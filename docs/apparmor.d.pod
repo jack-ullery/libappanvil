@@ -106,7 +106,7 @@ has been provided to use change_hat(2).)
 =head2 Access Modes
 
 File permission access modes consists of combinations of the following
-seven modes:
+modes:
 
 =over 8
 
@@ -180,11 +180,11 @@ Inherit and Unconstrained execute entries.
 
 =item B<Link mode>
 
-Allows the program to be able to create and remove a link with this name
+Allows the program to be able to create a link with this name
 (including symlinks). When a link is created, the file that is being
 linked to B<MUST> have the same access permissions as the link being
 created (with the exception that the destination does not have to have
-link access.) Link access is required for unlinking a file.
+link access.)
 
 =back
 
@@ -323,9 +323,7 @@ descriptions of how some of the abstractions are used.
 
 =item F<abstractions/base>
 
-includes files that should be readable in all profiles, files that
-should be writable in all profiles, and a single network confinement
-rule to ensure every domain includes network constraints. 
+includes files that should be readable and writable in all profiles.
 
 =begin comment
 
@@ -361,7 +359,8 @@ includes file access rules needed for common kerberos clients.
 =back
 
 The abstractions stored in F</etc/apparmor.d/program-chunks/> are
-intended for use by single programs.
+intended for use by specific program suites, and are not generally
+useful.
 
 =begin comment
 
@@ -372,20 +371,6 @@ access to specific ports only. A system administrator may wish to allow
 certain services to communicate only with specific subnets.)
 
 =end comment
-
-References to user home directories in profiles are usually confined to
-abstractions stored in files with names beginning with "user-". There
-are many here suitable for customization; a few notable entries:
-
-=over 4
-
-=item F<program-chunks/apache-default-uri>
-
-is a convenient place to put file access that should be allowed for
-Apache change_hat(2) conventions that don't have a more specific
-subprofile in Apache's profile. See also mod_apparmor(5).
-
-=back
 
 =head1 EXAMPLE
 
@@ -420,8 +405,6 @@ An example AppArmor profile:
 =item F</etc/init.d/boot.apparmor>
 
 =item F</etc/apparmor.d/>
-
-=item F</usr/share/vim/current/syntax/apparmor.vim>
 
 =back
 
