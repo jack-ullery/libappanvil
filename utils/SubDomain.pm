@@ -1275,7 +1275,7 @@ sub do_logprof_pass {
   my $stuffed = undef;
   my $last;
   # okay, done loading the previous profiles, get on to the good stuff...
-  open(LOG, $filename) or fatal_error "Can't read subdomain logfile $filename: $!";
+  open(LOG, $filename) or fatal_error "Can't read AppArmor logfile $filename: $!";
   while(($_ = $stuffed) || ($_ = <LOG>)) {
     chomp;
 
@@ -2001,7 +2001,7 @@ sub contains ($$) {
 }
 
 sub readprofiles () {
-  opendir(SDDIR, $profiledir) or fatal_error "Can't read subdomain profiles in $profiledir.";
+  opendir(SDDIR, $profiledir) or fatal_error "Can't read AppArmor profiles in $profiledir.";
   for my $file (grep { -f "$profiledir/$_" } readdir(SDDIR)) {
     next if $file =~ /\.rpm(save|new)$/;
     readprofile("$profiledir/$file");
@@ -2339,7 +2339,7 @@ sub writeprofile ($) {
 
   my $filename = getprofilefilename($profile);
 
-  open(SDPROF, ">$filename") or fatal_error "Can't write new subdomain profile $filename: $!";
+  open(SDPROF, ">$filename") or fatal_error "Can't write new AppArmor profile $filename: $!";
 
   # stick in a vim mode line to turn on subdomain syntax highlighting
   print SDPROF "# vim:syntax=apparmor\n";
