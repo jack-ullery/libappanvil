@@ -1,0 +1,13 @@
+#
+#	$Id: cod.negative_entry2 3713 2005-01-19 08:17:38Z sarnold $
+#
+# 	this is a smaple negative entry, which we no longer support.
+#	
+	/usr/src/codomain-1.2.0-pre2/testprogs/foo.sh  	{
+/dev/urandom		r ,
+./bad			r ,
+12345678901234567890123456789012345678901234567890123456789012345678901 !
+	x        aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ,
+123456789012345678901234567890123456789012345678901234567890123456789012 		r ,
+	}
+#

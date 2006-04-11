@@ -1,0 +1,11 @@
+# The parser should spit out the following error for this file:
+#	 An unconstrained file must have execute privileges
+#
+/home/greg/wirex/immunix/CoDomain/test/uncon1 {
+/dev/urandom                                  r
+/etc/ld.so.cache                              r
+/home/greg/wirex/immunix/CoDomain/test/uncon2 u	0f9a787f80df3c614121665640371727
+/lib/ld-2.1.3.so                              x	d18dc2b68b01e6e573567f60bbd554e4
+/lib/libc-2.1.3.so                            r
+}
+
