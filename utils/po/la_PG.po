@@ -1,0 +1,470 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmor-utils 1.2\n"
+"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"POT-Creation-Date: 2005-04-01 14:07-0800\n"
+"PO-Revision-Date: 2005-04-15 09:10+8\n"
+"Last-Translator: Jesse Michael <jesse@immunix.com>\n"
+"Language-Team: Pig Latin\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: GenProf.ycp:22
+msgid "wizardinfo"
+msgstr "Guvf jvmneq jvyy uryc lbh perngr n FhoQbznva \n"
+"cebsvyr sbe na nccyvpngvba sebz fpengpu \n"
+"be nhtzrag na rkvfgvat cebsvyr ol yrneavat\n"
+"arj orunivbe.\n"
+"\n"
+"Cyrnfr ragre gur nccyvpngvba anzr sbe juvpu lbh jvfu \n"
+"gb perngr n cebsvyr be  fryrpg Oebjfr gb svaq gur \n"
+"cebtenz lbhefrys."
+
+#: GenProf.ycp:34
+msgid "&Application to Profile"
+msgstr "&Applicationway otay Ofilepray"
+
+#: GenProf.ycp:69
+msgid "noappentered"
+msgstr "Lbh unir abg ragrerq be fryrpgrq na \n"
+"nccyvpngvba gb cebsvyr.\n"
+"Cyrnfr ragre na nccyvpngvba anzr gb\n"
+"pbagvahr trarengvat n cebsvyr be cerff \n"
+"Nobeg gb pnapry guvf jvmneq."
+
+#: GenProf.ycp:79 GenProf.ycp:86
+msgid "noappexist"
+msgstr "Gur nccyvpngvba lbh unir ragrerq qbrf abg rkvfg.\n"
+"\n"
+"Cyrnfr ragre na rkvfgvat nccyvpngvba anzr gb trarengr n cebsvyr be \n"
+"cerff Nobeg gb pnapry guvf jvmneq."
+
+#: GenProf.ycp:108
+msgid "Select Program to Profile "
+msgstr "Electsay Ogrampray otay Ofilepray "
+
+#: GenProf.ycp:126 LogProf.ycp:24
+msgid "&Profile"
+msgstr "Ofile&pray"
+
+#: GenProf.ycp:127 LogProf.ycp:25
+msgid "&Inherit"
+msgstr "&Inheritway"
+
+#: GenProf.ycp:128 LogProf.ycp:26
+msgid "&Unconfined"
+msgstr "&Unconfinedway"
+
+#: GenProf.ycp:299 GenProf.ycp:324
+msgid "Profile:  "
+msgstr "Ofilepray:  "
+
+#: GenProf.ycp:300 GenProf.ycp:325
+msgid "Path:     "
+msgstr "Athpay:     "
+
+#: GenProf.ycp:301
+msgid "Old Mode: "
+msgstr "Oldway Odemay: "
+
+#: GenProf.ycp:302 GenProf.ycp:326
+msgid "New Mode: "
+msgstr "Ewnay Odemay: "
+
+#: GenProf.ycp:308 GenProf.ycp:332 GenProf.ycp:378 GenProf.ycp:421
+#: GenProf.ycp:461
+msgid "&Allow"
+msgstr "&Allowway"
+
+#: GenProf.ycp:309 GenProf.ycp:333 GenProf.ycp:379 GenProf.ycp:422
+#: GenProf.ycp:462
+msgid "&Deny"
+msgstr "Eny&day"
+
+#: GenProf.ycp:310 GenProf.ycp:334
+msgid "&Glob"
+msgstr "Ob&glay"
+
+#: GenProf.ycp:311 GenProf.ycp:335
+msgid "Glob w/E&xt"
+msgstr "Obglay way/EWAY&xtay"
+
+#: GenProf.ycp:312 GenProf.ycp:336
+msgid "&Edit"
+msgstr "&Editway"
+
+#: GenProf.ycp:345 GenProf.ycp:385 GenProf.ycp:428 GenProf.ycp:468
+#: GenProf.ycp:535 LogProf.ycp:243 LogProf.ycp:283 LogProf.ycp:327
+#: LogProf.ycp:368 LogProf.ycp:405 LogProf.ycp:424 LogProf.ycp:440
+msgid "LogProf - SubDomain profiling wizard"
+msgstr "OgProflay - UbDomainsay ofilingpray izardway"
+
+#: GenProf.ycp:345 GenProf.ycp:385 GenProf.ycp:428 GenProf.ycp:468
+#: GenProf.ycp:517 GenProf.ycp:535 LogProf.ycp:243 LogProf.ycp:283
+#: LogProf.ycp:327 LogProf.ycp:368 LogProf.ycp:405 LogProf.ycp:424
+#: LogProf.ycp:440
+msgid "&Finish"
+msgstr "Inish&fay"
+
+#: GenProf.ycp:371
+msgid "Profile:    "
+msgstr "Ofilepray:    "
+
+#: GenProf.ycp:372
+msgid "Capability: "
+msgstr "Apabilitycay: "
+
+#: GenProf.ycp:412
+msgid "Profile: "
+msgstr "Ofilepray: "
+
+#: GenProf.ycp:413
+msgid "Path:    "
+msgstr "Athpay:    "
+
+#: GenProf.ycp:445
+msgid "Profile:       "
+msgstr "Ofilepray:       "
+
+#: GenProf.ycp:446
+msgid "Requested Hat: "
+msgstr "Equestedray Athay: "
+
+#: GenProf.ycp:447
+msgid "Default Hat:   "
+msgstr "Efaultday Athay:   "
+
+#: GenProf.ycp:451
+msgid "Add Requested Hat"
+msgstr "Addway Equestedray Athay"
+
+#: GenProf.ycp:452
+msgid "Use Default Hat"
+msgstr "Useway Efaultday Athay"
+
+#: GenProf.ycp:489
+msgid "&Scan system log for entries to add to profiles"
+msgstr "An&scay emsystay oglay orfay entriesway otay addway otay ofilespray"
+
+#: GenProf.ycp:500
+msgid "Profiling: "
+msgstr "Ofilingpray: "
+
+#: GenProf.ycp:502
+msgid "pleasestart"
+msgstr "Cyrnfr fgneg gur nccyvpngvba gb or cebsvyrq va \n"
+"nabgure jvaqbj naq rkrepvfr vgf shapgvbanyvgl abj.\n"
+"\n"
+"Bapr pbzcyrgrq, fryrpg gur \"Fpna\" ohggba orybj va \n"
+"beqre gb fpna gur flfgrz ybtf sbe FhoQbznva riragf.  \n"
+"\n"
+"Sbe rnpu FhoQbznva rirag, lbh jvyy or tvira gur \n"
+"bccbeghavgl gb pubbfr jurgure gur npprff fubhyq or \n"
+"nyybjrq be qravrq."
+
+#: GenProf.ycp:517
+msgid "GenProf - SubDomain profiling wizard"
+msgstr "EnProfgay - UbDomainsay ofilingpray izardway"
+
+#: GenProf.ycp:530
+msgid "No unhandled SubDomain events were found in the system log."
+msgstr "Onay unhandledway UbDomainsay eventsway ereway oundfay inway ethay emsystay oglay."
+
+#: GenProf.ycp:547 GenProf.ycp:676
+msgid "Are you sure you want to exit?"
+msgstr "Areway ouyay uresay ouyay antway otay exitway?"
+
+#: GenProf.ycp:556
+msgid "Abandon all profile changes and exit?"
+msgstr "Abandonway allway ofilepray angeschay andway exitway?"
+
+#: GenProf.ycp:689
+msgid "Save these profile changes and exit?"
+msgstr "Avesay esethay ofilepray angeschay andway exitway?"
+
+#: GenProf.ycp:772 LogProf.ycp:649
+msgid "&Add"
+msgstr "&Addway"
+
+#: GenProf.ycp:780 LogProf.ycp:657
+msgid "&Cancel"
+msgstr "Ancel&cay"
+
+#: GenProf.ycp:800 LogProf.ycp:677
+msgid "&New Entry"
+msgstr "Ew&nay Entryway"
+
+msgid "Setting %s to complain mode."
+msgstr "Ettingsay %say otay omplaincay odemay."
+
+msgid "Setting %s to enforce mode."
+msgstr "Ettingsay %say otay enforceway odemay."
+
+msgid "Profile"
+msgstr "Ofilepray"
+
+msgid "Default Hat"
+msgstr "Efaultday Athay"
+
+msgid "Requested Hat"
+msgstr "Equestedray Athay"
+
+msgid "Abandoning all changes."
+msgstr "Abandoningway allway angeschay."
+
+msgid "Saving all changes."
+msgstr "Avingsay allway angeschay."
+
+msgid "Execute"
+msgstr "Executeway"
+
+msgid "(I)nherit"
+msgstr "(I)nherittay"
+
+msgid "(P)rofile"
+msgstr "Ofile(P)ray"
+
+msgid "(U)nconfined"
+msgstr "(U)nconfinedday"
+
+msgid "(D)eny"
+msgstr "Eny(d)ay"
+
+msgid "Abo(r)t"
+msgstr "Abo(r)tay"
+
+msgid "(F)inish"
+msgstr "Inish(f)ay"
+
+msgid "Reading log entries from %s."
+msgstr "Eadingray oglay entriesway omfray %say."
+
+msgid "Updating subdomain profiles in %s."
+msgstr "Updatingway ubdomainsay ofilespray inway %say."
+
+msgid "Complain-mode changes:"
+msgstr "Omplaincay-odemay angeschay:"
+
+msgid "Enforce-mode changes:"
+msgstr "Enforceway-odemay angeschay:"
+
+msgid "WTF?  I don't understand mode %s."
+msgstr "WTFAY?  IWAY on'tday understandway odemay %say."
+
+msgid "Capability"
+msgstr "Apabilitycay"
+
+msgid "(A)llow"
+msgstr "(A)llowllay"
+
+msgid "Adding capability %s to profile."
+msgstr "Addingway apabilitycay %say otay ofilepray."
+
+msgid "Denying capability %s to profile."
+msgstr "Enyingday apabilitycay %say otay ofilepray."
+
+msgid "Path"
+msgstr "Athpay"
+
+msgid "Old Mode"
+msgstr "Oldway Odemay"
+
+msgid "New Mode"
+msgstr "Ewnay Odemay"
+
+msgid "(N)ew"
+msgstr "ew(N)ay"
+
+msgid "(G)lob"
+msgstr "ob(G)lay"
+
+msgid "Glob w/(E)xt"
+msgstr "Obglay way/(E)xtay"
+
+msgid "Adding #include <%s> to profile."
+msgstr "Addingway #includeway <%say> otay ofilepray."
+
+msgid "Deleted %s previous matching profile entries."
+msgstr "Eletedday %say eviouspray atchingmay ofilepray entriesway."
+
+msgid "Adding %s %s to profile."
+msgstr "Addingway %say %say otay ofilepray."
+
+msgid "Enter new path: "
+msgstr "Enterway ewnay athpay: "
+
+msgid "The specified path does not match this log entry:"
+msgstr "Ethay ecifiedspay athpay oesday otnay atchmay isthay oglay entryway:"
+
+msgid "Log Entry"
+msgstr "Oglay Entryway"
+
+msgid "Entered Path"
+msgstr "Enteredway Athpay"
+
+msgid "Do you really want to use this path?"
+msgstr "Oday ouyay eallyray antway otay useway isthay athpay?"
+
+msgid "Profile %s contains invalid regexp %s."
+msgstr "Ofilepray %say ontainscay invalidway egexpray %say."
+
+msgid "Writing updated profile for %s."
+msgstr "Itingwray updatedway ofilepray orfay %say."
+
+msgid "&Browse"
+msgstr "Owse&bray"
+
+msgid "&Create Profile"
+msgstr "Eate&cray Ofilepray"
+
+msgid "&Yes"
+msgstr "Es&yay"
+
+msgid "&No"
+msgstr "O&nay"
+
+msgid "&Abort"
+msgstr "&Abortay"
+
+msgid "&Back"
+msgstr "Ack&bay"
+
+#: /usr/share/YaST2/clients/GenProf.ycp:138
+msgid "ghelp"
+msgstr "<b>FhoQbznva Ybt Nanylmre naq Cebsvyvat Jvmneq</b><br>\n"
+"       Guvf jvmneq jvyy fgrc lbh guebhtu gur ragevrf trarengvat ol gur "
+"FhoQbznva npprff pbageby zbqhyr. Vg cebivqrf na rnfl jnl gb trarengr "
+"cebsvyrf sebz abezny nccyvpngvba orunivbe naq cebivqrf fhttrfgvbaf sbe "
+"trarengvat uvtuyl bcgvzvmrq naq ebohfg frphevgl cebsvyrf. <br>\n"
+"       Gur sbyybjvat uryc grkg qrfpevorf gur qrgnvy bs gur frphevgl cebsvyr "
+"flagnk gung  FhoQbznva hfrf. <br>Ng nal fgntr lbh znl phfgbzvmr gur cebsvyr "
+"ragel ol bireevqvat gur fhttrfgvba. Guvf bireivrj jvyy nffvfg lbh va lbhe "
+"bcgvbaf.\n"
+"<br>\n"
+"       <b>Npprff Zbqrf</b><br>\n"
+"\n"
+"       Svyr crezvffvba npprff zbqrf pbafvfgf bs pbzovangvbaf bs\n"
+"       gur sbyybjvat fvk zbqrf:\n"
+"\n"
+"<ul>   <li>e    - ernq</li>\n"
+"       <li>j    - jevgr</li>\n"
+"       <li>ck   - qvfpergr cebsvyr rkrphgr</li>\n"
+"       <li>hk   - hapbasvarq rkrphgr</li>\n"
+"       <li>vk   - vaurevg rkrphgr</li>\n"
+"       <li>y    - yvax</li>\n"
+"</ul>\n"
+"<p>\n"
+"       <b>Npprff Zbqrf Qrgnvyf</b>\n"
+"<br><br>\n"
+"       <b>Ernq zbqr</b><br>\n"
+"           Nyybjf gur cebtenz gb unir ernq npprff gb gur\n"
+"           erfbhepr. Ernq npprff vf erdhverq sbe furyy fpevcgf\n"
+"           naq bgure vagrecergrq pbagrag, naq qrgrezvarf vs na\n"
+"           rkrphgvat cebprff pna pber qhzc be or nggnpurq gb jvgu\n"
+"           cgenpr(2).  (cgenpr(2) vf hfrq ol hgvyvgvrf fhpu nf\n"
+"           fgenpr(1), ygenpr(1), naq tqo(1).)\n"
+"       <br>\n"
+"       <br>\n"
+"       <b>Jevgr zbqr</b><br>\n"
+"           Nyybjf gur cebtenz gb unir jevgr npprff gb gur\n"
+"           erfbhepr. Svyrf zhfg unir guvf crezvffvba vs gurl ner\n"
+"           gb or hayvaxrq (erzbirq.)\n"
+"       <br>\n"
+"       <br>\n"
+"       <br>\n"
+"\n"
+"       <b>Hapbafgenvarq rkrphgr zbqr</b><br>\n"
+"       <br>\n"
+"           Nyybjf gur cebtenz gb rkrphgr gur erfbhepr jvgubhg nal\n"
+"           FhoQbznva cebsvyr orvat nccyvrq gb gur rkrphgrq\n"
+"           erfbhepr. Erdhverf yvfgvat rkrphgr zbqr nf jryy.\n"
+"           Vapbzcngvoyr jvgu Vaurevg naq Qvfpergr Cebsvyr rkrphgr\n"
+"           ragevrf.\n"
+"       <br>\n"
+"\n"
+"           Guvf zbqr vf hfrshy jura n pbasvarq cebtenz arrqf gb\n"
+"           or noyr gb cresbez n cevivyrtrq bcrengvba, fhpu nf\n"
+"           erobbgvat gur znpuvar. Ol cynpvat gur cevivyrtrq frpgvba \n"
+"           va nabgure rkrphgnoyr naq tenagvat hapbasvarq\n"
+"           rkrphgvba evtugf, vg vf cbffvoyr gb olcnff gur znaqngbel \n"
+"           pbafgenvagf vzcbfrq ba nyy pbasvarq cebprffrf.\n"
+"           Sbe zber vasbezngvba ba jung vf pbafgenvarq, frr gur\n"
+"           fhoqbznva(7) zna cntr.\n"
+"       <br> \n"
+"       <br>\n"
+"       <br>\n"
+"\n"
+"      <b>Vaurevg rkrphgr zbqr</b><br>\n"
+"       <br>\n"
+"           Cerirag gur abezny FhoQbznva qbznva genafvgvba ba\n"
+"           rkrpir(2) jura gur cebsvyrq cebtenz rkrphgrf gur\n"
+"           erfbhepr. Vafgrnq, gur rkrphgrq erfbhepr jvyy vaurevg\n"
+"           gur pheerag cebsvyr. Vapbzcngvoyr jvgu Hapbafgenvarq\n"
+"           naq Qvfpergr Cebsvyr rkrphgr ragevrf.\n"
+"\n"
+"           Guvf zbqr vf hfrshy jura n pbasvarq cebtenz arrqf gb\n"
+"           pnyy nabgure pbasvarq cebtenz jvgubhg tnvavat gur crezvffvbaf \n"
+"           bs gur gnetrg'f cebsvyr, be ybfvat gur crezvffvbaf bs gur \n"
+"           pheerag cebsvyr. Guvf zbqr vf vaserrdhragyl hfrq.\n"
+"     <br> \n"
+"       <br>\n"
+"       <br>\n"
+"\n"
+"     <b>Qvfpergr Cebsvyr rkrphgr zbqr</b><br>\n"
+"       <br>\n"
+"           Guvf zbqr erdhverf gung n qvfpergr frphevgl cebsvyr vf\n"
+"           qrsvarq sbe n erfbhepr rkrphgrq ng n FhoQbznva qbznva\n"
+"           genafvgvba.  Vs gurer vf ab cebsvyr qrsvarq gura gur\n"
+"           npprff jvyy or qravrq.  Vapbzcngvoyr jvgu Vaurevg naq\n"
+"           Hapbafgenvarq rkrphgr ragevrf.\n"
+"       <br>\n"
+"       <br>\n"
+"   <br> \n"
+"\n"
+"    <b>Yvax zbqr</b><br>\n"
+"       <br>\n"
+"           Nyybjf gur cebtenz gb or noyr gb perngr naq erzbir n\n"
+"           yvax jvgu guvf anzr (vapyhqvat flzyvaxf). Jura n yvax\n"
+"           vf perngrq, gur svyr gung vf orvat yvaxrq gb ZHFG unir\n"
+"           gur fnzr npprff crezvffvbaf nf gur yvax orvat perngrq\n"
+"           (jvgu gur rkprcgvba gung gur qrfgvangvba qbrf abg unir\n"
+"           gb unir yvax npprff.) Yvax npprff vf erdhverq sbe\n"
+"           hayvaxvat n svyr.\n"
+"    \n"
+"       <br>\n"
+"       <br>\n"
+"       <oe>\n"
+"      \n"
+"      <b>Tyboovat</b>\n"
+"       <br>\n"
+"       <br>\n"
+"       Svyr erfbheprf znl or fcrpvsvrq jvgu n tyboovat flagnk\n"
+"       fvzvyne gb gung hfrq ol cbchyne furyyf, fhpu nf pfu(1),\n"
+"       onfu(1), mfu(1).\n"
+"       <br>\n"
+"\n"
+"       <ul><li><b>*</b>   pna fhofgvghgr sbe nal ahzore bs punenpgref, "
+"rkprcgvat\n"
+"           '/'</li>\n"
+"\n"
+"       <li><b>**</b>  pna fhofgvghgr sbe nal ahzore bs punenpgref, "
+"vapyhqvat\n"
+"           '/'</li>\n"
+"\n"
+"       <li><b>?</b>   pna fhofgvghgr sbe nal fvatyr punenpgre rkprcgvat '/'</li>\n"
+"\n"
+"       <li><b>[nop]</b> jvyy fhofgvghgr sbe gur fvatyr punenpgre n, o, be p</li>\n"
+"\n"
+"       <li><b>[n-p]</b> jvyy fhofgvghgr sbe gur fvatyr punenpgre n, o, be p</li>\n"
+"\n"
+"       <li><b>{no,pq}</b> jvyy rkcnaq gb bar ehyr gb zngpu no, bar ehyr gb "
+"zngpu\n"
+"           pq</li>\n"
+"       </ul>"

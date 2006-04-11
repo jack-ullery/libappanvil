@@ -1,0 +1,504 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2005 NOVELL, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmor\n"
+"PO-Revision-Date: 2004-03-30 19.38+0200\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../parser_include.c:87
+msgid "エラーは一時ファイルを割り当てることができませんでした\n"
+msgstr "エラーは一時ファイルを割り当てることができませんでした\n"
+
+#: ../parser_include.c:110
+msgid "Error: Out of Memory\n"
+msgstr "エラー: メモリ不足\n"
+
+#: ../parser_include.c:129
+#, c-format
+msgid "Error: Can't add directory %s to search path\n"
+msgstr "エラー: ディレクトリ%sを検索パスに追加できません\n"
+
+#: ../parser_include.c:137
+msgid "Error: Could not allocate memory\n"
+msgstr "エラー: メモリを割り当てることができませんでした\n"
+
+#: ../parser_include.c:258
+#, c-format
+msgid "Error: could not allocate buffer for include. line %d in %s\n"
+msgstr "エラー: 含めるバッファを割り当てることができませんでした。%2$sの行%1$d\n"
+
+#: ../parser_include.c:266 ../parser_include.c:281
+#, c-format
+msgid "Error: bad include. line %d in %s\n"
+msgstr "エラー: 不正インクルード。%2$sの行%1$d\n"
+
+#: ../parser_include.c:310
+#, c-format
+msgid "Error: exceeded %d levels of includes.  NOT processing %s include\n"
+msgstr "エラー: インクルードの%dレベルを超えました  %sインクルードを処理していません\n"
+
+#: ../parser_include.c:325
+#, c-format
+msgid "Error: #include %s%c not found. line %d in %s\n"
+msgstr "エラー: #include %1$s%2$cが見つかりません。%4$sの行%3$d\n"
+
+#: ../parser_interface.c:115
+#, c-format
+msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
+msgstr "PANIC 不正増分バッファ %p pos %p ext %p size %d res %p\n"
+
+#: ../parser_interface.c:506 ../parser_sysctl.c:107
+#, c-format
+msgid "Unable to open %s - %s\n"
+msgstr "%sを開けません - %s\n"
+
+#: ../parser_interface.c:522
+msgid "unable to create work area\n"
+msgstr "作業領域を作成できません\n"
+
+#: ../parser_interface.c:530
+#, c-format
+msgid "unable to serialize profile %s\n"
+msgstr "プロファイル%s\nを順番に並べることができません\n"
+
+#: ../parser_interface.c:539
+#, c-format
+msgid "%s: Unable to write entire profile entry\n"
+msgstr "%s: プロファイルエントリ全体を書き込むことができません\n"
+
+#: parser_lex.l:346
+#, c-format
+msgid "(ip_mode) Found unexpected character: '%s'"
+msgstr "(ip_mode) 予期しない文字を検出しました: '%s'"
+
+#: parser_lex.l:470
+#, c-format
+msgid "Found unexpected character: '%s'"
+msgstr "予期しない文字を検出しました: '%s'"
+
+#: ../parser_main.c:276
+#, c-format
+msgid "%s: Could not allocate memory for subdomain mount point\n"
+msgstr "%s: サブドメインマウントポイントに対してメモリを割り当てることができませんでした\n"
+
+#: ../parser_main.c:282
+#, c-format
+msgid "%s: Could not allocate memory for subdomainbase mount point\n"
+msgstr "%s: サブドメインベースマウントポイントに対してメモリを割り当てることができませんでした\n"
+
+#: ../parser_main.c:347
+#, c-format
+msgid ""
+"%s: Unable to query modules - '%s'\n"
+"Either modules are disabled or your kernel is too old.\n"
+msgstr "%s: モジュールをクエリできません - 「%s」どちらかのモジュールが無効になっているか、カーネルが古すぎます。\n"
+
+#: ../parser_main.c:353
+#, c-format
+msgid "%s: Unable to find "
+msgstr "%s: 検出できません"
+
+#: ../parser_main.c:353
+msgid ""
+"!\n"
+"Ensure that it has been loaded.\n"
+msgstr "!\nロードされていることを確認してください。\n"
+
+#: ../parser_main.c:370
+#, c-format
+msgid ""
+"%s: Sorry. You need root privileges to run this program.\n"
+"\n"
+msgstr "%s: 申し訳ありません。 このプログラムを実行するには、ルート特権が必要です。\n\n"
+
+#: ../parser_main.c:377
+#, c-format
+msgid ""
+"%s: Warning! You've set this program setuid root.\n"
+"Anybody who can run this program can update your AppArmor profiles.\n"
+"\n"
+msgstr "%s: 警告! このプログラムsetuid rootを設定しています。\nこのプログラムを実行できれば誰でもAppArmorプロファイルを更新できます。\n\n"
+
+#: ../parser_main.c:439
+#, c-format
+msgid "%s: Errors found in file. Aborting.\n"
+msgstr "%s: ファイルにエラーが検出されました。 中止しています。\n"
+
+#: ../parser_main.c:446
+#, c-format
+msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
+msgstr "%s: 規則後処理の結合中にエラーが見つかりました。 中止しています。\n"
+
+#: ../parser_main.c:454
+#, c-format
+msgid "%s: Errors found during regex postprocess. Aborting.\n"
+msgstr "%s: regex後処理の間にエラーが見つかりました。 中止しています。\n"
+
+#: ../parser_merge.c:56
+msgid "Couldn't merge entries. Out of Memory\n"
+msgstr "エントリをマージできませんでした。 メモリ不足\n"
+
+#: ../parser_merge.c:77
+#, c-format
+msgid "profile %s: has merged rule %s with multiple x modifiers\n"
+msgstr "プロファイル%s: 複数のx修飾キーで規則%sがマージされています\n"
+
+#: ../parser_merge.c:140
+#, c-format
+msgid "ERROR in profile %s, failed to load\n"
+msgstr "プロファイル%sのエラー、ロードに失敗しました\n"
+
+#: ../parser_sysctl.c:44
+msgid "Bad write position\n"
+msgstr "不正書き込み位置\n"
+
+#: ../parser_sysctl.c:47
+msgid "Permission denied\n"
+msgstr " 拒否されたパーミッション\n"
+
+#: ../parser_sysctl.c:50
+msgid "Out of memory\n"
+msgstr "メモリ不足\n"
+
+#: ../parser_sysctl.c:53
+msgid "Couldn't copy profile Bad memory address\n"
+msgstr "プロファイルの不正メモリアドレスをコピーできませんでした\n"
+
+#: ../parser_sysctl.c:56
+msgid "Profile doesn't conform to protocol\n"
+msgstr "プロファイルがプロトコルに準拠していません\n"
+
+#: ../parser_sysctl.c:59
+msgid "Profile does not match signature\n"
+msgstr "プロファイルが署名に一致していません\n"
+
+#: ../parser_sysctl.c:62
+msgid "Profile version not supported\n"
+msgstr "プロファイルバージョンがサポートされていません\n"
+
+#: ../parser_sysctl.c:65
+msgid "Profile already exists\n"
+msgstr "プロファイルはすでに存在します\n"
+
+#: ../parser_sysctl.c:68
+msgid "Profile doesn't exist\n"
+msgstr "プロファイルが存在しません\n"
+
+#: ../parser_sysctl.c:71
+msgid "Unknown error\n"
+msgstr "不明なエラー\n"
+
+#: ../parser_sysctl.c:92
+#, c-format
+msgid "%s: Profile '%s' is not authorised to be loaded\n"
+msgstr "%s: プロファイル「%s」がロードする権限を与えられていません\n"
+
+#: ../parser_sysctl.c:132
+#, c-format
+msgid "%s: Unable to add \"%s\".  "
+msgstr " %s: \"%s\"を追加できません。"
+
+#: ../parser_sysctl.c:138
+#, c-format
+msgid "%s: Unable to replace \"%s\".  "
+msgstr " %s: \"%s\"を置換できません。"
+
+#: ../parser_sysctl.c:144
+#, c-format
+msgid "%s: Unable to remove \"%s\".  "
+msgstr " %s: \"%s\"を削除できません。"
+
+#: ../parser_sysctl.c:150
+#, c-format
+msgid "%s: Unable to write to stdout\n"
+msgstr "%s: stdoutに書き込めません\n"
+
+#: ../parser_sysctl.c:154 ../parser_sysctl.c:179
+#, c-format
+msgid "%s: ASSERT: Invalid option: %d\n"
+msgstr "%s: ASSERT: 無効なオプション: %d\n"
+
+#: ../parser_sysctl.c:165
+#, c-format
+msgid "Addition succeeded for \"%s\".\n"
+msgstr " \"%s\"に続く追加。\n"
+
+#: ../parser_sysctl.c:169
+#, c-format
+msgid "Replacement succeeded for \"%s\".\n"
+msgstr " \"%s\"に続く置換。\n"
+
+#: ../parser_sysctl.c:173
+#, c-format
+msgid "Removal succeeded for \"%s\".\n"
+msgstr " \"%s\"に続く削除。\n"
+
+#: parser_yacc.y:215 parser_yacc.y:239 parser_yacc.y:387 parser_yacc.y:403
+#: parser_yacc.y:453 parser_yacc.y:493 parser_yacc.y:522 parser_yacc.y:536
+#: parser_yacc.y:550 parser_yacc.y:564 parser_yacc.y:578 parser_yacc.y:606
+#: parser_yacc.y:634 parser_yacc.y:671 parser_yacc.y:688 parser_yacc.y:702
+#: parser_yacc.y:908
+msgid "Memory allocation error."
+msgstr "メモリ割り当てエラー。"
+
+#: parser_yacc.y:257
+#, c-format
+msgid "Default allow subdomains are no longer supported, sorry. (domain: %s)"
+msgstr "デフォルトでは、サブドメインがもはやサポートされていません。 (ドメイン: %s)"
+
+#: parser_yacc.y:263
+#, c-format
+msgid ""
+"Default allow subdomains are no longer supported, sorry. (domain: %s^%s)"
+msgstr "デフォルトでは、サブドメインがもはやサポートされていません。 (ドメイン: %s^%s)"
+
+#: parser_yacc.y:294
+msgid "flags=(debug) is no longer supported, sorry."
+msgstr "flags=(debug)はもはやサポートされていません。"
+
+#: parser_yacc.y:330
+msgid "Assert: `rule' returned NULL."
+msgstr "Assert: 「rule」はNULLを返しています。"
+
+#: parser_yacc.y:344
+msgid "Assert: `netrule' returned NULL."
+msgstr "Assert: 「netrule」はNULLを返しています。"
+
+#: parser_yacc.y:372
+msgid "Assert: 'hat rule' returned NULL."
+msgstr "Assert: 「hat rule」はNULLを返しています。"
+
+#: parser_yacc.y:405
+msgid "md5 signature given without execute privilege."
+msgstr "md5署名は実行権限なしに与えられています。"
+
+#: parser_yacc.y:420 parser_yacc.y:429
+#, c-format
+msgid "missing an end of line character? (entry: %s)"
+msgstr "行末文字が欠けていますか? (entry: %s)"
+
+#: parser_yacc.y:435 parser_yacc.y:441
+#, c-format
+msgid "Negative subdomain entries are no longer supported, sorry. (entry: %s)"
+msgstr "負のサブドメインエントリがもはやサポートされていません。 (entry: %s)"
+
+#: parser_yacc.y:488
+msgid "Assert: `addresses' returned NULL."
+msgstr "Assert: 「address」はNULLを返しています。"
+
+#: parser_yacc.y:588
+msgid "Network entries can only have one TO address."
+msgstr "ネットワークエントリには、TOアドレスを1つだけ指定できます。"
+
+#: parser_yacc.y:593
+msgid "Network entries can only have one FROM address."
+msgstr "ネットワークエントリには、FROMアドレスを1つだけ指定できます。"
+
+#: parser_yacc.y:611 parser_yacc.y:640
+#, c-format
+msgid "`%s' is not a valid ip address."
+msgstr "`%s'は有効なIPアドレスではありません。"
+
+#: parser_yacc.y:652
+#, c-format
+msgid "`/%d' is not a valid netmask."
+msgstr "`/%d'は有効なネットマスクではありません。"
+
+#: parser_yacc.y:659
+#, c-format
+msgid "`%s' is not a valid netmask."
+msgstr "`%s'は有効なネットマスクではありません。"
+
+#: parser_yacc.y:685 parser_yacc.y:705
+#, c-format
+msgid "ports must be between %d and %d"
+msgstr "ポートは%dと%dの間に置かれる必要があります"
+
+#: parser_yacc.y:771
+#, c-format
+msgid "AppArmor parser error, line %d: %s\n"
+msgstr "サブドメイン構文解析エラー、行%d: %s\n"
+
+#: parser_yacc.y:814
+msgid "Exec qualifier 'i' must be followed by 'x'"
+msgstr "Execクォリファイア「i」の後に「x」が続く必要があります"
+
+#: parser_yacc.y:816
+msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
+msgstr "Execクォリファイア「i」は無効です、相反するクォリファイアがすでに指定されています"
+
+#: parser_yacc.y:826
+msgid "Exec qualifier 'u' must be followed by 'x'"
+msgstr "Execクォリファイア「u」の後に「x」が続く必要があります"
+
+#: parser_yacc.y:828
+msgid "Exec qualifier 'u' invalid, conflicting qualifier already specified"
+msgstr "Execクォリファイア「u」は無効です、相反するクォリファイアがすでに指定されています"
+
+#: parser_yacc.y:838
+msgid "Exec qualifier 'p' must be followed by 'x'"
+msgstr "Execクォリファイア「p」の後に「x」が続く必要があります"
+
+#: parser_yacc.y:840
+msgid "Exec qualifier 'p' invalid, conflicting qualifier already specified"
+msgstr "Execクォリファイア「p」は無効です、相反するクォリファイアがすでに指定されています"
+
+#: parser_yacc.y:849
+msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'u' or 'p'"
+msgstr "無効なモード、「x」にはexecクォリファイア「i」、「u」、または「p」が前に付きます。"
+
+#: parser_yacc.y:853
+msgid "Internal: unexpected mode character in input"
+msgstr "内部: 予期しないモード文字が入力されています"
+
+#: parser_yacc.y:1209
+#, c-format
+msgid "%s: Illegal open {, nesting groupings not allowed\n"
+msgstr "%s: 不正オープン{、入れ子グループ分けは許可されていません\n"
+
+#: parser_yacc.y:1229
+#, c-format
+msgid "%s: Regex grouping error: Invalid number of items between {}\n"
+msgstr "%s: Regexグループ分けエラー: {}の間にある項目の無効数\n"
+
+#: parser_yacc.y:1235
+#, c-format
+msgid ""
+"%s: Regex grouping error: Invalid close }, no matching open { detected\n"
+msgstr "%s: Regexグループ分けエラー: 無効なクローズ}、一致するオープンがありません{ detected\n"
+
+#: parser_yacc.y:1301
+#, c-format
+msgid ""
+"%s: Regex grouping error: Unclosed grouping or character class, expecting "
+"close }\n"
+msgstr "%s: Regexグループ分けエラー: クローズしていないグループ分けまたは文字クラスです、クローズします}\n"
+
+#: parser_yacc.y:1316
+#, c-format
+msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
+msgstr "%s: 内部バッファオーバーフローが検出されました、%d文字超えています\n"
+
+#: parser_yacc.y:1321
+#, c-format
+msgid "%s: Unable to parse input line '%s'\n"
+msgstr "%s: 入力行「%s」を解析できません\n"
+
+#: parser_yacc.y:1355
+#, c-format
+msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
+msgstr "%s: regex 「%s」 [original: 「%s」]のコンパイルに失敗しました\n"
+
+#: parser_yacc.y:1360
+#, c-format
+msgid "%s: error near               "
+msgstr "%s: エラーすれすれ               "
+
+#: parser_yacc.y:1371
+#, c-format
+msgid "%s: error reason: '%s'\n"
+msgstr "%s: エラーの理由: '%s'\n"
+
+#: parser_yacc.y:1381
+#, c-format
+msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
+msgstr "%s: regex 「%s」 [original: 「%s」]のコンパイルに失敗しました - mallocの失敗\n"
+
+#: parser_yacc.y:1439
+#, c-format
+msgid "%s: Subdomain '%s' defined, but no parent '%s'.\n"
+msgstr "%s: サブドメイン「%s」が定義されていますが、親「%s」がありません。\n"
+
+#: parser_yacc.y:1476
+#, c-format
+msgid "%s: Two SubDomains defined for '%s'.\n"
+msgstr "%s: 「%s」に対して2つのサブドメインが定義されています。\n"
+
+#: ../parser_sdlite.c:38
+#, c-format
+msgid "%s: Error opening certificate directory '%s': %s\n"
+msgstr "%s: 証明書ディレクトリ「%s」を開くときのエラー: %s\n"
+
+#: ../parser_sdlite.c:48
+#, c-format
+msgid "%s: Error reading certificates from %s\n"
+msgstr "%s: %sから証明書を読み込むときのエラー\n"
+
+#: ../parser_sdlite.c:111
+#, c-format
+msgid "%s: Failed to load certificate '%s'\n"
+msgstr "%s: 証明書「%s」の読み込みに失敗しました\n"
+
+#: ../parser_sdlite.c:118
+#, c-format
+msgid "%s: Failed to load profilelist from certificate '%s'\n"
+msgstr "%s: 証明書「%s」からプロファイルリストの読み込みに失敗しました\n"
+
+#: ../parser_sdlite.c:125
+#, c-format
+msgid "%s: Failure querying certificate/expiry '%s'\n"
+msgstr "%s: 証明書/有効期限「%s」をクエリしているときのエラー\n"
+
+#: ../parser_sdlite.c:131
+#, c-format
+msgid "%s: Certificate '%s' has expired\n"
+msgstr "%s: 証明書「%s」の有効期限がきれました\n"
+
+#: ../parser_sdlite.c:139
+#, c-format
+msgid "%s: Failure querying certificate/leaf '%s'\n"
+msgstr "%s: 証明書/葉「%s」をクエリしているときのエラー\n"
+
+#: ../parser_sdlite.c:145
+#, c-format
+msgid "%s: Certificate '%s' is not a leaf certificate\n"
+msgstr "%s: 証明書「%s」は葉証明書ではありません\n"
+
+#: ../parser_sdlite.c:156
+#, c-format
+msgid "%s: Profile '%s' not authorized by certificate '%s'\n"
+msgstr "%s: プロファイル「%s」は証明書「%s」によって承認されていません\n"
+
+#: ../parser_sdlite.c:171
+#, c-format
+msgid "%s: Failure querying certificate/isparent '%s' '%s'\n"
+msgstr "%s: 証明書/isparent「%s」「%s」をクエリしているときのエラー\n"
+
+#: ../parser_sdlite.c:176
+#, c-format
+msgid "%s: Certificate %s is not a valid parent of certificate %s\n"
+msgstr "%s: 証明書%sは証明書%sの有効な親ではありません\n"
+
+#: ../parser_sdlite.c:181
+#, c-format
+msgid "%s: Certificate %s is an invalid certificate\n"
+msgstr "%s: 証明書%sは有効な証明書です\n"
+
+#: ../parser_sdlite.c:189
+#, c-format
+msgid "%s: Failure querying certificate/isroot '%s'\n"
+msgstr "%s: 証明書/isroot「%s」をクエリしているときのエラー\n"
+
+#: ../parser_sdlite.c:194
+#, c-format
+msgid "%s: Certificate %s is not a valid root certificate\n"
+msgstr "%s: 証明書%sは有効なルートではありません\n"
+
+#: ../parser_sdlite.c:212
+#, c-format
+msgid "%s: Warning certificate cache '%s' is invalid. Rebuild using '%s'\n"
+msgstr "%s: 警告証明書キャッシュ「%s」が無効です。 「%s」を使用してリビルド\n"
+
+#: ../parser.h:37
+#, c-format
+msgid "Warning (line %d): "
+msgstr "警告(行%d):"
+

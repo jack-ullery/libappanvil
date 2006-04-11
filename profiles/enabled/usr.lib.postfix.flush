@@ -1,0 +1,54 @@
+# $Id: usr.lib.postfix.flush 6228 2006-02-04 01:19:32Z sarnold $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2006 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+#include <tunables/global>
+
+/usr/lib/postfix/flush {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/kerberosclient>
+  #include <program-chunks/postfix-common>
+
+  capability setgid,
+  capability setuid,
+
+  /usr/lib/postfix/flush                      rix,
+
+  /{var/spool/postfix/,}deferred                     r,
+  /{var/spool/postfix/,}deferred/[a-z]               r,
+  /{var/spool/postfix/,}deferred/[a-z]/[a-z]         rwl,
+  /{var/spool/postfix/,}deferred/[a-z]/[a-z]/*       rwl,
+  /{var/spool/postfix/,}deferred/[a-z]/[a-z]*        rwl,
+  /{var/spool/postfix/,}deferred/[a-z]*              rwl,
+  /{var/spool/postfix/,}flush                        rwl,
+  /{var/spool/postfix/,}flush/[a-z]                  rwl,
+  /{var/spool/postfix/,}flush/[a-z]/[a-z]            rwl,
+  /{var/spool/postfix/,}flush/[a-z]/[a-z]/*          rwl,
+  /{var/spool/postfix/,}flush/[a-z]/[a-z]*           rwl,
+  /{var/spool/postfix/,}flush/[a-z]*                 rwl,
+  /{var/spool/postfix/,}incoming                     r,
+  /{var/spool/postfix/,}incoming/[a-z]               r,
+  /{var/spool/postfix/,}incoming/[a-z]/[a-z]         rwl,
+  /{var/spool/postfix/,}incoming/[a-z]/[a-z]/*       rwl,
+  /{var/spool/postfix/,}incoming/[a-z]/[a-z]*        rwl,
+  /{var/spool/postfix/,}incoming/[a-z]*              rwl,
+  /{var/spool/postfix/,}public/qmgr                  w,
+  /etc/mtab                                          r,
+  /etc/postfix/main.cf                        r,
+  /etc/postfix/virtual.db                     r,
+
+  @{HOME}/.forward                            r,
+
+  /proc/stat                                  r,
+  /proc/sys/kernel/ngroups_max                r,
+  /var/spool/postfix/pid/unix.flush           rw,
+
+}

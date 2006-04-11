@@ -1,0 +1,34 @@
+# $Id: sbin.syslogd 6222 2006-02-03 23:42:57Z sarnold $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+#include <tunables/global>
+
+/sbin/syslogd {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/consoles>
+
+  capability sys_tty_config,
+  capability dac_override,
+  capability dac_read_search,
+
+  /dev/log                      wl,
+  /var/lib/*/dev/log            wl,
+
+  /dev/tty*                     w,
+  /dev/xconsole                 rw,
+  /etc/syslog.conf              r,
+  /sbin/syslogd                 rix,
+  /var/log/**                   rw,
+  /var/run/syslogd.pid          rwl,
+  /var/run/utmp                 rw,
+  /var/spool/compaq/nic/messages_fifo rw,
+}

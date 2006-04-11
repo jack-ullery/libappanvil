@@ -1,0 +1,38 @@
+# $Id: usr.NX.bin.nxclient 6227 2006-02-04 00:30:36Z sarnold $
+# vim:syntax=apparmor
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+#include <tunables/global>
+
+/usr/NX/bin/nxclient {
+  #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/consoles>
+  #include <abstractions/nameservice>
+  #include <abstractions/kde>
+  #include <abstractions/X>
+
+  /bin/bash            ix,
+  /usr/bin/cut         ix,
+  /usr/NX/bin/nxclient r,
+  /usr/NX/bin/nxssh    ix,
+  /usr/NX/bin/nxproxy  ix,
+  /usr/NX/lib/**       r,
+  /usr/NX/share/**     r,
+  /usr/X11R6/bin/xauth rix,
+
+  @{HOME}/.nx               rwl,
+  @{HOME}/.nx/**            rwl,
+  @{HOME}/.Xauthority-c     rwl,
+  @{HOME}/.Xauthority-l     rwl,
+  @{HOME}/.ssh/config       r,
+  @{HOME}/.ssh/known_hosts  rw,
+}

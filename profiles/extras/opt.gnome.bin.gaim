@@ -1,0 +1,82 @@
+# $Id: $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+# vim:syntax=apparmor
+# Last Modified: Fri Sep  2 19:07:43 2005
+
+#include <tunables/global>
+
+/opt/gnome/bin/gaim {
+  #include <abstractions/audio>
+  #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/consoles>
+  #include <abstractions/kde>
+  #include <abstractions/nameservice>
+  #include <abstractions/perl>
+  #include <abstractions/gnome>
+  #include <abstractions/user-tmp>
+
+  /bin/bash ixr,
+  /dev/random r,
+  /etc/esd.conf r,
+  /etc/opt/gnome/pango/pango.modules r,
+  /etc/opt/gnome/pango/pango64.modules r,
+
+  @{HOME}/.fonts r,
+  @{HOME}/.gaim r,
+  @{HOME}/.gaim/** lrw,
+  @{HOME}/.gtk_qt_engine_rc r,
+  @{HOME}/.icons r,
+  @{HOME}/.mcoprc r,
+  @{HOME}/.kde/share/config/gtkrc-* r,
+
+  /opt/MozillaFirefox/bin/firefox.sh px,
+  /opt/gnome/bin/gaim ixr,
+  /opt/gnome/bin/gnome-open ux,
+  /opt/gnome/lib/GConf/2/gconfd-2 px,
+  /opt/gnome/lib/bonobo/bonobo-activation-server uxr,
+  /opt/gnome/lib/gaim r,
+  /opt/gnome/lib/gaim/*.so r,
+  /opt/gnome/lib/gtk-*/*/engines/*.so r,
+  /opt/gnome/lib/gtk-*/*/loaders/*.so r,
+  /opt/gnome/lib/lib*so* r,
+  /opt/gnome/lib/pango/*/modules/*.so r,
+  /opt/gnome/share/icons r,
+  /opt/gnome/share/icons/** r,
+  /opt/gnome/share/pixmaps r,
+  /opt/gnome/share/pixmaps/gaim/** r,
+  /opt/gnome/share/sounds/gaim/* r,
+  /opt/gnome/share/themes/** r,
+  /opt/kde3/bin/kde-config ixr,
+  /opt/kde3/bin/kfmclient ux,
+  /opt/kde3/bin/kcminit rux,
+  /opt/mozilla/lib/lib*so* r,
+  /opt/mozilla/lib64/lib*so* r,
+  /proc/cpuinfo r,
+  /proc/stat r,
+  /proc/*/cmdline r,
+  /usr/X11R6/lib/Acrobat*/Resource/Font/* r,
+  /usr/X11R6/lib/Acrobat*/Resource/Font/PFM/* r,
+  /usr/X11R6/lib/lib*so* r,
+  /usr/lib/ao/plugins-* r,
+  /usr/lib/ao/plugins-*/lib*.so r,
+  /usr/lib/aspell-** r,
+  /usr/lib/jvm/java-*/jre/lib/fonts/** r,
+  /usr/lib/ooo-*/share/fonts/** r,
+  /usr/lib/tcl*/encoding/* r,
+  /usr/lib64/ao/plugins-* r,
+  /usr/lib64/ao/plugins-*/lib*.so r,
+  /usr/lib64/aspell-* r,
+  /usr/share/alsa/alsa.conf r,
+  /usr/share/icons r,
+  /usr/share/tcl/tcl*/encoding/* r,
+  /var/run/.resmgr_socket w,
+}

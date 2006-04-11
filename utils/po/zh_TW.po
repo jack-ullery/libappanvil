@@ -1,0 +1,189 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmor-utils 1.2\n"
+"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"POT-Creation-Date: 2005-04-01 14:07-0800\n"
+"PO-Revision-Date: 2005-04-14 15:24+8\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Setting %s to complain mode."
+msgstr "設定 %s 為抱怨 (complain) 模式。"
+
+msgid "Setting %s to enforce mode."
+msgstr "設定 %s 為強迫  (enforce)  模式。"
+
+msgid "Profile"
+msgstr "設定檔 "
+
+msgid "Default Hat"
+msgstr "預設 Hat"
+
+msgid "Requested Hat"
+msgstr "要求的 Hat"
+
+msgid "Abandoning all changes."
+msgstr "正在放棄所有變更。"
+
+msgid "Saving all changes."
+msgstr "正在儲存所有變更"
+
+msgid "Execute"
+msgstr "執行"
+
+msgid "(I)nherit"
+msgstr "繼承(I)"
+
+msgid "(P)rofile"
+msgstr "(P)rofile"
+
+msgid "(U)nconfined"
+msgstr "未設限(U)"
+
+msgid "(D)eny"
+msgstr "(D)eny"
+
+msgid "Abo(r)t"
+msgstr "中止(R)"
+
+msgid "(F)inish"
+msgstr "(F)inish"
+
+msgid "Reading log entries from %s."
+msgstr "正在讀取 %s 的記錄項目。"
+
+msgid "Updating subdomain profiles in %s."
+msgstr "更新 %s 中的子領域設定檔。"
+
+msgid "Complain-mode changes:"
+msgstr "抱怨模式變更："
+
+msgid "Enforce-mode changes:"
+msgstr "強迫模式變更："
+
+msgid "Invalid mode found: %s"
+msgstr "找到的無效模式：%s"
+
+msgid "Capability"
+msgstr "功能"
+
+msgid "(A)llow"
+msgstr "允許(A)"
+
+msgid "Adding capability %s to profile."
+msgstr "正在將功能 %s 新增到設定檔。"
+
+msgid "Denying capability %s to profile."
+msgstr "正在拒絕設定檔的 %s 功能。"
+
+msgid "Path"
+msgstr "路徑"
+
+msgid "Old Mode"
+msgstr "舊模式"
+
+msgid "New Mode"
+msgstr "新模式"
+
+msgid "(N)ew"
+msgstr "新(N)"
+
+msgid "(G)lob"
+msgstr "(G)lob"
+
+msgid "Glob w/(E)xt"
+msgstr "Glob w/(E)xt"
+
+msgid "Adding #include <%s> to profile."
+msgstr "正在將 #include <%s> 新增到設定檔 。"
+
+msgid "Deleted %s previous matching profile entries."
+msgstr "已刪除 %s 個之前符合設定檔的項目。"
+
+msgid "Adding %s %s to profile."
+msgstr "正在將 %s %s新增到設定檔。"
+
+msgid "Enter new path: "
+msgstr "輸入新路徑："
+
+msgid "The specified path does not match this log entry:"
+msgstr "指定的路徑與此記錄項目不符。"
+
+msgid "Log Entry"
+msgstr "記錄項目"
+
+msgid "Entered Path"
+msgstr "輸入的路徑"
+
+msgid "Do you really want to use this path?"
+msgstr "您確定要使用這個路徑？"
+
+msgid "Profile %s contains invalid regexp %s."
+msgstr "設定檔 %s 包含無效的 regexp %s。"
+
+msgid "Writing updated profile for %s."
+msgstr "正在為 %s 寫入更新的設定檔。"
+
+msgid "&Browse"
+msgstr "瀏覽(&B)"
+
+msgid "&Create Profile"
+msgstr "建立設定檔(&C)"
+
+msgid "&Yes"
+msgstr "是(&Y)"
+
+msgid "&No"
+msgstr "否(&N)"
+
+msgid "&Abort"
+msgstr "中止(&A)"
+
+msgid "&Back"
+msgstr "上一步(&B)"
+
+msgid "(Y)es"
+msgstr "是(&Y)"
+
+msgid "(N)o"
+msgstr "否(N)"
+
+msgid "Please start the application to be profiled in \n"
+"another window and exercise its functionality now.\n"
+"\n"
+"Once completed, select the \"Scan\" button below in \n"
+"order to scan the system logs for AppArmor events.  \n"
+"\n"
+"For each AppArmor event, you will be given the  \n"
+"opportunity to choose whether the access should be  \n"
+"allowed or denied."
+msgstr "請立刻在其他視窗啟動要設定的應用程式\n並練習使用其功能。\n\n完成之後，請依據選擇下方的 Scan 按鈕\n以掃瞄 AppArmor 事件的系統記錄。\n\n您可以針對每個 AppArmor 事件\n選擇是否要允許或拒絕\n存取。"
+
+msgid "Can't find %s."
+msgstr "找不到 %s。"
+
+msgid "The profile analyzer has completed processing the log files.\n\n"
+"All updated profiles will be reloaded"
+msgstr "設定檔分析程式已完成處理記錄檔。\n\n將重新載入所有已更新的設定檔。"
+
+
+msgid "No unhandled AppArmor events were found in the system log."
+msgstr "在系統記錄中找不到尚未處理的 AppArmor 事件。"
+
+msgid "%s contains syntax errors."
+msgstr "%s 包含語法錯誤。"
+
+msgid ""
+"The version of AppArmor that you are running does not allow the creation of\n"
+"this profile. Refer to the AppArmor User's Guide for a description of\n"
+"AppArmor-Lite and upgrade options for AppArmor."
+msgstr "您所執行的 AppArmor 版本不允許建立\n此設定檔。請參考 AppArmor 使用手冊中有關 AppArmor-Lite 及 AppArmor 升級選項的說明。"
+

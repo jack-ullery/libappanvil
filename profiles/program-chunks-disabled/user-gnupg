@@ -1,0 +1,21 @@
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+
+  # $Id: user-gnupg 6111 2006-01-22 08:23:01Z dominic $
+
+
+  # per-user gpg settings
+  /home/*/.gnupg/*         rwl,
+  /root/.gnupg/*           rwl,
+  # perhaps you wish to allow your users to use gpg on random files in
+  # their home directories? The default, without this access, appears to
+  # be good enough for mutt & gpg use.
+  # /home/*/* rwl,

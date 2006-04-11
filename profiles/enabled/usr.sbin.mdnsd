@@ -1,0 +1,19 @@
+# vim:syntax=subdomain
+# Last Modified: Wed Feb  1 11:07:56 2006
+/usr/sbin/mdnsd {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  capability net_bind_service,
+  capability setgid,
+  capability setuid,
+  capability sys_chroot,
+  capability sys_resource,
+
+  /proc/net r,
+  /proc/net/unix r,
+  /proc/sys/kernel/ngroups_max r,
+  /usr/sbin/mdnsd r,
+  /var/run/mdnsd lw,
+  /var/run/mdnsd.pid w,
+}

@@ -1,0 +1,434 @@
+# $Id: apparmor.d.pod 6225 2006-02-04 00:25:12Z steve $
+# This publication is intellectual property of Novell Inc. Its contents
+# can be duplicated, either in part or in whole, provided that a copyright
+# label is visibly located on each copy.
+# 
+# All information found in this book has been compiled with utmost
+# attention to detail. However, this does not guarantee complete accuracy.
+# Neither SUSE LINUX GmbH, the authors, nor the translators shall be held
+# liable for possible errors or the consequences thereof.
+# 
+# Many of the software and hardware descriptions cited in this book
+# are registered trademarks. All trade names are subject to copyright
+# restrictions and may be registered trade marks. SUSE LINUX GmbH
+# essentially adheres to the manufacturer's spelling.
+# 
+# Names of products and trademarks appearing in this book (with or without
+# specific notation) are likewise subject to trademark and trade protection
+# laws and may thus fall under copyright restrictions.
+# 
+# Please direct suggestions and comments to apparmor-general@forge.novell.com.
+
+
+=pod
+
+=head1 NAME
+
+apparmor.d - syntax of security profiles for AppArmor.
+
+=head1 DESCRIPTION
+
+AppArmor profiles describe mandatory access rights granted to given
+programs and are fed to the AppArmor policy enforcement module using
+apparmor_parser(8). This man page describes the format of the AppArmor
+configuration files; see apparmor(7) for an overview of AppArmor.
+
+=head1 FORMAT
+
+The following is a BNF-style description of AppArmor policy
+configuration files; see below for an example AppArmor policy file.
+AppArmor configuration files are line-oriented; B<#> introduces a
+comment, similar to shell scripting languages. The exception to this
+rule is that B<#include> will I<include> the contents of a file inline
+to the policy; this behaviour is modelled after cpp(1).
+
+=over 4
+
+B<INCLUDE> = '#include' ( I<ABS PATH> | I<MAGIC PATH> )
+
+B<ABS PATH> = '"' path '"' (the path is passed to open(2))
+
+B<MAGIC PATH> = '<' relative path '>' (the path is relative to F</etc/apparmor.d/>)
+
+B<COMMENT> = '#' I<TEXT>
+
+B<TEXT> = any characters
+
+B<PROFILE> = [ I<COMMENT> ... ] I<PROGRAM> [ I<flags=(complain)> ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}' [ I<SUBPROFILE> ... ]
+
+B<SUBPROFILE> = [ I<COMMENT> ... ] I<PROGRAMHAT> '{' [ ( I<FILE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}'
+
+B<PROGRAM> = (non-whitespace characters except for B<^>, must start with '/')
+
+B<PROGRAMHAT> = I<PROGRAM> '^'  (non-whitespace characters; see change_hat(2) for a description of how this "hat" is used.)
+
+B<RESOURCE RULE> = ( I<FILE RULE> | I<NETWORK RULE> ) ','
+
+B<FILE RULE> = ( I<FILENAME> | I<FILEGLOB> ) I<ACCESS> 
+
+B<FILENAME> = (non-whitespace characters except for B<?*[]{}^>, must start with '/')
+
+B<FILEGLOB> = (non-whitespace characters, must start with '/', B<?*[]{}^> have special meanings; see below.)
+
+B<ACCESS> = ( 'r' | 'w' | 'l' | 'ix' | 'ux' | 'px' ) I<ACCESS>  (not all combinations are allowed; see below.)
+
+=begin comment
+
+XXX COMMENTED OUT UNTIL APPARMOR SUPPORTS NETDOMAIN
+
+B<NETWORK RULE> = ( 'tcp_connect' | 'tcp_accept' | 'udp_send' | 'udp_receive' ) [ ( 'to' I<IP> | 'from' I<IP> ) ] [ 'via' I<IFACE> ]  (Obviously, at most one 'to' and at most one 'from' is allowed per line.)
+=
+=B<IP> = I<NUM> '.' I<NUM> '.' I<NUM> '.' I<NUM> [ '/' I<NETMASK> ] [ ':' ( I<PORT> | I<PORTRANGE> ) ]
+
+B<NUM> = [0-9]+
+
+B<NETMASK> = I<NUM> [ I<NUM> ... ]  (CIDR notation)
+
+B<PORT> = I<NUM> [ I<NUM> ... ]  (0-65535, inclusive)
+
+B<PORTRANGE> = I<PORT> '-' I<PORT>  (low port, high port, inclusive)
+
+B<IFACE> = [a-z0-9]+  (name of interface; e.g., 'eth0')
+
+=end comment
+
+
+=back
+
+All resources and programs need a full path. There may be any number
+of subprofiles ("hats") in a profile, limited only by kernel memory.
+Subprofile names are limited to 974 characters. Subprofiles must be in the
+same file as the parent profile. Not all profiles benefit from subprofiles
+--- applications must either be written or modified to use change_hat(2)
+to take advantage of subprofiles. (An Apache module, mod_apparmor(5)
+has been provided to use change_hat(2).)
+
+=head2 Access Modes
+
+File permission access modes consists of combinations of the following
+seven modes:
+
+=over 8
+
+=item B<r> 	- read
+
+=item B<w> 	- write
+
+=item B<px> 	- discrete profile execute 
+
+=item B<ux> 	- unconstrained execute 
+
+=item B<ix>	- inherit execute 
+
+=item B<l> 	- link
+
+=back
+
+=head2 Access Modes Details
+
+=over 4
+
+=item B<Read mode>
+
+Allows the program to have read access to the resource. Read access is
+required for shell scripts and other interpreted content, and determines
+if an executing process can core dump or be attached to with ptrace(2).
+(ptrace(2) is used by utilities such as strace(1), ltrace(1), and
+gdb(1).)
+
+=item B<Write mode>
+
+Allows the program to have write access to the resource. Files must have
+this permission if they are to be unlinked (removed.)
+
+
+=item B<Unconstrained execute mode>
+
+Allows the program to execute the resource without any AppArmor profile
+being applied to the executed resource. Requires listing execute mode
+as well. Incompatible with Inherit and Discrete Profile execute entries.
+
+This mode is useful when a confined program needs to be able to perform
+a privileged operation, such as rebooting the machine. By placing the
+privileged section in another executable and granting unconstrained
+execution rights, it is possible to bypass the mandatory constraints
+imposed on all confined processes. For more information on what is
+constrained, see the apparmor(7) man page.
+
+B<WARNING> this should only be used in very special cases. It enables the
+designated child processes to be run without any AppArmor protection.
+Use at your own risk.
+
+=item B<Inherit execute mode>
+
+Prevent the normal AppArmor domain transition on execve(2) when the
+profiled program executes the resource. Instead, the executed resource
+will inherit the current profile. Incompatible with Unconstrained and
+Discrete Profile execute entries.
+
+This mode is useful when a confined program needs to call another
+confined program without gaining the permissions of the target's
+profile, or losing the permissions of the current profile. This mode is
+infrequently used.
+
+=item B<Discrete Profile execute mode>
+
+This mode requires that a discrete security profile is defined for
+a resource executed at a AppArmor domain transition.  If there is no
+profile defined then the access will be denied.  Incompatible with
+Inherit and Unconstrained execute entries.
+
+=item B<Link mode>
+
+Allows the program to be able to create and remove a link with this name
+(including symlinks). When a link is created, the file that is being
+linked to B<MUST> have the same access permissions as the link being
+created (with the exception that the destination does not have to have
+link access.) Link access is required for unlinking a file.
+
+=back
+
+=head2 Comments
+
+Comments start with # and may begin at any place within a line. The
+comment ends when the line ends. This is the same comment style as
+shell scripts.
+
+=head2 Globbing
+
+File resources may be specified with a globbing syntax similar to that
+used by popular shells, such as csh(1), bash(1), zsh(1).
+
+=over 4
+
+=item B<*>
+
+can substitute for any number of characters, excepting '/'
+
+=item B<**>
+
+can substitute for any number of characters, including '/'
+
+=item B<?>
+
+can substitute for any single character excepting '/'
+
+=item B<[abc]>
+
+will substitute for the single character a, b, or c
+
+=item B<[a-c]>
+
+will substitute for the single character a, b, or c
+
+=item B<{ab,cd}>
+
+will expand to one rule to match ab, one rule to match cd
+
+=back
+
+=begin comment
+
+=head2 Network Rules
+
+AppArmor also performs mandatory per-process mediation of network
+use, similar to tcp_wrappers (hosts_access(5)). Network access control
+is handled a little differently than file system access control ---
+a process only has network use mediated by AppArmor if there are any
+network rules in the program's profile.
+
+All network rules accept specifications for a "from" address, a "to"
+address, and an interface to use. Leaving a "from" or "to" address
+unspecified is the same as using "0.0.0.0" --- a wildcard equivalent to
+INADDR_ANY. Leaving the ports unspecified for a "from" or "to" address
+is equivalent to using the range 0-65535.
+
+=over 4
+
+=item B<tcp_accept>
+
+is required if a program must be able to use accept(2) to
+accept an incoming TCP session setup handshake. An incoming connection
+that does not match any of the loaded rules is rejected; if no accept
+rule is loaded, the accept(2) system call is quickly rejected with
+-EACCES. If the process is allowed to perform an accept(2), rejected
+connections do NOT cause an error out of the system call --- the
+connection is simply dropped with an RST.
+
+=item B<tcp_connect>
+
+is required if a program must be able to use connect(2) to
+initiate an outgoing TCP session setup handshake. An outgoing connection
+that does not match any of the loaded rules is rejected with -EACCES.
+
+(It is a known issue that I<tcp_connect> does not mediate TCP session
+setup when only a "via iface" is specified; read(2) and write(2)
+mediation will still occur, so explicit data transfer is impossible.)
+
+=item B<udp_send>
+
+is required if a program must be able to use send(2), sendto(2),
+sendmsg(2), or write(2) to communicate using a UDP socket. No outgoing
+packet is sent, and -EACCES is returned to the process.
+
+(It is a known issue that I<udp_send> does not mediate outgoing UDP
+packets when only a "via iface" rule is specified. If the socket is
+connected, read(2) and write(2) mediation will still occur; however,
+explicit data transfer is possible.)
+
+=item B<udp_receive>
+
+is required if a program must be able to use recv(2), recvfrom(2),
+recvmsg(2), or read(2) to communicate using a UDP socket. The incoming
+packet is thrown away and no notice is sent to the communicating peer;
+if no receive rule is loaded, the system calls are quickly rejected with
+-EACCES. If the process is allowed to receive, rejected packets do NOT
+cause an error out of the system call --- the packet is simply dropped.
+
+=back
+
+Of special note is programs spawned by inetd(8), xinetd(8), tcpserver,
+or similar programs; as the inetd will perform an accept(2) on behalf of
+a configured service, the profile for inetd must include a I<tcp_accept>
+rule that allows connections to the service. In addition, if the program
+spawned by the inetd uses a different profile than the inetd (strongly
+recommended), then the spawned program's profile must also include a
+I<tcp_accept> or I<tcp_connect> rule, so that the short-circuit tests
+may be satisfied.
+
+=end comment
+
+=head2 #include mechanism
+
+AppArmor provides an easy abstraction mechanism to group common file
+access requirements; this abstraction is an extremely flexible way to
+grant site-specific rights and makes writing new AppArmor profiles very
+simple by assembling the needed building blocks for any given program.
+
+The use of '#include' is modelled directly after cpp(1); its use will
+replace the '#include' statement with the specified file's contents.
+B<#include "/absolute/path"> specifies that F</absolute/path> should be
+used.  B<#include "relative/path"> specifies that F<relative/path> should
+be used, where the path is relative to the current working directory.
+B<#include E<lt>magic/pathE<gt>> is the most common usage; it will load
+F<magic/path> relative to a directory specified to apparmor_parser(8).
+F</etc/apparmor.d/> is the AppArmor default.
+
+The supplied AppArmor profiles follow several conventions; the
+abstractions stored in F</etc/apparmor.d/abstractions/> are some
+large clusters that are used in most profiles. What follows are short
+descriptions of how some of the abstractions are used.
+
+=over 4
+
+=item F<abstractions/base>
+
+includes files that should be readable in all profiles, files that
+should be writable in all profiles, and a single network confinement
+rule to ensure every domain includes network constraints. 
+
+=begin comment
+
+Note: this profile set is required by programs compiled with the
+Immunix security toolchain - including StackGuard and FormatGuard.
+(Should you need to write a profile that does not include network 
+rules, you may I<#include E<lt>program-chunks/base-filesE<gt>>, 
+which is only the file portions of the F<abstractions/base> 
+abstraction.)
+
+=end comment
+
+=item F<abstractions/nameservice>
+
+includes file rules to allow DNS, LDAP, NIS, SMB, user and group password
+databases, services, and protocols lookups.
+
+=item F<abstractions/consoles>
+
+includes read and write access to the device files controlling the
+virtual console, sshd(8), xterm(1), etc. This abstraction is needed for
+many programs that interact with users.
+
+=item F<abstractions/wutmp>
+
+includes write access to files used to maintain wtmp(5) and utmp(5)
+databases, used with the w(1) and associated commands.
+
+=item F<abstractions/kerberosclient>
+
+includes file access rules needed for common kerberos clients.
+
+=back
+
+The abstractions stored in F</etc/apparmor.d/program-chunks/> are
+intended for use by single programs.
+
+=begin comment
+
+most networking rules have been
+placed in these files to facilitate better constraints. (The AppArmor
+network policies allow communication with all IP addresses, and restrict
+access to specific ports only. A system administrator may wish to allow
+certain services to communicate only with specific subnets.)
+
+=end comment
+
+References to user home directories in profiles are usually confined to
+abstractions stored in files with names beginning with "user-". There
+are many here suitable for customization; a few notable entries:
+
+=over 4
+
+=item F<program-chunks/apache-default-uri>
+
+is a convenient place to put file access that should be allowed for
+Apache change_hat(2) conventions that don't have a more specific
+subprofile in Apache's profile. See also mod_apparmor(5).
+
+=back
+
+=head1 EXAMPLE
+
+An example AppArmor profile:
+
+	# a comment about foo.
+	/usr/bin/foo {
+	  /bin/mount          ux,
+  	  /dev/{,u}random     r,
+  	  /etc/ld.so.cache    r,
+  	  /etc/foo.conf       r,
+  	  /etc/foo/*          r,
+  	  /lib/ld-*.so*       x,
+  	  /lib/lib*.so*       r,
+  	  /proc/[0-9]**       r,
+  	  /usr/lib/**         r,
+  	  /tmp/foo.pid        wr,
+  	  /tmp/foo.*          lrw,
+
+	  # a comment about foo's subprofile, bar.
+  	  ^bar {
+  	    /lib/ld-*.so*       x,
+  	    /usr/bin/bar        x,
+  	    /var/spool/*        rwl,
+  	  }
+  	}
+
+=head1 FILES
+
+=over 4
+
+=item F</etc/init.d/boot.apparmor>
+
+=item F</etc/apparmor.d/>
+
+=item F</usr/share/vim/current/syntax/apparmor.vim>
+
+=back
+
+=head1 SEE ALSO
+
+apparmor(7), apparmor_parser(8), complain(1),
+enforce(1), change_hat(2), mod_apparmor(5), and
+L<http://forge.novell.com/modules/xfmod/project/?apparmor>.
+
+=cut

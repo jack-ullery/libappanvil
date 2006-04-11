@@ -1,0 +1,38 @@
+# $Id: usr.sbin.postalias 6364 2006-04-03 04:00:03Z dominic $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+#include <tunables/global>
+
+/usr/sbin/postalias {
+  #include <abstractions/base>
+  #include <abstractions/kerberosclient>
+  #include <abstractions/nameservice>
+  #include <abstractions/consoles>
+  #include <program-chunks/postfix-common>
+  /etc/aliases                         r,
+  /etc/aliases.db                      rwl,
+  /etc/postfix                         r,
+  /etc/postfix/main.cf                 r,
+  /etc/postfix/aliases                 r,
+  /etc/postfix/aliases.db              rwl,
+  /etc/postfix/__db.aliases.db         lrw,
+  /etc/__db.aliases.db                 rwl,
+  /usr/sbin/postalias                  rix,
+  /proc/net/if_inet6                   r,
+  /proc/cpuinfo                        r,
+  /proc/stat                           r, 
+  # On SuSE, mailman is configured to use its own alias db
+  /var/lib/mailman/data/aliases        r,
+  /var/lib/mailman/data/__db.aliases.db rwl,
+  /var/lib/mailman/data/aliases.db     rwl,
+  /var/spool/postfix                   r,
+  /var/spool/postfix/pid               r,
+}

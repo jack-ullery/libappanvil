@@ -1,0 +1,194 @@
+#
+# $Id: apparmor-utils.spec.in 6378 2006-04-10 18:18:32Z steve $
+#
+# ----------------------------------------------------------------------
+#    Copyright (c) 2004, 2005 NOVELL (All rights reserved)
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, contact Novell, Inc.
+# ----------------------------------------------------------------------
+# norootforbuild
+
+%if ! %{?distro:1}0
+    %define distro suse
+%endif
+
+Summary: AppArmor userlevel utilities that are useful in creating AppArmor profiles.
+Name: apparmor-utils
+Version: @@immunix_version@@
+Release: 4.3
+Group: Productivity/Security
+Source0: %{name}-%{version}-@@repo_version@@.tar.gz
+License: GPL
+BuildRoot: %{?_tmppath:}%{!?_tmppath:/var/tmp}/%{name}-%{version}-build
+BuildArch: noarch
+Url: http://forge.novell.com/modules/xfmod/project/?apparmor
+%if %{distro} == "rhel4"
+# Bleah, on RHEL4, individual requirements on perl modules are
+# calculated, even if the modules are conditionally used.
+Requires: perl
+Requires: /bin/sh
+AutoReqProv: no
+%endif
+Requires: perl-TimeDate perl-DBI perl-DBD-SQLite perl-File-Tail
+Obsoletes: subdomain-utils
+Provides: subdomain-utils
+
+
+%description
+This provides some useful programs to help create and manage AppArmor
+profiles.  This package is part of a suite of tools that used to be
+named SubDomain.
+
+%prep
+%setup -q
+
+%build
+[ "${RPM_BUILD_ROOT}" != "/" ] && rm -rf ${RPM_BUILD_ROOT}
+
+%install
+[ "${RPM_BUILD_ROOT}" != "/" ] && rm -rf ${RPM_BUILD_ROOT}
+make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro} \
+	     BINDIR=${RPM_BUILD_ROOT}%{_prefix}/sbin/ \
+	     PERLDIR=${RPM_BUILD_ROOT}%{_prefix}/lib/perl5/vendor_perl/Immunix
+
+%clean 
+[ "${RPM_BUILD_ROOT}" != "/" ] && rm -rf ${RPM_BUILD_ROOT}
+
+%files
+%defattr(-,root,root)
+%config /etc/apparmor/*
+%{_prefix}/sbin/*
+%{_prefix}/lib/perl5/vendor_perl/*
+%{_prefix}/share/locale/*/*/apparmor-utils.mo
+%dir /var/log/apparmor
+%dir /etc/apparmor
+#  XXX Grumble autobuild grumble
+%dir %attr(-,root,root) /usr/share/locale/hu_HU
+%dir %attr(-,root,root) /usr/share/locale/hu_HU/LC_MESSAGES
+%dir %attr(-,root,root) /usr/share/locale/ja_JP
+%dir %attr(-,root,root) /usr/share/locale/ja_JP/LC_MESSAGES
+
+
+
+%preun
+if [ -x "/usr/sbin/sd-event-dispatch.pl" -a -e "/var/run/sd-event-dispatch.init.pid" ] ; then
+	echo "Shutting down SubDomain Event daemon" ;
+	/sbin/killproc -p /var/run/sd-event-disptach.init.pid -TERM /usr/sbin/sd-event-dispatch.pl >& /dev/null ;
+fi
+# only do the following when uninstalling
+if [ "$1" = 0 ] ; then
+	if [ -x "/usr/sbin/aa-eventd" -a -e "/var/run/aa-eventd.pid" ] ; then
+      		echo "Shutting down AppArmor Event daemon" ;
+      		/sbin/killproc  -p /var/run/aa-eventd.pid  -TERM /usr/sbin/aa-eventd  >& /dev/null;
+   	fi 
+fi
+
+
+%changelog
+* Mon Apr 10 2006 Steve Beattie <sbeattie@suse.de>
+- Get rid of obsolete license files
+* Sun Mar 26 2006 Jesse Michael <jmichael@suse.de>
+- Move vim syntax file to the vim package
+* Fri Mar  3 2006 Steve Beattie <sbeattie@suse.de> 2.0-4
+- switch to use perl-File-Tail and monitor both syslog and audit.log 
+* Fri Mar  3 2006 Seth Arnold <seth.arnold@suse.de> 2.0-4.1
+- Add /srv to severity.db #153313
+* Fri Feb 10 2006 Dominic Reynolds <dreynolds@suse.de> 2.0-3.11
+- Ignore vsdo lib output from ldd for autodep
+- Include counter (and time) in genprof logmark
+* Sun Feb  5 2006 Steve Beattie <sbeattie@suse.de> 2.0-3.10
+- Only kill aa-eventd on uninstall, not for upgrades
+- (jmichael) in reporting, enable/start aaeventd if not already
+- Fix signal handling problems when being shutdown
+* Mon Jan 30 2006 Seth Arnold <seth.arnold@suse.de> 2.0-3.7
+- aa-audit, aa-autodep, aa-status symlinks
+* Fri Jan 27 2006 Dominic Reynolds <dreynolds@suse.de> 2.0-3.6
+- Changes to work with profiles located under /etc/apparmor.d.
+- disable AALite check
+- srarnold: don't drop variables
+* Thu Jan 26 2006 Steve Beattie <sbeattie@suse.de> 2.0-3.3
+- Fix SubDomain.pm and apparmor_status to deal with module/parser
+  renaming
+* Wed Jan 25 2006 Dominic Reynolds <dreynolds@suse.de> 2.0-3.2
+- Renaming changes: apparmor_status, apparmor.vim, aa-eventd, and
+  aa- prefix for profile utils
+* Sun Jan 22 2006 Dominic Reynolds <dreynolds@suse.de> 2.0-3.1
+- Added support for read events from the audit system to:
+  genprof/logprof and sd-event-dispatch.pl
+* Wed Jan  4 2006 Steve Beattie <sbeattie@suse.de> 2.0-3
+- Add svn repo to tarball
+* Thu Dec  8 2005 Steve Beattie <sbeattie@suse.de> 2.0-2
+- drewelow: fix parsing/sql errors in reports bug #137742
+- dreynolds: fix unconfined to support securityfs
+- jmichael: fix for xattr handling in genprof/logprof
+- jmichael: fix genprof/logprof to support securityfs
+- fix textdomain() calls to reflect new package name
+- fix references to old package name within .po files
+* Wed Dec  7 2005 Steve Beattie <sbeattie@suse.de> 2.0-1
+- Reset version for SUSE autobuild inclusion
+* Wed Nov 30 2005 Steve Beattie <sbeattie@suse.de> 1.2-26
+- Rename package to apparmor-utils
+* Wed Nov 30 2005 Jesse Michael <jmichael@suse.de> 1.2-25_imnx
+- Change license to GPL
+* Tue Nov 29 2005 Steve Beattie <sbeattie@suse.de> 1.2-24_imnx
+- Add subdomain_status script
+* Wed Nov 2 2005 Jesse Michael <jmichael@suse.de> 1.2-23_imnx
+- make autodep, logprof, and genprof ignore any user specified $PATH settings
+* Wed Oct 19 2005 Jesse Michael <jmichael@suse.de> 1.2-22_imnx
+- sd-event-dispatch.pl now under rcsubdomain control
+* Thu Sep  8 2005 Steve Beattie <sbeattie@suse.de> 1.2-21_imnx
+- sd-event-dispatch.pl now under rcsubdomain control
+* Wed Sep 2 2005 Jesse Michael <jmichael@suse.de> 1.2-20_imnx
+- handle access(directory, X_OK) correctly again
+- stop event dispatcher if we uninstall the rpm
+- fix bug where event dispatcher wasn't inserting events in db sometimes
+* Wed Sep 1 2005 Jesse Michael <jmichael@suse.de> 1.2-19_imnx
+- fork/exec tracking and localization fixes
+* Wed Aug 17 2005 Jesse Michael <jmichael@suse.de> 1.2-18_imnx
+- move perl modules from site_perl to vendor_perl
+* Fri Aug 5 2005 Dominic Reynolds <dreynolds@suse.de> 1.2-17_imnx
+- buildcache path change
+* Mon May 23 2005 Steve beattie <sbeattie@novell.com> 1.2-12_imnx
+- "Fix" the perl module dependencies for RHEL4
+* Mon May 16 2005 David Drewelow <davidd@immunix.com> 1.2-9_imnx
+- Changed /etc/immunix to /etc/apparmor 
+* Sun Apr 10 2005 Seth Arnold <sarnold@immunix.com> 1.2-9_imnx
+- Merge i18n support from 1.1
+* Wed Mar  9 2005 Steve Beattie <steve@immunix.com> 1.2-3_imnx
+- Fix some internal handling around % distro
+* Mon Feb 14 2005 Steve Beattie <steve@immunix.com> 1.2-2_imnx
+- Add support for FC3/RHEL4 era redhat distros
+* Fri Feb  4 2005 Seth Arnold <sarnold@immunix.com> 1.2-1_imnx
+- Reversion to 1.2
+* Thu Nov 11 2004 Steve Beattie <steve@immunix.com> 1.1-4_imnx
+- Support different toolsets on a per distro basis
+* Wed Nov 10 2004 Steve Beattie <steve@immunix.com> 1.1-3_imnx
+- Merge in new-style build support.
+* Tue Oct 12 2004 Steve Beattie <steve@immunix.com> 1.1-1_imnx
+- re-version package for shass-1.1 release
+* Mon Aug 30 2004 Steve Beattie <steve@immunix.com> 7.3-30_imnx
+- Fix up various copyright notices.
+* Fri Jul 23 2004 Steve Beattie <steve@immunix.com> 7.3-25_imnx
+- Red Hat 9 still uses vim 6.1
+* Wed Jul 21 2004 Steve Beattie <steve@immunix.com> 7.3-24_imnx
+- Added the dependency on perl-TermReadKey
+* Wed Jul 21 2004 Steve Beattie <steve@immunix.com> 7.3-23_imnx
+- first attempt to make rpm cross-distro
+* Thu May  6 2004 Steve Beattie <steve@immunix.com> 7.3-14.SUSE_imnx
+- Fix to unconfined due to different ls output
+* Thu May  6 2004 Steve Beattie <steve@immunix.com> 7.3-11.SUSE_imnx
+- updates to autodep, logprof, and unconfined.
+* Mon May  3 2004 Seth Arnold <sarnold@immunix.com> 7.3-10.SUSE_imnx
+- Fix up the description text to no longer mention /usr/libexec/subdomain
+* Mon Apr 26 2004 Steve Beattie <steve@wirex.com> 7.3-9.SUSE_imnx
+- Added logprof.pl 

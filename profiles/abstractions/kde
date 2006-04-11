@@ -1,0 +1,51 @@
+# $Id: kde 6201 2006-02-02 21:10:54Z sarnold $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2006 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+#include <abstractions/base>
+#include <abstractions/fonts>
+#include <abstractions/X>
+#include <abstractions/user-tmp>
+/etc/X11/kstylerc r,
+/etc/X11/qt_plugins_3.3rc r,
+/etc/X11/qtrc r,
+/etc/kde3rc r,
+/etc/opt/kde3/share/config/* r,
+/etc/opt/kde3/share/icons r,
+/etc/opt/kde3/share/icons/** r,
+
+@{HOME}/.DCOPserver_* r,
+@{HOME}/.ICEauthority r,
+@{HOME}/.fonts.* lrw,
+@{HOME}/.kde/share/config/kdeglobals rw,
+@{HOME}/.qt/** rw,
+
+/opt/kde3/lib64/kde3/plugins/styles r,
+/opt/kde3/lib64/kde3/plugins/styles/* r,
+/opt/kde3/lib64/lib*so* r,
+/opt/kde3/lib/kde3/plugins/styles r,
+/opt/kde3/lib/kde3/plugins/styles/* r,
+/opt/kde3/lib/lib*so* r,
+
+/opt/kde3/share/config/kdeglobals r,
+/opt/kde3/share/icons r,
+/opt/kde3/share/icons/** r,
+/usr/X11R6/lib64/X11/XKeysymDB r,
+/usr/X11R6/lib64/X11/icons/** r,
+/usr/X11R6/lib/X11/XKeysymDB r,
+/usr/X11R6/lib/X11/icons/** r,
+
+/usr/lib/qt3/lib64/lib*so* r,
+/usr/lib64/qt3/plugins/**  r,
+/usr/lib/qt3/lib/lib*so* r,
+/usr/lib/qt3/plugins/**  r,
+
+/usr/share/YaST2/theme/** r,
+/usr/share/pixmaps r,

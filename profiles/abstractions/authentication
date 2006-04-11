@@ -1,0 +1,46 @@
+# $Id: authentication 6233 2006-02-04 09:00:26Z sarnold $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+
+
+  # Some services need to perform authentication of users
+  # Such authentication almost certainly needs access to the local users
+  # databases containing passwords, PAM configuration files, PAM libraries
+  /etc/nologin                r,
+  /etc/pam.d/*                r,
+  /etc/securetty              r,
+  /etc/security/*             r,
+  /etc/shadow                 r,
+  /etc/gshadow                r,
+  /etc/pwdb.conf              r,
+
+  /lib64/security/pam_filter/*  r,
+  /lib64/security/pam_*.so      r,
+  /lib64/security               r,
+
+  /lib/security/pam_filter/*  r,
+  /lib/security/pam_*.so      r,
+  /lib/security               r,
+
+  # kerberos
+  #include <abstractions/kerberosclient>
+  # SuSE's pwdutils are different:
+  /etc/default/passwd         r,
+  /etc/login.defs             r,
+
+  # pam_winbindd
+  /tmp/.winbindd/pipe  rw,
+  /var/lib/samba/winbindd_privileged/pipe  rw,
+  /etc/samba/smb.conf         r,
+  /usr/lib/samba/valid.dat    r,
+  /usr/lib/samba/upcase.dat   r,
+  /usr/lib/samba/lowcase.dat  r,
+

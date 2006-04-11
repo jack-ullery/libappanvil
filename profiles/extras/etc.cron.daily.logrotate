@@ -1,0 +1,54 @@
+# $Id: etc.cron.daily.logrotate 6223 2006-02-03 23:55:54Z sarnold $
+# vim:syntax=apparmor
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2006 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+#include <tunables/global>
+
+/etc/cron.daily/logrotate {
+  #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/nameservice>
+
+  /bin/bash ixr,
+  /bin/cat ixr,
+  /bin/gzip ixr,
+  /bin/kill ixr,
+  /bin/logger ixr,
+  /bin/true ixr,
+  /etc/init.d/* ixr,
+  /usr/bin/killall ixr,
+  /usr/sbin/logrotate ixr,
+
+  /var/log      r,
+  /var/log/**   wrl,
+
+  /var/lib/privoxy/log/**  rwl,
+  /var/lib64/privoxy/log/**  rwl,
+
+  / r,
+  /dev/tty wr,
+  /etc/cron.daily/logrotate r,
+  /etc/logrotate.conf r,
+  /etc/logrotate.d r,
+  /etc/logrotate.d/* r,
+  /etc/subdomain.d r,
+  /proc r,
+  /proc/[1-9]* r,
+  /tmp w,
+  /tmp/file* wl,
+  /tmp/logrot* wlr,
+  /var/lib/logrotate.status wr,
+  /var/lock/samba r,
+  /var/run/httpd.pid r,
+  /var/run/syslogd.pid r,
+  /var/spool/slrnpull wr,
+  /var/spool/slrnpull/log* wrl,
+}

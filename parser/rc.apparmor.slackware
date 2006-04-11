@@ -1,0 +1,93 @@
+#!/bin/sh
+#
+#	$Id: rc.apparmor.slackware 6160 2006-01-27 07:25:33Z steve $
+#
+# ----------------------------------------------------------------------
+#    Copyright (c) 1999, 2000, 20001, 2004, 2005, 2006 NOVELL
+#    (All rights reserved)
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, contact Novell, Inc.
+# ----------------------------------------------------------------------
+# rc.apparmor by Steve Beattie
+#
+# /etc/rc.d/rc.apparmor
+APPARMOR_FUNCTIONS=/lib/apparmor/rc.apparmor.functions
+
+function sd_action() {
+	STRING=$1
+	shift
+	$*
+	rc=$?
+	if [ $rc -eq 0 ] ; then
+		sd_log_success_msg $"$STRING "
+	else
+		sd_log_failure_msg $"$STRING "
+	fi
+	return $rc
+}
+
+function sd_log_warning_msg() {
+	[ -n "$1" ] && echo -n $1
+	echo ": Warning."
+}
+
+function sd_log_success_msg() {
+	[ -n "$1" ] && echo -n $1
+	echo ": OK."
+}
+
+function sd_log_failure_msg() {
+	[ -n "$1" ] && echo -n $1
+	echo ": Failed."
+}
+
+function usage() {
+    echo "Usage: $0 {start|stop|restart|try-restart|reload|force-reload|status|kill}"
+}
+
+# source function library
+if [ -f "${APPARMOR_FUNCTIONS}" ] ; then
+	source ${APPARMOR_FUNCTIONS}
+else
+	sd_log_failure_msg "Unable to find AppArmor initscript functions"
+	exit 1
+fi
+
+case "$1" in
+	start)
+		subdomain_start
+		;;
+	stop)
+		subdomain_stop
+		;;
+	restart|reload|force-reload)
+		subdomain_restart
+		;;
+	try-restart)
+		subdomain_try_restart
+		;;
+	debug)
+		subdomain_debug
+		;;
+	kill)
+		subdomain_kill
+		;;
+	status)
+		subdomain_status
+		;;
+	*)
+		usage
+		exit 1
+	esac
+exit 0
+

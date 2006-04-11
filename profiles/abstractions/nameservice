@@ -1,0 +1,62 @@
+# $Id: nameservice 6366 2006-04-04 20:08:39Z sarnold $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+  # Many programs wish to perform nameservice-like operations, such as
+  # looking up users by name or id, groups by name or id, hosts by name
+  # or IP, etc. These operations may be performed through files, dns,
+  # NIS, NIS+, LDAP, hesiod, wins, etc. Allow them all here.
+  /etc/group              r,
+  /etc/host.conf          r,
+  /etc/hosts              r,
+  /etc/ldap.conf          r,
+  /etc/nsswitch.conf      r,
+  /etc/passwd             r,
+  /etc/protocols          r,
+  /etc/resolv.conf        r,
+  /etc/samba/lmhosts      r,
+  /etc/services           r,
+  # is this file for openldap servers or clients? wombat makes me think clients
+  /etc/openldap/ldap.conf r,
+  # The Name Service Cache Daemon can cache lookups, sometimes leading
+  # to vast speed increases when working with network-based lookups.
+  /var/run/.nscd_socket   rw,
+  /var/run/nscd/socket    rw,
+  /var/run/nscd/passwd    rix,
+  /var/run/nscd/group     rix,
+  # nscd renames and unlinks files in it's operation that clients will
+  # have open
+  /var/run/nscd/db*  rix,
+
+  # The nss libraries are sometimes used in addition to PAM; make sure
+  # they are available
+  /lib64/libnss_*.so*         r,
+  /lib/libnss_*.so*           r,
+  /usr/lib64/libnss_*.so*     r,
+  /usr/lib/libnss_*.so*       r,
+  /etc/default/nss            r,
+
+  # NIS rules
+  /var/yp/binding/*           r,
+  # portmapper may ask root processes to do nis/ldap at low ports
+  capability net_bind_service,
+
+  # pam_winbindd
+  /tmp/.winbindd/pipe  rw,
+  /var/lib/samba/winbindd_privileged/pipe  rw,
+  /etc/samba/smb.conf         r,
+  /usr/lib/samba/valid.dat    r,
+  /usr/lib/samba/upcase.dat   r,
+  /usr/lib/samba/lowcase.dat  r,
+
+  # mdnsd
+  /etc/nss_mdns.conf r,
+  /var/run/mdnsd w,
+

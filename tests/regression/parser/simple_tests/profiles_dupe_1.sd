@@ -1,0 +1,25 @@
+#
+# $Id$
+#=DESCRIPTION dupe profiles
+#=EXRESULT FAIL
+#
+/does/not/exist {
+  #include <abstractions/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /usr/bin/emacs r,
+}
+
+/does/not/exist2 {
+  #include <abstractions/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /usr/bin/emacs r,
+}
+
+/does/not/exist2 {
+  #include <abstractions/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist r,
+}

@@ -1,0 +1,114 @@
+# $Id: apparmor_parser.pod 6225 2006-02-04 00:25:12Z steve $
+# This publication is intellectual property of Novell Inc. Its contents
+# can be duplicated, either in part or in whole, provided that a copyright
+# label is visibly located on each copy.
+# 
+# All information found in this book has been compiled with utmost
+# attention to detail. However, this does not guarantee complete accuracy.
+# Neither SUSE LINUX GmbH, the authors, nor the translators shall be held
+# liable for possible errors or the consequences thereof.
+# 
+# Many of the software and hardware descriptions cited in this book
+# are registered trademarks. All trade names are subject to copyright
+# restrictions and may be registered trade marks. SUSE LINUX GmbH
+# essentially adheres to the manufacturer's spelling.
+# 
+# Names of products and trademarks appearing in this book (with or without
+# specific notation) are likewise subject to trademark and trade protection
+# laws and may thus fall under copyright restrictions.
+# 
+# Please direct suggestions and comments to apparmor-general@forge.novell.com.
+
+
+=pod
+
+=head1 NAME
+
+apparmor_parser - loads AppArmor profiles into the kernel
+
+=head1 SYNOPSIS
+
+B<apparmor_parser [-adrR] [--add] [--debug]  [--replace] [--remove]
+                  [--preprocess] [--Include n] [--base n] [ --Complain ]>
+
+B<apparmor_parser [-hv] [--help] [--version]>
+
+=head1 DESCRIPTION
+
+B<apparmor_parser> is used to import new apparmor.d(5) profiles
+into the Linux kernel. The profiles restrict the operations available
+to processes by executable name.
+
+The profiles are loaded into the Linux kernel by the B<apparmor_parser>
+program, which takes its input from standard input. The input supplied to
+B<apparmor_parser> should be in the format described in apparmor.d(5).
+
+=head1 OPTIONS
+
+=over 4
+
+=item -a, --add
+
+Insert the AppArmor definitions given into the kernel. This is the default
+action. This gives an error message if a AppArmor definition by the same
+name already exists in the kernel, or if the parser doesn't understand
+its input. It reports when an addition succeeded.
+
+=item -r, --replace
+
+This flag is required if an AppArmor definition by the same name already
+exists in the kernel, and one wants to replace the definition already
+in the kernel with the definition giving on standard input.
+
+=item -R, --remove
+
+This flag is used to remove an AppArmor definition already in the kernel.
+Note that it still requires a complete AppArmor definition as described
+in subdomain.d(5) even though the contents of the definition aren't
+used.
+
+=item -p, --preprocess
+
+Parse the profile(s) and process include directives and output the
+result to stdout.
+
+=item -I n, --Include n
+
+Add element n to the search path when resolving #include directives
+defined as an absolute paths.
+
+=item -b n, --base n
+
+Set the base directory for resolving #include directives
+defined as relative paths.
+
+=item -C, --Complain
+
+Load the profile in complain mode.
+
+=item -h, --help
+
+Give a quick reference guide.
+
+=item -v, --version
+
+Print the version number and exit.
+
+=item -d, --debug
+
+Given once, only checks the profiles to ensure syntactic correctness.
+Given twice, dumps its interpretation of the profile for checking.
+
+=back
+
+=head1 BUGS
+
+None known. If you find any, please report them to bugzilla at
+L<http://bugzilla.novell.com>.
+
+=head1 SEE ALSO
+
+apparmor(7), apparmor.d(5), subdomain.conf(5), change_hat(2), and
+L<http://forge.novell.com/modules/xfmod/project/?apparmor>.
+
+=cut

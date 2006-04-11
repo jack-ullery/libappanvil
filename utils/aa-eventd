@@ -1,0 +1,1026 @@
+#!/usr/bin/perl -w
+
+# $Id$
+#
+# ----------------------------------------------------------------------
+#    Copyright (c) 2005 Novell, Inc. All Rights Reserved.
+#      
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License as published by the Free Software Foundation.
+#      
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#      
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, contact Novell, Inc.
+#      
+#    To contact Novell about this file by physical or electronic mail, 
+#    you may find current contact information at www.novell.com.
+# ----------------------------------------------------------------------
+
+use strict;
+
+use Data::Dumper;
+use Date::Parse;
+use DBI;
+use Fcntl;
+use File::Temp qw(tempfile);
+use Getopt::Long;
+use POSIX 'setsid';
+use Time::Local;
+use File::Tail;
+
+use Immunix::Severity;
+
+##########################################################################
+# locations
+
+my $productname = "apparmor";
+
+my $cfgdir      = "/etc/$productname";
+my $dbdir       = "/var/log/$productname";
+
+my $cfgfile     = "$cfgdir/notify.cfg";
+my $errlog      = "$dbdir/event-dispatch.log";
+
+my $logfile     = "/var/log/audit/audit.log";
+my $syslogfile  = "/var/log/messages";
+
+##########################################################################
+
+# options variables
+my $pidfile = '';
+
+GetOptions(
+  'pidfile|p=s'     => \$pidfile
+);
+
+my $DEBUG = 0;
+
+my $config;
+
+my $verbose = { last_notify => 0 };
+my $summary = { last_notify => 0 };
+my $terse   = { last_notify => 0 };
+
+# we don't want to call str2time on every line and also batch up event dbs 
+# a month at a time, so we need to keep track of a few extra things
+my $timestamp = 0;
+my $lasttime  = "";
+my $counter   = 0;
+my $thismonth = 0;
+my $nextmonth = 0;
+
+# pop open a connection to the severity database
+my $sevdb = new Immunix::Severity("$cfgdir/severity.db", -1);
+
+my $REdate = '\w{3}\s+\d+\s+\d{2}:\d{2}:\d{2}';
+
+my $last_inserted_time;
+my $last_inserted_counter;
+
+##########################################################################
+
+# commit how often?
+my $timeout = 5;
+
+# keep track of when we commited last
+my $last_flush_time = 0;
+
+# keep track of some statistics
+my $max     = 0;
+my $inserts = 0;
+my $total   = 0;
+
+my @commit_buffer;
+
+my @verbose_buffer;
+my @summary_buffer;
+my @terse_buffer;
+
+my %templates = (
+  "path"                => "(time,counter,type,profile,sdmode,mode,resource,prog,pid,severity)   VALUES(?,?,'path',?,?,?,?,?,?,?)",
+  "link"                => "(time,counter,type,profile,sdmode,resource,target,prog,pid,severity) VALUES(?,?,'link',?,?,?,?,?,?,?)",
+  "chattr"              => "(time,counter,type,profile,sdmode,resource,mode,prog,pid,severity)   VALUES(?,?,'chattr',?,?,?,?,?,?,?)",
+  "capability"          => "(time,counter,type,profile,sdmode,resource,prog,pid,severity)        VALUES(?,?,'capability',?,?,?,?,?,?)",
+  "unknown_hat"         => "(time,counter,type,profile,sdmode,resource,pid)                      VALUES(?,?,'unknown_hat',?,?,?,?)",
+  "fork"                => "(time,counter,type,profile,sdmode,pid,resource)                      VALUES(?,?,'fork',?,?,?,?)",
+  "changing_profile"    => "(time,counter,type,profile,sdmode,pid)                               VALUES(?,?,'changing_profile',?,?,?)",
+  "profile_replacement" => "(time,counter,type,profile,sdmode,prog,pid,severity)                 VALUES(?,?,'profile_replacement',?,?,?,?,?)",
+  "removed"             => "(time,counter,type,severity)                                         VALUES(?,?,'removed',?)",
+  "initialized"         => "(time,counter,type,resource,severity)                                VALUES(?,?,'initialized',?,?)",
+  "ctrl_var"            => "(time,counter,type,resource,mode,severity)                           VALUES(?,?,'ctrl_var',?,?,?)",
+);
+
+##########################################################################
+# generic functions
+
+sub errlog ($) {
+  my $mesg = shift;
+
+  my $localtime = localtime(time);
+  print ERRLOG "[$localtime] $mesg\n";
+}
+
+sub readconfig () {
+
+  my $cfg = { };
+
+  # record when we read the config file
+  $cfg->{load_time} = time;
+
+  if(open(CFG, $cfgfile)) {
+
+    # yank in the values we need
+    while (<CFG>) {
+      $cfg->{$1} = $2 if /^(\S+)\s+(.+)\s*$/;
+    } 
+    close(CFG);
+  }
+
+  return $cfg;
+}
+
+sub daemonize {
+  chdir '/'                 or die "Can't chdir to /: $!";
+  open STDIN, '/dev/null'   or die "Can't read /dev/null: $!";
+  open STDOUT, '>/dev/null' or die "Can't write to /dev/null: $!";
+  defined(my $pid = fork)   or die "Can't fork: $!";
+  exit if $pid;
+  setsid                    or die "Can't start a new session: $!";
+  open STDERR, '>&STDOUT'   or die "Can't dup stdout: $!";
+}
+
+##########################################################################
+# database handling functions
+
+sub connect_database ($) {
+  my $dbdir = shift;
+
+  my $dbh = DBI->connect("dbi:SQLite:dbname=$dbdir/events.db","","");
+
+  # we'll do the commits ourselves so performance doesn't suck
+  $dbh->{AutoCommit} = 0;
+
+  # bump up our cache size a little
+  $dbh->do("PRAGMA cache_size = 20000;");
+
+  # figure out if the tables already exist or not
+  my %existing_tables;
+  my $sth = $dbh->prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;");
+  $sth->execute;
+  while(my @row = $sth->fetchrow_array) {
+    $existing_tables{$row[0]} = 1;
+  }
+  $sth->finish;
+
+  # create the info table and fill in the appropriate values for this db
+  unless($existing_tables{info}) {
+
+    my $host = `hostname -f`;
+    chomp $host;
+
+    $dbh->do("CREATE TABLE info (name,value)");
+    $sth = $dbh->prepare("INSERT INTO info(name,value) VALUES(?,?)");
+    $sth->execute("version",   "0.1");
+    $sth->execute("host",      "$host");
+  }
+
+  # create the events table
+  unless($existing_tables{events}) {
+    $dbh->do("CREATE TABLE events (
+                id       INTEGER PRIMARY KEY AUTOINCREMENT,
+                time     INTEGER NOT NULL, 
+                counter  INTEGER NOT NULL,
+                pid,
+                sdmode,
+                type,
+                mode,
+                resource,
+                target,
+                profile,
+                prog,
+                severity INTEGER
+              )");
+
+    # set up the indexes we want
+    my @indexes = qw(time type sdmode mode resource profile prog severity);
+    for my $index (@indexes) {
+      $dbh->do("CREATE INDEX " . $index . "_idx ON events($index)");
+    }
+  }
+
+  # make sure our changes actually get saved
+  $dbh->commit || errlog "Error commiting changes: $!";
+
+  # mark the db as up to date as of now
+  $last_flush_time = time;
+
+  return $dbh;
+}
+
+##########################################################################
+
+sub verbose_notify_handler {
+  my ($email, $file, $last, $level, $unknown) = @_;
+
+  $last = localtime($last);
+
+  my $now = time;
+
+  my $host = `hostname -f`;
+  chomp $host;
+
+  my $subj = "Verbose Security Report for $host.";
+  my $mesg = "The following security events occured since $last:\n\n";
+
+  my @events;
+  if(open(V, $file)) {
+    while(<V>) {
+      chomp;
+      if(/^(\d+) (\d+) (.+)$/) {
+        my ($timestamp, $counter, $logmsg) = ($1, $2, $3);
+        push @events, [ $timestamp, $counter ];
+        $mesg .= "$logmsg\n";
+      }
+    }
+    close(V);
+  
+    if(@events) {
+      if($DEBUG) {
+        my $count = scalar @events;
+        errlog "[$count events] sending verbose notification to $email.";
+      }
+      # actually send out the notification...
+      open(MAIL, "| sendmail -F 'AppArmor Security Notification' $email");
+      print MAIL "To: $email\n";
+      print MAIL "Subject: $subj\n\n";
+      print MAIL "$mesg\n";
+      print MAIL ".\n";
+      close(MAIL);
+    }
+  
+    # delete the verbose notification logfile once we've processed it
+    unlink($file);
+  }
+}
+
+sub summary_notify_handler {
+  my ($email, $file, $last, $level, $unknown) = @_;
+
+  $last = localtime($last);
+
+  my $now = time;
+
+  my $host = `hostname -f`;
+  chomp $host;
+
+  my $subj = "Summary Security Report for $host.";
+  my $mesg = "The following security events occured since $last:\n\n";
+
+  my @events;
+  if(open(V, $file)) {
+    while(<V>) {
+      chomp;
+      if(/^(\d+) (\d+) (.+)$/) {
+        my ($timestamp, $counter, $logmsg) = ($1, $2, $3);
+        push @events, [ $timestamp, $counter ];
+        $mesg .= "$logmsg\n";
+      }
+    }
+    close(V);
+  
+    if(@events) {
+      if($DEBUG) {
+        my $count = scalar @events;
+        errlog "[$count events] sending summary notification to $email.";
+      }
+      # actually send out the notification...
+      open(MAIL, "| sendmail -F 'AppArmor Security Notification' $email");
+      print MAIL "To: $email\n";
+      print MAIL "Subject: $subj\n\n";
+      print MAIL "$mesg\n";
+      print MAIL ".\n";
+      close(MAIL);
+    }
+  
+    # delete the verbose notification logfile once we've processed it
+    unlink($file);
+  }
+}
+
+sub terse_notify_handler {
+  my ($email, $file, $last, $level, $unknown) = @_;
+
+  $last = localtime($last);
+
+  my $now = time;
+
+  my $host = `hostname -f`;
+  chomp $host;
+
+
+  my @events;
+  my $count = 0;
+  if(open(V, $file)) {
+    while(<V>) {
+      chomp;
+      if(/^(\d+) (\d+) (.+)$/) {
+        my ($timestamp, $counter, $logmsg) = ($1, $2, $3);
+        push @events, [ $timestamp, $counter ];
+        $count++;
+      }
+    }
+    close(V);
+  
+    if($count) {
+      if($DEBUG) {
+        errlog "[$count events] sending terse notification to $email.";
+      }
+      my $subj = "Security Report for $host.";
+      my $mesg = "$host has had $count security events since $last.";
+  
+      # actually send out the notification...
+      open(MAIL, "| sendmail -F 'AppArmor Security Notification' $email");
+      print MAIL "To: $email\n";
+      print MAIL "Subject: $subj\n\n";
+      print MAIL "$mesg\n";
+      print MAIL ".\n";
+      close(MAIL);
+    }
+  
+    # delete the terse notification logfile once we've processed it
+    unlink($file);
+  }
+}
+
+sub fork_into_background {
+  my ($name, $func, @args) = @_;
+
+  my $pid = fork;
+
+  if(not defined $pid) {
+
+    # something bad happened, just log it...
+    errlog "couldn't fork for \"$name\": $!" 
+
+  } elsif($pid == 0) {
+
+    # we're in the child process now...
+ 
+    # set our process name
+    $0 = $name;
+
+    # call our subroutine
+    my $ret = &$func(@args);
+
+    exit($ret);
+  }
+
+  return $pid;
+}
+
+##########################################################################
+
+sub process_event ($$) {
+  my $dbh    = shift;
+  my $logmsg = shift;
+  my $sth;
+
+  my ($time, $mesg);
+  if($logmsg =~ /^(?:type=APPARMOR msg=|$REdate\s+\S+\s+(?:kernel:\s+)*)audit\((\d+).\d+:\d+\): (.+)$/) {
+    ($time, $mesg) = ($1, $2);
+
+     # have we rolled over to another second yet?
+     if($time ne $lasttime) {
+       $counter   = 0;
+       $timestamp = $time;
+       $lasttime  = $time;
+     }
+  } elsif ($logmsg =~ /^\s*($REdate)\s+\S+\s+(?:kernel:\s+)*(SubDomain|AppArmor):\s+(.+)$/) {
+    ($time, $mesg) = ($1, $3);
+
+    # have we rolled over to another second yet?
+    if($time ne $lasttime) {
+      $counter   = 0;
+      $timestamp = str2time($time);
+      $lasttime  = $time;
+    }
+  } else {
+    # not one of ours, just return
+    return;
+  }
+
+  $counter++;
+
+  # some statistics...
+  $max = $counter if $counter > $max;
+
+  # if we already have events in the db, make sure we don't try to re-enter
+  # duplicates if we start up again and parse the same logfile over again
+  if($last_inserted_time) {
+    return if $timestamp <  $last_inserted_time;
+      
+    if($timestamp == $last_inserted_time) {
+      return if $counter   <= $last_inserted_counter;
+    }
+      
+    $last_inserted_time = undef;
+  }
+
+  # workaround for syslog uglyness.
+  if($mesg =~ s/(PERMITTING|REJECTING|AUDITING)-SYSLOGFIX/$1/) {
+    $mesg =~ s/%%/%/g;
+  }
+
+  if($mesg =~ /(PERMITTING|REJECTING|AUDITING) (\S+) access to (.+?) \((\S+)\((\d+)\) profile (\S+) active (\S+)\)/) {
+    my ($sdmode, $mode, $resource, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
+
+    $profile .= "^$hat" if $profile ne $hat;
+
+    my $severity = "";
+    if($sdmode eq "REJECTING") {
+      $severity = $sevdb->rank($resource, $mode);
+
+      # we only do notification for enforce mode events
+      if($config->{verbose_freq}) {
+        if(($severity >= $config->{verbose_level}) ||
+          (($severity == -1) && $config->{verbose_unknown})) {
+          push @verbose_buffer, [ $timestamp, $counter, $logmsg ];
+        }
+      }
+
+      if($config->{summary_freq}) {
+        if(($severity >= $config->{summary_level}) ||
+          (($severity == -1) && $config->{summary_unknown})) {
+          push @summary_buffer, [ $timestamp, $counter, "path", $prog, $mode, $resource ];
+        }
+      }
+
+      if($config->{terse_freq}) {
+        if(($severity >= $config->{terse_level}) ||
+          (($severity == -1) && $config->{terse_unknown})) {
+          push @terse_buffer, [ $timestamp, $counter, "dummy" ];
+        }
+      }
+
+    }
+
+    push @commit_buffer, [ "path", $timestamp, $counter, $profile, $sdmode, $mode, $resource, $prog, $pid, $severity ];
+    $inserts++;
+
+  } elsif($mesg =~ /(PERMITTING|REJECTING|AUDITING) link access from (.+?) to (.+?) \((\S+)\((\d+)\) profile (\S+) active (\S+)\)/) {
+    my ($sdmode, $link, $target, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
+
+    $profile .= "^$hat" if $profile ne $hat;
+
+    my $severity = "";
+    if($sdmode eq "REJECTING") {
+      $severity = $sevdb->rank($target, "l");
+
+      # we only do notification for enforce mode events
+      if($config->{verbose_freq}) {
+        if(($severity >= $config->{verbose_level}) ||
+          (($severity == -1) && $config->{verbose_unknown})) {
+          push @verbose_buffer, [ $timestamp, $counter, $logmsg ];
+        }
+      }
+
+      if($config->{summary_freq}) {
+        if(($severity >= $config->{summary_level}) ||
+          (($severity == -1) && $config->{summary_unknown})) {
+          push @summary_buffer, [ $timestamp, $counter, "link", $prog, $link, $target ];
+        }
+      }
+
+      if($config->{terse_freq}) {
+        if(($severity >= $config->{terse_level}) ||
+          (($severity == -1) && $config->{terse_unknown})) {
+          push @terse_buffer, [ $timestamp, $counter ];
+        }
+      }
+    }
+
+    push @commit_buffer, [ "link", $timestamp, $counter, $profile, $sdmode, $link, $target, $prog, $pid, $severity ];
+    $inserts++;
+
+  } elsif($mesg =~ /(PERMITTING|REJECTING|AUDITING) attribute \((\S*)\) change to (.+)? \((\S+)\((\d+)\) profile (\S+) active (\S+)\)/) {
+    my ($sdmode, $attrch, $resource, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
+
+    $profile .= "^$hat" if $profile ne $hat;
+
+    my $severity = "";
+    if($sdmode eq "REJECTING") {
+      $severity = $sevdb->rank($resource, "w");
+
+      # we only do notification for enforce mode events
+      if($config->{verbose_freq}) {
+        if(($severity >= $config->{verbose_level}) ||
+          (($severity == -1) && $config->{verbose_unknown})) {
+          push @verbose_buffer, [ $timestamp, $counter, $logmsg ];
+        }
+      }
+
+      if($config->{summary_freq}) {
+        if(($severity >= $config->{summary_level}) ||
+          (($severity == -1) && $config->{summary_unknown})) {
+          push @summary_buffer, [ $timestamp, $counter, "attrch", $prog, $resource, $attrch ];
+        }
+      }
+
+      if($config->{terse_freq}) {
+        if(($severity >= $config->{terse_level}) ||
+          (($severity == -1) && $config->{terse_unknown})) {
+          push @terse_buffer, [ $timestamp, $counter ];
+        }
+      }
+    }
+
+    push @commit_buffer, [ "chattr", $timestamp, $counter, $profile, $sdmode, $resource, $attrch, $prog, $pid, $severity ];
+    $inserts++;
+
+  } elsif(m/(PERMITTING|REJECTING) (?:mk|rm)dir on (.+) \((\S+)\((\d+)\) profile (\S+) active (\S+)\)/) {
+    my ($sdmode, $resource, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6);
+
+    $profile .= "^$hat" if $profile ne $hat;
+
+    my $mode = "w";
+
+    my $severity = "";
+    if($sdmode eq "REJECTING") {
+      $severity = $sevdb->rank($resource, $mode);
+
+      # we only do notification for enforce mode events
+      if($config->{verbose_freq}) {
+        if(($severity >= $config->{verbose_level}) ||
+          (($severity == -1) && $config->{verbose_unknown})) {
+          push @verbose_buffer, [ $timestamp, $counter, $logmsg ];
+        }
+      }
+
+      if($config->{summary_freq}) {
+        if(($severity >= $config->{summary_level}) ||
+          (($severity == -1) && $config->{summary_unknown})) {
+          push @summary_buffer, [ $timestamp, $counter, "path", $prog, $mode, $resource ];
+        }
+      }
+
+      if($config->{terse_freq}) {
+        if(($severity >= $config->{terse_level}) ||
+          (($severity == -1) && $config->{terse_unknown})) {
+          push @terse_buffer, [ $timestamp, $counter, "dummy" ];
+        }
+      }
+
+    }
+
+    push @commit_buffer, [ "path", $timestamp, $counter, $profile, $sdmode, $mode, $resource, $prog, $pid, $severity ];
+    $inserts++;
+  } elsif(/(PERMITTING|REJECTING) xattr (\S+) on (.+) \((\S+)\((\d+)\) profile (\S+) active (\S+)\)/) {
+    my ($sdmode, $xattr_op, $resource, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
+
+    $profile .= "^$hat" if $profile ne $hat;
+
+    my $mode;
+    if($xattr_op eq "get" || $xattr_op eq "list") {
+      $mode = "r";
+    } elsif($xattr_op eq "set" || $xattr_op eq "remove") {
+      $mode = "w";
+    }
+
+    my $severity = "";
+    if($sdmode eq "REJECTING") {
+      $severity = $sevdb->rank($resource, $mode);
+
+      # we only do notification for enforce mode events
+      if($config->{verbose_freq}) {
+        if(($severity >= $config->{verbose_level}) ||
+          (($severity == -1) && $config->{verbose_unknown})) {
+          push @verbose_buffer, [ $timestamp, $counter, $logmsg ];
+        }
+      }
+
+      if($config->{summary_freq}) {
+        if(($severity >= $config->{summary_level}) ||
+          (($severity == -1) && $config->{summary_unknown})) {
+          push @summary_buffer, [ $timestamp, $counter, "path", $prog, $mode, $resource ];
+        }
+      }
+
+      if($config->{terse_freq}) {
+        if(($severity >= $config->{terse_level}) ||
+          (($severity == -1) && $config->{terse_unknown})) {
+          push @terse_buffer, [ $timestamp, $counter, "dummy" ];
+        }
+      }
+
+    }
+
+    push @commit_buffer, [ "path", $timestamp, $counter, $profile, $sdmode, $mode, $resource, $prog, $pid, $severity ];
+    $inserts++;
+
+  } elsif($mesg =~ /(PERMITTING|REJECTING|AUDITING) access to capability '(.+?)' \((\S+)\((\d+)\) profile (\S+) active (\S+)\)/) {
+    my ($sdmode, $capability, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
+
+    $profile .= "^$hat" if $profile ne $hat;
+
+    my $severity = "";
+    if($sdmode eq "REJECTING") {
+      $severity = $sevdb->rank(uc("cap_$capability"));
+
+      # we only do notification for enforce mode events
+      if($config->{verbose_freq}) {
+        if(($severity >= $config->{verbose_level}) ||
+          (($severity == -1) && $config->{verbose_unknown})) {
+          push @verbose_buffer, [ $timestamp, $counter, $logmsg ];
+        }
+      }
+
+      if($config->{summary_freq}) {
+        if(($severity >= $config->{summary_level}) ||
+          (($severity == -1) && $config->{summary_unknown})) {
+          push @summary_buffer, [ $timestamp, $counter, "capability", $prog, $capability ];
+        }
+      }
+
+      if($config->{terse_freq}) {
+        if(($severity >= $config->{terse_level}) ||
+          (($severity == -1) && $config->{terse_unknown})) {
+          push @terse_buffer, [ $timestamp, $counter ];
+        }
+      }
+    }
+
+    push @commit_buffer, [ "capability", $timestamp, $counter, $profile, $sdmode, $capability, $prog, $pid, $severity ];
+    $inserts++;
+
+  } elsif($mesg =~ /LOGPROF-HINT unknown_hat (\S+) pid=(\d+) profile=(\S+) active=(\S+)/) {
+    my ($uhat, $pid, $profile, $hat) = ($1, $2, $3, $4);
+
+    $profile .= "^$hat" if $profile ne $hat;
+
+    push @commit_buffer, [ "unknown_hat", $timestamp, $counter, $profile, "PERMITTING", $uhat, $pid ];
+    $inserts++;
+
+  } elsif($mesg =~ /LOGPROF-HINT fork pid=(\d+) child=(\d+) profile=(\S+) active=(\S+)/) {
+    my ($pid, $child, $profile, $hat) = ($1, $2, $3, $4);
+
+    $profile .= "^$hat" if $profile ne $hat;
+
+    push @commit_buffer, [ "fork", $timestamp, $counter, $profile, "PERMITTING", $pid, $child ];
+    $inserts++;
+
+  } elsif($mesg =~ /LOGPROF-HINT changing_profile pid=(\d+) newprofile=(\S+)/) {
+    my ($pid, $newprofile) = ($1, $2);
+
+    push @commit_buffer, [ "changing_profile", $timestamp, $counter, $newprofile, "PERMITTING", $pid ];
+    $inserts++;
+
+  } elsif($mesg =~ /LOGPROF-HINT fork pid=(\d+) child=(\d+)/) {
+    my ($pid, $child) = ($1, $2);
+
+    push @commit_buffer, [ "fork", $timestamp, $counter, "null-complain-profile", "PERMITTING", $pid, $child ];
+    $inserts++;
+
+  } elsif($mesg =~ /LOGPROF-HINT changing_profile pid=(\d+)/) {
+    my $pid = $1;
+
+    push @commit_buffer, [ "changing_profile", $timestamp, $counter, "null-complain-profile", "PERMITTING", $pid ];
+    $inserts++;
+
+  } elsif($mesg =~ /(PERMITTING|REJECTING|AUDITING) access to profile replacement \((\S+)\((\d+)\) profile (\S+) active (\S+)\)/) {
+    my ($sdmode, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
+
+    $profile .= "^$hat" if $profile ne $hat;
+
+    my $severity = 10;
+
+    # we only do notification for enforce mode events
+    if($config->{verbose_freq}) {
+      if(($severity >= $config->{verbose_level}) ||
+        (($severity == -1) && $config->{verbose_unknown})) {
+        push @verbose_buffer, [ $timestamp, $counter, $logmsg ];
+      }
+    }
+
+    if($config->{summary_freq}) {
+      if(($severity >= $config->{summary_level}) ||
+        (($severity == -1) && $config->{summary_unknown})) {
+        push @summary_buffer, [ $timestamp, $counter, "profile_replacement", $prog ];
+      }
+    }
+
+    if($config->{terse_freq}) {
+      if(($severity >= $config->{terse_level}) ||
+        (($severity == -1) && $config->{terse_unknown})) {
+        push @terse_buffer, [ $timestamp, $counter ];
+      }
+    }
+
+    push @commit_buffer, [ "profile_replacement", $timestamp, $counter, $profile, $sdmode, $prog, $pid, $severity ];
+    $inserts++;
+
+  } elsif($mesg =~ /(SubDomain|AppArmor) protection removed/) {
+
+    push @commit_buffer, [ "removed", $timestamp, $counter, 10 ];
+    $inserts++;
+
+  } elsif($mesg =~ /(SubDomain|AppArmor) \(version (\S+)\) initialized/) {
+    my $version = $1;
+
+    push @commit_buffer, [ "initialized", $timestamp, $counter, $version, 10 ];
+    $inserts++;
+
+  } elsif($mesg =~ /Control variable '(\S+)' changed to (\S+)/) {
+    my ($variable, $value) = ($1, $2);
+
+    push @commit_buffer, [ "ctrl_var", $timestamp, $counter, $variable, $value, 10 ];
+    $inserts++;
+
+  } else {
+    errlog "Unhandled log message: $logmsg";
+  }
+}
+
+sub dump_events {
+  my ($which, @events) = @_;
+
+  if($DEBUG) {
+    my $count = scalar @events;
+    errlog "dumping $count events to $which db.";
+  }
+
+  if(open(F, ">>$dbdir/$which.db")) {
+    for my $event (@events) {
+      my @event = @$event;
+      print F "@event\n";
+    }
+    close(F);
+  } else {
+    errlog "can't write to $dbdir/$which.db: $!";
+  }
+}
+
+sub check_timers ($) {
+  my $dbh = shift;
+
+  # what time is it right... NOW
+  my $now = time;
+
+  # make sure we commit periodically
+  if(($inserts > 10000) || ($now >= ($last_flush_time + $timeout))) {
+
+    my $last_prepare = "";
+    my $sth;
+
+    for my $event ( sort { $a->[0] cmp $b->[0] } @commit_buffer ) {
+      my @event = @{$event};
+      my $type = shift @event;
+
+      if($type ne $last_prepare) {
+        $sth = $dbh->prepare("INSERT INTO events $templates{$type};");
+        $last_prepare = $type;
+      }
+
+      $sth->execute(@event);
+    }
+
+    $dbh->commit || errlog "Error commiting changes: $!";
+    
+    # need to get the time again to include how much time it takes to 
+    # actually write all this crap to the db
+    $now = time;
+
+    if($DEBUG && $inserts) {
+      $total   += $inserts;
+      my $delta = $now - $last_flush_time;
+      my $rate  = int($inserts / $delta);
+      errlog "$rate/s  $inserts in ${delta}s  total=$total  max=$max";
+    }
+
+    $last_flush_time = $now;
+
+    @commit_buffer = ( );
+
+    $max     = 0;
+    $inserts = 0;
+
+    if(@verbose_buffer) {
+      # if we've got verbose events, dump them
+      dump_events("verbose", @verbose_buffer);
+
+      # and clear out our buffer
+      @verbose_buffer = ( );
+    }
+
+    if(@terse_buffer) {
+      # if we've got terse events, dump them
+      dump_events("terse", @terse_buffer);
+
+      # and clear out our buffer
+      @terse_buffer = ( );
+    }
+
+    # bail out if we don't have notification configured
+    return unless -f $cfgfile;
+
+    # what time did we last read the config file?
+    my $load_time = $config->{load_time};
+
+    # check when the config file was last modified...
+    my $mtime = (stat($cfgfile))[9];
+
+    # if it's been changed since we last read the config file, we need to
+    # load the new settings
+    if($load_time < $mtime) {
+      errlog "Reloading changed config file.";
+      $config = readconfig();
+    }
+
+  }
+
+  # bail out if we don't have notification configured
+  return unless -f $cfgfile;
+
+  if($config->{terse_freq}) {
+    if(($terse->{last_notify} + $config->{terse_freq}) <= $now) {
+      if(-f "$dbdir/terse.db") {
+        $DEBUG && errlog "doing terse notification...";
+
+        # get a temporary filename...
+        my ($fh, $filename) = tempfile("terseXXXXXX", DIR => $dbdir);
+
+        # overwrite the temp file we just created...
+        rename("$dbdir/terse.db", $filename);
+
+        if($DEBUG) {
+          errlog "terse file is $filename";
+        }
+
+        # do the actual notification in the background
+        fork_into_background("terse-notification",
+                             \&terse_notify_handler,
+                             $config->{terse_email},
+                             $filename, 
+                             $terse->{last_notify}, 
+                             $config->{terse_level}, 
+                             $config->{terse_unknown});
+
+        # ...keep track of when we last sent out a notify
+        $terse->{last_notify} = $now;
+      }
+    }
+  }
+
+  if($config->{summary_freq}) {
+    if(($summary->{last_notify} + $config->{summary_freq}) <= $now) {
+      if(-f "$dbdir/summary.db") {
+        $DEBUG && errlog "doing summary notification...";
+
+        # get a temporary filename...
+        my ($fh, $filename) = tempfile("summaryXXXXXX", DIR => $dbdir);
+
+        # overwrite the temp file we just created...
+        rename("$dbdir/summary.db", $filename);
+
+        # do the actual notification in the background
+        fork_into_background("summary-notification",
+                             \&summary_notify_handler,
+                             $config->{summary_email},
+                             $filename, 
+                             $summary->{last_notify}, 
+                             $config->{summary_level}, 
+                             $config->{summary_unknown});
+
+        # ...keep track of when we last sent out a notify
+        $summary->{last_notify} = $now;
+      }
+    }
+  }
+
+  if($config->{verbose_freq}) {
+    if(($verbose->{last_notify} + $config->{verbose_freq}) <= $now) {
+      if(-f "$dbdir/verbose.db") {
+        $DEBUG && errlog "doing verbose notification...";
+
+        # get a temporary filename...
+        my ($fh, $filename) = tempfile("verboseXXXXXX", DIR => $dbdir);
+
+        # overwrite the temp file we just created...
+        rename("$dbdir/verbose.db", $filename);
+
+        if($DEBUG) {
+          errlog "verbose file is $filename";
+        }
+
+        # do the actual notification in the background
+        fork_into_background("verbose-notification",
+                             \&verbose_notify_handler,
+                             $config->{verbose_email},
+                             $filename, 
+                             $verbose->{last_notify}, 
+                             $config->{verbose_level}, 
+                             $config->{verbose_unknown});
+
+        # ...keep track of when we last sent out a notify
+        $verbose->{last_notify} = $now;
+      }
+    }
+  }
+
+}
+
+sub get_last_event {
+  my $dbh = shift;
+
+  my ($time, $counter);
+  # get the oldest timestamp...
+  my $sth = $dbh->prepare('SELECT MAX(time) FROM events');
+  $sth->execute;
+  my @row = $sth->fetchrow_array || ( 0 );
+  $time = $row[0];
+  if($time) {
+    # get the highest counter for this timestamp...
+    $sth = $dbh->prepare("SELECT MAX(counter) FROM events WHERE time = $time");
+    $sth->execute;
+    @row = $sth->fetchrow_array || ( 0 );
+    $counter = $row[0];
+  }
+
+  return ($time, $counter);
+}
+
+##########################################################################
+# start the real magic...
+
+my $finished;
+
+# make sure we exit if someone sends us the right signal
+sub sig_handler {
+  my $signame = shift;
+
+  errlog("Caught signal '$signame'.  Exiting...");
+  $finished = 1;
+};
+
+
+# set up our error log without buffering
+open(ERRLOG, ">>$dbdir/event-dispatch.log");
+my $oldfd = select(ERRLOG); $| = 1; select($oldfd);
+
+errlog "Starting...";
+
+$config = readconfig();
+
+# fork off into the background.  we need to do this before we connect to
+# the db, otherwise, we'll get an ugly error about rolling back a
+# connection that's being destroyed
+daemonize;
+
+# automagically reap child processes
+$SIG{INT} = \&sig_handler;
+$SIG{TERM} = \&sig_handler;
+$SIG{CHLD} = 'IGNORE';
+
+# if they want us to write a pid, do it
+if($pidfile) {
+  if(open(PIDFILE, ">$pidfile")) {
+    print PIDFILE "$$\n";
+    close(PIDFILE);
+  }
+}
+
+my $dbh = connect_database($dbdir);
+
+($last_inserted_time, $last_inserted_counter) = get_last_event($dbh);
+
+my $auditlog=File::Tail->new(name=>$logfile, debug=>1, interval=>1, maxinterval=>5, adjustafter=>20, errmode=>"return", ignore_noexistant=>1);
+my $syslog=File::Tail->new(name=>$syslogfile, debug=>1, interval=>1, maxinterval=>5, adjustafter=>20, errmode=>"return", ignore_noexistant=>1);
+my $line = '';
+
+# process complete lines from the buffer...
+while (not $finished) {
+  my ($nfound, $timeleft, @pending) =
+    File::Tail::select(undef, undef, undef, $timeout, ($auditlog, $syslog));
+
+  foreach(@pending) {
+    process_event($dbh, $_->read);
+  }
+
+  # see if we should flush pending entries to disk and/or do notification
+  check_timers($dbh);
+};
+
+# make sure we don't exit with any pending events not written to the db
+$dbh->commit     || errlog "Error commiting changes: $!";
+$dbh->disconnect || errlog "Error disconnecting from db: $!";
+
+# close our error/debugging log file
+close(ERRLOG);
+
+unlink($pidfile) if $pidfile;
+
+exit 0;

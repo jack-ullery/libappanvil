@@ -1,0 +1,183 @@
+#!/usr/bin/perl -w
+# $Id: apparmor_status 6148 2006-01-26 23:11:58Z steve $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2005-2006 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+
+use strict;
+use Getopt::Long;
+
+my $confdir = "/etc/apparmor";
+my $sd_mountpoint;
+my $check_enabled = 0;
+my $count_enforced = 0;
+my $count_profiled = 0;
+my $count_complain = 0;
+my $verbose = 0;
+my $help;
+
+GetOptions(
+  'complaining'		=> \$count_complain,
+  'enabled'		=> \$check_enabled,
+  'enforced'		=> \$count_enforced,
+  'profiled'		=> \$count_profiled,
+  'verbose|v'		=> \$verbose,
+  'help|h'		=> \$help,
+) or usage();
+
+sub usage {
+  print "Usage: $0 [OPTIONS]\n";
+  print "Displays various information about the currently loaded AppArmor policy.\n";
+  print "OPTIONS (one only):\n";
+  print "  --enabled       returns error code if subdomain not enabled\n";
+  print "  --profiled      prints the number of loaded policies\n";
+  print "  --enforced      prints the number of loaded enforcing policies\n";
+  print "  --complaining   prints the number of loaded non-enforcing policies\n";
+  print "  --verbose       (default) displays multiple data points about loaded policy set\n";
+  print "  --help          this message\n";
+  exit;
+}
+
+$verbose = 1 if ($count_complain + $check_enabled + $count_enforced + $count_profiled == 0);
+usage() if $help or ($count_complain + $check_enabled + $count_enforced + $count_profiled + $verbose > 1);
+
+sub is_subdomain_loaded() {
+  if(open(MODULES, "/proc/modules")) {
+    while(<MODULES>) {
+      return 1 if m/^(subdomain|apparmor)\s+/;
+    }
+  }
+
+  return 0;
+}
+
+sub find_subdomainfs() {
+
+  my $sd_mountpoint;
+  if(open(MOUNTS, "/proc/mounts")) {
+    while(<MOUNTS>) {
+      $sd_mountpoint = "$1/apparmor" if m/^\S+\s+(\S+)\s+securityfs\s/ && -e "$1/apparmor";
+      $sd_mountpoint = "$1/subdomain" if m/^\S+\s+(\S+)\s+securityfs\s/ && -e "$1/subdomain";
+      $sd_mountpoint = $1 if m/^\S+\s+(\S+)\s+subdomainfs\s/ && -e "$1";
+    }
+    close(MOUNTS);
+  }
+
+  return $sd_mountpoint;
+}
+
+sub count_profiles {
+  my $mountpoint = shift;
+  my $profiles = 0;
+  my $enforced = 0;
+  my $complain = 0;
+
+  if (open(PROFILES, "$mountpoint/profiles")) {
+    while(<PROFILES>) {
+      $profiles++;
+      $enforced++ if m/\(enforce\)$/;
+      $complain++ if m/\(complain\)$/;
+    }
+    close(PROFILES);
+  }
+  return ($profiles, $enforced, $complain);
+}
+
+sub count_processes {
+  my $processes = 0;
+  my $confined = 0;
+  my $enforced = 0;
+  my $complain = 0;
+  if (opendir(PROC, "/proc")) {
+    my $file;
+    while (defined($file = readdir(PROC))) {
+      if ($file =~ m/^\d+/ && open(CURRENT, "/proc/$file/attr/current")) {
+	while (<CURRENT>) {
+	  $processes++;
+	  $confined++ if not m/^unconstrained$/;
+	  $enforced++ if m/\(enforce\)$/;
+	  $complain++ if m/\(complain\)$/;
+	}
+	close(CURRENT);
+      }
+    }
+    closedir(PROC);
+  }
+  return ($processes, $confined, $enforced, $complain);
+}
+
+my $is_loaded = is_subdomain_loaded();
+
+if (!$is_loaded) {
+  print STDERR "apparmor module is not loaded.\n" if $verbose;
+  exit 1;
+}
+
+print "apparmor module is loaded.\n" if $verbose;
+
+$sd_mountpoint = find_subdomainfs();
+if (!$sd_mountpoint) {
+  print STDERR "apparmor filesystem is not mounted.\n" if $verbose;
+  exit 3;
+}
+
+if (! -r "$sd_mountpoint/profiles") {
+  print STDERR "You do not have enough privilege to read the profile set.\n" if $verbose;
+  exit 4;
+}
+
+#print "subdomainfs is at $sd_mountpoint.\n" if $verbose;
+
+my $processes;
+my $profiles;
+my $enforced;
+my $complain;
+
+($profiles, $enforced, $complain) = count_profiles($sd_mountpoint);
+
+# we consider the case where no profiles are loaded to be "disabled" as well
+my $rc = ($profiles == 0) ? 2 : 0;
+
+if ($check_enabled) {
+  exit $rc;
+}
+
+if ($count_profiled) {
+  print "$profiles\n";
+  exit $rc;
+}
+
+if ($count_enforced) {
+  print "$enforced\n";
+  exit $rc;
+}
+
+if ($count_complain) {
+  print "$complain\n";
+  exit $rc;
+}
+
+
+if ($verbose) {
+  print "$profiles profiles are loaded.\n";
+  print "$enforced profiles are in enforce mode.\n";
+  print "$complain profiles are in complain mode.\n";
+}
+
+($processes, $profiles, $enforced, $complain) = count_processes();
+
+if ($verbose) {
+  print "Out of $processes processes running:\n";
+  print "$profiles processes have profiles defined.\n";
+  print "$enforced processes have profiles in enforce mode.\n";
+  print "$complain processes have profiles in complain mode.\n";
+}
+
+exit $rc;

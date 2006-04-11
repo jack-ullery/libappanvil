@@ -1,0 +1,19 @@
+#
+# $Id: flags_bad3.sd 5662 2005-11-07 09:55:28Z steve $
+#=DESCRIPTION Ensure really bad parsing fails
+#=EXRESULT FAIL
+# vim:syntax=subdomain
+# Last Modified: Sun Apr 17 19:44:44 2005
+#
+/does/not/exist flags=(blahblab {
+
+  /usr/X11R6/lib/lib*so* r
+  /does/not/exist r
+}
+
+audit) {
+  #include <abstractions/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist2 r,
+}

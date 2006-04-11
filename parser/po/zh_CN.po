@@ -1,0 +1,506 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2005 NOVELL, Inc.
+# This file is distributed under the same license as the PACKAGE package. 
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmor\n"
+"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"POT-Creation-Date: 2005-07-29 08:51+0200\n"
+"PO-Revision-Date: 2005-08-18 17:12+0100\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../parser_include.c:87
+msgid "Error couldn't allocate temporary file\n"
+msgstr "错误：无法分配临时文件\n"
+
+#: ../parser_include.c:110
+msgid "Error: Out of Memory\n"
+msgstr "错误：内存不足\n"
+
+#: ../parser_include.c:129
+#, c-format
+msgid "Error: Can't add directory %s to search path\n"
+msgstr "错误：无法添加目录 %s 到搜索路径\n"
+
+#: ../parser_include.c:137
+msgid "Error: Could not allocate memory\n"
+msgstr "错误：无法分配内存\n"
+
+#: ../parser_include.c:258
+#, c-format
+msgid "Error: could not allocate buffer for include. line %d in %s\n"
+msgstr "错误：无法为 include 分配缓冲区。第 %d 行（在 %s 中）。\n"
+
+#: ../parser_include.c:266 ../parser_include.c:281
+#, c-format
+msgid "Error: bad include. line %d in %s\n"
+msgstr "错误：include 无效。第 %d 行（在 %s 中）。\n"
+
+#: ../parser_include.c:310
+#, c-format
+msgid "Error: exceeded %d levels of includes.  NOT processing %s include\n"
+msgstr "错误：include 超过 %d 级。不处理 %s include\n"
+
+#: ../parser_include.c:325
+#, c-format
+msgid "Error: #include %s%c not found. line %d in %s\n"
+msgstr "错误：找不到 #include %s%c。第 %d 行（在 %s 中）。\n"
+
+#: ../parser_interface.c:115
+#, c-format
+msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
+msgstr "PANIC 无效的递增缓冲区：%p pos %p ext %p size %d res %p\n"
+
+#: ../parser_interface.c:506 ../parser_sysctl.c:107
+#, c-format
+msgid "Unable to open %s - %s\n"
+msgstr "无法打开 %s － %s\n"
+
+#: ../parser_interface.c:522
+msgid "unable to create work area\n"
+msgstr "无法创建工作区域\n"
+
+#: ../parser_interface.c:530
+#, c-format
+msgid "unable to serialize profile %s\n"
+msgstr "无法序列化简报 %s\n"
+
+#: ../parser_interface.c:539
+#, c-format
+msgid "%s: Unable to write entire profile entry\n"
+msgstr "%s: 无法写入整个简报项\n"
+
+#: parser_lex.l:346
+#, c-format
+msgid "(ip_mode) Found unexpected character: '%s'"
+msgstr "(ip_mode) 发现意外字符：\"%s\""
+
+#: parser_lex.l:470
+#, c-format
+msgid "Found unexpected character: '%s'"
+msgstr "发现意外字符：\"%s\""
+
+#: ../parser_main.c:276
+#, c-format
+msgid "%s: Could not allocate memory for subdomain mount point\n"
+msgstr "%s: 无法为子域装入点分配内存\n"
+
+#: ../parser_main.c:282
+#, c-format
+msgid "%s: Could not allocate memory for subdomainbase mount point\n"
+msgstr "%s: 无法为子域基底装入点分配内存\n"
+
+#: ../parser_main.c:347
+#, c-format
+msgid ""
+"%s: Unable to query modules - '%s'\n"
+"Either modules are disabled or your kernel is too old.\n"
+msgstr "%s: 无法查询模块 －\"%s\"\n模块被禁用或内核过旧。\n"
+
+#: ../parser_main.c:353
+#, c-format
+msgid "%s: Unable to find "
+msgstr "%s: 无法找到"
+
+#: ../parser_main.c:353
+msgid ""
+"!\n"
+"Ensure that it has been loaded.\n"
+msgstr "!\n确保其已装载。\n"
+
+#: ../parser_main.c:370
+#, c-format
+msgid ""
+"%s: Sorry. You need root privileges to run this program.\n"
+"\n"
+msgstr "%s: 抱歉。您需要 root 用户特权来运行此程序。\n\n"
+
+#: ../parser_main.c:377
+#, c-format
+msgid ""
+"%s: Warning! You've set this program setuid root.\n"
+"Anybody who can run this program can update your AppArmor profiles.\n"
+"\n"
+msgstr "%s: 警告！您已将此程序的 setuid 设置为 root。\n任何可以运行此程序的人都能更新您的子域简报。\n\n"
+
+#: ../parser_main.c:439
+#, c-format
+msgid "%s: Errors found in file. Aborting.\n"
+msgstr "%s: 文件中发现错误。正在中止。\n"
+
+#: ../parser_main.c:446
+#, c-format
+msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
+msgstr "%s: 在组合规则后处理中发现错误。正在中止。\n"
+
+#: ../parser_main.c:454
+#, c-format
+msgid "%s: Errors found during regex postprocess. Aborting.\n"
+msgstr "%s: 在 Regex 后处理中发现错误。正在中止。\n"
+
+#: ../parser_merge.c:56
+msgid "Couldn't merge entries. Out of Memory\n"
+msgstr "无法合并项。内存不足\n"
+
+#: ../parser_merge.c:77
+#, c-format
+msgid "profile %s: has merged rule %s with multiple x modifiers\n"
+msgstr "简报 %s：已将规则 %s 和多个 x 修改程序并合\n"
+
+#: ../parser_merge.c:140
+#, c-format
+msgid "ERROR in profile %s, failed to load\n"
+msgstr "简报 %s 中存在错误，未能装载\n"
+
+#: ../parser_sysctl.c:44
+msgid "Bad write position\n"
+msgstr "写入位置无效\n"
+
+#: ../parser_sysctl.c:47
+msgid "Permission denied\n"
+msgstr "拒绝许可权限\n"
+
+#: ../parser_sysctl.c:50
+msgid "Out of memory\n"
+msgstr "内存不足\n"
+
+#: ../parser_sysctl.c:53
+msgid "Couldn't copy profile Bad memory address\n"
+msgstr "无法复制简报，内存地址无效\n"
+
+#: ../parser_sysctl.c:56
+msgid "Profile doesn't conform to protocol\n"
+msgstr "简报未遵守协议\n"
+
+#: ../parser_sysctl.c:59
+msgid "Profile does not match signature\n"
+msgstr "简报和签名不匹配\n"
+
+#: ../parser_sysctl.c:62
+msgid "Profile version not supported\n"
+msgstr "简报版本不受支持\n"
+
+#: ../parser_sysctl.c:65
+msgid "Profile already exists\n"
+msgstr "简报已存在\n"
+
+#: ../parser_sysctl.c:68
+msgid "Profile doesn't exist\n"
+msgstr "简报不存在\n"
+
+#: ../parser_sysctl.c:71
+msgid "Unknown error\n"
+msgstr "未知错误\n"
+
+#: ../parser_sysctl.c:92
+#, c-format
+msgid "%s: Profile '%s' is not authorised to be loaded\n"
+msgstr "%s: 简报\"%s\"未经授权以供装载\n"
+
+#: ../parser_sysctl.c:132
+#, c-format
+msgid "%s: Unable to add \"%s\".  "
+msgstr "%s: 无法添加\"%s\"。"
+
+#: ../parser_sysctl.c:138
+#, c-format
+msgid "%s: Unable to replace \"%s\".  "
+msgstr "%s: 无法替换\"%s\"。"
+
+#: ../parser_sysctl.c:144
+#, c-format
+msgid "%s: Unable to remove \"%s\".  "
+msgstr "%s: 无法去除\"%s\""
+
+#: ../parser_sysctl.c:150
+#, c-format
+msgid "%s: Unable to write to stdout\n"
+msgstr "%s: 无法写入 stdout\n"
+
+#: ../parser_sysctl.c:154 ../parser_sysctl.c:179
+#, c-format
+msgid "%s: ASSERT: Invalid option: %d\n"
+msgstr "%s: 声明：无效选项：%d\n"
+
+#: ../parser_sysctl.c:165
+#, c-format
+msgid "Addition succeeded for \"%s\".\n"
+msgstr "添加\"%s\"成功。\n"
+
+#: ../parser_sysctl.c:169
+#, c-format
+msgid "Replacement succeeded for \"%s\".\n"
+msgstr "替换\"%s\"成功。\n"
+
+#: ../parser_sysctl.c:173
+#, c-format
+msgid "Removal succeeded for \"%s\".\n"
+msgstr "去除\"%s\"成功。\n"
+
+#: parser_yacc.y:215 parser_yacc.y:239 parser_yacc.y:387 parser_yacc.y:403
+#: parser_yacc.y:453 parser_yacc.y:493 parser_yacc.y:522 parser_yacc.y:536
+#: parser_yacc.y:550 parser_yacc.y:564 parser_yacc.y:578 parser_yacc.y:606
+#: parser_yacc.y:634 parser_yacc.y:671 parser_yacc.y:688 parser_yacc.y:702
+#: parser_yacc.y:908
+msgid "Memory allocation error."
+msgstr "内存分配错误。"
+
+#: parser_yacc.y:257
+#, c-format
+msgid "Default allow subdomains are no longer supported, sorry. (domain: %s)"
+msgstr "抱歉，不再支持默认允许的子域。（域：%s）"
+
+#: parser_yacc.y:263
+#, c-format
+msgid ""
+"Default allow subdomains are no longer supported, sorry. (domain: %s^%s)"
+msgstr "抱歉，不再支持默认允许的子域。（域：%s^%s）"
+
+#: parser_yacc.y:294
+msgid "flags=(debug) is no longer supported, sorry."
+msgstr "抱歉，不再支持 flags=(debug)。"
+
+#: parser_yacc.y:330
+msgid "Assert: `rule' returned NULL."
+msgstr "声明：\"rule\"返回 NULL。"
+
+#: parser_yacc.y:344
+msgid "Assert: `netrule' returned NULL."
+msgstr "声明：\"netrule\"返回 NULL。"
+
+#: parser_yacc.y:372
+msgid "Assert: 'hat rule' returned NULL."
+msgstr "声明：\"hat rule\"返回 NULL。"
+
+#: parser_yacc.y:405
+msgid "md5 signature given without execute privilege."
+msgstr "给定的 Md5 签名没有执行特权。"
+
+#: parser_yacc.y:420 parser_yacc.y:429
+#, c-format
+msgid "missing an end of line character? (entry: %s)"
+msgstr "是否缺少行结束字符？ （项：%s）"
+
+#: parser_yacc.y:435 parser_yacc.y:441
+#, c-format
+msgid "Negative subdomain entries are no longer supported, sorry. (entry: %s)"
+msgstr "抱歉，不再支持负的子域项。（项：%s）"
+
+#: parser_yacc.y:488
+msgid "Assert: `addresses' returned NULL."
+msgstr "声明：\"addresses\"返回 NULL。"
+
+#: parser_yacc.y:588
+msgid "Network entries can only have one TO address."
+msgstr "网络项只能有一个 TO 地址。"
+
+#: parser_yacc.y:593
+msgid "Network entries can only have one FROM address."
+msgstr "网络项只能有一个 FROM 地址。"
+
+#: parser_yacc.y:611 parser_yacc.y:640
+#, c-format
+msgid "`%s' is not a valid ip address."
+msgstr "`\"%s\"不是有效的 IP 地址。"
+
+#: parser_yacc.y:652
+#, c-format
+msgid "`/%d' is not a valid netmask."
+msgstr "`/\"%d\"不是有效的网络掩码。"
+
+#: parser_yacc.y:659
+#, c-format
+msgid "`%s' is not a valid netmask."
+msgstr "`\"%s\"不是有效的网络掩码。"
+
+#: parser_yacc.y:685 parser_yacc.y:705
+#, c-format
+msgid "ports must be between %d and %d"
+msgstr "端口必须在 %d 和 %d 之间"
+
+#: parser_yacc.y:771
+#, c-format
+msgid "AppArmor parser error, line %d: %s\n"
+msgstr "子域语法分析错误，第 %d 行：%s\n"
+
+#: parser_yacc.y:814
+msgid "Exec qualifier 'i' must be followed by 'x'"
+msgstr "Exec 限定符\"i\"必须后面跟有\"x\""
+
+#: parser_yacc.y:816
+msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
+msgstr "Exec 限定符\"i\"无效，已指定了和其冲突的限定符"
+
+#: parser_yacc.y:826
+msgid "Exec qualifier 'u' must be followed by 'x'"
+msgstr "Exec 限定符\"u\"必须后面跟有\"x\""
+
+#: parser_yacc.y:828
+msgid "Exec qualifier 'u' invalid, conflicting qualifier already specified"
+msgstr "Exec 限定符\"u\"无效，已指定了和其冲突的限定符"
+
+#: parser_yacc.y:838
+msgid "Exec qualifier 'p' must be followed by 'x'"
+msgstr "Exec 限定符\"p\"必须后面跟有\"x\""
+
+#: parser_yacc.y:840
+msgid "Exec qualifier 'p' invalid, conflicting qualifier already specified"
+msgstr "Exec 限定符\"p\"无效，已指定了和其冲突的限定符。"
+
+#: parser_yacc.y:849
+msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'u' or 'p'"
+msgstr "无效方式，\"x\"前面必须带有 exec 限定符\"i\"、\"u\"或\"p\""
+
+#: parser_yacc.y:853
+msgid "Internal: unexpected mode character in input"
+msgstr "内部：输入中有意外方式字符"
+
+#: parser_yacc.y:1209
+#, c-format
+msgid "%s: Illegal open {, nesting groupings not allowed\n"
+msgstr "%s: 不合法的左侧大括号 {，不允许嵌套分组\n"
+
+#: parser_yacc.y:1229
+#, c-format
+msgid "%s: Regex grouping error: Invalid number of items between {}\n"
+msgstr "%s: Regex 分组错误：{} 内的项目数无效\n"
+
+#: parser_yacc.y:1235
+#, c-format
+msgid ""
+"%s: Regex grouping error: Invalid close }, no matching open { detected\n"
+msgstr "%s: Regex 分组错误：无效的右侧花括号 }，未检测到匹配的左侧花括号 {\n"
+
+#: parser_yacc.y:1301
+#, c-format
+msgid ""
+"%s: Regex grouping error: Unclosed grouping or character class, expecting "
+"close }\n"
+msgstr "%s: Regex 分组错误：未关闭的分组或字符类，正在等待关闭 }\n"
+
+#: parser_yacc.y:1316
+#, c-format
+msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
+msgstr "%s: 检测到内部缓冲区溢出，超过 %d 个字符\n"
+
+#: parser_yacc.y:1321
+#, c-format
+msgid "%s: Unable to parse input line '%s'\n"
+msgstr "%s: 无法对输入行\"%s\"进行语法分析\n"
+
+#: parser_yacc.y:1355
+#, c-format
+msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
+msgstr "%s: 未能编译 regex\"%s\"[原始：\"%s\"]\n"
+
+#: parser_yacc.y:1360
+#, c-format
+msgid "%s: error near               "
+msgstr "%s: 错误接近              "
+
+#: parser_yacc.y:1371
+#, c-format
+msgid "%s: error reason: '%s'\n"
+msgstr "%s: 错误原因：'%s'\n"
+
+#: parser_yacc.y:1381
+#, c-format
+msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
+msgstr "%s: 未能编译 regex\"%s\"[原始：\"%s\"] － malloc 失败\n"
+
+#: parser_yacc.y:1439
+#, c-format
+msgid "%s: Subdomain '%s' defined, but no parent '%s'.\n"
+msgstr "%s: 已定义子域\"%s\"，但没有父域\"%s\"。\n"
+
+#: parser_yacc.y:1476
+#, c-format
+msgid "%s: Two SubDomains defined for '%s'.\n"
+msgstr "%s: 为\"%s\"定义了两个子域。\n"
+
+#: ../parser_sdlite.c:38
+#, c-format
+msgid "%s: Error opening certificate directory '%s': %s\n"
+msgstr "%s: 打开证书目录\"%s\"时出错：%s\n"
+
+#: ../parser_sdlite.c:48
+#, c-format
+msgid "%s: Error reading certificates from %s\n"
+msgstr "%s: 从 %s 读取证书时出错\n"
+
+#: ../parser_sdlite.c:111
+#, c-format
+msgid "%s: Failed to load certificate '%s'\n"
+msgstr "%s: 未能装载证书\"%s\"\n"
+
+#: ../parser_sdlite.c:118
+#, c-format
+msgid "%s: Failed to load profilelist from certificate '%s'\n"
+msgstr "%s: 未能从证书\"%s\"装载简报列表\n"
+
+#: ../parser_sdlite.c:125
+#, c-format
+msgid "%s: Failure querying certificate/expiry '%s'\n"
+msgstr "%s: 查询证书/失效\"%s\"时发生故障\n"
+
+#: ../parser_sdlite.c:131
+#, c-format
+msgid "%s: Certificate '%s' has expired\n"
+msgstr "%s: 证书\"%s\"已失效\n"
+
+#: ../parser_sdlite.c:139
+#, c-format
+msgid "%s: Failure querying certificate/leaf '%s'\n"
+msgstr "%s: 查询证书/叶\"%s\"时发生故障\n"
+
+#: ../parser_sdlite.c:145
+#, c-format
+msgid "%s: Certificate '%s' is not a leaf certificate\n"
+msgstr "%s: 证书\"%s\"不是叶证书\n"
+
+#: ../parser_sdlite.c:156
+#, c-format
+msgid "%s: Profile '%s' not authorized by certificate '%s'\n"
+msgstr "%s: 简报\"%s\"未经证书\"%s\"授权\n"
+
+#: ../parser_sdlite.c:171
+#, c-format
+msgid "%s: Failure querying certificate/isparent '%s' '%s'\n"
+msgstr "%s: 查询证书/Isparent\"%s\"\"%s\"时发生故障\n"
+
+#: ../parser_sdlite.c:176
+#, c-format
+msgid "%s: Certificate %s is not a valid parent of certificate %s\n"
+msgstr "%s: 证书 %s 不是证书 %s 的有效父证书\n"
+
+#: ../parser_sdlite.c:181
+#, c-format
+msgid "%s: Certificate %s is an invalid certificate\n"
+msgstr "%s: 证书 %s 是无效的证书\n"
+
+#: ../parser_sdlite.c:189
+#, c-format
+msgid "%s: Failure querying certificate/isroot '%s'\n"
+msgstr "%s: 查询证书/Isroot\"%s\"时发生故障\n"
+
+#: ../parser_sdlite.c:194
+#, c-format
+msgid "%s: Certificate %s is not a valid root certificate\n"
+msgstr "%s: 证书 %s 不是有效的根证书\n"
+
+#: ../parser_sdlite.c:212
+#, c-format
+msgid "%s: Warning certificate cache '%s' is invalid. Rebuild using '%s'\n"
+msgstr "%s: 警告：证书超速缓存\"%s\"无效。使用\"%s\"重新构建\n"
+
+#: ../parser.h:37
+#, c-format
+msgid "Warning (line %d): "
+msgstr "警告（第 %d 行）："
+

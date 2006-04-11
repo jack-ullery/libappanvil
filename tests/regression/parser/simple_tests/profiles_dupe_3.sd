@@ -1,0 +1,42 @@
+#
+# $Id$
+#=DESCRIPTION dupe hats in profile
+#=EXRESULT FAIL
+#
+/does/not/exist {
+
+  ^does/not/exist1 {
+    #include <abstractions/base>
+    /usr/X11R6/lib/lib*so* r,
+    /usr/bin/emacs r,
+  }
+
+  ^does/not/exist2 {
+    #include <abstractions/base>
+    /usr/X11R6/lib/lib*so* r,
+    /usr/bin/emacs r,
+  }
+
+  #include <abstractions/base>
+  /usr/X11R6/lib/lib*so* r,
+  /usr/bin/emacs r,
+
+  ^does/not/exist3 {
+    #include <abstractions/base>
+    /usr/X11R6/lib/lib*so* r,
+    /usr/bin/emacs r,
+  }
+
+  ^does/not/exist2 {
+    #include <abstractions/base>
+    /usr/X11R6/lib/lib*so* r,
+    /does/not/exist r,
+  }
+
+  ^does/not/exist4 {
+    #include <abstractions/base>
+    /usr/X11R6/lib/lib*so* r,
+    /usr/bin/emacs r,
+  }
+
+}

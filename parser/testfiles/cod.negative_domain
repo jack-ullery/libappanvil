@@ -1,0 +1,50 @@
+#
+#	$Id: cod.negative_domain 3713 2005-01-19 08:17:38Z sarnold $
+#
+#	/etc/mfsprofile
+#
+#	This is the codomain description file. 
+#
+#	Codomain descriptions should be of the following format:
+#
+#	Commented lines begin with #
+#
+# /path/program_name	{
+# /path/resource	access_mode  	digital_signature_if_exe
+# /path/resource	access_mode  	digital_signature_if_exe
+# /path/resource	access_mode 	digital_signature_if_exe
+#  }
+#
+#	Access modes consist of four possible entries: r(ead), w(rite),
+#	x(ecute) and i(nherit) (which is the default anyway).
+#
+#	A really limited lame form of name_globbing exists: Any
+#	description with a * will match anything following it. E.g.
+#	a resource of "/foo/bar*  r" will grant read access to the
+#	following:
+#		/foo/barnyard_animals.gif
+#		/foo/barf/baz/biff/blah
+#	The exception: it will not match things that contain /../ so it
+#	will not match
+#		/foo/bar/../../etc/passwd
+#	This should be improved/made slightly more sophisticated.
+#
+#	For subdomains, define a codomain for the main program (a
+#	default), then define subdomains in the form of:
+#		/path/to/program^subdomain_ident { \n  .... }
+#	with resources on subsequent lines.
+#
+#	microbenchmarks for subdomain
+#
+#	Attempt to use md5sum as a prefetching microbenchmark. Sadly, it
+#	didn't work.
+#	
+#	
+	/usr/src/codomain-1.2.0-pre2/testprogs/foo.sh  !	{
+/dev/urandom		r ,
+/bad			r ,
+/12345678901234567890123456789012345678901234567890123456789012345678901
+	x        aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ,
+/123456789012345678901234567890123456789012345678901234567890123456789012 		r ,
+	}
+#

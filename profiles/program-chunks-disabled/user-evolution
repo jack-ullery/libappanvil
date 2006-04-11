@@ -1,0 +1,44 @@
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+
+  # $Id: user-evolution 6111 2006-01-22 08:23:01Z dominic $
+
+
+  # some per-user evolution files
+
+  # imported from /usr/bin/bonobo-moniker-xmldb
+  /home/*/evolution/config.xmldb*               rwl,
+  /home/*/evolution/private/config.xmldb*       rwl,
+
+  # imported from /usr/bin/evolution
+  /home/*/evolution                     rw,
+  /home/*/evolution/private             rwx,
+  /home/*/evolution/**                  rw,
+
+  # imported from /usr/bin/evolution-addressbook
+  /home/*/evolution/addressbook-sources.xml     r,
+  /home/*/.gnome/accels/evolution-addressbook   rw,
+
+  # imported from /usr/bin/evolution-calendar
+  /home/*/evolution/config/*                    rw,
+
+  # imported from /usr/bin/evolution-mail
+  /home/*/.camel_certs/*                        rw,
+  /home/*/evolution/*.db                        rw,
+  /home/*/evolution/*.xml                       r,
+  /home/*/evolution/config/*                    rw,
+  /home/*/evolution/local/**                    rw,
+  /home/*/evolution/mail/**                     rwl,
+
+  # imported from /usr/bin/wombat
+  /home/*/evolution/local/Contacts/addressbook.db   rw,
+  /home/*/evolution/local/**.{ics,ics~}             rwl,
+

@@ -1,0 +1,28 @@
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+
+  # $Id: user-w3m 6111 2006-01-22 08:23:01Z dominic $
+
+
+  # per-user w3m files
+  /home/*/.bashrc                     r,
+  /home/*/.mime.types                 r,
+  /home/*/.rnd                        rw,
+  /home/*/.w3m/*                      rwl,
+
+  # helpers that w3m may execute:
+  /bin/gunzip                         rix,
+  /usr/lib/gdk-pixbuf/**              r,
+  /usr/lib64/gdk-pixbuf/**            r,
+
+  # suse
+  /opt/gnome/lib/gdk-pixbuf/**        r,
+  /opt/gnome/lib64/gdk-pixbuf/**      r,

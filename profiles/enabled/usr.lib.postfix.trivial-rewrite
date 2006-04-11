@@ -1,0 +1,30 @@
+# $Id: usr.lib.postfix.trivial-rewrite 6222 2006-02-03 23:42:57Z sarnold $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2006 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+#include <tunables/global>
+
+/usr/lib/postfix/trivial-rewrite {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/kerberosclient>
+  #include <program-chunks/postfix-common>
+
+  /usr/lib/postfix/trivial-rewrite            rix,
+
+  /etc/postfix/relocated.db                   r,
+  /etc/postfix/transport.db                   r,
+  /etc/postfix/virtual.db                     r,
+  /etc/{m,fs}tab                              r,
+  /var/spool/postfix/pid/unix.rewrite         rw,
+
+  /proc/{cpuinfo,stat}                        r,
+  /proc/sys/kernel/ngroups_max                r,
+}

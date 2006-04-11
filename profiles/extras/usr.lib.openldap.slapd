@@ -1,0 +1,37 @@
+# $Id: usr.lib.openldap.slapd 6223 2006-02-03 23:55:54Z sarnold $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+#include <tunables/global>
+
+/usr/lib/openldap/slapd {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  /dev/urandom                  r,
+  /etc/hosts.allow		r,
+  /etc/hosts.deny		r,
+  /etc/ldap.conf		r,
+  /etc/openldap/schema/**	rw,
+  /etc/openldap/*.conf		r,
+  /usr/kerberos/lib/lib*.so*	r,
+  /var/lib/ldap			r,
+  /usr/lib/sasl			r,
+  /usr/lib/sasl/lib*.so*	r,
+  /usr/sbin/openldap/*.la	r,
+  /usr/share/ssl/openssl.cnf	r,
+  /usr/share/ssl/certs/ca-bundle.crt	r,
+  /usr/share/ssl/certs/slapd.pem	r,
+  /var/lib/ldap/*		rwl,
+  /var/run/slapd.args 		r,
+  /var/run/slapd.pid		rw,
+
+  /usr/lib/openldap/slapd       rix,
+}

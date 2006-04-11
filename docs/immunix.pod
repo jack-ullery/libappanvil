@@ -1,0 +1,80 @@
+# $Id: immunix.pod 5820 2005-11-30 19:51:33Z sarnold $
+# This publication is intellectual property of Novell Inc. Its contents
+# can be duplicated, either in part or in whole, provided that a copyright
+# label is visibly located on each copy.
+# 
+# All information found in this book has been compiled with utmost
+# attention to detail. However, this does not guarantee complete accuracy.
+# Neither SUSE LINUX GmbH, the authors, nor the translators shall be held
+# liable for possible errors or the consequences thereof.
+# 
+# Many of the software and hardware descriptions cited in this book
+# are registered trademarks. All trade names are subject to copyright
+# restrictions and may be registered trade marks. SUSE LINUX GmbH
+# essentially adheres to the manufacturer's spelling.
+# 
+# Names of products and trademarks appearing in this book (with or without
+# specific notation) are likewise subject to trademark and trade protection
+# laws and may thus fall under copyright restrictions.
+# 
+# Please direct suggestions and comments to apparmor-general@forge.novell.com.
+
+
+=head1 NAME
+
+Immunix - an introduction to Immunix technologies
+
+=head1 DESCRIPTION
+
+AppArmor is designed to increase the security of a typical Linux system
+without noticeable impact on users of the system.
+
+=over 4
+
+=item *
+SubDomain provides a filesystem-based process confinement mechanism; it
+also mediates many system calls to prevent confined root-level
+processes from breaking out of their domains.
+
+=back
+
+=head1 USER GUIDE
+
+A comprehensive discussion of AppArmor technologies is included in the User's Guide,
+available in F</usr/share/doc/packages/subdomain-docs/immunizing_applications.pdf>.
+
+
+=head1 CONTRIBUTED SOFTWARE
+
+Immunix, Inc., provides additional software for AppArmor
+in the /extras directory F</usr/src/kernel-modules/SubDomain/profiles/extras>.
+This extra software includes SubDomain 
+profiles and rpms containing "change-hat" enabled versions of software. 
+Immunix does not provide support for software located in this directory. 
+If you would like to contribute Immunized software packages, please send
+mail to the immunix-users mail list. (See below.)
+
+
+=head1 FEEDBACK
+
+Please file bug reports at L<https://bugs.wirex.com>. We also
+have two mail lists: a moderate traffic immunix-users mail list
+(L<http://mail.wirex.com/mailman/listinfo/immunix-users/>) used for
+discussion with other Immunix OS users and a low traffic immunix-announce
+(L<http://mail.wirex.com/mailman/listinfo/immunix-announce/>) mail list
+used for security update and new product announcements.
+
+Security bugs may be reported directly to security@immunix.com;
+Immunix, Inc., recommends bug reporters follow the RFPolicy
+(L<http://www.wiretrip.net/rfp/policy.html>) when reporting
+vulnerabilities.
+
+=head1 SEE ALSO
+
+subdomain(7),
+F</usr/share/doc/packages/subdomain-docs/immunizing_applications.pdf>
+
+=cut
+subdomain(7)
+
+=cut

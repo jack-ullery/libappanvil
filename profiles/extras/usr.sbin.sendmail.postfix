@@ -1,0 +1,53 @@
+# $Id: usr.sbin.sendmail.postfix 6223 2006-02-03 23:55:54Z sarnold $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+#include <tunables/global>
+
+/usr/sbin/sendmail.postfix {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/consoles>
+  #include <abstractions/kerberosclient>
+  #include <abstractions/user-tmp>
+  #include <program-chunks/postfix-common>
+
+  /etc/mtab                                r,
+  /etc/postfix                             r,
+  /etc/postfix/aliases                     r,
+  /etc/postfix/aliases.db                  rw,
+  /etc/postfix/main.cf                     r,
+  /etc/postfix/postfix-script              px,
+  /proc/meminfo                            r,
+  /proc/net/if_inet6                       r,
+  /usr/lib/postfix                         r,
+  /usr/lib/postfix/master                  px,
+  /usr/lib/postfixshowq                    px,
+  /usr/sbin/postalias                      px,
+  /usr/sbin/postdrop                       px,
+  /usr/sbin/postqueue                      px,
+  /usr/sbin/sendmail.postfix               rix,
+  /var/spool/postfix                       r,
+  /var/spool/postfix/active                r,
+  /var/spool/postfix/bounce                r,
+  /var/spool/postfix/corrupt               r,
+  /var/spool/postfix/defer                 r,
+  /var/spool/postfix/deferred              r,
+  /var/spool/postfix/incoming              r,
+  /var/spool/postfix/maildrop              r,
+  /var/spool/postfix/maildrop/*            lrw,
+  /var/spool/postfix/pid                   r,
+  /var/spool/postfix/private               r,
+  /var/spool/postfix/public                r,
+  /var/spool/postfix/public/pickup         w,
+  /var/spool/postfix/public/showq          w,
+  /var/spool/postfix/public/qmgr           w,
+  /var/spool/postfix/saved                 r,
+}

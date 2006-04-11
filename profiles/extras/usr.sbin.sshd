@@ -1,0 +1,163 @@
+# $Id: usr.sbin.sshd 6227 2006-02-04 00:30:36Z sarnold $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+# will need to revalidate this profile once we finish re-architecting
+# the change_hat patch.
+#
+# vim:syntax=apparmor
+
+#include <tunables/global>
+
+/usr/sbin/sshd {
+  #include <abstractions/authentication>
+  #include <abstractions/base>
+  #include <abstractions/consoles>
+  #include <abstractions/nameservice>
+  #include <abstractions/wutmp>
+
+  capability sys_chroot,
+  capability sys_tty_config,
+  capability net_bind_service,
+  capability chown,
+  capability fowner,
+  capability kill,
+  capability setgid,
+  capability setuid,
+
+  /dev/ptmx rw,
+  /dev/urandom r,
+  /etc/hosts.allow r,
+  /etc/hosts.deny r,
+  /etc/modules.conf r,
+  /etc/ssh/* r,
+  /lib64/ld-*.so px,
+  /lib/ld-*.so px,
+  /usr/sbin/sshd rpx,
+  /var/run w,
+  /var/run/sshd{,.init}.pid wl,
+
+  /proc/[0-9]*/fd r,
+
+# should only be here for use in non-change-hat openssh
+# duplicated from EXEC hat
+  /bin/ash ux,
+  /bin/bash ux,
+  /bin/bash2 ux,
+  /bin/bsh ux,
+  /bin/csh ux,
+  /bin/ksh ux,
+  /bin/sh ux,
+  /bin/tcsh ux,
+  /bin/zsh ux,
+  /sbin/nologin ux,
+
+# stuff duplicated from PRIVSEP_MONITOR
+  @{HOME}/.ssh/authorized_keys{,2}         r,
+
+  /dev/pts/[0-9]* rw,
+  /etc/ssh/moduli r,
+  /proc/sys/kernel/ngroups_max r,
+  /proc/[0-9]*/mounts r,
+
+# duplicated from AUTHENTICATED
+  /etc/motd r,
+  /tmp/ssh-*/agent.[0-9]* rwl,
+
+#
+# default subprofile for when sshd has authenticated the user
+#
+  ^EXEC {
+    #include <abstractions/base>
+  
+    /bin/ash ux,
+    /bin/bash ux,
+    /bin/bash2 ux,
+    /bin/bsh ux,
+    /bin/csh ux,
+    /bin/ksh ux,
+    /bin/sh ux,
+    /bin/tcsh ux,
+    /bin/zsh ux,
+    /sbin/nologin ux,
+
+# for debugging
+#  /dev/pts/[0-9]*                                              rw,
+  }
+
+#
+# subprofile for handling network input (privilege seperated child)
+#
+  ^PRIVSEP {
+    #include <abstractions/base>
+    #include <abstractions/nameservice>
+  
+    capability sys_chroot,
+    capability setuid,
+    capability setgid,
+
+# for debugging
+#  /dev/pts/[0-9]*                                              rw,
+  }
+
+#
+# subprofile that handles authentication requests from the privilege
+# seperated child
+#
+  ^PRIVSEP_MONITOR {
+    #include <abstractions/authentication>
+    #include <abstractions/base>
+    #include <abstractions/nameservice>
+    #include <abstractions/wutmp>
+  
+
+    capability setuid,
+    capability setgid,
+    capability chown,
+  
+    @{HOME}/.ssh/authorized_keys{,2}         r,
+    /dev/ptmx rw,
+    /dev/pts/[0-9]* rw,
+    /dev/urandom r,
+    /etc/hosts.allow r,
+    /etc/hosts.deny r,
+    /etc/ssh/moduli r,
+    /proc/sys/kernel/ngroups_max r,
+    /proc/[0-9]*/mounts r,
+
+# for debugging
+#  /dev/pts/[0-9]*                                              rw,
+  }
+
+# 
+# subprofile for post-authentication period until the user's shell is spawned
+#
+  ^AUTHENTICATED {
+    #include <abstractions/authentication>
+    #include <abstractions/consoles>
+    #include <abstractions/nameservice>
+    #include <abstractions/wutmp>
+  
+    capability sys_tty_config,
+    capability setgid,
+    capability setuid,
+  
+    /dev/log  w,
+    /dev/ptmx rw,
+    /etc/default/passwd r,
+    /etc/localtime r,
+    /etc/login.defs r,
+    /etc/motd r,
+    /proc/sys/kernel/ngroups_max r,
+    /tmp/ssh-*/agent.[0-9]* rwl,
+
+# for debugging
+#  /dev/pts/[0-9]*                                              rw,
+  }
+}

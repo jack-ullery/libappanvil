@@ -1,0 +1,96 @@
+# $Id: mod_apparmor.pod 6225 2006-02-04 00:25:12Z steve $
+# This publication is intellectual property of Novell Inc. Its contents
+# can be duplicated, either in part or in whole, provided that a copyright
+# label is visibly located on each copy.
+#
+# All information found in this book has been compiled with utmost
+# attention to detail. However, this does not guarantee complete accuracy.
+# Neither SUSE LINUX GmbH, the authors, nor the translators shall be held
+# liable for possible errors or the consequences thereof.
+#
+# Many of the software and hardware descriptions cited in this book
+# are registered trademarks. All trade names are subject to copyright
+# restrictions and may be registered trade marks. SUSE LINUX GmbH
+# essentially adheres to the manufacturer's spelling.
+#
+# Names of products and trademarks appearing in this book (with or without
+# specific notation) are likewise subject to trademark and trade protection
+# laws and may thus fall under copyright restrictions.
+#
+# Please direct suggestions and comments to apparmor-general@forge.novell.com.
+
+
+=pod
+
+=head1 NAME
+
+mod_apparmor - fine-grained AppArmor confinement for apache
+
+=head1 DESCRIPTION
+
+An AppArmor profile applies to an executable program; if a portion of
+the program needs different access permissions than other portions,
+the program can "change hats" via change_hat(2) to a different role,
+also known as a subprofile.  The mod_apparmor apache module uses the
+change_hat(2) mechanism to offer more fine-grained confinement of dynamic
+elements within apache such as individual php and perl scripts, while
+still allowing the performance benefits of using mod_php and mod_perl.
+
+To use mod_apparmor with apache, ensure that mod_apparmor is configured to
+be loaded into apache, either via yast or manual editing of the httpd(8)
+configuration files, and restart apache. Make sure that apparmor is also
+functioning.
+
+Once mod_apparmor is loaded within apache, all requests to apache will
+cause mod_apparmor to attempt to change into a hat named by the URI
+(e.g. /app/some.cgi). If no such hat is found, it will fall back to
+attempting to use the hat DEFAULT_URI; if that also does not exist,
+it will fall back to using the global apache profile. Most static web
+pages can simply make use of the DEFAULT_URI hat.
+
+However, defining hats for every URI/URL would become tedious, so there
+are a couple of configuration options that mod_apparmor supports:
+
+=over 4
+
+=item B<AAHatName>
+
+AAHatName allows you to specify a hat to be used for a given apache
+directory or location directive (see the apache documenation for more
+details). Note that mod_apparmor behavior can become confused if
+directory and location directives are intermingled; it's preferred to
+stick to one type of directive. If the hat specified by AAHatName does
+not exist in the apache profile, then it falls back to the behavior
+above.
+
+=item B<AADefaultHatName>
+
+AADefaultHatName allows you to specify a default hat to be used for
+vhosts and other apache server directives, so that you can have
+different defaults for different virtual hosts. This can be overridden
+by an AAHatName directive. If the AADefaultHatName hat does not exist,
+it falls back to the behavior described above.
+
+=back
+
+Additionally, before any requests come in to apache, mod_apparmor
+will attempt to change hat into the HANDLING_UNTRUSTED_INPUT hat.
+mod_apparmor will attempt to use this hat while apache is doing the
+initial parsing of a given http request, before its given to a specific
+handler (like mod_php) for processing.
+
+=head1 BUGS
+
+mod_apparmor() currently only supports apache2, and has only been tested
+with the prefork MPM configuration -- threaded configurations of apache
+may not work correctly.
+
+There are likely other bugs lurking about; if you find any, please report
+them to bugzilla at L<http://bugzilla.novell.com>.
+
+=head1 SEE ALSO
+
+apparmor(7), subdomain.conf(5), apparmor_parser(8), and
+L<http://forge.novell.com/modules/xfmod/project/?apparmor>.
+
+=cut

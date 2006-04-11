@@ -1,0 +1,52 @@
+# $Id: usr.lib.man-db.man 6223 2006-02-03 23:55:54Z sarnold $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+# vim:syntax=apparmor
+
+#include <tunables/global>
+
+/usr/lib/man-db/man {
+  #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/consoles>
+  #include <abstractions/user-manpages>
+
+  /etc/manpath.config r,
+  /usr/lib/man-db/man rix,
+
+
+
+
+  /bin/bash rix,
+  /bin/cat rix,
+  /bin/gunzip rix,
+  /bin/more rix,
+  /etc/lesskey.bin r,
+  /etc/man.config r,
+  /etc/papersize r,
+  /etc/termcap r,
+  /proc/sys/kernel/ngroups_max r,
+  /usr/bin/apropos px,
+  /usr/bin/cmp rix,
+  /usr/bin/groff rix,
+  /usr/bin/grops rix,
+  /usr/bin/grotty rix,
+  /usr/bin/iconv rix,
+  /usr/bin/less rix,
+  /usr/bin/locale rix,
+  /usr/bin/man rix,
+  /usr/bin/nroff rix,
+  /usr/bin/tbl rix,
+  /usr/bin/troff rix,
+  /usr/bin/zsoelim rix,
+  /usr/share/groff/** r,
+  /usr/share/terminfo/** r,
+  /var/cache/man/** r,
+}

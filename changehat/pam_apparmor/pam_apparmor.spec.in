@@ -1,0 +1,79 @@
+#
+# spec file for package pam_apparmor (Version 2)
+#
+# Copyright (c) 2005 SUSE LINUX Products GmbH, Nuernberg, Germany.
+# This file and all modifications and additions to the pristine
+# package are under the same license as the package itself.
+#
+# Please submit bugfixes or comments via http://www.suse.de/feedback/
+#
+
+# norootforbuild
+# neededforbuild  pam-devel libapparmor
+
+BuildRequires: pam-devel libapparmor
+
+Name:         pam_apparmor
+License:      GPL
+Group:        Productivity/Security
+Autoreqprov:  on
+Version:      @@immunix_version@@
+Release:      1
+Summary:      Pam module to add AppArmor change_hat functionality
+URL:          http://forge.novell.com/modules/xfmod/project/?apparmor
+Source:       pam_apparmor-%{version}-@@repo_version@@.tar.gz
+BuildRoot:    %{_tmppath}/%{name}-%{version}-build
+BuildRequires: pam-devel libapparmor
+Requires:     pam
+Prereq:       pam
+
+%description
+The pam_apparmor module provides the means for any pam applications that
+call pam_open_session() to automatically perform an AppArmor change_hat 
+operation in order to switch to a user-specific security policy.
+
+
+Authors:
+--------
+    Jesse Michael jmichael@suse.de
+
+%prep
+%setup -q
+
+%build
+make
+
+%install
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+make install DESTDIR=${RPM_BUILD_ROOT} SECDIR=${RPM_BUILD_ROOT}/%{_lib}/security
+
+%clean
+[ "${RPM_BUILD_ROOT}" != "/" ] && rm -rf ${RPM_BUILD_ROOT}
+
+%post
+grep -qs "pam_apparmor.so" /etc/pam.d/common-session
+if [ $? != 0 ]; then
+	echo "session required pam_apparmor.so" >> /etc/pam.d/common-session
+fi
+
+%preun
+if [ "$1" = 0 ] ; then
+	grep -qs "pam_apparmor.so" /etc/pam.d/common-session
+	if [ $? == 0 ]; then
+		grep -v "pam_apparmor.so" /etc/pam.d/common-session > /etc/pam.d/common-session.$$
+		mv /etc/pam.d/common-session.$$ /etc/pam.d/common-session
+	fi
+fi
+
+%files
+%defattr(444,root,root,755)
+%doc README 
+%attr(555,root,root) /%{_lib}/security/pam_apparmor.so
+
+%changelog -n pam_apparmor
+* Fri Jan 13 2006 Steve Beattie <sbeattie@suse.de>
+- Add svn repo number to tarball
+* Fri Jan 13 2006 Jesse Michael <jmichael@suse.de>
+- Make magic tokens harder to guess by pulling them from /dev/urandom
+* Wed Dec 21 2005 - jmichael@suse.de
+- initial

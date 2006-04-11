@@ -1,0 +1,110 @@
+# vim:syntax=apparmor
+# Last Modified: Fri Feb 17 17:48:58 2006
+# $Id: $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+#include <tunables/global>
+
+/usr/lib/firefox/firefox-bin {
+  #include <abstractions/X>
+  #include <abstractions/audio>
+  #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/consoles>
+  #include <abstractions/gnome>
+  #include <abstractions/kde>
+  #include <abstractions/nameservice>
+  #include <abstractions/user-download>
+  #include <abstractions/user-write>
+
+  capability sys_nice,
+
+  /bin/bash ixr,
+  /bin/netstat px,
+  /etc/SuSE-release r,
+  /etc/X11/.kstylerc.lock rw,
+  /etc/X11/.qt_plugins_*rc.lock rw,
+  /etc/X11/.qtrc.lock rw,
+  /etc/X11/fs/config r,
+  /etc/mailcap r,
+  /etc/mime.types r,
+  /etc/mozpluggerrc r,
+  /etc/opt/gnome/gnome-vfs-*/modules r,
+  /etc/opt/gnome/gnome-vfs-*/modules/*.conf r,
+  /etc/opt/gnome/pango/* r,
+  /etc/opt/kde3/share/applications/mimeinfo.cache r,
+  /etc/rpc r,
+  /etc/sysconfig/clock r,
+  /opt/gnome/lib/GConf/2/gconfd-2 px,
+  /opt/gnome/lib/gnome-vfs-*/modules/*.so r,
+  /opt/gnome/lib/gtk-*/*/engines/*.so r,
+  /opt/gnome/lib/gtk-*/*/loaders/*.so r,
+  /opt/gnome/lib/lib*so* r,
+  /opt/gnome/lib/pango/**.so r,
+  /opt/gnome/lib64/lib*so* r,
+  /opt/gnome/share/applications/*.desktop r,
+  /opt/gnome/share/applications/defaults.list r,
+  /opt/gnome/share/applications/mimeinfo.cache r,
+  /opt/gnome/share/icons r,
+  /opt/gnome/share/icons/** r,
+  /opt/gnome/share/locale/** r,
+  /opt/gnome/share/pixmaps r,
+  /opt/gnome/share/themes/** r,
+  /opt/kde3/bin/kde-config ixr,
+  /opt/kde3/share/applications/**.desktop r,
+  /opt/kde3/share/applications/mimeinfo.cache r,
+  /proc/*/cmdline r,
+  /proc/*/stat r,
+  /proc/net/if_inet6 r,
+  /proc/stat r,
+  /proc/sys/vm/heap-stack-gap r,
+  /usr/X11R6/lib/Acrobat*/Browser/intellinux/nppdf.so r,
+  /usr/X11R6/lib/Acrobat*/Resource/Font/** r,
+  /usr/X11R6/lib/lib*so* r,
+  /usr/X11R6/lib64/lib*so* r,
+  /usr/bin/m4 rix,
+  /usr/bin/mozplugger-helper rix,
+  /usr/java/jre*/plugin/*/ns*/libjavaplugin_oji.so r,
+  /usr/lib/RealPlayer10/realplay ux,
+  /usr/lib/browser-extensions/firefox r,
+  /usr/lib/browser-plugins r,
+  /usr/lib/browser-plugins/*.so r,
+  /usr/lib/browser-plugins/*.xpt r,
+  /usr/lib/firefox/** r,
+  /usr/lib/firefox/firefox-bin ixr,
+  /usr/lib/jvm/java-*/** r,
+  /usr/lib/jvm/java-*/jre/bin/java_vm ixr,
+  /usr/lib/ooo-*/share/fonts/** r,
+  /usr/share/applications/*.desktop r,
+  /usr/share/applications/mimeinfo.cache r,
+  /usr/share/ghostscript/fonts r,
+  /usr/share/icons r,
+  /usr/share/mime/** r,
+  /usr/share/zoneinfo r,
+  /var/X11R6/compose-cache/* r,
+  /var/run/dbus/system_bus_socket w,
+  @{HOME}/.fonts r,
+  @{HOME}/.fonts.cache-1 r,
+  @{HOME}/.gnome2_private w,
+  @{HOME}/.gtk_qt_engine_rc lrw,
+  @{HOME}/.icons r,
+  @{HOME}/.java/deployment/cache/javapi/** lrw,
+  @{HOME}/.java/deployment/log/* lw,
+  @{HOME}/.kde/share/config/* r,
+  @{HOME}/.kde/share/config/gtkrc-* r,
+  @{HOME}/.macromedia/** r,
+  "@{HOME}/.macromedia/Macromedia/Flash Player/**.sxx" rw,
+  @{HOME}/.mailcap r,
+  @{HOME}/.mime.types r,
+  @{HOME}/.mozilla/appreg rw,
+  @{HOME}/.mozilla/firefox/** lrw,
+  @{HOME}/.mozilla/plugins/** lrw,
+}

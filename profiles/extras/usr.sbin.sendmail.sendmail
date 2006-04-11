@@ -1,0 +1,51 @@
+# $Id: usr.sbin.sendmail.sendmail 6223 2006-02-03 23:55:54Z sarnold $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+#include <tunables/global>
+
+/usr/sbin/sendmail.sendmail {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  /proc/loadavg               r,
+  /proc/cpuinfo               r,
+  /etc/aliases                rw,
+  /etc/aliases.db             rw,
+  /etc/fstab                  r,
+  /etc/hosts.allow            r,
+  /etc/hosts.deny             r,
+  /etc/ldap.conf              r,
+  /etc/mail/statistics        rw,
+  /etc/mail/*                 r,
+  /etc/mtab                   r,
+  /etc/sendmail.cf            r,
+  /etc/sendmail.cw            r,
+  /etc/shells                 r,
+  /proc/stat                  r,
+  /root/.forward              rw,
+  /root/dead.letter           w,
+  /usr/bin/procmail           px,
+  /usr/kerberos/lib/lib*.so*  r,
+  /usr/lib/sasl               r,
+  /usr/lib/sasl/*             r,
+  /usr/lib/sasl2              r,
+  /usr/lib/sasl2/*            r,
+  /usr/sbin/sendmail.sendmail rix,
+  /var/run/sendmail.pid       rwl,
+  /var/run/sm-client.pid      rwl,
+  /var/run/utmp               rw,
+  /var/spool/clientmqueue     r,
+  /var/spool/clientmqueue/*   rwl,
+  /var/spool/mail             rwl,
+  /var/spool/mail/*           rwl,
+  /var/spool/mqueue           rwl,
+  /var/spool/mqueue/*         rwl,
+}

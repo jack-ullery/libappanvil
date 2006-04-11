@@ -1,0 +1,18 @@
+# $Id: perl 5860 2005-12-06 08:16:39Z dominic $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+
+
+  # a few files typically required for perl scripts
+  /usr/bin/perl                  rix,
+  /usr/bin/perl[0-9].[0-9].[0-9] rix,
+  /usr/lib/perl5/**              r,
+  /usr/lib64/perl5/**            r,

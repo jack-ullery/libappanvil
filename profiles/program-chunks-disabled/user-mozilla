@@ -1,0 +1,29 @@
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+
+  # $Id: user-mozilla 6111 2006-01-22 08:23:01Z dominic $
+
+
+  # per-user mozilla config files
+  /home/*/.mozilla/**                       rwl,
+  /home/*/.Xdefaults                        r,
+  /home/*/.mailcap                          r,
+  /home/*/.mime.types                       r,
+  # per-user ESD
+  /home/*/.esd_auth                         r,
+
+  # perhaps you wish your users to be able to execute programs right
+  # from mozilla?
+  /usr/X11R6/bin/gv                         px,
+  /usr/bin/plugger                          px,
+  /usr/bin/xpdf                             px,
+  /usr/X11R6/bin/xmessage                   px,
+

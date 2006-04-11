@@ -1,0 +1,188 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmor-utils 1.2\n"
+"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"POT-Creation-Date: 2005-04-01 14:07-0800\n"
+"PO-Revision-Date: 2005-04-14 15:24+8\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Setting %s to complain mode."
+msgstr "Impostazione di %s in modalità complain."
+
+msgid "Setting %s to enforce mode."
+msgstr "Impostazione di %s in modo Applica."
+
+msgid "Profile"
+msgstr "Profilo"
+
+msgid "Default Hat"
+msgstr "Hat predefinito"
+
+msgid "Requested Hat"
+msgstr "Hat richiesto"
+
+msgid "Abandoning all changes."
+msgstr "Annullamento in corso di tutte le modifiche."
+
+msgid "Saving all changes."
+msgstr "Salvataggio di tutte le modifiche."
+
+msgid "Execute"
+msgstr "Esegui"
+
+msgid "(I)nherit"
+msgstr "(E)redita"
+
+msgid "(P)rofile"
+msgstr "(P)rofilo"
+
+msgid "(U)nconfined"
+msgstr "(I)llimitato"
+
+msgid "(D)eny"
+msgstr "(N)ega"
+
+msgid "Abo(r)t"
+msgstr "Inter(r)ompi"
+
+msgid "(F)inish"
+msgstr "(F)inisci"
+
+msgid "Reading log entries from %s."
+msgstr "Lettura voci registro da %s."
+
+msgid "Updating subdomain profiles in %s."
+msgstr "Aggiornamento profili sottodominio in %s."
+
+msgid "Complain-mode changes:"
+msgstr "Modifiche modalità Complain:"
+
+msgid "Enforce-mode changes:"
+	msgstr "Modifiche modalità Applica:"
+
+msgid "Invalid mode found: %s"
+msgstr "Trovata modalità non valida: %s"
+
+msgid "Capability"
+msgstr "Capacità"
+
+msgid "(A)llow"
+msgstr "(C)onsenti"
+
+msgid "Adding capability %s to profile."
+msgstr "Aggiunta capacità %s a profilo."
+
+msgid "Denying capability %s to profile."
+msgstr "Negazione capacità %s a profilo."
+
+msgid "Path"
+msgstr "Percorso"
+
+msgid "Old Mode"
+msgstr "Modalità obsoleta"
+
+msgid "New Mode"
+msgstr "Nuovo modo"
+
+msgid "(N)ew"
+msgstr "(N)uovo"
+
+msgid "(G)lob"
+msgstr "(G)lob"
+
+msgid "Glob w/(E)xt"
+msgstr "Glob con (E)st"
+
+msgid "Adding #include <%s> to profile."
+msgstr "Aggiunta #include <%s> a profilo."
+
+msgid "Deleted %s previous matching profile entries."
+msgstr "Voci profilo corrispondenti precedenti %s eliminate."
+
+msgid "Adding %s %s to profile."
+msgstr "Aggiunta %s %s a profilo."
+
+msgid "Enter new path: "
+msgstr "Immettere nuovo percorso:"
+
+msgid "The specified path does not match this log entry:"
+msgstr "Il percorso specificato non corrisponde a questa registrazione log:"
+
+msgid "Log Entry"
+msgstr "Voce di registro"
+
+msgid "Entered Path"
+msgstr "Percorso immesso"
+
+msgid "Do you really want to use this path?"
+msgstr "Utilizzare questo percorso?"
+
+msgid "Profile %s contains invalid regexp %s."
+msgstr "Il profilo %s contiene regexp non valido %s."
+
+msgid "Writing updated profile for %s."
+msgstr "Scrittura profilo aggiornato per %s."
+
+msgid "&Browse"
+msgstr "&Sfoglia"
+
+msgid "&Create Profile"
+msgstr "&Crea profilo"
+
+msgid "&Yes"
+msgstr "&Sì"
+
+msgid "&No"
+msgstr "&No"
+
+msgid "&Abort"
+msgstr "&Interrompi"
+
+msgid "&Back"
+msgstr "&Indietro"
+
+msgid "(Y)es"
+msgstr "(S)ì"
+
+msgid "(N)o"
+msgstr "(N)o"
+
+msgid "Please start the application to be profiled in \n"
+"another window and exercise its functionality now.\n"
+"\n"
+"Once completed, select the \"Scan\" button below in \n"
+"order to scan the system logs for AppArmor events.  \n"
+"\n"
+"For each AppArmor event, you will be given the  \n"
+"opportunity to choose whether the access should be  \n"
+"allowed or denied."
+msgstr "Avviare l'applicazione per cui creare il profilo in \nun'altra finestra e provarne ora la funzionalità.\n\nAl termine, selezionare il pulsante Scansione di seguito \nper eseguire la scansione dei log di sistema per la ricerca di eventi AppArmor.  \n\nPer ogni evento AppArmor, sarà possibile \nscegliere se consentire o negare \nl'accesso."
+
+msgid "Can't find %s."
+msgstr "Impossibile trovare %s."
+
+msgid "The profile analyzer has completed processing the log files.\n\n"
+"All updated profiles will be reloaded"
+msgstr "L'analizzatore profilo ha terminato l'elaborazione dei file di log.\n\nTutti i profili aggiornati verranno ricaricati"
+
+
+msgid "No unhandled AppArmor events were found in the system log."
+msgstr "Nessun evento AppArmor non gestito individuato nel log di sistema."
+
+msgid "%s contains syntax errors."
+msgstr "%s contiene errori di sintassi."
+
+msgid ""
+"The version of AppArmor that you are running does not allow the creation of\n"
+"this profile. Refer to the AppArmor User's Guide for a description of\n"
+"AppArmor-Lite and upgrade options for AppArmor."
+msgstr "La versione di AppArmor in esecuzione non consente la creazione di\nquesto profilo. Consultare la guida utente di AppArmor per una descrizione di\nAppArmor-Lite e delle opzioni di aggiornamento di AppArmor."

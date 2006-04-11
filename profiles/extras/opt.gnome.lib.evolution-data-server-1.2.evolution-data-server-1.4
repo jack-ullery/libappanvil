@@ -1,0 +1,44 @@
+# $Id: $
+# vim:syntax=apparmor
+# Last Modified: Wed Sep  7 07:44:21 2005
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+#include <tunables/global>
+
+/opt/gnome/lib/evolution-data-server-1.2/evolution-data-server-1.4 {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/user-tmp>
+
+  /etc/mtab r,
+  /etc/opt/gnome/** r,
+
+  @{HOME}/.evolution/addressbook/local/** lrw,
+  @{HOME}/.evolution/cache/calendar/** lrw,
+  @{HOME}/.evolution/calendar/local/** lrw,
+  @{HOME}/.evolution/tasks/local/** lrw,
+  @{HOME}/.gconf r,
+  @{HOME}/.gconf/** lrw,
+  @{HOME}/.gnome2_private w,
+
+  /opt/gnome/lib/GConf/**.so r,
+  /opt/gnome/lib/GConf/2/gconfd-2 pxr,
+  /opt/gnome/lib/evolution-data-server-*/evolution-data-server-* r,
+  /opt/gnome/lib/evolution-data-server-*/extensions r,
+  /opt/gnome/lib/evolution-data-server-*/extensions/lib*.so r,
+  /opt/gnome/lib/gnome-vfs** r,
+  /opt/gnome/lib/lib*so* r,
+  /opt/gnome/share/evolution-data-server-*/** r,
+  /proc/meminfo r,
+  /proc/stat r,
+  /usr/X11R6/lib/X11/locale/* r,
+
+}

@@ -1,0 +1,63 @@
+# $Id: usr.bin.ldd 6222 2006-02-03 23:42:57Z sarnold $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+# special case for ldd.  ld.so inherits a loose 'rx' profile in order to
+# do its job.
+# Note it has inlined abstractions/base, due to bare 'x' vs 'xi'
+# differences in the loader permissions.
+#
+# ldd calls the loader with a special environment variable, so it is
+# -almost- running programs natively. Thus, we've got a very loose
+# profile for ldd, so that it is most likely to function. Thankfully,
+# the write accesses are very limited.
+#
+
+#include <tunables/global>
+
+/usr/bin/ldd {
+  #include <abstractions/consoles>
+  capability dac_override,
+
+  /dev/log                       w,
+  /dev/urandom                   r,
+  /etc/locale/**                 r,
+  /etc/localtime                 r,
+  /usr/share/locale/**           r,
+  /usr/share/zoneinfo/**         r,
+
+  /usr/lib64/locale/**             r,
+  /usr/lib64/gconv/*.so            r,
+  /usr/lib64/gconv/gconv-modules*  r,
+
+  /usr/lib/locale/**             r,
+  /usr/lib/gconv/*.so            r,
+  /usr/lib/gconv/gconv-modules*  r,
+
+  /etc/ld.so.cache               r,
+
+  /lib64/lib*.so*                r,
+  /lib64/tls/lib*.so*            r,
+  /usr/lib64/lib*.so*            r,
+  /usr/lib64/tls/lib*.so*        r,
+
+  /lib/lib*.so*                  r,
+  /lib/tls/lib*.so*              r,
+  /usr/lib/lib*.so*              r,
+  /usr/lib/tls/lib*.so*          r,
+
+  /dev/null                      rw,
+  /dev/zero                      rw,
+
+  /proc/sys/kernel/version       r,
+
+  /lib/ld-*               rix,
+  /**                     rix,
+  /bin/bash		  rix,
+}

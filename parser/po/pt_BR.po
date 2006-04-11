@@ -1,0 +1,506 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2005 NOVELL, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmor-parser\n"
+"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"POT-Creation-Date: 2005-07-22 14:00-0700\n"
+"PO-Revision-Date: 2005-08-18 15:02+0000\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../parser_include.c:87
+msgid "Erro: impossível alocar arquivo temporário\n"
+msgstr "Erro: impossível alocar arquivo temporário\n"
+
+#: ../parser_include.c:110
+msgid "Error: Out of Memory\n"
+msgstr "Erro: Memória Insuficiente\n"
+
+#: ../parser_include.c:129
+#, c-format
+msgid "Error: Can't add directory %s to search path\n"
+msgstr "Erro: Impossível adicionar diretório %s ao caminho de pesquisa\n"
+
+#: ../parser_include.c:137
+msgid "Error: Could not allocate memory\n"
+msgstr "Erro: Impossível alocar memória\n"
+
+#: ../parser_include.c:258
+#, c-format
+msgid "Error: could not allocate buffer for include. line %d in %s\n"
+msgstr "Erro: impossível alocar buffer para inclusão. Linha %d em %s\n"
+
+#: ../parser_include.c:266 ../parser_include.c:281
+#, c-format
+msgid "Error: bad include. line %d in %s\n"
+msgstr "Erro: inclusão incorreta. Linha %d em %s\n"
+
+#: ../parser_include.c:310
+#, c-format
+msgid "Error: exceeded %d levels of includes.  NOT processing %s include\n"
+msgstr "Erro: foram excedidos %d níveis de inclusões. A inclusão de %s NÃO está sendo processada\n"
+
+#: ../parser_include.c:325
+#, c-format
+msgid "Error: #include %s%c not found. line %d in %s\n"
+msgstr "Erro: inclusão de %s%c não encontrada. Linha %d em %s\n"
+
+#: ../parser_interface.c:115
+#, c-format
+msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
+msgstr "PÂNICO: buffer de incremento incorreto %p pos %p ext %p tamanho %d res %p\n"
+
+#: ../parser_interface.c:506 ../parser_sysctl.c:107
+#, c-format
+msgid "Unable to open %s - %s\n"
+msgstr "Impossível abrir %s - %s\n"
+
+#: ../parser_interface.c:522
+msgid "unable to create work area\n"
+msgstr "impossível criar área de trabalho\n"
+
+#: ../parser_interface.c:530
+#, c-format
+msgid "unable to serialize profile %s\n"
+msgstr "impossível serializar perfil %s\n"
+
+#: ../parser_interface.c:539
+#, c-format
+msgid "%s: Unable to write entire profile entry\n"
+msgstr "%s: Impossível gravar toda a entrada do perfil\n"
+
+#: parser_lex.l:346
+#, c-format
+msgid "(ip_mode) Found unexpected character: '%s'"
+msgstr "(ip_mode) Caractere inesperado encontrado: '%s'"
+
+#: parser_lex.l:470
+#, c-format
+msgid "Found unexpected character: '%s'"
+msgstr "Caractere inesperado encontrado: '%s'"
+
+#: ../parser_main.c:276
+#, c-format
+msgid "%s: Could not allocate memory for subdomain mount point\n"
+msgstr "%s: Impossível alocar memória para ponto de montagem de subdomínio\n"
+
+#: ../parser_main.c:282
+#, c-format
+msgid "%s: Could not allocate memory for subdomainbase mount point\n"
+msgstr "%s: Impossível alocar memória para ponto de montagem de base de subdomínio\n"
+
+#: ../parser_main.c:347
+#, c-format
+msgid ""
+"%s: Unable to query modules - '%s'\n"
+"Either modules are disabled or your kernel is too old.\n"
+msgstr "%s: Impossível consultar módulos - '%s'\nOs módulos podem estar desabilitados ou o seu kernel é muito antigo.\n"
+
+#: ../parser_main.c:353
+#, c-format
+msgid "%s: Unable to find "
+msgstr "%s: Impossível localizar"
+
+#: ../parser_main.c:353
+msgid ""
+"!\n"
+"Ensure that it has been loaded.\n"
+msgstr "!\nVerifique se foi carregado.\n"
+
+#: ../parser_main.c:370
+#, c-format
+msgid ""
+"%s: Sorry. You need root privileges to run this program.\n"
+"\n"
+msgstr "%s: Desculpe. Você precisa de privilégios de root para executar esse programa.\n\n"
+
+#: ../parser_main.c:377
+#, c-format
+msgid ""
+"%s: Warning! You've set this program setuid root.\n"
+"Anybody who can run this program can update your AppArmor profiles.\n"
+"\n"
+msgstr "%s: Aviso! Você configurou o setuid deste programa como root.\nQualquer pessoa capaz de executar este programa poderá atualizar os perfis de AppArmor.\n\n"
+
+#: ../parser_main.c:439
+#, c-format
+msgid "%s: Errors found in file. Aborting.\n"
+msgstr "%s: Erros encontrados no arquivo. Abortando.\n"
+
+#: ../parser_main.c:446
+#, c-format
+msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
+msgstr "%s: Erros encontrados no pós-processamento de regras de combinação. Abortando.\n"
+
+#: ../parser_main.c:454
+#, c-format
+msgid "%s: Errors found during regex postprocess. Aborting.\n"
+msgstr "%s: Erros encontrados durante o pós-processamento de expressão regular. Abortando.\n"
+
+#: ../parser_merge.c:56
+msgid "Couldn't merge entries. Out of Memory\n"
+msgstr "Impossível mesclar entradas. Memória Insuficiente\n"
+
+#: ../parser_merge.c:77
+#, c-format
+msgid "profile %s: has merged rule %s with multiple x modifiers\n"
+msgstr "perfil %s: mesclou a regra %s com vários modificadores x\n"
+
+#: ../parser_merge.c:140
+#, c-format
+msgid "ERROR in profile %s, failed to load\n"
+msgstr "ERRO no perfil %s, falha ao carregar\n"
+
+#: ../parser_sysctl.c:44
+msgid "Bad write position\n"
+msgstr "Posição de gravação incorreta\n"
+
+#: ../parser_sysctl.c:47
+msgid "Permission denied\n"
+msgstr "Permissão negada\n"
+
+#: ../parser_sysctl.c:50
+msgid "Out of memory\n"
+msgstr "Memória Insuficiente\n"
+
+#: ../parser_sysctl.c:53
+msgid "Couldn't copy profile Bad memory address\n"
+msgstr "Impossível copiar perfil. Endereço de memória incorreto\n"
+
+#: ../parser_sysctl.c:56
+msgid "Profile doesn't conform to protocol\n"
+msgstr "Perfil não compatível com o protocolo\n"
+
+#: ../parser_sysctl.c:59
+msgid "Profile does not match signature\n"
+msgstr "Perfil não corresponde à assinatura\n"
+
+#: ../parser_sysctl.c:62
+msgid "Profile version not supported\n"
+msgstr "Versão de perfil não suportada\n"
+
+#: ../parser_sysctl.c:65
+msgid "Profile already exists\n"
+msgstr "O perfil já existe\n"
+
+#: ../parser_sysctl.c:68
+msgid "Profile doesn't exist\n"
+msgstr "O perfil não existe\n"
+
+#: ../parser_sysctl.c:71
+msgid "Unknown error\n"
+msgstr "Erro desconhecido\n"
+
+#: ../parser_sysctl.c:92
+#, c-format
+msgid "%s: Profile '%s' is not authorised to be loaded\n"
+msgstr "%s: Perfil '%s' não autorizado a ser carregado\n"
+
+#: ../parser_sysctl.c:132
+#, c-format
+msgid "%s: Unable to add \"%s\".  "
+msgstr "%s: Impossível adicionar %s."
+
+#: ../parser_sysctl.c:138
+#, c-format
+msgid "%s: Unable to replace \"%s\".  "
+msgstr "%s: Impossível substituir %s."
+
+#: ../parser_sysctl.c:144
+#, c-format
+msgid "%s: Unable to remove \"%s\".  "
+msgstr "%s: Impossível remover %s."
+
+#: ../parser_sysctl.c:150
+#, c-format
+msgid "%s: Unable to write to stdout\n"
+msgstr "%s: Impossível gravar em stdout\n"
+
+#: ../parser_sysctl.c:154 ../parser_sysctl.c:179
+#, c-format
+msgid "%s: ASSERT: Invalid option: %d\n"
+msgstr "%s: DECLARAR: Opção inválida: %d\n"
+
+#: ../parser_sysctl.c:165
+#, c-format
+msgid "Addition succeeded for \"%s\".\n"
+msgstr "Adição bem-sucedida de %s.\n"
+
+#: ../parser_sysctl.c:169
+#, c-format
+msgid "Replacement succeeded for \"%s\".\n"
+msgstr "Substituição bem-sucedida de %s.\n"
+
+#: ../parser_sysctl.c:173
+#, c-format
+msgid "Removal succeeded for \"%s\".\n"
+msgstr "Remoção bem-sucedida de %s.\n"
+
+#: parser_yacc.y:215 parser_yacc.y:239 parser_yacc.y:387 parser_yacc.y:403
+#: parser_yacc.y:453 parser_yacc.y:493 parser_yacc.y:522 parser_yacc.y:536
+#: parser_yacc.y:550 parser_yacc.y:564 parser_yacc.y:578 parser_yacc.y:606
+#: parser_yacc.y:634 parser_yacc.y:671 parser_yacc.y:688 parser_yacc.y:702
+#: parser_yacc.y:908
+msgid "Memory allocation error."
+msgstr "Erro de alocação de memória."
+
+#: parser_yacc.y:257
+#, c-format
+msgid "Default allow subdomains are no longer supported, sorry. (domain: %s)"
+msgstr "Subdomínios de permissão padrão não são mais suportados. (domínio: %s)"
+
+#: parser_yacc.y:263
+#, c-format
+msgid ""
+"Default allow subdomains are no longer supported, sorry. (domain: %s^%s)"
+msgstr "Subdomínios de permissão padrão não são mais suportados. (domínio: %s^%s)"
+
+#: parser_yacc.y:294
+msgid "flags=(debug) is no longer supported, sorry."
+msgstr "flags=(depuração) não é mais suportado."
+
+#: parser_yacc.y:330
+msgid "Assert: `rule' returned NULL."
+msgstr "Declarar: `rule' retornou NULL."
+
+#: parser_yacc.y:344
+msgid "Assert: `netrule' returned NULL."
+msgstr "Declarar: `netrule' retornou NULL."
+
+#: parser_yacc.y:372
+msgid "Assert: 'hat rule' returned NULL."
+msgstr "Declarar: 'hat rule' retornou NULL."
+
+#: parser_yacc.y:405
+msgid "md5 signature given without execute privilege."
+msgstr "assinatura md5 fornecida sem privilégio de execução."
+
+#: parser_yacc.y:420 parser_yacc.y:429
+#, c-format
+msgid "missing an end of line character? (entry: %s)"
+msgstr "caractere de fim de linha ausente?  (entrada: %s)"
+
+#: parser_yacc.y:435 parser_yacc.y:441
+#, c-format
+msgid "Negative subdomain entries are no longer supported, sorry. (entry: %s)"
+msgstr "Entradas de subdomínio negativas não são mais suportadas. (entrada: %s)"
+
+#: parser_yacc.y:488
+msgid "Assert: `addresses' returned NULL."
+msgstr "Declarar: `addresses' retornou NULL."
+
+#: parser_yacc.y:588
+msgid "Network entries can only have one TO address."
+msgstr "As entradas de rede podem ter somente um endereço PARA."
+
+#: parser_yacc.y:593
+msgid "Network entries can only have one FROM address."
+msgstr "As entradas de rede podem ter somente um endereço DE."
+
+#: parser_yacc.y:611 parser_yacc.y:640
+#, c-format
+msgid "`%s' is not a valid ip address."
+msgstr "`%s' não é um endereço IP válido."
+
+#: parser_yacc.y:652
+#, c-format
+msgid "`/%d' is not a valid netmask."
+msgstr "`/%d' não é uma máscara de rede válida."
+
+#: parser_yacc.y:659
+#, c-format
+msgid "`%s' is not a valid netmask."
+msgstr "`%s' não é uma máscara de rede válida."
+
+#: parser_yacc.y:685 parser_yacc.y:705
+#, c-format
+msgid "ports must be between %d and %d"
+msgstr "portas precisam estar entre %d e %d"
+
+#: parser_yacc.y:771
+#, c-format
+msgid "AppArmor parser error, line %d: %s\n"
+msgstr "Erro do analisador de AppArmor, linha %d: %s\n"
+
+#: parser_yacc.y:814
+msgid "Exec qualifier 'i' must be followed by 'x'"
+msgstr "Qualificador de execução 'i' deve ser seguido de 'x'"
+
+#: parser_yacc.y:816
+msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
+msgstr "Qualificador de execução 'i' inválido, qualificador em conflito já especificado"
+
+#: parser_yacc.y:826
+msgid "Exec qualifier 'u' must be followed by 'x'"
+msgstr "Qualificador de execução 'u' deve ser seguido de 'x'"
+
+#: parser_yacc.y:828
+msgid "Exec qualifier 'u' invalid, conflicting qualifier already specified"
+msgstr "Qualificador de execução 'u' inválido, qualificador em conflito já especificado"
+
+#: parser_yacc.y:838
+msgid "Exec qualifier 'p' must be followed by 'x'"
+msgstr "Qualificador de execução 'p' deve ser seguido de 'x'"
+
+#: parser_yacc.y:840
+msgid "Exec qualifier 'p' invalid, conflicting qualifier already specified"
+msgstr "Qualificador de execução 'p' inválido, qualificador em conflito já especificado"
+
+#: parser_yacc.y:849
+msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'u' or 'p'"
+msgstr "Modo inválido, 'x' deve ser precedido por um qualificador de execução 'i', 'u' ou 'p'"
+
+#: parser_yacc.y:853
+msgid "Internal: unexpected mode character in input"
+msgstr "Interno: caractere de modo inesperado na entrada"
+
+#: parser_yacc.y:1209
+#, c-format
+msgid "%s: Illegal open {, nesting groupings not allowed\n"
+msgstr "%s: Abertura ilegal {, agrupamentos aninhados não permitidos\n"
+
+#: parser_yacc.y:1229
+#, c-format
+msgid "%s: Regex grouping error: Invalid number of items between {}\n"
+msgstr "%s: Erro de agrupamento de expressão regular: Número inválido de itens entre {}\n"
+
+#: parser_yacc.y:1235
+#, c-format
+msgid ""
+"%s: Regex grouping error: Invalid close }, no matching open { detected\n"
+msgstr "%s: Erro de agrupamento de expressão regular: Fechamento inválido }, nenhuma abertura correspondente { detectada\n"
+
+#: parser_yacc.y:1301
+#, c-format
+msgid ""
+"%s: Regex grouping error: Unclosed grouping or character class, expecting "
+"close }\n"
+msgstr "%s: Erro de agrupamento de expressão regular: Agrupamento ou classe de caracteres não fechado(a), aguardando fechamento }\n"
+
+#: parser_yacc.y:1316
+#, c-format
+msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
+msgstr "%s: Overflow de buffer interno detectado, %d caracteres excedidos\n"
+
+#: parser_yacc.y:1321
+#, c-format
+msgid "%s: Unable to parse input line '%s'\n"
+msgstr "%s: Impossível analisar linha de entrada '%s'\n"
+
+#: parser_yacc.y:1355
+#, c-format
+msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
+msgstr "%s: Falha ao compilar expressão regular '%s' [original: '%s']\n"
+
+#: parser_yacc.y:1360
+#, c-format
+msgid "%s: error near               "
+msgstr "%s: proximidade do erro"
+
+#: parser_yacc.y:1371
+#, c-format
+msgid "%s: error reason: '%s'\n"
+msgstr "%s: motivo do erro: '%s'\n"
+
+#: parser_yacc.y:1381
+#, c-format
+msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
+msgstr "%s: Falha ao compilar expressão regular '%s' [original: '%s'] - falha de malloc \n"
+
+#: parser_yacc.y:1439
+#, c-format
+msgid "%s: Subdomain '%s' defined, but no parent '%s'.\n"
+msgstr "%s: Subdomínio '%s' definido, mas sem pai '%s'.\n"
+
+#: parser_yacc.y:1476
+#, c-format
+msgid "%s: Two SubDomains defined for '%s'.\n"
+msgstr "%s: Dois subdomínios definidos para '%s'.\n"
+
+#: ../parser_sdlite.c:38
+#, c-format
+msgid "%s: Error opening certificate directory '%s': %s\n"
+msgstr "%s: Erro ao abrir diretório de certificado '%s': %s\n"
+
+#: ../parser_sdlite.c:48
+#, c-format
+msgid "%s: Error reading certificates from %s\n"
+msgstr "%s: Erro ao ler certificados de %s\n"
+
+#: ../parser_sdlite.c:111
+#, c-format
+msgid "%s: Failed to load certificate '%s'\n"
+msgstr "%s: Falha ao carregar certificado '%s'\n"
+
+#: ../parser_sdlite.c:118
+#, c-format
+msgid "%s: Failed to load profilelist from certificate '%s'\n"
+msgstr "%s: Falha ao carregar lista de perfis do certificado '%s'\n"
+
+#: ../parser_sdlite.c:125
+#, c-format
+msgid "%s: Failure querying certificate/expiry '%s'\n"
+msgstr "%s: Falha ao consultar certificado/expiração '%s'\n"
+
+#: ../parser_sdlite.c:131
+#, c-format
+msgid "%s: Certificate '%s' has expired\n"
+msgstr "%s: Certificado '%s' expirou\n"
+
+#: ../parser_sdlite.c:139
+#, c-format
+msgid "%s: Failure querying certificate/leaf '%s'\n"
+msgstr "%s: Falha ao consultar certificado/folha '%s'\n"
+
+#: ../parser_sdlite.c:145
+#, c-format
+msgid "%s: Certificate '%s' is not a leaf certificate\n"
+msgstr "%s: Certificado '%s' não é um certificado folha\n"
+
+#: ../parser_sdlite.c:156
+#, c-format
+msgid "%s: Profile '%s' not authorized by certificate '%s'\n"
+msgstr "%s: Perfil '%s' não autorizado pelo certificado '%s'\n"
+
+#: ../parser_sdlite.c:171
+#, c-format
+msgid "%s: Failure querying certificate/isparent '%s' '%s'\n"
+msgstr "%s: Falha ao consultar certificado/isparent '%s %s'\n"
+
+#: ../parser_sdlite.c:176
+#, c-format
+msgid "%s: Certificate %s is not a valid parent of certificate %s\n"
+msgstr "%s: Certificado %s não é um pai válido do certificado %s\n"
+
+#: ../parser_sdlite.c:181
+#, c-format
+msgid "%s: Certificate %s is an invalid certificate\n"
+msgstr "%s: Certificado %s é inválido\n"
+
+#: ../parser_sdlite.c:189
+#, c-format
+msgid "%s: Failure querying certificate/isroot '%s'\n"
+msgstr "%s: Falha ao consultar certificado/isroot '%s'\n"
+
+#: ../parser_sdlite.c:194
+#, c-format
+msgid "%s: Certificate %s is not a valid root certificate\n"
+msgstr "%s: Certificado %s não é um certificado de root válido\n"
+
+#: ../parser_sdlite.c:212
+#, c-format
+msgid "%s: Warning certificate cache '%s' is invalid. Rebuild using '%s'\n"
+msgstr "%s: Aviso: cache de certificado '%s' é inválido. Reconstruir usando '%s'\n"
+
+#: ../parser.h:37
+#, c-format
+msgid "Warning (line %d): "
+msgstr "Aviso (linha %d):"
+

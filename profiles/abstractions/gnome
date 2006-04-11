@@ -1,0 +1,58 @@
+# $Id: gnome 6287 2006-02-25 00:57:01Z sarnold $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2006 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+  # systemwide gtk defaults
+  /etc/gnome/gtkrc*               r,
+  /etc/gtk/*                      r,
+  /usr/lib/gtk/**                 r,
+  /usr/lib64/gtk/**               r,
+  /usr/share/themes/**            r,
+
+  # gtk-2 needed some new rights
+  /etc/fonts/*                    r,
+  /etc/gtk-*/*                    r,
+  /etc/pango/*                    r,
+  /usr/lib64/pango/**             r,
+  /usr/lib64/gtk-*/**             r,
+  /usr/lib/pango/**               r,
+  /usr/lib/gtk-*/**               r,
+  /usr/share/icons/**             r,
+  /usr/share/pixmaps/**           r,
+
+  # gnome libs
+  /opt/gnome/lib/**               r,
+  /opt/gnome/lib64/**             r,
+
+  # per-user gtk configuration
+  @{HOME}/.gnome/Gnome            r,
+  @{HOME}/.gtk                    r,
+  @{HOME}/.gtkrc                  r,
+  @{HOME}/.gtkrc-2.0              r,
+
+  # from evolution-mail
+  @{HOME}/.gconfd/lock/*                        r,
+  @{HOME}/.gnome/application-info               r,
+
+  # per-user font business
+  @{HOME}/.fonts.cache-*          rwl,
+
+
+  # suse likes some odd pathnames
+  /etc/opt/gnome/**           r,
+  /opt/gnome/share/**         r,
+
+  # icon caches
+  /var/cache/**/icon-theme.cache  r,
+  /usr/share/**/icon-theme.cache  r,
+
+  # buggy software
+  /opt/gnome/lib/libgnomeui/gnome_segv2 ixr,
+  /opt/gnome/bin/bug-buddy uxr,

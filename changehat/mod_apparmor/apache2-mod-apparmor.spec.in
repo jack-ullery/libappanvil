@@ -1,0 +1,200 @@
+# $Id: apache2-mod-apparmor.spec.in 6353 2006-03-31 02:26:46Z sarnold $
+# ----------------------------------------------------------------------
+#    Copyright (c) 2004, 2005 NOVELL (All rights reserved)
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, contact Novell, Inc.
+# ----------------------------------------------------------------------
+# norootforbuild
+
+# Check first to see if distro is already defined.
+
+%if ! %{?distro:1}0
+  %define distro suse
+%endif
+
+# this is required to be underscore
+%define module_name mod_apparmor
+
+Summary: AppArmor module for apache2.
+Name: apache2-mod-apparmor
+Version: @@immunix_version@@
+Release: 7.2
+Group: Applications/System
+Source0: %{name}-%{version}-@@repo_version@@.tar.gz
+License: LGPL
+BuildRoot: %{?_tmppath:}%{!?_tmppath:/var/tmp}/%{name}-%{version}-build
+Url: http://forge.novell.com/modules/xfmod/project/?apparmor
+Prereq: libapparmor
+BuildRequires: libapparmor
+Obsoletes: mod_change_hat mod-change-hat mod-apparmor
+Provides: mod_change_hat mod-change-hat mod-apparmor
+
+%if %{distro} == "suse"
+%define apxs /usr/sbin/apxs2
+%define apache_mmn        %(MMN=$(%{apxs} -q LIBEXECDIR)_MMN; test -x $MMN && $MMN)
+Prereq: apache2-prefork 
+Prereq: apparmor-parser
+BuildRequires: apache2-devel
+Requires:     apache2 %{apache_mmn}
+%else
+%if %{distro} == "redhat" || %{distro} == "rhel4"
+%define apxs /usr/sbin/apxs
+Prereq: httpd
+BuildRequires: httpd-devel
+%endif
+%endif
+%define module_path 		%(%{apxs} -q LIBEXECDIR)
+%define apache_sysconfdir	%(%{apxs} -q SYSCONFDIR)
+%define my_bin_dir /usr/lib/%{name}
+
+%description
+apache2-mod-apparmor adds support to apache2 to provide AppArmor confinement
+to individual cgi scripts handled by apache modules like mod_php and
+mod_perl.
+This package is part of a suite of tools that used to be named SubDomain.
+
+%prep
+
+%setup -q 
+
+%build
+make %{module_name}.so APXS=%{apxs}
+%{__strip} -g %{module_name}.so
+
+%install
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+
+mkdir -p ${RPM_BUILD_ROOT}
+make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro}
+
+%if %{distro} == "suse"
+       mkdir -p ${RPM_BUILD_ROOT}/%{my_bin_dir}
+       mkdir -p ${RPM_BUILD_ROOT}%{_libdir}/apache2-prefork/
+       ln -s %{module_path}/%{module_name}.so ${RPM_BUILD_ROOT}%{_libdir}/apache2-prefork/%{module_name}.so
+       cp -a frob_sysconfig ${RPM_BUILD_ROOT}/%{my_bin_dir}
+       chmod 755 ${RPM_BUILD_ROOT}/%{my_bin_dir}/frob_sysconfig
+%else 
+  %if %{distro} == "redhat" || %{distro} == "rhel4"
+  	mkdir -p ${RPM_BUILD_ROOT}/%{apache_sysconfdir}.d/
+	install -m 644 %{module_name}.conf ${RPM_BUILD_ROOT}/%{apache_sysconfdir}.d/
+  %endif
+%endif
+
+%clean 
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root)
+%{module_path}
+%if %{distro} == "suse"
+   %dir %{my_bin_dir}
+   %{my_bin_dir}/frob_sysconfig
+   %{_libdir}/apache2-prefork/%{module_name}.so
+%else 
+  %if %{distro} == "redhat" || %{distro} == "rhel4"
+    %{apache_sysconfdir}.d/%{module_name}.conf
+  %endif
+%endif
+%doc COPYING.LGPL
+
+%post
+%if %{distro} == "suse"
+  %{my_bin_dir}/frob_sysconfig
+  if [ "%{suse_version}" -lt 930 ] ; then
+    /sbin/SuSEconfig --module apache2
+  fi
+%endif
+
+%preun
+%if %{distro} == "suse"
+  if [ $1 = 0 ] ; then
+    %{my_bin_dir}/frob_sysconfig --remove
+    if [ "%{suse_version}" -lt 930 ] ; then
+      /sbin/SuSEconfig --module apache2
+    fi
+  fi
+%endif
+
+%triggerpostun -- mod_change_hat mod-change-hat
+%if %{distro} == "suse"
+  %{my_bin_dir}/frob_sysconfig
+  if [ "%{suse_version}" -lt 930 ] ; then
+    /sbin/SuSEconfig --module apache2
+  fi
+%endif
+
+%changelog
+* Thu Mar 30 2006 - Seth Arnold <seth.arnold@suse.de> 2.0-7.2
+- Relicense to LGPL
+* Mon Jan 30 2006 - Steve Beattie <sbeattie@suse.de> 2.0-7.1
+- Renamed apache config options:
+	ImmhatName -> AAHatName
+	ImmDefaultHatName -> AADefaultHatName
+* Mon Jan 30 2006 - poeml@suse.de                                                                                                                        
+- removed libapr-util1-devel from BuildRequires (apache2-devel does                                                                                      
+  require it) 
+* Fri Jan 27 2006 Steve Beattie <sbeattie@suse.de> 2.0-6.1
+- No more neededforbuild in STABLE
+* Wed Jan 25 2006 Steve Beattie <sbeattie@suse.de> 2.0-6
+- Fix linking against libapparmor.so
+* Sun Jan  8 2006 Steve Beattie <sbeattie@suse.de> 2.0-5
+- More SUSE autobuild fixups.
+* Wed Jan  4 2006 Steve Beattie <sbeattie@suse.de> 2.0-4
+- Fixup SUSE autobuild require on apache-devel-packages
+- Add svn revision to the source tarball
+* Sun Dec 18 2005 Steve Beattie <sbeattie@novell.com> 2.0-3
+- Include symlink in %{_libdir}/apache2-prefork/
+* Thu Dec  8 2005 Steve Beattie <sbeattie@novell.com> 2.0-2
+- Rename to apache2-mod-apparmor for consistency w/SUSE packages
+- Rename module to mod_apparmor.so
+* Wed Dec  7 2005 Steve Beattie <sbeattie@novell.com> 2.0-1
+- Reset version for inclusion in SUSE autobuild
+* Mon Dec  5 2005 Steve Beattie <sbeattie@novell.com> 1.99-9
+- Rename package to mod-apparmor
+* Wed Nov 30 2005 Steve Beattie <sbeattie@novell.com> 1.99-8
+- Minor packaging cleanups
+* Wed Nov 30 2005 Steve Beattie <sbeattie@novell.com> 1.99-7_imnx
+- Convert license to GPL
+* Thu Jun 23 2005 Steve Beattie <sbeattie@novell.com> 1.99-6_imnx
+- Add trigger for mod_change_hat => mod-change-hat upgrades
+- Don't run SuSEconfig on SuSE 9.3 or newer
+* Mon May 23 2005 Steve Beattie <sbeattie@novell.com> 1.99-5_imnx
+- Fix package uninstall on RHEL4.
+* Fri Mar 11 2005 Steve Beattie <steve@immunix.com> 1.99-4_imnx
+- Rename to be consistent with other packages
+* Fri Feb 18 2005 Steve Beattie <steve@immunix.com> 1.99-3_imnx
+- Cleanup some non-64bit clean code, sigh.
+- Fix install locations on 64-bit platform.
+* Fri Feb  4 2005 Seth Arnold <sarnold@immunix.coM> 1.99-1_imnx
+- Reversion to 1.99
+* Fri Nov 12 2004 Steve Beattie <steve@immunix.com> 1.2-2_imnx
+- Add configuration file for redhat build
+* Tue Oct 12 2004 Steve Beattie <steve@immunix.com> 1.2-1_imnx
+- Bump version after shass-1.1 branched off
+* Mon Sep 20 2004 Dominic Reynolds <dominic@immunix.com> 1.0-7_imnx_(redhat|suse)
+- Modified to build separate versions for suse/redhat (EL3).
+- Note:RH version does not currently setup the module configuraiton
+- in apache.
+* Tue Aug 31 2004 Steve Beattie <steve@immunix.com> 1.0-6_imnx
+- Got location and per server config directives working somewhat
+  correctly :-)
+- copyright fixups.
+* Fri Aug 20 2004 Steve Beattie <steve@immunix.com> 1.0-5_imnx
+- added support for <Location> hatname </Location>
+* Wed Jul 21 2004 Steve Beattie <steve@immunix.com> 1.0-4_imnx
+- reduced loglevel of some debug messages
+- add change_hat to list of apache modules
+* Tue Jul 20 2004 Steve Beattie <steve@immunix.com> 1.0-2_imnx
+- got module actually working, at least in simple cases.
+* Thu Jul 15 2004 Steve Beattie <steve@immunix.com> 1.0-1_imnx
+- Initial package creation.

@@ -1,0 +1,206 @@
+# translation of apparmor-utils.pt.po to portuguese
+# This file is distributed under the same license as the PACKAGE package.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER.
+# Antonio Cardoso Martins <digiplan@netvisao.pt>, 2005.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmor-utils.pt\n"
+"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"POT-Creation-Date: 2005-04-01 14:07-0800\n"
+"PO-Revision-Date: 2005-08-07 00:59+0100\n"
+"Last-Translator: Antonio Cardoso Martins <digiplan@netvisao.pt>\n"
+"Language-Team: portuguese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.10\n"
+
+msgid "Setting %s to complain mode."
+msgstr "A definir %s para modo de reclamação."
+
+msgid "Setting %s to enforce mode."
+msgstr "A definir %s para modo forçado."
+
+msgid "Profile"
+msgstr "Perfil"
+
+msgid "Default Hat"
+msgstr "Chapéu pré-definido"
+
+msgid "Requested Hat"
+msgstr "Pedir Chapéu"
+
+msgid "Abandoning all changes."
+msgstr "A abandonar todas as alterações."
+
+msgid "Saving all changes."
+msgstr "A gravar todas as alterações."
+
+msgid "Execute"
+msgstr "Executar"
+
+msgid "(I)nherit"
+msgstr "(H)erdar"
+
+msgid "(P)rofile"
+msgstr "(P)erfil"
+
+msgid "(U)nconfined"
+msgstr "(N)ão confinado"
+
+msgid "(D)eny"
+msgstr "(N)egar"
+
+msgid "Abo(r)t"
+msgstr "(I)nterromper"
+
+msgid "(F)inish"
+msgstr "(T)erminar"
+
+msgid "Reading log entries from %s."
+msgstr "A ler os registos de diário a partir de %s."
+
+msgid "Updating subdomain profiles in %s."
+msgstr "A actualizar os perfile de sub-domínio em %s."
+
+msgid "Complain-mode changes:"
+msgstr "Alterações ao modo de reclamação:"
+
+msgid "Enforce-mode changes:"
+msgstr "Alterações ao modo forçado:"
+
+msgid "Invalid mode found: %s"
+msgstr "Foi encontrado um modo inválido: %s"
+
+msgid "Capability"
+msgstr "Capacidade"
+
+msgid "(A)llow"
+msgstr "(P)ermitir"
+
+msgid "Adding capability %s to profile."
+msgstr "A adicionar a capacidade %s ao perfil."
+
+msgid "Denying capability %s to profile."
+msgstr "A negar a capacidade %s ao perfil."
+
+msgid "Path"
+msgstr "Caminho"
+
+msgid "Old Mode"
+msgstr "Modo Antigo"
+
+msgid "New Mode"
+msgstr "Modo Novo"
+
+msgid "(N)ew"
+msgstr "(N)ovo"
+
+msgid "(G)lob"
+msgstr "(G)lob"
+
+msgid "Glob w/(E)xt"
+msgstr "Glob w/(E)xt"
+
+msgid "Adding #include <%s> to profile."
+msgstr "A adicionar #include <%s> ao perfil."
+
+msgid "Deleted %s previous matching profile entries."
+msgstr "Foram apagados as entradas %s de perfis anteriores coincidentes."
+
+msgid "Adding %s %s to profile."
+msgstr "A adicionar %s %s ao perfil."
+
+msgid "Enter new path: "
+msgstr "Digite o novo caminho: "
+
+msgid "The specified path does not match this log entry:"
+msgstr "O caminho especificado não coincide com esta entrada de registo diário:"
+
+msgid "Log Entry"
+msgstr "Entrada em Registo Diário"
+
+msgid "Entered Path"
+msgstr "Caminho Introduzido"
+
+msgid "Do you really want to use this path?"
+msgstr "Pretende mesmo utilizar este caminho?"
+
+msgid "Profile %s contains invalid regexp %s."
+msgstr "O perfil %s contém a expressão regular %s inválida."
+
+msgid "Writing updated profile for %s."
+msgstr "A escrever o perfil actualizado para %s."
+
+msgid "&Browse"
+msgstr "&Navegar"
+
+msgid "&Create Profile"
+msgstr "&Criar Perfil"
+
+msgid "&Yes"
+msgstr "&Sim"
+
+msgid "&No"
+msgstr "&Não"
+
+msgid "&Abort"
+msgstr "&Interromper"
+
+msgid "&Back"
+msgstr "&Voltar"
+
+msgid "(Y)es"
+msgstr "(S)im"
+
+msgid "(N)o"
+msgstr "(N)ão"
+
+msgid ""
+"Please start the application to be profiled in \n"
+"another window and exercise its functionality now.\n"
+"\n"
+"Once completed, select the \"Scan\" button below in \n"
+"order to scan the system logs for AppArmor events.  \n"
+"\n"
+"For each AppArmor event, you will be given the  \n"
+"opportunity to choose whether the access should be  \n"
+"allowed or denied."
+msgstr ""
+"Por favor inicie em outra janela a aplicação à qual\n"
+"vai ser analisado o perfil, e exercite agora a sua funcionalidade.\n"
+"\n"
+"Uma vez completa, escolha o botão \"Pesquisar\" abaixo\n"
+"por forma a pesquisar eventos AppArmor nos registos diários.\n"
+"\n"
+"Para cada evento AppArmor, ser-lhe-á dada a oportunidade\n"
+"para escolher se o acesso deve ser permitido ou negado."
+
+msgid "Can't find %s."
+msgstr "Não é possível encontrar %s."
+
+msgid ""
+"The profile analyzer has completed processing the log files.\n"
+"\n"
+"All updated profiles will be reloaded"
+msgstr ""
+"O analisador de perfil completou o processamento dos registos diários.\n"
+"\n"
+"Todos os perfil actualizados serão recarregados"
+
+msgid "No unhandled AppArmor events were found in the system log."
+msgstr "Não foram encontrados nos registos diários, eventos AppArmor que não sejam manuseáveis."
+
+msgid "%s contains syntax errors."
+msgstr "%s contém erros de sintaxe."
+
+msgid ""
+"The version of AppArmor that you are running does not allow the creation of\n"
+"this profile. Refer to the AppArmor User's Guide for a description of\n"
+"AppArmor-Lite and upgrade options for AppArmor."
+msgstr ""
+"A versão do AppArmor que está a executar não permite a criação deste\n"
+"perfil. Consulte o Guia de Utilizador do AppArmor para uma descrição\n"
+"do AppArmor-Lite e das opções de upgrade para AppArmor."
+

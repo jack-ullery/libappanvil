@@ -1,0 +1,273 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmor-utils 1.2\n"
+"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"POT-Creation-Date: 2005-04-01 14:07-0800\n"
+"PO-Revision-Date: 2005-04-14 15:24+8\n"
+"Last-Translator: Jesse Michael <jesse@immunix.com>\n"
+"Language-Team: English <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit \n"
+
+msgid "Setting %s to complain mode."
+msgstr "Setting %s to complain mode."
+
+msgid "Setting %s to enforce mode."
+msgstr "Setting %s to enforce mode."
+
+msgid "Profile"
+msgstr "Profile"
+
+msgid "Default Hat"
+msgstr "Default Hat"
+
+msgid "Requested Hat"
+msgstr "Requested Hat"
+
+msgid "Abandoning all changes."
+msgstr "Abandoning all changes."
+
+msgid "Saving all changes."
+msgstr "Saving all changes."
+
+msgid "Execute"
+msgstr "Execute"
+
+msgid "(I)nherit"
+msgstr "(I)nherit"
+
+msgid "(P)rofile"
+msgstr "(P)rofile"
+
+msgid "(U)nconfined"
+msgstr "(U)nconfined"
+
+msgid "(D)eny"
+msgstr "(D)eny"
+
+msgid "Abo(r)t"
+msgstr "Abo(r)t"
+
+msgid "(F)inish"
+msgstr "(F)inish"
+
+msgid "Reading log entries from %s."
+msgstr "Reading log entries from %s."
+
+msgid "Updating subdomain profiles in %s."
+msgstr "Updating subdomain profiles in %s."
+
+msgid "Complain-mode changes:"
+msgstr "Complain-mode changes:"
+
+msgid "Enforce-mode changes:"
+msgstr "Enforce-mode changes:"
+
+msgid "Invalid mode found: %s"
+msgstr "Invalid mode found: %s"
+
+msgid "Capability"
+msgstr "Capability"
+
+msgid "(A)llow"
+msgstr "(A)llow"
+
+msgid "Adding capability %s to profile."
+msgstr "Adding capability %s to profile."
+
+msgid "Denying capability %s to profile."
+msgstr "Denying capability %s to profile."
+
+msgid "Path"
+msgstr "Path"
+
+msgid "Old Mode"
+msgstr "Old Mode"
+
+msgid "New Mode"
+msgstr "New Mode"
+
+msgid "(N)ew"
+msgstr "(N)ew"
+
+msgid "(G)lob"
+msgstr "(G)lob"
+
+msgid "Glob w/(E)xt"
+msgstr "Glob w/(E)xt"
+
+msgid "Adding #include <%s> to profile."
+msgstr "Adding #include <%s> to profile."
+
+msgid "Deleted %s previous matching profile entries."
+msgstr "Deleted %s previous matching profile entries."
+
+msgid "Adding %s %s to profile."
+msgstr "Adding %s %s to profile."
+
+msgid "Enter new path: "
+msgstr "Enter new path: "
+
+msgid "The specified path does not match this log entry:"
+msgstr "The specified path does not match this log entry:"
+
+msgid "Log Entry"
+msgstr "Log Entry"
+
+msgid "Entered Path"
+msgstr "Entered Path"
+
+msgid "Do you really want to use this path?"
+msgstr "Do you really want to use this path?"
+
+msgid "Profile %s contains invalid regexp %s."
+msgstr "Profile %s contains invalid regexp %s."
+
+msgid "Writing updated profile for %s."
+msgstr "Writing updated profile for %s."
+
+msgid "&Browse"
+msgstr "&Browse"
+
+msgid "&Create Profile"
+msgstr "&Create Profile"
+
+msgid "&Yes"
+msgstr "&Yes"
+
+msgid "&No"
+msgstr "&No"
+
+msgid "&Abort"
+msgstr "&Abort"
+
+msgid "&Back"
+msgstr "&Back"
+
+msgid "(Y)es"
+msgstr "(Y)es"
+
+msgid "(N)o"
+msgstr "(N)o"
+
+msgid "Please start the application to be profiled in \n"
+"another window and exercise its functionality now.\n"
+"\n"
+"Once completed, select the \"Scan\" button below in \n"
+"order to scan the system logs for AppArmor events.  \n"
+"\n"
+"For each AppArmor event, you will be given the  \n"
+"opportunity to choose whether the access should be  \n"
+"allowed or denied."
+msgstr "Please start the application to be profiled in \n"
+"another window and exercise its functionality now.\n"
+"\n"
+"Once completed, select the \"Scan\" button below in \n"
+"order to scan the system logs for AppArmor events.  \n"
+"\n"
+"For each AppArmor event, you will be given the  \n"
+"opportunity to choose whether the access should be  \n"
+"allowed or denied."
+
+msgid "Can't find %s."
+msgstr "Can't find %s."
+
+msgid "The profile analyzer has completed processing the log files.\n\n"
+"All updated profiles will be reloaded"
+msgstr "The profile analyzer has completed processing the log files.\n\n"
+"All updated profiles will be reloaded"
+
+msgid "No unhandled AppArmor events were found in the system log."
+msgstr "No unhandled AppArmor events were found in the system log."
+
+msgid "%s contains syntax errors."
+msgstr "%s contains syntax errors."
+
+msgid ""
+"The version of AppArmor that you are running does not allow the\n"
+"creation of this profile.  Please contact Novell sales for\n"
+"upgrade options for AppArmor."
+msgstr ""
+"The version of AppArmor that you are running does not allow the\n"
+"creation of this profile.  Please contact Novell sales for\n"
+"upgrade options for AppArmor."
+
+msgid "Severity"
+msgstr "Severity"
+
+msgid ""
+"%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
+msgstr ""
+"%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
+
+msgid "Profile for %s already exists - skipping."
+msgstr "Profile for %s already exists - skipping."
+
+msgid "Are you sure you want to abandon this set of profile changes and exit?"
+msgstr "Are you sure you want to abandon this set of profile changes and exit?"
+
+msgid "Are you sure you want to save the current set of profile changes and exit?"
+msgstr "Are you sure you want to save the current set of profile changes and exit?"
+
+msgid ""
+"Launching processes in an unconfined state is a very\n"
+"dangerous operation and cause serious security holes.\n\n"
+"Are you absolutely certain you wish to remove all\n"
+"AppArmor protection when executing %s?"
+msgstr ""
+"Launching processes in an unconfined state is a very\n"
+"dangerous operation and cause serious security holes.\n\n"
+"Are you absolutely certain you wish to remove all\n"
+"AppArmor protection when executing %s?"
+
+msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
+msgstr "SubDomain does not appear to be started.  Please enable SubDomain and try again."
+
+msgid "Please enter the program to profile: "
+msgstr "Please enter the program to profile: "
+
+msgid "%s does not exist, please double-check the path."
+msgstr "%s does not exist, please double-check the path."
+
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
+msgstr "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
+
+msgid "Profiling"
+msgstr "Profiling"
+
+msgid "(S)can system log for SubDomain events"
+msgstr "(S)can system log for SubDomain events"
+
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
+msgstr "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
+
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
+msgstr "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
+
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
+msgstr "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
+
+msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
+msgstr "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
+
+msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
+msgstr "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
+
+msgid "Reloaded SubDomain profiles in enforce mode."
+msgstr "Reloaded SubDomain profiles in enforce mode."
+
+msgid "Finished generating profile for %s."
+msgstr "Finished generating profile for %s."
+
+msgid "unknown"
+msgstr "unknown"
+
+msgid "Include %s contains invalid regexp %s."
+msgstr "Include %s contains invalid regexp %s."

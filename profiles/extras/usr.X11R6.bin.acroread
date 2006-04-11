@@ -1,0 +1,72 @@
+# $Id:$
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+# vim:syntax=apparmor
+# Last Modified: Wed Aug 24 16:21:32 2005
+
+#include <tunables/global>
+
+/usr/X11R6/bin/acroread {
+  #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/consoles>
+  #include <abstractions/fonts>
+  #include <abstractions/kde>
+  #include <abstractions/nameservice>
+  #include <abstractions/gnome>
+  #include <abstractions/X>
+
+  capability dac_override,
+
+  /bin/basename ixr,
+  /bin/bash ix,
+  /bin/cat ixr,
+  /bin/grep ixr,
+  /bin/uname ixr,
+  /etc/opt/gnome/** r,
+
+  @{HOME}/.adobe/** rw,
+  @{HOME}/Desktop/** rw,
+  @{HOME}/Documents/* rw,
+  @{HOME}/.fonts.cache-* r,
+  @{HOME}/.gconfd/saved_state lrw,
+  @{HOME}/.gconfd/saved_state.orig lw,
+  @{HOME}/.gconfd/saved_state.tmp lrw,
+  @{HOME}/.gconf r,
+  @{HOME}/.gconf/.testing.writeability lw,
+  @{HOME}/* rw,
+
+  /opt/MozillaFirefox/bin/firefox.sh pxr,
+  /opt/MozillaFirefox/lib/firefox-bin pxr,
+  /opt/MozillaFirefox/lib/init.d r,
+  /opt/gnome/bin/gconftool-2 ixr,
+  /opt/gnome/lib/GConf/** r,
+  /opt/gnome/lib/GConf/2/gconfd-2 pxr,
+  /opt/gnome/lib/gtk-2.0/2.4.0/loaders/* r,
+  /opt/gnome/lib/lib*so* r,
+  /opt/gnome/lib/pango/1.4.0/modules/pango-basic-fc.so r,
+  /opt/gnome/share/icons r,
+  /opt/gnome/share/icons/hicolor/icon-theme.cache r,
+  /opt/gnome/share/pixmaps r,
+  /usr/X11R6/bin/acroread r,
+  /usr/X11R6/bin/xterm rux,
+  /usr/X11R6/lib/Acrobat7/** ixr,
+  /usr/bin/cut ixr,
+  /usr/bin/dirname ixr,
+  /usr/bin/lp rux,
+  /usr/bin/mutt rux,
+  /usr/bin/nail rux,
+  /opt/gnome/bin/evolution-2.4 ux,
+  /opt/kde3/bin/kmail ux,
+  /usr/bin/which ixr,
+  /usr/lib/jvm/java-1.4.2-sun-1.4.2.06/jre/lib/fonts/** r,
+  /usr/lib/ooo-2.0/share/fonts/** r,
+  /usr/share/icons r,
+}

@@ -1,0 +1,37 @@
+# $Id: usr.sbin.named 6344 2006-03-27 13:18:51Z jesse $
+#
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+# vim:syntax=apparmor
+# Last Modified: Wed Aug 17 14:09:24 2005
+
+#include <tunables/global>
+
+/usr/sbin/named {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  capability net_bind_service,
+  capability setgid,
+  capability setuid,
+  capability sys_chroot,
+
+  /** r,
+  /dyn/** rwl,
+  /usr/bin/dnskeygen ix,
+  /usr/bin/dnsquery ix,
+  /usr/sbin/named rix,
+  /usr/sbin/named-xfer ix,
+  /var/lib/named/** rwl,
+  /var/named/** rwl,
+  /var/run/named.pid wl,
+  /var/run/named/named.pid wl,
+  /var/run/ndc wl,
+}

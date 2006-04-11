@@ -1,0 +1,23 @@
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+# vim:syntax=apparmor
+# Last Modified: Tue May 31 09:46:20 2005
+
+#include <tunables/global>
+
+/usr/lib/postfix/scache {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <program-chunks/postfix-common>
+
+  /proc/sys/kernel/ngroups_max r,
+  /usr/lib/postfix/scache r,
+  /var/run/nscd/group r,
+}

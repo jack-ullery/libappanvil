@@ -1,0 +1,21 @@
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+
+  # $Id: user-rcommands 6111 2006-01-22 08:23:01Z dominic $
+
+  # per-user .rhosts files -- if you don't want to allow them, please
+  # comment these line out
+  /root/.rhosts   r,
+  /home/*/.rhosts r,
+
+  # some programs you may wish to allow to run
+  /bin/ls     ix,
+

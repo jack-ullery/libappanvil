@@ -1,0 +1,207 @@
+# translation of apparmor-utils.po to
+# This file is distributed under the same license as the PACKAGE package.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER.
+# Olav Pettershagen <olav.pet@online.no>, 2005.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmor-utils\n"
+"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"POT-Creation-Date: 2005-04-01 14:07-0800\n"
+"PO-Revision-Date: 2005-08-13 12:25+0200\n"
+"Last-Translator: Olav Pettershagen <olav.pet@online.no>\n"
+"Language-Team:  <nb@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.10.2\n"
+
+msgid "Setting %s to complain mode."
+msgstr "Setter %s i klagemodus."
+
+msgid "Setting %s to enforce mode."
+msgstr "Setter %s i overstyringsmodus."
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Default Hat"
+msgstr "Standard paraply"
+
+msgid "Requested Hat"
+msgstr "Ønsket paraply"
+
+msgid "Abandoning all changes."
+msgstr "Forkaster alle endringer."
+
+msgid "Saving all changes."
+msgstr "Lagrer alle endringer."
+
+msgid "Execute"
+msgstr "Kjør"
+
+msgid "(I)nherit"
+msgstr "Ta over (I)"
+
+msgid "(P)rofile"
+msgstr "(P)rofil"
+
+msgid "(U)nconfined"
+msgstr "(U)begrenset"
+
+msgid "(D)eny"
+msgstr "Avvis (D)"
+
+msgid "Abo(r)t"
+msgstr "Avb(r)yt"
+
+msgid "(F)inish"
+msgstr "Avslutt (F)"
+
+msgid "Reading log entries from %s."
+msgstr "Leser loggoppføringer fra %s."
+
+msgid "Updating subdomain profiles in %s."
+msgstr "Oppdaterer subdomeneprofiler i %s."
+
+msgid "Complain-mode changes:"
+msgstr "Endringer i klagemodus:"
+
+msgid "Enforce-mode changes:"
+msgstr "Endringer i overstyringsmodus:"
+
+msgid "Invalid mode found: %s"
+msgstr "Ugyldig modus funnet: %s"
+
+msgid "Capability"
+msgstr "Egenskaper"
+
+msgid "(A)llow"
+msgstr "Tillatt (A)"
+
+msgid "Adding capability %s to profile."
+msgstr "Legge egenskapen %s til profil."
+
+msgid "Denying capability %s to profile."
+msgstr "Avvise egenskapen %s i profil."
+
+msgid "Path"
+msgstr "Sti"
+
+msgid "Old Mode"
+msgstr "Gammel modus"
+
+msgid "New Mode"
+msgstr "Ny modus"
+
+msgid "(N)ew"
+msgstr "(N)y"
+
+msgid "(G)lob"
+msgstr "(G)lob"
+
+msgid "Glob w/(E)xt"
+msgstr "Glob m/(E)xt"
+
+msgid "Adding #include <%s> to profile."
+msgstr "Legge #include <%s> til profil."
+
+msgid "Deleted %s previous matching profile entries."
+msgstr "Slettet %s tidligere samsvarende profiloppføringer."
+
+msgid "Adding %s %s to profile."
+msgstr "Legge %s %s til profil."
+
+msgid "Enter new path: "
+msgstr "Angi ny sti: "
+
+msgid "The specified path does not match this log entry:"
+msgstr "Den spesifiserte stien samsvarer ikke med denne loggoppføringen:"
+
+msgid "Log Entry"
+msgstr "Loggoppføring"
+
+msgid "Entered Path"
+msgstr "Angitt sti"
+
+msgid "Do you really want to use this path?"
+msgstr "Vil du virkelig bruke denne stien?"
+
+msgid "Profile %s contains invalid regexp %s."
+msgstr "Profilen %s inneholder ugyldig regexp %s."
+
+msgid "Writing updated profile for %s."
+msgstr "Lagrer oppdatert profil for %s."
+
+msgid "&Browse"
+msgstr "&Bla gjennom"
+
+msgid "&Create Profile"
+msgstr "&Opprett profil"
+
+msgid "&Yes"
+msgstr "&Ja"
+
+msgid "&No"
+msgstr "&a"
+
+msgid "&Abort"
+msgstr "&Avbryt"
+
+msgid "&Back"
+msgstr "&Tilbake"
+
+msgid "(Y)es"
+msgstr "Ja (Y)"
+
+msgid "(N)o"
+msgstr "(N)ei"
+
+msgid ""
+"Please start the application to be profiled in \n"
+"another window and exercise its functionality now.\n"
+"\n"
+"Once completed, select the \"Scan\" button below in \n"
+"order to scan the system logs for AppArmor events.  \n"
+"\n"
+"For each AppArmor event, you will be given the  \n"
+"opportunity to choose whether the access should be  \n"
+"allowed or denied."
+msgstr ""
+"Start programmet som skal profileres, i \n"
+"et annet vindu og test funksjonaliteten nå.\n"
+"\n"
+"Når du er ferdig, klikk på \"Søk\"-knappen nedenfor for \n"
+"å søke etter AppArmor-hendelser i systemloggene.  \n"
+"\n"
+"For hver AppArmor-hendelse kan du  \n"
+"velge om tilgang skal \n"
+"tillates eller avvises."
+
+msgid "Can't find %s."
+msgstr "Kan ikke finne %s."
+
+msgid ""
+"The profile analyzer has completed processing the log files.\n"
+"\n"
+"All updated profiles will be reloaded"
+msgstr ""
+"Profilanalysatoren er ferdig med å generere loggfilene.\n"
+"\n"
+"Alle oppdaterte profiler vil bli lastet på nytt"
+
+msgid "No unhandled AppArmor events were found in the system log."
+msgstr "Ingen ubehandlede AppArmor-hendelser ble funnet i systemloggen."
+
+msgid "%s contains syntax errors."
+msgstr "%s inneholder syntaksfeil."
+
+msgid ""
+"The version of AppArmor that you are running does not allow the creation of\n"
+"this profile. Refer to the AppArmor User's Guide for a description of\n"
+"AppArmor-Lite and upgrade options for AppArmor."
+msgstr ""
+"Denne AppArmor-versjonen tillater ikke opprettelse av\n"
+"denne profilen. I brukerveiledningen for AppArmor finner du en beskrivelse av\n"
+"AppArmor-Lite og oppgraderingsmuligheter for AppArmor."
+

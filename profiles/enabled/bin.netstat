@@ -1,0 +1,33 @@
+# $Id: bin.netstat 6222 2006-02-03 23:42:57Z sarnold $
+# vim:syntax=apparmor
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+# evolution, amongst other things, calls this program. I didn't want to
+# give evolution access to significant chunks of /proc
+#
+
+#include <tunables/global>
+
+/bin/netstat {
+  #include <abstractions/base>
+  #include <abstractions/consoles>
+  #include <abstractions/nameservice>
+
+  capability dac_override,
+  capability dac_read_search,
+
+  /bin/netstat rix,
+  /etc/networks r,
+  /proc r,
+  /proc/[0-9]*/cmdline r,
+  /proc/[0-9]*/fd r,
+  /proc/net r,
+  /proc/net/* r,
+}

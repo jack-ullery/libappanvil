@@ -1,0 +1,62 @@
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+
+  # $Id: mozilla 6111 2006-01-22 08:23:01Z dominic $
+
+  # None of us use mozilla as a mail client, irc client, or news client.
+  # So, uh, this profile is guaranteed to be insufficient for anything
+  # other than web browsing. Fixes welcome.
+
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/consoles>
+  #include <abstractions/fonts>
+  #include <abstractions/X>
+  #include <abstractions/gnome>
+  #include <abstractions/user-tmp>
+  #include <program-chunks/user-mozilla>
+  /bin/netstat                              px,
+  /bin/bash                                 ix,
+  /dev/mixer*                               rw,
+  /dev/dsp                                  rw,
+  /dev/urandom                              rw,
+  /dev/random                               rw,
+  /etc/esd.conf                             r,
+  /etc/fstab                                r,
+  /etc/mailcap                              r,
+  /etc/mime.types                           r,
+  /etc/mtab                                 r,
+  /etc/pluggerrc			    r,
+  /etc/X11/fs/config                        r,
+  /proc/net                                 r,
+  /proc/net/appletalk                       r,
+  /proc/net/dev                             r,
+  /proc/net/ipx                             r,
+  /proc/net/unix                            r,
+  /proc/meminfo                             r,
+  /usr/bin/esd                              rpx,
+
+  /usr/lib64/flash-plugin/*                 r,
+  /usr/lib64/browser-plugins/**             r,
+  /usr/lib64/mozilla-1.[1-9][a-z]*/**       r,
+  /usr/lib64/mozilla-1.[1-9]/**             r,
+  /usr/lib64/mozilla/**                     r,
+  /usr/lib64/netscape/**                    r,
+  /usr/lib/flash-plugin/*                   r,
+  /usr/lib/browser-plugins/**               r,
+  /usr/lib/mozilla-1.[1-9][a-z]*/**         r,
+  /usr/lib/mozilla-1.[1-9]/**               r,
+  /usr/lib/mozilla/**                       r,
+  /usr/lib/netscape/**                      r,
+
+  /opt/mozilla/**                           r,
+  # let mozilla read package documentation
+  /usr/share/doc/**                         r,

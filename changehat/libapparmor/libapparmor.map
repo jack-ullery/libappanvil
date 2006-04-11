@@ -1,0 +1,13 @@
+IMMUNIX_1.0 {
+  global:
+	change_hat;
+  local:
+	*;
+};
+
+APPARMOR_1.0 {
+  global:
+	change_hat;
+  local:
+	*;
+};

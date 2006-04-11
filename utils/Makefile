@@ -1,0 +1,68 @@
+# 	$Id: Makefile 6343 2006-03-27 04:26:38Z jesse $
+# ----------------------------------------------------------------------
+#    Copyright (c) 1999, 2004, 2005, 2006 NOVELL (All rights reserved)
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, contact Novell, Inc.
+# ----------------------------------------------------------------------
+NAME 		= apparmor-utils
+all:
+COMMONDIR=../../common/
+
+include Make.rules
+
+COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
+ifeq ($(COMMONDIR_EXISTS), true)
+Make.rules: $(COMMONDIR)/Make.rules 
+	ln -f $(COMMONDIR)/Make.rules .
+
+po/Make.rules: $(COMMONDIR)/Make-po.rules
+	make -C po Make.rules
+endif
+
+TOOLS = genprof logprof autodep audit complain enforce \
+	unconfined aa-eventd apparmor_status
+
+# need some better way of determining this
+DESTDIR=/
+BINDIR=${DESTDIR}/usr/sbin
+CONFDIR=${DESTDIR}/etc/apparmor
+PERLDIR=${DESTDIR}/usr/lib/perl5/vendor_perl/Immunix
+
+po/${NAME}.pot: ${TOOLS}
+	make -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} SubDomain.pm Reports.pm"
+
+.PHONY: install
+install: 
+	install -d ${CONFDIR}
+	install -m 644 logprof.conf severity.db ${CONFDIR}
+	install -d ${BINDIR}
+	ln -sf apparmor_status ${BINDIR}/aa-status
+	ln -sf audit ${BINDIR}/aa-audit
+	ln -sf autodep ${BINDIR}/aa-autodep
+	ln -sf complain ${BINDIR}/aa-complain
+	ln -sf enforce ${BINDIR}/aa-enforce
+	ln -sf genprof ${BINDIR}/aa-genprof
+	ln -sf logprof ${BINDIR}/aa-logprof
+	ln -sf unconfined ${BINDIR}/aa-unconfined
+	install -m 755 ${TOOLS} ${BINDIR}
+	install -d ${PERLDIR}
+	install -m 755 SubDomain.pm Reports.pm Severity.pm ${PERLDIR}
+	make -C po install DESTDIR=${DESTDIR} NAME=${NAME}
+	mkdir -m 0700 -p $(DESTDIR)/var/log/apparmor
+	
+.PHONY: clean
+clean: po/Make.rules
+	rm -f core core.* *.o *.s *.a *~ 
+	rm -f $(NAME)-$(VERSION)-*.tar.gz
+	make -C po clean
+

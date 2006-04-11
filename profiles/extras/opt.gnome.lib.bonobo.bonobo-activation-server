@@ -1,0 +1,28 @@
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+# vim:syntax=apparmor
+# Last Modified: Mon Aug 29 10:49:30 2005
+
+#include <tunables/global>
+
+/opt/gnome/lib/bonobo/bonobo-activation-server {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/user-tmp>
+
+  /etc/bonobo-activation/bonobo-activation-config.xml r,
+  /opt/gnome/lib/bonobo/bonobo-activation-server r,
+  /opt/gnome/lib/bonobo/servers r,
+  /opt/gnome/lib/bonobo/servers/*.server r,
+  /opt/gnome/lib/evolution-data-server-1.2/evolution-data-server-1.4 px,
+  /opt/gnome/lib/evolution/2.4/evolution-alarm-notify ux,
+  /opt/gnome/lib/lib*so* r,
+  /usr/X11R6/lib/X11/locale/* r,
+}

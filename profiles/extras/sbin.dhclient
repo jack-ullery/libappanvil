@@ -1,0 +1,56 @@
+# $Id: sbin.dhclient 6223 2006-02-03 23:55:54Z sarnold $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+# Note that this profile doesn't include any NetDomain rules; dhclient uses
+# raw sockets, and thus cannot be confined with NetDomain
+#
+# Should these programs have their own domains?
+# /bin/ps                     ixr,
+# /sbin/arp                   rix,
+# /usr/bin/dig                rix,
+# /usr/bin/uptime             rix,
+# /usr/bin/vmstat             rix,
+# /usr/bin/w                  rix,
+
+#include <tunables/global>
+
+/sbin/dhclient {
+  #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/nameservice>
+  /sbin/dhclient              rix,
+  /sbin/dhclient-script       rix,
+  /bin/bash                   rix,
+  /bin/df                     rix,
+  /bin/netstat                px,
+  /bin/ps                     ixr,
+  /dev/random                 r,
+  /etc/dhclient.conf          r,
+  /proc/                      r,
+  /proc/interrupts            r,
+  /proc/net/dev               r,
+  /proc/rtc                   r,
+  /proc/self/status           r,
+  /proc/stat                  r,
+  /sbin/arp                   rix,
+  /usr/bin/dig                rix,
+  /usr/bin/uptime             rix,
+  /usr/bin/vmstat             rix,
+  /usr/bin/w                  rix,
+  /var/lib/dhcp/dhclient.leases     rw,
+  /var/lib/dhcp/dhclient-*.leases   rw,
+  /var/log/lastlog            r,
+  /var/log/messages           r,
+  /var/log/wtmp               r,
+  /var/run/dhclient.pid       rw,
+  /var/run/dhclient-*.pid     rw,
+  /var/spool                  r,
+  /var/spool/mail             r,
+}
