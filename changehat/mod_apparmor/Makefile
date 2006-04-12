@@ -1,4 +1,4 @@
-#	$Id: Makefile 6135 2006-01-25 19:58:44Z steve $
+#	$Id$
 # ----------------------------------------------------------------------
 #    Copyright (c) 2004, 2005 NOVELL (All rights reserved)
 #
@@ -16,7 +16,7 @@
 # ----------------------------------------------------------------------
 NAME:=apache2-mod-apparmor
 all:
-COMMONDIR=../common/
+COMMONDIR=../../common/
 
 include Make.rules
 

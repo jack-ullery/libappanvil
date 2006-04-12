@@ -1,4 +1,4 @@
-# $Id: apache2-mod-apparmor.spec.in 6353 2006-03-31 02:26:46Z sarnold $
+# $Id$
 # ----------------------------------------------------------------------
 #    Copyright (c) 2004, 2005 NOVELL (All rights reserved)
 #
@@ -28,7 +28,7 @@
 Summary: AppArmor module for apache2.
 Name: apache2-mod-apparmor
 Version: @@immunix_version@@
-Release: 7.2
+Release: 8
 Group: Applications/System
 Source0: %{name}-%{version}-@@repo_version@@.tar.gz
 License: LGPL
@@ -134,6 +134,8 @@ make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro}
 %endif
 
 %changelog
+* Wed Apr 12 2006 - Steve Beattie <sbeattie@suse.de>
+- Move to novell forge svn repo; fix build issue with new layout
 * Thu Mar 30 2006 - Seth Arnold <seth.arnold@suse.de> 2.0-7.2
 - Relicense to LGPL
 * Mon Jan 30 2006 - Steve Beattie <sbeattie@suse.de> 2.0-7.1
