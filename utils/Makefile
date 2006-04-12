@@ -1,4 +1,4 @@
-# 	$Id: Makefile 6343 2006-03-27 04:26:38Z jesse $
+# 	$Id$
 # ----------------------------------------------------------------------
 #    Copyright (c) 1999, 2004, 2005, 2006 NOVELL (All rights reserved)
 #
@@ -16,7 +16,7 @@
 # ----------------------------------------------------------------------
 NAME 		= apparmor-utils
 all:
-COMMONDIR=../../common/
+COMMONDIR=../common/
 
 include Make.rules
 

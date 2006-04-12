@@ -1,4 +1,4 @@
-# $Id: SubDomain.pm 6377 2006-04-09 21:49:41Z jesse $
+# $Id$
 #
 # ----------------------------------------------------------------------
 #    Copyright (c) 2006 Novell, Inc. All Rights Reserved.

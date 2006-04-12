@@ -2,7 +2,7 @@
 
 """A SubDomain lint tool.
 
-$Id: profilelint.py 3713 2005-01-19 08:17:38Z sarnold $
+$Id$
 
      PROPRIETARY DATA of IMMUNIX INC.
      Copyright (c) 2004, IMMUNIX (All rights reserved)

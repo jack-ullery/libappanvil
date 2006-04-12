@@ -1,4 +1,4 @@
-" $Id: apparmor.vim 6139 2006-01-26 02:33:54Z dominic $
+" $Id$
 "
 " ----------------------------------------------------------------------
 "    Copyright (c) 2005 Novell, Inc. All Rights Reserved.

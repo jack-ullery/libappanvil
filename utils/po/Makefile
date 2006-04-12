@@ -20,7 +20,7 @@ all:
 # made/installed.
 LANGS=en_US de_DE es_ES fr_FR hu_HU it_IT ja_JP nb_NO pt_BR pt_PT zh_CN zh_TW
 
-COMMONDIR=../../../common/
+COMMONDIR=../../common/
 
 include Make.rules
 

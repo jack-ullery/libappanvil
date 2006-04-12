@@ -1,5 +1,5 @@
 #
-# $Id: apparmor-utils.spec.in 6378 2006-04-10 18:18:32Z steve $
+# $Id$
 #
 # ----------------------------------------------------------------------
 #    Copyright (c) 2004, 2005 NOVELL (All rights reserved)
@@ -25,7 +25,7 @@
 Summary: AppArmor userlevel utilities that are useful in creating AppArmor profiles.
 Name: apparmor-utils
 Version: @@immunix_version@@
-Release: 4.3
+Release: 5
 Group: Productivity/Security
 Source0: %{name}-%{version}-@@repo_version@@.tar.gz
 License: GPL
@@ -95,6 +95,8 @@ fi
 
 
 %changelog
+* Wed Apr 12 2006 Steve Beattie <sbeattie@suse.de>
+- Move to novell forge svn; fixup build issues due to new svn layout
 * Mon Apr 10 2006 Steve Beattie <sbeattie@suse.de>
 - Get rid of obsolete license files
 * Sun Mar 26 2006 Jesse Michael <jmichael@suse.de>
