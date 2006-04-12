@@ -1,4 +1,4 @@
-/* $Id: parser_main.c 6367 2006-04-04 22:44:04Z sarnold $ */
+/* $Id$ */
 
 /*
  *   Copyright (c) 1999, 2000, 2003, 2004, 2005, 2006 NOVELL

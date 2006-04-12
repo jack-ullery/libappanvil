@@ -1,4 +1,4 @@
-/* $Id: parser_interface.c 6039 2006-01-10 23:34:57Z steve $ */
+/* $Id$ */
 
 /*
  *   Copyright (c) 1999, 2000, 2004, 2005 NOVELL (All rights reserved)

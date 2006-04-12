@@ -1,4 +1,4 @@
-/* $Id: parser_lex.l 6048 2006-01-12 17:43:44Z steve $ */
+/* $Id$ */
 
 /*
  *   Copyright (c) 1999, 2000, 2002, 2003, 2004, 2005 NOVELL (All rights reserved)

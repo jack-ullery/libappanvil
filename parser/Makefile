@@ -1,4 +1,4 @@
-# 	$Id: Makefile 6345 2006-03-27 13:59:31Z jesse $
+# 	$Id$
 # ----------------------------------------------------------------------
 #    Copyright (c) 2004, 2005, 2006 NOVELL (All rights reserved)
 #
@@ -16,7 +16,7 @@
 # ----------------------------------------------------------------------
 NAME=apparmor-parser
 all:
-COMMONDIR=../../common/
+COMMONDIR=../common/
 
 include Make.rules
 
