@@ -1,4 +1,4 @@
-# $Id: apparmor-profiles.spec.in 6375 2006-04-07 06:35:24Z dominic $
+# $Id$
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
@@ -24,7 +24,7 @@
 Summary: AppArmor profiles 
 Name: apparmor-profiles
 Version: @@immunix_version@@
-Release: 11.1
+Release: 12
 Group: Productivity/Security
 Source0: %{name}-%{version}-@@repo_version@@.tar.gz
 License: GPL
@@ -78,6 +78,8 @@ make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro} \
 %preun
 
 %changelog
+* Wed Apr 12 2006 Steve Beattie <sbeattie@suse.de>
+- Move to forge svn repo; fix build issue due to new dir layout
 * Fri Apr 7 2006 Dominic Reynolds <dreynolds@suse.de> 2.0-11.1
 - seth.arnold: 
 - Fix for base (ntpd) - #164150

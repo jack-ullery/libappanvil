@@ -9,7 +9,7 @@
 # ------------------------------------------------------------------
 
 
-  # $Id: user-rcommands 6111 2006-01-22 08:23:01Z dominic $
+  # $Id$
 
   # per-user .rhosts files -- if you don't want to allow them, please
   # comment these line out

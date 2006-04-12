@@ -9,7 +9,7 @@
 # ------------------------------------------------------------------
 
 
-  # $Id: mozilla 6111 2006-01-22 08:23:01Z dominic $
+  # $Id$
 
   # None of us use mozilla as a mail client, irc client, or news client.
   # So, uh, this profile is guaranteed to be insufficient for anything

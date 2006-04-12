@@ -13,7 +13,7 @@
 
 NAME=apparmor-profiles
 ALL:
-COMMONDIR=../../common/
+COMMONDIR=../common/
 
 include Make.rules
 

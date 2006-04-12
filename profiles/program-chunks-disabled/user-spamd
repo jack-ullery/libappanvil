@@ -9,7 +9,7 @@
 # ------------------------------------------------------------------
 
 
-  # $Id: user-spamd 6111 2006-01-22 08:23:01Z dominic $
+  # $Id$
 
   # spamd should just use everything the spamassassin standalone can use
   #include <program-chunks/user-spamassassin>

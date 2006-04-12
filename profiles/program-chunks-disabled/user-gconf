@@ -9,7 +9,7 @@
 # ------------------------------------------------------------------
 
 
-  # $Id: user-gconf 6111 2006-01-22 08:23:01Z dominic $
+  # $Id$
 
   # per-user gconf configuration
   /home/*/.gconfd/lock/*        rwl,

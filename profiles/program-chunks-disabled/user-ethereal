@@ -9,7 +9,7 @@
 # ------------------------------------------------------------------
 
 
-  # $Id: user-ethereal 6111 2006-01-22 08:23:01Z dominic $
+  # $Id$
 
   # per-user storage of configration
   /root/.ethereal/**           rw,

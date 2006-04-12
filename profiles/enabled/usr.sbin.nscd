@@ -1,6 +1,6 @@
 # vim:syntax=apparmor
 # Last Modified: Sun Jan 22 00:12:50 2006
-# $Id: usr.sbin.nscd 6233 2006-02-04 09:00:26Z sarnold $
+# $Id$
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE

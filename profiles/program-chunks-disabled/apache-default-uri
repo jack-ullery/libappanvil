@@ -9,7 +9,7 @@
 # ------------------------------------------------------------------
 
 
-  # $Id: apache-default-uri 6111 2006-01-22 08:23:01Z dominic $
+  # $Id$
 
   # These entries are common document locations that should be served
   # from apache's DEFAULT_URI subprofile.

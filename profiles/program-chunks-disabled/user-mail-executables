@@ -9,7 +9,7 @@
 # ------------------------------------------------------------------
 
 
-  # $Id: user-mail-executables 6111 2006-01-22 08:23:01Z dominic $
+  # $Id$
 
   # sometimes .signatures are rotated through helper programs, or one
   # wishes to pipe a mail message through a shell command

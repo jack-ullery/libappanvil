@@ -9,7 +9,7 @@
 # ------------------------------------------------------------------
 
 
-  # $Id: rsync 6111 2006-01-22 08:23:01Z dominic $
+  # $Id$
 
   # where in the filesystem to allow access?
   /** r,
