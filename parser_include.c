@@ -1,4 +1,4 @@
-/* $Id: parser_include.c 6168 2006-01-27 20:28:31Z steve $ */
+/* $Id$ */
 
 /*
  *   Copyright (c) 2004, 2005 NOVELL (All rights reserved)

@@ -1,4 +1,4 @@
-/*	 $Id: parser_symtab.c 6263 2006-02-11 08:26:48Z steve $ 	*/
+/*	 $Id$ 	*/
 
 /*
  *   Copyright (c) 2005 NOVELL (All rights reserved)
