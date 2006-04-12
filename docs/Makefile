@@ -1,4 +1,4 @@
-# $Id: Makefile 6225 2006-02-04 00:25:12Z steve $
+# $Id$
 # ----------------------------------------------------------------------
 #    Copyright (c) 2004, 2005 NOVELL (All rights reserved)
 #
@@ -49,11 +49,7 @@ MANPAGES			= change_hat.2 \
 				  apparmor_parser.8 apparmor_status.8 mod_apparmor.8
 OLD_MANPAGES			= subdomain.d.5 subdomain.vim.5 \
 				  subdomain.7 subdomain_parser.8
-DOCUMENTS                       = licenses/COPYING \
-				  licenses/Immunix_Commercial_License.html \
-				  licenses/Immunix_Commercial_License.txt \
-				  *.pdf \
-				  immunix.css
+DOCUMENTS                       = immunix.css
 PAPERS=$(wildcard papers/*) 
 
 HTMLMANPAGES=$(foreach manpage, ${MANPAGES}, ${manpage}.html)

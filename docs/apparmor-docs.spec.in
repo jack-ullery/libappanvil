@@ -1,4 +1,4 @@
-# $Id: apparmor-docs.spec.in 6269 2006-02-16 20:29:51Z dominic $
+# $Id$
 # ----------------------------------------------------------------------
 #    Copyright (c) 2004, 2005 NOVELL (All rights reserved)
 #
@@ -26,7 +26,7 @@
 Summary:	Novell AppArmor Host Application Security Suite Documentation package
 Name:		apparmor-docs
 Version:        @@immunix_version@@
-Release:	3.4
+Release:	4
 Group:		Applications/System
 Source0:	%{name}-%{version}-@@repo_version@@.tar.gz
 License:	Other License(s), see package
@@ -44,10 +44,6 @@ This package is part of a suite of tools that used to be named SubDomain.
 
 %prep
 %setup -q
-for file in gpl.txt lesser.txt
-do 
-  cp -a licenses/${file} .
-done 
 
 %build
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
@@ -66,14 +62,14 @@ make install_manpages DESTDIR=$RPM_BUILD_ROOT MANDIR=%{_mandir}
 %{_mandir}/man5/*
 %{_mandir}/man7/*
 %{_mandir}/man8/*
-%doc book.apparmor.admin-online.pdf
-%doc gpl.txt
-%doc lesser.txt
 # html versions of the manpages
 %doc *.[0-9].*html
 %doc immunix.css
 
 %changelog
+* Tue Apr 11 2006 Steve Beattie <sbeattie@use.de>
+- push to novell forge svn (resets repo number alas)
+- eliminate unnecessary licenses and binary documents 
 * Thu Feb 16 2006 Dominic Reynolds <dreynolds@suse.de> 2.0-3.4
 - Updated manual from doc group - includes new naming changes.
 * Mon Jan 30 2006 Steve Beattie <sbeattie@suse.de> 2.0-3.2

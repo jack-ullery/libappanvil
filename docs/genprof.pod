@@ -1,4 +1,4 @@
-# $Id: genprof.pod 6203 2006-02-02 22:03:41Z steve $
+# $Id$
 # This publication is intellectual property of Novell Inc. Its contents
 # can be duplicated, either in part or in whole, provided that a copyright
 # label is visibly located on each copy.

@@ -1,4 +1,4 @@
-# $Id: immunix.pod 5820 2005-11-30 19:51:33Z sarnold $
+# $Id$
 # This publication is intellectual property of Novell Inc. Its contents
 # can be duplicated, either in part or in whole, provided that a copyright
 # label is visibly located on each copy.
