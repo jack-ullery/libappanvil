@@ -72,27 +72,6 @@ B<FILEGLOB> = (non-whitespace characters, must start with '/', B<?*[]{}^> have s
 
 B<ACCESS> = ( 'r' | 'w' | 'l' | 'ix' | 'ux' | 'px' ) I<ACCESS>  (not all combinations are allowed; see below.)
 
-=begin comment
-
-XXX COMMENTED OUT UNTIL APPARMOR SUPPORTS NETDOMAIN
-
-B<NETWORK RULE> = ( 'tcp_connect' | 'tcp_accept' | 'udp_send' | 'udp_receive' ) [ ( 'to' I<IP> | 'from' I<IP> ) ] [ 'via' I<IFACE> ]  (Obviously, at most one 'to' and at most one 'from' is allowed per line.)
-=
-=B<IP> = I<NUM> '.' I<NUM> '.' I<NUM> '.' I<NUM> [ '/' I<NETMASK> ] [ ':' ( I<PORT> | I<PORTRANGE> ) ]
-
-B<NUM> = [0-9]+
-
-B<NETMASK> = I<NUM> [ I<NUM> ... ]  (CIDR notation)
-
-B<PORT> = I<NUM> [ I<NUM> ... ]  (0-65535, inclusive)
-
-B<PORTRANGE> = I<PORT> '-' I<PORT>  (low port, high port, inclusive)
-
-B<IFACE> = [a-z0-9]+  (name of interface; e.g., 'eth0')
-
-=end comment
-
-
 =back
 
 All resources and programs need a full path. There may be any number
@@ -168,8 +147,7 @@ Discrete Profile execute entries.
 
 This mode is useful when a confined program needs to call another
 confined program without gaining the permissions of the target's
-profile, or losing the permissions of the current profile. This mode is
-infrequently used.
+profile, or losing the permissions of the current profile.
 
 =item B<Discrete Profile execute mode>
 
@@ -180,8 +158,8 @@ Inherit and Unconstrained execute entries.
 
 =item B<Link mode>
 
-Allows the program to be able to create a link with this name
-(including symlinks). When a link is created, the file that is being
+Allows the program to be able to create a link with this name.
+When a link is created, the file that is being
 linked to B<MUST> have the same access permissions as the link being
 created (with the exception that the destination does not have to have
 link access.)
@@ -227,77 +205,6 @@ will expand to one rule to match ab, one rule to match cd
 
 =back
 
-=begin comment
-
-=head2 Network Rules
-
-AppArmor also performs mandatory per-process mediation of network
-use, similar to tcp_wrappers (hosts_access(5)). Network access control
-is handled a little differently than file system access control ---
-a process only has network use mediated by AppArmor if there are any
-network rules in the program's profile.
-
-All network rules accept specifications for a "from" address, a "to"
-address, and an interface to use. Leaving a "from" or "to" address
-unspecified is the same as using "0.0.0.0" --- a wildcard equivalent to
-INADDR_ANY. Leaving the ports unspecified for a "from" or "to" address
-is equivalent to using the range 0-65535.
-
-=over 4
-
-=item B<tcp_accept>
-
-is required if a program must be able to use accept(2) to
-accept an incoming TCP session setup handshake. An incoming connection
-that does not match any of the loaded rules is rejected; if no accept
-rule is loaded, the accept(2) system call is quickly rejected with
--EACCES. If the process is allowed to perform an accept(2), rejected
-connections do NOT cause an error out of the system call --- the
-connection is simply dropped with an RST.
-
-=item B<tcp_connect>
-
-is required if a program must be able to use connect(2) to
-initiate an outgoing TCP session setup handshake. An outgoing connection
-that does not match any of the loaded rules is rejected with -EACCES.
-
-(It is a known issue that I<tcp_connect> does not mediate TCP session
-setup when only a "via iface" is specified; read(2) and write(2)
-mediation will still occur, so explicit data transfer is impossible.)
-
-=item B<udp_send>
-
-is required if a program must be able to use send(2), sendto(2),
-sendmsg(2), or write(2) to communicate using a UDP socket. No outgoing
-packet is sent, and -EACCES is returned to the process.
-
-(It is a known issue that I<udp_send> does not mediate outgoing UDP
-packets when only a "via iface" rule is specified. If the socket is
-connected, read(2) and write(2) mediation will still occur; however,
-explicit data transfer is possible.)
-
-=item B<udp_receive>
-
-is required if a program must be able to use recv(2), recvfrom(2),
-recvmsg(2), or read(2) to communicate using a UDP socket. The incoming
-packet is thrown away and no notice is sent to the communicating peer;
-if no receive rule is loaded, the system calls are quickly rejected with
--EACCES. If the process is allowed to receive, rejected packets do NOT
-cause an error out of the system call --- the packet is simply dropped.
-
-=back
-
-Of special note is programs spawned by inetd(8), xinetd(8), tcpserver,
-or similar programs; as the inetd will perform an accept(2) on behalf of
-a configured service, the profile for inetd must include a I<tcp_accept>
-rule that allows connections to the service. In addition, if the program
-spawned by the inetd uses a different profile than the inetd (strongly
-recommended), then the spawned program's profile must also include a
-I<tcp_accept> or I<tcp_connect> rule, so that the short-circuit tests
-may be satisfied.
-
-=end comment
-
 =head2 #include mechanism
 
 AppArmor provides an easy abstraction mechanism to group common file
@@ -321,40 +228,80 @@ descriptions of how some of the abstractions are used.
 
 =over 4
 
+
+=item F<abstractions/audio>
+
+Includes accesses to device files used for audio applications.
+
+=item F<abstractions/authentication>
+
+Includes access to files and services typically necessary for services
+that perform user authentication.
+
 =item F<abstractions/base>
 
-includes files that should be readable and writable in all profiles.
+Includes files that should be readable and writable in all profiles.
 
-=begin comment
+=item F<abstractions/bash>
 
-Note: this profile set is required by programs compiled with the
-Immunix security toolchain - including StackGuard and FormatGuard.
-(Should you need to write a profile that does not include network 
-rules, you may I<#include E<lt>program-chunks/base-filesE<gt>>, 
-which is only the file portions of the F<abstractions/base> 
-abstraction.)
-
-=end comment
-
-=item F<abstractions/nameservice>
-
-includes file rules to allow DNS, LDAP, NIS, SMB, user and group password
-databases, services, and protocols lookups.
+Includes many files used by bash; useful for interactive shells and
+programs that call system(3).
 
 =item F<abstractions/consoles>
 
-includes read and write access to the device files controlling the
+Includes read and write access to the device files controlling the
 virtual console, sshd(8), xterm(1), etc. This abstraction is needed for
 many programs that interact with users.
 
-=item F<abstractions/wutmp>
+=item F<abstractions/fonts>
 
-includes write access to files used to maintain wtmp(5) and utmp(5)
-databases, used with the w(1) and associated commands.
+Includes access to fonts and the font libraries.
+
+=item F<abstractions/gnome>
+
+Includes read and write access to GNOME configuration files, as well as
+read access to GNOME libraries.
+
+=item F<abstractions/kde>
+
+Includes read and write access to KDE configuration files, as well as
+read access to KDE libraries.
 
 =item F<abstractions/kerberosclient>
 
-includes file access rules needed for common kerberos clients.
+Includes file access rules needed for common kerberos clients.
+
+=item F<abstractions/nameservice>
+
+Includes file rules to allow DNS, LDAP, NIS, SMB, user and group password
+databases, services, and protocols lookups.
+
+=item F<abstractions/perl>
+
+Includes read access to perl modules.
+
+=item F<abstractions/user-download>
+
+=item F<abstractions/user-mail>
+
+=item F<abstractions/user-manpages>
+
+=item F<abstractions/user-tmp>
+
+=item F<abstractions/user-write>
+
+Some profiles for typical "user" programs will use these include files
+to describe rights that users have in the system.
+
+=item F<abstractions/wutmp>
+
+Includes write access to files used to maintain wtmp(5) and utmp(5)
+databases, used with the w(1) and associated commands.
+
+=item F<abstractions/X>
+
+Includes read access to libraries, configuration files, X authentication
+files, and the X socket.
 
 =back
 
@@ -362,15 +309,15 @@ The abstractions stored in F</etc/apparmor.d/program-chunks/> are
 intended for use by specific program suites, and are not generally
 useful.
 
-=begin comment
-
-most networking rules have been
-placed in these files to facilitate better constraints. (The AppArmor
-network policies allow communication with all IP addresses, and restrict
-access to specific ports only. A system administrator may wish to allow
-certain services to communicate only with specific subnets.)
-
-=end comment
+Some of the abstractions rely on variables that are set in files in the
+F</etc/apparmor.d/tunables/> directory. These variables are currently
+B<@{HOME}> and B<@{HOMEDIR}>. Variables cannot be set in profile scope;
+they can only be set before the profile. Therefore, any profiles that
+use abstractions should either B<#include E<lt>tunables/globalE<gt>> or
+otherwise ensure that B<@{HOME}> and B<@{HOMEDIR}> are set before
+starting the profile definition. The autodep(8) and genprof(8) utilities
+will automatically emit B<#include E<lt>tunables/globalE<gt>> in
+generated profiles.
 
 =head1 EXAMPLE
 
