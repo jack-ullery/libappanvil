@@ -1,7 +1,0 @@
-Make.rules
-subdomain_parser-*.tar.gz
-subdomain_parser-*.tgz
-subdomain_parser
-parser_lex.c
-parser_yacc.[ch]
-parser_version.h
