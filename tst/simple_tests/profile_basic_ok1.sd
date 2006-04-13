@@ -1,0 +1,19 @@
+#
+# $Id: flags_ok.sd 4342 2005-04-18 22:21:03Z steve $
+#=DESCRIPTION Basic parsing test, duplicate mode bits
+#=EXRESULT PASS
+# vim:syntax=subdomain
+# Last Modified: Sun Apr 17 19:44:44 2005
+#
+/does/not/exist {
+  #include <abstractions/base>
+
+  /usr/X11R6/lib/lib*so* rRr,
+  /does/not/exist r,
+  /var/log/messages wWw,
+  /tmp/sd*.foo rwRWwrlL,
+  /bin/cat PxpxpXPXpx,
+  /bin/ls iXIXIxIX,
+  /bin/echo uXUXuxUxuX,
+}
+

@@ -1,0 +1,13 @@
+#
+# $Id: flags_bad2.sd 5662 2005-11-07 09:55:28Z steve $
+#=DESCRIPTION Don't accept other keyword as a flag
+#=EXRESULT FAIL
+# vim:syntax=subdomain
+# Last Modified: Sun Apr 17 19:44:44 2005
+#
+/does/not/exist flags=(capability) {
+  #include <abstractions/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist r,
+}
