@@ -54,13 +54,13 @@ B<COMMENT> = '#' I<TEXT>
 
 B<TEXT> = any characters
 
-B<PROFILE> = [ I<COMMENT> ... ] I<PROGRAM> [ I<flags=(complain)> ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}' [ I<SUBPROFILE> ... ]
+B<PROFILE> = [ I<COMMENT> ... ] I<PROGRAM> [ I<flags=(complain)> ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> ) ... ] '}'
 
 B<SUBPROFILE> = [ I<COMMENT> ... ] I<PROGRAMHAT> '{' [ ( I<FILE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}'
 
 B<PROGRAM> = (non-whitespace characters except for B<^>, must start with '/')
 
-B<PROGRAMHAT> = I<PROGRAM> '^'  (non-whitespace characters; see change_hat(2) for a description of how this "hat" is used.)
+B<PROGRAMHAT> = '^'  (non-whitespace characters; see change_hat(2) for a description of how this "hat" is used.)
 
 B<RESOURCE RULE> = ( I<FILE RULE> | I<NETWORK RULE> ) ','
 
@@ -76,8 +76,8 @@ B<ACCESS> = ( 'r' | 'w' | 'l' | 'ix' | 'ux' | 'px' ) I<ACCESS>  (not all combina
 
 All resources and programs need a full path. There may be any number
 of subprofiles ("hats") in a profile, limited only by kernel memory.
-Subprofile names are limited to 974 characters. Subprofiles must be in the
-same file as the parent profile. Not all profiles benefit from subprofiles
+Subprofile names are limited to 974 characters.
+Not all profiles benefit from subprofiles
 --- applications must either be written or modified to use change_hat(2)
 to take advantage of subprofiles. (An Apache module, mod_apparmor(5)
 has been provided to use change_hat(2).)
