@@ -22,6 +22,8 @@
 }
 /lib64/ld-2.3.90.so {
 }
+/lib64/ld-2.4.so {
+}
 /lib64/ld-linux.so.2 {
 }
 /lib64/ld-lsb.so.1 {
@@ -37,6 +39,8 @@
 /lib/ld-2.3.4.so {
 }
 /lib/ld-2.3.90.so {
+}
+/lib/ld-2.4.so {
 }
 /lib/ld-linux.so.2 {
 }
