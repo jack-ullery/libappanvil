@@ -1,0 +1,17 @@
+The profiles in this directory are not turned on by default because they
+are not as mature as the profiles in /etc/apparmor.d/.
+
+In some cases, it is because the profile hasn't been updated to work
+with newer code; in other cases, it because any benefit provided by the
+profile is much less than the potential for causing problems.
+
+In short, feel free to try these profiles if you wish, but be aware that
+they may not work on default configurations, let alone your specific
+configuration.
+
+Feedback on these is welcomed; any contributions for this directory
+should be clearly licensed -- we recommend using the GPL. Please mail
+suggestions or modifications to the apparmor-general@forge.novell.com
+mail list: http://forge.novell.com/mailman/listinfo/apparmor-general
+
+Thanks
