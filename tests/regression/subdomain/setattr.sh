@@ -71,14 +71,20 @@ newgid=$(awk -F: "/^${newgroup}:/ {print \$3}" /etc/group)
 touch $file
 chmod $origfileperm $file
 
+# NOTE on the ordering of tests: XFS requires the FOWNER capability 
+# to chgrp a file that you are not the owner of; linux's vfs layer will
+# allow you to do it if you are in the group of the file without FOWNER.
+# Therefore, we should do the chgrp test BEFORE changing the owner of
+# the file.
+
 # PASS TEST (UNCONSTRAINED)
 
 settest chmod
 runchecktest "CHMOD (unconstrained)" pass $file $newfileperm
-settest chown
-runchecktest "CHOWN (unconstrained)" pass $file $newuid
 settest chgrp
 runchecktest "CHGRP (unconstrained)" pass $file $newgid
+settest chown
+runchecktest "CHOWN (unconstrained)" pass $file $newuid
 
 checkfile $file "unconstrained" $newfilepermstr $newuser $newgroup
 
@@ -91,13 +97,13 @@ settest chmod
 genprofile $file:$okperm 
 runchecktest "CHMOD (constrained $okperm)" pass $file 000
 
-settest chown
-genprofile $file:$okperm $pwfiles capability:chown
-runchecktest "CHOWN (constrained $okperm)" pass $file $newuid
-
 settest chgrp
 genprofile $file:$okperm $pwfiles capability:chown
 runchecktest "CHGRP (constrained $okperm)" pass $file $newgid
+
+settest chown
+genprofile $file:$okperm $pwfiles capability:chown
+runchecktest "CHOWN (constrained $okperm)" pass $file $newuid
 
 checkfile $file "constrained $okperm" $newfilepermstr $newuser $newgroup
 
@@ -110,12 +116,12 @@ settest chmod
 genprofile $file:$badperm $pwfiles
 runchecktest "CHMOD (constrained $badperm)" fail $file 000
 
-settest chown
-genprofile $file:$badperm $pwfiles
-runchecktest "CHOWN (constrained $badperm)" fail $file $newuid
-
 settest chgrp
 genprofile $file:$badperm $pwfiles
 runchecktest "CHGRP (constrained $badperm)" fail $file $newgid
+
+settest chown
+genprofile $file:$badperm $pwfiles
+runchecktest "CHOWN (constrained $badperm)" fail $file $newuid
 
 checkfile $file "constrained $badperm" $origfilepermstr $origuser $origgroup
