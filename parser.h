@@ -213,3 +213,4 @@ extern void free_policy(struct codomain *cod);
 extern void dump_policy(void);
 extern void dump_policy_hats(struct codomain *cod);
 extern void dump_policy_names(void);
+extern int die_if_any_regex(void);

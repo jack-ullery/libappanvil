@@ -117,6 +117,56 @@ int merge_hat_rules(struct codomain *cod)
 	return 0;
 }
 
+int die_if_any_regex(void);
+static int die_if_any_hat_regex(struct codomain *cod);
+static int any_regex_entries(struct cod_entry *entry_list);
+
+/* only call if regex is not allowed */
+static void __any_regex(const void *nodep, const VISIT value,
+		        const int __unused depth)
+{
+	struct codomain **t = (struct codomain **) nodep;
+
+	if (value == preorder || value == endorder)
+		return;
+
+	if (any_regex_entries(*t)) {
+		PERROR(_("ERROR profile %s contains policy elements not usable with this kernel:\n"
+			 "\t'*', '?', character ranges, and alternations are not allowed.\n"
+			 "\t'**' may only be used at the end of a rule.\n"),
+			(*t)->name);
+		exit(1);
+	}
+
+	die_if_any_hat_regex(*t);
+}
+
+/* only call if regex is not allowed */
+int die_if_any_regex(void)
+{
+	twalk(policy_list, __any_regex);
+	return 0;
+}
+
+/* only call if regex is not allowed */
+static int die_if_any_hat_regex(struct codomain *cod)
+{
+	twalk(cod->hat_table, __any_regex);
+	return 0;
+}
+
+static int any_regex_entries(struct cod_entry *entry_list)
+{
+	struct cod_entry *entry;
+
+	for (entry = entry_list; entry; entry = entry->next) {
+		if (entry->pattern_type == ePatternRegex)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
 static void __process_regex(const void *nodep, const VISIT value,
 			    const int __unused depth)
 {
