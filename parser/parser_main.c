@@ -44,7 +44,9 @@
 #define OLD_MODULE_NAME "subdomain"
 #define PROC_MODULES "/proc/modules"
 #define DEFAULT_APPARMORFS "/sys/kernel/security/" MODULE_NAME
+#define MATCH_STRING "/sys/kernel/security/" MODULE_NAME "/matching"
 #define MOUNTED_FS "/proc/mounts"
+#define PCRE "pattern=pcre"
 
 #define UNPRIVILEGED_OPS (debug || preprocess_only || option == OPTION_STDOUT || names_only || \
 			  dump_vars || dump_expanded_vars)
@@ -59,6 +61,7 @@ int dump_vars = 0;
 int dump_expanded_vars = 0;
 char *subdomainbase = NULL;
 char *profilename;
+char *match_string = NULL;
 
 struct option long_options[] = {
 	{"add", 		0, 0, 'a'},
@@ -77,6 +80,7 @@ struct option long_options[] = {
 	{"remove",		0, 0, 'R'},
 	{"names",		0, 0, 'N'},	/* undocumented only emit profilenames */
 	{"stdout",		0, 0, 'S'},
+	{"match-string",	1, 0, 'm'},
 	{NULL, 0, 0, 0},
 };
 
@@ -105,7 +109,8 @@ static void display_usage(char *command)
 	       "-I n, --Include n	Add n to the search path\n"
 	       "-b n, --base n		Set base dir and cwd\n"
 	       "-f n, --subdomainfs n	Set location of apparmor filesystem\n"
-	       "-S, --stdout		Write output to stdout\n", command);
+	       "-S, --stdout		Write output to stdout\n"
+	       "-m n, --match-string n  Use only match features n\n", command);
 }
 
 static int process_args(int argc, char *argv[])
@@ -114,7 +119,7 @@ static int process_args(int argc, char *argv[])
 	int option = OPTION_ADD;
 	int count = 0;
 
-	while ((c = getopt_long(argc, argv, "adf:hrRvpI:b:CNS", long_options, &o)) != -1)
+	while ((c = getopt_long(argc, argv, "adf:hrRvpI:b:CNSm:", long_options, &o)) != -1)
 	{
 		switch (c) {
 		case 0:
@@ -173,6 +178,9 @@ static int process_args(int argc, char *argv[])
 			break;
 		case 'E':
 			dump_expanded_vars = 1;
+			break;
+		case 'm':
+			match_string = strdup(optarg);
 			break;
 		default:
 			display_usage(progname);
@@ -342,6 +350,51 @@ int have_enough_privilege(void)
 	return 0;
 }
 
+/* match_string == NULL --> no match_string available
+   match_string != NULL --> either a matching string specified on the
+   command line, or the kernel supplied a match string */
+static void get_match_string(void) {
+
+	/* has process_args() already assigned a match string? */
+	if (match_string)
+		return;
+
+	FILE *ms = fopen(MATCH_STRING, "r");
+	if (!ms)
+		return;
+
+	match_string = malloc(1000);
+	if (!match_string) {
+		goto out;
+	}
+
+	if (!fgets(match_string, 1000, ms)) {
+		free(match_string);
+		match_string = NULL;
+	}
+
+out:
+	fclose(ms);
+	return;
+}
+
+/* return 1 --> PCRE should work fine
+   return 0 --> no PCRE support */
+static int pcre_support(void) {
+
+	get_match_string();
+
+	/* no match string, predates (or postdates?) the split matching
+	module design */
+	if (!match_string)
+		return 1;
+
+	if (strstr(match_string, PCRE))
+		return 1;
+
+	return 0;
+}
+
 int process_profile(int option, char *profilename)
 {
 	int retval = 0;
@@ -386,6 +439,10 @@ int process_profile(int option, char *profilename)
 
 	if (!subdomainbase && !preprocess_only && !(option == OPTION_STDOUT))
 			find_subdomainfs_mountpoint();
+
+	if (!pcre_support()) {
+		die_if_any_regex();
+	}
 
 	retval = load_policy(option);
 
