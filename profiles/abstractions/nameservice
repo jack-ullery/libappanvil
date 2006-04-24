@@ -23,8 +23,8 @@
   /etc/resolv.conf        r,
   /etc/samba/lmhosts      r,
   /etc/services           r,
-  # is this file for openldap servers or clients? wombat makes me think clients
-  /etc/openldap/ldap.conf r,
+  # all openldap config
+  /etc/openldap/*         r,
   # The Name Service Cache Daemon can cache lookups, sometimes leading
   # to vast speed increases when working with network-based lookups.
   /var/run/.nscd_socket   rw,
