@@ -54,9 +54,12 @@ B<COMMENT> = '#' I<TEXT>
 
 B<TEXT> = any characters
 
-B<PROFILE> = [ I<COMMENT> ... ] I<PROGRAM> [ I<flags=(complain)> ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> ) ... ] '}'
+B<PROFILE> = [ I<COMMENT> ... ] I<PROGRAM> [ I<flags=(complain)> ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> ) ... ] '}'
 
 B<SUBPROFILE> = [ I<COMMENT> ... ] I<PROGRAMHAT> '{' [ ( I<FILE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}'
+
+B<CAPABILITY> = (lowercase capability name without 'CAP_' prefix; see
+capabilities(7))
 
 B<PROGRAM> = (non-whitespace characters except for B<^>, must start with '/')
 
@@ -171,6 +174,19 @@ link access.)
 Comments start with # and may begin at any place within a line. The
 comment ends when the line ends. This is the same comment style as
 shell scripts.
+
+=head2 Capabilities
+
+The only capabilities a confined process may use may be enumerated; for
+the complete list, please refer to capabilities(7). Note that granting
+some capabilities renders AppArmor confinement for that domain advisory;
+while open(2), read(2), write(2), etc., will still return error when
+access is not granted, some capabilities allow loading kernel modules,
+arbitrary access to IPC, ability to bypass discretionary access controls,
+and other operations that are typically reserved for the root user.
+
+The only operations that cannot be controlled in this manner are mount(2)
+and umount(2), which are always denied to confined processes.
 
 =head2 Globbing
 
