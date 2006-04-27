@@ -46,13 +46,15 @@
   /usr/share/ssl/certs/ca-bundle.crt          r,
   /usr/share/ssl/openssl.cnf                  r,
 
-  /var/spool/postfix/pid/inet.smtp            rw,
-  /var/spool/postfix/pid/inet.smtps           rw,
-  /var/spool/postfix/private/proxymap         w,
-  /var/spool/postfix/private/rewrite          w,
-  /var/spool/postfix/public/cleanup           w,
-  /public/cleanup                             w,
-  /private/rewrite                            w,
+  /{var/spool/postfix,}/pid/inet.smtp            rw,
+  /{var/spool/postfix,}/pid/inet.smtps           rw,
+  /{var/spool/postfix,}/private/anvil            w,
+  /{var/spool/postfix,}/private/proxymap         w,
+  /{var/spool/postfix,}/private/rewrite          w,
+  /{var/spool/postfix,}/private/tlsmgr           w,
+  /{var/spool/postfix,}/public/cleanup           w,
+
+  /var/run/sasl2/mux                             w,
 
   /proc/net/if_inet6                          r,
   /proc/cpuinfo                               r,

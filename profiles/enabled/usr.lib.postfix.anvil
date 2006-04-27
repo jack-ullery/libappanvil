@@ -1,0 +1,30 @@
+# $Id: usr.lib.postfix.anvil 6222 2006-02-03 23:42:57Z varkoly $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2006 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+#include <tunables/global>
+
+/usr/lib/postfix/anvil {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/kerberosclient>
+  #include <program-chunks/postfix-common>
+
+  capability setgid,
+  capability setuid,
+
+  /usr/lib/postfix/anvil                      rix,
+
+  /etc/postfix/main.cf                        r,
+  /var/spool/postfix/private/anvil            rw,
+  /var/spool/postfix/pid/unix.anvil           rw,
+  /proc/net/if_inet6                          r,
+  /proc/sys/kernel/ngroups_max                r,
+}

@@ -27,6 +27,7 @@
   /var/spool/postfix/private/tlsmgr            rwl,
   /var/spool/postfix/public/{cleanup,flush,pickup,qmgr,showq,tlsmgr} rwl,
 
+  /usr/lib/postfix/anvil                       px,
   /usr/lib/postfix/bounce                      px,
   /usr/lib/postfix/cleanup                     px,
   /usr/lib/postfix/flush                       px,
@@ -35,6 +36,7 @@
   /usr/lib/postfix/nqmgr                       px,
   /usr/lib/postfix/proxymap                    px,
   /usr/lib/postfix/pickup                      px,
+  /usr/lib/postfix/pipe                        px,
   /usr/lib/postfix/qmgr                        px,
   /usr/lib/postfix/scache                      px,
   /usr/lib/postfix/showq                       px,
