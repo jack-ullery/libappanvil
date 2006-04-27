@@ -21,6 +21,7 @@
   capability net_bind_service,
 
   /etc/nscd.conf r,
+  /proc/meminfo r,
   /proc/*/fd r,
   /proc/*/fd/* r,
   /proc/*/maps r,
