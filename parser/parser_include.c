@@ -191,7 +191,7 @@ int add_search_dir(char *dir)
 		return 0;
 	}
 
-	if (strlen(dir) <= 0)
+	if (!dir || strlen(dir) <= 0)
 		return 1;
 
 	t = malloc(strlen(dir) + 1);
