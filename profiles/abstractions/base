@@ -74,3 +74,8 @@
   # Depending on which glibc routine uses this file, base may not be the
   # best place -- but many profiles require it, and it is quite harmless.
   /proc/sys/kernel/ngroups_max   r,
+
+  # glibc's sysconf(3) routine to determine free memory, etc
+  /proc/meminfo                  r,
+  /proc/stat                     r,
+  /proc/cpuinfo                  r,
