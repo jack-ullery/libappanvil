@@ -34,4 +34,5 @@
   /var/run/named.pid wl,
   /var/run/named/named.pid wl,
   /var/run/ndc wl,
+  /slave/tmp-* rw,
 }
