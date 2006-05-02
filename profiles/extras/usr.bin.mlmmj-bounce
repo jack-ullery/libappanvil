@@ -1,4 +1,4 @@
-# $Id: usr.lib.postfix.tlsmgr 12 2006-04-12 21:35:41Z steve-beattie $
+# $Id$
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
