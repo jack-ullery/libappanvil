@@ -8,5 +8,5 @@ all: tests
 
 .PHONY: tests
 tests: 
-	${PROVE} ${TESTS}
+	pushd . && ${PROVE} ${TESTS} && popd
 

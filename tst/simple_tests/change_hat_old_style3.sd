@@ -21,7 +21,7 @@
 }
 
 /does/not/exist {
-  #include <abstractions/base>
+  #include <includes/base>
 
   /usr/X11R6/lib/lib*so* r,
   /usr/bin/emacs r,

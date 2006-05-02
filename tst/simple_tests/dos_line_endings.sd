@@ -3,14 +3,8 @@
 #=DESCRIPTION dos line endings
 #=EXRESULT PASS
 /usr/lib/RealPlayer10/realplay {
-  #include <abstractions/base>
-  #include <abstractions/bash>
-  #include <abstractions/consoles>
-  #include <abstractions/fonts>
-  #include <abstractions/kde>
-  #include <abstractions/nameservice>
-  #include <abstractions/gnome>
-  #include <abstractions/user-download>
+  #include <includes/base>
+  #include <includes/fonts>
 
   /bin/bash ix,
   /bin/sed ixr,

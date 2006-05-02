@@ -1,6 +1,6 @@
 #
 #=DESCRIPTION A helper for includes_okay.sd
 #
-  #include <abstractions/nameservice>
+  #include <includes/fonts>
 
   /tmp/** r,
