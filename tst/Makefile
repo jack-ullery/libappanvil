@@ -7,6 +7,8 @@ TESTS=simple.pl
 all: tests
 
 .PHONY: tests
-tests: 
+tests: ../apparmor_parser
 	pushd . && ${PROVE} ${TESTS} && popd
 
+../apparmor_parser:
+	make -C .. apparmor_parser
