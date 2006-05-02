@@ -3,6 +3,6 @@
 #=EXRESULT FAIL
 #
 /does/not/exist {
-  #include <abstractions/base>
+  #include <includes/base>
   #include <does-not-exist/does-not-exist>
 }

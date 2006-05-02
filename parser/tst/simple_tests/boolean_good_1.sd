@@ -8,5 +8,5 @@ $HO_HUM=TRUE
 $MEEP                            =                                                                                                                                                                                                         true
 
 /bin/foo {
-  #include <abstractions/base>
+  #include <includes/base>
 }

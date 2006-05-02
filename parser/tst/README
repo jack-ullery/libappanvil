@@ -37,9 +37,13 @@ proper)
 
 The simple script has the parser attempt to parse all of the profiles
 named *.sd in the simple_tests/ subdirectory; thus, to add a new profile
-to test, simply add it to the simple_tests/ directory. The simple script
-also adds the testdir (simple_tests/ by default) to the parsers include
-path (assuming that particular bug has been fixed :-)).
+to test, simply add it to the simple_tests/ directory. The simple
+script also adds the testdir (simple_tests/ by default) to the parsers
+include path (assuming that particular bug has been fixed :-)). There
+is an includes/ subdir to place additional includes if necessary (we
+purposefully choose to use different directory names versus the shipped
+profiles to minimize testsuite breakage with changes in the external
+policy).
 
 The simple script looks for a few special comments in the profile,
 #=DESCRIPTION, #=EXRESULT, and #=TODO:

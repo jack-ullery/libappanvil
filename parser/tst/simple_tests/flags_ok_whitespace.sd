@@ -6,21 +6,21 @@
 # Last Modified: Sun Apr 17 19:44:44 2005
 #
 /does/not/exist3 flags=(complain, audit) {
-  #include <abstractions/base>
+  #include <includes/base>
 
   /usr/X11R6/lib/lib*so* r,
   /does/not/exist5 r,
 }
 
 /does/not/exist4 flags = (audit , complain){
-  #include <abstractions/base>
+  #include <includes/base>
 
   /usr/X11R6/lib/lib*so* r,
   /does/not/exist7 r,
 }
 
 /does/not/exist5 flags 	= (	audit , complain  	, audit ) {
-  #include <abstractions/base>
+  #include <includes/base>
 
   /usr/X11R6/lib/lib*so* r,
   /does/not/exist8 r,

@@ -6,25 +6,25 @@
 # Last Modified: Sun Apr 17 19:44:44 2005
 #
 /HAT1 {
-  #include <abstractions/base>
+  #include <includes/base>
   /usr/X11R6/lib/lib*so* r,
   /usr/bin/emacs r,
 }
 
 /HAT2 {
-  #include <abstractions/base>
+  #include <includes/base>
   /usr/X11R6/lib/lib*so* r,
   /usr/bin/emacs r,
 }
 
 /HAT3 {
-  #include <abstractions/base>
+  #include <includes/base>
   /usr/X11R6/lib/lib*so* r,
   /usr/bin/emacs r,
 }
 
 /does/not/exist1 {
-  #include <abstractions/base>
+  #include <includes/base>
 
 # hat 1
   ^/HAT1 {
@@ -38,7 +38,7 @@
 }
 
 /does/not/exist2 {
-  #include <abstractions/base>
+  #include <includes/base>
 
 # hat 1
   ^/HAT1 {
@@ -52,7 +52,7 @@
 }
 
 /does/not/exist3 {
-  #include <abstractions/base>
+  #include <includes/base>
 
 # hat 1
   ^/HAT1 {
