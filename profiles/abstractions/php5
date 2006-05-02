@@ -1,0 +1,31 @@
+# $Id: audio 12 2006-04-12 21:35:41Z steve-beattie $
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2006 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+  # shared snippets for config files
+  /etc/php5/conf.d r,
+  /etc/php5/conf.d/*.ini r,
+
+  # fastcgi specific config
+  /etc/php5/fastcgi/php.ini r,
+
+  # Xlibs
+  /usr/X11R6/lib{64,}/lib*.so* r,
+  # php extensions
+  /usr/lib{64,}/php5/extensions/*.so r,
+
+  # php5 session mmap socket
+  /var/lib/php5/session_mm_* rwl,
+  # file based session handler
+  /var/lib/php5/sess_* rwl,
+
+  # php libraries
+  /usr/share/php r,
+  /usr/share/php/** r,

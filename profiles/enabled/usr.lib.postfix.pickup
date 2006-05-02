@@ -19,14 +19,10 @@
 
   /usr/lib/postfix/pickup                     rix,
 
-  /maildrop                                   r,
-  /maildrop/*                                 rwl,
-  /public/cleanup                             w,
-  /public/pickup                              r,
   /proc/sys/kernel/ngroups_max                r,
-  /var/spool/postfix/public/pickup            r,
-  /var/spool/postfix/maildrop                 r,
-  /var/spool/postfix/maildrop/*               rwl,
-  /var/spool/postfix/public/cleanup           w,
 
+  /{var/spool/postfix/,}public/cleanup           w,
+  /{var/spool/postfix/,}public/pickup            r,
+  /{var/spool/postfix/,}maildrop                 r,
+  /{var/spool/postfix/,}maildrop/*               rwl,
 }

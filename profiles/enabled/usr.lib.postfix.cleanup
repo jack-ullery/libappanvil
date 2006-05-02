@@ -27,9 +27,9 @@
   /{var/spool/postfix/,}incoming/[0-9A-F]*                rwl,
   /{var/spool/postfix/,}private/{rewrite,bounce}          w,
   /{var/spool/postfix/,}public/qmgr                       w,
+  /{var/spool/postfix/,}pid/unix.cleanup         rw,
   /etc/{m,fs}tab                              r,
   /etc/postfix/*                              r,
   /proc/sys/kernel/ngroups_max                r,
   /proc/{stat,cpuinfo}                        r,
-  /var/spool/postfix/pid/unix.cleanup         rw,
 }

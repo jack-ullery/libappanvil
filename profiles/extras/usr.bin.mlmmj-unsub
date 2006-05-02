@@ -1,4 +1,4 @@
-# $Id$
+# $Id: usr.lib.postfix.tlsmgr 12 2006-04-12 21:35:41Z steve-beattie $
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
@@ -12,13 +12,17 @@
 
 #include <tunables/global>
 
-/usr/lib/postfix/tlsmgr {
+/usr/bin/mlmmj-unsub {
   #include <abstractions/base>
-  #include <abstractions/nameservice>
-  #include <program-chunks/postfix-common>
 
-  /etc/postfix/prng_exch            rw,
-  /proc/sys/kernel/ngroups_max      r,
-  /usr/lib/postfix/tlsmgr           r,
-  /{var/spool/postfix/,}private/tlsmgr r,
+  /usr/bin/mlmmj-unsub r,
+  /usr/bin/mlmmj-send px,
+  /var/spool/mlmmj/*/control/* r,
+  /var/spool/mlmmj/*/text/* r,
+  /var/spool/mlmmj/*/subscribers.d r,
+  /var/spool/mlmmj/*/subscribers.d/* r,
+
+  /var/spool/mlmmj/*/queue/* rwl,
+  /var/spool/mlmmj/*/unsubconf/* rwl,
+  /var/spool/mlmmj/*/subscribers.d/* rwl,
 }

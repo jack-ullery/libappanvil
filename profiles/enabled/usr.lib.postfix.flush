@@ -41,6 +41,7 @@
   /{var/spool/postfix/,}incoming/[a-z]/[a-z]*        rwl,
   /{var/spool/postfix/,}incoming/[a-z]*              rwl,
   /{var/spool/postfix/,}public/qmgr                  w,
+  /{var/spool/postfix/,}pid/unix.flush               rw,
   /etc/mtab                                          r,
   /etc/postfix/main.cf                        r,
   /etc/postfix/virtual.db                     r,
@@ -49,6 +50,5 @@
 
   /proc/stat                                  r,
   /proc/sys/kernel/ngroups_max                r,
-  /var/spool/postfix/pid/unix.flush           rw,
 
 }

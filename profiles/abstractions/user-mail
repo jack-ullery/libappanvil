@@ -21,10 +21,5 @@
   @{HOME}/mbox          rw,
   @{HOME}/inbox         rw,
   @{HOME}/.forward	r,
-
-  # location of configuration files -- maybe these should go elsewhere
-  @{HOME}/.muttrc       r,
-  @{HOME}/.mutt_alias   r,
-  @{HOME}/.mailcap      r,
-  @{HOME}/.mime.types   r,
-
+  @{HOME}/Maildir       r,
+  @{HOME}/Maildir/**    rw,

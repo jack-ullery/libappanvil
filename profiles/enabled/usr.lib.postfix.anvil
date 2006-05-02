@@ -23,8 +23,8 @@
   /usr/lib/postfix/anvil                      rix,
 
   /etc/postfix/main.cf                        r,
-  /var/spool/postfix/private/anvil            rw,
-  /var/spool/postfix/pid/unix.anvil           rw,
+  /{var/spool/postfix/,}private/anvil         rw,
+  /{var/spool/postfix/,}pid/unix.anvil        rw,
   /proc/net/if_inet6                          r,
   /proc/sys/kernel/ngroups_max                r,
 }

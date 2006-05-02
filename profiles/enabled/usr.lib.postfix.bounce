@@ -38,11 +38,11 @@
   /{var/spool/postfix/,}trace/[0-9A-F]/[0-9A-F]*                   rwl,
   /{var/spool/postfix/,}trace/[0-9A-F]*                            rwl,
   /{var/spool/postfix/,}public/cleanup                             w,
+  /{var/spool/postfix/,}pid/unix.bounce          rw,
+  /{var/spool/postfix/,}pid/unix.defer           rw,
+  /{var/spool/postfix/,}pid/unix.trace           rw,
 
   /etc/postfix/main.cf                        r,
-  /var/spool/postfix/pid/unix.bounce          rw,
-  /var/spool/postfix/pid/unix.defer           rw,
-  /var/spool/postfix/pid/unix.trace           rw,
   /proc/net/if_inet6                          r,
   /proc/sys/kernel/ngroups_max                r,
 }
