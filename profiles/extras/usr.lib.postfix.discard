@@ -12,7 +12,7 @@
 
 #include <tunables/global>
 
-/usr/lib/postfix/discard flags=(complain) {
+/usr/lib/postfix/discard {
   #include <abstractions/base>
 
   /usr/lib/postfix/discard r,

@@ -11,7 +11,7 @@
 
 #include <tunables/global>
 
-/usr/lib/postfix/lmtp flags=(complain) {
+/usr/lib/postfix/lmtp {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/kerberosclient>

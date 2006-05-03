@@ -12,7 +12,7 @@
 
 #include <tunables/global>
 
-/usr/lib/postfix/oqmgr flags=(complain) {
+/usr/lib/postfix/oqmgr {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <program-chunks/postfix-common>
