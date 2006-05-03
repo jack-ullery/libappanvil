@@ -24,7 +24,7 @@
   #include <abstractions/user-tmp>
   #include <program-chunks/postfix-common>
 
-  /usr/bin/procmail           ux,
+  /usr/bin/procmail           px,
 
   /etc/aliases.db             rw,
   /etc/aliases                rw,
@@ -60,7 +60,7 @@
   /usr/lib/sasl2/*            r,
   /usr/lib/sasl               r,
   /usr/lib/sasl/*             r,
-  /usr/sbin/postfix           ux,
+  /usr/sbin/postfix           px,
   /usr/sbin/postalias         px,
   /usr/sbin/postdrop          px,
   /usr/sbin/postqueue         px,

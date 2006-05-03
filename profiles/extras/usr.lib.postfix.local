@@ -19,7 +19,7 @@
   #include <abstractions/user-mail>
   #include <program-chunks/postfix-common>
 
-  /usr/bin/procmail                                     ux,
+  /usr/bin/procmail                                     px,
 
   /usr/lib/mailman/mail/mailman                         px,
   /var/mailman/mail/wrapper                             px,
