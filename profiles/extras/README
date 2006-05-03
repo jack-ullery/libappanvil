@@ -9,9 +9,33 @@ In short, feel free to try these profiles if you wish, but be aware that
 they may not work on default configurations, let alone your specific
 configuration.
 
-Feedback on these is welcomed; any contributions for this directory
-should be clearly licensed -- we recommend using the GPL. Please mail
-suggestions or modifications to the apparmor-general@forge.novell.com
-mail list: http://forge.novell.com/mailman/listinfo/apparmor-general
+To use, for example, the postfix profiles, we recommend running commands
+such as:
+
+  # cd /etc/apparmor/profiles/extras
+  # mv *postfix* usr.bin.procmail usr.sbin.sendmail /etc/apparmor.d/
+  # aa-complain /etc/apparmor.d/*postfix*
+  # aa-complain /etc/apparmor.d/usr.bin.procmail
+  # aa-complain /etc/apparmor.d/usr.sbin.sendmail
+  # rcapparmor restart
+    <use postfix>
+  # aa-logprof
+    <answer some questions>
+
+Once you've used the profiles enough to feel confident that they will
+work for your situation, then run commands such as the following:
+
+  # aa-enforce /etc/apparmor.d/*postfix*
+  # aa-enforce /etc/apparmor.d/usr.bin.procmail 
+  # aa-enforce /etc/apparmor.d/usr.sbin.sendmail
+
+You may use the aa-unconfined tool to make sure your profiles are
+working as you expect.
+
+Feedback on these unsupported profiles is welcomed; any
+contributions for this directory should be clearly licensed
+-- we recommend using the GPL. Please mail suggestions or
+modifications to the apparmor-general@forge.novell.com mail list:
+http://forge.novell.com/mailman/listinfo/apparmor-general
 
 Thanks
