@@ -13,8 +13,10 @@ To use, for example, the postfix profiles, we recommend running commands
 such as:
 
   # cd /etc/apparmor/profiles/extras
-  # mv *postfix* usr.bin.procmail usr.sbin.sendmail /etc/apparmor.d/
+  # mv *postfix* usr.sbin.post* /etc/apparmor.d/
+  # mv usr.bin.procmail usr.sbin.sendmail /etc/apparmor.d/
   # aa-complain /etc/apparmor.d/*postfix*
+  # aa-complain /etc/apparmor.d/usr.sbin.post*
   # aa-complain /etc/apparmor.d/usr.bin.procmail
   # aa-complain /etc/apparmor.d/usr.sbin.sendmail
   # rcapparmor restart
@@ -26,6 +28,7 @@ Once you've used the profiles enough to feel confident that they will
 work for your situation, then run commands such as the following:
 
   # aa-enforce /etc/apparmor.d/*postfix*
+  # aa-enforce /etc/apparmor.d/usr.sbin.post*
   # aa-enforce /etc/apparmor.d/usr.bin.procmail 
   # aa-enforce /etc/apparmor.d/usr.sbin.sendmail
 
