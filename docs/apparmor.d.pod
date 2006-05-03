@@ -54,14 +54,14 @@ B<COMMENT> = '#' I<TEXT>
 
 B<TEXT> = any characters
 
-B<PROFILE> = [ I<COMMENT> ... ] I<PROGRAM> [ I<flags=(complain)> ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> ) ... ] '}'
+B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ]  I<PROGRAM> [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> ) ... ] '}'
 
 B<SUBPROFILE> = [ I<COMMENT> ... ] I<PROGRAMHAT> '{' [ ( I<FILE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}'
 
 B<CAPABILITY> = (lowercase capability name without 'CAP_' prefix; see
 capabilities(7))
 
-B<PROGRAM> = (non-whitespace characters except for B<^>, must start with '/')
+B<PROGRAM> = (non-whitespace characters except for '^', must start with '/')
 
 B<PROGRAMHAT> = '^'  (non-whitespace characters; see change_hat(2) for a description of how this "hat" is used.)
 
@@ -69,11 +69,19 @@ B<RESOURCE RULE> = ( I<FILE RULE> | I<NETWORK RULE> ) ','
 
 B<FILE RULE> = ( I<FILENAME> | I<FILEGLOB> ) I<ACCESS> 
 
-B<FILENAME> = (non-whitespace characters except for B<?*[]{}^>, must start with '/')
+B<FILENAME> = (non-whitespace characters except for B<?*[]{}^>, must start with '/'. May include I<VARIABLE>.)
 
-B<FILEGLOB> = (non-whitespace characters, must start with '/', B<?*[]{}^> have special meanings; see below.)
+B<FILEGLOB> = (non-whitespace characters, must start with '/', B<?*[]{}^> have special meanings; see below. May include I<VARIABLE>.)
 
 B<ACCESS> = ( 'r' | 'w' | 'l' | 'ix' | 'ux' | 'px' ) I<ACCESS>  (not all combinations are allowed; see below.)
+
+B<VARIABLE> = '@{' I<ALPHA> [ I<ALPHANUMERIC> ... ] '}'
+
+B<VARIABLE ASSIGNMENT> = I<VARIABLE> ('=' | '+=') (space separated values)
+
+B<ALPHA> = ('a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
+
+B<ALPHANUMERIC> = ('1', '2', '3', ... '9', 'a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
 =back
 
@@ -187,6 +195,22 @@ and other operations that are typically reserved for the root user.
 
 The only operations that cannot be controlled in this manner are mount(2)
 and umount(2), which are always denied to confined processes.
+
+=head2 Variables
+
+AppArmor's policy language allows embedding variables into file rules
+to enable easier configuration for some common (and pervasive) setups.
+Variables may have multiple values assigned, but any variable assignments
+must be made before the start of the profile.
+
+The parser will automatically expand variables to include all values
+that they have been assigned; it is an error to reference a variable
+without setting at least one value.
+
+At the time of this writing, only B<@{HOME}> and B<@{HOMEDIR}>
+are defined in the AppArmor policy provided with SUSE Linux, in the
+F</etc/apparmor.d/tunables/home> file; these variables are used in many
+of the abstractions described later.
 
 =head2 Globbing
 
@@ -339,6 +363,9 @@ generated profiles.
 
 An example AppArmor profile:
 
+	# a variable definition
+	@{HOME} = /home/*/ /root/
+
 	# a comment about foo.
 	/usr/bin/foo {
 	  /bin/mount          ux,
@@ -352,6 +379,7 @@ An example AppArmor profile:
   	  /usr/lib/**         r,
   	  /tmp/foo.pid        wr,
   	  /tmp/foo.*          lrw,
+	  /@{HOME}/.foo_file  rw,
 
 	  # a comment about foo's subprofile, bar.
   	  ^bar {
