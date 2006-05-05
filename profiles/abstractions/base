@@ -43,6 +43,8 @@
   # function; without a loaded profile, the kernel will fail the exec.
   /lib/ld-*.so                   px,
   /lib64/ld-*.so                 px,
+  /lib/ld64-*.so                 px,
+  /lib64/ld64-*.so               px,
   /opt/*-linux-uclibc/lib/ld-uClibc*so* px,
 
   # we might as well allow everything to use common libraries
