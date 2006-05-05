@@ -43,6 +43,7 @@
   /{var/spool/postfix/,}incoming/[0-9A-F]/[0-9A-F]/*              rwl,
   /{var/spool/postfix/,}incoming/[0-9A-F]/[0-9A-F]*               rwl,
   /{var/spool/postfix/,}incoming/[0-9A-F]*                        rwl,
+  /{var/spool/postfix/,}public/flush                              w,
   /{var/spool/postfix/,}public/qmgr                               r,
   /{var/spool/postfix/,}private/bounce                            w,
   /{var/spool/postfix/,}private/defer                             w,
