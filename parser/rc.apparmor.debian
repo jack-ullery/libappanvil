@@ -31,7 +31,7 @@
 # Provides: apparmor
 # Default-Start: 3 4 5 
 # Default-Stop: 0 1 2 6
-# Short-Description: NOVELL/SUSE AppArmor initialization
+# Short-Description: AppArmor initialization
 # Description: AppArmor rc file. This rc script inserts the apparmor \
 # 	       module and runs the parser on the /etc/apparmor.d/ \
 #	       directory.

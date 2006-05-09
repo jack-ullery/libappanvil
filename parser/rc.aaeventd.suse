@@ -32,7 +32,7 @@
 # Required-Start: boot.apparmor
 # Default-Start: 2 3 5
 # Default-Stop:
-# Short-Description: NOVELL AppArmor initialization
+# Short-Description: AppArmor Notification and Reporting
 # Description: AppArmor Notification and Reporting daemon
 ### END INIT INFO
 APPARMOR_FUNCTIONS=/lib/apparmor/rc.apparmor.functions
