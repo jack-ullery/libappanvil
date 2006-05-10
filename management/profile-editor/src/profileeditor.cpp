@@ -63,6 +63,7 @@ BEGIN_EVENT_TABLE( ProfileToolFrame, wxFrame )
 	EVT_MENU(ID_TREE_CONTEXT_RELOAD, ProfileToolFrame::OnReloadProfile)
 	EVT_MENU(wxSTC_APPARMOR_OPEN_INCLUDE_MENU_ITEM, ProfileToolFrame::OnOpenInclude)
 	EVT_MENU(wxSTC_APPARMOR_INSERT_INCLUDE_MENU_ITEM, ProfileToolFrame::OnInsertInclude)
+	EVT_MENU(wxSTC_APPARMOR_SEARCH_PHRASE_IN_ALL_PROFILES, ProfileToolFrame::OnSearchAllProfiles)
 	EVT_TREE_ITEM_ACTIVATED(ID_PROFILE_TREE, ProfileToolFrame::OnTreeSelection)
 	EVT_TREE_ITEM_MENU(ID_PROFILE_TREE, ProfileToolFrame::OnTreeContextMenu)
 	EVT_STC_CHANGE(ID_STYLED_PROFILE_WINDOW, ProfileToolFrame::OnProfileModified)
@@ -1038,11 +1039,15 @@ void ProfileToolFrame::OnSaveAs (wxCommandEvent& WXUNUSED(event))
  * Event handler triggered by Edit->Search All
  * @param event 
  */
-void ProfileToolFrame::OnSearchAllProfiles (wxCommandEvent& WXUNUSED(event))
+void ProfileToolFrame::OnSearchAllProfiles (wxCommandEvent& event)
 {
 	SearchAllProfilesDialog *searchDialog = new SearchAllProfilesDialog(this);
 	searchDialog->SetProfileDirectory(Configuration::GetProfileDirectory());
 	searchDialog->SetEditorExecutable(Configuration::GetEditorExecutable());
+
+	if (wxSTC_APPARMOR_SEARCH_PHRASE_IN_ALL_PROFILES == event.GetId())
+		searchDialog->SetSearchText(mpProfileView->GetSelectedText());
+	
 	searchDialog->ShowModal();
 	searchDialog->Destroy();
 }
@@ -1092,8 +1097,8 @@ void ProfileToolFrame::OnTreeSelection(wxTreeEvent& event)
 		ProfileTreeData *data = (ProfileTreeData *) mpProfileTree->GetItemData(node);
 		if (NULL == data) 
 		{
-			// It's not a profile, it's a directory node, so expand it
-			mpProfileTree->Expand(node);
+			// It's not a profile, it's a directory node
+			mpProfileTree->Toggle(node);
 		}
 		else 
 		{

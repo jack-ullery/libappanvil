@@ -321,7 +321,7 @@
 // Keep this number the same as in ScintillaBase.h
 #define wxSTC_APPARMOR_OPEN_INCLUDE_MENU_ITEM 4891
 #define wxSTC_APPARMOR_INSERT_INCLUDE_MENU_ITEM 4892
-
+#define wxSTC_APPARMOR_SEARCH_PHRASE_IN_ALL_PROFILES 4893
 //-----------------------------------------
 // Commands that can be bound to keystrokes
 
@@ -598,6 +598,7 @@
 
 // "Open in a new window" has been selected from the context menu
 #define wxSTC_CMD_OPEN_INCLUDE_IN_NEW_WINDOW 2443
+
 
 // END of generated section
 //----------------------------------------------------------------------

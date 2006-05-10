@@ -37,6 +37,8 @@ public:
 
 	void SetProfileDirectory (const wxString& dir) { mProfileDirectory = dir; }
 	void SetEditorExecutable (const wxString& exec) { mEditorExecutable = exec; }
+	void SetSearchText (const wxString& searchString) { mpSearchPhraseTextCtrl->SetValue(searchString); }
+
 private:
 	wxFlexGridSizer*	mpSearchPhraseSizer;
 	wxStaticText*		mpSearchStaticText;

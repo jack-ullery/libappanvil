@@ -397,7 +397,17 @@ void ScintillaBase::CallTipClick() {
 }
 
 void ScintillaBase::ContextMenu(Point pt) {
+	// Save any prior highlighting
+	int tmpPos = currentPos;
+	int tmpAnchor = anchor;
 	MovePositionTo(PositionFromLocation(pt));
+
+	if (tmpPos != tmpAnchor)
+	{
+		SetSelection(tmpAnchor, tmpPos);
+	}
+	
+
 	if (displayPopupMenu) {
 		bool writable = !WndProc(SCI_GETREADONLY, 0, 0);
 		popup.CreatePopUp();
@@ -411,6 +421,7 @@ void ScintillaBase::ContextMenu(Point pt) {
 		AddToPopUp("");
 		AddToPopUp("Select All", idcmdSelectAll);
 		AddToPopUp("");
+		AddToPopUp("Search for this phrase in all profiles", APPARMOR_SEARCH_PHRASE_IN_ALL_PROFILES, currentPos != anchor);
 		AddToPopUp("Insert an include", APPARMOR_INSERT_INCLUDE_MENU_ITEM);
 		if (pdoc->StyleAt(currentPos) == SCE_APPARMOR_INCLUDE)
 			AddToPopUp("Open included file in New Window", APPARMOR_OPEN_INCLUDE_MENU_ITEM);
