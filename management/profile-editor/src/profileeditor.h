@@ -91,6 +91,7 @@ class ProfileToolFrame : public wxFrame
 		wxFindReplaceData 	mFindData, mReplaceData;
 		wxTreeItemId 		mRootNode;
 		wxTreeItemId 		mCurrentNode;
+		wxSplitterWindow	*mpSplitterWindow;
 		DECLARE_EVENT_TABLE()
 };
 

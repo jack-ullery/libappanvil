@@ -9,8 +9,6 @@
 
 // TODO:
 // * Find box in profile list
-// * Maybe switch from using a horizontal BoxSizer in the main 
-//   view to a split pane window so people can resize things?
 // * Go through and make sure that translation will work correctly
 
 #include "wx/wxprec.h"
@@ -229,31 +227,33 @@ void ProfileToolFrame::CreateControls(const wxString &startingProfile, const wxS
 	mpMenuBar->Enable(ID_MENU_FILE_SAVE_AS, false);
 	mpMenuBar->Enable(ID_MENU_EDIT_UNDO, false);
 	mpMenuBar->Enable(ID_MENU_EDIT_REDO, false);
-	mpMenuBar->Enable(ID_MENU_EDIT_FIND_NEXT, false);
-	
+	mpMenuBar->Enable(ID_MENU_EDIT_FIND_NEXT, false);	
 	SetMenuBar( mpMenuBar );
+	
+	// Restore the user's window position if there was one
+	Move(Configuration::GetWindowPos());
+	SetSize(Configuration::GetWindowSize());
 
-	// Now we need a nice top level sizer to keep things clean
-	wxBoxSizer* pMainSizer = new wxBoxSizer(wxHORIZONTAL);
-
+	mpSplitterWindow = new wxSplitterWindow(this, 
+				wxID_ANY, 
+				wxDefaultPosition, 
+				GetClientSize(), wxSP_3D| wxEXPAND);
+ 	
 //	The tree control displays the list of profiles.
-	mpProfileTree = new wxTreeCtrl(this, ID_PROFILE_TREE, wxDefaultPosition, wxSize(350,-1), 
+	mpProfileTree = new wxTreeCtrl(mpSplitterWindow, ID_PROFILE_TREE, wxDefaultPosition, wxDefaultSize,
 					wxTR_HAS_BUTTONS
 					| wxTR_SINGLE);
-	mpProfileView = new ProfileTextCtrl (this, ID_STYLED_PROFILE_WINDOW, wxDefaultPosition, wxDefaultSize);
+	mpProfileView = new ProfileTextCtrl (mpSplitterWindow, 
+					ID_STYLED_PROFILE_WINDOW, 
+					wxDefaultPosition, 
+					wxDefaultSize);
+	mpSplitterWindow->SplitVertically(mpProfileTree, mpProfileView, 200);
+	mpSplitterWindow->SetMinimumPaneSize(20);
 	
 	mRootNode = mpProfileTree->AddRoot(_("Profiles"));
 	mCurrentNode.Unset();
 	PopulateControls(); // Load up the profile tree
 
-	pMainSizer->Add(mpProfileTree);
-	pMainSizer->Add(mpProfileView);
-	
-	SetSizer(pMainSizer);
-	SetAutoLayout(true);
-
-	SetSize(50,50,800,600); // Maybe this should be more dynamic?
-	
 	mpProfileView->SetFileName(_T(""));
 	mpProfileView->SetIsNew(true);
 	SetStatusText(_("New Profile"));
@@ -409,7 +409,8 @@ void ProfileToolFrame::ProfileHasBeenModified()
 	mpMenuBar->Enable(ID_MENU_FILE_SAVE_AS, true);
 	mpMenuBar->Enable(ID_MENU_EDIT_UNDO, mpProfileView->CanUndo());
 	mpMenuBar->Enable(ID_MENU_EDIT_REDO, mpProfileView->CanRedo());
-	mpProfileTree->SetItemTextColour(mCurrentNode, *wxRED);
+	if ((mCurrentNode != mRootNode) && mCurrentNode.IsOk())
+		mpProfileTree->SetItemTextColour(mCurrentNode, *wxRED);
 	mpProfileView->SetNeedSaving(true);
 }
 
@@ -549,6 +550,10 @@ void ProfileToolFrame::OnAbout( wxCommandEvent& WXUNUSED(event) )
  */
 void ProfileToolFrame::OnClose( wxCloseEvent& WXUNUSED(event) )
 {
+	// Save our window settings
+	wxPoint pos = GetPosition();
+	wxSize size = GetSize();
+	Configuration::WriteWindowSettings(GetPosition(), GetSize());
 	if (mpProfileView->GetNeedSaving())
 	{
 		if (ProfileNeedSaving() != -1)
@@ -1060,10 +1065,9 @@ void ProfileToolFrame::OnSize(wxSizeEvent& WXUNUSED(event))
 {
 	int w, h;
 	GetClientSize(&w, &h);
-
-	mpProfileTree->SetSize(0, 0, 350, h);
+	mpSplitterWindow->SetSize(0,0,w,h);
 	mpProfileTree->Refresh();
-	mpProfileView->SetSize(350, 0, w - 350, h);
+	mpProfileTree->Update();
 }
 
 /**

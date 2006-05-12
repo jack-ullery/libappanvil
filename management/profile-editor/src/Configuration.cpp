@@ -31,7 +31,10 @@ wxFont Configuration::mCommentFont(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_ITALIC,
 wxFont Configuration::mIncludeFont(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 wxFont Configuration::mPathFont(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD);
 wxFont Configuration::mPermsFont(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
-
+int Configuration::mWindowX;
+int Configuration::mWindowY;
+int Configuration::mWindowHeight;
+int Configuration::mWindowWidth;
 /**
  * Reads in the initial variables
  */
@@ -39,6 +42,10 @@ void Configuration::Initialize()
 {
 	// Read in all of the values
 	mProfileEditorExecutable = wxTheApp->argv[0];
+	mWindowX = wxConfig::Get()->Read(_("WindowX"), 50);
+	mWindowY = wxConfig::Get()->Read(_("WindowY"), 50);
+	mWindowWidth = wxConfig::Get()->Read(_("WindowWidth"), 800);
+	mWindowHeight = wxConfig::Get()->Read(_("WindowHeight"), 600);
 	mProfileDirectory = wxConfig::Get()->Read(_("ProfileDirectory"), Configuration::BestGuessProfileDirectory());
 	mParserCommand = wxConfig::Get()->Read(_("Parser"), BestGuessParserCommand());
 	mTemplateText = wxConfig::Get()->Read(_("ProfileTemplate"), wxEmptyString);	
@@ -52,6 +59,7 @@ void Configuration::Initialize()
 	_ReadFont(_("CapabilityFont"), mCapabilityFont);
 	_ReadFont(_("PathFont"), mPathFont);
 	_ReadFont(_("PermsFont"), mPermsFont);
+
 }
 
 /**
@@ -109,6 +117,20 @@ bool Configuration::CommitChanges()
 	return true;
 }
 
+/**
+ * Writes the given window settings to the configuration file.
+ * This is kept separately from CommitChanges() because:
+ * a) There's no reason to re-write all configuration changes on exit and
+ * b) There's no reason to update the window position and size on every OnSize() event
+ */
+void Configuration::WriteWindowSettings(const wxPoint &pos, const wxSize& size)
+{
+	wxConfig::Get()->Write(_("WindowX"), pos.x);
+	wxConfig::Get()->Write(_("WindowY"), pos.y);
+	wxConfig::Get()->Write(_("WindowWidth"), size.GetWidth());
+	wxConfig::Get()->Write(_("WindowHeight"), size.GetHeight());
+	wxConfig::Get()->Flush();
+}
 /**
  * Reads a colour setting from the config file and translates it into
  * a wxColour.  If it can't convert the stored value, or the stored value 

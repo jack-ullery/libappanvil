@@ -407,7 +407,7 @@ void ScintillaBase::ContextMenu(Point pt) {
 		SetSelection(tmpAnchor, tmpPos);
 	}
 	
-
+	
 	if (displayPopupMenu) {
 		bool writable = !WndProc(SCI_GETREADONLY, 0, 0);
 		popup.CreatePopUp();

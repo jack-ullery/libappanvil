@@ -34,8 +34,12 @@ public:
 	static wxFont GetIncludeFont() { return mIncludeFont; }
 	static wxFont GetPathFont() { return mPathFont; }
 	static wxFont GetPermFont() { return mPermsFont; }
+	static wxSize GetWindowSize() { return wxSize(mWindowWidth, mWindowHeight); }
+	static wxPoint GetWindowPos() { return wxPoint(mWindowX, mWindowY); }
+	static void WriteWindowSettings(const wxPoint &pos, const wxSize& size);
 
-	static void SetProfileDirectory(const wxString& profileDirectory) { mProfileDirectory = profileDirectory; }
+	static void SetProfileDirectory(const wxString& profileDirectory) 
+					{ mProfileDirectory = profileDirectory; }
 	static void SetEditorExecutable(const wxString& executable) { mProfileEditorExecutable = executable; }
 	static void SetParserCommand(const wxString& parserCommand) { mParserCommand = parserCommand; }
 	static void SetTemplateText(const wxString& templateText) { mTemplateText = templateText; }
@@ -68,6 +72,10 @@ private:
 	static wxFont		mIncludeFont;
 	static wxFont		mPathFont;
 	static wxFont		mPermsFont;
+	static int		mWindowX; // These are just the settings from the 
+	static int		mWindowY; // config file, they are *NOT* updated 
+	static int		mWindowWidth; // in any size events
+	static int		mWindowHeight;
 
 };
 
