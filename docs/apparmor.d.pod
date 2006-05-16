@@ -73,7 +73,7 @@ B<FILENAME> = (non-whitespace characters except for B<?*[]{}^>, must start with 
 
 B<FILEGLOB> = (non-whitespace characters, must start with '/', B<?*[]{}^> have special meanings; see below. May include I<VARIABLE>.)
 
-B<ACCESS> = ( 'r' | 'w' | 'l' | 'ix' | 'ux' | 'px' ) I<ACCESS>  (not all combinations are allowed; see below.)
+B<ACCESS> = ( 'r' | 'w' | 'l' | 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'm' ) [ I<ACCESS> ... ]  (not all combinations are allowed; see below.)
 
 B<VARIABLE> = '@{' I<ALPHA> [ I<ALPHANUMERIC> ... ] '}'
 
@@ -104,11 +104,17 @@ modes:
 
 =item B<w> 	- write
 
-=item B<px> 	- discrete profile execute 
+=item B<ux> 	- unconstrained execute
 
-=item B<ux> 	- unconstrained execute 
+=item B<Ux> 	- unconstrained execute -- scrub the environment
 
-=item B<ix>	- inherit execute 
+=item B<px> 	- discrete profile execute
+
+=item B<Px> 	- discrete profile execute -- scrub the environment
+
+=item B<ix>	- inherit execute
+
+=item B<m>	- allow PROT_EXEC with mmap(2) calls
 
 =item B<l> 	- link
 
@@ -118,25 +124,23 @@ modes:
 
 =over 4
 
-=item B<Read mode>
+=item B<r - Read mode>
 
-Allows the program to have read access to the resource. Read access is
+Allows the program to have read access to the file. Read access is
 required for shell scripts and other interpreted content, and determines
 if an executing process can core dump or be attached to with ptrace(2).
 (ptrace(2) is used by utilities such as strace(1), ltrace(1), and
 gdb(1).)
 
-=item B<Write mode>
+=item B<w - Write mode>
 
-Allows the program to have write access to the resource. Files must have
+Allows the program to have write access to the file. Files must have
 this permission if they are to be unlinked (removed.)
 
+=item B<ux - Unconstrained execute mode>
 
-=item B<Unconstrained execute mode>
-
-Allows the program to execute the resource without any AppArmor profile
-being applied to the executed resource. Requires listing execute mode
-as well. Incompatible with Inherit and Discrete Profile execute entries.
+Allows the program to execute the program without any AppArmor profile
+being applied to the program.
 
 This mode is useful when a confined program needs to be able to perform
 a privileged operation, such as rebooting the machine. By placing the
@@ -145,35 +149,82 @@ execution rights, it is possible to bypass the mandatory constraints
 imposed on all confined processes. For more information on what is
 constrained, see the apparmor(7) man page.
 
-B<WARNING> this should only be used in very special cases. It enables the
+B<WARNING> 'ux' should only be used in very special cases. It enables the
 designated child processes to be run without any AppArmor protection.
-Use at your own risk.
+'ux' does not scrub the environment of variables such as LD_PRELOAD;
+as a result, the calling domain may have an undue amount of influence
+over the callee.  Use this mode only if the child absolutely must be
+run unconfined and LD_PRELOAD must be used. Any profile using this mode
+provides negligible security. Use at your own risk.
 
-=item B<Inherit execute mode>
+Incompatible with 'Ux', 'px', 'Px', 'ix'.
+
+=item B<Ux - unconstrained execute -- scrub the environment>
+
+'Ux' allows the named program to run in 'ux' mode, but AppArmor
+will invoke the Linux Kernel's B<unsafe_exec> routines to scrub
+the environment, similar to setuid programs. (See ld.so(8) for some
+information on setuid/setgid environment scrubbing.)
+
+B<WARNING> 'Ux' should only be used in very special cases. It enables the
+designated child processes to be run without any AppArmor protection.
+Use this mode only if the child absolutely must be run unconfined. Use
+at your own risk.
+
+Incompatible with 'ux', 'px', 'Px', 'ix'.
+
+=item B<px - Discrete Profile execute mode>
+
+This mode requires that a discrete security profile is defined for a
+program executed and forces an AppArmor domain transition. If there is
+no profile defined then the access will be denied.
+
+B<WARNING> 'px' does not scrub the environment of variables such as
+LD_PRELOAD; as a result, the calling domain may have an undue amount of
+influence over the callee.
+
+Incompatible with 'Ux', 'ux', 'Px', 'ix'.
+
+=item B<Px - Discrete Profile execute mode -- scrub the environment>
+
+'Px' allows the named program to run in 'px' mode, but AppArmor
+will invoke the Linux Kernel's B<unsafe_exec> routines to scrub
+the environment, similar to setuid programs. (See ld.so(8) for some
+information on setuid/setgid environment scrubbing.)
+
+Incompatible with 'Ux', 'ux', 'px', 'ix'.
+
+=item B<ix - Inherit execute mode>
 
 Prevent the normal AppArmor domain transition on execve(2) when the
-profiled program executes the resource. Instead, the executed resource
-will inherit the current profile. Incompatible with Unconstrained and
-Discrete Profile execute entries.
+profiled program executes the named program. Instead, the executed resource
+will inherit the current profile.
 
 This mode is useful when a confined program needs to call another
 confined program without gaining the permissions of the target's
-profile, or losing the permissions of the current profile.
+profile, or losing the permissions of the current profile. There is no
+version to scrub the environment because 'ix' executions don't change
+privileges.
 
-=item B<Discrete Profile execute mode>
+Incompatible with 'Ux', 'ux', 'Px', 'px'. Implies 'm'.
 
-This mode requires that a discrete security profile is defined for
-a resource executed at a AppArmor domain transition.  If there is no
-profile defined then the access will be denied.  Incompatible with
-Inherit and Unconstrained execute entries.
+=item B<m - Allow executable mapping>
 
-=item B<Link mode>
+This mode allows a file to be mapped into memory using mmap(2)'s
+PROT_EXEC flag. This flag marks the pages executable; it is used on some
+architectures to provide non-executable data pages, which can complicate
+exploit attempts. AppArmor uses this mode to limit which files a
+well-behaved program (or all programs on architectures that enforce
+non-executable memory access controls) may use as libraries, to limit
+the effect of invalid B<-L> flags given to ld(1) and B<LD_PRELOAD>,
+B<LD_LIBRARY_PATH>, given to ld.so(8).
 
-Allows the program to be able to create a link with this name.
-When a link is created, the file that is being
-linked to B<MUST> have the same access permissions as the link being
-created (with the exception that the destination does not have to have
-link access.)
+=item B<l - Link mode>
+
+Allows the program to be able to create a link with this name.  When a
+link is created, the file that is being linked to B<MUST> have the same
+access permissions as the link being created (with the exception that
+the destination does not have to have link access.)
 
 =back
 
@@ -193,8 +244,9 @@ access is not granted, some capabilities allow loading kernel modules,
 arbitrary access to IPC, ability to bypass discretionary access controls,
 and other operations that are typically reserved for the root user.
 
-The only operations that cannot be controlled in this manner are mount(2)
-and umount(2), which are always denied to confined processes.
+The only operations that cannot be controlled in this manner are mount(2),
+umount(2), and loading new AppArmor policy into the kernel, which are
+always denied to confined processes.
 
 =head2 Variables
 
@@ -384,7 +436,7 @@ An example AppArmor profile:
 	  # a comment about foo's subprofile, bar.
   	  ^bar {
   	    /lib/ld-*.so*       x,
-  	    /usr/bin/bar        x,
+  	    /usr/bin/bar        ix,
   	    /var/spool/*        rwl,
   	  }
   	}
