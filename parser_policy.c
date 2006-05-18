@@ -130,7 +130,7 @@ static void __any_regex(const void *nodep, const VISIT value,
 	if (value == preorder || value == endorder)
 		return;
 
-	if (any_regex_entries(*t)) {
+	if (any_regex_entries((*t)->entries)) {
 		PERROR(_("ERROR profile %s contains policy elements not usable with this kernel:\n"
 			 "\t'*', '?', character ranges, and alternations are not allowed.\n"
 			 "\t'**' may only be used at the end of a rule.\n"),
