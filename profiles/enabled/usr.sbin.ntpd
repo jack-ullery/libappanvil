@@ -33,6 +33,7 @@
   /etc/ntp/step-tickers r,
   /tmp/ntp* rwl,
   /usr/sbin/ntpd rix,
+  /var/lib/ntp/etc/ntp.conf.iburst  r,
   /var/lib/ntp/drift rwl,
   /var/lib/ntp/drift.TEMP rwl,
   /var/lib/ntp/drift/ntp.drift r,
