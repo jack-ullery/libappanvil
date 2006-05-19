@@ -1,4 +1,4 @@
-/* $Id: fork.c 6339 2006-03-27 00:02:34Z jj $ */
+/* $Id$ */
 
 /*
  *	Copyright (C) 2002-2005 Novell/SUSE

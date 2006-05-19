@@ -1,5 +1,5 @@
 #! /bin/bash
-# $Id: rename.sh 6040 2006-01-11 00:15:48Z tonyj $
+# $Id$
 
 #	Copyright (C) 2002-2005 Novell/SUSE
 #

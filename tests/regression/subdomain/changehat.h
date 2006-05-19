@@ -1,4 +1,4 @@
-/* $Id: changehat.h 6285 2006-02-24 22:24:47Z steve $ */
+/* $Id$ */
 
 
 /* #define CHANGEHAT_NOT_IN_GLIB */

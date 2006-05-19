@@ -1,5 +1,5 @@
 #! /bin/bash
-# $Id: fork.sh 6304 2006-03-09 03:09:05Z steve $
+# $Id$
 
 #	Copyright (C) 2002-2005 Novell/SUSE
 #

@@ -1,4 +1,4 @@
-/* $Id: changehat.c 6285 2006-02-24 22:24:47Z steve $ */
+/* $Id$ */
 
 /*
  *	Copyright (C) 2002-2005 Novell/SUSE

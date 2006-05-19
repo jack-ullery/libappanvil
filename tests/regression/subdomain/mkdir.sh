@@ -1,5 +1,5 @@
 #! /bin/bash
-# $Id: mkdir.sh 6318 2006-03-10 01:56:00Z steve $
+# $Id$
 
 #	Copyright (C) 2002-2005 Novell/SUSE
 #

@@ -8,7 +8,7 @@
  *	published by the Free Software Foundation, version 2 of the
  *	License.
  */
- * $Id: symlink.c 6040 2006-01-11 00:15:48Z tonyj $
+ * $Id$
  */
 
 #include <stdio.h>

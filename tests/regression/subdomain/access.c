@@ -1,4 +1,4 @@
-/* $Id: open.c 4283 2005-04-14 03:29:59Z steve $ */
+/* $Id$ */
 
 /*
  *	Copyright (C) 2002-2005 Novell/SUSE

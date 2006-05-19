@@ -1,4 +1,4 @@
-# $Id: Makefile 6285 2006-02-24 22:24:47Z steve $
+# $Id$
 #
 #	Copyright (C) 2002-2005 Novell/SUSE
 #
@@ -132,9 +132,6 @@ all: $(EXEC) changehat.h
 
 changehat_pthread: changehat_pthread.c changehat.h
 	${CC} ${CFLAGS} -lpthread -o $@ $<
-
-ptrace_helper: ptrace_helper.c
-	$(CC) -o $@ $<
 
 tests: all
 	@if [ `whoami` == "root" ] ;\
