@@ -65,7 +65,7 @@ runchecktest "UMOUNT (unconfined)" pass umount ${loop_device} ${mount_point}
 
 # TEST A2.  confine MOUNT
 
-genprofile
+genprofile capability:sys_admin
 runchecktest "MOUNT (confined)" fail mount ${loop_device} ${mount_point}
 
 # TEST A3.  confine UMOUNT
