@@ -96,12 +96,24 @@ TEST_OBJECTS = $(filter-out parser_lex.o, \
 	       $(filter-out parser_yacc.o, \
 	       $(filter-out parser_main.o, ${OBJECTS} ${PCREOBJECTS})))
 
+ifndef VERBOSE
+  VERBOSE = 0
+endif
+ifeq ($(VERBOSE),1)
+  BUILD_OUTPUT =
+  Q =
+else
+  BUILD_OUTPUT = > /dev/null 2>&1
+  Q = @
+endif
+export Q VERBOSE BUILD_OUTPUT
+
 po/${NAME}.pot: ${SRCS} ${HDRS}
 	make -C po ${NAME}.pot NAME=${NAME} SOURCES="${SRCS} ${HDRS}"
 
 all: 	$(LEX_C_FILES) $(YACC_C_FILES) $(TOOLS)
-	make -C po all
-	make tests
+	$(Q)make -C po all
+	$(Q)make -s tests
 
 apparmor_parser: $(OBJECTS) $(PCREOBJECTS)
 	$(CC) $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(PCREOBJECTS) $(LIBS) ${LEXLIB}
@@ -150,22 +162,24 @@ parser_version.h: Makefile
 	@mv -f .ver $@
 
 tst_symtab: parser_symtab.c parser.h parser_variable.o
-	$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< parser_variable.o
+	$(Q)$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< parser_variable.o $(BUILD_OUTPUT)
 
 tst_variable: parser_variable.c parser.h $(filter-out parser_variable.o, ${TEST_OBJECTS})
-	$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< $(filter-out parser_variable.o, ${TEST_OBJECTS})
+	$(Q)$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< $(filter-out parser_variable.o, ${TEST_OBJECTS}) $(BUILD_OUTPUT)
 
 tst_misc: parser_misc.c parser.h parser_yacc.h
-	$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $<
+	$(Q)$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< $(BUILD_OUTPUT)
 
 tst_regex: parser_regex.c parser.h parser_yacc.h $(PCREOBJECTS)
-	$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< $(PCREOBJECTS)
+	$(Q)$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< $(PCREOBJECTS) $(BUILD_OUTPUT)
 
 .SILENT: tests
 tests: ${TESTS}
-	for test in ${TESTS} ; do echo "*** running $${test}" && ./$${test} ; done
+	for test in ${TESTS} ; do echo "*** running $${test}" && ./$${test} $(BUILD_OUTPUT) ; done
+	$(Q)make -s -C tst tests
 
 # always need to rebuild.
+.SILENT: $(PCREOBJECTS)
 $(PCREOBJECTS):
 	make -C $(PCREDIR) "CFLAGS=$(CFLAGS)"
 
@@ -212,6 +226,7 @@ install: $(INSTALLDEPS)
 	install -m 755 rc.apparmor.functions $(APPARMOR_BIN_PREFIX)
 	make -C po install NAME=${NAME} DESTDIR=${DESTDIR}
 
+.SILENT: clean
 .PHONY: clean
 clean:
 	rm -f core core.* *.o *.s *.a *~ 
@@ -220,9 +235,10 @@ clean:
 	rm -f $(YACC_C_FILES)
 	rm -f parser_version.h
 	rm -f $(NAME)*.tar.gz $(NAME)*.tgz
-	make -C $(PCREDIR) clean
-	make -C po clean
+	make -s -C $(PCREDIR) clean
+	make -s -C po clean
 
+.SILENT: dist_clean
 dist_clean:
-	make clean
-	rm -f $(LEX_C_FILES) $(YACC_C_FILES)
+	@make clean
+	@rm -f $(LEX_C_FILES) $(YACC_C_FILES)
