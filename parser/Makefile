@@ -215,7 +215,6 @@ endif
 
 .PHONY: install
 install: $(INSTALLDEPS)
-	strip $(TOOLS)
 	install -m 755 -d $(DESTDIR)/sbin
 	install -m 755 ${TOOLS} $(DESTDIR)/sbin
 	install -m 755 -d $(INSTALL_CONFDIR)

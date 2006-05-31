@@ -28,7 +28,7 @@
 Summary: AppArmor module for apache2.
 Name: apache2-mod-apparmor
 Version: @@immunix_version@@
-Release: 8
+Release: @@repo_version@@
 Group: Applications/System
 Source0: %{name}-%{version}-@@repo_version@@.tar.gz
 License: LGPL
@@ -69,12 +69,8 @@ This package is part of a suite of tools that used to be named SubDomain.
 
 %build
 make %{module_name}.so APXS=%{apxs}
-%{__strip} -g %{module_name}.so
 
 %install
-[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
-
-mkdir -p ${RPM_BUILD_ROOT}
 make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro}
 
 %if %{distro} == "suse"
@@ -134,6 +130,8 @@ make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro}
 %endif
 
 %changelog
+* Fri May 26 2006 - schwab@suse.de                                                                                                                                        
+- Don't strip binaries.
 * Wed Apr 12 2006 - Steve Beattie <sbeattie@suse.de>
 - Move to novell forge svn repo; fix build issue with new layout
 * Thu Mar 30 2006 - Seth Arnold <seth.arnold@suse.de> 2.0-7.2
