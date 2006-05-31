@@ -1,5 +1,5 @@
 #
-# $Id: Makefile 4312 2005-04-17 07:41:31Z steve $
+# $Id$
 #
 PROVE=/usr/bin/prove
 TESTS=simple.pl
