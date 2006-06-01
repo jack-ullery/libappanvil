@@ -1,5 +1,5 @@
 #
-# $Id: flags_bad3.sd 5662 2005-11-07 09:55:28Z steve $
+# $Id$
 #=DESCRIPTION Ensure really bad parsing fails
 #=EXRESULT FAIL
 # vim:syntax=subdomain

@@ -1,5 +1,5 @@
 #
-# $Id: tcp_server_ok1.sd 4324 2005-04-18 02:17:26Z steve $
+# $Id$
 #=DESCRIPTION netdomain tcp accept simple parse test (from,via)
 #=EXRESULT PASS
 #

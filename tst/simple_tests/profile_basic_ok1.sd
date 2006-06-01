@@ -1,5 +1,5 @@
 #
-# $Id: flags_ok.sd 4342 2005-04-18 22:21:03Z steve $
+# $Id$
 #=DESCRIPTION Basic parsing test, duplicate mode bits
 #=EXRESULT PASS
 # vim:syntax=subdomain

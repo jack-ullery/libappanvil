@@ -1,5 +1,5 @@
 #
-# $Id: flags_bad.sd 4374 2005-04-22 06:14:42Z steve $
+# $Id$
 #=DESCRIPTION Ensure debug flag is no longer accepted
 #=EXRESULT FAIL
 # vim:syntax=subdomain

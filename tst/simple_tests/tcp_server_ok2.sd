@@ -1,5 +1,5 @@
 #
-# $Id: tcp_server_ok2.sd 4324 2005-04-18 02:17:26Z steve $
+# $Id$
 #=DESCRIPTION netdomain tcp accept from ip/cidr netmask/port range via
 #=EXRESULT PASS
 /tmp/tcp/tcp_server {
