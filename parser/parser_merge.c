@@ -109,7 +109,7 @@ static int process_file_entries(struct codomain *cod)
 	return 1;
 }
 
-static int process_net_entries(struct codomain *cod)
+static int process_net_entries(struct codomain __unused *cod)
 {
 	return 1;
 }
