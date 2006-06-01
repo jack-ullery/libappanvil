@@ -1,5 +1,5 @@
 #
-# $Id: change_hat_new_style2.sd 4344 2005-04-19 04:55:20Z steve $
+# $Id$
 #=DESCRIPTION Tests to verify multiple profiles can have the same hatname
 #=EXRESULT PASS
 # vim:syntax=subdomain

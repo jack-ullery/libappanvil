@@ -7,7 +7,7 @@ use strict;
 use Getopt::Long;
 use Test::More; 
 
-my $__VERSION__='$Id: simple.pl 5924 2005-12-14 19:09:04Z steve $';
+my $__VERSION__='$Id$';
 my %config;
 $config{'parser'} = "/sbin/subdomain_parser";
 $config{'profiledir'} = "./simple_tests/";

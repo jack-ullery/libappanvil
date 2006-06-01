@@ -1,5 +1,5 @@
 #
-# $Id: tcp_server_ok4.sd 4324 2005-04-18 02:17:26Z steve $
+# $Id$
 #=DESCRIPTION netdomain accept from port 65535 
 #=EXRESULT PASS
 #

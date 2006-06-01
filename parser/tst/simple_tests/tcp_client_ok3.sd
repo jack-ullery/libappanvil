@@ -1,5 +1,5 @@
 #
-# $Id: tcp_client_ok3.sd 4316 2005-04-17 20:42:35Z steve $
+# $Id$
 #=DESCRIPTION netdomain tcp connect to,from,via
 /tmp/tcp/tcp_client {
   tcp_connect to 10.0.0.17/16:50-100 from 127.0.0.1 via eth1,

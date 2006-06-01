@@ -1,5 +1,5 @@
 #
-# $Id: flags_ok.sd 4372 2005-04-22 03:44:02Z steve $
+# $Id$
 #=DESCRIPTION validate some uses of the profile flags.
 #=EXRESULT PASS
 # vim:syntax=subdomain

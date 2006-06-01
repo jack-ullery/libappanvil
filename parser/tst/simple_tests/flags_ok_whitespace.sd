@@ -1,5 +1,5 @@
 #
-# $Id: flags_ok_whitespace.sd 5669 2005-11-08 08:22:57Z steve $
+# $Id$
 #=DESCRIPTION verify whitespace is allowed in profile flags.
 #=EXRESULT PASS
 # vim:syntax=subdomain

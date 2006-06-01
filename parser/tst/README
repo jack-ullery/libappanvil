@@ -65,4 +65,4 @@ The simple script looks for a few special comments in the profile,
 
 Otherwise, the profile is passed on as-is to the subdomain parser.
 
-$Id: README 5937 2005-12-15 23:17:02Z steve $ 
+$Id$ 

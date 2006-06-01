@@ -1,5 +1,5 @@
 #
-# $Id: tcp_client_ok4.sd 4316 2005-04-17 20:42:35Z steve $
+# $Id$
 #=DESCRIPTION netdomain tcp (accept,connect), udp (send,receive) conglomerate test
 #=EXRESULT PASS
 #

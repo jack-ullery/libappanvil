@@ -1,5 +1,5 @@
 #
-# $Id: tcp_client_error7.sd 4316 2005-04-17 20:42:35Z steve $
+# $Id$
 #=DESCRIPTION netdomain tcp connect w/portnumber 65536
 #=EXRESULT FAIL
 #
