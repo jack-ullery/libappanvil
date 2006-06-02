@@ -126,6 +126,15 @@ static void ColouriseAppArmorDoc(
 				|| sc.ch == 'p'
 				|| sc.ch == 'u'
 				|| sc.ch == 'i'
+				|| sc.ch == 'm'
+				|| sc.ch == 'W'
+				|| sc.ch == 'R'
+				|| sc.ch == 'X'
+				|| sc.ch == 'L'
+				|| sc.ch == 'M'
+				|| sc.ch == 'P'
+				|| sc.ch == 'U'
+				|| sc.ch == 'I'
 				|| sc.ch == ',') {
 				sc.SetState(SCE_APPARMOR_PERMS);
 			} else if (sc.ch == ' ' || sc.ch == '\t') {
