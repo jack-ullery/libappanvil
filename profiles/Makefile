@@ -1,15 +1,24 @@
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2002-2005 Novell/SUSE
+#    $Id$
+#
+#    Copyright (C) 2002-2006 Novell/SUSE
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
 #    License published by the Free Software Foundation.
 #
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, contact Novell, Inc.
+#
 # ------------------------------------------------------------------
 
-
-# Makefile for LSM-based SubDomain SuSE profiles
+# Makefile for LSM-based AppArmor SuSE profiles
 
 NAME=apparmor-profiles
 ALL:
@@ -43,3 +52,38 @@ install:
 .PHONY: clean
 clean:
 	-rm -f $(NAME)-$(VERSION)*.tar.gz
+
+ifndef VERBOSE
+  Q=@
+else
+  Q=
+endif
+
+ifndef PARSER
+# use system parser
+PARSER=/sbin/apparmor_parser
+endif
+
+ifndef LOGPROF
+# use system logprof
+LOGPROF=/usr/sbin/aa-logprof
+endif
+
+ENABLED_PATH=./enabled
+EXTRAS_PATH=./extras
+IGNORE_FILES=${EXTRAS_PATH}/README
+CHECK_PROFILES=$(filter-out ${IGNORE_FILES}, $(wildcard ${ENABLED_PATH}/*) $(wildcard ${EXTRAS_PATH}/*))
+CHECK_INCLUDES=${PWD}
+
+.PHONY: check
+check:
+	@echo "*** Checking profiles against apparmor_parser"
+	$(Q)for profile in ${CHECK_PROFILES} ; do \
+		${PARSER} -S -b ${CHECK_INCLUDES} $${profile} > /dev/null ; \
+	done
+
+.PHONY: check-install
+check-install:
+	$(Q)make check ENABLED_PATH=${DESTDIR}/etc/apparmor.d EXTRAS_PATH=${EXTRASDIR} CHECK_INCLUDES=${DESTDIR}/etc/apparmor.d
+	@echo "*** Checking profiles against logprof"
+	$(Q)${LOGPROF} -d ${DESTDIR}/etc/apparmor.d -f /dev/null
