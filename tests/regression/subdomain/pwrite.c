@@ -66,7 +66,7 @@ nextpass:
 			strerror(errno));
 		return(1);
 	} else if (ret != strlen(bugger)) {
-		fprintf(stderr, "FAIL: pwrite failed - wrote %i expected %i\n", 
+		fprintf(stderr, "FAIL: pwrite failed - wrote %zi expected %zi\n", 
 			ret, strlen(bugger));
 		return(1);
 	}
@@ -78,7 +78,7 @@ nextpass:
 			strerror(errno));
 		return(1);
 	}  else if (ret != strlen(bugger)) {
-		fprintf(stderr, "FAIL: pread failed - read %i expected %i\n",
+		fprintf(stderr, "FAIL: pread failed - read %zi expected %zi\n",
 			ret, strlen(bugger));
 		return(1);
 	} else if (memcmp(bugger, in_buffer, strlen(bugger)) != 0) {
