@@ -105,8 +105,10 @@ struct var_string {
 #define COD_EXEC_CHAR 		'x'
 #define COD_INHERIT_CHAR 	'i'
 #define COD_LINK_CHAR 		'l'
-#define COD_UNCONSTRAINED_CHAR	'u'
-#define COD_PROFILE_CHAR	'p'
+#define COD_UNCONSTRAINED_CHAR	'U'
+#define COD_UNSAFE_UNCONSTRAINED_CHAR	'u'
+#define COD_PROFILE_CHAR	'P'
+#define COD_UNSAFE_PROFILE_CHAR	'p'
 #define COD_MMAP_CHAR		'm'
 
 #define OPTION_ADD      1
@@ -121,9 +123,6 @@ struct var_string {
 #endif
 #define NPDEBUG(fmt, args...)	/* Do nothing */
 
-/* FIXME: PWARN needs to become a true function so we can i18n-ize calls
- * to it */
-#define PWARN(fmt, args...) fprintf(stderr, _("Warning (line %d): " fmt), current_lineno, ## args)
 #define PERROR(fmt, args...) fprintf(stderr, fmt, ## args)
 
 #ifndef TRUE
@@ -147,6 +146,7 @@ extern char *profilename;
 
 /* from parser_main */
 extern int force_complain;
+extern void pwarn(char *fmt, ...) __attribute__((__format__(__printf__, 1, 2)));
 
 extern int yyparse(void);
 extern void yyerror(char *msg, ...);

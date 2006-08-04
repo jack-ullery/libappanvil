@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <getopt.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -55,13 +56,16 @@ const char *parser_title	= "Novell/SUSE AppArmor parser";
 const char *parser_copyright	= "Copyright (C) 1999, 2000, 2003, 2004, 2005, 2006 Novell Inc.";
 
 char *progname;
+int option = OPTION_ADD;
 int force_complain = 0;
 int names_only = 0;
 int dump_vars = 0;
 int dump_expanded_vars = 0;
+int conf_quiet = 0;
 char *subdomainbase = NULL;
 char *profilename;
 char *match_string = NULL;
+extern int current_lineno;
 
 struct option long_options[] = {
 	{"add", 		0, 0, 'a'},
@@ -81,6 +85,7 @@ struct option long_options[] = {
 	{"names",		0, 0, 'N'},	/* undocumented only emit profilenames */
 	{"stdout",		0, 0, 'S'},
 	{"match-string",	1, 0, 'm'},
+	{"quiet",		0, 0, 'q'},
 	{NULL, 0, 0, 0},
 };
 
@@ -110,16 +115,38 @@ static void display_usage(char *command)
 	       "-b n, --base n		Set base dir and cwd\n"
 	       "-f n, --subdomainfs n	Set location of apparmor filesystem\n"
 	       "-S, --stdout		Write output to stdout\n"
-	       "-m n, --match-string n  Use only match features n\n", command);
+	       "-m n, --match-string n  Use only match features n\n"
+	       "-q, --quiet		Don't emit warnings\n", command);
+}
+
+void pwarn(char *fmt, ...)
+{
+	va_list arg;
+	char *newfmt;
+	int rc;
+
+	if (conf_quiet || names_only || option == OPTION_REMOVE)
+		return;
+
+	rc = asprintf(&newfmt, "Warning (%s line %d): %s",
+		      profilename ? profilename : "stdin",
+		      current_lineno,
+		      fmt);
+	if (!newfmt)
+		return;
+
+	va_start(arg, fmt);
+	vfprintf(stderr, newfmt, arg);
+	va_end(arg);
 }
 
 static int process_args(int argc, char *argv[])
 {
 	int c, o;
-	int option = OPTION_ADD;
 	int count = 0;
+	option = OPTION_ADD;
 
-	while ((c = getopt_long(argc, argv, "adf:hrRvpI:b:CNSm:", long_options, &o)) != -1)
+	while ((c = getopt_long(argc, argv, "adf:hrRvpI:b:CNSm:q", long_options, &o)) != -1)
 	{
 		switch (c) {
 		case 0:
@@ -181,6 +208,9 @@ static int process_args(int argc, char *argv[])
 			break;
 		case 'm':
 			match_string = strdup(optarg);
+			break;
+		case 'q':
+			conf_quiet = 1;
 			break;
 		default:
 			display_usage(progname);

@@ -814,7 +814,7 @@ ports:		TOK_COLON TOK_NUM TOK_RANGE TOK_NUM
 		if ((*ports)[0] > (*ports)[1])
 		{
 			unsigned short tmp;
-			PWARN("expected first port number to be less than the second, swapping (%ld,%ld)\n",
+			pwarn("expected first port number to be less than the second, swapping (%ld,%ld)\n",
 				$2, $4);
 			tmp = (*ports)[0];
 			(*ports)[0] = (*ports)[1];

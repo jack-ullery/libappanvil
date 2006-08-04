@@ -8,12 +8,12 @@
 /does/not/exist {
   #include <includes/base>
 
-  /usr/X11R6/lib/lib*so* rRr,
+  /usr/X11R6/lib/lib*so* rrr,
   /does/not/exist r,
-  /var/log/messages wWw,
-  /tmp/sd*.foo rwRWwrlL,
-  /bin/cat PxpxpXPXpx,
-  /bin/ls iXIXIxIX,
-  /bin/echo uXUXuxUxuX,
+  /var/log/messages www,
+  /tmp/sd*.foo rwrwwrll,
+  /bin/cat pxpxpxpxpx,
+  /bin/ls ixixixix,
+  /bin/echo uxuxuxuxux,
 }
 

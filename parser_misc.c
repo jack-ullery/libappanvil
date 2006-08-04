@@ -261,6 +261,16 @@ int str_to_boolean(const char *value)
 	return retval;
 }
 
+static int warned_uppercase = 0;
+
+static void warn_uppercase(void)
+{
+	if (!warned_uppercase) {
+		pwarn("Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
+		      "See the apparmor.d(5) manpage for details.\n");
+		warned_uppercase = 1;
+	}
+}
 int parse_mode(const char *str_mode)
 {
 	/* The 'check' int is a bit of a kludge, but we need some context
@@ -276,9 +286,11 @@ int parse_mode(const char *str_mode)
 
 	p = str_mode;
 	while (*p) {
-		char this = tolower(*p);
-		char next = tolower(*(p + 1));
+		char this = *p;
+		char next = *(p + 1);
+		char lower;
 
+reeval:
 		switch (this) {
 		case COD_READ_CHAR:
 			PDEBUG("Parsing mode: found READ\n");
@@ -297,24 +309,34 @@ int parse_mode(const char *str_mode)
 
 		case COD_INHERIT_CHAR:
 			PDEBUG("Parsing mode: found INHERIT\n");
-			if (next != COD_EXEC_CHAR) {
+			if (next != COD_EXEC_CHAR && tolower(next) != COD_EXEC_CHAR) {
 				yyerror(_("Exec qualifier 'i' must be followed by 'x'"));
 			} else if (IS_DIFF_QUAL(this)) {
 				yyerror(_("Exec qualifier 'i' invalid, conflicting qualifier already specified"));
 			} else {
+				if (next != tolower(next))
+					warn_uppercase();
 				mode |=
 				    (KERN_COD_EXEC_INHERIT | KERN_COD_MAY_EXEC);
 				p++;	/* skip 'x' */
 			}
 			break;
 
+		case COD_UNSAFE_UNCONSTRAINED_CHAR:
+			mode |= KERN_COD_EXEC_UNSAFE;
+			pwarn("Unconstrained exec qualifier (%c%c) allows some dangerous environment variables\n"
+			      "to be passed to the unconfined process; see the apparmor.d(5) manpage for details.\n",
+			      COD_UNSAFE_UNCONSTRAINED_CHAR, COD_EXEC_CHAR);
+			/* fall through */
 		case COD_UNCONSTRAINED_CHAR:
 			PDEBUG("Parsing mode: found UNCONSTRAINED\n");
-			if (next != COD_EXEC_CHAR) {
+			if (next != COD_EXEC_CHAR && tolower(next) != COD_EXEC_CHAR) {
 				yyerror(_("Exec qualifier 'u' must be followed by 'x'"));
 			} else if (IS_DIFF_QUAL(this)) {
 				yyerror(_("Exec qualifier 'u' invalid, conflicting qualifier already specified"));
 			} else {
+				if (next != tolower(next))
+					warn_uppercase();
 				mode |=
 				    (KERN_COD_EXEC_UNCONSTRAINED |
 				     KERN_COD_MAY_EXEC);
@@ -322,13 +344,18 @@ int parse_mode(const char *str_mode)
 			}
 			break;
 
+		case COD_UNSAFE_PROFILE_CHAR:
+			mode |= KERN_COD_EXEC_UNSAFE;
+			/* fall through */
 		case COD_PROFILE_CHAR:
 			PDEBUG("Parsing mode: found PROFILE\n");
-			if (next != COD_EXEC_CHAR) {
+			if (next != COD_EXEC_CHAR && tolower(next) != COD_EXEC_CHAR) {
 				yyerror(_("Exec qualifier 'p' must be followed by 'x'"));
 			} else if (IS_DIFF_QUAL(this)) {
 				yyerror(_("Exec qualifier 'p' invalid, conflicting qualifier already specified"));
 			} else {
+				if (next != tolower(next))
+					warn_uppercase();
 				mode |=
 				    (KERN_COD_EXEC_PROFILE | KERN_COD_MAY_EXEC);
 				p++;	/* skip 'x' */
@@ -345,8 +372,28 @@ int parse_mode(const char *str_mode)
 			yyerror(_("Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"));
 			break;
 
+ 		/* error cases */
+
 		default:
-			yyerror(_("Internal: unexpected mode character in input"));
+			lower = tolower(this);
+			switch (lower) {
+			case COD_READ_CHAR:
+			case COD_WRITE_CHAR:
+			case COD_LINK_CHAR:
+			case COD_INHERIT_CHAR:
+			case COD_MMAP_CHAR:
+			case COD_EXEC_CHAR:
+				PDEBUG("Parsing mode: found invalid upper case char %c\n", this);
+				warn_uppercase();
+				this = lower;
+				goto reeval;
+				break;
+			default:
+				yyerror(_("Internal: unexpected mode character '%c' in input"),
+					this);
+				break;
+			}
+			break;
 		}
 
 		p++;
@@ -510,21 +557,29 @@ void debug_cod_entries(struct cod_entry *list)
 
 		printf("Mode:\t");
 		if (item->mode & KERN_COD_MAY_READ)
-			printf("r");
+			printf("%c", COD_READ_CHAR);
 		if (item->mode & KERN_COD_MAY_WRITE)
-			printf("w");
-		if (item->mode & KERN_COD_MAY_EXEC)
-			printf("x");
+			printf("%c", COD_WRITE_CHAR);
 		if (item->mode & KERN_COD_MAY_LINK)
-			printf("l");
+			printf("%c", COD_LINK_CHAR);
 		if (item->mode & KERN_COD_EXEC_INHERIT)
-			printf("i");
-		if (item->mode & KERN_COD_EXEC_UNCONSTRAINED)
-			printf("u");
-		if (item->mode & KERN_COD_EXEC_PROFILE)
-			printf("p");
+			printf("%c", COD_INHERIT_CHAR);
+		if (item->mode & KERN_COD_EXEC_UNCONSTRAINED) {
+			if (item->mode & KERN_COD_EXEC_UNSAFE)
+				printf("%c", COD_UNSAFE_UNCONSTRAINED_CHAR);
+			else
+				printf("%c", COD_UNCONSTRAINED_CHAR);
+		}
+		if (item->mode & KERN_COD_EXEC_PROFILE) {
+			if (item->mode & KERN_COD_EXEC_UNSAFE)
+				printf("%c", COD_UNSAFE_PROFILE_CHAR);
+			else
+				printf("%c", COD_PROFILE_CHAR);
+		}
 		if (item->mode & KERN_COD_EXEC_MMAP)
 			printf("%c", COD_MMAP_CHAR);
+		if (item->mode & KERN_COD_MAY_EXEC)
+			printf("%c", COD_EXEC_CHAR);
 
 		if (item->name)
 			printf("\tName:\t(%s)\n", item->name);
@@ -712,6 +767,3 @@ int main(void)
 	return rc;
 }
 #endif /* UNIT_TEST */
-
-
-
