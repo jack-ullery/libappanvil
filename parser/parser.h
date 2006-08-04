@@ -107,6 +107,7 @@ struct var_string {
 #define COD_LINK_CHAR 		'l'
 #define COD_UNCONSTRAINED_CHAR	'u'
 #define COD_PROFILE_CHAR	'p'
+#define COD_MMAP_CHAR		'm'
 
 #define OPTION_ADD      1
 #define OPTION_REMOVE   2
