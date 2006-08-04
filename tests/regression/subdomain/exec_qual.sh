@@ -102,28 +102,28 @@ local_runchecktest "enforce px case4" fail "n/a" $test2 $file
 #	  child profile grants access (should be irrelevant)
 #	  expected behaviour: child should be able to access resource
 
-genprofile $test2:ix $file:$fileperm -- image=$test2 $file:$fileperm
+genprofile $test2:rix $file:$fileperm -- image=$test2 $file:$fileperm
 local_runchecktest "enforce ix case1" pass $test1 $test2 $file
 
 # case 2: parent profile grants access
 #	  child profile disallows access (should be irrelevant)
 #	  expected behaviour: child should be able to access resource
 
-genprofile $test2:ix $file:$fileperm -- image=$test2 
+genprofile $test2:rix $file:$fileperm -- image=$test2
 local_runchecktest "enforce ix case2" pass $test1 $test2 $file
 
 # case 3: parent profile disallows access
 #	  child profile allows access (should be irrelevant)
 #	  expected behaviour: child should be unable to access resource
 
-genprofile $test2:ix -- image=$test2 $file:$fileperm
+genprofile $test2:rix -- image=$test2 $file:$fileperm
 local_runchecktest "enforce ix case3" fail $test1 $test2 $file
 
 # case 4: parent profile grants access
 #	  missing child profile (irrelvant)
 #	  expected behaviour: child should be able to access resource
 
-genprofile $test2:ix $file:$fileperm
+genprofile $test2:rix $file:$fileperm
 local_runchecktest "enforce ix case4" pass $test1 $test2 $file
 
 # constrained parent, exec child with 'ux'

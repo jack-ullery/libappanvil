@@ -149,7 +149,7 @@ resolve_libs()
 	# compiler, we also need access to /dev/urandom
 	for i in $libs /dev/urandom
 	do
-		mode=r
+		mode=rm
 		# resolve possible symlinks before checking for ld pattern
 		# this is necessary because some architectures (zSeries)
 		# use nonconforming ld symlink names, like ld64.so
@@ -298,7 +298,7 @@ emit_profile()
 		# skip dynamic libs for subprofiles
 		$bin/mkprofile.pl ${mkflags} $name ${outfile}:w "$@" >> $profile
 	else
-		$bin/mkprofile.pl ${mkflags} $name ${name}:r $dynlibs ${outfile}:w "$@" >> $profile
+		$bin/mkprofile.pl ${mkflags} $name ${name}:rm $dynlibs ${outfile}:w "$@" >> $profile
 	fi
 
 	echo $name >> $profilenames
@@ -421,7 +421,7 @@ loadprofile()
 {
 	#global complainflaf profile profileloaded
 
-	$subdomain $complainflag < $profile > /dev/null
+	$subdomain -q $complainflag < $profile > /dev/null
 	if [ $? -ne 0 ]
 	then
 		removeprofile
@@ -435,7 +435,7 @@ replaceprofile()
 {
 	#global complainflag profile
 
-	$subdomain -r $complainflag < $profile > /dev/null
+	$subdomain -qr $complainflag < $profile > /dev/null
 	if [ $? -ne 0 ]
 	then
 		fatalerror "Unable to replace profile"
@@ -454,7 +454,7 @@ removeprofile()
 		remprofile=$profile
 	fi
 
-	$subdomain -R < $remprofile > /dev/null
+	$subdomain -qR < $remprofile > /dev/null
 	if [ $? -ne 0 ]
 	then
 		fatalerror "Unable to remove profile $remoprofile"

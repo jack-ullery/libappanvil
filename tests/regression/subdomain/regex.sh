@@ -122,7 +122,7 @@ runchecktest "GLOB FOLLOWED BY DOUBLE TAILGLOB (fail)" fail ${file2}
 
 settest exec
 file=/bin/true
-okperm=ix
+okperm=rix
 baderm=r
 
 # PASS TEST - looking for *
