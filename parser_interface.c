@@ -54,7 +54,7 @@
 #define SD_CODE_SIZE (sizeof(u8))
 #define SD_STR_LEN (sizeof(u16))
 
-#define SUBDOMAIN_INTERFACE_VERSION 3
+#define SUBDOMAIN_INTERFACE_VERSION 2
 
 int sd_serialize_codomain(int option, struct codomain *cod);
 
