@@ -78,6 +78,11 @@ function sd_log_failure_msg() {
 	log_failure_msg $*
 }
 
+function sd_log_skipped_msg() {
+	echo -en "$@"
+	echo -e	"$rc_skipped"
+}
+
 function usage() {
     echo "Usage: $0 {start|stop|restart|try-restart|reload|force-reload|status|kill}"
 }
