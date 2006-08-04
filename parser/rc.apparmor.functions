@@ -125,13 +125,13 @@ function parse_profiles() {
 	fi
 
 	if [ ! -d "$PROFILE_DIR" ]; then
-		sd_log_failure_msg "- Profile directory not found"
-		exit 1
+		sd_log_skipped_msg "- Profile directory not found\nNo AppArmor policy loaded."
+		return 1
 	fi
 
 	if [ "X" == "X$(ls $PROFILE_DIR/)" ]; then
-		sd_log_failure_msg "- No profiles found"
-		exit 1
+		sd_log_skipped_msg "- No profiles found\nNo AppArmor policy loaded."
+		return 1
 	fi
 
 	for profile in $PROFILE_DIR/*; do
@@ -379,7 +379,7 @@ function subdomain_start() {
 	if [ $(wc -l "$SFS_MOUNTPOINT/profiles" | awk '{print $1}') -eq 0 ] ; then
 		parse_profiles load
 	else
-		sd_log_warning_msg "Loading AppArmor profiles - AppArmor already loaded with profiles. Not loading profiles."
+		sd_log_skipped_msg "Loading AppArmor profiles - AppArmor already loaded with profiles."
 	fi
 }
 
