@@ -48,7 +48,7 @@
   /{var/spool/postfix/,}incoming/[0-9A-F]/[0-9A-F]                 r,
   /{var/spool/postfix/,}incoming/[0-9A-F]/[0-9A-F]/*               r,
   /{var/spool/postfix/,}incoming/[0-9A-F]/[0-9A-F]*                r,
-  /{var/spool/postfix/,}incoming/[0-0A-F]*                         r,
+  /{var/spool/postfix/,}incoming/[0-9A-F]*                         r,
   /{var/spool/postfix/,}maildrop                                   r,
   /{var/spool/postfix/,}maildrop/[0-9A-F]*                         r,
   /{var/spool/postfix/,}pid/unix.showq                             rw,
