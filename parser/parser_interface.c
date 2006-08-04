@@ -54,7 +54,7 @@
 #define SD_CODE_SIZE (sizeof(u8))
 #define SD_STR_LEN (sizeof(u16))
 
-#define SUBDOMAIN_INTERFACE_VERSION 2
+#define SUBDOMAIN_INTERFACE_VERSION 3
 
 int sd_serialize_codomain(int option, struct codomain *cod);
 
@@ -80,7 +80,7 @@ static void print_error(int error)
 		PERROR(_("Profile does not match signature\n"));
 		break;
 	case -EPROTONOSUPPORT:
-		PERROR(_("Profile version not supported\n"));
+		PERROR(_("Profile version not supported by Apparmor module\n"));
 		break;
 	case -EEXIST:
 		PERROR(_("Profile already exists\n"));
