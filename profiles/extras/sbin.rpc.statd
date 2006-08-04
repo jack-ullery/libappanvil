@@ -15,7 +15,7 @@
   #include <abstractions/base>
   #include <abstractions/nameservice>
   /etc/rpc                         r,
-  /sbin/rpc.statd                  rix,
+  /sbin/rpc.statd                  rmix,
   /sm                              rw,
   /sm.bak                          rw,
   /state                           rw,

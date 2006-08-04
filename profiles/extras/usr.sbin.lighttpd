@@ -35,10 +35,10 @@
   /etc/lighttpd/auth.d/* r,
   /etc/lighttpd/vhosts.d r,
   /etc/lighttpd/vhosts.d/* r,
-  /usr/sbin/lighttpd ix,
+  /usr/sbin/lighttpd mix,
 
-  /usr/lib/lighttpd/*.so r,
-  /usr/lib64/lighttpd/*.so r,
+  /usr/lib/lighttpd/*.so mr,
+  /usr/lib64/lighttpd/*.so mr,
 
   /etc/ssl/private/*.pem r,
   # home dir. e.g. used for sockets.
@@ -52,8 +52,8 @@
   # log files
   /var/log/lighttpd/*.log rw,
   # include_shell
-  /bin/bash ix,
-  /bin/zsh ix,
-  /bin/cat ix,
+  /bin/bash mix,
+  /bin/zsh mix,
+  /bin/cat mix,
 }
 

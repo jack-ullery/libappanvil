@@ -26,12 +26,12 @@
   /usr/share/locale/**           r,
   /usr/share/zoneinfo/**         r,
 
-  /usr/lib64/locale/**           r,
-  /usr/lib64/gconv/*.so          r,
-  /usr/lib64/gconv/gconv-modules*  r,
-  /usr/lib/locale/**             r,
-  /usr/lib/gconv/*.so            r,
-  /usr/lib/gconv/gconv-modules*  r,
+  /usr/lib64/locale/**           mr,
+  /usr/lib64/gconv/*.so          mr,
+  /usr/lib64/gconv/gconv-modules*  mr,
+  /usr/lib/locale/**             mr,
+  /usr/lib/gconv/*.so            mr,
+  /usr/lib/gconv/gconv-modules*  mr,
 
   # used by glibc when binding to ephemeral ports
   /etc/bindresvport.blacklist    r,
@@ -41,35 +41,38 @@
   /etc/ld.so.cache               r,
   # 'px' requires a profile to be available for the transition to
   # function; without a loaded profile, the kernel will fail the exec.
-  /lib/ld-*.so                   px,
-  /lib64/ld-*.so                 px,
-  /lib/ld64-*.so                 px,
-  /lib64/ld64-*.so               px,
-  /opt/*-linux-uclibc/lib/ld-uClibc*so* px,
+  /lib/ld-*.so                   mrPx,
+  /lib64/ld-*.so                 mrPx,
+  /lib/ld64-*.so                 mrPx,
+  /lib64/ld64-*.so               mrPx,
+  /opt/*-linux-uclibc/lib/ld-uClibc*so* mrPx,
 
   # we might as well allow everything to use common libraries
-  /lib/lib*.so*                  r,
-  /lib/tls/lib*.so*              r,
-  /lib/power4/lib*.so*           r,
-  /lib/power5/lib*.so*           r,
-  /lib/power5+/lib*.so*          r,
-  /lib64/power4/lib*.so*         r,
-  /lib64/power5/lib*.so*         r,
-  /lib64/power5+/lib*.so*        r,
-  /usr/lib/*.so*                 r,
-  /usr/lib/tls/lib*.so*          r,
-  /usr/lib/power4/lib*.so*       r,
-  /usr/lib/power5/lib*.so*       r,
-  /usr/lib/power5+/lib*.so*      r,
-  /lib64/lib*.so*                r,
-  /lib64/tls/lib*.so*            r,
-  /usr/lib64/*.so*               r,
-  /usr/lib64/tls/lib*.so*        r,
+  /lib/lib*.so*                  mr,
+  /lib/tls/lib*.so*              mr,
+  /lib/power4/lib*.so*           mr,
+  /lib/power5/lib*.so*           mr,
+  /lib/power5+/lib*.so*          mr,
+  /lib64/power4/lib*.so*         mr,
+  /lib64/power5/lib*.so*         mr,
+  /lib64/power5+/lib*.so*        mr,
+  /usr/lib/*.so*                 mr,
+  /usr/lib/tls/lib*.so*          mr,
+  /usr/lib/power4/lib*.so*       mr,
+  /usr/lib/power5/lib*.so*       mr,
+  /usr/lib/power5+/lib*.so*      mr,
+  /lib64/lib*.so*                mr,
+  /lib64/tls/lib*.so*            mr,
+  /usr/lib64/*.so*               mr,
+  /usr/lib64/tls/lib*.so*        mr,
 
   # /dev/null is pretty harmless and frequently used
   /dev/null                      rw,
   # as is /dev/zero
   /dev/zero                      rw,
+  # recent glibc uses /dev/full in preference to /dev/null for programs
+  # that don't have open fds at exec()
+  /dev/full                      rw,
 
   # Sometimes used to determine kernel/user interfaces to use
   /proc/sys/kernel/version       r,

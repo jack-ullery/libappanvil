@@ -13,5 +13,5 @@
 
 /sbin/rpc.lockd {
   #include <abstractions/base>
-  /sbin/rpc.lockd	rix,
+  /sbin/rpc.lockd	rmix,
 }

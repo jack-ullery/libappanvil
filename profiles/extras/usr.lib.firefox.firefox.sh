@@ -18,17 +18,19 @@
   #include <abstractions/consoles>
   #include <abstractions/user-tmp>
 
-  /bin/basename ixr,
-  /bin/bash ix,
-  /bin/gawk ixr,
-  /bin/grep ixr,
+  /bin/basename mixr,
+  /bin/bash mixr,
+  /bin/gawk mixr,
+  /bin/grep mixr,
   /etc/magic r,
-  /usr/bin/aoss ux,
-  /usr/bin/file ixr,
-  /usr/bin/which ixr,
+  /usr/bin/aoss Ux,
+  /usr/bin/file mixr,
+  /usr/bin/which mixr,
   /usr/lib/firefox/* r,
+# the shell script relies on LD_PRELOAD.
   /usr/lib/firefox/firefox-bin px,
-  /usr/lib/firefox/firefox.sh rix,
+  /usr/lib/firefox/firefox.sh rmix,
+# the shell script relies on LD_PRELOAD.
   /usr/lib/firefox/mozilla-xremote-client px,
   /usr/share/misc/magic.mgc r,
 }

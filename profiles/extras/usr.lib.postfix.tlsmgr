@@ -17,8 +17,9 @@
   #include <abstractions/nameservice>
   #include <program-chunks/postfix-common>
 
+  /usr/lib/postfix/tlsmgr           rmix,
+
   /etc/postfix/prng_exch            rw,
   /proc/sys/kernel/ngroups_max      r,
-  /usr/lib/postfix/tlsmgr           r,
   /{var/spool/postfix/,}private/tlsmgr r,
 }

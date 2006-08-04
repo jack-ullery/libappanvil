@@ -19,5 +19,5 @@
   capability net_raw,
 
   /proc/net/route       r,
-  /usr/sbin/traceroute  rix,
+  /usr/sbin/traceroute  rmix,
 }

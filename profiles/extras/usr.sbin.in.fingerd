@@ -18,7 +18,7 @@
   @{HOME}/.plan          r,
   @{HOME}/.project       r,
 
-  /usr/bin/finger        ix,
+  /usr/bin/finger        mix,
   /var/log/lastlog       r,
   /var/run/utmp          r,
 }

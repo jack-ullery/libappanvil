@@ -20,9 +20,9 @@
 
   /etc/postfix r,
   /etc/postfix/main.cf r,
-  /etc/postfix/postfix-script ixr,
+  /etc/postfix/postfix-script mixr,
   /proc/net/if_inet6 r,
-  /usr/sbin/postdrop rix,
+  /usr/sbin/postdrop rmix,
   /var/spool/postfix r,
   /var/spool/postfix/maildrop r,
   /var/spool/postfix/maildrop/* rwl,

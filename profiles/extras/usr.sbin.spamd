@@ -23,7 +23,7 @@
   capability setgid,
   capability setuid,
 
-  /bin/pwd ixr,
+  /bin/pwd mixr,
   /etc/mail/spamassassin r,
   /etc/mail/spamassassin/* r,
   /etc/mtab r,
@@ -33,7 +33,7 @@
   /proc/stat r,
   /tmp/spamd-*-init r,
   /tmp/spamd-*-init/** lrw,
-  /usr/bin/perl ix,
+  /usr/bin/perl mix,
   /usr/sbin/spamd r,
   /usr/share/spamassassin r,
   /usr/share/spamassassin/*.cf r,

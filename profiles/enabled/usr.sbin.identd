@@ -20,22 +20,7 @@
   /etc/identd.conf         r,
   /etc/identd.key          r,
   /etc/identd.pid          w,
-  /usr/sbin/identd	   rix,
-  /proc/net/tcp            r,
-  /proc/net/tcp6           r,
-  /var/run/identd.pid      w,
-}
-
-/usr/sbin/in.identd {
-  #include <abstractions/base>
-  #include <abstractions/nameservice>
-  capability net_bind_service,
-  capability setgid,
-  capability setuid,
-  /etc/identd.conf         r,
-  /etc/identd.key          r,
-  /etc/identd.pid          w,
-  /usr/sbin/in.identd	   rix,
+  /usr/sbin/identd	   rmix,
   /proc/net/tcp            r,
   /proc/net/tcp6           r,
   /var/run/identd.pid      w,

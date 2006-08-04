@@ -15,11 +15,12 @@
 /usr/sbin/userdel {
   #include <abstractions/authentication>
   #include <abstractions/base>
+  #include <abstractions/perl>
   #include <abstractions/nameservice>
 
   capability sys_resource,
 
-  /bin/cat ix,
+  /bin/cat mix,
   /dev/log w,
   /etc/.pwd.lock rw,
   /etc/default/useradd r,
@@ -30,8 +31,7 @@
   /etc/shadow* rwl,
   @{HOMEDIRS}**  rwl,
   /proc/*/mounts r,
-  /usr/lib/perl5/** r,
-  /usr/sbin/userdel rix,
+  /usr/sbin/userdel rmix,
   /var/log/lastlog rw,
   # XXX
   /var/run/nscd.pid r,

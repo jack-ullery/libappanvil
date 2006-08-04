@@ -20,7 +20,7 @@
   capability setgid,
   capability setuid,
 
-  /usr/lib/postfix/anvil                      rix,
+  /usr/lib/postfix/anvil                      rmix,
 
   /etc/postfix/main.cf                        r,
   /{var/spool/postfix/,}private/anvil         rw,

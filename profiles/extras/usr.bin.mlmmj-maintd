@@ -18,7 +18,7 @@
   capability setuid,
 
   /usr/bin/mlmmj-maintd r,
-  /usr/bin/mlmmj-send px,
+  /usr/bin/mlmmj-send Px,
 
   /var/spool/mlmmj r,
   /var/spool/mlmmj/*/bounce r,

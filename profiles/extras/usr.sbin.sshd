@@ -33,13 +33,14 @@
 
   /dev/ptmx rw,
   /dev/urandom r,
+  /etc/environment r,
   /etc/hosts.allow r,
   /etc/hosts.deny r,
   /etc/modules.conf r,
   /etc/ssh/* r,
-  /lib64/ld-*.so px,
-  /lib/ld-*.so px,
-  /usr/sbin/sshd rpx,
+  /lib64/ld-*.so Px,
+  /lib/ld-*.so Px,
+  /usr/sbin/sshd mrix,
   /var/run w,
   /var/run/sshd{,.init}.pid wl,
 
@@ -47,16 +48,16 @@
 
 # should only be here for use in non-change-hat openssh
 # duplicated from EXEC hat
-  /bin/ash ux,
-  /bin/bash ux,
-  /bin/bash2 ux,
-  /bin/bsh ux,
-  /bin/csh ux,
-  /bin/ksh ux,
-  /bin/sh ux,
-  /bin/tcsh ux,
-  /bin/zsh ux,
-  /sbin/nologin ux,
+  /bin/ash Ux,
+  /bin/bash Ux,
+  /bin/bash2 Ux,
+  /bin/bsh Ux,
+  /bin/csh Ux,
+  /bin/ksh Ux,
+  /bin/sh Ux,
+  /bin/tcsh Ux,
+  /bin/zsh Ux,
+  /sbin/nologin Ux,
 
 # stuff duplicated from PRIVSEP_MONITOR
   @{HOME}/.ssh/authorized_keys{,2}         r,
@@ -70,22 +71,24 @@
   /etc/motd r,
   /tmp/ssh-*/agent.[0-9]* rwl,
 
+  /tmp/ssh-*[0-9]* w,
+
 #
 # default subprofile for when sshd has authenticated the user
 #
   ^EXEC {
     #include <abstractions/base>
   
-    /bin/ash ux,
-    /bin/bash ux,
-    /bin/bash2 ux,
-    /bin/bsh ux,
-    /bin/csh ux,
-    /bin/ksh ux,
-    /bin/sh ux,
-    /bin/tcsh ux,
-    /bin/zsh ux,
-    /sbin/nologin ux,
+    /bin/ash Ux,
+    /bin/bash Ux,
+    /bin/bash2 Ux,
+    /bin/bsh Ux,
+    /bin/csh Ux,
+    /bin/ksh Ux,
+    /bin/sh Ux,
+    /bin/tcsh Ux,
+    /bin/zsh Ux,
+    /sbin/nologin Ux,
 
 # for debugging
 #  /dev/pts/[0-9]*                                              rw,

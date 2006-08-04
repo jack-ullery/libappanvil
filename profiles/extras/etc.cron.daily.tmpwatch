@@ -16,7 +16,7 @@
   /etc/cron.daily/tmpwatch  r,
   /tmp                      r,
   /tmp/**                   rwl,
-  /usr/sbin/tmpwatch        ixr,
+  /usr/sbin/tmpwatch        mixr,
   /var/cache/man*           r,
   /var/cache/man*/**        r,
   /var/tmp                  r,

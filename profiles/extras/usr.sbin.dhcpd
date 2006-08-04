@@ -26,7 +26,7 @@
   /etc/dhcpd.conf	r,
   /etc/hosts.allow	r,
   /etc/hosts.deny	r,
-  /usr/sbin/dhcpd	rix,
+  /usr/sbin/dhcpd	rmix,
   /var/lib/dhcp/dhcpd.leases*	rwl,
   /var/lib/dhcp/etc/dhcpd.conf  r,
   /var/run/dhcpd.pid	wl,

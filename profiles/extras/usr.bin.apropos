@@ -15,13 +15,13 @@
   #include <abstractions/base>
   #include <abstractions/bash>
   #include <abstractions/consoles>
-  /bin/basename         ixr,
-  /bin/bash             ixr,
-  /bin/grep             ixr,
+  /bin/basename         mixr,
+  /bin/bash             mixr,
+  /bin/grep             mixr,
   /etc/manpath.config   r,
-  /usr/bin/apropos      rix,
-  /usr/bin/man          px,
-  /usr/bin/tr           ixr,
+  /usr/bin/apropos      rmix,
+  /usr/bin/man          Px,
+  /usr/bin/tr           mixr,
   /var/cache/man/whatis r,
   /var/cache/man/**     r,
 }

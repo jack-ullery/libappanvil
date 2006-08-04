@@ -14,5 +14,5 @@
 /usr/lib/postfix/pipe {
   #include <abstractions/base>
 
-  /usr/lib/postfix/pipe r,
+  /usr/lib/postfix/pipe rmix,
 }

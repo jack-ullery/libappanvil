@@ -18,7 +18,7 @@
   #include <abstractions/kerberosclient>
   #include <program-chunks/postfix-common>
   /etc/postfix                         r,
-  /usr/sbin/postqueue                  rix,
+  /usr/sbin/postqueue                  rmix,
   /var/spool/postfix                   r,
   /var/spool/postfix/maildrop          r,
   /var/spool/postfix/maildrop/*        rwl,

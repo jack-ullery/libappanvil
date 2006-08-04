@@ -17,7 +17,7 @@
   #include <abstractions/nameservice>
   #include <program-chunks/postfix-common>
 
-  /usr/lib/postfix/nqmgr                      rix,
+  /usr/lib/postfix/nqmgr                      rmix,
 
   /{var/spool/postfix/,}active                                    r,
   /{var/spool/postfix/,}active/[0-9A-F]                           r,

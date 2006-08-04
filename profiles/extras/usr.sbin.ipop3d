@@ -19,7 +19,7 @@
 
   /dev/urandom                           r     ,
   /tmp/.*                                rwl   ,
-  /usr/sbin/ipop3d                       rix   ,
+  /usr/sbin/ipop3d                       rmix,
   /usr/share/ssl/certs/ipop3d.pem        r     ,
   /usr/share/ssl/openssl.cnf             r     ,
 }

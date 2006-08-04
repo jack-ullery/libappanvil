@@ -17,9 +17,9 @@
   /etc/php5/fastcgi/php.ini r,
 
   # Xlibs
-  /usr/X11R6/lib{64,}/lib*.so* r,
+  /usr/X11R6/lib{64,}/lib*.so* mr,
   # php extensions
-  /usr/lib{64,}/php5/extensions/*.so r,
+  /usr/lib{64,}/php5/extensions/*.so mr,
 
   # php5 session mmap socket
   /var/lib/php5/session_mm_* rwl,
@@ -28,4 +28,4 @@
 
   # php libraries
   /usr/share/php r,
-  /usr/share/php/** r,
+  /usr/share/php/** mr,

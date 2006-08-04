@@ -21,7 +21,7 @@
   capability dac_read_search,
   capability net_bind_service,
 
-  /usr/lib/postfix/smtp                        rix,
+  /usr/lib/postfix/smtp                        rmix,
 
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/*      rwl,
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]*       rwl,

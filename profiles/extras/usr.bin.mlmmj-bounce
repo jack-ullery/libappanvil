@@ -16,7 +16,7 @@
   #include <abstractions/base>
 
   /usr/bin/mlmmj-bounce r,
-  /usr/bin/mlmmj-send px,
+  /usr/bin/mlmmj-send Px,
   /var/spool/mlmmj/*/subconf/* rwl,
   /var/spool/mlmmj/*/queue/* rwl,
 

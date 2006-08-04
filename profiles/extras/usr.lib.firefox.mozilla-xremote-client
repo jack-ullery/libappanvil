@@ -16,7 +16,7 @@
   #include <abstractions/base>
   #include <abstractions/X>
 
-  /usr/lib/mozilla/lib*so* r,
-  /usr/lib/firefox/mozilla-xremote-client r,
-  /usr/X11R6/lib/lib*so* r,
+  /usr/lib/mozilla/lib*so* mr,
+  /usr/lib/firefox/mozilla-xremote-client rmix,
+  /usr/X11R6/lib/lib*so* mr,
 }

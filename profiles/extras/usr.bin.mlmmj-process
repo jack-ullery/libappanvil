@@ -16,10 +16,10 @@
   #include <abstractions/base>
 
   /usr/bin/mlmmj-process r,
-  /usr/bin/mlmmj-send px,
-  /usr/bin/mlmmj-sub px,
-  /usr/bin/mlmmj-unsub px,
-  /usr/bin/mlmmj-bounce px,
+  /usr/bin/mlmmj-send Px,
+  /usr/bin/mlmmj-sub Px,
+  /usr/bin/mlmmj-unsub Px,
+  /usr/bin/mlmmj-bounce Px,
   /var/spool/mlmmj/*/control/* r,
   /var/spool/mlmmj/*/text/* r,
   /var/spool/mlmmj/*/incoming/* rwl,

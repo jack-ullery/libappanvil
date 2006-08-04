@@ -16,4 +16,6 @@
   #include <abstractions/nameservice>
   #include <abstractions/kerberosclient>
   #include <program-chunks/postfix-common>
+
+  /usr/lib/postfix/verify rmix,
 }

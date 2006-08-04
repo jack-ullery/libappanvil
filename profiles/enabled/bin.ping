@@ -9,9 +9,6 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
-# ping uses raw sockets, so the netdomain rules included in base and
-# nameservice are NOT the only network access ping has.
-#
 
 #include <tunables/global>
 
@@ -23,6 +20,6 @@
   capability net_raw,
   capability setuid,
 
-  /bin/ping ixr,
+  /bin/ping mixr,
   /etc/modules.conf r,
 }

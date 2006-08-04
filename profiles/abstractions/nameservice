@@ -29,18 +29,18 @@
   # to vast speed increases when working with network-based lookups.
   /var/run/.nscd_socket   rw,
   /var/run/nscd/socket    rw,
-  /var/run/nscd/passwd    rix,
-  /var/run/nscd/group     rix,
+  /var/run/nscd/passwd    rmix,
+  /var/run/nscd/group     rmix,
   # nscd renames and unlinks files in it's operation that clients will
   # have open
-  /var/run/nscd/db*  rix,
+  /var/run/nscd/db*  rmix,
 
   # The nss libraries are sometimes used in addition to PAM; make sure
   # they are available
-  /lib64/libnss_*.so*         r,
-  /lib/libnss_*.so*           r,
-  /usr/lib64/libnss_*.so*     r,
-  /usr/lib/libnss_*.so*       r,
+  /lib64/libnss_*.so*         mr,
+  /lib/libnss_*.so*           mr,
+  /usr/lib64/libnss_*.so*     mr,
+  /usr/lib/libnss_*.so*       mr,
   /etc/default/nss            r,
 
   # nis

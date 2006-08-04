@@ -20,14 +20,14 @@
   #include <abstractions/kde>
   #include <abstractions/X>
 
-  /bin/bash            ix,
-  /usr/bin/cut         ix,
-  /usr/NX/bin/nxclient r,
-  /usr/NX/bin/nxssh    ix,
-  /usr/NX/bin/nxproxy  ix,
-  /usr/NX/lib/**       r,
+  /bin/bash            mix,
+  /usr/bin/cut         mix,
+  /usr/NX/bin/nxclient rmix,
+  /usr/NX/bin/nxssh    mix,
+  /usr/NX/bin/nxproxy  mix,
+  /usr/NX/lib/**       mr,
   /usr/NX/share/**     r,
-  /usr/X11R6/bin/xauth rix,
+  /usr/X11R6/bin/xauth rmix,
 
   @{HOME}/.nx               rwl,
   @{HOME}/.nx/**            rwl,

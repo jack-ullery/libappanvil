@@ -45,37 +45,37 @@
   /tmp/auth_ldap_cache.sem wl,
   /tmp/session_mm_apache0.sem wl,
   /tmp/session_mm_apache2handler0.sem wl,
-  /usr/X11R6/lib64/lib*.so* r,
-  /usr/X11R6/lib/lib*.so* r,
+  /usr/X11R6/lib64/lib*.so* mr,
+  /usr/X11R6/lib/lib*.so* mr,
   /usr/apache2/error/* r,
 
-  /usr/lib64/apache2-leader/{lib,mod_}*.so* r,
-  /usr/lib64/apache2-metuxmpm/{lib,mod_}*.so* r,
-  /usr/lib64/apache2-prefork/{lib,mod_}*.so* r,
-  /usr/lib64/apache2-worker/{lib,mod_}*.so* r,
-  /usr/lib64/apache2/modules/{lib,mod_}*.so* r,
-  /usr/lib64/apache2/{lib,mod_}*.so* r,
+  /usr/lib64/apache2-leader/{lib,mod_}*.so* mr,
+  /usr/lib64/apache2-metuxmpm/{lib,mod_}*.so* mr,
+  /usr/lib64/apache2-prefork/{lib,mod_}*.so* mr,
+  /usr/lib64/apache2-worker/{lib,mod_}*.so* mr,
+  /usr/lib64/apache2/modules/{lib,mod_}*.so* mr,
+  /usr/lib64/apache2/{lib,mod_}*.so* mr,
 
-  /usr/lib/apache2-leader/{lib,mod_}*.so* r,
-  /usr/lib/apache2-metuxmpm/{lib,mod_}*.so* r,
-  /usr/lib/apache2-prefork/{lib,mod_}*.so* r,
-  /usr/lib/apache2-worker/{lib,mod_}*.so* r,
-  /usr/lib/apache2/modules/{lib,mod_}*.so* r,
+  /usr/lib/apache2-leader/{lib,mod_}*.so* mr,
+  /usr/lib/apache2-metuxmpm/{lib,mod_}*.so* mr,
+  /usr/lib/apache2-prefork/{lib,mod_}*.so* mr,
+  /usr/lib/apache2-worker/{lib,mod_}*.so* mr,
+  /usr/lib/apache2/modules/{lib,mod_}*.so* mr,
 
-  /usr/lib64/mysql/libmysql*.so* r,
-  /usr/lib64/php/extensions/*.so r,
-  /usr/lib64/php4/*.so r,
-  /usr/lib64/python[12].[0-9]/**.{py,pyc,pth,so} r,
+  /usr/lib64/mysql/libmysql*.so* mr,
+  /usr/lib64/php/extensions/*.so mr,
+  /usr/lib64/php4/*.so mr,
+  /usr/lib64/python[12].[0-9]/**.{py,pyc,pth,so} mr,
   /usr/lib64/python[12].[0-9]/site-packages r,
-  /usr/lib64/qt3/lib/lib*.so* r,
+  /usr/lib64/qt3/lib/lib*.so* mr,
 
-  /usr/lib/apache2/{lib,mod_}*.so r,
-  /usr/lib/mysql/libmysql*.so* r,
-  /usr/lib/php/extensions/*.so r,
-  /usr/lib/php4/*.so r,
-  /usr/lib/python[12].[0-9]/**.{py,pyc,pth,so} r,
+  /usr/lib/apache2/{lib,mod_}*.so mr,
+  /usr/lib/mysql/libmysql*.so* mr,
+  /usr/lib/php/extensions/*.so mr,
+  /usr/lib/php4/*.so mr,
+  /usr/lib/python[12].[0-9]/**.{py,pyc,pth,so} mr,
   /usr/lib/python[12].[0-9]/site-packages r,
-  /usr/lib/qt3/lib/lib*.so* r,
+  /usr/lib/qt3/lib/lib*.so* mr,
 
   /usr/local/tomcat/conf/mod_jk.conf r,
   /usr/local/tomcat/conf/workers-ajp12.properties r,
@@ -99,22 +99,22 @@
   # takes place to perform a domain change.
   
   # suexec execution of CGIs will require appropriate permissions
-  /usr/sbin/suexec2 ixr,
+  /usr/sbin/suexec2 mixr,
   
   # Allow logging
   /var/log/apache2/** rwl,
   
   # Allow any CGIs in user directories to run, inheriting the apache
   # profile: 
-  # /home/*/public_html/**             ixr,
+  # /home/*/public_html/**             mixr,
   # (note that if you are using mod_change_hat, you have a choice of
   # providing neccesary access in this file OR in URI-specific hats, or
   # hats in the <VHost>, <Location>, or <Directory> directives. Please
   # see the user's guide or mod_apparmor(5) for more information.
   
   # Allow site-wide CGIs to run, inheriting the apache profile:
-  # /srv/www/cgi-bin/**        ixr,
-  # /var/www/cgi-bin/**        ixr,
+  # /srv/www/cgi-bin/**        mixr,
+  # /var/www/cgi-bin/**        mixr,
   
   @{HOME}/public_html                r,
   @{HOME}/public_html/**             r,
@@ -150,22 +150,22 @@
     # takes place to perform a domain change.
     
     # suexec execution of CGIs will require appropriate permissions
-    /usr/sbin/suexec2 ixr,
+    /usr/sbin/suexec2 mixr,
     
     # Allow logging
     /var/log/apache2/** rwl,
     
     # Allow any CGIs in user directories to run, inheriting the apache
     # profile: 
-    # /home/*/public_html/**             ixr,
+    # /home/*/public_html/**             mixr,
     # (note that if you are using mod_change_hat, you have a choice of
     # providing neccesary access in this file OR in URI-specific hats, or
     # hats in the <VHost>, <Location>, or <Directory> directives. Please
     # see the user's guide or mod_apparmor(5) for more information.
     
     # Allow site-wide CGIs to run, inheriting the apache profile:
-    # /srv/www/cgi-bin/**        ixr,
-    # /var/www/cgi-bin/**        ixr,
+    # /srv/www/cgi-bin/**        mixr,
+    # /var/www/cgi-bin/**        mixr,
     
     @{HOME}/public_html                r,
     @{HOME}/public_html/**             r,

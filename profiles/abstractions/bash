@@ -43,5 +43,5 @@
 
   # run out of /etc/bash.bashrc
   /etc/DIR_COLORS                  r,
-  /bin/ls                          ix,
-  /usr/bin/dircolors               ix,
+  /bin/ls                          mix,
+  /usr/bin/dircolors               mix,

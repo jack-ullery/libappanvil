@@ -18,7 +18,7 @@
 
   /boot/System.map*     r,
   /proc/kmsg		r,
-  /sbin/klogd		rix,
+  /sbin/klogd		rmix,
   /var/log/boot.msg     rwl,
   /var/run/klogd.pid    rwl,
 }

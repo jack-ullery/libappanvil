@@ -1,5 +1,17 @@
-# vim:syntax=subdomain
-# Last Modified: Wed Feb  1 11:07:56 2006
+# $Id$
+# vim:syntax=apparmor
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2002-2005 Novell/SUSE
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+#include <tunables/global>
+
 /usr/sbin/mdnsd {
   #include <abstractions/base>
   #include <abstractions/consoles>
@@ -11,10 +23,11 @@
   capability sys_chroot,
   capability sys_resource,
 
+  /usr/sbin/mdnsd rmix,
+
   /proc/net r,
   /proc/net/unix r,
   /proc/sys/kernel/ngroups_max r,
-  /usr/sbin/mdnsd r,
   /var/run/mdnsd lw,
   /var/run/mdnsd.pid w,
 }

@@ -17,7 +17,7 @@
   #include <abstractions/kerberosclient>
   #include <program-chunks/postfix-common>
 
-  /usr/lib/postfix/showq                       rix,
+  /usr/lib/postfix/showq                       rmix,
 
   /{var/spool/postfix/,}active                                     r,
   /{var/spool/postfix/,}active/[0-9A-F]                            r,

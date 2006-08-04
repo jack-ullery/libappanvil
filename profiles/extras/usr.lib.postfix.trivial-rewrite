@@ -17,7 +17,7 @@
   #include <abstractions/kerberosclient>
   #include <program-chunks/postfix-common>
 
-  /usr/lib/postfix/trivial-rewrite            rix,
+  /usr/lib/postfix/trivial-rewrite            rmix,
 
   /etc/postfix/relocated.db                   r,
   /etc/postfix/transport.db                   r,

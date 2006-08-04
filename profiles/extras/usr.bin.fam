@@ -16,7 +16,7 @@
   #include <abstractions/nameservice>
   /tmp/.fam*		wl,
   /etc/mtab		rw,
-  /usr/bin/fam          rix,
+  /usr/bin/fam          rmix,
   # it makes some level of sense for FAM to read all files on the
   # filesystem, even if this is a little unfortunate.
   /** 			r,

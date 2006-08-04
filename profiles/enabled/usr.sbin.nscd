@@ -28,7 +28,7 @@
   /proc/*/mounts r,
   /proc/filesystems r,
   /proc/sys/kernel/ngroups_max r,
-  /usr/sbin/nscd rix,
+  /usr/sbin/nscd rmix,
   /var/run/.nscd_socket wl,
   /var/run/nscd r,
   /var/run/nscd/db* wl,

@@ -16,4 +16,6 @@
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <program-chunks/postfix-common>
+
+  /usr/lib/postfix/oqmgr rmix,
 }

@@ -25,7 +25,7 @@
   /etc/postfix/aliases.db              rwl,
   /etc/postfix/__db.aliases.db         lrw,
   /etc/__db.aliases.db                 rwl,
-  /usr/sbin/postalias                  rix,
+  /usr/sbin/postalias                  rmix,
   /proc/net/if_inet6                   r,
   /proc/cpuinfo                        r,
   /proc/stat                           r, 

@@ -17,15 +17,15 @@
   #include <abstractions/bash>
   #include <abstractions/nameservice>
 
-  /bin/bash ixr,
-  /bin/cat ixr,
-  /bin/gzip ixr,
-  /bin/kill ixr,
-  /bin/logger ixr,
-  /bin/true ixr,
-  /etc/init.d/* ixr,
-  /usr/bin/killall ixr,
-  /usr/sbin/logrotate ixr,
+  /bin/bash mixr,
+  /bin/cat mixr,
+  /bin/gzip mixr,
+  /bin/kill mixr,
+  /bin/logger mixr,
+  /bin/true mixr,
+  /etc/init.d/* mixr,
+  /usr/bin/killall mixr,
+  /usr/sbin/logrotate mixr,
 
   /var/log      r,
   /var/log/**   wrl,

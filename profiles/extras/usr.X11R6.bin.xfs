@@ -21,7 +21,7 @@
   /etc/mtab				r,
   /proc/meminfo				r,
   /tmp/.font-unix/fs710[0-9]		wl,
-  /usr/X11R6/bin/xfs                    rix,
-  /usr/X11R6/lib/lib*.so*               r,
+  /usr/X11R6/bin/xfs                    rmix,
+  /usr/X11R6/lib/lib*.so*               mr,
   /var/run/xfs.pid			rw,
 }

@@ -28,11 +28,11 @@
 @{HOME}/.qt/** rw,
 
 /opt/kde3/lib64/kde3/plugins/styles r,
-/opt/kde3/lib64/kde3/plugins/styles/* r,
-/opt/kde3/lib64/lib*so* r,
+/opt/kde3/lib64/kde3/plugins/styles/* mr,
+/opt/kde3/lib64/lib*so* mr,
 /opt/kde3/lib/kde3/plugins/styles r,
-/opt/kde3/lib/kde3/plugins/styles/* r,
-/opt/kde3/lib/lib*so* r,
+/opt/kde3/lib/kde3/plugins/styles/* mr,
+/opt/kde3/lib/lib*so* mr,
 
 /opt/kde3/share/config/kdeglobals r,
 /opt/kde3/share/icons r,
@@ -42,10 +42,10 @@
 /usr/X11R6/lib/X11/XKeysymDB r,
 /usr/X11R6/lib/X11/icons/** r,
 
-/usr/lib/qt3/lib64/lib*so* r,
-/usr/lib64/qt3/plugins/**  r,
-/usr/lib/qt3/lib/lib*so* r,
-/usr/lib/qt3/plugins/**  r,
+/usr/lib/qt3/lib64/lib*so* mr,
+/usr/lib64/qt3/plugins/**  mr,
+/usr/lib/qt3/lib/lib*so* mr,
+/usr/lib/qt3/plugins/**  mr,
 
 /usr/share/YaST2/theme/** r,
 /usr/share/pixmaps r,

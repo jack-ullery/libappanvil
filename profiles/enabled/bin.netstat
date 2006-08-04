@@ -23,7 +23,7 @@
   capability dac_override,
   capability dac_read_search,
 
-  /bin/netstat rix,
+  /bin/netstat rmix,
   /etc/networks r,
   /proc r,
   /proc/[0-9]*/cmdline r,

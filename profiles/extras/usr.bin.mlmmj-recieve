@@ -15,7 +15,7 @@
 /usr/bin/mlmmj-recieve {
   #include <abstractions/base>
 
-  /usr/bin/mlmmj-process px,
+  /usr/bin/mlmmj-process Px,
   /usr/bin/mlmmj-recieve r,
   /var/spool/mlmmj/*/incoming/* w,
 }

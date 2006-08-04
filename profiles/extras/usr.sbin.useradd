@@ -15,6 +15,7 @@
 /usr/sbin/useradd {
   #include <abstractions/authentication>
   #include <abstractions/base>
+  #include <abstractions/perl>
   #include <abstractions/consoles>
   #include <abstractions/nameservice>
 
@@ -32,9 +33,8 @@
   @{HOMEDIRS}**  rw,
   /proc/*/mounts r,
   /proc/filesystems r,
-  /usr/lib/perl5/** r,
-  /usr/sbin/adduser rix,
-  /usr/sbin/useradd rix,
+  /usr/sbin/adduser rmix,
+  /usr/sbin/useradd rmix,
   /var/log/faillog rw,
   /var/log/lastlog rw,
   /var/run/nscd.pid rw,

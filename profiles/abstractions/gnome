@@ -12,24 +12,24 @@
   # systemwide gtk defaults
   /etc/gnome/gtkrc*               r,
   /etc/gtk/*                      r,
-  /usr/lib/gtk/**                 r,
-  /usr/lib64/gtk/**               r,
+  /usr/lib/gtk/**                 mr,
+  /usr/lib64/gtk/**               mr,
   /usr/share/themes/**            r,
 
   # gtk-2 needed some new rights
   /etc/fonts/*                    r,
   /etc/gtk-*/*                    r,
   /etc/pango/*                    r,
-  /usr/lib64/pango/**             r,
-  /usr/lib64/gtk-*/**             r,
-  /usr/lib/pango/**               r,
-  /usr/lib/gtk-*/**               r,
+  /usr/lib64/pango/**             mr,
+  /usr/lib64/gtk-*/**             mr,
+  /usr/lib/pango/**               mr,
+  /usr/lib/gtk-*/**               mr,
   /usr/share/icons/**             r,
   /usr/share/pixmaps/**           r,
 
   # gnome libs
-  /opt/gnome/lib/**               r,
-  /opt/gnome/lib64/**             r,
+  /opt/gnome/lib/**               mr,
+  /opt/gnome/lib64/**             mr,
 
   # per-user gtk configuration
   @{HOME}/.gnome/Gnome            r,
@@ -54,5 +54,5 @@
   /usr/share/**/icon-theme.cache  r,
 
   # buggy software
-  /opt/gnome/lib/libgnomeui/gnome_segv2 ixr,
-  /opt/gnome/bin/bug-buddy uxr,
+  /opt/gnome/lib/libgnomeui/gnome_segv2 mixr,
+  /opt/gnome/bin/bug-buddy Uxr,

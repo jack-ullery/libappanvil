@@ -19,6 +19,7 @@ such as:
   # aa-complain /etc/apparmor.d/usr.sbin.post*
   # aa-complain /etc/apparmor.d/usr.bin.procmail
   # aa-complain /etc/apparmor.d/usr.sbin.sendmail
+  # rcpostfix restart
   # rcapparmor restart
     <use postfix>
   # aa-logprof

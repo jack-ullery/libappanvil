@@ -12,9 +12,9 @@
   /usr/share/AbiSuite/fonts/**          r,
 
   /usr/X11R6/lib/X11/fonts/**           r,
-  /usr/X11R6/lib/modules/fonts/**       r,
+  /usr/X11R6/lib/modules/fonts/**       mr,
   /usr/X11R6/lib64/X11/fonts/**         r,
-  /usr/X11R6/lib64/modules/fonts/**     r,
+  /usr/X11R6/lib64/modules/fonts/**     mr,
 
   /usr/X11R6/include/X11/fonts/**       r,
 
@@ -38,7 +38,7 @@
   /opt/mozilla/lib64/res/fonts/**       r,
 
   /var/cache/fonts/**                   r,
-  /var/cache/fontconfig/**              r,
+  /var/cache/fontconfig/**              mr,
 
   /usr/share/a2ps/fonts/**              r,
   /usr/share/xfce/fonts/**              r,
@@ -46,6 +46,7 @@
   /usr/share/texmf/*/fonts/**           r,
 
   @{HOME}/.fonts/**                     r,
+  @{HOME}/.fonts.cache-2               mr,
 
   /usr/local/share/fonts                r,
   /usr/local/share/fonts/**             r,

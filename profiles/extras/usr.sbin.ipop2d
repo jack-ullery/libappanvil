@@ -19,7 +19,7 @@
 
   /dev/urandom                           r     ,
   /tmp/.*                                rwl   ,
-  /usr/sbin/ipop2d                       rix   ,
+  /usr/sbin/ipop2d                       rmix,
   /usr/share/ssl/certs/ipop2d.pem        r     ,
   /usr/share/ssl/openssl.cnf             r     ,
 }

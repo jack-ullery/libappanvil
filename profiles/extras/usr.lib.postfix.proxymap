@@ -19,7 +19,7 @@
   capability setgid,
   capability setuid,
 
-  /usr/lib/postfix/proxymap     rix,
+  /usr/lib/postfix/proxymap     rmix,
 
   /etc/postfix/main.cf          r,
   /proc/net/if_inet6            r,

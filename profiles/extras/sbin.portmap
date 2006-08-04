@@ -22,5 +22,5 @@
   /etc/bindresvport.blacklist r,
   /etc/hosts.allow	r,
   /etc/hosts.deny	r,
-  /sbin/portmap         rix,
+  /sbin/portmap         rmix,
 }

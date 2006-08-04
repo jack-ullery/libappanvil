@@ -28,11 +28,11 @@
 
   /dev/tty	        rw,
   # common commands
-  /bin/bash             rix,
-  /bin/date	        rix,
-  /bin/gzip         	rix,
-  /usr/bin/formail      rix,
-  /usr/bin/procmail     rix,
-  /usr/bin/spamc        px,
-  /usr/sbin/sendmail           rpx,
+  /bin/bash             rmix,
+  /bin/date	        rmix,
+  /bin/gzip         	rmix,
+  /usr/bin/formail      rmix,
+  /usr/bin/procmail     rmix,
+  /usr/bin/spamc        Px,
+  /usr/sbin/sendmail           rPx,
 }

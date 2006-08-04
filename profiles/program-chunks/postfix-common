@@ -13,11 +13,12 @@
 
   capability            setuid,
   capability            setgid,
+  capability            sys_chroot,
 
   /etc/postfix/*.cf     r,
   /proc/net/if_inet6    r,
-  /usr/lib/postfix/*.so r,
-  /usr/lib64/sasl2/*    r,
+  /usr/lib/postfix/*.so mr,
+  /usr/lib64/sasl2/*    mr,
   /usr/lib64/sasl2      r,
-  /usr/lib/sasl2/*      r,
+  /usr/lib/sasl2/*      mr,
   /usr/lib/sasl2        r,

@@ -32,7 +32,7 @@
   /etc/ntp/keys r,
   /etc/ntp/step-tickers r,
   /tmp/ntp* rwl,
-  /usr/sbin/ntpd rix,
+  /usr/sbin/ntpd rmix,
   /var/lib/ntp/etc/ntp.conf.iburst  r,
   /var/lib/ntp/drift rwl,
   /var/lib/ntp/drift.TEMP rwl,

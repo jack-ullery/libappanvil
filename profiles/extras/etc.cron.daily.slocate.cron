@@ -17,12 +17,12 @@
 
 /etc/cron.daily/slocate.cron {
   #include <abstractions/base>
-  /bin/bash                        ixr ,
+  /bin/bash                        mixr,
   /dev/tty                         wr  ,
   /etc/cron.daily/slocate.cron     r   ,
   /etc/mtab                        r   ,
   /proc/meminfo                    r   ,
-  /usr/bin/slocate                 ixr ,
-  /usr/bin/renice                  ixr ,
+  /usr/bin/slocate                 mixr,
+  /usr/bin/renice                  mixr,
   /**                              r   ,
 }

@@ -22,12 +22,12 @@
   /etc/gshadow                r,
   /etc/pwdb.conf              r,
 
-  /lib64/security/pam_filter/*  r,
-  /lib64/security/pam_*.so      r,
+  /lib64/security/pam_filter/*  mr,
+  /lib64/security/pam_*.so      mr,
   /lib64/security               r,
 
-  /lib/security/pam_filter/*  r,
-  /lib/security/pam_*.so      r,
+  /lib/security/pam_filter/*  mr,
+  /lib/security/pam_*.so      mr,
   /lib/security               r,
 
   # kerberos

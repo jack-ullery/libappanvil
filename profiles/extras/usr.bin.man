@@ -21,6 +21,6 @@
   capability setuid,
   
   /proc/sys/kernel/ngroups_max r,
-  /usr/lib/man-db/man px,
+  /usr/lib/man-db/man Px,
 
 }

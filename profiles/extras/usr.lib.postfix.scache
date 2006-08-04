@@ -17,7 +17,8 @@
   #include <abstractions/nameservice>
   #include <program-chunks/postfix-common>
 
+  /usr/lib/postfix/scache rmix,
+
   /proc/sys/kernel/ngroups_max r,
-  /usr/lib/postfix/scache r,
   /var/run/nscd/group r,
 }

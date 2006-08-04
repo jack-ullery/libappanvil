@@ -20,7 +20,7 @@
   capability setgid,
   capability setuid,
 
-  /usr/lib/postfix/bounce                      rix,
+  /usr/lib/postfix/bounce                      rmix,
 
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/*                 rwl,
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]*                  rwl,

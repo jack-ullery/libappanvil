@@ -15,5 +15,5 @@
 /usr/lib/postfix/discard {
   #include <abstractions/base>
 
-  /usr/lib/postfix/discard r,
+  /usr/lib/postfix/discard rmix,
 }

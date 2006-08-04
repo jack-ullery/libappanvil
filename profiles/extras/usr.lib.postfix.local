@@ -19,15 +19,15 @@
   #include <abstractions/user-mail>
   #include <program-chunks/postfix-common>
 
-  /usr/bin/procmail                                     px,
+  /usr/bin/procmail                                     Px,
 
-  /usr/lib/mailman/mail/mailman                         px,
-  /var/mailman/mail/wrapper                             px,
-  /usr/bin/mlmmj-recieve                                px,
+  /usr/lib/mailman/mail/mailman                         Px,
+  /var/mailman/mail/wrapper                             Px,
+  /usr/bin/mlmmj-recieve                                Px,
 
-  /usr/lib/postfix/local                                rix,
-  /bin/bash                                             ixr,
-  /bin/date                                             ixr,
+  /usr/lib/postfix/local                                rmix,
+  /bin/bash                                             mixr,
+  /bin/date                                             mixr,
 
   /dev/tty                                              rw,
   /etc/{postfix/,}aliases.db                            r,
