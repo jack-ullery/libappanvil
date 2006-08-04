@@ -1,5 +1,5 @@
 #! /bin/bash
-# $Id:$
+# $Id$
 
 #	Copyright (C) 2002-2005 Novell/SUSE
 #
@@ -41,7 +41,7 @@ bin=$pwd
 file=$tmpdir/testfile
 link=$tmpdir/testlink
 dir=$tmpdir/testdir
-perm=rw
+okperm=rw
 badperm=r
 
 touch $file
@@ -62,17 +62,17 @@ for var in $file $link $dir ; do
     xattrtest $var "$badperm+cap SYS_ADMIN" write trusted fail
     if [ $var != $link ] ; then xattrtest $var "$badperm+cap SYS_ADMIN" write user fail ; fi
 
-    genprofile $var:$perm
-    xattrtest $var $perm write security pass
-    #xattrtest $var $perm write system fail
-    xattrtest $var $perm write trusted fail
-    if [ $var != $link ] ; then xattrtest $var $perm write user pass ; fi
+    genprofile $var:$okperm
+    xattrtest $var $okperm write security pass
+    #xattrtest $var $okperm write system fail
+    xattrtest $var $okperm write trusted fail
+    if [ $var != $link ] ; then xattrtest $var $okperm write user pass ; fi
 
-    genprofile $var:$perm capability:sys_admin
-    xattrtest $var "$perm+cap SYS_ADMIN" write security pass
-    #xattrtest $var "$perm+cap SYS_ADMIN" write system pass
-    xattrtest $var "$perm+cap SYS_ADMIN" write trusted pass
-    if [ $var != $link ] ; then xattrtest $var "$perm+cap SYS_ADMIN" write user pass ; fi
+    genprofile $var:$okperm capability:sys_admin
+    xattrtest $var "$okperm+cap SYS_ADMIN" write security pass
+    #xattrtest $var "$okperm+cap SYS_ADMIN" write system pass
+    xattrtest $var "$okperm+cap SYS_ADMIN" write trusted pass
+    if [ $var != $link ] ; then xattrtest $var "$okperm+cap SYS_ADMIN" write user pass ; fi
 
 
 #read xattr
@@ -102,21 +102,21 @@ for var in $file $link $dir ; do
     xattrtest $var "$badperm+cap SYS_ADMIN" remove trusted fail
     if [ $var != $link ] ; then xattrtest $var "$badperm+cap SYS_ADMIN" remove user fail ; fi
 
-    genprofile $var:$perm
-    xattrtest $var $perm remove security pass
-    #xattrtest $var $perm remove system fail
-    xattrtest $var $perm remove trusted fail
-    if [ $var != $link ] ; then xattrtest $var $perm remove user pass ; fi
+    genprofile $var:$okperm
+    xattrtest $var $okperm remove security pass
+    #xattrtest $var $okperm remove system fail
+    xattrtest $var $okperm remove trusted fail
+    if [ $var != $link ] ; then xattrtest $var $okperm remove user pass ; fi
 
     #set the xattr for thos that passed above again so we can test removing it
     setfattr -h -n security.sdtest -v hello $var
     if [ $var != $link ] ; then setfattr -h -n user.sdtest -v hello $var ; fi
 
-    genprofile $var:$perm capability:sys_admin
-    xattrtest $var "$perm+cap SYS_ADMIN" remove security pass
-    #xattrtest $var "$perm+cap SYS_ADMIN" remove system pass
-    xattrtest $var "$perm+cap SYS_ADMIN" remove trusted pass
-    if [ $var != $link ] ; then xattrtest $var "$perm+cap SYS_ADMIN" remove user pass ; fi
+    genprofile $var:$okperm capability:sys_admin
+    xattrtest $var "$okperm+cap SYS_ADMIN" remove security pass
+    #xattrtest $var "$okperm+cap SYS_ADMIN" remove system pass
+    xattrtest $var "$okperm+cap SYS_ADMIN" remove trusted pass
+    if [ $var != $link ] ; then xattrtest $var "$okperm+cap SYS_ADMIN" remove user pass ; fi
 
 done
 
