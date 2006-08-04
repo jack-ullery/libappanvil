@@ -105,6 +105,7 @@ TESTS=access \
       fork \
       i18n \
       link \
+      longpath \
       mkdir \
       mmap \
       mount \
