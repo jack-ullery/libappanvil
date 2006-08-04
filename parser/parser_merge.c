@@ -75,19 +75,17 @@ static int process_file_entries(struct codomain *cod)
 	table[count] = NULL;
 
 #define CHECK_CONFLICT_UNSAFE(a, b) \
-	(((a & KERN_COD_EXEC_UNSAFE) ^ (b & KERN_COD_EXEC_UNSAFE)) && \
-	 (KERN_EXEC_MODIFIERS(a) & ~KERN_COD_EXEC_INHERIT) && \
-	 (KERN_EXEC_MODIFIERS(b) & ~KERN_COD_EXEC_INHERIT))
+	((HAS_EXEC_UNSAFE(a) ^ HAS_EXEC_UNSAFE(b)) && \
+	 ((HAS_EXEC_PROFILE(a) && HAS_EXEC_PROFILE(b)) || \
+	  (HAS_EXEC_UNCONSTRAINED(a) && HAS_EXEC_UNCONSTRAINED(b))))
 
 	/* walk the sorted table merging similar entries */
 	for (cur = table[0], next = table[1], n = 1; next != NULL; n++, next = table[n]) {
 		if (file_comp(&cur, &next) == 0) {
 			int conflict = CHECK_CONFLICT_UNSAFE(cur->mode, next->mode);
-			PDEBUG("%s: cur_mode: %x next_mode: %x conflict %d\n",
-				__FUNCTION__, cur->mode, next->mode, conflict);
 			cur->mode |= next->mode;
 			/* check for merged x consistency */
-			if (KERN_COD_MAY_EXEC & cur->mode &&
+			if (HAS_MAY_EXEC(cur->mode) &&
 			    ((KERN_EXEC_MODIFIERS(cur->mode) &
 			      (KERN_EXEC_MODIFIERS(cur->mode) - 1)) ||
 			     conflict)) {

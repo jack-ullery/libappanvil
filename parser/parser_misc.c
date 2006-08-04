@@ -266,8 +266,8 @@ static int warned_uppercase = 0;
 static void warn_uppercase(void)
 {
 	if (!warned_uppercase) {
-		pwarn("Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
-		      "See the apparmor.d(5) manpage for details.\n");
+		pwarn(_("Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
+			"See the apparmor.d(5) manpage for details.\n"));
 		warned_uppercase = 1;
 	}
 }
@@ -324,16 +324,18 @@ reeval:
 
 		case COD_UNSAFE_UNCONSTRAINED_CHAR:
 			mode |= KERN_COD_EXEC_UNSAFE;
-			pwarn("Unconstrained exec qualifier (%c%c) allows some dangerous environment variables\n"
-			      "to be passed to the unconfined process; see the apparmor.d(5) manpage for details.\n",
+			pwarn(_("Unconstrained exec qualifier (%c%c) allows some dangerous environment variables "
+				"to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"),
 			      COD_UNSAFE_UNCONSTRAINED_CHAR, COD_EXEC_CHAR);
 			/* fall through */
 		case COD_UNCONSTRAINED_CHAR:
 			PDEBUG("Parsing mode: found UNCONSTRAINED\n");
 			if (next != COD_EXEC_CHAR && tolower(next) != COD_EXEC_CHAR) {
-				yyerror(_("Exec qualifier 'u' must be followed by 'x'"));
+				yyerror(_("Exec qualifier '%c' must be followed by 'x'"),
+					this);
 			} else if (IS_DIFF_QUAL(this)) {
-				yyerror(_("Exec qualifier 'u' invalid, conflicting qualifier already specified"));
+				yyerror(_("Exec qualifier '%c' invalid, conflicting qualifier already specified"),
+					this);
 			} else {
 				if (next != tolower(next))
 					warn_uppercase();
@@ -350,9 +352,11 @@ reeval:
 		case COD_PROFILE_CHAR:
 			PDEBUG("Parsing mode: found PROFILE\n");
 			if (next != COD_EXEC_CHAR && tolower(next) != COD_EXEC_CHAR) {
-				yyerror(_("Exec qualifier 'p' must be followed by 'x'"));
+				yyerror(_("Exec qualifier '%c' must be followed by 'x'"),
+					this);
 			} else if (IS_DIFF_QUAL(this)) {
-				yyerror(_("Exec qualifier 'p' invalid, conflicting qualifier already specified"));
+				yyerror(_("Exec qualifier '%c' invalid, conflicting qualifier already specified"),
+					this);
 			} else {
 				if (next != tolower(next))
 					warn_uppercase();
@@ -556,29 +560,29 @@ void debug_cod_entries(struct cod_entry *list)
 			printf("Item is NULL!\n");
 
 		printf("Mode:\t");
-		if (item->mode & KERN_COD_MAY_READ)
+		if (HAS_MAY_READ(item->mode))
 			printf("%c", COD_READ_CHAR);
-		if (item->mode & KERN_COD_MAY_WRITE)
+		if (HAS_MAY_WRITE(item->mode))
 			printf("%c", COD_WRITE_CHAR);
-		if (item->mode & KERN_COD_MAY_LINK)
+		if (HAS_MAY_LINK(item->mode))
 			printf("%c", COD_LINK_CHAR);
-		if (item->mode & KERN_COD_EXEC_INHERIT)
+		if (HAS_EXEC_INHERIT(item->mode))
 			printf("%c", COD_INHERIT_CHAR);
-		if (item->mode & KERN_COD_EXEC_UNCONSTRAINED) {
-			if (item->mode & KERN_COD_EXEC_UNSAFE)
+		if (HAS_EXEC_UNCONSTRAINED(item->mode)) {
+			if (HAS_EXEC_UNSAFE(item->mode))
 				printf("%c", COD_UNSAFE_UNCONSTRAINED_CHAR);
 			else
 				printf("%c", COD_UNCONSTRAINED_CHAR);
 		}
-		if (item->mode & KERN_COD_EXEC_PROFILE) {
-			if (item->mode & KERN_COD_EXEC_UNSAFE)
+		if (HAS_EXEC_PROFILE(item->mode)) {
+			if (HAS_EXEC_UNSAFE(item->mode))
 				printf("%c", COD_UNSAFE_PROFILE_CHAR);
 			else
 				printf("%c", COD_PROFILE_CHAR);
 		}
-		if (item->mode & KERN_COD_EXEC_MMAP)
+		if (HAS_EXEC_MMAP(item->mode))
 			printf("%c", COD_MMAP_CHAR);
-		if (item->mode & KERN_COD_MAY_EXEC)
+		if (HAS_MAY_EXEC(item->mode))
 			printf("%c", COD_EXEC_CHAR);
 
 		if (item->name)

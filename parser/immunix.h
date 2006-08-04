@@ -88,4 +88,14 @@ enum pattern_t {
 	ePatternInvalid,
 };
 
+#define HAS_MAY_READ(mode)		((mode) & KERN_COD_MAY_READ)
+#define HAS_MAY_WRITE(mode)		((mode) & KERN_COD_MAY_WRITE)
+#define HAS_MAY_LINK(mode)		((mode) & KERN_COD_MAY_LINK)
+#define HAS_MAY_EXEC(mode)		((mode) & KERN_COD_MAY_EXEC)
+#define HAS_EXEC_INHERIT(mode)		((mode) & KERN_COD_EXEC_INHERIT)
+#define HAS_EXEC_PROFILE(mode)		((mode) & KERN_COD_EXEC_PROFILE)
+#define HAS_EXEC_UNCONSTRAINED(mode)	((mode) & KERN_COD_EXEC_UNCONSTRAINED)
+#define HAS_EXEC_MMAP(mode) 		((mode) & KERN_COD_EXEC_MMAP)
+#define HAS_EXEC_UNSAFE(mode) 		((mode) & KERN_COD_EXEC_UNSAFE)
+
 #endif				/* ! _IMMUNIX_H */

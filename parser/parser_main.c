@@ -128,7 +128,7 @@ void pwarn(char *fmt, ...)
 	if (conf_quiet || names_only || option == OPTION_REMOVE)
 		return;
 
-	rc = asprintf(&newfmt, "Warning (%s line %d): %s",
+	rc = asprintf(&newfmt, _("Warning (%s line %d): %s"),
 		      profilename ? profilename : "stdin",
 		      current_lineno,
 		      fmt);
