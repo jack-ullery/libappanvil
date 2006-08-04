@@ -335,9 +335,14 @@ int parse_mode(const char *str_mode)
 			}
 			break;
 
+		case COD_MMAP_CHAR:
+			PDEBUG("Parsing mode: found MMAP\n");
+			mode |= KERN_COD_EXEC_MMAP;
+			break;
+
 		case COD_EXEC_CHAR:
 			PDEBUG("Parsing mode: found EXEC\n");
-			yyerror(_("Invalid mode, 'x' must be preceded by exec qualifier 'i', 'u' or 'p'"));
+			yyerror(_("Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"));
 			break;
 
 		default:
@@ -518,6 +523,8 @@ void debug_cod_entries(struct cod_entry *list)
 			printf("u");
 		if (item->mode & KERN_COD_EXEC_PROFILE)
 			printf("p");
+		if (item->mode & KERN_COD_EXEC_MMAP)
+			printf("%c", COD_MMAP_CHAR);
 
 		if (item->name)
 			printf("\tName:\t(%s)\n", item->name);
