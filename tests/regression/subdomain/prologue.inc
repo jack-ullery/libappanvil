@@ -291,9 +291,7 @@ emit_profile()
 
 	mkflags="${wflag} ${escapeflag}"
 
-	name=$1; perm $2; shift 2
-
-	shift
+	name=$1; perm=$2; shift 2
 
 	if [ $subprofile -eq 1 ]
 	then
