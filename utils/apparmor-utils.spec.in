@@ -25,7 +25,7 @@
 Summary: AppArmor userlevel utilities that are useful in creating AppArmor profiles.
 Name: apparmor-utils
 Version: @@immunix_version@@
-Release: 5
+Release: 6
 Group: Productivity/Security
 Source0: %{name}-%{version}-@@repo_version@@.tar.gz
 License: GPL
@@ -95,6 +95,14 @@ fi
 
 
 %changelog
+* Thu Jun 01 2006 - jmichael@suse.de
+- add support for the new m mode (#175388)
+- add support for the new Px/Ux modes (#172061)
+- make aaeventd process all of the events in the log file, not
+  just those that occur after it's already running. (#154239)
+- look for the changing_profile hint on the next AppArmor or audit
+  line in the log file, not strictly the very next in the file.
+  (#175421)
 * Wed Apr 12 2006 Steve Beattie <sbeattie@suse.de>
 - Move to novell forge svn; fixup build issues due to new svn layout
 * Mon Apr 10 2006 Steve Beattie <sbeattie@suse.de>

@@ -179,6 +179,27 @@ END {
   close(DEBUG) if $DEBUGGING;
 }
 
+# returns true if the specified program contains references to LD_PRELOAD or
+# LD_LIBRARY_PATH to give the PX/UX code better suggestions
+sub check_for_LD_XXX ($) {
+  my $file = shift;
+
+  return undef unless -f $file;
+
+  # limit our checking to programs/scripts under 10k to speed things up a bit
+  my $size = -s $file;
+  return undef unless ($size && $size < 10000);
+
+  my $found = undef;
+  if(open(F, $file)) {
+    while(<F>) {
+      $found = 1 if /LD_(PRELOAD|LIBRARY_PATH)/;
+    }
+    close(F);
+  }
+
+  return $found;
+}
 
 sub fatal_error ($) {
   my $message = shift;
@@ -514,9 +535,9 @@ sub handle_binfmt ($$) {
     next unless $library;
 
     if($library =~ /\/lib\/ld-.+/) {
-      $profile->{path}->{$library} = "px";
+      $profile->{path}->{$library} = "mpx";
     } else {
-      $profile->{path}->{$library} = "r";
+      $profile->{path}->{$library} = "mr";
     }
   }
 
@@ -538,7 +559,7 @@ sub autodep ($) {
 
   my $profile = { flags   => "complain",
                   include => { "abstractions/base" => 1   },
-                  path    => { $fqdbin             => "r" } };
+                  path    => { $fqdbin             => "mr" } };
 
   # if the executable exists on this system, pull in extra dependencies
   if(-f $fqdbin) {
@@ -709,6 +730,63 @@ sub UI_YesNo ($$) {
   return $ans;
 }
 
+sub UI_YesNoCancel ($$) {
+  my $text = shift;
+  my $default = shift;
+
+  $DEBUGGING && debug "UI_YesNoCancel: $UI_Mode: $text $default";
+
+  my $ans;
+  if($UI_Mode eq "text") {
+
+    my $yes = gettext("(Y)es");
+    my $no = gettext("(N)o");
+    my $cancel = gettext("(C)ancel");
+
+    # figure out our localized hotkeys
+    $yes =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey for '$yes'";
+    my $yeskey = lc($1);
+    $no =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey for '$no'";
+    my $nokey = lc($1);
+    $cancel =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey for '$cancel'";
+    my $cancelkey = lc($1);
+
+    $ans = "XXXINVALIDXXX";
+    while($ans !~ /^(y|n|c)$/) {
+      print "\n$text\n";
+      if($default eq "y") {
+        print "\n[$yes] / $no / $cancel\n";
+      } elsif($default eq "n") {
+        print "\n$yes / [$no] / $cancel\n";
+      } else {
+        print "\n$yes / $no / [$cancel]\n";
+      }
+      $ans = getkey();
+      if($ans) {
+        # convert back from a localized answer to english y or n
+        $ans = lc($ans);
+        if($ans eq $yeskey) {
+          $ans = "y";
+        } elsif($ans eq $nokey) {
+          $ans = "n";
+        } elsif($ans eq $cancelkey) {
+          $ans = "c";
+        }
+      } else {
+        $ans = $default;
+      }
+    }
+  } else {
+
+    SendDataToYast( { type => "dialog-yesnocancel", question => $text } );
+    my ($ypath, $yarg) = GetDataFromYast();
+    $ans = $yarg->{answer} || $default;
+
+  }
+
+  return $ans;
+}
+
 sub UI_GetString ($$) {
   my $text = shift;
   my $default = shift;
@@ -771,7 +849,9 @@ my %CMDS = (
   CMD_FINISHED   => "(F)inish",
   CMD_INHERIT    => "(I)nherit",
   CMD_PROFILE    => "(P)rofile",
+  CMD_PROFILE_CLEAN => "(P)rofile Clean Exec",
   CMD_UNCONFINED => "(U)nconfined",
+  CMD_UNCONFINED_CLEAN => "(U)nconfined Clean Exec",
   CMD_NEW        => "(N)ew",
   CMD_GLOB       => "(G)lob",
   CMD_GLOBEXT    => "Glob w/(E)xt",
@@ -1082,6 +1162,12 @@ sub handlechildren {
           } elsif(contains($combinedmode, "ux")) {
             $ans = "CMD_UNCONFINED";
             $exec_mode = "ux";
+          } elsif(contains($combinedmode, "Px")) {
+            $ans = "CMD_PROFILE_CLEAN";
+            $exec_mode = "Px";
+          } elsif(contains($combinedmode, "Ux")) {
+            $ans = "CMD_UNCONFINED_CLEAN";
+            $exec_mode = "Ux";
           } else {
             my $options = $qualifiers{$exec_target} || "ipu";
 
@@ -1101,6 +1187,11 @@ sub handlechildren {
             } else {
               $default = "CMD_DENY";
             }
+
+            # ugh, this doesn't work if someone does an ix before calling
+            # this particular child process.  at least it's only a hint
+            # instead of mandatory to get this right.
+            my $parent_uses_ld_xxx = check_for_LD_XXX($profile);
 
             my $severity = $sevdb->rank($exec_target, "x");
 
@@ -1131,7 +1222,7 @@ sub handlechildren {
             $seenevents++;
 
             my $arg;
-            while($ans !~ m/^CMD_(INHERIT|PROFILE|UNCONFINED|DENY)$/) {
+            while($ans !~ m/^CMD_(INHERIT|PROFILE|PROFILE_CLEAN|UNCONFINED|UNCONFINED_CLEAN|DENY)$/) {
               ($ans, $arg) = UI_PromptUser($q);
 
               # check for Abort or Finish
@@ -1151,9 +1242,24 @@ sub handlechildren {
                   # XXX - BUGBUG - this is REALLY nasty, but i'm in a hurry...
                   goto SAVE_PROFILES;
                 }
+              } elsif($ans eq "CMD_PROFILE") {
+                my $px_default = "n";
+                my $px_mesg = gettext("Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH.");
+                if($parent_uses_ld_xxx) {
+                  $px_mesg = gettext("Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut this application appears to use LD_PRELOAD\nor LD_LIBRARY_PATH and clearing these could\ncause functionality problems.");
+                }
+                my $ynans = UI_YesNo($px_mesg, $px_default);
+                if($ynans eq "y") {
+                  $ans = "CMD_PROFILE_CLEAN";
+                }
               } elsif($ans eq "CMD_UNCONFINED") {
-                my $ynans = UI_YesNo(sprintf(gettext("Launching processes in an unconfined state is a very\ndangerous operation and cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing \%s?"), $exec_target), "n");
-                if($ynans ne "y") {
+                my $ynans = UI_YesNo(sprintf(gettext("Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing \%s?"), $exec_target), "n");
+                if($ynans eq "y") {
+                  my $ynans = UI_YesNo(gettext("Should AppArmor sanitize the environment when\nrunning this program unconfined?\n\nNot sanitizing the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."), "y");
+                  if($ynans eq "y") {
+                    $ans = "CMD_UNCONFINED_CLEAN";
+                  }
+                } else {
                   $ans = "INVALID";
                 }
               }
@@ -1168,6 +1274,10 @@ sub handlechildren {
               $exec_mode = "px";
             } elsif($ans eq "CMD_UNCONFINED") {
               $exec_mode = "ux";
+            } elsif($ans eq "CMD_PROFILE_CLEAN") {
+              $exec_mode = "Px";
+            } elsif($ans eq "CMD_UNCONFINED_CLEAN") {
+              $exec_mode = "Ux";
             } else {
               # skip all remaining events if they say to deny the exec
               return if $domainchange eq "change";
@@ -1198,7 +1308,7 @@ sub handlechildren {
                     $sd{$profile}{$hat}{include}{"abstractions/bash"} = 1;
                   }
                 }
-              } elsif($ans eq "CMD_PROFILE") {
+              } elsif($ans =~ /^CMD_PROFILE/) {
                 # if they want to use px, make sure a profile exists for the target.
                 unless(-e getprofilefilename($exec_target)) {
                   $helpers{$exec_target} = "enforce";
@@ -1214,7 +1324,7 @@ sub handlechildren {
           # update our tracking info based on what kind of change this is...
           if($ans eq "CMD_INHERIT") {
             $profilechanges{$pid} = $profile;
-          } elsif($ans eq "CMD_PROFILE") {
+          } elsif($ans =~ /^CMD_PROFILE/) {
             if($sdmode eq "PERMITTING") {
               if($domainchange eq "change") {
                 $profile = $exec_target;
@@ -1222,7 +1332,7 @@ sub handlechildren {
                 $profilechanges{$pid} = $profile;
               }
             }
-          } elsif ($ans eq "CMD_UNCONFINED") {
+          } elsif ($ans =~ /^CMD_UNCONFINED/) {
             $profilechanges{$pid} = "unconstrained";
             return if $domainchange eq "change";
           }
@@ -1321,7 +1431,9 @@ sub do_logprof_pass {
       if($mode =~ /x/) {
         # we need to try to check if we're doing a domain transition this time
         if($sdmode eq "PERMITTING") {
+          do {
           $stuffed = <LOG>;
+          } until $stuffed =~ /AppArmor|audit/;
           if($stuffed =~ m/changing_profile/) {
             $domainchange = "change";
             $stuffed = undef;
@@ -1606,12 +1718,35 @@ sub do_logprof_pass {
             if($combinedmode) {
               if(contains($combinedmode, "ix") ||
                  contains($combinedmode, "px") ||
-                 contains($combinedmode, "ux")) {
+                 contains($combinedmode, "ux") ||
+                 contains($combinedmode, "Px") ||
+                 contains($combinedmode, "Ux")) {
               } else {
                 $mode .= "ix";
               }
             } else {
               $mode .= "ix";
+            }
+          }
+
+          # if we had an mmap(PROT_EXEC) request, first check if we already
+          # have added an ix rule to the profile
+          if($mode =~ /m/) {
+            my $combinedmode = "";
+            my ($cm, @m);
+
+            # does path match any regexps in original profile?
+            ($cm, @m) = rematchfrag($sd{$profile}{$hat}, $path);
+            $combinedmode .= $cm if $cm;
+
+            # does path match anything pulled in by includes in original profile?
+            ($cm, @m) = matchincludes($sd{$profile}{$hat}, $path);
+            $combinedmode .= $cm if $cm;
+
+            # ix implies m.  don't ask if they want to add an "m" rule when
+            # we already have a matching ix rule.
+            if($combinedmode && contains($combinedmode, "ix")) {
+              $mode =~ s/m//g;
             }
           }
 
@@ -1955,9 +2090,9 @@ sub collapselog () {
 sub profilemode ($) {
   my $mode = shift;
 
-  my $modifier = ($mode =~ m/[iup]/)[0];
+  my $modifier = ($mode =~ m/[iupUP]/)[0];
   if($modifier) {
-    $mode =~ s/[iupx]//g;
+    $mode =~ s/[iupUPx]//g;
     $mode .= $modifier . "x";
   }
 
@@ -1981,7 +2116,7 @@ sub collapsemode ($) {
   my $new = join "",
             sort
             grep { ! $seen{$_}++ }
-            $old =~ m/\G(r|w|l|ix|px|ux)/g;
+            $old =~ m/\G(r|w|l|m|ix|px|ux|Px|Ux)/g;
   return $new;
 }
 
@@ -1991,9 +2126,9 @@ sub contains ($$) {
   $glob = "" unless defined $glob;
 
   my %h;
-  $h{$_}++ for ($glob =~ m/\G(r|w|l|ix|px|ux)/g);
+  $h{$_}++ for ($glob =~ m/\G(r|w|l|m|ix|px|ux|Px|Ux)/g);
 
-  for my $mode ($single =~ m/\G(r|w|l|ix|px|ux)/g) {
+  for my $mode ($single =~ m/\G(r|w|l|m|ix|px|ux|Px|Ux)/g) {
     return 0 unless $h{$mode};
   }
 
