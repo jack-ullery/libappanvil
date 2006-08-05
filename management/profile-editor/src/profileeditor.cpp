@@ -118,14 +118,14 @@ bool AppArmorProfileTool::OnInit()
 	}
 
 	// No sense in letting them any further if they aren't root
-// 	if (geteuid() != 0) {
-// 		wxMessageDialog *dlg = new wxMessageDialog(NULL, 
-// 						_T("You must be root to run this program."), _T("Error"), 
-// 						wxOK|wxICON_ERROR);
-// 		dlg->ShowModal();
-// 		dlg->Destroy();	
-// 		return FALSE;
-// 	}
+ 	if (geteuid() != 0) {
+ 		wxMessageDialog *dlg = new wxMessageDialog(NULL, 
+ 						_T("You must be root to run this program."), _T("Error"), 
+ 						wxOK|wxICON_ERROR);
+ 		dlg->ShowModal();
+ 		dlg->Destroy();	
+ 		return FALSE;
+ 	}
 
 	frame = new ProfileToolFrame(_("AppArmor Profile Editor" ), 
 				wxPoint(50,50),
