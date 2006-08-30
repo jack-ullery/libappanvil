@@ -582,7 +582,7 @@ int aa_audit(struct aaprofile *active, const struct aa_audit *sa)
 			logcls = "AUDITING";
 		}
 	} else if (sa->error_code < 0) {
-		audit_log(current->audit_context, gfp_mask, AUDIT_AA,
+		audit_log(current->audit_context, gfp_mask, AUDIT_SD,
 			"Internal error auditing event type %d (error %d)",
 			sa->type, sa->error_code);
 		AA_ERROR("Internal error auditing event type %d (error %d)\n",
@@ -617,7 +617,7 @@ int aa_audit(struct aaprofile *active, const struct aa_audit *sa)
 			current->audit_context : NULL;
 	}
 
-	ab = audit_log_start(ctx, gfp_mask, AUDIT_AA);
+	ab = audit_log_start(ctx, gfp_mask, AUDIT_SD);
 
 	if (!ab) {
 		AA_ERROR("Unable to log event (%d) to audit subsys\n",
