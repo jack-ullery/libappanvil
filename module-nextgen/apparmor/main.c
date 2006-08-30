@@ -751,8 +751,21 @@ char *aa_get_name(struct dentry *dentry, struct vfsmount *mnt)
 	if (!page)
 		goto out;
 
-	name = d_path_flags(dentry, mnt, page, PAGE_SIZE,
-			DPATH_SYSROOT|DPATH_NODELETED);
+	name = d_path(dentry, mnt, page, PAGE_SIZE);
+	/* check for (deleted) that d_path appends to pathnames if the dentry
+	 * has been removed from the cache.
+	 * The size > deleted_size and strcmp checks are redundant safe guards.
+	 */
+	if (name) {
+		const char deleted_str[] = " (deleted)";
+		const size_t deleted_size = sizeof(deleted_str) - 1;
+		size_t size;
+		size = strlen(name);
+		if (!IS_ROOT(dentry) && d_unhashed(dentry) &&
+		    size > deleted_size &&
+		    strcmp(name + size - deleted_size, deleted_str) == 0)
+			name[size - deleted_size] = '\0';
+	}
 
 	AA_DEBUG("%s: full_path=%s\n", __FUNCTION__, name);
 out:
