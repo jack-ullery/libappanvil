@@ -894,7 +894,7 @@ static void __exit apparmor_exit(void)
 		"AppArmor protection removed\n");
 }
 
-security_initcall(apparmor_init);
+module_init(apparmor_init);
 module_exit(apparmor_exit);
 
 MODULE_DESCRIPTION("AppArmor process confinement");
