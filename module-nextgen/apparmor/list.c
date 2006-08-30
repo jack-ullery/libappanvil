@@ -212,7 +212,7 @@ void aa_subdomainlist_iterate(aa_iter func, void *cookie)
 /**
  * aa_subdomainlist_release - Remove all subdomains from subdomain_list
  */
-void aa_subdomainlist_release()
+void aa_subdomainlist_release(void)
 {
 	struct subdomain *node, *tmp;
 	unsigned long flags;

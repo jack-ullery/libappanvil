@@ -214,7 +214,7 @@ extern struct aaprofile *null_complain_profile;
 struct aa_audit {
 	unsigned short type, flags;
 	unsigned int result;
-	unsigned int gfp_mask;
+	gfp_t gfp_mask;
 	int error_code;
 
 	const char *name;
@@ -273,9 +273,9 @@ enum aa_xattroptype {
 extern int alloc_null_complain_profile(void);
 extern void free_null_complain_profile(void);
 extern int attach_nullprofile(struct aaprofile *profile);
-extern int aa_audit_message(struct aaprofile *active, unsigned int gfp, int,
+extern int aa_audit_message(struct aaprofile *active, gfp_t gfp, int,
 			    const char *, ...);
-extern int aa_audit_syscallreject(struct aaprofile *active, unsigned int gfp,
+extern int aa_audit_syscallreject(struct aaprofile *active, gfp_t gfp,
 				  const char *);
 extern int aa_audit(struct aaprofile *active, const struct aa_audit *);
 extern char *aa_get_name(struct dentry *dentry, struct vfsmount *mnt);

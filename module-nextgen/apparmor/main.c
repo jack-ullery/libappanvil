@@ -523,7 +523,7 @@ void free_null_complain_profile(void)
  * @flags: audit flags
  * @fmt: varargs fmt
  */
-int aa_audit_message(struct aaprofile *active, unsigned int gfp, int flags,
+int aa_audit_message(struct aaprofile *active, gfp_t gfp, int flags,
 		     const char *fmt, ...)
 {
 	int ret;
@@ -550,7 +550,7 @@ int aa_audit_message(struct aaprofile *active, unsigned int gfp, int flags,
  * @msg: string describing syscall being rejected
  * @gfp: memory allocation flags
  */
-int aa_audit_syscallreject(struct aaprofile *active, unsigned int gfp,
+int aa_audit_syscallreject(struct aaprofile *active, gfp_t gfp,
 			   const char *msg)
 {
 	struct aa_audit sa;
@@ -582,7 +582,7 @@ int aa_audit(struct aaprofile *active, const struct aa_audit *sa)
 	    error = -EINVAL,
 	    opspec_error = -EACCES;
 
-	const unsigned int gfp_mask = sa->gfp_mask;
+	const gfp_t gfp_mask = sa->gfp_mask;
 
 	WARN_ON(sa->type >= AA_AUDITTYPE__END);
 
