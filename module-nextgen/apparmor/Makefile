@@ -1,6 +1,19 @@
 # Makefile for AppArmor Linux Security Module
 #
-subdir-$(CONFIG_SECURITY_APPARMOR) += match
-obj-$(CONFIG_SECURITY_APPARMOR) += apparmor.o
+# kernel build Makefile is the Kbuild file
 
-apparmor-y := main.o list.o procattr.o lsm.o apparmorfs.o capabilities.o module_interface.o
+KERNELVER := $(shell uname -r)
+
+KERNELDIR := /lib/modules/${KERNELVER}/build
+
+all:
+	$(MAKE) -C $(KERNELDIR) M=`pwd` $@
+	mv apparmor.ko apparmor-${KERNELVER}.ko
+	mv match/aamatch_pcre.ko aamatch_pcre-${KERNELVER}.ko
+
+clean:
+	rm -f *~ *.o *.ko *.mod.c .*.cmd Modules.symvers \
+		match/*~ match/*.o match/*.ko match/.*.cmd match/*.mod.c
+	rm -rf .tmp_versions
+
+
