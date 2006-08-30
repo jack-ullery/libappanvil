@@ -89,7 +89,7 @@ static int apparmor_ptrace(struct task_struct *parent,
 
 	error = cap_ptrace(parent, child);
 
-	active = get_active_aaprofile();
+	active = get_task_active_aaprofile(parent);
 
 	if (!error && active) {
 		error = aa_audit_syscallreject(active, GFP_KERNEL, "ptrace");
