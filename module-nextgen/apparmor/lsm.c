@@ -194,7 +194,21 @@ static int apparmor_bprm_set_security(struct linux_binprm *bprm)
 	/* already set based on script name */
 	if (bprm->sh_bang)
 		return 0;
-	return aa_register(bprm->file);
+	return aa_register(bprm);
+}
+
+static int apparmor_bprm_secureexec(struct linux_binprm *bprm)
+{
+	int ret = cap_bprm_secureexec(bprm);
+
+	if (ret == 0 &&
+	    (unsigned long)bprm->security & AA_SECURE_EXEC_NEEDED) {
+		AA_DEBUG("%s: secureexec required for %s\n",
+			 __FUNCTION__, bprm->filename);
+		ret = 1;
+	}
+
+	return ret;
 }
 
 static int apparmor_sb_mount(char *dev_name, struct nameidata *nd, char *type,
@@ -748,6 +762,7 @@ struct security_operations apparmor_ops = {
 
 	.bprm_apply_creds =		apparmor_bprm_apply_creds,
 	.bprm_set_security =		apparmor_bprm_set_security,
+	.bprm_secureexec =		apparmor_bprm_secureexec,
 
 	.sb_mount =			apparmor_sb_mount,
 	.sb_umount =			apparmor_umount,

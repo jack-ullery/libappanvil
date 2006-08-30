@@ -13,6 +13,7 @@
 #define __APPARMOR_H
 
 #include <linux/fs.h>	/* Include for defn of iattr */
+#include <linux/binfmts.h>	/* defn of linux_binprm */
 #include <linux/rcupdate.h>
 
 #include "shared.h"
@@ -101,15 +102,12 @@ struct aa_entry {
 	struct list_head listp[POS_AA_FILE_MAX + 1];
 };
 
-#define AA_EXEC_MODIFIER_MASK(mask) ((mask) & (AA_EXEC_UNCONSTRAINED |\
-		      		    AA_EXEC_INHERIT |\
-		      		    AA_EXEC_PROFILE))
+#define AA_SECURE_EXEC_NEEDED 0x00000001
 
-#define AA_EXEC_MASK(mask) ((mask) & (AA_MAY_EXEC |\
-		      		    AA_EXEC_UNCONSTRAINED |\
-		      		    AA_EXEC_INHERIT |\
-		      		    AA_EXEC_PROFILE))
-
+#define AA_EXEC_MODIFIER_MASK(mask) ((mask) & AA_EXEC_MODIFIERS)
+#define AA_EXEC_MASK(mask) ((mask) & (AA_MAY_EXEC | AA_EXEC_MODIFIERS))
+#define AA_EXEC_UNSAFE_MASK(mask) ((mask) & (AA_MAY_EXEC | AA_EXEC_MODIFIERS |\
+					     AA_EXEC_UNSAFE))
 
 /* struct aaprofile - basic confinement data
  * @parent: non refcounted pointer to parent profile
@@ -298,7 +296,7 @@ extern int aa_perm_dir(struct aaprofile *active, struct dentry *dentry,
 extern int aa_link(struct aaprofile *active,
 		   struct dentry *link, struct dentry *target);
 extern int aa_fork(struct task_struct *p);
-extern int aa_register(struct file *file);
+extern int aa_register(struct linux_binprm *bprm);
 extern void aa_release(struct task_struct *p);
 extern int aa_change_hat(const char *id, u32 hat_magic);
 extern int aa_associate_filp(struct file *filp);

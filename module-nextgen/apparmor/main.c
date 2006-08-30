@@ -119,22 +119,22 @@ out:
  *         %AA_MAY_EXEC is returned indicating a naked x
  *         if the has an exec qualifier then only the qualifier bit {pui}
  *         is returned (%AA_MAY_EXEC) is not set.
- *
+ * @unsafe: true if secure_exec should be overriden
  * Returns %0 (false):
  *    if unable to find profile or there are conflicting pattern matches.
  *       *xmod - is not modified
+ *       *unsafe - is not modified
  *
  * Returns %1 (true):
- *    if not confined
- *       *xmod = %AA_MAY_EXEC
  *    if exec rule matched
  *       if the rule has an execution mode qualifier {pui} then
  *          *xmod = the execution qualifier of the rule {pui}
  *       else
  *          *xmod = %AA_MAY_EXEC
+ *       unsafe = presence of unsage flag
  */
 static inline int aa_get_execmode(struct aaprofile *active, const char *name,
-				  int *xmod)
+				  int *xmod, int *unsafe)
 {
 	struct aa_entry *entry;
 	struct aa_entry *match = NULL;
@@ -158,8 +158,8 @@ static inline int aa_get_execmode(struct aaprofile *active, const char *name,
 		    aamatch_match(name, entry->filename,
 				  entry->type, entry->extradata)) {
 			if (match &&
-			    AA_EXEC_MASK(entry->mode) !=
-			    AA_EXEC_MASK(match->mode))
+			    AA_EXEC_UNSAFE_MASK(entry->mode) !=
+			    AA_EXEC_UNSAFE_MASK(match->mode))
 				pattern_match_invalid = 1;
 			else
 				/* keep searching for an exact match */
@@ -179,8 +179,8 @@ static inline int aa_get_execmode(struct aaprofile *active, const char *name,
 				break;
 			} else {
 				if (match &&
-				    AA_EXEC_MASK(entry->mode) !=
-				    AA_EXEC_MASK(match->mode))
+				    AA_EXEC_UNSAFE_MASK(entry->mode) !=
+				    AA_EXEC_UNSAFE_MASK(match->mode))
 					pattern_match_invalid = 1;
 				else
 					/* got a tailglob match, keep searching
@@ -204,6 +204,7 @@ static inline int aa_get_execmode(struct aaprofile *active, const char *name,
 			mode = mode & ~AA_MAY_EXEC;
 
 		*xmod = mode;
+		*unsafe = (match->mode & AA_EXEC_UNSAFE);
 	} else if (!match) {
 		AA_DEBUG("%s: Unable to find execute entry in profile "
 			 "for image '%s'\n",
@@ -219,9 +220,6 @@ static inline int aa_get_execmode(struct aaprofile *active, const char *name,
 	}
 
 	return rc;
-
-	*xmod = AA_MAY_EXEC;
-	return 1;
 }
 
 /**
@@ -1203,14 +1201,15 @@ int aa_fork(struct task_struct *p)
 
 /**
  * aa_register - register a new program
- * @filp: file of program being registered
+ * @bprm: binprm of program being registered
  *
  * Try to register a new program during execve().  This should give the
  * new program a valid subdomain.
  */
-int aa_register(struct file *filp)
+int aa_register(struct linux_binprm *bprm)
 {
 	char *filename;
+	struct file *filp = bprm->file;
 	struct subdomain *sd;
 	struct aaprofile *active;
 	struct aaprofile *newprofile = NULL, unconstrained_flag;
@@ -1218,6 +1217,7 @@ int aa_register(struct file *filp)
 		exec_mode = 0,
 		find_profile = 0,
 		find_profile_mandatory = 0,
+	        unsafe_exec = 0,
 		complain = 0;
 
 	AA_DEBUG("%s\n", __FUNCTION__);
@@ -1260,7 +1260,7 @@ int aa_register(struct file *filp)
 	/* Confined task, determine what mode inherit, unconstrained or
 	 * mandatory to load new profile
 	 */
-	if (aa_get_execmode(active, filename, &exec_mode)) {
+	if (aa_get_execmode(active, filename, &exec_mode, &unsafe_exec)) {
 		switch (exec_mode) {
 		case AA_EXEC_INHERIT:
 			/* do nothing - setting of profile
@@ -1320,9 +1320,10 @@ int aa_register(struct file *filp)
 	} else if (complain) {
 		/* There was no entry in calling profile
 		 * describing mode to execute image in.
-		 * Drop into null-profile
+		 * Drop into null-profile (disabling secure exec).
 		 */
 		newprofile = get_aaprofile(null_complain_profile);
+		unsafe_exec = 1;
 	} else {
 		AA_WARN("%s: Rejecting exec(2) of image '%s'. "
 			"Unable to determine exec qualifier "
@@ -1427,6 +1428,23 @@ apply_profile:
 				spin_unlock_irqrestore(&sd_lock, flags);
 				goto find_profile;
 			}
+		}
+
+		/* Handle confined exec.
+		 * Can be at this point for the following reasons:
+		 * 1. unconfined switching to confined
+		 * 2. confined switching to different confinement
+		 * 3. confined switching to unconfined
+		 *
+		 * Cases 2 and 3 are marked as requiring secure exec
+		 * (unless policy specified "unsafe exec")
+		 */
+		if (__aa_is_confined(sd) && !unsafe_exec) {
+			unsigned long bprm_flags;
+
+			bprm_flags = AA_SECURE_EXEC_NEEDED;
+			bprm->security = (void*)
+				((unsigned long)bprm->security | bprm_flags);
 		}
 
 		aa_switch(sd, newprofile);
