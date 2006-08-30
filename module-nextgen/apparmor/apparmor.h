@@ -9,8 +9,8 @@
  *	AppArmor internal prototypes
  */
 
-#ifndef __SUBDOMAIN_H
-#define __SUBDOMAIN_H
+#ifndef __APPARMOR_H
+#define __APPARMOR_H
 
 #include <linux/fs.h>	/* Include for defn of iattr */
 #include <linux/rcupdate.h>
@@ -322,4 +322,4 @@ extern void destroy_apparmorfs(void);
 /* capabilities.c */
 extern const char *capability_to_name(unsigned int cap);
 
-#endif				/* __SUBDOMAIN_H */
+#endif				/* __APPARMOR_H */

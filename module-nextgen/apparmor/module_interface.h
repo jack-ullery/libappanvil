@@ -5,7 +5,7 @@
 #define AA_CODE_BYTE (sizeof(u8))
 #define INTERFACE_ID "INTERFACE"
 
-#define SUBDOMAIN_INTERFACE_VERSION 2
+#define APPARMOR_INTERFACE_VERSION 2
 
 enum aa_code {
 	AA_U8,

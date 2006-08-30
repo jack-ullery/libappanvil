@@ -553,7 +553,7 @@ static int apparmor_getprocattr(struct task_struct *p, char *name, void *value,
 	struct aaprofile *active;
 	char *str = value;
 
-	/* Subdomain only supports the "current" process attribute */
+	/* AppArmor only supports the "current" process attribute */
 	if (strcmp(name, "current") != 0) {
 		error = -EINVAL;
 		goto out;

@@ -25,7 +25,7 @@
  * case we need a complain null_profile and enforce null_profile
  *
  * The null_complain_profile cannot be statically allocated, because it
- * can be associated to files which keep their reference even if subdomain is
+ * can be associated to files which keep their reference even if apparmor is
  * unloaded
  */
 struct aaprofile *null_complain_profile;
@@ -830,13 +830,13 @@ out:
 }
 
 /**
- * aa_perm - basic subdomain permissions check
+ * aa_perm - basic apparmor permissions check
  * @active: profile to check against
  * @dentry: dentry
  * @mnt: mountpoint
  * @mask: access mode requested
  *
- * Determine if access (mask) for dentry is authorized by subdomain active
+ * Determine if access (mask) for dentry is authorized by active
  * profile.  Result, %0 (success), -ve (error)
  */
 int aa_perm(struct aaprofile *active, struct dentry *dentry,
@@ -1198,7 +1198,7 @@ int aa_register(struct file *filp)
 		complain = SUBDOMAIN_COMPLAIN(sd);
 	} else {
 		/* task has no subdomain.  This can happen when a task is
-		 * created when subdomain is not loaded.  Allocate and
+		 * created when apparmor is not loaded.  Allocate and
 		 * attach a subdomain to the task
 		 */
 		sd = alloc_subdomain(current);

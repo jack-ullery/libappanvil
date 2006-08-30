@@ -412,12 +412,12 @@ int create_apparmorfs(void)
 
 	if (AAFS_DENTRY) {
 		error = -EEXIST;
-		AA_ERROR("%s: Subdomain securityfs already exists\n",
+		AA_ERROR("%s: AppArmor securityfs already exists\n",
 			__FUNCTION__);
 	} else {
 		error = populate_apparmorfs(aafs_dentry);
 		if (error != 0) {
-			AA_ERROR("%s: Error populating Subdomain securityfs\n",
+			AA_ERROR("%s: Error populating AppArmor securityfs\n",
 				__FUNCTION__);
 		}
 	}
