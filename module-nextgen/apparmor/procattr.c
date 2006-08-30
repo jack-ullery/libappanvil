@@ -159,6 +159,7 @@ int aa_setprocattr_changehat(char *hatinfo, size_t infosize)
 	error = aa_change_hat(hat, magic);
 	spin_unlock_irqrestore(&sd_lock, flags);
 
+	error = 0;
 out:
 	if (token) {
 		memset(token, 0, infosize);
