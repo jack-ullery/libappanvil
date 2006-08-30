@@ -737,14 +737,9 @@ int aa_audit(struct aaprofile *active, const struct aa_audit *sa)
 		goto out;
 	}
 
-	audit_log_format(ab, "(%s(%d) ", current->comm, current->pid);
-
-	if (0)
-		audit_log_format(ab, "[global deny])");
-	else
-		audit_log_format(ab, "profile %s active %s)",
-				 BASE_PROFILE(active)->name,
-				 active->name);
+	audit_log_format(ab, "(%s(%d) profile %s active %s)",
+			 current->comm, current->pid,
+			 BASE_PROFILE(active)->name, active->name);
 
 	audit_log_end(ab);
 
