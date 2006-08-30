@@ -745,18 +745,22 @@ out:
  */
 char *aa_get_name(struct dentry *dentry, struct vfsmount *mnt)
 {
-	char *page, *name = NULL;
+	char *page, *name;
 
 	page = (char *)__get_free_page(GFP_KERNEL);
-	if (!page)
+	if (!page) {
+		name = ERR_PTR(-ENOMEM);
 		goto out;
+	}
 
 	name = d_path(dentry, mnt, page, PAGE_SIZE);
 	/* check for (deleted) that d_path appends to pathnames if the dentry
 	 * has been removed from the cache.
 	 * The size > deleted_size and strcmp checks are redundant safe guards.
 	 */
-	if (name) {
+	if (IS_ERR(name)) {
+		free_page((unsigned long)page);
+	} else {
 		const char deleted_str[] = " (deleted)";
 		const size_t deleted_size = sizeof(deleted_str) - 1;
 		size_t size;
@@ -765,9 +769,9 @@ char *aa_get_name(struct dentry *dentry, struct vfsmount *mnt)
 		    size > deleted_size &&
 		    strcmp(name + size - deleted_size, deleted_str) == 0)
 			name[size - deleted_size] = '\0';
+		AA_DEBUG("%s: full_path=%s\n", __FUNCTION__, name);
 	}
 
-	AA_DEBUG("%s: full_path=%s\n", __FUNCTION__, name);
 out:
 	return name;
 }
@@ -870,7 +874,12 @@ int aa_perm(struct aaprofile *active, struct dentry *dentry,
 	sa.flags = 0;
 	sa.gfp_mask = GFP_KERNEL;
 
-	permerror = (sa.name ? aa_file_perm(active, sa.name, mask) : -ENOMEM);
+	if (IS_ERR(sa.name)) {
+		permerror = PTR_ERR(sa.name);
+		sa.name = NULL;
+	} else {
+		permerror = aa_file_perm(active, sa.name, mask);
+	}
 
 	aa_permerror2result(permerror, &sa);
 
@@ -1225,7 +1234,7 @@ int aa_register(struct file *filp)
 	}
 
 	filename = aa_get_name(filp->f_dentry, filp->f_vfsmnt);
-	if (!filename) {
+	if (IS_ERR(filename)) {
 		AA_WARN("%s: Failed to get filename\n", __FUNCTION__);
 		goto out;
 	}

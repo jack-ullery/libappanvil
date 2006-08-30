@@ -321,8 +321,10 @@ static inline char *aa_path_getname(struct aa_path_data *data)
 
 		if (mnt->mnt_root == data->root) {
 			name = aa_get_name(data->dentry, mnt);
-			if (!name)
-				data->errno = -ENOMEM;
+			if (IS_ERR(name)) {
+				data->errno = PTR_ERR(name);
+				name = NULL;
+			}
 			break;
 		}
 	}
