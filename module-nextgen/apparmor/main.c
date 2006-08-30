@@ -35,6 +35,34 @@ struct aaprofile *null_complain_profile;
  **************************/
 
 /**
+ * dentry_xlate_error
+ * @dentry: pointer to dentry
+ * @error: error number
+ * @dtype: type of dentry
+ *
+ * Display error message when a dentry translation error occured
+ */
+static void dentry_xlate_error(struct dentry *dentry, int error, char *dtype)
+{
+	const unsigned int len = 16;
+	char buf[len];
+	
+	if (dentry->d_inode) {
+		snprintf(buf, len, "%lu", dentry->d_inode->i_ino);
+	} else {
+		strncpy(buf, "<negative>", len);
+		buf[len-1]=0;
+	}
+	
+	AA_ERROR("An error occured while translating %s %p "
+		 "inode# %s to a pathname. Error %d\n",
+		 dtype,
+		 dentry,
+		 buf,
+		 error);
+}
+
+/**
  * aa_taskattr_access
  * @procrelname: name of file to check permission
  *
@@ -391,13 +419,7 @@ static int _aa_perm_dentry(struct aaprofile *active, struct dentry *dentry,
 	} while (name);
 
 	if ((path_error = aa_path_end(&data)) != 0) {
-		AA_ERROR("%s: An error occured while translating dentry %p "
-			 "inode# %lu to a pathname. Error %d\n",
-			 __FUNCTION__,
-			 dentry,
-			 dentry->d_inode->i_ino,
-			 path_error);
-
+		dentry_xlate_error(dentry, path_error, "dentry");
 		WARN_ON(name);	/* name should not be set if error */
 		error = path_error;
 		name = NULL;
@@ -1075,13 +1097,8 @@ int aa_link(struct aaprofile *active, struct dentry *link,
 
 			/* should not be possible if we matched */
 			if ((path_error = aa_path_end(&idata)) != 0) {
-				AA_ERROR("%s: An error occured while "
-					 "translating inner dentry %p "
-					 "inode %lu to a pathname. Error %d\n",
-					 __FUNCTION__,
-					 target,
-					 target->d_inode->i_ino,
-					 path_error);
+				dentry_xlate_error(target, path_error,
+						   "inner dentry [link]");
 
 				/* name should not be set if error */
 				WARN_ON(iname);
@@ -1099,13 +1116,7 @@ int aa_link(struct aaprofile *active, struct dentry *link,
 		/* inner error */
 		(void)aa_path_end(&odata);
 	} else if ((path_error = aa_path_end(&odata)) != 0) {
-		AA_ERROR("%s: An error occured while translating outer "
-			 "dentry %p inode %lu to a pathname. Error %d\n",
-			 __FUNCTION__,
-			 link,
-			 link->d_inode->i_ino,
-			 path_error);
-
+		dentry_xlate_error(link, path_error, "outer dentry [link]");
 		error_code = path_error;
 	}
 
