@@ -222,7 +222,7 @@ static int apparmor_umount(struct vfsmount *mnt, int flags)
 	active = get_active_aaprofile();
 
 	if (active) {
-		error = aa_audit_syscallreject(active, GFP_KERNEL, "umount");
+		error = aa_audit_syscallreject(active, GFP_ATOMIC, "umount");
 		WARN_ON(error != -EPERM);
 	}
 
