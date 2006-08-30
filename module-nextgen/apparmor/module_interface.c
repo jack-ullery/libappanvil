@@ -465,6 +465,10 @@ static inline int check_rule_and_add(struct aa_entry *file_entry,
 		goto out;
 	}
 
+	/* ix -> m (required so that target exec binary may map itself) */
+  	         if (mode & AA_EXEC_INHERIT)
+  	                 file_entry->mode |= AA_EXEC_MMAP;
+
 	list_add(&file_entry->list, &profile->file_entry);
 	profile->num_file_entries++;
 

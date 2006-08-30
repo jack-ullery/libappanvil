@@ -288,9 +288,10 @@ static unsigned int aa_file_perm(struct aaprofile *active, const char *name,
 
 	AA_DEBUG("%s: %s 0x%x\n", __FUNCTION__, name, mask);
 
-	/* should not enter with other than R/W/X/L */
+	/* should not enter with other than R/W/M/X/L */
 	WARN_ON(mask &
-	       ~(AA_MAY_READ | AA_MAY_WRITE | AA_MAY_EXEC | AA_MAY_LINK));
+	       ~(AA_MAY_READ | AA_MAY_WRITE | AA_MAY_EXEC | AA_EXEC_MMAP |
+		 AA_MAY_LINK));
 
 	/* Special case access to /proc/self/attr/current
 	 * Currently we only allow access if opened O_WRONLY
@@ -664,12 +665,13 @@ int aa_audit(struct aaprofile *active, const struct aa_audit *sa)
 	if (sa->type == AA_AUDITTYPE_FILE) {
 		int perm = audit ? sa->ival : sa->error_code;
 
-		audit_log_format(ab, "%s%s%s%s access to %s ",
-			perm & AA_MAY_READ  ? "r" : "",
-			perm & AA_MAY_WRITE ? "w" : "",
-			perm & AA_MAY_EXEC  ? "x" : "",
-			perm & AA_MAY_LINK  ? "l" : "",
-			sa->name);
+		audit_log_format(ab, "%s%s%s%s%s access to %s ",
+				 perm & AA_EXEC_MMAP ? "m" : "",
+				 perm & AA_MAY_READ  ? "r" : "",
+				 perm & AA_MAY_WRITE ? "w" : "",
+				 perm & AA_MAY_EXEC  ? "x" : "",
+				 perm & AA_MAY_LINK  ? "l" : "",
+				 sa->name);
 
 		opspec_error = -EPERM;
 

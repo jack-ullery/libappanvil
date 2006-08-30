@@ -13,6 +13,7 @@
 
 #include <linux/security.h>
 #include <linux/module.h>
+#include <linux/mm.h>
 #include <linux/mman.h>
 
 #include "apparmor.h"
@@ -459,16 +460,16 @@ static int apparmor_inode_removexattr(struct dentry *dentry, char *name)
 static int apparmor_file_permission(struct file *file, int mask)
 {
 	struct aaprofile *active;
-	struct aaprofile *f_profile;
+	struct aafile *aaf;
 	int error = 0;
 
-	f_profile = AA_PROFILE(file->f_security);
+	aaf = (struct aafile *)file->f_security;
 	/* bail out early if this isn't a mediated file */
-	if (!(f_profile && VALID_FSTYPE(file->f_dentry->d_inode)))
+	if (!aaf || !VALID_FSTYPE(file->f_dentry->d_inode))
 		goto out;
 
 	active = get_active_aaprofile();
-	if (active && f_profile != active)
+	if (active && aaf->profile != active)
 		error = aa_perm(active, file->f_dentry, file->f_vfsmnt,
 				mask & (MAY_EXEC | MAY_WRITE | MAY_READ));
 	put_aaprofile(active);
@@ -480,48 +481,80 @@ out:
 static int apparmor_file_alloc_security(struct file *file)
 {
 	struct aaprofile *active;
+	int error = 0;
 
 	active = get_active_aaprofile();
-	file->f_security = get_aaprofile(active);
+	if (active) {
+		struct aafile *aaf;
+		aaf = kmalloc(sizeof(struct aafile), GFP_KERNEL);
+
+		if (aaf) {
+			aaf->type = aa_file_default;
+			aaf->profile = get_aaprofile(active);
+		} else {
+			error = -ENOMEM;
+		}
+	}
 	put_aaprofile(active);
 
-	return 0;
+	return error;
 }
 
 static void apparmor_file_free_security(struct file *file)
 {
-	struct aaprofile *p = AA_PROFILE(file->f_security);
-	put_aaprofile(p);
+	struct aafile *aaf = (struct aafile *)file->f_security;
+
+	if (aaf) {
+		put_aaprofile(aaf->profile);
+		kfree(aaf);
+	}
 }
 
-static int apparmor_file_mmap(struct file *file, unsigned long reqprot,
-			       unsigned long prot, unsigned long flags)
+static inline int aa_mmap(struct file *file, unsigned long prot,
+			  unsigned long flags)
 {
 	int error = 0, mask = 0;
 	struct aaprofile *active;
-
-	if (!file)
-		goto out;
+	struct aafile *aaf;
 
 	active = get_active_aaprofile();
+	if (!active || !file ||
+	    !(aaf = (struct aafile *)file->f_security) ||
+	    aaf->type == aa_file_shmem)
+		goto out;
 
 	if (prot & PROT_READ)
 		mask |= MAY_READ;
+
 	/* Private mappings don't require write perms since they don't
 	 * write back to the files */
-	if (prot & PROT_WRITE && !(flags & MAP_PRIVATE))
+	if (prot & PROT_WRITE && (!flags & MAP_PRIVATE))
 		mask |= MAY_WRITE;
 	if (prot & PROT_EXEC)
-		mask |= MAY_EXEC;
+		mask |= AA_EXEC_MMAP;
 
 	AA_DEBUG("%s: 0x%x\n", __FUNCTION__, mask);
 
-	error = aa_perm(active, file->f_dentry, file->f_vfsmnt, mask);
+	if (mask)
+		error = aa_perm(active, file->f_dentry, file->f_vfsmnt, mask);
 
 	put_aaprofile(active);
 
 out:
 	return error;
+}
+
+static int apparmor_file_mmap(struct file *file, unsigned long reqprot,
+			       unsigned long prot, unsigned long flags)
+{
+	return aa_mmap(file, prot, flags);
+}
+
+static int apparmor_file_mprotect(struct vm_area_struct *vma,
+				  unsigned long reqprot, unsigned long prot)
+{
+	return aa_mmap(vma->vm_file, prot,
+		       !(vma->vm_flags & VM_SHARED) ? MAP_PRIVATE : 0);
 }
 
 static int apparmor_task_alloc_security(struct task_struct *p)
@@ -535,7 +568,7 @@ static void apparmor_task_free_security(struct task_struct *p)
 }
 
 static int apparmor_task_post_setuid(uid_t id0, uid_t id1, uid_t id2,
-				      int flags)
+				     int flags)
 {
 	return cap_task_post_setuid(id0, id1, id2, flags);
 }
@@ -546,8 +579,19 @@ static void apparmor_task_reparent_to_init(struct task_struct *p)
 	return;
 }
 
+static int apparmor_shm_shmat(struct shmid_kernel *shp, char __user *shmaddr,
+			      int shmflg)
+{
+	struct aafile *aaf = (struct aafile *)shp->shm_file->f_security;
+
+	if (aaf)
+		aaf->type = aa_file_shmem;
+
+	return 0;
+}
+
 static int apparmor_getprocattr(struct task_struct *p, char *name, void *value,
-				 size_t size)
+				size_t size)
 {
 	int error;
 	struct aaprofile *active;
@@ -725,11 +769,14 @@ struct security_operations apparmor_ops = {
 	.file_alloc_security =		apparmor_file_alloc_security,
 	.file_free_security =		apparmor_file_free_security,
 	.file_mmap =			apparmor_file_mmap,
+	.file_mprotect =		apparmor_file_mprotect,
 
 	.task_alloc_security =		apparmor_task_alloc_security,
 	.task_free_security =		apparmor_task_free_security,
 	.task_post_setuid =		apparmor_task_post_setuid,
 	.task_reparent_to_init =	apparmor_task_reparent_to_init,
+
+	.shm_shmat =			apparmor_shm_shmat,
 
 	.getprocattr =			apparmor_getprocattr,
 	.setprocattr =			apparmor_setprocattr,

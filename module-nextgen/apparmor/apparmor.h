@@ -153,6 +153,21 @@ struct aaprofile {
 	struct kref count;
 };
 
+enum aafile_type {
+	aa_file_default,
+	aa_file_shmem
+};
+
+/**
+ * aafile - file pointer confinement data
+ *
+ * Data structure assigned to each open file (by apparmor_file_alloc_security)
+ */
+struct aafile {
+	enum aafile_type type;
+	struct aaprofile *profile;
+};
+
 /**
  * struct subdomain - primary label for confined tasks
  * @active: the current active profile
