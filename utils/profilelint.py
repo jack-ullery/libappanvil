@@ -4,18 +4,25 @@
 
 $Id$
 
-     PROPRIETARY DATA of IMMUNIX INC.
-     Copyright (c) 2004, IMMUNIX (All rights reserved)
+    Copyright (c) 2004, 2006 Novell Inc. (All rights reserved)
 
-     This document contains trade secret data which is the property
-     of IMMUNIX Inc.  This document is submitted to recipient in
-     confidence. Information contained herein may not be used, copied
-     or disclosed in whole or in part except as permitted by written
-     agreement signed by an officer of IMMUNIX, Inc.
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of version 2 of the GNU General Public
+    License published by the Free Software Foundation.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, contact Novell, Inc.
 
 When called as a script, this tool will perform a variety of sanity
 checks on the profiles located in the named directory, or
-/etc/subdomain.d/.
+/etc/apparmor.d/.
+
+Currently unmaintained and stale. :-( 
 """
 
 import os
@@ -96,7 +103,7 @@ def main():
 		print msg
 		print "usage: %s [-v] [-d profile dir]" % sys.argv[0]
 		sys.exit(1)
-	pdir = "/etc/subdomain.d"
+	pdir = "/etc/apparmor.d/"
 	verbose = 0
 	for o, a in opts:
 		if o == '-d': pdir = a
@@ -107,7 +114,7 @@ def main():
 	
 	files = []
 	l = dircache.listdir(pdir)
-	l = map(lambda x: os.path.join("/etc/subdomain.d/",x), l)
+	l = map(lambda x: os.path.join(pdir, x), l)
 	l = map(lambda x: os.path.realpath(x), l)
 	for f in l:
 		if os.path.isfile(f):
