@@ -355,8 +355,8 @@ msgid "Exec qualifier 'p' invalid, conflicting qualifier already specified"
 msgstr "Exec-Qualifizierer 'p' ist ungültig, ein Qualifizierer, mit dem ein Konflikt besteht, wurde bereits angegeben."
 
 #: parser_yacc.y:849
-msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'u' or 'p'"
-msgstr "Ungültiger Modus. Vor 'x' muss Exec-Qualifizierer 'i', 'u' oder 'p' stehen"
+msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
+msgstr "Ungültiger Modus. Vor 'x' muss Exec-Qualifizierer 'i', 'p' oder 'u' stehen"
 
 #: parser_yacc.y:853
 msgid "Internal: unexpected mode character in input"

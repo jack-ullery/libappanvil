@@ -356,8 +356,8 @@ msgid "Exec qualifier 'p' invalid, conflicting qualifier already specified"
 msgstr "Exec qualifier 'p' invalid, conflicting qualifier already specified"
 
 #: parser_yacc.y:856
-msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'u' or 'p'"
-msgstr "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'u' or 'p'"
+msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
+msgstr "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
 
 #: parser_yacc.y:860
 msgid "Internal: unexpected mode character in input"

@@ -354,8 +354,8 @@ msgid "Exec qualifier 'p' invalid, conflicting qualifier already specified"
 msgstr "Exec 限定符\"p\"无效，已指定了和其冲突的限定符。"
 
 #: parser_yacc.y:849
-msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'u' or 'p'"
-msgstr "无效方式，\"x\"前面必须带有 exec 限定符\"i\"、\"u\"或\"p\""
+msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
+msgstr "无效方式，\"x\"前面必须带有 exec 限定符\"i\"、\"p\"或\"u\""
 
 #: parser_yacc.y:853
 msgid "Internal: unexpected mode character in input"
