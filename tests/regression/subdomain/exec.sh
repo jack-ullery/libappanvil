@@ -60,3 +60,13 @@ runchecktest "EXEC no x" fail $file
 genprofile $file:$bad_mx_perm
 
 runchecktest "EXEC mmap x" fail $file
+
+# UNCONFINED -> CONFINED
+
+genprofile image=$file 
+runchecktest "EXEC unconfined -> confined" pass $file
+
+# UNCONFINED -> CONFINED no access to self binary
+
+genprofile -N image=$file  "/lib/ld*.so*:rix" "/lib/lib*.so*:rm"
+runchecktest "EXEC unconfined -> confined/no access to self" pass $file

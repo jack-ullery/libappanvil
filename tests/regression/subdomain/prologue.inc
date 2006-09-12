@@ -293,7 +293,7 @@ emit_profile()
 
 	name=$1; perm=$2; shift 2
 
-	if [ $subprofile -eq 1 ]
+	if [ "$subprofile" -eq 1 -o "$nodefaults" -eq 1 ]
 	then
 		# skip dynamic libs for subprofiles
 		$bin/mkprofile.pl ${mkflags} $name ${outfile}:w "$@" >> $profile
@@ -312,23 +312,25 @@ then
 fi
 	
 	local num_emitted imagename hat args arg names1 names2
-	#global complainflag escapeflag profile profilenames
+	#global complainflag escapeflag nodefaults profile profilenames
 
-	if [ "$1" == "-C" ]
-	then
-		complainflag="-C"
+	complainflag=""
+	escapeflag=""
+	nodefaults=0
+	while /bin/true 
+	do
+		case "$1" in 
+			"-C") complainflag="-C"
+			      ;;
+			"-E") escapeflag="-E"
+			      ;;
+			"-N") nodefaults=1
+			      ;;
+			*) break
+			   ;;
+		esac
 		shift
-	else
-		complainflag=""
-	fi
-
-	if [ "$1" == "-E" ]
-	then
-		escapeflag="-E"
-		shift
-	else
-		escapeflag=""
-	fi
+	done
 
 	# save previous profile
 	if [ -f $profile ] 
