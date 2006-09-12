@@ -21,6 +21,8 @@ SRC=access.c \
     chmod.c \
     chown.c \
     deleted.c \
+    environ.c \
+    env_check.c \
     exec.c \
     exec_qual.c \
     exec_qual2.c \
@@ -100,6 +102,7 @@ TESTS=access \
       changehat_misc \
       chdir \
       deleted \
+      environ \
       exec \
       exec_qual \
       fork \
