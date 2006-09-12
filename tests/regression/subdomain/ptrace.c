@@ -41,7 +41,7 @@ int interp_status(int status)
 
 int do_parent(pid_t pid, int trace, int num_syscall)
 {
-	struct user_regs_struct regs;
+	struct user regs;
 	int status, i;
 
 	if (trace) {
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 	    use_helper = 0,
 	    num_syscall = NUM_CHLD_SYSCALLS, 
 	    opt;
-	const char *usage="usage: %s [-c] [-n #syscall] program [args ...]";
+	const char *usage="usage: %s [-c] [-n #syscall] program [args ...]\n";
 	char **args;
 
 	opterr=0;
