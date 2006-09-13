@@ -433,7 +433,7 @@ loadprofile()
 	if [ $? -ne 0 ]
 	then
 		removeprofile
-		fatalerror "Unable to load profile"
+		fatalerror "Unable to load profile $profile"
 	else
 		profileloaded=1
 	fi
@@ -446,7 +446,7 @@ replaceprofile()
 	$subdomain ${parser_args} -r $complainflag < $profile > /dev/null
 	if [ $? -ne 0 ]
 	then
-		fatalerror "Unable to replace profile"
+		fatalerror "Unable to replace profile $profile"
 	fi
 }
 
@@ -465,7 +465,7 @@ removeprofile()
 	$subdomain ${parser_args} -R < $remprofile > /dev/null
 	if [ $? -ne 0 ]
 	then
-		fatalerror "Unable to remove profile $remoprofile"
+		fatalerror "Unable to remove profile $remprofile"
 	else
 		profileloaded=0
 	fi
