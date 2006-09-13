@@ -68,10 +68,10 @@ genrunscript()
 	if [ "$retaintmpdir" = "true" ]
 	then
 		runfile=$tmpdir/runtest
-		echo "$subdomain < $profile" > $runfile
+		echo "$subdomain ${parser_args} < $profile" > $runfile
 		echo "$testexec \"$@\" 2>&1 > $outfile" >> $runfile
 		echo "echo $testname: \`cat $outfile\`" >> $runfile
-		echo "$subdomain -R < $profile" >> $runfile
+		echo "$subdomain ${parser_args} -R < $profile" >> $runfile
 	fi
 }
 
@@ -429,7 +429,7 @@ loadprofile()
 {
 	#global complainflaf profile profileloaded
 
-	$subdomain -q $complainflag < $profile > /dev/null
+	$subdomain ${parser_args} $complainflag < $profile > /dev/null
 	if [ $? -ne 0 ]
 	then
 		removeprofile
@@ -443,7 +443,7 @@ replaceprofile()
 {
 	#global complainflag profile
 
-	$subdomain -qr $complainflag < $profile > /dev/null
+	$subdomain ${parser_args} -r $complainflag < $profile > /dev/null
 	if [ $? -ne 0 ]
 	then
 		fatalerror "Unable to replace profile"
@@ -462,7 +462,7 @@ removeprofile()
 		remprofile=$profile
 	fi
 
-	$subdomain -qR < $remprofile > /dev/null
+	$subdomain ${parser_args} -R < $remprofile > /dev/null
 	if [ $? -ne 0 ]
 	then
 		fatalerror "Unable to remove profile $remoprofile"
@@ -553,7 +553,7 @@ fi
 
 if [ ! -x $subdomain ]
 then
-	fatalerror "Subdomain parser '$subdomain' is not executable"
+	fatalerror "AppArmor parser '$subdomain' is not executable"
 fi
 
 profileloaded=0
