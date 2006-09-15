@@ -6,6 +6,8 @@ and run the tests.
 
 You must be root to execute make tests (a requirement of subdomain).
 
+(There is also a 'make alltests', which adds a test for bug that, when
+triggered, would cause the kernel to crash.)
 
 Test output
 ===========
@@ -26,8 +28,9 @@ Changing environment variables
 ==============================
 
 Common user changeable environment variables are stored in the file
-'uservars.inc'.  Currently the path to the tmp directory and the path
-to the subdomain_parser executable are specified in this directory.
+'uservars.inc'.  Currently the path to the tmp directory, the path
+to the subdomain_parser executable, and any additional arguments to give
+to the parser are specified in this configuration file.
 
 (Note: the tmp directory specified in uservars.inc will have an added
 random string appended to it by the mktemp(1) program.)
@@ -219,14 +222,6 @@ Current failures
    This is not an error, rather a sign that bash noticed the kernel had killed 
    a process which was attempting to use a bogus MAGIC number.  Alas, there is 
    no way to get bash to not print this diagnostic
-
-2) Mkdir
-	Error: mkdir passed. Test 'MKDIR (confined)' was expected to 'fail'
-	Error: mkdir passed. Test 'RMDIR (confined)' was expected to 'fail'
-
-   There is currently no mediation for mkdir.  Whether there should be (and
-   this is truly an error) or whether the test should be changed to "pass"
-   is an open issue.
 
 3) Ptrace
 	Error: open passed. Test 'STRACE OPEN (x confinement)' 

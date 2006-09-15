@@ -63,19 +63,19 @@ genprofile ${helper_sh}:Ux
 runchecktest "ENVIRON (shell script): Ux & regular env" pass ${helper_sh} FOO=BAR
 runchecktest "ENVIRON (shell script): Ux & sensitive env" fail ${helper_sh} LD_LIBRARY_PATH=.
 
-genprofile ${helper_sh}:px -- image=${helper_sh} /bin/bash:rix "/lib/lib*:mr"
+genprofile ${helper_sh}:px -- image=${helper_sh} /bin/bash:rix "/lib*/lib*:mr"
 runchecktest "ENVIRON (shell script): px & regular env" pass ${helper_sh} FOO=BAR
 runchecktest "ENVIRON (shell script): px & sensitive env" pass ${helper_sh} LD_LIBRARY_PATH=.
 
-genprofile ${helper_sh}:Px -- image=${helper_sh} /bin/bash:rix "/lib/lib*:mr"
+genprofile ${helper_sh}:Px -- image=${helper_sh} /bin/bash:rix "/lib*/lib*:mr"
 runchecktest "ENVIRON (shell script): Px & regular env" pass ${helper_sh} FOO=BAR
 runchecktest "ENVIRON (shell script): Px & sensitive env" fail ${helper_sh} LD_LIBRARY_PATH=.
 
-genprofile ${helper_sh}:rix /bin/bash:rix "/lib/lib*:mr"
+genprofile ${helper_sh}:rix /bin/bash:rix "/lib*/lib*:mr"
 runchecktest "ENVIRON (shell script): ix & regular env" pass ${helper_sh} FOO=BAR
 runchecktest "ENVIRON (shell script): ix & sensitive env" pass ${helper_sh} LD_LIBRARY_PATH=.
 
-genprofile image=${helper_sh} /bin/bash:rix "/lib/lib*:mr"
+genprofile image=${helper_sh} /bin/bash:rix "/lib*/lib*:mr"
 runchecktest "ENVIRON (shell script): unconfined --> confined & regular env" pass ${helper_sh} FOO=BAR
 runchecktest "ENVIRON (shell script): unconfined --> confined & sensitive env" pass ${helper_sh} LD_LIBRARY_PATH=.
 

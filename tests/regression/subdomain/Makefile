@@ -108,7 +108,6 @@ TESTS=access \
       fork \
       i18n \
       link \
-      longpath \
       mkdir \
       mmap \
       mount \
@@ -130,9 +129,10 @@ TESTS=access \
       unlink\
       xattrs
 
+# Tests that can crash the kernel should be placed here
+RISKY_TESTS=longpath
+
 all: $(EXEC) changehat.h
-	# This is sadly needed for buildbot, which has a restrictive umask.
-	chmod 755 . ${EXEC}
 
 changehat_pthread: changehat_pthread.c changehat.h
 	${CC} ${CFLAGS} -lpthread -o $@ $<
@@ -150,11 +150,20 @@ tests: all
 		echo "must be root to run tests" ;\
 	fi
 
+alltests: all
+	@if [ `whoami` == "root" ] ;\
+	then \
+		for i in $(TESTS) $(RISKY_TESTS) ;\
+		do \
+			echo ;\
+			echo "running $$i" ;\
+			sh $$i.sh ;\
+		done ;\
+	else \
+		echo "must be root to run tests" ;\
+	fi
+
 clean:
 	rm -f $(EXEC)
 
 regex.sh: open exec
-
-cvsignore:
-	echo -n "" > .cvsignore ; \
-		for i in $(EXEC) ; do echo $$i >> .cvsignore ; done
