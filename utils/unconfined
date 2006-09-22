@@ -54,7 +54,7 @@ sub usage {
 
 my $subdomainfs = check_for_subdomain();
 
-die gettext("SubDomain does not appear to be started.  Please enable SubDomain and try again.")."\n"  unless $subdomainfs;
+die gettext("SubDomain does not appear to be started. Please enable SubDomain and try again.")."\n"  unless $subdomainfs;
 
 my @pids;
 if($paranoid) {
