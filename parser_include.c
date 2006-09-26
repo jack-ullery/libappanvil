@@ -92,7 +92,7 @@ int do_include_preprocessing(char *profilename)
 	if (profilename) {
 		profile = fopen(profilename, "r");
 		if (!profile) {
-			PERROR(_("Error: couldn't read profile %s: %s\n"),
+			PERROR(_("Error: Could not read profile %s: %s.\n"),
 			       profilename, strerror(errno));
 			exit(errno);
 		}
@@ -111,7 +111,7 @@ int do_include_preprocessing(char *profilename)
 
 	tmp = tmpfile();
 	if (!tmp) {
-		PERROR(_("Error couldn't allocate temporary file\n"));
+		PERROR(_("Error: Could not allocate temporary file.\n"));
 		exit(10);
 	}
 
@@ -162,7 +162,7 @@ void set_base_dir(char *dir)
 
 	t = strndup(dir, PATH_MAX);
 	if (!t) {
-		PERROR(_("Error: Out of Memory\n"));
+		PERROR(_("Error: Out of memory.\n"));
 		return;
 	}
 
@@ -172,7 +172,7 @@ void set_base_dir(char *dir)
 
 	rc = stat(t, &sbuf);
 	if (rc == -1 || !S_ISDIR(sbuf.st_mode)) {
-		PERROR(_("basedir %s is not a directory, skipping\n"), t);
+		PERROR(_("Error: basedir %s is not a directory, skipping.\n"), t);
 		free(t);
 		return;
 	}
@@ -186,7 +186,7 @@ int add_search_dir(char *dir)
 {
 	char *t;
 	if (npath >= MAX_PATH) {
-		PERROR(_("Error: Can't add directory %s to search path\n"),
+		PERROR(_("Error: Could not add directory %s to search path.\n"),
 		       dir);
 		return 0;
 	}
@@ -196,7 +196,7 @@ int add_search_dir(char *dir)
 
 	t = malloc(strlen(dir) + 1);
 	if (t == NULL) {
-		PERROR(_("Error: Could not allocate memory\n"));
+		PERROR(_("Error: Could not allocate memory.\n"));
 		return 0;
 	}
 	strcpy(t, dir);
@@ -329,7 +329,7 @@ static int getincludestr(char **inc, int c, FILE *f, int line, char *name,
 	/* found "#include" now search for the file name to include */
 	b = malloc(2048);
 	if (!b) {
-		PERROR(_("Error: could not allocate buffer for include. line %d in %s\n"),
+		PERROR(_("Error: Could not allocate buffer for include at line %d in %s.\n"),
 		       line, name);
 		retval = 1;
 		goto comment;
@@ -345,7 +345,7 @@ static int getincludestr(char **inc, int c, FILE *f, int line, char *name,
 		/* eat whitespace */ ;
 	if (c != '\"' && c != '<') {
 		free(b);
-		PERROR(_("Error: bad include. line %d in %s\n"), line, name);
+		PERROR(_("Error: Bad include at line %d in %s.\n"), line, name);
 		if (c == '\n')
 			ungetc(c, f);
 		retval = 1;
@@ -365,7 +365,7 @@ static int getincludestr(char **inc, int c, FILE *f, int line, char *name,
 	}
 
 	free(b);
-	PERROR(_("Error: bad include. line %d in %s\n"), line, name);
+	PERROR(_("Error: Bad include at line %d in %s.\n"), line, name);
 	ungetc(d, f);
 	retval = 1;
 	/* fall through to comment - this makes trailing stuff a comment */
@@ -395,7 +395,7 @@ static int preprocess(FILE * f, char *name, FILE * out, int nest)
 	char cwd[1024];
 
 	if (nest > MAX_NEST_LEVEL) {
-		PERROR(_("Error: exceeded %d levels of includes.  NOT processing %s include\n"),
+		PERROR(_("Error: Exceeded %d levels of includes.  Not processing %s include.\n"),
 		       MAX_NEST_LEVEL, name);
 		return 1;
 	}
@@ -420,7 +420,7 @@ static int preprocess(FILE * f, char *name, FILE * out, int nest)
 				fclose(newf);
 				chdir(cwd);
 			} else {
-				PERROR(_("Error: #include %s%c not found. line %d in %s\n"),
+				PERROR(_("Error: #include %s%c not found at line %d in %s.\n"),
 				       inc,
 				       *inc == '<' ? '>' : '\"',
 				       line,
