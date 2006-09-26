@@ -1,9 +1,10 @@
-# Portugese (Brasilian) message file for YaST2 (@memory@).
+# German message file for YaST2 (@memory@).
 # Copyright (C) 2005 SUSE Linux Products GmbH.
-# Copyright (C) 2002 SuSE Linux AG.
-# Copyright (C) 1999-2000, 2001 SuSE GmbH.
-# Karl Eichwalder <ke@suse.de>, 1999.
-# Ralf Lanz <rlanz@genix.com.br>, 1999.
+# Copyright (C) 2002, 2003 SuSE Linux AG.
+# Copyright (C) 1999, 2000, 2001 SuSE GmbH.
+# Antje Faber <afaber@suse.de>, 2000-2003.
+# Karl Eichwalder <ke@suse.de>, 1999-2003.
+# Martin Lohner <ml@suse.de>, 2000.
 #
 msgid ""
 msgstr ""
@@ -22,15 +23,15 @@ msgstr ""
 #: ../parser_include.c:95
 #, fuzzy, c-format
 msgid "Error: couldn't read profile %s: %s\n"
-msgstr "Erro: impossível alocar arquivo temporário\n"
+msgstr "Fehler: Temporäre Datei konnte nicht zugeordnet werden\n"
 
 #: ../parser_include.c:114
 msgid "Error couldn't allocate temporary file\n"
-msgstr "Erro: impossível alocar arquivo temporário\n"
+msgstr "Fehler: Temporäre Datei konnte nicht zugeordnet werden\n"
 
 #: ../parser_include.c:165
 msgid "Error: Out of Memory\n"
-msgstr "Erro: Memória Insuficiente\n"
+msgstr "Fehler: Kein Speicher vorhanden\n"
 
 #: ../parser_include.c:175
 #, c-format
@@ -40,151 +41,151 @@ msgstr ""
 #: ../parser_include.c:189
 #, c-format
 msgid "Error: Can't add directory %s to search path\n"
-msgstr "Erro: Impossível adicionar diretório %s ao caminho de pesquisa\n"
+msgstr "Fehler: Verzeichnis %s kann nicht zu Suchpfad hinzugefügt werden\n"
 
 #: ../parser_include.c:199
 msgid "Error: Could not allocate memory\n"
-msgstr "Erro: Impossível alocar memória\n"
+msgstr "Fehler: Es konnte kein Speicher zugeordnet werden\n"
 
 #: ../parser_include.c:332
 #, c-format
 msgid "Error: could not allocate buffer for include. line %d in %s\n"
-msgstr "Erro: impossível alocar buffer para inclusão. Linha %d em %s\n"
+msgstr "Fehler: Es konnte kein Puffer für include.-Zeile %d in %s zugeordnet werden\n"
 
 #: ../parser_include.c:348 ../parser_include.c:368
 #, c-format
 msgid "Error: bad include. line %d in %s\n"
-msgstr "Erro: inclusão incorreta. Linha %d em %s\n"
+msgstr "Fehler: Ungültige include.-Zeile %d in %s\n"
 
 #: ../parser_include.c:398
 #, c-format
 msgid "Error: exceeded %d levels of includes.  NOT processing %s include\n"
-msgstr "Erro: foram excedidos %d níveis de inclusões.  A inclusão de %s NÃO está sendo processada\n"
+msgstr "Fehler: %d Include-Stufen überschritten. %s-Include wird NICHT verarbeitet\n"
 
 #: ../parser_include.c:423
 #, c-format
 msgid "Error: #include %s%c not found. line %d in %s\n"
-msgstr "Erro: inclusão de %s%c não encontrada. Linha %d em %s\n"
+msgstr "Fehler: #include %s%c nicht gefunden. Zeile %d in %s\n"
 
 #: ../parser_interface.c:65
 msgid "Bad write position\n"
-msgstr "Posição de gravação incorreta\n"
+msgstr "Ungültige Schreibposition\n"
 
 #: ../parser_interface.c:68
 msgid "Permission denied\n"
-msgstr "Permissão negada\n"
+msgstr "Berechtigung verweigert\n"
 
 #: ../parser_interface.c:71
 msgid "Out of memory\n"
-msgstr "Memória insuficiente\n"
+msgstr "Kein Speicher vorhanden\n"
 
 #: ../parser_interface.c:74
 msgid "Couldn't copy profile Bad memory address\n"
-msgstr "Impossível copiar perfil. Endereço de memória incorreto\n"
+msgstr "Ungültige Speicheradresse - Profil konnte nicht kopiert werden\n"
 
 #: ../parser_interface.c:77
 msgid "Profile doesn't conform to protocol\n"
-msgstr "Perfil não compatível com o protocolo\n"
+msgstr "Das Profil entspricht nicht dem Protokoll\n"
 
 #: ../parser_interface.c:80
 msgid "Profile does not match signature\n"
-msgstr "Perfil não corresponde à assinatura\n"
+msgstr "Das Profil stimmt nicht mit der Signatur überein\n"
 
 #: ../parser_interface.c:83
 #, fuzzy
 msgid "Profile version not supported by Apparmor module\n"
-msgstr "Versão de perfil não suportada\n"
+msgstr "Die Profilversion wird nicht unterstützt\n"
 
 #: ../parser_interface.c:86
 msgid "Profile already exists\n"
-msgstr "O perfil já existe\n"
+msgstr "Profil ist bereits vorhanden\n"
 
 #: ../parser_interface.c:89
 msgid "Profile doesn't exist\n"
-msgstr "O perfil não existe\n"
+msgstr "Profil ist nicht vorhanden\n"
 
 #: ../parser_interface.c:92
 msgid "Unknown error\n"
-msgstr "Erro desconhecido\n"
+msgstr "Unbekannter Fehler\n"
 
 #: ../parser_interface.c:109
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr "%s: Impossível adicionar \"%s\"."
+msgstr "%s: Hinzufügen von \"%s\" nicht möglich."
 
 #: ../parser_interface.c:114
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr "%s: Impossível substituir \"%s\"."
+msgstr "%s: \"%s\" kann nicht ersetzt werden."
 
 #: ../parser_interface.c:119
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr "%s: Impossível remover \"%s\"."
+msgstr "%s: \"%s\" kann nicht entfernt werden."
 
 #: ../parser_interface.c:124
 #, c-format
 msgid "%s: Unable to write to stdout\n"
-msgstr "%s: Impossível gravar em stdout\n"
+msgstr "%s: Schreiben in stdout nicht möglich\n"
 
 #: ../parser_interface.c:128 ../parser_interface.c:151
 #, c-format
 msgid "%s: ASSERT: Invalid option: %d\n"
-msgstr "%s: DECLARAR: Opção inválida: %d\n"
+msgstr "%s: ASSERT: Ungültige Option: %d\n"
 
 #: ../parser_interface.c:137
 #, c-format
 msgid "Addition succeeded for \"%s\".\n"
-msgstr "Adição bem-sucedida de \"%s\".\n"
+msgstr "Hinzufügen für \"%s\" erfolgreich.\n"
 
 #: ../parser_interface.c:141
 #, c-format
 msgid "Replacement succeeded for \"%s\".\n"
-msgstr "Substituição bem-sucedida de \"%s\".\n"
+msgstr "Ersetzungsvorgang für \"%s\" erfolgreich.\n"
 
 #: ../parser_interface.c:145
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
-msgstr "Remoção bem-sucedida de \"%s\".\n"
+msgstr "Entfernen für \"%s\" erfolgreich.\n"
 
 #: ../parser_interface.c:236
 #, c-format
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
-msgstr "PÂNICO: buffer de incremento incorreto %p pos %p ext %p tamanho %d res %p\n"
+msgstr "PANIC - ungültiger Inkrement-Puffer %p Position %p Erweiterung %p Größe %d Auflösung %p\n"
 
 #: ../parser_interface.c:644
 #, c-format
 msgid "Unable to open %s - %s\n"
-msgstr "Impossível abrir %s - %s\n"
+msgstr "%s kann nicht geöffnet werden - %s\n"
 
 #: ../parser_interface.c:661
 msgid "unable to create work area\n"
-msgstr "impossível criar área de trabalho\n"
+msgstr "Arbeitsbereich kann nicht erstellt werden\n"
 
 #: ../parser_interface.c:669
 #, c-format
 msgid "unable to serialize profile %s\n"
-msgstr "impossível serializar perfil %s\n"
+msgstr "Serialisierung von Profil %s nicht möglich\n"
 
 #: ../parser_interface.c:679
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
-msgstr "%s: Impossível gravar toda a entrada do perfil\n"
+msgstr "%s: Profileintrag kann nicht geschrieben werden\n"
 
 #: parser_lex.l:119 parser_lex.l:221 parser_lex.l:347
 #, c-format
 msgid "Found unexpected character: '%s'"
-msgstr "Caractere inesperado encontrado: '%s'"
+msgstr "Unerwartetes Zeichen gefunden: '%s'"
 
 #: parser_lex.l:159
 #, c-format
 msgid "(ip_mode) Found unexpected character: '%s'"
-msgstr "(ip_mode) Caractere inesperado encontrado: '%s'"
+msgstr "(ip_mode) Unerwartetes Zeichen gefunden: '%s'"
 
 #: parser_lex.l:174
 #, fuzzy, c-format
 msgid "Unexpected character in interface name: '%s'"
-msgstr "Caractere inesperado encontrado: '%s'"
+msgstr "Unerwartetes Zeichen gefunden: '%s'"
 
 #: parser_lex.l:213
 #, c-format
@@ -194,17 +195,17 @@ msgstr ""
 #: parser_lex.l:326
 #, fuzzy, c-format
 msgid "Found unexpected keyword: '%s'"
-msgstr "Caractere inesperado encontrado: '%s'"
+msgstr "Unerwartetes Zeichen gefunden: '%s'"
 
 #: ../parser_main.c:131
 #, fuzzy, c-format
 msgid "Warning (%s line %d): %s"
-msgstr "Aviso (linha %d):"
+msgstr "Warnung (Zeile %d):"
 
 #: ../parser_main.c:255
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
-msgstr "%s: Impossível alocar memória para ponto de montagem de base de subdomínio\n"
+msgstr "%s: Dem Mountpunkt der Unterdomänenbasis konnte kein Speicher zugeordnet werden\n"
 
 #: ../parser_main.c:274
 #, c-format
@@ -227,13 +228,13 @@ msgid ""
 "%s: Unable to query modules - '%s'\n"
 "Either modules are disabled or your kernel is too old.\n"
 msgstr ""
-"%s: Impossível consultar módulos - '%s'\n"
-"Os módulos podem estar desabilitados ou o seu kernel é muito antigo.\n"
+"%s: Abfrage der Module nicht möglich - '%s'\n"
+"Die Module sind entweder deaktiviert oder der Kernel ist zu alt.\n"
 
 #: ../parser_main.c:352
 #, c-format
 msgid "%s: Unable to find "
-msgstr "%s: Impossível localizar"
+msgstr "%s: Konnte nicht gefunden werden"
 
 #: ../parser_main.c:352
 msgid ""
@@ -241,7 +242,7 @@ msgid ""
 "Ensure that it has been loaded.\n"
 msgstr ""
 "!\n"
-"Verifique se foi carregado.\n"
+"Stellen Sie sicher, dass das Element geladen wurde.\n"
 
 #: ../parser_main.c:368
 #, fuzzy, c-format
@@ -249,7 +250,7 @@ msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
 msgstr ""
-"%s: Desculpe. Você precisa de privilégios de root para executar este programa.\n"
+"%s: Sie benötigen Root-Rechte, um dieses Programm ausführen zu können.\n"
 "\n"
 
 #: ../parser_main.c:375
@@ -259,14 +260,14 @@ msgid ""
 "Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 msgstr ""
-"%s: Aviso! Você configurou o setuid deste programa como root.\n"
-"Qualquer pessoa capaz de executar esse programa poderá atualizar os perfis de Subdomínio.\n"
+"%s: Warnung! Sie haben für das Programm 'setuid root' festgelegt.\n"
+"Alle Personen, die dieses Programm ausführen, können Ihre SubDomain-Profile aktualisieren.\n"
 " \n"
 
 #: ../parser_main.c:442
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
-msgstr "%s: Erros encontrados no arquivo. Interrompendo.\n"
+msgstr "%s: In der Datei wurde ein Fehler gefunden. Der Vorgang wird abgebrochen.\n"
 
 #: ../parser_misc.c:269
 msgid ""
@@ -276,11 +277,11 @@ msgstr ""
 
 #: ../parser_misc.c:313
 msgid "Exec qualifier 'i' must be followed by 'x'"
-msgstr "Qualificador de execução 'i' deve ser seguido de 'x'"
+msgstr "Auf den Exec-Qualifizierer 'i' muss 'x' folgen."
 
 #: ../parser_misc.c:315
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
-msgstr "Qualificador de execução 'i' inválido. Qualificador em conflito já especificado"
+msgstr "Exec-Qualifizierer 'i' ist ungültig, ein Qualifizierer, mit dem ein Konflikt besteht, wurde bereits angegeben."
 
 #: ../parser_misc.c:327
 #, c-format
@@ -290,22 +291,22 @@ msgstr ""
 #: ../parser_misc.c:334 ../parser_misc.c:355
 #, fuzzy, c-format
 msgid "Exec qualifier '%c' must be followed by 'x'"
-msgstr "Qualificador de execução 'i' deve ser seguido de 'x'"
+msgstr "Auf den Exec-Qualifizierer 'i' muss 'x' folgen."
 
 #: ../parser_misc.c:337 ../parser_misc.c:358
 #, fuzzy, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr "Qualificador de execução 'i' inválido. Qualificador em conflito já especificado"
+msgstr "Exec-Qualifizierer 'i' ist ungültig, ein Qualifizierer, mit dem ein Konflikt besteht, wurde bereits angegeben."
 
 #: ../parser_misc.c:376
 #, fuzzy
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "Modo inválido; 'x' deve ser precedido por um qualificador de execução 'i', 'u' ou 'p'"
+msgstr "Ungültiger Modus. Vor 'x' muss Exec-Qualifizierer 'i', 'u' oder 'p' stehen"
 
 #: ../parser_misc.c:396
 #, fuzzy, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr "Interno: caractere de modo inesperado na entrada"
+msgstr "Intern: Unerwartetes Moduszeichen in Eingabe"
 
 #: ../parser_misc.c:426 parser_yacc.y:222 parser_yacc.y:315 parser_yacc.y:327
 #: parser_yacc.y:387 parser_yacc.y:521 parser_yacc.y:533 parser_yacc.y:553
@@ -313,39 +314,39 @@ msgstr "Interno: caractere de modo inesperado na entrada"
 #: parser_yacc.y:665 parser_yacc.y:679 parser_yacc.y:707 parser_yacc.y:737
 #: parser_yacc.y:775 parser_yacc.y:792 parser_yacc.y:806
 msgid "Memory allocation error."
-msgstr "Erro de alocação de memória."
+msgstr "Speicherzuordnungsfehler."
 
 #: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
 #: ../parser_variable.c:227
 #, fuzzy, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr "Erro do analisador de subdomínio, linha %d: %s\n"
+msgstr "Analysefehler Unterdomäne, Zeile %d: %s\n"
 
 #: ../parser_merge.c:64
 msgid "Couldn't merge entries. Out of Memory\n"
-msgstr "Impossível mesclar entradas. Memória Insuficiente\n"
+msgstr "Einträge konnten nicht zusammengeführt werden. Kein Speicher vorhanden\n"
 
 #: ../parser_merge.c:92
 #, c-format
 msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-msgstr "perfil %s: mesclou a regra %s com vários modificadores x\n"
+msgstr "Profil %s: verfügt über zusammengeführte Regel %s mit mehreren x-Modifiern\n"
 
 #: parser_yacc.y:362
 #, fuzzy
 msgid "flags=(debug) is no longer supported, sorry."
-msgstr "Subdomínios de permissão padrão não são mais suportados. (domínio: %s)"
+msgstr "Unterdomänen mit standardmäßigem Zulassen werden nicht mehr unterstützt. (Domäne: %s)"
 
 #: parser_yacc.y:398
 msgid "Assert: `rule' returned NULL."
-msgstr "Declarar: `rule' retornou NULL."
+msgstr "Assert: Für 'rule' wurde NULL zurückgegeben."
 
 #: parser_yacc.y:407
 msgid "Assert: `netrule' returned NULL."
-msgstr "Declarar: `netrule' retornou NULL."
+msgstr "Assert: Für 'netrule' wurde NULL zurückgegeben."
 
 #: parser_yacc.y:424
 msgid "Assert: 'hat rule' returned NULL."
-msgstr "Declarar: 'hat rule' retornou NULL."
+msgstr "Assert: Für 'hat rule' wurde NULL zurückgegeben."
 
 #: parser_yacc.y:487
 #, c-format
@@ -355,104 +356,104 @@ msgstr ""
 #: parser_yacc.y:545
 #, c-format
 msgid "missing an end of line character? (entry: %s)"
-msgstr "caractere de fim de linha ausente?  (entrada: %s)"
+msgstr "Fehlt ein Zeilenumbruch? (Eintrag: %s)"
 
 #: parser_yacc.y:586
 msgid "Assert: `addresses' returned NULL."
-msgstr "Declarar: `addresses' retornou NULL."
+msgstr "Assert: Für 'addresses' wurde NULL zurückgegeben."
 
 #: parser_yacc.y:689
 msgid "Network entries can only have one TO address."
-msgstr "As entradas de rede podem ter somente um endereço PARA."
+msgstr "Netzwerkeinträge können nur über eine TO-Adresse verfügen."
 
 #: parser_yacc.y:694
 msgid "Network entries can only have one FROM address."
-msgstr "As entradas de rede podem ter somente um endereço DE."
+msgstr "Netzwerkeinträge können nur über eine FROM-Adresse verfügen."
 
 #: parser_yacc.y:712 parser_yacc.y:743
 #, c-format
 msgid "`%s' is not a valid ip address."
-msgstr "`%s' não é um endereço IP válido."
+msgstr "`%s' ist keine gültige IP-Adresse."
 
 #: parser_yacc.y:756
 #, c-format
 msgid "`/%d' is not a valid netmask."
-msgstr "`/%d' não é uma máscara de rede válida."
+msgstr "`/%d' ist keine gültige Netzmaske."
 
 #: parser_yacc.y:763
 #, c-format
 msgid "`%s' is not a valid netmask."
-msgstr "`%s' não é uma máscara de rede válida."
+msgstr "`%s' ist keine gültige Netzmaske."
 
 #: parser_yacc.y:789 parser_yacc.y:809
 #, c-format
 msgid "ports must be between %d and %d"
-msgstr "portas precisam estar entre %d e %d"
+msgstr "Zwischen %d und %d müssen sich Ports befinden"
 
 #: parser_yacc.y:876
 #, fuzzy, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr "Erro do analisador de subdomínio, linha %d: %s\n"
+msgstr "Analysefehler Unterdomäne, Zeile %d: %s\n"
 
 #: parser_yacc.y:879
 #, fuzzy, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr "Erro do analisador de subdomínio, linha %d: %s\n"
+msgstr "Analysefehler Unterdomäne, Zeile %d: %s\n"
 
 #: ../parser_regex.c:247
 #, c-format
 msgid "%s: Illegal open {, nesting groupings not allowed\n"
-msgstr "%s: Abertura ilegal {, agrupamentos aninhados não permitidos\n"
+msgstr "%s: Öffnen ungültig {, verschachtelte Gruppierungen sind nicht zulässig\n"
 
 #: ../parser_regex.c:267
 #, c-format
 msgid "%s: Regex grouping error: Invalid number of items between {}\n"
-msgstr "%s: Erro de agrupamento de expressão regular: Número inválido de itens entre {}\n"
+msgstr "%s: Regex-Gruppierungsfehler: Ungültige Anzahl an Einträgen zwischen {}\n"
 
 #: ../parser_regex.c:273
 #, c-format
 msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
-msgstr "%s: Erro de agrupamento de expressão regular: Fechamento inválido }; nenhuma abertura correspondente { detectada\n"
+msgstr "%s: Regex-Gruppierungsfehler: Ungültiges schließendes Zeichen }, kein passendes öffnendes Zeichen { gefunden\n"
 
 #: ../parser_regex.c:339
 #, fuzzy, c-format
 msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
-msgstr "%s: Erro de agrupamento de expressão regular: Agrupamento não fechado; aguardando fechamento }\n"
+msgstr "%s: Regex-Gruppierungsfehler: Nicht geschlossene Gruppierung, schließendes Zeichen } erwartet\n"
 
 #: ../parser_regex.c:353
 #, c-format
 msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
-msgstr "%s: Overflow de buffer interno detectado; %d caracteres excedidos\n"
+msgstr "%s: Interner Pufferüberlauf erkannt, %d Zeichen überschritten\n"
 
 #: ../parser_regex.c:357
 #, c-format
 msgid "%s: Unable to parse input line '%s'\n"
-msgstr "%s: Impossível analisar linha de entrada '%s'\n"
+msgstr "%s: Eingabezeile '%s' kann nicht analysiert werden\n"
 
 #: ../parser_regex.c:390
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-msgstr "%s: Falha ao compilar expressão regular '%s' [original: '%s']\n"
+msgstr "%s: Fehler beim Kompilieren von regex '%s' [ursprünglich: '%s']\n"
 
 #: ../parser_regex.c:394
 #, c-format
 msgid "%s: error near               "
-msgstr "%s: proximidade do erro"
+msgstr "%s: Fehler bei"
 
 #: ../parser_regex.c:404
 #, c-format
 msgid "%s: error reason: '%s'\n"
-msgstr "%s: motivo do erro: '%s'\n"
+msgstr "%s: Fehlerursache: '%s'\n"
 
 #: ../parser_regex.c:413
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-msgstr "%s: Falha ao compilar expressão regular '%s' [original: '%s'] - falha de malloc \n"
+msgstr "%s: Fehler beim Kompilieren von regex '%s' [ursprünglich: '%s'] - malloc nicht erfolgreich\n"
 
 #: ../parser_policy.c:102
 #, fuzzy, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
-msgstr "ERRO no perfil %s. Falha ao carregar\n"
+msgstr "FEHLER in Profil %s, konnte nicht geladen werden\n"
 
 #: ../parser_policy.c:134
 #, c-format
@@ -465,54 +466,54 @@ msgstr ""
 #: ../parser_policy.c:179
 #, fuzzy, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr "ERRO no perfil %s. Falha ao carregar\n"
+msgstr "FEHLER in Profil %s, konnte nicht geladen werden\n"
 
 #: ../parser_policy.c:206
 #, fuzzy, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr "ERRO no perfil %s. Falha ao carregar\n"
+msgstr "FEHLER in Profil %s, konnte nicht geladen werden\n"
 
 #: ../parser_policy.c:259
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
-msgstr "ERRO no perfil %s. Falha ao carregar\n"
+msgstr "FEHLER in Profil %s, konnte nicht geladen werden\n"
 
 #: ../parser_policy.c:413
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
-msgstr "%s: Erros encontrados no pós-processamento de regras de combinação. Interrompendo.\n"
+msgstr "%s: Beim Kombinieren von Regeln in der Nachverarbeitung sind Fehler aufgetreten. Der Vorgang wird abgebrochen.\n"
 
 #: ../parser_policy.c:420 ../parser_policy.c:427
 #, fuzzy, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
-msgstr "%s: Erros encontrados durante o pós-processamento de expressão regular. Interrompendo.\n"
+msgstr "%s: Bei der Regex-Nachverarbeitung sind Fehler aufgetreten. Der Vorgang wird abgebrochen.\n"
 
 #~ msgid "%s: Could not allocate memory for subdomain mount point\n"
-#~ msgstr "%s: Impossível alocar memória para ponto de montagem de subdomínio\n"
+#~ msgstr "%s: Dem Mountpunkt der Unterdomäne konnte kein Speicher zugeordnet werden\n"
 
 #~ msgid "Default allow subdomains are no longer supported, sorry. (domain: %s^%s)"
-#~ msgstr "Subdomínios de permissão padrão não são mais suportados. (domínio: %s^%s)"
+#~ msgstr "Unterdomänen mit standardmäßigem Zulassen werden nicht mehr unterstützt. (Domäne: %s^%s)"
 
 #~ msgid "md5 signature given without execute privilege."
-#~ msgstr "assinatura md5 fornecida sem privilégio de execução."
+#~ msgstr "md5-Signatur ohne Ausführungsberechtigung erteilt."
 
 #~ msgid "Negative subdomain entries are no longer supported, sorry. (entry: %s)"
-#~ msgstr "Entradas de subdomínio negativas não são mais suportadas. (entrada: %s)"
+#~ msgstr "Negative Unterdomäneneinträge werden nicht mehr unterstützt. (Eintrag: %s)"
 
 #~ msgid "Exec qualifier 'u' must be followed by 'x'"
-#~ msgstr "Qualificador de execução 'u' deve ser seguido de 'x'"
+#~ msgstr "Auf den Exec-Qualifizierer 'u' muss 'x' folgen."
 
 #~ msgid "Exec qualifier 'u' invalid, conflicting qualifier already specified"
-#~ msgstr "Qualificador de execução 'u' inválido. Qualificador em conflito já especificado"
+#~ msgstr "Exec-Qualifizierer 'u' ist ungültig, ein Qualifizierer, mit dem ein Konflikt besteht, wurde bereits angegeben."
 
 #~ msgid "Exec qualifier 'p' must be followed by 'x'"
-#~ msgstr "Qualificador de execução 'p' deve ser seguido de 'x'"
+#~ msgstr "Auf den Exec-Qualifizierer 'p' muss 'x' folgen."
 
 #~ msgid "Exec qualifier 'p' invalid, conflicting qualifier already specified"
-#~ msgstr "Qualificador de execução 'p' inválido. Qualificador em conflito já especificado"
+#~ msgstr "Exec-Qualifizierer 'p' ist ungültig, ein Qualifizierer, mit dem ein Konflikt besteht, wurde bereits angegeben."
 
 #~ msgid "%s: Subdomain '%s' defined, but no parent '%s'.\n"
-#~ msgstr "%s: Subdomínio '%s' definido, mas sem pai '%s'.\n"
+#~ msgstr "%s: Unterdomäne '%s' ist definiert, es ist jedoch keine übergeordnete Domäne '%s' vorhanden.\n"
 
 #~ msgid "%s: Two SubDomains defined for '%s'.\n"
-#~ msgstr "%s: Dois Subdomínios definidos para '%s'.\n"
+#~ msgstr "%s: Zwei SubDomains für '%s' definiert.\n"

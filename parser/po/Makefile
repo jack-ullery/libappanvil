@@ -10,8 +10,8 @@ all:
 
 # As translations get added, add them to the LANGS variable to get
 # made/installed.
-LANGS=de_DE en_US es_ES fr_FR hu_HU it_IT ja_JP nb_NO pt_BR pt_PT \
-	zh_CN zh_TW
+LANGS=ar bg bn bs ca cs cy da de el en_GB en_US es et fi fr gl he hi hr hu id it ja ka km ko lo lt nb nl pa pl pt_BR pt ro ru sk sl sr sv ta tr uk vi zh_CN zh_TW
+
 
 COMMONDIR=../../common/
 
@@ -24,4 +24,3 @@ ifeq ($(COMMONDIR_EXISTS), true)
 Make.rules: $(COMMONDIR)/Make-po.rules
 	ln -f $(COMMONDIR)/Make-po.rules $@
 endif
-

@@ -1,0 +1,520 @@
+# translation of apparmor-parser.po to Khmer
+# Khoem Sokhem <khoemsokhem@khmeros.info>, 2006.
+# Leang Chumsoben <soben@khmeros.info>, 2006.
+# Hok Kakada <hokkakada@khmeros.info>, 2006.
+# Keo Sophon <keosophon@khmeros.info>, 2006.
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmor-parser\n"
+"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"POT-Creation-Date: 2006-09-22 10:46-0600\n"
+"PO-Revision-Date: 2006-03-22 10:32+0700\n"
+"Last-Translator: Leang Chumsoben <soben@khmeros.info>\n"
+"Language-Team: Khmer <support@khmeros.info>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../parser_include.c:95
+#, fuzzy, c-format
+msgid "Error: couldn't read profile %s: %s\n"
+msgstr "កំហុស មិន​អាច​បម្រុង​ទុក​ឯកសារ​បណ្ដោះ​អាសន្ន\n"
+
+#: ../parser_include.c:114
+msgid "Error couldn't allocate temporary file\n"
+msgstr "កំហុស មិន​អាច​បម្រុង​ទុក​ឯកសារ​បណ្ដោះ​អាសន្ន\n"
+
+#: ../parser_include.c:165
+msgid "Error: Out of Memory\n"
+msgstr "កំហុស ៖ អស់​សតិ\n"
+
+#: ../parser_include.c:175
+#, c-format
+msgid "basedir %s is not a directory, skipping\n"
+msgstr ""
+
+#: ../parser_include.c:189
+#, c-format
+msgid "Error: Can't add directory %s to search path\n"
+msgstr "កំហុស ៖ មិន​អាច​បន្ថែម​ថត %s ទៅ​ផ្លូវ​ស្វែងរក\n"
+
+#: ../parser_include.c:199
+msgid "Error: Could not allocate memory\n"
+msgstr "កំហុស ៖ មិន​អាច​បម្រុង​ទុក​សតិ\n"
+
+#: ../parser_include.c:332
+#, c-format
+msgid "Error: could not allocate buffer for include. line %d in %s\n"
+msgstr "កំហុស ៖ មិន​អាច​បម្រុង​ទុក​សតិ​បណ្ដោះ​អាសន្ន​ដើម្បីរួមបញ្ចូល ។ បន្ទាត់ %d ក្នុង %s\n"
+
+#: ../parser_include.c:348 ../parser_include.c:368
+#, c-format
+msgid "Error: bad include. line %d in %s\n"
+msgstr "កំហុស ៖ ការ​រួម​បញ្ចូល​ខូច ។ បន្ទាត់ %d ក្នុង %s\n"
+
+#: ../parser_include.c:398
+#, c-format
+msgid "Error: exceeded %d levels of includes.  NOT processing %s include\n"
+msgstr "កំហុស ៖ បាន​ហួស​កម្រិត %d នៃ​ការ​រួម​បញ្ចូល ។  មិន​ដំណើរការ​ការ​រួម​បញ្ចូល %s \n"
+
+#: ../parser_include.c:423
+#, c-format
+msgid "Error: #include %s%c not found. line %d in %s\n"
+msgstr "កំហុស ៖ រក​មិនឃើញ #include %s%c ។ ជួរ %d ក្នុង %s\n"
+
+#: ../parser_interface.c:65
+msgid "Bad write position\n"
+msgstr "ទីតាំង​សរសេរ​ខូច\n"
+
+#: ../parser_interface.c:68
+msgid "Permission denied\n"
+msgstr "សិទ្ធិ​ត្រូវ​បាន​បដិសេធ\n"
+
+#: ../parser_interface.c:71
+msgid "Out of memory\n"
+msgstr "អស់​សតិ\n"
+
+#: ../parser_interface.c:74
+msgid "Couldn't copy profile Bad memory address\n"
+msgstr "មិន​អាច​ចម្លង​ទម្រង់ ដោយ​សារ​តែ​អាសយដ្ឋាន​សតិ​ខូច\n"
+
+#: ../parser_interface.c:77
+msgid "Profile doesn't conform to protocol\n"
+msgstr "ទម្រង់​មិន​អះអាង​ទៅ​ពិធីការ\n"
+
+#: ../parser_interface.c:80
+msgid "Profile does not match signature\n"
+msgstr "ទម្រង់​មិន​ផ្គូផ្គង​ហត្ថលេខា\n"
+
+#: ../parser_interface.c:83
+#, fuzzy
+msgid "Profile version not supported by Apparmor module\n"
+msgstr "កំណែ​ទម្រង់​មិន​បាន​គាំទ្រ\n"
+
+#: ../parser_interface.c:86
+#, fuzzy
+msgid "Profile already exists\n"
+msgstr "មិន​មាន​ទម្រង់​ឡើយ\n"
+
+#: ../parser_interface.c:89
+msgid "Profile doesn't exist\n"
+msgstr "មិន​មាន​ទម្រង់​ឡើយ\n"
+
+#: ../parser_interface.c:92
+msgid "Unknown error\n"
+msgstr "កំហុស​មិន​ស្គាល់\n"
+
+#: ../parser_interface.c:109
+#, c-format
+msgid "%s: Unable to add \"%s\".  "
+msgstr "%s ៖ មិន​អាច​បន្ថែម \"%s\" ។  "
+
+#: ../parser_interface.c:114
+#, c-format
+msgid "%s: Unable to replace \"%s\".  "
+msgstr "%s ៖ មិន​អាច​ជំនួស \"%s\" ។  "
+
+#: ../parser_interface.c:119
+#, c-format
+msgid "%s: Unable to remove \"%s\".  "
+msgstr "%s ៖ មិន​អាច​យក \"%s\" ចេញ ។  "
+
+#: ../parser_interface.c:124
+#, c-format
+msgid "%s: Unable to write to stdout\n"
+msgstr "%s ៖ មិន​អាច​សរសេរ​ទៅ stdout\n"
+
+#: ../parser_interface.c:128 ../parser_interface.c:151
+#, c-format
+msgid "%s: ASSERT: Invalid option: %d\n"
+msgstr "%s ៖ ASSERT ៖ ជម្រើស​មិន​ត្រឹមត្រូវ ៖ %d\n"
+
+#: ../parser_interface.c:137
+#, c-format
+msgid "Addition succeeded for \"%s\".\n"
+msgstr "ការ​បន្ថែម​បាន​ជោគជ័យ​សម្រាប់ \"%s\" ។\n"
+
+#: ../parser_interface.c:141
+#, c-format
+msgid "Replacement succeeded for \"%s\".\n"
+msgstr "ការ​ជំនួស​បាន​ជោគជ័យ​សម្រាប់ \"%s\" ។\n"
+
+#: ../parser_interface.c:145
+#, c-format
+msgid "Removal succeeded for \"%s\".\n"
+msgstr "ការ​យក​ចេញ​បាន​ជោគជ័យ​សម្រាប់ \"%s\" ។\n"
+
+#: ../parser_interface.c:236
+#, c-format
+msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
+msgstr "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
+
+#: ../parser_interface.c:644
+#, fuzzy, c-format
+msgid "Unable to open %s - %s\n"
+msgstr "មិន​អាច​បើក %s - %s\n"
+
+#: ../parser_interface.c:661
+msgid "unable to create work area\n"
+msgstr "មិន​អាច​បង្កើត​តំបន់​ធ្វើការ\n"
+
+#: ../parser_interface.c:669
+#, c-format
+msgid "unable to serialize profile %s\n"
+msgstr "មិន​អាច​កំណត់​ទម្រង់ %s ជា​ស៊េរី​បាន​ឡើយ\n"
+
+#: ../parser_interface.c:679
+#, c-format
+msgid "%s: Unable to write entire profile entry\n"
+msgstr "%s ៖ មិន​អាច​សរសេរធាតុ​ទម្រង់​ទាំង​មូល\n"
+
+#: parser_lex.l:119 parser_lex.l:221 parser_lex.l:347
+#, c-format
+msgid "Found unexpected character: '%s'"
+msgstr "រក​ឃើញ​តួអក្សរ​ដែល​មិន​រំពឹង ៖ '%s'"
+
+#: parser_lex.l:159
+#, c-format
+msgid "(ip_mode) Found unexpected character: '%s'"
+msgstr "(ip_mode) រក​ឃើញ​តួអក្សរ​ដែល​មិន​រំពឹង ៖ '%s'"
+
+#: parser_lex.l:174
+#, fuzzy, c-format
+msgid "Unexpected character in interface name: '%s'"
+msgstr "រក​ឃើញ​តួអក្សរ​ដែល​មិន​រំពឹង ៖ '%s'"
+
+#: parser_lex.l:213
+#, c-format
+msgid "Found unknown flag: '%s'"
+msgstr ""
+
+#: parser_lex.l:326
+#, fuzzy, c-format
+msgid "Found unexpected keyword: '%s'"
+msgstr "រក​ឃើញ​តួអក្សរ​ដែល​មិន​រំពឹង ៖ '%s'"
+
+#: ../parser_main.c:131
+#, fuzzy, c-format
+msgid "Warning (%s line %d): %s"
+msgstr "ការ​ព្រមាន (បន្ទាត់ %d) ៖ "
+
+#: ../parser_main.c:255
+#, c-format
+msgid "%s: Could not allocate memory for subdomainbase mount point\n"
+msgstr "%s ៖ មិន​អាច​បម្រុង​ទុក​សតិ​សម្រាប់​ចំណុច​ម៉ោនមូលដ្ឋាន​ដែនរង​\n"
+
+#: ../parser_main.c:274
+#, c-format
+msgid ""
+"Warning: unable to open %s, attempting to use %s\n"
+"as the subdomainfs location. Use --subdomainfs to override.\n"
+msgstr ""
+
+#: ../parser_main.c:305
+#, c-format
+msgid ""
+"Warning: unable to find a suitable fs in %s, is it mounted?\n"
+"Attempting to use %s as the subdomainfs location.\n"
+"Use --subdomainfs to override.\n"
+msgstr ""
+
+#: ../parser_main.c:347
+#, c-format
+msgid ""
+"%s: Unable to query modules - '%s'\n"
+"Either modules are disabled or your kernel is too old.\n"
+msgstr ""
+"%s ៖ មិនអាចសួរ​ម៉ូឌុល - '%s'\n"
+"ម៉ូឌុល​មិន​ត្រូវ​បានអនុញ្ញាត ឬ ខឺណែល​របស់​អ្នក​ចាស់​ពេក ។\n"
+
+#: ../parser_main.c:352
+#, c-format
+msgid "%s: Unable to find "
+msgstr "%s ៖ មិន​អាច​រក "
+
+#: ../parser_main.c:352
+msgid ""
+"!\n"
+"Ensure that it has been loaded.\n"
+msgstr ""
+"!\n"
+"ប្រាកដ​ថា វា​ត្រូវ​បាន​ផ្ទុក ។\n"
+
+#: ../parser_main.c:368
+#, fuzzy, c-format
+msgid ""
+"%s: Sorry. You need root privileges to run this program.\n"
+"\n"
+msgstr ""
+"%s ៖ សូម​ទោស ។ អ្នក​ត្រូវ​ការ​សិទ្ធិ​ជា root ដើម្បី​រត់​កម្មវិធី​នេះ ។\n"
+"\n"
+
+#: ../parser_main.c:375
+#, fuzzy, c-format
+msgid ""
+"%s: Warning! You've set this program setuid root.\n"
+"Anybody who can run this program can update your AppArmor profiles.\n"
+"\n"
+msgstr ""
+"%s ៖ ​ព្រមាន ! អ្នក​បាន​កំណត់​កម្មវិធី​នេះជា setuid root ។\n"
+"អ្នក​ដែល​រត់​កម្មវិធី​នេះ អាច​ធ្វើ​ឲ្យ​ទម្រង់​ដែនរង​របស់​អ្នក​ទាន់​សម័យ ។\n"
+"\n"
+
+#: ../parser_main.c:442
+#, c-format
+msgid "%s: Errors found in file. Aborting.\n"
+msgstr "%s ៖ រក​ឃើញ​កំហុស​ក្នុង​ឯកសារ ។ បោះបង់ ។\n"
+
+#: ../parser_misc.c:269
+msgid ""
+"Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
+"See the apparmor.d(5) manpage for details.\n"
+msgstr ""
+
+#: ../parser_misc.c:313
+msgid "Exec qualifier 'i' must be followed by 'x'"
+msgstr "Exec qualifier 'i' ត្រូវ​តែ​បន្ត​ដោយ 'x'"
+
+#: ../parser_misc.c:315
+msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
+msgstr "Exec qualifier 'i' មិន​ត្រឹមត្រូវ​ឡើយ, qualifier ដែល​ប៉ះទង្គិច​ត្រូវ​បាន​បញ្ជាក់​រួច​ហើយ"
+
+#: ../parser_misc.c:327
+#, c-format
+msgid "Unconstrained exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
+msgstr ""
+
+#: ../parser_misc.c:334 ../parser_misc.c:355
+#, fuzzy, c-format
+msgid "Exec qualifier '%c' must be followed by 'x'"
+msgstr "Exec qualifier 'i' ត្រូវ​តែ​បន្ត​ដោយ 'x'"
+
+#: ../parser_misc.c:337 ../parser_misc.c:358
+#, fuzzy, c-format
+msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
+msgstr "Exec qualifier 'i' មិន​ត្រឹមត្រូវ​ឡើយ, qualifier ដែល​ប៉ះទង្គិច​ត្រូវ​បាន​បញ្ជាក់​រួច​ហើយ"
+
+#: ../parser_misc.c:376
+#, fuzzy
+msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
+msgstr "របៀប​មិន​ត្រឹមត្រូវ, 'x' ត្រូវ​តែ​បន្ត​ដោយ exec qualifier 'i', 'u' ឬ 'p'"
+
+#: ../parser_misc.c:396
+#, fuzzy, c-format
+msgid "Internal: unexpected mode character '%c' in input"
+msgstr "ខាង​ក្នុង ៖ របៀបតួអក្សរ​ដែល​មិន​រំពឹង​ក្នុង​ព័ត៌មាន​បញ្ចូល"
+
+#: ../parser_misc.c:426 parser_yacc.y:222 parser_yacc.y:315 parser_yacc.y:327
+#: parser_yacc.y:387 parser_yacc.y:521 parser_yacc.y:533 parser_yacc.y:553
+#: parser_yacc.y:591 parser_yacc.y:623 parser_yacc.y:637 parser_yacc.y:651
+#: parser_yacc.y:665 parser_yacc.y:679 parser_yacc.y:707 parser_yacc.y:737
+#: parser_yacc.y:775 parser_yacc.y:792 parser_yacc.y:806
+msgid "Memory allocation error."
+msgstr "កំហុស​បម្រុង​ទុក​សតិ ។"
+
+#: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
+#: ../parser_variable.c:227
+#, fuzzy, c-format
+msgid "AppArmor parser error: %s\n"
+msgstr "កំហុស​ឧបករណ៍​ញែក​ដែន​រង បន្ទាត់ %d ៖ %s\n"
+
+#: ../parser_merge.c:64
+#, fuzzy
+msgid "Couldn't merge entries. Out of Memory\n"
+msgstr "មិន​អាច​បញ្ចូល​ធាតុ​ចូលគ្នា ។ អស់​សតិ\n"
+
+#: ../parser_merge.c:92
+#, c-format
+msgid "profile %s: has merged rule %s with multiple x modifiers\n"
+msgstr "ទម្រង់ %s ៖ បាន​បញ្ចូល​ក្បួន %s ចូល​គ្នា​ជា​មួយ​អ្នក​កែប្រែ x ជា​ច្រើន\n"
+
+#: parser_yacc.y:362
+#, fuzzy
+msgid "flags=(debug) is no longer supported, sorry."
+msgstr "សូម​ទោស ការ​អនុញ្ញាត​ដែនរង​លំនាំដើម​មិន​ត្រូវ​បាន​គាំទ្រ​ទៀត​ទេ ។ (ដែន ៖ %s)"
+
+#: parser_yacc.y:398
+msgid "Assert: `rule' returned NULL."
+msgstr "អះអាង ៖ `ច្បាប់' បាន​ត្រឡប់ NULL ។"
+
+#: parser_yacc.y:407
+msgid "Assert: `netrule' returned NULL."
+msgstr "អះអាង ៖ `ច្បាប់​បណ្ដាញ' បាន​ត្រឡប់ NULL ។"
+
+#: parser_yacc.y:424
+msgid "Assert: 'hat rule' returned NULL."
+msgstr "អះអាង ៖ 'ច្បាប់ hat' បាន​ត្រឡប់ NULL ។"
+
+#: parser_yacc.y:487
+#, c-format
+msgid "Unset boolean variable %s used in if-expression"
+msgstr ""
+
+#: parser_yacc.y:545
+#, c-format
+msgid "missing an end of line character? (entry: %s)"
+msgstr "បាត់​តួអក្សរ​ចុង​បន្ទាត់​មួយឬ ? (ធាតុ ៖ %s)"
+
+#: parser_yacc.y:586
+msgid "Assert: `addresses' returned NULL."
+msgstr "អះអាង ៖ `អាសយដ្ឋាន' បាន​ត្រឡប់ NULL។"
+
+#: parser_yacc.y:689
+msgid "Network entries can only have one TO address."
+msgstr "ធាតុ​បណ្ដាញ​អាច​មាន​តែ​អាសយដ្ឋាន TO មួយ​ប៉ុណ្ណោះ ។"
+
+#: parser_yacc.y:694
+msgid "Network entries can only have one FROM address."
+msgstr "ធាតុ​បណ្ដាញ​អាច​មាន​តែ​អាសយដ្ឋាន FROM មួយ​ប៉ុណ្ណោះ ។"
+
+#: parser_yacc.y:712 parser_yacc.y:743
+#, c-format
+msgid "`%s' is not a valid ip address."
+msgstr "`%s' មិន​មែន​ជា​អាសយដ្ឋាន ip ត្រឹមត្រូវ ។"
+
+#: parser_yacc.y:756
+#, c-format
+msgid "`/%d' is not a valid netmask."
+msgstr "`/%d' មិន​មែន​ជា​របាំង​បណ្ដាញ​ត្រឹមត្រូវ ។"
+
+#: parser_yacc.y:763
+#, c-format
+msgid "`%s' is not a valid netmask."
+msgstr "`%s' មិន​មែន​ជា​របាំង​បណ្ដាញ​ត្រឹមត្រូវ ។"
+
+#: parser_yacc.y:789 parser_yacc.y:809
+#, c-format
+msgid "ports must be between %d and %d"
+msgstr "ច្រក​ត្រូវ​តែ​នៅ​ចន្លោះ %d និង %d"
+
+#: parser_yacc.y:876
+#, fuzzy, c-format
+msgid "AppArmor parser error in %s at line %d: %s\n"
+msgstr "កំហុស​ឧបករណ៍​ញែក​ដែន​រង បន្ទាត់ %d ៖ %s\n"
+
+#: parser_yacc.y:879
+#, fuzzy, c-format
+msgid "AppArmor parser error, line %d: %s\n"
+msgstr "កំហុស​ឧបករណ៍​ញែក​ដែន​រង បន្ទាត់ %d ៖ %s\n"
+
+#: ../parser_regex.c:247
+#, c-format
+msgid "%s: Illegal open {, nesting groupings not allowed\n"
+msgstr "%s ៖ ការ​បើក​មិន​ត្រឹមត្រូវ {, ការ​ដាក់​ជា​ក្រុម​ក្នុង​មិន​បាន​អនុញ្ញាត\n"
+
+#: ../parser_regex.c:267
+#, c-format
+msgid "%s: Regex grouping error: Invalid number of items between {}\n"
+msgstr "%s ៖ កំហុស​ការ​ដាក់​កន្សោម​ធម្មតា​ជា​ក្រុម ៖ ចំនួន​ធាតុ​មិន​ត្រឹមត្រូវ​ចន្លោះ {}\n"
+
+#: ../parser_regex.c:273
+#, c-format
+msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
+msgstr "%s ៖ កំហុស​ការ​ដាក់​កន្សោម​ធម្មតា​ជាក្រុម ៖ បិទ​មិន​ត្រឹមត្រូវ } មិន​ផ្គូផ្គង​នឹង​ការ​បើក { ដែល​បាន​រក​ឃើញ\n"
+
+#: ../parser_regex.c:339
+#, fuzzy, c-format
+msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
+msgstr "%s ៖ កំហុស​ការ​ដាក់​កន្សោម​ធម្មតា​ជា​ក្រុម ៖ ការ​ដាក់​ជា​ក្រុម​ដែល​មិន​បាន​បិទ ការ​បិទ​ដែល​រំពឹង​គឺ }\n"
+
+#: ../parser_regex.c:353
+#, c-format
+msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
+msgstr "%s ៖ បាន​រកឃើញ​សតិ​បណ្ដោះ​អាសន្ន​ខាង​ក្នុង​លើស​ចំណុះ បាន​លើសតួអក្សរ %d \n"
+
+#: ../parser_regex.c:357
+#, c-format
+msgid "%s: Unable to parse input line '%s'\n"
+msgstr "%s ៖ មិន​អាច​ញែក​បន្ទាត់​បញ្ចូល '%s'\n"
+
+#: ../parser_regex.c:390
+#, c-format
+msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
+msgstr "%s ៖ បាន​បរាជ័យក្នុង​ការ​ចងក្រង​កន្សោម​ធម្មតា '%s' [ដើម ៖ '%s']\n"
+
+#: ../parser_regex.c:394
+#, c-format
+msgid "%s: error near               "
+msgstr "%s ៖ កំហុស​ជិត               "
+
+#: ../parser_regex.c:404
+#, c-format
+msgid "%s: error reason: '%s'\n"
+msgstr "%s ៖ ហេតុផល​កំហុស ៖ '%s'\n"
+
+#: ../parser_regex.c:413
+#, c-format
+msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
+msgstr "%s ៖ បរាជ័យក្នុង​ការ​ចង់ក្រង​កន្សោម​ធម្មតា '%s' [ដើម ៖ '%s'] - malloc បាន​បរាជ័យ\n"
+
+#: ../parser_policy.c:102
+#, fuzzy, c-format
+msgid "ERROR merging rules for profile %s, failed to load\n"
+msgstr "កំហុស​ក្នុង​ទម្រង់ %s បាន​បរាជ័យ​ក្នុង​ការ​ផ្ទុក\n"
+
+#: ../parser_policy.c:134
+#, c-format
+msgid ""
+"ERROR profile %s contains policy elements not usable with this kernel:\n"
+"\t'*', '?', character ranges, and alternations are not allowed.\n"
+"\t'**' may only be used at the end of a rule.\n"
+msgstr ""
+
+#: ../parser_policy.c:179
+#, fuzzy, c-format
+msgid "ERROR processing regexs for profile %s, failed to load\n"
+msgstr "កំហុស​ក្នុង​ទម្រង់ %s បាន​បរាជ័យ​ក្នុង​ការ​ផ្ទុក\n"
+
+#: ../parser_policy.c:206
+#, fuzzy, c-format
+msgid "ERROR expanding variables for profile %s, failed to load\n"
+msgstr "កំហុស​ក្នុង​ទម្រង់ %s បាន​បរាជ័យ​ក្នុង​ការ​ផ្ទុក\n"
+
+#: ../parser_policy.c:259
+#, c-format
+msgid "ERROR in profile %s, failed to load\n"
+msgstr "កំហុស​ក្នុង​ទម្រង់ %s បាន​បរាជ័យ​ក្នុង​ការ​ផ្ទុក\n"
+
+#: ../parser_policy.c:413
+#, c-format
+msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
+msgstr "%s ៖ រក​ឃើញ​កំហុស​ក្នុង​ច្បាប់​បន្សំ​ដំណើរការ​ជា​មុន ។ បោះបង់ ។\n"
+
+#: ../parser_policy.c:420 ../parser_policy.c:427
+#, fuzzy, c-format
+msgid "%s: Errors found during regex postprocess.  Aborting.\n"
+msgstr "%s ៖ រក​ឃើញ​កំហុស​កំឡុង​ពេល​ដំណើរ​ការ​កន្សោម​ធម្មតា​ជា​មុន ។ បោះបង់ ។\n"
+
+#~ msgid "%s: Could not allocate memory for subdomain mount point\n"
+#~ msgstr "%s ៖ មិន​អាច​បម្រុង​ទុក​សតិ​សម្រាប់​ចំណុច​ម៉ោន​ដែន​រង\n"
+
+#~ msgid "Default allow subdomains are no longer supported, sorry. (domain: %s^%s)"
+#~ msgstr "សូម​ទោស ការ​អនុញ្ញាត​ដែនរង​លំនាំដើម​មិន​ត្រូវ​បាន​គាំទ្រ​ទៀត​ទេ ។ (ដែន ៖ %s^%s)"
+
+#~ msgid "md5 signature given without execute privilege."
+#~ msgstr "ហត្ថលេខា md5 ត្រូវ​បាន​ផ្ដល់​ដោយ​គ្មាន​សិទ្ធិ​ប្រតិបត្តិ ។"
+
+#~ msgid "Negative subdomain entries are no longer supported, sorry. (entry: %s)"
+#~ msgstr "សូម​ទោស  ធាតុ​ដែន​រង​អវិជ្ជមាន​មិន​ត្រូវ​បាន​គាំទ្រ​ទៀត​ទេ ។ (ធាតុ ៖ %s)"
+
+#~ msgid "Exec qualifier 'u' must be followed by 'x'"
+#~ msgstr "Exec qualifier 'u' ត្រូវ​តែ​បន្ត​ដោយ 'x'"
+
+#~ msgid "Exec qualifier 'u' invalid, conflicting qualifier already specified"
+#~ msgstr "Exec qualifier 'u' មិន​ត្រឹមត្រូវ​ឡើយ, qualifier ដែល​ប៉ះទង្គិច​ត្រូវ​បាន​បញ្ជាក់​រួច​ហើយ"
+
+#~ msgid "Exec qualifier 'p' must be followed by 'x'"
+#~ msgstr "Exec qualifier 'p' ត្រូវ​តែ​បន្ត​ដោយ 'x'"
+
+#~ msgid "Exec qualifier 'p' invalid, conflicting qualifier already specified"
+#~ msgstr "Exec qualifier 'p' មិន​ត្រឹមត្រូវ​ឡើយ, qualifier ដែល​ប៉ះទង្គិច​ត្រូវ​បាន​បញ្ជាក់​រួច​ហើយ"
+
+#~ msgid "%s: Subdomain '%s' defined, but no parent '%s'.\n"
+#~ msgstr "%s ៖ ដែន​រង '%s' បាន​កំណត់ ប៉ុន្តែ​គ្មាន​មេ '%s' ។\n"
+
+#~ msgid "%s: Two SubDomains defined for '%s'.\n"
+#~ msgstr "%s ៖ ដែន​រង​ពីរ​បាន​កំណត់​សម្រាប់ '%s' ។\n"
+
+#, fuzzy
+#~ msgid "Profile for %s already exists - skipping."
+#~ msgstr "មាន​ទម្រង់​រួច​ហើយ\n"
