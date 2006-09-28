@@ -1,0 +1,8 @@
+current - contains the patches for the current branch of apparmor
+nextgen - contains the patches for the nextgen branch of apparmor
+
+in each directory
+patches : contains quilt series of patches to apply to the kernel
+
+apparmor-fullseries.patch : is the quilt series flattened into a single patch
+

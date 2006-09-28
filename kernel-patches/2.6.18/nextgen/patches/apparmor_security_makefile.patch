@@ -1,0 +1,12 @@
+Index: linux-2.6.18/security/Makefile
+===================================================================
+--- linux-2.6.18.orig/security/Makefile
++++ linux-2.6.18/security/Makefile
+@@ -4,6 +4,7 @@
+ 
+ obj-$(CONFIG_KEYS)			+= keys/
+ subdir-$(CONFIG_SECURITY_SELINUX)	+= selinux
++obj-$(CONFIG_SECURITY_APPARMOR)		+= apparmor/
+ 
+ # if we don't select a security model, use the default capabilities
+ ifneq ($(CONFIG_SECURITY),y)
