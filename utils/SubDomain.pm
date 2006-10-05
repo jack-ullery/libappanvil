@@ -36,7 +36,7 @@ use Immunix::Severity;
 
 require Exporter;
 our @ISA    = qw(Exporter);
-our @EXPORT = qw(%sd $filename $profiledir $parser %qualifiers %include %helpers $UI_Mode which getprofilefilename getprofileflags setprofileflags complain enforce autodep reload UI_GetString UI_GetFile UI_YesNo UI_Important UI_Info getkey do_logprof_pass readconfig loadincludes check_for_subdomain UI_PromptUser $running_under_genprof GetDataFromYast SendDataToYast setup_yast shutdown_yast readprofile readprofiles writeprofile get_full_path fatal_error);
+our @EXPORT = qw(%sd $filename $profiledir $parser %qualifiers %include %helpers $UI_Mode which getprofilefilename getprofileflags setprofileflags complain enforce autodep reload UI_GetString UI_GetFile UI_YesNo UI_Important UI_Info getkey do_logprof_pass readconfig loadincludes check_for_subdomain UI_PromptUser $running_under_genprof GetDataFromYast SendDataToYast setup_yast shutdown_yast readprofile readprofiles writeprofile get_full_path fatal_error checkProfileSyntax checkIncludeSyntax);
 
 no warnings 'all';
 
@@ -95,6 +95,7 @@ our %qualifiers;
 our %required_hats;
 our %defaulthat;
 our %globmap;
+our @custom_includes;
 
 # these are globs that the user specifically entered.  we'll keep track of
 # them so that if one later matches, we'll suggest it again.
@@ -1359,7 +1360,7 @@ sub do_logprof_pass {
   %variables      = ( );
 
   UI_Info(sprintf(gettext('Reading log entries from %s.'), $filename));
-  UI_Info(sprintf(gettext('Updating subdomain profiles in %s.'), $profiledir));
+  UI_Info(sprintf(gettext('Updating AppArmor profiles in %s.'), $profiledir));
 
   readprofiles();
 
@@ -1778,15 +1779,24 @@ sub do_logprof_pass {
 
             # check the path against the available set of include files
             my @newincludes;
+            my $includevalid;
             for my $incname (keys %include) {
+              $includevalid = 0;
 
               # don't suggest it if we're already including it, that's dumb
               next if $sd{$profile}{$hat}{$incname};
 
+              # only match includes that can be suggested to the user
+              for my $incmatch( @custom_includes ) {
+                $includevalid = 1 if $incname =~ /$incmatch/;
+              }
+              $includevalid = 1 if $incname =~ /abstractions/;
+              next if ( $includevalid == 0 );
+
               ($cm, @m) = matchinclude($incname, $path);
               if($cm && contains($cm, $mode)) {
                 unless(grep { $_ eq "/**" } @m) {
-                  push @newincludes, $incname if $incname =~ /abstractions/;
+                  push @newincludes, $incname;
                 }
               }
             }
@@ -2135,18 +2145,70 @@ sub contains ($$) {
   return 1;
 }
 
+
+sub checkIncludeSyntax($) {
+  my $errors = shift;
+
+
+  if(opendir(SDDIR, $profiledir )) {   
+   my @incdirs = grep { (! /^\./) && (-d "$profiledir/$_") } readdir(SDDIR);
+   close(SDDIR);
+   while(my $id = shift @incdirs) {
+     if(opendir(SDDIR, "$profiledir/$id" )) {
+       for my $path (grep { ! /^\./ } readdir(SDDIR)) {
+         chomp($path);
+         next if $path =~ /\.rpm(save|new)$/;
+         if(-f "$profiledir/$id/$path") {           
+           my $file = "$id/$path";
+           $file =~ s/$profiledir\///;
+           my $err = loadinclude($file, \&printMessageErrorHandler);
+           if ( $err ne 0 ) {
+             push @$errors, $err;
+           }
+         } elsif(-d "$id/$path") {
+           push @incdirs, "$id/$path";
+         }
+       }
+       closedir(SDDIR);
+     }
+   }
+  }
+  return $errors;
+}
+
+sub checkProfileSyntax ($) {
+  my $errors = shift;
+  # Check the syntax of profiles
+
+  opendir(SDDIR, $profiledir) or fatal_error "Can't read AppArmor profiles in $profiledir.";
+  for my $file (grep { -f "$profiledir/$_" } readdir(SDDIR)) {
+    next if $file =~ /\.rpm(save|new)$/;
+    my $err = readprofile( "$profiledir/$file", \&printMessageErrorHandler);
+    if ( defined $err and $err ne 1) {
+       push @$errors, $err;
+    }
+  }
+  closedir(SDDIR);
+  return $errors;
+}
+
+sub printMessageErrorHandler ($) {
+  my $message = shift;
+  return $message
+}
+
 sub readprofiles () {
   opendir(SDDIR, $profiledir) or fatal_error "Can't read AppArmor profiles in $profiledir.";
   for my $file (grep { -f "$profiledir/$_" } readdir(SDDIR)) {
     next if $file =~ /\.rpm(save|new)$/;
-    readprofile("$profiledir/$file");
+    readprofile("$profiledir/$file", \&fatal_error);
   }
   closedir(SDDIR);
 }
 
-sub readprofile ($) {
+sub readprofile ($$) {
   my $file = shift;
-
+  my $error_handler = shift;
   if(open(SDPROF, "$file")) {
     my ($profile, $hat, $in_contained_hat);
     my $initial_comment = "";
@@ -2162,7 +2224,7 @@ sub readprofile ($) {
         # if we run into the start of a profile while we're already in a
         # profile, something's wrong...
         if($profile) {
-          fatal_error "$profile profile in $file contains syntax errors.";
+          return &$error_handler( "$profile profile in $file contains syntax errors.");
         }
 
         # we hit the start of a profile, keep track of it...
@@ -2202,7 +2264,7 @@ sub readprofile ($) {
         # if we hit the end of a profile when we're not in one, something's
         # wrong...
         if(not $profile) {
-          fatal_error(sprintf(gettext('%s contains syntax errors.'), $file));
+          return &$error_handler( sprintf(gettext('%s contains syntax errors.'), $file));
         }
 
         if($in_contained_hat) {
@@ -2232,7 +2294,7 @@ sub readprofile ($) {
 
       } elsif(m/^\s*capability\s+(\S+)\s*,\s*$/) {  # capability entry
         if(not $profile) {
-          fatal_error(sprintf(gettext('%s contains syntax errors.'), $file));
+          return &$error_handler(sprintf(gettext('%s contains syntax errors.'), $file));
         }
 
         my $capability = $1;
@@ -2246,7 +2308,7 @@ sub readprofile ($) {
       } elsif(m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) { # conditional -- boolean defined
       } elsif(m/^\s*([\"\@\/].*)\s+(\S+)\s*,\s*$/) {     # path entry
         if(not $profile) {
-          fatal_error(sprintf(gettext('%s contains syntax errors.'), $file));
+          return &$error_handler(sprintf(gettext('%s contains syntax errors.'), $file));
         }
 
         my ($path, $mode) = ($1, $2);
@@ -2260,7 +2322,7 @@ sub readprofile ($) {
         my $p_re = convert_regexp($path);
         eval { "foo" =~ m/^$p_re$/; };
         if($@) {
-          fatal_error sprintf(gettext('Profile %s contains invalid regexp %s.'), $file, $path);
+          return &$error_handler(sprintf(gettext('Profile %s contains invalid regexp %s.'), $file, $path));
         }
 
         $sd{$profile}{$hat}{path}{$path} = $mode;
@@ -2276,12 +2338,12 @@ sub readprofile ($) {
           }                            
           $variables{$file}{"#" . $include} = 1; # sorry
         }
-
-        loadinclude($include);
+        my $ret = loadinclude($include, $error_handler);
+        return $ret if ( $ret != 0 );
 
       } elsif(/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
         if(not $profile) {
-          fatal_error(sprintf(gettext('%s contains syntax errors.'), $file));
+          return &$error_handler(sprintf(gettext('%s contains syntax errors.'), $file));
         }
 
         # XXX - BUGBUGBUG - don't strip netdomain entries
@@ -2301,7 +2363,7 @@ sub readprofile ($) {
         # if we hit the start of a contained hat when we're not in a profile
         # something is wrong...
         if(not $profile) {
-          fatal_error(sprintf(gettext('%s contains syntax errors.'), $file));
+          return &$error_handler(sprintf(gettext('%s contains syntax errors.'), $file));
         }
 
         $in_contained_hat = 1;
@@ -2338,20 +2400,19 @@ sub readprofile ($) {
       } else {
 
         # we hit something we don't understand in a profile...
-        fatal_error(sprintf(gettext('%s contains syntax errors.'), $file));
+        return &$error_handler(sprintf(gettext('%s contains syntax errors.'), $file));
       }
     }
 
     # if we're still in a profile when we hit the end of the file, it's bad
     if($profile) {
-      fatal_error "Reached the end of $file while we were still inside the $profile profile.";
+      return &$error_handler("Reached the end of $file while we were still inside the $profile profile.");
     }
 
     close(SDPROF);
   } else {
     $DEBUGGING && debug "readprofile: can't read $file - skipping";
   }
-
 }
 
 sub escape($) {
@@ -2476,7 +2537,7 @@ sub writeprofile ($) {
 
   open(SDPROF, ">$filename") or fatal_error "Can't write new AppArmor profile $filename: $!";
 
-  # stick in a vim mode line to turn on subdomain syntax highlighting
+  # stick in a vim mode line to turn on AppArmor syntax highlighting
   print SDPROF "# vim:syntax=apparmor\n";
 
   # keep track of when the file was last updated
@@ -2557,7 +2618,7 @@ sub matchliteral {
 sub reload ($) {
   my $bin = shift;
 
-  # don't try to reload profile if subdomain is not running
+  # don't try to reload profile if AppArmor is not running
   return unless check_for_subdomain();
 
   # don't reload the profile if the corresponding executable doesn't exist
@@ -2570,9 +2631,10 @@ sub reload ($) {
 
 sub loadinclude {
   my $which= shift;
+  my $error_handler = shift;
 
   # don't bother loading it again if we already have
-  return if $include{$which};
+  return 0 if $include{$which};
 
   my @loadincludes = ( $which );
   while(my $incfile = shift @loadincludes) {
@@ -2602,7 +2664,7 @@ sub loadinclude {
         my $p_re = convert_regexp($path);
         eval { "foo" =~ m/^$p_re$/; };
         if($@) {
-          fatal_error sprintf(gettext('Include %s contains invalid regexp %s.'), $incfile, $path);
+          return &$error_handler(sprintf(gettext('Include file %s contains invalid regexp %s.'), $incfile, $path));
         }
 
         $include{$incfile}{path}{$path} = $mode;
@@ -2625,12 +2687,12 @@ sub loadinclude {
         next if /^\s*\#/;
 
         # we hit something we don't understand in a profile...
-        fatal_error sprintf(gettext('%s contains syntax errors.'), $incfile);
+        return &$error_handler(sprintf(gettext('Include file %s contains syntax errors or is not a valid #include file.'), $incfile));
       }
-
     }
     close(INCLUDE);
   }
+  return 0;
 }
 
 sub rematchfrag{
@@ -2664,7 +2726,7 @@ sub matchincludes {
   # scan the include fragments for this profile looking for matches
   my @includelist = keys %{$frag->{include}};
   while(my $include = shift @includelist) {
-    loadinclude($include);
+    loadinclude($include, \&fatal_error);
     my ($cm, @m) = rematchfrag($include{$include}, $path);
     if($cm) {
       $combinedmode .= $cm;
@@ -2741,6 +2803,11 @@ sub readconfig () {
         } elsif($which eq "required_hats") {
           $required_hats{$key} = $value;
         }
+      } elsif(m/^\s*(\S+)\s*$/) {
+        my $val = $1;
+        if($which eq "custom_includes") {
+          push @custom_includes, $val;
+        }
       }
     }
     close(LPCONF);
@@ -2760,7 +2827,7 @@ if(opendir(SDDIR, $profiledir )) {
         if(-f "$profiledir/$id/$path") {
           my $file = "$id/$path";
           $file =~ s/$profiledir\///;
-          loadinclude($file);
+          loadinclude($file, \&fatal_error);
         } elsif(-d "$id/$path") {
           push @incdirs, "$id/$path";
         }
