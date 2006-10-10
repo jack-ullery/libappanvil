@@ -1159,9 +1159,11 @@ int aa_link(struct aaprofile *active, struct dentry *link,
  * aa_fork - create a new subdomain
  * @p: new process
  *
- * Create a new subdomain struct for the newly created process @p.
- * Copy parent info to child.  If parent has no subdomain, child
- * will get one with %NULL values.  Return %0 on sucess.
+ * Create a new subdomain for newly created process @p if it's parent
+ * is already confined.  Otherwise a subdomain will be lazily allocated
+ * will get one with NULL values.  Return 0 on sucess.
+ * for the child if it subsequently execs (in aa_register).
+ * Return 0 on sucess.
  *
  * The sd_lock is used to maintain consistency against profile
  * replacement/removal.
@@ -1170,15 +1172,17 @@ int aa_link(struct aaprofile *active, struct dentry *link,
 int aa_fork(struct task_struct *p)
 {
 	struct subdomain *sd = AA_SUBDOMAIN(current->security);
-	struct subdomain *newsd = alloc_subdomain(p);
+	struct subdomain *newsd = NULL;
 
 	AA_DEBUG("%s\n", __FUNCTION__);
 
-	if (!newsd)
-		return -ENOMEM;
-
-	if (sd) {
+	if (__aa_is_confined(sd)) {
 		unsigned long flags;
+
+		newsd = alloc_subdomain(p);
+
+		if (!newsd)
+			return -ENOMEM;
 
 		/* Use locking here instead of getting the reference
 		 * because we need both the old reference and the
@@ -1210,7 +1214,6 @@ int aa_register(struct linux_binprm *bprm)
 {
 	char *filename;
 	struct file *filp = bprm->file;
-	struct subdomain *sd;
 	struct aaprofile *active;
 	struct aaprofile *newprofile = NULL, unconstrained_flag;
 	int 	error = -ENOMEM,
@@ -1221,25 +1224,6 @@ int aa_register(struct linux_binprm *bprm)
 		complain = 0;
 
 	AA_DEBUG("%s\n", __FUNCTION__);
-
-	sd = AA_SUBDOMAIN(current->security);
-
-	if (sd) {
-		complain = SUBDOMAIN_COMPLAIN(sd);
-	} else {
-		/* task has no subdomain.  This can happen when a task is
-		 * created when apparmor is not loaded.  Allocate and
-		 * attach a subdomain to the task
-		 */
-		sd = alloc_subdomain(current);
-		if (!sd) {
-			AA_WARN("%s: Failed to allocate subdomain\n",
-				__FUNCTION__);
-			goto out;
-		}
-
-		current->security = sd;
-	}
 
 	filename = aa_get_name(filp->f_dentry, filp->f_vfsmnt);
 	if (IS_ERR(filename)) {
@@ -1256,6 +1240,8 @@ int aa_register(struct linux_binprm *bprm)
 		find_profile = 1;
 		goto find_profile;
 	}
+
+	complain = PROFILE_COMPLAIN(active);
 
 	/* Confined task, determine what mode inherit, unconstrained or
 	 * mandatory to load new profile
@@ -1312,7 +1298,7 @@ int aa_register(struct linux_binprm *bprm)
 				 filename,
 				 exec_mode,
 				 current->comm, current->pid,
-				 BASE_PROFILE(active)->name, sd->active->name);
+				 BASE_PROFILE(active)->name, active->name);
 			error = -EPERM;
 			break;
 		}
@@ -1383,6 +1369,7 @@ find_profile:
 apply_profile:
 	/* Apply profile if necessary */
 	if (newprofile) {
+		struct subdomain *sd, *lazy_sd = NULL;
 		unsigned long flags;
 
 		if (newprofile == &unconstrained_flag)
@@ -1393,11 +1380,15 @@ apply_profile:
 		 *
 		 * Several things may have changed since the code above
 		 *
+		 * - Task may be presently unconfined (have no sd). In which
+		 *   case we have to lazily allocate one.  Note we may be raced
+		 *   to this allocation by a setprofile.
+		 *
 		 * - If we are a confined process, active is a refcounted copy
 		 *   of the profile that was on the subdomain at entry.
 		 *   This allows us to not have to hold a lock around
 		 *   all this code.   If profile replacement has taken place
-		 *   our sd->active may not equal sd->active any more.
+		 *   our active may not equal sd->active any more.
 		 *   This is okay since the operation is treated as if
 		 *   the transition occured before replacement.
 		 *
@@ -1407,7 +1398,31 @@ apply_profile:
 		 *   having to hold a lock around all this code.
 		 */
 
+		if (!active && !(sd = AA_SUBDOMAIN(current->security))) {
+			lazy_sd = alloc_subdomain(current);
+			if (!lazy_sd) {
+				AA_ERROR("%s: Failed to allocate subdomain\n",
+					 __FUNCTION__);
+				error = -ENOMEM;
+				goto cleanup;
+			}
+		}
+
 		spin_lock_irqsave(&sd_lock, flags);
+
+		sd = AA_SUBDOMAIN(current->security);
+		if (lazy_sd) {
+			if (sd) {
+				/* raced by setprofile - created sd */
+				free_subdomain(lazy_sd);
+				lazy_sd = NULL;
+			} else {
+				/* Not rcu used to get the write barrier
+				 * correct */
+				rcu_assign_pointer(current->security, lazy_sd);
+				sd = lazy_sd;
+			}
+		}
 
 		/* Determine if profile we found earlier is stale.
 		 * If so, reobtain it.  N.B stale flag should never be
@@ -1458,6 +1473,7 @@ apply_profile:
 		spin_unlock_irqrestore(&sd_lock, flags);
 	}
 
+cleanup:
 	aa_put_name(filename);
 
 	put_aaprofile(active);
@@ -1486,7 +1502,6 @@ void aa_release(struct task_struct *p)
 		p->security = NULL;
 
 		aa_subdomainlist_remove(sd);
-
 		aa_switch_unconfined(sd);
 
 		kfree(sd);
