@@ -176,9 +176,9 @@ static int apparmor_netlink_send(struct sock *sk, struct sk_buff *skb)
 	return cap_netlink_send(sk, skb);
 }
 
-static int apparmor_netlink_recv(struct sk_buff *skb)
+static int apparmor_netlink_recv(struct sk_buff *skb, int cap)
 {
-	return cap_netlink_recv(skb);
+	return cap_netlink_recv(skb, cap);
 }
 
 static void apparmor_bprm_apply_creds(struct linux_binprm *bprm, int unsafe)
