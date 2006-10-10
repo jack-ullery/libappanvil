@@ -7,7 +7,7 @@ KERNELVER := $(shell uname -r)
 KERNELDIR := /lib/modules/${KERNELVER}/build
 
 all:
-	$(MAKE) -C $(KERNELDIR) M=`pwd` $@
+	$(MAKE) -C $(KERNELDIR) M=`pwd` modules CONFIG_SECURITY_APPARMOR=m
 	mv apparmor.ko apparmor-${KERNELVER}.ko
 	mv match/aamatch_pcre.ko aamatch_pcre-${KERNELVER}.ko
 

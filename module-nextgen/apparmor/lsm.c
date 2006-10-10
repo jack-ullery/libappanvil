@@ -508,6 +508,7 @@ static int apparmor_file_alloc_security(struct file *file)
 		} else {
 			error = -ENOMEM;
 		}
+		file->f_security = aaf;
 	}
 	put_aaprofile(active);
 
@@ -542,7 +543,7 @@ static inline int aa_mmap(struct file *file, unsigned long prot,
 
 	/* Private mappings don't require write perms since they don't
 	 * write back to the files */
-	if (prot & PROT_WRITE && (!flags & MAP_PRIVATE))
+	if (prot & PROT_WRITE && !(flags & MAP_PRIVATE))
 		mask |= MAY_WRITE;
 	if (prot & PROT_EXEC)
 		mask |= AA_EXEC_MMAP;
