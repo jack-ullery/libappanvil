@@ -898,6 +898,7 @@ static void __exit apparmor_exit(void)
 module_init(apparmor_init);
 module_exit(apparmor_exit);
 
+MODULE_VERSION(APPARMOR_VERSION);
 MODULE_DESCRIPTION("AppArmor process confinement");
 MODULE_AUTHOR("Tony Jones <tonyj@suse.de>");
 MODULE_LICENSE("GPL");
