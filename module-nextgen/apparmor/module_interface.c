@@ -322,7 +322,10 @@ static int aa_is_nameX(struct aa_ext *e, enum aa_code code, void *data,
 			     strncmp(name, (char *)e->pos, (size_t)size-1)))
 			goto fail;
 		e->pos += size;
+	} else if (name) {
+		goto fail;
 	}
+
 	/* now check if data actually matches */
 	ret = aa_is_X(e, code, data);
 	if (!ret)
@@ -387,8 +390,8 @@ static inline struct aa_entry *aa_activate_file_entry(struct aa_ext *e)
 
 	AA_READ_X(e, AA_STRUCT, NULL, "fe");
 	AA_READ_X(e, AA_DYN_STRING, &entry->filename, NULL);
-	AA_READ_X(e, AA_U32, &entry->mode, "file.mode");
-	AA_READ_X(e, AA_U32, &entry->type, "file.pattern_type");
+	AA_READ_X(e, AA_U32, &entry->mode, NULL);
+	AA_READ_X(e, AA_U32, &entry->type, NULL);
 
 	entry->extradata = aamatch_alloc(entry->type);
 	if (IS_ERR(entry->extradata)) {
@@ -539,14 +542,13 @@ static struct aaprofile *aa_activate_profile(struct aa_ext *e, ssize_t *error)
 	error_string = "Invalid flags";
 	/* per profile debug flags (debug, complain, audit) */
 	AA_READ_X(e, AA_STRUCT, NULL, "flags");
-	AA_READ_X(e, AA_U32, &(profile->flags.debug), "profile.flags.debug");
-	AA_READ_X(e, AA_U32, &(profile->flags.complain),
-		  "profile.flags.complain");
-	AA_READ_X(e, AA_U32, &(profile->flags.audit), "profile.flags.audit");
+	AA_READ_X(e, AA_U32, &(profile->flags.debug), NULL);
+	AA_READ_X(e, AA_U32, &(profile->flags.complain), NULL);
+	AA_READ_X(e, AA_U32, &(profile->flags.audit), NULL);
 	AA_READ_X(e, AA_STRUCTEND, NULL, NULL);
 
 	error_string = "Invalid capabilities";
-	AA_READ_X(e, AA_U32, &(profile->capabilities), "profile.capabilities");
+	AA_READ_X(e, AA_U32, &(profile->capabilities), NULL);
 
 	/* get the file entries. */
 	AA_ENTRY_LIST("pgent");		/* pcre rules */

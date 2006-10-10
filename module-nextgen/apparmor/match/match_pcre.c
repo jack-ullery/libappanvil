@@ -87,8 +87,8 @@ int aamatch_serialize(void *entry_extradata, struct aa_ext *e,
 	   uschar must be the same in user and kernel space */
 	/* check that we are processing the correct structure */
 	AA_READ_X(e, AA_STRUCT, NULL, "pcre");
-	AA_READ_X(e, AA_U32, &size, "pattern.size");
-	AA_READ_X(e, AA_U32, &magic, "pattern.magic");
+	AA_READ_X(e, AA_U32, &size, NULL);
+	AA_READ_X(e, AA_U32, &magic, NULL);
 
 	/* the allocation of pcre is delayed because it depends on the size
 	 * of the pattern */
@@ -102,15 +102,15 @@ int aamatch_serialize(void *entry_extradata, struct aa_ext *e,
 	ed->compiled->magic_number = magic;
 	ed->compiled->size = size + sizeof(pcre);
 
-	AA_READ_X(e, AA_U32, &opts, "pattern.options");
+	AA_READ_X(e, AA_U32, &opts, NULL);
 	ed->compiled->options = opts;
-	AA_READ_X(e, AA_U16, &ed->compiled->top_bracket, "pattern.top_bracket");
-	AA_READ_X(e, AA_U16, &ed->compiled->top_backref, "pattern.top_backref");
-	AA_READ_X(e, AA_U8, &t_char, "pattern.first_char");
+	AA_READ_X(e, AA_U16, &ed->compiled->top_bracket, NULL);
+	AA_READ_X(e, AA_U16, &ed->compiled->top_backref, NULL);
+	AA_READ_X(e, AA_U8, &t_char, NULL);
 	ed->compiled->first_char = t_char;
-	AA_READ_X(e, AA_U8, &t_char, "pattern.req_char");
+	AA_READ_X(e, AA_U8, &t_char, NULL);
 	ed->compiled->req_char = t_char;
-	AA_READ_X(e, AA_U8, &t_char, "pattern.code[0]");
+	AA_READ_X(e, AA_U8, &t_char, NULL);
 	ed->compiled->code[0] = t_char;
 
 	AA_READ_X(e, AA_STATIC_BLOB, &ed->compiled->code[1], NULL);
