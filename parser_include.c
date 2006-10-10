@@ -46,6 +46,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <libintl.h>
+#include <dirent.h>
 #include "parser.h"
 #include "parser_include.h"
 #define _(s) gettext(s)
@@ -71,7 +72,6 @@ static int getincludestr(char **inc, int c, FILE *f, int line, char *name,
 			 FILE *out);
 static int stripcomment(char *s);
 static char *stripblanks(char *s);
-static FILE *find_inc_file(char *file);
 static int preprocess(FILE *f, char *name, FILE * out, int nest);
 
 int preprocess_only;
@@ -259,42 +259,6 @@ out:
 	}
 }
 
-/* Find the include file by searching the path.
-   Doesn't handle escaped / in file name
-   can we even do that. */
-static FILE *find_inc_file(char *file)
-{
-	int i;
-	FILE *f = NULL;
-	char buf[1024];
-	char *p = NULL;
-
-	if (*file == '\"') {
-		f = fopen(file + 1, "r");
-		if (f) {
-			strncpy(buf, file, 1024);
-			/*scan backwards to the first / or start of string */
-			for (i = strlen(file) - 1; i >= 0; i--) {
-				if (buf[i] == '/')
-					break;
-			}
-			if (i > 0)
-				buf[i] = 0;
-			p = buf;
-		}
-	} else {
-		for (i = 0; i < npath; i++) {
-			snprintf(buf, 1024, "%s/%s", path[i], file + 1);
-			f = fopen(buf, "r");
-			p = path[i];
-			if (f)
-				break;
-		}
-	}
-
-	return f;
-}
-
 const char incword[] = "include";
 
 /* getincludestr:
@@ -370,7 +334,7 @@ static int getincludestr(char **inc, int c, FILE *f, int line, char *name,
 	retval = 1;
 	/* fall through to comment - this makes trailing stuff a comment */
 
-      comment:
+comment:
 	fputc('#', out);
 	for (a = 0; a < i; a++) {
 		fputc(incword[a], out);
@@ -383,16 +347,103 @@ static int getincludestr(char **inc, int c, FILE *f, int line, char *name,
 	return retval;
 }
 
+/* Find the include file or directory by searching the path. */
+static int process_include(char *inc, char *name, int line, FILE *out, int nest)
+{
+	FILE *newf = NULL;
+	int retval = 0;
+	char *buf;
+	struct stat my_stat;
+	int err;
+
+	if (*inc == '\"') {
+		buf = strdup(inc + 1);
+		newf = fopen(buf, "r");
+	} else {
+		int i;
+		for (i = 0; i < npath; i++) {
+			asprintf(&buf, "%s/%s", path[i], inc + 1);
+			newf = fopen(buf, "r");
+			if (newf)
+				break;
+		}
+	}
+
+	if (!newf) {
+		PERROR(_("Error: #include %s%c not found at line %d in %s.\n"),
+		       inc,
+		       *inc == '<' ? '>' : '\"',
+		       line,
+		       name);
+		retval = 1;
+		goto out;
+	}
+
+	err = fstat(fileno(newf), &my_stat);
+	if (err) {
+		retval = errno;
+		goto out;
+	}
+
+	if (S_ISREG(my_stat.st_mode)) {
+		err = preprocess(newf, inc + 1, out, nest + 1);
+		if (err)
+			retval = err;
+		goto out;
+	}
+
+	if (S_ISDIR(my_stat.st_mode)) {
+		DIR *dir = fdopendir(fileno(newf));
+		struct dirent *dirent;
+		if (!dir) {
+			retval = 1;
+			goto out;
+		}
+
+		while ((dirent = readdir(dir)) != NULL) {
+			char *dirbuf;
+			/* skip dotfiles. */
+			if (dirent->d_name[0] == '.')
+				continue;
+			asprintf(&dirbuf, "%s/%s", buf, dirent->d_name);
+			err = stat(dirbuf, &my_stat);
+			if (err) {
+				retval = errno;
+				free(dirbuf);
+				goto out;
+			}
+
+			if (S_ISREG(my_stat.st_mode)) {
+				newf = fopen(dirbuf, "r");
+				if (newf) {
+					err = preprocess(newf, inc + 1, out, nest + 1);
+					if (err)
+						retval = err;
+					fclose(newf);
+				} else {
+					retval = errno;
+				}
+			}
+			free(dirbuf);
+		}
+		newf = NULL;
+		closedir(dir);
+	}
+out:
+	if (buf)
+		free(buf);
+	if (newf)
+		fclose(newf);
+	return retval;
+}
+
 static int preprocess(FILE * f, char *name, FILE * out, int nest)
 {
 	int line = 1;
 	int c;
 	int retval = 0;
-
 	char *inc = NULL;
-	FILE *newf;
-
-	char cwd[1024];
+	char *cwd;
 
 	if (nest > MAX_NEST_LEVEL) {
 		PERROR(_("Error: Exceeded %d levels of includes.  Not processing %s include.\n"),
@@ -411,22 +462,12 @@ static int preprocess(FILE * f, char *name, FILE * out, int nest)
 		if (err)
 			retval = err;
 		if (inc) {
-			getcwd(cwd, 1024);
-			newf = find_inc_file(inc);
-			if (newf) {
-				err = preprocess(newf, inc + 1, out, nest + 1);
-				if (err)
-					retval = err;
-				fclose(newf);
-				chdir(cwd);
-			} else {
-				PERROR(_("Error: #include %s%c not found at line %d in %s.\n"),
-				       inc,
-				       *inc == '<' ? '>' : '\"',
-				       line,
-				       name);
-				retval = 1;
-			}
+			cwd = get_current_dir_name();
+			err = process_include(inc, name, line, out, nest);
+			if (err)
+				retval = err;
+			chdir(cwd);
+			free(cwd);
 			free(inc);
 		} else {
 			if (c != '#')
