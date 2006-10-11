@@ -18,7 +18,7 @@ License:      GPL
 Group:        Productivity/Security
 Autoreqprov:  on
 Version:      @@immunix_version@@
-Release:      1
+Release:      @@repo_version@@
 Summary:      Pam module to add AppArmor change_hat functionality
 URL:          http://forge.novell.com/modules/xfmod/project/?apparmor
 Source:       pam_apparmor-%{version}-@@repo_version@@.tar.gz
