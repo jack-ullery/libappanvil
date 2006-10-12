@@ -51,7 +51,7 @@ Provides: subdomain-parser-demo subdomain-parser-common subdomain-leaf-cert
 Provides: libimnxcert
 %define apparmor_bin_prefix /lib/apparmor
 
-%description 
+%description
 AppArmor Parser is a userlevel program that is used to load in program
 profiles to the AppArmor Security kernel module.
 This package is part of a suite of tools that used to be named SubDomain.
@@ -87,16 +87,10 @@ make install DESTDIR=${RPM_BUILD_ROOT} \
   /etc/init.d/aaeventd
 %endif
 %config(noreplace) /etc/apparmor/subdomain.conf
-/subdomain
 /var/lib/apparmor
 %dir %attr(-, root, root) %{apparmor_bin_prefix}
 %{apparmor_bin_prefix}/rc.apparmor.functions
 %{_prefix}/share/locale/*/*/apparmor-parser.mo
-# XXX Grumble autobuild grumble
-%dir %attr(-,root,root) /usr/share/locale/hu_HU
-%dir %attr(-,root,root) /usr/share/locale/hu_HU/LC_MESSAGES
-%dir %attr(-,root,root) /usr/share/locale/ja_JP
-%dir %attr(-,root,root) /usr/share/locale/ja_JP/LC_MESSAGES
 
 %pre
 %if %{distro} == "redhat" || %{distro} == "rhel4"
@@ -116,14 +110,14 @@ fi
   if test -e /etc/init.d/boot.subdomain -o -e /etc/init.d/subdomain; then
     SUBDOMAIN_PARSER_INSTALLED="yes"
   fi
-  if  test "$1" == 1  -a $SUBDOMAIN_PARSER_INSTALLED = "no"; then    
+  if  test "$1" == 1  -a $SUBDOMAIN_PARSER_INSTALLED = "no"; then
     %{insserv_force_if_yast boot.apparmor}
   elif test -e /etc/rc.d/boot.d/S??boot.subdomain  -o \
             -e /etc/rc.d/boot.d/S??boot.apparmor  -o \
             -e /etc/rc.d/rc3.d/S??subdomain ; then
     %{insserv_force_if_yast boot.apparmor}
-  else    
-    %{fillup_and_insserv -f boot.apparmor}  
+  else
+    %{fillup_and_insserv -f boot.apparmor}
   fi
 %endif
 %if %{distro} == "redhat" || %{distro} == "rhel4"
@@ -162,6 +156,24 @@ fi
 
 
 %changelog
+* Thu Oct 12 2006 - sbeattie@suse.de
+- get rid of /subdomain (#160020)
+* Tue Oct 10 2006 - sbeattie@suse.de
+- add support for #include'ing directories
+- updated i18n messages/other fixes
+* Fri Jul 28 2006 - olh@suse.de
+- make boot.localfs optional in boot.apparmor (#181972)
+* Mon Jun 05 2006 - sbeattie@suse.de
+- Add support for 'm' flag (mmap w/PROT_EXEC permission) (#175388)
+- Add Px and Ux flags to indicate to ld.so that sensitive environemnt
+  variables should be filtered on exec() (#172061) The m, Px, and Ux
+  flags are added in such a way that apparmor modules without
+  corresponding support will just ignore them.
+- Fix segv if profiles directory does not exist (#160330)
+- Fix aaeventd initscript description (#172961)
+- Add check to verify module supports pcre
+- Add regression tests and run on every build
+- Other minor fixups
 * Fri May 26 2006 - schwab@suse.de
 - Don't strip binaries.
 * Thu Apr 27 2006 Steve beattie <sbeattie@suse.de>
