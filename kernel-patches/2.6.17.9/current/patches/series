@@ -1,4 +1,0 @@
-apparmor_audit.patch
-apparmor_namespacesem.patch
-apparmor_security_makefile.patch
-apparmor.patch
