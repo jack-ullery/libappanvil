@@ -46,14 +46,14 @@ static void dentry_xlate_error(struct dentry *dentry, int error, char *dtype)
 {
 	const unsigned int len = 16;
 	char buf[len];
-	
+
 	if (dentry->d_inode) {
 		snprintf(buf, len, "%lu", dentry->d_inode->i_ino);
 	} else {
 		strncpy(buf, "<negative>", len);
 		buf[len-1]=0;
 	}
-	
+
 	AA_ERROR("An error occured while translating %s %p "
 		 "inode# %s to a pathname. Error %d\n",
 		 dtype,
