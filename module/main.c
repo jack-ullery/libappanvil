@@ -749,7 +749,7 @@ int sd_audit(struct subdomain *sd, const struct sd_audit *sa)
 		goto out;
 	}
 
-	audit_log_format(ab, "(%s(%d) profile %s active %s)", 
+	audit_log_format(ab, "(%s(%d) profile %s active %s)",
 		current->comm, current->pid,
 		sd->profile->name, sd->active->name);
 
