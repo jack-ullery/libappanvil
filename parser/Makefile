@@ -219,7 +219,6 @@ install: $(INSTALLDEPS)
 	install -m 755 ${TOOLS} $(DESTDIR)/sbin
 	install -m 755 -d $(INSTALL_CONFDIR)
 	install -m 644 subdomain.conf $(INSTALL_CONFDIR)
-	install -m 755 -d ${DESTDIR}/subdomain
 	install -m 755 -d ${DESTDIR}/var/lib/apparmor
 	install -m 755 -d $(APPARMOR_BIN_PREFIX)
 	install -m 755 rc.apparmor.functions $(APPARMOR_BIN_PREFIX)
