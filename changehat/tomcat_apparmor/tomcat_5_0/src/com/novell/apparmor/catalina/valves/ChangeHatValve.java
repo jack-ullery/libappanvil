@@ -12,7 +12,6 @@ package com.novell.apparmor.catalina.valves;
 
 import com.novell.apparmor.JNIChangeHat;
 import java.io.IOException;
-import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.catalina.HttpRequest;
@@ -127,14 +126,15 @@ public final class ChangeHatValve extends ValveBase {
         if ( !( request instanceof HttpRequest) 
                 || !(response instanceof HttpResponse) ) {
             container.getLogger().log(this.getClass().toString()
-                + "[APPARMOR] Non HttpRequest received. Not changing context. ["
-                + request.getInfo() + "]",  container.getLogger().ERROR);
+                + "[APPARMOR] Non HttpRequest received. Not changing context. "
+                + "[" + request.getInfo() + "]",  container.getLogger().ERROR);
             context.invokeNext(request, response);
             return;
         }
         
         HttpRequest httpRequest = (HttpRequest) request;
-        HttpServletRequest servletRequest = (HttpServletRequest) httpRequest.getRequest();
+        HttpServletRequest servletRequest = (HttpServletRequest) 
+          httpRequest.getRequest();
         
         String hatname = ChangeHatValve.DEFAULT_HAT;;
         if ( getMediationType() == ChangeHatValve.SERVLET_PATH_MEDIATION ) {
@@ -146,7 +146,8 @@ public final class ChangeHatValve extends ValveBase {
        /*
         * Select the AppArmor container for this request:
         * 
-        *  1. try hat name from either URI or ServletPath (based on configuration)
+        *  1. try hat name from either URI or ServletPath 
+        *     (based on configuration)
         * 
         *  2. try hat name of the defined DEFAULT_HAT 
         * 
@@ -157,27 +158,35 @@ public final class ChangeHatValve extends ValveBase {
         container.getLogger().log("[APPARMOR] ChangeHat to [" + hatname 
           + "] cookie [" + cookie + "]", container.getLogger().DEBUG);
         result = changehat_wrapper.changehat_in(hatname, cookie);
-        if ( result == JNIChangeHat.EACCES ) {
-            changehat_wrapper.changehat_out(cookie);
-            result = changehat_wrapper.changehat_in(ChangeHatValve.DEFAULT_HAT, cookie);
-            if ( result != 0 ) {
-                changehat_wrapper.changehat_out(cookie);
-                container.getLogger().log("[APPARMOR] ChangeHat to [" + hatname 
-                  + "] failed. Running in parent context.", 
-                  container.getLogger().ERROR);                
-            } else  {
-                inSubHat = true;
-            } 
-        } else if ( result != 0 ) {
-            changehat_wrapper.changehat_out(cookie);
-            container.getLogger().log("[APPARMOR] ChangeHat to [" + hatname 
-              + "] failed. Running in parent context.", 
-              container.getLogger().ERROR);
+        if ( result == JNIChangeHat.EPERM ) {
+            container.getLogger().log("[APPARMOR] change_hat valve " +
+              "configured but Tomcat process is not confined by an " +
+              "AppArmor profile.", container.getLogger().ERROR); 
+            context.invokeNext(request, response);
         } else {
-            inSubHat = true;
+            if ( result == JNIChangeHat.EACCES ) {
+	        changehat_wrapper.changehat_out(cookie);
+	        result = changehat_wrapper.changehat_in(ChangeHatValve.DEFAULT_HAT,
+	          cookie);
+	        if ( result != 0 ) {
+	            changehat_wrapper.changehat_out(cookie);
+	            container.getLogger().log("[APPARMOR] ChangeHat to [" + hatname 
+	              + "] failed. Running in parent context.", 
+	              container.getLogger().ERROR);                
+	        } else  {
+	            inSubHat = true;
+	        } 
+	    } else if ( result != 0 ) {
+	        changehat_wrapper.changehat_out(cookie);
+	        container.getLogger().log("[APPARMOR] ChangeHat to [" + hatname 
+	          + "] failed. Running in parent context.", 
+	          container.getLogger().ERROR);
+	    } else {
+	        inSubHat = true;
+	    }
+	    context.invokeNext(request, response);
+	    if ( inSubHat ) changehat_wrapper.changehat_out(cookie);
         }
-        context.invokeNext(request, response);
-        if ( inSubHat ) changehat_wrapper.changehat_out(cookie);
     }
 }
 

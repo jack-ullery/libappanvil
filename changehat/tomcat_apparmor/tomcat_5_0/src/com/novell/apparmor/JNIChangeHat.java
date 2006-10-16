@@ -18,9 +18,11 @@ import java.nio.*;
   **/
 public class JNIChangeHat
 {
+  public static int EPERM  = 1;
   public static int ENOMEM = 12;
   public static int EACCES = 13;
   public static int EFAULT = 14;
+
 	
   //  Native 'c' function delcaration
   public native int changehat_in(String subdomain, int magic_token);

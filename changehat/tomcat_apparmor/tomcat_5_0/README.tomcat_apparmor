@@ -28,8 +28,7 @@
 
 This package provides an implementation of a Tomcat 5.0 Valve that calls out 
 to the change_hat(2) function provided by libapparmor to allow a process to 
-change its security context. This code is intended as a proof of concept plugin 
-for AppArmor and Tomcat. Any feedback is greatly appreciated.
+change its security context. Any feedback is greatly appreciated.
 
 
 2. Requirements
@@ -48,7 +47,8 @@ From the top level directory execute:
 
 
 This will create a jar file and a shared library (for the JNI interface to the 
-libapparmor library) and place them under dist/.
+libapparmor library) and place the jar file under dist/ and the shared library 
+under src/jni_src.
 
 
 4. Installation
@@ -63,11 +63,13 @@ libapparmor library) and place them under dist/.
 
 - Copy the shared library to somehere in your library search path:
 
-  cp dist/libJNIChangeHat.so /usr/local/lib
+  cp dist/libJNIChangeHat.so /usr/lib
 
-  [Note: you must ensure that the target directory is in your search path or set
-  the env variable LD_LIBRARY_PATH to include this directory so that tomcat can 
-  find this library at startup]
+  [Note: you must ensure that the target directory is passed to tomcat via the
+   java.library.path propert. This can be accomplished by setting the JAVA_OPTS
+   enviroment variable, export JAVA_OPTS=-Djava.library.path, or set via the 
+   env variable LD_LIBRARY_PATH to include this directory so that tomcat can 
+   find this library at startup]
 
 
 - Configure the Tomcat server to use ChangeHatValve:

@@ -3,10 +3,16 @@
     <property name="src" location="src"/>
     <property name="jni_src" location="src/jni_src"/>
     <property name="build" location="build"/>
+    <property name="install_root" location="/"/>
+    <property name="catalina_home" location="/usr/share/tomcat5"/>
     <property name="lib" location="lib"/>
+    <property name="install_lib" value="/lib"/>
     <property name="dist" location="dist"/>
     <property name="jarfile" location="${dist}/${ant.project.name}.jar"/>
-    <property name="compile.debug" value="true"/>
+    <property name="compile.debug" value="false"/>
+    <property name="target" value="1.4"/>
+    <property name="version" value="2.0"/>
+    <property name="release" value="1"/>
 
     <fileset id="lib.jars" dir="${lib}">
         <include name="**/*.jar"/>
@@ -35,7 +41,8 @@
         <mkdir dir="${build}"/>
         <mkdir dir="${lib}"/>
         <javac srcdir="${src}" destdir="${build}" includeAntRuntime="no"
-               classpathref="lib.path" debug="${compile.debug}">
+               classpathref="lib.path" debug="${compile.debug}" 
+               source="${target}" target="${target}">
         </javac>
     </target>
 
@@ -46,7 +53,11 @@
 -->
     <target name="jni_so" depends="compile" description="Build JNI library">
         <mkdir dir="${dist}"/>
-        <exec dir="${jni_src}" executable="/usr/bin/make"/>
+        <exec dir="${jni_src}" executable="/usr/bin/make">
+              <arg value="DESTDIR=${dist}"/>
+              <arg value="VERSION=${version}"/>
+              <arg value="RELEASE=${release}"/>
+        </exec>
     </target>
 
     <target name="jar" depends="compile" description="Build jar">
@@ -57,8 +68,20 @@
         </jar>
     </target>
 
-    <target name="run" depends="jar" description="Run jar file">
-        <java jar="${jarfile}" fork="yes" failonerror="true"/>
+    <target name="install_jni" depends="jni_so" description="Install jni so">
+        <exec dir="${jni_src}" executable="/usr/bin/make">
+              <arg value="install"/>
+              <arg value="DESTDIR=${install_root}"/>
+              <arg value="LIB=${install_lib}"/>
+              <arg value="VERSION=${version}"/>
+              <arg value="RELEASE=${release}"/>
+        </exec>
+    </target>
+
+    <target name="install_jar" depends="jni_so" description="Install jar file">
+        <mkdir dir="${install_root}/${catalina_home}/server/lib/"/>
+        <copy file="${jarfile}" tofile="${install_root}/${catalina_home}/server/lib/${ant.project.name}.jar"/>
+        <chmod perm="644" file="${install_root}/${catalina_home}/server/lib/${ant.project.name}.jar"/>
     </target>
 
     <target name="clean" description="Remove build and dist directories">
