@@ -92,6 +92,7 @@ RELEASE = $(shell rpm -q --specfile --define "_sourcedir ." ${RPMARG} --qf "%{RE
 RELEASE_DIR	= $(NAME)-$(VERSION)
 TARBALL		= $(NAME)-$(VERSION)-${REPO_VERSION}.tar.gz
 TAR		= /bin/tar czvp --exclude .svn --exclude CVS --exclude .cvsignore --exclude ${TARBALL} --exclude ${RELEASE_DIR}/${RELEASE_DIR}  $(shell test -f ${NAME}.exclude && echo "-X ${NAME}.exclude")
+LDCONFIG	= /sbin/ldconfig
 
 CVSPKG_VERSION=$(shell rpm -q --specfile --define "_sourcedir ." ${RPMARG} ${SPECFILE} | head -1 | tr "." "_")
 

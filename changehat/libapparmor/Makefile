@@ -98,12 +98,12 @@ check: $(TESTS)
 	-./tst-sgkey-static
 
 .PHONY: install
-install: $(TARGETS)
+install: $(SPECFILE) $(TARGETS) $(OLDTARGET)
 	install -d $(DESTDIR)/${LIB} $(DESTDIR)${LIBDIR}
 	install -d ${DESTDIR}/usr/include/sys
 	mv -f $(TARGET).so.$(SO_VERS) $(TARGET)-$(VERSION)-$(RELEASE).so.$(SO_VERS)
 	install -m 755 $(TARGET)-$(VERSION)-$(RELEASE).so.$(SO_VERS) ${DESTDIR}/${LIB}
-	ln -sf $(TARGET)-$(VERSION)-$(RELEASE).so.$(SO_VERS) ${DESTDIR}/${LIB}/$(TARGET).so.$(SO_VERS)
+	${LDCONFIG} -n ${DESTDIR}/${LIB}
 	install -m 755 $(TARGET).a ${DESTDIR}${LIBDIR}
 	install -m 644 apparmor.h ${DESTDIR}/usr/include/sys
 	ln -sf /${LIB}/$(TARGET).so.$(SO_VERS) ${DESTDIR}${LIBDIR}/$(TARGET).so
