@@ -22,6 +22,13 @@
   %define distro suse
 %endif
 
+%if %{distro} == "suse"
+%define CATALINA_HOME /usr/share/tomcat5
+%endif 
+%define APPARMOR_DOC_DIR /usr/share/doc/packages/apparmor-docs/
+%define JNI_SO libJNIChangeHat.so
+%define JAR_FILE changeHatValve.jar
+
 
 Summary: Tomcat 5 plugin for AppArmor change_hat
 Name: tomcat_apparmor
@@ -42,13 +49,6 @@ support for AppArmor change_hat for creating AppArmor containers that are
 bound to discrete elements of processing within the Tomcat servlet 
 container. The AppArmor containers, or "hats", can be created for invidual
 URL processing or per servlet. 
-
-%if %{distro} == "suse"
-%define CATALINA_HOME /usr/share/tomcat5
-%endif 
-%define APPARMOR_DOC_DIR /usr/share/doc/packages/apparmor-docs/
-%define JNI_SO libJNIChangeHat.so
-%define JAR_FILE changeHatValve.jar
 
 %prep
 
