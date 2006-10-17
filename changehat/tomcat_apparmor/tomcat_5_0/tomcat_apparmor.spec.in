@@ -44,7 +44,7 @@ container. The AppArmor containers, or "hats", can be created for invidual
 URL processing or per servlet. 
 
 %if %{distro} == "suse"
-       %define CATALINA_HOME /usr/share/tomcat5
+%define CATALINA_HOME /usr/share/tomcat5
 %endif 
 %define APPARMOR_DOC_DIR /usr/share/doc/packages/apparmor-docs/
 %define JNI_SO libJNIChangeHat.so
