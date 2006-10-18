@@ -29,6 +29,7 @@
   /{var/spool/postfix/,}private/anvil                   w,
   /{var/spool/postfix/,}private/bounce                  w,
   /{var/spool/postfix/,}private/defer                   w,
+  /{var/spool/postfix/,}private/rewrite                 w,
   /{var/spool/postfix/,}private/scache                  w,
   /{var/spool/postfix/,}private/tlsmgr                  w,
   /{var/spool/postfix/,}private/trace                   w,

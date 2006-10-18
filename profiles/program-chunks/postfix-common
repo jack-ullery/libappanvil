@@ -16,6 +16,7 @@
   capability            sys_chroot,
 
   /etc/postfix/*.cf     r,
+  /etc/postfix/*.db     r,
   /proc/net/if_inet6    r,
   /usr/lib/postfix/*.so mr,
   /usr/lib64/sasl2/*    mr,
