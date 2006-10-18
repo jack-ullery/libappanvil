@@ -27,11 +27,11 @@ void *worker (void *param)
 	rc = do_open(file);
 	dump_me("worker changed hat");
 	change_hat (NULL, 12345);
-	is_done = 1;
 	if (rc == 0) {
 		printf("PASS\n");
 	}
 	thread_rc = rc;
+	is_done = 1;
 	return 0;
 }
 
