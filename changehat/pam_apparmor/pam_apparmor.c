@@ -19,6 +19,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <pwd.h>
+#include <grp.h>
+#include <syslog.h>
 
 #include <security/_pam_macros.h>
 
@@ -33,6 +35,8 @@
 
 #include <security/pam_modules.h>
 
+#define DEBUG 0
+
 /* --- session management functions (only) --- */
 
 PAM_EXTERN int
@@ -46,56 +50,97 @@ PAM_EXTERN
 int pam_sm_open_session(pam_handle_t *pamh, int flags,
 			int argc, const char **argv)
 {
-	int fd, retval;
+	int fd, retval, pam_retval = PAM_SUCCESS;
 	unsigned int magic_token;
 	const char *user;
+	struct passwd *pw;
+	struct group *gr;
 
 	/* grab the target user name */
 	retval = pam_get_user(pamh, &user, NULL);
 	if (retval != PAM_SUCCESS || user == NULL || *user == '\0') {
+		pam_syslog(pamh, LOG_ERR, "Can't determine user\n");
 		return PAM_USER_UNKNOWN;
+	}
+
+	pw = getpwnam(user);
+	if(!pw) {
+		pam_syslog(pamh, LOG_ERR, "Can't determine group for user %s\n", user);
+		return PAM_PERM_DENIED;
+	}
+
+	gr = getgrgid(pw->pw_gid);
+	if(!gr || !gr->gr_name) {
+		pam_syslog(pamh, LOG_ERR, "Can't read info for group %d\n", pw->pw_gid);
+		return PAM_PERM_DENIED;
 	}
 
 	fd = open("/dev/urandom", O_RDONLY);
 	if (fd < 0) {
+		pam_syslog(pamh, LOG_ERR, "Can't open /dev/urandom\n");
 		return PAM_PERM_DENIED;
 	}
 
-	/* the magic token needs to be non-zero otherwise, we won't be able to 
-	   probe for hats */
+	/* 
+	 * the magic token needs to be non-zero otherwise, we won't be able 
+	 * to probe for hats
+	 */
 	do {
 		retval = read(fd, (void *) &magic_token, sizeof(magic_token));
 		if (retval < 0) {
+			pam_syslog(pamh, LOG_ERR, "Can't read from /dev/urandom\n");
 			return PAM_PERM_DENIED;
 		}
-	} while (magic_token == 0);
+	} while ((magic_token == 0) || (retval != sizeof(magic_token)));
 
 	close(fd);
 
-	/* change into the user hat */
-	retval = change_hat(user, magic_token);
+	/* change into the group hat */
+	retval = change_hat(gr->gr_name, magic_token);
 	if (retval < 0) {
-		/* failed to change into user hat, so we'll jump back out */
+		/* failed to change into group hat, so we'll jump back out */
 		retval = change_hat(NULL, magic_token);
 		if (retval == 0) {
 			/* and try to change to the DEFAULT hat instead */
 			retval = change_hat("DEFAULT", magic_token);
 			if (retval < 0) {
-				/* failed to change into default hat, so we'll 
-				   jump back out */
+				/* 
+				 * failed to change into default hat, so 
+				 * we'll jump back out
+				 */
 				retval = change_hat(NULL, magic_token);
-				return PAM_PERM_DENIED;
+				pam_syslog(pamh, LOG_ERR, "Can't change to DEFAULT hat\n");
+				pam_retval = PAM_PERM_DENIED;
+			} else {
+#if DEBUG
+				pam_syslog(pamh, LOG_DEBUG, "Successfully changed to DEFAULT hat\n");
+#endif
 			}
+		} else {
+			/*
+			 * changing into the group hat and attempting to 
+			 * jump back out both failed.  that most likely 
+			 * means that either apparmor is not loaded or we 
+			 * don't have a profile loaded for this application.
+			 * in this case, we want to allow the pam operation 
+			 * to succeed.
+			 */
 		}
+	} else {
+#if DEBUG
+		pam_syslog(pamh, LOG_DEBUG, "Successfully changed to %s hat\n", gr->gr_name);
+#endif
 	}
 
-	/* zero out the magic token so an attacker wouldn't be able to just grab 
-	   it out of process memory and instead would need to brute force it */
+	/*
+	 * zero out the magic token so an attacker wouldn't be able to 
+	 * just grab it out of process memory and instead would need to
+	 * brute force it
+	 */
 	memset(&magic_token, 0, sizeof(magic_token));
 
-	return PAM_SUCCESS;
+	return pam_retval;
 }
-
 
 #ifdef PAM_STATIC
 
