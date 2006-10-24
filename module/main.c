@@ -1605,7 +1605,7 @@ int sd_change_hat(const char *hat_name, __u32 hat_magic)
 
 	/* check to see if an unconfined process is doing a changehat. */
 	if (!__sd_is_confined(sd)) {
-		error = -EACCES;
+		error = -EPERM;
 		goto out;
 	}
 
