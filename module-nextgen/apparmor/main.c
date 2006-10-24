@@ -1594,7 +1594,7 @@ int aa_change_hat(const char *hat_name, u32 hat_magic)
 
 	/* check to see if an unconfined process is doing a changehat. */
 	if (!__aa_is_confined(sd)) {
-		error = -EACCES;
+		error = -EPERM;
 		goto out;
 	}
 
