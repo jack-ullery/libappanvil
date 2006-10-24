@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 		if (rc == -1){
 			fprintf(stderr, "FAIL: changehat %s failed - %s\n",
 				argv[1], strerror(errno));
-			exit(1);
+			exit(errno);
 		}
 	}
 

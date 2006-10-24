@@ -203,8 +203,6 @@ checktestbg()
 runtestfg()
 {
 	# global _testdesc _pfmode outfile
-	local rc
-
 	_testdesc=$1
 	_pfmode=$2
 	shift 2
@@ -212,10 +210,10 @@ runtestfg()
 	genrunscript "$@"
 	
 	$testexec "$@" > $outfile 2>&1
-	rc=$?
-	if [ $rc -gt 128 ]
+	test_rc=$?
+	if [ $test_rc -gt 128 ]
 	then
-		echo "SIGNAL$(($rc - 128))" > $outfile
+		echo "SIGNAL$(($test_rc - 128))" > $outfile
 	fi
 }
 
@@ -268,6 +266,25 @@ runchecktest()
 
 	runtestfg "$@"
 	checktestfg
+}
+
+runchecktest_errno()
+{
+	local errno=$(perl -MPOSIX -e 'printf "%d\n", '$1';')
+	shift 1
+
+	if [ -z "${__NO_TRAP_ERR}" ]
+	then
+		trap "error_handler" ERR
+	fi
+
+	runtestfg "$@"
+	if [ "$test_rc" == "$errno" ] ; then
+		checktestfg
+	else
+		echo "Error: ${testname} failed. Test '${_testdesc}' was expected to '${_pfmode}'. Reason for failure expect errno ${errno} != ${test_rc}"
+		testfailed
+	fi
 }
 
 emit_profile()

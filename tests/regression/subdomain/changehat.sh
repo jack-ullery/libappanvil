@@ -31,12 +31,20 @@ subtest3=sub3
 
 touch $file $subfile
 
-# NO CHANGEHAT TEST
+# CHANGEHAT UNCONFINED
+runchecktest "CHANGEHAT (unconfined - nochange)" pass nochange $file
+runchecktest_errno EPERM "CHANGEHAT (unconfined)" fail $subtest $file
 
+# NO CHANGEHAT TEST
 genprofile $file:$okperm
 
 runchecktest "NO CHANGEHAT (access parent file)" pass nochange $file
 runchecktest "NO CHANGEHAT (access sub file)" fail nochange $subfile
+
+# CHANGEHAT NO HATS TEST
+runchecktest "CHAGEHAT (no hats, nochange)" pass nochange $file
+runchecktest_errno EPERM "CHANGEHAT (no hats, $file)" fail $subtest $file
+runchecktest_errno EPERM "CHANGEHAT (no hats, $subfile)" fail $subtest $subfile
 
 # CHANGEHAT TEST
 
@@ -53,3 +61,4 @@ runchecktest "CHANGEHAT (access parent file)" fail $subtest $file
 runchecktest "CHANGEHAT (access sub file)" pass $subtest $subfile
 runchecktest "CHANGEHAT (access sub file)" pass $subtest2 $subfile
 runchecktest "CHANGEHAT (access sub file)" pass $subtest3 $subfile
+
