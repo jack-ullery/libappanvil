@@ -52,10 +52,14 @@ make install DESTDIR=${RPM_BUILD_ROOT} SECDIR=${RPM_BUILD_ROOT}/%{_lib}/security
 
 %files
 %defattr(444,root,root,755)
-%doc README
+%doc README COPYING
 %attr(555,root,root) /%{_lib}/security/pam_apparmor.so
 
 %changelog -n pam_apparmor
+* Wed Oct 25 2006 Steve Beattie <sbeattie@suse.de>
+- remove auto-editing of pam's common-session
+- honor RPM's CFLAGS when building
+- add license (same as Linux PAM package).
 * Fri Jan 13 2006 Steve Beattie <sbeattie@suse.de>
 - Add svn repo number to tarball
 * Fri Jan 13 2006 Jesse Michael <jmichael@suse.de>
