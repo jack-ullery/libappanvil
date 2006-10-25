@@ -26,13 +26,13 @@ Make.rules: $(COMMONDIR)/Make.rules
 	ln -f $(COMMONDIR)/Make.rules .
 endif
 
-CFLAGS=-fPIC -shared -Xlinker -x
+EXTRA_CFLAGS=$(CFLAGS) -fPIC -shared -Xlinker -x
 LIBS=-lpam -lapparmor
 
 all: $(NAME).so
 
 $(NAME).so: $(NAME).c
-	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
+	$(CC) $(EXTRA_CFLAGS) -o $@ $< $(LIBS)
 
 # need some better way of determining this
 DESTDIR=/
@@ -45,6 +45,6 @@ install:
 	
 .PHONY: clean
 clean: Make.rules
-	rm -f core core.* *.so *.o *.s *.a *~ 
-	rm -f $(TARBALL)
+	rm -f core core.* *.so *.o *.s *.a *~
+	rm -f ${NAME}-*.tar.gz
 

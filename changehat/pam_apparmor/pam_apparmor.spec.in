@@ -41,7 +41,7 @@ Authors:
 %setup -q
 
 %build
-make
+make CFLAGS="${RPM_OPT_FLAGS}"
 
 %install
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
@@ -50,24 +50,9 @@ make install DESTDIR=${RPM_BUILD_ROOT} SECDIR=${RPM_BUILD_ROOT}/%{_lib}/security
 %clean
 [ "${RPM_BUILD_ROOT}" != "/" ] && rm -rf ${RPM_BUILD_ROOT}
 
-%post
-grep -qs "pam_apparmor.so" /etc/pam.d/common-session
-if [ $? != 0 ]; then
-	echo "session required pam_apparmor.so" >> /etc/pam.d/common-session
-fi
-
-%preun
-if [ "$1" = 0 ] ; then
-	grep -qs "pam_apparmor.so" /etc/pam.d/common-session
-	if [ $? == 0 ]; then
-		grep -v "pam_apparmor.so" /etc/pam.d/common-session > /etc/pam.d/common-session.$$
-		mv /etc/pam.d/common-session.$$ /etc/pam.d/common-session
-	fi
-fi
-
 %files
 %defattr(444,root,root,755)
-%doc README 
+%doc README
 %attr(555,root,root) /%{_lib}/security/pam_apparmor.so
 
 %changelog -n pam_apparmor
