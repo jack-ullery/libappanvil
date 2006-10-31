@@ -154,8 +154,9 @@ fi
   %{insserv_cleanup}
 %endif
 
-
 %changelog
+* Sat Oct 28 2006 - olh@suse.de
+- boot.apparmor should start after boot.localfs (#215156)
 * Thu Oct 12 2006 - sbeattie@suse.de
 - get rid of /subdomain (#160020)
 * Tue Oct 10 2006 - sbeattie@suse.de
