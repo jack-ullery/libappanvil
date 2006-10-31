@@ -1,7 +1,7 @@
 /* pam_apparmor module */
 
 /*
- * $Id: $
+ * $Id$
  *
  * Written by Jesse Michael <jmichael@suse.de> 2006/08/24
  *	  and Steve Beattie <sbeattie@suse.de> 2006/10/25

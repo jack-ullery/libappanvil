@@ -1,5 +1,5 @@
 /*
- * $Id: $
+ * $Id$
  *
  * Written by Steve Beattie <sbeattie@suse.de> 2006/10/25
  *
