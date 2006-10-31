@@ -31,7 +31,8 @@
 #
 ### BEGIN INIT INFO
 # Provides: apparmor
-# Should-Start: $localfs
+# Required-Start:
+# Should-Start: $local_fs
 # Default-Start: B 2 3 5
 # Default-Stop: 
 # Short-Description: AppArmor initialization
