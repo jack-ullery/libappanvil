@@ -70,15 +70,29 @@ errno(3) is set appropriately.
 
 =over 4
 
-=item B<ENOMEM> 
+=item B<EINVAL>
+
+The apparmor kernel module is not loaded.
+
+=item B<ENOMEM>
 
 Insufficient kernel memory was available.
 
-=item B<EACCES> 
+=item B<EPERM>
 
-The I<magic_token> passed in was 0, which is not a valid value for
-the I<magic_token>, or the specified I<subprofile> does not exist in
-this profile.
+The calling application is not confined by apparmor.
+
+=item B<ECHILD>
+
+The application's profile has no hats defined for it.
+
+=item B<EACCES>
+
+The specified I<subprofile> does not exist in this profile.
+
+=item B<EPROTO>
+
+The I<magic_token> passed in was 0 and the I<subprofile> was set to NULL.
 
 =item B<EFAULT>
 
