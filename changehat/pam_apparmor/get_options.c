@@ -53,8 +53,7 @@
 
 #include "pam_apparmor.h"
 
-#define DEBUG 1
-
+#define DEBUG_STRING "debug"
 #define ORDER_PREFIX "order="
 
 static int parse_option(pam_handle_t *pamh, struct config **config, const char *argv)
@@ -64,8 +63,10 @@ static int parse_option(pam_handle_t *pamh, struct config **config, const char *
 	if (argv == NULL || argv[0] == '\0')
 		return 0;
 
-	/* someday we may have more option. Gasp! */
-	if (strncasecmp(argv, ORDER_PREFIX, strlen(ORDER_PREFIX)) != 0) {
+	if (strcasecmp(argv, DEBUG_STRING) == 0) {
+		debug_flag = 1;
+		return 0;
+	} else if (strncasecmp(argv, ORDER_PREFIX, strlen(ORDER_PREFIX)) != 0) {
 		pam_syslog (pamh, LOG_ERR, "Unknown option: `%s'\n", argv);
 		return PAM_SESSION_ERR;
 	}

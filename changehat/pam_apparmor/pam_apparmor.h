@@ -52,5 +52,7 @@ struct config {
 	hat_t hat_type[MAX_HAT_TYPES];
 };
 
+extern int debug_flag;
+
 extern int get_options(pam_handle_t *pamh, struct config **config,
 		int argc, const char **argv);

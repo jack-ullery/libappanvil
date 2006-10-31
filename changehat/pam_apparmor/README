@@ -60,6 +60,10 @@ Some exmaple configurations:
   # DEFAULT if the prior hats do not exist in the apparmor profile
   session  optional       pam_apparmor.so order=user,group,default
 
+You can also add a 'debug' flag to the pam_apparmor session line; this
+will cause the pam module to report more of what it is attempting to do
+to syslog.
+
 References
 ----------
 Project webpage:

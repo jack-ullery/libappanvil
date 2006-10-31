@@ -38,7 +38,7 @@
 
 #include "pam_apparmor.h"
 
-#define DEBUG 0
+int debug_flag = 0;
 
 static struct config default_config = {
 	.hat_type[0] = eGroupname,
@@ -115,21 +115,18 @@ int pam_sm_open_session(pam_handle_t *pamh, int flags,
 		const char *hat = NULL;
 		switch (config->hat_type[i]) {
 		case eGroupname:
-#if DEBUG
-			pam_syslog(pamh, LOG_DEBUG, "Using groupname\n");
-#endif
 			hat = gr->gr_name;
+			if (debug_flag)
+				pam_syslog(pamh, LOG_DEBUG, "Using groupname '%s'\n", hat);
 			break;
 		case eUsername:
-#if DEBUG
-			pam_syslog(pamh, LOG_DEBUG, "Using username\n");
-#endif
 			hat = user;
+			if (debug_flag)
+				pam_syslog(pamh, LOG_DEBUG, "Using username '%s'\n", hat);
 			break;
 		case eDefault:
-#if DEBUG
-			pam_syslog(pamh, LOG_DEBUG, "Using DEFAULT\n");
-#endif
+			if (debug_flag)
+				pam_syslog(pamh, LOG_DEBUG, "Using DEFAULT\n");
 			hat = "DEFAULT";
 			break;
 		default:
@@ -142,9 +139,8 @@ int pam_sm_open_session(pam_handle_t *pamh, int flags,
 		retval = change_hat(hat, magic_token);
 		if (retval == 0) {
 			/* success, let's bail */
-#if DEBUG
-			pam_syslog(pamh, LOG_DEBUG, "Successfully changed to hat '%s'\n", hat);
-#endif
+			if (debug_flag)
+				pam_syslog(pamh, LOG_DEBUG, "Successfully changed to hat '%s'\n", hat);
 			goto out;
 		}
 
@@ -155,10 +151,9 @@ int pam_sm_open_session(pam_handle_t *pamh, int flags,
 		case EINVAL:
 			/* apparmor is not loaded or application is unconfined,
 			 * stop attempting to use change_hat */
-#if DEBUG
-			pam_syslog(pamh, LOG_DEBUG,
+			if (debug_flag)
+				pam_syslog(pamh, LOG_DEBUG,
 				   "AppArmor not loaded, or application is unconfined\n");
-#endif
 			pam_retval = PAM_SUCCESS;
 			goto out;
 			break;
