@@ -26,8 +26,6 @@ Make.rules: $(COMMONDIR)/Make.rules
 	ln -f $(COMMONDIR)/Make.rules .
 endif
 
-all: rpm
-
 TARGET:=mod_apparmor.so
 APXS:=$(shell if [ -x "/usr/sbin/apxs2" ] ; then \
 		echo "/usr/sbin/apxs2" ; \
@@ -43,6 +41,8 @@ LIBAPPARMOR_FLAGS=$(shell if [ -f /usr/lib/libapparmor.so -o -f /usr/lib64/libap
 			  else \
 			  	echo -DUSE_COMPAT_IMMUNIX_H -limmunix ;\
 			  fi)
+
+all: $(TARGET)
 
 %.so: %.c
 	${APXS} ${LIBAPPARMOR_FLAGS} -c $<
