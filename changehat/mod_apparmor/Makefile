@@ -14,7 +14,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program; if not, contact Novell, Inc.
 # ----------------------------------------------------------------------
-NAME:=apache2-mod-apparmor
+NAME:=apache2-mod_apparmor
+SPECFILE:=apache2-mod-apparmor.spec
 all:
 COMMONDIR=../../common/
 

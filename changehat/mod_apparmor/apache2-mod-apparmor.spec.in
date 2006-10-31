@@ -26,7 +26,7 @@
 %define module_name mod_apparmor
 
 Summary: AppArmor module for apache2.
-Name: apache2-mod-apparmor
+Name: apache2-mod_apparmor
 Version: @@immunix_version@@
 Release: @@repo_version@@
 Group: Applications/System
@@ -36,13 +36,13 @@ BuildRoot: %{?_tmppath:}%{!?_tmppath:/var/tmp}/%{name}-%{version}-build
 Url: http://forge.novell.com/modules/xfmod/project/?apparmor
 Prereq: libapparmor
 BuildRequires: libapparmor
-Obsoletes: mod_change_hat mod-change-hat mod-apparmor
-Provides: mod_change_hat mod-change-hat mod-apparmor
+Obsoletes: mod_change_hat mod-change-hat mod-apparmor apache2-mod-apparmor
+Provides: mod_change_hat mod-change-hat mod-apparmor apache2-mod-apparmor
 
 %if %{distro} == "suse"
 %define apxs /usr/sbin/apxs2
 %define apache_mmn        %(MMN=$(%{apxs} -q LIBEXECDIR)_MMN; test -x $MMN && $MMN)
-Prereq: apache2-prefork 
+Prereq: apache2-prefork
 Prereq: apparmor-parser
 BuildRequires: apache2-devel
 Requires:     apache2 %{apache_mmn}
@@ -55,17 +55,16 @@ BuildRequires: httpd-devel
 %endif
 %define module_path 		%(%{apxs} -q LIBEXECDIR)
 %define apache_sysconfdir	%(%{apxs} -q SYSCONFDIR)
-%define my_bin_dir /usr/lib/%{name}
 
 %description
-apache2-mod-apparmor adds support to apache2 to provide AppArmor confinement
+apache2-mod_apparmor adds support to apache2 to provide AppArmor confinement
 to individual cgi scripts handled by apache modules like mod_php and
 mod_perl.
 This package is part of a suite of tools that used to be named SubDomain.
 
 %prep
 
-%setup -q 
+%setup -q
 
 %build
 make %{module_name}.so APXS=%{apxs}
@@ -74,11 +73,8 @@ make %{module_name}.so APXS=%{apxs}
 make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro}
 
 %if %{distro} == "suse"
-       mkdir -p ${RPM_BUILD_ROOT}/%{my_bin_dir}
        mkdir -p ${RPM_BUILD_ROOT}%{_libdir}/apache2-prefork/
        ln -s %{module_path}/%{module_name}.so ${RPM_BUILD_ROOT}%{_libdir}/apache2-prefork/%{module_name}.so
-       cp -a frob_sysconfig ${RPM_BUILD_ROOT}/%{my_bin_dir}
-       chmod 755 ${RPM_BUILD_ROOT}/%{my_bin_dir}/frob_sysconfig
 %else 
   %if %{distro} == "redhat" || %{distro} == "rhel4"
   	mkdir -p ${RPM_BUILD_ROOT}/%{apache_sysconfdir}.d/
@@ -93,10 +89,8 @@ make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro}
 %defattr(-,root,root)
 %{module_path}
 %if %{distro} == "suse"
-   %dir %{my_bin_dir}
-   %{my_bin_dir}/frob_sysconfig
    %{_libdir}/apache2-prefork/%{module_name}.so
-%else 
+%else
   %if %{distro} == "redhat" || %{distro} == "rhel4"
     %{apache_sysconfdir}.d/%{module_name}.conf
   %endif
@@ -105,32 +99,27 @@ make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro}
 
 %post
 %if %{distro} == "suse"
-  %{my_bin_dir}/frob_sysconfig
-  if [ "%{suse_version}" -lt 930 ] ; then
-    /sbin/SuSEconfig --module apache2
-  fi
+  /usr/sbin/a2enmod apparmor
 %endif
 
 %preun
 %if %{distro} == "suse"
   if [ $1 = 0 ] ; then
-    %{my_bin_dir}/frob_sysconfig --remove
-    if [ "%{suse_version}" -lt 930 ] ; then
-      /sbin/SuSEconfig --module apache2
-    fi
+    /usr/sbin/a2dismod apparmor
   fi
 %endif
 
 %triggerpostun -- mod_change_hat mod-change-hat
 %if %{distro} == "suse"
-  %{my_bin_dir}/frob_sysconfig
-  if [ "%{suse_version}" -lt 930 ] ; then
-    /sbin/SuSEconfig --module apache2
-  fi
+  /usr/sbin/a2enmod apparmor
 %endif
 
 %changelog
-* Fri May 26 2006 - schwab@suse.de                                                                                                                                        
+* Wed Sep 06 2006 - poeml@suse.de
+- rename to apache2-mod_apparmor
+- use a2enmod instead of frob_sysconfig
+- remove SuSEconfig calls
+* Fri May 26 2006 - schwab@suse.de
 - Don't strip binaries.
 * Wed Apr 12 2006 - Steve Beattie <sbeattie@suse.de>
 - Move to novell forge svn repo; fix build issue with new layout
@@ -140,9 +129,9 @@ make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro}
 - Renamed apache config options:
 	ImmhatName -> AAHatName
 	ImmDefaultHatName -> AADefaultHatName
-* Mon Jan 30 2006 - poeml@suse.de                                                                                                                        
-- removed libapr-util1-devel from BuildRequires (apache2-devel does                                                                                      
-  require it) 
+* Mon Jan 30 2006 - poeml@suse.de
+- removed libapr-util1-devel from BuildRequires (apache2-devel does
+  require it)
 * Fri Jan 27 2006 Steve Beattie <sbeattie@suse.de> 2.0-6.1
 - No more neededforbuild in STABLE
 * Wed Jan 25 2006 Steve Beattie <sbeattie@suse.de> 2.0-6
