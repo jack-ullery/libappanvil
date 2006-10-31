@@ -39,7 +39,7 @@ VERSION=2.0
 TESTBUILDDIR=$(shell [ -f ${HOME}/.rpmmacros ] && awk '/^%_topdir/ {print $$2}' ${HOME}/.rpmmacros)
 ifdef BUILDDIR
 #BUILDDIR:=$(BUILDDIR,/=)
-else 
+else
 BUILDDIR=$(shell if [ -d "${TESTBUILDDIR}" ] ; then \
 		    echo ${TESTBUILDDIR} | sed "s^/$$^^" ; \
 		  elif [ -d "/usr/src/redhat" ] ; then \
@@ -80,6 +80,9 @@ RPMARG=--define "_topdir ${BUILDDIR}" \
 REPO_VERSION=$(shell if [ -x /usr/bin/svn ] ; then \
 				/usr/bin/svn info . 2> /dev/null | grep "^Last Changed Rev:" | sed "s/^Last Changed Rev: //" ; \
 		      fi)
+REPO_URL=$(shell if [ -x /usr/bin/svn ] ; then \
+			/usr/bin/svn info . 2> /dev/null | grep "^URL:" | sed "s/^URL: //" ; \
+		 fi)
 
 ifdef EXTERNAL_PACKAGE
 RPMARG+=--define "_sourcedir $(shell pwd)"
@@ -87,7 +90,7 @@ endif
 
 ifndef SPECFILE
 SPECFILE        = $(NAME).spec
-endif 
+endif
 RELEASE = $(shell rpm -q --specfile --define "_sourcedir ." ${RPMARG} --qf "%{RELEASE}" ${SPECFILE})
 RELEASE_DIR	= $(NAME)-$(VERSION)
 TARBALL		= $(NAME)-$(VERSION)-${REPO_VERSION}.tar.gz
@@ -138,6 +141,14 @@ ${TARBALL}: clean ${SPECFILE}
 
 .PHONY: tarball
 tarball: clean $(TARBALL)
+
+.PHONY: dist
+dist: clean $(SPECFILE)
+	-rm -rf $(RELEASE_DIR)
+	svn export $(REPO_URL) $(RELEASE_DIR)
+	$(TAR) -f $(TARBALL) $(RELEASE_DIR)
+	rm -rf $(RELEASE_DIR)
+
 endif
 
 .PHONY: version
