@@ -4,6 +4,7 @@
  * $Id$
  *
  * Written by Jesse Michael <jmichael@suse.de> 2006/08/24
+ *	  and Steve Beattie <sbeattie@suse.de> 2006/10/25
  *
  * Based off of pam_motd by:
  *   Ben Collins <bcollins@debian.org> 2005/10/04
@@ -21,8 +22,9 @@
 #include <pwd.h>
 #include <grp.h>
 #include <syslog.h>
-
-#include <security/_pam_macros.h>
+#include <errno.h>
+#include <sys/apparmor.h>
+#include <security/pam_ext.h>
 
 /*
  * here, we make a definition for the externally accessible function
@@ -32,10 +34,17 @@
  */
 
 #define PAM_SM_SESSION
-
 #include <security/pam_modules.h>
 
+#include "pam_apparmor.h"
+
 #define DEBUG 0
+
+static struct config default_config = {
+	.hat_type[0] = eGroupname,
+	.hat_type[1] = eDefault,
+	.hat_type[2] = eNoEntry,
+};
 
 /* --- session management functions (only) --- */
 
@@ -43,7 +52,7 @@ PAM_EXTERN int
 pam_sm_close_session (pam_handle_t *pamh, int flags,
 		      int argc, const char **argv)
 {
-     return PAM_IGNORE;
+	return PAM_IGNORE;
 }
 
 PAM_EXTERN
@@ -55,6 +64,14 @@ int pam_sm_open_session(pam_handle_t *pamh, int flags,
 	const char *user;
 	struct passwd *pw;
 	struct group *gr;
+	struct config *config = NULL;
+	int i;
+
+	if ((retval = get_options(pamh, &config, argc, argv)) != 0)
+		return retval;
+
+	if (!config)
+		config = &default_config;
 
 	/* grab the target user name */
 	retval = pam_get_user(pamh, &user, NULL);
@@ -64,13 +81,13 @@ int pam_sm_open_session(pam_handle_t *pamh, int flags,
 	}
 
 	pw = getpwnam(user);
-	if(!pw) {
+	if (!pw) {
 		pam_syslog(pamh, LOG_ERR, "Can't determine group for user %s\n", user);
 		return PAM_PERM_DENIED;
 	}
 
 	gr = getgrgid(pw->pw_gid);
-	if(!gr || !gr->gr_name) {
+	if (!gr || !gr->gr_name) {
 		pam_syslog(pamh, LOG_ERR, "Can't read info for group %d\n", pw->pw_gid);
 		return PAM_PERM_DENIED;
 	}
@@ -81,10 +98,8 @@ int pam_sm_open_session(pam_handle_t *pamh, int flags,
 		return PAM_PERM_DENIED;
 	}
 
-	/* 
-	 * the magic token needs to be non-zero otherwise, we won't be able 
-	 * to probe for hats
-	 */
+	/* the magic token needs to be non-zero otherwise, we won't be able
+	 * to probe for hats */
 	do {
 		retval = read(fd, (void *) &magic_token, sizeof(magic_token));
 		if (retval < 0) {
@@ -95,50 +110,102 @@ int pam_sm_open_session(pam_handle_t *pamh, int flags,
 
 	close(fd);
 
-	/* change into the group hat */
-	retval = change_hat(gr->gr_name, magic_token);
-	if (retval < 0) {
-		/* failed to change into group hat, so we'll jump back out */
-		retval = change_hat(NULL, magic_token);
-		if (retval == 0) {
-			/* and try to change to the DEFAULT hat instead */
-			retval = change_hat("DEFAULT", magic_token);
-			if (retval < 0) {
-				/* 
-				 * failed to change into default hat, so 
-				 * we'll jump back out
-				 */
-				retval = change_hat(NULL, magic_token);
-				pam_syslog(pamh, LOG_ERR, "Can't change to DEFAULT hat\n");
-				pam_retval = PAM_PERM_DENIED;
-			} else {
+	pam_retval = PAM_SUCCESS;
+	for (i = 0; i < MAX_HAT_TYPES && config->hat_type[i] != eNoEntry; i++) {
+		const char *hat = NULL;
+		switch (config->hat_type[i]) {
+		case eGroupname:
 #if DEBUG
-				pam_syslog(pamh, LOG_DEBUG, "Successfully changed to DEFAULT hat\n");
+			pam_syslog(pamh, LOG_DEBUG, "Using groupname\n");
 #endif
-			}
-		} else {
-			/*
-			 * changing into the group hat and attempting to 
-			 * jump back out both failed.  that most likely 
-			 * means that either apparmor is not loaded or we 
-			 * don't have a profile loaded for this application.
-			 * in this case, we want to allow the pam operation 
-			 * to succeed.
-			 */
+			hat = gr->gr_name;
+			break;
+		case eUsername:
+#if DEBUG
+			pam_syslog(pamh, LOG_DEBUG, "Using username\n");
+#endif
+			hat = user;
+			break;
+		case eDefault:
+#if DEBUG
+			pam_syslog(pamh, LOG_DEBUG, "Using DEFAULT\n");
+#endif
+			hat = "DEFAULT";
+			break;
+		default:
+			pam_syslog(pamh, LOG_ERR, "Unknown value in hat table: %x\n",
+					config->hat_type[i]);
+			goto nodefault;
+			break;
 		}
-	} else {
+
+		retval = change_hat(hat, magic_token);
+		if (retval == 0) {
+			/* success, let's bail */
 #if DEBUG
-		pam_syslog(pamh, LOG_DEBUG, "Successfully changed to %s hat\n", gr->gr_name);
+			pam_syslog(pamh, LOG_DEBUG, "Successfully changed to hat '%s'\n", hat);
 #endif
+			goto out;
+		}
+
+		switch (errno) {
+
+		/* case EPERM: */ /* Can't enable until ECHILD patch gets accepted, and we can
+				   * distinguish between unconfined and confined-but-no-hats */
+		case EINVAL:
+			/* apparmor is not loaded or application is unconfined,
+			 * stop attempting to use change_hat */
+#if DEBUG
+			pam_syslog(pamh, LOG_DEBUG,
+				   "AppArmor not loaded, or application is unconfined\n");
+#endif
+			pam_retval = PAM_SUCCESS;
+			goto out;
+			break;
+		case ECHILD:
+			/* application is confined but has no hats,
+			 * stop attempting to use change_hat */
+			goto nodefault;
+			break;
+		case EPERM: /* Disable when ECHILD patch gets accepted */
+		case EACCES:
+			/* failed to change into attempted hat, so we'll
+			 * jump back out and try the next one */
+			break;
+		default:
+			pam_syslog(pamh, LOG_ERR, "Unknown error occurred changing to %s hat: %s\n",
+					hat, strerror(errno));
+			/* give up? */
+			pam_retval = PAM_SYSTEM_ERR;
+			goto out;
+		}
+
+		retval = change_hat(NULL, magic_token);
+		if (retval != 0) {
+			/* changing into the specific hat and attempting to
+	 		 * jump back out both failed.  that most likely
+	 		 * means that either apparmor is not loaded or we
+	 		 * don't have a profile loaded for this application.
+	 		 * in this case, we want to allow the pam operation
+	 		 * to succeed. */
+			goto out;
+		}
+
 	}
 
-	/*
-	 * zero out the magic token so an attacker wouldn't be able to 
-	 * just grab it out of process memory and instead would need to
-	 * brute force it
-	 */
-	memset(&magic_token, 0, sizeof(magic_token));
+nodefault:
+	/* if we got here, we were unable to change into any of the hats
+	 * we attempted. */
+	pam_syslog(pamh, LOG_ERR, "Can't change to any hat\n");
+	pam_retval = PAM_SESSION_ERR;
 
+out:
+	/* zero out the magic token so an attacker wouldn't be able to
+	 * just grab it out of process memory and instead would need to
+	 * brute force it */
+	memset(&magic_token, 0, sizeof(magic_token));
+	if (config && config != &default_config)
+		free(config);
 	return pam_retval;
 }
 

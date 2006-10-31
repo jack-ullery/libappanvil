@@ -29,7 +29,7 @@ Prereq:       pam
 
 %description
 The pam_apparmor module provides the means for any pam applications that
-call pam_open_session() to automatically perform an AppArmor change_hat 
+call pam_open_session() to automatically perform an AppArmor change_hat
 operation in order to switch to a user-specific security policy.
 
 

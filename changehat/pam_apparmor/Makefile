@@ -26,13 +26,18 @@ Make.rules: $(COMMONDIR)/Make.rules
 	ln -f $(COMMONDIR)/Make.rules .
 endif
 
-EXTRA_CFLAGS=$(CFLAGS) -fPIC -shared -Xlinker -x
+EXTRA_CFLAGS=$(CFLAGS) -fPIC -shared -Wall
+LINK_FLAGS=-Xlinker -x
 LIBS=-lpam -lapparmor
+OBJECTS=${NAME}.o get_options.o
 
 all: $(NAME).so
 
-$(NAME).so: $(NAME).c
-	$(CC) $(EXTRA_CFLAGS) -o $@ $< $(LIBS)
+$(NAME).so: ${OBJECTS}
+	$(CC) $(EXTRA_CFLAGS) $(LINK_FLAGS) -o $@ ${OBJECTS} $(LIBS)
+
+%.o: %.c
+	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
 
 # need some better way of determining this
 DESTDIR=/
