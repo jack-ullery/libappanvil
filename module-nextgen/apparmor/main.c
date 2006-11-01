@@ -295,8 +295,7 @@ static unsigned int aa_file_perm(struct aaprofile *active, const char *name,
 	 * Currently we only allow access if opened O_WRONLY
 	 */
 	if (mask == MAY_WRITE && strncmp(PROCPFX, name, PROCLEN) == 0 &&
-	    (!list_empty(&BASE_PROFILE(active)->sub) ||
-	     PROFILE_COMPLAIN(active)) && aa_taskattr_access(name + PROCLEN))
+	    aa_taskattr_access(name + PROCLEN))
 		goto done;
 
 	mode = 0;
@@ -1595,6 +1594,13 @@ int aa_change_hat(const char *hat_name, u32 hat_magic)
 	/* check to see if an unconfined process is doing a changehat. */
 	if (!__aa_is_confined(sd)) {
 		error = -EPERM;
+		goto out;
+	}
+
+	/* check to see if the confined process has any hats. */
+	if (list_empty(&BASE_PROFILE(sd->active)->sub) &&
+	    !PROFILE_COMPLAIN(sd->active)) {
+		error = -ECHILD;
 		goto out;
 	}
 
