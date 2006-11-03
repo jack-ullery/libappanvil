@@ -57,14 +57,14 @@ its input. It reports when an addition succeeded.
 =item -r, --replace
 
 This flag is required if an AppArmor definition by the same name already
-exists in the kernel, and one wants to replace the definition already
-in the kernel with the definition giving on standard input.
+exists in the kernel; used to replace the definition already
+in the kernel with the definition given on standard input.
 
 =item -R, --remove
 
 This flag is used to remove an AppArmor definition already in the kernel.
 Note that it still requires a complete AppArmor definition as described
-in subdomain.d(5) even though the contents of the definition aren't
+in apparmor.d(5) even though the contents of the definition aren't
 used.
 
 =item -p, --preprocess

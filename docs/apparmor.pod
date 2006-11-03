@@ -39,7 +39,6 @@ SysV initscript, which is used like this:
 	# /etc/init.d/boot.apparmor start
 	# /etc/init.d/boot.apparmor stop
 	# /etc/init.d/boot.apparmor restart
-	# /etc/init.d/boot.apparmor kill
 
 AppArmor can operate in two modes: I<enforcement>, and I<complain or learning>:
 
@@ -56,7 +55,7 @@ policy violation attempts to syslogd.
 I<complain> - Profiles loaded in  C<complain> mode will not enforce policy.  
 Instead, it will report policy violation attempts. This mode is convenient for 
 developing profiles. To manage complain mode for individual profiles the 
-utilities /usr/bin/complain and /usr/bin/enforce can be used. 
+utilities aa-complain(8) and aa-enforce(8) can be used. 
 These utilities take a program name as an argument. 
 
 
@@ -65,7 +64,7 @@ These utilities take a program name as an argument.
 Profiles are traditionally stored in files in F</etc/apparmor.d/>
 under filenames with the convention of replacing the B</> in pathnames
 with B<.> (except for the root B</>) so profiles are easier to manage
-(e.g. the F</usr/sbin/sshd> profile would be named F<usr.sbin.sshd>).
+(e.g. the F</usr/sbin/nscd> profile would be named F<usr.sbin.nscd>).
 
 Profiles are applied to a process at exec(3) time (as seen through the
 execve(2) system call); an already running process cannot be confined.
@@ -98,15 +97,17 @@ A confined process can not call mknod(2) to create character or block devices.
 =head1 ERRORS
 
 When a confined process tries to access a file it does not have permission
-to access, the kernel will report a message to klogd, similar to:
+to access, the kernel will report a message through audit, similar to:
 
-	AppArmor: REJECTING x access to /bin/bash (irssi(2667)
-	  profile /usr/local/bin/irssi active /usr/local/bin/irssi)
-  	AppArmor: REJECTING r access to /home/sarnold (mozilla-bin(3029)
-	  profile /usr/lib/mozilla-1.4/mozilla-bin active
-	  /usr/lib/mozilla-1.4/mozilla-bin)
-	AppArmor: REJECTING rw access to /dev/pts/4 (sh(1721)
-	  profile /usr/bin/crontab active /usr/bin/crontab)
+	audit(1148420912.879:96): REJECTING x access to /bin/uname
+	  (sh(6646) profile /tmp/sh active /tmp/sh)
+
+	audit(1148420912.879:97): REJECTING r access to /bin/uname
+	  (sh(6646) profile /tmp/sh active /tmp/sh)
+
+	audit(1148420944.837:98): REJECTING access to capability
+	  'dac_override' (sh(6641) profile /tmp/sh active /tmp/sh)
+
 
 The permissions requested by the process are immediately after
 REJECTING. The "name" and process id of the running program are reported,
@@ -117,18 +118,21 @@ active (see change_hat(2)) then the profile name is printed for "active".
 
 For confined processes running under a profile that has been loaded in 
 complain mode, enforcement will not take place and the log messages 
-reported to klogd will be of the form:
+reported to audit will be of the form:
 
-	AppArmor: PERMITTING r access to /root/.viminfo (vi(1272) 
-		profile /bin/vim active /bin/vim)
-	AppArmor: PERMITTING w access to /root/.viminfo.tmp (vi(1272) 
-		profile /bin/vim active /bin/vim)
-	AppArmor: PERMITTING wl access to /root/.viminfo (vi(1272) 
-		profile /bin/vim active /bin/vim)
-	AppArmor: PERMITTING rwl access to /root/.viminfo.tmp (vi(1272) 
-		profile /bin/vim active /bin/vim)
-	AppArmor: PERMITTING w access to /root/.viminfo (vi(1272) 
-		profile /bin/vim active /bin/vim)
+	audit(1146868287.904:237): PERMITTING r access to
+	  /etc/apparmor.d/tunables (du(3811) profile /usr/bin/du active
+	  /usr/bin/du)
+
+	audit(1146868287.904:238): PERMITTING r access to /etc/apparmor.d
+	  (du(3811) profile /usr/bin/du active /usr/bin/du)
+
+
+If the userland auditd is not running, the kernel will send audit events
+to klogd; klogd will send the messages to syslog, which will log the
+messages with the KERN facility. Thus, REJECTING and PERMITTING messages
+may go to either F</var/log/audit/audit.log> or F</var/log/messages>,
+depending upon local configuration.
 
 =head1 FILES
 
@@ -138,16 +142,19 @@ reported to klogd will be of the form:
 
 =item F</etc/apparmor.d/>
 
-=item F</usr/share/vim/current/syntax/apparmor.vim>
-
 =item F</lib/apparmor/>
+
+=item F</var/log/audit/audit.log>
+
+=item F</var/log/messages>
 
 =back
 
 =head1 SEE ALSO
 
 apparmor_parser(8), change_hat(2), apparmor.d(5),
-subdomain.conf(5), autodep(1), clean(1), apparmor.vim(5),
+subdomain.conf(5), autodep(1), clean(1),
+auditd(8),
 unconfined(8), enforce(1), complain(1), and
 L<http://forge.novell.com/modules/xfmod/project/?apparmor>.
 

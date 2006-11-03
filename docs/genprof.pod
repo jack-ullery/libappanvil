@@ -54,11 +54,10 @@ Genprof will then:
    - write a mark to the system log
 
    - instruct the user to start the application to
-
      be profiled in another window and exercise its functionality
 
 It then presents the user with two options, (S)can system log for entries 
-to add to profile and (D)one.
+to add to profile and (F)inish.
 
 If the user selects (S)can or hits return, genprof will parse 
 the complain mode logs and iterate through generated violations
@@ -70,7 +69,7 @@ the updated profiles in complain mode and again prompt the user for (S)can and
 (D)one. This cycle can then be repeated as neccesary until all application 
 functionality has been exercised without generating access violations.
 
-When the user eventually hits (D)one, genprof will set the main profile,
+When the user eventually hits (F)inish, genprof will set the main profile,
 and any other profiles that were generated, into enforce mode and exit.
 
 =head1 BUGS
