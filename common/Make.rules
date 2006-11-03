@@ -24,8 +24,8 @@
 #     Make.rules files that already exist in the individual application
 #     directories
 
-DISTRIBUTION=Novell AppArmor
-VERSION=2.0
+DISTRIBUTION=AppArmor
+VERSION=2.0.1
 
 # OVERRIDABLE variables
 # Set these variables before including Make.rules to change its behavior
