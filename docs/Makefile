@@ -25,12 +25,12 @@ COMMONDIR:=$(strip $(shell if [ -d "../common/" ] ; then \
                    fi))
 all:
 
-include Make.rules
+include common/Make.rules
 
 COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
 ifeq ($(COMMONDIR_EXISTS), true)
-Make.rules: ${COMMONDIR}/Make.rules
-	ln -f ${COMMONDIR}/Make.rules .
+common/Make.rules: ${COMMONDIR}/Make.rules
+	ln -sf ${COMMONDIR} .
 endif
 
 POD2MAN				= /usr/bin/pod2man
