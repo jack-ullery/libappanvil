@@ -83,6 +83,9 @@ REPO_VERSION=$(shell if [ -x /usr/bin/svn ] ; then \
 REPO_URL=$(shell if [ -x /usr/bin/svn ] ; then \
 			/usr/bin/svn info . 2> /dev/null | grep "^URL:" | sed "s/^URL: //" ; \
 		 fi)
+COMMON_REPO_URL=$(shell if [ -x /usr/bin/svn ] ; then \
+			/usr/bin/svn info $(COMMONDIR)  2> /dev/null | grep "^URL:" | sed "s/^URL: //" ; \
+		 fi)
 
 ifdef EXTERNAL_PACKAGE
 RPMARG+=--define "_sourcedir $(shell pwd)"
@@ -94,7 +97,7 @@ endif
 RELEASE = $(shell rpm -q --specfile --define "_sourcedir ." ${RPMARG} --qf "%{RELEASE}" ${SPECFILE})
 RELEASE_DIR	= $(NAME)-$(VERSION)
 TARBALL		= $(NAME)-$(VERSION)-${REPO_VERSION}.tar.gz
-TAR		= /bin/tar czvp --exclude .svn --exclude CVS --exclude .cvsignore --exclude ${TARBALL} --exclude ${RELEASE_DIR}/${RELEASE_DIR}  $(shell test -f ${NAME}.exclude && echo "-X ${NAME}.exclude")
+TAR		= /bin/tar czvp -h --exclude .svn --exclude CVS --exclude .cvsignore --exclude ${TARBALL} --exclude ${RELEASE_DIR}/${RELEASE_DIR}  $(shell test -f ${NAME}.exclude && echo "-X ${NAME}.exclude")
 LDCONFIG	= /sbin/ldconfig
 
 CVSPKG_VERSION=$(shell rpm -q --specfile --define "_sourcedir ." ${RPMARG} ${SPECFILE} | head -1 | tr "." "_")
@@ -146,6 +149,7 @@ tarball: clean $(TARBALL)
 dist: clean $(SPECFILE)
 	-rm -rf $(RELEASE_DIR)
 	svn export $(REPO_URL) $(RELEASE_DIR)
+	svn export $(COMMON_REPO_URL) $(RELEASE_DIR)/common
 	$(TAR) -f $(TARBALL) $(RELEASE_DIR)
 	rm -rf $(RELEASE_DIR)
 

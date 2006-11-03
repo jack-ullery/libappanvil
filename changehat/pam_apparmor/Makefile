@@ -17,13 +17,14 @@
 NAME=pam_apparmor
 all:
 COMMONDIR=../../common/
+MAKE_RULES=common/Make.rules
 
-include Make.rules
+include ${MAKE_RULES}
 
 COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
 ifeq ($(COMMONDIR_EXISTS), true)
-Make.rules: $(COMMONDIR)/Make.rules 
-	ln -f $(COMMONDIR)/Make.rules .
+common/Make.rules: $(COMMONDIR)/Make.rules
+	ln -sf $(COMMONDIR) .
 endif
 
 EXTRA_CFLAGS=$(CFLAGS) -fPIC -shared -Wall
@@ -44,12 +45,12 @@ DESTDIR=/
 SECDIR=${DESTDIR}/lib/security
 
 .PHONY: install
-install: 
+install:
 	install -m 755 -d $(SECDIR)
 	install -m 555 $(NAME).so $(SECDIR)/
 	
 .PHONY: clean
-clean: Make.rules
+clean: ${MAKE_RULES}
 	rm -f core core.* *.so *.o *.s *.a *~
 	rm -f ${NAME}-*.tar.gz
 
