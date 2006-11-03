@@ -97,13 +97,13 @@
   # Note that mod_perl, mod_php, mod_python, etc, allows in-apache
   # execution of content regardless of 'x' permissions, as no exec(2)
   # takes place to perform a domain change.
-  
+
   # suexec execution of CGIs will require appropriate permissions
   /usr/sbin/suexec2 mixr,
-  
+
   # Allow logging
   /var/log/apache2/** rwl,
-  
+
   # Allow any CGIs in user directories to run, inheriting the apache
   # profile: 
   # /home/*/public_html/**             mixr,
@@ -111,11 +111,11 @@
   # providing neccesary access in this file OR in URI-specific hats, or
   # hats in the <VHost>, <Location>, or <Directory> directives. Please
   # see the user's guide or mod_apparmor(5) for more information.
-  
+
   # Allow site-wide CGIs to run, inheriting the apache profile:
   # /srv/www/cgi-bin/**        mixr,
   # /var/www/cgi-bin/**        mixr,
-  
+
   @{HOME}/public_html                r,
   @{HOME}/public_html/**             r,
   # Red Hat locations
@@ -130,7 +130,7 @@
   /srv/www/vhosts/**                 r,
   # SuSE location of the apache manual + error pages
   /usr/share/apache2/**              r,
-  
+
   # php session state
   /var/lib/php/sess_*                rwl,
 
@@ -148,13 +148,13 @@
     # Note that mod_perl, mod_php, mod_python, etc, allows in-apache
     # execution of content regardless of 'x' permissions, as no exec(2)
     # takes place to perform a domain change.
-    
+
     # suexec execution of CGIs will require appropriate permissions
     /usr/sbin/suexec2 mixr,
-    
+
     # Allow logging
     /var/log/apache2/** rwl,
-    
+
     # Allow any CGIs in user directories to run, inheriting the apache
     # profile: 
     # /home/*/public_html/**             mixr,
@@ -162,11 +162,11 @@
     # providing neccesary access in this file OR in URI-specific hats, or
     # hats in the <VHost>, <Location>, or <Directory> directives. Please
     # see the user's guide or mod_apparmor(5) for more information.
-    
+
     # Allow site-wide CGIs to run, inheriting the apache profile:
     # /srv/www/cgi-bin/**        mixr,
     # /var/www/cgi-bin/**        mixr,
-    
+
     @{HOME}/public_html                r,
     @{HOME}/public_html/**             r,
     # Red Hat locations
@@ -181,7 +181,7 @@
     /srv/www/vhosts/**                 r,
     # SuSE location of the apache manual + error pages
     /usr/share/apache2/**              r,
-    
+
     # php session state
     /var/lib/php/sess_*                rwl,
   }

@@ -78,7 +78,7 @@
 #
   ^EXEC {
     #include <abstractions/base>
-  
+
     /bin/ash Ux,
     /bin/bash Ux,
     /bin/bash2 Ux,
@@ -100,7 +100,7 @@
   ^PRIVSEP {
     #include <abstractions/base>
     #include <abstractions/nameservice>
-  
+
     capability sys_chroot,
     capability setuid,
     capability setgid,
@@ -118,12 +118,12 @@
     #include <abstractions/base>
     #include <abstractions/nameservice>
     #include <abstractions/wutmp>
-  
+
 
     capability setuid,
     capability setgid,
     capability chown,
-  
+
     @{HOME}/.ssh/authorized_keys{,2}         r,
     /dev/ptmx rw,
     /dev/pts/[0-9]* rw,
@@ -138,7 +138,7 @@
 #  /dev/pts/[0-9]*                                              rw,
   }
 
-# 
+#
 # subprofile for post-authentication period until the user's shell is spawned
 #
   ^AUTHENTICATED {
@@ -146,11 +146,11 @@
     #include <abstractions/consoles>
     #include <abstractions/nameservice>
     #include <abstractions/wutmp>
-  
+
     capability sys_tty_config,
     capability setgid,
     capability setuid,
-  
+
     /dev/log  w,
     /dev/ptmx rw,
     /etc/default/passwd r,

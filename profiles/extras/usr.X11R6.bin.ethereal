@@ -1,4 +1,4 @@
-# $Id:$
+# $Id$
 # vim:syntax=apparmor
 # Last Modified: Thu Aug 25 13:37:56 2005
 # ------------------------------------------------------------------
@@ -22,7 +22,7 @@
   #include <abstractions/gnome>
   #include <abstractions/user-write>
   #include <abstractions/X>
-  
+
   capability net_raw,
 
   /etc/ethers r,
