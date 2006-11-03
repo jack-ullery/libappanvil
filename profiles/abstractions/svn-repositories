@@ -12,7 +12,7 @@
   # This little snippet should abstract the read/write access to a repository.
   # it is intended to be included in profiles for svnserve/apache2 and maybe
   # some repository viewers like trac/viewvc
-  
+
   # no hooks exec by default; please define whatever you need explicitely.
 
   /srv/svn/**/conf/* r,
