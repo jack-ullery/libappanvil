@@ -52,5 +52,5 @@ install:
 .PHONY: clean
 clean: ${MAKE_RULES}
 	rm -f core core.* *.so *.o *.s *.a *~
-	rm -f ${NAME}-*.tar.gz
+	rm -f ${NAME}-*.tar.gz Make.rules
 
