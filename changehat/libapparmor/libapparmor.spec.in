@@ -36,7 +36,7 @@
 Name: libapparmor
 Summary: Library to provide key AppArmor symbols
 Version: @@immunix_version@@
-Release: 6
+Release: @@repo_version@@
 %if %distro == "suse"
 Group: System/Libraries
 %else

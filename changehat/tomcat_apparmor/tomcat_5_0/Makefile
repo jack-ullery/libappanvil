@@ -18,27 +18,24 @@ NAME 		= tomcat_apparmor
 all:
 COMMONDIR=../../../common/
 
-include Make.rules
+include common/Make.rules
 
 COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
 ifeq ($(COMMONDIR_EXISTS), true)
-Make.rules: $(COMMONDIR)/Make.rules 
-	ln -f $(COMMONDIR)/Make.rules .
-
-po/Make.rules: $(COMMONDIR)/Make-po.rules
-	make -C po Make.rules
+common/Make.rules: $(COMMONDIR)/Make.rules
+	ln -sf $(COMMONDIR) .
 endif
 
 LIB		= lib
 CATALINA_HOME 	= /usr/share/tomcat5
 
 # By default build 1.4 bytecode
-all: 
+all:
 	ant -Dtarget=1.4 jar jni_so
 
 clean:
 	ant clean
-	rm -f tomcat_apparmor.spec tomcat_apparmor-*.tar.gz
+	rm -f tomcat_apparmor.spec ${NAME}-*.tar.gz Make.rules
 
 install: $(SPECFILE)
 	 ant  -Dversion=$(VERSION) -Drelease=$(RELEASE) -Dcatalina_home=${CATALINA_HOME} -Dinstall_lib=${LIB} install_jar install_jni

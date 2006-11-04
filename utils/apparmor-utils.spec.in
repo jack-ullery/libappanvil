@@ -25,7 +25,7 @@
 Summary: AppArmor userlevel utilities that are useful in creating AppArmor profiles.
 Name: apparmor-utils
 Version: @@immunix_version@@
-Release: 7
+Release: @@repo_version@@
 Group: Productivity/Security
 Source0: %{name}-%{version}-@@repo_version@@.tar.gz
 License: GPL

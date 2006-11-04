@@ -41,5 +41,4 @@ install: ${TARGET_MOS}
 
 .PHONY: clean
 clean:
-	rm -f *.mo
-
+	rm -f *.mo Make.rules

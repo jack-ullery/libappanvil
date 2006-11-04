@@ -18,12 +18,12 @@ NAME:=apache2-mod_apparmor
 all:
 COMMONDIR=../../common/
 
-include Make.rules
+include common/Make.rules
 
 COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
 ifeq ($(COMMONDIR_EXISTS), true)
-Make.rules: $(COMMONDIR)/Make.rules
-	ln -f $(COMMONDIR)/Make.rules .
+common/Make.rules: $(COMMONDIR)/Make.rules
+	ln -sf $(COMMONDIR) .
 endif
 
 TARGET:=mod_apparmor.so
@@ -55,5 +55,5 @@ install: ${TARGET}
 
 .PHONY: clean
 clean:
-	rm -rf .libs 
-	rm -f ${NAME}*.tar.gz *.la *.lo *.so *.o *.slo
+	rm -rf .libs
+	rm -f ${NAME}*.tar.gz *.la *.lo *.so *.o *.slo Make.rules

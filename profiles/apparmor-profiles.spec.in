@@ -24,7 +24,7 @@
 Summary: AppArmor profiles 
 Name: apparmor-profiles
 Version: @@immunix_version@@
-Release: 12
+Release: @@repo_version@@
 Group: Productivity/Security
 Source0: %{name}-%{version}-@@repo_version@@.tar.gz
 License: GPL

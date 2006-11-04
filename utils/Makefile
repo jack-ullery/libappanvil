@@ -18,15 +18,12 @@ NAME 		= apparmor-utils
 all:
 COMMONDIR=../common/
 
-include Make.rules
+include common/Make.rules
 
 COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
 ifeq ($(COMMONDIR_EXISTS), true)
-Make.rules: $(COMMONDIR)/Make.rules 
-	ln -f $(COMMONDIR)/Make.rules .
-
-po/Make.rules: $(COMMONDIR)/Make-po.rules
-	make -C po Make.rules
+common/Make.rules: $(COMMONDIR)/Make.rules
+	ln -sf $(COMMONDIR) .
 endif
 
 TOOLS = genprof logprof autodep audit complain enforce \
@@ -42,7 +39,7 @@ po/${NAME}.pot: ${TOOLS}
 	make -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} SubDomain.pm Reports.pm"
 
 .PHONY: install
-install: 
+install:
 	install -d ${CONFDIR}
 	install -m 644 logprof.conf severity.db ${CONFDIR}
 	install -d ${BINDIR}
@@ -61,8 +58,8 @@ install:
 	mkdir -m 0700 -p $(DESTDIR)/var/log/apparmor
 	
 .PHONY: clean
-clean: po/Make.rules
-	rm -f core core.* *.o *.s *.a *~ 
-	rm -f $(NAME)-$(VERSION)-*.tar.gz
+clean:
+	rm -f core core.* *.o *.s *.a *~
+	rm -f $(NAME)-$(VERSION)-*.tar.gz Make.rules
 	make -C po clean
 

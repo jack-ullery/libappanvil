@@ -24,12 +24,12 @@ COMMONDIR:=$(strip $(shell if [ -d "../common/" ] ; then \
 	             echo "/common_dir_not_found" ; \
 	     fi))
 
-include Make.rules
+include common/Make.rules
 
 COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
 ifeq ($(COMMONDIR_EXISTS), true)
-Make.rules: $(COMMONDIR)/Make.rules
-	ln -f $(COMMONDIR)/Make.rules .
+common/Make.rules: $(COMMONDIR)/Make.rules
+	ln -sf $(COMMONDIR) .
 endif
 
 SO_VERS		= 1
@@ -113,5 +113,5 @@ install: $(SPECFILE) $(TARGETS) $(OLDTARGET)
 
 .PHONY: clean
 clean:
-	rm -f *.o $(TARGET)*.so* ${TARGETS} ${OLDTARGET}
+	rm -f *.o $(TARGET)*.so* ${TARGETS} ${OLDTARGET} Make.rules
 	rm -f ${NAME}-${VERSION}*.tar.gz ${TESTS} $(NAME)-*.tgz ${SPECFILE}

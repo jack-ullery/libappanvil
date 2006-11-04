@@ -24,12 +24,12 @@ NAME=apparmor-profiles
 ALL:
 COMMONDIR=../common/
 
-include Make.rules
+include common/Make.rules
 
 COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
 ifeq ($(COMMONDIR_EXISTS), true)
-Make.rules: $(COMMONDIR)/Make.rules
-	ln -f $(COMMONDIR)/Make.rules
+common/Make.rules: $(COMMONDIR)/Make.rules
+	ln -sf $(COMMONDIR) .
 endif
 
 DESTDIR=/
@@ -51,7 +51,7 @@ install:
 
 .PHONY: clean
 clean:
-	-rm -f $(NAME)-$(VERSION)*.tar.gz
+	-rm -f $(NAME)-$(VERSION)*.tar.gz Make.rules
 
 ifndef VERBOSE
   Q=@

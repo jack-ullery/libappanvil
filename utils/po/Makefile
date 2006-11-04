@@ -20,15 +20,8 @@ all:
 # made/installed.
 LANGS=en_US de_DE es_ES fr_FR hu_HU it_IT ja_JP nb_NO pt_BR pt_PT zh_CN zh_TW
 
-COMMONDIR=../../common/
-
-include Make.rules
+include ../common/Make-po.rules
+../common/Make-po.rules:
+	make -C .. common/Make.rules
 
 XGETTEXT_ARGS+=--language=perl
-
-COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
-ifeq ($(COMMONDIR_EXISTS), true)
-Make.rules: $(COMMONDIR)/Make-po.rules
-	ln -f $(COMMONDIR)/Make-po.rules $@
-endif
-
