@@ -67,7 +67,7 @@ release: $(TARBALL)
 
 .PHONY: clean
 clean:
-	-rm -f $(GENERATED) $(TARBALL) $(NAME)-$(VERSION)*.tar.gz
+	-rm -f $(GENERATED) $(TARBALL) $(NAME)-$(VERSION)*.tar.gz Make.rules
 
 # I'm pretty sure the following could be in a foreach loop, but I'm too
 # lazy to code it up.
