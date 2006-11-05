@@ -1,7 +1,8 @@
 # $Id$
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2002-2006 Novell/SUSE
+#    Copyright (C) 2006 Novell/SUSE
+#    Copyright (C) 2006 Christian Boltz
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -11,17 +12,21 @@
 
 #include <tunables/global>
 
-/usr/lib/postfix/virtual {
+/sbin/syslog-ng {
   #include <abstractions/base>
+  #include <abstractions/consoles>
   #include <abstractions/nameservice>
-  #include <abstractions/kerberosclient>
-  #include <program-chunks/postfix-common>
 
-  capability setgid,
-  capability setuid,
+  capability chown,
+  capability dac_override,
+  capability fsetid,
 
-  /usr/lib/postfix/virtual rmix,
-  /var/spool/postfix/active/* rw,
-  /var/spool/postfix/pid/unix.virtual rw,
-  /var/spool/postfix/private/bounce w,
+  /dev/tty10 w,
+  /dev/xconsole rw,
+  /etc/syslog-ng/* r,
+  /sbin/syslog-ng mr,
+  /var/lib/named/dev/log w,
+  /var/log/* w,
+  /var/run/syslog-ng.pid w,
 }
+
