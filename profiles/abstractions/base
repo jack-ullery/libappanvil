@@ -39,13 +39,11 @@
   # ld.so.cache and ld are used to load shared libraries; they are best
   # available everywhere
   /etc/ld.so.cache               r,
-  # 'px' requires a profile to be available for the transition to
-  # function; without a loaded profile, the kernel will fail the exec.
-  /lib/ld-*.so                   mrPx,
-  /lib64/ld-*.so                 mrPx,
-  /lib/ld64-*.so                 mrPx,
-  /lib64/ld64-*.so               mrPx,
-  /opt/*-linux-uclibc/lib/ld-uClibc*so* mrPx,
+  /lib/ld-*.so                   mrix,
+  /lib64/ld-*.so                 mrix,
+  /lib/ld64-*.so                 mrix,
+  /lib64/ld64-*.so               mrix,
+  /opt/*-linux-uclibc/lib/ld-uClibc*so* mrix,
 
   # we might as well allow everything to use common libraries
   /lib/lib*.so*                  mr,

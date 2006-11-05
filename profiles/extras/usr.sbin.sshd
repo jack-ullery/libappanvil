@@ -38,8 +38,6 @@
   /etc/hosts.deny r,
   /etc/modules.conf r,
   /etc/ssh/* r,
-  /lib64/ld-*.so Px,
-  /lib/ld-*.so Px,
   /usr/sbin/sshd mrix,
   /var/run w,
   /var/run/sshd{,.init}.pid wl,
