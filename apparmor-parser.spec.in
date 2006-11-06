@@ -155,6 +155,8 @@ fi
 %endif
 
 %changelog
+* Mon Nov  6 2006 - sbeattie@suse.de
+- /lib/lsb/init-functions provides killproc(), use it instead.
 * Sat Oct 28 2006 - olh@suse.de
 - boot.apparmor should start after boot.localfs (#215156)
 * Thu Oct 12 2006 - sbeattie@suse.de
