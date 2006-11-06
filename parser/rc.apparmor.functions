@@ -335,7 +335,7 @@ function load_module() {
 	fi
 }	
 
-function start_sd_event() {
+function start_aa_event() {
 	if [ -x "$AA_EV_BIN" -a "${APPARMOR_ENABLE_AAEVENTD}" = "yes" ] ; then
 		sd_action "Starting AppArmor Event daemon" startproc -f -p $AA_EV_PIDFILE $AA_EV_BIN -p $AA_EV_PIDFILE
 	elif [ -x "$SD_EV_BIN" -a "${APPARMOR_ENABLE_AAEVENTD}" = "yes" ] ; then
@@ -343,12 +343,12 @@ function start_sd_event() {
 	fi
 }
 
-function stop_sd_event() {
+function stop_aa_event() {
 	if [ -x "$AA_EV_BIN" -a -f "$AA_EV_PIDFILE" ] ; then
-		sd_action "Shutting down AppArmor Event daemon" /sbin/killproc -G -p $AA_EV_PIDFILE -INT $AA_EV_BIN
+		sd_action "Shutting down AppArmor Event daemon" killproc -G -p $AA_EV_PIDFILE -INT $AA_EV_BIN
 	fi
 	if [ -f "$SD_EV_PIDFILE" ] ; then
-		sd_action "Shutting down AppArmor Event daemon" /sbin/killproc -G -p $SD_EV_PIDFILE -INT $SD_EV_BIN
+		sd_action "Shutting down AppArmor Event daemon" killproc -G -p $SD_EV_PIDFILE -INT $SD_EV_BIN
 	fi
 }
 
@@ -419,13 +419,13 @@ function remove_profiles() {
 }
 
 function subdomain_stop() {
-	stop_sd_event
+	stop_aa_event
 	echo -n "Unloading AppArmor profiles "
 	remove_profiles
 }
 
 function subdomain_kill() {
-	stop_sd_event
+	stop_aa_event
 	unmount_subdomainfs
 	if grep -qE "^apparmor[[:space:]]" /proc/modules ; then
 		MODULE=apparmor
