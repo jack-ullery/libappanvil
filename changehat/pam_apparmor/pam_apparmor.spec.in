@@ -56,10 +56,18 @@ make install DESTDIR=${RPM_BUILD_ROOT} SECDIR=${RPM_BUILD_ROOT}/%{_lib}/security
 %attr(555,root,root) /%{_lib}/security/pam_apparmor.so
 
 %changelog -n pam_apparmor
+* Tue Oct 31 2006 Jesse Michael <jmichael@suse.de>
+- Add debug option
+* Tue Oct 31 2006 Steve Beattie <sbeattie@suse.de>
+- Add configuration options to order attempted hat changes
 * Wed Oct 25 2006 Steve Beattie <sbeattie@suse.de>
 - remove auto-editing of pam's common-session
 - honor RPM's CFLAGS when building
 - add license (same as Linux PAM package).
+* Thu Sep 14 2006 Jesse Michael <jmichael@suse.de>
+- header comment was incorrect
+- use pam_get_user() instead of pam_get_item()
+- fix read from urandom if 0
 * Fri Jan 13 2006 Steve Beattie <sbeattie@suse.de>
 - Add svn repo number to tarball
 * Fri Jan 13 2006 Jesse Michael <jmichael@suse.de>
