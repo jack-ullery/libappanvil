@@ -152,6 +152,8 @@ fi
 %changelog
 * Wed Nov  8 2006 - sbeattie@suse.de
 - Use kernel's capability defines rather than libcap
+* Wed Nov  8 2006 - ddrewelow@suse.de
+- pull translation updates from lcn
 * Wed Nov  8 2006 - jjohansen@suse.de
 - Add audit_write and audit_control cpapabilities (#218961)
 * Mon Nov  6 2006 - sbeattie@suse.de
