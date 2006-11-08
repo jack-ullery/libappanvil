@@ -155,7 +155,7 @@ fi
 * Wed Nov  8 2006 - ddrewelow@suse.de
 - pull translation updates from lcn
 * Wed Nov  8 2006 - jjohansen@suse.de
-- Add audit_write and audit_control cpapabilities (#218961)
+- Add audit_write and audit_control capabilities (#218961)
 * Mon Nov  6 2006 - sbeattie@suse.de
 - /lib/lsb/init-functions provides killproc(), use it instead.
 * Sat Oct 28 2006 - olh@suse.de
