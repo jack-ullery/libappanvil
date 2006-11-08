@@ -38,11 +38,6 @@ Prereq: %{insserv_prereq} aaa_base
 %if %{distro} == "rhel4"
 Prereq: apparmor-master
 %endif
-%if %{suse_version}%{!?suse_version:1} > 1000
-BuildRequires: libcap-devel
-%else
-BuildRequires: libcap
-%endif
 Obsoletes: subdomain_parser subdomain-parser
 Obsoletes: subdomain-parser-demo subdomain-parser-common subdomain-leaf-cert
 Obsoletes: libimnxcert
@@ -155,6 +150,10 @@ fi
 %endif
 
 %changelog
+* Wed Nov  8 2006 - sbeattie@suse.de
+- Use kernel's capability defines rather than libcap
+* Wed Nov  8 2006 - jjohansen@suse.de
+- Add audit_write and audit_control cpapabilities (#218961)
 * Mon Nov  6 2006 - sbeattie@suse.de
 - /lib/lsb/init-functions provides killproc(), use it instead.
 * Sat Oct 28 2006 - olh@suse.de

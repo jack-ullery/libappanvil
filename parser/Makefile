@@ -61,8 +61,6 @@ ifdef INCLUDEDIR
 	CFLAGS += -I$(INCLUDEDIR)
 endif
 
-EXTRA_CFLAGS+=$(shell [ -e /usr/include/sys/capability.h ] || echo -DNOLIBCAP)
-
 # Internationalization support. Define a package and a LOCALEDIR
 EXTRA_CFLAGS+=-DPACKAGE=\"${NAME}\" -DLOCALEDIR=\"${LOCALEDIR}\"
 
