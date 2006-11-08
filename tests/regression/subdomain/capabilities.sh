@@ -49,7 +49,7 @@ CAPABILITIES="chown dac_override dac_read_search fowner fsetid kill \
 	      net_broadcast net_admin net_raw ipc_lock ipc_owner \
 	      sys_module sys_rawio sys_chroot sys_ptrace sys_pacct \
 	      sys_admin sys_boot sys_nice sys_resource sys_time \
-	      sys_tty_config mknod lease"
+	      sys_tty_config mknod lease audit_write audit_control"
 
 # defines which test+capability pairs should succeed.
 syscall_reboot_sys_boot=TRUE
