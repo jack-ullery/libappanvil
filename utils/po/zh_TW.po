@@ -1,162 +1,44 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-utils 1.2\n"
+"Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2005-04-01 14:07-0800\n"
-"PO-Revision-Date: 2005-04-14 15:24+8\n"
+"POT-Creation-Date: 2006-09-22 10:57-0600\n"
+"PO-Revision-Date: 2006-11-02 14:23\n"
 "Last-Translator: Novell Language <language@novell.com>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "Setting %s to complain mode."
-msgstr "設定 %s 為抱怨 (complain) 模式。"
+#: ../genprof:55
+msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
+msgstr "子領域似乎未啟動。請啟用子領用並再試一次。"
 
-msgid "Setting %s to enforce mode."
-msgstr "設定 %s 為強迫  (enforce)  模式。"
+#: ../genprof:69
+msgid "Please enter the program to profile: "
+msgstr "請輸入您的支援金鑰"
 
-msgid "Profile"
-msgstr "設定檔 "
+#: ../genprof:87
+#, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
+msgstr "系統路徑清單中找不到 %s。若應用程式的名稱正確，請在其他視窗執行 'which %s'，以找出完全合格的路徑。"
 
-msgid "Default Hat"
-msgstr "預設 Hat"
+#: ../genprof:89 ../autodep:117 ../audit:112 ../complain:112 ../enforce:111
+#, perl-format
+msgid "%s does not exist, please double-check the path."
+msgstr "%s 不存在，請仔細檢查路徑。"
 
-msgid "Requested Hat"
-msgstr "要求的 Hat"
+#: ../genprof:100 ../autodep:99
+#, perl-format
+msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
+msgstr "目前已將 %s 標示為本身不會有設定檔的程式。通常，以這種方式標示程式後，若還為其建立設定檔，就有可能會破壞系統其他部分。若您清楚知道您正在做什麼，並確定要為此程式建立設定檔，請在 /etc/apparmor/logprof.conf 的「修飾語」區段中，編輯對應的項目。"
 
-msgid "Abandoning all changes."
-msgstr "正在放棄所有變更。"
-
-msgid "Saving all changes."
-msgstr "正在儲存所有變更"
-
-msgid "Execute"
-msgstr "執行"
-
-msgid "(I)nherit"
-msgstr "繼承(I)"
-
-msgid "(P)rofile"
-msgstr "(P)rofile"
-
-msgid "(U)nconfined"
-msgstr "未設限(U)"
-
-msgid "(D)eny"
-msgstr "(D)eny"
-
-msgid "Abo(r)t"
-msgstr "中止(R)"
-
-msgid "(F)inish"
-msgstr "(F)inish"
-
-msgid "Reading log entries from %s."
-msgstr "正在讀取 %s 的記錄項目。"
-
-msgid "Updating subdomain profiles in %s."
-msgstr "更新 %s 中的子領域設定檔。"
-
-msgid "Complain-mode changes:"
-msgstr "抱怨模式變更："
-
-msgid "Enforce-mode changes:"
-msgstr "強迫模式變更："
-
-msgid "Invalid mode found: %s"
-msgstr "找到的無效模式：%s"
-
-msgid "Capability"
-msgstr "功能"
-
-msgid "(A)llow"
-msgstr "允許(A)"
-
-msgid "Adding capability %s to profile."
-msgstr "正在將功能 %s 新增到設定檔。"
-
-msgid "Denying capability %s to profile."
-msgstr "正在拒絕設定檔的 %s 功能。"
-
-msgid "Path"
-msgstr "路徑"
-
-msgid "Old Mode"
-msgstr "舊模式"
-
-msgid "New Mode"
-msgstr "新模式"
-
-msgid "(N)ew"
-msgstr "新(N)"
-
-msgid "(G)lob"
-msgstr "(G)lob"
-
-msgid "Glob w/(E)xt"
-msgstr "Glob w/(E)xt"
-
-msgid "Adding #include <%s> to profile."
-msgstr "正在將 #include <%s> 新增到設定檔 。"
-
-msgid "Deleted %s previous matching profile entries."
-msgstr "已刪除 %s 個之前符合設定檔的項目。"
-
-msgid "Adding %s %s to profile."
-msgstr "正在將 %s %s新增到設定檔。"
-
-msgid "Enter new path: "
-msgstr "輸入新路徑："
-
-msgid "The specified path does not match this log entry:"
-msgstr "指定的路徑與此記錄項目不符。"
-
-msgid "Log Entry"
-msgstr "記錄項目"
-
-msgid "Entered Path"
-msgstr "輸入的路徑"
-
-msgid "Do you really want to use this path?"
-msgstr "您確定要使用這個路徑？"
-
-msgid "Profile %s contains invalid regexp %s."
-msgstr "設定檔 %s 包含無效的 regexp %s。"
-
-msgid "Writing updated profile for %s."
-msgstr "正在為 %s 寫入更新的設定檔。"
-
-msgid "&Browse"
-msgstr "瀏覽(&B)"
-
-msgid "&Create Profile"
-msgstr "建立設定檔(&C)"
-
-msgid "&Yes"
-msgstr "是(&Y)"
-
-msgid "&No"
-msgstr "否(&N)"
-
-msgid "&Abort"
-msgstr "中止(&A)"
-
-msgid "&Back"
-msgstr "上一步(&B)"
-
-msgid "(Y)es"
-msgstr "是(&Y)"
-
-msgid "(N)o"
-msgstr "否(N)"
-
-msgid "Please start the application to be profiled in \n"
+#: ../genprof:121
+msgid ""
+"Please start the application to be profiled in \n"
 "another window and exercise its functionality now.\n"
 "\n"
 "Once completed, select the \"Scan\" button below in \n"
@@ -165,25 +47,437 @@ msgid "Please start the application to be profiled in \n"
 "For each AppArmor event, you will be given the  \n"
 "opportunity to choose whether the access should be  \n"
 "allowed or denied."
-msgstr "請立刻在其他視窗啟動要設定的應用程式\n並練習使用其功能。\n\n完成之後，請依據選擇下方的 Scan 按鈕\n以掃瞄 AppArmor 事件的系統記錄。\n\n您可以針對每個 AppArmor 事件\n選擇是否要允許或拒絕\n存取。"
+msgstr ""
+"請啟動即將在其他視窗顯示的應用程式\n"
+"並立即執行其功能。\n"
+"\n"
+" 完成後，請選取下方的「掃描」按鈕，\n"
+"掃描 AppArmor 事件的系統記錄。\n"
+" \n"
+"您可以針對每個 AppArmor 事件\n"
+"選擇是否要允許或拒絕\n"
+"存取。"
 
+#: ../genprof:140
+msgid "Profiling"
+msgstr "正在查探"
+
+#: ../genprof:167
+msgid "Reloaded SubDomain profiles in enforce mode."
+msgstr "以強迫模式重新載入子領域設定檔。"
+
+#: ../genprof:168
+#, perl-format
+msgid "Finished generating profile for %s."
+msgstr "已完成產生 %s 設定檔。"
+
+#: ../genprof:172
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
+msgstr "使用率：%s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
+
+#: ../logprof:75
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
+msgstr "使用率：%s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
+
+#: ../autodep:64
+#, perl-format
+msgid "Can't find subdomain profiles in %s."
+msgstr "在 %s 內找不到子領域設定檔。"
+
+#: ../autodep:75
+msgid "Please enter the program to create a profile for: "
+msgstr "請進入程式以建立設定檔："
+
+#: ../autodep:107
+#, perl-format
+msgid "Profile for %s already exists - skipping."
+msgstr "已有提供者名稱 %s。"
+
+#: ../autodep:114 ../audit:109 ../complain:109 ../enforce:108
+#, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
+msgstr "在系統路徑清單中找不到 %s。如果應用程式的名稱不正確，請以具有正確 PATH 環境設定的使用者身份執行 'which %s' 以尋找完整檔案路徑。"
+
+#: ../audit:102
+#, perl-format
+msgid "Setting %s to audit mode."
+msgstr "設定 %s 為稽核模式。"
+
+#: ../audit:121
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
+msgstr "使用率：%s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
+
+#: ../complain:67
+msgid "Please enter the program to switch to complain mode: "
+msgstr "請進入程式以切換至抱怨模式："
+
+#: ../complain:102 ../SubDomain.pm:426
+#, perl-format
+msgid "Setting %s to complain mode."
+msgstr "設定 %s 為抱怨 (complain) 模式。"
+
+#: ../complain:121
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
+msgstr "使用率：%s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
+
+#: ../enforce:67
+msgid "Please enter the program to switch to enforce mode: "
+msgstr "請進入程式以切換至強制模式。"
+
+#: ../enforce:101 ../SubDomain.pm:440
+#, perl-format
+msgid "Setting %s to enforce mode."
+msgstr "將 %s 設定為強制執行模式"
+
+#: ../enforce:120
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
+msgstr "使用率：%s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
+
+#: ../unconfined:51
+#, perl-format
+msgid "Usage: %s [ --paranoid ]\n"
+msgstr "使用率：%s [ --paranoid ]\n"
+
+#: ../unconfined:57
+msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
+msgstr "子領域似乎未啟動。請啟用子領用並再試一次。"
+
+#: ../unconfined:61
+msgid "Can't read /proc\n"
+msgstr "無法讀取 /proc\n"
+
+#: ../unconfined:91 ../unconfined:93
+msgid "not confined\n"
+msgstr "未限制\n"
+
+#: ../unconfined:102 ../unconfined:104
+msgid "confined by"
+msgstr "限制者"
+
+#: ../SubDomain.pm:421 ../SubDomain.pm:435
+#, perl-format
 msgid "Can't find %s."
-msgstr "找不到 %s。"
+msgstr "無法寫入 %s。"
 
-msgid "The profile analyzer has completed processing the log files.\n\n"
+#: ../SubDomain.pm:703 ../SubDomain.pm:742
+msgid "(Y)es"
+msgstr "是(&Y)"
+
+#: ../SubDomain.pm:704 ../SubDomain.pm:743
+msgid "(N)o"
+msgstr "無"
+
+#: ../SubDomain.pm:744
+msgid "(C)ancel"
+msgstr "取消(&C)"
+
+#: ../SubDomain.pm:1010 ../SubDomain.pm:1201 ../SubDomain.pm:1630
+#: ../SubDomain.pm:1827
+msgid "Profile"
+msgstr "設定檔 "
+
+#: ../SubDomain.pm:1012
+msgid "Default Hat"
+msgstr "預設主機"
+
+#: ../SubDomain.pm:1014
+msgid "Requested Hat"
+msgstr "要求的 Hat"
+
+#: ../SubDomain.pm:1044 ../SubDomain.pm:1230 ../SubDomain.pm:1664
+#: ../SubDomain.pm:1962
+msgid "Are you sure you want to abandon this set of profile changes and exit?"
+msgstr "您確定要放棄此設定檔變更集並離開？"
+
+#: ../SubDomain.pm:1046 ../SubDomain.pm:1233 ../SubDomain.pm:1660
+#: ../SubDomain.pm:1666 ../SubDomain.pm:1964
+msgid "Abandoning all changes."
+msgstr "放棄所有變更？"
+
+#: ../SubDomain.pm:1051 ../SubDomain.pm:1238 ../SubDomain.pm:1680
+#: ../SubDomain.pm:1969
+msgid "Are you sure you want to save the current set of profile changes and exit?"
+msgstr "確定要取消建立設定檔嗎？"
+
+#: ../SubDomain.pm:1053 ../SubDomain.pm:1240 ../SubDomain.pm:1675
+#: ../SubDomain.pm:1682 ../SubDomain.pm:1971
+msgid "Saving all changes."
+msgstr "正在儲存所有變更"
+
+#: ../SubDomain.pm:1203
+msgid "Program"
+msgstr "程式"
+
+#: ../SubDomain.pm:1205
+msgid "Execute"
+msgstr "專家"
+
+#: ../SubDomain.pm:1206 ../SubDomain.pm:1632 ../SubDomain.pm:1839
+msgid "Severity"
+msgstr "保安"
+
+#: ../SubDomain.pm:1247
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"switching profiles?\n"
+"\n"
+"Sanitizing the environment is more secure,\n"
+"but some applications depend on the presence\n"
+"of LD_PRELOAD or LD_LIBRARY_PATH."
+msgstr ""
+"當切換設定檔時，\n"
+"AppArmor 需淨化環境嗎？s\n"
+"\n"
+"淨化環境會加強安全性，\n"
+"但有些應用程式有依賴\n"
+" LD_PRELOAD 或 LD_LIBRARY_PATH 的存在。"
+
+#: ../SubDomain.pm:1249
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"switching profiles?\n"
+"\n"
+"Sanitizing the environment is more secure,\n"
+"but this application appears to use LD_PRELOAD\n"
+"or LD_LIBRARY_PATH and clearing these could\n"
+"cause functionality problems."
+msgstr ""
+"當切換設定檔時，\n"
+"AppArmor 需淨化環境嗎？s\n"
+"\n"
+"淨化環境會加強安全性，\n"
+"但此應用程式會使用 LD_PRELOAD\n"
+"或 LD_LIBRARY_PATH，將它們清除會\n"
+"造成功能上的問題。"
+
+#: ../SubDomain.pm:1256
+#, perl-format
+msgid ""
+"Launching processes in an unconfined state is a very\n"
+"dangerous operation and can cause serious security holes.\n"
+"\n"
+"Are you absolutely certain you wish to remove all\n"
+"AppArmor protection when executing %s?"
+msgstr ""
+"在未限制的狀態下啟動程序是非常\n"
+"危險的作業，會導致嚴重的安全漏洞。\n"
+"\n"
+"您確定要在執行 %s 時移除所有\n"
+"AppArmor 保護嗎？"
+
+#: ../SubDomain.pm:1258
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"running this program unconfined?\n"
+"\n"
+"Not sanitizing the environment when unconfining\n"
+"a program opens up significant security holes\n"
+"and should be avoided if at all possible."
+msgstr ""
+"當執行此未限制的程式時，\n"
+"AppArmor 應該淨化環境嗎？\n"
+"\n"
+"當未限制的程式有嚴重的安全漏洞，且應避免一切可能發生的危險時，未淨化環境。"
+
+#: ../SubDomain.pm:1361
+#, perl-format
+msgid "Reading log entries from %s."
+msgstr "正在讀取郵件伺服器領域%s..."
+
+#: ../SubDomain.pm:1362
+#, perl-format
+msgid "Updating subdomain profiles in %s."
+msgstr "更新 %s 中的子領域設定檔。"
+
+#: ../SubDomain.pm:1368
+msgid "unknown"
+msgstr "不明"
+
+#: ../SubDomain.pm:1597
+msgid "Complain-mode changes:"
+msgstr "抱怨模式變更："
+
+#: ../SubDomain.pm:1599
+msgid "Enforce-mode changes:"
+msgstr "強迫模式變更："
+
+#: ../SubDomain.pm:1604
+#, perl-format
+msgid "Invalid mode found: %s"
+msgstr "無效的選項：%s"
+
+#: ../SubDomain.pm:1631
+msgid "Capability"
+msgstr "功能"
+
+#: ../SubDomain.pm:1654
+#, perl-format
+msgid "Adding capability %s to profile."
+msgstr "正在將功能 %s 新增到設定檔。"
+
+#: ../SubDomain.pm:1656
+#, perl-format
+msgid "Denying capability %s to profile."
+msgstr "正在拒絕設定檔的 %s 功能。"
+
+#: ../SubDomain.pm:1828
+msgid "Path"
+msgstr "路徑"
+
+#: ../SubDomain.pm:1833
+msgid "Old Mode"
+msgstr "舊模式"
+
+#: ../SubDomain.pm:1835
+msgid "New Mode"
+msgstr "文字模式"
+
+#: ../SubDomain.pm:1837
+msgid "Mode"
+msgstr "模式"
+
+#: ../SubDomain.pm:1875
+#, perl-format
+msgid "Adding #include <%s> to profile."
+msgstr "將 #include <%s> 新增到設定檔"
+
+#: ../SubDomain.pm:1876 ../SubDomain.pm:1901
+#, perl-format
+msgid "Deleted %s previous matching profile entries."
+msgstr "已刪除 %s 個之前符合設定檔的項目。"
+
+#: ../SubDomain.pm:1900
+#, perl-format
+msgid "Adding %s %s to profile."
+msgstr "將 %s %s 新增到設定檔。"
+
+#: ../SubDomain.pm:1908
+msgid "Enter new path: "
+msgstr "輸入新路徑："
+
+#: ../SubDomain.pm:1911
+msgid "The specified path does not match this log entry:"
+msgstr "指定的介面卡不存在。"
+
+#: ../SubDomain.pm:1912
+msgid "Log Entry"
+msgstr "記錄項目"
+
+#: ../SubDomain.pm:1913
+msgid "Entered Path"
+msgstr "已安裝的修補程式"
+
+#: ../SubDomain.pm:1914
+msgid "Do you really want to use this path?"
+msgstr "您確定要使用這個路徑？"
+
+#: ../SubDomain.pm:1988
+msgid ""
+"The profile analyzer has completed processing the log files.\n"
+"\n"
 "All updated profiles will be reloaded"
-msgstr "設定檔分析程式已完成處理記錄檔。\n\n將重新載入所有已更新的設定檔。"
+msgstr ""
+"設定檔分析程式已完成處理記錄檔。\n"
+"\n"
+"將重新載入所有已更新的設定檔。"
 
-
+#: ../SubDomain.pm:1996
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "在系統記錄中找不到尚未處理的 AppArmor 事件。"
 
+#: ../SubDomain.pm:2205 ../SubDomain.pm:2235 ../SubDomain.pm:2249
+#: ../SubDomain.pm:2284 ../SubDomain.pm:2304 ../SubDomain.pm:2341
+#: ../SubDomain.pm:2628
+#, perl-format
 msgid "%s contains syntax errors."
 msgstr "%s 包含語法錯誤。"
 
-msgid ""
-"The version of AppArmor that you are running does not allow the creation of\n"
-"this profile. Refer to the AppArmor User's Guide for a description of\n"
-"AppArmor-Lite and upgrade options for AppArmor."
-msgstr "您所執行的 AppArmor 版本不允許建立\n此設定檔。請參考 AppArmor 使用手冊中有關 AppArmor-Lite 及 AppArmor 升級選項的說明。"
+#: ../SubDomain.pm:2263
+#, perl-format
+msgid "Profile %s contains invalid regexp %s."
+msgstr "設定檔 %s 包含無效的 regexp %s。"
 
+#: ../SubDomain.pm:2473
+#, perl-format
+msgid "Writing updated profile for %s."
+msgstr "正在寫入提供者%s..."
+
+#: ../SubDomain.pm:2605
+#, perl-format
+msgid "Include %s contains invalid regexp %s."
+msgstr "Include %s 包含無效的 regexp %s。"
+
+#: ../Reports.pm:266 ../Reports.pm:374 ../Reports.pm:1490
+#, perl-format
+msgid "DBI Execution failed: %s."
+msgstr "DBI 執行失敗： %s."
+
+#: ../Reports.pm:400
+#, perl-format
+msgid "Couldn't open file: %s."
+msgstr "無法開啟檔案： %s."
+
+#: ../Reports.pm:404
+msgid "No type value passed.  Unable to determine page count."
+msgstr "未傳遞類別值。無法判斷頁數。"
+
+#: ../Reports.pm:474
+#, perl-format
+msgid "Failed copying %s."
+msgstr "複製 %s 失敗。"
+
+#: ../Reports.pm:587
+#, perl-format
+msgid "Export Log Error: Couldn't open %s"
+msgstr "匯出記錄錯誤：無法開啟 %s"
+
+#: ../Reports.pm:611
+msgid "Fatal error.  No report name given. Exiting."
+msgstr "嚴重錯誤。未取得報告名稱。正在離開。"
+
+#: ../Reports.pm:617
+#, perl-format
+msgid ""
+"Unable to get configuration info for %s.\n"
+"                Unable to find %s."
+msgstr "無法取得 %s 的組態資訊。無法尋找 %s。"
+
+#: ../Reports.pm:658
+#, perl-format
+msgid "Failed to parse: %s."
+msgstr "剖析失敗： %s."
+
+#: ../Reports.pm:667
+#, perl-format
+msgid "Fatal Error.  Couldn't open %s."
+msgstr "嚴重錯誤。無法開啟 %s。"
+
+#: ../Reports.pm:715
+#, perl-format
+msgid "Fatal Error.  Can't run %s.  Exiting."
+msgstr "嚴重錯誤。無法執行 %s。正在離開。"
+
+#: ../Reports.pm:756
+#, perl-format
+msgid "Fatal Error.  No directory, %s, found.  Exiting."
+msgstr "嚴重錯誤。找不到目錄 %s。正在離開。"
+
+#: ../Reports.pm:775
+#, perl-format
+msgid "Fatal Error.  Couldn't open %s.  Exiting"
+msgstr "嚴重錯誤。無法開啟 %s。正在離開"
+
+#: ../Reports.pm:803 ../Reports.pm:816 ../Reports.pm:826
+#, perl-format
+msgid "DBI Execution failed: %s"
+msgstr "DBI 執行失敗： %s"
+
+#: ../Reports.pm:1596
+#, perl-format
+msgid "Fatal Error.  getArchReport() couldn't open %s"
+msgstr "嚴重錯誤。  getArchReport() 無法開啟 %s"

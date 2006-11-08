@@ -1,40 +1,44 @@
-# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
-# This file is distributed under the same license as the package.
+# translation of apparmor-utils.po to
+# translation of subdomain-utils.po to
+# This file is distributed under the same license as the PACKAGE package.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER.
 #
+# Olav Pettershagen <olav.pet@online.no>, 2005, 2006.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-22 10:57-0600\n"
-"PO-Revision-Date: 2006-11-02 14:21\n"
-"Last-Translator: Novell Language <language@novell.com>\n"
-"Language-Team: Novell Language <language@novell.com>\n"
+"PO-Revision-Date: 2006-10-06 17:30+0200\n"
+"Last-Translator: Olav Pettershagen <olav.pet@online.no>\n"
+"Language-Team:  <nb@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
 
 #: ../genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "子域可能未启动。请启用子域并重试。"
+msgstr "SubDomain ser ikke ut til å kjøre.  Aktiver SubDomain og forsøk igjen."
 
 #: ../genprof:69
 msgid "Please enter the program to profile: "
-msgstr "请输入您的支持关键字"
+msgstr "Angi programmet som skal tilordnes en profil: "
 
 #: ../genprof:87
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
-msgstr "系统路径列表中找不到 %s。如果应用程序名称正确，请在其他窗口中运行\"which %s\"，以便找到完全限定的路径。"
+msgstr "Kan ikke finne %s i systemet.  Hvis programnavnet er riktig, kjør 'which %s' i det andre vinduet for å finne den fullstendige filstien."
 
 #: ../genprof:89 ../autodep:117 ../audit:112 ../complain:112 ../enforce:111
 #, perl-format
 msgid "%s does not exist, please double-check the path."
-msgstr "%s 不存在，请复查路径。"
+msgstr "%s finnes ikke. Kontroller filstien."
 
 #: ../genprof:100 ../autodep:99
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
-msgstr "%s 当前标记为不应具有自身配置文件的程序。通常，当为程序创建配置文件可能会破坏系统的其余部分时，如此标记。如果您知道您在做什么，并确信您要创建该程序的配置文件，请编辑 /etc/apparmor/logprof.conf 中 [qualifiers] 部分中的相应条目。"
+msgstr "%s er merket som et program som ikke bør ha sin egen profil.  Programmer er vanligvis merket på denne måten dersom resten av systemet kan bli skadet hvis du oppretter en profil for dem.  Hvis du vet hva du gjør og er sikker på at du vil opprette en profil for dette programmet, kan du redigere den aktuelle oppføringen under [qualifiers] i filen /etc/apparmor/logprof.conf."
 
 #: ../genprof:121
 msgid ""
@@ -48,178 +52,179 @@ msgid ""
 "opportunity to choose whether the access should be  \n"
 "allowed or denied."
 msgstr ""
-"请立即启动要在\n"
-"其他窗口中制作配置文件的应用程序并运用其功能。\n"
+"Start programmet som skal profileres, i \n"
+"et annet vindu og test funksjonaliteten nå.\n"
 "\n"
-"一旦完成，选择下面的\"扫描\"按钮，\n"
-"以进行 AppArmor 事件的系统日志扫描。\n"
+"Når du er ferdig, klikk på \"Søk\"-knappen nedenfor for \n"
+"å søke etter AppArmor-hendelser i systemloggene.  \n"
 "\n"
-"对于每个 AppArmor 事件，您都将有机会\n"
-"选择应该允许\n"
-"还是拒绝此访问。"
+"For hver AppArmor-hendelse kan du  \n"
+"velge om tilgang skal \n"
+"tillates eller avvises."
 
 #: ../genprof:140
 msgid "Profiling"
-msgstr "检测"
+msgstr "Tilordne profil"
 
 #: ../genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "以强制方式重新装载子域配置文件。"
+msgstr "SubDomain-profiler i overstyringsmodus lastet på nytt."
 
 #: ../genprof:168
 #, perl-format
 msgid "Finished generating profile for %s."
-msgstr "%s 配置文件生成完毕。"
+msgstr "Generering av profil for %s er fullført."
 
 #: ../genprof:172
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
-msgstr "用法：%s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ 制作配置文件的程序 ]"
+msgstr "bruk: %s [ -d /sti/til/profiler ] [ -f /sti/til/loggfil ] [ program som skal tilordnes profil ]"
 
 #: ../logprof:75
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
-msgstr "用法：%s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"日志中用于启动后处理的标记 \""
+msgstr "bruk: %s [ -d /sti/til/profiler ] [ -f /sti/til/loggfil ] [ -m \"markering i logg for å starte kjøring etter\""
 
 #: ../autodep:64
 #, perl-format
 msgid "Can't find subdomain profiles in %s."
-msgstr "无法在 %s 中找到子域配置文件。"
+msgstr "Kan ikke finne subdomeneprofiler i %s."
 
 #: ../autodep:75
 msgid "Please enter the program to create a profile for: "
-msgstr "请进入程序以为以下内容创建一个配置文件："
+msgstr "Angi programmet som en profil skal opprettes for: "
 
 #: ../autodep:107
 #, perl-format
 msgid "Profile for %s already exists - skipping."
-msgstr "%s 的配置文件已存在 - 正在跳过。"
+msgstr "En profil for %s finnes allerede - hopper over denne."
 
 #: ../autodep:114 ../audit:109 ../complain:109 ../enforce:108
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
-msgstr "无法在系统路径列表中找到 %s。如果此应用程序的名称正确，请作为具有正确 PATH 环境设置用户来运行“which %s”以查找标准路径。"
+msgstr "Kan ikke finne %s i systemstilisten.  Hvis navnet på programmet er riktig, kjør 'which %s' som vanlig bruker med riktig definert PATH-miljø for å finne den fullstendige filstien."
 
 #: ../audit:102
 #, perl-format
 msgid "Setting %s to audit mode."
-msgstr "将 %s 设置为审计模式。"
+msgstr "Setter %s i overvåkingsmodus."
 
 #: ../audit:121
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
-msgstr "用法：%s [ -d /path/to/profiles ] [ 切换到审计方式的程序 ]"
+msgstr "bruk: %s [ -d /sti/til/profiler ] [ program som skal kjøres i overvåkingsmodus ]"
 
 #: ../complain:67
 msgid "Please enter the program to switch to complain mode: "
-msgstr "请进入程序以切换为申诉模式："
+msgstr "Angi programmet som skal endres til klagemodus: "
 
 #: ../complain:102 ../SubDomain.pm:426
 #, perl-format
 msgid "Setting %s to complain mode."
-msgstr "正在将 %s 设置为抱怨方式。"
+msgstr "Setter %s i klagemodus."
 
 #: ../complain:121
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
-msgstr "用法：%s [ -d /path/to/profiles ] [ 切换到抱怨方式的程序 ]"
+msgstr "bruk: %s [ -d /sti/til/profiler ] [ program som skal kjøres i klagemodus ]"
 
 #: ../enforce:67
 msgid "Please enter the program to switch to enforce mode: "
-msgstr "请进入程序以切换为强制模式："
+msgstr "Angi programmet som skal endres til overstyringsmodus: "
 
 #: ../enforce:101 ../SubDomain.pm:440
 #, perl-format
 msgid "Setting %s to enforce mode."
-msgstr "正在将 %s 设置为强制方式。"
+msgstr "Setter %s i overstyringsmodus."
 
 #: ../enforce:120
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
-msgstr "用法：%s [ -d /path/to/profiles ] [ 切换到强制方式的程序 ]"
+msgstr "bruk: %s [ -d /sti/til/profiler ] [ program som skal kjøres i overstyrt modus ]"
 
 #: ../unconfined:51
 #, perl-format
 msgid "Usage: %s [ --paranoid ]\n"
-msgstr "用法：%s [ --paranoid ]\n"
+msgstr "Bruk: %s [ --paranoid ]\n"
 
 #: ../unconfined:57
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "子域可能未启动。请启用子域并重试。"
+msgstr "SubDomain ser ikke ut til å kjøre.  Aktiver SubDomain og forsøk igjen."
 
 #: ../unconfined:61
 msgid "Can't read /proc\n"
-msgstr "无法读取 /proc\n"
+msgstr "Kan ikke lese /proc\n"
 
 #: ../unconfined:91 ../unconfined:93
 msgid "not confined\n"
-msgstr "未限制\n"
+msgstr "ikke begrenset\n"
 
 #: ../unconfined:102 ../unconfined:104
 msgid "confined by"
-msgstr "限制者"
+msgstr "begrenset av"
 
 #: ../SubDomain.pm:421 ../SubDomain.pm:435
 #, perl-format
 msgid "Can't find %s."
-msgstr "找不到 %s。"
+msgstr "Kan ikke finne %s."
 
 #: ../SubDomain.pm:703 ../SubDomain.pm:742
 msgid "(Y)es"
-msgstr "是(Y)"
+msgstr "Ja (Y)"
 
 #: ../SubDomain.pm:704 ../SubDomain.pm:743
 msgid "(N)o"
-msgstr "否(N)"
+msgstr "(N)ei"
 
+# cancel button label
 #: ../SubDomain.pm:744
 msgid "(C)ancel"
-msgstr "取消(C)"
+msgstr "(A)vbryt"
 
 #: ../SubDomain.pm:1010 ../SubDomain.pm:1201 ../SubDomain.pm:1630
 #: ../SubDomain.pm:1827
 msgid "Profile"
-msgstr "配置文件"
+msgstr "Profil"
 
 #: ../SubDomain.pm:1012
 msgid "Default Hat"
-msgstr "默认 Hat"
+msgstr "Standard paraply"
 
 #: ../SubDomain.pm:1014
 msgid "Requested Hat"
-msgstr "必需的 Hat"
+msgstr "Ønsket paraply"
 
 #: ../SubDomain.pm:1044 ../SubDomain.pm:1230 ../SubDomain.pm:1664
 #: ../SubDomain.pm:1962
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
-msgstr "是否确实要放弃这组配置文件更改并退出？"
+msgstr "Er du sikker på at du vil avbryte disse profilendringene og avslutte?"
 
 #: ../SubDomain.pm:1046 ../SubDomain.pm:1233 ../SubDomain.pm:1660
 #: ../SubDomain.pm:1666 ../SubDomain.pm:1964
 msgid "Abandoning all changes."
-msgstr "正在放弃所有更改。"
+msgstr "Forkaster alle endringer."
 
 #: ../SubDomain.pm:1051 ../SubDomain.pm:1238 ../SubDomain.pm:1680
 #: ../SubDomain.pm:1969
 msgid "Are you sure you want to save the current set of profile changes and exit?"
-msgstr "是否确实要取消配置文件创建？"
+msgstr "Er du sikker på at du vil lagre disse profilendringene og avslutte?"
 
 #: ../SubDomain.pm:1053 ../SubDomain.pm:1240 ../SubDomain.pm:1675
 #: ../SubDomain.pm:1682 ../SubDomain.pm:1971
 msgid "Saving all changes."
-msgstr "正在保存所有更改。"
+msgstr "Lagrer alle endringer."
 
 #: ../SubDomain.pm:1203
 msgid "Program"
-msgstr "程序"
+msgstr "Program"
 
 #: ../SubDomain.pm:1205
 msgid "Execute"
-msgstr "执行"
+msgstr "Kjør"
 
 #: ../SubDomain.pm:1206 ../SubDomain.pm:1632 ../SubDomain.pm:1839
 msgid "Severity"
-msgstr "安全"
+msgstr "Alvorlighetsgrad"
 
 #: ../SubDomain.pm:1247
 msgid ""
@@ -230,12 +235,12 @@ msgid ""
 "but some applications depend on the presence\n"
 "of LD_PRELOAD or LD_LIBRARY_PATH."
 msgstr ""
-"切换配置文件时 AppArmor 是否应\n"
-"清理环境？\n"
+"Skal AppArmor rense miljøet ved\n"
+"bytte av profiler?\n"
 "\n"
-"清理环境比较安全，\n"
-"但是有些应用程序需要存在\n"
-" LD_PRELOAD 或 LD_LIBRARY_PATH。"
+"Rensing av miljøet øker sikkerheten,\n"
+"men noen programmer krever at\n"
+"LD_PRELOAD eller LD_LIBRARY_PATH finnes."
 
 #: ../SubDomain.pm:1249
 msgid ""
@@ -247,13 +252,13 @@ msgid ""
 "or LD_LIBRARY_PATH and clearing these could\n"
 "cause functionality problems."
 msgstr ""
-"切换配置文件时 AppArmor 是否应\n"
-"清理环境？\n"
+"Skal AppArmor rense miljøet ved\n"
+"bytte av profiler?\n"
 "\n"
-"清理环境比较安全，\n"
-"但是此应用程序可能使用 LD_PRELOAD\n"
-" 或 LD_LIBRARY_PATH，清除它们可能会\n"
-"导致发生功能问题。"
+"Rensing av miljøet øker sikkerheten,\n"
+"men dette programmet ser ut til å bruke LD_PRELOAD\n"
+"eller LD_LIBRARY_PATH, og det kan føre til problemer\n"
+"hvis disse fjernes."
 
 #: ../SubDomain.pm:1256
 #, perl-format
@@ -264,11 +269,11 @@ msgid ""
 "Are you absolutely certain you wish to remove all\n"
 "AppArmor protection when executing %s?"
 msgstr ""
-"在未限制的状态下启动进程是非常\n"
-"危险的操作，并且可能会导致产生严重的安全漏洞。\n"
+"Å starte prosesser med ubegrenset status er en svært\n"
+"farlig handling, og kan føre til alvorlige sikkerhetshull.\n"
 "\n"
-"确实希望在执行 %s? 时删除所有 \n"
-"AppArmor 保护吗？"
+"Er du helt sikker på at du vil fjerne all\n"
+"AppArmor-beskyttelse når du kjører %s?"
 
 #: ../SubDomain.pm:1258
 msgid ""
@@ -279,104 +284,104 @@ msgid ""
 "a program opens up significant security holes\n"
 "and should be avoided if at all possible."
 msgstr ""
-"在未限制的状态下运行此程序时 AppArmor 是否应\n"
-"清理环境？\n"
+"Skal AppArmor rense miljøet når\n"
+"dette programmet kjøres ubegrenset?\n"
 "\n"
-"在取消程序限制时不清理\n"
-"环境会产生严重的安全漏洞，请\n"
-"尽量清理环境。"
+"Å unnlate å rense miljøet når begrensningene for\n"
+"et program fjernes, åpner alvorlige sikkerhetshull,\n"
+"og bør så langt som mulig unngås."
 
 #: ../SubDomain.pm:1361
 #, perl-format
 msgid "Reading log entries from %s."
-msgstr "正在从 %s 读取日志条目。"
+msgstr "Leser loggoppføringer fra %s."
 
 #: ../SubDomain.pm:1362
 #, perl-format
 msgid "Updating subdomain profiles in %s."
-msgstr "正在更新 %s 中的子域配置文件。"
+msgstr "Oppdaterer subdomeneprofiler i %s."
 
 #: ../SubDomain.pm:1368
 msgid "unknown"
-msgstr "未知"
+msgstr "ukjent"
 
 #: ../SubDomain.pm:1597
 msgid "Complain-mode changes:"
-msgstr "抱怨方式更改："
+msgstr "Endringer i klagemodus:"
 
 #: ../SubDomain.pm:1599
 msgid "Enforce-mode changes:"
-msgstr "强制方式更改："
+msgstr "Endringer i overstyringsmodus:"
 
 #: ../SubDomain.pm:1604
 #, perl-format
 msgid "Invalid mode found: %s"
-msgstr "发现无效方式：%s"
+msgstr "Ugyldig modus funnet: %s"
 
 #: ../SubDomain.pm:1631
 msgid "Capability"
-msgstr "功能"
+msgstr "Egenskaper"
 
 #: ../SubDomain.pm:1654
 #, perl-format
 msgid "Adding capability %s to profile."
-msgstr "正在添加功能 %s 到配置文件。"
+msgstr "Legge egenskapen %s til profil."
 
 #: ../SubDomain.pm:1656
 #, perl-format
 msgid "Denying capability %s to profile."
-msgstr "正在对配置文件拒绝功能 %s。"
+msgstr "Avvise egenskapen %s i profil."
 
 #: ../SubDomain.pm:1828
 msgid "Path"
-msgstr "路径"
+msgstr "Sti"
 
 #: ../SubDomain.pm:1833
 msgid "Old Mode"
-msgstr "旧方式"
+msgstr "Gammel modus"
 
 #: ../SubDomain.pm:1835
 msgid "New Mode"
-msgstr "新方式"
+msgstr "Ny modus"
 
 #: ../SubDomain.pm:1837
 msgid "Mode"
-msgstr "方式"
+msgstr "Modus"
 
 #: ../SubDomain.pm:1875
 #, perl-format
 msgid "Adding #include <%s> to profile."
-msgstr "正在将 #include <%s> 添加到配置文件中。"
+msgstr "Legge #include <%s> til profil."
 
 #: ../SubDomain.pm:1876 ../SubDomain.pm:1901
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
-msgstr "已删除 %s 个以前匹配的配置文件项。"
+msgstr "Slettet %s tidligere samsvarende profiloppføringer."
 
 #: ../SubDomain.pm:1900
 #, perl-format
 msgid "Adding %s %s to profile."
-msgstr "正在将 %s %s 添加到配置文件。"
+msgstr "Legge %s %s til profil."
 
 #: ../SubDomain.pm:1908
 msgid "Enter new path: "
-msgstr "输入新路径："
+msgstr "Angi ny sti: "
 
 #: ../SubDomain.pm:1911
 msgid "The specified path does not match this log entry:"
-msgstr "指定的路径与此日志条目不匹配："
+msgstr "Den spesifiserte stien samsvarer ikke med denne loggoppføringen:"
 
 #: ../SubDomain.pm:1912
 msgid "Log Entry"
-msgstr "日志项"
+msgstr "Loggoppføring"
 
 #: ../SubDomain.pm:1913
 msgid "Entered Path"
-msgstr "已输入的路径"
+msgstr "Angitt sti"
 
 #: ../SubDomain.pm:1914
 msgid "Do you really want to use this path?"
-msgstr "确实要使用此路径吗？"
+msgstr "Vil du virkelig bruke denne stien?"
 
 #: ../SubDomain.pm:1988
 msgid ""
@@ -384,63 +389,63 @@ msgid ""
 "\n"
 "All updated profiles will be reloaded"
 msgstr ""
-"配置文件分析程序已完成对日志文件的处理。\n"
+"Profilanalysatoren er ferdig med å generere loggfilene.\n"
 "\n"
-"将重新装载所有已更新的配置文件。"
+"Alle oppdaterte profiler vil bli lastet på nytt"
 
 #: ../SubDomain.pm:1996
 msgid "No unhandled AppArmor events were found in the system log."
-msgstr "在系统日志中没有发现未处理的 AppArmor 事件。"
+msgstr "Ingen ubehandlede AppArmor-hendelser ble funnet i systemloggen."
 
 #: ../SubDomain.pm:2205 ../SubDomain.pm:2235 ../SubDomain.pm:2249
 #: ../SubDomain.pm:2284 ../SubDomain.pm:2304 ../SubDomain.pm:2341
 #: ../SubDomain.pm:2628
 #, perl-format
 msgid "%s contains syntax errors."
-msgstr "%s 包含语法错误。"
+msgstr "%s inneholder syntaksfeil."
 
 #: ../SubDomain.pm:2263
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
-msgstr "配置文件 %s 包含无效的 regexp %s。"
+msgstr "Profilen %s inneholder ugyldig regexp %s."
 
 #: ../SubDomain.pm:2473
 #, perl-format
 msgid "Writing updated profile for %s."
-msgstr "正在写入 %s 已更新的配置文件。"
+msgstr "Lagrer oppdatert profil for %s."
 
 #: ../SubDomain.pm:2605
 #, perl-format
 msgid "Include %s contains invalid regexp %s."
-msgstr "Include %s 包含无效的 regexp %s。"
+msgstr "Inkludert ressurs %s inneholder ugyldig regexp %s."
 
 #: ../Reports.pm:266 ../Reports.pm:374 ../Reports.pm:1490
 #, perl-format
 msgid "DBI Execution failed: %s."
-msgstr "DBI 执行失败： %s."
+msgstr "DBI Kjøring mislyktes: %s."
 
 #: ../Reports.pm:400
 #, perl-format
 msgid "Couldn't open file: %s."
-msgstr "无法打开文件： %s."
+msgstr "Kunne ikke åpne filen: %s."
 
 #: ../Reports.pm:404
 msgid "No type value passed.  Unable to determine page count."
-msgstr "没有传递类型值。无法确定页数。"
+msgstr "Ingen typeverdi sendt.  Kan ikke avgjøre sideantall."
 
 #: ../Reports.pm:474
 #, perl-format
 msgid "Failed copying %s."
-msgstr "未能复制 %s。"
+msgstr "Feil under kopiering av %s."
 
 #: ../Reports.pm:587
 #, perl-format
 msgid "Export Log Error: Couldn't open %s"
-msgstr "导出日志错误：无法打开 %s"
+msgstr "Feil under loggeksport: Kunne ikke åpne %s"
 
 #: ../Reports.pm:611
 msgid "Fatal error.  No report name given. Exiting."
-msgstr "致命错误。没有给定报告名。正在退出。"
+msgstr "Fatal feil.  Rapportnavn ikke angitt. Avslutter."
 
 #: ../Reports.pm:617
 #, perl-format
@@ -448,40 +453,40 @@ msgid ""
 "Unable to get configuration info for %s.\n"
 "                Unable to find %s."
 msgstr ""
-"无法获取 %s 的配置信息。\n"
-"无法找到 %s。"
+"Kan ikke hente konfigurasjonsinfo for %s.\n"
+"                Kan ikke finne %s."
 
 #: ../Reports.pm:658
 #, perl-format
 msgid "Failed to parse: %s."
-msgstr "未能对 %s 进行语法分析."
+msgstr "Kunnne ikke analysere: %s."
 
 #: ../Reports.pm:667
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s."
-msgstr "致命错误。无法打开 %s。"
+msgstr "Fatal feil.  Kunne ikke åpne %s."
 
 #: ../Reports.pm:715
 #, perl-format
 msgid "Fatal Error.  Can't run %s.  Exiting."
-msgstr "致命错误。无法运行 %s。正在退出。"
+msgstr "Fatal feil.  Kan ikke kjøre %s.  Avslutter."
 
 #: ../Reports.pm:756
 #, perl-format
 msgid "Fatal Error.  No directory, %s, found.  Exiting."
-msgstr "致命错误。未找到目录 %s。正在退出。"
+msgstr "Fatal feil.  Katalogen %s ikke funnet.  Avslutter."
 
 #: ../Reports.pm:775
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
-msgstr "致命错误。无法打开 %s。正在退出"
+msgstr "Fatal feil.  Kunne ikke åpne %s.  Avslutter"
 
 #: ../Reports.pm:803 ../Reports.pm:816 ../Reports.pm:826
 #, perl-format
 msgid "DBI Execution failed: %s"
-msgstr "DBI 执行失败： %s"
+msgstr "DBI-kjøring mislyktes: %s"
 
 #: ../Reports.pm:1596
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"
-msgstr "致命错误。getArchReport() 无法打开  %s"
+msgstr "Fatal feil.  getArchReport() kunne ikke åpne %s"

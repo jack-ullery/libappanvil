@@ -1,0 +1,497 @@
+# translation of apparmor-utils.ru.po to Russian
+# Russian message file for YaST2 (@memory@).
+# Copyright (C) 2005, 2006 SUSE Linux Products GmbH.
+# Copyright (C) 2002 SuSE Linux AG.
+# Copyright (C) 1999, 2000, 2001 SuSE GmbH.
+#
+# Aleksey Novodvorksy <aen@logic.ru>, 2000.
+# Eugene Osintsev <osgene@omskelecom.ru>, 1999, 2000.
+# Aleksey Osipov <aliks-os@yandex.ru>, 2005, 2006.
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmor-utils.ru\n"
+"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"POT-Creation-Date: 2006-09-22 10:57-0600\n"
+"PO-Revision-Date: 2006-11-03 09:07+0200\n"
+"Last-Translator: Aleksey Osipov <aliks-os@yandex.ru>\n"
+"Language-Team: Russian <i18n@suse.de>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: KBabel 1.11.2\n"
+
+#: ../genprof:55
+msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
+msgstr "Похоже ПодДомены не запущены. Пожалуйста, включите ПодДомены и попробуйте снова."
+
+#: ../genprof:69
+msgid "Please enter the program to profile: "
+msgstr "Пожалуйста укажите программу для этого профиля: "
+
+#: ../genprof:87
+#, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
+msgstr "Невозможно найти %s в списке системных путей.  Если имя приложения правильно, пожалуйста, запустите 'which %s' в другом окне, чтобы определить полный путь."
+
+#: ../genprof:89 ../autodep:117 ../audit:112 ../complain:112 ../enforce:111
+#, perl-format
+msgid "%s does not exist, please double-check the path."
+msgstr "%s не существует, пожалуйста проверьте путь."
+
+#: ../genprof:100 ../autodep:99
+#, perl-format
+msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
+msgstr "%s помечено как программа которая не должна иметь своего профиля.  Обычно, так помечаются программы, если создается профиль для них, и вы хотите облегчить работу всей системы.  Если вы знаете, что вы делаете и вы хотите точно создать профиль для этой программы, отредактируйте соответствующую запись в секции [qualifiers] в файле /etc/apparmor/logprof.conf."
+
+#: ../genprof:121
+msgid ""
+"Please start the application to be profiled in \n"
+"another window and exercise its functionality now.\n"
+"\n"
+"Once completed, select the \"Scan\" button below in \n"
+"order to scan the system logs for AppArmor events.  \n"
+"\n"
+"For each AppArmor event, you will be given the  \n"
+"opportunity to choose whether the access should be  \n"
+"allowed or denied."
+msgstr ""
+"Пожалуста запустите приложение профиля в \n"
+"другом окне и продемонстрируйте его функциональность.\n"
+"\n"
+"После завершения, нажмите кнопку \"Сканировать\", чтобы \n"
+"просканировать системный журнал на предмет событий AppArmor.  \n"
+"\n"
+"Для каждого события AppArmor, вы должны  \n"
+"указать разрешать доступ  \n"
+"или запретить."
+
+#: ../genprof:140
+msgid "Profiling"
+msgstr "Профилирование"
+
+#: ../genprof:167
+msgid "Reloaded SubDomain profiles in enforce mode."
+msgstr "Перегрузить ПдДомены в вынужденном режиме."
+
+#: ../genprof:168
+#, perl-format
+msgid "Finished generating profile for %s."
+msgstr "Генерация профиля %s завершено."
+
+#: ../genprof:172
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
+msgstr "использование: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ программа профиля ]"
+
+#: ../logprof:75
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
+msgstr "использование: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"метка в журнале, чтобы после запустить обработку\""
+
+#: ../autodep:64
+#, perl-format
+msgid "Can't find subdomain profiles in %s."
+msgstr "Невозможно найти профили ПодДоенов в %s."
+
+#: ../autodep:75
+msgid "Please enter the program to create a profile for: "
+msgstr "Пожалуйста укажите программу, для которой создается профиль: "
+
+#: ../autodep:107
+#, perl-format
+msgid "Profile for %s already exists - skipping."
+msgstr "Профиль для %s уже существует - пропускаем."
+
+#: ../autodep:114 ../audit:109 ../complain:109 ../enforce:108
+#, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
+msgstr "Невозможно найти %s в списке системных путей.  Если имя приложения правильно, пожалуйста, запустите 'which %s' с правильными установленными переменными PATH, чтобы определить полный путь."
+
+#: ../audit:102
+#, perl-format
+msgid "Setting %s to audit mode."
+msgstr "Настройки %s в режиме аудита."
+
+#: ../audit:121
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
+msgstr "использование: %s [ -d /path/to/profiles ] [ программа для переключения в режим аудита ]"
+
+#: ../complain:67
+msgid "Please enter the program to switch to complain mode: "
+msgstr "Пожалуйста укажите программу для переключения в щадящем режиме: "
+
+#: ../complain:102 ../SubDomain.pm:426
+#, perl-format
+msgid "Setting %s to complain mode."
+msgstr "Настройка %s в щадящем режиме."
+
+#: ../complain:121
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
+msgstr "использование: %s [ -d /path/to/profiles ] [ программа для переключения в щадящий режим ]"
+
+#: ../enforce:67
+msgid "Please enter the program to switch to enforce mode: "
+msgstr "Пожалуйста укажите программу для переключения в вынужденном режиме: "
+
+#: ../enforce:101 ../SubDomain.pm:440
+#, perl-format
+msgid "Setting %s to enforce mode."
+msgstr "Настройка %s в вынужденном режиме."
+
+#: ../enforce:120
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
+msgstr "использование: %s [ -d /path/to/profiles ] [ программа для переключения в вынужденный режим ]"
+
+#: ../unconfined:51
+#, perl-format
+msgid "Usage: %s [ --paranoid ]\n"
+msgstr "Использование: %s [ --paranoid ]\n"
+
+#: ../unconfined:57
+msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
+msgstr "Похоже ПодДомены не запущены. Пожалуйста, включите ПодДомены и попробуйте снова."
+
+#: ../unconfined:61
+msgid "Can't read /proc\n"
+msgstr "Невозможно прочитать /proc\n"
+
+#: ../unconfined:91 ../unconfined:93
+msgid "not confined\n"
+msgstr "не ограничен\n"
+
+#: ../unconfined:102 ../unconfined:104
+msgid "confined by"
+msgstr "ограничен"
+
+#: ../SubDomain.pm:421 ../SubDomain.pm:435
+#, perl-format
+msgid "Can't find %s."
+msgstr "Невозможно найти %s."
+
+#: ../SubDomain.pm:703 ../SubDomain.pm:742
+msgid "(Y)es"
+msgstr "(Д)а"
+
+#: ../SubDomain.pm:704 ../SubDomain.pm:743
+msgid "(N)o"
+msgstr "(Н)ет"
+
+# cancel button label
+#: ../SubDomain.pm:744
+msgid "(C)ancel"
+msgstr "(О)тмена"
+
+#: ../SubDomain.pm:1010 ../SubDomain.pm:1201 ../SubDomain.pm:1630
+#: ../SubDomain.pm:1827
+msgid "Profile"
+msgstr "Профиль"
+
+#: ../SubDomain.pm:1012
+msgid "Default Hat"
+msgstr "Покрытие по умолчанию"
+
+#: ../SubDomain.pm:1014
+msgid "Requested Hat"
+msgstr "Запршенное покрытие"
+
+#: ../SubDomain.pm:1044 ../SubDomain.pm:1230 ../SubDomain.pm:1664
+#: ../SubDomain.pm:1962
+msgid "Are you sure you want to abandon this set of profile changes and exit?"
+msgstr "Вы уверены, что вы хотите отменить этот набор изменений профиля и выйти?"
+
+#: ../SubDomain.pm:1046 ../SubDomain.pm:1233 ../SubDomain.pm:1660
+#: ../SubDomain.pm:1666 ../SubDomain.pm:1964
+msgid "Abandoning all changes."
+msgstr "Отменяются все изменения."
+
+#: ../SubDomain.pm:1051 ../SubDomain.pm:1238 ../SubDomain.pm:1680
+#: ../SubDomain.pm:1969
+msgid "Are you sure you want to save the current set of profile changes and exit?"
+msgstr "Вы уверены, что вы хотите сохранить текущий набор изменений профиля и выйти?"
+
+#: ../SubDomain.pm:1053 ../SubDomain.pm:1240 ../SubDomain.pm:1675
+#: ../SubDomain.pm:1682 ../SubDomain.pm:1971
+msgid "Saving all changes."
+msgstr "Сохраняются все изменения"
+
+#: ../SubDomain.pm:1203
+msgid "Program"
+msgstr "Программа"
+
+#: ../SubDomain.pm:1205
+msgid "Execute"
+msgstr "Выполнить"
+
+#: ../SubDomain.pm:1206 ../SubDomain.pm:1632 ../SubDomain.pm:1839
+msgid "Severity"
+msgstr "Строгость"
+
+#: ../SubDomain.pm:1247
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"switching profiles?\n"
+"\n"
+"Sanitizing the environment is more secure,\n"
+"but some applications depend on the presence\n"
+"of LD_PRELOAD or LD_LIBRARY_PATH."
+msgstr ""
+"Должен ли AppArmor санировать среду при\n"
+"переключении профилей?\n"
+"\n"
+"Санирование среды это более безопасно,\n"
+"но некоторые приложения зависят от присутствия\n"
+"LD_PRELOAD или LD_LIBRARY_PATH."
+
+#: ../SubDomain.pm:1249
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"switching profiles?\n"
+"\n"
+"Sanitizing the environment is more secure,\n"
+"but this application appears to use LD_PRELOAD\n"
+"or LD_LIBRARY_PATH and clearing these could\n"
+"cause functionality problems."
+msgstr ""
+"Должен ли AppArmor санировать среду при\n"
+"переключении профилей?\n"
+"\n"
+"Санирование среды это более безопасно,\n"
+"но похоже, это приложение использует LD_PRELOAD\n"
+"или LD_LIBRARY_PATH и очистка их может вызвать\n"
+"проблемы работоспособности."
+
+#: ../SubDomain.pm:1256
+#, perl-format
+msgid ""
+"Launching processes in an unconfined state is a very\n"
+"dangerous operation and can cause serious security holes.\n"
+"\n"
+"Are you absolutely certain you wish to remove all\n"
+"AppArmor protection when executing %s?"
+msgstr ""
+"Запуск процессов в неограниченном состоянии это очень\n"
+"опасное действие и может произвести дыры в безопасноит.\n"
+"\n"
+"Вы абсолютно уверены, что вы хотите удалить всю\n"
+"защиту AppArmor при запуске %s?"
+
+#: ../SubDomain.pm:1258
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"running this program unconfined?\n"
+"\n"
+"Not sanitizing the environment when unconfining\n"
+"a program opens up significant security holes\n"
+"and should be avoided if at all possible."
+msgstr ""
+"Должен ли AppArmor санировать среду при запуске\n"
+"этой программы в неограниченном состоянии?\n"
+"\n"
+"Не санированная среда, при неограниченной программе,\n"
+"открывает потенциальные дыры безопасности,\n"
+"и этого следует по возможности избегать."
+
+#: ../SubDomain.pm:1361
+#, perl-format
+msgid "Reading log entries from %s."
+msgstr "Читаются записи журнала из %s."
+
+#: ../SubDomain.pm:1362
+#, perl-format
+msgid "Updating subdomain profiles in %s."
+msgstr "Обновление профилей поддомена в %s."
+
+#: ../SubDomain.pm:1368
+msgid "unknown"
+msgstr "неизвестно"
+
+#: ../SubDomain.pm:1597
+msgid "Complain-mode changes:"
+msgstr "Изменения щадящего режима:"
+
+#: ../SubDomain.pm:1599
+msgid "Enforce-mode changes:"
+msgstr "Изменения вынужденного режима"
+
+#: ../SubDomain.pm:1604
+#, perl-format
+msgid "Invalid mode found: %s"
+msgstr "Найден неверный режим: %s"
+
+#: ../SubDomain.pm:1631
+msgid "Capability"
+msgstr "Возможность"
+
+#: ../SubDomain.pm:1654
+#, perl-format
+msgid "Adding capability %s to profile."
+msgstr "Добавление возможности %s в профиль."
+
+#: ../SubDomain.pm:1656
+#, perl-format
+msgid "Denying capability %s to profile."
+msgstr "Ограничение возможности %s в профиле."
+
+#: ../SubDomain.pm:1828
+msgid "Path"
+msgstr "Путь"
+
+#: ../SubDomain.pm:1833
+msgid "Old Mode"
+msgstr "Старый режим"
+
+#: ../SubDomain.pm:1835
+msgid "New Mode"
+msgstr "Новый режим"
+
+#: ../SubDomain.pm:1837
+msgid "Mode"
+msgstr "Режим"
+
+#: ../SubDomain.pm:1875
+#, perl-format
+msgid "Adding #include <%s> to profile."
+msgstr "Добавляется #include <%s> в профиль."
+
+#: ../SubDomain.pm:1876 ../SubDomain.pm:1901
+#, perl-format
+msgid "Deleted %s previous matching profile entries."
+msgstr "Удалены ранее сопоставленные записи профиля %s."
+
+#: ../SubDomain.pm:1900
+#, perl-format
+msgid "Adding %s %s to profile."
+msgstr "Добавляется %s %s в профиль."
+
+#: ../SubDomain.pm:1908
+msgid "Enter new path: "
+msgstr "Введите новый путь: "
+
+#: ../SubDomain.pm:1911
+msgid "The specified path does not match this log entry:"
+msgstr "Указанный путь не соответствует этой записи журнала:"
+
+#: ../SubDomain.pm:1912
+msgid "Log Entry"
+msgstr "Записи Журнала"
+
+#: ../SubDomain.pm:1913
+msgid "Entered Path"
+msgstr "Введенный путь"
+
+#: ../SubDomain.pm:1914
+msgid "Do you really want to use this path?"
+msgstr "Вы действительно хотите использовать этот путь?"
+
+#: ../SubDomain.pm:1988
+msgid ""
+"The profile analyzer has completed processing the log files.\n"
+"\n"
+"All updated profiles will be reloaded"
+msgstr ""
+"Анализатор профиля закончил обработку файлов журнала.\n"
+"\n"
+"Все обновленные профили будут перезагружены"
+
+#: ../SubDomain.pm:1996
+msgid "No unhandled AppArmor events were found in the system log."
+msgstr "Не обработанные события AppArmor были найдены в системном журнале."
+
+#: ../SubDomain.pm:2205 ../SubDomain.pm:2235 ../SubDomain.pm:2249
+#: ../SubDomain.pm:2284 ../SubDomain.pm:2304 ../SubDomain.pm:2341
+#: ../SubDomain.pm:2628
+#, perl-format
+msgid "%s contains syntax errors."
+msgstr "%s содержит синтаксические ошибки."
+
+#: ../SubDomain.pm:2263
+#, perl-format
+msgid "Profile %s contains invalid regexp %s."
+msgstr "Профиль %s содержин неверный %s."
+
+#: ../SubDomain.pm:2473
+#, perl-format
+msgid "Writing updated profile for %s."
+msgstr "Зыписывается обновленный профиль %s."
+
+#: ../SubDomain.pm:2605
+#, perl-format
+msgid "Include %s contains invalid regexp %s."
+msgstr "Включение %s содержит неверный regexp %s."
+
+#: ../Reports.pm:266 ../Reports.pm:374 ../Reports.pm:1490
+#, perl-format
+msgid "DBI Execution failed: %s."
+msgstr "Ошибка выполнения DBI: %s"
+
+#: ../Reports.pm:400
+#, perl-format
+msgid "Couldn't open file: %s."
+msgstr "Невозможно открыть файл: %s."
+
+#: ../Reports.pm:404
+msgid "No type value passed.  Unable to determine page count."
+msgstr "Не передано значение типа. Невозможно определить количество страниц."
+
+#: ../Reports.pm:474
+#, perl-format
+msgid "Failed copying %s."
+msgstr "Не удалось скопировать %s."
+
+#: ../Reports.pm:587
+#, perl-format
+msgid "Export Log Error: Couldn't open %s"
+msgstr "Ошибка экспорта журнала: Невозможно открыть %s"
+
+#: ../Reports.pm:611
+msgid "Fatal error.  No report name given. Exiting."
+msgstr "Fatal error.  Отчету не присвоено имя. Выход."
+
+#: ../Reports.pm:617
+#, perl-format
+msgid ""
+"Unable to get configuration info for %s.\n"
+"                Unable to find %s."
+msgstr ""
+"Невозможно получить информация по конфигурации для %s.\n"
+"                Невозможно найти %s."
+
+#: ../Reports.pm:658
+#, perl-format
+msgid "Failed to parse: %s."
+msgstr "Не удалось обработать: %s."
+
+#: ../Reports.pm:667
+#, perl-format
+msgid "Fatal Error.  Couldn't open %s."
+msgstr "Фатальная ошибка.  Невозможно открыть %s."
+
+#: ../Reports.pm:715
+#, perl-format
+msgid "Fatal Error.  Can't run %s.  Exiting."
+msgstr "Fatal Error.  Невозможно выполнить %s.  Выход."
+
+#: ../Reports.pm:756
+#, perl-format
+msgid "Fatal Error.  No directory, %s, found.  Exiting."
+msgstr "Fatal Error.  Каталог %s не найден.  Выход."
+
+#: ../Reports.pm:775
+#, perl-format
+msgid "Fatal Error.  Couldn't open %s.  Exiting"
+msgstr "Fatal Error. Невозможно открыть %s.  Выход."
+
+#: ../Reports.pm:803 ../Reports.pm:816 ../Reports.pm:826
+#, perl-format
+msgid "DBI Execution failed: %s"
+msgstr "Ошибка выполнения DBI: %s"
+
+#: ../Reports.pm:1596
+#, perl-format
+msgid "Fatal Error.  getArchReport() couldn't open %s"
+msgstr "Fatal Error.  getArchReport() не может открыть %s"
+
