@@ -77,6 +77,8 @@ static struct keyword_table keyword_table[] = {
 	{"sys_tty_config",	TOK_CAP_SYS_TTY_CONFIG},
 	{"mknod",		TOK_CAP_MKNOD},
 	{"lease",		TOK_CAP_LEASE},
+	{"audit_write",		TOK_CAP_AUDIT_WRITE},
+	{"audit_control",	TOK_CAP_AUDIT_CONTROL},
 	/* flags */
 	{"flags",		TOK_FLAGS},
 	{"debug",		TOK_FLAG_DEBUG},
@@ -669,7 +671,9 @@ static const char *capnames[] = {
 	"sys_time",
 	"sys_tty_config",
 	"mknod",
-	"lease"
+	"lease",
+	"audit_write",
+	"audit_control"
 };
 
 const char *capability_to_name(unsigned int cap)
