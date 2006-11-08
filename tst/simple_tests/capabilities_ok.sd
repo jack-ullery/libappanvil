@@ -1,5 +1,5 @@
 #
-# $Id:$
+# $Id$
 #=DESCRIPTION validate some uses of capabilties.
 #=EXRESULT PASS
 # vim:syntax=subdomain
@@ -35,6 +35,8 @@
   capability sys_tty_config,
   capability mknod,
   capability lease,
+  capability audit_write,
+  capability audit_control,
 }
 
 /does/not/exist2 {
@@ -124,6 +126,12 @@
   }
   ^lease { 
     capability lease,
+  }
+  ^audit_write {
+    capability audit_write,
+  }
+  ^audit_control {
+    capability audit_control,
   }
 }
 

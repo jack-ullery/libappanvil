@@ -36,11 +36,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#ifndef NOLIBCAP
-#include <sys/capability.h>
-#else 
 #include <linux/capability.h>
-#endif
 
 /* A few utility defines */
 
