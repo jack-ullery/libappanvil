@@ -133,6 +133,8 @@ void free_value_list(struct value_list *list);
 %token TOK_CAP_SYS_TTY_CONFIG
 %token TOK_CAP_MKNOD
 %token TOK_CAP_LEASE
+%token TOK_CAP_AUDIT_WRITE
+%token TOK_CAP_AUDIT_CONTROL
 
 /* debug flag values */
 %token TOK_FLAGS
@@ -858,7 +860,8 @@ cap: 	TOK_CAP_CHOWN			{ $$ = CAP_CHOWN; }
 	| TOK_CAP_SYS_TTY_CONFIG	{ $$ = CAP_SYS_TTY_CONFIG; }
 	| TOK_CAP_MKNOD			{ $$ = CAP_MKNOD; }
 	| TOK_CAP_LEASE			{ $$ = CAP_LEASE; }
-
+	| TOK_CAP_AUDIT_WRITE		{ $$ = CAP_AUDIT_WRITE; }
+	| TOK_CAP_AUDIT_CONTROL		{ $$ = CAP_AUDIT_CONTROL; }
 		
 %%
 #define MAXBUFSIZE 4096
