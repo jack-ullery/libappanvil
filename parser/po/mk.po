@@ -1,21 +1,19 @@
-# @TITLE@
-# Copyright (C) 2006, SUSE Linux GmbH, Nuremberg
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-# This file is distributed under the same license as @PACKAGE@ package. FIRST
+# Macedonian message file for YaST2 (@memory@).
+# Copyright (C) 2006 SUSE Linux Products GmbH.
+# Зоран Димовски <zoki.dimovski@gmail.com>
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: @PACKAGE@\n"
+"Project-Id-Version: YaST (@memory@)\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2005-08-24 17:53+0300\n"
-"Last-Translator: Hellenic SuSE Translation Team <hstg@billg.gr>\n"
-"Language-Team: Hellenic-Ελληνικά-Greek <hstg@billg.gr>\n"
+"PO-Revision-Date: 2001-07-17 16:12+0200\n"
+"Last-Translator: Зоран Димовски <zoki.dimovski@gmail.com>\n"
+"Language-Team: Macedonian <i18n@suse.de>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.10\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 #: ../parser_include.c:95
 #, c-format
@@ -101,14 +99,13 @@ msgid "Profile doesn't exist\n"
 msgstr ""
 
 #: ../parser_interface.c:92
-#, fuzzy
 msgid "Unknown error\n"
-msgstr "Άγνωστη οθόνη:"
+msgstr ""
 
 #: ../parser_interface.c:109
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr "Αποτυχία στη φόρτωση της μονάδας \"%s\"."
+msgstr ""
 
 #: ../parser_interface.c:114
 #, c-format
@@ -151,9 +148,9 @@ msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 msgstr ""
 
 #: ../parser_interface.c:644
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to open %s - %s\n"
-msgstr "Αδυναμία της λήψης εντροπίας από %s"
+msgstr ""
 
 #: ../parser_interface.c:661
 msgid "unable to create work area\n"
@@ -357,19 +354,19 @@ msgid "Network entries can only have one FROM address."
 msgstr ""
 
 #: parser_yacc.y:712 parser_yacc.y:743
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is not a valid ip address."
-msgstr "Αυτή δεν είναι μια έγκυρη διεύθυνση CCW."
+msgstr ""
 
 #: parser_yacc.y:756
-#, fuzzy, c-format
+#, c-format
 msgid "`/%d' is not a valid netmask."
-msgstr "Αυτή δεν είναι μια έγκυρη διεύθυνση CCW."
+msgstr ""
 
 #: parser_yacc.y:763
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is not a valid netmask."
-msgstr "Αυτή δεν είναι μια έγκυρη διεύθυνση CCW."
+msgstr ""
 
 #: parser_yacc.y:789 parser_yacc.y:809
 #, c-format

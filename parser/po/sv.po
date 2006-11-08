@@ -1,68 +1,69 @@
+# translation of apparmor-parser.po to Swedish
 # @TITLE@
 # Copyright (C) 2006, SUSE Linux GmbH, Nuremberg
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 # This file is distributed under the same license as @PACKAGE@ package. FIRST
 #
+# Mattias Newzella <newzella@linux.se>, 2006.
 msgid ""
 msgstr ""
-"Project-Id-Version: @PACKAGE@\n"
+"Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-09-22 10:46-0600\n"
-"PO-Revision-Date: 2005-09-18 19:09+0200\n"
+"POT-Creation-Date: 2006-09-26 13:01-0600\n"
+"PO-Revision-Date: 2006-10-22 12:38+0200\n"
 "Last-Translator: Mattias Newzella <newzella@linux.se>\n"
 "Language-Team: Swedish <sv@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.10.1\n"
+"X-Generator: KBabel 1.11.4\n"
 "Plural-Forms:  nplurals=2; plural=(n != 1);\n"
 
 #: ../parser_include.c:95
 #, c-format
-msgid "Error: couldn't read profile %s: %s\n"
-msgstr ""
+msgid "Error: Could not read profile %s: %s.\n"
+msgstr "Fel: Kunde inte läsa profil %s: %s.\n"
 
 #: ../parser_include.c:114
-msgid "Error couldn't allocate temporary file\n"
+msgid "Error: Could not allocate temporary file.\n"
 msgstr ""
 
 #: ../parser_include.c:165
-msgid "Error: Out of Memory\n"
-msgstr ""
+msgid "Error: Out of memory.\n"
+msgstr "Fel: Slut på minne.\n"
 
 #: ../parser_include.c:175
 #, c-format
-msgid "basedir %s is not a directory, skipping\n"
+msgid "Error: basedir %s is not a directory, skipping.\n"
 msgstr ""
 
 #: ../parser_include.c:189
 #, c-format
-msgid "Error: Can't add directory %s to search path\n"
+msgid "Error: Could not add directory %s to search path.\n"
 msgstr ""
 
 #: ../parser_include.c:199
-msgid "Error: Could not allocate memory\n"
+msgid "Error: Could not allocate memory.\n"
 msgstr ""
 
 #: ../parser_include.c:332
 #, c-format
-msgid "Error: could not allocate buffer for include. line %d in %s\n"
+msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
 msgstr ""
 
 #: ../parser_include.c:348 ../parser_include.c:368
 #, c-format
-msgid "Error: bad include. line %d in %s\n"
+msgid "Error: Bad include at line %d in %s.\n"
 msgstr ""
 
 #: ../parser_include.c:398
 #, c-format
-msgid "Error: exceeded %d levels of includes.  NOT processing %s include\n"
+msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
 msgstr ""
 
 #: ../parser_include.c:423
 #, c-format
-msgid "Error: #include %s%c not found. line %d in %s\n"
+msgid "Error: #include %s%c not found at line %d in %s.\n"
 msgstr ""
 
 #: ../parser_interface.c:65
@@ -71,11 +72,11 @@ msgstr ""
 
 #: ../parser_interface.c:68
 msgid "Permission denied\n"
-msgstr ""
+msgstr "Åtkomst nekas\n"
 
 #: ../parser_interface.c:71
 msgid "Out of memory\n"
-msgstr ""
+msgstr "Slut på minne\n"
 
 #: ../parser_interface.c:74
 msgid "Couldn't copy profile Bad memory address\n"
@@ -102,9 +103,8 @@ msgid "Profile doesn't exist\n"
 msgstr ""
 
 #: ../parser_interface.c:92
-#, fuzzy
 msgid "Unknown error\n"
-msgstr "Okänd bildskärm:"
+msgstr "Okänt fel\n"
 
 #: ../parser_interface.c:109
 #, fuzzy, c-format
@@ -152,9 +152,9 @@ msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 msgstr ""
 
 #: ../parser_interface.c:644
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to open %s - %s\n"
-msgstr "Kunde inte montera cd-rom."
+msgstr "Kunde inte öppna %s - %s\n"
 
 #: ../parser_interface.c:661
 msgid "unable to create work area\n"
@@ -198,7 +198,7 @@ msgstr "Ansluten till: %s"
 #: ../parser_main.c:131
 #, c-format
 msgid "Warning (%s line %d): %s"
-msgstr ""
+msgstr "Varning (%s rad %d): %s"
 
 #: ../parser_main.c:255
 #, c-format
@@ -230,7 +230,7 @@ msgstr ""
 #: ../parser_main.c:352
 #, c-format
 msgid "%s: Unable to find "
-msgstr ""
+msgstr "%s: Kunde inte hitta "
 
 #: ../parser_main.c:352
 msgid ""
@@ -474,3 +474,4 @@ msgstr ""
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr ""
+

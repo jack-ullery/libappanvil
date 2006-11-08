@@ -1,71 +1,64 @@
-# Japanese message file for YaST2 (@memory@).
-# Copyright (C) 2005 SUSE Linux Products GmbH.
-# Copyright (C) 2002 SuSE Linux AG.
-# Copyright (C) 2000, 2001 SuSE GmbH.
-# Mike Fabian <mfabian@suse.de>, 2000, 2001.
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: base\n"
+"Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-09-22 10:46-0600\n"
-"PO-Revision-Date: 2006-06-21 14:02\n"
+"POT-Creation-Date: 2006-09-26 13:01-0600\n"
+"PO-Revision-Date: 2006-11-03 13:52\n"
 "Last-Translator: Novell Language <language@novell.com>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: KBabel 1.9\n"
 
 #: ../parser_include.c:95
-#, fuzzy, c-format
-msgid "Error: couldn't read profile %s: %s\n"
-msgstr "エラーは一時ファイルを割り当てることができませんでした\n"
+#, c-format
+msgid "Error: Could not read profile %s: %s.\n"
+msgstr "エラー: プロファイル %s: %s を読み込めませんでした。\n"
 
 #: ../parser_include.c:114
-msgid "Error couldn't allocate temporary file\n"
-msgstr "エラーは一時ファイルを割り当てることができませんでした\n"
+msgid "Error: Could not allocate temporary file.\n"
+msgstr "エラー: 一時ファイルを割り当てることができませんでした。\n"
 
 #: ../parser_include.c:165
-msgid "Error: Out of Memory\n"
-msgstr "エラー:メモリ不足\n"
+msgid "Error: Out of memory.\n"
+msgstr "エラー: メモリ不足\n"
 
 #: ../parser_include.c:175
 #, c-format
-msgid "basedir %s is not a directory, skipping\n"
-msgstr ""
+msgid "Error: basedir %s is not a directory, skipping.\n"
+msgstr "エラー: basedir %s はディレクトリではありません。スキップします。\n"
 
 #: ../parser_include.c:189
 #, c-format
-msgid "Error: Can't add directory %s to search path\n"
-msgstr "エラー:ディレクトリ%sを検索パスに追加できません\n"
+msgid "Error: Could not add directory %s to search path.\n"
+msgstr "エラー: ディレクトリ %s を検索パスに追加できませんでした。\n"
 
 #: ../parser_include.c:199
-msgid "Error: Could not allocate memory\n"
-msgstr "エラー:メモリを割り当てることができませんでした\n"
+msgid "Error: Could not allocate memory.\n"
+msgstr "エラー: メモリを割り当てることができませんでした。\n"
 
 #: ../parser_include.c:332
 #, c-format
-msgid "Error: could not allocate buffer for include. line %d in %s\n"
-msgstr "エラー:含めるバッファを割り当てることができませんでした。%2$sの行%1$d\n"
+msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
+msgstr "エラー: %2$s の行 %1$d で含めるバッファを割り当てることができませんでした。\n"
 
 #: ../parser_include.c:348 ../parser_include.c:368
 #, c-format
-msgid "Error: bad include. line %d in %s\n"
-msgstr "エラー:不正インクルード。%2$sの行%1$d\n"
+msgid "Error: Bad include at line %d in %s.\n"
+msgstr "エラー: %2$s の行 %1$d での不正なインクルード。\n"
 
 #: ../parser_include.c:398
 #, c-format
-msgid "Error: exceeded %d levels of includes.  NOT processing %s include\n"
-msgstr "エラー:インクルードの%dレベルを超えました%sインクルードを処理していません\n"
+msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
+msgstr "エラー: インクルードの %d レベルを超えました。%s インクルードを処理していません\n"
 
 #: ../parser_include.c:423
 #, c-format
-msgid "Error: #include %s%c not found. line %d in %s\n"
-msgstr ""
-"エラー:#include %1$s%2$c が見つかりません。%4$s\n"
-"の行%3$d\n"
+msgid "Error: #include %s%c not found at line %d in %s.\n"
+msgstr "エラー: %4$s の行 %3$d に#include %1$s%2$c が見つかりません。\n"
 
 #: ../parser_interface.c:65
 msgid "Bad write position\n"
@@ -92,9 +85,8 @@ msgid "Profile does not match signature\n"
 msgstr "プロファイルが署名に一致していません\n"
 
 #: ../parser_interface.c:83
-#, fuzzy
 msgid "Profile version not supported by Apparmor module\n"
-msgstr "プロファイルバージョンがサポートされていません\n"
+msgstr "Apparmorモジュールはプロファイルバージョンをサポートしていません。\n"
 
 #: ../parser_interface.c:86
 msgid "Profile already exists\n"
@@ -183,24 +175,24 @@ msgid "(ip_mode) Found unexpected character: '%s'"
 msgstr "(ip_mode) 予期しない文字を検出しました: '%s'"
 
 #: parser_lex.l:174
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected character in interface name: '%s'"
-msgstr "予期しない文字を検出しました: '%s'"
+msgstr "インタフェース名:「%s」に予期しない文字があります"
 
 #: parser_lex.l:213
 #, c-format
 msgid "Found unknown flag: '%s'"
-msgstr ""
+msgstr "不明のフラグ:「%s」が見つかりました"
 
 #: parser_lex.l:326
-#, fuzzy, c-format
+#, c-format
 msgid "Found unexpected keyword: '%s'"
-msgstr "予期しない文字を検出しました: '%s'"
+msgstr "予期しないキーワード: 「%s」を検出しました"
 
 #: ../parser_main.c:131
-#, fuzzy, c-format
+#, c-format
 msgid "Warning (%s line %d): %s"
-msgstr "警告(行%d):"
+msgstr "警告 (%s 行 %d): %s"
 
 #: ../parser_main.c:255
 #, c-format
@@ -213,6 +205,8 @@ msgid ""
 "Warning: unable to open %s, attempting to use %s\n"
 "as the subdomainfs location. Use --subdomainfs to override.\n"
 msgstr ""
+"警告: %s を開くことができません。subdomainfsの場所として %s を使用\n"
+"しようとしています。--subdomainfsを使用して上書きしてください。\n"
 
 #: ../parser_main.c:305
 #, c-format
@@ -221,6 +215,9 @@ msgid ""
 "Attempting to use %s as the subdomainfs location.\n"
 "Use --subdomainfs to override.\n"
 msgstr ""
+"警告: %s に適切なfsを見つけることができません。マウントされていますか？\n"
+"subdomainfsの場所として %s を使用しようとしています。\n"
+"--subdomainfsを使用して上書きしてください。\n"
 
 #: ../parser_main.c:347
 #, c-format
@@ -243,7 +240,7 @@ msgstr ""
 "ロードされていることを確認してください。\n"
 
 #: ../parser_main.c:368
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
@@ -252,15 +249,15 @@ msgstr ""
 "\n"
 
 #: ../parser_main.c:375
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s: Warning! You've set this program setuid root.\n"
 "Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 msgstr ""
-"%s: 警告!このプログラムsetuid rootを設定しています。\n"
-"このプログラムを実行できれば誰でもSubDomainプロファイルを更新できます。\n"
-" \n"
+"%s: 警告!このプログラムにsetuid rootを設定しました。\n"
+"このプログラムを実行できれば誰でもAppArmorプロファイルを更新できます。\n"
+"\n"
 
 #: ../parser_main.c:442
 #, c-format
@@ -272,6 +269,8 @@ msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
 msgstr ""
+"大文字クォリファイア\"RWLIMX\"は不正です。小文字に変更してください。\n"
+"詳細については、マニュアルページのapparmor.d(5)を参照してください。\n"
 
 #: ../parser_misc.c:313
 msgid "Exec qualifier 'i' must be followed by 'x'"
@@ -284,27 +283,26 @@ msgstr "Execクォリファイア「i」は無効です、相反するクォリ�
 #: ../parser_misc.c:327
 #, c-format
 msgid "Unconstrained exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
-msgstr ""
+msgstr "無制限のexecクォリファイア(%c%c)は、制限されないプロセスに危険な環境変数が渡される結果を招きます。詳細については、「man 5 apparmor.d」を参照してください。\n"
 
 #: ../parser_misc.c:334 ../parser_misc.c:355
-#, fuzzy, c-format
+#, c-format
 msgid "Exec qualifier '%c' must be followed by 'x'"
-msgstr "Execクォリファイア「i」の後に「x」が続く必要があります"
+msgstr "Execクォリファイア「%c」の後に「x」が続く必要があります"
 
 #: ../parser_misc.c:337 ../parser_misc.c:358
-#, fuzzy, c-format
+#, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr "Execクォリファイア「i」は無効です、相反するクォリファイアがすでに指定されています"
+msgstr "Execクォリファイア「%c」は無効です、相反するクォリファイアがすでに指定されています"
 
 #: ../parser_misc.c:376
-#, fuzzy
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "無効なモード、「x」にはexecクォリファイア「i」、「u」、または「p」が前に付きます。"
+msgstr "無効なモード、「x」の前にはexecクォリファイア「i」、「p」、または「u」が付きます。"
 
 #: ../parser_misc.c:396
-#, fuzzy, c-format
+#, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr "内部:予期しないモード文字が入力されています"
+msgstr "内部: 予期しないモード文字「%c」が入力されています"
 
 #: ../parser_misc.c:426 parser_yacc.y:222 parser_yacc.y:315 parser_yacc.y:327
 #: parser_yacc.y:387 parser_yacc.y:521 parser_yacc.y:533 parser_yacc.y:553
@@ -316,9 +314,9 @@ msgstr "メモリ割り当てエラー。"
 
 #: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
 #: ../parser_variable.c:227
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr "サブドメイン構文解析エラー、行%d: %s\n"
+msgstr "AppArmor構文解析エラー: %s\n"
 
 #: ../parser_merge.c:64
 msgid "Couldn't merge entries. Out of Memory\n"
@@ -330,9 +328,8 @@ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
 msgstr "プロファイル%s:複数のx修飾キーで規則%sがマージされています\n"
 
 #: parser_yacc.y:362
-#, fuzzy
 msgid "flags=(debug) is no longer supported, sorry."
-msgstr "デフォルトでは、サブドメインがもはやサポートされていません。(ドメイン: %s)"
+msgstr "flags=(debug)はもはやサポートされていません。"
 
 #: parser_yacc.y:398
 msgid "Assert: `rule' returned NULL."
@@ -349,7 +346,7 @@ msgstr "Assert:「hat rule」はNULLを返しています。"
 #: parser_yacc.y:487
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr ""
+msgstr "未設定のブーリアン変数 %s は条件分岐の構文に使用されています。 "
 
 #: parser_yacc.y:545
 #, c-format
@@ -389,14 +386,14 @@ msgid "ports must be between %d and %d"
 msgstr "ポートは%dと%dの間に置かれる必要があります"
 
 #: parser_yacc.y:876
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr "サブドメイン構文解析エラー、行%d: %s\n"
+msgstr "行 %2$d: %3$s の %1$s におけるAppArmorの構文解析エラー\n"
 
 #: parser_yacc.y:879
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr "サブドメイン構文解析エラー、行%d: %s\n"
+msgstr "AppArmor 構文解析エラー、行 %d: %s\n"
 
 #: ../parser_regex.c:247
 #, c-format
@@ -414,9 +411,9 @@ msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
 msgstr "%s: Regexグループ分けエラー:無効なクローズ}、一致するオープンがありません{ detected\n"
 
 #: ../parser_regex.c:339
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
-msgstr "%s: Regexグループ分けエラー:グループが閉じていません、閉じてください}\n"
+msgstr "%s: Regexグループ分けエラー: クローズしていないグループ分けまたは文字クラスです、クローズします}\n"
 
 #: ../parser_regex.c:353
 #, c-format
@@ -449,9 +446,9 @@ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
 msgstr "%s: regex 「%s」 [original: 「%s」]のコンパイルに失敗しました - mallocの失敗\n"
 
 #: ../parser_policy.c:102
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
-msgstr "プロファイル%sのエラー、ロードに失敗しました\n"
+msgstr "エラー プロファイル %s の規則がマージされています、ロードに失敗しました。\n"
 
 #: ../parser_policy.c:134
 #, c-format
@@ -460,16 +457,19 @@ msgid ""
 "\t'*', '?', character ranges, and alternations are not allowed.\n"
 "\t'**' may only be used at the end of a rule.\n"
 msgstr ""
+"エラー プロファイル %s は、このカーネルには使用できないポリシー要素を含んでいます:\n"
+"\t「*」、「?」、文字範囲、および変更はできません。\n"
+"\t「**」は規則の終わりにのみ使用できます。\n"
 
 #: ../parser_policy.c:179
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr "プロファイル%sのエラー、ロードに失敗しました\n"
+msgstr "エラー プロファイル %s のためのregexs処理がロードに失敗しました。\n"
 
 #: ../parser_policy.c:206
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr "プロファイル%sのエラー、ロードに失敗しました\n"
+msgstr "エラー プロファイル %s の拡大変数がロードに失敗しました。\n"
 
 #: ../parser_policy.c:259
 #, c-format
@@ -482,36 +482,6 @@ msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
 msgstr "%s: 規則後処理の結合中にエラーが見つかりました。中断しています。\n"
 
 #: ../parser_policy.c:420 ../parser_policy.c:427
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr "%s: regex後処理の間にエラーが見つかりました。中止しています。\n"
-
-#~ msgid "%s: Could not allocate memory for subdomain mount point\n"
-#~ msgstr "%s: サブドメインマウントポイントに対してメモリを割り当てることができませんでした\n"
-
-#~ msgid "Default allow subdomains are no longer supported, sorry. (domain: %s^%s)"
-#~ msgstr "デフォルトでは、サブドメインがもはやサポートされていません。(ドメイン: %s^%s)"
-
-#~ msgid "md5 signature given without execute privilege."
-#~ msgstr "md5署名は実行権限なしに与えられています。"
-
-#~ msgid "Negative subdomain entries are no longer supported, sorry. (entry: %s)"
-#~ msgstr "負のサブドメインエントリがもはやサポートされていません。(entry: %s)"
-
-#~ msgid "Exec qualifier 'u' must be followed by 'x'"
-#~ msgstr "Execクォリファイア「u」の後に「x」が続く必要があります"
-
-#~ msgid "Exec qualifier 'u' invalid, conflicting qualifier already specified"
-#~ msgstr "Execクォリファイア「u」は無効です、相反するクォリファイアがすでに指定されています"
-
-#~ msgid "Exec qualifier 'p' must be followed by 'x'"
-#~ msgstr "Execクォリファイア「p」の後に「x」が続く必要があります"
-
-#~ msgid "Exec qualifier 'p' invalid, conflicting qualifier already specified"
-#~ msgstr "Execクォリファイア「p」は無効です、相反するクォリファイアがすでに指定されています"
-
-#~ msgid "%s: Subdomain '%s' defined, but no parent '%s'.\n"
-#~ msgstr "%s: サブドメイン「%s」が定義されていますが、親「%s」がありません。\n"
-
-#~ msgid "%s: Two SubDomains defined for '%s'.\n"
-#~ msgstr "%s: 「%s」に対して2つのサブドメインが定義されています。\n"

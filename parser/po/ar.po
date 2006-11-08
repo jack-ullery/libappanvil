@@ -1,65 +1,65 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# apparmor-parser
+# Copyright (C) 2006 THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-09-22 10:46-0600\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"POT-Creation-Date: 2006-09-26 13:01-0600\n"
+"PO-Revision-Date: 2006-09-27 09:51+0200\n"
+"Last-Translator: opensuse-translations@opensuse.org\n"
+"Language-Team: opensuse-translations@opensuse.org\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: ../parser_include.c:95
 #, c-format
-msgid "Error: couldn't read profile %s: %s\n"
+msgid "Error: Could not read profile %s: %s.\n"
 msgstr ""
 
 #: ../parser_include.c:114
-msgid "Error couldn't allocate temporary file\n"
+msgid "Error: Could not allocate temporary file.\n"
 msgstr ""
 
 #: ../parser_include.c:165
-msgid "Error: Out of Memory\n"
+msgid "Error: Out of memory.\n"
 msgstr ""
 
 #: ../parser_include.c:175
 #, c-format
-msgid "basedir %s is not a directory, skipping\n"
+msgid "Error: basedir %s is not a directory, skipping.\n"
 msgstr ""
 
 #: ../parser_include.c:189
 #, c-format
-msgid "Error: Can't add directory %s to search path\n"
+msgid "Error: Could not add directory %s to search path.\n"
 msgstr ""
 
 #: ../parser_include.c:199
-msgid "Error: Could not allocate memory\n"
+msgid "Error: Could not allocate memory.\n"
 msgstr ""
 
 #: ../parser_include.c:332
 #, c-format
-msgid "Error: could not allocate buffer for include. line %d in %s\n"
+msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
 msgstr ""
 
 #: ../parser_include.c:348 ../parser_include.c:368
 #, c-format
-msgid "Error: bad include. line %d in %s\n"
+msgid "Error: Bad include at line %d in %s.\n"
 msgstr ""
 
 #: ../parser_include.c:398
 #, c-format
-msgid "Error: exceeded %d levels of includes.  NOT processing %s include\n"
+msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
 msgstr ""
 
 #: ../parser_include.c:423
 #, c-format
-msgid "Error: #include %s%c not found. line %d in %s\n"
+msgid "Error: #include %s%c not found at line %d in %s.\n"
 msgstr ""
 
 #: ../parser_interface.c:65

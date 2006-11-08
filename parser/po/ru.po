@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-parser.ru\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-09-22 10:46-0600\n"
-"PO-Revision-Date: 2006-09-22 09:44+0200\n"
+"POT-Creation-Date: 2006-11-02 10:01-0600\n"
+"PO-Revision-Date: 2006-11-03 14:06+0200\n"
 "Last-Translator: Aleksey Osipov <aliks-os@yandex.ru>\n"
 "Language-Team: Russian <i18n@suse.de>\n"
 "MIME-Version: 1.0\n"
@@ -23,50 +23,50 @@ msgstr ""
 
 #: ../parser_include.c:95
 #, c-format
-msgid "Error: couldn't read profile %s: %s\n"
-msgstr ""
+msgid "Error: Could not read profile %s: %s.\n"
+msgstr "Ошибка: Невозможно прочитать профиль %s: %s.\n"
 
 #: ../parser_include.c:114
-msgid "Error couldn't allocate temporary file\n"
-msgstr ""
+msgid "Error: Could not allocate temporary file.\n"
+msgstr "Ошибка: Невозможно расположить временный файл.\n"
 
 #: ../parser_include.c:165
-msgid "Error: Out of Memory\n"
-msgstr "Ошибка: Нехватает памяти\n"
+msgid "Error: Out of memory.\n"
+msgstr "Ошибка: Нехватает памяти.\n"
 
 #: ../parser_include.c:175
-#, fuzzy, c-format
-msgid "basedir %s is not a directory, skipping\n"
-msgstr "'%1'не является каталогом"
+#, c-format
+msgid "Error: basedir %s is not a directory, skipping.\n"
+msgstr "Ошибка: basedir %s не является каталогом, пропускается.\n"
 
 #: ../parser_include.c:189
 #, c-format
-msgid "Error: Can't add directory %s to search path\n"
-msgstr ""
+msgid "Error: Could not add directory %s to search path.\n"
+msgstr "Ошибка: Невозможно добавить каталог %s в путь поиска.\n"
 
 #: ../parser_include.c:199
-msgid "Error: Could not allocate memory\n"
-msgstr ""
+msgid "Error: Could not allocate memory.\n"
+msgstr "Ошибка: Невозможно распределить память.\n"
 
 #: ../parser_include.c:332
 #, c-format
-msgid "Error: could not allocate buffer for include. line %d in %s\n"
-msgstr ""
+msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
+msgstr "Ошибка: Невозможно расположить буффер для включения в строке %d в %s.\n"
 
 #: ../parser_include.c:348 ../parser_include.c:368
 #, c-format
-msgid "Error: bad include. line %d in %s\n"
-msgstr ""
+msgid "Error: Bad include at line %d in %s.\n"
+msgstr "Ошибка: Неверный знак в строке %d в %s.\n"
 
 #: ../parser_include.c:398
 #, c-format
-msgid "Error: exceeded %d levels of includes.  NOT processing %s include\n"
-msgstr ""
+msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
+msgstr "Ошибка: Превышение %d уровней включения.  Включение %s не обрабатывается.\n"
 
 #: ../parser_include.c:423
 #, c-format
-msgid "Error: #include %s%c not found. line %d in %s\n"
-msgstr ""
+msgid "Error: #include %s%c not found at line %d in %s.\n"
+msgstr "Ошибка: #include %s%c не найдена в строке %d в %s.\n"
 
 #: ../parser_interface.c:65
 msgid "Bad write position\n"
@@ -90,11 +90,11 @@ msgstr "Профиль не соответствует протоколу\n"
 
 #: ../parser_interface.c:80
 msgid "Profile does not match signature\n"
-msgstr ""
+msgstr "Профиль не соответствует подписи\n"
 
 #: ../parser_interface.c:83
 msgid "Profile version not supported by Apparmor module\n"
-msgstr ""
+msgstr "Версия профиля не поддерживается модулем Apparmor\n"
 
 #: ../parser_interface.c:86
 msgid "Profile already exists\n"
@@ -111,7 +111,7 @@ msgstr "Неизвестная ошибка\n"
 #: ../parser_interface.c:109
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr ""
+msgstr "%s: Невозможно добавить \"%s\".  "
 
 #: ../parser_interface.c:114
 #, c-format
@@ -121,12 +121,12 @@ msgstr "%s: Невозможно заменить \"%s\".  "
 #: ../parser_interface.c:119
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr ""
+msgstr "%s: Невозможно удалить \"%s\".  "
 
 #: ../parser_interface.c:124
 #, c-format
 msgid "%s: Unable to write to stdout\n"
-msgstr ""
+msgstr "%s: Невозможно записать в stdout\n"
 
 #: ../parser_interface.c:128 ../parser_interface.c:151
 #, c-format
@@ -136,17 +136,17 @@ msgstr ""
 #: ../parser_interface.c:137
 #, c-format
 msgid "Addition succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Дополнение походит для \"%s\".\n"
 
 #: ../parser_interface.c:141
 #, c-format
 msgid "Replacement succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Замена подходит для \"%s\".\n"
 
 #: ../parser_interface.c:145
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Удаление подходит для \"%s\".\n"
 
 #: ../parser_interface.c:236
 #, c-format
@@ -156,11 +156,11 @@ msgstr ""
 #: ../parser_interface.c:644
 #, c-format
 msgid "Unable to open %s - %s\n"
-msgstr "невозможно открыть %s - %s\n"
+msgstr "Невозможно открыть %s - %s\n"
 
 #: ../parser_interface.c:661
 msgid "unable to create work area\n"
-msgstr ""
+msgstr "невозможно создать рабочую область\n"
 
 #: ../parser_interface.c:669
 #, c-format
@@ -170,37 +170,37 @@ msgstr ""
 #: ../parser_interface.c:679
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
-msgstr ""
+msgstr "%s: Невозможно записать введенную запись профиля\n"
 
 #: parser_lex.l:119 parser_lex.l:221 parser_lex.l:347
 #, c-format
 msgid "Found unexpected character: '%s'"
-msgstr ""
+msgstr "Найден неожиданный знак: '%s'"
 
 #: parser_lex.l:159
 #, c-format
 msgid "(ip_mode) Found unexpected character: '%s'"
-msgstr ""
+msgstr "(ip_mode) Найден неожиданный знак: '%s'"
 
 #: parser_lex.l:174
 #, c-format
 msgid "Unexpected character in interface name: '%s'"
-msgstr ""
+msgstr "Неожиданный знак в имени интерфейса: '%s'"
 
 #: parser_lex.l:213
 #, c-format
 msgid "Found unknown flag: '%s'"
-msgstr ""
+msgstr "Найден неизвестный флаг: '%s'"
 
 #: parser_lex.l:326
-#, fuzzy, c-format
+#, c-format
 msgid "Found unexpected keyword: '%s'"
-msgstr "Подключенн к: %s"
+msgstr "Найдено неожиданное ключевое слово: '%s'"
 
 #: ../parser_main.c:131
 #, c-format
 msgid "Warning (%s line %d): %s"
-msgstr ""
+msgstr "Внимание (%s строка %d): %s"
 
 #: ../parser_main.c:255
 #, c-format
@@ -228,6 +228,8 @@ msgid ""
 "%s: Unable to query modules - '%s'\n"
 "Either modules are disabled or your kernel is too old.\n"
 msgstr ""
+"%s: Невозможно опросить модули - '%s'\n"
+"Или модули отключены или ядро слишком старое.\n"
 
 #: ../parser_main.c:352
 #, c-format
@@ -239,9 +241,11 @@ msgid ""
 "!\n"
 "Ensure that it has been loaded.\n"
 msgstr ""
+"!\n"
+"Удостоверьтесь, что он был загружен.\n"
 
 #: ../parser_main.c:368
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
@@ -306,18 +310,18 @@ msgstr ""
 #: parser_yacc.y:665 parser_yacc.y:679 parser_yacc.y:707 parser_yacc.y:737
 #: parser_yacc.y:775 parser_yacc.y:792 parser_yacc.y:806
 msgid "Memory allocation error."
-msgstr ""
+msgstr "Ошибка располдожения в памяти."
 
 # 62889 AttribValues/label
 #: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
 #: ../parser_variable.c:227
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr "Редактор профилей AppArmor"
+msgstr "Ошибка обработчика AppArmor: %s\n"
 
 #: ../parser_merge.c:64
 msgid "Couldn't merge entries. Out of Memory\n"
-msgstr ""
+msgstr "Невозможно объединить записи. Нехватает памяти\n"
 
 #: ../parser_merge.c:92
 #, c-format
@@ -348,7 +352,7 @@ msgstr ""
 #: parser_yacc.y:545
 #, c-format
 msgid "missing an end of line character? (entry: %s)"
-msgstr ""
+msgstr "отсутствует знак конца строки? (запись: %s)"
 
 #: parser_yacc.y:586
 msgid "Assert: `addresses' returned NULL."
@@ -356,11 +360,11 @@ msgstr ""
 
 #: parser_yacc.y:689
 msgid "Network entries can only have one TO address."
-msgstr ""
+msgstr "Сетевые записи могут иметь только один КОМУ адрес."
 
 #: parser_yacc.y:694
 msgid "Network entries can only have one FROM address."
-msgstr ""
+msgstr "Сетевые записи могут иметь только один ОТ адрес."
 
 #: parser_yacc.y:712 parser_yacc.y:743
 #, c-format
@@ -385,12 +389,12 @@ msgstr "порты должны быть между %d и %d"
 #: parser_yacc.y:876
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr ""
+msgstr "Ошибка обработчика AppArmor в %s в строке %d: %s\n"
 
 #: parser_yacc.y:879
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr ""
+msgstr "Ошибка обработчика AppArmor, строка %d: %s\n"
 
 #: ../parser_regex.c:247
 #, c-format
@@ -420,7 +424,7 @@ msgstr ""
 #: ../parser_regex.c:357
 #, c-format
 msgid "%s: Unable to parse input line '%s'\n"
-msgstr ""
+msgstr "%s: Невозможно обработать строку ввода '%s'\n"
 
 #: ../parser_regex.c:390
 #, c-format
@@ -430,12 +434,12 @@ msgstr ""
 #: ../parser_regex.c:394
 #, c-format
 msgid "%s: error near               "
-msgstr ""
+msgstr "%s: ошибка возле            "
 
 #: ../parser_regex.c:404
 #, c-format
 msgid "%s: error reason: '%s'\n"
-msgstr ""
+msgstr "%s: причина ошибки: '%s'\n"
 
 #: ../parser_regex.c:413
 #, c-format
@@ -456,9 +460,9 @@ msgid ""
 msgstr ""
 
 #: ../parser_policy.c:179
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr "ОШИБКА в профиле %s, неудалось загрузить\n"
+msgstr "ОШИБКА обработки regexs профиля %s, неудалось загрузить\n"
 
 #: ../parser_policy.c:206
 #, fuzzy, c-format
@@ -479,3 +483,4 @@ msgstr ""
 #, fuzzy, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr "%s: Обнаружены ошибки в файле. Прерываем.\n"
+

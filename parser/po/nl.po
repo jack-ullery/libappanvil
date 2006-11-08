@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-parser.nl\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-09-22 10:46-0600\n"
-"PO-Revision-Date: 2006-09-07 00:11+0200\n"
+"POT-Creation-Date: 2006-09-26 13:01-0600\n"
+"PO-Revision-Date: 2006-10-09 22:59+0200\n"
 "Last-Translator: Rinse de Vries <rinsedevries@kde.nl>\n"
 "Language-Team: Dutch <kde-i18n-nl@kde.org>\n"
 "MIME-Version: 1.0\n"
@@ -19,51 +19,51 @@ msgstr ""
 "Plural-Forms:  nplurals=2; plural=(n != 1);\n"
 
 #: ../parser_include.c:95
-#, fuzzy, c-format
-msgid "Error: couldn't read profile %s: %s\n"
-msgstr "Fout: Tijdelijk bestand kon niet gereserveerd worden\n"
+#, c-format
+msgid "Error: Could not read profile %s: %s.\n"
+msgstr "Fout: kan profiel %s niet lezen: %s.\n"
 
 #: ../parser_include.c:114
-msgid "Error couldn't allocate temporary file\n"
-msgstr "Fout: Tijdelijk bestand kon niet gereserveerd worden\n"
+msgid "Error: Could not allocate temporary file.\n"
+msgstr "Fout: tijdelijk bestand kon niet gereserveerd worden.\n"
 
 #: ../parser_include.c:165
-msgid "Error: Out of Memory\n"
-msgstr "Fout: Geheugen vol\n"
+msgid "Error: Out of memory.\n"
+msgstr "Fout: onvoldoende geheugen.\n"
 
 #: ../parser_include.c:175
 #, c-format
-msgid "basedir %s is not a directory, skipping\n"
-msgstr ""
+msgid "Error: basedir %s is not a directory, skipping.\n"
+msgstr "Fout: basisdirectory %s is geen directory, overgeslagen.\n"
 
 #: ../parser_include.c:189
 #, c-format
-msgid "Error: Can't add directory %s to search path\n"
-msgstr "Fout: Kan de directory %s niet aan het zoekpad toevoegen\n"
+msgid "Error: Could not add directory %s to search path.\n"
+msgstr "Fout: kon directory %s niet aan het zoekpad toevoegen.\n"
 
 #: ../parser_include.c:199
-msgid "Error: Could not allocate memory\n"
-msgstr "Fout: Geheugen vol\n"
+msgid "Error: Could not allocate memory.\n"
+msgstr "Fout: kon geen geheugen reserveren.\n"
 
 #: ../parser_include.c:332
 #, c-format
-msgid "Error: could not allocate buffer for include. line %d in %s\n"
-msgstr "Fout: Buffer voor de include kon niet gereserveerd worden. Regel %d in %s\n"
+msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
+msgstr "Fout: kon geen buffer reserveren voor include op regel %d in %s.\n"
 
 #: ../parser_include.c:348 ../parser_include.c:368
 #, c-format
-msgid "Error: bad include. line %d in %s\n"
-msgstr "Fout: Foutieve include. Regel %d in%s\n"
+msgid "Error: Bad include at line %d in %s.\n"
+msgstr "Fout: foutieve include op regel %d in%s\n"
 
 #: ../parser_include.c:398
 #, c-format
-msgid "Error: exceeded %d levels of includes.  NOT processing %s include\n"
-msgstr "Fout: Het aantal van %d geneste includes overschreden. Include %s wordt NIET verwerkt\n"
+msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
+msgstr "Fout: het aantal van %d geneste includes overschreden. Include %s wordt niet verwerkt\n"
 
 #: ../parser_include.c:423
 #, c-format
-msgid "Error: #include %s%c not found. line %d in %s\n"
-msgstr "Fout: #include %s%c niet gevonden. Regel %d in %s\n"
+msgid "Error: #include %s%c not found at line %d in %s.\n"
+msgstr "Fout: #include %s%c niet gevonden op regel %d in %s\n"
 
 #: ../parser_interface.c:65
 msgid "Bad write position\n"
@@ -90,9 +90,8 @@ msgid "Profile does not match signature\n"
 msgstr "Profiel komt niet overeen met de ondertekening\n"
 
 #: ../parser_interface.c:83
-#, fuzzy
 msgid "Profile version not supported by Apparmor module\n"
-msgstr "Profielversie niet ondersteund\n"
+msgstr "Profielversie niet ondersteund door Apparmor-module\n"
 
 #: ../parser_interface.c:86
 msgid "Profile already exists\n"
@@ -181,24 +180,24 @@ msgid "(ip_mode) Found unexpected character: '%s'"
 msgstr "(ip_mode) Onverwacht teken gevonden: '%s'"
 
 #: parser_lex.l:174
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected character in interface name: '%s'"
-msgstr "Onverwacht teken gevonden: '%s'"
+msgstr "Onverwacht teken in interfacenaam: '%s'"
 
 #: parser_lex.l:213
 #, c-format
 msgid "Found unknown flag: '%s'"
-msgstr ""
+msgstr "Onbekende flag gevonden: '%s'"
 
 #: parser_lex.l:326
-#, fuzzy, c-format
+#, c-format
 msgid "Found unexpected keyword: '%s'"
-msgstr "Onverwacht teken gevonden: '%s'"
+msgstr "Onverwacht sleutelwoord gevonden: '%s'"
 
 #: ../parser_main.c:131
-#, fuzzy, c-format
+#, c-format
 msgid "Warning (%s line %d): %s"
-msgstr "Waarschuwing (regel %d): "
+msgstr "Waarschuwing (%s regel %d): %s"
 
 #: ../parser_main.c:255
 #, c-format
@@ -211,6 +210,8 @@ msgid ""
 "Warning: unable to open %s, attempting to use %s\n"
 "as the subdomainfs location. Use --subdomainfs to override.\n"
 msgstr ""
+"Waarschuwing: kan %s niet openen, er wordt geprobeerd %s te gebruiken als de locatie\n"
+"van subdomainfs. Gebruik  --subdomainfs om dit te omzeilen.\n"
 
 #: ../parser_main.c:305
 #, c-format
@@ -219,6 +220,9 @@ msgid ""
 "Attempting to use %s as the subdomainfs location.\n"
 "Use --subdomainfs to override.\n"
 msgstr ""
+"Waarschuwing: kan geen geschikt bestandssysteem vinden in %s. Is deze aangekoppeld?\n"
+"Er wordt geprobeerd om %s te gebruiken als locatie van subdomainfs.\n"
+"Gebruik --subdomainfs om dit te omzeilen.\n"
 
 #: ../parser_main.c:347
 #, c-format
@@ -243,23 +247,23 @@ msgstr ""
 "Verzeker u ervan dat het geladen is.\n"
 
 #: ../parser_main.c:368
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
 msgstr ""
-"%s: Helaas. U heeft systeembeheerrechten nodig om dit programma uit te voeren.\n"
+"%s: u heeft systeembeheerrechten nodig om dit programma uit te voeren.\n"
 "\n"
 
 #: ../parser_main.c:375
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s: Warning! You've set this program setuid root.\n"
 "Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 msgstr ""
 "%s: Waarschuwing! U heeft dit programma systeembeheerrechten gegeven (setuid root).\n"
-"Eenieder die dit programma kan uitvoeren kan uw Subdomeinprofielen aanpassen.\n"
+"Eenieder die dit programma kan uitvoeren kan uw AppArmor-profielen aanpassen.\n"
 "\n"
 
 #: ../parser_main.c:442
@@ -272,6 +276,8 @@ msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
 msgstr ""
+"Qualifiers in hoofdletters \"RWLIMX\" zijn achterhaald. Converteer ze naar kleine letters.\n"
+"Zie de manpagina  apparmor.d(5) voor meer informatie.\n"
 
 #: ../parser_misc.c:313
 msgid "Exec qualifier 'i' must be followed by 'x'"
@@ -486,32 +492,3 @@ msgstr "%s: Fouten gevonden in het combineren van de nabewerkingsregels. Stop.\n
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr "%s: Fouten gevonden tijdens de nabewerking van regex regels. Stop.\n"
 
-#~ msgid "%s: Could not allocate memory for subdomain mount point\n"
-#~ msgstr "%s: Kon geen geheugen reserveren voor het subdomein  aankoppelpunt\n"
-
-#~ msgid "Default allow subdomains are no longer supported, sorry. (domain: %s^%s)"
-#~ msgstr "Helaas, standaard toestaan van subdomeinen wordt niet meer ondersteund. (domein: %s^%s)"
-
-#~ msgid "md5 signature given without execute privilege."
-#~ msgstr "md5 ondertekening gegeven zonder uitvoerrechten. "
-
-#~ msgid "Negative subdomain entries are no longer supported, sorry. (entry: %s)"
-#~ msgstr "Helaas, negatieve subdomeinen worden niet meer ondersteund. (invoer: %s)"
-
-#~ msgid "Exec qualifier 'u' must be followed by 'x'"
-#~ msgstr "Exec bepaling 'u' moet gevolgd worden door 'x'"
-
-#~ msgid "Exec qualifier 'u' invalid, conflicting qualifier already specified"
-#~ msgstr "Exec bepaling 'u' ongeldig, conflicterende bepaling is reeds opgegeven"
-
-#~ msgid "Exec qualifier 'p' must be followed by 'x'"
-#~ msgstr "Exec bepaling 'p' moet gevolgd worden door 'x'"
-
-#~ msgid "Exec qualifier 'p' invalid, conflicting qualifier already specified"
-#~ msgstr "Exec bepaling 'p' ongeldig, conflicterende bepaling is reeds opgegeven"
-
-#~ msgid "%s: Subdomain '%s' defined, but no parent '%s'.\n"
-#~ msgstr "%s: Subdomein '%s' gedefinieerd, maar geen bovenliggend domein '%s'.\n"
-
-#~ msgid "%s: Two SubDomains defined for '%s'.\n"
-#~ msgstr "%s: Twee Subdomeinen gedefinieerd voor '%s'.\n"

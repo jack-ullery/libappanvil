@@ -1,68 +1,64 @@
-# Chinese message file for YaST2 (@memory@). -*- coding: utf-8 -*-
-# Copyright (C) 2005 SUSE Linux Products GmbH.
-# Copyright (C) 2002 SuSE Linux AG.
-# Copyright (C) 2001 SuSE GmbH.
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: base\n"
+"Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-09-22 10:46-0600\n"
-"PO-Revision-Date: 2005-03-09 13:54+0100\n"
+"POT-Creation-Date: 2006-09-26 13:01-0600\n"
+"PO-Revision-Date: 2006-11-02 14:23\n"
 "Last-Translator: Novell Language <language@novell.com>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: KBabel 1.9\n"
 
 #: ../parser_include.c:95
-#, fuzzy, c-format
-msgid "Error: couldn't read profile %s: %s\n"
-msgstr "發生無法配置暫存檔的錯誤\n"
+#, c-format
+msgid "Error: Could not read profile %s: %s.\n"
+msgstr "錯誤：無法讀取設定檔：%s：%s。\n"
 
 #: ../parser_include.c:114
-msgid "Error couldn't allocate temporary file\n"
-msgstr "發生無法配置暫存檔的錯誤\n"
+msgid "Error: Could not allocate temporary file.\n"
+msgstr "錯誤：無法配置暫存檔。\n"
 
 #: ../parser_include.c:165
-msgid "Error: Out of Memory\n"
-msgstr "錯誤：記憶體不足\n"
+msgid "Error: Out of memory.\n"
+msgstr "錯誤：記憶體不足。\n"
 
 #: ../parser_include.c:175
 #, c-format
-msgid "basedir %s is not a directory, skipping\n"
-msgstr ""
+msgid "Error: basedir %s is not a directory, skipping.\n"
+msgstr "錯誤：basedir %s 不是目錄，正在略過。\n"
 
 #: ../parser_include.c:189
 #, c-format
-msgid "Error: Can't add directory %s to search path\n"
-msgstr "錯誤：無法在搜尋路徑中加入目錄 %s\n"
+msgid "Error: Could not add directory %s to search path.\n"
+msgstr "錯誤：無法新增目錄 %s 來搜尋路徑。\n"
 
 #: ../parser_include.c:199
-msgid "Error: Could not allocate memory\n"
-msgstr "錯誤：無法配置記憶體\n"
+msgid "Error: Could not allocate memory.\n"
+msgstr "錯誤：無法配置記憶體。\n"
 
 #: ../parser_include.c:332
 #, c-format
-msgid "Error: could not allocate buffer for include. line %d in %s\n"
-msgstr "錯誤：無法配置 include 的緩衝區。%2$s 中的第 %1$d 行\n"
+msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
+msgstr "錯誤：無法配置於 %2$s 中第 %1$d 行的 include 緩衝區。\n"
 
 #: ../parser_include.c:348 ../parser_include.c:368
 #, c-format
-msgid "Error: bad include. line %d in %s\n"
-msgstr "錯誤：不良的 include。%2$s 中的第 %1$d 行\n"
+msgid "Error: Bad include at line %d in %s.\n"
+msgstr "錯誤：於 %2$s 中第 %1$d 行的不良 include。\n"
 
 #: ../parser_include.c:398
 #, c-format
-msgid "Error: exceeded %d levels of includes.  NOT processing %s include\n"
-msgstr "錯誤：已超過 include 的 %d 階層。未處理 %s include\n"
+msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
+msgstr "錯誤：已超過 include 的 %d 階層。未處理 %s include。\n"
 
 #: ../parser_include.c:423
-#, fuzzy, c-format
-msgid "Error: #include %s%c not found. line %d in %s\n"
-msgstr "錯誤：找不到 #include %s%c。%s 中的第 %d 行\n"
+#, c-format
+msgid "Error: #include %s%c not found at line %d in %s.\n"
+msgstr "錯誤：找不到於 %4$s 中第 %3$d 行的 #include %1$s%2$c。\n"
 
 #: ../parser_interface.c:65
 msgid "Bad write position\n"
@@ -89,9 +85,8 @@ msgid "Profile does not match signature\n"
 msgstr "設定檔不符合簽名\n"
 
 #: ../parser_interface.c:83
-#, fuzzy
 msgid "Profile version not supported by Apparmor module\n"
-msgstr "設定檔版本不被支援\n"
+msgstr "Apparmor 模組不支援設定檔版本\n"
 
 #: ../parser_interface.c:86
 msgid "Profile already exists\n"
@@ -180,24 +175,24 @@ msgid "(ip_mode) Found unexpected character: '%s'"
 msgstr "(ip_mode) 找到非預期的字元： '%s'"
 
 #: parser_lex.l:174
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected character in interface name: '%s'"
-msgstr "找到非預期的字元： '%s'"
+msgstr "界面名稱中非預期的字元：'%s'"
 
 #: parser_lex.l:213
 #, c-format
 msgid "Found unknown flag: '%s'"
-msgstr ""
+msgstr "找到未知的旗標：'%s'"
 
 #: parser_lex.l:326
-#, fuzzy, c-format
+#, c-format
 msgid "Found unexpected keyword: '%s'"
-msgstr "找到非預期的字元： '%s'"
+msgstr "找到非預期的關鍵字：'%s'"
 
 #: ../parser_main.c:131
-#, fuzzy, c-format
+#, c-format
 msgid "Warning (%s line %d): %s"
-msgstr "警告 (第 %d 行)："
+msgstr "警告 (%s 行 %d)：%s"
 
 #: ../parser_main.c:255
 #, c-format
@@ -210,6 +205,8 @@ msgid ""
 "Warning: unable to open %s, attempting to use %s\n"
 "as the subdomainfs location. Use --subdomainfs to override.\n"
 msgstr ""
+"警告：無法開啟 %s，嘗試使用 %s\n"
+"作為子領域位置。使用 --子領域以覆寫。\n"
 
 #: ../parser_main.c:305
 #, c-format
@@ -218,6 +215,9 @@ msgid ""
 "Attempting to use %s as the subdomainfs location.\n"
 "Use --subdomainfs to override.\n"
 msgstr ""
+"警告：在 %s 中無法找到合適的 fs，是否已掛載 fs？\n"
+"嘗試使用 %s 做為 subdomainfs 位置。\n"
+"使用 --欲覆寫的 subdomainfs。\n"
 
 #: ../parser_main.c:347
 #, c-format
@@ -242,24 +242,24 @@ msgstr ""
 "請確定已將它載入。\n"
 
 #: ../parser_main.c:368
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
 msgstr ""
-"%s: 抱歉。您必須有 root 許可權才能執行此程式。\n"
+"%s：很抱歉，您必須有 root 權限才能執行此程式。\n"
 "\n"
 
 #: ../parser_main.c:375
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s: Warning! You've set this program setuid root.\n"
 "Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 msgstr ""
-"%s: 警告！您已經將此程式設定為 setuid root。\n"
-"任何可執行此程式的使用者均可更新您的 SubDomain 設定檔。\n"
-" \n"
+"%s：警告！您已設定此程式 setuid root。\n"
+"任何可執行此程式的人均可更新您的 AppArmor 設定檔。\n"
+"\n"
 
 #: ../parser_main.c:442
 #, c-format
@@ -271,6 +271,8 @@ msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
 msgstr ""
+"已取代大寫修識語 \"RWLIMX\"，請轉換為小寫\n"
+"如需詳細資訊，請參閱 apparmor.d(5) 管理。\n"
 
 #: ../parser_misc.c:313
 msgid "Exec qualifier 'i' must be followed by 'x'"
@@ -283,27 +285,26 @@ msgstr "Exec 修飾語「i」是無效的，已指定衝突的修飾語"
 #: ../parser_misc.c:327
 #, c-format
 msgid "Unconstrained exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
-msgstr ""
+msgstr "未限制的 exec 修飾語 (%c%c) 可讓一些危險的環境變數傳遞至不受限制的程序；'man 5 apparmor.d' 以取得詳細資訊。\n"
 
 #: ../parser_misc.c:334 ../parser_misc.c:355
-#, fuzzy, c-format
+#, c-format
 msgid "Exec qualifier '%c' must be followed by 'x'"
-msgstr "Exec 修飾語「i」的後面必須連接「x」"
+msgstr "Exec 修飾語 '%c' 必須加在 'x' 之後"
 
 #: ../parser_misc.c:337 ../parser_misc.c:358
-#, fuzzy, c-format
+#, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr "Exec 修飾語「i」是無效的，已指定衝突的修飾語"
+msgstr "Exec 修飾語 '%c' 無效，已指定衝突的修飾語"
 
 #: ../parser_misc.c:376
-#, fuzzy
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "無效的模式，「x」的前面必須是 Exec 修飾語「i」、「u」或「p」"
+msgstr "無效模式，'x' 必須在 Exec 修飾語 'i'、'p' 或 'u' 之前"
 
 #: ../parser_misc.c:396
-#, fuzzy, c-format
+#, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr "內部：在輸入中有未預期的模式字元"
+msgstr "內部：在輸入中有未預期的模式字元 '%c'"
 
 #: ../parser_misc.c:426 parser_yacc.y:222 parser_yacc.y:315 parser_yacc.y:327
 #: parser_yacc.y:387 parser_yacc.y:521 parser_yacc.y:533 parser_yacc.y:553
@@ -315,9 +316,9 @@ msgstr "記憶體配置錯誤。"
 
 #: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
 #: ../parser_variable.c:227
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr "子領域剖析錯誤，第 %d 行： %s\n"
+msgstr "AppArmor 剖析器錯誤：%s\n"
 
 #: ../parser_merge.c:64
 msgid "Couldn't merge entries. Out of Memory\n"
@@ -329,9 +330,8 @@ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
 msgstr "設定檔 %s：已結合規則 %s 與多個 x Modifier\n"
 
 #: parser_yacc.y:362
-#, fuzzy
 msgid "flags=(debug) is no longer supported, sorry."
-msgstr "抱歉，已不再支援預設允許的子領域。(領域： %s)"
+msgstr "很抱歉，不再支援 flags=(debug)。 "
 
 #: parser_yacc.y:398
 msgid "Assert: `rule' returned NULL."
@@ -348,7 +348,7 @@ msgstr "顯示：'hat rule' 傳回 NULL。"
 #: parser_yacc.y:487
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr ""
+msgstr "取消在 if 運算式中使用的布林變數 %s"
 
 #: parser_yacc.y:545
 #, c-format
@@ -388,14 +388,14 @@ msgid "ports must be between %d and %d"
 msgstr "通訊埠必須介於 %d 與 %d 之間"
 
 #: parser_yacc.y:876
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr "子領域剖析錯誤，第 %d 行： %s\n"
+msgstr "於第 %2$d 行的 %1$s 處發生 AppArmor 剖析器錯誤：%3$s\n"
 
 #: parser_yacc.y:879
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr "子領域剖析錯誤，第 %d 行： %s\n"
+msgstr "第 %d 行發生 AppArmor 剖析器錯誤：%s\n"
 
 #: ../parser_regex.c:247
 #, c-format
@@ -413,9 +413,9 @@ msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
 msgstr "%s: Regex 群組錯誤：非法關閉 }, 無相符的開啟 { 已偵測到\n"
 
 #: ../parser_regex.c:339
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
-msgstr "%s: Regex 群組錯誤：未關閉的群組，預期關閉}\n"
+msgstr "%s：Regex 群組錯誤：未關閉的群組或字元類別別，必須關閉 }\n"
 
 #: ../parser_regex.c:353
 #, c-format
@@ -448,9 +448,9 @@ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
 msgstr "%s: 無法編譯 regex '%s' [原始：'%s'] - malloc 失敗\n"
 
 #: ../parser_policy.c:102
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
-msgstr "設定檔 %s 中有錯誤，載入失敗\n"
+msgstr "合併設定檔 %s 的規則時發生錯誤，無法載入\n"
 
 #: ../parser_policy.c:134
 #, c-format
@@ -459,16 +459,19 @@ msgid ""
 "\t'*', '?', character ranges, and alternations are not allowed.\n"
 "\t'**' may only be used at the end of a rule.\n"
 msgstr ""
+"設定檔 %s 包含無法與此核心一起使用的原則元素時發生錯誤：\n"
+"\t不允許 '*'、'?'、字元範圍和替代。\n"
+"\t'**' 僅能用於規則結束處。\n"
 
 #: ../parser_policy.c:179
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr "設定檔 %s 中有錯誤，載入失敗\n"
+msgstr "處理設定檔 %s 的 regexs 時發生錯誤，無法載入\n"
 
 #: ../parser_policy.c:206
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr "設定檔 %s 中有錯誤，載入失敗\n"
+msgstr "展開設定檔 %s 變數時發生錯誤，無法載入\n"
 
 #: ../parser_policy.c:259
 #, c-format
@@ -481,36 +484,6 @@ msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
 msgstr "%s: 結合規則後處理時發現錯誤。正在中止。\n"
 
 #: ../parser_policy.c:420 ../parser_policy.c:427
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
-msgstr "%s: regex 後處理時發現錯誤。正在中止。\n"
-
-#~ msgid "%s: Could not allocate memory for subdomain mount point\n"
-#~ msgstr "%s: 無法為子領域裝載點配置記憶體\n"
-
-#~ msgid "Default allow subdomains are no longer supported, sorry. (domain: %s^%s)"
-#~ msgstr "抱歉，已不再支援預設允許的子領域。(領域： %s^%s)"
-
-#~ msgid "md5 signature given without execute privilege."
-#~ msgstr "已獲得 md5 簽名但沒有執行權限。"
-
-#~ msgid "Negative subdomain entries are no longer supported, sorry. (entry: %s)"
-#~ msgstr "抱歉，已不再支援 Negative 子領域項目。(項目： %s)"
-
-#~ msgid "Exec qualifier 'u' must be followed by 'x'"
-#~ msgstr "Exec 修飾語「u」的後面必須連接「x」"
-
-#~ msgid "Exec qualifier 'u' invalid, conflicting qualifier already specified"
-#~ msgstr "Exec 修飾語「u」是無效的，已指定衝突的修飾語"
-
-#~ msgid "Exec qualifier 'p' must be followed by 'x'"
-#~ msgstr "Exec 修飾語「p」的後面必須連接「x」"
-
-#~ msgid "Exec qualifier 'p' invalid, conflicting qualifier already specified"
-#~ msgstr "Exec 修飾語「p」是無效的，已指定衝突的修飾語"
-
-#~ msgid "%s: Subdomain '%s' defined, but no parent '%s'.\n"
-#~ msgstr "%s: 子領域 '%s' 已定義，但無父代 '%s'。\n"
-
-#~ msgid "%s: Two SubDomains defined for '%s'.\n"
-#~ msgstr "%s: 已為 '%s' 定義兩個子領域。\n"
+msgstr "%s：regex 後處理時發現錯誤。正在中止。\n"

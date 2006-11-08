@@ -1,66 +1,67 @@
+# translation of apparmor-parser.po to
 # translation of subdomain-parser.po to
 # This file is distributed under the same license as the PACKAGE package.
 # Copyright (C) YEAR Immunix, Inc.
-# Olav Pettershagen <olav.pet@online.no>, 2005.
 #
+# Olav Pettershagen <olav.pet@online.no>, 2005, 2006.
 msgid ""
 msgstr ""
-"Project-Id-Version: subdomain-parser\n"
+"Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-09-22 10:46-0600\n"
-"PO-Revision-Date: 2005-11-18 17:52+0100\n"
+"POT-Creation-Date: 2006-09-26 13:01-0600\n"
+"PO-Revision-Date: 2006-10-06 17:24+0200\n"
 "Last-Translator: Olav Pettershagen <olav.pet@online.no>\n"
 "Language-Team:  <nb@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.10.2\n"
+"X-Generator: KBabel 1.11.4\n"
 
 #: ../parser_include.c:95
-#, fuzzy, c-format
-msgid "Error: couldn't read profile %s: %s\n"
-msgstr "Feil: Kunne ikke tilordne midlertidig fil\n"
+#, c-format
+msgid "Error: Could not read profile %s: %s.\n"
+msgstr "Feil: Kunne ikke lese profil %s:%s.\n"
 
 #: ../parser_include.c:114
-msgid "Error couldn't allocate temporary file\n"
+msgid "Error: Could not allocate temporary file.\n"
 msgstr "Feil: Kunne ikke tilordne midlertidig fil\n"
 
 #: ../parser_include.c:165
-msgid "Error: Out of Memory\n"
-msgstr "Feil: For lite minne\n"
+msgid "Error: Out of memory.\n"
+msgstr "Feil: For lite minne.\n"
 
 #: ../parser_include.c:175
 #, c-format
-msgid "basedir %s is not a directory, skipping\n"
-msgstr ""
+msgid "Error: basedir %s is not a directory, skipping.\n"
+msgstr "Feil: basedir %s er ikke en katalog, hopper over.\n"
 
 #: ../parser_include.c:189
 #, c-format
-msgid "Error: Can't add directory %s to search path\n"
+msgid "Error: Could not add directory %s to search path.\n"
 msgstr "Feil: Kan ikke legge katalogen %s til søkesti\n"
 
 #: ../parser_include.c:199
-msgid "Error: Could not allocate memory\n"
+msgid "Error: Could not allocate memory.\n"
 msgstr "Feil: Kunne ikke tilordne minne\n"
 
 #: ../parser_include.c:332
 #, c-format
-msgid "Error: could not allocate buffer for include. line %d in %s\n"
-msgstr "Feil: kunne ikke tildele mellomlager for inkludert oppføring. Linje %d i %s\n"
+msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
+msgstr "Feil: kunne ikke tildele mellomlager for inkludert oppføring på linje %d i %s\n"
 
 #: ../parser_include.c:348 ../parser_include.c:368
 #, c-format
-msgid "Error: bad include. line %d in %s\n"
-msgstr "Feil: Ugyldig inkludert oppføring, linje %d i %s\n"
+msgid "Error: Bad include at line %d in %s.\n"
+msgstr "Feil: Ugyldig inkludert oppføring på linje %d i %s\n"
 
 #: ../parser_include.c:398
 #, c-format
-msgid "Error: exceeded %d levels of includes.  NOT processing %s include\n"
-msgstr "Feil: %d nivåer for inkluderingsoppføringer overskredet. Inkludert oppføring %s blir IKKE behandlet\n"
+msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
+msgstr "Feil: %d nivåer for inkluderte oppføringer overskredet. Inkludert oppføring %s blir ikke behandlet.\n"
 
 #: ../parser_include.c:423
 #, c-format
-msgid "Error: #include %s%c not found. line %d in %s\n"
+msgid "Error: #include %s%c not found at line %d in %s.\n"
 msgstr "Feil: #include %s%c ikke funnet. Linje %d i %s\n"
 
 #: ../parser_interface.c:65
@@ -88,14 +89,12 @@ msgid "Profile does not match signature\n"
 msgstr "Profilen samsvarer ikke med signaturen\n"
 
 #: ../parser_interface.c:83
-#, fuzzy
 msgid "Profile version not supported by Apparmor module\n"
-msgstr "Profilversjonen støttes ikke\n"
+msgstr "Profilversjonen støttes ikke av Apparmor-modulen\n"
 
 #: ../parser_interface.c:86
-#, fuzzy
 msgid "Profile already exists\n"
-msgstr "Profilen finnes ikke\n"
+msgstr "Profilen finnes allerede\n"
 
 #: ../parser_interface.c:89
 msgid "Profile doesn't exist\n"
@@ -151,7 +150,7 @@ msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 msgstr "PANIC ugyldig inkrementbuffer %p pos %p ext %p size %d res %p\n"
 
 #: ../parser_interface.c:644
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to open %s - %s\n"
 msgstr "Kan ikke åpne %s - %s\n"
 
@@ -180,24 +179,24 @@ msgid "(ip_mode) Found unexpected character: '%s'"
 msgstr "(ip_mode) Fant uventet tegn: '%s'"
 
 #: parser_lex.l:174
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected character in interface name: '%s'"
-msgstr "Fant uventet tegn: '%s'"
+msgstr "Uventet tegn i grensesnittnavn: '%s'"
 
 #: parser_lex.l:213
 #, c-format
 msgid "Found unknown flag: '%s'"
-msgstr ""
+msgstr "Fant ukjent flagg: '%s'"
 
 #: parser_lex.l:326
-#, fuzzy, c-format
+#, c-format
 msgid "Found unexpected keyword: '%s'"
-msgstr "Fant uventet tegn: '%s'"
+msgstr "Fant uventet nøkkelord: '%s'"
 
 #: ../parser_main.c:131
-#, fuzzy, c-format
+#, c-format
 msgid "Warning (%s line %d): %s"
-msgstr "Advarsel (linje %d): "
+msgstr "Advarsel (%s linje %d): %s"
 
 #: ../parser_main.c:255
 #, c-format
@@ -210,6 +209,8 @@ msgid ""
 "Warning: unable to open %s, attempting to use %s\n"
 "as the subdomainfs location. Use --subdomainfs to override.\n"
 msgstr ""
+"Advarsel: Kunne ikke åpne %s, forsøker å bruke %s\n"
+"som subdomainfs-plassering. Bruk --subdomainfs for å overstyre.\n"
 
 #: ../parser_main.c:305
 #, c-format
@@ -218,6 +219,9 @@ msgid ""
 "Attempting to use %s as the subdomainfs location.\n"
 "Use --subdomainfs to override.\n"
 msgstr ""
+"Advarsel: Kunne ikke finne en egnet fs i %s, er den montert?\n"
+"Forsøker å bruke %s som subdomainfs-plassering.\n"
+"Bruk --subdomainfs for å overstyre.\n"
 
 #: ../parser_main.c:347
 #, c-format
@@ -242,7 +246,7 @@ msgstr ""
 "Kontroller at den er lastet.\n"
 
 #: ../parser_main.c:368
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
@@ -251,14 +255,14 @@ msgstr ""
 "\n"
 
 #: ../parser_main.c:375
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s: Warning! You've set this program setuid root.\n"
 "Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 msgstr ""
 "%s: Advarsel! Du har definert 'setuid root' for dette programmet.\n"
-"Hvem som helst kan kjøre dette programmet og oppdatere dine subdomeneprofiler.\n"
+"Alle som kan kjøre dette programmet, kan oppdatere dine AppArmor-profiler.\n"
 "\n"
 
 #: ../parser_main.c:442
@@ -271,6 +275,8 @@ msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
 msgstr ""
+"Valg med store bokstaver \"RWLIMX\" brukes ikke lenger. Konverter til små bokstaver.\n"
+"Se manualsiden apparmor.d(5).\n"
 
 #: ../parser_misc.c:313
 msgid "Exec qualifier 'i' must be followed by 'x'"
@@ -283,27 +289,26 @@ msgstr "Exec-valget 'i' er ugyldig. Et annen valg som er i konflikt med dette, e
 #: ../parser_misc.c:327
 #, c-format
 msgid "Unconstrained exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
-msgstr ""
+msgstr "Et ubegrenset exec-valg (%c%c) kan medføre at farlige miljøvariabler sendes til den ubegrensede prosessen. Se 'man 5 apparmor.d'.\n"
 
 #: ../parser_misc.c:334 ../parser_misc.c:355
-#, fuzzy, c-format
+#, c-format
 msgid "Exec qualifier '%c' must be followed by 'x'"
-msgstr "Exec-valget 'i' må være etterfulgt av 'x'"
+msgstr "Exec-valget '%c' må være etterfulgt av 'x'"
 
 #: ../parser_misc.c:337 ../parser_misc.c:358
-#, fuzzy, c-format
+#, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr "Exec-valget 'i' er ugyldig. Et annen valg som er i konflikt med dette, er allerede spesifisert."
+msgstr "Exec-valget '%c' er ugyldig. Et annen valg er allerede spesifisert."
 
 #: ../parser_misc.c:376
-#, fuzzy
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "Ugyldig modus. 'x' må komme etter exec-valget 'i', 'u' eller 'p'"
+msgstr "Ugyldig modus. 'x' må komme etter exec-valget 'i', 'p' eller 'u'"
 
 #: ../parser_misc.c:396
-#, fuzzy, c-format
+#, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr "Intern feil: Uventet modustegn angitt"
+msgstr "Intern feil: Uventet modustegn '%c' angitt"
 
 #: ../parser_misc.c:426 parser_yacc.y:222 parser_yacc.y:315 parser_yacc.y:327
 #: parser_yacc.y:387 parser_yacc.y:521 parser_yacc.y:533 parser_yacc.y:553
@@ -315,14 +320,13 @@ msgstr "Minnetilordningsfeil."
 
 #: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
 #: ../parser_variable.c:227
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr "Feil under analyse av subdomene, linje %d: %s\n"
+msgstr "Feil under AppArmor-analyse: %s\n"
 
 #: ../parser_merge.c:64
-#, fuzzy
 msgid "Couldn't merge entries. Out of Memory\n"
-msgstr "Kunne ikke legge inn oppføringer. For lite minne.\n"
+msgstr "Kunne ikke legge inn oppføringer. For lite minne\n"
 
 #: ../parser_merge.c:92
 #, c-format
@@ -330,9 +334,8 @@ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
 msgstr "Profil %s: Har lagt inn regel %s med flere x-modifikatorer.\n"
 
 #: parser_yacc.y:362
-#, fuzzy
 msgid "flags=(debug) is no longer supported, sorry."
-msgstr "Standard tillatte subdomener støttes ikke lenger. (domene: %s)"
+msgstr "flagg=(debug) støttes ikke lenger, beklager."
 
 #: parser_yacc.y:398
 msgid "Assert: `rule' returned NULL."
@@ -349,7 +352,7 @@ msgstr "Assert: 'hat rule' returnerte NULL."
 #: parser_yacc.y:487
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr ""
+msgstr "Udefinert boolsk variabel %s brukt i if-uttrykk"
 
 #: parser_yacc.y:545
 #, c-format
@@ -389,14 +392,14 @@ msgid "ports must be between %d and %d"
 msgstr "Portnummer må være mellom %d og %d"
 
 #: parser_yacc.y:876
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr "Feil under analyse av subdomene, linje %d: %s\n"
+msgstr "Feil under AppArmor-analyse %s på linje %d: %s\n"
 
 #: parser_yacc.y:879
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr "Feil under analyse av subdomene, linje %d: %s\n"
+msgstr "Feil under AppArmor-analyse, linje %d: %s\n"
 
 #: ../parser_regex.c:247
 #, c-format
@@ -414,9 +417,9 @@ msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
 msgstr "%s: Regex-grupperingsfeil: Ugyldig avsluttende }, ingen initial { funnet\n"
 
 #: ../parser_regex.c:339
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
-msgstr "%s: Regex-grupperingsfeil: Åpen gruppering, lukket forventet }\n"
+msgstr "%s: Regex-grupperingsfeil: Åpen grupperings- eller tegnklasse, lukket forventet }\n"
 
 #: ../parser_regex.c:353
 #, c-format
@@ -449,9 +452,9 @@ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
 msgstr "%s: Kunne ikke kompilere regex '%s' [original: '%s'] - malloc mislyktes\n"
 
 #: ../parser_policy.c:102
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
-msgstr "FEIL i profil %s, kunne ikke laste\n"
+msgstr "FEIL under aktivering av regler for profil %s, kunne ikke laste\n"
 
 #: ../parser_policy.c:134
 #, c-format
@@ -460,16 +463,19 @@ msgid ""
 "\t'*', '?', character ranges, and alternations are not allowed.\n"
 "\t'**' may only be used at the end of a rule.\n"
 msgstr ""
+"FEIL Profilen %s inneholder strategielementer som ikke kan brukes med denne kjernen:\n"
+"\t'*', '?', og alternerende elementer er ikke tillatt.\n"
+"\t'**' kan bare brukes på slutten av en regel.\n"
 
 #: ../parser_policy.c:179
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr "FEIL i profil %s, kunne ikke laste\n"
+msgstr "FEIL under behandling av regexs for profil %s, kunne ikke laste\n"
 
 #: ../parser_policy.c:206
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr "FEIL i profil %s, kunne ikke laste\n"
+msgstr "FEIL under utvidelse av variabler for profil %s, kunne ikke laste\n"
 
 #: ../parser_policy.c:259
 #, c-format
@@ -482,40 +488,6 @@ msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
 msgstr "%s: Feil funnet under etterbehandling av kombinasjonsregler. Avbryter.\n"
 
 #: ../parser_policy.c:420 ../parser_policy.c:427
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr "%s: Feil funnet under etterbehandling av regex. Avbryter.\n"
-
-#~ msgid "%s: Could not allocate memory for subdomain mount point\n"
-#~ msgstr "%s: Kunne ikke tilordne minne for subdomenets monteringspunkt\n"
-
-#~ msgid "Default allow subdomains are no longer supported, sorry. (domain: %s^%s)"
-#~ msgstr "Standard tillatte subdomener støttes ikke lenger. (domene: %s^%s)"
-
-#~ msgid "md5 signature given without execute privilege."
-#~ msgstr "md5-signatur angitt uten kjørerettigheter."
-
-#~ msgid "Negative subdomain entries are no longer supported, sorry. (entry: %s)"
-#~ msgstr "Negative subdomeneoppføringer støttes ikke lenger. (oppføring: %s)"
-
-#~ msgid "Exec qualifier 'u' must be followed by 'x'"
-#~ msgstr "Exec-verdien 'u' må være etterfulgt av 'x'"
-
-#~ msgid "Exec qualifier 'u' invalid, conflicting qualifier already specified"
-#~ msgstr "Exec-valget 'u' er ugyldig. Et annen valg som er i konflikt med dette, er allerede spesifisert."
-
-#~ msgid "Exec qualifier 'p' must be followed by 'x'"
-#~ msgstr "Exec-verdien 'p' må være etterfulgt av 'x'"
-
-#~ msgid "Exec qualifier 'p' invalid, conflicting qualifier already specified"
-#~ msgstr "Exec-valget 'p' er ugyldig. Et annen valg som er i konflikt med dette, er allerede spesifisert."
-
-#~ msgid "%s: Subdomain '%s' defined, but no parent '%s'.\n"
-#~ msgstr "%s: Subdomene '%s' definert, men ikke hoveddomene '%s'.\n"
-
-#~ msgid "%s: Two SubDomains defined for '%s'.\n"
-#~ msgstr "%s: To subdomener definert for '%s'.\n"
-
-#, fuzzy
-#~ msgid "Profile for %s already exists - skipping."
-#~ msgstr "Profilen finnes allerede\n"

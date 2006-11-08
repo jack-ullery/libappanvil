@@ -5,14 +5,14 @@
 # Copyright (C) 1999-2001 SuSE GmbH.
 #
 # Petr Pavlik <pp@suse.cz>, 1999, 2000, 2001.
-# Jakub Friedl <jfriedl@suse.cz>, 2005.
+# Jakub Friedl <jfriedl@suse.cz>, 2005, 2006.
 # Klara Cihlarova <koty@seznam.cz>, 2006.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-09-22 10:46-0600\n"
-"PO-Revision-Date: 2006-06-05 09:51+0200\n"
+"POT-Creation-Date: 2006-09-26 13:01-0600\n"
+"PO-Revision-Date: 2006-10-02 08:06+0200\n"
 "Last-Translator: Klara Cihlarova <koty@seznam.cz>\n"
 "Language-Team: cs_CZ <cs@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -22,51 +22,51 @@ msgstr ""
 "X-Generator: KBabel 1.11.2\n"
 
 #: ../parser_include.c:95
-#, fuzzy, c-format
-msgid "Error: couldn't read profile %s: %s\n"
-msgstr "Chyba: nelze alokovat dočasný soubor\n"
+#, c-format
+msgid "Error: Could not read profile %s: %s.\n"
+msgstr "Chyba: Nelze číst profil %s: %s.\n"
 
 #: ../parser_include.c:114
-msgid "Error couldn't allocate temporary file\n"
-msgstr "Chyba: nelze alokovat dočasný soubor\n"
+msgid "Error: Could not allocate temporary file.\n"
+msgstr "Chyba: nelze alokovat dočasný soubor.\n"
 
 #: ../parser_include.c:165
-msgid "Error: Out of Memory\n"
-msgstr "Chyba: nedostatek paměti\n"
+msgid "Error: Out of memory.\n"
+msgstr "Chyba: nedostatek paměti.\n"
 
 #: ../parser_include.c:175
-#, fuzzy, c-format
-msgid "basedir %s is not a directory, skipping\n"
-msgstr "'%1' není adresář"
+#, c-format
+msgid "Error: basedir %s is not a directory, skipping.\n"
+msgstr "Chyba: basedir %s není adresář, přeskakuji.\n"
 
 #: ../parser_include.c:189
 #, c-format
-msgid "Error: Can't add directory %s to search path\n"
-msgstr "Chyba: nelze přidat adresář %s do vyhledávací cesty\n"
+msgid "Error: Could not add directory %s to search path.\n"
+msgstr "Chyba: nelze přidat adresář %s do vyhledávací cesty.\n"
 
 #: ../parser_include.c:199
-msgid "Error: Could not allocate memory\n"
-msgstr "Chyba: nelze přidělit paměť\n"
+msgid "Error: Could not allocate memory.\n"
+msgstr "Chyba: nelze přidělit paměť.\n"
 
 #: ../parser_include.c:332
 #, c-format
-msgid "Error: could not allocate buffer for include. line %d in %s\n"
-msgstr "Chyba: nelze alokovat buffer pro include. Řádka %d v %s\n"
+msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
+msgstr "Chyba: nelze alokovat buffer pro include na řádce %d v %s.\n"
 
 #: ../parser_include.c:348 ../parser_include.c:368
 #, c-format
-msgid "Error: bad include. line %d in %s\n"
-msgstr "Chyba: špatný include. Řádka %d v %s\n"
+msgid "Error: Bad include at line %d in %s.\n"
+msgstr "Chyba: špatný include na řádce %d v %s.\n"
 
 #: ../parser_include.c:398
 #, c-format
-msgid "Error: exceeded %d levels of includes.  NOT processing %s include\n"
-msgstr "Chyba: překročeno %d úrovní vkládání. Nezpracovává se include %s\n"
+msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
+msgstr "Chyba: překročeno %d úrovní vkládání. Nezpracovává se include %s.\n"
 
 #: ../parser_include.c:423
 #, c-format
-msgid "Error: #include %s%c not found. line %d in %s\n"
-msgstr "Chyba:#include %s%c nenalezen. Řádka %d v %s\n"
+msgid "Error: #include %s%c not found at line %d in %s.\n"
+msgstr "Chyba:#include %s%c nenalezen na řádce%d v %s.\n"
 
 #: ../parser_interface.c:65
 msgid "Bad write position\n"
@@ -93,9 +93,8 @@ msgid "Profile does not match signature\n"
 msgstr "Profil neodpovídá podpisu\n"
 
 #: ../parser_interface.c:83
-#, fuzzy
 msgid "Profile version not supported by Apparmor module\n"
-msgstr "Verze profilu není podporována\n"
+msgstr "Verze profilu není podporována modulem Apparmor\n"
 
 #: ../parser_interface.c:86
 msgid "Profile already exists\n"
@@ -184,24 +183,24 @@ msgid "(ip_mode) Found unexpected character: '%s'"
 msgstr "(ip_mode) Nalezen neočekávaný znak: '%s'"
 
 #: parser_lex.l:174
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected character in interface name: '%s'"
-msgstr "Nalezen neočekávaný znak: '%s'"
+msgstr "Neočekávaný znak ve jménu rozhraní: '%s'"
 
 #: parser_lex.l:213
 #, c-format
 msgid "Found unknown flag: '%s'"
-msgstr ""
+msgstr "Nalezen neznámý příznak: '%s'"
 
 #: parser_lex.l:326
-#, fuzzy, c-format
+#, c-format
 msgid "Found unexpected keyword: '%s'"
-msgstr "Nalezen neočekávaný znak: '%s'"
+msgstr "Nalezeno neočekávané klíčové slovo: '%s'"
 
 #: ../parser_main.c:131
-#, fuzzy, c-format
+#, c-format
 msgid "Warning (%s line %d): %s"
-msgstr "Varování (řádka %d): "
+msgstr "Varování (%s řádka %d): %s"
 
 #: ../parser_main.c:255
 #, c-format
@@ -214,6 +213,8 @@ msgid ""
 "Warning: unable to open %s, attempting to use %s\n"
 "as the subdomainfs location. Use --subdomainfs to override.\n"
 msgstr ""
+"varování: nelze otevřít %s, pokouším se použít %s\n"
+"jako místo subdomainfs. Pro potlačení použijte --subdomainfs.\n"
 
 #: ../parser_main.c:305
 #, c-format
@@ -222,6 +223,9 @@ msgid ""
 "Attempting to use %s as the subdomainfs location.\n"
 "Use --subdomainfs to override.\n"
 msgstr ""
+"Varování: nelze nalézt vhodný fs v %s, je připojen?\n"
+"Pokouším se použít %s jako místo subdomainfs.\n"
+"Pro potlačení použijte --subdomainfs.\n"
 
 #: ../parser_main.c:347
 #, c-format
@@ -246,7 +250,7 @@ msgstr ""
 "Zajistěte načtení.\n"
 
 #: ../parser_main.c:368
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
@@ -255,14 +259,14 @@ msgstr ""
 "\n"
 
 #: ../parser_main.c:375
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s: Warning! You've set this program setuid root.\n"
 "Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 msgstr ""
 "%s: Varování! Nastavili jste tomuto programu setuid root.\n"
-"Kdokoliv může tento program spustit, může aktualizovat vaše SubDomain profily.\n"
+"Kdokoliv může tento program spustit, může aktualizovat vaše AppArmor profily.\n"
 "\n"
 
 #: ../parser_main.c:442
@@ -275,6 +279,9 @@ msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
 msgstr ""
+"Kvalifikátory psané velkými písmeny \"RWLIMX\" jsou zastaralé,\n"
+"převeďte je prosím na malá písmena. Více viz manuálová stránka\n"
+"apparmor.d(5).\n"
 
 #: ../parser_misc.c:313
 msgid "Exec qualifier 'i' must be followed by 'x'"
@@ -287,27 +294,26 @@ msgstr "Exec kvalifikátor 'i' je neplatný, byl již specifikován konfliktní 
 #: ../parser_misc.c:327
 #, c-format
 msgid "Unconstrained exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
-msgstr ""
+msgstr "Neomezený exec kvalifikátor (%c%c) umožňuje předat neomezenému procesu některé nebezpečné proměnné prostředí; více viz 'man 5 apparmor.d'.\n"
 
 #: ../parser_misc.c:334 ../parser_misc.c:355
-#, fuzzy, c-format
+#, c-format
 msgid "Exec qualifier '%c' must be followed by 'x'"
-msgstr "Exec kvalifikátor 'i' musí být následován 'x'"
+msgstr "Exec kvalifikátor '%c' musí být následován 'x'"
 
 #: ../parser_misc.c:337 ../parser_misc.c:358
-#, fuzzy, c-format
+#, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr "Exec kvalifikátor 'i' je neplatný, byl již specifikován konfliktní kvalifikátor"
+msgstr "Exec kvalifikátor '%c' je neplatný, byl již specifikován konfliktní kvalifikátor"
 
 #: ../parser_misc.c:376
-#, fuzzy
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "Neplatný režim, před 'x' musí být exec kvalifikátor 'i', 'u' nebo 'p'"
+msgstr "Neplatný režim, před 'x' musí být exec kvalifikátor 'i', 'p' nebo 'u'"
 
 #: ../parser_misc.c:396
-#, fuzzy, c-format
+#, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr "Vnitřní: neznámý znak režimu na vstupu"
+msgstr "Vnitřní: neznámý znak režimu '%c' na vstupu"
 
 #: ../parser_misc.c:426 parser_yacc.y:222 parser_yacc.y:315 parser_yacc.y:327
 #: parser_yacc.y:387 parser_yacc.y:521 parser_yacc.y:533 parser_yacc.y:553
@@ -319,9 +325,9 @@ msgstr "Chyba alokace paměti."
 
 #: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
 #: ../parser_variable.c:227
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr "Chyba parseru subdomény, řádek %d: %s\n"
+msgstr "Chyba parseru AppArmor: %s\n"
 
 #: ../parser_merge.c:64
 msgid "Couldn't merge entries. Out of Memory\n"
@@ -333,9 +339,8 @@ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
 msgstr "profil %s: sloučil pravidlo %s s více x modifikátory\n"
 
 #: parser_yacc.y:362
-#, fuzzy
 msgid "flags=(debug) is no longer supported, sorry."
-msgstr "Výchozí povolené subdomény nejsou nadále podporovány (doména: %s)."
+msgstr "flags=(debug) není nadále bohužel podporováno."
 
 #: parser_yacc.y:398
 msgid "Assert: `rule' returned NULL."
@@ -352,7 +357,7 @@ msgstr "Assert: 'hat rule' vrátil NULL."
 #: parser_yacc.y:487
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr ""
+msgstr "Nenastavená booleovská proměnná %s v if výrazu"
 
 #: parser_yacc.y:545
 #, c-format
@@ -392,14 +397,14 @@ msgid "ports must be between %d and %d"
 msgstr "porty musí být mezi %d a %d"
 
 #: parser_yacc.y:876
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr "Chyba parseru subdomény, řádek %d: %s\n"
+msgstr "Chyba parseru AppArmor v %s na řádce %d: %s\n"
 
 #: parser_yacc.y:879
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr "Chyba parseru subdomény, řádek %d: %s\n"
+msgstr "Chyba parseru AppArmor, řádka %d: %s\n"
 
 #: ../parser_regex.c:247
 #, c-format
@@ -417,9 +422,9 @@ msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
 msgstr "%s: Chyba seskupování regex: neplatná uzavírací }, nenalezena odpovídající otevírací {\n"
 
 #: ../parser_regex.c:339
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
-msgstr "%s: Chyba seskupování regex: neuzavřené seskupení, očekávána uzavírací }\n"
+msgstr "%s: Chyba seskupování regex: neuzavřené seskupení třídy znaků, očekávána uzavírací }\n"
 
 #: ../parser_regex.c:353
 #, c-format
@@ -452,9 +457,9 @@ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
 msgstr "%s: Selhala kompilace regex '%s' [originál: '%s'] - selhání malloc\n"
 
 #: ../parser_policy.c:102
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
-msgstr "CHYBA v profilu %s, selhalo načítání\n"
+msgstr "CHYBA slučování pravidel profilu %s, selhalo načítání\n"
 
 #: ../parser_policy.c:134
 #, c-format
@@ -463,16 +468,19 @@ msgid ""
 "\t'*', '?', character ranges, and alternations are not allowed.\n"
 "\t'**' may only be used at the end of a rule.\n"
 msgstr ""
+"CHYBA profil %s obsahuje prvky politiky nepoužitelné s tímto jádrem:\n"
+"\t'*', '?', rozsahy znaků a alternace nejsou povoleny.\n"
+"\t'**' může být pouze na konci pravidla.\n"
 
 #: ../parser_policy.c:179
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr "CHYBA v profilu %s, selhalo načítání\n"
+msgstr "CHYBApři zpracování regex pro profil %s, selhalo načítání\n"
 
 #: ../parser_policy.c:206
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr "CHYBA v profilu %s, selhalo načítání\n"
+msgstr "CHYBA při expanzi proměnných pro profil %s, selhalo načítání\n"
 
 #: ../parser_policy.c:259
 #, c-format
@@ -485,36 +493,7 @@ msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
 msgstr "%s: Nalezeny chyby při postprocesingu kombinačních pravidel. Ukončuji.\n"
 
 #: ../parser_policy.c:420 ../parser_policy.c:427
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr "%s: Nalezeny chyby během postprocesingu regex. Ukončuji.\n"
 
-#~ msgid "%s: Could not allocate memory for subdomain mount point\n"
-#~ msgstr "%s: Nelze alokovat paměť pro bod připojení subdomény\n"
-
-#~ msgid "Default allow subdomains are no longer supported, sorry. (domain: %s^%s)"
-#~ msgstr "Výchozí povolené subdomény nejsou nadále podporovány (doména: %s^%s)."
-
-#~ msgid "md5 signature given without execute privilege."
-#~ msgstr "md5 podpis bez práva k vykonání."
-
-#~ msgid "Negative subdomain entries are no longer supported, sorry. (entry: %s)"
-#~ msgstr "Negativní záznamy subdomén nejsou nadále podporovány, bohužel. (záznam: %s)"
-
-#~ msgid "Exec qualifier 'u' must be followed by 'x'"
-#~ msgstr "Exec kvalifikátor 'u' musí být následován 'x'"
-
-#~ msgid "Exec qualifier 'u' invalid, conflicting qualifier already specified"
-#~ msgstr "Exec kvalifikátor 'u' je neplatný, byl již specifikován konfliktní kvalifikátor"
-
-#~ msgid "Exec qualifier 'p' must be followed by 'x'"
-#~ msgstr "Exec kvalifikátor 'p' musí být následován 'x'"
-
-#~ msgid "Exec qualifier 'p' invalid, conflicting qualifier already specified"
-#~ msgstr "Exec kvalifikátor 'p' je neplatný, byl již specifikován konfliktní kvalifikátor"
-
-#~ msgid "%s: Subdomain '%s' defined, but no parent '%s'.\n"
-#~ msgstr "%s: Subdoména '%s' definována, rodič '%s' však nikoliv.\n"
-
-#~ msgid "%s: Two SubDomains defined for '%s'.\n"
-#~ msgstr "%s: Definovány dvě subdomény pro '%s'.\n"

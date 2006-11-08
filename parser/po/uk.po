@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-parser.uk\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-09-22 10:46-0600\n"
+"POT-Creation-Date: 2006-09-26 13:01-0600\n"
 "PO-Revision-Date: 2006-01-08 22:52-0700\n"
 "Last-Translator: Ivan Petrouchtchak <ivanpetrouchtchak@yahoo.com>\n"
 "Language-Team: Ukrainian <translation@linux.org.ua>\n"
@@ -21,53 +21,53 @@ msgstr ""
 
 #: ../parser_include.c:95
 #, fuzzy, c-format
-msgid "Error: couldn't read profile %s: %s\n"
+msgid "Error: Could not read profile %s: %s.\n"
 msgstr "Помилка збереження. Не вдалось створити тимчасовий файл: %1."
 
 #: ../parser_include.c:114
 #, fuzzy
-msgid "Error couldn't allocate temporary file\n"
+msgid "Error: Could not allocate temporary file.\n"
 msgstr "Помилка збереження. Не вдалось створити тимчасовий файл: %1."
 
 #: ../parser_include.c:165
 #, fuzzy
-msgid "Error: Out of Memory\n"
+msgid "Error: Out of memory.\n"
 msgstr "Помилка: Не достатньо пам'яті.\n"
 
 #: ../parser_include.c:175
 #, c-format
-msgid "basedir %s is not a directory, skipping\n"
+msgid "Error: basedir %s is not a directory, skipping.\n"
 msgstr ""
 
 #: ../parser_include.c:189
 #, c-format
-msgid "Error: Can't add directory %s to search path\n"
+msgid "Error: Could not add directory %s to search path.\n"
 msgstr ""
 
 #: ../parser_include.c:199
 #, fuzzy
-msgid "Error: Could not allocate memory\n"
+msgid "Error: Could not allocate memory.\n"
 msgstr "Неможливо виділити пам'ять під структуру."
 
 #: ../parser_include.c:332
 #, fuzzy, c-format
-msgid "Error: could not allocate buffer for include. line %d in %s\n"
+msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
 msgstr "Помилка збереження. Не вдалось створити тимчасовий файл: %1."
 
 #: ../parser_include.c:348 ../parser_include.c:368
-#, c-format
-msgid "Error: bad include. line %d in %s\n"
-msgstr ""
+#, fuzzy, c-format
+msgid "Error: Bad include at line %d in %s.\n"
+msgstr "Помилка збереження. Не вдалось створити тимчасовий файл: %1."
 
 #: ../parser_include.c:398
 #, c-format
-msgid "Error: exceeded %d levels of includes.  NOT processing %s include\n"
+msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
 msgstr ""
 
 #: ../parser_include.c:423
-#, c-format
-msgid "Error: #include %s%c not found. line %d in %s\n"
-msgstr ""
+#, fuzzy, c-format
+msgid "Error: #include %s%c not found at line %d in %s.\n"
+msgstr "Помилка збереження. Не вдалось створити тимчасовий файл: %1."
 
 #: ../parser_interface.c:65
 msgid "Bad write position\n"

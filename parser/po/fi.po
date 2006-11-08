@@ -1,4 +1,4 @@
-# translation of apparmor-parser.po to SUOMI
+# translation of apparmor-parser.po to Suomi
 # translation of apparmor-parser.fi.po to
 # translation of apparmor-parser.po to
 # translation of subdomain-parser.po to
@@ -8,65 +8,66 @@
 # Jyri Palokangas <jmp@netti.fi>, 2005, 2006.
 # Ilkka Pirskanen <ilkka.pirskanen@kolumbus.fi>, 2005.
 # Erkka Hakkarainen <erkka.hakkarainen@pp.inet.fi>, 2006.
+# Joonas Niilola <juippis@roskakori.org>, 2006.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-09-22 10:46-0600\n"
-"PO-Revision-Date: 2006-09-05 10:12+0300\n"
+"POT-Creation-Date: 2006-09-26 13:01-0600\n"
+"PO-Revision-Date: 2006-11-02 16:32+0200\n"
 "Last-Translator: Erkka Hakkarainen <erkka.hakkarainen@pp.inet.fi>\n"
-"Language-Team: SUOMI <suser-fi@kotoistaminen.novell.fi>\n"
+"Language-Team: Suomi <suser-fi@kotoistaminen.novell.fi>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.2\n"
 
 #: ../parser_include.c:95
-#, fuzzy, c-format
-msgid "Error: couldn't read profile %s: %s\n"
-msgstr "Virhe: ei voitu allokoida tilapäistä tiedostoa\n"
+#, c-format
+msgid "Error: Could not read profile %s: %s.\n"
+msgstr "Virhe: Ei voitu lukea profiilia %s: %s\n"
 
 #: ../parser_include.c:114
-msgid "Error couldn't allocate temporary file\n"
-msgstr "Virhe: ei voitu allokoida tilapäistä tiedostoa\n"
+msgid "Error: Could not allocate temporary file.\n"
+msgstr "Virhe: Ei voitu varata tilapäistä tiedostoa.\n"
 
 #: ../parser_include.c:165
-msgid "Error: Out of Memory\n"
-msgstr "Virhe: Muisti loppui\n"
+msgid "Error: Out of memory.\n"
+msgstr "Virhe: Muisti loppui.\n"
 
 #: ../parser_include.c:175
 #, c-format
-msgid "basedir %s is not a directory, skipping\n"
-msgstr ""
+msgid "Error: basedir %s is not a directory, skipping.\n"
+msgstr "Virhe: kantahakemisto %s ei ole hakemisto, ohitetaan.\n"
 
 #: ../parser_include.c:189
 #, c-format
-msgid "Error: Can't add directory %s to search path\n"
-msgstr "Virhe: Hakemistoa %s ei voitu lisätä etsintäpolkuun\n"
+msgid "Error: Could not add directory %s to search path.\n"
+msgstr "Virhe: Hakemistoa %s ei voitu lisätä etsintäpolkuun.\n"
 
 #: ../parser_include.c:199
-msgid "Error: Could not allocate memory\n"
-msgstr "Virhe: Muistin varaaminen epäonnistui\n"
+msgid "Error: Could not allocate memory.\n"
+msgstr "Virhe: Muistin varaaminen epäonnistui.\n"
 
 #: ../parser_include.c:332
 #, c-format
-msgid "Error: could not allocate buffer for include. line %d in %s\n"
-msgstr "Virhe: include-puskurin varaus ei onnistunut. rivi %d tiedostossa %s\n"
+msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
+msgstr "Virhe: include-puskurin varaus ei onnistunut. rivi %d tiedostossa %s.\n"
 
 #: ../parser_include.c:348 ../parser_include.c:368
 #, c-format
-msgid "Error: bad include. line %d in %s\n"
-msgstr "Virhe: viallinen include. rivi %d tiedostossa %s\n"
+msgid "Error: Bad include at line %d in %s.\n"
+msgstr "Virhe: Viallinen include. Rivi %d tiedostossa %s.\n"
 
 #: ../parser_include.c:398
 #, c-format
-msgid "Error: exceeded %d levels of includes.  NOT processing %s include\n"
-msgstr "Virhe: ylitettiin %d tasoa includeissa.  EI käsitellä includea %s\n"
+msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
+msgstr "Virhe: Ylitettiin %d tasoa includeissa.  Includea %s eI käsitellä.\n"
 
 #: ../parser_include.c:423
 #, c-format
-msgid "Error: #include %s%c not found. line %d in %s\n"
-msgstr "Virhe: #include %s%c ei löytynyt. rivi %d tiedostossa %s\n"
+msgid "Error: #include %s%c not found at line %d in %s.\n"
+msgstr "Virhe: #include %s%c ei löytynyt riviltä %d tiedostosta %s.\n"
 
 #: ../parser_interface.c:65
 msgid "Bad write position\n"
@@ -82,20 +83,19 @@ msgstr "Muisti loppui\n"
 
 #: ../parser_interface.c:74
 msgid "Couldn't copy profile Bad memory address\n"
-msgstr "Profiilin kopiointi ei onnistunut. Väärä muistiosoite\n"
+msgstr "Profiilin kopiointi ei onnistunut: Väärä muistiosoite\n"
 
 #: ../parser_interface.c:77
 msgid "Profile doesn't conform to protocol\n"
-msgstr "Profiili ei noudata protokollaa\n"
+msgstr "Profiili ei ole protokollan mukainen\n"
 
 #: ../parser_interface.c:80
 msgid "Profile does not match signature\n"
 msgstr "Profiili ei täsmää allekirjoitukseen\n"
 
 #: ../parser_interface.c:83
-#, fuzzy
 msgid "Profile version not supported by Apparmor module\n"
-msgstr "Profiilin versio ei tuettu\n"
+msgstr "Profiiliversio ei ole Appamor-moduulin tukema\n"
 
 #: ../parser_interface.c:86
 msgid "Profile already exists\n"
@@ -103,7 +103,7 @@ msgstr "Profiili on jo olemassa\n"
 
 #: ../parser_interface.c:89
 msgid "Profile doesn't exist\n"
-msgstr "Profiilia ei ole olemssa\n"
+msgstr "Profiilia ei ole olemassa\n"
 
 #: ../parser_interface.c:92
 msgid "Unknown error\n"
@@ -161,7 +161,7 @@ msgstr "Ei voitu avata %s - %s\n"
 
 #: ../parser_interface.c:661
 msgid "unable to create work area\n"
-msgstr "Ei voitu luoda työaluetta\n"
+msgstr "Ei voitu luoda työskentelyaluetta\n"
 
 #: ../parser_interface.c:669
 #, c-format
@@ -176,7 +176,7 @@ msgstr "%s: Koko profiilimerkinnän kirjoittaminen ei onnistunut\n"
 #: parser_lex.l:119 parser_lex.l:221 parser_lex.l:347
 #, c-format
 msgid "Found unexpected character: '%s'"
-msgstr "Odottamaton merkki löydetty: '%s'"
+msgstr "Odottamaton merkki: '%s' löydetty"
 
 #: parser_lex.l:159
 #, c-format
@@ -184,24 +184,24 @@ msgid "(ip_mode) Found unexpected character: '%s'"
 msgstr "(ip_mode) Odottamaton merkki löydetty: '%s'"
 
 #: parser_lex.l:174
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected character in interface name: '%s'"
-msgstr "Odottamaton merkki löydetty: '%s'"
+msgstr "Odottamaton merkki liitännän nimessä: '%s'"
 
 #: parser_lex.l:213
 #, c-format
 msgid "Found unknown flag: '%s'"
-msgstr ""
+msgstr "Tuntematon lippu löydetty: '%s'"
 
 #: parser_lex.l:326
-#, fuzzy, c-format
+#, c-format
 msgid "Found unexpected keyword: '%s'"
-msgstr "Odottamaton merkki löydetty: '%s'"
+msgstr "Odottamaton avainsana löydetty: '%s'"
 
 #: ../parser_main.c:131
-#, fuzzy, c-format
+#, c-format
 msgid "Warning (%s line %d): %s"
-msgstr "Varoitus (rivi %d): "
+msgstr "Varoitus (%s rivi %d): %s"
 
 #: ../parser_main.c:255
 #, c-format
@@ -214,6 +214,8 @@ msgid ""
 "Warning: unable to open %s, attempting to use %s\n"
 "as the subdomainfs location. Use --subdomainfs to override.\n"
 msgstr ""
+"Varoitus: %s avaaminen ei onnistu, yritetään käyttää %s\n"
+"subdomainfs sijaintiin. Käytä --subdomainfs:ää ohittaaksesi.\n"
 
 #: ../parser_main.c:305
 #, c-format
@@ -222,6 +224,9 @@ msgid ""
 "Attempting to use %s as the subdomainfs location.\n"
 "Use --subdomainfs to override.\n"
 msgstr ""
+"Varoitus: sopivaa tiedostojärjestelmää ei löydetty kohteesta %s, onko osio liitetty?\n"
+"Yritetään käyttää kohdetta %s subdomainfs-kohteena.\n"
+"Käytä --subdomainfs ohittaaksesi.\n"
 
 #: ../parser_main.c:347
 #, c-format
@@ -229,8 +234,8 @@ msgid ""
 "%s: Unable to query modules - '%s'\n"
 "Either modules are disabled or your kernel is too old.\n"
 msgstr ""
-"%s: Ei voitu tutkia moduleita - '%s'\n"
-"Joko moduulit on poistettu käytöstä tai ydin on liian vanha.\n"
+"%s: Ei voitu tutkia moduuleita - '%s'\n"
+"Moduulit on poistettu käytöstä tai ydin on liian vanha.\n"
 
 #: ../parser_main.c:352
 #, c-format
@@ -246,7 +251,7 @@ msgstr ""
 "Varmista, että se on ladattu.\n"
 
 #: ../parser_main.c:368
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
@@ -255,14 +260,14 @@ msgstr ""
 "\n"
 
 #: ../parser_main.c:375
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s: Warning! You've set this program setuid root.\n"
 "Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 msgstr ""
 "%s: Varoitus! Olet asettanut ohjelman setuid-tiedon pääkäyttäjäksi.\n"
-"Kaikki jotka voivat suorittaa tämän ohjelman, voivat muuttaa SubDomain profiileja.\n"
+"Kaikki jotka voivat suorittaa tämän ohjelman, voivat muuttaa AppArmor-profiileja.\n"
 "\n"
 
 #: ../parser_main.c:442
@@ -275,6 +280,8 @@ msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
 msgstr ""
+"Isolla kirjoitetut määritteet \"RWLIMX\" eivät ole suositeltuja. Ole hyvä ja muuta ne pienellä kirjoitetuiksi.\n"
+"Lue apparmor.d(5) manuaalisivu saadaksesi lisätietoja.\n"
 
 #: ../parser_misc.c:313
 msgid "Exec qualifier 'i' must be followed by 'x'"
@@ -287,27 +294,26 @@ msgstr "Exec-valitsin 'i' epäkelpo, ristiriidan aiheuttava valitsin määritett
 #: ../parser_misc.c:327
 #, c-format
 msgid "Unconstrained exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
-msgstr ""
+msgstr "Rajoittamaton exec-valitsin (%c%c) sallii joidenkin vaarallisten ympäristömuuttujien lähettämisen varmistamattomille prosesseille; man 5 apparmor.d saadaksesi lisätietoja aiheesta.\n"
 
 #: ../parser_misc.c:334 ../parser_misc.c:355
-#, fuzzy, c-format
+#, c-format
 msgid "Exec qualifier '%c' must be followed by 'x'"
-msgstr "Exec-valitsimen 'i' jälkeen pitää olla 'x' -arvo"
+msgstr "Exec-valitsimen '%c' jälkeen pitää olla 'x' -arvo"
 
 #: ../parser_misc.c:337 ../parser_misc.c:358
-#, fuzzy, c-format
+#, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr "Exec-valitsin 'i' epäkelpo, ristiriidan aiheuttava valitsin määritetty jo aiemmin"
+msgstr "Exec-valitsin '%c' epäkelpo, ristiriidan aiheuttava valitsin määritetty jo aiemmin"
 
 #: ../parser_misc.c:376
-#, fuzzy
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "Epäkelpo tila, valitsinta 'x' pitää edeltää valitsin 'i', 'u' tai 'p'"
+msgstr "Epäkelpo tila, valitsinta 'x' pitää edeltää valitsin 'i', 'p' tai 'u'"
 
 #: ../parser_misc.c:396
-#, fuzzy, c-format
+#, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr "Sisäinen: odottamaton tila -merkki/valitsin syötteessä"
+msgstr "Sisäinen: odottamaton tila -merkki '%c' syötteessä"
 
 #: ../parser_misc.c:426 parser_yacc.y:222 parser_yacc.y:315 parser_yacc.y:327
 #: parser_yacc.y:387 parser_yacc.y:521 parser_yacc.y:533 parser_yacc.y:553
@@ -319,9 +325,9 @@ msgstr "Muistivarausvirhe."
 
 #: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
 #: ../parser_variable.c:227
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr "Alitoimialueen parser -virhe, rivi %d: %s\n"
+msgstr "AppArmor-koostajan virhe: %s\n"
 
 #: ../parser_merge.c:64
 msgid "Couldn't merge entries. Out of Memory\n"
@@ -330,12 +336,11 @@ msgstr "Merkintöjen yhdistäminen ei onnistunut. Muisti loppui\n"
 #: ../parser_merge.c:92
 #, c-format
 msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-msgstr "profiilissa %s: on yhdistetty sääntö %s, jossa on monta x-muuntajaa\n"
+msgstr "profiilissa %s: on yhdistetty sääntö %s, jossa on useampia x-muuntajia\n"
 
 #: parser_yacc.y:362
-#, fuzzy
 msgid "flags=(debug) is no longer supported, sorry."
-msgstr "Oletuksena sallittuja alitoimialueita ei enää tueta. (toimialue: %s)"
+msgstr "flags=(debug) ei enää ole tuettu."
 
 #: parser_yacc.y:398
 msgid "Assert: `rule' returned NULL."
@@ -352,7 +357,7 @@ msgstr "Assert: 'hat rule' palautti NULL."
 #: parser_yacc.y:487
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr ""
+msgstr "Asettamaton boolean muuttuja %s käytössä if-lausekkeessa"
 
 #: parser_yacc.y:545
 #, c-format
@@ -374,7 +379,7 @@ msgstr "Verkko-listauksilla voi olla vain yksi FROM-osoite."
 #: parser_yacc.y:712 parser_yacc.y:743
 #, c-format
 msgid "`%s' is not a valid ip address."
-msgstr "`%s' ei ole kelvollinen ip-osoite."
+msgstr "`%s' ei ole kelvollinen IP-osoite."
 
 #: parser_yacc.y:756
 #, c-format
@@ -389,17 +394,17 @@ msgstr "`/%s' ei ole kelvollinen aliverkon peite."
 #: parser_yacc.y:789 parser_yacc.y:809
 #, c-format
 msgid "ports must be between %d and %d"
-msgstr "portit -arvon pitää olla %d ja %d väliltä"
+msgstr "portit-arvon pitää olla %d ja %d väliltä"
 
 #: parser_yacc.y:876
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr "Alitoimialueen parser -virhe, rivi %d: %s\n"
+msgstr "AppArmor-koostajan virhe %s -tiedostossa, rivillä %d: %s\n"
 
 #: parser_yacc.y:879
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr "Alitoimialueen parser -virhe, rivi %d: %s\n"
+msgstr "AppArmor-koostajan virhe, rivi %d: %s\n"
 
 #: ../parser_regex.c:247
 #, c-format
@@ -409,7 +414,7 @@ msgstr "%s: Ei sallittu avaa{, sisäkkäisiä ryhmityksiä ei sallita\n"
 #: ../parser_regex.c:267
 #, c-format
 msgid "%s: Regex grouping error: Invalid number of items between {}\n"
-msgstr "%s: Regex ryhmitysvirhe: Epäkelpo määrä kohteita {} välissä\n"
+msgstr "%s: Regex ryhmitysvirhe: Epäkelpo määrä kohteita {} -merkkien välissä\n"
 
 #: ../parser_regex.c:273
 #, c-format
@@ -417,9 +422,9 @@ msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
 msgstr "%s: Regex ryhmitysvirhe: Epäkelpo sulje }, vastaavaa avaa { ei löydetty\n"
 
 #: ../parser_regex.c:339
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
-msgstr "%s: Regex ryhmitysvirhe: Sulkematon ryhmitys, odotetaan sulje } -merkintää\n"
+msgstr "%s: Regex ryhmitysvirhe: Sulkematon ryhmitys tai merkkiluokka, odotettiin sulje } -merkintää\n"
 
 #: ../parser_regex.c:353
 #, c-format
@@ -452,9 +457,9 @@ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
 msgstr "%s: Regex:in '%s' kääntäminen ei onnistunut [alkuperäinen: '%s'] - malloc epäonnistui\n"
 
 #: ../parser_policy.c:102
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
-msgstr "VIRHE profiilissa %s, lataaminen ei onnistunut\n"
+msgstr "VIRHE yhdistettäessä profiilin %s sääntöjä, lataaminen ei onnistunut\n"
 
 #: ../parser_policy.c:134
 #, c-format
@@ -463,16 +468,19 @@ msgid ""
 "\t'*', '?', character ranges, and alternations are not allowed.\n"
 "\t'**' may only be used at the end of a rule.\n"
 msgstr ""
+"VIRHE profiili %s sisältää menettelytapa (policy) elementtejä jotka eivät toimi tämän ytimen kanssa:\n"
+"\t'*', '?', merkkialueet ja muunnokset eivät ole sallittuja.\n"
+"\t'**' voidaan käyttää vain säännön lopussa.\n"
 
 #: ../parser_policy.c:179
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr "VIRHE profiilissa %s, lataaminen ei onnistunut\n"
+msgstr "VIRHE prosessoitaessa profiilin %s säännöllisiä lausekkeita, lataaminen ei onnistunut\n"
 
 #: ../parser_policy.c:206
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr "VIRHE profiilissa %s, lataaminen ei onnistunut\n"
+msgstr "VIRHE laajennettaessa muuttujia profiilille %s, lataaminen ei onnistunut\n"
 
 #: ../parser_policy.c:259
 #, c-format
@@ -485,36 +493,7 @@ msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
 msgstr "%s: Löydettiin virheitä yhdistyssääntöjen jälkikäsittelyssä. Keskeytetään.\n"
 
 #: ../parser_policy.c:420 ../parser_policy.c:427
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
-msgstr "%s: Löydettiin virheitä säännöllisten lausekkeiden jälkikäsittelyssä. Keskeytetään.\n"
+msgstr "%s: Löydettiin virheitä säännöllisten (regex) lausekkeiden jälkikäsittelyssä.  Keskeytetään.\n"
 
-#~ msgid "%s: Could not allocate memory for subdomain mount point\n"
-#~ msgstr "%s: Ei voida varata muistia alitoimialueen liitoskohdalle\n"
-
-#~ msgid "Default allow subdomains are no longer supported, sorry. (domain: %s^%s)"
-#~ msgstr "Oletuksena sallittuja alitoimialueita ei enää tueta. (toimialueet: %s^%s)"
-
-#~ msgid "md5 signature given without execute privilege."
-#~ msgstr "md5-allekirjoitus annettu ilman suoritusoikeutta."
-
-#~ msgid "Negative subdomain entries are no longer supported, sorry. (entry: %s)"
-#~ msgstr "Käänteisiä alitoimialuemerkintöjä ei enää tueta. (merkintä: %s)"
-
-#~ msgid "Exec qualifier 'u' must be followed by 'x'"
-#~ msgstr "Exec-valitsimen 'u' jälkeen pitää olla 'x' -arvo"
-
-#~ msgid "Exec qualifier 'u' invalid, conflicting qualifier already specified"
-#~ msgstr "Exec-valitsin 'u' epäkelpo, ristiriidan aiheuttava valitsin määritetty jo aiemmin"
-
-#~ msgid "Exec qualifier 'p' must be followed by 'x'"
-#~ msgstr "Exec-valitsimen 'p' jälkeen pitää olla 'x' -arvo"
-
-#~ msgid "Exec qualifier 'p' invalid, conflicting qualifier already specified"
-#~ msgstr "Exec-valitsin 'p' epäkelpo, ristiriidan aiheuttava valitsin määritetty jo aiemmin"
-
-#~ msgid "%s: Subdomain '%s' defined, but no parent '%s'.\n"
-#~ msgstr "%s: Alitoimialue '%s' määritelty, mutta päätoimialue '%s' puuttuu.\n"
-
-#~ msgid "%s: Two SubDomains defined for '%s'.\n"
-#~ msgstr "%s: Kaksi alitoimialuetta määritetty toimialueelle '%s'.\n"
