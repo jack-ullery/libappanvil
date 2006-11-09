@@ -1,0 +1,495 @@
+# translation of apparmor-utils.km.po to Khmer
+# Khoem Sokhem <khoemsokhem@khmeros.info>, 2006.
+# Leang Chumsoben <soben@khmeros.info>, 2006.
+# Hok Kakada <hokkakada@khmeros.info>, 2006.
+# sokun <sokunpoch@khmeros.info>, 2006.
+# auk piseth <piseth_dv@khmeros.info>, 2006.
+# Eng Vannak <evannak@khmeros.info>, 2006.
+# translation of apparmor-utils.km.po to
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmor-utils.km\n"
+"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"POT-Creation-Date: 2006-09-22 10:57-0600\n"
+"PO-Revision-Date: 2006-10-12 08:21+0700\n"
+"Last-Translator: auk piseth <piseth_dv@khmeros.info>\n"
+"Language-Team: Khmer <support@khmeros.info>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.2\n"
+
+#: ../genprof:55
+msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
+msgstr "ដែនរង​ទំនង​ជា​មិន​ត្រូវបាន​ចាប់​ផ្ដើម ។ សូម​អនុញ្ញាត​ដែនរង និង​ព្យាយាម​ម្ដង​ទៀត ។"
+
+#: ../genprof:69
+msgid "Please enter the program to profile: "
+msgstr "សូម​បញ្ចូល​កម្មវិធី​ទៅ​ទម្រង់ ៖ "
+
+#: ../genprof:87
+#, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
+msgstr "មិន​អាច​រក %s ក្នុង​បញ្ជី​ផ្លូវ​ប្រព័ន្ធ ។  បើ​ឈ្មោះ​របស់​កម្មវិធី​ត្រឹមត្រូវ សូម​រត់ ' %s ណាមួយ' ក្នុង​បង្អួចផ្សេង​ទៀត ដើម្បី​រក​ផ្លូវ​ដែល​ពេញលក្ខណៈ ។"
+
+#: ../genprof:89 ../autodep:117 ../audit:112 ../complain:112 ../enforce:111
+#, perl-format
+msgid "%s does not exist, please double-check the path."
+msgstr "មិន​មាន %s ឡើយ សូម​ពិនិត្យ​មើល​ផ្លូវ​ឲ្យ​បាន​ពីរ​ដង ។"
+
+#: ../genprof:100 ../autodep:99
+#, perl-format
+msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
+msgstr "%s បច្ចុប្បន្ន​ត្រូវ​បាន​សម្គាល់​ជា​កម្មវិធី​មួយ ដែល​មិន​គួរ​មាន​ទម្រង់​ផ្ទាល់​ខ្លួន​របស់​វា ។  តាមធម្មតា កម្មវិធី​ត្រូវ​បាន​សម្គាល់​តាម​វិធី​នេះ បើ​ការ​បង្កើត​ទម្រង់​មួយ​សម្រាប់​ពួក​វា ទំនង​ជាធ្វើ​ឲ្យ​ខូច​ផ្នែក​នៅ​សល់​របស់​ប្រព័ន្ធ ។ បើ​អ្នក​ដឹងថាអ្វី​ដែល​អ្នកកំពុង​ធ្វើ និង​អ្នក​ពិត​ជា ​ចង់​បង្កើត​ទម្រង់​មួយ​សម្រាប់​កម្មវិធី​នេះ កែសម្រួល​ធាតុ​ដែល​ទាក់ទង​ក្នុង​ផ្នែក [qualifiers] នៅក្នុង /etc/apparmor/logprof.conf ។"
+
+#: ../genprof:121
+msgid ""
+"Please start the application to be profiled in \n"
+"another window and exercise its functionality now.\n"
+"\n"
+"Once completed, select the \"Scan\" button below in \n"
+"order to scan the system logs for AppArmor events.  \n"
+"\n"
+"For each AppArmor event, you will be given the  \n"
+"opportunity to choose whether the access should be  \n"
+"allowed or denied."
+msgstr ""
+"សូម​ចាប់​ផ្ដើម​កម្មវិធី​ដែល​ត្រូវ​កំណត់​ទម្រង់​ក្នុង \n"
+"បង្អួច​មួយ​ទៀត និង​អនុវត្ត​មុខងារ​របស់​វា​ឥឡូវ ។\n"
+"\n"
+"ពេល​បាន​បញ្ចប់ ជ្រើស​ប៊ូតុង \"វិភាគ\" ខាងក្រោម ដើម្បី \n"
+"វិភាគ​កំណត់​ហេតុ​ប្រព័ន្ធ​សម្រាប់​ព្រឹត្តិការណ៍ AppArmor ។  \n"
+"\n"
+"សម្រាប់​ព្រឹត្តិការណ៍ AppArmor នីមួយៗ អ្នក​នឹង​ត្រូវ​បាន​ផ្ដល់  \n"
+"ឳកាស​ដើម្បី​ជ្រើស​ថាតើ​ការ​ចូល​ដំណើរការ​គួរ​ត្រូវ​បាន \n"
+"អនុញ្ញាត ឬ បដិសេធ ។"
+
+#: ../genprof:140
+msgid "Profiling"
+msgstr "ការ​កំណត់​ទម្រង់"
+
+#: ../genprof:167
+msgid "Reloaded SubDomain profiles in enforce mode."
+msgstr "ទម្រង់​ដែនរងដែល​បាន​ផ្ទុក​ឡើងវិញ​ក្នុង​របៀប​បង្ខំ ។"
+
+#: ../genprof:168
+#, perl-format
+msgid "Finished generating profile for %s."
+msgstr "បាន​បញ្ចប់​ការ​បង្កើត​ទម្រង់​សម្រាប់ %s ។"
+
+#: ../genprof:172
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
+msgstr "របៀបប្រើ ៖ %s [ -d /ផ្លូវ/ទៅកាន់/ទម្រង់ ] [ -f /ផ្លូវ/ទៅកាន់/ឯកសារ​កំណត់​ហេតុ ] [ កម្មវិធី​ទៅ​ទម្រង់ ]"
+
+#: ../logprof:75
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
+msgstr "របៀបប្រើ ៖ %s [ -d /ផ្លូវ/ទៅកាន់/ទម្រង់ ] [ -f /ផ្លូវ/ទៅកាន់/ឯកសារ​កំណត់​ហេតុ ] [ -m \"សម្គាល់​ក្នុង​កំណត់​ហេតុ ដើម្បី​ចាប់ផ្ដើម​ដំណើរការ​បន្ទាប់​ពី\""
+
+#: ../autodep:64
+#, perl-format
+msgid "Can't find subdomain profiles in %s."
+msgstr "មិន​អាច​រក​ទម្រង់​ដែនរង​នៅក្នុង %s បានទេ ។"
+
+#: ../autodep:75
+msgid "Please enter the program to create a profile for: "
+msgstr "សូម​បញ្ចូល​កម្មវិធី​ដើម្បី​បង្កើត​ទម្រង់​សម្រាប់ ៖ "
+
+#: ../autodep:107
+#, perl-format
+msgid "Profile for %s already exists - skipping."
+msgstr "មាន​ទម្រង់​សម្រាប់ %s រួច​ហើយ - រំលង ។"
+
+#: ../autodep:114 ../audit:109 ../complain:109 ../enforce:108
+#, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
+msgstr "មិនអាច​រក %s នៅក្នុង​បញ្ជី​ផ្លូវ​ប្រព័ន្ធ ។  ប្រសិនបើ​ឈ្មោះ​របស់​កម្មវិធី​ត្រឹមត្រូវ សូមរត់ '%s ណាមួយ' ជាអ្នកប្រើ​ដែលមានការរៀបចំ​​បរិស្ថាន PATH ត្រឹមត្រូវ ដើម្បី​រក​ផ្លូវ​ដែលបាន​បញ្ជាក់​ពេញលេញ ។"
+
+#: ../audit:102
+#, perl-format
+msgid "Setting %s to audit mode."
+msgstr "ការ​កំណត់ %s ទៅជា​របៀប​ពិនិត្យ ។"
+
+#: ../audit:121
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
+msgstr "របៀបប្រើ ៖ %s [ -d /ផ្លូវ/ទៅកាន់/ទម្រង់ ] [កម្មវិធី​ត្រូវ​ប្ដូរ​ជា​របៀប​ពិនិត្យ]"
+
+#: ../complain:67
+msgid "Please enter the program to switch to complain mode: "
+msgstr "សូម​បញ្ចូល​កម្មវិធី​ដើម្បី​ប្ដូរ​ទៅជា​របៀប​តវ៉ា ៖ "
+
+#: ../complain:102 ../SubDomain.pm:426
+#, perl-format
+msgid "Setting %s to complain mode."
+msgstr "ការ​កំណត់ %s ទៅជា​របៀប​តវ៉ា ។"
+
+#: ../complain:121
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
+msgstr "របៀប​ប្រើ ៖ %s [ -d /ផ្លូវ/ទៅកាន់/ទម្រង់ ] [ កម្មវិធី​ត្រូវ​ប្ដូរ​ជា​របៀប​តវ៉ា ]"
+
+#: ../enforce:67
+msgid "Please enter the program to switch to enforce mode: "
+msgstr "សូម​បញ្ចូល​កម្មវិធី​ដើម្បី​ប្ដូរ​ទៅជា​របៀប​បង្ខំ ៖ "
+
+#: ../enforce:101 ../SubDomain.pm:440
+#, perl-format
+msgid "Setting %s to enforce mode."
+msgstr "ការ​កំណត់ %s ទៅជា​របៀប​បង្ខំ ។"
+
+#: ../enforce:120
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
+msgstr "របៀប​ប្រើ ៖ %s [ -d /ផ្លូវ/ទៅកាន់/ទម្រង់ ] [កម្មវិធី​ត្រូវ​ប្ដូរ​ជា​របៀប​បង្ខំ]"
+
+#: ../unconfined:51
+#, perl-format
+msgid "Usage: %s [ --paranoid ]\n"
+msgstr "របៀបប្រើ ៖ %s [ --paranoid ]\n"
+
+#: ../unconfined:57
+msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
+msgstr "ដែនរង​ទំនង​ជា​មិន​ត្រូវបាន​ចាប់​ផ្ដើម ។ សូម​អនុញ្ញាត​ដែនរង ហើយ​ព្យាយាម​ម្ដង​ទៀត ។"
+
+#: ../unconfined:61
+msgid "Can't read /proc\n"
+msgstr "មិនអាច​អាន /proc បានទេ\n"
+
+#: ../unconfined:91 ../unconfined:93
+msgid "not confined\n"
+msgstr "មិន​បានកំណត់\n"
+
+#: ../unconfined:102 ../unconfined:104
+msgid "confined by"
+msgstr "បាន​កំណត់​ដោយ"
+
+#: ../SubDomain.pm:421 ../SubDomain.pm:435
+#, perl-format
+msgid "Can't find %s."
+msgstr "មិន​អាច​រក %s ។"
+
+#: ../SubDomain.pm:703 ../SubDomain.pm:742
+msgid "(Y)es"
+msgstr "បាទ/ចាស"
+
+#: ../SubDomain.pm:704 ../SubDomain.pm:743
+msgid "(N)o"
+msgstr "ទេ"
+
+# cancel button label
+#: ../SubDomain.pm:744
+msgid "(C)ancel"
+msgstr "បោះបង់"
+
+#: ../SubDomain.pm:1010 ../SubDomain.pm:1201 ../SubDomain.pm:1630
+#: ../SubDomain.pm:1827
+msgid "Profile"
+msgstr "ទម្រង់"
+
+#: ../SubDomain.pm:1012
+msgid "Default Hat"
+msgstr "Hat លំនាំដើម"
+
+#: ../SubDomain.pm:1014
+msgid "Requested Hat"
+msgstr "Hat ដែល​បាន​ស្នើ"
+
+#: ../SubDomain.pm:1044 ../SubDomain.pm:1230 ../SubDomain.pm:1664
+#: ../SubDomain.pm:1962
+msgid "Are you sure you want to abandon this set of profile changes and exit?"
+msgstr "តើ​អ្នក​ពិត​ជា​ចង់បោះបង់​ការ​ផ្លាស់ប្ដូរសំណុំទម្រង់ រួច​ចេញឬ ?"
+
+#: ../SubDomain.pm:1046 ../SubDomain.pm:1233 ../SubDomain.pm:1660
+#: ../SubDomain.pm:1666 ../SubDomain.pm:1964
+msgid "Abandoning all changes."
+msgstr "ការបោះបង់​ការ​ផ្លាស់​ប្ដូរ​ទាំង​អស់ ។"
+
+#: ../SubDomain.pm:1051 ../SubDomain.pm:1238 ../SubDomain.pm:1680
+#: ../SubDomain.pm:1969
+msgid "Are you sure you want to save the current set of profile changes and exit?"
+msgstr "តើ​អ្នក​ពិត​ជា​ចង់រក្សា​ទុក​ការ​ផ្លាស់ប្ដូរសំណុំទម្រង់បច្ចុប្បន្ន និង​ចេញឬ ?"
+
+#: ../SubDomain.pm:1053 ../SubDomain.pm:1240 ../SubDomain.pm:1675
+#: ../SubDomain.pm:1682 ../SubDomain.pm:1971
+msgid "Saving all changes."
+msgstr "រក្សា​ទុក​ការ​ផ្លាស់ប្ដូរ​ទាំង​អស់ ។"
+
+#: ../SubDomain.pm:1203
+msgid "Program"
+msgstr "កម្មវិធី"
+
+#: ../SubDomain.pm:1205
+msgid "Execute"
+msgstr "ប្រតិបត្តិ"
+
+#: ../SubDomain.pm:1206 ../SubDomain.pm:1632 ../SubDomain.pm:1839
+msgid "Severity"
+msgstr "ភាព​ត្រឹមត្រូវ"
+
+#: ../SubDomain.pm:1247
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"switching profiles?\n"
+"\n"
+"Sanitizing the environment is more secure,\n"
+"but some applications depend on the presence\n"
+"of LD_PRELOAD or LD_LIBRARY_PATH."
+msgstr ""
+"តើ AppArmor គួរ​តែ​ធ្វើ​ឲ្យ​បរិស្ថាន​ល្អ​ពេល\n"
+"កំពុង​ប្ដូរ​ទម្រង់​ឬ ?\n"
+"\n"
+"ធ្វើ​ឲ្យ​បរិស្ថាន​ល្អ​រឹត​តែ​មាន​សុវត្ថិភាព\n"
+"ប៉ុន្តែ​កម្មវិធី​ខ្លះ​ពឹងផ្អែក​លើ​វត្ដមាន​នៃ\n"
+"LD_PRELOAD ឬ LD_LIBRARY_PATH ។"
+
+#: ../SubDomain.pm:1249
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"switching profiles?\n"
+"\n"
+"Sanitizing the environment is more secure,\n"
+"but this application appears to use LD_PRELOAD\n"
+"or LD_LIBRARY_PATH and clearing these could\n"
+"cause functionality problems."
+msgstr ""
+"តើ AppArmor គួរ​តែ​ធ្វើ​ឲ្យ​បរិស្ថាន​ល្អ​ពេល\n"
+"កំពុង​ប្ដូរ​ទម្រង់​ឬ ?\n"
+"\n"
+"ធ្វើ​ឲ្យ​បរិស្ថាន​ល្អ​គឺ​រឹត​តែ​មាន​សុវត្ថិភាព\n"
+"ប៉ុន្តែ​កម្មវិធី​នេះ​លេចឡើង​សម្រាប់​ប្រើ LD_PRELOAD\n"
+"ឬ LD_LIBRARY_PATH ហើយ​​ការ​ជម្រះ​ទាំងនេះ​អាច\n"
+"បង្ករ​បញ្ហា​មុខងារ ។"
+
+#: ../SubDomain.pm:1256
+#, perl-format
+msgid ""
+"Launching processes in an unconfined state is a very\n"
+"dangerous operation and can cause serious security holes.\n"
+"\n"
+"Are you absolutely certain you wish to remove all\n"
+"AppArmor protection when executing %s?"
+msgstr ""
+"ការ​ចាប់​ផ្ដើម​ដំណើរការ​ក្នុង​សភាពមិន​បាន​កំណត់​មួយគឺជា​ប្រតិបត្តិការ​ដ៏គ្រោះថ្នាក់\n"
+"បំផុត និងអាច​​បណ្ដាល​ឲ្យ​មាន​បញ្ហា​​សុវត្ថិភាពធ្ងន់ធ្ងរ ។\n"
+"\n"
+"តើ​អ្នក​ពិត​ជា​ចង់យកការ​ការពាររបស់​\n"
+"AppArmor ទាំង​អស់​ចេញ នៅ​ពេល​ប្រតិបត្តិ %s ឬ ?"
+
+#: ../SubDomain.pm:1258
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"running this program unconfined?\n"
+"\n"
+"Not sanitizing the environment when unconfining\n"
+"a program opens up significant security holes\n"
+"and should be avoided if at all possible."
+msgstr ""
+"តើ AppArmor គួរតែ​ធ្វើ​ឲ្យ​បរិស្ថាន​ល្អ​នៅ​ពេល\n"
+"កំពុង​រត់​កម្មវិធី​នេះ​ដោយ​មិនបាន​កំណត់​ឬ ?\n"
+"\n"
+"ការ​ដែលមិន​ធ្វើ​ឲ្យ​បរិស្ថាន​ល្អ​នៅពេល​មិនបាន​កំណត់\n"
+"នោះ​កម្មវិធី​បើក​បញ្ហា​សុវត្ថិភាព​សំខាន់\n"
+"ហើយ​គួរតែ​ត្រូវបាន​ជៀស​វៀង​ប្រសិន​បើវា​អាច​ធ្វើ​បាន​ទាំងអស់ ។"
+
+#: ../SubDomain.pm:1361
+#, perl-format
+msgid "Reading log entries from %s."
+msgstr "អាន​ធាតុ​កំណត់​ហេតុ​ពី %s ។"
+
+#: ../SubDomain.pm:1362
+#, perl-format
+msgid "Updating subdomain profiles in %s."
+msgstr "ធ្វើ​ឲ្យ​ទម្រង់​ដែនរង​ទាន់​សម័យ​ក្នុង %s ។"
+
+#: ../SubDomain.pm:1368
+msgid "unknown"
+msgstr "មិន​ស្គាល់"
+
+#: ../SubDomain.pm:1597
+msgid "Complain-mode changes:"
+msgstr "ការ​ផ្លាស់ប្ដូរ​របៀប​តវ៉ា ៖"
+
+#: ../SubDomain.pm:1599
+msgid "Enforce-mode changes:"
+msgstr "ការ​ផ្លាស់​ប្ដូរ​របៀប​បង្ខំ ៖"
+
+#: ../SubDomain.pm:1604
+#, perl-format
+msgid "Invalid mode found: %s"
+msgstr "រក​ឃើញ​របៀប​មិន​ត្រឹមត្រូវ ៖ %s"
+
+#: ../SubDomain.pm:1631
+msgid "Capability"
+msgstr "សមត្ថភាព"
+
+#: ../SubDomain.pm:1654
+#, perl-format
+msgid "Adding capability %s to profile."
+msgstr "បន្ថែម​សមត្ថភាព %s ទៅ​ទម្រង់ ។"
+
+#: ../SubDomain.pm:1656
+#, perl-format
+msgid "Denying capability %s to profile."
+msgstr "បដិសេធ​សមត្ថភាព %s ទៅ​ទម្រង់ ។"
+
+#: ../SubDomain.pm:1828
+msgid "Path"
+msgstr "ផ្លូវ"
+
+#: ../SubDomain.pm:1833
+msgid "Old Mode"
+msgstr "របៀប​ចាស់"
+
+#: ../SubDomain.pm:1835
+msgid "New Mode"
+msgstr "របៀប​ថ្មី"
+
+#: ../SubDomain.pm:1837
+msgid "Mode"
+msgstr "របៀប"
+
+#: ../SubDomain.pm:1875
+#, perl-format
+msgid "Adding #include <%s> to profile."
+msgstr "បន្ថែម #include <%s> ទៅ​ទម្រង់ ។"
+
+#: ../SubDomain.pm:1876 ../SubDomain.pm:1901
+#, perl-format
+msgid "Deleted %s previous matching profile entries."
+msgstr "បាន​លុបធាតុ​ទម្រង់ដែលផ្គូផ្គង​ពី​មុន %s ។"
+
+#: ../SubDomain.pm:1900
+#, perl-format
+msgid "Adding %s %s to profile."
+msgstr "បន្ថែម %s %s ទៅ​ទម្រង់ ។"
+
+#: ../SubDomain.pm:1908
+msgid "Enter new path: "
+msgstr "បញ្ចូល​ផ្លូវ​ថ្មី ៖ "
+
+#: ../SubDomain.pm:1911
+msgid "The specified path does not match this log entry:"
+msgstr "ផ្លូវ​ដែល​បាន​បញ្ជាក់​មិន​ផ្គូផ្គង​ធាតុ​កំណត់​ហេតុ​នេះ ៖"
+
+#: ../SubDomain.pm:1912
+msgid "Log Entry"
+msgstr "ធាតុ​កំណត់​ហេតុ"
+
+#: ../SubDomain.pm:1913
+msgid "Entered Path"
+msgstr "ផ្លូវ​ដែល​បាន​បញ្ចូល"
+
+#: ../SubDomain.pm:1914
+msgid "Do you really want to use this path?"
+msgstr "តើ​អ្នក​ពិត​ជា​ចង់​ប្រើផ្លូវ​នេះ​ឬ ?"
+
+#: ../SubDomain.pm:1988
+msgid ""
+"The profile analyzer has completed processing the log files.\n"
+"\n"
+"All updated profiles will be reloaded"
+msgstr ""
+"អ្នក​វិភាគ​ទម្រង់​បាន​បញ្ចប់​ដំណើរការ​ឯកសារ​កំណត់​ហេតុ ។\n"
+"\n"
+"ទម្រង់​ដែល​បានធ្វើ​ឲ្យ​ទាន់​សម័យ​ទាំង​អស់ នឹង​ត្រូវ​បាន​ផ្ទុក​ឡើង​វិញ"
+
+#: ../SubDomain.pm:1996
+msgid "No unhandled AppArmor events were found in the system log."
+msgstr "រក​មិន​ឃើញ​ព្រឹត្តិការណ៍ AppArmor ដែល​មិន​បាន​ដោះស្រាយ ក្នុង​កំណត់​ហេតុ​ប្រព័ន្ធ ។"
+
+#: ../SubDomain.pm:2205 ../SubDomain.pm:2235 ../SubDomain.pm:2249
+#: ../SubDomain.pm:2284 ../SubDomain.pm:2304 ../SubDomain.pm:2341
+#: ../SubDomain.pm:2628
+#, perl-format
+msgid "%s contains syntax errors."
+msgstr "%s មាន​កំហុស​វាក្យ​សម្ពន្ធ ។"
+
+#: ../SubDomain.pm:2263
+#, perl-format
+msgid "Profile %s contains invalid regexp %s."
+msgstr "ទម្រង់ %s មាន​កន្សោម​ធម្មតា %s មិន​ត្រឹមត្រូវ ។"
+
+#: ../SubDomain.pm:2473
+#, perl-format
+msgid "Writing updated profile for %s."
+msgstr "សរសេរ​ទម្រង់​ដែល​បានធ្វើ​ឲ្យ​ទាន់​សម័យ​សម្រាប់ %s ។"
+
+#: ../SubDomain.pm:2605
+#, perl-format
+msgid "Include %s contains invalid regexp %s."
+msgstr "ការ​រួម​បញ្ចូល %s មាន​កន្សោម​ធម្មតា %s មិន​ត្រឹមត្រូវ ។"
+
+#: ../Reports.pm:266 ../Reports.pm:374 ../Reports.pm:1490
+#, perl-format
+msgid "DBI Execution failed: %s."
+msgstr "ការ​ប្រតិបត្តិ DBI បាន​បរាជ័យ ៖ %s ។"
+
+#: ../Reports.pm:400
+#, perl-format
+msgid "Couldn't open file: %s."
+msgstr "មិន​អាច​បើក​ឯកសារ ៖ %s ។"
+
+#: ../Reports.pm:404
+msgid "No type value passed.  Unable to determine page count."
+msgstr "មិន​មាន​តម្លៃ​ប្រភេទ​ត្រូវ​បាន​ហុច​ឡើយ ។  មិន​អាច​កំណត់​ការ​រាប់​ទំព័រ​បាន​ឡើយ ។"
+
+#: ../Reports.pm:474
+#, perl-format
+msgid "Failed copying %s."
+msgstr "បាន​បរាជ័យ​ក្នុង​ការ​ចម្លង %s ។"
+
+#: ../Reports.pm:587
+#, perl-format
+msgid "Export Log Error: Couldn't open %s"
+msgstr "កំហុស​នាំ​ចេញ​កំណត់ហេតុ ៖ មិន​អាច​បើក %s"
+
+#: ../Reports.pm:611
+msgid "Fatal error.  No report name given. Exiting."
+msgstr "កំហុស​ធ្ងន់ធ្ងរ ។  គ្មាន​ឈ្មោះ​របាយការណ៍​បាន​ផ្ដល់ ។ ចេញ ។"
+
+#: ../Reports.pm:617
+#, perl-format
+msgid ""
+"Unable to get configuration info for %s.\n"
+"                Unable to find %s."
+msgstr ""
+"មិនអាច​ទទួល​ព័ត៌មាន​កំណត់​រចនាសម្ព័ន្ធ​សម្រាប់ %s បានទេ ។\n"
+"                មិនអាច​ស្វែងរក %s បានទេ ។"
+
+#: ../Reports.pm:658
+#, perl-format
+msgid "Failed to parse: %s."
+msgstr "បាន​បរាជ័យ​ក្នុង​ការ​ញែក ៖ %s ។"
+
+#: ../Reports.pm:667
+#, perl-format
+msgid "Fatal Error.  Couldn't open %s."
+msgstr "កំហុស​ធ្ងន់ធ្ងរ ។  មិន​អាច​បើក %s ។"
+
+#: ../Reports.pm:715
+#, perl-format
+msgid "Fatal Error.  Can't run %s.  Exiting."
+msgstr "កំហុស​ធ្ងន់ធ្ងរ ។  មិន​អាច​រត់ %s ។  ចេញ ។"
+
+#: ../Reports.pm:756
+#, perl-format
+msgid "Fatal Error.  No directory, %s, found.  Exiting."
+msgstr "កំហុស​ធ្ងន់ធ្ងរ ។  រក​មិន​ឃើញ​ថត %s ទេ ។  ចេញ ។"
+
+#: ../Reports.pm:775
+#, perl-format
+msgid "Fatal Error.  Couldn't open %s.  Exiting"
+msgstr "កំហុស​ធ្ងន់ធ្ងរ ។  មិន​អាច​បើក %s បានទេ ។  ចេញ"
+
+#: ../Reports.pm:803 ../Reports.pm:816 ../Reports.pm:826
+#, perl-format
+msgid "DBI Execution failed: %s"
+msgstr "ការ​ប្រតិបត្តិ DBI បាន​បរាជ័យ ៖ %s"
+
+#: ../Reports.pm:1596
+#, perl-format
+msgid "Fatal Error.  getArchReport() couldn't open %s"
+msgstr "កំហុស​ធ្ងន់ធ្ងរ ។  getArchReport() មិន​អាច​បើក %s"
+

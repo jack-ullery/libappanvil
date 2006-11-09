@@ -1,0 +1,472 @@
+# KOREAN message file for YaST2 (@memory@).
+# Copyright (C) 2005 SUSE Linux Products GmbH.
+# Copyright (C) 2002 SuSE Linux AG.
+# Copyright (C) 2000, 2001 SuSE GmbH.
+# Hwang, Sang-Jin <violiet@suse.de>
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: YaST (@memory@)\n"
+"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"POT-Creation-Date: 2006-09-22 10:57-0600\n"
+"PO-Revision-Date: 2001-07-18 11:05+0200\n"
+"Last-Translator: Hwang, Sang-Jin <violiet@suse.de>\n"
+"Language-Team: Korean <i18n@suse.de>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: ../genprof:55
+msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
+msgstr ""
+
+#: ../genprof:69
+msgid "Please enter the program to profile: "
+msgstr ""
+
+#: ../genprof:87
+#, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
+msgstr ""
+
+#: ../genprof:89 ../autodep:117 ../audit:112 ../complain:112 ../enforce:111
+#, perl-format
+msgid "%s does not exist, please double-check the path."
+msgstr ""
+
+#: ../genprof:100 ../autodep:99
+#, perl-format
+msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
+msgstr ""
+
+#: ../genprof:121
+msgid ""
+"Please start the application to be profiled in \n"
+"another window and exercise its functionality now.\n"
+"\n"
+"Once completed, select the \"Scan\" button below in \n"
+"order to scan the system logs for AppArmor events.  \n"
+"\n"
+"For each AppArmor event, you will be given the  \n"
+"opportunity to choose whether the access should be  \n"
+"allowed or denied."
+msgstr ""
+
+#: ../genprof:140
+msgid "Profiling"
+msgstr ""
+
+#: ../genprof:167
+msgid "Reloaded SubDomain profiles in enforce mode."
+msgstr ""
+
+#: ../genprof:168
+#, perl-format
+msgid "Finished generating profile for %s."
+msgstr ""
+
+#: ../genprof:172
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
+msgstr ""
+
+#: ../logprof:75
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
+msgstr ""
+
+#: ../autodep:64
+#, perl-format
+msgid "Can't find subdomain profiles in %s."
+msgstr ""
+
+#: ../autodep:75
+msgid "Please enter the program to create a profile for: "
+msgstr ""
+
+#: ../autodep:107
+#, perl-format
+msgid "Profile for %s already exists - skipping."
+msgstr ""
+
+#: ../autodep:114 ../audit:109 ../complain:109 ../enforce:108
+#, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
+msgstr ""
+
+#: ../audit:102
+#, perl-format
+msgid "Setting %s to audit mode."
+msgstr ""
+
+#: ../audit:121
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
+msgstr ""
+
+#: ../complain:67
+msgid "Please enter the program to switch to complain mode: "
+msgstr ""
+
+#: ../complain:102 ../SubDomain.pm:426
+#, perl-format
+msgid "Setting %s to complain mode."
+msgstr ""
+
+#: ../complain:121
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
+msgstr ""
+
+#: ../enforce:67
+msgid "Please enter the program to switch to enforce mode: "
+msgstr ""
+
+#: ../enforce:101 ../SubDomain.pm:440
+#, perl-format
+msgid "Setting %s to enforce mode."
+msgstr ""
+
+#: ../enforce:120
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
+msgstr ""
+
+#: ../unconfined:51
+#, perl-format
+msgid "Usage: %s [ --paranoid ]\n"
+msgstr ""
+
+#: ../unconfined:57
+msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
+msgstr ""
+
+#: ../unconfined:61
+msgid "Can't read /proc\n"
+msgstr ""
+
+#: ../unconfined:91 ../unconfined:93
+msgid "not confined\n"
+msgstr ""
+
+#: ../unconfined:102 ../unconfined:104
+msgid "confined by"
+msgstr ""
+
+#: ../SubDomain.pm:421 ../SubDomain.pm:435
+#, perl-format
+msgid "Can't find %s."
+msgstr ""
+
+#: ../SubDomain.pm:703 ../SubDomain.pm:742
+msgid "(Y)es"
+msgstr ""
+
+#: ../SubDomain.pm:704 ../SubDomain.pm:743
+msgid "(N)o"
+msgstr ""
+
+#: ../SubDomain.pm:744
+msgid "(C)ancel"
+msgstr ""
+
+#: ../SubDomain.pm:1010 ../SubDomain.pm:1201 ../SubDomain.pm:1630
+#: ../SubDomain.pm:1827
+msgid "Profile"
+msgstr ""
+
+#: ../SubDomain.pm:1012
+msgid "Default Hat"
+msgstr ""
+
+#: ../SubDomain.pm:1014
+msgid "Requested Hat"
+msgstr ""
+
+#: ../SubDomain.pm:1044 ../SubDomain.pm:1230 ../SubDomain.pm:1664
+#: ../SubDomain.pm:1962
+msgid "Are you sure you want to abandon this set of profile changes and exit?"
+msgstr ""
+
+#: ../SubDomain.pm:1046 ../SubDomain.pm:1233 ../SubDomain.pm:1660
+#: ../SubDomain.pm:1666 ../SubDomain.pm:1964
+msgid "Abandoning all changes."
+msgstr ""
+
+#: ../SubDomain.pm:1051 ../SubDomain.pm:1238 ../SubDomain.pm:1680
+#: ../SubDomain.pm:1969
+msgid "Are you sure you want to save the current set of profile changes and exit?"
+msgstr ""
+
+#: ../SubDomain.pm:1053 ../SubDomain.pm:1240 ../SubDomain.pm:1675
+#: ../SubDomain.pm:1682 ../SubDomain.pm:1971
+msgid "Saving all changes."
+msgstr ""
+
+#: ../SubDomain.pm:1203
+msgid "Program"
+msgstr ""
+
+#: ../SubDomain.pm:1205
+msgid "Execute"
+msgstr ""
+
+#: ../SubDomain.pm:1206 ../SubDomain.pm:1632 ../SubDomain.pm:1839
+#, fuzzy
+msgid "Severity"
+msgstr "보안"
+
+#: ../SubDomain.pm:1247
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"switching profiles?\n"
+"\n"
+"Sanitizing the environment is more secure,\n"
+"but some applications depend on the presence\n"
+"of LD_PRELOAD or LD_LIBRARY_PATH."
+msgstr ""
+
+#: ../SubDomain.pm:1249
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"switching profiles?\n"
+"\n"
+"Sanitizing the environment is more secure,\n"
+"but this application appears to use LD_PRELOAD\n"
+"or LD_LIBRARY_PATH and clearing these could\n"
+"cause functionality problems."
+msgstr ""
+
+#: ../SubDomain.pm:1256
+#, perl-format
+msgid ""
+"Launching processes in an unconfined state is a very\n"
+"dangerous operation and can cause serious security holes.\n"
+"\n"
+"Are you absolutely certain you wish to remove all\n"
+"AppArmor protection when executing %s?"
+msgstr ""
+
+#: ../SubDomain.pm:1258
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"running this program unconfined?\n"
+"\n"
+"Not sanitizing the environment when unconfining\n"
+"a program opens up significant security holes\n"
+"and should be avoided if at all possible."
+msgstr ""
+
+#: ../SubDomain.pm:1361
+#, perl-format
+msgid "Reading log entries from %s."
+msgstr ""
+
+#: ../SubDomain.pm:1362
+#, perl-format
+msgid "Updating subdomain profiles in %s."
+msgstr ""
+
+#  translators: fallback name for a module at command line
+#: ../SubDomain.pm:1368
+msgid "unknown"
+msgstr "알수없음"
+
+#: ../SubDomain.pm:1597
+msgid "Complain-mode changes:"
+msgstr ""
+
+#: ../SubDomain.pm:1599
+msgid "Enforce-mode changes:"
+msgstr ""
+
+#: ../SubDomain.pm:1604
+#, perl-format
+msgid "Invalid mode found: %s"
+msgstr ""
+
+#: ../SubDomain.pm:1631
+#, fuzzy
+msgid "Capability"
+msgstr "<b>능력:</b>"
+
+#: ../SubDomain.pm:1654
+#, perl-format
+msgid "Adding capability %s to profile."
+msgstr ""
+
+#: ../SubDomain.pm:1656
+#, perl-format
+msgid "Denying capability %s to profile."
+msgstr ""
+
+#: ../SubDomain.pm:1828
+msgid "Path"
+msgstr ""
+
+# src/clients/modem_proposal.ycp:62 src/modem/complex.ycp:200
+#: ../SubDomain.pm:1833
+#, fuzzy
+msgid "Old Mode"
+msgstr "모뎀"
+
+# src/clients/modem_proposal.ycp:62 src/modem/complex.ycp:200
+#: ../SubDomain.pm:1835
+#, fuzzy
+msgid "New Mode"
+msgstr "모뎀"
+
+# src/clients/modem_proposal.ycp:62 src/modem/complex.ycp:200
+#: ../SubDomain.pm:1837
+#, fuzzy
+msgid "Mode"
+msgstr "모뎀"
+
+#: ../SubDomain.pm:1875
+#, perl-format
+msgid "Adding #include <%s> to profile."
+msgstr ""
+
+#: ../SubDomain.pm:1876 ../SubDomain.pm:1901
+#, perl-format
+msgid "Deleted %s previous matching profile entries."
+msgstr ""
+
+#: ../SubDomain.pm:1900
+#, perl-format
+msgid "Adding %s %s to profile."
+msgstr ""
+
+#: ../SubDomain.pm:1908
+msgid "Enter new path: "
+msgstr ""
+
+#: ../SubDomain.pm:1911
+msgid "The specified path does not match this log entry:"
+msgstr ""
+
+#: ../SubDomain.pm:1912
+msgid "Log Entry"
+msgstr ""
+
+#: ../SubDomain.pm:1913
+msgid "Entered Path"
+msgstr ""
+
+#: ../SubDomain.pm:1914
+msgid "Do you really want to use this path?"
+msgstr ""
+
+#: ../SubDomain.pm:1988
+msgid ""
+"The profile analyzer has completed processing the log files.\n"
+"\n"
+"All updated profiles will be reloaded"
+msgstr ""
+
+#: ../SubDomain.pm:1996
+msgid "No unhandled AppArmor events were found in the system log."
+msgstr ""
+
+#: ../SubDomain.pm:2205 ../SubDomain.pm:2235 ../SubDomain.pm:2249
+#: ../SubDomain.pm:2284 ../SubDomain.pm:2304 ../SubDomain.pm:2341
+#: ../SubDomain.pm:2628
+#, perl-format
+msgid "%s contains syntax errors."
+msgstr ""
+
+#: ../SubDomain.pm:2263
+#, perl-format
+msgid "Profile %s contains invalid regexp %s."
+msgstr ""
+
+#: ../SubDomain.pm:2473
+#, perl-format
+msgid "Writing updated profile for %s."
+msgstr ""
+
+#: ../SubDomain.pm:2605
+#, perl-format
+msgid "Include %s contains invalid regexp %s."
+msgstr ""
+
+#: ../Reports.pm:266 ../Reports.pm:374 ../Reports.pm:1490
+#, perl-format
+msgid "DBI Execution failed: %s."
+msgstr ""
+
+#: ../Reports.pm:400
+#, perl-format
+msgid "Couldn't open file: %s."
+msgstr ""
+
+#: ../Reports.pm:404
+msgid "No type value passed.  Unable to determine page count."
+msgstr ""
+
+#: ../Reports.pm:474
+#, perl-format
+msgid "Failed copying %s."
+msgstr ""
+
+#: ../Reports.pm:587
+#, perl-format
+msgid "Export Log Error: Couldn't open %s"
+msgstr ""
+
+#: ../Reports.pm:611
+msgid "Fatal error.  No report name given. Exiting."
+msgstr ""
+
+#: ../Reports.pm:617
+#, perl-format
+msgid ""
+"Unable to get configuration info for %s.\n"
+"                Unable to find %s."
+msgstr ""
+
+#: ../Reports.pm:658
+#, perl-format
+msgid "Failed to parse: %s."
+msgstr ""
+
+#: ../Reports.pm:667
+#, perl-format
+msgid "Fatal Error.  Couldn't open %s."
+msgstr ""
+
+#: ../Reports.pm:715
+#, perl-format
+msgid "Fatal Error.  Can't run %s.  Exiting."
+msgstr ""
+
+#: ../Reports.pm:756
+#, perl-format
+msgid "Fatal Error.  No directory, %s, found.  Exiting."
+msgstr ""
+
+#: ../Reports.pm:775
+#, perl-format
+msgid "Fatal Error.  Couldn't open %s.  Exiting"
+msgstr ""
+
+#: ../Reports.pm:803 ../Reports.pm:816 ../Reports.pm:826
+#, perl-format
+msgid "DBI Execution failed: %s"
+msgstr ""
+
+#: ../Reports.pm:1596
+#, perl-format
+msgid "Fatal Error.  getArchReport() couldn't open %s"
+msgstr ""
+
+#, fuzzy
+#~ msgid "(F)inish"
+#~ msgstr "핀란드어"
+
+#~ msgid "&Yes"
+#~ msgstr "예(&Y)"
+
+#~ msgid "&No"
+#~ msgstr "아니오(&N)"

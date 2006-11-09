@@ -1,0 +1,487 @@
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmor-utils\n"
+"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"POT-Creation-Date: 2006-09-22 10:57-0600\n"
+"PO-Revision-Date: 2006-11-03 13:52\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../genprof:55
+msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
+msgstr "サブドメインが開始されていないようです。サブドメインを有効にして、もう一度実行してください。."
+
+#: ../genprof:69
+msgid "Please enter the program to profile: "
+msgstr "サポートキーを記入してください"
+
+#: ../genprof:87
+#, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
+msgstr "システムパスリストの%sが見つかりません。アプリケーションの名前が正しい場合は、完全修飾パスを見つけるために、他のウィンドウで「which %s」を実行してください。"
+
+#: ../genprof:89 ../autodep:117 ../audit:112 ../complain:112 ../enforce:111
+#, perl-format
+msgid "%s does not exist, please double-check the path."
+msgstr "%sが存在しないので、パスをダブルチェックしてください。"
+
+#: ../genprof:100 ../autodep:99
+#, perl-format
+msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
+msgstr "%sは、現在固有のプロファイルをもたないプログラムとしてマークされています。通常、プロファイルを作成している場合にこのようにマークされていない場合、残りのシステムを破損させる恐れがあります。操作が明確にわかっている場合で、このプログラムにプロファイルを作成することが確かな場合は、/etc/apparmor/logprof.confの[qualifiers]セクションの対応するエントリを編集してください。"
+
+#: ../genprof:121
+msgid ""
+"Please start the application to be profiled in \n"
+"another window and exercise its functionality now.\n"
+"\n"
+"Once completed, select the \"Scan\" button below in \n"
+"order to scan the system logs for AppArmor events.  \n"
+"\n"
+"For each AppArmor event, you will be given the  \n"
+"opportunity to choose whether the access should be  \n"
+"allowed or denied."
+msgstr ""
+"アプリケーションのプロファイルが別のウィンドウで\n"
+"作成されるように開始し、その機能を実行してください。\n"
+"\n"
+"一度終了したら、AppArmor イベントのシステムログを \n"
+"スキャンするために、下の \"Scan\" ボタンを選択してください。 \n"
+"\n"
+"それぞれのAppArmorイベントに対して、アクセスを\n"
+"許可するか拒否するかを選択する\n"
+"機会を与えられます。"
+
+#: ../genprof:140
+msgid "Profiling"
+msgstr "検出中"
+
+#: ../genprof:167
+msgid "Reloaded SubDomain profiles in enforce mode."
+msgstr "サブドメインプロファイルを強制モードでリロード。"
+
+#: ../genprof:168
+#, perl-format
+msgid "Finished generating profile for %s."
+msgstr "%sのプロファイル生成を完了。"
+
+#: ../genprof:172
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
+msgstr "使用:%s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [プロファイルを作成するプログラム]"
+
+#: ../logprof:75
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
+msgstr "使用:%s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"後で処理を開始するログ中のマーク\"]"
+
+#: ../autodep:64
+#, perl-format
+msgid "Can't find subdomain profiles in %s."
+msgstr "%s のサブドメインプロファイルが見つかりませんでした。"
+
+#: ../autodep:75
+msgid "Please enter the program to create a profile for: "
+msgstr "プロファイルを作成するプログラムを入力してください: "
+
+#: ../autodep:107
+#, perl-format
+msgid "Profile for %s already exists - skipping."
+msgstr "プロバイダ名 %s はすでに存在します。"
+
+#: ../autodep:114 ../audit:109 ../complain:109 ../enforce:108
+#, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
+msgstr "システムパスリストで %s を見つけることができません。アプリケーションの名前が正しい場合は、完全修飾パスを見つけるためにユーザとして正しいパス環境を設定し、「which %s」を実行してください。"
+
+#: ../audit:102
+#, perl-format
+msgid "Setting %s to audit mode."
+msgstr "%s を監査モードに設定します。"
+
+#: ../audit:121
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
+msgstr "使用:%s [ -d /path/to/profiles ] [ プログラムを監査モードに切り替え]"
+
+#: ../complain:67
+msgid "Please enter the program to switch to complain mode: "
+msgstr "プログラムを入力してコンプレインモードに切り換えてください: "
+
+#: ../complain:102 ../SubDomain.pm:426
+#, perl-format
+msgid "Setting %s to complain mode."
+msgstr "コンプレインモードに%sを設定します。"
+
+#: ../complain:121
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
+msgstr "使用:%s [ -d /path/to/profiles ] [ プログラムをコンプレインモードに切り替え]"
+
+#: ../enforce:67
+msgid "Please enter the program to switch to enforce mode: "
+msgstr "プログラムを入力して強制モードに切り換えてください:"
+
+#: ../enforce:101 ../SubDomain.pm:440
+#, perl-format
+msgid "Setting %s to enforce mode."
+msgstr "%sを強制モードに設定しています。"
+
+#: ../enforce:120
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
+msgstr "使用:%s [ -d /path/to/profiles ] [ プログラムを強制モードに切り替え]"
+
+#: ../unconfined:51
+#, perl-format
+msgid "Usage: %s [ --paranoid ]\n"
+msgstr "使用: %s [ --paranoid ]\n"
+
+#: ../unconfined:57
+msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
+msgstr "サブドメインが開始されていないようです。サブドメインを有効にして、もう一度実行してください。"
+
+#: ../unconfined:61
+msgid "Can't read /proc\n"
+msgstr "/procを読めません。\n"
+
+#: ../unconfined:91 ../unconfined:93
+msgid "not confined\n"
+msgstr "制限されていない\n"
+
+#: ../unconfined:102 ../unconfined:104
+msgid "confined by"
+msgstr "制限されている"
+
+#: ../SubDomain.pm:421 ../SubDomain.pm:435
+#, perl-format
+msgid "Can't find %s."
+msgstr "%s を書き込めません。"
+
+#: ../SubDomain.pm:703 ../SubDomain.pm:742
+msgid "(Y)es"
+msgstr "はい(Y)"
+
+#: ../SubDomain.pm:704 ../SubDomain.pm:743
+msgid "(N)o"
+msgstr "いいえ"
+
+#: ../SubDomain.pm:744
+msgid "(C)ancel"
+msgstr "キャンセル(&C)"
+
+#: ../SubDomain.pm:1010 ../SubDomain.pm:1201 ../SubDomain.pm:1630
+#: ../SubDomain.pm:1827
+msgid "Profile"
+msgstr "プロファイル"
+
+#: ../SubDomain.pm:1012
+msgid "Default Hat"
+msgstr "デフォルトホスト"
+
+#: ../SubDomain.pm:1014
+msgid "Requested Hat"
+msgstr "ハットの要求"
+
+#: ../SubDomain.pm:1044 ../SubDomain.pm:1230 ../SubDomain.pm:1664
+#: ../SubDomain.pm:1962
+msgid "Are you sure you want to abandon this set of profile changes and exit?"
+msgstr "このプロファイルの変更を破棄し、終了しますか?"
+
+#: ../SubDomain.pm:1046 ../SubDomain.pm:1233 ../SubDomain.pm:1660
+#: ../SubDomain.pm:1666 ../SubDomain.pm:1964
+msgid "Abandoning all changes."
+msgstr "すべての変更を中止しますか?"
+
+#: ../SubDomain.pm:1051 ../SubDomain.pm:1238 ../SubDomain.pm:1680
+#: ../SubDomain.pm:1969
+msgid "Are you sure you want to save the current set of profile changes and exit?"
+msgstr "プロファイルの作成をキャンセルしますか?"
+
+#: ../SubDomain.pm:1053 ../SubDomain.pm:1240 ../SubDomain.pm:1675
+#: ../SubDomain.pm:1682 ../SubDomain.pm:1971
+msgid "Saving all changes."
+msgstr "すべての変更の保存中。"
+
+#: ../SubDomain.pm:1203
+msgid "Program"
+msgstr "プログラム"
+
+#: ../SubDomain.pm:1205
+msgid "Execute"
+msgstr "エキスパート(E)"
+
+#: ../SubDomain.pm:1206 ../SubDomain.pm:1632 ../SubDomain.pm:1839
+msgid "Severity"
+msgstr "セキュリティ"
+
+#: ../SubDomain.pm:1247
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"switching profiles?\n"
+"\n"
+"Sanitizing the environment is more secure,\n"
+"but some applications depend on the presence\n"
+"of LD_PRELOAD or LD_LIBRARY_PATH."
+msgstr ""
+"AppArmorはプロファイルを切り換えるときに環境を\n"
+"サニタイズする必要がありますか？\n"
+"\n"
+"環境をサニタイズすることはずっと安全です、\n"
+"しかし一部のアプリケーションは次のパスの存在に依存しています。\n"
+"LD_PRELOAD or LD_LIBRARY_PATH"
+
+#: ../SubDomain.pm:1249
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"switching profiles?\n"
+"\n"
+"Sanitizing the environment is more secure,\n"
+"but this application appears to use LD_PRELOAD\n"
+"or LD_LIBRARY_PATH and clearing these could\n"
+"cause functionality problems."
+msgstr ""
+"AppArmorはプロファイルを切り換えるときに\n"
+"環境をサニタイズする必要がありますか？\n"
+"\n"
+"環境をサニタイズすることによりさらに安全になりますが、\n"
+"このアプリケーションはLD_PRELOAD\n"
+"またはLD_LIBRARY_PATHを使用しているようです。これらをクリアすることは \n"
+"機能上の問題を引き起こします。"
+
+#: ../SubDomain.pm:1256
+#, perl-format
+msgid ""
+"Launching processes in an unconfined state is a very\n"
+"dangerous operation and can cause serious security holes.\n"
+"\n"
+"Are you absolutely certain you wish to remove all\n"
+"AppArmor protection when executing %s?"
+msgstr ""
+"制限されていない状態での起動プロセスは非常に\n"
+"危険な操作であり、重大なセキュリティの問題を発生させるおそれがあります。\n"
+"\n"
+"%s の実行時に本当にAppArmorの保護を\n"
+"排除してもよろしいですか？"
+
+#: ../SubDomain.pm:1258
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"running this program unconfined?\n"
+"\n"
+"Not sanitizing the environment when unconfining\n"
+"a program opens up significant security holes\n"
+"and should be avoided if at all possible."
+msgstr ""
+"制限されない状態でこのプログラムを実行するときに\n"
+"AppArmorは環境をサニタイズする必要がありますか？\n"
+"\n"
+"制限されていないときに環境をサニタイズしない場合、\n"
+"プログラムが重大なセキュリティの問題をまねくことになります。\n"
+"可能ならば、これを避けるべきです。"
+
+#: ../SubDomain.pm:1361
+#, perl-format
+msgid "Reading log entries from %s."
+msgstr "%sからログエントリを読み込んでいます。"
+
+#: ../SubDomain.pm:1362
+#, perl-format
+msgid "Updating subdomain profiles in %s."
+msgstr "%sのサブドメインプロファイルを更新しています。"
+
+#: ../SubDomain.pm:1368
+msgid "unknown"
+msgstr "不明"
+
+#: ../SubDomain.pm:1597
+msgid "Complain-mode changes:"
+msgstr "コンプレインモードの変更:"
+
+#: ../SubDomain.pm:1599
+msgid "Enforce-mode changes:"
+msgstr "強制モードの変更:"
+
+#: ../SubDomain.pm:1604
+#, perl-format
+msgid "Invalid mode found: %s"
+msgstr "無効なオプション: %s"
+
+#: ../SubDomain.pm:1631
+msgid "Capability"
+msgstr "機能"
+
+#: ../SubDomain.pm:1654
+#, perl-format
+msgid "Adding capability %s to profile."
+msgstr "機能%sをプロファイルに追加しています。"
+
+#: ../SubDomain.pm:1656
+#, perl-format
+msgid "Denying capability %s to profile."
+msgstr "機能%sをプロファイルで拒否しています。"
+
+#: ../SubDomain.pm:1828
+msgid "Path"
+msgstr "パス"
+
+#: ../SubDomain.pm:1833
+msgid "Old Mode"
+msgstr "古いモード"
+
+#: ../SubDomain.pm:1835
+msgid "New Mode"
+msgstr "テキストモード"
+
+#: ../SubDomain.pm:1837
+msgid "Mode"
+msgstr "モード"
+
+#: ../SubDomain.pm:1875
+#, perl-format
+msgid "Adding #include <%s> to profile."
+msgstr "#include <%s>をプロファイルに追加しています。"
+
+#: ../SubDomain.pm:1876 ../SubDomain.pm:1901
+#, perl-format
+msgid "Deleted %s previous matching profile entries."
+msgstr "前の%s個の一致するプロファイルエントリを削除しました。"
+
+#: ../SubDomain.pm:1900
+#, perl-format
+msgid "Adding %s %s to profile."
+msgstr "%s %sをプロファイルに追加しています。"
+
+#: ../SubDomain.pm:1908
+msgid "Enter new path: "
+msgstr "新規パスの入力:"
+
+#: ../SubDomain.pm:1911
+msgid "The specified path does not match this log entry:"
+msgstr "指定されたカードは存在しません。"
+
+#: ../SubDomain.pm:1912
+msgid "Log Entry"
+msgstr "ログ入力"
+
+#: ../SubDomain.pm:1913
+msgid "Entered Path"
+msgstr "インストール済みパッチ"
+
+#: ../SubDomain.pm:1914
+msgid "Do you really want to use this path?"
+msgstr "このパスを本当に使用しますか?"
+
+#: ../SubDomain.pm:1988
+msgid ""
+"The profile analyzer has completed processing the log files.\n"
+"\n"
+"All updated profiles will be reloaded"
+msgstr ""
+"プロファイルアナライザがログファイルの処理を完了しました。\n"
+"\n"
+"更新されたすべてのプロファイルはリロードされます"
+
+#: ../SubDomain.pm:1996
+msgid "No unhandled AppArmor events were found in the system log."
+msgstr "システムログに未処理AppArmorイベントが見つかりませんでした。"
+
+#: ../SubDomain.pm:2205 ../SubDomain.pm:2235 ../SubDomain.pm:2249
+#: ../SubDomain.pm:2284 ../SubDomain.pm:2304 ../SubDomain.pm:2341
+#: ../SubDomain.pm:2628
+#, perl-format
+msgid "%s contains syntax errors."
+msgstr "%sは構文エラーを含んでいます。"
+
+#: ../SubDomain.pm:2263
+#, perl-format
+msgid "Profile %s contains invalid regexp %s."
+msgstr "プロファイル%sに無効なregexp %sが含まれています。"
+
+#: ../SubDomain.pm:2473
+#, perl-format
+msgid "Writing updated profile for %s."
+msgstr "%sの更新されたプロファイルを書き込んでいます。"
+
+#: ../SubDomain.pm:2605
+#, perl-format
+msgid "Include %s contains invalid regexp %s."
+msgstr "%sに無効なregexp %sが含まれています。"
+
+#: ../Reports.pm:266 ../Reports.pm:374 ../Reports.pm:1490
+#, perl-format
+msgid "DBI Execution failed: %s."
+msgstr "DBIを実行できませんでした: %s。"
+
+#: ../Reports.pm:400
+#, perl-format
+msgid "Couldn't open file: %s."
+msgstr "ファイルを開けませんでした: %s。"
+
+#: ../Reports.pm:404
+msgid "No type value passed.  Unable to determine page count."
+msgstr "型の値が渡されていません。ページ数を決定できません。"
+
+#: ../Reports.pm:474
+#, perl-format
+msgid "Failed copying %s."
+msgstr "%sのコピーに失敗しました。"
+
+#: ../Reports.pm:587
+#, perl-format
+msgid "Export Log Error: Couldn't open %s"
+msgstr "ログエラーのエクスポート: %sを開けませんでした。"
+
+#: ../Reports.pm:611
+msgid "Fatal error.  No report name given. Exiting."
+msgstr "致命的エラー。リポート名が与えられていません。終了中。"
+
+#: ../Reports.pm:617
+#, perl-format
+msgid ""
+"Unable to get configuration info for %s.\n"
+"                Unable to find %s."
+msgstr ""
+"%s に対する設定を取得できません。\n"
+"                %s を検出できません。"
+
+#: ../Reports.pm:658
+#, perl-format
+msgid "Failed to parse: %s."
+msgstr "解析に失敗しました: %s。"
+
+#: ../Reports.pm:667
+#, perl-format
+msgid "Fatal Error.  Couldn't open %s."
+msgstr "致命的エラー。%sを開けませんでした。"
+
+#: ../Reports.pm:715
+#, perl-format
+msgid "Fatal Error.  Can't run %s.  Exiting."
+msgstr "致命的エラー。%sを実行できません。終了中。"
+
+#: ../Reports.pm:756
+#, perl-format
+msgid "Fatal Error.  No directory, %s, found.  Exiting."
+msgstr "致命的エラー。ディレクトリ、%sが見つかりません。終了中。"
+
+#: ../Reports.pm:775
+#, perl-format
+msgid "Fatal Error.  Couldn't open %s.  Exiting"
+msgstr "致命的エラー。%sを開けませんでした。終了中"
+
+#: ../Reports.pm:803 ../Reports.pm:816 ../Reports.pm:826
+#, perl-format
+msgid "DBI Execution failed: %s"
+msgstr "DBIを実行できませんでした:  %s"
+
+#: ../Reports.pm:1596
+#, perl-format
+msgid "Fatal Error.  getArchReport() couldn't open %s"
+msgstr "致命的エラー。  getArchReport()が%sを開けませんでした"
