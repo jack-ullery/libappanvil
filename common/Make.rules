@@ -148,8 +148,8 @@ tarball: clean $(TARBALL)
 .PHONY: dist
 dist: clean $(SPECFILE)
 	-rm -rf $(RELEASE_DIR)
-	svn export $(REPO_URL) $(RELEASE_DIR)
-	svn export $(COMMON_REPO_URL) $(RELEASE_DIR)/common
+	svn export -r $(REPO_VERSION) $(REPO_URL) $(RELEASE_DIR)
+	svn export -r $(REPO_VERSION) $(COMMON_REPO_URL) $(RELEASE_DIR)/common
 	$(TAR) -f $(TARBALL) $(RELEASE_DIR)
 	rm -rf $(RELEASE_DIR)
 
