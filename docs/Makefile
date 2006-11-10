@@ -47,8 +47,6 @@ MANPAGES			= change_hat.2 \
 				  apparmor.7 \
 				  ${AA_MANPAGES} \
 				  apparmor_parser.8 apparmor_status.8 mod_apparmor.8
-OLD_MANPAGES			= subdomain.d.5 subdomain.vim.5 \
-				  subdomain.7 subdomain_parser.8
 DOCUMENTS                       = immunix.css
 PAPERS=$(wildcard papers/*) 
 
@@ -107,8 +105,6 @@ install_manpages: $(MANPAGES)
 	for dir in ${MANDIRS} ; do install -d ${DESTDIR}/${MANDIR}/man$${dir} ; done
 	$(foreach dir, ${MANDIRS}, \
 	     install -m 644 $(filter %.${dir}, ${MANPAGES}) ${DESTDIR}/${MANDIR}/man${dir}; \
-	     $(foreach oldpage, $(filter %.${dir}, ${OLD_MANPAGES}), \
-	     	ln -sf $(oldpage:subdomain%=apparmor%) ${DESTDIR}/${MANDIR}/man${dir}/${oldpage};) \
 	     $(foreach aa_page, $(filter %.${dir}, ${AA_MANPAGES}), \
 	     	ln -sf $(aa_page) ${DESTDIR}/${MANDIR}/man${dir}/${aa_page:%=aa-%};)) 
 	# special case for apparmor_status
