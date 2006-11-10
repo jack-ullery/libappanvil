@@ -72,7 +72,8 @@ errno(3) is set appropriately.
 
 =item B<EINVAL>
 
-The apparmor kernel module is not loaded.
+The apparmor kernel module is not loaded or the communication via the
+F</proc/*/attr/current> file did not conform to protocol.
 
 =item B<ENOMEM>
 
@@ -88,15 +89,8 @@ The application's profile has no hats defined for it.
 
 =item B<EACCES>
 
-The specified I<subprofile> does not exist in this profile.
-
-=item B<EPROTO>
-
-The I<magic_token> passed in was 0 and the I<subprofile> was set to NULL.
-
-=item B<EFAULT>
-
-An internal error occurred.
+The specified I<subprofile> does not exist in this profile or the
+process tried to change another process's domain.
 
 =back 
 
@@ -192,27 +186,28 @@ This code example requires the following profile to be loaded with
 apparmor_parser(8):
 
  /tmp/ch {
- #default entries; most required by __canary_death_handler()
- /dev/log                       w ,
- /etc/ld.so.cache               r ,
- /etc/locale/**                 r ,
- /etc/localtime                 r ,
- /usr/share/locale/**           r ,
- /usr/share/zoneinfo/**         r ,
- /usr/lib/locale/**             r ,
- /usr/lib/gconv/*.so            r ,
- /usr/lib/gconv/gconv-modules*  r ,
- #entries specific to this application
- /lib/ld-*.so* rx ,
- /lib/libc*.so* r ,
- /etc/passwd    r ,
- /dev/pts/*     rw,
- /tmp/ch        r ,
+   /etc/ld.so.cache               mr,
+   /etc/locale/**                 r,
+   /etc/localtime                 r,
+   /usr/share/locale/**           r,
+   /usr/share/zoneinfo/**         r,
+   /usr/lib/locale/**             mr,
+   /usr/lib/gconv/*.so            mr,
+   /usr/lib/gconv/gconv-modules*  mr,
+
+   /lib/ld-*.so*         mrix,
+   /lib/libc*.so*        mr,
+   /lib/libapparmor*.so* mr,
+   /dev/pts/*            rw,
+   /tmp/ch               mr,
+
+   /etc/passwd           r,
+
+   ^hat {
+     /dev/pts/*     rw,
+   }
  }
- 
- /tmp/ch^hat {
- /dev/pts/*     rw,
- }
+
 
 The output when run:
 
@@ -226,7 +221,9 @@ The output when run:
 =head1 BUGS
 
 None known. If you find any, please report them to bugzilla at
-L<http://bugzilla.novell.com>.
+L<http://bugzilla.novell.com>. Note that change_hat(2) provides no 
+memory barriers between different areas of a program; if address space
+separation is required, then separate processes should be used.
 
 =head1 SEE ALSO
 
