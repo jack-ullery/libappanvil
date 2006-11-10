@@ -150,6 +150,8 @@ fi
 %endif
 
 %changelog
+* Fri Nov 10 2006 - sbeattie@suse.de
+- fix rc.aaeventd to depend on apparmor, not boot.apparmor (#214293)
 * Wed Nov  8 2006 - sbeattie@suse.de
 - Use kernel's capability defines rather than libcap
 * Wed Nov  8 2006 - ddrewelow@suse.de
