@@ -28,19 +28,13 @@ apparmor.vim - vim syntax highlighting file for AppArmor profiles
 
 =head1 SYNOPSIS
 
-To automatically use the apparmor.vim syntax highlighting in vim, place
-the following lines in your ~/.vimrc file:
-
- autocmd BufNewFile,BufRead /etc/apparmor.d/*  set syntax=apparmor
- autocmd BufNewFile,BufRead */sdprofiles/*     set syntax=apparmor
- autocmd BufNewFile,BufRead */codomain-*/*/*   set syntax=apparmor
- 
- syntax on
-
-If you wish to use the profile in a specific vim session, you may run:
+The SUSE vim package is configured to automatically use syntax
+highlighting for AppArmor policies stored in /etc/apparmor.d/ and the
+extra policies stored in /etc/apparmor/profiles/extras/. If you wish to
+use the syntax highlighting in a specific vim session, you may run:
 
  :syntax on
- :set syntax=apparmor
+ :setf apparmor
 
 =head1 DESCRIPTION
 
@@ -48,18 +42,15 @@ B<apparmor.vim> provides syntax highlighting rules for the vim(1) text
 editor; the rules provide an easy visual method to inspect AppArmor
 profiles for syntax correctness and semantics.
 
-The most useful colors provided are I<red> for C<unconstrained execute>
-access, I<green> for C<execute> access, and I<yellow> for C<write> access.
-
-=head1 FILES
-
-F</usr/share/vim/current/syntax/apparmor.vim>
+The colors indicate the relative severity of granting a specific set of
+privileges. Ranking access with colors is necessarily generic and vague,
+but it may help you understand your profiles better.
 
 =head1 BUGS
 
-B<apparmor.vim> does not currently parse correctly files that are
-#include'd or hats (see change_hat(2)). Patches accepted.  If you find
-any bugs, please report them to bugzilla at L<http://bugzilla.novell.com>.
+B<apparmor.vim> does not properly detect dark versus light backgrounds.
+Patches accepted. If you find any bugs, please report them to bugzilla
+at L<http://bugzilla.novell.com>.
 
 =head1 SEE ALSO
 
