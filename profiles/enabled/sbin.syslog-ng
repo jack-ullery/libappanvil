@@ -25,7 +25,8 @@
   /dev/xconsole rw,
   /etc/syslog-ng/* r,
   /sbin/syslog-ng mr,
-  /var/lib/named/dev/log w,
+  # chrooted applications
+  /var/lib/*/dev/log w,
   /var/log/* w,
   /var/run/syslog-ng.pid w,
 }
