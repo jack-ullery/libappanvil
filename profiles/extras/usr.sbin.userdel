@@ -15,22 +15,35 @@
 /usr/sbin/userdel {
   #include <abstractions/authentication>
   #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/consoles>
   #include <abstractions/perl>
   #include <abstractions/nameservice>
 
+  capability chown,
+  capability dac_override,
+  capability dac_read_search,
   capability sys_resource,
 
   /bin/cat mix,
+  /bin/bash mix,
   /dev/log w,
   /etc/.pwd.lock rw,
+  /etc/cron.deny r,
   /etc/default/useradd r,
   /etc/group* rwl,
   /etc/gshadow* rwl,
   /etc/login.defs r,
   /etc/passwd* rwl,
   /etc/shadow* rwl,
+  /etc/pwdutils/logging r,
   @{HOMEDIRS}**  rwl,
   /proc/*/mounts r,
+  /usr/bin/crontab ixr,
+  /usr/lib*/pwdutils/*.so.* mr,
+  /usr/sbin/userdel rmix,
+  /usr/sbin/userdel-post.local ixr,
+  /usr/sbin/userdel-pre.local ixr,
   /usr/sbin/userdel rmix,
   /var/log/lastlog rw,
   # XXX

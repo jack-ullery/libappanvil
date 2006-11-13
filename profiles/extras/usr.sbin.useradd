@@ -15,12 +15,18 @@
 /usr/sbin/useradd {
   #include <abstractions/authentication>
   #include <abstractions/base>
+  #include <abstractions/bash>
   #include <abstractions/perl>
   #include <abstractions/consoles>
   #include <abstractions/nameservice>
 
+  capability chown,
+  capability dac_override,
+  capability fowner,
+  capability fsetid,
   capability sys_resource,
 
+  /bin/bash mixr,
   /etc/.pwd.lock rw,
   /etc/default/useradd r,
   /etc/group* rwl,
@@ -28,13 +34,16 @@
   /etc/login.defs r,
   /etc/passwd* rwl,
   /etc/shadow* rwl,
+  /etc/pwdutils/logging r,
   /etc/skel r,
   /etc/skel/** r,
   @{HOMEDIRS}**  rw,
   /proc/*/mounts r,
   /proc/filesystems r,
+  /usr/lib*/pwdutils/*so* mr,
   /usr/sbin/adduser rmix,
   /usr/sbin/useradd rmix,
+  /usr/sbin/useradd.local rmix,
   /var/log/faillog rw,
   /var/log/lastlog rw,
   /var/run/nscd.pid rw,
