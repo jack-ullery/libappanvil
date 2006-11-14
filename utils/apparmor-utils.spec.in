@@ -72,12 +72,6 @@ make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro} \
 %{_prefix}/share/locale/*/*/apparmor-utils.mo
 %dir /var/log/apparmor
 %dir /etc/apparmor
-#  XXX Grumble autobuild grumble
-%dir %attr(-,root,root) /usr/share/locale/hu_HU
-%dir %attr(-,root,root) /usr/share/locale/hu_HU/LC_MESSAGES
-%dir %attr(-,root,root) /usr/share/locale/ja_JP
-%dir %attr(-,root,root) /usr/share/locale/ja_JP/LC_MESSAGES
-
 
 
 %preun
