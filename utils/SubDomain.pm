@@ -535,11 +535,7 @@ sub handle_binfmt ($$) {
     chomp $library;
     next unless $library;
 
-    if($library =~ /\/lib\/ld-.+/) {
-      $profile->{path}->{$library} = "mpx";
-    } else {
-      $profile->{path}->{$library} = "mr";
-    }
+    $profile->{path}->{$library} = "mr";
   }
 
   return $profile;
