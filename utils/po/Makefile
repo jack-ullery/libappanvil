@@ -18,7 +18,7 @@ all:
 
 # As translations get added, add them to the LANGS variable to get
 # made/installed.
-LANGS=ar bg bn bs ca cs cy da de_DE de el en_GB en_US es_ES es et fi fr_FR fr gl he hi hr hu_HU hu id it_IT it ja_JP ja ka km ko la_PG lo lt mk nb_NO nb nl pa pl pt_BR pt pt_PT ro ru sk sl sr sv ta tr uk vi zh_CN zh_TW
+LANGS=ar bg bn bs ca cs cy da de el en_GB en_US es et fi fr gl he hi hr hu id it ja ka km ko lo lt mk nb nl pa pl pt_BR pt_PT pt ro ru sk sl sr sv ta tr uk vi zh_CN zh_TW
 
 include ../common/Make-po.rules
 ../common/Make-po.rules:
