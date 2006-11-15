@@ -29,6 +29,9 @@ endif
 TOOLS = genprof logprof autodep audit complain enforce \
 	unconfined aa-eventd apparmor_status
 
+all:
+	make -C po all
+
 # need some better way of determining this
 DESTDIR=/
 BINDIR=${DESTDIR}/usr/sbin

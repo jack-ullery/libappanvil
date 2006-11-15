@@ -20,7 +20,8 @@ XGETTEXT_ARGS=--copyright-holder="NOVELL, Inc." --msgid-bugs-address=apparmor-ge
 # pass in the list of sources in the SOURCES variable
 PARENT_SOURCES=$(foreach source, ${SOURCES}, ../${source})
 
-TARGET_MOS=$(foreach lang, ${LANGS}, ${lang}.mo)
+LANGS=$(patsubst %.po, %, $(wildcard *.po))
+TARGET_MOS=$(foreach lang, $(filter-out $(DISABLED_LANGS),$(LANGS)), ${lang}.mo)
 
 .PHONY: all
 all: ${TARGET_MOS}

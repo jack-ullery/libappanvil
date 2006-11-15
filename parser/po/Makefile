@@ -8,11 +8,10 @@
 # ----------------------------------------------------------------------
 all:
 
-# As translations get added, add them to the LANGS variable to get
-# made/installed.
+# As translations get added, they will automatically be included, unless
+# the lang is explicitly added to DISABLED_LANGS; e.g. DISABLED_LANGS=en es
 
-# DISABLED LANGS = ar
-LANGS=ar bg bn bs ca cs cy da de el en_GB en_US es et fi fr gl he hi hr hu id it ja ka km ko lo lt mk nb nl pa pl pt_BR pt ro ru sk sl sr sv ta tr uk vi zh_CN zh_TW
+DISABLED_LANGS=
 
 include ../common/Make-po.rules
 ../common/Make-po.rules:
