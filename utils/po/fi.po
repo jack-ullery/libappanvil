@@ -1,4 +1,4 @@
-# translation of apparmor-utils.po to Suomi
+# translation of apparmor-utils.fi.po to Suomi
 # translation of apparmor-utils.po to
 # translation of apparmor-utils.fi.po to
 # translation of subdomain-utils.po to
@@ -12,41 +12,98 @@
 # Joonas Niilola <juippis@roskakori.org>, 2006.
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-utils\n"
+"Project-Id-Version: apparmor-utils.fi\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-09-22 10:57-0600\n"
-"PO-Revision-Date: 2006-11-02 16:45+0200\n"
-"Last-Translator: Erkka Hakkarainen <erkka.hakkarainen@pp.inet.fi>\n"
-"Language-Team: Suomi <suser-fi@kotoistaminen.novell.fi>\n"
+"POT-Creation-Date: 2006-11-03 13:51-0800\n"
+"PO-Revision-Date: 2006-11-06 22:04+0200\n"
+"Last-Translator: Jyri Palokangas <jmp@netti.fi>\n"
+"Language-Team: Suomi <yast-trans-fi@kotoistaminen.novell.fi>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.2\n"
+"X-Generator: KBabel 1.11.4\n"
 
-#: ../genprof:55
-msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "SubDomain ei vaikuta olevan käynnistetty.  Ota SubDomain käyttöön ja yritä uudelleen."
-
-#: ../genprof:69
-msgid "Please enter the program to profile: "
-msgstr "Syötä profiloitava ohjelma: "
-
-#: ../genprof:87
+#: audit:102
 #, perl-format
-msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
-msgstr "%s ei löytynyt järjestelmäpolkujen luettelosta.  Jos sovelluksen nimi on oikein, suorita 'which %s' toisessa ikkunassa löytääksesi täysin määritellyn (FQ) polun."
+msgid "Setting %s to audit mode."
+msgstr "Asetetaan %s tarkkailutilaan."
 
-#: ../genprof:89 ../autodep:117 ../audit:112 ../complain:112 ../enforce:111
+#: audit:109 autodep:114 complain:109 enforce:108
+#, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
+msgstr "%s ei löytynyt järjestelmäpolkujen luettelosta.  Jos sovelluksen nimi on oikein, suorita 'which %s' toisessa ikkunassa löytääksesi täysin määritellyn polun."
+
+#: audit:112 autodep:117 complain:112 enforce:111 genprof:89
 #, perl-format
 msgid "%s does not exist, please double-check the path."
 msgstr "%s ei ole olemassa, tarkista antamasi polku."
 
-#: ../genprof:100 ../autodep:99
+#: audit:121
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
+msgstr "käyttö: %s [ -d /polku/profiileihin ] [ ohjelma joka vaihdetaan, tarkastus-tilaan ]"
+
+#: autodep:64
+#, perl-format
+msgid "Can't find subdomain profiles in %s."
+msgstr "Alitoimialueiden profiileja ei löydy %s :stä."
+
+#: autodep:75
+msgid "Please enter the program to create a profile for: "
+msgstr "Syötä profiloitava ohjelma: "
+
+#: autodep:99 genprof:100
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
 msgstr "%s on tällä hetkellä merkitty ohjelmaksi, jolla ei tulisi olla omaa profiilia.  Yleensä ohjelmat on merkitty tällä tavoin, jos profiilin luominen rikkoisi jotain muuta järjestelmästä.  Jos tiedät mitä olet tekemässä ja olet varma että haluat luoda profiilin tälle ohjelmalle, muokkaa vastaavaa merkintää /etc/apparmor/logprof.conf tiedoston [qualifiers] kohdassa."
 
-#: ../genprof:121
+#: autodep:107
+#, perl-format
+msgid "Profile for %s already exists - skipping."
+msgstr "Profiili ohjelmaa %s varten on jo olemassa - ohitetaan."
+
+#: complain:67
+msgid "Please enter the program to switch to complain mode: "
+msgstr "Syötä ohjelma, jonka haluat muutettavan valitustilaan."
+
+#: complain:102 SubDomain.pm:427
+#, perl-format
+msgid "Setting %s to complain mode."
+msgstr "Asetetaan %s tarkkailutilaan (complain mode)."
+
+#: complain:121
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
+msgstr "käyttö: %s [ -d /polku/profiileihin ] [ ohjelma joka vaihdetaan valitustilaan ]"
+
+#: enforce:67
+msgid "Please enter the program to switch to enforce mode: "
+msgstr "Syötä ohjelma, jonka haluat muutettavan pakottamistilaan (enforce mode)."
+
+#: enforce:101 SubDomain.pm:441
+#, perl-format
+msgid "Setting %s to enforce mode."
+msgstr "Asetetaan %s pakotustilaan (enforce mode)."
+
+#: enforce:120
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
+msgstr "käyttö: %s [ -d /polku/profiileihin ] [ ohjelma, joka vaihdetaan pakotustilaan (enforce mode)]"
+
+#: genprof:55
+msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
+msgstr "SubDomain ei vaikuta olevan käynnistetty.  Ota SubDomain käyttöön ja yritä uudelleen."
+
+#: genprof:69
+msgid "Please enter the program to profile: "
+msgstr "Syötä profiloitava ohjelma: "
+
+#: genprof:87
+#, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
+msgstr "%s ei löytynyt järjestelmäpolkujen luettelosta.  Jos sovelluksen nimi on oikein, suorita 'which %s' toisessa ikkunassa löytääksesi täysin määritellyn (FQ) polun."
+
+#: genprof:121
 msgid ""
 "Please start the application to be profiled in \n"
 "another window and exercise its functionality now.\n"
@@ -67,171 +124,90 @@ msgstr ""
 "Kustakin AppArmor-tapahtumasta kysytään, tulisiko  \n"
 "kyseinen käyttö olla sallittua vai kiellettyä."
 
-#: ../genprof:140
+#: genprof:140
 msgid "Profiling"
 msgstr "Profiloidaan"
 
-#: ../genprof:167
+#: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
 msgstr "Uudelleen ladattiin SubDomain profiilit pakotus-tilaan."
 
-#: ../genprof:168
+#: genprof:168
 #, perl-format
 msgid "Finished generating profile for %s."
 msgstr "Profiilin %s luominen valmis."
 
-#: ../genprof:172
+#: genprof:172
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
 msgstr "käyttö: %s [ -d /polku/profiileihin ] [ -f /polku/lokitiedostoihin ] [ profiloitava ohjelma ]"
 
-#: ../logprof:75
+#: logprof:75
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
 msgstr "käyttö: %s [ -d /polku/profiileihin ] [ -f /polku/lokitiedostoon ] [ -m \"merkitse lokitiedostoon prosessoinnin aloittaminen jälkeen\""
 
-#: ../autodep:64
-#, perl-format
-msgid "Can't find subdomain profiles in %s."
-msgstr "Alitoimialueiden profiileja ei löydy %s :stä."
-
-#: ../autodep:75
-msgid "Please enter the program to create a profile for: "
-msgstr "Syötä profiloitava ohjelma: "
-
-#: ../autodep:107
-#, perl-format
-msgid "Profile for %s already exists - skipping."
-msgstr "Profiili ohjelmaa %s varten on jo olemassa - ohitetaan."
-
-#: ../autodep:114 ../audit:109 ../complain:109 ../enforce:108
-#, perl-format
-msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
-msgstr "%s ei löytynyt järjestelmäpolkujen luettelosta.  Jos sovelluksen nimi on oikein, suorita 'which %s' toisessa ikkunassa löytääksesi täysin määritellyn polun."
-
-#: ../audit:102
-#, perl-format
-msgid "Setting %s to audit mode."
-msgstr "Asetetaan %s tarkkailutilaan."
-
-#: ../audit:121
-#, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
-msgstr "käyttö: %s [ -d /polku/profiileihin ] [ ohjelma joka vaihdetaan, tarkastus-tilaan ]"
-
-#: ../complain:67
-msgid "Please enter the program to switch to complain mode: "
-msgstr "Syötä ohjelma, jonka haluat muutettavan valitustilaan."
-
-#: ../complain:102 ../SubDomain.pm:426
-#, perl-format
-msgid "Setting %s to complain mode."
-msgstr "Asetetaan %s tarkkailutilaan (complain mode)."
-
-#: ../complain:121
-#, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
-msgstr "käyttö: %s [ -d /polku/profiileihin ] [ ohjelma joka vaihdetaan valitustilaan ]"
-
-#: ../enforce:67
-msgid "Please enter the program to switch to enforce mode: "
-msgstr "Syötä ohjelma, jonka haluat muutettavan pakottamistilaan (enforce mode)."
-
-#: ../enforce:101 ../SubDomain.pm:440
-#, perl-format
-msgid "Setting %s to enforce mode."
-msgstr "Asetetaan %s pakotustilaan (enforce mode)."
-
-#: ../enforce:120
-#, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
-msgstr "käyttö: %s [ -d /polku/profiileihin ] [ ohjelma, joka vaihdetaan pakotustilaan (enforce mode)]"
-
-#: ../unconfined:51
-#, perl-format
-msgid "Usage: %s [ --paranoid ]\n"
-msgstr "Käyttö: %s [ --paranoid ]\n"
-
-#: ../unconfined:57
-msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "SubDomain ei vaikuta olevan käynnistetty. Ota SubDomain käyttöön ja yritä uudelleen."
-
-#: ../unconfined:61
-msgid "Can't read /proc\n"
-msgstr "Ei voida lukea /proc -hakemistoa\n"
-
-#: ../unconfined:91 ../unconfined:93
-msgid "not confined\n"
-msgstr "ei rajoitettu\n"
-
-#: ../unconfined:102 ../unconfined:104
-msgid "confined by"
-msgstr "rajoitettu/rajoittaja"
-
-#: ../SubDomain.pm:421 ../SubDomain.pm:435
+#: SubDomain.pm:422 SubDomain.pm:436
 #, perl-format
 msgid "Can't find %s."
 msgstr "%s ei löydy."
 
-#: ../SubDomain.pm:703 ../SubDomain.pm:742
+#: SubDomain.pm:704 SubDomain.pm:743
 msgid "(Y)es"
 msgstr "(K)yllä"
 
-#: ../SubDomain.pm:704 ../SubDomain.pm:743
+#: SubDomain.pm:705 SubDomain.pm:744
 msgid "(N)o"
 msgstr "(E)i"
 
 # cancel button label
-#: ../SubDomain.pm:744
+#: SubDomain.pm:745
 msgid "(C)ancel"
 msgstr "(P)eruuta"
 
-#: ../SubDomain.pm:1010 ../SubDomain.pm:1201 ../SubDomain.pm:1630
-#: ../SubDomain.pm:1827
+#: SubDomain.pm:1011 SubDomain.pm:1202 SubDomain.pm:1631 SubDomain.pm:1837
 msgid "Profile"
 msgstr "Profiili"
 
-#: ../SubDomain.pm:1012
+#: SubDomain.pm:1013
 msgid "Default Hat"
 msgstr "Oletushattu (Hat)"
 
-#: ../SubDomain.pm:1014
+#: SubDomain.pm:1015
 msgid "Requested Hat"
 msgstr "Pyydetty hattu (Hat)"
 
-#: ../SubDomain.pm:1044 ../SubDomain.pm:1230 ../SubDomain.pm:1664
-#: ../SubDomain.pm:1962
+#: SubDomain.pm:1045 SubDomain.pm:1231 SubDomain.pm:1665 SubDomain.pm:1972
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
 msgstr "Haluatko varmasti hylätä nämä profiiliasetusten muutokset ja lopettaa?"
 
-#: ../SubDomain.pm:1046 ../SubDomain.pm:1233 ../SubDomain.pm:1660
-#: ../SubDomain.pm:1666 ../SubDomain.pm:1964
+#: SubDomain.pm:1047 SubDomain.pm:1234 SubDomain.pm:1661 SubDomain.pm:1667
+#: SubDomain.pm:1974
 msgid "Abandoning all changes."
 msgstr "Kaikki muutokset hylätään."
 
-#: ../SubDomain.pm:1051 ../SubDomain.pm:1238 ../SubDomain.pm:1680
-#: ../SubDomain.pm:1969
+#: SubDomain.pm:1052 SubDomain.pm:1239 SubDomain.pm:1681 SubDomain.pm:1979
 msgid "Are you sure you want to save the current set of profile changes and exit?"
 msgstr "Haluatko varmasti tallentaa tämänhetkiset profiiliasetusten muutokset ja lopettaa?"
 
-#: ../SubDomain.pm:1053 ../SubDomain.pm:1240 ../SubDomain.pm:1675
-#: ../SubDomain.pm:1682 ../SubDomain.pm:1971
+#: SubDomain.pm:1054 SubDomain.pm:1241 SubDomain.pm:1676 SubDomain.pm:1683
+#: SubDomain.pm:1981
 msgid "Saving all changes."
 msgstr "Kaikki muutokset tallennetaan."
 
-#: ../SubDomain.pm:1203
+#: SubDomain.pm:1204
 msgid "Program"
 msgstr "Ohjelma"
 
-#: ../SubDomain.pm:1205
+#: SubDomain.pm:1206
 msgid "Execute"
 msgstr "Suorita"
 
-#: ../SubDomain.pm:1206 ../SubDomain.pm:1632 ../SubDomain.pm:1839
+#: SubDomain.pm:1207 SubDomain.pm:1633 SubDomain.pm:1849
 msgid "Severity"
 msgstr "Vakavuus"
 
-#: ../SubDomain.pm:1247
+#: SubDomain.pm:1248
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -246,7 +222,7 @@ msgstr ""
 "mutta jotkut ohjelmat vaativat LD_PRELOAD tai \n"
 "LD_LIBRARY_PATH -arvojen olemassaolon."
 
-#: ../SubDomain.pm:1249
+#: SubDomain.pm:1250
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -263,7 +239,7 @@ msgstr ""
 "tai LD_LIBRARY_PATH -arvoja, jolloin niiden tyhjentäminen \n"
 "voi aiheuttaa ongelmia."
 
-#: ../SubDomain.pm:1256
+#: SubDomain.pm:1257
 #, perl-format
 msgid ""
 "Launching processes in an unconfined state is a very\n"
@@ -278,7 +254,7 @@ msgstr ""
 "Oletko aivan varma että haluat poistaa kaikki\n"
 "AppArmor-suojaukset suoritettaessa %s ohjelmaa?"
 
-#: ../SubDomain.pm:1258
+#: SubDomain.pm:1259
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "running this program unconfined?\n"
@@ -294,99 +270,99 @@ msgstr ""
 "tietoturva-aukkoja. Tätä tulisi välttää kaikin \n"
 "mahdollisin keinoin."
 
-#: ../SubDomain.pm:1361
+#: SubDomain.pm:1362
 #, perl-format
 msgid "Reading log entries from %s."
 msgstr "Luetaan lokitapahtumat tiedostosta %s."
 
-#: ../SubDomain.pm:1362
+#: SubDomain.pm:1363
 #, perl-format
-msgid "Updating subdomain profiles in %s."
-msgstr "Päivitetään alatoimialueiden profiilit tiedostossa %s."
+msgid "Updating AppArmor profiles in %s."
+msgstr "PäivitetäänAppArmor profiilit tiedostossa %s."
 
-#: ../SubDomain.pm:1368
+#: SubDomain.pm:1369
 msgid "unknown"
 msgstr "tuntematon"
 
-#: ../SubDomain.pm:1597
+#: SubDomain.pm:1598
 msgid "Complain-mode changes:"
 msgstr "Tarkkailutilan (complain mode) muutokset:"
 
-#: ../SubDomain.pm:1599
+#: SubDomain.pm:1600
 msgid "Enforce-mode changes:"
 msgstr "Pakotustilan (enforce mode) muutokset:"
 
-#: ../SubDomain.pm:1604
+#: SubDomain.pm:1605
 #, perl-format
 msgid "Invalid mode found: %s"
 msgstr "Löydettiin epäkelpo tila: %s"
 
-#: ../SubDomain.pm:1631
+#: SubDomain.pm:1632
 msgid "Capability"
 msgstr "Kyky"
 
-#: ../SubDomain.pm:1654
+#: SubDomain.pm:1655
 #, perl-format
 msgid "Adding capability %s to profile."
 msgstr "Lisätään kyky %s profiiliin."
 
-#: ../SubDomain.pm:1656
+#: SubDomain.pm:1657
 #, perl-format
 msgid "Denying capability %s to profile."
 msgstr "Kielletään kyky %s profiililta."
 
-#: ../SubDomain.pm:1828
+#: SubDomain.pm:1838
 msgid "Path"
 msgstr "Polku"
 
-#: ../SubDomain.pm:1833
+#: SubDomain.pm:1843
 msgid "Old Mode"
 msgstr "Vanha tila"
 
-#: ../SubDomain.pm:1835
+#: SubDomain.pm:1845
 msgid "New Mode"
 msgstr "Uusi tila"
 
-#: ../SubDomain.pm:1837
+#: SubDomain.pm:1847
 msgid "Mode"
 msgstr "Tila"
 
-#: ../SubDomain.pm:1875
+#: SubDomain.pm:1885
 #, perl-format
 msgid "Adding #include <%s> to profile."
 msgstr "Lisätään #include <%s> profiiliin."
 
-#: ../SubDomain.pm:1876 ../SubDomain.pm:1901
+#: SubDomain.pm:1886 SubDomain.pm:1911
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
 msgstr "Poistettiin %s edellistä täsmäävää profiilimerkintää."
 
-#: ../SubDomain.pm:1900
+#: SubDomain.pm:1910
 #, perl-format
 msgid "Adding %s %s to profile."
 msgstr "Lisätään %s %s profiiliin."
 
-#: ../SubDomain.pm:1908
+#: SubDomain.pm:1918
 msgid "Enter new path: "
 msgstr "Anna uusi polku: "
 
-#: ../SubDomain.pm:1911
+#: SubDomain.pm:1921
 msgid "The specified path does not match this log entry:"
 msgstr "Annettu polku ei täsmää tähän lokimerkintään:"
 
-#: ../SubDomain.pm:1912
+#: SubDomain.pm:1922
 msgid "Log Entry"
 msgstr "Lokimerkintä"
 
-#: ../SubDomain.pm:1913
+#: SubDomain.pm:1923
 msgid "Entered Path"
 msgstr "Annettu polku"
 
-#: ../SubDomain.pm:1914
+#: SubDomain.pm:1924
 msgid "Do you really want to use this path?"
 msgstr "Haluatko varmasti käyttää tätä polkua?"
 
-#: ../SubDomain.pm:1988
+#: SubDomain.pm:1998
 msgid ""
 "The profile analyzer has completed processing the log files.\n"
 "\n"
@@ -396,101 +372,54 @@ msgstr ""
 "\n"
 "Kaikki päivitetyt profiilit ladataan uudelleen"
 
-#: ../SubDomain.pm:1996
+#: SubDomain.pm:2006
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "Käsittelemättömiä AppArmor-tapahtumia ei löydetty järjestelmälokista."
 
-#: ../SubDomain.pm:2205 ../SubDomain.pm:2235 ../SubDomain.pm:2249
-#: ../SubDomain.pm:2284 ../SubDomain.pm:2304 ../SubDomain.pm:2341
-#: ../SubDomain.pm:2628
+#: SubDomain.pm:2267 SubDomain.pm:2297 SubDomain.pm:2311 SubDomain.pm:2346
+#: SubDomain.pm:2366 SubDomain.pm:2403
 #, perl-format
 msgid "%s contains syntax errors."
 msgstr "%s sisältää syntaksivirheitä."
 
-#: ../SubDomain.pm:2263
+#: SubDomain.pm:2325
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
 msgstr "Profiili %s sisältää epäkelvon regex:in %s."
 
-#: ../SubDomain.pm:2473
+#: SubDomain.pm:2534
 #, perl-format
 msgid "Writing updated profile for %s."
 msgstr "Kirjoitetaan päivitetty profiili %s."
 
-#: ../SubDomain.pm:2605
+#: SubDomain.pm:2667
 #, perl-format
-msgid "Include %s contains invalid regexp %s."
-msgstr "Include %s sisältää epäkelvon regex:in %s."
+msgid "Include file %s contains invalid regexp %s."
+msgstr "Include -tiedosto %s sisältää epäkelvon regexp:in %s."
 
-#: ../Reports.pm:266 ../Reports.pm:374 ../Reports.pm:1490
+#: SubDomain.pm:2690
 #, perl-format
-msgid "DBI Execution failed: %s."
-msgstr "DBI-suoritus epäonnistui: %s."
+msgid "Include file %s contains syntax errors or is not a valid #include file."
+msgstr "Include-tiedosto %s sisältää syntaksi virheitä tai ei ole kelpo #include-tiedosto."
 
-#: ../Reports.pm:400
+#: unconfined:51
 #, perl-format
-msgid "Couldn't open file: %s."
-msgstr "Ei voitu avata tiedostoa: %s."
+msgid "Usage: %s [ --paranoid ]\n"
+msgstr "Käyttö: %s [ --paranoid ]\n"
 
-#: ../Reports.pm:404
-msgid "No type value passed.  Unable to determine page count."
-msgstr "Tyyppiarvoa ei välitetty.  Sivumäärän laskeminen ei onnistunut."
+#: unconfined:57
+msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
+msgstr "SubDomain ei vaikuta olevan käynnistetty. Ota SubDomain käyttöön ja yritä uudelleen."
 
-#: ../Reports.pm:474
-#, perl-format
-msgid "Failed copying %s."
-msgstr "%s kopiointi epäonnistui."
+#: unconfined:61
+msgid "Can't read /proc\n"
+msgstr "Ei voida lukea /proc -hakemistoa\n"
 
-#: ../Reports.pm:587
-#, perl-format
-msgid "Export Log Error: Couldn't open %s"
-msgstr "Virhe lokin viennissä: Ei voitu avata %s"
+#: unconfined:91 unconfined:93
+msgid "not confined\n"
+msgstr "ei rajoitettu\n"
 
-#: ../Reports.pm:611
-msgid "Fatal error.  No report name given. Exiting."
-msgstr "Vakava virhe.  Raportin nimeä ei annettu. Poistutaan."
-
-#: ../Reports.pm:617
-#, perl-format
-msgid ""
-"Unable to get configuration info for %s.\n"
-"                Unable to find %s."
-msgstr ""
-"Määritystietojen saaminen %s varten ei onnistu.\n"
-"                %s ei löydetty."
-
-#: ../Reports.pm:658
-#, perl-format
-msgid "Failed to parse: %s."
-msgstr "Koostaminen ei onnistunut: %s."
-
-#: ../Reports.pm:667
-#, perl-format
-msgid "Fatal Error.  Couldn't open %s."
-msgstr "Vakava virhe.  Ei voitu avata %s."
-
-#: ../Reports.pm:715
-#, perl-format
-msgid "Fatal Error.  Can't run %s.  Exiting."
-msgstr "Vakava virhe.  Ei voitu suorittaa %s. Poistutaan."
-
-#: ../Reports.pm:756
-#, perl-format
-msgid "Fatal Error.  No directory, %s, found.  Exiting."
-msgstr "Vakava virhe.  Hakemistoa %s ei löydetty.  Poistutaan."
-
-#: ../Reports.pm:775
-#, perl-format
-msgid "Fatal Error.  Couldn't open %s.  Exiting"
-msgstr "Vakava virhe.  Ei voitu avata %s.  Poistutaan"
-
-#: ../Reports.pm:803 ../Reports.pm:816 ../Reports.pm:826
-#, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "DBI-suoritus epäonnistui. %s"
-
-#: ../Reports.pm:1596
-#, perl-format
-msgid "Fatal Error.  getArchReport() couldn't open %s"
-msgstr "Vakava virhe.  getArchReport() ei voinut avata %s"
+#: unconfined:102 unconfined:104
+msgid "confined by"
+msgstr "rajoitettu/rajoittaja"
 

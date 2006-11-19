@@ -8,39 +8,96 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-09-22 10:57-0600\n"
-"PO-Revision-Date: 2006-11-01 00:27+0000\n"
-"Last-Translator: Jan Madsen <jan.madsen.pt(a)gmail.com>\n"
+"POT-Creation-Date: 2006-11-03 13:51-0800\n"
+"PO-Revision-Date: 2006-11-06 15:44+0100\n"
+"Last-Translator: Martin Schlander <suse@linuxin.dk>\n"
 "Language-Team:  <opensuse-translation@opensuse.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
 
-#: ../genprof:55
-msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "Subdomæne ser ikke ud til at være startet.  Aktivér venligst subdomænet og prøv igen."
-
-#: ../genprof:69
-msgid "Please enter the program to profile: "
-msgstr "Angiv venligst programmet der skal profileres: "
-
-#: ../genprof:87
+#: audit:102
 #, perl-format
-msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
-msgstr "Kan ikke finde %s i listen over systemsøgestier. Hvis navnet på programmet er korrekt, venligst kør 'hvilket %s' i et andet vindue, for at finde den fuldt kvalificererede søgesti."
+msgid "Setting %s to audit mode."
+msgstr "Indstiller %s til revideringstilstand"
 
-#: ../genprof:89 ../autodep:117 ../audit:112 ../complain:112 ../enforce:111
+#: audit:109 autodep:114 complain:109 enforce:108
+#, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
+msgstr "Kan ikke finde %s i listen over systemsøgestier.  Hvis navnet på programmet er korrekt, kør venligst 'hvilket %s' som en bruger med det korrekte PATH-miljø sat op, for at finde den fuldt kvalificerede søgesti."
+
+#: audit:112 autodep:117 complain:112 enforce:111 genprof:89
 #, perl-format
 msgid "%s does not exist, please double-check the path."
 msgstr "%s eksisterer ikke, dobbelttjek venligst søgestien."
 
-#: ../genprof:100 ../autodep:99
+#: audit:121
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
+msgstr "brug: %s [ -d /søgesti/til/profiler ] [ program som skal skifte til revideringstilstand ]"
+
+#: autodep:64
+#, perl-format
+msgid "Can't find subdomain profiles in %s."
+msgstr "Kan ikke finde subdomæne-profiler i %s."
+
+#: autodep:75
+msgid "Please enter the program to create a profile for: "
+msgstr "Angiv venligst programmet, der skal oprettes en profil for: "
+
+#: autodep:99 genprof:100
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
 msgstr "%s er aktuelt markeret som et program, der ikke skal have sin egen profil.  Sædvanligvis er programmer markeret på denne måde, hvis oprettelse af en profil for dem sandsynligvis vil ødelægge resten af systemet. Hvis du ved hvad du gør, og er sikker på at du ønsker at oprette en profil for dette program, rediger den tilsvarende indgang i [qualifiers]-sektionen i /etc/apparmor/logprof.conf."
 
-#: ../genprof:121
+#: autodep:107
+#, perl-format
+msgid "Profile for %s already exists - skipping."
+msgstr "Profil for %s eksisterer allerede - springer over."
+
+#: complain:67
+msgid "Please enter the program to switch to complain mode: "
+msgstr "Angiv venligst programmet som skal skifte til klagetilstand: "
+
+#: complain:102 SubDomain.pm:427
+#, perl-format
+msgid "Setting %s to complain mode."
+msgstr "Indstiller %s til klagetilstand."
+
+#: complain:121
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
+msgstr "Brug: %s [ -d /søgesti/til/profiler ] [ program som skal skifte til klagetilstand ]"
+
+#: enforce:67
+msgid "Please enter the program to switch to enforce mode: "
+msgstr "Angiv venligst programmet som skal skifte til tvangstilstand: "
+
+#: enforce:101 SubDomain.pm:441
+#, perl-format
+msgid "Setting %s to enforce mode."
+msgstr "Indstiller %s til tvangstilstand."
+
+#: enforce:120
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
+msgstr "Brug: %s [ -d /søgesti/til/profiler ] [ program som skal skifte til tvangstilstand ]"
+
+#: genprof:55
+msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
+msgstr "Subdomæne ser ikke ud til at være startet.  Aktivér venligst subdomænet og prøv igen."
+
+#: genprof:69
+msgid "Please enter the program to profile: "
+msgstr "Angiv venligst programmet der skal profileres: "
+
+#: genprof:87
+#, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
+msgstr "Kan ikke finde %s i listen over systemsøgestier. Hvis navnet på programmet er korrekt, venligst kør 'hvilket %s' i et andet vindue, for at finde den fuldt kvalificererede søgesti."
+
+#: genprof:121
 msgid ""
 "Please start the application to be profiled in \n"
 "another window and exercise its functionality now.\n"
@@ -61,171 +118,90 @@ msgstr ""
 "lejlighed til at vælge, hvorvidt adgang skal  \n"
 "være tilladt eller nægtet."
 
-#: ../genprof:140
+#: genprof:140
 msgid "Profiling"
 msgstr "Profilerer"
 
-#: ../genprof:167
+#: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
 msgstr "Genindlæste subdomæne-profiler i tvangstilstand"
 
-#: ../genprof:168
+#: genprof:168
 #, perl-format
 msgid "Finished generating profile for %s."
 msgstr "Generering af profil for %s færdiggjort."
 
-#: ../genprof:172
+#: genprof:172
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
 msgstr "brug: %s [ -d /søgesti/til/profiler ] [ -f /søgesti/til/logfil ] [ program som skal profileres ]"
 
-#: ../logprof:75
+#: logprof:75
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
 msgstr "brug: %s [ -d /søgesti/til/profiler ] [ -f /søgesti/til/logfil ] [ -m \"mærke i loggen til at starte behandling efter\""
 
-#: ../autodep:64
-#, perl-format
-msgid "Can't find subdomain profiles in %s."
-msgstr "Kan ikke finde subdomæne-profiler i %s."
-
-#: ../autodep:75
-msgid "Please enter the program to create a profile for: "
-msgstr "Angiv venligst programmet, der skal oprettes en profil for: "
-
-#: ../autodep:107
-#, perl-format
-msgid "Profile for %s already exists - skipping."
-msgstr "Profil for %s eksisterer allerede - springer over."
-
-#: ../autodep:114 ../audit:109 ../complain:109 ../enforce:108
-#, perl-format
-msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
-msgstr "Kan ikke finde %s i listen over systemsøgestier.  Hvis navnet på programmet er korrekt, kør venligst 'hvilket %s' som en bruger med det korrekte PATH-miljø sat op, for at finde den fuldt kvalificerede søgesti."
-
-#: ../audit:102
-#, perl-format
-msgid "Setting %s to audit mode."
-msgstr "Indstiller %s til revideringstilstand"
-
-#: ../audit:121
-#, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
-msgstr "brug: %s [ -d /søgesti/til/profiler ] [ program som skal skifte til revideringstilstand ]"
-
-#: ../complain:67
-msgid "Please enter the program to switch to complain mode: "
-msgstr "Angiv venligst programmet som skal skifte til klagetilstand: "
-
-#: ../complain:102 ../SubDomain.pm:426
-#, perl-format
-msgid "Setting %s to complain mode."
-msgstr "Indstiller %s til klagetilstand."
-
-#: ../complain:121
-#, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
-msgstr "Brug: %s [ -d /søgesti/til/profiler ] [ program som skal skifte til klagetilstand ]"
-
-#: ../enforce:67
-msgid "Please enter the program to switch to enforce mode: "
-msgstr "Angiv venligst programmet som skal skifte til tvangstilstand: "
-
-#: ../enforce:101 ../SubDomain.pm:440
-#, perl-format
-msgid "Setting %s to enforce mode."
-msgstr "Indstiller %s til tvangstilstand."
-
-#: ../enforce:120
-#, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
-msgstr "Brug: %s [ -d /søgesti/til/profiler ] [ program som skal skifte til tvangstilstand ]"
-
-#: ../unconfined:51
-#, perl-format
-msgid "Usage: %s [ --paranoid ]\n"
-msgstr "Brug: %s [ --paranoid ]\n"
-
-#: ../unconfined:57
-msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "Subdomæne ser ikke ud til at være startet. Aktivér venligst subdomænet og prøv igen."
-
-#: ../unconfined:61
-msgid "Can't read /proc\n"
-msgstr "Kan ikke læse /proc\n"
-
-#: ../unconfined:91 ../unconfined:93
-msgid "not confined\n"
-msgstr "ikke indskrænket\n"
-
-#: ../unconfined:102 ../unconfined:104
-msgid "confined by"
-msgstr "indskrænket af"
-
-#: ../SubDomain.pm:421 ../SubDomain.pm:435
+#: SubDomain.pm:422 SubDomain.pm:436
 #, perl-format
 msgid "Can't find %s."
 msgstr "Kan ikke finde %s."
 
-#: ../SubDomain.pm:703 ../SubDomain.pm:742
+#: SubDomain.pm:704 SubDomain.pm:743
 msgid "(Y)es"
 msgstr "(J)a"
 
-#: ../SubDomain.pm:704 ../SubDomain.pm:743
+#: SubDomain.pm:705 SubDomain.pm:744
 msgid "(N)o"
 msgstr "(N)ej"
 
 # cancel button label
-#: ../SubDomain.pm:744
+#: SubDomain.pm:745
 msgid "(C)ancel"
 msgstr "(A)nnullér"
 
-#: ../SubDomain.pm:1010 ../SubDomain.pm:1201 ../SubDomain.pm:1630
-#: ../SubDomain.pm:1827
+#: SubDomain.pm:1011 SubDomain.pm:1202 SubDomain.pm:1631 SubDomain.pm:1837
 msgid "Profile"
 msgstr "Profil"
 
-#: ../SubDomain.pm:1012
+#: SubDomain.pm:1013
 msgid "Default Hat"
 msgstr "Standard hat"
 
-#: ../SubDomain.pm:1014
+#: SubDomain.pm:1015
 msgid "Requested Hat"
 msgstr "Forespurgt hat"
 
-#: ../SubDomain.pm:1044 ../SubDomain.pm:1230 ../SubDomain.pm:1664
-#: ../SubDomain.pm:1962
+#: SubDomain.pm:1045 SubDomain.pm:1231 SubDomain.pm:1665 SubDomain.pm:1972
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
 msgstr "Er du sikker på at du ønsker at opgive dette sæt af profilændringer og afslutte?"
 
-#: ../SubDomain.pm:1046 ../SubDomain.pm:1233 ../SubDomain.pm:1660
-#: ../SubDomain.pm:1666 ../SubDomain.pm:1964
+#: SubDomain.pm:1047 SubDomain.pm:1234 SubDomain.pm:1661 SubDomain.pm:1667
+#: SubDomain.pm:1974
 msgid "Abandoning all changes."
 msgstr "Opgiver alle ændringer."
 
-#: ../SubDomain.pm:1051 ../SubDomain.pm:1238 ../SubDomain.pm:1680
-#: ../SubDomain.pm:1969
+#: SubDomain.pm:1052 SubDomain.pm:1239 SubDomain.pm:1681 SubDomain.pm:1979
 msgid "Are you sure you want to save the current set of profile changes and exit?"
 msgstr "Er du sikker på at du vil gemme det nuværende sæt af profilændringer og afslutte?"
 
-#: ../SubDomain.pm:1053 ../SubDomain.pm:1240 ../SubDomain.pm:1675
-#: ../SubDomain.pm:1682 ../SubDomain.pm:1971
+#: SubDomain.pm:1054 SubDomain.pm:1241 SubDomain.pm:1676 SubDomain.pm:1683
+#: SubDomain.pm:1981
 msgid "Saving all changes."
 msgstr "Gemmer alle ændringer."
 
-#: ../SubDomain.pm:1203
+#: SubDomain.pm:1204
 msgid "Program"
 msgstr "Program"
 
-#: ../SubDomain.pm:1205
+#: SubDomain.pm:1206
 msgid "Execute"
 msgstr "Udfør"
 
-#: ../SubDomain.pm:1206 ../SubDomain.pm:1632 ../SubDomain.pm:1839
+#: SubDomain.pm:1207 SubDomain.pm:1633 SubDomain.pm:1849
 msgid "Severity"
 msgstr "Alvor"
 
-#: ../SubDomain.pm:1247
+#: SubDomain.pm:1248
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -241,7 +217,7 @@ msgstr ""
 "men nogle programmer afhænger af tilstedeværelsen\n"
 "af LD_PRELOAD eller LD_LIBRARY_PATH."
 
-#: ../SubDomain.pm:1249
+#: SubDomain.pm:1250
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -259,7 +235,7 @@ msgstr ""
 "eller LD_LIBRARY_PATH og at rydde disse kan \n"
 "forårsage problemer med funktionaliteten."
 
-#: ../SubDomain.pm:1256
+#: SubDomain.pm:1257
 #, perl-format
 msgid ""
 "Launching processes in an unconfined state is a very\n"
@@ -274,7 +250,7 @@ msgstr ""
 "Er du fuldstændigt sikker på du ønsker at fjerne al\n"
 "AppArmor-beskyttelse når du udfører %s?"
 
-#: ../SubDomain.pm:1258
+#: SubDomain.pm:1259
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "running this program unconfined?\n"
@@ -290,99 +266,99 @@ msgstr ""
 "på et program fjernes, åbner for betydelige sikkerhedshuller,\n"
 "og bør undgås hvis det overhovedet er muligt."
 
-#: ../SubDomain.pm:1361
+#: SubDomain.pm:1362
 #, perl-format
 msgid "Reading log entries from %s."
 msgstr "Læser logindgange fra %s."
 
-#: ../SubDomain.pm:1362
+#: SubDomain.pm:1363
 #, perl-format
-msgid "Updating subdomain profiles in %s."
-msgstr "Opdaterer subdomæneprofiler i %s."
+msgid "Updating AppArmor profiles in %s."
+msgstr "Opdaterer AppArmor-profiler i %s."
 
-#: ../SubDomain.pm:1368
+#: SubDomain.pm:1369
 msgid "unknown"
 msgstr "ukendt"
 
-#: ../SubDomain.pm:1597
+#: SubDomain.pm:1598
 msgid "Complain-mode changes:"
 msgstr "Klagetilstandsændringer:"
 
-#: ../SubDomain.pm:1599
+#: SubDomain.pm:1600
 msgid "Enforce-mode changes:"
 msgstr "Tvangstilstandsændringer:"
 
-#: ../SubDomain.pm:1604
+#: SubDomain.pm:1605
 #, perl-format
 msgid "Invalid mode found: %s"
 msgstr "Ugyldig tilstand fundet: %s"
 
-#: ../SubDomain.pm:1631
+#: SubDomain.pm:1632
 msgid "Capability"
 msgstr "Evne"
 
-#: ../SubDomain.pm:1654
+#: SubDomain.pm:1655
 #, perl-format
 msgid "Adding capability %s to profile."
 msgstr "Tilføjer evnen %s til profilen."
 
-#: ../SubDomain.pm:1656
+#: SubDomain.pm:1657
 #, perl-format
 msgid "Denying capability %s to profile."
 msgstr "Nægter evnen %s for profilen."
 
-#: ../SubDomain.pm:1828
+#: SubDomain.pm:1838
 msgid "Path"
 msgstr "Søgesti"
 
-#: ../SubDomain.pm:1833
+#: SubDomain.pm:1843
 msgid "Old Mode"
 msgstr "Gammel tilstand"
 
-#: ../SubDomain.pm:1835
+#: SubDomain.pm:1845
 msgid "New Mode"
 msgstr "Ny tilstand"
 
-#: ../SubDomain.pm:1837
+#: SubDomain.pm:1847
 msgid "Mode"
 msgstr "Tilstand"
 
-#: ../SubDomain.pm:1875
+#: SubDomain.pm:1885
 #, perl-format
 msgid "Adding #include <%s> to profile."
 msgstr "Tilføjer #include <%s> til profilen."
 
-#: ../SubDomain.pm:1876 ../SubDomain.pm:1901
+#: SubDomain.pm:1886 SubDomain.pm:1911
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
 msgstr "Slettede %s tidligere matchende profilindgange."
 
-#: ../SubDomain.pm:1900
+#: SubDomain.pm:1910
 #, perl-format
 msgid "Adding %s %s to profile."
 msgstr "Tilføjer %s %s til profilen."
 
-#: ../SubDomain.pm:1908
+#: SubDomain.pm:1918
 msgid "Enter new path: "
 msgstr "Angiv ny søgesti: "
 
-#: ../SubDomain.pm:1911
+#: SubDomain.pm:1921
 msgid "The specified path does not match this log entry:"
 msgstr "Den specifikke søgesti matcher ikke denne logindgang:"
 
-#: ../SubDomain.pm:1912
+#: SubDomain.pm:1922
 msgid "Log Entry"
 msgstr "Logindgang"
 
-#: ../SubDomain.pm:1913
+#: SubDomain.pm:1923
 msgid "Entered Path"
 msgstr "Angivet søgesti"
 
-#: ../SubDomain.pm:1914
+#: SubDomain.pm:1924
 msgid "Do you really want to use this path?"
 msgstr "Vil du virkelig anvende denne søgesti?"
 
-#: ../SubDomain.pm:1988
+#: SubDomain.pm:1998
 msgid ""
 "The profile analyzer has completed processing the log files.\n"
 "\n"
@@ -392,102 +368,54 @@ msgstr ""
 "\n"
 "Alle opdaterede profiler vil blive genindlæst"
 
-#: ../SubDomain.pm:1996
+#: SubDomain.pm:2006
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "Ingen ubehandlede AppArmor-hændelser blev fundet i systemloggen."
 
-#: ../SubDomain.pm:2205 ../SubDomain.pm:2235 ../SubDomain.pm:2249
-#: ../SubDomain.pm:2284 ../SubDomain.pm:2304 ../SubDomain.pm:2341
-#: ../SubDomain.pm:2628
+#: SubDomain.pm:2267 SubDomain.pm:2297 SubDomain.pm:2311 SubDomain.pm:2346
+#: SubDomain.pm:2366 SubDomain.pm:2403
 #, perl-format
 msgid "%s contains syntax errors."
 msgstr "%s indeholder syntaksfejl."
 
-#: ../SubDomain.pm:2263
+#: SubDomain.pm:2325
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
 msgstr "Profilen %s indeholder ugyldige reg.-udtryk %s."
 
-#: ../SubDomain.pm:2473
+#: SubDomain.pm:2534
 #, perl-format
 msgid "Writing updated profile for %s."
 msgstr "Skriver opdateret profil for %s."
 
-#: ../SubDomain.pm:2605
+#: SubDomain.pm:2667
 #, perl-format
-msgid "Include %s contains invalid regexp %s."
-msgstr "Inkludering af %s indeholder ugyldige reg.-udtryk %s"
+msgid "Include file %s contains invalid regexp %s."
+msgstr "Include-filen %s indeholder ugyldigt reg. udtryk %s."
 
-# %s is either BOOTP or DHCP
-#: ../Reports.pm:266 ../Reports.pm:374 ../Reports.pm:1490
+#: SubDomain.pm:2690
 #, perl-format
-msgid "DBI Execution failed: %s."
-msgstr "DBI-udførelse fejlede: %s."
+msgid "Include file %s contains syntax errors or is not a valid #include file."
+msgstr "Include-filen %s indeholder syntaksfejl og er ikke en gyldig #include-fil."
 
-#: ../Reports.pm:400
+#: unconfined:51
 #, perl-format
-msgid "Couldn't open file: %s."
-msgstr "Kunne ikke åbne fil: %s."
+msgid "Usage: %s [ --paranoid ]\n"
+msgstr "Brug: %s [ --paranoid ]\n"
 
-#: ../Reports.pm:404
-msgid "No type value passed.  Unable to determine page count."
-msgstr "Ingen typeværdi angivet. Kan ikke bestemme sideantal."
+#: unconfined:57
+msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
+msgstr "Subdomæne ser ikke ud til at være startet. Aktivér venligst subdomænet og prøv igen."
 
-#: ../Reports.pm:474
-#, perl-format
-msgid "Failed copying %s."
-msgstr "Kopiering af %s fejlede."
+#: unconfined:61
+msgid "Can't read /proc\n"
+msgstr "Kan ikke læse /proc\n"
 
-#: ../Reports.pm:587
-#, perl-format
-msgid "Export Log Error: Couldn't open %s"
-msgstr "Fejl i eksportlog: Kunne ikke åbne %s"
+#: unconfined:91 unconfined:93
+msgid "not confined\n"
+msgstr "ikke indskrænket\n"
 
-#: ../Reports.pm:611
-msgid "Fatal error.  No report name given. Exiting."
-msgstr "Alvorlig fejl. Intet rapportnavn anført. Afslutter."
-
-#: ../Reports.pm:617
-#, perl-format
-msgid ""
-"Unable to get configuration info for %s.\n"
-"                Unable to find %s."
-msgstr ""
-"Kan ikke hente konfigurationsinfo for %s.\n"
-"                Kan ikke finde %s."
-
-#: ../Reports.pm:658
-#, perl-format
-msgid "Failed to parse: %s."
-msgstr "Mislykkedes at fortolke: %s."
-
-#: ../Reports.pm:667
-#, perl-format
-msgid "Fatal Error.  Couldn't open %s."
-msgstr "Alvorlig fejl.  Kunne ikke åbne %s."
-
-#: ../Reports.pm:715
-#, perl-format
-msgid "Fatal Error.  Can't run %s.  Exiting."
-msgstr "Alvorlig fejl.  Kan ikke køre %s.  Afslutter."
-
-#: ../Reports.pm:756
-#, perl-format
-msgid "Fatal Error.  No directory, %s, found.  Exiting."
-msgstr "Alvorlig fejl.  Ingen mappe, %s, fundet.  Afslutter."
-
-#: ../Reports.pm:775
-#, perl-format
-msgid "Fatal Error.  Couldn't open %s.  Exiting"
-msgstr "Alvorlig fejl.  Kunne ikke åbne %s.  Afslutter"
-
-#: ../Reports.pm:803 ../Reports.pm:816 ../Reports.pm:826
-#, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "DBI-udførelse fejlede: %s"
-
-#: ../Reports.pm:1596
-#, perl-format
-msgid "Fatal Error.  getArchReport() couldn't open %s"
-msgstr "Alvorlig fejl.  getArchReport() Kunne ikke åbne %s"
+#: unconfined:102 unconfined:104
+msgid "confined by"
+msgstr "indskrænket af"
 

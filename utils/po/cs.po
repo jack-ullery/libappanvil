@@ -1,50 +1,107 @@
-# translation of apparmor-utils.po to Czech
+# translation of apparmor-utils.po to cs_CZ
 # translation of apparmor-utils.po to
 # translation of subdomain-utils.po to
-# translation of subdomain-utils.po to Czech
 # This file is distributed under the same license as the PACKAGE package.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER.
+#
 # Jakub Friedl <jfried@suse.cz>, 2005.
 # Jakub Friedl <jfriedl@suse.cz>, 2005, 2006.
-#
+# Klara Cihlarova <koty@seznam.cz>, 2006.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-09-22 10:57-0600\n"
-"PO-Revision-Date: 2006-09-27 16:21+0200\n"
-"Last-Translator: Jakub Friedl <jfriedl@suse.cz>\n"
-"Language-Team: Czech <cs@li.org>\n"
+"POT-Creation-Date: 2006-11-03 13:51-0800\n"
+"PO-Revision-Date: 2006-11-07 13:22+0100\n"
+"Last-Translator: Klara Cihlarova <koty@seznam.cz>\n"
+"Language-Team: cs_CZ <cs@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.10.2\n"
+"X-Generator: KBabel 1.11.2\n"
 "Plural-Forms:  nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 
-#: ../genprof:55
-msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "SubDomain zřejmě není spuštěna. Povolte prosím SubDomain a zkuste to znovu."
-
-#: ../genprof:69
-msgid "Please enter the program to profile: "
-msgstr "Zadejte prosím program k profilování: "
-
-#: ../genprof:87
+#: audit:102
 #, perl-format
-msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
-msgstr "Nelze nalézt %s v cestě. Pokud je jméno aplikace správné, spusťte prosím v jiném okně 'which %s' a zjistěte tak plně kvalifikovanou cestu."
+msgid "Setting %s to audit mode."
+msgstr "Nastavuje se %s do režimu auditu."
 
-#: ../genprof:89 ../autodep:117 ../audit:112 ../complain:112 ../enforce:111
+#: audit:109 autodep:114 complain:109 enforce:108
+#, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
+msgstr "Nelze nalézt %s v systémové cestě. Pokud je jméno aplikace správné, spusťte prosím v jiném okně 'which %s' jako uživatel se správně nastaveným prostředím PATH a zjistěte tak plně kvalifikovanou cestu."
+
+#: audit:112 autodep:117 complain:112 enforce:111 genprof:89
 #, perl-format
 msgid "%s does not exist, please double-check the path."
 msgstr "%s neexistuje, zkontrolujte prosím cestu."
 
-#: ../genprof:100 ../autodep:99
+#: audit:121
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
+msgstr "použití: %s [ -d /cesta/k/profilům ] [ program pro přepnutí do režimu auditu ]"
+
+#: autodep:64
+#, perl-format
+msgid "Can't find subdomain profiles in %s."
+msgstr "Nelze nalézt profily subdomény v %s."
+
+#: autodep:75
+msgid "Please enter the program to create a profile for: "
+msgstr "Zadejte prosím program k profilování: "
+
+#: autodep:99 genprof:100
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
 msgstr "%s je nyní označen jako program, který by neměl mít vlastní profil. Tak jsou obvykle označeny programy, u nichž vytvoření profilu může způsobit porušení zbytku systému. Pokud víte, co děláte, a jste si jisti, že pro tento program chcete vytvořit nový profil, upravte odpovídající záznam v části [qualifiers] souboru /etc/apparmor/logprof.conf."
 
-#: ../genprof:121
+#: autodep:107
+#, perl-format
+msgid "Profile for %s already exists - skipping."
+msgstr "Profil pro %s již existuje - přeskakuji."
+
+#: complain:67
+msgid "Please enter the program to switch to complain mode: "
+msgstr "Zadejte prosím program k přepnutí do režimu stížností: "
+
+#: complain:102 SubDomain.pm:427
+#, perl-format
+msgid "Setting %s to complain mode."
+msgstr "%s se nastavuje do complain režimu."
+
+#: complain:121
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
+msgstr "použití: %s [ -d /cesta/k/profilům ] [ program pro přepnutí do režimu stížností ]"
+
+#: enforce:67
+msgid "Please enter the program to switch to enforce mode: "
+msgstr "Zadejte prosím program k přepnutí do režimu vynucení: "
+
+#: enforce:101 SubDomain.pm:441
+#, perl-format
+msgid "Setting %s to enforce mode."
+msgstr "%s se nastavuje do enforce režimu."
+
+#: enforce:120
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
+msgstr "použití: %s [ -d /cesta/k/profilům ] [ program pro přepnutí do enforce režimu ]"
+
+#: genprof:55
+msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
+msgstr "SubDomain zřejmě není spuštěna. Povolte prosím SubDomain a zkuste to znovu."
+
+#: genprof:69
+msgid "Please enter the program to profile: "
+msgstr "Zadejte prosím program k profilování: "
+
+#: genprof:87
+#, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
+msgstr "Nelze nalézt %s v cestě. Pokud je jméno aplikace správné, spusťte prosím v jiném okně 'which %s' a zjistěte tak plně kvalifikovanou cestu."
+
+#: genprof:121
 msgid ""
 "Please start the application to be profiled in \n"
 "another window and exercise its functionality now.\n"
@@ -66,172 +123,91 @@ msgstr ""
 "Pak můžete rozhodnout o povolení či zákazu\n"
 "jednotlivých AppArmor událostí."
 
-#: ../genprof:140
+#: genprof:140
 msgid "Profiling"
 msgstr "Profilování"
 
-#: ../genprof:167
+#: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
 msgstr "Znovu načteny profily subdomén v enforce režimu."
 
-#: ../genprof:168
+#: genprof:168
 #, perl-format
 msgid "Finished generating profile for %s."
 msgstr "Dokončeno generování profilu pro %s."
 
-#: ../genprof:172
+#: genprof:172
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
 msgstr "použití: %s [ -d /cesta/k/profilům ] [ -f /cesta/k/logu ] [ program k profilování ]"
 
-#: ../logprof:75
+#: logprof:75
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
 msgstr "použití: %s [ -d /cesta/k/profilům ] [ -f /cesta/k/logu ] [ -m \"označit v logu ke zpracování po\""
 
-#: ../autodep:64
-#, perl-format
-msgid "Can't find subdomain profiles in %s."
-msgstr "Nelze nalézt profily subdomény v %s."
-
-#: ../autodep:75
-msgid "Please enter the program to create a profile for: "
-msgstr "Zadejte prosím program k profilování: "
-
-#: ../autodep:107
-#, perl-format
-msgid "Profile for %s already exists - skipping."
-msgstr "Profil pro %s již existuje - přeskakuji."
-
-#: ../autodep:114 ../audit:109 ../complain:109 ../enforce:108
-#, perl-format
-msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
-msgstr "Nelze nalézt %s v systémové cestě. Pokud je jméno aplikace správné, spusťte prosím v jiném okně 'which %s' jako uživatel se správně nastaveným prostředím PATH a zjistěte tak plně kvalifikovanou cestu."
-
-#: ../audit:102
-#, perl-format
-msgid "Setting %s to audit mode."
-msgstr "Nastavuje se %s do režimu auditu."
-
-#: ../audit:121
-#, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
-msgstr "použití: %s [ -d /cesta/k/profilům ] [ program pro přepnutí do režimu auditu ]"
-
-#: ../complain:67
-msgid "Please enter the program to switch to complain mode: "
-msgstr "Zadejte prosím program k přepnutí do režimu stížností: "
-
-#: ../complain:102 ../SubDomain.pm:426
-#, perl-format
-msgid "Setting %s to complain mode."
-msgstr "%s se nastavuje do complain režimu."
-
-#: ../complain:121
-#, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
-msgstr "použití: %s [ -d /cesta/k/profilům ] [ program pro přepnutí do režimu stížností ]"
-
-#: ../enforce:67
-msgid "Please enter the program to switch to enforce mode: "
-msgstr "Zadejte prosím program k přepnutí do režimu vynucení: "
-
-#: ../enforce:101 ../SubDomain.pm:440
-#, perl-format
-msgid "Setting %s to enforce mode."
-msgstr "%s se nastavuje do enforce režimu."
-
-#: ../enforce:120
-#, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
-msgstr "použití: %s [ -d /cesta/k/profilům ] [ program pro přepnutí do enforce režimu ]"
-
-#: ../unconfined:51
-#, perl-format
-msgid "Usage: %s [ --paranoid ]\n"
-msgstr "Použití: %s [ --paranoid ]\n"
-
-#: ../unconfined:57
-msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "SubDomain zřejmě není spuštěna. Povolte prosím SubDomain a zkuste to znovu."
-
-#: ../unconfined:61
-msgid "Can't read /proc\n"
-msgstr "Nelze číst /proc\n"
-
-#: ../unconfined:91 ../unconfined:93
-msgid "not confined\n"
-msgstr "neomezeno\n"
-
-#: ../unconfined:102 ../unconfined:104
-msgid "confined by"
-msgstr "omezeno"
-
-#: ../SubDomain.pm:421 ../SubDomain.pm:435
+#: SubDomain.pm:422 SubDomain.pm:436
 #, perl-format
 msgid "Can't find %s."
 msgstr "Nelze nalézt %s."
 
-#: ../SubDomain.pm:703 ../SubDomain.pm:742
+#: SubDomain.pm:704 SubDomain.pm:743
 msgid "(Y)es"
 msgstr "(A)no"
 
-#: ../SubDomain.pm:704 ../SubDomain.pm:743
+#: SubDomain.pm:705 SubDomain.pm:744
 msgid "(N)o"
 msgstr "(N)e"
 
 # cancel button label
-#: ../SubDomain.pm:744
+#: SubDomain.pm:745
 msgid "(C)ancel"
 msgstr "(Z)rušit"
 
-#: ../SubDomain.pm:1010 ../SubDomain.pm:1201 ../SubDomain.pm:1630
-#: ../SubDomain.pm:1827
+#: SubDomain.pm:1011 SubDomain.pm:1202 SubDomain.pm:1631 SubDomain.pm:1837
 msgid "Profile"
 msgstr "Profil"
 
-#: ../SubDomain.pm:1012
+#: SubDomain.pm:1013
 msgid "Default Hat"
 msgstr "Výchozí hat"
 
-#: ../SubDomain.pm:1014
+#: SubDomain.pm:1015
 msgid "Requested Hat"
 msgstr "Požadovaný hat"
 
-#: ../SubDomain.pm:1044 ../SubDomain.pm:1230 ../SubDomain.pm:1664
-#: ../SubDomain.pm:1962
+#: SubDomain.pm:1045 SubDomain.pm:1231 SubDomain.pm:1665 SubDomain.pm:1972
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
 msgstr "Opravdu chcete zahodit tyto změny profilu a skončit?"
 
-#: ../SubDomain.pm:1046 ../SubDomain.pm:1233 ../SubDomain.pm:1660
-#: ../SubDomain.pm:1666 ../SubDomain.pm:1964
+#: SubDomain.pm:1047 SubDomain.pm:1234 SubDomain.pm:1661 SubDomain.pm:1667
+#: SubDomain.pm:1974
 msgid "Abandoning all changes."
 msgstr "Ruší se všechny změny."
 
-#: ../SubDomain.pm:1051 ../SubDomain.pm:1238 ../SubDomain.pm:1680
-#: ../SubDomain.pm:1969
+#: SubDomain.pm:1052 SubDomain.pm:1239 SubDomain.pm:1681 SubDomain.pm:1979
 msgid "Are you sure you want to save the current set of profile changes and exit?"
 msgstr "Opravdu chcete uložit aktuální změny profilu a skončit?"
 
-#: ../SubDomain.pm:1053 ../SubDomain.pm:1240 ../SubDomain.pm:1675
-#: ../SubDomain.pm:1682 ../SubDomain.pm:1971
+#: SubDomain.pm:1054 SubDomain.pm:1241 SubDomain.pm:1676 SubDomain.pm:1683
+#: SubDomain.pm:1981
 msgid "Saving all changes."
 msgstr "Ukládají se všechny změny."
 
 # 51384 AttribValues/label
-#: ../SubDomain.pm:1203
+#: SubDomain.pm:1204
 msgid "Program"
 msgstr "Program"
 
-#: ../SubDomain.pm:1205
+#: SubDomain.pm:1206
 msgid "Execute"
 msgstr "Spustit"
 
-#: ../SubDomain.pm:1206 ../SubDomain.pm:1632 ../SubDomain.pm:1839
+#: SubDomain.pm:1207 SubDomain.pm:1633 SubDomain.pm:1849
 msgid "Severity"
 msgstr "Závažnost"
 
-#: ../SubDomain.pm:1247
+#: SubDomain.pm:1248
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -247,7 +223,7 @@ msgstr ""
 "některé aplikace jsou závislé na přítomnosti\n"
 "LD_PRELOAD nebo LD_LIBRARY_PATH."
 
-#: ../SubDomain.pm:1249
+#: SubDomain.pm:1250
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -265,7 +241,7 @@ msgstr ""
 "nebo LD_LIBRARY_PATH a jejich vymazání\n"
 "může způsobit funkční problémy."
 
-#: ../SubDomain.pm:1256
+#: SubDomain.pm:1257
 #, perl-format
 msgid ""
 "Launching processes in an unconfined state is a very\n"
@@ -280,7 +256,7 @@ msgstr ""
 "Jste si naprosto jistí, že chcete při spouštění %s\n"
 "odstranit veškerou ochranu AppArmorem?"
 
-#: ../SubDomain.pm:1258
+#: SubDomain.pm:1259
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "running this program unconfined?\n"
@@ -296,99 +272,99 @@ msgstr ""
 "programu otevírá významné bezpečnostní díry.\n"
 "Pokud je to možné, vyhněte se tomu."
 
-#: ../SubDomain.pm:1361
+#: SubDomain.pm:1362
 #, perl-format
 msgid "Reading log entries from %s."
 msgstr "Čtou se záznamy z %s."
 
-#: ../SubDomain.pm:1362
+#: SubDomain.pm:1363
 #, perl-format
-msgid "Updating subdomain profiles in %s."
-msgstr "Aktualizují se profily subdomény v %s."
+msgid "Updating AppArmor profiles in %s."
+msgstr "Aktualizují se AppArmor profily v %s."
 
-#: ../SubDomain.pm:1368
+#: SubDomain.pm:1369
 msgid "unknown"
 msgstr "neznámý"
 
-#: ../SubDomain.pm:1597
+#: SubDomain.pm:1598
 msgid "Complain-mode changes:"
 msgstr "Změny complain režimu:"
 
-#: ../SubDomain.pm:1599
+#: SubDomain.pm:1600
 msgid "Enforce-mode changes:"
 msgstr "Změny enforce režimu:"
 
-#: ../SubDomain.pm:1604
+#: SubDomain.pm:1605
 #, perl-format
 msgid "Invalid mode found: %s"
 msgstr "Nalezen neplatný režim: %s"
 
-#: ../SubDomain.pm:1631
+#: SubDomain.pm:1632
 msgid "Capability"
 msgstr "Schopnost"
 
-#: ../SubDomain.pm:1654
+#: SubDomain.pm:1655
 #, perl-format
 msgid "Adding capability %s to profile."
 msgstr "Přidává se schopnost %s profilu."
 
-#: ../SubDomain.pm:1656
+#: SubDomain.pm:1657
 #, perl-format
 msgid "Denying capability %s to profile."
 msgstr "Odmítá se schopnost %s profilu."
 
-#: ../SubDomain.pm:1828
+#: SubDomain.pm:1838
 msgid "Path"
 msgstr "Cesta"
 
-#: ../SubDomain.pm:1833
+#: SubDomain.pm:1843
 msgid "Old Mode"
 msgstr "Starý režim"
 
-#: ../SubDomain.pm:1835
+#: SubDomain.pm:1845
 msgid "New Mode"
 msgstr "Nový režim"
 
-#: ../SubDomain.pm:1837
+#: SubDomain.pm:1847
 msgid "Mode"
 msgstr "Režim"
 
-#: ../SubDomain.pm:1875
+#: SubDomain.pm:1885
 #, perl-format
 msgid "Adding #include <%s> to profile."
 msgstr "Přidává se #include <%s> do profilu."
 
-#: ../SubDomain.pm:1876 ../SubDomain.pm:1901
+#: SubDomain.pm:1886 SubDomain.pm:1911
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
 msgstr "Smazáno %s předchozích odpovídajících záznamů profilu."
 
-#: ../SubDomain.pm:1900
+#: SubDomain.pm:1910
 #, perl-format
 msgid "Adding %s %s to profile."
 msgstr "Přidává se %s %s do profilu."
 
-#: ../SubDomain.pm:1908
+#: SubDomain.pm:1918
 msgid "Enter new path: "
 msgstr "Zadejte novou cestu: "
 
-#: ../SubDomain.pm:1911
+#: SubDomain.pm:1921
 msgid "The specified path does not match this log entry:"
 msgstr "Zadaná cesta neodpovídá tomuto záznamu:"
 
-#: ../SubDomain.pm:1912
+#: SubDomain.pm:1922
 msgid "Log Entry"
 msgstr "Záznam"
 
-#: ../SubDomain.pm:1913
+#: SubDomain.pm:1923
 msgid "Entered Path"
 msgstr "Zadaná cesta"
 
-#: ../SubDomain.pm:1914
+#: SubDomain.pm:1924
 msgid "Do you really want to use this path?"
 msgstr "Opravdu chcete použít tuto cestu?"
 
-#: ../SubDomain.pm:1988
+#: SubDomain.pm:1998
 msgid ""
 "The profile analyzer has completed processing the log files.\n"
 "\n"
@@ -398,101 +374,54 @@ msgstr ""
 "\n"
 "Všechny aktualizované profily budou znovu nahrány"
 
-#: ../SubDomain.pm:1996
+#: SubDomain.pm:2006
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "Systémový log neobsahuje žádné neobsloužené události AppArmor."
 
-#: ../SubDomain.pm:2205 ../SubDomain.pm:2235 ../SubDomain.pm:2249
-#: ../SubDomain.pm:2284 ../SubDomain.pm:2304 ../SubDomain.pm:2341
-#: ../SubDomain.pm:2628
+#: SubDomain.pm:2267 SubDomain.pm:2297 SubDomain.pm:2311 SubDomain.pm:2346
+#: SubDomain.pm:2366 SubDomain.pm:2403
 #, perl-format
 msgid "%s contains syntax errors."
 msgstr "%s obsahuje syntaktické chyby."
 
-#: ../SubDomain.pm:2263
+#: SubDomain.pm:2325
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
 msgstr "Profil %s obsahuje neplatný regulární výraz %s."
 
-#: ../SubDomain.pm:2473
+#: SubDomain.pm:2534
 #, perl-format
 msgid "Writing updated profile for %s."
 msgstr "Zapisuje se aktualizovaný profil pro %s."
 
-#: ../SubDomain.pm:2605
+#: SubDomain.pm:2667
 #, perl-format
-msgid "Include %s contains invalid regexp %s."
-msgstr "Include %s obsahuje neplatný regulární výraz %s."
+msgid "Include file %s contains invalid regexp %s."
+msgstr "Include soubore %s obsahuje neplatný regulární výraz %s."
 
-#: ../Reports.pm:266 ../Reports.pm:374 ../Reports.pm:1490
+#: SubDomain.pm:2690
 #, perl-format
-msgid "DBI Execution failed: %s."
-msgstr "Spuštění DBI selhalo: %s."
+msgid "Include file %s contains syntax errors or is not a valid #include file."
+msgstr "Include soubor %s obsahuje chybu v syntaxi nebo jde o neplatný #include soubor."
 
-#: ../Reports.pm:400
+#: unconfined:51
 #, perl-format
-msgid "Couldn't open file: %s."
-msgstr "Nelze otevřít soubor: %s."
+msgid "Usage: %s [ --paranoid ]\n"
+msgstr "Použití: %s [ --paranoid ]\n"
 
-#: ../Reports.pm:404
-msgid "No type value passed.  Unable to determine page count."
-msgstr "Nebyla předána hodnota typu. Nelze určit počet stránek."
+#: unconfined:57
+msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
+msgstr "SubDomain zřejmě není spuštěna. Povolte prosím SubDomain a zkuste to znovu."
 
-#: ../Reports.pm:474
-#, perl-format
-msgid "Failed copying %s."
-msgstr "Selhalo kopírování %s."
+#: unconfined:61
+msgid "Can't read /proc\n"
+msgstr "Nelze číst /proc\n"
 
-#: ../Reports.pm:587
-#, perl-format
-msgid "Export Log Error: Couldn't open %s"
-msgstr "Chyba exp. logu: nelze otevřít %s"
+#: unconfined:91 unconfined:93
+msgid "not confined\n"
+msgstr "neomezeno\n"
 
-#: ../Reports.pm:611
-msgid "Fatal error.  No report name given. Exiting."
-msgstr "Fatální chyba. Nebylo zadáno jméno zprávy. Konec."
-
-#: ../Reports.pm:617
-#, perl-format
-msgid ""
-"Unable to get configuration info for %s.\n"
-"                Unable to find %s."
-msgstr ""
-"Nelze získat konfigurační informace pro %s.\n"
-"                Nelze nalézt %s."
-
-#: ../Reports.pm:658
-#, perl-format
-msgid "Failed to parse: %s."
-msgstr "Chyba parsování: %s."
-
-#: ../Reports.pm:667
-#, perl-format
-msgid "Fatal Error.  Couldn't open %s."
-msgstr "Fatální chyba.  Nelze otevřít %s."
-
-#: ../Reports.pm:715
-#, perl-format
-msgid "Fatal Error.  Can't run %s.  Exiting."
-msgstr "Fatální chyba.  Nelze spustit %s.  Konec."
-
-#: ../Reports.pm:756
-#, perl-format
-msgid "Fatal Error.  No directory, %s, found.  Exiting."
-msgstr "Fatální chyba. Nebyl nalezen adresář %s. Konec."
-
-#: ../Reports.pm:775
-#, perl-format
-msgid "Fatal Error.  Couldn't open %s.  Exiting"
-msgstr "Fatální chyba. Nelze otevřít %s. Konec."
-
-#: ../Reports.pm:803 ../Reports.pm:816 ../Reports.pm:826
-#, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "Selhalo spuštění DBI: %s"
-
-#: ../Reports.pm:1596
-#, perl-format
-msgid "Fatal Error.  getArchReport() couldn't open %s"
-msgstr "Fatální chyba.  getArchReport() nemůže otevřít %s"
+#: unconfined:102 unconfined:104
+msgid "confined by"
+msgstr "omezeno"
 
