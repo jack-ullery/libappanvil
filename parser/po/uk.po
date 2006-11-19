@@ -1,4 +1,4 @@
-# translation of apparmor-parser.uk.po to Ukrainian
+# Translation of apparmor-parser.uk.po to Ukrainian
 # English translations for subdomain_parser package.
 # Copyright (C) 2005 Immunix, Inc.
 # This file is distributed under the same license as the subdomain_parser package.
@@ -10,154 +10,141 @@ msgstr ""
 "Project-Id-Version: apparmor-parser.uk\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2006-01-08 22:52-0700\n"
+"PO-Revision-Date: 2006-11-16 17:00-0800\n"
 "Last-Translator: Ivan Petrouchtchak <ivanpetrouchtchak@yahoo.com>\n"
 "Language-Team: Ukrainian <translation@linux.org.ua>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: KBabel 1.11\n"
+"X-Generator: KBabel 1.11.4\n"
 
 #: ../parser_include.c:95
-#, fuzzy, c-format
+#, c-format
 msgid "Error: Could not read profile %s: %s.\n"
-msgstr "Помилка збереження. Не вдалось створити тимчасовий файл: %1."
+msgstr "Помилка: Не вдалось прочитати профіль %s: %s.\n"
 
 #: ../parser_include.c:114
-#, fuzzy
 msgid "Error: Could not allocate temporary file.\n"
-msgstr "Помилка збереження. Не вдалось створити тимчасовий файл: %1."
+msgstr "Помилка: Не вдалося виділити тимчасовий файл.\n"
 
 #: ../parser_include.c:165
-#, fuzzy
 msgid "Error: Out of memory.\n"
 msgstr "Помилка: Не достатньо пам'яті.\n"
 
 #: ../parser_include.c:175
 #, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
-msgstr ""
+msgstr "Помилка: базовий каталог %s - це не каталог; пропускається.\n"
 
 #: ../parser_include.c:189
 #, c-format
 msgid "Error: Could not add directory %s to search path.\n"
-msgstr ""
+msgstr "Помилка: Не вдалося додати каталог %s до шляху пошуку.\n"
 
 #: ../parser_include.c:199
-#, fuzzy
 msgid "Error: Could not allocate memory.\n"
-msgstr "Неможливо виділити пам'ять під структуру."
+msgstr "Помилка: Не вдалося виділити пам'ять.\n"
 
 #: ../parser_include.c:332
-#, fuzzy, c-format
+#, c-format
 msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-msgstr "Помилка збереження. Не вдалось створити тимчасовий файл: %1."
+msgstr "Помилка: Не вдалося виділити буфер для включення в рядку %d в %s.\n"
 
 #: ../parser_include.c:348 ../parser_include.c:368
-#, fuzzy, c-format
+#, c-format
 msgid "Error: Bad include at line %d in %s.\n"
-msgstr "Помилка збереження. Не вдалось створити тимчасовий файл: %1."
+msgstr "Помилка: Погане включення в рядку %d в %s.\n"
 
 #: ../parser_include.c:398
 #, c-format
 msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-msgstr ""
+msgstr "Помилка: Перевищено %d рівнів включень. Включення %s не обробляється.\n"
 
 #: ../parser_include.c:423
-#, fuzzy, c-format
+#, c-format
 msgid "Error: #include %s%c not found at line %d in %s.\n"
-msgstr "Помилка збереження. Не вдалось створити тимчасовий файл: %1."
+msgstr "Помилка: #include %s%c не знайдене в рядку %d в %s.\n"
 
 #: ../parser_interface.c:65
 msgid "Bad write position\n"
-msgstr ""
+msgstr "Погана позиція запису\n"
 
 #: ../parser_interface.c:68
-#, fuzzy
 msgid "Permission denied\n"
-msgstr "<qt>Неможливо відкрити <nobr><strong>%1</strong></nobr>: Відмовлено у доступі.</qt>"
+msgstr "Відмовлено у доступі\n"
 
 #: ../parser_interface.c:71
-#, fuzzy
 msgid "Out of memory\n"
 msgstr "Не вистачає пам'яті\n"
 
 #: ../parser_interface.c:74
 msgid "Couldn't copy profile Bad memory address\n"
-msgstr ""
+msgstr "Не вдалося скопіювати профіль; неправильна адреса пам'яті\n"
 
 #: ../parser_interface.c:77
-#, fuzzy
 msgid "Profile doesn't conform to protocol\n"
-msgstr "  Створити новий файл календаря, якщо він не існує"
+msgstr "Профіль не сумісний з протоколом\n"
 
 #: ../parser_interface.c:80
-#, fuzzy
 msgid "Profile does not match signature\n"
-msgstr "Розмір файла не співпадає."
+msgstr "Профіль не співпадає з підписом\n"
 
 #: ../parser_interface.c:83
-#, fuzzy
 msgid "Profile version not supported by Apparmor module\n"
-msgstr "Версія HTTP не підтримується"
+msgstr "Версія профілю не підтримується модулем Apparmor\n"
 
 #: ../parser_interface.c:86
-#, fuzzy
 msgid "Profile already exists\n"
-msgstr "  Створити новий файл календаря, якщо він не існує"
+msgstr "Профіль вже існує\n"
 
 #: ../parser_interface.c:89
-#, fuzzy
 msgid "Profile doesn't exist\n"
-msgstr "  Створити новий файл календаря, якщо він не існує"
+msgstr "Профіль не існує\n"
 
 #: ../parser_interface.c:92
-#, fuzzy
 msgid "Unknown error\n"
-msgstr ""
-"Невідома помилка\n"
-"%1"
+msgstr "Невідома помилка\n"
 
 #: ../parser_interface.c:109
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr "Помилка: Не вдається знайти додану точку зупинки."
+msgstr "%s: Неможливо додати \"%s\".  "
 
 #: ../parser_interface.c:114
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr "Неможливо видалити каталог %1."
+msgstr "%s: Неможливо замінити \"%s\".  "
 
 #: ../parser_interface.c:119
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr "Неможливо видалити каталог %1."
+msgstr "%s: Неможливо вилучити \"%s\".  "
 
 #: ../parser_interface.c:124
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Unable to write to stdout\n"
-msgstr "Помилка: Не вдається записати тимчасові результати у %1.\n"
+msgstr "%s: Неможливо записати в stdout\n"
 
 #: ../parser_interface.c:128 ../parser_interface.c:151
 #, c-format
 msgid "%s: ASSERT: Invalid option: %d\n"
-msgstr ""
+msgstr "%s: ASSERT: не чинний параметр: %d\n"
 
 #: ../parser_interface.c:137
 #, c-format
 msgid "Addition succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Успішне додавання для \"%s\".\n"
 
 #: ../parser_interface.c:141
 #, c-format
 msgid "Replacement succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Успішна заміна для \"%s\".\n"
 
 #: ../parser_interface.c:145
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Успішне вилучення для \"%s\".\n"
 
 #: ../parser_interface.c:236
 #, c-format
@@ -165,17 +152,13 @@ msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 msgstr ""
 
 #: ../parser_interface.c:644
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to open %s - %s\n"
-msgstr ""
-"Неможливо відкрити \n"
-" %1 \n"
-" для запису"
+msgstr "Неможливо відкрити %s - %s\n"
 
 #: ../parser_interface.c:661
-#, fuzzy
 msgid "unable to create work area\n"
-msgstr "<qt>Тека <b>%1</b> не існує - неможливо створити індекс.</qt>"
+msgstr "неможливо створити робочу ділянку\n"
 
 #: ../parser_interface.c:669
 #, c-format
@@ -183,44 +166,44 @@ msgid "unable to serialize profile %s\n"
 msgstr ""
 
 #: ../parser_interface.c:679
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Unable to write entire profile entry\n"
-msgstr "Помилка: Не вдається записати тимчасові результати у %1.\n"
+msgstr "%s: Не вдається записати повний запис профілю\n"
 
 #: parser_lex.l:119 parser_lex.l:221 parser_lex.l:347
-#, fuzzy, c-format
+#, c-format
 msgid "Found unexpected character: '%s'"
-msgstr "несподіваний символ"
+msgstr "Знайдено несподіваний символ: \"%s\""
 
 #: parser_lex.l:159
-#, fuzzy, c-format
+#, c-format
 msgid "(ip_mode) Found unexpected character: '%s'"
-msgstr "несподіваний символ"
+msgstr "(ip_mode) Знайдено несподіваний символ: \"%s\""
 
 #: parser_lex.l:174
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected character in interface name: '%s'"
-msgstr "несподіваний символ"
+msgstr "Знайдено несподіваний символ в назві інтерфейсу: \"%s\""
 
 #: parser_lex.l:213
 #, c-format
 msgid "Found unknown flag: '%s'"
-msgstr ""
+msgstr "Знайдено несподіваний прапорець: \"%s\""
 
 #: parser_lex.l:326
-#, fuzzy, c-format
+#, c-format
 msgid "Found unexpected keyword: '%s'"
-msgstr "несподіваний символ"
+msgstr "Знайдено несподіване ключове слово: \"%s\""
 
 #: ../parser_main.c:131
 #, c-format
 msgid "Warning (%s line %d): %s"
-msgstr ""
+msgstr "Попередження (%s рядок %d): %s"
 
 #: ../parser_main.c:255
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
-msgstr "Неможливо виділити пам'ять під структуру."
+msgstr ""
 
 #: ../parser_main.c:274
 #, c-format
@@ -245,22 +228,26 @@ msgid ""
 msgstr ""
 
 #: ../parser_main.c:352
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Unable to find "
-msgstr "Неможливо знайти працюючий сервер CUPS"
+msgstr "%s: Не вдається знайти "
 
 #: ../parser_main.c:352
 msgid ""
 "!\n"
 "Ensure that it has been loaded.\n"
 msgstr ""
+"!\n"
+"Переконайтесь, що його завантажено.\n"
 
 #: ../parser_main.c:368
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
-msgstr "Для вживання цієї програми потрібні привілеї адміністратора."
+msgstr ""
+"%s: Для вживання цієї програми потрібні привілеї адміністратора.\n"
+"\n"
 
 #: ../parser_main.c:375
 #, c-format
@@ -269,11 +256,15 @@ msgid ""
 "Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 msgstr ""
+"%s: Попередження! Ви вказали для цієї програми setuid root.\n"
+"Будь-хто, хто може запускати цю програму, може змінювати\n"
+"ваші профілі AppArmor.\n"
+"\n"
 
 #: ../parser_main.c:442
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
-msgstr ""
+msgstr "%s: В файлі знайдені помилки. Переривається.\n"
 
 #: ../parser_misc.c:269
 msgid ""
@@ -309,28 +300,27 @@ msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
 msgstr ""
 
 #: ../parser_misc.c:396
-#, fuzzy, c-format
+#, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr "несподіваний символ"
+msgstr ""
 
 #: ../parser_misc.c:426 parser_yacc.y:222 parser_yacc.y:315 parser_yacc.y:327
 #: parser_yacc.y:387 parser_yacc.y:521 parser_yacc.y:533 parser_yacc.y:553
 #: parser_yacc.y:591 parser_yacc.y:623 parser_yacc.y:637 parser_yacc.y:651
 #: parser_yacc.y:665 parser_yacc.y:679 parser_yacc.y:707 parser_yacc.y:737
 #: parser_yacc.y:775 parser_yacc.y:792 parser_yacc.y:806
-#, fuzzy
 msgid "Memory allocation error."
-msgstr "Проблема виділення пам'яті."
+msgstr "Помилка виділення пам'яті."
 
 #: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
 #: ../parser_variable.c:227
 #, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr ""
+msgstr "Помилка аналізатора AppArmor: %s\n"
 
 #: ../parser_merge.c:64
 msgid "Couldn't merge entries. Out of Memory\n"
-msgstr ""
+msgstr "Не вдалося об'єднати записи. Не вистачає пам'яті\n"
 
 #: ../parser_merge.c:92
 #, c-format
@@ -339,7 +329,7 @@ msgstr ""
 
 #: parser_yacc.y:362
 msgid "flags=(debug) is no longer supported, sorry."
-msgstr ""
+msgstr "flags=(debug) вже не підтримується."
 
 #: parser_yacc.y:398
 msgid "Assert: `rule' returned NULL."
@@ -376,34 +366,34 @@ msgid "Network entries can only have one FROM address."
 msgstr ""
 
 #: parser_yacc.y:712 parser_yacc.y:743
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is not a valid ip address."
-msgstr "Адреса, яку було введено, є неправильною."
+msgstr "\"%s\" не є чинною адресою IP."
 
 #: parser_yacc.y:756
-#, fuzzy, c-format
+#, c-format
 msgid "`/%d' is not a valid netmask."
-msgstr "Вказана мережна маска має не чинний формат."
+msgstr "\"/%d\" не є чинною маскою мережі."
 
 #: parser_yacc.y:763
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is not a valid netmask."
-msgstr "Вказана мережна маска має не чинний формат."
+msgstr "\"%s\" не є чинною маскою мережі."
 
 #: parser_yacc.y:789 parser_yacc.y:809
-#, fuzzy, c-format
+#, c-format
 msgid "ports must be between %d and %d"
-msgstr "Найближчий рахунок мусить бути між 1 і 10."
+msgstr "порти мусять бути між %d і %d"
 
 #: parser_yacc.y:876
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr ""
+msgstr "Помилка аналізатора AppArmor в %s в рядку %d: %s\n"
 
 #: parser_yacc.y:879
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr ""
+msgstr "Помилка аналізатора AppArmor, рядок %d: %s\n"
 
 #: ../parser_regex.c:247
 #, c-format
@@ -431,9 +421,9 @@ msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
 msgstr ""
 
 #: ../parser_regex.c:357
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Unable to parse input line '%s'\n"
-msgstr "Помилка: Не вдається опрацювати %1 як номер рядка.\n"
+msgstr "%s: Не вдається проаналізувати вхідний файл \"%s\"\n"
 
 #: ../parser_regex.c:390
 #, c-format
@@ -443,12 +433,12 @@ msgstr ""
 #: ../parser_regex.c:394
 #, c-format
 msgid "%s: error near               "
-msgstr ""
+msgstr "%s: помилка біля               "
 
 #: ../parser_regex.c:404
 #, c-format
 msgid "%s: error reason: '%s'\n"
-msgstr ""
+msgstr "%s: причина помилки: '%s'\n"
 
 #: ../parser_regex.c:413
 #, c-format
@@ -481,7 +471,7 @@ msgstr ""
 #: ../parser_policy.c:259
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
-msgstr ""
+msgstr "ПОМИЛКА  в профілі %s, не вдалося завантажити\n"
 
 #: ../parser_policy.c:413
 #, c-format
@@ -493,10 +483,3 @@ msgstr ""
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr ""
 
-#, fuzzy
-#~ msgid "%s: Could not allocate memory for subdomain mount point\n"
-#~ msgstr "Неможливо виділити пам'ять під структуру."
-
-#, fuzzy
-#~ msgid "Profile for %s already exists - skipping."
-#~ msgstr "<qt>Тека або файл, що має назву <b>%1</b> вже існує..</qt>"

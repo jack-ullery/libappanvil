@@ -12,8 +12,8 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2006-10-20 15:57+0200\n"
-"Last-Translator: Sławek Guz <urugan@interia.pl>\n"
+"PO-Revision-Date: 2006-11-10 01:22+0100\n"
+"Last-Translator: Stanisław Małolepszy <smalolepszy@aviary.pl>\n"
 "Language-Team:  <pl@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -24,7 +24,7 @@ msgstr ""
 #: ../parser_include.c:95
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
-msgstr "Błąd: Nie mogę odczytać profilu %s: %s.\n"
+msgstr "Błąd: Nie można odczytać profilu %s: %s.\n"
 
 #: ../parser_include.c:114
 msgid "Error: Could not allocate temporary file.\n"
@@ -35,9 +35,9 @@ msgid "Error: Out of memory.\n"
 msgstr "Błąd: Brak pamięci.\n"
 
 #: ../parser_include.c:175
-#, fuzzy, c-format
+#, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
-msgstr "Error: basedir %s is not a directory, skipping.\n"
+msgstr "Błąd: basedir %s nie jest katalogiem. Pominięto.\n"
 
 #: ../parser_include.c:189
 #, c-format
@@ -49,9 +49,9 @@ msgid "Error: Could not allocate memory.\n"
 msgstr "Błąd: Przydzielenie pamięci nie powiodło się.\n"
 
 #: ../parser_include.c:332
-#, fuzzy, c-format
+#, c-format
 msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-msgstr "Błąd: Przydzielenie buforu do dołączenia w linii %d do %s nie powiodło się.\n"
+msgstr "Błąd: Przydzielenie bufora do dołączenia w linii %d pliku %s nie powiodło się.\n"
 
 #: ../parser_include.c:348 ../parser_include.c:368
 #, c-format
@@ -61,7 +61,7 @@ msgstr "Błąd: Nieprawidłowe dołączenie: linia %d w %s.\n"
 #: ../parser_include.c:398
 #, c-format
 msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-msgstr "Błąd: Przekroczono %d poziomów dołączeń. %s NIE zostanie przetworzone.\n"
+msgstr "Błąd: Przekroczono %d poziomów dołączeń. Dołączenie %s nie zostanie przetworzone.\n"
 
 #: ../parser_include.c:423
 #, c-format
@@ -154,9 +154,9 @@ msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 msgstr "Nieprawidłowy bufor inkrementujący %p na pozycji %p ext %p rozmiar %d zasób %p\n"
 
 #: ../parser_interface.c:644
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to open %s - %s\n"
-msgstr "Otwarcie %s - %s nie powiodło się\n"
+msgstr "Otwarcie %s nie powiodło się - %s\n"
 
 #: ../parser_interface.c:661
 msgid "unable to create work area\n"
@@ -330,7 +330,6 @@ msgid "AppArmor parser error: %s\n"
 msgstr "Błąd parsera AppArmor: %s\n"
 
 #: ../parser_merge.c:64
-#, fuzzy
 msgid "Couldn't merge entries. Out of Memory\n"
 msgstr "Łączenie wpisów nie powiodło się. Brak pamięci.\n"
 
