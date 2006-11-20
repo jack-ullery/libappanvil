@@ -103,17 +103,17 @@ msgstr "Errore sconosciuto\n"
 #: ../parser_interface.c:109
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr "%s: Impossibile aggiungere \"%s\"."
+msgstr "%s: Impossibile aggiungere \"%s\".  "
 
 #: ../parser_interface.c:114
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr "%s: Impossibile sostituire \"%s\"."
+msgstr "%s: Impossibile sostituire \"%s\".  "
 
 #: ../parser_interface.c:119
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr "%s: Impossibile rimuovere \"%s\"."
+msgstr "%s: Impossibile rimuovere \"%s\".  "
 
 #: ../parser_interface.c:124
 #, c-format
@@ -435,7 +435,7 @@ msgstr "%s: Impossibile compilare regex '%s' [originale: '%s']\n"
 #: ../parser_regex.c:394
 #, c-format
 msgid "%s: error near               "
-msgstr "%s: errore vicino"
+msgstr "%s: errore vicino               "
 
 #: ../parser_regex.c:404
 #, c-format

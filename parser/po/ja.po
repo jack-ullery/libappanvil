@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2006-11-03 13:52\n"
+"PO-Revision-Date: 2006-11-20 11:36\n"
 "Last-Translator: Novell Language <language@novell.com>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
@@ -229,7 +229,7 @@ msgstr "%s: モジュールをクエリできません - 「%s」どちらかの
 #: ../parser_main.c:352
 #, c-format
 msgid "%s: Unable to find "
-msgstr "%s: 検出できません"
+msgstr "%s: 検出できません "
 
 #: ../parser_main.c:352
 msgid ""
@@ -346,7 +346,7 @@ msgstr "Assert:「hat rule」はNULLを返しています。"
 #: parser_yacc.y:487
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr "未設定のブーリアン変数 %s は条件分岐の構文に使用されています。 "
+msgstr "未設定のブーリアン変数 %s は条件分岐の構文に使用されています"
 
 #: parser_yacc.y:545
 #, c-format
@@ -433,7 +433,7 @@ msgstr "%s: regex 「%s」 [original: 「%s」]のコンパイルに失敗しま
 #: ../parser_regex.c:394
 #, c-format
 msgid "%s: error near               "
-msgstr "%s: エラーすれすれ"
+msgstr "%s: エラーすれすれ               "
 
 #: ../parser_regex.c:404
 #, c-format

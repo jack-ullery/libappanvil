@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2006-11-02 14:07\n"
+"PO-Revision-Date: 2006-11-20 10:07\n"
 "Last-Translator: Novell Language <language@novell.com>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
@@ -103,17 +103,17 @@ msgstr "Error desconocido\n"
 #: ../parser_interface.c:109
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr "%s: no es posible añadir \"%s\"."
+msgstr "%s: no es posible añadir \"%s\".  "
 
 #: ../parser_interface.c:114
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr "%s: no es posible sustituir \"%s\"."
+msgstr "%s: no es posible sustituir \"%s\".  "
 
 #: ../parser_interface.c:119
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr "%s: no es posible eliminar \"%s\"."
+msgstr "%s: no es posible eliminar \"%s\".  "
 
 #: ../parser_interface.c:124
 #, c-format
@@ -231,7 +231,7 @@ msgstr ""
 #: ../parser_main.c:352
 #, c-format
 msgid "%s: Unable to find "
-msgstr "%s: no se ha encontrado"
+msgstr "%s: no se ha encontrado "
 
 #: ../parser_main.c:352
 msgid ""
@@ -435,7 +435,7 @@ msgstr "%s: error al compilar regex '%s' [original: '%s']\n"
 #: ../parser_regex.c:394
 #, c-format
 msgid "%s: error near               "
-msgstr "%s: error cercano"
+msgstr "%s: error cercano               "
 
 #: ../parser_regex.c:404
 #, c-format
