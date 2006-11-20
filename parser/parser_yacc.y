@@ -38,6 +38,13 @@
 
 #include <linux/capability.h>
 
+#ifndef CAP_AUDIT_WRITE
+#define CAP_AUDIT_WRITE 29
+#endif
+#ifndef CAP_AUDIT_CONTROL
+#define CAP_AUDIT_CONTROL 30
+#endif
+
 /* A few utility defines */
 
 #define CIDR_32 htonl(0xffffffff)
