@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-11-03 13:51-0800\n"
-"PO-Revision-Date: 2006-11-02 14:07\n"
+"PO-Revision-Date: 2006-11-20 10:07\n"
 "Last-Translator: Novell Language <language@novell.com>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
@@ -86,7 +86,7 @@ msgstr "Parece que SubDomain no se ha iniciado. Habilite SubDomain e inténtelo 
 
 #: genprof:69
 msgid "Please enter the program to profile: "
-msgstr "Introduzca el programa cuyo perfil desee crear:"
+msgstr "Introduzca el programa cuyo perfil desee crear: "
 
 #: genprof:87
 #, perl-format
@@ -336,7 +336,7 @@ msgstr "Leyendo  %s %s perfiles..."
 
 #: SubDomain.pm:1918
 msgid "Enter new path: "
-msgstr "Introduzca la nueva vía:"
+msgstr "Introduzca la nueva vía: "
 
 #: SubDomain.pm:1921
 msgid "The specified path does not match this log entry:"

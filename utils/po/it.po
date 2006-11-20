@@ -54,7 +54,7 @@ msgstr "Il nome di provider %s esiste già."
 
 #: complain:67
 msgid "Please enter the program to switch to complain mode: "
-msgstr "Specificare il programma da attivare in modalità complain:"
+msgstr "Specificare il programma da attivare in modalità complain: "
 
 #: complain:102 SubDomain.pm:427
 #, perl-format
@@ -68,7 +68,7 @@ msgstr "utilizzo: %s [ -d /percorso/in/profili ] [ programma da attivare in moda
 
 #: enforce:67
 msgid "Please enter the program to switch to enforce mode: "
-msgstr "Specificare il programma da attivare in modalità di enforce:"
+msgstr "Specificare il programma da attivare in modalità di enforce: "
 
 #: enforce:101 SubDomain.pm:441
 #, perl-format
@@ -86,7 +86,7 @@ msgstr "SubDomain non è stato avviato.  Attivare SubDomain e riprovare."
 
 #: genprof:69
 msgid "Please enter the program to profile: "
-msgstr "Specificare il programma per il quale si desidera creare il profilo:"
+msgstr "Specificare il programma per il quale si desidera creare il profilo: "
 
 #: genprof:87
 #, perl-format
@@ -336,7 +336,7 @@ msgstr "Lettura %s %s dei profili in corso..."
 
 #: SubDomain.pm:1918
 msgid "Enter new path: "
-msgstr "Immettere nuovo percorso:"
+msgstr "Immettere nuovo percorso: "
 
 #: SubDomain.pm:1921
 msgid "The specified path does not match this log entry:"
