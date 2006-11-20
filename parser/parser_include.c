@@ -393,8 +393,13 @@ static int process_include(char *inc, char *name, int line, FILE *out, int nest)
 	}
 
 	if (S_ISDIR(my_stat.st_mode)) {
-		DIR *dir = fdopendir(fileno(newf));
+		DIR *dir = NULL;
 		struct dirent *dirent;
+
+		/* XXX - fdopendir not available in glibc < 2.4 */
+		/* dir = fdopendir(fileno(newf)); */
+		fclose(newf);
+		dir = opendir(buf);
 		if (!dir) {
 			retval = 1;
 			goto out;
