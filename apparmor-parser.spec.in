@@ -150,6 +150,9 @@ fi
 %endif
 
 %changelog
+* Mon Nov 20 2006 - sbeattie@suse.de
+- use fclose();opendir() instead of fdopendir()
+- more translation updates
 * Fri Nov 10 2006 - sbeattie@suse.de
 - fix rc.aaeventd to depend on apparmor, not boot.apparmor (#214293)
 * Wed Nov  8 2006 - sbeattie@suse.de
