@@ -27,7 +27,7 @@
   /sbin/syslog-ng mr,
   # chrooted applications
   /var/lib/*/dev/log w,
-  /var/log/* w,
+  /var/log/** w,
   /var/run/syslog-ng.pid w,
 }
 
