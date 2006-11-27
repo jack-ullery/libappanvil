@@ -20,6 +20,7 @@
   capability chown,
   capability dac_override,
   capability fsetid,
+  capability fowner,
 
   /dev/tty10 w,
   /dev/xconsole rw,
