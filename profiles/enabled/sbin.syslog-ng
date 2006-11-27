@@ -22,6 +22,7 @@
   capability fsetid,
   capability fowner,
 
+  /dev/log w,
   /dev/tty10 w,
   /dev/xconsole rw,
   /etc/syslog-ng/* r,
