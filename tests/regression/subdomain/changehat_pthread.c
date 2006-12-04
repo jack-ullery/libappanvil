@@ -1,3 +1,14 @@
+/* $Id:$ */
+
+/*
+ *	Copyright (C) 2006 Novell/SUSE
+ *
+ *	This program is free software; you can redistribute it and/or
+ *	modify it under the terms of the GNU General Public License as
+ *	published by the Free Software Foundation, version 2 of the
+ *	License.
+ */
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -5,13 +16,12 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <errno.h>
+#include <sys/syscall.h>
 #include "changehat.h"
-
-_syscall0(pid_t, gettid);
 
 void static inline dump_me(const char *msg)
 {
-	//printf("(%d/%d/0x%lx) %s\n", getpid(), gettid(), pthread_self(), msg);
+	//printf("(%d/%ld/0x%lx) %s\n", getpid(), syscall(SYS_gettid), pthread_self(), msg);
 }
 
 static int is_done;

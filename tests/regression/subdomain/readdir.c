@@ -1,7 +1,7 @@
 /* $Id$ */
 
 /*
- *	Copyright (C) 2002-2005 Novell/SUSE
+ *	Copyright (C) 2002-2006 Novell/SUSE
  *
  *	This program is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License as
@@ -17,14 +17,12 @@
 #include <linux/dirent.h>
 #include <linux/unistd.h>
 #include <string.h>
-
-/* define getdents since it isn't exported in glibc */
-_syscall3(int, getdents, uint, fd, struct dirent *, dirp, uint, count);
+#include <sys/syscall.h>
 
 int main(int argc, char *argv[])
 {
-int fd;
-struct dirent dir;
+	int fd;
+	struct dirent dir;
 
 	if (argc != 2){
 		fprintf(stderr, "usage: %s dir\n",
@@ -32,7 +30,7 @@ struct dirent dir;
 		return 1;
 	}
 
-	fd=open(argv[1], O_RDONLY, 0);
+	fd = open(argv[1], O_RDONLY, 0);
 	if (fd == -1){
 		printf("FAIL - open  %s\n", strerror(errno));
 		return 1;
@@ -45,7 +43,8 @@ struct dirent dir;
 	}
 	*/
 
-	if (getdents(fd, &dir, sizeof(struct dirent)) == -1){
+	/* getdents isn't exported by glibc, so must use syscall() */
+	if (syscall(SYS_getdents, fd, &dir, sizeof(struct dirent)) == -1){
 		printf("FAIL - getdents  %s\n", strerror(errno));
 		return 1;
 	}
