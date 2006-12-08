@@ -22,4 +22,6 @@
   /etc/postfix/prng_exch            rw,
   /proc/sys/kernel/ngroups_max      r,
   /{var/spool/postfix/,}private/tlsmgr r,
+  /var/run/__db.smtpd_tls_session_cache.db rw,
+  /var/run/smtpd_tls_session_cache.db rw,
 }
