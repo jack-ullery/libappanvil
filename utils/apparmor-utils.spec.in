@@ -89,6 +89,8 @@ fi
 
 
 %changelog
+* Tue Dec 12 2006 - sbeattie@suse.de
+- Add ksh to list of shells that should not be profiled
 * Thu Oct 5 2006 - <dreynolds@suse.de> 2.0-7
 - add support syntax checking for profiles.
 * Thu Jun 01 2006 - jmichael@suse.de
