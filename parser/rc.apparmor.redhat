@@ -49,29 +49,29 @@ else
 	exit 0
 fi
 
-function usage() {
+usage() {
 	echo "Usage: $0 {start|stop|restart|try-restart|reload|force-reload|status|kill}"
 }
 
-function sd_log_success_msg() {
+sd_log_success_msg() {
 	echo -n "$*"
 	success
 	echo
 }
 
-function sd_log_warning_msg() {
+sd_log_warning_msg() {
 	echo -n "$*"
 	warning
 	echo
 }
 
-function sd_log_failure_msg() {
+sd_log_failure_msg() {
 	echo -n "$*"
 	failure
 	echo
 }
 
-function sd_action() {
+sd_action() {
 	STRING=$1
 	shift
 	action "${STRING} " "$@"
@@ -80,7 +80,7 @@ function sd_action() {
 
 # source apparmor function library
 if [ -f "${APPARMOR_FUNCTIONS}" ]; then
-	source ${APPARMOR_FUNCTIONS}
+	. ${APPARMOR_FUNCTIONS}
 else
 	sd_log_failure_msg "Unable to find AppArmor initscript functions"
 	exit 1

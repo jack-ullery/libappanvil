@@ -53,7 +53,7 @@ APPARMOR_ENABLE_AAEVENTD="no"
 
 if [ -f "${APPARMOR_CONF}" ] ; then
 	#parse the conf file to see what we should do
-	source "${APPARMOR_CONF}"
+	. "${APPARMOR_CONF}"
 fi
 
 if [ -f /sbin/apparmor_parser ] ; then
@@ -102,7 +102,7 @@ fi
 # keep exit status from parser during profile load.  0 is good, 1 is bad
 STATUS=0
 
-function parse_profiles() {	
+parse_profiles() {
 	# get parser arg
 	case "$1" in
 		load)
@@ -160,7 +160,7 @@ function parse_profiles() {
 	fi
 }
 
-function profiles_names_list() {	
+profiles_names_list() {
 	# run the parser on all of the apparmor profiles
 	TMPFILE=$1
 	if [ ! -f "$PARSER" ]; then
@@ -188,7 +188,7 @@ function profiles_names_list() {
 	done
 }
 
-function is_subdomainfs_mounted() {
+is_subdomainfs_mounted() {
 	if grep -q subdomainfs /proc/filesystems ; then
 		if grep -q subdomainfs /proc/mounts && \
 		   [ -f "${SUBDOMAINFS_MOUNTPOINT}/profiles" ]; then
@@ -211,7 +211,7 @@ function is_subdomainfs_mounted() {
 	return 1
 }
 
-function mount_subdomainfs() {
+mount_subdomainfs() {
 	# for backwords compatibility
 	if grep -q subdomainfs /proc/filesystems ; then
 		if [ "X" != "X${SUBDOMAINFS_MOUNTPOINT}" ]; then
@@ -239,14 +239,14 @@ function mount_subdomainfs() {
 	return 0
 }
 
-function unmount_subdomainfs() {
+unmount_subdomainfs() {
 	SUBDOMAINFS=$(grep subdomainfs /proc/mounts  | cut -d" " -f2 2> /dev/null)
 	if [ "X" != "X${SUBDOMAINFS}" ]; then
 		sd_action "Unmounting subdomainfs" umount ${SUBDOMAINFS}
 	fi
 }
 
-function rebuild_subdomain() {
+rebuild_subdomain() {
 	if [ -d "$SUBDOMAIN_SRC" ] ; then
 		# only try to rebuild for the running kernel
 		cd "$SUBDOMAIN_SRC"
@@ -280,7 +280,7 @@ function rebuild_subdomain() {
 	fi
 }
 
-function failstop_system() {
+failstop_system() {
 	level=$(runlevel | cut -d" " -f2)
 	if [ $level -ne "1" ] ; then
 		sd_log_failure_msg "- could not start AppArmor.  Changing to runlevel 1"
@@ -291,7 +291,7 @@ function failstop_system() {
 	return -1
 }
 
-function module_panic() {
+module_panic() {
 	# the module failed to load, determine what action should be taken
 
 	case "$SUBDOMAIN_MODULE_PANIC" in
@@ -315,7 +315,7 @@ function module_panic() {
 	esac
 }
 
-function load_module() {
+load_module() {
 	if modinfo -F filename apparmor > /dev/null 2>&1 ; then
 		MODULE=apparmor
 	elif modinfo -F filename subdomain > /dev/null 2>&1 ; then
@@ -335,7 +335,7 @@ function load_module() {
 	fi
 }	
 
-function start_aa_event() {
+start_aa_event() {
 	if [ -x "$AA_EV_BIN" -a "${APPARMOR_ENABLE_AAEVENTD}" = "yes" ] ; then
 		sd_action "Starting AppArmor Event daemon" startproc -f -p $AA_EV_PIDFILE $AA_EV_BIN -p $AA_EV_PIDFILE
 	elif [ -x "$SD_EV_BIN" -a "${APPARMOR_ENABLE_AAEVENTD}" = "yes" ] ; then
@@ -343,7 +343,7 @@ function start_aa_event() {
 	fi
 }
 
-function stop_aa_event() {
+stop_aa_event() {
 	if [ -x "$AA_EV_BIN" -a -f "$AA_EV_PIDFILE" ] ; then
 		sd_action "Shutting down AppArmor Event daemon" killproc -G -p $AA_EV_PIDFILE -INT $AA_EV_BIN
 	fi
@@ -352,7 +352,7 @@ function stop_aa_event() {
 	fi
 }
 
-function subdomain_start() {
+subdomain_start() {
 	if ! grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules ; then
 		load_module
 		rc=$?
@@ -383,7 +383,8 @@ function subdomain_start() {
 	fi
 }
 
-function remove_profiles() {
+remove_profiles() {
+
 	# removing profiles as we directly read from subdomainfs
 	# doesn't work, since we are removing entries which screws up
 	# our position.  Lets hope there are never enough profiles to
@@ -418,13 +419,13 @@ function remove_profiles() {
 	fi	
 }
 
-function subdomain_stop() {
+subdomain_stop() {
 	stop_aa_event
 	echo -n "Unloading AppArmor profiles "
 	remove_profiles
 }
 
-function subdomain_kill() {
+subdomain_kill() {
 	stop_aa_event
 	unmount_subdomainfs
 	if grep -qE "^apparmor[[:space:]]" /proc/modules ; then
@@ -437,7 +438,7 @@ function subdomain_kill() {
 	sd_action "Unloading AppArmor modules" /sbin/modprobe -r $MODULE
 }
 
-function __subdomain_restart() {
+__subdomain_restart() {
 	if [ ! -w "$SFS_MOUNTPOINT/.load" ] ; then
 		sd_log_failure_msg "Loading AppArmor profiles - failed, Do you have the correct privileges?"
 		return 4
@@ -459,7 +460,7 @@ function __subdomain_restart() {
 	return 0
 }
 
-function subdomain_restart() {
+subdomain_restart() {
 	if ! grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules ; then
 		subdomain_start
 		rc=$?
@@ -479,7 +480,7 @@ function subdomain_restart() {
 	return $rc
 }
 
-function subdomain_try_restart() {
+subdomain_try_restart() {
 	if ! grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules ; then
 		return 1
 	fi
@@ -493,7 +494,7 @@ function subdomain_try_restart() {
 	return $rc
 }
 
-function subdomain_debug() {
+subdomain_debug() {
 	subdomain_kill
 	load_module "subdomain_debug=1"
 	mount_subdomainfs
@@ -501,7 +502,7 @@ function subdomain_debug() {
 	parse_profiles load
 }
 
-function configure_owlsm () {
+configure_owlsm () {
 	if [ "${SUBDOMAIN_ENABLE_OWLSM}" = "yes" -a -f ${SFS_MOUNTPOINT}/control/owlsm ] ; then
 		# Sigh, the "sh -c" is necessary for the SuSE sd_action
 		# and it can't be abstracted out as a seperate function, as
@@ -513,7 +514,7 @@ function configure_owlsm () {
 	fi
 }
 
-function subdomain_status () {
+subdomain_status () {
 	if test -x ${AA_STATUS} ; then
 		${AA_STATUS} --verbose
 		return $?

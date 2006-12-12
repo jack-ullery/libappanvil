@@ -150,6 +150,8 @@ fi
 %endif
 
 %changelog
+* Tue Dec 12 2006 - sbeattie@suse.de
+- Fix from PLD people to make initscript more likely to work in other shells
 * Mon Nov 20 2006 - sbeattie@suse.de
 - use fclose();opendir() instead of fdopendir()
 - more translation updates
