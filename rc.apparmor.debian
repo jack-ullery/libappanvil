@@ -38,7 +38,7 @@
 ### END INIT INFO
 APPARMOR_FUNCTIONS=/lib/apparmor/rc.apparmor.functions
 
-function sd_action() {
+sd_action() {
 	STRING=$1
 	shift
 	$*
@@ -51,28 +51,28 @@ function sd_action() {
 	return $rc
 }
 
-function sd_log_success_msg() {
+sd_log_success_msg() {
  	[ -n "$1" ] && echo -n $1
         echo ": done."
 }
 
-function sd_log_warning_msg() {
+sd_log_warning_msg() {
  	[ -n "$1" ] && echo -n $1
         echo ": Warning."
 }
 
-function sd_log_failure_msg() {
+sd_log_failure_msg() {
  	[ -n "$1" ] && echo -n $1
         echo ": Failed."
 }
 
-function usage() {
+usage() {
     echo "Usage: $0 {start|stop|restart|try-restart|reload|force-reload|status|kill}"
 }
 
 # source apparmor function library
 if [ -f "${APPARMOR_FUNCTIONS}" ]; then
-	source ${APPARMOR_FUNCTIONS}
+	. ${APPARMOR_FUNCTIONS}
 else
 	sd_log_failure_msg "Unable to find AppArmor initscript functions"
 	exit 1
