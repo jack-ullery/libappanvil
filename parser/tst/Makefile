@@ -12,7 +12,7 @@ all: tests
 
 .PHONY: tests
 tests: ../apparmor_parser
-	$(Q)pushd . && ${PROVE} ${PROVE_ARG} ${TESTS} && popd
+	$(Q)${PROVE} ${PROVE_ARG} ${TESTS}
 
 ../apparmor_parser:
 	make -C .. apparmor_parser

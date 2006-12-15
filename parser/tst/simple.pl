@@ -13,6 +13,8 @@ $config{'parser'} = "/sbin/subdomain_parser";
 $config{'profiledir'} = "./simple_tests/";
 
 my $help;
+my $pwd = `pwd`;
+chomp($pwd);
 
 GetOptions(
   "help|h" => \$help,
@@ -32,13 +34,13 @@ read_config();
 # Override config file profile location when passed on command line
 if (@ARGV >= 1) {
   $config{'profiledir'} = shift;
-} 
+}
 
 if ($config{'profiledir'} =~ /^\//) {
   $config{'includedir'} = $config{'profiledir'};
 } else {
-  $config{'includedir'} = "$ENV{'PWD'}/$config{'profiledir'}";
-} 
+  $config{'includedir'} = "$pwd/$config{'profiledir'}";
+}
 
 sub read_config {
   my $which;
