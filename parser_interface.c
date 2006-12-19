@@ -647,6 +647,9 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		goto exit;
 	}
 
+	if (option != OPTION_STDOUT)
+		free(filename);
+
 	if (option == OPTION_REMOVE) {
 		size = strlen(cod->name) + 1;
 		wsize = write(fd, cod->name, size);
