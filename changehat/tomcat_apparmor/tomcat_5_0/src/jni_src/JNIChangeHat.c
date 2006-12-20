@@ -22,8 +22,13 @@ JNIEXPORT jint Java_com_novell_apparmor_JNIChangeHat_changehat_1in
   (JNIEnv *env, jobject obj, jstring hatnameUTF, jint token)
 {
 
-  int len = (*env)->GetStringLength(env, hatnameUTF);
+  int len;
   jint result = 0;
+  
+  if ( hatnameUTF == NULL ) {
+  	  	return ( EINVAL );
+  } 
+  len = (*env)->GetStringLength(env, hatnameUTF);
   if ( len > 0 ) {
      if ( len > 128 ) {
        len = 128;

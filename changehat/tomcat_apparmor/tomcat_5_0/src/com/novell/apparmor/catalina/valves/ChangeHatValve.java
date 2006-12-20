@@ -155,9 +155,14 @@ public final class ChangeHatValve extends ValveBase {
         */
  
         cookie = getCookie();
+        if ( hatname == null || "".equals(hatname) ) {
+            hatname = ChangeHatValve.DEFAULT_HAT;
+        } 
         container.getLogger().log("[APPARMOR] ChangeHat to [" + hatname 
           + "] cookie [" + cookie + "]", container.getLogger().DEBUG);
+        
         result = changehat_wrapper.changehat_in(hatname, cookie);
+        
         if ( result == JNIChangeHat.EPERM ) {
             container.getLogger().log("[APPARMOR] change_hat valve " +
               "configured but Tomcat process is not confined by an " +
