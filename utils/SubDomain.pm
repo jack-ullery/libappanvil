@@ -1991,9 +1991,7 @@ sub do_logprof_pass {
     if(not $running_under_genprof) {
       if($seenevents) {
         my $w = { type => "wizard" };
-        $w->{explanation} = gettext("The profile analyzer has completed processing the log files.
-
-All updated profiles will be reloaded");
+        $w->{explanation} = gettext("The profile analyzer has completed processing the log files.\nAll updated profiles will be reloaded");
         $w->{functions} = [ "CMD_ABORT", "CMD_FINISHED" ];
         SendDataToYast($w);
         my $foo = GetDataFromYast();
