@@ -43,6 +43,7 @@
   /var/run/sshd{,.init}.pid wl,
 
   /proc/[0-9]*/fd r,
+  /proc/[0-9]*/loginuid w,
 
 # should only be here for use in non-change-hat openssh
 # duplicated from EXEC hat
