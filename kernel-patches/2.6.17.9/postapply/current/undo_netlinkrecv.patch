@@ -1,5 +1,5 @@
 --- linux-2.6.18.orig/security/apparmor/lsm.c
-+++ linux-2.6.18/security.apparmor/lsm.c
++++ linux-2.6.18/security/apparmor/lsm.c
 @@ -199,9 +199,9 @@
  	return cap_netlink_send(sk, skb);
  }
