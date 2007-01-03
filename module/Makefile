@@ -20,6 +20,6 @@ all:
 	mv aamatch/aamatch_pcre.ko aamatch_pcre-${KERNELVER}.ko
 
 clean:
-	rm -f *.o *.ko *.mod.c .*.cmd Modules.symvers \
+	rm -f *.o *.ko *.mod.c .*.cmd Module{s,}.symvers \
 		aamatch/*.o aamatch/*.ko aamatch/.*.cmd aamatch/*.mod.c
 	rm -rf .tmp_versions
