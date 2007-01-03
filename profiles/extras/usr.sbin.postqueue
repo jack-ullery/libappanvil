@@ -17,6 +17,10 @@
   #include <abstractions/nameservice>
   #include <abstractions/kerberosclient>
   #include <program-chunks/postfix-common>
+
+  # This is needed at least for permissions=paranoid
+  capability dac_override,
+
   /etc/postfix                         r,
   /usr/sbin/postqueue                  rmix,
   /var/spool/postfix                   r,

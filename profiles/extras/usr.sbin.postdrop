@@ -18,6 +18,10 @@
   #include <abstractions/nameservice>
   #include <program-chunks/postfix-common>
 
+  # This is needed at least for permissions=paranoid
+  capability dac_override,
+  capability dac_read_search,
+
   /etc/postfix r,
   /etc/postfix/main.cf r,
   /etc/postfix/postfix-script mixr,
