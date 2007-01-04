@@ -546,22 +546,28 @@ int aa_audit_message(struct aaprofile *active, gfp_t gfp, int flags,
 /**
  * aa_audit_syscallreject - Log a syscall rejection to the audit subsystem
  * @active: profile to check against
- * @msg: string describing syscall being rejected
  * @gfp: memory allocation flags
+ * @call: aa syscall cache bit number
  */
 int aa_audit_syscallreject(struct aaprofile *active, gfp_t gfp,
-			   const char *msg)
+			   enum aasyscall call)
 {
 	struct aa_audit sa;
+	int error = -EPERM;
 
-	sa.type = AA_AUDITTYPE_SYSCALL;
-	sa.name = msg;
-	sa.flags = 0;
-	sa.gfp_mask = gfp;
-	sa.error_code = 0;
-	sa.result = 0; /* failure */
+	if (!syscall_is_cached(call)) {
+		sa.type = AA_AUDITTYPE_SYSCALL;
+		sa.name = syscall_to_name(call);
+		sa.flags = 0;
+		sa.gfp_mask = gfp;
+		sa.error_code = 0;
+		sa.result = 0; /* failure */
 
-	return aa_audit(active, &sa);
+		error = aa_audit(active, &sa);
+		if (error == -EPERM)
+			add_to_cached_syscalls(call);
+	}
+	return error;
 }
 
 /**
@@ -617,6 +623,16 @@ int aa_audit(struct aaprofile *active, const struct aa_audit *sa)
 	} else {
 		complain = PROFILE_COMPLAIN(active);
 		logcls = complain ? "PERMITTING" : "REJECTING";
+	}
+
+	/* test if event has already been logged and cached used to log
+	 * only first time event occurs.
+	 */
+	if (sa->type == AA_AUDITTYPE_CAP) {
+		if (cap_is_cached(sa->ival)) {
+			opspec_error = -EPERM;
+			goto skip_logging;
+		}
 	}
 
 	/* In future extend w/ per-profile flags
@@ -725,7 +741,7 @@ int aa_audit(struct aaprofile *active, const struct aa_audit *sa)
 		audit_log_format(ab,
 			"access to capability '%s' ",
 			capability_to_name(sa->ival));
-
+		add_to_cached_caps(sa->ival);
 		opspec_error = -EPERM;
 	} else if (sa->type == AA_AUDITTYPE_SYSCALL) {
 		audit_log_format(ab, "access to syscall '%s' ", sa->name);
@@ -742,6 +758,7 @@ int aa_audit(struct aaprofile *active, const struct aa_audit *sa)
 
 	audit_log_end(ab);
 
+skip_logging:
 	if (complain)
 		error = 0;
 	else
