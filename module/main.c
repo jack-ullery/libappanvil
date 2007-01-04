@@ -336,7 +336,6 @@ static unsigned int sd_file_perm(struct subdomain *sd, const char *name,
 	 * Currently we only allow access if opened O_WRONLY
 	 */
 	if (mask == MAY_WRITE && strncmp(PROCPFX, name, PROCLEN) == 0 &&
-	    (!list_empty(&sd->profile->sub) || SUBDOMAIN_COMPLAIN(sd)) &&
 	    sd_taskattr_access(name + PROCLEN))
 		goto done;
 
@@ -1606,6 +1605,12 @@ int sd_change_hat(const char *hat_name, __u32 hat_magic)
 	/* check to see if an unconfined process is doing a changehat. */
 	if (!__sd_is_confined(sd)) {
 		error = -EPERM;
+		goto out;
+	}
+
+	/* check to see if the confined process has any hats. */
+	if (list_empty(&sd->profile->sub) && !SUBDOMAIN_COMPLAIN(sd)) {
+		error = -ECHILD;
 		goto out;
 	}
 
