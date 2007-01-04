@@ -52,6 +52,8 @@ size_t sd_getprocattr(struct subdomain *sd, char *str, size_t size)
 			str += lenm;
 			*str++ = '\n';
 			error = len;
+		} else if (size == 0) {
+			error = len;
 		} else {
 			error = -ERANGE;
 		}
@@ -62,6 +64,8 @@ size_t sd_getprocattr(struct subdomain *sd, char *str, size_t size)
 		/* DONT null terminate strings we output via proc */
 		if (len <= size) {
 			memcpy(str, unconstrained_str, len);
+			error = len;
+		} else if (size == 0) {
 			error = len;
 		} else {
 			error = -ERANGE;

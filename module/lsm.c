@@ -667,11 +667,6 @@ static int subdomain_getprocattr(struct task_struct *p, char *name, void *value,
 		goto out;
 	}
 
-	if (!size) {
-		error = -ERANGE;
-		goto out;
-	}
-
 	/* must be task querying itself or admin */
 	if (current != p && !capable(CAP_SYS_ADMIN)) {
 		error = -EPERM;
