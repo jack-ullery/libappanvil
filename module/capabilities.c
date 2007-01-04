@@ -40,7 +40,9 @@ static const char *capnames[] = {
 	"sys_time",
 	"sys_tty_config",
 	"mknod",
-	"lease"
+	"lease",
+	"audit_write",
+	"audit_control"
 };
 
 const char *capability_to_name(unsigned int cap)
