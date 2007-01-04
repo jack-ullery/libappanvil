@@ -82,6 +82,62 @@ static inline void put_sdprofile(struct sdprofile *p)
 }
 
 /**
+ * cap_is_cached - check if @cap access has already been logged for current
+ * @cap: capability to test if cached
+ */
+static inline int cap_is_cached(int cap)
+{
+	struct subdomain *sd = SD_SUBDOMAIN(current->security);
+	return cap_raised(sd->cached_caps, cap);
+}
+
+/**
+ * add_to_cached_caps - add a capability to the tasks logged capabilities cache
+ * @cap: the capability to add
+ */
+static inline void add_to_cached_caps(int cap)
+{
+	struct subdomain *sd = SD_SUBDOMAIN(current->security);
+	sd->cached_caps = cap_combine(sd->cached_caps, CAP_TO_MASK(cap));
+}
+
+/**
+ * clear_cached_caps - clear the tasks logged capabilities cache
+ */
+static inline void clear_cached_caps(struct subdomain *sd)
+{
+	sd->cached_caps = CAP_EMPTY_SET;
+}
+
+/**
+ * syscall_is_cached - check if @call access has already been logged
+ * @call: syscall to test if cached
+ */
+static inline int syscall_is_cached(enum aasyscall call)
+{
+	struct subdomain *sd = SD_SUBDOMAIN(current->security);
+	return sd->cached_syscalls & AA_SYSCALL_TO_MASK(call);
+}
+
+/**
+ * add_to_cached_syscalls - add a syscall to the tasks logged syscalls cache
+ * @call: the syscall to add
+ */
+static inline void add_to_cached_syscalls(enum aasyscall call)
+{
+	struct subdomain *sd = SD_SUBDOMAIN(current->security);
+	sd->cached_syscalls |= AA_SYSCALL_TO_MASK(call);
+}
+
+/**
+ * clear_cached_syscalls - clear the tasks logged syscalls cache
+ */
+static inline void clear_cached_syscalls(struct subdomain *sd)
+{
+	sd->cached_syscalls = 0;
+}
+
+/**
  * sd_switch
  * @sd: subdomain to switch
  * @profile: new profile
@@ -99,6 +155,8 @@ static inline void sd_switch(struct subdomain *sd,
 
 	sd->profile = get_sdprofile(profile);
 	sd->active = get_sdprofile(active);
+	clear_cached_caps(sd);
+	clear_cached_syscalls(sd);
 }
 
 /**

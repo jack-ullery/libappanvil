@@ -54,3 +54,18 @@ const char *capability_to_name(unsigned int cap)
 
 	return capname;
 }
+
+static const char *syscall_names[] = {
+	"ptrace",
+	"sysctl (write)",
+	"mount",
+	"umount"
+};
+
+const char *syscall_to_name(enum aasyscall call)
+{
+	const char *name;
+	name = (call < (sizeof(syscall_names) / sizeof(char *))
+		? syscall_names[call] : "invalid-syscall");
+	return name;
+}

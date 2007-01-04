@@ -105,11 +105,9 @@ static int subdomain_ptrace(struct task_struct *parent,
 
 		sd = SD_SUBDOMAIN(parent->security);
 
-		if (__sd_is_confined(sd)) {
+		if (__sd_is_confined(sd))
 			error = sd_audit_syscallreject(sd, GFP_ATOMIC,
-						       "ptrace");
-			WARN_ON(error != -EPERM);
-		}
+						       AA_SYSCALL_PTRACE);
 
 		read_unlock_irqrestore(&sd_lock, flags);
 	}
@@ -178,11 +176,9 @@ static int subdomain_sysctl(struct ctl_table *table, int op)
 
 	sd = SD_SUBDOMAIN(current->security);
 
-	if ((op & 002) && __sd_is_confined(sd) && !capable(CAP_SYS_ADMIN)) {
+	if ((op & 002) && __sd_is_confined(sd) && !capable(CAP_SYS_ADMIN))
 		error = sd_audit_syscallreject(sd, GFP_ATOMIC,
-					       "sysctl (write)");
-		WARN_ON(error != -EPERM);
-	}
+					       AA_SYSCALL_SYSCTL_WRITE);
 
 	read_unlock_irqrestore(&sd_lock, flags);
 
@@ -247,10 +243,9 @@ static int subdomain_sb_mount(char *dev_name, struct nameidata *nd, char *type,
 
 	sd = SD_SUBDOMAIN(current->security);
 
-	if (__sd_is_confined(sd)) {
-		error = sd_audit_syscallreject(sd, GFP_ATOMIC, "mount");
-		WARN_ON(error != -EPERM);
-	}
+	if (__sd_is_confined(sd))
+		error = sd_audit_syscallreject(sd, GFP_ATOMIC,
+					       AA_SYSCALL_MOUNT);
 
 	read_unlock_irqrestore(&sd_lock, lockflags);
 
@@ -270,10 +265,9 @@ static int subdomain_umount(struct vfsmount *mnt, int flags)
 
 	sd = SD_SUBDOMAIN(current->security);
 
-	if (__sd_is_confined(sd)) {
-		error = sd_audit_syscallreject(sd, GFP_ATOMIC, "umount");
-		WARN_ON(error != -EPERM);
-	}
+	if (__sd_is_confined(sd))
+		error = sd_audit_syscallreject(sd, GFP_ATOMIC,
+					       AA_SYSCALL_UMOUNT);
 
 	read_unlock_irqrestore(&sd_lock, lockflags);
 

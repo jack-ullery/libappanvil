@@ -57,6 +57,16 @@ extern int subdomain_logsyscall;
 #define SD_WARN(fmt, args...)	printk(KERN_WARNING "AppArmor: " fmt, ##args)
 #define SD_ERROR(fmt, args...)	printk(KERN_ERR "AppArmor: " fmt, ##args)
 
+/* apparmor logged syscall reject caching */
+enum aasyscall {
+	AA_SYSCALL_PTRACE,
+	AA_SYSCALL_SYSCTL_WRITE,
+	AA_SYSCALL_MOUNT,
+	AA_SYSCALL_UMOUNT
+};
+
+#define AA_SYSCALL_TO_MASK(X) (1 << (X))
+
 /* basic AppArmor data structures */
 
 struct flagval {
@@ -154,6 +164,9 @@ struct subdomain {
 	__u32 sd_hat_magic;		/* used with change_hat */
 	struct list_head list;		/* list of subdomains */
 	struct task_struct *task;
+
+	kernel_cap_t cached_caps;
+	unsigned int cached_syscalls;
 };
 
 typedef int (*sd_iter) (struct subdomain *, void *);
@@ -239,7 +252,7 @@ extern void free_nullprofiles(void);
 extern int sd_audit_message(struct subdomain *, unsigned int gfp, int,
 			    const char *, ...);
 extern int sd_audit_syscallreject(struct subdomain *, unsigned int gfp,
-				  const char *);
+				  enum aasyscall call);
 extern int sd_audit(struct subdomain *, const struct sd_audit *);
 extern char *sd_get_name(struct dentry *dentry, struct vfsmount *mnt);
 
@@ -294,6 +307,7 @@ extern int destroy_subdomainfs(void);
 
 /* capabilities.c */
 extern const char *capability_to_name(unsigned int cap);
+extern const char *syscall_to_name(enum aasyscall call);
 
 /* apparmor_version.c */
 extern const char *apparmor_version(void);

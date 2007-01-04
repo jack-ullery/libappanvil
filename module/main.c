@@ -562,18 +562,24 @@ int sd_audit_message(struct subdomain *sd, unsigned int gfp, int flags,
  * @gfp: memory allocation flags
  */
 int sd_audit_syscallreject(struct subdomain *sd, unsigned int gfp,
-			   const char *msg)
+			   enum aasyscall call)
 {
 	struct sd_audit sa;
+	int error = -EPERM;
 
-	sa.type = SD_AUDITTYPE_SYSCALL;
-	sa.name = msg;
-	sa.flags = 0;
-	sa.gfp_mask = gfp;
-	sa.errorcode = 0;
-	sa.result = 0; /* failure */
+	if (!syscall_is_cached(call)) {
+		sa.type = SD_AUDITTYPE_SYSCALL;
+		sa.name = syscall_to_name(call);
+		sa.flags = 0;
+		sa.gfp_mask = gfp;
+		sa.errorcode = 0;
+		sa.result = 0; /* failure */
 
-	return sd_audit(sd, &sa);
+		error = sd_audit(sd, &sa);
+		if (error == -EPERM)
+			add_to_cached_syscalls(call);
+	}
+	return error;
 }
 
 /**
@@ -629,6 +635,16 @@ int sd_audit(struct subdomain *sd, const struct sd_audit *sa)
 	} else {
 		sdcomplain = SUBDOMAIN_COMPLAIN(sd);
 		logcls = sdcomplain ? "PERMITTING" : "REJECTING";
+	}
+
+	/* test if event has already been logged and cached used to log
+	 * only first time event occurs.
+	 */
+	if (sa->type == SD_AUDITTYPE_CAP) {
+		if (cap_is_cached(sa->ival)) {
+			opspec_error = -EPERM;
+			goto skip_logging;
+		}
 	}
 
 	/* In future extend w/ per-profile flags
@@ -737,7 +753,7 @@ int sd_audit(struct subdomain *sd, const struct sd_audit *sa)
 		audit_log_format(ab,
 			"access to capability '%s' ",
 			capability_to_name(sa->ival));
-
+		add_to_cached_caps(sa->ival);
 		opspec_error = -EPERM;
 	} else if (sa->type == SD_AUDITTYPE_SYSCALL) {
 		audit_log_format(ab, "access to syscall '%s' ", sa->name);
@@ -754,6 +770,7 @@ int sd_audit(struct subdomain *sd, const struct sd_audit *sa)
 
 	audit_log_end(ab);
 
+skip_logging:
 	if (sdcomplain)
 		error = 0;
 	else
