@@ -32,8 +32,8 @@
   /etc/ntp/drift* rwl,
   /etc/ntp/keys r,
   /etc/ntp/step-tickers r,
-  /tmp/ntp* rwl,
   /proc/net/if_inet6 r,
+  /tmp/ntp* rwl,
   /usr/sbin/ntpd rmix,
   /var/lib/ntp/etc/ntp.conf.iburst  r,
   /var/lib/ntp/drift rwl,
@@ -43,4 +43,5 @@
   /var/log/ntp w,
   /var/log/ntp.log w,
   /var/run/ntpd.pid w,
+  /var/tmp/ntp* rwl,
 }
