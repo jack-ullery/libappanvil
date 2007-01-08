@@ -43,6 +43,13 @@ int do_parent(pid_t pid, int trace, int num_syscall)
 {
 	struct user regs;
 	int status, i;
+	unsigned int rc;
+
+	rc = alarm(5);
+	if (rc != 0) {
+		fprintf(stderr, "FAIL: unexpected alarm already set\n");
+		return 0;
+	}
 
 	if (trace) {
 		if (ptrace(PTRACE_ATTACH, pid, NULL, NULL) == -1) {
@@ -58,7 +65,7 @@ int do_parent(pid_t pid, int trace, int num_syscall)
 	if (!WIFSTOPPED(status))
 		return interp_status(status);
 
-	for (i=0;i<num_syscall * 2;i++){
+	for (i = 0; i < num_syscall * 2; i++){
 		/* this will restart stopped child */
 		if (ptrace(PTRACE_SYSCALL, pid, NULL, 0) == -1) {
 			perror("FAIL: parent ptrace(PTRACE_SINGLESTEP) failed - ");
@@ -115,6 +122,11 @@ int do_child(char *argv[], int child_trace, int helper)
 	return RET_FAILURE;
 }
 
+void sigalrm_handler(int sig) {
+	fprintf(stderr, "FAIL: parent timed out waiting for child\n");
+	exit(1);
+}
+
 int main(int argc, char *argv[])
 {
 	pid_t pid;
@@ -122,12 +134,17 @@ int main(int argc, char *argv[])
 	    use_helper = 0,
 	    num_syscall = NUM_CHLD_SYSCALLS, 
 	    opt;
-	const char *usage="usage: %s [-c] [-n #syscall] program [args ...]\n";
+	const char *usage = "usage: %s [-c] [-n #syscall] program [args ...]\n";
 	char **args;
 
-	opterr=0;
+	if (signal(SIGALRM, sigalrm_handler) == SIG_ERR) {
+		perror ("FAIL - signal failed: ");
+		return(1);
+        }
+
+	opterr = 0;
 	while (1) {
-		opt=getopt(argc, argv, "chn:");
+		opt = getopt(argc, argv, "chn:");
 
 		if (opt == -1)
 			break;
@@ -149,7 +166,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	args=&argv[optind];
+	args = &argv[optind];
 
 	pid = fork();
 	if (pid > 0){	/*parent */
