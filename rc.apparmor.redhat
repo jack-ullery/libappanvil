@@ -65,6 +65,12 @@ sd_log_warning_msg() {
 	echo
 }
 
+sd_log_skipped_msg() {
+	echo -n "$*"
+	warning
+	echo
+}
+
 sd_log_failure_msg() {
 	echo -n "$*"
 	failure

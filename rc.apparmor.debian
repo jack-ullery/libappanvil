@@ -66,6 +66,11 @@ sd_log_failure_msg() {
         echo ": Failed."
 }
 
+sd_log_skipped_msg() {
+ 	[ -n "$1" ] && echo -n $1
+        echo ": Skipped."
+}
+
 usage() {
     echo "Usage: $0 {start|stop|restart|try-restart|reload|force-reload|status|kill}"
 }
