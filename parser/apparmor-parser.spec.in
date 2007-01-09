@@ -35,9 +35,6 @@ Prereq: sed
 %if %{distro} == "suse"
 Prereq: %{insserv_prereq} aaa_base
 %endif
-%if %{distro} == "rhel4"
-Prereq: apparmor-master
-%endif
 Obsoletes: subdomain_parser subdomain-parser
 Obsoletes: subdomain-parser-demo subdomain-parser-common subdomain-leaf-cert
 Obsoletes: libimnxcert
