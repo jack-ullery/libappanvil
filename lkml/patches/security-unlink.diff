@@ -1,0 +1,90 @@
+Index: linux-2.6.19/fs/namei.c
+===================================================================
+--- linux-2.6.19.orig/fs/namei.c
++++ linux-2.6.19/fs/namei.c
+@@ -2106,7 +2106,7 @@ int vfs_unlink(struct inode *dir, struct
+ 	if (d_mountpoint(dentry))
+ 		error = -EBUSY;
+ 	else {
+-		error = security_inode_unlink(dir, dentry);
++		error = security_inode_unlink(dir, mnt, dentry);
+ 		if (!error)
+ 			error = dir->i_op->unlink(dir, dentry);
+ 	}
+Index: linux-2.6.19/include/linux/security.h
+===================================================================
+--- linux-2.6.19.orig/include/linux/security.h
++++ linux-2.6.19/include/linux/security.h
+@@ -297,6 +297,7 @@ struct request_sock;
+  * @inode_unlink:
+  *	Check the permission to remove a hard link to a file. 
+  *	@dir contains the inode structure of parent directory of the file.
++ *	@mnt is the vfsmount where the dentry was looked up (may be NULL)
+  *	@dentry contains the dentry structure for file to be unlinked.
+  *	Return 0 if permission is granted.
+  * @inode_symlink:
+@@ -1226,7 +1227,8 @@ struct security_operations {
+ 	int (*inode_link) (struct vfsmount *old_mnt, struct dentry *old_dentry,
+ 	                   struct inode *dir, struct vfsmount *new_mnt,
+ 			   struct dentry *new_dentry);
+-	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
++	int (*inode_unlink) (struct inode *dir, struct vfsmount *mnt,
++			     struct dentry *dentry);
+ 	int (*inode_symlink) (struct inode *dir, struct vfsmount *mnt,
+ 	                      struct dentry *dentry, const char *old_name);
+ 	int (*inode_mkdir) (struct inode *dir, struct vfsmount *mnt,
+@@ -1654,11 +1656,12 @@ static inline int security_inode_link (s
+ }
+ 
+ static inline int security_inode_unlink (struct inode *dir,
++					 struct vfsmount *mnt,
+ 					 struct dentry *dentry)
+ {
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_unlink (dir, dentry);
++	return security_ops->inode_unlink (dir, mnt, dentry);
+ }
+ 
+ static inline int security_inode_symlink (struct inode *dir,
+@@ -2386,6 +2389,7 @@ static inline int security_inode_link (s
+ }
+ 
+ static inline int security_inode_unlink (struct inode *dir,
++					 struct vfsmount *mnt,
+ 					 struct dentry *dentry)
+ {
+ 	return 0;
+Index: linux-2.6.19/security/dummy.c
+===================================================================
+--- linux-2.6.19.orig/security/dummy.c
++++ linux-2.6.19/security/dummy.c
+@@ -278,7 +278,8 @@ static int dummy_inode_link (struct vfsm
+ 	return 0;
+ }
+ 
+-static int dummy_inode_unlink (struct inode *inode, struct dentry *dentry)
++static int dummy_inode_unlink (struct inode *inode, struct vfsmount *mnt,
++			       struct dentry *dentry)
+ {
+ 	return 0;
+ }
+Index: linux-2.6.19/security/selinux/hooks.c
+===================================================================
+--- linux-2.6.19.orig/security/selinux/hooks.c
++++ linux-2.6.19/security/selinux/hooks.c
+@@ -2149,11 +2149,12 @@ static int selinux_inode_link(struct vfs
+ 	return may_link(dir, old_dentry, MAY_LINK);
+ }
+ 
+-static int selinux_inode_unlink(struct inode *dir, struct dentry *dentry)
++static int selinux_inode_unlink(struct inode *dir, struct vfsmount *mnt,
++				struct dentry *dentry)
+ {
+ 	int rc;
+ 
+-	rc = secondary_ops->inode_unlink(dir, dentry);
++	rc = secondary_ops->inode_unlink(dir, mnt, dentry);
+ 	if (rc)
+ 		return rc;
+ 	return may_link(dir, dentry, MAY_UNLINK);

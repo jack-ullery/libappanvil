@@ -1,0 +1,84 @@
+Index: linux-2.6.19/fs/nfsd/vfs.c
+===================================================================
+--- linux-2.6.19.orig/fs/nfsd/vfs.c
++++ linux-2.6.19/fs/nfsd/vfs.c
+@@ -1986,7 +1986,7 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+ 		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
+ 			error = 0;
+ 		else {
+-			error = vfs_removexattr(fhp->fh_dentry, name);
++			error = vfs_removexattr(NULL, fhp->fh_dentry, name);
+ 			if (error == -ENODATA)
+ 				error = 0;
+ 		}
+Index: linux-2.6.19/fs/xattr.c
+===================================================================
+--- linux-2.6.19.orig/fs/xattr.c
++++ linux-2.6.19/fs/xattr.c
+@@ -166,7 +166,7 @@ vfs_listxattr(struct vfsmount *mnt, stru
+ EXPORT_SYMBOL_GPL(vfs_listxattr);
+ 
+ int
+-vfs_removexattr(struct dentry *dentry, char *name)
++vfs_removexattr(struct vfsmount *mnt, struct dentry *dentry, char *name)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+@@ -437,7 +437,7 @@ sys_flistxattr(int fd, char __user *list
+  * Extended attribute REMOVE operations
+  */
+ static long
+-removexattr(struct dentry *d, char __user *name)
++removexattr(struct vfsmount *mnt, struct dentry *dentry, char __user *name)
+ {
+ 	int error;
+ 	char kname[XATTR_NAME_MAX + 1];
+@@ -448,7 +448,7 @@ removexattr(struct dentry *d, char __use
+ 	if (error < 0)
+ 		return error;
+ 
+-	return vfs_removexattr(d, kname);
++	return vfs_removexattr(mnt, dentry, kname);
+ }
+ 
+ asmlinkage long
+@@ -460,7 +460,7 @@ sys_removexattr(char __user *path, char 
+ 	error = user_path_walk(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = removexattr(nd.dentry, name);
++	error = removexattr(nd.mnt, nd.dentry, name);
+ 	path_release(&nd);
+ 	return error;
+ }
+@@ -474,7 +474,7 @@ sys_lremovexattr(char __user *path, char
+ 	error = user_path_walk_link(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = removexattr(nd.dentry, name);
++	error = removexattr(nd.mnt, nd.dentry, name);
+ 	path_release(&nd);
+ 	return error;
+ }
+@@ -491,7 +491,7 @@ sys_fremovexattr(int fd, char __user *na
+ 		return error;
+ 	dentry = f->f_dentry;
+ 	audit_inode(NULL, dentry->d_inode);
+-	error = removexattr(dentry, name);
++	error = removexattr(f->f_vfsmnt, dentry, name);
+ 	fput(f);
+ 	return error;
+ }
+Index: linux-2.6.19/include/linux/xattr.h
+===================================================================
+--- linux-2.6.19.orig/include/linux/xattr.h
++++ linux-2.6.19/include/linux/xattr.h
+@@ -45,7 +45,7 @@ ssize_t vfs_getxattr(struct vfsmount *, 
+ ssize_t vfs_listxattr(struct vfsmount *, struct dentry *, char *, size_t);
+ int vfs_setxattr(struct vfsmount *, struct dentry *, char *, void *, size_t,
+ 		 int);
+-int vfs_removexattr(struct dentry *, char *);
++int vfs_removexattr(struct vfsmount *, struct dentry *, char *);
+ 
+ ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
+ ssize_t generic_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size);

@@ -1,0 +1,80 @@
+Index: linux-2.6.19/fs/xattr.c
+===================================================================
+--- linux-2.6.19.orig/fs/xattr.c
++++ linux-2.6.19/fs/xattr.c
+@@ -117,7 +117,7 @@ vfs_getxattr(struct vfsmount *mnt, struc
+ 	if (error)
+ 		return error;
+ 
+-	error = security_inode_getxattr(dentry, name);
++	error = security_inode_getxattr(mnt, dentry, name);
+ 	if (error)
+ 		return error;
+ 
+Index: linux-2.6.19/include/linux/security.h
+===================================================================
+--- linux-2.6.19.orig/include/linux/security.h
++++ linux-2.6.19/include/linux/security.h
+@@ -1254,7 +1254,8 @@ struct security_operations {
+ 			       char *name, void *value, size_t size, int flags);
+ 	void (*inode_post_setxattr) (struct dentry *dentry, char *name, void *value,
+ 				     size_t size, int flags);
+-	int (*inode_getxattr) (struct dentry *dentry, char *name);
++	int (*inode_getxattr) (struct vfsmount *mnt, struct dentry *dentry,
++			       char *name);
+ 	int (*inode_listxattr) (struct dentry *dentry);
+ 	int (*inode_removexattr) (struct dentry *dentry, char *name);
+ 	const char *(*inode_xattr_getsuffix) (void);
+@@ -1787,11 +1788,12 @@ static inline void security_inode_post_s
+ 	security_ops->inode_post_setxattr (dentry, name, value, size, flags);
+ }
+ 
+-static inline int security_inode_getxattr (struct dentry *dentry, char *name)
++static inline int security_inode_getxattr (struct vfsmount *mnt,
++					   struct dentry *dentry, char *name)
+ {
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_getxattr (dentry, name);
++	return security_ops->inode_getxattr (mnt, dentry, name);
+ }
+ 
+ static inline int security_inode_listxattr (struct dentry *dentry)
+@@ -2489,7 +2491,8 @@ static inline void security_inode_post_s
+ 						 void *value, size_t size, int flags)
+ { }
+ 
+-static inline int security_inode_getxattr (struct dentry *dentry, char *name)
++static inline int security_inode_getxattr (struct vfsmount *mnt,
++					   struct dentry *dentry, char *name)
+ {
+ 	return 0;
+ }
+Index: linux-2.6.19/security/dummy.c
+===================================================================
+--- linux-2.6.19.orig/security/dummy.c
++++ linux-2.6.19/security/dummy.c
+@@ -366,7 +366,8 @@ static void dummy_inode_post_setxattr (s
+ {
+ }
+ 
+-static int dummy_inode_getxattr (struct dentry *dentry, char *name)
++static int dummy_inode_getxattr (struct vfsmount *mnt, struct dentry *dentry,
++				 char *name)
+ {
+ 	return 0;
+ }
+Index: linux-2.6.19/security/selinux/hooks.c
+===================================================================
+--- linux-2.6.19.orig/security/selinux/hooks.c
++++ linux-2.6.19/security/selinux/hooks.c
+@@ -2343,7 +2343,8 @@ static void selinux_inode_post_setxattr(
+ 	return;
+ }
+ 
+-static int selinux_inode_getxattr (struct dentry *dentry, char *name)
++static int selinux_inode_getxattr (struct vfsmount *mnt, struct dentry *dentry,
++				   char *name)
+ {
+ 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
+ }
