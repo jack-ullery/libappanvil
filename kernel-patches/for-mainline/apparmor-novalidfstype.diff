@@ -1,0 +1,455 @@
+Index: linux-2.6.19/security/apparmor/apparmor.h
+===================================================================
+--- linux-2.6.19.orig/security/apparmor/apparmor.h
++++ linux-2.6.19/security/apparmor/apparmor.h
+@@ -25,17 +25,6 @@ extern int apparmor_debug;
+ extern int apparmor_audit;
+ extern int apparmor_logsyscall;
+ 
+-/* PIPEFS_MAGIC */
+-#include <linux/pipe_fs_i.h>
+-/* from net/socket.c */
+-#define SOCKFS_MAGIC 0x534F434B
+-/* from inotify.c  */
+-#define INOTIFYFS_MAGIC 0xBAD1DEA
+-
+-#define VALID_FSTYPE(inode) ((inode)->i_sb->s_magic != PIPEFS_MAGIC && \
+-                             (inode)->i_sb->s_magic != SOCKFS_MAGIC && \
+-                             (inode)->i_sb->s_magic != INOTIFYFS_MAGIC)
+-
+ #define PROFILE_COMPLAIN(_profile) \
+ 	(apparmor_complain == 1 || ((_profile) && (_profile)->flags.complain))
+ 
+@@ -102,7 +91,8 @@ struct aa_entry {
+ 	struct list_head listp[POS_AA_FILE_MAX + 1];
+ };
+ 
+-#define AA_SECURE_EXEC_NEEDED 0x00000001
++#define AA_MEDIATE_FS		(void*)0x00000001
++#define AA_SECURE_EXEC_NEEDED 	0x00000001
+ 
+ #define AA_EXEC_MODIFIER_MASK(mask) ((mask) & AA_EXEC_MODIFIERS)
+ #define AA_EXEC_MASK(mask) ((mask) & (AA_MAY_EXEC | AA_EXEC_MODIFIERS))
+@@ -151,21 +141,6 @@ struct aaprofile {
+ 	struct kref count;
+ };
+ 
+-enum aafile_type {
+-	aa_file_default,
+-	aa_file_shmem
+-};
+-
+-/**
+- * aafile - file pointer confinement data
+- *
+- * Data structure assigned to each open file (by apparmor_file_alloc_security)
+- */
+-struct aafile {
+-	enum aafile_type type;
+-	struct aaprofile *profile;
+-};
+-
+ /**
+  * struct subdomain - primary label for confined tasks
+  * @active: the current active profile
+Index: linux-2.6.19/security/apparmor/lsm.c
+===================================================================
+--- linux-2.6.19.orig/security/apparmor/lsm.c
++++ linux-2.6.19/security/apparmor/lsm.c
+@@ -202,6 +202,9 @@ static int apparmor_sb_mount(char *dev_n
+ 	if (active) {
+ 		error = aa_audit_syscallreject(active, GFP_KERNEL, "mount");
+ 		WARN_ON(error != -EPERM);
++	} else {
++		AA_ERROR("labelling volume %s\n", nd->mnt->mnt_sb->s_id);
++		nd->mnt->mnt_sb->s_security = AA_MEDIATE_FS;
+ 	}
+ 
+ 	put_aaprofile(active);
+@@ -219,6 +222,8 @@ static int apparmor_umount(struct vfsmou
+ 	if (active) {
+ 		error = aa_audit_syscallreject(active, GFP_ATOMIC, "umount");
+ 		WARN_ON(error != -EPERM);
++	} else {
++		mnt->mnt_sb->s_security = NULL;
+ 	}
+ 
+ 	put_aaprofile(active);
+@@ -226,13 +231,13 @@ static int apparmor_umount(struct vfsmou
+ 	return error;
+ }
+ 
+-static int apparmor_inode_mkdir(struct inode *inode, struct vfsmount *mnt,
++static int apparmor_inode_mkdir(struct inode *dir, struct vfsmount *mnt,
+ 				struct dentry *dentry, int mask)
+ {
+ 	struct aaprofile *active;
+ 	int error = 0;
+ 
+-	if (!mnt)
++	if (!mnt || dir->i_sb->s_security != AA_MEDIATE_FS)
+ 		goto out;
+ 
+ 	active = get_active_aaprofile();
+@@ -246,13 +251,13 @@ out:
+ 	return error;
+ }
+ 
+-static int apparmor_inode_rmdir(struct inode *inode, struct vfsmount *mnt,
++static int apparmor_inode_rmdir(struct inode *dir, struct vfsmount *mnt,
+ 				struct dentry *dentry)
+ {
+ 	struct aaprofile *active;
+ 	int error = 0;
+ 
+-	if (!mnt)
++	if (!mnt || dir->i_sb->s_security != AA_MEDIATE_FS)
+ 		goto out;
+ 
+ 	active = get_active_aaprofile();
+@@ -266,13 +271,13 @@ out:
+ 	return error;
+ }
+ 
+-static int apparmor_inode_create(struct inode *inode, struct vfsmount *mnt,
++static int apparmor_inode_create(struct inode *dir, struct vfsmount *mnt,
+ 				 struct dentry *dentry, int mask)
+ {
+ 	struct aaprofile *active;
+ 	int error = 0;
+ 
+-	if (!mnt)
++	if (!mnt || dir->i_sb->s_security != AA_MEDIATE_FS)
+ 		goto out;
+ 
+ 	active = get_active_aaprofile();
+@@ -287,14 +292,14 @@ out:
+ }
+ 
+ static int apparmor_inode_link(struct vfsmount *old_mnt,
+-			       struct dentry *old_dentry, struct inode *inode,
++			       struct dentry *old_dentry, struct inode *dir,
+ 			       struct vfsmount *new_mnt,
+ 			       struct dentry *new_dentry)
+ {
+ 	int error = 0;
+ 	struct aaprofile *active;
+ 
+-	if (!old_mnt || !new_mnt)
++	if (!old_mnt || !new_mnt || dir->i_sb->s_security != AA_MEDIATE_FS)
+ 		goto out;
+ 
+ 	active = get_active_aaprofile();
+@@ -315,7 +320,7 @@ static int apparmor_inode_unlink(struct 
+ 	struct aaprofile *active;
+ 	int error = 0;
+ 
+-	if (!mnt)
++	if (!mnt || dentry->d_inode->i_sb->s_security != AA_MEDIATE_FS)
+ 		goto out;
+ 
+ 	active = get_active_aaprofile();
+@@ -329,13 +334,13 @@ out:
+ 	return error;
+ }
+ 
+-static int apparmor_inode_mknod(struct inode *inode, struct vfsmount *mnt,
++static int apparmor_inode_mknod(struct inode *dir, struct vfsmount *mnt,
+ 				struct dentry *dentry, int mode, dev_t dev)
+ {
+ 	struct aaprofile *active;
+ 	int error = 0;
+ 
+-	if (!mnt)
++	if (!mnt || dir->i_sb->s_security != AA_MEDIATE_FS)
+ 		goto out;
+ 
+ 	active = get_active_aaprofile();
+@@ -349,10 +354,10 @@ out:
+ 	return error;
+ }
+ 
+-static int apparmor_inode_rename(struct inode *old_inode,
++static int apparmor_inode_rename(struct inode *old_dir,
+ 				 struct vfsmount *old_mnt,
+ 				 struct dentry *old_dentry,
+-				 struct inode *new_inode,
++				 struct inode *new_dir,
+ 				 struct vfsmount *new_mnt,
+ 				 struct dentry *new_dentry)
+ {
+@@ -365,11 +370,12 @@ static int apparmor_inode_rename(struct 
+ 	active = get_active_aaprofile();
+ 
+ 	if (active) {
+-		if (old_mnt)
++		if (old_mnt && old_dir->i_sb->s_security == AA_MEDIATE_FS)
+ 			error = aa_perm(active, old_dentry, old_mnt,
+ 					MAY_READ|MAY_WRITE);
+ 
+-		if (!error && new_mnt)
++		if (!error && new_mnt &&
++		    new_dir->i_sb->s_security == AA_MEDIATE_FS)
+ 			error = aa_perm(active, new_dentry, new_mnt,
+ 					MAY_WRITE);
+ 	}
+@@ -388,7 +394,7 @@ static int apparmor_inode_permission(str
+ 	/* Do not perform check on pipes or sockets
+ 	 * Same as apparmor_file_permission
+ 	 */
+-	if (nd && VALID_FSTYPE(inode)) {
++	if (nd && inode->i_sb->s_security == AA_MEDIATE_FS) {
+ 		struct aaprofile *active;
+ 
+ 		active = get_active_aaprofile();
+@@ -404,23 +410,21 @@ static int apparmor_inode_setattr(struct
+ 				  struct iattr *iattr)
+ {
+ 	int error = 0;
++	struct aaprofile *active;
+ 
+-	if (!mnt)
++	if (!mnt || dentry->d_inode->i_sb->s_security != AA_MEDIATE_FS)
+ 		goto out;
+ 
+-	if (VALID_FSTYPE(dentry->d_inode)) {
+-		struct aaprofile *active;
++	active = get_active_aaprofile();
+ 
+-		active = get_active_aaprofile();
+-		/*
+-		 * Mediate any attempt to change attributes of a file
+-		 * (chmod, chown, chgrp, etc)
+-		 */
+-		if (active)
+-			error = aa_attr(active, dentry, mnt, iattr);
++	/*
++	 * Mediate any attempt to change attributes of a file
++	 * (chmod, chown, chgrp, etc)
++	 */
++	if (active)
++		error = aa_attr(active, dentry, mnt, iattr);
+ 
+-		put_aaprofile(active);
+-	}
++	put_aaprofile(active);
+ 
+ out:
+ 	return error;
+@@ -431,19 +435,16 @@ static int apparmor_inode_setxattr(struc
+ 				   int flags)
+ {
+ 	int error = 0;
++	struct aaprofile *active;
+ 
+-	if (!mnt)
++	if (!mnt || dentry->d_inode->i_sb->s_security != AA_MEDIATE_FS)
+ 		goto out;
+ 
+-	if (VALID_FSTYPE(dentry->d_inode)) {
+-		struct aaprofile *active;
+-
+-		active = get_active_aaprofile();
+-		if (active)
+-			error = aa_xattr(active, dentry, mnt, name,
+-					 aa_xattr_set);
+-		put_aaprofile(active);
+-	}
++	active = get_active_aaprofile();
++	if (active)
++		error = aa_xattr(active, dentry, mnt, name,
++				 aa_xattr_set);
++	put_aaprofile(active);
+ 
+ out:
+ 	return error;
+@@ -453,19 +454,17 @@ static int apparmor_inode_getxattr(struc
+ 				   char *name)
+ {
+ 	int error = 0;
++	struct aaprofile *active;
+ 
+-	if (!mnt)
++	if (!mnt || dentry->d_inode->i_sb->s_security != AA_MEDIATE_FS)
+ 		goto out;
+ 
+-	if (VALID_FSTYPE(dentry->d_inode)) {
+-		struct aaprofile *active;
+ 
+-		active = get_active_aaprofile();
+-		if (active)
+-			error = aa_xattr(active, dentry, mnt, name,
+-					 aa_xattr_get);
+-		put_aaprofile(active);
+-	}
++	active = get_active_aaprofile();
++	if (active)
++		error = aa_xattr(active, dentry, mnt, name,
++				 aa_xattr_get);
++	put_aaprofile(active);
+ 
+ out:
+ 	return error;
+@@ -473,19 +472,16 @@ out:
+ static int apparmor_inode_listxattr(struct vfsmount *mnt, struct dentry *dentry)
+ {
+ 	int error = 0;
++	struct aaprofile *active;
+ 
+-	if (!mnt)
++	if (!mnt || dentry->d_inode->i_sb->s_security != AA_MEDIATE_FS)
+ 		goto out;
+ 
+-	if (VALID_FSTYPE(dentry->d_inode)) {
+-		struct aaprofile *active;
+-
+-		active = get_active_aaprofile();
+-		if (active)
+-			error = aa_xattr(active, dentry, mnt, NULL,
+-					 aa_xattr_list);
+-		put_aaprofile(active);
+-	}
++	active = get_active_aaprofile();
++	if (active)
++		error = aa_xattr(active, dentry, mnt, NULL,
++				 aa_xattr_list);
++	put_aaprofile(active);
+ 
+ out:
+ 	return error;
+@@ -495,19 +491,16 @@ static int apparmor_inode_removexattr(st
+ 				      struct dentry *dentry, char *name)
+ {
+ 	int error = 0;
++	struct aaprofile *active;
+ 
+-	if (!mnt)
++	if (!mnt || dentry->d_inode->i_sb->s_security != AA_MEDIATE_FS)
+ 		goto out;
+ 
+-	if (VALID_FSTYPE(dentry->d_inode)) {
+-		struct aaprofile *active;
+-
+-		active = get_active_aaprofile();
+-		if (active)
+-			error = aa_xattr(active, dentry, mnt, name,
+-					 aa_xattr_remove);
+-		put_aaprofile(active);
+-	}
++	active = get_active_aaprofile();
++	if (active)
++		error = aa_xattr(active, dentry, mnt, name,
++				 aa_xattr_remove);
++	put_aaprofile(active);
+ 
+ out:
+ 	return error;
+@@ -516,55 +509,36 @@ out:
+ static int apparmor_file_permission(struct file *file, int mask)
+ {
+ 	struct aaprofile *active;
+-	struct aafile *aaf;
+ 	int error = 0;
+ 
+-	aaf = (struct aafile *)file->f_security;
+-	/* bail out early if this isn't a mediated file */
+-	if (!aaf || !VALID_FSTYPE(file->f_dentry->d_inode))
+-		goto out;
+-
+-	active = get_active_aaprofile();
+-	if (active && aaf->profile != active)
+-		error = aa_perm(active, file->f_dentry, file->f_vfsmnt,
+-				mask & (MAY_EXEC | MAY_WRITE | MAY_READ));
+-	put_aaprofile(active);
++	if (file->f_vfsmnt->mnt_sb->s_security == AA_MEDIATE_FS &&
++	    file->f_security) {
++		active = get_active_aaprofile();
++		if (active && (struct aaprofile*)file->f_security != active)
++			error = aa_perm(active, file->f_dentry, file->f_vfsmnt,
++					mask & (MAY_EXEC|MAY_WRITE|MAY_READ));
++		put_aaprofile(active);
++	}
+ 
+-out:
+ 	return error;
+ }
+ 
+ static int apparmor_file_alloc_security(struct file *file)
+ {
+ 	struct aaprofile *active;
+-	int error = 0;
+ 
+ 	active = get_active_aaprofile();
+-	if (active) {
+-		struct aafile *aaf;
+-		aaf = kmalloc(sizeof(struct aafile), GFP_KERNEL);
++	if (active)
++		file->f_security = get_aaprofile(active);
+ 
+-		if (aaf) {
+-			aaf->type = aa_file_default;
+-			aaf->profile = get_aaprofile(active);
+-		} else {
+-			error = -ENOMEM;
+-		}
+-		file->f_security = aaf;
+-	}
+ 	put_aaprofile(active);
+ 
+-	return error;
++	return 0;
+ }
+ 
+ static void apparmor_file_free_security(struct file *file)
+ {
+-	struct aafile *aaf = (struct aafile *)file->f_security;
+-
+-	if (aaf) {
+-		put_aaprofile(aaf->profile);
+-		kfree(aaf);
+-	}
++	put_aaprofile((struct aaprofile *)file->f_security);
+ }
+ 
+ static inline int aa_mmap(struct file *file, unsigned long prot,
+@@ -572,12 +546,10 @@ static inline int aa_mmap(struct file *f
+ {
+ 	int error = 0, mask = 0;
+ 	struct aaprofile *active;
+-	struct aafile *aaf;
+ 
+ 	active = get_active_aaprofile();
+ 	if (!active || !file ||
+-	    !(aaf = (struct aafile *)file->f_security) ||
+-	    aaf->type == aa_file_shmem)
++	    file->f_vfsmnt->mnt_sb->s_security != AA_MEDIATE_FS)
+ 		goto out;
+ 
+ 	if (prot & PROT_READ)
+@@ -636,17 +608,6 @@ static void apparmor_task_reparent_to_in
+ 	return;
+ }
+ 
+-static int apparmor_shm_shmat(struct shmid_kernel *shp, char __user *shmaddr,
+-			      int shmflg)
+-{
+-	struct aafile *aaf = (struct aafile *)shp->shm_file->f_security;
+-
+-	if (aaf)
+-		aaf->type = aa_file_shmem;
+-
+-	return 0;
+-}
+-
+ static int apparmor_getprocattr(struct task_struct *p, char *name, void *value,
+ 				size_t size)
+ {
+@@ -829,8 +790,6 @@ struct security_operations apparmor_ops 
+ 	.task_post_setuid =		apparmor_task_post_setuid,
+ 	.task_reparent_to_init =	apparmor_task_reparent_to_init,
+ 
+-	.shm_shmat =			apparmor_shm_shmat,
+-
+ 	.getprocattr =			apparmor_getprocattr,
+ 	.setprocattr =			apparmor_setprocattr,
+ };

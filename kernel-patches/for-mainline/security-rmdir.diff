@@ -1,0 +1,90 @@
+Pass struct vfsmount to the inode_rmdir LSM hook
+
+Signed-off-by: Tony Jones <tonyj@suse.de>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+
+Index: linux-2.6.19/fs/namei.c
+===================================================================
+--- linux-2.6.19.orig/fs/namei.c
++++ linux-2.6.19/fs/namei.c
+@@ -2027,7 +2027,7 @@ int vfs_rmdir(struct inode *dir, struct 
+ 	if (d_mountpoint(dentry))
+ 		error = -EBUSY;
+ 	else {
+-		error = security_inode_rmdir(dir, dentry);
++		error = security_inode_rmdir(dir, mnt, dentry);
+ 		if (!error) {
+ 			error = dir->i_op->rmdir(dir, dentry);
+ 			if (!error)
+Index: linux-2.6.19/include/linux/security.h
+===================================================================
+--- linux-2.6.19.orig/include/linux/security.h
++++ linux-2.6.19/include/linux/security.h
+@@ -317,6 +317,7 @@ struct request_sock;
+  * @inode_rmdir:
+  *	Check the permission to remove a directory.
+  *	@dir contains the inode structure of parent of the directory to be removed.
++ *	@mnt is the vfsmount where the dentry was looked up (may be NULL)
+  *	@dentry contains the dentry structure of directory to be removed.
+  *	Return 0 if permission is granted.
+  * @inode_mknod:
+@@ -1230,7 +1231,8 @@ struct security_operations {
+ 	                      struct dentry *dentry, const char *old_name);
+ 	int (*inode_mkdir) (struct inode *dir, struct vfsmount *mnt,
+ 			    struct dentry *dentry, int mode);
+-	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
++	int (*inode_rmdir) (struct inode *dir, struct vfsmount *mnt,
++			    struct dentry *dentry);
+ 	int (*inode_mknod) (struct inode *dir, struct vfsmount *mnt,
+ 			    struct dentry *dentry, int mode, dev_t dev);
+ 	int (*inode_rename) (struct inode *old_dir, struct dentry *old_dentry,
+@@ -1680,11 +1682,12 @@ static inline int security_inode_mkdir (
+ }
+ 
+ static inline int security_inode_rmdir (struct inode *dir,
++					struct vfsmount *mnt,
+ 					struct dentry *dentry)
+ {
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_rmdir (dir, dentry);
++	return security_ops->inode_rmdir (dir, mnt, dentry);
+ }
+ 
+ static inline int security_inode_mknod (struct inode *dir,
+@@ -2405,6 +2408,7 @@ static inline int security_inode_mkdir (
+ }
+ 
+ static inline int security_inode_rmdir (struct inode *dir,
++					struct vfsmount *mnt,
+ 					struct dentry *dentry)
+ {
+ 	return 0;
+Index: linux-2.6.19/security/dummy.c
+===================================================================
+--- linux-2.6.19.orig/security/dummy.c
++++ linux-2.6.19/security/dummy.c
+@@ -295,7 +295,8 @@ static int dummy_inode_mkdir (struct ino
+ 	return 0;
+ }
+ 
+-static int dummy_inode_rmdir (struct inode *inode, struct dentry *dentry)
++static int dummy_inode_rmdir (struct inode *inode, struct vfsmount *mnt,
++			      struct dentry *dentry)
+ {
+ 	return 0;
+ }
+Index: linux-2.6.19/security/selinux/hooks.c
+===================================================================
+--- linux-2.6.19.orig/security/selinux/hooks.c
++++ linux-2.6.19/security/selinux/hooks.c
+@@ -2171,7 +2171,8 @@ static int selinux_inode_mkdir(struct in
+ 	return may_create(dir, dentry, SECCLASS_DIR);
+ }
+ 
+-static int selinux_inode_rmdir(struct inode *dir, struct dentry *dentry)
++static int selinux_inode_rmdir(struct inode *dir, struct vfsmount *mnt,
++			       struct dentry *dentry)
+ {
+ 	return may_link(dir, dentry, MAY_RMDIR);
+ }
