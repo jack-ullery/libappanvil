@@ -37,9 +37,7 @@ VERSION=2.0.1
 # location -- it *should* pick out the right thing to do based on the
 # .rpmmacros file, but you can still use BUILDDIR to override that.
 TESTBUILDDIR=$(shell [ -f ${HOME}/.rpmmacros ] && awk '/^%_topdir/ {print $$2}' ${HOME}/.rpmmacros)
-ifdef BUILDDIR
-#BUILDDIR:=$(BUILDDIR,/=)
-else
+ifndef BUILDDIR
 BUILDDIR=$(shell if [ -d "${TESTBUILDDIR}" ] ; then \
 		    echo ${TESTBUILDDIR} | sed "s^/$$^^" ; \
 		  elif [ -d "/usr/src/redhat" ] ; then \
@@ -64,12 +62,12 @@ DISTRO=$(shell if [ -f /etc/slackware-version ] ; then \
 	          echo unknown ;\
 	       fi)
 endif
-RPMARG=--define "_topdir ${BUILDDIR}" \
+RPMARG=--define "_topdir $(BUILDDIR:/=)" \
         --define "vendor NOVELL, Inc." \
 	--define "distribution ${DISTRIBUTION}" \
 	--define "debug_package %{nil}" \
 	--define "immunix_version ${VERSION}" \
-	$(shell [ -d ${BUILDDIR}/BUILDROOT ] && echo --define \"buildroot ${BUILDDIR}/BUILDROOT\") \
+	$(shell [ -d ${BUILDDIR}/BUILDROOT ] && echo --define \"buildroot $(BUILDDIR:/=)/BUILDROOT\") \
 	$(shell [ -n "${DISTRO}" ] && echo --define \"distro ${DISTRO}\")
 
 #REPO_VERSION=$(shell if [ -x /usr/bin/svn ] ; then \
@@ -104,7 +102,7 @@ CVSPKG_VERSION=$(shell rpm -q --specfile --define "_sourcedir ." ${RPMARG} ${SPE
 
 RPMSUBDIRS=SOURCES SPECS BUILD BUILDROOT SRPMS RPMS/i386 RPMS/i586 \
         RPMS/i686 RPMS/athlon RPMS/noarch RPMS/x86_64
-BUILDRPMSUBDIRS=$(foreach subdir, $(RPMSUBDIRS), $(BUILDDIR)/$(subdir))
+BUILDRPMSUBDIRS=$(foreach subdir, $(RPMSUBDIRS), $(BUILDDIR:/=)/$(subdir))
 
 .PHONY: cvs_tag
 cvs_tag:
