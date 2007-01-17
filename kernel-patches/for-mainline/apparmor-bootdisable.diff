@@ -18,7 +18,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  /* Flag values, also controllable via apparmorfs/control.
   * We explicitly do not allow these to be modifiable when exported via
   * /sys/modules/parameters, as we want to do additional mediation and
-@@ -827,6 +836,11 @@ static int __init apparmor_init(void)
+@@ -831,6 +840,11 @@ static int __init apparmor_init(void)
  	int error;
  	const char *complainmsg = ": complainmode enabled";
  

@@ -7,19 +7,19 @@ Index: linux-2.6.19/fs/attr.c
 ===================================================================
 --- linux-2.6.19.orig/fs/attr.c
 +++ linux-2.6.19/fs/attr.c
-@@ -145,13 +145,13 @@ int notify_change(struct vfsmount *mnt, 
+@@ -145,13 +145,13 @@ int notify_change(struct dentry * dentry
  		down_write(&dentry->d_inode->i_alloc_sem);
  
  	if (inode->i_op && inode->i_op->setattr) {
 -		error = security_inode_setattr(dentry, attr);
-+		error = security_inode_setattr(mnt, dentry, attr);
++		error = security_inode_setattr(dentry, mnt, attr);
  		if (!error)
  			error = inode->i_op->setattr(dentry, attr);
  	} else {
  		error = inode_change_ok(inode, attr);
  		if (!error)
 -			error = security_inode_setattr(dentry, attr);
-+			error = security_inode_setattr(mnt, dentry, attr);
++			error = security_inode_setattr(dentry, mnt, attr);
  		if (!error) {
  			if ((ia_valid & ATTR_UID && attr->ia_uid != inode->i_uid) ||
  			    (ia_valid & ATTR_GID && attr->ia_gid != inode->i_gid))
@@ -27,47 +27,43 @@ Index: linux-2.6.19/include/linux/security.h
 ===================================================================
 --- linux-2.6.19.orig/include/linux/security.h
 +++ linux-2.6.19/include/linux/security.h
-@@ -357,6 +357,7 @@ struct request_sock;
-  *	call to notify_change is performed from several locations, whenever
+@@ -358,6 +358,7 @@ struct request_sock;
   *	file attributes change (such as when a file is truncated, chown/chmod
   *	operations, transferring disk quotas, etc).
-+ *	@mnt is the vfsmount where the dentry was looked up (may be NULL)
   *	@dentry contains the dentry structure for the file.
++ *	@mnt is the vfsmount where the dentry was looked up (may be NULL)
   *	@attr is the iattr structure containing the new file attributes.
   *	Return 0 if permission is granted.
+  * @inode_getattr:
 @@ -1229,7 +1230,8 @@ struct security_operations {
  	int (*inode_readlink) (struct dentry *dentry);
  	int (*inode_follow_link) (struct dentry *dentry, struct nameidata *nd);
  	int (*inode_permission) (struct inode *inode, int mask, struct nameidata *nd);
 -	int (*inode_setattr)	(struct dentry *dentry, struct iattr *attr);
-+	int (*inode_setattr) (struct vfsmount *mnt, struct dentry *dentry,
++	int (*inode_setattr) (struct dentry *dentry, struct vfsmount *mnt,
 +			      struct iattr *attr);
  	int (*inode_getattr) (struct vfsmount *mnt, struct dentry *dentry);
          void (*inode_delete) (struct inode *inode);
  	int (*inode_setxattr) (struct dentry *dentry, char *name, void *value,
-@@ -1716,12 +1718,13 @@ static inline int security_inode_permiss
- 	return security_ops->inode_permission (inode, mask, nd);
+@@ -1717,11 +1719,12 @@ static inline int security_inode_permiss
  }
  
--static inline int security_inode_setattr (struct dentry *dentry,
-+static inline int security_inode_setattr (struct vfsmount *mnt,
-+					  struct dentry *dentry,
+ static inline int security_inode_setattr (struct dentry *dentry,
++					  struct vfsmount *mnt,
  					  struct iattr *attr)
  {
  	if (unlikely (IS_PRIVATE (dentry->d_inode)))
  		return 0;
 -	return security_ops->inode_setattr (dentry, attr);
-+	return security_ops->inode_setattr (mnt, dentry, attr);
++	return security_ops->inode_setattr (dentry, mnt, attr);
  }
  
  static inline int security_inode_getattr (struct vfsmount *mnt,
-@@ -2420,7 +2423,8 @@ static inline int security_inode_permiss
- 	return 0;
+@@ -2421,6 +2424,7 @@ static inline int security_inode_permiss
  }
  
--static inline int security_inode_setattr (struct dentry *dentry,
-+static inline int security_inode_setattr (struct vfsmount *mnt,
-+					  struct dentry *dentry,
+ static inline int security_inode_setattr (struct dentry *dentry,
++					  struct vfsmount *mnt,
  					  struct iattr *attr)
  {
  	return 0;
@@ -80,7 +76,7 @@ Index: linux-2.6.19/security/dummy.c
  }
  
 -static int dummy_inode_setattr (struct dentry *dentry, struct iattr *iattr)
-+static int dummy_inode_setattr (struct vfsmount *mnt, struct dentry *dentry,
++static int dummy_inode_setattr (struct dentry *dentry, struct vfsmount *mnt,
 +				struct iattr *iattr)
  {
  	return 0;
@@ -94,13 +90,13 @@ Index: linux-2.6.19/security/selinux/hooks.c
  }
  
 -static int selinux_inode_setattr(struct dentry *dentry, struct iattr *iattr)
-+static int selinux_inode_setattr(struct vfsmount *mnt, struct dentry *dentry,
++static int selinux_inode_setattr(struct dentry *dentry, struct vfsmount *mnt,
 +				 struct iattr *iattr)
  {
  	int rc;
  
 -	rc = secondary_ops->inode_setattr(dentry, iattr);
-+	rc = secondary_ops->inode_setattr(mnt, dentry, iattr);
++	rc = secondary_ops->inode_setattr(dentry, mnt, iattr);
  	if (rc)
  		return rc;
  

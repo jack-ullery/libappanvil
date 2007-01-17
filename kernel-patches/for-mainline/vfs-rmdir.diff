@@ -21,7 +21,7 @@ Index: linux-2.6.19/fs/ecryptfs/inode.c
  	lower_dir_dentry = lock_parent(lower_dentry);
  	dget(lower_dentry);
 -	rc = vfs_rmdir(lower_dir_dentry->d_inode, lower_dentry);
-+	rc = vfs_rmdir(lower_dir_dentry->d_inode, lower_mnt, lower_dentry);
++	rc = vfs_rmdir(lower_dir_dentry->d_inode, lower_dentry, lower_mnt);
  	dput(lower_dentry);
  	if (!rc)
  		d_delete(lower_dentry);
@@ -34,7 +34,7 @@ Index: linux-2.6.19/fs/namei.c
  }
  
 -int vfs_rmdir(struct inode *dir, struct dentry *dentry)
-+int vfs_rmdir(struct inode *dir, struct vfsmount *mnt, struct dentry *dentry)
++int vfs_rmdir(struct inode *dir, struct dentry *dentry,struct vfsmount *mnt)
  {
  	int error = may_delete(dir, dentry, 1);
  
@@ -43,7 +43,7 @@ Index: linux-2.6.19/fs/namei.c
  	if (IS_ERR(dentry))
  		goto exit2;
 -	error = vfs_rmdir(nd.dentry->d_inode, dentry);
-+	error = vfs_rmdir(nd.dentry->d_inode, nd.mnt, dentry);
++	error = vfs_rmdir(nd.dentry->d_inode, dentry, nd.mnt);
  	dput(dentry);
  exit2:
  	mutex_unlock(&nd.dentry->d_inode->i_mutex);
@@ -82,7 +82,7 @@ Index: linux-2.6.19/fs/reiserfs/xattr.c
  		root = get_xa_root(inode->i_sb);
  		reiserfs_write_lock_xattrs(inode->i_sb);
 -		err = vfs_rmdir(root->d_inode, dir);
-+		err = vfs_rmdir(root->d_inode, NULL, dir);
++		err = vfs_rmdir(root->d_inode, dir, NULL);
  		reiserfs_write_unlock_xattrs(inode->i_sb);
  		dput(root);
  	} else {
@@ -91,11 +91,11 @@ Index: linux-2.6.19/include/linux/fs.h
 --- linux-2.6.19.orig/include/linux/fs.h
 +++ linux-2.6.19/include/linux/fs.h
 @@ -1017,7 +1017,7 @@ extern int vfs_mkdir(struct inode *, str
- extern int vfs_mknod(struct inode *, struct vfsmount *, struct dentry *, int, dev_t);
- extern int vfs_symlink(struct inode *, struct vfsmount *, struct dentry *, const char *, int);
- extern int vfs_link(struct vfsmount *, struct dentry *, struct inode *, struct vfsmount *, struct dentry *);
+ extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
+ extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
+ extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
 -extern int vfs_rmdir(struct inode *, struct dentry *);
-+extern int vfs_rmdir(struct inode *, struct vfsmount *, struct dentry *);
++extern int vfs_rmdir(struct inode *, struct dentry *, struct vfsmount *);
  extern int vfs_unlink(struct inode *, struct dentry *);
  extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
  

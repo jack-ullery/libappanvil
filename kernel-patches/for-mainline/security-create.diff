@@ -12,7 +12,7 @@ Index: linux-2.6.19/fs/namei.c
  	mode &= S_IALLUGO;
  	mode |= S_IFREG;
 -	error = security_inode_create(dir, dentry, mode);
-+	error = security_inode_create(dir, nd ? nd->mnt : NULL, dentry, mode);
++	error = security_inode_create(dir, dentry, nd ? nd->mnt : NULL, mode);
  	if (error)
  		return error;
  	DQUOT_INIT(dir);
@@ -20,58 +20,57 @@ Index: linux-2.6.19/include/linux/security.h
 ===================================================================
 --- linux-2.6.19.orig/include/linux/security.h
 +++ linux-2.6.19/include/linux/security.h
-@@ -282,6 +282,7 @@ struct request_sock;
-  * @inode_create:
+@@ -283,6 +283,7 @@ struct request_sock;
   *	Check permission to create a regular file.
   *	@dir contains inode structure of the parent of the new file.
-+ *	@mnt is the vfsmount of the new dentry (may be NULL)
   *	@dentry contains the dentry structure for the file to be created.
++ *	@mnt is the vfsmount corresponding to dir (may be NULL)
   *	@mode contains the file mode of the file to be created.
   *	Return 0 if permission is granted.
-@@ -1212,7 +1213,7 @@ struct security_operations {
+  * @inode_link:
+@@ -1212,8 +1213,8 @@ struct security_operations {
  	void (*inode_free_security) (struct inode *inode);
  	int (*inode_init_security) (struct inode *inode, struct inode *dir,
  				    char **name, void **value, size_t *len);
 -	int (*inode_create) (struct inode *dir,
-+	int (*inode_create) (struct inode *dir, struct vfsmount *mnt,
- 	                     struct dentry *dentry, int mode);
+-	                     struct dentry *dentry, int mode);
++	int (*inode_create) (struct inode *dir, struct dentry *dentry,
++			     struct vfsmount *mnt, int mode);
  	int (*inode_link) (struct dentry *old_dentry,
  	                   struct inode *dir, struct dentry *new_dentry);
-@@ -1619,12 +1620,13 @@ static inline int security_inode_init_se
- }
+ 	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
+@@ -1620,11 +1621,12 @@ static inline int security_inode_init_se
  	
  static inline int security_inode_create (struct inode *dir,
-+					 struct vfsmount *mnt,
  					 struct dentry *dentry,
++					 struct vfsmount *mnt,
  					 int mode)
  {
  	if (unlikely (IS_PRIVATE (dir)))
  		return 0;
 -	return security_ops->inode_create (dir, dentry, mode);
-+	return security_ops->inode_create (dir, mnt, dentry, mode);
++	return security_ops->inode_create (dir, dentry, mnt, mode);
  }
  
  static inline int security_inode_link (struct dentry *old_dentry,
-@@ -2346,6 +2348,7 @@ static inline int security_inode_init_se
- }
+@@ -2347,6 +2349,7 @@ static inline int security_inode_init_se
  	
  static inline int security_inode_create (struct inode *dir,
-+					 struct vfsmount *mnt,
  					 struct dentry *dentry,
++					 struct vfsmount *mnt,
  					 int mode)
  {
+ 	return 0;
 Index: linux-2.6.19/security/dummy.c
 ===================================================================
 --- linux-2.6.19.orig/security/dummy.c
 +++ linux-2.6.19/security/dummy.c
-@@ -264,8 +264,8 @@ static int dummy_inode_init_security (st
- 	return -EOPNOTSUPP;
+@@ -265,7 +265,7 @@ static int dummy_inode_init_security (st
  }
  
--static int dummy_inode_create (struct inode *inode, struct dentry *dentry,
+ static int dummy_inode_create (struct inode *inode, struct dentry *dentry,
 -			       int mask)
-+static int dummy_inode_create (struct inode *inode, struct vfsmount *mnt,
-+			       struct dentry *dentry, int mask)
++			       struct vfsmount *mnt, int mask)
  {
  	return 0;
  }
@@ -84,8 +83,8 @@ Index: linux-2.6.19/security/selinux/hooks.c
  }
  
 -static int selinux_inode_create(struct inode *dir, struct dentry *dentry, int mask)
-+static int selinux_inode_create(struct inode *dir, struct vfsmount *mnt,
-+				struct dentry *dentry, int mask)
++static int selinux_inode_create(struct inode *dir, struct dentry *dentry,
++				 struct vfsmount *mnt, int mask)
  {
  	return may_create(dir, dentry, SECCLASS_FILE);
  }

@@ -28,7 +28,7 @@ Index: linux-2.6.19/fs/ecryptfs/inode.c
  		goto out_lock;
  	}
 -	rc = vfs_symlink(lower_dir_dentry->d_inode, lower_dentry,
-+	rc = vfs_symlink(lower_dir_dentry->d_inode, lower_mnt, lower_dentry,
++	rc = vfs_symlink(lower_dir_dentry->d_inode, lower_dentry, lower_mnt,
  			 encoded_symname, mode);
  	kfree(encoded_symname);
  	if (rc || !lower_dentry->d_inode)
@@ -41,7 +41,7 @@ Index: linux-2.6.19/fs/namei.c
  }
  
 -int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname, int mode)
-+int vfs_symlink(struct inode *dir, struct vfsmount *mnt, struct dentry *dentry,
++int vfs_symlink(struct inode *dir, struct dentry *dentry, struct vfsmount *mnt,
 +		const char *oldname, int mode)
  {
  	int error = may_create(dir, dentry, NULL);
@@ -51,7 +51,7 @@ Index: linux-2.6.19/fs/namei.c
  		goto out_unlock;
  
 -	error = vfs_symlink(nd.dentry->d_inode, dentry, from, S_IALLUGO);
-+	error = vfs_symlink(nd.dentry->d_inode, nd.mnt, dentry, from,
++	error = vfs_symlink(nd.dentry->d_inode, dentry, nd.mnt, from,
 +			    S_IALLUGO);
  	dput(dentry);
  out_unlock:
@@ -65,13 +65,13 @@ Index: linux-2.6.19/fs/nfsd/vfs.c
  			strncpy(path_alloced, path, plen);
  			path_alloced[plen] = 0;
 -			host_err = vfs_symlink(dentry->d_inode, dnew, path_alloced, mode);
-+			host_err = vfs_symlink(dentry->d_inode, NULL, dnew,
++			host_err = vfs_symlink(dentry->d_inode, dnew, NULL,
 +					       path_alloced, mode);
  			kfree(path_alloced);
  		}
  	} else
 -		host_err = vfs_symlink(dentry->d_inode, dnew, path, mode);
-+		host_err = vfs_symlink(dentry->d_inode, NULL, dnew, path, mode);
++		host_err = vfs_symlink(dentry->d_inode, dnew, NULL, path, mode);
  
  	if (!host_err) {
  		if (EX_ISSYNC(fhp->fh_export))
@@ -81,10 +81,10 @@ Index: linux-2.6.19/include/linux/fs.h
 +++ linux-2.6.19/include/linux/fs.h
 @@ -1015,7 +1015,7 @@ extern int vfs_permission(struct nameida
  extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
- extern int vfs_mkdir(struct inode *, struct vfsmount *, struct dentry *, int);
- extern int vfs_mknod(struct inode *, struct vfsmount *, struct dentry *, int, dev_t);
+ extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
+ extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
 -extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
-+extern int vfs_symlink(struct inode *, struct vfsmount *, struct dentry *, const char *, int);
++extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
  extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
  extern int vfs_rmdir(struct inode *, struct dentry *);
  extern int vfs_unlink(struct inode *, struct dentry *);

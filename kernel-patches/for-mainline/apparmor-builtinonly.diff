@@ -56,7 +56,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  static int apparmor_ptrace(struct task_struct *parent,
  			    struct task_struct *child)
  {
-@@ -891,67 +861,4 @@ createfs_out:
+@@ -895,67 +865,4 @@ createfs_out:
  
  }
  

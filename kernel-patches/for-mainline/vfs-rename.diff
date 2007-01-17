@@ -26,11 +26,10 @@ Index: linux-2.6.19/fs/ecryptfs/inode.c
  	lower_old_dir_dentry = dget_parent(lower_old_dentry);
  	lower_new_dir_dentry = dget_parent(lower_new_dentry);
  	lock_rename(lower_old_dir_dentry, lower_new_dir_dentry);
--	rc = vfs_rename(lower_old_dir_dentry->d_inode, lower_old_dentry,
+ 	rc = vfs_rename(lower_old_dir_dentry->d_inode, lower_old_dentry,
 -			lower_new_dir_dentry->d_inode, lower_new_dentry);
-+	rc = vfs_rename(lower_old_dir_dentry->d_inode, lower_old_mnt,
-+			lower_old_dentry, lower_new_dir_dentry->d_inode,
-+			lower_new_mnt, lower_new_dentry);
++			lower_old_mnt, lower_new_dir_dentry->d_inode,
++			lower_new_dentry, lower_new_mnt);
  	if (rc)
  		goto out_lock;
  	ecryptfs_copy_attr_all(new_dir, lower_new_dir_dentry->d_inode);
@@ -38,39 +37,33 @@ Index: linux-2.6.19/fs/namei.c
 ===================================================================
 --- linux-2.6.19.orig/fs/namei.c
 +++ linux-2.6.19/fs/namei.c
-@@ -2385,8 +2385,9 @@ asmlinkage long sys_link(const char __us
-  *	   ->i_mutex on parents, which works but leads to some truely excessive
+@@ -2386,7 +2386,8 @@ asmlinkage long sys_link(const char __us
   *	   locking].
   */
--static int vfs_rename_dir(struct inode *old_dir, struct dentry *old_dentry,
+ static int vfs_rename_dir(struct inode *old_dir, struct dentry *old_dentry,
 -			  struct inode *new_dir, struct dentry *new_dentry)
-+static int vfs_rename_dir(struct inode *old_dir, struct vfsmount *old_mnt,
-+			  struct dentry *old_dentry, struct inode *new_dir,
-+			  struct vfsmount *new_mnt, struct dentry *new_dentry)
++			  struct vfsmount *old_mnt, struct inode *new_dir,
++			  struct dentry *new_dentry, struct vfsmount *new_mnt)
  {
  	int error = 0;
  	struct inode *target;
-@@ -2428,8 +2429,9 @@ static int vfs_rename_dir(struct inode *
- 	return error;
+@@ -2429,7 +2430,8 @@ static int vfs_rename_dir(struct inode *
  }
  
--static int vfs_rename_other(struct inode *old_dir, struct dentry *old_dentry,
+ static int vfs_rename_other(struct inode *old_dir, struct dentry *old_dentry,
 -			    struct inode *new_dir, struct dentry *new_dentry)
-+static int vfs_rename_other(struct inode *old_dir, struct vfsmount *old_mnt,
-+			    struct dentry *old_dentry, struct inode *new_dir,
-+			    struct vfsmount *new_mnt, struct dentry *new_dentry)
++			    struct vfsmount *old_mnt, struct inode *new_dir,
++			    struct dentry *new_dentry, struct vfsmount *new_mnt)
  {
  	struct inode *target;
  	int error;
-@@ -2456,8 +2458,9 @@ static int vfs_rename_other(struct inode
- 	return error;
+@@ -2457,7 +2459,8 @@ static int vfs_rename_other(struct inode
  }
  
--int vfs_rename(struct inode *old_dir, struct dentry *old_dentry,
+ int vfs_rename(struct inode *old_dir, struct dentry *old_dentry,
 -	       struct inode *new_dir, struct dentry *new_dentry)
-+int vfs_rename(struct inode *old_dir, struct vfsmount *old_mnt,
-+	       struct dentry *old_dentry, struct inode *new_dir,
-+	       struct vfsmount *new_mnt, struct dentry *new_dentry)
++	        struct vfsmount *old_mnt, struct inode *new_dir,
++	        struct dentry *new_dentry, struct vfsmount *new_mnt)
  {
  	int error;
  	int is_dir = S_ISDIR(old_dentry->d_inode->i_mode);
@@ -79,12 +72,12 @@ Index: linux-2.6.19/fs/namei.c
  
  	if (is_dir)
 -		error = vfs_rename_dir(old_dir,old_dentry,new_dir,new_dentry);
-+		error = vfs_rename_dir(old_dir, old_mnt, old_dentry,
-+				       new_dir, new_mnt, new_dentry);
++		error = vfs_rename_dir(old_dir, old_dentry, old_mnt,
++				       new_dir, new_dentry, new_mnt);
  	else
 -		error = vfs_rename_other(old_dir,old_dentry,new_dir,new_dentry);
-+		error = vfs_rename_other(old_dir, old_mnt, old_dentry,
-+					 new_dir, new_mnt, new_dentry);
++		error = vfs_rename_other(old_dir, old_dentry, old_mnt,
++					 new_dir, new_dentry, new_mnt);
  	if (!error) {
  		const char *new_name = old_dentry->d_name.name;
  		fsnotify_move(old_dir, new_dir, old_name, new_name, is_dir,
@@ -94,8 +87,8 @@ Index: linux-2.6.19/fs/namei.c
  
 -	error = vfs_rename(old_dir->d_inode, old_dentry,
 -				   new_dir->d_inode, new_dentry);
-+	error = vfs_rename(old_dir->d_inode, oldnd.mnt, old_dentry,
-+			   new_dir->d_inode, newnd.mnt, new_dentry);
++	error = vfs_rename(old_dir->d_inode, old_dentry, oldnd.mnt,
++			   new_dir->d_inode, new_dentry, newnd.mnt);
  exit5:
  	dput(new_dentry);
  exit4:
@@ -108,7 +101,7 @@ Index: linux-2.6.19/fs/nfsd/vfs.c
  	} else
  #endif
 -	host_err = vfs_rename(fdir, odentry, tdir, ndentry);
-+	host_err = vfs_rename(fdir, NULL, odentry, tdir, NULL, ndentry);
++	host_err = vfs_rename(fdir, odentry, NULL, tdir, ndentry, NULL);
  	if (!host_err && EX_ISSYNC(tfhp->fh_export)) {
  		host_err = nfsd_sync_dir(tdentry);
  		if (!host_err)
@@ -117,11 +110,11 @@ Index: linux-2.6.19/include/linux/fs.h
 --- linux-2.6.19.orig/include/linux/fs.h
 +++ linux-2.6.19/include/linux/fs.h
 @@ -1019,7 +1019,7 @@ extern int vfs_symlink(struct inode *, s
- extern int vfs_link(struct vfsmount *, struct dentry *, struct inode *, struct vfsmount *, struct dentry *);
- extern int vfs_rmdir(struct inode *, struct vfsmount *, struct dentry *);
- extern int vfs_unlink(struct inode *, struct vfsmount *, struct dentry *);
+ extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
+ extern int vfs_rmdir(struct inode *, struct dentry *, struct vfsmount *);
+ extern int vfs_unlink(struct inode *, struct dentry *, struct vfsmount *);
 -extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
-+extern int vfs_rename(struct inode *, struct vfsmount *, struct dentry *, struct inode *, struct vfsmount *, struct dentry *);
++extern int vfs_rename(struct inode *, struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
  
  /*
   * VFS dentry helper functions.

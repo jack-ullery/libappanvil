@@ -12,7 +12,7 @@ Index: linux-2.6.19/fs/namei.c
  
  	mode &= (S_IRWXUGO|S_ISVTX);
 -	error = security_inode_mkdir(dir, dentry, mode);
-+	error = security_inode_mkdir(dir, mnt, dentry, mode);
++	error = security_inode_mkdir(dir, dentry, mnt, mode);
  	if (error)
  		return error;
  
@@ -20,47 +20,46 @@ Index: linux-2.6.19/include/linux/security.h
 ===================================================================
 --- linux-2.6.19.orig/include/linux/security.h
 +++ linux-2.6.19/include/linux/security.h
-@@ -307,6 +307,7 @@ struct request_sock;
-  *	Check permissions to create a new directory in the existing directory
+@@ -308,6 +308,7 @@ struct request_sock;
   *	associated with inode strcture @dir. 
   *	@dir containst the inode structure of parent of the directory to be created.
-+ *	@mnt is the vfsmount of the new dentry (may be NULL)
   *	@dentry contains the dentry structure of new directory.
++ *      @mnt is the vfsmount corresponding to dir (may be NULL)
   *	@mode contains the mode of new directory.
   *	Return 0 if permission is granted.
+  * @inode_rmdir:
 @@ -1221,7 +1222,8 @@ struct security_operations {
  	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
  	int (*inode_symlink) (struct inode *dir,
  	                      struct dentry *dentry, const char *old_name);
 -	int (*inode_mkdir) (struct inode *dir, struct dentry *dentry, int mode);
-+	int (*inode_mkdir) (struct inode *dir, struct vfsmount *mnt,
-+			    struct dentry *dentry, int mode);
++	int (*inode_mkdir) (struct inode *dir, struct dentry *dentry,
++			    struct vfsmount *mnt, int mode);
  	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
  	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
  	                    int mode, dev_t dev);
-@@ -1658,12 +1660,13 @@ static inline int security_inode_symlink
- }
+@@ -1659,11 +1661,12 @@ static inline int security_inode_symlink
  
  static inline int security_inode_mkdir (struct inode *dir,
-+					struct vfsmount *mnt,
  					struct dentry *dentry,
++					struct vfsmount *mnt,
  					int mode)
  {
  	if (unlikely (IS_PRIVATE (dir)))
  		return 0;
 -	return security_ops->inode_mkdir (dir, dentry, mode);
-+	return security_ops->inode_mkdir (dir, mnt, dentry, mode);
++	return security_ops->inode_mkdir (dir, dentry, mnt, mode);
  }
  
  static inline int security_inode_rmdir (struct inode *dir,
-@@ -2379,6 +2382,7 @@ static inline int security_inode_symlink
- }
+@@ -2380,6 +2383,7 @@ static inline int security_inode_symlink
  
  static inline int security_inode_mkdir (struct inode *dir,
-+					struct vfsmount *mnt,
  					struct dentry *dentry,
++					struct vfsmount *mnt,
  					int mode)
  {
+ 	return 0;
 Index: linux-2.6.19/security/dummy.c
 ===================================================================
 --- linux-2.6.19.orig/security/dummy.c
@@ -71,8 +70,8 @@ Index: linux-2.6.19/security/dummy.c
  
 -static int dummy_inode_mkdir (struct inode *inode, struct dentry *dentry,
 -			      int mask)
-+static int dummy_inode_mkdir (struct inode *inode, struct vfsmount *mnt,
-+			      struct dentry *dentry, int mask)
++static int dummy_inode_mkdir (struct inode *inode, struct dentry *dentry,
++			      struct vfsmount *mnt, int mask)
  {
  	return 0;
  }
@@ -85,8 +84,8 @@ Index: linux-2.6.19/security/selinux/hooks.c
  }
  
 -static int selinux_inode_mkdir(struct inode *dir, struct dentry *dentry, int mask)
-+static int selinux_inode_mkdir(struct inode *dir, struct vfsmount *mnt,
-+			       struct dentry *dentry, int mask)
++static int selinux_inode_mkdir(struct inode *dir, struct dentry *dentry,
++			       struct vfsmount *mnt, int mask)
  {
  	return may_create(dir, dentry, SECCLASS_DIR);
  }

@@ -16,7 +16,7 @@ Index: linux-2.6.19/fs/ecryptfs/inode.c
  
  	lock_parent(lower_dentry);
 -	rc = vfs_unlink(lower_dir_inode, lower_dentry);
-+	rc = vfs_unlink(lower_dir_inode, lower_mnt, lower_dentry);
++	rc = vfs_unlink(lower_dir_inode, lower_dentry, lower_mnt);
  	if (rc) {
  		printk(KERN_ERR "Error in vfs_unlink; rc = [%d]\n", rc);
  		goto out_unlock;
@@ -29,7 +29,7 @@ Index: linux-2.6.19/fs/namei.c
  }
  
 -int vfs_unlink(struct inode *dir, struct dentry *dentry)
-+int vfs_unlink(struct inode *dir, struct vfsmount *mnt, struct dentry *dentry)
++int vfs_unlink(struct inode *dir, struct dentry *dentry, struct vfsmount *mnt)
  {
  	int error = may_delete(dir, dentry, 0);
  
@@ -38,7 +38,7 @@ Index: linux-2.6.19/fs/namei.c
  		if (inode)
  			atomic_inc(&inode->i_count);
 -		error = vfs_unlink(nd.dentry->d_inode, dentry);
-+		error = vfs_unlink(nd.dentry->d_inode, nd.mnt, dentry);
++		error = vfs_unlink(nd.dentry->d_inode, dentry, nd.mnt);
  	exit2:
  		dput(dentry);
  	}
@@ -51,7 +51,7 @@ Index: linux-2.6.19/fs/nfsd/nfs4recover.c
  	}
  	mutex_lock(&dir->d_inode->i_mutex);
 -	status = vfs_unlink(dir->d_inode, dentry);
-+	status = vfs_unlink(dir->d_inode, NULL, dentry);
++	status = vfs_unlink(dir->d_inode, dentry, NULL);
  	mutex_unlock(&dir->d_inode->i_mutex);
  	return status;
  }
@@ -64,7 +64,7 @@ Index: linux-2.6.19/fs/nfsd/vfs.c
  		} else
  #endif
 -		host_err = vfs_unlink(dirp, rdentry);
-+		host_err = vfs_unlink(dirp, NULL, rdentry);
++		host_err = vfs_unlink(dirp, rdentry, NULL);
  	} else { /* It's RMDIR */
  		host_err = vfs_rmdir(dirp, NULL, rdentry);
  	}
@@ -73,11 +73,11 @@ Index: linux-2.6.19/include/linux/fs.h
 --- linux-2.6.19.orig/include/linux/fs.h
 +++ linux-2.6.19/include/linux/fs.h
 @@ -1018,7 +1018,7 @@ extern int vfs_mknod(struct inode *, str
- extern int vfs_symlink(struct inode *, struct vfsmount *, struct dentry *, const char *, int);
- extern int vfs_link(struct vfsmount *, struct dentry *, struct inode *, struct vfsmount *, struct dentry *);
- extern int vfs_rmdir(struct inode *, struct vfsmount *, struct dentry *);
+ extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
+ extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
+ extern int vfs_rmdir(struct inode *, struct dentry *, struct vfsmount *);
 -extern int vfs_unlink(struct inode *, struct dentry *);
-+extern int vfs_unlink(struct inode *, struct vfsmount *, struct dentry *);
++extern int vfs_unlink(struct inode *, struct dentry *, struct vfsmount *);
  extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
  
  /*
@@ -90,7 +90,7 @@ Index: linux-2.6.19/ipc/mqueue.c
  		atomic_inc(&inode->i_count);
  
 -	err = vfs_unlink(dentry->d_parent->d_inode, dentry);
-+	err = vfs_unlink(dentry->d_parent->d_inode, mqueue_mnt, dentry);
++	err = vfs_unlink(dentry->d_parent->d_inode, dentry, mqueue_mnt);
  out_err:
  	dput(dentry);
  

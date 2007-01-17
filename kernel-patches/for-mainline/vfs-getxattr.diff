@@ -12,7 +12,7 @@ Index: linux-2.6.19/fs/nfsd/vfs.c
  	ssize_t buflen;
  
 -	buflen = vfs_getxattr(dentry, key, NULL, 0);
-+	buflen = vfs_getxattr(NULL, dentry, key, NULL, 0);
++	buflen = vfs_getxattr(dentry, NULL, key, NULL, 0);
  	if (buflen <= 0)
  		return buflen;
  
@@ -21,7 +21,7 @@ Index: linux-2.6.19/fs/nfsd/vfs.c
  		return -ENOMEM;
  
 -	return vfs_getxattr(dentry, key, *buf, buflen);
-+	return vfs_getxattr(NULL, dentry, key, *buf, buflen);
++	return vfs_getxattr(dentry, NULL, key, *buf, buflen);
  }
  #endif
  
@@ -34,7 +34,7 @@ Index: linux-2.6.19/fs/xattr.c
  
  ssize_t
 -vfs_getxattr(struct dentry *dentry, char *name, void *value, size_t size)
-+vfs_getxattr(struct vfsmount *mnt, struct dentry *dentry, char *name,
++vfs_getxattr(struct dentry *dentry, struct vfsmount *mnt, char *name,
 +	     void *value, size_t size)
  {
  	struct inode *inode = dentry->d_inode;
@@ -44,7 +44,7 @@ Index: linux-2.6.19/fs/xattr.c
   */
  static ssize_t
 -getxattr(struct dentry *d, char __user *name, void __user *value, size_t size)
-+getxattr(struct vfsmount *mnt, struct dentry *dentry, char __user *name,
++getxattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name,
 +	 void __user *value, size_t size)
  {
  	ssize_t error;
@@ -54,7 +54,7 @@ Index: linux-2.6.19/fs/xattr.c
  	}
  
 -	error = vfs_getxattr(d, kname, kvalue, size);
-+	error = vfs_getxattr(mnt, dentry, kname, kvalue, size);
++	error = vfs_getxattr(dentry, mnt, kname, kvalue, size);
  	if (error > 0) {
  		if (size && copy_to_user(value, kvalue, error))
  			error = -EFAULT;
@@ -63,7 +63,7 @@ Index: linux-2.6.19/fs/xattr.c
  	if (error)
  		return error;
 -	error = getxattr(nd.dentry, name, value, size);
-+	error = getxattr(nd.mnt, nd.dentry, name, value, size);
++	error = getxattr(nd.dentry, nd.mnt, name, value, size);
  	path_release(&nd);
  	return error;
  }
@@ -72,7 +72,7 @@ Index: linux-2.6.19/fs/xattr.c
  	if (error)
  		return error;
 -	error = getxattr(nd.dentry, name, value, size);
-+	error = getxattr(nd.mnt, nd.dentry, name, value, size);
++	error = getxattr(nd.dentry, nd.mnt, name, value, size);
  	path_release(&nd);
  	return error;
  }
@@ -81,7 +81,7 @@ Index: linux-2.6.19/fs/xattr.c
  	if (!f)
  		return error;
 -	error = getxattr(f->f_dentry, name, value, size);
-+	error = getxattr(f->f_vfsmnt, f->f_dentry, name, value, size);
++	error = getxattr(f->f_dentry, f->f_vfsmnt, name, value, size);
  	fput(f);
  	return error;
  }
@@ -94,8 +94,8 @@ Index: linux-2.6.19/include/linux/xattr.h
  };
  
 -ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);
-+ssize_t vfs_getxattr(struct vfsmount *, struct dentry *, char *, void *,
++ssize_t vfs_getxattr(struct dentry *, struct vfsmount *, char *, void *,
 +		     size_t);
  ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
- int vfs_setxattr(struct vfsmount *, struct dentry *, char *, void *, size_t,
+ int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,
  		 int);

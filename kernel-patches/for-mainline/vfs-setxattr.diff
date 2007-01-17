@@ -12,7 +12,7 @@ Index: linux-2.6.19/fs/nfsd/vfs.c
  	}
  
 -	error = vfs_setxattr(dentry, key, buf, len, 0);
-+	error = vfs_setxattr(NULL, dentry, key, buf, len, 0);
++	error = vfs_setxattr(dentry, NULL, key, buf, len, 0);
  out:
  	kfree(buf);
  	return error;
@@ -21,7 +21,7 @@ Index: linux-2.6.19/fs/nfsd/vfs.c
  
  	if (size)
 -		error = vfs_setxattr(fhp->fh_dentry, name, value, size, 0);
-+		error = vfs_setxattr(NULL, fhp->fh_dentry, name, value, size,0);
++		error = vfs_setxattr(fhp->fh_dentry, NULL, name, value, size,0);
  	else {
  		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
  			error = 0;
@@ -35,7 +35,7 @@ Index: linux-2.6.19/fs/xattr.c
  int
 -vfs_setxattr(struct dentry *dentry, char *name, void *value,
 -		size_t size, int flags)
-+vfs_setxattr(struct vfsmount *mnt, struct dentry *dentry, char *name,
++vfs_setxattr(struct dentry *dentry, struct vfsmount *mnt, char *name,
 +	     void *value, size_t size, int flags)
  {
  	struct inode *inode = dentry->d_inode;
@@ -46,7 +46,7 @@ Index: linux-2.6.19/fs/xattr.c
  static long
 -setxattr(struct dentry *d, char __user *name, void __user *value,
 -	 size_t size, int flags)
-+setxattr(struct vfsmount *mnt, struct dentry *dentry, char __user *name,
++setxattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name,
 +	 void __user *value, size_t size, int flags)
  {
  	int error;
@@ -56,7 +56,7 @@ Index: linux-2.6.19/fs/xattr.c
  	}
  
 -	error = vfs_setxattr(d, kname, kvalue, size, flags);
-+	error = vfs_setxattr(mnt, dentry, kname, kvalue, size, flags);
++	error = vfs_setxattr(dentry, mnt, kname, kvalue, size, flags);
  	kfree(kvalue);
  	return error;
  }
@@ -65,7 +65,7 @@ Index: linux-2.6.19/fs/xattr.c
  	if (error)
  		return error;
 -	error = setxattr(nd.dentry, name, value, size, flags);
-+	error = setxattr(nd.mnt, nd.dentry, name, value, size, flags);
++	error = setxattr(nd.dentry, nd.mnt, name, value, size, flags);
  	path_release(&nd);
  	return error;
  }
@@ -74,7 +74,7 @@ Index: linux-2.6.19/fs/xattr.c
  	if (error)
  		return error;
 -	error = setxattr(nd.dentry, name, value, size, flags);
-+	error = setxattr(nd.mnt, nd.dentry, name, value, size, flags);
++	error = setxattr(nd.dentry, nd.mnt, name, value, size, flags);
  	path_release(&nd);
  	return error;
  }
@@ -83,7 +83,7 @@ Index: linux-2.6.19/fs/xattr.c
  	dentry = f->f_dentry;
  	audit_inode(NULL, dentry->d_inode);
 -	error = setxattr(dentry, name, value, size, flags);
-+	error = setxattr(f->f_vfsmnt, dentry, name, value, size, flags);
++	error = setxattr(dentry, f->f_vfsmnt, name, value, size, flags);
  	fput(f);
  	return error;
  }
@@ -96,7 +96,7 @@ Index: linux-2.6.19/include/linux/xattr.h
  ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);
  ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
 -int vfs_setxattr(struct dentry *, char *, void *, size_t, int);
-+int vfs_setxattr(struct vfsmount *, struct dentry *, char *, void *, size_t,
++int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,
 +		 int);
  int vfs_removexattr(struct dentry *, char *);
  
