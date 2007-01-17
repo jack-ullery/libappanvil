@@ -38,8 +38,11 @@ Url: http://forge.novell.com/modules/xfmod/project/?apparmor
 Requires: perl
 Requires: /bin/sh
 AutoReqProv: no
+Requires: perl-DateManip
+%else
+Requires: perl-TimeDate
 %endif
-Requires: perl-TimeDate perl-DBI perl-DBD-SQLite perl-File-Tail perl-gettext
+Requires: perl-DBI perl-DBD-SQLite perl-File-Tail perl-gettext
 Obsoletes: subdomain-utils
 Provides: subdomain-utils
 
@@ -89,6 +92,8 @@ fi
 
 
 %changelog
+* Wed Jan 17 2007 - sbeattie@suse.de
+- Fall back to Date::Manip if Date::Parse is not available
 * Wed Jan 17 2007 - sbeattie@suse.de
 - Add perl-gettext to list of dependencies
 * Tue Dec 12 2006 - sbeattie@suse.de

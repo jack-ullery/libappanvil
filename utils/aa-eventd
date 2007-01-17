@@ -24,7 +24,6 @@
 use strict;
 
 use Data::Dumper;
-use Date::Parse;
 use DBI;
 use Fcntl;
 use File::Temp qw(tempfile);
@@ -101,6 +100,8 @@ my @verbose_buffer;
 my @summary_buffer;
 my @terse_buffer;
 
+my $date_module = "None";
+
 my %templates = (
   "path"                => "(time,counter,type,profile,sdmode,mode,resource,prog,pid,severity)   VALUES(?,?,'path',?,?,?,?,?,?,?)",
   "link"                => "(time,counter,type,profile,sdmode,resource,target,prog,pid,severity) VALUES(?,?,'link',?,?,?,?,?,?,?)",
@@ -152,6 +153,21 @@ sub daemonize {
   exit if $pid;
   setsid                    or die "Can't start a new session: $!";
   open STDERR, '>&STDOUT'   or die "Can't dup stdout: $!";
+}
+
+sub parsedate ($) {
+  my $time = shift;
+  my $timestamp = 0;
+  if ($date_module eq 'TimeDate') {
+    $timestamp = Date::Parse::str2time($time);
+  } elsif ($date_module eq 'DateManip') {
+    $timestamp = Date::Manip::UnixDate(Date::Manip::ParseDateString($time), '%s');
+  } else {
+    errlog "No date module found, exiing";
+    kill HUP => -$$;
+  }
+
+  return $timestamp;
 }
 
 ##########################################################################
@@ -406,7 +422,7 @@ sub process_event ($$) {
     # have we rolled over to another second yet?
     if($time ne $lasttime) {
       $counter   = 0;
-      $timestamp = str2time($time);
+      $timestamp = parsedate($time);
       $lasttime  = $time;
     }
   } else {
@@ -984,6 +1000,20 @@ daemonize;
 $SIG{INT} = \&sig_handler;
 $SIG{TERM} = \&sig_handler;
 $SIG{CHLD} = 'IGNORE';
+
+# Sigh, portable dates in perl sucks
+eval "use Date::Parse";
+if (!$@) {
+  $date_module = 'TimeDate'
+} else {
+  eval "use Date::Manip";
+  if (!$@) {
+    $date_module = 'DateManip'
+  } else {
+    errlog "Unable to load Date module; use either TimeDate or Date::Manip";
+    $finished = 1;
+  }
+}
 
 # if they want us to write a pid, do it
 if($pidfile) {
