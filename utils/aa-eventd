@@ -4,20 +4,20 @@
 #
 # ----------------------------------------------------------------------
 #    Copyright (c) 2005 Novell, Inc. All Rights Reserved.
-#      
+#
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
 #    License as published by the Free Software Foundation.
-#      
+#
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
-#      
+#
 #    You should have received a copy of the GNU General Public License
 #    along with this program; if not, contact Novell, Inc.
-#      
-#    To contact Novell about this file by physical or electronic mail, 
+#
+#    To contact Novell about this file by physical or electronic mail,
 #    you may find current contact information at www.novell.com.
 # ----------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ my $verbose = { last_notify => 0 };
 my $summary = { last_notify => 0 };
 my $terse   = { last_notify => 0 };
 
-# we don't want to call str2time on every line and also batch up event dbs 
+# we don't want to call str2time on every line and also batch up event dbs
 # a month at a time, so we need to keep track of a few extra things
 my $timestamp = 0;
 my $lasttime  = "";
@@ -138,7 +138,7 @@ sub readconfig () {
     # yank in the values we need
     while (<CFG>) {
       $cfg->{$1} = $2 if /^(\S+)\s+(.+)\s*$/;
-    } 
+    }
     close(CFG);
   }
 
@@ -209,7 +209,7 @@ sub connect_database ($) {
   unless($existing_tables{events}) {
     $dbh->do("CREATE TABLE events (
                 id       INTEGER PRIMARY KEY AUTOINCREMENT,
-                time     INTEGER NOT NULL, 
+                time     INTEGER NOT NULL,
                 counter  INTEGER NOT NULL,
                 pid,
                 sdmode,
@@ -264,7 +264,7 @@ sub verbose_notify_handler {
       }
     }
     close(V);
-  
+
     if(@events) {
       if($DEBUG) {
         my $count = scalar @events;
@@ -278,7 +278,7 @@ sub verbose_notify_handler {
       print MAIL ".\n";
       close(MAIL);
     }
-  
+
     # delete the verbose notification logfile once we've processed it
     unlink($file);
   }
@@ -308,7 +308,7 @@ sub summary_notify_handler {
       }
     }
     close(V);
-  
+
     if(@events) {
       if($DEBUG) {
         my $count = scalar @events;
@@ -322,7 +322,7 @@ sub summary_notify_handler {
       print MAIL ".\n";
       close(MAIL);
     }
-  
+
     # delete the verbose notification logfile once we've processed it
     unlink($file);
   }
@@ -351,14 +351,14 @@ sub terse_notify_handler {
       }
     }
     close(V);
-  
+
     if($count) {
       if($DEBUG) {
         errlog "[$count events] sending terse notification to $email.";
       }
       my $subj = "Security Report for $host.";
       my $mesg = "$host has had $count security events since $last.";
-  
+
       # actually send out the notification...
       open(MAIL, "| sendmail -F 'AppArmor Security Notification' $email");
       print MAIL "To: $email\n";
@@ -367,7 +367,7 @@ sub terse_notify_handler {
       print MAIL ".\n";
       close(MAIL);
     }
-  
+
     # delete the terse notification logfile once we've processed it
     unlink($file);
   }
@@ -381,12 +381,12 @@ sub fork_into_background {
   if(not defined $pid) {
 
     # something bad happened, just log it...
-    errlog "couldn't fork for \"$name\": $!" 
+    errlog "couldn't fork for \"$name\": $!"
 
   } elsif($pid == 0) {
 
     # we're in the child process now...
- 
+
     # set our process name
     $0 = $name;
 
@@ -439,11 +439,11 @@ sub process_event ($$) {
   # duplicates if we start up again and parse the same logfile over again
   if($last_inserted_time) {
     return if $timestamp <  $last_inserted_time;
-      
+
     if($timestamp == $last_inserted_time) {
       return if $counter   <= $last_inserted_counter;
     }
-      
+
     $last_inserted_time = undef;
   }
 
@@ -757,6 +757,7 @@ sub process_event ($$) {
     $inserts++;
 
   } else {
+    chomp $logmsg;
     errlog "Unhandled log message: $logmsg";
   }
 }
@@ -805,8 +806,8 @@ sub check_timers ($) {
     }
 
     $dbh->commit || errlog "Error commiting changes: $!";
-    
-    # need to get the time again to include how much time it takes to 
+
+    # need to get the time again to include how much time it takes to
     # actually write all this crap to the db
     $now = time;
 
@@ -880,9 +881,9 @@ sub check_timers ($) {
         fork_into_background("terse-notification",
                              \&terse_notify_handler,
                              $config->{terse_email},
-                             $filename, 
-                             $terse->{last_notify}, 
-                             $config->{terse_level}, 
+                             $filename,
+                             $terse->{last_notify},
+                             $config->{terse_level},
                              $config->{terse_unknown});
 
         # ...keep track of when we last sent out a notify
@@ -906,9 +907,9 @@ sub check_timers ($) {
         fork_into_background("summary-notification",
                              \&summary_notify_handler,
                              $config->{summary_email},
-                             $filename, 
-                             $summary->{last_notify}, 
-                             $config->{summary_level}, 
+                             $filename,
+                             $summary->{last_notify},
+                             $config->{summary_level},
                              $config->{summary_unknown});
 
         # ...keep track of when we last sent out a notify
@@ -936,9 +937,9 @@ sub check_timers ($) {
         fork_into_background("verbose-notification",
                              \&verbose_notify_handler,
                              $config->{verbose_email},
-                             $filename, 
-                             $verbose->{last_notify}, 
-                             $config->{verbose_level}, 
+                             $filename,
+                             $verbose->{last_notify},
+                             $config->{verbose_level},
                              $config->{verbose_unknown});
 
         # ...keep track of when we last sent out a notify
