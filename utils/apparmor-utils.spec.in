@@ -39,7 +39,7 @@ Requires: perl
 Requires: /bin/sh
 AutoReqProv: no
 %endif
-Requires: perl-TimeDate perl-DBI perl-DBD-SQLite perl-File-Tail
+Requires: perl-TimeDate perl-DBI perl-DBD-SQLite perl-File-Tail perl-gettext
 Obsoletes: subdomain-utils
 Provides: subdomain-utils
 
@@ -89,6 +89,8 @@ fi
 
 
 %changelog
+* Wed Jan 17 2007 - sbeattie@suse.de
+- Add perl-gettext to list of dependencies
 * Tue Dec 12 2006 - sbeattie@suse.de
 - Add ksh to list of shells that should not be profiled
 * Thu Oct 5 2006 - <dreynolds@suse.de> 2.0-7

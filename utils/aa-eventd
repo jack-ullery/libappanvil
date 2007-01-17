@@ -391,7 +391,7 @@ sub process_event ($$) {
   my $sth;
 
   my ($time, $mesg);
-  if($logmsg =~ /^(?:type=APPARMOR msg=|$REdate\s+\S+\s+(?:kernel:\s+)*)audit\((\d+).\d+:\d+\): (.+)$/) {
+  if($logmsg =~ /^(?:type=(?:APPARMOR|UNKNOWN\[1500\]) msg=|$REdate\s+\S+\s+(?:kernel:\s+)*)audit\((\d+).\d+:\d+\): (.+)$/) {
     ($time, $mesg) = ($1, $2);
 
      # have we rolled over to another second yet?

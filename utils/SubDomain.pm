@@ -1393,7 +1393,7 @@ sub do_logprof_pass {
     next unless $seenmark;
 
     # all we care about is subdomain messages
-    next unless (/^.* audit\(/ || /type=APPARMOR msg=audit\([\d\.\:]+\):/ || /SubDomain/);
+    next unless (/^.* audit\(/ || /type=(APPARMOR|UNKNOWN\[1500\]) msg=audit\([\d\.\:]+\):/ || /SubDomain/);
     # workaround for syslog uglyness.
     if(s/(PERMITTING|REJECTING)-SYSLOGFIX/$1/) {
       s/%%/%/g;
