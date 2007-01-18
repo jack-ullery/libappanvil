@@ -335,23 +335,6 @@ load_module() {
 	fi
 }	
 
-start_aa_event() {
-	if [ -x "$AA_EV_BIN" -a "${APPARMOR_ENABLE_AAEVENTD}" = "yes" ] ; then
-		sd_action "Starting AppArmor Event daemon" startproc -f -p $AA_EV_PIDFILE $AA_EV_BIN -p $AA_EV_PIDFILE
-	elif [ -x "$SD_EV_BIN" -a "${APPARMOR_ENABLE_AAEVENTD}" = "yes" ] ; then
-		sd_action "Starting AppArmor Event daemon" startproc -f -p $SD_EV_PIDFILE $SD_EV_BIN -p $SD_EV_PIDFILE
-	fi
-}
-
-stop_aa_event() {
-	if [ -x "$AA_EV_BIN" -a -f "$AA_EV_PIDFILE" ] ; then
-		sd_action "Shutting down AppArmor Event daemon" killproc -G -p $AA_EV_PIDFILE -INT $AA_EV_BIN
-	fi
-	if [ -f "$SD_EV_PIDFILE" ] ; then
-		sd_action "Shutting down AppArmor Event daemon" killproc -G -p $SD_EV_PIDFILE -INT $SD_EV_BIN
-	fi
-}
-
 subdomain_start() {
 	if ! grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules ; then
 		load_module
