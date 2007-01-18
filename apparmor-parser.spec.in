@@ -123,13 +123,6 @@ fi
     %{apparmor_bin_prefix}/install/frob_slack_rc --shutdown
   fi
 %endif
-if [ %{?suse_version}%{!?suse_version:1} -le 1000 ] ; then
-  SFS_MOUNTPOINT=$(grep subdomainfs /etc/fstab  | \
-                 sed -e 's|^[[:space:]]*[^[:space:]]+[[:space:]]\+\(/[^[:space:]]*\)[[:space:]]\+subdomainfs.*$|\1|' 2> /dev/null)
-  if [ "X" == "X${SFS_MOUNTPOINT}" ]; then
-    echo "subdomain            /subdomain       subdomainfs noauto         0 0" >> /etc/fstab
-  fi
-fi
 
 %preun
 if [ "$1" = 0 ] ; then
@@ -147,6 +140,8 @@ fi
 %endif
 
 %changelog
+* Thu Jan 18 2007 - sbeattie@suse.de
+- Remove long obsolete editing of fstab
 * Tue Dec 12 2006 - sbeattie@suse.de
 - Fix from PLD people to make initscript more likely to work in other shells
 * Mon Nov 20 2006 - sbeattie@suse.de
