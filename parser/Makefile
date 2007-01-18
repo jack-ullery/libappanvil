@@ -185,6 +185,7 @@ install-rhel4: install-redhat
 install-redhat:
 	install -m 755 -d $(DESTDIR)/etc/init.d
 	install -m 755 rc.apparmor.$(subst install-,,$@) $(DESTDIR)/etc/init.d/apparmor
+	install -m 755 rc.aaeventd.redhat $(DESTDIR)/etc/init.d/aaeventd
 
 .PHONY: install-suse
 install-suse:
