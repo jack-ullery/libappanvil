@@ -109,6 +109,9 @@ make CFLAGS="${RPM_OPT_FLAGS}"
 %endif
 make install DESTDIR=${RPM_BUILD_ROOT} LIB=%{_lib} VERSION=%{version} RELEASE=%{release}
 
+%clean
+[ "${RPM_BUILD_ROOT}" != "/" ] && rm -rf ${RPM_BUILD_ROOT}
+
 # don't use -p here, breaks slackware package builds
 %post
 /sbin/ldconfig
@@ -129,6 +132,8 @@ make install DESTDIR=${RPM_BUILD_ROOT} LIB=%{_lib} VERSION=%{version} RELEASE=%{
 %doc COPYING.LGPL
 
 %changelog
+* Thu Jan 18 2007 - sbeattie@suse.de
+- Add a clean stage to remove buildroot to specfile
 * Fri Feb 17 2006 Seth Arnold <seth.arnold@suse.de> 2.0-4.1
 - use gettid() instead of /proc/self
 * Fri Feb 10 2006 Steve Beattie <sbeattie@suse.de> 2.0-3.2
