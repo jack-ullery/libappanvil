@@ -18,6 +18,15 @@
 # norootforbuild
 
 # Check first to see if distro is already defined.
+# I hate rpm macros
+%if ! %{?distro:1}0
+%if %{?suse_version:1}0
+  %define distro suse
+%endif
+%if %{?fedora_version:1}0
+  %define distro redhat
+%endif
+%endif
 %if ! %{?distro:1}0
   %define distro suse
 %endif
@@ -49,7 +58,6 @@ profiles to the AppArmor Security kernel module.
 This package is part of a suite of tools that used to be named SubDomain.
 
 %prep
-
 %setup -q
 
 %build

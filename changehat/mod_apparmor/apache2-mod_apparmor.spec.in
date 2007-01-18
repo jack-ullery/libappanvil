@@ -17,7 +17,15 @@
 # norootforbuild
 
 # Check first to see if distro is already defined.
-
+# I hate rpm macros
+%if ! %{?distro:1}0
+%if %{?suse_version:1}0
+  %define distro suse
+%endif
+%if %{?fedora_version:1}0
+  %define distro redhat
+%endif
+%endif
 %if ! %{?distro:1}0
   %define distro suse
 %endif
