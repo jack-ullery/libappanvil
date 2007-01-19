@@ -16,6 +16,7 @@
 /usr/sbin/ntpd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
+  #include <abstractions/xad>
 
   capability ipc_lock,
   capability net_bind_service,
@@ -42,6 +43,7 @@
   /var/lib/ntp/var/run/ntp/ntpd.pid w,
   /var/log/ntp w,
   /var/log/ntp.log w,
+  /var/opt/novell/xad/rpc/xadsd rw,
   /var/run/ntpd.pid w,
   /var/tmp/ntp* rwl,
 }

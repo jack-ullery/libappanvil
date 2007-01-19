@@ -17,6 +17,7 @@
 /usr/sbin/named {
   #include <abstractions/base>
   #include <abstractions/nameservice>
+  #include <abstractions/xad>
 
   capability net_bind_service,
   capability setgid,
@@ -35,4 +36,8 @@
   /var/run/named/named.pid wl,
   /var/run/ndc wl,
   /slave/* rw,
+
+  /var/opt/novell/xad/ds/krb5kdc/krb5.keytab r,
+  /var/tmp/DNS_* rw,
+  /tmp/DNS_* rw,
 }
