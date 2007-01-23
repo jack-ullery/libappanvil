@@ -62,18 +62,18 @@ Index: linux-2.6.19/include/linux/security.h
  }
  
  static inline int security_inode_unlink (struct inode *dir,
-@@ -2367,8 +2373,10 @@ static inline int security_inode_create 
- 	return 0;
+@@ -2368,8 +2374,10 @@ static inline int security_inode_create 
  }
  
--static inline int security_inode_link (struct dentry *old_dentry,
-+static inline int security_inode_link (struct vfsmount *old_mnt,
-+				       struct dentry *old_dentry,
+ static inline int security_inode_link (struct dentry *old_dentry,
++				       struct vfsmount *old_mnt,
  				       struct inode *dir,
-+				       struct vfsmount *new_mnt,
- 				       struct dentry *new_dentry)
+-				       struct dentry *new_dentry)
++				       struct dentry *new_dentry,
++				       struct vfsmount *new_mnt)
  {
  	return 0;
+ }
 Index: linux-2.6.19/security/dummy.c
 ===================================================================
 --- linux-2.6.19.orig/security/dummy.c

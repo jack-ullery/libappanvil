@@ -56,7 +56,7 @@ Index: linux-2.6.19/fs/nfsd/nfs4recover.c
  	nfsd4_list_rec_dir(dentry, nfsd4_remove_clid_file);
  	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_PARENT);
 -	status = vfs_rmdir(dir->d_inode, dentry);
-+	status = vfs_rmdir(dir->d_inode, NULL, dentry);
++	status = vfs_rmdir(dir->d_inode, dentry, NULL);
  	mutex_unlock(&dir->d_inode->i_mutex);
  	return status;
  }
@@ -69,7 +69,7 @@ Index: linux-2.6.19/fs/nfsd/vfs.c
  		host_err = vfs_unlink(dirp, rdentry);
  	} else { /* It's RMDIR */
 -		host_err = vfs_rmdir(dirp, rdentry);
-+		host_err = vfs_rmdir(dirp, NULL, rdentry);
++		host_err = vfs_rmdir(dirp, rdentry, NULL);
  	}
  
  	dput(rdentry);

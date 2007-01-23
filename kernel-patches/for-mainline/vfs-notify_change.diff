@@ -114,7 +114,7 @@ Index: linux-2.6.19/fs/nfsd/vfs.c
  	if (!check_guard || guardtime == inode->i_ctime.tv_sec) {
  		fh_lock(fhp);
 -		host_err = notify_change(dentry, iap);
-+		host_err = notify_change(NULL, dentry, iap);
++		host_err = notify_change(dentry, NULL, iap);
  		err = nfserrno(host_err);
  		fh_unlock(fhp);
  	}
