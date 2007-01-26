@@ -36,6 +36,7 @@
   @{HOME}/.gnome2/nautilus-sendto/* rw,
   @{HOME}/.gtk_qt_engine_rc r,
   @{HOME}/.icons/** r,
+  @{HOME}/.mcop/random-seed rw,
   @{HOME}/.mcoprc r,
   @{HOME}/.kde/share/config/gtkrc-* r,
   @{HOME}/.themes/** r,
