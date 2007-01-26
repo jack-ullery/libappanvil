@@ -48,5 +48,6 @@
   /usr/bin/zsoelim rmix,
   /usr/share/groff/** r,
   /usr/share/terminfo/** r,
+  /usr/share/texmf/teTeX/man/** r,
   /var/cache/man/** r,
 }
