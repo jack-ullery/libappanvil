@@ -47,22 +47,14 @@
 
   # we might as well allow everything to use common libraries
   /lib/lib*.so*                  mr,
-  /lib/tls/lib*.so*              mr,
-  /lib/power4/lib*.so*           mr,
-  /lib/power5/lib*.so*           mr,
-  /lib/power5+/lib*.so*          mr,
-  /lib64/power4/lib*.so*         mr,
-  /lib64/power5/lib*.so*         mr,
-  /lib64/power5+/lib*.so*        mr,
+  /lib/*/lib*.so*                mr,
+  /lib64/*/lib*.so*              mr,
   /usr/lib/*.so*                 mr,
-  /usr/lib/tls/lib*.so*          mr,
-  /usr/lib/power4/lib*.so*       mr,
-  /usr/lib/power5/lib*.so*       mr,
-  /usr/lib/power5+/lib*.so*      mr,
+  /usr/lib/*/lib*.so*            mr,
   /lib64/lib*.so*                mr,
-  /lib64/tls/lib*.so*            mr,
+  /lib64/*/lib*.so*              mr,
   /usr/lib64/*.so*               mr,
-  /usr/lib64/tls/lib*.so*        mr,
+  /usr/lib64/*/lib*.so*          mr,
 
   # /dev/null is pretty harmless and frequently used
   /dev/null                      rw,
