@@ -33,10 +33,12 @@
   @{HOME}/.fonts r,
   @{HOME}/.gaim r,
   @{HOME}/.gaim/** lrw,
+  @{HOME}/.gnome2/nautilus-sendto/* rw,
   @{HOME}/.gtk_qt_engine_rc r,
-  @{HOME}/.icons r,
+  @{HOME}/.icons/** r,
   @{HOME}/.mcoprc r,
   @{HOME}/.kde/share/config/gtkrc-* r,
+  @{HOME}/.themes/** r,
 
   /opt/MozillaFirefox/bin/firefox.sh Px,
   /opt/gnome/bin/gaim mixr,
