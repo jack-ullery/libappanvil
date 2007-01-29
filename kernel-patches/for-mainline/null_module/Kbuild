@@ -1,0 +1,3 @@
+obj-$(CONFIG_SECURITY_FOOBAR) += foobar.o
+
+foobar-y := foobar-lsm.o
