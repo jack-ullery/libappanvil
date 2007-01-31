@@ -1,0 +1,101 @@
+Index: linux-2.6.19.1/fs/dcache.c
+===================================================================
+--- linux-2.6.19.1.orig/fs/dcache.c
++++ linux-2.6.19.1/fs/dcache.c
+@@ -1731,9 +1731,11 @@ shouldnt_be_hashed:
+  * @rootmnt: vfsmnt to which the root dentry belongs
+  * @buffer: buffer to return value in
+  * @buflen: buffer length
++ * @flags: flags indicating what should be in the path
+  *
+  * Convert a dentry into an ASCII path name. If the entry has been deleted
+- * the string " (deleted)" is appended. Note that this is ambiguous.
++ * and the DPATH_DELETED flag is set the string " (deleted)" is appended.
++ * Note that this is ambiguous.
+  *
+  * Returns the buffer or an error code if the path was too long.
+  *
+@@ -1741,7 +1743,7 @@ shouldnt_be_hashed:
+  */
+ static char * __d_path( struct dentry *dentry, struct vfsmount *vfsmnt,
+ 			struct dentry *root, struct vfsmount *rootmnt,
+-			char *buffer, int buflen)
++			char *buffer, int buflen, unsigned int flags)
+ {
+ 	char * end = buffer+buflen;
+ 	char * retval;
+@@ -1749,7 +1751,8 @@ static char * __d_path( struct dentry *d
+ 
+ 	*--end = '\0';
+ 	buflen--;
+-	if (!IS_ROOT(dentry) && d_unhashed(dentry)) {
++	if ((flags & DPATH_DELETED) &&
++	    !IS_ROOT(dentry) && d_unhashed(dentry)) {
+ 		buflen -= 10;
+ 		end -= 10;
+ 		if (buflen < 0)
+@@ -1808,8 +1811,8 @@ Elong:
+ }
+ 
+ /* write full pathname into buffer and return start of pathname */
+-char * d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
+-				char *buf, int buflen)
++char * d_path_flags(struct dentry *dentry, struct vfsmount *vfsmnt,
++		    char *buf, int buflen, unsigned int flags)
+ {
+ 	char *res;
+ 	struct vfsmount *rootmnt;
+@@ -1820,7 +1823,7 @@ char * d_path(struct dentry *dentry, str
+ 	root = dget(current->fs->root);
+ 	read_unlock(&current->fs->lock);
+ 	spin_lock(&dcache_lock);
+-	res = __d_path(dentry, vfsmnt, root, rootmnt, buf, buflen);
++	res = __d_path(dentry, vfsmnt, root, rootmnt, buf, buflen, flags);
+ 	spin_unlock(&dcache_lock);
+ 	dput(root);
+ 	mntput(rootmnt);
+@@ -1869,7 +1872,8 @@ asmlinkage long sys_getcwd(char __user *
+ 		unsigned long len;
+ 		char * cwd;
+ 
+-		cwd = __d_path(pwd, pwdmnt, root, rootmnt, page, PAGE_SIZE);
++		cwd = __d_path(pwd, pwdmnt, root, rootmnt, page, PAGE_SIZE,
++			       DPATH_DELETED);
+ 		spin_unlock(&dcache_lock);
+ 
+ 		error = PTR_ERR(cwd);
+@@ -2119,7 +2123,7 @@ EXPORT_SYMBOL(d_invalidate);
+ EXPORT_SYMBOL(d_lookup);
+ EXPORT_SYMBOL(d_move);
+ EXPORT_SYMBOL_GPL(d_materialise_unique);
+-EXPORT_SYMBOL(d_path);
++EXPORT_SYMBOL(d_path_flags);
+ EXPORT_SYMBOL(d_prune_aliases);
+ EXPORT_SYMBOL(d_rehash);
+ EXPORT_SYMBOL(d_splice_alias);
+Index: linux-2.6.19.1/include/linux/dcache.h
+===================================================================
+--- linux-2.6.19.1.orig/include/linux/dcache.h
++++ linux-2.6.19.1/include/linux/dcache.h
+@@ -176,6 +176,9 @@ d_iput:		no		no		no       yes
+ 
+ #define DCACHE_INOTIFY_PARENT_WATCHED	0x0020 /* Parent inode is watched */
+ 
++/* d_path flags */
++#define DPATH_DELETED		0x0001	/* append " (deleted)" */
++
+ extern spinlock_t dcache_lock;
+ 
+ /**
+@@ -293,7 +296,10 @@ extern struct dentry * d_hash_and_lookup
+ /* validate "insecure" dentry pointer */
+ extern int d_validate(struct dentry *, struct dentry *);
+ 
+-extern char * d_path(struct dentry *, struct vfsmount *, char *, int);
++#define d_path(D, V, B, BL) d_path_flags(D, V, B, BL, DPATH_DELETED)
++
++extern char * d_path_flags(struct dentry *, struct vfsmount *, char *, int,
++			   unsigned int);
+   
+ /* Allocation counts.. */
+ 
