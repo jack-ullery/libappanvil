@@ -8,7 +8,7 @@ Index: linux-2.6/include/linux/security.h
   *	Check permission before obtaining file attributes.
 - *	@mnt is the vfsmount where the dentry was looked up
 - *	@dentry contains the dentry structure for the file.
-+ *	@path contains the vfsmount / dentry of the file.
++ *	@path contains the vfsmount and dentry of the file.
   *	Return 0 if permission is granted.
   * @inode_delete:
   *	@inode contains the inode structure for deleted inode.
