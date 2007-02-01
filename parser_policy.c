@@ -451,5 +451,9 @@ void free_policy(struct codomain *cod)
 	free_hat_table(cod->hat_table);
 	free_cod_entries(cod->entries);
 	free_net_entries(cod->net_entries);
+	if (cod->dfarules)
+		aare_delete_ruleset(cod->dfarules);
+	if (cod->dfa)
+		free(cod->dfa);
 	free(cod);
 }
