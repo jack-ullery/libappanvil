@@ -19,7 +19,6 @@
 #include <netinet/in.h>
 #include "pcre/internal.h"
 #include "immunix.h"
-#include "libapparmor_re/apparmor_re.h"
 
 typedef enum pattern_t pattern_t;
 
@@ -69,11 +68,6 @@ struct codomain {
 	struct cod_net_entry * net_entries;
 	void *hat_table;
 	//struct codomain *next;
-
-	aare_ruleset_t *dfarules;
-	int dfarule_count;
-	void *dfa;
-	size_t dfa_size;
 } ;
 
 struct cod_global_entry {
@@ -122,10 +116,6 @@ struct var_string {
 #define OPTION_REPLACE  3
 #define OPTION_STDOUT	4
 
-#define AARE_NONE 0
-#define AARE_PCRE 1
-#define AARE_DFA 2
-
 #ifdef DEBUG
 #define PDEBUG(fmt, args...) printf("parser: " fmt, ## args)
 #else
@@ -156,7 +146,6 @@ extern char *profilename;
 
 /* from parser_main */
 extern int force_complain;
-extern int regex_type;
 extern void pwarn(char *fmt, ...) __attribute__((__format__(__printf__, 1, 2)));
 
 extern int yyparse(void);
