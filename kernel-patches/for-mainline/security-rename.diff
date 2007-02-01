@@ -3,10 +3,10 @@ Pass struct vfsmount to the inode_rename LSM hook
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6-hooks/fs/namei.c
+Index: linux-2.6/fs/namei.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/namei.c
-+++ linux-2.6-hooks/fs/namei.c
+--- linux-2.6.orig/fs/namei.c
++++ linux-2.6/fs/namei.c
 @@ -2398,7 +2398,8 @@ static int vfs_rename_dir(struct inode *
  			return error;
  	}
@@ -27,10 +27,10 @@ Index: linux-2.6-hooks/fs/namei.c
  	if (error)
  		return error;
  
-Index: linux-2.6-hooks/include/linux/security.h
+Index: linux-2.6/include/linux/security.h
 ===================================================================
---- linux-2.6-hooks.orig/include/linux/security.h
-+++ linux-2.6-hooks/include/linux/security.h
+--- linux-2.6.orig/include/linux/security.h
++++ linux-2.6/include/linux/security.h
 @@ -336,8 +336,10 @@ struct request_sock;
   *	Check for permission to rename a file or directory.
   *	@old_dir contains the inode structure for parent of the old link.
@@ -85,10 +85,10 @@ Index: linux-2.6-hooks/include/linux/security.h
  {
  	return 0;
  }
-Index: linux-2.6-hooks/security/dummy.c
+Index: linux-2.6/security/dummy.c
 ===================================================================
---- linux-2.6-hooks.orig/security/dummy.c
-+++ linux-2.6-hooks/security/dummy.c
+--- linux-2.6.orig/security/dummy.c
++++ linux-2.6/security/dummy.c
 @@ -310,8 +310,10 @@ static int dummy_inode_mknod (struct ino
  
  static int dummy_inode_rename (struct inode *old_inode,
@@ -101,10 +101,10 @@ Index: linux-2.6-hooks/security/dummy.c
  {
  	return 0;
  }
-Index: linux-2.6-hooks/security/selinux/hooks.c
+Index: linux-2.6/security/selinux/hooks.c
 ===================================================================
---- linux-2.6-hooks.orig/security/selinux/hooks.c
-+++ linux-2.6-hooks/security/selinux/hooks.c
+--- linux-2.6.orig/security/selinux/hooks.c
++++ linux-2.6/security/selinux/hooks.c
 @@ -2197,8 +2197,12 @@ static int selinux_inode_mknod(struct in
  	return may_create(dir, dentry, inode_mode_to_security_class(mode));
  }

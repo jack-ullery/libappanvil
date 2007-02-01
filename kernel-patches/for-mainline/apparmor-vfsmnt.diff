@@ -1,7 +1,7 @@
-Index: linux-2.6.19/security/apparmor/apparmor.h
+Index: linux-2.6/security/apparmor/apparmor.h
 ===================================================================
---- linux-2.6.19.orig/security/apparmor/apparmor.h
-+++ linux-2.6.19/security/apparmor/apparmor.h
+--- linux-2.6.orig/security/apparmor/apparmor.h
++++ linux-2.6/security/apparmor/apparmor.h
 @@ -188,16 +188,6 @@ struct subdomain {
  
  typedef int (*aa_iter) (struct subdomain *, void *);
@@ -45,10 +45,19 @@ Index: linux-2.6.19/security/apparmor/apparmor.h
  extern int aa_fork(struct task_struct *p);
  extern int aa_register(struct linux_binprm *bprm);
  extern void aa_release(struct task_struct *p);
-Index: linux-2.6.19/security/apparmor/inline.h
+Index: linux-2.6/security/apparmor/inline.h
 ===================================================================
---- linux-2.6.19.orig/security/apparmor/inline.h
-+++ linux-2.6.19/security/apparmor/inline.h
+--- linux-2.6.orig/security/apparmor/inline.h
++++ linux-2.6/security/apparmor/inline.h
+@@ -10,7 +10,7 @@
+ #ifndef __INLINE_H
+ #define __INLINE_H
+ 
+-#include <linux/namespace.h>
++#include <linux/sched.h>
+ 
+ static inline int __aa_is_confined(struct subdomain *sd)
+ {
 @@ -252,84 +252,4 @@ static inline struct aaprofile *__aa_fin
  	}
  	return NULL;
@@ -134,25 +143,24 @@ Index: linux-2.6.19/security/apparmor/inline.h
 -}
 -
  #endif /* __INLINE_H__ */
-Index: linux-2.6.19/security/apparmor/lsm.c
+Index: linux-2.6/security/apparmor/lsm.c
 ===================================================================
---- linux-2.6.19.orig/security/apparmor/lsm.c
-+++ linux-2.6.19/security/apparmor/lsm.c
-@@ -15,6 +15,7 @@
+--- linux-2.6.orig/security/apparmor/lsm.c
++++ linux-2.6/security/apparmor/lsm.c
+@@ -15,6 +15,8 @@
  #include <linux/module.h>
  #include <linux/mm.h>
  #include <linux/mman.h>
++#include <linux/mount.h>
 +#include <linux/namei.h>
  
  #include "apparmor.h"
  #include "inline.h"
-@@ -246,122 +247,158 @@ static int apparmor_umount(struct vfsmou
- 	return error;
+@@ -247,121 +249,157 @@ static int apparmor_umount(struct vfsmou
  }
  
--static int apparmor_inode_mkdir(struct inode *inode, struct dentry *dentry,
+ static int apparmor_inode_mkdir(struct inode *inode, struct dentry *dentry,
 -				 int mask)
-+static int apparmor_inode_mkdir(struct inode *inode, struct dentry *dentry,
 +				struct vfsmount *mnt, int mask)
  {
  	struct aaprofile *active;
@@ -329,7 +337,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  	return error;
  }
  
-@@ -373,22 +410,26 @@ static int apparmor_inode_permission(str
+@@ -373,22 +411,26 @@ static int apparmor_inode_permission(str
  	/* Do not perform check on pipes or sockets
  	 * Same as apparmor_file_permission
  	 */
@@ -359,7 +367,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  	if (VALID_FSTYPE(dentry->d_inode)) {
  		struct aaprofile *active;
  
-@@ -398,76 +439,99 @@ static int apparmor_inode_setattr(struct
+@@ -398,76 +440,99 @@ static int apparmor_inode_setattr(struct
  		 * (chmod, chown, chgrp, etc)
  		 */
  		if (active)
@@ -469,10 +477,10 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  	return error;
  }
  
-Index: linux-2.6.19/security/apparmor/main.c
+Index: linux-2.6/security/apparmor/main.c
 ===================================================================
---- linux-2.6.19.orig/security/apparmor/main.c
-+++ linux-2.6.19/security/apparmor/main.c
+--- linux-2.6.orig/security/apparmor/main.c
++++ linux-2.6/security/apparmor/main.c
 @@ -35,34 +35,6 @@ struct aaprofile *null_complain_profile;
   **************************/
  

@@ -1,8 +1,8 @@
-Index: linux-2.6.19.1/fs/dcache.c
+Index: linux-2.6/fs/dcache.c
 ===================================================================
---- linux-2.6.19.1.orig/fs/dcache.c
-+++ linux-2.6.19.1/fs/dcache.c
-@@ -1732,6 +1732,8 @@ shouldnt_be_hashed:
+--- linux-2.6.orig/fs/dcache.c
++++ linux-2.6/fs/dcache.c
+@@ -1740,6 +1740,8 @@ shouldnt_be_hashed:
   * @buffer: buffer to return value in
   * @buflen: buffer length
   * @flags: flags indicating what should be in the path
@@ -11,7 +11,7 @@ Index: linux-2.6.19.1/fs/dcache.c
   *
   * Convert a dentry into an ASCII path name.
   * If the entry has been deleted and the DPATH_DELETED flag is set the
-@@ -1745,21 +1747,25 @@ shouldnt_be_hashed:
+@@ -1753,21 +1755,25 @@ shouldnt_be_hashed:
   */
  static char * __d_path( struct dentry *dentry, struct vfsmount *vfsmnt,
  			struct dentry *root, struct vfsmount *rootmnt,
@@ -45,7 +45,7 @@ Index: linux-2.6.19.1/fs/dcache.c
  	}
  
  	if (buflen < 1)
-@@ -1771,9 +1777,11 @@ static char * __d_path( struct dentry *d
+@@ -1779,9 +1785,11 @@ static char * __d_path( struct dentry *d
  	for (;;) {
  		struct dentry * parent;
  
@@ -60,7 +60,7 @@ Index: linux-2.6.19.1/fs/dcache.c
  		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
  			/* Global root? */
  			spin_lock(&vfsmount_lock);
-@@ -1799,6 +1807,8 @@ static char * __d_path( struct dentry *d
+@@ -1807,6 +1815,8 @@ static char * __d_path( struct dentry *d
  		dentry = parent;
  	}
  
@@ -69,7 +69,7 @@ Index: linux-2.6.19.1/fs/dcache.c
  	return retval;
  
  global_root:
-@@ -1808,6 +1818,8 @@ global_root:
+@@ -1816,6 +1826,8 @@ global_root:
  		goto Elong;
  	retval -= namelen-1;	/* hit the slash */
  	memcpy(retval, dentry->d_name.name, namelen);
@@ -78,7 +78,7 @@ Index: linux-2.6.19.1/fs/dcache.c
  	return retval;
  Elong:
  	return ERR_PTR(-ENAMETOOLONG);
-@@ -1815,7 +1827,8 @@ Elong:
+@@ -1823,7 +1835,8 @@ Elong:
  
  /* write full pathname into buffer and return start of pathname */
  char * d_path_flags(struct dentry *dentry, struct vfsmount *vfsmnt,
@@ -88,7 +88,7 @@ Index: linux-2.6.19.1/fs/dcache.c
  {
  	char *res;
  	struct vfsmount *rootmnt = NULL;
-@@ -1828,7 +1841,8 @@ char * d_path_flags(struct dentry *dentr
+@@ -1836,7 +1849,8 @@ char * d_path_flags(struct dentry *dentr
  		read_unlock(&current->fs->lock);
  	}
  	spin_lock(&dcache_lock);
@@ -98,7 +98,7 @@ Index: linux-2.6.19.1/fs/dcache.c
  	spin_unlock(&dcache_lock);
  	if (!(flags & DPATH_NSROOT)) {
  		dput(root);
-@@ -1858,6 +1872,7 @@ char * d_path_flags(struct dentry *dentr
+@@ -1866,6 +1880,7 @@ char * d_path_flags(struct dentry *dentr
  asmlinkage long sys_getcwd(char __user *buf, unsigned long size)
  {
  	int error;
@@ -106,7 +106,7 @@ Index: linux-2.6.19.1/fs/dcache.c
  	struct vfsmount *pwdmnt, *rootmnt;
  	struct dentry *pwd, *root;
  	char *page = (char *) __get_free_page(GFP_USER);
-@@ -1880,7 +1895,7 @@ asmlinkage long sys_getcwd(char __user *
+@@ -1888,7 +1903,7 @@ asmlinkage long sys_getcwd(char __user *
  		char * cwd;
  
  		cwd = __d_path(pwd, pwdmnt, root, rootmnt, page, PAGE_SIZE,
@@ -115,10 +115,10 @@ Index: linux-2.6.19.1/fs/dcache.c
  		spin_unlock(&dcache_lock);
  
  		error = PTR_ERR(cwd);
-Index: linux-2.6.19.1/include/linux/dcache.h
+Index: linux-2.6/include/linux/dcache.h
 ===================================================================
---- linux-2.6.19.1.orig/include/linux/dcache.h
-+++ linux-2.6.19.1/include/linux/dcache.h
+--- linux-2.6.orig/include/linux/dcache.h
++++ linux-2.6/include/linux/dcache.h
 @@ -297,10 +297,10 @@ extern struct dentry * d_hash_and_lookup
  /* validate "insecure" dentry pointer */
  extern int d_validate(struct dentry *, struct dentry *);

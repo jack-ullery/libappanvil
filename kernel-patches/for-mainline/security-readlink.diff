@@ -3,10 +3,10 @@ Pass struct vfsmount to the inode_readlink LSM hook
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6-hooks/fs/stat.c
+Index: linux-2.6/fs/stat.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/stat.c
-+++ linux-2.6-hooks/fs/stat.c
+--- linux-2.6.orig/fs/stat.c
++++ linux-2.6/fs/stat.c
 @@ -307,7 +307,7 @@ asmlinkage long sys_readlinkat(int dfd, 
  
  		error = -EINVAL;
@@ -16,10 +16,10 @@ Index: linux-2.6-hooks/fs/stat.c
  			if (!error) {
  				touch_atime(nd.mnt, nd.dentry);
  				error = inode->i_op->readlink(nd.dentry, buf, bufsiz);
-Index: linux-2.6-hooks/include/linux/security.h
+Index: linux-2.6/include/linux/security.h
 ===================================================================
---- linux-2.6-hooks.orig/include/linux/security.h
-+++ linux-2.6-hooks/include/linux/security.h
+--- linux-2.6.orig/include/linux/security.h
++++ linux-2.6/include/linux/security.h
 @@ -338,6 +338,7 @@ struct request_sock;
   * @inode_readlink:
   *	Check the permission to read the symbolic link.
@@ -62,10 +62,10 @@ Index: linux-2.6-hooks/include/linux/security.h
  {
  	return 0;
  }
-Index: linux-2.6-hooks/security/dummy.c
+Index: linux-2.6/security/dummy.c
 ===================================================================
---- linux-2.6-hooks.orig/security/dummy.c
-+++ linux-2.6-hooks/security/dummy.c
+--- linux-2.6.orig/security/dummy.c
++++ linux-2.6/security/dummy.c
 @@ -312,7 +312,7 @@ static int dummy_inode_rename (struct in
  	return 0;
  }
@@ -75,10 +75,10 @@ Index: linux-2.6-hooks/security/dummy.c
  {
  	return 0;
  }
-Index: linux-2.6-hooks/security/selinux/hooks.c
+Index: linux-2.6/security/selinux/hooks.c
 ===================================================================
---- linux-2.6-hooks.orig/security/selinux/hooks.c
-+++ linux-2.6-hooks/security/selinux/hooks.c
+--- linux-2.6.orig/security/selinux/hooks.c
++++ linux-2.6/security/selinux/hooks.c
 @@ -2196,7 +2196,7 @@ static int selinux_inode_rename(struct i
  	return may_rename(old_inode, old_dentry, new_inode, new_dentry);
  }

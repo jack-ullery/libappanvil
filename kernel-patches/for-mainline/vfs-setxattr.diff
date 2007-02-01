@@ -3,11 +3,11 @@ Add a struct vfsmount parameter to vfs_setxattr()
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6-hooks/fs/nfsd/vfs.c
+Index: linux-2.6/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/nfsd/vfs.c
-+++ linux-2.6-hooks/fs/nfsd/vfs.c
-@@ -416,7 +416,7 @@ set_nfsv4_acl_one(struct dentry *dentry,
+--- linux-2.6.orig/fs/nfsd/vfs.c
++++ linux-2.6/fs/nfsd/vfs.c
+@@ -415,7 +415,7 @@ set_nfsv4_acl_one(struct dentry *dentry,
  		goto out;
  	}
  
@@ -16,7 +16,7 @@ Index: linux-2.6-hooks/fs/nfsd/vfs.c
  out:
  	kfree(buf);
  	return error;
-@@ -1970,7 +1970,7 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+@@ -1969,7 +1969,7 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
  		size = 0;
  
  	if (size)
@@ -25,10 +25,10 @@ Index: linux-2.6-hooks/fs/nfsd/vfs.c
  	else {
  		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
  			error = 0;
-Index: linux-2.6-hooks/fs/xattr.c
+Index: linux-2.6/fs/xattr.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/xattr.c
-+++ linux-2.6-hooks/fs/xattr.c
+--- linux-2.6.orig/fs/xattr.c
++++ linux-2.6/fs/xattr.c
 @@ -70,8 +70,8 @@ xattr_permission(struct inode *inode, co
  }
  
@@ -87,10 +87,10 @@ Index: linux-2.6-hooks/fs/xattr.c
  	fput(f);
  	return error;
  }
-Index: linux-2.6-hooks/include/linux/xattr.h
+Index: linux-2.6/include/linux/xattr.h
 ===================================================================
---- linux-2.6-hooks.orig/include/linux/xattr.h
-+++ linux-2.6-hooks/include/linux/xattr.h
+--- linux-2.6.orig/include/linux/xattr.h
++++ linux-2.6/include/linux/xattr.h
 @@ -42,7 +42,8 @@ struct xattr_handler {
  
  ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);

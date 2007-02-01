@@ -3,10 +3,10 @@ Add struct vfsmount parameters to vfs_rename()
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6-hooks/fs/ecryptfs/inode.c
+Index: linux-2.6/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/ecryptfs/inode.c
-+++ linux-2.6-hooks/fs/ecryptfs/inode.c
+--- linux-2.6.orig/fs/ecryptfs/inode.c
++++ linux-2.6/fs/ecryptfs/inode.c
 @@ -590,19 +590,24 @@ ecryptfs_rename(struct inode *old_dir, s
  {
  	int rc;
@@ -33,10 +33,10 @@ Index: linux-2.6-hooks/fs/ecryptfs/inode.c
  	if (rc)
  		goto out_lock;
  	fsstack_copy_attr_all(new_dir, lower_new_dir_dentry->d_inode, NULL);
-Index: linux-2.6-hooks/fs/namei.c
+Index: linux-2.6/fs/namei.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/namei.c
-+++ linux-2.6-hooks/fs/namei.c
+--- linux-2.6.orig/fs/namei.c
++++ linux-2.6/fs/namei.c
 @@ -2382,7 +2382,8 @@ asmlinkage long sys_link(const char __us
   *	   locking].
   */
@@ -92,11 +92,11 @@ Index: linux-2.6-hooks/fs/namei.c
  exit5:
  	dput(new_dentry);
  exit4:
-Index: linux-2.6-hooks/fs/nfsd/vfs.c
+Index: linux-2.6/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/nfsd/vfs.c
-+++ linux-2.6-hooks/fs/nfsd/vfs.c
-@@ -1621,7 +1621,7 @@ nfsd_rename(struct svc_rqst *rqstp, stru
+--- linux-2.6.orig/fs/nfsd/vfs.c
++++ linux-2.6/fs/nfsd/vfs.c
+@@ -1620,7 +1620,7 @@ nfsd_rename(struct svc_rqst *rqstp, stru
  			host_err = -EPERM;
  	} else
  #endif
@@ -105,10 +105,10 @@ Index: linux-2.6-hooks/fs/nfsd/vfs.c
  	if (!host_err && EX_ISSYNC(tfhp->fh_export)) {
  		host_err = nfsd_sync_dir(tdentry);
  		if (!host_err)
-Index: linux-2.6-hooks/include/linux/fs.h
+Index: linux-2.6/include/linux/fs.h
 ===================================================================
---- linux-2.6-hooks.orig/include/linux/fs.h
-+++ linux-2.6-hooks/include/linux/fs.h
+--- linux-2.6.orig/include/linux/fs.h
++++ linux-2.6/include/linux/fs.h
 @@ -985,7 +985,7 @@ extern int vfs_symlink(struct inode *, s
  extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
  extern int vfs_rmdir(struct inode *, struct dentry *, struct vfsmount *);

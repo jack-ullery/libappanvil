@@ -1,8 +1,8 @@
-Index: linux-2.6.19/security/apparmor/lsm.c
+Index: linux-2.6/security/apparmor/lsm.c
 ===================================================================
---- linux-2.6.19.orig/security/apparmor/lsm.c
-+++ linux-2.6.19/security/apparmor/lsm.c
-@@ -23,6 +23,15 @@
+--- linux-2.6.orig/security/apparmor/lsm.c
++++ linux-2.6/security/apparmor/lsm.c
+@@ -24,6 +24,15 @@
  /* struct subdomain write update lock (read side is RCU). */
  spinlock_t sd_lock = SPIN_LOCK_UNLOCKED;
  
@@ -18,7 +18,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  /* Flag values, also controllable via apparmorfs/control.
   * We explicitly do not allow these to be modifiable when exported via
   * /sys/modules/parameters, as we want to do additional mediation and
-@@ -831,6 +840,11 @@ static int __init apparmor_init(void)
+@@ -833,6 +842,11 @@ static int __init apparmor_init(void)
  	int error;
  	const char *complainmsg = ": complainmode enabled";
  

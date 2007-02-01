@@ -1,7 +1,7 @@
-Index: linux-2.6.19/security/apparmor/apparmor.h
+Index: linux-2.6/security/apparmor/apparmor.h
 ===================================================================
---- linux-2.6.19.orig/security/apparmor/apparmor.h
-+++ linux-2.6.19/security/apparmor/apparmor.h
+--- linux-2.6.orig/security/apparmor/apparmor.h
++++ linux-2.6/security/apparmor/apparmor.h
 @@ -25,17 +25,6 @@ extern int apparmor_debug;
  extern int apparmor_audit;
  extern int apparmor_logsyscall;
@@ -52,11 +52,11 @@ Index: linux-2.6.19/security/apparmor/apparmor.h
  /**
   * struct subdomain - primary label for confined tasks
   * @active: the current active profile
-Index: linux-2.6.19/security/apparmor/lsm.c
+Index: linux-2.6/security/apparmor/lsm.c
 ===================================================================
---- linux-2.6.19.orig/security/apparmor/lsm.c
-+++ linux-2.6.19/security/apparmor/lsm.c
-@@ -202,6 +202,9 @@ static int apparmor_sb_mount(char *dev_n
+--- linux-2.6.orig/security/apparmor/lsm.c
++++ linux-2.6/security/apparmor/lsm.c
+@@ -203,6 +203,9 @@ static int apparmor_sb_mount(char *dev_n
  	if (active) {
  		error = aa_audit_syscallreject(active, GFP_KERNEL, "mount");
  		WARN_ON(error != -EPERM);
@@ -66,7 +66,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  	}
  
  	put_aaprofile(active);
-@@ -219,6 +222,8 @@ static int apparmor_umount(struct vfsmou
+@@ -220,6 +223,8 @@ static int apparmor_umount(struct vfsmou
  	if (active) {
  		error = aa_audit_syscallreject(active, GFP_ATOMIC, "umount");
  		WARN_ON(error != -EPERM);
@@ -75,7 +75,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  	}
  
  	put_aaprofile(active);
-@@ -226,13 +231,13 @@ static int apparmor_umount(struct vfsmou
+@@ -227,13 +232,13 @@ static int apparmor_umount(struct vfsmou
  	return error;
  }
  
@@ -91,7 +91,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  		goto out;
  
  	active = get_active_aaprofile();
-@@ -246,13 +251,13 @@ out:
+@@ -247,13 +252,13 @@ out:
  	return error;
  }
  
@@ -107,7 +107,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  		goto out;
  
  	active = get_active_aaprofile();
-@@ -287,14 +292,14 @@ out:
+@@ -288,14 +293,14 @@ out:
  }
  
  static int apparmor_inode_link(struct dentry *old_dentry,
@@ -124,7 +124,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  		goto out;
  
  	active = get_active_aaprofile();
-@@ -316,7 +321,7 @@ static int apparmor_inode_unlink(struct 
+@@ -317,7 +322,7 @@ static int apparmor_inode_unlink(struct 
  	struct aaprofile *active;
  	int error = 0;
  
@@ -133,7 +133,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  		goto out;
  
  	active = get_active_aaprofile();
-@@ -330,13 +335,13 @@ out:
+@@ -331,13 +336,13 @@ out:
  	return error;
  }
  
@@ -149,7 +149,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  		goto out;
  
  	active = get_active_aaprofile();
-@@ -350,10 +355,10 @@ out:
+@@ -351,10 +356,10 @@ out:
  	return error;
  }
  
@@ -162,7 +162,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  				 struct dentry *new_dentry,
  				 struct vfsmount *new_mnt)
  {
-@@ -366,11 +371,12 @@ static int apparmor_inode_rename(struct 
+@@ -367,11 +372,12 @@ static int apparmor_inode_rename(struct 
  	active = get_active_aaprofile();
  
  	if (active) {
@@ -177,7 +177,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  			error = aa_perm(active, new_dentry, new_mnt,
  					MAY_WRITE);
  	}
-@@ -389,7 +395,7 @@ static int apparmor_inode_permission(str
+@@ -390,7 +396,7 @@ static int apparmor_inode_permission(str
  	/* Do not perform check on pipes or sockets
  	 * Same as apparmor_file_permission
  	 */
@@ -186,7 +186,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  		struct aaprofile *active;
  
  		active = get_active_aaprofile();
-@@ -405,23 +411,21 @@ static int apparmor_inode_setattr(struct
+@@ -406,23 +412,21 @@ static int apparmor_inode_setattr(struct
  				  struct iattr *iattr)
  {
  	int error = 0;
@@ -220,7 +220,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  
  out:
  	return error;
-@@ -432,19 +436,16 @@ static int apparmor_inode_setxattr(struc
+@@ -433,19 +437,16 @@ static int apparmor_inode_setxattr(struc
  				   int flags)
  {
  	int error = 0;
@@ -247,7 +247,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  
  out:
  	return error;
-@@ -454,19 +455,17 @@ static int apparmor_inode_getxattr(struc
+@@ -455,19 +456,17 @@ static int apparmor_inode_getxattr(struc
  				   char *name)
  {
  	int error = 0;
@@ -274,7 +274,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  
  out:
  	return error;
-@@ -474,19 +473,16 @@ out:
+@@ -475,19 +474,16 @@ out:
  static int apparmor_inode_listxattr(struct dentry *dentry, struct vfsmount *mnt)
  {
  	int error = 0;
@@ -301,7 +301,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  
  out:
  	return error;
-@@ -496,19 +492,16 @@ static int apparmor_inode_removexattr(st
+@@ -497,19 +493,16 @@ static int apparmor_inode_removexattr(st
  				      struct vfsmount *mnt, char *name)
  {
  	int error = 0;
@@ -328,7 +328,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  
  out:
  	return error;
-@@ -517,55 +510,36 @@ out:
+@@ -518,55 +511,36 @@ out:
  static int apparmor_file_permission(struct file *file, int mask)
  {
  	struct aaprofile *active;
@@ -396,7 +396,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  }
  
  static inline int aa_mmap(struct file *file, unsigned long prot,
-@@ -573,12 +547,10 @@ static inline int aa_mmap(struct file *f
+@@ -574,12 +548,10 @@ static inline int aa_mmap(struct file *f
  {
  	int error = 0, mask = 0;
  	struct aaprofile *active;
@@ -410,7 +410,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  		goto out;
  
  	if (prot & PROT_READ)
-@@ -637,17 +609,6 @@ static void apparmor_task_reparent_to_in
+@@ -638,17 +610,6 @@ static void apparmor_task_reparent_to_in
  	return;
  }
  
@@ -428,7 +428,7 @@ Index: linux-2.6.19/security/apparmor/lsm.c
  static int apparmor_getprocattr(struct task_struct *p, char *name, void *value,
  				size_t size)
  {
-@@ -830,8 +791,6 @@ struct security_operations apparmor_ops 
+@@ -831,8 +792,6 @@ struct security_operations apparmor_ops 
  	.task_post_setuid =		apparmor_task_post_setuid,
  	.task_reparent_to_init =	apparmor_task_reparent_to_init,
  

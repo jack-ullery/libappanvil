@@ -1,7 +1,7 @@
-Index: linux-2.6.19.1/security/apparmor/main.c
+Index: linux-2.6/security/apparmor/main.c
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/main.c
-+++ linux-2.6.19.1/security/apparmor/main.c
+--- linux-2.6.orig/security/apparmor/main.c
++++ linux-2.6/security/apparmor/main.c
 @@ -804,6 +804,7 @@ char *aa_get_name(struct dentry *dentry,
  {
  	char *buffer, *name;

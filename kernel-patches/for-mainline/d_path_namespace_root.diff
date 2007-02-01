@@ -1,8 +1,8 @@
-Index: linux-2.6.19.1/fs/dcache.c
+Index: linux-2.6/fs/dcache.c
 ===================================================================
---- linux-2.6.19.1.orig/fs/dcache.c
-+++ linux-2.6.19.1/fs/dcache.c
-@@ -1733,10 +1733,12 @@ shouldnt_be_hashed:
+--- linux-2.6.orig/fs/dcache.c
++++ linux-2.6/fs/dcache.c
+@@ -1741,10 +1741,12 @@ shouldnt_be_hashed:
   * @buflen: buffer length
   * @flags: flags indicating what should be in the path
   *
@@ -19,7 +19,7 @@ Index: linux-2.6.19.1/fs/dcache.c
   * Returns the buffer or an error code if the path was too long.
   *
   * "buflen" should be positive. Caller holds the dcache_lock.
-@@ -1769,7 +1771,8 @@ static char * __d_path( struct dentry *d
+@@ -1777,7 +1779,8 @@ static char * __d_path( struct dentry *d
  	for (;;) {
  		struct dentry * parent;
  
@@ -29,7 +29,7 @@ Index: linux-2.6.19.1/fs/dcache.c
  			break;
  		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
  			/* Global root? */
-@@ -1815,18 +1818,22 @@ char * d_path_flags(struct dentry *dentr
+@@ -1823,18 +1826,22 @@ char * d_path_flags(struct dentry *dentr
  		    char *buf, int buflen, unsigned int flags)
  {
  	char *res;
@@ -60,10 +60,10 @@ Index: linux-2.6.19.1/fs/dcache.c
  	return res;
  }
  
-Index: linux-2.6.19.1/include/linux/dcache.h
+Index: linux-2.6/include/linux/dcache.h
 ===================================================================
---- linux-2.6.19.1.orig/include/linux/dcache.h
-+++ linux-2.6.19.1/include/linux/dcache.h
+--- linux-2.6.orig/include/linux/dcache.h
++++ linux-2.6/include/linux/dcache.h
 @@ -178,6 +178,7 @@ d_iput:		no		no		no       yes
  
  /* d_path flags */

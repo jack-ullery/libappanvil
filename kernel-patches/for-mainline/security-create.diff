@@ -3,10 +3,10 @@ Pass struct vfsmount to the inode_create LSM hook.
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6-hooks/fs/namei.c
+Index: linux-2.6/fs/namei.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/namei.c
-+++ linux-2.6-hooks/fs/namei.c
+--- linux-2.6.orig/fs/namei.c
++++ linux-2.6/fs/namei.c
 @@ -1503,7 +1503,7 @@ int vfs_create(struct inode *dir, struct
  		return -EACCES;	/* shouldn't it be ENOSYS? */
  	mode &= S_IALLUGO;
@@ -16,10 +16,10 @@ Index: linux-2.6-hooks/fs/namei.c
  	if (error)
  		return error;
  	DQUOT_INIT(dir);
-Index: linux-2.6-hooks/include/linux/security.h
+Index: linux-2.6/include/linux/security.h
 ===================================================================
---- linux-2.6-hooks.orig/include/linux/security.h
-+++ linux-2.6-hooks/include/linux/security.h
+--- linux-2.6.orig/include/linux/security.h
++++ linux-2.6/include/linux/security.h
 @@ -283,6 +283,7 @@ struct request_sock;
   *	Check permission to create a regular file.
   *	@dir contains inode structure of the parent of the new file.
@@ -61,10 +61,10 @@ Index: linux-2.6-hooks/include/linux/security.h
  					 int mode)
  {
  	return 0;
-Index: linux-2.6-hooks/security/dummy.c
+Index: linux-2.6/security/dummy.c
 ===================================================================
---- linux-2.6-hooks.orig/security/dummy.c
-+++ linux-2.6-hooks/security/dummy.c
+--- linux-2.6.orig/security/dummy.c
++++ linux-2.6/security/dummy.c
 @@ -265,7 +265,7 @@ static int dummy_inode_init_security (st
  }
  
@@ -74,10 +74,10 @@ Index: linux-2.6-hooks/security/dummy.c
  {
  	return 0;
  }
-Index: linux-2.6-hooks/security/selinux/hooks.c
+Index: linux-2.6/security/selinux/hooks.c
 ===================================================================
---- linux-2.6-hooks.orig/security/selinux/hooks.c
-+++ linux-2.6-hooks/security/selinux/hooks.c
+--- linux-2.6.orig/security/selinux/hooks.c
++++ linux-2.6/security/selinux/hooks.c
 @@ -2135,7 +2135,8 @@ static int selinux_inode_init_security(s
  	return 0;
  }

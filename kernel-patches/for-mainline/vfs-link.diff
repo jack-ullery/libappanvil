@@ -3,10 +3,10 @@ Add struct vfsmount parameters to vfs_link()
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6-hooks/fs/namei.c
+Index: linux-2.6/fs/namei.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/namei.c
-+++ linux-2.6-hooks/fs/namei.c
+--- linux-2.6.orig/fs/namei.c
++++ linux-2.6/fs/namei.c
 @@ -2250,7 +2250,7 @@ asmlinkage long sys_symlink(const char _
  	return sys_symlinkat(oldname, AT_FDCWD, newname);
  }
@@ -26,10 +26,10 @@ Index: linux-2.6-hooks/fs/namei.c
  	dput(new_dentry);
  out_unlock:
  	mutex_unlock(&nd.dentry->d_inode->i_mutex);
-Index: linux-2.6-hooks/include/linux/fs.h
+Index: linux-2.6/include/linux/fs.h
 ===================================================================
---- linux-2.6-hooks.orig/include/linux/fs.h
-+++ linux-2.6-hooks/include/linux/fs.h
+--- linux-2.6.orig/include/linux/fs.h
++++ linux-2.6/include/linux/fs.h
 @@ -982,7 +982,7 @@ extern int vfs_create(struct inode *, st
  extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
  extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
@@ -39,10 +39,10 @@ Index: linux-2.6-hooks/include/linux/fs.h
  extern int vfs_rmdir(struct inode *, struct dentry *);
  extern int vfs_unlink(struct inode *, struct dentry *);
  extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
-Index: linux-2.6-hooks/fs/ecryptfs/inode.c
+Index: linux-2.6/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/ecryptfs/inode.c
-+++ linux-2.6-hooks/fs/ecryptfs/inode.c
+--- linux-2.6.orig/fs/ecryptfs/inode.c
++++ linux-2.6/fs/ecryptfs/inode.c
 @@ -403,19 +403,24 @@ static int ecryptfs_link(struct dentry *
  			 struct dentry *new_dentry)
  {
@@ -70,11 +70,11 @@ Index: linux-2.6-hooks/fs/ecryptfs/inode.c
  	if (rc || !lower_new_dentry->d_inode)
  		goto out_lock;
  	rc = ecryptfs_interpose(lower_new_dentry, new_dentry, dir->i_sb, 0);
-Index: linux-2.6-hooks/fs/nfsd/vfs.c
+Index: linux-2.6/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/nfsd/vfs.c
-+++ linux-2.6-hooks/fs/nfsd/vfs.c
-@@ -1528,7 +1528,7 @@ nfsd_link(struct svc_rqst *rqstp, struct
+--- linux-2.6.orig/fs/nfsd/vfs.c
++++ linux-2.6/fs/nfsd/vfs.c
+@@ -1527,7 +1527,7 @@ nfsd_link(struct svc_rqst *rqstp, struct
  	dold = tfhp->fh_dentry;
  	dest = dold->d_inode;
  

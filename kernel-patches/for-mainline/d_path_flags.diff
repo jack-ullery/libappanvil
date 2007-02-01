@@ -1,8 +1,8 @@
-Index: linux-2.6.19.1/fs/dcache.c
+Index: linux-2.6/fs/dcache.c
 ===================================================================
---- linux-2.6.19.1.orig/fs/dcache.c
-+++ linux-2.6.19.1/fs/dcache.c
-@@ -1731,9 +1731,11 @@ shouldnt_be_hashed:
+--- linux-2.6.orig/fs/dcache.c
++++ linux-2.6/fs/dcache.c
+@@ -1739,9 +1739,11 @@ shouldnt_be_hashed:
   * @rootmnt: vfsmnt to which the root dentry belongs
   * @buffer: buffer to return value in
   * @buflen: buffer length
@@ -15,7 +15,7 @@ Index: linux-2.6.19.1/fs/dcache.c
   *
   * Returns the buffer or an error code if the path was too long.
   *
-@@ -1741,7 +1743,7 @@ shouldnt_be_hashed:
+@@ -1749,7 +1751,7 @@ shouldnt_be_hashed:
   */
  static char * __d_path( struct dentry *dentry, struct vfsmount *vfsmnt,
  			struct dentry *root, struct vfsmount *rootmnt,
@@ -24,7 +24,7 @@ Index: linux-2.6.19.1/fs/dcache.c
  {
  	char * end = buffer+buflen;
  	char * retval;
-@@ -1749,7 +1751,8 @@ static char * __d_path( struct dentry *d
+@@ -1757,7 +1759,8 @@ static char * __d_path( struct dentry *d
  
  	*--end = '\0';
  	buflen--;
@@ -34,7 +34,7 @@ Index: linux-2.6.19.1/fs/dcache.c
  		buflen -= 10;
  		end -= 10;
  		if (buflen < 0)
-@@ -1808,8 +1811,8 @@ Elong:
+@@ -1816,8 +1819,8 @@ Elong:
  }
  
  /* write full pathname into buffer and return start of pathname */
@@ -45,7 +45,7 @@ Index: linux-2.6.19.1/fs/dcache.c
  {
  	char *res;
  	struct vfsmount *rootmnt;
-@@ -1820,7 +1823,7 @@ char * d_path(struct dentry *dentry, str
+@@ -1828,7 +1831,7 @@ char * d_path(struct dentry *dentry, str
  	root = dget(current->fs->root);
  	read_unlock(&current->fs->lock);
  	spin_lock(&dcache_lock);
@@ -54,7 +54,7 @@ Index: linux-2.6.19.1/fs/dcache.c
  	spin_unlock(&dcache_lock);
  	dput(root);
  	mntput(rootmnt);
-@@ -1869,7 +1872,8 @@ asmlinkage long sys_getcwd(char __user *
+@@ -1877,7 +1880,8 @@ asmlinkage long sys_getcwd(char __user *
  		unsigned long len;
  		char * cwd;
  
@@ -64,7 +64,7 @@ Index: linux-2.6.19.1/fs/dcache.c
  		spin_unlock(&dcache_lock);
  
  		error = PTR_ERR(cwd);
-@@ -2119,7 +2123,7 @@ EXPORT_SYMBOL(d_invalidate);
+@@ -2127,7 +2131,7 @@ EXPORT_SYMBOL(d_invalidate);
  EXPORT_SYMBOL(d_lookup);
  EXPORT_SYMBOL(d_move);
  EXPORT_SYMBOL_GPL(d_materialise_unique);
@@ -73,10 +73,10 @@ Index: linux-2.6.19.1/fs/dcache.c
  EXPORT_SYMBOL(d_prune_aliases);
  EXPORT_SYMBOL(d_rehash);
  EXPORT_SYMBOL(d_splice_alias);
-Index: linux-2.6.19.1/include/linux/dcache.h
+Index: linux-2.6/include/linux/dcache.h
 ===================================================================
---- linux-2.6.19.1.orig/include/linux/dcache.h
-+++ linux-2.6.19.1/include/linux/dcache.h
+--- linux-2.6.orig/include/linux/dcache.h
++++ linux-2.6/include/linux/dcache.h
 @@ -176,6 +176,9 @@ d_iput:		no		no		no       yes
  
  #define DCACHE_INOTIFY_PARENT_WATCHED	0x0020 /* Parent inode is watched */

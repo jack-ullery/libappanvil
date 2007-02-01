@@ -13,10 +13,10 @@ The next patch passes the vfsmount to the inode_setattr LSM hook.
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6-hooks/fs/attr.c
+Index: linux-2.6/fs/attr.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/attr.c
-+++ linux-2.6-hooks/fs/attr.c
+--- linux-2.6.orig/fs/attr.c
++++ linux-2.6/fs/attr.c
 @@ -101,7 +101,8 @@ int inode_setattr(struct inode * inode, 
  }
  EXPORT_SYMBOL(inode_setattr);
@@ -27,10 +27,10 @@ Index: linux-2.6-hooks/fs/attr.c
  {
  	struct inode *inode = dentry->d_inode;
  	mode_t mode;
-Index: linux-2.6-hooks/include/linux/fs.h
+Index: linux-2.6/include/linux/fs.h
 ===================================================================
---- linux-2.6-hooks.orig/include/linux/fs.h
-+++ linux-2.6-hooks/include/linux/fs.h
+--- linux-2.6.orig/include/linux/fs.h
++++ linux-2.6/include/linux/fs.h
 @@ -1457,8 +1457,8 @@ static inline int break_lease(struct ino
  
  /* fs/open.c */
@@ -51,10 +51,10 @@ Index: linux-2.6-hooks/include/linux/fs.h
  extern int permission(struct inode *, int, struct nameidata *);
  extern int generic_permission(struct inode *, int,
  		int (*check_acl)(struct inode *, int));
-Index: linux-2.6-hooks/fs/ecryptfs/inode.c
+Index: linux-2.6/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/ecryptfs/inode.c
-+++ linux-2.6-hooks/fs/ecryptfs/inode.c
+--- linux-2.6.orig/fs/ecryptfs/inode.c
++++ linux-2.6/fs/ecryptfs/inode.c
 @@ -856,12 +856,14 @@ static int ecryptfs_setattr(struct dentr
  {
  	int rc = 0;
@@ -79,10 +79,10 @@ Index: linux-2.6-hooks/fs/ecryptfs/inode.c
  out:
  	fsstack_copy_attr_all(inode, lower_inode, NULL);
  	return rc;
-Index: linux-2.6-hooks/fs/fat/file.c
+Index: linux-2.6/fs/fat/file.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/fat/file.c
-+++ linux-2.6-hooks/fs/fat/file.c
+--- linux-2.6.orig/fs/fat/file.c
++++ linux-2.6/fs/fat/file.c
 @@ -92,7 +92,7 @@ int fat_generic_ioctl(struct inode *inod
  		}
  
@@ -92,10 +92,10 @@ Index: linux-2.6-hooks/fs/fat/file.c
  		if (err)
  			goto up;
  
-Index: linux-2.6-hooks/fs/hpfs/namei.c
+Index: linux-2.6/fs/hpfs/namei.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/hpfs/namei.c
-+++ linux-2.6-hooks/fs/hpfs/namei.c
+--- linux-2.6.orig/fs/hpfs/namei.c
++++ linux-2.6/fs/hpfs/namei.c
 @@ -426,7 +426,7 @@ again:
  			/*printk("HPFS: truncating file before delete.\n");*/
  			newattrs.ia_size = 0;
@@ -105,11 +105,11 @@ Index: linux-2.6-hooks/fs/hpfs/namei.c
  			put_write_access(inode);
  			if (!err)
  				goto again;
-Index: linux-2.6-hooks/fs/nfsd/vfs.c
+Index: linux-2.6/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/nfsd/vfs.c
-+++ linux-2.6-hooks/fs/nfsd/vfs.c
-@@ -359,7 +359,7 @@ nfsd_setattr(struct svc_rqst *rqstp, str
+--- linux-2.6.orig/fs/nfsd/vfs.c
++++ linux-2.6/fs/nfsd/vfs.c
+@@ -358,7 +358,7 @@ nfsd_setattr(struct svc_rqst *rqstp, str
  	err = nfserr_notsync;
  	if (!check_guard || guardtime == inode->i_ctime.tv_sec) {
  		fh_lock(fhp);
@@ -118,7 +118,7 @@ Index: linux-2.6-hooks/fs/nfsd/vfs.c
  		err = nfserrno(host_err);
  		fh_unlock(fhp);
  	}
-@@ -897,7 +897,7 @@ static void kill_suid(struct dentry *den
+@@ -896,7 +896,7 @@ static void kill_suid(struct dentry *den
  	ia.ia_valid = ATTR_KILL_SUID | ATTR_KILL_SGID;
  
  	mutex_lock(&dentry->d_inode->i_mutex);
@@ -127,10 +127,10 @@ Index: linux-2.6-hooks/fs/nfsd/vfs.c
  	mutex_unlock(&dentry->d_inode->i_mutex);
  }
  
-Index: linux-2.6-hooks/fs/open.c
+Index: linux-2.6/fs/open.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/open.c
-+++ linux-2.6-hooks/fs/open.c
+--- linux-2.6.orig/fs/open.c
++++ linux-2.6/fs/open.c
 @@ -194,8 +194,8 @@ out:
  	return error;
  }
@@ -243,10 +243,10 @@ Index: linux-2.6-hooks/fs/open.c
  	fput(file);
  out:
  	return error;
-Index: linux-2.6-hooks/fs/reiserfs/xattr.c
+Index: linux-2.6/fs/reiserfs/xattr.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/reiserfs/xattr.c
-+++ linux-2.6-hooks/fs/reiserfs/xattr.c
+--- linux-2.6.orig/fs/reiserfs/xattr.c
++++ linux-2.6/fs/reiserfs/xattr.c
 @@ -527,7 +527,7 @@ reiserfs_xattr_set(struct inode *inode, 
  	newattrs.ia_size = buffer_size;
  	newattrs.ia_valid = ATTR_SIZE | ATTR_CTIME;
@@ -274,10 +274,10 @@ Index: linux-2.6-hooks/fs/reiserfs/xattr.c
  	unlock_kernel();
  
        out_dir:
-Index: linux-2.6-hooks/fs/sysfs/file.c
+Index: linux-2.6/fs/sysfs/file.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/sysfs/file.c
-+++ linux-2.6-hooks/fs/sysfs/file.c
+--- linux-2.6.orig/fs/sysfs/file.c
++++ linux-2.6/fs/sysfs/file.c
 @@ -526,7 +526,7 @@ int sysfs_chmod_file(struct kobject *kob
  			newattrs.ia_mode = (mode & S_IALLUGO) |
  						(inode->i_mode & ~S_IALLUGO);
@@ -287,10 +287,10 @@ Index: linux-2.6-hooks/fs/sysfs/file.c
  			mutex_unlock(&inode->i_mutex);
  		}
  		dput(victim);
-Index: linux-2.6-hooks/fs/utimes.c
+Index: linux-2.6/fs/utimes.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/utimes.c
-+++ linux-2.6-hooks/fs/utimes.c
+--- linux-2.6.orig/fs/utimes.c
++++ linux-2.6/fs/utimes.c
 @@ -62,7 +62,7 @@ asmlinkage long sys_utime(char __user * 
  			goto dput_and_out;
  	}
@@ -309,10 +309,10 @@ Index: linux-2.6-hooks/fs/utimes.c
  	mutex_unlock(&inode->i_mutex);
  dput_and_out:
  	path_release(&nd);
-Index: linux-2.6-hooks/mm/filemap.c
+Index: linux-2.6/mm/filemap.c
 ===================================================================
---- linux-2.6-hooks.orig/mm/filemap.c
-+++ linux-2.6-hooks/mm/filemap.c
+--- linux-2.6.orig/mm/filemap.c
++++ linux-2.6/mm/filemap.c
 @@ -1897,7 +1897,7 @@ int __remove_suid(struct path *path, int
  	struct iattr newattrs;
  
@@ -322,10 +322,10 @@ Index: linux-2.6-hooks/mm/filemap.c
  }
  
  int remove_suid(struct path *path)
-Index: linux-2.6-hooks/fs/exec.c
+Index: linux-2.6/fs/exec.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/exec.c
-+++ linux-2.6-hooks/fs/exec.c
+--- linux-2.6.orig/fs/exec.c
++++ linux-2.6/fs/exec.c
 @@ -1534,7 +1534,8 @@ int do_coredump(long signr, int exit_cod
  		goto close_fail;
  	if (!file->f_op->write)
@@ -336,10 +336,10 @@ Index: linux-2.6-hooks/fs/exec.c
  		goto close_fail;
  
  	retval = binfmt->core_dump(signr, regs, file);
-Index: linux-2.6-hooks/fs/namei.c
+Index: linux-2.6/fs/namei.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/namei.c
-+++ linux-2.6-hooks/fs/namei.c
+--- linux-2.6.orig/fs/namei.c
++++ linux-2.6/fs/namei.c
 @@ -1580,7 +1580,8 @@ int may_open(struct nameidata *nd, int a
  		if (!error) {
  			DQUOT_INIT(inode);
@@ -350,10 +350,10 @@ Index: linux-2.6-hooks/fs/namei.c
  		}
  		put_write_access(inode);
  		if (error)
-Index: linux-2.6-hooks/mm/tiny-shmem.c
+Index: linux-2.6/mm/tiny-shmem.c
 ===================================================================
---- linux-2.6-hooks.orig/mm/tiny-shmem.c
-+++ linux-2.6-hooks/mm/tiny-shmem.c
+--- linux-2.6.orig/mm/tiny-shmem.c
++++ linux-2.6/mm/tiny-shmem.c
 @@ -86,7 +86,7 @@ struct file *shmem_file_setup(char *name
  	file->f_mode = FMODE_WRITE | FMODE_READ;
  

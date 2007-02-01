@@ -3,10 +3,10 @@ Add a struct vfsmount parameter to vfs_unlink()
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6-hooks/fs/ecryptfs/inode.c
+Index: linux-2.6/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/ecryptfs/inode.c
-+++ linux-2.6-hooks/fs/ecryptfs/inode.c
+--- linux-2.6.orig/fs/ecryptfs/inode.c
++++ linux-2.6/fs/ecryptfs/inode.c
 @@ -445,10 +445,11 @@ static int ecryptfs_unlink(struct inode 
  {
  	int rc = 0;
@@ -20,10 +20,10 @@ Index: linux-2.6-hooks/fs/ecryptfs/inode.c
  	if (rc) {
  		printk(KERN_ERR "Error in vfs_unlink; rc = [%d]\n", rc);
  		goto out_unlock;
-Index: linux-2.6-hooks/fs/namei.c
+Index: linux-2.6/fs/namei.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/namei.c
-+++ linux-2.6-hooks/fs/namei.c
+--- linux-2.6.orig/fs/namei.c
++++ linux-2.6/fs/namei.c
 @@ -2086,7 +2086,7 @@ asmlinkage long sys_rmdir(const char __u
  	return do_rmdir(AT_FDCWD, pathname);
  }
@@ -42,10 +42,10 @@ Index: linux-2.6-hooks/fs/namei.c
  	exit2:
  		dput(dentry);
  	}
-Index: linux-2.6-hooks/fs/nfsd/nfs4recover.c
+Index: linux-2.6/fs/nfsd/nfs4recover.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/nfsd/nfs4recover.c
-+++ linux-2.6-hooks/fs/nfsd/nfs4recover.c
+--- linux-2.6.orig/fs/nfsd/nfs4recover.c
++++ linux-2.6/fs/nfsd/nfs4recover.c
 @@ -260,7 +260,7 @@ nfsd4_remove_clid_file(struct dentry *di
  		return -EINVAL;
  	}
@@ -55,11 +55,11 @@ Index: linux-2.6-hooks/fs/nfsd/nfs4recover.c
  	mutex_unlock(&dir->d_inode->i_mutex);
  	return status;
  }
-Index: linux-2.6-hooks/fs/nfsd/vfs.c
+Index: linux-2.6/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/nfsd/vfs.c
-+++ linux-2.6-hooks/fs/nfsd/vfs.c
-@@ -1693,7 +1693,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+--- linux-2.6.orig/fs/nfsd/vfs.c
++++ linux-2.6/fs/nfsd/vfs.c
+@@ -1692,7 +1692,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
  			host_err = -EPERM;
  		} else
  #endif
@@ -68,10 +68,10 @@ Index: linux-2.6-hooks/fs/nfsd/vfs.c
  	} else { /* It's RMDIR */
  		host_err = vfs_rmdir(dirp, rdentry, NULL);
  	}
-Index: linux-2.6-hooks/include/linux/fs.h
+Index: linux-2.6/include/linux/fs.h
 ===================================================================
---- linux-2.6-hooks.orig/include/linux/fs.h
-+++ linux-2.6-hooks/include/linux/fs.h
+--- linux-2.6.orig/include/linux/fs.h
++++ linux-2.6/include/linux/fs.h
 @@ -984,7 +984,7 @@ extern int vfs_mknod(struct inode *, str
  extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
  extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
@@ -81,10 +81,10 @@ Index: linux-2.6-hooks/include/linux/fs.h
  extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
  
  /*
-Index: linux-2.6-hooks/ipc/mqueue.c
+Index: linux-2.6/ipc/mqueue.c
 ===================================================================
---- linux-2.6-hooks.orig/ipc/mqueue.c
-+++ linux-2.6-hooks/ipc/mqueue.c
+--- linux-2.6.orig/ipc/mqueue.c
++++ linux-2.6/ipc/mqueue.c
 @@ -747,7 +747,7 @@ asmlinkage long sys_mq_unlink(const char
  	if (inode)
  		atomic_inc(&inode->i_count);

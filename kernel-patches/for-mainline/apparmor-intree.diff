@@ -1,7 +1,7 @@
-Index: linux-2.6.19/security/Kconfig
+Index: linux-2.6/security/Kconfig
 ===================================================================
---- linux-2.6.19.orig/security/Kconfig
-+++ linux-2.6.19/security/Kconfig
+--- linux-2.6.orig/security/Kconfig
++++ linux-2.6/security/Kconfig
 @@ -94,6 +94,7 @@ config SECURITY_ROOTPLUG
  	  If you are unsure how to answer this question, answer N.
  
@@ -10,10 +10,10 @@ Index: linux-2.6.19/security/Kconfig
  
  endmenu
  
-Index: linux-2.6.19/security/Makefile
+Index: linux-2.6/security/Makefile
 ===================================================================
---- linux-2.6.19.orig/security/Makefile
-+++ linux-2.6.19/security/Makefile
+--- linux-2.6.orig/security/Makefile
++++ linux-2.6/security/Makefile
 @@ -4,6 +4,7 @@
  
  obj-$(CONFIG_KEYS)			+= keys/

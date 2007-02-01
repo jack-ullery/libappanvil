@@ -6,10 +6,10 @@ calling iop->setattr.
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6-hooks/fs/proc/base.c
+Index: linux-2.6/fs/proc/base.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/proc/base.c
-+++ linux-2.6-hooks/fs/proc/base.c
+--- linux-2.6.orig/fs/proc/base.c
++++ linux-2.6/fs/proc/base.c
 @@ -344,11 +344,8 @@ static int proc_setattr(struct dentry *d
  		return -EPERM;
  

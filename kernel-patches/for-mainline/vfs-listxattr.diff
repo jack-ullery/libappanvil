@@ -3,10 +3,10 @@ Add a struct vfsmount parameter to vfs_listxattr()
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6-hooks/fs/xattr.c
+Index: linux-2.6/fs/xattr.c
 ===================================================================
---- linux-2.6-hooks.orig/fs/xattr.c
-+++ linux-2.6-hooks/fs/xattr.c
+--- linux-2.6.orig/fs/xattr.c
++++ linux-2.6/fs/xattr.c
 @@ -144,18 +144,20 @@ vfs_getxattr(struct dentry *dentry, stru
  EXPORT_SYMBOL_GPL(vfs_getxattr);
  
@@ -80,10 +80,10 @@ Index: linux-2.6-hooks/fs/xattr.c
  	fput(f);
  	return error;
  }
-Index: linux-2.6-hooks/include/linux/xattr.h
+Index: linux-2.6/include/linux/xattr.h
 ===================================================================
---- linux-2.6-hooks.orig/include/linux/xattr.h
-+++ linux-2.6-hooks/include/linux/xattr.h
+--- linux-2.6.orig/include/linux/xattr.h
++++ linux-2.6/include/linux/xattr.h
 @@ -42,7 +42,8 @@ struct xattr_handler {
  
  ssize_t vfs_getxattr(struct dentry *, struct vfsmount *, char *, void *,
