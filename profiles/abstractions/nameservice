@@ -17,6 +17,7 @@
   /etc/host.conf          r,
   /etc/hosts              r,
   /etc/ldap.conf          r,
+  /etc/ldap.secret        r,
   /etc/nsswitch.conf      r,
   /etc/passwd             r,
   /etc/protocols          r,
