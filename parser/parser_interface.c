@@ -26,6 +26,7 @@
 #define _(s) gettext(s)
 
 #include "parser.h"
+#include "libapparmor_re/apparmor_re.h"
 
 #include <unistd.h>
 #include <linux/unistd.h>
@@ -470,6 +471,31 @@ int sd_serialize_file_entry(sd_serialize *p, struct cod_entry *file_entry)
 	return 1;
 }
 
+int sd_serialize_dfa(sd_serialize *p, void *dfa, size_t size)
+{
+	/* fake up a file entry in regex entry list */
+	PDEBUG("Writing file entry. name '%s'\n", file_entry->name);
+	if (!sd_write_list(p, "pgent"))
+		return 0;
+	if (!sd_write_struct(p, "fe"))
+		return 0;
+	if (!sd_write_string(p, "dfa", NULL))
+		return 0;
+	/* list entry has having all perms but no exec modifiers */
+	if (!sd_write32(p, 0x7fffffff & ~AA_EXEC_MODIFIERS))
+		return 0;
+	if (!sd_write32(p, ePatternRegex))
+		return 0;
+	if (!sd_write_blob(p, dfa, size, "aadfa"))
+		return 0;
+	if (!sd_write_structend(p))
+		return 0;
+	if (!sd_write_listend(p))
+		return 0;
+
+	return 1;
+}
+
 int count_file_ents(struct cod_entry *list)
 {
 	struct cod_entry *file_entry;
@@ -529,49 +555,55 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile)
 	if (!sd_write32(p, profile->capabilities))
 		return 0;
 
-	/* pcre globbing entries */
-	if (count_pcre_ents(profile->entries)) {
-		if (!sd_write_list(p, "pgent"))
+	/* either have a single dfa or lists of different entry types */
+	if (profile->dfa) {
+		if (!sd_serialize_dfa(p, profile->dfa, profile->dfa_size))
 			return 0;
-		for (file_entry = profile->entries; file_entry;
-		     file_entry = file_entry->next) {
-			if (file_entry->pattern_type == ePatternRegex) {
-				if (!sd_serialize_file_entry(p, file_entry))
-					return 0;
+	} else {
+		/* pcre globbing entries */
+		if (count_pcre_ents(profile->entries)) {
+			if (!sd_write_list(p, "pgent"))
+				return 0;
+			for (file_entry = profile->entries; file_entry;
+			     file_entry = file_entry->next) {
+				if (file_entry->pattern_type == ePatternRegex) {
+					if (!sd_serialize_file_entry(p, file_entry))
+						return 0;
+				}
 			}
+			if (!sd_write_listend(p))
+				return 0;
 		}
-		if (!sd_write_listend(p))
-			return 0;
-	}
 
-	/* simple globbing entries */
-	if (count_tailglob_ents(profile->entries)) {
-		if (!sd_write_list(p, "sgent"))
-			return 0;
-		for (file_entry = profile->entries; file_entry;
-		     file_entry = file_entry->next) {
-			if (file_entry->pattern_type == ePatternTailGlob) {
-				if (!sd_serialize_file_entry(p, file_entry))
-					return 0;
+		/* simple globbing entries */
+		if (count_tailglob_ents(profile->entries)) {
+			if (!sd_write_list(p, "sgent"))
+				return 0;
+			for (file_entry = profile->entries; file_entry;
+			     file_entry = file_entry->next) {
+				if (file_entry->pattern_type == ePatternTailGlob) {
+					if (!sd_serialize_file_entry(p, file_entry))
+						return 0;
+				}
 			}
+			if (!sd_write_listend(p))
+				return 0;
 		}
-		if (!sd_write_listend(p))
-			return 0;
-	}
 
-	/* basic file entries */
-	if (count_file_ents(profile->entries)) {
-		if (!sd_write_list(p, "fent"))
-			return 0;
-		for (file_entry = profile->entries; file_entry;
-		     file_entry = file_entry->next) {
-			if (file_entry->pattern_type == ePatternBasic) {
-				if (!sd_serialize_file_entry(p, file_entry))
-					return 0;
+		/* basic file entries */
+		if (count_file_ents(profile->entries)) {
+			if (!sd_write_list(p, "fent"))
+				return 0;
+			for (file_entry = profile->entries; file_entry;
+			     file_entry = file_entry->next) {
+				if (file_entry->pattern_type == ePatternBasic) {
+					if (!sd_serialize_file_entry(p, file_entry))
+						return 0;
+				}
 			}
+			if (!sd_write_listend(p))
+				return 0;
 		}
-		if (!sd_write_listend(p))
-			return 0;
 	}
 
 	if (profile->net_entries) {
