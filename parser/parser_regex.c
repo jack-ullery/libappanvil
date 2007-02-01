@@ -27,7 +27,6 @@
 /* #define DEBUG */
 
 #include "parser.h"
-#include "libapparmor_re/apparmor_re.h"
 
 enum error_type {
 	e_no_error,
@@ -114,11 +113,10 @@ static void filter_slashes(char *path)
 	}
 }
 
-static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
-					 char *pcre, size_t pcre_size)
+static int process_regex_entry(struct cod_entry *entry)
 {
 #define STORE(_src, _dest, _len) \
-	if ((const char*)_dest + _len > (pcre + pcre_size)){ \
+	if ((const char*)_dest + _len > tbufend){ \
 		error = e_buffer_overflow; \
 	} else { \
 		memcpy(_dest, _src, _len); \
@@ -129,6 +127,9 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 	int ret = TRUE;
 	/* flag to indicate input error */
 	enum error_type error;
+
+	char tbuf[PATH_MAX + 3];	/* +3 for ^, $ and \0 */
+	const char *tbufend = &tbuf[PATH_MAX];
 
 	const char *sptr;
 	char *dptr;
@@ -141,12 +142,14 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 	error = e_no_error;
 	ptype = ePatternBasic;	/* assume no regex */
 
-	sptr = aare;
-	dptr = pcre;
+	if (!entry) 		/* shouldn't happen */
+		return TRUE;
 
-	if (anchor)
-		/* anchor beginning of regular expression */
-		*dptr++ = '^';
+	sptr = entry->name;
+	dptr = tbuf;
+
+	/* anchor beginning of regular expression */
+	*dptr++ = '^';
 
 	while (error == e_no_error && *sptr) {
 		switch (*sptr) {
@@ -339,10 +342,10 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 	}
 
 	/* anchor end and terminate pattern string */
-	if (error == e_no_error && anchor)
-		STORE("$" , dptr, 1);
 	if (error == e_no_error) {
-		STORE("", dptr, 1);
+		char buf[2] = { '$', 0 };
+
+		STORE(buf, dptr, 2);
 	}
 
 	/* check error  again, as above STORE may have set it */
@@ -353,30 +356,11 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 		}
 
 		PERROR(_("%s: Unable to parse input line '%s'\n"),
-		       progname, aare);
+		       progname, entry->name);
 
 		ret = FALSE;
 		goto out;
 	}
-
-out:
-	if (ret == FALSE)
-		ptype = ePatternInvalid;
-	return ptype;
-}
-
-static int process_pcre_entry(struct cod_entry *entry)
-{
-	char tbuf[PATH_MAX + 3];	/* +3 for ^, $ and \0 */
-	int ret = TRUE;
-	pattern_t ptype;
-
-	if (!entry) 		/* shouldn't happen */
-		return TRUE;
-
-	ptype = convert_aaregex_to_pcre(entry->name, 1, tbuf, PATH_MAX + 3);
-	if (ptype == ePatternInvalid)
-		return FALSE;
 
 	entry->pattern_type = ptype;
 
@@ -438,89 +422,33 @@ static int process_pcre_entry(struct cod_entry *entry)
 		filter_escapes(entry->name);
 	}		/* ptype == ePatternRegex */
 
+out:
 	return ret;
 }
 
-static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
-{
-	char tbuf[PATH_MAX + 3];	/* +3 for ^, $ and \0 */
-	int ret = TRUE;
-	pattern_t ptype;
-
-	if (!entry) 		/* shouldn't happen */
-		return TRUE;
-
-	ptype = convert_aaregex_to_pcre(entry->name, 0, tbuf, PATH_MAX + 3);
-	if (ptype == ePatternInvalid)
-		return FALSE;
-
-	entry->pattern_type = ptype;
-
-	/* ix implies m but the apparmor module does not add m bit to
-	 * dfa states like it does for pcre
-	 */
-	if (entry->mode & KERN_COD_EXEC_INHERIT)
-		entry->mode |= KERN_COD_EXEC_MMAP;
-	if (!aare_add_rule(dfarules, tbuf, entry->mode))
-		ret = FALSE;
-
-	return ret;
-}
-
-int post_process_entries(struct codomain *cod)
+int post_process_entries(struct cod_entry *entry_list)
 {
 	int ret = TRUE, rc;
 	struct cod_entry *entry;
-	int count = 0;
 
-	for (entry = cod->entries; entry; entry = entry->next) {
+	for (entry = entry_list; entry; entry = entry->next) {
 		filter_slashes(entry->name);
-		if (regex_type == AARE_DFA)
-			rc = process_dfa_entry(cod->dfarules, entry);
-		else
-			rc = process_pcre_entry(entry);
+		rc = process_regex_entry(entry);
 		if (!rc)
 			ret = FALSE;
-		count++;
 	}
 
-	code->dfarule_count = count;
 	return ret;
 }
 
 int process_regex(struct codomain *cod)
 {
-	int error = -1;
+	int error = 0;
 
-	if (regex_type == AARE_DFA) {
-		cod->dfarules = aare_new_ruleset(0);
-		if (!cod->dfarules)
-			goto out;
+	if (!post_process_entries(cod->entries)) {
+		error = -1;
 	}
-	if (!post_process_entries(cod))
-{
-fprintf(stderr, "Failed post_process_entries\n");
-		goto out;
-}
 
-	if (regex_type == AARE_DFA && cod->dfarule_count > 0) {
-		cod->dfa = aare_create_dfa(cod->dfarules, 0, &cod->dfa_size);
-		if (!cod->dfa)
-{
-fprintf(stderr, "Failed create dfa\n");
-			goto out;
-}
-/*
-		if (cod->dfa_size == 0) {
-			PERROR(_("profile %s: has merged rules (%s) with "
-				 "multiple x modifiers\n"),
-			       cod->name, (char *) cod->dfa);
-			free(cod->dfa);
-			cod->dfa = NULL;
-			goto out;
-		}
-*/
-	}
 	/*
 	 * Post process subdomain(s):
 	 *
@@ -536,11 +464,8 @@ fprintf(stderr, "Failed create dfa\n");
 	 * }
 	 */
 	if (process_hat_regex(cod) != 0)
-		goto out;
+		error = -1;
 
-	error = 0;
-
-out:
 	return error;
 }
 

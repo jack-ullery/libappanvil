@@ -48,7 +48,6 @@
 #define MATCH_STRING "/sys/kernel/security/" MODULE_NAME "/matching"
 #define MOUNTED_FS "/proc/mounts"
 #define PCRE "pattern=pcre"
-#define AADFA "pattern=aadfa"
 
 #define UNPRIVILEGED_OPS (debug || preprocess_only || option == OPTION_STDOUT || names_only || \
 			  dump_vars || dump_expanded_vars)
@@ -66,8 +65,6 @@ int conf_quiet = 0;
 char *subdomainbase = NULL;
 char *profilename;
 char *match_string = NULL;
-int regex_type = AARE_NONE;
-
 extern int current_lineno;
 
 struct option long_options[] = {
@@ -390,7 +387,7 @@ static void get_match_string(void) {
 
 	/* has process_args() already assigned a match string? */
 	if (match_string)
-		goto out;
+		return;
 
 	FILE *ms = fopen(MATCH_STRING, "r");
 	if (!ms)
@@ -407,28 +404,22 @@ static void get_match_string(void) {
 	}
 
 out:
-	if (match_string) {
-		if (strstr(match_string, PCRE))
-			regex_type = AARE_PCRE;
-
-		if (strstr(match_string, AADFA))
-			regex_type = AARE_DFA;
-	}
-
-	if (ms)
-		fclose(ms);
+	fclose(ms);
 	return;
 }
 
 /* return 1 --> PCRE should work fine
    return 0 --> no PCRE support */
-static int regex_support(void) {
+static int pcre_support(void) {
+
+	get_match_string();
+
 	/* no match string, predates (or postdates?) the split matching
 	module design */
 	if (!match_string)
 		return 1;
 
-	if (regex_type != AARE_NONE)
+	if (strstr(match_string, PCRE))
 		return 1;
 
 	return 0;
@@ -445,9 +436,6 @@ int process_profile(int option, char *profilename)
 	retval = yyparse();
 	if (retval != 0)
 		goto out;
-
-	/* Get the match string to determine type of regex support needed */
-	get_match_string();
 
 	retval = post_process_policy();
   	if (retval != 0) {
@@ -482,7 +470,7 @@ int process_profile(int option, char *profilename)
 	if (!subdomainbase && !preprocess_only && !(option == OPTION_STDOUT))
 			find_subdomainfs_mountpoint();
 
-	if (!regex_support()) {
+	if (!pcre_support()) {
 		die_if_any_regex();
 	}
 
