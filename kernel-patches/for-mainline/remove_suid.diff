@@ -1,100 +1,99 @@
 Pass struct file down to remove_suid and children
 
-We always call remove_suid for a specific struct file. Pass this
-struct down into remove_suid and children instead of the dentry
-of the file. We can then call notify_change() with the vfsmount
-and dentry of the file (next patch).
+Pass struct path to remove_suid and should_remove_suid instead of
+only the dentry. Required by a later patch that adds a struct
+vfsmount parameter to notify_change().
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6.19/mm/filemap.c
+Index: linux-2.6-hooks/mm/filemap.c
 ===================================================================
---- linux-2.6.19.orig/mm/filemap.c
-+++ linux-2.6.19/mm/filemap.c
-@@ -1872,9 +1872,9 @@ repeat:
+--- linux-2.6-hooks.orig/mm/filemap.c
++++ linux-2.6-hooks/mm/filemap.c
+@@ -1869,9 +1869,9 @@ repeat:
   *	if suid or (sgid and xgrp)
   *		remove privs
   */
 -int should_remove_suid(struct dentry *dentry)
-+int should_remove_suid(struct file *file)
++int should_remove_suid(struct path *path)
  {
 -	mode_t mode = dentry->d_inode->i_mode;
-+	mode_t mode = file->f_dentry->d_inode->i_mode;
++	mode_t mode = path->dentry->d_inode->i_mode;
  	int kill = 0;
  
  	/* suid always must be killed */
-@@ -1894,20 +1894,20 @@ int should_remove_suid(struct dentry *de
- 	return 0;
+@@ -1892,20 +1892,20 @@ int should_remove_suid(struct dentry *de
  }
+ EXPORT_SYMBOL(should_remove_suid);
  
 -int __remove_suid(struct dentry *dentry, int kill)
-+int __remove_suid(struct file *file, int kill)
++int __remove_suid(struct path *path, int kill)
  {
  	struct iattr newattrs;
  
  	newattrs.ia_valid = ATTR_FORCE | kill;
 -	return notify_change(dentry, &newattrs);
-+	return notify_change(file->f_dentry, &newattrs);
++	return notify_change(path->dentry, &newattrs);
  }
  
 -int remove_suid(struct dentry *dentry)
-+int remove_suid(struct file *file)
++int remove_suid(struct path *path)
  {
 -	int kill = should_remove_suid(dentry);
-+	int kill = should_remove_suid(file);
++	int kill = should_remove_suid(path);
  
  	if (unlikely(kill))
 -		return __remove_suid(dentry, kill);
-+		return __remove_suid(file, kill);
++		return __remove_suid(path, kill);
  
  	return 0;
  }
-@@ -2269,7 +2269,7 @@ __generic_file_aio_write_nolock(struct k
+@@ -2266,7 +2266,7 @@ __generic_file_aio_write_nolock(struct k
  	if (count == 0)
  		goto out;
  
--	err = remove_suid(file->f_dentry);
-+	err = remove_suid(file);
+-	err = remove_suid(file->f_path.dentry);
++	err = remove_suid(&file->f_path);
  	if (err)
  		goto out;
  
-Index: linux-2.6.19/fs/ntfs/file.c
+Index: linux-2.6-hooks/fs/ntfs/file.c
 ===================================================================
---- linux-2.6.19.orig/fs/ntfs/file.c
-+++ linux-2.6.19/fs/ntfs/file.c
+--- linux-2.6-hooks.orig/fs/ntfs/file.c
++++ linux-2.6-hooks/fs/ntfs/file.c
 @@ -2162,7 +2162,7 @@ static ssize_t ntfs_file_aio_write_noloc
  		goto out;
  	if (!count)
  		goto out;
--	err = remove_suid(file->f_dentry);
-+	err = remove_suid(file);
+-	err = remove_suid(file->f_path.dentry);
++	err = remove_suid(&file->f_path);
  	if (err)
  		goto out;
  	file_update_time(file);
-Index: linux-2.6.19/fs/reiserfs/file.c
+Index: linux-2.6-hooks/fs/reiserfs/file.c
 ===================================================================
---- linux-2.6.19.orig/fs/reiserfs/file.c
-+++ linux-2.6.19/fs/reiserfs/file.c
-@@ -1378,7 +1378,7 @@ static ssize_t reiserfs_file_write(struc
+--- linux-2.6-hooks.orig/fs/reiserfs/file.c
++++ linux-2.6-hooks/fs/reiserfs/file.c
+@@ -1353,7 +1353,7 @@ static ssize_t reiserfs_file_write(struc
  	if (count == 0)
  		goto out;
  
--	res = remove_suid(file->f_dentry);
-+	res = remove_suid(file);
+-	res = remove_suid(file->f_path.dentry);
++	res = remove_suid(&file->f_path);
  	if (res)
  		goto out;
  
-Index: linux-2.6.19/fs/splice.c
+Index: linux-2.6-hooks/fs/splice.c
 ===================================================================
---- linux-2.6.19.orig/fs/splice.c
-+++ linux-2.6.19/fs/splice.c
+--- linux-2.6-hooks.orig/fs/splice.c
++++ linux-2.6-hooks/fs/splice.c
 @@ -844,7 +844,7 @@ generic_file_splice_write_nolock(struct 
  	ssize_t ret;
  	int err;
  
--	err = remove_suid(out->f_dentry);
-+	err = remove_suid(out);
+-	err = remove_suid(out->f_path.dentry);
++	err = remove_suid(&out->f_path);
  	if (unlikely(err))
  		return err;
  
@@ -102,68 +101,115 @@ Index: linux-2.6.19/fs/splice.c
  	ssize_t ret;
  	int err;
  
--	err = should_remove_suid(out->f_dentry);
-+	err = should_remove_suid(out);
+-	err = should_remove_suid(out->f_path.dentry);
++	err = should_remove_suid(&out->f_path);
  	if (unlikely(err)) {
  		mutex_lock(&inode->i_mutex);
--		err = __remove_suid(out->f_dentry, err);
-+		err = __remove_suid(out, err);
+-		err = __remove_suid(out->f_path.dentry, err);
++		err = __remove_suid(&out->f_path, err);
  		mutex_unlock(&inode->i_mutex);
  		if (err)
  			return err;
-Index: linux-2.6.19/fs/xfs/linux-2.6/xfs_lrw.c
+Index: linux-2.6-hooks/fs/xfs/linux-2.6/xfs_lrw.c
 ===================================================================
---- linux-2.6.19.orig/fs/xfs/linux-2.6/xfs_lrw.c
-+++ linux-2.6.19/fs/xfs/linux-2.6/xfs_lrw.c
+--- linux-2.6-hooks.orig/fs/xfs/linux-2.6/xfs_lrw.c
++++ linux-2.6-hooks/fs/xfs/linux-2.6/xfs_lrw.c
 @@ -805,7 +805,7 @@ start:
  	     !capable(CAP_FSETID)) {
  		error = xfs_write_clear_setuid(xip);
  		if (likely(!error))
--			error = -remove_suid(file->f_dentry);
-+			error = -remove_suid(file);
+-			error = -remove_suid(file->f_path.dentry);
++			error = -remove_suid(&file->f_path);
  		if (unlikely(error)) {
  			xfs_iunlock(xip, iolock);
  			goto out_unlock_mutex;
-Index: linux-2.6.19/include/linux/fs.h
+Index: linux-2.6-hooks/include/linux/fs.h
 ===================================================================
---- linux-2.6.19.orig/include/linux/fs.h
-+++ linux-2.6.19/include/linux/fs.h
-@@ -1712,9 +1712,9 @@ extern void __iget(struct inode * inode)
+--- linux-2.6-hooks.orig/include/linux/fs.h
++++ linux-2.6-hooks/include/linux/fs.h
+@@ -1678,9 +1678,9 @@ extern void __iget(struct inode * inode)
  extern void clear_inode(struct inode *);
  extern void destroy_inode(struct inode *);
  extern struct inode *new_inode(struct super_block *);
 -extern int __remove_suid(struct dentry *, int);
 -extern int should_remove_suid(struct dentry *);
 -extern int remove_suid(struct dentry *);
-+extern int __remove_suid(struct file *, int);
-+extern int should_remove_suid(struct file *);
-+extern int remove_suid(struct file *);
++extern int __remove_suid(struct path *, int);
++extern int should_remove_suid(struct path *);
++extern int remove_suid(struct path *);
  extern void remove_dquot_ref(struct super_block *, int, struct list_head *);
  
  extern void __insert_inode_hash(struct inode *, unsigned long hashval);
-Index: linux-2.6.19/mm/filemap_xip.c
+Index: linux-2.6-hooks/mm/filemap_xip.c
 ===================================================================
---- linux-2.6.19.orig/mm/filemap_xip.c
-+++ linux-2.6.19/mm/filemap_xip.c
+--- linux-2.6-hooks.orig/mm/filemap_xip.c
++++ linux-2.6-hooks/mm/filemap_xip.c
 @@ -379,7 +379,7 @@ xip_file_write(struct file *filp, const 
  	if (count == 0)
  		goto out_backing;
  
--	ret = remove_suid(filp->f_dentry);
-+	ret = remove_suid(filp);
+-	ret = remove_suid(filp->f_path.dentry);
++	ret = remove_suid(&filp->f_path);
  	if (ret)
  		goto out_backing;
  
-Index: linux-2.6.19/mm/shmem.c
+Index: linux-2.6-hooks/mm/shmem.c
 ===================================================================
---- linux-2.6.19.orig/mm/shmem.c
-+++ linux-2.6.19/mm/shmem.c
-@@ -1442,7 +1442,7 @@ shmem_file_write(struct file *file, cons
+--- linux-2.6-hooks.orig/mm/shmem.c
++++ linux-2.6-hooks/mm/shmem.c
+@@ -1447,7 +1447,7 @@ shmem_file_write(struct file *file, cons
  	if (err || !count)
  		goto out;
  
--	err = remove_suid(file->f_dentry);
-+	err = remove_suid(file);
+-	err = remove_suid(file->f_path.dentry);
++	err = remove_suid(&file->f_path);
  	if (err)
  		goto out;
  
+Index: linux-2.6-hooks/fs/ocfs2/file.c
+===================================================================
+--- linux-2.6-hooks.orig/fs/ocfs2/file.c
++++ linux-2.6-hooks/fs/ocfs2/file.c
+@@ -1035,13 +1035,13 @@ out:
+ 	return ret;
+ }
+ 
+-static int ocfs2_prepare_inode_for_write(struct dentry *dentry,
++static int ocfs2_prepare_inode_for_write(struct path *path,
+ 					 loff_t *ppos,
+ 					 size_t count,
+ 					 int appending)
+ {
+ 	int ret = 0, meta_level = appending;
+-	struct inode *inode = dentry->d_inode;
++	struct inode *inode = path->dentry->d_inode;
+ 	u32 clusters;
+ 	loff_t newsize, saved_pos;
+ 
+@@ -1067,7 +1067,7 @@ static int ocfs2_prepare_inode_for_write
+ 		 * inode. There's also the dinode i_size state which
+ 		 * can be lost via setattr during extending writes (we
+ 		 * set inode->i_size at the end of a write. */
+-		if (should_remove_suid(dentry)) {
++		if (should_remove_suid(path)) {
+ 			if (meta_level == 0) {
+ 				ocfs2_meta_unlock(inode, meta_level);
+ 				meta_level = 1;
+@@ -1176,7 +1176,7 @@ static ssize_t ocfs2_file_aio_write(stru
+ 		goto out;
+ 	}
+ 
+-	ret = ocfs2_prepare_inode_for_write(filp->f_path.dentry, &iocb->ki_pos,
++	ret = ocfs2_prepare_inode_for_write(&filp->f_path, &iocb->ki_pos,
+ 					    iocb->ki_left, appending);
+ 	if (ret < 0) {
+ 		mlog_errno(ret);
+@@ -1239,7 +1239,7 @@ static ssize_t ocfs2_file_splice_write(s
+ 		goto out;
+ 	}
+ 
+-	ret = ocfs2_prepare_inode_for_write(out->f_path.dentry, ppos, len, 0);
++	ret = ocfs2_prepare_inode_for_write(&out->f_path, ppos, len, 0);
+ 	if (ret < 0) {
+ 		mlog_errno(ret);
+ 		goto out_unlock;

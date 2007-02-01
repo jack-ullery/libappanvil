@@ -3,11 +3,11 @@ Add struct vfsmount parameters to vfs_rename()
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6.19/fs/ecryptfs/inode.c
+Index: linux-2.6-hooks/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6.19.orig/fs/ecryptfs/inode.c
-+++ linux-2.6.19/fs/ecryptfs/inode.c
-@@ -627,19 +627,24 @@ ecryptfs_rename(struct inode *old_dir, s
+--- linux-2.6-hooks.orig/fs/ecryptfs/inode.c
++++ linux-2.6-hooks/fs/ecryptfs/inode.c
+@@ -590,19 +590,24 @@ ecryptfs_rename(struct inode *old_dir, s
  {
  	int rc;
  	struct dentry *lower_old_dentry;
@@ -32,12 +32,12 @@ Index: linux-2.6.19/fs/ecryptfs/inode.c
 +			lower_new_dentry, lower_new_mnt);
  	if (rc)
  		goto out_lock;
- 	ecryptfs_copy_attr_all(new_dir, lower_new_dir_dentry->d_inode);
-Index: linux-2.6.19/fs/namei.c
+ 	fsstack_copy_attr_all(new_dir, lower_new_dir_dentry->d_inode, NULL);
+Index: linux-2.6-hooks/fs/namei.c
 ===================================================================
---- linux-2.6.19.orig/fs/namei.c
-+++ linux-2.6.19/fs/namei.c
-@@ -2386,7 +2386,8 @@ asmlinkage long sys_link(const char __us
+--- linux-2.6-hooks.orig/fs/namei.c
++++ linux-2.6-hooks/fs/namei.c
+@@ -2382,7 +2382,8 @@ asmlinkage long sys_link(const char __us
   *	   locking].
   */
  static int vfs_rename_dir(struct inode *old_dir, struct dentry *old_dentry,
@@ -47,7 +47,7 @@ Index: linux-2.6.19/fs/namei.c
  {
  	int error = 0;
  	struct inode *target;
-@@ -2429,7 +2430,8 @@ static int vfs_rename_dir(struct inode *
+@@ -2425,7 +2426,8 @@ static int vfs_rename_dir(struct inode *
  }
  
  static int vfs_rename_other(struct inode *old_dir, struct dentry *old_dentry,
@@ -57,7 +57,7 @@ Index: linux-2.6.19/fs/namei.c
  {
  	struct inode *target;
  	int error;
-@@ -2457,7 +2459,8 @@ static int vfs_rename_other(struct inode
+@@ -2453,7 +2455,8 @@ static int vfs_rename_other(struct inode
  }
  
  int vfs_rename(struct inode *old_dir, struct dentry *old_dentry,
@@ -67,7 +67,7 @@ Index: linux-2.6.19/fs/namei.c
  {
  	int error;
  	int is_dir = S_ISDIR(old_dentry->d_inode->i_mode);
-@@ -2486,9 +2489,11 @@ int vfs_rename(struct inode *old_dir, st
+@@ -2482,9 +2485,11 @@ int vfs_rename(struct inode *old_dir, st
  	old_name = fsnotify_oldname_init(old_dentry->d_name.name);
  
  	if (is_dir)
@@ -81,7 +81,7 @@ Index: linux-2.6.19/fs/namei.c
  	if (!error) {
  		const char *new_name = old_dentry->d_name.name;
  		fsnotify_move(old_dir, new_dir, old_name, new_name, is_dir,
-@@ -2560,8 +2565,8 @@ static int do_rename(int olddfd, const c
+@@ -2556,8 +2561,8 @@ static int do_rename(int olddfd, const c
  	if (new_dentry == trap)
  		goto exit5;
  
@@ -92,11 +92,11 @@ Index: linux-2.6.19/fs/namei.c
  exit5:
  	dput(new_dentry);
  exit4:
-Index: linux-2.6.19/fs/nfsd/vfs.c
+Index: linux-2.6-hooks/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6.19.orig/fs/nfsd/vfs.c
-+++ linux-2.6.19/fs/nfsd/vfs.c
-@@ -1631,7 +1631,7 @@ nfsd_rename(struct svc_rqst *rqstp, stru
+--- linux-2.6-hooks.orig/fs/nfsd/vfs.c
++++ linux-2.6-hooks/fs/nfsd/vfs.c
+@@ -1621,7 +1621,7 @@ nfsd_rename(struct svc_rqst *rqstp, stru
  			host_err = -EPERM;
  	} else
  #endif
@@ -105,11 +105,11 @@ Index: linux-2.6.19/fs/nfsd/vfs.c
  	if (!host_err && EX_ISSYNC(tfhp->fh_export)) {
  		host_err = nfsd_sync_dir(tdentry);
  		if (!host_err)
-Index: linux-2.6.19/include/linux/fs.h
+Index: linux-2.6-hooks/include/linux/fs.h
 ===================================================================
---- linux-2.6.19.orig/include/linux/fs.h
-+++ linux-2.6.19/include/linux/fs.h
-@@ -1019,7 +1019,7 @@ extern int vfs_symlink(struct inode *, s
+--- linux-2.6-hooks.orig/include/linux/fs.h
++++ linux-2.6-hooks/include/linux/fs.h
+@@ -985,7 +985,7 @@ extern int vfs_symlink(struct inode *, s
  extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
  extern int vfs_rmdir(struct inode *, struct dentry *, struct vfsmount *);
  extern int vfs_unlink(struct inode *, struct dentry *, struct vfsmount *);

@@ -3,10 +3,10 @@ Pass struct vfsmount to the inode_setxattr LSM hook
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6.19/include/linux/security.h
+Index: linux-2.6-hooks/include/linux/security.h
 ===================================================================
---- linux-2.6.19.orig/include/linux/security.h
-+++ linux-2.6.19/include/linux/security.h
+--- linux-2.6-hooks.orig/include/linux/security.h
++++ linux-2.6-hooks/include/linux/security.h
 @@ -49,7 +49,7 @@ extern void cap_capset_set (struct task_
  extern int cap_bprm_set_security (struct linux_binprm *bprm);
  extern void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe);
@@ -30,7 +30,7 @@ Index: linux-2.6.19/include/linux/security.h
   * @inode_getxattr:
   * 	Check permission before obtaining the extended attributes
   * 	identified by @name for @dentry.
-@@ -1250,9 +1250,11 @@ struct security_operations {
+@@ -1242,9 +1242,11 @@ struct security_operations {
  			      struct iattr *attr);
  	int (*inode_getattr) (struct vfsmount *mnt, struct dentry *dentry);
          void (*inode_delete) (struct inode *inode);
@@ -45,7 +45,7 @@ Index: linux-2.6.19/include/linux/security.h
  				     size_t size, int flags);
  	int (*inode_getxattr) (struct dentry *dentry, char *name);
  	int (*inode_listxattr) (struct dentry *dentry);
-@@ -1769,20 +1771,24 @@ static inline void security_inode_delete
+@@ -1760,20 +1762,24 @@ static inline void security_inode_delete
  	security_ops->inode_delete (inode);
  }
  
@@ -75,12 +75,12 @@ Index: linux-2.6.19/include/linux/security.h
  }
  
  static inline int security_inode_getxattr (struct dentry *dentry, char *name)
-@@ -2476,14 +2482,18 @@ static inline int security_inode_getattr
+@@ -2467,14 +2473,18 @@ static inline int security_inode_getattr
  static inline void security_inode_delete (struct inode *inode)
  { }
  
 -static inline int security_inode_setxattr (struct dentry *dentry, char *name,
-+static inline int security_inode_setxattr (struct dentry *dentry,,
++static inline int security_inode_setxattr (struct dentry *dentry,
 +					   struct vfsmount *mnt, char *name,
  					   void *value, size_t size, int flags)
  {
@@ -98,10 +98,10 @@ Index: linux-2.6.19/include/linux/security.h
  { }
  
  static inline int security_inode_getxattr (struct dentry *dentry, char *name)
-Index: linux-2.6.19/security/commoncap.c
+Index: linux-2.6-hooks/security/commoncap.c
 ===================================================================
---- linux-2.6.19.orig/security/commoncap.c
-+++ linux-2.6.19/security/commoncap.c
+--- linux-2.6-hooks.orig/security/commoncap.c
++++ linux-2.6-hooks/security/commoncap.c
 @@ -191,8 +191,8 @@ int cap_bprm_secureexec (struct linux_bi
  		current->egid != current->gid);
  }
@@ -113,10 +113,10 @@ Index: linux-2.6.19/security/commoncap.c
  {
  	if (!strncmp(name, XATTR_SECURITY_PREFIX,
  		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
-Index: linux-2.6.19/security/dummy.c
+Index: linux-2.6-hooks/security/dummy.c
 ===================================================================
---- linux-2.6.19.orig/security/dummy.c
-+++ linux-2.6.19/security/dummy.c
+--- linux-2.6-hooks.orig/security/dummy.c
++++ linux-2.6-hooks/security/dummy.c
 @@ -350,8 +350,9 @@ static void dummy_inode_delete (struct i
  	return;
  }
@@ -140,11 +140,11 @@ Index: linux-2.6.19/security/dummy.c
  				       size_t size, int flags)
  {
  }
-Index: linux-2.6.19/security/selinux/hooks.c
+Index: linux-2.6-hooks/security/selinux/hooks.c
 ===================================================================
---- linux-2.6.19.orig/security/selinux/hooks.c
-+++ linux-2.6.19/security/selinux/hooks.c
-@@ -2258,7 +2258,9 @@ static int selinux_inode_getattr(struct 
+--- linux-2.6-hooks.orig/security/selinux/hooks.c
++++ linux-2.6-hooks/security/selinux/hooks.c
+@@ -2264,7 +2264,9 @@ static int selinux_inode_getattr(struct 
  	return dentry_has_perm(current, mnt, dentry, FILE__GETATTR);
  }
  
@@ -155,7 +155,7 @@ Index: linux-2.6.19/security/selinux/hooks.c
  {
  	struct task_security_struct *tsec = current->security;
  	struct inode *inode = dentry->d_inode;
-@@ -2318,7 +2320,9 @@ static int selinux_inode_setxattr(struct
+@@ -2324,7 +2326,9 @@ static int selinux_inode_setxattr(struct
  			    &ad);
  }
  
@@ -166,10 +166,10 @@ Index: linux-2.6.19/security/selinux/hooks.c
                                          void *value, size_t size, int flags)
  {
  	struct inode *inode = dentry->d_inode;
-Index: linux-2.6.19/fs/xattr.c
+Index: linux-2.6-hooks/fs/xattr.c
 ===================================================================
---- linux-2.6.19.orig/fs/xattr.c
-+++ linux-2.6.19/fs/xattr.c
+--- linux-2.6-hooks.orig/fs/xattr.c
++++ linux-2.6-hooks/fs/xattr.c
 @@ -81,7 +81,7 @@ vfs_setxattr(struct dentry *dentry, stru
  		return error;
  

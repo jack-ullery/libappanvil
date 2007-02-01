@@ -3,11 +3,11 @@ Pass struct vfsmount to the inode_setattr LSM hook
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6.19/fs/attr.c
+Index: linux-2.6-hooks/fs/attr.c
 ===================================================================
---- linux-2.6.19.orig/fs/attr.c
-+++ linux-2.6.19/fs/attr.c
-@@ -145,13 +145,13 @@ int notify_change(struct dentry * dentry
+--- linux-2.6-hooks.orig/fs/attr.c
++++ linux-2.6-hooks/fs/attr.c
+@@ -145,13 +145,13 @@ int notify_change(struct dentry *dentry,
  		down_write(&dentry->d_inode->i_alloc_sem);
  
  	if (inode->i_op && inode->i_op->setattr) {
@@ -23,19 +23,19 @@ Index: linux-2.6.19/fs/attr.c
  		if (!error) {
  			if ((ia_valid & ATTR_UID && attr->ia_uid != inode->i_uid) ||
  			    (ia_valid & ATTR_GID && attr->ia_gid != inode->i_gid))
-Index: linux-2.6.19/include/linux/security.h
+Index: linux-2.6-hooks/include/linux/security.h
 ===================================================================
---- linux-2.6.19.orig/include/linux/security.h
-+++ linux-2.6.19/include/linux/security.h
+--- linux-2.6-hooks.orig/include/linux/security.h
++++ linux-2.6-hooks/include/linux/security.h
 @@ -358,6 +358,7 @@ struct request_sock;
   *	file attributes change (such as when a file is truncated, chown/chmod
   *	operations, transferring disk quotas, etc).
   *	@dentry contains the dentry structure for the file.
-+ *	@mnt is the vfsmount where the dentry was looked up (may be NULL)
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
   *	@attr is the iattr structure containing the new file attributes.
   *	Return 0 if permission is granted.
   * @inode_getattr:
-@@ -1229,7 +1230,8 @@ struct security_operations {
+@@ -1221,7 +1222,8 @@ struct security_operations {
  	int (*inode_readlink) (struct dentry *dentry);
  	int (*inode_follow_link) (struct dentry *dentry, struct nameidata *nd);
  	int (*inode_permission) (struct inode *inode, int mask, struct nameidata *nd);
@@ -45,7 +45,7 @@ Index: linux-2.6.19/include/linux/security.h
  	int (*inode_getattr) (struct vfsmount *mnt, struct dentry *dentry);
          void (*inode_delete) (struct inode *inode);
  	int (*inode_setxattr) (struct dentry *dentry, char *name, void *value,
-@@ -1717,11 +1719,12 @@ static inline int security_inode_permiss
+@@ -1708,11 +1710,12 @@ static inline int security_inode_permiss
  }
  
  static inline int security_inode_setattr (struct dentry *dentry,
@@ -59,7 +59,7 @@ Index: linux-2.6.19/include/linux/security.h
  }
  
  static inline int security_inode_getattr (struct vfsmount *mnt,
-@@ -2421,6 +2424,7 @@ static inline int security_inode_permiss
+@@ -2412,6 +2415,7 @@ static inline int security_inode_permiss
  }
  
  static inline int security_inode_setattr (struct dentry *dentry,
@@ -67,10 +67,10 @@ Index: linux-2.6.19/include/linux/security.h
  					  struct iattr *attr)
  {
  	return 0;
-Index: linux-2.6.19/security/dummy.c
+Index: linux-2.6-hooks/security/dummy.c
 ===================================================================
---- linux-2.6.19.orig/security/dummy.c
-+++ linux-2.6.19/security/dummy.c
+--- linux-2.6-hooks.orig/security/dummy.c
++++ linux-2.6-hooks/security/dummy.c
 @@ -328,7 +328,8 @@ static int dummy_inode_permission (struc
  	return 0;
  }
@@ -81,11 +81,11 @@ Index: linux-2.6.19/security/dummy.c
  {
  	return 0;
  }
-Index: linux-2.6.19/security/selinux/hooks.c
+Index: linux-2.6-hooks/security/selinux/hooks.c
 ===================================================================
---- linux-2.6.19.orig/security/selinux/hooks.c
-+++ linux-2.6.19/security/selinux/hooks.c
-@@ -2220,11 +2220,12 @@ static int selinux_inode_permission(stru
+--- linux-2.6-hooks.orig/security/selinux/hooks.c
++++ linux-2.6-hooks/security/selinux/hooks.c
+@@ -2226,11 +2226,12 @@ static int selinux_inode_permission(stru
  			       file_mask_to_av(inode->i_mode, mask), NULL);
  }
  

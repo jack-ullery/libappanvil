@@ -3,11 +3,11 @@ Pass struct vfsmount to the inode_create LSM hook.
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6.19/fs/namei.c
+Index: linux-2.6-hooks/fs/namei.c
 ===================================================================
---- linux-2.6.19.orig/fs/namei.c
-+++ linux-2.6.19/fs/namei.c
-@@ -1506,7 +1506,7 @@ int vfs_create(struct inode *dir, struct
+--- linux-2.6-hooks.orig/fs/namei.c
++++ linux-2.6-hooks/fs/namei.c
+@@ -1503,7 +1503,7 @@ int vfs_create(struct inode *dir, struct
  		return -EACCES;	/* shouldn't it be ENOSYS? */
  	mode &= S_IALLUGO;
  	mode |= S_IFREG;
@@ -16,19 +16,19 @@ Index: linux-2.6.19/fs/namei.c
  	if (error)
  		return error;
  	DQUOT_INIT(dir);
-Index: linux-2.6.19/include/linux/security.h
+Index: linux-2.6-hooks/include/linux/security.h
 ===================================================================
---- linux-2.6.19.orig/include/linux/security.h
-+++ linux-2.6.19/include/linux/security.h
+--- linux-2.6-hooks.orig/include/linux/security.h
++++ linux-2.6-hooks/include/linux/security.h
 @@ -283,6 +283,7 @@ struct request_sock;
   *	Check permission to create a regular file.
   *	@dir contains inode structure of the parent of the new file.
   *	@dentry contains the dentry structure for the file to be created.
-+ *	@mnt is the vfsmount corresponding to dir (may be NULL)
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
   *	@mode contains the file mode of the file to be created.
   *	Return 0 if permission is granted.
   * @inode_link:
-@@ -1212,8 +1213,8 @@ struct security_operations {
+@@ -1204,8 +1205,8 @@ struct security_operations {
  	void (*inode_free_security) (struct inode *inode);
  	int (*inode_init_security) (struct inode *inode, struct inode *dir,
  				    char **name, void **value, size_t *len);
@@ -39,7 +39,7 @@ Index: linux-2.6.19/include/linux/security.h
  	int (*inode_link) (struct dentry *old_dentry,
  	                   struct inode *dir, struct dentry *new_dentry);
  	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
-@@ -1620,11 +1621,12 @@ static inline int security_inode_init_se
+@@ -1611,11 +1612,12 @@ static inline int security_inode_init_se
  	
  static inline int security_inode_create (struct inode *dir,
  					 struct dentry *dentry,
@@ -53,7 +53,7 @@ Index: linux-2.6.19/include/linux/security.h
  }
  
  static inline int security_inode_link (struct dentry *old_dentry,
-@@ -2347,6 +2349,7 @@ static inline int security_inode_init_se
+@@ -2338,6 +2340,7 @@ static inline int security_inode_init_se
  	
  static inline int security_inode_create (struct inode *dir,
  					 struct dentry *dentry,
@@ -61,10 +61,10 @@ Index: linux-2.6.19/include/linux/security.h
  					 int mode)
  {
  	return 0;
-Index: linux-2.6.19/security/dummy.c
+Index: linux-2.6-hooks/security/dummy.c
 ===================================================================
---- linux-2.6.19.orig/security/dummy.c
-+++ linux-2.6.19/security/dummy.c
+--- linux-2.6-hooks.orig/security/dummy.c
++++ linux-2.6-hooks/security/dummy.c
 @@ -265,7 +265,7 @@ static int dummy_inode_init_security (st
  }
  
@@ -74,11 +74,11 @@ Index: linux-2.6.19/security/dummy.c
  {
  	return 0;
  }
-Index: linux-2.6.19/security/selinux/hooks.c
+Index: linux-2.6-hooks/security/selinux/hooks.c
 ===================================================================
---- linux-2.6.19.orig/security/selinux/hooks.c
-+++ linux-2.6.19/security/selinux/hooks.c
-@@ -2129,7 +2129,8 @@ static int selinux_inode_init_security(s
+--- linux-2.6-hooks.orig/security/selinux/hooks.c
++++ linux-2.6-hooks/security/selinux/hooks.c
+@@ -2135,7 +2135,8 @@ static int selinux_inode_init_security(s
  	return 0;
  }
  

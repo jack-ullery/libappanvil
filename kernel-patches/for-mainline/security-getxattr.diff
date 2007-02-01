@@ -3,10 +3,10 @@ Pass struct vfsmount to the inode_getxattr LSM hook
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6.19/fs/xattr.c
+Index: linux-2.6-hooks/fs/xattr.c
 ===================================================================
---- linux-2.6.19.orig/fs/xattr.c
-+++ linux-2.6.19/fs/xattr.c
+--- linux-2.6-hooks.orig/fs/xattr.c
++++ linux-2.6-hooks/fs/xattr.c
 @@ -117,7 +117,7 @@ vfs_getxattr(struct dentry *dentry, stru
  	if (error)
  		return error;
@@ -16,20 +16,20 @@ Index: linux-2.6.19/fs/xattr.c
  	if (error)
  		return error;
  
-Index: linux-2.6.19/include/linux/security.h
+Index: linux-2.6-hooks/include/linux/security.h
 ===================================================================
---- linux-2.6.19.orig/include/linux/security.h
-+++ linux-2.6.19/include/linux/security.h
+--- linux-2.6-hooks.orig/include/linux/security.h
++++ linux-2.6-hooks/include/linux/security.h
 @@ -391,7 +391,7 @@ struct request_sock;
   * 	@value identified by @name for @dentry and @mnt.
   * @inode_getxattr:
   * 	Check permission before obtaining the extended attributes
 - * 	identified by @name for @dentry.
-+ * 	identified by @name for @dentry and @mnt
++ * 	identified by @name for @dentry and @mnt.
   * 	Return 0 if permission is granted.
   * @inode_listxattr:
   * 	Check permission before obtaining the list of extended attribute 
-@@ -1256,7 +1256,8 @@ struct security_operations {
+@@ -1248,7 +1248,8 @@ struct security_operations {
  				     struct vfsmount *mnt,
  				     char *name, void *value,
  				     size_t size, int flags);
@@ -39,7 +39,7 @@ Index: linux-2.6.19/include/linux/security.h
  	int (*inode_listxattr) (struct dentry *dentry);
  	int (*inode_removexattr) (struct dentry *dentry, char *name);
  	const char *(*inode_xattr_getsuffix) (void);
-@@ -1791,11 +1792,12 @@ static inline void security_inode_post_s
+@@ -1782,11 +1783,12 @@ static inline void security_inode_post_s
  	security_ops->inode_post_setxattr (dentry, mnt, name, value, size, flags);
  }
  
@@ -54,7 +54,7 @@ Index: linux-2.6.19/include/linux/security.h
  }
  
  static inline int security_inode_listxattr (struct dentry *dentry)
-@@ -2496,7 +2498,8 @@ static inline void security_inode_post_s
+@@ -2487,7 +2489,8 @@ static inline void security_inode_post_s
  						 int flags)
  { }
  
@@ -64,10 +64,10 @@ Index: linux-2.6.19/include/linux/security.h
  {
  	return 0;
  }
-Index: linux-2.6.19/security/dummy.c
+Index: linux-2.6-hooks/security/dummy.c
 ===================================================================
---- linux-2.6.19.orig/security/dummy.c
-+++ linux-2.6.19/security/dummy.c
+--- linux-2.6-hooks.orig/security/dummy.c
++++ linux-2.6-hooks/security/dummy.c
 @@ -368,7 +368,8 @@ static void dummy_inode_post_setxattr (s
  {
  }
@@ -78,11 +78,11 @@ Index: linux-2.6.19/security/dummy.c
  {
  	return 0;
  }
-Index: linux-2.6.19/security/selinux/hooks.c
+Index: linux-2.6-hooks/security/selinux/hooks.c
 ===================================================================
---- linux-2.6.19.orig/security/selinux/hooks.c
-+++ linux-2.6.19/security/selinux/hooks.c
-@@ -2346,7 +2346,8 @@ static void selinux_inode_post_setxattr(
+--- linux-2.6-hooks.orig/security/selinux/hooks.c
++++ linux-2.6-hooks/security/selinux/hooks.c
+@@ -2352,7 +2352,8 @@ static void selinux_inode_post_setxattr(
  	return;
  }
  

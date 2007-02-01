@@ -3,11 +3,11 @@ Add struct vfsmount parameter to vfs_mkdir
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6.19/fs/ecryptfs/inode.c
+Index: linux-2.6-hooks/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6.19.orig/fs/ecryptfs/inode.c
-+++ linux-2.6.19/fs/ecryptfs/inode.c
-@@ -540,11 +540,14 @@ static int ecryptfs_mkdir(struct inode *
+--- linux-2.6-hooks.orig/fs/ecryptfs/inode.c
++++ linux-2.6-hooks/fs/ecryptfs/inode.c
+@@ -501,11 +501,14 @@ static int ecryptfs_mkdir(struct inode *
  {
  	int rc;
  	struct dentry *lower_dentry;
@@ -23,11 +23,11 @@ Index: linux-2.6.19/fs/ecryptfs/inode.c
  	if (rc || !lower_dentry->d_inode)
  		goto out;
  	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
-Index: linux-2.6.19/fs/namei.c
+Index: linux-2.6-hooks/fs/namei.c
 ===================================================================
---- linux-2.6.19.orig/fs/namei.c
-+++ linux-2.6.19/fs/namei.c
-@@ -1919,7 +1919,8 @@ asmlinkage long sys_mknod(const char __u
+--- linux-2.6-hooks.orig/fs/namei.c
++++ linux-2.6-hooks/fs/namei.c
+@@ -1916,7 +1916,8 @@ asmlinkage long sys_mknod(const char __u
  	return sys_mknodat(AT_FDCWD, filename, mode, dev);
  }
  
@@ -37,7 +37,7 @@ Index: linux-2.6.19/fs/namei.c
  {
  	int error = may_create(dir, dentry, NULL);
  
-@@ -1963,7 +1964,7 @@ asmlinkage long sys_mkdirat(int dfd, con
+@@ -1960,7 +1961,7 @@ asmlinkage long sys_mkdirat(int dfd, con
  
  	if (!IS_POSIXACL(nd.dentry->d_inode))
  		mode &= ~current->fs->umask;
@@ -46,10 +46,10 @@ Index: linux-2.6.19/fs/namei.c
  	dput(dentry);
  out_unlock:
  	mutex_unlock(&nd.dentry->d_inode->i_mutex);
-Index: linux-2.6.19/fs/nfsd/nfs4recover.c
+Index: linux-2.6-hooks/fs/nfsd/nfs4recover.c
 ===================================================================
---- linux-2.6.19.orig/fs/nfsd/nfs4recover.c
-+++ linux-2.6.19/fs/nfsd/nfs4recover.c
+--- linux-2.6-hooks.orig/fs/nfsd/nfs4recover.c
++++ linux-2.6-hooks/fs/nfsd/nfs4recover.c
 @@ -156,7 +156,7 @@ nfsd4_create_clid_dir(struct nfs4_client
  		dprintk("NFSD: nfsd4_create_clid_dir: DIRECTORY EXISTS\n");
  		goto out_put;
@@ -59,11 +59,11 @@ Index: linux-2.6.19/fs/nfsd/nfs4recover.c
  out_put:
  	dput(dentry);
  out_unlock:
-Index: linux-2.6.19/fs/nfsd/vfs.c
+Index: linux-2.6-hooks/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6.19.orig/fs/nfsd/vfs.c
-+++ linux-2.6.19/fs/nfsd/vfs.c
-@@ -1183,7 +1183,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+--- linux-2.6-hooks.orig/fs/nfsd/vfs.c
++++ linux-2.6-hooks/fs/nfsd/vfs.c
+@@ -1184,7 +1184,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
  		host_err = vfs_create(dirp, dchild, iap->ia_mode, NULL);
  		break;
  	case S_IFDIR:
@@ -72,11 +72,11 @@ Index: linux-2.6.19/fs/nfsd/vfs.c
  		break;
  	case S_IFCHR:
  	case S_IFBLK:
-Index: linux-2.6.19/include/linux/fs.h
+Index: linux-2.6-hooks/include/linux/fs.h
 ===================================================================
---- linux-2.6.19.orig/include/linux/fs.h
-+++ linux-2.6.19/include/linux/fs.h
-@@ -1013,7 +1013,7 @@ static inline void unlock_super(struct s
+--- linux-2.6-hooks.orig/include/linux/fs.h
++++ linux-2.6-hooks/include/linux/fs.h
+@@ -979,7 +979,7 @@ extern void unlock_super(struct super_bl
   */
  extern int vfs_permission(struct nameidata *, int);
  extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);

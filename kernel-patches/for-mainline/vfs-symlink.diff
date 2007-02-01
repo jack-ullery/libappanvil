@@ -3,11 +3,11 @@ Add a struct vfsmount parameter to vfs_symlink()
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6.19/fs/ecryptfs/inode.c
+Index: linux-2.6-hooks/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6.19.orig/fs/ecryptfs/inode.c
-+++ linux-2.6.19/fs/ecryptfs/inode.c
-@@ -502,6 +502,7 @@ static int ecryptfs_symlink(struct inode
+--- linux-2.6-hooks.orig/fs/ecryptfs/inode.c
++++ linux-2.6-hooks/fs/ecryptfs/inode.c
+@@ -462,6 +462,7 @@ static int ecryptfs_symlink(struct inode
  {
  	int rc;
  	struct dentry *lower_dentry;
@@ -15,7 +15,7 @@ Index: linux-2.6.19/fs/ecryptfs/inode.c
  	struct dentry *lower_dir_dentry;
  	umode_t mode;
  	char *encoded_symname;
-@@ -510,6 +511,7 @@ static int ecryptfs_symlink(struct inode
+@@ -470,6 +471,7 @@ static int ecryptfs_symlink(struct inode
  
  	lower_dentry = ecryptfs_dentry_to_lower(dentry);
  	dget(lower_dentry);
@@ -23,7 +23,7 @@ Index: linux-2.6.19/fs/ecryptfs/inode.c
  	lower_dir_dentry = lock_parent(lower_dentry);
  	mode = S_IALLUGO;
  	encoded_symlen = ecryptfs_encode_filename(crypt_stat, symname,
-@@ -519,7 +521,7 @@ static int ecryptfs_symlink(struct inode
+@@ -479,7 +481,7 @@ static int ecryptfs_symlink(struct inode
  		rc = encoded_symlen;
  		goto out_lock;
  	}
@@ -32,11 +32,11 @@ Index: linux-2.6.19/fs/ecryptfs/inode.c
  			 encoded_symname, mode);
  	kfree(encoded_symname);
  	if (rc || !lower_dentry->d_inode)
-Index: linux-2.6.19/fs/namei.c
+Index: linux-2.6-hooks/fs/namei.c
 ===================================================================
---- linux-2.6.19.orig/fs/namei.c
-+++ linux-2.6.19/fs/namei.c
-@@ -2189,7 +2189,8 @@ asmlinkage long sys_unlink(const char __
+--- linux-2.6-hooks.orig/fs/namei.c
++++ linux-2.6-hooks/fs/namei.c
+@@ -2185,7 +2185,8 @@ asmlinkage long sys_unlink(const char __
  	return do_unlinkat(AT_FDCWD, pathname);
  }
  
@@ -46,7 +46,7 @@ Index: linux-2.6.19/fs/namei.c
  {
  	int error = may_create(dir, dentry, NULL);
  
-@@ -2235,7 +2236,8 @@ asmlinkage long sys_symlinkat(const char
+@@ -2231,7 +2232,8 @@ asmlinkage long sys_symlinkat(const char
  	if (IS_ERR(dentry))
  		goto out_unlock;
  
@@ -56,11 +56,11 @@ Index: linux-2.6.19/fs/namei.c
  	dput(dentry);
  out_unlock:
  	mutex_unlock(&nd.dentry->d_inode->i_mutex);
-Index: linux-2.6.19/fs/nfsd/vfs.c
+Index: linux-2.6-hooks/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6.19.orig/fs/nfsd/vfs.c
-+++ linux-2.6.19/fs/nfsd/vfs.c
-@@ -1474,11 +1474,12 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+--- linux-2.6-hooks.orig/fs/nfsd/vfs.c
++++ linux-2.6-hooks/fs/nfsd/vfs.c
+@@ -1464,11 +1464,12 @@ nfsd_symlink(struct svc_rqst *rqstp, str
  		else {
  			strncpy(path_alloced, path, plen);
  			path_alloced[plen] = 0;
@@ -75,11 +75,11 @@ Index: linux-2.6.19/fs/nfsd/vfs.c
  
  	if (!host_err) {
  		if (EX_ISSYNC(fhp->fh_export))
-Index: linux-2.6.19/include/linux/fs.h
+Index: linux-2.6-hooks/include/linux/fs.h
 ===================================================================
---- linux-2.6.19.orig/include/linux/fs.h
-+++ linux-2.6.19/include/linux/fs.h
-@@ -1015,7 +1015,7 @@ extern int vfs_permission(struct nameida
+--- linux-2.6-hooks.orig/include/linux/fs.h
++++ linux-2.6-hooks/include/linux/fs.h
+@@ -981,7 +981,7 @@ extern int vfs_permission(struct nameida
  extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
  extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
  extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);

@@ -3,11 +3,11 @@ Add a struct vfsmount parameter to vfs_mknod()
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6.19/fs/ecryptfs/inode.c
+Index: linux-2.6-hooks/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6.19.orig/fs/ecryptfs/inode.c
-+++ linux-2.6.19/fs/ecryptfs/inode.c
-@@ -590,11 +590,14 @@ ecryptfs_mknod(struct inode *dir, struct
+--- linux-2.6-hooks.orig/fs/ecryptfs/inode.c
++++ linux-2.6-hooks/fs/ecryptfs/inode.c
+@@ -552,11 +552,14 @@ ecryptfs_mknod(struct inode *dir, struct
  {
  	int rc;
  	struct dentry *lower_dentry;
@@ -23,11 +23,11 @@ Index: linux-2.6.19/fs/ecryptfs/inode.c
  	if (rc || !lower_dentry->d_inode)
  		goto out;
  	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
-Index: linux-2.6.19/fs/namei.c
+Index: linux-2.6-hooks/fs/namei.c
 ===================================================================
---- linux-2.6.19.orig/fs/namei.c
-+++ linux-2.6.19/fs/namei.c
-@@ -1840,7 +1840,8 @@ fail:
+--- linux-2.6-hooks.orig/fs/namei.c
++++ linux-2.6-hooks/fs/namei.c
+@@ -1837,7 +1837,8 @@ fail:
  }
  EXPORT_SYMBOL_GPL(lookup_create);
  
@@ -37,7 +37,7 @@ Index: linux-2.6.19/fs/namei.c
  {
  	int error = may_create(dir, dentry, NULL);
  
-@@ -1892,11 +1893,12 @@ asmlinkage long sys_mknodat(int dfd, con
+@@ -1889,11 +1890,12 @@ asmlinkage long sys_mknodat(int dfd, con
  			error = vfs_create(nd.dentry->d_inode,dentry,mode,&nd);
  			break;
  		case S_IFCHR: case S_IFBLK:
@@ -53,11 +53,11 @@ Index: linux-2.6.19/fs/namei.c
  			break;
  		case S_IFDIR:
  			error = -EPERM;
-Index: linux-2.6.19/fs/nfsd/vfs.c
+Index: linux-2.6-hooks/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6.19.orig/fs/nfsd/vfs.c
-+++ linux-2.6.19/fs/nfsd/vfs.c
-@@ -1189,7 +1189,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+--- linux-2.6-hooks.orig/fs/nfsd/vfs.c
++++ linux-2.6-hooks/fs/nfsd/vfs.c
+@@ -1190,7 +1190,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
  	case S_IFBLK:
  	case S_IFIFO:
  	case S_IFSOCK:
@@ -66,11 +66,11 @@ Index: linux-2.6.19/fs/nfsd/vfs.c
  		break;
  	default:
  	        printk("nfsd: bad file type %o in nfsd_create\n", type);
-Index: linux-2.6.19/include/linux/fs.h
+Index: linux-2.6-hooks/include/linux/fs.h
 ===================================================================
---- linux-2.6.19.orig/include/linux/fs.h
-+++ linux-2.6.19/include/linux/fs.h
-@@ -1014,7 +1014,7 @@ static inline void unlock_super(struct s
+--- linux-2.6-hooks.orig/include/linux/fs.h
++++ linux-2.6-hooks/include/linux/fs.h
+@@ -980,7 +980,7 @@ extern void unlock_super(struct super_bl
  extern int vfs_permission(struct nameidata *, int);
  extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
  extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
@@ -79,11 +79,11 @@ Index: linux-2.6.19/include/linux/fs.h
  extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
  extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
  extern int vfs_rmdir(struct inode *, struct dentry *);
-Index: linux-2.6.19/net/unix/af_unix.c
+Index: linux-2.6-hooks/net/unix/af_unix.c
 ===================================================================
---- linux-2.6.19.orig/net/unix/af_unix.c
-+++ linux-2.6.19/net/unix/af_unix.c
-@@ -807,7 +807,7 @@ static int unix_bind(struct socket *sock
+--- linux-2.6-hooks.orig/net/unix/af_unix.c
++++ linux-2.6-hooks/net/unix/af_unix.c
+@@ -808,7 +808,7 @@ static int unix_bind(struct socket *sock
  		 */
  		mode = S_IFSOCK |
  		       (SOCK_INODE(sock)->i_mode & ~current->fs->umask);

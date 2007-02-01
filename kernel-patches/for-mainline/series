@@ -36,7 +36,7 @@ apparmor.diff
 apparmor-vfsmnt.diff
 apparmor-builtinonly.diff
 apparmor-bootdisable.diff
-apparmor-twophaseinit.diff
+# apparmor-twophaseinit.diff
 apparmor-novalidfstype.diff
 apparmor-match_perms.diff
 apparmor-dfa.diff

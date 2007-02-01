@@ -3,11 +3,11 @@ Pass struct vfsmount to the inode_mknod LSM hook
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6.19/fs/namei.c
+Index: linux-2.6-hooks/fs/namei.c
 ===================================================================
---- linux-2.6.19.orig/fs/namei.c
-+++ linux-2.6.19/fs/namei.c
-@@ -1854,7 +1854,7 @@ int vfs_mknod(struct inode *dir, struct 
+--- linux-2.6-hooks.orig/fs/namei.c
++++ linux-2.6-hooks/fs/namei.c
+@@ -1851,7 +1851,7 @@ int vfs_mknod(struct inode *dir, struct 
  	if (!dir->i_op || !dir->i_op->mknod)
  		return -EPERM;
  
@@ -16,30 +16,28 @@ Index: linux-2.6.19/fs/namei.c
  	if (error)
  		return error;
  
-Index: linux-2.6.19/include/linux/security.h
+Index: linux-2.6-hooks/include/linux/security.h
 ===================================================================
---- linux-2.6.19.orig/include/linux/security.h
-+++ linux-2.6.19/include/linux/security.h
+--- linux-2.6-hooks.orig/include/linux/security.h
++++ linux-2.6-hooks/include/linux/security.h
 @@ -323,6 +323,7 @@ struct request_sock;
   *	and not this hook.
   *	@dir contains the inode structure of parent of the new file.
   *	@dentry contains the dentry structure of the new file.
-+ *      @mnt is the vfsmount corresponding to dir (may be NULL)
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
   *	@mode contains the mode of the new file.
   *	@dev contains the the device number.
   *	Return 0 if permission is granted.
-@@ -1225,8 +1226,8 @@ struct security_operations {
- 	int (*inode_mkdir) (struct inode *dir, struct dentry *dentry,
+@@ -1218,7 +1219,7 @@ struct security_operations {
  			    struct vfsmount *mnt, int mode);
  	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
--	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
+ 	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
 -	                    int mode, dev_t dev);
-+	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
 +			    struct vfsmount *mnt, int mode, dev_t dev);
  	int (*inode_rename) (struct inode *old_dir, struct dentry *old_dentry,
  	                     struct inode *new_dir, struct dentry *new_dentry);
  	int (*inode_readlink) (struct dentry *dentry);
-@@ -1679,11 +1680,12 @@ static inline int security_inode_rmdir (
+@@ -1670,11 +1671,12 @@ static inline int security_inode_rmdir (
  
  static inline int security_inode_mknod (struct inode *dir,
  					struct dentry *dentry,
@@ -53,7 +51,7 @@ Index: linux-2.6.19/include/linux/security.h
  }
  
  static inline int security_inode_rename (struct inode *old_dir,
-@@ -2397,6 +2399,7 @@ static inline int security_inode_rmdir (
+@@ -2388,6 +2390,7 @@ static inline int security_inode_rmdir (
  
  static inline int security_inode_mknod (struct inode *dir,
  					struct dentry *dentry,
@@ -61,10 +59,10 @@ Index: linux-2.6.19/include/linux/security.h
  					int mode, dev_t dev)
  {
  	return 0;
-Index: linux-2.6.19/security/dummy.c
+Index: linux-2.6-hooks/security/dummy.c
 ===================================================================
---- linux-2.6.19.orig/security/dummy.c
-+++ linux-2.6.19/security/dummy.c
+--- linux-2.6-hooks.orig/security/dummy.c
++++ linux-2.6-hooks/security/dummy.c
 @@ -299,7 +299,7 @@ static int dummy_inode_rmdir (struct ino
  }
  
@@ -74,11 +72,11 @@ Index: linux-2.6.19/security/dummy.c
  {
  	return 0;
  }
-Index: linux-2.6.19/security/selinux/hooks.c
+Index: linux-2.6-hooks/security/selinux/hooks.c
 ===================================================================
---- linux-2.6.19.orig/security/selinux/hooks.c
-+++ linux-2.6.19/security/selinux/hooks.c
-@@ -2171,11 +2171,12 @@ static int selinux_inode_rmdir(struct in
+--- linux-2.6-hooks.orig/security/selinux/hooks.c
++++ linux-2.6-hooks/security/selinux/hooks.c
+@@ -2177,11 +2177,12 @@ static int selinux_inode_rmdir(struct in
  	return may_link(dir, dentry, MAY_RMDIR);
  }
  

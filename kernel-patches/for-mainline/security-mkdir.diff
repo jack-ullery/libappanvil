@@ -3,11 +3,11 @@ Pass struct vfsmount to the inode_mkdir LSM hook
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6.19/fs/namei.c
+Index: linux-2.6-hooks/fs/namei.c
 ===================================================================
---- linux-2.6.19.orig/fs/namei.c
-+++ linux-2.6.19/fs/namei.c
-@@ -1931,7 +1931,7 @@ int vfs_mkdir(struct inode *dir, struct 
+--- linux-2.6-hooks.orig/fs/namei.c
++++ linux-2.6-hooks/fs/namei.c
+@@ -1928,7 +1928,7 @@ int vfs_mkdir(struct inode *dir, struct 
  		return -EPERM;
  
  	mode &= (S_IRWXUGO|S_ISVTX);
@@ -16,19 +16,19 @@ Index: linux-2.6.19/fs/namei.c
  	if (error)
  		return error;
  
-Index: linux-2.6.19/include/linux/security.h
+Index: linux-2.6-hooks/include/linux/security.h
 ===================================================================
---- linux-2.6.19.orig/include/linux/security.h
-+++ linux-2.6.19/include/linux/security.h
+--- linux-2.6-hooks.orig/include/linux/security.h
++++ linux-2.6-hooks/include/linux/security.h
 @@ -308,6 +308,7 @@ struct request_sock;
   *	associated with inode strcture @dir. 
   *	@dir containst the inode structure of parent of the directory to be created.
   *	@dentry contains the dentry structure of new directory.
-+ *      @mnt is the vfsmount corresponding to dir (may be NULL)
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
   *	@mode contains the mode of new directory.
   *	Return 0 if permission is granted.
   * @inode_rmdir:
-@@ -1221,7 +1222,8 @@ struct security_operations {
+@@ -1213,7 +1214,8 @@ struct security_operations {
  	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
  	int (*inode_symlink) (struct inode *dir,
  	                      struct dentry *dentry, const char *old_name);
@@ -38,7 +38,7 @@ Index: linux-2.6.19/include/linux/security.h
  	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
  	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
  	                    int mode, dev_t dev);
-@@ -1659,11 +1661,12 @@ static inline int security_inode_symlink
+@@ -1650,11 +1652,12 @@ static inline int security_inode_symlink
  
  static inline int security_inode_mkdir (struct inode *dir,
  					struct dentry *dentry,
@@ -52,7 +52,7 @@ Index: linux-2.6.19/include/linux/security.h
  }
  
  static inline int security_inode_rmdir (struct inode *dir,
-@@ -2380,6 +2383,7 @@ static inline int security_inode_symlink
+@@ -2371,6 +2374,7 @@ static inline int security_inode_symlink
  
  static inline int security_inode_mkdir (struct inode *dir,
  					struct dentry *dentry,
@@ -60,26 +60,24 @@ Index: linux-2.6.19/include/linux/security.h
  					int mode)
  {
  	return 0;
-Index: linux-2.6.19/security/dummy.c
+Index: linux-2.6-hooks/security/dummy.c
 ===================================================================
---- linux-2.6.19.orig/security/dummy.c
-+++ linux-2.6.19/security/dummy.c
-@@ -287,8 +287,8 @@ static int dummy_inode_symlink (struct i
- 	return 0;
+--- linux-2.6-hooks.orig/security/dummy.c
++++ linux-2.6-hooks/security/dummy.c
+@@ -288,7 +288,7 @@ static int dummy_inode_symlink (struct i
  }
  
--static int dummy_inode_mkdir (struct inode *inode, struct dentry *dentry,
+ static int dummy_inode_mkdir (struct inode *inode, struct dentry *dentry,
 -			      int mask)
-+static int dummy_inode_mkdir (struct inode *inode, struct dentry *dentry,
 +			      struct vfsmount *mnt, int mask)
  {
  	return 0;
  }
-Index: linux-2.6.19/security/selinux/hooks.c
+Index: linux-2.6-hooks/security/selinux/hooks.c
 ===================================================================
---- linux-2.6.19.orig/security/selinux/hooks.c
-+++ linux-2.6.19/security/selinux/hooks.c
-@@ -2160,7 +2160,8 @@ static int selinux_inode_symlink(struct 
+--- linux-2.6-hooks.orig/security/selinux/hooks.c
++++ linux-2.6-hooks/security/selinux/hooks.c
+@@ -2166,7 +2166,8 @@ static int selinux_inode_symlink(struct 
  	return may_create(dir, dentry, SECCLASS_LNK_FILE);
  }
  
