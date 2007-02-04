@@ -1,7 +1,11 @@
-Index: linux-2.6/include/linux/namei.h
+Pack the vfsmount and dentry in nameidata into a struct path
+
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+
+Index: linux-2.6-hooks/include/linux/namei.h
 ===================================================================
---- linux-2.6.orig/include/linux/namei.h
-+++ linux-2.6/include/linux/namei.h
+--- linux-2.6-hooks.orig/include/linux/namei.h
++++ linux-2.6-hooks/include/linux/namei.h
 @@ -6,6 +6,11 @@
  
  struct vfsmount;
@@ -36,10 +40,10 @@ Index: linux-2.6/include/linux/namei.h
  /*
   * Type of the last component on LOOKUP_PARENT
   */
-Index: linux-2.6/drivers/md/dm-table.c
+Index: linux-2.6-hooks/drivers/md/dm-table.c
 ===================================================================
---- linux-2.6.orig/drivers/md/dm-table.c
-+++ linux-2.6/drivers/md/dm-table.c
+--- linux-2.6-hooks.orig/drivers/md/dm-table.c
++++ linux-2.6-hooks/drivers/md/dm-table.c
 @@ -356,7 +356,7 @@ static int lookup_device(const char *pat
  	if ((r = path_lookup(path, LOOKUP_FOLLOW, &nd)))
  		return r;
@@ -49,10 +53,10 @@ Index: linux-2.6/drivers/md/dm-table.c
  	if (!inode) {
  		r = -ENOENT;
  		goto out;
-Index: linux-2.6/fs/afs/mntpt.c
+Index: linux-2.6-hooks/fs/afs/mntpt.c
 ===================================================================
---- linux-2.6.orig/fs/afs/mntpt.c
-+++ linux-2.6/fs/afs/mntpt.c
+--- linux-2.6-hooks.orig/fs/afs/mntpt.c
++++ linux-2.6-hooks/fs/afs/mntpt.c
 @@ -235,9 +235,9 @@ static void *afs_mntpt_follow_link(struc
  	kenter("%p{%s},{%s:%p{%s}}",
  	       dentry,
@@ -89,10 +93,10 @@ Index: linux-2.6/fs/afs/mntpt.c
  	}
  
  	kleave(" = %d", err);
-Index: linux-2.6/fs/autofs4/root.c
+Index: linux-2.6-hooks/fs/autofs4/root.c
 ===================================================================
---- linux-2.6.orig/fs/autofs4/root.c
-+++ linux-2.6/fs/autofs4/root.c
+--- linux-2.6-hooks.orig/fs/autofs4/root.c
++++ linux-2.6-hooks/fs/autofs4/root.c
 @@ -369,7 +369,8 @@ static void *autofs4_follow_link(struct 
  		 * so we don't need to follow the mount.
  		 */
@@ -103,10 +107,10 @@ Index: linux-2.6/fs/autofs4/root.c
  				status = -ENOENT;
  				goto out_error;
  			}
-Index: linux-2.6/fs/block_dev.c
+Index: linux-2.6-hooks/fs/block_dev.c
 ===================================================================
---- linux-2.6.orig/fs/block_dev.c
-+++ linux-2.6/fs/block_dev.c
+--- linux-2.6-hooks.orig/fs/block_dev.c
++++ linux-2.6-hooks/fs/block_dev.c
 @@ -1339,12 +1339,12 @@ struct block_device *lookup_bdev(const c
  	if (error)
  		return ERR_PTR(error);
@@ -122,10 +126,10 @@ Index: linux-2.6/fs/block_dev.c
  		goto fail;
  	error = -ENOMEM;
  	bdev = bd_acquire(inode);
-Index: linux-2.6/fs/coda/pioctl.c
+Index: linux-2.6-hooks/fs/coda/pioctl.c
 ===================================================================
---- linux-2.6.orig/fs/coda/pioctl.c
-+++ linux-2.6/fs/coda/pioctl.c
+--- linux-2.6-hooks.orig/fs/coda/pioctl.c
++++ linux-2.6-hooks/fs/coda/pioctl.c
 @@ -75,7 +75,7 @@ static int coda_pioctl(struct inode * in
  	if ( error ) {
  		return error;
@@ -135,10 +139,10 @@ Index: linux-2.6/fs/coda/pioctl.c
  	}
  	
  	/* return if it is not a Coda inode */
-Index: linux-2.6/fs/configfs/symlink.c
+Index: linux-2.6-hooks/fs/configfs/symlink.c
 ===================================================================
---- linux-2.6.orig/fs/configfs/symlink.c
-+++ linux-2.6/fs/configfs/symlink.c
+--- linux-2.6-hooks.orig/fs/configfs/symlink.c
++++ linux-2.6-hooks/fs/configfs/symlink.c
 @@ -99,8 +99,8 @@ static int get_target(const char *symnam
  
  	ret = path_lookup(symname, LOOKUP_FOLLOW|LOOKUP_DIRECTORY, nd);
@@ -150,10 +154,10 @@ Index: linux-2.6/fs/configfs/symlink.c
  			if (!*target) {
  				ret = -ENOENT;
  				path_release(nd);
-Index: linux-2.6/fs/dquot.c
+Index: linux-2.6-hooks/fs/dquot.c
 ===================================================================
---- linux-2.6.orig/fs/dquot.c
-+++ linux-2.6/fs/dquot.c
+--- linux-2.6-hooks.orig/fs/dquot.c
++++ linux-2.6-hooks/fs/dquot.c
 @@ -1519,14 +1519,15 @@ int vfs_quota_on(struct super_block *sb,
  	error = path_lookup(path, LOOKUP_FOLLOW, &nd);
  	if (error < 0)
@@ -173,10 +177,10 @@ Index: linux-2.6/fs/dquot.c
  out_path:
  	path_release(&nd);
  	return error;
-Index: linux-2.6/fs/ecryptfs/dentry.c
+Index: linux-2.6-hooks/fs/ecryptfs/dentry.c
 ===================================================================
---- linux-2.6.orig/fs/ecryptfs/dentry.c
-+++ linux-2.6/fs/ecryptfs/dentry.c
+--- linux-2.6-hooks.orig/fs/ecryptfs/dentry.c
++++ linux-2.6-hooks/fs/ecryptfs/dentry.c
 @@ -51,13 +51,13 @@ static int ecryptfs_d_revalidate(struct 
  
  	if (!lower_dentry->d_op || !lower_dentry->d_op->d_revalidate)
@@ -197,10 +201,10 @@ Index: linux-2.6/fs/ecryptfs/dentry.c
  	if (dentry->d_inode) {
  		struct inode *lower_inode =
  			ecryptfs_inode_to_lower(dentry->d_inode);
-Index: linux-2.6/fs/ecryptfs/inode.c
+Index: linux-2.6-hooks/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6.orig/fs/ecryptfs/inode.c
-+++ linux-2.6/fs/ecryptfs/inode.c
+--- linux-2.6-hooks.orig/fs/ecryptfs/inode.c
++++ linux-2.6-hooks/fs/ecryptfs/inode.c
 @@ -77,13 +77,13 @@ ecryptfs_create_underlying_file(struct i
  	struct vfsmount *vfsmount_save;
  	int rc;
@@ -251,10 +255,10 @@ Index: linux-2.6/fs/ecryptfs/inode.c
          } else
  		rc = permission(ecryptfs_inode_to_lower(inode), mask, NULL);
          return rc;
-Index: linux-2.6/fs/ecryptfs/main.c
+Index: linux-2.6-hooks/fs/ecryptfs/main.c
 ===================================================================
---- linux-2.6.orig/fs/ecryptfs/main.c
-+++ linux-2.6/fs/ecryptfs/main.c
+--- linux-2.6-hooks.orig/fs/ecryptfs/main.c
++++ linux-2.6-hooks/fs/ecryptfs/main.c
 @@ -441,14 +441,14 @@ static int ecryptfs_read_super(struct su
  		ecryptfs_printk(KERN_WARNING, "path_lookup() failed\n");
  		goto out_free;
@@ -272,10 +276,10 @@ Index: linux-2.6/fs/ecryptfs/main.c
  	ecryptfs_set_superblock_lower(sb, lower_root->d_sb);
  	sb->s_maxbytes = lower_root->d_sb->s_maxbytes;
  	ecryptfs_set_dentry_lower(sb->s_root, lower_root);
-Index: linux-2.6/fs/exec.c
+Index: linux-2.6-hooks/fs/exec.c
 ===================================================================
---- linux-2.6.orig/fs/exec.c
-+++ linux-2.6/fs/exec.c
+--- linux-2.6-hooks.orig/fs/exec.c
++++ linux-2.6-hooks/fs/exec.c
 @@ -133,7 +133,7 @@ asmlinkage long sys_uselib(const char __
  		goto out;
  
@@ -297,10 +301,10 @@ Index: linux-2.6/fs/exec.c
  		    S_ISREG(inode->i_mode)) {
  			int err = vfs_permission(&nd, MAY_EXEC);
  			file = ERR_PTR(err);
-Index: linux-2.6/fs/ext3/super.c
+Index: linux-2.6-hooks/fs/ext3/super.c
 ===================================================================
---- linux-2.6.orig/fs/ext3/super.c
-+++ linux-2.6/fs/ext3/super.c
+--- linux-2.6-hooks.orig/fs/ext3/super.c
++++ linux-2.6-hooks/fs/ext3/super.c
 @@ -2601,12 +2601,12 @@ static int ext3_quota_on(struct super_bl
  	if (err)
  		return err;
@@ -316,10 +320,10 @@ Index: linux-2.6/fs/ext3/super.c
  		printk(KERN_WARNING
  			"EXT3-fs: Quota file not on filesystem root. "
  			"Journalled quota will not work.\n");
-Index: linux-2.6/fs/ext4/super.c
+Index: linux-2.6-hooks/fs/ext4/super.c
 ===================================================================
---- linux-2.6.orig/fs/ext4/super.c
-+++ linux-2.6/fs/ext4/super.c
+--- linux-2.6-hooks.orig/fs/ext4/super.c
++++ linux-2.6-hooks/fs/ext4/super.c
 @@ -2676,12 +2676,12 @@ static int ext4_quota_on(struct super_bl
  	if (err)
  		return err;
@@ -335,10 +339,10 @@ Index: linux-2.6/fs/ext4/super.c
  		printk(KERN_WARNING
  			"EXT4-fs: Quota file not on filesystem root. "
  			"Journalled quota will not work.\n");
-Index: linux-2.6/fs/gfs2/ops_fstype.c
+Index: linux-2.6-hooks/fs/gfs2/ops_fstype.c
 ===================================================================
---- linux-2.6.orig/fs/gfs2/ops_fstype.c
-+++ linux-2.6/fs/gfs2/ops_fstype.c
+--- linux-2.6-hooks.orig/fs/gfs2/ops_fstype.c
++++ linux-2.6-hooks/fs/gfs2/ops_fstype.c
 @@ -827,13 +827,13 @@ static struct super_block* get_gfs2_sb(c
  		       dev_name);
  		goto out;
@@ -355,10 +359,10 @@ Index: linux-2.6/fs/gfs2/ops_fstype.c
  			sb = s;
  			goto free_nd;
  		}
-Index: linux-2.6/fs/inotify_user.c
+Index: linux-2.6-hooks/fs/inotify_user.c
 ===================================================================
---- linux-2.6.orig/fs/inotify_user.c
-+++ linux-2.6/fs/inotify_user.c
+--- linux-2.6-hooks.orig/fs/inotify_user.c
++++ linux-2.6-hooks/fs/inotify_user.c
 @@ -631,7 +631,7 @@ asmlinkage long sys_inotify_add_watch(in
  		goto fput_and_out;
  
@@ -368,10 +372,10 @@ Index: linux-2.6/fs/inotify_user.c
  	dev = filp->private_data;
  
  	mutex_lock(&dev->up_mutex);
-Index: linux-2.6/fs/jffs2/super.c
+Index: linux-2.6-hooks/fs/jffs2/super.c
 ===================================================================
---- linux-2.6.orig/fs/jffs2/super.c
-+++ linux-2.6/fs/jffs2/super.c
+--- linux-2.6-hooks.orig/fs/jffs2/super.c
++++ linux-2.6-hooks/fs/jffs2/super.c
 @@ -248,29 +248,29 @@ static int jffs2_get_sb(struct file_syst
  	err = path_lookup(dev_name, LOOKUP_FOLLOW, &nd);
  
@@ -407,10 +411,10 @@ Index: linux-2.6/fs/jffs2/super.c
  	path_release(&nd);
  
  	return jffs2_get_sb_mtdnr(fs_type, flags, dev_name, data, mtdnr, mnt);
-Index: linux-2.6/fs/namei.c
+Index: linux-2.6-hooks/fs/namei.c
 ===================================================================
---- linux-2.6.orig/fs/namei.c
-+++ linux-2.6/fs/namei.c
+--- linux-2.6-hooks.orig/fs/namei.c
++++ linux-2.6-hooks/fs/namei.c
 @@ -253,7 +253,8 @@ int permission(struct inode *inode, int 
  	 * the fs is mounted with the "noexec" flag.
  	 */
@@ -1019,10 +1023,10 @@ Index: linux-2.6/fs/namei.c
  	if (newnd.last_type != LAST_NORM)
  		goto exit2;
  
-Index: linux-2.6/fs/namespace.c
+Index: linux-2.6-hooks/fs/namespace.c
 ===================================================================
---- linux-2.6.orig/fs/namespace.c
-+++ linux-2.6/fs/namespace.c
+--- linux-2.6-hooks.orig/fs/namespace.c
++++ linux-2.6-hooks/fs/namespace.c
 @@ -154,13 +154,13 @@ static void __touch_mnt_namespace(struct
  
  static void detach_mnt(struct vfsmount *mnt, struct nameidata *old_nd)
@@ -1424,10 +1428,10 @@ Index: linux-2.6/fs/namespace.c
  	up_write(&namespace_sem);
  	path_release(&user_nd);
  	path_release(&old_nd);
-Index: linux-2.6/fs/nfs/dir.c
+Index: linux-2.6-hooks/fs/nfs/dir.c
 ===================================================================
---- linux-2.6.orig/fs/nfs/dir.c
-+++ linux-2.6/fs/nfs/dir.c
+--- linux-2.6-hooks.orig/fs/nfs/dir.c
++++ linux-2.6-hooks/fs/nfs/dir.c
 @@ -923,7 +923,7 @@ static struct dentry *nfs_lookup(struct 
  		res = ERR_PTR(error);
  		goto out_unlock;
@@ -1437,10 +1441,10 @@ Index: linux-2.6/fs/nfs/dir.c
  	if (error < 0) {
  		res = ERR_PTR(error);
  		goto out_unlock;
-Index: linux-2.6/fs/nfs/namespace.c
+Index: linux-2.6-hooks/fs/nfs/namespace.c
 ===================================================================
---- linux-2.6.orig/fs/nfs/namespace.c
-+++ linux-2.6/fs/nfs/namespace.c
+--- linux-2.6-hooks.orig/fs/nfs/namespace.c
++++ linux-2.6-hooks/fs/nfs/namespace.c
 @@ -107,38 +107,40 @@ static void * nfs_follow_mountpoint(stru
  
  	BUG_ON(IS_ROOT(dentry));
@@ -1503,10 +1507,10 @@ Index: linux-2.6/fs/nfs/namespace.c
  		;
  	err = 0;
  	goto out;
-Index: linux-2.6/fs/nfsctl.c
+Index: linux-2.6-hooks/fs/nfsctl.c
 ===================================================================
---- linux-2.6.orig/fs/nfsctl.c
-+++ linux-2.6/fs/nfsctl.c
+--- linux-2.6-hooks.orig/fs/nfsctl.c
++++ linux-2.6-hooks/fs/nfsctl.c
 @@ -25,12 +25,12 @@ static struct file *do_open(char *name, 
  	struct nameidata nd;
  	int error;
@@ -1533,11 +1537,11 @@ Index: linux-2.6/fs/nfsctl.c
  
  	path_release(&nd);
  	return ERR_PTR(error);
-Index: linux-2.6/fs/nfsd/export.c
+Index: linux-2.6-hooks/fs/nfsd/export.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/export.c
-+++ linux-2.6/fs/nfsd/export.c
-@@ -168,8 +168,8 @@ static int expkey_parse(struct cache_det
+--- linux-2.6-hooks.orig/fs/nfsd/export.c
++++ linux-2.6-hooks/fs/nfsd/export.c
+@@ -167,8 +167,8 @@ static int expkey_parse(struct cache_det
  			goto out;
  
  		dprintk("Found the path %s\n", buf);
@@ -1548,7 +1552,7 @@ Index: linux-2.6/fs/nfsd/export.c
  		
  		ek = svc_expkey_update(&key, ek);
  		if (ek)
-@@ -473,7 +473,7 @@ static int svc_export_parse(struct cache
+@@ -472,7 +472,7 @@ static int svc_export_parse(struct cache
  	struct svc_export exp, *expp;
  	int an_int;
  
@@ -1557,7 +1561,7 @@ Index: linux-2.6/fs/nfsd/export.c
  	exp.ex_path = NULL;
  
  	if (mesg[mlen-1] != '\n')
-@@ -503,8 +503,8 @@ static int svc_export_parse(struct cache
+@@ -502,8 +502,8 @@ static int svc_export_parse(struct cache
  
  	exp.h.flags = 0;
  	exp.ex_client = dom;
@@ -1568,7 +1572,7 @@ Index: linux-2.6/fs/nfsd/export.c
  	exp.ex_path = kstrdup(buf, GFP_KERNEL);
  	err = -ENOMEM;
  	if (!exp.ex_path)
-@@ -544,7 +544,7 @@ static int svc_export_parse(struct cache
+@@ -543,7 +543,7 @@ static int svc_export_parse(struct cache
  		if (err) goto out;
  		exp.ex_fsid = an_int;
  
@@ -1577,7 +1581,7 @@ Index: linux-2.6/fs/nfsd/export.c
  		if (err) goto out;
  
  		err = fsloc_parse(&mesg, buf, &exp.ex_fslocs);
-@@ -564,7 +564,7 @@ static int svc_export_parse(struct cache
+@@ -563,7 +563,7 @@ static int svc_export_parse(struct cache
  		exp_put(expp);
   out:
   	kfree(exp.ex_path);
@@ -1586,7 +1590,7 @@ Index: linux-2.6/fs/nfsd/export.c
  		path_release(&nd);
   out_no_path:
  	if (dom)
-@@ -953,7 +953,7 @@ exp_export(struct nfsctl_export *nxp)
+@@ -952,7 +952,7 @@ exp_export(struct nfsctl_export *nxp)
  		goto out_unlock;
  	err = -EINVAL;
  
@@ -1595,7 +1599,7 @@ Index: linux-2.6/fs/nfsd/export.c
  
  	memset(&new, 0, sizeof(new));
  
-@@ -962,7 +962,8 @@ exp_export(struct nfsctl_export *nxp)
+@@ -961,7 +961,8 @@ exp_export(struct nfsctl_export *nxp)
  	    (fsid_key = exp_get_fsid_key(clp, nxp->ex_dev)) &&
  	    !IS_ERR(fsid_key) &&
  	    fsid_key->ek_mnt &&
@@ -1605,7 +1609,7 @@ Index: linux-2.6/fs/nfsd/export.c
  		goto finish;
  
  	if (exp) {
-@@ -978,7 +979,7 @@ exp_export(struct nfsctl_export *nxp)
+@@ -977,7 +978,7 @@ exp_export(struct nfsctl_export *nxp)
  		goto finish;
  	}
  
@@ -1614,7 +1618,7 @@ Index: linux-2.6/fs/nfsd/export.c
  	if (err) goto finish;
  
  	err = -ENOMEM;
-@@ -991,8 +992,8 @@ exp_export(struct nfsctl_export *nxp)
+@@ -990,8 +991,8 @@ exp_export(struct nfsctl_export *nxp)
  	if (!new.ex_path)
  		goto finish;
  	new.ex_client = clp;
@@ -1625,7 +1629,7 @@ Index: linux-2.6/fs/nfsd/export.c
  	new.ex_flags = nxp->ex_flags;
  	new.ex_anon_uid = nxp->ex_anon_uid;
  	new.ex_anon_gid = nxp->ex_anon_gid;
-@@ -1072,7 +1073,7 @@ exp_unexport(struct nfsctl_export *nxp)
+@@ -1071,7 +1072,7 @@ exp_unexport(struct nfsctl_export *nxp)
  		goto out_domain;
  
  	err = -EINVAL;
@@ -1634,7 +1638,7 @@ Index: linux-2.6/fs/nfsd/export.c
  	path_release(&nd);
  	if (!exp)
  		goto out_domain;
-@@ -1109,12 +1110,12 @@ exp_rootfh(svc_client *clp, char *path, 
+@@ -1108,12 +1109,12 @@ exp_rootfh(svc_client *clp, char *path, 
  		printk("nfsd: exp_rootfh path not found %s", path);
  		return err;
  	}
@@ -1650,7 +1654,7 @@ Index: linux-2.6/fs/nfsd/export.c
  	if (IS_ERR(exp)) {
  		err = PTR_ERR(exp);
  		goto out;
-@@ -1128,7 +1129,7 @@ exp_rootfh(svc_client *clp, char *path, 
+@@ -1127,7 +1128,7 @@ exp_rootfh(svc_client *clp, char *path, 
  	 * fh must be initialized before calling fh_compose
  	 */
  	fh_init(&fh, maxsize);
@@ -1659,10 +1663,10 @@ Index: linux-2.6/fs/nfsd/export.c
  		err = -EINVAL;
  	else
  		err = 0;
-Index: linux-2.6/fs/nfsd/nfs4recover.c
+Index: linux-2.6-hooks/fs/nfsd/nfs4recover.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/nfs4recover.c
-+++ linux-2.6/fs/nfsd/nfs4recover.c
+--- linux-2.6-hooks.orig/fs/nfsd/nfs4recover.c
++++ linux-2.6-hooks/fs/nfsd/nfs4recover.c
 @@ -122,9 +122,9 @@ out_no_tfm:
  static void
  nfsd4_sync_rec_dir(void)
@@ -1761,10 +1765,10 @@ Index: linux-2.6/fs/nfsd/nfs4recover.c
  	return status;
  }
  
-Index: linux-2.6/fs/nfsd/nfs4state.c
+Index: linux-2.6-hooks/fs/nfsd/nfs4state.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/nfs4state.c
-+++ linux-2.6/fs/nfsd/nfs4state.c
+--- linux-2.6-hooks.orig/fs/nfsd/nfs4state.c
++++ linux-2.6-hooks/fs/nfsd/nfs4state.c
 @@ -3299,7 +3299,7 @@ nfs4_reset_recoverydir(char *recdir)
  	if (status)
  		return status;
@@ -1774,10 +1778,10 @@ Index: linux-2.6/fs/nfsd/nfs4state.c
  		nfs4_set_recdir(recdir);
  		status = 0;
  	}
-Index: linux-2.6/fs/open.c
+Index: linux-2.6-hooks/fs/open.c
 ===================================================================
---- linux-2.6.orig/fs/open.c
-+++ linux-2.6/fs/open.c
+--- linux-2.6-hooks.orig/fs/open.c
++++ linux-2.6-hooks/fs/open.c
 @@ -127,7 +127,7 @@ asmlinkage long sys_statfs(const char __
  	error = user_path_walk(path, &nd);
  	if (!error) {
@@ -1909,10 +1913,10 @@ Index: linux-2.6/fs/open.c
  	else
  		path_release(nd);
  	return filp;
-Index: linux-2.6/fs/proc/base.c
+Index: linux-2.6-hooks/fs/proc/base.c
 ===================================================================
---- linux-2.6.orig/fs/proc/base.c
-+++ linux-2.6/fs/proc/base.c
+--- linux-2.6-hooks.orig/fs/proc/base.c
++++ linux-2.6-hooks/fs/proc/base.c
 @@ -926,7 +926,8 @@ static void *proc_pid_follow_link(struct
  	if (!proc_fd_access_allowed(inode))
  		goto out;
@@ -1923,10 +1927,10 @@ Index: linux-2.6/fs/proc/base.c
  	nd->last_type = LAST_BIND;
  out:
  	return ERR_PTR(error);
-Index: linux-2.6/fs/reiserfs/super.c
+Index: linux-2.6-hooks/fs/reiserfs/super.c
 ===================================================================
---- linux-2.6.orig/fs/reiserfs/super.c
-+++ linux-2.6/fs/reiserfs/super.c
+--- linux-2.6-hooks.orig/fs/reiserfs/super.c
++++ linux-2.6-hooks/fs/reiserfs/super.c
 @@ -1983,12 +1983,12 @@ static int reiserfs_quota_on(struct supe
  	if (err)
  		return err;
@@ -1951,10 +1955,10 @@ Index: linux-2.6/fs/reiserfs/super.c
  		reiserfs_warning(sb,
  				 "reiserfs: Quota file not on filesystem root. "
  				 "Journalled quota will not work.");
-Index: linux-2.6/fs/stat.c
+Index: linux-2.6-hooks/fs/stat.c
 ===================================================================
---- linux-2.6.orig/fs/stat.c
-+++ linux-2.6/fs/stat.c
+--- linux-2.6-hooks.orig/fs/stat.c
++++ linux-2.6-hooks/fs/stat.c
 @@ -63,7 +63,7 @@ int vfs_stat_fd(int dfd, char __user *na
  
  	error = __user_walk_fd(dfd, name, LOOKUP_FOLLOW, &nd);
@@ -1993,10 +1997,10 @@ Index: linux-2.6/fs/stat.c
  			}
  		}
  		path_release(&nd);
-Index: linux-2.6/fs/utimes.c
+Index: linux-2.6-hooks/fs/utimes.c
 ===================================================================
---- linux-2.6.orig/fs/utimes.c
-+++ linux-2.6/fs/utimes.c
+--- linux-2.6-hooks.orig/fs/utimes.c
++++ linux-2.6-hooks/fs/utimes.c
 @@ -30,7 +30,7 @@ asmlinkage long sys_utime(char __user * 
  	error = user_path_walk(filename, &nd);
  	if (error)
@@ -2033,10 +2037,10 @@ Index: linux-2.6/fs/utimes.c
  	mutex_unlock(&inode->i_mutex);
  dput_and_out:
  	path_release(&nd);
-Index: linux-2.6/fs/xattr.c
+Index: linux-2.6-hooks/fs/xattr.c
 ===================================================================
---- linux-2.6.orig/fs/xattr.c
-+++ linux-2.6/fs/xattr.c
+--- linux-2.6-hooks.orig/fs/xattr.c
++++ linux-2.6-hooks/fs/xattr.c
 @@ -237,7 +237,7 @@ sys_setxattr(char __user *path, char __u
  	error = user_path_walk(path, &nd);
  	if (error)
@@ -2109,10 +2113,10 @@ Index: linux-2.6/fs/xattr.c
  	path_release(&nd);
  	return error;
  }
-Index: linux-2.6/fs/xfs/linux-2.6/xfs_ioctl.c
+Index: linux-2.6-hooks/fs/xfs/linux-2.6/xfs_ioctl.c
 ===================================================================
---- linux-2.6.orig/fs/xfs/linux-2.6/xfs_ioctl.c
-+++ linux-2.6/fs/xfs/linux-2.6/xfs_ioctl.c
+--- linux-2.6-hooks.orig/fs/xfs/linux-2.6/xfs_ioctl.c
++++ linux-2.6-hooks/fs/xfs/linux-2.6/xfs_ioctl.c
 @@ -93,9 +93,9 @@ xfs_find_handle(
  		if (error)
  			return error;
@@ -2126,10 +2130,10 @@ Index: linux-2.6/fs/xfs/linux-2.6/xfs_ioctl.c
  		path_release(&nd);
  		break;
  	}
-Index: linux-2.6/kernel/auditfilter.c
+Index: linux-2.6-hooks/kernel/auditfilter.c
 ===================================================================
---- linux-2.6.orig/kernel/auditfilter.c
-+++ linux-2.6/kernel/auditfilter.c
+--- linux-2.6-hooks.orig/kernel/auditfilter.c
++++ linux-2.6-hooks/kernel/auditfilter.c
 @@ -167,8 +167,8 @@ static struct audit_parent *audit_init_p
  	inotify_init_watch(&parent->wdata);
  	/* grab a ref so inotify watch hangs around until we take audit_filter_mutex */
@@ -2162,10 +2166,10 @@ Index: linux-2.6/kernel/auditfilter.c
  		parent = audit_init_parent(ndp);
  		if (IS_ERR(parent)) {
  			/* caller expects mutex locked */
-Index: linux-2.6/net/sunrpc/rpc_pipe.c
+Index: linux-2.6-hooks/net/sunrpc/rpc_pipe.c
 ===================================================================
---- linux-2.6.orig/net/sunrpc/rpc_pipe.c
-+++ linux-2.6/net/sunrpc/rpc_pipe.c
+--- linux-2.6-hooks.orig/net/sunrpc/rpc_pipe.c
++++ linux-2.6-hooks/net/sunrpc/rpc_pipe.c
 @@ -453,14 +453,14 @@ rpc_lookup_parent(char *path, struct nam
  {
  	if (path[0] == '\0')
@@ -2205,10 +2209,10 @@ Index: linux-2.6/net/sunrpc/rpc_pipe.c
  	if ((error = __rpc_mkdir(dir, dentry)) != 0)
  		goto err_dput;
  	RPC_I(dentry->d_inode)->private = rpc_client;
-Index: linux-2.6/net/unix/af_unix.c
+Index: linux-2.6-hooks/net/unix/af_unix.c
 ===================================================================
---- linux-2.6.orig/net/unix/af_unix.c
-+++ linux-2.6/net/unix/af_unix.c
+--- linux-2.6-hooks.orig/net/unix/af_unix.c
++++ linux-2.6-hooks/net/unix/af_unix.c
 @@ -708,14 +708,14 @@ static struct sock *unix_find_other(stru
  			goto put_fail;
  
@@ -2264,10 +2268,10 @@ Index: linux-2.6/net/unix/af_unix.c
  	path_release(&nd);
  out_mknod_parent:
  	if (err==-EEXIST)
-Index: linux-2.6/security/selinux/hooks.c
+Index: linux-2.6-hooks/security/selinux/hooks.c
 ===================================================================
---- linux-2.6.orig/security/selinux/hooks.c
-+++ linux-2.6/security/selinux/hooks.c
+--- linux-2.6-hooks.orig/security/selinux/hooks.c
++++ linux-2.6-hooks/security/selinux/hooks.c
 @@ -2042,10 +2042,10 @@ static int selinux_mount(char * dev_name
  		return rc;
  
