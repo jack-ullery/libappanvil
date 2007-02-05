@@ -1,0 +1,13 @@
+AC_INIT(configure.in)
+
+AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE(aadbus, 0.7)
+
+AC_LANG_C
+AC_PROG_CC
+
+AC_CHECK_HEADERS(libaudit.h)
+PKG_CHECK_MODULES(DBUS, dbus-1 >= 0.60)
+AC_CHECK_LIB(pcre, pcre_compile)
+
+AC_OUTPUT(Makefile src/Makefile)
