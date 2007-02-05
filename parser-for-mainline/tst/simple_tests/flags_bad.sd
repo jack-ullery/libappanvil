@@ -1,0 +1,39 @@
+#
+# $Id: flags_bad.sd 66 2006-06-01 18:02:28Z steve-beattie $
+#=DESCRIPTION Ensure debug flag is no longer accepted
+#=EXRESULT FAIL
+# vim:syntax=subdomain
+# Last Modified: Sun Apr 17 19:44:44 2005
+#
+/does/not/exist flags=(debug) {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist r,
+}
+
+/does/not/exist2 flags=(audit,debug) {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist2 r,
+}
+
+/does/not/exist3 flags=(debug,complain) {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist5 r,
+}
+
+/does/not/exist4 flags=(audit,complain) {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist7 r,
+
+  ^debug flags=(debug) {
+    /var/log/debug rwl,
+  }
+}
+

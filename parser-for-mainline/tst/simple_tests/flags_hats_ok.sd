@@ -1,0 +1,121 @@
+#
+# $Id: flags_hats_ok.sd 66 2006-06-01 18:02:28Z steve-beattie $
+#=DESCRIPTION validate some uses of the profile flags with hats.
+#=EXRESULT PASS
+# vim:syntax=subdomain
+# Last Modified: Sun Apr 17 19:44:44 2005
+#
+/does/not/exist flags=(complain) {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist r,
+
+  ^FOO {
+    #include <includes/base>
+  }
+}
+
+/does/not/exist2 flags=(complain) {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist2 r,
+
+  ^FOO flags=(complain) {
+    #include <includes/base>
+  }
+}
+
+/does/not/exist3 flags=(complain) {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist3 r,
+
+  ^FOO flags=(audit) {
+    #include <includes/base>
+  }
+}
+
+/does/not/exist4 {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist4 r,
+
+  ^FOO flags=(complain) {
+    #include <includes/base>
+  }
+}
+
+/does/not/exist5 flags=(audit) {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist5 r,
+
+  ^FOO {
+    #include <includes/base>
+  }
+}
+
+/does/not/exist6 flags=(audit) {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist6 r,
+
+  ^FOO flags=(audit) {
+    #include <includes/base>
+  }
+}
+
+/does/not/exist7 flags=(audit) {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist7 r,
+
+  ^FOO flags=(complain) {
+    #include <includes/base>
+  }
+}
+
+/does/not/exist8 {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist8 r,
+
+  ^FOO flags=(audit) {
+    #include <includes/base>
+  }
+}
+
+/does/not/exist9 {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist9 r,
+
+  ^FOO flags=(audit) {
+    #include <includes/base>
+  }
+
+  ^BAR {
+    #include <includes/fonts>
+  }
+
+  ^BAZ flags=(audit) {
+    #include <includes/fonts>
+  }
+
+  ^BIF flags=(complain) {
+    #include <includes/base>
+  }
+
+  ^BUZ flags=(complain,audit) {
+    /var/log/messages r,
+  }
+}

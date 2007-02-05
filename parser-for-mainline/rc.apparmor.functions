@@ -1,0 +1,531 @@
+#!/bin/sh
+#
+#	$Id: rc.apparmor.functions 302 2007-01-18 04:54:49Z steve-beattie $
+#
+# ----------------------------------------------------------------------
+#    Copyright (c) 1999, 2000, 20001, 2004, 2005, NOVELL (All rights reserved)
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, contact Novell, Inc.
+# ----------------------------------------------------------------------
+# rc.subdomain.functions by Steve Beattie
+#
+# NOTE: rc.subdomain initscripts that source this file need to implement
+# the following set of functions:
+#	sd_action
+#	sd_log_success_msg
+#	sd_log_warning_msg
+#       sd_log_failure_msg
+
+# Some nice defines that we use
+
+CONFIG_DIR=/etc/apparmor
+MODULE=apparmor
+OLD_MODULE=subdomain
+if [ -f "${CONFIG_DIR}/${MODULE}.conf" ] ; then
+	APPARMOR_CONF="${CONFIG_DIR}/${MODULE}.conf"
+elif [ -f "${CONFIG_DIR}/${OLD_MODULE}.conf" ] ; then
+	APPARMOR_CONF="${CONFIG_DIR}/${OLD_MODULE}.conf"
+elif [ -f "/etc/immunix/subdomain.conf" ] ; then
+	sd_log_warning_msg "/etc/immunix/subdomain.conf is deprecated, use ${CONFIG_DIR}/subdomain.conf instead"
+	APPARMOR_CONF="/etc/immunix/subdomain.conf"
+elif [ -f "/etc/subdomain.conf" ] ; then
+	sd_log_warning_msg "/etc/subdomain.conf is deprecated, use ${CONFIG_DIR}/subdomain.conf instead"
+	APPARMOR_CONF="/etc/subdomain.conf"
+else
+	sd_log_warning_msg "Unable to find config file in ${CONFIG_DIR}, installation problem?"
+fi
+
+# Read configuration options from /etc/subdomain.conf, default is to
+# warn if subdomain won't load.
+SUBDOMAIN_MODULE_PANIC="warn"
+SUBDOMAIN_ENABLE_OWLSM="no"
+APPARMOR_ENABLE_AAEVENTD="no"
+
+if [ -f "${APPARMOR_CONF}" ] ; then
+	#parse the conf file to see what we should do
+	. "${APPARMOR_CONF}"
+fi
+
+if [ -f /sbin/apparmor_parser ] ; then
+	PARSER=/sbin/apparmor_parser
+elif [ -f /sbin/subdomain_parser -o -h /sbin/subdomain_parser ] ; then
+	PARSER=/sbin/subdomain_parser
+else
+	sd_log_failure_msg "Unable to find apparmor_parser, installation problem?"
+	exit 1
+fi
+
+# SUBDOMAIN_DIR and APPARMOR_DIR might be defined in subdomain.conf|apparmor.conf
+if [ -d "${APPAMROR_DIR}" ] ; then
+	PROFILE_DIR=${APPARMOR_DIR}
+elif [ -d "${SUBDOMAIN_DIR}" ] ; then
+	PROFILE_DIR=${SUBDOMAIN_DIR}
+elif [ -d /etc/apparmor.d ] ; then
+	PROFILE_DIR=/etc/apparmor.d
+elif [ -d /etc/subdomain.d ] ; then
+	PROFILE_DIR=/etc/subdomain.d
+fi
+ABSTRACTIONS="-I${PROFILE_DIR}"
+AA_EV_BIN=/usr/sbin/aa-eventd
+AA_EV_PIDFILE=/var/run/aa-eventd.pid
+AA_STATUS=/usr/sbin/apparmor_status
+SD_EV_BIN=/usr/sbin/sd-event-dispatch.pl
+SD_EV_PIDFILE=/var/run/sd-event-dispatch.init.pid
+SD_STATUS=/usr/sbin/subdomain_status
+if grep -q securityfs /proc/filesystems ; then
+	SECURITYFS=/sys/kernel/security
+fi
+
+SUBDOMAINFS_MOUNTPOINT=$(grep subdomainfs /etc/fstab  | \
+	sed -e 's|^[[:space:]]*[^[:space:]]\+[[:space:]]\+\(/[^[:space:]]*\)[[:space:]]\+subdomainfs.*$|\1|' 2> /dev/null)
+SUBDOMAIN_SRC="/usr/src/kernel-modules/SubDomain/module"
+
+if [ -d "/var/lib/${MODULE}" ] ; then
+	APPARMOR_TMPDIR="/var/lib/${MODULE}"
+elif [ -d "/var/lib/${OLD_MODULE}" ] ; then
+	APPARMOR_TMPDIR="/var/lib/${OLD_MODULE}"
+else
+	APPARMOR_TMPDIR="/tmp"
+fi
+
+
+# keep exit status from parser during profile load.  0 is good, 1 is bad
+STATUS=0
+
+parse_profiles() {
+	# get parser arg
+	case "$1" in
+		load)
+			PARSER_ARGS="--add"
+			PARSER_MSG="Loading AppArmor profiles "
+			;;
+		reload)
+			PARSER_ARGS="--replace"
+			PARSER_MSG="Reloading AppArmor profiles "
+			;;
+		*)
+			exit 1
+			;;
+	esac
+	echo -n "$PARSER_MSG"
+	# run the parser on all of the apparmor profiles
+	if [ ! -f "$PARSER" ]; then
+		sd_log_failure_msg "- AppArmor parser not found"
+		exit 1
+	fi
+
+	if [ ! -d "$PROFILE_DIR" ]; then
+		sd_log_skipped_msg "- Profile directory not found\nNo AppArmor policy loaded."
+		return 1
+	fi
+
+	if [ "X" == "X$(ls $PROFILE_DIR/)" ]; then
+		sd_log_skipped_msg "- No profiles found\nNo AppArmor policy loaded."
+		return 1
+	fi
+
+	for profile in $PROFILE_DIR/*; do
+	        if [ "${profile%.rpmnew}" != "${profile}" -o \
+		     "${profile%.rpmsave}" != "${profile}" -o \
+		     "${profile%\~}" != "${profile}" ]
+		then 
+			echo " Skipping profile $profile"
+			logger -t "AppArmor(init)" -p daemon.warn "Skipping profile $profile"
+			STATUS=2
+		elif [ -f "${profile}" ] ; then
+			$PARSER $ABSTRACTIONS $PARSER_ARGS "$profile" > /dev/null
+			if [ $? -ne 0 ]; then
+				echo " Profile $profile failed to load"
+				STATUS=1
+			fi
+		fi
+	done
+	if [ $STATUS -eq 0 ]; then
+		sd_log_success_msg
+	elif [ $STATUS -eq 2 ]; then
+		sd_log_warning_msg
+	else
+		sd_log_failure_msg
+		exit $STATUS
+	fi
+}
+
+profiles_names_list() {
+	# run the parser on all of the apparmor profiles
+	TMPFILE=$1
+	if [ ! -f "$PARSER" ]; then
+		sd_log_failure_msg "- AppArmor parser not found"
+		exit 1
+	fi
+
+	if [ ! -d "$PROFILE_DIR" ]; then
+		sd_log_failure_msg "- Profile directory not found"
+		exit 1
+	fi
+
+	for profile in $PROFILE_DIR/*; do
+	        if [ "${profile%.rpmnew}" != "${profile}" -o \
+		     "${profile%.rpmsave}" != "${profile}" -o \
+		     "${profile%\~}" != "${profile}" ]
+		then 
+			echo "nop" >/dev/null
+		elif [ -f "${profile}" ] ; then
+			LIST_ADD=$($PARSER $ABSTRACTIONS -N "$profile" | grep -v '\^')
+			if [ $? -eq 0 ]; then
+				echo "$LIST_ADD" >>$TMPFILE
+			fi
+		fi
+	done
+}
+
+is_subdomainfs_mounted() {
+	if grep -q subdomainfs /proc/filesystems ; then
+		if grep -q subdomainfs /proc/mounts && \
+		   [ -f "${SUBDOMAINFS_MOUNTPOINT}/profiles" ]; then
+			SFS_MOUNTPOINT=${SUBDOMAINFS_MOUNTPOINT}
+			return 0
+		else
+			return 1
+		fi
+	fi
+	if grep -q securityfs /proc/filesystems && grep -q securityfs /proc/mounts ; then
+		if [ -f "${SECURITYFS}/${MODULE}/profiles" ]; then
+			SFS_MOUNTPOINT="${SECURITYFS}/${MODULE}"
+			return 0
+		fi
+		if [ -f "${SECURITYFS}/${OLD_MODULE}/profiles" ]; then
+			SFS_MOUNTPOINT="${SECURITYFS}/${OLD_MODULE}"
+			return 0
+		fi
+	fi
+	return 1
+}
+
+mount_subdomainfs() {
+	# for backwords compatibility
+	if grep -q subdomainfs /proc/filesystems ; then
+		if [ "X" != "X${SUBDOMAINFS_MOUNTPOINT}" ]; then
+			SFS_MOUNTPOINT=${SUBDOMAINFS_MOUNTPOINT}
+			sd_action "Mounting subdomainfs on ${SFS_MOUNTPOINT}" mount "${SFS_MOUNTPOINT}"
+			rc=$?
+			return $rc
+		fi
+	fi
+	if [ "X" != "X${SECURITYFS}" ]; then
+		if ! grep -q securityfs /proc/mounts ; then
+			sd_action "Mounting securityfs on ${SECURITYFS}" \
+					mount -t securityfs securityfs "${SECURITYFS}"
+			rc=$?
+			if [ -f "${SECURITYFS}/${MODULE}/profiles" ]; then
+				SFS_MOUNTPOINT="${SECURITYFS}/${MODULE}"
+			elif [ -f "${SECURITYFS}/${OLD_MODULE}/profiles" ]; then
+				SFS_MOUNTPOINT="${SECURITYFS}/${OLD_MODULE}"
+			else
+				SFS_MOUNTPOINT="${SECURITYFS}/${MODULE}"
+			fi
+			return $rc
+		fi
+	fi
+	return 0
+}
+
+unmount_subdomainfs() {
+	SUBDOMAINFS=$(grep subdomainfs /proc/mounts  | cut -d" " -f2 2> /dev/null)
+	if [ "X" != "X${SUBDOMAINFS}" ]; then
+		sd_action "Unmounting subdomainfs" umount ${SUBDOMAINFS}
+	fi
+}
+
+rebuild_subdomain() {
+	if [ -d "$SUBDOMAIN_SRC" ] ; then
+		# only try to rebuild for the running kernel
+		cd "$SUBDOMAIN_SRC"
+		kernelver=`uname -r`
+                kernelsrc=`readlink "/lib/modules/$kernelver/build"`
+		line="KERNELVER=$kernelver KERNELSRC=$kernelsrc"
+		/usr/bin/env $line ${SUBDOMAIN_SRC}/BUILD-SUBDOMAIN ;
+		rc=$?
+		if [ $rc -ne 0 ] ; then
+			sd_log_failure_msg "- could not rebuild AppArmor module"
+			return $rc
+		fi
+		depmod -a
+		rc=$?
+		if [ $rc -ne 0 ] ; then
+			sd_log_failure_msg "- could not set AppArmor module dependencies"
+			return $rc ;
+		fi	
+
+		sd_action "Loading AppArmor module" /sbin/modprobe $MODULE $1
+		rc=$?
+		if [ $rc -ne 0 ] ; then
+			# we couldn't find the module
+			sd_log_failure_msg "- could not load rebuilt AppArmor module"
+			rc=$?
+			return $rc
+		fi
+	else
+		sd_log_failure_msg "- could not rebuild AppArmor, module source not found."
+		return -1
+	fi
+}
+
+failstop_system() {
+	level=$(runlevel | cut -d" " -f2)
+	if [ $level -ne "1" ] ; then
+		sd_log_failure_msg "- could not start AppArmor.  Changing to runlevel 1"
+		telinit 1;
+		return -1;
+	fi
+	sd_log_failure_msg "- could not start AppArmor."
+	return -1
+}
+
+module_panic() {
+	# the module failed to load, determine what action should be taken
+
+	case "$SUBDOMAIN_MODULE_PANIC" in
+		"warn"|"WARN") sd_log_failure_msg "- could not start AppArmor"
+			return -1 ;;
+		"build"|"BUILD") rebuild_subdomain
+			rc=$?
+			return $rc ;;
+		"build-panic"|"BUILD-PANIC") rebuild_subdomain
+			rc=$?
+			if [ $rc -ne 0 ] ; then
+				failstop_system
+				rc=$?
+			fi
+			return $rc ;;
+		"panic"|"PANIC") failstop_system
+			rc=$?
+			return $rc ;;
+		*) sd_log_failure_msg "- invalid AppArmor module fail option"
+			return -1 ;;
+	esac
+}
+
+load_module() {
+	if modinfo -F filename apparmor > /dev/null 2>&1 ; then
+		MODULE=apparmor
+	elif modinfo -F filename subdomain > /dev/null 2>&1 ; then
+		MODULE=subdomain
+	fi
+	if ! grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules ; then
+		/sbin/modprobe $MODULE $1
+		rc=$?
+		if [ $rc -eq 0 ] ; then
+			sd_action "Loading AppArmor module" true
+		else
+			# we couldn't find the module, see if apparmor is
+			# builtin.
+			local builtin=`cat /proc/self/attr/current`
+			rc=$?
+			if [ $rc -eq 0 -a $builtin == "unconstrained" ]
+			then
+				sd_action "AppArmor is built in to kernel" true
+			else
+				sd_action "Loading AppArmor module" false
+				module_panic
+				rc=$?
+				if [ $rc -ne 0 ] ; then
+					exit $rc
+				fi
+			fi
+		fi
+	fi
+}	
+
+subdomain_start() {
+	if ! grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules ; then
+		load_module
+		rc=$?
+		if [ $rc -ne 0 ] ; then
+			return $rc
+		fi
+	fi
+
+	if ! is_subdomainfs_mounted ; then
+		mount_subdomainfs
+		rc=$?
+		if [ $rc -ne 0 ] ; then
+			return $rc
+		fi
+	fi
+
+	if [ ! -w "$SFS_MOUNTPOINT/.load" ] ; then
+		sd_log_failure_msg "Loading AppArmor profiles - failed, Do you have the correct privileges?"
+		return 1
+	fi
+
+	configure_owlsm
+
+	if [ $(wc -l "$SFS_MOUNTPOINT/profiles" | awk '{print $1}') -eq 0 ] ; then
+		parse_profiles load
+	else
+		sd_log_skipped_msg "Loading AppArmor profiles - AppArmor already loaded with profiles."
+	fi
+}
+
+remove_profiles() {
+
+	# removing profiles as we directly read from subdomainfs
+	# doesn't work, since we are removing entries which screws up
+	# our position.  Lets hope there are never enough profiles to
+	# overflow the variable
+	if ! is_subdomainfs_mounted ; then
+		sd_log_failure_msg "- failed, is securityfs loaded?"
+		return 1
+	fi
+
+	if [ ! -w "$SFS_MOUNTPOINT/.remove" ] ; then
+		sd_log_failure_msg "- failed, Do you have the correct privileges?"
+		return 1
+	fi
+
+	if [ ! -x "${PARSER}" ] ; then
+		sd_log_failure_msg "- failed, unable to execute subdomain parser"
+		return 1
+	fi
+
+	retval=0
+	IFS=$'\n' && for profile in $(sed -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles") ; do
+		echo "\"$profile\" { }" | $PARSER -R >/dev/null
+		rc=$?
+		if [ ${rc} -ne 0 ] ; then 
+			retval=${rc}
+		fi
+	done
+	if [ ${retval} -eq 0 ] ; then
+		sd_log_success_msg
+	else
+		sd_log_failure_msg
+	fi	
+}
+
+subdomain_stop() {
+	stop_aa_event
+	echo -n "Unloading AppArmor profiles "
+	remove_profiles
+}
+
+subdomain_kill() {
+	stop_aa_event
+	unmount_subdomainfs
+	if grep -qE "^apparmor[[:space:]]" /proc/modules ; then
+		MODULE=apparmor
+	elif grep -qE "^subdomain[[:space:]]" /proc/modules ; then
+		MODULE=subdomain
+	else
+		MODULE=apparmor
+	fi
+	sd_action "Unloading AppArmor modules" /sbin/modprobe -r $MODULE
+}
+
+__subdomain_restart() {
+	if [ ! -w "$SFS_MOUNTPOINT/.load" ] ; then
+		sd_log_failure_msg "Loading AppArmor profiles - failed, Do you have the correct privileges?"
+		return 4
+	fi
+
+	configure_owlsm
+	parse_profiles reload
+	PNAMES_LIST=$(mktemp ${APPARMOR_TMPDIR}/tmp.XXXXXXXX)
+	profiles_names_list ${PNAMES_LIST}
+	MODULE_PLIST=$(mktemp ${APPARMOR_TMPDIR}/tmp.XXXXXXXX)
+	sed  -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" | sort >"$MODULE_PLIST"
+	#profiles=$(cat $PNAMES_LIST | sort | comm -2 -3 "$MODULE_PLIST" -)
+	#for profile in $profiles ; do
+	IFS=$'\n' && for profile in $(cat $PNAMES_LIST | sort | comm -2 -3 "$MODULE_PLIST" -) ; do
+		echo "\"$profile\" {}" | $PARSER -R >/dev/null
+	done
+	rm "$MODULE_PLIST"
+	rm "$PNAMES_LIST"
+	return 0
+}
+
+subdomain_restart() {
+	if ! grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules ; then
+		subdomain_start
+		rc=$?
+		return $rc
+	fi
+
+	if ! is_subdomainfs_mounted ; then
+		mount_subdomainfs
+		rc=$?
+		if [ $rc -ne 0 ] ; then
+			return $rc
+		fi
+	fi
+
+	__subdomain_restart
+	rc=$?
+	return $rc
+}
+
+subdomain_try_restart() {
+	if ! grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules ; then
+		return 1
+	fi
+
+	if ! is_subdomainfs_mounted ; then
+		return 1
+	fi
+
+	__subdomain_restart
+	rc=$?
+	return $rc
+}
+
+subdomain_debug() {
+	subdomain_kill
+	load_module "subdomain_debug=1"
+	mount_subdomainfs
+	configure_owlsm
+	parse_profiles load
+}
+
+configure_owlsm () {
+	if [ "${SUBDOMAIN_ENABLE_OWLSM}" = "yes" -a -f ${SFS_MOUNTPOINT}/control/owlsm ] ; then
+		# Sigh, the "sh -c" is necessary for the SuSE sd_action
+		# and it can't be abstracted out as a seperate function, as
+		# that breaks under RedHat's action, which needs a
+		# binary to invoke.
+		sd_action "Enabling OWLSM extension" sh -c "echo -n \"1\" > \"${SFS_MOUNTPOINT}/control/owlsm\""
+	elif [ -f "${SFS_MOUNTPOINT}/control/owlsm" ] ; then
+		sd_action "Disabling OWLSM extension" sh -c "echo -n \"0\" > \"${SFS_MOUNTPOINT}/control/owlsm\""
+	fi
+}
+
+subdomain_status () {
+	if test -x ${AA_STATUS} ; then
+		${AA_STATUS} --verbose
+		return $?
+	fi
+	if test -x ${SD_STATUS} ; then
+		${SD_STATUS} --verbose
+		return $?
+	fi
+	if ! grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules ; then
+		echo "AppArmor is not loaded."
+		rc=1
+	else
+		echo "AppArmor is enabled,"
+		rc=0
+	fi
+	echo "Install the apparmor-utils package to receive more detailed"
+	echo "status information here (or examine ${SFS_MOUNTPOINT} directly)."
+
+	return $rc
+}
