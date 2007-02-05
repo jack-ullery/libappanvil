@@ -1,4 +1,4 @@
-Add struct vfsmount parameter to vfs_mkdir
+Add struct vfsmount parameter to vfs_mkdir()
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
