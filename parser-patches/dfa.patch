@@ -19,7 +19,7 @@ Index: parser/parser_main.c
  extern int current_lineno;
  
  struct option long_options[] = {
-@@ -387,7 +390,7 @@ static void get_match_string(void) {
+@@ -344,7 +347,7 @@ static void get_match_string(void) {
  
  	/* has process_args() already assigned a match string? */
  	if (match_string)
@@ -28,7 +28,7 @@ Index: parser/parser_main.c
  
  	FILE *ms = fopen(MATCH_STRING, "r");
  	if (!ms)
-@@ -404,22 +407,28 @@ static void get_match_string(void) {
+@@ -361,22 +364,28 @@ static void get_match_string(void) {
  	}
  
  out:
@@ -63,7 +63,7 @@ Index: parser/parser_main.c
  		return 1;
  
  	return 0;
-@@ -437,6 +446,9 @@ int process_profile(int option, char *pr
+@@ -394,6 +403,9 @@ int process_profile(int option, char *pr
  	if (retval != 0)
  		goto out;
  
@@ -73,9 +73,9 @@ Index: parser/parser_main.c
  	retval = post_process_policy();
    	if (retval != 0) {
    		PERROR(_("%s: Errors found in file. Aborting.\n"), progname);
-@@ -470,7 +482,7 @@ int process_profile(int option, char *pr
- 	if (!subdomainbase && !preprocess_only && !(option == OPTION_STDOUT))
- 			find_subdomainfs_mountpoint();
+@@ -424,7 +436,7 @@ int process_profile(int option, char *pr
+ 		goto out;
+ 	}
  
 -	if (!pcre_support()) {
 +	if (!regex_support()) {
@@ -138,20 +138,24 @@ Index: parser/parser_regex.c
  
  	while (error == e_no_error && *sptr) {
  		switch (*sptr) {
-@@ -342,10 +339,10 @@ static int process_regex_entry(struct co
+@@ -342,12 +339,12 @@ static int process_regex_entry(struct co
  	}
  
  	/* anchor end and terminate pattern string */
-+	if (error == e_no_error && anchor)
-+		STORE("$" , dptr, 1);
- 	if (error == e_no_error) {
+-	if (error == e_no_error) {
 -		char buf[2] = { '$', 0 };
 -
 -		STORE(buf, dptr, 2);
++	if ((error == e_no_error) && anchor) {
++		STORE("$" , dptr, 1);
++	}
++	if (error != e_no_error) {
 +		STORE("", dptr, 1);
  	}
- 
+-
  	/* check error  again, as above STORE may have set it */
+ 	if (error != e_no_error) {
+ 		if (error == e_buffer_overflow) {
 @@ -356,12 +353,31 @@ static int process_regex_entry(struct co
  		}
  
@@ -185,7 +189,7 @@ Index: parser/parser_regex.c
  	entry->pattern_type = ptype;
  
  	/*
-@@ -422,33 +438,89 @@ static int process_regex_entry(struct co
+@@ -422,33 +438,83 @@ static int process_regex_entry(struct co
  		filter_escapes(entry->name);
  	}		/* ptype == ePatternRegex */
  
@@ -239,7 +243,7 @@ Index: parser/parser_regex.c
 +		count++;
  	}
  
-+	code->dfarule_count = count;
++	cod->dfarule_count = count;
  	return ret;
  }
  
@@ -256,18 +260,12 @@ Index: parser/parser_regex.c
 +			goto out;
  	}
 +	if (!post_process_entries(cod))
-+{
-+fprintf(stderr, "Failed post_process_entries\n");
 +		goto out;
-+}
  
 +	if (regex_type == AARE_DFA && cod->dfarule_count > 0) {
 +		cod->dfa = aare_create_dfa(cod->dfarules, 0, &cod->dfa_size);
 +		if (!cod->dfa)
-+{
-+fprintf(stderr, "Failed create dfa\n");
 +			goto out;
-+}
 +/*
 +		if (cod->dfa_size == 0) {
 +			PERROR(_("profile %s: has merged rules (%s) with "
@@ -282,7 +280,7 @@ Index: parser/parser_regex.c
  	/*
  	 * Post process subdomain(s):
  	 *
-@@ -464,8 +536,11 @@ int process_regex(struct codomain *cod)
+@@ -464,8 +530,11 @@ int process_regex(struct codomain *cod)
  	 * }
  	 */
  	if (process_hat_regex(cod) != 0)
@@ -2307,27 +2305,28 @@ Index: parser/Makefile
 ===================================================================
 --- parser.orig/Makefile
 +++ parser/Makefile
-@@ -77,6 +77,8 @@ OBJECTS = parser_lex.o parser_yacc.o par
+@@ -77,6 +77,9 @@ OBJECTS = parser_lex.o parser_yacc.o par
  	  parser_include.o parser_merge.o parser_symtab.o parser_misc.o \
  	  parser_regex.o parser_variable.o parser_policy.o
  
-+AARE = libapparmor_re/libapparmor_re.a
++AAREDIR= libapparmor_re
++AAREOBJECTS = ${AAREDIR}/libapparmor_re.a
 +
  PCREDIR= pcre
  PCREOBJECTS = ${PCREDIR}/pcre.o
  
-@@ -110,8 +112,8 @@ all: 	$(LEX_C_FILES) $(YACC_C_FILES) $(T
+@@ -110,8 +113,8 @@ all: 	$(LEX_C_FILES) $(YACC_C_FILES) $(T
  	$(Q)make -C po all
  	$(Q)make -s tests
  
 -apparmor_parser: $(OBJECTS) $(PCREOBJECTS)
 -	$(CC) $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(PCREOBJECTS) $(LIBS) ${LEXLIB}
-+apparmor_parser: $(OBJECTS) $(PCREOBJECTS) $(AARE)
-+	$(CC) $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(PCREOBJECTS) $(LIBS) ${LEXLIB} -Bstatic $(AARE) -lstdc++
++apparmor_parser: $(OBJECTS) $(PCREOBJECTS) $(AAREOBJECTS)
++	$(CC) $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(PCREOBJECTS) $(LIBS) ${LEXLIB} -Bstatic $(AAREOBJECTS) -lstdc++
  
  parser_yacc.c parser_yacc.h: parser_yacc.y parser.h
  	$(YACC) $(YFLAGS) -o parser_yacc.c parser_yacc.y 
-@@ -196,7 +198,7 @@ install-suse:
+@@ -196,7 +199,7 @@ install-suse:
  	ln -sf /etc/init.d/boot.apparmor $(DESTDIR)/sbin/rcapparmor
  	ln -sf rcapparmor $(DESTDIR)/sbin/rcsubdomain
  	ln -sf /etc/init.d/aaeventd $(DESTDIR)/sbin/rcaaeventd

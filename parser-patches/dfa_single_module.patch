@@ -1,0 +1,67 @@
+Index: parser/parser_interface.c
+===================================================================
+--- parser.orig/parser_interface.c
++++ parser/parser_interface.c
+@@ -56,6 +56,7 @@
+ #define SD_STR_LEN (sizeof(u16))
+ 
+ #define SUBDOMAIN_INTERFACE_VERSION 2
++#define SUBDOMAIN_INTERFACE_DFA_VERSION 3
+ 
+ int sd_serialize_codomain(int option, struct codomain *cod);
+ 
+@@ -473,24 +474,7 @@ int sd_serialize_file_entry(sd_serialize
+ 
+ int sd_serialize_dfa(sd_serialize *p, void *dfa, size_t size)
+ {
+-	/* fake up a file entry in regex entry list */
+-	PDEBUG("Writing file entry. name '%s'\n", file_entry->name);
+-	if (!sd_write_list(p, "pgent"))
+-		return 0;
+-	if (!sd_write_struct(p, "fe"))
+-		return 0;
+-	if (!sd_write_string(p, "dfa", NULL))
+-		return 0;
+-	/* list entry has having all perms but no exec modifiers */
+-	if (!sd_write32(p, 0x7fffffff & ~AA_EXEC_MODIFIERS))
+-		return 0;
+-	if (!sd_write32(p, ePatternRegex))
+-		return 0;
+-	if (!sd_write_blob(p, dfa, size, "aadfa"))
+-		return 0;
+-	if (!sd_write_structend(p))
+-		return 0;
+-	if (!sd_write_listend(p))
++	if (dfa && !sd_write_blob(p, dfa, size, "aadfa"))
+ 		return 0;
+ 
+ 	return 1;
+@@ -556,7 +540,7 @@ int sd_serialize_profile(sd_serialize *p
+ 		return 0;
+ 
+ 	/* either have a single dfa or lists of different entry types */
+-	if (profile->dfa) {
++	if (regex_type == AARE_DFA) {
+ 		if (!sd_serialize_dfa(p, profile->dfa, profile->dfa_size))
+ 			return 0;
+ 	} else {
+@@ -635,9 +619,18 @@ int sd_serialize_profile(sd_serialize *p
+ 
+ int sd_serialize_top_profile(sd_serialize *p, struct codomain *profile)
+ {
++	int version;
++
++	if (regex_type == AARE_DFA)
++		version = SUBDOMAIN_INTERFACE_DFA_VERSION;
++	else
++		version = SUBDOMAIN_INTERFACE_VERSION;
++
++
+ 	if (!sd_write_name(p, "version"))
+ 		return 0;
+-	if (!sd_write32(p, SUBDOMAIN_INTERFACE_VERSION))
++
++	if (!sd_write32(p, version))
+ 		return 0;
+ 	return sd_serialize_profile(p, profile);
+ }

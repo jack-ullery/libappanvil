@@ -1,0 +1,36 @@
+Index: apparmor/rc.apparmor.functions
+===================================================================
+--- apparmor.orig/rc.apparmor.functions
++++ apparmor/rc.apparmor.functions
+@@ -322,14 +322,25 @@ function load_module() {
+ 		MODULE=subdomain
+ 	fi
+ 	if ! grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules ; then
+-		sd_action "Loading AppArmor module" /sbin/modprobe $MODULE $1
++		/sbin/modprobe $MODULE $1
+ 		rc=$?
+-		if [ $rc -ne 0 ] ; then
+-			# we couldn't find the module
+-			module_panic
++		if [ $rc -eq 0 ] ; then
++			sd_action "Loading AppArmor module" true
++		else
++			# we couldn't find the module, see if apparmor is
++			# builtin.
++			local builtin=`cat /proc/self/attr/current`
+ 			rc=$?
+-			if [ $rc -ne 0 ] ; then
+-				exit $rc
++			if [ $rc -eq 0 -a $builtin == "unconstrained" ]
++			then
++				sd_action "AppArmor is built in to kernel" true
++			else
++				sd_action "Loading AppArmor module" false
++				module_panic
++				rc=$?
++				if [ $rc -ne 0 ] ; then
++					exit $rc
++				fi
+ 			fi
+ 		fi
+ 	fi

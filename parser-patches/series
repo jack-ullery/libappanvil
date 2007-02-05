@@ -1,3 +1,5 @@
-fix_missing_break.patch
+rcapparmor_builtin.patch
+parser_loadinterface.patch
+parser_cache.patch
 dfa.patch
-libapparmor_re
+dfa_single_module.patch

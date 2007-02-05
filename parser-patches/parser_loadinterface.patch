@@ -1,0 +1,121 @@
+Index: parser/parser_main.c
+===================================================================
+--- parser.orig/parser_main.c
++++ parser/parser_main.c
+@@ -264,18 +264,14 @@ static inline char *try_subdomainfs_moun
+ 	return retval;
+ }
+ 
+-void find_subdomainfs_mountpoint(void)
++int find_subdomainfs_mountpoint(void)
+ {
+ 	FILE *mntfile;
+ 	struct mntent *mntpt;
+ 
+ 	if (!(mntfile = setmntent(MOUNTED_FS, "r"))) {
+ 		/* Ugh, what's the right default if you can't open /proc/mounts? */
+-		PERROR(_("Warning: unable to open %s, attempting to use %s\n"
+-			 "as the subdomainfs location. Use --subdomainfs to override.\n"),
+-		       MOUNTED_FS, DEFAULT_APPARMORFS);
+-		subdomainbase = DEFAULT_APPARMORFS;
+-		return;
++		goto test_default;
+ 	}
+ 
+ 	while ((mntpt = getmntent(mntfile))) {
+@@ -301,62 +297,23 @@ void find_subdomainfs_mountpoint(void)
+ 		}
+ 	}
+ 
++ test_default:
+ 	if (!subdomainbase) {
+-		PERROR(_("Warning: unable to find a suitable fs in %s, is it mounted?\n"
+-			 "Attempting to use %s as the subdomainfs location.\n"
+-			 "Use --subdomainfs to override.\n"),
+-		       MOUNTED_FS, DEFAULT_APPARMORFS);
+-		subdomainbase = DEFAULT_APPARMORFS;
+-	}
+-	endmntent(mntfile);
+-}
+-
+-int is_module_loaded(void)
+-{
+-	char *query_failed = NULL;
+-	int module_loaded = 0;
+-	int mlen = strlen(MODULE_NAME);
+-	int oldmlen = strlen(OLD_MODULE_NAME);
+-	FILE *fp;
+-
+-	fp = fopen(PROC_MODULES, "r");
+-	if (fp) {
+-		while (!feof(fp)) {
+-			const int buflen = 256;
+-			char buf[buflen];
+-
+-			if (fgets(buf, buflen, fp)) {
+-				buf[buflen - 1] = 0;
+-
+-				if (strncmp(buf, MODULE_NAME, mlen) == 0 &&
+-				    buf[mlen] == ' ') {
+-					module_loaded = 1;
+-				}
+-				if (strncmp(buf, OLD_MODULE_NAME, oldmlen) == 0 &&
+-				    buf[oldmlen] == ' ') {
+-					module_loaded = 1;
+-				}
+-			}
++		struct stat buf;
++		if (stat(DEFAULT_APPARMORFS, &buf) == -1) {
++		PERROR(_("Warning: unable to find a suitable fs in %s, is it "
++			 "mounted?\nUse --subdomainfs to override.\n"),
++		       MOUNTED_FS);
++		} else {
++			subdomainbase = DEFAULT_APPARMORFS;
+ 		}
+-		(void)fclose(fp);
+-	} else {
+-		query_failed = "unable to open " PROC_MODULES;
+-	}
+-
+-	if (query_failed) {
+-		PERROR(_("%s: Unable to query modules - '%s'\n"
+-			 "Either modules are disabled or your kernel is"
+-			 " too old.\n"), progname, query_failed);
+-		return 1;
+-	} else if (!module_loaded) {
+-		PERROR(_("%s: Unable to find " MODULE_NAME "!\n"
+-			 "Ensure that it has been loaded.\n"), progname);
+-		return 1;
+ 	}
++	endmntent(mntfile);
+ 
+-	return 0;
++	return (subdomainbase == NULL);
+ }
+ 
++
+ int have_enough_privilege(void)
+ {
+ 	uid_t uid, euid;
+@@ -467,9 +424,6 @@ int process_profile(int option, char *pr
+ 		goto out;
+ 	}
+ 
+-	if (!subdomainbase && !preprocess_only && !(option == OPTION_STDOUT))
+-			find_subdomainfs_mountpoint();
+-
+ 	if (!pcre_support()) {
+ 		die_if_any_regex();
+ 	}
+@@ -502,8 +456,9 @@ int main(int argc, char *argv[])
+ 		return retval;
+ 	}
+ 
+-	/* Check to make sure modules are enabled */
+-	if (!(UNPRIVILEGED_OPS) && ((retval = is_module_loaded()))) {
++	/* Check to make sure there is an interface to load policy */
++	if (!(UNPRIVILEGED_OPS) && (subdomainbase == NULL) &&
++	    (retval = find_subdomainfs_mountpoint())) {
+ 		return retval;
+ 	}
+ 
