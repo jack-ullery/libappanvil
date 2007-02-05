@@ -40,6 +40,7 @@ apparmor-bootdisable.diff
 apparmor-novalidfstype.diff
 apparmor-match_perms.diff
 apparmor-dfa.diff
+apparmor-single_module.diff
 apparmor-percpu_path_cache.diff
 apparmor-path_resize.diff
 apparmor-d_path_flags.diff

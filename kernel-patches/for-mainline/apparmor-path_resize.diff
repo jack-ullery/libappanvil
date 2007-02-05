@@ -1,8 +1,8 @@
-Index: linux-2.6/security/apparmor/apparmor.h
+Index: linux-2.6.19.1/security/apparmor/apparmor.h
 ===================================================================
---- linux-2.6.orig/security/apparmor/apparmor.h
-+++ linux-2.6/security/apparmor/apparmor.h
-@@ -255,7 +255,8 @@ extern int aa_audit_message(struct aapro
+--- linux-2.6.19.1.orig/security/apparmor/apparmor.h
++++ linux-2.6.19.1/security/apparmor/apparmor.h
+@@ -218,7 +218,8 @@ extern int aa_audit_message(struct aapro
  extern int aa_audit_syscallreject(struct aaprofile *active, gfp_t gfp,
  				  const char *);
  extern int aa_audit(struct aaprofile *active, const struct aa_audit *);
@@ -12,11 +12,11 @@ Index: linux-2.6/security/apparmor/apparmor.h
  
  extern int aa_attr(struct aaprofile *active, struct dentry *dentry,
  		   struct vfsmount *mnt, struct iattr *iattr);
-Index: linux-2.6/security/apparmor/inline.h
+Index: linux-2.6.19.1/security/apparmor/inline.h
 ===================================================================
---- linux-2.6.orig/security/apparmor/inline.h
-+++ linux-2.6/security/apparmor/inline.h
-@@ -220,9 +220,12 @@ static inline struct aaprofile *alloc_aa
+--- linux-2.6.19.1.orig/security/apparmor/inline.h
++++ linux-2.6.19.1/security/apparmor/inline.h
+@@ -214,9 +214,12 @@ static inline struct aaprofile *alloc_aa
   * Release space (free_page) allocated to hold pathname
   * name may be NULL (checked for by free_page)
   */
@@ -31,11 +31,11 @@ Index: linux-2.6/security/apparmor/inline.h
  }
  
  /** __aa_find_profile
-Index: linux-2.6/security/apparmor/main.c
+Index: linux-2.6.19.1/security/apparmor/main.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/main.c
-+++ linux-2.6/security/apparmor/main.c
-@@ -454,8 +454,9 @@ static int _aa_perm_vfsmount(struct aapr
+--- linux-2.6.19.1.orig/security/apparmor/main.c
++++ linux-2.6.19.1/security/apparmor/main.c
+@@ -318,8 +318,9 @@ static int _aa_perm_vfsmount(struct aapr
                        struct vfsmount *mnt, struct aa_audit *sa, int mask)
  {
  	int permerror, error;
@@ -46,7 +46,7 @@ Index: linux-2.6/security/apparmor/main.c
  
  	if (IS_ERR(sa->name)) {
  		permerror = PTR_ERR(sa->name);
-@@ -468,7 +469,7 @@ static int _aa_perm_vfsmount(struct aapr
+@@ -332,7 +333,7 @@ static int _aa_perm_vfsmount(struct aapr
  
  	error = aa_audit(active, sa);
  
@@ -55,7 +55,7 @@ Index: linux-2.6/security/apparmor/main.c
  
  	return error;
  }
-@@ -794,27 +795,37 @@ out:
+@@ -658,27 +659,37 @@ out:
   * aa_get_name - retrieve fully qualified path name
   * @dentry: relative path element
   * @mnt: where in tree
@@ -100,7 +100,7 @@ Index: linux-2.6/security/apparmor/main.c
  	} else {
  		const char deleted_str[] = " (deleted)";
  		const size_t deleted_size = sizeof(deleted_str) - 1;
-@@ -828,6 +839,8 @@ char *aa_get_name(struct dentry *dentry,
+@@ -692,6 +703,8 @@ char *aa_get_name(struct dentry *dentry,
  	}
  
  out:
@@ -109,7 +109,15 @@ Index: linux-2.6/security/apparmor/main.c
  	return name;
  }
  
-@@ -986,9 +999,10 @@ int aa_link(struct aaprofile *active,
+@@ -766,6 +779,7 @@ int aa_perm(struct aaprofile *active, st
+ {
+ 	int error = 0;
+ 	struct aa_audit sa;
++	char *addr;
+ 
+ 	if ((mask = aa_filter_mask(mask, dentry->d_inode)) == 0)
+ 		goto out;
+@@ -850,9 +864,10 @@ int aa_link(struct aaprofile *active,
  {
          int permerror = -EPERM, error;
  	struct aa_audit sa;
@@ -122,7 +130,7 @@ Index: linux-2.6/security/apparmor/main.c
  
          if (IS_ERR(sa.name)) {
                  permerror = PTR_ERR(sa.name);
-@@ -1010,8 +1024,8 @@ int aa_link(struct aaprofile *active,
+@@ -874,8 +889,8 @@ int aa_link(struct aaprofile *active,
  
  	error = aa_audit(active, &sa);
  
@@ -133,7 +141,7 @@ Index: linux-2.6/security/apparmor/main.c
  
          return error;
  }
-@@ -1078,6 +1092,7 @@ int aa_fork(struct task_struct *p)
+@@ -942,6 +957,7 @@ int aa_fork(struct task_struct *p)
  int aa_register(struct linux_binprm *bprm)
  {
  	char *filename;
@@ -141,7 +149,7 @@ Index: linux-2.6/security/apparmor/main.c
  	struct file *filp = bprm->file;
  	struct aaprofile *active;
  	struct aaprofile *newprofile = NULL, unconstrained_flag;
-@@ -1090,7 +1105,7 @@ int aa_register(struct linux_binprm *bpr
+@@ -954,7 +970,7 @@ int aa_register(struct linux_binprm *bpr
  
  	AA_DEBUG("%s\n", __FUNCTION__);
  
@@ -150,7 +158,7 @@ Index: linux-2.6/security/apparmor/main.c
  	if (IS_ERR(filename)) {
  		AA_WARN("%s: Failed to get filename\n", __FUNCTION__);
  		goto out;
-@@ -1339,7 +1354,7 @@ apply_profile:
+@@ -1206,7 +1222,7 @@ apply_profile:
  	}
  
  cleanup:

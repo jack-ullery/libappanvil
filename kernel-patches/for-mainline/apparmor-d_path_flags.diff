@@ -1,8 +1,8 @@
-Index: linux-2.6/security/apparmor/main.c
+Index: linux-2.6.19.1/security/apparmor/main.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/main.c
-+++ linux-2.6/security/apparmor/main.c
-@@ -804,6 +804,7 @@ char *aa_get_name(struct dentry *dentry,
+--- linux-2.6.19.1.orig/security/apparmor/main.c
++++ linux-2.6.19.1/security/apparmor/main.c
+@@ -668,6 +668,7 @@ char *aa_get_name(struct dentry *dentry,
  {
  	char *buffer, *name;
  	int order = 0;
@@ -10,7 +10,7 @@ Index: linux-2.6/security/apparmor/main.c
  
  	*addr = NULL;
  	buffer = (char *)aa_get_path(GFP_KERNEL);
-@@ -813,7 +814,8 @@ char *aa_get_name(struct dentry *dentry,
+@@ -677,7 +678,8 @@ char *aa_get_name(struct dentry *dentry,
  		goto out;
  	}
  
@@ -20,7 +20,7 @@ Index: linux-2.6/security/apparmor/main.c
  	/* check for (deleted) that d_path appends to pathnames if the dentry
  	 * has been removed from the cache.
  	 * The size > deleted_size and strcmp checks are redundant safe guards.
-@@ -826,16 +828,6 @@ char *aa_get_name(struct dentry *dentry,
+@@ -690,16 +692,6 @@ char *aa_get_name(struct dentry *dentry,
  		order++;
  		buffer = kmalloc(PAGE_SIZE << order, GFP_KERNEL);
  		goto retry;
