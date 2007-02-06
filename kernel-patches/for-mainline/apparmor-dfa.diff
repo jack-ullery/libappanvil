@@ -1,7 +1,7 @@
-Index: linux-2.6.19.1/security/apparmor/match/Kbuild
+Index: linux-2.6/security/apparmor/match/Kbuild
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/match/Kbuild
-+++ linux-2.6.19.1/security/apparmor/match/Kbuild
+--- linux-2.6.orig/security/apparmor/match/Kbuild
++++ linux-2.6/security/apparmor/match/Kbuild
 @@ -1,6 +1,6 @@
  # Makefile for AppArmor aamatch submodule
  #
@@ -11,10 +11,10 @@ Index: linux-2.6.19.1/security/apparmor/match/Kbuild
  
 -aamatch_pcre-y := match_pcre.o pcre_exec.o
 +aamatch_dfa-y := match_dfa.o
-Index: linux-2.6.19.1/security/apparmor/match/match_dfa.c
+Index: linux-2.6/security/apparmor/match/match_dfa.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.19.1/security/apparmor/match/match_dfa.c
++++ linux-2.6/security/apparmor/match/match_dfa.c
 @@ -0,0 +1,398 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -414,10 +414,10 @@ Index: linux-2.6.19.1/security/apparmor/match/match_dfa.c
 +MODULE_DESCRIPTION("AppArmor aa_match module [dfa]");
 +MODULE_AUTHOR("John Johansen <jjohansen@suse.de>");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.19.1/security/apparmor/module_interface.c
+Index: linux-2.6/security/apparmor/module_interface.c
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/module_interface.c
-+++ linux-2.6.19.1/security/apparmor/module_interface.c
+--- linux-2.6.orig/security/apparmor/module_interface.c
++++ linux-2.6/security/apparmor/module_interface.c
 @@ -206,6 +206,7 @@ static void aaconvert(enum aa_code code,
  		*(u16 *)dest = le16_to_cpu(get_unaligned((u16 *)src));
  		break;
@@ -465,10 +465,10 @@ Index: linux-2.6.19.1/security/apparmor/module_interface.c
  	free_aa_entry(entry);
  	return NULL;
  }
-Index: linux-2.6.19.1/security/apparmor/module_interface.h
+Index: linux-2.6/security/apparmor/module_interface.h
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/module_interface.h
-+++ linux-2.6.19.1/security/apparmor/module_interface.h
+--- linux-2.6.orig/security/apparmor/module_interface.h
++++ linux-2.6/security/apparmor/module_interface.h
 @@ -20,6 +20,7 @@ enum aa_code {
  	AA_LIST,
  	AA_LISTEND,
@@ -477,10 +477,10 @@ Index: linux-2.6.19.1/security/apparmor/module_interface.h
  	AA_BAD
  };
  
-Index: linux-2.6.19.1/security/apparmor/shared.h
+Index: linux-2.6/security/apparmor/shared.h
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/shared.h
-+++ linux-2.6.19.1/security/apparmor/shared.h
+--- linux-2.6.orig/security/apparmor/shared.h
++++ linux-2.6/security/apparmor/shared.h
 @@ -28,6 +28,9 @@
  #define POS_AA_EXEC_UNSAFE		(POS_AA_EXEC_MMAP + 1)
  #define POS_AA_FILE_MAX			POS_AA_EXEC_UNSAFE

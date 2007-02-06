@@ -1,7 +1,7 @@
-Index: linux-2.6.19.1/security/apparmor/Makefile
+Index: linux-2.6/security/apparmor/Makefile
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/Makefile
-+++ linux-2.6.19.1/security/apparmor/Makefile
+--- linux-2.6.orig/security/apparmor/Makefile
++++ linux-2.6/security/apparmor/Makefile
 @@ -1,6 +1,6 @@
  # Makefile for AppArmor Linux Security Module
  #
@@ -11,10 +11,10 @@ Index: linux-2.6.19.1/security/apparmor/Makefile
  apparmor-y := main.o list.o procattr.o lsm.o apparmorfs.o capabilities.o \
 -	      module_interface.o
 +	      module_interface.o match.o
-Index: linux-2.6.19.1/security/apparmor/apparmor.h
+Index: linux-2.6/security/apparmor/apparmor.h
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/apparmor.h
-+++ linux-2.6.19.1/security/apparmor/apparmor.h
+--- linux-2.6.orig/security/apparmor/apparmor.h
++++ linux-2.6/security/apparmor/apparmor.h
 @@ -17,6 +17,7 @@
  #include <linux/rcupdate.h>
  
@@ -115,10 +115,10 @@ Index: linux-2.6.19.1/security/apparmor/apparmor.h
 +unsigned int aamatch(struct aa_dfa *dfa, const char *pathname);
 +
  #endif				/* __APPARMOR_H */
-Index: linux-2.6.19.1/security/apparmor/inline.h
+Index: linux-2.6/security/apparmor/inline.h
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/inline.h
-+++ linux-2.6.19.1/security/apparmor/inline.h
+--- linux-2.6.orig/security/apparmor/inline.h
++++ linux-2.6/security/apparmor/inline.h
 @@ -199,14 +199,8 @@ static inline struct aaprofile *alloc_aa
  					      GFP_KERNEL);
  	AA_DEBUG("%s(%p)\n", __FUNCTION__, profile);
@@ -134,10 +134,10 @@ Index: linux-2.6.19.1/security/apparmor/inline.h
  		INIT_RCU_HEAD(&profile->rcu);
  		kref_init(&profile->count);
  	}
-Index: linux-2.6.19.1/security/apparmor/main.c
+Index: linux-2.6/security/apparmor/main.c
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/main.c
-+++ linux-2.6.19.1/security/apparmor/main.c
+--- linux-2.6.orig/security/apparmor/main.c
++++ linux-2.6/security/apparmor/main.c
 @@ -14,7 +14,6 @@
  #include <linux/audit.h>
  
@@ -349,9 +349,9 @@ Index: linux-2.6.19.1/security/apparmor/main.c
  		case AA_EXEC_INHERIT:
  			/* do nothing - setting of profile
  			 * already handed in aa_fork
-Index: linux-2.6.19.1/security/apparmor/match/Kbuild
+Index: linux-2.6/security/apparmor/match/Kbuild
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/match/Kbuild
+--- linux-2.6.orig/security/apparmor/match/Kbuild
 +++ /dev/null
 @@ -1,6 +0,0 @@
 -# Makefile for AppArmor aamatch submodule
@@ -360,9 +360,9 @@ Index: linux-2.6.19.1/security/apparmor/match/Kbuild
 -obj-$(CONFIG_SECURITY_APPARMOR) += aamatch_dfa.o
 -
 -aamatch_dfa-y := match_dfa.o
-Index: linux-2.6.19.1/security/apparmor/match/Makefile
+Index: linux-2.6/security/apparmor/match/Makefile
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/match/Makefile
+--- linux-2.6.orig/security/apparmor/match/Makefile
 +++ /dev/null
 @@ -1,5 +0,0 @@
 -# Makefile for AppArmor aamatch submodule
@@ -370,9 +370,9 @@ Index: linux-2.6.19.1/security/apparmor/match/Makefile
 -obj-$(CONFIG_SECURITY_APPARMOR) += aamatch_pcre.o
 -
 -aamatch_pcre-y := match_pcre.o pcre_exec.o
-Index: linux-2.6.19.1/security/apparmor/match/match.h
+Index: linux-2.6/security/apparmor/match/match.h
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/match/match.h
+--- linux-2.6.orig/security/apparmor/match/match.h
 +++ /dev/null
 @@ -1,126 +0,0 @@
 -/*
@@ -501,9 +501,9 @@ Index: linux-2.6.19.1/security/apparmor/match/match.h
 -}
 -
 -#endif /* __MATCH_H */
-Index: linux-2.6.19.1/security/apparmor/match/match_default.c
+Index: linux-2.6/security/apparmor/match/match_default.c
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/match/match_default.c
+--- linux-2.6.orig/security/apparmor/match/match_default.c
 +++ /dev/null
 @@ -1,56 +0,0 @@
 -/*
@@ -562,9 +562,9 @@ Index: linux-2.6.19.1/security/apparmor/match/match_default.c
 -MODULE_DESCRIPTION("AppArmor match module (aamatch) [default]");
 -MODULE_AUTHOR("Tony Jones <tonyj@suse.de>");
 -MODULE_LICENSE("GPL");
-Index: linux-2.6.19.1/security/apparmor/match/match_dfa.c
+Index: linux-2.6/security/apparmor/match/match_dfa.c
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/match/match_dfa.c
+--- linux-2.6.orig/security/apparmor/match/match_dfa.c
 +++ /dev/null
 @@ -1,398 +0,0 @@
 -/*
@@ -965,9 +965,9 @@ Index: linux-2.6.19.1/security/apparmor/match/match_dfa.c
 -MODULE_DESCRIPTION("AppArmor aa_match module [dfa]");
 -MODULE_AUTHOR("John Johansen <jjohansen@suse.de>");
 -MODULE_LICENSE("GPL");
-Index: linux-2.6.19.1/security/apparmor/match/match_pcre.c
+Index: linux-2.6/security/apparmor/match/match_pcre.c
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/match/match_pcre.c
+--- linux-2.6.orig/security/apparmor/match/match_pcre.c
 +++ /dev/null
 @@ -1,168 +0,0 @@
 -/*
@@ -1138,9 +1138,9 @@ Index: linux-2.6.19.1/security/apparmor/match/match_pcre.c
 -MODULE_DESCRIPTION("AppArmor aa_match module [pcre]");
 -MODULE_AUTHOR("Tony Jones <tonyj@suse.de>");
 -MODULE_LICENSE("GPL");
-Index: linux-2.6.19.1/security/apparmor/match/pcre_exec.c
+Index: linux-2.6/security/apparmor/match/pcre_exec.c
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/match/pcre_exec.c
+--- linux-2.6.orig/security/apparmor/match/pcre_exec.c
 +++ /dev/null
 @@ -1,1945 +0,0 @@
 -/*
@@ -3088,9 +3088,9 @@ Index: linux-2.6.19.1/security/apparmor/match/pcre_exec.c
 -}
 -
 -/* End of pcre.c */
-Index: linux-2.6.19.1/security/apparmor/match/pcre_exec.h
+Index: linux-2.6/security/apparmor/match/pcre_exec.h
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/match/pcre_exec.h
+--- linux-2.6.orig/security/apparmor/match/pcre_exec.h
 +++ /dev/null
 @@ -1,308 +0,0 @@
 -/*
@@ -3401,9 +3401,9 @@ Index: linux-2.6.19.1/security/apparmor/match/pcre_exec.h
 -
 -#endif // _PCRE_H
 - /* End of pcre.h */
-Index: linux-2.6.19.1/security/apparmor/match/pcre_tables.h
+Index: linux-2.6/security/apparmor/match/pcre_tables.h
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/match/pcre_tables.h
+--- linux-2.6.orig/security/apparmor/match/pcre_tables.h
 +++ /dev/null
 @@ -1,184 +0,0 @@
 -
@@ -3590,10 +3590,10 @@ Index: linux-2.6.19.1/security/apparmor/match/pcre_tables.h
 -  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};/* 248-255 */
 -
 -/* End of chartables.c */
-Index: linux-2.6.19.1/security/apparmor/module_interface.c
+Index: linux-2.6/security/apparmor/module_interface.c
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/module_interface.c
-+++ linux-2.6.19.1/security/apparmor/module_interface.c
+--- linux-2.6.orig/security/apparmor/module_interface.c
++++ linux-2.6/security/apparmor/module_interface.c
 @@ -14,7 +14,6 @@
  #include "apparmor.h"
  #include "inline.h"
@@ -3862,10 +3862,10 @@ Index: linux-2.6.19.1/security/apparmor/module_interface.c
  
  	/* use free_aaprofile instead of put_aaprofile to destroy the
  	 * null_profile, because the null_profile use the same reference
-Index: linux-2.6.19.1/security/apparmor/apparmorfs.c
+Index: linux-2.6/security/apparmor/apparmorfs.c
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/apparmorfs.c
-+++ linux-2.6.19.1/security/apparmor/apparmorfs.c
+--- linux-2.6.orig/security/apparmor/apparmorfs.c
++++ linux-2.6/security/apparmor/apparmorfs.c
 @@ -17,7 +17,6 @@
  
  #include "apparmor.h"
@@ -3874,10 +3874,10 @@ Index: linux-2.6.19.1/security/apparmor/apparmorfs.c
  
  #define SECFS_AA "apparmor"
  static struct dentry *aafs_dentry = NULL;
-Index: linux-2.6.19.1/security/apparmor/match.c
+Index: linux-2.6/security/apparmor/match.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.19.1/security/apparmor/match.c
++++ linux-2.6/security/apparmor/match.c
 @@ -0,0 +1,274 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -4153,10 +4153,10 @@ Index: linux-2.6.19.1/security/apparmor/match.c
 +
 +	return 0;
 +}
-Index: linux-2.6.19.1/security/apparmor/match.h
+Index: linux-2.6/security/apparmor/match.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.19.1/security/apparmor/match.h
++++ linux-2.6/security/apparmor/match.h
 @@ -0,0 +1,80 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE

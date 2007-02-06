@@ -26,21 +26,29 @@ vfs-listxattr.diff
 security-listxattr.diff
 vfs-removexattr.diff
 security-removexattr.diff
-d_path_flags.diff
-d_path_namespace_root.diff
-d_path_return_flags.diff
-security_chroot.diff
+d_path-lazy-unmounts.diff
+d_namespace_path.diff
+# d_path_flags.diff
+# d_path_namespace_root.diff
+# d_path_return_flags.diff
+# security_chroot.diff
 apparmor-audit.diff
 apparmor-intree.diff
 apparmor.diff
 apparmor-vfsmnt.diff
 apparmor-builtinonly.diff
 apparmor-bootdisable.diff
-# apparmor-twophaseinit.diff
 apparmor-novalidfstype.diff
 apparmor-match_perms.diff
 apparmor-dfa.diff
 apparmor-single_module.diff
-apparmor-percpu_path_cache.diff
-apparmor-path_resize.diff
-apparmor-d_path_flags.diff
+apparmor-d_namespace.diff
+apparmor-audit-cleanup.diff
+apparmor-minor-stuff.diff
+apparmor-setprocattr.diff
+apparmor-cleanup-aa.diff
+apparmor-aa_-to-aa.diff
+# apparmor-twophaseinit.diff
+# apparmor-percpu_path_cache.diff
+# apparmor-path_resize.diff
+# apparmor-d_path_flags.diff

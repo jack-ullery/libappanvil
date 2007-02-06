@@ -1,7 +1,7 @@
-Index: linux-2.6.19.1/security/apparmor/apparmor.h
+Index: linux-2.6/security/apparmor/apparmor.h
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/apparmor.h
-+++ linux-2.6.19.1/security/apparmor/apparmor.h
+--- linux-2.6.orig/security/apparmor/apparmor.h
++++ linux-2.6/security/apparmor/apparmor.h
 @@ -218,7 +218,8 @@ extern int aa_audit_message(struct aapro
  extern int aa_audit_syscallreject(struct aaprofile *active, gfp_t gfp,
  				  const char *);
@@ -12,10 +12,10 @@ Index: linux-2.6.19.1/security/apparmor/apparmor.h
  
  extern int aa_attr(struct aaprofile *active, struct dentry *dentry,
  		   struct vfsmount *mnt, struct iattr *iattr);
-Index: linux-2.6.19.1/security/apparmor/inline.h
+Index: linux-2.6/security/apparmor/inline.h
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/inline.h
-+++ linux-2.6.19.1/security/apparmor/inline.h
+--- linux-2.6.orig/security/apparmor/inline.h
++++ linux-2.6/security/apparmor/inline.h
 @@ -214,9 +214,12 @@ static inline struct aaprofile *alloc_aa
   * Release space (free_page) allocated to hold pathname
   * name may be NULL (checked for by free_page)
@@ -31,10 +31,10 @@ Index: linux-2.6.19.1/security/apparmor/inline.h
  }
  
  /** __aa_find_profile
-Index: linux-2.6.19.1/security/apparmor/main.c
+Index: linux-2.6/security/apparmor/main.c
 ===================================================================
---- linux-2.6.19.1.orig/security/apparmor/main.c
-+++ linux-2.6.19.1/security/apparmor/main.c
+--- linux-2.6.orig/security/apparmor/main.c
++++ linux-2.6/security/apparmor/main.c
 @@ -318,8 +318,9 @@ static int _aa_perm_vfsmount(struct aapr
                        struct vfsmount *mnt, struct aa_audit *sa, int mask)
  {

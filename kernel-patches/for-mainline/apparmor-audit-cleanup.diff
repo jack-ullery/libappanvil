@@ -1,0 +1,289 @@
+The aa_diroptype and aa_xattroptype enumerations don't help a thing; they
+only mess up the code. Pass the name of the operation in aa_audit instead.
+
+Use a union for the remaining users of ival in aa_audit: this is more
+readable.
+
+Index: linux-2.6/security/apparmor/apparmor.h
+===================================================================
+--- linux-2.6.orig/security/apparmor/apparmor.h
++++ linux-2.6/security/apparmor/apparmor.h
+@@ -145,8 +145,12 @@ struct aa_audit {
+ 	gfp_t gfp_mask;
+ 	int error_code;
+ 
++	const char *operation;
+ 	const char *name;
+-	unsigned int ival;
++	union {
++		int capability;
++		int mask;
++	};
+ 	union {
+ 		const void *pval;
+ 		va_list vaval;
+@@ -180,20 +184,6 @@ struct aa_audit {
+ 			"LOGPROF-HINT " hint " " fmt, ##args);\
+ 	} while(0)
+ 
+-/* directory op type, for aa_perm_dir */
+-enum aa_diroptype {
+-	aa_dir_mkdir,
+-	aa_dir_rmdir
+-};
+-
+-/* xattr op type, for aa_xattr */
+-enum aa_xattroptype {
+-	aa_xattr_get,
+-	aa_xattr_set,
+-	aa_xattr_list,
+-	aa_xattr_remove
+-};
+-
+ #define BASE_PROFILE(p) ((p)->parent ? (p)->parent : (p))
+ #define IN_SUBPROFILE(p) ((p)->parent)
+ 
+@@ -210,14 +200,14 @@ extern char *aa_get_name(struct dentry *
+ 
+ extern int aa_attr(struct aaprofile *active, struct dentry *dentry,
+ 		   struct vfsmount *mnt, struct iattr *iattr);
+-extern int aa_xattr(struct aaprofile *active, struct dentry *dentry,
+-		    struct vfsmount *mnt,
+-		    const char *xattr, enum aa_xattroptype xattroptype);
++extern int aa_perm_xattr(struct aaprofile *active, struct dentry *dentry,
++			 struct vfsmount *mnt, const char *operation,
++			 const char *xattr_xattr, int mask);
+ extern int aa_capability(struct aaprofile *active, int cap);
+ extern int aa_perm(struct aaprofile *active, struct dentry *dentry,
+ 		   struct vfsmount *mnt, int mask);
+ extern int aa_perm_dir(struct aaprofile *active, struct dentry *dentry,
+-		       struct vfsmount *mnt, enum aa_diroptype diroptype);
++		       struct vfsmount *mnt, const char *operation, int mask);
+ extern int aa_link(struct aaprofile *active,
+ 		   struct dentry *link, struct vfsmount *link_mnt,
+ 		   struct dentry *target, struct vfsmount *target_mnt);
+Index: linux-2.6/security/apparmor/main.c
+===================================================================
+--- linux-2.6.orig/security/apparmor/main.c
++++ linux-2.6/security/apparmor/main.c
+@@ -443,7 +443,7 @@ int aa_audit(struct aaprofile *active, c
+ 	audit_log_format(ab, "%s ", logcls);	/* REJECTING/ALLOWING/etc */
+ 
+ 	if (sa->type == AA_AUDITTYPE_FILE) {
+-		int perm = audit ? sa->ival : sa->error_code;
++		int perm = audit ? sa->mask : sa->error_code;
+ 
+ 		audit_log_format(ab, "%s%s%s%s%s access to %s ",
+ 				 perm & AA_EXEC_MMAP ? "m" : "",
+@@ -456,9 +456,7 @@ int aa_audit(struct aaprofile *active, c
+ 		opspec_error = -EPERM;
+ 
+ 	} else if (sa->type == AA_AUDITTYPE_DIR) {
+-		audit_log_format(ab, "%s on %s ",
+-			sa->ival == aa_dir_mkdir ? "mkdir" : "rmdir",
+-			sa->name);
++		audit_log_format(ab, "%s on %s ", sa->operation, sa->name);
+ 
+ 	} else if (sa->type == AA_AUDITTYPE_ATTR) {
+ 		struct iattr *iattr = (struct iattr*)sa->pval;
+@@ -477,26 +475,10 @@ int aa_audit(struct aaprofile *active, c
+ 			sa->name);
+ 
+ 	} else if (sa->type == AA_AUDITTYPE_XATTR) {
+-		const char *fmt;
+-		switch (sa->ival) {
+-			case aa_xattr_get:
+-				fmt = "xattr get";
+-				break;
+-			case aa_xattr_set:
+-				fmt = "xattr set";
+-				break;
+-			case aa_xattr_list:
+-				fmt = "xattr list";
+-				break;
+-			case aa_xattr_remove:
+-				fmt = "xattr remove";
+-				break;
+-			default:
+-				fmt = "xattr <unknown>";
+-				break;
+-		}
+-
+-		audit_log_format(ab, "%s on %s ", fmt, sa->name);
++		/* FIXME: how are special characters in sa->name escaped? */
++		/* FIXME: check if this can be handled on the stack
++			  with an inline varargs function. */
++		audit_log_format(ab, "%s on %s ", sa->operation, sa->name);
+ 
+ 	} else if (sa->type == AA_AUDITTYPE_LINK) {
+ 		audit_log_format(ab,
+@@ -507,7 +489,7 @@ int aa_audit(struct aaprofile *active, c
+ 	} else if (sa->type == AA_AUDITTYPE_CAP) {
+ 		audit_log_format(ab,
+ 			"access to capability '%s' ",
+-			capability_to_name(sa->ival));
++			capability_to_name(sa->capability));
+ 
+ 		opspec_error = -EPERM;
+ 	} else if (sa->type == AA_AUDITTYPE_SYSCALL) {
+@@ -602,27 +584,24 @@ int aa_attr(struct aaprofile *active, st
+ }
+ 
+ /**
+- * aa_xattr - check whether xattr attribute change allowed
++ * aa_perm_xattr - check whether xattr attribute change allowed
+  * @active: profile to check against
+  * @dentry: file to check
+- * @xattr: xattr to check
+- * @xattroptype: type of xattr operation
++ * @mnt: mount of file to check
++ * @operation: xattr operation being done
++ * @xattr_name: name of xattr to check
++ * @mask: access mode requested
+  */
+-int aa_xattr(struct aaprofile *active, struct dentry *dentry,
+-	     struct vfsmount *mnt, const char *xattr,
+-	     enum aa_xattroptype xattroptype)
++int aa_perm_xattr(struct aaprofile *active, struct dentry *dentry,
++		  struct vfsmount *mnt, const char *operation,
++		  const char *xattr_name, int mask)
+ {
+-	int error = 0, mask = 0;
++	int error;
+ 	struct aa_audit sa;
+ 
+-	if (xattroptype == aa_xattr_get || xattroptype == aa_xattr_list)
+-		mask = MAY_READ;
+-	else if (xattroptype == aa_xattr_set || xattroptype == aa_xattr_remove)
+-		mask = MAY_WRITE;
+-
+ 	sa.type = AA_AUDITTYPE_XATTR;
+-	sa.ival = xattroptype;
+-	sa.pval = xattr;
++	sa.operation = operation;
++	sa.pval = xattr_name;
+ 	sa.flags = 0;
+ 	sa.gfp_mask = GFP_KERNEL;
+ 
+@@ -651,7 +630,7 @@ int aa_perm(struct aaprofile *active, st
+ 		goto out;
+ 
+ 	sa.type = AA_AUDITTYPE_FILE;
+-	sa.ival = mask;
++	sa.mask = mask;
+ 	sa.flags = 0;
+ 	sa.gfp_mask = GFP_KERNEL;
+ 	error = _aa_perm_vfsmount(active, dentry, mnt, &sa, mask);
+@@ -664,31 +643,25 @@ out:
+  * aa_perm_dir
+  * @active: profile to check against
+  * @dentry: requested dentry
+- * @diroptype: aa_dir_mkdir or aa_dir_rmdir
+- * @mnt: vfsmount
++ * @mnt: mount of file to check
++ * @operation: directory operation being performed
++ * @mask: access mode requested
+  *
+  * Determine if directory operation (make/remove) for dentry is authorized
+  * by @active profile.
+  * Result, %0 (success), -ve (error)
+  */
+ int aa_perm_dir(struct aaprofile *active, struct dentry *dentry,
+-		struct vfsmount *mnt, enum aa_diroptype diroptype)
++		struct vfsmount *mnt, const char *operation, int mask)
+ {
+-	int error = 0, mask;
+ 	struct aa_audit sa;
+ 
+-	WARN_ON(diroptype != aa_dir_mkdir && diroptype != aa_dir_rmdir);
+-
+-	mask = MAY_WRITE;
+-
+ 	sa.type = AA_AUDITTYPE_DIR;
+-	sa.ival = diroptype;
++	sa.operation = operation;
+ 	sa.flags = 0;
+ 	sa.gfp_mask = GFP_KERNEL;
+ 
+-	error = _aa_perm_vfsmount(active, dentry, mnt, &sa, MAY_WRITE);
+-
+-	return error;
++	return _aa_perm_vfsmount(active, dentry, mnt, &sa, mask);
+ }
+ 
+ /**
+@@ -706,7 +679,7 @@ int aa_capability(struct aaprofile *acti
+ 
+ 	sa.type = AA_AUDITTYPE_CAP;
+ 	sa.name = NULL;
+-	sa.ival = cap;
++	sa.capability = cap;
+ 	sa.flags = 0;
+ 	sa.error_code = 0;
+ 	sa.result = cap_raised(active->capabilities, cap);
+Index: linux-2.6/security/apparmor/lsm.c
+===================================================================
+--- linux-2.6.orig/security/apparmor/lsm.c
++++ linux-2.6/security/apparmor/lsm.c
+@@ -244,7 +244,7 @@ static int apparmor_inode_mkdir(struct i
+ 	active = get_active_aaprofile();
+ 
+ 	if (active)
+-		error = aa_perm_dir(active, dentry, mnt, aa_dir_mkdir);
++		error = aa_perm_dir(active, dentry, mnt, "mkdir", AA_MAY_WRITE);
+ 
+ 	put_aaprofile(active);
+ 
+@@ -264,7 +264,7 @@ static int apparmor_inode_rmdir(struct i
+ 	active = get_active_aaprofile();
+ 
+ 	if (active)
+-		error = aa_perm_dir(active, dentry, mnt, aa_dir_rmdir);
++		error = aa_perm_dir(active, dentry, mnt, "rmdir", AA_MAY_WRITE);
+ 
+ 	put_aaprofile(active);
+ 
+@@ -444,8 +444,8 @@ static int apparmor_inode_setxattr(struc
+ 
+ 	active = get_active_aaprofile();
+ 	if (active)
+-		error = aa_xattr(active, dentry, mnt, name,
+-				 aa_xattr_set);
++		error = aa_perm_xattr(active, dentry, mnt, name, "xattr set",
++				      AA_MAY_WRITE);
+ 	put_aaprofile(active);
+ 
+ out:
+@@ -464,8 +464,8 @@ static int apparmor_inode_getxattr(struc
+ 
+ 	active = get_active_aaprofile();
+ 	if (active)
+-		error = aa_xattr(active, dentry, mnt, name,
+-				 aa_xattr_get);
++		error = aa_perm_xattr(active, dentry, mnt, name, "xattr get",
++				      AA_MAY_READ);
+ 	put_aaprofile(active);
+ 
+ out:
+@@ -481,8 +481,8 @@ static int apparmor_inode_listxattr(stru
+ 
+ 	active = get_active_aaprofile();
+ 	if (active)
+-		error = aa_xattr(active, dentry, mnt, NULL,
+-				 aa_xattr_list);
++		error = aa_perm_xattr(active, dentry, mnt, NULL, "xattr list",
++				      AA_MAY_READ);
+ 	put_aaprofile(active);
+ 
+ out:
+@@ -500,8 +500,8 @@ static int apparmor_inode_removexattr(st
+ 
+ 	active = get_active_aaprofile();
+ 	if (active)
+-		error = aa_xattr(active, dentry, mnt, name,
+-				 aa_xattr_remove);
++		error = aa_perm_xattr(active, dentry, mnt, name, "xattr remove",
++				      AA_MAY_WRITE);
+ 	put_aaprofile(active);
+ 
+ out:

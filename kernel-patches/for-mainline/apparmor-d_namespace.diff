@@ -1,0 +1,21 @@
+Index: linux-2.6/security/apparmor/main.c
+===================================================================
+--- linux-2.6.orig/security/apparmor/main.c
++++ linux-2.6/security/apparmor/main.c
+@@ -12,6 +12,7 @@
+ #include <linux/security.h>
+ #include <linux/namei.h>
+ #include <linux/audit.h>
++#include <linux/mount.h>
+ 
+ #include "apparmor.h"
+ 
+@@ -551,7 +552,7 @@ char *aa_get_name(struct dentry *dentry,
+ 		goto out;
+ 	}
+ 
+-	name = d_path(dentry, mnt, page, PAGE_SIZE);
++	name = d_namespace_path(dentry, mnt, page, PAGE_SIZE, 1);
+ 	/* check for (deleted) that d_path appends to pathnames if the dentry
+ 	 * has been removed from the cache.
+ 	 * The size > deleted_size and strcmp checks are redundant safe guards.
