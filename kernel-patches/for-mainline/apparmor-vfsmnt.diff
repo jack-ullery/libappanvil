@@ -1,7 +1,7 @@
-Index: linux-2.6/security/apparmor/apparmor.h
+Index: b/security/apparmor/apparmor.h
 ===================================================================
---- linux-2.6.orig/security/apparmor/apparmor.h
-+++ linux-2.6/security/apparmor/apparmor.h
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
 @@ -188,16 +188,6 @@ struct subdomain {
  
  typedef int (*aa_iter) (struct subdomain *, void *);
@@ -45,10 +45,10 @@ Index: linux-2.6/security/apparmor/apparmor.h
  extern int aa_fork(struct task_struct *p);
  extern int aa_register(struct linux_binprm *bprm);
  extern void aa_release(struct task_struct *p);
-Index: linux-2.6/security/apparmor/inline.h
+Index: b/security/apparmor/inline.h
 ===================================================================
---- linux-2.6.orig/security/apparmor/inline.h
-+++ linux-2.6/security/apparmor/inline.h
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
 @@ -10,7 +10,7 @@
  #ifndef __INLINE_H
  #define __INLINE_H
@@ -143,10 +143,10 @@ Index: linux-2.6/security/apparmor/inline.h
 -}
 -
  #endif /* __INLINE_H__ */
-Index: linux-2.6/security/apparmor/lsm.c
+Index: b/security/apparmor/lsm.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/lsm.c
-+++ linux-2.6/security/apparmor/lsm.c
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
 @@ -15,6 +15,8 @@
  #include <linux/module.h>
  #include <linux/mm.h>
@@ -477,10 +477,10 @@ Index: linux-2.6/security/apparmor/lsm.c
  	return error;
  }
  
-Index: linux-2.6/security/apparmor/main.c
+Index: b/security/apparmor/main.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/main.c
-+++ linux-2.6/security/apparmor/main.c
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
 @@ -35,34 +35,6 @@ struct aaprofile *null_complain_profile;
   **************************/
  
@@ -595,8 +595,6 @@ Index: linux-2.6/security/apparmor/main.c
 -		}
 -	} while (name);
 +	int permerror, error;
-+
-+	sa->name = aa_get_name(dentry, mnt);
  
 -	if ((path_error = aa_path_end(&data)) != 0) {
 -		dentry_xlate_error(dentry, path_error, "dentry");
@@ -606,6 +604,8 @@ Index: linux-2.6/security/apparmor/main.c
 -	} else if (name) {
 -		if (failed_name)
 -			aa_put_name(failed_name);
++	sa->name = aa_get_name(dentry, mnt);
++
 +	if (IS_ERR(sa->name)) {
 +		permerror = PTR_ERR(sa->name);
 +		sa->name = NULL;
@@ -675,12 +675,12 @@ Index: linux-2.6/security/apparmor/main.c
  
 -	permerror = _aa_perm_dentry(active, dentry, mask, &sa.name);
 -	aa_permerror2result(permerror, &sa);
--
++	error = _aa_perm_vfsmount(active, dentry, mnt, &sa, mask);
+ 
 -	error = aa_audit(active, &sa);
 -
 -	aa_put_name(sa.name);
-+	error = _aa_perm_vfsmount(active, dentry, mnt, &sa, mask);
- 
+-
 -out:
  	return error;
  }
@@ -806,10 +806,10 @@ Index: linux-2.6/security/apparmor/main.c
 -	aa_permerror2result(permerror, &sa);
 -
 -	error = aa_audit(active, &sa);
+-
+-	aa_put_name(sa.name);
 +	error = _aa_perm_vfsmount(active, dentry, mnt, &sa, MAY_WRITE);
  
--	aa_put_name(sa.name);
--
 -out:
  	return error;
  }
@@ -822,7 +822,7 @@ Index: linux-2.6/security/apparmor/main.c
  	struct aa_audit sa;
  
  	sa.type = AA_AUDITTYPE_CAP;
-@@ -1030,124 +867,42 @@ int aa_capability(struct aaprofile *acti
+@@ -1030,122 +867,40 @@ int aa_capability(struct aaprofile *acti
   * @active: profile to check against
   * @link: dentry for link being created
   * @target: dentry for link target
@@ -894,7 +894,9 @@ Index: linux-2.6/security/apparmor/main.c
 -			if ((path_error = aa_path_end(&idata)) != 0) {
 -				dentry_xlate_error(target, path_error,
 -						   "inner dentry [link]");
--
++	sa.name = aa_get_name(link, link_mnt);
++	sa.pval = aa_get_name(target, target_mnt);
+ 
 -				/* name should not be set if error */
 -				WARN_ON(iname);
 -
@@ -906,9 +908,7 @@ Index: linux-2.6/security/apparmor/main.c
 -				aa_put_name(oname);
 -		}
 -	} while (oname && !match);
-+	sa.name = aa_get_name(link, link_mnt);
-+	sa.pval = aa_get_name(target, target_mnt);
- 
+-
 -	if (error_code != 0) {
 -		/* inner error */
 -		(void)aa_path_end(&odata);
@@ -963,8 +963,5 @@ Index: linux-2.6/security/apparmor/main.c
 +	aa_put_name(sa.name);
 +	aa_put_name(sa.pval);
  
--	return error;
-+	return error;
+ 	return error;
  }
- 
- /*******************************

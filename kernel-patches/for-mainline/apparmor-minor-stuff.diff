@@ -4,10 +4,10 @@ Defining and initializing a variable at the same time is okay.
 
 Rename struct task *p to <task>.
 
-Index: linux-2.6/security/apparmor/lsm.c
+Index: b/security/apparmor/lsm.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/lsm.c
-+++ linux-2.6/security/apparmor/lsm.c
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
 @@ -66,12 +66,8 @@ MODULE_PARM_DESC(apparmor_logsyscall, "T
  static int apparmor_ptrace(struct task_struct *parent,
  			    struct task_struct *child)

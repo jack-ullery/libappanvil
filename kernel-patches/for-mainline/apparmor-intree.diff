@@ -1,7 +1,7 @@
-Index: linux-2.6-apparmor/security/Kconfig
+Index: b/security/Kconfig
 ===================================================================
---- linux-2.6-apparmor.orig/security/Kconfig
-+++ linux-2.6-apparmor/security/Kconfig
+--- a/security/Kconfig
++++ b/security/Kconfig
 @@ -94,6 +94,7 @@ config SECURITY_ROOTPLUG
  	  If you are unsure how to answer this question, answer N.
  
@@ -10,10 +10,10 @@ Index: linux-2.6-apparmor/security/Kconfig
  
  endmenu
  
-Index: linux-2.6-apparmor/security/Makefile
+Index: b/security/Makefile
 ===================================================================
---- linux-2.6-apparmor.orig/security/Makefile
-+++ linux-2.6-apparmor/security/Makefile
+--- a/security/Makefile
++++ b/security/Makefile
 @@ -4,6 +4,7 @@
  
  obj-$(CONFIG_KEYS)			+= keys/

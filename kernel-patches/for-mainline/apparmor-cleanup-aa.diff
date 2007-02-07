@@ -1,7 +1,7 @@
-Index: linux-2.6/security/apparmor/apparmor.h
+Index: b/security/apparmor/apparmor.h
 ===================================================================
---- linux-2.6.orig/security/apparmor/apparmor.h
-+++ linux-2.6/security/apparmor/apparmor.h
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
 @@ -68,7 +68,7 @@ struct flagval {
  #define AA_EXEC_MODIFIER_MASK(mask) ((mask) & AA_EXEC_MODIFIERS)
  #define AA_EXEC_MASK(mask) ((mask) & (AA_EXEC_MODIFIERS | AA_EXEC_UNSAFE))
@@ -135,10 +135,10 @@ Index: linux-2.6/security/apparmor/apparmor.h
 +unsigned int aa_match(struct aa_dfa *dfa, const char *pathname);
  
  #endif				/* __APPARMOR_H */
-Index: linux-2.6/security/apparmor/apparmorfs.c
+Index: b/security/apparmor/apparmorfs.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/apparmorfs.c
-+++ linux-2.6/security/apparmor/apparmorfs.c
+--- a/security/apparmor/apparmorfs.c
++++ b/security/apparmor/apparmorfs.c
 @@ -19,7 +19,7 @@
  #include "inline.h"
  
@@ -198,10 +198,10 @@ Index: linux-2.6/security/apparmor/apparmorfs.c
 +	if (AA_FS_DENTRY)
  		clear_apparmorfs();
  }
-Index: linux-2.6/security/apparmor/inline.h
+Index: b/security/apparmor/inline.h
 ===================================================================
---- linux-2.6.orig/security/apparmor/inline.h
-+++ linux-2.6/security/apparmor/inline.h
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
 @@ -44,10 +44,10 @@ static inline int aa_sub_defined(void)
  }
  
@@ -350,10 +350,10 @@ Index: linux-2.6/security/apparmor/inline.h
  			return p;
  		} else {
  			AA_DEBUG("%s: skipping %s\n", __FUNCTION__, p->name);
-Index: linux-2.6/security/apparmor/list.c
+Index: b/security/apparmor/list.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/list.c
-+++ linux-2.6/security/apparmor/list.c
+--- a/security/apparmor/list.c
++++ b/security/apparmor/list.c
 @@ -28,9 +28,9 @@ static rwlock_t subdomain_lock = RW_LOCK
   * Search the profile list for profile @name.  Return refcounted profile on
   * success, NULL on failure.
@@ -474,10 +474,10 @@ Index: linux-2.6/security/apparmor/list.c
  	seq_printf(f, "%s (%s)\n", profile->name,
  		   PROFILE_COMPLAIN(profile) ? "complain" : "enforce");
  	return 0;
-Index: linux-2.6/security/apparmor/lsm.c
+Index: b/security/apparmor/lsm.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/lsm.c
-+++ linux-2.6/security/apparmor/lsm.c
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
 @@ -66,7 +66,7 @@ MODULE_PARM_DESC(apparmor_logsyscall, "T
  static int apparmor_ptrace(struct task_struct *parent,
  			    struct task_struct *child)
@@ -877,10 +877,10 @@ Index: linux-2.6/security/apparmor/lsm.c
  	} else {
  		/* unknown operation */
  		AA_WARN("%s: Unknown setprocattr command '%.*s' by task %s(%d) "
-Index: linux-2.6/security/apparmor/main.c
+Index: b/security/apparmor/main.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/main.c
-+++ linux-2.6/security/apparmor/main.c
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
 @@ -28,7 +28,7 @@
   * can be associated to files which keep their reference even if apparmor is
   * unloaded
@@ -935,16 +935,19 @@ Index: linux-2.6/security/apparmor/main.c
  			const char *link, const char *target)
  {
  	int l_mode, t_mode, ret = -EPERM;
-@@ -194,7 +194,7 @@ static int aa_link_perm(struct aaprofile
+@@ -194,8 +194,9 @@ static int aa_link_perm(struct aaprofile
  	return ret;
  }
  
 -static int _aa_perm_vfsmount(struct aaprofile *active, struct dentry *dentry,
+-		      struct vfsmount *mnt, struct aa_audit *sa, int mask)
 +static int _aa_perm_vfsmount(struct aa_profile *active, struct dentry *dentry,
-                       struct vfsmount *mnt, struct aa_audit *sa, int mask)
++			     struct vfsmount *mnt, struct aa_audit *sa,
++			     int mask)
  {
  	int permerror, error;
-@@ -227,12 +227,12 @@ static int _aa_perm_vfsmount(struct aapr
+ 
+@@ -227,12 +228,12 @@ static int _aa_perm_vfsmount(struct aapr
   *
   * Return %0 (success) or error (-%ENOMEM)
   */
@@ -960,7 +963,7 @@ Index: linux-2.6/security/apparmor/main.c
  	if (!hat)
  		goto fail;
  	if (profile->flags.complain)
-@@ -252,7 +252,7 @@ int attach_nullprofile(struct aaprofile 
+@@ -252,7 +253,7 @@ int attach_nullprofile(struct aaprofile 
  
  fail:
  	kfree(hatname);
@@ -969,7 +972,7 @@ Index: linux-2.6/security/apparmor/main.c
  
  	return -ENOMEM;
  }
-@@ -265,7 +265,7 @@ fail:
+@@ -265,7 +266,7 @@ fail:
   */
  int alloc_null_complain_profile(void)
  {
@@ -978,7 +981,7 @@ Index: linux-2.6/security/apparmor/main.c
  	if (!null_complain_profile)
  		goto fail;
  
-@@ -282,8 +282,8 @@ int alloc_null_complain_profile(void)
+@@ -282,8 +283,8 @@ int alloc_null_complain_profile(void)
  	return 0;
  
  fail:
@@ -989,7 +992,7 @@ Index: linux-2.6/security/apparmor/main.c
  	null_complain_profile = NULL;
  
  	return -ENOMEM;
-@@ -294,7 +294,7 @@ fail:
+@@ -294,7 +295,7 @@ fail:
   */
  void free_null_complain_profile(void)
  {
@@ -998,7 +1001,7 @@ Index: linux-2.6/security/apparmor/main.c
  	null_complain_profile = NULL;
  }
  
-@@ -305,7 +305,7 @@ void free_null_complain_profile(void)
+@@ -305,7 +306,7 @@ void free_null_complain_profile(void)
   * @flags: audit flags
   * @fmt: varargs fmt
   */
@@ -1007,7 +1010,7 @@ Index: linux-2.6/security/apparmor/main.c
  		     const char *fmt, ...)
  {
  	int ret;
-@@ -332,7 +332,7 @@ int aa_audit_message(struct aaprofile *a
+@@ -332,7 +333,7 @@ int aa_audit_message(struct aaprofile *a
   * @msg: string describing syscall being rejected
   * @gfp: memory allocation flags
   */
@@ -1016,7 +1019,7 @@ Index: linux-2.6/security/apparmor/main.c
  			   const char *msg)
  {
  	struct aa_audit sa;
-@@ -352,7 +352,7 @@ int aa_audit_syscallreject(struct aaprof
+@@ -352,7 +353,7 @@ int aa_audit_syscallreject(struct aaprof
   * @active: profile to check against
   * @sa: audit event
   */
@@ -1025,7 +1028,7 @@ Index: linux-2.6/security/apparmor/main.c
  {
  	struct audit_buffer *ab = NULL;
  	struct audit_context *ctx;
-@@ -567,7 +567,7 @@ out:
+@@ -567,7 +568,7 @@ out:
   * @dentry: file to check
   * @iattr: attribute changes requested
   */
@@ -1034,7 +1037,7 @@ Index: linux-2.6/security/apparmor/main.c
  	    struct vfsmount *mnt, struct iattr *iattr)
  {
  	int error;
-@@ -592,7 +592,7 @@ int aa_attr(struct aaprofile *active, st
+@@ -592,7 +593,7 @@ int aa_attr(struct aaprofile *active, st
   * @xattr_name: name of xattr to check
   * @mask: access mode requested
   */
@@ -1043,7 +1046,7 @@ Index: linux-2.6/security/apparmor/main.c
  		  struct vfsmount *mnt, const char *operation,
  		  const char *xattr_name, int mask)
  {
-@@ -620,7 +620,7 @@ int aa_perm_xattr(struct aaprofile *acti
+@@ -620,7 +621,7 @@ int aa_perm_xattr(struct aaprofile *acti
   * Determine if access (mask) for dentry is authorized by active
   * profile.  Result, %0 (success), -ve (error)
   */
@@ -1052,7 +1055,7 @@ Index: linux-2.6/security/apparmor/main.c
  	    struct vfsmount *mnt, int mask)
  {
  	int error = 0;
-@@ -651,7 +651,7 @@ out:
+@@ -651,7 +652,7 @@ out:
   * by @active profile.
   * Result, %0 (success), -ve (error)
   */
@@ -1061,7 +1064,7 @@ Index: linux-2.6/security/apparmor/main.c
  		struct vfsmount *mnt, const char *operation, int mask)
  {
  	struct aa_audit sa;
-@@ -672,7 +672,7 @@ int aa_perm_dir(struct aaprofile *active
+@@ -672,7 +673,7 @@ int aa_perm_dir(struct aaprofile *active
   * Look up capability in active profile capability set.
   * Return %0 (success), -%EPERM (error)
   */
@@ -1070,7 +1073,7 @@ Index: linux-2.6/security/apparmor/main.c
  {
  	int error = 0;
  	struct aa_audit sa;
-@@ -697,7 +697,7 @@ int aa_capability(struct aaprofile *acti
+@@ -697,7 +698,7 @@ int aa_capability(struct aaprofile *acti
   * @target: dentry for link target
   * @mnt: vfsmount (-EXDEV is link and target are not on same vfsmount)
   */
@@ -1079,7 +1082,7 @@ Index: linux-2.6/security/apparmor/main.c
  	    struct dentry *link, struct vfsmount *link_mnt,
  	    struct dentry *target, struct vfsmount *target_mnt)
  {
-@@ -796,8 +796,8 @@ int aa_register(struct linux_binprm *bpr
+@@ -796,8 +797,8 @@ int aa_register(struct linux_binprm *bpr
  {
  	char *filename;
  	struct file *filp = bprm->file;
@@ -1090,7 +1093,7 @@ Index: linux-2.6/security/apparmor/main.c
  	int 	error = -ENOMEM,
  		exec_mode = 0,
  		find_profile = 0,
-@@ -815,7 +815,7 @@ int aa_register(struct linux_binprm *bpr
+@@ -815,7 +816,7 @@ int aa_register(struct linux_binprm *bpr
  
  	error = 0;
  
@@ -1099,7 +1102,7 @@ Index: linux-2.6/security/apparmor/main.c
  
  	if (!active) {
  		/* Unconfined task, load profile if it exists */
-@@ -828,7 +828,7 @@ int aa_register(struct linux_binprm *bpr
+@@ -828,7 +829,7 @@ int aa_register(struct linux_binprm *bpr
  	/* Confined task, determine what mode inherit, unconstrained or
  	 * mandatory to load new profile
  	 */
@@ -1108,7 +1111,7 @@ Index: linux-2.6/security/apparmor/main.c
  	unsafe_exec = exec_mode & AA_EXEC_UNSAFE;
  
  	if (exec_mode) {
-@@ -893,7 +893,7 @@ int aa_register(struct linux_binprm *bpr
+@@ -893,7 +894,7 @@ int aa_register(struct linux_binprm *bpr
  		 * describing mode to execute image in.
  		 * Drop into null-profile (disabling secure exec).
  		 */
@@ -1117,7 +1120,7 @@ Index: linux-2.6/security/apparmor/main.c
  		unsafe_exec = 1;
  	} else {
  		AA_WARN("%s: Rejecting exec(2) of image '%s'. "
-@@ -926,7 +926,7 @@ find_profile:
+@@ -926,7 +927,7 @@ find_profile:
  				current->pid,
  				BASE_PROFILE(active)->name, active->name);
  
@@ -1126,7 +1129,7 @@ Index: linux-2.6/security/apparmor/main.c
  		} else {
  			AA_WARN("REJECTING exec(2) of image '%s'. "
  				"Profile mandatory and not found "
-@@ -1016,8 +1016,8 @@ apply_profile:
+@@ -1016,8 +1017,8 @@ apply_profile:
  		if (newprofile && unlikely(newprofile->isstale)) {
  			WARN_ON(newprofile == null_complain_profile);
  
@@ -1137,7 +1140,7 @@ Index: linux-2.6/security/apparmor/main.c
  
  			newprofile = aa_profilelist_find(filename);
  
-@@ -1048,7 +1048,7 @@ apply_profile:
+@@ -1048,7 +1049,7 @@ apply_profile:
  		}
  
  		aa_switch(sd, newprofile);
@@ -1146,7 +1149,7 @@ Index: linux-2.6/security/apparmor/main.c
  
  		if (complain && newprofile == null_complain_profile)
  			LOG_HINT(newprofile, GFP_ATOMIC, HINT_CHGPROF,
-@@ -1061,7 +1061,7 @@ apply_profile:
+@@ -1061,7 +1062,7 @@ apply_profile:
  cleanup:
  	aa_put_name(filename);
  
@@ -1155,7 +1158,7 @@ Index: linux-2.6/security/apparmor/main.c
  
  out:
  	return error;
-@@ -1106,7 +1106,7 @@ void aa_release(struct task_struct *p)
+@@ -1106,7 +1107,7 @@ void aa_release(struct task_struct *p)
   */
  static inline int do_change_hat(const char *hat_name, struct subdomain *sd)
  {
@@ -1164,7 +1167,7 @@ Index: linux-2.6/security/apparmor/main.c
  	int error = 0;
  
  	sub = __aa_find_profile(hat_name, &BASE_PROFILE(sd->active)->sub);
-@@ -1114,7 +1114,7 @@ static inline int do_change_hat(const ch
+@@ -1114,7 +1115,7 @@ static inline int do_change_hat(const ch
  	if (sub) {
  		/* change hat */
  		aa_switch(sd, sub);
@@ -1173,10 +1176,10 @@ Index: linux-2.6/security/apparmor/main.c
  	} else {
  		/* There is no such subprofile change to a NULL profile.
  		 * The NULL profile grants no file access.
-Index: linux-2.6/security/apparmor/match.c
+Index: b/security/apparmor/match.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/match.c
-+++ linux-2.6/security/apparmor/match.c
+--- a/security/apparmor/match.c
++++ b/security/apparmor/match.c
 @@ -16,7 +16,7 @@
  #include <linux/module.h>
  #include "match.h"
@@ -1260,10 +1263,10 @@ Index: linux-2.6/security/apparmor/match.c
  
  	return 0;
  }
-Index: linux-2.6/security/apparmor/module_interface.c
+Index: b/security/apparmor/module_interface.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/module_interface.c
-+++ linux-2.6/security/apparmor/module_interface.c
+--- a/security/apparmor/module_interface.c
++++ b/security/apparmor/module_interface.c
 @@ -17,24 +17,24 @@
  
  /* aa_code defined in module_interface.h */
@@ -1605,10 +1608,10 @@ Index: linux-2.6/security/apparmor/module_interface.c
  	}
  
  	if (profile->name) {
-Index: linux-2.6/security/apparmor/procattr.c
+Index: b/security/apparmor/procattr.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/procattr.c
-+++ linux-2.6/security/apparmor/procattr.c
+--- a/security/apparmor/procattr.c
++++ b/security/apparmor/procattr.c
 @@ -15,7 +15,7 @@
  #include "apparmor.h"
  #include "inline.h"

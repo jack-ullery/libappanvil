@@ -1,7 +1,7 @@
-Index: linux-2.6/security/apparmor/main.c
+Index: b/security/apparmor/main.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/main.c
-+++ linux-2.6/security/apparmor/main.c
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
 @@ -61,7 +61,7 @@ static inline int aa_taskattr_access(con
  static inline int aa_file_mode(struct aaprofile *profile, const char *name)
  {
@@ -171,10 +171,10 @@ Index: linux-2.6/security/apparmor/main.c
  
  done:
  	return error;
-Index: linux-2.6/security/apparmor/match/match.h
+Index: b/security/apparmor/match/match.h
 ===================================================================
---- linux-2.6.orig/security/apparmor/match/match.h
-+++ linux-2.6/security/apparmor/match/match.h
+--- a/security/apparmor/match/match.h
++++ b/security/apparmor/match/match.h
 @@ -69,16 +69,11 @@ extern int aamatch_serialize(void *entry
  
  /**
@@ -231,10 +231,10 @@ Index: linux-2.6/security/apparmor/match/match.h
  }
  
  #endif /* __MATCH_H */
-Index: linux-2.6/security/apparmor/match/match_default.c
+Index: b/security/apparmor/match/match_default.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/match/match_default.c
-+++ linux-2.6/security/apparmor/match/match_default.c
+--- a/security/apparmor/match/match_default.c
++++ b/security/apparmor/match/match_default.c
 @@ -36,12 +36,11 @@ int aamatch_serialize(void *entry_extrad
  	return 0;
  }
@@ -250,10 +250,10 @@ Index: linux-2.6/security/apparmor/match/match_default.c
  
  	return ret;
  }
-Index: linux-2.6/security/apparmor/match/match_pcre.c
+Index: b/security/apparmor/match/match_pcre.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/match/match_pcre.c
-+++ linux-2.6/security/apparmor/match/match_pcre.c
+--- a/security/apparmor/match/match_pcre.c
++++ b/security/apparmor/match/match_pcre.c
 @@ -132,27 +132,26 @@ done:
  	return error;
  }
@@ -271,19 +271,19 @@ Index: linux-2.6/security/apparmor/match/match_pcre.c
 -			(struct aamatch_entry *) entry_extradata;
 +			(struct aamatch_entry *) entry->extradata;
  
-         	pcreret = pcre_exec(ed->compiled, NULL,
+ 		pcreret = pcre_exec(ed->compiled, NULL,
  				    pathname, strlen(pathname),
  			    	    0, 0, NULL, 0);
  
--        	ret = (pcreret >= 0);
-+        	ret = (pcreret >= 0) ? entry->mode : 0;
+-		ret = (pcreret >= 0);
++		ret = (pcreret >= 0) ? entry->mode : 0;
  
  		// XXX - this needs access to subdomain_debug,  hmmm
-         	//AA_DEBUG("%s(%d): %s %s %d\n", __FUNCTION__,
+ 		//AA_DEBUG("%s(%d): %s %s %d\n", __FUNCTION__,
  		//	 ret, pathname, ed->pattern, pcreret);
  	} else {
 -		ret = aamatch_match_common(pathname, entry_name, entry_type);
 +		ret = aamatch_match_common(entry, pathname);
  	}
  
-         return ret;
+ 	return ret;

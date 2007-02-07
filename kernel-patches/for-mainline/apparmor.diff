@@ -1,7 +1,7 @@
-Index: linux-2.6/security/apparmor/Kconfig
+Index: b/security/apparmor/Kconfig
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/Kconfig
++++ b/security/apparmor/Kconfig
 @@ -0,0 +1,9 @@
 +config SECURITY_APPARMOR
 +	tristate "AppArmor support"
@@ -12,10 +12,10 @@ Index: linux-2.6/security/apparmor/Kconfig
 +	  distribution) and further information may be found at
 +	  <http://forge.novell.com/modules/xfmod/project/?apparmor>
 +	  If you are unsure how to answer this question, answer N.
-Index: linux-2.6/security/apparmor/Makefile
+Index: b/security/apparmor/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/Makefile
++++ b/security/apparmor/Makefile
 @@ -0,0 +1,6 @@
 +# Makefile for AppArmor Linux Security Module
 +#
@@ -23,10 +23,10 @@ Index: linux-2.6/security/apparmor/Makefile
 +
 +apparmor-y := main.o list.o procattr.o lsm.o apparmorfs.o capabilities.o \
 +	      module_interface.o
-Index: linux-2.6/security/apparmor/apparmor.h
+Index: b/security/apparmor/apparmor.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
 @@ -0,0 +1,338 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
@@ -63,8 +63,8 @@ Index: linux-2.6/security/apparmor/apparmor.h
 +#define INOTIFYFS_MAGIC 0xBAD1DEA
 +
 +#define VALID_FSTYPE(inode) ((inode)->i_sb->s_magic != PIPEFS_MAGIC && \
-+                             (inode)->i_sb->s_magic != SOCKFS_MAGIC && \
-+                             (inode)->i_sb->s_magic != INOTIFYFS_MAGIC)
++			     (inode)->i_sb->s_magic != SOCKFS_MAGIC && \
++			     (inode)->i_sb->s_magic != INOTIFYFS_MAGIC)
 +
 +#define PROFILE_COMPLAIN(_profile) \
 +	(apparmor_complain == 1 || ((_profile) && (_profile)->flags.complain))
@@ -366,10 +366,10 @@ Index: linux-2.6/security/apparmor/apparmor.h
 +extern const char *capability_to_name(unsigned int cap);
 +
 +#endif				/* __APPARMOR_H */
-Index: linux-2.6/security/apparmor/apparmorfs.c
+Index: b/security/apparmor/apparmorfs.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/apparmorfs.c
++++ b/security/apparmor/apparmorfs.c
 @@ -0,0 +1,432 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
@@ -803,10 +803,10 @@ Index: linux-2.6/security/apparmor/apparmorfs.c
 +	if (AAFS_DENTRY)
 +		clear_apparmorfs();
 +}
-Index: linux-2.6/security/apparmor/capabilities.c
+Index: b/security/apparmor/capabilities.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/capabilities.c
++++ b/security/apparmor/capabilities.c
 @@ -0,0 +1,54 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
@@ -862,10 +862,10 @@ Index: linux-2.6/security/apparmor/capabilities.c
 +
 +	return name;
 +}
-Index: linux-2.6/security/apparmor/inline.h
+Index: b/security/apparmor/inline.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
 @@ -0,0 +1,335 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
@@ -1202,10 +1202,10 @@ Index: linux-2.6/security/apparmor/inline.h
 +}
 +
 +#endif /* __INLINE_H__ */
-Index: linux-2.6/security/apparmor/list.c
+Index: b/security/apparmor/list.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/list.c
++++ b/security/apparmor/list.c
 @@ -0,0 +1,268 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
@@ -1475,10 +1475,10 @@ Index: linux-2.6/security/apparmor/list.c
 +	.stop =		p_stop,
 +	.show =		seq_show_profile,
 +};
-Index: linux-2.6/security/apparmor/lsm.c
+Index: b/security/apparmor/lsm.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
 @@ -0,0 +1,898 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -2378,10 +2378,10 @@ Index: linux-2.6/security/apparmor/lsm.c
 +MODULE_DESCRIPTION("AppArmor process confinement");
 +MODULE_AUTHOR("Tony Jones <tonyj@suse.de>");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6/security/apparmor/main.c
+Index: b/security/apparmor/main.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/main.c
++++ b/security/apparmor/main.c
 @@ -0,0 +1,1687 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -4070,10 +4070,10 @@ Index: linux-2.6/security/apparmor/main.c
 +out:
 +	return error;
 +}
-Index: linux-2.6/security/apparmor/module_interface.c
+Index: b/security/apparmor/module_interface.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/module_interface.c
++++ b/security/apparmor/module_interface.c
 @@ -0,0 +1,846 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
@@ -4921,10 +4921,10 @@ Index: linux-2.6/security/apparmor/module_interface.c
 +
 +	kfree(profile);
 +}
-Index: linux-2.6/security/apparmor/module_interface.h
+Index: b/security/apparmor/module_interface.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/module_interface.h
++++ b/security/apparmor/module_interface.h
 @@ -0,0 +1,37 @@
 +#ifndef __MODULEINTERFACE_H
 +#define __MODULEINTERFACE_H
@@ -4963,10 +4963,10 @@ Index: linux-2.6/security/apparmor/module_interface.h
 +};
 +
 +#endif /* __MODULEINTERFACE_H */
-Index: linux-2.6/security/apparmor/procattr.c
+Index: b/security/apparmor/procattr.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/procattr.c
++++ b/security/apparmor/procattr.c
 @@ -0,0 +1,332 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
@@ -5300,10 +5300,10 @@ Index: linux-2.6/security/apparmor/procattr.c
 +
 +	return error;
 +}
-Index: linux-2.6/security/apparmor/shared.h
+Index: b/security/apparmor/shared.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/shared.h
++++ b/security/apparmor/shared.h
 @@ -0,0 +1,46 @@
 +/*
 + *	Copyright (C) 2000, 2001, 2004, 2005 Novell/SUSE
@@ -5351,10 +5351,10 @@ Index: linux-2.6/security/apparmor/shared.h
 +					 AA_EXEC_PROFILE)
 +
 +#endif /* _SHARED_H */
-Index: linux-2.6/security/apparmor/match/Kbuild
+Index: b/security/apparmor/match/Kbuild
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/match/Kbuild
++++ b/security/apparmor/match/Kbuild
 @@ -0,0 +1,6 @@
 +# Makefile for AppArmor aamatch submodule
 +#
@@ -5362,20 +5362,20 @@ Index: linux-2.6/security/apparmor/match/Kbuild
 +obj-$(CONFIG_SECURITY_APPARMOR) += aamatch_pcre.o
 +
 +aamatch_pcre-y := match_pcre.o pcre_exec.o
-Index: linux-2.6/security/apparmor/match/Makefile
+Index: b/security/apparmor/match/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/match/Makefile
++++ b/security/apparmor/match/Makefile
 @@ -0,0 +1,5 @@
 +# Makefile for AppArmor aamatch submodule
 +#
 +obj-$(CONFIG_SECURITY_APPARMOR) += aamatch_pcre.o
 +
 +aamatch_pcre-y := match_pcre.o pcre_exec.o
-Index: linux-2.6/security/apparmor/match/match.h
+Index: b/security/apparmor/match/match.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/match/match.h
++++ b/security/apparmor/match/match.h
 @@ -0,0 +1,132 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -5509,10 +5509,10 @@ Index: linux-2.6/security/apparmor/match/match.h
 +}
 +
 +#endif /* __MATCH_H */
-Index: linux-2.6/security/apparmor/match/match_default.c
+Index: b/security/apparmor/match/match_default.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/match/match_default.c
++++ b/security/apparmor/match/match_default.c
 @@ -0,0 +1,57 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -5571,10 +5571,10 @@ Index: linux-2.6/security/apparmor/match/match_default.c
 +MODULE_DESCRIPTION("AppArmor match module (aamatch) [default]");
 +MODULE_AUTHOR("Tony Jones <tonyj@suse.de>");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6/security/apparmor/match/match_pcre.c
+Index: b/security/apparmor/match/match_pcre.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/match/match_pcre.c
++++ b/security/apparmor/match/match_pcre.c
 @@ -0,0 +1,169 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -5720,20 +5720,20 @@ Index: linux-2.6/security/apparmor/match/match_pcre.c
 +		struct aamatch_entry *ed =
 +			(struct aamatch_entry *) entry_extradata;
 +
-+        	pcreret = pcre_exec(ed->compiled, NULL,
++		pcreret = pcre_exec(ed->compiled, NULL,
 +				    pathname, strlen(pathname),
 +			    	    0, 0, NULL, 0);
 +
-+        	ret = (pcreret >= 0);
++		ret = (pcreret >= 0);
 +
 +		// XXX - this needs access to subdomain_debug,  hmmm
-+        	//AA_DEBUG("%s(%d): %s %s %d\n", __FUNCTION__,
++		//AA_DEBUG("%s(%d): %s %s %d\n", __FUNCTION__,
 +		//	 ret, pathname, ed->pattern, pcreret);
 +	} else {
 +		ret = aamatch_match_common(pathname, entry_name, entry_type);
 +	}
 +
-+        return ret;
++	return ret;
 +}
 +
 +EXPORT_SYMBOL_GPL(aamatch_alloc);
@@ -5745,10 +5745,10 @@ Index: linux-2.6/security/apparmor/match/match_pcre.c
 +MODULE_DESCRIPTION("AppArmor aa_match module [pcre]");
 +MODULE_AUTHOR("Tony Jones <tonyj@suse.de>");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6/security/apparmor/match/pcre_exec.c
+Index: b/security/apparmor/match/pcre_exec.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/match/pcre_exec.c
++++ b/security/apparmor/match/pcre_exec.c
 @@ -0,0 +1,1945 @@
 +/*
 + *  This is a modified version of pcre.c containing only the code/data
@@ -5767,7 +5767,7 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +
 +Written by: Philip Hazel <ph10@cam.ac.uk>
 +
-+           Copyright (c) 1997-2001 University of Cambridge
++	   Copyright (c) 1997-2001 University of Cambridge
 +
 +-----------------------------------------------------------------------------
 +Permission is granted to anyone to use this software for any purpose on any
@@ -5980,10 +5980,10 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +   md          pointer to "static" info for the match
 +   ims         current /i, /m, and /s options
 +   eptrb       pointer to chain of blocks containing eptr at start of
-+                 brackets - for testing for empty matches
++		 brackets - for testing for empty matches
 +   flags       can contain
-+                 match_condassert - this is an assertion condition
-+                 match_isgroup - this is the start of a bracketed group
++		 match_condassert - this is an assertion condition
++		 match_isgroup - this is the start of a bracketed group
 +
 +Returns:       TRUE if matched
 +*/
@@ -6059,11 +6059,11 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      md->offset_vector[md->offset_end - number] = eptr - md->start_subject;
 +
 +      do
-+        {
-+        if (match(eptr, ecode+3, offset_top, md, ims, eptrb, match_isgroup))
-+          return TRUE;
-+        ecode += (ecode[1] << 8) + ecode[2];
-+        }
++	{
++	if (match(eptr, ecode+3, offset_top, md, ims, eptrb, match_isgroup))
++	  return TRUE;
++	ecode += (ecode[1] << 8) + ecode[2];
++	}
 +      while (*ecode == OP_ALT);
 +
 +      DPRINTF(("bracket %d failed\n", number));
@@ -6089,7 +6089,7 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +    do
 +      {
 +      if (match(eptr, ecode+3, offset_top, md, ims, eptrb, match_isgroup))
-+        return TRUE;
++	return TRUE;
 +      ecode += (ecode[1] << 8) + ecode[2];
 +      }
 +    while (*ecode == OP_ALT);
@@ -6106,9 +6106,9 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      {
 +      int offset = (ecode[4] << 9) | (ecode[5] << 1); /* Doubled ref number */
 +      return match(eptr,
-+        ecode + ((offset < offset_top && md->offset_vector[offset] >= 0)?
-+          6 : 3 + (ecode[1] << 8) + ecode[2]),
-+        offset_top, md, ims, eptrb, match_isgroup);
++	ecode + ((offset < offset_top && md->offset_vector[offset] >= 0)?
++	  6 : 3 + (ecode[1] << 8) + ecode[2]),
++	offset_top, md, ims, eptrb, match_isgroup);
 +      }
 +
 +    /* The condition is an assertion. Call match() to evaluate it - setting
@@ -6117,11 +6117,11 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +    else
 +      {
 +      if (match(eptr, ecode+3, offset_top, md, ims, NULL,
-+          match_condassert | match_isgroup))
-+        {
-+        ecode += 3 + (ecode[4] << 8) + ecode[5];
-+        while (*ecode == OP_ALT) ecode += (ecode[1] << 8) + ecode[2];
-+        }
++	  match_condassert | match_isgroup))
++	{
++	ecode += 3 + (ecode[4] << 8) + ecode[5];
++	while (*ecode == OP_ALT) ecode += (ecode[1] << 8) + ecode[2];
++	}
 +      else ecode += (ecode[1] << 8) + ecode[2];
 +      return match(eptr, ecode+3, offset_top, md, ims, eptrb, match_isgroup);
 +      }
@@ -6187,7 +6187,7 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +    do
 +      {
 +      if (match(eptr, ecode+3, offset_top, md, ims, NULL, match_isgroup))
-+        return FALSE;
++	return FALSE;
 +      ecode += (ecode[1] << 8) + ecode[2];
 +      }
 +    while (*ecode == OP_ALT);
@@ -6239,21 +6239,21 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      c = md->offset_max;
 +
 +      if (c < 16) save = stacksave; else
-+        {
-+        save = (int *)(pcre_malloc)((c+1) * sizeof(int));
-+        if (save == NULL)
-+          {
-+          save = stacksave;
-+          c = 15;
-+          }
-+        }
++	{
++	save = (int *)(pcre_malloc)((c+1) * sizeof(int));
++	if (save == NULL)
++	  {
++	  save = stacksave;
++	  c = 15;
++	  }
++	}
 +
 +      for (i = 1; i <= c; i++)
-+        save[i] = md->offset_vector[md->offset_end - i];
++	save[i] = md->offset_vector[md->offset_end - i];
 +      rc = match(eptr, md->start_pattern, offset_top, md, ims, eptrb,
-+        match_isgroup);
++	match_isgroup);
 +      for (i = 1; i <= c; i++)
-+        md->offset_vector[md->offset_end - i] = save[i];
++	md->offset_vector[md->offset_end - i] = save[i];
 +      if (save != stacksave) (pcre_free)(save);
 +      if (!rc) return FALSE;
 +
@@ -6280,11 +6280,11 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      const uschar *saved_eptr = eptr;
 +
 +      do
-+        {
-+        if (match(eptr, ecode+3, offset_top, md, ims, eptrb, match_isgroup))
-+          break;
-+        ecode += (ecode[1] << 8) + ecode[2];
-+        }
++	{
++	if (match(eptr, ecode+3, offset_top, md, ims, eptrb, match_isgroup))
++	  break;
++	ecode += (ecode[1] << 8) + ecode[2];
++	}
 +      while (*ecode == OP_ALT);
 +
 +      /* If hit the end of the group (which could be repeated), fail */
@@ -6306,10 +6306,10 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      course of events. */
 +
 +      if (*ecode == OP_KET || eptr == saved_eptr)
-+        {
-+        ecode += 3;
-+        break;
-+        }
++	{
++	ecode += 3;
++	break;
++	}
 +
 +      /* The repeating kets try the rest of the pattern or restart from the
 +      preceding bracket, in the appropriate order. We need to reset any options
@@ -6317,22 +6317,22 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      opcode. */
 +
 +      if (ecode[3] == OP_OPT)
-+        {
-+        ims = (ims & ~PCRE_IMS) | ecode[4];
-+        DPRINTF(("ims set to %02lx at group repeat\n", ims));
-+        }
++	{
++	ims = (ims & ~PCRE_IMS) | ecode[4];
++	DPRINTF(("ims set to %02lx at group repeat\n", ims));
++	}
 +
 +      if (*ecode == OP_KETRMIN)
-+        {
-+        if (match(eptr, ecode+3, offset_top, md, ims, eptrb, 0) ||
-+            match(eptr, prev, offset_top, md, ims, eptrb, match_isgroup))
-+              return TRUE;
-+        }
++	{
++	if (match(eptr, ecode+3, offset_top, md, ims, eptrb, 0) ||
++	    match(eptr, prev, offset_top, md, ims, eptrb, match_isgroup))
++	      return TRUE;
++	}
 +      else  /* OP_KETRMAX */
-+        {
-+        if (match(eptr, prev, offset_top, md, ims, eptrb, match_isgroup) ||
-+            match(eptr, ecode+3, offset_top, md, ims, eptrb, 0)) return TRUE;
-+        }
++	{
++	if (match(eptr, prev, offset_top, md, ims, eptrb, match_isgroup) ||
++	    match(eptr, ecode+3, offset_top, md, ims, eptrb, 0)) return TRUE;
++	}
 +      }
 +    return FALSE;
 +
@@ -6353,7 +6353,7 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      {
 +      const uschar *next = ecode+1;
 +      if (match(eptr, next, offset_top, md, ims, eptrb, match_isgroup))
-+        return TRUE;
++	return TRUE;
 +      do next += (next[1] << 8) + next[2]; while (*next == OP_ALT);
 +      ecode = next + 3;
 +      }
@@ -6364,7 +6364,7 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      const uschar *next = ecode+1;
 +      do next += (next[1] << 8) + next[2]; while (*next == OP_ALT);
 +      if (match(eptr, next+3, offset_top, md, ims, eptrb, match_isgroup))
-+        return TRUE;
++	return TRUE;
 +      ecode++;
 +      }
 +    break;
@@ -6384,45 +6384,45 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      eptrb = eptrb->prev;    /* Back up the stack of bracket start pointers */
 +
 +      if (*prev == OP_ASSERT || *prev == OP_ASSERT_NOT ||
-+          *prev == OP_ASSERTBACK || *prev == OP_ASSERTBACK_NOT ||
-+          *prev == OP_ONCE)
-+        {
-+        md->end_match_ptr = eptr;      /* For ONCE */
-+        md->end_offset_top = offset_top;
-+        return TRUE;
-+        }
++	  *prev == OP_ASSERTBACK || *prev == OP_ASSERTBACK_NOT ||
++	  *prev == OP_ONCE)
++	{
++	md->end_match_ptr = eptr;      /* For ONCE */
++	md->end_offset_top = offset_top;
++	return TRUE;
++	}
 +
 +      /* In all other cases except a conditional group we have to check the
 +      group number back at the start and if necessary complete handling an
 +      extraction by setting the offsets and bumping the high water mark. */
 +
 +      if (*prev != OP_COND)
-+        {
-+        int offset;
-+        int number = *prev - OP_BRA;
++	{
++	int offset;
++	int number = *prev - OP_BRA;
 +
-+        /* For extended extraction brackets (large number), we have to fish out
-+        the number from a dummy opcode at the start. */
++	/* For extended extraction brackets (large number), we have to fish out
++	the number from a dummy opcode at the start. */
 +
-+        if (number > EXTRACT_BASIC_MAX) number = (prev[4] << 8) | prev[5];
-+        offset = number << 1;
++	if (number > EXTRACT_BASIC_MAX) number = (prev[4] << 8) | prev[5];
++	offset = number << 1;
 +
 +#ifdef DEBUG
-+        PCRE_PRINTF("end bracket %d", number);
-+        PCRE_PRINTF("\n");
++	PCRE_PRINTF("end bracket %d", number);
++	PCRE_PRINTF("\n");
 +#endif
 +
-+        if (number > 0)
-+          {
-+          if (offset >= md->offset_max) md->offset_overflow = TRUE; else
-+            {
-+            md->offset_vector[offset] =
-+              md->offset_vector[md->offset_end - number];
-+            md->offset_vector[offset+1] = eptr - md->start_subject;
-+            if (offset_top <= offset) offset_top = offset + 2;
-+            }
-+          }
-+        }
++	if (number > 0)
++	  {
++	  if (offset >= md->offset_max) md->offset_overflow = TRUE; else
++	    {
++	    md->offset_vector[offset] =
++	      md->offset_vector[md->offset_end - number];
++	    md->offset_vector[offset+1] = eptr - md->start_subject;
++	    if (offset_top <= offset) offset_top = offset + 2;
++	    }
++	  }
++	}
 +
 +      /* Reset the value of the ims flags, in case they got changed during
 +      the group. */
@@ -6437,25 +6437,25 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      course of events. */
 +
 +      if (*ecode == OP_KET || eptr == saved_eptr)
-+        {
-+        ecode += 3;
-+        break;
-+        }
++	{
++	ecode += 3;
++	break;
++	}
 +
 +      /* The repeating kets try the rest of the pattern or restart from the
 +      preceding bracket, in the appropriate order. */
 +
 +      if (*ecode == OP_KETRMIN)
-+        {
-+        if (match(eptr, ecode+3, offset_top, md, ims, eptrb, 0) ||
-+            match(eptr, prev, offset_top, md, ims, eptrb, match_isgroup))
-+              return TRUE;
-+        }
++	{
++	if (match(eptr, ecode+3, offset_top, md, ims, eptrb, 0) ||
++	    match(eptr, prev, offset_top, md, ims, eptrb, match_isgroup))
++	      return TRUE;
++	}
 +      else  /* OP_KETRMAX */
-+        {
-+        if (match(eptr, prev, offset_top, md, ims, eptrb, match_isgroup) ||
-+            match(eptr, ecode+3, offset_top, md, ims, eptrb, 0)) return TRUE;
-+        }
++	{
++	if (match(eptr, prev, offset_top, md, ims, eptrb, match_isgroup) ||
++	    match(eptr, ecode+3, offset_top, md, ims, eptrb, 0)) return TRUE;
++	}
 +      }
 +    return FALSE;
 +
@@ -6485,7 +6485,7 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +    if ((ims & PCRE_MULTILINE) != 0)
 +      {
 +      if (eptr < md->end_subject) { if (*eptr != NEWLINE) return FALSE; }
-+        else { if (md->noteol) return FALSE; }
++	else { if (md->noteol) return FALSE; }
 +      ecode++;
 +      break;
 +      }
@@ -6493,13 +6493,13 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      {
 +      if (md->noteol) return FALSE;
 +      if (!md->endonly)
-+        {
-+        if (eptr < md->end_subject - 1 ||
-+           (eptr == md->end_subject - 1 && *eptr != NEWLINE)) return FALSE;
++	{
++	if (eptr < md->end_subject - 1 ||
++	   (eptr == md->end_subject - 1 && *eptr != NEWLINE)) return FALSE;
 +
-+        ecode++;
-+        break;
-+        }
++	ecode++;
++	break;
++	}
 +      }
 +    /* ... else fall through */
 +
@@ -6524,12 +6524,12 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +    case OP_WORD_BOUNDARY:
 +      {
 +      BOOL prev_is_word = (eptr != md->start_subject) &&
-+        ((md->ctypes[eptr[-1]] & ctype_word) != 0);
++	((md->ctypes[eptr[-1]] & ctype_word) != 0);
 +      BOOL cur_is_word = (eptr < md->end_subject) &&
-+        ((md->ctypes[*eptr] & ctype_word) != 0);
++	((md->ctypes[*eptr] & ctype_word) != 0);
 +      if ((*ecode++ == OP_WORD_BOUNDARY)?
-+           cur_is_word == prev_is_word : cur_is_word != prev_is_word)
-+        return FALSE;
++	   cur_is_word == prev_is_word : cur_is_word != prev_is_word)
++	return FALSE;
 +      }
 +    break;
 +
@@ -6608,40 +6608,40 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      minima. */
 +
 +      length = (offset >= offset_top || md->offset_vector[offset] < 0)?
-+        md->end_subject - eptr + 1 :
-+        md->offset_vector[offset+1] - md->offset_vector[offset];
++	md->end_subject - eptr + 1 :
++	md->offset_vector[offset+1] - md->offset_vector[offset];
 +
 +      /* Set up for repetition, or handle the non-repeated case */
 +
 +      switch (*ecode)
-+        {
-+        case OP_CRSTAR:
-+        case OP_CRMINSTAR:
-+        case OP_CRPLUS:
-+        case OP_CRMINPLUS:
-+        case OP_CRQUERY:
-+        case OP_CRMINQUERY:
-+        c = *ecode++ - OP_CRSTAR;
-+        minimize = (c & 1) != 0;
-+        min = rep_min[c];                 /* Pick up values from tables; */
-+        max = rep_max[c];                 /* zero for max => infinity */
-+        if (max == 0) max = INT_MAX;
-+        break;
++	{
++	case OP_CRSTAR:
++	case OP_CRMINSTAR:
++	case OP_CRPLUS:
++	case OP_CRMINPLUS:
++	case OP_CRQUERY:
++	case OP_CRMINQUERY:
++	c = *ecode++ - OP_CRSTAR;
++	minimize = (c & 1) != 0;
++	min = rep_min[c];                 /* Pick up values from tables; */
++	max = rep_max[c];                 /* zero for max => infinity */
++	if (max == 0) max = INT_MAX;
++	break;
 +
-+        case OP_CRRANGE:
-+        case OP_CRMINRANGE:
-+        minimize = (*ecode == OP_CRMINRANGE);
-+        min = (ecode[1] << 8) + ecode[2];
-+        max = (ecode[3] << 8) + ecode[4];
-+        if (max == 0) max = INT_MAX;
-+        ecode += 5;
-+        break;
++	case OP_CRRANGE:
++	case OP_CRMINRANGE:
++	minimize = (*ecode == OP_CRMINRANGE);
++	min = (ecode[1] << 8) + ecode[2];
++	max = (ecode[3] << 8) + ecode[4];
++	if (max == 0) max = INT_MAX;
++	ecode += 5;
++	break;
 +
-+        default:               /* No repeat follows */
-+        if (!match_ref(offset, eptr, length, md, ims)) return FALSE;
-+        eptr += length;
-+        continue;              /* With the main loop */
-+        }
++	default:               /* No repeat follows */
++	if (!match_ref(offset, eptr, length, md, ims)) return FALSE;
++	eptr += length;
++	continue;              /* With the main loop */
++	}
 +
 +      /* If the length of the reference is zero, just continue with the
 +      main loop. */
@@ -6653,10 +6653,10 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      address of eptr, so that eptr can be a register variable. */
 +
 +      for (i = 1; i <= min; i++)
-+        {
-+        if (!match_ref(offset, eptr, length, md, ims)) return FALSE;
-+        eptr += length;
-+        }
++	{
++	if (!match_ref(offset, eptr, length, md, ims)) return FALSE;
++	eptr += length;
++	}
 +
 +      /* If min = max, continue at the same level without recursion.
 +      They are not both allowed to be zero. */
@@ -6666,36 +6666,36 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      /* If minimizing, keep trying and advancing the pointer */
 +
 +      if (minimize)
-+        {
-+        for (i = min;; i++)
-+          {
-+          if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
-+            return TRUE;
-+          if (i >= max || !match_ref(offset, eptr, length, md, ims))
-+            return FALSE;
-+          eptr += length;
-+          }
-+        /* Control never gets here */
-+        }
++	{
++	for (i = min;; i++)
++	  {
++	  if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
++	    return TRUE;
++	  if (i >= max || !match_ref(offset, eptr, length, md, ims))
++	    return FALSE;
++	  eptr += length;
++	  }
++	/* Control never gets here */
++	}
 +
 +      /* If maximizing, find the longest string and work backwards */
 +
 +      else
-+        {
-+        const uschar *pp = eptr;
-+        for (i = min; i < max; i++)
-+          {
-+          if (!match_ref(offset, eptr, length, md, ims)) break;
-+          eptr += length;
-+          }
-+        while (eptr >= pp)
-+          {
-+          if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
-+            return TRUE;
-+          eptr -= length;
-+          }
-+        return FALSE;
-+        }
++	{
++	const uschar *pp = eptr;
++	for (i = min; i < max; i++)
++	  {
++	  if (!match_ref(offset, eptr, length, md, ims)) break;
++	  eptr += length;
++	  }
++	while (eptr >= pp)
++	  {
++	  if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
++	    return TRUE;
++	  eptr -= length;
++	  }
++	return FALSE;
++	}
 +      }
 +    /* Control never gets here */
 +
@@ -6711,49 +6711,49 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      ecode += 33;                     /* Advance past the item */
 +
 +      switch (*ecode)
-+        {
-+        case OP_CRSTAR:
-+        case OP_CRMINSTAR:
-+        case OP_CRPLUS:
-+        case OP_CRMINPLUS:
-+        case OP_CRQUERY:
-+        case OP_CRMINQUERY:
-+        c = *ecode++ - OP_CRSTAR;
-+        minimize = (c & 1) != 0;
-+        min = rep_min[c];                 /* Pick up values from tables; */
-+        max = rep_max[c];                 /* zero for max => infinity */
-+        if (max == 0) max = INT_MAX;
-+        break;
++	{
++	case OP_CRSTAR:
++	case OP_CRMINSTAR:
++	case OP_CRPLUS:
++	case OP_CRMINPLUS:
++	case OP_CRQUERY:
++	case OP_CRMINQUERY:
++	c = *ecode++ - OP_CRSTAR;
++	minimize = (c & 1) != 0;
++	min = rep_min[c];                 /* Pick up values from tables; */
++	max = rep_max[c];                 /* zero for max => infinity */
++	if (max == 0) max = INT_MAX;
++	break;
 +
-+        case OP_CRRANGE:
-+        case OP_CRMINRANGE:
-+        minimize = (*ecode == OP_CRMINRANGE);
-+        min = (ecode[1] << 8) + ecode[2];
-+        max = (ecode[3] << 8) + ecode[4];
-+        if (max == 0) max = INT_MAX;
-+        ecode += 5;
-+        break;
++	case OP_CRRANGE:
++	case OP_CRMINRANGE:
++	minimize = (*ecode == OP_CRMINRANGE);
++	min = (ecode[1] << 8) + ecode[2];
++	max = (ecode[3] << 8) + ecode[4];
++	if (max == 0) max = INT_MAX;
++	ecode += 5;
++	break;
 +
-+        default:               /* No repeat follows */
-+        min = max = 1;
-+        break;
-+        }
++	default:               /* No repeat follows */
++	min = max = 1;
++	break;
++	}
 +
 +      /* First, ensure the minimum number of matches are present. */
 +
 +      for (i = 1; i <= min; i++)
-+        {
-+        if (eptr >= md->end_subject) return FALSE;
-+        GETCHARINC(c, eptr)         /* Get character; increment eptr */
++	{
++	if (eptr >= md->end_subject) return FALSE;
++	GETCHARINC(c, eptr)         /* Get character; increment eptr */
 +
 +#ifdef SUPPORT_UTF8
-+        /* We do not yet support class members > 255 */
-+        if (c > 255) return FALSE;
++	/* We do not yet support class members > 255 */
++	if (c > 255) return FALSE;
 +#endif
 +
-+        if ((data[c/8] & (1 << (c&7))) != 0) continue;
-+        return FALSE;
-+        }
++	if ((data[c/8] & (1 << (c&7))) != 0) continue;
++	return FALSE;
++	}
 +
 +      /* If max == min we can continue with the main loop without the
 +      need to recurse. */
@@ -6764,54 +6764,54 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      the pointer while it matches the class. */
 +
 +      if (minimize)
-+        {
-+        for (i = min;; i++)
-+          {
-+          if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
-+            return TRUE;
-+          if (i >= max || eptr >= md->end_subject) return FALSE;
-+          GETCHARINC(c, eptr)       /* Get character; increment eptr */
++	{
++	for (i = min;; i++)
++	  {
++	  if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
++	    return TRUE;
++	  if (i >= max || eptr >= md->end_subject) return FALSE;
++	  GETCHARINC(c, eptr)       /* Get character; increment eptr */
 +
 +#ifdef SUPPORT_UTF8
-+          /* We do not yet support class members > 255 */
-+          if (c > 255) return FALSE;
++	  /* We do not yet support class members > 255 */
++	  if (c > 255) return FALSE;
 +#endif
-+          if ((data[c/8] & (1 << (c&7))) != 0) continue;
-+          return FALSE;
-+          }
-+        /* Control never gets here */
-+        }
++	  if ((data[c/8] & (1 << (c&7))) != 0) continue;
++	  return FALSE;
++	  }
++	/* Control never gets here */
++	}
 +
 +      /* If maximizing, find the longest possible run, then work backwards. */
 +
 +      else
-+        {
-+        const uschar *pp = eptr;
-+        int len = 1;
-+        for (i = min; i < max; i++)
-+          {
-+          if (eptr >= md->end_subject) break;
-+          GETCHARLEN(c, eptr, len)  /* Get character, set length if UTF-8 */
++	{
++	const uschar *pp = eptr;
++	int len = 1;
++	for (i = min; i < max; i++)
++	  {
++	  if (eptr >= md->end_subject) break;
++	  GETCHARLEN(c, eptr, len)  /* Get character, set length if UTF-8 */
 +
 +#ifdef SUPPORT_UTF8
-+          /* We do not yet support class members > 255 */
-+          if (c > 255) break;
++	  /* We do not yet support class members > 255 */
++	  if (c > 255) break;
 +#endif
-+          if ((data[c/8] & (1 << (c&7))) == 0) break;
-+          eptr += len;
-+          }
++	  if ((data[c/8] & (1 << (c&7))) == 0) break;
++	  eptr += len;
++	  }
 +
-+        while (eptr >= pp)
-+          {
-+          if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
-+            return TRUE;
++	while (eptr >= pp)
++	  {
++	  if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
++	    return TRUE;
 +
 +#ifdef SUPPORT_UTF8
-+          BACKCHAR(eptr)
++	  BACKCHAR(eptr)
 +#endif
-+          }
-+        return FALSE;
-+        }
++	  }
++	return FALSE;
++	}
 +      }
 +    /* Control never gets here */
 +
@@ -6824,28 +6824,28 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +
 +#ifdef DEBUG    /* Sigh. Some compilers never learn. */
 +      if (eptr >= md->end_subject)
-+        PCRE_PRINTF("matching subject <null> against pattern ");
++	PCRE_PRINTF("matching subject <null> against pattern ");
 +      else
-+        {
-+        PCRE_PRINTF("matching subject ");
-+        pchars(eptr, length, TRUE, md);
-+        PCRE_PRINTF(" against pattern ");
-+        }
++	{
++	PCRE_PRINTF("matching subject ");
++	pchars(eptr, length, TRUE, md);
++	PCRE_PRINTF(" against pattern ");
++	}
 +      pchars(ecode, length, FALSE, md);
 +      PCRE_PRINTF("\n");
 +#endif
 +
 +      if (length > md->end_subject - eptr) return FALSE;
 +      if ((ims & PCRE_CASELESS) != 0)
-+        {
-+        while (length-- > 0)
-+          if (md->lcc[*ecode++] != md->lcc[*eptr++])
-+            return FALSE;
-+        }
++	{
++	while (length-- > 0)
++	  if (md->lcc[*ecode++] != md->lcc[*eptr++])
++	    return FALSE;
++	}
 +      else
-+        {
-+        while (length-- > 0) if (*ecode++ != *eptr++) return FALSE;
-+        }
++	{
++	while (length-- > 0) if (*ecode++ != *eptr++) return FALSE;
++	}
 +      }
 +    break;
 +
@@ -6899,33 +6899,33 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      {
 +      c = md->lcc[c];
 +      for (i = 1; i <= min; i++)
-+        if (c != md->lcc[*eptr++]) return FALSE;
++	if (c != md->lcc[*eptr++]) return FALSE;
 +      if (min == max) continue;
 +      if (minimize)
-+        {
-+        for (i = min;; i++)
-+          {
-+          if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
-+            return TRUE;
-+          if (i >= max || eptr >= md->end_subject ||
-+              c != md->lcc[*eptr++])
-+            return FALSE;
-+          }
-+        /* Control never gets here */
-+        }
++	{
++	for (i = min;; i++)
++	  {
++	  if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
++	    return TRUE;
++	  if (i >= max || eptr >= md->end_subject ||
++	      c != md->lcc[*eptr++])
++	    return FALSE;
++	  }
++	/* Control never gets here */
++	}
 +      else
-+        {
-+        const uschar *pp = eptr;
-+        for (i = min; i < max; i++)
-+          {
-+          if (eptr >= md->end_subject || c != md->lcc[*eptr]) break;
-+          eptr++;
-+          }
-+        while (eptr >= pp)
-+          if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
-+            return TRUE;
-+        return FALSE;
-+        }
++	{
++	const uschar *pp = eptr;
++	for (i = min; i < max; i++)
++	  {
++	  if (eptr >= md->end_subject || c != md->lcc[*eptr]) break;
++	  eptr++;
++	  }
++	while (eptr >= pp)
++	  if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
++	    return TRUE;
++	return FALSE;
++	}
 +      /* Control never gets here */
 +      }
 +
@@ -6936,28 +6936,28 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      for (i = 1; i <= min; i++) if (c != *eptr++) return FALSE;
 +      if (min == max) continue;
 +      if (minimize)
-+        {
-+        for (i = min;; i++)
-+          {
-+          if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
-+            return TRUE;
-+          if (i >= max || eptr >= md->end_subject || c != *eptr++) return FALSE;
-+          }
-+        /* Control never gets here */
-+        }
++	{
++	for (i = min;; i++)
++	  {
++	  if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
++	    return TRUE;
++	  if (i >= max || eptr >= md->end_subject || c != *eptr++) return FALSE;
++	  }
++	/* Control never gets here */
++	}
 +      else
-+        {
-+        const uschar *pp = eptr;
-+        for (i = min; i < max; i++)
-+          {
-+          if (eptr >= md->end_subject || c != *eptr) break;
-+          eptr++;
-+          }
-+        while (eptr >= pp)
-+         if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
-+           return TRUE;
-+        return FALSE;
-+        }
++	{
++	const uschar *pp = eptr;
++	for (i = min; i < max; i++)
++	  {
++	  if (eptr >= md->end_subject || c != *eptr) break;
++	  eptr++;
++	  }
++	while (eptr >= pp)
++	 if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
++	   return TRUE;
++	return FALSE;
++	}
 +      }
 +    /* Control never gets here */
 +
@@ -7030,33 +7030,33 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      {
 +      c = md->lcc[c];
 +      for (i = 1; i <= min; i++)
-+        if (c == md->lcc[*eptr++]) return FALSE;
++	if (c == md->lcc[*eptr++]) return FALSE;
 +      if (min == max) continue;
 +      if (minimize)
-+        {
-+        for (i = min;; i++)
-+          {
-+          if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
-+            return TRUE;
-+          if (i >= max || eptr >= md->end_subject ||
-+              c == md->lcc[*eptr++])
-+            return FALSE;
-+          }
-+        /* Control never gets here */
-+        }
++	{
++	for (i = min;; i++)
++	  {
++	  if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
++	    return TRUE;
++	  if (i >= max || eptr >= md->end_subject ||
++	      c == md->lcc[*eptr++])
++	    return FALSE;
++	  }
++	/* Control never gets here */
++	}
 +      else
-+        {
-+        const uschar *pp = eptr;
-+        for (i = min; i < max; i++)
-+          {
-+          if (eptr >= md->end_subject || c == md->lcc[*eptr]) break;
-+          eptr++;
-+          }
-+        while (eptr >= pp)
-+          if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
-+            return TRUE;
-+        return FALSE;
-+        }
++	{
++	const uschar *pp = eptr;
++	for (i = min; i < max; i++)
++	  {
++	  if (eptr >= md->end_subject || c == md->lcc[*eptr]) break;
++	  eptr++;
++	  }
++	while (eptr >= pp)
++	  if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
++	    return TRUE;
++	return FALSE;
++	}
 +      /* Control never gets here */
 +      }
 +
@@ -7067,28 +7067,28 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      for (i = 1; i <= min; i++) if (c == *eptr++) return FALSE;
 +      if (min == max) continue;
 +      if (minimize)
-+        {
-+        for (i = min;; i++)
-+          {
-+          if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
-+            return TRUE;
-+          if (i >= max || eptr >= md->end_subject || c == *eptr++) return FALSE;
-+          }
-+        /* Control never gets here */
-+        }
++	{
++	for (i = min;; i++)
++	  {
++	  if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
++	    return TRUE;
++	  if (i >= max || eptr >= md->end_subject || c == *eptr++) return FALSE;
++	  }
++	/* Control never gets here */
++	}
 +      else
-+        {
-+        const uschar *pp = eptr;
-+        for (i = min; i < max; i++)
-+          {
-+          if (eptr >= md->end_subject || c == *eptr) break;
-+          eptr++;
-+          }
-+        while (eptr >= pp)
-+         if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
-+           return TRUE;
-+        return FALSE;
-+        }
++	{
++	const uschar *pp = eptr;
++	for (i = min; i < max; i++)
++	  {
++	  if (eptr >= md->end_subject || c == *eptr) break;
++	  eptr++;
++	  }
++	while (eptr >= pp)
++	 if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
++	   return TRUE;
++	return FALSE;
++	}
 +      }
 +    /* Control never gets here */
 +
@@ -7140,53 +7140,53 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      case OP_ANY:
 +#ifdef SUPPORT_UTF8
 +      if (md->utf8)
-+        {
-+        for (i = 1; i <= min; i++)
-+          {
-+          if (eptr >= md->end_subject ||
-+             (*eptr++ == NEWLINE && (ims & PCRE_DOTALL) == 0))
-+            return FALSE;
-+          while (eptr < md->end_subject && (*eptr & 0xc0) == 0x80) eptr++;
-+          }
-+        break;
-+        }
++	{
++	for (i = 1; i <= min; i++)
++	  {
++	  if (eptr >= md->end_subject ||
++	     (*eptr++ == NEWLINE && (ims & PCRE_DOTALL) == 0))
++	    return FALSE;
++	  while (eptr < md->end_subject && (*eptr & 0xc0) == 0x80) eptr++;
++	  }
++	break;
++	}
 +#endif
 +      /* Non-UTF8 can be faster */
 +      if ((ims & PCRE_DOTALL) == 0)
-+        { for (i = 1; i <= min; i++) if (*eptr++ == NEWLINE) return FALSE; }
++	{ for (i = 1; i <= min; i++) if (*eptr++ == NEWLINE) return FALSE; }
 +      else eptr += min;
 +      break;
 +
 +      case OP_NOT_DIGIT:
 +      for (i = 1; i <= min; i++)
-+        if ((md->ctypes[*eptr++] & ctype_digit) != 0) return FALSE;
++	if ((md->ctypes[*eptr++] & ctype_digit) != 0) return FALSE;
 +      break;
 +
 +      case OP_DIGIT:
 +      for (i = 1; i <= min; i++)
-+        if ((md->ctypes[*eptr++] & ctype_digit) == 0) return FALSE;
++	if ((md->ctypes[*eptr++] & ctype_digit) == 0) return FALSE;
 +      break;
 +
 +      case OP_NOT_WHITESPACE:
 +      for (i = 1; i <= min; i++)
-+        if ((md->ctypes[*eptr++] & ctype_space) != 0) return FALSE;
++	if ((md->ctypes[*eptr++] & ctype_space) != 0) return FALSE;
 +      break;
 +
 +      case OP_WHITESPACE:
 +      for (i = 1; i <= min; i++)
-+        if ((md->ctypes[*eptr++] & ctype_space) == 0) return FALSE;
++	if ((md->ctypes[*eptr++] & ctype_space) == 0) return FALSE;
 +      break;
 +
 +      case OP_NOT_WORDCHAR:
 +      for (i = 1; i <= min; i++)
-+        if ((md->ctypes[*eptr++] & ctype_word) != 0)
-+          return FALSE;
++	if ((md->ctypes[*eptr++] & ctype_word) != 0)
++	  return FALSE;
 +      break;
 +
 +      case OP_WORDCHAR:
 +      for (i = 1; i <= min; i++)
-+        if ((md->ctypes[*eptr++] & ctype_word) == 0)
-+          return FALSE;
++	if ((md->ctypes[*eptr++] & ctype_word) == 0)
++	  return FALSE;
 +      break;
 +      }
 +
@@ -7200,46 +7200,46 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +    if (minimize)
 +      {
 +      for (i = min;; i++)
-+        {
-+        if (match(eptr, ecode, offset_top, md, ims, eptrb, 0)) return TRUE;
-+        if (i >= max || eptr >= md->end_subject) return FALSE;
++	{
++	if (match(eptr, ecode, offset_top, md, ims, eptrb, 0)) return TRUE;
++	if (i >= max || eptr >= md->end_subject) return FALSE;
 +
-+        c = *eptr++;
-+        switch(ctype)
-+          {
-+          case OP_ANY:
-+          if ((ims & PCRE_DOTALL) == 0 && c == NEWLINE) return FALSE;
++	c = *eptr++;
++	switch(ctype)
++	  {
++	  case OP_ANY:
++	  if ((ims & PCRE_DOTALL) == 0 && c == NEWLINE) return FALSE;
 +#ifdef SUPPORT_UTF8
-+          if (md->utf8)
-+            while (eptr < md->end_subject && (*eptr & 0xc0) == 0x80) eptr++;
++	  if (md->utf8)
++	    while (eptr < md->end_subject && (*eptr & 0xc0) == 0x80) eptr++;
 +#endif
-+          break;
++	  break;
 +
-+          case OP_NOT_DIGIT:
-+          if ((md->ctypes[c] & ctype_digit) != 0) return FALSE;
-+          break;
++	  case OP_NOT_DIGIT:
++	  if ((md->ctypes[c] & ctype_digit) != 0) return FALSE;
++	  break;
 +
-+          case OP_DIGIT:
-+          if ((md->ctypes[c] & ctype_digit) == 0) return FALSE;
-+          break;
++	  case OP_DIGIT:
++	  if ((md->ctypes[c] & ctype_digit) == 0) return FALSE;
++	  break;
 +
-+          case OP_NOT_WHITESPACE:
-+          if ((md->ctypes[c] & ctype_space) != 0) return FALSE;
-+          break;
++	  case OP_NOT_WHITESPACE:
++	  if ((md->ctypes[c] & ctype_space) != 0) return FALSE;
++	  break;
 +
-+          case OP_WHITESPACE:
-+          if  ((md->ctypes[c] & ctype_space) == 0) return FALSE;
-+          break;
++	  case OP_WHITESPACE:
++	  if  ((md->ctypes[c] & ctype_space) == 0) return FALSE;
++	  break;
 +
-+          case OP_NOT_WORDCHAR:
-+          if ((md->ctypes[c] & ctype_word) != 0) return FALSE;
-+          break;
++	  case OP_NOT_WORDCHAR:
++	  if ((md->ctypes[c] & ctype_word) != 0) return FALSE;
++	  break;
 +
-+          case OP_WORDCHAR:
-+          if ((md->ctypes[c] & ctype_word) == 0) return FALSE;
-+          break;
-+          }
-+        }
++	  case OP_WORDCHAR:
++	  if ((md->ctypes[c] & ctype_word) == 0) return FALSE;
++	  break;
++	  }
++	}
 +      /* Control never gets here */
 +      }
 +
@@ -7250,115 +7250,115 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      {
 +      const uschar *pp = eptr;
 +      switch(ctype)
-+        {
-+        case OP_ANY:
++	{
++	case OP_ANY:
 +
-+        /* Special code is required for UTF8, but when the maximum is unlimited
-+        we don't need it. */
++	/* Special code is required for UTF8, but when the maximum is unlimited
++	we don't need it. */
 +
 +#ifdef SUPPORT_UTF8
-+        if (md->utf8 && max < INT_MAX)
-+          {
-+          if ((ims & PCRE_DOTALL) == 0)
-+            {
-+            for (i = min; i < max; i++)
-+              {
-+              if (eptr >= md->end_subject || *eptr++ == NEWLINE) break;
-+              while (eptr < md->end_subject && (*eptr & 0xc0) == 0x80) eptr++;
-+              }
-+            }
-+          else
-+            {
-+            for (i = min; i < max; i++)
-+              {
-+              eptr++;
-+              while (eptr < md->end_subject && (*eptr & 0xc0) == 0x80) eptr++;
-+              }
-+            }
-+          break;
-+          }
++	if (md->utf8 && max < INT_MAX)
++	  {
++	  if ((ims & PCRE_DOTALL) == 0)
++	    {
++	    for (i = min; i < max; i++)
++	      {
++	      if (eptr >= md->end_subject || *eptr++ == NEWLINE) break;
++	      while (eptr < md->end_subject && (*eptr & 0xc0) == 0x80) eptr++;
++	      }
++	    }
++	  else
++	    {
++	    for (i = min; i < max; i++)
++	      {
++	      eptr++;
++	      while (eptr < md->end_subject && (*eptr & 0xc0) == 0x80) eptr++;
++	      }
++	    }
++	  break;
++	  }
 +#endif
-+        /* Non-UTF8 can be faster */
-+        if ((ims & PCRE_DOTALL) == 0)
-+          {
-+          for (i = min; i < max; i++)
-+            {
-+            if (eptr >= md->end_subject || *eptr == NEWLINE) break;
-+            eptr++;
-+            }
-+          }
-+        else
-+          {
-+          c = max - min;
-+          if (c > md->end_subject - eptr) c = md->end_subject - eptr;
-+          eptr += c;
-+          }
-+        break;
++	/* Non-UTF8 can be faster */
++	if ((ims & PCRE_DOTALL) == 0)
++	  {
++	  for (i = min; i < max; i++)
++	    {
++	    if (eptr >= md->end_subject || *eptr == NEWLINE) break;
++	    eptr++;
++	    }
++	  }
++	else
++	  {
++	  c = max - min;
++	  if (c > md->end_subject - eptr) c = md->end_subject - eptr;
++	  eptr += c;
++	  }
++	break;
 +
-+        case OP_NOT_DIGIT:
-+        for (i = min; i < max; i++)
-+          {
-+          if (eptr >= md->end_subject || (md->ctypes[*eptr] & ctype_digit) != 0)
-+            break;
-+          eptr++;
-+          }
-+        break;
++	case OP_NOT_DIGIT:
++	for (i = min; i < max; i++)
++	  {
++	  if (eptr >= md->end_subject || (md->ctypes[*eptr] & ctype_digit) != 0)
++	    break;
++	  eptr++;
++	  }
++	break;
 +
-+        case OP_DIGIT:
-+        for (i = min; i < max; i++)
-+          {
-+          if (eptr >= md->end_subject || (md->ctypes[*eptr] & ctype_digit) == 0)
-+            break;
-+          eptr++;
-+          }
-+        break;
++	case OP_DIGIT:
++	for (i = min; i < max; i++)
++	  {
++	  if (eptr >= md->end_subject || (md->ctypes[*eptr] & ctype_digit) == 0)
++	    break;
++	  eptr++;
++	  }
++	break;
 +
-+        case OP_NOT_WHITESPACE:
-+        for (i = min; i < max; i++)
-+          {
-+          if (eptr >= md->end_subject || (md->ctypes[*eptr] & ctype_space) != 0)
-+            break;
-+          eptr++;
-+          }
-+        break;
++	case OP_NOT_WHITESPACE:
++	for (i = min; i < max; i++)
++	  {
++	  if (eptr >= md->end_subject || (md->ctypes[*eptr] & ctype_space) != 0)
++	    break;
++	  eptr++;
++	  }
++	break;
 +
-+        case OP_WHITESPACE:
-+        for (i = min; i < max; i++)
-+          {
-+          if (eptr >= md->end_subject || (md->ctypes[*eptr] & ctype_space) == 0)
-+            break;
-+          eptr++;
-+          }
-+        break;
++	case OP_WHITESPACE:
++	for (i = min; i < max; i++)
++	  {
++	  if (eptr >= md->end_subject || (md->ctypes[*eptr] & ctype_space) == 0)
++	    break;
++	  eptr++;
++	  }
++	break;
 +
-+        case OP_NOT_WORDCHAR:
-+        for (i = min; i < max; i++)
-+          {
-+          if (eptr >= md->end_subject || (md->ctypes[*eptr] & ctype_word) != 0)
-+            break;
-+          eptr++;
-+          }
-+        break;
++	case OP_NOT_WORDCHAR:
++	for (i = min; i < max; i++)
++	  {
++	  if (eptr >= md->end_subject || (md->ctypes[*eptr] & ctype_word) != 0)
++	    break;
++	  eptr++;
++	  }
++	break;
 +
-+        case OP_WORDCHAR:
-+        for (i = min; i < max; i++)
-+          {
-+          if (eptr >= md->end_subject || (md->ctypes[*eptr] & ctype_word) == 0)
-+            break;
-+          eptr++;
-+          }
-+        break;
-+        }
++	case OP_WORDCHAR:
++	for (i = min; i < max; i++)
++	  {
++	  if (eptr >= md->end_subject || (md->ctypes[*eptr] & ctype_word) == 0)
++	    break;
++	  eptr++;
++	  }
++	break;
++	}
 +
 +      while (eptr >= pp)
-+        {
-+        if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
-+          return TRUE;
++	{
++	if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
++	  return TRUE;
 +#ifdef SUPPORT_UTF8
-+        if (md->utf8)
-+          while (eptr > pp && (*eptr & 0xc0) == 0x80) eptr--;
++	if (md->utf8)
++	  while (eptr > pp && (*eptr & 0xc0) == 0x80) eptr--;
 +#endif
-+        }
++	}
 +      return FALSE;
 +      }
 +    /* Control never gets here */
@@ -7399,9 +7399,9 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +  offsetcount     the number of elements in the vector
 +
 +Returns:          > 0 => success; value is the number of elements filled in
-+                  = 0 => success, but offsets is not big enough
-+                   -1 => failed to match
-+                 < -1 => some kind of unexpected problem
++		  = 0 => success, but offsets is not big enough
++		   -1 => failed to match
++		 < -1 => some kind of unexpected problem
 +*/
 +
 +int
@@ -7512,7 +7512,7 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +  else
 +    if (!startline && extra != NULL &&
 +      (extra->options & PCRE_STUDY_MAPPED) != 0)
-+        start_bits = extra->start_bits;
++	start_bits = extra->start_bits;
 +  }
 +
 +/* For anchored or unanchored matches, there may be a "last known required
@@ -7549,11 +7549,11 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +    {
 +    if ((ims & PCRE_CASELESS) != 0)
 +      while (start_match < end_subject &&
-+             match_block.lcc[*start_match] != first_char)
-+        start_match++;
++	     match_block.lcc[*start_match] != first_char)
++	start_match++;
 +    else
 +      while (start_match < end_subject && *start_match != first_char)
-+        start_match++;
++	start_match++;
 +    }
 +
 +  /* Or to just after \n for a multiline match if possible */
@@ -7563,7 +7563,7 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +    if (start_match > match_block.start_subject + start_offset)
 +      {
 +      while (start_match < end_subject && start_match[-1] != NEWLINE)
-+        start_match++;
++	start_match++;
 +      }
 +    }
 +
@@ -7607,23 +7607,23 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +      /* Do a single test if no case difference is set up */
 +
 +      if (req_char == req_char2)
-+        {
-+        while (p < end_subject)
-+          {
-+          if (*p++ == req_char) { p--; break; }
-+          }
-+        }
++	{
++	while (p < end_subject)
++	  {
++	  if (*p++ == req_char) { p--; break; }
++	  }
++	}
 +
 +      /* Otherwise test for either case */
 +
 +      else
-+        {
-+        while (p < end_subject)
-+          {
-+          register int pp = *p++;
-+          if (pp == req_char || pp == req_char2) { p--; break; }
-+          }
-+        }
++	{
++	while (p < end_subject)
++	  {
++	  register int pp = *p++;
++	  if (pp == req_char || pp == req_char2) { p--; break; }
++	  }
++	}
 +
 +      /* If we can't find the required character, break the matching loop */
 +
@@ -7655,7 +7655,7 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +    if (offsetcount >= 4)
 +      {
 +      memcpy(offsets + 2, match_block.offset_vector + 2,
-+        (offsetcount - 2) * sizeof(int));
++	(offsetcount - 2) * sizeof(int));
 +      DPRINTF(("Copied offsets from temporary memory\n"));
 +      }
 +    if (match_block.end_offset_top > offsetcount)
@@ -7695,10 +7695,10 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +}
 +
 +/* End of pcre.c */
-Index: linux-2.6/security/apparmor/match/pcre_exec.h
+Index: b/security/apparmor/match/pcre_exec.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/match/pcre_exec.h
++++ b/security/apparmor/match/pcre_exec.h
 @@ -0,0 +1,308 @@
 +/*
 + *  This is a modified header file containing the definitions from
@@ -7910,11 +7910,11 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.h
 +  OP_BRAMINZERO,     /* order. */
 +
 +  OP_BRANUMBER,      /* Used for extracting brackets whose number is greater
-+                        than can fit into an opcode. */
++			than can fit into an opcode. */
 +
 +  OP_BRA             /* This and greater values are used for brackets that
-+                        extract substrings up to a basic limit. After that,
-+                        use is made of OP_BRANUMBER. */
++			extract substrings up to a basic limit. After that,
++			use is made of OP_BRANUMBER. */
 +};
 +
 +/* The highest extraction number before we have to start using additional
@@ -8008,10 +8008,10 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.h
 +
 +#endif // _PCRE_H
 + /* End of pcre.h */
-Index: linux-2.6/security/apparmor/match/pcre_tables.h
+Index: b/security/apparmor/match/pcre_tables.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/match/pcre_tables.h
++++ b/security/apparmor/match/pcre_tables.h
 @@ -0,0 +1,184 @@
 +
 +/*************************************************

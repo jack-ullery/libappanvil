@@ -1,7 +1,7 @@
-Index: linux-2.6/security/apparmor/main.c
+Index: b/security/apparmor/main.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/main.c
-+++ linux-2.6/security/apparmor/main.c
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
 @@ -12,6 +12,7 @@
  #include <linux/security.h>
  #include <linux/namei.h>

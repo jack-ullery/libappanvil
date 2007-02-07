@@ -1,7 +1,7 @@
-Index: linux-2.6/security/apparmor/Kconfig
+Index: b/security/apparmor/Kconfig
 ===================================================================
---- linux-2.6.orig/security/apparmor/Kconfig
-+++ linux-2.6/security/apparmor/Kconfig
+--- a/security/apparmor/Kconfig
++++ b/security/apparmor/Kconfig
 @@ -1,8 +1,9 @@
  config SECURITY_APPARMOR
 -	tristate "AppArmor support"
@@ -15,10 +15,10 @@ Index: linux-2.6/security/apparmor/Kconfig
  	  Required userspace tools (if they are not included in your
  	  distribution) and further information may be found at
  	  <http://forge.novell.com/modules/xfmod/project/?apparmor>
-Index: linux-2.6/security/apparmor/lsm.c
+Index: b/security/apparmor/lsm.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/lsm.c
-+++ linux-2.6/security/apparmor/lsm.c
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
 @@ -54,36 +54,6 @@ int apparmor_logsyscall = 0;
  module_param_named(logsyscall, apparmor_logsyscall, int, S_IRUSR);
  MODULE_PARM_DESC(apparmor_logsyscall, "Toggle AppArmor logsyscall mode");
@@ -124,16 +124,16 @@ Index: linux-2.6/security/apparmor/lsm.c
 -MODULE_DESCRIPTION("AppArmor process confinement");
 -MODULE_AUTHOR("Tony Jones <tonyj@suse.de>");
 -MODULE_LICENSE("GPL");
-Index: linux-2.6/security/Makefile
+Index: b/security/Makefile
 ===================================================================
---- linux-2.6.orig/security/Makefile
-+++ linux-2.6/security/Makefile
+--- a/security/Makefile
++++ b/security/Makefile
 @@ -16,7 +16,7 @@ obj-$(CONFIG_SECURITY)			+= security.o d
  # Must precede capability.o in order to stack properly.
  obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
  ifeq ($(CONFIG_SECURITY_APPARMOR),y)
--obj-$(CONFIG_SECURITY_APPARMOR)		+= apparmor/built-in.o
-+obj-$(CONFIG_SECURITY_APPARMOR)		+= apparmor/built-in.o commoncap.o
+-obj-y					+= apparmor/built-in.o
++obj-y					+= apparmor/built-in.o commoncap.o
  endif
  obj-$(CONFIG_SECURITY_CAPABILITIES)	+= commoncap.o capability.o
  obj-$(CONFIG_SECURITY_ROOTPLUG)		+= commoncap.o root_plug.o

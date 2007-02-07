@@ -1,7 +1,7 @@
-Index: linux-2.6/security/apparmor/apparmor.h
+Index: b/security/apparmor/apparmor.h
 ===================================================================
---- linux-2.6.orig/security/apparmor/apparmor.h
-+++ linux-2.6/security/apparmor/apparmor.h
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
 @@ -25,17 +25,6 @@ extern int apparmor_debug;
  extern int apparmor_audit;
  extern int apparmor_logsyscall;
@@ -14,8 +14,8 @@ Index: linux-2.6/security/apparmor/apparmor.h
 -#define INOTIFYFS_MAGIC 0xBAD1DEA
 -
 -#define VALID_FSTYPE(inode) ((inode)->i_sb->s_magic != PIPEFS_MAGIC && \
--                             (inode)->i_sb->s_magic != SOCKFS_MAGIC && \
--                             (inode)->i_sb->s_magic != INOTIFYFS_MAGIC)
+-			     (inode)->i_sb->s_magic != SOCKFS_MAGIC && \
+-			     (inode)->i_sb->s_magic != INOTIFYFS_MAGIC)
 -
  #define PROFILE_COMPLAIN(_profile) \
  	(apparmor_complain == 1 || ((_profile) && (_profile)->flags.complain))
@@ -52,10 +52,10 @@ Index: linux-2.6/security/apparmor/apparmor.h
  /**
   * struct subdomain - primary label for confined tasks
   * @active: the current active profile
-Index: linux-2.6/security/apparmor/lsm.c
+Index: b/security/apparmor/lsm.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/lsm.c
-+++ linux-2.6/security/apparmor/lsm.c
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
 @@ -203,6 +203,9 @@ static int apparmor_sb_mount(char *dev_n
  	if (active) {
  		error = aa_audit_syscallreject(active, GFP_KERNEL, "mount");

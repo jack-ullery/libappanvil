@@ -4,10 +4,10 @@ only mess up the code. Pass the name of the operation in aa_audit instead.
 Use a union for the remaining users of ival in aa_audit: this is more
 readable.
 
-Index: linux-2.6/security/apparmor/apparmor.h
+Index: b/security/apparmor/apparmor.h
 ===================================================================
---- linux-2.6.orig/security/apparmor/apparmor.h
-+++ linux-2.6/security/apparmor/apparmor.h
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
 @@ -145,8 +145,12 @@ struct aa_audit {
  	gfp_t gfp_mask;
  	int error_code;
@@ -62,10 +62,10 @@ Index: linux-2.6/security/apparmor/apparmor.h
  extern int aa_link(struct aaprofile *active,
  		   struct dentry *link, struct vfsmount *link_mnt,
  		   struct dentry *target, struct vfsmount *target_mnt);
-Index: linux-2.6/security/apparmor/main.c
+Index: b/security/apparmor/main.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/main.c
-+++ linux-2.6/security/apparmor/main.c
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
 @@ -443,7 +443,7 @@ int aa_audit(struct aaprofile *active, c
  	audit_log_format(ab, "%s ", logcls);	/* REJECTING/ALLOWING/etc */
  
@@ -221,10 +221,10 @@ Index: linux-2.6/security/apparmor/main.c
  	sa.flags = 0;
  	sa.error_code = 0;
  	sa.result = cap_raised(active->capabilities, cap);
-Index: linux-2.6/security/apparmor/lsm.c
+Index: b/security/apparmor/lsm.c
 ===================================================================
---- linux-2.6.orig/security/apparmor/lsm.c
-+++ linux-2.6/security/apparmor/lsm.c
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
 @@ -244,7 +244,7 @@ static int apparmor_inode_mkdir(struct i
  	active = get_active_aaprofile();
  
