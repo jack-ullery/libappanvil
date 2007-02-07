@@ -3,23 +3,24 @@ Add a struct vfsmount parameter to vfs_removexattr()
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6/fs/nfsd/vfs.c
+Index: b/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c
-+++ linux-2.6/fs/nfsd/vfs.c
-@@ -1974,7 +1974,7 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1989,7 +1989,8 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
  		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
  			error = 0;
  		else {
 -			error = vfs_removexattr(fhp->fh_dentry, name);
-+			error = vfs_removexattr(fhp->fh_dentry, NULL, name);
++			error = vfs_removexattr(fhp->fh_dentry,
++						fhp->fh_export->ex_mnt, name);
  			if (error == -ENODATA)
  				error = 0;
  		}
-Index: linux-2.6/fs/xattr.c
+Index: b/fs/xattr.c
 ===================================================================
---- linux-2.6.orig/fs/xattr.c
-+++ linux-2.6/fs/xattr.c
+--- a/fs/xattr.c
++++ b/fs/xattr.c
 @@ -166,7 +166,7 @@ vfs_listxattr(struct dentry *dentry, str
  EXPORT_SYMBOL_GPL(vfs_listxattr);
  
@@ -74,10 +75,10 @@ Index: linux-2.6/fs/xattr.c
  	fput(f);
  	return error;
  }
-Index: linux-2.6/include/linux/xattr.h
+Index: b/include/linux/xattr.h
 ===================================================================
---- linux-2.6.orig/include/linux/xattr.h
-+++ linux-2.6/include/linux/xattr.h
+--- a/include/linux/xattr.h
++++ b/include/linux/xattr.h
 @@ -46,7 +46,7 @@ ssize_t vfs_listxattr(struct dentry *d, 
  		      size_t size);
  int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,

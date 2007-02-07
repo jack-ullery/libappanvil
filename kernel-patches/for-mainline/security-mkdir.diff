@@ -3,10 +3,10 @@ Pass struct vfsmount to the inode_mkdir LSM hook
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6/fs/namei.c
+Index: b/fs/namei.c
 ===================================================================
---- linux-2.6.orig/fs/namei.c
-+++ linux-2.6/fs/namei.c
+--- a/fs/namei.c
++++ b/fs/namei.c
 @@ -1928,7 +1928,7 @@ int vfs_mkdir(struct inode *dir, struct 
  		return -EPERM;
  
@@ -16,10 +16,10 @@ Index: linux-2.6/fs/namei.c
  	if (error)
  		return error;
  
-Index: linux-2.6/include/linux/security.h
+Index: b/include/linux/security.h
 ===================================================================
---- linux-2.6.orig/include/linux/security.h
-+++ linux-2.6/include/linux/security.h
+--- a/include/linux/security.h
++++ b/include/linux/security.h
 @@ -308,6 +308,7 @@ struct request_sock;
   *	associated with inode strcture @dir. 
   *	@dir containst the inode structure of parent of the directory to be created.
@@ -60,10 +60,10 @@ Index: linux-2.6/include/linux/security.h
  					int mode)
  {
  	return 0;
-Index: linux-2.6/security/dummy.c
+Index: b/security/dummy.c
 ===================================================================
---- linux-2.6.orig/security/dummy.c
-+++ linux-2.6/security/dummy.c
+--- a/security/dummy.c
++++ b/security/dummy.c
 @@ -288,7 +288,7 @@ static int dummy_inode_symlink (struct i
  }
  
@@ -73,10 +73,10 @@ Index: linux-2.6/security/dummy.c
  {
  	return 0;
  }
-Index: linux-2.6/security/selinux/hooks.c
+Index: b/security/selinux/hooks.c
 ===================================================================
---- linux-2.6.orig/security/selinux/hooks.c
-+++ linux-2.6/security/selinux/hooks.c
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
 @@ -2166,7 +2166,8 @@ static int selinux_inode_symlink(struct 
  	return may_create(dir, dentry, SECCLASS_LNK_FILE);
  }

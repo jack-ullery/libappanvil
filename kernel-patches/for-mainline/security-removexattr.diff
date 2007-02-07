@@ -3,10 +3,10 @@ Pass struct vfsmount to the inode_removexattr LSM hook
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6/fs/xattr.c
+Index: b/fs/xattr.c
 ===================================================================
---- linux-2.6.orig/fs/xattr.c
-+++ linux-2.6/fs/xattr.c
+--- a/fs/xattr.c
++++ b/fs/xattr.c
 @@ -178,7 +178,7 @@ vfs_removexattr(struct dentry *dentry, s
  	if (error)
  		return error;
@@ -16,10 +16,10 @@ Index: linux-2.6/fs/xattr.c
  	if (error)
  		return error;
  
-Index: linux-2.6/include/linux/security.h
+Index: b/include/linux/security.h
 ===================================================================
---- linux-2.6.orig/include/linux/security.h
-+++ linux-2.6/include/linux/security.h
+--- a/include/linux/security.h
++++ b/include/linux/security.h
 @@ -50,7 +50,7 @@ extern int cap_bprm_set_security (struct
  extern void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe);
  extern int cap_bprm_secureexec(struct linux_binprm *bprm);
@@ -67,10 +67,10 @@ Index: linux-2.6/include/linux/security.h
  }
  
  static inline const char *security_inode_xattr_getsuffix (void)
-Index: linux-2.6/security/commoncap.c
+Index: b/security/commoncap.c
 ===================================================================
---- linux-2.6.orig/security/commoncap.c
-+++ linux-2.6/security/commoncap.c
+--- a/security/commoncap.c
++++ b/security/commoncap.c
 @@ -201,7 +201,8 @@ int cap_inode_setxattr(struct dentry *de
  	return 0;
  }
@@ -81,10 +81,10 @@ Index: linux-2.6/security/commoncap.c
  {
  	if (!strncmp(name, XATTR_SECURITY_PREFIX,
  		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
-Index: linux-2.6/security/dummy.c
+Index: b/security/dummy.c
 ===================================================================
---- linux-2.6.orig/security/dummy.c
-+++ linux-2.6/security/dummy.c
+--- a/security/dummy.c
++++ b/security/dummy.c
 @@ -379,7 +379,8 @@ static int dummy_inode_listxattr (struct
  	return 0;
  }
@@ -95,10 +95,10 @@ Index: linux-2.6/security/dummy.c
  {
  	if (!strncmp(name, XATTR_SECURITY_PREFIX,
  		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
-Index: linux-2.6/security/selinux/hooks.c
+Index: b/security/selinux/hooks.c
 ===================================================================
---- linux-2.6.orig/security/selinux/hooks.c
-+++ linux-2.6/security/selinux/hooks.c
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
 @@ -2363,7 +2363,8 @@ static int selinux_inode_listxattr (stru
  	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
  }

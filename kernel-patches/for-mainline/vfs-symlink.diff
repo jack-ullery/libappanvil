@@ -3,10 +3,10 @@ Add a struct vfsmount parameter to vfs_symlink()
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6/fs/ecryptfs/inode.c
+Index: b/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6.orig/fs/ecryptfs/inode.c
-+++ linux-2.6/fs/ecryptfs/inode.c
+--- a/fs/ecryptfs/inode.c
++++ b/fs/ecryptfs/inode.c
 @@ -462,6 +462,7 @@ static int ecryptfs_symlink(struct inode
  {
  	int rc;
@@ -32,10 +32,10 @@ Index: linux-2.6/fs/ecryptfs/inode.c
  			 encoded_symname, mode);
  	kfree(encoded_symname);
  	if (rc || !lower_dentry->d_inode)
-Index: linux-2.6/fs/namei.c
+Index: b/fs/namei.c
 ===================================================================
---- linux-2.6.orig/fs/namei.c
-+++ linux-2.6/fs/namei.c
+--- a/fs/namei.c
++++ b/fs/namei.c
 @@ -2185,7 +2185,8 @@ asmlinkage long sys_unlink(const char __
  	return do_unlinkat(AT_FDCWD, pathname);
  }
@@ -56,29 +56,45 @@ Index: linux-2.6/fs/namei.c
  	dput(dentry);
  out_unlock:
  	mutex_unlock(&nd.dentry->d_inode->i_mutex);
-Index: linux-2.6/fs/nfsd/vfs.c
+Index: b/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c
-+++ linux-2.6/fs/nfsd/vfs.c
-@@ -1463,11 +1463,12 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1432,6 +1432,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+ 				struct iattr *iap)
+ {
+ 	struct dentry	*dentry, *dnew;
++	struct vfsmount *mnt;
+ 	__be32		err, cerr;
+ 	int		host_err;
+ 	umode_t		mode;
+@@ -1458,6 +1459,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+ 	if (iap && (iap->ia_valid & ATTR_MODE))
+ 		mode = iap->ia_mode & S_IALLUGO;
+ 
++	mnt = fhp->fh_export->ex_mnt;
+ 	if (unlikely(path[plen] != 0)) {
+ 		char *path_alloced = kmalloc(plen+1, GFP_KERNEL);
+ 		if (path_alloced == NULL)
+@@ -1465,11 +1467,12 @@ nfsd_symlink(struct svc_rqst *rqstp, str
  		else {
  			strncpy(path_alloced, path, plen);
  			path_alloced[plen] = 0;
 -			host_err = vfs_symlink(dentry->d_inode, dnew, path_alloced, mode);
-+			host_err = vfs_symlink(dentry->d_inode, dnew, NULL,
++			host_err = vfs_symlink(dentry->d_inode, dnew, mnt,
 +					       path_alloced, mode);
  			kfree(path_alloced);
  		}
  	} else
 -		host_err = vfs_symlink(dentry->d_inode, dnew, path, mode);
-+		host_err = vfs_symlink(dentry->d_inode, dnew, NULL, path, mode);
++		host_err = vfs_symlink(dentry->d_inode, dnew, mnt, path, mode);
  
  	if (!host_err) {
  		if (EX_ISSYNC(fhp->fh_export))
-Index: linux-2.6/include/linux/fs.h
+Index: b/include/linux/fs.h
 ===================================================================
---- linux-2.6.orig/include/linux/fs.h
-+++ linux-2.6/include/linux/fs.h
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
 @@ -981,7 +981,7 @@ extern int vfs_permission(struct nameida
  extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
  extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);

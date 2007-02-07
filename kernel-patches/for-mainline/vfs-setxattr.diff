@@ -3,32 +3,76 @@ Add a struct vfsmount parameter to vfs_setxattr()
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6/fs/nfsd/vfs.c
+Index: b/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c
-+++ linux-2.6/fs/nfsd/vfs.c
-@@ -415,7 +415,7 @@ set_nfsv4_acl_one(struct dentry *dentry,
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -396,7 +396,8 @@ static ssize_t nfsd_getxattr(struct dent
+ 
+ #if defined(CONFIG_NFSD_V4)
+ static int
+-set_nfsv4_acl_one(struct dentry *dentry, struct posix_acl *pacl, char *key)
++set_nfsv4_acl_one(struct dentry *dentry, struct vfsmount *mnt,
++		  struct posix_acl *pacl, char *key)
+ {
+ 	int len;
+ 	size_t buflen;
+@@ -415,7 +416,7 @@ set_nfsv4_acl_one(struct dentry *dentry,
  		goto out;
  	}
  
 -	error = vfs_setxattr(dentry, key, buf, len, 0);
-+	error = vfs_setxattr(dentry, NULL, key, buf, len, 0);
++	error = vfs_setxattr(dentry, mnt, key, buf, len, 0);
  out:
  	kfree(buf);
  	return error;
-@@ -1969,7 +1969,7 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+@@ -428,6 +429,7 @@ nfsd4_set_nfs4_acl(struct svc_rqst *rqst
+ 	__be32 error;
+ 	int host_error;
+ 	struct dentry *dentry;
++	struct vfsmount *mnt;
+ 	struct inode *inode;
+ 	struct posix_acl *pacl = NULL, *dpacl = NULL;
+ 	unsigned int flags = 0;
+@@ -438,6 +440,7 @@ nfsd4_set_nfs4_acl(struct svc_rqst *rqst
+ 		goto out;
+ 
+ 	dentry = fhp->fh_dentry;
++	mnt = fhp->fh_export->ex_mnt;
+ 	inode = dentry->d_inode;
+ 	if (S_ISDIR(inode->i_mode))
+ 		flags = NFS4_ACL_DIR;
+@@ -449,12 +452,14 @@ nfsd4_set_nfs4_acl(struct svc_rqst *rqst
+ 	} else if (host_error < 0)
+ 		goto out_nfserr;
+ 
+-	host_error = set_nfsv4_acl_one(dentry, pacl, POSIX_ACL_XATTR_ACCESS);
++	host_error = set_nfsv4_acl_one(dentry, mnt, pacl,
++				       POSIX_ACL_XATTR_ACCESS);
+ 	if (host_error < 0)
+ 		goto out_nfserr;
+ 
+ 	if (S_ISDIR(inode->i_mode)) {
+-		host_error = set_nfsv4_acl_one(dentry, dpacl, POSIX_ACL_XATTR_DEFAULT);
++		host_error = set_nfsv4_acl_one(dentry, mnt, dpacl,
++					       POSIX_ACL_XATTR_DEFAULT);
+ 		if (host_error < 0)
+ 			goto out_nfserr;
+ 	}
+@@ -1975,7 +1980,8 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
  		size = 0;
  
  	if (size)
 -		error = vfs_setxattr(fhp->fh_dentry, name, value, size, 0);
-+		error = vfs_setxattr(fhp->fh_dentry, NULL, name, value, size,0);
++		error = vfs_setxattr(fhp->fh_dentry, fhp->fh_export->ex_mnt,
++				     name, value, size,0);
  	else {
  		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
  			error = 0;
-Index: linux-2.6/fs/xattr.c
+Index: b/fs/xattr.c
 ===================================================================
---- linux-2.6.orig/fs/xattr.c
-+++ linux-2.6/fs/xattr.c
+--- a/fs/xattr.c
++++ b/fs/xattr.c
 @@ -70,8 +70,8 @@ xattr_permission(struct inode *inode, co
  }
  
@@ -87,10 +131,10 @@ Index: linux-2.6/fs/xattr.c
  	fput(f);
  	return error;
  }
-Index: linux-2.6/include/linux/xattr.h
+Index: b/include/linux/xattr.h
 ===================================================================
---- linux-2.6.orig/include/linux/xattr.h
-+++ linux-2.6/include/linux/xattr.h
+--- a/include/linux/xattr.h
++++ b/include/linux/xattr.h
 @@ -42,7 +42,8 @@ struct xattr_handler {
  
  ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);

@@ -3,10 +3,10 @@ Add a struct vfsmount parameter to vfs_rmdir()
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6/fs/ecryptfs/inode.c
+Index: b/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6.orig/fs/ecryptfs/inode.c
-+++ linux-2.6/fs/ecryptfs/inode.c
+--- a/fs/ecryptfs/inode.c
++++ b/fs/ecryptfs/inode.c
 @@ -534,14 +534,16 @@ out:
  static int ecryptfs_rmdir(struct inode *dir, struct dentry *dentry)
  {
@@ -25,10 +25,10 @@ Index: linux-2.6/fs/ecryptfs/inode.c
  	dput(lower_dentry);
  	if (!rc)
  		d_delete(lower_dentry);
-Index: linux-2.6/fs/namei.c
+Index: b/fs/namei.c
 ===================================================================
---- linux-2.6.orig/fs/namei.c
-+++ linux-2.6/fs/namei.c
+--- a/fs/namei.c
++++ b/fs/namei.c
 @@ -2006,7 +2006,7 @@ void dentry_unhash(struct dentry *dentry
  	spin_unlock(&dcache_lock);
  }
@@ -47,36 +47,36 @@ Index: linux-2.6/fs/namei.c
  	dput(dentry);
  exit2:
  	mutex_unlock(&nd.dentry->d_inode->i_mutex);
-Index: linux-2.6/fs/nfsd/nfs4recover.c
+Index: b/fs/nfsd/nfs4recover.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/nfs4recover.c
-+++ linux-2.6/fs/nfsd/nfs4recover.c
-@@ -275,7 +275,7 @@ nfsd4_clear_clid_dir(struct dentry *dir,
+--- a/fs/nfsd/nfs4recover.c
++++ b/fs/nfsd/nfs4recover.c
+@@ -276,7 +276,7 @@ nfsd4_clear_clid_dir(struct dentry *dir,
  	 * a kernel from the future.... */
  	nfsd4_list_rec_dir(dentry, nfsd4_remove_clid_file);
  	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_PARENT);
 -	status = vfs_rmdir(dir->d_inode, dentry);
-+	status = vfs_rmdir(dir->d_inode, dentry, NULL);
++	status = vfs_rmdir(dir->d_inode, dentry, rec_dir.mnt);
  	mutex_unlock(&dir->d_inode->i_mutex);
  	return status;
  }
-Index: linux-2.6/fs/nfsd/vfs.c
+Index: b/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c
-+++ linux-2.6/fs/nfsd/vfs.c
-@@ -1694,7 +1694,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1699,7 +1699,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
  #endif
  		host_err = vfs_unlink(dirp, rdentry);
  	} else { /* It's RMDIR */
 -		host_err = vfs_rmdir(dirp, rdentry);
-+		host_err = vfs_rmdir(dirp, rdentry, NULL);
++		host_err = vfs_rmdir(dirp, rdentry, fhp->fh_export->ex_mnt);
  	}
  
  	dput(rdentry);
-Index: linux-2.6/fs/reiserfs/xattr.c
+Index: b/fs/reiserfs/xattr.c
 ===================================================================
---- linux-2.6.orig/fs/reiserfs/xattr.c
-+++ linux-2.6/fs/reiserfs/xattr.c
+--- a/fs/reiserfs/xattr.c
++++ b/fs/reiserfs/xattr.c
 @@ -823,7 +823,7 @@ int reiserfs_delete_xattrs(struct inode 
  	if (dir->d_inode->i_nlink <= 2) {
  		root = get_xa_root(inode->i_sb);
@@ -86,10 +86,10 @@ Index: linux-2.6/fs/reiserfs/xattr.c
  		reiserfs_write_unlock_xattrs(inode->i_sb);
  		dput(root);
  	} else {
-Index: linux-2.6/include/linux/fs.h
+Index: b/include/linux/fs.h
 ===================================================================
---- linux-2.6.orig/include/linux/fs.h
-+++ linux-2.6/include/linux/fs.h
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
 @@ -983,7 +983,7 @@ extern int vfs_mkdir(struct inode *, str
  extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
  extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);

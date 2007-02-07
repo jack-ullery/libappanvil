@@ -3,10 +3,10 @@ Pass struct vfsmount to the inode_symlink LSM hook.
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6/fs/namei.c
+Index: b/fs/namei.c
 ===================================================================
---- linux-2.6.orig/fs/namei.c
-+++ linux-2.6/fs/namei.c
+--- a/fs/namei.c
++++ b/fs/namei.c
 @@ -2196,7 +2196,7 @@ int vfs_symlink(struct inode *dir, struc
  	if (!dir->i_op || !dir->i_op->symlink)
  		return -EPERM;
@@ -16,10 +16,10 @@ Index: linux-2.6/fs/namei.c
  	if (error)
  		return error;
  
-Index: linux-2.6/include/linux/security.h
+Index: b/include/linux/security.h
 ===================================================================
---- linux-2.6.orig/include/linux/security.h
-+++ linux-2.6/include/linux/security.h
+--- a/include/linux/security.h
++++ b/include/linux/security.h
 @@ -301,6 +301,7 @@ struct request_sock;
   *	Check the permission to create a symbolic link to a file.
   *	@dir contains the inode structure of parent directory of the symbolic link.
@@ -61,10 +61,10 @@ Index: linux-2.6/include/linux/security.h
  					  const char *old_name)
  {
  	return 0;
-Index: linux-2.6/security/dummy.c
+Index: b/security/dummy.c
 ===================================================================
---- linux-2.6.orig/security/dummy.c
-+++ linux-2.6/security/dummy.c
+--- a/security/dummy.c
++++ b/security/dummy.c
 @@ -282,7 +282,7 @@ static int dummy_inode_unlink (struct in
  }
  
@@ -74,10 +74,10 @@ Index: linux-2.6/security/dummy.c
  {
  	return 0;
  }
-Index: linux-2.6/security/selinux/hooks.c
+Index: b/security/selinux/hooks.c
 ===================================================================
---- linux-2.6.orig/security/selinux/hooks.c
-+++ linux-2.6/security/selinux/hooks.c
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
 @@ -2161,7 +2161,8 @@ static int selinux_inode_unlink(struct i
  	return may_link(dir, dentry, MAY_UNLINK);
  }

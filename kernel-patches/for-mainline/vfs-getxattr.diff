@@ -3,32 +3,91 @@ Add a struct vfsmount parameter to vfs_getxattr()
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6/fs/nfsd/vfs.c
+Index: b/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c
-+++ linux-2.6/fs/nfsd/vfs.c
-@@ -382,7 +382,7 @@ static ssize_t nfsd_getxattr(struct dent
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -378,11 +378,12 @@ out_nfserr:
+ #if defined(CONFIG_NFSD_V2_ACL) || \
+     defined(CONFIG_NFSD_V3_ACL) || \
+     defined(CONFIG_NFSD_V4)
+-static ssize_t nfsd_getxattr(struct dentry *dentry, char *key, void **buf)
++static ssize_t nfsd_getxattr(struct dentry *dentry, struct vfsmount *mnt,
++			     char *key, void **buf)
  {
  	ssize_t buflen;
  
 -	buflen = vfs_getxattr(dentry, key, NULL, 0);
-+	buflen = vfs_getxattr(dentry, NULL, key, NULL, 0);
++	buflen = vfs_getxattr(dentry, mnt, key, NULL, 0);
  	if (buflen <= 0)
  		return buflen;
  
-@@ -390,7 +390,7 @@ static ssize_t nfsd_getxattr(struct dent
+@@ -390,7 +391,7 @@ static ssize_t nfsd_getxattr(struct dent
  	if (!*buf)
  		return -ENOMEM;
  
 -	return vfs_getxattr(dentry, key, *buf, buflen);
-+	return vfs_getxattr(dentry, NULL, key, *buf, buflen);
++	return vfs_getxattr(dentry, mnt, key, *buf, buflen);
  }
  #endif
  
-Index: linux-2.6/fs/xattr.c
+@@ -476,13 +477,13 @@ out_nfserr:
+ }
+ 
+ static struct posix_acl *
+-_get_posix_acl(struct dentry *dentry, char *key)
++_get_posix_acl(struct dentry *dentry, struct vfsmount *mnt, char *key)
+ {
+ 	void *buf = NULL;
+ 	struct posix_acl *pacl = NULL;
+ 	int buflen;
+ 
+-	buflen = nfsd_getxattr(dentry, key, &buf);
++	buflen = nfsd_getxattr(dentry, mnt, key, &buf);
+ 	if (!buflen)
+ 		buflen = -ENODATA;
+ 	if (buflen <= 0)
+@@ -494,14 +495,15 @@ _get_posix_acl(struct dentry *dentry, ch
+ }
+ 
+ int
+-nfsd4_get_nfs4_acl(struct svc_rqst *rqstp, struct dentry *dentry, struct nfs4_acl **acl)
++nfsd4_get_nfs4_acl(struct svc_rqst *rqstp, struct dentry *dentry,
++		   struct vfsmount *mnt, struct nfs4_acl **acl)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	int error = 0;
+ 	struct posix_acl *pacl = NULL, *dpacl = NULL;
+ 	unsigned int flags = 0;
+ 
+-	pacl = _get_posix_acl(dentry, POSIX_ACL_XATTR_ACCESS);
++	pacl = _get_posix_acl(dentry, mnt, POSIX_ACL_XATTR_ACCESS);
+ 	if (IS_ERR(pacl) && PTR_ERR(pacl) == -ENODATA)
+ 		pacl = posix_acl_from_mode(inode->i_mode, GFP_KERNEL);
+ 	if (IS_ERR(pacl)) {
+@@ -511,7 +513,7 @@ nfsd4_get_nfs4_acl(struct svc_rqst *rqst
+ 	}
+ 
+ 	if (S_ISDIR(inode->i_mode)) {
+-		dpacl = _get_posix_acl(dentry, POSIX_ACL_XATTR_DEFAULT);
++		dpacl = _get_posix_acl(dentry, mnt, POSIX_ACL_XATTR_DEFAULT);
+ 		if (IS_ERR(dpacl) && PTR_ERR(dpacl) == -ENODATA)
+ 			dpacl = NULL;
+ 		else if (IS_ERR(dpacl)) {
+@@ -1935,7 +1937,8 @@ nfsd_get_posix_acl(struct svc_fh *fhp, i
+ 		return ERR_PTR(-EOPNOTSUPP);
+ 	}
+ 
+-	size = nfsd_getxattr(fhp->fh_dentry, name, &value);
++	size = nfsd_getxattr(fhp->fh_dentry, fhp->fh_export->ex_mnt, name,
++			     &value);
+ 	if (size < 0)
+ 		return ERR_PTR(size);
+ 
+Index: b/fs/xattr.c
 ===================================================================
---- linux-2.6.orig/fs/xattr.c
-+++ linux-2.6/fs/xattr.c
+--- a/fs/xattr.c
++++ b/fs/xattr.c
 @@ -107,7 +107,8 @@ out:
  EXPORT_SYMBOL_GPL(vfs_setxattr);
  
@@ -85,10 +144,10 @@ Index: linux-2.6/fs/xattr.c
  	fput(f);
  	return error;
  }
-Index: linux-2.6/include/linux/xattr.h
+Index: b/include/linux/xattr.h
 ===================================================================
---- linux-2.6.orig/include/linux/xattr.h
-+++ linux-2.6/include/linux/xattr.h
+--- a/include/linux/xattr.h
++++ b/include/linux/xattr.h
 @@ -40,7 +40,8 @@ struct xattr_handler {
  		   size_t size, int flags);
  };
@@ -99,3 +158,16 @@ Index: linux-2.6/include/linux/xattr.h
  ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
  int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,
  		 int);
+Index: b/fs/nfsd/nfs4xdr.c
+===================================================================
+--- a/fs/nfsd/nfs4xdr.c
++++ b/fs/nfsd/nfs4xdr.c
+@@ -1472,7 +1472,7 @@ nfsd4_encode_fattr(struct svc_fh *fhp, s
+ 	}
+ 	if (bmval0 & (FATTR4_WORD0_ACL | FATTR4_WORD0_ACLSUPPORT
+ 			| FATTR4_WORD0_SUPPORTED_ATTRS)) {
+-		err = nfsd4_get_nfs4_acl(rqstp, dentry, &acl);
++		err = nfsd4_get_nfs4_acl(rqstp, dentry, exp->ex_mnt, &acl);
+ 		aclsupport = (err == 0);
+ 		if (bmval0 & FATTR4_WORD0_ACL) {
+ 			if (err == -EOPNOTSUPP)

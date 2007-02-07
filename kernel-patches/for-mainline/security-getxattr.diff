@@ -3,10 +3,10 @@ Pass struct vfsmount to the inode_getxattr LSM hook
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6/fs/xattr.c
+Index: b/fs/xattr.c
 ===================================================================
---- linux-2.6.orig/fs/xattr.c
-+++ linux-2.6/fs/xattr.c
+--- a/fs/xattr.c
++++ b/fs/xattr.c
 @@ -117,7 +117,7 @@ vfs_getxattr(struct dentry *dentry, stru
  	if (error)
  		return error;
@@ -16,10 +16,10 @@ Index: linux-2.6/fs/xattr.c
  	if (error)
  		return error;
  
-Index: linux-2.6/include/linux/security.h
+Index: b/include/linux/security.h
 ===================================================================
---- linux-2.6.orig/include/linux/security.h
-+++ linux-2.6/include/linux/security.h
+--- a/include/linux/security.h
++++ b/include/linux/security.h
 @@ -391,7 +391,7 @@ struct request_sock;
   * 	@value identified by @name for @dentry and @mnt.
   * @inode_getxattr:
@@ -64,10 +64,10 @@ Index: linux-2.6/include/linux/security.h
  {
  	return 0;
  }
-Index: linux-2.6/security/dummy.c
+Index: b/security/dummy.c
 ===================================================================
---- linux-2.6.orig/security/dummy.c
-+++ linux-2.6/security/dummy.c
+--- a/security/dummy.c
++++ b/security/dummy.c
 @@ -368,7 +368,8 @@ static void dummy_inode_post_setxattr (s
  {
  }
@@ -78,10 +78,10 @@ Index: linux-2.6/security/dummy.c
  {
  	return 0;
  }
-Index: linux-2.6/security/selinux/hooks.c
+Index: b/security/selinux/hooks.c
 ===================================================================
---- linux-2.6.orig/security/selinux/hooks.c
-+++ linux-2.6/security/selinux/hooks.c
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
 @@ -2352,7 +2352,8 @@ static void selinux_inode_post_setxattr(
  	return;
  }
