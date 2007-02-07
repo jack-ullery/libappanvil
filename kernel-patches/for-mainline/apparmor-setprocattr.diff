@@ -9,7 +9,7 @@ Index: b/security/apparmor/lsm.c
 ===================================================================
 --- a/security/apparmor/lsm.c
 +++ b/security/apparmor/lsm.c
-@@ -594,19 +594,15 @@ static int apparmor_setprocattr(struct t
+@@ -681,19 +681,15 @@ static int apparmor_setprocattr(struct t
  	const char *cmd_changehat = "changehat ",
  		   *cmd_setprofile = "setprofile ";
  
@@ -34,7 +34,7 @@ Index: b/security/apparmor/lsm.c
  
  	/* CHANGE HAT -- switch task into a subhat (subprofile) if defined */
  	if (size > strlen(cmd_changehat) &&
-@@ -631,7 +627,6 @@ static int apparmor_setprocattr(struct t
+@@ -718,7 +714,6 @@ static int apparmor_setprocattr(struct t
  
  		error = aa_setprocattr_changehat(hatinfo, infosize);
  		if (error == 0)

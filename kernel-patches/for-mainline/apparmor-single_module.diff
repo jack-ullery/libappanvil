@@ -23,7 +23,7 @@ Index: b/security/apparmor/apparmor.h
  
  /* Control parameters (0 or 1), settable thru module/boot flags or
   * via /sys/kernel/security/apparmor/control */
-@@ -61,56 +62,21 @@ struct flagval {
+@@ -66,55 +67,20 @@ struct flagval {
  	int audit;
  };
  
@@ -57,8 +57,7 @@ Index: b/security/apparmor/apparmor.h
 -	struct list_head listp[POS_AA_FILE_MAX + 1];
 -};
 -
- #define AA_MEDIATE_FS		(void*)0x00000001
- #define AA_SECURE_EXEC_NEEDED 	0x00000001
+ #define AA_SECURE_EXEC_NEEDED 0x00000001
  
  #define AA_EXEC_MODIFIER_MASK(mask) ((mask) & AA_EXEC_MODIFIERS)
 -#define AA_EXEC_MASK(mask) ((mask) & (AA_MAY_EXEC | AA_EXEC_MODIFIERS))
@@ -82,7 +81,7 @@ Index: b/security/apparmor/apparmor.h
   * @capabilities: capabilities granted by the process
   * @rcu: rcu head used when freeing the profile
   * @count: reference count of the profile
-@@ -123,17 +89,14 @@ struct aaprofile {
+@@ -127,17 +93,14 @@ struct aaprofile {
  	struct aaprofile *parent;
  	char *name;
  
@@ -102,7 +101,7 @@ Index: b/security/apparmor/apparmor.h
  	kernel_cap_t capabilities;
  
  	struct rcu_head rcu;
-@@ -298,4 +261,12 @@ extern void destroy_apparmorfs(void);
+@@ -302,4 +265,12 @@ extern void destroy_apparmorfs(void);
  /* capabilities.c */
  extern const char *capability_to_name(unsigned int cap);
  

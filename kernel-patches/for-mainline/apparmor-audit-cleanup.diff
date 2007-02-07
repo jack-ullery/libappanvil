@@ -8,7 +8,7 @@ Index: b/security/apparmor/apparmor.h
 ===================================================================
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
-@@ -145,8 +145,12 @@ struct aa_audit {
+@@ -149,8 +149,12 @@ struct aa_audit {
  	gfp_t gfp_mask;
  	int error_code;
  
@@ -22,7 +22,7 @@ Index: b/security/apparmor/apparmor.h
  	union {
  		const void *pval;
  		va_list vaval;
-@@ -180,20 +184,6 @@ struct aa_audit {
+@@ -184,20 +188,6 @@ struct aa_audit {
  			"LOGPROF-HINT " hint " " fmt, ##args);\
  	} while(0)
  
@@ -43,7 +43,7 @@ Index: b/security/apparmor/apparmor.h
  #define BASE_PROFILE(p) ((p)->parent ? (p)->parent : (p))
  #define IN_SUBPROFILE(p) ((p)->parent)
  
-@@ -210,14 +200,14 @@ extern char *aa_get_name(struct dentry *
+@@ -214,14 +204,14 @@ extern char *aa_get_name(struct dentry *
  
  extern int aa_attr(struct aaprofile *active, struct dentry *dentry,
  		   struct vfsmount *mnt, struct iattr *iattr);
@@ -225,7 +225,7 @@ Index: b/security/apparmor/lsm.c
 ===================================================================
 --- a/security/apparmor/lsm.c
 +++ b/security/apparmor/lsm.c
-@@ -244,7 +244,7 @@ static int apparmor_inode_mkdir(struct i
+@@ -260,7 +260,7 @@ static int apparmor_inode_mkdir(struct i
  	active = get_active_aaprofile();
  
  	if (active)
@@ -234,7 +234,7 @@ Index: b/security/apparmor/lsm.c
  
  	put_aaprofile(active);
  
-@@ -264,7 +264,7 @@ static int apparmor_inode_rmdir(struct i
+@@ -280,7 +280,7 @@ static int apparmor_inode_rmdir(struct i
  	active = get_active_aaprofile();
  
  	if (active)
@@ -243,47 +243,47 @@ Index: b/security/apparmor/lsm.c
  
  	put_aaprofile(active);
  
-@@ -444,8 +444,8 @@ static int apparmor_inode_setxattr(struc
+@@ -463,8 +463,8 @@ static int apparmor_inode_setxattr(struc
  
- 	active = get_active_aaprofile();
- 	if (active)
--		error = aa_xattr(active, dentry, mnt, name,
--				 aa_xattr_set);
-+		error = aa_perm_xattr(active, dentry, mnt, name, "xattr set",
-+				      AA_MAY_WRITE);
- 	put_aaprofile(active);
+ 		active = get_active_aaprofile();
+ 		if (active)
+-			error = aa_xattr(active, dentry, mnt, name,
+-					 aa_xattr_set);
++			error = aa_perm_xattr(active, dentry, mnt, name,
++					      "xattr set", AA_MAY_WRITE);
+ 		put_aaprofile(active);
+ 	}
  
- out:
-@@ -464,8 +464,8 @@ static int apparmor_inode_getxattr(struc
+@@ -485,8 +485,8 @@ static int apparmor_inode_getxattr(struc
  
- 	active = get_active_aaprofile();
- 	if (active)
--		error = aa_xattr(active, dentry, mnt, name,
--				 aa_xattr_get);
-+		error = aa_perm_xattr(active, dentry, mnt, name, "xattr get",
-+				      AA_MAY_READ);
- 	put_aaprofile(active);
+ 		active = get_active_aaprofile();
+ 		if (active)
+-			error = aa_xattr(active, dentry, mnt, name,
+-					 aa_xattr_get);
++			error = aa_perm_xattr(active, dentry, mnt, name,
++					      "xattr get", AA_MAY_READ);
+ 		put_aaprofile(active);
+ 	}
  
- out:
-@@ -481,8 +481,8 @@ static int apparmor_inode_listxattr(stru
+@@ -505,8 +505,8 @@ static int apparmor_inode_listxattr(stru
  
- 	active = get_active_aaprofile();
- 	if (active)
--		error = aa_xattr(active, dentry, mnt, NULL,
--				 aa_xattr_list);
-+		error = aa_perm_xattr(active, dentry, mnt, NULL, "xattr list",
-+				      AA_MAY_READ);
- 	put_aaprofile(active);
+ 		active = get_active_aaprofile();
+ 		if (active)
+-			error = aa_xattr(active, dentry, mnt, NULL,
+-					 aa_xattr_list);
++			error = aa_perm_xattr(active, dentry, mnt, NULL,
++					      "xattr list", AA_MAY_READ);;
+ 		put_aaprofile(active);
+ 	}
  
- out:
-@@ -500,8 +500,8 @@ static int apparmor_inode_removexattr(st
+@@ -527,8 +527,8 @@ static int apparmor_inode_removexattr(st
  
- 	active = get_active_aaprofile();
- 	if (active)
--		error = aa_xattr(active, dentry, mnt, name,
--				 aa_xattr_remove);
-+		error = aa_perm_xattr(active, dentry, mnt, name, "xattr remove",
-+				      AA_MAY_WRITE);
- 	put_aaprofile(active);
+ 		active = get_active_aaprofile();
+ 		if (active)
+-			error = aa_xattr(active, dentry, mnt, name,
+-					 aa_xattr_remove);
++			error = aa_perm_xattr(active, dentry, mnt, name,
++					      "xattr remove", AA_MAY_WRITE);
+ 		put_aaprofile(active);
+ 	}
  
- out:
