@@ -242,9 +242,8 @@ void applet_about(BonoboUIComponent * uic)
 {
 	const gchar *license =
 		_("AppArmorApplet is free software; you can redistribute it and/or modify\n"
-		 "it under the terms of the GNU General Public License as published by\n"
-		 "the Free Software Foundation; either version 2 of the License, or\n"
-		 "(at your option) any later version.");
+		 "it under the terms of the GNU General Public License, version 2, as published by\n"
+		 "the Free Software Foundation.");
 
 	const gchar *authors[] = {
 		"Matt Barringer <mbarringer@suse.de>",
@@ -274,7 +273,7 @@ void applet_prefs (BonoboUIComponent *uic)
 gboolean on_button_press (GtkWidget *event_box, 
 				GdkEventButton *event,
 				gpointer data)
-  {
+{
 	if (event->button != 1)
 		return FALSE;
 	
@@ -290,19 +289,20 @@ gboolean on_button_press (GtkWidget *event_box,
 	}
 
 	return TRUE;
-  }
-
-void reject_button_press (GtkDialog * dialog, gint answer, gpointer data)
-{
-	if (answer == GTK_RESPONSE_OK || answer == GTK_RESPONSE_CANCEL)
-	{
-		gtk_widget_hide(apparmor_applet->reject_dialog);
-	}
 }
 
-void reject_window_close (GtkDialog * dialog, gpointer data)
+/* Decrement the event count and reset the icon/tooltip state if necessary */
+void decrement_event_count(gint decrement)
 {
-		gtk_widget_hide(apparmor_applet->reject_dialog);
+	apparmor_applet->alert_count = apparmor_applet->alert_count - decrement;
+
+	if (apparmor_applet->alert_count <= 0)
+	{
+		apparmor_applet->alert_count= 0;
+		apparmor_applet->uncleared_alerts = FALSE;
+		set_appropriate_icon();
+		set_tooltip();
+	}
 }
 
 PANEL_APPLET_BONOBO_FACTORY("OAFIID:AppArmorApplet_Factory",

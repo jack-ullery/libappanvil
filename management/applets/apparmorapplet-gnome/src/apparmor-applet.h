@@ -1,6 +1,12 @@
 #ifndef __APPARMOR_APPLET_H
 #define __APPARMOR_APPLET_H
 
+#include <panel-applet.h>
+
+#define CONF_PATH "/apps/AppArmor/apparmor-applet"
+#define CONF_PROFILE_KEY "/apps/AppArmor/apparmor-applet/profiler"
+#define CONF_PATH_KEY "/apps/AppArmor/apparmor-applet/path"
+
 struct _apparmor_applet 
 {
 	GtkWidget *applet;
@@ -26,7 +32,6 @@ gboolean on_button_press (GtkWidget *event_box,
 				GdkEventButton *event,
 				gpointer data);
 void insert_into_list(char *name);
-void reject_button_press (GtkDialog * dialog, gint answer, gpointer data);
-void reject_window_close (GtkDialog * dialog, gpointer data);
+void decrement_event_count(gint decrement);
 
 #endif
