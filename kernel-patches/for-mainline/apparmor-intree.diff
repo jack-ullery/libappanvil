@@ -1,7 +1,7 @@
-Index: linux-2.6/security/Kconfig
+Index: linux-2.6-apparmor/security/Kconfig
 ===================================================================
---- linux-2.6.orig/security/Kconfig
-+++ linux-2.6/security/Kconfig
+--- linux-2.6-apparmor.orig/security/Kconfig
++++ linux-2.6-apparmor/security/Kconfig
 @@ -94,6 +94,7 @@ config SECURITY_ROOTPLUG
  	  If you are unsure how to answer this question, answer N.
  
@@ -10,10 +10,10 @@ Index: linux-2.6/security/Kconfig
  
  endmenu
  
-Index: linux-2.6/security/Makefile
+Index: linux-2.6-apparmor/security/Makefile
 ===================================================================
---- linux-2.6.orig/security/Makefile
-+++ linux-2.6/security/Makefile
+--- linux-2.6-apparmor.orig/security/Makefile
++++ linux-2.6-apparmor/security/Makefile
 @@ -4,6 +4,7 @@
  
  obj-$(CONFIG_KEYS)			+= keys/
@@ -27,7 +27,7 @@ Index: linux-2.6/security/Makefile
  # Must precede capability.o in order to stack properly.
  obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
 +ifeq ($(CONFIG_SECURITY_APPARMOR),y)
-+obj-$(CONFIG_SECURITY_APPARMOR)		+= apparmor/built-in.o
++obj-y					+= apparmor/built-in.o
 +endif
  obj-$(CONFIG_SECURITY_CAPABILITIES)	+= commoncap.o capability.o
  obj-$(CONFIG_SECURITY_ROOTPLUG)		+= commoncap.o root_plug.o
