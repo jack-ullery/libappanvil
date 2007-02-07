@@ -565,7 +565,7 @@ Index: linux-2.6/security/apparmor/main.c
 -static int _aa_perm_dentry(struct aaprofile *active, struct dentry *dentry,
 -			   int mask, const char **pname)
 +static int _aa_perm_vfsmount(struct aaprofile *active, struct dentry *dentry,
-+                      struct vfsmount *mnt, struct aa_audit *sa, int mask)
++		      struct vfsmount *mnt, struct aa_audit *sa, int mask)
  {
 -	char *name = NULL, *failed_name = NULL;
 -	struct aa_path_data data;
@@ -843,7 +843,7 @@ Index: linux-2.6/security/apparmor/main.c
 -	int error, path_error, error_code = 0, match = 0,
 -	    complain = PROFILE_COMPLAIN(active);
 -	struct aa_path_data idata, odata;
-+        int permerror = -EPERM, error;
++	int permerror = -EPERM, error;
  	struct aa_audit sa;
  
 -	if (!active)
@@ -906,8 +906,8 @@ Index: linux-2.6/security/apparmor/main.c
 -				aa_put_name(oname);
 -		}
 -	} while (oname && !match);
-+        sa.name = aa_get_name(link, link_mnt);
-+        sa.pval = aa_get_name(target, target_mnt);
++	sa.name = aa_get_name(link, link_mnt);
++	sa.pval = aa_get_name(target, target_mnt);
  
 -	if (error_code != 0) {
 -		/* inner error */
@@ -915,9 +915,9 @@ Index: linux-2.6/security/apparmor/main.c
 -	} else if ((path_error = aa_path_end(&odata)) != 0) {
 -		dentry_xlate_error(link, path_error, "outer dentry [link]");
 -		error_code = path_error;
-+        if (IS_ERR(sa.name)) {
-+                permerror = PTR_ERR(sa.name);
-+                sa.name = NULL;
++	if (IS_ERR(sa.name)) {
++		permerror = PTR_ERR(sa.name);
++		sa.name = NULL;
  	}
 -
 -	if (error_code != 0) {
@@ -933,15 +933,15 @@ Index: linux-2.6/security/apparmor/main.c
 -		result = 0;
 -		iname = failed_iname;
 -		oname = failed_oname;
-+        if (IS_ERR(sa.pval)) {
-+                permerror = PTR_ERR(sa.pval);
-+                sa.pval = NULL;
++	if (IS_ERR(sa.pval)) {
++		permerror = PTR_ERR(sa.pval);
++		sa.pval = NULL;
  	}
  
 +	if (sa.name && sa.pval)
 +		permerror = aa_link_perm(active, sa.name, sa.pval);
 +
-+        aa_permerror2result(permerror, &sa);
++	aa_permerror2result(permerror, &sa);
 +
  	sa.type = AA_AUDITTYPE_LINK;
 -	sa.name = oname;	/* link */
@@ -960,11 +960,11 @@ Index: linux-2.6/security/apparmor/main.c
 -
 -	aa_put_name(oname);
 -	aa_put_name(iname);
-+        aa_put_name(sa.name);
-+        aa_put_name(sa.pval);
++	aa_put_name(sa.name);
++	aa_put_name(sa.pval);
  
 -	return error;
-+        return error;
++	return error;
  }
  
  /*******************************
