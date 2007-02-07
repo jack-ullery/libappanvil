@@ -146,14 +146,11 @@ Index: b/security/apparmor/lsm.c
  	put_aaprofile(active);
  
  out:
-@@ -560,34 +561,25 @@ out:
+@@ -560,34 +561,22 @@ out:
  static int apparmor_file_alloc_security(struct file *file)
  {
  	struct aaprofile *active;
 -	int error = 0;
-+
-+	if (!VALID_FSTYPE(file->f_dentry->d_inode))
-+		return 0;
  
  	active = get_active_aaprofile();
  	if (active) {
@@ -190,7 +187,7 @@ Index: b/security/apparmor/lsm.c
  }
  
  static inline int aa_mmap(struct file *file, unsigned long prot,
-@@ -595,12 +587,9 @@ static inline int aa_mmap(struct file *f
+@@ -595,12 +584,9 @@ static inline int aa_mmap(struct file *f
  {
  	int error = 0, mask = 0;
  	struct aaprofile *active;
@@ -204,7 +201,7 @@ Index: b/security/apparmor/lsm.c
  		goto out;
  
  	if (prot & PROT_READ)
-@@ -659,17 +648,6 @@ static void apparmor_task_reparent_to_in
+@@ -659,17 +645,6 @@ static void apparmor_task_reparent_to_in
  	return;
  }
  
@@ -222,7 +219,7 @@ Index: b/security/apparmor/lsm.c
  static int apparmor_getprocattr(struct task_struct *p, char *name, void *value,
  				size_t size)
  {
-@@ -852,8 +830,6 @@ struct security_operations apparmor_ops 
+@@ -852,8 +827,6 @@ struct security_operations apparmor_ops 
  	.task_post_setuid =		apparmor_task_post_setuid,
  	.task_reparent_to_init =	apparmor_task_reparent_to_init,
  

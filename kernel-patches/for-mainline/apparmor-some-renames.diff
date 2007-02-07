@@ -206,16 +206,7 @@ Index: b/security/apparmor/lsm.c
  		goto out;
  
  	active = get_active_aaprofile();
-@@ -562,7 +562,7 @@ static int apparmor_file_alloc_security(
- {
- 	struct aaprofile *active;
- 
--	if (!VALID_FSTYPE(file->f_dentry->d_inode))
-+	if (!mediated_filesystem(file->f_dentry->d_inode))
- 		return 0;
- 
- 	active = get_active_aaprofile();
-@@ -589,7 +589,7 @@ static inline int aa_mmap(struct file *f
+@@ -586,7 +586,7 @@ static inline int aa_mmap(struct file *f
  	struct aaprofile *active;
  
  	active = get_active_aaprofile();
