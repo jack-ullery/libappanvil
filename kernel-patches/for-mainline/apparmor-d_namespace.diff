@@ -10,7 +10,7 @@ Index: b/security/apparmor/main.c
  
  #include "apparmor.h"
  
-@@ -551,7 +552,7 @@ char *aa_get_name(struct dentry *dentry,
+@@ -533,7 +534,7 @@ char *aa_get_name(struct dentry *dentry,
  		goto out;
  	}
  
