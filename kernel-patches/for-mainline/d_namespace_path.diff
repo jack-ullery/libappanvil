@@ -52,7 +52,7 @@ Index: linux-2.6/fs/namespace.c
 +	root = dget(nsrootmnt->mnt_root);
 +	spin_unlock(&vfsmount_lock);
 +	mntput(rootmnt);
-+	res = __d_path(dentry, vfsmnt, root, rootmnt, buf, buflen, 0);
++	res = __d_path(dentry, vfsmnt, root, nsrootmnt, buf, buflen, 0);
 +	dput(root);
 +	mntput(nsrootmnt);
 +	return res;
