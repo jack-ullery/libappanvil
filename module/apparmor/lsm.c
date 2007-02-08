@@ -154,11 +154,9 @@ static int apparmor_sysctl(struct ctl_table *table, int op)
 
 	active = get_active_aaprofile();
 
-	if ((op & 002) && active && !capable(CAP_SYS_ADMIN)) {
+	if ((op & 002) && active && !capable(CAP_SYS_ADMIN))
 		error = aa_audit_syscallreject(active, GFP_KERNEL,
 					       AA_SYSCALL_SYSCTL_WRITE);
-		WARN_ON(error != -EPERM);
-	}
 
 	put_aaprofile(active);
 
@@ -218,11 +216,9 @@ static int apparmor_sb_mount(char *dev_name, struct nameidata *nd, char *type,
 
 	active = get_active_aaprofile();
 
-	if (active) {
+	if (active)
 		error = aa_audit_syscallreject(active, GFP_KERNEL,
 					       AA_SYSCALL_MOUNT);
-		WARN_ON(error != -EPERM);
-	}
 
 	put_aaprofile(active);
 
@@ -236,11 +232,9 @@ static int apparmor_umount(struct vfsmount *mnt, int flags)
 
 	active = get_active_aaprofile();
 
-	if (active) {
+	if (active)
 		error = aa_audit_syscallreject(active, GFP_ATOMIC,
 					       AA_SYSCALL_UMOUNT);
-		WARN_ON(error != -EPERM);
-	}
 
 	put_aaprofile(active);
 
