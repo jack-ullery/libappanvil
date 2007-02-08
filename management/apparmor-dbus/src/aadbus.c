@@ -220,7 +220,7 @@ static int event_loop(void)
 	//dbus_message_unref(message);
 
 	if (con)
-	        dbus_connection_disconnect (con);
+	        dbus_connection_close(con);
 	pcre_free(reject_regex);
 	return 0;
 }
