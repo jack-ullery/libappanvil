@@ -34,7 +34,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = aadbus$(EXEEXT)
+bin_PROGRAMS = apparmor-dbus$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -47,9 +47,9 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am_aadbus_OBJECTS = aadbus.$(OBJEXT)
-aadbus_OBJECTS = $(am_aadbus_OBJECTS)
-aadbus_LDADD = $(LDADD)
+am_apparmor_dbus_OBJECTS = aadbus.$(OBJEXT)
+apparmor_dbus_OBJECTS = $(am_apparmor_dbus_OBJECTS)
+apparmor_dbus_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -57,8 +57,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(aadbus_SOURCES)
-DIST_SOURCES = $(aadbus_SOURCES)
+SOURCES = $(apparmor_dbus_SOURCES)
+DIST_SOURCES = $(apparmor_dbus_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -137,13 +137,13 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-aadbus_SOURCES = aadbus.c
+apparmor_dbus_SOURCES = aadbus.c
 
 # set the include path found by configure
 INCLUDES = $(all_includes) `$(PKG_CONFIG) --cflags dbus-1`
 
 # the library search path.
-aadbus_LDFLAGS = $(all_libraries)  -laudit -lpcre `$(PKG_CONFIG) --libs dbus-1`
+apparmor_dbus_LDFLAGS = $(all_libraries)  -laudit -lpcre `$(PKG_CONFIG) --libs dbus-1`
 all: all-am
 
 .SUFFIXES:
@@ -200,9 +200,9 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-aadbus$(EXEEXT): $(aadbus_OBJECTS) $(aadbus_DEPENDENCIES) 
-	@rm -f aadbus$(EXEEXT)
-	$(LINK) $(aadbus_LDFLAGS) $(aadbus_OBJECTS) $(aadbus_LDADD) $(LIBS)
+apparmor-dbus$(EXEEXT): $(apparmor_dbus_OBJECTS) $(apparmor_dbus_DEPENDENCIES) 
+	@rm -f apparmor-dbus$(EXEEXT)
+	$(LINK) $(apparmor_dbus_LDFLAGS) $(apparmor_dbus_OBJECTS) $(apparmor_dbus_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
