@@ -5,6 +5,7 @@
 
 Name:		apparmor-dbus
 BuildRequires:	audit-devel dbus-1-devel pcre-devel pkgconfig
+Requires:	audit dbus-1 pcre
 Version:	1.0
 Release:	0
 License:	GPL
