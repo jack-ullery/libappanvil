@@ -13,7 +13,6 @@
 #include <glib/gi18n.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
-#include <libgnomesu.h>
 #include "reject_list.h"
 #include "apparmor-applet.h"
 
