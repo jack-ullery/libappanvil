@@ -171,3 +171,17 @@ Index: b/fs/nfsd/nfs4xdr.c
  		aclsupport = (err == 0);
  		if (bmval0 & FATTR4_WORD0_ACL) {
  			if (err == -EOPNOTSUPP)
+Index: b/include/linux/nfsd/nfsd.h
+===================================================================
+--- a/include/linux/nfsd/nfsd.h
++++ b/include/linux/nfsd/nfsd.h
+@@ -77,7 +77,8 @@ __be32		nfsd_setattr(struct svc_rqst *, 
+ #ifdef CONFIG_NFSD_V4
+ __be32          nfsd4_set_nfs4_acl(struct svc_rqst *, struct svc_fh *,
+                     struct nfs4_acl *);
+-int             nfsd4_get_nfs4_acl(struct svc_rqst *, struct dentry *, struct nfs4_acl **);
++int             nfsd4_get_nfs4_acl(struct svc_rqst *, struct dentry *,
++				struct vfsmount *mnt, struct nfs4_acl **);
+ #endif /* CONFIG_NFSD_V4 */
+ __be32		nfsd_create(struct svc_rqst *, struct svc_fh *,
+ 				char *name, int len, struct iattr *attrs,

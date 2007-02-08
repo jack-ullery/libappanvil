@@ -26,7 +26,6 @@ vfs-listxattr.diff
 security-listxattr.diff
 vfs-removexattr.diff
 security-removexattr.diff
-fixes.diff
 d_path-lazy-unmounts.diff
 d_namespace_path.diff
 # security_chroot.diff
