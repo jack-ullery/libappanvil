@@ -1,7 +1,7 @@
-Index: linux-2.6/security/apparmor/Kconfig
+Index: b/security/apparmor/Kconfig
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/Kconfig
++++ b/security/apparmor/Kconfig
 @@ -0,0 +1,9 @@
 +config SECURITY_APPARMOR
 +	tristate "AppArmor support"
@@ -12,10 +12,10 @@ Index: linux-2.6/security/apparmor/Kconfig
 +	  distribution) and further information may be found at
 +	  <http://forge.novell.com/modules/xfmod/project/?apparmor>
 +	  If you are unsure how to answer this question, answer N.
-Index: linux-2.6/security/apparmor/Makefile
+Index: b/security/apparmor/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/Makefile
++++ b/security/apparmor/Makefile
 @@ -0,0 +1,6 @@
 +# Makefile for AppArmor Linux Security Module
 +#
@@ -23,10 +23,10 @@ Index: linux-2.6/security/apparmor/Makefile
 +
 +apparmor-y := main.o list.o procattr.o lsm.o apparmorfs.o capabilities.o \
 +	      module_interface.o
-Index: linux-2.6/security/apparmor/apparmor.h
+Index: b/security/apparmor/apparmor.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
 @@ -0,0 +1,338 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
@@ -366,10 +366,10 @@ Index: linux-2.6/security/apparmor/apparmor.h
 +extern const char *capability_to_name(unsigned int cap);
 +
 +#endif				/* __APPARMOR_H */
-Index: linux-2.6/security/apparmor/apparmorfs.c
+Index: b/security/apparmor/apparmorfs.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/apparmorfs.c
++++ b/security/apparmor/apparmorfs.c
 @@ -0,0 +1,432 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
@@ -803,10 +803,10 @@ Index: linux-2.6/security/apparmor/apparmorfs.c
 +	if (AAFS_DENTRY)
 +		clear_apparmorfs();
 +}
-Index: linux-2.6/security/apparmor/capabilities.c
+Index: b/security/apparmor/capabilities.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/capabilities.c
++++ b/security/apparmor/capabilities.c
 @@ -0,0 +1,54 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
@@ -862,10 +862,10 @@ Index: linux-2.6/security/apparmor/capabilities.c
 +
 +	return name;
 +}
-Index: linux-2.6/security/apparmor/inline.h
+Index: b/security/apparmor/inline.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
 @@ -0,0 +1,335 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
@@ -1202,10 +1202,10 @@ Index: linux-2.6/security/apparmor/inline.h
 +}
 +
 +#endif /* __INLINE_H__ */
-Index: linux-2.6/security/apparmor/list.c
+Index: b/security/apparmor/list.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/list.c
++++ b/security/apparmor/list.c
 @@ -0,0 +1,268 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
@@ -1475,10 +1475,10 @@ Index: linux-2.6/security/apparmor/list.c
 +	.stop =		p_stop,
 +	.show =		seq_show_profile,
 +};
-Index: linux-2.6/security/apparmor/lsm.c
+Index: b/security/apparmor/lsm.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
 @@ -0,0 +1,898 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -2378,10 +2378,10 @@ Index: linux-2.6/security/apparmor/lsm.c
 +MODULE_DESCRIPTION("AppArmor process confinement");
 +MODULE_AUTHOR("Tony Jones <tonyj@suse.de>");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6/security/apparmor/main.c
+Index: b/security/apparmor/main.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/main.c
++++ b/security/apparmor/main.c
 @@ -0,0 +1,1687 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -4070,10 +4070,10 @@ Index: linux-2.6/security/apparmor/main.c
 +out:
 +	return error;
 +}
-Index: linux-2.6/security/apparmor/module_interface.c
+Index: b/security/apparmor/module_interface.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/module_interface.c
++++ b/security/apparmor/module_interface.c
 @@ -0,0 +1,846 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
@@ -4921,10 +4921,10 @@ Index: linux-2.6/security/apparmor/module_interface.c
 +
 +	kfree(profile);
 +}
-Index: linux-2.6/security/apparmor/module_interface.h
+Index: b/security/apparmor/module_interface.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/module_interface.h
++++ b/security/apparmor/module_interface.h
 @@ -0,0 +1,37 @@
 +#ifndef __MODULEINTERFACE_H
 +#define __MODULEINTERFACE_H
@@ -4963,10 +4963,10 @@ Index: linux-2.6/security/apparmor/module_interface.h
 +};
 +
 +#endif /* __MODULEINTERFACE_H */
-Index: linux-2.6/security/apparmor/procattr.c
+Index: b/security/apparmor/procattr.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/procattr.c
++++ b/security/apparmor/procattr.c
 @@ -0,0 +1,332 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
@@ -5300,10 +5300,10 @@ Index: linux-2.6/security/apparmor/procattr.c
 +
 +	return error;
 +}
-Index: linux-2.6/security/apparmor/shared.h
+Index: b/security/apparmor/shared.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/shared.h
++++ b/security/apparmor/shared.h
 @@ -0,0 +1,46 @@
 +/*
 + *	Copyright (C) 2000, 2001, 2004, 2005 Novell/SUSE
@@ -5351,10 +5351,10 @@ Index: linux-2.6/security/apparmor/shared.h
 +					 AA_EXEC_PROFILE)
 +
 +#endif /* _SHARED_H */
-Index: linux-2.6/security/apparmor/match/Kbuild
+Index: b/security/apparmor/match/Kbuild
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/match/Kbuild
++++ b/security/apparmor/match/Kbuild
 @@ -0,0 +1,6 @@
 +# Makefile for AppArmor aamatch submodule
 +#
@@ -5362,20 +5362,20 @@ Index: linux-2.6/security/apparmor/match/Kbuild
 +obj-$(CONFIG_SECURITY_APPARMOR) += aamatch_pcre.o
 +
 +aamatch_pcre-y := match_pcre.o pcre_exec.o
-Index: linux-2.6/security/apparmor/match/Makefile
+Index: b/security/apparmor/match/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/match/Makefile
++++ b/security/apparmor/match/Makefile
 @@ -0,0 +1,5 @@
 +# Makefile for AppArmor aamatch submodule
 +#
 +obj-$(CONFIG_SECURITY_APPARMOR) += aamatch_pcre.o
 +
 +aamatch_pcre-y := match_pcre.o pcre_exec.o
-Index: linux-2.6/security/apparmor/match/match.h
+Index: b/security/apparmor/match/match.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/match/match.h
++++ b/security/apparmor/match/match.h
 @@ -0,0 +1,132 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -5509,10 +5509,10 @@ Index: linux-2.6/security/apparmor/match/match.h
 +}
 +
 +#endif /* __MATCH_H */
-Index: linux-2.6/security/apparmor/match/match_default.c
+Index: b/security/apparmor/match/match_default.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/match/match_default.c
++++ b/security/apparmor/match/match_default.c
 @@ -0,0 +1,57 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -5571,10 +5571,10 @@ Index: linux-2.6/security/apparmor/match/match_default.c
 +MODULE_DESCRIPTION("AppArmor match module (aamatch) [default]");
 +MODULE_AUTHOR("Tony Jones <tonyj@suse.de>");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6/security/apparmor/match/match_pcre.c
+Index: b/security/apparmor/match/match_pcre.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/match/match_pcre.c
++++ b/security/apparmor/match/match_pcre.c
 @@ -0,0 +1,169 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -5745,10 +5745,10 @@ Index: linux-2.6/security/apparmor/match/match_pcre.c
 +MODULE_DESCRIPTION("AppArmor aa_match module [pcre]");
 +MODULE_AUTHOR("Tony Jones <tonyj@suse.de>");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6/security/apparmor/match/pcre_exec.c
+Index: b/security/apparmor/match/pcre_exec.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/match/pcre_exec.c
++++ b/security/apparmor/match/pcre_exec.c
 @@ -0,0 +1,1945 @@
 +/*
 + *  This is a modified version of pcre.c containing only the code/data
@@ -7695,10 +7695,10 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.c
 +}
 +
 +/* End of pcre.c */
-Index: linux-2.6/security/apparmor/match/pcre_exec.h
+Index: b/security/apparmor/match/pcre_exec.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/match/pcre_exec.h
++++ b/security/apparmor/match/pcre_exec.h
 @@ -0,0 +1,308 @@
 +/*
 + *  This is a modified header file containing the definitions from
@@ -8008,10 +8008,10 @@ Index: linux-2.6/security/apparmor/match/pcre_exec.h
 +
 +#endif // _PCRE_H
 + /* End of pcre.h */
-Index: linux-2.6/security/apparmor/match/pcre_tables.h
+Index: b/security/apparmor/match/pcre_tables.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/security/apparmor/match/pcre_tables.h
++++ b/security/apparmor/match/pcre_tables.h
 @@ -0,0 +1,184 @@
 +
 +/*************************************************
