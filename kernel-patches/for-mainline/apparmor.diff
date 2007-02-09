@@ -1320,7 +1320,7 @@ Index: b/security/apparmor/lsm.c
 ===================================================================
 --- /dev/null
 +++ b/security/apparmor/lsm.c
-@@ -0,0 +1,931 @@
+@@ -0,0 +1,919 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
 + *
@@ -1417,10 +1417,8 @@ Index: b/security/apparmor/lsm.c
 +
 +	active = get_task_active_aa_profile(parent);
 +
-+	if (!error && active) {
++	if (!error && active)
 +		error = aa_audit_syscallreject(active, GFP_KERNEL, "ptrace");
-+		WARN_ON(error != -EPERM);
-+	}
 +
 +	put_aa_profile(active);
 +
@@ -1449,7 +1447,6 @@ Index: b/security/apparmor/lsm.c
 +				 kernel_cap_t *permitted)
 +{
 +	cap_capset_set(target, effective, inheritable, permitted);
-+	return;
 +}
 +
 +static int apparmor_capable(struct task_struct *tsk, int cap)
@@ -1459,7 +1456,7 @@ Index: b/security/apparmor/lsm.c
 +	/* cap_capable returns 0 on success, else -EPERM */
 +	error = cap_capable(tsk, cap);
 +
-+	if (error == 0) {
++	if (!error) {
 +		struct aa_profile *active;
 +
 +		active = get_task_active_aa_profile(tsk);
@@ -1480,11 +1477,9 @@ Index: b/security/apparmor/lsm.c
 +
 +	active = get_active_aa_profile();
 +
-+	if ((op & 002) && active && !capable(CAP_SYS_ADMIN)) {
++	if ((op & 002) && active && !capable(CAP_SYS_ADMIN))
 +		error = aa_audit_syscallreject(active, GFP_KERNEL,
 +					       "sysctl (write)");
-+		WARN_ON(error != -EPERM);
-+	}
 +
 +	put_aa_profile(active);
 +
@@ -1509,7 +1504,6 @@ Index: b/security/apparmor/lsm.c
 +static void apparmor_bprm_apply_creds(struct linux_binprm *bprm, int unsafe)
 +{
 +	cap_bprm_apply_creds(bprm, unsafe);
-+	return;
 +}
 +
 +static int apparmor_bprm_set_security(struct linux_binprm *bprm)
@@ -1526,8 +1520,7 @@ Index: b/security/apparmor/lsm.c
 +{
 +	int ret = cap_bprm_secureexec(bprm);
 +
-+	if (ret == 0 &&
-+	    (unsigned long)bprm->security & AA_SECURE_EXEC_NEEDED) {
++	if (!ret && (unsigned long)bprm->security & AA_SECURE_EXEC_NEEDED) {
 +		AA_DEBUG("%s: secureexec required for %s\n",
 +			 __FUNCTION__, bprm->filename);
 +		ret = 1;
@@ -1544,10 +1537,8 @@ Index: b/security/apparmor/lsm.c
 +
 +	active = get_active_aa_profile();
 +
-+	if (active) {
++	if (active)
 +		error = aa_audit_syscallreject(active, GFP_KERNEL, "mount");
-+		WARN_ON(error != -EPERM);
-+	}
 +
 +	put_aa_profile(active);
 +
@@ -1561,10 +1552,8 @@ Index: b/security/apparmor/lsm.c
 +
 +	active = get_active_aa_profile();
 +
-+	if (active) {
++	if (active)
 +		error = aa_audit_syscallreject(active, GFP_ATOMIC, "umount");
-+		WARN_ON(error != -EPERM);
-+	}
 +
 +	put_aa_profile(active);
 +
@@ -1965,7 +1954,6 @@ Index: b/security/apparmor/lsm.c
 +static void apparmor_task_reparent_to_init(struct task_struct *p)
 +{
 +	cap_task_reparent_to_init(p);
-+	return;
 +}
 +
 +static int apparmor_getprocattr(struct task_struct *p, char *name, void *value,
@@ -2033,7 +2021,7 @@ Index: b/security/apparmor/lsm.c
 +		}
 +
 +		error = aa_setprocattr_changehat(hatinfo, infosize);
-+		if (error == 0)
++		if (!error)
 +			error = size;
 +
 +	/* SET NEW PROFILE */
@@ -2064,7 +2052,7 @@ Index: b/security/apparmor/lsm.c
 +			size_t profilesize = size - strlen(cmd_setprofile);
 +
 +			error = aa_setprocattr_setprofile(p, profile, profilesize);
-+			if (error == 0)
++			if (!error)
 +				/* success,
 +				 * set return to #bytes in orig request
 +				 */
@@ -2256,7 +2244,7 @@ Index: b/security/apparmor/main.c
 ===================================================================
 --- /dev/null
 +++ b/security/apparmor/main.c
-@@ -0,0 +1,1272 @@
+@@ -0,0 +1,1256 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
 + *
@@ -2294,21 +2282,23 @@ Index: b/security/apparmor/main.c
 +
 +/**
 + * aa_taskattr_access
-+ * @procrelname: name of file to check permission
++ * @name: name of file to check permission
 + *
-+ * Determine if request is for write access to /proc/self/attr/current
-+ * This file is the usermode iterface for changing it's hat.
++ * Check if name matches /proc/self/attr/current, with self resolved
++ * to the current pid. This file is the usermode iterface for
++ * changing one's hat.
 + */
-+static inline int aa_taskattr_access(const char *procrelname)
++static inline int aa_taskattr_access(const char *name)
 +{
-+	char buf[sizeof("/attr/current") + 10];
-+	const int maxbuflen = sizeof(buf);
-+	/* assumption, 32bit pid (10 decimal digits incl \0) */
++	unsigned long pid;
++	char *end;
 +
-+	snprintf(buf, maxbuflen, "%d/attr/current", current->pid);
-+	buf[maxbuflen - 1] = 0;
-+
-+	return strcmp(buf, procrelname) == 0;
++	if (strncmp(name, "/proc/", 6) != 0)
++		return 0;
++	pid = simple_strtoul(name + 6, &end, 10);
++	if (pid != current->pid)
++		return 0;
++	return strcmp(end, "/attr/current") == 0;
 +}
 +
 +/**
@@ -2393,33 +2383,15 @@ Index: b/security/apparmor/main.c
 + */
 +static int aa_file_perm(struct aa_profile *active, const char *name, int mask)
 +{
-+	int error = 0;
 +	int perms;
 +
-+#define PROCPFX "/proc/"
-+#define PROCLEN sizeof(PROCPFX) - 1
-+
-+	AA_DEBUG("%s: %s 0x%x\n", __FUNCTION__, name, mask);
-+
-+	/* should not enter with other than R/W/M/X/L */
-+	WARN_ON(mask &
-+	       ~(AA_MAY_READ | AA_MAY_WRITE | AA_MAY_EXEC | AA_EXEC_MMAP |
-+		 AA_MAY_LINK));
-+
-+	/* Special case access to /proc/self/attr/current
-+	 * Currently we only allow access if opened O_WRONLY
-+	 */
-+	if (mask == MAY_WRITE && strncmp(PROCPFX, name, PROCLEN) == 0 &&
-+	    aa_taskattr_access(name + PROCLEN))
-+		goto done;
++	/* Always allow write access to /proc/self/attr/current. */
++	if (mask == MAY_WRITE && aa_taskattr_access(name))
++		return 0;
 +
 +	perms = aa_match(active->file_rules, name);
 +
-+	/* return permissions not satisfied */
-+	error = mask & ~perms;
-+
-+done:
-+	return error;
++	return mask & ~perms;  /* return permissions not satisfied */
 +}
 +
 +/**
