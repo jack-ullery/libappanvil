@@ -210,3 +210,16 @@ Index: b/security/apparmor/main.c
  		goto out;
  
  	sa.type = AA_AUDITTYPE_FILE;
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -209,7 +209,7 @@ extern int aa_perm_xattr(struct aa_profi
+ 			 const char *xattr_xattr, int mask);
+ extern int aa_capability(struct aa_profile *active, int cap);
+ extern int aa_perm(struct aa_profile *active, struct dentry *dentry,
+-		   struct vfsmount *mnt, int mask);
++		   struct vfsmount *mnt, int mask, int leaf);
+ extern int aa_perm_dir(struct aa_profile *active, struct dentry *dentry,
+ 		       struct vfsmount *mnt, const char *operation, int mask);
+ extern int aa_link(struct aa_profile *active,
