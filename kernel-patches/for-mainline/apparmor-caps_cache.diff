@@ -1,0 +1,63 @@
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -114,6 +114,7 @@ struct aa_profile {
+  * @hat_magic: the magic token controling the ability to leave a hat
+  * @list: list this subdomain is on
+  * @task: task that the subdomain confines
++ * @caps_logged: caps that have previously generated log entries
+  *
+  * Contains the tasks current active profile (which could change due to
+  * change_hat).  Plus the hat_magic needed during change_hat.
+@@ -126,6 +127,7 @@ struct subdomain {
+ 	u32 hat_magic;			/* used with change_hat */
+ 	struct list_head list;		/* list of subdomains */
+ 	struct task_struct *task;
++	kernel_cap_t caps_logged;
+ };
+ 
+ typedef int (*aa_iter) (struct subdomain *, void *);
+Index: b/security/apparmor/inline.h
+===================================================================
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -132,6 +132,7 @@ static inline void aa_switch(struct subd
+ 
+ 	/* noop if NULL */
+ 	rcu_assign_pointer(sd->active, get_aa_profile(newactive));
++	sd->caps_logged = CAP_EMPTY_SET;
+ 	put_aa_profile(oldactive);
+ }
+ 
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -644,15 +644,24 @@ int aa_perm_dir(struct aa_profile *activ
+  */
+ int aa_capability(struct aa_profile *active, int cap)
+ {
+-	int error = 0;
++	int error = cap_raised(active->capabilities, cap) ? 0 : -EPERM;
+ 	struct aa_audit sa;
++	struct subdomain *sd = AA_SUBDOMAIN(current->security);
++
++	/* test if cap has alread been logged */
++	if (cap_raised(sd->caps_logged, cap)) {
++		if (PROFILE_COMPLAIN(active))
++			error = 0;
++		return error;
++	} else
++		cap_combine(sd->caps_logged, cap);
+ 
+ 	sa.type = AA_AUDITTYPE_CAP;
+ 	sa.name = NULL;
+ 	sa.capability = cap;
+ 	sa.flags = 0;
+ 	sa.error_code = 0;
+-	sa.result = cap_raised(active->capabilities, cap);
++	sa.result = !error;
+ 	sa.gfp_mask = GFP_ATOMIC;
+ 
+ 	error = aa_audit(active, &sa);

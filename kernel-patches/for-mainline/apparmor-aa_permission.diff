@@ -8,7 +8,7 @@ Index: b/security/apparmor/lsm.c
 ===================================================================
 --- a/security/apparmor/lsm.c
 +++ b/security/apparmor/lsm.c
-@@ -285,26 +285,27 @@ out:
+@@ -277,26 +277,27 @@ out:
  	return error;
  }
  
@@ -49,7 +49,7 @@ Index: b/security/apparmor/lsm.c
  static int apparmor_inode_link(struct dentry *old_dentry,
  			       struct vfsmount *old_mnt, struct inode *dir,
  			       struct dentry *new_dentry,
-@@ -332,61 +333,19 @@ static int apparmor_inode_unlink(struct 
+@@ -324,61 +325,19 @@ static int apparmor_inode_unlink(struct 
  				 struct dentry *dentry,
  				 struct vfsmount *mnt)
  {
@@ -114,7 +114,7 @@ Index: b/security/apparmor/lsm.c
  }
  
  static int apparmor_inode_rename(struct inode *old_dir,
-@@ -423,21 +382,10 @@ out:
+@@ -415,21 +374,10 @@ out:
  static int apparmor_inode_permission(struct inode *inode, int mask,
  				     struct nameidata *nd)
  {
@@ -140,7 +140,7 @@ Index: b/security/apparmor/lsm.c
  }
  
  static int apparmor_inode_setattr(struct dentry *dentry, struct vfsmount *mnt,
-@@ -466,91 +414,49 @@ out:
+@@ -458,91 +406,49 @@ out:
  	return error;
  }
  
@@ -162,7 +162,7 @@ Index: b/security/apparmor/lsm.c
 -		active = get_active_aa_profile();
 +	if (mnt && mediated_filesystem(dentry->d_inode)) {
 +		struct aa_profile *active = get_active_aa_profile();
-+		
++
  		if (active)
  			error = aa_perm_xattr(active, dentry, mnt, name,
 -					      "xattr set", AA_MAY_WRITE);
@@ -253,7 +253,7 @@ Index: b/security/apparmor/lsm.c
  }
  
  static int apparmor_file_permission(struct file *file, int mask)
-@@ -559,15 +465,16 @@ static int apparmor_file_permission(stru
+@@ -551,15 +457,16 @@ static int apparmor_file_permission(stru
  	struct aa_profile *file_profile = (struct aa_profile*)file->f_security;
  	int error = 0;
  
@@ -275,7 +275,7 @@ Index: b/security/apparmor/lsm.c
  	}
  	put_aa_profile(active);
  
-@@ -599,32 +506,22 @@ static void apparmor_file_free_security(
+@@ -591,32 +498,22 @@ static void apparmor_file_free_security(
  static inline int aa_mmap(struct file *file, unsigned long prot,
  			  unsigned long flags)
  {

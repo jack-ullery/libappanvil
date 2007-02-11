@@ -1,0 +1,97 @@
+Get rid of duplicate code in syscall reject auditing.
+
+Index: b/security/apparmor/lsm.c
+===================================================================
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -84,20 +84,27 @@ static int __init aa_getopt_logsyscall(c
+ __setup("apparmor_logsyscall=", aa_getopt_logsyscall);
+ #endif
+ 
+-static int apparmor_ptrace(struct task_struct *parent,
+-			    struct task_struct *child)
++static int aa_reject_syscall(struct task_struct *task, gfp_t flags,
++			     const char *name)
+ {
+-	int error;
+-	struct aa_profile *active;
++	struct aa_profile *active = get_task_active_aa_profile(task);
++	int error = 0;
+ 
+-	error = cap_ptrace(parent, child);
++	if (active) {
++		error = aa_audit_syscallreject(active, flags, name);
++		put_aa_profile(active);
++	}
+ 
+-	active = get_task_active_aa_profile(parent);
++	return error;
++}
+ 
+-	if (!error && active)
+-		error = aa_audit_syscallreject(active, GFP_KERNEL, "ptrace");
++static int apparmor_ptrace(struct task_struct *parent,
++			    struct task_struct *child)
++{
++	int error = cap_ptrace(parent, child);
+ 
+-	put_aa_profile(active);
++	if (!error)
++		error = aa_reject_syscall(parent, GFP_KERNEL, "ptrace");
+ 
+ 	return error;
+ }
+@@ -150,15 +157,10 @@ static int apparmor_capable(struct task_
+ static int apparmor_sysctl(struct ctl_table *table, int op)
+ {
+ 	int error = 0;
+-	struct aa_profile *active;
+ 
+-	active = get_active_aa_profile();
+-
+-	if ((op & 002) && active && !capable(CAP_SYS_ADMIN))
+-		error = aa_audit_syscallreject(active, GFP_KERNEL,
+-					       "sysctl (write)");
+-
+-	put_aa_profile(active);
++	if ((op & 002) && !capable(CAP_SYS_ADMIN))
++		error = aa_reject_syscall(current, GFP_KERNEL,
++					  "sysctl (write)");
+ 
+ 	return error;
+ }
+@@ -209,32 +211,12 @@ static int apparmor_bprm_secureexec(stru
+ static int apparmor_sb_mount(char *dev_name, struct nameidata *nd, char *type,
+ 			      unsigned long flags, void *data)
+ {
+-	int error = 0;
+-	struct aa_profile *active;
+-
+-	active = get_active_aa_profile();
+-
+-	if (active)
+-		error = aa_audit_syscallreject(active, GFP_KERNEL, "mount");
+-
+-	put_aa_profile(active);
+-
+-	return error;
++	return aa_reject_syscall(current, GFP_KERNEL, "mount");
+ }
+ 
+ static int apparmor_umount(struct vfsmount *mnt, int flags)
+ {
+-	int error = 0;
+-	struct aa_profile *active;
+-
+-	active = get_active_aa_profile();
+-
+-	if (active)
+-		error = aa_audit_syscallreject(active, GFP_ATOMIC, "umount");
+-
+-	put_aa_profile(active);
+-
+-	return error;
++	return aa_reject_syscall(current, GFP_ATOMIC, "umount");
+ }
+ 
+ static int apparmor_inode_mkdir(struct inode *dir, struct dentry *dentry,

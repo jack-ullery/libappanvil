@@ -1,0 +1,129 @@
+Replace AA_TASK_CONTEXT(task->security) with aa_task_context(task):
+this is type safe. Use an inline function instead of a macro.
+
+AA_PROFILE() is unused.
+
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -145,9 +145,6 @@ struct aa_task_context {
+ 
+ typedef int (*aa_iter) (struct aa_task_context *, void *);
+ 
+-#define AA_TASK_CONTEXT(sec)	((struct aa_task_context*)(sec))
+-#define AA_PROFILE(sec)		((struct aa_profile*)(sec))
+-
+ static inline int aa_is_confined(struct task_struct *task)
+ {
+ 	struct aa_task_context *cxt = (struct aa_task_context *)task->security;
+@@ -155,6 +152,11 @@ static inline int aa_is_confined(struct 
+ 	return cxt && cxt->active;
+ }
+ 
++static inline struct aa_task_context *aa_task_context(struct task_struct *task)
++{
++	return (struct aa_task_context *)task->security;
++}
++
+ /* Lock protecting access to 'struct aa_task_context' accesses */
+ extern spinlock_t cxt_lock;
+ 
+Index: b/security/apparmor/inline.h
+===================================================================
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -42,7 +42,7 @@ static inline void put_aa_profile(struct
+  */
+ static inline struct aa_profile *get_task_activeptr_rcu(struct task_struct *tsk)
+ {
+-	struct aa_task_context *cxt = AA_TASK_CONTEXT(tsk->security);
++	struct aa_task_context *cxt = aa_task_context(tsk);
+ 	struct aa_profile *active = NULL;
+ 
+ 	if (cxt)
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -646,7 +646,7 @@ int aa_capability(struct aa_profile *act
+ {
+ 	int error = cap_raised(active->capabilities, cap) ? 0 : -EPERM;
+ 	struct aa_audit sa;
+-	struct aa_task_context *cxt = AA_TASK_CONTEXT(current->security);
++	struct aa_task_context *cxt = aa_task_context(current);
+ 
+ 	/* test if cap has alread been logged */
+ 	if (cap_raised(cxt->caps_logged, cap)) {
+@@ -732,7 +732,7 @@ int aa_link(struct aa_profile *active,
+ 
+ int aa_fork(struct task_struct *p)
+ {
+-	struct aa_task_context *cxt = AA_TASK_CONTEXT(current->security);
++	struct aa_task_context *cxt = aa_task_context(current);
+ 	struct aa_task_context *newcxt = NULL;
+ 
+ 	AA_DEBUG("%s\n", __FUNCTION__);
+@@ -962,7 +962,7 @@ apply_profile:
+ 		 *   having to hold a lock around all this code.
+ 		 */
+ 
+-		if (!active && !(cxt = AA_TASK_CONTEXT(current->security))) {
++		if (!active && !(cxt = aa_task_context(current))) {
+ 			lazy_cxt = alloc_aa_task_context(current);
+ 			if (!lazy_cxt) {
+ 				AA_ERROR("%s: Failed to allocate aa_task_context\n",
+@@ -974,7 +974,7 @@ apply_profile:
+ 
+ 		spin_lock_irqsave(&cxt_lock, flags);
+ 
+-		cxt = AA_TASK_CONTEXT(current->security);
++		cxt = aa_task_context(current);
+ 		if (lazy_cxt) {
+ 			if (cxt) {
+ 				/* raced by setprofile - created cxt */
+@@ -1061,7 +1061,7 @@ out:
+  */
+ void aa_release(struct task_struct *p)
+ {
+-	struct aa_task_context *cxt = AA_TASK_CONTEXT(p->security);
++	struct aa_task_context *cxt = aa_task_context(p);
+ 	if (cxt) {
+ 		p->security = NULL;
+ 
+@@ -1141,7 +1141,7 @@ static inline int do_change_hat(const ch
+  */
+ int aa_change_hat(const char *hat_name, u32 hat_magic)
+ {
+-	struct aa_task_context *cxt = AA_TASK_CONTEXT(current->security);
++	struct aa_task_context *cxt = aa_task_context(current);
+ 	int error = 0;
+ 
+ 	AA_DEBUG("%s: %p, 0x%x (pid %d)\n",
+Index: b/security/apparmor/procattr.c
+===================================================================
+--- a/security/apparmor/procattr.c
++++ b/security/apparmor/procattr.c
+@@ -223,7 +223,7 @@ int aa_setprocattr_setprofile(struct tas
+ 
+ 	spin_lock_irqsave(&cxt_lock, flags);
+ 
+-	cxt = AA_TASK_CONTEXT(p->security);
++	cxt = aa_task_context(p);
+ 
+ 	/* switch to unconstrained */
+ 	if (!profile) {
+@@ -268,11 +268,11 @@ int aa_setprocattr_setprofile(struct tas
+ 			}
+ 
+ 			spin_lock_irqsave(&cxt_lock, flags);
+-			if (!AA_TASK_CONTEXT(p->security)) {
++			if (!aa_task_context(p)) {
+ 				p->security = cxt;
+ 			} else { /* race */
+ 				free_aa_task_context(cxt);
+-				cxt = AA_TASK_CONTEXT(p->security);
++				cxt = aa_task_context(p);
+ 			}
+ 		}
+ 

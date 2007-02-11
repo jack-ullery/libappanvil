@@ -1,0 +1,33 @@
+There is no need to give struct flagval a name; it is only used
+in this one place.
+
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -77,12 +77,6 @@ static inline int mediated_filesystem(st
+ 
+ /* basic AppArmor data structures */
+ 
+-struct flagval {
+-	int debug;
+-	int complain;
+-	int audit;
+-};
+-
+ #define AA_SECURE_EXEC_NEEDED 0x00000001
+ 
+ #define AA_EXEC_MODIFIER_MASK(mask) ((mask) & AA_EXEC_MODIFIERS)
+@@ -113,7 +107,11 @@ struct aa_profile {
+ 
+ 	struct list_head list;
+ 	struct list_head sub;
+-	struct flagval flags;
++	struct {
++		int debug;
++		int complain;
++		int audit;
++	} flags;
+ 	struct aa_profile *null_profile;
+ 	int isstale;
+ 

@@ -35,6 +35,22 @@ apparmor-inode_symlink.diff
 apparmor-aa_permission.diff 
 apparmor-ditch-revalidation.diff 
 apparmor-dir-rename-fix.diff 
+audit-unterminated-string.diff
+apparmor-caps_cache.diff
+apparmor-no-nd.diff
+apparmor-aa_task_context.diff
+refactor-syscallreject.diff 
+shared.h-is-no-longer-shared.diff
+aa_is_confined.diff
+aa_task_context.diff
+struct-flagval-not-needed.diff
+rename-get_aa_profile.diff
+aa_get_profile.diff
+replace-activeptr.diff
+fix-capabilities.diff
+comment-wrong.diff
+aa_switch.diff
+active-really-is-a-profile.diff
 d_namespace_path.diff
 apparmor-d_namespace.diff
 # apparmor-percpu_path_cache.diff

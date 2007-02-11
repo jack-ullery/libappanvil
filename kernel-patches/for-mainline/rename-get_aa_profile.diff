@@ -1,0 +1,110 @@
+Index: b/security/apparmor/inline.h
+===================================================================
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -13,10 +13,10 @@
+ #include <linux/sched.h>
+ 
+ /**
+- * get_aa_profile - increment refcount on profile @p
++ * aa_dup_profile - increment refcount on profile @p
+  * @p: profile
+  */
+-static inline struct aa_profile *get_aa_profile(struct aa_profile *p)
++static inline struct aa_profile *aa_dup_profile(struct aa_profile *p)
+ {
+ 	if (p)
+ 		kref_get(&(BASE_PROFILE(p)->count));
+@@ -69,7 +69,7 @@ static inline struct aa_profile *get_tas
+ 	struct aa_profile *active;
+ 
+ 	rcu_read_lock();
+-	active = get_aa_profile(get_task_activeptr_rcu(tsk));
++	active = aa_dup_profile(get_task_activeptr_rcu(tsk));
+ 	rcu_read_unlock();
+ 
+ 	return active;
+@@ -101,7 +101,7 @@ static inline void aa_switch(struct aa_t
+ 	struct aa_profile *oldactive = cxt->active;
+ 
+ 	/* noop if NULL */
+-	rcu_assign_pointer(cxt->active, get_aa_profile(newactive));
++	rcu_assign_pointer(cxt->active, aa_dup_profile(newactive));
+ 	cxt->caps_logged = CAP_EMPTY_SET;
+ 	put_aa_profile(oldactive);
+ }
+@@ -211,7 +211,7 @@ static inline struct aa_profile *__aa_fi
+ 	list_for_each_entry(p, head, list) {
+ 		if (!strcmp(p->name, name)) {
+ 			/* return refcounted object */
+-			p = get_aa_profile(p);
++			p = aa_dup_profile(p);
+ 			return p;
+ 		} else {
+ 			AA_DEBUG("%s: skipping %s\n", __FUNCTION__, p->name);
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -872,7 +872,7 @@ int aa_register(struct linux_binprm *bpr
+ 		 * describing mode to execute image in.
+ 		 * Drop into null-profile (disabling secure exec).
+ 		 */
+-		newprofile = get_aa_profile(null_complain_profile);
++		newprofile = aa_dup_profile(null_complain_profile);
+ 		unsafe_exec = 1;
+ 	} else {
+ 		AA_WARN("%s: Rejecting exec(2) of image '%s'. "
+@@ -905,7 +905,7 @@ find_profile:
+ 				current->pid,
+ 				BASE_PROFILE(active)->name, active->name);
+ 
+-			newprofile = get_aa_profile(null_complain_profile);
++			newprofile = aa_dup_profile(null_complain_profile);
+ 		} else {
+ 			AA_WARN("REJECTING exec(2) of image '%s'. "
+ 				"Profile mandatory and not found "
+@@ -995,7 +995,7 @@ apply_profile:
+ 		if (newprofile && unlikely(newprofile->isstale)) {
+ 			WARN_ON(newprofile == null_complain_profile);
+ 
+-			/* drop refcnt obtained from earlier get_aa_profile */
++			/* drop refcnt obtained from earlier aa_dup_profile */
+ 			put_aa_profile(newprofile);
+ 
+ 			newprofile = aa_profilelist_find(filename);
+Index: b/security/apparmor/procattr.c
+===================================================================
+--- a/security/apparmor/procattr.c
++++ b/security/apparmor/procattr.c
+@@ -281,7 +281,7 @@ int aa_setprocattr_setprofile(struct tas
+ 		if (unlikely(profile->isstale)) {
+ 			WARN_ON(profile == null_complain_profile);
+ 
+-			/* drop refcnt obtained from earlier get_aa_profile */
++			/* drop refcnt obtained from earlier aa_dup_profile */
+ 			put_aa_profile(profile);
+ 			profile = aa_profilelist_find(name);
+ 
+Index: b/security/apparmor/module_interface.c
+===================================================================
+--- a/security/apparmor/module_interface.c
++++ b/security/apparmor/module_interface.c
+@@ -110,7 +110,7 @@ static inline void task_replace(struct a
+ 		nactive = __aa_find_profile(cxt->active->name, &new->sub);
+ 
+ 		if (!nactive)
+-			nactive = get_aa_profile(new->null_profile);
++			nactive = aa_dup_profile(new->null_profile);
+ 
+ 		aa_switch(cxt, nactive);
+ 		put_aa_profile(nactive);
+@@ -560,7 +560,7 @@ ssize_t aa_file_prof_repl(void *udata, s
+ 	 * Grab extra reference on new_profile to prevent this
+ 	 */
+ 
+-	get_aa_profile(data.new_profile);
++	aa_dup_profile(data.new_profile);
+ 
+ 	data.old_profile = aa_profilelist_replace(data.new_profile);
+ 

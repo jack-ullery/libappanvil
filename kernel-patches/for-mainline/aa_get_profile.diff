@@ -1,0 +1,156 @@
+Replace the cryptic get_task_active_aa_profile() and
+get_active_aa_profile() functions with aa_get_profile().
+
+Index: b/security/apparmor/inline.h
+===================================================================
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -60,30 +60,18 @@ static inline struct aa_profile *get_act
+ 	return get_task_activeptr_rcu(current);
+ }
+ 
+-/**
+- * get_task_active_aa_profile - get a reference to tsk's active profile.
+- * @tsk: the task to get the active profile reference for
+- */
+-static inline struct aa_profile *get_task_active_aa_profile(struct task_struct *tsk)
++static inline struct aa_profile *aa_get_profile(struct task_struct *task)
+ {
+ 	struct aa_profile *active;
+ 
+ 	rcu_read_lock();
+-	active = aa_dup_profile(get_task_activeptr_rcu(tsk));
++	active = aa_dup_profile(get_task_activeptr_rcu(task));
+ 	rcu_read_unlock();
+ 
+ 	return active;
+ }
+ 
+ /**
+- * get_active_aa_profile - get a reference to the current tasks active profile
+- */
+-static inline struct aa_profile *get_active_aa_profile(void)
+-{
+-	return get_task_active_aa_profile(current);
+-}
+-
+-/**
+  * aa_switch - change aa_task_context to use a new profile
+  * @cxt: aa_task_context to switch the active profile on
+  * @newactive: new active profile
+Index: b/security/apparmor/lsm.c
+===================================================================
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -87,7 +87,7 @@ __setup("apparmor_logsyscall=", aa_getop
+ static int aa_reject_syscall(struct task_struct *task, gfp_t flags,
+ 			     const char *name)
+ {
+-	struct aa_profile *active = get_task_active_aa_profile(task);
++	struct aa_profile *active = aa_get_profile(task);
+ 	int error = 0;
+ 
+ 	if (active) {
+@@ -143,7 +143,7 @@ static int apparmor_capable(struct task_
+ 	if (!error) {
+ 		struct aa_profile *active;
+ 
+-		active = get_task_active_aa_profile(tsk);
++		active = aa_get_profile(tsk);
+ 
+ 		if (active)
+ 			error = aa_capability(active, cap);
+@@ -228,7 +228,7 @@ static int apparmor_inode_mkdir(struct i
+ 	if (!mnt || !mediated_filesystem(dir))
+ 		goto out;
+ 
+-	active = get_active_aa_profile();
++	active = aa_get_profile(current);
+ 
+ 	if (active)
+ 		error = aa_perm_dir(active, dentry, mnt, "mkdir", MAY_WRITE);
+@@ -248,7 +248,7 @@ static int apparmor_inode_rmdir(struct i
+ 	if (!mnt || !mediated_filesystem(dir))
+ 		goto out;
+ 
+-	active = get_active_aa_profile();
++	active = aa_get_profile(current);
+ 
+ 	if (active)
+ 		error = aa_perm_dir(active, dentry, mnt, "rmdir", MAY_WRITE);
+@@ -265,7 +265,7 @@ static int aa_permission(struct inode *i
+ 	int error = 0;
+ 
+ 	if (mnt && mediated_filesystem(inode)) {
+-		struct aa_profile *active = get_active_aa_profile();
++		struct aa_profile *active = aa_get_profile(current);
+ 
+ 		if (active)
+ 			error = aa_perm(active, dentry, mnt, mask, leaf);
+@@ -291,7 +291,7 @@ static int apparmor_inode_link(struct de
+ 	if (!old_mnt || !new_mnt || !mediated_filesystem(dir))
+ 		goto out;
+ 
+-	active = get_active_aa_profile();
++	active = aa_get_profile(current);
+ 
+ 	if (active)
+ 		error = aa_link(active, new_dentry, new_mnt,
+@@ -335,7 +335,7 @@ static int apparmor_inode_rename(struct 
+ 	if ((!old_mnt && !new_mnt) || !mediated_filesystem(old_dir))
+ 		goto out;
+ 
+-	active = get_active_aa_profile();
++	active = aa_get_profile(current);
+ 
+ 	if (active) {
+ 		if (old_mnt)
+@@ -387,7 +387,7 @@ static int apparmor_inode_setattr(struct
+ 	if (mediated_filesystem(dentry->d_inode)) {
+ 		struct aa_profile *active;
+ 
+-		active = get_active_aa_profile();
++		active = aa_get_profile(current);
+ 		/*
+ 		 * Mediate any attempt to change attributes of a file
+ 		 * (chmod, chown, chgrp, etc)
+@@ -409,7 +409,7 @@ static int aa_xattr_permission(struct de
+ 	int error = 0;
+ 
+ 	if (mnt && mediated_filesystem(dentry->d_inode)) {
+-		struct aa_profile *active = get_active_aa_profile();
++		struct aa_profile *active = aa_get_profile(current);
+ 
+ 		if (active)
+ 			error = aa_perm_xattr(active, dentry, mnt, name,
+@@ -520,7 +520,7 @@ static int apparmor_getprocattr(struct t
+ 		goto out;
+ 	}
+ 
+-	active = get_task_active_aa_profile(p);
++	active = aa_get_profile(p);
+ 	error = aa_getprocattr(active, str, size);
+ 	put_aa_profile(active);
+ 
+@@ -591,7 +591,7 @@ static int apparmor_setprocattr(struct t
+ 			goto out;
+ 		}
+ 
+-		active = get_active_aa_profile();
++		active = aa_get_profile(current);
+ 		if (!active) {
+ 			char *profile = cmd + strlen(cmd_setprofile);
+ 			size_t profilesize = size - strlen(cmd_setprofile);
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -794,7 +794,7 @@ int aa_register(struct linux_binprm *bpr
+ 
+ 	error = 0;
+ 
+-	active = get_active_aa_profile();
++	active = aa_get_profile(current);
+ 
+ 	if (!active) {
+ 		/* Unconfined task, load profile if it exists */

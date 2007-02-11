@@ -1,0 +1,79 @@
+Remove get_task_activeptr_rcu() and get_activeptr_rcu().  Remove the
+tiny optimization in aa_simple_write_to_buffer(): I bet it doesn't
+matter at all.
+
+Index: b/security/apparmor/inline.h
+===================================================================
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -34,38 +34,17 @@ static inline void put_aa_profile(struct
+ 		kref_put(&BASE_PROFILE(p)->count, free_aa_profile_kref);
+ }
+ 
+-/**
+- * get_task_activeptr_rcu - get pointer to @tsk's active profile.
+- * @tsk: task to get active profile from
+- *
+- * Requires rcu_read_lock is held
+- */
+-static inline struct aa_profile *get_task_activeptr_rcu(struct task_struct *tsk)
+-{
+-	struct aa_task_context *cxt = aa_task_context(tsk);
+-	struct aa_profile *active = NULL;
+-
+-	if (cxt)
+-		active = (struct aa_profile *) rcu_dereference(cxt->active);
+-
+-	return active;
+-}
+-
+-/**
+- * get_activeptr_rcu - get pointer to current task's active profile
+- * Requires rcu_read_lock is held
+- */
+-static inline struct aa_profile *get_activeptr_rcu(void)
+-{
+-	return get_task_activeptr_rcu(current);
+-}
+-
+ static inline struct aa_profile *aa_get_profile(struct task_struct *task)
+ {
+-	struct aa_profile *active;
++	struct aa_task_context *cxt;
++	struct aa_profile *active = NULL;
+ 
+ 	rcu_read_lock();
+-	active = aa_dup_profile(get_task_activeptr_rcu(task));
++	cxt = aa_task_context(task);
++	if (cxt) {
++		active = (struct aa_profile *)rcu_dereference(cxt->active);
++		aa_dup_profile(active);
++	}
+ 	rcu_read_unlock();
+ 
+ 	return active;
+Index: b/security/apparmor/apparmorfs.c
+===================================================================
+--- a/security/apparmor/apparmorfs.c
++++ b/security/apparmor/apparmorfs.c
+@@ -164,18 +164,17 @@ static char *aa_simple_write_to_buffer(c
+ 	 * No sane person would add rules allowing this to a profile
+ 	 * but we enforce the restriction anyways.
+ 	 */
+-	rcu_read_lock();
+-	active = get_activeptr_rcu();
++	active = aa_get_profile(current);
+ 	if (active) {
+ 		AA_WARN("REJECTING access to profile %s (%s(%d) "
+ 			"profile %s active %s)\n",
+ 			msg, current->comm, current->pid,
+ 			BASE_PROFILE(active)->name, active->name);
++		put_aa_profile(active);
+ 
+ 		data = ERR_PTR(-EPERM);
+ 		goto out;
+ 	}
+-	rcu_read_unlock();
+ 
+ 	data = vmalloc(alloc_size);
+ 	if (data == NULL) {

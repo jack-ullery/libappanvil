@@ -1,0 +1,124 @@
+It's just insane to keep a table of capability names that can go
+out of sync with capabilities.h at any time. Just generate the
+table on the fly instead.
+
+Index: b/security/apparmor/Makefile
+===================================================================
+--- a/security/apparmor/Makefile
++++ b/security/apparmor/Makefile
+@@ -2,5 +2,12 @@
+ #
+ obj-$(CONFIG_SECURITY_APPARMOR) += apparmor.o
+ 
+-apparmor-y := main.o list.o procattr.o lsm.o apparmorfs.o capabilities.o \
++apparmor-y := main.o list.o procattr.o lsm.o apparmorfs.o \
+ 	      module_interface.o match.o
++
++quiet_cmd_make-caps = GEN     $@
++cmd_make-caps = sed -n -e "/CAP_FS_MASK/d" -e "s/^\#define[ \\t]\\+CAP_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9]\\+\\)\$$/[\\2]  = \"\\1\",/p" $< | tr A-Z a-z > $@
++
++$(obj)/main.o : $(obj)/capability_names.h
++$(obj)/capability_names.h : $(srctree)/include/linux/capability.h
++	$(call cmd,make-caps)
+Index: b/security/apparmor/capabilities.c
+===================================================================
+--- a/security/apparmor/capabilities.c
++++ /dev/null
+@@ -1,56 +0,0 @@
+-/*
+- *	Copyright (C) 2005 Novell/SUSE
+- *
+- *	This program is free software; you can redistribute it and/or
+- *	modify it under the terms of the GNU General Public License as
+- *	published by the Free Software Foundation, version 2 of the
+- *	License.
+- *
+- *	AppArmor capability definitions
+- */
+-
+-#include "apparmor.h"
+-
+-static const char *cap_names[] = {
+-	"chown",
+-	"dac_override",
+-	"dac_read_search",
+-	"fowner",
+-	"fsetid",
+-	"kill",
+-	"setgid",
+-	"setuid",
+-	"setpcap",
+-	"linux_immutable",
+-	"net_bind_service",
+-	"net_broadcast",
+-	"net_admin",
+-	"net_raw",
+-	"ipc_lock",
+-	"ipc_owner",
+-	"sys_module",
+-	"sys_rawio",
+-	"sys_chroot",
+-	"sys_ptrace",
+-	"sys_pacct",
+-	"sys_admin",
+-	"sys_boot",
+-	"sys_nice",
+-	"sys_resource",
+-	"sys_time",
+-	"sys_tty_config",
+-	"mknod",
+-	"lease",
+-	"audit_write",
+-	"audit_control"
+-};
+-
+-const char *capability_to_name(unsigned int cap)
+-{
+-	const char *name;
+-
+-	name = (cap < (sizeof(cap_names) / sizeof(char *))
+-		   ? cap_names[cap] : "invalid-capability");
+-
+-	return name;
+-}
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -17,6 +17,13 @@
+ 
+ #include "inline.h"
+ 
++/*
++ * A table of capability names: we generate it from capabilities.h.
++ */
++static const char *capability_names[] = {
++#include "capability_names.h"
++};
++
+ /* NULL complain profile
+  *
+  * Used when in complain mode, to emit Permitting messages for non-existant
+@@ -446,7 +453,7 @@ int aa_audit(struct aa_profile *active, 
+ 	} else if (sa->type == AA_AUDITTYPE_CAP) {
+ 		audit_log_format(ab,
+ 			"access to capability '%s' ",
+-			capability_to_name(sa->capability));
++			capability_names[sa->capability]);
+ 
+ 		opspec_error = -EPERM;
+ 	} else if (sa->type == AA_AUDITTYPE_SYSCALL) {
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -274,9 +274,6 @@ extern int aa_setprocattr_setprofile(str
+ extern int create_apparmorfs(void);
+ extern void destroy_apparmorfs(void);
+ 
+-/* capabilities.c */
+-extern const char *capability_to_name(unsigned int cap);
+-
+ /* match.c */
+ struct aa_dfa *aa_match_alloc(void);
+ void aa_match_free(struct aa_dfa *dfa);

@@ -1,0 +1,15 @@
+We don't make a copy here; we only grab a refrence.
+
+Index: b/security/apparmor/inline.h
+===================================================================
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -163,7 +163,7 @@ static inline void aa_put_name(const cha
+  * @name: name of profile to find
+  * @head: list to search
+  *
+- * Return reference counted copy of profile. NULL if not found
++ * Return reference counted handle to profile. NULL if not found
+  * Caller must hold any necessary locks
+  */
+ static inline struct aa_profile *__aa_find_profile(const char *name,

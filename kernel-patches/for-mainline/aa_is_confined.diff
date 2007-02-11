@@ -1,0 +1,166 @@
+Replace aa_is_confined(cxt) with aa_is_confined(task): it's the task
+that is confined, not the context hanging off the task_struct.
+
+Replace __aa_is_confined(ctx) with its definition in the code: this
+inline function adds nothing to the clarity of the code; it only
+inflates the header.
+
+aa_sub_defined() and __aa_sub_defined() are unused.
+
+Index: b/security/apparmor/lsm.c
+===================================================================
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -724,7 +724,7 @@ static int apparmor_exit_removeall_iter(
+ {
+ 	/* spin_lock(&cxt_lock) held here */
+ 
+-	if (__aa_is_confined(cxt)) {
++	if (cxt->active) {
+ 		AA_DEBUG("%s: Dropping profiles %s(%d) "
+ 			 "profile %s(%p) active %s(%p)\n",
+ 			 __FUNCTION__,
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -737,7 +737,7 @@ int aa_fork(struct task_struct *p)
+ 
+ 	AA_DEBUG("%s\n", __FUNCTION__);
+ 
+-	if (__aa_is_confined(cxt)) {
++	if (cxt && cxt->active) {
+ 		unsigned long flags;
+ 
+ 		newcxt = alloc_aa_task_context(p);
+@@ -1018,7 +1018,7 @@ apply_profile:
+ 		 * Cases 2 and 3 are marked as requiring secure exec
+ 		 * (unless policy specified "unsafe exec")
+ 		 */
+-		if (__aa_is_confined(cxt) && !unsafe_exec) {
++		if (cxt && cxt->active && !unsafe_exec) {
+ 			unsigned long bprm_flags;
+ 
+ 			bprm_flags = AA_SECURE_EXEC_NEEDED;
+@@ -1157,7 +1157,7 @@ int aa_change_hat(const char *hat_name, 
+ 	}
+ 
+ 	/* check to see if an unconfined process is doing a changehat. */
+-	if (!__aa_is_confined(cxt)) {
++	if (!cxt || !cxt->active) {
+ 		error = -EPERM;
+ 		goto out;
+ 	}
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -12,6 +12,7 @@
+ #ifndef __APPARMOR_H
+ #define __APPARMOR_H
+ 
++#include <linux/sched.h>
+ #include <linux/fs.h>	/* Include for defn of iattr */
+ #include <linux/binfmts.h>	/* defn of linux_binprm */
+ #include <linux/rcupdate.h>
+@@ -147,6 +148,13 @@ typedef int (*aa_iter) (struct aa_task_c
+ #define AA_TASK_CONTEXT(sec)	((struct aa_task_context*)(sec))
+ #define AA_PROFILE(sec)		((struct aa_profile*)(sec))
+ 
++static inline int aa_is_confined(struct task_struct *task)
++{
++	struct aa_task_context *cxt = (struct aa_task_context *)task->security;
++
++	return cxt && cxt->active;
++}
++
+ /* Lock protecting access to 'struct aa_task_context' accesses */
+ extern spinlock_t cxt_lock;
+ 
+Index: b/security/apparmor/module_interface.c
+===================================================================
+--- a/security/apparmor/module_interface.c
++++ b/security/apparmor/module_interface.c
+@@ -71,7 +71,7 @@ static int taskremove_iter(struct aa_tas
+ 
+ 	spin_lock_irqsave(&cxt_lock, flags);
+ 
+-	if (__aa_is_confined(cxt) && BASE_PROFILE(cxt->active) == old_profile) {
++	if (cxt->active && BASE_PROFILE(cxt->active) == old_profile) {
+ 		task_remove(cxt);
+ 	}
+ 
+@@ -137,8 +137,7 @@ static int taskreplace_iter(struct aa_ta
+ 
+ 	spin_lock_irqsave(&cxt_lock, flags);
+ 
+-	if (__aa_is_confined(cxt) &&
+-	    BASE_PROFILE(cxt->active) == data->old_profile)
++	if (cxt->active && BASE_PROFILE(cxt->active) == data->old_profile)
+ 		task_replace(cxt, data->new_profile);
+ 
+ 	spin_unlock_irqrestore(&cxt_lock, flags);
+Index: b/security/apparmor/procattr.c
+===================================================================
+--- a/security/apparmor/procattr.c
++++ b/security/apparmor/procattr.c
+@@ -11,7 +11,6 @@
+ 
+ /* for isspace */
+ #include <linux/ctype.h>
+-
+ #include "apparmor.h"
+ #include "inline.h"
+ 
+@@ -228,7 +227,7 @@ int aa_setprocattr_setprofile(struct tas
+ 
+ 	/* switch to unconstrained */
+ 	if (!profile) {
+-		if (__aa_is_confined(cxt)) {
++		if (cxt && cxt->active) {
+ 			AA_WARN("%s: Unconstraining task %s(%d) "
+ 				"profile %s active %s\n",
+ 				__FUNCTION__,
+Index: b/security/apparmor/inline.h
+===================================================================
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -12,38 +12,6 @@
+ 
+ #include <linux/sched.h>
+ 
+-static inline int __aa_is_confined(struct aa_task_context *cxt)
+-{
+-	return (cxt && cxt->active);
+-}
+-
+-/**
+- *  aa_is_confined
+- *  Determine whether current task contains a valid profile (confined).
+- *  Return %1 if confined, %0 otherwise.
+- */
+-static inline int aa_is_confined(void)
+-{
+-	struct aa_task_context *cxt = AA_TASK_CONTEXT(current->security);
+-	return __aa_is_confined(cxt);
+-}
+-
+-static inline int __aa_sub_defined(struct aa_task_context *cxt)
+-{
+-    return __aa_is_confined(cxt) &&
+-	    !list_empty(&BASE_PROFILE(cxt->active)->sub);
+-}
+-
+-/**
+- * aa_sub_defined - check to see if current task has any subprofiles
+- * Return 1 if true, 0 otherwise
+- */
+-static inline int aa_sub_defined(void)
+-{
+-	struct aa_task_context *cxt = AA_TASK_CONTEXT(current->security);
+-	return __aa_sub_defined(cxt);
+-}
+-
+ /**
+  * get_aa_profile - increment refcount on profile @p
+  * @p: profile
