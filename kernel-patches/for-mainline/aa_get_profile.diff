@@ -1,5 +1,5 @@
 Replace the cryptic get_task_active_aa_profile() and
-get_active_aa_profile() functions with aa_get_profile().
+get_active_aa_profile() functions with aa_get_profile(task).
 
 Index: b/security/apparmor/inline.h
 ===================================================================

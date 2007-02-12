@@ -4,13 +4,10 @@ this is easier to understand. Pass the hat magic to switch to to
 aa_switch_to_profile as well: we want to make it more explicit
 which profile switches go together with which hat changes!
 
-The entire change hat logic looks very questionable to me; it is
-definitely not ready for mainline submission in its current state!
-
 This patch adds a FIXME note about a race in aa_fork().
 
-a_register() is a catastrophy, and needs to be broken up in sensible
-pieces.
+Also a FIXME: a_register() is much too long and needs to be broken
+up into sensible pieces.
 
 Index: b/security/apparmor/inline.h
 ===================================================================

@@ -1,3 +1,7 @@
+Rename get_aa_profile to aa_dup_profile: this better matches what
+the function does -- "grab another handle" to the profile by
+bumping the reference count.
+
 Index: b/security/apparmor/inline.h
 ===================================================================
 --- a/security/apparmor/inline.h
