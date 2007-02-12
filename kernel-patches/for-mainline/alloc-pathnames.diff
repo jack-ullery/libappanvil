@@ -1,0 +1,195 @@
+aa_get_name and aa_put_name are only used in main.c. Make them
+static.
+
+Use kmalloc() instead of __get_free_page(): it has per-cpu pools;
+that way, we don't need to bother implementing that ourselves.
+
+Start out with a 256-byte buffer only: that way, we don't need to
+stress the memory subsystem so much.
+
+Allow pathnames to be up to 2 * PAGE_SIZE long: this is an entirely
+arbitrary limit.  There is no inherent length limit on pathnames; we
+could allow arbitrarily long paths.  This would only allow an attacker
+to cause frequent large memory allocations in the kernel though, and
+this could unnecessarily slow down the system. We don't expect any
+reasonable application to use paths longer than PAGE_SIZE, so twice
+that much should be on the safe side.
+
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -222,7 +222,6 @@ extern int aa_audit_message(struct aa_pr
+ extern int aa_audit_syscallreject(struct aa_profile *profile, gfp_t gfp,
+ 				  const char *);
+ extern int aa_audit(struct aa_profile *profile, const struct aa_audit *);
+-extern char *aa_get_name(struct dentry *dentry, struct vfsmount *mnt);
+ 
+ extern int aa_attr(struct aa_profile *profile, struct dentry *dentry,
+ 		   struct vfsmount *mnt, struct iattr *iattr);
+Index: b/security/apparmor/inline.h
+===================================================================
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -133,18 +133,6 @@ static inline struct aa_profile *alloc_a
+ 	return profile;
+ }
+ 
+-/**
+- * aa_put_name
+- * @name: name to release.
+- *
+- * Release space (free_page) allocated to hold pathname
+- * name may be NULL (checked for by free_page)
+- */
+-static inline void aa_put_name(const char *name)
+-{
+-	free_page((unsigned long)name);
+-}
+-
+ /** __aa_find_profile
+  * @name: name of profile to find
+  * @head: list to search
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -159,12 +159,44 @@ static int aa_link_perm(struct aa_profil
+ 	return ret;
+ }
+ 
++static char *aa_get_pathname(struct dentry *dentry, struct vfsmount *mnt,
++			     char **buffer)
++{
++	char *name;
++	int size = 256;
++
++	for (;;) {
++		char *buf = kmalloc(size, GFP_KERNEL);
++		if (!buf)
++			return ERR_PTR(-ENOMEM);
++
++		name = d_namespace_path(dentry, mnt, buf, size, 1);
++		if (!IS_ERR(name)) {
++			*buffer = buf;
++			return name;
++		}
++		if (PTR_ERR(name) != -ENAMETOOLONG)
++			return name;
++
++		kfree(buf);
++		size <<= 1;
++		if (size > 2 * PAGE_SIZE)
++			return ERR_PTR(-ENAMETOOLONG);
++	}
++}
++
++static inline void aa_put_pathname_buffer(char *buffer)
++{
++	kfree(buffer);
++}
++
+ static int _aa_perm_vfsmount(struct aa_profile *profile, struct dentry *dentry,
+ 		      struct vfsmount *mnt, struct aa_audit *sa, int mask)
+ {
++	char *buffer = NULL;
+ 	int permerror, error;
+ 
+-	sa->name = aa_get_name(dentry, mnt);
++	sa->name = aa_get_pathname(dentry, mnt, &buffer);
+ 
+ 	if (IS_ERR(sa->name)) {
+ 		permerror = PTR_ERR(sa->name);
+@@ -177,7 +209,7 @@ static int _aa_perm_vfsmount(struct aa_p
+ 
+ 	error = aa_audit(profile, sa);
+ 
+-	aa_put_name(sa->name);
++	aa_put_pathname_buffer(buffer);
+ 
+ 	return error;
+ }
+@@ -481,29 +513,6 @@ out:
+ 	return error;
+ }
+ 
+-/**
+- * aa_get_name - retrieve fully qualified path name
+- * @dentry: relative path element
+- * @mnt: where in tree
+- *
+- * Returns fully qualified path name on sucess, NULL on failure.
+- * aa_put_name must be used to free the allocated buffer.
+- */
+-char *aa_get_name(struct dentry *dentry, struct vfsmount *mnt)
+-{
+-	char *page, *name;
+-
+-	page = (char *)__get_free_page(GFP_KERNEL);
+-	if (!page)
+-		return ERR_PTR(-ENOMEM);
+-
+-	name = d_namespace_path(dentry, mnt, page, PAGE_SIZE, 1);
+-	if (IS_ERR(name))
+-		free_page((unsigned long)page);
+-
+-	return name;
+-}
+-
+ /***********************************
+  * Global permission check functions
+  ***********************************/
+@@ -670,11 +679,12 @@ int aa_link(struct aa_profile *profile,
+ 	    struct dentry *link, struct vfsmount *link_mnt,
+ 	    struct dentry *target, struct vfsmount *target_mnt)
+ {
++	char *name_buffer = NULL, *pval_buffer = NULL;
+ 	int permerror = -EPERM, error;
+ 	struct aa_audit sa;
+ 
+-	sa.name = aa_get_name(link, link_mnt);
+-	sa.pval = aa_get_name(target, target_mnt);
++	sa.name = aa_get_pathname(link, link_mnt, &name_buffer);
++	sa.pval = aa_get_pathname(target, target_mnt, &pval_buffer);
+ 
+ 	if (IS_ERR(sa.name)) {
+ 		permerror = PTR_ERR(sa.name);
+@@ -696,8 +706,8 @@ int aa_link(struct aa_profile *profile,
+ 
+ 	error = aa_audit(profile, &sa);
+ 
+-	aa_put_name(sa.name);
+-	aa_put_name(sa.pval);
++	aa_put_pathname_buffer(name_buffer);
++	aa_put_pathname_buffer(pval_buffer);
+ 
+ 	return error;
+ }
+@@ -771,7 +781,7 @@ int aa_fork(struct task_struct *task)
+  */
+ int aa_register(struct linux_binprm *bprm)
+ {
+-	char *filename;
++	char *filename, *filename_buffer = NULL;
+ 	struct file *filp = bprm->file;
+ 	struct aa_profile *profile;
+ 	struct aa_profile *newprofile = NULL, unconstrained_flag;
+@@ -784,7 +794,8 @@ int aa_register(struct linux_binprm *bpr
+ 
+ 	AA_DEBUG("%s\n", __FUNCTION__);
+ 
+-	filename = aa_get_name(filp->f_dentry, filp->f_vfsmnt);
++	filename = aa_get_pathname(filp->f_dentry, filp->f_vfsmnt,
++				   &filename_buffer);
+ 	if (IS_ERR(filename)) {
+ 		AA_WARN("%s: Failed to get filename\n", __FUNCTION__);
+ 		goto out;
+@@ -1036,7 +1047,7 @@ apply_profile:
+ 	}
+ 
+ cleanup:
+-	aa_put_name(filename);
++	aa_put_pathname_buffer(filename_buffer);
+ 
+ 	aa_put_profile(profile);
+ 

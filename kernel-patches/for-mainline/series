@@ -56,6 +56,7 @@ rename-task_struct-vars.diff
 rename-ctx-to-cxt.diff
 d_namespace_path.diff
 apparmor-d_namespace.diff
+alloc-pathnames.diff
 # fix-change_hat.diff
 # apparmor-percpu_path_cache.diff
 # apparmor-path_resize.diff
