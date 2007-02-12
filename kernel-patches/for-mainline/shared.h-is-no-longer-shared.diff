@@ -1,4 +1,5 @@
-shared.h is no longer shared with anything.
+shared.h is no longer shared with anything. Remove it, and put its
+definitions in apparmor.h.
 
 Remove AA_MAY_READ, AA_MAY_WRITE, AA_MAY_AXEC, AA_MAY_APPEND, and
 use the in-kernel versions instead: we are doing that in some
