@@ -1,0 +1,32 @@
+Context is only abbreviated as ctx here, but as cxt everywhere else.
+
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -319,7 +319,7 @@ int aa_audit_syscallreject(struct aa_pro
+ int aa_audit(struct aa_profile *profile, const struct aa_audit *sa)
+ {
+ 	struct audit_buffer *ab = NULL;
+-	struct audit_context *ctx;
++	struct audit_context *cxt;
+ 
+ 	const char *logcls;
+ 	unsigned int flags;
+@@ -378,13 +378,13 @@ int aa_audit(struct aa_profile *profile,
+ 	 * we are rejecting a syscall
+ 	 */
+ 	if (sa->type == AA_AUDITTYPE_SYSCALL) {
+-		ctx = current->audit_context;
++		cxt = current->audit_context;
+ 	} else {
+-		ctx = (flags & AA_AUDITFLAG_AUDITSS_SYSCALL) ?
++		cxt = (flags & AA_AUDITFLAG_AUDITSS_SYSCALL) ?
+ 			current->audit_context : NULL;
+ 	}
+ 
+-	ab = audit_log_start(ctx, gfp_mask, AUDIT_APPARMOR);
++	ab = audit_log_start(cxt, gfp_mask, AUDIT_APPARMOR);
+ 
+ 	if (!ab) {
+ 		AA_ERROR("Unable to log event (%d) to audit subsys\n",

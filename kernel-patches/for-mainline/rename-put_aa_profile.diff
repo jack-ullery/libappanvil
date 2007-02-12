@@ -1,0 +1,327 @@
+Rename put_aa_profile to aa_put_profile for consistency.
+
+Index: b/security/apparmor/apparmorfs.c
+===================================================================
+--- a/security/apparmor/apparmorfs.c
++++ b/security/apparmor/apparmorfs.c
+@@ -170,7 +170,7 @@ static char *aa_simple_write_to_buffer(c
+ 			"profile %s hat %s)\n",
+ 			msg, current->comm, current->pid,
+ 			BASE_PROFILE(profile)->name, profile->name);
+-		put_aa_profile(profile);
++		aa_put_profile(profile);
+ 
+ 		data = ERR_PTR(-EPERM);
+ 		goto out;
+Index: b/security/apparmor/inline.h
+===================================================================
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -25,10 +25,10 @@ static inline struct aa_profile *aa_dup_
+ }
+ 
+ /**
+- * put_aa_profile - decrement refcount on profile @p
++ * aa_put_profile - decrement refcount on profile @p
+  * @p: profile
+  */
+-static inline void put_aa_profile(struct aa_profile *p)
++static inline void aa_put_profile(struct aa_profile *p)
+ {
+ 	if (p)
+ 		kref_put(&BASE_PROFILE(p)->count, free_aa_profile_kref);
+@@ -72,7 +72,7 @@ static inline void aa_switch_to_profile(str
+ 	cxt->caps_logged = CAP_EMPTY_SET;
+ 	cxt->hat_magic = hat_magic;
+ 	rcu_assign_pointer(cxt->profile, aa_dup_profile(newactive));
+-	put_aa_profile(old);
++	aa_put_profile(old);
+ }
+ 
+ /**
+Index: b/security/apparmor/list.c
+===================================================================
+--- a/security/apparmor/list.c
++++ b/security/apparmor/list.c
+@@ -60,7 +60,7 @@ int aa_profilelist_add(struct aa_profile
+ 	write_lock(&profile_lock);
+ 	old_profile = __aa_find_profile(profile->name, &profile_list);
+ 	if (old_profile) {
+-		put_aa_profile(old_profile);
++		aa_put_profile(old_profile);
+ 		goto out;
+ 	}
+ 
+@@ -126,7 +126,7 @@ struct aa_profile *aa_profilelist_replac
+ 		oldprofile->isstale = 1;
+ 
+ 		/* __aa_find_profile incremented count, so adjust down */
+-		put_aa_profile(oldprofile);
++		aa_put_profile(oldprofile);
+ 	}
+ 
+ 	list_add(&profile->list, &profile_list);
+@@ -145,7 +145,7 @@ void aa_profilelist_release(void)
+ 	write_lock(&profile_lock);
+ 	list_for_each_entry_safe(p, tmp, &profile_list, list) {
+ 		list_del_init(&p->list);
+-		put_aa_profile(p);
++		aa_put_profile(p);
+ 	}
+ 	write_unlock(&profile_lock);
+ }
+Index: b/security/apparmor/lsm.c
+===================================================================
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -92,7 +92,7 @@ static int aa_reject_syscall(struct task
+ 
+ 	if (profile) {
+ 		error = aa_audit_syscallreject(profile, flags, name);
+-		put_aa_profile(profile);
++		aa_put_profile(profile);
+ 	}
+ 
+ 	return error;
+@@ -148,7 +148,7 @@ static int apparmor_capable(struct task_
+ 		if (profile)
+ 			error = aa_capability(profile, cap);
+ 
+-		put_aa_profile(profile);
++		aa_put_profile(profile);
+ 	}
+ 
+ 	return error;
+@@ -233,7 +233,7 @@ static int apparmor_inode_mkdir(struct i
+ 	if (profile)
+ 		error = aa_perm_dir(profile, dentry, mnt, "mkdir", MAY_WRITE);
+ 
+-	put_aa_profile(profile);
++	aa_put_profile(profile);
+ 
+ out:
+ 	return error;
+@@ -253,7 +253,7 @@ static int apparmor_inode_rmdir(struct i
+ 	if (profile)
+ 		error = aa_perm_dir(profile, dentry, mnt, "rmdir", MAY_WRITE);
+ 
+-	put_aa_profile(profile);
++	aa_put_profile(profile);
+ 
+ out:
+ 	return error;
+@@ -269,7 +269,7 @@ static int aa_permission(struct inode *i
+ 
+ 		if (profile)
+ 			error = aa_perm(profile, dentry, mnt, mask, leaf);
+-		put_aa_profile(profile);
++		aa_put_profile(profile);
+ 	}
+ 	return error;
+ }
+@@ -297,7 +297,7 @@ static int apparmor_inode_link(struct de
+ 		error = aa_link(profile, new_dentry, new_mnt,
+ 				old_dentry, old_mnt);
+ 
+-	put_aa_profile(profile);
++	aa_put_profile(profile);
+ 
+ out:
+ 	return error;
+@@ -347,7 +347,7 @@ static int apparmor_inode_rename(struct 
+ 					MAY_WRITE, 1);
+ 	}
+ 
+-	put_aa_profile(profile);
++	aa_put_profile(profile);
+ 
+ out:
+ 	return error;
+@@ -395,7 +395,7 @@ static int apparmor_inode_setattr(struct
+ 		if (profile)
+ 			error = aa_attr(profile, dentry, mnt, iattr);
+ 
+-		put_aa_profile(profile);
++		aa_put_profile(profile);
+ 	}
+ 
+ out:
+@@ -414,7 +414,7 @@ static int aa_xattr_permission(struct de
+ 		if (profile)
+ 			error = aa_perm_xattr(profile, dentry, mnt, name,
+ 					      operation, mask);
+-		put_aa_profile(profile);
++		aa_put_profile(profile);
+ 	}
+ 
+ 	return error;
+@@ -522,7 +522,7 @@ static int apparmor_getprocattr(struct t
+ 
+ 	profile = aa_get_profile(p);
+ 	error = aa_getprocattr(profile, str, size);
+-	put_aa_profile(profile);
++	aa_put_profile(profile);
+ 
+ out:
+ 	return error;
+@@ -614,7 +614,7 @@ static int apparmor_setprocattr(struct t
+ 
+ 			error = -EACCES;
+ 		}
+-		put_aa_profile(profile);
++		aa_put_profile(profile);
+ 	} else {
+ 		/* unknown operation */
+ 		AA_WARN("%s: Unknown setprocattr command '%.*s' by task %s(%d) "
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -258,7 +258,7 @@ fail:
+  */
+ void free_null_complain_profile(void)
+ {
+-	put_aa_profile(null_complain_profile);
++	aa_put_profile(null_complain_profile);
+ 	null_complain_profile = NULL;
+ }
+ 
+@@ -1011,7 +1011,7 @@ apply_profile:
+ 			WARN_ON(newprofile == null_complain_profile);
+ 
+ 			/* drop refcnt obtained from earlier aa_dup_profile */
+-			put_aa_profile(newprofile);
++			aa_put_profile(newprofile);
+ 
+ 			newprofile = aa_profilelist_find(filename);
+ 
+@@ -1042,7 +1042,7 @@ apply_profile:
+ 		}
+ 
+ 		aa_switch_to_profile(cxt, newprofile, 0);
+-		put_aa_profile(newprofile);
++		aa_put_profile(newprofile);
+ 
+ 		if (complain && newprofile == null_complain_profile)
+ 			LOG_HINT(newprofile, GFP_ATOMIC, HINT_CHGPROF,
+@@ -1055,7 +1055,7 @@ apply_profile:
+ cleanup:
+ 	aa_put_name(filename);
+ 
+-	put_aa_profile(profile);
++	aa_put_profile(profile);
+ 
+ out:
+ 	return error;
+@@ -1110,7 +1110,7 @@ static inline int do_change_hat(const ch
+ 	if (sub) {
+ 		/* change hat */
+ 		aa_switch_to_profile(cxt, sub, hat_magic);
+-		put_aa_profile(sub);
++		aa_put_profile(sub);
+ 	} else {
+ 		/* There is no such subprofile change to a NULL profile.
+ 		 * The NULL profile grants no file access.
+Index: b/security/apparmor/module_interface.c
+===================================================================
+--- a/security/apparmor/module_interface.c
++++ b/security/apparmor/module_interface.c
+@@ -113,7 +113,7 @@ static inline void task_replace(struct a
+ 			nactive = aa_dup_profile(new->null_profile);
+ 
+ 		aa_switch_to_profile(cxt, nactive, cxt->hat_magic);
+-		put_aa_profile(nactive);
++		aa_put_profile(nactive);
+ 	} else
+ 		aa_switch_to_profile(cxt, new, cxt->hat_magic);
+ }
+@@ -508,7 +508,7 @@ ssize_t aa_file_prof_add(void *data, siz
+ 	} else {
+ 		AA_WARN("trying to add profile (%s) that already exists.\n",
+ 			profile->name);
+-		put_aa_profile(profile);
++		aa_put_profile(profile);
+ 		error = -EEXIST;
+ 	}
+ 
+@@ -572,11 +572,11 @@ ssize_t aa_file_prof_repl(void *udata, s
+ 		aa_task_context_list_iterate(taskreplace_iter, (void *)&data);
+ 
+ 		/* it's off global list, and we are done replacing */
+-		put_aa_profile(data.old_profile);
++		aa_put_profile(data.old_profile);
+ 	}
+ 
+ 	/* release extra reference obtained above (race) */
+-	put_aa_profile(data.new_profile);
++	aa_put_profile(data.new_profile);
+ 
+ 	error = size;
+ 
+@@ -607,7 +607,7 @@ ssize_t aa_file_prof_remove(const char *
+ 					     (void *)old_profile);
+ 
+ 		/* drop reference obtained by aa_profilelist_remove */
+-		put_aa_profile(old_profile);
++		aa_put_profile(old_profile);
+ 	} else {
+ 		AA_WARN("%s: trying to remove profile (%s) that "
+ 			"doesn't exist - skipping.\n", __FUNCTION__, name);
+@@ -618,7 +618,7 @@ ssize_t aa_file_prof_remove(const char *
+ }
+ 
+ /**
+- * free_aa_profile_kref - free aa_profile by kref (called by put_aa_profile)
++ * free_aa_profile_kref - free aa_profile by kref (called by aa_put_profile)
+  * @kr: kref callback for freeing of a profile
+  */
+ void free_aa_profile_kref(struct kref *kr)
+@@ -657,7 +657,7 @@ void free_aa_profile(struct aa_profile *
+ 
+ 	aa_match_free(profile->file_rules);
+ 
+-	/* use free_aa_profile instead of put_aa_profile to destroy the
++	/* use free_aa_profile instead of aa_put_profile to destroy the
+ 	 * null_profile, because the null_profile use the same reference
+ 	 * counting as hats, ie. the count goes to the base profile.
+ 	 */
+@@ -665,7 +665,7 @@ void free_aa_profile(struct aa_profile *
+ 	list_for_each_entry_safe(p, ptmp, &profile->sub, list) {
+ 		list_del_init(&p->list);
+ 		p->parent = NULL;
+-		put_aa_profile(p);
++		aa_put_profile(p);
+ 	}
+ 
+ 	if (profile->name) {
+Index: b/security/apparmor/procattr.c
+===================================================================
+--- a/security/apparmor/procattr.c
++++ b/security/apparmor/procattr.c
+@@ -262,7 +262,7 @@ int aa_setprocattr_setprofile(struct tas
+ 					name);
+ 
+ 				error = -ENOMEM;
+-				put_aa_profile(profile);
++				aa_put_profile(profile);
+ 
+ 				goto out;
+ 			}
+@@ -282,7 +282,7 @@ int aa_setprocattr_setprofile(struct tas
+ 			WARN_ON(profile == null_complain_profile);
+ 
+ 			/* drop refcnt obtained from earlier aa_dup_profile */
+-			put_aa_profile(profile);
++			aa_put_profile(profile);
+ 			profile = aa_profilelist_find(name);
+ 
+ 			if (!profile) {
+@@ -309,7 +309,7 @@ int aa_setprocattr_setprofile(struct tas
+ 			name);
+ 
+ 		aa_switch_to_profile(cxt, profile, 0);
+-		put_aa_profile(profile);
++		aa_put_profile(profile);
+ 	}
+ 
+ 	spin_unlock_irqrestore(&cxt_lock, flags);

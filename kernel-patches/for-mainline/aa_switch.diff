@@ -1,6 +1,7 @@
-Rename aa_switch() to aa_switch_profile(), and replace
-aa_switch_unconfined(task) with aa_switch_profile(task, NULL, 0):
-this is easier to understand; we want to make it more explicit
+Rename aa_switch() to aa_switch_to_profile(), and replace
+aa_switch_unconfined(task) with aa_switch_to_profile(task, NULL, 0):
+this is easier to understand. Pass the hat magic to switch to to
+aa_switch_to_profile as well: we want to make it more explicit
 which profile switches go together with which hat changes!
 
 The entire change hat logic looks very questionable to me; it is
@@ -20,7 +21,7 @@ Index: b/security/apparmor/inline.h
  
  /**
 - * aa_switch - change aa_task_context to use a new profile
-+ * aa_switch_profile - change aa_task_context to use a new profile
++ * aa_switch_to_profile - change aa_task_context to use a new profile
   * @cxt: aa_task_context to switch the active profile on
 - * @newactive: new active profile
 + * @newactive: new active profile (NULL for unconfined)
@@ -35,16 +36,16 @@ Index: b/security/apparmor/inline.h
 - */
 -static inline void aa_switch(struct aa_task_context *cxt,
 -			     struct aa_profile *newactive)
-+ * aa_switch_profile handles the changing of a aa_task_context's active
++ * aa_switch_to_profile handles the changing of a aa_task_context's active
 + * profile.  The cxt_lock must be held to ensure consistency against
 + * other writers.  Some write paths (ex. aa_register) require
 + * cxt->active not to change over several operations, so the calling
 + * function is responsible for grabing the cxt_lock to meet its
-+ * consistency constraints before calling aa_switch_profile
++ * consistency constraints before calling aa_switch_to_profile
 + */
-+static inline void aa_switch_profile(struct aa_task_context *cxt,
-+				     struct aa_profile *newactive,
-+				     u32 hat_magic)
++static inline void aa_switch_to_profile(struct aa_task_context *cxt,
++					struct aa_profile *newactive,
++					u32 hat_magic)
  {
 -	struct aa_profile *oldactive = cxt->active;
 +	struct aa_profile *old = cxt->active;
@@ -104,7 +105,7 @@ Index: b/security/apparmor/main.c
  		spin_lock_irqsave(&cxt_lock, flags);
 -		aa_switch(newcxt, cxt->active);
 -		newcxt->hat_magic = cxt->hat_magic;
-+		aa_switch_profile(newcxt, cxt->active, cxt->hat_magic);
++		aa_switch_to_profile(newcxt, cxt->active, cxt->hat_magic);
  		spin_unlock_irqrestore(&cxt_lock, flags);
  
  		if (APPARMOR_COMPLAIN(cxt) &&
@@ -113,7 +114,7 @@ Index: b/security/apparmor/main.c
  		}
  
 -		aa_switch(cxt, newprofile);
-+		aa_switch_profile(cxt, newprofile, 0);
++		aa_switch_to_profile(cxt, newprofile, 0);
  		put_aa_profile(newprofile);
  
  		if (complain && newprofile == null_complain_profile)
@@ -124,7 +125,7 @@ Index: b/security/apparmor/main.c
 - * writers. There may still be other readers so we must still use aa_switch
 - * to put the aa_task_context's reference safely.
 + * writers. There may still be other readers so we must still use
-+ * aa_switch_profile to put the aa_task_context's reference safely.
++ * aa_switch_to_profile to put the aa_task_context's reference safely.
   */
  void aa_release(struct task_struct *p)
  {
@@ -133,7 +134,7 @@ Index: b/security/apparmor/main.c
  
  		aa_task_context_list_remove(cxt);
 -		aa_switch_unconfined(cxt);
-+		aa_switch_profile(cxt, NULL, 0);
++		aa_switch_to_profile(cxt, NULL, 0);
  
  		kfree(cxt);
  	}
@@ -153,7 +154,7 @@ Index: b/security/apparmor/main.c
  	if (sub) {
  		/* change hat */
 -		aa_switch(cxt, sub);
-+		aa_switch_profile(cxt, sub, hat_magic);
++		aa_switch_to_profile(cxt, sub, hat_magic);
  		put_aa_profile(sub);
  	} else {
  		/* There is no such subprofile change to a NULL profile.
@@ -171,7 +172,7 @@ Index: b/security/apparmor/main.c
  			error = -EACCES;
  		}
 -		aa_switch(cxt, cxt->active->null_profile);
-+		aa_switch_profile(cxt, cxt->active->null_profile, hat_magic);
++		aa_switch_to_profile(cxt, cxt->active->null_profile, hat_magic);
  	}
  
  	return error;
@@ -185,7 +186,7 @@ Index: b/security/apparmor/main.c
  		} else {
  			/* Got here via changehat(NULL, magic)
  			 *
-@@ -1212,21 +1221,20 @@ int aa_change_hat(const char *hat_name, 
+@@ -1212,21 +1221,21 @@ int aa_change_hat(const char *hat_name, 
  		 * Handle special casing of NULL magic which confines task
  		 * to subprofile and prohibits further changehats
  		 */
@@ -202,7 +203,8 @@ Index: b/security/apparmor/main.c
 -				 * New value will be passed on next changehat
 -				 */
 -				cxt->hat_magic = 0;
-+				aa_switch_profile(cxt, cxt->active->parent, 0);
++				aa_switch_to_profile(cxt, cxt->active->parent,
++						     0);
  			} else {
 -				/* change to another (sibling) profile */
 -				error = do_change_hat(hat_name, cxt);
@@ -215,7 +217,7 @@ Index: b/security/apparmor/main.c
  			}
  		} else if (cxt->hat_magic) {
  			AA_ERROR("KILLING process %s(%d) "
-@@ -1240,7 +1248,7 @@ int aa_change_hat(const char *hat_name, 
+@@ -1240,7 +1249,7 @@ int aa_change_hat(const char *hat_name, 
  
  			/* terminate current process */
  			(void)send_sig_info(SIGKILL, NULL, current);
@@ -233,7 +235,7 @@ Index: b/security/apparmor/lsm.c
  			 BASE_PROFILE(cxt->active),
  			 cxt->active->name, cxt->active);
 -		aa_switch_unconfined(cxt);
-+		aa_switch_profile(cxt, NULL, 0);
++		aa_switch_to_profile(cxt, NULL, 0);
  	}
  
  	return 0;
@@ -246,7 +248,7 @@ Index: b/security/apparmor/procattr.c
  				cxt->active->name);
  
 -			aa_switch_unconfined(cxt);
-+			aa_switch_profile(cxt, NULL, 0);
++			aa_switch_to_profile(cxt, NULL, 0);
  		} else {
  			AA_WARN("%s: task %s(%d) "
  				"is already unconstrained\n",
@@ -265,7 +267,7 @@ Index: b/security/apparmor/procattr.c
 -		 * calling aa_switch
 -		 */
 -		cxt->hat_magic = 0;
-+		aa_switch_profile(cxt, profile, 0);
++		aa_switch_to_profile(cxt, profile, 0);
 +		put_aa_profile(profile);
  	}
  
@@ -279,7 +281,7 @@ Index: b/security/apparmor/module_interface.c
  		 cxt->active->name);
  
 -	aa_switch_unconfined(cxt);
-+	aa_switch_profile(cxt, NULL, 0);
++	aa_switch_to_profile(cxt, NULL, 0);
  }
  
  /** taskremove_iter - Iterator to unconfine aa_task_contexts which match cookie
@@ -297,7 +299,7 @@ Index: b/security/apparmor/module_interface.c
  			nactive = aa_dup_profile(new->null_profile);
  
 -		aa_switch(cxt, nactive);
-+		aa_switch_profile(cxt, nactive, cxt->hat_magic);
++		aa_switch_to_profile(cxt, nactive, cxt->hat_magic);
  		put_aa_profile(nactive);
 -	} else {
 -		aa_switch(cxt, new);
@@ -306,7 +308,7 @@ Index: b/security/apparmor/module_interface.c
 - out:
 -	return;
 +	} else
-+		aa_switch_profile(cxt, new, cxt->hat_magic);
++		aa_switch_to_profile(cxt, new, cxt->hat_magic);
  }
  
  /** taskreplace_iter - Iterator to replace a aa_task_context's profile

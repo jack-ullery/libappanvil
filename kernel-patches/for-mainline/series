@@ -50,8 +50,12 @@ replace-activeptr.diff
 fix-capabilities.diff
 comment-wrong.diff
 aa_switch.diff
-active-really-is-a-profile.diff
+rename-aa_task_context-active.diff
+rename-put_aa_profile.diff
+rename-task_struct-vars.diff
+rename-ctx-to-cxt.diff
 d_namespace_path.diff
 apparmor-d_namespace.diff
+# fix-change_hat.diff
 # apparmor-percpu_path_cache.diff
 # apparmor-path_resize.diff
