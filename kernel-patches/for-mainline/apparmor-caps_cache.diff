@@ -49,7 +49,7 @@ Index: b/security/apparmor/main.c
 +			error = 0;
 +		return error;
 +	} else
-+		cap_combine(sd->caps_logged, cap);
++		cap_raise(sd->caps_logged, cap);
  
  	sa.type = AA_AUDITTYPE_CAP;
  	sa.name = NULL;
