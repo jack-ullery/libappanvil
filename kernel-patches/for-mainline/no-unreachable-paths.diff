@@ -81,7 +81,7 @@ Index: b/fs/proc/base.c
 ===================================================================
 --- a/fs/proc/base.c
 +++ b/fs/proc/base.c
-@@ -356,13 +356,16 @@ static const struct inode_operations pro
+@@ -353,13 +353,16 @@ static const struct inode_operations pro
  	.setattr	= proc_setattr,
  };
  
@@ -99,7 +99,7 @@ Index: b/fs/proc/base.c
  {
  	struct task_struct *task = get_proc_task(inode);
  	struct mnt_namespace *ns = NULL;
-@@ -385,12 +388,16 @@ static int mounts_open(struct inode *ino
+@@ -382,12 +385,16 @@ static int mounts_open(struct inode *ino
  		p = kmalloc(sizeof(struct proc_mounts), GFP_KERNEL);
  		if (p) {
  			file->private_data = &p->m;
@@ -117,7 +117,7 @@ Index: b/fs/proc/base.c
  			kfree(p);
  		}
  		put_mnt_ns(ns);
-@@ -398,17 +405,25 @@ static int mounts_open(struct inode *ino
+@@ -395,17 +402,25 @@ static int mounts_open(struct inode *ino
  	return ret;
  }
  
@@ -146,7 +146,7 @@ Index: b/fs/proc/base.c
  	struct mnt_namespace *ns = p->m.private;
  	unsigned res = 0;
  
-@@ -435,31 +450,7 @@ static const struct file_operations proc
+@@ -432,31 +447,7 @@ static const struct file_operations proc
  extern struct seq_operations mountstats_op;
  static int mountstats_open(struct inode *inode, struct file *file)
  {

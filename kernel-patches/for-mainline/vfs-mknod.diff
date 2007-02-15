@@ -7,7 +7,7 @@ Index: b/fs/ecryptfs/inode.c
 ===================================================================
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -552,11 +552,14 @@ ecryptfs_mknod(struct inode *dir, struct
+@@ -563,11 +563,14 @@ ecryptfs_mknod(struct inode *dir, struct
  {
  	int rc;
  	struct dentry *lower_dentry;
@@ -71,7 +71,7 @@ Index: b/include/linux/fs.h
 ===================================================================
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -980,7 +980,7 @@ extern void unlock_super(struct super_bl
+@@ -981,7 +981,7 @@ extern void unlock_super(struct super_bl
  extern int vfs_permission(struct nameidata *, int);
  extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
  extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);

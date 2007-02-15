@@ -11,7 +11,7 @@ Index: b/mm/filemap.c
 ===================================================================
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -1869,9 +1869,9 @@ repeat:
+@@ -1849,9 +1849,9 @@ repeat:
   *	if suid or (sgid and xgrp)
   *		remove privs
   */
@@ -23,7 +23,7 @@ Index: b/mm/filemap.c
  	int kill = 0;
  
  	/* suid always must be killed */
-@@ -1892,20 +1892,20 @@ int should_remove_suid(struct dentry *de
+@@ -1872,20 +1872,20 @@ int should_remove_suid(struct dentry *de
  }
  EXPORT_SYMBOL(should_remove_suid);
  
@@ -49,7 +49,7 @@ Index: b/mm/filemap.c
  
  	return 0;
  }
-@@ -2266,7 +2266,7 @@ __generic_file_aio_write_nolock(struct k
+@@ -2246,7 +2246,7 @@ __generic_file_aio_write_nolock(struct k
  	if (count == 0)
  		goto out;
  
@@ -114,7 +114,7 @@ Index: b/fs/xfs/linux-2.6/xfs_lrw.c
 ===================================================================
 --- a/fs/xfs/linux-2.6/xfs_lrw.c
 +++ b/fs/xfs/linux-2.6/xfs_lrw.c
-@@ -805,7 +805,7 @@ start:
+@@ -799,7 +799,7 @@ start:
  	     !capable(CAP_FSETID)) {
  		error = xfs_write_clear_setuid(xip);
  		if (likely(!error))
@@ -127,7 +127,7 @@ Index: b/include/linux/fs.h
 ===================================================================
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -1678,9 +1678,9 @@ extern void __iget(struct inode * inode)
+@@ -1685,9 +1685,9 @@ extern void __iget(struct inode * inode)
  extern void clear_inode(struct inode *);
  extern void destroy_inode(struct inode *);
  extern struct inode *new_inode(struct super_block *);
@@ -137,9 +137,9 @@ Index: b/include/linux/fs.h
 +extern int __remove_suid(struct path *, int);
 +extern int should_remove_suid(struct path *);
 +extern int remove_suid(struct path *);
- extern void remove_dquot_ref(struct super_block *, int, struct list_head *);
  
  extern void __insert_inode_hash(struct inode *, unsigned long hashval);
+ extern void remove_inode_hash(struct inode *);
 Index: b/mm/filemap_xip.c
 ===================================================================
 --- a/mm/filemap_xip.c

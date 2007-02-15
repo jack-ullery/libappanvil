@@ -78,7 +78,7 @@ Index: b/security/selinux/hooks.c
 ===================================================================
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2135,7 +2135,8 @@ static int selinux_inode_init_security(s
+@@ -2178,7 +2178,8 @@ static int selinux_inode_init_security(s
  	return 0;
  }
  

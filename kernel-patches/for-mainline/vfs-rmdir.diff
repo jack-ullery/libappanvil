@@ -7,7 +7,7 @@ Index: b/fs/ecryptfs/inode.c
 ===================================================================
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -534,14 +534,16 @@ out:
+@@ -545,14 +545,16 @@ out:
  static int ecryptfs_rmdir(struct inode *dir, struct dentry *dentry)
  {
  	struct dentry *lower_dentry;
@@ -90,7 +90,7 @@ Index: b/include/linux/fs.h
 ===================================================================
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -983,7 +983,7 @@ extern int vfs_mkdir(struct inode *, str
+@@ -984,7 +984,7 @@ extern int vfs_mkdir(struct inode *, str
  extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
  extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
  extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);

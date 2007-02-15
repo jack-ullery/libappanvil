@@ -7,7 +7,7 @@ Index: b/fs/ecryptfs/inode.c
 ===================================================================
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -590,19 +590,24 @@ ecryptfs_rename(struct inode *old_dir, s
+@@ -601,19 +601,24 @@ ecryptfs_rename(struct inode *old_dir, s
  {
  	int rc;
  	struct dentry *lower_old_dentry;
@@ -110,7 +110,7 @@ Index: b/include/linux/fs.h
 ===================================================================
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -985,7 +985,7 @@ extern int vfs_symlink(struct inode *, s
+@@ -986,7 +986,7 @@ extern int vfs_symlink(struct inode *, s
  extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
  extern int vfs_rmdir(struct inode *, struct dentry *, struct vfsmount *);
  extern int vfs_unlink(struct inode *, struct dentry *, struct vfsmount *);

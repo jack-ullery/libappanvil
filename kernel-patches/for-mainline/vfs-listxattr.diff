@@ -84,7 +84,7 @@ Index: b/include/linux/xattr.h
 ===================================================================
 --- a/include/linux/xattr.h
 +++ b/include/linux/xattr.h
-@@ -42,7 +42,8 @@ struct xattr_handler {
+@@ -48,7 +48,8 @@ struct xattr_handler {
  
  ssize_t vfs_getxattr(struct dentry *, struct vfsmount *, char *, void *,
  		     size_t);

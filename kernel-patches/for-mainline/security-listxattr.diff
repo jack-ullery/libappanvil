@@ -80,7 +80,7 @@ Index: b/security/selinux/hooks.c
 ===================================================================
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2358,7 +2358,7 @@ static int selinux_inode_getxattr (struc
+@@ -2401,7 +2401,7 @@ static int selinux_inode_getxattr (struc
  	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
  }
  

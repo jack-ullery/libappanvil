@@ -76,7 +76,7 @@ Index: b/security/selinux/hooks.c
 ===================================================================
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2177,11 +2177,12 @@ static int selinux_inode_rmdir(struct in
+@@ -2220,11 +2220,12 @@ static int selinux_inode_rmdir(struct in
  	return may_link(dir, dentry, MAY_RMDIR);
  }
  

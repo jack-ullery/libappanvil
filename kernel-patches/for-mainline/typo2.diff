@@ -1,0 +1,17 @@
+---
+ security/apparmor/inline.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: b/security/apparmor/inline.h
+===================================================================
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -60,7 +60,7 @@ static inline struct aa_profile *aa_get_
+  * profile.  The cxt_lock must be held to ensure consistency against
+  * other writers.  Some write paths (ex. aa_register) require
+  * cxt->profile not to change over several operations, so the calling
+- * function is responsible for grabing the cxt_lock to meet its
++ * function is responsible for grabbing the cxt_lock to meet its
+  * consistency constraints before calling aa_switch_to_profile
+  */
+ static inline void aa_switch_to_profile(struct aa_task_context *cxt,

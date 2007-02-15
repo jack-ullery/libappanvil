@@ -95,7 +95,7 @@ Index: b/security/selinux/hooks.c
 ===================================================================
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2141,11 +2141,16 @@ static int selinux_inode_create(struct i
+@@ -2184,11 +2184,16 @@ static int selinux_inode_create(struct i
  	return may_create(dir, dentry, SECCLASS_FILE);
  }
  

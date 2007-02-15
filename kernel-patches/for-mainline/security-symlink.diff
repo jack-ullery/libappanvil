@@ -78,7 +78,7 @@ Index: b/security/selinux/hooks.c
 ===================================================================
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2161,7 +2161,8 @@ static int selinux_inode_unlink(struct i
+@@ -2204,7 +2204,8 @@ static int selinux_inode_unlink(struct i
  	return may_link(dir, dentry, MAY_UNLINK);
  }
  

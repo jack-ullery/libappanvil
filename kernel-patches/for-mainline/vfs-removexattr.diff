@@ -79,7 +79,7 @@ Index: b/include/linux/xattr.h
 ===================================================================
 --- a/include/linux/xattr.h
 +++ b/include/linux/xattr.h
-@@ -46,7 +46,7 @@ ssize_t vfs_listxattr(struct dentry *d, 
+@@ -52,7 +52,7 @@ ssize_t vfs_listxattr(struct dentry *d, 
  		      size_t size);
  int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,
  		 int);

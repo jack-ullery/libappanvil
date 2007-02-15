@@ -77,7 +77,7 @@ Index: b/security/selinux/hooks.c
 ===================================================================
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2166,7 +2166,8 @@ static int selinux_inode_symlink(struct 
+@@ -2209,7 +2209,8 @@ static int selinux_inode_symlink(struct 
  	return may_create(dir, dentry, SECCLASS_LNK_FILE);
  }
  

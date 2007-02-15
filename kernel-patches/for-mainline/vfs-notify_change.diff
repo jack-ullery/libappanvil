@@ -31,7 +31,7 @@ Index: b/include/linux/fs.h
 ===================================================================
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -1457,8 +1457,8 @@ static inline int break_lease(struct ino
+@@ -1458,8 +1458,8 @@ static inline int break_lease(struct ino
  
  /* fs/open.c */
  
@@ -42,7 +42,7 @@ Index: b/include/linux/fs.h
  extern long do_sys_open(int fdf, const char __user *filename, int flags,
  			int mode);
  extern struct file *filp_open(const char *, int, int);
-@@ -1605,7 +1605,7 @@ extern int do_remount_sb(struct super_bl
+@@ -1612,7 +1612,7 @@ extern int do_remount_sb(struct super_bl
  #ifdef CONFIG_BLOCK
  extern sector_t bmap(struct inode *, sector_t);
  #endif
@@ -55,7 +55,7 @@ Index: b/fs/ecryptfs/inode.c
 ===================================================================
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -856,12 +856,14 @@ static int ecryptfs_setattr(struct dentr
+@@ -873,12 +873,14 @@ static int ecryptfs_setattr(struct dentr
  {
  	int rc = 0;
  	struct dentry *lower_dentry;
@@ -70,7 +70,7 @@ Index: b/fs/ecryptfs/inode.c
  	inode = dentry->d_inode;
  	lower_inode = ecryptfs_inode_to_lower(inode);
  	if (ia->ia_valid & ATTR_SIZE) {
-@@ -876,7 +878,7 @@ static int ecryptfs_setattr(struct dentr
+@@ -893,7 +895,7 @@ static int ecryptfs_setattr(struct dentr
  		if (rc < 0)
  			goto out;
  	}
@@ -294,7 +294,7 @@ Index: b/fs/sysfs/file.c
 ===================================================================
 --- a/fs/sysfs/file.c
 +++ b/fs/sysfs/file.c
-@@ -526,7 +526,7 @@ int sysfs_chmod_file(struct kobject *kob
+@@ -560,7 +560,7 @@ int sysfs_chmod_file(struct kobject *kob
  			newattrs.ia_mode = (mode & S_IALLUGO) |
  						(inode->i_mode & ~S_IALLUGO);
  			newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
@@ -329,7 +329,7 @@ Index: b/mm/filemap.c
 ===================================================================
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -1897,7 +1897,7 @@ int __remove_suid(struct path *path, int
+@@ -1877,7 +1877,7 @@ int __remove_suid(struct path *path, int
  	struct iattr newattrs;
  
  	newattrs.ia_valid = ATTR_FORCE | kill;
@@ -342,7 +342,7 @@ Index: b/fs/exec.c
 ===================================================================
 --- a/fs/exec.c
 +++ b/fs/exec.c
-@@ -1534,7 +1534,8 @@ int do_coredump(long signr, int exit_cod
+@@ -1532,7 +1532,8 @@ int do_coredump(long signr, int exit_cod
  		goto close_fail;
  	if (!file->f_op->write)
  		goto close_fail;

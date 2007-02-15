@@ -82,7 +82,7 @@ Index: b/security/selinux/hooks.c
 ===================================================================
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2352,7 +2352,8 @@ static void selinux_inode_post_setxattr(
+@@ -2395,7 +2395,8 @@ static void selinux_inode_post_setxattr(
  	return;
  }
  

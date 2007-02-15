@@ -85,7 +85,7 @@ Index: b/security/selinux/hooks.c
 ===================================================================
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2226,11 +2226,12 @@ static int selinux_inode_permission(stru
+@@ -2269,11 +2269,12 @@ static int selinux_inode_permission(stru
  			       file_mask_to_av(inode->i_mode, mask), NULL);
  }
  

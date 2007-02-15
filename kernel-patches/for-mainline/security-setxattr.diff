@@ -144,7 +144,7 @@ Index: b/security/selinux/hooks.c
 ===================================================================
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2264,7 +2264,9 @@ static int selinux_inode_getattr(struct 
+@@ -2307,7 +2307,9 @@ static int selinux_inode_getattr(struct 
  	return dentry_has_perm(current, mnt, dentry, FILE__GETATTR);
  }
  
@@ -155,7 +155,7 @@ Index: b/security/selinux/hooks.c
  {
  	struct task_security_struct *tsec = current->security;
  	struct inode *inode = dentry->d_inode;
-@@ -2324,7 +2326,9 @@ static int selinux_inode_setxattr(struct
+@@ -2367,7 +2369,9 @@ static int selinux_inode_setxattr(struct
  			    &ad);
  }
  

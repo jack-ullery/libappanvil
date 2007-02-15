@@ -105,7 +105,7 @@ Index: b/security/selinux/hooks.c
 ===================================================================
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2197,8 +2197,12 @@ static int selinux_inode_mknod(struct in
+@@ -2240,8 +2240,12 @@ static int selinux_inode_mknod(struct in
  	return may_create(dir, dentry, inode_mode_to_security_class(mode));
  }
  

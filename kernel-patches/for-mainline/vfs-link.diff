@@ -30,7 +30,7 @@ Index: b/include/linux/fs.h
 ===================================================================
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -982,7 +982,7 @@ extern int vfs_create(struct inode *, st
+@@ -983,7 +983,7 @@ extern int vfs_create(struct inode *, st
  extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
  extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
  extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
@@ -43,7 +43,7 @@ Index: b/fs/ecryptfs/inode.c
 ===================================================================
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -403,19 +403,24 @@ static int ecryptfs_link(struct dentry *
+@@ -414,19 +414,24 @@ static int ecryptfs_link(struct dentry *
  			 struct dentry *new_dentry)
  {
  	struct dentry *lower_old_dentry;

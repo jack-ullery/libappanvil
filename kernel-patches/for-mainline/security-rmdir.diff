@@ -81,7 +81,7 @@ Index: b/security/selinux/hooks.c
 ===================================================================
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2178,7 +2178,8 @@ static int selinux_inode_mkdir(struct in
+@@ -2221,7 +2221,8 @@ static int selinux_inode_mkdir(struct in
  	return may_create(dir, dentry, SECCLASS_DIR);
  }
  

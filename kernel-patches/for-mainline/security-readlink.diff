@@ -79,7 +79,7 @@ Index: b/security/selinux/hooks.c
 ===================================================================
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2196,7 +2196,7 @@ static int selinux_inode_rename(struct i
+@@ -2239,7 +2239,7 @@ static int selinux_inode_rename(struct i
  	return may_rename(old_inode, old_dentry, new_inode, new_dentry);
  }
  

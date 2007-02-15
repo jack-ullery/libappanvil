@@ -1,5 +1,6 @@
 security-create.diff
 proc_setattr.diff 
+proc_sys_setattr.diff
 remove_suid.diff
 vfs-notify_change.diff
 security-setattr.diff
@@ -60,6 +61,7 @@ apparmor-d_namespace.diff
 alloc-pathnames.diff
 fix-change_hat.diff
 typo.diff 
+typo2.diff 
 reintroduce-revalidation.diff
 remove-debug-flag.diff 
 rename-profile-lock.diff

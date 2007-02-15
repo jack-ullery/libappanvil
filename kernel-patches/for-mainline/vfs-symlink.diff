@@ -7,7 +7,7 @@ Index: b/fs/ecryptfs/inode.c
 ===================================================================
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -462,6 +462,7 @@ static int ecryptfs_symlink(struct inode
+@@ -473,6 +473,7 @@ static int ecryptfs_symlink(struct inode
  {
  	int rc;
  	struct dentry *lower_dentry;
@@ -15,7 +15,7 @@ Index: b/fs/ecryptfs/inode.c
  	struct dentry *lower_dir_dentry;
  	umode_t mode;
  	char *encoded_symname;
-@@ -470,6 +471,7 @@ static int ecryptfs_symlink(struct inode
+@@ -481,6 +482,7 @@ static int ecryptfs_symlink(struct inode
  
  	lower_dentry = ecryptfs_dentry_to_lower(dentry);
  	dget(lower_dentry);
@@ -23,7 +23,7 @@ Index: b/fs/ecryptfs/inode.c
  	lower_dir_dentry = lock_parent(lower_dentry);
  	mode = S_IALLUGO;
  	encoded_symlen = ecryptfs_encode_filename(crypt_stat, symname,
-@@ -479,7 +481,7 @@ static int ecryptfs_symlink(struct inode
+@@ -490,7 +492,7 @@ static int ecryptfs_symlink(struct inode
  		rc = encoded_symlen;
  		goto out_lock;
  	}
@@ -95,7 +95,7 @@ Index: b/include/linux/fs.h
 ===================================================================
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -981,7 +981,7 @@ extern int vfs_permission(struct nameida
+@@ -982,7 +982,7 @@ extern int vfs_permission(struct nameida
  extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
  extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
  extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
