@@ -15,7 +15,7 @@ Index: b/security/apparmor/apparmor.h
 ===================================================================
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
-@@ -108,7 +108,6 @@ struct aa_profile {
+@@ -109,7 +109,6 @@ struct aa_profile {
  	struct list_head list;
  	struct list_head sub;
  	struct {

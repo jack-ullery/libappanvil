@@ -4,7 +4,7 @@ Index: b/security/apparmor/lsm.c
 ===================================================================
 --- a/security/apparmor/lsm.c
 +++ b/security/apparmor/lsm.c
-@@ -445,6 +445,55 @@ static int apparmor_inode_removexattr(st
+@@ -450,6 +450,55 @@ static int apparmor_inode_removexattr(st
  				   MAY_WRITE);
  }
  
@@ -60,7 +60,7 @@ Index: b/security/apparmor/lsm.c
  static inline int aa_mmap(struct file *file, unsigned long prot,
  			  unsigned long flags)
  {
-@@ -668,6 +717,9 @@ struct security_operations apparmor_ops 
+@@ -673,6 +722,9 @@ struct security_operations apparmor_ops 
  	.inode_getxattr =		apparmor_inode_getxattr,
  	.inode_listxattr =		apparmor_inode_listxattr,
  	.inode_removexattr =		apparmor_inode_removexattr,

@@ -19,7 +19,15 @@ Index: b/security/apparmor/apparmor.h
 ===================================================================
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
-@@ -215,7 +215,6 @@ extern int aa_audit_message(struct aa_pr
+@@ -41,6 +41,7 @@ extern int apparmor_complain;
+ extern int apparmor_debug;
+ extern int apparmor_audit;
+ extern int apparmor_logsyscall;
++extern int apparmor_path_max;
+ 
+ static inline int mediated_filesystem(struct inode *inode)
+ {
+@@ -215,7 +216,6 @@ extern int aa_audit_message(struct aa_pr
  extern int aa_audit_syscallreject(struct aa_profile *profile, gfp_t gfp,
  				  const char *);
  extern int aa_audit(struct aa_profile *profile, const struct aa_audit *);
@@ -79,7 +87,7 @@ Index: b/security/apparmor/main.c
 +
 +		kfree(buf);
 +		size <<= 1;
-+		if (size > 2 * PAGE_SIZE)
++		if (size > apparmor_path_max)
 +			return ERR_PTR(-ENAMETOOLONG);
 +	}
 +}
@@ -193,3 +201,19 @@ Index: b/security/apparmor/main.c
  
  	aa_put_profile(profile);
  
+Index: b/security/apparmor/lsm.c
+===================================================================
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -54,6 +54,11 @@ int apparmor_logsyscall = 0;
+ module_param_named(logsyscall, apparmor_logsyscall, int, S_IRUSR);
+ MODULE_PARM_DESC(apparmor_logsyscall, "Toggle AppArmor logsyscall mode");
+ 
++/* Maximum pathname length before accesses will start getting rejected */
++int apparmor_path_max = 2 * PATH_MAX;
++module_param_named(path_max, apparmor_path_max, int, S_IRUSR);
++MODULE_PARM_DESC(apparmor_path_max, "Maximum pathname length allowed");
++
+ #ifndef MODULE
+ static int __init aa_getopt_complain(char *str)
+ {
