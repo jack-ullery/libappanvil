@@ -217,3 +217,17 @@ Index: b/security/apparmor/lsm.c
  #ifndef MODULE
  static int __init aa_getopt_complain(char *str)
  {
+@@ -82,6 +87,13 @@ static int __init aa_getopt_logsyscall(c
+ 	return 1;
+ }
+ __setup("apparmor_logsyscall=", aa_getopt_logsyscall);
++
++static int __init aa_getopt_path_max(char *str)
++{
++	get_option(&str, &apparmor_path_max);
++	return 1;
++}
++__setup("apparmor_path_max=", aa_getopt_path_max);
+ #endif
+ 
+ static int aa_reject_syscall(struct task_struct *task, gfp_t flags,
