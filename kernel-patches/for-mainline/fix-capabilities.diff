@@ -112,7 +112,7 @@ Index: b/security/apparmor/apparmor.h
 ===================================================================
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
-@@ -274,9 +274,6 @@ extern int aa_setprocattr_setprofile(str
+@@ -267,9 +267,6 @@ extern int aa_setprocattr_setprofile(str
  extern int create_apparmorfs(void);
  extern void destroy_apparmorfs(void);
  

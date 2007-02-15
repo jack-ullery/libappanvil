@@ -30,8 +30,8 @@ d_path-lazy-unmounts.diff
 no-unreachable-paths.diff
 # security_chroot.diff
 apparmor-audit.diff
-apparmor-intree.diff
 apparmor.diff
+apparmor-intree.diff
 apparmor-inode_symlink.diff
 apparmor-aa_permission.diff 
 apparmor-ditch-revalidation.diff 
@@ -58,10 +58,11 @@ rename-ctx-to-cxt.diff
 d_namespace_path.diff
 apparmor-d_namespace.diff
 alloc-pathnames.diff
-# fix-change_hat.diff
+fix-change_hat.diff
 typo.diff 
 reintroduce-revalidation.diff
 remove-debug-flag.diff 
 rename-profile-lock.diff
 match-features.diff
 match-changes.diff
+rename-audit_context.diff

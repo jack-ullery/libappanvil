@@ -7,28 +7,19 @@ Index: b/security/apparmor/apparmor.h
 ===================================================================
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
-@@ -145,9 +145,6 @@ struct aa_task_context {
+@@ -145,8 +145,10 @@ struct aa_task_context {
  
  typedef int (*aa_iter) (struct aa_task_context *, void *);
  
 -#define AA_TASK_CONTEXT(sec)	((struct aa_task_context*)(sec))
 -#define AA_PROFILE(sec)		((struct aa_profile*)(sec))
--
- static inline int aa_is_confined(struct task_struct *task)
- {
- 	struct aa_task_context *cxt = (struct aa_task_context *)task->security;
-@@ -155,6 +152,11 @@ static inline int aa_is_confined(struct 
- 	return cxt && cxt->active;
- }
- 
 +static inline struct aa_task_context *aa_task_context(struct task_struct *task)
 +{
 +	return (struct aa_task_context *)task->security;
 +}
-+
+ 
  /* Lock protecting access to 'struct aa_task_context' accesses */
  extern spinlock_t cxt_lock;
- 
 Index: b/security/apparmor/inline.h
 ===================================================================
 --- a/security/apparmor/inline.h

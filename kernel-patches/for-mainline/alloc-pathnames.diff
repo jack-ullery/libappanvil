@@ -19,7 +19,7 @@ Index: b/security/apparmor/apparmor.h
 ===================================================================
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
-@@ -222,7 +222,6 @@ extern int aa_audit_message(struct aa_pr
+@@ -215,7 +215,6 @@ extern int aa_audit_message(struct aa_pr
  extern int aa_audit_syscallreject(struct aa_profile *profile, gfp_t gfp,
  				  const char *);
  extern int aa_audit(struct aa_profile *profile, const struct aa_audit *);

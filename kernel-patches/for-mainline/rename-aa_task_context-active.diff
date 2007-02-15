@@ -44,16 +44,7 @@ Index: b/security/apparmor/apparmor.h
  	u32 hat_magic;			/* used with change_hat */
  	struct list_head list;
  	struct task_struct *task;
-@@ -147,7 +147,7 @@ static inline int aa_is_confined(struct 
- {
- 	struct aa_task_context *cxt = (struct aa_task_context *)task->security;
- 
--	return cxt && cxt->active;
-+	return cxt && cxt->profile;
- }
- 
- static inline struct aa_task_context *aa_task_context(struct task_struct *task)
-@@ -217,24 +217,24 @@ struct aa_audit {
+@@ -210,24 +210,24 @@ struct aa_audit {
  extern int alloc_null_complain_profile(void);
  extern void free_null_complain_profile(void);
  extern int attach_nullprofile(struct aa_profile *profile);
@@ -87,7 +78,7 @@ Index: b/security/apparmor/apparmor.h
  		   struct dentry *link, struct vfsmount *link_mnt,
  		   struct dentry *target, struct vfsmount *target_mnt);
  extern int aa_fork(struct task_struct *p);
-@@ -265,7 +265,7 @@ extern void free_aa_profile(struct aa_pr
+@@ -258,7 +258,7 @@ extern void free_aa_profile(struct aa_pr
  extern void free_aa_profile_kref(struct kref *kref);
  
  /* procattr.c */

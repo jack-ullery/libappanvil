@@ -4,7 +4,7 @@ Index: b/security/apparmor/apparmor.h
 ===================================================================
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
-@@ -278,7 +278,6 @@ struct aa_dfa *aa_match_alloc(void);
+@@ -271,7 +271,6 @@ struct aa_dfa *aa_match_alloc(void);
  void aa_match_free(struct aa_dfa *dfa);
  int unpack_dfa(struct aa_dfa *dfa, void *blob, size_t size);
  int verify_dfa(struct aa_dfa *dfa);

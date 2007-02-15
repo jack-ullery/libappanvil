@@ -6,7 +6,7 @@ Index: b/security/apparmor/main.c
 ===================================================================
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -1113,14 +1113,6 @@ static inline int do_change_hat(const ch
+@@ -1106,14 +1106,6 @@ static inline int do_change_hat(const ch
  		aa_switch_to_profile(cxt, sub, hat_magic);
  		aa_put_profile(sub);
  	} else {
@@ -21,7 +21,7 @@ Index: b/security/apparmor/main.c
  		if (APPARMOR_COMPLAIN(cxt)) {
  			LOG_HINT(cxt->profile, GFP_ATOMIC, HINT_UNKNOWN_HAT,
   				"%s pid=%d "
-@@ -1129,6 +1121,16 @@ static inline int do_change_hat(const ch
+@@ -1122,6 +1114,13 @@ static inline int do_change_hat(const ch
  				current->pid,
  				BASE_PROFILE(cxt->profile)->name,
  				cxt->profile->name);
@@ -29,16 +29,13 @@ Index: b/security/apparmor/main.c
 +			 * Switch to the NULL profile: it grants no accesses,
 +			 * so all accesses will be logged. This allows us to
 +			 * learn about new hats.
-+			 *
-+			 * N.B from the null-profile the task can still change
-+			 * back to the parent profile if hat_magic != 0.
 +			 */
 +			aa_switch_to_profile(cxt, cxt->profile->null_profile,
 +					     hat_magic);
  		} else {
  			AA_DEBUG("%s: Unknown hatname '%s'. "
  				"Changing to NULL profile "
-@@ -1140,7 +1142,6 @@ static inline int do_change_hat(const ch
+@@ -1133,7 +1132,6 @@ static inline int do_change_hat(const ch
  				 cxt->profile->name);
  			error = -EACCES;
  		}

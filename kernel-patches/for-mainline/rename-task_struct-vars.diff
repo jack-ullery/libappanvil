@@ -4,7 +4,7 @@ Index: b/security/apparmor/apparmor.h
 ===================================================================
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
-@@ -237,9 +237,9 @@ extern int aa_perm_dir(struct aa_profile
+@@ -230,9 +230,9 @@ extern int aa_perm_dir(struct aa_profile
  extern int aa_link(struct aa_profile *profile,
  		   struct dentry *link, struct vfsmount *link_mnt,
  		   struct dentry *target, struct vfsmount *target_mnt);
@@ -16,7 +16,7 @@ Index: b/security/apparmor/apparmor.h
  extern int aa_change_hat(const char *id, u32 hat_magic);
  extern int aa_associate_filp(struct file *filp);
  
-@@ -267,7 +267,8 @@ extern void free_aa_profile_kref(struct 
+@@ -260,7 +260,8 @@ extern void free_aa_profile_kref(struct 
  /* procattr.c */
  extern size_t aa_getprocattr(struct aa_profile *profile, char *str, size_t size);
  extern int aa_setprocattr_changehat(char *hatinfo, size_t infosize);

@@ -1,7 +1,7 @@
-Index: linux-2.6/include/linux/dcache.h
+Index: b/include/linux/dcache.h
 ===================================================================
---- linux-2.6.orig/include/linux/dcache.h
-+++ linux-2.6/include/linux/dcache.h
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
 @@ -293,6 +293,8 @@ extern struct dentry * d_hash_and_lookup
  /* validate "insecure" dentry pointer */
  extern int d_validate(struct dentry *, struct dentry *);
@@ -11,11 +11,11 @@ Index: linux-2.6/include/linux/dcache.h
  extern char * d_path(struct dentry *, struct vfsmount *, char *, int);
    
  /* Allocation counts.. */
-Index: linux-2.6/fs/dcache.c
+Index: b/fs/dcache.c
 ===================================================================
---- linux-2.6.orig/fs/dcache.c
-+++ linux-2.6/fs/dcache.c
-@@ -1747,9 +1747,9 @@ shouldnt_be_hashed:
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1750,9 +1750,9 @@ shouldnt_be_hashed:
   *
   * Returns the buffer or an error code.
   */
@@ -26,13 +26,13 @@ Index: linux-2.6/fs/dcache.c
 +	       struct dentry *root, struct vfsmount *rootmnt,
 +	       char *buffer, int buflen, int fail_deleted)
  {
- 	char *end = buffer + buflen - 1;
- 	int namelen;
-Index: linux-2.6/fs/namespace.c
+ 	int namelen, is_slash;
+ 
+Index: b/fs/namespace.c
 ===================================================================
---- linux-2.6.orig/fs/namespace.c
-+++ linux-2.6/fs/namespace.c
-@@ -1878,3 +1878,25 @@ void __put_mnt_ns(struct mnt_namespace *
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -1895,3 +1895,25 @@ void __put_mnt_ns(struct mnt_namespace *
  	release_mounts(&umount_list);
  	kfree(ns);
  }
@@ -58,10 +58,10 @@ Index: linux-2.6/fs/namespace.c
 +	return res;
 +}
 +EXPORT_SYMBOL(d_namespace_path);
-Index: linux-2.6/include/linux/mount.h
+Index: b/include/linux/mount.h
 ===================================================================
---- linux-2.6.orig/include/linux/mount.h
-+++ linux-2.6/include/linux/mount.h
+--- a/include/linux/mount.h
++++ b/include/linux/mount.h
 @@ -97,5 +97,7 @@ extern void shrink_submounts(struct vfsm
  extern spinlock_t vfsmount_lock;
  extern dev_t name_to_dev_t(char *name);
