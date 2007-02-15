@@ -1,0 +1,52 @@
+Remove some remains of the matcher modules.
+
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -278,7 +278,6 @@ struct aa_dfa *aa_match_alloc(void);
+ void aa_match_free(struct aa_dfa *dfa);
+ int unpack_dfa(struct aa_dfa *dfa, void *blob, size_t size);
+ int verify_dfa(struct aa_dfa *dfa);
+-const char *aa_match_features(void);
+ unsigned int aa_match(struct aa_dfa *dfa, const char *pathname);
+ 
+ #endif				/* __APPARMOR_H */
+Index: b/security/apparmor/apparmorfs.c
+===================================================================
+--- a/security/apparmor/apparmorfs.c
++++ b/security/apparmor/apparmorfs.c
+@@ -141,7 +141,7 @@ static int aa_prof_release(struct inode 
+ static ssize_t aa_matching_read(struct file *file, char __user *buf,
+ 			       size_t size, loff_t *ppos)
+ {
+-	const char *matching = aa_match_features();
++	const char *matching = "pattern=aadfa";
+ 
+ 	return simple_read_from_buffer(buf, size, ppos, matching,
+ 				       strlen(matching));
+Index: b/security/apparmor/match.c
+===================================================================
+--- a/security/apparmor/match.c
++++ b/security/apparmor/match.c
+@@ -16,8 +16,6 @@
+ #include <linux/module.h>
+ #include "match.h"
+ 
+-static const char *features="pattern=aadfa";
+-
+ static struct table_header *unpack_table(void *blob, size_t bsize)
+ {
+ 	struct table_header *table = NULL;
+@@ -202,11 +200,6 @@ void aa_match_free(struct aa_dfa *dfa)
+ 	kfree(dfa);
+ }
+ 
+-const char *aa_match_features(void)
+-{
+-	return features;
+-}
+-
+ /**
+  * aadfa_label - return the permissions associated with @state
+  * @dfa: dfa to get state permission from

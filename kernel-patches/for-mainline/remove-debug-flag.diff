@@ -1,0 +1,25 @@
+Index: b/security/apparmor/module_interface.c
+===================================================================
+--- a/security/apparmor/module_interface.c
++++ b/security/apparmor/module_interface.c
+@@ -383,7 +383,7 @@ static struct aa_profile *aa_activate_pr
+ 	error_string = "Invalid flags";
+ 	/* per profile debug flags (debug, complain, audit) */
+ 	AA_READ_X(e, AA_STRUCT, NULL, "flags");
+-	AA_READ_X(e, AA_U32, &(profile->flags.debug), NULL);
++	AA_READ_X(e, AA_U32, NULL, NULL);
+ 	AA_READ_X(e, AA_U32, &(profile->flags.complain), NULL);
+ 	AA_READ_X(e, AA_U32, &(profile->flags.audit), NULL);
+ 	AA_READ_X(e, AA_STRUCTEND, NULL, NULL);
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -108,7 +108,6 @@ struct aa_profile {
+ 	struct list_head list;
+ 	struct list_head sub;
+ 	struct {
+-		int debug;
+ 		int complain;
+ 		int audit;
+ 	} flags;
