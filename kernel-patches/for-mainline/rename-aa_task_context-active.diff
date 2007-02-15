@@ -109,8 +109,7 @@ Index: b/security/apparmor/apparmorfs.c
 +	profile = aa_get_profile(current);
 +	if (profile) {
  		AA_WARN("REJECTING access to profile %s (%s(%d) "
--			"profile %s active %s)\n",
-+			"profile %s hat %s)\n",
+ 			"profile %s active %s)\n",
  			msg, current->comm, current->pid,
 -			BASE_PROFILE(active)->name, active->name);
 -		put_aa_profile(active);
@@ -443,8 +442,7 @@ Index: b/security/apparmor/lsm.c
 -	if (cxt->active) {
 +	if (cxt->profile) {
  		AA_DEBUG("%s: Dropping profiles %s(%d) "
--			 "profile %s(%p) active %s(%p)\n",
-+			 "profile %s(%p) hat %s(%p)\n",
+ 			 "profile %s(%p) active %s(%p)\n",
  			 __FUNCTION__,
  			 cxt->task->comm, cxt->task->pid,
 -			 BASE_PROFILE(cxt->active)->name,
@@ -643,12 +641,9 @@ Index: b/security/apparmor/main.c
  	 */
  	flags = sa->flags;
  	if (apparmor_logsyscall)
-@@ -465,9 +465,9 @@ int aa_audit(struct aa_profile *active, 
- 		goto out;
- 	}
+@@ -467,7 +467,7 @@ int aa_audit(struct aa_profile *active, 
  
--	audit_log_format(ab, "(%s(%d) profile %s active %s)",
-+	audit_log_format(ab, "(%s(%d) profile %s hat %s)",
+ 	audit_log_format(ab, "(%s(%d) profile %s active %s)",
  			 current->comm, current->pid,
 -			 BASE_PROFILE(active)->name, active->name);
 +			 BASE_PROFILE(profile)->name, profile->name);
@@ -892,12 +887,7 @@ Index: b/security/apparmor/main.c
  	unsafe_exec = exec_mode & AA_EXEC_UNSAFE;
  
  	if (exec_mode) {
-@@ -861,23 +861,23 @@ int aa_register(struct linux_binprm *bpr
- 			 */
- 			AA_ERROR("%s: Rejecting exec(2) of image '%s'. "
- 				"MAY_EXEC without exec qualifier invalid "
--				"(%s(%d) profile %s active %s\n",
-+				"(%s(%d) profile %s hat %s\n",
+@@ -865,7 +865,7 @@ int aa_register(struct linux_binprm *bpr
  				 __FUNCTION__,
  				 filename,
  				 current->comm, current->pid,
@@ -906,12 +896,7 @@ Index: b/security/apparmor/main.c
  			error = -EPERM;
  			break;
  
- 		default:
- 			AA_ERROR("%s: Rejecting exec(2) of image '%s'. "
- 				 "Unknown exec qualifier %x "
--				 "(%s (pid %d) profile %s active %s)\n",
-+				 "(%s (pid %d) profile %s hat %s)\n",
- 				 __FUNCTION__,
+@@ -877,7 +877,7 @@ int aa_register(struct linux_binprm *bpr
  				 filename,
  				 exec_mode,
  				 current->comm, current->pid,
@@ -920,12 +905,7 @@ Index: b/security/apparmor/main.c
  			error = -EPERM;
  			break;
  		}
-@@ -892,11 +892,11 @@ int aa_register(struct linux_binprm *bpr
- 	} else {
- 		AA_WARN("%s: Rejecting exec(2) of image '%s'. "
- 			"Unable to determine exec qualifier "
--			"(%s (pid %d) profile %s active %s)\n",
-+			"(%s (pid %d) profile %s hat %s)\n",
+@@ -896,7 +896,7 @@ int aa_register(struct linux_binprm *bpr
  			__FUNCTION__,
  			filename,
  			current->comm, current->pid,
@@ -934,14 +914,13 @@ Index: b/security/apparmor/main.c
  		error = -EPERM;
  	}
  
-@@ -914,20 +914,20 @@ find_profile:
+@@ -914,11 +914,11 @@ find_profile:
  		/* Profile (mandatory) could not be found */
  
  		if (complain) {
 -			LOG_HINT(active, GFP_KERNEL, HINT_MANDPROF,
--				"image=%s pid=%d profile=%s active=%s\n",
 +			LOG_HINT(profile, GFP_KERNEL, HINT_MANDPROF,
-+				"image=%s pid=%d profile=%s hat=%s\n",
+ 				"image=%s pid=%d profile=%s active=%s\n",
  				filename,
  				current->pid,
 -				BASE_PROFILE(active)->name, active->name);
@@ -949,10 +928,8 @@ Index: b/security/apparmor/main.c
  
  			newprofile = aa_dup_profile(null_complain_profile);
  		} else {
- 			AA_WARN("REJECTING exec(2) of image '%s'. "
- 				"Profile mandatory and not found "
--				"(%s(%d) profile %s active %s)\n",
-+				"(%s(%d) profile %s hat %s)\n",
+@@ -927,7 +927,7 @@ find_profile:
+ 				"(%s(%d) profile %s active %s)\n",
  				filename,
  				current->comm, current->pid,
 -				BASE_PROFILE(active)->name, active->name);
@@ -1019,15 +996,14 @@ Index: b/security/apparmor/main.c
  
  	if (sub) {
  		/* change hat */
-@@ -1121,25 +1121,25 @@ static inline int do_change_hat(const ch
+@@ -1121,13 +1121,13 @@ static inline int do_change_hat(const ch
  		 * out to the parent profile (assuming magic != 0)
  		 */
  		if (APPARMOR_COMPLAIN(cxt)) {
 -			LOG_HINT(cxt->active, GFP_ATOMIC, HINT_UNKNOWN_HAT,
 +			LOG_HINT(cxt->profile, GFP_ATOMIC, HINT_UNKNOWN_HAT,
   				"%s pid=%d "
--				"profile=%s active=%s\n",
-+				"profile=%s hat=%s\n",
+ 				"profile=%s active=%s\n",
  				hat_name,
  				current->pid,
 -				BASE_PROFILE(cxt->active)->name,
@@ -1037,8 +1013,7 @@ Index: b/security/apparmor/main.c
  		} else {
  			AA_DEBUG("%s: Unknown hatname '%s'. "
  				"Changing to NULL profile "
--				"(%s(%d) profile %s active %s)\n",
-+				"(%s(%d) profile %s hat %s)\n",
+@@ -1135,11 +1135,11 @@ static inline int do_change_hat(const ch
  				 __FUNCTION__,
  				 hat_name,
  				 current->comm, current->pid,
@@ -1089,12 +1064,7 @@ Index: b/security/apparmor/main.c
  						     0);
  			} else {
  				/*
-@@ -1240,22 +1240,22 @@ int aa_change_hat(const char *hat_name, 
- 		} else if (cxt->hat_magic) {
- 			AA_ERROR("KILLING process %s(%d) "
- 				 "Invalid change_hat() magic# 0x%x "
--				 "(hatname %s profile %s active %s)\n",
-+				 "(hatname %s profile %s hat %s)\n",
+@@ -1244,8 +1244,8 @@ int aa_change_hat(const char *hat_name, 
  				 current->comm, current->pid,
  				 hat_magic,
  				 hat_name ? hat_name : "NULL",
@@ -1105,11 +1075,9 @@ Index: b/security/apparmor/main.c
  
  			/* terminate current process */
  			(void)send_sig_info(SIGKILL, NULL, current);
- 		} else {	/* cxt->hat_magic == 0 */
- 			AA_ERROR("KILLING process %s(%d) "
+@@ -1254,8 +1254,8 @@ int aa_change_hat(const char *hat_name, 
  				 "Task was confined to current subprofile "
--				 "(profile %s active %s)\n",
-+				 "(profile %s hat %s)\n",
+ 				 "(profile %s active %s)\n",
  				 current->comm, current->pid,
 -				 BASE_PROFILE(cxt->active)->name,
 -				 cxt->active->name);
@@ -1122,7 +1090,7 @@ Index: b/security/apparmor/module_interface.c
 ===================================================================
 --- a/security/apparmor/module_interface.c
 +++ b/security/apparmor/module_interface.c
-@@ -41,18 +41,18 @@ static void free_aa_profile_rcu(struct r
+@@ -41,7 +41,7 @@ static void free_aa_profile_rcu(struct r
   * task_remove - remove profile from a task's aa_task_context
   * @cxt: task's aa_task_context
   *
@@ -1131,10 +1099,7 @@ Index: b/security/apparmor/module_interface.c
   * to an unconfined state.
   */
  static inline void task_remove(struct aa_task_context *cxt)
- {
- 	/* spin_lock(&cxt_lock) held here */
--	AA_DEBUG("%s: removing profile from task %s(%d) profile %s active %s\n",
-+	AA_DEBUG("%s: removing profile from task %s(%d) profile %s hat %s\n",
+@@ -51,8 +51,8 @@ static inline void task_remove(struct aa
  		 __FUNCTION__,
  		 cxt->task->comm,
  		 cxt->task->pid,
@@ -1279,8 +1244,7 @@ Index: b/security/apparmor/procattr.c
 -		if (cxt && cxt->active) {
 +		if (cxt && cxt->profile) {
  			AA_WARN("%s: Unconstraining task %s(%d) "
--				"profile %s active %s\n",
-+				"profile %s hat %s\n",
+ 				"profile %s active %s\n",
  				__FUNCTION__,
  				p->comm, p->pid,
 -				BASE_PROFILE(cxt->active)->name,
@@ -1290,12 +1254,8 @@ Index: b/security/apparmor/procattr.c
  
  			aa_switch_to_profile(cxt, NULL, 0);
  		} else {
-@@ -300,12 +300,12 @@ int aa_setprocattr_setprofile(struct tas
- 		 */
- 
- 		AA_WARN("%s: Switching task %s(%d) "
--			"profile %s active %s to new profile %s\n",
-+			"profile %s hat %s to new profile %s\n",
+@@ -303,9 +303,9 @@ int aa_setprocattr_setprofile(struct tas
+ 			"profile %s active %s to new profile %s\n",
  			__FUNCTION__,
  			p->comm, p->pid,
 -			cxt->active ? BASE_PROFILE(cxt->active)->name :

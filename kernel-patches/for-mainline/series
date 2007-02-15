@@ -68,3 +68,5 @@ rename-profile-lock.diff
 match-features.diff
 match-changes.diff
 rename-audit_context.diff
+secure-replace.diff
+rework-locking.diff
