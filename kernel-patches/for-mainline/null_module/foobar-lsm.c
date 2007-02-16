@@ -6,6 +6,11 @@ static void log_path(char *op, struct dentry *dentry, struct vfsmount *mnt)
 {
 	char *page, *name;
 
+	if (!mnt) {
+		printk(KERN_INFO "foobar(%s): %p NULL vfsmnt\n", op, dentry);
+		return;
+	}
+			
         page = (char *)__get_free_page(GFP_KERNEL);
         if (!page) {
 		printk(KERN_ERR "foobar(%s): Unable to get page for path %p/%p\n",
