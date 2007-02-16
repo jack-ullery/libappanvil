@@ -5,7 +5,7 @@ Index: b/security/apparmor/apparmorfs.c
 --- a/security/apparmor/apparmorfs.c
 +++ b/security/apparmor/apparmorfs.c
 @@ -170,7 +170,7 @@ static char *aa_simple_write_to_buffer(c
- 			"profile %s hat %s)\n",
+ 			"profile %s active %s)\n",
  			msg, current->comm, current->pid,
  			BASE_PROFILE(profile)->name, profile->name);
 -		put_aa_profile(profile);
@@ -30,7 +30,7 @@ Index: b/security/apparmor/inline.h
  {
  	if (p)
  		kref_put(&BASE_PROFILE(p)->count, free_aa_profile_kref);
-@@ -72,7 +72,7 @@ static inline void aa_switch_to_profile(str
+@@ -72,7 +72,7 @@ static inline void aa_switch_to_profile(
  	cxt->caps_logged = CAP_EMPTY_SET;
  	cxt->hat_magic = hat_magic;
  	rcu_assign_pointer(cxt->profile, aa_dup_profile(newactive));

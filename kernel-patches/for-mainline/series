@@ -59,6 +59,7 @@ rename-ctx-to-cxt.diff
 d_namespace_path.diff
 apparmor-d_namespace.diff
 alloc-pathnames.diff
+zap-__setup.diff
 fix-change_hat.diff
 typo.diff 
 typo2.diff 

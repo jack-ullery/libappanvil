@@ -340,7 +340,7 @@ Index: b/security/apparmor/procattr.c
  	if (!profile) {
 @@ -231,7 +231,7 @@ int aa_setprocattr_setprofile(struct tas
  			AA_WARN("%s: Unconstraining task %s(%d) "
- 				"profile %s hat %s\n",
+ 				"profile %s active %s\n",
  				__FUNCTION__,
 -				p->comm, p->pid,
 +				task->comm, task->pid,
@@ -395,7 +395,7 @@ Index: b/security/apparmor/procattr.c
  
 @@ -302,7 +302,7 @@ int aa_setprocattr_setprofile(struct tas
  		AA_WARN("%s: Switching task %s(%d) "
- 			"profile %s hat %s to new profile %s\n",
+ 			"profile %s active %s to new profile %s\n",
  			__FUNCTION__,
 -			p->comm, p->pid,
 +			task->comm, task->pid,

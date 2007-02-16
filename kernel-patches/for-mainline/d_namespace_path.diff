@@ -32,7 +32,7 @@ Index: b/fs/namespace.c
 ===================================================================
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
-@@ -1895,3 +1895,25 @@ void __put_mnt_ns(struct mnt_namespace *
+@@ -1894,3 +1894,25 @@ void __put_mnt_ns(struct mnt_namespace *
  	release_mounts(&umount_list);
  	kfree(ns);
  }
@@ -62,7 +62,7 @@ Index: b/include/linux/mount.h
 ===================================================================
 --- a/include/linux/mount.h
 +++ b/include/linux/mount.h
-@@ -97,5 +97,7 @@ extern void shrink_submounts(struct vfsm
+@@ -103,5 +103,7 @@ extern void shrink_submounts(struct vfsm
  extern spinlock_t vfsmount_lock;
  extern dev_t name_to_dev_t(char *name);
  
