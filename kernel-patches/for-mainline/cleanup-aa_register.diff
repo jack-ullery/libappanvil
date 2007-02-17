@@ -1,0 +1,62 @@
+Make it more obvious in aa_register which AA_EXEC flags we are
+testing against.
+
+The MAY_EXEC case is dead code; MAY_EXEC is not in AA_EXEC_MODIFIERS.
+Q: should we be testing for MAY_EXEC here, too? It wouldn't help
+   much, but...
+
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -816,11 +816,12 @@ int aa_register(struct linux_binprm *bpr
+ 	/* Confined task, determine what mode inherit, unconstrained or
+ 	 * mandatory to load new profile
+ 	 */
+-	exec_mode = AA_EXEC_MASK(aa_match(profile->file_rules, filename));
++	exec_mode = aa_match(profile->file_rules, filename);
+ 	unsafe_exec = exec_mode & AA_EXEC_UNSAFE;
++	exec_mode &= AA_EXEC_MODIFIERS;
+ 
+ 	if (exec_mode) {
+-		switch (AA_EXEC_MODIFIER_MASK(exec_mode)) {
++		switch (exec_mode) {
+ 		case AA_EXEC_INHERIT:
+ 			/* do nothing - setting of profile
+ 			 * already handed in aa_fork
+@@ -848,21 +849,6 @@ int aa_register(struct linux_binprm *bpr
+ 			find_profile_mandatory = 1;
+ 			break;
+ 
+-		case MAY_EXEC:
+-			/* this should not happen, entries
+-			 * with just EXEC only should be
+-			 * rejected at profile load time
+-			 */
+-			AA_ERROR("%s: Rejecting exec(2) of image '%s'. "
+-				"MAY_EXEC without exec qualifier invalid "
+-				"(%s(%d) profile %s active %s\n",
+-				 __FUNCTION__,
+-				 filename,
+-				 current->comm, current->pid,
+-				 BASE_PROFILE(profile)->name, profile->name);
+-			error = -EPERM;
+-			break;
+-
+ 		default:
+ 			AA_ERROR("%s: Rejecting exec(2) of image '%s'. "
+ 				 "Unknown exec qualifier %x "
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -80,9 +80,6 @@ static inline int mediated_filesystem(st
+ 
+ #define AA_SECURE_EXEC_NEEDED 0x00000001
+ 
+-#define AA_EXEC_MODIFIER_MASK(mask) ((mask) & AA_EXEC_MODIFIERS)
+-#define AA_EXEC_MASK(mask) ((mask) & (AA_EXEC_MODIFIERS | AA_EXEC_UNSAFE))
+-
+ /* struct aa_profile - basic confinement data
+  * @parent: non refcounted pointer to parent profile
+  * @name: the profiles name

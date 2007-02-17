@@ -129,9 +129,9 @@ Index: b/fs/dcache.c
 -		*--end = '/';
 -		retval = end;
 +		buflen -= namelen + 1;
-+		buffer -= namelen + 1;
++		buffer -= namelen;
 +		memcpy(buffer, dentry->d_name.name, namelen);
-+		*buffer = '/';
++		*--buffer = '/';
  		dentry = parent;
  	}
 +	/* Get '/' right. */

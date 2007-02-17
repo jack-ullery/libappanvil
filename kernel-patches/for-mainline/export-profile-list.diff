@@ -1,0 +1,29 @@
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -142,6 +142,9 @@ static inline void unlock_profile(struct
+ 	spin_unlock_irqrestore(&profile->lock, profile->interrupt_flags);
+ }
+ 
++extern struct list_head profile_list;
++extern rwlock_t profile_list_lock;
++
+ /**
+  * struct aa_task_context - primary label for confined tasks
+  * @profile: the current profile
+Index: b/security/apparmor/list.c
+===================================================================
+--- a/security/apparmor/list.c
++++ b/security/apparmor/list.c
+@@ -14,8 +14,8 @@
+ #include "inline.h"
+ 
+ /* list of all profiles and lock */
+-static LIST_HEAD(profile_list);
+-static rwlock_t profile_list_lock = RW_LOCK_UNLOCKED;
++LIST_HEAD(profile_list);
++rwlock_t profile_list_lock = RW_LOCK_UNLOCKED;
+ 
+ /* list of all task_contexts and lock */
+ static LIST_HEAD(task_context_list);

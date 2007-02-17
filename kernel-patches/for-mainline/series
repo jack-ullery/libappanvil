@@ -69,3 +69,9 @@ rename-profile-lock.diff
 match-features.diff
 match-changes.diff
 rename-audit_context.diff
+cleanup-aa_register.diff
+cleanup-aa_register-2.diff
+aa_task_context_list_release-does-nothing-useful.diff
+per-profile-task-contexts.diff
+export-profile-list.diff
+# rework-locking.diff
