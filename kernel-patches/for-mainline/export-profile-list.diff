@@ -2,9 +2,9 @@ Index: b/security/apparmor/apparmor.h
 ===================================================================
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
-@@ -142,6 +142,9 @@ static inline void unlock_profile(struct
- 	spin_unlock_irqrestore(&profile->lock, profile->interrupt_flags);
- }
+@@ -119,6 +119,9 @@ struct aa_profile {
+ 	struct kref count;
+ };
  
 +extern struct list_head profile_list;
 +extern rwlock_t profile_list_lock;

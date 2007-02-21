@@ -21,25 +21,20 @@ Index: b/security/apparmor/main.c
  		if (APPARMOR_COMPLAIN(cxt)) {
  			LOG_HINT(cxt->profile, GFP_ATOMIC, HINT_UNKNOWN_HAT,
   				"%s pid=%d "
-@@ -1122,6 +1114,13 @@ static inline int do_change_hat(const ch
- 				current->pid,
- 				BASE_PROFILE(cxt->profile)->name,
- 				cxt->profile->name);
-+			/*
-+			 * Switch to the NULL profile: it grants no accesses,
-+			 * so all accesses will be logged. This allows us to
-+			 * learn about new hats.
-+			 */
-+			aa_switch_to_profile(cxt, cxt->profile->null_profile,
-+					     hat_magic);
- 		} else {
- 			AA_DEBUG("%s: Unknown hatname '%s'. "
- 				"Changing to NULL profile "
-@@ -1133,7 +1132,6 @@ static inline int do_change_hat(const ch
+@@ -1133,7 +1125,15 @@ static inline int do_change_hat(const ch
  				 cxt->profile->name);
  			error = -EACCES;
  		}
 -		aa_switch_to_profile(cxt, cxt->profile->null_profile, hat_magic);
++		/*
++		 * Switch to the NULL profile: it grants no accesses, so in
++		 * learning mode all accesses will get logged, and in enforce
++		 * mode all accesses will be denied.
++		 *
++		 * In learning mode, this allows us to learn about new hats.
++		 */
++		aa_switch_to_profile(cxt, cxt->profile->null_profile,
++				     hat_magic);
  	}
  
  	return error;

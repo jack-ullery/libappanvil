@@ -1,0 +1,199 @@
+Introduce per-profile task context lists and a per-profile lock
+to protect the profile's task contexts list and the isstale flag.
+
+A subsequent patch reworks the locking, and breaks the global tast
+context up into per-profile lists.
+
+Users of the isstale flag are not grabbing the profile lock yet;
+the lock rework patch fixes that up.
+
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -94,15 +94,20 @@ static inline int mediated_filesystem(st
+  * @count: reference count of the profile
+  *
+  * The AppArmor profile contains the basic confinement data.  Each profile
+- * has a name and potentially a list of profile entries. The profiles are
+- * connected in a list
++ * has a name and potentially a list of profile entries. All profiles are
++ * on the profile_list.
++ *
++ * The task_contexts list and the isstale flag are protected by the
++ * profile lock.
++ *
++ * If a task context is moved between two profiles, we first need to grab
++ * both profile locks. lock_both_profiles() does that in a deadlock-safe
++ * way.
+  */
+ struct aa_profile {
+ 	struct aa_profile *parent;
+ 	char *name;
+-
+ 	struct aa_dfa *file_rules;
+-
+ 	struct list_head list;
+ 	struct list_head sub;
+ 	struct {
+@@ -113,10 +118,11 @@ struct aa_profile {
+ 	int isstale;
+ 
+ 	kernel_cap_t capabilities;
+-
+ 	struct rcu_head rcu;
+-
+ 	struct kref count;
++	struct list_head task_contexts;
++	spinlock_t lock;
++	unsigned long int_flags;
+ };
+ 
+ extern struct list_head profile_list;
+Index: b/security/apparmor/inline.h
+===================================================================
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -141,7 +141,118 @@ static inline struct aa_profile *alloc_a
+ 		INIT_LIST_HEAD(&profile->sub);
+ 		INIT_RCU_HEAD(&profile->rcu);
+ 		kref_init(&profile->count);
++		INIT_LIST_HEAD(&profile->task_contexts);
++		spin_lock_init(&profile->lock);
+ 	}
+ 	return profile;
+ }
++
++/**
++ * lock_profile - lock a profile
++ * @profile: the profile to lock
++ *
++ * While the profile is locked, local interrupts are disabled. This also
++ * gives us RCU reader safety.
++ */
++static inline void lock_profile(struct aa_profile *profile)
++{
++	/* We always lock top-level profiles instead of children. */
++	if (profile)
++		profile = profile->parent;
++
++	/*
++	 * Lock the profile.
++	 *
++	 * Need to disable interrupts here because this lock is used in
++	 * the task_free_security hook, which may run in RCU context.
++	 */
++	if (profile)
++		spin_lock_irqsave(&profile->lock, profile->int_flags);
++}
++
++/**
++ * unlock_profile - unlock a profile
++ * @profile: the profile to unlock
++ */
++static inline void unlock_profile(struct aa_profile *profile)
++{
++	/* We always lock top-level profiles instead of children. */
++	if (profile)
++		profile = profile->parent;
++
++	/* Unlock the profile. */
++	if (profile)
++		spin_unlock_irqrestore(&profile->lock, profile->int_flags);
++}
++
++/**
++ * lock_both_profiles  -  lock two profiles in a deadlock-free way
++ *
++ * The order in which profiles are passed into lock_both_profiles() /
++ * unlock_both_profiles() does not matter.
++ * While the profile is locked, local interrupts are disabled. This also
++ * gives us RCU reader safety.
++ */
++static inline void lock_both_profiles(struct aa_profile *profile1,
++				      struct aa_profile *profile2)
++{
++	/* We always lock top-level profiles instead of children. */
++	if (profile1)
++		profile1 = profile1->parent;
++	if (profile2)
++		profile2 = profile2->parent;
++
++	/*
++	 * Lock the two profiles.
++	 *
++	 * We need to disable interrupts because the profile locks are
++	 * used in the task_free_security hook, which may run in RCU
++	 * context.
++	 *
++	 * Do not nest spin_lock_irqsave()/spin_unlock_irqresore():
++	 * interrupts only need to be turned off once.
++	 */
++	if (!profile1 || profile1 == profile2) {
++		if (profile2)
++			spin_lock_irqsave(&profile2->lock, profile2->int_flags);
++	} else if (profile1 > profile2) {
++		spin_lock_irqsave(&profile1->lock, profile1->int_flags);
++		if (profile2)
++			spin_lock(&profile2->lock);
++	} else {
++		spin_lock_irqsave(&profile2->lock, profile2->int_flags);
++		spin_lock(&profile1->lock);
++	}
++}
++
++/**
++ * unlock_both_profiles  -  unlock two profiles in a deadlock-free way
++ *
++ * The order in which profiles are passed into lock_both_profiles() /
++ * unlock_both_profiles() does not matter.
++ */
++static inline void unlock_both_profiles(struct aa_profile *profile1,
++				        struct aa_profile *profile2)
++{
++	/* We always lock top-level profiles instead of children. */
++	if (profile1)
++		profile1 = profile1->parent;
++	if (profile2)
++		profile2 = profile2->parent;
++
++	/* Unlock the two profiles. */
++	if (!profile1 || profile1 == profile2) {
++		if (profile2)
++			spin_unlock_irqrestore(&profile2->lock,
++					       profile2->int_flags);
++	} else if (profile1 > profile2) {
++		if (profile2)
++			spin_unlock(&profile2->lock);
++		spin_unlock_irqrestore(&profile1->lock, profile1->int_flags);
++	} else {
++		spin_unlock(&profile1->lock);
++		spin_unlock_irqrestore(&profile2->lock, profile2->int_flags);
++	}
++}
++
+ #endif /* __INLINE_H__ */
+Index: b/security/apparmor/module_interface.c
+===================================================================
+--- a/security/apparmor/module_interface.c
++++ b/security/apparmor/module_interface.c
+@@ -536,7 +536,9 @@ ssize_t aa_file_prof_repl(void *udata, s
+ 	if (data.old_profile) {
+ 		list_del_init(&data.old_profile->list);
+ 
++		lock_profile(data.old_profile);
+ 		data.old_profile->isstale = 1;
++		unlock_profile(data.old_profile);
+ 
+ 		/*
+ 		 * Find all tasks using the old profile and replace the old
+@@ -572,7 +574,9 @@ ssize_t aa_file_prof_remove(const char *
+ 
+ 	list_del_init(&profile->list);
+ 
++	lock_profile(profile);
+ 	profile->isstale = 1;
++	unlock_profile(profile);
+ 
+ 	aa_task_context_list_iterate(taskremove_iter, profile);
+ 	aa_put_profile(profile);

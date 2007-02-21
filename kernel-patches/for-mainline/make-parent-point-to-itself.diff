@@ -1,0 +1,273 @@
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -203,9 +203,6 @@ struct aa_audit {
+ 			"LOGPROF-HINT " hint " " fmt, ##args);\
+ 	} while(0)
+ 
+-#define BASE_PROFILE(p) ((p)->parent ? (p)->parent : (p))
+-#define IN_SUBPROFILE(p) ((p)->parent)
+-
+ /* main.c */
+ extern int alloc_null_complain_profile(void);
+ extern void free_null_complain_profile(void);
+Index: b/security/apparmor/apparmorfs.c
+===================================================================
+--- a/security/apparmor/apparmorfs.c
++++ b/security/apparmor/apparmorfs.c
+@@ -169,7 +169,7 @@ static char *aa_simple_write_to_buffer(c
+ 		AA_WARN("REJECTING access to profile %s (%s(%d) "
+ 			"profile %s active %s)\n",
+ 			msg, current->comm, current->pid,
+-			BASE_PROFILE(profile)->name, profile->name);
++			profile->parent->name, profile->name);
+ 		aa_put_profile(profile);
+ 
+ 		data = ERR_PTR(-EPERM);
+Index: b/security/apparmor/inline.h
+===================================================================
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -19,7 +19,7 @@
+ static inline struct aa_profile *aa_dup_profile(struct aa_profile *p)
+ {
+ 	if (p)
+-		kref_get(&(BASE_PROFILE(p)->count));
++		kref_get(&(p->parent->count));
+ 
+ 	return p;
+ }
+@@ -31,7 +31,7 @@ static inline struct aa_profile *aa_dup_
+ static inline void aa_put_profile(struct aa_profile *p)
+ {
+ 	if (p)
+-		kref_put(&BASE_PROFILE(p)->count, free_aa_profile_kref);
++		kref_put(&p->parent->count, free_aa_profile_kref);
+ }
+ 
+ static inline struct aa_profile *aa_get_profile(struct task_struct *task)
+@@ -136,6 +136,7 @@ static inline struct aa_profile *alloc_a
+ 					      GFP_KERNEL);
+ 	AA_DEBUG("%s(%p)\n", __FUNCTION__, profile);
+ 	if (profile) {
++		profile->parent = profile;
+ 		INIT_LIST_HEAD(&profile->list);
+ 		INIT_LIST_HEAD(&profile->sub);
+ 		INIT_RCU_HEAD(&profile->rcu);
+Index: b/security/apparmor/lsm.c
+===================================================================
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -757,8 +757,8 @@ static int apparmor_exit_removeall_iter(
+ 			 "profile %s(%p) active %s(%p)\n",
+ 			 __FUNCTION__,
+ 			 cxt->task->comm, cxt->task->pid,
+-			 BASE_PROFILE(cxt->profile)->name,
+-			 BASE_PROFILE(cxt->profile),
++			 cxt->profile->parent->name,
++			 cxt->profile->parent,
+ 			 cxt->profile->name, cxt->profile);
+ 		aa_switch_to_profile(cxt, NULL, 0);
+ 	}
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -500,7 +500,7 @@ int aa_audit(struct aa_profile *profile,
+ 
+ 	audit_log_format(ab, "(%s(%d) profile %s active %s)",
+ 			 current->comm, current->pid,
+-			 BASE_PROFILE(profile)->name, profile->name);
++			 profile->parent->name, profile->name);
+ 
+ 	audit_log_end(ab);
+ 
+@@ -788,7 +788,7 @@ aa_register_find(const char *name, int m
+ 				"image=%s pid=%d profile=%s active=%s\n",
+ 				name,
+ 				current->pid,
+-				BASE_PROFILE(profile)->name, profile->name);
++				profile->parent->name, profile->name);
+ 
+ 			profile = aa_dup_profile(null_complain_profile);
+ 		} else {
+@@ -797,7 +797,7 @@ aa_register_find(const char *name, int m
+ 				"(%s(%d) profile %s active %s)\n",
+ 				name,
+ 				current->comm, current->pid,
+-				BASE_PROFILE(profile)->name, profile->name);
++				profile->parent->name, profile->name);
+ 			return ERR_PTR(-EPERM);
+ 		}
+ 	} else {
+@@ -878,7 +878,7 @@ repeat:
+ 					 filename,
+ 					 exec_mode & AA_EXEC_MODIFIERS,
+ 					 current->comm, current->pid,
+-					 BASE_PROFILE(profile)->name,
++					 profile->parent->name,
+ 					 profile->name);
+ 				newprofile = ERR_PTR(-EPERM);
+ 				break;
+@@ -898,7 +898,7 @@ repeat:
+ 				__FUNCTION__,
+ 				filename,
+ 				current->comm, current->pid,
+-				BASE_PROFILE(profile)->name, profile->name);
++				profile->parent->name, profile->name);
+ 			newprofile = ERR_PTR(-EPERM);
+ 		}
+ 	} else {
+@@ -1067,7 +1067,7 @@ static inline int do_change_hat(const ch
+ 	 * Note: the profile and sub-profiles cannot go away under us here;
+ 	 * no need to grab an additional reference count.
+ 	 */
+-	sub = __aa_find_profile(hat_name, &BASE_PROFILE(cxt->profile)->sub);
++	sub = __aa_find_profile(hat_name, &cxt->profile->parent->sub);
+ 	if (sub) {
+ 		/* change hat */
+ 		aa_switch_to_profile(cxt, sub, hat_magic);
+@@ -1078,7 +1078,7 @@ static inline int do_change_hat(const ch
+ 				"profile=%s active=%s\n",
+ 				hat_name,
+ 				current->pid,
+-				BASE_PROFILE(cxt->profile)->name,
++				cxt->profile->parent->name,
+ 				cxt->profile->name);
+ 		} else {
+ 			AA_DEBUG("%s: Unknown hatname '%s'. "
+@@ -1087,7 +1087,7 @@ static inline int do_change_hat(const ch
+ 				 __FUNCTION__,
+ 				 hat_name,
+ 				 current->comm, current->pid,
+-				 BASE_PROFILE(cxt->profile)->name,
++				 cxt->profile->parent->name,
+ 				 cxt->profile->name);
+ 			error = -EACCES;
+ 		}
+@@ -1140,7 +1140,7 @@ int aa_change_hat(const char *hat_name, 
+ 	}
+ 
+ 	/* check to see if the confined process has any hats. */
+-	if (list_empty(&BASE_PROFILE(cxt->profile)->sub) &&
++	if (list_empty(&cxt->profile->parent->sub) &&
+ 	    !PROFILE_COMPLAIN(cxt->profile)) {
+ 		error = -ECHILD;
+ 		goto out;
+@@ -1149,7 +1149,7 @@ int aa_change_hat(const char *hat_name, 
+ 	/* Check whether current domain is parent
+ 	 * or one of the sibling children
+ 	 */
+-	if (!IN_SUBPROFILE(cxt->profile)) {
++	if (cxt->profile != cxt->profile->parent) {
+ 		/*
+ 		 * parent
+ 		 */
+@@ -1204,7 +1204,7 @@ int aa_change_hat(const char *hat_name, 
+ 				 current->comm, current->pid,
+ 				 hat_magic,
+ 				 hat_name ? hat_name : "NULL",
+-				 BASE_PROFILE(cxt->profile)->name,
++				 cxt->profile->parent->name,
+ 				 cxt->profile->name);
+ 
+ 			/* terminate current process */
+@@ -1214,7 +1214,7 @@ int aa_change_hat(const char *hat_name, 
+ 				 "Task was confined to current subprofile "
+ 				 "(profile %s active %s)\n",
+ 				 current->comm, current->pid,
+-				 BASE_PROFILE(cxt->profile)->name,
++				 cxt->profile->parent->name,
+ 				 cxt->profile->name);
+ 
+ 			/* terminate current process */
+Index: b/security/apparmor/module_interface.c
+===================================================================
+--- a/security/apparmor/module_interface.c
++++ b/security/apparmor/module_interface.c
+@@ -51,7 +51,7 @@ static inline void task_remove(struct aa
+ 		 __FUNCTION__,
+ 		 cxt->task->comm,
+ 		 cxt->task->pid,
+-		 BASE_PROFILE(cxt->profile)->name,
++		 cxt->profile->parent->name,
+ 		 cxt->profile->name);
+ 
+ 	aa_switch_to_profile(cxt, NULL, 0);
+@@ -71,7 +71,7 @@ static int taskremove_iter(struct aa_tas
+ 
+ 	spin_lock_irqsave(&cxt_lock, flags);
+ 
+-	if (cxt->profile && BASE_PROFILE(cxt->profile) == old_profile) {
++	if (cxt->profile && cxt->profile->parent == old_profile) {
+ 		task_remove(cxt);
+ 	}
+ 
+@@ -96,13 +96,13 @@ static inline void task_replace(struct a
+ 		 "profile=%s (%p) hat=%s (%p)\n",
+ 		 __FUNCTION__,
+ 		 cxt->task->comm, cxt->task->pid,
+-		 BASE_PROFILE(cxt->profile)->name, BASE_PROFILE(cxt->profile),
++		 cxt->profile->parent->name, cxt->profile->parent,
+ 		 cxt->profile->name, cxt->profile);
+ 
+ 	if (!cxt->profile)
+ 		return;
+ 
+-	if (IN_SUBPROFILE(cxt->profile)) {
++	if (cxt->profile != cxt->profile->parent) {
+ 		struct aa_profile *nactive;
+ 
+ 		/* The old profile was in a hat, check to see if the new
+@@ -133,7 +133,7 @@ static int taskreplace_iter(struct aa_ta
+ 
+ 	spin_lock_irqsave(&cxt_lock, flags);
+ 
+-	if (cxt->profile && BASE_PROFILE(cxt->profile) == data->old_profile)
++	if (cxt->profile && cxt->profile->parent == data->old_profile)
+ 		task_replace(cxt, data->new_profile);
+ 
+ 	spin_unlock_irqrestore(&cxt_lock, flags);
+Index: b/security/apparmor/procattr.c
+===================================================================
+--- a/security/apparmor/procattr.c
++++ b/security/apparmor/procattr.c
+@@ -31,8 +31,8 @@ size_t aa_getprocattr(struct aa_profile 
+ 		lena = strlen(profile->name);
+ 
+ 		len = lena;
+-		if (IN_SUBPROFILE(profile)) {
+-			lenp = strlen(BASE_PROFILE(profile)->name);
++		if (profile != profile->parent) {
++			lenp = strlen(profile->parent->name);
+ 			len += (lenp + 1);	/* +1 for ^ */
+ 		}
+ 		/* DONT null terminate strings we output via proc */
+@@ -40,7 +40,7 @@ size_t aa_getprocattr(struct aa_profile 
+ 
+ 		if (len <= size) {
+ 			if (lenp) {
+-				memcpy(str, BASE_PROFILE(profile)->name,
++				memcpy(str, profile->parent->name,
+ 				       lenp);
+ 				str += lenp;
+ 				*str++ = '^';
+@@ -232,7 +232,7 @@ int aa_setprocattr_setprofile(struct tas
+ 				"profile %s active %s\n",
+ 				__FUNCTION__,
+ 				task->comm, task->pid,
+-				BASE_PROFILE(cxt->profile)->name,
++				cxt->profile->parent->name,
+ 				cxt->profile->name);
+ 
+ 			aa_switch_to_profile(cxt, NULL, 0);
+@@ -303,7 +303,7 @@ int aa_setprocattr_setprofile(struct tas
+ 			"profile %s active %s to new profile %s\n",
+ 			__FUNCTION__,
+ 			task->comm, task->pid,
+-			cxt->profile ? BASE_PROFILE(cxt->profile)->name :
++			cxt->profile ? cxt->profile->parent->name :
+ 				"unconstrained",
+ 			cxt->profile ? cxt->profile->name : "unconstrained",
+ 			name);

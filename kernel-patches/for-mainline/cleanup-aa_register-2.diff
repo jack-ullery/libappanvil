@@ -1,0 +1,324 @@
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -772,6 +772,45 @@ int aa_fork(struct task_struct *task)
+ 	return 0;
+ }
+ 
++static struct aa_profile *
++aa_register_find(const char *name, int mandatory, int complain)
++{
++	struct aa_profile *profile;
++
++	/* Locate new profile */
++	profile = aa_profilelist_find(name);
++	if (profile) {
++		AA_DEBUG("%s: setting profile %s\n",
++			 __FUNCTION__, profile->name);
++	} else if (mandatory) {
++		if (complain) {
++			LOG_HINT(profile, GFP_KERNEL, HINT_MANDPROF,
++				"image=%s pid=%d profile=%s active=%s\n",
++				name,
++				current->pid,
++				BASE_PROFILE(profile)->name, profile->name);
++
++			profile = aa_dup_profile(null_complain_profile);
++		} else {
++			AA_WARN("REJECTING exec(2) of image '%s'. "
++				"Profile mandatory and not found "
++				"(%s(%d) profile %s active %s)\n",
++				name,
++				current->comm, current->pid,
++				BASE_PROFILE(profile)->name, profile->name);
++			return ERR_PTR(-EPERM);
++		}
++	} else {
++		/* Only way we can get into this code is if task
++		 * is unconstrained.
++		 */
++		AA_DEBUG("%s: No profile found for exec image %s\n",
++			 __FUNCTION__,
++			 name);
++	}
++	return profile;
++}
++
+ /**
+  * aa_register - register a new program
+  * @bprm: binprm of program being registered
+@@ -783,14 +822,8 @@ int aa_register(struct linux_binprm *bpr
+ {
+ 	char *filename, *filename_buffer = NULL;
+ 	struct file *filp = bprm->file;
+-	struct aa_profile *profile;
+-	struct aa_profile *newprofile = NULL, unconstrained_flag;
+-	int 	error = -ENOMEM,
+-		exec_mode = 0,
+-		find_profile = 0,
+-		find_profile_mandatory = 0,
+-		complain = 0,
+-		unsafe_exec = 0;
++	struct aa_profile *profile, *newprofile = NULL;
++	int exec_mode = AA_EXEC_UNSAFE, complain = 0;
+ 
+ 	AA_DEBUG("%s\n", __FUNCTION__);
+ 
+@@ -798,142 +831,88 @@ int aa_register(struct linux_binprm *bpr
+ 				   &filename_buffer);
+ 	if (IS_ERR(filename)) {
+ 		AA_WARN("%s: Failed to get filename\n", __FUNCTION__);
+-		goto out;
++		return -ENOENT;
+ 	}
+ 
+-	error = 0;
+-
+ 	profile = aa_get_profile(current);
++repeat:
++	if (profile) {
++		complain = PROFILE_COMPLAIN(profile);
+ 
+-	if (!profile) {
+-		/* Unconfined task, load profile if it exists */
+-		find_profile = 1;
+-		goto find_profile;
+-	}
+-
+-	complain = PROFILE_COMPLAIN(profile);
+-
+-	/* Confined task, determine what mode inherit, unconstrained or
+-	 * mandatory to load new profile
+-	 */
+-	exec_mode = aa_match(profile->file_rules, filename);
+-	unsafe_exec = exec_mode & AA_EXEC_UNSAFE;
+-	exec_mode &= AA_EXEC_MODIFIERS;
+-
+-	if (exec_mode) {
+-		switch (exec_mode) {
+-		case AA_EXEC_INHERIT:
+-			/* do nothing - setting of profile
+-			 * already handed in aa_fork
+-			 */
+-			AA_DEBUG("%s: INHERIT %s\n",
+-				 __FUNCTION__,
+-				 filename);
+-			break;
+-
+-		case AA_EXEC_UNCONSTRAINED:
+-			AA_DEBUG("%s: UNCONSTRAINED %s\n",
+-				 __FUNCTION__,
+-				 filename);
+-
+-			/* unload profile */
+-			newprofile = &unconstrained_flag;
+-			break;
+-
+-		case AA_EXEC_PROFILE:
+-			AA_DEBUG("%s: PROFILE %s\n",
+-				 __FUNCTION__,
+-				 filename);
+-
+-			find_profile = 1;
+-			find_profile_mandatory = 1;
+-			break;
+-
+-		default:
+-			AA_ERROR("%s: Rejecting exec(2) of image '%s'. "
+-				 "Unknown exec qualifier %x "
+-				 "(%s (pid %d) profile %s active %s)\n",
+-				 __FUNCTION__,
+-				 filename,
+-				 exec_mode,
+-				 current->comm, current->pid,
+-				 BASE_PROFILE(profile)->name, profile->name);
+-			error = -EPERM;
+-			break;
+-		}
+-
+-	} else if (complain) {
+-		/* There was no entry in calling profile
+-		 * describing mode to execute image in.
+-		 * Drop into null-profile (disabling secure exec).
++		/* Confined task, determine what mode inherit, unconstrained or
++		 * mandatory to load new profile
+ 		 */
+-		newprofile = aa_dup_profile(null_complain_profile);
+-		unsafe_exec = 1;
+-	} else {
+-		AA_WARN("%s: Rejecting exec(2) of image '%s'. "
+-			"Unable to determine exec qualifier "
+-			"(%s (pid %d) profile %s active %s)\n",
+-			__FUNCTION__,
+-			filename,
+-			current->comm, current->pid,
+-			BASE_PROFILE(profile)->name, profile->name);
+-		error = -EPERM;
+-	}
+-
++		exec_mode = aa_match(profile->file_rules, filename);
+ 
+-find_profile:
+-	if (!find_profile)
+-		goto apply_profile;
+-
+-	/* Locate new profile */
+-	newprofile = aa_profilelist_find(filename);
+-	if (newprofile) {
+-		AA_DEBUG("%s: setting profile %s\n",
+-			 __FUNCTION__, newprofile->name);
+-	} else if (find_profile_mandatory) {
+-		/* Profile (mandatory) could not be found */
++		if (exec_mode & AA_EXEC_MODIFIERS) {
++			switch (exec_mode & AA_EXEC_MODIFIERS) {
++			case AA_EXEC_INHERIT:
++				AA_DEBUG("%s: INHERIT %s\n",
++					 __FUNCTION__,
++					 filename);
++				/* nothing to be done here */
++				goto cleanup;
+ 
+-		if (complain) {
+-			LOG_HINT(profile, GFP_KERNEL, HINT_MANDPROF,
+-				"image=%s pid=%d profile=%s active=%s\n",
+-				filename,
+-				current->pid,
+-				BASE_PROFILE(profile)->name, profile->name);
++			case AA_EXEC_UNCONSTRAINED:
++				AA_DEBUG("%s: UNCONSTRAINED %s\n",
++					 __FUNCTION__,
++					 filename);
++
++				/* unload profile */
++				newprofile = NULL;
++				break;
++
++			case AA_EXEC_PROFILE:
++				AA_DEBUG("%s: PROFILE %s\n",
++					 __FUNCTION__,
++					 filename);
++				newprofile = aa_register_find(filename, 1,
++							      complain);
++				break;
++
++			default:
++				AA_ERROR("%s: Rejecting exec(2) of image '%s'. "
++					 "Unknown exec qualifier %x "
++					 "(%s (pid %d) profile %s active %s)\n",
++					 __FUNCTION__,
++					 filename,
++					 exec_mode & AA_EXEC_MODIFIERS,
++					 current->comm, current->pid,
++					 BASE_PROFILE(profile)->name,
++					 profile->name);
++				newprofile = ERR_PTR(-EPERM);
++				break;
++			}
+ 
++		} else if (complain) {
++			/* There was no entry in calling profile
++			 * describing mode to execute image in.
++			 * Drop into null-profile (disabling secure exec).
++			 */
+ 			newprofile = aa_dup_profile(null_complain_profile);
++			exec_mode |= AA_EXEC_UNSAFE;
+ 		} else {
+-			AA_WARN("REJECTING exec(2) of image '%s'. "
+-				"Profile mandatory and not found "
+-				"(%s(%d) profile %s active %s)\n",
++			AA_WARN("%s: Rejecting exec(2) of image '%s'. "
++				"Unable to determine exec qualifier "
++				"(%s (pid %d) profile %s active %s)\n",
++				__FUNCTION__,
+ 				filename,
+ 				current->comm, current->pid,
+ 				BASE_PROFILE(profile)->name, profile->name);
+-			error = -EPERM;
++			newprofile = ERR_PTR(-EPERM);
+ 		}
+ 	} else {
+-		/* Profile (non-mandatory) could not be found */
+-
+-		/* Only way we can get into this code is if task
+-		 * is unconstrained.
+-		 */
+-
+-		WARN_ON(profile);
+-
+-		AA_DEBUG("%s: No profile found for exec image %s\n",
+-			 __FUNCTION__,
+-			 filename);
+-	} /* newprofile */
+-
++		/* Unconfined task, load profile if it exists */
++		newprofile = aa_register_find(filename, 0, 0);
++		if (newprofile == NULL)
++			goto cleanup;
++	}
+ 
+-apply_profile:
+-	/* Apply profile if necessary */
+-	if (newprofile) {
++	/* Apply the new profile, or switch to unconfined if NULL. */
++	if (!IS_ERR(newprofile)) {
+ 		struct aa_task_context *cxt, *lazy_cxt = NULL;
+ 		unsigned long flags;
+ 
+-		if (newprofile == &unconstrained_flag)
+-			newprofile = NULL;
+-
+ 		/* grab a lock - this is to guarentee consistency against
+ 		 * other writers of aa_task_context (replacement/removal)
+ 		 *
+@@ -962,7 +941,7 @@ apply_profile:
+ 			if (!lazy_cxt) {
+ 				AA_ERROR("%s: Failed to allocate aa_task_context\n",
+ 					 __FUNCTION__);
+-				error = -ENOMEM;
++				newprofile = ERR_PTR(-ENOMEM);
+ 				goto cleanup;
+ 			}
+ 		}
+@@ -1000,7 +979,7 @@ apply_profile:
+ 				 * Redo with error checking
+ 				 */
+ 				spin_unlock_irqrestore(&cxt_lock, flags);
+-				goto find_profile;
++				goto repeat;
+ 			}
+ 		}
+ 
+@@ -1013,7 +992,7 @@ apply_profile:
+ 		 * Cases 2 and 3 are marked as requiring secure exec
+ 		 * (unless policy specified "unsafe exec")
+ 		 */
+-		if (cxt && cxt->profile && !unsafe_exec) {
++		if (newprofile && !(exec_mode & AA_EXEC_UNSAFE)) {
+ 			unsigned long bprm_flags;
+ 
+ 			bprm_flags = AA_SECURE_EXEC_NEEDED;
+@@ -1022,7 +1001,6 @@ apply_profile:
+ 		}
+ 
+ 		aa_switch_to_profile(cxt, newprofile, 0);
+-		aa_put_profile(newprofile);
+ 
+ 		if (complain && newprofile == null_complain_profile)
+ 			LOG_HINT(newprofile, GFP_ATOMIC, HINT_CHGPROF,
+@@ -1034,11 +1012,11 @@ apply_profile:
+ 
+ cleanup:
+ 	aa_put_pathname_buffer(filename_buffer);
+-
+ 	aa_put_profile(profile);
+-
+-out:
+-	return error;
++	if (IS_ERR(newprofile))
++		return PTR_ERR(newprofile);
++	aa_put_profile(newprofile);
++	return 0;
+ }
+ 
+ /**

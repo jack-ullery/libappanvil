@@ -60,9 +60,8 @@ d_namespace_path.diff
 apparmor-d_namespace.diff
 alloc-pathnames.diff
 zap-__setup.diff
-fix-change_hat.diff
-typo.diff 
-typo2.diff 
+change_hat-comment.diff
+typos.diff 
 reintroduce-revalidation.diff
 remove-debug-flag.diff 
 rename-profile-lock.diff
@@ -71,7 +70,10 @@ match-changes.diff
 rename-audit_context.diff
 cleanup-aa_register.diff
 cleanup-aa_register-2.diff
-aa_task_context_list_release-does-nothing-useful.diff
+rewrite-profile-list-functions.diff
+make-parent-point-to-itself.diff
 per-profile-task-contexts.diff
-export-profile-list.diff
-# rework-locking.diff
+remove-iterators.diff
+rename-aa_switch_to_profile.diff
+rework-locking.diff
+rework-locking-2.diff
