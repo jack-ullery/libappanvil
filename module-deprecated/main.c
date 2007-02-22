@@ -1144,9 +1144,7 @@ int sd_link(struct subdomain *sd, struct dentry *link, struct dentry *target)
 	if (errorcode != 0) {
 		/* inner or outer error */
 		result = 0;
-	} else if (match) {
-		result = 1;
-	} else {
+	} else if (!match) {
 		/* failed to match */
 		WARN_ON(iname);
 		WARN_ON(oname);
