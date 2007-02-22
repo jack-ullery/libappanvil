@@ -1,0 +1,22 @@
+There is no need to go throught the whole state machine for unreachable
+dentries; they will never match.
+
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -172,6 +172,14 @@ static char *aa_get_pathname(struct dent
+ 
+ 		name = d_namespace_path(dentry, mnt, buf, size, 1);
+ 		if (!IS_ERR(name)) {
++			if (*name != '/') {
++				/*
++				 * This dentry is not connected to the
++				 * namespace root -- reject access.
++				 */
++				kfree(buf);
++				return ERR_PTR(-ENOENT);
++			}
+ 			*buffer = buf;
+ 			return name;
+ 		}
