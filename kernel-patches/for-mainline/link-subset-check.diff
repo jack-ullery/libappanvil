@@ -1,0 +1,49 @@
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -134,29 +134,30 @@ static int aa_file_perm(struct aa_profil
+  * @profile: profile to check against
+  * @link: name of link being created
+  * @target: name of target to be linked to
+- *
+- * Look up permission mode on both @link and @target.  @link must have same
+- * permission mode as @target.  At least @link must have the link bit enabled.
+- * Return %0 on success, else -EPERM
+  */
+ static int aa_link_perm(struct aa_profile *profile,
+ 			const char *link, const char *target)
+ {
+-	int l_mode, t_mode, ret = -EPERM;
++	int l_mode, t_mode;
+ 
+ 	l_mode = aa_file_mode(profile, link);
+-	if (l_mode & AA_MAY_LINK) {
+-		/* mask off link bit */
+-		l_mode &= ~AA_MAY_LINK;
++	t_mode = aa_file_mode(profile, target);
+ 
+-		t_mode = aa_file_mode(profile, target);
+-		t_mode &= ~AA_MAY_LINK;
++	/**
++	 * If the process does not have the link permission for the link, or
++	 * the read, write, and execute permissions of the link are not a
++	 * subset of those of the target, or any of the remaining permissions
++	 * (which are all execute related) differ between the link and the
++	 * target, deny the access.
++	 */
+ 
+-		if (l_mode == t_mode)
+-			ret = 0;
+-	}
++	if (!(l_mode & AA_MAY_LINK) ||
++	    (~t_mode & l_mode & (MAY_READ | MAY_WRITE | MAY_EXEC)) ||
++	    ((l_mode & ~(MAY_READ | MAY_WRITE | MAY_EXEC | AA_MAY_LINK)) !=
++	     (t_mode & ~(MAY_READ | MAY_WRITE | MAY_EXEC | AA_MAY_LINK))))
++		return -EPERM;
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ static char *aa_get_pathname(struct dentry *dentry, struct vfsmount *mnt,
