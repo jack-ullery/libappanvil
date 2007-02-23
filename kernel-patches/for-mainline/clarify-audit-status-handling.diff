@@ -1,0 +1,162 @@
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -104,19 +104,16 @@ static inline void aa_permerror2result(i
+  ************************/
+ 
+ /**
+- * aa_file_perm - calculate access mode for file
++ * aa_file_denied - check for @mask access on a file
+  * @profile: profile to check against
+- * @name: name of file to calculate mode for
++ * @name: name of file
+  * @mask: permission mask requested for file
+  *
+- * Search the aa_entry list in @profile.
+- * Search looking to verify all permissions passed in mask.
+- * Perform the search by looking at the partitioned list of entries, one
+- * partition per permission bit.
+- *
+- * Return %0 on success, else mask of non-allowed permissions
++ * Return %0 on success, or else the permissions in @mask that the
++ * profile denies.
+  */
+-static int aa_file_perm(struct aa_profile *profile, const char *name, int mask)
++static int aa_file_denied(struct aa_profile *profile, const char *name,
++			  int mask)
+ {
+ 	int perms;
+ 
+@@ -126,21 +123,20 @@ static int aa_file_perm(struct aa_profil
+ 
+ 	perms = aa_match(profile->file_rules, name);
+ 
+-	return mask & ~perms;  /* return permissions not satisfied */
++	return (mask & ~perms);
+ }
+ 
+ /**
+- * aa_link_perm - test permission to link to a file
++ * aa_link_denied - check for permission to link a file
+  * @profile: profile to check against
+  * @link: name of link being created
+  * @target: name of target to be linked to
+  *
+- * Look up permission mode on both @link and @target.  @link must have same
+- * permission mode as @target.  At least @link must have the link bit enabled.
+- * Return %0 on success, else -EPERM
++ * Return %0 on success, or else the permissions in @mask that the
++ * profile denies.
+  */
+-static int aa_link_perm(struct aa_profile *profile,
+-			const char *link, const char *target)
++static int aa_link_denied(struct aa_profile *profile, const char *link,
++			  const char *target)
+ {
+ 	int l_mode, t_mode, ret = -EPERM;
+ 
+@@ -211,23 +207,23 @@ static inline void aa_put_name_buffer(ch
+ 	kfree(buffer);
+ }
+ 
+-static int _aa_perm_vfsmount(struct aa_profile *profile, struct dentry *dentry,
+-		      struct vfsmount *mnt, struct aa_audit *sa, int mask,
+-		      int is_dir)
++static int aa_perm_dentry(struct aa_profile *profile, struct dentry *dentry,
++			  struct vfsmount *mnt, struct aa_audit *sa, int mask,
++			  int is_dir)
+ {
+ 	char *buffer = NULL;
+-	int permerror, error;
++	int denied_mask, error;
+ 
+ 	sa->name = aa_get_name(dentry, mnt, &buffer, is_dir);
+ 
+ 	if (IS_ERR(sa->name)) {
+-		permerror = PTR_ERR(sa->name);
++		denied_mask = PTR_ERR(sa->name);
+ 		sa->name = NULL;
+ 	} else {
+-		permerror = aa_file_perm(profile, sa->name, mask);
++		denied_mask = aa_file_denied(profile, sa->name, mask);
+ 	}
+ 
+-	aa_permerror2result(permerror, sa);
++	aa_permerror2result(denied_mask, sa);
+ 
+ 	error = aa_audit(profile, sa);
+ 
+@@ -556,8 +552,8 @@ int aa_attr(struct aa_profile *profile, 
+ 	sa.flags = 0;
+ 	sa.gfp_mask = GFP_KERNEL;
+ 
+-	error = _aa_perm_vfsmount(profile, dentry, mnt, &sa, MAY_WRITE,
+-				  S_ISDIR(dentry->d_inode->i_mode));
++	error = aa_perm_dentry(profile, dentry, mnt, &sa, MAY_WRITE,
++			       S_ISDIR(dentry->d_inode->i_mode));
+ 
+ 	return error;
+ }
+@@ -584,8 +580,8 @@ int aa_perm_xattr(struct aa_profile *pro
+ 	sa.flags = 0;
+ 	sa.gfp_mask = GFP_KERNEL;
+ 
+-	error = _aa_perm_vfsmount(profile, dentry, mnt, &sa, mask,
+-				  S_ISDIR(dentry->d_inode->i_mode));
++	error = aa_perm_dentry(profile, dentry, mnt, &sa, mask,
++			       S_ISDIR(dentry->d_inode->i_mode));
+ 
+ 	return error;
+ }
+@@ -626,8 +622,8 @@ int aa_perm(struct aa_profile *profile, 
+ 	sa.mask = mask;
+ 	sa.flags = 0;
+ 	sa.gfp_mask = GFP_KERNEL;
+-	error = _aa_perm_vfsmount(profile, dentry, mnt, &sa, mask,
+-				  S_ISDIR(inode->i_mode));
++	error = aa_perm_dentry(profile, dentry, mnt, &sa, mask,
++			       S_ISDIR(inode->i_mode));
+ 
+ out:
+ 	return error;
+@@ -655,7 +651,7 @@ int aa_perm_dir(struct aa_profile *profi
+ 	sa.flags = 0;
+ 	sa.gfp_mask = GFP_KERNEL;
+ 
+-	return _aa_perm_vfsmount(profile, dentry, mnt, &sa, mask, 1);
++	return aa_perm_dentry(profile, dentry, mnt, &sa, mask, 1);
+ }
+ 
+ /**
+@@ -705,25 +701,25 @@ int aa_link(struct aa_profile *profile,
+ 	    struct dentry *target, struct vfsmount *target_mnt)
+ {
+ 	char *name_buffer = NULL, *pval_buffer = NULL;
+-	int permerror = -EPERM, error;
++	int denied_mask = -EPERM, error;
+ 	struct aa_audit sa;
+ 
+ 	sa.name = aa_get_name(link, link_mnt, &name_buffer, 0);
+ 	sa.pval = aa_get_name(target, target_mnt, &pval_buffer, 0);
+ 
+ 	if (IS_ERR(sa.name)) {
+-		permerror = PTR_ERR(sa.name);
++		denied_mask = PTR_ERR(sa.name);
+ 		sa.name = NULL;
+ 	}
+ 	if (IS_ERR(sa.pval)) {
+-		permerror = PTR_ERR(sa.pval);
++		denied_mask = PTR_ERR(sa.pval);
+ 		sa.pval = NULL;
+ 	}
+ 
+ 	if (sa.name && sa.pval)
+-		permerror = aa_link_perm(profile, sa.name, sa.pval);
++		denied_mask = aa_link_denied(profile, sa.name, sa.pval);
+ 
+-	aa_permerror2result(permerror, &sa);
++	aa_permerror2result(denied_mask, &sa);
+ 
+ 	sa.type = AA_AUDITTYPE_LINK;
+ 	sa.flags = 0;

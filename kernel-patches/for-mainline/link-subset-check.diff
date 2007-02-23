@@ -2,17 +2,9 @@ Index: b/security/apparmor/main.c
 ===================================================================
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -134,29 +134,30 @@ static int aa_file_perm(struct aa_profil
-  * @profile: profile to check against
-  * @link: name of link being created
-  * @target: name of target to be linked to
-- *
-- * Look up permission mode on both @link and @target.  @link must have same
-- * permission mode as @target.  At least @link must have the link bit enabled.
-- * Return %0 on success, else -EPERM
-  */
- static int aa_link_perm(struct aa_profile *profile,
- 			const char *link, const char *target)
+@@ -138,21 +138,31 @@ static int aa_file_denied(struct aa_prof
+ static int aa_link_denied(struct aa_profile *profile, const char *link,
+ 			  const char *target)
  {
 -	int l_mode, t_mode, ret = -EPERM;
 +	int l_mode, t_mode;
@@ -31,6 +23,11 @@ Index: b/security/apparmor/main.c
 +	 * subset of those of the target, or any of the remaining permissions
 +	 * (which are all execute related) differ between the link and the
 +	 * target, deny the access.
++	 *
++	 * FIXME: There currenly is no way to report which other permissions
++	 * the process would need to have in l_mode, or which permissions in
++	 * l_mode would have to be removed in order for the operation to
++	 * succeed.
 +	 */
  
 -		if (l_mode == t_mode)
@@ -40,10 +37,10 @@ Index: b/security/apparmor/main.c
 +	    (~t_mode & l_mode & (MAY_READ | MAY_WRITE | MAY_EXEC)) ||
 +	    ((l_mode & ~(MAY_READ | MAY_WRITE | MAY_EXEC | AA_MAY_LINK)) !=
 +	     (t_mode & ~(MAY_READ | MAY_WRITE | MAY_EXEC | AA_MAY_LINK))))
-+		return -EPERM;
++	        return AA_MAY_LINK;
  
 -	return ret;
 +	return 0;
  }
  
- static char *aa_get_pathname(struct dentry *dentry, struct vfsmount *mnt,
+ static char *aa_get_name(struct dentry *dentry, struct vfsmount *mnt,
