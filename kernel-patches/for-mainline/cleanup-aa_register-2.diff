@@ -48,9 +48,9 @@ Index: b/security/apparmor/main.c
  /**
   * aa_register - register a new program
   * @bprm: binprm of program being registered
-@@ -783,14 +822,8 @@ int aa_register(struct linux_binprm *bpr
+@@ -783,156 +822,96 @@ int aa_register(struct linux_binprm *bpr
  {
- 	char *filename, *filename_buffer = NULL;
+ 	char *filename, *buffer = NULL;
  	struct file *filp = bprm->file;
 -	struct aa_profile *profile;
 -	struct aa_profile *newprofile = NULL, unconstrained_flag;
@@ -65,8 +65,7 @@ Index: b/security/apparmor/main.c
  
  	AA_DEBUG("%s\n", __FUNCTION__);
  
-@@ -798,142 +831,88 @@ int aa_register(struct linux_binprm *bpr
- 				   &filename_buffer);
+ 	filename = aa_get_name(filp->f_dentry, filp->f_vfsmnt, &buffer);
  	if (IS_ERR(filename)) {
  		AA_WARN("%s: Failed to get filename\n", __FUNCTION__);
 -		goto out;
@@ -271,7 +270,7 @@ Index: b/security/apparmor/main.c
  		/* grab a lock - this is to guarentee consistency against
  		 * other writers of aa_task_context (replacement/removal)
  		 *
-@@ -962,7 +941,7 @@ apply_profile:
+@@ -961,7 +940,7 @@ apply_profile:
  			if (!lazy_cxt) {
  				AA_ERROR("%s: Failed to allocate aa_task_context\n",
  					 __FUNCTION__);
@@ -280,7 +279,7 @@ Index: b/security/apparmor/main.c
  				goto cleanup;
  			}
  		}
-@@ -1000,7 +979,7 @@ apply_profile:
+@@ -999,7 +978,7 @@ apply_profile:
  				 * Redo with error checking
  				 */
  				spin_unlock_irqrestore(&cxt_lock, flags);
@@ -289,7 +288,7 @@ Index: b/security/apparmor/main.c
  			}
  		}
  
-@@ -1013,7 +992,7 @@ apply_profile:
+@@ -1012,7 +991,7 @@ apply_profile:
  		 * Cases 2 and 3 are marked as requiring secure exec
  		 * (unless policy specified "unsafe exec")
  		 */
@@ -298,7 +297,7 @@ Index: b/security/apparmor/main.c
  			unsigned long bprm_flags;
  
  			bprm_flags = AA_SECURE_EXEC_NEEDED;
-@@ -1022,7 +1001,6 @@ apply_profile:
+@@ -1021,7 +1000,6 @@ apply_profile:
  		}
  
  		aa_switch_to_profile(cxt, newprofile, 0);
@@ -306,10 +305,10 @@ Index: b/security/apparmor/main.c
  
  		if (complain && newprofile == null_complain_profile)
  			LOG_HINT(newprofile, GFP_ATOMIC, HINT_CHGPROF,
-@@ -1034,11 +1012,11 @@ apply_profile:
+@@ -1033,11 +1011,11 @@ apply_profile:
  
  cleanup:
- 	aa_put_pathname_buffer(filename_buffer);
+ 	aa_put_name_buffer(buffer);
 -
  	aa_put_profile(profile);
 -

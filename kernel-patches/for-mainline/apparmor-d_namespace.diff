@@ -35,7 +35,7 @@ Index: b/security/apparmor/main.c
 -	 * The size > deleted_size and strcmp checks are redundant safe guards.
 -	 */
 -	if (IS_ERR(name)) {
-+	name = d_namespace_path(dentry, mnt, page, PAGE_SIZE, 1);
++	name = d_namespace_path(dentry, mnt, page, PAGE_SIZE);
 +	if (IS_ERR(name))
  		free_page((unsigned long)page);
 -	} else {

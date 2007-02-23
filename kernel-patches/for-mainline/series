@@ -80,5 +80,6 @@ rework-locking.diff
 rework-locking-2.diff
 unreachabe-paths.diff
 rename-aa_fork.diff
+tell-files-from-dirs.diff
 # ptrace.diff
 # link-subset-check.diff

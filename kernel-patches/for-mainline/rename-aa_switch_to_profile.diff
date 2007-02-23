@@ -66,7 +66,7 @@ Index: b/security/apparmor/main.c
  		spin_unlock_irqrestore(&cxt_lock, flags);
  
  		if (APPARMOR_COMPLAIN(cxt) &&
-@@ -1000,7 +1000,7 @@ repeat:
+@@ -999,7 +999,7 @@ repeat:
  				((unsigned long)bprm->security | bprm_flags);
  		}
  
@@ -75,7 +75,7 @@ Index: b/security/apparmor/main.c
  
  		if (complain && newprofile == null_complain_profile)
  			LOG_HINT(newprofile, GFP_ATOMIC, HINT_CHGPROF,
-@@ -1030,7 +1030,7 @@ cleanup:
+@@ -1029,7 +1029,7 @@ cleanup:
   * removing a profile from a aa_task_context.  Once the aa_task_context has
   * been removed from the aa_task_context_list, we are no longer racing other
   * writers. There may still be other readers so we must still use
@@ -84,7 +84,7 @@ Index: b/security/apparmor/main.c
   */
  void aa_release(struct task_struct *task)
  {
-@@ -1039,7 +1039,7 @@ void aa_release(struct task_struct *task
+@@ -1038,7 +1038,7 @@ void aa_release(struct task_struct *task
  		task->security = NULL;
  
  		aa_task_context_list_remove(cxt);
@@ -93,7 +93,7 @@ Index: b/security/apparmor/main.c
  
  		kfree(cxt);
  	}
-@@ -1070,7 +1070,7 @@ static inline int do_change_hat(const ch
+@@ -1069,7 +1069,7 @@ static inline int do_change_hat(const ch
  	sub = __aa_find_profile(hat_name, &cxt->profile->parent->sub);
  	if (sub) {
  		/* change hat */
@@ -102,7 +102,7 @@ Index: b/security/apparmor/main.c
  	} else {
  		if (APPARMOR_COMPLAIN(cxt)) {
  			LOG_HINT(cxt->profile, GFP_ATOMIC, HINT_UNKNOWN_HAT,
-@@ -1098,8 +1098,7 @@ static inline int do_change_hat(const ch
+@@ -1097,8 +1097,7 @@ static inline int do_change_hat(const ch
  		 *
  		 * In learning mode, this allows us to learn about new hats.
  		 */
@@ -112,7 +112,7 @@ Index: b/security/apparmor/main.c
  	}
  
  	return error;
-@@ -1187,8 +1186,7 @@ int aa_change_hat(const char *hat_name, 
+@@ -1186,8 +1185,7 @@ int aa_change_hat(const char *hat_name, 
  				 * Got here via changehat(NULL, magic)
  				 * Return from subprofile, back to parent
  				 */

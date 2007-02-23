@@ -5,11 +5,11 @@ Index: b/security/apparmor/main.c
 ===================================================================
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -172,6 +172,14 @@ static char *aa_get_pathname(struct dent
+@@ -172,6 +172,14 @@ static char *aa_get_name(struct dentry *
  
- 		name = d_namespace_path(dentry, mnt, buf, size, 1);
+ 		name = d_namespace_path(dentry, mnt, buf, size);
  		if (!IS_ERR(name)) {
-+			if (*name != '/') {
++			if (name[0] != '/') {
 +				/*
 +				 * This dentry is not connected to the
 +				 * namespace root -- reject access.

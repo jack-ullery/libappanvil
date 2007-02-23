@@ -2,7 +2,7 @@ Index: b/security/apparmor/main.c
 ===================================================================
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -1087,7 +1087,7 @@ void aa_release(struct task_struct *task
+@@ -1086,7 +1086,7 @@ void aa_release(struct task_struct *task
  
  /**
   * do_change_hat - actually switch hats

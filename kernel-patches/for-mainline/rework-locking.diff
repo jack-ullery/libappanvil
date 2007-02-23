@@ -329,7 +329,7 @@ Index: b/security/apparmor/main.c
  
  		if (APPARMOR_COMPLAIN(cxt) &&
  		    cxt->profile == null_complain_profile)
-@@ -911,7 +897,6 @@ repeat:
+@@ -910,7 +896,6 @@ repeat:
  	/* Apply the new profile, or switch to unconfined if NULL. */
  	if (!IS_ERR(newprofile)) {
  		struct aa_task_context *cxt, *lazy_cxt = NULL;
@@ -337,7 +337,7 @@ Index: b/security/apparmor/main.c
  
  		/* grab a lock - this is to guarentee consistency against
  		 * other writers of aa_task_context (replacement/removal)
-@@ -937,7 +922,7 @@ repeat:
+@@ -936,7 +921,7 @@ repeat:
  		 */
  
  		if (!profile && !(cxt = aa_task_context(current))) {
@@ -346,7 +346,7 @@ Index: b/security/apparmor/main.c
  			if (!lazy_cxt) {
  				AA_ERROR("%s: Failed to allocate aa_task_context\n",
  					 __FUNCTION__);
-@@ -946,13 +931,11 @@ repeat:
+@@ -945,13 +930,11 @@ repeat:
  			}
  		}
  
@@ -361,7 +361,7 @@ Index: b/security/apparmor/main.c
  				lazy_cxt = NULL;
  			} else {
  				/* Not rcu used to get the write barrier
-@@ -978,7 +961,6 @@ repeat:
+@@ -977,7 +960,6 @@ repeat:
  				/* Race, profile was removed, not replaced.
  				 * Redo with error checking
  				 */
@@ -369,7 +369,7 @@ Index: b/security/apparmor/main.c
  				goto repeat;
  			}
  		}
-@@ -1006,8 +988,6 @@ repeat:
+@@ -1005,8 +987,6 @@ repeat:
  			LOG_HINT(newprofile, GFP_ATOMIC, HINT_CHGPROF,
  				"pid=%d\n",
  				current->pid);
@@ -378,7 +378,7 @@ Index: b/security/apparmor/main.c
  	}
  
  cleanup:
-@@ -1020,28 +1000,51 @@ cleanup:
+@@ -1019,28 +999,51 @@ cleanup:
  }
  
  /**

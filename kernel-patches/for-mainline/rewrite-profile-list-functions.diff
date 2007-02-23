@@ -241,7 +241,7 @@ Index: b/security/apparmor/main.c
  	if (profile) {
  		AA_DEBUG("%s: setting profile %s\n",
  			 __FUNCTION__, profile->name);
-@@ -931,7 +931,7 @@ repeat:
+@@ -930,7 +930,7 @@ repeat:
  		 *   the transition occured before replacement.
  		 *
  		 * - If newprofile points to an actual profile (result of
@@ -250,7 +250,7 @@ Index: b/security/apparmor/main.c
  		 *   replaced.  We need to fix it up.  Doing this to avoid
  		 *   having to hold a lock around all this code.
  		 */
-@@ -972,7 +972,7 @@ repeat:
+@@ -971,7 +971,7 @@ repeat:
  			/* drop refcnt obtained from earlier aa_dup_profile */
  			aa_put_profile(newprofile);
  
@@ -259,7 +259,7 @@ Index: b/security/apparmor/main.c
  
  			if (!newprofile) {
  				/* Race, profile was removed, not replaced.
-@@ -1063,12 +1063,14 @@ static inline int do_change_hat(const ch
+@@ -1062,12 +1062,14 @@ static inline int do_change_hat(const ch
  	struct aa_profile *sub;
  	int error = 0;
  

@@ -101,7 +101,7 @@ Index: b/security/apparmor/main.c
  			return ERR_PTR(-EPERM);
  		}
  	} else {
-@@ -878,7 +878,7 @@ repeat:
+@@ -877,7 +877,7 @@ repeat:
  					 filename,
  					 exec_mode & AA_EXEC_MODIFIERS,
  					 current->comm, current->pid,
@@ -110,7 +110,7 @@ Index: b/security/apparmor/main.c
  					 profile->name);
  				newprofile = ERR_PTR(-EPERM);
  				break;
-@@ -898,7 +898,7 @@ repeat:
+@@ -897,7 +897,7 @@ repeat:
  				__FUNCTION__,
  				filename,
  				current->comm, current->pid,
@@ -119,7 +119,7 @@ Index: b/security/apparmor/main.c
  			newprofile = ERR_PTR(-EPERM);
  		}
  	} else {
-@@ -1067,7 +1067,7 @@ static inline int do_change_hat(const ch
+@@ -1066,7 +1066,7 @@ static inline int do_change_hat(const ch
  	 * Note: the profile and sub-profiles cannot go away under us here;
  	 * no need to grab an additional reference count.
  	 */
@@ -128,7 +128,7 @@ Index: b/security/apparmor/main.c
  	if (sub) {
  		/* change hat */
  		aa_switch_to_profile(cxt, sub, hat_magic);
-@@ -1078,7 +1078,7 @@ static inline int do_change_hat(const ch
+@@ -1077,7 +1077,7 @@ static inline int do_change_hat(const ch
  				"profile=%s active=%s\n",
  				hat_name,
  				current->pid,
@@ -137,7 +137,7 @@ Index: b/security/apparmor/main.c
  				cxt->profile->name);
  		} else {
  			AA_DEBUG("%s: Unknown hatname '%s'. "
-@@ -1087,7 +1087,7 @@ static inline int do_change_hat(const ch
+@@ -1086,7 +1086,7 @@ static inline int do_change_hat(const ch
  				 __FUNCTION__,
  				 hat_name,
  				 current->comm, current->pid,
@@ -146,7 +146,7 @@ Index: b/security/apparmor/main.c
  				 cxt->profile->name);
  			error = -EACCES;
  		}
-@@ -1140,7 +1140,7 @@ int aa_change_hat(const char *hat_name, 
+@@ -1139,7 +1139,7 @@ int aa_change_hat(const char *hat_name, 
  	}
  
  	/* check to see if the confined process has any hats. */
@@ -155,7 +155,7 @@ Index: b/security/apparmor/main.c
  	    !PROFILE_COMPLAIN(cxt->profile)) {
  		error = -ECHILD;
  		goto out;
-@@ -1149,7 +1149,7 @@ int aa_change_hat(const char *hat_name, 
+@@ -1148,7 +1148,7 @@ int aa_change_hat(const char *hat_name, 
  	/* Check whether current domain is parent
  	 * or one of the sibling children
  	 */
@@ -164,7 +164,7 @@ Index: b/security/apparmor/main.c
  		/*
  		 * parent
  		 */
-@@ -1204,7 +1204,7 @@ int aa_change_hat(const char *hat_name, 
+@@ -1203,7 +1203,7 @@ int aa_change_hat(const char *hat_name, 
  				 current->comm, current->pid,
  				 hat_magic,
  				 hat_name ? hat_name : "NULL",
@@ -173,7 +173,7 @@ Index: b/security/apparmor/main.c
  				 cxt->profile->name);
  
  			/* terminate current process */
-@@ -1214,7 +1214,7 @@ int aa_change_hat(const char *hat_name, 
+@@ -1213,7 +1213,7 @@ int aa_change_hat(const char *hat_name, 
  				 "Task was confined to current subprofile "
  				 "(profile %s active %s)\n",
  				 current->comm, current->pid,

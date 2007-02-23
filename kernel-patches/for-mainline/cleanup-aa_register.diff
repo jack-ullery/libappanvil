@@ -9,7 +9,7 @@ Index: b/security/apparmor/main.c
 ===================================================================
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -816,11 +816,12 @@ int aa_register(struct linux_binprm *bpr
+@@ -815,11 +815,12 @@ int aa_register(struct linux_binprm *bpr
  	/* Confined task, determine what mode inherit, unconstrained or
  	 * mandatory to load new profile
  	 */
@@ -24,7 +24,7 @@ Index: b/security/apparmor/main.c
  		case AA_EXEC_INHERIT:
  			/* do nothing - setting of profile
  			 * already handed in aa_fork
-@@ -848,21 +849,6 @@ int aa_register(struct linux_binprm *bpr
+@@ -847,21 +848,6 @@ int aa_register(struct linux_binprm *bpr
  			find_profile_mandatory = 1;
  			break;
  

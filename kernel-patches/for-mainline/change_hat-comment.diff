@@ -6,7 +6,7 @@ Index: b/security/apparmor/main.c
 ===================================================================
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -1106,14 +1106,6 @@ static inline int do_change_hat(const ch
+@@ -1105,14 +1105,6 @@ static inline int do_change_hat(const ch
  		aa_switch_to_profile(cxt, sub, hat_magic);
  		aa_put_profile(sub);
  	} else {
@@ -21,7 +21,7 @@ Index: b/security/apparmor/main.c
  		if (APPARMOR_COMPLAIN(cxt)) {
  			LOG_HINT(cxt->profile, GFP_ATOMIC, HINT_UNKNOWN_HAT,
   				"%s pid=%d "
-@@ -1133,7 +1125,15 @@ static inline int do_change_hat(const ch
+@@ -1132,7 +1124,15 @@ static inline int do_change_hat(const ch
  				 cxt->profile->name);
  			error = -EACCES;
  		}

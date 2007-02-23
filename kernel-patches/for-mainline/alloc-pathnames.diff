@@ -66,8 +66,8 @@ Index: b/security/apparmor/main.c
  	return ret;
  }
  
-+static char *aa_get_pathname(struct dentry *dentry, struct vfsmount *mnt,
-+			     char **buffer)
++static char *aa_get_name(struct dentry *dentry, struct vfsmount *mnt,
++			 char **buffer)
 +{
 +	char *name;
 +	int size = 256;
@@ -77,7 +77,7 @@ Index: b/security/apparmor/main.c
 +		if (!buf)
 +			return ERR_PTR(-ENOMEM);
 +
-+		name = d_namespace_path(dentry, mnt, buf, size, 1);
++		name = d_namespace_path(dentry, mnt, buf, size);
 +		if (!IS_ERR(name)) {
 +			*buffer = buf;
 +			return name;
@@ -92,7 +92,7 @@ Index: b/security/apparmor/main.c
 +	}
 +}
 +
-+static inline void aa_put_pathname_buffer(char *buffer)
++static inline void aa_put_name_buffer(char *buffer)
 +{
 +	kfree(buffer);
 +}
@@ -104,7 +104,7 @@ Index: b/security/apparmor/main.c
  	int permerror, error;
  
 -	sa->name = aa_get_name(dentry, mnt);
-+	sa->name = aa_get_pathname(dentry, mnt, &buffer);
++	sa->name = aa_get_name(dentry, mnt, &buffer);
  
  	if (IS_ERR(sa->name)) {
  		permerror = PTR_ERR(sa->name);
@@ -113,7 +113,7 @@ Index: b/security/apparmor/main.c
  	error = aa_audit(profile, sa);
  
 -	aa_put_name(sa->name);
-+	aa_put_pathname_buffer(buffer);
++	aa_put_name_buffer(buffer);
  
  	return error;
  }
@@ -137,7 +137,7 @@ Index: b/security/apparmor/main.c
 -	if (!page)
 -		return ERR_PTR(-ENOMEM);
 -
--	name = d_namespace_path(dentry, mnt, page, PAGE_SIZE, 1);
+-	name = d_namespace_path(dentry, mnt, page, PAGE_SIZE);
 -	if (IS_ERR(name))
 -		free_page((unsigned long)page);
 -
@@ -157,8 +157,8 @@ Index: b/security/apparmor/main.c
  
 -	sa.name = aa_get_name(link, link_mnt);
 -	sa.pval = aa_get_name(target, target_mnt);
-+	sa.name = aa_get_pathname(link, link_mnt, &name_buffer);
-+	sa.pval = aa_get_pathname(target, target_mnt, &pval_buffer);
++	sa.name = aa_get_name(link, link_mnt, &name_buffer);
++	sa.pval = aa_get_name(target, target_mnt, &pval_buffer);
  
  	if (IS_ERR(sa.name)) {
  		permerror = PTR_ERR(sa.name);
@@ -168,8 +168,8 @@ Index: b/security/apparmor/main.c
  
 -	aa_put_name(sa.name);
 -	aa_put_name(sa.pval);
-+	aa_put_pathname_buffer(name_buffer);
-+	aa_put_pathname_buffer(pval_buffer);
++	aa_put_name_buffer(name_buffer);
++	aa_put_name_buffer(pval_buffer);
  
  	return error;
  }
@@ -178,26 +178,25 @@ Index: b/security/apparmor/main.c
  int aa_register(struct linux_binprm *bprm)
  {
 -	char *filename;
-+	char *filename, *filename_buffer = NULL;
++	char *filename, *buffer = NULL;
  	struct file *filp = bprm->file;
  	struct aa_profile *profile;
  	struct aa_profile *newprofile = NULL, unconstrained_flag;
-@@ -784,7 +794,8 @@ int aa_register(struct linux_binprm *bpr
+@@ -784,7 +794,7 @@ int aa_register(struct linux_binprm *bpr
  
  	AA_DEBUG("%s\n", __FUNCTION__);
  
 -	filename = aa_get_name(filp->f_dentry, filp->f_vfsmnt);
-+	filename = aa_get_pathname(filp->f_dentry, filp->f_vfsmnt,
-+				   &filename_buffer);
++	filename = aa_get_name(filp->f_dentry, filp->f_vfsmnt, &buffer);
  	if (IS_ERR(filename)) {
  		AA_WARN("%s: Failed to get filename\n", __FUNCTION__);
  		goto out;
-@@ -1036,7 +1047,7 @@ apply_profile:
+@@ -1036,7 +1046,7 @@ apply_profile:
  	}
  
  cleanup:
 -	aa_put_name(filename);
-+	aa_put_pathname_buffer(filename_buffer);
++	aa_put_name_buffer(buffer);
  
  	aa_put_profile(profile);
  

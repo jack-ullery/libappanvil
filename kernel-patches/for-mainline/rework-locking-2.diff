@@ -80,14 +80,14 @@ Index: b/security/apparmor/main.c
  
 @@ -808,7 +813,7 @@ int aa_register(struct linux_binprm *bpr
  {
- 	char *filename, *filename_buffer = NULL;
+ 	char *filename, *buffer = NULL;
  	struct file *filp = bprm->file;
 -	struct aa_profile *profile, *newprofile = NULL;
 +	struct aa_profile *profile, *old_profile, *new_profile = NULL;
  	int exec_mode = AA_EXEC_UNSAFE, complain = 0;
  
  	AA_DEBUG("%s\n", __FUNCTION__);
-@@ -820,8 +825,8 @@ int aa_register(struct linux_binprm *bpr
+@@ -819,8 +824,8 @@ int aa_register(struct linux_binprm *bpr
  		return -ENOENT;
  	}
  
@@ -97,7 +97,7 @@ Index: b/security/apparmor/main.c
  	if (profile) {
  		complain = PROFILE_COMPLAIN(profile);
  
-@@ -844,16 +849,16 @@ repeat:
+@@ -843,16 +848,16 @@ repeat:
  					 __FUNCTION__,
  					 filename);
  
@@ -118,7 +118,7 @@ Index: b/security/apparmor/main.c
  				break;
  
  			default:
-@@ -866,7 +871,7 @@ repeat:
+@@ -865,7 +870,7 @@ repeat:
  					 current->comm, current->pid,
  					 profile->parent->name,
  					 profile->name);
@@ -127,7 +127,7 @@ Index: b/security/apparmor/main.c
  				break;
  			}
  
-@@ -875,7 +880,7 @@ repeat:
+@@ -874,7 +879,7 @@ repeat:
  			 * describing mode to execute image in.
  			 * Drop into null-profile (disabling secure exec).
  			 */
@@ -136,7 +136,7 @@ Index: b/security/apparmor/main.c
  			exec_mode |= AA_EXEC_UNSAFE;
  		} else {
  			AA_WARN("%s: Rejecting exec(2) of image '%s'. "
-@@ -885,117 +890,58 @@ repeat:
+@@ -884,117 +889,58 @@ repeat:
  				filename,
  				current->comm, current->pid,
  				profile->parent->name, profile->name);
@@ -281,7 +281,7 @@ Index: b/security/apparmor/main.c
  	}
  
  cleanup:
- 	aa_put_pathname_buffer(filename_buffer);
+ 	aa_put_name_buffer(buffer);
 -	aa_put_profile(profile);
 -	if (IS_ERR(newprofile))
 -		return PTR_ERR(newprofile);
@@ -292,7 +292,7 @@ Index: b/security/apparmor/main.c
  	return 0;
  }
  
-@@ -1007,7 +953,6 @@ cleanup:
+@@ -1006,7 +952,6 @@ cleanup:
   */
  void aa_release(struct task_struct *task)
  {
@@ -300,7 +300,7 @@ Index: b/security/apparmor/main.c
  	struct aa_profile *profile;
  
  	/*
-@@ -1025,10 +970,12 @@ void aa_release(struct task_struct *task
+@@ -1024,10 +969,12 @@ void aa_release(struct task_struct *task
  repeat:
  	profile = aa_get_profile(task);
  	if (profile) {
@@ -314,7 +314,7 @@ Index: b/security/apparmor/main.c
  			task_unlock(task);
  			unlock_profile(profile);
  			aa_put_profile(profile);
-@@ -1043,8 +990,9 @@ repeat:
+@@ -1042,8 +989,9 @@ repeat:
  		list_del(&cxt->list);
  		unlock_profile(profile);
  		aa_put_profile(profile);
@@ -325,7 +325,7 @@ Index: b/security/apparmor/main.c
  	}
  }
  
-@@ -1075,14 +1023,16 @@ static inline int do_change_hat(const ch
+@@ -1074,14 +1022,16 @@ static inline int do_change_hat(const ch
  		/* change hat */
  		aa_change_profile(cxt, sub, hat_magic);
  	} else {
@@ -345,7 +345,7 @@ Index: b/security/apparmor/main.c
  		} else {
  			AA_DEBUG("%s: Unknown hatname '%s'. "
  				"Changing to NULL profile "
-@@ -1090,8 +1040,8 @@ static inline int do_change_hat(const ch
+@@ -1089,8 +1039,8 @@ static inline int do_change_hat(const ch
  				 __FUNCTION__,
  				 hat_name,
  				 current->comm, current->pid,
@@ -356,7 +356,7 @@ Index: b/security/apparmor/main.c
  			error = -EACCES;
  		}
  		/*
-@@ -1120,57 +1070,49 @@ static inline int do_change_hat(const ch
+@@ -1119,57 +1069,49 @@ static inline int do_change_hat(const ch
   */
  int aa_change_hat(const char *hat_name, u32 hat_magic)
  {
@@ -435,7 +435,7 @@ Index: b/security/apparmor/main.c
  			 *
  			 * We used to simply update the magic cookie.
  			 * That's an odd behaviour, so just do nothing.
-@@ -1178,17 +1120,16 @@ int aa_change_hat(const char *hat_name, 
+@@ -1177,17 +1119,16 @@ int aa_change_hat(const char *hat_name, 
  		}
  	} else {
  		/*
@@ -460,7 +460,7 @@ Index: b/security/apparmor/main.c
  				aa_change_profile(cxt, cxt->profile->parent, 0);
  			} else {
  				/*
-@@ -1205,8 +1146,8 @@ int aa_change_hat(const char *hat_name, 
+@@ -1204,8 +1145,8 @@ int aa_change_hat(const char *hat_name, 
  				 current->comm, current->pid,
  				 hat_magic,
  				 hat_name ? hat_name : "NULL",
@@ -471,7 +471,7 @@ Index: b/security/apparmor/main.c
  
  			/* terminate current process */
  			(void)send_sig_info(SIGKILL, NULL, current);
-@@ -1215,8 +1156,8 @@ int aa_change_hat(const char *hat_name, 
+@@ -1214,8 +1155,8 @@ int aa_change_hat(const char *hat_name, 
  				 "Task was confined to current subprofile "
  				 "(profile %s active %s)\n",
  				 current->comm, current->pid,
@@ -482,7 +482,7 @@ Index: b/security/apparmor/main.c
  
  			/* terminate current process */
  			(void)send_sig_info(SIGKILL, NULL, current);
-@@ -1225,5 +1166,61 @@ int aa_change_hat(const char *hat_name, 
+@@ -1224,5 +1165,61 @@ int aa_change_hat(const char *hat_name, 
  	}
  
  out:
