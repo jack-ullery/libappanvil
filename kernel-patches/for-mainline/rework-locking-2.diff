@@ -107,7 +107,7 @@ Index: b/security/apparmor/main.c
 +				new_profile = NULL;
  				break;
  
- 			case AA_EXEC_PROFILE:
+ 			case MAY_EXEC | AA_EXEC_PROFILE:
  				AA_DEBUG("%s: PROFILE %s\n",
  					 __FUNCTION__,
  					 filename);

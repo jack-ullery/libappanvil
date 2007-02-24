@@ -2,7 +2,7 @@ Index: b/security/apparmor/main.c
 ===================================================================
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -844,16 +844,16 @@ repeat:
+@@ -843,16 +843,16 @@ repeat:
  		 */
  		exec_mode = aa_match(profile->file_rules, filename);
  
@@ -23,7 +23,7 @@ Index: b/security/apparmor/main.c
  				AA_DEBUG("%s: UNCONSTRAINED %s\n",
  					 __FUNCTION__,
  					 filename);
-@@ -862,7 +862,7 @@ repeat:
+@@ -861,7 +861,7 @@ repeat:
  				newprofile = NULL;
  				break;
  
