@@ -1,0 +1,163 @@
+Index: b/include/linux/fs.h
+===================================================================
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -349,6 +349,9 @@ struct iattr {
+ 	 * Not an attribute, but an auxilary info for filesystems wanting to
+ 	 * implement an ftruncate() like method.  NOTE: filesystem should
+ 	 * check for (ia_valid & ATTR_FILE), and not for (ia_file != NULL).
++	 *
++	 * The LSM hooks also use this to distinguish operations on a file
++	 * descriptors from operations on pathnames.
+ 	 */
+ 	struct file	*ia_file;
+ };
+Index: b/fs/open.c
+===================================================================
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -520,6 +520,8 @@ asmlinkage long sys_fchmod(unsigned int 
+ 		mode = inode->i_mode;
+ 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
++	newattrs.ia_valid |= ATTR_FILE;
++	newattrs.ia_file = file;
+ 	err = notify_change(dentry, file->f_path.mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+ 
+@@ -570,7 +572,7 @@ asmlinkage long sys_chmod(const char __u
+ }
+ 
+ static int chown_common(struct dentry * dentry, struct vfsmount *mnt,
+-			uid_t user, gid_t group)
++			uid_t user, gid_t group, struct file *file)
+ {
+ 	struct inode * inode;
+ 	int error;
+@@ -598,6 +600,10 @@ static int chown_common(struct dentry * 
+ 	}
+ 	if (!S_ISDIR(inode->i_mode))
+ 		newattrs.ia_valid |= ATTR_KILL_SUID|ATTR_KILL_SGID;
++	if (file) {
++		newattrs.ia_file = file;
++		newattrs.ia_valid |= ATTR_FILE;
++	}
+ 	mutex_lock(&inode->i_mutex);
+ 	error = notify_change(dentry, mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+@@ -613,7 +619,7 @@ asmlinkage long sys_chown(const char __u
+ 	error = user_path_walk(filename, &nd);
+ 	if (error)
+ 		goto out;
+-	error = chown_common(nd.dentry, nd.mnt, user, group);
++	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
+ 	path_release(&nd);
+ out:
+ 	return error;
+@@ -633,7 +639,7 @@ asmlinkage long sys_fchownat(int dfd, co
+ 	error = __user_walk_fd(dfd, filename, follow, &nd);
+ 	if (error)
+ 		goto out;
+-	error = chown_common(nd.dentry, nd.mnt, user, group);
++	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
+ 	path_release(&nd);
+ out:
+ 	return error;
+@@ -647,7 +653,7 @@ asmlinkage long sys_lchown(const char __
+ 	error = user_path_walk_link(filename, &nd);
+ 	if (error)
+ 		goto out;
+-	error = chown_common(nd.dentry, nd.mnt, user, group);
++	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
+ 	path_release(&nd);
+ out:
+ 	return error;
+@@ -666,7 +672,7 @@ asmlinkage long sys_fchown(unsigned int 
+ 
+ 	dentry = file->f_path.dentry;
+ 	audit_inode(NULL, dentry->d_inode);
+-	error = chown_common(dentry, file->f_path.mnt, user, group);
++	error = chown_common(dentry, file->f_path.mnt, user, group, file);
+ 	fput(file);
+ out:
+ 	return error;
+Index: b/security/apparmor/lsm.c
+===================================================================
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -82,7 +82,7 @@ static int apparmor_ptrace(struct task_s
+ 	 * under the rules that the kernel normally permits if the two
+ 	 * processes are running under the same profile, but then we
+ 	 * would probably have to reject profile changes for processes
+-	 * that are being ptraces as well as for processes ptracing
++	 * that are being ptraced as well as for processes ptracing
+ 	 * others.
+ 	 */
+ 
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -190,7 +190,7 @@ static inline void aa_put_name_buffer(ch
+ 
+ static int aa_perm_dentry(struct aa_profile *profile, struct dentry *dentry,
+ 			  struct vfsmount *mnt, struct aa_audit *sa, int mask,
+-			  int is_dir)
++			  int is_dir, int accessed_through_fd)
+ {
+ 	char *buffer = NULL;
+ 	int denied_mask, error;
+@@ -198,8 +198,11 @@ static int aa_perm_dentry(struct aa_prof
+ 	sa->name = aa_get_name(dentry, mnt, &buffer, is_dir);
+ 
+ 	if (IS_ERR(sa->name)) {
+-		/* deleted files are given a pass on permission checks */
+-		if (PTR_ERR(sa->name) == -ENOENT)
++		/*
++		 * deleted files are given a pass on permission checks when
++		 * accessed through a file descriptor.
++		 */
++		if (PTR_ERR(sa->name) == -ENOENT && accessed_through_fd)
+ 			denied_mask = 0;
+ 		else
+ 			denied_mask = PTR_ERR(sa->name);
+@@ -538,7 +541,8 @@ int aa_attr(struct aa_profile *profile, 
+ 	sa.gfp_mask = GFP_KERNEL;
+ 
+ 	error = aa_perm_dentry(profile, dentry, mnt, &sa, MAY_WRITE,
+-			       S_ISDIR(dentry->d_inode->i_mode));
++			       S_ISDIR(dentry->d_inode->i_mode),
++			       iattr->ia_valid & ATTR_FILE);
+ 
+ 	return error;
+ }
+@@ -566,7 +570,8 @@ int aa_perm_xattr(struct aa_profile *pro
+ 	sa.gfp_mask = GFP_KERNEL;
+ 
+ 	error = aa_perm_dentry(profile, dentry, mnt, &sa, mask,
+-			       S_ISDIR(dentry->d_inode->i_mode));
++			       S_ISDIR(dentry->d_inode->i_mode),
++			       0 /* FIXME */);
+ 
+ 	return error;
+ }
+@@ -608,7 +613,8 @@ int aa_perm(struct aa_profile *profile, 
+ 	sa.flags = 0;
+ 	sa.gfp_mask = GFP_KERNEL;
+ 	error = aa_perm_dentry(profile, dentry, mnt, &sa, mask,
+-			       inode && S_ISDIR(inode->i_mode));
++			       inode && S_ISDIR(inode->i_mode),
++			       0 /* FIXME */);
+ 
+ out:
+ 	return error;
+@@ -636,7 +642,8 @@ int aa_perm_dir(struct aa_profile *profi
+ 	sa.flags = 0;
+ 	sa.gfp_mask = GFP_KERNEL;
+ 
+-	return aa_perm_dentry(profile, dentry, mnt, &sa, mask, 1);
++	return aa_perm_dentry(profile, dentry, mnt, &sa, mask, 1,
++			      0 /* FIXME */);
+ }
+ 
+ /**

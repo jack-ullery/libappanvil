@@ -59,7 +59,7 @@ Index: b/security/apparmor/main.c
 ===================================================================
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -831,7 +831,7 @@ aa_register_find(struct aa_profile *prof
+@@ -802,7 +802,7 @@ aa_register_find(struct aa_profile *prof
  		}
  	} else {
  		/* Only way we can get into this code is if task
@@ -68,7 +68,7 @@ Index: b/security/apparmor/main.c
  		 */
  		AA_DEBUG("%s: No profile found for exec image %s\n",
  			 __FUNCTION__,
-@@ -867,7 +867,7 @@ repeat:
+@@ -838,7 +838,7 @@ repeat:
  	if (profile) {
  		complain = PROFILE_COMPLAIN(profile);
  
@@ -77,7 +77,7 @@ Index: b/security/apparmor/main.c
  		 * mandatory to load new profile
  		 */
  		exec_mode = aa_match(profile->file_rules, filename);
-@@ -881,8 +881,8 @@ repeat:
+@@ -852,8 +852,8 @@ repeat:
  				/* nothing to be done here */
  				goto cleanup;
  

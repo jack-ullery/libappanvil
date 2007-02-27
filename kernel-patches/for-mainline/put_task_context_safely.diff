@@ -2,7 +2,7 @@ Index: b/security/apparmor/main.c
 ===================================================================
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -1028,8 +1028,11 @@ repeat:
+@@ -999,8 +999,11 @@ repeat:
  		list_del(&cxt->list);
  		unlock_profile(profile);
  		aa_put_profile(profile);

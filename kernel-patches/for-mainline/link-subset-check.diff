@@ -2,45 +2,85 @@ Index: b/security/apparmor/main.c
 ===================================================================
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -138,21 +138,31 @@ static int aa_file_denied(struct aa_prof
+@@ -62,32 +62,6 @@ static inline int aa_taskattr_access(con
+ 	return strcmp(end, "/attr/current") == 0;
+ }
+ 
+-/**
+- * aa_file_mode - get full mode for file entry from profile
+- * @profile: profile
+- * @name: filename
+- */
+-static inline int aa_file_mode(struct aa_profile *profile, const char *name)
+-{
+-	int perms = 0;
+-
+-	AA_DEBUG("%s: %s\n", __FUNCTION__, name);
+-	if (!name) {
+-		AA_DEBUG("%s: no name\n", __FUNCTION__);
+-		goto out;
+-	}
+-
+-	if (!profile) {
+-		AA_DEBUG("%s: no profile\n", __FUNCTION__);
+-		goto out;
+-	}
+-
+-	perms = aa_match(profile->file_rules, name);
+-
+-out:
+-	return perms;
+-}
+-
+ static inline void aa_permerror2result(int perm_result, struct aa_audit *sa)
+ {
+ 	if (perm_result == 0) {	/* success */
+@@ -132,27 +106,34 @@ static int aa_file_denied(struct aa_prof
+  * @link: name of link being created
+  * @target: name of target to be linked to
+  *
+- * Return %0 on success, or else the permissions in @mask that the
+- * profile denies.
++ * Return %0 on success, or else the permissions that the profile denies.
+  */
  static int aa_link_denied(struct aa_profile *profile, const char *link,
  			  const char *target)
  {
 -	int l_mode, t_mode, ret = -EPERM;
-+	int l_mode, t_mode;
- 
- 	l_mode = aa_file_mode(profile, link);
+-
+-	l_mode = aa_file_mode(profile, link);
 -	if (l_mode & AA_MAY_LINK) {
 -		/* mask off link bit */
 -		l_mode &= ~AA_MAY_LINK;
-+	t_mode = aa_file_mode(profile, target);
++	int l_mode, t_mode;
  
 -		t_mode = aa_file_mode(profile, target);
 -		t_mode &= ~AA_MAY_LINK;
-+	/**
-+	 * If the process does not have the link permission for the link, or
-+	 * the read, write, and execute permissions of the link are not a
-+	 * subset of those of the target, or any of the remaining permissions
-+	 * (which are all execute related) differ between the link and the
-+	 * target, deny the access.
-+	 *
-+	 * FIXME: There currenly is no way to report which other permissions
-+	 * the process would need to have in l_mode, or which permissions in
-+	 * l_mode would have to be removed in order for the operation to
-+	 * succeed.
-+	 */
++	l_mode = aa_match(profile->file_rules, link);
++	t_mode = aa_match(profile->file_rules, target);
  
 -		if (l_mode == t_mode)
 -			ret = 0;
 -	}
-+	if (!(l_mode & AA_MAY_LINK) ||
-+	    (~t_mode & l_mode & (MAY_READ | MAY_WRITE | MAY_EXEC)) ||
-+	    ((l_mode & ~(MAY_READ | MAY_WRITE | MAY_EXEC | AA_MAY_LINK)) !=
-+	     (t_mode & ~(MAY_READ | MAY_WRITE | MAY_EXEC | AA_MAY_LINK))))
-+	        return AA_MAY_LINK;
++	/**
++	 * Allow to link if we have permission to rename, or we are allowed to
++	 * link and to read the target.
++	 *
++	 * FIXME: We could warn if we have link write permission, but not
++	 * target write permission -- this could be considered a form of
++	 * permission elevation.
++	 */
++	if (((l_mode & MAY_WRITE) && (t_mode & (MAY_READ | MAY_WRITE))) ||
++	    ((l_mode & AA_MAY_LINK) && (t_mode & MAY_READ)))
++		return 0;
  
 -	return ret;
-+	return 0;
++	/**
++	 * FIXME: There currenly is no way to report which permissions
++	 * we expect in t_mode, so linking could fail even after learning
++	 * the required l_mode.
++	 */
++	return AA_MAY_LINK;
  }
  
  static char *aa_get_name(struct dentry *dentry, struct vfsmount *mnt,

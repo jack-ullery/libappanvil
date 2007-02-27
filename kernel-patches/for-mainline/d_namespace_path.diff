@@ -26,7 +26,7 @@ Index: b/fs/dcache.c
 +	       struct dentry *root, struct vfsmount *rootmnt,
 +	       char *buffer, int buflen, int fail_deleted)
  {
- 	int namelen, is_slash;
+ 	int namelen, is_slash, vfsmount_locked = 0;
  
 Index: b/fs/namespace.c
 ===================================================================

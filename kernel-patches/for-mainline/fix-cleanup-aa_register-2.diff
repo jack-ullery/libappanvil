@@ -2,7 +2,7 @@ Index: b/security/apparmor/main.c
 ===================================================================
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -797,16 +797,17 @@ repeat:
+@@ -768,16 +768,17 @@ repeat:
  }
  
  static struct aa_profile *
@@ -26,7 +26,7 @@ Index: b/security/apparmor/main.c
  		if (complain) {
  			LOG_HINT(profile, GFP_KERNEL, HINT_MANDPROF,
  				"image=%s pid=%d profile=%s active=%s\n",
-@@ -832,7 +833,7 @@ aa_register_find(const char *name, int m
+@@ -803,7 +804,7 @@ aa_register_find(const char *name, int m
  			 __FUNCTION__,
  			 name);
  	}
@@ -35,7 +35,7 @@ Index: b/security/apparmor/main.c
  }
  
  /**
-@@ -847,7 +848,7 @@ int aa_register(struct linux_binprm *bpr
+@@ -818,7 +819,7 @@ int aa_register(struct linux_binprm *bpr
  	char *filename, *buffer = NULL;
  	struct file *filp = bprm->file;
  	struct aa_profile *profile, *old_profile, *new_profile = NULL;
@@ -44,7 +44,7 @@ Index: b/security/apparmor/main.c
  
  	AA_DEBUG("%s\n", __FUNCTION__);
  
-@@ -889,7 +890,8 @@ repeat:
+@@ -860,7 +861,8 @@ repeat:
  				AA_DEBUG("%s: PROFILE %s\n",
  					 __FUNCTION__,
  					 filename);
@@ -54,7 +54,7 @@ Index: b/security/apparmor/main.c
  							       complain);
  				break;
  
-@@ -926,7 +928,7 @@ repeat:
+@@ -897,7 +899,7 @@ repeat:
  		}
  	} else {
  		/* Unconfined task, load profile if it exists */
@@ -63,7 +63,7 @@ Index: b/security/apparmor/main.c
  		if (new_profile == NULL)
  			goto cleanup;
  	}
-@@ -955,7 +957,7 @@ repeat:
+@@ -926,7 +928,7 @@ repeat:
  	 * Cases 2 and 3 are marked as requiring secure exec
  	 * (unless policy specified "unsafe exec")
  	 */

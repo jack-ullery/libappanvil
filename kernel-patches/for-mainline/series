@@ -29,6 +29,7 @@ vfs-removexattr.diff
 security-removexattr.diff
 d_path-lazy-unmounts.diff
 no-unreachable-paths.diff
+mount-consistent-d_cache.diff
 # security_chroot.diff
 apparmor-audit.diff
 apparmor.diff
@@ -95,3 +96,4 @@ aafs-perms.diff
 put_task_context_safely.diff
 apparmor-interface-revision.diff
 constrained-to-confined.diff
+file-handle-ops.diff

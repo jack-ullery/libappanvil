@@ -2,7 +2,7 @@ Index: b/security/apparmor/main.c
 ===================================================================
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -227,7 +227,11 @@ static int aa_perm_dentry(struct aa_prof
+@@ -198,7 +198,11 @@ static int aa_perm_dentry(struct aa_prof
  	sa->name = aa_get_name(dentry, mnt, &buffer, is_dir);
  
  	if (IS_ERR(sa->name)) {
