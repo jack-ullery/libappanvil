@@ -296,17 +296,17 @@ reeval:
 		switch (this) {
 		case COD_READ_CHAR:
 			PDEBUG("Parsing mode: found READ\n");
-			mode |= KERN_COD_MAY_READ;
+			mode |= AA_MAY_READ;
 			break;
 
 		case COD_WRITE_CHAR:
 			PDEBUG("Parsing mode: found WRITE\n");
-			mode |= KERN_COD_MAY_WRITE;
+			mode |= AA_MAY_WRITE;
 			break;
 
 		case COD_LINK_CHAR:
 			PDEBUG("Parsing mode: found LINK\n");
-			mode |= KERN_COD_MAY_LINK;
+			mode |= AA_MAY_LINK;
 			break;
 
 		case COD_INHERIT_CHAR:
@@ -319,13 +319,13 @@ reeval:
 				if (next != tolower(next))
 					warn_uppercase();
 				mode |=
-				    (KERN_COD_EXEC_INHERIT | KERN_COD_MAY_EXEC);
+				    (AA_EXEC_INHERIT | AA_MAY_EXEC);
 				p++;	/* skip 'x' */
 			}
 			break;
 
 		case COD_UNSAFE_UNCONSTRAINED_CHAR:
-			mode |= KERN_COD_EXEC_UNSAFE;
+			mode |= AA_EXEC_UNSAFE;
 			pwarn(_("Unconstrained exec qualifier (%c%c) allows some dangerous environment variables "
 				"to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"),
 			      COD_UNSAFE_UNCONSTRAINED_CHAR, COD_EXEC_CHAR);
@@ -342,14 +342,14 @@ reeval:
 				if (next != tolower(next))
 					warn_uppercase();
 				mode |=
-				    (KERN_COD_EXEC_UNCONSTRAINED |
-				     KERN_COD_MAY_EXEC);
+				    (AA_EXEC_UNCONSTRAINED |
+				     AA_MAY_EXEC);
 				p++;	/* skip 'x' */
 			}
 			break;
 
 		case COD_UNSAFE_PROFILE_CHAR:
-			mode |= KERN_COD_EXEC_UNSAFE;
+			mode |= AA_EXEC_UNSAFE;
 			/* fall through */
 		case COD_PROFILE_CHAR:
 			PDEBUG("Parsing mode: found PROFILE\n");
@@ -363,14 +363,14 @@ reeval:
 				if (next != tolower(next))
 					warn_uppercase();
 				mode |=
-				    (KERN_COD_EXEC_PROFILE | KERN_COD_MAY_EXEC);
+				    (AA_EXEC_PROFILE | AA_MAY_EXEC);
 				p++;	/* skip 'x' */
 			}
 			break;
 
 		case COD_MMAP_CHAR:
 			PDEBUG("Parsing mode: found MMAP\n");
-			mode |= KERN_COD_EXEC_MMAP;
+			mode |= AA_EXEC_MMAP;
 			break;
 
 		case COD_EXEC_CHAR:
@@ -557,7 +557,7 @@ void debug_cod_entries(struct cod_entry *list)
 
 	printf("--- Entries ---\n");
 
-	for (item = list; item; item = item->next) {
+	list_for_each(list, item) {
 		if (!item)
 			printf("Item is NULL!\n");
 
@@ -603,7 +603,7 @@ void debug_cod_net_entries(struct cod_net_entry *list)
 
 	printf("--- NetwerkEntries --- \n");
 
-	for (item = list; item; item = item->next) {
+	list_for_each(list, item) {
 		if (!item)
 			printf("Item is NULL");
 
@@ -623,17 +623,17 @@ void debug_cod_net_entries(struct cod_net_entry *list)
 		printf("Destination netmask: %lx\n", dmask);
 		fflush(stdout);
 		printf("Mode:\t");
-		if (item->mode & KERN_COD_TCP_ACCEPT)
+		if (item->mode & AA_TCP_ACCEPT)
 			printf("TA");
-		if (item->mode & KERN_COD_TCP_CONNECT)
+		if (item->mode & AA_TCP_CONNECT)
 			printf("TC");
-		if (item->mode & KERN_COD_TCP_ACCEPTED)
+		if (item->mode & AA_TCP_ACCEPTED)
 			printf("Ta");
-		if (item->mode & KERN_COD_TCP_CONNECTED)
+		if (item->mode & AA_TCP_CONNECTED)
 			printf("Tc");
-		if (item->mode & KERN_COD_UDP_SEND)
+		if (item->mode & AA_UDP_SEND)
 			printf("US");
-		if (item->mode & KERN_COD_UDP_RECEIVE)
+		if (item->mode & AA_UDP_RECEIVE)
 			printf("UR");
 		if (item->iface != NULL)
 			printf("\nInterface: %s\n", item->iface);

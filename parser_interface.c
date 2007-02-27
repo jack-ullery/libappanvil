@@ -26,6 +26,7 @@
 #define _(s) gettext(s)
 
 #include "parser.h"
+#include "libapparmor_re/apparmor_re.h"
 
 #include <unistd.h>
 #include <linux/unistd.h>
@@ -55,6 +56,7 @@
 #define SD_STR_LEN (sizeof(u16))
 
 #define SUBDOMAIN_INTERFACE_VERSION 2
+#define SUBDOMAIN_INTERFACE_DFA_VERSION 3
 
 int sd_serialize_codomain(int option, struct codomain *cod);
 
@@ -334,6 +336,27 @@ inline int sd_write_blob(sd_serialize *p, void *b, int buf_size, char *name)
 	return 1;
 }
 
+#define align64(X) (((size_t) (X) + (size_t) 7) & ~((size_t) 7))
+inline int sd_write_aligned_blob(sd_serialize *p, void *b, int buf_size,
+				 char *name)
+{
+	size_t pad;
+	u32 tmp;
+	if (!sd_write_name(p, name))
+		return 0;
+	pad = align64((p->pos + 5) - p->buffer) - ((p->pos + 5) - p->buffer);
+	if (!sd_prepare_write(p, SD_BLOB, 4 + buf_size + pad))
+		return 0;
+	tmp = cpu_to_le32(buf_size + pad);
+	memcpy(p->pos, &tmp, sizeof(tmp));
+	sd_inc(p, sizeof(tmp));
+	memset(p->pos, 0, pad);
+	sd_inc(p, pad);
+	memcpy(p->pos, b, buf_size);
+	sd_inc(p, buf_size);
+	return 1;
+}
+
 inline int sd_write_string(sd_serialize *p, char *b, char *name)
 {
 	u16 tmp;
@@ -470,12 +493,20 @@ int sd_serialize_file_entry(sd_serialize *p, struct cod_entry *file_entry)
 	return 1;
 }
 
+int sd_serialize_dfa(sd_serialize *p, void *dfa, size_t size)
+{
+	if (dfa && !sd_write_aligned_blob(p, dfa, size, "aadfa"))
+		return 0;
+
+	return 1;
+}
+
 int count_file_ents(struct cod_entry *list)
 {
-	struct cod_entry *file_entry;
+	struct cod_entry *entry;
 	int count = 0;
-	for (file_entry = list; file_entry; file_entry = file_entry->next) {
-		if (file_entry->pattern_type == ePatternBasic) {
+	list_for_each(list, entry) {
+		if (entry->pattern_type == ePatternBasic) {
 			count++;
 		}
 	}
@@ -484,10 +515,10 @@ int count_file_ents(struct cod_entry *list)
 
 int count_tailglob_ents(struct cod_entry *list)
 {
-	struct cod_entry *file_entry;
+	struct cod_entry *entry;
 	int count = 0;
-	for (file_entry = list; file_entry; file_entry = file_entry->next) {
-		if (file_entry->pattern_type == ePatternTailGlob) {
+	list_for_each(list, entry) {
+		if (entry->pattern_type == ePatternTailGlob) {
 			count++;
 		}
 	}
@@ -496,10 +527,10 @@ int count_tailglob_ents(struct cod_entry *list)
 
 int count_pcre_ents(struct cod_entry *list)
 {
-	struct cod_entry *file_entry;
+	struct cod_entry *entry;
 	int count = 0;
-	for (file_entry = list; file_entry; file_entry = file_entry->next) {
-		if (file_entry->pattern_type == ePatternRegex) {
+	list_for_each(list, entry) {
+		if (entry->pattern_type == ePatternRegex) {
 			count++;
 		}
 	}
@@ -508,7 +539,7 @@ int count_pcre_ents(struct cod_entry *list)
 
 int sd_serialize_profile(sd_serialize *p, struct codomain *profile)
 {
-	struct cod_entry *file_entry;
+	struct cod_entry *entry;
 	struct cod_net_entry *net_entry;
 
 	if (!sd_write_struct(p, "profile"))
@@ -529,55 +560,58 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile)
 	if (!sd_write32(p, profile->capabilities))
 		return 0;
 
-	/* pcre globbing entries */
-	if (count_pcre_ents(profile->entries)) {
-		if (!sd_write_list(p, "pgent"))
+	/* either have a single dfa or lists of different entry types */
+	if (regex_type == AARE_DFA) {
+		if (!sd_serialize_dfa(p, profile->dfa, profile->dfa_size))
 			return 0;
-		for (file_entry = profile->entries; file_entry;
-		     file_entry = file_entry->next) {
-			if (file_entry->pattern_type == ePatternRegex) {
-				if (!sd_serialize_file_entry(p, file_entry))
-					return 0;
+	} else {
+		/* pcre globbing entries */
+		if (count_pcre_ents(profile->entries)) {
+			if (!sd_write_list(p, "pgent"))
+				return 0;
+			list_for_each(profile->entries, entry) {
+				if (entry->pattern_type == ePatternRegex) {
+					if (!sd_serialize_file_entry(p, entry))
+						return 0;
+				}
 			}
+			if (!sd_write_listend(p))
+				return 0;
 		}
-		if (!sd_write_listend(p))
-			return 0;
+
+		/* simple globbing entries */
+		if (count_tailglob_ents(profile->entries)) {
+			if (!sd_write_list(p, "sgent"))
+				return 0;
+			list_for_each(profile->entries, entry) {
+				if (entry->pattern_type == ePatternTailGlob) {
+					if (!sd_serialize_file_entry(p, entry))
+						return 0;
+				}
+			}
+			if (!sd_write_listend(p))
+				return 0;
+		}
+
+		/* basic file entries */
+		if (count_file_ents(profile->entries)) {
+			if (!sd_write_list(p, "fent"))
+				return 0;
+			list_for_each(profile->entries, entry) {
+				if (entry->pattern_type == ePatternBasic) {
+					if (!sd_serialize_file_entry(p, entry))
+						return 0;
+				}
+			}
+			if (!sd_write_listend(p))
+				return 0;
+		}
 	}
 
-	/* simple globbing entries */
-	if (count_tailglob_ents(profile->entries)) {
-		if (!sd_write_list(p, "sgent"))
-			return 0;
-		for (file_entry = profile->entries; file_entry;
-		     file_entry = file_entry->next) {
-			if (file_entry->pattern_type == ePatternTailGlob) {
-				if (!sd_serialize_file_entry(p, file_entry))
-					return 0;
-			}
-		}
-		if (!sd_write_listend(p))
-			return 0;
-	}
-
-	/* basic file entries */
-	if (count_file_ents(profile->entries)) {
-		if (!sd_write_list(p, "fent"))
-			return 0;
-		for (file_entry = profile->entries; file_entry;
-		     file_entry = file_entry->next) {
-			if (file_entry->pattern_type == ePatternBasic) {
-				if (!sd_serialize_file_entry(p, file_entry))
-					return 0;
-			}
-		}
-		if (!sd_write_listend(p))
-			return 0;
-	}
-
-	if (profile->net_entries) {
+	if (profile->net_entries && (regex_type != AARE_DFA)) {
 		if (!sd_write_list(p, "net"))
 			return 0;
-		for (net_entry = profile->net_entries; net_entry; net_entry = net_entry->next) {
+		list_for_each(profile->net_entries, net_entry) {
 			if (!sd_serialize_net_entry(p, net_entry))
 				return 0;
 		}
@@ -603,9 +637,18 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile)
 
 int sd_serialize_top_profile(sd_serialize *p, struct codomain *profile)
 {
+	int version;
+
+	if (regex_type == AARE_DFA)
+		version = SUBDOMAIN_INTERFACE_DFA_VERSION;
+	else
+		version = SUBDOMAIN_INTERFACE_VERSION;
+
+
 	if (!sd_write_name(p, "version"))
 		return 0;
-	if (!sd_write32(p, SUBDOMAIN_INTERFACE_VERSION))
+
+	if (!sd_write32(p, version))
 		return 0;
 	return sd_serialize_profile(p, profile);
 }

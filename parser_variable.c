@@ -184,7 +184,7 @@ static int process_variables_in_entries(struct cod_entry *entry_list)
 	int ret = TRUE, rc;
 	struct cod_entry *entry;
 
-	for (entry = entry_list; entry; entry = entry->next) {
+	list_for_each(entry_list, entry) {
 		rc = expand_entry_variables(entry);
 		if (!rc)
 			ret = FALSE;

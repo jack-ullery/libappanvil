@@ -1,0 +1,1641 @@
+/*
+ * regexp.y -- Regular Expression Matcher Generator
+ * (C) 2006 Andreas Gruenbacher <agruen@suse.de>
+ *
+ * Implementation based on the Lexical Analysis chapter of:
+ *   Alfred V. Aho, Ravi Sethi, Jeffrey D. Ullman:
+ *   Compilers: Principles, Techniques, and Tools (The "Dragon Book"),
+ *   Addison-Wesley, 1986.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License version 2 as
+ *  published by the Free Software Foundation.
+ *
+ *  See http://www.gnu.org for more details.
+ */
+
+%{
+    #include <list>
+    #include <vector>
+    #include <set>
+    #include <map>
+    #include <ostream>
+
+    using namespace std;
+
+    typedef unsigned char uchar;
+    typedef set<uchar> Chars;
+
+    ostream& operator<<(ostream& os, uchar c);
+
+    /* Compute the union of two sets. */
+    template<class T>
+    set<T> operator+(const set<T>& a, const set<T>& b)
+    {
+	set<T> c(a);
+	c.insert(b.begin(), b.end());
+	return c;
+    }
+
+    /**
+     * A DFA state is a set of important nodes in the syntax tree. This
+     * includes AcceptNodes, which indicate that when a match ends in a
+     * particular state, the regular expressions that the AcceptNode
+     * belongs to match.
+     */
+    class ImportantNode;
+    typedef set <ImportantNode *> State;
+
+    /**
+     * Out-edges from a state to another: we store the follow-state
+     * for each input character that is not a default match in
+     * cases (i.e., following a CharNode or CharSetNode), and default
+     * matches in otherwise as well as in all matching explicit cases
+     * (i.e., following an AnyCharNode or NotCharSetNode). This avoids
+     * enumerating all the explicit tranitions for default matches.
+     */
+    typedef struct Cases {
+	typedef map<uchar, State *>::iterator iterator;
+	iterator begin() { return cases.begin(); }
+	iterator end() { return cases.end(); }
+
+	Cases() : otherwise(0) { }
+	map<uchar, State *> cases;
+	State *otherwise;
+    } Cases;
+
+    /* An abstract node in the syntax tree. */
+    class Node {
+    public:
+	Node() :
+	    nullable(false), left(0), right(0) { }
+	Node(Node *left) :
+	    nullable(false), left(left), right(0) { }
+	Node(Node *left, Node *right) :
+	    nullable(false), left(left), right(right) { }
+	virtual ~Node()
+	{
+	    delete left;
+	    delete right;
+	}
+
+	/**
+	 * See the "Dragon Book" for an explanation of nullable, firstpos,
+	 * lastpos, and followpos.
+	 */
+	virtual void compute_nullable() { }
+	virtual void compute_firstpos() = 0;
+	virtual void compute_lastpos() = 0;
+	virtual void compute_followpos() { }
+
+	virtual ostream& dump(ostream& os) = 0;
+
+	bool nullable;
+	State firstpos, lastpos, followpos;
+	Node *left, *right;
+    };
+
+    /* Match nothing (//). */
+    class EpsNode : public Node {
+    public:
+	EpsNode()
+	{
+	    nullable = true;
+	}
+	void compute_firstpos()
+	{
+	}
+	void compute_lastpos()
+	{
+	}
+	ostream& dump(ostream& os)
+	{
+	    return os << "[]";
+	}
+    };
+
+    /**
+     * Leaf nodes in the syntax tree are important to us: they describe the
+     * characters that the regular expression matches. We also consider
+     * AcceptNodes import: they indicate when a regular expression matches.
+     */
+    class ImportantNode : public Node {
+    public:
+	ImportantNode() { }
+	void compute_firstpos()
+	{
+	    firstpos.insert(this);
+	}
+	void compute_lastpos() {
+	    lastpos.insert(this);
+	}
+	virtual void follow(Cases& cases) = 0;
+    };
+
+    /* Match one specific character (/c/). */
+    class CharNode : public ImportantNode {
+    public:
+	CharNode(uchar c) : c(c) { }
+	void follow(Cases& cases)
+	{
+	    State **x = &cases.cases[c];
+	    if (!*x) {
+		if (cases.otherwise)
+		    *x = new State(*cases.otherwise);
+		else
+		    *x = new State;
+	    }
+	    (*x)->insert(followpos.begin(), followpos.end());
+	}
+	ostream& dump(ostream& os)
+	{
+	    return os << c;
+	}
+
+	uchar c;
+    };
+
+    /* Match a set of characters (/[abc]/). */
+    class CharSetNode : public ImportantNode {
+    public:
+	CharSetNode(Chars& chars) : chars(chars) { }
+	void follow(Cases& cases)
+	{
+	    for (Chars::iterator i = chars.begin(); i != chars.end(); i++) {
+		State **x = &cases.cases[*i];
+		if (!*x) {
+		    if (cases.otherwise)
+			*x = new State(*cases.otherwise);
+		    else
+			*x = new State;
+		}
+		(*x)->insert(followpos.begin(), followpos.end());
+	    }
+	}
+	ostream& dump(ostream& os)
+	{
+	    os << '[';
+	    for (Chars::iterator i = chars.begin(); i != chars.end(); i++)
+		os << *i;
+	    return os << ']';
+	}
+
+	Chars chars;
+    };
+
+    /* Match all except one character (/[^abc]/). */
+    class NotCharSetNode : public ImportantNode {
+    public:
+	NotCharSetNode(Chars& chars) : chars(chars) { }
+	void follow(Cases& cases)
+	{
+	    if (!cases.otherwise)
+		cases.otherwise = new State;
+	    for (Chars::iterator j = chars.begin(); j != chars.end(); j++) {
+		State **x = &cases.cases[*j];
+		if (!*x)
+		    *x = new State(*cases.otherwise);
+	    }
+	    /**
+	     * Note: Add to the nonmatching characters after copying away the
+	     * old otherwise state for the matching characters.
+	     */
+	    cases.otherwise->insert(followpos.begin(), followpos.end());
+	    for (Cases::iterator i = cases.begin(); i != cases.end(); i++) {
+		if (chars.find(i->first) == chars.end())
+		    i->second->insert(followpos.begin(), followpos.end());
+	    }
+	}
+	ostream& dump(ostream& os)
+	{
+	    os << "[^";
+	    for (Chars::iterator i = chars.begin(); i != chars.end(); i++)
+		os << *i;
+	    return os << ']';
+	}
+
+	Chars chars;
+    };
+
+    /* Match any character (/./). */
+    class AnyCharNode : public ImportantNode {
+    public:
+	AnyCharNode() { }
+	void follow(Cases& cases)
+	{
+	    if (!cases.otherwise)
+		cases.otherwise = new State;
+	    cases.otherwise->insert(followpos.begin(), followpos.end());
+	    for (Cases::iterator i = cases.begin(); i != cases.end(); i++)
+		i->second->insert(followpos.begin(), followpos.end());
+	}
+	ostream& dump(ostream& os) {
+	    return os << ".";
+	}
+    };
+
+    /**
+     * Indicate that a regular expression matches. An AcceptNode itself
+     * doesn't match anything, so it will never generate any transitions.
+     */
+    class AcceptNode : public ImportantNode {
+    public:
+	AcceptNode(uint32_t perms, int is_rerule)
+	    : perms(perms), is_rerule(is_rerule) {}
+	void follow(Cases& cases)
+	{
+	    /* Nothing to follow. */
+	}
+	ostream& dump(ostream& os) {
+	    return os << '<' << perms << ", " << is_rerule << '>';
+	}
+
+	uint32_t perms;
+	int is_rerule;
+    };
+
+    /* Match a pair of consecutive nodes. */
+    class CatNode : public Node {
+    public:
+	CatNode(Node *left, Node *right) :
+	    Node(left, right) { }
+	void compute_nullable()
+	{
+	    nullable = left->nullable && right->nullable;
+	}
+	void compute_firstpos()
+	{
+	    if (left->nullable)
+		firstpos = left->firstpos + right->firstpos;
+	    else
+		firstpos = left->firstpos;
+	}
+	void compute_lastpos()
+	{
+	    if (right->nullable)
+		lastpos = left->lastpos + right->lastpos;
+	    else
+		lastpos = right->lastpos;
+	}
+	void compute_followpos()
+	{
+	    State from = left->lastpos, to = right->firstpos;
+	    for(State::iterator i = from.begin(); i != from.end(); i++) {
+		(*i)->followpos.insert(to.begin(), to.end());
+	    }
+	}
+	ostream& dump(ostream& os)
+	{
+	    return os;
+	    //return os << ' ';
+	}
+    };
+
+    /* Match a node zero or more times. (This is a unary operator.) */
+    class StarNode : public Node {
+    public:
+	StarNode(Node *left) :
+	    Node(left)
+	{
+	    nullable = true;
+	}
+	void compute_firstpos()
+	{
+	    firstpos = left->firstpos;
+	}
+	void compute_lastpos()
+	{
+	    lastpos = left->lastpos;
+	}
+	void compute_followpos()
+	{
+	    State from = left->lastpos, to = left->firstpos;
+	    for(State::iterator i = from.begin(); i != from.end(); i++) {
+		(*i)->followpos.insert(to.begin(), to.end());
+	    }
+	}
+	ostream& dump(ostream& os)
+	{
+	    return os << '*';
+	}
+    };
+
+    /* Match a node one or more times. (This is a unary operator.) */
+    class PlusNode : public Node {
+    public:
+	PlusNode(Node *left) :
+	    Node(left) { }
+	void compute_nullable()
+	{
+	    nullable = left->nullable;
+	}
+	void compute_firstpos()
+	{
+	    firstpos = left->firstpos;
+	}
+	void compute_lastpos()
+	{
+	    lastpos = left->lastpos;
+	}
+	void compute_followpos()
+	{
+	    State from = left->lastpos, to = left->firstpos;
+	    for(State::iterator i = from.begin(); i != from.end(); i++) {
+		(*i)->followpos.insert(to.begin(), to.end());
+	    }
+	}
+	ostream& dump(ostream& os)
+	{
+	    return os << '+';
+	}
+    };
+
+    /* Match one of two alternative nodes. */
+    class AltNode : public Node {
+    public:
+	AltNode(Node *left, Node *right) :
+	    Node(left, right) { }
+	void compute_nullable()
+	{
+	    nullable = left->nullable || right->nullable;
+	}
+	void compute_lastpos()
+	{
+	    lastpos = left->lastpos + right->lastpos;
+	}
+	void compute_firstpos()
+	{
+	    firstpos = left->firstpos + right->firstpos;
+	}
+	ostream& dump(ostream& os)
+	{
+	    return os << '|';
+	}
+    };
+%}
+
+%union {
+    char c;
+    Node *node;
+    Chars *cset;
+}
+
+%{
+    void regexp_error(Node **, const char *, int *, const char *);
+#   define YYLEX_PARAM &text
+    int regexp_lex(YYSTYPE *, const char **);
+
+    static inline Chars*
+    insert_char(Chars* cset, uchar a)
+    {
+	cset->insert(a);
+	return cset;
+    }
+
+    static inline Chars*
+    insert_char_range(Chars* cset, uchar a, uchar b)
+    {
+	if (a > b)
+	    swap(a, b);
+	for (uchar i = a; i <= b; i++)
+	    cset->insert(i);
+	return cset;
+    }
+%}
+
+%pure-parser
+/* %error-verbose */
+%parse-param {Node **root}
+%parse-param {const char *text}
+%parse-param {int *is_rerule}
+%name-prefix = "regexp_"
+
+%token <c> CHAR
+%type <c> regex_char cset_char1 cset_char cset_charN
+%type <cset> charset cset_chars
+%type <node> regexp expr terms0 terms qterm term
+
+/**
+ * Note: destroy all nodes upon failure, but *not* the start symbol once
+ * parsing succeeds!
+ */
+%destructor { delete $$; } expr terms0 terms qterm term
+
+%%
+
+/* FIXME: Does not parse "[--]", "[---]", "[^^-x]". I don't actually know
+          which precise grammer Perl regexps use, and rediscovering that
+	  is proving to be painful. */
+
+regexp	    : /* empty */	{ *root = $$ = new EpsNode; }
+	    | expr		{ *root = $$ = $1; }
+	    ;
+
+expr	    : terms
+	    | expr '|' terms0	{ $$ = new AltNode($1, $3); }
+	    | '|' terms0	{ $$ = new AltNode(new EpsNode, $2); }
+	    ;
+
+terms0	    : /* empty */	{ $$ = new EpsNode; }
+	    | terms
+	    ;
+
+terms	    : qterm
+	    | terms qterm	{ $$ = new CatNode($1, $2); }
+	    ;
+
+qterm	    : term
+	    | term '*'		{ $$ = new StarNode($1); *is_rerule = 1; }
+	    | term '+'		{ $$ = new PlusNode($1); *is_rerule = 1; }
+	    ;
+
+term	    : '.'		{ $$ = new AnyCharNode; *is_rerule = 1; }
+	    | regex_char	{ $$ = new CharNode($1); }
+	    | '[' charset ']'	{ $$ = new CharSetNode(*$2);
+				  delete $2; *is_rerule = 1; }
+	    | '[' '^' charset ']'
+				{ $$ = new NotCharSetNode(*$3);
+				  delete $3; *is_rerule = 1; }
+	    | '[' '^' '^' cset_chars ']'
+				{ $4->insert('^');
+				  $$ = new NotCharSetNode(*$4);
+				  delete $4; *is_rerule = 1; }
+	    | '(' regexp ')'	{ $$ = $2; }
+	    ;
+
+regex_char  : CHAR
+	    | '^'		{ $$ = '^'; }
+	    | '-'		{ $$ = '-'; }
+	    | ']'		{ $$ = ']'; }
+	    ;
+
+charset	    : cset_char1 cset_chars
+				{ $$ = insert_char($2, $1); }
+	    | cset_char1 '-' cset_charN cset_chars
+				{ $$ = insert_char_range($4, $1, $3); }
+	    ;
+
+cset_chars  : /* nothing */	{ $$ = new Chars; }
+	    | cset_chars cset_charN
+				{ $$ = insert_char($1, $2); }
+	    | cset_chars cset_charN '-' cset_charN
+				{ $$ = insert_char_range($1, $2, $4); }
+	    ;
+
+cset_char1  : cset_char
+	    | ']'		{ $$ = ']'; }
+	    | '-'		{ $$ = '-'; }
+	    ;
+
+cset_charN  : cset_char
+	    | '^'		{ $$ = '^'; }
+	    ;
+
+cset_char   : CHAR
+	    | '['		{ $$ = '['; }
+	    | '*'		{ $$ = '*'; }
+	    | '+'		{ $$ = '+'; }
+	    | '.'		{ $$ = '.'; }
+	    | '|'		{ $$ = '|'; }
+	    | '('		{ $$ = '('; }
+	    | ')'		{ $$ = ')'; }
+	    ;
+
+%%
+
+#include <string.h>
+#include <getopt.h>
+#include <assert.h>
+#include <arpa/inet.h>
+
+#include <iostream>
+#include <fstream>
+
+#include "../immunix.h"
+
+#define NOT_RE_RULE 0
+
+/* Traverse the syntax tree depth-first in an iterator-like manner. */
+class depth_first_traversal {
+    vector<Node *> stack;
+    vector<bool> visited;
+public:
+    depth_first_traversal(Node *node) {
+	stack.push_back(node);
+	while (node->left) {
+	    visited.push_back(false);
+	    stack.push_back(node->left);
+	    node = node->left;
+	}
+    }
+    Node *operator*()
+    {
+	return stack.back();
+    }
+    Node* operator->()
+    {
+	return stack.back();
+    }
+    operator bool()
+    {
+	return !stack.empty();
+    }
+    void operator++(int)
+    {
+	stack.pop_back();
+	if (!stack.empty()) {
+	    if (!visited.back() && stack.back()->right) {
+		visited.pop_back();
+		visited.push_back(true);
+		stack.push_back(stack.back()->right);
+		while (stack.back()->left) {
+		    visited.push_back(false);
+		    stack.push_back(stack.back()->left);
+		}
+	    } else
+		visited.pop_back();
+	}
+    }
+};
+
+ostream& operator<<(ostream& os, Node& node)
+{
+    node.dump(os);
+    return os;
+}
+
+ostream& operator<<(ostream& os, uchar c)
+{
+    const char *search = "\a\033\f\n\r\t|*+[](). ",
+	       *replace = "aefnrt|*+[](). ", *s;
+
+    if ((s = strchr(search, c)) && *s != '\0')
+	os << '\\' << replace[s - search];
+    else if (c < 32 || c >= 127)
+	os << '\\' << '0' << char('0' + (c >> 6))
+	   << char('0' + ((c >> 3) & 7)) << char('0' + (c & 7));
+    else
+	os << (char)c;
+    return os;
+}
+
+int
+octdigit(char c)
+{
+    if (c >= '0' && c <= '7')
+	return c - '0';
+    return -1;
+}
+
+int
+hexdigit(char c)
+{
+    if (c >= '0' && c <= '9')
+	return c - '0';
+    else if (c >= 'A' && c <= 'F')
+	return 10 + c - 'A';
+    else if (c >= 'a' && c <= 'f')
+	return 10 + c - 'A';
+    else
+	return -1;
+}
+
+int
+regexp_lex(YYSTYPE *val, const char **pos)
+{
+    int c;
+
+    val->c = **pos;
+    switch(*(*pos)++) {
+	case '\0':
+	    (*pos)--;
+	    return 0;
+
+	case '*': case '+': case '.': case '|': case '^': case '-':
+	case '[': case ']': case '(' : case ')':
+	    return *(*pos - 1);
+
+	case '\\':
+	    val->c = **pos;
+	    switch(*(*pos)++) {
+		case '\0':
+		    (*pos)--;
+		    val->c = '\\';
+		    break;
+
+		case '0':
+		    val->c = 0;
+		    if ((c = octdigit(**pos)) >= 0) {
+			val->c = c;
+			(*pos)++;
+		    }
+		    if ((c = octdigit(**pos)) >= 0) {
+			val->c = (val->c << 3) + c;
+			(*pos)++;
+		    }
+		    if ((c = octdigit(**pos)) >= 0) {
+			val->c = (val->c << 3) + c;
+			(*pos)++;
+		    }
+		    break;
+
+		case 'x':
+		    val->c = 0;
+		    if ((c = hexdigit(**pos)) >= 0) {
+			val->c = c;
+			(*pos)++;
+		    }
+		    if ((c = hexdigit(**pos)) >= 0) {
+			val->c = (val->c << 4) + c;
+			(*pos)++;
+		    }
+		    break;
+
+		case 'a':
+		    val->c = '\a';
+		    break;
+
+		case 'e':
+		    val->c = 033  /* ESC */;
+		    break;
+
+		case 'f':
+		    val->c = '\f';
+		    break;
+
+		case 'n':
+		    val->c = '\n';
+		    break;
+
+		case 'r':
+		    val->c = '\r';
+		    break;
+
+		case 't':
+		    val->c = '\t';
+		    break;
+	    }
+    }
+    return CHAR;
+}
+
+void
+regexp_error(Node **, const char *text, int *is_rerule, const char *error)
+{
+    /* We don't want the library to print error messages. */
+}
+
+/**
+ * Assign a consecutive number to each node. This is only needed for
+ * pretty-printing the debug output.
+ */
+map<Node *, int> node_label;
+void label_nodes(Node *root)
+{
+    int nodes = 0;
+    for (depth_first_traversal i(root); i; i++)
+	node_label.insert(make_pair(*i, nodes++));
+}
+
+/**
+ * Text-dump a state (for debugging).
+ */
+ostream& operator<<(ostream& os, const State& state)
+{
+    os << '{';
+    if (!state.empty()) {
+	State::iterator i = state.begin();
+	for(;;) {
+	    os << node_label[*i];
+	    if (++i == state.end())
+		break;
+	    os << ',';
+	}
+    }
+    os << '}';
+    return os;
+}
+
+/**
+ * Text-dump the syntax tree (for debugging).
+ */
+void dump_syntax_tree(ostream& os, Node *node) {
+    for (depth_first_traversal i(node); i; i++) {
+	os << node_label[*i] << '\t';
+	if ((*i)->left == 0)
+	    os << **i << '\t' << (*i)->followpos << endl;
+	else {
+	    if ((*i)->right == 0)
+		os << node_label[(*i)->left] << **i;
+	    else
+		os << node_label[(*i)->left] << **i
+		   << node_label[(*i)->right];
+	    os << '\t' << (*i)->firstpos
+		       << (*i)->lastpos << endl;
+	}
+    }
+    os << endl;
+}
+
+/* Comparison operator for sets of <State *>. */
+template<class T>
+class deref_less_than {
+public:
+    deref_less_than() { }
+    bool operator()(T a, T b)
+    {
+	return *a < *b;
+    }
+};
+
+/**
+ * States in the DFA. The pointer comparison allows us to tell sets we
+ * have seen already from new ones when constructing the DFA.
+ */
+typedef set<State *, deref_less_than<State *> > States;
+/* Transitions in the DFA. */
+typedef map<State *, Cases> Trans;
+
+class DFA {
+public:
+    DFA(Node *root);
+    virtual ~DFA();
+    void dump(ostream& os);
+    void dump_dot_graph(ostream& os);
+    map<uchar, uchar> equivalence_classes();
+    void apply_equivalence_classes(map<uchar, uchar>& eq);
+    State *verify_perms(void);
+    Node *root;
+    State *nonmatching, *start;
+    States states;
+    Trans trans;
+};
+
+/**
+ * Construct a DFA from a syntax tree.
+ */
+DFA::DFA(Node *root) : root(root)
+{
+    for (depth_first_traversal i(root); i; i++) {
+	(*i)->compute_nullable();
+	(*i)->compute_firstpos();
+	(*i)->compute_lastpos();
+    }
+    for (depth_first_traversal i(root); i; i++) {
+	(*i)->compute_followpos();
+    }
+
+    nonmatching = new State;
+    states.insert(nonmatching);
+
+    start = new State(root->firstpos);
+    states.insert(start);
+
+    list<State *> work_queue;
+    work_queue.push_back(start);
+    while (!work_queue.empty()) {
+	State *from = work_queue.front();
+	work_queue.pop_front();
+	Cases cases;
+	for (State::iterator i = from->begin(); i != from->end(); i++)
+	    (*i)->follow(cases);
+	if (cases.otherwise) {
+	    pair <States::iterator, bool> x = states.insert(cases.otherwise);
+	    if (x.second)
+		work_queue.push_back(cases.otherwise);
+	    else {
+		delete cases.otherwise;
+		cases.otherwise = *x.first;
+	    }
+	}
+	for (Cases::iterator j = cases.begin(); j != cases.end(); j++) {
+	    pair <States::iterator, bool> x = states.insert(j->second);
+	    if (x.second)
+		work_queue.push_back(*x.first);
+	    else {
+		delete j->second;
+		j->second = *x.first;
+	    }
+	}
+	Cases& here = trans.insert(make_pair(from, Cases())).first->second;
+	here.otherwise = cases.otherwise;
+	for (Cases::iterator j = cases.begin(); j != cases.end(); j++) {
+	    /**
+	     * Do not insert transitions that the default transition already
+	     * covers.
+	     */
+	    if (j->second != cases.otherwise)
+		here.cases.insert(*j);
+	}
+    }
+    /**
+     * Set the result of the nonmatching state to an invalid perm, but only
+     * after contructing the DFA: otherwise, the empty states that
+     * NotCharSetNode::follow() create would not compare equal with the
+     * nonmatching state -- but we rely on merging states that compare
+     * equal.
+     */
+    nonmatching->insert(new AcceptNode(AA_INVALID_PERM, NOT_RE_RULE));
+}
+
+DFA::~DFA()
+{
+    for (States::iterator i = states.begin(); i != states.end(); i++)
+	delete *i;
+}
+
+/**
+ * Result when this state matches.
+ */
+uint32_t accept_perms(State *state)
+{
+    uint32_t perms = 0;
+    int is_exactXmatch = 0;
+
+    for (State::iterator i = state->begin(); i != state->end(); i++) {
+	if (AcceptNode *accept = dynamic_cast<AcceptNode *>(*i)) {
+	    if (is_exactXmatch) {
+		/* exact match X perms override an re match X perm.  Only
+		 * accumulate regular permissions
+		 */
+		if (accept->is_rerule)
+		    perms |= AA_NOXMODS_PERM_MASK & accept->perms;
+		else
+		    /* N exact matches must have same X perm so accumulate
+		     * to catch any error */
+		    perms |= accept->perms;
+	    } else {
+		if (accept->is_rerule ||
+		    !(AA_EXEC_MODIFIERS & accept->perms)) {
+		    perms |= accept->perms;
+		} else {
+		    /* exact match with an exec modifier override accumulated
+		     * X permissions */
+		    is_exactXmatch = 1;
+		    perms = (AA_NOXMODS_PERM_MASK & perms) | accept->perms;
+		}
+	    }
+	}
+    }
+    return perms;
+}
+
+/**
+ * verify that there are no conflicting X permissions on the dfa
+ * return NULL - perms verified okay
+ *     State of 1st encountered with bad X perms
+ */
+State *DFA::verify_perms(void)
+{
+    for (States::iterator i = states.begin(); i != states.end(); i++) {
+	uint32_t accept = accept_perms(*i);
+	if (*i == start || accept) {
+	    if ((accept & AA_EXEC_MODIFIERS) &&
+		!AA_EXEC_SINGLE_MODIFIER_SET(accept))
+		return *i;
+	}
+    }
+    return NULL;
+}
+
+/**
+ * text-dump the DFA (for debugging).
+ */
+void DFA::dump(ostream& os)
+{
+    for (States::iterator i = states.begin(); i != states.end(); i++) {
+	uint32_t accept = accept_perms(*i);
+	if (*i == start || accept) {
+	    os << **i;
+	    if (*i == start)
+		os << " <==";
+	    if (accept) {
+		os << " (" << accept << ')';
+	    }
+	    os << endl;
+	}
+    }
+    os << endl;
+
+    for (Trans::iterator i = trans.begin(); i != trans.end(); i++) {
+	if (i->second.otherwise)
+	    os << *(i->first) << " -> " << *i->second.otherwise << endl;
+	for (Cases::iterator j = i->second.begin(); j != i->second.end(); j++) {
+	    os << *(i->first) << " -> " << *(j->second) << ":  "
+	       << j->first << endl;
+	}
+    }
+    os << endl;
+}
+
+/**
+ * Create a dot (graphviz) graph from the DFA (for debugging).
+ */
+void DFA::dump_dot_graph(ostream& os)
+{
+    os << "digraph \"dfa\" {" << endl;
+
+    for (States::iterator i = states.begin(); i != states.end(); i++) {
+	if (*i == nonmatching)
+	    continue;
+
+	os << "\t\"" << **i << "\" [" << endl;
+	if (*i == start) {
+	    os << "\t\tstyle=bold" << endl;
+	}
+	uint32_t perms = accept_perms(*i);
+	if (perms) {
+	    os << "\t\tlabel=\"" << **i << "\\n("
+	       << perms << ")\"" << endl;
+	}
+	os << "\t]" << endl;
+    }
+    for (Trans::iterator i = trans.begin(); i != trans.end(); i++) {
+	Cases& cases = i->second;
+	Chars excluded;
+
+	for (Cases::iterator j = cases.begin(); j != cases.end(); j++) {
+	    if (j->second == nonmatching)
+		excluded.insert(j->first);
+	    else {
+		os << "\t\"" << *i->first << "\" -> \"";
+		os << *j->second << "\" [" << endl;
+		os << "\t\tlabel=\"" << (char)j->first << "\"" << endl;
+		os << "\t]" << endl;
+	    }
+	}
+	if (i->second.otherwise && i->second.otherwise != nonmatching) {
+	    os << "\t\"" << *i->first << "\" -> \"" << *i->second.otherwise
+	       << "\" [" << endl;
+	    if (!excluded.empty()) {
+		os << "\t\tlabel=\"[^";
+		for (Chars::iterator i = excluded.begin();
+		     i != excluded.end();
+		     i++) {
+		    os << *i;
+		}
+		os << "]\"" << endl;
+	    }
+	    os << "\t]" << endl;
+	}
+    }
+    os << '}' << endl;
+}
+
+/**
+ * Compute character equivalence classes in the DFA to save space in the
+ * transition table.
+ */
+map<uchar, uchar> DFA::equivalence_classes()
+{
+    map<uchar, uchar> classes;
+    uchar next_class = 1;
+
+    for (Trans::iterator i = trans.begin(); i != trans.end(); i++) {
+	Cases& cases = i->second;
+
+	/* Group edges to the same next state together */
+	map<const State *, Chars> node_sets;
+	for (Cases::iterator j = cases.begin(); j != cases.end(); j++)
+	    node_sets[j->second].insert(j->first);
+
+	for (map<const State *, Chars>::iterator j = node_sets.begin();
+	     j != node_sets.end();
+	     j++) {
+	    /* Group edges to the same next state together by class */
+	    map<uchar, Chars> node_classes;
+	    bool class_used = false;
+	    for (Chars::iterator k = j->second.begin();
+		 k != j->second.end();
+		 k++) {
+		pair<map<uchar, uchar>::iterator, bool> x =
+		    classes.insert(make_pair(*k, next_class));
+		if (x.second)
+		    class_used = true;
+		pair<map<uchar, Chars>::iterator, bool> y =
+		    node_classes.insert(make_pair(x.first->second, Chars()));
+		y.first->second.insert(*k);
+	    }
+	    if (class_used) {
+		next_class++;
+		class_used = false;
+	    }
+	    for (map<uchar, Chars>::iterator k = node_classes.begin();
+		 k != node_classes.end();
+		 k++) {
+		/**
+		 * If any other characters are in the same class, move
+		 * the characters in this class into their own new class
+		 */
+		map<uchar, uchar>::iterator l;
+		for (l = classes.begin(); l != classes.end(); l++) {
+		    if (l->second == k->first &&
+			k->second.find(l->first) == k->second.end()) {
+			class_used = true;
+			break;
+		    }
+		}
+		if (class_used) {
+		    for (Chars::iterator l = k->second.begin();
+			 l != k->second.end();
+			 l++) {
+			classes[*l]  = next_class;
+		    }
+		    next_class++;
+		    class_used = false;
+		}
+	    }
+	}
+    }
+    return classes;
+}
+
+/**
+ * Text-dump the equivalence classes (for debugging).
+ */
+void dump_equivalence_classes(ostream& os, map<uchar, uchar>& eq)
+{
+    map<uchar, Chars> rev;
+
+    for (map<uchar, uchar>::iterator i = eq.begin(); i != eq.end(); i++) {
+	Chars& chars = rev.insert(make_pair(i->second,
+				      Chars())).first->second;
+	chars.insert(i->first);
+    }
+    os << "(eq):" << endl;
+    for (map<uchar, Chars>::iterator i = rev.begin(); i != rev.end(); i++) {
+	os << (int)i->first << ':';
+	Chars& chars = i->second;
+	for (Chars::iterator j = chars.begin(); j != chars.end(); j++) {
+	    os << ' ' << *j;
+	}
+	os << endl;
+    }
+}
+
+/**
+ * Replace characters with classes (which are also represented as
+ * characters) in the DFA transition table.
+ */
+void DFA::apply_equivalence_classes(map<uchar, uchar>& eq)
+{
+    /**
+     * Note: We only transform the transition table; the nodes continue to
+     * contain the original characters.
+     */
+    for (Trans::iterator i = trans.begin(); i != trans.end(); i++) {
+	map<uchar, State *> tmp;
+	tmp.swap(i->second.cases);
+	for (Cases::iterator j = tmp.begin(); j != tmp.end(); j++)
+	    i->second.cases.insert(make_pair(eq[j->first], j->second));
+    }
+}
+
+/**
+ * Flip the children of all cat nodes. This causes strings to be matched
+ * back-forth.
+ */
+void flip_tree(Node *node)
+{
+    for (depth_first_traversal i(node); i; i++) {
+	if (CatNode *cat = dynamic_cast<CatNode *>(*i)) {
+	    swap(cat->left, cat->right);
+	}
+    }
+}
+
+class TransitionTable {
+    typedef vector<pair<const State *, size_t> > DefaultBase;
+    typedef vector<pair<const State *, const State *> > NextCheck;
+public:
+    TransitionTable(DFA& dfa, map<uchar, uchar>& eq);
+    void dump(ostream& os);
+    void flex_table(ostream& os, const char *name);
+    bool fits_in(size_t base, Cases& cases);
+    void insert_state(State *state, DFA& dfa);
+
+private:
+    vector<uint32_t> accept;
+    DefaultBase default_base;
+    NextCheck next_check;
+    map<const State *, size_t> num;
+    map<uchar, uchar>& eq;
+    uchar max_eq;
+    uint32_t min_base;
+};
+
+/**
+ * Construct the transition table.
+ */
+TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq)
+    : eq(eq), min_base(0)
+{
+    /* Insert the dummy nonmatching transition by hand */
+    next_check.push_back(make_pair(dfa.nonmatching, dfa.nonmatching));
+
+    if (eq.empty())
+	max_eq = 255;
+    else {
+	max_eq = 0;
+	for(map<uchar, uchar>::iterator i = eq.begin(); i != eq.end(); i++) {
+	    if (i->second > max_eq)
+		max_eq = i->second;
+	}
+    }
+
+    /**
+     * Insert all the DFA states into the transition table. The nonmatching
+     * and start states come first, followed by all other states.
+     */
+    insert_state(dfa.nonmatching, dfa);
+    insert_state(dfa.start, dfa);
+    for (States::iterator i = dfa.states.begin(); i != dfa.states.end(); i++) {
+	if (*i != dfa.nonmatching && *i != dfa.start)
+	    insert_state(*i, dfa);
+    }
+
+    num.insert(make_pair(dfa.nonmatching, num.size()));
+    num.insert(make_pair(dfa.start, num.size()));
+    for (States::iterator i = dfa.states.begin(); i != dfa.states.end(); i++) {
+	if (*i != dfa.nonmatching && *i != dfa.start)
+	    num.insert(make_pair(*i, num.size()));
+    }
+
+    accept.resize(dfa.states.size());
+    for (States::iterator i = dfa.states.begin(); i != dfa.states.end(); i++)
+	/* mask off AA_INVALID_PERM, it is not needed by match engine */
+	accept[num[*i]] = accept_perms(*i) & ~AA_INVALID_PERM;
+}
+
+/**
+ * Does <cases> fit into position <base> of the transition table?
+ */
+bool TransitionTable::fits_in(size_t base, Cases& cases)
+{
+    for (Cases::iterator i = cases.begin(); i != cases.end(); i++) {
+	size_t c = base + i->first;
+	if (c >= next_check.size())
+	    continue;
+	if (next_check[c].second)
+	    return false;
+    }
+    return true;
+}
+
+/**
+ * Insert <state> of <dfa> into the transition table.
+ */
+void TransitionTable::insert_state(State *from, DFA& dfa)
+{
+    State *default_state = dfa.nonmatching;
+    size_t base = 0;
+
+    Trans::iterator i = dfa.trans.find(from);
+    if (i != dfa.trans.end()) {
+	Cases& cases = i->second;
+	if (cases.otherwise)
+	    default_state = cases.otherwise;
+	if (cases.cases.empty())
+	    goto insert_state;
+
+	size_t c = cases.begin()->first;
+	if (c < min_base)
+	    base = min_base - c;
+	/* Try inserting until we succeed. */
+	while (!fits_in(base, cases))
+	    base++;
+
+	if (next_check.size() <= base + max_eq)
+	    next_check.resize(base + max_eq + 1);
+	for (Cases::iterator j = cases.begin(); j != cases.end(); j++)
+	    next_check[base + j->first] = make_pair(j->second, from);
+
+	while (min_base < next_check.size()) {
+	    if (!next_check[min_base].second)
+		break;
+	    min_base++;
+	}
+    }
+insert_state:
+    default_base.push_back(make_pair(default_state, base));
+}
+
+/**
+ * Text-dump the transition table (for debugging).
+ */
+void TransitionTable::dump(ostream& os)
+{
+    map<size_t, const State *> st;
+    for (map<const State *, size_t>::iterator i = num.begin();
+	 i != num.end();
+	 i++) {
+	st.insert(make_pair(i->second, i->first));
+    }
+
+    os << "(accept, default, base):" << endl;
+    for (size_t i = 0; i < default_base.size(); i++) {
+	os << "(" << accept[i] << ", "
+	   << num[default_base[i].first] << ", "
+	   << default_base[i].second << ")";
+	if (st[i])
+	    os << " " << *st[i];
+	if (default_base[i].first)
+	    os << " -> " << *default_base[i].first;
+	os << endl;
+    }
+
+    os << "(next, check):" << endl;
+    for (size_t i = 0; i < next_check.size(); i++) {
+	if (!next_check[i].second)
+	    continue;
+
+	os << i << ": ";
+	if (next_check[i].second) {
+	    os << "(" << num[next_check[i].first] << ", "
+	       << num[next_check[i].second] << ")" << " "
+	       << *next_check[i].second << " -> "
+	       << *next_check[i].first << ": ";
+
+	    size_t offs = i - default_base[num[next_check[i].second]].second;
+	    if (eq.size())
+		os << offs;
+	    else
+		os << (uchar)offs;
+	}
+	os << endl;
+    }
+}
+
+#if 0
+template<class Iter>
+class FirstIterator {
+public:
+    FirstIterator(Iter pos) : pos(pos)  { }
+    typename Iter::value_type::first_type operator*()  { return pos->first; }
+    bool operator!=(FirstIterator<Iter>& i)  { return pos != i.pos; }
+    void operator++()  { ++pos; }
+    ssize_t operator-(FirstIterator<Iter> i)  { return pos - i.pos; }
+private:
+    Iter pos;
+};
+
+template<class Iter>
+FirstIterator<Iter> first_iterator(Iter iter)
+{
+    return FirstIterator<Iter>(iter);
+}
+
+template<class Iter>
+class SecondIterator {
+public:
+    SecondIterator(Iter pos) : pos(pos)  { }
+    typename Iter::value_type::second_type operator*()  { return pos->second; }
+    bool operator!=(SecondIterator<Iter>& i)  { return pos != i.pos; }
+    void operator++()  { ++pos; }
+    ssize_t operator-(SecondIterator<Iter> i)  { return pos - i.pos; }
+private:
+    Iter pos;
+};
+
+template<class Iter>
+SecondIterator<Iter> second_iterator(Iter iter)
+{
+    return SecondIterator<Iter>(iter);
+}
+#endif
+
+/**
+ * Create a flex-style binary dump of the DFA tables. The table format
+ * was partly reverse engineered from the flex sources and from
+ * examining the tables that flex creates with its --tables-file option.
+ * (Only the -Cf and -Ce formats are currently supported.)
+ */
+
+#include "flex-tables.h"
+#include "regexp.h"
+
+static inline size_t pad64(size_t i)
+{
+    return (i + (size_t)7) & ~(size_t)7;
+}
+
+string fill64(size_t i)
+{
+    const char zeroes[8] = { };
+    string fill(zeroes, (i & 7) ? 8 - (i & 7) : 0);
+    return fill;
+}
+
+template<class Iter>
+size_t flex_table_size(Iter pos, Iter end)
+{
+    return pad64(sizeof(struct table_header) + sizeof(*pos) * (end - pos));
+}
+
+template<class Iter>
+void write_flex_table(ostream& os, int id, Iter pos, Iter end)
+{
+    struct table_header td = { };
+    size_t size = end - pos;
+
+    td.td_id = htons(id);
+    td.td_flags = htons(sizeof(*pos));
+    td.td_lolen = htonl(size);
+    os.write((char *)&td, sizeof(td));
+
+    for (; pos != end; ++pos) {
+	switch(sizeof(*pos)) {
+	    case 4:
+		os.put((char)(*pos >> 24));
+		os.put((char)(*pos >> 16));
+	    case 2:
+		os.put((char)(*pos >> 8));
+	    case 1:
+		os.put((char)*pos);
+	}
+    }
+
+    os << fill64(sizeof(td) + sizeof(*pos) * size);
+}
+
+void TransitionTable::flex_table(ostream& os, const char *name)
+{
+    const char th_version[] = "notflex";
+    struct table_set_header th = { };
+
+    /**
+     * Change the following two data types to adjust the maximum flex
+     * table size.
+     */
+    typedef uint16_t state_t;
+    typedef uint32_t trans_t;
+
+    if (default_base.size() >= (state_t)-1) {
+	cerr << "Too many states (" << default_base.size() << ") for "
+		"type state_t" << endl;
+	exit(1);
+    }
+    if (next_check.size() >= (trans_t)-1) {
+	cerr << "Too many transitions (" << next_check.size() << ") for "
+	        "type trans_t" << endl;
+	exit(1);
+    }
+
+    /**
+     * Create copies of the data structures so that we can dump the tables
+     * using the generic write_flex_table() routine.
+     */
+    vector<uint8_t> equiv_vec;
+    if (eq.size()) {
+	equiv_vec.resize(256);
+	for (map<uchar, uchar>::iterator i = eq.begin(); i != eq.end(); i++) {
+	    equiv_vec[i->first] = i->second;
+	}
+    }
+
+    vector<state_t> default_vec;
+    vector<trans_t> base_vec;
+    for (DefaultBase::iterator i = default_base.begin();
+	 i != default_base.end();
+	 i++) {
+	default_vec.push_back(num[i->first]);
+	base_vec.push_back(i->second);
+    }
+
+    vector<state_t> next_vec;
+    vector<state_t> check_vec;
+    for (NextCheck::iterator i = next_check.begin();
+	 i != next_check.end();
+	 i++) {
+	next_vec.push_back(num[i->first]);
+	check_vec.push_back(num[i->second]);
+    }
+
+    /* Write the actual flex parser table. */
+
+    size_t hsize = pad64(sizeof(th) + sizeof(th_version) + strlen(name) + 1);
+    th.th_magic = htonl(YYTH_REGEXP_MAGIC);
+    th.th_hsize = htonl(hsize);
+    th.th_ssize = htonl(hsize +
+	    flex_table_size(accept.begin(), accept.end()) +
+	    (eq.size() ?
+		flex_table_size(equiv_vec.begin(), equiv_vec.end()) : 0) +
+	    flex_table_size(base_vec.begin(), base_vec.end()) +
+	    flex_table_size(default_vec.begin(), default_vec.end()) +
+	    flex_table_size(next_vec.begin(), next_vec.end()) +
+	    flex_table_size(check_vec.begin(), check_vec.end()));
+    os.write((char *)&th, sizeof(th));
+    os << th_version << (char)0 << name << (char)0;
+    os << fill64(sizeof(th) + sizeof(th_version) + strlen(name) + 1);
+
+
+    write_flex_table(os, YYTD_ID_ACCEPT, accept.begin(), accept.end());
+    if (eq.size())
+	write_flex_table(os, YYTD_ID_EC, equiv_vec.begin(), equiv_vec.end());
+    write_flex_table(os, YYTD_ID_BASE, base_vec.begin(), base_vec.end());
+    write_flex_table(os, YYTD_ID_DEF, default_vec.begin(), default_vec.end());
+    write_flex_table(os, YYTD_ID_NXT, next_vec.begin(), next_vec.end());
+    write_flex_table(os, YYTD_ID_CHK, check_vec.begin(), check_vec.end());
+}
+
+typedef set<ImportantNode *> AcceptNodes;
+map<ImportantNode *, AcceptNodes> dominance(DFA& dfa)
+{
+    map<ImportantNode *, AcceptNodes> is_dominated;
+
+    for (States::iterator i = dfa.states.begin(); i != dfa.states.end(); i++) {
+	AcceptNodes set1;
+	for (State::iterator j = (*i)->begin(); j != (*i)->end(); j++) {
+	    if (AcceptNode *accept = dynamic_cast<AcceptNode *>(*j))
+		set1.insert(accept);
+	}
+	for (AcceptNodes::iterator j = set1.begin(); j != set1.end(); j++) {
+	    pair<map<ImportantNode *, AcceptNodes>::iterator, bool> x =
+		is_dominated.insert(make_pair(*j, set1));
+	    if (!x.second) {
+		AcceptNodes &set2(x.first->second), set3;
+		for (AcceptNodes::iterator l = set2.begin();
+		     l != set2.end();
+		     l++) {
+		    if (set1.find(*l) != set1.end())
+			set3.insert(*l);
+		}
+		set3.swap(set2);
+	    }
+	}
+    }
+    return is_dominated;
+}
+
+void dump_regexp_rec(ostream& os, Node *tree)
+{
+    if (tree->left)
+	dump_regexp_rec(os, tree->left);
+    os << *tree;
+    if (tree->right)
+	dump_regexp_rec(os, tree->right);
+}
+
+void dump_regexp(ostream& os, Node *tree)
+{
+    dump_regexp_rec(os, tree);
+    os << endl;
+}
+
+/**
+ * "Librarize"
+ */
+
+#include <errno.h>
+#include <sstream>
+#if 0
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+#endif
+
+/**
+ * "value\0regexp\0value\0regexp\0\0"
+ */
+extern "C" char *
+regexp_flex_table(const char *name, const char *regexps,
+		  int equivalence_classes, int reverse, size_t *size)
+{
+    Node *root = new EpsNode();
+    char *buffer;
+
+    while (*regexps) {
+	char *endptr;
+	uint32_t accept;
+	int is_rerule;
+
+	Node *tree;
+
+	accept = strtoul(regexps, &endptr, 0);
+	if (*endptr != '\0' || accept == 0 || accept >= (1UL << 31)) {
+	    delete root;
+	    errno = EINVAL;
+	    return NULL;
+	}
+	regexps = endptr + 1;
+	is_rerule = NOT_RE_RULE;
+	if (regexp_parse(&tree, endptr, &is_rerule)) {
+	    delete root;
+	    errno = EINVAL;
+	    return NULL;
+	}
+	if (reverse)
+	    flip_tree(tree);
+
+	tree = new CatNode(tree, new AcceptNode(accept, is_rerule));
+	root = new AltNode(root, tree);
+	regexps = strchr(regexps, 0);
+    }
+
+    DFA dfa(root);
+    map<uchar, uchar> eq;
+    if (equivalence_classes) {
+	eq = dfa.equivalence_classes();
+	dfa.apply_equivalence_classes(eq);
+    }
+    TransitionTable transition_table(dfa, eq);
+    ostringstream stream;
+    transition_table.flex_table(stream, name);
+    delete root;
+
+    streambuf *buf = stream.rdbuf();
+    *size = buf->in_avail();
+    buffer = (char *)malloc(*size);
+    if (!buffer)
+	return NULL;
+    buf->sgetn(buffer, *size);
+    return buffer;
+}
+
+#include <ext/stdio_filebuf.h>
+#include "apparmor_re.h"
+
+struct aare_ruleset {
+    int reverse;
+    Node *root;
+};
+
+extern "C" {
+
+aare_ruleset_t *aare_new_ruleset(int reverse)
+{
+    aare_ruleset_t *container = (aare_ruleset_t *) malloc(sizeof(aare_ruleset_t));
+    if (!container)
+	return NULL;
+
+    container->root = new EpsNode();
+    container->reverse = reverse;
+
+    return container;
+}
+
+void aare_delete_ruleset(aare_ruleset_t *rules)
+{
+    if (rules) {
+	delete(rules->root);
+	free(rules);
+    }
+}
+
+int aare_add_rule(aare_ruleset_t *rules, char *rule,
+		  uint32_t perms)
+{
+    Node *tree;
+    int is_rerule = NOT_RE_RULE;
+
+    if (regexp_parse(&tree, rule, &is_rerule)) {
+	return 0;
+    }
+
+    if (rules->reverse)
+	flip_tree(tree);
+    AcceptNode *accept = new AcceptNode(perms, is_rerule);
+    tree = new CatNode(tree, accept);
+    rules->root = new AltNode(rules->root, tree);
+
+    return 1;
+}
+
+/* create a dfa from the ruleset
+ * returns: buffer contain dfa tables, @size set to the size of the tables
+ *          else NULL on failure
+ */
+void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes, size_t *size)
+{
+    char *buffer = NULL;
+
+    label_nodes(rules->root);
+    DFA dfa(rules->root);
+    map<uchar, uchar> eq;
+    if (equiv_classes) {
+	eq = dfa.equivalence_classes();
+	dfa.apply_equivalence_classes(eq);
+    }
+
+    if (dfa.verify_perms()) {
+	*size = 0;
+	return NULL;
+    }
+
+    stringstream stream;
+    TransitionTable transition_table(dfa, eq);
+    transition_table.flex_table(stream, "");
+
+    stringbuf *buf = stream.rdbuf();
+
+    buf->pubseekpos(0);
+    *size = buf->in_avail();
+
+    buffer = (char *)malloc(*size);
+    if (!buffer)
+	return NULL;
+    buf->sgetn(buffer, *size);
+    return buffer;
+}
+
+} /* extern C */
