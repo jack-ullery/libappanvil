@@ -1,0 +1,144 @@
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -25,14 +25,14 @@
+  */
+ #define AA_MAY_LINK			0x0010
+ #define AA_EXEC_INHERIT			0x0020
+-#define AA_EXEC_UNCONSTRAINED		0x0040
++#define AA_EXEC_UNCONFINED		0x0040
+ #define AA_EXEC_PROFILE			0x0080
+ #define AA_EXEC_MMAP			0x0100
+ #define AA_EXEC_UNSAFE			0x0200
+ #define AA_INVALID_PERM			0x0400
+ 
+ #define AA_EXEC_MODIFIERS		(AA_EXEC_INHERIT | \
+-					 AA_EXEC_UNCONSTRAINED | \
++					 AA_EXEC_UNCONFINED | \
+ 					 AA_EXEC_PROFILE)
+ 
+ /* Control parameters (0 or 1), settable thru module/boot flags or
+Index: b/security/apparmor/capability_names.h
+===================================================================
+--- a/security/apparmor/capability_names.h
++++ /dev/null
+@@ -1,31 +0,0 @@
+-[0]  = "chown",
+-[1]  = "dac_override",
+-[2]  = "dac_read_search",
+-[3]  = "fowner",
+-[4]  = "fsetid",
+-[5]  = "kill",
+-[6]  = "setgid",
+-[7]  = "setuid",
+-[8]  = "setpcap",
+-[9]  = "linux_immutable",
+-[10]  = "net_bind_service",
+-[11]  = "net_broadcast",
+-[12]  = "net_admin",
+-[13]  = "net_raw",
+-[14]  = "ipc_lock",
+-[15]  = "ipc_owner",
+-[16]  = "sys_module",
+-[17]  = "sys_rawio",
+-[18]  = "sys_chroot",
+-[19]  = "sys_ptrace",
+-[20]  = "sys_pacct",
+-[21]  = "sys_admin",
+-[22]  = "sys_boot",
+-[23]  = "sys_nice",
+-[24]  = "sys_resource",
+-[25]  = "sys_time",
+-[26]  = "sys_tty_config",
+-[27]  = "mknod",
+-[28]  = "lease",
+-[29]  = "audit_write",
+-[30]  = "audit_control",
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -831,7 +831,7 @@ aa_register_find(struct aa_profile *prof
+ 		}
+ 	} else {
+ 		/* Only way we can get into this code is if task
+-		 * is unconstrained.
++		 * is unconfined.
+ 		 */
+ 		AA_DEBUG("%s: No profile found for exec image %s\n",
+ 			 __FUNCTION__,
+@@ -867,7 +867,7 @@ repeat:
+ 	if (profile) {
+ 		complain = PROFILE_COMPLAIN(profile);
+ 
+-		/* Confined task, determine what mode inherit, unconstrained or
++		/* Confined task, determine what mode inherit, unconfined or
+ 		 * mandatory to load new profile
+ 		 */
+ 		exec_mode = aa_match(profile->file_rules, filename);
+@@ -881,8 +881,8 @@ repeat:
+ 				/* nothing to be done here */
+ 				goto cleanup;
+ 
+-			case MAY_EXEC | AA_EXEC_UNCONSTRAINED:
+-				AA_DEBUG("%s: UNCONSTRAINED %s\n",
++			case MAY_EXEC | AA_EXEC_UNCONFINED:
++				AA_DEBUG("%s: UNCONFINED %s\n",
+ 					 __FUNCTION__,
+ 					 filename);
+ 
+Index: b/security/apparmor/procattr.c
+===================================================================
+--- a/security/apparmor/procattr.c
++++ b/security/apparmor/procattr.c
+@@ -58,12 +58,12 @@ size_t aa_getprocattr(struct aa_profile 
+ 			error = -ERANGE;
+ 		}
+ 	} else {
+-		const char *unconstrained_str = "unconstrained\n";
+-		len = strlen(unconstrained_str);
++		const char *unconfined_str = "unconfined\n";
++		len = strlen(unconfined_str);
+ 
+ 		/* DONT null terminate strings we output via proc */
+ 		if (len <= size) {
+-			memcpy(str, unconstrained_str, len);
++			memcpy(str, unconfined_str, len);
+ 			error = len;
+ 		} else if (size == 0) {
+ 			error = len;
+@@ -194,7 +194,7 @@ int aa_setprocattr_setprofile(struct tas
+ 	name_copy[size] = 0;
+ 
+ repeat:
+-	if (strcmp(name_copy, "unconstrained") != 0) {
++	if (strcmp(name_copy, "unconfined") != 0) {
+ 		new_profile = aa_find_profile(name_copy);
+ 		if (!new_profile) {
+ 			AA_WARN("%s: Unable to switch task %s(%d) to profile"
+@@ -224,12 +224,12 @@ repeat:
+ 			__FUNCTION__,
+ 			task->comm, task->pid,
+ 			old_profile ? old_profile->parent->name :
+-				"unconstrained",
+-			old_profile ? old_profile->name : "unconstrained",
++				"unconfined",
++			old_profile ? old_profile->name : "unconfined",
+ 			name_copy);
+ 	} else {
+ 		if (old_profile) {
+-			AA_WARN("%s: Unconstraining task %s(%d) "
++			AA_WARN("%s: Unconfining task %s(%d) "
+ 				"profile %s active %s\n",
+ 				__FUNCTION__,
+ 				task->comm, task->pid,
+@@ -237,7 +237,7 @@ repeat:
+ 				old_profile->name);
+ 		} else {
+ 			AA_WARN("%s: task %s(%d) "
+-				"is already unconstrained\n",
++				"is already unconfined\n",
+ 				__FUNCTION__, task->comm, task->pid);
+ 		}
+ 	}

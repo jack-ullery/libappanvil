@@ -85,3 +85,13 @@ ptrace.diff
 clarify-audit-status-handling.diff
 link-subset-check.diff
 no-new-namespaces.diff
+apparmor-audit-deadlock.diff
+fix-cleanup-aa_register-2.diff
+fix-make-parent-point-to-itself.diff
+fix-tell-files-from-dirs.diff
+fix-deleted-revalidation.diff
+fix-unconfined-mmap.diff
+aafs-perms.diff
+put_task_context_safely.diff
+apparmor-interface-revision.diff
+constrained-to-confined.diff

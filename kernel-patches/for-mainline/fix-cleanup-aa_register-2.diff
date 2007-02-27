@@ -1,0 +1,74 @@
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -797,16 +797,17 @@ repeat:
+ }
+ 
+ static struct aa_profile *
+-aa_register_find(const char *name, int mandatory, int complain)
++aa_register_find(struct aa_profile *profile, const char *name, int mandatory,
++		 int complain)
+ {
+-	struct aa_profile *profile;
++	struct aa_profile *new_profile;
+ 
+ 	/* Locate new profile */
+-	profile = aa_find_profile(name);
+-	if (profile) {
++	new_profile = aa_find_profile(name);
++	if (new_profile) {
+ 		AA_DEBUG("%s: setting profile %s\n",
+-			 __FUNCTION__, profile->name);
+-	} else if (mandatory) {
++			 __FUNCTION__, new_profile->name);
++	} else if (mandatory && profile) {
+ 		if (complain) {
+ 			LOG_HINT(profile, GFP_KERNEL, HINT_MANDPROF,
+ 				"image=%s pid=%d profile=%s active=%s\n",
+@@ -832,7 +833,7 @@ aa_register_find(const char *name, int m
+ 			 __FUNCTION__,
+ 			 name);
+ 	}
+-	return profile;
++	return new_profile;
+ }
+ 
+ /**
+@@ -847,7 +848,7 @@ int aa_register(struct linux_binprm *bpr
+ 	char *filename, *buffer = NULL;
+ 	struct file *filp = bprm->file;
+ 	struct aa_profile *profile, *old_profile, *new_profile = NULL;
+-	int exec_mode = AA_EXEC_UNSAFE, complain = 0;
++	int exec_mode = 0, complain = 0;
+ 
+ 	AA_DEBUG("%s\n", __FUNCTION__);
+ 
+@@ -889,7 +890,8 @@ repeat:
+ 				AA_DEBUG("%s: PROFILE %s\n",
+ 					 __FUNCTION__,
+ 					 filename);
+-				new_profile = aa_register_find(filename, 1,
++				new_profile = aa_register_find(profile,
++							       filename, 1,
+ 							       complain);
+ 				break;
+ 
+@@ -926,7 +928,7 @@ repeat:
+ 		}
+ 	} else {
+ 		/* Unconfined task, load profile if it exists */
+-		new_profile = aa_register_find(filename, 0, 0);
++		new_profile = aa_register_find(NULL, filename, 0, 0);
+ 		if (new_profile == NULL)
+ 			goto cleanup;
+ 	}
+@@ -955,7 +957,7 @@ repeat:
+ 	 * Cases 2 and 3 are marked as requiring secure exec
+ 	 * (unless policy specified "unsafe exec")
+ 	 */
+-	if (new_profile && !(exec_mode & AA_EXEC_UNSAFE)) {
++	if (profile && !(exec_mode & AA_EXEC_UNSAFE)) {
+ 		unsigned long bprm_flags;
+ 
+ 		bprm_flags = AA_SECURE_EXEC_NEEDED;

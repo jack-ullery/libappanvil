@@ -1,0 +1,13 @@
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -633,7 +633,7 @@ int aa_perm(struct aa_profile *profile, 
+ 	sa.flags = 0;
+ 	sa.gfp_mask = GFP_KERNEL;
+ 	error = aa_perm_dentry(profile, dentry, mnt, &sa, mask,
+-			       S_ISDIR(inode->i_mode));
++			       inode && S_ISDIR(inode->i_mode));
+ 
+ out:
+ 	return error;

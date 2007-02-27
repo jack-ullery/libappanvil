@@ -1,0 +1,18 @@
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -1028,8 +1028,11 @@ repeat:
+ 		list_del(&cxt->list);
+ 		unlock_profile(profile);
+ 		aa_put_profile(profile);
+-		/* FIXME: Also put the task context safely. */
+-		kfree(cxt);
++		/* it is safe to free the task_context here, it has been
++		 * removed from the context list it was on and
++		 * the task that could access this context is dead
++		 */
++		aa_free_task_context(cxt);
+ 		rcu_assign_pointer(task->security, NULL);
+ 	}
+ }
