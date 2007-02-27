@@ -599,12 +599,12 @@ netrule:   action addresses interface TOK_END_OF_RULE
 		$$ = entry;
 	};
 	
-action:		TOK_TCP_CONN { $$ = KERN_COD_TCP_CONNECT; }
-	|	TOK_TCP_ACPT { $$ = KERN_COD_TCP_ACCEPT; }
-	|	TOK_TCP_CONN_ESTB { $$ = KERN_COD_TCP_CONNECTED; }
-	|       TOK_TCP_ACPT_ESTB { $$ = KERN_COD_TCP_ACCEPTED; }
-	|	TOK_UDP_SEND { $$ = KERN_COD_UDP_SEND; }
-	|	TOK_UDP_RECV { $$ = KERN_COD_UDP_RECEIVE; }
+action:		TOK_TCP_CONN { $$ = AA_TCP_CONNECT; }
+	|	TOK_TCP_ACPT { $$ = AA_TCP_ACCEPT; }
+	|	TOK_TCP_CONN_ESTB { $$ = AA_TCP_CONNECTED; }
+	|       TOK_TCP_ACPT_ESTB { $$ = AA_TCP_ACCEPTED; }
+	|	TOK_UDP_SEND { $$ = AA_UDP_SEND; }
+	|	TOK_UDP_RECV { $$ = AA_UDP_RECEIVE; }
 	;
 	
 

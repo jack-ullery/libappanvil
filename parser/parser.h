@@ -19,6 +19,7 @@
 #include <netinet/in.h>
 #include "pcre/internal.h"
 #include "immunix.h"
+#include "libapparmor_re/apparmor_re.h"
 
 typedef enum pattern_t pattern_t;
 
@@ -37,8 +38,8 @@ struct cod_entry {
 	char * name ;
 	struct codomain *codomain ; 	/* Special codomain defined
 					 * just for this executable */
-	int mode ;	/* mode is 'or' of KERN_COD_* bits */
-	int deny ;	/* TRUE or FALSE */
+	int mode ;			/* mode is 'or' of AA_* bits */
+	int deny ;			/* TRUE or FALSE */
 
 	pattern_t pattern_type;
 	struct cod_pattern pat;
@@ -68,6 +69,11 @@ struct codomain {
 	struct cod_net_entry * net_entries;
 	void *hat_table;
 	//struct codomain *next;
+
+	aare_ruleset_t *dfarules;
+	int dfarule_count;
+	void *dfa;
+	size_t dfa_size;
 } ;
 
 struct cod_global_entry {
@@ -116,6 +122,10 @@ struct var_string {
 #define OPTION_REPLACE  3
 #define OPTION_STDOUT	4
 
+#define AARE_NONE 0
+#define AARE_PCRE 1
+#define AARE_DFA 2
+
 #ifdef DEBUG
 #define PDEBUG(fmt, args...) printf("parser: " fmt, ## args)
 #else
@@ -139,6 +149,11 @@ struct var_string {
 #define __unused __attribute__ ((unused))
 #endif
 
+#define list_for_each(LIST, ENTRY) \
+	for ((ENTRY) = (LIST); (ENTRY); (ENTRY) = (ENTRY)->next)
+#define list_last_entry(LIST, ENTRY) \
+	for ((ENTRY) = (LIST); (ENTRY) && (ENTRY)->next; (ENTRY) = (ENTRY)->next)
+
 /* Some external definitions to make b0rken programs happy */
 extern char *progname;
 extern char *subdomainbase;
@@ -146,6 +161,7 @@ extern char *profilename;
 
 /* from parser_main */
 extern int force_complain;
+extern int regex_type;
 extern void pwarn(char *fmt, ...) __attribute__((__format__(__printf__, 1, 2)));
 
 extern int yyparse(void);

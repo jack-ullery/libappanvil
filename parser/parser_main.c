@@ -48,6 +48,7 @@
 #define MATCH_STRING "/sys/kernel/security/" MODULE_NAME "/matching"
 #define MOUNTED_FS "/proc/mounts"
 #define PCRE "pattern=pcre"
+#define AADFA "pattern=aadfa"
 
 #define UNPRIVILEGED_OPS (debug || preprocess_only || option == OPTION_STDOUT || names_only || \
 			  dump_vars || dump_expanded_vars)
@@ -65,6 +66,8 @@ int conf_quiet = 0;
 char *subdomainbase = NULL;
 char *profilename;
 char *match_string = NULL;
+int regex_type = AARE_NONE;
+
 extern int current_lineno;
 
 struct option long_options[] = {
@@ -264,98 +267,51 @@ static inline char *try_subdomainfs_mountpoint(const char *mntpnt,
 	return retval;
 }
 
-void find_subdomainfs_mountpoint(void)
+int find_subdomainfs_mountpoint(void)
 {
 	FILE *mntfile;
 	struct mntent *mntpt;
 
-	if (!(mntfile = setmntent(MOUNTED_FS, "r"))) {
-		/* Ugh, what's the right default if you can't open /proc/mounts? */
-		PERROR(_("Warning: unable to open %s, attempting to use %s\n"
-			 "as the subdomainfs location. Use --subdomainfs to override.\n"),
-		       MOUNTED_FS, DEFAULT_APPARMORFS);
-		subdomainbase = DEFAULT_APPARMORFS;
-		return;
-	}
-
-	while ((mntpt = getmntent(mntfile))) {
-		char *proposed = NULL;
-		if (strcmp(mntpt->mnt_type, "securityfs") == 0) {
-			proposed = try_subdomainfs_mountpoint(mntpt->mnt_dir, "/" MODULE_NAME);
-			if (proposed != NULL) {
-				subdomainbase = proposed;
-				break;
+	if ((mntfile = setmntent(MOUNTED_FS, "r"))) {
+		while ((mntpt = getmntent(mntfile))) {
+			char *proposed = NULL;
+			if (strcmp(mntpt->mnt_type, "securityfs") == 0) {
+				proposed = try_subdomainfs_mountpoint(mntpt->mnt_dir, "/" MODULE_NAME);
+				if (proposed != NULL) {
+					subdomainbase = proposed;
+					break;
+				}
+				proposed = try_subdomainfs_mountpoint(mntpt->mnt_dir, "/" OLD_MODULE_NAME);
+				if (proposed != NULL) {
+					subdomainbase = proposed;
+					break;
+				}
 			}
-			proposed = try_subdomainfs_mountpoint(mntpt->mnt_dir, "/" OLD_MODULE_NAME);
-			if (proposed != NULL) {
-				subdomainbase = proposed;
-				break;
-			}
-		}
-		if (strcmp(mntpt->mnt_type, "subdomainfs") == 0) {
-			proposed = try_subdomainfs_mountpoint(mntpt->mnt_dir, "");
-			if (proposed != NULL) {
-				subdomainbase = proposed;
-				break;
+			if (strcmp(mntpt->mnt_type, "subdomainfs") == 0) {
+				proposed = try_subdomainfs_mountpoint(mntpt->mnt_dir, "");
+				if (proposed != NULL) {
+					subdomainbase = proposed;
+					break;
+				}
 			}
 		}
+		endmntent(mntfile);
 	}
 
 	if (!subdomainbase) {
-		PERROR(_("Warning: unable to find a suitable fs in %s, is it mounted?\n"
-			 "Attempting to use %s as the subdomainfs location.\n"
-			 "Use --subdomainfs to override.\n"),
-		       MOUNTED_FS, DEFAULT_APPARMORFS);
-		subdomainbase = DEFAULT_APPARMORFS;
-	}
-	endmntent(mntfile);
-}
-
-int is_module_loaded(void)
-{
-	char *query_failed = NULL;
-	int module_loaded = 0;
-	int mlen = strlen(MODULE_NAME);
-	int oldmlen = strlen(OLD_MODULE_NAME);
-	FILE *fp;
-
-	fp = fopen(PROC_MODULES, "r");
-	if (fp) {
-		while (!feof(fp)) {
-			const int buflen = 256;
-			char buf[buflen];
-
-			if (fgets(buf, buflen, fp)) {
-				buf[buflen - 1] = 0;
-
-				if (strncmp(buf, MODULE_NAME, mlen) == 0 &&
-				    buf[mlen] == ' ') {
-					module_loaded = 1;
-				}
-				if (strncmp(buf, OLD_MODULE_NAME, oldmlen) == 0 &&
-				    buf[oldmlen] == ' ') {
-					module_loaded = 1;
-				}
-			}
+		struct stat buf;
+		if (stat(DEFAULT_APPARMORFS, &buf) == -1) {
+		PERROR(_("Warning: unable to find a suitable fs in %s, is it "
+			 "mounted?\nUse --subdomainfs to override.\n"),
+		       MOUNTED_FS);
+		} else {
+			subdomainbase = DEFAULT_APPARMORFS;
 		}
-		(void)fclose(fp);
-	} else {
-		query_failed = "unable to open " PROC_MODULES;
 	}
 
-	if (query_failed) {
-		PERROR(_("%s: Unable to query modules - '%s'\n"
-			 "Either modules are disabled or your kernel is"
-			 " too old.\n"), progname, query_failed);
-		return 1;
-	} else if (!module_loaded) {
-		PERROR(_("%s: Unable to find " MODULE_NAME "!\n"
-			 "Ensure that it has been loaded.\n"), progname);
-		return 1;
-	}
-
-	return 0;
+	return (subdomainbase == NULL);
 }
+
 
 int have_enough_privilege(void)
 {
@@ -387,7 +343,7 @@ static void get_match_string(void) {
 
 	/* has process_args() already assigned a match string? */
 	if (match_string)
-		return;
+		goto out;
 
 	FILE *ms = fopen(MATCH_STRING, "r");
 	if (!ms)
@@ -404,22 +360,28 @@ static void get_match_string(void) {
 	}
 
 out:
-	fclose(ms);
+	if (match_string) {
+		if (strstr(match_string, PCRE))
+			regex_type = AARE_PCRE;
+
+		if (strstr(match_string, AADFA))
+			regex_type = AARE_DFA;
+	}
+
+	if (ms)
+		fclose(ms);
 	return;
 }
 
 /* return 1 --> PCRE should work fine
    return 0 --> no PCRE support */
-static int pcre_support(void) {
-
-	get_match_string();
-
+static int regex_support(void) {
 	/* no match string, predates (or postdates?) the split matching
 	module design */
 	if (!match_string)
 		return 1;
 
-	if (strstr(match_string, PCRE))
+	if (regex_type != AARE_NONE)
 		return 1;
 
 	return 0;
@@ -436,6 +398,9 @@ int process_profile(int option, char *profilename)
 	retval = yyparse();
 	if (retval != 0)
 		goto out;
+
+	/* Get the match string to determine type of regex support needed */
+	get_match_string();
 
 	retval = post_process_policy();
   	if (retval != 0) {
@@ -467,10 +432,7 @@ int process_profile(int option, char *profilename)
 		goto out;
 	}
 
-	if (!subdomainbase && !preprocess_only && !(option == OPTION_STDOUT))
-			find_subdomainfs_mountpoint();
-
-	if (!pcre_support()) {
+	if (!regex_support()) {
 		die_if_any_regex();
 	}
 
@@ -502,8 +464,9 @@ int main(int argc, char *argv[])
 		return retval;
 	}
 
-	/* Check to make sure modules are enabled */
-	if (!(UNPRIVILEGED_OPS) && ((retval = is_module_loaded()))) {
+	/* Check to make sure there is an interface to load policy */
+	if (!(UNPRIVILEGED_OPS) && (subdomainbase == NULL) &&
+	    (retval = find_subdomainfs_mountpoint())) {
 		return retval;
 	}
 

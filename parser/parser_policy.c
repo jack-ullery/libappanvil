@@ -159,7 +159,7 @@ static int any_regex_entries(struct cod_entry *entry_list)
 {
 	struct cod_entry *entry;
 
-	for (entry = entry_list; entry; entry = entry->next) {
+	list_for_each(entry_list, entry) {
 		if (entry->pattern_type == ePatternRegex)
 			return TRUE;
 	}
@@ -374,8 +374,7 @@ struct codomain *merge_policy(struct codomain *a, struct codomain *b)
 	}
 
 	if (a->entries) {
-		for (last = a->entries; last->next; last = last->next)
-			/* do nothing */ ;
+		list_last_entry(a->entries, last);
 		last->next = b->entries;
 	} else {
 		a->entries = b->entries;
@@ -383,8 +382,7 @@ struct codomain *merge_policy(struct codomain *a, struct codomain *b)
 	b->entries = NULL;
 
 	if (a->net_entries) {
-		for (lastnet = a->net_entries; lastnet->next; lastnet = lastnet->next)
-			/* do nothing */ ;
+		list_last_entry(a->net_entries, lastnet);
 		lastnet->next = b->net_entries;
 	} else {
 		a->net_entries = b->net_entries;
@@ -451,5 +449,9 @@ void free_policy(struct codomain *cod)
 	free_hat_table(cod->hat_table);
 	free_cod_entries(cod->entries);
 	free_net_entries(cod->net_entries);
+	if (cod->dfarules)
+		aare_delete_ruleset(cod->dfarules);
+	if (cod->dfa)
+		free(cod->dfa);
 	free(cod);
 }

@@ -77,6 +77,9 @@ OBJECTS = parser_lex.o parser_yacc.o parser_main.o parser_interface.o \
 	  parser_include.o parser_merge.o parser_symtab.o parser_misc.o \
 	  parser_regex.o parser_variable.o parser_policy.o
 
+AAREDIR= libapparmor_re
+AAREOBJECTS = ${AAREDIR}/libapparmor_re.a
+
 PCREDIR= pcre
 PCREOBJECTS = ${PCREDIR}/pcre.o
 
@@ -110,8 +113,11 @@ all: 	$(LEX_C_FILES) $(YACC_C_FILES) $(TOOLS)
 	$(Q)make -C po all
 	$(Q)make -s tests
 
-apparmor_parser: $(OBJECTS) $(PCREOBJECTS)
-	$(CC) $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(PCREOBJECTS) $(LIBS) ${LEXLIB}
+apparmor_parser: $(OBJECTS) $(PCREOBJECTS) $(AAREOBJECTS)
+	rm -f ./libstdc++.a
+	ln -s `g++ -print-file-name=libstdc++.a`
+	g++ $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(PCREOBJECTS) $(LIBS) \
+	      ${LEXLIB}  $(AAREOBJECTS) -static-libgcc -L.
 
 parser_yacc.c parser_yacc.h: parser_yacc.y parser.h
 	$(YACC) $(YFLAGS) -o parser_yacc.c parser_yacc.y 
@@ -174,6 +180,10 @@ tests: ${TESTS}
 	$(Q)make -s -C tst tests
 
 # always need to rebuild.
+.SILENT: $(AAREOBJECTS)
+$(AAREOBJECTS):
+	make -C $(AAREDIR)
+
 .SILENT: $(PCREOBJECTS)
 $(PCREOBJECTS):
 	make -C $(PCREDIR) "CFLAGS=$(CFLAGS)"
@@ -196,7 +206,7 @@ install-suse:
 	ln -sf /etc/init.d/boot.apparmor $(DESTDIR)/sbin/rcapparmor
 	ln -sf rcapparmor $(DESTDIR)/sbin/rcsubdomain
 	ln -sf /etc/init.d/aaeventd $(DESTDIR)/sbin/rcaaeventd
-	
+
 .PHONY: install-slackware
 install-slackware:
 	install -m 755 -d $(APPARMOR_BIN_PREFIX)/install
@@ -229,7 +239,9 @@ clean:
 	rm -f $(YACC_C_FILES)
 	rm -f parser_version.h
 	rm -f $(NAME)*.tar.gz $(NAME)*.tgz
+	rm -rf libstdc++.a
 	make -s -C $(PCREDIR) clean
+	make -s -C $(AAREDIR) clean
 	make -s -C po clean
 
 .SILENT: dist_clean
