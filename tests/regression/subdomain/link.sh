@@ -33,15 +33,27 @@ touch $src
 # PASS TEST
 
 genprofile $src:$okperm $target:$okperm
+runchecktest "MATCHING PERM (rwixl)" pass $src $target
 
-runchecktest "MATCHING PERM" pass $src $target
+# PASS TEST
+
+rm -f $target
+
+genprofile $src:$nolinkperm $target:$okperm
+runchecktest "MATCHING PERM (rwix)" pass $src $target
+
+# PASS TEST
+
+rm -f $target
+
+genprofile $src:r $target:rl
+runchecktest "MATCHING PERM (r)" pass $src $target
 
 # FAILURE TEST
 
 rm -f $target
 
 genprofile $src:$okperm $target:$badperm
-
 runchecktest "NONMATCHING PERM" fail $src $target
 
 # NOLINK TEST
@@ -49,5 +61,4 @@ runchecktest "NONMATCHING PERM" fail $src $target
 rm -f $target
 
 genprofile $src:$okperm $target:$nolinkperm
-
 runchecktest "NOLINK PERM" fail $src $target
