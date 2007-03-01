@@ -1,0 +1,74 @@
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -731,6 +731,33 @@ int aa_link(struct aa_profile *profile,
+ 	return error;
+ }
+ 
++int aa_unlink(struct aa_profile *profile, struct dentry *dentry,
++	      struct vfsmount *mnt)
++{
++	char *buffer = NULL;
++	struct aa_audit sa;
++	int mode, error = -EACCES;
++
++	sa.name = aa_get_name(dentry, mnt, &buffer, 0);
++	if (IS_ERR(sa.name))
++		return PTR_ERR(sa.name);
++
++	mode = aa_match(profile->file_rules, sa.name);
++	if (mode & (MAY_WRITE | AA_MAY_LINK))
++		error = 0;
++
++	sa.type = AA_AUDITTYPE_FILE;
++	sa.mask = MAY_WRITE;
++	sa.flags = 0;
++	sa.gfp_mask = GFP_KERNEL;
++
++	aa_permerror2result(error ? MAY_WRITE : 0, &sa);
++	error = aa_audit(profile, &sa);
++	aa_put_name_buffer(buffer);
++
++	return error;
++}
++
+ /*******************************
+  * Global task related functions
+  *******************************/
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -232,6 +232,8 @@ extern int aa_perm_dir(struct aa_profile
+ extern int aa_link(struct aa_profile *profile,
+ 		   struct dentry *link, struct vfsmount *link_mnt,
+ 		   struct dentry *target, struct vfsmount *target_mnt);
++extern int aa_unlink(struct aa_profile *profile, struct dentry *dentry,
++		     struct vfsmount *mnt);
+ extern int aa_clone(struct task_struct *task);
+ extern int aa_register(struct linux_binprm *bprm);
+ extern void aa_release(struct task_struct *task);
+Index: b/security/apparmor/lsm.c
+===================================================================
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -298,7 +298,17 @@ static int apparmor_inode_unlink(struct 
+ 				 struct dentry *dentry,
+ 				 struct vfsmount *mnt)
+ {
+-	return aa_permission(dir, dentry, mnt, MAY_WRITE, AA_CHECK_LEAF);
++	int error = 0;
++
++	if (mnt && mediated_filesystem(dentry->d_inode)) {
++		struct aa_profile *profile = aa_get_profile(current);
++
++		if (profile)
++			error = aa_unlink(profile, dentry, mnt);
++		aa_put_profile(profile);
++	}
++
++	return error;
+ }
+ 
+ static int apparmor_inode_symlink(struct inode *dir, struct dentry *dentry,
