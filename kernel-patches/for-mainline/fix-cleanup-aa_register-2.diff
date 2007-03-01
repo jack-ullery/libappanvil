@@ -35,15 +35,6 @@ Index: b/security/apparmor/main.c
  }
  
  /**
-@@ -818,7 +819,7 @@ int aa_register(struct linux_binprm *bpr
- 	char *filename, *buffer = NULL;
- 	struct file *filp = bprm->file;
- 	struct aa_profile *profile, *old_profile, *new_profile = NULL;
--	int exec_mode = AA_EXEC_UNSAFE, complain = 0;
-+	int exec_mode = 0, complain = 0;
- 
- 	AA_DEBUG("%s\n", __FUNCTION__);
- 
 @@ -860,7 +861,8 @@ repeat:
  				AA_DEBUG("%s: PROFILE %s\n",
  					 __FUNCTION__,
@@ -68,7 +59,7 @@ Index: b/security/apparmor/main.c
  	 * (unless policy specified "unsafe exec")
  	 */
 -	if (new_profile && !(exec_mode & AA_EXEC_UNSAFE)) {
-+	if (profile && !(exec_mode & AA_EXEC_UNSAFE)) {
++	if (!(exec_mode & AA_EXEC_UNSAFE)) {
  		unsigned long bprm_flags;
  
  		bprm_flags = AA_SECURE_EXEC_NEEDED;
