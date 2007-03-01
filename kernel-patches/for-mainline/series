@@ -29,7 +29,7 @@ vfs-removexattr.diff
 security-removexattr.diff
 d_path-lazy-unmounts.diff
 no-unreachable-paths.diff
-mount-consistent-d_cache.diff
+mount-consistent-d_path.diff
 # security_chroot.diff
 apparmor-audit.diff
 apparmor.diff
