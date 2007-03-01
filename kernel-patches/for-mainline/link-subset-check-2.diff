@@ -1,0 +1,19 @@
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -120,11 +120,12 @@ static int aa_link_denied(struct aa_prof
+ 	 * Allow to link
+ 	 * - if we have permission to rename, or
+ 	 * - if we are only allowed to link and to read the target,
+-	 *   but not to write to the link.
++	 *   but not to write to the link, and also only if the link
++	 *   won't add any form of execute access.
+ 	 */
+ 	if (((l_mode & MAY_WRITE) &&
+ 	     (t_mode & (MAY_READ | MAY_WRITE) == (MAY_READ | MAY_WRITE))) ||
+-	    ((l_mode & (MAY_WRITE | AA_MAY_LINK) == AA_MAY_LINK) &&
++	    ((l_mode & (MAY_WRITE | MAY_EXEC | AA_MAY_LINK) == AA_MAY_LINK) &&
+ 	     (t_mode & MAY_READ)))
+ 		return 0;
+ 
