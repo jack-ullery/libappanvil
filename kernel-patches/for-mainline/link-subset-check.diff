@@ -69,8 +69,8 @@ Index: b/security/apparmor/main.c
 +	 *   but not to write to the link.
 +	 */
 +	if (((l_mode & MAY_WRITE) &&
-+	     (t_mode & (MAY_READ | MAY_WRITE) == (MAY_READ | MAY_WRITE))) ||
-+	    ((l_mode & (MAY_WRITE | AA_MAY_LINK) == AA_MAY_LINK) &&
++	     ((t_mode & (MAY_READ | MAY_WRITE)) == (MAY_READ | MAY_WRITE))) ||
++	    (((l_mode & (MAY_WRITE | AA_MAY_LINK)) == AA_MAY_LINK) &&
 +	     (t_mode & MAY_READ)))
 +		return 0;
  
