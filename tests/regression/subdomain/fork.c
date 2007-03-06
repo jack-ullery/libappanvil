@@ -33,10 +33,10 @@ int (*pass)[MAX_FILES];
 
 void test_files(int num_files, char *files[], int index)
 {
-	int fd,i;
+	int fd, i;
 
-	for (i=0;i<num_files;i++){
-		fd=open(files[i], O_RDWR);
+	for (i = 0; i < num_files; i++) {
+		fd = open(files[i], O_RDWR);
 
 		if (fd == -1) {
 			if (errno == ENOENT) {
@@ -53,66 +53,64 @@ void test_files(int num_files, char *files[], int index)
 
 int main(int argc, char *argv[])
 {
-	int num_files,i, shmid;
+	int num_files, i, shmid;
 	pid_t pid;
 	struct shmid_ds shm_desc;
 
-	if (argc < 2){
+	if (argc < 2) {
 		fprintf(stderr, "usage: %s program [args] \n", argv[0]);
 		return 1;
 	}
 
-	num_files=max(argc - 1, MAX_FILES);
+	num_files = max(argc - 1, MAX_FILES);
 
-	shmid=shmget(IPC_PRIVATE, sizeof(int[2][MAX_FILES]), IPC_CREAT);
-	if (shmid == -1){
-		fprintf(stderr, "FAIL: shmget failed %s\n", 
-			strerror(errno));
+	shmid = shmget(IPC_PRIVATE, sizeof(int[2][MAX_FILES]), IPC_CREAT);
+	if (shmid == -1) {
+		fprintf(stderr, "FAIL: shmget failed %s\n", strerror(errno));
 		return 1;
 	}
 
-	pass=(int(*)[MAX_FILES])shmat(shmid, NULL, 0);
+	pass = (int(*)[MAX_FILES])shmat(shmid, NULL, 0);
 
-	if (pass == (void*)-1){
-		fprintf(stderr, "FAIL: shmat failed %s\n", 
-			strerror(errno));
+	if (pass == (void *)-1) {
+		fprintf(stderr, "FAIL: shmat failed %s\n", strerror(errno));
 		return 1;
 	}
 
-	pid=fork();
+	pid = fork();
 
-	if (pid){	/* parent */
+	if (pid) {		/* parent */
 		int status;
-		int allpassed=TRUE;
+		int allpassed = TRUE;
 
-		test_files(argc-1, &argv[1], 0);
+		test_files(argc - 1, &argv[1], 0);
 
-		while (wait(&status) != pid);
+		while (wait(&status) != pid) ;
 
-		for (i=0;i<argc-1;i++){
+		for (i = 0; i < argc - 1; i++) {
 			if (pass[0][i] != pass[1][i] ||
 			    pass[0][i] == -1 || pass[1][i] == -1) {
-				if (allpassed){
+				if (allpassed) {
 					fprintf(stderr, "FAILED:");
-					allpassed=FALSE;
+					allpassed = FALSE;
 				}
 
 				fprintf(stderr, " file%d(%d:%d)",
-					i+1, pass[0][i], pass[1][i]);
+					i + 1, pass[0][i], pass[1][i]);
 			}
 		}
 
-		if (allpassed){
+		if (allpassed) {
 			printf("PASS\n");
-		}else{
+		} else {
 			fprintf(stderr, "\n");
 		}
 
 		(void)shmdt(pass);
 		shmctl(shmid, IPC_RMID, &shm_desc);
 
-	}else{
-		test_files(argc-1, &argv[1], 1);
+	} else {
+		test_files(argc - 1, &argv[1], 1);
 	}
 
 	return 0;
