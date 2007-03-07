@@ -68,7 +68,13 @@ runchecktest "TCP (accept, connect)" pass $port
 # will always fail unless process has net_bind_service capability.
 # you damn well better not be running telnetd.
 genprofile tcp_accept: tcp_connect:
-runchecktest "TCP (accept, connect)" fail 23
+runchecktest "TCP (accept, connect, port 23)" fail 23
+
+# PASS TEST - simple / low-numbered port
+# will always fail unless process has net_bind_service capability.
+# you damn well better not be running telnetd.
+genprofile tcp_accept: tcp_connect: cap:net_bind_service
+runchecktest "TCP (accept, connect, port 23)" pass 23
 
 # The following tests will FAIL only if netdomain is enabled. If
 # netdomain is disabled, they are expected to pass. netdomain is
