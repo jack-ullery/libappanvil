@@ -20,6 +20,7 @@ SRC=access.c \
     chgrp.c \
     chmod.c \
     chown.c \
+    clone.c \
     deleted.c \
     environ.c \
     env_check.c \
@@ -104,6 +105,7 @@ TESTS=access \
       changehat_fork \
       changehat_misc \
       chdir \
+      clone \
       deleted \
       environ \
       exec \
