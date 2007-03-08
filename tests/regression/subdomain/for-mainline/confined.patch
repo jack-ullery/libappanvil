@@ -1,0 +1,58 @@
+Index: subdomain/exec_qual.sh
+===================================================================
+--- subdomain.orig/exec_qual.sh
++++ subdomain/exec_qual.sh
+@@ -131,13 +131,13 @@ local_runchecktest "enforce ix case4" pa
+ #	  expected behaviour, child should be able to access resource
+ 
+ genprofile $test2:ux $file:$fileperm
+-local_runchecktest "enforce ux case1" pass "unconstrained" $test2 $file
++local_runchecktest "enforce ux case1" pass "unconfined" $test2 $file
+ 
+ # case 2: parent profile denies access (should be irrelevant)
+ #	  expected behaviour, child should be able to access resource
+ 
+ genprofile $test2:ux
+-local_runchecktest "enforce ux case1" pass "unconstrained" $test2 $file
++local_runchecktest "enforce ux case1" pass "unconfined" $test2 $file
+ 
+ # constrained parent, exec child with conflicting exec qualifiers
+ # that overlap in such away that px is prefered (ix is glob, px is exact
+@@ -148,24 +148,24 @@ local_runchecktest "enforce ux case1" pa
+ genprofile $test2:px $test2_rex1:ix -- image=$test2 $file:$fileperm
+ local_runchecktest "enforce conflicting exec qual" pass $test2 $test2 $file
+ 
+-# unconstrained parent
++# unconfined parent
+ # case 1: child profile exists, child profile grants access
+ #	  expected behaviour: child should be able to access resource
+ 
+ genprofile image=$test2 $file:$fileperm
+-local_runchecktest "enforce unconstrained case1" pass $test2 $test2 $file
++local_runchecktest "enforce unconfined case1" pass $test2 $test2 $file
+ 
+ # case 2: child profile exists, child profile denies access
+ #	  expected behaviour: child should be unable to access resource
+ 
+ genprofile image=$test2
+-local_runchecktest "enforce unconstrained case2" fail $test2 $test2 $file
++local_runchecktest "enforce unconfined case2" fail $test2 $test2 $file
+ 
+ # case 3: no child profile exists, unconfined
+ #	  expected behaviour: child should be able to access resource
+ 
+ removeprofile
+-local_runchecktest "enforce unconstrained case3" pass "unconstrained" $test2 $file
++local_runchecktest "enforce unconfined case3" pass "unconfined" $test2 $file
+ 
+ # -----------------------------------------------------------------------
+ 
+@@ -193,7 +193,7 @@ local_runchecktest "enforce unconstraine
+ # case 1: child should be able to access resource
+ #	  verify that child is in null-complain-profile
+ 
+-# unconstrained parent
++# unconfined parent
+ # case 1: expected behaviour: as enforce
+ # case 2: expected behaviour, child should be able to access resource
+ # case 3: expected behaviour: as enforce

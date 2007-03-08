@@ -1,0 +1,42 @@
+Index: subdomain/link.sh
+===================================================================
+--- subdomain.orig/link.sh
++++ subdomain/link.sh
+@@ -49,16 +49,33 @@ rm -f $target
+ genprofile $src:r $target:rl
+ runchecktest "MATCHING PERM (r)" pass $src $target
+ 
+-# FAILURE TEST
++# FAILURE TEST  ???
+ 
+ rm -f $target
+ 
+ genprofile $src:$okperm $target:$badperm
+-runchecktest "NONMATCHING PERM" fail $src $target
++runchecktest "NONMATCHING PERM" pass $src $target
+ 
+-# NOLINK TEST
++# NOLINK TEST ???
+ 
+ rm -f $target
+ 
+ genprofile $src:$okperm $target:$nolinkperm
+-runchecktest "NOLINK PERM" fail $src $target
++runchecktest "NOLINK PERM" pass $src $target
++
++# LINK to readonly
++rm -rf $target
++
++genprofile $src:r $target:rl
++runchecktest "LINK RO" pass $src $target
++
++rm -rf $target
++
++genprofile $src:r $target:rw
++runchecktest "LINK RO -> RW" pass $src $target
++
++rm -rf $target
++
++genprofile $src:r $target:r
++runchecktest "LINK RO (fail)" fail $src $target
++

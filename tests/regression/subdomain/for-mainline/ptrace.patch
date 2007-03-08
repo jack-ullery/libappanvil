@@ -1,0 +1,13 @@
+Index: subdomain/capabilities.sh
+===================================================================
+--- subdomain.orig/capabilities.sh
++++ subdomain/capabilities.sh
+@@ -66,7 +66,7 @@ net_raw_net_raw=TRUE
+ 
+ # we completely disable ptrace(), but it's not clear if we should allow it
+ # when the sys_ptrace cap is specified.
+-# syscall_ptrace_sys_ptrace=TRUE
++syscall_ptrace_sys_ptrace=TRUE
+ 
+ # if a test case requires arguments, add them here.
+ syscall_reboot_args=off
