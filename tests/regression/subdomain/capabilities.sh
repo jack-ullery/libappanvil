@@ -77,7 +77,7 @@ syscall_iopl_args=3
 syscall_chroot_args=${tmpdir}
 
 # if a testcase requires extra subdomain rules, add them here
-syscall_chroot_extra_entries="/:r"
+syscall_chroot_extra_entries="/:r ${tmpdir}:r"
 
 testwrapper=changehat_wrapper
 
