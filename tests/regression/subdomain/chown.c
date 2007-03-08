@@ -19,23 +19,22 @@
 
 int main(int argc, char *argv[])
 {
-uid_t uid;
+	uid_t uid;
 
-	if (argc != 3){
+	if (argc != 3) {
 		fprintf(stderr, "usage: %s file username|uid\n",
 			argv[0]);
 		return 1;
 	}
 
-	if (sscanf(argv[2], "%d", &uid) != 1){
+	if (sscanf(argv[2], "%d", &uid) != 1) {
 		fprintf(stderr, "FAIL: bad uid %s\n", argv[2]);
 		return 1;
 	}
 	
-	if (chown(argv[1], uid, -1) == -1){
+	if (chown(argv[1], uid, -1) == -1) {
 		fprintf(stderr, "FAIL: chown %s %d failed - %s\n",
-			argv[1], uid,
-			strerror(errno));
+			argv[1], uid, strerror(errno));
 		return 1;
 	}
 

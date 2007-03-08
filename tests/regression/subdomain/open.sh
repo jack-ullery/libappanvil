@@ -46,6 +46,10 @@ genprofile $file:$badperm2
 runchecktest "OPEN W" fail $file
 
 # FAILURE TEST (3)
+genprofile $file:$badperm1 cap:dac_override
+runchecktest "OPEN R+dac_override" fail $file
+
+# FAILURE TEST (4)
 # This is testing for bug: https://bugs.wirex.com/show_bug.cgi?id=2885
 # When we open O_CREAT|O_RDWR, we are (were?) allowing only write access
 # to be required.

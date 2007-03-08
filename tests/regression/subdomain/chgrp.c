@@ -19,24 +19,23 @@
 
 int main(int argc, char *argv[])
 {
-gid_t gid;
+	gid_t gid;
 
-	if (argc != 3){
+	if (argc != 3) {
 		fprintf(stderr, "usage: %s file groupname|gid\n",
 			argv[0]);
 		return 1;
 	}
 
 
-	if (sscanf(argv[2], "%d", &gid) != 1){
+	if (sscanf(argv[2], "%d", &gid) != 1) {
 		fprintf(stderr, "FAIL: bad gid %s\n", argv[2]);
 		return 1;
 	}
 	
-	if (chown(argv[1], -1, gid) == -1){
+	if (chown(argv[1], -1, gid) == -1) {
 		fprintf(stderr, "FAIL: chgrp %s %d failed - %s\n",
-			argv[1], gid,
-			strerror(errno));
+			argv[1], gid, strerror(errno));
 		return 1;
 	}
 

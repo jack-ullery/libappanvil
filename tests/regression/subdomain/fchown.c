@@ -19,22 +19,31 @@
 
 int main(int argc, char *argv[])
 {
-	mode_t mode;
+	uid_t uid;
+	int fd;
 
 	if (argc != 3) {
-		fprintf(stderr, "usage: %s file mode\n",
+		fprintf(stderr, "usage: %s file username|uid\n",
 			argv[0]);
 		return 1;
 	}
 
-	if (sscanf(argv[2], "%o", &mode) != 1) {
-		fprintf(stderr, "FAIL: bad mode %s\n", argv[2]);
+	if (sscanf(argv[2], "%d", &uid) != 1) {
+		fprintf(stderr, "FAIL: bad uid %s\n", argv[2]);
 		return 1;
 	}
 	
-	if (chmod(argv[1], mode) == -1) {
-		fprintf(stderr, "FAIL: fchmod %s %o failed - %s\n",
-			argv[1], mode, strerror(errno));
+	fd = open(argv[1], O_RDONLY);
+	if (fd == -1) {
+		fprintf(stderr, "FAIL: open %s failed - %s\n",
+			argv[1], strerror(errno));
+		perror("FAIL: open");
+		return 1;
+	}
+
+	if (fchown(fd, uid, -1) == -1) {
+		fprintf(stderr, "FAIL: chown %s %d failed - %s\n",
+			argv[1], uid, strerror(errno));
 		return 1;
 	}
 

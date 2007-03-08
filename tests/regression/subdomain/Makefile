@@ -26,6 +26,9 @@ SRC=access.c \
     exec.c \
     exec_qual.c \
     exec_qual2.c \
+    fchgrp.c \
+    fchmod.c \
+    fchown.c \
     fork.c \
     link.c \
     mmap.c \

@@ -1,7 +1,7 @@
 /* $Id$ */
 
 /*
- *	Copyright (C) 2002-2005 Novell/SUSE
+ *	Copyright (C) 2002-2007 Novell/SUSE
  *
  *	This program is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License as
@@ -19,22 +19,32 @@
 
 int main(int argc, char *argv[])
 {
-	mode_t mode;
+	gid_t gid;
+	int fd;
 
 	if (argc != 3) {
-		fprintf(stderr, "usage: %s file mode\n",
+		fprintf(stderr, "usage: %s file groupname|gid\n",
 			argv[0]);
 		return 1;
 	}
 
-	if (sscanf(argv[2], "%o", &mode) != 1) {
-		fprintf(stderr, "FAIL: bad mode %s\n", argv[2]);
+
+	if (sscanf(argv[2], "%d", &gid) != 1) {
+		fprintf(stderr, "FAIL: bad gid %s\n", argv[2]);
 		return 1;
 	}
 	
-	if (chmod(argv[1], mode) == -1) {
-		fprintf(stderr, "FAIL: fchmod %s %o failed - %s\n",
-			argv[1], mode, strerror(errno));
+	fd = open(argv[1], O_RDONLY);
+	if (fd == -1) {
+		fprintf(stderr, "FAIL: open %s failed - %s\n",
+			argv[1], strerror(errno));
+		perror("FAIL: open");
+		return 1;
+	}
+
+	if (fchown(fd, -1, gid) == -1) {
+		fprintf(stderr, "FAIL: fchgrp %s %d failed - %s\n",
+			argv[1], gid, strerror(errno));
 		return 1;
 	}
 
