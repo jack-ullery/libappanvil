@@ -1,5 +1,5 @@
 #! /bin/bash
-# $Id:$
+# $Id$
 
 #	Copyright (C) 2002-2005 Novell/SUSE
 #
@@ -77,11 +77,11 @@ EOM
 # lets just be on the safe side
 rm -f ${socket}
 
-# PASS - unconstrained client
+# PASS - unconfined client
 
 genprofile $file:$okperm $socket:rw $fd_client:ux
 
-runchecktest "fd passing; unconstrained client" pass $file $socket $fd_client "delete_file"
+runchecktest "fd passing; unconfined client" pass $file $socket $fd_client "delete_file"
 
 sleep 1
 cat > ${file} << EOM
@@ -96,10 +96,10 @@ ed15ad1d4fb9959008589e589206ee13
 EOM
 rm -f ${socket}
 
-# PASS - constrained client, rw access to the file
+# PASS - confined client, rw access to the file
 
 genprofile $file:$okperm $socket:rw $fd_client:px -- image=$fd_client $file:$okperm $socket:rw
-runchecktest "fd passing; constrained client w/ rw" pass $file $socket $fd_client "delete_file"
+runchecktest "fd passing; confined client w/ rw" pass $file $socket $fd_client "delete_file"
 
 sleep 1
 cat > ${file} << EOM
@@ -113,10 +113,10 @@ ccc2c402fcc6e66d5cfaa0c68b94211c
 ed15ad1d4fb9959008589e589206ee13
 EOM
 rm -f ${socket}
-# FAIL - constrained client, w access to the file
+# FAIL - confined client, w access to the file
 
 genprofile $file:$okperm $socket:rw $fd_client:px -- image=$fd_client $file:$badperm $socket:rw
-runchecktest "fd passing; constrained client w/ w only" fail $file $socket $fd_client "delete_file"
+runchecktest "fd passing; confined client w/ w only" fail $file $socket $fd_client "delete_file"
 
 sleep 1
 rm -f ${socket}

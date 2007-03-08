@@ -83,124 +83,124 @@ newgid=$(awk -F: "/^${newgroup}:/ {print \$3}" /etc/group)
 # Therefore, we should do the chgrp test BEFORE changing the owner of
 # the file.
 
-# PASS TEST (UNCONSTRAINED)
+# PASS TEST (UNCONFINED)
 resettest
 
 settest chmod
-runchecktest "CHMOD (unconstrained)" pass $file $newfileperm
+runchecktest "CHMOD (unconfined)" pass $file $newfileperm
 
 settest chgrp
-runchecktest "CHGRP (unconstrained)" pass $file $newgid
+runchecktest "CHGRP (unconfined)" pass $file $newgid
 
 settest chown
-runchecktest "CHOWN (unconstrained)" pass $file $newuid
+runchecktest "CHOWN (unconfined)" pass $file $newuid
 
-checkfile $file "unconstrained" $newfilepermstr $newuser $newgroup
+checkfile $file "unconfined" $newfilepermstr $newuser $newgroup
 
-# PASS TEST (UNCONSTRAINED w/FOPS)
+# PASS TEST (UNCONFINED w/FOPS)
 resettest
 
 settest fchmod
-runchecktest "FCHMOD (unconstrained)" pass $file $newfileperm
+runchecktest "FCHMOD (unconfined)" pass $file $newfileperm
 
 settest fchgrp
-runchecktest "FCHGRP (unconstrained)" pass $file $newgid
+runchecktest "FCHGRP (unconfined)" pass $file $newgid
 
 settest fchown
-runchecktest "FCHOWN (unconstrained)" pass $file $newuid
+runchecktest "FCHOWN (unconfined)" pass $file $newuid
 
-checkfile $file "unconstrained" $newfilepermstr $newuser $newgroup
+checkfile $file "unconfined" $newfilepermstr $newuser $newgroup
 
-# PASS TEST (CONSTRAINED)
+# PASS TEST (CONFINED)
 resettest
 
 settest chmod
 genprofile $file:$okperm 
-runchecktest "CHMOD (constrained $okperm)" pass $file $newfileperm
+runchecktest "CHMOD (confined $okperm)" pass $file $newfileperm
 
 settest chgrp
 genprofile $file:$okperm $pwfiles cap:chown
-runchecktest "CHGRP (constrained $okperm)" pass $file $newgid
+runchecktest "CHGRP (confined $okperm)" pass $file $newgid
 
 settest chown
 genprofile $file:$okperm $pwfiles cap:chown
-runchecktest "CHOWN (constrained $okperm)" pass $file $newuid
+runchecktest "CHOWN (confined $okperm)" pass $file $newuid
 
-checkfile $file "constrained $okperm" $newfilepermstr $newuser $newgroup
+checkfile $file "confined $okperm" $newfilepermstr $newuser $newgroup
 
-# PASS TEST (CONSTRAINED w/FOPS)
+# PASS TEST (CONFINED w/FOPS)
 resettest
 
 settest fchmod
 genprofile $file:$okperm 
-runchecktest "FCHMOD (constrained $okperm)" pass $file $newfileperm
+runchecktest "FCHMOD (confined $okperm)" pass $file $newfileperm
 
 settest fchgrp
 genprofile $file:$okperm $pwfiles cap:chown
-runchecktest "FCHGRP (constrained $okperm)" pass $file $newgid
+runchecktest "FCHGRP (confined $okperm)" pass $file $newgid
 
 settest fchown
 genprofile $file:$okperm $pwfiles cap:chown
-runchecktest "FCHOWN (constrained $okperm)" pass $file $newuid
+runchecktest "FCHOWN (confined $okperm)" pass $file $newuid
 
-checkfile $file "constrained $okperm" $newfilepermstr $newuser $newgroup
+checkfile $file "confined $okperm" $newfilepermstr $newuser $newgroup
 
-# FAIL TEST (CONSTRAINED)
+# FAIL TEST (CONFINED)
 resettest
 
 settest chmod
 genprofile $file:$badperm $pwfiles
-runchecktest "CHMOD (constrained $badperm)" fail $file $newfileperm
+runchecktest "CHMOD (confined $badperm)" fail $file $newfileperm
 
 settest chgrp
 genprofile $file:$badperm $pwfiles cap:chown
-runchecktest "CHGRP (constrained $badperm)" fail $file $newgid
+runchecktest "CHGRP (confined $badperm)" fail $file $newgid
 
 settest chown
 genprofile $file:$badperm $pwfiles cap:chown
-runchecktest "CHOWN (constrained $badperm)" fail $file $newuid
+runchecktest "CHOWN (confined $badperm)" fail $file $newuid
 
-checkfile $file "constrained $badperm" $origfilepermstr $origuser $origgroup
+checkfile $file "confined $badperm" $origfilepermstr $origuser $origgroup
 
-# FAIL TEST (CONSTRAINED/LACKING CAPS)
+# FAIL TEST (CONFINED/LACKING CAPS)
 resettest
 
 settest chgrp
 genprofile $file:$okperm $pwfiles
-runchecktest "CHGRP (constrained $okperm/no capabilities)" fail $file $newgid
+runchecktest "CHGRP (confined $okperm/no capabilities)" fail $file $newgid
 
 settest chown
 genprofile $file:$okperm $pwfiles
-runchecktest "CHOWN (constrained $okperm/no capabilities)" fail $file $newuid
+runchecktest "CHOWN (confined $okperm/no capabilities)" fail $file $newuid
 
-checkfile $file "constrained $badperm" $origfilepermstr $origuser $origgroup
+checkfile $file "confined $badperm" $origfilepermstr $origuser $origgroup
 
-# FAIL TEST (CONSTRAINED w/FOPS)
+# FAIL TEST (CONFINED w/FOPS)
 resettest
 
 settest fchmod
 genprofile $file:$badperm $pwfiles
-runchecktest "FCHMOD (constrained $badperm)" fail $file $newfileperm
+runchecktest "FCHMOD (confined $badperm)" fail $file $newfileperm
 
 settest fchgrp
 genprofile $file:$badperm $pwfiles cap:chown
-runchecktest "FCHGRP (constrained $badperm)" fail $file $newgid
+runchecktest "FCHGRP (confined $badperm)" fail $file $newgid
 
 settest fchown
 genprofile $file:$badperm $pwfiles cap:chown
-runchecktest "FCHOWN (constrained $badperm)" fail $file $newuid
+runchecktest "FCHOWN (confined $badperm)" fail $file $newuid
 
-checkfile $file "constrained $badperm" $origfilepermstr $origuser $origgroup
+checkfile $file "confined $badperm" $origfilepermstr $origuser $origgroup
 
-# FAIL TEST (CONSTRAINED w/FOPS/LACKING CAPS)
+# FAIL TEST (CONFINED w/FOPS/LACKING CAPS)
 resettest
 
 settest fchgrp
 genprofile $file:$okperm $pwfiles
-runchecktest "FCHGRP (constrained $okperm/no capabilities)" fail $file $newgid
+runchecktest "FCHGRP (confined $okperm/no capabilities)" fail $file $newgid
 
 settest fchown
 genprofile $file:$okperm $pwfiles
-runchecktest "FCHOWN (constrained $okperm/no capabilities)" fail $file $newuid
+runchecktest "FCHOWN (confined $okperm/no capabilities)" fail $file $newuid
 
-checkfile $file "constrained $badperm" $origfilepermstr $origuser $origgroup
+checkfile $file "confined $badperm" $origfilepermstr $origuser $origgroup

@@ -31,7 +31,7 @@ genprofile $file:$ok_ix_perm
 
 runchecktest "EXEC with ix" pass $file
 
-# PASS TEST - unconstrained
+# PASS TEST - unconfined
 
 genprofile $file:$ok_ux_perm
 

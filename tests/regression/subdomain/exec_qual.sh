@@ -68,7 +68,7 @@ local_runchecktest()
 
 # ENFORCE mode
 
-# constrained parent, exec child with 'px'
+# confined parent, exec child with 'px'
 # case 1: parent profile grants access (should be irrelevant)
 #	  child profile grants access
 #	  expected behaviour: child should be able to access resource
@@ -97,7 +97,7 @@ local_runchecktest "enforce px case3" pass $test2 $test2 $file
 genprofile $test2:px $file:$fileperm
 local_runchecktest "enforce px case4" fail "n/a" $test2 $file
 
-# constrained parent, exec child with 'ix'
+# confined parent, exec child with 'ix'
 # case 1: parent profile grants access
 #	  child profile grants access (should be irrelevant)
 #	  expected behaviour: child should be able to access resource
@@ -126,7 +126,7 @@ local_runchecktest "enforce ix case3" fail $test1 $test2 $file
 genprofile $test2:rix $file:$fileperm
 local_runchecktest "enforce ix case4" pass $test1 $test2 $file
 
-# constrained parent, exec child with 'ux'
+# confined parent, exec child with 'ux'
 # case 1: parent profile grants access (should be irrelevant)
 #	  expected behaviour, child should be able to access resource
 
@@ -139,45 +139,45 @@ local_runchecktest "enforce ux case1" pass "unconstrained" $test2 $file
 genprofile $test2:ux
 local_runchecktest "enforce ux case1" pass "unconstrained" $test2 $file
 
-# constrained parent, exec child with conflicting exec qualifiers
+# confined parent, exec child with conflicting exec qualifiers
 # case 1: 
 #	  expected behaviour: exec of child fails
 
 genprofile $test2_rex1:px $test2_rex2:ix -- image=$test2 $file:$fileperm
 local_runchecktest "enforce conflicting exec qual" fail "n/a" $test2 $file
 
-# unconstrained parent
+# unconfined parent
 # case 1: child profile exists, child profile grants access
 #	  expected behaviour: child should be able to access resource
 
 genprofile image=$test2 $file:$fileperm
-local_runchecktest "enforce unconstrained case1" pass $test2 $test2 $file
+local_runchecktest "enforce unconfined case1" pass $test2 $test2 $file
 
 # case 2: child profile exists, child profile denies access
 #	  expected behaviour: child should be unable to access resource
 
 genprofile image=$test2
-local_runchecktest "enforce unconstrained case2" fail $test2 $test2 $file
+local_runchecktest "enforce unconfined case2" fail $test2 $test2 $file
 
 # case 3: no child profile exists, unconfined
 #	  expected behaviour: child should be able to access resource
 
 removeprofile
-local_runchecktest "enforce unconstrained case3" pass "unconstrained" $test2 $file
+local_runchecktest "enforce unconfined case3" pass "unconstrained" $test2 $file
 
 # -----------------------------------------------------------------------
 
 # COMPLAIN mode -- all the tests again but with profiles loaded in
 # complain mode rather than enforce mode
 
-# constrained parent, exec child with 'px'
+# confined parent, exec child with 'px'
 # case 1: expected behaviour: as enforce
 # case 2: expected behaviour: child should be able to access resource
 # case 3: expected behaviour: as enforce
 # case 4: expected behaviour: child should be able to access resource
 #	  verify child is in null-complain-profile
 
-# constrained parent, exec child with 'ix'
+# confined parent, exec child with 'ix'
 # case 1: expected behaviour: as enforce
 # case 2: expected behaviour: as enforce
 # case 3: expected behaviour: child should be able to access resource
@@ -187,11 +187,11 @@ local_runchecktest "enforce unconstrained case3" pass "unconstrained" $test2 $fi
 # case 1: expected behaviour, child should be able to access resource
 # case 2: expected behaviour, child should be able to access resource
 
-# constrained parent, exec child with conflicting exec qualifiers
+# confined parent, exec child with conflicting exec qualifiers
 # case 1: child should be able to access resource
 #	  verify that child is in null-complain-profile
 
-# unconstrained parent
+# unconfined parent
 # case 1: expected behaviour: as enforce
 # case 2: expected behaviour, child should be able to access resource
 # case 3: expected behaviour: as enforce
