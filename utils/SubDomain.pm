@@ -21,14 +21,13 @@
 
 package Immunix::SubDomain;
 
-use warnings;
 use strict;
+use warnings;
 
 use Carp;
 use Cwd qw(cwd realpath);
-use File::Basename;
 use Data::Dumper;
-
+use File::Basename;
 use Locale::gettext;
 use POSIX;
 
@@ -36,14 +35,62 @@ use Immunix::Severity;
 
 require Exporter;
 our @ISA    = qw(Exporter);
-our @EXPORT = qw(%sd $filename $profiledir $parser %qualifiers %include %helpers $UI_Mode which getprofilefilename getprofileflags setprofileflags complain enforce autodep reload UI_GetString UI_GetFile UI_YesNo UI_Important UI_Info getkey do_logprof_pass readconfig loadincludes check_for_subdomain UI_PromptUser $running_under_genprof GetDataFromYast SendDataToYast setup_yast shutdown_yast readprofile readprofiles writeprofile get_full_path fatal_error checkProfileSyntax checkIncludeSyntax);
+our @EXPORT = qw(
+  %sd
+  $filename
+  $profiledir
+  $parser
+  %qualifiers
+  %include
+  %helpers
+  $UI_Mode
+  $running_under_genprof
 
-no warnings 'all';
+  which
+  get_full_path
+
+  getprofilefilename
+
+  getprofileflags
+  setprofileflags
+  complain
+  enforce
+
+  autodep
+  reload
+
+  UI_GetFile
+  UI_GetString
+  UI_Important
+  UI_Info
+  UI_PromptUser
+  UI_YesNo
+  getkey
+
+  do_logprof_pass
+
+  readconfig
+  loadincludes
+  readprofile
+  readprofiles
+  writeprofile
+
+  check_for_subdomain
+  fatal_error
+
+  setup_yast
+  shutdown_yast
+
+  GetDataFromYast
+  SendDataToYast
+
+  checkProfileSyntax
+  checkIncludeSyntax
+);
 
 our $confdir = "/etc/apparmor";
 
 our $running_under_genprof = 0;
-our $finishing = 0;
 
 our $DEBUGGING;
 
@@ -69,9 +116,9 @@ textdomain("apparmor-utils");
 
 # where do we get our log messages from?
 our $filename;
-if(-f "/var/log/audit/audit.log") {
+if (-f "/var/log/audit/audit.log") {
   $filename = "/var/log/audit/audit.log";
-} elsif(-f "/etc/slackware-version") {
+} elsif (-f "/etc/slackware-version") {
   $filename = "/var/log/syslog";
 } else {
   $filename = "/var/log/messages";
@@ -110,6 +157,8 @@ my %seen;
 my %profilechanges;
 my %prelog;
 my %log;
+my @log;
+my %pid;
 my %changed;
 my %skip;
 our %helpers;                  # we want to preserve this one between passes
@@ -159,7 +208,7 @@ BEGIN {
   }
 
   # set things up to log extra info if they want...
-  if($ENV{LOGPROF_DEBUG}) {
+  if ($ENV{LOGPROF_DEBUG}) {
     $DEBUGGING = 1;
     open(DEBUG, ">/tmp/logprof_debug_$$.log");
     my $oldfd = select(DEBUG);
@@ -192,8 +241,8 @@ sub check_for_LD_XXX ($) {
   return undef unless ($size && $size < 10000);
 
   my $found = undef;
-  if(open(F, $file)) {
-    while(<F>) {
+  if (open(F, $file)) {
+    while (<F>) {
       $found = 1 if /LD_(PRELOAD|LIBRARY_PATH)/;
     }
     close(F);
@@ -207,7 +256,7 @@ sub fatal_error ($) {
 
   my $details = "$message\n";
 
-  if($DEBUGGING) {
+  if ($DEBUGGING) {
     # we'll include the stack backtrace if we're debugging...
     $details = Carp::longmess($message);
 
@@ -234,14 +283,12 @@ sub fatal_error ($) {
 
 sub setup_yast {
   # set up the yast connection if we're running under yast...
-  if($ENV{YAST_IS_RUNNING}) {
+  if ($ENV{YAST_IS_RUNNING}) {
 
     # load the yast module if available.
-    eval { require Immunix::Ycp; };
-    unless($@) {
-      import Immunix::Ycp;
-
-      no warnings 'all';
+    eval { require ycp; };
+    unless ($@) {
+      import ycp;
 
       $UI_Mode = "yast";
 
@@ -250,10 +297,10 @@ sub setup_yast {
 
       # see if the frontend is just starting up also...
       my ($ypath, $yarg) = GetDataFromYast();
-      unless($yarg                                   &&
-            (ref($yarg)      eq "HASH")              &&
-            ($yarg->{type}   eq "initial_handshake") &&
-            ($yarg->{status} eq "frontend_starting")) {
+      unless ($yarg                                   &&
+             (ref($yarg)      eq "HASH")              &&
+             ($yarg->{type}   eq "initial_handshake") &&
+             ($yarg->{status} eq "frontend_starting")) {
 
         # something's broken, die a horrible, painful death
         fatal_error "Yast frontend is out of sync from backend agent.";
@@ -270,7 +317,7 @@ sub setup_yast {
 }
 
 sub shutdown_yast {
-  if($UI_Mode eq "yast") {
+  if ($UI_Mode eq "yast") {
     SendDataToYast( { type => "final_shutdown" } );
     my ($ypath, $yarg) = GetDataFromYast();
   }
@@ -279,8 +326,8 @@ sub shutdown_yast {
 sub check_for_subdomain () {
 
   my ($support_subdomainfs, $support_securityfs);
-  if(open(MOUNTS, "/proc/filesystems")) {
-    while(<MOUNTS>) {
+  if (open(MOUNTS, "/proc/filesystems")) {
+    while (<MOUNTS>) {
       $support_subdomainfs = 1 if m/subdomainfs/;
       $support_securityfs  = 1 if m/securityfs/;
     }
@@ -288,11 +335,11 @@ sub check_for_subdomain () {
   }
 
   my $sd_mountpoint;
-  if(open(MOUNTS, "/proc/mounts")) {
-    while(<MOUNTS>) {
-      if($support_subdomainfs) {
+  if (open(MOUNTS, "/proc/mounts")) {
+    while (<MOUNTS>) {
+      if ($support_subdomainfs) {
         $sd_mountpoint = $1 if m/^\S+\s+(\S+)\s+subdomainfs\s/;
-      } elsif($support_securityfs) {
+      } elsif ($support_securityfs) {
         if ( m/^\S+\s+(\S+)\s+securityfs\s/ ) {
           if ( -e "$1/apparmor" ) {
             $sd_mountpoint = "$1/apparmor";
@@ -364,19 +411,19 @@ sub get_full_path ($) {
   $path = cwd() . "/$path" if $path !~ m/\//;
 
   # beat symlinks into submission
-  while(-l $path) {
+  while (-l $path) {
 
-    if($linkcount++ > 64) {
+    if ($linkcount++ > 64) {
       fatal_error "Followed too many symlinks resolving $originalpath";
     }
 
     # split out the directory/file components
-    if($path =~ m/^(.*)\/(.+)$/) {
+    if ($path =~ m/^(.*)\/(.+)$/) {
       my ($dir, $file) = ($1, $2);
 
       # figure out where the link is pointing...
       my $link = readlink($path);
-      if($link =~ /^\//) {
+      if ($link =~ /^\//) {
         $path = $link;             # if it's an absolute link, just replace it
       } else {
         $path = $dir . "/$link";   # if it's relative, let abs_path handle it
@@ -384,7 +431,7 @@ sub get_full_path ($) {
     }
   }
 
-  if(-f $path) {
+  if (-f $path) {
     my ($dir, $file) = $path =~ m/^(.*)\/(.+)$/;
     $path = realpath($dir) . "/$file";
   } else {
@@ -398,19 +445,19 @@ sub findexecutable ($) {
   my $bin = shift;
 
   my $fqdbin;
-  if(-e $bin) {
+  if (-e $bin) {
     $fqdbin = get_full_path($bin);
     chomp($fqdbin);
   } else {
-    if($bin !~ /\//) {
+    if ($bin !~ /\//) {
       my $which = which($bin);
-      if($which) {
+      if ($which) {
         $fqdbin = get_full_path($which);
       }
     }
   }
 
-  unless($fqdbin && -e $fqdbin) {
+  unless ($fqdbin && -e $fqdbin) {
     return undef;
   }
 
@@ -448,7 +495,7 @@ sub head ($) {
   my $file = shift;
 
   my $first = "";
-  if(open(FILE, $file)) {
+  if (open(FILE, $file)) {
     $first = <FILE>;
     close(FILE);
   }
@@ -464,7 +511,7 @@ sub get_output (@) {
   my $pid;
   my @output;
 
-  if(-x $program) {
+  if (-x $program) {
     $pid = open(KID_TO_READ, "-|");
     unless (defined $pid) {
       fatal_error "can't fork: $!";
@@ -494,7 +541,7 @@ sub get_reqs ($) {
   my @reqs;
   my ($ret, @ldd) = get_output($ldd, $file);
 
-  if($ret == 0) {
+  if ($ret == 0) {
     for my $line (@ldd) {
       last if $line =~ /not a dynamic executable/;
       last if $line =~ /cannot read header/;
@@ -502,7 +549,7 @@ sub get_reqs ($) {
 
       next if $line =~ /linux-(gate|vdso(32|64)).so/; # avoid new kernel 2.6 poo
 
-      if($line =~ /^\s*\S+ => (\/\S+)/) {
+      if ($line =~ /^\s*\S+ => (\/\S+)/) {
         push @reqs, $1;
       } elsif ($line =~ /^\s*(\/\S+)/) {
         push @reqs, $1;
@@ -559,12 +606,12 @@ sub autodep ($) {
                   path    => { $fqdbin             => "mr" } };
 
   # if the executable exists on this system, pull in extra dependencies
-  if(-f $fqdbin) {
+  if (-f $fqdbin) {
     my $hashbang = head($fqdbin);
-    if($hashbang =~ /^#!\s*(\S+)/) {
+    if ($hashbang =~ /^#!\s*(\S+)/) {
       my $interpreter = get_full_path($1);
       $profile->{path}->{$interpreter} = "ix";
-      if($interpreter =~ /perl/) {
+      if ($interpreter =~ /perl/) {
         $profile->{include}->{"abstractions/perl"} = 1;
       } elsif ($interpreter =~ m/\/bin\/(bash|sh)/) {
         $profile->{include}->{"abstractions/bash"} = 1;
@@ -580,7 +627,7 @@ sub autodep ($) {
 
   # instantiate the required infrastructure hats for this changehat application
   for my $hatglob (keys %required_hats) {
-    if($fqdbin =~ /$hatglob/) {
+    if ($fqdbin =~ /$hatglob/) {
       for my $hat (split(/\s+/, $required_hats{$hatglob})) {
         $sd{$fqdbin}{$hat} = { flags => "complain" };
       }
@@ -614,21 +661,21 @@ sub setprofileflags ($$) {
   my $filename = shift;
   my $newflags = shift;
 
-  if(open(PROFILE, "$filename")) {
-    if(open(NEWPROFILE, ">$filename.new")) {
-      while(<PROFILE>) {
-        if(m/^\s*("??\/.+?"??)\s+(flags=\(.+\)\s+)*\{\s*$/) {
+  if (open(PROFILE, "$filename")) {
+    if (open(NEWPROFILE, ">$filename.new")) {
+      while (<PROFILE>) {
+        if (m/^\s*("??\/.+?"??)\s+(flags=\(.+\)\s+)*\{\s*$/) {
           my ($binary, $flags) = ($1, $2);
 
-          if($newflags) {
+          if ($newflags) {
             $_ = "$binary flags=($newflags) {\n";
           } else {
             $_ = "$binary {\n";
           }
-        } elsif(m/^(\s*\^\S+)\s+(flags=\(.+\)\s+)*\{\s*$/) {
+        } elsif (m/^(\s*\^\S+)\s+(flags=\(.+\)\s+)*\{\s*$/) {
           my ($hat, $flags) = ($1, $2);
 
-          if($newflags) {
+          if ($newflags) {
             $_ = "$hat flags=($newflags) {\n";
           } else {
             $_ = "$hat {\n";
@@ -651,7 +698,7 @@ sub profile_exists($) {
 
   # if the profile exists, mark it in the cache and return true
   my $profile = getprofilefilename($program);
-  if(-e $profile) {
+  if (-e $profile) {
     $existing_profiles{$program} = 1;
     return 1
   }
@@ -668,10 +715,10 @@ sub UI_Info ($) {
 
   $DEBUGGING && debug "UI_Info: $UI_Mode: $text";
 
-  if($UI_Mode eq "text") {
+  if ($UI_Mode eq "text") {
     print "$text\n";
   } else {
-    Immunix::Ycp::y2milestone($text);
+    ycp::y2milestone($text);
   }
 }
 
@@ -680,7 +727,7 @@ sub UI_Important ($) {
 
   $DEBUGGING && debug "UI_Important: $UI_Mode: $text";
 
-  if($UI_Mode eq "text") {
+  if ($UI_Mode eq "text") {
     print "\n$text\n";
   } else {
     SendDataToYast( { type => "dialog-error", message => $text } );
@@ -695,19 +742,20 @@ sub UI_YesNo ($$) {
   $DEBUGGING && debug "UI_YesNo: $UI_Mode: $text $default";
 
   my $ans;
-  if($UI_Mode eq "text") {
+  if ($UI_Mode eq "text") {
 
     my $yes = gettext("(Y)es");
     my $no  = gettext("(N)o");
 
     # figure out our localized hotkeys
-    $yes =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey for '$yes'";
+    my $usrmsg = "PromptUser: " . gettext("Invalid hotkey for");
+    $yes =~ /\((\S)\)/ or fatal_error "$usrmsg '$yes'";
     my $yeskey = lc($1);
-    $no =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey for '$no'";
+    $no =~ /\((\S)\)/ or fatal_error "$usrmsg '$no'";
     my $nokey = lc($1);
 
     print "\n$text\n";
-    if($default eq "y") {
+    if ($default eq "y") {
       print "\n[$yes] / $no\n";
     } else {
       print "\n$yes / [$no]\n";
@@ -734,39 +782,41 @@ sub UI_YesNoCancel ($$) {
   $DEBUGGING && debug "UI_YesNoCancel: $UI_Mode: $text $default";
 
   my $ans;
-  if($UI_Mode eq "text") {
+  if ($UI_Mode eq "text") {
 
     my $yes = gettext("(Y)es");
     my $no = gettext("(N)o");
     my $cancel = gettext("(C)ancel");
 
+    my $usrmsg = "PromptUser: " . gettext("Invalid hotkey for");
+
     # figure out our localized hotkeys
-    $yes =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey for '$yes'";
+    $yes =~ /\((\S)\)/ or fatal_error "$usrmsg '$yes'";
     my $yeskey = lc($1);
-    $no =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey for '$no'";
+    $no =~ /\((\S)\)/ or fatal_error "$usrmsg '$no'";
     my $nokey = lc($1);
-    $cancel =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey for '$cancel'";
+    $cancel =~ /\((\S)\)/ or fatal_error "$usrmsg '$cancel'";
     my $cancelkey = lc($1);
 
     $ans = "XXXINVALIDXXX";
-    while($ans !~ /^(y|n|c)$/) {
+    while ($ans !~ /^(y|n|c)$/) {
       print "\n$text\n";
-      if($default eq "y") {
+      if ($default eq "y") {
         print "\n[$yes] / $no / $cancel\n";
-      } elsif($default eq "n") {
+      } elsif ($default eq "n") {
         print "\n$yes / [$no] / $cancel\n";
       } else {
         print "\n$yes / $no / [$cancel]\n";
       }
       $ans = getkey();
-      if($ans) {
+      if ($ans) {
         # convert back from a localized answer to english y or n
         $ans = lc($ans);
-        if($ans eq $yeskey) {
+        if ($ans eq $yeskey) {
           $ans = "y";
-        } elsif($ans eq $nokey) {
+        } elsif ($ans eq $nokey) {
           $ans = "n";
-        } elsif($ans eq $cancelkey) {
+        } elsif ($ans eq $cancelkey) {
           $ans = "c";
         }
       } else {
@@ -791,9 +841,9 @@ sub UI_GetString ($$) {
   $DEBUGGING && debug "UI_GetString: $UI_Mode: $text $default";
 
   my $string;
-  if($UI_Mode eq "text") {
+  if ($UI_Mode eq "text") {
 
-    if($term) {
+    if ($term) {
       $string = $term->readline($text, $default);
     } else {
       local $| = 1;
@@ -818,7 +868,7 @@ sub UI_GetFile ($) {
   $DEBUGGING && debug "UI_GetFile: $UI_Mode";
 
   my $filename;
-  if($UI_Mode eq "text") {
+  if ($UI_Mode eq "text") {
 
     local $| = 1;
     print "$f->{description}\n";
@@ -831,7 +881,7 @@ sub UI_GetFile ($) {
 
     SendDataToYast( $f );
     my ($ypath, $yarg) = GetDataFromYast();
-    if($yarg->{answer} eq "okay") {
+    if ($yarg->{answer} eq "okay") {
       $filename = $yarg->{filename};
     }
   }
@@ -862,7 +912,7 @@ sub UI_PromptUser ($) {
   my $q = shift;
 
   my ($cmd, $arg);
-  if($UI_Mode eq "text") {
+  if ($UI_Mode eq "text") {
 
     ($cmd, $arg) = Text_PromptUser($q);
 
@@ -875,6 +925,14 @@ sub UI_PromptUser ($) {
 
     $cmd = $yarg->{selection} || "CMD_ABORT";
     $arg = $yarg->{selected};
+  }
+
+  if ($cmd eq "CMD_ABORT") {
+    confirm_and_abort();
+    $cmd = "XXXINVALIDXXX";
+  } elsif ($cmd eq "CMD_FINISHED") {
+    confirm_and_finish();
+    $cmd = "XXXINVALIDXXX";
   }
 
   return ($cmd, $arg);
@@ -892,18 +950,18 @@ sub SendDataToYast {
 
   $DEBUGGING && debug "SendDataToYast: Waiting for YCP command";
 
-  while(<STDIN>) {
+  while (<STDIN>) {
     $DEBUGGING && debug "SendDataToYast: YCP: $_";
-    my ($ycommand, $ypath, $yargument) = Immunix::Ycp::ParseCommand ($_);
+    my ($ycommand, $ypath, $yargument) = ycp::ParseCommand($_);
 
-    if($ycommand && $ycommand eq "Read") {
+    if ($ycommand && $ycommand eq "Read") {
 
-      if($DEBUGGING) {
+      if ($DEBUGGING) {
         my $debugmsg = Data::Dumper->Dump([$data], [qw(*data)]);
         debug "SendDataToYast: Sending--\n$debugmsg";
       }
 
-      Immunix::Ycp::Return($data);
+      ycp::Return($data);
       return 1;
 
     } else {
@@ -924,18 +982,18 @@ sub GetDataFromYast {
 
   $DEBUGGING && debug "GetDataFromYast: Waiting for YCP command";
 
-  while(<STDIN>) {
+  while (<STDIN>) {
     $DEBUGGING && debug "GetDataFromYast: YCP: $_";
-    my ($ycmd, $ypath, $yarg) = Immunix::Ycp::ParseCommand ($_);
+    my ($ycmd, $ypath, $yarg) = ycp::ParseCommand($_);
 
-    if($DEBUGGING) {
+    if ($DEBUGGING) {
       my $debugmsg = Data::Dumper->Dump([$yarg], [qw(*data)]);
       debug "GetDataFromYast: Received--\n$debugmsg";
     }
 
-    if($ycmd && $ycmd eq "Write") {
+    if ($ycmd && $ycmd eq "Write") {
 
-      Immunix::Ycp::Return("true");
+      ycp::Return("true");
       return ($ypath, $yarg);
 
     } else {
@@ -945,6 +1003,26 @@ sub GetDataFromYast {
 
   # if we ever break out here, something's horribly wrong.
   fatal_error "GetDataFromYast: didn't receive YCP command before connection died";
+}
+
+sub confirm_and_abort {
+  my $ans = UI_YesNo(gettext("Are you sure you want to abandon this set of profile changes and exit?"), "n");
+  if ($ans eq "y") {
+    UI_Info(gettext("Abandoning all changes."));
+    shutdown_yast();
+    exit 0;
+  }
+}
+
+sub confirm_and_finish {
+  my $ans = UI_YesNo(gettext("Are you sure you want to save the current set of profile changes and exit?"), "n");
+  if ($ans eq "y") {
+    UI_Info(gettext("Saving all changes."));
+
+    # need to wrap any calls to ui functions with eval { } blocks in order
+    # to catch this exception
+    die "FINISHING\n";
+  }
 }
 
 ##########################################################################
@@ -960,17 +1038,17 @@ sub handlechildren {
   for my $entry (@entries) {
     fatal_error "$entry is not a ref" if not ref($entry);
 
-    if(ref($entry->[0])) {
+    if (ref($entry->[0])) {
       handlechildren($profile, $hat, $entry);
     } else {
 
       my @entry = @$entry;
       my $type = shift @entry;
 
-      if($type eq "fork") {
+      if ($type eq "fork") {
         my ($pid, $p, $h) = @entry;
 
-        if(($p !~ /null(-complain)*-profile/) &&
+        if (($p !~ /null(-complain)*-profile/) &&
            ($h !~ /null(-complain)*-profile/)) {
           $profile = $p;
           $hat     = $h;
@@ -978,14 +1056,14 @@ sub handlechildren {
 
         $profilechanges{$pid} = $profile;
 
-      } elsif($type eq "unknown_hat") {
+      } elsif ($type eq "unknown_hat") {
         my ($pid, $p, $h, $sdmode, $uhat) = @entry;
 
-        if($p !~ /null(-complain)*-profile/) {
+        if ($p !~ /null(-complain)*-profile/) {
           $profile = $p;
         }
 
-        if($sd{$profile}{$uhat}) {
+        if ($sd{$profile}{$uhat}) {
           $hat = $uhat;
           next;
         }
@@ -1001,11 +1079,11 @@ sub handlechildren {
         $context .= " -> ^$uhat";
         my $ans = $transitions{$context} || "";
 
-        unless($ans) {
+        unless ($ans) {
           my $q = { };
           $q->{headers} = [ ];
           push @{$q->{headers}}, gettext("Profile"), $profile;
-          if($defaulthat) {
+          if ($defaulthat) {
             push @{$q->{headers}}, gettext("Default Hat"), $defaulthat;
           }
           push @{$q->{headers}}, gettext("Requested Hat"), $uhat;
@@ -1013,9 +1091,7 @@ sub handlechildren {
           $q->{functions} = [ ];
           push @{$q->{functions}}, "CMD_ADDHAT";
           push @{$q->{functions}}, "CMD_USEDEFAULT" if $defaulthat;
-          push @{$q->{functions}}, "CMD_DENY";
-          push @{$q->{functions}}, "CMD_ABORT";
-          push @{$q->{functions}}, "CMD_FINISHED";
+          push @{$q->{functions}}, "CMD_DENY", "CMD_ABORT", "CMD_FINISHED";
 
           $q->{default} = ($sdmode eq "PERMITTING") ? "CMD_ADDHAT" : "CMD_DENY";
 
@@ -1030,34 +1106,19 @@ sub handlechildren {
         # ugh, there's a bug here.  if they pick "abort" or "finish" and then
         # say "well, no, I didn't really mean that", we need to ask the
         # question again, but we currently go on to the next one.  oops.
-        if($ans eq "CMD_ADDHAT") {
+        if ($ans eq "CMD_ADDHAT") {
           $hat = $uhat;
           $sd{$profile}{$hat}{flags} = $sd{$profile}{$profile}{flags};
-        } elsif($ans eq "CMD_USEDEFAULT") {
+        } elsif ($ans eq "CMD_USEDEFAULT") {
           $hat = $defaulthat;
-        } elsif($ans eq "CMD_DENY") {
+        } elsif ($ans eq "CMD_DENY") {
           return;
-        } elsif($ans eq "CMD_ABORT") {
-          my $ans = UI_YesNo(gettext("Are you sure you want to abandon this set of profile changes and exit?"), "n");
-          if($ans eq "y") {
-            UI_Info(gettext("Abandoning all changes."));
-            shutdown_yast();
-            exit 0;
-          }
-        } elsif($ans eq "CMD_FINISHED") {
-          my $ans = UI_YesNo(gettext("Are you sure you want to save the current set of profile changes and exit?"), "n");
-          if($ans eq "y") {
-            UI_Info(gettext("Saving all changes."));
-            $finishing = 1;
-            # XXX - BUGBUG - this is REALLY nasty, but i'm in a hurry...
-            goto SAVE_PROFILES;
-          }
         }
 
-      } elsif($type eq "capability") {
+      } elsif ($type eq "capability") {
         my ($pid, $p, $h, $prog, $sdmode, $capability) = @entry;
 
-        if(($p !~ /null(-complain)*-profile/) &&
+        if (($p !~ /null(-complain)*-profile/) &&
            ($h !~ /null(-complain)*-profile/)) {
           $profile = $p;
           $hat     = $h;
@@ -1068,10 +1129,10 @@ sub handlechildren {
         next unless $profile && $hat;
 
         $prelog{$sdmode}{$profile}{$hat}{capability}{$capability} = 1;
-      } elsif(($type eq "path") || ($type eq "exec")) {
+      } elsif (($type eq "path") || ($type eq "exec")) {
         my ($pid, $p, $h, $prog, $sdmode, $mode, $detail) = @entry;
 
-        if(($p !~ /null(-complain)*-profile/) &&
+        if (($p !~ /null(-complain)*-profile/) &&
            ($h !~ /null(-complain)*-profile/)) {
           $profile = $p;
           $hat     = $h;
@@ -1089,28 +1150,28 @@ sub handlechildren {
         # dialog for directories
         my $do_execute  = 0;
         my $exec_target = $detail;
-        if($mode =~ s/x//g) {
-          if(-d $exec_target) {
+        if ($mode =~ s/x//g) {
+          if (-d $exec_target) {
             $mode .= "ix";
           } else {
             $do_execute = 1;
           }
         }
 
-        if($mode eq "link") {
+        if ($mode eq "link") {
           $mode = "l";
-          if($detail =~ m/^from (.+) to (.+)$/) {
+          if ($detail =~ m/^from (.+) to (.+)$/) {
             my ($path, $target) = ($1, $2);
 
             my $frommode = "lr";
-            if(defined $prelog{$sdmode}{$profile}{$hat}{path}{$path}) {
+            if (defined $prelog{$sdmode}{$profile}{$hat}{path}{$path}) {
               $frommode .= $prelog{$sdmode}{$profile}{$hat}{path}{$path};
             }
             $frommode = collapsemode($frommode);
             $prelog{$sdmode}{$profile}{$hat}{path}{$path} = $frommode;
 
             my $tomode = "lr";
-            if(defined $prelog{$sdmode}{$profile}{$hat}{path}{$target}) {
+            if (defined $prelog{$sdmode}{$profile}{$hat}{path}{$target}) {
               $tomode .= $prelog{$sdmode}{$profile}{$hat}{path}{$target};
             }
             $tomode = collapsemode($tomode);
@@ -1123,7 +1184,7 @@ sub handlechildren {
         } elsif ($mode) {
           my $path = $detail;
 
-          if(defined $prelog{$sdmode}{$profile}{$hat}{path}{$path}) {
+          if (defined $prelog{$sdmode}{$profile}{$hat}{path}{$path}) {
             $mode .= $prelog{$sdmode}{$profile}{$hat}{path}{$path};
             $mode = collapsemode($mode);
           }
@@ -1132,7 +1193,7 @@ sub handlechildren {
 #          print "$pid $profile $hat $prog $sdmode $mode $path\n";
         }
 
-        if($do_execute) {
+        if ($do_execute) {
 
           my $context = $profile;
           $context .= "^$hat" if $profile ne $hat;
@@ -1150,19 +1211,19 @@ sub handlechildren {
           $combinedmode .= $cm if $cm;
 
           my $exec_mode;
-          if(contains($combinedmode, "ix")) {
+          if (contains($combinedmode, "ix")) {
             $ans = "CMD_INHERIT";
             $exec_mode = "ixr";
-          } elsif(contains($combinedmode, "px")) {
+          } elsif (contains($combinedmode, "px")) {
             $ans = "CMD_PROFILE";
             $exec_mode = "px";
-          } elsif(contains($combinedmode, "ux")) {
+          } elsif (contains($combinedmode, "ux")) {
             $ans = "CMD_UNCONFINED";
             $exec_mode = "ux";
-          } elsif(contains($combinedmode, "Px")) {
+          } elsif (contains($combinedmode, "Px")) {
             $ans = "CMD_PROFILE_CLEAN";
             $exec_mode = "Px";
-          } elsif(contains($combinedmode, "Ux")) {
+          } elsif (contains($combinedmode, "Ux")) {
             $ans = "CMD_UNCONFINED_CLEAN";
             $exec_mode = "Ux";
           } else {
@@ -1177,9 +1238,9 @@ sub handlechildren {
 
             # figure out what our default option should be...
             my $default;
-            if($options =~ /p/ && -e getprofilefilename($exec_target)) {
+            if ($options =~ /p/ && -e getprofilefilename($exec_target)) {
               $default = "CMD_PROFILE";
-            } elsif($options =~ /i/) {
+            } elsif ($options =~ /i/) {
               $default = "CMD_INHERIT";
             } else {
               $default = "CMD_DENY";
@@ -1196,7 +1257,7 @@ sub handlechildren {
             my $q = { };
             $q->{headers} = [ ];
             push @{$q->{headers}}, gettext("Profile"), combine_name($profile, $hat);
-            if($prog && $prog ne "HINT") {
+            if ($prog && $prog ne "HINT") {
               push @{$q->{headers}}, gettext("Program"), $prog;
             }
             push @{$q->{headers}}, gettext("Execute"), $exec_target;
@@ -1208,9 +1269,7 @@ sub handlechildren {
             push @{$q->{functions}}, "CMD_INHERIT"    if $options =~ /i/;
             push @{$q->{functions}}, "CMD_PROFILE"    if $options =~ /p/;
             push @{$q->{functions}}, "CMD_UNCONFINED" if $options =~ /u/;
-            push @{$q->{functions}}, "CMD_DENY";
-            push @{$q->{functions}}, "CMD_ABORT";
-            push @{$q->{functions}}, "CMD_FINISHED";
+            push @{$q->{functions}}, "CMD_DENY", "CMD_ABORT", "CMD_FINISHED";
 
             $q->{default} = $default;
 
@@ -1219,41 +1278,24 @@ sub handlechildren {
             $seenevents++;
 
             my $arg;
-            while($ans !~ m/^CMD_(INHERIT|PROFILE|PROFILE_CLEAN|UNCONFINED|UNCONFINED_CLEAN|DENY)$/) {
+            while ($ans !~ m/^CMD_(INHERIT|PROFILE|PROFILE_CLEAN|UNCONFINED|UNCONFINED_CLEAN|DENY)$/) {
               ($ans, $arg) = UI_PromptUser($q);
 
-              # check for Abort or Finish
-              if($ans eq "CMD_ABORT") {
-                my $ans = UI_YesNo(gettext("Are you sure you want to abandon this set of profile changes and exit?"), "n");
-                $DEBUGGING && debug "back from abort yesno";
-                if($ans eq "y") {
-                  UI_Info(gettext("Abandoning all changes."));
-                  shutdown_yast();
-                  exit 0;
-                }
-              } elsif($ans eq "CMD_FINISHED") {
-                my $ans = UI_YesNo(gettext("Are you sure you want to save the current set of profile changes and exit?"), "n");
-                if($ans eq "y") {
-                  UI_Info(gettext("Saving all changes."));
-                  $finishing = 1;
-                  # XXX - BUGBUG - this is REALLY nasty, but i'm in a hurry...
-                  goto SAVE_PROFILES;
-                }
-              } elsif($ans eq "CMD_PROFILE") {
+              if ($ans eq "CMD_PROFILE") {
                 my $px_default = "n";
                 my $px_mesg = gettext("Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH.");
-                if($parent_uses_ld_xxx) {
+                if ($parent_uses_ld_xxx) {
                   $px_mesg = gettext("Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut this application appears to use LD_PRELOAD\nor LD_LIBRARY_PATH and clearing these could\ncause functionality problems.");
                 }
                 my $ynans = UI_YesNo($px_mesg, $px_default);
-                if($ynans eq "y") {
+                if ($ynans eq "y") {
                   $ans = "CMD_PROFILE_CLEAN";
                 }
-              } elsif($ans eq "CMD_UNCONFINED") {
+              } elsif ($ans eq "CMD_UNCONFINED") {
                 my $ynans = UI_YesNo(sprintf(gettext("Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing \%s?"), $exec_target), "n");
-                if($ynans eq "y") {
+                if ($ynans eq "y") {
                   my $ynans = UI_YesNo(gettext("Should AppArmor sanitize the environment when\nrunning this program unconfined?\n\nNot sanitizing the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."), "y");
-                  if($ynans eq "y") {
+                  if ($ynans eq "y") {
                     $ans = "CMD_UNCONFINED_CLEAN";
                   }
                 } else {
@@ -1265,23 +1307,23 @@ sub handlechildren {
 
 
             # if we're inheriting, things'll bitch unless we have r
-            if($ans eq "CMD_INHERIT") {
+            if ($ans eq "CMD_INHERIT") {
               $exec_mode = "ixr";
-            } elsif($ans eq "CMD_PROFILE") {
+            } elsif ($ans eq "CMD_PROFILE") {
               $exec_mode = "px";
-            } elsif($ans eq "CMD_UNCONFINED") {
+            } elsif ($ans eq "CMD_UNCONFINED") {
               $exec_mode = "ux";
-            } elsif($ans eq "CMD_PROFILE_CLEAN") {
+            } elsif ($ans eq "CMD_PROFILE_CLEAN") {
               $exec_mode = "Px";
-            } elsif($ans eq "CMD_UNCONFINED_CLEAN") {
+            } elsif ($ans eq "CMD_UNCONFINED_CLEAN") {
               $exec_mode = "Ux";
             } else {
               # skip all remaining events if they say to deny the exec
               return if $domainchange eq "change";
             }
 
-            unless($ans eq "CMD_DENY") {
-              if(defined $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target}) {
+            unless ($ans eq "CMD_DENY") {
+              if (defined $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target}) {
                 $exec_mode .= $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target};
                 $exec_mode = collapsemode($exec_mode);
               }
@@ -1289,25 +1331,25 @@ sub handlechildren {
               $log{PERMITTING}{$profile} = { };
               $sd{$profile}{$hat}{path}{$exec_target} = $exec_mode;
               $changed{$profile} = 1; # mark this profile as changed
-              if($ans eq "CMD_INHERIT") {
-                if($exec_target =~ /perl/) {
+              if ($ans eq "CMD_INHERIT") {
+                if ($exec_target =~ /perl/) {
                   $sd{$profile}{$hat}{include}{"abstractions/perl"} = 1;
                 } elsif ($detail =~ m/\/bin\/(bash|sh)/) {
                   $sd{$profile}{$hat}{include}{"abstractions/bash"} = 1;
                 }
                 my $hashbang = head($exec_target);
-                if($hashbang =~ /^#!\s*(\S+)/) {
+                if ($hashbang =~ /^#!\s*(\S+)/) {
                   my $interpreter = get_full_path($1);
                   $sd{$profile}{$hat}{path}->{$interpreter} = "ix";
-                  if($interpreter =~ /perl/) {
+                  if ($interpreter =~ /perl/) {
                     $sd{$profile}{$hat}{include}{"abstractions/perl"} = 1;
                   } elsif ($interpreter =~ m/\/bin\/(bash|sh)/) {
                     $sd{$profile}{$hat}{include}{"abstractions/bash"} = 1;
                   }
                 }
-              } elsif($ans =~ /^CMD_PROFILE/) {
+              } elsif ($ans =~ /^CMD_PROFILE/) {
                 # if they want to use px, make sure a profile exists for the target.
-                unless(-e getprofilefilename($exec_target)) {
+                unless (-e getprofilefilename($exec_target)) {
                   $helpers{$exec_target} = "enforce";
                   autodep($exec_target);
                   reload($exec_target);
@@ -1319,11 +1361,11 @@ sub handlechildren {
           #print "$pid $profile $hat EXEC $exec_target $ans $exec_mode\n";
 
           # update our tracking info based on what kind of change this is...
-          if($ans eq "CMD_INHERIT") {
+          if ($ans eq "CMD_INHERIT") {
             $profilechanges{$pid} = $profile;
-          } elsif($ans =~ /^CMD_PROFILE/) {
-            if($sdmode eq "PERMITTING") {
-              if($domainchange eq "change") {
+          } elsif ($ans =~ /^CMD_PROFILE/) {
+            if ($sdmode eq "PERMITTING") {
+              if ($domainchange eq "change") {
                 $profile = $exec_target;
                 $hat     = $exec_target;
                 $profilechanges{$pid} = $profile;
@@ -1340,50 +1382,28 @@ sub handlechildren {
   }
 }
 
-sub do_logprof_pass {
-  my $logmark = shift || "";
+sub add_to_tree ($@) {
+  my ($pid, $type, @event) = @_;
 
-  # zero out the state variables for this pass...
-  %t              = ( );
-  %transitions    = ( );
-  %seen           = ( );
-  %sd             = ( );
-  %profilechanges = ( );
-  %prelog         = ( );
-  %log            = ( );
-  %changed        = ( );
-  %skip           = ( );
-  %variables      = ( );
+  unless (exists $pid{$pid}) {
+    my $arrayref = [ ];
+    push @log, $arrayref;
+    $pid{$pid} = $arrayref;
+  }
 
-  UI_Info(sprintf(gettext('Reading log entries from %s.'), $filename));
-  UI_Info(sprintf(gettext('Updating AppArmor profiles in %s.'), $profiledir));
+  push @{$pid{$pid}}, [ $type, $pid, @event ];
+}
 
-  readprofiles();
+sub read_log {
+  my $logmark = shift;
 
   my $seenmark = $logmark ? 0 : 1;
-
-  $sevdb = new Immunix::Severity("$confdir/severity.db", gettext("unknown"));
-
-  my @log;
-  my %pid;
-
-  sub add_to_tree ($@) {
-    my ($pid, $type, @event) = @_;
-
-    unless(exists $pid{$pid}) {
-      my $arrayref = [ ];
-      push @log, $arrayref;
-      $pid{$pid} = $arrayref;
-    }
-
-    push @{$pid{$pid}}, [ $type, $pid, @event ];
-  }
 
   my $stuffed = undef;
   my $last;
   # okay, done loading the previous profiles, get on to the good stuff...
   open(LOG, $filename) or fatal_error "Can't read AppArmor logfile $filename: $!";
-  while(($_ = $stuffed) || ($_ = <LOG>)) {
+  while (($_ = $stuffed) || ($_ = <LOG>)) {
     chomp;
 
     $stuffed = undef;
@@ -1395,11 +1415,11 @@ sub do_logprof_pass {
     # all we care about is subdomain messages
     next unless (/^.* audit\(/ || /type=(APPARMOR|UNKNOWN\[1500\]) msg=audit\([\d\.\:]+\):/ || /SubDomain/);
     # workaround for syslog uglyness.
-    if(s/(PERMITTING|REJECTING)-SYSLOGFIX/$1/) {
+    if (s/(PERMITTING|REJECTING)-SYSLOGFIX/$1/) {
       s/%%/%/g;
     }
 
-    if(m/LOGPROF-HINT unknown_hat (\S+) pid=(\d+) profile=(.+) active=(.+)/) {
+    if (m/LOGPROF-HINT unknown_hat (\S+) pid=(\d+) profile=(.+) active=(.+)/) {
       my ($uhat, $pid, $profile, $hat) = ($1, $2, $3, $4);
 
       $last = $&;
@@ -1409,7 +1429,7 @@ sub do_logprof_pass {
       next if (($profile ne 'null-complain-profile') && (! profile_exists($profile)));
 
       add_to_tree($pid, "unknown_hat", $profile, $hat, "PERMITTING", $uhat);
-    } elsif(m/LOGPROF-HINT (unknown_profile|missing_mandatory_profile) image=(.+) pid=(\d+) profile=(.+) active=(.+)/) {
+    } elsif (m/LOGPROF-HINT (unknown_profile|missing_mandatory_profile) image=(.+) pid=(\d+) profile=(.+) active=(.+)/) {
       my ($image, $pid, $profile, $hat) = ($2, $3, $4, $5);
 
       next if $last =~ /PERMITTING x access to $image/;
@@ -1421,17 +1441,17 @@ sub do_logprof_pass {
 
       add_to_tree($pid, "exec", $profile, $hat, "HINT", "PERMITTING", "x", $image);
 
-    } elsif(m/(PERMITTING|REJECTING) (\S+) access (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
+    } elsif (m/(PERMITTING|REJECTING) (\S+) access (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
       my ($sdmode, $mode, $detail, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
 
       my $domainchange = "nochange";
-      if($mode =~ /x/) {
+      if ($mode =~ /x/) {
         # we need to try to check if we're doing a domain transition this time
-        if($sdmode eq "PERMITTING") {
+        if ($sdmode eq "PERMITTING") {
           do {
           $stuffed = <LOG>;
           } until $stuffed =~ /AppArmor|audit/;
-          if($stuffed =~ m/changing_profile/) {
+          if ($stuffed =~ m/changing_profile/) {
             $domainchange = "change";
             $stuffed = undef;
           }
@@ -1446,7 +1466,7 @@ sub do_logprof_pass {
 
       # we want to ignore entries for profiles that don't exist - they're
       # most likely broken entries or old entries for deleted profiles
-      if(($profile ne 'null-complain-profile') && (! profile_exists($profile))) {
+      if (($profile ne 'null-complain-profile') && (! profile_exists($profile))) {
         $stuffed = undef;
         next;
       }
@@ -1470,13 +1490,13 @@ sub do_logprof_pass {
 
       $detail =~ s/^to\s+//;
 
-      if($domainchange eq "change") {
+      if ($domainchange eq "change") {
         add_to_tree($pid, "exec", $profile, $hat, $prog, $sdmode, $mode, $detail);
       } else {
         add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode, $mode, $detail);
       }
 
-    } elsif(m/(PERMITTING|REJECTING) (?:mk|rm)dir on (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
+    } elsif (m/(PERMITTING|REJECTING) (?:mk|rm)dir on (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
       my ($sdmode, $path, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6);
 
       # we want to ignore duplicates for things other than executes...
@@ -1490,7 +1510,7 @@ sub do_logprof_pass {
 
       add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode, "w", $path);
 
-    } elsif(m/(PERMITTING|REJECTING) xattr (\S+) on (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
+    } elsif (m/(PERMITTING|REJECTING) xattr (\S+) on (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
       my ($sdmode, $xattr_op, $path, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
 
       # we want to ignore duplicates for things other than executes...
@@ -1503,17 +1523,17 @@ sub do_logprof_pass {
       next if (($profile ne 'null-complain-profile') && (! profile_exists($profile)));
 
       my $xattrmode;
-      if($xattr_op eq "get" || $xattr_op eq "list") {
+      if ($xattr_op eq "get" || $xattr_op eq "list") {
         $xattrmode = "r";
-      } elsif($xattr_op eq "set" || $xattr_op eq "remove") {
+      } elsif ($xattr_op eq "set" || $xattr_op eq "remove") {
         $xattrmode = "w";
       }
 
-      if($xattrmode) {
+      if ($xattrmode) {
         add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode, $xattrmode, $path);
       }
 
-    } elsif(m/(PERMITTING|REJECTING) attribute \((.*?)\) change to (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
+    } elsif (m/(PERMITTING|REJECTING) attribute \((.*?)\) change to (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
       my ($sdmode, $change, $path, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
 
       # we want to ignore duplicates for things other than executes...
@@ -1532,7 +1552,7 @@ sub do_logprof_pass {
 
       add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode, "w", $path);
 
-    } elsif(m/(PERMITTING|REJECTING) access to capability '(\S+)' \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
+    } elsif (m/(PERMITTING|REJECTING) access to capability '(\S+)' \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
       my ($sdmode, $capability, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6);
 
       next if $seen{$&};
@@ -1546,7 +1566,7 @@ sub do_logprof_pass {
 
       add_to_tree($pid, "capability", $profile, $hat, $prog, $sdmode, $capability);
 
-    } elsif(m/Fork parent (\d+) child (\d+) profile (.+) active (.+)/ ||
+    } elsif (m/Fork parent (\d+) child (\d+) profile (.+) active (.+)/ ||
             m/LOGPROF-HINT fork pid=(\d+) child=(\d+) profile=(.+) active=(.+)/ ||
             m/LOGPROF-HINT fork pid=(\d+) child=(\d+)/) {
       my ($parent, $child, $profile, $hat) = ($1, $2, $3, $4);
@@ -1561,7 +1581,7 @@ sub do_logprof_pass {
       next if (($profile ne 'null-complain-profile') && (! profile_exists($profile)));
 
       my $arrayref = [ ];
-      if(exists $pid{$parent}) {
+      if (exists $pid{$parent}) {
         push @{$pid{$parent}}, $arrayref;
       } else {
         push @log, $arrayref;
@@ -1573,26 +1593,18 @@ sub do_logprof_pass {
     }
   }
   close(LOG);
+}
 
-  for my $root (@log) {
-    handlechildren(undef, undef, $root);
-  }
-
-  for my $pid (sort { $a <=> $b } keys %profilechanges) {
-    setprocess($pid, $profilechanges{$pid});
-  }
-
-  collapselog();
-
+sub ask_the_questions {
   my $found;
 
   # do the magic foo-foo
   for my $sdmode (sort keys %log) {
 
     # let them know what sort of changes we're about to list...
-    if($sdmode eq "PERMITTING") {
+    if ($sdmode eq "PERMITTING") {
       UI_Info(gettext("Complain-mode changes:"));
-    } elsif($sdmode eq "REJECTING") {
+    } elsif ($sdmode eq "REJECTING") {
       UI_Info(gettext("Enforce-mode changes:"));
     } else {
       # if we're not permitting and not rejecting, something's broken.
@@ -1628,7 +1640,9 @@ sub do_logprof_pass {
           push @{$q->{headers}}, gettext("Capability"), $capability;
           push @{$q->{headers}}, gettext("Severity"), $severity;
 
-          $q->{functions} = [ "CMD_ALLOW", "CMD_DENY", "CMD_ABORT", "CMD_FINISHED" ];
+          $q->{functions} = [
+            "CMD_ALLOW", "CMD_DENY", "CMD_ABORT", "CMD_FINISHED"
+          ];
 
           # complain-mode events default to allow - enforce defaults to deny
           $q->{default} = ($sdmode eq "PERMITTING") ? "CMD_ALLOW" : "CMD_DENY";
@@ -1638,7 +1652,7 @@ sub do_logprof_pass {
           # what did the grand exalted master tell us to do?
           my ($ans, $arg) = UI_PromptUser($q);
 
-          if($ans eq "CMD_ALLOW") {
+          if ($ans eq "CMD_ALLOW") {
             # they picked (a)llow, so...
 
             # stick the capability into the profile
@@ -1649,40 +1663,10 @@ sub do_logprof_pass {
 
             # give a little feedback to the user
             UI_Info(sprintf(gettext('Adding capability %s to profile.'), $capability));
-          } elsif($ans eq "CMD_DENY") {
+          } elsif ($ans eq "CMD_DENY") {
             UI_Info(sprintf(gettext('Denying capability %s to profile.'), $capability));
-          } elsif($ans eq "CMD_ABORT") {
-            # if we're in yast, they've already been asked for confirmation
-            if($UI_Mode eq "yast") {
-              UI_Info(gettext("Abandoning all changes."));
-              shutdown_yast();
-              exit 0;
-            }
-            my $ans = UI_YesNo(gettext("Are you sure you want to abandon this set of profile changes and exit?"), "n");
-            if($ans eq "y") {
-              UI_Info(gettext("Abandoning all changes."));
-              shutdown_yast();
-              exit 0;
-            } else {
-              redo;
-            }
-          } elsif($ans eq "CMD_FINISHED") {
-            # if we're in yast, they've already been asked for confirmation
-            if($UI_Mode eq "yast") {
-              UI_Info(gettext("Saving all changes."));
-              $finishing = 1;
-              # XXX - BUGBUG - this is REALLY nasty, but i'm in a hurry...
-              goto SAVE_PROFILES;
-            }
-            my $ans = UI_YesNo(gettext("Are you sure you want to save the current set of profile changes and exit?"), "n");
-            if($ans eq "y") {
-              UI_Info(gettext("Saving all changes."));
-              $finishing = 1;
-              # XXX - BUGBUG - this is REALLY nasty, but i'm in a hurry...
-              goto SAVE_PROFILES;
-            } else {
-              redo;
-            }
+          } else {
+            redo;
           }
         }
 
@@ -1695,7 +1679,7 @@ sub do_logprof_pass {
           # that generates a "PERMITTING x" syslog entry, first check if it
           # was already dealt with by a i/p/x question due to a exec().  if
           # not, ask about adding ix permission.
-          if($mode =~ /X/) {
+          if ($mode =~ /X/) {
 
             # get rid of the access() markers.
             $mode =~ s/X//g;
@@ -1712,8 +1696,8 @@ sub do_logprof_pass {
             ($cm, @m) = matchincludes($sd{$profile}{$hat}, $path);
             $combinedmode .= $cm if $cm;
 
-            if($combinedmode) {
-              if(contains($combinedmode, "ix") ||
+            if ($combinedmode) {
+              if (contains($combinedmode, "ix") ||
                  contains($combinedmode, "px") ||
                  contains($combinedmode, "ux") ||
                  contains($combinedmode, "Px") ||
@@ -1728,7 +1712,7 @@ sub do_logprof_pass {
 
           # if we had an mmap(PROT_EXEC) request, first check if we already
           # have added an ix rule to the profile
-          if($mode =~ /m/) {
+          if ($mode =~ /m/) {
             my $combinedmode = "";
             my ($cm, @m);
 
@@ -1742,7 +1726,7 @@ sub do_logprof_pass {
 
             # ix implies m.  don't ask if they want to add an "m" rule when
             # we already have a matching ix rule.
-            if($combinedmode && contains($combinedmode, "ix")) {
+            if ($combinedmode && contains($combinedmode, "ix")) {
               $mode =~ s/m//g;
             }
           }
@@ -1756,19 +1740,19 @@ sub do_logprof_pass {
 
           # does path match any regexps in original profile?
           ($cm, @m) = rematchfrag($sd{$profile}{$hat}, $path);
-          if($cm) {
+          if ($cm) {
             $combinedmode .= $cm;
             push @matches, @m;
           }
 
           # does path match anything pulled in by includes in original profile?
           ($cm, @m) = matchincludes($sd{$profile}{$hat}, $path);
-          if($cm) {
+          if ($cm) {
             $combinedmode .= $cm;
             push @matches, @m;
           }
 
-          unless($combinedmode && contains($combinedmode, $mode)) {
+          unless ($combinedmode && contains($combinedmode, $mode)) {
 
             my $defaultoption = 1;
             my @options = ( );
@@ -1790,15 +1774,15 @@ sub do_logprof_pass {
               next if ( $includevalid == 0 );
 
               ($cm, @m) = matchinclude($incname, $path);
-              if($cm && contains($cm, $mode)) {
-                unless(grep { $_ eq "/**" } @m) {
+              if ($cm && contains($cm, $mode)) {
+                unless (grep { $_ eq "/**" } @m) {
                   push @newincludes, $incname;
                 }
               }
             }
 
             # did any match?  add them to the option list...
-            if(@newincludes) {
+            if (@newincludes) {
               push @options, map { "#include <$_>" } sort(uniq(@newincludes));
             }
 
@@ -1807,7 +1791,7 @@ sub do_logprof_pass {
 
             # match the current path against the globbing list in logprof.conf
             my @globs = globcommon($path);
-            if(@globs) {
+            if (@globs) {
               push @matches, @globs;
             }
 
@@ -1826,7 +1810,7 @@ sub do_logprof_pass {
             my $severity = $sevdb->rank($path, $mode);
 
             my $done = 0;
-            while(not $done) {
+            while (not $done) {
 
               my $q = { };
               $q->{headers} = [ ];
@@ -1834,7 +1818,7 @@ sub do_logprof_pass {
               push @{$q->{headers}}, gettext("Path"),    $path;
 
               # merge in any previous modes from this run
-              if($combinedmode) {
+              if ($combinedmode) {
                 $combinedmode = collapsemode($combinedmode);
                 push @{$q->{headers}}, gettext("Old Mode"), $combinedmode;
                 $mode = collapsemode("$mode$combinedmode");
@@ -1847,7 +1831,10 @@ sub do_logprof_pass {
               $q->{options} = [ @options ];
               $q->{selected} = $defaultoption - 1;
 
-              $q->{functions} = [ "CMD_ALLOW", "CMD_DENY", "CMD_GLOB", "CMD_GLOBEXT", "CMD_NEW", "CMD_ABORT", "CMD_FINISHED" ];
+              $q->{functions} = [
+                "CMD_ALLOW", "CMD_DENY", "CMD_GLOB", "CMD_GLOBEXT", "CMD_NEW",
+                "CMD_ABORT", "CMD_FINISHED"
+              ];
 
               $q->{default} = ($sdmode eq "PERMITTING") ? "CMD_ALLOW" : "CMD_DENY";
 
@@ -1856,10 +1843,10 @@ sub do_logprof_pass {
               # if they just hit return, use the default answer
               my ($ans, $selected) = UI_PromptUser($q);
 
-              if($ans eq "CMD_ALLOW") {
+              if ($ans eq "CMD_ALLOW") {
                 $path = $selected;
                 $done = 1;
-                if($path =~ m/^#include <(.+)>$/) {
+                if ($path =~ m/^#include <(.+)>$/) {
                   my $inc = $1;
 
                   my $deleted = 0;
@@ -1868,7 +1855,7 @@ sub do_logprof_pass {
                     next if $path eq $entry;
 
                     my $cm = matchinclude($inc, $entry);
-                    if($cm && contains($cm, $sd{$profile}{$hat}{path}{$entry})) {
+                    if ($cm && contains($cm, $sd{$profile}{$hat}{path}{$entry})) {
                       delete $sd{$profile}{$hat}{path}{$entry};
                       $deleted++;
                     }
@@ -1881,7 +1868,7 @@ sub do_logprof_pass {
                   UI_Info(sprintf(gettext('Adding #include <%s> to profile.'), $inc));
                   UI_Info(sprintf(gettext('Deleted %s previous matching profile entries.'), $deleted)) if $deleted;
                 } else {
-                  if($sd{$profile}{$hat}{path}{$path}) {
+                  if ($sd{$profile}{$hat}{path}{$path}) {
                     $mode = collapsemode($mode . $sd{$profile}{$hat}{path}{$path});
                   }
 
@@ -1890,9 +1877,9 @@ sub do_logprof_pass {
 
                     next if $path eq $entry;
 
-                    if(matchregexp($path, $entry)) {
+                    if (matchregexp($path, $entry)) {
                       # regexp matches, add it's mode to the list to check against
-                      if(contains($mode, $sd{$profile}{$hat}{path}{$entry})) {
+                      if (contains($mode, $sd{$profile}{$hat}{path}{$entry})) {
                         delete $sd{$profile}{$hat}{path}{$entry};
                         $deleted++;
                       }
@@ -1906,14 +1893,14 @@ sub do_logprof_pass {
                   UI_Info(sprintf(gettext('Adding %s %s to profile.'), $path, $mode));
                   UI_Info(sprintf(gettext('Deleted %s previous matching profile entries.'), $deleted)) if $deleted;
                 }
-              } elsif($ans eq "CMD_DENY") {
+              } elsif ($ans eq "CMD_DENY") {
                 # go on to the next entry without saving this one
                 $done = 1;
-              } elsif($ans eq "CMD_NEW") {
-                if($selected !~ /^#include/) {
+              } elsif ($ans eq "CMD_NEW") {
+                if ($selected !~ /^#include/) {
                   $ans = UI_GetString(gettext("Enter new path: "), $selected);
-                  if($ans) {
-                    unless(matchliteral($ans, $path)) {
+                  if ($ans) {
+                    unless (matchliteral($ans, $path)) {
                       my $ynprompt = gettext("The specified path does not match this log entry:") . "\n\n";
                       $ynprompt   .= "  " . gettext("Log Entry") . ":    $path\n";
                       $ynprompt   .= "  " . gettext("Entered Path") . ": $ans\n\n";
@@ -1932,53 +1919,38 @@ sub do_logprof_pass {
                     $defaultoption = $#options + 1;
                   }
                 }
-              } elsif($ans eq "CMD_GLOB") {
+              } elsif ($ans eq "CMD_GLOB") {
                 # do globbing if they don't have an include selected
-                unless($selected =~ /^#include/) {
+                unless ($selected =~ /^#include/) {
                   my $newpath = $selected;
                   # do we collapse to /* or /**?
-                  if($newpath =~ m/\/\*{1,2}$/) {
+                  if ($newpath =~ m/\/\*{1,2}$/) {
                     $newpath =~ s/\/[^\/]+\/\*{1,2}$/\/\*\*/;
                   } else {
                     $newpath =~ s/\/[^\/]+$/\/\*/;
                   }
-                  if($newpath ne $selected) {
+                  if ($newpath ne $selected) {
                     push @options, $newpath;
                     $defaultoption = $#options + 1;
                   }
                 }
-              } elsif($ans eq "CMD_GLOBEXT") {
+              } elsif ($ans eq "CMD_GLOBEXT") {
                 # do globbing if they don't have an include selected
-                unless($selected =~ /^#include/) {
+                unless ($selected =~ /^#include/) {
                   my $newpath = $selected;
                   # do we collapse to /*.ext or /**.ext?
-                  if($newpath =~ m/\/\*{1,2}\.[^\/]+$/) {
+                  if ($newpath =~ m/\/\*{1,2}\.[^\/]+$/) {
                     $newpath =~ s/\/[^\/]+\/\*{1,2}(\.[^\/]+)$/\/\*\*$1/;
                   } else {
                     $newpath =~ s/\/[^\/]+(\.[^\/]+)$/\/\*$1/;
                   }
-                  if($newpath ne $selected) {
+                  if ($newpath ne $selected) {
                     push @options, $newpath;
                     $defaultoption = $#options + 1;
                   }
                 }
-              } elsif($ans =~ /\d/) {
+              } elsif ($ans =~ /\d/) {
                 $defaultoption = $ans;
-              } elsif($ans eq "CMD_ABORT") {
-                $ans = UI_YesNo(gettext("Are you sure you want to abandon this set of profile changes and exit?"), "n");
-                if($ans eq "y") {
-                  UI_Info(gettext("Abandoning all changes."));
-                  shutdown_yast();
-                  exit 0;
-                }
-              } elsif($ans eq "CMD_FINISHED") {
-                $ans = UI_YesNo(gettext("Are you sure you want to save the current set of profile changes and exit?"), "n");
-                if($ans eq "y") {
-                  UI_Info(gettext("Saving all changes."));
-                  $finishing = 1;
-                  # XXX - BUGBUG - this is REALLY nasty, but i'm in a hurry...
-                  goto SAVE_PROFILES;
-                }
               }
             }
           }
@@ -1987,9 +1959,9 @@ sub do_logprof_pass {
     }
   }
 
-  if($UI_Mode eq "yast") {
-    if(not $running_under_genprof) {
-      if($seenevents) {
+  if ($UI_Mode eq "yast") {
+    if (not $running_under_genprof) {
+      if ($seenevents) {
         my $w = { type => "wizard" };
         $w->{explanation} = gettext("The profile analyzer has completed processing the log files.\nAll updated profiles will be reloaded");
         $w->{functions} = [ "CMD_ABORT", "CMD_FINISHED" ];
@@ -2056,7 +2028,7 @@ sub collapselog () {
           my $combinedmode = "";
 
           # is it in the original profile?
-          if($sd{$profile}{$hat}{path}{$path}) {
+          if ($sd{$profile}{$hat}{path}{$path}) {
             $combinedmode .= $sd{$profile}{$hat}{path}{$path};
           }
 
@@ -2067,10 +2039,10 @@ sub collapselog () {
           $combinedmode .= matchincludes($sd{$profile}{$hat}, $path);
 
           # if we found any matching entries, do the modes match?
-          unless($combinedmode && contains($combinedmode, $mode)) {
+          unless ($combinedmode && contains($combinedmode, $mode)) {
 
             # merge in any previous modes from this run
-            if($log{$sdmode}{$profile}{$hat}{path}{$path}) {
+            if ($log{$sdmode}{$profile}{$hat}{path}{$path}) {
               $mode = collapsemode($mode . $log{$sdmode}{$profile}{$hat}{path}{$path});
             }
 
@@ -2082,7 +2054,7 @@ sub collapselog () {
         for my $capability (keys %{$prelog{$sdmode}{$profile}{$hat}{capability}}) {
 
           # if we don't already have this capability in the profile, add it
-          unless($sd{$profile}{$hat}{capability}{$capability}) {
+          unless ($sd{$profile}{$hat}{capability}{$capability}) {
             $log{$sdmode}{$profile}{$hat}{capability}{$capability} = 1;
           }
         }
@@ -2095,7 +2067,7 @@ sub profilemode ($) {
   my $mode = shift;
 
   my $modifier = ($mode =~ m/[iupUP]/)[0];
-  if($modifier) {
+  if ($modifier) {
     $mode =~ s/[iupUPx]//g;
     $mode .= $modifier . "x";
   }
@@ -2144,28 +2116,28 @@ sub checkIncludeSyntax($) {
   my $errors = shift;
 
 
-  if(opendir(SDDIR, $profiledir )) {   
-   my @incdirs = grep { (! /^\./) && (-d "$profiledir/$_") } readdir(SDDIR);
-   close(SDDIR);
-   while(my $id = shift @incdirs) {
-     if(opendir(SDDIR, "$profiledir/$id" )) {
-       for my $path (grep { ! /^\./ } readdir(SDDIR)) {
-         chomp($path);
-         next if $path =~ /\.rpm(save|new)$/;
-         if(-f "$profiledir/$id/$path") {           
-           my $file = "$id/$path";
-           $file =~ s/$profiledir\///;
-           my $err = loadinclude($file, \&printMessageErrorHandler);
-           if ( $err ne 0 ) {
-             push @$errors, $err;
-           }
-         } elsif(-d "$id/$path") {
-           push @incdirs, "$id/$path";
-         }
-       }
-       closedir(SDDIR);
-     }
-   }
+  if (opendir(SDDIR, $profiledir )) {
+    my @incdirs = grep { (! /^\./) && (-d "$profiledir/$_") } readdir(SDDIR);
+    close(SDDIR);
+    while (my $id = shift @incdirs) {
+      if (opendir(SDDIR, "$profiledir/$id" )) {
+        for my $path (grep { ! /^\./ } readdir(SDDIR)) {
+          chomp($path);
+          next if $path =~ /\.rpm(save|new)$/;
+          if (-f "$profiledir/$id/$path") {
+            my $file = "$id/$path";
+            $file =~ s/$profiledir\///;
+            my $err = loadinclude($file, \&printMessageErrorHandler);
+            if ( $err ne 0 ) {
+              push @$errors, $err;
+            }
+          } elsif (-d "$id/$path") {
+            push @incdirs, "$id/$path";
+          }
+        }
+        closedir(SDDIR);
+      }
+    }
   }
   return $errors;
 }
@@ -2179,7 +2151,7 @@ sub checkProfileSyntax ($) {
     next if $file =~ /\.rpm(save|new)$/;
     my $err = readprofile( "$profiledir/$file", \&printMessageErrorHandler);
     if ( defined $err and $err ne 1) {
-       push @$errors, $err;
+      push @$errors, $err;
     }
   }
   closedir(SDDIR);
@@ -2203,21 +2175,21 @@ sub readprofiles () {
 sub readprofile ($$) {
   my $file = shift;
   my $error_handler = shift;
-  if(open(SDPROF, "$file")) {
+  if (open(SDPROF, "$file")) {
     my ($profile, $hat, $in_contained_hat);
     my $initial_comment = "";
-    while(<SDPROF>) {
+    while (<SDPROF>) {
       chomp;
 
       # we don't care about blank lines
       next if /^\s*$/;
 
       # start of a profile...
-      if(m/^\s*("??\/.+?"??)\s+(flags=\(.+\)\s+)*\{\s*$/) {
+      if (m/^\s*("??\/.+?"??)\s+(flags=\(.+\)\s+)*\{\s*$/) {
 
         # if we run into the start of a profile while we're already in a
         # profile, something's wrong...
-        if($profile) {
+        if ($profile) {
           return &$error_handler( "$profile profile in $file contains syntax errors.");
         }
 
@@ -2231,18 +2203,18 @@ sub readprofile ($$) {
 
         # deal with whitespace in profile and hat names.
         $profile = $1 if $profile =~ /^"(.+)"$/;
-        $hat     = $1 if $hat     =~ /^"(.+)"$/;
+        $hat     = $1 if $hat && $hat =~ /^"(.+)"$/;
 
         # if we run into old-style hat declarations mark the profile as
         # changed so we'll write it out as new-style
-        if($hat && $hat ne $profile) {
+        if ($hat && $hat ne $profile) {
           $changed{$profile} = 1;
         }
 
         $hat           ||= $profile;
 
         # keep track of profile flags
-        if($flags && $flags =~ /^flags=\((.+)\)\s*$/) {
+        if ($flags && $flags =~ /^flags=\((.+)\)\s*$/) {
           $flags = $1;
           $sd{$profile}{$hat}{flags} = $flags;
         }
@@ -2253,15 +2225,15 @@ sub readprofile ($$) {
         $sd{$profile}{$hat}{initial_comment} = $initial_comment if $initial_comment;
         $initial_comment = "";
 
-      } elsif(m/^\s*\}\s*$/) {                    # end of a profile...
+      } elsif (m/^\s*\}\s*$/) {                    # end of a profile...
 
         # if we hit the end of a profile when we're not in one, something's
         # wrong...
-        if(not $profile) {
+        if (not $profile) {
           return &$error_handler( sprintf(gettext('%s contains syntax errors.'), $file));
         }
 
-        if($in_contained_hat) {
+        if ($in_contained_hat) {
           $hat = $profile;
           $in_contained_hat = 0;
         } else {
@@ -2269,9 +2241,9 @@ sub readprofile ($$) {
           # if we're finishing a profile, make sure that any required
           # infrastructure hats for this changehat application exist
           for my $hatglob (keys %required_hats) {
-            if($profile =~ /$hatglob/) {
+            if ($profile =~ /$hatglob/) {
               for my $hat (split(/\s+/, $required_hats{$hatglob})) {
-                unless($sd{$profile}{$hat}) {
+                unless ($sd{$profile}{$hat}) {
                   $sd{$profile}{$hat} = { };
                   # if we had to auto-instantiate a hat, we want to write out
                   # an updated version of the profile
@@ -2286,22 +2258,22 @@ sub readprofile ($$) {
           $initial_comment = "";
         }
 
-      } elsif(m/^\s*capability\s+(\S+)\s*,\s*$/) {  # capability entry
-        if(not $profile) {
+      } elsif (m/^\s*capability\s+(\S+)\s*,\s*$/) {  # capability entry
+        if (not $profile) {
           return &$error_handler(sprintf(gettext('%s contains syntax errors.'), $file));
         }
 
         my $capability = $1;
         $sd{$profile}{$hat}{capability}{$capability} = 1;
 
-      } elsif(/^\s*(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*$/i) { # boolean definition
-      } elsif(/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\+=\s*(.+)\s*$/) { # variable additions
-      } elsif(/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*=\s*(.+)\s*$/) { # variable definitions
-      } elsif(m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*$/) { # conditional -- boolean
-      } elsif(m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) { # conditional -- variable defined
-      } elsif(m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) { # conditional -- boolean defined
-      } elsif(m/^\s*([\"\@\/].*)\s+(\S+)\s*,\s*$/) {     # path entry
-        if(not $profile) {
+      } elsif (/^\s*(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*$/i) { # boolean definition
+      } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\+=\s*(.+)\s*$/) { # variable additions
+      } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*=\s*(.+)\s*$/) { # variable definitions
+      } elsif (m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*$/) { # conditional -- boolean
+      } elsif (m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) { # conditional -- variable defined
+      } elsif (m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) { # conditional -- boolean defined
+      } elsif (m/^\s*([\"\@\/].*)\s+(\S+)\s*,\s*$/) {     # path entry
+        if (not $profile) {
           return &$error_handler(sprintf(gettext('%s contains syntax errors.'), $file));
         }
 
@@ -2315,13 +2287,13 @@ sub readprofile ($$) {
         # make sure they don't have broken regexps in the profile
         my $p_re = convert_regexp($path);
         eval { "foo" =~ m/^$p_re$/; };
-        if($@) {
+        if ($@) {
           return &$error_handler(sprintf(gettext('Profile %s contains invalid regexp %s.'), $file, $path));
         }
 
         $sd{$profile}{$hat}{path}{$path} = $mode;
 
-      } elsif(m/^\s*#include <(.+)>\s*$/) {     # include stuff
+      } elsif (m/^\s*#include <(.+)>\s*$/) {     # include stuff
         my $include = $1;
 
         if ($profile) {         
@@ -2335,14 +2307,14 @@ sub readprofile ($$) {
         my $ret = loadinclude($include, $error_handler);
         return $ret if ( $ret != 0 );
 
-      } elsif(/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
-        if(not $profile) {
+      } elsif (/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
+        if (not $profile) {
           return &$error_handler(sprintf(gettext('%s contains syntax errors.'), $file));
         }
 
         # XXX - BUGBUGBUG - don't strip netdomain entries
 
-        unless($sd{$profile}{$hat}{netdomain}) {
+        unless ($sd{$profile}{$hat}{netdomain}) {
           $sd{$profile}{$hat}{netdomain} = [ ];
         }
 
@@ -2353,10 +2325,10 @@ sub readprofile ($$) {
         # keep track of netdomain entries...
         push @{$sd{$profile}{$hat}{netdomain}}, $_;
 
-      } elsif(m/^\s*\^(\"?.+?)\s+(flags=\(.+\)\s+)*\{\s*$/) { # start of a hat
+      } elsif (m/^\s*\^(\"?.+?)\s+(flags=\(.+\)\s+)*\{\s*$/) { # start of a hat
         # if we hit the start of a contained hat when we're not in a profile
         # something is wrong...
-        if(not $profile) {
+        if (not $profile) {
           return &$error_handler(sprintf(gettext('%s contains syntax errors.'), $file));
         }
 
@@ -2370,7 +2342,7 @@ sub readprofile ($$) {
         $hat     = $1 if $hat     =~ /^"(.+)"$/;
 
         # keep track of profile flags
-        if($flags && $flags =~ /^flags=\((.+)\)\s*$/) {
+        if ($flags && $flags =~ /^flags=\((.+)\)\s*$/) {
           $flags = $1;
           $sd{$profile}{$hat}{flags} = $flags;
         }
@@ -2382,9 +2354,9 @@ sub readprofile ($$) {
         $sd{$profile}{$hat}{initial_comment} = $initial_comment if $initial_comment;
         $initial_comment = "";
 
-      } elsif(/^\s*\#/) {
+      } elsif (/^\s*\#/) {
         # we only currently handle initial comments
-        if(not $profile) {
+        if (not $profile) {
           # ignore vim syntax highlighting lines
           next if /^\s*\# vim:syntax/;
           # ignore Last Modified: lines
@@ -2399,7 +2371,7 @@ sub readprofile ($$) {
     }
 
     # if we're still in a profile when we hit the end of the file, it's bad
-    if($profile) {
+    if ($profile) {
       return &$error_handler("Reached the end of $file while we were still inside the $profile profile.");
     }
 
@@ -2428,7 +2400,7 @@ sub writeheader ($$$$) {
   my $p = $profile;
   $p = "\"$p\"" if $p =~ /\s/;
 
-  if($sd{$profile}{$hat}{flags}) {
+  if ($sd{$profile}{$hat}{flags}) {
     print $fh "$p flags=($sd{$profile}{$hat}{flags}) {\n";
   } else {
     print $fh "$p {\n";
@@ -2439,7 +2411,7 @@ sub writeincludes ($$$$) {
   my ($fh, $profile, $hat, $indent) = @_;
 
   # dump out the includes
-  if(exists $sd{$profile}{$hat}{include}) {
+  if (exists $sd{$profile}{$hat}{include}) {
     for my $include (sort keys %{$sd{$profile}{$hat}{include}}) {
       print $fh "$indent  #include <$include>\n";
     }
@@ -2451,7 +2423,7 @@ sub writecapabilities ($$$$) {
   my ($fh, $profile, $hat, $indent) = @_;
 
   # dump out the capability entries...
-  if(exists $sd{$profile}{$hat}{capability}) {
+  if (exists $sd{$profile}{$hat}{capability}) {
     for my $capability (sort keys %{$sd{$profile}{$hat}{capability}}) {
       print $fh "$indent  capability $capability,\n";
     }
@@ -2463,7 +2435,7 @@ sub writenetdomain ($$$$) {
   my ($fh, $profile, $hat, $indent) = @_;
 
   # dump out the netdomain entries...
-  if(exists $sd{$profile}{$hat}{netdomain}) {
+  if (exists $sd{$profile}{$hat}{netdomain}) {
     for my $nd (sort @{$sd{$profile}{$hat}{netdomain}}) {
       print $fh "$indent  $nd,\n";
     }
@@ -2474,7 +2446,7 @@ sub writenetdomain ($$$$) {
 sub writepaths ($$$$) {
   my ($fh, $profile, $hat, $indent) = @_;
 
-  if(exists $sd{$profile}{$hat}{path}) {
+  if (exists $sd{$profile}{$hat}{path}) {
     for my $path (sort keys %{$sd{$profile}{$hat}{path}}) {
       my $mode = $sd{$profile}{$hat}{path}{$path};
 
@@ -2482,7 +2454,7 @@ sub writepaths ($$$$) {
       $mode =~ s/X//g;
 
       # deal with whitespace in path names
-      if($path =~ /\s/) {
+      if ($path =~ /\s/) {
         print $fh "$indent  \"$path\" $mode,\n";
       } else {
         print $fh "$indent  $path $mode,\n";
@@ -2505,7 +2477,7 @@ sub writepiece ($$) {
     my $h = $hat;
     $h = "\"$h\"" if $h =~ /\s/;
 
-    if($sd{$profile}{$hat}{flags}) {
+    if ($sd{$profile}{$hat}{flags}) {
       print $sdprof "\n  ^$h flags=($sd{$profile}{$hat}{flags}) {\n";
     } else {
       print $sdprof "\n  ^$h {\n";
@@ -2538,14 +2510,14 @@ sub writeprofile ($) {
   print SDPROF "# Last Modified: " . localtime(time) . "\n";
 
   # print out initial comment
-  if($sd{$profile}{$profile}{initial_comment}) {
+  if ($sd{$profile}{$profile}{initial_comment}) {
     $sd{$profile}{$profile}{initial_comment} =~ s/\\n/\n/g;
     print SDPROF $sd{$profile}{$profile}{initial_comment};
     print SDPROF "\n";
   }
 
   # dump variables defined in this file
-  if($variables{$filename}) {
+  if ($variables{$filename}) {
     for my $var (sort keys %{$variables{$filename}}) {
       if ($var =~ m/^@/) {
         my @values = sort @{$variables{$filename}{$var}};
@@ -2579,9 +2551,9 @@ sub getprofileflags {
 
   my $flags = "enforce";
 
-  if(open(PROFILE, "$filename")) {
-    while(<PROFILE>) {
-      if(m/^\s*\/\S+\s+(flags=\(.+\)\s+)*{\s*$/) {
+  if (open(PROFILE, "$filename")) {
+    while (<PROFILE>) {
+      if (m/^\s*\/\S+\s+(flags=\(.+\)\s+)*{\s*$/) {
         $flags = $1;
         close(PROFILE);
         $flags =~ s/flags=\((.+)\)/$1/;
@@ -2631,22 +2603,22 @@ sub loadinclude {
   return 0 if $include{$which};
 
   my @loadincludes = ( $which );
-  while(my $incfile = shift @loadincludes) {
+  while (my $incfile = shift @loadincludes) {
 
     # load the include from the directory we found earlier...
     open(INCLUDE, "$profiledir/$incfile") or fatal_error "Can't find include file $incfile: $!";
 
-    while(<INCLUDE>) {
+    while (<INCLUDE>) {
       chomp;
 
-      if(/^\s*(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*$/i) { # boolean definition
-      } elsif(/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\+=\s*(.+)\s*$/) { # variable additions
-      } elsif(/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*=\s*(.+)\s*$/) { # variable definitions
-      } elsif(m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*$/) { # conditional -- boolean
-      } elsif(m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) { # conditional -- variable defined
-      } elsif(m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) { # conditional -- boolean defined
-      } elsif(m/^\s*\}\s*$/) {                    # end of a profile or conditional
-      } elsif(m/^\s*([\"\@\/].*)\s+(\S+)\s*,\s*$/) {     # path entry
+      if (/^\s*(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*$/i) { # boolean definition
+      } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\+=\s*(.+)\s*$/) { # variable additions
+      } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*=\s*(.+)\s*$/) { # variable definitions
+      } elsif (m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*$/) { # conditional -- boolean
+      } elsif (m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) { # conditional -- variable defined
+      } elsif (m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) { # conditional -- boolean defined
+      } elsif (m/^\s*\}\s*$/) {                    # end of a profile or conditional
+      } elsif (m/^\s*([\"\@\/].*)\s+(\S+)\s*,\s*$/) {     # path entry
         my ($path, $mode) = ($1, $2);
 
         # strip off any trailing spaces.
@@ -2657,23 +2629,23 @@ sub loadinclude {
         # make sure they don't have broken regexps in the profile
         my $p_re = convert_regexp($path);
         eval { "foo" =~ m/^$p_re$/; };
-        if($@) {
+        if ($@) {
           return &$error_handler(sprintf(gettext('Include file %s contains invalid regexp %s.'), $incfile, $path));
         }
 
         $include{$incfile}{path}{$path} = $mode;
-      } elsif(/^\s*capability\s+(.+)\s*,\s*$/) {
+      } elsif (/^\s*capability\s+(.+)\s*,\s*$/) {
 
         my $capability = $1;
         $include{$incfile}{capability}{$capability} = 1;
 
-      } elsif(/^\s*#include <(.+)>\s*$/) {     # include stuff
+      } elsif (/^\s*#include <(.+)>\s*$/) {     # include stuff
 
         my $newinclude = $1;
         push @loadincludes, $newinclude unless $include{$newinclude};
         $include{$incfile}{include}{$newinclude} = 1;
 
-      } elsif(/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
+      } elsif (/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
       } else {
 
         # we don't care about blank lines or comments
@@ -2700,7 +2672,7 @@ sub rematchfrag{
     my $regexp = convert_regexp($entry);
 
     # check the log entry against our converted regexp...
-    if($path =~ /^$regexp$/) {
+    if ($path =~ /^$regexp$/) {
       # regexp matches, add it's mode to the list to check against
       $combinedmode .= $frag->{path}{$entry};
       push @matches, $entry;
@@ -2719,21 +2691,21 @@ sub matchincludes {
 
   # scan the include fragments for this profile looking for matches
   my @includelist = keys %{$frag->{include}};
-  while(my $include = shift @includelist) {
+  while (my $include = shift @includelist) {
     loadinclude($include, \&fatal_error);
     my ($cm, @m) = rematchfrag($include{$include}, $path);
-    if($cm) {
+    if ($cm) {
       $combinedmode .= $cm;
       push @matches, @m;
     }
 
     # check if a literal version is in the current include fragment
-    if($include{$include}{path}{$path}) {
+    if ($include{$include}{path}{$path}) {
       $combinedmode .= $include{$include}{path}{$path};
     }
 
     # if this fragment includes others, check them too
-    if(keys %{$include{$include}{include}}) {
+    if (keys %{$include{$include}{include}}) {
       push @includelist, keys %{$include{$include}{include}};
     }
   }
@@ -2749,25 +2721,25 @@ sub matchinclude {
 
   # scan the include fragments for this profile looking for matches
   my @includelist = ( $incname );
-  while(my $include = shift @includelist) {
+  while (my $include = shift @includelist) {
     my ($cm, @m) = rematchfrag($include{$include}, $path);
-    if($cm) {
+    if ($cm) {
       $combinedmode .= $cm;
       push @matches, @m;
     }
 
     # check if a literal version is in the current include fragment
-    if($include{$include}{path}{$path}) {
+    if ($include{$include}{path}{$path}) {
       $combinedmode .= $include{$include}{path}{$path};
     }
 
     # if this fragment includes others, check them too
-    if(keys %{$include{$include}{include}}) {
+    if (keys %{$include{$include}{include}}) {
       push @includelist, keys %{$include{$include}{include}};
     }
   }
 
-  if($combinedmode) {
+  if ($combinedmode) {
     return wantarray ? ($combinedmode, @matches) : $combinedmode;
   } else {
     return;
@@ -2778,28 +2750,28 @@ sub readconfig () {
 
   my $which;
 
-  if(open(LPCONF, "$confdir/logprof.conf")) {
-    while(<LPCONF>) {
+  if (open(LPCONF, "$confdir/logprof.conf")) {
+    while (<LPCONF>) {
       chomp;
 
       next if /^\s*#/;
 
-      if(m/^\[(\S+)\]/) {
+      if (m/^\[(\S+)\]/) {
         $which = $1;
-      } elsif(m/^\s*(\S+)\s*=\s*(.+)\s*$/) {
+      } elsif (m/^\s*(\S+)\s*=\s*(.+)\s*$/) {
         my ($key, $value) = ($1, $2);
-        if($which eq "defaulthat") {
+        if ($which eq "defaulthat") {
           $defaulthat{$key} = $value;
-        } elsif($which eq "qualifiers") {
+        } elsif ($which eq "qualifiers") {
           $qualifiers{$key} = $value;
-        } elsif($which eq "globs") {
+        } elsif ($which eq "globs") {
           $globmap{$key} = $value;
-        } elsif($which eq "required_hats") {
+        } elsif ($which eq "required_hats") {
           $required_hats{$key} = $value;
         }
-      } elsif(m/^\s*(\S+)\s*$/) {
+      } elsif (m/^\s*(\S+)\s*$/) {
         my $val = $1;
-        if($which eq "custom_includes") {
+        if ($which eq "custom_includes") {
           push @custom_includes, $val;
         }
       }
@@ -2809,20 +2781,20 @@ sub readconfig () {
 }
 
 sub loadincludes {
-if(opendir(SDDIR, $profiledir )) {
+if (opendir(SDDIR, $profiledir )) {
   my @incdirs = grep { (! /^\./) && (-d "$profiledir/$_") } readdir(SDDIR);
   close(SDDIR);
 
-  while(my $id = shift @incdirs) {
-    if(opendir(SDDIR, "$profiledir/$id" )) {
+  while (my $id = shift @incdirs) {
+    if (opendir(SDDIR, "$profiledir/$id" )) {
       for my $path (grep { ! /^\./ } readdir(SDDIR)) {
         chomp($path);
         next if $path =~ /\.rpm(save|new)$/;
-        if(-f "$profiledir/$id/$path") {
+        if (-f "$profiledir/$id/$path") {
           my $file = "$id/$path";
           $file =~ s/$profiledir\///;
           loadinclude($file, \&fatal_error);
-        } elsif(-d "$id/$path") {
+        } elsif (-d "$id/$path") {
           push @incdirs, "$id/$path";
         }
       }
@@ -2838,7 +2810,7 @@ sub globcommon ($) {
   my @globs;
 
   # glob library versions in both foo-5.6.so and baz.so.9.2 form
-  if($path =~ m/[\d\.]+\.so$/ || $path =~ m/\.so\.[\d\.]+$/) {
+  if ($path =~ m/[\d\.]+\.so$/ || $path =~ m/\.so\.[\d\.]+$/) {
     my $libpath = $path;
     $libpath =~ s/[\d\.]+\.so$/*.so/;
     $libpath =~ s/\.so\.[\d\.]+$/.so.*/;
@@ -2846,14 +2818,14 @@ sub globcommon ($) {
   }
 
   for my $glob (keys %globmap) {
-    if($path =~ /$glob/) {
+    if ($path =~ /$glob/) {
       my $globbedpath = $path;
       $globbedpath =~ s/$glob/$globmap{$glob}/g;
       push @globs, $globbedpath if $globbedpath ne $path;
     }
   }
 
-  if(wantarray) {
+  if (wantarray) {
     return sort { length($b) <=> length($a) } uniq(@globs);
   } else {
     my @list = sort { length($b) <=> length($a) } uniq(@globs);
@@ -2870,7 +2842,7 @@ sub matchregexp ($$) {
   return undef if $old =~ /\{.*(\,.*)*\}/;
 
   # are there any regexps at all in the old pattern?
-  if($old =~ /\[.+\]/ or $old =~ /\*/ or $old =~ /\?/) {
+  if ($old =~ /\[.+\]/ or $old =~ /\*/ or $old =~ /\?/) {
 
     # convert {foo,baz} to (foo|baz)
     $new =~ y/\{\}\,/\(\)\|/ if $new =~ /\{.*\,.*\}/;
@@ -2886,7 +2858,7 @@ sub matchregexp ($$) {
 
     # strip common prefix
     my $prefix = commonprefix($new, $old);
-    if($prefix) {
+    if ($prefix) {
       # make sure we don't accidentally gobble up a trailing * or **
       $prefix =~ s/(\001|\002)$//;
       $new =~ s/^$prefix//;
@@ -2895,7 +2867,7 @@ sub matchregexp ($$) {
 
     # strip common suffix
     my $suffix = commonsuffix($new, $old);
-    if($suffix) {
+    if ($suffix) {
       # make sure we don't accidentally gobble up a leading * or **
       $suffix =~ s/^(\001|\002)//;
       $new =~ s/$suffix$//;
@@ -2984,24 +2956,27 @@ sub Text_PromptUser ($) {
   my @menu_items;
   for my $cmd (@functions) {
     # make sure we know about this particular command
-    fatal_error "PromptUser: Unknown command $cmd" unless $CMDS{$cmd};
+    my $cmdmsg = "PromptUser: " . gettext("Unknown command") . " $cmd";
+    fatal_error $cmdmsg unless $CMDS{$cmd};
 
     # grab the localized text to use for the menu for this command
     my $menutext = gettext($CMDS{$cmd});
 
     # figure out what the hotkey for this menu item is
-    $menutext =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey in '$menutext'";
+    my $menumsg = "PromptUser: " . gettext("Invalid hotkey in") . " '$menutext'";
+    $menutext =~ /\((\S)\)/ or fatal_error $menumsg; 
 
     # we want case insensitive comparisons so we'll force things to lowercase
     my $key = lc($1);
 
     # check if we're already using this hotkey for this prompt
-    fatal_error "PromptUser: Duplicate hotkey for $cmd: $menutext" if $keys{$key};
+    my $hotkeymsg = "PromptUser: " . gettext("Duplicate hotkey for") . " $cmd: $menutext";
+    fatal_error $hotkeymsg if $keys{$key};
 
     # keep track of which command they're picking if they hit this hotkey
     $keys{$key} = $cmd;
 
-    if($default && $default eq $cmd) {
+    if ($default && $default eq $cmd) {
       $menutext = "[$menutext]";
     }
 
@@ -3010,21 +2985,23 @@ sub Text_PromptUser ($) {
 
   # figure out the key for the default option
   my $default_key;
-  if($default && $CMDS{$default}) {
+  if ($default && $CMDS{$default}) {
     my $defaulttext = gettext($CMDS{$default});
 
     # figure out what the hotkey for this menu item is
-    $defaulttext =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey in default item '$defaulttext'";
+    my $defmsg = "PromptUser: " . gettext("Invalid hotkey in default item") . " '$defaulttext'";
+    $defaulttext =~ /\((\S)\)/ or fatal_error $defmsg; 
 
     # we want case insensitive comparisons so we'll force things to lowercase
     $default_key = lc($1);
 
-    fatal_error "PromptUser: Invalid default $default" unless $keys{$default_key};
+    my $defkeymsg = "PromptUser: " . gettext("Invalid default") . " $default"; 
+    fatal_error $defkeymsg; 
   }
 
   my $widest = 0;
   my @poo = @headers;
-  while(my $header = shift @poo) {
+  while (my $header = shift @poo) {
     my $value = shift @poo;
     $widest = length($header) if length($header) > $widest;
   }
@@ -3038,16 +3015,16 @@ sub Text_PromptUser ($) {
   $function_regexp   .= ')$';
 
   my $ans = "XXXINVALIDXXX";
-  while($ans !~ /$function_regexp/i) {
+  while ($ans !~ /$function_regexp/i) {
     # build up the prompt...
     my $prompt = "\n";
     my @poo = @headers;
-    while(my $header = shift @poo) {
+    while (my $header = shift @poo) {
       my $value = shift @poo;
       $prompt .= sprintf($format, "$header:", $value);
     }
     $prompt .= "\n";
-    if($options) {
+    if ($options) {
       for (my $i = 0; $options->[$i]; $i++) {
         my $f = ($selected == $i) ? ' [%d - %s]' : '  %d - %s ';
         $prompt .= sprintf("$f\n", $i+1, $options->[$i]);
@@ -3060,7 +3037,7 @@ sub Text_PromptUser ($) {
     # get their input...
     $ans = lc(getkey);
 
-    if($ans && $keys{$ans} && $keys{$ans} eq "CMD_HELP") {
+    if ($ans && $keys{$ans} && $keys{$ans} eq "CMD_HELP") {
       print "\n$helptext\n";
       $ans = undef;
     }
@@ -3069,13 +3046,13 @@ sub Text_PromptUser ($) {
     $ans = $default_key if ord($ans) == 10;
 
     # ugly code to handle escape sequences so you can up/down in the list
-    if(ord($ans) == 27) {
+    if (ord($ans) == 27) {
       $ans = getkey;
-      if(ord($ans) == 91) {
+      if (ord($ans) == 91) {
         $ans = getkey;
-        if(ord($ans) == 65) {
-          if($options) {
-            if($selected > 0) {
+        if (ord($ans) == 65) {
+          if ($options) {
+            if ($selected > 0) {
               $ans = $selected;
             } else {
               $ans = "again";
@@ -3083,9 +3060,9 @@ sub Text_PromptUser ($) {
           } else {
             $ans = "again";
           }
-        } elsif(ord($ans) == 66) {
-          if($options) {
-            if($selected <= scalar(@$options)) {
+        } elsif (ord($ans) == 66) {
+          if ($options) {
+            if ($selected <= scalar(@$options)) {
               $ans = $selected + 2;
             } else {
               $ans = "again";
@@ -3100,8 +3077,8 @@ sub Text_PromptUser ($) {
     }
 
     # handle option poo
-    if($options && ($ans =~ /^\d$/)) {
-      if($ans > 0 && $ans <= scalar(@$options)) {
+    if ($options && ($ans =~ /^\d$/)) {
+      if ($ans > 0 && $ans <= scalar(@$options)) {
         $selected = $ans - 1;
       }
       $ans = undef;
@@ -3111,24 +3088,18 @@ sub Text_PromptUser ($) {
   # pull our command back from our hotkey map
   $ans = $keys{$ans} if $keys{$ans};
 
-#  if($options) {
-#    die "ERROR: not looking for array when options passed" unless wantarray;
-    if($options) {
-      return ($ans, $options->[$selected]);
-    } else {
-      return ($ans, $selected);
-    }
-#  } else {
-#    die "ERROR: looking for list when options not passed" if wantarray;
-#    return $ans;
-#  }
+  if ($options) {
+    return ($ans, $options->[$selected]);
+  } else {
+    return ($ans, $selected);
+  }
 }
 
-unless(-x $ldd)    {
+unless (-x $ldd)    {
   $ldd    = which("ldd")              or fatal_error "Can't find ldd.";
 }
 
-unless(-x $parser) {
+unless (-x $parser) {
   $parser = which("apparmor_parser") || which("subdomain_parser")
 	or fatal_error "Can't find apparmor_parser.";
 }

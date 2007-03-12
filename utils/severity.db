@@ -40,6 +40,8 @@
        CAP_IPC_LOCK 8
        CAP_SYS_TTY_CONFIG 8
        CAP_DAC_READ_SEARCH 7
+       CAP_AUDIT_CONTROL 8
+       CAP_AUDIT_WRITE 8
 # unused
        CAP_NET_BROADCAST 0
 

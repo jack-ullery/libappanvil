@@ -31,12 +31,11 @@ package Immunix::Reports;
 ################################################################################
 
 use strict;
-use Immunix::Ycp;				# debug
 use DBI;
 use DBD::SQLite;
-
-use POSIX;
 use Locale::gettext;
+use POSIX;
+use ycp;
 
 setlocale(LC_MESSAGES, "");
 textdomain("Reports");
@@ -263,7 +262,7 @@ sub checkEventDb {
         };
 
         if ( $@ ) {
-            Immunix::Ycp::y2error(sprintf(gettext("DBI Execution failed: %s."), $DBI::errstr));
+            ycp::y2error(sprintf(gettext("DBI Execution failed: %s."), $DBI::errstr));
             return;
         }
 
@@ -371,13 +370,13 @@ sub getNumPages {
 		};
 
 		if ( $@ ) {
-            Immunix::Ycp::y2error(sprintf(gettext("DBI Execution failed: %s."), $DBI::errstr));
+            ycp::y2error(sprintf(gettext("DBI Execution failed: %s."), $DBI::errstr));
 	        return;
 	    }
 
 	    $dbh->disconnect();
 
-		#Immunix::Ycp::y2milestone("Numpages Query: $query");		# debug
+		#ycp::y2milestone("Numpages Query: $query");		# debug
 
 		$numPages = pageRound($count/$numEvents);
 		if ( $numPages < 1 ) { $numPages = 1; }
@@ -397,11 +396,11 @@ sub getNumPages {
 	        close REP;
 
 	    } else {
-            Immunix::Ycp::y2error(sprintf(gettext("Couldn't open file: %s."), $eventRep));
+            ycp::y2error(sprintf(gettext("Couldn't open file: %s."), $eventRep));
 	    }
 
 	} else {
-        Immunix::Ycp::y2error(gettext("No type value passed.  Unable to determine page count."));
+        ycp::y2error(gettext("No type value passed.  Unable to determine page count."));
 		return("1");
 	}
 
@@ -471,7 +470,7 @@ sub updateFiles {
     if ( unlink("$oldFile") ) {
         if ( ! rename ("$newFile", "$oldFile") ) {
             if ( ! system('/bin/mv', "$newFile","$oldFile") ) {
-                Immunix::Ycp::y2error(sprintf(gettext("Failed copying %s."), $oldFile));
+                ycp::y2error(sprintf(gettext("Failed copying %s."), $oldFile));
                 return 1;
             }
         }
@@ -584,7 +583,7 @@ sub exportLog {
 
         close LOG;
     } else {
-        Immunix::Ycp::y2error(sprintf(gettext("Export Log Error: Couldn't open %s"), $exportLog));
+        ycp::y2error(sprintf(gettext("Export Log Error: Couldn't open %s"), $exportLog));
     }
 	# return($error);
 }
@@ -608,13 +607,13 @@ sub getXmlReport {
     }
 
     if ( ! $repName ) {
-        Immunix::Ycp::y2error(gettext("Fatal error.  No report name given. Exiting."));
+        ycp::y2error(gettext("Fatal error.  No report name given. Exiting."));
     }
 
 	if ( ! $repConf || ! -e $repConf ) {
 		$repConf = '/etc/apparmor/reports.conf';
 		if ( ! -e $repConf ) {
-            Immunix::Ycp::y2error(sprintf(gettext("Unable to get configuration info for %s.
+            ycp::y2error(sprintf(gettext("Unable to get configuration info for %s.
                 Unable to find %s."), $repName, $repConf));
 			exit 1;
 		}
@@ -655,7 +654,7 @@ sub getXmlReport {
 	                    if ($1) {
 							$rep{"$1"}= $2 unless $2 eq '-';
 						} else {
-							Immunix::Ycp::y2error(sprintf(gettext("Failed to parse: %s."), $_));
+							ycp::y2error(sprintf(gettext("Failed to parse: %s."), $_));
 						}
 	                }
 				}
@@ -664,8 +663,8 @@ sub getXmlReport {
         close XML;
 
     } else {
-		Immunix::Ycp::y2error(sprintf(gettext("Fatal Error.  Couldn't open %s."), $repConf));
-        exit 1;
+		  ycp::y2error(sprintf(gettext("Fatal Error.  Couldn't open %s."), $repConf));
+      exit 1;
     }
 
     return \%rep;
@@ -713,7 +712,7 @@ sub getCfInfo {
 
     } else {
         my $error = sprintf(gettext("Fatal Error.  Can't run %s.  Exiting."), $cfApp);
-        Immunix::Ycp::y2error($error);
+        ycp::y2error($error);
         return $error;
     }
 
@@ -753,7 +752,7 @@ sub getEssStats {
 	}
 
     if ( ! -e $targetDir ) {
-        Immunix::Ycp::y2error(sprintf(gettext("Fatal Error.  No directory, %s, found.  Exiting."), $targetDir));
+        ycp::y2error(sprintf(gettext("Fatal Error.  No directory, %s, found.  Exiting."), $targetDir));
         return;
     }
 
@@ -772,7 +771,7 @@ sub getEssStats {
         close TDIR;
 
     } else {
-        Immunix::Ycp::y2error(sprintf(gettext("Fatal Error.  Couldn't open %s.  Exiting"), $targetDir));
+        ycp::y2error(sprintf(gettext("Fatal Error.  Couldn't open %s.  Exiting"), $targetDir));
         return;
     }
 
@@ -800,7 +799,7 @@ sub getEssStats {
         };
 
         if ( $@ ) {
-            Immunix::Ycp::y2error(sprintf(gettext("DBI Execution failed: %s"), $DBI::errstr));
+            ycp::y2error(sprintf(gettext("DBI Execution failed: %s"), $DBI::errstr));
             return;
         }
 
@@ -813,7 +812,7 @@ sub getEssStats {
         };
 
         if ( $@ ) {
-            Immunix::Ycp::y2error(sprintf(gettext("DBI Execution failed: %s"), $DBI::errstr));
+            ycp::y2error(sprintf(gettext("DBI Execution failed: %s"), $DBI::errstr));
             return;
         }
 
@@ -823,7 +822,7 @@ sub getEssStats {
         };
 
         if ( $@ ) {
-            Immunix::Ycp::y2error(sprintf(gettext("DBI Execution failed: %s"), $DBI::errstr));
+            ycp::y2error(sprintf(gettext("DBI Execution failed: %s"), $DBI::errstr));
             return;
         }
 
@@ -1487,7 +1486,7 @@ sub getEvents {
 	};
 
 	if ( $@ ) {
-        Immunix::Ycp::y2error(sprintf(gettext("DBI Execution failed: %s."), $DBI::errstr));
+        ycp::y2error(sprintf(gettext("DBI Execution failed: %s."), $DBI::errstr));
 		return;
 	}
 
@@ -1593,7 +1592,7 @@ sub getArchReport {
 		close REP;
 
 	} else {
-        Immunix::Ycp::y2error(sprintf(gettext("Fatal Error.  getArchReport() couldn't open %s"), $eventRep));
+        ycp::y2error(sprintf(gettext("Fatal Error.  getArchReport() couldn't open %s"), $eventRep));
 		return("Couldn't open $eventRep");
 	}
 
