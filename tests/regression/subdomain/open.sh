@@ -1,7 +1,7 @@
 #! /bin/bash
 # $Id$
 
-#	Copyright (C) 2002-2005 Novell/SUSE
+#	Copyright (C) 2002-2007 Novell/SUSE
 #
 #	This program is free software; you can redistribute it and/or
 #	modify it under the terms of the GNU General Public License as
@@ -11,7 +11,6 @@
 #=NAME open
 #=DESCRIPTION 
 # Verify that the open syscall is correctly managed for confined profiles.  
-# A test should be added verifying for non-confined.
 #=END
 
 pwd=`dirname $0`
@@ -26,10 +25,11 @@ okperm=rw
 badperm1=r
 badperm2=w
 
-#touch $file
-#chmod 600 $file
+# PASS UNCONFINED
+runchecktest "OPEN unconfined RW (create) " pass $file
 
 # PASS TEST (the file shouldn't exist, so open should create it
+rm -f ${file}
 genprofile $file:$okperm
 runchecktest "OPEN RW (create) " pass $file
 

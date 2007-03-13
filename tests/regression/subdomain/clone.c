@@ -9,14 +9,6 @@
  *	License.
  */
 
-/* this program serves as a wrapper program that does a change_hat call
- * before fork()ing and exec()ing another test prorgram. This way we can
- * perform some of the additional testcases within a subhat without
- * duplicating the fork/exec/changehat code. The big assumption that
- * must be true (and is part of subdomain's semantics is that an
- * inherited profile that is currently in a subprofile will stay that
- * way across fork()/exec(). */
-
 #define _GNU_SOURCE
 
 #include <stdio.h>
