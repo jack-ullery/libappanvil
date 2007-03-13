@@ -38,6 +38,7 @@ SRC=access.c \
     named_pipe.c \
     net_raw.c \
     open.c \
+    openat.c \
     pipe.c \
     ptrace.c \
     ptrace_helper.c \
@@ -119,7 +120,9 @@ TESTS=access \
       mult_mount \
       named_pipe \
       net_raw \
-      open pipe \
+      open \
+      openat \
+      pipe \
       ptrace \
       pwrite \
       regex \
