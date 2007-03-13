@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <sys/apparmor.h>
 #include <security/pam_ext.h>
+#include <security/pam_modutil.h>
 
 /*
  * here, we make a definition for the externally accessible function
