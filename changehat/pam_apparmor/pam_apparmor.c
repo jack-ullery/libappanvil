@@ -80,13 +80,13 @@ int pam_sm_open_session(pam_handle_t *pamh, int flags,
 		return PAM_USER_UNKNOWN;
 	}
 
-	pw = getpwnam(user);
+	pw = pam_modutil_getpwnam(pamh, user);
 	if (!pw) {
 		pam_syslog(pamh, LOG_ERR, "Can't determine group for user %s\n", user);
 		return PAM_PERM_DENIED;
 	}
 
-	gr = getgrgid(pw->pw_gid);
+	gr = pam_modutil_getgrgid(pamh, pw->pw_gid);
 	if (!gr || !gr->gr_name) {
 		pam_syslog(pamh, LOG_ERR, "Can't read info for group %d\n", pw->pw_gid);
 		return PAM_PERM_DENIED;
@@ -101,7 +101,9 @@ int pam_sm_open_session(pam_handle_t *pamh, int flags,
 	/* the magic token needs to be non-zero otherwise, we won't be able
 	 * to probe for hats */
 	do {
-		retval = read(fd, (void *) &magic_token, sizeof(magic_token));
+		retval = pam_modutil_read(fd,
+					  (void *)&magic_token,
+					  sizeof(magic_token));
 		if (retval < 0) {
 			pam_syslog(pamh, LOG_ERR, "Can't read from /dev/urandom\n");
 			return PAM_PERM_DENIED;

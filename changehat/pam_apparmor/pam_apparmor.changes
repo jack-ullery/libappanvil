@@ -1,34 +1,39 @@
 -------------------------------------------------------------------
-Tue Oct 31 12:00:00 UTC 2006 - jmichael@suse
+Tue Mar 13 10:27:34 PDT 2007 - jmichael@suse.de
+
+- Use pam_modutil_* wrapper functions when possible
+
+-------------------------------------------------------------------
+Tue Oct 31 12:00:00 UTC 2006 - jmichael@suse.de
 
 - Add debug option
 
 -------------------------------------------------------------------
-Tue Oct 31 12:00:00 UTC 2006 - sbeattie@suse
+Tue Oct 31 12:00:00 UTC 2006 - sbeattie@suse.de
 
 - Add configuration options to order attempted hat changes
 
 -------------------------------------------------------------------
-Wed Oct 25 12:00:00 UTC 2006 - sbeattie@suse
+Wed Oct 25 12:00:00 UTC 2006 - sbeattie@suse.de
 
 - remove auto-editing of pam's common-session
 - honor RPM's CFLAGS when building
 - add license (same as Linux PAM package).
 
 -------------------------------------------------------------------
-Thu Sep 14 12:00:00 UTC 2006 - jmichael@suse
+Thu Sep 14 12:00:00 UTC 2006 - jmichael@suse.de
 
 - header comment was incorrect
 - use pam_get_user() instead of pam_get_item()
 - fix read from urandom if 0
 
 -------------------------------------------------------------------
-Fri Jan 13 12:00:00 UTC 2006 - sbeattie@suse
+Fri Jan 13 12:00:00 UTC 2006 - sbeattie@suse.de
 
 - Add svn repo number to tarball
 
 -------------------------------------------------------------------
-Fri Jan 13 12:00:00 UTC 2006 - jmichael@suse
+Fri Jan 13 12:00:00 UTC 2006 - jmichael@suse.de
 
 - Make magic tokens harder to guess by pulling them from /dev/urandom
 
