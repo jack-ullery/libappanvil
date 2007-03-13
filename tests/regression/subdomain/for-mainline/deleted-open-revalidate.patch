@@ -3,11 +3,11 @@ Index: subdomain/deleted.sh
 --- subdomain.orig/deleted.sh
 +++ subdomain/deleted.sh
 @@ -116,7 +116,7 @@ rm -f ${socket}
- # FAIL - constrained client, w access to the file
+ # FAIL - confined client, w access to the file
  
  genprofile $file:$okperm $socket:rw $fd_client:px -- image=$fd_client $file:$badperm $socket:rw
--runchecktest "fd passing; constrained client w/ w only" fail $file $socket $fd_client "delete_file"
-+runchecktest "fd passing; constrained client w/ w only" pass $file $socket $fd_client "delete_file"
+-runchecktest "fd passing; confined client w/ w only" fail $file $socket $fd_client "delete_file"
++runchecktest "fd passing; confined client w/ w only" pass $file $socket $fd_client "delete_file"
  
  sleep 1
  rm -f ${socket}
