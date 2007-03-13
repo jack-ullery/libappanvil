@@ -1,0 +1,166 @@
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -141,7 +141,7 @@ extern rwlock_t profile_list_lock;
+  */
+ struct aa_task_context {
+ 	struct aa_profile *profile;	/* The current profile */
+-	u32 hat_magic;			/* used with change_hat */
++	u64 hat_magic;			/* used with change_hat */
+ 	struct list_head list;
+ 	struct task_struct *task;
+ 	kernel_cap_t caps_logged;
+@@ -235,7 +235,7 @@ extern int aa_link(struct aa_profile *pr
+ extern int aa_clone(struct task_struct *task);
+ extern int aa_register(struct linux_binprm *bprm);
+ extern void aa_release(struct task_struct *task);
+-extern int aa_change_hat(const char *id, u32 hat_magic);
++extern int aa_change_hat(const char *id, u64 hat_magic);
+ extern struct aa_profile *__aa_find_profile(const char *name,
+ 					    struct list_head *list);
+ extern struct aa_profile *aa_replace_profile(struct task_struct *task,
+Index: b/security/apparmor/inline.h
+===================================================================
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -69,7 +69,7 @@ static inline struct aa_profile *aa_find
+  */
+ static inline void aa_change_profile(struct aa_task_context *cxt,
+ 				     struct aa_profile *profile,
+-				     u32 hat_magic)
++				     u64 hat_magic)
+ {
+ 	struct aa_profile *old_profile = cxt->profile;
+ 
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -1035,7 +1035,7 @@ repeat:
+  */
+ static inline int do_change_hat(const char *hat_name,
+ 				struct aa_task_context *cxt,
+-				u32 hat_magic)
++				u64 hat_magic)
+ {
+ 	struct aa_profile *sub;
+ 	int error = 0;
+@@ -1110,7 +1110,7 @@ static inline int do_change_hat(const ch
+  * return to original top level profile.  Returns %0 on success, error
+  * otherwise.
+  */
+-int aa_change_hat(const char *hat_name, u32 hat_magic)
++int aa_change_hat(const char *hat_name, u64 hat_magic)
+ {
+ 	struct aa_task_context *cxt;
+ 	struct aa_profile *profile;
+@@ -1118,7 +1118,7 @@ int aa_change_hat(const char *hat_name, 
+ 
+ 	/* Dump out above debugging in WARN mode if we are in AUDIT mode */
+ 	if (APPARMOR_AUDIT(aa_task_context(current))) {
+-		AA_WARN("%s: %s, 0x%x (pid %d)\n",
++		AA_WARN("%s: %s, 0x%llx (pid %d)\n",
+ 			__FUNCTION__, hat_name ? hat_name : "NULL",
+ 			hat_magic, current->pid);
+ 	}
+@@ -1148,7 +1148,7 @@ repeat:
+ 	if (profile == profile->parent) {
+ 		/* We are in the parent profile. */
+ 		if (hat_name) {
+-			AA_DEBUG("%s: switching to %s, 0x%x\n",
++			AA_DEBUG("%s: switching to %s, 0x%llx\n",
+ 				 __FUNCTION__,
+ 				 hat_name,
+ 				 hat_magic);
+@@ -1188,7 +1188,7 @@ repeat:
+ 			}
+ 		} else if (cxt->hat_magic) {
+ 			AA_ERROR("KILLING process %s(%d) "
+-				 "Invalid change_hat() magic# 0x%x "
++				 "Invalid change_hat() magic# 0x%llx "
+ 				 "(hatname %s profile %s active %s)\n",
+ 				 current->comm, current->pid,
+ 				 hat_magic,
+Index: b/security/apparmor/procattr.c
+===================================================================
+--- a/security/apparmor/procattr.c
++++ b/security/apparmor/procattr.c
+@@ -79,9 +79,8 @@ size_t aa_getprocattr(struct aa_profile 
+ int aa_setprocattr_changehat(char *hatinfo, size_t infosize)
+ {
+ 	int error = -EINVAL;
+-	char *token = NULL, *hat, *smagic, *tmp;
+-	u32 magic;
+-	int rc, len, consumed;
++	char *token = NULL, *hat;
++	u64 magic;
+ 
+ 	AA_DEBUG("%s: %p %zd\n", __FUNCTION__, hatinfo, infosize);
+ 
+@@ -92,7 +91,7 @@ int aa_setprocattr_changehat(char *hatin
+ 	}
+ 
+ 	if (infosize == 0)
+-		goto out;
++		return -EINVAL;
+ 
+ 	/*
+ 	 * Copy string to a new buffer so we can play with it
+@@ -100,50 +99,19 @@ int aa_setprocattr_changehat(char *hatin
+ 	 * for 100% safety
+ 	 */
+ 	token = kmalloc(infosize + 1, GFP_KERNEL);
+-
+-	if (!token) {
+-		error = -ENOMEM;
+-		goto out;
+-	}
+-
++	if (!token)
++		return -ENOMEM;
+ 	memcpy(token, hatinfo, infosize);
+ 	token[infosize] = 0;
+ 
+-	/* error is INVAL until we have at least parsed something */
+-	error = -EINVAL;
+-
+-	tmp = token;
+-	while (*tmp && *tmp != '^') {
+-		tmp++;
+-	}
+-
+-	if (!*tmp || tmp == token) {
++	magic = simple_strtoull(token, &hat, 16);
++	if (hat == token || *hat != '^') {
+ 		AA_WARN("%s: Invalid input '%s'\n", __FUNCTION__, token);
+ 		goto out;
+ 	}
+ 
+-	/* split magic and hat into two strings */
+-	*tmp = 0;
+-	smagic = token;
+-
+-	/*
+-	 * Initially set consumed=strlen(magic), as if sscanf
+-	 * consumes all input via the %x it will not process the %n
+-	 * directive. Otherwise, if sscanf does not consume all the
+-	 * input it will process the %n and update consumed.
+-	 */
+-	consumed = len = strlen(smagic);
+-
+-	rc = sscanf(smagic, "%x%n", &magic, &consumed);
+-
+-	if (rc != 1 || consumed != len) {
+-		AA_WARN("%s: Invalid hex magic %s\n",
+-			__FUNCTION__,
+-			smagic);
+-		goto out;
+-	}
+-
+-	hat = tmp + 1;
++	/* skip ^ */
++	hat++;
+ 
+ 	if (!*hat)
+ 		hat = NULL;

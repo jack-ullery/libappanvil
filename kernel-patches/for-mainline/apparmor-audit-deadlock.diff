@@ -2,21 +2,12 @@ Index: b/security/apparmor/lsm.c
 ===================================================================
 --- a/security/apparmor/lsm.c
 +++ b/security/apparmor/lsm.c
-@@ -150,7 +150,7 @@ static int apparmor_sysctl(struct ctl_ta
- 	int error = 0;
- 
- 	if ((op & 002) && !capable(CAP_SYS_ADMIN))
--		error = aa_reject_syscall(current, GFP_KERNEL,
-+		error = aa_reject_syscall(current, GFP_ATOMIC,
- 					  "sysctl (write)");
- 
- 	return error;
-@@ -202,7 +202,7 @@ static int apparmor_bprm_secureexec(stru
- static int apparmor_sb_mount(char *dev_name, struct nameidata *nd, char *type,
- 			      unsigned long flags, void *data)
- {
--	return aa_reject_syscall(current, GFP_KERNEL, "mount");
-+	return aa_reject_syscall(current, GFP_ATOMIC, "mount");
- }
+@@ -207,7 +207,7 @@ static int apparmor_sb_mount(char *dev_n
  
  static int apparmor_umount(struct vfsmount *mnt, int flags)
+ {
+-	return aa_reject_syscall(current, GFP_ATOMIC, "umount");
++	return aa_reject_syscall(current, GFP_KERNEL, "umount");
+ }
+ 
+ static int apparmor_inode_mkdir(struct inode *dir, struct dentry *dentry,

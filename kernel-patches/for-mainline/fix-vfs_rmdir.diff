@@ -1,0 +1,31 @@
+Index: b/fs/namei.c
+===================================================================
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -2016,6 +2016,10 @@ int vfs_rmdir(struct inode *dir, struct 
+ 	if (!dir->i_op || !dir->i_op->rmdir)
+ 		return -EPERM;
+ 
++	error = security_inode_rmdir(dir, dentry, mnt);
++	if (error)
++		return error;
++
+ 	DQUOT_INIT(dir);
+ 
+ 	mutex_lock(&dentry->d_inode->i_mutex);
+@@ -2023,12 +2027,9 @@ int vfs_rmdir(struct inode *dir, struct 
+ 	if (d_mountpoint(dentry))
+ 		error = -EBUSY;
+ 	else {
+-		error = security_inode_rmdir(dir, dentry, mnt);
+-		if (!error) {
+-			error = dir->i_op->rmdir(dir, dentry);
+-			if (!error)
+-				dentry->d_inode->i_flags |= S_DEAD;
+-		}
++		error = dir->i_op->rmdir(dir, dentry);
++		if (!error)
++			dentry->d_inode->i_flags |= S_DEAD;
+ 	}
+ 	mutex_unlock(&dentry->d_inode->i_mutex);
+ 	if (!error) {

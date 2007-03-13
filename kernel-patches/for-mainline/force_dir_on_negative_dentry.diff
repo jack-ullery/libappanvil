@@ -1,0 +1,25 @@
+Index: b/security/apparmor/lsm.c
+===================================================================
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -333,9 +333,18 @@ static int apparmor_inode_rename(struct 
+ 			error = aa_perm(profile, old_dentry, old_mnt,
+ 					MAY_READ | MAY_WRITE, AA_CHECK_LEAF);
+ 
+-		if (!error && new_mnt)
++		if (!error && new_mnt) {
++			int check = 0;
++			/*
++			 * if the new_dentry doesn't exist force it to be the
++			 * same file/dir type as old_dentry
++			 */
++			if (!new_dentry->d_inode && old_dentry->d_inode &&
++			    S_ISDIR(old_dentry->d_inode->i_mode))
++				check = AA_CHECK_DIR;
+ 			error = aa_perm(profile, new_dentry, new_mnt,
+-					MAY_WRITE, AA_CHECK_LEAF);
++					MAY_WRITE, check | AA_CHECK_LEAF);
++		}
+ 	}
+ 
+ 	aa_put_profile(profile);
