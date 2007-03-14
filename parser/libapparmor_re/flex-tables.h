@@ -16,13 +16,13 @@ struct table_set_header {
 	char		th_pad64[];*/
 } __attribute__ ((packed));
 
-#define	YYTD_ID_ACCEPT	1 /* 1 */
-#define YYTD_ID_BASE	2 /* 2 */
-#define YYTD_ID_CHK	3 /* 3 */
-#define YYTD_ID_DEF	4 /* 4 */
-#define YYTD_ID_EC	5 /* 5 */
-#define YYTD_ID_NXT	6 /* 8 */
-#define YYTD_ID_META	7 /* 6 */
+#define	YYTD_ID_ACCEPT	1
+#define YYTD_ID_BASE	2
+#define YYTD_ID_CHK	3
+#define YYTD_ID_DEF	4
+#define YYTD_ID_EC	5
+#define YYTD_ID_META	6
+#define YYTD_ID_NXT	8
 
 #define YYTD_DATA8	1
 #define YYTD_DATA16	2
