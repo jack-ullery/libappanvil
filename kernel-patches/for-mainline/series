@@ -107,3 +107,4 @@ force_dir_on_negative_dentry.diff
 fix-vfs_rmdir.diff
 fix-change_hat-replacement.diff
 64bit-changehat.diff
+dfa-table-order.diff
