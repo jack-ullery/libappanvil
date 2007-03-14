@@ -208,11 +208,12 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 					 * /*/foo -> should not match //foo
 					 */
 					#endif
-					char *s = sptr;
+					const char *s = sptr;
 					while (*s == '*')
 						s++;
-					if (*s == '/' || !*s)
+					if (*s == '/' || !*s) {
 						STORE("[^/]", dptr, 4);
+					}
 				}
 				if (*(sptr + 1) == '*') {
 					/* is this the first regex form we
