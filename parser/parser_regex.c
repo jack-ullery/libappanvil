@@ -107,10 +107,18 @@ static void filter_slashes(char *path)
 		}
 	}
 	*dptr = 0;
-	/* eliminate trailing slash */
-	len = strlen(path);
-	if (len > 2 && path[len -1] == '/') {
-		path[len - 1] = 0;
+
+	if (regex_type != AARE_DFA) {
+		/* eliminate trailing slashes for versions of apparmor that
+		 * do not use the dfa engine.
+		 * Versions of apparmor which use the dfa engine use the
+		 * trailing / to differentiate between file and directory
+		 * matches
+		 */
+		len = strlen(path);
+		if (len > 2 && path[len -1] == '/') {
+			path[len - 1] = 0;
+		}
 	}
 }
 
@@ -177,6 +185,35 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 				 */
 				STORE("\\*", dptr, 2);
 			} else {
+				if ((dptr > pcre) &&  *(dptr - 1) == '/') {
+					#if 0
+					/* handle comment containing use
+					 * of C comment characters
+					 * /* /*/ and /** to describe paths
+					 *
+					 * modify what is emitted for * and **
+					 * when used as the only path
+					 * component
+					 * ex.
+					 * /* /*/ /**/ /**
+					 * this prevents these expressions
+					 * from matching directories or
+					 * invalid paths
+					 * in these case * and ** must
+					 * match at least 1 character to
+					 * get a valid path element.
+					 * ex.
+					 * /foo/* -> should not match /foo/
+					 * /foo/*bar -> should match /foo/bar
+					 * /*/foo -> should not match //foo
+					 */
+					#endif
+					char *s = sptr;
+					while (*s == '*')
+						s++;
+					if (*s == '/' || !*s)
+						STORE("[^/]", dptr, 4);
+				}
 				if (*(sptr + 1) == '*') {
 					/* is this the first regex form we
 					 * have seen and also the end of
@@ -620,6 +657,8 @@ static int test_filter_slashes(void)
 
 	return rc;
 }
+
+int regex_type = AARE_PCRE;
 
 int main(void)
 {
