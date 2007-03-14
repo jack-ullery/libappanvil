@@ -65,12 +65,12 @@ int main(int argc, char *argv[])
 {
 	int rc;
 	int waitstatus;
-	int c, o;
+	int c;
 	char buf[BUFSIZ];
 	void *child_stack = malloc(PAGE_SIZE << 4);
 	int clone_flags = 0;
 
-	while ((c = getopt_long (argc, argv, "+hn", long_options, &o)) != -1) {
+	while ((c = getopt_long (argc, argv, "+hn", long_options, NULL)) != -1) {
 		switch (c) {
 		    case 'n':
 			clone_flags |= CLONE_NEWNS;

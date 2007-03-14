@@ -12,33 +12,80 @@
 #define _GNU_SOURCE
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+#include <getopt.h>
+
+struct option long_options[] = {
+        {"delete", 0, 0, 'd'},  /* delete the directory after opening */
+        {"rename", 1, 0, 'r'},  /* rename the directory to -- */
+        {"help", 0, 0, 'h'},
+};
+
+static void usage (char * program)
+{
+	fprintf(stderr, "usage: %s [--delete] dir file\n", program);
+	fprintf(stderr, "%s\n", "$Id$");
+	exit(1);
+}
 
 int main(int argc, char *argv[])
 {
 	int fd = -1, dirfd = -1;
+	int c;
+	int do_delete = 0;
+	int do_rename = 0;
+	char *dir, *file, *newdir = NULL;
 
-	if (argc != 3){
-		fprintf(stderr, "usage: %s dir file\n", argv[0]);
-		return 1;
+	while ((c = getopt_long (argc, argv, "+hdr:", long_options, NULL)) != -1) {
+		switch (c) {
+		    case 'd':
+			do_delete = 1;
+			break;
+		    case 'r':
+			do_rename = 1;
+			newdir = optarg;
+			break;
+		    case 'h':
+			/* fall through */
+		    default:
+			usage(argv[0]);
+			break;
+		}
 	}
 
-	dirfd = open(argv[1], O_RDONLY | O_DIRECTORY);
+	if (argc - optind != 2)
+		usage(argv[0]);
+
+	dir = argv[optind];
+	file = argv[optind + 1];
+
+	dirfd = open(dir, O_RDONLY | O_DIRECTORY);
 	if (dirfd == -1) {
 		fprintf(stderr, "FAIL: open %s failed - %s\n",
-			argv[1], strerror(errno));
+			dir, strerror(errno));
 		return 1;
 	}
 
-	fd = openat(dirfd, argv[2], O_RDWR | O_CREAT, S_IWUSR | S_IRUSR);
+	if (do_delete && rmdir(dir) == -1) {
+		fprintf(stderr, "FAIL: rmdir %s failed - %s\n",
+			dir, strerror(errno));
+		return 1;
+	} else if (do_rename && rename(dir, newdir) == -1) {
+		fprintf(stderr, "FAIL: rename %s, %s failed - %s\n",
+			dir, newdir, strerror(errno));
+		return 1;
+	}
+
+	fd = openat(dirfd, file, O_RDWR | O_CREAT, S_IWUSR | S_IRUSR);
 	if (fd == -1) {
 		fprintf(stderr, "FAIL: openat %s failed - %s\n",
-			argv[2], strerror(errno));
+			file, strerror(errno));
 		close(dirfd);
 		return 1;
 	}
