@@ -701,9 +701,10 @@ sub UI_YesNo ($$) {
     my $no  = gettext("(N)o");
 
     # figure out our localized hotkeys
-    $yes =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey for '$yes'";
+    my $usrmsg = "PromptUser: " . gettext("Invalid hotkey for");
+    $yes =~ /\((\S)\)/ or fatal_error "$usrmsg '$yes'";
     my $yeskey = lc($1);
-    $no =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey for '$no'";
+    $no =~ /\((\S)\)/ or fatal_error "$usrmsg '$no'";
     my $nokey = lc($1);
 
     print "\n$text\n";
@@ -741,11 +742,12 @@ sub UI_YesNoCancel ($$) {
     my $cancel = gettext("(C)ancel");
 
     # figure out our localized hotkeys
-    $yes =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey for '$yes'";
+    my $usrmsg = "PromptUser: " . gettext("Invalid hotkey for");
+    $yes =~ /\((\S)\)/ or fatal_error "$usrmsg '$yes'";
     my $yeskey = lc($1);
-    $no =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey for '$no'";
+    $no =~ /\((\S)\)/ or fatal_error "$usrmsg '$no'";
     my $nokey = lc($1);
-    $cancel =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey for '$cancel'";
+    $cancel =~ /\((\S)\)/ or fatal_error "$usrmsg '$cancel'";
     my $cancelkey = lc($1);
 
     $ans = "XXXINVALIDXXX";
@@ -2984,19 +2986,22 @@ sub Text_PromptUser ($) {
   my @menu_items;
   for my $cmd (@functions) {
     # make sure we know about this particular command
-    fatal_error "PromptUser: Unknown command $cmd" unless $CMDS{$cmd};
+    my $cmdmsg = "PromptUser: " . gettext("Unknown command") . " $cmd";
+    fatal_error $cmdmsg unless $CMDS{$cmd};
 
     # grab the localized text to use for the menu for this command
     my $menutext = gettext($CMDS{$cmd});
 
     # figure out what the hotkey for this menu item is
-    $menutext =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey in '$menutext'";
+    my $menumsg = "PromptUser: " . gettext("Invalid hotkey in") . " '$menutext'";
+    $menutext =~ /\((\S)\)/ or fatal_error $menumsg; 
 
     # we want case insensitive comparisons so we'll force things to lowercase
     my $key = lc($1);
 
     # check if we're already using this hotkey for this prompt
-    fatal_error "PromptUser: Duplicate hotkey for $cmd: $menutext" if $keys{$key};
+    my $hotkeymsg = "PromptUser: " . gettext("Duplicate hotkey for") . " $cmd: $menutext";
+    fatal_error $hotkeymsg if $keys{$key};
 
     # keep track of which command they're picking if they hit this hotkey
     $keys{$key} = $cmd;
@@ -3014,12 +3019,14 @@ sub Text_PromptUser ($) {
     my $defaulttext = gettext($CMDS{$default});
 
     # figure out what the hotkey for this menu item is
-    $defaulttext =~ /\((\S)\)/ or fatal_error "PromptUser: Invalid hotkey in default item '$defaulttext'";
+    my $defmsg = "PromptUser: " . gettext("Invalid hotkey in default item") . " '$defaulttext'";
+    $defaulttext =~ /\((\S)\)/ or fatal_error $defmsg; 
 
     # we want case insensitive comparisons so we'll force things to lowercase
     $default_key = lc($1);
 
-    fatal_error "PromptUser: Invalid default $default" unless $keys{$default_key};
+    my $defkeymsg = "PromptUser: " . gettext("Invalid default") . " $default"; 
+    fatal_error $defkeymsg unless $keys{$default_key};
   }
 
   my $widest = 0;
