@@ -1,5 +1,0 @@
-rcapparmor_builtin.patch
-parser_loadinterface.patch
-parser_cache.patch
-dfa.patch
-dfa_single_module.patch

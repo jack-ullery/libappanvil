@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION ux and Ux conflict
-#=EXRESULT FAIL
-#
-/usr/bin/foo {
-  /bin/cat Uxux,
-}

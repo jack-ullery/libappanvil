@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION px and ux conflict
-#=EXRESULT FAIL
-#
-/usr/bin/foo {
-  /bin/cat pxux,
-}

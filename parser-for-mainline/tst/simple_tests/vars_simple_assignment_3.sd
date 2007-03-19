@@ -1,8 +1,0 @@
-#=DESCRIPTION undefined set used as rvalue
-#=EXRESULT FAIL
-
-@{FOO}=@{BAR}
-
-/bin/foo {
-	/home/@{FOO} r,
-}

@@ -1,7 +1,0 @@
-#
-#=DESCRIPTION px and ix conflict
-#=EXRESULT FAIL
-#
-/usr/bin/foo {
-  /bin/cat pxix,
-}

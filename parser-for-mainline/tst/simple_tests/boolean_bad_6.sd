@@ -1,5 +1,0 @@
-# from condcod6.sd
-#=DESCRIPTION initial part of word matches 'true'
-#=EXRESULT FAIL
-
-$FOO=truely

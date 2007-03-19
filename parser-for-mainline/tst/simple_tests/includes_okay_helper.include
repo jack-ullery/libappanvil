@@ -1,6 +1,0 @@
-#
-#=DESCRIPTION A helper for includes_okay.sd
-#
-  #include <includes/fonts>
-
-  /tmp/** r,
