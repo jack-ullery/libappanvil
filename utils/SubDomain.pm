@@ -237,9 +237,9 @@ sub setup_yast {
   if($ENV{YAST_IS_RUNNING}) {
 
     # load the yast module if available.
-    eval { require Immunix::Ycp; };
+    eval { require ycp; };
     unless($@) {
-      import Immunix::Ycp;
+      import ycp;
 
       no warnings 'all';
 
@@ -671,7 +671,7 @@ sub UI_Info ($) {
   if($UI_Mode eq "text") {
     print "$text\n";
   } else {
-    Immunix::Ycp::y2milestone($text);
+    ycp::y2milestone($text);
   }
 }
 
@@ -896,7 +896,7 @@ sub SendDataToYast {
 
   while(<STDIN>) {
     $DEBUGGING && debug "SendDataToYast: YCP: $_";
-    my ($ycommand, $ypath, $yargument) = Immunix::Ycp::ParseCommand ($_);
+    my ($ycommand, $ypath, $yargument) = ycp::ParseCommand($_);
 
     if($ycommand && $ycommand eq "Read") {
 
@@ -905,7 +905,7 @@ sub SendDataToYast {
         debug "SendDataToYast: Sending--\n$debugmsg";
       }
 
-      Immunix::Ycp::Return($data);
+      ycp::Return($data);
       return 1;
 
     } else {
@@ -928,7 +928,7 @@ sub GetDataFromYast {
 
   while(<STDIN>) {
     $DEBUGGING && debug "GetDataFromYast: YCP: $_";
-    my ($ycmd, $ypath, $yarg) = Immunix::Ycp::ParseCommand ($_);
+    my ($ycmd, $ypath, $yarg) = ycp::ParseCommand($_);
 
     if($DEBUGGING) {
       my $debugmsg = Data::Dumper->Dump([$yarg], [qw(*data)]);
@@ -937,7 +937,7 @@ sub GetDataFromYast {
 
     if($ycmd && $ycmd eq "Write") {
 
-      Immunix::Ycp::Return("true");
+      ycp::Return("true");
       return ($ypath, $yarg);
 
     } else {
