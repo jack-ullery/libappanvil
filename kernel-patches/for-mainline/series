@@ -102,7 +102,7 @@ file-handle-ops-2.diff
 # unlink.diff
 coding-style.diff
 dir-leaf-nodes.diff
-force_dir_on_negative_dentry.diff
+rename-file-type.diff
 fix-vfs_rmdir.diff
 fix-change_hat-replacement.diff
 64bit-changehat.diff
