@@ -170,8 +170,8 @@ Index: linux-2.6/security/apparmor/procattr.c
  
 -	AA_DEBUG("%s: Magic 0x%x Hat '%s'\n",
 -		 __FUNCTION__, magic, hat ? hat : NULL);
-+	AA_DEBUG("%s: Magic 0x%lx Hat '%s'\n",
-+		 __FUNCTION__, (unsigned long)magic, hat ? hat : NULL);
++	AA_DEBUG("%s: Magic 0x%llx Hat '%s'\n",
++		 __FUNCTION__, magic, hat ? hat : NULL);
  
  	error = aa_change_hat(hat, magic);
  
