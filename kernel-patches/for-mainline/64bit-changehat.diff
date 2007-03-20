@@ -1,7 +1,7 @@
-Index: b/security/apparmor/apparmor.h
+Index: linux-2.6/security/apparmor/apparmor.h
 ===================================================================
---- a/security/apparmor/apparmor.h
-+++ b/security/apparmor/apparmor.h
+--- linux-2.6.orig/security/apparmor/apparmor.h
++++ linux-2.6/security/apparmor/apparmor.h
 @@ -141,7 +141,7 @@ extern rwlock_t profile_list_lock;
   */
  struct aa_task_context {
@@ -20,10 +20,10 @@ Index: b/security/apparmor/apparmor.h
  extern struct aa_profile *__aa_find_profile(const char *name,
  					    struct list_head *list);
  extern struct aa_profile *aa_replace_profile(struct task_struct *task,
-Index: b/security/apparmor/inline.h
+Index: linux-2.6/security/apparmor/inline.h
 ===================================================================
---- a/security/apparmor/inline.h
-+++ b/security/apparmor/inline.h
+--- linux-2.6.orig/security/apparmor/inline.h
++++ linux-2.6/security/apparmor/inline.h
 @@ -69,7 +69,7 @@ static inline struct aa_profile *aa_find
   */
  static inline void aa_change_profile(struct aa_task_context *cxt,
@@ -33,10 +33,10 @@ Index: b/security/apparmor/inline.h
  {
  	struct aa_profile *old_profile = cxt->profile;
  
-Index: b/security/apparmor/main.c
+Index: linux-2.6/security/apparmor/main.c
 ===================================================================
---- a/security/apparmor/main.c
-+++ b/security/apparmor/main.c
+--- linux-2.6.orig/security/apparmor/main.c
++++ linux-2.6/security/apparmor/main.c
 @@ -1035,7 +1035,7 @@ repeat:
   */
  static inline int do_change_hat(const char *hat_name,
@@ -82,10 +82,10 @@ Index: b/security/apparmor/main.c
  				 "(hatname %s profile %s active %s)\n",
  				 current->comm, current->pid,
  				 hat_magic,
-Index: b/security/apparmor/procattr.c
+Index: linux-2.6/security/apparmor/procattr.c
 ===================================================================
---- a/security/apparmor/procattr.c
-+++ b/security/apparmor/procattr.c
+--- linux-2.6.orig/security/apparmor/procattr.c
++++ linux-2.6/security/apparmor/procattr.c
 @@ -79,9 +79,8 @@ size_t aa_getprocattr(struct aa_profile 
  int aa_setprocattr_changehat(char *hatinfo, size_t infosize)
  {
@@ -164,3 +164,14 @@ Index: b/security/apparmor/procattr.c
  
  	if (!*hat)
  		hat = NULL;
+@@ -154,8 +122,8 @@ int aa_setprocattr_changehat(char *hatin
+ 		goto out;
+ 	}
+ 
+-	AA_DEBUG("%s: Magic 0x%x Hat '%s'\n",
+-		 __FUNCTION__, magic, hat ? hat : NULL);
++	AA_DEBUG("%s: Magic 0x%lx Hat '%s'\n",
++		 __FUNCTION__, (unsigned long)magic, hat ? hat : NULL);
+ 
+ 	error = aa_change_hat(hat, magic);
+ 
