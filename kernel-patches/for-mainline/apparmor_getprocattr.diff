@@ -1,0 +1,142 @@
+Index: linux-2.6/security/apparmor/apparmor.h
+===================================================================
+--- linux-2.6.orig/security/apparmor/apparmor.h
++++ linux-2.6/security/apparmor/apparmor.h
+@@ -253,7 +253,8 @@ extern void free_aa_profile(struct aa_pr
+ extern void free_aa_profile_kref(struct kref *kref);
+ 
+ /* procattr.c */
+-extern size_t aa_getprocattr(struct aa_profile *profile, char *str, size_t size);
++extern int aa_getprocattr(struct aa_profile *profile, char **string,
++			  unsigned *len);
+ extern int aa_setprocattr_changehat(char *hatinfo, size_t infosize);
+ extern int aa_setprocattr_setprofile(struct task_struct *task,
+ 				     char *profilename,
+Index: linux-2.6/security/apparmor/lsm.c
+===================================================================
+--- linux-2.6.orig/security/apparmor/lsm.c
++++ linux-2.6/security/apparmor/lsm.c
+@@ -575,11 +575,11 @@ static void apparmor_task_reparent_to_in
+ }
+ 
+ static int apparmor_getprocattr(struct task_struct *task, char *name,
+-				void *value, size_t size)
++				char **value)
+ {
++	unsigned len;
+ 	int error;
+ 	struct aa_profile *profile;
+-	char *str = value;
+ 
+ 	/* AppArmor only supports the "current" process attribute */
+ 	if (strcmp(name, "current") != 0) {
+@@ -594,8 +594,10 @@ static int apparmor_getprocattr(struct t
+ 	}
+ 
+ 	profile = aa_get_profile(task);
+-	error = aa_getprocattr(profile, str, size);
++	error = aa_getprocattr(profile, value, &len);
+ 	aa_put_profile(profile);
++	if (!error)
++		error = len;
+ 
+ out:
+ 	return error;
+Index: linux-2.6/security/apparmor/procattr.c
+===================================================================
+--- linux-2.6.orig/security/apparmor/procattr.c
++++ linux-2.6/security/apparmor/procattr.c
+@@ -14,66 +14,45 @@
+ #include "apparmor.h"
+ #include "inline.h"
+ 
+-size_t aa_getprocattr(struct aa_profile *profile, char *str, size_t size)
++int aa_getprocattr(struct aa_profile *profile, char **string, unsigned *len)
+ {
+-	int error = -EACCES;	/* default to a perm denied */
+-	size_t len;
++	char *str;
+ 
+ 	if (profile) {
+-		size_t lena, lenm, lenp = 0;
+-		const char *enforce_str = " (enforce)";
+-		const char *complain_str = " (complain)";
+-		const char *mode_str =
+-			PROFILE_COMPLAIN(profile) ? complain_str : enforce_str;
++		const char *mode_str = PROFILE_COMPLAIN(profile) ?
++			" (complain)" : " (enforce)";
+ 
+-		lenm = strlen(mode_str);
++		*len = ((profile != profile->parent) ?
++		           strlen(profile->parent->name) + 1 : 0) +
++		       strlen(mode_str) + strlen(profile->name) + 1;
++		str = kmalloc(*len, GFP_ATOMIC);
++		if (!str)
++			return -ENOMEM;
+ 
+-		lena = strlen(profile->name);
+-
+-		len = lena;
+ 		if (profile != profile->parent) {
+-			lenp = strlen(profile->parent->name);
+-			len += (lenp + 1);	/* +1 for ^ */
+-		}
+-		/* DONT null terminate strings we output via proc */
+-		len += (lenm + 1);	/* for \n */
+-
+-		if (len <= size) {
+-			if (lenp) {
+-				memcpy(str, profile->parent->name,
+-				       lenp);
+-				str += lenp;
+-				*str++ = '^';
+-			}
+-
+-			memcpy(str, profile->name, lena);
+-			str += lena;
+-			memcpy(str, mode_str, lenm);
+-			str += lenm;
+-			*str++ = '\n';
+-			error = len;
+-		} else if (size == 0) {
+-			error = len;
+-		} else {
+-			error = -ERANGE;
++			memcpy(str, profile->parent->name,
++			       strlen(profile->parent->name));
++			str += strlen(profile->parent->name);
++			*str++ = '^';
+ 		}
++		memcpy(str, profile->name, strlen(profile->name));
++		str += strlen(profile->name);
++		memcpy(str, mode_str, strlen(mode_str));
++		str += strlen(mode_str);
++		*str++ = '\n';
+ 	} else {
+ 		const char *unconfined_str = "unconfined\n";
+-		len = strlen(unconfined_str);
+ 
+-		/* DONT null terminate strings we output via proc */
+-		if (len <= size) {
+-			memcpy(str, unconfined_str, len);
+-			error = len;
+-		} else if (size == 0) {
+-			error = len;
+-		} else {
+-			error = -ERANGE;
+-		}
++		*len = strlen(unconfined_str);
++		str = kmalloc(*len, GFP_ATOMIC);
++		if (!str)
++			return -ENOMEM;
++		
++		memcpy(str, unconfined_str, *len);
+ 	}
++	*string = str;
+ 
+-	return error;
+-
++	return 0;
+ }
+ 
+ int aa_setprocattr_changehat(char *hatinfo, size_t infosize)
