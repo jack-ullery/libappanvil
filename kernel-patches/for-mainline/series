@@ -108,3 +108,4 @@ fix-change_hat-replacement.diff
 64bit-changehat.diff
 dfa-table-order.diff
 apparmor_getprocattr.diff
+rcu-task-context.diff
