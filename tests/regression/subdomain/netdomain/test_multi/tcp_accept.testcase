@@ -1,0 +1,8 @@
+send_ip: 127.0.0.1
+send_port: 8989
+send_profile:
+receive_ip: 127.0.0.1
+receive_port: 8990
+receive_profile:
+message: tcp_accept pass
+proto: tcp

@@ -1,0 +1,8 @@
+send_ip: 127.0.0.1
+send_port: 9001
+send_profile:
+receive_ip: 127.0.0.1
+receive_port: 9002
+receive_profile:
+message: Test pass
+proto: tcp
