@@ -21,8 +21,8 @@
 
 package Immunix::SubDomain;
 
-use warnings;
 use strict;
+use warnings;
 
 use Carp;
 use Cwd qw(cwd realpath);
@@ -89,8 +89,6 @@ our @EXPORT = qw(
     checkIncludeSyntax
 );
 
-no warnings 'all';
-
 our $confdir = "/etc/apparmor";
 
 our $running_under_genprof = 0;
@@ -155,6 +153,9 @@ our @userglobs;
 our %t;
 our %transitions;
 our %sd;    # we keep track of the original profiles in %sd
+
+my @log;
+my %pid;
 
 my %seen;
 my %profilechanges;
@@ -293,8 +294,6 @@ sub setup_yast {
         unless ($@) {
             import ycp;
 
-            no warnings 'all';
-
             $UI_Mode = "yast";
 
             # let the frontend know that we're starting
@@ -343,7 +342,7 @@ sub check_for_subdomain () {
         close(MOUNTS);
     }
 
-    my $sd_mountpoint;
+    my $sd_mountpoint = "";
     if (open(MOUNTS, "/proc/mounts")) {
         while (<MOUNTS>) {
             if ($support_subdomainfs) {
@@ -1436,6 +1435,18 @@ sub handlechildren {
     }
 }
 
+sub add_to_tree ($@) {
+    my ($pid, $type, @event) = @_;
+
+    unless (exists $pid{$pid}) {
+        my $arrayref = [];
+        push @log, $arrayref;
+        $pid{$pid} = $arrayref;
+    }
+
+    push @{ $pid{$pid} }, [ $type, $pid, @event ];
+}
+
 sub do_logprof_pass {
     my $logmark = shift || "";
 
@@ -1459,21 +1470,6 @@ sub do_logprof_pass {
     my $seenmark = $logmark ? 0 : 1;
 
     $sevdb = new Immunix::Severity("$confdir/severity.db", gettext("unknown"));
-
-    my @log;
-    my %pid;
-
-    sub add_to_tree ($@) {
-        my ($pid, $type, @event) = @_;
-
-        unless (exists $pid{$pid}) {
-            my $arrayref = [];
-            push @log, $arrayref;
-            $pid{$pid} = $arrayref;
-        }
-
-        push @{ $pid{$pid} }, [ $type, $pid, @event ];
-    }
 
     my $stuffed = undef;
     my $last;
@@ -2402,7 +2398,7 @@ sub readprofile ($$) {
 
                 # deal with whitespace in profile and hat names.
                 $profile = $1 if $profile =~ /^"(.+)"$/;
-                $hat     = $1 if $hat     =~ /^"(.+)"$/;
+                $hat     = $1 if $hat && $hat =~ /^"(.+)"$/;
 
                 # if we run into old-style hat declarations mark the profile as
                 # changed so we'll write it out as new-style

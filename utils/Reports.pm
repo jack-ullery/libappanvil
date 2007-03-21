@@ -31,6 +31,7 @@ package Immunix::Reports;
 ################################################################################
 
 use strict;
+
 use DBI;
 use DBD::SQLite;
 use Locale::gettext;
@@ -518,7 +519,6 @@ sub exportLog {
             if ($header) { print LOG "$header\n\n"; }
 
             for (@$db) {
-                no strict;
 
 # host time prog profile pid severity resource sdmode mode
 #print LOG "$_->{'host'},$_->{'time'},$_->{'prog'},$_->{'profile'},$_->{'pid'},";
@@ -548,7 +548,6 @@ sub exportLog {
             my $idx = 1;
 
             for (@$db) {
-                no strict;
                 $idx++;
                 if ($idx % 2 == 0) {
 
