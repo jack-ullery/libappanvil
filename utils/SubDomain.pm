@@ -1691,7 +1691,7 @@ sub do_logprof_pass {
                 push @log, $arrayref;
             }
             $pid{$child} = $arrayref;
-            push @{$arrayref}, [ "fork", $child . $profile, $hat ];
+            push @{$arrayref}, [ "fork", $child, $profile, $hat ];
         } else {
             $DEBUGGING && debug "UNHANDLED: $_";
         }
