@@ -39,7 +39,7 @@ for applications using pam_apparmor).
 However, this is configurable by adding an option to the pam configuration
 line to modify what order and what attributes pam_apparmor will attempt
 to use when attempting to change_hat. To do so, add 'order=' followed by
-a comma seperated list of types of hats to try. The type of hats
+a comma separated list of types of hats to try. The type of hats
 available are:
 
   * 'user' - the username will be used as the hatname
@@ -48,7 +48,7 @@ available are:
 		Generally, this should be the hat of last resort.
 
 The order in the list determines the order the hat will be attempted.
-Some exmaple configurations:
+Some example configurations:
 
   # the default behavior
   session  optional       pam_apparmor.so order=group,default
@@ -56,7 +56,7 @@ Some exmaple configurations:
   # attempt to use only the username
   session  optional       pam_apparmor.so order=user
 
-  # use the username, followed by the primary groupname, follwed by
+  # use the username, followed by the primary groupname, followed by
   # DEFAULT if the prior hats do not exist in the apparmor profile
   session  optional       pam_apparmor.so order=user,group,default
 
