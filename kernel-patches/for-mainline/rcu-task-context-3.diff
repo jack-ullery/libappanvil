@@ -1,0 +1,66 @@
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -1089,7 +1089,7 @@ static inline int do_change_hat(const ch
+ int aa_change_hat(const char *hat_name, u64 hat_magic)
+ {
+ 	struct aa_task_context *cxt, *new_cxt;
+-	struct aa_profile *profile;
++	struct aa_profile *profile = NULL;
+ 	int error = 0;
+ 
+ 	/* Dump out above debugging in WARN mode if we are in AUDIT mode */
+@@ -1106,12 +1106,11 @@ int aa_change_hat(const char *hat_name, 
+ 	cxt = lock_task_and_profiles(current, NULL);
+ 	if (!cxt) {
+ 		/* An unconfined process cannot change_hat(). */
+-		task_unlock(current);
+-		aa_free_task_context(new_cxt);
+-		return -EPERM;
++		error = -EPERM;
++		goto out;
+ 	}
+ 
+-	/* no need to get reference count */
++	/* No need to get reference count: we do not sleep. */
+ 	profile = cxt->profile;
+ 
+ 	/* check to see if the confined process has any hats. */
+@@ -1128,13 +1127,6 @@ int aa_change_hat(const char *hat_name, 
+ 				 hat_name,
+ 				 hat_magic);
+ 			error = do_change_hat(hat_name, new_cxt, hat_magic);
+-		} else {
+-			/* Got here via change_hat(NULL, magic)
+-			 *
+-			 * We used to simply update the magic cookie.
+-			 * That's an odd behaviour, so just do nothing.
+-			 */
+-			aa_free_task_context(new_cxt);
+ 		}
+ 	} else {
+ 		/*
+@@ -1170,7 +1162,6 @@ int aa_change_hat(const char *hat_name, 
+ 
+ 			/* terminate current process */
+ 			(void)send_sig_info(SIGKILL, NULL, current);
+-			aa_free_task_context(new_cxt);
+ 		} else {	/* cxt->hat_magic == 0 */
+ 			AA_ERROR("KILLING process %s(%d) "
+ 				 "Task was confined to current subprofile "
+@@ -1181,12 +1172,13 @@ int aa_change_hat(const char *hat_name, 
+ 
+ 			/* terminate current process */
+ 			(void)send_sig_info(SIGKILL, NULL, current);
+-			aa_free_task_context(new_cxt);
+ 		}
+ 
+ 	}
+ 
+ out:
++	if (aa_task_context(current) != new_cxt)
++		aa_free_task_context(new_cxt);
+ 	task_unlock(current);
+ 	unlock_profile(profile);
+ 	return error;
