@@ -25,13 +25,6 @@ extern int apparmor_debug;
 extern int apparmor_audit;
 extern int apparmor_logsyscall;
 
-/* PIPEFS_MAGIC */
-#include <linux/pipe_fs_i.h>
-/* from net/socket.c */
-#define SOCKFS_MAGIC 0x534F434B
-/* from inotify.c  */
-#define INOTIFYFS_MAGIC 0xBAD1DEA
-
 static inline int mediated_filesystem(struct inode *inode)
 {
 	return !(inode->i_sb->s_flags & MS_NOUSER);
