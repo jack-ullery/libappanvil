@@ -496,7 +496,7 @@ static int apparmor_file_permission(struct file *file, int mask)
 	active = get_active_aaprofile();
 	if (active && aaf->profile != active)
 		error = aa_perm(active, file->f_dentry, file->f_vfsmnt,
-				mask & (MAY_EXEC | MAY_WRITE | MAY_READ));
+				mask & (MAY_EXEC | MAY_WRITE | MAY_READ), 1);
 	put_aaprofile(active);
 
 out:
@@ -562,7 +562,8 @@ static inline int aa_mmap(struct file *file, unsigned long prot,
 	AA_DEBUG("%s: 0x%x\n", __FUNCTION__, mask);
 
 	if (mask)
-		error = aa_perm(active, file->f_dentry, file->f_vfsmnt, mask);
+		error = aa_perm(active, file->f_dentry, file->f_vfsmnt, mask,
+				1);
 
 	put_aaprofile(active);
 

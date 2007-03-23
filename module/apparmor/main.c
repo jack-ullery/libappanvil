@@ -222,32 +222,6 @@ static inline int aa_get_execmode(struct aaprofile *active, const char *name,
 	return rc;
 }
 
-/**
- * aa_filter_mask
- * @mask: requested mask
- * @inode: potential directory inode
- *
- * This fn performs pre-verification of the requested mask
- * We ignore append. Previously we required 'w' on a dir to add a file.
- * No longer. Now we require 'w' on just the file itself. Traversal 'x' is
- * also ignored for directories.
- *
- * Returned value of %0 indicates no need to perform a perm check.
- */
-static inline int aa_filter_mask(int mask, struct inode *inode)
-{
-	if (mask) {
-		int elim = MAY_APPEND;
-
-		if (inode && S_ISDIR(inode->i_mode))
-			elim |= (MAY_EXEC | MAY_WRITE);
-
-		mask &= ~elim;
-	}
-
-	return mask;
-}
-
 static inline void aa_permerror2result(int perm_result, struct aa_audit *sa)
 {
 	if (perm_result == 0) {	/* success */
@@ -901,7 +875,7 @@ out:
  * profile.  Result, %0 (success), -ve (error)
  */
 int aa_perm(struct aaprofile *active, struct dentry *dentry,
-	    struct vfsmount *mnt, int mask)
+	    struct vfsmount *mnt, int mask, int leaf)
 {
 	int error = 0, permerror;
 	struct aa_audit sa;
@@ -909,7 +883,10 @@ int aa_perm(struct aaprofile *active, struct dentry *dentry,
 	if (!active)
 		goto out;
 
-	if ((mask = aa_filter_mask(mask, dentry->d_inode)) == 0)
+	if (!leaf && dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode)) {
+		mask &= ~(AA_MAY_EXEC | AA_MAY_WRITE);
+	}
+	if (mask == 0)
 		goto out;
 
 	sa.type = AA_AUDITTYPE_FILE;
@@ -946,7 +923,7 @@ int aa_perm_nameidata(struct aaprofile *active, struct nameidata *nd, int mask)
 	int error = 0;
 
 	if (nd)
-		error = aa_perm(active, nd->dentry, nd->mnt, mask);
+		error = aa_perm(active, nd->dentry, nd->mnt, mask, 0);
 
 	return error;
 }
@@ -968,8 +945,8 @@ int aa_perm_dentry(struct aaprofile *active, struct dentry *dentry, int mask)
 	if (!active)
 		goto out;
 
-	if ((mask = aa_filter_mask(mask, dentry->d_inode)) == 0)
-		goto out;
+	/* perm dentry is always called as a leaf so no mask filtering is
+	 * done like in aa_perm */
 
 	sa.type = AA_AUDITTYPE_FILE;
 	sa.ival = mask;

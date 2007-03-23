@@ -303,7 +303,7 @@ extern int aa_xattr(struct aaprofile *active, struct dentry *dentry,
 		    const char *xattr, enum aa_xattroptype xattroptype);
 extern int aa_capability(struct aaprofile *active, int cap);
 extern int aa_perm(struct aaprofile *active, struct dentry *dentry,
-		   struct vfsmount *mnt, int mask);
+		   struct vfsmount *mnt, int mask, int leaf);
 extern int aa_perm_nameidata(struct aaprofile *active, struct nameidata *nd,
 			     int mask);
 extern int aa_perm_dentry(struct aaprofile *active, struct dentry *dentry,
