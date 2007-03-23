@@ -797,7 +797,13 @@ int apparmor_register_subsecurity(const char *name,
 	if (mutex_lock_interruptible(&aa_secondary_lock))
 		return -ERESTARTSYS;
 
-	if (strcmp(name, "dazuko") == 0 && !aa_secondary_ops) {
+	/* allow dazuko and capability to stack.  The stacking with
+	 * capability is fake however in that non of capabilities hooks
+	 * get called, since apparmor already composes capability using
+	 * common cap.
+	 */
+	if (!aa_secondary_ops && (strcmp(name, "dazuko") == 0 ||
+				  strcmp(name, "capability") == 0)){
 		/* The apparmor module needs to be pinned while a secondary is
 		 * registered
 		 */
