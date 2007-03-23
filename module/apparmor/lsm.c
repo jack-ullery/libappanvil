@@ -320,6 +320,22 @@ static int apparmor_inode_unlink(struct inode *inode, struct dentry *dentry)
 	return error;
 }
 
+static int apparmor_inode_symlink(struct inode *dir, struct dentry *dentry,
+				  const char *old_name)
+{
+	struct aaprofile *active;
+	int error = 0;
+
+	active = get_active_aaprofile();
+
+	if (active)
+		error = aa_perm_dentry(active, dentry, MAY_WRITE);
+
+	put_aaprofile(active);
+
+	return error;
+}
+
 static int apparmor_inode_mknod(struct inode *inode, struct dentry *dentry,
 				 int mode, dev_t dev)
 {
@@ -763,6 +779,7 @@ struct security_operations apparmor_ops = {
 	.inode_create =			apparmor_inode_create,
 	.inode_link =			apparmor_inode_link,
 	.inode_unlink =			apparmor_inode_unlink,
+	.inode_symlink =		apparmor_inode_symlink,
 	.inode_mknod =			apparmor_inode_mknod,
 	.inode_rename =			apparmor_inode_rename,
 	.inode_permission =		apparmor_inode_permission,
