@@ -136,6 +136,7 @@ struct aa_entry {
  * @num_file_pentries: number of file entries for each partitioned list
  * @capabilities: capabilities granted by the process
  * @rcu: rcu head used when freeing the profile
+ * @on_rcu_callback: flag indicating profile is on the rcu callback list
  * @count: reference count of the profile
  *
  * The AppArmor profile contains the basic confinement data.  Each profile
@@ -160,6 +161,7 @@ struct aaprofile {
 	kernel_cap_t capabilities;
 
 	struct rcu_head rcu;
+	int on_rcu_callback;
 
 	struct kref count;
 };

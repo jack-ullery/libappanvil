@@ -69,7 +69,21 @@ static inline struct aa_entry *alloc_aa_entry(void)
 static void free_aaprofile_rcu(struct rcu_head *head)
 {
 	struct aaprofile *p = container_of(head, struct aaprofile, rcu);
-	free_aaprofile(p);
+	/* check that the reference count is still 0.  There is a
+	 * race where a reference can be gotten after the profile is
+	 * put on the rcu callback
+	 * If it is not 0 here who ever has the reference will
+	 * put it causing the profile to be freed.
+	 */
+	spin_lock(&sd_lock);
+	p->on_rcu_callback = 0;
+	if (atomic_read(&p->count.refcount) == 0) {
+		spin_unlock(&sd_lock);
+		free_aaprofile(p);
+	} else {
+		INIT_RCU_HEAD(&p->rcu);
+		spin_unlock(&sd_lock);
+	}
 }
 
 /**
@@ -786,7 +800,18 @@ void free_aaprofile_kref(struct kref *kr)
 {
 	struct aaprofile *p=container_of(kr, struct aaprofile, count);
 
-	call_rcu(&p->rcu, free_aaprofile_rcu);
+	/* The is a race between getting the rcu ref of profile from
+	 * the subdomain and putting it, so check that the rcu list
+	 * entry is not in use, before putting it on the list.
+	 * If it is we have raced, it is already there and we don't
+	 * have to do anything.
+	 */
+	spin_lock(&sd_lock);
+	if (!p->on_rcu_callback) {
+		p->on_rcu_callback = 1;
+		call_rcu(&p->rcu, free_aaprofile_rcu);
+	}
+	spin_unlock(&sd_lock);
 }
 
 /**
