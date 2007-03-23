@@ -44,6 +44,7 @@ Prereq: sed
 %if %{distro} == "suse"
 Prereq: %{insserv_prereq} aaa_base
 %endif
+BuildRequires: gcc-c++
 Obsoletes: subdomain_parser subdomain-parser
 Obsoletes: subdomain-parser-demo subdomain-parser-common subdomain-leaf-cert
 Obsoletes: libimnxcert
@@ -148,6 +149,9 @@ fi
 %endif
 
 %changelog
+* Fri Mar 23 2007 - sbeattie@suse.de
+- Added dfa matching code
+- add build dep on c++ compiler
 * Thu Jan 18 2007 - sbeattie@suse.de
 - Remove long obsolete editing of fstab
 * Tue Dec 12 2006 - sbeattie@suse.de

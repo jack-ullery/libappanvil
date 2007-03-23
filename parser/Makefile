@@ -186,7 +186,7 @@ $(AAREOBJECTS):
 
 .SILENT: $(PCREOBJECTS)
 $(PCREOBJECTS):
-	make -C $(PCREDIR) "CFLAGS=$(CFLAGS)"
+	make -C $(PCREDIR) "CFLAGS=$(EXTRA_CFLAGS)"
 
 .PHONY: install-rhel4
 install-rhel4: install-redhat
@@ -239,7 +239,7 @@ clean:
 	rm -f $(YACC_C_FILES)
 	rm -f parser_version.h
 	rm -f $(NAME)*.tar.gz $(NAME)*.tgz
-	rm -rf libstdc++.a
+	rm -f libstdc++.a
 	make -s -C $(PCREDIR) clean
 	make -s -C $(AAREDIR) clean
 	make -s -C po clean
