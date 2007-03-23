@@ -32,9 +32,10 @@ extern int apparmor_logsyscall;
 /* from inotify.c  */
 #define INOTIFYFS_MAGIC 0xBAD1DEA
 
-#define VALID_FSTYPE(inode) ((inode)->i_sb->s_magic != PIPEFS_MAGIC && \
-                             (inode)->i_sb->s_magic != SOCKFS_MAGIC && \
-                             (inode)->i_sb->s_magic != INOTIFYFS_MAGIC)
+static inline int mediated_filesystem(struct inode *inode)
+{
+	return !(inode->i_sb->s_flags & MS_NOUSER);
+}
 
 #define PROFILE_COMPLAIN(_profile) \
 	(apparmor_complain == 1 || ((_profile) && (_profile)->flags.complain))

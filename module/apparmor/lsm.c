@@ -384,7 +384,7 @@ static int apparmor_inode_permission(struct inode *inode, int mask,
 	/* Do not perform check on pipes or sockets
 	 * Same as apparmor_file_permission
 	 */
-	if (VALID_FSTYPE(inode)) {
+	if (mediated_filesystem(inode)) {
 		struct aaprofile *active;
 
 		active = get_active_aaprofile();
@@ -400,7 +400,7 @@ static int apparmor_inode_setattr(struct dentry *dentry, struct iattr *iattr)
 {
 	int error = 0;
 
-	if (VALID_FSTYPE(dentry->d_inode)) {
+	if (mediated_filesystem(dentry->d_inode)) {
 		struct aaprofile *active;
 
 		active = get_active_aaprofile();
@@ -422,7 +422,7 @@ static int apparmor_inode_setxattr(struct dentry *dentry, char *name,
 {
 	int error = 0;
 
-	if (VALID_FSTYPE(dentry->d_inode)) {
+	if (mediated_filesystem(dentry->d_inode)) {
 		struct aaprofile *active;
 
 		active = get_active_aaprofile();
@@ -438,7 +438,7 @@ static int apparmor_inode_getxattr(struct dentry *dentry, char *name)
 {
 	int error = 0;
 
-	if (VALID_FSTYPE(dentry->d_inode)) {
+	if (mediated_filesystem(dentry->d_inode)) {
 		struct aaprofile *active;
 
 		active = get_active_aaprofile();
@@ -453,7 +453,7 @@ static int apparmor_inode_listxattr(struct dentry *dentry)
 {
 	int error = 0;
 
-	if (VALID_FSTYPE(dentry->d_inode)) {
+	if (mediated_filesystem(dentry->d_inode)) {
 		struct aaprofile *active;
 
 		active = get_active_aaprofile();
@@ -469,7 +469,7 @@ static int apparmor_inode_removexattr(struct dentry *dentry, char *name)
 {
 	int error = 0;
 
-	if (VALID_FSTYPE(dentry->d_inode)) {
+	if (mediated_filesystem(dentry->d_inode)) {
 		struct aaprofile *active;
 
 		active = get_active_aaprofile();
@@ -490,7 +490,7 @@ static int apparmor_file_permission(struct file *file, int mask)
 
 	aaf = (struct aafile *)file->f_security;
 	/* bail out early if this isn't a mediated file */
-	if (!aaf || !VALID_FSTYPE(file->f_dentry->d_inode))
+	if (!aaf || !mediated_filesystem(file->f_dentry->d_inode))
 		goto out;
 
 	active = get_active_aaprofile();
