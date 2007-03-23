@@ -803,7 +803,7 @@ retry:
 		const char deleted_str[] = " (deleted)";
 		const size_t deleted_size = sizeof(deleted_str) - 1;
 		size_t size;
-		size = strlen(name);
+		size = (PAGE_SIZE - 1) - (name - page);
 
 		/* check for (deleted) that d_path appends to pathnames if
 		 * the dentry has been removed from the cache.
