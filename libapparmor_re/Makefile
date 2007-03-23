@@ -3,7 +3,7 @@
 
 TARGET=libapparmor_re.a
 
-CFLAGS = -c -g -Wall -O2 ${EXTRA_CFLAGS}
+CFLAGS = -g -Wall -O2 ${EXTRA_CFLAGS}
 CXXFLAGS := ${CFLAGS}
 
 ARFLAGS=-rcs
@@ -16,7 +16,7 @@ libapparmor_re.a: regexp.o
 	ar ${ARFLAGS} $@ $^
 
 regexp.o : regexp.cc
-	$(LINK.cc) $^ -o $@
+	$(LINK.cc) $^ -c -o $@
 
 regexp.cc : regexp.y flex-tables.h
 	${BISON} -o $@ $<
