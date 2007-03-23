@@ -1,6 +1,4 @@
-#vfs-mnt.patch
-inode_symlink.patch 
-tests-directory_rename.patch 
+vfs-mnt.patch
 exec_qual.patch
 deleted-open-revalidate.patch
 #deleted_no_revalidation-pass.patch
