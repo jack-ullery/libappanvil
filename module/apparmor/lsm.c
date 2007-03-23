@@ -22,6 +22,37 @@
 /* struct subdomain write update lock (read side is RCU). */
 spinlock_t sd_lock = SPIN_LOCK_UNLOCKED;
 
+/* point to the apparmor module */
+struct module *aa_module = NULL;
+
+/* secondary ops if apparmor is stacked */
+static struct security_operations *aa_secondary_ops = NULL;
+static DEFINE_MUTEX(aa_secondary_lock);
+
+#if 0
+#define AA_SECONDARY(ERROR, FN, ARGS...) \
+	({ \
+	 struct security_operations *__f1; \
+	 rcu_read_lock(); \
+	 __f1 = rcu_dereference(aa_secondary_ops); \
+	 rcu_read_unlock(); \
+	 (!(ERROR) && unlikely(__f1) && __f1->FN) ? __f1->FN(ARGS) : (ERROR); \
+	 })
+#endif
+#define AA_SECONDARY(ERROR, FN, ARGS...) \
+        ({ \
+         struct security_operations *__f1; \
+         if (!ERROR) { \
+                rcu_read_lock(); \
+                __f1 = rcu_dereference(aa_secondary_ops); \
+                if (unlikely(__f1) && __f1->FN) \
+                        (ERROR) = __f1->FN(ARGS); \
+                rcu_read_unlock(); \
+         } \
+         (ERROR); \
+         })
+
+
 /* Flag values, also controllable via apparmorfs/control.
  * We explicitly do not allow these to be modifiable when exported via
  * /sys/modules/parameters, as we want to do additional mediation and
@@ -393,6 +424,8 @@ static int apparmor_inode_permission(struct inode *inode, int mask,
 		put_aaprofile(active);
 	}
 
+	error = AA_SECONDARY(error, inode_permission, inode, mask, nd);
+
 	return error;
 }
 
@@ -756,6 +789,56 @@ out:
 	return error;
 }
 
+int apparmor_register_subsecurity(const char *name,
+				  struct security_operations *ops)
+{
+	int error = 0;
+
+	if (mutex_lock_interruptible(&aa_secondary_lock))
+		return -ERESTARTSYS;
+
+	if (strcmp(name, "dazuko") == 0 && !aa_secondary_ops) {
+		/* The apparmor module needs to be pinned while a secondary is
+		 * registered
+		 */
+		if (try_module_get(aa_module)) {
+			aa_secondary_ops = ops;
+			AA_INFO("Registered secondary security module: %s.\n",
+				name);
+		} else {
+			error = -EINVAL;
+		}
+	} else {
+		AA_WARN("Unable to register %s as a secondary security "
+			"module\n", name);
+		error = -EPERM;
+	}
+	mutex_unlock(&aa_secondary_lock);
+	return error;
+}
+
+int apparmor_unregister_subsecurity(const char *name,
+				    struct security_operations *ops)
+{
+	int error = 0;
+
+	if (mutex_lock_interruptible(&aa_secondary_lock))
+		return -ERESTARTSYS;
+
+	if (aa_secondary_ops && aa_secondary_ops == ops) {
+		rcu_assign_pointer(aa_secondary_ops, NULL);
+		synchronize_rcu();
+		module_put(aa_module);
+		AA_INFO("Unregistered secondary security module: %s\n", name);
+	} else {
+		AA_WARN("Unable to unregister secondary security module %s\n",
+			name);
+		error = -EPERM;
+	}
+	mutex_unlock(&aa_secondary_lock);
+	return error;
+}
+
 struct security_operations apparmor_ops = {
 	.ptrace =			apparmor_ptrace,
 	.capget =			apparmor_capget,
@@ -804,6 +887,9 @@ struct security_operations apparmor_ops = {
 
 	.getprocattr =			apparmor_getprocattr,
 	.setprocattr =			apparmor_setprocattr,
+
+	.register_security =		apparmor_register_subsecurity,
+	.unregister_security =		apparmor_unregister_subsecurity,
 };
 
 static int __init apparmor_init(void)
@@ -831,6 +917,8 @@ static int __init apparmor_init(void)
 	aa_audit_message(NULL, GFP_KERNEL, 0,
 		"AppArmor initialized%s\n",
 		apparmor_complain ? complainmsg : "");
+
+	aa_module = THIS_MODULE;
 
 	return error;
 
