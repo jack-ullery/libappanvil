@@ -97,7 +97,7 @@ for my $profiling (@profiling) {
         next unless -f $filename;
 
         # skip rpm backup files
-        next if $filename =~ /\.rpm(save|new)$/;
+        next if isSkippableFile($filename);
 
         printf(gettext('Setting %s to complain mode.'), $fqdbin);
         print "\n";

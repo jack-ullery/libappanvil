@@ -87,6 +87,8 @@ our @EXPORT = qw(
 
     checkProfileSyntax
     checkIncludeSyntax
+
+    isSkippableFile
 );
 
 our $confdir = "/etc/apparmor";
@@ -2305,6 +2307,16 @@ sub contains ($$) {
     return 1;
 }
 
+# isSkippableFile - return true if filename matches something that
+# should be skipped (rpm backup files, dotfiles, emacs backup files
+sub isSkippableFile($) {
+    my $path = shift;
+
+    return ($path =~ /(^|\/)\.[^\/]*$/
+            || $path =~ /\.rpm(save|new)$/
+            || $path =~ /\~$/);
+}
+
 sub checkIncludeSyntax($) {
     my $errors = shift;
 
@@ -2315,7 +2327,7 @@ sub checkIncludeSyntax($) {
             if (opendir(SDDIR, "$profiledir/$id")) {
                 for my $path (grep { !/^\./ } readdir(SDDIR)) {
                     chomp($path);
-                    next if $path =~ /\.rpm(save|new)$/;
+                    next if isSkippableFile($path);
                     if (-f "$profiledir/$id/$path") {
                         my $file = "$id/$path";
                         $file =~ s/$profiledir\///;
@@ -2342,7 +2354,7 @@ sub checkProfileSyntax ($) {
     opendir(SDDIR, $profiledir)
       or fatal_error "Can't read AppArmor profiles in $profiledir.";
     for my $file (grep { -f "$profiledir/$_" } readdir(SDDIR)) {
-        next if $file =~ /\.rpm(save|new)$/;
+        next if isSkippableFile($file);
         my $err = readprofile("$profiledir/$file", \&printMessageErrorHandler);
         if (defined $err and $err ne 1) {
             push @$errors, $err;
@@ -2361,7 +2373,7 @@ sub readprofiles () {
     opendir(SDDIR, $profiledir)
       or fatal_error "Can't read AppArmor profiles in $profiledir.";
     for my $file (grep { -f "$profiledir/$_" } readdir(SDDIR)) {
-        next if $file =~ /\.rpm(save|new)$/;
+        next if isSkippableFile($file);
         readprofile("$profiledir/$file", \&fatal_error);
     }
     closedir(SDDIR);
@@ -3004,9 +3016,9 @@ sub loadincludes {
 
         while (my $id = shift @incdirs) {
             if (opendir(SDDIR, "$profiledir/$id")) {
-                for my $path (grep { !/^\./ } readdir(SDDIR)) {
+                for my $path (readdir(SDDIR)) {
                     chomp($path);
-                    next if $path =~ /\.rpm(save|new)$/;
+                    next if isSkippableFile($path);
                     if (-f "$profiledir/$id/$path") {
                         my $file = "$id/$path";
                         $file =~ s/$profiledir\///;
