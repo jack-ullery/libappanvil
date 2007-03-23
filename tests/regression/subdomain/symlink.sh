@@ -9,9 +9,7 @@
 #	License.
 
 #=NAME symlink
-#=DESCRIPTION As the 'link' test but for symbolic rather than hard links
-
-echo "symlink mediation in AppArmor has been removed"; exit 1
+#=DESCRIPTION creating a symlink should require write access to the new name
 
 pwd=`dirname $0`
 pwd=`cd $pwd ; /bin/pwd`
@@ -20,42 +18,24 @@ bin=$pwd
 
 . $bin/prologue.inc
 
-src1=$tmpdir/src1
-src2=$tmpdir/src2
-src3=$tmpdir/src3
+src=$tmpdir/src1
 target=$tmpdir/target
-path2=target
-path3=$(echo $tmpdir | sed -e "s|/[^/]*|../|g")${target}
-okperm=rwixl
-badperm=rwl
-nolinkperm=rwix
 
-touch $target 
+okperm=w
+badperm=rlixm
+
+touch $target
 
 # PASS TEST
 
-genprofile ${src1}:$okperm ${src2}:$okperm ${src3}:$okperm $target:$nolinkperm
+genprofile ${src}:$okperm
 
-runchecktest "MATCHING PERM (absolute)" pass $target ${src1}
-runchecktest "MATCHING PERM (same dir)" pass ${path2} ${src2} 
-runchecktest "MATCHING PERM (relative)" pass ${path3} ${src3}
+runchecktest "SYMLINK/WRITE PERMS" pass $target ${src}
 
 # FAILURE TEST
 
-rm -f ${src1} ${src2} ${src3}
+rm -f ${src}
 
-genprofile ${src1}:$badperm ${src2}:$badperm ${src3}:$badperm $target:$nolinkperm
+genprofile ${src}:$badperm
 
-runchecktest "NONMATCHING PERM (absolute)" fail $target ${src1}
-runchecktest "NONMATCHING PERM (same dir)" fail ${path2} ${src2} 
-runchecktest "NONMATCHING PERM (relative)" fail ${path3} ${src3}
-
-# NOLINK TEST
-
-rm -f ${src1} ${src2} ${src3}
-
-genprofile ${src1}:$nolinkperm ${src2}:$nolinkperm ${src3}:$nolinkperm $target:$nolinkperm
-
-runchecktest "NOLINK PERM (absolute)" fail $target ${src1}
-runchecktest "NOLINK PERM (same dir)" fail ${path2} ${src2}
-runchecktest "NOLINK PERM (relative)" fail ${path3} ${src3}
+runchecktest "SYMLINK/NO-WRITE PERMS" fail $target ${src}

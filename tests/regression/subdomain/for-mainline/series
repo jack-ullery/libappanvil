@@ -1,4 +1,4 @@
-vfs-mnt.patch
+#vfs-mnt.patch
 inode_symlink.patch 
 tests-directory_rename.patch 
 exec_qual.patch

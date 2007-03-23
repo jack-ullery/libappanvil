@@ -46,6 +46,7 @@ SRC=access.c \
     rename.c \
     readdir.c \
     rw.c \
+    symlink.c \
     syscall_mknod.c \
     swap.c \
     syscall_chroot.c \
@@ -132,6 +133,7 @@ TESTS=access \
       swap \
       sd_flags \
       setattr \
+      symlink \
       syscall \
       unix_fd_server \
       unlink\
