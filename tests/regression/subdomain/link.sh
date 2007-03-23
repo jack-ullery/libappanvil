@@ -49,6 +49,13 @@ rm -f $target
 genprofile $src:r $target:rl
 runchecktest "MATCHING PERM (r)" pass $src $target
 
+# PASS TEST
+
+rm -f $target
+
+genprofile $src:w $target:wl
+runchecktest "MATCHING PERM (w)" pass $src $target
+
 # FAILURE TEST
 
 rm -f $target
