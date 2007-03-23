@@ -779,6 +779,7 @@ out:
 char *aa_get_name(struct dentry *dentry, struct vfsmount *mnt)
 {
 	char *page, *name;
+	int deleted = !IS_ROOT(dentry) && d_unhashed(dentry);
 
 	page = (char *)__get_free_page(GFP_KERNEL);
 	if (!page) {
@@ -786,20 +787,30 @@ char *aa_get_name(struct dentry *dentry, struct vfsmount *mnt)
 		goto out;
 	}
 
+retry:
 	name = d_path(dentry, mnt, page, PAGE_SIZE);
-	/* check for (deleted) that d_path appends to pathnames if the dentry
-	 * has been removed from the cache.
-	 * The size > deleted_size and strcmp checks are redundant safe guards.
-	 */
+
 	if (IS_ERR(name)) {
 		free_page((unsigned long)page);
+	} else if (!deleted && (!IS_ROOT(dentry) && d_unhashed(dentry))) {
+		/* test for race of name lookup against the dentry being
+		 * deleted.  If a race is detected then redo the lookup,
+		 * so that the (deleted) suffix can be unambiguously removed
+		 */
+		deleted = 1;
+		goto retry;
 	} else {
 		const char deleted_str[] = " (deleted)";
 		const size_t deleted_size = sizeof(deleted_str) - 1;
 		size_t size;
 		size = strlen(name);
-		if (!IS_ROOT(dentry) && d_unhashed(dentry) &&
-		    size > deleted_size &&
+
+		/* check for (deleted) that d_path appends to pathnames if
+		 * the dentry has been removed from the cache.
+		 * The size > deleted_size and strcmp checks are redundant
+		 * safe guards.
+		 */
+		if (deleted && size > deleted_size &&
 		    strcmp(name + size - deleted_size, deleted_str) == 0)
 			name[size - deleted_size] = '\0';
 		AA_DEBUG("%s: full_path=%s\n", __FUNCTION__, name);
