@@ -148,26 +148,26 @@ changehat_pthread: changehat_pthread.c changehat.h
 	${CC} ${CFLAGS} -lpthread -o $@ $<
 
 tests: all
-	@if [ `whoami` == "root" ] ;\
+	@if [ `whoami` = "root" ] ;\
 	then \
 		for i in $(TESTS) ;\
 		do \
 			echo ;\
 			echo "running $$i" ;\
-			sh $$i.sh ;\
+			bash $$i.sh ;\
 		done ;\
 	else \
 		echo "must be root to run tests" ;\
 	fi
 
 alltests: all
-	@if [ `whoami` == "root" ] ;\
+	@if [ `whoami` = "root" ] ;\
 	then \
 		for i in $(TESTS) $(RISKY_TESTS) ;\
 		do \
 			echo ;\
 			echo "running $$i" ;\
-			sh $$i.sh ;\
+			bash $$i.sh ;\
 		done ;\
 	else \
 		echo "must be root to run tests" ;\
