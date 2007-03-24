@@ -403,13 +403,11 @@ remove_profiles() {
 }
 
 subdomain_stop() {
-	stop_aa_event
 	echo -n "Unloading AppArmor profiles "
 	remove_profiles
 }
 
 subdomain_kill() {
-	stop_aa_event
 	unmount_subdomainfs
 	if grep -qE "^apparmor[[:space:]]" /proc/modules ; then
 		MODULE=apparmor
