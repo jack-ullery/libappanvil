@@ -883,6 +883,9 @@ int aa_perm(struct aaprofile *active, struct dentry *dentry,
 	if (!active)
 		goto out;
 
+	/* AppArmor does not use append so mask it off */
+	mask &= ~MAY_APPEND;
+
 	if (!leaf && dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode)) {
 		mask &= ~(AA_MAY_EXEC | AA_MAY_WRITE);
 	}
@@ -944,6 +947,9 @@ int aa_perm_dentry(struct aaprofile *active, struct dentry *dentry, int mask)
 
 	if (!active)
 		goto out;
+
+	/* AppArmor does not use append so mask it off */
+	mask &= ~MAY_APPEND;
 
 	/* perm dentry is always called as a leaf so no mask filtering is
 	 * done like in aa_perm */
