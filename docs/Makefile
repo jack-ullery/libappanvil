@@ -48,7 +48,7 @@ MANPAGES			= change_hat.2 \
 				  ${AA_MANPAGES} \
 				  apparmor_parser.8 apparmor_status.8 mod_apparmor.8
 DOCUMENTS                       = immunix.css
-PAPERS=$(wildcard papers/*) 
+PAPERS=$(wildcard papers/*)
 
 HTMLMANPAGES=$(foreach manpage, ${MANPAGES}, ${manpage}.html)
 # All manpages are now autotragically generated.
@@ -112,9 +112,8 @@ install_manpages: $(MANPAGES)
 
 .PHONY: install_documents
 install_documents: ${HTMLMANPAGES}
-	mkdir -m 755 -p ${DESTDIR}/${DOCDIR} ${DESTDIR}/${DOCDIR}/papers
+	mkdir -m 755 -p ${DESTDIR}/${DOCDIR}
 	install -m 644 $(DOCUMENTS) ${HTMLMANPAGES} ${DESTDIR}/${DOCDIR}
-	install -m 644 -D ${PAPERS} ${DESTDIR}/${DOCDIR}/papers
 
 .PHONY: install
 install: install_manpages install_documents
