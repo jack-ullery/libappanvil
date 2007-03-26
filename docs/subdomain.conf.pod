@@ -19,8 +19,8 @@
 # 
 # Please direct suggestions and comments to apparmor-general@forge.novell.com.
 
-
 =pod
+
 =head1 NAME
 
 /etc/apparmor/subdomain.conf - configuration file for fine-tuning the
