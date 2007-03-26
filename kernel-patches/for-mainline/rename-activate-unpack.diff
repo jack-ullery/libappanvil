@@ -95,3 +95,12 @@ Index: b/security/apparmor/module_interface.c
  	if (IS_ERR(new_profile))
  		return PTR_ERR(new_profile);
  
+@@ -489,7 +489,7 @@ ssize_t aa_file_prof_replace(void *udata
+ 		if (new_profile->isstale) {
+ 			struct aa_profile *profile;
+ 			if (IS_ERR(new_profile->isstale)) {
+-				/* new_profile was removed so become removal */
++				/* new_profile was removed so do removal */
+ 				remove_tasks_on_context_list(old_profile);
+ 				unlock_both_profiles(old_profile, new_profile);
+ 				break;

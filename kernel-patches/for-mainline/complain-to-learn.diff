@@ -1,0 +1,459 @@
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -37,7 +37,7 @@
+ 
+ /* Control parameters (0 or 1), settable thru module/boot flags or
+  * via /sys/kernel/security/apparmor/control */
+-extern int apparmor_complain;
++extern int apparmor_learning;
+ extern int apparmor_debug;
+ extern int apparmor_audit;
+ extern int apparmor_logsyscall;
+@@ -48,12 +48,12 @@ static inline int mediated_filesystem(st
+ 	return !(inode->i_sb->s_flags & MS_NOUSER);
+ }
+ 
+-#define PROFILE_COMPLAIN(_profile) \
+-	(apparmor_complain == 1 || ((_profile) && (_profile)->flags.complain))
++#define PROFILE_LEARNING(_profile) \
++	(apparmor_learning == 1 || ((_profile) && (_profile)->flags.learning))
+ 
+-#define APPARMOR_COMPLAIN(_cxt) \
+-	(apparmor_complain == 1 || \
+-	 ((_cxt) && (_cxt)->profile && (_cxt)->profile->flags.complain))
++#define APPARMOR_LEARNING(_cxt) \
++	(apparmor_learning == 1 || \
++	 ((_cxt) && (_cxt)->profile && (_cxt)->profile->flags.learning))
+ 
+ #define PROFILE_AUDIT(_profile) \
+ 	(apparmor_audit == 1 || ((_profile) && (_profile)->flags.audit))
+@@ -116,7 +116,7 @@ struct aa_profile {
+ 	struct list_head list;
+ 	struct list_head sub;
+ 	struct {
+-		int complain;
++		int learning;
+ 		int audit;
+ 	} flags;
+ 	struct aa_profile *null_profile;
+@@ -158,7 +158,7 @@ static inline struct aa_task_context *aa
+ 	return rcu_dereference((struct aa_task_context *)task->security);
+ }
+ 
+-extern struct aa_profile *null_complain_profile;
++extern struct aa_profile *null_learning_profile;
+ 
+ /* aa_audit - AppArmor auditing structure
+  * Structure is populated by access control code and passed to aa_audit which
+@@ -217,8 +217,8 @@ struct aa_audit {
+ 
+ /* main.c */
+ extern void free_aa_task_context_rcu_callback(struct rcu_head *head);
+-extern int alloc_null_complain_profile(void);
+-extern void free_null_complain_profile(void);
++extern int alloc_null_learning_profile(void);
++extern void free_null_learning_profile(void);
+ extern int attach_nullprofile(struct aa_profile *profile);
+ extern int aa_audit_message(struct aa_profile *profile, gfp_t gfp, int,
+ 			    const char *, ...);
+Index: b/security/apparmor/apparmorfs.c
+===================================================================
+--- a/security/apparmor/apparmorfs.c
++++ b/security/apparmor/apparmorfs.c
+@@ -106,8 +106,8 @@ static struct root_entry {
+ 
+ 	/* interface for setting binary config values */
+ 	{"control",  	S_IFDIR, 0550},
+-	{"complain", 	S_IFREG, 0640, &apparmorfs_control_fops,
+-				       &apparmor_complain},
++	{"learning", 	S_IFREG, 0640, &apparmorfs_control_fops,
++				       &apparmor_learning},
+ 	{"audit",    	S_IFREG, 0640, &apparmorfs_control_fops,
+ 				       &apparmor_audit},
+ 	{"debug",    	S_IFREG, 0640, &apparmorfs_control_fops,
+Index: b/security/apparmor/list.c
+===================================================================
+--- a/security/apparmor/list.c
++++ b/security/apparmor/list.c
+@@ -84,7 +84,7 @@ static int seq_show_profile(struct seq_f
+ {
+ 	struct aa_profile *profile = (struct aa_profile *)v;
+ 	seq_printf(f, "%s (%s)\n", profile->name,
+-		   PROFILE_COMPLAIN(profile) ? "complain" : "enforce");
++		   PROFILE_LEARNING(profile) ? "learning" : "enforce");
+ 	return 0;
+ }
+ 
+Index: b/security/apparmor/lsm.c
+===================================================================
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -26,15 +26,15 @@
+  * /sys/modules/parameters, as we want to do additional mediation and
+  * don't want to add special path code. */
+ 
+-/* Complain mode -- in complain mode access failures result in auditing only
++/* Learning mode -- in learning mode access failures result in auditing only
+  * and task is allowed access.  audit events are processed by userspace to
+  * generate policy.  Default is 'enforce' (0).
+  * Value is also togglable per profile and referenced when global value is
+  * enforce.
+  */
+-int apparmor_complain = 0;
+-module_param_named(complain, apparmor_complain, int, S_IRUSR);
+-MODULE_PARM_DESC(apparmor_complain, "Toggle AppArmor complain mode");
++int apparmor_learning = 0;
++module_param_named(learning, apparmor_learning, int, S_IRUSR);
++MODULE_PARM_DESC(apparmor_learning, "Toggle AppArmor learning mode");
+ 
+ /* Debug mode */
+ int apparmor_debug = 0;
+@@ -767,15 +767,15 @@ struct security_operations apparmor_ops 
+ static int __init apparmor_init(void)
+ {
+ 	int error;
+-	const char *complainmsg = ": complainmode enabled";
++	const char *learningmsg = ": learningmode enabled";
+ 
+ 	if ((error = create_apparmorfs())) {
+ 		AA_ERROR("Unable to activate AppArmor filesystem\n");
+ 		goto createfs_out;
+ 	}
+ 
+-	if ((error = alloc_null_complain_profile())){
+-		AA_ERROR("Unable to allocate null complain profile\n");
++	if ((error = alloc_null_learning_profile())){
++		AA_ERROR("Unable to allocate null learning profile\n");
+ 		goto alloc_out;
+ 	}
+ 
+@@ -785,15 +785,15 @@ static int __init apparmor_init(void)
+ 	}
+ 
+ 	AA_INFO(GFP_KERNEL, "AppArmor initialized%s\n",
+-		apparmor_complain ? complainmsg : "");
++		apparmor_learning ? learningmsg : "");
+ 	aa_audit_message(NULL, GFP_KERNEL, 0,
+ 		"AppArmor initialized%s\n",
+-		apparmor_complain ? complainmsg : "");
++		apparmor_learning ? learningmsg : "");
+ 
+ 	return error;
+ 
+ register_security_out:
+-	free_null_complain_profile();
++	free_null_learning_profile();
+ 
+ alloc_out:
+ 	(void)destroy_apparmorfs();
+@@ -825,7 +825,7 @@ static void __exit apparmor_exit(void)
+ 
+ 	/* FIXME: cleanup profiles references on files */
+ 
+-	free_null_complain_profile();
++	free_null_learning_profile();
+ 
+ 	/**
+ 	 * Delay for an rcu cycle to make sure that all active task
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -25,17 +25,17 @@ static const char *capability_names[] = 
+ #include "capability_names.h"
+ };
+ 
+-/* NULL complain profile
++/* NULL learning profile
+  *
+- * Used when in complain mode, to emit Permitting messages for non-existant
++ * Used when in learning mode, to emit Permitting messages for non-existant
+  * profiles and hats.  This is necessary because of selective mode, in which
+- * case we need a complain null_profile and enforce null_profile
++ * case we need a learning null_profile and enforce null_profile
+  *
+- * The null_complain_profile cannot be statically allocated, because it
++ * The null_learning_profile cannot be statically allocated, because it
+  * can be associated to files which keep their reference even if apparmor is
+  * unloaded
+  */
+-struct aa_profile *null_complain_profile;
++struct aa_profile *null_learning_profile;
+ 
+ /***************************
+  * Private utility functions
+@@ -237,14 +237,14 @@ int attach_nullprofile(struct aa_profile
+ 	hat = alloc_aa_profile();
+ 	if (!hat)
+ 		goto fail;
+-	if (profile->flags.complain)
+-		hatname = kstrdup("null-complain-profile", GFP_KERNEL);
++	if (profile->flags.learning)
++		hatname = kstrdup("null-learning-profile", GFP_KERNEL);
+ 	else
+ 		hatname = kstrdup("null-profile", GFP_KERNEL);
+ 	if (!hatname)
+ 		goto fail;
+ 
+-	hat->flags.complain = profile->flags.complain;
++	hat->flags.learning = profile->flags.learning;
+ 	hat->name = hatname;
+ 	hat->parent = profile;
+ 
+@@ -261,43 +261,43 @@ fail:
+ 
+ 
+ /**
+- * alloc_null_complain_profile - Allocate the global null_complain_profile.
++ * alloc_null_learning_profile - Allocate the global null_learning_profile.
+  *
+  * Return %0 (success) or error (-%ENOMEM)
+  */
+-int alloc_null_complain_profile(void)
++int alloc_null_learning_profile(void)
+ {
+-	null_complain_profile = alloc_aa_profile();
+-	if (!null_complain_profile)
++	null_learning_profile = alloc_aa_profile();
++	if (!null_learning_profile)
+ 		goto fail;
+ 
+-	null_complain_profile->name =
+-		kstrdup("null-complain-profile", GFP_KERNEL);
++	null_learning_profile->name =
++		kstrdup("null-learning-profile", GFP_KERNEL);
+ 
+-	if (!null_complain_profile->name)
++	if (!null_learning_profile->name)
+ 		goto fail;
+ 
+-	null_complain_profile->flags.complain = 1;
+-	if (attach_nullprofile(null_complain_profile))
++	null_learning_profile->flags.learning = 1;
++	if (attach_nullprofile(null_learning_profile))
+ 		goto fail;
+ 
+ 	return 0;
+ 
+ fail:
+ 	/* free_aa_profile is safe for freeing partially constructed objects */
+-	free_aa_profile(null_complain_profile);
+-	null_complain_profile = NULL;
++	free_aa_profile(null_learning_profile);
++	null_learning_profile = NULL;
+ 
+ 	return -ENOMEM;
+ }
+ 
+ /**
+- * free_null_complain_profile - Free null profiles
++ * free_null_learning_profile - Free null profiles
+  */
+-void free_null_complain_profile(void)
++void free_null_learning_profile(void)
+ {
+-	aa_put_profile(null_complain_profile);
+-	null_complain_profile = NULL;
++	aa_put_profile(null_learning_profile);
++	null_learning_profile = NULL;
+ }
+ 
+ /**
+@@ -362,7 +362,7 @@ int aa_audit(struct aa_profile *profile,
+ 	const char *logcls;
+ 	unsigned int flags;
+ 	int audit = 0,
+-	    complain = 0,
++	    learning = 0,
+ 	    error = -EINVAL,
+ 	    opspec_error = -EACCES;
+ 
+@@ -400,8 +400,8 @@ int aa_audit(struct aa_profile *profile,
+ 		 */
+ 		logcls = "REJECTING";
+ 	} else {
+-		complain = PROFILE_COMPLAIN(profile);
+-		logcls = complain ? "PERMITTING" : "REJECTING";
++		learning = PROFILE_LEARNING(profile);
++		logcls = learning ? "PERMITTING" : "REJECTING";
+ 	}
+ 
+ 	/* In future extend w/ per-profile flags
+@@ -427,7 +427,7 @@ int aa_audit(struct aa_profile *profile,
+ 	if (!ab) {
+ 		AA_ERROR("Unable to log event (%d) to audit subsys\n",
+ 			sa->type);
+-		if (complain)
++		if (learning)
+ 			error = 0;
+ 		goto out;
+ 	}
+@@ -509,7 +509,7 @@ int aa_audit(struct aa_profile *profile,
+ 
+ 	audit_log_end(ab);
+ 
+-	if (complain)
++	if (learning)
+ 		error = 0;
+ 	else
+ 		error = sa->result ? 0 : opspec_error;
+@@ -664,7 +664,7 @@ int aa_capability(struct aa_task_context
+ 
+ 	/* test if cap has alread been logged */
+ 	if (cap_raised(cxt->caps_logged, cap)) {
+-		if (PROFILE_COMPLAIN(cxt->profile))
++		if (PROFILE_LEARNING(cxt->profile))
+ 			error = 0;
+ 		return error;
+ 	} else
+@@ -773,8 +773,8 @@ repeat:
+ 				       cxt->hat_magic);
+ 		unlock_profile(profile);
+ 
+-		if (APPARMOR_COMPLAIN(child_cxt) &&
+-		    profile == null_complain_profile) {
++		if (APPARMOR_LEARNING(child_cxt) &&
++		    profile == null_learning_profile) {
+ 			LOG_HINT(profile, GFP_KERNEL, HINT_FORK,
+ 				 "pid=%d child=%d\n",
+ 				 current->pid, child->pid);
+@@ -788,7 +788,7 @@ repeat:
+ 
+ static struct aa_profile *
+ aa_register_find(struct aa_profile *profile, const char *name, int mandatory,
+-		 int complain)
++		 int learning)
+ {
+ 	struct aa_profile *new_profile;
+ 
+@@ -798,14 +798,14 @@ aa_register_find(struct aa_profile *prof
+ 		AA_DEBUG("%s: setting profile %s\n",
+ 			 __FUNCTION__, new_profile->name);
+ 	} else if (mandatory && profile) {
+-		if (complain) {
++		if (learning) {
+ 			LOG_HINT(profile, GFP_KERNEL, HINT_MANDPROF,
+ 				"image=%s pid=%d profile=%s active=%s\n",
+ 				name,
+ 				current->pid,
+ 				profile->parent->name, profile->name);
+ 
+-			profile = aa_dup_profile(null_complain_profile);
++			profile = aa_dup_profile(null_learning_profile);
+ 		} else {
+ 			AA_WARN(GFP_KERNEL, "REJECTING exec(2) of image '%s'. "
+ 				"Profile mandatory and not found "
+@@ -838,7 +838,7 @@ int aa_register(struct linux_binprm *bpr
+ 	char *filename, *buffer = NULL;
+ 	struct file *filp = bprm->file;
+ 	struct aa_profile *profile, *old_profile, *new_profile = NULL;
+-	int exec_mode = AA_EXEC_UNSAFE, complain = 0;
++	int exec_mode = AA_EXEC_UNSAFE, learning = 0;
+ 
+ 	AA_DEBUG("%s\n", __FUNCTION__);
+ 
+@@ -852,7 +852,7 @@ int aa_register(struct linux_binprm *bpr
+ repeat:
+ 	profile = aa_get_profile(current);
+ 	if (profile) {
+-		complain = PROFILE_COMPLAIN(profile);
++		learning = PROFILE_LEARNING(profile);
+ 
+ 		/* Confined task, determine what mode inherit, unconfined or
+ 		 * mandatory to load new profile
+@@ -883,7 +883,7 @@ repeat:
+ 					 filename);
+ 				new_profile = aa_register_find(profile,
+ 							       filename, 1,
+-							       complain);
++							       learning);
+ 				break;
+ 
+ 			default:
+@@ -900,12 +900,12 @@ repeat:
+ 				break;
+ 			}
+ 
+-		} else if (complain) {
++		} else if (learning) {
+ 			/* There was no entry in calling profile
+ 			 * describing mode to execute image in.
+ 			 * Drop into null-profile (disabling secure exec).
+ 			 */
+-			new_profile = aa_dup_profile(null_complain_profile);
++			new_profile = aa_dup_profile(null_learning_profile);
+ 			exec_mode |= AA_EXEC_UNSAFE;
+ 		} else {
+ 			AA_WARN(GFP_KERNEL,
+@@ -957,7 +957,7 @@ repeat:
+ 			((unsigned long)bprm->security | bprm_flags);
+ 	}
+ 
+-	if (complain && new_profile == null_complain_profile) {
++	if (learning && new_profile == null_learning_profile) {
+ 		LOG_HINT(new_profile, GFP_ATOMIC, HINT_CHGPROF,
+ 			"pid=%d\n",
+ 			current->pid);
+@@ -1044,7 +1044,7 @@ static inline int do_change_hat(const ch
+ 	} else {
+ 		struct aa_profile *profile = cxt->profile;
+ 
+-		if (APPARMOR_COMPLAIN(cxt)) {
++		if (APPARMOR_LEARNING(cxt)) {
+ 			LOG_HINT(profile, GFP_ATOMIC, HINT_UNKNOWN_HAT,
+  				"%s pid=%d "
+ 				"profile=%s active=%s\n",
+@@ -1116,7 +1116,7 @@ int aa_change_hat(const char *hat_name, 
+ 	profile = cxt->profile;
+ 
+ 	/* check to see if the confined process has any hats. */
+-	if (list_empty(&profile->parent->sub) && !PROFILE_COMPLAIN(profile)) {
++	if (list_empty(&profile->parent->sub) && !PROFILE_LEARNING(profile)) {
+ 		error = -ECHILD;
+ 		goto out;
+ 	}
+Index: b/security/apparmor/module_interface.c
+===================================================================
+--- a/security/apparmor/module_interface.c
++++ b/security/apparmor/module_interface.c
+@@ -245,12 +245,12 @@ static struct aa_profile *aa_unpack_prof
+ 	if (!aa_is_dynstring(e, &profile->name, NULL))
+ 		goto fail;
+ 
+-	/* per profile debug flags (complain, audit) */
++	/* per profile debug flags (learning, audit) */
+ 	if (!aa_is_nameX(e, AA_STRUCT, "flags"))
+ 		goto fail;
+ 	if (!aa_is_u32(e, NULL, NULL))
+ 		goto fail;
+-	if (!aa_is_u32(e, &(profile->flags.complain), NULL))
++	if (!aa_is_u32(e, &(profile->flags.learning), NULL))
+ 		goto fail;
+ 	if (!aa_is_u32(e, &(profile->flags.audit), NULL))
+ 		goto fail;
+@@ -308,7 +308,7 @@ static struct aa_profile *aa_unpack_prof
+ {
+ 	struct aa_profile *profile = aa_unpack_profile(e);
+ 	if (!IS_ERR(profile) &&
+-	    (!list_empty(&profile->sub) || profile->flags.complain)) {
++	    (!list_empty(&profile->sub) || profile->flags.learning)) {
+ 		int error;
+ 		if ((error = attach_nullprofile(profile))) {
+ 			aa_put_profile(profile);
+Index: b/security/apparmor/procattr.c
+===================================================================
+--- a/security/apparmor/procattr.c
++++ b/security/apparmor/procattr.c
+@@ -19,8 +19,8 @@ int aa_getprocattr(struct aa_profile *pr
+ 	char *str;
+ 
+ 	if (profile) {
+-		const char *mode_str = PROFILE_COMPLAIN(profile) ?
+-			" (complain)" : " (enforce)";
++		const char *mode_str = PROFILE_LEARNING(profile) ?
++			" (learning)" : " (enforce)";
+ 
+ 		*len = ((profile != profile->parent) ?
+ 		           strlen(profile->parent->name) + 1 : 0) +
