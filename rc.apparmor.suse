@@ -23,7 +23,7 @@
 # /etc/init.d/boot.apparmor
 #   and its symbolic link
 # /sbin/rcapparmor
-# 
+#
 # chkconfig: 2345 01 99
 # description: AppArmor rc file. This rc script inserts the apparmor \
 # 	       module and runs the parser on the /etc/apparmor.d/ \
@@ -32,12 +32,13 @@
 ### BEGIN INIT INFO
 # Provides: apparmor
 # Required-Start:
+# Rquired-Stop:
 # Should-Start: $local_fs
 # Default-Start: B 2 3 5
-# Default-Stop: 
+# Default-Stop:
 # Short-Description: AppArmor initialization
-# Description: AppArmor rc file. This rc script inserts the apparmor \
-# 	       module and runs the parser on the /etc/apparmor.d/ \
+# Description: AppArmor rc file. This rc script inserts the apparmor
+# 	       module and runs the parser on the /etc/apparmor.d/
 #	       directory.
 ### END INIT INFO
 APPARMOR_FUNCTIONS=/lib/apparmor/rc.apparmor.functions
@@ -121,6 +122,7 @@ case "$1" in
 	*)
 		usage
 		exit 1
+		;;
 	esac
 exit 0
 
