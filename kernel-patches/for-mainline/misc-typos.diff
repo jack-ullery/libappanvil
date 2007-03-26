@@ -1,0 +1,39 @@
+Index: b/security/apparmor/apparmorfs.c
+===================================================================
+--- a/security/apparmor/apparmorfs.c
++++ b/security/apparmor/apparmorfs.c
+@@ -235,7 +235,7 @@ static ssize_t aa_profile_remove(struct 
+ 	ssize_t error;
+ 
+ 	/* aa_file_prof_remove needs a null terminated string so 1 extra
+-	 * byte is allocated and null the copied data is then null terminated
++	 * byte is allocated and the copied data is then null terminated
+ 	 */
+ 	data = aa_simple_write_to_buffer(buf, size+1, size, pos, "removal");
+ 
+Index: b/security/apparmor/lsm.c
+===================================================================
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -819,6 +819,8 @@ static void __exit apparmor_exit(void)
+ 	}
+ 	write_unlock(&profile_list_lock);
+ 
++	/* FIXME: cleanup profiles references on files */
++
+ 	free_null_complain_profile();
+ 
+ 	/**
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -671,7 +671,7 @@ int aa_capability(struct aa_task_context
+ 		/* don't worry about rcu replacement of the cxt here.
+ 		 * caps_logged is a cache to reduce the occurance of
+ 		 * duplicate messages in the log.  The worst that can
+-		 * happen is duplicate capability messages show up in
++		 * happen is duplicate capability messages shows up in
+ 		 * the audit log
+ 		 */
+ 		cap_raise(cxt->caps_logged, cap);

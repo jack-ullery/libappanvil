@@ -102,15 +102,25 @@ file-handle-ops-2.diff
 # unlink.diff
 coding-style.diff
 dir-leaf-nodes.diff
+#rename-file-type-aa_permission.diff
 rename-file-type.diff
+fix-rename-file-type.diff
 fix-vfs_rmdir.diff
 fix-change_hat-replacement.diff
 64bit-changehat.diff
 dfa-table-order.diff
 apparmor_getprocattr.diff
+fix_apparmor_getprocattr.diff
 rcu-task-context.diff
 rcu-task-context-2.diff
+rcu-fix-lock_both_profiles.diff
 no-inline-aa_change_task_context.diff
 rcu-task-context-3.diff 
 rcu-task-context-4.diff 
-rcu-task-context-5.diff 
+rcu-caps-cache-comment.diff
+rcu-stale-forward-ptr.diff
+rcu-locking-docs.txt
+rename-activate-unpack.diff
+#rcu-task-context-5.diff 
+misc-typos.diff
+warn-info-messages.diff

@@ -1,0 +1,97 @@
+Index: b/security/apparmor/module_interface.c
+===================================================================
+--- a/security/apparmor/module_interface.c
++++ b/security/apparmor/module_interface.c
+@@ -38,7 +38,7 @@ enum aa_code {
+ 
+ /* aa_ext is the read of the buffer containing the serialized profile.  The
+  * data is copied into a kernel buffer in apparmorfs and then handed off to
+- * the activate routines.
++ * the unpack routines.
+  */
+ struct aa_ext {
+ 	void *start;
+@@ -188,12 +188,12 @@ fail:
+ }
+ 
+ /**
+- * aa_activate_dfa - unpack a file rule dfa
++ * aa_unpack_dfa - unpack a file rule dfa
+  * @e: serialized data extent information
+  *
+  * returns dfa or ERR_PTR
+  */
+-struct aa_dfa *aa_activate_dfa(struct aa_ext *e)
++struct aa_dfa *aa_unpack_dfa(struct aa_ext *e)
+ {
+ 	char *blob = NULL;
+ 	size_t size, error = 0;
+@@ -225,11 +225,11 @@ struct aa_dfa *aa_activate_dfa(struct aa
+ }
+ 
+ /**
+- * aa_activate_profile - unpack a serialized profile
++ * aa_unpack_profile - unpack a serialized profile
+  * @e: serialized data extent information
+  * @error: error code returned if unpacking fails
+  */
+-static struct aa_profile *aa_activate_profile(struct aa_ext *e)
++static struct aa_profile *aa_unpack_profile(struct aa_ext *e)
+ {
+ 	struct aa_profile *profile = NULL;
+ 
+@@ -261,7 +261,7 @@ static struct aa_profile *aa_activate_pr
+ 		goto fail;
+ 
+ 	/* get file rules */
+-	profile->file_rules = aa_activate_dfa(e);
++	profile->file_rules = aa_unpack_dfa(e);
+ 	if (IS_ERR(profile->file_rules)) {
+ 		error = PTR_ERR(profile->file_rules);
+ 		profile->file_rules = NULL;
+@@ -272,7 +272,7 @@ static struct aa_profile *aa_activate_pr
+ 	if (aa_is_nameX(e, AA_LIST, "hats")) {
+ 		while (!aa_is_nameX(e, AA_LISTEND, NULL)) {
+ 			struct aa_profile *subprofile;
+-			subprofile = aa_activate_profile(e);
++			subprofile = aa_unpack_profile(e);
+ 			if (IS_ERR(subprofile)) {
+ 				error = PTR_ERR(subprofile);
+ 				goto fail;
+@@ -298,15 +298,15 @@ fail:
+ }
+ 
+ /**
+- * aa_activate_profile_wrapper - unpack a serialized base profile
++ * aa_unpack_profile_wrapper - unpack a serialized base profile
+  * @e: serialized data extent information
+  *
+  * check interface version unpack a profile and all its hats and patch
+  * in any extra information that the profile needs.
+  */
+-static struct aa_profile *aa_activate_profile_wrapper(struct aa_ext *e)
++static struct aa_profile *aa_unpack_profile_wrapper(struct aa_ext *e)
+ {
+-	struct aa_profile *profile = aa_activate_profile(e);
++	struct aa_profile *profile = aa_unpack_profile(e);
+ 	if (!IS_ERR(profile) &&
+ 	    (!list_empty(&profile->sub) || profile->flags.complain)) {
+ 		int error;
+@@ -358,7 +358,7 @@ ssize_t aa_file_prof_add(void *data, siz
+ 	if (error)
+ 		return error;
+ 
+-	profile = aa_activate_profile_wrapper(&e);
++	profile = aa_unpack_profile_wrapper(&e);
+ 	if (IS_ERR(profile))
+ 		return PTR_ERR(profile);
+ 
+@@ -437,7 +437,7 @@ ssize_t aa_file_prof_replace(void *udata
+ 	if (error)
+ 		return error;
+ 
+-	new_profile = aa_activate_profile_wrapper(&e);
++	new_profile = aa_unpack_profile_wrapper(&e);
+ 	if (IS_ERR(new_profile))
+ 		return PTR_ERR(new_profile);
+ 

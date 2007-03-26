@@ -1,0 +1,14 @@
+Index: b/security/apparmor/lsm.c
+===================================================================
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -260,7 +260,8 @@ static int aa_permission(struct inode *i
+ 
+ 		profile = aa_get_profile(current);
+ 		if (profile) {
+-			if (inode && S_ISDIR(inode->i_mode))
++			struct inode *d_inode = dentry->d_inode;
++			if (d_inode && S_ISDIR(d_inode->i_mode))
+ 				check |= AA_CHECK_DIR;
+ 			error = aa_perm(profile, dentry, mnt, mask, check);
+ 		}

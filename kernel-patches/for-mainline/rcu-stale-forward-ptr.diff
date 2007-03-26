@@ -1,0 +1,219 @@
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -88,7 +88,7 @@ static inline int mediated_filesystem(st
+  * @sub: profiles list of subprofiles (HATS)
+  * @flags: flags controlling profile behavior
+  * @null_profile: if needed per profile learning and null confinement profile
+- * @isstale: flag to indicate the profile is stale
++ * @isstale: flag indicating profile is stale by pointing to its replacement
+  * @capabilities: capabilities granted by the process
+  * @count: reference count of the profile
+  *
+@@ -114,7 +114,7 @@ struct aa_profile {
+ 		int audit;
+ 	} flags;
+ 	struct aa_profile *null_profile;
+-	int isstale;
++	struct aa_profile *isstale;
+ 
+ 	kernel_cap_t capabilities;
+ 	struct kref count;
+Index: b/security/apparmor/lsm.c
+===================================================================
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -809,16 +809,8 @@ static void __exit apparmor_exit(void)
+ 
+ 		/* Remove the profile from each task context it is on. */
+ 		lock_profile(profile);
+-		profile->isstale = 1;
+-		while (!list_empty(&profile->task_contexts)) {
+-			struct task_struct *task =
+-				list_entry(profile->task_contexts.next,
+-					   struct aa_task_context, list)->task;
+-
+-			task_lock(task);
+-			aa_change_task_context(task, NULL, NULL, 0);
+-			task_unlock(task);
+-		}
++		profile->isstale = ERR_PTR(-ENOENT);
++		remove_tasks_on_context_list(profile);
+ 		unlock_profile(profile);
+ 
+ 		/* Release the profile itself. */
+Index: b/security/apparmor/module_interface.c
+===================================================================
+--- a/security/apparmor/module_interface.c
++++ b/security/apparmor/module_interface.c
+@@ -14,8 +14,6 @@
+ #include "apparmor.h"
+ #include "inline.h"
+ 
+-static DEFINE_MUTEX(aa_interface_lock);
+-
+ /* The AppArmor interface treats data as a type byte followed by the
+  * actual data.  The interface has the notion of a a named entry
+  * which has a name (AA_NAME typecode followed by name string) followed by
+@@ -364,18 +362,15 @@ ssize_t aa_file_prof_add(void *data, siz
+ 	if (IS_ERR(profile))
+ 		return PTR_ERR(profile);
+ 
+-	mutex_lock(&aa_interface_lock);
+ 	write_lock(&profile_list_lock);
+ 	if (__aa_find_profile(profile->name, &profile_list)) {
+ 		/* A profile with this name exists already. */
+ 		write_unlock(&profile_list_lock);
+-		mutex_unlock(&aa_interface_lock);
+ 		aa_put_profile(profile);
+ 		return -EEXIST;
+ 	}
+ 	list_add(&profile->list, &profile_list);
+ 	write_unlock(&profile_list_lock);
+-	mutex_unlock(&aa_interface_lock);
+ 
+ 	return size;
+ }
+@@ -446,13 +441,13 @@ ssize_t aa_file_prof_replace(void *udata
+ 	if (IS_ERR(new_profile))
+ 		return PTR_ERR(new_profile);
+ 
+-	mutex_lock(&aa_interface_lock);
+ 	write_lock(&profile_list_lock);
+ 	old_profile = __aa_find_profile(new_profile->name, &profile_list);
+ 	if (old_profile) {
+-		old_profile->isstale = 1;
++		old_profile->isstale = aa_dup_profile(new_profile);
+ 		list_del_init(&old_profile->list);
+ 	}
++	aa_dup_profile(new_profile);
+ 	list_add(&new_profile->list, &profile_list);
+ 	write_unlock(&profile_list_lock);
+ 
+@@ -460,9 +455,18 @@ ssize_t aa_file_prof_replace(void *udata
+ 		goto out;
+ 
+ 	/*
+-	 * FIXME: this loop is confusing. Can't we simply allocate the new
+-	 * task context under the profile locks after checking that we
+-	 * actually need it?
++	 * Replacement needs to allocate a new aa_task_context for each
++	 * task confined by old_profile.  To do this the profile locks
++	 * are only held when the actual switch is done per task.  While
++	 * looping to allocate a new aa_task_context the old_task list
++	 * may get shorter if tasks exist/change their profile but will
++	 * not get longer as new task will not use old_profile detecting
++	 * that is stale.
++	 * The new_profile could be removed/replaced becoming stale itself.
++	 * In this case replacement switches to using new_profile->isstale
++	 * forwarding pointer for replacement of any remaining tasks.
++	 * The replacement that made new_profile stale will take care of
++	 * replacing any tasks that were already moved to new_profile.
+ 	 */
+ 	do {
+ 		new_cxt = aa_alloc_task_context();
+@@ -480,7 +484,22 @@ ssize_t aa_file_prof_replace(void *udata
+ 		 * profile (updating the list) and replacement updating
+ 		 * the list
+ 		 */
++	repeat:
+ 		lock_both_profiles(old_profile, new_profile);
++		if (new_profile->isstale) {
++			struct aa_profile *profile;
++			if (IS_ERR(new_profile->isstale)) {
++				/* new_profile was removed so become removal */
++				remove_tasks_on_context_list(old_profile);
++				unlock_both_profiles(old_profile, new_profile);
++				break;
++			}
++			profile = aa_dup_profile(new_profile->isstale);
++			unlock_both_profiles(old_profile, new_profile);
++			aa_put_profile(new_profile);
++			new_profile = profile;
++			goto repeat;
++		}
+ 		if (!list_empty(&old_profile->task_contexts)) {
+ 			struct task_struct *task =
+ 				list_entry(old_profile->task_contexts.next,
+@@ -494,9 +513,8 @@ ssize_t aa_file_prof_replace(void *udata
+ 	} while (!new_cxt);
+ 	aa_free_task_context(new_cxt);
+ 	aa_put_profile(old_profile);
+-
++	aa_put_profile(new_profile);
+ out:
+-	mutex_unlock(&aa_interface_lock);
+ 
+ 	return size;
+ }
+@@ -513,29 +531,19 @@ ssize_t aa_file_prof_remove(const char *
+ {
+ 	struct aa_profile *profile;
+ 
+-	mutex_lock(&aa_interface_lock);
+ 	write_lock(&profile_list_lock);
+ 	profile = __aa_find_profile(name, &profile_list);
+ 	if (!profile) {
+ 		write_unlock(&profile_list_lock);
+-		mutex_unlock(&aa_interface_lock);
+ 		return -ENOENT;
+ 	}
+-	profile->isstale = 1;
++	profile->isstale = ERR_PTR(-ENOENT);
+ 	list_del_init(&profile->list);
+ 	write_unlock(&profile_list_lock);
+ 
+ 	lock_profile(profile);
+-	while (!list_empty(&profile->task_contexts)) {
+-		struct task_struct *task =
+-			list_entry(profile->task_contexts.next,
+-				   struct aa_task_context, list)->task;
+-		task_lock(task);
+-		aa_change_task_context(task, NULL, NULL, 0);
+-		task_unlock(task);
+-	}
++	remove_tasks_on_context_list(profile);
+ 	unlock_profile(profile);
+-	mutex_unlock(&aa_interface_lock);
+ 	aa_put_profile(profile);
+ 
+ 	return size;
+@@ -579,6 +587,8 @@ void free_aa_profile(struct aa_profile *
+ 		BUG();
+ 	}
+ 
++	if (!IS_ERR(profile->isstale))
++		aa_put_profile(profile->isstale);
+ 	aa_match_free(profile->file_rules);
+ 
+ 	/* use free_aa_profile instead of aa_put_profile to destroy the
+Index: b/security/apparmor/inline.h
+===================================================================
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -104,6 +104,24 @@ static inline struct aa_profile *alloc_a
+ }
+ 
+ /**
++ * remove_tasks_on_context_list - remove tasks on @profiles task_contexts list
++ * @profile: profile to remove associated tasks
++ *
++ * Assumes that @profile lock is held
++ */
++static inline void remove_tasks_on_context_list(struct aa_profile *profile)
++{
++	while (!list_empty(&profile->task_contexts)) {
++		struct task_struct *task =
++			list_entry(profile->task_contexts.next,
++				   struct aa_task_context, list)->task;
++		task_lock(task);
++		aa_change_task_context(task, NULL, NULL, 0);
++		task_unlock(task);
++	}
++}
++
++/**
+  * lock_profile - lock a profile
+  * @profile: the profile to lock
+  *

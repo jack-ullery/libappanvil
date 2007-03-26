@@ -1,0 +1,37 @@
+Index: b/security/apparmor/locking.txt
+===================================================================
+--- a/security/apparmor/locking.txt
++++ b/security/apparmor/locking.txt
+@@ -15,15 +15,11 @@ Which lock protects what?
+ 	>-----------------------+-------------------------------<
+ 	| profile_list,		| profile_list_lock		|
+ 	+-----------------------+-------------------------------+
++	| aa_profile		| reference count		|
++	+-----------------------+-------------------------------+
+ 	| aa_profile->		| aa_profile->lock		|
+ 	|   isstale,		|				|
+ 	|   task_contexts	|				|
+-	| aa_profile->count	| RCU				|
+-	+-----------------------+-------------------------------+
+-	| aa_task_context->	|				|
+-	|   profile		| read: RCU			|
+-	|			| write: aa_profile->lock +	|
+-	|			|	 task_lock()		|
+ 	+-----------------------+-------------------------------+
+ 	| task_struct->security	| read: RCU			|
+ 	|			| write: task_lock()		|
+@@ -39,8 +35,9 @@ When moving a task context from one prof
+ profile locks with lock_both_profiles(). This ensures that both locks
+ are always taken in the same order, and so we won't deadlock.
+ 
+-Since aa_task_struct->profile is RCU protected, it can change under a
+-reader at any time. Therefore, we should grab the pointer and use the
+-cached result, but we can only do this after all blocking operations (or
+-else the pointer could just change again). The ->profile pointer may
+-change or become NULL at any time; we must be careful about this.
++Since task_struct->security is RCU protected the aa_task_struct it
++references is only guarenteed to exist for the rcu cycle.  Where
++aa_task_context->profile is needed in blocking operations the
++profile's reference count is incremented and the profile reference
++is used.
++
