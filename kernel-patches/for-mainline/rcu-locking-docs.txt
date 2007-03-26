@@ -1,12 +1,12 @@
-Index: b/security/apparmor/locking.txt
+Index: linux-2.6-apparmor/security/apparmor/locking.txt
 ===================================================================
---- a/security/apparmor/locking.txt
-+++ b/security/apparmor/locking.txt
+--- linux-2.6-apparmor.orig/security/apparmor/locking.txt
++++ linux-2.6-apparmor/security/apparmor/locking.txt
 @@ -15,15 +15,11 @@ Which lock protects what?
  	>-----------------------+-------------------------------<
  	| profile_list,		| profile_list_lock		|
  	+-----------------------+-------------------------------+
-+	| aa_profile		| reference count		|
++	| aa_profile		| (reference count)		|
 +	+-----------------------+-------------------------------+
  	| aa_profile->		| aa_profile->lock		|
  	|   isstale,		|				|
@@ -20,7 +20,7 @@ Index: b/security/apparmor/locking.txt
  	+-----------------------+-------------------------------+
  	| task_struct->security	| read: RCU			|
  	|			| write: task_lock()		|
-@@ -39,8 +35,9 @@ When moving a task context from one prof
+@@ -39,8 +35,12 @@ When moving a task context from one prof
  profile locks with lock_both_profiles(). This ensures that both locks
  are always taken in the same order, and so we won't deadlock.
  
@@ -35,3 +35,6 @@ Index: b/security/apparmor/locking.txt
 +profile's reference count is incremented and the profile reference
 +is used.
 +
++Profiles on profile_list are never stale: when a profile becomes stale,
++it is removed from profile_list at the same time (under profile_list_lock
++and aa_profile->lock).

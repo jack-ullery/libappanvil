@@ -1,0 +1,89 @@
+Index: linux-2.6-apparmor/security/apparmor/lsm.c
+===================================================================
+--- linux-2.6-apparmor.orig/security/apparmor/lsm.c
++++ linux-2.6-apparmor/security/apparmor/lsm.c
+@@ -259,12 +259,8 @@ static int aa_permission(struct inode *i
+ 		struct aa_profile *profile;
+ 
+ 		profile = aa_get_profile(current);
+-		if (profile) {
+-			struct inode *d_inode = dentry->d_inode;
+-			if (d_inode && S_ISDIR(d_inode->i_mode))
+-				check |= AA_CHECK_DIR;
++		if (profile)
+ 			error = aa_perm(profile, dentry, mnt, mask, check);
+-		}
+ 		aa_put_profile(profile);
+ 	}
+ 	return error;
+@@ -299,11 +295,14 @@ out:
+ 	return error;
+ }
+ 
+-static int apparmor_inode_unlink(struct inode *dir,
+-				 struct dentry *dentry,
++static int apparmor_inode_unlink(struct inode *dir, struct dentry *dentry,
+ 				 struct vfsmount *mnt)
+ {
+-	return aa_permission(dir, dentry, mnt, MAY_WRITE, AA_CHECK_LEAF);
++	int check = AA_CHECK_LEAF;
++
++	if (S_ISDIR(dentry->d_inode->i_mode))
++		check |= AA_CHECK_DIR;
++	return aa_permission(dir, dentry, mnt, MAY_WRITE, check);
+ }
+ 
+ static int apparmor_inode_symlink(struct inode *dir, struct dentry *dentry,
+@@ -358,24 +357,16 @@ out:
+ static int apparmor_inode_permission(struct inode *inode, int mask,
+ 				     struct nameidata *nd)
+ {
++	int check = 0;
++
+ 	if (!nd)
+ 		return 0;
+-	/*
+-	 * Assume we are /not/ checking a leaf directory.  We do not
+-	 * require profile access to non-leaf directories in order to
+-	 * traverse them, create or remove files in them.  We do require
+-	 * MAY_WRITE profile access on the actual file or directory
+-	 * being created or removed, though, which makes the model safe
+-	 * again.
+-	 *
+-	 * For the access(2) system call this means that when used on a
+-	 * leaf directory, we may return 0 even though the requesting
+-	 * process doesn't actually have MAY_WRITE nor MAY_EXEC access
+-	 * in the profile.  This is nothing but an inconvenience; using
+-	 * access(2) for permission checking is invalid, anyways.
+-	 */
+-	return aa_permission(inode, nd->dentry, nd->mnt,
+-			     mask & (MAY_READ | MAY_WRITE | MAY_EXEC), 0);
++	if (S_ISDIR(inode->i_mode))
++		check |= AA_CHECK_DIR;
++	mask &= (MAY_READ | MAY_WRITE | MAY_EXEC);
++
++	/* Assume we are not checking a leaf directory. */
++	return aa_permission(inode, nd->dentry, nd->mnt, mask, check);
+ }
+ 
+ static int apparmor_inode_setattr(struct dentry *dentry, struct vfsmount *mnt,
+@@ -470,14 +461,17 @@ static int apparmor_file_permission(stru
+ 	if (profile && file_profile != profile) {
+ 		struct dentry *dentry = file->f_dentry;
+ 		struct vfsmount *mnt = file->f_vfsmnt;
++		struct inode *inode = dentry->d_inode;
++		int check = AA_CHECK_LEAF | AA_CHECK_FD;
+ 
+ 		/*
+ 		 * FIXME: We should remember which profiles we revalidated
+ 		 *	  against.
+ 		 */
++		if (S_ISDIR(inode->i_mode))
++			check |= AA_CHECK_DIR;
+ 		mask &= (MAY_READ | MAY_WRITE | MAY_EXEC);
+-		error = aa_permission(dentry->d_inode, dentry, mnt, mask,
+-				      AA_CHECK_LEAF | AA_CHECK_FD);
++		error = aa_permission(inode, dentry, mnt, mask, check);
+ 	}
+ 	aa_put_profile(profile);
+ 

@@ -105,6 +105,7 @@ dir-leaf-nodes.diff
 #rename-file-type-aa_permission.diff
 rename-file-type.diff
 fix-rename-file-type.diff
+fix-rename-file-type-2.diff 
 fix-vfs_rmdir.diff
 fix-change_hat-replacement.diff
 64bit-changehat.diff
@@ -113,12 +114,14 @@ apparmor_getprocattr.diff
 fix_apparmor_getprocattr.diff
 rcu-task-context.diff
 rcu-task-context-2.diff
-rcu-fix-lock_both_profiles.diff
+rcu-document-lock_both_profiles.diff
 no-inline-aa_change_task_context.diff
 rcu-task-context-3.diff 
 rcu-task-context-4.diff 
 rcu-caps-cache-comment.diff
+aa_alloc_task_context-flags.diff
 rcu-stale-forward-ptr.diff
+rcu-stale-forward-ptr-2.diff 
 rcu-locking-docs.txt
 rename-activate-unpack.diff
 #rcu-task-context-5.diff 

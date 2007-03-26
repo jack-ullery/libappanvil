@@ -1,7 +1,7 @@
-Index: b/security/apparmor/apparmor.h
+Index: linux-2.6-apparmor/security/apparmor/apparmor.h
 ===================================================================
---- a/security/apparmor/apparmor.h
-+++ b/security/apparmor/apparmor.h
+--- linux-2.6-apparmor.orig/security/apparmor/apparmor.h
++++ linux-2.6-apparmor/security/apparmor/apparmor.h
 @@ -88,7 +88,7 @@ static inline int mediated_filesystem(st
   * @sub: profiles list of subprofiles (HATS)
   * @flags: flags controlling profile behavior
@@ -20,11 +20,11 @@ Index: b/security/apparmor/apparmor.h
  
  	kernel_cap_t capabilities;
  	struct kref count;
-Index: b/security/apparmor/lsm.c
+Index: linux-2.6-apparmor/security/apparmor/lsm.c
 ===================================================================
---- a/security/apparmor/lsm.c
-+++ b/security/apparmor/lsm.c
-@@ -809,16 +809,8 @@ static void __exit apparmor_exit(void)
+--- linux-2.6-apparmor.orig/security/apparmor/lsm.c
++++ linux-2.6-apparmor/security/apparmor/lsm.c
+@@ -806,16 +806,8 @@ static void __exit apparmor_exit(void)
  
  		/* Remove the profile from each task context it is on. */
  		lock_profile(profile);
@@ -43,10 +43,10 @@ Index: b/security/apparmor/lsm.c
  		unlock_profile(profile);
  
  		/* Release the profile itself. */
-Index: b/security/apparmor/module_interface.c
+Index: linux-2.6-apparmor/security/apparmor/module_interface.c
 ===================================================================
---- a/security/apparmor/module_interface.c
-+++ b/security/apparmor/module_interface.c
+--- linux-2.6-apparmor.orig/security/apparmor/module_interface.c
++++ linux-2.6-apparmor/security/apparmor/module_interface.c
 @@ -14,8 +14,6 @@
  #include "apparmor.h"
  #include "inline.h"
@@ -112,8 +112,8 @@ Index: b/security/apparmor/module_interface.c
 +	 * replacing any tasks that were already moved to new_profile.
  	 */
  	do {
- 		new_cxt = aa_alloc_task_context();
-@@ -480,7 +484,22 @@ ssize_t aa_file_prof_replace(void *udata
+ 		new_cxt = aa_alloc_task_context(GFP_KERNEL | __GFP_NOFAIL);
+@@ -474,7 +478,22 @@ ssize_t aa_file_prof_replace(void *udata
  		 * profile (updating the list) and replacement updating
  		 * the list
  		 */
@@ -136,7 +136,7 @@ Index: b/security/apparmor/module_interface.c
  		if (!list_empty(&old_profile->task_contexts)) {
  			struct task_struct *task =
  				list_entry(old_profile->task_contexts.next,
-@@ -494,9 +513,8 @@ ssize_t aa_file_prof_replace(void *udata
+@@ -488,9 +507,8 @@ ssize_t aa_file_prof_replace(void *udata
  	} while (!new_cxt);
  	aa_free_task_context(new_cxt);
  	aa_put_profile(old_profile);
@@ -147,7 +147,7 @@ Index: b/security/apparmor/module_interface.c
  
  	return size;
  }
-@@ -513,29 +531,19 @@ ssize_t aa_file_prof_remove(const char *
+@@ -507,29 +525,19 @@ ssize_t aa_file_prof_remove(const char *
  {
  	struct aa_profile *profile;
  
@@ -179,7 +179,7 @@ Index: b/security/apparmor/module_interface.c
  	aa_put_profile(profile);
  
  	return size;
-@@ -579,6 +587,8 @@ void free_aa_profile(struct aa_profile *
+@@ -573,6 +581,8 @@ void free_aa_profile(struct aa_profile *
  		BUG();
  	}
  
@@ -188,10 +188,10 @@ Index: b/security/apparmor/module_interface.c
  	aa_match_free(profile->file_rules);
  
  	/* use free_aa_profile instead of aa_put_profile to destroy the
-Index: b/security/apparmor/inline.h
+Index: linux-2.6-apparmor/security/apparmor/inline.h
 ===================================================================
---- a/security/apparmor/inline.h
-+++ b/security/apparmor/inline.h
+--- linux-2.6-apparmor.orig/security/apparmor/inline.h
++++ linux-2.6-apparmor/security/apparmor/inline.h
 @@ -104,6 +104,24 @@ static inline struct aa_profile *alloc_a
  }
  
