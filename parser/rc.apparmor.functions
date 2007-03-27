@@ -129,7 +129,7 @@ parse_profiles() {
 		return 1
 	fi
 
-	if [ "X" == "X$(ls $PROFILE_DIR/)" ]; then
+	if [ -z "$(ls $PROFILE_DIR/)" ]; then
 		sd_log_skipped_msg "- No profiles found\nNo AppArmor policy loaded."
 		return 1
 	fi
@@ -388,7 +388,7 @@ remove_profiles() {
 	fi
 
 	retval=0
-	IFS=$'\n' && for profile in $(sed -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles") ; do
+	sed -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" | while read profile ; do
 		echo "\"$profile\" { }" | $PARSER -R >/dev/null
 		rc=$?
 		if [ ${rc} -ne 0 ] ; then 
@@ -431,9 +431,7 @@ __subdomain_restart() {
 	profiles_names_list ${PNAMES_LIST}
 	MODULE_PLIST=$(mktemp ${APPARMOR_TMPDIR}/tmp.XXXXXXXX)
 	sed  -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" | sort >"$MODULE_PLIST"
-	#profiles=$(cat $PNAMES_LIST | sort | comm -2 -3 "$MODULE_PLIST" -)
-	#for profile in $profiles ; do
-	IFS=$'\n' && for profile in $(cat $PNAMES_LIST | sort | comm -2 -3 "$MODULE_PLIST" -) ; do
+	sort "$PNAMES_LIST" | comm -2 -3 "$MODULE_PLIST" - | while read profile ; do
 		echo "\"$profile\" {}" | $PARSER -R >/dev/null
 	done
 	rm "$MODULE_PLIST"

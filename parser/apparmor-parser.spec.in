@@ -149,6 +149,8 @@ fi
 %endif
 
 %changelog
+* Tue Mar 27 2007 - sbeattie@suse.de
+- Removed a couple of bashisms from initscripts
 * Fri Mar 23 2007 - sbeattie@suse.de
 - Added dfa matching code
 - add build dep on c++ compiler
