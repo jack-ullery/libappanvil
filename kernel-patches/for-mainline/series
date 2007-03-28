@@ -122,6 +122,7 @@ rcu-caps-cache-comment.diff
 aa_alloc_task_context-flags.diff
 rcu-stale-forward-ptr.diff
 rcu-stale-forward-ptr-2.diff 
+reintroduce-interface-lock.diff
 rcu-locking-docs.txt
 rename-activate-unpack.diff
 #rcu-task-context-5.diff 

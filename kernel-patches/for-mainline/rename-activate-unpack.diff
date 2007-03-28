@@ -1,8 +1,8 @@
-Index: b/security/apparmor/module_interface.c
+Index: linux-2.6-apparmor/security/apparmor/module_interface.c
 ===================================================================
---- a/security/apparmor/module_interface.c
-+++ b/security/apparmor/module_interface.c
-@@ -38,7 +38,7 @@ enum aa_code {
+--- linux-2.6-apparmor.orig/security/apparmor/module_interface.c
++++ linux-2.6-apparmor/security/apparmor/module_interface.c
+@@ -47,7 +47,7 @@ enum aa_code {
  
  /* aa_ext is the read of the buffer containing the serialized profile.  The
   * data is copied into a kernel buffer in apparmorfs and then handed off to
@@ -11,7 +11,7 @@ Index: b/security/apparmor/module_interface.c
   */
  struct aa_ext {
  	void *start;
-@@ -188,12 +188,12 @@ fail:
+@@ -197,12 +197,12 @@ fail:
  }
  
  /**
@@ -26,7 +26,7 @@ Index: b/security/apparmor/module_interface.c
  {
  	char *blob = NULL;
  	size_t size, error = 0;
-@@ -225,11 +225,11 @@ struct aa_dfa *aa_activate_dfa(struct aa
+@@ -234,11 +234,11 @@ struct aa_dfa *aa_activate_dfa(struct aa
  }
  
  /**
@@ -40,7 +40,7 @@ Index: b/security/apparmor/module_interface.c
  {
  	struct aa_profile *profile = NULL;
  
-@@ -261,7 +261,7 @@ static struct aa_profile *aa_activate_pr
+@@ -270,7 +270,7 @@ static struct aa_profile *aa_activate_pr
  		goto fail;
  
  	/* get file rules */
@@ -49,7 +49,7 @@ Index: b/security/apparmor/module_interface.c
  	if (IS_ERR(profile->file_rules)) {
  		error = PTR_ERR(profile->file_rules);
  		profile->file_rules = NULL;
-@@ -272,7 +272,7 @@ static struct aa_profile *aa_activate_pr
+@@ -281,7 +281,7 @@ static struct aa_profile *aa_activate_pr
  	if (aa_is_nameX(e, AA_LIST, "hats")) {
  		while (!aa_is_nameX(e, AA_LISTEND, NULL)) {
  			struct aa_profile *subprofile;
@@ -58,7 +58,7 @@ Index: b/security/apparmor/module_interface.c
  			if (IS_ERR(subprofile)) {
  				error = PTR_ERR(subprofile);
  				goto fail;
-@@ -298,15 +298,15 @@ fail:
+@@ -307,15 +307,15 @@ fail:
  }
  
  /**
@@ -77,7 +77,7 @@ Index: b/security/apparmor/module_interface.c
  	if (!IS_ERR(profile) &&
  	    (!list_empty(&profile->sub) || profile->flags.complain)) {
  		int error;
-@@ -358,7 +358,7 @@ ssize_t aa_file_prof_add(void *data, siz
+@@ -367,7 +367,7 @@ ssize_t aa_file_prof_add(void *data, siz
  	if (error)
  		return error;
  
@@ -86,7 +86,7 @@ Index: b/security/apparmor/module_interface.c
  	if (IS_ERR(profile))
  		return PTR_ERR(profile);
  
-@@ -437,7 +437,7 @@ ssize_t aa_file_prof_replace(void *udata
+@@ -449,7 +449,7 @@ ssize_t aa_file_prof_replace(void *udata
  	if (error)
  		return error;
  
@@ -95,12 +95,3 @@ Index: b/security/apparmor/module_interface.c
  	if (IS_ERR(new_profile))
  		return PTR_ERR(new_profile);
  
-@@ -489,7 +489,7 @@ ssize_t aa_file_prof_replace(void *udata
- 		if (new_profile->isstale) {
- 			struct aa_profile *profile;
- 			if (IS_ERR(new_profile->isstale)) {
--				/* new_profile was removed so become removal */
-+				/* new_profile was removed so do removal */
- 				remove_tasks_on_context_list(old_profile);
- 				unlock_both_profiles(old_profile, new_profile);
- 				break;
