@@ -1535,8 +1535,9 @@ sub do_logprof_pass {
                 if ($sdmode eq "PERMITTING") {
                     do {
                         $stuffed = <LOG>;
-                    } until $stuffed =~ /AppArmor|audit/;
-                    if ($stuffed =~ m/changing_profile/) {
+                    } until ((! $stuffed) || ($stuffed =~ /AppArmor|audit/));
+
+                    if ($stuffed && ($stuffed =~ m/changing_profile/)) {
                         $domainchange = "change";
                         $stuffed      = undef;
                     }
