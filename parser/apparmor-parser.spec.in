@@ -52,6 +52,7 @@ Provides: subdomain_parser subdomain-parser
 Provides: subdomain-parser-demo subdomain-parser-common subdomain-leaf-cert
 Provides: libimnxcert
 %define apparmor_bin_prefix /lib/apparmor
+BuildRequires: bison flex
 
 %description
 AppArmor Parser is a userlevel program that is used to load in program
@@ -149,6 +150,8 @@ fi
 %endif
 
 %changelog
+* Thu Mar 29 2007 - coolo@suse.de
+- BuildRequire flex and bison
 * Tue Mar 27 2007 - sbeattie@suse.de
 - Removed a couple of bashisms from initscripts
 * Fri Mar 23 2007 - sbeattie@suse.de
