@@ -406,16 +406,16 @@ int post_process_policy(void)
 {
 	int retval = 0;
 
-	retval = post_merge_rules();
-	if (retval != 0) {
-		PERROR(_("%s: Errors found in combining rules postprocessing. Aborting.\n"),
-		       progname);
-		return -1;
-	}
-
 	retval = post_process_variables();
 	if (retval != 0) {
 		PERROR(_("%s: Errors found during regex postprocess.  Aborting.\n"),
+		       progname);
+		return retval;
+	}
+
+	retval = post_merge_rules();
+	if (retval != 0) {
+		PERROR(_("%s: Errors found in combining rules postprocessing. Aborting.\n"),
 		       progname);
 		return retval;
 	}
