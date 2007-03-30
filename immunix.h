@@ -70,10 +70,6 @@ enum pattern_t {
 #define HAS_EXEC_MMAP(mode) 		((mode) & AA_EXEC_MMAP)
 #define HAS_EXEC_UNSAFE(mode) 		((mode) & AA_EXEC_UNSAFE)
 
-#define AA_NOXMODS_PERM_MASK		(AA_MAY_EXEC | AA_MAY_WRITE | \
-					 AA_MAY_READ | AA_MAY_LINK | \
-					 AA_EXEC_MMAP)
-
 #define SINGLE_BIT_SET(X) (!((X) & ((X) - 1)))
 #define AA_EXEC_SINGLE_MODIFIER_SET(X) SINGLE_BIT_SET(((X) & AA_EXEC_MODIFIERS))
 #endif				/* ! _IMMUNIX_H */
