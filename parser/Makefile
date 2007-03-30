@@ -214,6 +214,9 @@ install-slackware:
 	install -m 755 -d $(DESTDIR)/etc/rc.d
 	install -m 755 rc.apparmor.$(subst install-,,$(@)) $(DESTDIR)/etc/rc.d/rc.apparmor
 
+.PHONY: install-debian
+install-debian:
+
 INSTALLDEPS=$(TOOLS)
 ifdef DISTRO
 INSTALLDEPS+=install-$(DISTRO)

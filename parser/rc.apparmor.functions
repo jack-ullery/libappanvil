@@ -137,6 +137,7 @@ parse_profiles() {
 	for profile in $PROFILE_DIR/*; do
 	        if [ "${profile%.rpmnew}" != "${profile}" -o \
 		     "${profile%.rpmsave}" != "${profile}" -o \
+		     "${profile%.dpkg-new}" != "${profile}" -o \
 		     "${profile%\~}" != "${profile}" ]
 		then 
 			echo " Skipping profile $profile"
