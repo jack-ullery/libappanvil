@@ -68,15 +68,17 @@
     class Node {
     public:
 	Node() :
-	    nullable(false), left(0), right(0) { }
+	    nullable(false), left(0), right(0), refcount(1) { }
 	Node(Node *left) :
-	    nullable(false), left(left), right(0) { }
+	    nullable(false), left(left), right(0), refcount(1) { }
 	Node(Node *left, Node *right) :
-	    nullable(false), left(left), right(right) { }
+	    nullable(false), left(left), right(right), refcount(1) { }
 	virtual ~Node()
 	{
-	    delete left;
-	    delete right;
+	    if (left)
+		left->release();
+	    if (right)
+		right->release();
 	}
 
 	/**
@@ -93,6 +95,17 @@
 	bool nullable;
 	State firstpos, lastpos, followpos;
 	Node *left, *right;
+
+	/**
+	 * We need reference counting for AcceptNodes: sharing AcceptNodes
+	 * avoids introducing duplicate States with identical accept values.
+	 */
+	unsigned int refcount;
+	void dup(void) { refcount++; }
+	void release(void) {
+	    if (--refcount == 0)
+		delete this;
+	}
     };
 
     /* Match nothing (//). */
@@ -419,7 +432,7 @@
  * Note: destroy all nodes upon failure, but *not* the start symbol once
  * parsing succeeds!
  */
-%destructor { delete $$; } expr terms0 terms qterm term
+%destructor { $$->release(); } expr terms0 terms qterm term
 
 %%
 
@@ -1482,76 +1495,7 @@ void dump_regexp(ostream& os, Node *tree)
     os << endl;
 }
 
-/**
- * "Librarize"
- */
-
-#include <errno.h>
 #include <sstream>
-#if 0
-#include <sys/cdefs.h>
-
-__BEGIN_DECLS
-#endif
-
-/**
- * "value\0regexp\0value\0regexp\0\0"
- */
-extern "C" char *
-regexp_flex_table(const char *name, const char *regexps,
-		  int equivalence_classes, int reverse, size_t *size)
-{
-    Node *root = new EpsNode();
-    char *buffer;
-
-    while (*regexps) {
-	char *endptr;
-	uint32_t accept;
-	int is_rerule;
-
-	Node *tree;
-
-	accept = strtoul(regexps, &endptr, 0);
-	if (*endptr != '\0' || accept == 0 || accept >= (1UL << 31)) {
-	    delete root;
-	    errno = EINVAL;
-	    return NULL;
-	}
-	regexps = endptr + 1;
-	is_rerule = NOT_RE_RULE;
-	if (regexp_parse(&tree, endptr, &is_rerule)) {
-	    delete root;
-	    errno = EINVAL;
-	    return NULL;
-	}
-	if (reverse)
-	    flip_tree(tree);
-
-	tree = new CatNode(tree, new AcceptNode(accept, is_rerule));
-	root = new AltNode(root, tree);
-	regexps = strchr(regexps, 0);
-    }
-
-    DFA dfa(root);
-    map<uchar, uchar> eq;
-    if (equivalence_classes) {
-	eq = dfa.equivalence_classes();
-	dfa.apply_equivalence_classes(eq);
-    }
-    TransitionTable transition_table(dfa, eq);
-    ostringstream stream;
-    transition_table.flex_table(stream, name);
-    delete root;
-
-    streambuf *buf = stream.rdbuf();
-    *size = buf->in_avail();
-    buffer = (char *)malloc(*size);
-    if (!buffer)
-	return NULL;
-    buf->sgetn(buffer, *size);
-    return buffer;
-}
-
 #include <ext/stdio_filebuf.h>
 #include "apparmor_re.h"
 
@@ -1560,9 +1504,7 @@ struct aare_ruleset {
     Node *root;
 };
 
-extern "C" {
-
-aare_ruleset_t *aare_new_ruleset(int reverse)
+extern "C" aare_ruleset_t *aare_new_ruleset(int reverse)
 {
     aare_ruleset_t *container = (aare_ruleset_t *) malloc(sizeof(aare_ruleset_t));
     if (!container)
@@ -1574,16 +1516,15 @@ aare_ruleset_t *aare_new_ruleset(int reverse)
     return container;
 }
 
-void aare_delete_ruleset(aare_ruleset_t *rules)
+extern "C" void aare_delete_ruleset(aare_ruleset_t *rules)
 {
     if (rules) {
-	delete(rules->root);
+	rules->root->release();
 	free(rules);
     }
 }
 
-int aare_add_rule(aare_ruleset_t *rules, char *rule,
-		  uint32_t perms)
+extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
 {
     Node *tree;
     int is_rerule = NOT_RE_RULE;
@@ -1605,7 +1546,8 @@ int aare_add_rule(aare_ruleset_t *rules, char *rule,
  * returns: buffer contain dfa tables, @size set to the size of the tables
  *          else NULL on failure
  */
-void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes, size_t *size)
+extern "C" void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes,
+				 size_t *size)
 {
     char *buffer = NULL;
 
@@ -1637,5 +1579,3 @@ void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes, size_t *size)
     buf->sgetn(buffer, *size);
     return buffer;
 }
-
-} /* extern C */
