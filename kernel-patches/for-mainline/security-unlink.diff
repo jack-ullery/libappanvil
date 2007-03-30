@@ -7,7 +7,7 @@ Index: b/fs/namei.c
 ===================================================================
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2102,7 +2102,7 @@ int vfs_unlink(struct inode *dir, struct
+@@ -2103,7 +2103,7 @@ int vfs_unlink(struct inode *dir, struct
  	if (d_mountpoint(dentry))
  		error = -EBUSY;
  	else {

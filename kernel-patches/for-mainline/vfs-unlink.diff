@@ -24,7 +24,7 @@ Index: b/fs/namei.c
 ===================================================================
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2086,7 +2086,7 @@ asmlinkage long sys_rmdir(const char __u
+@@ -2087,7 +2087,7 @@ asmlinkage long sys_rmdir(const char __u
  	return do_rmdir(AT_FDCWD, pathname);
  }
  
@@ -33,7 +33,7 @@ Index: b/fs/namei.c
  {
  	int error = may_delete(dir, dentry, 0);
  
-@@ -2150,7 +2150,7 @@ static long do_unlinkat(int dfd, const c
+@@ -2151,7 +2151,7 @@ static long do_unlinkat(int dfd, const c
  		inode = dentry->d_inode;
  		if (inode)
  			atomic_inc(&inode->i_count);
