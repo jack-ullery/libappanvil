@@ -66,7 +66,7 @@ int conf_quiet = 0;
 char *subdomainbase = NULL;
 char *profilename;
 char *match_string = NULL;
-int regex_type = AARE_NONE;
+int regex_type = AARE_DFA;
 
 extern int current_lineno;
 
