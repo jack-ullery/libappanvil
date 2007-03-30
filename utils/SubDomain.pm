@@ -3273,11 +3273,6 @@ sub Text_PromptUser ($) {
         # get their input...
         $ans = lc(getkey);
 
-        if ($ans && $keys{$ans} && $keys{$ans} eq "CMD_HELP") {
-            print "\n$helptext\n";
-            $ans = undef;
-        }
-
         # pick the default if they hit return...
         $ans = $default_key if ord($ans) == 10;
 
@@ -3317,7 +3312,12 @@ sub Text_PromptUser ($) {
             if ($ans > 0 && $ans <= scalar(@$options)) {
                 $selected = $ans - 1;
             }
-            $ans = undef;
+            $ans = "again";
+        }
+
+        if ($keys{$ans} && $keys{$ans} eq "CMD_HELP") {
+            print "\n$helptext\n";
+            $ans = "again";
         }
     }
 
