@@ -841,14 +841,6 @@ DFA::DFA(Node *root) : root(root)
 		here.cases.insert(*j);
 	}
     }
-    /**
-     * Set the result of the nonmatching state to an invalid perm, but only
-     * after contructing the DFA: otherwise, the empty states that
-     * NotCharSetNode::follow() create would not compare equal with the
-     * nonmatching state -- but we rely on merging states that compare
-     * equal.
-     */
-    nonmatching->insert(new AcceptNode(AA_INVALID_PERM, NOT_RE_RULE));
 }
 
 DFA::~DFA()
@@ -1176,8 +1168,7 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq)
 
     accept.resize(dfa.states.size());
     for (States::iterator i = dfa.states.begin(); i != dfa.states.end(); i++)
-	/* mask off AA_INVALID_PERM, it is not needed by match engine */
-	accept[num[*i]] = accept_perms(*i) & ~AA_INVALID_PERM;
+	accept[num[*i]] = accept_perms(*i);
 }
 
 /**

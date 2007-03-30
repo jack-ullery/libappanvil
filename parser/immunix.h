@@ -38,7 +38,6 @@
 					 AA_EXEC_UNCONSTRAINED | \
 					 AA_EXEC_PROFILE)
 
-#if 0
 /* Network subdomain extensions.  */
 #define AA_TCP_CONNECT			(1 << 16)
 #define AA_TCP_ACCEPT			(1 << 17)
@@ -50,7 +49,6 @@
 /* logging only */
 #define AA_LOGTCP_SEND			(1 << 22)
 #define AA_LOGTCP_RECEIVE		(1 << 23)
-#endif
 
 #define AA_HAT_SIZE	975	/* Maximum size of a subdomain
 					 * ident (hat) */
