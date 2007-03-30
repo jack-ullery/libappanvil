@@ -7,7 +7,7 @@ Index: b/fs/ecryptfs/inode.c
 ===================================================================
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -601,19 +601,24 @@ ecryptfs_rename(struct inode *old_dir, s
+@@ -598,19 +598,24 @@ ecryptfs_rename(struct inode *old_dir, s
  {
  	int rc;
  	struct dentry *lower_old_dentry;
@@ -96,7 +96,7 @@ Index: b/fs/nfsd/vfs.c
 ===================================================================
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1625,7 +1625,8 @@ nfsd_rename(struct svc_rqst *rqstp, stru
+@@ -1628,7 +1628,8 @@ nfsd_rename(struct svc_rqst *rqstp, stru
  			host_err = -EPERM;
  	} else
  #endif

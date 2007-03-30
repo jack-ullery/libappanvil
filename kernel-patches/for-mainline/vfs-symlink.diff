@@ -7,7 +7,7 @@ Index: b/fs/ecryptfs/inode.c
 ===================================================================
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -473,6 +473,7 @@ static int ecryptfs_symlink(struct inode
+@@ -470,6 +470,7 @@ static int ecryptfs_symlink(struct inode
  {
  	int rc;
  	struct dentry *lower_dentry;
@@ -15,7 +15,7 @@ Index: b/fs/ecryptfs/inode.c
  	struct dentry *lower_dir_dentry;
  	umode_t mode;
  	char *encoded_symname;
-@@ -481,6 +482,7 @@ static int ecryptfs_symlink(struct inode
+@@ -478,6 +479,7 @@ static int ecryptfs_symlink(struct inode
  
  	lower_dentry = ecryptfs_dentry_to_lower(dentry);
  	dget(lower_dentry);
@@ -23,7 +23,7 @@ Index: b/fs/ecryptfs/inode.c
  	lower_dir_dentry = lock_parent(lower_dentry);
  	mode = S_IALLUGO;
  	encoded_symlen = ecryptfs_encode_filename(crypt_stat, symname,
-@@ -490,7 +492,7 @@ static int ecryptfs_symlink(struct inode
+@@ -487,7 +489,7 @@ static int ecryptfs_symlink(struct inode
  		rc = encoded_symlen;
  		goto out_lock;
  	}
@@ -60,7 +60,7 @@ Index: b/fs/nfsd/vfs.c
 ===================================================================
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1432,6 +1432,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+@@ -1435,6 +1435,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
  				struct iattr *iap)
  {
  	struct dentry	*dentry, *dnew;
@@ -68,7 +68,7 @@ Index: b/fs/nfsd/vfs.c
  	__be32		err, cerr;
  	int		host_err;
  	umode_t		mode;
-@@ -1458,6 +1459,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+@@ -1461,6 +1462,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
  	if (iap && (iap->ia_valid & ATTR_MODE))
  		mode = iap->ia_mode & S_IALLUGO;
  
@@ -76,7 +76,7 @@ Index: b/fs/nfsd/vfs.c
  	if (unlikely(path[plen] != 0)) {
  		char *path_alloced = kmalloc(plen+1, GFP_KERNEL);
  		if (path_alloced == NULL)
-@@ -1465,11 +1467,12 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+@@ -1468,11 +1470,12 @@ nfsd_symlink(struct svc_rqst *rqstp, str
  		else {
  			strncpy(path_alloced, path, plen);
  			path_alloced[plen] = 0;

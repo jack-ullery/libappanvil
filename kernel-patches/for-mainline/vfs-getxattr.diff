@@ -31,7 +31,7 @@ Index: b/fs/nfsd/vfs.c
  }
  #endif
  
-@@ -476,13 +477,13 @@ out_nfserr:
+@@ -479,13 +480,13 @@ out_nfserr:
  }
  
  static struct posix_acl *
@@ -47,7 +47,7 @@ Index: b/fs/nfsd/vfs.c
  	if (!buflen)
  		buflen = -ENODATA;
  	if (buflen <= 0)
-@@ -494,14 +495,15 @@ _get_posix_acl(struct dentry *dentry, ch
+@@ -497,14 +498,15 @@ _get_posix_acl(struct dentry *dentry, ch
  }
  
  int
@@ -65,7 +65,7 @@ Index: b/fs/nfsd/vfs.c
  	if (IS_ERR(pacl) && PTR_ERR(pacl) == -ENODATA)
  		pacl = posix_acl_from_mode(inode->i_mode, GFP_KERNEL);
  	if (IS_ERR(pacl)) {
-@@ -511,7 +513,7 @@ nfsd4_get_nfs4_acl(struct svc_rqst *rqst
+@@ -514,7 +516,7 @@ nfsd4_get_nfs4_acl(struct svc_rqst *rqst
  	}
  
  	if (S_ISDIR(inode->i_mode)) {
@@ -74,7 +74,7 @@ Index: b/fs/nfsd/vfs.c
  		if (IS_ERR(dpacl) && PTR_ERR(dpacl) == -ENODATA)
  			dpacl = NULL;
  		else if (IS_ERR(dpacl)) {
-@@ -1935,7 +1937,8 @@ nfsd_get_posix_acl(struct svc_fh *fhp, i
+@@ -1938,7 +1940,8 @@ nfsd_get_posix_acl(struct svc_fh *fhp, i
  		return ERR_PTR(-EOPNOTSUPP);
  	}
  
@@ -162,7 +162,7 @@ Index: b/fs/nfsd/nfs4xdr.c
 ===================================================================
 --- a/fs/nfsd/nfs4xdr.c
 +++ b/fs/nfsd/nfs4xdr.c
-@@ -1472,7 +1472,7 @@ nfsd4_encode_fattr(struct svc_fh *fhp, s
+@@ -1470,7 +1470,7 @@ nfsd4_encode_fattr(struct svc_fh *fhp, s
  	}
  	if (bmval0 & (FATTR4_WORD0_ACL | FATTR4_WORD0_ACLSUPPORT
  			| FATTR4_WORD0_SUPPORTED_ATTRS)) {

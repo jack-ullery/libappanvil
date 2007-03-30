@@ -7,7 +7,7 @@ Index: b/fs/ecryptfs/inode.c
 ===================================================================
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -512,11 +512,14 @@ static int ecryptfs_mkdir(struct inode *
+@@ -509,11 +509,14 @@ static int ecryptfs_mkdir(struct inode *
  {
  	int rc;
  	struct dentry *lower_dentry;
@@ -64,7 +64,7 @@ Index: b/fs/nfsd/vfs.c
 ===================================================================
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1183,7 +1183,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
+@@ -1186,7 +1186,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
  		host_err = vfs_create(dirp, dchild, iap->ia_mode, NULL);
  		break;
  	case S_IFDIR:

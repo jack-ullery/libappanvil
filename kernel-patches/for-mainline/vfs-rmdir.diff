@@ -7,7 +7,7 @@ Index: b/fs/ecryptfs/inode.c
 ===================================================================
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -545,14 +545,16 @@ out:
+@@ -542,14 +542,16 @@ out:
  static int ecryptfs_rmdir(struct inode *dir, struct dentry *dentry)
  {
  	struct dentry *lower_dentry;
@@ -64,7 +64,7 @@ Index: b/fs/nfsd/vfs.c
 ===================================================================
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1699,7 +1699,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+@@ -1702,7 +1702,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
  #endif
  		host_err = vfs_unlink(dirp, rdentry);
  	} else { /* It's RMDIR */

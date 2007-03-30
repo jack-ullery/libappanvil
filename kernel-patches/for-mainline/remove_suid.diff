@@ -49,7 +49,7 @@ Index: b/mm/filemap.c
  
  	return 0;
  }
-@@ -2246,7 +2246,7 @@ __generic_file_aio_write_nolock(struct k
+@@ -2252,7 +2252,7 @@ __generic_file_aio_write_nolock(struct k
  	if (count == 0)
  		goto out;
  
@@ -88,7 +88,7 @@ Index: b/fs/splice.c
 ===================================================================
 --- a/fs/splice.c
 +++ b/fs/splice.c
-@@ -844,7 +844,7 @@ generic_file_splice_write_nolock(struct 
+@@ -797,7 +797,7 @@ generic_file_splice_write_nolock(struct 
  	ssize_t ret;
  	int err;
  
@@ -97,7 +97,7 @@ Index: b/fs/splice.c
  	if (unlikely(err))
  		return err;
  
-@@ -890,10 +890,10 @@ generic_file_splice_write(struct pipe_in
+@@ -843,10 +843,10 @@ generic_file_splice_write(struct pipe_in
  	ssize_t ret;
  	int err;
  
@@ -144,7 +144,7 @@ Index: b/mm/filemap_xip.c
 ===================================================================
 --- a/mm/filemap_xip.c
 +++ b/mm/filemap_xip.c
-@@ -379,7 +379,7 @@ xip_file_write(struct file *filp, const 
+@@ -405,7 +405,7 @@ xip_file_write(struct file *filp, const 
  	if (count == 0)
  		goto out_backing;
  
@@ -157,7 +157,7 @@ Index: b/mm/shmem.c
 ===================================================================
 --- a/mm/shmem.c
 +++ b/mm/shmem.c
-@@ -1447,7 +1447,7 @@ shmem_file_write(struct file *file, cons
+@@ -1516,7 +1516,7 @@ shmem_file_write(struct file *file, cons
  	if (err || !count)
  		goto out;
  

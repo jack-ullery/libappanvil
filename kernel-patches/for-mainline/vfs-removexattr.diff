@@ -7,7 +7,7 @@ Index: b/fs/nfsd/vfs.c
 ===================================================================
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1989,7 +1989,8 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+@@ -1992,7 +1992,8 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
  		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
  			error = 0;
  		else {

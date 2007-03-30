@@ -7,7 +7,7 @@ Index: b/fs/ecryptfs/inode.c
 ===================================================================
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -456,10 +456,11 @@ static int ecryptfs_unlink(struct inode 
+@@ -453,10 +453,11 @@ static int ecryptfs_unlink(struct inode 
  {
  	int rc = 0;
  	struct dentry *lower_dentry = ecryptfs_dentry_to_lower(dentry);
@@ -59,7 +59,7 @@ Index: b/fs/nfsd/vfs.c
 ===================================================================
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1697,7 +1697,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+@@ -1700,7 +1700,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
  			host_err = -EPERM;
  		} else
  #endif
@@ -85,7 +85,7 @@ Index: b/ipc/mqueue.c
 ===================================================================
 --- a/ipc/mqueue.c
 +++ b/ipc/mqueue.c
-@@ -747,7 +747,7 @@ asmlinkage long sys_mq_unlink(const char
+@@ -748,7 +748,7 @@ asmlinkage long sys_mq_unlink(const char
  	if (inode)
  		atomic_inc(&inode->i_count);
  

@@ -59,7 +59,7 @@ Index: b/fs/nfsd/vfs.c
  		if (host_error < 0)
  			goto out_nfserr;
  	}
-@@ -1975,7 +1980,8 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+@@ -1978,7 +1983,8 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
  		size = 0;
  
  	if (size)

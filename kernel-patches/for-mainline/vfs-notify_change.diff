@@ -55,7 +55,7 @@ Index: b/fs/ecryptfs/inode.c
 ===================================================================
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -873,12 +873,14 @@ static int ecryptfs_setattr(struct dentr
+@@ -870,12 +870,14 @@ static int ecryptfs_setattr(struct dentr
  {
  	int rc = 0;
  	struct dentry *lower_dentry;
@@ -70,7 +70,7 @@ Index: b/fs/ecryptfs/inode.c
  	inode = dentry->d_inode;
  	lower_inode = ecryptfs_inode_to_lower(inode);
  	if (ia->ia_valid & ATTR_SIZE) {
-@@ -893,7 +895,7 @@ static int ecryptfs_setattr(struct dentr
+@@ -890,7 +892,7 @@ static int ecryptfs_setattr(struct dentr
  		if (rc < 0)
  			goto out;
  	}
@@ -118,7 +118,7 @@ Index: b/fs/nfsd/vfs.c
  		err = nfserrno(host_err);
  		fh_unlock(fhp);
  	}
-@@ -890,13 +890,13 @@ out:
+@@ -893,13 +893,13 @@ out:
  	return err;
  }
  
@@ -134,7 +134,7 @@ Index: b/fs/nfsd/vfs.c
  	mutex_unlock(&dentry->d_inode->i_mutex);
  }
  
-@@ -955,7 +955,7 @@ nfsd_vfs_write(struct svc_rqst *rqstp, s
+@@ -958,7 +958,7 @@ nfsd_vfs_write(struct svc_rqst *rqstp, s
  
  	/* clear setuid/setgid flag after write */
  	if (host_err >= 0 && (inode->i_mode & (S_ISUID | S_ISGID)))
@@ -294,7 +294,7 @@ Index: b/fs/sysfs/file.c
 ===================================================================
 --- a/fs/sysfs/file.c
 +++ b/fs/sysfs/file.c
-@@ -560,7 +560,7 @@ int sysfs_chmod_file(struct kobject *kob
+@@ -584,7 +584,7 @@ int sysfs_chmod_file(struct kobject *kob
  			newattrs.ia_mode = (mode & S_IALLUGO) |
  						(inode->i_mode & ~S_IALLUGO);
  			newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
