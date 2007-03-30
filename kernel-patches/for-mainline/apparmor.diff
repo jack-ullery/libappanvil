@@ -1,7 +1,7 @@
-Index: b/security/apparmor/Kconfig
+Index: linux-2.6-apparmor/security/apparmor/Kconfig
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/Kconfig
++++ linux-2.6-apparmor/security/apparmor/Kconfig
 @@ -0,0 +1,9 @@
 +config SECURITY_APPARMOR
 +	tristate "AppArmor support"
@@ -12,10 +12,10 @@ Index: b/security/apparmor/Kconfig
 +	  distribution) and further information may be found at
 +	  <http://forge.novell.com/modules/xfmod/project/?apparmor>
 +	  If you are unsure how to answer this question, answer N.
-Index: b/security/apparmor/Makefile
+Index: linux-2.6-apparmor/security/apparmor/Makefile
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/Makefile
++++ linux-2.6-apparmor/security/apparmor/Makefile
 @@ -0,0 +1,13 @@
 +# Makefile for AppArmor Linux Security Module
 +#
@@ -30,11 +30,11 @@ Index: b/security/apparmor/Makefile
 +$(obj)/main.o : $(obj)/capability_names.h
 +$(obj)/capability_names.h : $(srctree)/include/linux/capability.h
 +	$(call cmd,make-caps)
-Index: b/security/apparmor/apparmor.h
+Index: linux-2.6-apparmor/security/apparmor/apparmor.h
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/apparmor.h
-@@ -0,0 +1,287 @@
++++ linux-2.6-apparmor/security/apparmor/apparmor.h
+@@ -0,0 +1,288 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
 + *
@@ -131,7 +131,7 @@ Index: b/security/apparmor/apparmor.h
 + * @sub: profiles list of subprofiles (HATS)
 + * @flags: flags controlling profile behavior
 + * @null_profile: if needed per profile learning and null confinement profile
-+ * @isstale: flag indicating profile is stale by pointing to its replacement
++ * @isstale: flag indicating if profile is stale
 + * @capabilities: capabilities granted by the process
 + * @count: reference count of the profile
 + *
@@ -157,7 +157,7 @@ Index: b/security/apparmor/apparmor.h
 +		int audit;
 +	} flags;
 +	struct aa_profile *null_profile;
-+	struct aa_profile *isstale;
++	int isstale;
 +
 +	kernel_cap_t capabilities;
 +	struct kref count;
@@ -168,6 +168,7 @@ Index: b/security/apparmor/apparmor.h
 +
 +extern struct list_head profile_list;
 +extern rwlock_t profile_list_lock;
++extern struct mutex aa_interface_lock;
 +
 +/**
 + * struct aa_task_context - primary label for confined tasks
@@ -322,10 +323,10 @@ Index: b/security/apparmor/apparmor.h
 +unsigned int aa_match(struct aa_dfa *dfa, const char *pathname);
 +
 +#endif				/* __APPARMOR_H */
-Index: b/security/apparmor/apparmorfs.c
+Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/apparmorfs.c
++++ linux-2.6-apparmor/security/apparmor/apparmorfs.c
 @@ -0,0 +1,430 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
@@ -757,10 +758,10 @@ Index: b/security/apparmor/apparmorfs.c
 +	if (AA_FS_DENTRY)
 +		clear_apparmorfs();
 +}
-Index: b/security/apparmor/inline.h
+Index: linux-2.6-apparmor/security/apparmor/inline.h
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/inline.h
++++ linux-2.6-apparmor/security/apparmor/inline.h
 @@ -0,0 +1,225 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
@@ -987,10 +988,10 @@ Index: b/security/apparmor/inline.h
 +}
 +
 +#endif /* __INLINE_H__ */
-Index: b/security/apparmor/list.c
+Index: linux-2.6-apparmor/security/apparmor/list.c
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/list.c
++++ linux-2.6-apparmor/security/apparmor/list.c
 @@ -0,0 +1,96 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
@@ -1088,11 +1089,11 @@ Index: b/security/apparmor/list.c
 +	.stop =		p_stop,
 +	.show =		seq_show_profile,
 +};
-Index: b/security/apparmor/lsm.c
+Index: linux-2.6-apparmor/security/apparmor/lsm.c
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/lsm.c
-@@ -0,0 +1,850 @@
++++ linux-2.6-apparmor/security/apparmor/lsm.c
+@@ -0,0 +1,852 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
 + *
@@ -1898,6 +1899,7 @@ Index: b/security/apparmor/lsm.c
 +static void __exit apparmor_exit(void)
 +{
 +	/* Remove and release all the profiles on the profile list. */
++	mutex_lock(&aa_interface_lock);
 +	write_lock(&profile_list_lock);
 +	while (!list_empty(&profile_list)) {
 +		struct aa_profile *profile =
@@ -1905,7 +1907,7 @@ Index: b/security/apparmor/lsm.c
 +
 +		/* Remove the profile from each task context it is on. */
 +		lock_profile(profile);
-+		profile->isstale = ERR_PTR(-ENOENT);
++		profile->isstale = 1;
 +		aa_unconfine_tasks(profile);
 +		unlock_profile(profile);
 +
@@ -1927,6 +1929,7 @@ Index: b/security/apparmor/lsm.c
 +	synchronize_rcu();
 +
 +	destroy_apparmorfs();
++	mutex_unlock(&aa_interface_lock);
 +
 +	if (unregister_security(&apparmor_ops))
 +		AA_INFO(GFP_KERNEL, "Unable to properly unregister "
@@ -1943,10 +1946,10 @@ Index: b/security/apparmor/lsm.c
 +MODULE_DESCRIPTION("AppArmor process confinement");
 +MODULE_AUTHOR("Tony Jones <tonyj@suse.de>");
 +MODULE_LICENSE("GPL");
-Index: b/security/apparmor/main.c
+Index: linux-2.6-apparmor/security/apparmor/main.c
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/main.c
++++ linux-2.6-apparmor/security/apparmor/main.c
 @@ -0,0 +1,1297 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -3245,11 +3248,11 @@ Index: b/security/apparmor/main.c
 +	rcu_assign_pointer(task->security, new_cxt);
 +}
 +
-Index: b/security/apparmor/module_interface.c
+Index: linux-2.6-apparmor/security/apparmor/module_interface.c
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/module_interface.c
-@@ -0,0 +1,621 @@
++++ linux-2.6-apparmor/security/apparmor/module_interface.c
+@@ -0,0 +1,615 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
 + *
@@ -3265,6 +3268,15 @@ Index: b/security/apparmor/module_interface.c
 +
 +#include "apparmor.h"
 +#include "inline.h"
++
++/*
++ * This mutex is used to synchronize profile adds, replacements, and
++ * removals: we only allow one of these operations at a time.
++ * We do not use the profile list lock here in order to avoid blocking
++ * exec during those operations.  (Exec involves a profile list lookup
++ * for named-profile transitions.)
++ */
++DEFINE_MUTEX(aa_interface_lock);
 +
 +/* The AppArmor interface treats data as a type byte followed by the
 + * actual data.  The interface has the notion of a a named entry
@@ -3615,15 +3627,18 @@ Index: b/security/apparmor/module_interface.c
 +	if (IS_ERR(profile))
 +		return PTR_ERR(profile);
 +
++	mutex_lock(&aa_interface_lock);
 +	write_lock(&profile_list_lock);
 +	if (__aa_find_profile(profile->name, &profile_list)) {
 +		/* A profile with this name exists already. */
 +		write_unlock(&profile_list_lock);
++		mutex_unlock(&aa_interface_lock);
 +		aa_put_profile(profile);
 +		return -EEXIST;
 +	}
 +	list_add(&profile->list, &profile_list);
 +	write_unlock(&profile_list_lock);
++	mutex_unlock(&aa_interface_lock);
 +
 +	return size;
 +}
@@ -3694,15 +3709,15 @@ Index: b/security/apparmor/module_interface.c
 +	if (IS_ERR(new_profile))
 +		return PTR_ERR(new_profile);
 +
++	mutex_lock(&aa_interface_lock);
 +	write_lock(&profile_list_lock);
 +	old_profile = __aa_find_profile(new_profile->name, &profile_list);
 +	if (old_profile) {
 +		lock_profile(old_profile);
-+		old_profile->isstale = new_profile;
++		old_profile->isstale = 1;
 +		unlock_profile(old_profile);
 +		list_del_init(&old_profile->list);
 +	}
-+	aa_dup_profile(new_profile);
 +	list_add(&new_profile->list, &profile_list);
 +	write_unlock(&profile_list_lock);
 +
@@ -3714,35 +3729,14 @@ Index: b/security/apparmor/module_interface.c
 +	 * task confined by old_profile.  To do this the profile locks
 +	 * are only held when the actual switch is done per task.  While
 +	 * looping to allocate a new aa_task_context the old_task list
-+	 * may get shorter if tasks exist/change their profile but will
++	 * may get shorter if tasks exit/change their profile but will
 +	 * not get longer as new task will not use old_profile detecting
 +	 * that is stale.
-+	 * The new_profile could be removed/replaced becoming stale itself.
-+	 * In this case replacement switches to using new_profile->isstale
-+	 * forwarding pointer for replacement of any remaining tasks.
-+	 * The replacement that made new_profile stale will take care of
-+	 * replacing any tasks that were already moved to new_profile.
 +	 */
 +	do {
 +		new_cxt = aa_alloc_task_context(GFP_KERNEL | __GFP_NOFAIL);
 +
-+	repeat:
 +		lock_both_profiles(old_profile, new_profile);
-+		if (new_profile->isstale) {
-+			struct aa_profile *profile;
-+
-+			if (IS_ERR(new_profile->isstale)) {
-+				/* new_profile was removed so become removal */
-+				aa_unconfine_tasks(old_profile);
-+				unlock_both_profiles(old_profile, new_profile);
-+				break;
-+			}
-+			profile = aa_dup_profile(new_profile->isstale);
-+			unlock_both_profiles(old_profile, new_profile);
-+			aa_put_profile(new_profile);
-+			new_profile = profile;
-+			goto repeat;
-+		}
 +		if (!list_empty(&old_profile->task_contexts)) {
 +			struct task_struct *task =
 +				list_entry(old_profile->task_contexts.next,
@@ -3756,9 +3750,9 @@ Index: b/security/apparmor/module_interface.c
 +	} while (!new_cxt);
 +	aa_free_task_context(new_cxt);
 +	aa_put_profile(old_profile);
-+	aa_put_profile(new_profile);
-+out:
 +
++out:
++	mutex_unlock(&aa_interface_lock);
 +	return size;
 +}
 +
@@ -3774,16 +3768,18 @@ Index: b/security/apparmor/module_interface.c
 +{
 +	struct aa_profile *profile;
 +
++	mutex_lock(&aa_interface_lock);
 +	write_lock(&profile_list_lock);
 +	profile = __aa_find_profile(name, &profile_list);
 +	if (!profile) {
 +		write_unlock(&profile_list_lock);
++		mutex_unlock(&aa_interface_lock);
 +		return -ENOENT;
 +	}
 +
 +	/* Remove the profile from each task context it is on. */
 +	lock_profile(profile);
-+	profile->isstale = ERR_PTR(-ENOENT);
++	profile->isstale = 1;
 +	aa_unconfine_tasks(profile);
 +	unlock_profile(profile);
 +
@@ -3791,6 +3787,7 @@ Index: b/security/apparmor/module_interface.c
 +	list_del_init(&profile->list);
 +	aa_put_profile(profile);
 +	write_unlock(&profile_list_lock);
++	mutex_unlock(&aa_interface_lock);
 +
 +	return size;
 +}
@@ -3871,10 +3868,10 @@ Index: b/security/apparmor/module_interface.c
 +		task_unlock(task);
 +	}
 +}
-Index: b/security/apparmor/procattr.c
+Index: linux-2.6-apparmor/security/apparmor/procattr.c
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/procattr.c
++++ linux-2.6-apparmor/security/apparmor/procattr.c
 @@ -0,0 +1,206 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
@@ -3926,7 +3923,7 @@ Index: b/security/apparmor/procattr.c
 +		str = kmalloc(*len, GFP_ATOMIC);
 +		if (!str)
 +			return -ENOMEM;
-+		
++
 +		memcpy(str, unconfined_str, *len);
 +	}
 +	*string = str;
@@ -4082,10 +4079,10 @@ Index: b/security/apparmor/procattr.c
 +	kfree(name_copy);
 +	return error;
 +}
-Index: b/security/apparmor/match.c
+Index: linux-2.6-apparmor/security/apparmor/match.c
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/match.c
++++ linux-2.6-apparmor/security/apparmor/match.c
 @@ -0,0 +1,246 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -4333,10 +4330,10 @@ Index: b/security/apparmor/match.c
 +{
 +	return dfa ? aa_dfa_match(dfa, pathname) : 0;
 +}
-Index: b/security/apparmor/match.h
+Index: linux-2.6-apparmor/security/apparmor/match.h
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/match.h
++++ linux-2.6-apparmor/security/apparmor/match.h
 @@ -0,0 +1,81 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -4419,10 +4416,10 @@ Index: b/security/apparmor/match.h
 +}
 +
 +#endif /* __MATCH_H */
-Index: b/security/apparmor/locking.txt
+Index: linux-2.6-apparmor/security/apparmor/locking.txt
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/locking.txt
++++ linux-2.6-apparmor/security/apparmor/locking.txt
 @@ -0,0 +1,46 @@
 +Locking in AppArmor
 +===================
