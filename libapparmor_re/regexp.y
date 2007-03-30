@@ -101,7 +101,11 @@
 	 * avoids introducing duplicate States with identical accept values.
 	 */
 	unsigned int refcount;
-	void dup(void) { refcount++; }
+	Node *dup(void)
+	{
+	    refcount++;
+	    return this;
+	}
 	void release(void) {
 	    if (--refcount == 0)
 		delete this;
@@ -253,18 +257,11 @@
      */
     class AcceptNode : public ImportantNode {
     public:
-	AcceptNode(uint32_t perms, int is_rerule)
-	    : perms(perms), is_rerule(is_rerule) {}
+	AcceptNode() {}
 	void follow(Cases& cases)
 	{
 	    /* Nothing to follow. */
 	}
-	ostream& dump(ostream& os) {
-	    return os << '<' << perms << ", " << is_rerule << '>';
-	}
-
-	uint32_t perms;
-	int is_rerule;
     };
 
     /* Match a pair of consecutive nodes. */
@@ -394,7 +391,7 @@
 }
 
 %{
-    void regexp_error(Node **, const char *, int *, const char *);
+    void regexp_error(Node **, const char *, const char *);
 #   define YYLEX_PARAM &text
     int regexp_lex(YYSTYPE *, const char **);
 
@@ -420,7 +417,6 @@
 /* %error-verbose */
 %parse-param {Node **root}
 %parse-param {const char *text}
-%parse-param {int *is_rerule}
 %name-prefix = "regexp_"
 
 %token <c> CHAR
@@ -458,21 +454,21 @@ terms	    : qterm
 	    ;
 
 qterm	    : term
-	    | term '*'		{ $$ = new StarNode($1); *is_rerule = 1; }
-	    | term '+'		{ $$ = new PlusNode($1); *is_rerule = 1; }
+	    | term '*'		{ $$ = new StarNode($1); }
+	    | term '+'		{ $$ = new PlusNode($1); }
 	    ;
 
-term	    : '.'		{ $$ = new AnyCharNode; *is_rerule = 1; }
+term	    : '.'		{ $$ = new AnyCharNode; }
 	    | regex_char	{ $$ = new CharNode($1); }
 	    | '[' charset ']'	{ $$ = new CharSetNode(*$2);
-				  delete $2; *is_rerule = 1; }
+				  delete $2; }
 	    | '[' '^' charset ']'
 				{ $$ = new NotCharSetNode(*$3);
-				  delete $3; *is_rerule = 1; }
+				  delete $3; }
 	    | '[' '^' '^' cset_chars ']'
 				{ $4->insert('^');
 				  $$ = new NotCharSetNode(*$4);
-				  delete $4; *is_rerule = 1; }
+				  delete $4; }
 	    | '(' regexp ')'	{ $$ = $2; }
 	    ;
 
@@ -525,8 +521,6 @@ cset_char   : CHAR
 #include <fstream>
 
 #include "../immunix.h"
-
-#define NOT_RE_RULE 0
 
 /* Traverse the syntax tree depth-first in an iterator-like manner. */
 class depth_first_traversal {
@@ -693,7 +687,7 @@ regexp_lex(YYSTYPE *val, const char **pos)
 }
 
 void
-regexp_error(Node **, const char *text, int *is_rerule, const char *error)
+regexp_error(Node **, const char *text, const char *error)
 {
     /* We don't want the library to print error messages. */
 }
@@ -849,41 +843,23 @@ DFA::~DFA()
 	delete *i;
 }
 
-/**
- * Result when this state matches.
- */
-uint32_t accept_perms(State *state)
-{
-    uint32_t perms = 0;
-    int is_exactXmatch = 0;
-
-    for (State::iterator i = state->begin(); i != state->end(); i++) {
-	if (AcceptNode *accept = dynamic_cast<AcceptNode *>(*i)) {
-	    if (is_exactXmatch) {
-		/* exact match X perms override an re match X perm.  Only
-		 * accumulate regular permissions
-		 */
-		if (accept->is_rerule)
-		    perms |= AA_NOXMODS_PERM_MASK & accept->perms;
-		else
-		    /* N exact matches must have same X perm so accumulate
-		     * to catch any error */
-		    perms |= accept->perms;
-	    } else {
-		if (accept->is_rerule ||
-		    !(AA_EXEC_MODIFIERS & accept->perms)) {
-		    perms |= accept->perms;
-		} else {
-		    /* exact match with an exec modifier override accumulated
-		     * X permissions */
-		    is_exactXmatch = 1;
-		    perms = (AA_NOXMODS_PERM_MASK & perms) | accept->perms;
-		}
-	    }
-	}
+class MatchFlag : public AcceptNode {
+public:
+    MatchFlag(uint32_t flag) : flag(flag) {}
+    ostream& dump(ostream& os)
+    {
+	return os << '<' << flag << '>';
     }
-    return perms;
-}
+
+    uint32_t flag;
+};
+
+class ExactMatchFlag : public MatchFlag {
+public:
+    ExactMatchFlag(uint32_t flag) : MatchFlag(flag) {}
+};
+
+uint32_t accept_perms(State *state);
 
 /**
  * verify that there are no conflicting X permissions on the dfa
@@ -1517,23 +1493,99 @@ extern "C" void aare_delete_ruleset(aare_ruleset_t *rules)
     }
 }
 
+#define ACCUMULATING_FLAGS \
+	(AA_MAY_READ | AA_MAY_WRITE | AA_MAY_EXEC | \
+	 AA_MAY_LINK | AA_EXEC_MMAP)
+
+/**
+ * Compute the permission flags that this state corresponds to. If we
+ * have any exact matches, then they override the execute and safe
+ * execute flags.
+ */
+uint32_t accept_perms(State *state)
+{
+    uint32_t perms = 0, exact_match_perms = 0;
+
+    for (State::iterator i = state->begin(); i != state->end(); i++) {
+	if (MatchFlag *match = dynamic_cast<MatchFlag *>(*i)) {
+		perms |= match->flag;
+		if (dynamic_cast<ExactMatchFlag *>(match))
+			exact_match_perms |= match->flag;
+	}
+    }
+
+    if (exact_match_perms & ~ACCUMULATING_FLAGS)
+	perms = (exact_match_perms & ~ACCUMULATING_FLAGS) |
+		(perms & ACCUMULATING_FLAGS);
+
+    return perms;
+}
+
 extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
 {
-    Node *tree;
-    int is_rerule = NOT_RE_RULE;
+    static MatchFlag *match_flags[sizeof(perms) * 8];
+    static ExactMatchFlag *exact_match_flags[sizeof(perms) * 8];
+    Node *tree, *accept;
+    int exact_match;
 
-    if (regexp_parse(&tree, rule, &is_rerule)) {
+    assert(perms != 0);
+
+    if (regexp_parse(&tree, rule))
 	return 0;
+
+    /*
+     * Check if we have an expression with or without wildcards. This
+     * determines how exec modifiers are merged in accept_perms() based
+     * on how we split permission bitmasks here.
+     */
+    exact_match = 1;
+    for (depth_first_traversal i(tree); i; i++) {
+	if (dynamic_cast<StarNode *>(*i) ||
+	    dynamic_cast<PlusNode *>(*i) ||
+	    dynamic_cast<AnyCharNode *>(*i) ||
+	    dynamic_cast<CharSetNode *>(*i) ||
+	    dynamic_cast<NotCharSetNode *>(*i))
+		exact_match = 0;
     }
 
     if (rules->reverse)
 	flip_tree(tree);
-    AcceptNode *accept = new AcceptNode(perms, is_rerule);
-    tree = new CatNode(tree, accept);
-    rules->root = new AltNode(rules->root, tree);
+
+    accept = NULL;
+    for (unsigned int n = 0; perms && n < sizeof(perms) * 8; n++) {
+	uint32_t mask = 1 << n;
+
+	if (perms & mask) {
+	    perms &= ~mask;
+
+	    Node *flag;
+	    if (exact_match && (mask & ~ACCUMULATING_FLAGS)) {
+		    if (exact_match_flags[n])
+			flag = exact_match_flags[n]->dup();
+		    else {
+			exact_match_flags[n] = new ExactMatchFlag(mask);
+			flag = exact_match_flags[n];
+		    }
+	    } else {
+		    if (match_flags[n])
+		        flag = match_flags[n]->dup();
+		    else {
+			match_flags[n] = new MatchFlag(mask);
+			flag = match_flags[n];
+		    }
+	    }
+	    if (accept)
+		    accept = new AltNode(accept, flag);
+	    else
+		    accept = flag;
+	}
+    }
+    rules->root = new AltNode(rules->root, new CatNode(tree, accept));
 
     return 1;
 }
+
+#undef ACCUMULATING_FLAGS
 
 /* create a dfa from the ruleset
  * returns: buffer contain dfa tables, @size set to the size of the tables
