@@ -1451,6 +1451,7 @@ void TransitionTable::flex_table(ostream& os, const char *name)
     write_flex_table(os, YYTD_ID_CHK, check_vec.begin(), check_vec.end());
 }
 
+#if 0
 typedef set<ImportantNode *> AcceptNodes;
 map<ImportantNode *, AcceptNodes> dominance(DFA& dfa)
 {
@@ -1479,6 +1480,7 @@ map<ImportantNode *, AcceptNodes> dominance(DFA& dfa)
     }
     return is_dominated;
 }
+#endif
 
 void dump_regexp_rec(ostream& os, Node *tree)
 {
