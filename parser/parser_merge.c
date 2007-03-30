@@ -83,11 +83,11 @@ static int process_file_entries(struct codomain *cod)
 	for (cur = table[0], next = table[1], n = 1; next != NULL; n++, next = table[n]) {
 		if (file_comp(&cur, &next) == 0) {
 			int conflict = CHECK_CONFLICT_UNSAFE(cur->mode, next->mode);
+
 			cur->mode |= next->mode;
 			/* check for merged x consistency */
 			if (HAS_MAY_EXEC(cur->mode) &&
-			    ((KERN_EXEC_MODIFIERS(cur->mode) &
-			      (KERN_EXEC_MODIFIERS(cur->mode) - 1)) ||
+			    (!AA_EXEC_SINGLE_MODIFIER_SET(cur->mode) ||
 			     conflict)) {
 				PERROR(_("profile %s: has merged rule %s with multiple x modifiers\n"),
 				       cod->name, cur->name);
