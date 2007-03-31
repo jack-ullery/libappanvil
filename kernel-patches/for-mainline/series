@@ -39,3 +39,4 @@ apparmor-audit.diff
 apparmor.diff
 apparmor-intree.diff
 # complain-to-learn.diff
+apparmor-setprocattr.diff

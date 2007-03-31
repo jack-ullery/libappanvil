@@ -1,0 +1,358 @@
+Index: linux-2.6-apparmor/security/apparmor/apparmor.h
+===================================================================
+--- linux-2.6-apparmor.orig/security/apparmor/apparmor.h
++++ linux-2.6-apparmor/security/apparmor/apparmor.h
+@@ -269,10 +269,8 @@ extern void aa_unconfine_tasks(struct aa
+ /* procattr.c */
+ extern int aa_getprocattr(struct aa_profile *profile, char **string,
+ 			  unsigned *len);
+-extern int aa_setprocattr_changehat(char *hatinfo, size_t infosize);
+-extern int aa_setprocattr_setprofile(struct task_struct *task,
+-				     char *profilename,
+-				     size_t profilesize);
++extern int aa_setprocattr_changehat(char *args);
++extern int aa_setprocattr_setprofile(struct task_struct *task, char *args);
+ 
+ /* apparmorfs.c */
+ extern int create_apparmorfs(void);
+Index: linux-2.6-apparmor/security/apparmor/lsm.c
+===================================================================
+--- linux-2.6-apparmor.orig/security/apparmor/lsm.c
++++ linux-2.6-apparmor/security/apparmor/lsm.c
+@@ -17,6 +17,7 @@
+ #include <linux/mman.h>
+ #include <linux/mount.h>
+ #include <linux/namei.h>
++#include <linux/ctype.h>
+ 
+ #include "apparmor.h"
+ #include "inline.h"
+@@ -580,16 +581,12 @@ static int apparmor_getprocattr(struct t
+ 	struct aa_profile *profile;
+ 
+ 	/* AppArmor only supports the "current" process attribute */
+-	if (strcmp(name, "current") != 0) {
+-		error = -EINVAL;
+-		goto out;
+-	}
++	if (strcmp(name, "current") != 0)
++		return -EINVAL;
+ 
+ 	/* must be task querying itself or admin */
+-	if (current != task && !capable(CAP_SYS_ADMIN)) {
+-		error = -EPERM;
+-		goto out;
+-	}
++	if (current != task && !capable(CAP_SYS_ADMIN))
++		return -EPERM;
+ 
+ 	profile = aa_get_profile(task);
+ 	error = aa_getprocattr(profile, value, &len);
+@@ -597,33 +594,29 @@ static int apparmor_getprocattr(struct t
+ 	if (!error)
+ 		error = len;
+ 
+-out:
+ 	return error;
+ }
+ 
+ static int apparmor_setprocattr(struct task_struct *task, char *name,
+ 				void *value, size_t size)
+ {
+-	const char *cmd_changehat = "changehat ",
+-		   *cmd_setprofile = "setprofile ";
+-
++	char *command, *args;
+ 	int error;
+-	char *cmd = (char *)value;
+-
+-	error = -EINVAL;
+-	if (strcmp(name, "current") != 0)
+-		goto out;
+-	error = -ERANGE;
+-	if (!size)
+-		goto out;
+ 
+-	/* CHANGE HAT -- switch task into a subhat (subprofile) if defined */
+-	if (size > strlen(cmd_changehat) &&
+-	    strncmp(cmd, cmd_changehat, strlen(cmd_changehat)) == 0) {
+-		char *hatinfo = cmd + strlen(cmd_changehat);
+-		size_t infosize = size - strlen(cmd_changehat);
++	if (strcmp(name, "current") != 0 || size == 0 || size >= PAGE_SIZE)
++		return -EINVAL;
++	args = value;
++	args[size] = '\0';
++	args = strstrip(args);
++	command = strsep(&args, " ");
++	if (!args)
++		return -EINVAL;
++	while (isspace(*args))
++		args++;
++	if (!*args)
++		return -EINVAL;
+ 
+-		/* Only the current process may change it's hat */
++	if (strcmp(command, "changehat") == 0) {
+ 		if (current != task) {
+ 			AA_WARN(GFP_KERNEL,
+ 				"%s: Attempt by foreign task %s(%d) "
+@@ -635,21 +628,14 @@ static int apparmor_setprocattr(struct t
+ 				task->comm,
+ 				task->pid);
+ 
+-			error = -EACCES;
+-			goto out;
++			return -EACCES;
+ 		}
+-
+-		error = aa_setprocattr_changehat(hatinfo, infosize);
+-		if (!error)
+-			error = size;
+-
+-	/* SET NEW PROFILE */
+-	} else if (size > strlen(cmd_setprofile) &&
+-		   strncmp(cmd, cmd_setprofile, strlen(cmd_setprofile)) == 0) {
++		error = aa_setprocattr_changehat(args);
++	} else if (strcmp(command, "setprofile")) {
+ 		struct aa_profile *profile;
+ 
+-		/* only an unconfined process with admin capabilities
+-		 * may change the profile of another task
++		/* Only an unconfined process with admin capabilities
++		 * may change the profile of another task.
+ 		 */
+ 
+ 		if (!capable(CAP_SYS_ADMIN)) {
+@@ -662,22 +648,12 @@ static int apparmor_setprocattr(struct t
+ 				current->uid,
+ 				task->comm,
+ 				task->pid);
+-			error = -EACCES;
+-			goto out;
++			return -EACCES;
+ 		}
+ 
+ 		profile = aa_get_profile(current);
+-		if (!profile) {
+-			char *profile = cmd + strlen(cmd_setprofile);
+-			size_t profilesize = size - strlen(cmd_setprofile);
+-
+-			error = aa_setprocattr_setprofile(task, profile, profilesize);
+-			if (!error)
+-				/* success,
+-				 * set return to #bytes in orig request
+-				 */
+-				error = size;
+-		} else {
++		if (profile) {
++			aa_put_profile(profile);
+ 			AA_WARN(GFP_KERNEL,
+ 				"%s: Attempt by confined task %s(%d) "
+ 				"[user %d] to assign profile to task %s(%d)\n",
+@@ -687,28 +663,25 @@ static int apparmor_setprocattr(struct t
+ 				current->uid,
+ 				task->comm,
+ 				task->pid);
+-
+-			error = -EACCES;
++			return -EACCES;
+ 		}
+-		aa_put_profile(profile);
++		error = aa_setprocattr_setprofile(task, args);
+ 	} else {
+-		/* unknown operation */
+-		AA_WARN(GFP_KERNEL,
+-			"%s: Unknown setprocattr command '%.*s' by task %s(%d)"
+-			" [user %d] for task %s(%d)\n",
++		AA_WARN(GFP_KERNEL, "%s: Unknown setprocattr command '%.*s' "
++			"by task %s(%d) [user %d] for task %s(%d)\n",
+ 			__FUNCTION__,
+ 			size < 16 ? (int)size : 16,
+-			cmd,
++			command,
+ 			current->comm,
+ 			current->pid,
+ 			current->uid,
+ 			task->comm,
+ 			task->pid);
+-
+ 		error = -EINVAL;
+ 	}
+ 
+-out:
++	if (!error)
++		error = size;
+ 	return error;
+ }
+ 
+Index: linux-2.6-apparmor/security/apparmor/procattr.c
+===================================================================
+--- linux-2.6-apparmor.orig/security/apparmor/procattr.c
++++ linux-2.6-apparmor/security/apparmor/procattr.c
+@@ -9,8 +9,6 @@
+  *	AppArmor /proc/pid/attr handling
+  */
+ 
+-/* for isspace */
+-#include <linux/ctype.h>
+ #include "apparmor.h"
+ #include "inline.h"
+ 
+@@ -56,117 +54,66 @@ int aa_getprocattr(struct aa_profile *pr
+ 	return 0;
+ }
+ 
+-int aa_setprocattr_changehat(char *hatinfo, size_t infosize)
++int aa_setprocattr_changehat(char *args)
+ {
+-	int error = -EINVAL;
+-	char *token = NULL, *hat;
++	char *hat;
+ 	u64 magic;
+ 
+-	AA_DEBUG("%s: %p %zd\n", __FUNCTION__, hatinfo, infosize);
+-
+-	/* strip leading white space */
+-	while (infosize && isspace(*hatinfo)) {
+-		hatinfo++;
+-		infosize--;
+-	}
+-
+-	if (infosize == 0)
+-		return -EINVAL;
+-
+-	/*
+-	 * Copy string to a new buffer so we can play with it
+-	 * It may be zero terminated but we add a trailing 0
+-	 * for 100% safety
+-	 */
+-	token = kmalloc(infosize + 1, GFP_KERNEL);
+-	if (!token)
+-		return -ENOMEM;
+-	memcpy(token, hatinfo, infosize);
+-	token[infosize] = 0;
+-
+-	magic = simple_strtoull(token, &hat, 16);
+-	if (hat == token || *hat != '^') {
++	magic = simple_strtoull(args, &hat, 16);
++	if (hat == args || *hat != '^') {
+ 		AA_WARN(GFP_KERNEL, "%s: Invalid input '%s'\n",
+-			__FUNCTION__, token);
+-		goto out;
++			__FUNCTION__, args);
++		return -EINVAL;
+ 	}
+-
+-	/* skip ^ */
+-	hat++;
+-
++	hat++;  /* skip ^ */
+ 	if (!*hat)
+ 		hat = NULL;
+-
+ 	if (!hat && !magic) {
+ 		AA_WARN(GFP_KERNEL,
+ 			"%s: Invalid input, NULL hat and NULL magic\n",
+ 			__FUNCTION__);
+-		goto out;
++		return -EINVAL;
+ 	}
+ 
+ 	AA_DEBUG("%s: Magic 0x%llx Hat '%s'\n",
+ 		 __FUNCTION__, magic, hat ? hat : NULL);
+ 
+-	error = aa_change_hat(hat, magic);
+-
+-out:
+-	if (token) {
+-		memset(token, 0, infosize);
+-		kfree(token);
+-	}
+-
+-	return error;
++	return aa_change_hat(hat, magic);
+ }
+ 
+-int aa_setprocattr_setprofile(struct task_struct *task, char *name, size_t size)
++int aa_setprocattr_setprofile(struct task_struct *task, char *args)
+ {
+ 	struct aa_profile *old_profile, *new_profile;
+-	char *name_copy = NULL;
+-	int error;
+ 
+ 	AA_DEBUG("%s: current %s(%d)\n",
+ 		 __FUNCTION__, current->comm, current->pid);
+ 
+-	/* strip leading white space */
+-	while (size && isspace(*name)) {
+-		name++;
+-		size--;
+-	}
+-	if (size == 0)
+-		return -EINVAL;
+-
+-	/* Create a zero-terminated copy if the name. */
+-	name_copy = kmalloc(size + 1, GFP_KERNEL);
+-	if (!name_copy)
+-		return -ENOMEM;
+-
+-	strncpy(name_copy, name, size);
+-	name_copy[size] = 0;
+-
+ repeat:
+-	if (strcmp(name_copy, "unconfined") != 0) {
+-		new_profile = aa_find_profile(name_copy);
++	if (strcmp(args, "unconfined") == 0)
++		new_profile = NULL;
++	else {
++		new_profile = aa_find_profile(args);
+ 		if (!new_profile) {
+ 			AA_WARN(GFP_KERNEL,
+ 				"%s: Unable to switch task %s(%d) to profile"
+ 				"'%s'. No such profile.\n",
+ 				__FUNCTION__,
+ 				task->comm, task->pid,
+-				name_copy);
++				args);
+ 
+-			error = -EINVAL;
+-			goto out;
++			return -EINVAL;
+ 		}
+-	} else
+-		new_profile = NULL;
++	}
+ 
+ 	old_profile = aa_replace_profile(task, new_profile, 0);
+ 	if (IS_ERR(old_profile)) {
++		int error;
++
+ 		aa_put_profile(new_profile);
+ 		error = PTR_ERR(old_profile);
+ 		if (error == -ESTALE)
+ 			goto repeat;
+-		goto out;
++		return error;
+ 	}
+ 
+ 	if (new_profile) {
+@@ -178,7 +125,7 @@ repeat:
+ 			old_profile ? old_profile->parent->name :
+ 				"unconfined",
+ 			old_profile ? old_profile->name : "unconfined",
+-			name_copy);
++			args);
+ 	} else {
+ 		if (old_profile) {
+ 			AA_WARN(GFP_KERNEL,
+@@ -198,9 +145,6 @@ repeat:
+ 
+ 	aa_put_profile(old_profile);
+ 	aa_put_profile(new_profile);
+-	error = 0;
+ 
+-out:
+-	kfree(name_copy);
+-	return error;
++	return 0;
+ }
