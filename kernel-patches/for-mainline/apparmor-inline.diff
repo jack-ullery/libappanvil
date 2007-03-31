@@ -1,0 +1,123 @@
+Index: linux-2.6-apparmor/security/apparmor/apparmor.h
+===================================================================
+--- linux-2.6-apparmor.orig/security/apparmor/apparmor.h
++++ linux-2.6-apparmor/security/apparmor/apparmor.h
+@@ -43,11 +43,6 @@ extern int apparmor_audit;
+ extern int apparmor_logsyscall;
+ extern int apparmor_path_max;
+ 
+-static inline int mediated_filesystem(struct inode *inode)
+-{
+-	return !(inode->i_sb->s_flags & MS_NOUSER);
+-}
+-
+ #define PROFILE_COMPLAIN(_profile) \
+ 	(apparmor_complain == 1 || ((_profile) && (_profile)->flags.complain))
+ 
+@@ -154,11 +149,6 @@ struct aa_task_context {
+ 	kernel_cap_t caps_logged;
+ };
+ 
+-static inline struct aa_task_context *aa_task_context(struct task_struct *task)
+-{
+-	return rcu_dereference((struct aa_task_context *)task->security);
+-}
+-
+ extern struct aa_profile *null_complain_profile;
+ 
+ /* aa_audit - AppArmor auditing structure
+@@ -262,6 +252,7 @@ extern void aa_profilelist_release(void)
+ extern ssize_t aa_file_prof_add(void *, size_t);
+ extern ssize_t aa_file_prof_replace(void *, size_t);
+ extern ssize_t aa_file_prof_remove(const char *, size_t);
++extern struct aa_profile *alloc_aa_profile(void);
+ extern void free_aa_profile(struct aa_profile *profile);
+ extern void free_aa_profile_kref(struct kref *kref);
+ extern void aa_unconfine_tasks(struct aa_profile *profile);
+@@ -283,4 +274,4 @@ int unpack_dfa(struct aa_dfa *dfa, void 
+ int verify_dfa(struct aa_dfa *dfa);
+ unsigned int aa_match(struct aa_dfa *dfa, const char *pathname);
+ 
+-#endif				/* __APPARMOR_H */
++#endif  /* __APPARMOR_H */
+Index: linux-2.6-apparmor/security/apparmor/inline.h
+===================================================================
+--- linux-2.6-apparmor.orig/security/apparmor/inline.h
++++ linux-2.6-apparmor/security/apparmor/inline.h
+@@ -12,6 +12,16 @@
+ 
+ #include <linux/sched.h>
+ 
++static inline int mediated_filesystem(struct inode *inode)
++{
++	return !(inode->i_sb->s_flags & MS_NOUSER);
++}
++
++static inline struct aa_task_context *aa_task_context(struct task_struct *task)
++{
++	return rcu_dereference((struct aa_task_context *)task->security);
++}
++
+ /**
+  * aa_dup_profile - increment refcount on profile @p
+  * @p: profile
+@@ -83,27 +93,6 @@ static inline void aa_free_task_context(
+ }
+ 
+ /**
+- * alloc_aa_profile - Allocate, initialize and return a new zeroed profile.
+- * Returns NULL on failure.
+- */
+-static inline struct aa_profile *alloc_aa_profile(void)
+-{
+-	struct aa_profile *profile;
+-
+-	profile = kzalloc(sizeof(*profile), GFP_KERNEL);
+-	AA_DEBUG("%s(%p)\n", __FUNCTION__, profile);
+-	if (profile) {
+-		profile->parent = profile;
+-		INIT_LIST_HEAD(&profile->list);
+-		INIT_LIST_HEAD(&profile->sub);
+-		kref_init(&profile->count);
+-		INIT_LIST_HEAD(&profile->task_contexts);
+-		spin_lock_init(&profile->lock);
+-	}
+-	return profile;
+-}
+-
+-/**
+  * lock_profile - lock a profile
+  * @profile: the profile to lock
+  *
+Index: linux-2.6-apparmor/security/apparmor/module_interface.c
+===================================================================
+--- linux-2.6-apparmor.orig/security/apparmor/module_interface.c
++++ linux-2.6-apparmor/security/apparmor/module_interface.c
+@@ -549,6 +549,27 @@ void free_aa_profile_kref(struct kref *k
+ }
+ 
+ /**
++ * alloc_aa_profile - Allocate, initialize and return a new zeroed profile.
++ * Returns NULL on failure.
++ */
++struct aa_profile *alloc_aa_profile(void)
++{
++	struct aa_profile *profile;
++
++	profile = kzalloc(sizeof(*profile), GFP_KERNEL);
++	AA_DEBUG("%s(%p)\n", __FUNCTION__, profile);
++	if (profile) {
++		profile->parent = profile;
++		INIT_LIST_HEAD(&profile->list);
++		INIT_LIST_HEAD(&profile->sub);
++		kref_init(&profile->count);
++		INIT_LIST_HEAD(&profile->task_contexts);
++		spin_lock_init(&profile->lock);
++	}
++	return profile;
++}
++
++/**
+  * free_aa_profile - free aa_profile structure
+  * @profile: the profile to free
+  *
