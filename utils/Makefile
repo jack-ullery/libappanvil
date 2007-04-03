@@ -29,7 +29,10 @@ endif
 TOOLS = genprof logprof autodep audit complain enforce \
 	unconfined aa-eventd apparmor_status
 
-all:
+AA_MANPAGES = autodep.8 complain.8 enforce.8 logprof.8 genprof.8 unconfined.8
+MANPAGES    = ${AA_MANPAGES} logprof.conf.5 apparmor_status.8
+
+all: ${MANPAGES} ${HTMLMANPAGES}
 	make -C po all
 
 # need some better way of determining this
@@ -42,7 +45,7 @@ po/${NAME}.pot: ${TOOLS}
 	make -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} SubDomain.pm Reports.pm"
 
 .PHONY: install
-install:
+install: ${MANPAGES} ${HTMLMANPAGES}
 	install -d ${CONFDIR}
 	install -m 644 logprof.conf severity.db ${CONFDIR}
 	install -d ${BINDIR}
@@ -59,10 +62,14 @@ install:
 	install -m 755 SubDomain.pm Reports.pm Severity.pm ${PERLDIR}
 	make -C po install DESTDIR=${DESTDIR} NAME=${NAME}
 	mkdir -m 0700 -p $(DESTDIR)/var/log/apparmor
+	make install_manpages DESTDIR=${DESTDIR}
+	# special case for apparmor_status
+	ln -sf apparmor_status.8 ${DESTDIR}/${MANDIR}/man8/aa-status.8
 	
 .PHONY: clean
 clean:
 	rm -f core core.* *.o *.s *.a *~
 	rm -f $(NAME)-$(VERSION)-*.tar.gz Make.rules
+	rm -f ${MANPAGES} ${HTMLMANPAGES}
 	make -C po clean
 

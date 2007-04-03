@@ -36,15 +36,10 @@ endif
 RELEASE_DIR                     = ${NAME}-${VERSION}
 DOCDIR                          = /usr/share/doc/${NAME}-${VERSION}
 
-AA_MANPAGES			= autodep.8 complain.8 enforce.8 logprof.8 genprof.8 \
-				  unconfined.8
-MANPAGES			= logprof.conf.5 \
-				  ${AA_MANPAGES} \
-				  apparmor_status.8 mod_apparmor.8
+MANPAGES			= mod_apparmor.8
 DOCUMENTS                       = immunix.css
 PAPERS=$(wildcard papers/*)
 
-HTMLMANPAGES=$(foreach manpage, ${MANPAGES}, ${manpage}.html)
 # All manpages are now autotragically generated.
 GENERATED=${MANPAGES} ${HTMLMANPAGES}
 
@@ -68,8 +63,6 @@ install_manpages: $(MANPAGES)
 	     install -m 644 $(filter %.${dir}, ${MANPAGES}) ${DESTDIR}/${MANDIR}/man${dir}; \
 	     $(foreach aa_page, $(filter %.${dir}, ${AA_MANPAGES}), \
 	     	ln -sf $(aa_page) ${DESTDIR}/${MANDIR}/man${dir}/${aa_page:%=aa-%};)) 
-	# special case for apparmor_status
-	ln -sf apparmor_status.8 ${DESTDIR}/${MANDIR}/man8/aa-status.8
 
 .PHONY: install_documents
 install_documents: ${HTMLMANPAGES}
