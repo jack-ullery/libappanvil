@@ -2,6 +2,7 @@ Add a struct vfsmount parameter to vfs_removexattr()
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
 Index: b/fs/nfsd/vfs.c
 ===================================================================

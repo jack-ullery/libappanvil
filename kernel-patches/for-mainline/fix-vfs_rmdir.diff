@@ -1,7 +1,9 @@
-vfs_rmdir: call lsm hook before unhashing dentry
+vfs_rmdir(): call lsm hook before unhashing dentry
 
 If we unhash the dentry before calling the security_inode_rmdir hook,
-we cannot compute the file's pathname in the hook anymore.
+we cannot compute the file's pathname in the hook anymore. AppArmor
+needs to know the filename in order to decide whether a file may be
+deleted, though.
 
 Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>

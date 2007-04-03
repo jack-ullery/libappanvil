@@ -1,13 +1,11 @@
-Remove redundant check from proc_sys_setattr(), similar to recent fixup
-in proc_setattr().
+Remove redundant check from proc_sys_setattr()
 
-notify_change() already calls security_inode_setattr() before
-calling iop->setattr.
+This is similar to a recent fixup in proc_setattr(): notify_change()
+already calls security_inode_setattr() before calling iop->setattr.
 
 Signed-off-by: Steve Beattie <sbeattie@suse.de>
----
- fs/proc/proc_sysctl.c |    7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
 Index: b/fs/proc/proc_sysctl.c
 ===================================================================

@@ -4,14 +4,9 @@ The vfsmount parameter must be set appropriately for files visibile
 outside the kernel. Files that are only used in a filesystem (e.g.,
 reiserfs xattr files) will have a NULL vfsmount.
 
-The kernel nfsd also doesn't have the necessary context for client
-requests. We cannot put it under any pathname based policy, and
-also set vfsmount to NULL there.
-
-The next patch passes the vfsmount to the inode_setattr LSM hook.
-
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
 Index: b/fs/attr.c
 ===================================================================

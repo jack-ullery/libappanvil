@@ -28,8 +28,7 @@ vfs-listxattr.diff
 security-listxattr.diff
 vfs-removexattr.diff
 security-removexattr.diff
-d_path-lazy-unmounts.diff
-no-unreachable-paths.diff
+fix-__d_path-for-lazy-unmounts-and-make-it-unambiguous.patch
 mount-consistent-d_path.diff
 # security_chroot.diff
 d_namespace_path.diff
@@ -39,4 +38,3 @@ apparmor-audit.diff
 apparmor.diff
 apparmor-intree.diff
 # complain-to-learn.diff
-
