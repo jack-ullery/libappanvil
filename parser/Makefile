@@ -239,9 +239,9 @@ install: $(INSTALLDEPS)
 
 .SILENT: clean
 .PHONY: clean
-clean:
+clean: _clean
 	rm -f core core.* *.o *.s *.a *~
-	rm -f $(TOOLS) $(TESTS) $(MANPAGES) $(HTMLMANPAGES)
+	rm -f $(TOOLS) $(TESTS)
 	rm -f $(LEX_C_FILES)
 	rm -f $(YACC_C_FILES)
 	rm -f parser_version.h

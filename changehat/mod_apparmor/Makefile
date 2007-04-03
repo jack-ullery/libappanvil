@@ -57,7 +57,6 @@ install: ${TARGET} ${MANPAGES}
 	make install_manpages DESTDIR=${DESTDIR}
 
 .PHONY: clean
-clean:
+clean: _clean
 	rm -rf .libs
-	rm -f ${NAME}*.tar.gz *.la *.lo *.so *.o *.slo Make.rules
-	rm -f ${MANPAGES} ${HTMLMANPAGES}
+	rm -f *.la *.lo *.so *.o *.slo Make.rules

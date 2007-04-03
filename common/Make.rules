@@ -165,6 +165,12 @@ build_dir: $(BUILDRPMSUBDIRS)
 $(BUILDRPMSUBDIRS):
 	mkdir -p $(BUILDRPMSUBDIRS)
 
+.PHONY: _clean
+.SILENT: _clean
+_clean:
+	-rm -f ${NAME}-${VERSION}-*.tar.gz
+	-rm -f ${MANPAGES} ${HTMLMANPAGES} pod2htm*.tmp
+
 # =====================
 # manpages
 # =====================

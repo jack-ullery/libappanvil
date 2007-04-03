@@ -114,6 +114,6 @@ install: $(SPECFILE) $(TARGETS) $(OLDTARGET)
 	make install_manpages DESTDIR=${DESTDIR}
 
 .PHONY: clean
-clean:
-	rm -f *.o $(TARGET)*.so* ${TARGETS} ${OLDTARGET} Make.rules ${MANPAGES}
-	rm -f ${NAME}-${VERSION}*.tar.gz ${TESTS} $(NAME)-*.tgz ${SPECFILE}
+clean: _clean
+	rm -f *.o $(TARGET)*.so* ${TARGETS} ${OLDTARGET} Make.rules
+	rm -f ${TESTS} ${SPECFILE}
