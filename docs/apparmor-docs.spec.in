@@ -58,10 +58,7 @@ make install_manpages DESTDIR=$RPM_BUILD_ROOT MANDIR=%{_mandir}
 %defattr(-,root,root)
 
 # the documentation
-%{_mandir}/man2/*
-%{_mandir}/man5/*
-%{_mandir}/man7/*
-%{_mandir}/man8/*
+%{_mandir}/man[1-9]/*
 # html versions of the manpages
 %doc *.[0-9].*html
 %doc common/apparmor.css

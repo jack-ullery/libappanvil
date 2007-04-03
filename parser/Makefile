@@ -31,6 +31,7 @@ APPARMOR_BIN_PREFIX=${DESTDIR}/lib/apparmor
 CONFDIR=/etc/apparmor
 INSTALL_CONFDIR=${DESTDIR}${CONFDIR}
 LOCALEDIR=/usr/share/locale
+MANPAGES=apparmor.d.5 apparmor.7 apparmor_parser.8 subdomain.conf.5 apparmor.vim.5
 
 YACC	:= /usr/bin/bison
 YFLAGS	:= -d
@@ -109,7 +110,7 @@ export Q VERBOSE BUILD_OUTPUT
 po/${NAME}.pot: ${SRCS} ${HDRS}
 	make -C po ${NAME}.pot NAME=${NAME} SOURCES="${SRCS} ${HDRS}"
 
-all: 	$(LEX_C_FILES) $(YACC_C_FILES) $(TOOLS)
+all: 	$(LEX_C_FILES) $(YACC_C_FILES) $(TOOLS) $(MANPAGES) ${HTMLMANPAGES}
 	$(Q)make -C po all
 	$(Q)make -s tests
 
@@ -234,12 +235,13 @@ install: $(INSTALLDEPS)
 	install -m 755 -d $(APPARMOR_BIN_PREFIX)
 	install -m 755 rc.apparmor.functions $(APPARMOR_BIN_PREFIX)
 	make -C po install NAME=${NAME} DESTDIR=${DESTDIR}
+	make install_manpages DESTDIR=${DESTDIR}
 
 .SILENT: clean
 .PHONY: clean
 clean:
-	rm -f core core.* *.o *.s *.a *~ 
-	rm -f $(TOOLS) $(TESTS)
+	rm -f core core.* *.o *.s *.a *~
+	rm -f $(TOOLS) $(TESTS) $(MANPAGES) $(HTMLMANPAGES)
 	rm -f $(LEX_C_FILES)
 	rm -f $(YACC_C_FILES)
 	rm -f parser_version.h

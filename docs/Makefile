@@ -39,10 +39,9 @@ DOCDIR                          = /usr/share/doc/${NAME}-${VERSION}
 AA_MANPAGES			= autodep.8 complain.8 enforce.8 logprof.8 genprof.8 \
 				  unconfined.8
 MANPAGES			= change_hat.2 \
-				  subdomain.conf.5 apparmor.d.5 apparmor.vim.5 logprof.conf.5 \
-				  apparmor.7 \
+				  logprof.conf.5 \
 				  ${AA_MANPAGES} \
-				  apparmor_parser.8 apparmor_status.8 mod_apparmor.8
+				  apparmor_status.8 mod_apparmor.8
 DOCUMENTS                       = immunix.css
 PAPERS=$(wildcard papers/*)
 

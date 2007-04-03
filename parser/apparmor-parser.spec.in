@@ -48,9 +48,11 @@ BuildRequires: gcc-c++
 Obsoletes: subdomain_parser subdomain-parser
 Obsoletes: subdomain-parser-demo subdomain-parser-common subdomain-leaf-cert
 Obsoletes: libimnxcert
+Obsoletes: apparmor-docs
 Provides: subdomain_parser subdomain-parser
 Provides: subdomain-parser-demo subdomain-parser-common subdomain-leaf-cert
 Provides: libimnxcert
+Provides: apparmor-docs
 %define apparmor_bin_prefix /lib/apparmor
 BuildRequires: bison flex
 
@@ -67,6 +69,7 @@ make clean all CFLAGS="${RPM_OPT_FLAGS}"
 
 %install
 make install DESTDIR=${RPM_BUILD_ROOT} \
+	     MANDIR=%{_mandir} \
 	     DISTRO=%{distro} \
 	     APPARMOR_BIN_PREFIX=${RPM_BUILD_ROOT}%{apparmor_bin_prefix}
 
@@ -93,6 +96,9 @@ make install DESTDIR=${RPM_BUILD_ROOT} \
 %dir %attr(-, root, root) %{apparmor_bin_prefix}
 %{apparmor_bin_prefix}/rc.apparmor.functions
 %{_prefix}/share/locale/*/*/apparmor-parser.mo
+%{_mandir}/man*/*
+%doc *.[1-9].html
+%doc common/apparmor.css
 
 %pre
 %if %{distro} == "redhat" || %{distro} == "rhel4"
@@ -150,6 +156,8 @@ fi
 %endif
 
 %changelog
+* Tue Apr  3 2007 - sbeattie@suse.de
+- Add manpages to package
 * Thu Mar 29 2007 - coolo@suse.de
 - BuildRequire flex and bison
 * Tue Mar 27 2007 - sbeattie@suse.de
