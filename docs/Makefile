@@ -38,8 +38,7 @@ DOCDIR                          = /usr/share/doc/${NAME}-${VERSION}
 
 AA_MANPAGES			= autodep.8 complain.8 enforce.8 logprof.8 genprof.8 \
 				  unconfined.8
-MANPAGES			= change_hat.2 \
-				  logprof.conf.5 \
+MANPAGES			= logprof.conf.5 \
 				  ${AA_MANPAGES} \
 				  apparmor_status.8 mod_apparmor.8
 DOCUMENTS                       = immunix.css

@@ -33,9 +33,10 @@ common/Make.rules: $(COMMONDIR)/Make.rules
 endif
 
 SO_VERS		= 1
-DESTDIR         = 
+DESTDIR         =
 LIB             = lib/
 LIBDIR          = /usr/${LIB}
+MANPAGES	= change_hat.2
 
 TARGET=libapparmor
 TARGETS=${TARGET}.so ${TARGET}.a
@@ -52,7 +53,7 @@ ARFLAGS=-rcs
 TEST_CFLAGS=$(CFLAGS) $(CANARY_FLAG) $(FORMATGUARD_FLAG)
 TEST_LDFLAGS= -L. -limmunix
 
-all: ${TARGETS} ${OLDTARGET}
+all: ${TARGETS} ${OLDTARGET} ${MANPAGES} ${HTMLMANPAGES}
 
 %.o: %.c
 	$(CC) ${EXTRA_CFLAGS} -c -shared -o $@ $<
@@ -110,8 +111,9 @@ install: $(SPECFILE) $(TARGETS) $(OLDTARGET)
 	# compatability with old libimmunix
 	install -m 755 $(OLDTARGET) ${DESTDIR}/${LIB}
 	ln -sf apparmor.h ${DESTDIR}/usr/include/sys/immunix.h
+	make install_manpages DESTDIR=${DESTDIR}
 
 .PHONY: clean
 clean:
-	rm -f *.o $(TARGET)*.so* ${TARGETS} ${OLDTARGET} Make.rules
+	rm -f *.o $(TARGET)*.so* ${TARGETS} ${OLDTARGET} Make.rules ${MANPAGES}
 	rm -f ${NAME}-${VERSION}*.tar.gz ${TESTS} $(NAME)-*.tgz ${SPECFILE}

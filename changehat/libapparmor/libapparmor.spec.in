@@ -62,9 +62,9 @@ This package is part of a suite of tools that used to be named SubDomain.
 %prep
 %if %{?build64:1}0
 %setup -q -c -n %{name}32
-%setup -D -q 
+%setup -D -q
 %else
-%setup -q 
+%setup -q
 %endif
 
 
@@ -107,7 +107,8 @@ make CFLAGS="${RPM_OPT_FLAGS}"
   echo "FIXME - disabled 32bit installs on 64bit platforms"
   #make install DESTDIR=${RPM_BUILD_ROOT} LIB=lib -C ../%{name}32/%{name}-%{version}
 %endif
-make install DESTDIR=${RPM_BUILD_ROOT} LIB=%{_lib} VERSION=%{version} RELEASE=%{release}
+make install DESTDIR=${RPM_BUILD_ROOT} LIB=%{_lib} VERSION=%{version} \
+             RELEASE=%{release} MANDIR=%{_mandir}
 
 %clean
 [ "${RPM_BUILD_ROOT}" != "/" ] && rm -rf ${RPM_BUILD_ROOT}
@@ -130,8 +131,13 @@ make install DESTDIR=${RPM_BUILD_ROOT} LIB=%{_lib} VERSION=%{version} RELEASE=%{
 %{_libdir}/lib*
 %{_prefix}/include/sys/*.h
 %doc COPYING.LGPL
+%{_mandir}/man*/*
+%doc *.[0-9].html
+%doc common/apparmor.css
 
 %changelog
+* Tue Apr  7 2007 - sbeattie@suse.de
+- Add change_hat manpage to package
 * Thu Jan 18 2007 - sbeattie@suse.de
 - Add a clean stage to remove buildroot to specfile
 * Fri Feb 17 2006 Seth Arnold <seth.arnold@suse.de> 2.0-4.1
