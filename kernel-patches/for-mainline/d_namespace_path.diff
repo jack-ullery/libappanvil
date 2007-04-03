@@ -1,3 +1,8 @@
+Add d_namespace_path() to obtain namespace relative pathnames
+
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Reviewed-by: John Johansen <jjohansen@suse.de>
+
 Index: b/include/linux/dcache.h
 ===================================================================
 --- a/include/linux/dcache.h

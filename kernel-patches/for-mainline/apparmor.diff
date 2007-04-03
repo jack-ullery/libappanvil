@@ -1,7 +1,7 @@
-Index: linux-2.6-apparmor/security/apparmor/Kconfig
+Index: b/security/apparmor/Kconfig
 ===================================================================
 --- /dev/null
-+++ linux-2.6-apparmor/security/apparmor/Kconfig
++++ b/security/apparmor/Kconfig
 @@ -0,0 +1,9 @@
 +config SECURITY_APPARMOR
 +	tristate "AppArmor support"
@@ -12,10 +12,10 @@ Index: linux-2.6-apparmor/security/apparmor/Kconfig
 +	  distribution) and further information may be found at
 +	  <http://forge.novell.com/modules/xfmod/project/?apparmor>
 +	  If you are unsure how to answer this question, answer N.
-Index: linux-2.6-apparmor/security/apparmor/Makefile
+Index: b/security/apparmor/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6-apparmor/security/apparmor/Makefile
++++ b/security/apparmor/Makefile
 @@ -0,0 +1,13 @@
 +# Makefile for AppArmor Linux Security Module
 +#
@@ -30,11 +30,11 @@ Index: linux-2.6-apparmor/security/apparmor/Makefile
 +$(obj)/main.o : $(obj)/capability_names.h
 +$(obj)/capability_names.h : $(srctree)/include/linux/capability.h
 +	$(call cmd,make-caps)
-Index: linux-2.6-apparmor/security/apparmor/apparmor.h
+Index: b/security/apparmor/apparmor.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-apparmor/security/apparmor/apparmor.h
-@@ -0,0 +1,288 @@
++++ b/security/apparmor/apparmor.h
+@@ -0,0 +1,278 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
 + *
@@ -66,11 +66,12 @@ Index: linux-2.6-apparmor/security/apparmor/apparmor.h
 +#define AA_EXEC_PROFILE			0x0080
 +#define AA_EXEC_MMAP			0x0100
 +#define AA_EXEC_UNSAFE			0x0200
-+#define AA_INVALID_PERM			0x0400
 +
 +#define AA_EXEC_MODIFIERS		(AA_EXEC_INHERIT | \
 +					 AA_EXEC_UNCONFINED | \
 +					 AA_EXEC_PROFILE)
++#define AA_RWXM (MAY_READ | MAY_WRITE | MAY_EXEC | AA_EXEC_MMAP)
++#define AA_LINK_X_MODIFIERS (AA_EXEC_MODIFIERS | AA_EXEC_UNSAFE)
 +
 +/* Control parameters (0 or 1), settable thru module/boot flags or
 + * via /sys/kernel/security/apparmor/control */
@@ -79,11 +80,6 @@ Index: linux-2.6-apparmor/security/apparmor/apparmor.h
 +extern int apparmor_audit;
 +extern int apparmor_logsyscall;
 +extern int apparmor_path_max;
-+
-+static inline int mediated_filesystem(struct inode *inode)
-+{
-+	return !(inode->i_sb->s_flags & MS_NOUSER);
-+}
 +
 +#define PROFILE_COMPLAIN(_profile) \
 +	(apparmor_complain == 1 || ((_profile) && (_profile)->flags.complain))
@@ -191,11 +187,6 @@ Index: linux-2.6-apparmor/security/apparmor/apparmor.h
 +	kernel_cap_t caps_logged;
 +};
 +
-+static inline struct aa_task_context *aa_task_context(struct task_struct *task)
-+{
-+	return rcu_dereference((struct aa_task_context *)task->security);
-+}
-+
 +extern struct aa_profile *null_complain_profile;
 +
 +/* aa_audit - AppArmor auditing structure
@@ -299,6 +290,7 @@ Index: linux-2.6-apparmor/security/apparmor/apparmor.h
 +extern ssize_t aa_file_prof_add(void *, size_t);
 +extern ssize_t aa_file_prof_replace(void *, size_t);
 +extern ssize_t aa_file_prof_remove(const char *, size_t);
++extern struct aa_profile *alloc_aa_profile(void);
 +extern void free_aa_profile(struct aa_profile *profile);
 +extern void free_aa_profile_kref(struct kref *kref);
 +extern void aa_unconfine_tasks(struct aa_profile *profile);
@@ -306,10 +298,8 @@ Index: linux-2.6-apparmor/security/apparmor/apparmor.h
 +/* procattr.c */
 +extern int aa_getprocattr(struct aa_profile *profile, char **string,
 +			  unsigned *len);
-+extern int aa_setprocattr_changehat(char *hatinfo, size_t infosize);
-+extern int aa_setprocattr_setprofile(struct task_struct *task,
-+				     char *profilename,
-+				     size_t profilesize);
++extern int aa_setprocattr_changehat(char *args);
++extern int aa_setprocattr_setprofile(struct task_struct *task, char *args);
 +
 +/* apparmorfs.c */
 +extern int create_apparmorfs(void);
@@ -322,11 +312,11 @@ Index: linux-2.6-apparmor/security/apparmor/apparmor.h
 +int verify_dfa(struct aa_dfa *dfa);
 +unsigned int aa_match(struct aa_dfa *dfa, const char *pathname);
 +
-+#endif				/* __APPARMOR_H */
-Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
++#endif  /* __APPARMOR_H */
+Index: b/security/apparmor/apparmorfs.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-apparmor/security/apparmor/apparmorfs.c
++++ b/security/apparmor/apparmorfs.c
 @@ -0,0 +1,430 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
@@ -758,11 +748,11 @@ Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
 +	if (AA_FS_DENTRY)
 +		clear_apparmorfs();
 +}
-Index: linux-2.6-apparmor/security/apparmor/inline.h
+Index: b/security/apparmor/inline.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-apparmor/security/apparmor/inline.h
-@@ -0,0 +1,225 @@
++++ b/security/apparmor/inline.h
+@@ -0,0 +1,214 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
 + *
@@ -776,6 +766,16 @@ Index: linux-2.6-apparmor/security/apparmor/inline.h
 +#define __INLINE_H
 +
 +#include <linux/sched.h>
++
++static inline int mediated_filesystem(struct inode *inode)
++{
++	return !(inode->i_sb->s_flags & MS_NOUSER);
++}
++
++static inline struct aa_task_context *aa_task_context(struct task_struct *task)
++{
++	return rcu_dereference((struct aa_task_context *)task->security);
++}
 +
 +/**
 + * aa_dup_profile - increment refcount on profile @p
@@ -845,27 +845,6 @@ Index: linux-2.6-apparmor/security/apparmor/inline.h
 +		aa_put_profile(cxt->profile);
 +		kfree(cxt);
 +	}
-+}
-+
-+/**
-+ * alloc_aa_profile - Allocate, initialize and return a new zeroed profile.
-+ * Returns NULL on failure.
-+ */
-+static inline struct aa_profile *alloc_aa_profile(void)
-+{
-+	struct aa_profile *profile;
-+
-+	profile = kzalloc(sizeof(*profile), GFP_KERNEL);
-+	AA_DEBUG("%s(%p)\n", __FUNCTION__, profile);
-+	if (profile) {
-+		profile->parent = profile;
-+		INIT_LIST_HEAD(&profile->list);
-+		INIT_LIST_HEAD(&profile->sub);
-+		kref_init(&profile->count);
-+		INIT_LIST_HEAD(&profile->task_contexts);
-+		spin_lock_init(&profile->lock);
-+	}
-+	return profile;
 +}
 +
 +/**
@@ -988,10 +967,10 @@ Index: linux-2.6-apparmor/security/apparmor/inline.h
 +}
 +
 +#endif /* __INLINE_H__ */
-Index: linux-2.6-apparmor/security/apparmor/list.c
+Index: b/security/apparmor/list.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-apparmor/security/apparmor/list.c
++++ b/security/apparmor/list.c
 @@ -0,0 +1,96 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
@@ -1089,11 +1068,11 @@ Index: linux-2.6-apparmor/security/apparmor/list.c
 +	.stop =		p_stop,
 +	.show =		seq_show_profile,
 +};
-Index: linux-2.6-apparmor/security/apparmor/lsm.c
+Index: b/security/apparmor/lsm.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-apparmor/security/apparmor/lsm.c
-@@ -0,0 +1,852 @@
++++ b/security/apparmor/lsm.c
+@@ -0,0 +1,825 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
 + *
@@ -1113,6 +1092,7 @@ Index: linux-2.6-apparmor/security/apparmor/lsm.c
 +#include <linux/mman.h>
 +#include <linux/mount.h>
 +#include <linux/namei.h>
++#include <linux/ctype.h>
 +
 +#include "apparmor.h"
 +#include "inline.h"
@@ -1676,16 +1656,12 @@ Index: linux-2.6-apparmor/security/apparmor/lsm.c
 +	struct aa_profile *profile;
 +
 +	/* AppArmor only supports the "current" process attribute */
-+	if (strcmp(name, "current") != 0) {
-+		error = -EINVAL;
-+		goto out;
-+	}
++	if (strcmp(name, "current") != 0)
++		return -EINVAL;
 +
 +	/* must be task querying itself or admin */
-+	if (current != task && !capable(CAP_SYS_ADMIN)) {
-+		error = -EPERM;
-+		goto out;
-+	}
++	if (current != task && !capable(CAP_SYS_ADMIN))
++		return -EPERM;
 +
 +	profile = aa_get_profile(task);
 +	error = aa_getprocattr(profile, value, &len);
@@ -1693,33 +1669,29 @@ Index: linux-2.6-apparmor/security/apparmor/lsm.c
 +	if (!error)
 +		error = len;
 +
-+out:
 +	return error;
 +}
 +
 +static int apparmor_setprocattr(struct task_struct *task, char *name,
 +				void *value, size_t size)
 +{
-+	const char *cmd_changehat = "changehat ",
-+		   *cmd_setprofile = "setprofile ";
-+
++	char *command, *args;
 +	int error;
-+	char *cmd = (char *)value;
 +
-+	error = -EINVAL;
-+	if (strcmp(name, "current") != 0)
-+		goto out;
-+	error = -ERANGE;
-+	if (!size)
-+		goto out;
++	if (strcmp(name, "current") != 0 || size == 0 || size >= PAGE_SIZE)
++		return -EINVAL;
++	args = value;
++	args[size] = '\0';
++	args = strstrip(args);
++	command = strsep(&args, " ");
++	if (!args)
++		return -EINVAL;
++	while (isspace(*args))
++		args++;
++	if (!*args)
++		return -EINVAL;
 +
-+	/* CHANGE HAT -- switch task into a subhat (subprofile) if defined */
-+	if (size > strlen(cmd_changehat) &&
-+	    strncmp(cmd, cmd_changehat, strlen(cmd_changehat)) == 0) {
-+		char *hatinfo = cmd + strlen(cmd_changehat);
-+		size_t infosize = size - strlen(cmd_changehat);
-+
-+		/* Only the current process may change it's hat */
++	if (strcmp(command, "changehat") == 0) {
 +		if (current != task) {
 +			AA_WARN(GFP_KERNEL,
 +				"%s: Attempt by foreign task %s(%d) "
@@ -1731,21 +1703,14 @@ Index: linux-2.6-apparmor/security/apparmor/lsm.c
 +				task->comm,
 +				task->pid);
 +
-+			error = -EACCES;
-+			goto out;
++			return -EACCES;
 +		}
-+
-+		error = aa_setprocattr_changehat(hatinfo, infosize);
-+		if (!error)
-+			error = size;
-+
-+	/* SET NEW PROFILE */
-+	} else if (size > strlen(cmd_setprofile) &&
-+		   strncmp(cmd, cmd_setprofile, strlen(cmd_setprofile)) == 0) {
++		error = aa_setprocattr_changehat(args);
++	} else if (strcmp(command, "setprofile")) {
 +		struct aa_profile *profile;
 +
-+		/* only an unconfined process with admin capabilities
-+		 * may change the profile of another task
++		/* Only an unconfined process with admin capabilities
++		 * may change the profile of another task.
 +		 */
 +
 +		if (!capable(CAP_SYS_ADMIN)) {
@@ -1758,22 +1723,12 @@ Index: linux-2.6-apparmor/security/apparmor/lsm.c
 +				current->uid,
 +				task->comm,
 +				task->pid);
-+			error = -EACCES;
-+			goto out;
++			return -EACCES;
 +		}
 +
 +		profile = aa_get_profile(current);
-+		if (!profile) {
-+			char *profile = cmd + strlen(cmd_setprofile);
-+			size_t profilesize = size - strlen(cmd_setprofile);
-+
-+			error = aa_setprocattr_setprofile(task, profile, profilesize);
-+			if (!error)
-+				/* success,
-+				 * set return to #bytes in orig request
-+				 */
-+				error = size;
-+		} else {
++		if (profile) {
++			aa_put_profile(profile);
 +			AA_WARN(GFP_KERNEL,
 +				"%s: Attempt by confined task %s(%d) "
 +				"[user %d] to assign profile to task %s(%d)\n",
@@ -1783,28 +1738,25 @@ Index: linux-2.6-apparmor/security/apparmor/lsm.c
 +				current->uid,
 +				task->comm,
 +				task->pid);
-+
-+			error = -EACCES;
++			return -EACCES;
 +		}
-+		aa_put_profile(profile);
++		error = aa_setprocattr_setprofile(task, args);
 +	} else {
-+		/* unknown operation */
-+		AA_WARN(GFP_KERNEL,
-+			"%s: Unknown setprocattr command '%.*s' by task %s(%d)"
-+			" [user %d] for task %s(%d)\n",
++		AA_WARN(GFP_KERNEL, "%s: Unknown setprocattr command '%.*s' "
++			"by task %s(%d) [user %d] for task %s(%d)\n",
 +			__FUNCTION__,
 +			size < 16 ? (int)size : 16,
-+			cmd,
++			command,
 +			current->comm,
 +			current->pid,
 +			current->uid,
 +			task->comm,
 +			task->pid);
-+
 +		error = -EINVAL;
 +	}
 +
-+out:
++	if (!error)
++		error = size;
 +	return error;
 +}
 +
@@ -1946,11 +1898,11 @@ Index: linux-2.6-apparmor/security/apparmor/lsm.c
 +MODULE_DESCRIPTION("AppArmor process confinement");
 +MODULE_AUTHOR("Tony Jones <tonyj@suse.de>");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-apparmor/security/apparmor/main.c
+Index: b/security/apparmor/main.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-apparmor/security/apparmor/main.c
-@@ -0,0 +1,1297 @@
++++ b/security/apparmor/main.c
+@@ -0,0 +1,1296 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
 + *
@@ -2075,19 +2027,18 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +	 * if the link has 'x', an exact match of all flags except
 +	 * 'r', 'w', 'x', 'm'.
 +	 */
-+#define RWXM (MAY_READ | MAY_WRITE | MAY_EXEC | AA_EXEC_MMAP)
 +	if ((l_mode & AA_MAY_LINK) &&
-+	    !(l_mode & ~t_mode & RWXM) &&
-+	    (!(t_mode & MAY_EXEC) || (l_mode & ~RWXM) == (t_mode & ~RWXM)))
++	    (l_mode & AA_RWXM) && !(l_mode & ~t_mode & AA_RWXM) &&
++	    (!(l_mode & MAY_EXEC) ||
++	     (l_mode & AA_LINK_X_MODIFIERS) == (t_mode & AA_LINK_X_MODIFIERS)))
 +		return 0;
-+#undef RWXM
 +
 +	/**
 +	 * FIXME: There currenly is no way to report which permissions
 +	 * we expect in t_mode, so linking could fail even after learning
 +	 * the required l_mode.
 +	 */
-+	return 0;
++	return AA_MAY_LINK;
 +}
 +
 +static char *aa_get_name(struct dentry *dentry, struct vfsmount *mnt,
@@ -3248,11 +3199,11 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +	rcu_assign_pointer(task->security, new_cxt);
 +}
 +
-Index: linux-2.6-apparmor/security/apparmor/module_interface.c
+Index: b/security/apparmor/module_interface.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-apparmor/security/apparmor/module_interface.c
-@@ -0,0 +1,615 @@
++++ b/security/apparmor/module_interface.c
+@@ -0,0 +1,636 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
 + *
@@ -3804,6 +3755,27 @@ Index: linux-2.6-apparmor/security/apparmor/module_interface.c
 +}
 +
 +/**
++ * alloc_aa_profile - Allocate, initialize and return a new zeroed profile.
++ * Returns NULL on failure.
++ */
++struct aa_profile *alloc_aa_profile(void)
++{
++	struct aa_profile *profile;
++
++	profile = kzalloc(sizeof(*profile), GFP_KERNEL);
++	AA_DEBUG("%s(%p)\n", __FUNCTION__, profile);
++	if (profile) {
++		profile->parent = profile;
++		INIT_LIST_HEAD(&profile->list);
++		INIT_LIST_HEAD(&profile->sub);
++		kref_init(&profile->count);
++		INIT_LIST_HEAD(&profile->task_contexts);
++		spin_lock_init(&profile->lock);
++	}
++	return profile;
++}
++
++/**
 + * free_aa_profile - free aa_profile structure
 + * @profile: the profile to free
 + *
@@ -3868,11 +3840,11 @@ Index: linux-2.6-apparmor/security/apparmor/module_interface.c
 +		task_unlock(task);
 +	}
 +}
-Index: linux-2.6-apparmor/security/apparmor/procattr.c
+Index: b/security/apparmor/procattr.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-apparmor/security/apparmor/procattr.c
-@@ -0,0 +1,206 @@
++++ b/security/apparmor/procattr.c
+@@ -0,0 +1,150 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
 + *
@@ -3884,8 +3856,6 @@ Index: linux-2.6-apparmor/security/apparmor/procattr.c
 + *	AppArmor /proc/pid/attr handling
 + */
 +
-+/* for isspace */
-+#include <linux/ctype.h>
 +#include "apparmor.h"
 +#include "inline.h"
 +
@@ -3931,117 +3901,66 @@ Index: linux-2.6-apparmor/security/apparmor/procattr.c
 +	return 0;
 +}
 +
-+int aa_setprocattr_changehat(char *hatinfo, size_t infosize)
++int aa_setprocattr_changehat(char *args)
 +{
-+	int error = -EINVAL;
-+	char *token = NULL, *hat;
++	char *hat;
 +	u64 magic;
 +
-+	AA_DEBUG("%s: %p %zd\n", __FUNCTION__, hatinfo, infosize);
-+
-+	/* strip leading white space */
-+	while (infosize && isspace(*hatinfo)) {
-+		hatinfo++;
-+		infosize--;
-+	}
-+
-+	if (infosize == 0)
-+		return -EINVAL;
-+
-+	/*
-+	 * Copy string to a new buffer so we can play with it
-+	 * It may be zero terminated but we add a trailing 0
-+	 * for 100% safety
-+	 */
-+	token = kmalloc(infosize + 1, GFP_KERNEL);
-+	if (!token)
-+		return -ENOMEM;
-+	memcpy(token, hatinfo, infosize);
-+	token[infosize] = 0;
-+
-+	magic = simple_strtoull(token, &hat, 16);
-+	if (hat == token || *hat != '^') {
++	magic = simple_strtoull(args, &hat, 16);
++	if (hat == args || *hat != '^') {
 +		AA_WARN(GFP_KERNEL, "%s: Invalid input '%s'\n",
-+			__FUNCTION__, token);
-+		goto out;
++			__FUNCTION__, args);
++		return -EINVAL;
 +	}
-+
-+	/* skip ^ */
-+	hat++;
-+
++	hat++;  /* skip ^ */
 +	if (!*hat)
 +		hat = NULL;
-+
 +	if (!hat && !magic) {
 +		AA_WARN(GFP_KERNEL,
 +			"%s: Invalid input, NULL hat and NULL magic\n",
 +			__FUNCTION__);
-+		goto out;
++		return -EINVAL;
 +	}
 +
 +	AA_DEBUG("%s: Magic 0x%llx Hat '%s'\n",
 +		 __FUNCTION__, magic, hat ? hat : NULL);
 +
-+	error = aa_change_hat(hat, magic);
-+
-+out:
-+	if (token) {
-+		memset(token, 0, infosize);
-+		kfree(token);
-+	}
-+
-+	return error;
++	return aa_change_hat(hat, magic);
 +}
 +
-+int aa_setprocattr_setprofile(struct task_struct *task, char *name, size_t size)
++int aa_setprocattr_setprofile(struct task_struct *task, char *args)
 +{
 +	struct aa_profile *old_profile, *new_profile;
-+	char *name_copy = NULL;
-+	int error;
 +
 +	AA_DEBUG("%s: current %s(%d)\n",
 +		 __FUNCTION__, current->comm, current->pid);
 +
-+	/* strip leading white space */
-+	while (size && isspace(*name)) {
-+		name++;
-+		size--;
-+	}
-+	if (size == 0)
-+		return -EINVAL;
-+
-+	/* Create a zero-terminated copy if the name. */
-+	name_copy = kmalloc(size + 1, GFP_KERNEL);
-+	if (!name_copy)
-+		return -ENOMEM;
-+
-+	strncpy(name_copy, name, size);
-+	name_copy[size] = 0;
-+
 +repeat:
-+	if (strcmp(name_copy, "unconfined") != 0) {
-+		new_profile = aa_find_profile(name_copy);
++	if (strcmp(args, "unconfined") == 0)
++		new_profile = NULL;
++	else {
++		new_profile = aa_find_profile(args);
 +		if (!new_profile) {
 +			AA_WARN(GFP_KERNEL,
 +				"%s: Unable to switch task %s(%d) to profile"
 +				"'%s'. No such profile.\n",
 +				__FUNCTION__,
 +				task->comm, task->pid,
-+				name_copy);
++				args);
 +
-+			error = -EINVAL;
-+			goto out;
++			return -EINVAL;
 +		}
-+	} else
-+		new_profile = NULL;
++	}
 +
 +	old_profile = aa_replace_profile(task, new_profile, 0);
 +	if (IS_ERR(old_profile)) {
++		int error;
++
 +		aa_put_profile(new_profile);
 +		error = PTR_ERR(old_profile);
 +		if (error == -ESTALE)
 +			goto repeat;
-+		goto out;
++		return error;
 +	}
 +
 +	if (new_profile) {
@@ -4053,7 +3972,7 @@ Index: linux-2.6-apparmor/security/apparmor/procattr.c
 +			old_profile ? old_profile->parent->name :
 +				"unconfined",
 +			old_profile ? old_profile->name : "unconfined",
-+			name_copy);
++			args);
 +	} else {
 +		if (old_profile) {
 +			AA_WARN(GFP_KERNEL,
@@ -4073,16 +3992,13 @@ Index: linux-2.6-apparmor/security/apparmor/procattr.c
 +
 +	aa_put_profile(old_profile);
 +	aa_put_profile(new_profile);
-+	error = 0;
 +
-+out:
-+	kfree(name_copy);
-+	return error;
++	return 0;
 +}
-Index: linux-2.6-apparmor/security/apparmor/match.c
+Index: b/security/apparmor/match.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-apparmor/security/apparmor/match.c
++++ b/security/apparmor/match.c
 @@ -0,0 +1,246 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -4330,10 +4246,10 @@ Index: linux-2.6-apparmor/security/apparmor/match.c
 +{
 +	return dfa ? aa_dfa_match(dfa, pathname) : 0;
 +}
-Index: linux-2.6-apparmor/security/apparmor/match.h
+Index: b/security/apparmor/match.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-apparmor/security/apparmor/match.h
++++ b/security/apparmor/match.h
 @@ -0,0 +1,81 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -4416,10 +4332,10 @@ Index: linux-2.6-apparmor/security/apparmor/match.h
 +}
 +
 +#endif /* __MATCH_H */
-Index: linux-2.6-apparmor/security/apparmor/locking.txt
+Index: b/security/apparmor/locking.txt
 ===================================================================
 --- /dev/null
-+++ linux-2.6-apparmor/security/apparmor/locking.txt
++++ b/security/apparmor/locking.txt
 @@ -0,0 +1,46 @@
 +Locking in AppArmor
 +===================

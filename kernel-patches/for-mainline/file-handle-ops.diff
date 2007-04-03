@@ -1,3 +1,11 @@
+Enable LSM hooks to distinguish operations on file descriptors from
+operations on pathnames.
+
+Signed-off-by: John Johansen <jjohansen@suse.de>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+
+
+
 Index: b/include/linux/fs.h
 ===================================================================
 --- a/include/linux/fs.h
