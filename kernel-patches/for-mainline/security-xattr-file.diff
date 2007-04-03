@@ -1,10 +1,11 @@
-Pass struct file to inode_*xattr security LSM hook.
+Pass struct file down the inode_*xattr security LSM hooks
 
-This is so that we can tell xattr operations on fds from xattr operations
-on pathnames.
+This allows LSMs to also distinguish between file descriptor and path
+access for the xattr operations. (The other relevant operations are
+covered by the setattr hook.)
 
-Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
 Index: b/include/linux/security.h
 ===================================================================

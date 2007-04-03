@@ -1,5 +1,10 @@
 Add d_namespace_path() to obtain namespace relative pathnames
 
+In AppArmor we are interested in pathnames relative to the namespace
+root. Except for the root where the search ends, this is the same as
+d_path(). Add d_namespace_path() for that.
+internals.
+
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Reviewed-by: John Johansen <jjohansen@suse.de>
 

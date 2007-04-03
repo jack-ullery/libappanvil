@@ -1,7 +1,14 @@
-Index: b/security/apparmor/Kconfig
+From: John Johansen <jjohansen@suse.de>
+Subject: The AppArmor LSM
+
+
+Signed-off-by: John Johansen <jjohansen@suse.de>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+
+Index: linux-2.6-apparmor/security/apparmor/Kconfig
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/Kconfig
++++ linux-2.6-apparmor/security/apparmor/Kconfig
 @@ -0,0 +1,9 @@
 +config SECURITY_APPARMOR
 +	tristate "AppArmor support"
@@ -12,10 +19,10 @@ Index: b/security/apparmor/Kconfig
 +	  distribution) and further information may be found at
 +	  <http://forge.novell.com/modules/xfmod/project/?apparmor>
 +	  If you are unsure how to answer this question, answer N.
-Index: b/security/apparmor/Makefile
+Index: linux-2.6-apparmor/security/apparmor/Makefile
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/Makefile
++++ linux-2.6-apparmor/security/apparmor/Makefile
 @@ -0,0 +1,13 @@
 +# Makefile for AppArmor Linux Security Module
 +#
@@ -30,11 +37,11 @@ Index: b/security/apparmor/Makefile
 +$(obj)/main.o : $(obj)/capability_names.h
 +$(obj)/capability_names.h : $(srctree)/include/linux/capability.h
 +	$(call cmd,make-caps)
-Index: b/security/apparmor/apparmor.h
+Index: linux-2.6-apparmor/security/apparmor/apparmor.h
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/apparmor.h
-@@ -0,0 +1,278 @@
++++ linux-2.6-apparmor/security/apparmor/apparmor.h
+@@ -0,0 +1,274 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
 + *
@@ -70,8 +77,8 @@ Index: b/security/apparmor/apparmor.h
 +#define AA_EXEC_MODIFIERS		(AA_EXEC_INHERIT | \
 +					 AA_EXEC_UNCONFINED | \
 +					 AA_EXEC_PROFILE)
-+#define AA_RWXM (MAY_READ | MAY_WRITE | MAY_EXEC | AA_EXEC_MMAP)
-+#define AA_LINK_X_MODIFIERS (AA_EXEC_MODIFIERS | AA_EXEC_UNSAFE)
++
++#define AA_SECURE_EXEC_NEEDED		1
 +
 +/* Control parameters (0 or 1), settable thru module/boot flags or
 + * via /sys/kernel/security/apparmor/control */
@@ -114,10 +121,6 @@ Index: b/security/apparmor/apparmor.h
 +	aa_audit_message(NULL, gfp, 0, fmt, ##args);
 +
 +#define AA_ERROR(fmt, args...)	printk(KERN_ERR "AppArmor: " fmt, ##args)
-+
-+/* basic AppArmor data structures */
-+
-+#define AA_SECURE_EXEC_NEEDED 0x00000001
 +
 +/* struct aa_profile - basic confinement data
 + * @parent: non refcounted pointer to parent profile
@@ -313,10 +316,10 @@ Index: b/security/apparmor/apparmor.h
 +unsigned int aa_match(struct aa_dfa *dfa, const char *pathname);
 +
 +#endif  /* __APPARMOR_H */
-Index: b/security/apparmor/apparmorfs.c
+Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/apparmorfs.c
++++ linux-2.6-apparmor/security/apparmor/apparmorfs.c
 @@ -0,0 +1,430 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
@@ -748,10 +751,10 @@ Index: b/security/apparmor/apparmorfs.c
 +	if (AA_FS_DENTRY)
 +		clear_apparmorfs();
 +}
-Index: b/security/apparmor/inline.h
+Index: linux-2.6-apparmor/security/apparmor/inline.h
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/inline.h
++++ linux-2.6-apparmor/security/apparmor/inline.h
 @@ -0,0 +1,214 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
@@ -967,10 +970,10 @@ Index: b/security/apparmor/inline.h
 +}
 +
 +#endif /* __INLINE_H__ */
-Index: b/security/apparmor/list.c
+Index: linux-2.6-apparmor/security/apparmor/list.c
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/list.c
++++ linux-2.6-apparmor/security/apparmor/list.c
 @@ -0,0 +1,96 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
@@ -1068,10 +1071,10 @@ Index: b/security/apparmor/list.c
 +	.stop =		p_stop,
 +	.show =		seq_show_profile,
 +};
-Index: b/security/apparmor/lsm.c
+Index: linux-2.6-apparmor/security/apparmor/lsm.c
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/lsm.c
++++ linux-2.6-apparmor/security/apparmor/lsm.c
 @@ -0,0 +1,825 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -1898,11 +1901,11 @@ Index: b/security/apparmor/lsm.c
 +MODULE_DESCRIPTION("AppArmor process confinement");
 +MODULE_AUTHOR("Tony Jones <tonyj@suse.de>");
 +MODULE_LICENSE("GPL");
-Index: b/security/apparmor/main.c
+Index: linux-2.6-apparmor/security/apparmor/main.c
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/main.c
-@@ -0,0 +1,1296 @@
++++ linux-2.6-apparmor/security/apparmor/main.c
+@@ -0,0 +1,1298 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
 + *
@@ -2024,15 +2027,17 @@ Index: b/security/apparmor/main.c
 +	/**
 +	 * Link always requires 'l' on the link, a subset of the
 +	 * target's 'r', 'w', 'x', and 'm' permissions on the link, and
-+	 * if the link has 'x', an exact match of all flags except
-+	 * 'r', 'w', 'x', 'm'.
++	 * if the link has 'x', an exact match of all the execute flags
++	 * ('i', 'u', 'U', 'p', 'P').
 +	 */
++#define RWXM (MAY_READ | MAY_WRITE | MAY_EXEC | AA_EXEC_MMAP)
 +	if ((l_mode & AA_MAY_LINK) &&
-+	    (l_mode & AA_RWXM) && !(l_mode & ~t_mode & AA_RWXM) &&
++	    (l_mode & RWXM) && !(l_mode & ~t_mode & RWXM) &&
 +	    (!(l_mode & MAY_EXEC) ||
-+	     (l_mode & AA_LINK_X_MODIFIERS) == (t_mode & AA_LINK_X_MODIFIERS)))
++	     ((l_mode & AA_EXEC_MODIFIERS) == (t_mode & AA_EXEC_MODIFIERS) &&
++	      (l_mode & AA_EXEC_UNSAFE) == (t_mode & AA_EXEC_UNSAFE))))
 +		return 0;
-+
++#undef RWXM
 +	/**
 +	 * FIXME: There currenly is no way to report which permissions
 +	 * we expect in t_mode, so linking could fail even after learning
@@ -3199,10 +3204,10 @@ Index: b/security/apparmor/main.c
 +	rcu_assign_pointer(task->security, new_cxt);
 +}
 +
-Index: b/security/apparmor/module_interface.c
+Index: linux-2.6-apparmor/security/apparmor/module_interface.c
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/module_interface.c
++++ linux-2.6-apparmor/security/apparmor/module_interface.c
 @@ -0,0 +1,636 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
@@ -3840,10 +3845,10 @@ Index: b/security/apparmor/module_interface.c
 +		task_unlock(task);
 +	}
 +}
-Index: b/security/apparmor/procattr.c
+Index: linux-2.6-apparmor/security/apparmor/procattr.c
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/procattr.c
++++ linux-2.6-apparmor/security/apparmor/procattr.c
 @@ -0,0 +1,150 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
@@ -3995,10 +4000,10 @@ Index: b/security/apparmor/procattr.c
 +
 +	return 0;
 +}
-Index: b/security/apparmor/match.c
+Index: linux-2.6-apparmor/security/apparmor/match.c
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/match.c
++++ linux-2.6-apparmor/security/apparmor/match.c
 @@ -0,0 +1,246 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -4246,10 +4251,10 @@ Index: b/security/apparmor/match.c
 +{
 +	return dfa ? aa_dfa_match(dfa, pathname) : 0;
 +}
-Index: b/security/apparmor/match.h
+Index: linux-2.6-apparmor/security/apparmor/match.h
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/match.h
++++ linux-2.6-apparmor/security/apparmor/match.h
 @@ -0,0 +1,81 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
@@ -4332,10 +4337,10 @@ Index: b/security/apparmor/match.h
 +}
 +
 +#endif /* __MATCH_H */
-Index: b/security/apparmor/locking.txt
+Index: linux-2.6-apparmor/security/apparmor/locking.txt
 ===================================================================
 --- /dev/null
-+++ b/security/apparmor/locking.txt
++++ linux-2.6-apparmor/security/apparmor/locking.txt
 @@ -0,0 +1,46 @@
 +Locking in AppArmor
 +===================

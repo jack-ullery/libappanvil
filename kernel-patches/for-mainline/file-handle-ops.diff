@@ -1,10 +1,14 @@
 Enable LSM hooks to distinguish operations on file descriptors from
 operations on pathnames.
 
-Signed-off-by: John Johansen <jjohansen@suse.de>
+Struct iattr already contains ia_file since commit cc4e69de from 
+Miklos (which is related to commit befc649c). Use this to pass
+struct file down the setattr hooks. This allows LSMs to distinguish
+operations on file descriptors from operations on paths.
+
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-
-
+Signed-off-by: John Johansen <jjohansen@suse.de>
+Cc: Miklos Szeredi <mszeredi@suse.cz>
 
 Index: b/include/linux/fs.h
 ===================================================================
