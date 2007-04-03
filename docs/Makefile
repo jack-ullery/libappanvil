@@ -33,11 +33,7 @@ common/Make.rules: ${COMMONDIR}/Make.rules
 	ln -sf ${COMMONDIR} .
 endif
 
-POD2MAN				= /usr/bin/pod2man
-POD2HTML			= /usr/bin/pod2html
 RELEASE_DIR                     = ${NAME}-${VERSION}
-MANDIRS                         = 2 5 7 8
-MANDIR                          = /usr/share/man
 DOCDIR                          = /usr/share/doc/${NAME}-${VERSION}
 
 AA_MANPAGES			= autodep.8 complain.8 enforce.8 logprof.8 genprof.8 \
@@ -66,39 +62,6 @@ release: $(TARBALL)
 .PHONY: clean
 clean:
 	-rm -f $(GENERATED) $(TARBALL) $(NAME)-$(VERSION)*.tar.gz Make.rules pod2*.tmp
-
-# I'm pretty sure the following could be in a foreach loop, but I'm too
-# lazy to code it up.
-
-%.1: %.pod
-	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=1 > $@
-
-%.2: %.pod
-	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=2 > $@
-
-%.5: %.pod
-	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=5 > $@
-
-%.7: %.pod
-	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=7 > $@
-
-%.8: %.pod
-	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=8 > $@
-
-%.1.html: %.pod
-	$(POD2HTML) --header --css immunix.css --infile=$< --outfile=$@ 
-
-%.2.html: %.pod
-	$(POD2HTML) --header --css immunix.css --infile=$< --outfile=$@ 
-
-%.5.html: %.pod
-	$(POD2HTML) --header --css immunix.css --infile=$< --outfile=$@ 
-
-%.7.html: %.pod
-	$(POD2HTML) --header --css immunix.css --infile=$< --outfile=$@ 
-
-%.8.html: %.pod
-	$(POD2HTML) --header --css immunix.css --infile=$< --outfile=$@ 
 
 .PHONY: install_manpages
 install_manpages: $(MANPAGES)

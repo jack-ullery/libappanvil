@@ -64,7 +64,7 @@ make install_manpages DESTDIR=$RPM_BUILD_ROOT MANDIR=%{_mandir}
 %{_mandir}/man8/*
 # html versions of the manpages
 %doc *.[0-9].*html
-%doc immunix.css
+%doc common/apparmor.css
 
 %changelog
 * Tue Apr 11 2006 Steve Beattie <sbeattie@use.de>

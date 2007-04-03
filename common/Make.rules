@@ -166,6 +166,75 @@ $(BUILDRPMSUBDIRS):
 	mkdir -p $(BUILDRPMSUBDIRS)
 
 # =====================
+# manpages
+# =====================
+
+POD2MAN                         = /usr/bin/pod2man
+POD2HTML                        = /usr/bin/pod2html
+MANDIR                          = /usr/share/man
+DOCDIR                          = /usr/share/doc/${NAME}-${VERSION}
+
+# get list of directory numbers based on definition of MANPAGES variable
+MANDIRS=$(sort $(foreach dir, 1 2 3 4 5 6 7 8, $(patsubst %.${dir}, ${dir}, $(filter %.${dir}, ${MANPAGES}))))
+HTMLMANPAGES=$(foreach manpage, ${MANPAGES}, ${manpage}.html)
+
+.PHONY: install_manpages
+install_manpages: $(MANPAGES)
+	$(foreach dir, ${MANDIRS}, \
+	     install -d ${DESTDIR}/${MANDIR}/man${dir} ; \
+	     install -m 644 $(filter %.${dir}, ${MANPAGES}) ${DESTDIR}/${MANDIR}/man${dir}; \
+	     $(foreach aa_page, $(filter %.${dir}, ${AA_MANPAGES}), \
+	     	ln -sf $(aa_page) ${DESTDIR}/${MANDIR}/man${dir}/${aa_page:%=aa-%};))
+
+%.1: %.pod
+	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=1 > $@
+
+%.2: %.pod
+	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=2 > $@
+
+%.3: %.pod
+	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=3 > $@
+
+%.4: %.pod
+	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=4 > $@
+
+%.5: %.pod
+	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=5 > $@
+
+%.6: %.pod
+	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=6 > $@
+
+%.7: %.pod
+	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=7 > $@
+
+%.8: %.pod
+	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=8 > $@
+
+%.1.html: %.pod
+	$(POD2HTML) --header --css apparmor.css --infile=$< --outfile=$@
+
+%.2.html: %.pod
+	$(POD2HTML) --header --css apparmor.css --infile=$< --outfile=$@
+
+%.3.html: %.pod
+	$(POD2HTML) --header --css apparmor.css --infile=$< --outfile=$@
+
+%.4.html: %.pod
+	$(POD2HTML) --header --css apparmor.css --infile=$< --outfile=$@
+
+%.5.html: %.pod
+	$(POD2HTML) --header --css apparmor.css --infile=$< --outfile=$@
+
+%.6.html: %.pod
+	$(POD2HTML) --header --css apparmor.css --infile=$< --outfile=$@
+
+%.7.html: %.pod
+	$(POD2HTML) --header --css apparmor.css --infile=$< --outfile=$@
+
+%.8.html: %.pod
+	$(POD2HTML) --header --css apparmor.css --infile=$< --outfile=$@
+
+# =====================
 # Slackware poo
 # =====================
 .PHONY: slack
