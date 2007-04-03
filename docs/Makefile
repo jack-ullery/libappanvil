@@ -36,7 +36,7 @@ endif
 RELEASE_DIR                     = ${NAME}-${VERSION}
 DOCDIR                          = /usr/share/doc/${NAME}-${VERSION}
 
-MANPAGES			= mod_apparmor.8
+MANPAGES			=
 DOCUMENTS                       = immunix.css
 PAPERS=$(wildcard papers/*)
 

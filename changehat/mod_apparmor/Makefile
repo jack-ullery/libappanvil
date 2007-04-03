@@ -27,6 +27,8 @@ common/Make.rules: $(COMMONDIR)/Make.rules
 endif
 
 TARGET:=mod_apparmor.so
+MANPAGES=mod_apparmor.8
+
 APXS:=$(shell if [ -x "/usr/sbin/apxs2" ] ; then \
 		echo "/usr/sbin/apxs2" ; \
               elif [ -x "/usr/sbin/apxs" ] ; then \
@@ -42,18 +44,20 @@ LIBAPPARMOR_FLAGS=$(shell if [ -f /usr/lib/libapparmor.so -o -f /usr/lib64/libap
 			  	echo -DUSE_COMPAT_IMMUNIX_H -limmunix ;\
 			  fi)
 
-all: $(TARGET)
+all: $(TARGET) ${MANPAGES} ${HTMLMANPAGES}
 
 %.so: %.c
 	${APXS} ${LIBAPPARMOR_FLAGS} -c $<
 	mv .libs/$@ .
 
 .PHONY: install
-install: ${TARGET}
+install: ${TARGET} ${MANPAGES}
 	mkdir -p ${DESTDIR}/${APXS_INSTALL_DIR}
 	install -m 755 $< ${DESTDIR}/${APXS_INSTALL_DIR}
+	make install_manpages DESTDIR=${DESTDIR}
 
 .PHONY: clean
 clean:
 	rm -rf .libs
 	rm -f ${NAME}*.tar.gz *.la *.lo *.so *.o *.slo Make.rules
+	rm -f ${MANPAGES} ${HTMLMANPAGES}

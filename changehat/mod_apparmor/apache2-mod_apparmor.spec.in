@@ -75,10 +75,10 @@ This package is part of a suite of tools that used to be named SubDomain.
 %setup -q
 
 %build
-make %{module_name}.so APXS=%{apxs}
+make APXS=%{apxs}
 
 %install
-make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro}
+make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro} MANDIR=%{_mandir}
 
 %if %{distro} == "suse"
        mkdir -p ${RPM_BUILD_ROOT}%{_libdir}/apache2-prefork/
@@ -104,6 +104,9 @@ make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro}
   %endif
 %endif
 %doc COPYING.LGPL
+%{_mandir}/man*/*
+%doc *.[0-9].html
+%doc common/apparmor.css
 
 %post
 %if %{distro} == "suse"
@@ -123,6 +126,8 @@ make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro}
 %endif
 
 %changelog
+* Tue Apr  3 2007 - sbeattie@suse.de
+- Add mod_apparmor manpage to package
 * Wed Sep 06 2006 - poeml@suse.de
 - rename to apache2-mod_apparmor
 - use a2enmod instead of frob_sysconfig
