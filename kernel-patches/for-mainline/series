@@ -33,8 +33,8 @@ no-unreachable-paths.diff
 mount-consistent-d_path.diff
 # security_chroot.diff
 d_namespace_path.diff
-security-xattr-file.diff
 file-handle-ops.diff
+security-xattr-file.diff
 apparmor-audit.diff
 apparmor.diff
 apparmor-intree.diff
