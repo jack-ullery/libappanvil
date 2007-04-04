@@ -41,7 +41,7 @@ Index: linux-2.6-apparmor/security/apparmor/apparmor.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6-apparmor/security/apparmor/apparmor.h
-@@ -0,0 +1,274 @@
+@@ -0,0 +1,271 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
 + *
@@ -57,11 +57,9 @@ Index: linux-2.6-apparmor/security/apparmor/apparmor.h
 +#define __APPARMOR_H
 +
 +#include <linux/sched.h>
-+#include <linux/fs.h>	/* Include for defn of iattr */
-+#include <linux/binfmts.h>	/* defn of linux_binprm */
++#include <linux/fs.h>
++#include <linux/binfmts.h>
 +#include <linux/rcupdate.h>
-+
-+#include "match.h"
 +
 +/*
 + * We use MAY_READ, MAY_WRITE, MAY_EXEC, and the following flags for
@@ -248,7 +246,6 @@ Index: linux-2.6-apparmor/security/apparmor/apparmor.h
 +#define AA_CHECK_DIR	4  /* file type is directory */
 +
 +/* main.c */
-+extern void free_aa_task_context_rcu_callback(struct rcu_head *head);
 +extern int alloc_null_complain_profile(void);
 +extern void free_null_complain_profile(void);
 +extern int attach_nullprofile(struct aa_profile *profile);
@@ -277,9 +274,9 @@ Index: linux-2.6-apparmor/security/apparmor/apparmor.h
 +extern int aa_change_hat(const char *id, u64 hat_magic);
 +extern struct aa_profile *__aa_find_profile(const char *name,
 +					    struct list_head *list);
-+extern struct aa_profile *aa_replace_profile(struct task_struct *task,
-+					     struct aa_profile *profile,
-+					     u32 hat_magic);
++extern struct aa_profile *__aa_replace_profile(struct task_struct *task,
++					       struct aa_profile *profile,
++					       u32 hat_magic);
 +extern struct aa_task_context *lock_task_and_profiles(struct task_struct *task,
 +						      struct aa_profile *profile);
 +extern void aa_change_task_context(struct task_struct *task,
@@ -290,9 +287,9 @@ Index: linux-2.6-apparmor/security/apparmor/apparmor.h
 +extern void aa_profilelist_release(void);
 +
 +/* module_interface.c */
-+extern ssize_t aa_file_prof_add(void *, size_t);
-+extern ssize_t aa_file_prof_replace(void *, size_t);
-+extern ssize_t aa_file_prof_remove(const char *, size_t);
++extern ssize_t aa_add_profile(void *, size_t);
++extern ssize_t aa_replace_profile(void *, size_t);
++extern ssize_t aa_remove_profile(const char *, size_t);
 +extern struct aa_profile *alloc_aa_profile(void);
 +extern void free_aa_profile(struct aa_profile *profile);
 +extern void free_aa_profile_kref(struct kref *kref);
@@ -309,18 +306,18 @@ Index: linux-2.6-apparmor/security/apparmor/apparmor.h
 +extern void destroy_apparmorfs(void);
 +
 +/* match.c */
-+struct aa_dfa *aa_match_alloc(void);
-+void aa_match_free(struct aa_dfa *dfa);
-+int unpack_dfa(struct aa_dfa *dfa, void *blob, size_t size);
-+int verify_dfa(struct aa_dfa *dfa);
-+unsigned int aa_match(struct aa_dfa *dfa, const char *pathname);
++extern struct aa_dfa *aa_match_alloc(void);
++extern void aa_match_free(struct aa_dfa *dfa);
++extern int unpack_dfa(struct aa_dfa *dfa, void *blob, size_t size);
++extern int verify_dfa(struct aa_dfa *dfa);
++extern unsigned int aa_dfa_match(struct aa_dfa *dfa, const char *str);
 +
 +#endif  /* __APPARMOR_H */
 Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6-apparmor/security/apparmor/apparmorfs.c
-@@ -0,0 +1,430 @@
+@@ -0,0 +1,399 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
 + *
@@ -340,135 +337,6 @@ Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
 +
 +#include "apparmor.h"
 +#include "inline.h"
-+
-+#define SECFS_AA "apparmor"
-+static struct dentry *aa_fs_dentry = NULL;
-+
-+/* profile */
-+extern struct seq_operations apparmorfs_profiles_op;
-+static int aa_prof_open(struct inode *inode, struct file *file);
-+static int aa_prof_release(struct inode *inode, struct file *file);
-+
-+static struct file_operations apparmorfs_profiles_fops = {
-+	.open =		aa_prof_open,
-+	.read =		seq_read,
-+	.llseek =	seq_lseek,
-+	.release =	aa_prof_release,
-+};
-+
-+/* matching */
-+static ssize_t aa_matching_read(struct file *file, char __user *buf,
-+			       size_t size, loff_t *ppos);
-+
-+static struct file_operations apparmorfs_matching_fops = {
-+	.read = 	aa_matching_read,
-+};
-+
-+
-+/* interface */
-+static ssize_t aa_profile_load(struct file *f, const char __user *buf,
-+			       size_t size, loff_t *pos);
-+static ssize_t aa_profile_replace(struct file *f, const char __user *buf,
-+				  size_t size, loff_t *pos);
-+static ssize_t aa_profile_remove(struct file *f, const char __user *buf,
-+				 size_t size, loff_t *pos);
-+
-+static struct file_operations apparmorfs_profile_load = {
-+	.write = aa_profile_load
-+};
-+
-+static struct file_operations apparmorfs_profile_replace = {
-+	.write = aa_profile_replace
-+};
-+
-+static struct file_operations apparmorfs_profile_remove = {
-+	.write = aa_profile_remove
-+};
-+
-+
-+/* control */
-+static u64 aa_control_get(void *data);
-+static void aa_control_set(void *data, u64 val);
-+
-+DEFINE_SIMPLE_ATTRIBUTE(apparmorfs_control_fops, aa_control_get,
-+			aa_control_set, "%lld\n");
-+
-+
-+
-+/* table of static entries */
-+
-+static struct root_entry {
-+	const char *name;
-+	int mode;
-+	int access;
-+	struct file_operations *fops;
-+	void *data;
-+
-+	/* internal fields */
-+	struct dentry *dentry;
-+	int parent_index;
-+} root_entries[] = {
-+	/* our root, normally /sys/kernel/security/apparmor */
-+	{SECFS_AA, 	S_IFDIR, 0555},	/* DO NOT EDIT/MOVE */
-+
-+	/* interface for obtaining list of profiles currently loaded */
-+	{"profiles", 	S_IFREG, 0440, &apparmorfs_profiles_fops,
-+				       NULL},
-+
-+	/* interface for obtaining matching features supported */
-+	{"matching",  	S_IFREG, 0444, &apparmorfs_matching_fops,
-+				       NULL},
-+
-+	/* interface for loading/removing/replacing profiles */
-+	{".load",    	S_IFREG, 0640, &apparmorfs_profile_load,
-+				       NULL},
-+	{".replace", 	S_IFREG, 0640, &apparmorfs_profile_replace,
-+				       NULL},
-+	{".remove",  	S_IFREG, 0640, &apparmorfs_profile_remove,
-+				       NULL},
-+
-+	/* interface for setting binary config values */
-+	{"control",  	S_IFDIR, 0550},
-+	{"complain", 	S_IFREG, 0640, &apparmorfs_control_fops,
-+				       &apparmor_complain},
-+	{"audit",    	S_IFREG, 0640, &apparmorfs_control_fops,
-+				       &apparmor_audit},
-+	{"debug",    	S_IFREG, 0640, &apparmorfs_control_fops,
-+				       &apparmor_debug},
-+	{"logsyscall", 	S_IFREG, 0640, &apparmorfs_control_fops,
-+				       &apparmor_logsyscall},
-+	{NULL,       	S_IFDIR, 0},
-+
-+	/* root end */
-+	{NULL,       	S_IFDIR, 0}
-+};
-+
-+#define AA_FS_DENTRY root_entries[0].dentry
-+
-+static const unsigned int num_entries =
-+	sizeof(root_entries) / sizeof(struct root_entry);
-+
-+
-+
-+static int aa_prof_open(struct inode *inode, struct file *file)
-+{
-+	return seq_open(file, &apparmorfs_profiles_op);
-+}
-+
-+
-+static int aa_prof_release(struct inode *inode, struct file *file)
-+{
-+	return seq_release(inode, file);
-+}
-+
-+static ssize_t aa_matching_read(struct file *file, char __user *buf,
-+			       size_t size, loff_t *ppos)
-+{
-+	const char *matching = "pattern=aadfa";
-+
-+	return simple_read_from_buffer(buf, size, ppos, matching,
-+				       strlen(matching));
-+}
 +
 +static char *aa_simple_write_to_buffer(const char __user *userbuf,
 +				       size_t alloc_size, size_t copy_size,
@@ -515,6 +383,42 @@ Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
 +	return data;
 +}
 +
++/* apparmor/profiles */
++extern struct seq_operations apparmorfs_profiles_op;
++
++static int aa_profiles_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &apparmorfs_profiles_op);
++}
++
++
++static int aa_profiles_release(struct inode *inode, struct file *file)
++{
++	return seq_release(inode, file);
++}
++
++static struct file_operations apparmorfs_profiles_fops = {
++	.open =		aa_profiles_open,
++	.read =		seq_read,
++	.llseek =	seq_lseek,
++	.release =	aa_profiles_release,
++};
++
++/* apparmor/matching */
++static ssize_t aa_matching_read(struct file *file, char __user *buf,
++			       size_t size, loff_t *ppos)
++{
++	const char *matching = "pattern=aadfa";
++
++	return simple_read_from_buffer(buf, size, ppos, matching,
++				       strlen(matching));
++}
++
++static struct file_operations apparmorfs_matching_fops = {
++	.read = 	aa_matching_read,
++};
++
++/* apparmor/.load */
 +static ssize_t aa_profile_load(struct file *f, const char __user *buf,
 +			       size_t size, loff_t *pos)
 +{
@@ -523,16 +427,21 @@ Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
 +
 +	data = aa_simple_write_to_buffer(buf, size, size, pos, "load");
 +
++	error = PTR_ERR(data);
 +	if (!IS_ERR(data)) {
-+		error = aa_file_prof_add(data, size);
++		error = aa_add_profile(data, size);
 +		vfree(data);
-+	} else {
-+		error = PTR_ERR(data);
 +	}
 +
 +	return error;
 +}
 +
++
++static struct file_operations apparmorfs_profile_load = {
++	.write = aa_profile_load
++};
++
++/* apparmor/.replace */
 +static ssize_t aa_profile_replace(struct file *f, const char __user *buf,
 +				  size_t size, loff_t *pos)
 +{
@@ -541,16 +450,21 @@ Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
 +
 +	data = aa_simple_write_to_buffer(buf, size, size, pos, "replacement");
 +
++	error = PTR_ERR(data);
 +	if (!IS_ERR(data)) {
-+		error = aa_file_prof_replace(data, size);
++		error = aa_replace_profile(data, size);
 +		vfree(data);
-+	} else {
-+		error = PTR_ERR(data);
 +	}
 +
 +	return error;
 +}
 +
++
++static struct file_operations apparmorfs_profile_replace = {
++	.write = aa_profile_replace
++};
++
++/* apparmor/.remove */
 +static ssize_t aa_profile_remove(struct file *f, const char __user *buf,
 +				  size_t size, loff_t *pos)
 +{
@@ -562,17 +476,21 @@ Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
 +	 */
 +	data = aa_simple_write_to_buffer(buf, size+1, size, pos, "removal");
 +
++	error = PTR_ERR(data);
 +	if (!IS_ERR(data)) {
 +		data[size] = 0;
-+		error = aa_file_prof_remove(data, size);
++		error = aa_remove_profile(data, size);
 +		vfree(data);
-+	} else {
-+		error = PTR_ERR(data);
 +	}
 +
 +	return error;
 +}
 +
++static struct file_operations apparmorfs_profile_remove = {
++	.write = aa_profile_remove
++};
++
++/* apparmor/control/ */
 +static u64 aa_control_get(void *data)
 +{
 +	return *(int *)data;
@@ -586,11 +504,60 @@ Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
 +	*(int*)data = (int)val;
 +}
 +
++DEFINE_SIMPLE_ATTRIBUTE(apparmorfs_control_fops, aa_control_get,
++			aa_control_set, "%lld\n");
++
++static struct root_entry {
++	const char *name;
++	int mode;
++	int access;
++	struct file_operations *fops;
++	void *data;
++
++	/* internal fields */
++	struct dentry *dentry;
++	int parent_index;
++} root_entries[] = {
++	/* our root, normally /sys/kernel/security/apparmor */
++	{"apparmor", 	S_IFDIR, 0555},	/* DO NOT EDIT/MOVE */
++
++	/* interface for obtaining list of profiles currently loaded */
++	{"profiles", 	S_IFREG, 0440, &apparmorfs_profiles_fops,
++				       NULL},
++
++	/* interface for obtaining matching features supported */
++	{"matching",  	S_IFREG, 0444, &apparmorfs_matching_fops,
++				       NULL},
++
++	/* interface for loading/removing/replacing profiles */
++	{".load",    	S_IFREG, 0640, &apparmorfs_profile_load,
++				       NULL},
++	{".replace", 	S_IFREG, 0640, &apparmorfs_profile_replace,
++				       NULL},
++	{".remove",  	S_IFREG, 0640, &apparmorfs_profile_remove,
++				       NULL},
++
++	/* interface for setting binary config values */
++	{"control",  	S_IFDIR, 0550},
++	{"complain", 	S_IFREG, 0640, &apparmorfs_control_fops,
++				       &apparmor_complain},
++	{"audit",    	S_IFREG, 0640, &apparmorfs_control_fops,
++				       &apparmor_audit},
++	{"debug",    	S_IFREG, 0640, &apparmorfs_control_fops,
++				       &apparmor_debug},
++	{"logsyscall", 	S_IFREG, 0640, &apparmorfs_control_fops,
++				       &apparmor_logsyscall},
++	{NULL,       	S_IFDIR, 0},
++
++	/* root end */
++	{NULL,       	S_IFDIR, 0}
++};
++
 +static void clear_apparmorfs(void)
 +{
 +	unsigned int i;
 +
-+	for (i=0; i < num_entries;i++) {
++	for (i=0; i < ARRAY_SIZE(root_entries); i++) {
 +		unsigned int index;
 +
 +		if (root_entries[i].mode == S_IFDIR) {
@@ -600,9 +567,8 @@ Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
 +			else
 +				/* cleanup parent */
 +				index = root_entries[i].parent_index;
-+		} else {
++		} else
 +			index = i;
-+		}
 +
 +		if (root_entries[index].dentry) {
 +			securityfs_remove(root_entries[index].dentry);
@@ -619,21 +585,21 @@ Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
 +	}
 +}
 +
-+static int populate_apparmorfs(struct dentry *root)
++static int populate_apparmorfs(void)
 +{
 +	unsigned int i, parent_index, depth;
 +
-+	for (i = 0; i < num_entries; i++) {
++	for (i = 0; i < ARRAY_SIZE(root_entries); i++) {
 +		root_entries[i].dentry = NULL;
 +		root_entries[i].parent_index = 0;
 +	}
 +
 +	/* 1. Verify entry 0 is valid [sanity check] */
-+	if (num_entries == 0 ||
++	if (ARRAY_SIZE(root_entries) == 0 ||
 +	    !root_entries[0].name ||
-+	    strcmp(root_entries[0].name, SECFS_AA) != 0 ||
++	    strcmp(root_entries[0].name, "apparmor") != 0 ||
 +	    root_entries[0].mode != S_IFDIR) {
-+		AA_ERROR("%s: root entry 0 is not SECFS_AA/dir\n",
++		AA_ERROR("%s: root entry 0 is not apparmor/dir\n",
 +			__FUNCTION__);
 +		goto error;
 +	}
@@ -642,7 +608,7 @@ Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
 +	parent_index = 0;
 +	depth = 1;
 +
-+	for (i = 1; i < num_entries; i++) {
++	for (i = 1; i < ARRAY_SIZE(root_entries); i++) {
 +		root_entries[i].parent_index = parent_index;
 +
 +		if (root_entries[i].name &&
@@ -684,7 +650,7 @@ Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
 +
 +
 +	/* 4. create remaining nodes */
-+	for (i = 1; i < num_entries; i++) {
++	for (i = 1; i < ARRAY_SIZE(root_entries); i++) {
 +		struct dentry *parent;
 +		void *data = NULL;
 +		struct file_operations *fops = NULL;
@@ -731,12 +697,12 @@ Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
 +{
 +	int error = 0;
 +
-+	if (AA_FS_DENTRY) {
++	if (root_entries[0].dentry) {
 +		error = -EEXIST;
 +		AA_ERROR("%s: AppArmor securityfs already exists\n",
 +			__FUNCTION__);
 +	} else {
-+		error = populate_apparmorfs(aa_fs_dentry);
++		error = populate_apparmorfs();
 +		if (error != 0) {
 +			AA_ERROR("%s: Error populating AppArmor securityfs\n",
 +				__FUNCTION__);
@@ -748,14 +714,14 @@ Index: linux-2.6-apparmor/security/apparmor/apparmorfs.c
 +
 +void destroy_apparmorfs(void)
 +{
-+	if (AA_FS_DENTRY)
++	if (root_entries[0].dentry)
 +		clear_apparmorfs();
 +}
 Index: linux-2.6-apparmor/security/apparmor/inline.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6-apparmor/security/apparmor/inline.h
-@@ -0,0 +1,214 @@
+@@ -0,0 +1,219 @@
 +/*
 + *	Copyright (C) 2005 Novell/SUSE
 + *
@@ -969,12 +935,17 @@ Index: linux-2.6-apparmor/security/apparmor/inline.h
 +	}
 +}
 +
++static inline unsigned int aa_match(struct aa_dfa *dfa, const char *pathname)
++{
++	        return dfa ? aa_dfa_match(dfa, pathname) : 0;
++}
++
 +#endif /* __INLINE_H__ */
 Index: linux-2.6-apparmor/security/apparmor/list.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6-apparmor/security/apparmor/list.c
-@@ -0,0 +1,96 @@
+@@ -0,0 +1,94 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
 + *
@@ -1029,9 +1000,6 @@ Index: linux-2.6-apparmor/security/apparmor/list.c
 +	write_unlock(&profile_list_lock);
 +}
 +
-+/* seq_file helper routines
-+ * Used by apparmorfs.c to iterate over profile_list
-+ */
 +static void *p_start(struct seq_file *f, loff_t *pos)
 +{
 +	struct aa_profile *node;
@@ -1065,6 +1033,7 @@ Index: linux-2.6-apparmor/security/apparmor/list.c
 +	return 0;
 +}
 +
++/* Used in apparmorfs.c */
 +struct seq_operations apparmorfs_profiles_op = {
 +	.start =	p_start,
 +	.next =		p_next,
@@ -1899,13 +1868,13 @@ Index: linux-2.6-apparmor/security/apparmor/lsm.c
 +module_exit(apparmor_exit);
 +
 +MODULE_DESCRIPTION("AppArmor process confinement");
-+MODULE_AUTHOR("Tony Jones <tonyj@suse.de>");
++MODULE_AUTHOR("Novell/Immunix, http://bugs.opensuse.org");
 +MODULE_LICENSE("GPL");
 Index: linux-2.6-apparmor/security/apparmor/main.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6-apparmor/security/apparmor/main.c
-@@ -0,0 +1,1298 @@
+@@ -0,0 +1,1317 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
 + *
@@ -1927,7 +1896,7 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +#include "inline.h"
 +
 +/*
-+ * A table of capability names: we generate it from capabilities.h.
++ * Table of capability names: we generate it from capabilities.h.
 + */
 +static const char *capability_names[] = {
 +#include "capability_names.h"
@@ -1945,13 +1914,9 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 + */
 +struct aa_profile *null_complain_profile;
 +
-+/***************************
-+ * Private utility functions
-+ **************************/
-+
 +/**
 + * aa_taskattr_access
-+ * @name: name of file to check permission
++ * @name: name of the file to check
 + *
 + * Check if name matches /proc/self/attr/current, with self resolved
 + * to the current pid. This file is the usermode iterface for
@@ -1981,14 +1946,10 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +	}
 +}
 +
-+/*************************
-+ * Main internal functions
-+ ************************/
-+
 +/**
 + * aa_file_denied - check for @mask access on a file
 + * @profile: profile to check against
-+ * @name: name of file
++ * @name: pathname of file
 + * @mask: permission mask requested for file
 + *
 + * Return %0 on success, or else the permissions in @mask that the
@@ -2011,8 +1972,8 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +/**
 + * aa_link_denied - check for permission to link a file
 + * @profile: profile to check against
-+ * @link: name of link being created
-+ * @target: name of target to be linked to
++ * @link: pathname of link being created
++ * @target: pathname of target to be linked to
 + *
 + * Return %0 on success, or else the permissions that the profile denies.
 + */
@@ -2046,6 +2007,19 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +	return AA_MAY_LINK;
 +}
 +
++/**
++ * aa_get_name - compute the pathname of a file
++ * @dentry: dentry of the file
++ * @mnt: vfsmount of the file
++ * @buffer: buffer that aa_get_name() allocated
++ * @check: AA_CHECK_DIR is set if the file is a directory
++ *
++ * Returns a pointer to the beginning of the pathname (which usually differs
++ * from the beginning of the buffer), or an error code.
++ *
++ * We need @check to indicate whether the file is a directory or not because
++ * the file may not yet exist, and so we cannot check the inode's file type.
++ */
 +static char *aa_get_name(struct dentry *dentry, struct vfsmount *mnt,
 +			 char **buffer, int check)
 +{
@@ -2097,6 +2071,20 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +	kfree(buffer);
 +}
 +
++/**
++ * aa_perm_dentry - check if @profile allows @mask for a file
++ * @profile: profile to check against
++ * @dentry: dentry of the file
++ * @mnt: vfsmount o the file
++ * @sa: audit context
++ * @mask: requested profile permissions
++ * @check: kind of check to perform
++ *
++ * Returns 0 upon success, or else an error code.
++ *
++ * @check indicates the file type, and whether the file was accessed through
++ * an open file descriptor (AA_CHECK_FD) or not.
++ */
 +static int aa_perm_dentry(struct aa_profile *profile, struct dentry *dentry,
 +			  struct vfsmount *mnt, struct aa_audit *sa, int mask,
 +			  int check)
@@ -2128,10 +2116,6 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +
 +	return error;
 +}
-+
-+/**************************
-+ * Global utility functions
-+ *************************/
 +
 +/**
 + * attach_nullprofile - allocate and attach a null_profile hat to profile
@@ -2168,7 +2152,6 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +
 +	return -ENOMEM;
 +}
-+
 +
 +/**
 + * alloc_null_complain_profile - Allocate the global null_complain_profile.
@@ -2428,14 +2411,11 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +	return error;
 +}
 +
-+/***********************************
-+ * Global permission check functions
-+ ***********************************/
-+
 +/**
-+ * aa_attr - check whether attribute change allowed
++ * aa_attr - check if attribute change is allowed
 + * @profile: profile to check against
-+ * @dentry: file to check
++ * @dentry: dentry of the file to check
++ * @mnt: vfsmount of the file to check
 + * @iattr: attribute changes requested
 + */
 +int aa_attr(struct aa_profile *profile, struct dentry *dentry,
@@ -2462,13 +2442,14 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +}
 +
 +/**
-+ * aa_perm_xattr - check whether xattr attribute change allowed
++ * aa_perm_xattr - check if xattr attribute change is allowed
 + * @profile: profile to check against
-+ * @dentry: file to check
-+ * @mnt: mount of file to check
++ * @dentry: dentry of the file to check
++ * @mnt: vfsmount of the file to check
 + * @operation: xattr operation being done
 + * @xattr_name: name of xattr to check
 + * @mask: access mode requested
++ * @check: kind of check to perform
 + */
 +int aa_perm_xattr(struct aa_profile *profile, struct dentry *dentry,
 +		  struct vfsmount *mnt, const char *operation,
@@ -2495,13 +2476,13 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +/**
 + * aa_perm - basic apparmor permissions check
 + * @profile: profile to check against
-+ * @dentry: dentry
-+ * @mnt: mountpoint
++ * @dentry: dentry of the file to check
++ * @mnt: vfsmount of the file to check
 + * @mask: access mode requested
-+ * @leaf: are we checking a leaf node?
++ * @check: kind of check to perform
 + *
-+ * Determine if access (mask) for dentry is authorized by profile
-+ * profile.  Result, %0 (success), -ve (error)
++ * Determine if access @mask for the file is authorized by @profile.
++ * Returns 0 on success, or else an error code.
 + */
 +int aa_perm(struct aa_profile *profile, struct dentry *dentry,
 +	    struct vfsmount *mnt, int mask, int check)
@@ -2536,14 +2517,14 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +/**
 + * aa_perm_dir
 + * @profile: profile to check against
-+ * @dentry: requested dentry
-+ * @mnt: mount of file to check
++ * @dentry: dentry of directory to check
++ * @mnt: vfsmount of directory to check
 + * @operation: directory operation being performed
 + * @mask: access mode requested
 + *
 + * Determine if directory operation (make/remove) for dentry is authorized
 + * by @profile.
-+ * Result, %0 (success), -ve (error)
++ * Returns 0 on success, or else an error code.
 + */
 +int aa_perm_dir(struct aa_profile *profile, struct dentry *dentry,
 +		struct vfsmount *mnt, const char *operation, int mask)
@@ -2565,7 +2546,7 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 + * @cap: capability to be tested
 + *
 + * Look up capability in profile capability set.
-+ * Return %0 (success), -%EPERM (error)
++ * Returns 0 on success, or else an error code.
 + */
 +int aa_capability(struct aa_task_context *cxt, int cap)
 +{
@@ -2602,9 +2583,12 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +/**
 + * aa_link - hard link check
 + * @profile: profile to check against
-+ * @link: dentry for link being created
-+ * @target: dentry for link target
-+ * @mnt: vfsmount (-EXDEV is link and target are not on same vfsmount)
++ * @link: dentry of link being created
++ * @link_mnt: vfsmount of link being created
++ * @target: dentry of link target
++ * @target_mnt: vfsmunt of link target
++ *
++ * Returns 0 on success, or else an error code.
 + */
 +int aa_link(struct aa_profile *profile,
 +	    struct dentry *link, struct vfsmount *link_mnt,
@@ -2649,7 +2633,9 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +
 +/**
 + * aa_clone - initialize the task context for a new task
-+ * @task: task that is being created
++ * @child: task that is being created
++ *
++ * Returns 0 on success, or else an error code.
 + */
 +int aa_clone(struct task_struct *child)
 +{
@@ -2741,7 +2727,7 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 + * @bprm: binprm of program being registered
 + *
 + * Try to register a new program during execve().  This should give the
-+ * new program a valid aa_task_context.
++ * new program a valid aa_task_context if confined.
 + */
 +int aa_register(struct linux_binprm *bprm)
 +{
@@ -2838,7 +2824,7 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +	if (IS_ERR(new_profile))
 +		goto cleanup;
 +
-+	old_profile = aa_replace_profile(current, new_profile, 0);
++	old_profile = __aa_replace_profile(current, new_profile, 0);
 +	if (IS_ERR(old_profile)) {
 +		aa_put_profile(new_profile);
 +		aa_put_profile(profile);
@@ -2924,16 +2910,13 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +	}
 +}
 +
-+/*****************************
-+ * global subprofile functions
-+ ****************************/
-+
 +/**
 + * do_change_hat - actually switch hats
 + * @hat_name: name of hat to switch to
 + * @new_cxt: new aa_task_context to use on profile change
++ * @hat_magic: new hagic value to use
 + *
-+ * Switch to a new hat.  Return %0 on success, error otherwise.
++ * Switch to a new hat.  Returns %0 on success, error otherwise.
 + */
 +static inline int do_change_hat(const char *hat_name,
 +				struct aa_task_context *new_cxt,
@@ -2989,14 +2972,14 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +
 +/**
 + * aa_change_hat - change hat to/from subprofile
-+ * @hat_name: specifies hat to change to
-+ * @hat_magic: token to validate hat change
++ * @hat_name: hat to change to
++ * @hat_magic: magic cookie to validate the hat change
 + *
-+ * Change to new @hat_name when current hat is top level profile, and store
-+ * the @hat_magic in the current aa_task_context.  If the new @hat_name is
-+ * %NULL, and the @hat_magic matches that stored in the current aa_task_context
-+ * return to original top level profile.  Returns %0 on success, error
-+ * otherwise.
++ * Change to new @hat_name, and store the @hat_magic in the current task
++ * context.  If the new @hat_name is %NULL and the @hat_magic matches that
++ * stored in the current task context and is not 0, return to the top level
++ * profile.
++ * Returns %0 on success, error otherwise.
 + */
 +int aa_change_hat(const char *hat_name, u64 hat_magic)
 +{
@@ -3097,11 +3080,17 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +}
 +
 +/**
-+ * aa_replace_profile - replace a task's profile
++ * __aa_replace_profile - replace a task's profile
++ * @task: task to switch the profile of
++ * @profile: profile to switch to
++ * @hat_magic: hagic cookie to switch to
++ *
++ * Returns a handle to the previous profile upon success, or else an
++ * error code.
 + */
-+struct aa_profile *aa_replace_profile(struct task_struct *task,
-+				      struct aa_profile *profile,
-+				      u32 hat_magic)
++struct aa_profile *__aa_replace_profile(struct task_struct *task,
++					struct aa_profile *profile,
++					u32 hat_magic)
 +{
 +	struct aa_task_context *cxt, *new_cxt = NULL;
 +	struct aa_profile *old_profile = NULL;
@@ -3130,14 +3119,6 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +	unlock_both_profiles(profile, old_profile);
 +
 +	return old_profile;
-+}
-+
-+void free_aa_task_context_rcu_callback(struct rcu_head *head)
-+{
-+	struct aa_task_context *cxt;
-+
-+	cxt = container_of(head, struct aa_task_context, rcu);
-+	aa_free_task_context(cxt);
 +}
 +
 +/**
@@ -3175,10 +3156,18 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +	return cxt;
 +}
 +
++static void free_aa_task_context_rcu_callback(struct rcu_head *head)
++{
++	struct aa_task_context *cxt;
++
++	cxt = container_of(head, struct aa_task_context, rcu);
++	aa_free_task_context(cxt);
++}
++
 +/**
-+ * aa_change_task_context - switch a tasks to use a new context and profile
-+ * @task: task that is having its aa_task_context changed
-+ * @new_cxt: new aa_task_context to use after the switch
++ * aa_change_task_context - switch a task to use a new context and profile
++ * @task: task that is having its task context changed
++ * @new_cxt: new task context to use after the switch
 + * @profile: new profile to use after the switch
 + * @hat_magic: hat value to switch to (0 for no hat)
 + */
@@ -3203,12 +3192,11 @@ Index: linux-2.6-apparmor/security/apparmor/main.c
 +	}
 +	rcu_assign_pointer(task->security, new_cxt);
 +}
-+
 Index: linux-2.6-apparmor/security/apparmor/module_interface.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6-apparmor/security/apparmor/module_interface.c
-@@ -0,0 +1,636 @@
+@@ -0,0 +1,633 @@
 +/*
 + *	Copyright (C) 1998-2005 Novell/SUSE
 + *
@@ -3426,8 +3414,8 @@ Index: linux-2.6-apparmor/security/apparmor/module_interface.c
 +			/* the dfa is aligned with in the blob to 8 bytes
 +			 * from the beginning of the stream
 +			 */
-+			size_t pad = pad64(blob - (char *) e->start) -
-+				(blob - (char *) e->start);
++			size_t sz = blob - (char *) e->start;
++			size_t pad = ALIGN(sz, 8) - sz;
 +			error = unpack_dfa(dfa, blob + pad, size - pad);
 +			if (!error)
 +				error = verify_dfa(dfa);
@@ -3563,11 +3551,11 @@ Index: linux-2.6-apparmor/security/apparmor/module_interface.c
 +}
 +
 +/**
-+ * aa_file_prof_add - Unpack and add a new profile to the profile list
++ * aa_add_profile - Unpack and add a new profile to the profile list
 + * @data: serialized data stream
 + * @size: size of the serialized data stream
 + */
-+ssize_t aa_file_prof_add(void *data, size_t size)
++ssize_t aa_add_profile(void *data, size_t size)
 +{
 +	struct aa_profile *profile = NULL;
 +	struct aa_ext e = {
@@ -3599,15 +3587,11 @@ Index: linux-2.6-apparmor/security/apparmor/module_interface.c
 +	return size;
 +}
 +
-+/** task_replace - replace aa_task_context's current profile with a new profile
++/**
++ * task_replace - replace a task's profile
 + * @task: task to replace profile on
 + * @new_cxt: new aa_task_context to do replacement with
-+ * @new: new profile
-+ *
-+ * Replace a task's (aa_task_context's) profile with a new profile.  If
-+ * task was in a hat then the new profile will also be in the equivalent
-+ * hat in the new profile if it exists.  If it doesn't exist the
-+ * task will be placed in the special null_profile state.
++ * @new_profile: new profile
 + */
 +static inline void task_replace(struct task_struct *task,
 +				struct aa_task_context *new_cxt,
@@ -3640,7 +3624,7 @@ Index: linux-2.6-apparmor/security/apparmor/module_interface.c
 +}
 +
 +/**
-+ * aa_file_prof_replace - replace a profile on the profile list
++ * aa_replace_profile - replace a profile on the profile list
 + * @udata: serialized data stream
 + * @size: size of the serialized data stream
 + *
@@ -3648,7 +3632,7 @@ Index: linux-2.6-apparmor/security/apparmor/module_interface.c
 + * by any aa_task_context.  If the profile does not exist on the profile list
 + * it is added.  Return %0 or error.
 + */
-+ssize_t aa_file_prof_replace(void *udata, size_t size)
++ssize_t aa_replace_profile(void *udata, size_t size)
 +{
 +	struct aa_profile *old_profile, *new_profile;
 +	struct aa_task_context *new_cxt;
@@ -3713,14 +3697,14 @@ Index: linux-2.6-apparmor/security/apparmor/module_interface.c
 +}
 +
 +/**
-+ * aa_file_prof_remove - remove a profile from the system
++ * aa_remove_profile - remove a profile from the system
 + * @name: name of the profile to remove
 + * @size: size of the name
 + *
 + * remove a profile from the profile list and all aa_task_context references
 + * to said profile.
 + */
-+ssize_t aa_file_prof_remove(const char *name, size_t size)
++ssize_t aa_remove_profile(const char *name, size_t size)
 +{
 +	struct aa_profile *profile;
 +
@@ -3752,15 +3736,15 @@ Index: linux-2.6-apparmor/security/apparmor/module_interface.c
 + * free_aa_profile_kref - free aa_profile by kref (called by aa_put_profile)
 + * @kr: kref callback for freeing of a profile
 + */
-+void free_aa_profile_kref(struct kref *kr)
++void free_aa_profile_kref(struct kref *kref)
 +{
-+	struct aa_profile *p=container_of(kr, struct aa_profile, count);
++	struct aa_profile *p=container_of(kref, struct aa_profile, count);
 +
 +	free_aa_profile(p);
 +}
 +
 +/**
-+ * alloc_aa_profile - Allocate, initialize and return a new zeroed profile.
++ * alloc_aa_profile - allocate, initialize and return a new profile
 + * Returns NULL on failure.
 + */
 +struct aa_profile *alloc_aa_profile(void)
@@ -3781,13 +3765,14 @@ Index: linux-2.6-apparmor/security/apparmor/module_interface.c
 +}
 +
 +/**
-+ * free_aa_profile - free aa_profile structure
++ * free_aa_profile - free a profile
 + * @profile: the profile to free
 + *
-+ * free a profile, its file entries hats and null_profile.  All references
-+ * to the profile, its hats and null_profile must have been put.
-+ * If the profile was referenced by a aa_task_context free_aa_profile should be
-+ * called from an rcu callback routine.
++ * Free a profile, its hats and null_profile. All references to the profile,
++ * its hats and null_profile must have been put.
++ *
++ * If the profile was referenced from a task context, free_aa_profile() will
++ * be called from an rcu callback routine, so we must not sleep here.
 + */
 +void free_aa_profile(struct aa_profile *profile)
 +{
@@ -3829,10 +3814,10 @@ Index: linux-2.6-apparmor/security/apparmor/module_interface.c
 +}
 +
 +/**
-+ * aa_unconfine_tasks - remove tasks on @profiles task_contexts list
-+ * @profile: profile to remove associated tasks
++ * aa_unconfine_tasks - remove tasks on a profile's task context list
++ * @profile: profile to remove tasks from
 + *
-+ * Assumes that @profile lock is held
++ * Assumes that @profile lock is held.
 + */
 +void aa_unconfine_tasks(struct aa_profile *profile)
 +{
@@ -3957,7 +3942,7 @@ Index: linux-2.6-apparmor/security/apparmor/procattr.c
 +		}
 +	}
 +
-+	old_profile = aa_replace_profile(task, new_profile, 0);
++	old_profile = __aa_replace_profile(task, new_profile, 0);
 +	if (IS_ERR(old_profile)) {
 +		int error;
 +
@@ -4004,7 +3989,7 @@ Index: linux-2.6-apparmor/security/apparmor/match.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6-apparmor/security/apparmor/match.c
-@@ -0,0 +1,246 @@
+@@ -0,0 +1,237 @@
 +/*
 + *	Copyright (C) 2002-2005 Novell/SUSE
 + *
@@ -4065,26 +4050,22 @@ Index: linux-2.6-apparmor/security/apparmor/match.c
 +
 +int unpack_dfa(struct aa_dfa *dfa, void *blob, size_t size)
 +{
-+	int i;
++	int hsize, i;
 +	int error = -ENOMEM;
 +
 +	/* get dfa table set header */
 +	if (size < sizeof(struct table_set_header))
 +		goto fail;
 +
-+	dfa->th.th_magic = ntohl(*(u32 *) (blob + 0));
-+	dfa->th.th_hsize = ntohl(*(u32 *) (blob + 4));
-+	dfa->th.th_ssize = ntohl(*(u32 *) (blob + 8));
-+	dfa->th.th_flags = ntohs(*(u16 *) (blob + 12));
-+
-+	if (dfa->th.th_magic != YYTH_MAGIC)
++	if (ntohl(*(u32 *)blob) != YYTH_MAGIC)
 +		goto fail;
 +
-+	if (size < dfa->th.th_hsize)
++	hsize = ntohl(*(u32 *)(blob + 4));
++	if (size < hsize)
 +		goto fail;
 +
-+	blob += dfa->th.th_hsize;
-+	size -= dfa->th.th_hsize;
++	blob += hsize;
++	size -= hsize;
 +
 +	while (size > 0) {
 +		struct table_header *table;
@@ -4217,7 +4198,7 @@ Index: linux-2.6-apparmor/security/apparmor/match.c
 + * finished matching in. The final state is used to look up the accepting
 + * label.
 + */
-+inline unsigned int aa_dfa_match(struct aa_dfa *dfa, const char *str)
++unsigned int aa_dfa_match(struct aa_dfa *dfa, const char *str)
 +{
 +	u16 *def = DEFAULT_TABLE(dfa);
 +	u32 *base = BASE_TABLE(dfa);
@@ -4246,18 +4227,13 @@ Index: linux-2.6-apparmor/security/apparmor/match.c
 +	}
 +	return ACCEPT_TABLE(dfa)[state];
 +}
-+
-+unsigned int aa_match(struct aa_dfa *dfa, const char *pathname)
-+{
-+	return dfa ? aa_dfa_match(dfa, pathname) : 0;
-+}
 Index: linux-2.6-apparmor/security/apparmor/match.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6-apparmor/security/apparmor/match.h
-@@ -0,0 +1,81 @@
+@@ -0,0 +1,83 @@
 +/*
-+ *	Copyright (C) 2002-2005 Novell/SUSE
++ *	Copyright (C) 2007 Novell/SUSE
 + *
 + *	This program is free software; you can redistribute it and/or
 + *	modify it under the terms of the GNU General Public License as
@@ -4270,10 +4246,19 @@ Index: linux-2.6-apparmor/security/apparmor/match.h
 +#ifndef __MATCH_H
 +#define __MATCH_H
 +
++/**
++ * The format used for transition tables is based on the GNU flex table
++ * file format (--tables-file option; see Table File Format in the flex
++ * info pages and the flex sources for documentation). The magic number
++ * used in the header is 0x1B5E783D insted of 0xF13C57B1 though, because
++ * the YY_ID_CHK (check) and YY_ID_DEF (default) tables are used
++ * slightly differently (see the apparmor-parser package).
++ */
++
 +#define YYTH_MAGIC	0x1B5E783D
 +
 +struct table_set_header {
-+	u32		th_magic;	/* TH_MAGIC */
++	u32		th_magic;	/* YYTH_MAGIC */
 +	u32		th_hsize;
 +	u32		th_ssize;
 +	u16		th_flags;
@@ -4310,8 +4295,6 @@ Index: linux-2.6-apparmor/security/apparmor/match.h
 +
 +struct aa_dfa {
 +	struct table_header *tables[YYTD_ID_NXT];
-+
-+	struct table_set_header th;
 +};
 +
 +#define ntohb(X) (X)
@@ -4326,14 +4309,9 @@ Index: linux-2.6-apparmor/security/apparmor/match.h
 +		} \
 +	} while (0)
 +
-+static inline size_t pad64(size_t i)
-+{
-+	return (i + (size_t)7) & ~(size_t)7;
-+}
-+
 +static inline size_t table_size(size_t len, size_t el_size)
 +{
-+	return pad64(sizeof(struct table_header) + len * el_size);
++	return ALIGN(sizeof(struct table_header) + len * el_size, 8);
 +}
 +
 +#endif /* __MATCH_H */
