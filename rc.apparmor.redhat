@@ -107,9 +107,6 @@ case "$1" in
 	try-restart)
 		subdomain_try_restart
 		;;
-	debug)
-		subdomain_debug
-		;;
 	kill)
 		subdomain_kill
 		;;
