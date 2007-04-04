@@ -82,9 +82,7 @@ AA_STATUS=/usr/sbin/apparmor_status
 SD_EV_BIN=/usr/sbin/sd-event-dispatch.pl
 SD_EV_PIDFILE=/var/run/sd-event-dispatch.init.pid
 SD_STATUS=/usr/sbin/subdomain_status
-if grep -q securityfs /proc/filesystems ; then
-	SECURITYFS=/sys/kernel/security
-fi
+SECURITYFS=/sys/kernel/security
 
 SUBDOMAINFS_MOUNTPOINT=$(grep subdomainfs /etc/fstab  | \
 	sed -e 's|^[[:space:]]*[^[:space:]]\+[[:space:]]\+\(/[^[:space:]]*\)[[:space:]]\+subdomainfs.*$|\1|' 2> /dev/null)
@@ -192,64 +190,6 @@ profiles_names_list() {
 	done
 }
 
-is_subdomainfs_mounted() {
-	if grep -q subdomainfs /proc/filesystems ; then
-		if grep -q subdomainfs /proc/mounts && \
-		   [ -f "${SUBDOMAINFS_MOUNTPOINT}/profiles" ]; then
-			SFS_MOUNTPOINT=${SUBDOMAINFS_MOUNTPOINT}
-			return 0
-		else
-			return 1
-		fi
-	fi
-	if grep -q securityfs /proc/filesystems && grep -q securityfs /proc/mounts ; then
-		if [ -f "${SECURITYFS}/${MODULE}/profiles" ]; then
-			SFS_MOUNTPOINT="${SECURITYFS}/${MODULE}"
-			return 0
-		fi
-		if [ -f "${SECURITYFS}/${OLD_MODULE}/profiles" ]; then
-			SFS_MOUNTPOINT="${SECURITYFS}/${OLD_MODULE}"
-			return 0
-		fi
-	fi
-	return 1
-}
-
-mount_subdomainfs() {
-	# for backwords compatibility
-	if grep -q subdomainfs /proc/filesystems ; then
-		if [ "X" != "X${SUBDOMAINFS_MOUNTPOINT}" ]; then
-			SFS_MOUNTPOINT=${SUBDOMAINFS_MOUNTPOINT}
-			sd_action "Mounting subdomainfs on ${SFS_MOUNTPOINT}" mount "${SFS_MOUNTPOINT}"
-			rc=$?
-			return $rc
-		fi
-	fi
-	if [ "X" != "X${SECURITYFS}" ]; then
-		if ! grep -q securityfs /proc/mounts ; then
-			sd_action "Mounting securityfs on ${SECURITYFS}" \
-					mount -t securityfs securityfs "${SECURITYFS}"
-			rc=$?
-			if [ -f "${SECURITYFS}/${MODULE}/profiles" ]; then
-				SFS_MOUNTPOINT="${SECURITYFS}/${MODULE}"
-			elif [ -f "${SECURITYFS}/${OLD_MODULE}/profiles" ]; then
-				SFS_MOUNTPOINT="${SECURITYFS}/${OLD_MODULE}"
-			else
-				SFS_MOUNTPOINT="${SECURITYFS}/${MODULE}"
-			fi
-			return $rc
-		fi
-	fi
-	return 0
-}
-
-unmount_subdomainfs() {
-	SUBDOMAINFS=$(grep subdomainfs /proc/mounts  | cut -d" " -f2 2> /dev/null)
-	if [ "X" != "X${SUBDOMAINFS}" ]; then
-		sd_action "Unmounting subdomainfs" umount ${SUBDOMAINFS}
-	fi
-}
-
 rebuild_subdomain() {
 	if [ -d "$SUBDOMAIN_SRC" ] ; then
 		# only try to rebuild for the running kernel
@@ -299,8 +239,8 @@ module_panic() {
 	# the module failed to load, determine what action should be taken
 
 	case "$SUBDOMAIN_MODULE_PANIC" in
-		"warn"|"WARN") sd_log_failure_msg "- could not start AppArmor"
-			return -1 ;;
+		"warn"|"WARN")
+			return 1 ;;
 		"build"|"BUILD") rebuild_subdomain
 			rc=$?
 			return $rc ;;
@@ -319,17 +259,79 @@ module_panic() {
 	esac
 }
 
+is_apparmor_loaded() {
+	if ! is_securityfs_mounted ; then
+		mount_securityfs
+	fi
+
+	mount_subdomainfs
+
+	if [ -f "${SECURITYFS}/${MODULE}/profiles" ]; then
+		SFS_MOUNTPOINT="${SECURITYFS}/${MODULE}"
+		return 0
+	fi
+
+	if [ -f "${SECURITYFS}/${OLD_MODULE}/profiles" ]; then
+		SFS_MOUNTPOINT="${SECURITYFS}/${OLD_MODULE}"
+		return 0
+	fi
+
+	if [ -f "${SUBDOMAINFS_MOUNTPOINT}/profiles" ]; then
+		SFS_MOUNTPOINT=${SUBDOMAINFS_MOUNTPOINT}
+		return 0
+	fi
+
+	# check for subdomainfs version of module
+	grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules
+	return $?
+}
+
+is_securityfs_mounted() {
+	grep -q securityfs /proc/filesystems && grep -q securityfs /proc/mounts
+	return $?
+}
+
+mount_securityfs() {
+	if grep -q securityfs /proc/filesystems ; then
+		sd_action "Mounting securityfs on ${SECURITYFS}" \
+				mount -t securityfs securityfs "${SECURITYFS}"
+		return $?
+	fi
+	return 0
+}
+
+
+mount_subdomainfs() {
+	# for backwords compatibility
+	if grep -q subdomainfs /proc/filesystems && \
+	   ! grep -q subdomainfs /proc/mounts && \
+	   [ -n "${SUBDOMAINFS_MOUNTPOINT}" ]; then
+		sd_action "Mounting subdomainfs on ${SUBDOMAINFS_MOUNTPOINT}" \
+				mount "${SUBDOMAINFS_MOUNTPOINT}"
+		return $?
+	fi
+	return 0
+}
+
+unmount_subdomainfs() {
+	SUBDOMAINFS=$(grep subdomainfs /proc/mounts  | cut -d" " -f2 2> /dev/null)
+	if [ -n "${SUBDOMAINFS}" ]; then
+		sd_action "Unmounting subdomainfs" umount ${SUBDOMAINFS}
+	fi
+}
+
 load_module() {
+	local rc=0
 	if modinfo -F filename apparmor > /dev/null 2>&1 ; then
 		MODULE=apparmor
-	elif modinfo -F filename subdomain > /dev/null 2>&1 ; then
-		MODULE=subdomain
+	elif modinfo -F filename ${OLD_MODULE} > /dev/null 2>&1 ; then
+		MODULE=${OLD_MODULE}
 	fi
+
 	if ! grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules ; then
-		sd_action "Loading AppArmor module" /sbin/modprobe $MODULE $1
+		sd_action "Loading AppArmor module" /sbin/modprobe -q $MODULE $1
 		rc=$?
 		if [ $rc -ne 0 ] ; then
-			# we couldn't find the module
 			module_panic
 			rc=$?
 			if [ $rc -ne 0 ] ; then
@@ -337,19 +339,17 @@ load_module() {
 			fi
 		fi
 	fi
+
+	if ! is_apparmor_loaded ; then
+		return 1
+	fi
+
+	return $rc
 }	
 
 subdomain_start() {
-	if ! grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules ; then
+	if ! is_apparmor_loaded ; then
 		load_module
-		rc=$?
-		if [ $rc -ne 0 ] ; then
-			return $rc
-		fi
-	fi
-
-	if ! is_subdomainfs_mounted ; then
-		mount_subdomainfs
 		rc=$?
 		if [ $rc -ne 0 ] ; then
 			return $rc
@@ -376,8 +376,8 @@ remove_profiles() {
 	# doesn't work, since we are removing entries which screws up
 	# our position.  Lets hope there are never enough profiles to
 	# overflow the variable
-	if ! is_subdomainfs_mounted ; then
-		sd_log_failure_msg "- failed, is securityfs loaded?"
+	if ! is_apparmor_loaded ; then
+		sd_log_failure_msg "- failed, is AppArmor loaded?"
 		return 1
 	fi
 
@@ -404,23 +404,32 @@ remove_profiles() {
 	else
 		sd_log_failure_msg
 	fi	
+	return ${retval}
 }
 
 subdomain_stop() {
 	echo -n "Unloading AppArmor profiles "
 	remove_profiles
+	return $?
 }
 
 subdomain_kill() {
+	if ! is_apparmor_loaded ; then
+		sd_log_failure_msg "Killing AppArmor module - failed, AppArmor is not loaded."
+		return 1
+	fi
+
 	unmount_subdomainfs
 	if grep -qE "^apparmor[[:space:]]" /proc/modules ; then
 		MODULE=apparmor
 	elif grep -qE "^subdomain[[:space:]]" /proc/modules ; then
 		MODULE=subdomain
 	else
-		MODULE=apparmor
+		sd_log_failure_msg "Killing AppArmor module - failed, AppArmor is builtin"
+		return 1
 	fi
-	sd_action "Unloading AppArmor modules" /sbin/modprobe -r $MODULE
+	sd_action "Unloading AppArmor modules" /sbin/modprobe -qr $MODULE
+	return $?
 }
 
 __subdomain_restart() {
@@ -444,37 +453,23 @@ __subdomain_restart() {
 }
 
 subdomain_restart() {
-	if ! grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules ; then
+	if ! is_apparmor_loaded ; then
 		subdomain_start
 		rc=$?
 		return $rc
 	fi
 
-	if ! is_subdomainfs_mounted ; then
-		mount_subdomainfs
-		rc=$?
-		if [ $rc -ne 0 ] ; then
-			return $rc
-		fi
-	fi
-
 	__subdomain_restart
-	rc=$?
-	return $rc
+	return $?
 }
 
 subdomain_try_restart() {
-	if ! grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules ; then
-		return 1
-	fi
-
-	if ! is_subdomainfs_mounted ; then
+	if ! is_apparmor_loaded ; then
 		return 1
 	fi
 
 	__subdomain_restart
-	rc=$?
-	return $rc
+	return $?
 }
 
 subdomain_debug() {
