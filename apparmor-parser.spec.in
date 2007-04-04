@@ -159,6 +159,7 @@ fi
 * Wed Apr  4 2007 - sbeattie@suse.de
 - rcapparmor: fix dpkg ignore check
 - rcapparmor: support apparmor built into kernel
+- rcapparmor: kill old cruft
 * Tue Apr  3 2007 - sbeattie@suse.de
 - Add manpages to package
 * Thu Mar 29 2007 - coolo@suse.de
