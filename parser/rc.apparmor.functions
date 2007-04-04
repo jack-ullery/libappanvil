@@ -102,6 +102,18 @@ fi
 # keep exit status from parser during profile load.  0 is good, 1 is bad
 STATUS=0
 
+skip_profile() {
+	local profile=$1
+	if [ "${profile%.rpmnew}" != "${profile}" -o \
+	     "${profile%.rpmsave}" != "${profile}" -o \
+	     "${profile%.dpkg-new}" != "${profile}" -o \
+	     "${profile%\~}" != "${profile}" ] ; then
+		return 0
+	fi
+
+	return 1
+}
+
 parse_profiles() {
 	# get parser arg
 	case "$1" in
@@ -135,11 +147,7 @@ parse_profiles() {
 	fi
 
 	for profile in $PROFILE_DIR/*; do
-	        if [ "${profile%.rpmnew}" != "${profile}" -o \
-		     "${profile%.rpmsave}" != "${profile}" -o \
-		     "${profile%.dpkg-new}" != "${profile}" -o \
-		     "${profile%\~}" != "${profile}" ]
-		then 
+		if skip_profile "${profile}" ; then
 			echo " Skipping profile $profile"
 			logger -t "AppArmor(init)" -p daemon.warn "Skipping profile $profile"
 			STATUS=2
@@ -175,12 +183,7 @@ profiles_names_list() {
 	fi
 
 	for profile in $PROFILE_DIR/*; do
-	        if [ "${profile%.rpmnew}" != "${profile}" -o \
-		     "${profile%.rpmsave}" != "${profile}" -o \
-		     "${profile%\~}" != "${profile}" ]
-		then 
-			echo "nop" >/dev/null
-		elif [ -f "${profile}" ] ; then
+	        if ! skip_profile "${profile}" && [ -f "${profile}" ] ; then
 			LIST_ADD=$($PARSER $ABSTRACTIONS -N "$profile" | grep -v '\^')
 			if [ $? -eq 0 ]; then
 				echo "$LIST_ADD" >>$TMPFILE
