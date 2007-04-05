@@ -1,7 +1,5 @@
 From: Andreas Gruenbacher <agruen@suse.de>
-
-Fix __d_path() for lazy unmounts and make it unambiguous; exclude unreachable
-mount points from /proc/mounts
+Subject: Fix __d_path() for lazy unmounts and make it unambiguous; exclude unreachable mount points from /proc/mounts
 
 First, when d_path() hits a lazily unmounted mount point, it tries to prepend
 the name of the lazily unmounted dentry to the path name.  It gets this wrong,
@@ -48,10 +46,14 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Reviewed-by: NeilBrown <neilb@suse.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-Index: linux-2.6-apparmor/fs/dcache.c
-===================================================================
---- linux-2.6-apparmor.orig/fs/dcache.c
-+++ linux-2.6-apparmor/fs/dcache.c
+---
+ fs/dcache.c    |  157 +++++++++++++++++++++++++++++++--------------------------
+ fs/namespace.c |   23 +++++++-
+ fs/proc/base.c |   52 +++++++-----------
+ 3 files changed, 131 insertions(+), 101 deletions(-)
+
+--- a/fs/dcache.c
++++ b/fs/dcache.c
 @@ -1732,52 +1732,51 @@ shouldnt_be_hashed:
  }
  
@@ -278,10 +280,8 @@ Index: linux-2.6-apparmor/fs/dcache.c
  
  out:
  	dput(pwd);
-Index: linux-2.6-apparmor/fs/namespace.c
-===================================================================
---- linux-2.6-apparmor.orig/fs/namespace.c
-+++ linux-2.6-apparmor/fs/namespace.c
+--- a/fs/namespace.c
++++ b/fs/namespace.c
 @@ -348,8 +348,16 @@ static inline void mangle(struct seq_fil
  	seq_escape(m, s, " \t\n\\");
  }
@@ -340,10 +340,8 @@ Index: linux-2.6-apparmor/fs/namespace.c
  	seq_putc(m, ' ');
  
  	/* file system type */
-Index: linux-2.6-apparmor/fs/proc/base.c
-===================================================================
---- linux-2.6-apparmor.orig/fs/proc/base.c
-+++ linux-2.6-apparmor/fs/proc/base.c
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
 @@ -353,13 +353,16 @@ static const struct inode_operations pro
  	.setattr	= proc_setattr,
  };

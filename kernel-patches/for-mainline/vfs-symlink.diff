@@ -1,11 +1,20 @@
-Add a struct vfsmount parameter to vfs_symlink()
+From: Tony Jones <tonyj@suse.de>
+Subject: Add a struct vfsmount parameter to vfs_symlink()
+
+The vfsmount will be passed down to the LSM hook so that LSMs can compute
+pathnames.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
-Index: b/fs/ecryptfs/inode.c
-===================================================================
+---
+ fs/ecryptfs/inode.c |    4 +++-
+ fs/namei.c          |    6 ++++--
+ fs/nfsd/vfs.c       |    7 +++++--
+ include/linux/fs.h  |    2 +-
+ 4 files changed, 13 insertions(+), 6 deletions(-)
+
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
 @@ -470,6 +470,7 @@ static int ecryptfs_symlink(struct inode
@@ -33,8 +42,6 @@ Index: b/fs/ecryptfs/inode.c
  			 encoded_symname, mode);
  	kfree(encoded_symname);
  	if (rc || !lower_dentry->d_inode)
-Index: b/fs/namei.c
-===================================================================
 --- a/fs/namei.c
 +++ b/fs/namei.c
 @@ -2185,7 +2185,8 @@ asmlinkage long sys_unlink(const char __
@@ -57,8 +64,6 @@ Index: b/fs/namei.c
  	dput(dentry);
  out_unlock:
  	mutex_unlock(&nd.dentry->d_inode->i_mutex);
-Index: b/fs/nfsd/vfs.c
-===================================================================
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
 @@ -1435,6 +1435,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
@@ -92,8 +97,6 @@ Index: b/fs/nfsd/vfs.c
  
  	if (!host_err) {
  		if (EX_ISSYNC(fhp->fh_export))
-Index: b/include/linux/fs.h
-===================================================================
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
 @@ -982,7 +982,7 @@ extern int vfs_permission(struct nameida

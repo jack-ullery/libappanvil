@@ -1,4 +1,5 @@
-Make d_path() consistent across mount operations
+From: Andreas Gruenbacher <agruen@suse.de>
+Subject: Make d_path() consistent across mount operations
 
 Right now, the path that __d_path() computes can become slightly
 inconsistent when it races with mount operations: it grabs the
@@ -14,8 +15,10 @@ completed.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: b/fs/dcache.c
-===================================================================
+---
+ fs/dcache.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
 --- a/fs/dcache.c
 +++ b/fs/dcache.c
 @@ -1754,7 +1754,7 @@ static char *__d_path(struct dentry *den

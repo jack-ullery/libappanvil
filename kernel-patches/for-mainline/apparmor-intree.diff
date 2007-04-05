@@ -1,12 +1,16 @@
-Add AppArmor LSM to security/Makefile
+From: John Johansen <jjohansen@suse.de>
+Subject: Add AppArmor LSM to security/Makefile
 
 Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6-apparmor/security/Kconfig
-===================================================================
---- linux-2.6-apparmor.orig/security/Kconfig
-+++ linux-2.6-apparmor/security/Kconfig
+---
+ security/Kconfig  |    1 +
+ security/Makefile |    1 +
+ 2 files changed, 2 insertions(+)
+
+--- a/security/Kconfig
++++ b/security/Kconfig
 @@ -94,6 +94,7 @@ config SECURITY_ROOTPLUG
  	  If you are unsure how to answer this question, answer N.
  
@@ -15,10 +19,8 @@ Index: linux-2.6-apparmor/security/Kconfig
  
  endmenu
  
-Index: linux-2.6-apparmor/security/Makefile
-===================================================================
---- linux-2.6-apparmor.orig/security/Makefile
-+++ linux-2.6-apparmor/security/Makefile
+--- a/security/Makefile
++++ b/security/Makefile
 @@ -14,5 +14,6 @@ endif
  obj-$(CONFIG_SECURITY)			+= security.o dummy.o inode.o
  # Must precede capability.o in order to stack properly.

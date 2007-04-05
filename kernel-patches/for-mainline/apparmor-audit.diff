@@ -8,8 +8,11 @@ Patch is not in mainline -- pending AppArmor code submission to lkml
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
-Index: b/include/linux/audit.h
-===================================================================
+---
+ include/linux/audit.h |    5 +++++
+ kernel/audit.c        |    6 ++++--
+ 2 files changed, 9 insertions(+), 2 deletions(-)
+
 --- a/include/linux/audit.h
 +++ b/include/linux/audit.h
 @@ -112,6 +112,8 @@
@@ -31,8 +34,6 @@ Index: b/include/linux/audit.h
  extern void		    audit_log_format(struct audit_buffer *ab,
  					     const char *fmt, ...)
  			    __attribute__((format(printf,2,3)));
-Index: b/kernel/audit.c
-===================================================================
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
 @@ -1054,8 +1054,7 @@ static inline int audit_expand(struct au

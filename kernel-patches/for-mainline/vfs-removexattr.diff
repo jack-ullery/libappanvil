@@ -1,11 +1,19 @@
-Add a struct vfsmount parameter to vfs_removexattr()
+From: Tony Jones <tonyj@suse.de>
+Subject: Add a struct vfsmount parameter to vfs_removexattr()
+
+The vfsmount will be passed down to the LSM hook so that LSMs can compute
+pathnames.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
-Index: b/fs/nfsd/vfs.c
-===================================================================
+---
+ fs/nfsd/vfs.c         |    3 ++-
+ fs/xattr.c            |   12 ++++++------
+ include/linux/xattr.h |    2 +-
+ 3 files changed, 9 insertions(+), 8 deletions(-)
+
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
 @@ -1992,7 +1992,8 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
@@ -18,8 +26,6 @@ Index: b/fs/nfsd/vfs.c
  			if (error == -ENODATA)
  				error = 0;
  		}
-Index: b/fs/xattr.c
-===================================================================
 --- a/fs/xattr.c
 +++ b/fs/xattr.c
 @@ -166,7 +166,7 @@ vfs_listxattr(struct dentry *dentry, str
@@ -76,8 +82,6 @@ Index: b/fs/xattr.c
  	fput(f);
  	return error;
  }
-Index: b/include/linux/xattr.h
-===================================================================
 --- a/include/linux/xattr.h
 +++ b/include/linux/xattr.h
 @@ -52,7 +52,7 @@ ssize_t vfs_listxattr(struct dentry *d, 

@@ -1,11 +1,20 @@
-Add struct vfsmount parameters to vfs_rename()
+From: Tony Jones <tonyj@suse.de>
+Subject: Add struct vfsmount parameters to vfs_rename()
+
+The vfsmount will be passed down to the LSM hook so that LSMs can compute
+pathnames.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
-Index: b/fs/ecryptfs/inode.c
-===================================================================
+---
+ fs/ecryptfs/inode.c |    7 ++++++-
+ fs/namei.c          |   19 ++++++++++++-------
+ fs/nfsd/vfs.c       |    3 ++-
+ include/linux/fs.h  |    2 +-
+ 4 files changed, 21 insertions(+), 10 deletions(-)
+
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
 @@ -598,19 +598,24 @@ ecryptfs_rename(struct inode *old_dir, s
@@ -34,8 +43,6 @@ Index: b/fs/ecryptfs/inode.c
  	if (rc)
  		goto out_lock;
  	fsstack_copy_attr_all(new_dir, lower_new_dir_dentry->d_inode, NULL);
-Index: b/fs/namei.c
-===================================================================
 --- a/fs/namei.c
 +++ b/fs/namei.c
 @@ -2383,7 +2383,8 @@ asmlinkage long sys_link(const char __us
@@ -93,8 +100,6 @@ Index: b/fs/namei.c
  exit5:
  	dput(new_dentry);
  exit4:
-Index: b/fs/nfsd/vfs.c
-===================================================================
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
 @@ -1628,7 +1628,8 @@ nfsd_rename(struct svc_rqst *rqstp, stru
@@ -107,8 +112,6 @@ Index: b/fs/nfsd/vfs.c
  	if (!host_err && EX_ISSYNC(tfhp->fh_export)) {
  		host_err = nfsd_sync_dir(tdentry);
  		if (!host_err)
-Index: b/include/linux/fs.h
-===================================================================
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
 @@ -986,7 +986,7 @@ extern int vfs_symlink(struct inode *, s

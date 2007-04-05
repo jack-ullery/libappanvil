@@ -1,4 +1,5 @@
-Remove redundant check from proc_setattr()
+From: Andreas Gruenbacher <agruen@suse.de>
+Subject: Remove redundant check from proc_setattr()
 
 notify_change() already calls security_inode_setattr() before
 calling iop->setattr.
@@ -7,8 +8,10 @@ Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
-Index: b/fs/proc/base.c
-===================================================================
+---
+ fs/proc/base.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
 --- a/fs/proc/base.c
 +++ b/fs/proc/base.c
 @@ -344,11 +344,8 @@ static int proc_setattr(struct dentry *d

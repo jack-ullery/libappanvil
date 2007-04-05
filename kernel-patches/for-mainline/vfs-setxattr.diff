@@ -1,11 +1,19 @@
-Add a struct vfsmount parameter to vfs_setxattr()
+From: Tony Jones <tonyj@suse.de>
+Subject: Add a struct vfsmount parameter to vfs_setxattr()
+
+The vfsmount will be passed down to the LSM hook so that LSMs can compute
+pathnames.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
-Index: b/fs/nfsd/vfs.c
-===================================================================
+---
+ fs/nfsd/vfs.c         |   16 +++++++++++-----
+ fs/xattr.c            |   16 ++++++++--------
+ include/linux/xattr.h |    3 ++-
+ 3 files changed, 21 insertions(+), 14 deletions(-)
+
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
 @@ -396,7 +396,8 @@ static ssize_t nfsd_getxattr(struct dent
@@ -70,8 +78,6 @@ Index: b/fs/nfsd/vfs.c
  	else {
  		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
  			error = 0;
-Index: b/fs/xattr.c
-===================================================================
 --- a/fs/xattr.c
 +++ b/fs/xattr.c
 @@ -70,8 +70,8 @@ xattr_permission(struct inode *inode, co
@@ -132,8 +138,6 @@ Index: b/fs/xattr.c
  	fput(f);
  	return error;
  }
-Index: b/include/linux/xattr.h
-===================================================================
 --- a/include/linux/xattr.h
 +++ b/include/linux/xattr.h
 @@ -48,7 +48,8 @@ struct xattr_handler {

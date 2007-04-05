@@ -1,11 +1,22 @@
-Add a struct vfsmount parameter to vfs_rmdir()
+From: Tony Jones <tonyj@suse.de>
+Subject: Add a struct vfsmount parameter to vfs_rmdir()
+
+The vfsmount will be passed down to the LSM hook so that LSMs can compute
+pathnames.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
-Index: b/fs/ecryptfs/inode.c
-===================================================================
+---
+ fs/ecryptfs/inode.c   |    4 +++-
+ fs/namei.c            |    4 ++--
+ fs/nfsd/nfs4recover.c |    2 +-
+ fs/nfsd/vfs.c         |    2 +-
+ fs/reiserfs/xattr.c   |    2 +-
+ include/linux/fs.h    |    2 +-
+ 6 files changed, 9 insertions(+), 7 deletions(-)
+
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
 @@ -542,14 +542,16 @@ out:
@@ -26,8 +37,6 @@ Index: b/fs/ecryptfs/inode.c
  	dput(lower_dentry);
  	if (!rc)
  		d_delete(lower_dentry);
-Index: b/fs/namei.c
-===================================================================
 --- a/fs/namei.c
 +++ b/fs/namei.c
 @@ -2006,7 +2006,7 @@ void dentry_unhash(struct dentry *dentry
@@ -48,8 +57,6 @@ Index: b/fs/namei.c
  	dput(dentry);
  exit2:
  	mutex_unlock(&nd.dentry->d_inode->i_mutex);
-Index: b/fs/nfsd/nfs4recover.c
-===================================================================
 --- a/fs/nfsd/nfs4recover.c
 +++ b/fs/nfsd/nfs4recover.c
 @@ -276,7 +276,7 @@ nfsd4_clear_clid_dir(struct dentry *dir,
@@ -61,8 +68,6 @@ Index: b/fs/nfsd/nfs4recover.c
  	mutex_unlock(&dir->d_inode->i_mutex);
  	return status;
  }
-Index: b/fs/nfsd/vfs.c
-===================================================================
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
 @@ -1702,7 +1702,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
@@ -74,8 +79,6 @@ Index: b/fs/nfsd/vfs.c
  	}
  
  	dput(rdentry);
-Index: b/fs/reiserfs/xattr.c
-===================================================================
 --- a/fs/reiserfs/xattr.c
 +++ b/fs/reiserfs/xattr.c
 @@ -823,7 +823,7 @@ int reiserfs_delete_xattrs(struct inode 
@@ -87,8 +90,6 @@ Index: b/fs/reiserfs/xattr.c
  		reiserfs_write_unlock_xattrs(inode->i_sb);
  		dput(root);
  	} else {
-Index: b/include/linux/fs.h
-===================================================================
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
 @@ -984,7 +984,7 @@ extern int vfs_mkdir(struct inode *, str

@@ -1,11 +1,21 @@
-Add a struct vfsmount parameter to vfs_mknod()
+From: Tony Jones <tonyj@suse.de>
+Subject: Add a struct vfsmount parameter to vfs_mknod()
+
+The vfsmount will be passed down to the LSM hook so that LSMs can compute
+pathnames.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
-Index: b/fs/ecryptfs/inode.c
-===================================================================
+---
+ fs/ecryptfs/inode.c |    5 ++++-
+ fs/namei.c          |   10 ++++++----
+ fs/nfsd/vfs.c       |    3 ++-
+ include/linux/fs.h  |    2 +-
+ net/unix/af_unix.c  |    2 +-
+ 5 files changed, 14 insertions(+), 8 deletions(-)
+
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
 @@ -560,11 +560,14 @@ ecryptfs_mknod(struct inode *dir, struct
@@ -24,8 +34,6 @@ Index: b/fs/ecryptfs/inode.c
  	if (rc || !lower_dentry->d_inode)
  		goto out;
  	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
-Index: b/fs/namei.c
-===================================================================
 --- a/fs/namei.c
 +++ b/fs/namei.c
 @@ -1837,7 +1837,8 @@ fail:
@@ -54,8 +62,6 @@ Index: b/fs/namei.c
  			break;
  		case S_IFDIR:
  			error = -EPERM;
-Index: b/fs/nfsd/vfs.c
-===================================================================
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
 @@ -1193,7 +1193,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
@@ -68,8 +74,6 @@ Index: b/fs/nfsd/vfs.c
  		break;
  	default:
  	        printk("nfsd: bad file type %o in nfsd_create\n", type);
-Index: b/include/linux/fs.h
-===================================================================
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
 @@ -981,7 +981,7 @@ extern void unlock_super(struct super_bl
@@ -81,8 +85,6 @@ Index: b/include/linux/fs.h
  extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
  extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
  extern int vfs_rmdir(struct inode *, struct dentry *);
-Index: b/net/unix/af_unix.c
-===================================================================
 --- a/net/unix/af_unix.c
 +++ b/net/unix/af_unix.c
 @@ -808,7 +808,7 @@ static int unix_bind(struct socket *sock

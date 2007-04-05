@@ -1,11 +1,21 @@
-Add struct vfsmount parameter to vfs_mkdir()
+From: Tony Jones <tonyj@suse.de>
+Subject: Add struct vfsmount parameter to vfs_mkdir()
+
+The vfsmount will be passed down to the LSM hook so that LSMs can compute
+pathnames.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
-Index: b/fs/ecryptfs/inode.c
-===================================================================
+---
+ fs/ecryptfs/inode.c   |    5 ++++-
+ fs/namei.c            |    5 +++--
+ fs/nfsd/nfs4recover.c |    3 ++-
+ fs/nfsd/vfs.c         |    3 ++-
+ include/linux/fs.h    |    2 +-
+ 5 files changed, 12 insertions(+), 6 deletions(-)
+
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
 @@ -509,11 +509,14 @@ static int ecryptfs_mkdir(struct inode *
@@ -24,8 +34,6 @@ Index: b/fs/ecryptfs/inode.c
  	if (rc || !lower_dentry->d_inode)
  		goto out;
  	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
-Index: b/fs/namei.c
-===================================================================
 --- a/fs/namei.c
 +++ b/fs/namei.c
 @@ -1916,7 +1916,8 @@ asmlinkage long sys_mknod(const char __u
@@ -47,8 +55,6 @@ Index: b/fs/namei.c
  	dput(dentry);
  out_unlock:
  	mutex_unlock(&nd.dentry->d_inode->i_mutex);
-Index: b/fs/nfsd/nfs4recover.c
-===================================================================
 --- a/fs/nfsd/nfs4recover.c
 +++ b/fs/nfsd/nfs4recover.c
 @@ -156,7 +156,8 @@ nfsd4_create_clid_dir(struct nfs4_client
@@ -61,8 +67,6 @@ Index: b/fs/nfsd/nfs4recover.c
  out_put:
  	dput(dentry);
  out_unlock:
-Index: b/fs/nfsd/vfs.c
-===================================================================
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
 @@ -1186,7 +1186,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
@@ -75,8 +79,6 @@ Index: b/fs/nfsd/vfs.c
  		break;
  	case S_IFCHR:
  	case S_IFBLK:
-Index: b/include/linux/fs.h
-===================================================================
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
 @@ -980,7 +980,7 @@ extern void unlock_super(struct super_bl

@@ -1,4 +1,5 @@
-vfs_rmdir(): call lsm hook before unhashing dentry
+From: John Johansen <jjohansen@suse.de>
+Subject: call lsm hook before unhashing dentry in vfs_rmdir()
 
 If we unhash the dentry before calling the security_inode_rmdir hook,
 we cannot compute the file's pathname in the hook anymore. AppArmor
@@ -8,8 +9,10 @@ deleted, though.
 Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: b/fs/namei.c
-===================================================================
+---
+ fs/namei.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
 --- a/fs/namei.c
 +++ b/fs/namei.c
 @@ -2016,6 +2016,10 @@ int vfs_rmdir(struct inode *dir, struct 
