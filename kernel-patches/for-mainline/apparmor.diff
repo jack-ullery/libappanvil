@@ -2963,7 +2963,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + * do_change_hat - actually switch hats
 + * @hat_name: name of hat to switch to
 + * @new_cxt: new aa_task_context to use on profile change
-+ * @hat_magic: new hagic value to use
++ * @hat_magic: new magic value to use
 + *
 + * Switch to a new hat.  Returns %0 on success, error otherwise.
 + */
@@ -3132,7 +3132,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + * __aa_replace_profile - replace a task's profile
 + * @task: task to switch the profile of
 + * @profile: profile to switch to
-+ * @hat_magic: hagic cookie to switch to
++ * @hat_magic: magic cookie to switch to
 + *
 + * Returns a handle to the previous profile upon success, or else an
 + * error code.

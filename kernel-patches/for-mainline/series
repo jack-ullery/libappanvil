@@ -36,5 +36,6 @@ file-handle-ops.diff
 security-xattr-file.diff
 apparmor-audit.diff
 apparmor.diff
+apparmor-ptrace.diff
 apparmor-intree.diff
 # complain-to-learn.diff
