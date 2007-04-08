@@ -1,0 +1,364 @@
+---
+ security/apparmor/apparmor.h         |   16 ++++++--
+ security/apparmor/apparmorfs.c       |    2 -
+ security/apparmor/lsm.c              |   25 ++++--------
+ security/apparmor/main.c             |   70 +++++++++++------------------------
+ security/apparmor/module_interface.c |    6 +--
+ security/apparmor/procattr.c         |   27 +++++--------
+ 6 files changed, 57 insertions(+), 89 deletions(-)
+
+--- linux-2.6.orig/security/apparmor/apparmor.h
++++ linux-2.6/security/apparmor/apparmor.h
+@@ -74,6 +74,13 @@ extern int apparmor_path_max;
+ #define AA_WARN(gfp, fmt, args...) \
+ 	aa_audit_message(NULL, gfp, 0, fmt, ##args);
+ 
++#define AA_REJECT_MSG(p, gfp, fmt, args...) \
++	aa_audit_message(p, gfp, 0, \
++			"REJECTING " fmt \
++			" (%s(%d) profile %s active %s)", ##args, \
++			current->comm, current->pid, \
++			(p)->parent->name, (p)->name)
++
+ #define AA_ERROR(fmt, args...)	printk(KERN_ERR "AppArmor: " fmt, ##args)
+ 
+ /* struct aa_profile - basic confinement data
+@@ -192,10 +199,11 @@ struct aa_audit {
+ #define HINT_PTRACE "ptrace"
+ 
+ #define LOG_HINT(p, gfp, hint, fmt, args...) \
+-	do {\
+-		aa_audit_message(p, gfp, 0, \
+-			"LOGPROF-HINT " hint " " fmt, ##args);\
+-	} while(0)
++	aa_audit_message(p, gfp, 0, \
++			"LOGPROF-HINT " hint " " fmt \
++			" (%s(%d) profile %s active %s)", ##args, \
++			current->comm, current->pid, \
++			(p)->parent->name, (p)->name)
+ 
+ /* Flags for the permission check functions */
+ #define AA_CHECK_LEAF	1  /* this is the leaf lookup component */
+--- linux-2.6.orig/security/apparmor/apparmorfs.c
++++ linux-2.6/security/apparmor/apparmorfs.c
+@@ -38,7 +38,7 @@ static char *aa_simple_write_to_buffer(c
+ 	profile = aa_get_profile(current);
+ 	if (profile) {
+ 		AA_WARN(GFP_KERNEL, "REJECTING access to profile %s (%s(%d) "
+-			"profile %s active %s)\n",
++			"profile %s active %s)",
+ 			msg, current->comm, current->pid,
+ 			profile->parent->name, profile->name);
+ 		aa_put_profile(profile);
+--- linux-2.6.orig/security/apparmor/lsm.c
++++ linux-2.6/security/apparmor/lsm.c
+@@ -622,9 +622,8 @@ static int apparmor_setprocattr(struct t
+ 	if (strcmp(command, "changehat") == 0) {
+ 		if (current != task) {
+ 			AA_WARN(GFP_KERNEL,
+-				"%s: Attempt by foreign task %s(%d) "
+-				"[user %d] to changehat of task %s(%d)\n",
+-				__FUNCTION__,
++				"Attempt by foreign task %s(%d) "
++				"[user %d] to changehat of task %s(%d)",
+ 				current->comm,
+ 				current->pid,
+ 				current->uid,
+@@ -643,9 +642,8 @@ static int apparmor_setprocattr(struct t
+ 
+ 		if (!capable(CAP_SYS_ADMIN)) {
+ 			AA_WARN(GFP_KERNEL,
+-				"%s: Unprivileged attempt by task %s(%d) "
+-				"[user %d] to assign profile to task %s(%d)\n",
+-				__FUNCTION__,
++				"Unprivileged attempt by task %s(%d) "
++				"[user %d] to assign profile to task %s(%d)",
+ 				current->comm,
+ 				current->pid,
+ 				current->uid,
+@@ -658,9 +656,8 @@ static int apparmor_setprocattr(struct t
+ 		if (profile) {
+ 			aa_put_profile(profile);
+ 			AA_WARN(GFP_KERNEL,
+-				"%s: Attempt by confined task %s(%d) "
+-				"[user %d] to assign profile to task %s(%d)\n",
+-				__FUNCTION__,
++				"Attempt by confined task %s(%d) "
++				"[user %d] to assign profile to task %s(%d)",
+ 				current->comm,
+ 				current->pid,
+ 				current->uid,
+@@ -670,9 +667,8 @@ static int apparmor_setprocattr(struct t
+ 		}
+ 		error = aa_setprocattr_setprofile(task, args);
+ 	} else {
+-		AA_WARN(GFP_KERNEL, "%s: Unknown setprocattr command '%.*s' "
+-			"by task %s(%d) [user %d] for task %s(%d)\n",
+-			__FUNCTION__,
++		AA_ERROR("Unknown setprocattr command '%.*s' "
++			"by task %s(%d) [user %d] for task %s(%d)",
+ 			size < 16 ? (int)size : 16,
+ 			command,
+ 			current->comm,
+@@ -759,9 +755,6 @@ static int __init apparmor_init(void)
+ 
+ 	AA_INFO(GFP_KERNEL, "AppArmor initialized%s\n",
+ 		apparmor_complain ? complainmsg : "");
+-	aa_audit_message(NULL, GFP_KERNEL, 0,
+-		"AppArmor initialized%s\n",
+-		apparmor_complain ? complainmsg : "");
+ 
+ 	return error;
+ 
+@@ -816,8 +809,6 @@ static void __exit apparmor_exit(void)
+ 			"AppArmor\n");
+ 
+ 	AA_INFO(GFP_KERNEL, "AppArmor protection removed\n");
+-	aa_audit_message(NULL, GFP_KERNEL, 0,
+-		"AppArmor protection removed\n");
+ }
+ 
+ module_init(apparmor_init);
+--- linux-2.6.orig/security/apparmor/main.c
++++ linux-2.6/security/apparmor/main.c
+@@ -802,11 +802,9 @@ repeat:
+ 		unlock_profile(profile);
+ 
+ 		if (APPARMOR_COMPLAIN(child_cxt) &&
+-		    profile == null_complain_profile) {
++		    profile == null_complain_profile)
+ 			LOG_HINT(profile, GFP_KERNEL, HINT_FORK,
+-				 "pid=%d child=%d\n",
+-				 current->pid, child->pid);
+-		}
++				 "child=%d", child->pid);
+ 		aa_put_profile(profile);
+ 	} else
+ 		aa_free_task_context(child_cxt);
+@@ -828,26 +826,20 @@ aa_register_find(struct aa_profile *prof
+ 	} else if (mandatory && profile) {
+ 		if (complain) {
+ 			LOG_HINT(profile, GFP_KERNEL, HINT_MANDPROF,
+-				"image=%s pid=%d profile=%s active=%s\n",
+-				name,
+-				current->pid,
+-				profile->parent->name, profile->name);
+-
++				 "image '%s'", name);
+ 			profile = aa_dup_profile(null_complain_profile);
+ 		} else {
+-			AA_WARN(GFP_KERNEL, "REJECTING exec(2) of image '%s'. "
+-				"Profile mandatory and not found "
+-				"(%s(%d) profile %s active %s)\n",
+-				name,
+-				current->comm, current->pid,
+-				profile->parent->name, profile->name);
++			AA_REJECT_MSG(profile, GFP_KERNEL,
++				      "exec(2) of image '%s'. "
++				      "Profile mandatory and not found.",
++				      name);
+ 			return ERR_PTR(-EPERM);
+ 		}
+ 	} else {
+ 		/* Only way we can get into this code is if task
+ 		 * is unconfined.
+ 		 */
+-		AA_DEBUG("%s: No profile found for exec image %s\n",
++		AA_DEBUG("%s: No profile found for exec image '%s'\n",
+ 			 __FUNCTION__,
+ 			 name);
+ 	}
+@@ -872,8 +864,7 @@ int aa_register(struct linux_binprm *bpr
+ 
+ 	filename = aa_get_name(filp->f_dentry, filp->f_vfsmnt, &buffer, 0);
+ 	if (IS_ERR(filename)) {
+-		AA_WARN(GFP_KERNEL, "%s: Failed to get filename\n",
+-			__FUNCTION__);
++		AA_ERROR("%s: Failed to get filename", __FUNCTION__);
+ 		return -ENOENT;
+ 	}
+ 
+@@ -915,10 +906,9 @@ repeat:
+ 				break;
+ 
+ 			default:
+-				AA_ERROR("%s: Rejecting exec(2) of image '%s'. "
++				AA_ERROR("Rejecting exec(2) of image '%s'. "
+ 					 "Unknown exec qualifier %x "
+ 					 "(%s (pid %d) profile %s active %s)\n",
+-					 __FUNCTION__,
+ 					 filename,
+ 					 exec_mode & AA_EXEC_MODIFIERS,
+ 					 current->comm, current->pid,
+@@ -936,14 +926,10 @@ repeat:
+ 			new_profile = aa_dup_profile(null_complain_profile);
+ 			exec_mode |= AA_EXEC_UNSAFE;
+ 		} else {
+-			AA_WARN(GFP_KERNEL,
+-				"%s: Rejecting exec(2) of image '%s'. "
+-				"Unable to determine exec qualifier "
+-				"(%s (pid %d) profile %s active %s)\n",
+-				__FUNCTION__,
+-				filename,
+-				current->comm, current->pid,
+-				profile->parent->name, profile->name);
++			AA_REJECT_MSG(profile, GFP_KERNEL,
++				      "exec(2) of image '%s'. "
++				      "Unable to determine exec qualifier.",
++				      filename);
+ 			new_profile = ERR_PTR(-EPERM);
+ 		}
+ 	} else {
+@@ -963,13 +949,10 @@ repeat:
+ 		if (PTR_ERR(old_profile) == -ESTALE)
+ 			goto repeat;
+ 		if (PTR_ERR(old_profile) == -EPERM)
+-			AA_WARN(GFP_KERNEL,
+-				"Rejecting exec(2) of image '%s'. "
+-				"Unable to change profile due to ptrace. ",
+-				"(%s (pid %d) profile %s active %s)\n",
+-				filename,
+-				current->comm, current->pid,
+-				profile->parent->name, profile->name);
++			AA_REJECT_MSG(profile, GFP_KERNEL,
++				"exec(2) of image '%s'. "
++				"Unable to change profile due to ptrace.",
++				filename);
+ 		new_profile = old_profile;
+ 		goto cleanup;
+ 	}
+@@ -993,11 +976,9 @@ repeat:
+ 			((unsigned long)bprm->security | bprm_flags);
+ 	}
+ 
+-	if (complain && new_profile == null_complain_profile) {
++	if (complain && new_profile == null_complain_profile)
+ 		LOG_HINT(new_profile, GFP_ATOMIC, HINT_CHGPROF,
+-			"pid=%d\n",
+-			current->pid);
+-	}
++			 "");
+ 
+ cleanup:
+ 	aa_put_name_buffer(buffer);
+@@ -1085,12 +1066,7 @@ static int do_change_hat(const char *hat
+ 
+ 		if (APPARMOR_COMPLAIN(cxt)) {
+ 			LOG_HINT(profile, GFP_ATOMIC, HINT_UNKNOWN_HAT,
+- 				"%s pid=%d "
+-				"profile=%s active=%s\n",
+-				hat_name,
+-				current->pid,
+-				profile->parent->name,
+-				profile->name);
++				 "%s", hat_name);
+ 		} else {
+ 			AA_DEBUG("%s: Unknown hatname '%s'. "
+ 				"Changing to NULL profile "
+@@ -1135,8 +1111,8 @@ int aa_change_hat(const char *hat_name, 
+ 
+ 	/* Dump out above debugging in WARN mode if we are in AUDIT mode */
+ 	if (APPARMOR_AUDIT(aa_task_context(current))) {
+-		AA_WARN(GFP_KERNEL, "%s: %s, 0x%llx (pid %d)\n",
+-			__FUNCTION__, hat_name ? hat_name : "NULL",
++		AA_WARN(GFP_KERNEL, "changehat %s, 0x%llx (pid %d)",
++			hat_name ? hat_name : "NULL",
+ 			hat_magic, current->pid);
+ 	}
+ 
+--- linux-2.6.orig/security/apparmor/module_interface.c
++++ linux-2.6/security/apparmor/module_interface.c
+@@ -297,7 +297,7 @@ static struct aa_profile *aa_unpack_prof
+ 	return profile;
+ 
+ fail:
+-	AA_WARN(GFP_KERNEL, "Invalid profile %s\n",
++	AA_WARN(GFP_KERNEL, "Invalid profile %s",
+ 		profile && profile->name ? profile->name : "unknown");
+ 
+ 	if (profile)
+@@ -338,14 +338,14 @@ static int aa_verify_header(struct aa_ex
+ {
+ 	/* get the interface version */
+ 	if (!aa_is_u32(e, &e->version, "version")) {
+-		AA_WARN(GFP_KERNEL, "Interface version missing\n");
++		AA_WARN(GFP_KERNEL, "Interface version missing");
+ 		return -EPROTONOSUPPORT;
+ 	}
+ 
+ 	/* check that the interface version is currently supported */
+ 	if (e->version != 3) {
+ 		AA_WARN(GFP_KERNEL,
+-			"Unsupported interface version (%d)\n", e->version);
++			"Unsupported interface version (%d)", e->version);
+ 		return -EPROTONOSUPPORT;
+ 	}
+ 	return 0;
+--- linux-2.6.orig/security/apparmor/procattr.c
++++ linux-2.6/security/apparmor/procattr.c
+@@ -61,17 +61,14 @@ int aa_setprocattr_changehat(char *args)
+ 
+ 	magic = simple_strtoull(args, &hat, 16);
+ 	if (hat == args || *hat != '^') {
+-		AA_WARN(GFP_KERNEL, "%s: Invalid input '%s'\n",
+-			__FUNCTION__, args);
++		AA_ERROR("change_hat: Invalid input '%s'", args);
+ 		return -EINVAL;
+ 	}
+ 	hat++;  /* skip ^ */
+ 	if (!*hat)
+ 		hat = NULL;
+ 	if (!hat && !magic) {
+-		AA_WARN(GFP_KERNEL,
+-			"%s: Invalid input, NULL hat and NULL magic\n",
+-			__FUNCTION__);
++		AA_ERROR("change_hat: Invalid input, NULL hat and NULL magic");
+ 		return -EINVAL;
+ 	}
+ 
+@@ -95,9 +92,8 @@ repeat:
+ 		new_profile = aa_find_profile(args);
+ 		if (!new_profile) {
+ 			AA_WARN(GFP_KERNEL,
+-				"%s: Unable to switch task %s(%d) to profile"
+-				"'%s'. No such profile.\n",
+-				__FUNCTION__,
++				"Unable to switch task %s(%d) to profile"
++				"'%s'. No such profile.",
+ 				task->comm, task->pid,
+ 				args);
+ 
+@@ -118,9 +114,8 @@ repeat:
+ 
+ 	if (new_profile) {
+ 		AA_WARN(GFP_KERNEL,
+-			"%s: Switching task %s(%d) "
+-			"profile %s active %s to new profile %s\n",
+-			__FUNCTION__,
++			"Switching task %s(%d) "
++			"profile %s active %s to new profile %s",
+ 			task->comm, task->pid,
+ 			old_profile ? old_profile->parent->name :
+ 				"unconfined",
+@@ -129,17 +124,15 @@ repeat:
+ 	} else {
+ 		if (old_profile) {
+ 			AA_WARN(GFP_KERNEL,
+-				"%s: Unconfining task %s(%d) "
+-				"profile %s active %s\n",
+-				__FUNCTION__,
++				"Unconfining task %s(%d) "
++				"profile %s active %s",
+ 				task->comm, task->pid,
+ 				old_profile->parent->name,
+ 				old_profile->name);
+ 		} else {
+ 			AA_WARN(GFP_KERNEL,
+-				"%s: task %s(%d) "
+-				"is already unconfined\n",
+-				__FUNCTION__, task->comm, task->pid);
++				"task %s(%d) is already unconfined",
++				task->comm, task->pid);
+ 		}
+ 	}
+ 

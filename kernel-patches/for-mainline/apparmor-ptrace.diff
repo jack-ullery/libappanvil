@@ -4,9 +4,19 @@
  security/apparmor/main.c     |   35 +++++++++++++++++++++++++++++++----
  3 files changed, 48 insertions(+), 23 deletions(-)
 
+Index: b/security/apparmor/apparmor.h
+===================================================================
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
-@@ -238,6 +238,8 @@ extern struct aa_task_context *lock_task
+@@ -189,6 +189,7 @@ struct aa_audit {
+ #define HINT_FORK "fork"
+ #define HINT_MANDPROF "missing_mandatory_profile"
+ #define HINT_CHGPROF "changing_profile"
++#define HINT_PTRACE "ptrace"
+ 
+ #define LOG_HINT(p, gfp, hint, fmt, args...) \
+ 	do {\
+@@ -238,6 +239,8 @@ extern struct aa_task_context *lock_task
  extern void aa_change_task_context(struct task_struct *task,
  				   struct aa_task_context *new_cxt,
  				   struct aa_profile *profile, u64 hat_magic);
@@ -15,9 +25,11 @@
  
  /* list.c */
  extern void aa_profilelist_release(void);
+Index: b/security/apparmor/lsm.c
+===================================================================
 --- a/security/apparmor/lsm.c
 +++ b/security/apparmor/lsm.c
-@@ -73,30 +73,26 @@ static int aa_reject_syscall(struct task
+@@ -73,30 +73,31 @@ static int aa_reject_syscall(struct task
  }
  
  static int apparmor_ptrace(struct task_struct *parent,
@@ -59,10 +71,17 @@
 +	child_cxt = aa_task_context(child);
 +	child_profile = child_cxt ? child_cxt->profile : NULL;
 +	error = aa_may_ptrace(cxt, child_profile);
++	if (cxt && PROFILE_COMPLAIN(cxt->profile)) {
++		LOG_HINT(cxt->profile, GFP_ATOMIC, HINT_PTRACE,
++				 "pid=%d child=%d\n",
++				 current->pid, child->pid);
++		}
 +	rcu_read_unlock();
  
  	return error;
  }
+Index: b/security/apparmor/main.c
+===================================================================
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
 @@ -13,6 +13,7 @@
@@ -73,15 +92,14 @@
  
  #include "apparmor.h"
  
-@@ -703,6 +704,15 @@ int aa_capability(struct aa_task_context
+@@ -703,6 +704,14 @@ int aa_capability(struct aa_task_context
  	return error;
  }
  
 +/* must be used inside rcu_read_lock or task_lock */
 +int aa_may_ptrace(struct aa_task_context *cxt, struct aa_profile *tracee)
 +{
-+	if (!cxt || cxt->profile == null_complain_profile ||
-+	    cxt->profile == tracee)
++	if (!cxt || cxt->profile == tracee)
 +		return 0;
 +	return aa_capability(cxt, CAP_SYS_PTRACE);
 +}
@@ -89,7 +107,7 @@
  /**
   * aa_link - hard link check
   * @profile: profile to check against
-@@ -953,6 +963,14 @@ repeat:
+@@ -953,6 +962,14 @@ repeat:
  		aa_put_profile(profile);
  		if (PTR_ERR(old_profile) == -ESTALE)
  			goto repeat;
@@ -104,7 +122,7 @@
  		new_profile = old_profile;
  		goto cleanup;
  	}
-@@ -1041,9 +1059,8 @@ repeat:
+@@ -1041,9 +1058,8 @@ repeat:
   *
   * Switch to a new hat.  Returns %0 on success, error otherwise.
   */
@@ -116,7 +134,7 @@
  {
  	struct aa_task_context *cxt = aa_task_context(current);
  	struct aa_profile *sub;
-@@ -1054,6 +1071,10 @@ static inline int do_change_hat(const ch
+@@ -1054,6 +1070,10 @@ static inline int do_change_hat(const ch
  	 * no need to grab an additional reference count.
  	 */
  	sub = __aa_find_profile(hat_name, &cxt->profile->parent->sub);
@@ -127,7 +145,7 @@
  	if (sub) {
  		/* change hat */
  		aa_change_task_context(current, new_cxt, sub, hat_magic);
-@@ -1232,6 +1253,13 @@ struct aa_profile *__aa_replace_profile(
+@@ -1232,6 +1252,13 @@ struct aa_profile *__aa_replace_profile(
  		return ERR_PTR(-ESTALE);
  	}
  
@@ -141,7 +159,7 @@
  	if (cxt) {
  		old_profile = aa_dup_profile(cxt->profile);
  		aa_change_task_context(task, new_cxt, profile, cxt->hat_magic);
-@@ -1240,7 +1268,6 @@ struct aa_profile *__aa_replace_profile(
+@@ -1240,7 +1267,6 @@ struct aa_profile *__aa_replace_profile(
  
  	task_unlock(task);
  	unlock_both_profiles(profile, old_profile);

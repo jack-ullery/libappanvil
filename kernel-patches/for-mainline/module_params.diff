@@ -1,0 +1,166 @@
+---
+ security/apparmor/apparmorfs.c |   28 -------------
+ security/apparmor/lsm.c        |   84 +++++++++++++++++++++++++++++++++++------
+ 2 files changed, 73 insertions(+), 39 deletions(-)
+
+--- linux-2.6.orig/security/apparmor/apparmorfs.c
++++ linux-2.6/security/apparmor/apparmorfs.c
+@@ -170,22 +170,6 @@ static struct file_operations apparmorfs
+ 	.write = aa_profile_remove
+ };
+ 
+-/* apparmor/control/ */
+-static u64 aa_control_get(void *data)
+-{
+-	return *(int *)data;
+-}
+-
+-static void aa_control_set(void *data, u64 val)
+-{
+-	if (val > 1)
+-		val = 1;
+-
+-	*(int*)data = (int)val;
+-}
+-
+-DEFINE_SIMPLE_ATTRIBUTE(apparmorfs_control_fops, aa_control_get,
+-			aa_control_set, "%lld\n");
+ 
+ static struct root_entry {
+ 	const char *name;
+@@ -217,18 +201,6 @@ static struct root_entry {
+ 	{".remove",  	S_IFREG, 0640, &apparmorfs_profile_remove,
+ 				       NULL},
+ 
+-	/* interface for setting binary config values */
+-	{"control",  	S_IFDIR, 0550},
+-	{"complain", 	S_IFREG, 0640, &apparmorfs_control_fops,
+-				       &apparmor_complain},
+-	{"audit",    	S_IFREG, 0640, &apparmorfs_control_fops,
+-				       &apparmor_audit},
+-	{"debug",    	S_IFREG, 0640, &apparmorfs_control_fops,
+-				       &apparmor_debug},
+-	{"logsyscall", 	S_IFREG, 0640, &apparmorfs_control_fops,
+-				       &apparmor_logsyscall},
+-	{NULL,       	S_IFDIR, 0},
+-
+ 	/* root end */
+ 	{NULL,       	S_IFDIR, 0}
+ };
+--- linux-2.6.orig/security/apparmor/lsm.c
++++ linux-2.6/security/apparmor/lsm.c
+@@ -22,41 +22,103 @@
+ #include "apparmor.h"
+ #include "inline.h"
+ 
+-/* Flag values, also controllable via apparmorfs/control.
+- * We explicitly do not allow these to be modifiable when exported via
+- * /sys/modules/parameters, as we want to do additional mediation and
+- * don't want to add special path code. */
+-
+-/* Complain mode -- in complain mode access failures result in auditing only
++static int param_set_aabool(const char *val, struct kernel_param *kp);
++static int param_get_aabool(char *buffer, struct kernel_param *kp);
++#define param_check_aabool(name, p) __param_check(name, p, int)
++
++static int param_set_aapathint(const char *val, struct kernel_param *kp);
++static int param_get_aapathint(char *buffer, struct kernel_param *kp);
++#define param_check_aapathint(name, p) __param_check(name, p, int)
++
++/* Flag values, also controllable via /sys/module/apparmor/parameters
++ * We define special types as we want to do additional mediation.
++ *
++ * Complain mode -- in complain mode access failures result in auditing only
+  * and task is allowed access.  audit events are processed by userspace to
+  * generate policy.  Default is 'enforce' (0).
+  * Value is also togglable per profile and referenced when global value is
+  * enforce.
+  */
+ int apparmor_complain = 0;
+-module_param_named(complain, apparmor_complain, int, S_IRUSR);
++module_param_named(complain, apparmor_complain, aabool, S_IRUSR | S_IWUSR);
+ MODULE_PARM_DESC(apparmor_complain, "Toggle AppArmor complain mode");
+ 
+ /* Debug mode */
+ int apparmor_debug = 0;
+-module_param_named(debug, apparmor_debug, int, S_IRUSR);
++module_param_named(debug, apparmor_debug, aabool, S_IRUSR | S_IWUSR);
+ MODULE_PARM_DESC(apparmor_debug, "Toggle AppArmor debug mode");
+ 
+ /* Audit mode */
+ int apparmor_audit = 0;
+-module_param_named(audit, apparmor_audit, int, S_IRUSR);
++module_param_named(audit, apparmor_audit, aabool, S_IRUSR | S_IWUSR);
+ MODULE_PARM_DESC(apparmor_audit, "Toggle AppArmor audit mode");
+ 
+ /* Syscall logging mode */
+ int apparmor_logsyscall = 0;
+-module_param_named(logsyscall, apparmor_logsyscall, int, S_IRUSR);
++module_param_named(logsyscall, apparmor_logsyscall, aabool, S_IRUSR | S_IWUSR);
+ MODULE_PARM_DESC(apparmor_logsyscall, "Toggle AppArmor logsyscall mode");
+ 
+ /* Maximum pathname length before accesses will start getting rejected */
+ int apparmor_path_max = 2 * PATH_MAX;
+-module_param_named(path_max, apparmor_path_max, int, S_IRUSR);
++module_param_named(path_max, apparmor_path_max, aapathint, S_IRUSR | S_IWUSR);
+ MODULE_PARM_DESC(apparmor_path_max, "Maximum pathname length allowed");
+ 
++static int param_set_aabool(const char *val, struct kernel_param *kp)
++{
++	int boolval, ret;
++	struct kernel_param dummy = { .arg = &boolval };
++
++	if (aa_task_context(current))
++		return -EPERM;
++
++	ret = param_set_bool(val, &dummy);
++	if (ret == 0)
++		*(int *)kp->arg = boolval;
++	return ret;
++}
++
++static int param_get_aabool(char *buffer, struct kernel_param *kp)
++{
++	int val;
++	struct kernel_param dummy = { .arg = &val };
++
++	if (aa_task_context(current))
++		return -EPERM;
++
++	val = *(int *)kp->arg;
++	return param_get_bool(buffer, &dummy);
++}
++
++static int param_set_aapathint(const char *val, struct kernel_param *kp)
++{
++	int len, ret;
++	struct kernel_param dummy = { .arg = &len };
++
++	if (aa_task_context(current))
++		return -EPERM;
++
++	ret = param_set_int(val, &dummy);
++	if (ret)
++		return ret;
++
++	if (len <0 && len <= apparmor_path_max)
++		return -EINVAL;
++
++	*(int *)kp->arg = len;
++	return 0;
++}
++
++static int param_get_aapathint(char *buffer, struct kernel_param *kp)
++{
++	int val;
++	struct kernel_param dummy = { .arg = &val };
++
++	if (aa_task_context(current))
++		return -EPERM;
++
++	val = *(int *)kp->arg;
++	return param_get_int(buffer, &dummy);
++}
+ 
+ static int aa_reject_syscall(struct task_struct *task, gfp_t flags,
+ 			     const char *name)

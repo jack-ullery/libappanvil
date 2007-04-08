@@ -36,6 +36,12 @@ file-handle-ops.diff
 security-xattr-file.diff
 apparmor-audit.diff
 apparmor.diff
+apparmor-2.diff 
 apparmor-ptrace.diff
+builtin-commoncap-dep.diff
+licence.diff
+# apparmor-messages.diff
+# apparmor-messages2.diff
 apparmor-intree.diff
+# module_params.diff
 # complain-to-learn.diff

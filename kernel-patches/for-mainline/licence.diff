@@ -1,0 +1,93 @@
+---
+ security/apparmor/apparmor.h         |    2 +-
+ security/apparmor/apparmorfs.c       |    2 +-
+ security/apparmor/inline.h           |    2 +-
+ security/apparmor/list.c             |    2 +-
+ security/apparmor/lsm.c              |    2 +-
+ security/apparmor/main.c             |    2 +-
+ security/apparmor/match.c            |    2 +-
+ security/apparmor/module_interface.c |    2 +-
+ security/apparmor/procattr.c         |    2 +-
+ 9 files changed, 9 insertions(+), 9 deletions(-)
+
+--- linux-2.6.orig/security/apparmor/apparmor.h
++++ linux-2.6/security/apparmor/apparmor.h
+@@ -1,5 +1,5 @@
+ /*
+- *	Copyright (C) 1998-2005 Novell/SUSE
++ *	Copyright (C) 1998-2007 Novell/SUSE
+  *
+  *	This program is free software; you can redistribute it and/or
+  *	modify it under the terms of the GNU General Public License as
+--- linux-2.6.orig/security/apparmor/apparmorfs.c
++++ linux-2.6/security/apparmor/apparmorfs.c
+@@ -1,5 +1,5 @@
+ /*
+- *	Copyright (C) 2005 Novell/SUSE
++ *	Copyright (C) 1998-2007 Novell/SUSE
+  *
+  *	This program is free software; you can redistribute it and/or
+  *	modify it under the terms of the GNU General Public License as
+--- linux-2.6.orig/security/apparmor/inline.h
++++ linux-2.6/security/apparmor/inline.h
+@@ -1,5 +1,5 @@
+ /*
+- *	Copyright (C) 2005 Novell/SUSE
++ *	Copyright (C) 1998-2007 Novell/SUSE
+  *
+  *	This program is free software; you can redistribute it and/or
+  *	modify it under the terms of the GNU General Public License as
+--- linux-2.6.orig/security/apparmor/list.c
++++ linux-2.6/security/apparmor/list.c
+@@ -1,5 +1,5 @@
+ /*
+- *	Copyright (C) 1998-2005 Novell/SUSE
++ *	Copyright (C) 1998-2007 Novell/SUSE
+  *
+  *	This program is free software; you can redistribute it and/or
+  *	modify it under the terms of the GNU General Public License as
+--- linux-2.6.orig/security/apparmor/lsm.c
++++ linux-2.6/security/apparmor/lsm.c
+@@ -1,5 +1,5 @@
+ /*
+- *	Copyright (C) 2002-2005 Novell/SUSE
++ *	Copyright (C) 1998-2007 Novell/SUSE
+  *
+  *	This program is free software; you can redistribute it and/or
+  *	modify it under the terms of the GNU General Public License as
+--- linux-2.6.orig/security/apparmor/main.c
++++ linux-2.6/security/apparmor/main.c
+@@ -1,5 +1,5 @@
+ /*
+- *	Copyright (C) 2002-2005 Novell/SUSE
++ *	Copyright (C) 2002-2007 Novell/SUSE
+  *
+  *	This program is free software; you can redistribute it and/or
+  *	modify it under the terms of the GNU General Public License as
+--- linux-2.6.orig/security/apparmor/match.c
++++ linux-2.6/security/apparmor/match.c
+@@ -1,5 +1,5 @@
+ /*
+- *	Copyright (C) 2002-2005 Novell/SUSE
++ *	Copyright (C) 2007 Novell/SUSE
+  *
+  *	This program is free software; you can redistribute it and/or
+  *	modify it under the terms of the GNU General Public License as
+--- linux-2.6.orig/security/apparmor/module_interface.c
++++ linux-2.6/security/apparmor/module_interface.c
+@@ -1,5 +1,5 @@
+ /*
+- *	Copyright (C) 1998-2005 Novell/SUSE
++ *	Copyright (C) 1998-2007 Novell/SUSE
+  *
+  *	This program is free software; you can redistribute it and/or
+  *	modify it under the terms of the GNU General Public License as
+--- linux-2.6.orig/security/apparmor/procattr.c
++++ linux-2.6/security/apparmor/procattr.c
+@@ -1,5 +1,5 @@
+ /*
+- *	Copyright (C) 2005 Novell/SUSE
++ *	Copyright (C) 1998-2007 Novell/SUSE
+  *
+  *	This program is free software; you can redistribute it and/or
+  *	modify it under the terms of the GNU General Public License as

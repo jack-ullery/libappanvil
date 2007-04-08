@@ -1,0 +1,237 @@
+---
+ security/apparmor/apparmorfs.c       |   10 ++++++----
+ security/apparmor/locking.txt        |   14 ++++++++++----
+ security/apparmor/lsm.c              |    4 +---
+ security/apparmor/match.c            |   31 +++++++++++++------------------
+ security/apparmor/module_interface.c |   26 +++++++++++++++++---------
+ 5 files changed, 47 insertions(+), 38 deletions(-)
+
+--- a/security/apparmor/apparmorfs.c
++++ b/security/apparmor/apparmorfs.c
+@@ -31,7 +31,8 @@ static char *aa_simple_write_to_buffer(c
+ 		goto out;
+ 	}
+ 
+-	/* Don't allow confined processes to load/replace/remove profiles.
++	/*
++	 * Don't allow confined processes to load/replace/remove profiles.
+ 	 * No sane person would add rules allowing this to a profile
+ 	 * but we enforce the restriction anyways.
+ 	 */
+@@ -151,10 +152,11 @@ static ssize_t aa_profile_remove(struct 
+ 	char *data;
+ 	ssize_t error;
+ 
+-	/* aa_file_prof_remove needs a null terminated string so 1 extra
+-	 * byte is allocated and the copied data is then null terminated
++	/*
++	 * aa_remove_profile needs a null terminated string so 1 extra
++	 * byte is allocated and the copied data is null terminated.
+ 	 */
+-	data = aa_simple_write_to_buffer(buf, size+1, size, pos, "removal");
++	data = aa_simple_write_to_buffer(buf, size + 1, size, pos, "removal");
+ 
+ 	error = PTR_ERR(data);
+ 	if (!IS_ERR(data)) {
+--- a/security/apparmor/locking.txt
++++ b/security/apparmor/locking.txt
+@@ -3,9 +3,10 @@ Locking in AppArmor
+ 
+ Lock hierarchy:
+ 
+-	profile_list_lock
+-	  aa_profile->lock
+-	    task_lock()
++	aa_interface_lock
++	  profile_list_lock
++	    aa_profile->lock
++	      task_lock()
+ 
+ 
+ Which lock protects what?
+@@ -13,7 +14,7 @@ Which lock protects what?
+ 	/-----------------------+-------------------------------\
+ 	| Variable		| Lock				|
+ 	>-----------------------+-------------------------------<
+-	| profile_list,		| profile_list_lock		|
++	| profile_list		| profile_list_lock		|
+ 	+-----------------------+-------------------------------+
+ 	| aa_profile		| (reference count)		|
+ 	+-----------------------+-------------------------------+
+@@ -44,3 +45,8 @@ is used.
+ Profiles on profile_list are never stale: when a profile becomes stale,
+ it is removed from profile_list at the same time (under profile_list_lock
+ and aa_profile->lock).
++
++The aa_interface_lock is taken whenever user-space modifies the profile
++list, and can sleep. This ensures that profile loading/replacement/removal
++won't race with itself. We release the profile_list_lock as soon as
++possible to avoid stalling exec during profile loading/replacement/removal.
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -6,9 +6,7 @@
+  *	published by the Free Software Foundation, version 2 of the
+  *	License.
+  *
+- *	http://forge.novell.com/modules/xfmod/project/?apparmor
+- *
+- *	Immunix AppArmor LSM interface
++ *	AppArmor LSM interface
+  */
+ 
+ #include <linux/security.h>
+--- a/security/apparmor/match.c
++++ b/security/apparmor/match.c
+@@ -6,14 +6,12 @@
+  *	published by the Free Software Foundation, version 2 of the
+  *	License.
+  *
+- *	http://forge.novell.com/modules/xfmod/project/?apparmor
+- *
+- *	AppArmor aa_match submodule (w/ pattern expansion).
+- *
++ *	Regular expression transition table matching
+  */
+ 
+-#include <asm/unaligned.h>
+-#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/slab.h>
++#include <linux/errno.h>
+ #include "match.h"
+ 
+ static struct table_header *unpack_table(void *blob, size_t bsize)
+@@ -75,6 +73,7 @@ int unpack_dfa(struct aa_dfa *dfa, void 
+ 	blob += hsize;
+ 	size -= hsize;
+ 
++	error = -EPROTO;
+ 	while (size > 0) {
+ 		struct table_header *table;
+ 		table = unpack_table(blob, size);
+@@ -86,37 +85,33 @@ int unpack_dfa(struct aa_dfa *dfa, void 
+ 		case YYTD_ID_BASE:
+ 			dfa->tables[table->td_id - 1] = table;
+ 			if (table->td_flags != YYTD_DATA32)
+-				goto fail_proto;
++				goto fail;
+ 			break;
+ 		case YYTD_ID_DEF:
+ 		case YYTD_ID_NXT:
+ 		case YYTD_ID_CHK:
+ 			dfa->tables[table->td_id - 1] = table;
+ 			if (table->td_flags != YYTD_DATA16)
+-				goto fail_proto;
++				goto fail;
+ 			break;
+ 		case YYTD_ID_EC:
+ 			dfa->tables[table->td_id - 1] = table;
+ 			if (table->td_flags != YYTD_DATA8)
+-				goto fail_proto;
++				goto fail;
+ 			break;
+ 		default:
+ 			kfree(table);
+-			goto fail_proto;
++			goto fail;
+ 		}
+ 
+ 		blob += table_size(table->td_lolen, table->td_flags);
+ 		size -= table_size(table->td_lolen, table->td_flags);
+ 	}
+ 
+-	error = 0;
+-
+-	return error;
++	return 0;
+ 
+-fail_proto:
+-	error = -EPROTO;
+ fail:
+-	for (i = 0; i < YYTD_ID_NXT; i++) {
++	for (i = 0; i < ARRAY_SIZE(dfa->tables); i++) {
+ 		if (dfa->tables[i]) {
+ 			kfree(dfa->tables[i]);
+ 			dfa->tables[i] = NULL;
+@@ -189,9 +184,9 @@ void aa_match_free(struct aa_dfa *dfa)
+ {
+ 	if (dfa) {
+ 		int i;
+-		for (i = 0; i < YYTD_ID_NXT; i++) {
++
++		for (i = 0; i < ARRAY_SIZE(dfa->tables); i++)
+ 			kfree(dfa->tables[i]);
+-		}
+ 	}
+ 	kfree(dfa);
+ }
+--- a/security/apparmor/module_interface.c
++++ b/security/apparmor/module_interface.c
+@@ -23,7 +23,8 @@
+  */
+ DEFINE_MUTEX(aa_interface_lock);
+ 
+-/* The AppArmor interface treats data as a type byte followed by the
++/*
++ * The AppArmor interface treats data as a type byte followed by the
+  * actual data.  The interface has the notion of a a named entry
+  * which has a name (AA_NAME typecode followed by name string) followed by
+  * the entries typecode and data.  Named types allow for optional
+@@ -45,7 +46,8 @@ enum aa_code {
+ 	AA_LISTEND,
+ };
+ 
+-/* aa_ext is the read of the buffer containing the serialized profile.  The
++/*
++ * aa_ext is the read of the buffer containing the serialized profile.  The
+  * data is copied into a kernel buffer in apparmorfs and then handed off to
+  * the unpack routines.
+  */
+@@ -116,8 +118,10 @@ static inline int aa_is_X(struct aa_ext 
+ static int aa_is_nameX(struct aa_ext *e, enum aa_code code, const char *name)
+ {
+ 	void *pos = e->pos;
+-	/* check for presence of a tagname, and if present name size
+-	 * AA_NAME tag value is a u16 */
++	/*
++	 * Check for presence of a tagname, and if present name size
++	 * AA_NAME tag value is a u16.
++	 */
+ 	if (aa_is_X(e, AA_NAME)) {
+ 		char *tag;
+ 		size_t size = aa_is_u16_chunk(e, &tag);
+@@ -212,8 +216,9 @@ struct aa_dfa *aa_unpack_dfa(struct aa_e
+ 	if (size) {
+ 		dfa = aa_match_alloc();
+ 		if (dfa) {
+-			/* the dfa is aligned with in the blob to 8 bytes
+-			 * from the beginning of the stream
++			/*
++			 * The dfa is aligned with in the blob to 8 bytes
++			 * from the beginning of the stream.
+ 			 */
+ 			size_t sz = blob - (char *) e->start;
+ 			size_t pad = ALIGN(sz, 8) - sz;
+@@ -410,8 +415,10 @@ static inline void task_replace(struct t
+ 	if (cxt->profile != cxt->profile->parent) {
+ 		struct aa_profile *hat;
+ 
+-		/* The old profile was in a hat, check to see if the new
+-		 * profile has an equivalent hat */
++		/*
++		 * The old profile was in a hat, check to see if the new
++		 * profile has an equivalent hat.
++		 */
+ 		hat = __aa_find_profile(cxt->profile->name, &new_profile->sub);
+ 
+ 		if (!hat)
+@@ -595,7 +602,8 @@ void free_aa_profile(struct aa_profile *
+ 
+ 	aa_match_free(profile->file_rules);
+ 
+-	/* use free_aa_profile instead of aa_put_profile to destroy the
++	/*
++	 * Use free_aa_profile instead of aa_put_profile to destroy the
+ 	 * null_profile, because the null_profile use the same reference
+ 	 * counting as hats, ie. the count goes to the base profile.
+ 	 */
