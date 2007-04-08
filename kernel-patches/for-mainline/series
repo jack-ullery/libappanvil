@@ -42,6 +42,7 @@ builtin-commoncap-dep.diff
 licence.diff
 # apparmor-messages.diff
 # apparmor-messages2.diff
+locking-comment.txt
+module_params.diff
 apparmor-intree.diff
-# module_params.diff
 # complain-to-learn.diff

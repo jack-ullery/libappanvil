@@ -1,0 +1,33 @@
+---
+ security/apparmor/locking.txt |    7 +++++++
+ security/apparmor/main.c      |    5 ++++-
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+
+--- a/security/apparmor/locking.txt
++++ b/security/apparmor/locking.txt
+@@ -50,3 +50,10 @@ The aa_interface_lock is taken whenever 
+ list, and can sleep. This ensures that profile loading/replacement/removal
+ won't race with itself. We release the profile_list_lock as soon as
+ possible to avoid stalling exec during profile loading/replacement/removal.
++
++lock_dep reports a false 'possible irq lock inversion dependency detected'
++when the profile lock is taken in aa_release.  This is due to that the
++task_lock is often taken inside the profile lock but other kernel code
++takes the task_lock with interrupts enabled.  A deadlock will not actually
++occur because apparmor does not take the task_lock in hard_irq or soft_irq
++context.
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -1026,8 +1026,11 @@ void aa_release(struct task_struct *task
+ 	 * sufficient to prevent the replacement race so we do not lock
+ 	 * the task.
+ 	 *
++	 * lock_dep reports a false 'possible irq lock inversion dependency'
++	 * between the profile lock and the task_lock.
++	 *
+ 	 * We also avoid taking the task_lock here because lock_dep
+-	 * would report a false {softirq-on-W} potential irq_lock
++	 * would report another false {softirq-on-W} potential irq_lock
+ 	 * inversion.
+ 	 *
+ 	 * If the task does not have a profile attached we are safe;
