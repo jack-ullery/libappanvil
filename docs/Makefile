@@ -49,12 +49,16 @@ help:
 	@echo "This makefile is for creating a releases only."
 	@echo "Please select release or rpm as targets."
 
+techdoc.pdf: techdoc.tex
+	pdflatex $<
+	pdflatex $<
+
 .PHONY: release
 release: $(TARBALL)
 
 .PHONY: clean
 clean:
-	-rm -f $(GENERATED) $(TARBALL) $(NAME)-$(VERSION)*.tar.gz Make.rules pod2*.tmp
+	-rm -f $(GENERATED) $(TARBALL) $(NAME)-$(VERSION)*.tar.gz Make.rules pod2*.tmp techdoc.{aux,log,pdf,toc}
 
 .PHONY: install_manpages
 install_manpages: $(MANPAGES)
