@@ -15,6 +15,8 @@
 # GNU General Public License for more details.
 
 use FileHandle;
+use File::Temp;
+use Getopt::Std;
 use strict;
 
 sub match($) {
@@ -70,10 +72,16 @@ sub never_add_slash($$) {
 
 }
 
-foreach my $filename (@ARGV) {
-    my $fh = new FileHandle("< $filename");
+our($opt_i);
+getopts('i');
 
-    while (<$fh>) {
+foreach my $filename (@ARGV) {
+    my $fh_in;
+    
+    $fh_in = new FileHandle("< $filename")
+	or die "$filename: $!\n";
+
+    while (<$fh_in>) {
 	    if (my @fields = match($_)) {
 		for my $x (alterations($fields[1])) {
 		    remember_pathname($x);
@@ -91,9 +99,18 @@ if (@ARGV == 0) {
 }
 
 foreach my $filename (@ARGV) {
-    my $fh = new FileHandle("< $filename");
+    my ($fh_in, $fh_out, $tmpname);
 
-    while (<$fh>) {
+    $fh_in = new FileHandle("< $filename")
+	or die "$filename: $!\n";
+
+    if ($opt_i) {
+	($fh_out, $tmpname) = mkstemp("$filename.XXXXXX")
+	    or die "$!\n";
+	*STDOUT = $fh_out;
+    }
+
+    while (<$fh_in>) {
 	    if (my @fields = match($_)) {
 		for my $x (alterations($fields[1])) {
 		    if (never_add_slash($x, $fields[2])) {
@@ -108,6 +125,11 @@ foreach my $filename (@ARGV) {
 	    } else {
 		print $_;
 	    }
+    }
+
+    if ($opt_i) {
+	rename $tmpname, $filename
+	    or die "$filename: $!\n";
     }
 }
 
