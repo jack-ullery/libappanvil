@@ -18,7 +18,7 @@
 +context.
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -1026,8 +1026,11 @@ void aa_release(struct task_struct *task
+@@ -1007,8 +1007,11 @@ void aa_release(struct task_struct *task
  	 * sufficient to prevent the replacement race so we do not lock
  	 * the task.
  	 *

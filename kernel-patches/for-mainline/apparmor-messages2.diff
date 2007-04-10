@@ -2,9 +2,9 @@
  security/apparmor/lsm.c |   23 ++---------------------
  1 file changed, 2 insertions(+), 21 deletions(-)
 
---- linux-2.6.orig/security/apparmor/lsm.c
-+++ linux-2.6/security/apparmor/lsm.c
-@@ -620,18 +620,8 @@ static int apparmor_setprocattr(struct t
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -616,18 +616,8 @@ static int apparmor_setprocattr(struct t
  		return -EINVAL;
  
  	if (strcmp(command, "changehat") == 0) {
@@ -24,7 +24,7 @@
  		error = aa_setprocattr_changehat(args);
  	} else if (strcmp(command, "setprofile")) {
  		struct aa_profile *profile;
-@@ -640,17 +630,8 @@ static int apparmor_setprocattr(struct t
+@@ -636,17 +626,8 @@ static int apparmor_setprocattr(struct t
  		 * may change the profile of another task.
  		 */
  

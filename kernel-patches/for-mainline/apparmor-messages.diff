@@ -1,28 +1,34 @@
 ---
- security/apparmor/apparmor.h         |   16 ++++++--
+ security/apparmor/apparmor.h         |   20 +++++++---
  security/apparmor/apparmorfs.c       |    2 -
  security/apparmor/lsm.c              |   25 ++++--------
  security/apparmor/main.c             |   70 +++++++++++------------------------
  security/apparmor/module_interface.c |    6 +--
  security/apparmor/procattr.c         |   27 +++++--------
- 6 files changed, 57 insertions(+), 89 deletions(-)
+ 6 files changed, 59 insertions(+), 91 deletions(-)
 
---- linux-2.6.orig/security/apparmor/apparmor.h
-+++ linux-2.6/security/apparmor/apparmor.h
-@@ -74,6 +74,13 @@ extern int apparmor_path_max;
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -69,10 +69,17 @@ extern int apparmor_path_max;
+ #define AA_INFO(gfp, fmt, args...) \
+ 	do { \
+ 		printk(KERN_INFO "AppArmor: " fmt, ##args); \
+-		aa_audit_message(NULL, gfp, 0, fmt, ##args); \
++		aa_audit_message(NULL, (gfp), 0, fmt, ##args); \
+ 	} while (0)
  #define AA_WARN(gfp, fmt, args...) \
- 	aa_audit_message(NULL, gfp, 0, fmt, ##args);
- 
+-	aa_audit_message(NULL, gfp, 0, fmt, ##args);
++	aa_audit_message(NULL, (gfp), 0, fmt, ##args);
++
 +#define AA_REJECT_MSG(p, gfp, fmt, args...) \
-+	aa_audit_message(p, gfp, 0, \
++	aa_audit_message((p), (gfp), 0, \
 +			"REJECTING " fmt \
 +			" (%s(%d) profile %s active %s)", ##args, \
 +			current->comm, current->pid, \
 +			(p)->parent->name, (p)->name)
-+
+ 
  #define AA_ERROR(fmt, args...)	printk(KERN_ERR "AppArmor: " fmt, ##args)
  
- /* struct aa_profile - basic confinement data
 @@ -192,10 +199,11 @@ struct aa_audit {
  #define HINT_PTRACE "ptrace"
  
@@ -31,7 +37,7 @@
 -		aa_audit_message(p, gfp, 0, \
 -			"LOGPROF-HINT " hint " " fmt, ##args);\
 -	} while(0)
-+	aa_audit_message(p, gfp, 0, \
++	aa_audit_message((p), (gfp), 0, \
 +			"LOGPROF-HINT " hint " " fmt \
 +			" (%s(%d) profile %s active %s)", ##args, \
 +			current->comm, current->pid, \
@@ -39,9 +45,9 @@
  
  /* Flags for the permission check functions */
  #define AA_CHECK_LEAF	1  /* this is the leaf lookup component */
---- linux-2.6.orig/security/apparmor/apparmorfs.c
-+++ linux-2.6/security/apparmor/apparmorfs.c
-@@ -38,7 +38,7 @@ static char *aa_simple_write_to_buffer(c
+--- a/security/apparmor/apparmorfs.c
++++ b/security/apparmor/apparmorfs.c
+@@ -39,7 +39,7 @@ static char *aa_simple_write_to_buffer(c
  	profile = aa_get_profile(current);
  	if (profile) {
  		AA_WARN(GFP_KERNEL, "REJECTING access to profile %s (%s(%d) "
@@ -50,9 +56,9 @@
  			msg, current->comm, current->pid,
  			profile->parent->name, profile->name);
  		aa_put_profile(profile);
---- linux-2.6.orig/security/apparmor/lsm.c
-+++ linux-2.6/security/apparmor/lsm.c
-@@ -622,9 +622,8 @@ static int apparmor_setprocattr(struct t
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -618,9 +618,8 @@ static int apparmor_setprocattr(struct t
  	if (strcmp(command, "changehat") == 0) {
  		if (current != task) {
  			AA_WARN(GFP_KERNEL,
@@ -64,7 +70,7 @@
  				current->comm,
  				current->pid,
  				current->uid,
-@@ -643,9 +642,8 @@ static int apparmor_setprocattr(struct t
+@@ -639,9 +638,8 @@ static int apparmor_setprocattr(struct t
  
  		if (!capable(CAP_SYS_ADMIN)) {
  			AA_WARN(GFP_KERNEL,
@@ -76,7 +82,7 @@
  				current->comm,
  				current->pid,
  				current->uid,
-@@ -658,9 +656,8 @@ static int apparmor_setprocattr(struct t
+@@ -654,9 +652,8 @@ static int apparmor_setprocattr(struct t
  		if (profile) {
  			aa_put_profile(profile);
  			AA_WARN(GFP_KERNEL,
@@ -88,7 +94,7 @@
  				current->comm,
  				current->pid,
  				current->uid,
-@@ -670,9 +667,8 @@ static int apparmor_setprocattr(struct t
+@@ -666,9 +663,8 @@ static int apparmor_setprocattr(struct t
  		}
  		error = aa_setprocattr_setprofile(task, args);
  	} else {
@@ -100,7 +106,7 @@
  			size < 16 ? (int)size : 16,
  			command,
  			current->comm,
-@@ -759,9 +755,6 @@ static int __init apparmor_init(void)
+@@ -755,9 +751,6 @@ static int __init apparmor_init(void)
  
  	AA_INFO(GFP_KERNEL, "AppArmor initialized%s\n",
  		apparmor_complain ? complainmsg : "");
@@ -110,7 +116,7 @@
  
  	return error;
  
-@@ -816,8 +809,6 @@ static void __exit apparmor_exit(void)
+@@ -812,8 +805,6 @@ static void __exit apparmor_exit(void)
  			"AppArmor\n");
  
  	AA_INFO(GFP_KERNEL, "AppArmor protection removed\n");
@@ -119,8 +125,8 @@
  }
  
  module_init(apparmor_init);
---- linux-2.6.orig/security/apparmor/main.c
-+++ linux-2.6/security/apparmor/main.c
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
 @@ -802,11 +802,9 @@ repeat:
  		unlock_profile(profile);
  
@@ -215,15 +221,15 @@
  		if (PTR_ERR(old_profile) == -EPERM)
 -			AA_WARN(GFP_KERNEL,
 -				"Rejecting exec(2) of image '%s'. "
--				"Unable to change profile due to ptrace. ",
+-				"Unable to change profile, ptraced by %d. ",
 -				"(%s (pid %d) profile %s active %s)\n",
--				filename,
+-				filename, current->parent->pid,
 -				current->comm, current->pid,
 -				profile->parent->name, profile->name);
 +			AA_REJECT_MSG(profile, GFP_KERNEL,
 +				"exec(2) of image '%s'. "
-+				"Unable to change profile due to ptrace.",
-+				filename);
++				"Unable to change profile, ptraced by %d.",
++				filename, current->parent->pid);
  		new_profile = old_profile;
  		goto cleanup;
  	}
@@ -241,7 +247,7 @@
  
  cleanup:
  	aa_put_name_buffer(buffer);
-@@ -1085,12 +1066,7 @@ static int do_change_hat(const char *hat
+@@ -1082,12 +1063,7 @@ static int do_change_hat(const char *hat
  
  		if (APPARMOR_COMPLAIN(cxt)) {
  			LOG_HINT(profile, GFP_ATOMIC, HINT_UNKNOWN_HAT,
@@ -255,20 +261,20 @@
  		} else {
  			AA_DEBUG("%s: Unknown hatname '%s'. "
  				"Changing to NULL profile "
-@@ -1135,8 +1111,8 @@ int aa_change_hat(const char *hat_name, 
+@@ -1132,8 +1108,8 @@ int aa_change_hat(const char *hat_name, 
  
  	/* Dump out above debugging in WARN mode if we are in AUDIT mode */
  	if (APPARMOR_AUDIT(aa_task_context(current))) {
 -		AA_WARN(GFP_KERNEL, "%s: %s, 0x%llx (pid %d)\n",
 -			__FUNCTION__, hat_name ? hat_name : "NULL",
-+		AA_WARN(GFP_KERNEL, "changehat %s, 0x%llx (pid %d)",
++		AA_WARN(GFP_KERNEL, "change_hat %s, 0x%llx (pid %d)",
 +			hat_name ? hat_name : "NULL",
  			hat_magic, current->pid);
  	}
  
---- linux-2.6.orig/security/apparmor/module_interface.c
-+++ linux-2.6/security/apparmor/module_interface.c
-@@ -297,7 +297,7 @@ static struct aa_profile *aa_unpack_prof
+--- a/security/apparmor/module_interface.c
++++ b/security/apparmor/module_interface.c
+@@ -302,7 +302,7 @@ static struct aa_profile *aa_unpack_prof
  	return profile;
  
  fail:
@@ -277,7 +283,7 @@
  		profile && profile->name ? profile->name : "unknown");
  
  	if (profile)
-@@ -338,14 +338,14 @@ static int aa_verify_header(struct aa_ex
+@@ -343,14 +343,14 @@ static int aa_verify_header(struct aa_ex
  {
  	/* get the interface version */
  	if (!aa_is_u32(e, &e->version, "version")) {
@@ -294,8 +300,8 @@
  		return -EPROTONOSUPPORT;
  	}
  	return 0;
---- linux-2.6.orig/security/apparmor/procattr.c
-+++ linux-2.6/security/apparmor/procattr.c
+--- a/security/apparmor/procattr.c
++++ b/security/apparmor/procattr.c
 @@ -61,17 +61,14 @@ int aa_setprocattr_changehat(char *args)
  
  	magic = simple_strtoull(args, &hat, 16);

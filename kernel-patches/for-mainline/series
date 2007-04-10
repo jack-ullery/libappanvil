@@ -39,8 +39,8 @@ apparmor.diff
 apparmor-2.diff 
 apparmor-ptrace.diff
 licence.diff
-# apparmor-messages.diff
-# apparmor-messages2.diff
+apparmor-messages.diff
+apparmor-messages2.diff
 locking-comment.txt
 module_params.diff
 apparmor-intree.diff

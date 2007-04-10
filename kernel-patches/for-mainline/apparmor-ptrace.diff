@@ -1,11 +1,9 @@
 ---
- security/apparmor/apparmor.h |    2 ++
- security/apparmor/lsm.c      |   34 +++++++++++++++-------------------
- security/apparmor/main.c     |   35 +++++++++++++++++++++++++++++++----
- 3 files changed, 48 insertions(+), 23 deletions(-)
+ security/apparmor/apparmor.h |    3 +++
+ security/apparmor/lsm.c      |   39 ++++++++++++++++++++-------------------
+ security/apparmor/main.c     |   34 ++++++++++++++++++++++++++++++----
+ 3 files changed, 53 insertions(+), 23 deletions(-)
 
-Index: b/security/apparmor/apparmor.h
-===================================================================
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
 @@ -189,6 +189,7 @@ struct aa_audit {
@@ -25,11 +23,9 @@ Index: b/security/apparmor/apparmor.h
  
  /* list.c */
  extern void aa_profilelist_release(void);
-Index: b/security/apparmor/lsm.c
-===================================================================
 --- a/security/apparmor/lsm.c
 +++ b/security/apparmor/lsm.c
-@@ -73,30 +73,31 @@ static int aa_reject_syscall(struct task
+@@ -71,30 +71,31 @@ static int aa_reject_syscall(struct task
  }
  
  static int apparmor_ptrace(struct task_struct *parent,
@@ -80,8 +76,6 @@ Index: b/security/apparmor/lsm.c
  
  	return error;
  }
-Index: b/security/apparmor/main.c
-===================================================================
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
 @@ -13,6 +13,7 @@
@@ -114,9 +108,9 @@ Index: b/security/apparmor/main.c
 +		if (PTR_ERR(old_profile) == -EPERM)
 +			AA_WARN(GFP_KERNEL,
 +				"Rejecting exec(2) of image '%s'. "
-+				"Unable to change profile due to ptrace. ",
++				"Unable to change profile, ptraced by %d. ",
 +				"(%s (pid %d) profile %s active %s)\n",
-+				filename,
++				filename, current->parent->pid,
 +				current->comm, current->pid,
 +				profile->parent->name, profile->name);
  		new_profile = old_profile;
