@@ -41,6 +41,7 @@
 /usr/X11R6/lib64/X11/icons/** r,
 /usr/X11R6/lib/X11/XKeysymDB r,
 /usr/X11R6/lib/X11/icons/** r,
+/usr/lib/X11/XKeysymDB r,
 
 /usr/lib/qt3/lib64/lib*so* mr,
 /usr/lib64/qt3/plugins/**  mr,
