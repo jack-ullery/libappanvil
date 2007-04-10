@@ -102,7 +102,7 @@ automatically generate a suitable new profile, or refine an existing one.
 The application does not need to be modified.
 
 An example profile together with a complete low-level walk-through of
-AppArmor can be found in section~\ref{sec:walk-through}.  The
+AppArmor can be found in Section~\ref{sec:walk-through}.  The
 apparmor.d(5) manual page contains further details.
 
 AppArmor is not based on labeling or label-based access and transition
@@ -578,7 +578,7 @@ Each process may consist of multiple tasks.  Each task may only change
 its own subprofile.  The superuser cannot put a task into a different
 hat, but he can replace the entire profile and its subprofiles, or he
 can put a process in a different top-level profile (see
-section~\ref{sec:association}).
+Section~\ref{sec:association}).
 
 Internally, change\_hat(2) is implemented by writing to a special
 kernel-provided file.  This is equivalent to a command like:
@@ -607,7 +607,7 @@ In addition to that, once a task is confined by a profile, that profile
 determines which other executables may be executed, and under which
 profile they may run (under the profile defined for that executable, the
 same profile as the current task, or unconfined; see
-section~\ref{sec:permissions}).
+Section~\ref{sec:permissions}).
 
 A process will consist of a single task after an exec, so in the exec
 case, the entire process will be confined.  New tasks (threads as well
@@ -848,8 +848,8 @@ complain, which will put profiles into enforce or complain mode:
 Inside the body of the profile are any number of rules consisting of a
 pathname expression that may include globbing, and a set of permissions.
 Table~\ref{tab:globbing} shows the supported shell-inspired globbing
-constructs; Section~\ref{sec:permissions} on page
-\pageref{sec:permissions} describes the permissions.
+constructs; Section~\ref{sec:permissions} on
+page~\pageref{sec:permissions} describes the permissions.
 
 \begin{table}[tb]
 \center
