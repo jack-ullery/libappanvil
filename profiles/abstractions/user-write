@@ -13,6 +13,7 @@
   @{HOME}/             r,
   @{HOME}/Desktop/     r,
   @{HOME}/Documents/   r,
+  @{HOME}/[a-zA-Z0-9]*/ rw,
   @{HOME}/[a-zA-Z0-9]* rwl,
   @{HOME}/Desktop/**   rwl,
   @{HOME}/Documents/** rwl,
