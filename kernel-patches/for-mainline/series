@@ -43,6 +43,7 @@ apparmor-messages.diff
 apparmor-messages2.diff
 locking-comment.txt
 module_params.diff
+module_params-2.diff
 apparmor-intree.diff
 builtin-commoncap-dep.diff
 # complain-to-learn.diff

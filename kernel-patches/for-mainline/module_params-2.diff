@@ -1,0 +1,176 @@
+---
+ security/apparmor/apparmorfs.c |   82 +++++++++++++++++++++++------------------
+ security/apparmor/lsm.c        |   16 ++++----
+ 2 files changed, 54 insertions(+), 44 deletions(-)
+
+--- a/security/apparmor/apparmorfs.c
++++ b/security/apparmor/apparmorfs.c
+@@ -172,56 +172,70 @@ static struct file_operations apparmorfs
+ 	.write = aa_profile_remove
+ };
+ 
+-#define NO_FS_ENTRIES 6
+-static struct dentry *fs_entries[NO_FS_ENTRIES];
++static struct dentry *apparmor_dentry;
+ 
+-void destroy_apparmorfs(void)
++static void aafs_remove(const char *name)
+ {
+-	unsigned int i;
++	struct dentry *dentry;
++
++	dentry = lookup_one_len(name, apparmor_dentry, strlen(name));
++	if (dentry && !IS_ERR(dentry))
++		securityfs_remove(dentry);
++}
+ 
+-	for (i=NO_FS_ENTRIES-1; i >= 0; i--) {
+-		if (!IS_ERR(fs_entries[i]))
+-			securityfs_remove(fs_entries[i]);
+-		fs_entries[i] = NULL;
++static int aafs_create(const char *name, int mask, struct file_operations *fops)
++{
++	struct dentry *dentry;
++
++	dentry = securityfs_create_file(name, S_IFREG | mask, apparmor_dentry,
++					NULL, fops);
++
++	return IS_ERR(dentry) ? PTR_ERR(dentry) : 0;
++}
++
++void destroy_apparmorfs(void)
++{
++	if (apparmor_dentry) {
++		aafs_remove(".remove");
++		aafs_remove(".replace");
++		aafs_remove(".load");
++		aafs_remove("matching");
++		aafs_remove("profiles");
++		securityfs_remove(apparmor_dentry);
++		apparmor_dentry = NULL;
+ 	}
+ }
+ 
+ int create_apparmorfs(void)
+ {
+-	int i, error = 0;
++	int error;
+ 
+-	if (fs_entries[0]) {
++	if (apparmor_dentry) {
+ 		AA_ERROR("%s: AppArmor securityfs already exists\n",
+ 			__FUNCTION__);
+ 		return -EEXIST;
+ 	}
+ 
+-	if (IS_ERR(fs_entries[0] = securityfs_create_dir("apparmor", NULL)))
+-		goto error;
+-	if (IS_ERR(fs_entries[1] = securityfs_create_file("profiles",
+-						S_IFREG | 0440,
+-						fs_entries[0], NULL,
+-						&apparmorfs_profiles_fops)))
++	apparmor_dentry = securityfs_create_dir("apparmor", NULL);
++	if (IS_ERR(apparmor_dentry)) {
++		error = PTR_ERR(apparmor_dentry);
++		apparmor_dentry = NULL;
++ 		goto error;
++	}
++	error = aafs_create("profiles", 0440, &apparmorfs_profiles_fops);
++	if (error)
+ 		goto error;
+-	if (IS_ERR(fs_entries[2] = securityfs_create_file("matching",
+-						S_IFREG | 0444,
+-						fs_entries[0], NULL,
+-						&apparmorfs_matching_fops)))
++	error = aafs_create("matching", 0444, &apparmorfs_matching_fops);
++	if (error)
+ 		goto error;
+-	if (IS_ERR(fs_entries[3] = securityfs_create_file(".load",
+-						S_IFREG | 0640,
+-						fs_entries[0], NULL,
+-						&apparmorfs_profile_load)))
++	error = aafs_create(".load", 0640, &apparmorfs_profile_load);
++	if (error)
+ 		goto error;
+-	if (IS_ERR(fs_entries[4] = securityfs_create_file(".replace",
+-						S_IFREG | 0640,
+-						fs_entries[0], NULL,
+-						&apparmorfs_profile_replace)))
++	error = aafs_create(".replace", 0640, &apparmorfs_profile_replace);
++	if (error)
+ 		goto error;
+-	if (IS_ERR(fs_entries[5] = securityfs_create_file(".remove",
+-						S_IFREG | 0640,
+-						fs_entries[0], NULL,
+-						&apparmorfs_profile_remove)))
++	error = aafs_create(".remove", 0640, &apparmorfs_profile_remove);
++	if (error)
+ 		goto error;
+ 
+ 	return 0;
+@@ -229,10 +243,6 @@ int create_apparmorfs(void)
+ error:
+ 	destroy_apparmorfs();
+ 	AA_ERROR("Error creating AppArmor securityfs\n");
+-	for (i=0; i < NO_FS_ENTRIES; i++) {
+-		if (IS_ERR(fs_entries[i]))
+-			return PTR_ERR(fs_entries[i]);
+-	}
+ 	return error;
+ }
+ 
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -24,9 +24,9 @@ static int param_set_aabool(const char *
+ static int param_get_aabool(char *buffer, struct kernel_param *kp);
+ #define param_check_aabool(name, p) __param_check(name, p, int)
+ 
+-static int param_set_aapathuint(const char *val, struct kernel_param *kp);
+-static int param_get_aapathuint(char *buffer, struct kernel_param *kp);
+-#define param_check_aapathuint(name, p) __param_check(name, p, int)
++static int param_set_aauint(const char *val, struct kernel_param *kp);
++static int param_get_aauint(char *buffer, struct kernel_param *kp);
++#define param_check_aauint(name, p) __param_check(name, p, int)
+ 
+ /* Flag values, also controllable via /sys/module/apparmor/parameters
+  * We define special types as we want to do additional mediation.
+@@ -58,7 +58,7 @@ MODULE_PARM_DESC(apparmor_logsyscall, "T
+ 
+ /* Maximum pathname length before accesses will start getting rejected */
+ unsigned int apparmor_path_max = 2 * PATH_MAX;
+-module_param_named(path_max, apparmor_path_max, aapathuint, S_IRUSR | S_IWUSR);
++module_param_named(path_max, apparmor_path_max, aauint, S_IRUSR | S_IWUSR);
+ MODULE_PARM_DESC(apparmor_path_max, "Maximum pathname length allowed");
+ 
+ static int param_set_aabool(const char *val, struct kernel_param *kp)
+@@ -75,18 +75,18 @@ static int param_get_aabool(char *buffer
+ 	return param_get_bool(buffer, kp);
+ }
+ 
+-static int param_set_aapathuint(const char *val, struct kernel_param *kp)
++static int param_set_aauint(const char *val, struct kernel_param *kp)
+ {
+ 	if (aa_task_context(current))
+ 		return -EPERM;
+ 	return param_set_uint(val, kp);
+ }
+ 
+-static int param_get_aapathuint(char *buffer, struct kernel_param *kp)
++static int param_get_aauint(char *buffer, struct kernel_param *kp)
+ {
+ 	if (aa_task_context(current))
+ 		return -EPERM;
+-	return param_get_int(buffer, kp);
++	return param_get_uint(buffer, kp);
+ }
+ 
+ static int aa_reject_syscall(struct task_struct *task, gfp_t flags,
+@@ -772,7 +772,7 @@ register_security_out:
+ 	free_null_complain_profile();
+ 
+ alloc_out:
+-	(void)destroy_apparmorfs();
++	destroy_apparmorfs();
+ 
+ createfs_out:
+ 	return error;

@@ -1,19 +1,21 @@
 ---
- security/apparmor/apparmor.h         |   20 +++++++---
+ security/apparmor/apparmor.h         |   22 +++++++----
  security/apparmor/apparmorfs.c       |    2 -
- security/apparmor/lsm.c              |   25 ++++--------
+ security/apparmor/lsm.c              |   31 +++++----------
  security/apparmor/main.c             |   70 +++++++++++------------------------
  security/apparmor/module_interface.c |    6 +--
  security/apparmor/procattr.c         |   27 +++++--------
- 6 files changed, 59 insertions(+), 91 deletions(-)
+ 6 files changed, 63 insertions(+), 95 deletions(-)
 
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
-@@ -69,10 +69,17 @@ extern int apparmor_path_max;
+@@ -68,11 +68,18 @@ extern int apparmor_path_max;
+ 	} while (0)
  #define AA_INFO(gfp, fmt, args...) \
  	do { \
- 		printk(KERN_INFO "AppArmor: " fmt, ##args); \
+-		printk(KERN_INFO "AppArmor: " fmt, ##args); \
 -		aa_audit_message(NULL, gfp, 0, fmt, ##args); \
++		printk(KERN_INFO "AppArmor: " fmt "\n", ##args); \
 +		aa_audit_message(NULL, (gfp), 0, fmt, ##args); \
  	} while (0)
  #define AA_WARN(gfp, fmt, args...) \
@@ -106,22 +108,29 @@
  			size < 16 ? (int)size : 16,
  			command,
  			current->comm,
-@@ -755,9 +751,6 @@ static int __init apparmor_init(void)
+@@ -753,10 +749,7 @@ static int __init apparmor_init(void)
+ 		goto register_security_out;
+ 	}
  
- 	AA_INFO(GFP_KERNEL, "AppArmor initialized%s\n",
- 		apparmor_complain ? complainmsg : "");
+-	AA_INFO(GFP_KERNEL, "AppArmor initialized%s\n",
+-		apparmor_complain ? complainmsg : "");
 -	aa_audit_message(NULL, GFP_KERNEL, 0,
 -		"AppArmor initialized%s\n",
--		apparmor_complain ? complainmsg : "");
++	AA_INFO(GFP_KERNEL, "AppArmor initialized%s",
+ 		apparmor_complain ? complainmsg : "");
  
  	return error;
+@@ -809,11 +802,9 @@ static void __exit apparmor_exit(void)
  
-@@ -812,8 +805,6 @@ static void __exit apparmor_exit(void)
- 			"AppArmor\n");
+ 	if (unregister_security(&apparmor_ops))
+ 		AA_INFO(GFP_KERNEL, "Unable to properly unregister "
+-			"AppArmor\n");
++			"AppArmor");
  
- 	AA_INFO(GFP_KERNEL, "AppArmor protection removed\n");
+-	AA_INFO(GFP_KERNEL, "AppArmor protection removed\n");
 -	aa_audit_message(NULL, GFP_KERNEL, 0,
 -		"AppArmor protection removed\n");
++	AA_INFO(GFP_KERNEL, "AppArmor protection removed");
  }
  
  module_init(apparmor_init);
