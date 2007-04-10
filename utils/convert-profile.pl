@@ -19,8 +19,14 @@ use strict;
 
 sub match($) {
     my ($str) = @_;
+    my @fields;
 
-    return ($str =~ /^(\s*)(\/\S*)(\s.*,)$/);
+    @fields = ($str =~ /^(\s*)(\/\S*)(\s.*,)$/);
+    if (!@fields) {
+	@fields = ($str =~ /^(\s*")((?:[^"]|\\")*)("\s.*,)$/);
+    }
+
+    return @fields;
 }
 
 sub alterations($) {
