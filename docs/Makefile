@@ -50,8 +50,12 @@ help:
 	@echo "Please select release or rpm as targets."
 
 techdoc.pdf: techdoc.tex
-	pdflatex $<
-	pdflatex $<
+	while pdflatex $< || exit 1; \
+	      grep -q "Label(s) may have changed" techdoc.log; \
+	do :; done
+
+techdoc/index.html: techdoc.pdf
+	latex2html -show_section_numbers -split 0 -noinfo -nonavigation -noaddress techdoc.tex
 
 .PHONY: release
 release: $(TARBALL)
@@ -59,6 +63,7 @@ release: $(TARBALL)
 .PHONY: clean
 clean:
 	-rm -f $(GENERATED) $(TARBALL) $(NAME)-$(VERSION)*.tar.gz Make.rules pod2*.tmp techdoc.{aux,log,pdf,toc}
+	-rm -rf techdoc/
 
 .PHONY: install_manpages
 install_manpages: $(MANPAGES)
