@@ -23,7 +23,7 @@ sub match($) {
     my ($str) = @_;
     my @fields;
 
-    @fields = ($str =~ /^(\s*)(\/\S*)(\s.*,)$/);
+    @fields = ($str =~ /^(\s*)([@\/]\S*)(\s.*,)$/);
     if (!@fields) {
 	@fields = ($str =~ /^(\s*")((?:[^"]|\\")*)("\s.*,)$/);
     }
@@ -60,15 +60,14 @@ sub remember_pathname($) {
 sub add_slash($$) {
     my ($str, $perms) = @_;
 
-    return exists $known_dirs{$str} || $str =~ /\*\*$/ ||
-	   -d $str;
+    return exists $known_dirs{$str} || -d $str;
 }
 
 sub never_add_slash($$) {
     my ($str, $perms) = @_;
 
     return $perms =~ /[lmx]/ || $str =~ /\.(so|cf|db|conf|config|log|pid|so\*)$/ ||
-	   $str =~ /\*\*|\/$/ || (-e $str && ! -d $str);
+	   $str =~ /(\*\*|\/)$/ || (-e $str && ! -d $str);
 
 }
 
