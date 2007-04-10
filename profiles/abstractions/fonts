@@ -48,5 +48,5 @@
   @{HOME}/.fonts/**                     r,
   @{HOME}/.fonts.cache-2               mr,
 
-  /usr/local/share/fonts                r,
+  /usr/local/share/fonts/               r,
   /usr/local/share/fonts/**             r,

@@ -10,11 +10,11 @@
 # ------------------------------------------------------------------
 
   /usr/lib64/python2.[45]/**.{egg,py,pyc,pth,so} mr,
-  /usr/lib64/python2.[45]/site-packages r,
+  /usr/lib64/python2.[45]/site-packages/ r,
   /usr/lib/python2.[45]/**.{egg,py,pyc,pth,so} mr,
-  /usr/lib/python2.[45]/site-packages r,
+  /usr/lib/python2.[45]/site-packages/ r,
 
   /usr/local/lib64/python2.[45]/**.{egg,py,pyc,pth,so} mr,
-  /usr/local/lib64/python2.[45]/site-packages r,
+  /usr/local/lib64/python2.[45]/site-packages/ r,
   /usr/local/lib/python2.[45]/**.{egg,py,pyc,pth,so} mr,
-  /usr/local/lib/python2.[45]/site-packages r,
+  /usr/local/lib/python2.[45]/site-packages/ r,

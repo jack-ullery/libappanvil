@@ -18,5 +18,5 @@
   @{HOME}/[a-zA-Z0-9]* 		rwl,
   @{HOME}/Desktop      		r,
   @{HOME}/Desktop/*    		rwl,
-  "@{HOME}/My Downloads" 	r,
+  "@{HOME}/My Downloads/" 	r,
   "@{HOME}/My Downloads/**" 	rwl,

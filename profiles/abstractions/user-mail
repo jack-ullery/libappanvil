@@ -10,16 +10,16 @@
 # ------------------------------------------------------------------
 
   # location of user mail, spool and mboxes
-  @{HOME}/Mail          r,
-  @{HOME}/mail          r,
+  @{HOME}/Mail/         r,
+  @{HOME}/mail/         r,
   @{HOME}/Mail/**       rwl,
   @{HOME}/mail/**       rwl,
-  @{HOME}/postponed*    rwl ,
-  /var/spool/mail       r,
+  @{HOME}/postponed*    rwl,
+  /var/spool/mail/      r,
   /var/spool/mail/*     rwl,
   @{HOME}/mbox.lock*    rwl,
   @{HOME}/mbox          rw,
   @{HOME}/inbox         rw,
   @{HOME}/.forward	r,
-  @{HOME}/Maildir       r,
+  @{HOME}/Maildir/      r,
   @{HOME}/Maildir/**    rwl,

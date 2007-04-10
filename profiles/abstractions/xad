@@ -9,7 +9,7 @@
 #
 # ------------------------------------------------------------------
 
-  /opt/novell/xad/lib r,
+  /opt/novell/xad/lib/ r,
   /opt/novell/xad/lib/lib*.so* mr,
   /opt/novell/xad/lib/gss/*.so* mr,
   /opt/novell/lib/libpthread_ext*.so* mr,
@@ -17,4 +17,5 @@
   /etc/opt/novell/xad/krb5.conf r,
   /etc/opt/novell/nici.cfg r,
   /var/opt/novell/nici/* r,
+  /var/opt/novell/nici/*/ r,
   /var/opt/novell/nici/*/* rw,

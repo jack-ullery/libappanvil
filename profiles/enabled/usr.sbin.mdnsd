@@ -25,7 +25,7 @@
 
   /usr/sbin/mdnsd rmix,
 
-  /proc/net r,
+  /proc/net/ r,
   /proc/net/unix r,
   /proc/sys/kernel/ngroups_max r,
   /var/run/mdnsd lw,

@@ -10,5 +10,5 @@
 # ------------------------------------------------------------------
 
    /var/lib/mysql/mysql.sock rw,
-   /usr/share/mysql/charsets r,
+   /usr/share/mysql/charsets/ r,
    /usr/share/mysql/charsets/*.xml r,

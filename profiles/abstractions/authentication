@@ -24,11 +24,11 @@
 
   /lib64/security/pam_filter/*  mr,
   /lib64/security/pam_*.so      mr,
-  /lib64/security               r,
+  /lib64/security/              r,
 
   /lib/security/pam_filter/*  mr,
   /lib/security/pam_*.so      mr,
-  /lib/security               r,
+  /lib/security/              r,
 
   # kerberos
   #include <abstractions/kerberosclient>

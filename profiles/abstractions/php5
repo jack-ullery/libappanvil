@@ -10,7 +10,7 @@
 # ------------------------------------------------------------------
 
   # shared snippets for config files
-  /etc/php5/conf.d r,
+  /etc/php5/conf.d/ r,
   /etc/php5/conf.d/*.ini r,
 
   # fastcgi specific config
@@ -27,5 +27,5 @@
   /var/lib/php5/sess_* rwl,
 
   # php libraries
-  /usr/share/php r,
+  /usr/share/php/ r,
   /usr/share/php/** mr,

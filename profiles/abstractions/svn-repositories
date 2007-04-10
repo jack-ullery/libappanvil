@@ -26,9 +26,9 @@
   /srv/svn/**/db/write-lock rwl,
   /srv/svn/**/db/current rwl,
   /srv/svn/**/db/current*.tmp rwl,
-  /srv/svn/**/db/revs r,
+  /srv/svn/**/db/revs/ r,
   /srv/svn/**/db/revs/* rw,
-  /srv/svn/**/db/revprops r,
+  /srv/svn/**/db/revprops/ r,
   /srv/svn/**/db/revprops/* rw,
   /srv/svn/**/db/transactions/** rw,
 

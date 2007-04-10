@@ -22,7 +22,7 @@
 
   /etc/nscd.conf r,
   /proc/meminfo r,
-  /proc/*/fd r,
+  /proc/*/fd/ r,
   /proc/*/fd/* r,
   /proc/*/maps r,
   /proc/*/mounts r,
@@ -30,7 +30,7 @@
   /proc/sys/kernel/ngroups_max r,
   /usr/sbin/nscd rmix,
   /var/run/.nscd_socket wl,
-  /var/run/nscd r,
+  /var/run/nscd/ r,
   /var/run/nscd/db* wl,
   /var/run/nscd/socket wl,
   /var/run/nscd/{passwd,group} w,

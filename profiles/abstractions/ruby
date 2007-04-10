@@ -9,32 +9,32 @@
 #
 # ------------------------------------------------------------------
 
-  /usr/lib64/ruby/1.8 r,
+  /usr/lib64/ruby/1.8/ r,
   /usr/lib64/ruby/1.8/*.rb r,
   /usr/lib64/ruby/1.8/**/*.rb r,
   /usr/lib64/ruby/1.8/*-linux/*.so mr,
   /usr/lib64/ruby/1.8/*-linux/**/*.so mr,
 
-  /usr/lib64/ruby/site_ruby/1.8 r,
+  /usr/lib64/ruby/site_ruby/1.8/ r,
   /usr/lib64/ruby/site_ruby/1.8/*.rb r,
   /usr/lib64/ruby/site_ruby/1.8/**/*.rb r,
   /usr/lib64/ruby/site_ruby/1.8/*-linux/*.so mr,
   /usr/lib64/ruby/site_ruby/1.8/*-linux/**/*.so mr,
 
-  /usr/lib64/ruby/gems/1.8 r,
+  /usr/lib64/ruby/gems/1.8/ r,
   /usr/lib64/ruby/gems/1.8/** r,
 
-  /usr/lib/ruby/1.8 r,
+  /usr/lib/ruby/1.8/ r,
   /usr/lib/ruby/1.8/*.rb r,
   /usr/lib/ruby/1.8/**/*.rb r,
   /usr/lib/ruby/1.8/*-linux/*.so mr,
   /usr/lib/ruby/1.8/*-linux/**/*.so mr,
 
-  /usr/lib/ruby/site_ruby/1.8 r,
+  /usr/lib/ruby/site_ruby/1.8/ r,
   /usr/lib/ruby/site_ruby/1.8/*.rb r,
   /usr/lib/ruby/site_ruby/1.8/**/*.rb r,
   /usr/lib/ruby/site_ruby/1.8/*-linux/*.so mr,
   /usr/lib/ruby/site_ruby/1.8/*-linux/**/*.so mr,
 
-  /usr/lib/ruby/gems/1.8 r,
+  /usr/lib/ruby/gems/1.8/ r,
   /usr/lib/ruby/gems/1.8/** r,

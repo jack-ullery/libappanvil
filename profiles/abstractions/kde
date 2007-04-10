@@ -18,7 +18,7 @@
 /etc/X11/qtrc r,
 /etc/kde3rc r,
 /etc/opt/kde3/share/config/* r,
-/etc/opt/kde3/share/icons r,
+/etc/opt/kde3/share/icons/ r,
 /etc/opt/kde3/share/icons/** r,
 
 @{HOME}/.DCOPserver_* r,
@@ -27,15 +27,15 @@
 @{HOME}/.kde/share/config/kdeglobals rw,
 @{HOME}/.qt/** rw,
 
-/opt/kde3/lib64/kde3/plugins/styles r,
+/opt/kde3/lib64/kde3/plugins/styles/ r,
 /opt/kde3/lib64/kde3/plugins/styles/* mr,
 /opt/kde3/lib64/lib*so* mr,
-/opt/kde3/lib/kde3/plugins/styles r,
+/opt/kde3/lib/kde3/plugins/styles/ r,
 /opt/kde3/lib/kde3/plugins/styles/* mr,
 /opt/kde3/lib/lib*so* mr,
 
 /opt/kde3/share/config/kdeglobals r,
-/opt/kde3/share/icons r,
+/opt/kde3/share/icons/ r,
 /opt/kde3/share/icons/** r,
 /usr/X11R6/lib64/X11/XKeysymDB r,
 /usr/X11R6/lib64/X11/icons/** r,
@@ -48,4 +48,4 @@
 /usr/lib/qt3/plugins/**  mr,
 
 /usr/share/YaST2/theme/** r,
-/usr/share/pixmaps r,
+/usr/share/pixmaps/ r,
