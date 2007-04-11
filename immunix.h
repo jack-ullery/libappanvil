@@ -1,5 +1,6 @@
 /*
- *	Copyright (C) 2000, 2001, 2004, 2005 Novell/SUSE
+ *	Copyright (c) 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007
+ *	NOVELL (All rights reserved)
  *
  *	Immunix AppArmor LSM
  *

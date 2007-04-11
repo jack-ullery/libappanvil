@@ -1,11 +1,12 @@
 /*   $Id: apparmor.h 6203 2006-02-02 22:03:41Z steve $
-
-     Copyright (c) 2003, 2004, 2005, 2006 Novell, Inc. (All rights reserved)
-
-     The libapparmor library is licensed under the terms of the GNU
-     Lesser General Public License, version 2.1. Please see the file
-     COPYING.LGPL.
-*/
+ *
+ *   Copyright (c) 2003, 2004, 2005, 2006, 2007 Novell, Inc.
+ *   (All rights reserved)
+ *
+ *   The libapparmor library is licensed under the terms of the GNU
+ *   Lesser General Public License, version 2.1. Please see the file
+ *   COPYING.LGPL.
+ */
 
 #ifndef APPARMOR_RE_H
 #define APPARMOR_RE_H
