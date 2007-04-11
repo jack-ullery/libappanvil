@@ -50,24 +50,20 @@ B<COMMENT> = '#' I<TEXT>
 
 B<TEXT> = any characters
 
-B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ]  I<PROGRAM> [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> ) ... ] '}'
+B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> ) ... ] '}'
 
 B<SUBPROFILE> = [ I<COMMENT> ... ] I<PROGRAMHAT> '{' [ ( I<FILE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}'
 
 B<CAPABILITY> = (lowercase capability name without 'CAP_' prefix; see
 capabilities(7))
 
-B<PROGRAM> = (non-whitespace characters except for '^', must start with '/')
+B<PROGRAM> = (non-whitespace characters except for '^', must start with '/'. Embedded spaces or tabs must be quoted.)
 
 B<PROGRAMHAT> = '^'  (non-whitespace characters; see change_hat(2) for a description of how this "hat" is used.)
 
-B<RESOURCE RULE> = ( I<FILE RULE> | I<NETWORK RULE> ) ','
+B<FILE RULE> = ( '"' I<FILEGLOB> '"' | I<FILEGLOB> ) I<ACCESS> ','
 
-B<FILE RULE> = ( I<FILENAME> | I<FILEGLOB> ) I<ACCESS> 
-
-B<FILENAME> = (non-whitespace characters except for B<?*[]{}^>, must start with '/'. May include I<VARIABLE>.)
-
-B<FILEGLOB> = (non-whitespace characters, must start with '/', B<?*[]{}^> have special meanings; see below. May include I<VARIABLE>.)
+B<FILEGLOB> = (must start with '/' (after variable expansion), B<?*[]{}^> have special meanings; see below. May include I<VARIABLE>. Rules with embedded spaces or tabs must be quoted. Rules must end with '/' to apply to directories.)
 
 B<ACCESS> = ( 'r' | 'w' | 'l' | 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'm' ) [ I<ACCESS> ... ]  (not all combinations are allowed; see below.)
 
@@ -86,8 +82,9 @@ of subprofiles ("hats") in a profile, limited only by kernel memory.
 Subprofile names are limited to 974 characters.
 Not all profiles benefit from subprofiles
 --- applications must either be written or modified to use change_hat(2)
-to take advantage of subprofiles. (An Apache module, mod_apparmor(5)
-has been provided to use change_hat(2).)
+to take advantage of subprofiles. Several change_hat(2)-aware
+applications exist, including an Apache module, mod_apparmor(5); a PAM
+module, pam_apparmor; and a Tomcat valve, tomcat_apparmor.
 
 =head2 Access Modes
 
@@ -122,16 +119,14 @@ modes:
 
 =item B<r - Read mode>
 
-Allows the program to have read access to the file. Read access is
-required for shell scripts and other interpreted content, and determines
-if an executing process can core dump or be attached to with ptrace(2).
-(ptrace(2) is used by utilities such as strace(1), ltrace(1), and
-gdb(1).)
+Allows the program to have read access to the file or directory listing. Read access is
+required for shell scripts and other interpreted content.
 
 =item B<w - Write mode>
 
-Allows the program to have write access to the file. Files must have
-this permission if they are to be unlinked (removed.)
+Allows the program to have write access to the file. Files and directories must have
+this permission if they are to be unlinked (removed.) Write mode is not
+required on a directory to rename or create files within the directory.
 
 =item B<ux - Unconstrained execute mode>
 
@@ -218,9 +213,10 @@ B<LD_LIBRARY_PATH>, given to ld.so(8).
 =item B<l - Link mode>
 
 Allows the program to be able to create a link with this name.  When a
-link is created, the file that is being linked to B<MUST> have the same
-access permissions as the link being created (with the exception that
-the destination does not have to have link access.)
+link is created, the new link B<MUST> have a subset of permissions as
+the original file (with the exception that
+the destination does not have to have link access.) If there is an 'x' rule
+on the new link, it must match the original file exactly.
 
 =back
 
@@ -290,6 +286,31 @@ will substitute for the single character a, b, or c
 =item B<{ab,cd}>
 
 will expand to one rule to match ab, one rule to match cd
+
+=back
+
+When AppArmor looks up a directory the pathname being looked up will
+end with a slash (e.g., F</var/tmp/>); otherwise it will not end with a
+slash. Only rules that match a trailing slash will match directories. Some
+examples, none matching the F</tmp/> directory itself, are:
+
+=over 4
+
+=item B</tmp/*>
+
+Files directly in F</tmp>.
+
+=item B</tmp/*/>
+
+Directories directly in F</tmp>.
+
+=item B</tmp/**>
+
+Files and directories anywhere underneath F</tmp>.
+
+=item B</tmp/**/>
+
+Directories anywhere underneath F</tmp>.
 
 =back
 
@@ -421,7 +442,7 @@ An example AppArmor profile:
   	  /etc/ld.so.cache    r,
   	  /etc/foo.conf       r,
   	  /etc/foo/*          r,
-  	  /lib/ld-*.so*       x,
+  	  /lib/ld-*.so*       rmix,
   	  /lib/lib*.so*       r,
   	  /proc/[0-9]**       r,
   	  /usr/lib/**         r,
@@ -431,8 +452,8 @@ An example AppArmor profile:
 
 	  # a comment about foo's subprofile, bar.
   	  ^bar {
-  	    /lib/ld-*.so*       x,
-  	    /usr/bin/bar        ix,
+  	    /lib/ld-*.so*       rmix,
+  	    /usr/bin/bar        rmix,
   	    /var/spool/*        rwl,
   	  }
   	}
