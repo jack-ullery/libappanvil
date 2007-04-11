@@ -1,23 +1,20 @@
 # $Id$
-# This publication is intellectual property of Novell Inc. Its contents
-# can be duplicated, either in part or in whole, provided that a copyright
-# label is visibly located on each copy.
-# 
-# All information found in this book has been compiled with utmost
-# attention to detail. However, this does not guarantee complete accuracy.
-# Neither SUSE LINUX GmbH, the authors, nor the translators shall be held
-# liable for possible errors or the consequences thereof.
-# 
-# Many of the software and hardware descriptions cited in this book
-# are registered trademarks. All trade names are subject to copyright
-# restrictions and may be registered trade marks. SUSE LINUX GmbH
-# essentially adheres to the manufacturer's spelling.
-# 
-# Names of products and trademarks appearing in this book (with or without
-# specific notation) are likewise subject to trademark and trade protection
-# laws and may thus fall under copyright restrictions.
-# 
-# Please direct suggestions and comments to apparmor-general@forge.novell.com.
+# ----------------------------------------------------------------------
+#    Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+#    NOVELL (All rights reserved)
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, contact Novell, Inc.
+# ----------------------------------------------------------------------
 
 
 =pod

@@ -1,6 +1,6 @@
 /*
  * regexp.y -- Regular Expression Matcher Generator
- * (C) 2006 Andreas Gruenbacher <agruen@suse.de>
+ * (C) 2006, 2007 Andreas Gruenbacher <agruen@suse.de>
  *
  * Implementation based on the Lexical Analysis chapter of:
  *   Alfred V. Aho, Ravi Sethi, Jeffrey D. Ullman:
