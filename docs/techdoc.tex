@@ -29,16 +29,16 @@ SUSE Labs / Novell}
 
 \section{Introduction}
 
-Here we describe AppArmor from a technical point of view, introduce its
-concepts, and explain the design decisions taken.  This text is intended
-for people interested in understanding why AppArmor works the way it
-does.  You may be looking for less detailed, low-level, or kernel
-centric documentation; in that case, please refer to the AppArmor
-documentation web site~\cite{apparmor}.
+In this paper we describe AppArmor from a technical point of view,
+introduce its concepts, and explain the design decisions taken.  This
+text is intended for people interested in understanding why AppArmor
+works the way it does.  You may be looking for less detailed, low-level,
+or kernel centric documentation; in that case, please refer to the
+AppArmor documentation web site~\cite{apparmor}.
 
 Sections~\ref{sec:overview} and ~\ref{sec:model} discuss the AppArmor
-security model, before Section~\ref{sec:walk-through} shows how to use
-it from a low-level point of view.  Please be aware that lots of details
+security model, while Section~\ref{sec:walk-through} shows how to use it
+from a low-level point of view.  Please be aware that lots of details
 are discussed here which the higher-level tools hide from the average
 user.
 
@@ -78,28 +78,28 @@ controls which files a process can access in which ways down to the
 individual file level, the potential damage is much limited.
 
 There is work going on for teaching AppArmor about additional resources
-like ulimits, interprocess, and network communication, but at this time,
-these resource types are not covered.  This is less severe than it might
-initially seem: in order to attack another process from a broken-into
-process like a network daemon, that other process has to actively
-listen.  The set of actively listening processes is relatively small,
-and this sort of interprocess communication is a natural security
+like ulimits, and interprocess and network communication, but at this
+time, these resource types are not covered.  This is less severe than it
+might initially seem: in order to attack another process from a
+broken-into process like a network daemon, that other process has to
+actively listen.  The set of actively listening processes is relatively
+small, and this sort of interprocess communication is a natural security
 boundary, so listening processes should be validating all their input
 already.  For protection against bugs in the input validation of those
 processes, they should also be confined by AppArmor though, thus further
 limiting the potential damage.
 
 AppArmor protection is selective: it only confines processes for which
-so-called profiles have been defined.  All other processes will continue
-to run unrestricted (with no noticeable runtime overhead).
+policies (referred to as profiles) have been defined.  All other
+processes will continue to run unrestricted by AppArmor.
 
 To confine a process, all it takes is to write a profile for it, take an
 existing profile, or automatically generate a profile: for the latter,
-the process can be run in so-called learning or complain mode in which
-AppArmor allows all accesses, and logs all accesses that are not allowed
-by the current profile already. This log can then be used to
-automatically generate a suitable new profile, or refine an existing one.
-The application does not need to be modified.
+the process can be run in \textit{learning} or \textit{complain} mode in
+which AppArmor allows all accesses, and logs all accesses that are not
+allowed by the current profile already. This log can then be used to
+automatically generate a suitable new profile, or refine an existing
+one.  The application does not need to be modified.
 
 An example profile together with a complete low-level walk-through of
 AppArmor can be found in Section~\ref{sec:walk-through}.  The
@@ -253,7 +253,7 @@ mechanism like AppArmor --- but there would be no enforcement.
 
 Because of all of this, it makes little sense to put the kernel NFS
 daemon under AppArmor control.  Administrators are advised to not assign
-profiles to the kernel nfsd deamons.
+profiles to the kernel nfsd daemons.
 
 
 \subsection{Why are the computed pathnames meaningful?}
@@ -323,14 +323,16 @@ in a failure with errno set to EACCES (Permission denied).
 
 In contrast, AppArmor first computes the pathname to a file.  If a file
 is being created, the name being looked up is the name of the new file
-and not the name of the parent directory.  If the file being looked up
-is a directory, AppArmor appends a slash to the pathname so that
-directory pathnames always end in a slash; otherwise the pathname will
-not end in a slash. It then checks for file access rules in the
-process's profile that match that pathname, and decides based on that.
-With some exceptions for execute modes as described in
-Section~\ref{sec:merging}, the permissions granted are the union of
-permissions of all matching rules.
+and not the name of the parent directory.
+
+If the file being looked up is a directory, AppArmor appends a slash to
+the pathname so that directory pathnames always end in a slash;
+otherwise the pathname will not end in a slash.
+
+It then checks for file access rules in the process's profile that match
+that pathname, and decides based on that.  With some exceptions for
+execute modes as described in Section~\ref{sec:merging}, the permissions
+granted are the union of permissions of all matching rules.
 
 
 \subsection{Profile Permissions}
@@ -457,7 +459,7 @@ revalidated under the new profile.  If the new profile does not allow
 them, the access is denied and errno is set to EACCES (Permission
 denied).
 
-File descriptors coming from unconfined processes are exempt from this
+File descriptors opened by unconfined processes are exempt from this
 rule.  This is so that processes will still have access to their stdin,
 stdout, and stderr without having to list all possible sources of input
 and output in all profiles.
@@ -525,11 +527,11 @@ process being traced is denied.
 In this mode, the kernel passes a flag to user space.  When glibc finds
 this flag set, it unsets environment variables that are considered
 dangerous, and it prevents the dynamic loader from loading libraries
-controlled by the environment.  With non-secure exec, the LD\_LOAD\_PATH
-environment variable can be used to switch to a different set of
-libraries, for example.  The secure exec mechanism is not specific to
-AppArmor: set-user-id and set-group-id executables also use it, as well
-as SELinux, which introduced this glibs feature.
+controlled by the environment.  With non-secure exec, the
+LD\_LIBRARY\_PATH environment variable can be used to switch to a
+different set of libraries, for example.  The secure exec mechanism is
+not specific to AppArmor: set-user-id and set-group-id executables also
+use it, as well as SELinux, which introduced this glibc feature.
 
 
 \subsection{Exec Mode Merging in Profiles, Exact Matches}
@@ -571,8 +573,20 @@ parameters.
 Profiles can contain subprofiles that processes may switch to from the
 main profile.  Switching from a subprofile into a sibling subprofile or
 back to the parent profile is allowed depending on how the subprofile
-was entered, and provided that the child knows a magic cookie.  See the
-change\_hat(2) manual page for details.
+was entered, and provided that the child knows a magic cookie.\footnote{
+    \textbf{A word of warning about change\_hat(2):} When used with a
+    non-zero magic cookie for changing into a subprofile, that magic
+    cookie can be used to change back out of the subprofile; in this
+    mode, change\_hat(2) is not a strong confinement mechanism. If the
+    code running in the subprofile can guess the magic cookie, it can
+    break out of the subprofile.  Likewise, if that code can manipulate
+    the processes' behavior beyond the point where the process returns
+    from the subprofile, it can influence what is done under the parent
+    profile. Therefore, change\_hat(2) with a non-zero magic cookie is
+    only safe in combination with restricted code environments, such as
+    when the subprofile is used for executing Safe Perl (see Safe(3pm)),
+    etc.
+} See the change\_hat(2) manual page for details.
 
 Each process may consist of multiple tasks.  Each task may only change
 its own subprofile.  The superuser cannot put a task into a different
@@ -686,7 +700,7 @@ profile subject to the change\_hat(2) semantics.
 
 AppArmor consists of a set of kernel patches and accompanying
 user-space tools, both of which are available at
-\url{http://www.novell.com/linux/security/apparmor/}.
+\url{http://developer.novell.com/wiki/index.php/Apparmor}.
 
 
 \subsection{Kernel Patches and Configuration}
@@ -739,7 +753,7 @@ with:
 \end{small}
 
 Once securityfs has been mounted and the apparmor module loaded,
-/sys/{\H}kernel/{\H}security/{\H}apparmor/{\H}profile will show the
+/sys/{\H}kernel/{\H}security/{\H}apparmor/{\H}profiles will show the
 profiles loaded into the kernel, as well as mark if the profiles are in
 enforcement mode or in learning mode:
 
