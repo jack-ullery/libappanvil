@@ -111,7 +111,18 @@ export Q VERBOSE BUILD_OUTPUT
 po/${NAME}.pot: ${SRCS} ${HDRS}
 	make -C po ${NAME}.pot NAME=${NAME} SOURCES="${SRCS} ${HDRS}"
 
-all: 	$(LEX_C_FILES) $(YACC_C_FILES) $(TOOLS) $(MANPAGES) ${HTMLMANPAGES}
+techdoc.pdf: techdoc.tex
+	while pdflatex $< || exit 1; \
+		grep -q "Label(s) may have changed" techdoc.log; \
+	do :; done
+
+techdoc/index.html: techdoc.pdf
+	latex2html -show_section_numbers -split 0 -noinfo -nonavigation -noaddress techdoc.tex
+
+techdoc.txt: techdoc/index.html
+	w3m -dump $< > $@
+
+all: 	$(TOOLS) $(MANPAGES) ${HTMLMANPAGES} techdoc.pdf techdoc/index.html
 	$(Q)make -C po all
 	$(Q)make -s tests
 
@@ -248,6 +259,7 @@ clean: _clean
 	rm -f parser_version.h
 	rm -f $(NAME)*.tar.gz $(NAME)*.tgz
 	rm -f libstdc++.a
+	-rm -rf techdoc.{aux,log,pdf,toc,txt} techdoc/
 	make -s -C $(PCREDIR) clean
 	make -s -C $(AAREDIR) clean
 	make -s -C po clean

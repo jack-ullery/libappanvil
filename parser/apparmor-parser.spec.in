@@ -54,7 +54,7 @@ Provides: subdomain-parser-demo subdomain-parser-common subdomain-leaf-cert
 Provides: libimnxcert
 Provides: apparmor-docs
 %define apparmor_bin_prefix /lib/apparmor
-BuildRequires: bison flex
+BuildRequires: bison flex te_latex latex2html
 
 %description
 AppArmor Parser is a userlevel program that is used to load in program
@@ -99,6 +99,7 @@ make install DESTDIR=${RPM_BUILD_ROOT} \
 %{_mandir}/man*/*
 %doc *.[1-9].html
 %doc common/apparmor.css
+%doc techdoc.pdf techdoc/techdoc.html techdoc/techdoc.css
 
 %pre
 %if %{distro} == "redhat" || %{distro} == "rhel4"
@@ -156,6 +157,8 @@ fi
 %endif
 
 %changelog
+* Wed Apr 11 2007 - sbeattie@suse.de
+- Include techdoc in package
 * Wed Apr  4 2007 - sbeattie@suse.de
 - rcapparmor: fix dpkg ignore check
 - rcapparmor: support apparmor built into kernel

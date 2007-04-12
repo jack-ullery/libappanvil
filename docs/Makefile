@@ -43,7 +43,7 @@ PAPERS=$(wildcard papers/*)
 # All manpages are now autotragically generated.
 GENERATED=${MANPAGES} ${HTMLMANPAGES}
 
-all: $(GENERATED)
+all: $(GENERATED) techdoc.pdf
 
 help:
 	@echo "This makefile is for creating a releases only."
@@ -53,6 +53,9 @@ techdoc.pdf: techdoc.tex
 	while pdflatex $< || exit 1; \
 	      grep -q "Label(s) may have changed" techdoc.log; \
 	do :; done
+
+%.txt: %.pdf
+	pdftotext $<
 
 techdoc/index.html: techdoc.pdf
 	latex2html -show_section_numbers -split 0 -noinfo -nonavigation -noaddress techdoc.tex
@@ -64,14 +67,6 @@ release: $(TARBALL)
 clean:
 	-rm -f $(GENERATED) $(TARBALL) $(NAME)-$(VERSION)*.tar.gz Make.rules pod2*.tmp techdoc.{aux,log,pdf,toc}
 	-rm -rf techdoc/
-
-.PHONY: install_manpages
-install_manpages: $(MANPAGES)
-	for dir in ${MANDIRS} ; do install -d ${DESTDIR}/${MANDIR}/man$${dir} ; done
-	$(foreach dir, ${MANDIRS}, \
-	     install -m 644 $(filter %.${dir}, ${MANPAGES}) ${DESTDIR}/${MANDIR}/man${dir}; \
-	     $(foreach aa_page, $(filter %.${dir}, ${AA_MANPAGES}), \
-	     	ln -sf $(aa_page) ${DESTDIR}/${MANDIR}/man${dir}/${aa_page:%=aa-%};)) 
 
 .PHONY: install_documents
 install_documents: ${HTMLMANPAGES}
