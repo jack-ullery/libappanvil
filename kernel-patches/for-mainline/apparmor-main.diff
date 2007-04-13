@@ -7,12 +7,12 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- security/apparmor/main.c | 1322 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 1322 insertions(+)
+ security/apparmor/main.c | 1321 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 1321 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/main.c
-@@ -0,0 +1,1322 @@
+@@ -0,0 +1,1321 @@
 +/*
 + *	Copyright (C) 2002-2007 Novell/SUSE
 + *
@@ -58,7 +58,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + * @name: name of the file to check
 + *
 + * Check if name matches /proc/self/attr/current, with self resolved
-+ * to the current pid. This file is the usermode iterface for
++ * to the current pid. This file is the usermode interface for
 + * changing one's hat.
 + */
 +static inline int aa_taskattr_access(const char *name)
@@ -243,9 +243,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		else
 +			denied_mask = PTR_ERR(sa->name);
 +		sa->name = NULL;
-+	} else {
++	} else
 +		denied_mask = aa_file_denied(profile, sa->name, mask);
-+	}
 +
 +	aa_permerror2result(denied_mask, sa);
 +
