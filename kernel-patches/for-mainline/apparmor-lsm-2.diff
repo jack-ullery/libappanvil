@@ -1,0 +1,89 @@
+---
+ security/apparmor/lsm.c |   58 +++++-------------------------------------------
+ 1 file changed, 7 insertions(+), 51 deletions(-)
+
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -133,30 +133,6 @@ static int apparmor_ptrace(struct task_s
+ 	return error;
+ }
+ 
+-static int apparmor_capget(struct task_struct *task,
+-			    kernel_cap_t *effective,
+-			    kernel_cap_t *inheritable,
+-			    kernel_cap_t *permitted)
+-{
+-	return cap_capget(task, effective, inheritable, permitted);
+-}
+-
+-static int apparmor_capset_check(struct task_struct *task,
+-				  kernel_cap_t *effective,
+-				  kernel_cap_t *inheritable,
+-				  kernel_cap_t *permitted)
+-{
+-	return cap_capset_check(task, effective, inheritable, permitted);
+-}
+-
+-static void apparmor_capset_set(struct task_struct *task,
+-				 kernel_cap_t *effective,
+-				 kernel_cap_t *inheritable,
+-				 kernel_cap_t *permitted)
+-{
+-	cap_capset_set(task, effective, inheritable, permitted);
+-}
+-
+ static int apparmor_capable(struct task_struct *task, int cap)
+ {
+ 	int error;
+@@ -188,26 +164,6 @@ static int apparmor_sysctl(struct ctl_ta
+ 	return error;
+ }
+ 
+-static int apparmor_syslog(int type)
+-{
+-	return cap_syslog(type);
+-}
+-
+-static int apparmor_netlink_send(struct sock *sk, struct sk_buff *skb)
+-{
+-	return cap_netlink_send(sk, skb);
+-}
+-
+-static int apparmor_netlink_recv(struct sk_buff *skb, int cap)
+-{
+-	return cap_netlink_recv(skb, cap);
+-}
+-
+-static void apparmor_bprm_apply_creds(struct linux_binprm *bprm, int unsafe)
+-{
+-	cap_bprm_apply_creds(bprm, unsafe);
+-}
+-
+ static int apparmor_bprm_set_security(struct linux_binprm *bprm)
+ {
+ 	/* handle capability bits with setuid, etc */
+@@ -696,17 +652,17 @@ static int apparmor_setprocattr(struct t
+ 
+ struct security_operations apparmor_ops = {
+ 	.ptrace =			apparmor_ptrace,
+-	.capget =			apparmor_capget,
+-	.capset_check =			apparmor_capset_check,
+-	.capset_set =			apparmor_capset_set,
++	.capget =			cap_capget,
++	.capset_check =			cap_capset_check,
++	.capset_set =			cap_capset_set,
+ 	.sysctl =			apparmor_sysctl,
+ 	.capable =			apparmor_capable,
+-	.syslog =			apparmor_syslog,
++	.syslog =			cap_syslog,
+ 
+-	.netlink_send =			apparmor_netlink_send,
+-	.netlink_recv =			apparmor_netlink_recv,
++	.netlink_send =			cap_netlink_send,
++	.netlink_recv =			cap_netlink_recv,
+ 
+-	.bprm_apply_creds =		apparmor_bprm_apply_creds,
++	.bprm_apply_creds =		cap_bprm_apply_creds,
+ 	.bprm_set_security =		apparmor_bprm_set_security,
+ 	.bprm_secureexec =		apparmor_bprm_secureexec,
+ 

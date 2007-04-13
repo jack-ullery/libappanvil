@@ -35,8 +35,11 @@ file-handle-ops.diff
 security-xattr-file.diff
 apparmor-audit.diff
 apparmor-main.diff
-apparmor-main-2.diff 
+apparmor-main-2.diff
 apparmor-lsm.diff
+apparmor-lsm-2.diff
+apparmor-ns-ptrace.diff
 apparmor-module_interface.diff
+apparmor-module_interface-2.diff
 apparmor-misc.diff
 apparmor-intree.diff
