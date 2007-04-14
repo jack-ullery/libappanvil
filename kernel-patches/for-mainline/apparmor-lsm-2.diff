@@ -1,6 +1,6 @@
 ---
- security/apparmor/lsm.c |   58 +++++-------------------------------------------
- 1 file changed, 7 insertions(+), 51 deletions(-)
+ security/apparmor/lsm.c |   73 +++++-------------------------------------------
+ 1 file changed, 9 insertions(+), 64 deletions(-)
 
 --- a/security/apparmor/lsm.c
 +++ b/security/apparmor/lsm.c
@@ -62,7 +62,25 @@
  static int apparmor_bprm_set_security(struct linux_binprm *bprm)
  {
  	/* handle capability bits with setuid, etc */
-@@ -696,17 +652,17 @@ static int apparmor_setprocattr(struct t
+@@ -594,17 +550,6 @@ static void apparmor_task_free_security(
+ 	aa_release(task);
+ }
+ 
+-static int apparmor_task_post_setuid(uid_t id0, uid_t id1, uid_t id2,
+-				     int flags)
+-{
+-	return cap_task_post_setuid(id0, id1, id2, flags);
+-}
+-
+-static void apparmor_task_reparent_to_init(struct task_struct *task)
+-{
+-	cap_task_reparent_to_init(task);
+-}
+-
+ static int apparmor_getprocattr(struct task_struct *task, char *name,
+ 				char **value)
+ {
+@@ -696,17 +641,17 @@ static int apparmor_setprocattr(struct t
  
  struct security_operations apparmor_ops = {
  	.ptrace =			apparmor_ptrace,
@@ -87,3 +105,14 @@
  	.bprm_set_security =		apparmor_bprm_set_security,
  	.bprm_secureexec =		apparmor_bprm_secureexec,
  
+@@ -736,8 +681,8 @@ struct security_operations apparmor_ops 
+ 	.task_create =			apparmor_task_create,
+ 	.task_alloc_security =		apparmor_task_alloc_security,
+ 	.task_free_security =		apparmor_task_free_security,
+-	.task_post_setuid =		apparmor_task_post_setuid,
+-	.task_reparent_to_init =	apparmor_task_reparent_to_init,
++	.task_post_setuid =		cap_task_post_setuid,
++	.task_reparent_to_init =	cap_task_reparent_to_init,
+ 
+ 	.getprocattr =			apparmor_getprocattr,
+ 	.setprocattr =			apparmor_setprocattr,
