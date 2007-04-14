@@ -48,24 +48,30 @@ BuildRequires: gcc-c++
 Obsoletes: subdomain_parser subdomain-parser
 Obsoletes: subdomain-parser-demo subdomain-parser-common subdomain-leaf-cert
 Obsoletes: libimnxcert
-Obsoletes: apparmor-docs
 Provides: subdomain_parser subdomain-parser
 Provides: subdomain-parser-demo subdomain-parser-common subdomain-leaf-cert
 Provides: libimnxcert
-Provides: apparmor-docs
 %define apparmor_bin_prefix /lib/apparmor
-BuildRequires: bison flex te_latex latex2html
+BuildRequires: bison flex te_latex latex2html w3m
+
+%package -n apparmor-docs
+Summary: AppArmor documentation package
+Group: Applications/System
 
 %description
 AppArmor Parser is a userlevel program that is used to load in program
 profiles to the AppArmor Security kernel module.
 This package is part of a suite of tools that used to be named SubDomain.
 
+%description -n apparmor-docs
+This package contains documentation for AppArmor.
+
 %prep
 %setup -q
 
 %build
 make clean all CFLAGS="${RPM_OPT_FLAGS}"
+make techdoc.txt
 
 %install
 make install DESTDIR=${RPM_BUILD_ROOT} \
@@ -73,10 +79,10 @@ make install DESTDIR=${RPM_BUILD_ROOT} \
 	     DISTRO=%{distro} \
 	     APPARMOR_BIN_PREFIX=${RPM_BUILD_ROOT}%{apparmor_bin_prefix}
 
-%clean 
+%clean
 [ "${RPM_BUILD_ROOT}" != "/" ] && rm -rf $RPM_BUILD_ROOT
 
-%files 
+%files
 %defattr(-,root,root)
 %doc README COPYING.GPL
 /sbin/apparmor_parser
@@ -97,9 +103,12 @@ make install DESTDIR=${RPM_BUILD_ROOT} \
 %{apparmor_bin_prefix}/rc.apparmor.functions
 %{_prefix}/share/locale/*/*/apparmor-parser.mo
 %{_mandir}/man*/*
+
+%files -n apparmor-docs
+%defattr(-,root,root)
 %doc *.[1-9].html
 %doc common/apparmor.css
-%doc techdoc.pdf techdoc/techdoc.html techdoc/techdoc.css
+%doc techdoc.pdf techdoc/techdoc.html techdoc/techdoc.css techdoc.txt
 
 %pre
 %if %{distro} == "redhat" || %{distro} == "rhel4"
@@ -157,6 +166,9 @@ fi
 %endif
 
 %changelog
+* Fri Apr 13 2007 - sbeattie@suse.de
+- Resurrect apparmor-docs as subpackage of apparmor-parser
+- Add text version of techdoc
 * Wed Apr 11 2007 - sbeattie@suse.de
 - Include techdoc in package
 * Wed Apr  4 2007 - sbeattie@suse.de
