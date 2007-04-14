@@ -1,8 +1,8 @@
 ---
  security/apparmor/match.c            |   12 ++++++------
  security/apparmor/match.h            |    2 +-
- security/apparmor/module_interface.c |   13 +++++++------
- 3 files changed, 14 insertions(+), 13 deletions(-)
+ security/apparmor/module_interface.c |   10 ++++++----
+ 3 files changed, 13 insertions(+), 11 deletions(-)
 
 --- a/security/apparmor/match.c
 +++ b/security/apparmor/match.c
@@ -67,12 +67,12 @@
  {
  	struct aa_profile *profile = NULL;
  
-@@ -283,10 +283,10 @@ static struct aa_profile *aa_unpack_prof
- 	}
+@@ -284,9 +284,11 @@ static struct aa_profile *aa_unpack_prof
  
  	/* get optional subprofiles */
--	if (aa_is_nameX(e, AA_LIST, "hats")) {
-+	if (aa_is_nameX(e, AA_LIST, "hats") && depth == 0) {
+ 	if (aa_is_nameX(e, AA_LIST, "hats")) {
++		if (depth > 0)
++			goto fail;
  		while (!aa_is_nameX(e, AA_LISTEND, NULL)) {
  			struct aa_profile *subprofile;
 -			subprofile = aa_unpack_profile(e);
@@ -80,17 +80,7 @@
  			if (IS_ERR(subprofile)) {
  				error = PTR_ERR(subprofile);
  				goto fail;
-@@ -294,7 +294,8 @@ static struct aa_profile *aa_unpack_prof
- 			subprofile->parent = profile;
- 			list_add(&subprofile->list, &profile->sub);
- 		}
--	}
-+	} else if (depth > 0)
-+		goto fail;
- 
- 	if (!aa_is_nameX(e, AA_STRUCTEND, NULL))
- 		goto fail;
-@@ -320,7 +321,7 @@ fail:
+@@ -320,7 +322,7 @@ fail:
   */
  static struct aa_profile *aa_unpack_profile_wrapper(struct aa_ext *e)
  {
