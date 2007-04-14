@@ -7,12 +7,12 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- security/apparmor/lsm.c |  829 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 829 insertions(+)
+ security/apparmor/lsm.c |  828 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 828 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/lsm.c
-@@ -0,0 +1,829 @@
+@@ -0,0 +1,828 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -830,8 +830,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	mutex_unlock(&aa_interface_lock);
 +
 +	if (unregister_security(&apparmor_ops))
-+		AA_INFO(GFP_KERNEL, "Unable to properly unregister "
-+			"AppArmor");
++		AA_INFO(GFP_KERNEL, "Unable to properly unregister AppArmor");
 +
 +	AA_INFO(GFP_KERNEL, "AppArmor protection removed");
 +}
