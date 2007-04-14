@@ -11,10 +11,10 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 Cc: Miklos Szeredi <mszeredi@suse.cz>
 
 ---
- fs/nfsd/vfs.c      |   11 ++++++-----
+ fs/nfsd/vfs.c      |   12 +++++++-----
  fs/open.c          |   16 +++++++++++-----
  include/linux/fs.h |    3 +++
- 3 files changed, 20 insertions(+), 10 deletions(-)
+ 3 files changed, 21 insertions(+), 10 deletions(-)
 
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
@@ -45,19 +45,19 @@ Cc: Miklos Szeredi <mszeredi@suse.cz>
  out:
  	kfree(buf);
  	return error;
-@@ -1987,13 +1987,14 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+@@ -1992,12 +1992,14 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
  
+ 	mnt = fhp->fh_export->ex_mnt;
  	if (size)
- 		error = vfs_setxattr(fhp->fh_dentry, fhp->fh_export->ex_mnt,
--				     name, value, size,0);
-+				     name, value, size, 0, NULL);
+-		error = vfs_setxattr(fhp->fh_dentry, mnt, name, value, size,0);
++		error = vfs_setxattr(fhp->fh_dentry, mnt, name, value, size, 0,
++				     NULL);
  	else {
  		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
  			error = 0;
  		else {
- 			error = vfs_removexattr(fhp->fh_dentry,
--						fhp->fh_export->ex_mnt, name);
-+						fhp->fh_export->ex_mnt, name,
+-			error = vfs_removexattr(fhp->fh_dentry, mnt, name);
++			error = vfs_removexattr(fhp->fh_dentry, mnt, name,
 +						NULL);
  			if (error == -ENODATA)
  				error = 0;

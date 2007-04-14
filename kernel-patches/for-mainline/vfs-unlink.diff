@@ -65,14 +65,14 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1700,7 +1700,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+@@ -1704,7 +1704,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
  			host_err = -EPERM;
  		} else
  #endif
 -		host_err = vfs_unlink(dirp, rdentry);
-+		host_err = vfs_unlink(dirp, rdentry, fhp->fh_export->ex_mnt);
++		host_err = vfs_unlink(dirp, rdentry, exp->ex_mnt);
  	} else { /* It's RMDIR */
- 		host_err = vfs_rmdir(dirp, rdentry, fhp->fh_export->ex_mnt);
+ 		host_err = vfs_rmdir(dirp, rdentry, exp->ex_mnt);
  	}
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h

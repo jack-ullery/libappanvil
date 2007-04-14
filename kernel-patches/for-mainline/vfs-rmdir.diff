@@ -12,10 +12,10 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  fs/ecryptfs/inode.c   |    4 +++-
  fs/namei.c            |    4 ++--
  fs/nfsd/nfs4recover.c |    2 +-
- fs/nfsd/vfs.c         |    2 +-
+ fs/nfsd/vfs.c         |    8 +++++---
  fs/reiserfs/xattr.c   |    2 +-
  include/linux/fs.h    |    2 +-
- 6 files changed, 9 insertions(+), 7 deletions(-)
+ 6 files changed, 13 insertions(+), 9 deletions(-)
 
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
@@ -70,15 +70,47 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1702,7 +1702,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+@@ -1666,6 +1666,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+ 				char *fname, int flen)
+ {
+ 	struct dentry	*dentry, *rdentry;
++	struct svc_export *exp;
+ 	struct inode	*dirp;
+ 	__be32		err;
+ 	int		host_err;
+@@ -1680,6 +1681,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+ 	fh_lock_nested(fhp, I_MUTEX_PARENT);
+ 	dentry = fhp->fh_dentry;
+ 	dirp = dentry->d_inode;
++	exp = fhp->fh_export;
+ 
+ 	rdentry = lookup_one_len(fname, dentry, flen);
+ 	host_err = PTR_ERR(rdentry);
+@@ -1697,21 +1699,21 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+ 
+ 	if (type != S_IFDIR) { /* It's UNLINK */
+ #ifdef MSNFS
+-		if ((fhp->fh_export->ex_flags & NFSEXP_MSNFS) &&
++		if ((exp->ex_flags & NFSEXP_MSNFS) &&
+ 			(atomic_read(&rdentry->d_count) > 1)) {
+ 			host_err = -EPERM;
+ 		} else
  #endif
  		host_err = vfs_unlink(dirp, rdentry);
  	} else { /* It's RMDIR */
 -		host_err = vfs_rmdir(dirp, rdentry);
-+		host_err = vfs_rmdir(dirp, rdentry, fhp->fh_export->ex_mnt);
++		host_err = vfs_rmdir(dirp, rdentry, exp->ex_mnt);
  	}
  
  	dput(rdentry);
+ 
+ 	if (host_err)
+ 		goto out_nfserr;
+-	if (EX_ISSYNC(fhp->fh_export))
++	if (EX_ISSYNC(exp))
+ 		host_err = nfsd_sync_dir(dentry);
+ 
+ out_nfserr:
 --- a/fs/reiserfs/xattr.c
 +++ b/fs/reiserfs/xattr.c
 @@ -823,7 +823,7 @@ int reiserfs_delete_xattrs(struct inode 

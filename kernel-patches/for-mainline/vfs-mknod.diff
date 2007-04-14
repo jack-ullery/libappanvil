@@ -64,13 +64,13 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  			error = -EPERM;
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1193,7 +1193,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
+@@ -1194,7 +1194,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
  	case S_IFBLK:
  	case S_IFIFO:
  	case S_IFSOCK:
 -		host_err = vfs_mknod(dirp, dchild, iap->ia_mode, rdev);
-+		host_err = vfs_mknod(dirp, dchild, fhp->fh_export->ex_mnt,
-+				     iap->ia_mode, rdev);
++		host_err = vfs_mknod(dirp, dchild, exp->ex_mnt, iap->ia_mode,
++				     rdev);
  		break;
  	default:
  	        printk("nfsd: bad file type %o in nfsd_create\n", type);

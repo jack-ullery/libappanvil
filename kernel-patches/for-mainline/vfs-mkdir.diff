@@ -12,9 +12,9 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  fs/ecryptfs/inode.c   |    5 ++++-
  fs/namei.c            |    5 +++--
  fs/nfsd/nfs4recover.c |    3 ++-
- fs/nfsd/vfs.c         |    3 ++-
+ fs/nfsd/vfs.c         |    8 +++++---
  include/linux/fs.h    |    2 +-
- 5 files changed, 12 insertions(+), 6 deletions(-)
+ 5 files changed, 15 insertions(+), 8 deletions(-)
 
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
@@ -69,16 +69,49 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  out_unlock:
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1186,7 +1186,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
+@@ -1115,6 +1115,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 		int type, dev_t rdev, struct svc_fh *resfhp)
+ {
+ 	struct dentry	*dentry, *dchild = NULL;
++	struct svc_export *exp;
+ 	struct inode	*dirp;
+ 	__be32		err;
+ 	int		host_err;
+@@ -1131,6 +1132,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 		goto out;
+ 
+ 	dentry = fhp->fh_dentry;
++	exp = fhp->fh_export;
+ 	dirp = dentry->d_inode;
+ 
+ 	err = nfserr_notdir;
+@@ -1147,7 +1149,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 		host_err = PTR_ERR(dchild);
+ 		if (IS_ERR(dchild))
+ 			goto out_nfserr;
+-		err = fh_compose(resfhp, fhp->fh_export, dchild, fhp);
++		err = fh_compose(resfhp, exp, dchild, fhp);
+ 		if (err)
+ 			goto out;
+ 	} else {
+@@ -1186,7 +1188,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
  		host_err = vfs_create(dirp, dchild, iap->ia_mode, NULL);
  		break;
  	case S_IFDIR:
 -		host_err = vfs_mkdir(dirp, dchild, iap->ia_mode);
-+		host_err = vfs_mkdir(dirp, dchild, fhp->fh_export->ex_mnt,
-+				     iap->ia_mode);
++		host_err = vfs_mkdir(dirp, dchild, exp->ex_mnt, iap->ia_mode);
  		break;
  	case S_IFCHR:
  	case S_IFBLK:
+@@ -1201,7 +1203,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 	if (host_err < 0)
+ 		goto out_nfserr;
+ 
+-	if (EX_ISSYNC(fhp->fh_export)) {
++	if (EX_ISSYNC(exp)) {
+ 		err = nfserrno(nfsd_sync_dir(dentry));
+ 		write_inode_now(dchild->d_inode, 1);
+ 	}
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
 @@ -980,7 +980,7 @@ extern void unlock_super(struct super_bl
