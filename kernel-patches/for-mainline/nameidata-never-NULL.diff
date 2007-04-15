@@ -1,8 +1,20 @@
+From: Andreas Gruenbacher <agruen@suse.de>
+Subject: Never pass a NULL nameidata to vfs_create()
+
+The kernel nfs daemon and the mqueue fs pass a NULL nameidata to
+vfs_create(), so the vfs cannot check the options of nd->mnt.  Fix those
+callers by creating a dummy nameidata.
+
+(There are still tons of callers left that pass a NULL nameidata to
+permission().)
+
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+
 ---
- fs/namei.c    |    2 +-
+ fs/namei.c    |    5 +++--
  fs/nfsd/vfs.c |   23 +++++++++++++++++++----
  ipc/mqueue.c  |    6 +++++-
- 3 files changed, 25 insertions(+), 6 deletions(-)
+ 3 files changed, 27 insertions(+), 7 deletions(-)
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
@@ -15,13 +27,23 @@
  	if (error)
  		return error;
  	DQUOT_INIT(dir);
+@@ -1887,7 +1887,8 @@ asmlinkage long sys_mknodat(int dfd, con
+ 	if (!IS_ERR(dentry)) {
+ 		switch (mode & S_IFMT) {
+ 		case 0: case S_IFREG:
+-			error = vfs_create(nd.dentry->d_inode,dentry,mode,&nd);
++			error = vfs_create(nd.dentry->d_inode, dentry, mode,
++					   &nd);
+ 			break;
+ 		case S_IFCHR: case S_IFBLK:
+ 			error = vfs_mknod(nd.dentry->d_inode, dentry, nd.mnt,
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
 @@ -1108,6 +1108,18 @@ nfsd_commit(struct svc_rqst *rqstp, stru
  }
  #endif /* CONFIG_NFSD_V3 */
  
-+static int
++static inline int
 +nfsd_do_create(struct inode *dir, struct dentry *child, struct vfsmount *mnt,
 +	       int mode)
 +{
