@@ -1,5 +1,5 @@
 From: Andreas Gruenbacher <agruen@suse.de>
-Subject: Never pass a NULL nameidata to vfs_create()
+Subject: Don't pass NULL nameidata to vfs_create()
 
 The kernel nfs daemon and the mqueue fs pass a NULL nameidata to
 vfs_create(), so the vfs cannot check the options of nd->mnt.  Fix those
@@ -126,7 +126,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
 +	struct nameidata nd = {
 +		.dentry = dentry,
-+		/* Not a regular create, so .mnt is NULL. */
++		/* Not a regular create, so set .mnt to NULL. */
 +	};
  	struct mq_attr attr;
  	int ret;

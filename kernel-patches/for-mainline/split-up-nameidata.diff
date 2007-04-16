@@ -5,7 +5,7 @@ The create, lookup, and permission inode operations are all passed a
 full nameidata.  This is unfortunate because in nfsd and the mqueue
 filesystem, we must instantiate a struct nameidata but cannot provide
 all of the same information that a regular lookup would provide.  The
-unused there take up excess space on the stack, but more importantly, it
+unused fields take up space on the stack, but more importantly, it is
 not obvious which fields have meaningful values and which don't, and so
 things might easily break.
 
