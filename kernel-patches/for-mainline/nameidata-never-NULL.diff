@@ -11,13 +11,22 @@ permission().)
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- fs/namei.c    |    5 +++--
+ fs/namei.c    |    7 ++++---
  fs/nfsd/vfs.c |   23 +++++++++++++++++++----
  ipc/mqueue.c  |    6 +++++-
- 3 files changed, 27 insertions(+), 7 deletions(-)
+ 3 files changed, 28 insertions(+), 8 deletions(-)
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
+@@ -1428,7 +1428,7 @@ static inline int may_create(struct inod
+ 		return -EEXIST;
+ 	if (IS_DEADDIR(dir))
+ 		return -ENOENT;
+-	return permission(dir,MAY_WRITE | MAY_EXEC, nd);
++	return permission(dir, MAY_WRITE | MAY_EXEC, nd);
+ }
+ 
+ /* 
 @@ -1503,7 +1503,7 @@ int vfs_create(struct inode *dir, struct
  		return -EACCES;	/* shouldn't it be ENOSYS? */
  	mode &= S_IALLUGO;
@@ -117,7 +126,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
 +	struct nameidata nd = {
 +		.dentry = dentry,
-+		.mnt = mqueue_mnt,
++		/* Not a regular create, so .mnt is NULL. */
 +	};
  	struct mq_attr attr;
  	int ret;
