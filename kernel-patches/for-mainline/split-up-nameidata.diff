@@ -2302,7 +2302,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  struct nameidata {
 -	struct dentry	*dentry;
 -	struct vfsmount *mnt;
-+	__NAMEIDATA2
++	struct { __NAMEIDATA2 };
  	struct qstr	last;
 -	unsigned int	flags;
  	int		last_type;
@@ -2315,7 +2315,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 -		struct open_intent open;
 -	} intent;
 +struct nameidata2 {
-+	__NAMEIDATA2
++	struct { __NAMEIDATA2 };
  };
  
 +#undef __NAMEIDATA2
