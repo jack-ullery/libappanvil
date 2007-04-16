@@ -74,7 +74,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  fs/libfs.c                     |    2 +-
  fs/minix/namei.c               |    4 ++--
  fs/msdos/namei.c               |    4 ++--
- fs/namei.c                     |   39 ++++++++++++++++++++-------------------
+ fs/namei.c                     |   37 +++++++++++++++++++------------------
  fs/ncpfs/dir.c                 |   14 +++++++-------
  fs/nfs/dir.c                   |   30 +++++++++++++++---------------
  fs/nfs/nfs3proc.c              |    2 +-
@@ -125,7 +125,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  security/apparmor/lsm.c        |    2 +-
  security/dummy.c               |    2 +-
  security/selinux/hooks.c       |    2 +-
- 109 files changed, 274 insertions(+), 253 deletions(-)
+ 109 files changed, 273 insertions(+), 252 deletions(-)
 
 --- a/fs/9p/vfs_inode.c
 +++ b/fs/9p/vfs_inode.c
@@ -1312,7 +1312,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  		if (!dentry)
  			dentry = new;
  		else
-@@ -1422,13 +1423,13 @@ static int may_delete(struct inode *dir,
+@@ -1422,7 +1423,7 @@ static int may_delete(struct inode *dir,
   *  4. We can't do it if dir is immutable (done in permission())
   */
  static inline int may_create(struct inode *dir, struct dentry *child,
@@ -1321,13 +1321,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	if (child->d_inode)
  		return -EEXIST;
- 	if (IS_DEADDIR(dir))
- 		return -ENOENT;
--	return permission(dir,MAY_WRITE | MAY_EXEC, nd);
-+	return permission(dir, MAY_WRITE | MAY_EXEC, nd);
- }
- 
- /* 
 @@ -1492,7 +1493,7 @@ void unlock_rename(struct dentry *p1, st
  }
  
@@ -1561,7 +1554,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct iattr attr;
  	int error;
-@@ -1949,7 +1949,7 @@ out:
+@@ -1950,7 +1950,7 @@ out:
  	return -EACCES;
  }
  
@@ -2470,7 +2463,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 -	struct nameidata nd = {
 +	struct nameidata2 nd = {
  		.dentry = dentry,
- 		.mnt = mqueue_mnt,
+ 		/* Not a regular create, so .mnt is NULL. */
  	};
 --- a/mm/shmem.c
 +++ b/mm/shmem.c
