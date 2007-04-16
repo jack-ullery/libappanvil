@@ -44,4 +44,6 @@ apparmor-module_interface-2.diff
 apparmor-misc.diff
 apparmor-intree.diff
 nameidata-never-NULL.diff
-split-up-nameidata.diff
+# split-up-nameidata.diff
+# sysctl-pathname.diff
+# apparmor-sysctl-pathname.diff
