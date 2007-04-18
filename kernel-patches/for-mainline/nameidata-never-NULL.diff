@@ -57,7 +57,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	       int mode)
 +{
 +	struct nameidata nd = {
-+		.dentry = child,
++		.dentry = child, /* FIXME: should be the parent */,
 +		.mnt = mnt,
 +	};
 +
@@ -125,7 +125,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  			int oflag, mode_t mode, struct mq_attr __user *u_attr)
  {
 +	struct nameidata nd = {
-+		.dentry = dentry,
++		.dentry = dentry, /* FIXME: should be the parent */,
 +		/* Not a regular create, so set .mnt to NULL. */
 +	};
  	struct mq_attr attr;
