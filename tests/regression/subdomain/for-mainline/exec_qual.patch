@@ -5,7 +5,7 @@ Index: subdomain/exec_qual.sh
 @@ -140,11 +140,13 @@ genprofile $test2:ux
  local_runchecktest "enforce ux case1" pass "unconstrained" $test2 $file
  
- # confined parent, exec child with conflicting exec qualifiers
+ # constrained parent, exec child with conflicting exec qualifiers
 +# that overlap in such away that px is prefered (ix is glob, px is exact
 +# match).  Other overlap tests should be in the parser.
  # case 1: 
@@ -17,5 +17,5 @@ Index: subdomain/exec_qual.sh
 +genprofile $test2:px $test2_rex1:ix -- image=$test2 $file:$fileperm
 +local_runchecktest "enforce conflicting exec qual" pass $test2 $test2 $file
  
- # unconfined parent
+ # unconstrained parent
  # case 1: child profile exists, child profile grants access

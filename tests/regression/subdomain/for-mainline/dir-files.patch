@@ -2,19 +2,20 @@ Index: subdomain/capabilities.sh
 ===================================================================
 --- subdomain.orig/capabilities.sh
 +++ subdomain/capabilities.sh
-@@ -74,10 +74,10 @@ syscall_sethostname_args=a.dumb.example.
+@@ -74,11 +74,11 @@ syscall_sethostname_args=a.dumb.example.
  syscall_setdomainname_args=dumb.example.com
  syscall_ioperm_args="0 0x3ff"
  syscall_iopl_args=3
 -syscall_chroot_args=${tmpdir}
 +syscall_chroot_args=${tmpdir}/
+ syscall_ptrace_args=sub
  
  # if a testcase requires extra subdomain rules, add them here
 -syscall_chroot_extra_entries="/:r ${tmpdir}:r"
 +syscall_chroot_extra_entries="/:r ${tmpdir}/:r"
+ syscall_ptrace_extra_entries="hat:sub"
  
  testwrapper=changehat_wrapper
- 
 Index: subdomain/mult_mount.sh
 ===================================================================
 --- subdomain.orig/mult_mount.sh
@@ -103,67 +104,3 @@ Index: subdomain/xattrs.sh
  okperm=rw
  badperm=r
  
-Index: subdomain/openat.sh
-===================================================================
---- subdomain.orig/openat.sh
-+++ subdomain/openat.sh
-@@ -22,43 +22,44 @@ bin=$pwd
- 
- . $bin/prologue.inc
- 
-+dir=${tmpdir}/
- subdir=deleteme
- file=${subdir}/file
--filepath=${tmpdir}/${file}
-+filepath=${dir}${file}
- okperm=rw
- badperm1=r
- badperm2=w
- 
--mkdir ${tmpdir}/${subdir}
-+mkdir ${dir}/${subdir}
- 
- # PASS UNCONFINED
--runchecktest "OPENAT unconfined RW (create) " pass $tmpdir $file
-+runchecktest "OPENAT unconfined RW (create) " pass $dir $file
- 
- # PASS TEST (the file shouldn't exist, so open should create it
- rm -f ${filepath}
--genprofile ${tmpdir}:r ${filepath}:$okperm
--runchecktest "OPENAT RW (create) " pass $tmpdir $file
-+genprofile ${dir}:r ${filepath}:$okperm
-+runchecktest "OPENAT RW (create) " pass $dir $file
- 
- # PASS TEST
--genprofile ${tmpdir}:r ${filepath}:$okperm
--runchecktest "OPENAT RW" pass $tmpdir $file
-+genprofile ${dir}:r ${filepath}:$okperm
-+runchecktest "OPENAT RW" pass $dir $file
- 
- # FAILURE TEST (1)
--genprofile ${tmpdir}:r ${filepath}:$badperm1
--runchecktest "OPENAT R" fail $tmpdir $file
-+genprofile ${dir}:r ${filepath}:$badperm1
-+runchecktest "OPENAT R" fail $dir $file
- 
- # FAILURE TEST (2)
--genprofile ${tmpdir}:r ${filepath}:$badperm2
--runchecktest "OPENAT W" fail $tmpdir $file
-+genprofile ${dir}:r ${filepath}:$badperm2
-+runchecktest "OPENAT W" fail $dir $file
- 
- # FAILURE TEST (3)
--genprofile ${tmpdir}:r ${filepath}:$badperm1 cap:dac_override
--runchecktest "OPENAT R+dac_override" fail $tmpdir $file
-+genprofile ${dir}:r ${filepath}:$badperm1 cap:dac_override
-+runchecktest "OPENAT R+dac_override" fail $dir $file
- 
- # FAILURE TEST (4)
- # This is testing for bug: https://bugs.wirex.com/show_bug.cgi?id=2885
- # When we open O_CREAT|O_RDWR, we are (were?) allowing only write access
- # to be required.
- rm -f ${filepath}
--genprofile ${tmpdir}:r ${filepath}:$badperm2
--runchecktest "OPENAT W (create)" fail $tmpdir $file
-+genprofile ${dir}:r ${filepath}:$badperm2
-+runchecktest "OPENAT W (create)" fail $dir $file

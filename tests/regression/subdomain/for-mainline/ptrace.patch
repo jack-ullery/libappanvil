@@ -11,3 +11,94 @@ Index: subdomain/capabilities.sh
  
  # if a test case requires arguments, add them here.
  syscall_reboot_args=off
+@@ -75,9 +75,11 @@ syscall_setdomainname_args=dumb.example.
+ syscall_ioperm_args="0 0x3ff"
+ syscall_iopl_args=3
+ syscall_chroot_args=${tmpdir}
++syscall_ptrace_args=sub
+ 
+ # if a testcase requires extra subdomain rules, add them here
+ syscall_chroot_extra_entries="/:r ${tmpdir}:r"
++syscall_ptrace_extra_entries="hat:sub"
+ 
+ testwrapper=changehat_wrapper
+ 
+Index: subdomain/syscall_ptrace.c
+===================================================================
+--- subdomain.orig/syscall_ptrace.c
++++ subdomain/syscall_ptrace.c
+@@ -21,6 +21,8 @@
+ #include <limits.h>
+ #include <string.h>
+ 
++#include "changehat.h"
++
+ #define FALSE 0
+ #define TRUE !FALSE
+ 
+@@ -29,7 +31,7 @@ int main(int argc, char *argv[])
+ 	pid_t pid;
+ 	int retval = 0;
+ 
+-	if (argc != 1){
++	if (argc != 2){
+ 		fprintf(stderr, "usage: %s\n", argv[0]);
+ 		return 1;
+ 	}
+@@ -43,6 +45,14 @@ int main(int argc, char *argv[])
+ 		while (wait(&status) != pid);
+ 		retval = WEXITSTATUS(status);
+ 	}else{
++		/* change profile so that ptrace can fail */
++		if (change_hat(argv[1], SD_ID_MAGIC + 1) == -1 &&
++		    errno != EPERM) {
++			/* confined process failed to change_hat */
++			fprintf(stderr, "FAIL: changehat %s failed - %s\n",
++				argv[1], strerror(errno));
++			return errno;
++		}
+ 		if (ptrace(PTRACE_TRACEME, 0, 0, 0) == -1){
+ 			fprintf(stderr, "FAIL: ptrace failed - %s\n",
+ 				strerror(errno));
+Index: subdomain/syscall.sh
+===================================================================
+--- subdomain.orig/syscall.sh
++++ subdomain/syscall.sh
+@@ -28,12 +28,12 @@ bin=$pwd
+ settest syscall_ptrace
+ 
+ # TEST A1
+-runchecktest "PTRACE with no profile" pass
++runchecktest "PTRACE with no profile" pass sub
+ 
+ # TEST A2.  ptrace will fail
+ genprofile
+ 
+-runchecktest "PTRACE with confinement" fail
++runchecktest "PTRACE with confinement" fail sub
+ 
+ ##
+ ## B. MKNOD
+Index: subdomain/ptrace.sh
+===================================================================
+--- subdomain.orig/ptrace.sh
++++ subdomain/ptrace.sh
+@@ -28,10 +28,6 @@ bin=$pwd
+ # using ptrace.  This stopped being required or functioning correctly 
+ # somewhere between 2.4.18 and 2.4.20.
+ #
+-# Tests 10 and 11
+-# Requires a patch which prevents confined traced task from attempting exec.
+-# Unsure of usefulness of this.  We are concerned about confined task being
+-# the tracer not the tracee
+ 
+ # Test Matrix:
+ # 1. unconfined parent, unconfined child, parent attaches		PASS
+@@ -76,5 +72,5 @@ runchecktest "test 9" pass -- /bin/bash 
+ #genprofile image=$helper /bin/true:ux
+ #runchecktest "test 10" fail -h -n 100 $helper /bin/true
+ 
+-#genprofile image=$helper /bin/true:rix
+-#runchecktest "test 11" fail -h -n 1000 $helper /bin/true
++genprofile image=$helper /bin/true:rix
++runchecktest "test 11" pass -h -n 1000 $helper /bin/true
