@@ -1,20 +1,19 @@
 From: Andreas Gruenbacher <agruen@suse.de>
-Subject: Add d_namespace_path() to obtain namespace relative pathnames
+Subject: Add d_namespace_path() to compute namespace relative pathnames
 
-In AppArmor we are interested in pathnames relative to the namespace
-root. Except for the root where the search ends, this is the same as
-d_path(). Add d_namespace_path() for that.
-internals.
+In AppArmor, we are interested in pathnames relative to the namespace root.
+This is the same as d_path() except for the root where the search ends. Add
+a function for computing the namespace-relative path.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Reviewed-by: John Johansen <jjohansen@suse.de>
 
 ---
  fs/dcache.c            |    6 +++---
- fs/namespace.c         |   22 ++++++++++++++++++++++
+ fs/namespace.c         |   27 +++++++++++++++++++++++++++
  include/linux/dcache.h |    2 ++
  include/linux/mount.h  |    2 ++
- 4 files changed, 29 insertions(+), 3 deletions(-)
+ 4 files changed, 34 insertions(+), 3 deletions(-)
 
 --- a/fs/dcache.c
 +++ b/fs/dcache.c
@@ -33,7 +32,7 @@ Reviewed-by: John Johansen <jjohansen@suse.de>
  
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
-@@ -1896,3 +1896,25 @@ void __put_mnt_ns(struct mnt_namespace *
+@@ -1877,3 +1877,30 @@ void __put_mnt_ns(struct mnt_namespace *
  	release_mounts(&umount_list);
  	kfree(ns);
  }
@@ -41,21 +40,26 @@ Reviewed-by: John Johansen <jjohansen@suse.de>
 +char *d_namespace_path(struct dentry *dentry, struct vfsmount *vfsmnt,
 +		       char *buf, int buflen)
 +{
++	struct vfsmount *rootmnt, *nsrootmnt = NULL;
++	struct dentry *root = NULL;
 +	char *res;
-+	struct vfsmount *rootmnt, *nsrootmnt;
-+	struct dentry *root;
 +
 +	read_lock(&current->fs->lock);
 +	rootmnt = mntget(current->fs->rootmnt);
 +	read_unlock(&current->fs->lock);
 +	spin_lock(&vfsmount_lock);
-+	nsrootmnt = mntget(rootmnt->mnt_ns->root);
-+	root = dget(nsrootmnt->mnt_root);
++	if (rootmnt->mnt_ns)
++		nsrootmnt = mntget(rootmnt->mnt_ns->root);
 +	spin_unlock(&vfsmount_lock);
 +	mntput(rootmnt);
++	if (nsrootmnt)
++		root = dget(nsrootmnt->mnt_root);
 +	res = __d_path(dentry, vfsmnt, root, nsrootmnt, buf, buflen, 1);
 +	dput(root);
 +	mntput(nsrootmnt);
++	/* Prevent empty path for lazily unmounted filesystems. */
++	if (!IS_ERR(res) && *res == '\0')
++		*--res = '.';
 +	return res;
 +}
 +EXPORT_SYMBOL(d_namespace_path);

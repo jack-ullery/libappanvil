@@ -28,9 +28,13 @@ vfs-listxattr.diff
 security-listxattr.diff
 vfs-removexattr.diff
 security-removexattr.diff
-fix-__d_path-for-lazy-unmounts-and-make-it-unambiguous.patch
-mount-consistent-d_path.diff
+unambiguous-__d_path.diff
+mount-consistent-__d_path.diff
 d_namespace_path.diff
+fix-getcwd.diff
+proc-mounts-cleanup.diff
+proc-mounts-check-d_path-result.diff
+fix-d_path.diff
 file-handle-ops.diff
 security-xattr-file.diff
 apparmor-audit.diff
