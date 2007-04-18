@@ -1,8 +1,8 @@
 ---
  security/apparmor/apparmor.h |    1 +
  security/apparmor/lsm.c      |   28 +++++++++++++++++++++++++---
- security/apparmor/main.c     |   16 ++++++++++++++++
- 3 files changed, 42 insertions(+), 3 deletions(-)
+ security/apparmor/main.c     |   17 +++++++++++++++++
+ 3 files changed, 43 insertions(+), 3 deletions(-)
 
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
@@ -63,7 +63,7 @@
  
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -634,6 +634,22 @@ int aa_perm_dir(struct aa_profile *profi
+@@ -634,6 +634,23 @@ int aa_perm_dir(struct aa_profile *profi
  			      AA_CHECK_DIR | AA_CHECK_LEAF);
  }
  
@@ -76,6 +76,7 @@
 +	sa.mask = mask;
 +	sa.flags = 0;
 +	sa.gfp_mask = GFP_KERNEL;
++	sa.name = name;
 +
 +	denied_mask = aa_file_denied(profile, name, mask);
 +	aa_permerror2result(denied_mask, &sa);
