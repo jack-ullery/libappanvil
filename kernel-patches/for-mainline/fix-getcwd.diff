@@ -18,7 +18,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	read_unlock(&current->fs->lock);
  
  	cwd = __d_path(pwd, pwdmnt, root, rootmnt, page, PAGE_SIZE, 1);
--	cwd = __connect_d_path(res, page);
+-	cwd = __connect_d_path(cwd, page);
  	error = PTR_ERR(cwd);
  	if (IS_ERR(cwd))
  		goto out;
