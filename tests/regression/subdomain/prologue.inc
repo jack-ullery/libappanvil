@@ -69,7 +69,12 @@ genrunscript()
 	then
 		runfile=$tmpdir/runtest
 		echo "$subdomain ${parser_args} < $profile" > $runfile
-		echo "$testexec \"$@\" 2>&1 > $outfile" >> $runfile
+		echo -n "$testexec " >> $runfile
+		while [ $# -gt 0 ] ; do
+		      echo -n "\"$1\" " >> $runfile
+		      shift
+		done
+		echo "2>&1 > $outfile" >> $runfile
 		echo "echo $testname: \`cat $outfile\`" >> $runfile
 		echo "$subdomain ${parser_args} -R < $profile" >> $runfile
 	fi
