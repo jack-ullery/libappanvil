@@ -17,7 +17,7 @@ Index: subdomain/link.sh
  # permissions in a profile.
  #=END
  
-@@ -22,43 +24,88 @@ bin=$pwd
+@@ -22,50 +24,88 @@ bin=$pwd
  
  . $bin/prologue.inc
  
@@ -124,6 +124,13 @@ Index: subdomain/link.sh
 -
 -genprofile $src:r $target:rl
 -runchecktest "MATCHING PERM (r)" pass $src $target
+-
+-# PASS TEST
+-
+-rm -f $target
+-
+-genprofile $src:w $target:wl
+-runchecktest "MATCHING PERM (w)" pass $src $target
 -
 -# FAILURE TEST
 -
