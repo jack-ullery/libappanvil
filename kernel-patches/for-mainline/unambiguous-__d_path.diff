@@ -4,24 +4,23 @@ Subject: Fix __d_path() for lazy unmounts and make it unambiguous
 First, when __d_path() hits a lazily unmounted mount point, it tries to prepend
 the name of the lazily unmounted dentry to the path name.  It gets this wrong,
 and also overwrites the slash that separates the name from the following
-pathname component.
+pathname component. This patch fixes that; if a process was in directory
+/foo/bar and /foo got lazily unmounted, the old result was ``foobar'' (note the
+missing slash), while the new result with this patch is ``foo/bar''.
 
 Second, it isn't always possible to tell from the __d_path() result whether the
-specified root and rootmnt (i.e., the chroot) was reached: lazy unmounts of
-bind mounts will produce a path that does start with a non-slash so we can tell
-from that, but other lazy unmounts will produce a path that starts with a
-slash, just as if the root and rootmnt were reached.
+specified root and rootmnt (i.e., the chroot) was reached.  We need an
+unambiguous result for AppArmor at least though, so we make sure that paths
+will only start with a slash if the path leads all the way up to the root.
 
-This patch cleans up __d_path() to fix the bug with overlapping pathname
-components.  It also adds a @fail_deleted argument, which allows to get rid of
-some of the mess in sys_getcwd().  We make sure that paths will only start with
-a slash if the path leads all the way up to the root.
+We also add a @fail_deleted argument, which allows to get rid of some of the
+mess in sys_getcwd().
 
-Except for fixing the bug with lazily unmounted directories, this patch leaves
-getcwd() and d_path() as they were before by pretending that disconnected paths
-are connected at the root: they are not, but this is the previous behavior, and
-there there is some disagreement that disambiguating getcwd() and d_path() is
-the right thing to do.
+This patch leaves getcwd() and d_path() as they were before for everything
+except for bind-mounted directories; for them, it reports ``/foo/bar'' instead
+of ``foobar'' in the example described above.  Subsequent patches propose to
+make getcwd() fail instead of reporting unreachable paths like this one and
+hide unreachable mount points from /proc/mounts.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
