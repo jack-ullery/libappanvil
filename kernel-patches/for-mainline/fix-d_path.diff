@@ -8,8 +8,9 @@ path returned never is the empty string: this would only occur with a lazily unm
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- fs/dcache.c |   18 ++++--------------
- 1 file changed, 4 insertions(+), 14 deletions(-)
+ fs/dcache.c    |   18 ++++--------------
+ fs/namespace.c |    3 ---
+ 2 files changed, 4 insertions(+), 17 deletions(-)
 
 --- a/fs/dcache.c
 +++ b/fs/dcache.c
@@ -53,3 +54,15 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	dput(root);
  	mntput(rootmnt);
  	return res;
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -1917,9 +1917,6 @@ char *d_namespace_path(struct dentry *de
+ 	res = __d_path(dentry, vfsmnt, root, nsrootmnt, buf, buflen, 1);
+ 	dput(root);
+ 	mntput(nsrootmnt);
+-	/* Prevent empty path for lazily unmounted filesystems. */
+-	if (!IS_ERR(res) && *res == '\0')
+-		*--res = '.';
+ 	return res;
+ }
+ EXPORT_SYMBOL(d_namespace_path);
