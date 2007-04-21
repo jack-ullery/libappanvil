@@ -1,0 +1,54 @@
+---
+ security/apparmor/main.c |   34 ++++++++++++++++++++++++++++++++--
+ 1 file changed, 32 insertions(+), 2 deletions(-)
+
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -102,6 +102,33 @@ static int aa_link_denied(struct aa_prof
+ 	return AA_MAY_LINK;
+ }
+ 
++static char *mangle(char *str, char *buffer)
++{
++	char *s, c;
++
++	for (s = str; (c = *s) != '\0'; s++) {
++		if (c == ' ' || c == '\t' || c == '\n' || c == '\\')
++			goto escape;
++	}
++	return str;
++
++escape:
++	for (s = str, str = buffer; (c = *s) != '\0'; s++) {
++		if (c != ' ' && c != '\t' && c != '\n' && c != '\\')
++			*buffer++ = c;
++		else {
++			if (unlikely(s - buffer < 3))
++				return ERR_PTR(-ENAMETOOLONG);
++			*buffer++ = '\\';
++			*buffer++ = '0' + ((c & 0300) >> 6);
++			*buffer++ = '0' + ((c & 070) >> 3);
++			*buffer++ = '0' + (c & 07);
++		}
++	}
++	*buffer++ = '\0';
++	return str;
++}
++
+ /**
+  * aa_get_name - compute the pathname of a file
+  * @dentry: dentry of the file
+@@ -148,8 +175,11 @@ static char *aa_get_name(struct dentry *
+ 				buf[size - 1] = '\0';
+ 			}
+ 
+-			*buffer = buf;
+-			return name;
++			name = mangle(name, buf);
++			if (!IS_ERR(name)) {
++				*buffer = buf;
++				return name;
++			}
+ 		}
+ 		if (PTR_ERR(name) != -ENAMETOOLONG)
+ 			return name;
