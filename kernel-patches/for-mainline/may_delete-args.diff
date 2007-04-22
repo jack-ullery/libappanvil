@@ -1,0 +1,61 @@
+---
+ fs/namei.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1382,8 +1382,9 @@ static inline int check_sticky(struct in
+  * 10. We don't allow removal of NFS sillyrenamed files; it's handled by
+  *     nfs_async_unlink().
+  */
+-static int may_delete(struct inode *dir,struct dentry *victim,int isdir)
++static int may_delete(struct nameidata2 *nd, struct dentry *victim, int isdir)
+ {
++	struct inode *dir = nd->dentry->d_inode;
+ 	int error;
+ 
+ 	if (!victim->d_inode)
+@@ -1392,7 +1393,7 @@ static int may_delete(struct inode *dir,
+ 	BUG_ON(victim->d_parent->d_inode != dir);
+ 	audit_inode_child(victim->d_name.name, victim->d_inode, dir);
+ 
+-	error = permission(dir,MAY_WRITE | MAY_EXEC, NULL);
++	error = permission(dir, MAY_WRITE | MAY_EXEC, nd);
+ 	if (error)
+ 		return error;
+ 	if (IS_APPEND(dir))
+@@ -2008,7 +2009,7 @@ void dentry_unhash(struct dentry *dentry
+ int vfs_rmdir(struct nameidata2 *nd, struct dentry *dentry)
+ {
+ 	struct inode *dir = nd->dentry->d_inode;
+-	int error = may_delete(dir, dentry, 1);
++	int error = may_delete(nd, dentry, 1);
+ 
+ 	if (error)
+ 		return error;
+@@ -2090,7 +2091,7 @@ asmlinkage long sys_rmdir(const char __u
+ int vfs_unlink(struct nameidata2 *nd, struct dentry *dentry)
+ {
+ 	struct inode *dir = nd->dentry->d_inode;
+-	int error = may_delete(dir, dentry, 0);
++	int error = may_delete(nd, dentry, 0);
+ 
+ 	if (error)
+ 		return error;
+@@ -2476,14 +2477,14 @@ int vfs_rename(struct nameidata2 *old_nd
+ 	if (old_dentry->d_inode == new_dentry->d_inode)
+  		return 0;
+  
+-	error = may_delete(old_dir, old_dentry, is_dir);
++	error = may_delete(old_nd, old_dentry, is_dir);
+ 	if (error)
+ 		return error;
+ 
+ 	if (!new_dentry->d_inode)
+ 		error = may_create(new_nd, new_dentry);
+ 	else
+-		error = may_delete(new_dir, new_dentry, is_dir);
++		error = may_delete(new_nd, new_dentry, is_dir);
+ 	if (error)
+ 		return error;
+ 
