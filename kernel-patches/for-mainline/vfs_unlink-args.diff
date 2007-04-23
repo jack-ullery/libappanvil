@@ -54,7 +54,7 @@
  
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2087,8 +2087,9 @@ asmlinkage long sys_rmdir(const char __u
+@@ -2091,8 +2091,9 @@ asmlinkage long sys_rmdir(const char __u
  	return do_rmdir(AT_FDCWD, pathname);
  }
  
@@ -65,7 +65,7 @@
  	int error = may_delete(dir, dentry, 0);
  
  	if (error)
-@@ -2103,7 +2104,7 @@ int vfs_unlink(struct inode *dir, struct
+@@ -2107,7 +2108,7 @@ int vfs_unlink(struct inode *dir, struct
  	if (d_mountpoint(dentry))
  		error = -EBUSY;
  	else {
@@ -74,7 +74,7 @@
  		if (!error)
  			error = dir->i_op->unlink(dir, dentry);
  	}
-@@ -2151,7 +2152,7 @@ static long do_unlinkat(int dfd, const c
+@@ -2155,7 +2156,7 @@ static long do_unlinkat(int dfd, const c
  		inode = dentry->d_inode;
  		if (inode)
  			atomic_inc(&inode->i_count);

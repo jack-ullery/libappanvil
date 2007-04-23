@@ -1,0 +1,29 @@
+From: Andreas Gruenbacher <agruen@suse.de>
+Subject: Fix file_permission()
+
+We cannot easily switch from file_permission() to vfs_permission()
+everywhere, so fix file_permission() to not use a NULL nameidata
+for the remaining users.
+
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+
+---
+ fs/namei.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -297,7 +297,12 @@ int vfs_permission(struct nameidata2 *nd
+  */
+ int file_permission(struct file *file, int mask)
+ {
+-	return permission(file->f_path.dentry->d_inode, mask, NULL);
++	struct nameidata2 nd = {
++		.dentry = file->f_path.dentry,
++		.mnt = file->f_path.mnt,
++	};
++
++	return permission(nd.dentry->d_inode, mask, &nd);
+ }
+ 
+ /*

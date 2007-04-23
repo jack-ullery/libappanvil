@@ -42,7 +42,7 @@
  				"Failure to create underlying file\n");
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1492,9 +1492,9 @@ void unlock_rename(struct dentry *p1, st
+@@ -1496,9 +1496,9 @@ void unlock_rename(struct dentry *p1, st
  	}
  }
  
@@ -54,7 +54,7 @@
  	int error = may_create(dir, dentry, nd);
  
  	if (error)
-@@ -1602,7 +1602,7 @@ static int open_namei_create(struct name
+@@ -1606,7 +1606,7 @@ static int open_namei_create(struct name
  
  	if (!IS_POSIXACL(dir->d_inode))
  		mode &= ~current->fs->umask;
@@ -63,7 +63,7 @@
  	mutex_unlock(&dir->d_inode->i_mutex);
  	dput(nd->dentry);
  	nd->dentry = path->dentry;
-@@ -1888,8 +1888,7 @@ asmlinkage long sys_mknodat(int dfd, con
+@@ -1892,8 +1892,7 @@ asmlinkage long sys_mknodat(int dfd, con
  	if (!IS_ERR(dentry)) {
  		switch (mode & S_IFMT) {
  		case 0: case S_IFREG:

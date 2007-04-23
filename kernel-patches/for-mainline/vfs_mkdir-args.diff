@@ -45,7 +45,7 @@
  	return rc;
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1918,10 +1918,10 @@ asmlinkage long sys_mknod(const char __u
+@@ -1922,10 +1922,10 @@ asmlinkage long sys_mknod(const char __u
  	return sys_mknodat(AT_FDCWD, filename, mode, dev);
  }
  
@@ -59,7 +59,7 @@
  
  	if (error)
  		return error;
-@@ -1930,7 +1930,7 @@ int vfs_mkdir(struct inode *dir, struct 
+@@ -1934,7 +1934,7 @@ int vfs_mkdir(struct inode *dir, struct 
  		return -EPERM;
  
  	mode &= (S_IRWXUGO|S_ISVTX);
@@ -68,7 +68,7 @@
  	if (error)
  		return error;
  
-@@ -1963,7 +1963,7 @@ asmlinkage long sys_mkdirat(int dfd, con
+@@ -1967,7 +1967,7 @@ asmlinkage long sys_mkdirat(int dfd, con
  
  	if (!IS_POSIXACL(nd.dentry->d_inode))
  		mode &= ~current->fs->umask;

@@ -1,0 +1,64 @@
+From: Andreas Gruenbacher <agruen@suse.de>
+Subject: Fix xattr_permission()
+
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+
+---
+ fs/xattr.c |   17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
+
+--- a/fs/xattr.c
++++ b/fs/xattr.c
+@@ -26,8 +26,15 @@
+  * because different namespaces have very different rules.
+  */
+ static int
+-xattr_permission(struct inode *inode, const char *name, int mask)
++xattr_permission(struct dentry *dentry, struct vfsmount *mnt, const char *name,
++		 int mask)
+ {
++	struct inode *inode = dentry->d_inode;
++	struct nameidata2 nd = {
++		.dentry = dentry,
++		.mnt = mnt,
++	};
++
+ 	/*
+ 	 * We can never set or remove an extended attribute on a read-only
+ 	 * filesystem  or on an immutable / append-only inode.
+@@ -66,7 +73,7 @@ xattr_permission(struct inode *inode, co
+ 			return -EPERM;
+ 	}
+ 
+-	return permission(inode, mask, NULL);
++	return permission(inode, mask, &nd);
+ }
+ 
+ int
+@@ -76,7 +83,7 @@ vfs_setxattr(struct dentry *dentry, stru
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+ 
+-	error = xattr_permission(inode, name, MAY_WRITE);
++	error = xattr_permission(dentry, mnt, name, MAY_WRITE);
+ 	if (error)
+ 		return error;
+ 
+@@ -113,7 +120,7 @@ vfs_getxattr(struct dentry *dentry, stru
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+ 
+-	error = xattr_permission(inode, name, MAY_READ);
++	error = xattr_permission(dentry, mnt, name, MAY_READ);
+ 	if (error)
+ 		return error;
+ 
+@@ -175,7 +182,7 @@ vfs_removexattr(struct dentry *dentry, s
+ 	if (!inode->i_op->removexattr)
+ 		return -EOPNOTSUPP;
+ 
+-	error = xattr_permission(inode, name, MAY_WRITE);
++	error = xattr_permission(dentry, mnt, name, MAY_WRITE);
+ 	if (error)
+ 		return error;
+ 

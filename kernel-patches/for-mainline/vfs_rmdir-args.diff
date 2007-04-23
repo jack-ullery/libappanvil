@@ -42,7 +42,7 @@
  	dput(dentry);
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2005,8 +2005,9 @@ void dentry_unhash(struct dentry *dentry
+@@ -2009,8 +2009,9 @@ void dentry_unhash(struct dentry *dentry
  	spin_unlock(&dcache_lock);
  }
  
@@ -53,7 +53,7 @@
  	int error = may_delete(dir, dentry, 1);
  
  	if (error)
-@@ -2015,7 +2016,7 @@ int vfs_rmdir(struct inode *dir, struct 
+@@ -2019,7 +2020,7 @@ int vfs_rmdir(struct inode *dir, struct 
  	if (!dir->i_op || !dir->i_op->rmdir)
  		return -EPERM;
  
@@ -62,7 +62,7 @@
  	if (error)
  		return error;
  
-@@ -2070,7 +2071,7 @@ static long do_rmdir(int dfd, const char
+@@ -2074,7 +2075,7 @@ static long do_rmdir(int dfd, const char
  	error = PTR_ERR(dentry);
  	if (IS_ERR(dentry))
  		goto exit2;

@@ -28,10 +28,6 @@ vfs-listxattr.diff
 security-listxattr.diff
 vfs-removexattr.diff
 security-removexattr.diff
-file_permission-1.diff
-file_permission-2.diff
-file_permission-3.diff
-xattr_permission.diff
 unambiguous-__d_path.diff
 mount-consistent-__d_path.diff
 d_namespace_path.diff
@@ -52,8 +48,14 @@ apparmor-module_interface.diff
 apparmor-module_interface-2.diff
 apparmor-misc.diff
 apparmor-intree.diff
+sysctl-pathname.diff
+apparmor-sysctl-pathname.diff
 # split-up-nameidata.diff
 # vfs_create-nameidata.diff
+# do_path_lookup-nameidata.diff
+# sys_fchdir-nameidata.diff
+# file_permission-nameidata.diff
+# xattr_permission.diff
 # vfs_create-args.diff
 # vfs_mknod-args.diff
 # vfs_mkdir-args.diff
@@ -64,5 +66,4 @@ apparmor-intree.diff
 # vfs_rmdir-args.diff
 # vfs_unlink-args.diff
 # may_delete-args.diff
-sysctl-pathname.diff
-apparmor-sysctl-pathname.diff
+# lookup_parent.diff

@@ -54,7 +54,7 @@
  	dput(lower_new_dentry);
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2384,10 +2384,11 @@ asmlinkage long sys_link(const char __us
+@@ -2388,10 +2388,11 @@ asmlinkage long sys_link(const char __us
   *	   ->i_mutex on parents, which works but leads to some truely excessive
   *	   locking].
   */
@@ -69,7 +69,7 @@
  	int error = 0;
  	struct inode *target;
  
-@@ -2396,13 +2397,13 @@ static int vfs_rename_dir(struct inode *
+@@ -2400,13 +2401,13 @@ static int vfs_rename_dir(struct inode *
  	 * we'll need to flip '..'.
  	 */
  	if (new_dir != old_dir) {
@@ -86,7 +86,7 @@
  	if (error)
  		return error;
  
-@@ -2429,15 +2430,18 @@ static int vfs_rename_dir(struct inode *
+@@ -2433,15 +2434,18 @@ static int vfs_rename_dir(struct inode *
  	return error;
  }
  
@@ -110,7 +110,7 @@
  	if (error)
  		return error;
  
-@@ -2459,10 +2463,11 @@ static int vfs_rename_other(struct inode
+@@ -2463,10 +2467,11 @@ static int vfs_rename_other(struct inode
  	return error;
  }
  
@@ -125,7 +125,7 @@
  	int error;
  	int is_dir = S_ISDIR(old_dentry->d_inode->i_mode);
  	const char *old_name;
-@@ -2475,7 +2480,7 @@ int vfs_rename(struct inode *old_dir, st
+@@ -2479,7 +2484,7 @@ int vfs_rename(struct inode *old_dir, st
  		return error;
  
  	if (!new_dentry->d_inode)
@@ -134,7 +134,7 @@
  	else
  		error = may_delete(new_dir, new_dentry, is_dir);
  	if (error)
-@@ -2490,11 +2495,10 @@ int vfs_rename(struct inode *old_dir, st
+@@ -2494,11 +2499,10 @@ int vfs_rename(struct inode *old_dir, st
  	old_name = fsnotify_oldname_init(old_dentry->d_name.name);
  
  	if (is_dir)
@@ -149,7 +149,7 @@
  	if (!error) {
  		const char *new_name = old_dentry->d_name.name;
  		fsnotify_move(old_dir, new_dir, old_name, new_name, is_dir,
-@@ -2566,8 +2570,7 @@ static int do_rename(int olddfd, const c
+@@ -2570,8 +2574,7 @@ static int do_rename(int olddfd, const c
  	if (new_dentry == trap)
  		goto exit5;
  
