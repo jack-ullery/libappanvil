@@ -67,7 +67,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	mutex_unlock(&nd.dentry->d_inode->i_mutex);
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1534,7 +1534,8 @@ nfsd_link(struct svc_rqst *rqstp, struct
+@@ -1536,7 +1536,8 @@ nfsd_link(struct svc_rqst *rqstp, struct
  	dold = tfhp->fh_dentry;
  	dest = dold->d_inode;
  

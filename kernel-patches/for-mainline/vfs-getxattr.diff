@@ -96,7 +96,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		if (IS_ERR(dpacl) && PTR_ERR(dpacl) == -ENODATA)
  			dpacl = NULL;
  		else if (IS_ERR(dpacl)) {
-@@ -1938,7 +1940,8 @@ nfsd_get_posix_acl(struct svc_fh *fhp, i
+@@ -1942,7 +1944,8 @@ nfsd_get_posix_acl(struct svc_fh *fhp, i
  		return ERR_PTR(-EOPNOTSUPP);
  	}
  

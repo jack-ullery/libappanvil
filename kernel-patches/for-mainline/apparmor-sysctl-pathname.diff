@@ -63,7 +63,7 @@
  
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -634,6 +634,23 @@ int aa_perm_dir(struct aa_profile *profi
+@@ -664,6 +664,23 @@ int aa_perm_dir(struct aa_profile *profi
  			      AA_CHECK_DIR | AA_CHECK_LEAF);
  }
  
