@@ -1,0 +1,32 @@
+---
+ fs/nfsd/vfs.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1808,6 +1808,10 @@ nfsd_statfs(struct svc_rqst *rqstp, stru
+ __be32
+ nfsd_permission(struct svc_export *exp, struct dentry *dentry, int acc)
+ {
++	struct nameidata2 nd = {
++		.dentry = dentry,
++		.mnt = exp->ex_mnt,
++	};
+ 	struct inode	*inode = dentry->d_inode;
+ 	int		err;
+ 
+@@ -1873,12 +1877,12 @@ nfsd_permission(struct svc_export *exp, 
+ 	    inode->i_uid == current->fsuid)
+ 		return 0;
+ 
+-	err = permission(inode, acc & (MAY_READ|MAY_WRITE|MAY_EXEC), NULL);
++	err = permission(inode, acc & (MAY_READ|MAY_WRITE|MAY_EXEC), &nd);
+ 
+ 	/* Allow read access to binaries even when mode 111 */
+ 	if (err == -EACCES && S_ISREG(inode->i_mode) &&
+ 	    acc == (MAY_READ | MAY_OWNER_OVERRIDE))
+-		err = permission(inode, MAY_EXEC, NULL);
++		err = permission(inode, MAY_EXEC, &nd);
+ 
+ 	return err? nfserrno(err) : 0;
+ }

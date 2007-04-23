@@ -43,7 +43,7 @@
  	return rc;
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1842,10 +1842,10 @@ fail:
+@@ -1841,10 +1841,10 @@ fail:
  }
  EXPORT_SYMBOL_GPL(lookup_create);
  
@@ -57,7 +57,7 @@
  
  	if (error)
  		return error;
-@@ -1856,7 +1856,7 @@ int vfs_mknod(struct inode *dir, struct 
+@@ -1855,7 +1855,7 @@ int vfs_mknod(struct inode *dir, struct 
  	if (!dir->i_op || !dir->i_op->mknod)
  		return -EPERM;
  
@@ -66,7 +66,7 @@
  	if (error)
  		return error;
  
-@@ -1895,12 +1895,11 @@ asmlinkage long sys_mknodat(int dfd, con
+@@ -1894,12 +1894,11 @@ asmlinkage long sys_mknodat(int dfd, con
  			error = vfs_create(ND2(&nd), dentry, mode);
  			break;
  		case S_IFCHR: case S_IFBLK:

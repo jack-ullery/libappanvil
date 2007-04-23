@@ -57,7 +57,7 @@
  	return rc;
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2255,15 +2255,18 @@ asmlinkage long sys_symlink(const char _
+@@ -2254,15 +2254,18 @@ asmlinkage long sys_symlink(const char _
  	return sys_symlinkat(oldname, AT_FDCWD, newname);
  }
  
@@ -78,7 +78,7 @@
  	if (error)
  		return error;
  
-@@ -2280,8 +2283,8 @@ int vfs_link(struct dentry *old_dentry, 
+@@ -2279,8 +2282,8 @@ int vfs_link(struct dentry *old_dentry, 
  	if (S_ISDIR(old_dentry->d_inode->i_mode))
  		return -EPERM;
  
@@ -89,7 +89,7 @@
  	if (error)
  		return error;
  
-@@ -2334,8 +2337,7 @@ asmlinkage long sys_linkat(int olddfd, c
+@@ -2333,8 +2336,7 @@ asmlinkage long sys_linkat(int olddfd, c
  	error = PTR_ERR(new_dentry);
  	if (IS_ERR(new_dentry))
  		goto out_unlock;

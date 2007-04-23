@@ -67,3 +67,4 @@ apparmor-sysctl-pathname.diff
 # vfs_unlink-args.diff
 # may_delete-args.diff
 # lookup_parent.diff
+# nfsd_permission-nameidata.diff

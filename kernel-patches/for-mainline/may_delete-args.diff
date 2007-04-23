@@ -4,7 +4,7 @@
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1386,8 +1386,9 @@ static inline int check_sticky(struct in
+@@ -1385,8 +1385,9 @@ static inline int check_sticky(struct in
   * 10. We don't allow removal of NFS sillyrenamed files; it's handled by
   *     nfs_async_unlink().
   */
@@ -15,7 +15,7 @@
  	int error;
  
  	if (!victim->d_inode)
-@@ -1396,7 +1397,7 @@ static int may_delete(struct inode *dir,
+@@ -1395,7 +1396,7 @@ static int may_delete(struct inode *dir,
  	BUG_ON(victim->d_parent->d_inode != dir);
  	audit_inode_child(victim->d_name.name, victim->d_inode, dir);
  
@@ -24,7 +24,7 @@
  	if (error)
  		return error;
  	if (IS_APPEND(dir))
-@@ -2012,7 +2013,7 @@ void dentry_unhash(struct dentry *dentry
+@@ -2011,7 +2012,7 @@ void dentry_unhash(struct dentry *dentry
  int vfs_rmdir(struct nameidata2 *nd, struct dentry *dentry)
  {
  	struct inode *dir = nd->dentry->d_inode;
@@ -33,7 +33,7 @@
  
  	if (error)
  		return error;
-@@ -2094,7 +2095,7 @@ asmlinkage long sys_rmdir(const char __u
+@@ -2093,7 +2094,7 @@ asmlinkage long sys_rmdir(const char __u
  int vfs_unlink(struct nameidata2 *nd, struct dentry *dentry)
  {
  	struct inode *dir = nd->dentry->d_inode;
@@ -42,7 +42,7 @@
  
  	if (error)
  		return error;
-@@ -2480,14 +2481,14 @@ int vfs_rename(struct nameidata2 *old_nd
+@@ -2479,14 +2480,14 @@ int vfs_rename(struct nameidata2 *old_nd
  	if (old_dentry->d_inode == new_dentry->d_inode)
   		return 0;
   

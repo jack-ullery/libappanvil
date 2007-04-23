@@ -74,7 +74,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  fs/libfs.c                     |    2 +-
  fs/minix/namei.c               |    4 ++--
  fs/msdos/namei.c               |    4 ++--
- fs/namei.c                     |   38 ++++++++++++++++++++------------------
+ fs/namei.c                     |   41 +++++++++++++++++++++--------------------
  fs/ncpfs/dir.c                 |   14 +++++++-------
  fs/nfs/dir.c                   |   30 +++++++++++++++---------------
  fs/nfs/nfs3proc.c              |    2 +-
@@ -124,7 +124,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  security/apparmor/lsm.c        |    2 +-
  security/dummy.c               |    2 +-
  security/selinux/hooks.c       |    2 +-
- 108 files changed, 272 insertions(+), 250 deletions(-)
+ 108 files changed, 273 insertions(+), 252 deletions(-)
 
 --- a/fs/9p/vfs_inode.c
 +++ b/fs/9p/vfs_inode.c
@@ -1247,16 +1247,17 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (unlikely(status <= 0)) {
  		/*
  		 * The dentry failed validation.
-@@ -455,7 +455,7 @@ static int exec_permission_lite(struct i
+@@ -428,8 +428,7 @@ static struct dentry * cached_lookup(str
+  * short-cut DAC fails, then call permission() to do more
+  * complete permission check.
+  */
+-static int exec_permission_lite(struct inode *inode,
+-				       struct nameidata *nd)
++static int exec_permission_lite(struct inode *inode, struct nameidata2 *nd)
+ {
+ 	umode_t	mode = inode->i_mode;
  
- 	return -EACCES;
- ok:
--	return security_inode_permission(inode, MAY_EXEC, nd);
-+	return security_inode_permission(inode, MAY_EXEC, ND2(nd));
- }
- 
- /*
-@@ -491,7 +491,7 @@ static struct dentry * real_lookup(struc
+@@ -491,7 +490,7 @@ static struct dentry * real_lookup(struc
  		struct dentry * dentry = d_alloc(parent, name);
  		result = ERR_PTR(-ENOMEM);
  		if (dentry) {
@@ -1265,16 +1266,19 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  			if (result)
  				dput(dentry);
  			else
-@@ -832,7 +832,7 @@ static fastcall int __link_path_walk(con
+@@ -830,9 +829,9 @@ static fastcall int __link_path_walk(con
+ 		unsigned int c;
+ 
  		nd->flags |= LOOKUP_CONTINUE;
- 		err = exec_permission_lite(inode, nd);
+-		err = exec_permission_lite(inode, nd);
++		err = exec_permission_lite(inode, ND2(nd));
  		if (err == -EAGAIN)
 -			err = vfs_permission(nd, MAY_EXEC);
 +			err = vfs_permission(ND2(nd), MAY_EXEC);
   		if (err)
  			break;
  
-@@ -978,7 +978,8 @@ return_reval:
+@@ -978,7 +977,8 @@ return_reval:
  		    (nd->dentry->d_sb->s_type->fs_flags & FS_REVAL_DOT)) {
  			err = -ESTALE;
  			/* Note: we do not d_invalidate() */
@@ -1284,7 +1288,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  				break;
  		}
  return_base:
-@@ -1194,7 +1195,7 @@ static int __path_lookup_intent_open(int
+@@ -1194,7 +1194,7 @@ static int __path_lookup_intent_open(int
  			path_release(nd);
  		}
  	} else if (err != 0)
@@ -1293,7 +1297,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	return err;
  }
  
-@@ -1255,7 +1256,7 @@ static struct dentry * __lookup_hash(str
+@@ -1255,7 +1255,7 @@ static struct dentry * __lookup_hash(str
  	int err;
  
  	inode = base->d_inode;
@@ -1302,7 +1306,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	dentry = ERR_PTR(err);
  	if (err)
  		goto out;
-@@ -1277,7 +1278,7 @@ static struct dentry * __lookup_hash(str
+@@ -1277,7 +1277,7 @@ static struct dentry * __lookup_hash(str
  		dentry = ERR_PTR(-ENOMEM);
  		if (!new)
  			goto out;
@@ -1311,7 +1315,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  		if (!dentry)
  			dentry = new;
  		else
-@@ -1422,7 +1423,7 @@ static int may_delete(struct inode *dir,
+@@ -1422,7 +1422,7 @@ static int may_delete(struct inode *dir,
   *  4. We can't do it if dir is immutable (done in permission())
   */
  static inline int may_create(struct inode *dir, struct dentry *child,
@@ -1320,7 +1324,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	if (child->d_inode)
  		return -EEXIST;
-@@ -1492,7 +1493,7 @@ void unlock_rename(struct dentry *p1, st
+@@ -1492,7 +1492,7 @@ void unlock_rename(struct dentry *p1, st
  }
  
  int vfs_create(struct inode *dir, struct dentry *dentry, int mode,
@@ -1329,7 +1333,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	int error = may_create(dir, dentry, nd);
  
-@@ -1528,7 +1529,7 @@ int may_open(struct nameidata *nd, int a
+@@ -1528,7 +1528,7 @@ int may_open(struct nameidata *nd, int a
  	if (S_ISDIR(inode->i_mode) && (flag & FMODE_WRITE))
  		return -EISDIR;
  
@@ -1338,7 +1342,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (error)
  		return error;
  
-@@ -1601,7 +1602,7 @@ static int open_namei_create(struct name
+@@ -1601,7 +1601,7 @@ static int open_namei_create(struct name
  
  	if (!IS_POSIXACL(dir->d_inode))
  		mode &= ~current->fs->umask;
@@ -1347,7 +1351,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	mutex_unlock(&dir->d_inode->i_mutex);
  	dput(nd->dentry);
  	nd->dentry = path->dentry;
-@@ -1734,7 +1735,7 @@ exit_dput:
+@@ -1734,7 +1734,7 @@ exit_dput:
  	dput_path(&path, nd);
  exit:
  	if (!IS_ERR(nd->intent.open.file))
@@ -1356,7 +1360,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	path_release(nd);
  	return error;
  
-@@ -1762,7 +1763,7 @@ do_link:
+@@ -1762,7 +1762,7 @@ do_link:
  		 * me so stupid? Anathema to whoever designed this non-sense
  		 * with "intent.open".
  		 */
@@ -1365,7 +1369,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  		return error;
  	}
  	nd->flags &= ~LOOKUP_PARENT;
-@@ -1887,7 +1888,8 @@ asmlinkage long sys_mknodat(int dfd, con
+@@ -1887,7 +1887,8 @@ asmlinkage long sys_mknodat(int dfd, con
  	if (!IS_ERR(dentry)) {
  		switch (mode & S_IFMT) {
  		case 0: case S_IFREG:
