@@ -1,3 +1,5 @@
+#statvfs.diff
+#statvfs-2.diff
 security-create.diff
 proc_setattr.diff 
 proc_sys_setattr.diff
@@ -47,6 +49,8 @@ apparmor-ns-ptrace.diff
 apparmor-module_interface.diff
 apparmor-module_interface-2.diff
 apparmor-misc.diff
+audit-cleanup.diff
+comm.diff
 apparmor-intree.diff
 sysctl-pathname.diff
 apparmor-sysctl-pathname.diff
