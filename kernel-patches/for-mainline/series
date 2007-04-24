@@ -51,6 +51,7 @@ apparmor-module_interface-2.diff
 apparmor-misc.diff
 audit-cleanup.diff
 comm.diff
+ecryptfs-d_revalidate.diff
 apparmor-intree.diff
 sysctl-pathname.diff
 apparmor-sysctl-pathname.diff
