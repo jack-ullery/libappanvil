@@ -27,7 +27,7 @@ nothing...
  
 +	comm = comm_buffer + sizeof(comm_buffer) - sizeof(current->comm);
 +	get_task_comm(comm, current);
-+	comm = mangle(current->comm, comm_buffer);
++	comm = mangle(comm, comm_buffer);
 +	if (!comm)
 +		comm = "?";
 +

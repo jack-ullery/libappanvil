@@ -1,0 +1,141 @@
+---
+ fs/namei.c                   |    2 ++
+ security/apparmor/apparmor.h |    5 ++---
+ security/apparmor/lsm.c      |   16 ++++++++--------
+ security/apparmor/main.c     |   14 +-------------
+ 4 files changed, 13 insertions(+), 24 deletions(-)
+
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1396,6 +1396,7 @@ static int may_delete(struct nameidata2 
+ 	BUG_ON(victim->d_parent->d_inode != dir);
+ 	audit_inode_child(victim->d_name.name, victim->d_inode, dir);
+ 
++	nd->flags |= LOOKUP_PARENT;
+ 	error = permission(dir, MAY_WRITE | MAY_EXEC, nd);
+ 	if (error)
+ 		return error;
+@@ -1432,6 +1433,7 @@ static inline int may_create(struct name
+ 		return -EEXIST;
+ 	if (IS_DEADDIR(nd->dentry->d_inode))
+ 		return -ENOENT;
++	nd->flags |= LOOKUP_PARENT;
+ 	return permission(nd->dentry->d_inode, MAY_WRITE | MAY_EXEC, nd);
+ }
+ 
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -206,9 +206,8 @@ struct aa_audit {
+ 			(p)->parent->name, (p)->name)
+ 
+ /* Flags for the permission check functions */
+-#define AA_CHECK_LEAF	1  /* this is the leaf lookup component */
+-#define AA_CHECK_FD	2  /* coming from a file descriptor */
+-#define AA_CHECK_DIR	4  /* file type is directory */
++#define AA_CHECK_FD	1  /* coming from a file descriptor */
++#define AA_CHECK_DIR	2  /* file type is directory */
+ 
+ /* main.c */
+ extern int alloc_null_complain_profile(void);
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -288,7 +288,7 @@ static int aa_permission(struct inode *i
+ static int apparmor_inode_create(struct inode *dir, struct dentry *dentry,
+ 				 struct vfsmount *mnt, int mask)
+ {
+-	return aa_permission(dir, dentry, mnt, MAY_WRITE, AA_CHECK_LEAF);
++	return aa_permission(dir, dentry, mnt, MAY_WRITE, 0);
+ }
+ 
+ static int apparmor_inode_link(struct dentry *old_dentry,
+@@ -317,7 +317,7 @@ out:
+ static int apparmor_inode_unlink(struct inode *dir, struct dentry *dentry,
+ 				 struct vfsmount *mnt)
+ {
+-	int check = AA_CHECK_LEAF;
++	int check = 0;
+ 
+ 	if (S_ISDIR(dentry->d_inode->i_mode))
+ 		check |= AA_CHECK_DIR;
+@@ -327,13 +327,13 @@ static int apparmor_inode_unlink(struct 
+ static int apparmor_inode_symlink(struct inode *dir, struct dentry *dentry,
+ 				  struct vfsmount *mnt, const char *old_name)
+ {
+-	return aa_permission(dir, dentry, mnt, MAY_WRITE, AA_CHECK_LEAF);
++	return aa_permission(dir, dentry, mnt, MAY_WRITE, 0);
+ }
+ 
+ static int apparmor_inode_mknod(struct inode *dir, struct dentry *dentry,
+ 				struct vfsmount *mnt, int mode, dev_t dev)
+ {
+-	return aa_permission(dir, dentry, mnt, MAY_WRITE, AA_CHECK_LEAF);
++	return aa_permission(dir, dentry, mnt, MAY_WRITE, 0);
+ }
+ 
+ static int apparmor_inode_rename(struct inode *old_dir,
+@@ -353,7 +353,7 @@ static int apparmor_inode_rename(struct 
+ 
+ 	if (profile) {
+ 		struct inode *inode = old_dentry->d_inode;
+-		int check = AA_CHECK_LEAF;
++		int check = 0;
+ 
+ 		if (inode && S_ISDIR(inode->i_mode))
+ 			check |= AA_CHECK_DIR;
+@@ -378,7 +378,7 @@ static int apparmor_inode_permission(str
+ {
+ 	int check = 0;
+ 
+-	if (!nd)
++	if (!nd || nd->flags & LOOKUP_PARENT)
+ 		return 0;
+ 	if (S_ISDIR(inode->i_mode))
+ 		check |= AA_CHECK_DIR;
+@@ -481,7 +481,7 @@ static int apparmor_file_permission(stru
+ 		struct dentry *dentry = file->f_dentry;
+ 		struct vfsmount *mnt = file->f_vfsmnt;
+ 		struct inode *inode = dentry->d_inode;
+-		int check = AA_CHECK_LEAF | AA_CHECK_FD;
++		int check = AA_CHECK_FD;
+ 
+ 		/*
+ 		 * FIXME: We should remember which profiles we revalidated
+@@ -552,7 +552,7 @@ static inline int aa_mmap(struct file *f
+ 
+ 	dentry = file->f_dentry;
+ 	return aa_permission(dentry->d_inode, dentry, file->f_vfsmnt, mask,
+-			     AA_CHECK_LEAF | AA_CHECK_FD);
++			     AA_CHECK_FD);
+ }
+ 
+ static int apparmor_file_mmap(struct file *file, unsigned long reqprot,
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -614,17 +614,6 @@ int aa_perm(struct aa_profile *profile, 
+ 	struct aa_audit sa;
+ 	int error = 0;
+ 
+-	if ((check & (AA_CHECK_DIR | AA_CHECK_LEAF)) == AA_CHECK_DIR) {
+-		/*
+-		 * If checking a non-leaf directory, allow traverse and
+-		 * write access: we do not require profile access to
+-		 * non-leaf directories in order to traverse them,
+-		 * create or remove files in them. We do require
+-		 * MAY_WRITE profile access on the actual file or
+-		 * directory being created or removed, though.
+-		 */
+-		mask &= ~(MAY_EXEC | MAY_WRITE);
+-	}
+ 	if (mask == 0)
+ 		goto out;
+ 
+@@ -660,8 +649,7 @@ int aa_perm_dir(struct aa_profile *profi
+ 	sa.flags = 0;
+ 	sa.gfp_mask = GFP_KERNEL;
+ 
+-	return aa_perm_dentry(profile, dentry, mnt, &sa, mask,
+-			      AA_CHECK_DIR | AA_CHECK_LEAF);
++	return aa_perm_dentry(profile, dentry, mnt, &sa, mask, AA_CHECK_DIR);
+ }
+ 
+ int aa_perm_path(struct aa_profile *profile, const char *name, int mask)
