@@ -1,0 +1,37 @@
+I don't see what prevents nd from becoming NULL here, particularly
+from lookup_one_len -> __lookup_hash -> permission -> cached_lookup ->
+do_revalidate -> d_op->d_revalidate, which ecryptfs_lookup uses.
+
+More probably ecryptfs shouldn't be using lookup_one_len on other
+filesystems, though.
+
+---
+ fs/ecryptfs/dentry.c |   16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
+
+--- a/fs/ecryptfs/dentry.c
++++ b/fs/ecryptfs/dentry.c
+@@ -51,13 +51,17 @@ static int ecryptfs_d_revalidate(struct 
+ 
+ 	if (!lower_dentry->d_op || !lower_dentry->d_op->d_revalidate)
+ 		goto out;
+-	dentry_save = nd->dentry;
+-	vfsmount_save = nd->mnt;
+-	nd->dentry = lower_dentry;
+-	nd->mnt = lower_mnt;
++	if (nd) {
++		dentry_save = nd->dentry;
++		vfsmount_save = nd->mnt;
++		nd->dentry = lower_dentry;
++		nd->mnt = lower_mnt;
++	}
+ 	rc = lower_dentry->d_op->d_revalidate(lower_dentry, nd);
+-	nd->dentry = dentry_save;
+-	nd->mnt = vfsmount_save;
++	if (nd) {
++		nd->dentry = dentry_save;
++		nd->mnt = vfsmount_save;
++	}
+ 	if (dentry->d_inode) {
+ 		struct inode *lower_inode =
+ 			ecryptfs_inode_to_lower(dentry->d_inode);
