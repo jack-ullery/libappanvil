@@ -57,9 +57,6 @@ unless (-d $profiledir) {
     exit 1;
 }
 
-# read the settings in /etc/logprof.conf
-readconfig();
-
 # what are we profiling?
 my @profiling = @ARGV;
 

@@ -72,7 +72,6 @@ our @EXPORT = qw(
 
     do_logprof_pass
 
-    readconfig
     loadincludes
     readprofile
     readprofiles
@@ -87,6 +86,7 @@ our @EXPORT = qw(
 
     checkProfileSyntax
     checkIncludeSyntax
+    check_qualifiers
 
     isSkippableFile
 );
@@ -118,33 +118,20 @@ textdomain("apparmor-utils");
 
 # where do we get our log messages from?
 our $filename;
-if (-f "/var/log/audit/audit.log") {
-    $filename = "/var/log/audit/audit.log";
-} elsif (-f "/etc/slackware-version") {
-    $filename = "/var/log/syslog";
-} else {
-    $filename = "/var/log/messages";
-}
 
-our $profiledir = "/etc/apparmor.d";
+our $parser;
+our $ldd;
+our $profiledir;
 
 # we keep track of the included profile fragments with %include
 my %include;
 
 my %existing_profiles;
 
-our $ldd    = "/usr/bin/ldd";
-our $parser = "/sbin/subdomain_parser";
-$parser = "/sbin/apparmor_parser" if -f "/sbin/apparmor_parser";
-
 our $seenevents = 0;
 
 # behaviour tweaking
-our %qualifiers;
-our %required_hats;
-our %defaulthat;
-our %globmap;
-our @custom_includes;
+our $cfg;
 
 # these are globs that the user specifically entered.  we'll keep track of
 # them so that if one later matches, we'll suggest it again.
@@ -631,9 +618,9 @@ sub create_new_profile {
     }
 
     # create required infrastructure hats if it's a known change_hat app
-    for my $hatglob (keys %required_hats) {
+  for my $hatglob (keys %{$cfg->{required_hats}}) {
         if ($fqdbin =~ /$hatglob/) {
-            for my $hat (sort split(/\s+/, $required_hats{$hatglob})) {
+      for my $hat (sort split(/\s+/, $cfg->{required_hats}{$hatglob})) {
                 $profile->{$hat} = { flags => "complain" };
             }
         }
@@ -1102,8 +1089,8 @@ sub handlechildren {
 
                 # figure out what our default hat for this application is.
                 my $defaulthat;
-                for my $hatglob (keys %defaulthat) {
-                    $defaulthat = $defaulthat{$hatglob}
+                for my $hatglob (keys %{$cfg->{defaulthat}}) {
+                    $defaulthat = $cfg->{defaulthat}{$hatglob}
                       if $profile =~ /$hatglob/;
                 }
 
@@ -1262,7 +1249,7 @@ sub handlechildren {
                         $ans       = "CMD_UNCONFINED_CLEAN";
                         $exec_mode = "Ux";
                     } else {
-                        my $options = $qualifiers{$exec_target} || "ipu";
+            my $options = $cfg->{qualifiers}{$exec_target} || "ipu";
 
                         # force "ix" as the only option when the profiled
                         # program executes itself
@@ -1854,8 +1841,10 @@ sub ask_the_questions {
 
                             # only match includes that can be suggested to
                             # the user
-                            for my $incmatch (@custom_includes) {
-                                $includevalid = 1 if $incname =~ /$incmatch/;
+                            for my $incm (split(/\s+/,
+                                                $cfg->{settings}{custom_includes})
+                                         ) {
+                                $includevalid = 1 if $incname =~ /$incm/;
                             }
                             $includevalid = 1 if $incname =~ /abstractions/;
                             next if ($includevalid == 0);
@@ -2449,9 +2438,9 @@ sub parse_profile_data {
 
                 # if we're finishing a profile, make sure that any required
                 # infrastructure hats for this changehat application exist
-                for my $hatglob (keys %required_hats) {
+        for my $hatglob (keys %{$cfg->{required_hats}}) {
                     if ($profile =~ /$hatglob/) {
-                        for my $hat (split(/\s+/, $required_hats{$hatglob})) {
+            for my $hat (split(/\s+/, $cfg->{required_hats}{$hatglob})) {
                             unless ($profile_data->{$profile}{$hat}) {
                                 $profile_data->{$profile}{$hat} = { };
                                 # if we had to auto-instantiate a hat, we want to write out
@@ -3010,38 +2999,88 @@ sub matchinclude {
     }
 }
 
-sub readconfig () {
+sub check_qualifiers {
+  my $program = shift;
+
+  if ($cfg->{qualifiers}{$program}) {
+    unless($cfg->{qualifiers}{$program} =~ /p/) {
+      fatal_error(sprintf(gettext("\%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."), $program));
+    }
+  }
+}
+
+sub read_config {
+  my $filename = shift;
+
+  my $config;
+  if (open(CONF, "$confdir/$filename")) {
 
     my $which;
-
-    if (open(LPCONF, "$confdir/logprof.conf")) {
-        while (<LPCONF>) {
+    while (<CONF>) {
             chomp;
 
+      # ignore comments
             next if /^\s*#/;
 
             if (m/^\[(\S+)\]/) {
                 $which = $1;
-            } elsif (m/^\s*(\S+)\s*=\s*(.+)\s*$/) {
+      } elsif (m/^\s*(\S+)\s*=\s*(.*)\s*$/) {
                 my ($key, $value) = ($1, $2);
-                if ($which eq "defaulthat") {
-                    $defaulthat{$key} = $value;
-                } elsif ($which eq "qualifiers") {
-                    $qualifiers{$key} = $value;
-                } elsif ($which eq "globs") {
-                    $globmap{$key} = $value;
-                } elsif ($which eq "required_hats") {
-                    $required_hats{$key} = $value;
-                }
-            } elsif (m/^\s*(\S+)\s*$/) {
-                my $val = $1;
-                if ($which eq "custom_includes") {
-                    push @custom_includes, $val;
-                }
+        $config->{$which}{$key} = $value;
             }
         }
-        close(LPCONF);
+    close(CONF);
+  }
+
+  return $config;
+}
+
+sub write_config {
+  my ($filename, $config) = @_;
+
+  if (open(CONF, ">$confdir/$filename")) {
+    for my $section (sort keys %$config) {
+      print CONF "[$section]\n";
+
+      for my $key (sort keys %{$config->{$section}}) {
+        print CONF "  $key = $config->{$section}{$key}\n";
+      }
     }
+    close(CONF);
+  } else {
+    fatal_error "Can't write config file $filename: $!";
+  }
+
+  my $mode = 0600;
+  chmod $mode, "$confdir/$filename";
+}
+
+sub find_first_file {
+  my $list = shift;
+
+  my $filename;
+  for my $f (split(/\s+/, $list)) {
+    if (-f $f) {
+      $filename = $f;
+      last;
+    }
+  }
+
+  return $filename;
+}
+
+sub find_first_dir {
+  my $list = shift;
+
+  my $dirname;
+  for my $f (split(/\s+/, $list)) {
+    if (-d $f) {
+      $dirname = $f;
+      last;
+    }
+    }
+
+  return $dirname;
 }
 
 sub loadincludes {
@@ -3082,10 +3121,10 @@ sub globcommon ($) {
         push @globs, $libpath if $libpath ne $path;
     }
 
-    for my $glob (keys %globmap) {
+  for my $glob (keys %{$cfg->{globs}}) {
         if ($path =~ /$glob/) {
             my $globbedpath = $path;
-            $globbedpath =~ s/$glob/$globmap{$glob}/g;
+      $globbedpath =~ s/$glob/$cfg->{globs}{$glob}/g;
             push @globs, $globbedpath if $globbedpath ne $path;
         }
     }
@@ -3366,14 +3405,22 @@ sub Text_PromptUser ($) {
     }
 }
 
-unless (-x $ldd) {
-    $ldd = which("ldd") or fatal_error "Can't find ldd.";
-}
+###############################################################################
+# required initialization
 
-unless (-x $parser) {
-    $parser = which("apparmor_parser") || which("subdomain_parser")
-      or fatal_error "Can't find apparmor_parser.";
-}
+$cfg = read_config("logprof.conf");
+
+$profiledir = find_first_dir($cfg->{settings}{profiledir}) || "/etc/apparmor.d";
+unless (-d $profiledir) { fatal_error "Can't find AppArmor profiles."; }
+
+$parser = find_first_file($cfg->{settings}{parser}) || "/sbin/apparmor_parser";
+unless (-x $parser) { fatal_error "Can't find apparmor_parser."; }
+
+$filename = find_first_file($cfg->{settings}{logfiles}) || "/var/log/messages";
+unless (-f $filename) { fatal_error "Can't find system log."; }
+
+$ldd = find_first_file($cfg->{settings}{ldd}) || "/usr/bin/ldd";
+unless (-x $ldd) { fatal_error "Can't find ldd."; }
 
 1;
 
