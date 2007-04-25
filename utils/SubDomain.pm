@@ -2293,9 +2293,9 @@ sub checkIncludeSyntax($) {
                     if (-f "$profiledir/$id/$path") {
                         my $file = "$id/$path";
                         $file =~ s/$profiledir\///;
-                        my $err = loadinclude($file, \&printMessageErrorHandler);
-                        if ($err ne 0) {
-                            push @$errors, $err;
+                        eval { loadinclude($file); };
+                        if ( defined $@ && $@ ne "" ) {
+                            push @$errors, $@;
                         }
                     } elsif (-d "$id/$path") {
                         push @incdirs, "$id/$path";
@@ -2318,7 +2318,7 @@ sub checkProfileSyntax ($) {
     for my $file (grep { -f "$profiledir/$_" } readdir(SDDIR)) {
         next if isSkippableFile($file);
         my $err = readprofile("$profiledir/$file", \&printMessageErrorHandler);
-        if (defined $err and $err ne 1) {
+        if (defined $err and $err ne "") {
             push @$errors, $err;
         }
     }
@@ -2345,218 +2345,243 @@ sub readprofile ($$) {
     my $file          = shift;
     my $error_handler = shift;
     if (open(SDPROF, "$file")) {
-        my ($profile, $hat, $in_contained_hat);
-        my $initial_comment = "";
-        while (<SDPROF>) {
-            chomp;
+        local $/;
+        my $data = <SDPROF>;
+        close(SDPROF);
 
-            # we don't care about blank lines
-            next if /^\s*$/;
+        eval {
+            my $profile_data = parse_profile_data($data, $file);
+            if ($profile_data) {
+                attach_profile_data(\%sd, $profile_data);
+            }
+        };
 
-            # start of a profile...
-            if (m/^\s*("??\/.+?"??)\s+(flags=\(.+\)\s+)*\{\s*$/) {
+        # if there were errors loading the profile, call the error handler
+        if ($@) {
+            $@ =~ s/\n$//;
+            return &$error_handler($@);
+        }
+  } else {
+      $DEBUGGING && debug "readprofile: can't read $file - skipping";
+  }
+}
 
-                # if we run into the start of a profile while we're already in a
-                # profile, something's wrong...
-                if ($profile) {
-                    return &$error_handler("$profile profile in $file contains syntax errors.");
-                }
+sub attach_profile_data {
+    my ($profiles, $profile_data) = @_;
 
-                # we hit the start of a profile, keep track of it...
-                $profile = $1;
-                my $flags = $2;
+    for my $p ( keys %$profile_data) {
+        $profiles->{$p} = $profile_data->{$p};
+    }
+}
+
+sub parse_profile_data {
+    my ($data, $file) = @_;
+
+    my ($profile_data, $profile, $hat, $in_contained_hat);
+    my $initial_comment = "";
+    for (split(/\n/, $data)) {
+        chomp;
+
+        # we don't care about blank lines
+        next if /^\s*$/;
+
+        # start of a profile...
+        if (m/^\s*("??\/.+?"??)\s+(flags=\(.+\)\s+)*\{\s*$/) {
+
+            # if we run into the start of a profile while we're already in a
+            # profile, something's wrong...
+            if ($profile) {
+                die "$profile profile in $file contains syntax errors.\n";
+            }
+
+            # we hit the start of a profile, keep track of it...
+            $profile  = $1;
+            my $flags = $2;
+            $in_contained_hat = 0;
+
+            # hat is same as profile name if we're not in a hat
+            ($profile, $hat) = split /\^/, $profile;
+
+            # deal with whitespace in profile and hat names.
+            $profile = $1 if $profile =~ /^"(.+)"$/;
+            $hat     = $1 if $hat && $hat =~ /^"(.+)"$/;
+
+            # if we run into old-style hat declarations mark the profile as
+            # changed so we'll write it out as new-style
+            if ($hat && $hat ne $profile) {
+                $changed{$profile} = 1;
+            }
+
+            $hat           ||= $profile;
+
+            # keep track of profile flags
+            if ($flags && $flags =~ /^flags=\((.+)\)\s*$/) {
+                $flags = $1;
+                $profile_data->{$profile}{$hat}{flags} = $flags;
+            }
+
+            $profile_data->{$profile}{$hat}{netdomain} = [];
+
+            # store off initial comment if they have one
+            $profile_data->{$profile}{$hat}{initial_comment} = $initial_comment if $initial_comment;
+            $initial_comment = "";
+
+        } elsif (m/^\s*\}\s*$/) {                    # end of a profile...
+
+            # if we hit the end of a profile when we're not in one, something's
+            # wrong...
+            if (not $profile) {
+                die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
+            }
+
+            if ($in_contained_hat) {
+                $hat = $profile;
                 $in_contained_hat = 0;
+            } else {
 
-                # hat is same as profile name if we're not in a hat
-                ($profile, $hat) = split /\^/, $profile;
-
-                # deal with whitespace in profile and hat names.
-                $profile = $1 if $profile =~ /^"(.+)"$/;
-                $hat     = $1 if $hat && $hat =~ /^"(.+)"$/;
-
-                # if we run into old-style hat declarations mark the profile as
-                # changed so we'll write it out as new-style
-                if ($hat && $hat ne $profile) {
-                    $changed{$profile} = 1;
-                }
-
-                $hat ||= $profile;
-
-                # keep track of profile flags
-                if ($flags && $flags =~ /^flags=\((.+)\)\s*$/) {
-                    $flags = $1;
-                    $sd{$profile}{$hat}{flags} = $flags;
-                }
-
-                $sd{$profile}{$hat}{netdomain} = [];
-
-                # store off initial comment if they have one
-                $sd{$profile}{$hat}{initial_comment} = $initial_comment
-                  if $initial_comment;
-                $initial_comment = "";
-
-            } elsif (m/^\s*\}\s*$/) {    # end of a profile...
-
-                # if we hit the end of a profile when we're not in one,
-                # something's wrong...
-                if (not $profile) {
-                    return &$error_handler(sprintf(gettext('%s contains syntax errors.'), $file));
-                }
-
-                if ($in_contained_hat) {
-                    $hat              = $profile;
-                    $in_contained_hat = 0;
-                } else {
-
-                    # if we're finishing a profile, make sure that any required
-                    # infrastructure hats for this changehat application exist
-                    for my $hatglob (keys %required_hats) {
-                        if ($profile =~ /$hatglob/) {
-                            for my $hat (split(/\s+/, $required_hats{$hatglob})) {
-                                unless ($sd{$profile}{$hat}) {
-                                    $sd{$profile}{$hat} = {};
-
-                                    # if we had to auto-instantiate a hat, we
-                                    # want to write out an updated version of
-                                    # the profile
-                                    $changed{$profile} = 1;
-                                }
+                # if we're finishing a profile, make sure that any required
+                # infrastructure hats for this changehat application exist
+                for my $hatglob (keys %required_hats) {
+                    if ($profile =~ /$hatglob/) {
+                        for my $hat (split(/\s+/, $required_hats{$hatglob})) {
+                            unless ($profile_data->{$profile}{$hat}) {
+                                $profile_data->{$profile}{$hat} = { };
+                                # if we had to auto-instantiate a hat, we want to write out
+                                # an updated version of the profile
+                                $changed{$profile} = 1;
                             }
                         }
                     }
-
-                    # mark that we're outside of a profile now...
-                    $profile         = undef;
-                    $initial_comment = "";
                 }
 
-            } elsif (m/^\s*capability\s+(\S+)\s*,\s*$/) {    # capability entry
-                if (not $profile) {
-                    return &$error_handler(sprintf(gettext('%s contains syntax errors.'), $file));
-                }
-
-                my $capability = $1;
-                $sd{$profile}{$hat}{capability}{$capability} = 1;
-
-            } elsif (/^\s*(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*$/i) {              # boolean definition
-            } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\+=\s*(.+)\s*$/) {                      # variable additions
-            } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*=\s*(.+)\s*$/) {                        # variable definitions
-            } elsif (m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*$/) {              # conditional -- boolean
-            } elsif (m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) {     # conditional -- variable defined
-            } elsif (m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) {    # conditional -- boolean defined
-            } elsif (m/^\s*([\"\@\/].*)\s+(\S+)\s*,\s*$/) {                                           # path entry
-                if (not $profile) {
-                    return &$error_handler(sprintf(gettext('%s contains syntax errors.'), $file));
-                }
-
-                my ($path, $mode) = ($1, $2);
-
-                # strip off any trailing spaces.
-                $path =~ s/\s+$//;
-
-                $path = $1 if $path =~ /^"(.+)"$/;
-
-                # make sure they don't have broken regexps in the profile
-                my $p_re = convert_regexp($path);
-                eval { "foo" =~ m/^$p_re$/; };
-                if ($@) {
-                    return &$error_handler(sprintf(gettext('Profile %s contains invalid regexp %s.'), $file, $path));
-                }
-
-                $sd{$profile}{$hat}{path}{$path} = $mode;
-
-            } elsif (m/^\s*#include <(.+)>\s*$/) {    # include stuff
-                my $include = $1;
-
-                if ($profile) {
-                    $sd{$profile}{$hat}{include}{$include} = 1;
-                } else {
-                    unless (exists $variables{$file}) {
-                        $variables{$file} = {};
-                    }
-                    $variables{$file}{ "#" . $include } = 1;    # sorry
-                }
-                my $ret = loadinclude($include, $error_handler);
-                return $ret if ($ret != 0);
-
-            } elsif (/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
-                if (not $profile) {
-                    return &$error_handler(sprintf(gettext('%s contains syntax errors.'), $file));
-                }
-
-                # XXX - BUGBUGBUG - don't strip netdomain entries
-
-                unless ($sd{$profile}{$hat}{netdomain}) {
-                    $sd{$profile}{$hat}{netdomain} = [];
-                }
-
-                # strip leading spaces and trailing comma
-                s/^\s+//;
-                s/,\s*$//;
-
-                # keep track of netdomain entries...
-                push @{ $sd{$profile}{$hat}{netdomain} }, $_;
-
-            } elsif (m/^\s*\^(\"?.+?)\s+(flags=\(.+\)\s+)*\{\s*$/) {
-                # start of a hat
-
-                # if we hit the start of a contained hat when we're not
-                # in a profile something is wrong...
-                if (not $profile) {
-                    return &$error_handler(sprintf(gettext('%s contains syntax errors.'), $file));
-                }
-
-                $in_contained_hat = 1;
-
-                # we hit the start of a hat inside the current profile
-                $hat = $1;
-                my $flags = $2;
-
-                # deal with whitespace in hat names.
-                $hat = $1 if $hat =~ /^"(.+)"$/;
-
-                # keep track of profile flags
-                if ($flags && $flags =~ /^flags=\((.+)\)\s*$/) {
-                    $flags = $1;
-                    $sd{$profile}{$hat}{flags} = $flags;
-                }
-
-                $sd{$profile}{$hat}{path}      = {};
-                $sd{$profile}{$hat}{netdomain} = [];
-
-                # store off initial comment if they have one
-                $sd{$profile}{$hat}{initial_comment} = $initial_comment
-                  if $initial_comment;
+                # mark that we're outside of a profile now...
+                $profile = undef;
                 $initial_comment = "";
-
-            } elsif (/^\s*\#/) {
-
-                # we only currently handle initial comments
-                if (not $profile) {
-
-                    # ignore vim syntax highlighting lines
-                    next if /^\s*\# vim:syntax/;
-
-                    # ignore Last Modified: lines
-                    next if /^\s*\# Last Modified:/;
-                    $initial_comment .= "$_\n";
-                }
-            } else {
-
-                # we hit something we don't understand in a profile...
-                return &$error_handler(sprintf(gettext('%s contains syntax errors.'), $file));
             }
-        }
 
-        # if we're still in a profile when we hit the end of the file, it's bad
-        if ($profile) {
-            return &$error_handler("Reached the end of $file while we were still inside the $profile profile.");
-        }
+        } elsif (m/^\s*capability\s+(\S+)\s*,\s*$/) {  # capability entry
+            if (not $profile) {
+                die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
+            }
 
-        close(SDPROF);
-    } else {
-        $DEBUGGING && debug "readprofile: can't read $file - skipping";
+            my $capability = $1;
+            $profile_data->{$profile}{$hat}{capability}{$capability} = 1;
+
+        } elsif (/^\s*(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*$/i) { # boolean definition
+        } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\+=\s*(.+)\s*$/) { # variable additions
+        } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*=\s*(.+)\s*$/) { # variable definitions
+        } elsif (m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*$/) { # conditional -- boolean
+        } elsif (m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) { # conditional -- variable defined
+        } elsif (m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) { # conditional -- boolean defined
+        } elsif (m/^\s*([\"\@\/].*)\s+(\S+)\s*,\s*$/) {     # path entry
+            if (not $profile) {
+                die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
+            }
+
+            my ($path, $mode) = ($1, $2);
+
+            # strip off any trailing spaces.
+            $path =~ s/\s+$//;
+
+            $path = $1 if $path =~ /^"(.+)"$/;
+
+            # make sure they don't have broken regexps in the profile
+            my $p_re = convert_regexp($path);
+            eval { "foo" =~ m/^$p_re$/; };
+            if ($@) {
+                die sprintf(gettext('Profile %s contains invalid regexp %s.'), $file, $path) . "\n";
+            }
+
+            $profile_data->{$profile}{$hat}{path}{$path} = $mode;
+
+        } elsif (m/^\s*#include <(.+)>\s*$/) {     # include stuff
+            my $include = $1;
+
+            if ($profile) {
+                $profile_data->{$profile}{$hat}{include}{$include} = 1;
+            } else {
+                unless (exists $variables{$file}) {
+                   $variables{$file} = { };
+                }
+                $variables{$file}{"#" . $include} = 1; # sorry
+            }
+
+            # try to load the include...
+            my $ret = eval { loadinclude($include); };
+            # propagate errors up the chain
+            if ($@) { die $@; }
+
+            return $ret if ( $ret != 0 );
+
+        } elsif (/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
+            if (not $profile) {
+                die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
+            }
+
+            # XXX - BUGBUGBUG - don't strip netdomain entries
+
+            unless ($profile_data->{$profile}{$hat}{netdomain}) {
+                $profile_data->{$profile}{$hat}{netdomain} = [ ];
+            }
+
+            # strip leading spaces and trailing comma
+            s/^\s+//;
+            s/,\s*$//;
+
+            # keep track of netdomain entries...
+            push @{$profile_data->{$profile}{$hat}{netdomain}}, $_;
+
+        } elsif (m/^\s*\^(\"?.+?)\s+(flags=\(.+\)\s+)*\{\s*$/) { # start of a hat
+            # if we hit the start of a contained hat when we're not in a profile
+            # something is wrong...
+            if (not $profile) {
+                die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
+            }
+
+            $in_contained_hat = 1;
+
+            # we hit the start of a hat inside the current profile
+            $hat = $1;
+            my $flags = $2;
+
+            # deal with whitespace in hat names.
+            $hat     = $1 if $hat     =~ /^"(.+)"$/;
+
+            # keep track of profile flags
+            if ($flags && $flags =~ /^flags=\((.+)\)\s*$/) {
+                $flags = $1;
+                $profile_data->{$profile}{$hat}{flags} = $flags;
+            }
+
+            $profile_data->{$profile}{$hat}{path} = { };
+            $profile_data->{$profile}{$hat}{netdomain} = [];
+
+            # store off initial comment if they have one
+            $profile_data->{$profile}{$hat}{initial_comment} = $initial_comment if $initial_comment;
+            $initial_comment = "";
+
+        } elsif (/^\s*\#/) {
+            # we only currently handle initial comments
+            if (not $profile) {
+                # ignore vim syntax highlighting lines
+                next if /^\s*\# vim:syntax/;
+                # ignore Last Modified: lines
+                next if /^\s*\# Last Modified:/;
+                $initial_comment .= "$_\n";
+            }
+        } else {
+
+            # we hit something we don't understand in a profile...
+            die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
+        }
     }
+
+    # if we're still in a profile when we hit the end of the file, it's bad
+    if ($profile) {
+        die "Reached the end of $file while we were still inside the $profile profile.\n";
+    }
+
+    return $profile_data;
 }
 
 sub escape ($) {
@@ -2573,106 +2598,158 @@ sub escape ($) {
     return $dangerous;
 }
 
-sub writeheader ($$$$) {
-    my ($fh, $profile, $hat, $indent) = @_;
+sub writeheader ($$) {
+    my ($profile_data, $name) = @_;
 
+    my @data;
     # deal with whitespace in profile names...
-    my $p = $profile;
-    $p = "\"$p\"" if $p =~ /\s/;
+    $name = "\"$name\"" if $name =~ /\s/;
 
-    if ($sd{$profile}{$hat}{flags}) {
-        print $fh "$p flags=($sd{$profile}{$hat}{flags}) {\n";
+    if ($profile_data->{flags}) {
+        push @data, "$name flags=($profile_data->{flags}) {";
     } else {
-        print $fh "$p {\n";
+        push @data, "$name {";
     }
+
+    return @data;
 }
 
-sub writeincludes ($$$$) {
-    my ($fh, $profile, $hat, $indent) = @_;
+sub writeincludes ($) {
+    my $profile_data = shift;
 
+    my @data;
     # dump out the includes
-    if (exists $sd{$profile}{$hat}{include}) {
-        for my $include (sort keys %{ $sd{$profile}{$hat}{include} }) {
-            print $fh "$indent  #include <$include>\n";
+    if (exists $profile_data->{include}) {
+        for my $include (sort keys %{$profile_data->{include}}) {
+            push @data, "  #include <$include>";
         }
-        print $fh "\n" if keys %{ $sd{$profile}{$hat}{include} };
+        push @data, "" if keys %{$profile_data->{include}};
     }
+
+    return @data;
 }
 
-sub writecapabilities ($$$$) {
-    my ($fh, $profile, $hat, $indent) = @_;
+sub writecapabilities ($) {
+    my $profile_data = shift;
 
+    my @data;
     # dump out the capability entries...
-    if (exists $sd{$profile}{$hat}{capability}) {
-        for my $capability (sort keys %{ $sd{$profile}{$hat}{capability} }) {
-            print $fh "$indent  capability $capability,\n";
+    if (exists $profile_data->{capability}) {
+        for my $capability (sort keys %{$profile_data->{capability}}) {
+          push @data, "  capability $capability,";
         }
-        print $fh "\n" if keys %{ $sd{$profile}{$hat}{capability} };
+        push @data, "" if keys %{$profile_data->{capability}};
     }
+
+    return @data;
 }
 
-sub writenetdomain ($$$$) {
-    my ($fh, $profile, $hat, $indent) = @_;
+sub writenetdomain ($) {
+    my $profile_data = shift;
 
+    my @data;
     # dump out the netdomain entries...
-    if (exists $sd{$profile}{$hat}{netdomain}) {
-        for my $nd (sort @{ $sd{$profile}{$hat}{netdomain} }) {
-            print $fh "$indent  $nd,\n";
+    if (exists $profile_data->{netdomain}) {
+        for my $nd (sort @{$profile_data->{netdomain}}) {
+          push @data, "  $nd,";
         }
-        print $fh "\n" if @{ $sd{$profile}{$hat}{netdomain} };
+        push @data, "" if @{$profile_data->{netdomain}};
     }
+
+    return @data;
 }
 
-sub writepaths ($$$$) {
-    my ($fh, $profile, $hat, $indent) = @_;
+sub writepaths ($) {
+    my $profile_data = shift;
 
-    if (exists $sd{$profile}{$hat}{path}) {
-        for my $path (sort keys %{ $sd{$profile}{$hat}{path} }) {
-            my $mode = $sd{$profile}{$hat}{path}{$path};
+    my @data;
+    if (exists $profile_data->{path}) {
+        for my $path (sort keys %{$profile_data->{path}}) {
+            my $mode = $profile_data->{path}{$path};
 
             # strip out any fake access() modes that might have slipped through
             $mode =~ s/X//g;
 
             # deal with whitespace in path names
             if ($path =~ /\s/) {
-                print $fh "$indent  \"$path\" $mode,\n";
+                push @data, "  \"$path\" $mode,";
             } else {
-                print $fh "$indent  $path $mode,\n";
+                push @data, "  $path $mode,";
             }
         }
     }
+
+    return @data;
 }
 
 sub writepiece ($$) {
-    my ($sdprof, $profile) = @_;
+    my ($profile_data, $name) = @_;
 
-    writeheader($sdprof, $profile, $profile, "");
-    writeincludes($sdprof, $profile, $profile, "");
-    writecapabilities($sdprof, $profile, $profile, "");
-    writenetdomain($sdprof, $profile, $profile, "");
-    writepaths($sdprof, $profile, $profile, "");
+    my @data;
+    push @data, writeheader($profile_data->{$name}, $name);
+    push @data, writeincludes($profile_data->{$name});
+    push @data, writecapabilities($profile_data->{$name});
+    push @data, writenetdomain($profile_data->{$name});
+    push @data, writepaths($profile_data->{$name});
 
-    for my $hat (grep { $_ ne $profile } sort keys %{ $sd{$profile} }) {
-
-        # deal with whitespace in profile names...
-        my $h = $hat;
-        $h = "\"$h\"" if $h =~ /\s/;
-
-        if ($sd{$profile}{$hat}{flags}) {
-            print $sdprof "\n  ^$h flags=($sd{$profile}{$hat}{flags}) {\n";
-        } else {
-            print $sdprof "\n  ^$h {\n";
-        }
-
-        writeincludes($sdprof, $profile, $hat, "  ");
-        writecapabilities($sdprof, $profile, $hat, "  ");
-        writenetdomain($sdprof, $profile, $hat, "  ");
-        writepaths($sdprof, $profile, $hat, "  ");
-
-        print $sdprof "  }\n";
+    for my $hat (grep { $_ ne $name } sort keys %{$profile_data}) {
+        push @data, "";
+        push @data, map { "  $_" } writeheader($profile_data->{$hat}, "^$hat");
+        push @data, map { "  $_" } writeincludes($profile_data->{$hat});
+        push @data, map { "  $_" } writecapabilities($profile_data->{$hat});
+        push @data, map { "  $_" } writenetdomain($profile_data->{$hat});
+        push @data, map { "  $_" } writepaths($profile_data->{$hat});
+        push @data, "  }";
     }
 
-    print $sdprof "}\n";
+    push @data, "}";
+
+    return @data;
+}
+
+sub serialize_profile {
+    my ($profile_data, $name, $include_metadata) = @_;
+
+    my $string = "";
+
+    if ($include_metadata) {
+        # keep track of when the file was last updated
+        $string .= "# Last Modified: " . localtime(time) . "\n";
+    }
+
+    # print out initial comment
+    if ($profile_data->{$name}{initial_comment}) {
+        my $comment = $profile_data->{$name}{initial_comment};
+        $comment =~ s/\\n/\n/g;
+        $string .= "$comment\n";
+    }
+
+# XXX - FIX THIS
+#
+#  # dump variables defined in this file
+#  if ($variables{$filename}) {
+#    for my $var (sort keys %{$variables{$filename}}) {
+#      if ($var =~ m/^@/) {
+#        my @values = sort @{$variables{$filename}{$var}};
+#        @values = map { escape($_) } @values;
+#        my $values = join (" ", @values);
+#        print SDPROF "$var = ";
+#        print SDPROF $values;
+#      } elsif ($var =~ m/^\$/) {
+#        print SDPROF "$var = ";
+#        print SDPROF ${$variables{$filename}{$var}};
+#      } elsif ($var =~ m/^\#/) {
+#        my $inc = $var;
+#        $inc =~ s/^\#//;
+#        print SDPROF "#include <$inc>";
+#      }
+#      print SDPROF "\n";
+#    }
+#  }
+
+    $string .= join("\n", writepiece($profile_data, $name));
+
+    return "$string\n";
 }
 
 sub writeprofile ($) {
@@ -2682,48 +2759,13 @@ sub writeprofile ($) {
 
     my $filename = getprofilefilename($profile);
 
-    open(SDPROF, ">$filename")
-      or fatal_error "Can't write new AppArmor profile $filename: $!";
-
-    # stick in a vim mode line to turn on AppArmor syntax highlighting
-    print SDPROF "# vim:syntax=apparmor\n";
-
-    # keep track of when the file was last updated
-    print SDPROF "# Last Modified: " . localtime(time) . "\n";
-
-    # print out initial comment
-    if ($sd{$profile}{$profile}{initial_comment}) {
-        $sd{$profile}{$profile}{initial_comment} =~ s/\\n/\n/g;
-        print SDPROF $sd{$profile}{$profile}{initial_comment};
-        print SDPROF "\n";
-    }
-
-    # dump variables defined in this file
-    if ($variables{$filename}) {
-        for my $var (sort keys %{ $variables{$filename} }) {
-            if ($var =~ m/^@/) {
-                my @values = sort @{ $variables{$filename}{$var} };
-                @values = map { escape($_) } @values;
-                my $values = join(" ", @values);
-                print SDPROF "$var = ";
-                print SDPROF $values;
-            } elsif ($var =~ m/^\$/) {
-                print SDPROF "$var = ";
-                print SDPROF ${ $variables{$filename}{$var} };
-            } elsif ($var =~ m/^\#/) {
-                my $inc = $var;
-                $inc =~ s/^\#//;
-                print SDPROF "#include <$inc>";
-            }
-            print SDPROF "\n";
-        }
-    }
-
-    print SDPROF "\n";
-
-    writepiece(\*SDPROF, $profile);
-
+    open(SDPROF, ">$filename") or fatal_error "Can't write new AppArmor profile $filename: $!";
+    my $profile_string = serialize_profile($sd{$profile}, $profile, 1);
+    print SDPROF $profile_string;
     close(SDPROF);
+
+    # mark the profile as up-to-date
+    delete $changed{$profile};
 }
 
 sub getprofileflags {
@@ -2745,6 +2787,7 @@ sub getprofileflags {
 
     return $flags;
 }
+
 
 sub matchliteral {
     my ($sd_regexp, $literal) = @_;
@@ -2774,9 +2817,31 @@ sub reload ($) {
     system("/bin/cat '$filename' | $parser -I$profiledir -r >/dev/null 2>&1");
 }
 
+sub read_include_from_file {
+    my $which = shift;
+
+    my $data;
+    if (open(INCLUDE, "$profiledir/$which")) {
+        local $/;
+        $data = <INCLUDE>;
+        close(INCLUDE);
+    }
+
+    return $data;
+}
+
+sub get_include_data {
+    my $which = shift;
+
+    my $data = read_include_from_file($which);
+    unless($data) {
+        fatal_error "Can't find include file $which: $!";
+    }
+    return $data;
+}
+
 sub loadinclude {
-    my $which         = shift;
-    my $error_handler = shift;
+    my $which = shift;
 
     # don't bother loading it again if we already have
     return 0 if $include{$which};
@@ -2784,11 +2849,8 @@ sub loadinclude {
     my @loadincludes = ($which);
     while (my $incfile = shift @loadincludes) {
 
-        # load the include from the directory we found earlier...
-        open(INCLUDE, "$profiledir/$incfile")
-          or fatal_error "Can't find include file $incfile: $!";
-
-        while (<INCLUDE>) {
+        my $data = get_include_data($incfile);
+        for (split(/\n/, $data)) {
             chomp;
 
             if (/^\s*(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*$/i) {
@@ -2819,7 +2881,8 @@ sub loadinclude {
                 my $p_re = convert_regexp($path);
                 eval { "foo" =~ m/^$p_re$/; };
                 if ($@) {
-                    return &$error_handler(sprintf(gettext('Include file %s contains invalid regexp %s.'), $incfile, $path));
+                    die sprintf(gettext('Include file %s contains invalid regexp %s.'),
+                                        $incfile, $path) . "\n";
                 }
 
                 $include{$incfile}{path}{$path} = $mode;
@@ -2843,7 +2906,8 @@ sub loadinclude {
                 next if /^\s*\#/;
 
                 # we hit something we don't understand in a profile...
-                return &$error_handler(sprintf(gettext('Include file %s contains syntax errors or is not a valid #include file.'), $incfile));
+                die sprintf(gettext('Include file %s contains syntax errors or is not a valid #include file.'),
+                                    $incfile) . "\n";
             }
         }
         close(INCLUDE);
@@ -2883,7 +2947,8 @@ sub matchincludes {
     # scan the include fragments for this profile looking for matches
     my @includelist = keys %{ $frag->{include} };
     while (my $include = shift @includelist) {
-        loadinclude($include, \&fatal_error);
+    my $ret = eval { loadinclude($include); };
+    if ($@) { fatal_error $@; }
         my ($cm, @m) = rematchfrag($include{$include}, $path);
         if ($cm) {
             $combinedmode .= $cm;
@@ -2984,7 +3049,8 @@ sub loadincludes {
                     if (-f "$profiledir/$id/$path") {
                         my $file = "$id/$path";
                         $file =~ s/$profiledir\///;
-                        loadinclude($file, \&fatal_error);
+          my $ret = eval { loadinclude($file); };
+          if ($@) { fatal_error $@; }
                     } elsif (-d "$id/$path") {
                         push @incdirs, "$id/$path";
                     }
