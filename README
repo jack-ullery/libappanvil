@@ -1,25 +1,6 @@
-Package Contents
-------------------
-  README 		- This file.
-
-  subdomain_parser	- This program loads the subdomain database into
-			  the kernel via the sysctl(2) interface.
-  subdomain.5		- Man page explaining the structure of the
-			  subdomain profile file.
-  change_hat.2		- Man page explaining the usage of the change_hat
-			  syscall.
-
-subdomain_parser takes all of its input from STDIN.  Thus, if you want to
-use it to load a description file, you want to do something like:
-
-	./subdomain_parser < /path/to/database/file
-
-Of course, you can use cat, etc. to load the contents of multiple files at
-the same time.
-
-subdomain_parser allows you to add, replace, and remove definitions
-through the use of command line options. The default is to add.
-`subdomain_parser --help` shows what the command line options are.
+The apparmor_parser allows you to add, replace, and remove AppArmor
+policy through the use of command line options. The default is to add.
+`apparmor_parser --help` shows what the command line options are.
 
 You can also find more information at
 <http://forge.novell.com/modules/xfmod/project/?apparmor>.
