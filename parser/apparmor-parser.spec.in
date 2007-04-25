@@ -52,11 +52,18 @@ Provides: subdomain_parser subdomain-parser
 Provides: subdomain-parser-demo subdomain-parser-common subdomain-leaf-cert
 Provides: libimnxcert
 %define apparmor_bin_prefix /lib/apparmor
-BuildRequires: bison flex te_latex latex2html w3m
+BuildRequires: bison flex latex2html w3m
+%if 0%{?suse_version} > 1020
+BuildRequires: texlive-latex
+%else
+BuildRequires: te_latex
+%endif
 
 %package -n apparmor-docs
 Summary: AppArmor documentation package
 Group: Applications/System
+Provides: subdomain-docs
+Obsoletes: subdomain-docs
 
 %description
 AppArmor Parser is a userlevel program that is used to load in program
@@ -102,7 +109,7 @@ make install DESTDIR=${RPM_BUILD_ROOT} \
 %dir %attr(-, root, root) %{apparmor_bin_prefix}
 %{apparmor_bin_prefix}/rc.apparmor.functions
 %{_prefix}/share/locale/*/*/apparmor-parser.mo
-%{_mandir}/man*/*
+%doc %{_mandir}/man*/*
 
 %files -n apparmor-docs
 %defattr(-,root,root)
@@ -166,6 +173,8 @@ fi
 %endif
 
 %changelog
+- Sat Apr 21 2007 - aj@suse.de
+- Use texlive for building.
 * Fri Apr 13 2007 - sbeattie@suse.de
 - Resurrect apparmor-docs as subpackage of apparmor-parser
 - Add text version of techdoc
