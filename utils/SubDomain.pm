@@ -600,8 +600,46 @@ sub handle_binfmt ($$) {
 
         $profile->{path}->{$library} = "mr";
     }
+}
 
-    return $profile;
+sub create_new_profile {
+    my $fqdbin = shift;
+
+    my $profile = {
+      $fqdbin => {
+          flags   => "complain",
+          include => { "abstractions/base" => 1    },
+          path    => { $fqdbin             => "mr" }
+      }
+    };
+
+    # if the executable exists on this system, pull in extra dependencies
+    if (-f $fqdbin) {
+        my $hashbang = head($fqdbin);
+        if ($hashbang =~ /^#!\s*(\S+)/) {
+            my $interpreter = get_full_path($1);
+            $profile->{$fqdbin}{path}->{$interpreter} = "ix";
+            if ($interpreter =~ /perl/) {
+                $profile->{$fqdbin}{include}->{"abstractions/perl"} = 1;
+            } elsif ($interpreter =~ m/\/bin\/(bash|sh)/) {
+                $profile->{$fqdbin}{include}->{"abstractions/bash"} = 1;
+            }
+            handle_binfmt($profile->{$fqdbin}, $interpreter);
+        } else {
+          handle_binfmt($profile->{$fqdbin}, $fqdbin);
+        }
+    }
+
+    # create required infrastructure hats if it's a known change_hat app
+    for my $hatglob (keys %required_hats) {
+        if ($fqdbin =~ /$hatglob/) {
+            for my $hat (sort split(/\s+/, $required_hats{$hatglob})) {
+                $profile->{$hat} = { flags => "complain" };
+            }
+        }
+    }
+
+    return { $fqdbin => $profile };
 }
 
 sub autodep ($) {
@@ -617,48 +655,18 @@ sub autodep ($) {
     # ignore directories
     return if -d $fqdbin;
 
-    my $profile = {
-        flags   => "complain",
-        include => { "abstractions/base" => 1 },
-        path    => { $fqdbin => "mr" }
-    };
-
-    # if the executable exists on this system, pull in extra dependencies
-    if (-f $fqdbin) {
-        my $hashbang = head($fqdbin);
-        if ($hashbang =~ /^#!\s*(\S+)/) {
-            my $interpreter = get_full_path($1);
-            $profile->{path}->{$interpreter} = "ix";
-            if ($interpreter =~ /perl/) {
-                $profile->{include}->{"abstractions/perl"} = 1;
-            } elsif ($interpreter =~ m/\/bin\/(bash|sh)/) {
-                $profile->{include}->{"abstractions/bash"} = 1;
-            }
-            $profile = handle_binfmt($profile, $interpreter);
-        } else {
-            $profile = handle_binfmt($profile, $fqdbin);
-        }
-    }
+    my $profile_data = create_new_profile($fqdbin);
 
     # stick the profile into our data structure.
-    $sd{$fqdbin}{$fqdbin} = $profile;
-
-    # instantiate the required infrastructure hats for this changehat app
-    for my $hatglob (keys %required_hats) {
-        if ($fqdbin =~ /$hatglob/) {
-            for my $hat (split(/\s+/, $required_hats{$hatglob})) {
-                $sd{$fqdbin}{$hat} = { flags => "complain" };
-            }
-        }
-    }
+    attach_profile_data(\%sd, $profile_data);
 
     if (-f "$profiledir/tunables/global") {
         my $file = getprofilefilename($fqdbin);
 
         unless (exists $variables{$file}) {
-            $variables{$file} = {};
+           $variables{$file} = { };
         }
-        $variables{$file}{"#tunables/global"} = 1;    # sorry
+        $variables{$file}{"#tunables/global"} = 1; # sorry
     }
 
     # write out the profile...
