@@ -1102,9 +1102,9 @@ sub handlechildren {
                 # keep track of previous answers for this run...
                 my $context = $profile;
                 $context .= " -> ^$uhat";
-                my $ans = $transitions{$context} || "";
+                my $ans = $transitions{$context} || "XXXINVALIDXXX";
 
-                unless ($ans) {
+                while ($ans !~ /^CMD_(ADDHAT|USEDEFAULT|DENY)$/) {
                     my $q = {};
                     $q->{headers} = [];
                     push @{ $q->{headers} }, gettext("Profile"), $profile;
@@ -1126,13 +1126,9 @@ sub handlechildren {
                     my $arg;
                     ($ans, $arg) = UI_PromptUser($q);
 
-                    $transitions{$context} = $ans;
                 }
+                $transitions{$context} = $ans;
 
-                # ugh, there's a bug here.  if they pick "abort" or "finish"
-                # and then say "well, no, I didn't really mean that", we need
-                # to ask the question again, but we currently go on to the
-                # next one.  oops.
                 if ($ans eq "CMD_ADDHAT") {
                     $hat = $uhat;
                     $sd{$profile}{$hat}{flags} = $sd{$profile}{$profile}{flags};
