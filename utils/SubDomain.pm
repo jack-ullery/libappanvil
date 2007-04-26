@@ -1933,7 +1933,8 @@ sub check_repo_for_newer {
           "Old Revision", $id,
           "New Revision", $p->{id},
         ];
-        $q->{explanation} = "An updated version of this profile has been found in the profile repository.  Would you like to use it?";
+        $q->{explanation} = 
+          gettext( "An updated version of this profile has been found in the profile repository.  Would you like to use it?");
         $q->{functions} = [
           "CMD_VIEW_CHANGES", "CMD_UPDATE_PROFILE", "CMD_IGNORE_UPDATE",
           "CMD_ABORT", "CMD_FINISHED"
@@ -1962,11 +1963,16 @@ sub check_repo_for_newer {
 
                 set_repo_info($sd{$profile}{$profile}, $url, $user, $p->{id});
 
-                UI_Info("Updated profile $profile to revision $p->{id}.");
+                UI_Info(
+                    sprintf(
+                        gettext("Updated profile %s to revision %s."),
+                        $profile, $p->{id}
+                    )
+                );
             };
 
             if ($@) {
-                UI_Info("Error parsing repository profile.");
+                UI_Info(gettext("Error parsing repository profile."));
             }
         }
     }
@@ -2393,7 +2399,8 @@ sub ask_to_enable_repo {
     $q->{headers} = [
       "Repository", $cfg->{settings}{repository},
     ];
-    $q->{explanation} = "Would you like to enable access to the profile repository?";
+    $q->{explanation} = 
+      gettext( "Would you like to enable access to the profile repository?" );
     $q->{functions} = [
       "CMD_ENABLE_REPO", "CMD_DISABLE_REPO", "CMD_ASK_LATER",
       "CMD_ABORT", "CMD_FINISHED",
@@ -2486,9 +2493,10 @@ sub ask_signup_info {
                                     "password [" . $pass . "]\n");
             } else {
                 $newuser = UI_YesNo(gettext("Create New User?"), "n");
-                $user    = UI_GetString("Username: ",            $user);
-                $pass    = UI_GetString("Password: ",            $pass);
-                $email = UI_GetString("Email Addr: ", $email) if ($newuser eq "y");
+                $user    = UI_GetString(gettext("Username: "), $user);
+                $pass    = UI_GetString(gettext("Password: "), $pass);
+                $email   = UI_GetString(gettext("Email Addr: "), $email)
+                             if ($newuser eq "y");
                 $save_config = UI_YesNo(gettext("Save Configuration? "), "y");
             }
 
@@ -2670,7 +2678,7 @@ sub save_profiles {
             $q->{headers} = [];
 
             $q->{explanation} =
-              "The following local profiles were changed.  Would you like to save them?";
+              gettext( "The following local profiles were changed.  Would you like to save them?");
 
             $q->{functions} = [ "CMD_SAVE_CHANGES",
                                 "CMD_VIEW_CHANGES",
@@ -2855,7 +2863,7 @@ sub yast_select_and_upload_profiles {
                 . $profile);
             }
         }
-        UI_Info("Uploaded changes to repository.");
+        UI_Info(gettext("Uploaded changes to repository."));
     } else {
         UI_ShortMessage(gettext("Repository Error"),
                         gettext(
@@ -2924,7 +2932,7 @@ sub console_select_and_upload_profiles {
     if ($ans eq "CMD_ASK_NEVER") {
         set_profiles_local_only( [ map { $_->[0] } @profiles ] );
     } elsif ($ans eq "CMD_UPLOAD_CHANGES") {
-        my $changelog = UI_GetString("Changelog Entry: ", "");
+        my $changelog = UI_GetString(gettext("Changelog Entry: "), "");
 
         my ($user, $pass) = get_repo_user_pass();
 
@@ -2941,7 +2949,9 @@ sub console_select_and_upload_profiles {
                     my $newid      = $newprofile->{id};
                     set_repo_info($sd{$profile}{$profile}, $url, $user, $newid);
                     writeprofile($profile);
-                    UI_Info("Uploaded $profile to repository.");
+                    UI_Info(
+                      sprintf(gettext("Uploaded %s to repository."), $profile)
+                    );
                 } else {
                     print "Error: $res\n";
                 }
