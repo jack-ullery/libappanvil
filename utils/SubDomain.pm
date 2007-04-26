@@ -27,10 +27,15 @@ use warnings;
 use Carp;
 use Cwd qw(cwd realpath);
 use File::Basename;
+use File::Temp qw/ tempfile tempdir /;
 use Data::Dumper;
 
 use Locale::gettext;
 use POSIX;
+use RPC::XML;
+use RPC::XML::Client;
+use Storable qw(dclone);
+
 use Term::ReadKey;
 
 use Immunix::Severity;
@@ -94,6 +99,8 @@ our @EXPORT = qw(
 
 our $confdir = "/etc/apparmor";
 
+our $repo_client;
+
 our $running_under_genprof = 0;
 
 our $DEBUGGING;
@@ -104,6 +111,8 @@ our $unimplemented_warning = 0;
 our $UI_Mode = "text";
 
 our $sevdb;
+
+our %uid2login;
 
 # initialize Term::ReadLine if it's available
 our $term;
@@ -133,6 +142,7 @@ our $seenevents = 0;
 
 # behaviour tweaking
 our $cfg;
+our $repo_cfg;
 
 # these are globs that the user specifically entered.  we'll keep track of
 # them so that if one later matches, we'll suggest it again.
@@ -142,6 +152,7 @@ our @userglobs;
 our %t;
 our %transitions;
 our %sd;    # we keep track of the original profiles in %sd
+our %original_sd;
 
 my @log;
 my %pid;
@@ -290,6 +301,7 @@ sub setup_yast {
                 # something's broken, die a horrible, painful death
                 fatal_error "Yast frontend is out of sync from backend agent.";
             }
+      $DEBUGGING && debug "Initial handshake ok";
 
             # the yast connection seems to be working okay
             return 1;
@@ -578,6 +590,140 @@ sub handle_binfmt ($$) {
     }
 }
 
+sub get_profile_from_repo {
+  my $fqdbin = shift;
+
+  my $profile_data;
+
+  my $distro = $cfg->{settings}{distro};
+  my $repository = $cfg->{settings}{repository};
+
+  if ($repo_client) {
+    my $res = $repo_client->send_request('FindProfiles', $distro, $fqdbin, "");
+    if (did_result_succeed($res)) {
+      my @profiles;
+      my @profile_list = @{$res->value};
+
+      if (@profile_list) {
+        my @uids;
+        for my $p (@profile_list) {
+          my $uid = $p->{user_id};
+          my $username = $uid2login{$uid};
+          if ($username) {
+            $p->{username} = $username;
+          } else {
+            push @uids, $uid;
+          }
+        }
+
+        if (@uids) {
+          # LoginNamesFromUserIds currently returns the list of uids in sorted
+          # order no matter how you pass them to it - that's a bug, but let's
+          # explictly sort the list to work around that.
+          @uids = sort @uids;
+
+          my $res = $repo_client->send_request('LoginNamesFromUserIds', [ @uids ]);
+          if (did_result_succeed($res)) {
+            my @usernames = @{$res->value};
+            for my $uid (@uids) {
+              my $username = shift @usernames;
+              $uid2login{$uid} = $username;
+            }
+          }
+        }
+
+        for my $p (@profile_list) {
+          next if $p->{username};
+          my $uid = $p->{user_id};
+          my $username = $uid2login{$uid};
+          if ($username) {
+            $p->{username} = $username;
+          } else {
+            $p->{username} = "unknown-$uid";
+          }
+        }
+
+        my @options = map { $_->{username} } @profile_list;
+
+        my $q = { };
+        $q->{headers} = [ ];
+        push @{$q->{headers}}, gettext("Profile"), $fqdbin;
+
+        $q->{functions} = [
+          "CMD_VIEW_REPO", "CMD_USE_REPO", "CMD_CREATE_PROFILE",
+          "CMD_ABORT", "CMD_FINISHED"
+        ];
+
+        $q->{default} = "CMD_VIEW_REPO";
+
+        $q->{options} = [ @options ];
+        $q->{selected} = 0;
+
+        my ($p, $ans, $arg);
+        do {
+          ($ans, $arg) = UI_PromptUser($q);
+
+          for (my $i = 0; $i < scalar(@profile_list); $i++) {
+            if ($profile_list[$i]->{username} eq $options[$arg]) {
+              $p = $profile_list[$i];
+              $q->{selected} = $i;
+            }
+          }
+
+          if ($ans eq "CMD_VIEW_REPO") {
+            if ($UI_Mode eq "yast") {
+              SendDataToYast( { type => "dialog-view-profile", user => $arg,
+                                profile => $p->{profile} } );
+              my ($ypath, $yarg) = GetDataFromYast();
+              $ans = $yarg->{answer} || "b";
+              if ( $ans eq "u" ) {
+                $profile_data = use_repo_profile($fqdbin, $repository, $p);
+                $ans = "CMD_USE_REPO";
+              }
+            } else {
+              open(PAGER, "| less");
+              print PAGER gettext("Profile submitted by") . " $options[$arg]:\n\n$p->{profile}\n\n";;
+              close(PAGER);
+            }
+          } elsif ($ans eq "CMD_USE_REPO") {
+            $profile_data = use_repo_profile($fqdbin, $repository, $p );
+          }
+        } until ($ans =~ /^CMD_(USE_REPO|CREATE_PROFILE)$/);
+      }
+    }
+  }
+
+  return $profile_data;
+}
+
+sub set_repo_info {
+  my ($profile_data, $repo_url, $username, $id) = @_;
+
+  # save repository metadata
+  $profile_data->{repo}{url}  = $repo_url;
+  $profile_data->{repo}{user} = $username;
+  $profile_data->{repo}{id}   = $id;
+}
+
+sub use_repo_profile {
+  my ($fqdbin, $repo_url, $profile) = @_;
+
+  my $profile_data = eval {
+    parse_profile_data($profile->{profile}, "repository profile");
+  };
+  if ($@) {
+    $profile_data = undef;
+  }
+
+  if ($profile_data) {
+    set_repo_info($profile_data->{$fqdbin}{$fqdbin}, $repo_url,
+                  $profile->{username}, $profile->{id});
+  }
+
+  return $profile_data;
+}
+
+
 sub create_new_profile {
     my $fqdbin = shift;
 
@@ -585,7 +731,7 @@ sub create_new_profile {
       $fqdbin => {
           flags   => "complain",
           include => { "abstractions/base" => 1    },
-          path    => { $fqdbin             => "mr" }
+      path    => { $fqdbin             => "mr" },
       }
     };
 
@@ -621,6 +767,17 @@ sub create_new_profile {
 sub autodep ($) {
     my $bin = shift;
 
+  unless ($repo_cfg) {
+    $repo_cfg = read_config("repository.conf");
+    unless ($repo_cfg->{repository}{enabled}) {
+      ask_to_enable_repo();
+    }
+  }
+
+  if (repo_is_enabled()) {
+    setup_repo_client();
+  }
+
     # findexecutable() might fail if we're running on a different system
     # than the logs were collected on.  ugly.  we'll just hope for the best.
     my $fqdbin = findexecutable($bin) || $bin;
@@ -631,10 +788,19 @@ sub autodep ($) {
     # ignore directories
     return if -d $fqdbin;
 
-    my $profile_data = create_new_profile($fqdbin);
+  my $profile_data;
+  if (repo_is_enabled()) {
+    $profile_data = eval { get_profile_from_repo($fqdbin) };
+  }
+  unless ($profile_data) {
+    $profile_data = create_new_profile($fqdbin);
+  }
 
     # stick the profile into our data structure.
     attach_profile_data(\%sd, $profile_data);
+  # and store a "clean" version also so we can display the changes we've
+  # made during this run
+  attach_profile_data(\%original_sd, $profile_data);
 
     if (-f "$profiledir/tunables/global") {
         my $file = getprofilefilename($fqdbin);
@@ -913,6 +1079,18 @@ my %CMDS = (
     CMD_USEDEFAULT       => "(U)se Default Hat",
     CMD_SCAN             => "(S)can system log for SubDomain events",
     CMD_HELP             => "(H)elp",
+  CMD_VIEW_REPO  => "(V)iew Profile",
+  CMD_USE_REPO   => "(U)se Profile",
+  CMD_CREATE_PROFILE => "(C)reate New Profile",
+  CMD_UPDATE_PROFILE => "(U)pdate Profile",
+  CMD_IGNORE_UPDATE => "(I)gnore Update",
+  CMD_SAVE_CHANGES => "(S)ave Changes",
+  CMD_UPLOAD_CHANGES => "(U)pload Changes",
+  CMD_VIEW_CHANGES => "(V)iew Changes",
+  CMD_ENABLE_REPO => "(E)nable Repository",
+  CMD_DISABLE_REPO => "(D)isable Repository",
+  CMD_ASK_NEVER => "(N)ever Ask Again",
+  CMD_ASK_LATER => "Ask Me (L)ater",
 );
 
 sub UI_PromptUser ($) {
@@ -1647,6 +1825,77 @@ sub read_log {
     close(LOG);
 }
 
+sub check_repo_for_newer {
+  my $profile = shift;
+
+  my $distro = $cfg->{settings}{distro};
+  my $url = $sd{$profile}{$profile}{repo}{url};
+  my $user = $sd{$profile}{$profile}{repo}{user};
+  my $id = $sd{$profile}{$profile}{repo}{id};
+
+  return unless ($distro && $url && $user && $id);
+
+  my $p;
+  if ($repo_client) {
+    my $res = $repo_client->send_request('FindProfiles', $distro, $profile, $user);
+    if (did_result_succeed($res)) {
+      my @profiles;
+      my @profile_list = @{$res->value};
+
+      if (@profile_list) {
+        if ($profile_list[0]->{id} > $id) {
+          $p = $profile_list[0];
+        }
+      }
+    }
+  }
+
+  if ($p) {
+    my $q = { };
+    $q->{headers} = [
+      "Profile", $profile,
+      "User", $user,
+      "Old Revision", $id,
+      "New Revision", $p->{id},
+    ];
+    $q->{explanation} = "An updated version of this profile has been found in the profile repository.  Would you like to use it?";
+    $q->{functions} = [
+      "CMD_VIEW_CHANGES", "CMD_UPDATE_PROFILE", "CMD_IGNORE_UPDATE",
+      "CMD_ABORT", "CMD_FINISHED"
+    ];
+
+    my $ans;
+    do {
+      $ans = UI_PromptUser($q);
+
+      if ($ans eq "CMD_VIEW_CHANGES") {
+        my $oldprofile = serialize_profile($sd{$profile}, $profile);
+        my $newprofile = $p->{profile};
+        display_changes($oldprofile, $newprofile);
+      }
+    } until $ans =~ /^CMD_(UPDATE_PROFILE|IGNORE_UPDATE)/;
+
+    if ($ans eq "CMD_UPDATE_PROFILE") {
+      eval {
+        my $profile_data = parse_profile_data($p->{profile}, "repository profile");
+        if ($profile_data) {
+          attach_profile_data(\%sd, $profile_data);
+          attach_profile_data(\%original_sd, $profile_data);
+          $changed{$profile} = 1;
+        }
+
+        set_repo_info($sd{$profile}{$profile}, $url, $user, $p->{id});
+
+        UI_Info("Updated profile $profile to revision $p->{id}.");
+      };
+
+      if ($@) {
+        UI_Info("Error parsing repository profile.");
+      }
+    }
+  }
+}
+
 sub ask_the_questions {
     my $found;
 
@@ -1667,6 +1916,8 @@ sub ask_the_questions {
         }
 
         for my $profile (sort keys %{ $log{$sdmode} }) {
+
+      check_repo_for_newer($profile);
 
             $found++;
 
@@ -2047,6 +2298,122 @@ sub ask_the_questions {
     }
 }
 
+sub repo_is_enabled {
+  my $enabled;
+
+  if ($repo_cfg &&
+      $repo_cfg->{repository}{enabled} &&
+      $repo_cfg->{repository}{enabled} eq "yes") {
+    $enabled = 1;
+  }
+
+  return $enabled;
+}
+
+sub ask_to_enable_repo {
+
+  my $q = { };
+  $q->{headers} = [
+    "Repository", $cfg->{settings}{repository},
+  ];
+  $q->{explanation} = "Would you like to enable access to the profile repository?";
+  $q->{functions} = [
+    "CMD_ENABLE_REPO", "CMD_DISABLE_REPO", "CMD_ASK_LATER",
+    "CMD_ABORT", "CMD_FINISHED",
+  ];
+
+  my $cmd;
+  do {
+    $cmd = UI_PromptUser($q);
+  } until $cmd =~ /^CMD_(ENABLE_REPO|DISABLE_REPO|LATER_REPO)/;
+
+  if ($cmd eq "CMD_ENABLE_REPO") {
+    $repo_cfg->{repository}{enabled} = "yes";
+  } elsif ($cmd eq "CMD_DISABLE_REPO") {
+    $repo_cfg->{repository}{enabled} = "no";
+  } elsif ($cmd eq "CMD_LATER_REPO") {
+    $repo_cfg->{repository}{enabled} = "later";
+  }
+
+  write_config("repository.conf", $repo_cfg);
+}
+
+sub get_repo_user_pass {
+  my ($user, $pass);
+
+  if ($repo_cfg) {
+    $user = $repo_cfg->{repository}{user};
+    $pass = $repo_cfg->{repository}{pass};
+  }
+
+  unless ($user && $pass) {
+    ($user, $pass) = ask_signup_info();
+  }
+
+  return ($user, $pass);
+}
+
+sub setup_repo_client {
+  unless ($repo_client) {
+    $repo_client = new RPC::XML::Client $cfg->{settings}{repository};
+  }
+}
+
+sub did_result_succeed {
+  my $result = shift;
+
+  my $ref = ref $result;
+  return ($ref && $ref ne "RPC::XML::fault") ? 1 : 0;
+}
+
+sub get_result_error {
+  my $result = shift;
+
+  if (ref $result) {
+    if (ref $result eq "RPC::XML::fault") {
+      $result = $result->string;
+    } else {
+      $result = $$result;
+    }
+  }
+
+  return $result;
+}
+
+sub ask_signup_info {
+
+  my ($user, $pass, $email, $signup_okay);
+
+  if ($repo_client) {
+    do {
+      $user = UI_GetString("Username: ", $user);
+      $pass = UI_GetString("Password: ", $pass);
+      $email = UI_GetString("Email Addr: ", $email);
+
+      my $res = $repo_client->send_request('LoginConfirm', $user, $pass);
+      if (did_result_succeed($res)) {
+        $signup_okay = 1;
+      } else {
+        $res = $repo_client->send_request('Signup', $user, $pass, $email);
+        if (did_result_succeed($res)) {
+          $signup_okay = 1;
+        } else {
+          my $error = get_result_error($res);
+          print STDERR "$error\n";
+        }
+      }
+    } until $signup_okay;
+  }
+
+  $repo_cfg->{repository}{user} = $user;
+  $repo_cfg->{repository}{pass} = $pass;
+  $repo_cfg->{repository}{email} = $email;
+
+  write_config("repository.conf", $repo_cfg);
+
+  return ($user, $pass);
+}
+
 sub do_logprof_pass {
     my $logmark = shift || "";
 
@@ -2075,6 +2442,17 @@ sub do_logprof_pass {
     # we need to be able to break all the way out of deep into subroutine calls
     # if they select "Finish" so we can take them back out to the genprof prompt
     eval {
+    unless ($repo_cfg) {
+      $repo_cfg = read_config("repository.conf");
+      unless ($repo_cfg->{repository}{enabled}) {
+        ask_to_enable_repo();
+      }
+    }
+
+    if (repo_is_enabled()) {
+      setup_repo_client();
+    }
+
         read_log($logmark);
 
         for my $root (@log) {
@@ -2119,6 +2497,13 @@ sub do_logprof_pass {
 
     save_profiles();
 
+  if (repo_is_enabled()) {
+    unless ($repo_cfg->{repository}{neversubmit}) {
+      submit_created_profiles();
+      submit_changed_profiles();
+    }
+  }
+
     # if they hit "Finish" we need to tell the caller that so we can exit
     # all the way instead of just going back to the genprof prompt
     return $finishing ? "FINISHED" : "NORMAL";
@@ -2126,12 +2511,251 @@ sub do_logprof_pass {
 
 sub save_profiles {
     # make sure the profile changes we've made are saved to disk...
-    for my $profile (sort keys %changed) {
-        writeprofile($profile);
-        reload($profile);
+    my @changed = sort keys %changed;
+
+    if (@changed) {
+        my $q = { };
+        $q->{title} = "Changed Profiles";
+        $q->{headers} = [ ];
+
+        $q->{explanation} = "The following profiles were changed.  Would you like to save them?";
+
+        $q->{functions} = [
+          "CMD_SAVE_CHANGES", "CMD_VIEW_CHANGES",
+          "CMD_ABORT",
+        ];
+
+        $q->{default} = "CMD_VIEW_CHANGES";
+
+        $q->{options} = [ @changed ];
+        $q->{selected} = 0;
+
+        my ($p, $ans, $arg);
+        do {
+            ($ans, $arg) = UI_PromptUser($q);
+
+            if ($ans eq "CMD_VIEW_CHANGES") {
+                my $which = $changed[$arg];
+                my $oldprofile = serialize_profile($original_sd{$which},
+                                                   $which);
+                my $newprofile = serialize_profile($sd{$which}, $which);
+                display_changes($oldprofile, $newprofile);
+            }
+
+        } until $ans =~ /^CMD_SAVE_CHANGES/;
+
+        for my $profile (sort keys %changed) {
+          writeprofile($profile);
+          reload($profile);
+        }
     }
 }
 
+sub is_repo_profile {
+    my $profile_data = shift;
+
+    return $profile_data->{repo}{url}  &&
+           $profile_data->{repo}{user} &&
+           $profile_data->{repo}{id};
+}
+
+sub submit_created_profiles {
+    my $url = $cfg->{settings}{repository};
+
+    my @new_profiles;
+    for my $profile (sort keys %sd) {
+        unless (is_repo_profile($sd{$profile}{$profile})) {
+            push @new_profiles, $profile;
+        }
+    }
+
+    if ($repo_client && @new_profiles) {
+        my $q = { };
+        $q->{title} = "Submit New Profiles";
+        $q->{headers} = [
+          "Repository", $url,
+        ];
+
+        $q->{explanation} = "Would you like to upload the following newly created profiles?";
+
+        $q->{functions} = [
+          "CMD_UPLOAD_CHANGES", "CMD_VIEW_CHANGES", "CMD_ASK_NEVER",
+          "CMD_ABORT",
+        ];
+
+        $q->{default} = "CMD_VIEW_CHANGES";
+
+        $q->{options} = [ @new_profiles ];
+        $q->{selected} = 0;
+
+        my ($ans, $arg);
+        do {
+            ($ans, $arg) = UI_PromptUser($q);
+
+            if ($ans eq "CMD_VIEW_CHANGES") {
+                my $which = $new_profiles[$arg];
+                my $newprofile = serialize_profile($sd{$which}, $which);
+                display_text($which, $newprofile);
+            }
+
+        } until $ans =~ /^CMD_UPLOAD_CHANGES/;
+
+        if ($ans eq "CMD_UPLOAD_CHANGES") {
+            my $changelog = UI_GetString("Changelog Entry: ", "");
+
+            my ($user, $pass) = get_repo_user_pass();
+
+            if ($user && $pass) {
+                for my $profile (@new_profiles) {
+                    my $profile_string = serialize_profile($sd{$profile},
+                                                           $profile);
+
+                    my @args = (
+                      'Create', $user, $pass, $cfg->{settings}{distro},
+                      $profile, $profile_string, $changelog
+                    );
+                    my $res = $repo_client->send_request(@args);
+                    if (ref $res) {
+                        my $newprofile = $res->{value};
+                        my $newid = $newprofile->{id};
+
+                        set_repo_info($sd{$profile}{$profile},
+                                      $url,
+                                      $user,
+                                      $newid);
+                        writeprofile($profile);
+                        UI_Info("Uploaded $profile to repository.");
+                    } else {
+                        print "Error: $res\n";
+                    }
+                }
+            }
+        }
+    }
+}
+
+sub submit_changed_profiles {
+
+    my $url = $cfg->{settings}{repository};
+
+    my @repo_profiles;
+    for my $profile (sort keys %sd) {
+        if (is_repo_profile($sd{$profile}{$profile})) {
+            push @repo_profiles, $profile;
+        }
+    }
+
+    if (@repo_profiles) {
+        if ($repo_client) {
+            my @changed_profiles;
+            for my $profile (@repo_profiles) {
+                my $id = $sd{$profile}{$profile}{repo}{id};
+                my $res = $repo_client->send_request('Show', $id);
+                if (did_result_succeed($res)) {
+                    my $p = $res->value;
+                    my $profile_string = serialize_profile($sd{$profile},
+                                                           $profile);
+                    if ($p->{profile} ne $profile_string) {
+                        push @changed_profiles, [ $profile, $p ];
+                    }
+                }
+            }
+
+            if (@changed_profiles) {
+                my $q = { };
+                $q->{title} = "Submit Profiles";
+                $q->{headers} = [
+                  "Repository", $url,
+                ];
+
+                $q->{explanation} = "The following profiles from the repository were changed.  Would you like to upload your changes?";
+
+                $q->{functions} = [
+                  "CMD_UPLOAD_CHANGES", "CMD_VIEW_CHANGES", "CMD_ASK_NEVER",
+                  "CMD_ABORT",
+                ];
+
+                $q->{default} = "CMD_VIEW_CHANGES";
+
+                $q->{options} = [ map { $_->[0] } @changed_profiles ];
+                $q->{selected} = 0;
+
+                my ($ans, $arg);
+                do {
+                    ($ans, $arg) = UI_PromptUser($q);
+
+                    if ($ans eq "CMD_VIEW_CHANGES") {
+                        my $which = $changed_profiles[$arg]->[0];
+                        my $repo_profile = $changed_profiles[$arg]->[1]->{profile};
+                        my $newprofile = serialize_profile($sd{$which}, $which);
+                        display_changes($repo_profile, $newprofile);
+                    }
+
+                } until $ans =~ /^CMD_UPLOAD_CHANGES/;
+
+                print "UPLOAD CHANGES\n";
+
+                if ($ans eq "CMD_UPLOAD_CHANGES") {
+                    my $changelog = UI_GetString("Changelog Entry: ", "");
+
+                    my ($user, $pass) = get_repo_user_pass();
+
+                    if ($user && $pass) {
+                        for my $profile (map { $_->[0] } @changed_profiles) {
+                            my $profile_string =
+                              serialize_profile($sd{$profile}, $profile);
+
+                            my @args = (
+                              'Create', $user, $pass, $cfg->{settings}{distro},
+                              $profile, $profile_string, $changelog
+                            );
+                            my $res = $repo_client->send_request(@args);
+                            if (ref $res) {
+                                my $newprofile = $res->{value};
+                                my $newid = $newprofile->{id};
+
+                                set_repo_info($sd{$profile}{$profile},
+                                              $url,
+                                              $user,
+                                              $newid);
+                                writeprofile($profile);
+                                UI_Info("Uploaded $profile to repository.");
+                            } else {
+                                print "Error: $res\n";
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+sub display_text {
+    my ($header, $body) = @_;
+
+    if (open(PAGER, "| less")) {
+        print PAGER "$header\n\n$body";
+        close(PAGER);
+    }
+}
+
+sub display_changes {
+    my ($oldprofile, $newprofile) = @_;
+
+    my $oldtmp = new File::Temp( UNLINK => 0 );
+    print $oldtmp $oldprofile;
+    close($oldtmp);
+
+    my $newtmp = new File::Temp( UNLINK => 0 );
+    print $newtmp $newprofile;
+    close($newtmp);
+
+    system("diff -uw $oldtmp $newtmp | less");
+
+    unlink($oldtmp);
+    unlink($newtmp);
+}
 
 sub setprocess ($$) {
     my ($pid, $profile) = @_;
@@ -2340,6 +2964,7 @@ sub readprofile ($$) {
             my $profile_data = parse_profile_data($data, $file);
             if ($profile_data) {
                 attach_profile_data(\%sd, $profile_data);
+        attach_profile_data(\%original_sd, $profile_data);
             }
         };
 
@@ -2356,15 +2981,17 @@ sub readprofile ($$) {
 sub attach_profile_data {
     my ($profiles, $profile_data) = @_;
 
+  # make deep copies of the profile data so that if we change one set of
+  # profile data, we're not changing others because of sharing references
     for my $p ( keys %$profile_data) {
-        $profiles->{$p} = $profile_data->{$p};
+    $profiles->{$p} = dclone($profile_data->{$p});
     }
 }
 
 sub parse_profile_data {
     my ($data, $file) = @_;
 
-    my ($profile_data, $profile, $hat, $in_contained_hat);
+  my ($profile_data, $profile, $hat, $in_contained_hat, $repo_data);
     my $initial_comment = "";
     for (split(/\n/, $data)) {
         chomp;
@@ -2412,6 +3039,13 @@ sub parse_profile_data {
             # store off initial comment if they have one
             $profile_data->{$profile}{$hat}{initial_comment} = $initial_comment if $initial_comment;
             $initial_comment = "";
+
+      if ($repo_data) {
+        $profile_data->{$profile}{$profile}{repo}{url}  = $repo_data->{url};
+        $profile_data->{$profile}{$profile}{repo}{user} = $repo_data->{user};
+        $profile_data->{$profile}{$profile}{repo}{id}   = $repo_data->{id};
+        $repo_data = undef;
+      }
 
         } elsif (m/^\s*\}\s*$/) {                    # end of a profile...
 
@@ -2554,7 +3188,11 @@ sub parse_profile_data {
                 next if /^\s*\# vim:syntax/;
                 # ignore Last Modified: lines
                 next if /^\s*\# Last Modified:/;
-                $initial_comment .= "$_\n";
+        if (/^\s*\# REPOSITORY: (\S+) (\S+) (\S+)$/) {
+          $repo_data = { url => $1, user => $2, id => $3 };
+        } else {
+          $initial_comment .= "$_\n";
+        }
             }
         } else {
 
@@ -2702,6 +3340,15 @@ sub serialize_profile {
     if ($include_metadata) {
         # keep track of when the file was last updated
         $string .= "# Last Modified: " . localtime(time) . "\n";
+
+    # print out repository metadata
+    if ($profile_data->{$name}{repo}       &&
+        $profile_data->{$name}{repo}{url}  &&
+        $profile_data->{$name}{repo}{user} &&
+        $profile_data->{$name}{repo}{id}) {
+      my $repo = $profile_data->{$name}{repo};
+      $string .= "# REPOSITORY: $repo->{url} $repo->{user} $repo->{id}\n";
+    }
     }
 
     # print out initial comment
@@ -2753,6 +3400,7 @@ sub writeprofile ($) {
 
     # mark the profile as up-to-date
     delete $changed{$profile};
+  $original_sd{$profile} = dclone($sd{$profile});
 }
 
 sub getprofileflags {
