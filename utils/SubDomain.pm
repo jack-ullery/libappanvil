@@ -2693,7 +2693,6 @@ sub submit_changed_profiles {
 
                 } until $ans =~ /^CMD_UPLOAD_CHANGES/;
 
-                print "UPLOAD CHANGES\n";
 
                 if ($ans eq "CMD_UPLOAD_CHANGES") {
                     my $changelog = UI_GetString("Changelog Entry: ", "");
