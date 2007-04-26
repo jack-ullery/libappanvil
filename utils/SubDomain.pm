@@ -2382,18 +2382,16 @@ sub get_result_error {
 
 sub ask_signup_info {
 
-  my ($user, $pass, $email, $signup_okay);
+  my ($res, $newuser, $user, $pass, $email, $signup_okay);
 
   if ($repo_client) {
     do {
+      $newuser = UI_YesNo(gettext("Create New User?"), "n");
       $user = UI_GetString("Username: ", $user);
       $pass = UI_GetString("Password: ", $pass);
-      $email = UI_GetString("Email Addr: ", $email);
+      $email = UI_GetString("Email Addr: ", $email) if ($newuser eq "y");
 
-      my $res = $repo_client->send_request('LoginConfirm', $user, $pass);
-      if (did_result_succeed($res)) {
-        $signup_okay = 1;
-      } else {
+      if ( $newuser eq "y" ) {
         $res = $repo_client->send_request('Signup', $user, $pass, $email);
         if (did_result_succeed($res)) {
           $signup_okay = 1;
@@ -2401,6 +2399,14 @@ sub ask_signup_info {
           my $error = get_result_error($res);
           print STDERR "$error\n";
         }
+      } else {
+        $res = $repo_client->send_request('LoginConfirm', $user, $pass);
+        if (did_result_succeed($res)) {
+          $signup_okay = 1;
+        } else {
+          my $error = get_result_error($res);
+          print STDERR gettext("Login failure. Please check username and password and try again") . "\n";
+          print STDERR "$error\n"; }
       }
     } until $signup_okay;
   }
