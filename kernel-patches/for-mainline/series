@@ -74,3 +74,4 @@ apparmor-sysctl-pathname.diff
 # lookup_parent.diff
 # nfsd_permission-nameidata.diff
 comm2.diff
+drop_CLONE_NEWNS_restriction.diff
