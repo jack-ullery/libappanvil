@@ -635,12 +635,6 @@ sub get_profile {
 
                 if (@uids) {
 
-                    # LoginNamesFromUserIds currently returns the list of uids
-                    # in sorted order no matter how you pass them to it - that's
-                    # a bug, but let's explictly sort the list to work around
-                    # that.
-                    @uids = sort @uids;
-
                     my $res =
                       $repo_client->send_request( 'LoginNamesFromUserIds',
                                                   [@uids] );
@@ -1556,7 +1550,7 @@ sub handlechildren {
                         $seenevents++;
 
                         while ($ans !~ m/^CMD_(INHERIT|PROFILE|PROFILE_CLEAN|UNCONFINED|UNCONFINED_CLEAN|DENY)$/) {
-              $ans = UI_PromptUser($q);
+                            $ans = UI_PromptUser($q);
 
                             if ($ans eq "CMD_PROFILE") {
                                 my $px_default = "n";
@@ -1906,74 +1900,76 @@ sub read_log {
 }
 
 sub check_repo_for_newer {
-  my $profile = shift;
+    my $profile = shift;
 
-  my $distro = $cfg->{settings}{distro};
-  my $url = $sd{$profile}{$profile}{repo}{url};
-  my $user = $sd{$profile}{$profile}{repo}{user};
-  my $id = $sd{$profile}{$profile}{repo}{id};
+    my $distro = $cfg->{settings}{distro};
+    my $url    = $sd{$profile}{$profile}{repo}{url};
+    my $user   = $sd{$profile}{$profile}{repo}{user};
+    my $id     = $sd{$profile}{$profile}{repo}{id};
 
-  return unless ($distro && $url && $user && $id);
+    return unless ($distro && $url && $user && $id);
 
-  my $p;
-  if ($repo_client) {
-    my $res = $repo_client->send_request('FindProfiles', $distro, $profile, $user);
-    if (did_result_succeed($res)) {
-      my @profiles;
-      my @profile_list = @{$res->value};
+    my $p;
+    if ($repo_client) {
+        my $res =
+          $repo_client->send_request('FindProfiles', $distro, $profile, $user);
+        if (did_result_succeed($res)) {
+            my @profiles;
+            my @profile_list = @{$res->value};
 
-      if (@profile_list) {
-        if ($profile_list[0]->{id} > $id) {
-          $p = $profile_list[0];
+            if (@profile_list) {
+                if ($profile_list[0]->{id} > $id) {
+                    $p = $profile_list[0];
+                }
+            }
         }
-      }
     }
-  }
 
-  if ($p) {
-    my $q = { };
-    $q->{headers} = [
-      "Profile", $profile,
-      "User", $user,
-      "Old Revision", $id,
-      "New Revision", $p->{id},
-    ];
-    $q->{explanation} = "An updated version of this profile has been found in the profile repository.  Would you like to use it?";
-    $q->{functions} = [
-      "CMD_VIEW_CHANGES", "CMD_UPDATE_PROFILE", "CMD_IGNORE_UPDATE",
-      "CMD_ABORT", "CMD_FINISHED"
-    ];
+    if ($p) {
+        my $q = { };
+        $q->{headers} = [
+          "Profile", $profile,
+          "User", $user,
+          "Old Revision", $id,
+          "New Revision", $p->{id},
+        ];
+        $q->{explanation} = "An updated version of this profile has been found in the profile repository.  Would you like to use it?";
+        $q->{functions} = [
+          "CMD_VIEW_CHANGES", "CMD_UPDATE_PROFILE", "CMD_IGNORE_UPDATE",
+          "CMD_ABORT", "CMD_FINISHED"
+        ];
 
-    my $ans;
-    do {
-      $ans = UI_PromptUser($q);
+        my $ans;
+        do {
+            $ans = UI_PromptUser($q);
 
-      if ($ans eq "CMD_VIEW_CHANGES") {
-        my $oldprofile = serialize_profile($sd{$profile}, $profile);
-        my $newprofile = $p->{profile};
-        display_changes($oldprofile, $newprofile);
-      }
-    } until $ans =~ /^CMD_(UPDATE_PROFILE|IGNORE_UPDATE)/;
+            if ($ans eq "CMD_VIEW_CHANGES") {
+                my $oldprofile = serialize_profile($sd{$profile}, $profile);
+                my $newprofile = $p->{profile};
+                display_changes($oldprofile, $newprofile);
+            }
+        } until $ans =~ /^CMD_(UPDATE_PROFILE|IGNORE_UPDATE)/;
 
-    if ($ans eq "CMD_UPDATE_PROFILE") {
-      eval {
-        my $profile_data = parse_profile_data($p->{profile}, "repository profile");
-        if ($profile_data) {
-          attach_profile_data(\%sd, $profile_data);
-          attach_profile_data(\%original_sd, $profile_data);
-          $changed{$profile} = 1;
+        if ($ans eq "CMD_UPDATE_PROFILE") {
+            eval {
+                my $profile_data =
+                  parse_profile_data($p->{profile}, "repository profile");
+                if ($profile_data) {
+                    attach_profile_data(\%sd, $profile_data);
+                    attach_profile_data(\%original_sd, $profile_data);
+                    $changed{$profile} = 1;
+                }
+
+                set_repo_info($sd{$profile}{$profile}, $url, $user, $p->{id});
+
+                UI_Info("Updated profile $profile to revision $p->{id}.");
+            };
+
+            if ($@) {
+                UI_Info("Error parsing repository profile.");
+            }
         }
-
-        set_repo_info($sd{$profile}{$profile}, $url, $user, $p->{id});
-
-        UI_Info("Updated profile $profile to revision $p->{id}.");
-      };
-
-      if ($@) {
-        UI_Info("Error parsing repository profile.");
-      }
     }
-  }
 }
 
 sub ask_the_questions {
@@ -2290,7 +2286,8 @@ sub ask_the_questions {
 
                                             # regexp matches, add it's mode to
                                             # the list to check against
-                                            if (contains($mode, $sd{$profile}{$hat}{path}{$entry})) {
+                                            if (contains($mode,
+                                                $sd{$profile}{$hat}{path}{$entry})) {
                                                 delete $sd{$profile}{$hat}{path}{$entry};
                                                 $deleted++;
                                             }
@@ -2562,16 +2559,16 @@ sub do_logprof_pass {
     # we need to be able to break all the way out of deep into subroutine calls
     # if they select "Finish" so we can take them back out to the genprof prompt
     eval {
-    unless ($repo_cfg) {
-      $repo_cfg = read_config("repository.conf");
-      unless ($repo_cfg->{repository}{enabled}) {
-        ask_to_enable_repo();
-      }
-    }
+        unless ($repo_cfg) {
+            $repo_cfg = read_config("repository.conf");
+            unless ($repo_cfg->{repository}{enabled}) {
+                ask_to_enable_repo();
+            }
+        }
 
-    if (repo_is_enabled()) {
-      setup_repo_client();
-    }
+        if (repo_is_enabled()) {
+            setup_repo_client();
+        }
 
         read_log($logmark);
 
@@ -3253,17 +3250,17 @@ sub readprofile ($$$) {
 sub attach_profile_data {
     my ($profiles, $profile_data) = @_;
 
-  # make deep copies of the profile data so that if we change one set of
-  # profile data, we're not changing others because of sharing references
+    # make deep copies of the profile data so that if we change one set of
+    # profile data, we're not changing others because of sharing references
     for my $p ( keys %$profile_data) {
-    $profiles->{$p} = dclone($profile_data->{$p});
+          $profiles->{$p} = dclone($profile_data->{$p});
     }
 }
 
 sub parse_profile_data {
     my ($data, $file) = @_;
 
-  my ($profile_data, $profile, $hat, $in_contained_hat, $repo_data);
+    my ($profile_data, $profile, $hat, $in_contained_hat, $repo_data);
     my $initial_comment = "";
     for (split(/\n/, $data)) {
         chomp;
@@ -3298,7 +3295,7 @@ sub parse_profile_data {
                 $changed{$profile} = 1;
             }
 
-            $hat           ||= $profile;
+            $hat ||= $profile;
 
             # keep track of profile flags
             if ($flags && $flags =~ /^flags=\((.+)\)\s*$/) {
@@ -3314,13 +3311,13 @@ sub parse_profile_data {
             $initial_comment = "";
 
             if ($repo_data) {
-              $profile_data->{$profile}{$profile}{repo}{url}  = $repo_data->{url};
-              $profile_data->{$profile}{$profile}{repo}{user} = $repo_data->{user};
-              $profile_data->{$profile}{$profile}{repo}{id}   = $repo_data->{id};
-              $repo_data = undef;
+                $profile_data->{$profile}{$profile}{repo}{url}  = $repo_data->{url};
+                $profile_data->{$profile}{$profile}{repo}{user} = $repo_data->{user};
+                $profile_data->{$profile}{$profile}{repo}{id}   = $repo_data->{id};
+                $repo_data = undef;
             }
 
-        } elsif (m/^\s*\}\s*$/) {                    # end of a profile...
+        } elsif (m/^\s*\}\s*$/) { # end of a profile...
 
             # if we hit the end of a profile when we're not in one, something's
             # wrong...
@@ -3441,7 +3438,7 @@ sub parse_profile_data {
             my $flags = $2;
 
             # deal with whitespace in hat names.
-            $hat     = $1 if $hat     =~ /^"(.+)"$/;
+            $hat = $1 if $hat =~ /^"(.+)"$/;
 
             # keep track of profile flags
             if ($flags && $flags =~ /^flags=\((.+)\)\s*$/) {
@@ -3538,7 +3535,7 @@ sub writecapabilities ($) {
     # dump out the capability entries...
     if (exists $profile_data->{capability}) {
         for my $capability (sort keys %{$profile_data->{capability}}) {
-          push @data, "  capability $capability,";
+            push @data, "  capability $capability,";
         }
         push @data, "" if keys %{$profile_data->{capability}};
     }
@@ -3553,7 +3550,7 @@ sub writenetdomain ($) {
     # dump out the netdomain entries...
     if (exists $profile_data->{netdomain}) {
         for my $nd (sort @{$profile_data->{netdomain}}) {
-          push @data, "  $nd,";
+            push @data, "  $nd,";
         }
         push @data, "" if @{$profile_data->{netdomain}};
     }
@@ -3672,14 +3669,15 @@ sub writeprofile ($) {
 
     my $filename = getprofilefilename($profile);
 
-    open(SDPROF, ">$filename") or fatal_error "Can't write new AppArmor profile $filename: $!";
+    open(SDPROF, ">$filename") or
+      fatal_error "Can't write new AppArmor profile $filename: $!";
     my $profile_string = serialize_profile($sd{$profile}, $profile, 1);
     print SDPROF $profile_string;
     close(SDPROF);
 
     # mark the profile as up-to-date
     delete $changed{$profile};
-  $original_sd{$profile} = dclone($sd{$profile});
+    $original_sd{$profile} = dclone($sd{$profile});
 }
 
 sub getprofileflags {
@@ -3820,8 +3818,7 @@ sub loadinclude {
                 next if /^\s*\#/;
 
                 # we hit something we don't understand in a profile...
-                die sprintf(gettext('Include file %s contains syntax errors or is not a valid #include file.'),
-                                    $incfile) . "\n";
+                die sprintf(gettext('Include file %s contains syntax errors or is not a valid #include file.'), $incfile) . "\n";
             }
         }
         close(INCLUDE);
@@ -3917,88 +3914,85 @@ sub matchinclude {
 }
 
 sub check_qualifiers {
-  my $program = shift;
+    my $program = shift;
 
-  if ($cfg->{qualifiers}{$program}) {
-    unless($cfg->{qualifiers}{$program} =~ /p/) {
-      fatal_error(sprintf(gettext("\%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."), $program));
+    if ($cfg->{qualifiers}{$program}) {
+        unless($cfg->{qualifiers}{$program} =~ /p/) {
+            fatal_error(sprintf(gettext("\%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."), $program));
+        }
     }
-  }
 }
 
 sub read_config {
-  my $filename = shift;
+    my $filename = shift;
+    my $config;
 
-  my $config;
-  if (open(CONF, "$confdir/$filename")) {
-
-    my $which;
-    while (<CONF>) {
+    if (open(CONF, "$confdir/$filename")) {
+        my $which;
+        while (<CONF>) {
             chomp;
-
-      # ignore comments
+            # ignore comments
             next if /^\s*#/;
-
             if (m/^\[(\S+)\]/) {
                 $which = $1;
-      } elsif (m/^\s*(\S+)\s*=\s*(.*)\s*$/) {
+            } elsif (m/^\s*(\S+)\s*=\s*(.*)\s*$/) {
                 my ($key, $value) = ($1, $2);
-        $config->{$which}{$key} = $value;
+                $config->{$which}{$key} = $value;
             }
         }
-    close(CONF);
-  }
+        close(CONF);
+    }
 
-  return $config;
+    return $config;
 }
 
 sub write_config {
-  my ($filename, $config) = @_;
+    my ($filename, $config) = @_;
 
-  if (open(CONF, ">$confdir/$filename")) {
-    for my $section (sort keys %$config) {
-      print CONF "[$section]\n";
+    if (open(CONF, ">$confdir/$filename")) {
+        for my $section (sort keys %$config) {
+            print CONF "[$section]\n";
 
-      for my $key (sort keys %{$config->{$section}}) {
-        print CONF "  $key = $config->{$section}{$key}\n"
-            if ($config->{$section}{$key});
-      }
+            for my $key (sort keys %{$config->{$section}}) {
+                print CONF "  $key = $config->{$section}{$key}\n"
+                    if ($config->{$section}{$key});
+            }
+        }
+        close(CONF);
+    } else {
+        fatal_error "Can't write config file $filename: $!";
     }
-    close(CONF);
-  } else {
-    fatal_error "Can't write config file $filename: $!";
-  }
 
-  my $mode = 0600;
-  chmod $mode, "$confdir/$filename";
+    my $mode = 0600;
+    chmod $mode, "$confdir/$filename";
 }
 
 sub find_first_file {
-  my $list = shift;
+    my $list = shift;
 
-  my $filename;
-  for my $f (split(/\s+/, $list)) {
-    if (-f $f) {
-      $filename = $f;
-      last;
+    my $filename;
+    for my $f (split(/\s+/, $list)) {
+        if (-f $f) {
+            $filename = $f;
+            last;
+        }
     }
-  }
 
-  return $filename;
+    return $filename;
 }
 
 sub find_first_dir {
-  my $list = shift;
+    my $list = shift;
 
-  my $dirname;
-  for my $f (split(/\s+/, $list)) {
-    if (-d $f) {
-      $dirname = $f;
-      last;
-    }
+    my $dirname;
+    for my $f (split(/\s+/, $list)) {
+        if (-d $f) {
+            $dirname = $f;
+            last;
+        }
     }
 
-  return $dirname;
+    return $dirname;
 }
 
 sub loadincludes {
@@ -4014,8 +4008,8 @@ sub loadincludes {
                     if (-f "$profiledir/$id/$path") {
                         my $file = "$id/$path";
                         $file =~ s/$profiledir\///;
-          my $ret = eval { loadinclude($file); };
-          if ($@) { fatal_error $@; }
+                        my $ret = eval { loadinclude($file); };
+                        if ($@) { fatal_error $@; }
                     } elsif (-d "$id/$path") {
                         push @incdirs, "$id/$path";
                     }
@@ -4039,10 +4033,10 @@ sub globcommon ($) {
         push @globs, $libpath if $libpath ne $path;
     }
 
-  for my $glob (keys %{$cfg->{globs}}) {
+    for my $glob (keys %{$cfg->{globs}}) {
         if ($path =~ /$glob/) {
             my $globbedpath = $path;
-      $globbedpath =~ s/$glob/$cfg->{globs}{$glob}/g;
+            $globbedpath =~ s/$glob/$cfg->{globs}{$glob}/g;
             push @globs, $globbedpath if $globbedpath ne $path;
         }
     }
@@ -4191,7 +4185,9 @@ sub Text_PromptUser ($) {
         my $menutext = gettext($CMDS{$cmd});
 
         # figure out what the hotkey for this menu item is
-        my $menumsg = "PromptUser: " . gettext("Invalid hotkey in") . " '$menutext'";
+        my $menumsg = "PromptUser: " .
+                      gettext("Invalid hotkey in") .
+                      " '$menutext'";
         $menutext =~ /\((\S)\)/ or fatal_error $menumsg;
 
         # we want case insensitive comparisons so we'll force things to
@@ -4199,7 +4195,9 @@ sub Text_PromptUser ($) {
         my $key = lc($1);
 
         # check if we're already using this hotkey for this prompt
-        my $hotkeymsg = "PromptUser: " . gettext("Duplicate hotkey for") . " $cmd: $menutext";
+        my $hotkeymsg = "PromptUser: " .
+                        gettext("Duplicate hotkey for") .
+                        " $cmd: $menutext";
         fatal_error $hotkeymsg if $keys{$key};
 
         # keep track of which command they're picking if they hit this hotkey
@@ -4218,14 +4216,18 @@ sub Text_PromptUser ($) {
         my $defaulttext = gettext($CMDS{$default});
 
         # figure out what the hotkey for this menu item is
-        my $defmsg = "PromptUser: " . gettext("Invalid hotkey in default item") . " '$defaulttext'";
+        my $defmsg = "PromptUser: " .
+                      gettext("Invalid hotkey in default item") .
+                      " '$defaulttext'";
         $defaulttext =~ /\((\S)\)/ or fatal_error $defmsg;
 
         # we want case insensitive comparisons so we'll force things to
         # lowercase
         $default_key = lc($1);
 
-        my $defkeymsg = "PromptUser: " . gettext("Invalid default") . " $default";
+        my $defkeymsg = "PromptUser: " .
+                        gettext("Invalid default") .
+                        " $default";
         fatal_error $defkeymsg unless $keys{$default_key};
     }
 
@@ -4252,12 +4254,12 @@ sub Text_PromptUser ($) {
         $prompt .= "= $title =\n\n" if $title;
 
         if (@headers) {
-          my @poo = @headers;
-          while (my $header = shift @poo) {
-            my $value = shift @poo;
-            $prompt .= sprintf($format, "$header:", $value);
-          }
-          $prompt .= "\n";
+            my @poo = @headers;
+            while (my $header = shift @poo) {
+                my $value = shift @poo;
+                $prompt .= sprintf($format, "$header:", $value);
+            }
+            $prompt .= "\n";
         }
 
         if ($explanation) {
