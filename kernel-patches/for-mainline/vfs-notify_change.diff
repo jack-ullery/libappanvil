@@ -262,7 +262,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	return error;
 --- a/fs/reiserfs/xattr.c
 +++ b/fs/reiserfs/xattr.c
-@@ -527,7 +527,7 @@ reiserfs_xattr_set(struct inode *inode, 
+@@ -483,7 +483,7 @@ reiserfs_xattr_set(struct inode *inode, 
  	newattrs.ia_size = buffer_size;
  	newattrs.ia_valid = ATTR_SIZE | ATTR_CTIME;
  	mutex_lock(&xinode->i_mutex);
@@ -271,7 +271,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (err)
  		goto out_filp;
  
-@@ -867,7 +867,7 @@ reiserfs_chown_xattrs_filler(void *buf, 
+@@ -823,7 +823,7 @@ reiserfs_chown_xattrs_filler(void *buf, 
  	}
  
  	if (!S_ISDIR(xafile->d_inode->i_mode))
@@ -280,7 +280,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	dput(xafile);
  
  	return err;
-@@ -919,7 +919,7 @@ int reiserfs_chown_xattrs(struct inode *
+@@ -875,7 +875,7 @@ int reiserfs_chown_xattrs(struct inode *
  		goto out_dir;
  	}
  

@@ -14,11 +14,9 @@ to not require it.
  security/apparmor/lsm.c |   17 -----------------
  1 file changed, 17 deletions(-)
 
-Index: b/security/apparmor/lsm.c
-===================================================================
 --- a/security/apparmor/lsm.c
 +++ b/security/apparmor/lsm.c
-@@ -495,22 +495,6 @@ out:
+@@ -467,22 +467,6 @@ out:
  	return error;
  }
  
@@ -41,7 +39,7 @@ Index: b/security/apparmor/lsm.c
  static int apparmor_file_alloc_security(struct file *file)
  {
  	struct aa_profile *profile;
-@@ -706,7 +690,6 @@ struct security_operations apparmor_ops 
+@@ -678,7 +662,6 @@ struct security_operations apparmor_ops 
  	.file_mmap =			apparmor_file_mmap,
  	.file_mprotect =		apparmor_file_mprotect,
  

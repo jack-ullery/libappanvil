@@ -113,9 +113,9 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  out_nfserr:
 --- a/fs/reiserfs/xattr.c
 +++ b/fs/reiserfs/xattr.c
-@@ -823,7 +823,7 @@ int reiserfs_delete_xattrs(struct inode 
+@@ -779,7 +779,7 @@ int reiserfs_delete_xattrs(struct inode 
  	if (dir->d_inode->i_nlink <= 2) {
- 		root = get_xa_root(inode->i_sb);
+ 		root = get_xa_root(inode->i_sb, XATTR_REPLACE);
  		reiserfs_write_lock_xattrs(inode->i_sb);
 -		err = vfs_rmdir(root->d_inode, dir);
 +		err = vfs_rmdir(root->d_inode, dir, NULL);

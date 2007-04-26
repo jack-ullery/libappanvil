@@ -6,7 +6,7 @@
 
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
-@@ -230,6 +230,7 @@ extern int aa_perm(struct aa_profile *pr
+@@ -227,6 +227,7 @@ extern int aa_perm(struct aa_profile *pr
  		   struct vfsmount *mnt, int mask, int check);
  extern int aa_perm_dir(struct aa_profile *profile, struct dentry *dentry,
  		       struct vfsmount *mnt, const char *operation, int mask);
@@ -63,7 +63,7 @@
  
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -664,6 +664,23 @@ int aa_perm_dir(struct aa_profile *profi
+@@ -682,6 +682,23 @@ int aa_perm_dir(struct aa_profile *profi
  			      AA_CHECK_DIR | AA_CHECK_LEAF);
  }
  

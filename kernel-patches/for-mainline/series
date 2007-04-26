@@ -45,6 +45,7 @@ apparmor-main-2.diff
 mangle.diff
 apparmor-lsm.diff
 apparmor-lsm-2.diff
+drop_CLONE_NEWNS_restriction.diff
 apparmor-ns-ptrace.diff
 apparmor-module_interface.diff
 apparmor-module_interface-2.diff
@@ -62,12 +63,6 @@ sys_fchdir-nameidata.diff
 nfsd_permission-nameidata.diff
 file_permission-nameidata.diff
 split-up-nameidata.diff
-# vfs_create-nameidata-2.diff
-# nfs-nameidata-check-2.diff
-# do_path_lookup-nameidata-2.diff
-# sys_fchdir-nameidata-2.diff
-# nfsd_permission-nameidata-2.diff
-# file_permission-nameidata-2.diff
 # xattr_permission.diff
 # vfs_create-args.diff
 # vfs_mknod-args.diff
@@ -81,5 +76,3 @@ split-up-nameidata.diff
 # may_delete-args.diff
 # lookup_parent.diff
 # nfsd_permission-nameidata.diff
-comm2.diff
-drop_CLONE_NEWNS_restriction.diff
