@@ -1,5 +1,5 @@
-#statvfs.diff
-#statvfs-2.diff
+# statvfs.diff
+# statvfs-2.diff
 security-create.diff
 proc_setattr.diff 
 proc_sys_setattr.diff
@@ -33,10 +33,10 @@ security-removexattr.diff
 unambiguous-__d_path.diff
 mount-consistent-__d_path.diff
 d_namespace_path.diff
-fix-getcwd.diff
+# fix-getcwd.diff
 proc-mounts-cleanup.diff
-proc-mounts-check-d_path-result.diff
-fix-d_path.diff
+# proc-mounts-check-d_path-result.diff
+# fix-d_path.diff
 file-handle-ops.diff
 security-xattr-file.diff
 apparmor-audit.diff
@@ -52,14 +52,22 @@ apparmor-misc.diff
 audit-cleanup.diff
 comm.diff
 ecryptfs-d_revalidate.diff
+nfs-nameidata-check.diff
 apparmor-intree.diff
 sysctl-pathname.diff
 apparmor-sysctl-pathname.diff
-# split-up-nameidata.diff
-# vfs_create-nameidata.diff
-# do_path_lookup-nameidata.diff
-# sys_fchdir-nameidata.diff
-# file_permission-nameidata.diff
+vfs_create-nameidata.diff
+do_path_lookup-nameidata.diff
+sys_fchdir-nameidata.diff
+nfsd_permission-nameidata.diff
+file_permission-nameidata.diff
+split-up-nameidata.diff
+# vfs_create-nameidata-2.diff
+# nfs-nameidata-check-2.diff
+# do_path_lookup-nameidata-2.diff
+# sys_fchdir-nameidata-2.diff
+# nfsd_permission-nameidata-2.diff
+# file_permission-nameidata-2.diff
 # xattr_permission.diff
 # vfs_create-args.diff
 # vfs_mknod-args.diff

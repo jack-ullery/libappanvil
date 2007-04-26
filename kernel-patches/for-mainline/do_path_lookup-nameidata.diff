@@ -33,7 +33,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  			goto fput_fail;
  
 -		retval = file_permission(file, MAY_EXEC);
-+		retval = vfs_permission(ND2(nd), MAY_EXEC);
++		retval = vfs_permission(nd, MAY_EXEC);
  		if (retval)
  			goto fput_fail;
  

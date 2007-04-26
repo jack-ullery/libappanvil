@@ -22,7 +22,7 @@
  		int type, dev_t rdev, struct svc_fh *resfhp)
  {
 -	struct dentry	*dentry, *dchild = NULL;
-+	struct nameidata2 nd = {};
++	struct nameidata nd = {};
 +	struct dentry	*dchild = NULL;
  	struct svc_export *exp;
  	struct inode	*dirp;
@@ -92,7 +92,7 @@
  	        int *truncp, int *created)
  {
 -	struct dentry	*dentry, *dchild = NULL;
-+	struct nameidata2 nd = {};
++	struct nameidata nd = {};
 +	struct dentry	*dchild = NULL;
 +	struct svc_export *exp;
  	struct inode	*dirp;
@@ -150,7 +150,7 @@
  static struct file *do_create(struct dentry *dir, struct dentry *dentry,
  			int oflag, mode_t mode, struct mq_attr __user *u_attr)
  {
-+	struct nameidata2 nd = {
++	struct nameidata nd = {
 +		.dentry = dir,
 +		/* Not a mounted filesystem, so set .mnt to NULL. */
 +	};

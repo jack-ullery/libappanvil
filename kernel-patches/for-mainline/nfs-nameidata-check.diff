@@ -9,6 +9,10 @@ exists?
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
+---
+ fs/nfs/dir.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
 --- a/fs/nfs/dir.c
 +++ b/fs/nfs/dir.c
 @@ -880,15 +880,15 @@ int nfs_is_exclusive_create(struct inode
@@ -16,7 +20,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  }
  
 -static inline int nfs_reval_fsid(struct vfsmount *mnt, struct inode *dir,
-+static inline int nfs_reval_fsid(struct nameidata2 *nd, struct inode *dir,
++static inline int nfs_reval_fsid(struct nameidata *nd, struct inode *dir,
  				 struct nfs_fh *fh, struct nfs_fattr *fattr)
  {
  	struct nfs_server *server = NFS_SERVER(dir);
@@ -31,7 +35,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	return __nfs_revalidate_inode(server, nd->mnt->mnt_root->d_inode);
  }
  
- static struct dentry *nfs_lookup(struct inode *dir, struct dentry * dentry, struct nameidata2 *nd)
+ static struct dentry *nfs_lookup(struct inode *dir, struct dentry * dentry, struct nameidata *nd)
 @@ -929,7 +929,7 @@ static struct dentry *nfs_lookup(struct 
  		res = ERR_PTR(error);
  		goto out_unlock;

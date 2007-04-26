@@ -7,6 +7,9 @@ Remove some duplicate code in generating the contents of /proc/mounts and
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
+
+This patch is optional, and does not affect the rest of this series.
+
  fs/proc/base.c |   45 +++++++++++++++------------------------------
  1 file changed, 15 insertions(+), 30 deletions(-)
 

@@ -1,21 +1,22 @@
 ---
- fs/nfsd/vfs.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ fs/nfsd/vfs.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1808,6 +1808,10 @@ nfsd_statfs(struct svc_rqst *rqstp, stru
+@@ -1802,6 +1802,11 @@ nfsd_statfs(struct svc_rqst *rqstp, stru
  __be32
  nfsd_permission(struct svc_export *exp, struct dentry *dentry, int acc)
  {
-+	struct nameidata2 nd = {
++	struct nameidata nd = {
 +		.dentry = dentry,
 +		.mnt = exp->ex_mnt,
++		.flags = LOOKUP_ACCESS,
 +	};
  	struct inode	*inode = dentry->d_inode;
  	int		err;
  
-@@ -1873,12 +1877,12 @@ nfsd_permission(struct svc_export *exp, 
+@@ -1867,12 +1872,12 @@ nfsd_permission(struct svc_export *exp, 
  	    inode->i_uid == current->fsuid)
  		return 0;
  

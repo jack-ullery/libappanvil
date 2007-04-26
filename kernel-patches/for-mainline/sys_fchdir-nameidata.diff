@@ -16,7 +16,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
  asmlinkage long sys_fchdir(unsigned int fd)
  {
-+	struct nameidata2 nd = {};
++	struct nameidata nd = {};
  	struct file *file;
 -	struct dentry *dentry;
 -	struct inode *inode;

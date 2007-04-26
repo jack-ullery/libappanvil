@@ -16,115 +16,117 @@ places where a full nameidat is not needed.
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- fs/9p/vfs_inode.c              |    4 ++--
- fs/adfs/dir.c                  |    2 +-
- fs/affs/affs.h                 |    4 ++--
- fs/affs/namei.c                |    4 ++--
- fs/afs/dir.c                   |    8 ++++----
- fs/afs/mntpt.c                 |    4 ++--
- fs/autofs/root.c               |    6 +++---
- fs/autofs4/root.c              |    8 ++++----
- fs/bad_inode.c                 |    6 +++---
- fs/befs/linuxvfs.c             |    4 ++--
- fs/bfs/dir.c                   |    4 ++--
- fs/cifs/cifsfs.c               |    2 +-
- fs/cifs/cifsfs.h               |    4 ++--
- fs/cifs/dir.c                  |    6 +++---
- fs/coda/dir.c                  |   14 +++++++-------
- fs/coda/pioctl.c               |    4 ++--
- fs/configfs/dir.c              |    2 +-
- fs/cramfs/inode.c              |    2 +-
- fs/ecryptfs/dentry.c           |    2 +-
- fs/ecryptfs/inode.c            |   10 +++++-----
- fs/efs/namei.c                 |    2 +-
- fs/exec.c                      |    8 ++++----
- fs/ext2/acl.c                  |    2 +-
- fs/ext2/acl.h                  |    2 +-
- fs/ext2/namei.c                |    4 ++--
- fs/ext3/acl.c                  |    2 +-
- fs/ext3/acl.h                  |    2 +-
- fs/ext3/namei.c                |    4 ++--
- fs/ext4/acl.c                  |    2 +-
- fs/ext4/acl.h                  |    2 +-
- fs/ext4/namei.c                |    4 ++--
- fs/freevxfs/vxfs_lookup.c      |    4 ++--
- fs/fuse/dir.c                  |   10 +++++-----
- fs/gfs2/inode.c                |    2 +-
- fs/gfs2/inode.h                |    2 +-
- fs/gfs2/ops_dentry.c           |    2 +-
- fs/gfs2/ops_inode.c            |    6 +++---
- fs/hfs/dir.c                   |    4 ++--
- fs/hfs/inode.c                 |    4 ++--
- fs/hfs/sysdep.c                |    2 +-
- fs/hfsplus/dir.c               |    4 ++--
- fs/hfsplus/inode.c             |    4 ++--
- fs/hpfs/dir.c                  |    2 +-
- fs/hpfs/hpfs_fn.h              |    2 +-
- fs/hpfs/namei.c                |    2 +-
- fs/hugetlbfs/inode.c           |    2 +-
- fs/inotify_user.c              |    2 +-
- fs/isofs/isofs.h               |    2 +-
- fs/isofs/namei.c               |    2 +-
- fs/jffs2/acl.c                 |    2 +-
- fs/jffs2/acl.h                 |    2 +-
- fs/jffs2/dir.c                 |    8 ++++----
- fs/jfs/acl.c                   |    2 +-
- fs/jfs/jfs_acl.h               |    2 +-
- fs/jfs/namei.c                 |    4 ++--
- fs/libfs.c                     |    2 +-
- fs/minix/namei.c               |    4 ++--
- fs/msdos/namei.c               |    4 ++--
- fs/namei.c                     |   41 +++++++++++++++++++++--------------------
- fs/ncpfs/dir.c                 |   14 +++++++-------
- fs/nfs/dir.c                   |   30 +++++++++++++++---------------
- fs/nfs/nfs3proc.c              |    2 +-
- fs/nfs/nfs4_fs.h               |    4 ++--
- fs/nfs/nfs4proc.c              |    8 ++++----
- fs/nfs/proc.c                  |    2 +-
- fs/ntfs/namei.c                |    2 +-
- fs/ocfs2/dcache.c              |    2 +-
- fs/ocfs2/dlm/dlmfs.c           |    2 +-
- fs/ocfs2/file.c                |    2 +-
- fs/ocfs2/file.h                |    2 +-
- fs/ocfs2/namei.c               |    4 ++--
- fs/open.c                      |   13 +++++++------
- fs/proc/base.c                 |   18 +++++++++---------
- fs/proc/generic.c              |    2 +-
- fs/proc/proc_sysctl.c          |    6 +++---
- fs/proc/root.c                 |    2 +-
- fs/qnx4/namei.c                |    2 +-
- fs/ramfs/inode.c               |    2 +-
- fs/reiserfs/namei.c            |    4 ++--
- fs/reiserfs/xattr.c            |    2 +-
- fs/romfs/inode.c               |    2 +-
- fs/smbfs/dir.c                 |   12 ++++++------
- fs/smbfs/file.c                |    2 +-
- fs/sysfs/dir.c                 |    2 +-
- fs/sysv/namei.c                |    4 ++--
- fs/udf/namei.c                 |    4 ++--
- fs/ufs/namei.c                 |    4 ++--
- fs/utimes.c                    |    4 ++--
- fs/vfat/namei.c                |    6 +++---
- fs/xfs/linux-2.6/xfs_iops.c    |    6 +++---
- include/linux/coda_linux.h     |    2 +-
- include/linux/dcache.h         |    3 ++-
- include/linux/efs_fs.h         |    2 +-
- include/linux/fs.h             |   15 ++++++++-------
- include/linux/namei.h          |   37 +++++++++++++++++++++++++++----------
- include/linux/nfs_fs.h         |    2 +-
- include/linux/nfs_xdr.h        |    2 +-
- include/linux/proc_fs.h        |    4 ++--
- include/linux/qnx4_fs.h        |    2 +-
- include/linux/reiserfs_xattr.h |    2 +-
- include/linux/security.h       |    6 +++---
- include/linux/shmem_fs.h       |    2 +-
- ipc/mqueue.c                   |    2 +-
- mm/shmem.c                     |    2 +-
- mm/shmem_acl.c                 |    2 +-
- security/apparmor/lsm.c        |    2 +-
- security/dummy.c               |    2 +-
- security/selinux/hooks.c       |    2 +-
- 108 files changed, 273 insertions(+), 252 deletions(-)
+ fs/9p/vfs_inode.c              |    4 +--
+ fs/adfs/dir.c                  |    2 -
+ fs/affs/affs.h                 |    4 +--
+ fs/affs/namei.c                |    4 +--
+ fs/afs/dir.c                   |    8 +++----
+ fs/afs/mntpt.c                 |    4 +--
+ fs/autofs/root.c               |    6 ++---
+ fs/autofs4/root.c              |    8 +++----
+ fs/bad_inode.c                 |    6 ++---
+ fs/befs/linuxvfs.c             |    4 +--
+ fs/bfs/dir.c                   |    4 +--
+ fs/cifs/cifsfs.c               |    2 -
+ fs/cifs/cifsfs.h               |    4 +--
+ fs/cifs/dir.c                  |    6 ++---
+ fs/coda/dir.c                  |   14 ++++++------
+ fs/coda/pioctl.c               |    4 +--
+ fs/configfs/dir.c              |    2 -
+ fs/cramfs/inode.c              |    2 -
+ fs/ecryptfs/dentry.c           |    2 -
+ fs/ecryptfs/inode.c            |   10 ++++-----
+ fs/efs/namei.c                 |    2 -
+ fs/exec.c                      |    8 +++----
+ fs/ext2/acl.c                  |    2 -
+ fs/ext2/acl.h                  |    2 -
+ fs/ext2/namei.c                |    4 +--
+ fs/ext3/acl.c                  |    2 -
+ fs/ext3/acl.h                  |    2 -
+ fs/ext3/namei.c                |    4 +--
+ fs/ext4/acl.c                  |    2 -
+ fs/ext4/acl.h                  |    2 -
+ fs/ext4/namei.c                |    4 +--
+ fs/freevxfs/vxfs_lookup.c      |    4 +--
+ fs/fuse/dir.c                  |   10 ++++-----
+ fs/gfs2/inode.c                |    2 -
+ fs/gfs2/inode.h                |    2 -
+ fs/gfs2/ops_dentry.c           |    2 -
+ fs/gfs2/ops_inode.c            |    6 ++---
+ fs/hfs/dir.c                   |    4 +--
+ fs/hfs/inode.c                 |    4 +--
+ fs/hfs/sysdep.c                |    2 -
+ fs/hfsplus/dir.c               |    4 +--
+ fs/hfsplus/inode.c             |    4 +--
+ fs/hpfs/dir.c                  |    2 -
+ fs/hpfs/hpfs_fn.h              |    2 -
+ fs/hpfs/namei.c                |    2 -
+ fs/hugetlbfs/inode.c           |    2 -
+ fs/inotify_user.c              |    2 -
+ fs/isofs/isofs.h               |    2 -
+ fs/isofs/namei.c               |    2 -
+ fs/jffs2/acl.c                 |    2 -
+ fs/jffs2/acl.h                 |    2 -
+ fs/jffs2/dir.c                 |    8 +++----
+ fs/jfs/acl.c                   |    2 -
+ fs/jfs/jfs_acl.h               |    2 -
+ fs/jfs/namei.c                 |    4 +--
+ fs/libfs.c                     |    2 -
+ fs/minix/namei.c               |    4 +--
+ fs/msdos/namei.c               |    4 +--
+ fs/namei.c                     |   45 ++++++++++++++++++++---------------------
+ fs/ncpfs/dir.c                 |   14 ++++++------
+ fs/nfs/dir.c                   |   32 ++++++++++++++---------------
+ fs/nfs/nfs3proc.c              |    2 -
+ fs/nfs/nfs4_fs.h               |    4 +--
+ fs/nfs/nfs4proc.c              |    8 +++----
+ fs/nfs/proc.c                  |    2 -
+ fs/nfsd/vfs.c                  |    6 ++---
+ fs/ntfs/namei.c                |    2 -
+ fs/ocfs2/dcache.c              |    2 -
+ fs/ocfs2/dlm/dlmfs.c           |    2 -
+ fs/ocfs2/file.c                |    2 -
+ fs/ocfs2/file.h                |    2 -
+ fs/ocfs2/namei.c               |    4 +--
+ fs/open.c                      |   15 +++++++------
+ fs/proc/base.c                 |   18 ++++++++--------
+ fs/proc/generic.c              |    2 -
+ fs/proc/proc_sysctl.c          |    6 ++---
+ fs/proc/root.c                 |    2 -
+ fs/qnx4/namei.c                |    2 -
+ fs/ramfs/inode.c               |    2 -
+ fs/reiserfs/namei.c            |    4 +--
+ fs/reiserfs/xattr.c            |    2 -
+ fs/romfs/inode.c               |    2 -
+ fs/smbfs/dir.c                 |   12 +++++-----
+ fs/smbfs/file.c                |    2 -
+ fs/sysfs/dir.c                 |    2 -
+ fs/sysv/namei.c                |    4 +--
+ fs/udf/namei.c                 |    4 +--
+ fs/ufs/namei.c                 |    4 +--
+ fs/utimes.c                    |    4 +--
+ fs/vfat/namei.c                |    6 ++---
+ fs/xfs/linux-2.6/xfs_iops.c    |    6 ++---
+ include/linux/coda_linux.h     |    2 -
+ include/linux/dcache.h         |    3 +-
+ include/linux/efs_fs.h         |    2 -
+ include/linux/fs.h             |   15 +++++++------
+ include/linux/namei.h          |   37 ++++++++++++++++++++++++---------
+ include/linux/nfs_fs.h         |    2 -
+ include/linux/nfs_xdr.h        |    2 -
+ include/linux/proc_fs.h        |    4 +--
+ include/linux/qnx4_fs.h        |    2 -
+ include/linux/reiserfs_xattr.h |    2 -
+ include/linux/security.h       |    6 ++---
+ include/linux/shmem_fs.h       |    2 -
+ ipc/mqueue.c                   |    4 +--
+ mm/shmem.c                     |    2 -
+ mm/shmem_acl.c                 |    2 -
+ net/unix/af_unix.c             |    2 -
+ security/apparmor/lsm.c        |    2 -
+ security/dummy.c               |    2 -
+ security/selinux/hooks.c       |    2 -
+ 110 files changed, 282 insertions(+), 261 deletions(-)
 
 --- a/fs/9p/vfs_inode.c
 +++ b/fs/9p/vfs_inode.c
@@ -1229,7 +1231,16 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	return permission(nd->dentry->d_inode, mask, nd);
  }
-@@ -366,7 +366,7 @@ void path_release_on_umount(struct namei
+@@ -297,7 +297,7 @@ int vfs_permission(struct nameidata *nd,
+  */
+ int file_permission(struct file *file, int mask)
+ {
+-	struct nameidata nd = {
++	struct nameidata2 nd = {
+ 		.dentry = file->f_path.dentry,
+ 		.mnt = file->f_path.mnt,
+ 	};
+@@ -371,7 +371,7 @@ void path_release_on_umount(struct namei
   * release_open_intent - free up open intent resources
   * @nd: pointer to nameidata
   */
@@ -1238,7 +1249,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	if (nd->intent.open.file->f_path.dentry == NULL)
  		put_filp(nd->intent.open.file);
-@@ -377,7 +377,7 @@ void release_open_intent(struct nameidat
+@@ -382,7 +382,7 @@ void release_open_intent(struct nameidat
  static inline struct dentry *
  do_revalidate(struct dentry *dentry, struct nameidata *nd)
  {
@@ -1247,7 +1258,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (unlikely(status <= 0)) {
  		/*
  		 * The dentry failed validation.
-@@ -428,8 +428,7 @@ static struct dentry * cached_lookup(str
+@@ -433,8 +433,7 @@ static struct dentry * cached_lookup(str
   * short-cut DAC fails, then call permission() to do more
   * complete permission check.
   */
@@ -1257,7 +1268,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	umode_t	mode = inode->i_mode;
  
-@@ -491,7 +490,7 @@ static struct dentry * real_lookup(struc
+@@ -496,7 +495,7 @@ static struct dentry * real_lookup(struc
  		struct dentry * dentry = d_alloc(parent, name);
  		result = ERR_PTR(-ENOMEM);
  		if (dentry) {
@@ -1266,7 +1277,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  			if (result)
  				dput(dentry);
  			else
-@@ -830,9 +829,9 @@ static fastcall int __link_path_walk(con
+@@ -835,9 +834,9 @@ static fastcall int __link_path_walk(con
  		unsigned int c;
  
  		nd->flags |= LOOKUP_CONTINUE;
@@ -1278,7 +1289,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
   		if (err)
  			break;
  
-@@ -978,7 +977,8 @@ return_reval:
+@@ -983,7 +982,8 @@ return_reval:
  		    (nd->dentry->d_sb->s_type->fs_flags & FS_REVAL_DOT)) {
  			err = -ESTALE;
  			/* Note: we do not d_invalidate() */
@@ -1288,7 +1299,16 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  				break;
  		}
  return_base:
-@@ -1194,7 +1194,7 @@ static int __path_lookup_intent_open(int
+@@ -1148,7 +1148,7 @@ static int fastcall do_path_lookup(int d
+ 		if (!S_ISDIR(nd->dentry->d_inode->i_mode))
+ 			goto fput_fail;
+ 
+-		retval = vfs_permission(nd, MAY_EXEC);
++		retval = vfs_permission(ND2(nd), MAY_EXEC);
+ 		if (retval)
+ 			goto fput_fail;
+ 
+@@ -1198,7 +1198,7 @@ static int __path_lookup_intent_open(int
  			path_release(nd);
  		}
  	} else if (err != 0)
@@ -1297,7 +1317,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	return err;
  }
  
-@@ -1255,7 +1255,7 @@ static struct dentry * __lookup_hash(str
+@@ -1259,7 +1259,7 @@ static struct dentry * __lookup_hash(str
  	int err;
  
  	inode = base->d_inode;
@@ -1306,7 +1326,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	dentry = ERR_PTR(err);
  	if (err)
  		goto out;
-@@ -1277,7 +1277,7 @@ static struct dentry * __lookup_hash(str
+@@ -1281,7 +1281,7 @@ static struct dentry * __lookup_hash(str
  		dentry = ERR_PTR(-ENOMEM);
  		if (!new)
  			goto out;
@@ -1315,7 +1335,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  		if (!dentry)
  			dentry = new;
  		else
-@@ -1422,7 +1422,7 @@ static int may_delete(struct inode *dir,
+@@ -1426,7 +1426,7 @@ static int may_delete(struct inode *dir,
   *  4. We can't do it if dir is immutable (done in permission())
   */
  static inline int may_create(struct inode *dir, struct dentry *child,
@@ -1324,7 +1344,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	if (child->d_inode)
  		return -EEXIST;
-@@ -1492,7 +1492,7 @@ void unlock_rename(struct dentry *p1, st
+@@ -1496,7 +1496,7 @@ void unlock_rename(struct dentry *p1, st
  }
  
  int vfs_create(struct inode *dir, struct dentry *dentry, int mode,
@@ -1333,7 +1353,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	int error = may_create(dir, dentry, nd);
  
-@@ -1528,7 +1528,7 @@ int may_open(struct nameidata *nd, int a
+@@ -1532,7 +1532,7 @@ int may_open(struct nameidata *nd, int a
  	if (S_ISDIR(inode->i_mode) && (flag & FMODE_WRITE))
  		return -EISDIR;
  
@@ -1342,7 +1362,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (error)
  		return error;
  
-@@ -1601,7 +1601,7 @@ static int open_namei_create(struct name
+@@ -1605,7 +1605,7 @@ static int open_namei_create(struct name
  
  	if (!IS_POSIXACL(dir->d_inode))
  		mode &= ~current->fs->umask;
@@ -1351,7 +1371,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	mutex_unlock(&dir->d_inode->i_mutex);
  	dput(nd->dentry);
  	nd->dentry = path->dentry;
-@@ -1734,7 +1734,7 @@ exit_dput:
+@@ -1738,7 +1738,7 @@ exit_dput:
  	dput_path(&path, nd);
  exit:
  	if (!IS_ERR(nd->intent.open.file))
@@ -1360,7 +1380,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	path_release(nd);
  	return error;
  
-@@ -1762,7 +1762,7 @@ do_link:
+@@ -1766,7 +1766,7 @@ do_link:
  		 * me so stupid? Anathema to whoever designed this non-sense
  		 * with "intent.open".
  		 */
@@ -1369,7 +1389,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  		return error;
  	}
  	nd->flags &= ~LOOKUP_PARENT;
-@@ -1887,7 +1887,8 @@ asmlinkage long sys_mknodat(int dfd, con
+@@ -1891,7 +1891,8 @@ asmlinkage long sys_mknodat(int dfd, con
  	if (!IS_ERR(dentry)) {
  		switch (mode & S_IFMT) {
  		case 0: case S_IFREG:
@@ -1504,8 +1524,17 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	if (NFS_PROTO(dir)->version == 2)
  		return 0;
+@@ -880,7 +880,7 @@ int nfs_is_exclusive_create(struct inode
+ 	return (nd->intent.open.flags & O_EXCL) != 0;
+ }
+ 
+-static inline int nfs_reval_fsid(struct nameidata *nd, struct inode *dir,
++static inline int nfs_reval_fsid(struct nameidata2 *nd, struct inode *dir,
+ 				 struct nfs_fh *fh, struct nfs_fattr *fattr)
+ {
+ 	struct nfs_server *server = NFS_SERVER(dir);
 @@ -891,7 +891,7 @@ static inline int nfs_reval_fsid(struct 
- 	return 0;
+ 	return __nfs_revalidate_inode(server, nd->mnt->mnt_root->d_inode);
  }
  
 -static struct dentry *nfs_lookup(struct inode *dir, struct dentry * dentry, struct nameidata *nd)
@@ -1640,6 +1669,35 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct nfs_fh		fhandle;
  	struct nfs_fattr	fattr;
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1121,7 +1121,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 		char *fname, int flen, struct iattr *iap,
+ 		int type, dev_t rdev, struct svc_fh *resfhp)
+ {
+-	struct nameidata nd = {};
++	struct nameidata2 nd = {};
+ 	struct dentry	*dchild = NULL;
+ 	struct svc_export *exp;
+ 	struct inode	*dirp;
+@@ -1254,7 +1254,7 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
+ 		struct svc_fh *resfhp, int createmode, u32 *verifier,
+ 	        int *truncp, int *created)
+ {
+-	struct nameidata nd = {};
++	struct nameidata2 nd = {};
+ 	struct dentry	*dchild = NULL;
+ 	struct svc_export *exp;
+ 	struct inode	*dirp;
+@@ -1802,7 +1802,7 @@ nfsd_statfs(struct svc_rqst *rqstp, stru
+ __be32
+ nfsd_permission(struct svc_export *exp, struct dentry *dentry, int acc)
+ {
+-	struct nameidata nd = {
++	struct nameidata2 nd = {
+ 		.dentry = dentry,
+ 		.mnt = exp->ex_mnt,
+ 		.flags = LOOKUP_ACCESS,
 --- a/fs/ntfs/namei.c
 +++ b/fs/ntfs/namei.c
 @@ -99,7 +99,7 @@
@@ -1744,7 +1802,16 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (error)
  		goto dput_and_out;
  
-@@ -475,7 +475,7 @@ asmlinkage long sys_chroot(const char __
+@@ -438,7 +438,7 @@ out:
+ 
+ asmlinkage long sys_fchdir(unsigned int fd)
+ {
+-	struct nameidata nd = {};
++	struct nameidata2 nd = {};
+ 	struct file *file;
+ 	int error;
+ 
+@@ -472,7 +472,7 @@ asmlinkage long sys_chroot(const char __
  	if (error)
  		goto out;
  
@@ -1753,7 +1820,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (error)
  		goto dput_and_out;
  
-@@ -796,8 +796,9 @@ EXPORT_SYMBOL(filp_open);
+@@ -793,8 +793,9 @@ EXPORT_SYMBOL(filp_open);
   * If the open callback is set to NULL, then the standard f_op->open()
   * filesystem callback is substituted.
   */
@@ -1767,7 +1834,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  		goto out;
 --- a/fs/proc/base.c
 +++ b/fs/proc/base.c
-@@ -1072,7 +1072,7 @@ static int pid_getattr(struct vfsmount *
+@@ -1064,7 +1064,7 @@ static int pid_getattr(struct vfsmount *
   * made this apply to all per process world readable and executable
   * directories.
   */
@@ -1776,7 +1843,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct inode *inode = dentry->d_inode;
  	struct task_struct *task = get_proc_task(inode);
-@@ -1220,7 +1220,7 @@ static int proc_fd_link(struct inode *in
+@@ -1212,7 +1212,7 @@ static int proc_fd_link(struct inode *in
  	return -ENOENT;
  }
  
@@ -1785,7 +1852,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct inode *inode = dentry->d_inode;
  	struct task_struct *task = get_proc_task(inode);
-@@ -1315,7 +1315,7 @@ out_iput:
+@@ -1307,7 +1307,7 @@ out_iput:
  	goto out;
  }
  
@@ -1794,7 +1861,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct task_struct *task = get_proc_task(dir);
  	unsigned fd = name_to_int(dentry);
-@@ -1631,7 +1631,7 @@ static const struct file_operations proc
+@@ -1623,7 +1623,7 @@ static const struct file_operations proc
  };
  
  static struct dentry *proc_attr_dir_lookup(struct inode *dir,
@@ -1803,7 +1870,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	return proc_pident_lookup(dir, dentry,
  				  attr_dir_stuff, ARRAY_SIZE(attr_dir_stuff));
-@@ -1685,7 +1685,7 @@ static struct pid_entry proc_base_stuff[
+@@ -1677,7 +1677,7 @@ static struct pid_entry proc_base_stuff[
   * directory. In this case, however, we can do it - no aliasing problems
   * due to the way we treat inodes.
   */
@@ -1812,7 +1879,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct inode *inode = dentry->d_inode;
  	struct task_struct *task = get_proc_task(inode);
-@@ -1880,7 +1880,7 @@ static const struct file_operations proc
+@@ -1872,7 +1872,7 @@ static const struct file_operations proc
  	.readdir	= proc_tgid_base_readdir,
  };
  
@@ -1821,7 +1888,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	return proc_pident_lookup(dir, dentry,
  				  tgid_base_stuff, ARRAY_SIZE(tgid_base_stuff));
  }
-@@ -1988,7 +1988,7 @@ out:
+@@ -1980,7 +1980,7 @@ out:
  	return error;
  }
  
@@ -1830,7 +1897,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct dentry *result = ERR_PTR(-ENOENT);
  	struct task_struct *task;
-@@ -2153,7 +2153,7 @@ static int proc_tid_base_readdir(struct 
+@@ -2145,7 +2145,7 @@ static int proc_tid_base_readdir(struct 
  				   tid_base_stuff,ARRAY_SIZE(tid_base_stuff));
  }
  
@@ -1839,7 +1906,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	return proc_pident_lookup(dir, dentry,
  				  tid_base_stuff, ARRAY_SIZE(tid_base_stuff));
  }
-@@ -2197,7 +2197,7 @@ out:
+@@ -2189,7 +2189,7 @@ out:
  	return error;
  }
  
@@ -1943,7 +2010,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	struct inode *inode;
 --- a/fs/reiserfs/xattr.c
 +++ b/fs/reiserfs/xattr.c
-@@ -1342,7 +1342,7 @@ static int reiserfs_check_acl(struct ino
+@@ -1298,7 +1298,7 @@ static int reiserfs_check_acl(struct ino
  	return error;
  }
  
@@ -2449,6 +2516,15 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct inode *inode;
  	struct mq_attr *attr = dentry->d_fsdata;
+@@ -604,7 +604,7 @@ static int mq_attr_ok(struct mq_attr *at
+ static struct file *do_create(struct dentry *dir, struct dentry *dentry,
+ 			int oflag, mode_t mode, struct mq_attr __user *u_attr)
+ {
+-	struct nameidata nd = {
++	struct nameidata2 nd = {
+ 		.dentry = dir,
+ 		/* Not a mounted filesystem, so set .mnt to NULL. */
+ 	};
 --- a/mm/shmem.c
 +++ b/mm/shmem.c
 @@ -1796,7 +1796,7 @@ static int shmem_mkdir(struct inode *dir
@@ -2471,6 +2547,17 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	return generic_permission(inode, mask, shmem_check_acl);
  }
+--- a/net/unix/af_unix.c
++++ b/net/unix/af_unix.c
+@@ -703,7 +703,7 @@ static struct sock *unix_find_other(stru
+ 		err = path_lookup(sunname->sun_path, LOOKUP_FOLLOW, &nd);
+ 		if (err)
+ 			goto fail;
+-		err = vfs_permission(&nd, MAY_WRITE);
++		err = vfs_permission(ND2(&nd), MAY_WRITE);
+ 		if (err)
+ 			goto put_fail;
+ 
 --- a/security/apparmor/lsm.c
 +++ b/security/apparmor/lsm.c
 @@ -374,7 +374,7 @@ out:
