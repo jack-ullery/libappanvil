@@ -136,6 +136,7 @@ our $filename;
 our $parser;
 our $ldd;
 our $profiledir;
+our $extraprofiledir;
 
 # we keep track of the included profile fragments with %include
 my %include;
@@ -157,6 +158,7 @@ our %t;
 our %transitions;
 our %sd;    # we keep track of the original profiles in %sd
 our %original_sd;
+our %extras;  # inactive profiles from extras
 
 my @log;
 my %pid;
@@ -595,115 +597,149 @@ sub handle_binfmt ($$) {
     }
 }
 
-sub get_profile_from_repo {
-  my $fqdbin = shift;
-
-  my $profile_data;
-
-  my $distro = $cfg->{settings}{distro};
-  my $repository = $cfg->{settings}{repository};
-
-  if ($repo_client) {
-    my $res = $repo_client->send_request('FindProfiles', $distro, $fqdbin, "");
-    if (did_result_succeed($res)) {
-      my @profiles;
-      my @profile_list = @{$res->value};
-
-      if (@profile_list) {
-        my @uids;
-        for my $p (@profile_list) {
-          my $uid = $p->{user_id};
-          my $username = $uid2login{$uid};
-          if ($username) {
-            $p->{username} = $username;
-          } else {
-            push @uids, $uid;
-          }
-        }
-
-        if (@uids) {
-          # LoginNamesFromUserIds currently returns the list of uids in sorted
-          # order no matter how you pass them to it - that's a bug, but let's
-          # explictly sort the list to work around that.
-          @uids = sort @uids;
-
-          my $res = $repo_client->send_request('LoginNamesFromUserIds', [ @uids ]);
-          if (did_result_succeed($res)) {
-            my @usernames = @{$res->value};
-            for my $uid (@uids) {
-              my $username = shift @usernames;
-              $uid2login{$uid} = $username;
-            }
-          }
-        }
-
-        for my $p (@profile_list) {
-          next if $p->{username};
-          my $uid = $p->{user_id};
-          my $username = $uid2login{$uid};
-          if ($username) {
-            $p->{username} = $username;
-          } else {
-            $p->{username} = "unknown-$uid";
-          }
-        }
-
-        my @options = map { $_->{username} } @profile_list;
-
-        my $q = { };
-        $q->{headers} = [ ];
-        push @{$q->{headers}}, gettext("Profile"), $fqdbin;
-
-        $q->{functions} = [
-          "CMD_VIEW_REPO", "CMD_USE_REPO", "CMD_CREATE_PROFILE",
-          "CMD_ABORT", "CMD_FINISHED"
-        ];
-
-        $q->{default} = "CMD_VIEW_REPO";
-
-        $q->{options} = [ @options ];
-        $q->{selected} = 0;
-
-        my ($p, $ans, $arg);
-        do {
-          ($ans, $arg) = UI_PromptUser($q);
-
-          for (my $i = 0; $i < scalar(@profile_list); $i++) {
-            if ($profile_list[$i]->{username} eq $options[$arg]) {
-              $p = $profile_list[$i];
-              $q->{selected} = $i;
-            }
-          }
-
-          if ($ans eq "CMD_VIEW_REPO") {
-            if ($UI_Mode eq "yast") {
-              SendDataToYast(
-                  {
-                      type    => "dialog-repo-view-profile",
-                      user    => $options[$arg],
-                      profile => $p->{profile}
-                  }
-              );
-              my ($ypath, $yarg) = GetDataFromYast();
-              $ans = $yarg->{answer} || "b";
-              if ( $ans eq "u" ) {
-                $profile_data = use_repo_profile($fqdbin, $repository, $p);
-                $ans = "CMD_USE_REPO";
-              }
-            } else {
-              open(PAGER, "| less");
-              print PAGER gettext("Profile submitted by") . " $options[$arg]:\n\n$p->{profile}\n\n";;
-              close(PAGER);
-            }
-          } elsif ($ans eq "CMD_USE_REPO") {
-            $profile_data = use_repo_profile($fqdbin, $repository, $p );
-          }
-        } until ($ans =~ /^CMD_(USE_REPO|CREATE_PROFILE)$/);
-      }
+sub get_inactive_profile {
+    my $fqdbin = shift;
+    if ( $extras{$fqdbin} ) {
+        return {$fqdbin => $extras{$fqdbin}};
     }
-  }
+}
 
-  return $profile_data;
+sub get_profile {
+    my $fqdbin = shift;
+    my $profile_data;
+
+    my $distro     = $cfg->{settings}{distro};
+    my $repository = $cfg->{settings}{repository};
+    my @profiles;
+    my @profile_list;
+
+    if (repo_is_enabled() && $repo_client) {
+        my $res = $repo_client->send_request('FindProfiles',
+                                             $distro,
+                                             $fqdbin,
+                                             "");
+        if (did_result_succeed($res)) {
+            @profile_list = @{ $res->value };
+
+            if (@profile_list) {
+                my @uids;
+                for my $p (@profile_list) {
+                    my $uid      = $p->{user_id};
+                    my $username = $uid2login{$uid};
+                    if ($username) {
+                        $p->{username} = $username;
+                    } else {
+                        push @uids, $uid;
+                    }
+                }
+
+                if (@uids) {
+
+                    # LoginNamesFromUserIds currently returns the list of uids
+                    # in sorted order no matter how you pass them to it - that's
+                    # a bug, but let's explictly sort the list to work around
+                    # that.
+                    @uids = sort @uids;
+
+                    my $res =
+                      $repo_client->send_request( 'LoginNamesFromUserIds',
+                                                  [@uids] );
+                    if (did_result_succeed($res)) {
+                        my @usernames = @{ $res->value };
+                        for my $uid (@uids) {
+                            my $username = shift @usernames;
+                            $uid2login{$uid} = $username;
+                        }
+                    }
+                }
+                for my $p (@profile_list) {
+                    $p->{profile_type} = "REPOSITORY";
+                    next if $p->{username};
+                    my $uid      = $p->{user_id};
+                    my $username = $uid2login{$uid};
+                    if ($username) {
+                        $p->{username} = $username;
+                    } else {
+                        $p->{username} = "unknown-$uid";
+                    }
+                }
+            }
+        }
+    }
+
+    my $inactive_profile = get_inactive_profile($fqdbin);
+    if ( defined $inactive_profile && $inactive_profile ne "" ) {
+        push @profile_list,
+            {
+              "username"     => gettext( "Inactive local profile for ") .
+                                $fqdbin,
+              "profile_type" => "INACTIVE_LOCAL",
+              "profile"      => serialize_profile(
+                                  ${%$inactive_profile}{$fqdbin},
+                                  $fqdbin
+                                ),
+              "profile_data" => $inactive_profile,
+            };
+    }
+
+    return undef if ( @profile_list == 0 ); # No repo profiles, no inactive
+                                            # profile
+
+    my @options = map { $_->{username} } @profile_list;
+    my $q = {};
+    $q->{headers} = [];
+    push @{ $q->{headers} }, gettext("Profile"), $fqdbin;
+
+    $q->{functions} = [ "CMD_VIEW_PROFILE", "CMD_USE_PROFILE",
+                        "CMD_CREATE_PROFILE", "CMD_ABORT", "CMD_FINISHED" ];
+
+    $q->{default} = "CMD_VIEW_PROFILE";
+
+    $q->{options}  = [@options];
+    $q->{selected} = 0;
+
+    my ($p, $ans, $arg);
+    do {
+        ($ans, $arg) = UI_PromptUser($q);
+
+        for (my $i = 0; $i < scalar(@profile_list); $i++) {
+            if ($profile_list[$i]->{username} eq $options[$arg]) {
+                $p = $profile_list[$i];
+                $q->{selected} = $i;
+            }
+        }
+
+        if ($ans eq "CMD_VIEW_PROFILE") {
+            if ($UI_Mode eq "yast") {
+                SendDataToYast(
+                    {
+                        type         => "dialog-view-profile",
+                        user         => $options[$arg],
+                        profile      => $p->{profile},
+                        profile_type => $p->{profile_type}
+                    }
+                );
+                my ($ypath, $yarg) = GetDataFromYast();
+            } else {
+                open(PAGER, "| less");
+                print PAGER gettext("Profile submitted by") .
+                                    " $options[$arg]:\n\n$p->{profile}\n\n";
+                close(PAGER);
+            }
+        } elsif ($ans eq "CMD_USE_PROFILE") {
+            if ( $p->{profile_type} eq "INACTIVE_LOCAL" ) {
+                $profile_data = $p->{profile_data};
+                push @created, $fqdbin; # This really is ugly here
+                                        # need to find a better place to mark
+                                        # this as newly created
+            } else {
+                $profile_data =
+                    use_repo_profile($fqdbin, $repository, $p);
+            }
+        }
+    } until ($ans =~ /^CMD_(USE_PROFILE|CREATE_PROFILE)$/);
+
+    return $profile_data;
 }
 
 sub set_repo_info {
@@ -776,17 +812,18 @@ sub create_new_profile {
 
 sub autodep ($) {
     my $bin = shift;
+    %extras = ();
 
-  unless ($repo_cfg) {
-    $repo_cfg = read_config("repository.conf");
-    unless ($repo_cfg->{repository}{enabled}) {
-      ask_to_enable_repo();
+    unless ($repo_cfg) {
+        $repo_cfg = read_config("repository.conf");
+        unless ($repo_cfg->{repository}{enabled}) {
+            ask_to_enable_repo();
+        }
     }
-  }
 
-  if (repo_is_enabled()) {
-    setup_repo_client();
-  }
+    if (repo_is_enabled()) {
+        setup_repo_client();
+    }
 
     # findexecutable() might fail if we're running on a different system
     # than the logs were collected on.  ugly.  we'll just hope for the best.
@@ -798,25 +835,26 @@ sub autodep ($) {
     # ignore directories
     return if -d $fqdbin;
 
-  my $profile_data;
-  if (repo_is_enabled()) {
-    $profile_data = eval { get_profile_from_repo($fqdbin) };
-  }
-  unless ($profile_data) {
-    $profile_data = create_new_profile($fqdbin);
-  }
+    my $profile_data;
+    readinactiveprofiles(); # need to read the profiles to see if an
+                            # inactive local profile is present
+    $profile_data = eval { get_profile($fqdbin) };
+
+    unless ($profile_data) {
+        $profile_data = create_new_profile($fqdbin);
+    }
 
     # stick the profile into our data structure.
     attach_profile_data(\%sd, $profile_data);
-  # and store a "clean" version also so we can display the changes we've
-  # made during this run
-  attach_profile_data(\%original_sd, $profile_data);
+    # and store a "clean" version also so we can display the changes we've
+    # made during this run
+    attach_profile_data(\%original_sd, $profile_data);
 
     if (-f "$profiledir/tunables/global") {
         my $file = getprofilefilename($fqdbin);
 
         unless (exists $variables{$file}) {
-           $variables{$file} = { };
+            $variables{$file} = { };
         }
         $variables{$file}{"#tunables/global"} = 1; # sorry
     }
@@ -1091,18 +1129,18 @@ my %CMDS = (
     CMD_USEDEFAULT       => "(U)se Default Hat",
     CMD_SCAN             => "(S)can system log for SubDomain events",
     CMD_HELP             => "(H)elp",
-  CMD_VIEW_REPO  => "(V)iew Profile",
-  CMD_USE_REPO   => "(U)se Profile",
-  CMD_CREATE_PROFILE => "(C)reate New Profile",
-  CMD_UPDATE_PROFILE => "(U)pdate Profile",
-  CMD_IGNORE_UPDATE => "(I)gnore Update",
-  CMD_SAVE_CHANGES => "(S)ave Changes",
-  CMD_UPLOAD_CHANGES => "(U)pload Changes",
-  CMD_VIEW_CHANGES => "(V)iew Changes",
-  CMD_ENABLE_REPO => "(E)nable Repository",
-  CMD_DISABLE_REPO => "(D)isable Repository",
-  CMD_ASK_NEVER => "(N)ever Ask Again",
-  CMD_ASK_LATER => "Ask Me (L)ater",
+    CMD_VIEW_PROFILE     => "(V)iew Profile",
+    CMD_USE_PROFILE      => "(U)se Profile",
+    CMD_CREATE_PROFILE   => "(C)reate New Profile",
+    CMD_UPDATE_PROFILE   => "(U)pdate Profile",
+    CMD_IGNORE_UPDATE    => "(I)gnore Update",
+    CMD_SAVE_CHANGES     => "(S)ave Changes",
+    CMD_UPLOAD_CHANGES   => "(U)pload Changes",
+    CMD_VIEW_CHANGES     => "(V)iew Changes",
+    CMD_ENABLE_REPO      => "(E)nable Repository",
+    CMD_DISABLE_REPO     => "(D)isable Repository",
+    CMD_ASK_NEVER        => "(N)ever Ask Again",
+    CMD_ASK_LATER        => "Ask Me (L)ater",
 );
 
 sub UI_PromptUser ($) {
@@ -1237,23 +1275,23 @@ sub GetDataFromYast {
 }
 
 sub confirm_and_abort {
-  my $ans = UI_YesNo(gettext("Are you sure you want to abandon this set of profile changes and exit?"), "n");
-  if ($ans eq "y") {
-    UI_Info(gettext("Abandoning all changes."));
-    shutdown_yast();
-    exit 0;
-  }
+    my $ans = UI_YesNo(gettext("Are you sure you want to abandon this set of profile changes and exit?"), "n");
+    if ($ans eq "y") {
+        UI_Info(gettext("Abandoning all changes."));
+        shutdown_yast();
+        exit 0;
+    }
 }
 
 sub confirm_and_finish {
-  my $ans = UI_YesNo(gettext("Are you sure you want to save the current set of profile changes and exit?"), "n");
-  if ($ans eq "y") {
-    UI_Info(gettext("Saving all changes."));
+    my $ans = UI_YesNo(gettext("Are you sure you want to save the current set of profile changes and exit?"), "n");
+    if ($ans eq "y") {
+        UI_Info(gettext("Saving all changes."));
 
-    # need to wrap any calls to ui functions with eval { } blocks in order
-    # to catch this exception
-    die "FINISHING\n";
-  }
+        # need to wrap any calls to ui functions with eval { } blocks in order
+        # to catch this exception
+        die "FINISHING\n";
+    }
 }
 
 ##########################################################################
@@ -1959,7 +1997,7 @@ sub ask_the_questions {
 
         for my $profile (sort keys %{ $log{$sdmode} }) {
 
-      check_repo_for_newer($profile);
+            check_repo_for_newer($profile);
 
             $found++;
 
@@ -1999,7 +2037,7 @@ sub ask_the_questions {
                     $seenevents++;
 
                     # what did the grand exalted master tell us to do?
-          my $ans = UI_PromptUser($q);
+                    my $ans = UI_PromptUser($q);
 
                     if ($ans eq "CMD_ALLOW") {
 
@@ -2213,7 +2251,7 @@ sub ask_the_questions {
                             my ($ans, $selected) = UI_PromptUser($q);
 
                             if ($ans eq "CMD_ALLOW") {
-                $path = $options[$selected];
+                                $path = $options[$selected];
                                 $done = 1;
                                 if ($path =~ m/^#include <(.+)>$/) {
                                     my $inc = $1;
@@ -2272,9 +2310,9 @@ sub ask_the_questions {
                                 # one
                                 $done = 1;
                             } elsif ($ans eq "CMD_NEW") {
-                my $arg = $options[$selected];
-                if ($arg !~ /^#include/) {
-                  $ans = UI_GetString(gettext("Enter new path: "), $arg);
+                                my $arg = $options[$selected];
+                                if ($arg !~ /^#include/) {
+                                    $ans = UI_GetString(gettext("Enter new path: "), $arg);
                                     if ($ans) {
                                         unless (matchliteral($ans, $path)) {
                                             my $ynprompt = gettext("The specified path does not match this log entry:") . "\n\n";
@@ -2341,94 +2379,93 @@ sub ask_the_questions {
 }
 
 sub repo_is_enabled {
-  my $enabled;
 
-  if ($repo_cfg &&
-      $repo_cfg->{repository}{enabled} &&
-      $repo_cfg->{repository}{enabled} eq "yes") {
-    $enabled = 1;
-  }
+    my $enabled;
+    if ($repo_cfg &&
+        $repo_cfg->{repository}{enabled} &&
+        $repo_cfg->{repository}{enabled} eq "yes") {
+        $enabled = 1;
+    }
+    return $enabled;
 
-  return $enabled;
 }
 
 sub ask_to_enable_repo {
 
-  my $q = { };
-  $q->{headers} = [
-    "Repository", $cfg->{settings}{repository},
-  ];
-  $q->{explanation} = "Would you like to enable access to the profile repository?";
-  $q->{functions} = [
-    "CMD_ENABLE_REPO", "CMD_DISABLE_REPO", "CMD_ASK_LATER",
-    "CMD_ABORT", "CMD_FINISHED",
-  ];
+    my $q = { };
+    $q->{headers} = [
+      "Repository", $cfg->{settings}{repository},
+    ];
+    $q->{explanation} = "Would you like to enable access to the profile repository?";
+    $q->{functions} = [
+      "CMD_ENABLE_REPO", "CMD_DISABLE_REPO", "CMD_ASK_LATER",
+      "CMD_ABORT", "CMD_FINISHED",
+    ];
 
-  my $cmd;
-  do {
-    $cmd = UI_PromptUser($q);
-  } until $cmd =~ /^CMD_(ENABLE_REPO|DISABLE_REPO|LATER_REPO)/;
+    my $cmd;
+    do {
+        $cmd = UI_PromptUser($q);
+    } until $cmd =~ /^CMD_(ENABLE_REPO|DISABLE_REPO|LATER_REPO)/;
 
-  if ($cmd eq "CMD_ENABLE_REPO") {
-    $repo_cfg->{repository}{enabled} = "yes";
-  } elsif ($cmd eq "CMD_DISABLE_REPO") {
-    $repo_cfg->{repository}{enabled} = "no";
-  } elsif ($cmd eq "CMD_LATER_REPO") {
-    $repo_cfg->{repository}{enabled} = "later";
-  }
+    if ($cmd eq "CMD_ENABLE_REPO") {
+        $repo_cfg->{repository}{enabled} = "yes";
+    } elsif ($cmd eq "CMD_DISABLE_REPO") {
+        $repo_cfg->{repository}{enabled} = "no";
+    } elsif ($cmd eq "CMD_LATER_REPO") {
+        $repo_cfg->{repository}{enabled} = "later";
+    }
 
-  write_config("repository.conf", $repo_cfg);
+    write_config("repository.conf", $repo_cfg);
 }
 
 sub get_repo_user_pass {
-  my ($user, $pass);
+    my ($user, $pass);
 
-  if ($repo_cfg) {
-    $user = $repo_cfg->{repository}{user};
-    $pass = $repo_cfg->{repository}{pass};
-  }
+    if ($repo_cfg) {
+        $user = $repo_cfg->{repository}{user};
+        $pass = $repo_cfg->{repository}{pass};
+    }
 
-  unless ($user && $pass) {
-    ($user, $pass) = ask_signup_info();
-  }
+    unless ($user && $pass) {
+        ($user, $pass) = ask_signup_info();
+    }
 
-  return ($user, $pass);
+    return ($user, $pass);
 }
 
 sub setup_repo_client {
-  unless ($repo_client) {
-    $repo_client = new RPC::XML::Client $cfg->{settings}{repository};
-  }
+    unless ($repo_client) {
+        $repo_client = new RPC::XML::Client $cfg->{settings}{repository};
+    }
 }
 
 sub did_result_succeed {
-  my $result = shift;
+    my $result = shift;
 
-  my $ref = ref $result;
-  return ($ref && $ref ne "RPC::XML::fault") ? 1 : 0;
+    my $ref = ref $result;
+    return ($ref && $ref ne "RPC::XML::fault") ? 1 : 0;
 }
 
 sub get_result_error {
-  my $result = shift;
+    my $result = shift;
 
-  if (ref $result) {
-    if (ref $result eq "RPC::XML::fault") {
-      $result = $result->string;
-    } else {
-      $result = $$result;
+    if (ref $result) {
+        if (ref $result eq "RPC::XML::fault") {
+            $result = $result->string;
+        } else {
+            $result = $$result;
+        }
     }
-  }
 
-  return $result;
+    return $result;
 }
 
 sub ask_signup_info {
 
     my ($res, $save_config, $newuser, $user, $pass, $email, $signup_okay);
 
-  if ($repo_client) {
-    do {
-
+    if ($repo_client) {
+        do {
             if ($UI_Mode eq "yast") {
                 SendDataToYast(
                     {
@@ -2445,7 +2482,11 @@ sub ask_signup_info {
                 if ($yarg->{cancelled} && $yarg->{cancelled} eq "y") {
                     return;
                 }
-                $DEBUGGING && debug("AppArmor Repository: \n\t " . ($newuser eq "1") ? "New User\n\temail: [" . $email . "]" : "Signin" . "\n\t user[" . $user . "]" . "password [" . $pass . "]\n");
+                $DEBUGGING && debug("AppArmor Repository: \n\t " .
+                                    ($newuser eq "1") ?
+                                    "New User\n\temail: [" . $email . "]" :
+                                    "Signin" . "\n\t user[" . $user . "]" .
+                                    "password [" . $pass . "]\n");
             } else {
                 $newuser = UI_YesNo(gettext("Create New User?"), "n");
                 $user    = UI_GetString("Username: ",            $user);
@@ -2455,12 +2496,12 @@ sub ask_signup_info {
             }
 
             if ($newuser eq "y") {
-        $res = $repo_client->send_request('Signup', $user, $pass, $email);
-        if (did_result_succeed($res)) {
-          $signup_okay = 1;
-        } else {
+                $res = $repo_client->send_request('Signup', $user, $pass, $email);
+                if (did_result_succeed($res)) {
+                  $signup_okay = 1;
+                } else {
                     my $error  = get_result_error($res);
-                    my $errmsg = gettext("The Profile Repository server returned the following error:") . "\n" . $error . "\n" . gettext("Please re-enter registration information or contact the administrator");
+                    my $errmsg = gettext("The Profile Repository server returned the following error:") . "\n" .  $error .  "\n" .  gettext("Please re-enter registration information or contact the administrator");
                     if ($UI_Mode eq "yast") {
                         UI_ShortMessage(gettext("Login Error"), $errmsg);
                     } else {
@@ -2479,18 +2520,18 @@ sub ask_signup_info {
                     } else {
                         print STDERR $errmsg;
                     }
-        }
-      }
-    } until $signup_okay;
-  }
+                }
+            }
+        } until $signup_okay;
+    }
 
-  $repo_cfg->{repository}{user} = $user;
-  $repo_cfg->{repository}{pass} = $pass;
-  $repo_cfg->{repository}{email} = $email;
+    $repo_cfg->{repository}{user} = $user;
+    $repo_cfg->{repository}{pass} = $pass;
+    $repo_cfg->{repository}{email} = $email;
 
-  write_config("repository.conf", $repo_cfg);
+    write_config("repository.conf", $repo_cfg);
 
-  return ($user, $pass);
+    return ($user, $pass);
 }
 
 sub do_logprof_pass {
@@ -2826,6 +2867,7 @@ sub yast_select_and_upload_profiles {
                         " repository.\nThese changes have not been sent."
                         ));
     }
+
     # Check to see if unselected profiles should be marked as local only
     # this is outside of the main repo code as we want users to be able to mark
     # profiles as local only even if they aren't able to connect to the repo.
@@ -2841,7 +2883,7 @@ sub yast_select_and_upload_profiles {
 }
 
 #
-# mark the profiles passed in @profiles as local only
+# Mark the profiles passed in @profiles as local only
 # and don't prompt to upload changes to the repository
 #
 sub set_profiles_local_only {
@@ -3164,14 +3206,25 @@ sub readprofiles () {
       or fatal_error "Can't read AppArmor profiles in $profiledir.";
     for my $file (grep { -f "$profiledir/$_" } readdir(SDDIR)) {
         next if isSkippableFile($file);
-        readprofile("$profiledir/$file", \&fatal_error);
+        readprofile("$profiledir/$file", \&fatal_error, 1);
     }
     closedir(SDDIR);
 }
 
-sub readprofile ($$) {
+sub readinactiveprofiles () {
+    opendir(ESDDIR, $extraprofiledir) or
+      fatal_error "Can't read AppArmor profiles in $extraprofiledir.";
+    for my $file (grep { -f "$extraprofiledir/$_" } readdir(ESDDIR)) {
+        next if $file =~ /\.rpm(save|new)|README$/;
+        readprofile("$extraprofiledir/$file", \&fatal_error, 0);
+    }
+    closedir(ESDDIR);
+}
+
+sub readprofile ($$$) {
     my $file          = shift;
     my $error_handler = shift;
+    my $active_profile = shift;
     if (open(SDPROF, "$file")) {
         local $/;
         my $data = <SDPROF>;
@@ -3179,9 +3232,11 @@ sub readprofile ($$) {
 
         eval {
             my $profile_data = parse_profile_data($data, $file);
-            if ($profile_data) {
+            if ($profile_data && $active_profile) {
                 attach_profile_data(\%sd, $profile_data);
-        attach_profile_data(\%original_sd, $profile_data);
+                attach_profile_data(\%original_sd, $profile_data);
+            } elsif ( $profile_data ) {
+                attach_profile_data(\%extras,      $profile_data);
             }
         };
 
@@ -4273,6 +4328,9 @@ $cfg = read_config("logprof.conf");
 
 $profiledir = find_first_dir($cfg->{settings}{profiledir}) || "/etc/apparmor.d";
 unless (-d $profiledir) { fatal_error "Can't find AppArmor profiles."; }
+
+$extraprofiledir = find_first_dir($cfg->{settings}{inactive_profiledir}) ||
+"/etc/apparmor/profiles/extras/";
 
 $parser = find_first_file($cfg->{settings}{parser}) || "/sbin/apparmor_parser";
 unless (-x $parser) { fatal_error "Can't find apparmor_parser."; }
