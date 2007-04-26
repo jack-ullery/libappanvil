@@ -1,0 +1,14 @@
+---
+ security/apparmor/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/security/apparmor/Kconfig
++++ b/security/apparmor/Kconfig
+@@ -1,6 +1,6 @@
+ config SECURITY_APPARMOR
+ 	tristate "AppArmor support"
+-	depends on SECURITY!=n
++	depends on SECURITY && AUDIT
+ 	help
+ 	  This enables the AppArmor security module.
+ 	  Required userspace tools (if they are not included in your

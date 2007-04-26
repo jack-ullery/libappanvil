@@ -63,6 +63,7 @@ sys_fchdir-nameidata.diff
 nfsd_permission-nameidata.diff
 file_permission-nameidata.diff
 split-up-nameidata.diff
+kconfig-dependencies.diff
 # xattr_permission.diff
 # vfs_create-args.diff
 # vfs_mknod-args.diff
