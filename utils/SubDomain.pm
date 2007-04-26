@@ -2826,6 +2826,31 @@ sub yast_select_and_upload_profiles {
                         " repository.\nThese changes have not been sent."
                         ));
     }
+    # Check to see if unselected profiles should be marked as local only
+    # this is outside of the main repo code as we want users to be able to mark
+    # profiles as local only even if they aren't able to connect to the repo.
+    if (defined $yarg->{NEVER_ASK_AGAIN}) {
+        my @unselected_profiles;
+        foreach my $prof (@profiles) {
+            if ( grep($prof->[0], @selected_profiles) == 0 ) {
+                push @unselected_profiles, $prof->[0];
+            }
+        }
+        set_profiles_local_only( @unselected_profiles );
+    }
+}
+
+#
+# mark the profiles passed in @profiles as local only
+# and don't prompt to upload changes to the repository
+#
+sub set_profiles_local_only {
+    my @profiles = @_;
+    for my $profile (@profiles) {
+         $sd{$profile}{$profile}{repo}{neversubmit} = 1;
+         writeprofile($profile);
+         $DEBUGGING && debug("set_profiles_local_only: [" . $profile . "]");
+    }
 }
 
 sub console_select_and_upload_profiles {
@@ -2855,9 +2880,11 @@ sub console_select_and_upload_profiles {
         if ($ans eq "CMD_VIEW_CHANGES") {
             display_changes($profiles[$arg]->[2], $profiles[$arg]->[1]);
         }
-    } until $ans =~ /^CMD_UPLOAD_CHANGES/;
+    } until $ans =~ /^CMD_(UPLOAD_CHANGES|ASK_NEVER)/;
 
-    if ($ans eq "CMD_UPLOAD_CHANGES") {
+    if ($ans eq "CMD_ASK_NEVER") {
+        set_profiles_local_only( [ map { $_->[0] } @profiles ] );
+    } elsif ($ans eq "CMD_UPLOAD_CHANGES") {
         my $changelog = UI_GetString("Changelog Entry: ", "");
 
         my ($user, $pass) = get_repo_user_pass();
@@ -3378,16 +3405,15 @@ sub parse_profile_data {
                 next if /^\s*\# vim:syntax/;
                 # ignore Last Modified: lines
                 next if /^\s*\# Last Modified:/;
-        if (/^\s*\# REPOSITORY: (\S+) (\S+) (\S+)$/) {
-          $repo_data = { url => $1, user => $2, id => $3 };
+                if (/^\s*\# REPOSITORY: (\S+) (\S+) (\S+)$/) {
+                    $repo_data = { url => $1, user => $2, id => $3 };
                 } elsif (/^\s*\# REPOSITORY: NEVERSUBMIT$/) {
                     $repo_data = { neversubmit => 1 };
-        } else {
-          $initial_comment .= "$_\n";
-        }
+                } else {
+                  $initial_comment .= "$_\n";
+                }
             }
         } else {
-
             # we hit something we don't understand in a profile...
             die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
         }
@@ -3533,17 +3559,16 @@ sub serialize_profile {
         # keep track of when the file was last updated
         $string .= "# Last Modified: " . localtime(time) . "\n";
 
-    # print out repository metadata
-    if ($profile_data->{$name}{repo}       &&
-        $profile_data->{$name}{repo}{url}  &&
-        $profile_data->{$name}{repo}{user} &&
-        $profile_data->{$name}{repo}{id}) {
-      my $repo = $profile_data->{$name}{repo};
-      $string .= "# REPOSITORY: $repo->{url} $repo->{user} $repo->{id}\n";
+        # print out repository metadata
+        if ($profile_data->{$name}{repo}       &&
+            $profile_data->{$name}{repo}{url}  &&
+            $profile_data->{$name}{repo}{user} &&
+            $profile_data->{$name}{repo}{id}) {
+            my $repo = $profile_data->{$name}{repo};
+            $string .= "# REPOSITORY: $repo->{url} $repo->{user} $repo->{id}\n";
         } elsif ($profile_data->{$name}{repo}{neversubmit}) {
             $string .= "# REPOSITORY: NEVERSUBMIT\n";
-    }
-
+        }
     }
 
     # print out initial comment
