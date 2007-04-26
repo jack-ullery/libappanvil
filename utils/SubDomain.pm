@@ -31,6 +31,7 @@ use Data::Dumper;
 
 use Locale::gettext;
 use POSIX;
+use Term::ReadKey;
 
 use Immunix::Severity;
 
@@ -163,40 +164,31 @@ sub debug ($) {
     print DEBUG "$message\n" if $DEBUGGING;
 }
 
+my %arrows = ( A => "UP", B => "DOWN", C => "RIGHT", D => "LEFT" );
+
+sub getkey {
+  # change to raw mode
+  ReadMode(4);
+
+  my $key = ReadKey(0);
+
+  # decode arrow key control sequences
+  if ($key eq "\x1B") {
+    $key = ReadKey(0);
+    if ($key eq "[") {
+      $key = ReadKey(0);
+      if ($arrows{$key}) {
+        $key = $arrows{$key};
+      }
+    }
+    }
+
+  # return to cooked mode
+  ReadMode(0);
+  return $key;
+}
+
 BEGIN {
-    use POSIX qw(:termios_h);
-
-    my ($term, $oterm, $echo, $noecho, $fd_stdin);
-
-    $fd_stdin = fileno(STDIN);
-
-    $term = POSIX::Termios->new();
-    $term->getattr($fd_stdin);
-    $oterm = $term->getlflag();
-
-    $echo   = ECHO | ECHOK | ICANON;
-    $noecho = $oterm & ~$echo;
-
-    sub cbreak {
-        $term->setlflag($noecho);
-        $term->setcc(VTIME, 1);
-        $term->setattr($fd_stdin, TCSANOW);
-    }
-
-    sub cooked {
-        $term->setlflag($oterm);
-        $term->setcc(VTIME, 0);
-        $term->setattr($fd_stdin, TCSANOW);
-    }
-
-    sub getkey {
-        my $key = '';
-        cbreak();
-        sysread(STDIN, $key, 1);
-        cooked();
-        return $key;
-    }
-
     # set things up to log extra info if they want...
     if ($ENV{LOGPROF_DEBUG}) {
         $DEBUGGING = 1;
@@ -210,9 +202,6 @@ BEGIN {
 }
 
 END {
-    # reset the terminal state
-    cooked();
-
     $DEBUGGING && debug "Exiting...";
 
     # close the debug log if necessary
@@ -945,15 +934,19 @@ sub UI_PromptUser ($) {
         $arg = $yarg->{selected};
     }
 
-  if ($cmd eq "CMD_ABORT") {
-    confirm_and_abort();
-    $cmd = "XXXINVALIDXXX";
-  } elsif ($cmd eq "CMD_FINISHED") {
-    confirm_and_finish();
-    $cmd = "XXXINVALIDXXX";
-  }
+    if ($cmd eq "CMD_ABORT") {
+        confirm_and_abort();
+        $cmd = "XXXINVALIDXXX";
+    } elsif ($cmd eq "CMD_FINISHED") {
+        confirm_and_finish();
+        $cmd = "XXXINVALIDXXX";
+    }
 
-    return ($cmd, $arg);
+    if (wantarray) {
+        return ($cmd, $arg);
+    } else {
+        return $cmd;
+    }
 }
 
 ##########################################################################
@@ -1118,8 +1111,7 @@ sub handlechildren {
 
                     $seenevents++;
 
-                    my $arg;
-                    ($ans, $arg) = UI_PromptUser($q);
+                    $ans = UI_PromptUser($q);
 
                 }
                 $transitions{$context} = $ans;
@@ -1249,7 +1241,7 @@ sub handlechildren {
                         $ans       = "CMD_UNCONFINED_CLEAN";
                         $exec_mode = "Ux";
                     } else {
-            my $options = $cfg->{qualifiers}{$exec_target} || "ipu";
+                        my $options = $cfg->{qualifiers}{$exec_target} || "ipu";
 
                         # force "ix" as the only option when the profiled
                         # program executes itself
@@ -1305,9 +1297,8 @@ sub handlechildren {
 
                         $seenevents++;
 
-                        my $arg;
                         while ($ans !~ m/^CMD_(INHERIT|PROFILE|PROFILE_CLEAN|UNCONFINED|UNCONFINED_CLEAN|DENY)$/) {
-                            ($ans, $arg) = UI_PromptUser($q);
+              $ans = UI_PromptUser($q);
 
                             if ($ans eq "CMD_PROFILE") {
                                 my $px_default = "n";
@@ -1715,7 +1706,7 @@ sub ask_the_questions {
                     $seenevents++;
 
                     # what did the grand exalted master tell us to do?
-                    my ($ans, $arg) = UI_PromptUser($q);
+          my $ans = UI_PromptUser($q);
 
                     if ($ans eq "CMD_ALLOW") {
 
@@ -1929,7 +1920,7 @@ sub ask_the_questions {
                             my ($ans, $selected) = UI_PromptUser($q);
 
                             if ($ans eq "CMD_ALLOW") {
-                                $path = $selected;
+                $path = $options[$selected];
                                 $done = 1;
                                 if ($path =~ m/^#include <(.+)>$/) {
                                     my $inc = $1;
@@ -1988,8 +1979,9 @@ sub ask_the_questions {
                                 # one
                                 $done = 1;
                             } elsif ($ans eq "CMD_NEW") {
-                                if ($selected !~ /^#include/) {
-                                    $ans = UI_GetString(gettext("Enter new path: "), $selected);
+                my $arg = $options[$selected];
+                if ($arg !~ /^#include/) {
+                  $ans = UI_GetString(gettext("Enter new path: "), $arg);
                                     if ($ans) {
                                         unless (matchliteral($ans, $path)) {
                                             my $ynprompt = gettext("The specified path does not match this log entry:") . "\n\n";
@@ -2014,9 +2006,8 @@ sub ask_the_questions {
 
                                 # do globbing if they don't have an include
                                 # selected
-                                unless ($selected =~ /^#include/) {
-                                    my $newpath = $selected;
-
+                                my $newpath = $options[$selected];
+                                unless ($newpath =~ /^#include/) {
                                     # do we collapse to /* or /**?
                                     if ($newpath =~ m/\/\*{1,2}$/) {
                                         $newpath =~ s/\/[^\/]+\/\*{1,2}$/\/\*\*/;
@@ -2032,9 +2023,8 @@ sub ask_the_questions {
 
                                 # do globbing if they don't have an include
                                 # selected
-                                unless ($selected =~ /^#include/) {
-                                    my $newpath = $selected;
-
+                                my $newpath = $options[$selected];
+                                unless ($newpath =~ /^#include/) {
                                     # do we collapse to /*.ext or /**.ext?
                                     if ($newpath =~ m/\/\*{1,2}\.[^\/]+$/) {
                                         $newpath =~ s/\/[^\/]+\/\*{1,2}(\.[^\/]+)$/\/\*\*$1/;
@@ -3247,12 +3237,15 @@ sub split_name ($) { my ($p, $h) = split(/\^/, $_[0]); $h ||= $p; ($p, $h); }
 sub Text_PromptUser ($) {
     my $question = shift;
 
+    my $title     = $question->{title};
+    my $explanation = $question->{explanation};
+
     my @headers   = (@{ $question->{headers} });
     my @functions = (@{ $question->{functions} });
 
     my $default  = $question->{default};
     my $options  = $question->{options};
-    my $selected = $question->{selected};
+    my $selected = $question->{selected} || 0;
 
     my $helptext = $question->{helptext};
 
@@ -3325,15 +3318,24 @@ sub Text_PromptUser ($) {
 
     my $ans = "XXXINVALIDXXX";
     while ($ans !~ /$function_regexp/i) {
-
         # build up the prompt...
         my $prompt = "\n";
-        my @poo    = @headers;
-        while (my $header = shift @poo) {
+
+        $prompt .= "= $title =\n\n" if $title;
+
+        if (@headers) {
+          my @poo = @headers;
+          while (my $header = shift @poo) {
             my $value = shift @poo;
             $prompt .= sprintf($format, "$header:", $value);
+          }
+          $prompt .= "\n";
         }
-        $prompt .= "\n";
+
+        if ($explanation) {
+            $prompt .= "$explanation\n\n";
+        }
+
         if ($options) {
             for (my $i = 0; $options->[$i]; $i++) {
                 my $f = ($selected == $i) ? ' [%d - %s]' : '  %d - %s ';
@@ -3345,48 +3347,42 @@ sub Text_PromptUser ($) {
         print "$prompt\n";
 
         # get their input...
-        $ans = lc(getkey);
+        $ans = lc(getkey());
 
-        # pick the default if they hit return...
-        $ans = $default_key if ord($ans) == 10;
+        if ($ans) {
+            # handle escape sequences so you can up/down in the list
+            if ($ans eq "up") {
 
-        # ugly code to handle escape sequences so you can up/down in the list
-        if (ord($ans) == 27) {
-            $ans = getkey;
-            if (ord($ans) == 91) {
-                $ans = getkey;
-                if (ord($ans) == 65) {
-                    if ($options) {
-                        if ($selected > 0) {
-                            $ans = $selected;
-                        } else {
-                            $ans = "again";
-                        }
-                    } else {
-                        $ans = "again";
-                    }
-                } elsif (ord($ans) == 66) {
-                    if ($options) {
-                        if ($selected <= scalar(@$options)) {
-                            $ans = $selected + 2;
-                        } else {
-                            $ans = "again";
-                        }
-                    }
-                } else {
-                    $ans = "again";
+                if ($options && ($selected > 0)) {
+                    $selected--;
                 }
-            } else {
-                $ans = "again";
-            }
-        }
+                $ans = "XXXINVALIDXXX";
 
-        # handle option poo
-        if ($options && ($ans =~ /^\d$/)) {
-            if ($ans > 0 && $ans <= scalar(@$options)) {
-                $selected = $ans - 1;
+            } elsif ($ans eq "down") {
+
+                if ($options && ($selected < (scalar(@$options) - 1))) {
+                    $selected++;
+                }
+                $ans = "XXXINVALIDXXX";
+
+            } elsif ($keys{$ans} && $keys{$ans} eq "CMD_HELP") {
+
+                print "\n$helptext\n";
+                $ans = "XXXINVALIDXXX";
+
+            } elsif (ord($ans) == 10) {
+
+                # pick the default if they hit return...
+                $ans = $default_key;
+
+            } elsif ($options && ($ans =~ /^\d$/)) {
+
+                # handle option poo
+                if ($ans > 0 && $ans <= scalar(@$options)) {
+                    $selected = $ans - 1;
+                }
+                $ans = "XXXINVALIDXXX";
             }
-            $ans = "again";
         }
 
         if ($keys{$ans} && $keys{$ans} eq "CMD_HELP") {
@@ -3397,12 +3393,8 @@ sub Text_PromptUser ($) {
 
     # pull our command back from our hotkey map
     $ans = $keys{$ans} if $keys{$ans};
+    return ($ans, $selected);
 
-    if ($options) {
-        return ($ans, $options->[$selected]);
-    } else {
-        return ($ans, $selected);
-    }
 }
 
 ###############################################################################
