@@ -3309,15 +3309,16 @@ sub parse_profile_data {
             $profile_data->{$profile}{$hat}{netdomain} = [];
 
             # store off initial comment if they have one
-            $profile_data->{$profile}{$hat}{initial_comment} = $initial_comment if $initial_comment;
+            $profile_data->{$profile}{$hat}{initial_comment} = $initial_comment
+              if $initial_comment;
             $initial_comment = "";
 
-      if ($repo_data) {
-        $profile_data->{$profile}{$profile}{repo}{url}  = $repo_data->{url};
-        $profile_data->{$profile}{$profile}{repo}{user} = $repo_data->{user};
-        $profile_data->{$profile}{$profile}{repo}{id}   = $repo_data->{id};
-        $repo_data = undef;
-      }
+            if ($repo_data) {
+              $profile_data->{$profile}{$profile}{repo}{url}  = $repo_data->{url};
+              $profile_data->{$profile}{$profile}{repo}{user} = $repo_data->{user};
+              $profile_data->{$profile}{$profile}{repo}{id}   = $repo_data->{id};
+              $repo_data = undef;
+            }
 
         } elsif (m/^\s*\}\s*$/) {                    # end of a profile...
 
@@ -3334,12 +3335,13 @@ sub parse_profile_data {
 
                 # if we're finishing a profile, make sure that any required
                 # infrastructure hats for this changehat application exist
-        for my $hatglob (keys %{$cfg->{required_hats}}) {
+                for my $hatglob (keys %{$cfg->{required_hats}}) {
                     if ($profile =~ /$hatglob/) {
-            for my $hat (split(/\s+/, $cfg->{required_hats}{$hatglob})) {
+                        for my $hat (split(/\s+/, $cfg->{required_hats}{$hatglob})) {
                             unless ($profile_data->{$profile}{$hat}) {
                                 $profile_data->{$profile}{$hat} = { };
-                                # if we had to auto-instantiate a hat, we want to write out
+                                # if we had to auto-instantiate a hat,
+                                # we want to write out
                                 # an updated version of the profile
                                 $changed{$profile} = 1;
                             }
@@ -3382,7 +3384,8 @@ sub parse_profile_data {
             my $p_re = convert_regexp($path);
             eval { "foo" =~ m/^$p_re$/; };
             if ($@) {
-                die sprintf(gettext('Profile %s contains invalid regexp %s.'), $file, $path) . "\n";
+                die sprintf(gettext('Profile %s contains invalid regexp %s.'),
+                                     $file, $path) . "\n";
             }
 
             $profile_data->{$profile}{$hat}{path}{$path} = $mode;
@@ -3450,7 +3453,8 @@ sub parse_profile_data {
             $profile_data->{$profile}{$hat}{netdomain} = [];
 
             # store off initial comment if they have one
-            $profile_data->{$profile}{$hat}{initial_comment} = $initial_comment if $initial_comment;
+            $profile_data->{$profile}{$hat}{initial_comment} = $initial_comment
+              if $initial_comment;
             $initial_comment = "";
 
         } elsif (/^\s*\#/) {
