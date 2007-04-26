@@ -2,7 +2,7 @@ From: Andreas Gruenbacher <agruen@suse.de>
 Subject: Switch to vfs_permission() in sys_fchdir()
 
 Switch from file_permission() to vfs_permission() in sys_fchdir(): this
-avoids calling permission() with a NULL nameidata.
+avoids calling permission() with a NULL nameidata here.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 

@@ -1,3 +1,6 @@
+From: Andreas Gruenbacher <agruen@suse.de>
+Subject: Never pass a NULL nameidata to vfs_create()
+
 ---
  fs/namei.c    |    2 +-
  fs/nfsd/vfs.c |   40 +++++++++++++++++++++++-----------------

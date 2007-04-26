@@ -1,3 +1,11 @@
+From: Andreas Gruenbacher <agruen@suse.de>
+Subject: Pass nameidata2 to vfs_link()
+
+Instead of passing independent dentry and vfsmount parameters, use
+nameidata2.
+
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+
 ---
  fs/ecryptfs/inode.c |   26 +++++++++++---------------
  fs/namei.c          |   14 ++++++++------

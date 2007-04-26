@@ -1,5 +1,5 @@
 From: Andreas Gruenbacher <agruen@suse.de>
-Subject: Fix xattr_permission()
+Subject: Don't use a NULL nameidata in xattr_permission()
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 

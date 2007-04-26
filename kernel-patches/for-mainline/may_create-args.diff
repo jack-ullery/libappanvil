@@ -1,3 +1,8 @@
+From: Andreas Gruenbacher <agruen@suse.de>
+Subject: Remove redundant may_create() argument
+
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+
 ---
  fs/namei.c |   19 +++++++++----------
  1 file changed, 9 insertions(+), 10 deletions(-)

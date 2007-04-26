@@ -1,3 +1,11 @@
+From: Andreas Gruenbacher <agruen@suse.de>
+Subject: Pass nameidata2 to may_delete()
+
+Pass the nameidata through to may_delete(), and pass it on to the
+permission() call.
+
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+
 ---
  fs/namei.c |   13 +++++++------
  1 file changed, 7 insertions(+), 6 deletions(-)

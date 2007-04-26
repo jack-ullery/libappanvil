@@ -1,3 +1,11 @@
+From: Andreas Gruenbacher <agruen@suse.de>
+Subject: Remove redundant vfs_create() argument
+
+vfs_create() is passed a redundant inode now; dir is always the same
+as nd->dentry->d_inode.
+
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+
 ---
  fs/ecryptfs/inode.c |   10 +++++-----
  fs/namei.c          |    9 ++++-----
