@@ -8,20 +8,21 @@ for the remaining users.
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- fs/namei.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ fs/namei.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -297,7 +297,12 @@ int vfs_permission(struct nameidata *nd,
+@@ -297,7 +297,13 @@ int vfs_permission(struct nameidata *nd,
   */
  int file_permission(struct file *file, int mask)
  {
 -	return permission(file->f_path.dentry->d_inode, mask, NULL);
-+	struct nameidata nd = {
-+		.dentry = file->f_path.dentry,
-+		.mnt = file->f_path.mnt,
-+	};
++	struct nameidata nd;
++	
++	nd.dentry = file->f_path.dentry;
++	nd.mnt = file->f_path.mnt;
++	nd.flags = LOOKUP_ACCESS;
 +
 +	return permission(nd.dentry->d_inode, mask, &nd);
  }

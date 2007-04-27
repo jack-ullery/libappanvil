@@ -1,7 +1,7 @@
 From: Andreas Gruenbacher <agruen@suse.de>
 Subject: Pass nameidata2 to permission() from nfsd_permission()
 
-Construct a nameidata2 object and pass it down to permission(), so
+Construct a nameidata object and pass it down to permission(), so
 that we can do the proper mount flag checks there.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
