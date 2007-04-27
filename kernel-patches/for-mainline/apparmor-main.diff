@@ -7,12 +7,12 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- security/apparmor/main.c | 1340 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 1340 insertions(+)
+ security/apparmor/main.c | 1357 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 1357 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/main.c
-@@ -0,0 +1,1340 @@
+@@ -0,0 +1,1357 @@
 +/*
 + *	Copyright (C) 2002-2007 Novell/SUSE
 + *
@@ -695,6 +695,23 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +	return aa_perm_dentry(profile, dentry, mnt, &sa, mask,
 +			      AA_CHECK_DIR | AA_CHECK_LEAF);
++}
++
++int aa_perm_path(struct aa_profile *profile, const char *name, int mask)
++{
++	struct aa_audit sa;
++	int denied_mask;
++
++	sa.type = AA_AUDITTYPE_FILE;
++	sa.mask = mask;
++	sa.flags = 0;
++	sa.gfp_mask = GFP_KERNEL;
++	sa.name = name;
++
++	denied_mask = aa_file_denied(profile, name, mask);
++	aa_permerror2result(denied_mask, &sa);
++
++	return aa_audit(profile, &sa);
 +}
 +
 +/**

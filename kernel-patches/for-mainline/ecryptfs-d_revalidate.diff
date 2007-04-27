@@ -3,10 +3,12 @@ Subject: Check for NULL nameidata in ecryptfs_d_revalidate
 
 Some filesystems like nfsd and ecryptfs use lookup_one_len() on other
 filesystems. This causes d_revalidate() calls with nd == NULL through
-__lookup_hash() and cached_lookup(). Because of that, all filesystems
-must cope with NULL nameidata.
+__lookup_hash() and cached_lookup(), so we need to check for NULL
+nameidata.
 
 Signed-off-by: Andreas Gruenbacher <agruen@use.de>
+Cc: Mike Halcrow <mhalcrow@us.ibm.com>
+Cc: Phillip Hellewell <phillip@hellewell.homeip.net>
 
 ---
  fs/ecryptfs/dentry.c |   16 ++++++++++------

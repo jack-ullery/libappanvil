@@ -7,12 +7,12 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- security/apparmor/lsm.c |  762 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 762 insertions(+)
+ security/apparmor/lsm.c |  784 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 784 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/lsm.c
-@@ -0,0 +1,762 @@
+@@ -0,0 +1,784 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -31,6 +31,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +#include <linux/mount.h>
 +#include <linux/namei.h>
 +#include <linux/ctype.h>
++#include <linux/sysctl.h>
 +
 +#include "apparmor.h"
 +#include "inline.h"
@@ -179,12 +180,33 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +static int apparmor_sysctl(struct ctl_table *table, int op)
 +{
++	struct aa_profile *profile = aa_get_profile(current);
 +	int error = 0;
 +
-+	if ((op & 002) && !capable(CAP_SYS_ADMIN))
-+		error = aa_reject_syscall(current, GFP_KERNEL,
-+					  "sysctl (write)");
++	if (profile) {
++		char *buffer, *name;
++		int mask;
 +
++		mask = 0;
++		if (op & 4)
++			mask |= MAY_READ;
++		if (op & 2)
++			mask |= MAY_WRITE;
++
++		error = -ENOMEM;
++		buffer = (char*)__get_free_page(GFP_KERNEL);
++		if (!buffer)
++			goto out;
++		name = sysctl_pathname(table, buffer, PAGE_SIZE);
++		if (name && name - buffer >= 5) {
++			name -= 5;
++			memcpy(name, "/proc", 5);
++			error = aa_perm_path(profile, name, mask);
++		}
++		free_page((unsigned long)buffer);
++	}
++
++out:
 +	return error;
 +}
 +
