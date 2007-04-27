@@ -39,30 +39,23 @@ proc-mounts-cleanup.diff
 # fix-d_path.diff
 file-handle-ops.diff
 security-xattr-file.diff
+sysctl-pathname.diff
+export-get_task_comm.diff
 apparmor-audit.diff
 apparmor-main.diff
-apparmor-main-2.diff
-mangle.diff
 apparmor-lsm.diff
-apparmor-lsm-2.diff
-drop_CLONE_NEWNS_restriction.diff
-apparmor-ns-ptrace.diff
 apparmor-module_interface.diff
-apparmor-module_interface-2.diff
 apparmor-misc.diff
-audit-cleanup.diff
-comm.diff
-ecryptfs-d_revalidate.diff
-nfs-nameidata-check.diff
 apparmor-intree.diff
-sysctl-pathname.diff
+ecryptfs-d_revalidate.diff
 apparmor-sysctl-pathname.diff
 vfs_create-nameidata.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 nfsd_permission-nameidata.diff
 file_permission-nameidata.diff
-kconfig-dependencies.diff
+# NOT YET
+nfs-nameidata-check.diff
 split-up-nameidata.diff
 # xattr_permission.diff
 # vfs_create-args.diff

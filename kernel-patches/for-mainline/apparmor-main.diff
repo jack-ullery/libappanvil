@@ -7,12 +7,12 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- security/apparmor/main.c | 1321 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 1321 insertions(+)
+ security/apparmor/main.c | 1340 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 1340 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/main.c
-@@ -0,0 +1,1321 @@
+@@ -0,0 +1,1340 @@
 +/*
 + *	Copyright (C) 2002-2007 Novell/SUSE
 + *
@@ -53,27 +53,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + */
 +struct aa_profile *null_complain_profile;
 +
-+/**
-+ * aa_taskattr_access
-+ * @name: name of the file to check
-+ *
-+ * Check if name matches /proc/self/attr/current, with self resolved
-+ * to the current pid. This file is the usermode interface for
-+ * changing one's hat.
-+ */
-+static inline int aa_taskattr_access(const char *name)
-+{
-+	unsigned long pid;
-+	char *end;
-+
-+	if (strncmp(name, "/proc/", 6) != 0)
-+		return 0;
-+	pid = simple_strtoul(name + 6, &end, 10);
-+	if (pid != current->pid)
-+		return 0;
-+	return strcmp(end, "/attr/current") == 0;
-+}
-+
 +static inline void aa_permerror2result(int perm_result, struct aa_audit *sa)
 +{
 +	if (perm_result == 0) {	/* success */
@@ -97,15 +76,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +static int aa_file_denied(struct aa_profile *profile, const char *name,
 +			  int mask)
 +{
-+	int perms;
-+
-+	/* Always allow write access to /proc/self/attr/current. */
-+	if (mask == MAY_WRITE && aa_taskattr_access(name))
-+		return 0;
-+
-+	perms = aa_match(profile->file_rules, name);
-+
-+	return (mask & ~perms);
++	return (mask & ~aa_match(profile->file_rules, name));
 +}
 +
 +/**
@@ -144,6 +115,51 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	 * the required l_mode.
 +	 */
 +	return AA_MAY_LINK;
++}
++
++/**
++ * mangle -- escape special characters in str
++ * @str: string to escape
++ * @buffer: buffer containing str
++ * 
++ * Escape special characters in @str, which must be contained in
++ * @buffer. The string grows towards @buffer. Returns a pointer
++ * to the quoted string, or ERR_PTR(-ENAMETOOLONG) upon failure.
++ */
++static char *mangle(char *str, char *buffer)
++{
++	static const char c_escape[] = {
++		['\a'] = 'a',	['\b'] = 'b',
++		['\f'] = 'f',	['\n'] = 'n',
++		['\r'] = 'r',	['\t'] = 't',
++		['\v'] = 'v',
++		[' '] = ' ',	['\\'] = '\\',
++	};
++	char *s, *t, c;
++
++#define mangle_escape(c)						\
++	unlikely((unsigned char)(c) < ARRAY_SIZE(c_escape) &&		\
++		 c_escape[(unsigned char)c])
++
++	for (s = str; (c = *s) != '\0'; s++)
++		if (mangle_escape(c))
++			goto escape;
++	return str;
++
++escape:
++	for (s = str, t = buffer; (c = *s) != '\0'; s++) {
++		if (mangle_escape(c)) {
++			if (t == s)
++				return NULL;
++			*t++ = '\\';
++			*t++ = c_escape[(unsigned char)c];
++		} else
++			*t++ = c;
++	}
++	*t++ = '\0';
++
++#undef mangle_escape
++	return buffer;
 +}
 +
 +/**
@@ -192,12 +208,16 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +				buf[size - 1] = '\0';
 +			}
 +
++			name = mangle(name, buf);
++			if (!name)
++				goto grow_buffer;
 +			*buffer = buf;
 +			return name;
 +		}
 +		if (PTR_ERR(name) != -ENAMETOOLONG)
 +			return name;
 +
++grow_buffer:
 +		kfree(buf);
 +		size <<= 1;
 +		if (size > apparmor_path_max)
@@ -398,8 +418,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	    opspec_error = -EACCES;
 +
 +	const gfp_t gfp_mask = sa->gfp_mask;
-+
-+	WARN_ON(sa->type >= AA_AUDITTYPE__END);
++	char comm_buffer[2 * sizeof(current->comm)], *comm;
 +
 +	/*
 +	 * sa->result:	  1 success, 0 failure
@@ -475,7 +494,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +	audit_log_format(ab, "%s ", logcls);	/* REJECTING/ALLOWING/etc */
 +
-+	if (sa->type == AA_AUDITTYPE_FILE) {
++	switch(sa->type) {
++	case AA_AUDITTYPE_FILE: {
 +		int perm = audit ? sa->mask : sa->error_code;
 +
 +		audit_log_format(ab, "%s%s%s%s%s access to %s ",
@@ -487,12 +507,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +				 sa->name);
 +
 +		opspec_error = -EPERM;
-+
-+	} else if (sa->type == AA_AUDITTYPE_DIR) {
-+		audit_log_format(ab, "%s on %s ", sa->operation, sa->name);
-+
-+	} else if (sa->type == AA_AUDITTYPE_ATTR) {
-+		struct iattr *iattr = (struct iattr*)sa->pval;
++		break;
++	}
++	case AA_AUDITTYPE_DIR:
++		audit_log_format(ab, "%s on %s ", sa->name2, sa->name);
++		break;
++	case AA_AUDITTYPE_ATTR: {
++		struct iattr *iattr = sa->iattr;
 +
 +		audit_log_format(ab,
 +			"attribute (%s%s%s%s%s%s%s) change to %s ",
@@ -506,36 +527,37 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +			 (iattr->ia_valid & ATTR_MTIME)) ? "mtime," : "",
 +			iattr->ia_valid & ATTR_CTIME ? "ctime," : "",
 +			sa->name);
-+
-+	} else if (sa->type == AA_AUDITTYPE_XATTR) {
-+		/* FIXME: how are special characters in sa->name escaped? */
-+		/* FIXME: check if this can be handled on the stack
-+			  with an inline varargs function. */
-+		audit_log_format(ab, "%s on %s ", sa->operation, sa->name);
-+
-+	} else if (sa->type == AA_AUDITTYPE_LINK) {
-+		audit_log_format(ab,
-+			"link access from %s to %s ",
-+			sa->name,
-+			(char*)sa->pval);
-+
-+	} else if (sa->type == AA_AUDITTYPE_CAP) {
-+		audit_log_format(ab,
-+			"access to capability '%s' ",
++		break;
++	}
++	case AA_AUDITTYPE_XATTR:
++		audit_log_format(ab, "%s on %s ", sa->name2, sa->name);
++		break;
++	case AA_AUDITTYPE_LINK:
++		audit_log_format(ab, "link access from %s to %s ", sa->name,
++			sa->name2);
++		break;
++	case AA_AUDITTYPE_CAP:
++		audit_log_format(ab, "access to capability '%s' ",
 +			capability_names[sa->capability]);
-+
 +		opspec_error = -EPERM;
-+	} else if (sa->type == AA_AUDITTYPE_SYSCALL) {
++		break;
++	case AA_AUDITTYPE_SYSCALL:
 +		audit_log_format(ab, "access to syscall '%s' ", sa->name);
-+
 +		opspec_error = -EPERM;
-+	} else {
-+		/* -EINVAL -- will WARN_ON above */
-+		goto out;
++		break;
++	default:
++		WARN_ON(1);
++		return error;
 +	}
 +
++	comm = comm_buffer + sizeof(comm_buffer) - sizeof(current->comm);
++	get_task_comm(comm, current);
++	comm = mangle(comm, comm_buffer);
++	if (!comm)
++		comm = "?";
++
 +	audit_log_format(ab, "(%s(%d) profile %s active %s)",
-+			 current->comm, current->pid,
++			 comm, current->pid,
 +			 profile->parent->name, profile->name);
 +
 +	audit_log_end(ab);
@@ -544,7 +566,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		error = 0;
 +	else
 +		error = sa->result ? 0 : opspec_error;
-+
 +out:
 +	return error;
 +}
@@ -564,7 +585,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	struct aa_audit sa;
 +
 +	sa.type = AA_AUDITTYPE_ATTR;
-+	sa.pval = iattr;
++	sa.iattr = iattr;
 +	sa.flags = 0;
 +	sa.gfp_mask = GFP_KERNEL;
 +
@@ -585,21 +606,19 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + * @dentry: dentry of the file to check
 + * @mnt: vfsmount of the file to check
 + * @operation: xattr operation being done
-+ * @xattr_name: name of xattr to check
 + * @mask: access mode requested
 + * @check: kind of check to perform
 + */
 +int aa_perm_xattr(struct aa_profile *profile, struct dentry *dentry,
 +		  struct vfsmount *mnt, const char *operation,
-+		  const char *xattr_name, int mask, int check)
++		  int mask, int check)
 +{
 +	struct inode *inode = dentry->d_inode;
 +	int error;
 +	struct aa_audit sa;
 +
 +	sa.type = AA_AUDITTYPE_XATTR;
-+	sa.operation = operation;
-+	sa.pval = xattr_name;
++	sa.name2 = operation;
 +	sa.flags = 0;
 +	sa.gfp_mask = GFP_KERNEL;
 +
@@ -670,7 +689,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	struct aa_audit sa;
 +
 +	sa.type = AA_AUDITTYPE_DIR;
-+	sa.operation = operation;
++	sa.name2 = operation;
 +	sa.flags = 0;
 +	sa.gfp_mask = GFP_KERNEL;
 +
@@ -740,24 +759,24 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	    struct dentry *link, struct vfsmount *link_mnt,
 +	    struct dentry *target, struct vfsmount *target_mnt)
 +{
-+	char *name_buffer = NULL, *pval_buffer = NULL;
++	char *name_buffer = NULL, *name2_buffer = NULL;
 +	int denied_mask = -EPERM, error;
 +	struct aa_audit sa;
 +
 +	sa.name = aa_get_name(link, link_mnt, &name_buffer, 0);
-+	sa.pval = aa_get_name(target, target_mnt, &pval_buffer, 0);
++	sa.name2 = aa_get_name(target, target_mnt, &name2_buffer, 0);
 +
 +	if (IS_ERR(sa.name)) {
 +		denied_mask = PTR_ERR(sa.name);
 +		sa.name = NULL;
 +	}
-+	if (IS_ERR(sa.pval)) {
-+		denied_mask = PTR_ERR(sa.pval);
-+		sa.pval = NULL;
++	if (IS_ERR(sa.name2)) {
++		denied_mask = PTR_ERR(sa.name2);
++		sa.name2 = NULL;
 +	}
 +
-+	if (sa.name && sa.pval)
-+		denied_mask = aa_link_denied(profile, sa.name, sa.pval);
++	if (sa.name && sa.name2)
++		denied_mask = aa_link_denied(profile, sa.name, sa.name2);
 +
 +	aa_permerror2result(denied_mask, &sa);
 +
@@ -768,7 +787,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	error = aa_audit(profile, &sa);
 +
 +	aa_put_name_buffer(name_buffer);
-+	aa_put_name_buffer(pval_buffer);
++	aa_put_name_buffer(name2_buffer);
 +
 +	return error;
 +}

@@ -7,12 +7,12 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- security/apparmor/lsm.c |  828 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 828 insertions(+)
+ security/apparmor/lsm.c |  762 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 762 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/lsm.c
-@@ -0,0 +1,828 @@
+@@ -0,0 +1,762 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -129,47 +129,32 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	/**
 +	 * parent can ptrace child when
 +	 * - parent is unconfined
-+	 * - parent is in complain mode
-+	 * - parent and child are confined by the same profile
++	 * - parent & child are in the same namespace &&
++	 *   - parent is in complain mode
++	 *   - parent and child are confined by the same profile
++	 *   - parent profile has CAP_SYS_PTRACE
 +	 */
 +
 +	rcu_read_lock();
 +	cxt = aa_task_context(parent);
 +	child_cxt = aa_task_context(child);
 +	child_profile = child_cxt ? child_cxt->profile : NULL;
-+	error = aa_may_ptrace(cxt, child_profile);
-+	if (cxt && PROFILE_COMPLAIN(cxt->profile)) {
-+		LOG_HINT(cxt->profile, GFP_ATOMIC, HINT_PTRACE,
++	if (cxt && (parent->nsproxy != child->nsproxy)) {
++		AA_WARN(GFP_ATOMIC,
++			"REJECTING ptrace across namespace of %d by %d",
++			parent->pid, child->pid);
++		error = -EPERM;
++	} else {
++		error = aa_may_ptrace(cxt, child_profile);
++		if (cxt && PROFILE_COMPLAIN(cxt->profile)) {
++			LOG_HINT(cxt->profile, GFP_ATOMIC, HINT_PTRACE,
 +				 "pid=%d child=%d\n",
 +				 current->pid, child->pid);
 +		}
++	}
 +	rcu_read_unlock();
 +
 +	return error;
-+}
-+
-+static int apparmor_capget(struct task_struct *task,
-+			    kernel_cap_t *effective,
-+			    kernel_cap_t *inheritable,
-+			    kernel_cap_t *permitted)
-+{
-+	return cap_capget(task, effective, inheritable, permitted);
-+}
-+
-+static int apparmor_capset_check(struct task_struct *task,
-+				  kernel_cap_t *effective,
-+				  kernel_cap_t *inheritable,
-+				  kernel_cap_t *permitted)
-+{
-+	return cap_capset_check(task, effective, inheritable, permitted);
-+}
-+
-+static void apparmor_capset_set(struct task_struct *task,
-+				 kernel_cap_t *effective,
-+				 kernel_cap_t *inheritable,
-+				 kernel_cap_t *permitted)
-+{
-+	cap_capset_set(task, effective, inheritable, permitted);
 +}
 +
 +static int apparmor_capable(struct task_struct *task, int cap)
@@ -201,26 +186,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +					  "sysctl (write)");
 +
 +	return error;
-+}
-+
-+static int apparmor_syslog(int type)
-+{
-+	return cap_syslog(type);
-+}
-+
-+static int apparmor_netlink_send(struct sock *sk, struct sk_buff *skb)
-+{
-+	return cap_netlink_send(sk, skb);
-+}
-+
-+static int apparmor_netlink_recv(struct sk_buff *skb, int cap)
-+{
-+	return cap_netlink_recv(skb, cap);
-+}
-+
-+static void apparmor_bprm_apply_creds(struct linux_binprm *bprm, int unsafe)
-+{
-+	cap_bprm_apply_creds(bprm, unsafe);
 +}
 +
 +static int apparmor_bprm_set_security(struct linux_binprm *bprm)
@@ -443,8 +408,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +}
 +
 +static int aa_xattr_permission(struct dentry *dentry, struct vfsmount *mnt,
-+			       const char *name, const char *operation,
-+			       int mask, struct file *file)
++			       const char *operation, int mask,
++			       struct file *file)
 +{
 +	int error = 0;
 +
@@ -453,8 +418,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		int check = file ? AA_CHECK_FD : 0;
 +
 +		if (profile)
-+			error = aa_perm_xattr(profile, dentry, mnt, name,
-+					      operation, mask, check);
++			error = aa_perm_xattr(profile, dentry, mnt, operation,
++					      mask, check);
 +		aa_put_profile(profile);
 +	}
 +
@@ -465,30 +430,27 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +				   char *name, void *value, size_t size,
 +				   int flags, struct file *file)
 +{
-+	return aa_xattr_permission(dentry, mnt, name, "xattr set", MAY_WRITE,
-+				   file);
++	return aa_xattr_permission(dentry, mnt, "xattr set", MAY_WRITE, file);
 +}
 +
 +static int apparmor_inode_getxattr(struct dentry *dentry, struct vfsmount *mnt,
 +				   char *name, struct file *file)
 +{
-+	return aa_xattr_permission(dentry, mnt, name, "xattr get", MAY_READ,
-+				   file);
++	return aa_xattr_permission(dentry, mnt, "xattr get", MAY_READ, file);
 +}
 +
 +static int apparmor_inode_listxattr(struct dentry *dentry, struct vfsmount *mnt,
 +				    struct file *file)
 +{
-+	return aa_xattr_permission(dentry, mnt, NULL, "xattr list", MAY_READ,
-+				   file);
++	return aa_xattr_permission(dentry, mnt, "xattr list", MAY_READ, file);
 +}
 +
 +static int apparmor_inode_removexattr(struct dentry *dentry,
 +				      struct vfsmount *mnt, char *name,
 +				      struct file *file)
 +{
-+	return aa_xattr_permission(dentry, mnt, name, "xattr remove",
-+				   MAY_WRITE, file);
++	return aa_xattr_permission(dentry, mnt, "xattr remove", MAY_WRITE,
++				   file);
 +}
 +
 +static int apparmor_file_permission(struct file *file, int mask)
@@ -523,22 +485,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	aa_put_profile(profile);
 +
 +out:
-+	return error;
-+}
-+
-+static int apparmor_task_create(unsigned long clone_flags)
-+{
-+	struct aa_profile *profile;
-+	int error = 0;
-+
-+	profile = aa_get_profile(current);
-+	if (profile) {
-+		/* Don't allow to create new namespaces. */
-+		if (clone_flags & CLONE_NEWNS)
-+			error = -EPERM;
-+	}
-+	aa_put_profile(profile);
-+
 +	return error;
 +}
 +
@@ -607,17 +553,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +static void apparmor_task_free_security(struct task_struct *task)
 +{
 +	aa_release(task);
-+}
-+
-+static int apparmor_task_post_setuid(uid_t id0, uid_t id1, uid_t id2,
-+				     int flags)
-+{
-+	return cap_task_post_setuid(id0, id1, id2, flags);
-+}
-+
-+static void apparmor_task_reparent_to_init(struct task_struct *task)
-+{
-+	cap_task_reparent_to_init(task);
 +}
 +
 +static int apparmor_getprocattr(struct task_struct *task, char *name,
@@ -711,17 +646,17 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +struct security_operations apparmor_ops = {
 +	.ptrace =			apparmor_ptrace,
-+	.capget =			apparmor_capget,
-+	.capset_check =			apparmor_capset_check,
-+	.capset_set =			apparmor_capset_set,
++	.capget =			cap_capget,
++	.capset_check =			cap_capset_check,
++	.capset_set =			cap_capset_set,
 +	.sysctl =			apparmor_sysctl,
 +	.capable =			apparmor_capable,
-+	.syslog =			apparmor_syslog,
++	.syslog =			cap_syslog,
 +
-+	.netlink_send =			apparmor_netlink_send,
-+	.netlink_recv =			apparmor_netlink_recv,
++	.netlink_send =			cap_netlink_send,
++	.netlink_recv =			cap_netlink_recv,
 +
-+	.bprm_apply_creds =		apparmor_bprm_apply_creds,
++	.bprm_apply_creds =		cap_bprm_apply_creds,
 +	.bprm_set_security =		apparmor_bprm_set_security,
 +	.bprm_secureexec =		apparmor_bprm_secureexec,
 +
@@ -748,11 +683,10 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	.file_mmap =			apparmor_file_mmap,
 +	.file_mprotect =		apparmor_file_mprotect,
 +
-+	.task_create =			apparmor_task_create,
 +	.task_alloc_security =		apparmor_task_alloc_security,
 +	.task_free_security =		apparmor_task_free_security,
-+	.task_post_setuid =		apparmor_task_post_setuid,
-+	.task_reparent_to_init =	apparmor_task_reparent_to_init,
++	.task_post_setuid =		cap_task_post_setuid,
++	.task_reparent_to_init =	cap_task_reparent_to_init,
 +
 +	.getprocattr =			apparmor_getprocattr,
 +	.setprocattr =			apparmor_setprocattr,

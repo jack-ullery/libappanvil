@@ -10,8 +10,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 ---
  security/apparmor/match.c            |  232 ++++++++++++
  security/apparmor/match.h            |   83 ++++
- security/apparmor/module_interface.c |  641 +++++++++++++++++++++++++++++++++++
- 3 files changed, 956 insertions(+)
+ security/apparmor/module_interface.c |  643 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 958 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/match.c
@@ -41,9 +41,9 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	if (bsize < sizeof(struct table_header))
 +		goto out;
 +
-+	th.td_id = ntohs(*(u16 *) (blob));
-+	th.td_flags = ntohs(*(u16 *) (blob + 2));
-+	th.td_lolen = ntohl(*(u32 *) (blob + 8));
++	th.td_id = be16_to_cpu(*(u16 *) (blob));
++	th.td_flags = be16_to_cpu(*(u16 *) (blob + 2));
++	th.td_lolen = be32_to_cpu(*(u32 *) (blob + 8));
 +	blob += sizeof(struct table_header);
 +
 +	if (!(th.td_flags == YYTD_DATA16 || th.td_flags == YYTD_DATA32 ||
@@ -59,13 +59,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		*table = th;
 +		if (th.td_flags == YYTD_DATA8)
 +			UNPACK_ARRAY(table->td_data, blob, th.td_lolen,
-+				     u8, ntohb);
++				     u8, byte_to_byte);
 +		else if (th.td_flags == YYTD_DATA16)
 +			UNPACK_ARRAY(table->td_data, blob, th.td_lolen,
-+				     u16, ntohs);
++				     u16, be16_to_cpu);
 +		else
 +			UNPACK_ARRAY(table->td_data, blob, th.td_lolen,
-+				     u32, ntohl);
++				     u32, be32_to_cpu);
 +	}
 +
 +out:
@@ -316,7 +316,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	struct table_header *tables[YYTD_ID_NXT];
 +};
 +
-+#define ntohb(X) (X)
++#define byte_to_byte(X) (X)
 +
 +#define UNPACK_ARRAY(TABLE, BLOB, LEN, TYPE, NTOHX) \
 +	do { \
@@ -336,7 +336,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +#endif /* __MATCH_H */
 --- /dev/null
 +++ b/security/apparmor/module_interface.c
-@@ -0,0 +1,641 @@
+@@ -0,0 +1,643 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -399,7 +399,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +static inline int aa_inbounds(struct aa_ext *e, size_t size)
 +{
-+	return (e->pos + size <= e->end);
++	return (size <= e->end - e->pos);
 +}
 +
 +/**
@@ -582,7 +582,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + * @e: serialized data extent information
 + * @error: error code returned if unpacking fails
 + */
-+static struct aa_profile *aa_unpack_profile(struct aa_ext *e)
++static struct aa_profile *aa_unpack_profile(struct aa_ext *e, int depth)
 +{
 +	struct aa_profile *profile = NULL;
 +
@@ -623,9 +623,11 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +	/* get optional subprofiles */
 +	if (aa_is_nameX(e, AA_LIST, "hats")) {
++		if (depth > 0)
++			goto fail;
 +		while (!aa_is_nameX(e, AA_LISTEND, NULL)) {
 +			struct aa_profile *subprofile;
-+			subprofile = aa_unpack_profile(e);
++			subprofile = aa_unpack_profile(e, depth + 1);
 +			if (IS_ERR(subprofile)) {
 +				error = PTR_ERR(subprofile);
 +				goto fail;
@@ -659,7 +661,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + */
 +static struct aa_profile *aa_unpack_profile_wrapper(struct aa_ext *e)
 +{
-+	struct aa_profile *profile = aa_unpack_profile(e);
++	struct aa_profile *profile = aa_unpack_profile(e, 0);
 +	if (!IS_ERR(profile) &&
 +	    (!list_empty(&profile->sub) || profile->flags.complain)) {
 +		int error;

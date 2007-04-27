@@ -13,13 +13,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 ---
  security/apparmor/Kconfig      |    9 +
  security/apparmor/Makefile     |   13 +
- security/apparmor/apparmor.h   |  282 +++++++++++++++++++++++++++++++++++++++++
+ security/apparmor/apparmor.h   |  279 +++++++++++++++++++++++++++++++++++++++++
  security/apparmor/apparmorfs.c |  248 ++++++++++++++++++++++++++++++++++++
- security/apparmor/inline.h     |  219 +++++++++++++++++++++++++++++++
+ security/apparmor/inline.h     |  219 ++++++++++++++++++++++++++++++++
  security/apparmor/list.c       |   94 +++++++++++++
  security/apparmor/locking.txt  |   59 ++++++++
- security/apparmor/procattr.c   |  143 ++++++++++++++++++++
- 8 files changed, 1067 insertions(+)
+ security/apparmor/procattr.c   |  143 +++++++++++++++++++++
+ 8 files changed, 1064 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/Kconfig
@@ -51,7 +51,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	$(call cmd,make-caps)
 --- /dev/null
 +++ b/security/apparmor/apparmor.h
-@@ -0,0 +1,282 @@
+@@ -0,0 +1,279 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -217,15 +217,12 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	unsigned int result;
 +	gfp_t gfp_mask;
 +	int error_code;
-+
-+	const char *operation;
 +	const char *name;
 +	union {
-+		int capability;
 +		int mask;
-+	};
-+	union {
-+		const void *pval;
++		int capability;
++		const char *name2;
++		struct iattr *iattr;
 +		va_list vaval;
 +	};
 +};
@@ -277,8 +274,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +extern int aa_attr(struct aa_profile *profile, struct dentry *dentry,
 +		   struct vfsmount *mnt, struct iattr *iattr);
 +extern int aa_perm_xattr(struct aa_profile *profile, struct dentry *dentry,
-+			 struct vfsmount *mnt, const char *operation,
-+			 const char *xattr_xattr, int mask, int check);
++			 struct vfsmount *mnt, const char *operation, int mask,
++			 int check);
 +extern int aa_capability(struct aa_task_context *cxt, int cap);
 +extern int aa_perm(struct aa_profile *profile, struct dentry *dentry,
 +		   struct vfsmount *mnt, int mask, int check);

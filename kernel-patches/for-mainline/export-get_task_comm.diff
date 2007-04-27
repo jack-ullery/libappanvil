@@ -1,0 +1,10 @@
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -806,6 +806,7 @@ void get_task_comm(char *buf, struct tas
+ 	strncpy(buf, tsk->comm, sizeof(tsk->comm));
+ 	task_unlock(tsk);
+ }
++EXPORT_SYMBOL(get_task_comm);
+ 
+ void set_task_comm(struct task_struct *tsk, char *buf)
+ {

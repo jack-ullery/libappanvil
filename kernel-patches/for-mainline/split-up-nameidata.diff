@@ -2347,7 +2347,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
 +/**
 + * Fields shared between nameidata and nameidata2 -- nameidata2 could
-+ * be embedded in nameidata, but then the vfs code would become
++ * simply be embedded in nameidata, but then the vfs code would become
 + * cluttered with dereferences.
 + */
 +#define __NAMEIDATA2				\
