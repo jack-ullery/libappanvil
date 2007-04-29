@@ -12,7 +12,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1802,6 +1802,11 @@ nfsd_statfs(struct svc_rqst *rqstp, stru
+@@ -1796,6 +1796,11 @@ nfsd_statfs(struct svc_rqst *rqstp, stru
  __be32
  nfsd_permission(struct svc_export *exp, struct dentry *dentry, int acc)
  {
@@ -24,7 +24,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	struct inode	*inode = dentry->d_inode;
  	int		err;
  
-@@ -1867,12 +1872,12 @@ nfsd_permission(struct svc_export *exp, 
+@@ -1861,12 +1866,12 @@ nfsd_permission(struct svc_export *exp, 
  	    inode->i_uid == current->fsuid)
  		return 0;
  

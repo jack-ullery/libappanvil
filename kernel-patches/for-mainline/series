@@ -45,6 +45,7 @@ do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff
 # NOT YET
+leaf.diff
 nfsd_permission-nameidata.diff
 ecryptfs-d_revalidate.diff
 # statvfs.diff

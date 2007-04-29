@@ -39,7 +39,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		d_delete(lower_dentry);
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2006,7 +2006,7 @@ void dentry_unhash(struct dentry *dentry
+@@ -2038,7 +2038,7 @@ void dentry_unhash(struct dentry *dentry
  	spin_unlock(&dcache_lock);
  }
  
@@ -48,7 +48,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int error = may_delete(dir, dentry, 1);
  
-@@ -2070,7 +2070,7 @@ static long do_rmdir(int dfd, const char
+@@ -2102,7 +2102,7 @@ static long do_rmdir(int dfd, const char
  	error = PTR_ERR(dentry);
  	if (IS_ERR(dentry))
  		goto exit2;
@@ -124,7 +124,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	} else {
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -984,7 +984,7 @@ extern int vfs_mkdir(struct inode *, str
+@@ -989,7 +989,7 @@ extern int vfs_mkdir(struct inode *, str
  extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
  extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
  extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);

@@ -36,7 +36,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1916,7 +1916,8 @@ asmlinkage long sys_mknod(const char __u
+@@ -1948,7 +1948,8 @@ asmlinkage long sys_mknod(const char __u
  	return sys_mknodat(AT_FDCWD, filename, mode, dev);
  }
  
@@ -46,7 +46,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int error = may_create(dir, dentry, NULL);
  
-@@ -1960,7 +1961,7 @@ asmlinkage long sys_mkdirat(int dfd, con
+@@ -1992,7 +1993,7 @@ asmlinkage long sys_mkdirat(int dfd, con
  
  	if (!IS_POSIXACL(nd.dentry->d_inode))
  		mode &= ~current->fs->umask;
@@ -114,7 +114,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	}
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -980,7 +980,7 @@ extern void unlock_super(struct super_bl
+@@ -985,7 +985,7 @@ extern void unlock_super(struct super_bl
   */
  extern int vfs_permission(struct nameidata *, int);
  extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);

@@ -34,7 +34,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		goto out_unlock;
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2087,7 +2087,7 @@ asmlinkage long sys_rmdir(const char __u
+@@ -2119,7 +2119,7 @@ asmlinkage long sys_rmdir(const char __u
  	return do_rmdir(AT_FDCWD, pathname);
  }
  
@@ -43,7 +43,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int error = may_delete(dir, dentry, 0);
  
-@@ -2151,7 +2151,7 @@ static long do_unlinkat(int dfd, const c
+@@ -2183,7 +2183,7 @@ static long do_unlinkat(int dfd, const c
  		inode = dentry->d_inode;
  		if (inode)
  			atomic_inc(&inode->i_count);
@@ -76,7 +76,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	}
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -985,7 +985,7 @@ extern int vfs_mknod(struct inode *, str
+@@ -990,7 +990,7 @@ extern int vfs_mknod(struct inode *, str
  extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
  extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
  extern int vfs_rmdir(struct inode *, struct dentry *, struct vfsmount *);
