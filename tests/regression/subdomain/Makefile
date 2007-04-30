@@ -27,6 +27,7 @@ SRC=access.c \
     exec.c \
     exec_qual.c \
     exec_qual2.c \
+    fchdir.c \
     fchgrp.c \
     fchmod.c \
     fchown.c \
@@ -112,6 +113,7 @@ TESTS=access \
       environ \
       exec \
       exec_qual \
+      fchdir \
       fork \
       i18n \
       link \

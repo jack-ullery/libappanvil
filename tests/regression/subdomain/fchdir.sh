@@ -28,9 +28,9 @@ mkdir $dir
 
 # CHDIR TEST
 
-# no profile, verify we didn't break normal chdir
-runchecktest "CHDIR" pass $dir
+# no profile, verify we didn't break normal fchdir
+runchecktest "FCHDIR/no profile" pass $dir
 
-# null profile, verify chdir (x) functions
+# null profile, verify fchdir (x) functions
 genprofile
-runchecktest "CHDIR" pass $dir
+runchecktest "FCHDIR/profile" pass $dir
