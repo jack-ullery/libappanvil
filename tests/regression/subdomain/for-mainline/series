@@ -8,3 +8,6 @@ link_perms.patch
 confined.patch
 change_hat_profile_access.patch
 sysctl.patch
+access.patch
+chdir.patch
+openat.patch
