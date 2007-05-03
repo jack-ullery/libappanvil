@@ -23,6 +23,7 @@ make getcwd() fail instead of reporting unreachable paths like this one and
 hide unreachable mount points from /proc/mounts.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
 
 ---
  fs/dcache.c |  169 ++++++++++++++++++++++++++++++++++--------------------------
