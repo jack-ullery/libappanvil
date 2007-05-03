@@ -1,11 +1,11 @@
 ---
  security/apparmor/apparmor.h         |    8 ++++----
  security/apparmor/apparmorfs.c       |    4 ++--
- security/apparmor/lsm.c              |    7 ++-----
+ security/apparmor/lsm.c              |   10 +++-------
  security/apparmor/main.c             |   29 ++++++++++-------------------
  security/apparmor/module_interface.c |    4 ++--
  security/apparmor/procattr.c         |   24 +++++++++++-------------
- 6 files changed, 31 insertions(+), 45 deletions(-)
+ 6 files changed, 32 insertions(+), 47 deletions(-)
 
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
@@ -31,7 +31,6 @@
  			(p)->parent->name, (p)->name)
  
  /* Flags for the permission check functions */
-Files a/security/apparmor/apparmor.o and b/security/apparmor/apparmor.o differ
 --- a/security/apparmor/apparmorfs.c
 +++ b/security/apparmor/apparmorfs.c
 @@ -38,9 +38,9 @@ static char *aa_simple_write_to_buffer(c
@@ -46,21 +45,23 @@ Files a/security/apparmor/apparmor.o and b/security/apparmor/apparmor.o differ
  			profile->parent->name, profile->name);
  		aa_put_profile(profile);
  
-Files a/security/apparmor/apparmorfs.o and b/security/apparmor/apparmorfs.o differ
 --- a/security/apparmor/lsm.c
 +++ b/security/apparmor/lsm.c
-@@ -623,9 +623,8 @@ static int apparmor_setprocattr(struct t
+@@ -623,25 +623,21 @@ static int apparmor_setprocattr(struct t
  		if (profile) {
  			aa_put_profile(profile);
  			AA_WARN(GFP_KERNEL,
 -				"Attempt by confined task %s(%d) "
-+				"Attempt by confined task %d "
- 				"[user %d] to assign profile to task %s(%d)",
+-				"[user %d] to assign profile to task %s(%d)",
 -				current->comm,
++				"Attempt by confined task %d "
++				"[user %d] to assign profile to task %d",
  				current->pid,
  				current->uid,
- 				task->comm,
-@@ -635,13 +634,11 @@ static int apparmor_setprocattr(struct t
+-				task->comm,
+ 				task->pid);
+ 			return -EACCES;
+ 		}
  		error = aa_setprocattr_setprofile(task, args);
  	} else {
  		AA_ERROR("Unknown setprocattr command '%.*s' "
@@ -75,7 +76,6 @@ Files a/security/apparmor/apparmorfs.o and b/security/apparmor/apparmorfs.o diff
  			task->pid);
  		error = -EINVAL;
  	}
-Files a/security/apparmor/lsm.o and b/security/apparmor/lsm.o differ
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
 @@ -403,7 +403,6 @@ int aa_audit(struct aa_profile *profile,
@@ -157,7 +157,6 @@ Files a/security/apparmor/lsm.o and b/security/apparmor/lsm.o differ
  				 profile->parent->name,
  				 profile->name);
  
-Files a/security/apparmor/main.o and b/security/apparmor/main.o differ
 --- a/security/apparmor/module_interface.c
 +++ b/security/apparmor/module_interface.c
 @@ -407,10 +407,10 @@ static inline void task_replace(struct t
@@ -173,7 +172,6 @@ Files a/security/apparmor/main.o and b/security/apparmor/main.o differ
  		 cxt->profile->parent->name, cxt->profile->parent,
  		 cxt->profile->name, cxt->profile);
  
-Files a/security/apparmor/module_interface.o and b/security/apparmor/module_interface.o differ
 --- a/security/apparmor/procattr.c
 +++ b/security/apparmor/procattr.c
 @@ -82,8 +82,8 @@ int aa_setprocattr_setprofile(struct tas
@@ -233,4 +231,3 @@ Files a/security/apparmor/module_interface.o and b/security/apparmor/module_inte
  		}
  	}
  
-Files a/security/apparmor/procattr.o and b/security/apparmor/procattr.o differ

@@ -3,11 +3,11 @@
 ---
  security/apparmor/apparmor.h         |    2 -
  security/apparmor/apparmorfs.c       |    8 +++----
- security/apparmor/lsm.c              |   18 +++++++----------
+ security/apparmor/lsm.c              |   17 +++++++---------
  security/apparmor/main.c             |    8 +++----
  security/apparmor/module_interface.c |   10 ++++-----
  security/apparmor/procattr.c         |   37 ++++++++++++++++-------------------
- 6 files changed, 38 insertions(+), 45 deletions(-)
+ 6 files changed, 38 insertions(+), 44 deletions(-)
 
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
@@ -52,22 +52,21 @@
  		error = -EPERM;
  	} else {
  		error = aa_may_ptrace(cxt, child_profile);
-@@ -622,13 +622,11 @@ static int apparmor_setprocattr(struct t
+@@ -622,12 +622,11 @@ static int apparmor_setprocattr(struct t
  		profile = aa_get_profile(current);
  		if (profile) {
  			aa_put_profile(profile);
 -			AA_WARN(GFP_KERNEL,
 -				"Attempt by confined task %d "
--				"[user %d] to assign profile to task %s(%d)",
+-				"[user %d] to assign profile to task %d",
 -				current->pid,
 -				current->uid,
--				task->comm,
 -				task->pid);
 +			aa_audit_message(NULL, GFP_KERNEL, "Attempt by "
-+					 "confined task %d [user %d] to assign "
-+					 "profile to task %s(%d)",
++					 "confined task %d [user %d] to "
++					 "assign profile to task %d",
 +					 current->pid, current->uid,
-+					 task->comm, task->pid);
++					 task->pid);
  			return -EACCES;
  		}
  		error = aa_setprocattr_setprofile(task, args);
