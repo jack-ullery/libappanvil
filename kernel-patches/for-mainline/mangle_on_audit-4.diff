@@ -1,0 +1,65 @@
+ * Rip out AA_INFO() and replace it with a static function where it's used.
+
+---
+ security/apparmor/apparmor.h |    5 -----
+ security/apparmor/lsm.c      |   17 ++++++++++++-----
+ 2 files changed, 12 insertions(+), 10 deletions(-)
+
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -66,11 +66,6 @@ extern unsigned int apparmor_path_max;
+ 		if (apparmor_debug)					\
+ 			printk(KERN_DEBUG "AppArmor: " fmt, ##args);	\
+ 	} while (0)
+-#define AA_INFO(gfp, fmt, args...) \
+-	do { \
+-		printk(KERN_INFO "AppArmor: " fmt "\n", ##args); \
+-		aa_audit_message(NULL, (gfp), fmt, ##args); \
+-	} while (0)
+ 
+ #define AA_ERROR(fmt, args...)	printk(KERN_ERR "AppArmor: " fmt, ##args)
+ 
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -694,10 +694,15 @@ struct security_operations apparmor_ops 
+ 	.setprocattr =			apparmor_setprocattr,
+ };
+ 
++static void info_message(const char *str)
++{
++	printk(KERN_INFO "AppArmor: %s", str);
++	aa_audit_message(NULL, GFP_KERNEL, "%s", str);
++}
++
+ static int __init apparmor_init(void)
+ {
+ 	int error;
+-	const char *complainmsg = ": complainmode enabled";
+ 
+ 	if ((error = create_apparmorfs())) {
+ 		AA_ERROR("Unable to activate AppArmor filesystem\n");
+@@ -714,8 +719,10 @@ static int __init apparmor_init(void)
+ 		goto register_security_out;
+ 	}
+ 
+-	AA_INFO(GFP_KERNEL, "AppArmor initialized%s",
+-		apparmor_complain ? complainmsg : "");
++	if (apparmor_complain)
++		info_message("AppArmor initialized: complainmode enabled");
++	else
++		info_message("AppArmor initialized");
+ 
+ 	return error;
+ 
+@@ -766,9 +773,9 @@ static void __exit apparmor_exit(void)
+ 	mutex_unlock(&aa_interface_lock);
+ 
+ 	if (unregister_security(&apparmor_ops))
+-		AA_INFO(GFP_KERNEL, "Unable to properly unregister AppArmor");
++		info_message("Unable to properly unregister AppArmor");
+ 
+-	AA_INFO(GFP_KERNEL, "AppArmor protection removed");
++	info_message("AppArmor protection removed");
+ }
+ 
+ module_init(apparmor_init);

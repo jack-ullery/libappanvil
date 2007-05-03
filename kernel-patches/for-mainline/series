@@ -43,6 +43,11 @@ apparmor-intree.diff
 apparmor-del-comm.diff
 comment_cleanup.diff
 mangle_on_audit.diff
+mangle_on_audit-2.diff
+mangle_on_audit-3.diff
+mangle_on_audit-4.diff
+mangle_on_audit-5.diff
+mangle_on_audit-6.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff

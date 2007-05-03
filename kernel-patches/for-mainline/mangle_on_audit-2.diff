@@ -1,0 +1,515 @@
+
+ * Remove the flags parameter of aa_audit_message -- it is always set to 0.
+
+ * Replace AA_REJECT_MSG() with direct calls to aa_audit_message().
+
+ * Stuff buffer2 in struct aa_audit together with name2; the two are always
+   used together.
+
+ * Add the AA_MANGLE_NAME and AA_MANGLE_NAME2 bitflags which indicate with of
+   the names in struct aa_audit need mangling.
+
+ * AA_AUDITTYPE__END is a dead definition.
+
+ * Add AA_CHECK_MANGLE flag for aa_get_name(), which makes sure that the
+   allocated buffer leaves enough space for name mangling. This flag is
+   only used when really necessary on the "interesting" code paths, and
+   always in aa_register() because there it doesn't really matter, anyway.
+
+ * Further improve the mangle() comment: it is *possible* to use a string
+   and a separate buffer, but that's not really intended, not necessary, and
+   it might lead to really nasty bugs in the future, so don't document that
+   possibility. Also clean up the const-ness there.
+
+ * Replace mangle_buffer(): fail aa_audit() with -ENAMETOOLONG for the usual
+   pathnames (this will practically never trigger), and make sure that
+   aa_register() and aa_register_find() will not lead to failues in the first
+   place with AA_CHECK_MANGLE.
+
+---
+ security/apparmor/apparmor.h |   37 +++----
+ security/apparmor/main.c     |  205 +++++++++++++++++++++----------------------
+ 2 files changed, 120 insertions(+), 122 deletions(-)
+
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -69,17 +69,10 @@ extern unsigned int apparmor_path_max;
+ #define AA_INFO(gfp, fmt, args...) \
+ 	do { \
+ 		printk(KERN_INFO "AppArmor: " fmt "\n", ##args); \
+-		aa_audit_message(NULL, (gfp), 0, fmt, ##args); \
++		aa_audit_message(NULL, (gfp), fmt, ##args); \
+ 	} while (0)
+ #define AA_WARN(gfp, fmt, args...) \
+-	aa_audit_message(NULL, (gfp), 0, fmt, ##args);
+-
+-#define AA_REJECT_MSG(p, gfp, fmt, args...) \
+-	aa_audit_message((p), (gfp), 0, \
+-			"REJECTING " fmt \
+-			" (%d profile %s active %s)", ##args, \
+-			current->pid, \
+-			(p)->parent->name, (p)->name)
++	aa_audit_message(NULL, (gfp), fmt, ##args);
+ 
+ #define AA_ERROR(fmt, args...)	printk(KERN_ERR "AppArmor: " fmt, ##args)
+ 
+@@ -165,26 +158,29 @@ struct aa_audit {
+ 	int error_code;
+ 	const char *name;
+ 	char *buffer;
+-	char *buffer2;
+ 	union {
+ 		int mask;
+ 		int capability;
+-		const char *name2;
++		struct {
++			const char *name2;
++			char *buffer2;
++		};
+ 		struct iattr *iattr;
+ 		va_list vaval;
+ 	};
+ };
+ 
+ /* audit types */
+-#define AA_AUDITTYPE_FILE	1
+-#define AA_AUDITTYPE_DIR	2
+-#define AA_AUDITTYPE_ATTR	3
+-#define AA_AUDITTYPE_XATTR	4
+-#define AA_AUDITTYPE_LINK	5
++#define AA_MANGLE_NAME		32
++#define AA_MANGLE_NAME2		64
++#define AA_AUDITTYPE_FILE	(1 | AA_MANGLE_NAME)
++#define AA_AUDITTYPE_DIR	(2 | AA_MANGLE_NAME)
++#define AA_AUDITTYPE_ATTR	(3 | AA_MANGLE_NAME)
++#define AA_AUDITTYPE_XATTR	(4 | AA_MANGLE_NAME)
++#define AA_AUDITTYPE_LINK	(5 | AA_MANGLE_NAME | AA_MANGLE_NAME2)
+ #define AA_AUDITTYPE_CAP	6
+ #define AA_AUDITTYPE_MSG	7
+ #define AA_AUDITTYPE_SYSCALL	8
+-#define AA_AUDITTYPE__END	9
+ 
+ /* audit flags */
+ #define AA_AUDITFLAG_AUDITSS_SYSCALL 1 /* log syscall context */
+@@ -198,7 +194,7 @@ struct aa_audit {
+ #define HINT_PTRACE "ptrace"
+ 
+ #define LOG_HINT(p, gfp, hint, fmt, args...) \
+-	aa_audit_message((p), (gfp), 0, \
++	aa_audit_message((p), (gfp), \
+ 			"LOGPROF-HINT " hint " " fmt \
+ 			" (%d profile %s active %s)", ##args, \
+ 			current->pid, \
+@@ -208,16 +204,17 @@ struct aa_audit {
+ #define AA_CHECK_LEAF	1  /* this is the leaf lookup component */
+ #define AA_CHECK_FD	2  /* coming from a file descriptor */
+ #define AA_CHECK_DIR	4  /* file type is directory */
++#define AA_CHECK_MANGLE	8  /* leave extra room for name mangling */
+ 
+ /* main.c */
+ extern int alloc_null_complain_profile(void);
+ extern void free_null_complain_profile(void);
+ extern int attach_nullprofile(struct aa_profile *profile);
+-extern int aa_audit_message(struct aa_profile *profile, gfp_t gfp, int,
++extern int aa_audit_message(struct aa_profile *profile, gfp_t gfp,
+ 			    const char *, ...);
+ extern int aa_audit_syscallreject(struct aa_profile *profile, gfp_t gfp,
+ 				  const char *);
+-extern int aa_audit(struct aa_profile *profile, const struct aa_audit *);
++extern int aa_audit(struct aa_profile *profile, struct aa_audit *);
+ 
+ extern int aa_attr(struct aa_profile *profile, struct dentry *dentry,
+ 		   struct vfsmount *mnt, struct iattr *iattr);
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -105,17 +105,18 @@ static int aa_link_denied(struct aa_prof
+ /**
+  * mangle -- escape special characters in str
+  * @str: string to escape
+- * @buffer: buffer possibly containing str
++ * @buffer: buffer containing str
+  *
+- * Escape special characters in @str, which may be contained in
+- * @buffer.  If @str is contained in @buffer it is assumed it is at the
+- * end of @buffer and the string is relocated to the beginning of @buffer.
+- * If @str is not contained in @buffer, @buffer must be large enough that
+- * escaping all special characters in @str will not overwrite the end of
+- * the buffer.
+- * Returns a pointer to the escaped string, NULL upon failure.
++ * Escape special characters in @str, which is contained in @buffer. @str must
++ * be aligned to the end of the buffer, and the space between @buffer and @str
++ * may be used for escaping.
++ *
++ * Returns @str if no escaping was necessary, a pointer to the beginning of the
++ * escaped string, or NULL if there was not enough space in @buffer.  When
++ * called with a NULL buffer, the return value tells whether any escaping is
++ * necessary.
+  */
+-static char *mangle(const char *str, char *buffer)
++static const char *mangle(const char *str, char *buffer)
+ {
+ 	static const char c_escape[] = {
+ 		['\a'] = 'a',	['\b'] = 'b',
+@@ -124,13 +125,14 @@ static char *mangle(const char *str, cha
+ 		['\v'] = 'v',
+ 		[' '] = ' ',	['\\'] = '\\',
+ 	};
+-	char *s, *t, c;
++	const char *s;
++	char *t, c;
+ 
+ #define mangle_escape(c)						\
+ 	unlikely((unsigned char)(c) < ARRAY_SIZE(c_escape) &&		\
+ 		 c_escape[(unsigned char)c])
+ 
+-	for (s = str; (c = *s) != '\0'; s++)
++	for (s = (char *)str; (c = *s) != '\0'; s++)
+ 		if (mangle_escape(c))
+ 			goto escape;
+ 	return str;
+@@ -150,32 +152,8 @@ escape:
+ 	*t++ = '\0';
+ 
+ #undef mangle_escape
+-	return buffer;
+-}
+ 
+-
+-/**
+- * mangle -- escape special characters in str
+- * @str: string to escape
+- * @buffer: buffer possibly containing str
+- *
+- * escape special characters in @str, which is contained in @buffer, if
+- * @buffer is not large enough it will be reallocated.
+- * returns pointer to escaped string or NULL upon failure.
+- */
+-static char *mangle_buffer(const char *str, char **buffer)
+-{
+-	char *b = mangle(str, *buffer);
+-	if (!b) {
+-		b = kmalloc(strlen(str) * 2 + 1, GFP_KERNEL);
+-		if (b) {
+-			mangle(str, b);
+-			kfree(*buffer);
+-			*buffer = b;
+-		}
+-	}
+-
+-	return b;
++	return buffer;
+ }
+ 
+ /**
+@@ -205,6 +183,12 @@ static char *aa_get_name(struct dentry *
+ 			return ERR_PTR(-ENOMEM);
+ 
+ 		name = d_namespace_path(dentry, mnt, buf, size - is_dir);
++
++		/* Make sure we have enough space for name mangling. */
++		if (!IS_ERR(name) &&
++		    (check & AA_CHECK_MANGLE) && name - buf <= size / 2)
++			name = ERR_PTR(-ENAMETOOLONG);
++
+ 		if (!IS_ERR(name)) {
+ 			if (name[0] != '/') {
+ 				/*
+@@ -262,6 +246,7 @@ static int aa_perm_dentry(struct aa_prof
+ {
+ 	int denied_mask, error;
+ 
++again:
+ 	sa->buffer = NULL;
+ 	sa->name = aa_get_name(dentry, mnt, &sa->buffer, check);
+ 
+@@ -283,6 +268,11 @@ static int aa_perm_dentry(struct aa_prof
+ 	error = aa_audit(profile, sa);
+ 
+ 	aa_put_name_buffer(sa->buffer);
++	if (error == -ENAMETOOLONG) {
++		BUG_ON(check & AA_CHECK_MANGLE);
++		check |= AA_CHECK_MANGLE;
++		goto again;
++	}
+ 
+ 	return error;
+ }
+@@ -370,8 +360,8 @@ void free_null_complain_profile(void)
+  * @flags: audit flags
+  * @fmt: varargs fmt
+  */
+-int aa_audit_message(struct aa_profile *profile, gfp_t gfp, int flags,
+-		     const char *fmt, ...)
++int aa_audit_message(struct aa_profile *profile, gfp_t gfp, const char *fmt,
++		     ...)
+ {
+ 	int ret;
+ 	struct aa_audit sa;
+@@ -379,7 +369,7 @@ int aa_audit_message(struct aa_profile *
+ 	sa.type = AA_AUDITTYPE_MSG;
+ 	sa.name = fmt;
+ 	va_start(sa.vaval, fmt);
+-	sa.flags = flags;
++	sa.flags = 0;
+ 	sa.gfp_mask = gfp;
+ 	sa.error_code = 0;
+ 	sa.result = 0;	/* fake failure: force message to be logged */
+@@ -417,7 +407,7 @@ int aa_audit_syscallreject(struct aa_pro
+  * @profile: profile to check against
+  * @sa: audit event
+  */
+-int aa_audit(struct aa_profile *profile, const struct aa_audit *sa)
++int aa_audit(struct aa_profile *profile, struct aa_audit *sa)
+ {
+ 	struct audit_buffer *ab = NULL;
+ 	struct audit_context *audit_cxt;
+@@ -501,32 +491,42 @@ int aa_audit(struct aa_profile *profile,
+ 		goto out;
+ 	}
+ 
++	if (sa->type & AA_MANGLE_NAME) {
++		sa->name = mangle(sa->name, sa->buffer);
++		if (!sa->name)
++			return -ENAMETOOLONG;
++	}
++	if (sa->type & AA_MANGLE_NAME2) {
++		sa->name2 = mangle(sa->name2, sa->buffer2);
++		if (!sa->name2)
++			return -ENAMETOOLONG;
++
++	}
++
+ 	/* log operation */
+ 
+ 	audit_log_format(ab, "%s ", logcls);	/* REJECTING/ALLOWING/etc */
+ 
+-	switch(sa->type) {
+-	case AA_AUDITTYPE_FILE: {
++#define NOFLAGS(x) ((x) & ~(AA_MANGLE_NAME | AA_MANGLE_NAME2))
++
++	switch(NOFLAGS(sa->type)) {
++	case NOFLAGS(AA_AUDITTYPE_FILE): {
+ 		int perm = audit ? sa->mask : sa->error_code;
+-		char *mangled_name = mangle_buffer(sa->name, &sa->buffer);
+-		if (!mangled_name) {
+-			opspec_error = -ENOMEM;
+-			break;
+-		}
++
+ 		audit_log_format(ab, "%s%s%s%s%s access to %s ",
+ 				 perm & AA_EXEC_MMAP ? "m" : "",
+ 				 perm & MAY_READ  ? "r" : "",
+ 				 perm & MAY_WRITE ? "w" : "",
+ 				 perm & MAY_EXEC  ? "x" : "",
+ 				 perm & AA_MAY_LINK  ? "l" : "",
+-				 mangled_name);
++				 sa->name);
+ 		opspec_error = -EPERM;
+ 		break;
+ 	}
+-	case AA_AUDITTYPE_DIR:
++	case NOFLAGS(AA_AUDITTYPE_DIR):
+ 		audit_log_format(ab, "%s on %s ", sa->name2, sa->name);
+ 		break;
+-	case AA_AUDITTYPE_ATTR: {
++	case NOFLAGS(AA_AUDITTYPE_ATTR): {
+ 		struct iattr *iattr = sa->iattr;
+ 
+ 		audit_log_format(ab,
+@@ -543,25 +543,19 @@ int aa_audit(struct aa_profile *profile,
+ 			sa->name);
+ 		break;
+ 	}
+-	case AA_AUDITTYPE_XATTR:
++	case NOFLAGS(AA_AUDITTYPE_XATTR):
+ 		audit_log_format(ab, "%s on %s ", sa->name2, sa->name);
+ 		break;
+-	case AA_AUDITTYPE_LINK: {
+-		char *link_name = mangle_buffer(sa->name, &sa->buffer);
+-		char *target_name = mangle_buffer(sa->name2, sa->buffer2);
+-		if (link_name && target_name)
+-			audit_log_format(ab, "link access from %s to %s ",
+-					 link_name, target_name);
+-		else
+-			opspec_error = -ENOMEM;
++	case NOFLAGS(AA_AUDITTYPE_LINK):
++		audit_log_format(ab, "link access from %s to %s ", sa->name,
++				 sa->name2);
+ 		break;
+-	}
+-	case AA_AUDITTYPE_CAP:
++	case NOFLAGS(AA_AUDITTYPE_CAP):
+ 		audit_log_format(ab, "access to capability '%s' ",
+ 			capability_names[sa->capability]);
+ 		opspec_error = -EPERM;
+ 		break;
+-	case AA_AUDITTYPE_SYSCALL:
++	case NOFLAGS(AA_AUDITTYPE_SYSCALL):
+ 		audit_log_format(ab, "access to syscall '%s' ", sa->name);
+ 		opspec_error = -EPERM;
+ 		break;
+@@ -570,6 +564,8 @@ int aa_audit(struct aa_profile *profile,
+ 		return error;
+ 	}
+ 
++#undef NOFLAGS
++
+ 	audit_log_format(ab, "(%d profile %s active %s)",
+ 			 current->pid, profile->parent->name, profile->name);
+ 
+@@ -789,12 +785,14 @@ int aa_link(struct aa_profile *profile,
+ 	    struct dentry *link, struct vfsmount *link_mnt,
+ 	    struct dentry *target, struct vfsmount *target_mnt)
+ {
+-	int denied_mask = -EPERM, error;
++	int denied_mask = -EPERM, error, check = 0;
+ 	struct aa_audit sa;
+ 
+-	sa.buffer = sa.buffer2 = NULL;
+-	sa.name = aa_get_name(link, link_mnt, &sa.buffer, 0);
+-	sa.name2 = aa_get_name(target, target_mnt, &sa.buffer2, 0);
++again:
++	sa.buffer = NULL;
++	sa.name = aa_get_name(link, link_mnt, &sa.buffer, check);
++	sa.buffer2 = NULL;
++	sa.name2 = aa_get_name(target, target_mnt, &sa.buffer2, check);
+ 
+ 	if (IS_ERR(sa.name)) {
+ 		denied_mask = PTR_ERR(sa.name);
+@@ -818,6 +816,11 @@ int aa_link(struct aa_profile *profile,
+ 
+ 	aa_put_name_buffer(sa.buffer);
+ 	aa_put_name_buffer(sa.buffer2);
++	if (error == -ENAMETOOLONG) {
++		BUG_ON(check & AA_CHECK_MANGLE);
++		check |= AA_CHECK_MANGLE;
++		goto again;
++	}
+ 
+ 	return error;
+ }
+@@ -876,7 +879,7 @@ repeat:
+ }
+ 
+ static struct aa_profile *
+-aa_register_find(struct aa_profile *profile, const char *name, char **buffer,
++aa_register_find(struct aa_profile *profile, const char *name, char *buffer,
+ 		 int mandatory, int complain)
+ {
+ 	struct aa_profile *new_profile;
+@@ -887,26 +890,19 @@ aa_register_find(struct aa_profile *prof
+ 		AA_DEBUG("%s: setting profile %s\n",
+ 			 __FUNCTION__, new_profile->name);
+ 	} else if (mandatory && profile) {
++		name = mangle(name, buffer);
+ 		if (complain) {
+-			char *mangled_name, *b = NULL;
+-			mangled_name = mangle_buffer(name, &b);
+-			if (!mangled_name)
+-				return ERR_PTR(-ENOMEM);
+ 			LOG_HINT(profile, GFP_KERNEL, HINT_MANDPROF,
+-				 "image '%s'", mangled_name);
+-			kfree(b);
++				 "image '%s'", name);
+ 			profile = aa_dup_profile(null_complain_profile);
+ 		} else {
+-			char *b = mangle_buffer(name, buffer);
+-			if (b) {
+-				AA_REJECT_MSG(profile, GFP_KERNEL,
+-					      "exec(2) of image '%s'. Profile "
+-					      "mandatory and not found.",
+-					      b);
+-				return ERR_PTR(-EPERM);
+-			} else {
+-				return ERR_PTR(-ENOMEM);
+-			}
++			aa_audit_message(profile, GFP_KERNEL, "REJECTING "
++					 "exec(2) of image '%s'. Profile "
++					 "mandatory and not found. "
++					 "(%d profile %s active %s)",
++					 name, current->pid,
++					 profile->parent->name, profile->name);
++			return ERR_PTR(-EPERM);
+ 		}
+ 	} else {
+ 		/* Only way we can get into this code is if task
+@@ -928,14 +924,16 @@ aa_register_find(struct aa_profile *prof
+  */
+ int aa_register(struct linux_binprm *bprm)
+ {
+-	char *filename, *buffer = NULL;
++	const char *filename;
++	char  *buffer = NULL;
+ 	struct file *filp = bprm->file;
+ 	struct aa_profile *profile, *old_profile, *new_profile = NULL;
+ 	int exec_mode = AA_EXEC_UNSAFE, complain = 0;
+ 
+ 	AA_DEBUG("%s\n", __FUNCTION__);
+ 
+-	filename = aa_get_name(filp->f_dentry, filp->f_vfsmnt, &buffer, 0);
++	filename = aa_get_name(filp->f_dentry, filp->f_vfsmnt, &buffer,
++			       AA_CHECK_MANGLE);
+ 	if (IS_ERR(filename)) {
+ 		AA_ERROR("%s: Failed to get filename", __FUNCTION__);
+ 		return -ENOENT;
+@@ -975,7 +973,7 @@ repeat:
+ 					 filename);
+ 				new_profile = aa_register_find(profile,
+ 							       filename,
+-							       &buffer, 1,
++							       buffer, 1,
+ 							       complain);
+ 				break;
+ 
+@@ -1000,20 +998,18 @@ repeat:
+ 			new_profile = aa_dup_profile(null_complain_profile);
+ 			exec_mode |= AA_EXEC_UNSAFE;
+ 		} else {
+-			const char *name = mangle_buffer(filename, &buffer);
+-			if (name) {
+-				AA_REJECT_MSG(profile, GFP_KERNEL,
+-					      "exec(2) of image '%s'. Unable "
+-					      "to determine exec qualifier.",
+-					      name);
+-				new_profile = ERR_PTR(-EPERM);
+-			} else {
+-				new_profile = ERR_PTR(-ENOMEM);
+-			}
++			filename = mangle(filename, buffer);
++			aa_audit_message(profile, GFP_KERNEL, "REJECTING "
++					 "exec(2) of image '%s'. Unable to "
++					 "determine exec qualifier. "
++					 "(%d profile %s active %s)",
++					 filename, current->pid,
++					 profile->parent->name, profile->name);
++			new_profile = ERR_PTR(-EPERM);
+ 		}
+ 	} else {
+ 		/* Unconfined task, load profile if it exists */
+-		new_profile = aa_register_find(NULL, filename, &buffer, 0, 0);
++		new_profile = aa_register_find(NULL, filename, buffer, 0, 0);
+ 		if (new_profile == NULL)
+ 			goto cleanup;
+ 	}
+@@ -1027,11 +1023,16 @@ repeat:
+ 		aa_put_profile(profile);
+ 		if (PTR_ERR(old_profile) == -ESTALE)
+ 			goto repeat;
+-		if (PTR_ERR(old_profile) == -EPERM)
+-			AA_REJECT_MSG(profile, GFP_KERNEL,
+-				"exec(2) of image '%s'. "
+-				"Unable to change profile, ptraced by %d.",
+-				filename, current->parent->pid);
++		if (PTR_ERR(old_profile) == -EPERM) {
++			filename = mangle(filename, buffer);
++			aa_audit_message(profile, GFP_KERNEL,
++					 "REJECTING exec(2) of image '%s'. "
++					 "Unable to change profile, ptraced by "
++					 "%d. (%d profile %s active %s)",
++					 filename, current->parent->pid,
++					 current->pid,
++					 profile->parent->name, profile->name);
++		}
+ 		new_profile = old_profile;
+ 		goto cleanup;
+ 	}

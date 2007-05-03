@@ -1,0 +1,72 @@
+ * Rip out the completely unnecessary HINT_ macros.
+
+---
+ security/apparmor/apparmor.h |    6 ------
+ security/apparmor/lsm.c      |    2 +-
+ security/apparmor/main.c     |    8 ++++----
+ 3 files changed, 5 insertions(+), 11 deletions(-)
+
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -180,12 +180,6 @@ struct aa_audit {
+ #define AA_AUDITFLAG_LOGERR	     2 /* log operations that failed due to
+ 					   non permission errors  */
+ 
+-#define HINT_UNKNOWN_HAT "unknown_hat"
+-#define HINT_FORK "fork"
+-#define HINT_MANDPROF "missing_mandatory_profile"
+-#define HINT_CHGPROF "changing_profile"
+-#define HINT_PTRACE "ptrace"
+-
+ #define LOG_HINT(p, gfp, hint, fmt, args...) \
+ 	aa_audit_message((p), (gfp), \
+ 			"LOGPROF-HINT " hint " " fmt \
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -133,7 +133,7 @@ static int apparmor_ptrace(struct task_s
+ 	} else {
+ 		error = aa_may_ptrace(cxt, child_profile);
+ 		if (cxt && PROFILE_COMPLAIN(cxt->profile)) {
+-			LOG_HINT(cxt->profile, GFP_ATOMIC, HINT_PTRACE,
++			LOG_HINT(cxt->profile, GFP_ATOMIC, "ptrace",
+ 				 "pid=%d child=%d\n",
+ 				 current->pid, child->pid);
+ 		}
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -869,7 +869,7 @@ repeat:
+ 
+ 		if (APPARMOR_COMPLAIN(child_cxt) &&
+ 		    profile == null_complain_profile)
+-			LOG_HINT(profile, GFP_KERNEL, HINT_FORK,
++			LOG_HINT(profile, GFP_KERNEL, "fork",
+ 				 "child=%d", child->pid);
+ 		aa_put_profile(profile);
+ 	} else
+@@ -892,7 +892,7 @@ aa_register_find(struct aa_profile *prof
+ 	} else if (mandatory && profile) {
+ 		name = mangle(name, buffer);
+ 		if (complain) {
+-			LOG_HINT(profile, GFP_KERNEL, HINT_MANDPROF,
++			LOG_HINT(profile, GFP_KERNEL, "missing_mandatory_profile",
+ 				 "image '%s'", name);
+ 			profile = aa_dup_profile(null_complain_profile);
+ 		} else {
+@@ -1056,7 +1056,7 @@ repeat:
+ 	}
+ 
+ 	if (complain && new_profile == null_complain_profile)
+-		LOG_HINT(new_profile, GFP_ATOMIC, HINT_CHGPROF,
++		LOG_HINT(new_profile, GFP_ATOMIC, "changing_profile",
+ 			 "");
+ 
+ cleanup:
+@@ -1144,7 +1144,7 @@ static int do_change_hat(const char *hat
+ 		struct aa_profile *profile = cxt->profile;
+ 
+ 		if (APPARMOR_COMPLAIN(cxt)) {
+-			LOG_HINT(profile, GFP_ATOMIC, HINT_UNKNOWN_HAT,
++			LOG_HINT(profile, GFP_ATOMIC, "unknown_hat",
+ 				 "%s", hat_name);
+ 		} else {
+ 			AA_DEBUG("%s: Unknown hatname '%s'. "
