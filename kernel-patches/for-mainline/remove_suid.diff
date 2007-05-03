@@ -34,7 +34,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	file_update_time(file);
 --- a/fs/ocfs2/file.c
 +++ b/fs/ocfs2/file.c
-@@ -1035,13 +1035,13 @@ out:
+@@ -1157,14 +1157,14 @@ out:
  	return ret;
  }
  
@@ -42,7 +42,8 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 +static int ocfs2_prepare_inode_for_write(struct path *path,
  					 loff_t *ppos,
  					 size_t count,
- 					 int appending)
+ 					 int appending,
+ 					 int *direct_io)
  {
  	int ret = 0, meta_level = appending;
 -	struct inode *inode = dentry->d_inode;
@@ -50,7 +51,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	u32 clusters;
  	loff_t newsize, saved_pos;
  
-@@ -1067,7 +1067,7 @@ static int ocfs2_prepare_inode_for_write
+@@ -1190,7 +1190,7 @@ static int ocfs2_prepare_inode_for_write
  		 * inode. There's also the dinode i_size state which
  		 * can be lost via setattr during extending writes (we
  		 * set inode->i_size at the end of a write. */
@@ -59,24 +60,24 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  			if (meta_level == 0) {
  				ocfs2_meta_unlock(inode, meta_level);
  				meta_level = 1;
-@@ -1176,7 +1176,7 @@ static ssize_t ocfs2_file_aio_write(stru
+@@ -1498,7 +1498,7 @@ relock:
+ 	}
+ 
+ 	can_do_direct = direct_io;
+-	ret = ocfs2_prepare_inode_for_write(file->f_path.dentry, ppos,
++	ret = ocfs2_prepare_inode_for_write(&file->f_path, ppos,
+ 					    iocb->ki_left, appending,
+ 					    &can_do_direct);
+ 	if (ret < 0) {
+@@ -1703,7 +1703,7 @@ static ssize_t ocfs2_file_splice_write(s
  		goto out;
  	}
  
--	ret = ocfs2_prepare_inode_for_write(filp->f_path.dentry, &iocb->ki_pos,
-+	ret = ocfs2_prepare_inode_for_write(&filp->f_path, &iocb->ki_pos,
- 					    iocb->ki_left, appending);
+-	ret = ocfs2_prepare_inode_for_write(out->f_path.dentry, ppos, len, 0,
++	ret = ocfs2_prepare_inode_for_write(&out->f_path, ppos, len, 0,
+ 					    NULL);
  	if (ret < 0) {
  		mlog_errno(ret);
-@@ -1239,7 +1239,7 @@ static ssize_t ocfs2_file_splice_write(s
- 		goto out;
- 	}
- 
--	ret = ocfs2_prepare_inode_for_write(out->f_path.dentry, ppos, len, 0);
-+	ret = ocfs2_prepare_inode_for_write(&out->f_path, ppos, len, 0);
- 	if (ret < 0) {
- 		mlog_errno(ret);
- 		goto out_unlock;
 --- a/fs/reiserfs/file.c
 +++ b/fs/reiserfs/file.c
 @@ -1353,7 +1353,7 @@ static ssize_t reiserfs_file_write(struc
@@ -125,7 +126,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  			goto out_unlock_mutex;
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -1685,9 +1685,9 @@ extern void __iget(struct inode * inode)
+@@ -1690,9 +1690,9 @@ extern void __iget(struct inode * inode)
  extern void clear_inode(struct inode *);
  extern void destroy_inode(struct inode *);
  extern struct inode *new_inode(struct super_block *);
