@@ -46,6 +46,7 @@ mangle_on_audit.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff
+apparmorfs_dentry_refcount_fix
 # NOT YET
 leaf.diff
 fix_leaf.diff
