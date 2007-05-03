@@ -41,11 +41,14 @@ apparmor-module_interface.diff
 apparmor-misc.diff
 apparmor-intree.diff
 apparmor-del-comm.diff
+comment_cleanup.diff
+mangle_on_audit.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff
 # NOT YET
 leaf.diff
+fix_leaf.diff
 nfsd_permission-nameidata.diff
 ecryptfs-d_revalidate.diff
 # statvfs.diff
