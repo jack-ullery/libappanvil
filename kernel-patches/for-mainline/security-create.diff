@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1535,7 +1535,7 @@ int vfs_create(struct inode *dir, struct
+@@ -1503,7 +1503,7 @@ int vfs_create(struct inode *dir, struct
  		return -EACCES;	/* shouldn't it be ENOSYS? */
  	mode &= S_IALLUGO;
  	mode |= S_IFREG;

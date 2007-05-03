@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2228,7 +2228,7 @@ int vfs_symlink(struct inode *dir, struc
+@@ -2196,7 +2196,7 @@ int vfs_symlink(struct inode *dir, struc
  	if (!dir->i_op || !dir->i_op->symlink)
  		return -EPERM;
  

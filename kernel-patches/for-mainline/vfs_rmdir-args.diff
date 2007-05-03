@@ -149,7 +149,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	err = nfserrno(host_err);
 --- a/fs/reiserfs/xattr.c
 +++ b/fs/reiserfs/xattr.c
-@@ -785,7 +785,7 @@ reiserfs_delete_xattrs_filler(void *buf,
+@@ -741,7 +741,7 @@ reiserfs_delete_xattrs_filler(void *buf,
  int reiserfs_delete_xattrs(struct inode *inode)
  {
  	struct file *fp;
@@ -158,21 +158,21 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	int err = 0;
  
  	/* Skip out, an xattr has no xattrs associated with it */
-@@ -821,11 +821,14 @@ int reiserfs_delete_xattrs(struct inode 
+@@ -777,11 +777,14 @@ int reiserfs_delete_xattrs(struct inode 
  
  	/* Leftovers besides . and .. -- that's not good. */
  	if (dir->d_inode->i_nlink <= 2) {
--		root = get_xa_root(inode->i_sb);
+-		root = get_xa_root(inode->i_sb, XATTR_REPLACE);
 +		struct nameidata2 nd = {
-+			.dentry = get_xa_root(inode->i_sb),
-+			/* .mnt = NULL, */
++			.dentry = get_xa_root(inode->i_sb, XATTR_REPLACE),
 +		};
++
  		reiserfs_write_lock_xattrs(inode->i_sb);
 -		err = vfs_rmdir(root->d_inode, dir, NULL);
 +		err = vfs_rmdir(&nd, dir);
  		reiserfs_write_unlock_xattrs(inode->i_sb);
 -		dput(root);
-+		dput(nd.dentry);
++		dput(nd.root);
  	} else {
  		reiserfs_warning(inode->i_sb,
  				 "Couldn't remove all entries in directory");

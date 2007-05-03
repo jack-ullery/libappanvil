@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2431,7 +2431,8 @@ static int vfs_rename_dir(struct inode *
+@@ -2399,7 +2399,8 @@ static int vfs_rename_dir(struct inode *
  			return error;
  	}
  
@@ -26,7 +26,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (error)
  		return error;
  
-@@ -2465,7 +2466,8 @@ static int vfs_rename_other(struct inode
+@@ -2433,7 +2434,8 @@ static int vfs_rename_other(struct inode
  	struct inode *target;
  	int error;
  

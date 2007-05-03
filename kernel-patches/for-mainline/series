@@ -61,16 +61,16 @@ ecryptfs-d_revalidate.diff
 nfs-nameidata-check.diff
 vfs_create-nameidata.diff
 split-up-nameidata.diff
-# xattr_permission.diff
-# vfs_create-args.diff
-# vfs_mknod-args.diff
-# vfs_mkdir-args.diff
-# vfs_symlink-args.diff
-# vfs_link-args.diff
-# vfs_rename-args.diff
-# may_create-args.diff
-# vfs_rmdir-args.diff
-# vfs_unlink-args.diff
-# may_delete-args.diff
-# lookup_parent.diff
-# nfsd_permission-nameidata.diff
+xattr_permission.diff
+vfs_create-args.diff
+vfs_mknod-args.diff
+vfs_mkdir-args.diff
+vfs_symlink-args.diff
+vfs_link-args.diff
+vfs_rename-args.diff
+may_create-args.diff
+vfs_rmdir-args.diff
+vfs_unlink-args.diff
+may_delete-args.diff
+lookup_parent.diff
+unlink-foo.diff

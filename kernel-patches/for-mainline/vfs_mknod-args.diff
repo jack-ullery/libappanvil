@@ -11,8 +11,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  fs/namei.c          |   15 +++++++--------
  fs/nfsd/vfs.c       |    3 +--
  include/linux/fs.h  |    2 +-
- net/unix/af_unix.c  |    4 ++--
- 5 files changed, 18 insertions(+), 22 deletions(-)
+ net/unix/af_unix.c  |    2 +-
+ 5 files changed, 17 insertions(+), 21 deletions(-)
 
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
@@ -115,15 +115,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  extern int vfs_rmdir(struct inode *, struct dentry *, struct vfsmount *);
 --- a/net/unix/af_unix.c
 +++ b/net/unix/af_unix.c
-@@ -703,7 +703,7 @@ static struct sock *unix_find_other(stru
- 		err = path_lookup(sunname->sun_path, LOOKUP_FOLLOW, &nd);
- 		if (err)
- 			goto fail;
--		err = vfs_permission(&nd, MAY_WRITE);
-+		err = vfs_permission(ND2(&nd), MAY_WRITE);
- 		if (err)
- 			goto put_fail;
- 
 @@ -808,7 +808,7 @@ static int unix_bind(struct socket *sock
  		 */
  		mode = S_IFSOCK |

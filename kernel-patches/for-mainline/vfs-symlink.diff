@@ -44,7 +44,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (rc || !lower_dentry->d_inode)
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2217,7 +2217,8 @@ asmlinkage long sys_unlink(const char __
+@@ -2185,7 +2185,8 @@ asmlinkage long sys_unlink(const char __
  	return do_unlinkat(AT_FDCWD, pathname);
  }
  
@@ -54,7 +54,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int error = may_create(dir, dentry, NULL);
  
-@@ -2263,7 +2264,8 @@ asmlinkage long sys_symlinkat(const char
+@@ -2231,7 +2232,8 @@ asmlinkage long sys_symlinkat(const char
  	if (IS_ERR(dentry))
  		goto out_unlock;
  
@@ -111,7 +111,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  out:
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -987,7 +987,7 @@ extern int vfs_permission(struct nameida
+@@ -982,7 +982,7 @@ extern int vfs_permission(struct nameida
  extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
  extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
  extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);

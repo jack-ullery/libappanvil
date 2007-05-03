@@ -6,7 +6,7 @@
 
 --- a/include/linux/sysctl.h
 +++ b/include/linux/sysctl.h
-@@ -963,6 +963,8 @@ extern int proc_doulongvec_minmax(ctl_ta
+@@ -959,6 +959,8 @@ extern int proc_doulongvec_minmax(ctl_ta
  extern int proc_doulongvec_ms_jiffies_minmax(ctl_table *table, int,
  				      struct file *, void __user *, size_t *, loff_t *);
  

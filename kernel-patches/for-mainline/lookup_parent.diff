@@ -33,7 +33,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
-@@ -206,9 +206,8 @@ struct aa_audit {
+@@ -203,9 +203,8 @@ struct aa_audit {
  			(p)->parent->name, (p)->name)
  
  /* Flags for the permission check functions */
@@ -99,7 +99,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  		return 0;
  	if (S_ISDIR(inode->i_mode))
  		check |= AA_CHECK_DIR;
-@@ -481,7 +481,7 @@ static int apparmor_file_permission(stru
+@@ -478,7 +478,7 @@ static int apparmor_file_permission(stru
  		struct dentry *dentry = file->f_dentry;
  		struct vfsmount *mnt = file->f_vfsmnt;
  		struct inode *inode = dentry->d_inode;
@@ -108,7 +108,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
  		/*
  		 * FIXME: We should remember which profiles we revalidated
-@@ -552,7 +552,7 @@ static inline int aa_mmap(struct file *f
+@@ -533,7 +533,7 @@ static inline int aa_mmap(struct file *f
  
  	dentry = file->f_dentry;
  	return aa_permission(dentry->d_inode, dentry, file->f_vfsmnt, mask,
@@ -119,7 +119,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  static int apparmor_file_mmap(struct file *file, unsigned long reqprot,
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -614,17 +614,6 @@ int aa_perm(struct aa_profile *profile, 
+@@ -632,17 +632,6 @@ int aa_perm(struct aa_profile *profile, 
  	struct aa_audit sa;
  	int error = 0;
  
@@ -137,7 +137,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (mask == 0)
  		goto out;
  
-@@ -660,8 +649,7 @@ int aa_perm_dir(struct aa_profile *profi
+@@ -678,8 +667,7 @@ int aa_perm_dir(struct aa_profile *profi
  	sa.flags = 0;
  	sa.gfp_mask = GFP_KERNEL;
  
