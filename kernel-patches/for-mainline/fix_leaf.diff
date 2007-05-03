@@ -1,0 +1,22 @@
+---
+ security/apparmor/lsm.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -380,10 +380,12 @@ static int apparmor_inode_permission(str
+ 
+ 	if (!nd || nd->flags & (LOOKUP_PARENT | LOOKUP_CONTINUE))
+ 		return 0;
+-	if (S_ISDIR(inode->i_mode))
+-		check |= AA_CHECK_DIR;
+ 	mask &= (MAY_READ | MAY_WRITE | MAY_EXEC);
+-
++	if (S_ISDIR(inode->i_mode)) {
++		check |= AA_CHECK_DIR;
++		/* allow traverse accesses to directories */
++		mask &= ~MAY_EXEC;
++	}
+ 	return aa_permission(inode, nd->dentry, nd->mnt, mask, check);
+ }
+ 
