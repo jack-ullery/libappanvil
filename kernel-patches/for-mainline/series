@@ -54,7 +54,6 @@ file_permission-nameidata.diff
 apparmorfs_dentry_refcount_fix
 # NOT YET
 leaf.diff
-fix_leaf.diff
 nfsd_permission-nameidata.diff
 ecryptfs-d_revalidate.diff
 # statvfs.diff
