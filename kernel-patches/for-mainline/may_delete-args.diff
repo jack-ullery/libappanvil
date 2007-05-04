@@ -7,12 +7,12 @@ permission() call.
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- fs/namei.c |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ fs/namei.c |   18 ++++++++----------
+ 1 file changed, 8 insertions(+), 10 deletions(-)
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1385,8 +1385,9 @@ static inline int check_sticky(struct in
+@@ -1418,8 +1418,9 @@ static inline int check_sticky(struct in
   * 10. We don't allow removal of NFS sillyrenamed files; it's handled by
   *     nfs_async_unlink().
   */
@@ -23,16 +23,21 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	int error;
  
  	if (!victim->d_inode)
-@@ -1395,7 +1396,7 @@ static int may_delete(struct inode *dir,
+@@ -1428,11 +1429,8 @@ static int may_delete(struct inode *dir,
  	BUG_ON(victim->d_parent->d_inode != dir);
  	audit_inode_child(victim->d_name.name, victim->d_inode, dir);
  
+-#if 0
+-	if (nd)
+-		nd->flags |= LOOKUP_CONTINUE;
+-#endif
 -	error = permission(dir,MAY_WRITE | MAY_EXEC, NULL);
-+	error = permission(dir, MAY_WRITE | MAY_EXEC, nd);
++	nd->flags |= LOOKUP_CONTINUE;
++	error = permission(dir,MAY_WRITE | MAY_EXEC, nd);
  	if (error)
  		return error;
  	if (IS_APPEND(dir))
-@@ -2011,7 +2012,7 @@ void dentry_unhash(struct dentry *dentry
+@@ -2049,7 +2047,7 @@ void dentry_unhash(struct dentry *dentry
  int vfs_rmdir(struct nameidata2 *nd, struct dentry *dentry)
  {
  	struct inode *dir = nd->dentry->d_inode;
@@ -41,7 +46,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
  	if (error)
  		return error;
-@@ -2093,7 +2094,7 @@ asmlinkage long sys_rmdir(const char __u
+@@ -2131,7 +2129,7 @@ asmlinkage long sys_rmdir(const char __u
  int vfs_unlink(struct nameidata2 *nd, struct dentry *dentry)
  {
  	struct inode *dir = nd->dentry->d_inode;
@@ -50,7 +55,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
  	if (error)
  		return error;
-@@ -2479,14 +2480,14 @@ int vfs_rename(struct nameidata2 *old_nd
+@@ -2517,14 +2515,14 @@ int vfs_rename(struct nameidata2 *old_nd
  	if (old_dentry->d_inode == new_dentry->d_inode)
   		return 0;
   

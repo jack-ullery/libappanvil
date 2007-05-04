@@ -51,7 +51,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	return rc;
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1841,10 +1841,10 @@ fail:
+@@ -1880,10 +1880,10 @@ fail:
  }
  EXPORT_SYMBOL_GPL(lookup_create);
  
@@ -65,7 +65,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
  	if (error)
  		return error;
-@@ -1855,7 +1855,7 @@ int vfs_mknod(struct inode *dir, struct 
+@@ -1894,7 +1894,7 @@ int vfs_mknod(struct inode *dir, struct 
  	if (!dir->i_op || !dir->i_op->mknod)
  		return -EPERM;
  
@@ -74,7 +74,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (error)
  		return error;
  
-@@ -1894,12 +1894,11 @@ asmlinkage long sys_mknodat(int dfd, con
+@@ -1933,12 +1933,11 @@ asmlinkage long sys_mknodat(int dfd, con
  			error = vfs_create(ND2(&nd), dentry, mode);
  			break;
  		case S_IFCHR: case S_IFBLK:
@@ -104,7 +104,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	        printk("nfsd: bad file type %o in nfsd_create\n", type);
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -985,7 +985,7 @@ extern void unlock_super(struct super_bl
+@@ -990,7 +990,7 @@ extern void unlock_super(struct super_bl
  extern int vfs_permission(struct nameidata2 *, int);
  extern int vfs_create(struct nameidata2 *, struct dentry *, int);
  extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);

@@ -65,7 +65,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	return rc;
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2254,15 +2254,18 @@ asmlinkage long sys_symlink(const char _
+@@ -2293,15 +2293,18 @@ asmlinkage long sys_symlink(const char _
  	return sys_symlinkat(oldname, AT_FDCWD, newname);
  }
  
@@ -86,7 +86,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (error)
  		return error;
  
-@@ -2279,8 +2282,8 @@ int vfs_link(struct dentry *old_dentry, 
+@@ -2318,8 +2321,8 @@ int vfs_link(struct dentry *old_dentry, 
  	if (S_ISDIR(old_dentry->d_inode->i_mode))
  		return -EPERM;
  
@@ -97,7 +97,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (error)
  		return error;
  
-@@ -2333,8 +2336,7 @@ asmlinkage long sys_linkat(int olddfd, c
+@@ -2372,8 +2375,7 @@ asmlinkage long sys_linkat(int olddfd, c
  	error = PTR_ERR(new_dentry);
  	if (IS_ERR(new_dentry))
  		goto out_unlock;
@@ -155,7 +155,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  		err = 0;
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -987,7 +987,7 @@ extern int vfs_create(struct nameidata2 
+@@ -992,7 +992,7 @@ extern int vfs_create(struct nameidata2 
  extern int vfs_mkdir(struct nameidata2 *, struct dentry *, int);
  extern int vfs_mknod(struct nameidata2 *, struct dentry *, int, dev_t);
  extern int vfs_symlink(struct nameidata2 *, struct dentry *, const char *, int);

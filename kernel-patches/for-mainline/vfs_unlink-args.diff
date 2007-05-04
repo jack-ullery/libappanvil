@@ -62,7 +62,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2090,8 +2090,9 @@ asmlinkage long sys_rmdir(const char __u
+@@ -2128,8 +2128,9 @@ asmlinkage long sys_rmdir(const char __u
  	return do_rmdir(AT_FDCWD, pathname);
  }
  
@@ -73,7 +73,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	int error = may_delete(dir, dentry, 0);
  
  	if (error)
-@@ -2106,7 +2107,7 @@ int vfs_unlink(struct inode *dir, struct
+@@ -2144,7 +2145,7 @@ int vfs_unlink(struct inode *dir, struct
  	if (d_mountpoint(dentry))
  		error = -EBUSY;
  	else {
@@ -82,7 +82,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  		if (!error)
  			error = dir->i_op->unlink(dir, dentry);
  	}
-@@ -2154,7 +2155,7 @@ static long do_unlinkat(int dfd, const c
+@@ -2192,7 +2193,7 @@ static long do_unlinkat(int dfd, const c
  		inode = dentry->d_inode;
  		if (inode)
  			atomic_inc(&inode->i_count);
@@ -126,7 +126,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	}
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -989,7 +989,7 @@ extern int vfs_mknod(struct nameidata2 *
+@@ -994,7 +994,7 @@ extern int vfs_mknod(struct nameidata2 *
  extern int vfs_symlink(struct nameidata2 *, struct dentry *, const char *, int);
  extern int vfs_link(struct nameidata2 *, struct dentry *, struct nameidata2 *);
  extern int vfs_rmdir(struct nameidata2 *, struct dentry *);

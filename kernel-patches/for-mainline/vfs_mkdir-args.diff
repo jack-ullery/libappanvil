@@ -53,7 +53,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	return rc;
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1921,10 +1921,10 @@ asmlinkage long sys_mknod(const char __u
+@@ -1960,10 +1960,10 @@ asmlinkage long sys_mknod(const char __u
  	return sys_mknodat(AT_FDCWD, filename, mode, dev);
  }
  
@@ -67,7 +67,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
  	if (error)
  		return error;
-@@ -1933,7 +1933,7 @@ int vfs_mkdir(struct inode *dir, struct 
+@@ -1972,7 +1972,7 @@ int vfs_mkdir(struct inode *dir, struct 
  		return -EPERM;
  
  	mode &= (S_IRWXUGO|S_ISVTX);
@@ -76,7 +76,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (error)
  		return error;
  
-@@ -1966,7 +1966,7 @@ asmlinkage long sys_mkdirat(int dfd, con
+@@ -2005,7 +2005,7 @@ asmlinkage long sys_mkdirat(int dfd, con
  
  	if (!IS_POSIXACL(nd.dentry->d_inode))
  		mode &= ~current->fs->umask;
@@ -110,7 +110,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	case S_IFBLK:
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -984,7 +984,7 @@ extern void unlock_super(struct super_bl
+@@ -989,7 +989,7 @@ extern void unlock_super(struct super_bl
   */
  extern int vfs_permission(struct nameidata2 *, int);
  extern int vfs_create(struct nameidata2 *, struct dentry *, int);

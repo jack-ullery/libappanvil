@@ -162,7 +162,7 @@
  	case AA_AUDITTYPE_CAP:
  		audit_log_format(ab, "access to capability '%s' ",
  			capability_names[sa->capability]);
-@@ -741,12 +777,12 @@ int aa_link(struct aa_profile *profile,
+@@ -753,12 +789,12 @@ int aa_link(struct aa_profile *profile,
  	    struct dentry *link, struct vfsmount *link_mnt,
  	    struct dentry *target, struct vfsmount *target_mnt)
  {
@@ -178,7 +178,7 @@
  
  	if (IS_ERR(sa.name)) {
  		denied_mask = PTR_ERR(sa.name);
-@@ -768,8 +804,8 @@ int aa_link(struct aa_profile *profile,
+@@ -780,8 +816,8 @@ int aa_link(struct aa_profile *profile,
  
  	error = aa_audit(profile, &sa);
  
@@ -189,7 +189,7 @@
  
  	return error;
  }
-@@ -828,8 +864,8 @@ repeat:
+@@ -840,8 +876,8 @@ repeat:
  }
  
  static struct aa_profile *
@@ -200,7 +200,7 @@
  {
  	struct aa_profile *new_profile;
  
-@@ -840,15 +876,25 @@ aa_register_find(struct aa_profile *prof
+@@ -852,15 +888,25 @@ aa_register_find(struct aa_profile *prof
  			 __FUNCTION__, new_profile->name);
  	} else if (mandatory && profile) {
  		if (complain) {
@@ -232,7 +232,7 @@
  		}
  	} else {
  		/* Only way we can get into this code is if task
-@@ -916,7 +962,8 @@ repeat:
+@@ -928,7 +974,8 @@ repeat:
  					 __FUNCTION__,
  					 filename);
  				new_profile = aa_register_find(profile,
@@ -242,7 +242,7 @@
  							       complain);
  				break;
  
-@@ -941,15 +988,20 @@ repeat:
+@@ -953,15 +1000,20 @@ repeat:
  			new_profile = aa_dup_profile(null_complain_profile);
  			exec_mode |= AA_EXEC_UNSAFE;
  		} else {

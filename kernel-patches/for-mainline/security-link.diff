@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2275,7 +2275,8 @@ int vfs_link(struct dentry *old_dentry, 
+@@ -2307,7 +2307,8 @@ int vfs_link(struct dentry *old_dentry, 
  	if (S_ISDIR(old_dentry->d_inode->i_mode))
  		return -EPERM;
  

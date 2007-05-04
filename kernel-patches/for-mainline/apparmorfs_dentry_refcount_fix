@@ -29,33 +29,20 @@ Any comments? (This patch is checked in to subversion.)
     reloading succeeded when it didn't.
 
 ---
- security/apparmor/apparmorfs.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ security/apparmor/apparmorfs.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Index: b/security/apparmor/apparmorfs.c
-===================================================================
 --- a/security/apparmor/apparmorfs.c
 +++ b/security/apparmor/apparmorfs.c
-@@ -179,8 +179,11 @@ static void aafs_remove(const char *name
+@@ -179,8 +179,10 @@ static void aafs_remove(const char *name
  	struct dentry *dentry;
  
  	dentry = lookup_one_len(name, apparmor_dentry, strlen(name));
 -	if (dentry && !IS_ERR(dentry))
-+	if (dentry && !IS_ERR(dentry)) {
++	if (!IS_ERR(dentry)) {
  		securityfs_remove(dentry);
 +		dput(dentry);
-+	} else
-+		AA_ERROR("Error removing AppArmor securityfs file %s\n", name);
++	}
  }
  
  static int aafs_create(const char *name, int mask, struct file_operations *fops)
-@@ -190,6 +193,9 @@ static int aafs_create(const char *name,
- 	dentry = securityfs_create_file(name, S_IFREG | mask, apparmor_dentry,
- 					NULL, fops);
- 
-+	if (!IS_ERR(dentry))
-+		dput(dentry);
-+
- 	return IS_ERR(dentry) ? PTR_ERR(dentry) : 0;
- }
- 

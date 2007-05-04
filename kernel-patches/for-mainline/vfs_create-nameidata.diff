@@ -9,7 +9,7 @@ Subject: Never pass a NULL nameidata to vfs_create()
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1540,7 +1540,7 @@ int vfs_create(struct inode *dir, struct
+@@ -1546,7 +1546,7 @@ int vfs_create(struct inode *dir, struct
  		return -EACCES;	/* shouldn't it be ENOSYS? */
  	mode &= S_IALLUGO;
  	mode |= S_IFREG;

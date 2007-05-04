@@ -50,7 +50,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	dput(dentry);
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2008,8 +2008,9 @@ void dentry_unhash(struct dentry *dentry
+@@ -2046,8 +2046,9 @@ void dentry_unhash(struct dentry *dentry
  	spin_unlock(&dcache_lock);
  }
  
@@ -61,7 +61,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	int error = may_delete(dir, dentry, 1);
  
  	if (error)
-@@ -2018,7 +2019,7 @@ int vfs_rmdir(struct inode *dir, struct 
+@@ -2056,7 +2057,7 @@ int vfs_rmdir(struct inode *dir, struct 
  	if (!dir->i_op || !dir->i_op->rmdir)
  		return -EPERM;
  
@@ -70,7 +70,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (error)
  		return error;
  
-@@ -2073,7 +2074,7 @@ static long do_rmdir(int dfd, const char
+@@ -2111,7 +2112,7 @@ static long do_rmdir(int dfd, const char
  	error = PTR_ERR(dentry);
  	if (IS_ERR(dentry))
  		goto exit2;
@@ -172,13 +172,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		err = vfs_rmdir(&nd, dir);
  		reiserfs_write_unlock_xattrs(inode->i_sb);
 -		dput(root);
-+		dput(nd.root);
++		dput(nd.dentry);
  	} else {
  		reiserfs_warning(inode->i_sb,
  				 "Couldn't remove all entries in directory");
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -988,7 +988,7 @@ extern int vfs_mkdir(struct nameidata2 *
+@@ -993,7 +993,7 @@ extern int vfs_mkdir(struct nameidata2 *
  extern int vfs_mknod(struct nameidata2 *, struct dentry *, int, dev_t);
  extern int vfs_symlink(struct nameidata2 *, struct dentry *, const char *, int);
  extern int vfs_link(struct nameidata2 *, struct dentry *, struct nameidata2 *);

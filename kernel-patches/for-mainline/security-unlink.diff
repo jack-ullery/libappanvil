@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2103,7 +2103,7 @@ int vfs_unlink(struct inode *dir, struct
+@@ -2135,7 +2135,7 @@ int vfs_unlink(struct inode *dir, struct
  	if (d_mountpoint(dentry))
  		error = -EBUSY;
  	else {

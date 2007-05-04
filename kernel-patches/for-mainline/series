@@ -39,6 +39,7 @@ apparmor-main.diff
 apparmor-lsm.diff
 apparmor-module_interface.diff
 apparmor-misc.diff
+apparmorfs_dentry_refcount_fix
 apparmor-intree.diff
 apparmor-del-comm.diff
 comment_cleanup.diff
@@ -51,9 +52,8 @@ mangle_on_audit-6.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff
-apparmorfs_dentry_refcount_fix
-# NOT YET
 leaf.diff
+# NOT YET
 nfsd_permission-nameidata.diff
 ecryptfs-d_revalidate.diff
 # statvfs.diff
@@ -76,5 +76,3 @@ may_create-args.diff
 vfs_rmdir-args.diff
 vfs_unlink-args.diff
 may_delete-args.diff
-lookup_parent.diff
-unlink-foo.diff

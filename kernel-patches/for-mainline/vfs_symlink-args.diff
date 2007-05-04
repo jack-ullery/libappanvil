@@ -63,7 +63,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  		d_drop(dentry);
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2189,10 +2189,11 @@ asmlinkage long sys_unlink(const char __
+@@ -2228,10 +2228,11 @@ asmlinkage long sys_unlink(const char __
  	return do_unlinkat(AT_FDCWD, pathname);
  }
  
@@ -77,7 +77,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
  	if (error)
  		return error;
-@@ -2200,7 +2201,7 @@ int vfs_symlink(struct inode *dir, struc
+@@ -2239,7 +2240,7 @@ int vfs_symlink(struct inode *dir, struc
  	if (!dir->i_op || !dir->i_op->symlink)
  		return -EPERM;
  
@@ -86,7 +86,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (error)
  		return error;
  
-@@ -2236,8 +2237,7 @@ asmlinkage long sys_symlinkat(const char
+@@ -2275,8 +2276,7 @@ asmlinkage long sys_symlinkat(const char
  	if (IS_ERR(dentry))
  		goto out_unlock;
  
@@ -152,7 +152,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	fh_unlock(fhp);
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -986,7 +986,7 @@ extern int vfs_permission(struct nameida
+@@ -991,7 +991,7 @@ extern int vfs_permission(struct nameida
  extern int vfs_create(struct nameidata2 *, struct dentry *, int);
  extern int vfs_mkdir(struct nameidata2 *, struct dentry *, int);
  extern int vfs_mknod(struct nameidata2 *, struct dentry *, int, dev_t);

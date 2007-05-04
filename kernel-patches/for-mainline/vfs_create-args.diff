@@ -50,7 +50,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  				"Failure to create underlying file\n");
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1495,9 +1495,9 @@ void unlock_rename(struct dentry *p1, st
+@@ -1534,9 +1534,9 @@ void unlock_rename(struct dentry *p1, st
  	}
  }
  
@@ -62,7 +62,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	int error = may_create(dir, dentry, nd);
  
  	if (error)
-@@ -1605,7 +1605,7 @@ static int open_namei_create(struct name
+@@ -1644,7 +1644,7 @@ static int open_namei_create(struct name
  
  	if (!IS_POSIXACL(dir->d_inode))
  		mode &= ~current->fs->umask;
@@ -71,7 +71,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	mutex_unlock(&dir->d_inode->i_mutex);
  	dput(nd->dentry);
  	nd->dentry = path->dentry;
-@@ -1891,8 +1891,7 @@ asmlinkage long sys_mknodat(int dfd, con
+@@ -1930,8 +1930,7 @@ asmlinkage long sys_mknodat(int dfd, con
  	if (!IS_ERR(dentry)) {
  		switch (mode & S_IFMT) {
  		case 0: case S_IFREG:
@@ -103,7 +103,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (created)
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -983,7 +983,7 @@ extern void unlock_super(struct super_bl
+@@ -988,7 +988,7 @@ extern void unlock_super(struct super_bl
   * VFS helper functions..
   */
  extern int vfs_permission(struct nameidata2 *, int);
