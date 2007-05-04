@@ -52,7 +52,7 @@
  				 "image '%s'", name);
  			profile = aa_dup_profile(null_complain_profile);
  		} else {
-@@ -1056,7 +1056,7 @@ repeat:
+@@ -1057,7 +1057,7 @@ repeat:
  	}
  
  	if (complain && new_profile == null_complain_profile)
@@ -61,7 +61,7 @@
  			 "");
  
  cleanup:
-@@ -1144,7 +1144,7 @@ static int do_change_hat(const char *hat
+@@ -1145,7 +1145,7 @@ static int do_change_hat(const char *hat
  		struct aa_profile *profile = cxt->profile;
  
  		if (APPARMOR_COMPLAIN(cxt)) {

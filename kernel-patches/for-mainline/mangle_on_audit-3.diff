@@ -4,10 +4,10 @@
  security/apparmor/apparmor.h         |    2 -
  security/apparmor/apparmorfs.c       |    8 +++----
  security/apparmor/lsm.c              |   17 +++++++---------
- security/apparmor/main.c             |    8 +++----
+ security/apparmor/main.c             |    7 +++---
  security/apparmor/module_interface.c |   10 ++++-----
  security/apparmor/procattr.c         |   37 ++++++++++++++++-------------------
- 6 files changed, 38 insertions(+), 44 deletions(-)
+ 6 files changed, 38 insertions(+), 43 deletions(-)
 
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
@@ -72,15 +72,7 @@
  		error = aa_setprocattr_setprofile(task, args);
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -1024,7 +1024,6 @@ repeat:
- 		if (PTR_ERR(old_profile) == -ESTALE)
- 			goto repeat;
- 		if (PTR_ERR(old_profile) == -EPERM) {
--			filename = mangle(filename, buffer);
- 			aa_audit_message(profile, GFP_KERNEL,
- 					 "REJECTING exec(2) of image '%s'. "
- 					 "Unable to change profile, ptraced by "
-@@ -1191,9 +1190,10 @@ int aa_change_hat(const char *hat_name, 
+@@ -1191,9 +1191,10 @@ int aa_change_hat(const char *hat_name, 
  
  	/* Dump out above debugging in WARN mode if we are in AUDIT mode */
  	if (APPARMOR_AUDIT(aa_task_context(current))) {

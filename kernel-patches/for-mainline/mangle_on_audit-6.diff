@@ -83,7 +83,7 @@
  			profile = aa_dup_profile(null_complain_profile);
  		} else {
  			aa_audit_message(profile, GFP_KERNEL, "REJECTING "
-@@ -1056,9 +1062,11 @@ repeat:
+@@ -1057,9 +1063,11 @@ repeat:
  	}
  
  	if (complain && new_profile == null_complain_profile)
@@ -98,7 +98,7 @@
  cleanup:
  	aa_put_name_buffer(buffer);
  	if (IS_ERR(new_profile))
-@@ -1144,8 +1152,11 @@ static int do_change_hat(const char *hat
+@@ -1145,8 +1153,11 @@ static int do_change_hat(const char *hat
  		struct aa_profile *profile = cxt->profile;
  
  		if (APPARMOR_COMPLAIN(cxt)) {
