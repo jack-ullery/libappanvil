@@ -34,6 +34,7 @@ d_namespace_path.diff
 file-handle-ops.diff
 security-xattr-file.diff
 sysctl-pathname.diff
+foobar.diff
 apparmor-audit.diff
 apparmor-main.diff
 apparmor-lsm.diff
