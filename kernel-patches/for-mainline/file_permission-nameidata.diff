@@ -13,7 +13,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -297,7 +297,13 @@ int vfs_permission(struct nameidata *nd,
+@@ -296,7 +296,13 @@ int vfs_permission(struct nameidata *nd,
   */
  int file_permission(struct file *file, int mask)
  {

@@ -31,7 +31,7 @@ Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
 
 --- a/fs/dcache.c
 +++ b/fs/dcache.c
-@@ -1732,52 +1732,51 @@ shouldnt_be_hashed:
+@@ -1761,52 +1761,51 @@ shouldnt_be_hashed:
  }
  
  /**
@@ -111,7 +111,7 @@ Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
  			spin_lock(&vfsmount_lock);
  			if (vfsmnt->mnt_parent == vfsmnt) {
  				spin_unlock(&vfsmount_lock);
-@@ -1791,33 +1790,72 @@ static char * __d_path( struct dentry *d
+@@ -1820,33 +1819,72 @@ static char * __d_path( struct dentry *d
  		parent = dentry->d_parent;
  		prefetch(parent);
  		namelen = dentry->d_name.len;
@@ -199,7 +199,7 @@ Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
  {
  	char *res;
  	struct vfsmount *rootmnt;
-@@ -1827,9 +1865,8 @@ char * d_path(struct dentry *dentry, str
+@@ -1866,9 +1904,8 @@ char * d_path(struct dentry *dentry, str
  	rootmnt = mntget(current->fs->rootmnt);
  	root = dget(current->fs->root);
  	read_unlock(&current->fs->lock);
@@ -211,7 +211,7 @@ Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
  	dput(root);
  	mntput(rootmnt);
  	return res;
-@@ -1855,10 +1892,10 @@ char * d_path(struct dentry *dentry, str
+@@ -1915,10 +1952,10 @@ char *dynamic_dname(struct dentry *dentr
   */
  asmlinkage long sys_getcwd(char __user *buf, unsigned long size)
  {
@@ -224,7 +224,7 @@ Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
  
  	if (!page)
  		return -ENOMEM;
-@@ -1870,29 +1907,19 @@ asmlinkage long sys_getcwd(char __user *
+@@ -1930,29 +1967,19 @@ asmlinkage long sys_getcwd(char __user *
  	root = dget(current->fs->root);
  	read_unlock(&current->fs->lock);
  

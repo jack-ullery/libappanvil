@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2307,7 +2307,8 @@ int vfs_link(struct dentry *old_dentry, 
+@@ -2295,7 +2295,8 @@ int vfs_link(struct dentry *old_dentry, 
  	if (S_ISDIR(old_dentry->d_inode->i_mode))
  		return -EPERM;
  
@@ -98,7 +98,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2184,11 +2184,16 @@ static int selinux_inode_create(struct i
+@@ -2182,11 +2182,16 @@ static int selinux_inode_create(struct i
  	return may_create(dir, dentry, SECCLASS_FILE);
  }
  

@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1960,7 +1960,7 @@ int vfs_mkdir(struct inode *dir, struct 
+@@ -1948,7 +1948,7 @@ int vfs_mkdir(struct inode *dir, struct 
  		return -EPERM;
  
  	mode &= (S_IRWXUGO|S_ISVTX);
@@ -80,7 +80,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2209,7 +2209,8 @@ static int selinux_inode_symlink(struct 
+@@ -2207,7 +2207,8 @@ static int selinux_inode_symlink(struct 
  	return may_create(dir, dentry, SECCLASS_LNK_FILE);
  }
  

@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1535,7 +1535,7 @@ int vfs_create(struct inode *dir, struct
+@@ -1523,7 +1523,7 @@ int vfs_create(struct inode *dir, struct
  		return -EACCES;	/* shouldn't it be ENOSYS? */
  	mode &= S_IALLUGO;
  	mode |= S_IFREG;
@@ -81,7 +81,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2178,7 +2178,8 @@ static int selinux_inode_init_security(s
+@@ -2176,7 +2176,8 @@ static int selinux_inode_init_security(s
  	return 0;
  }
  

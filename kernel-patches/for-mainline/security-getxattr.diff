@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/xattr.c
 +++ b/fs/xattr.c
-@@ -117,7 +117,7 @@ vfs_getxattr(struct dentry *dentry, stru
+@@ -116,7 +116,7 @@ vfs_getxattr(struct dentry *dentry, stru
  	if (error)
  		return error;
  
@@ -85,7 +85,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2395,7 +2395,8 @@ static void selinux_inode_post_setxattr(
+@@ -2393,7 +2393,8 @@ static void selinux_inode_post_setxattr(
  	return;
  }
  

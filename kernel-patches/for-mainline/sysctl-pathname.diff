@@ -17,7 +17,7 @@
  		      void __user *newval, size_t newlen);
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
-@@ -1087,6 +1087,33 @@ struct ctl_table_header *sysctl_head_nex
+@@ -1098,6 +1098,33 @@ struct ctl_table_header *sysctl_head_nex
  	return NULL;
  }
  
@@ -53,7 +53,7 @@
  	       void __user *newval, size_t newlen)
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -1428,40 +1428,15 @@ static int selinux_capable(struct task_s
+@@ -1427,40 +1427,15 @@ static int selinux_capable(struct task_s
  
  static int selinux_sysctl_get_sid(ctl_table *table, u16 tclass, u32 *sid)
  {

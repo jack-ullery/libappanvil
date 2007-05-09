@@ -1,6 +1,7 @@
+fix-CONFIG_MMC_DEBUG.diff
 security-create.diff
-proc_setattr.diff 
-proc_sys_setattr.diff
+#proc_setattr.diff 
+#proc_sys_setattr.diff
 remove_suid.diff
 vfs-notify_change.diff
 security-setattr.diff

@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/stat.c
 +++ b/fs/stat.c
-@@ -307,7 +307,7 @@ asmlinkage long sys_readlinkat(int dfd, 
+@@ -306,7 +306,7 @@ asmlinkage long sys_readlinkat(int dfd, 
  
  		error = -EINVAL;
  		if (inode->i_op && inode->i_op->readlink) {
@@ -82,7 +82,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2239,7 +2239,7 @@ static int selinux_inode_rename(struct i
+@@ -2237,7 +2237,7 @@ static int selinux_inode_rename(struct i
  	return may_rename(old_inode, old_dentry, new_inode, new_dentry);
  }
  

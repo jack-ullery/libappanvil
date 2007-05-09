@@ -18,7 +18,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/nfsd/nfs4xdr.c
 +++ b/fs/nfsd/nfs4xdr.c
-@@ -1470,7 +1470,7 @@ nfsd4_encode_fattr(struct svc_fh *fhp, s
+@@ -1469,7 +1469,7 @@ nfsd4_encode_fattr(struct svc_fh *fhp, s
  	}
  	if (bmval0 & (FATTR4_WORD0_ACL | FATTR4_WORD0_ACLSUPPORT
  			| FATTR4_WORD0_SUPPORTED_ATTRS)) {
@@ -108,7 +108,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
 --- a/fs/xattr.c
 +++ b/fs/xattr.c
-@@ -107,7 +107,8 @@ out:
+@@ -106,7 +106,8 @@ out:
  EXPORT_SYMBOL_GPL(vfs_setxattr);
  
  ssize_t
@@ -118,7 +118,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	struct inode *inode = dentry->d_inode;
  	int error;
-@@ -279,7 +280,8 @@ sys_fsetxattr(int fd, char __user *name,
+@@ -278,7 +279,8 @@ sys_fsetxattr(int fd, char __user *name,
   * Extended attribute GET operations
   */
  static ssize_t
@@ -128,7 +128,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	ssize_t error;
  	void *kvalue = NULL;
-@@ -299,7 +301,7 @@ getxattr(struct dentry *d, char __user *
+@@ -298,7 +300,7 @@ getxattr(struct dentry *d, char __user *
  			return -ENOMEM;
  	}
  
@@ -137,7 +137,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (error > 0) {
  		if (size && copy_to_user(value, kvalue, error))
  			error = -EFAULT;
-@@ -322,7 +324,7 @@ sys_getxattr(char __user *path, char __u
+@@ -321,7 +323,7 @@ sys_getxattr(char __user *path, char __u
  	error = user_path_walk(path, &nd);
  	if (error)
  		return error;
@@ -146,7 +146,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -337,7 +339,7 @@ sys_lgetxattr(char __user *path, char __
+@@ -336,7 +338,7 @@ sys_lgetxattr(char __user *path, char __
  	error = user_path_walk_link(path, &nd);
  	if (error)
  		return error;
@@ -155,7 +155,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -351,7 +353,7 @@ sys_fgetxattr(int fd, char __user *name,
+@@ -350,7 +352,7 @@ sys_fgetxattr(int fd, char __user *name,
  	f = fget(fd);
  	if (!f)
  		return error;

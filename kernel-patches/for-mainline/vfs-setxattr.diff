@@ -80,7 +80,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  			error = 0;
 --- a/fs/xattr.c
 +++ b/fs/xattr.c
-@@ -70,8 +70,8 @@ xattr_permission(struct inode *inode, co
+@@ -69,8 +69,8 @@ xattr_permission(struct inode *inode, co
  }
  
  int
@@ -91,7 +91,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	struct inode *inode = dentry->d_inode;
  	int error;
-@@ -194,8 +194,8 @@ EXPORT_SYMBOL_GPL(vfs_removexattr);
+@@ -193,8 +193,8 @@ EXPORT_SYMBOL_GPL(vfs_removexattr);
   * Extended attribute SET operations
   */
  static long
@@ -102,7 +102,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int error;
  	void *kvalue = NULL;
-@@ -222,7 +222,7 @@ setxattr(struct dentry *d, char __user *
+@@ -221,7 +221,7 @@ setxattr(struct dentry *d, char __user *
  		}
  	}
  
@@ -111,7 +111,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	kfree(kvalue);
  	return error;
  }
-@@ -237,7 +237,7 @@ sys_setxattr(char __user *path, char __u
+@@ -236,7 +236,7 @@ sys_setxattr(char __user *path, char __u
  	error = user_path_walk(path, &nd);
  	if (error)
  		return error;
@@ -120,7 +120,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -252,7 +252,7 @@ sys_lsetxattr(char __user *path, char __
+@@ -251,7 +251,7 @@ sys_lsetxattr(char __user *path, char __
  	error = user_path_walk_link(path, &nd);
  	if (error)
  		return error;
@@ -129,7 +129,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -270,7 +270,7 @@ sys_fsetxattr(int fd, char __user *name,
+@@ -269,7 +269,7 @@ sys_fsetxattr(int fd, char __user *name,
  		return error;
  	dentry = f->f_path.dentry;
  	audit_inode(NULL, dentry->d_inode);

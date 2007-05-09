@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/attr.c
 +++ b/fs/attr.c
-@@ -145,13 +145,13 @@ int notify_change(struct dentry *dentry,
+@@ -144,13 +144,13 @@ int notify_change(struct dentry *dentry,
  		down_write(&dentry->d_inode->i_alloc_sem);
  
  	if (inode->i_op && inode->i_op->setattr) {
@@ -88,7 +88,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2269,11 +2269,12 @@ static int selinux_inode_permission(stru
+@@ -2267,11 +2267,12 @@ static int selinux_inode_permission(stru
  			       file_mask_to_av(inode->i_mode, mask), NULL);
  }
  

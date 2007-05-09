@@ -19,7 +19,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 --- a/fs/dcache.c
 +++ b/fs/dcache.c
-@@ -1754,7 +1754,7 @@ static char *__d_path(struct dentry *den
+@@ -1783,7 +1783,7 @@ static char *__d_path(struct dentry *den
  		      struct dentry *root, struct vfsmount *rootmnt,
  		      char *buffer, int buflen, int fail_deleted)
  {
@@ -28,7 +28,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
  	if (buflen < 2)
  		return ERR_PTR(-ENAMETOOLONG);
-@@ -1777,14 +1777,14 @@ static char *__d_path(struct dentry *den
+@@ -1806,14 +1806,14 @@ static char *__d_path(struct dentry *den
  		struct dentry * parent;
  
  		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
@@ -48,7 +48,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  			continue;
  		}
  		parent = dentry->d_parent;
-@@ -1803,6 +1803,8 @@ static char *__d_path(struct dentry *den
+@@ -1832,6 +1832,8 @@ static char *__d_path(struct dentry *den
  		*--buffer = '/';
  
  out:

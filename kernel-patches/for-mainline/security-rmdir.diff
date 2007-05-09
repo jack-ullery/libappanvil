@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2055,7 +2055,7 @@ int vfs_rmdir(struct inode *dir, struct 
+@@ -2043,7 +2043,7 @@ int vfs_rmdir(struct inode *dir, struct 
  	if (d_mountpoint(dentry))
  		error = -EBUSY;
  	else {
@@ -84,7 +84,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2221,7 +2221,8 @@ static int selinux_inode_mkdir(struct in
+@@ -2219,7 +2219,8 @@ static int selinux_inode_mkdir(struct in
  	return may_create(dir, dentry, SECCLASS_DIR);
  }
  

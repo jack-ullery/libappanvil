@@ -17,7 +17,7 @@ Reviewed-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/dcache.c
 +++ b/fs/dcache.c
-@@ -1750,9 +1750,9 @@ shouldnt_be_hashed:
+@@ -1779,9 +1779,9 @@ shouldnt_be_hashed:
   *
   * Returns the buffer or an error code.
   */
@@ -32,7 +32,7 @@ Reviewed-by: John Johansen <jjohansen@suse.de>
  
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
-@@ -1877,3 +1877,30 @@ void __put_mnt_ns(struct mnt_namespace *
+@@ -1868,3 +1868,30 @@ void __put_mnt_ns(struct mnt_namespace *
  	release_mounts(&umount_list);
  	kfree(ns);
  }
@@ -65,9 +65,9 @@ Reviewed-by: John Johansen <jjohansen@suse.de>
 +EXPORT_SYMBOL(d_namespace_path);
 --- a/include/linux/dcache.h
 +++ b/include/linux/dcache.h
-@@ -293,6 +293,8 @@ extern struct dentry * d_hash_and_lookup
- /* validate "insecure" dentry pointer */
- extern int d_validate(struct dentry *, struct dentry *);
+@@ -299,6 +299,8 @@ extern int d_validate(struct dentry *, s
+  */
+ extern char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
  
 +extern char *__d_path(struct dentry *, struct vfsmount *, struct dentry *,
 +		      struct vfsmount *, char *, int, int);

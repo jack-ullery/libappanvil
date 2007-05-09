@@ -10,16 +10,16 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
  fs/xattr.c               |   58 ++++++++++++++++++++++++-----------------------
- include/linux/security.h |   37 +++++++++++++++++------------
+ include/linux/security.h |   53 +++++++++++++++++++++++++-----------------
  include/linux/xattr.h    |    8 +++---
  security/commoncap.c     |    4 +--
  security/dummy.c         |   10 ++++----
  security/selinux/hooks.c |   10 ++++----
- 6 files changed, 70 insertions(+), 57 deletions(-)
+ 6 files changed, 80 insertions(+), 63 deletions(-)
 
 --- a/fs/xattr.c
 +++ b/fs/xattr.c
-@@ -71,7 +71,7 @@ xattr_permission(struct inode *inode, co
+@@ -70,7 +70,7 @@ xattr_permission(struct inode *inode, co
  
  int
  vfs_setxattr(struct dentry *dentry, struct vfsmount *mnt, char *name,
@@ -28,7 +28,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	struct inode *inode = dentry->d_inode;
  	int error;
-@@ -81,7 +81,7 @@ vfs_setxattr(struct dentry *dentry, stru
+@@ -80,7 +80,7 @@ vfs_setxattr(struct dentry *dentry, stru
  		return error;
  
  	mutex_lock(&inode->i_mutex);
@@ -37,7 +37,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (error)
  		goto out;
  	error = -EOPNOTSUPP;
-@@ -108,7 +108,7 @@ EXPORT_SYMBOL_GPL(vfs_setxattr);
+@@ -107,7 +107,7 @@ EXPORT_SYMBOL_GPL(vfs_setxattr);
  
  ssize_t
  vfs_getxattr(struct dentry *dentry, struct vfsmount *mnt, char *name,
@@ -46,7 +46,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	struct inode *inode = dentry->d_inode;
  	int error;
-@@ -117,7 +117,7 @@ vfs_getxattr(struct dentry *dentry, stru
+@@ -116,7 +116,7 @@ vfs_getxattr(struct dentry *dentry, stru
  	if (error)
  		return error;
  
@@ -55,7 +55,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (error)
  		return error;
  
-@@ -145,12 +145,12 @@ EXPORT_SYMBOL_GPL(vfs_getxattr);
+@@ -144,12 +144,12 @@ EXPORT_SYMBOL_GPL(vfs_getxattr);
  
  ssize_t
  vfs_listxattr(struct dentry *dentry, struct vfsmount *mnt, char *list,
@@ -70,7 +70,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (error)
  		return error;
  	error = -EOPNOTSUPP;
-@@ -166,7 +166,8 @@ vfs_listxattr(struct dentry *dentry, str
+@@ -165,7 +165,8 @@ vfs_listxattr(struct dentry *dentry, str
  EXPORT_SYMBOL_GPL(vfs_listxattr);
  
  int
@@ -80,7 +80,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	struct inode *inode = dentry->d_inode;
  	int error;
-@@ -178,7 +179,7 @@ vfs_removexattr(struct dentry *dentry, s
+@@ -177,7 +178,7 @@ vfs_removexattr(struct dentry *dentry, s
  	if (error)
  		return error;
  
@@ -89,7 +89,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (error)
  		return error;
  
-@@ -198,7 +199,7 @@ EXPORT_SYMBOL_GPL(vfs_removexattr);
+@@ -197,7 +198,7 @@ EXPORT_SYMBOL_GPL(vfs_removexattr);
   */
  static long
  setxattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name,
@@ -98,7 +98,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int error;
  	void *kvalue = NULL;
-@@ -225,7 +226,7 @@ setxattr(struct dentry *dentry, struct v
+@@ -224,7 +225,7 @@ setxattr(struct dentry *dentry, struct v
  		}
  	}
  
@@ -107,7 +107,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	kfree(kvalue);
  	return error;
  }
-@@ -240,7 +241,7 @@ sys_setxattr(char __user *path, char __u
+@@ -239,7 +240,7 @@ sys_setxattr(char __user *path, char __u
  	error = user_path_walk(path, &nd);
  	if (error)
  		return error;
@@ -116,7 +116,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -255,7 +256,7 @@ sys_lsetxattr(char __user *path, char __
+@@ -254,7 +255,7 @@ sys_lsetxattr(char __user *path, char __
  	error = user_path_walk_link(path, &nd);
  	if (error)
  		return error;
@@ -125,7 +125,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -273,7 +274,7 @@ sys_fsetxattr(int fd, char __user *name,
+@@ -272,7 +273,7 @@ sys_fsetxattr(int fd, char __user *name,
  		return error;
  	dentry = f->f_path.dentry;
  	audit_inode(NULL, dentry->d_inode);
@@ -134,7 +134,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	fput(f);
  	return error;
  }
-@@ -283,7 +284,7 @@ sys_fsetxattr(int fd, char __user *name,
+@@ -282,7 +283,7 @@ sys_fsetxattr(int fd, char __user *name,
   */
  static ssize_t
  getxattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name,
@@ -143,7 +143,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	ssize_t error;
  	void *kvalue = NULL;
-@@ -303,7 +304,7 @@ getxattr(struct dentry *dentry, struct v
+@@ -302,7 +303,7 @@ getxattr(struct dentry *dentry, struct v
  			return -ENOMEM;
  	}
  
@@ -152,7 +152,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (error > 0) {
  		if (size && copy_to_user(value, kvalue, error))
  			error = -EFAULT;
-@@ -326,7 +327,7 @@ sys_getxattr(char __user *path, char __u
+@@ -325,7 +326,7 @@ sys_getxattr(char __user *path, char __u
  	error = user_path_walk(path, &nd);
  	if (error)
  		return error;
@@ -161,7 +161,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -341,7 +342,7 @@ sys_lgetxattr(char __user *path, char __
+@@ -340,7 +341,7 @@ sys_lgetxattr(char __user *path, char __
  	error = user_path_walk_link(path, &nd);
  	if (error)
  		return error;
@@ -170,7 +170,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -355,7 +356,7 @@ sys_fgetxattr(int fd, char __user *name,
+@@ -354,7 +355,7 @@ sys_fgetxattr(int fd, char __user *name,
  	f = fget(fd);
  	if (!f)
  		return error;
@@ -179,7 +179,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	fput(f);
  	return error;
  }
-@@ -365,7 +366,7 @@ sys_fgetxattr(int fd, char __user *name,
+@@ -364,7 +365,7 @@ sys_fgetxattr(int fd, char __user *name,
   */
  static ssize_t
  listxattr(struct dentry *dentry, struct vfsmount *mnt, char __user *list,
@@ -188,7 +188,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	ssize_t error;
  	char *klist = NULL;
-@@ -378,7 +379,7 @@ listxattr(struct dentry *dentry, struct 
+@@ -377,7 +378,7 @@ listxattr(struct dentry *dentry, struct 
  			return -ENOMEM;
  	}
  
@@ -197,7 +197,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (error > 0) {
  		if (size && copy_to_user(list, klist, error))
  			error = -EFAULT;
-@@ -400,7 +401,7 @@ sys_listxattr(char __user *path, char __
+@@ -399,7 +400,7 @@ sys_listxattr(char __user *path, char __
  	error = user_path_walk(path, &nd);
  	if (error)
  		return error;
@@ -206,7 +206,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -414,7 +415,7 @@ sys_llistxattr(char __user *path, char _
+@@ -413,7 +414,7 @@ sys_llistxattr(char __user *path, char _
  	error = user_path_walk_link(path, &nd);
  	if (error)
  		return error;
@@ -215,7 +215,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -428,7 +429,7 @@ sys_flistxattr(int fd, char __user *list
+@@ -427,7 +428,7 @@ sys_flistxattr(int fd, char __user *list
  	f = fget(fd);
  	if (!f)
  		return error;
@@ -224,7 +224,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	fput(f);
  	return error;
  }
-@@ -437,7 +438,8 @@ sys_flistxattr(int fd, char __user *list
+@@ -436,7 +437,8 @@ sys_flistxattr(int fd, char __user *list
   * Extended attribute REMOVE operations
   */
  static long
@@ -234,7 +234,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int error;
  	char kname[XATTR_NAME_MAX + 1];
-@@ -448,7 +450,7 @@ removexattr(struct dentry *dentry, struc
+@@ -447,7 +449,7 @@ removexattr(struct dentry *dentry, struc
  	if (error < 0)
  		return error;
  
@@ -243,7 +243,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
  
  asmlinkage long
-@@ -460,7 +462,7 @@ sys_removexattr(char __user *path, char 
+@@ -459,7 +461,7 @@ sys_removexattr(char __user *path, char 
  	error = user_path_walk(path, &nd);
  	if (error)
  		return error;
@@ -252,7 +252,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -474,7 +476,7 @@ sys_lremovexattr(char __user *path, char
+@@ -473,7 +475,7 @@ sys_lremovexattr(char __user *path, char
  	error = user_path_walk_link(path, &nd);
  	if (error)
  		return error;
@@ -261,7 +261,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -491,7 +493,7 @@ sys_fremovexattr(int fd, char __user *na
+@@ -490,7 +492,7 @@ sys_fremovexattr(int fd, char __user *na
  		return error;
  	dentry = f->f_path.dentry;
  	audit_inode(NULL, dentry->d_inode);
@@ -365,6 +365,48 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
  
  static inline const char *security_inode_xattr_getsuffix(void)
+@@ -2480,9 +2487,10 @@ static inline void security_inode_delete
+ 
+ static inline int security_inode_setxattr (struct dentry *dentry,
+ 					   struct vfsmount *mnt, char *name,
+-					   void *value, size_t size, int flags)
++					   void *value, size_t size, int flags,
++					   struct file *file)
+ {
+-	return cap_inode_setxattr(dentry, mnt, name, value, size, flags);
++	return cap_inode_setxattr(dentry, mnt, name, value, size, flags, file);
+ }
+ 
+ static inline void security_inode_post_setxattr (struct dentry *dentry,
+@@ -2493,21 +2501,24 @@ static inline void security_inode_post_s
+ { }
+ 
+ static inline int security_inode_getxattr (struct dentry *dentry,
+-					    struct vfsmount *mnt, char *name)
++					    struct vfsmount *mnt, char *name,
++					    struct file *file)
+ {
+ 	return 0;
+ }
+ 
+ static inline int security_inode_listxattr (struct dentry *dentry,
+-					    struct vfsmount *mnt)
++					    struct vfsmount *mnt,
++					    struct file *file)
+ {
+ 	return 0;
+ }
+ 
+ static inline int security_inode_removexattr (struct dentry *dentry,
+-					      struct vfsmount *mnt, char *name)
++					      struct vfsmount *mnt, char *name,
++					      struct file *file)
+ {
+-	return cap_inode_removexattr(dentry, mnt, name);
++	return cap_inode_removexattr(dentry, mnt, name, file);
+ }
+ 
+ static inline const char *security_inode_xattr_getsuffix (void)
 --- a/include/linux/xattr.h
 +++ b/include/linux/xattr.h
 @@ -47,12 +47,12 @@ struct xattr_handler {
@@ -386,7 +428,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  ssize_t generic_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size);
 --- a/security/commoncap.c
 +++ b/security/commoncap.c
-@@ -192,7 +192,7 @@ int cap_bprm_secureexec (struct linux_bi
+@@ -191,7 +191,7 @@ int cap_bprm_secureexec (struct linux_bi
  }
  
  int cap_inode_setxattr(struct dentry *dentry, struct vfsmount *mnt, char *name,
@@ -395,7 +437,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	if (!strncmp(name, XATTR_SECURITY_PREFIX,
  		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
-@@ -202,7 +202,7 @@ int cap_inode_setxattr(struct dentry *de
+@@ -201,7 +201,7 @@ int cap_inode_setxattr(struct dentry *de
  }
  
  int cap_inode_removexattr(struct dentry *dentry, struct vfsmount *mnt,
@@ -441,7 +483,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2309,7 +2309,7 @@ static int selinux_inode_getattr(struct 
+@@ -2307,7 +2307,7 @@ static int selinux_inode_getattr(struct 
  
  static int selinux_inode_setxattr(struct dentry *dentry, struct vfsmount *mnt,
  				  char *name, void *value, size_t size,
@@ -450,7 +492,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	struct task_security_struct *tsec = current->security;
  	struct inode *inode = dentry->d_inode;
-@@ -2396,18 +2396,20 @@ static void selinux_inode_post_setxattr(
+@@ -2394,18 +2394,20 @@ static void selinux_inode_post_setxattr(
  }
  
  static int selinux_inode_getxattr (struct dentry *dentry, struct vfsmount *mnt,

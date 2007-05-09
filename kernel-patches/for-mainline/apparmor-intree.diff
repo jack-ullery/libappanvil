@@ -6,9 +6,9 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
  security/Kconfig          |    1 +
- security/Makefile         |    3 ++-
+ security/Makefile         |    1 +
  security/apparmor/Kconfig |    3 ++-
- 3 files changed, 5 insertions(+), 2 deletions(-)
+ 3 files changed, 4 insertions(+), 1 deletion(-)
 
 --- a/security/Kconfig
 +++ b/security/Kconfig
