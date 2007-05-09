@@ -367,6 +367,7 @@ static int process_include(char *inc, char *name, int line, FILE *out, int nest)
 			newf = fopen(buf, "r");
 			if (newf)
 				break;
+			free(buf);
 		}
 	}
 
