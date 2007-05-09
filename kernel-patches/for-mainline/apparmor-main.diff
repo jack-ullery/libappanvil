@@ -7,12 +7,12 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- security/apparmor/main.c | 1357 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 1357 insertions(+)
+ security/apparmor/main.c | 1401 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 1401 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/main.c
-@@ -0,0 +1,1357 @@
+@@ -0,0 +1,1401 @@
 +/*
 + *	Copyright (C) 2002-2007 Novell/SUSE
 + *
@@ -121,12 +121,17 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + * mangle -- escape special characters in str
 + * @str: string to escape
 + * @buffer: buffer containing str
-+ * 
-+ * Escape special characters in @str, which must be contained in
-+ * @buffer. The string grows towards @buffer. Returns a pointer
-+ * to the quoted string, or ERR_PTR(-ENAMETOOLONG) upon failure.
++ *
++ * Escape special characters in @str, which is contained in @buffer. @str must
++ * be aligned to the end of the buffer, and the space between @buffer and @str
++ * may be used for escaping.
++ *
++ * Returns @str if no escaping was necessary, a pointer to the beginning of the
++ * escaped string, or NULL if there was not enough space in @buffer.  When
++ * called with a NULL buffer, the return value tells whether any escaping is
++ * necessary.
 + */
-+static char *mangle(char *str, char *buffer)
++static const char *mangle(const char *str, char *buffer)
 +{
 +	static const char c_escape[] = {
 +		['\a'] = 'a',	['\b'] = 'b',
@@ -135,18 +140,21 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		['\v'] = 'v',
 +		[' '] = ' ',	['\\'] = '\\',
 +	};
-+	char *s, *t, c;
++	const char *s;
++	char *t, c;
 +
 +#define mangle_escape(c)						\
 +	unlikely((unsigned char)(c) < ARRAY_SIZE(c_escape) &&		\
 +		 c_escape[(unsigned char)c])
 +
-+	for (s = str; (c = *s) != '\0'; s++)
++	for (s = (char *)str; (c = *s) != '\0'; s++)
 +		if (mangle_escape(c))
 +			goto escape;
 +	return str;
 +
 +escape:
++	if (!buffer)
++		return NULL;
 +	for (s = str, t = buffer; (c = *s) != '\0'; s++) {
 +		if (mangle_escape(c)) {
 +			if (t == s)
@@ -159,6 +167,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	*t++ = '\0';
 +
 +#undef mangle_escape
++
 +	return buffer;
 +}
 +
@@ -189,6 +198,12 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +			return ERR_PTR(-ENOMEM);
 +
 +		name = d_namespace_path(dentry, mnt, buf, size - is_dir);
++
++		/* Make sure we have enough space for name mangling. */
++		if (!IS_ERR(name) &&
++		    (check & AA_CHECK_MANGLE) && name - buf <= size / 2)
++			name = ERR_PTR(-ENAMETOOLONG);
++
 +		if (!IS_ERR(name)) {
 +			if (name[0] != '/') {
 +				/*
@@ -208,16 +223,12 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +				buf[size - 1] = '\0';
 +			}
 +
-+			name = mangle(name, buf);
-+			if (!name)
-+				goto grow_buffer;
 +			*buffer = buf;
 +			return name;
 +		}
 +		if (PTR_ERR(name) != -ENAMETOOLONG)
 +			return name;
 +
-+grow_buffer:
 +		kfree(buf);
 +		size <<= 1;
 +		if (size > apparmor_path_max)
@@ -248,10 +259,11 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +			  struct vfsmount *mnt, struct aa_audit *sa, int mask,
 +			  int check)
 +{
-+	char *buffer = NULL;
 +	int denied_mask, error;
 +
-+	sa->name = aa_get_name(dentry, mnt, &buffer, check);
++again:
++	sa->buffer = NULL;
++	sa->name = aa_get_name(dentry, mnt, &sa->buffer, check);
 +
 +	if (IS_ERR(sa->name)) {
 +		/*
@@ -270,7 +282,12 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +	error = aa_audit(profile, sa);
 +
-+	aa_put_name_buffer(buffer);
++	aa_put_name_buffer(sa->buffer);
++	if (error == -ENAMETOOLONG) {
++		BUG_ON(check & AA_CHECK_MANGLE);
++		check |= AA_CHECK_MANGLE;
++		goto again;
++	}
 +
 +	return error;
 +}
@@ -358,8 +375,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + * @flags: audit flags
 + * @fmt: varargs fmt
 + */
-+int aa_audit_message(struct aa_profile *profile, gfp_t gfp, int flags,
-+		     const char *fmt, ...)
++int aa_audit_message(struct aa_profile *profile, gfp_t gfp, const char *fmt,
++		     ...)
 +{
 +	int ret;
 +	struct aa_audit sa;
@@ -367,7 +384,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	sa.type = AA_AUDITTYPE_MSG;
 +	sa.name = fmt;
 +	va_start(sa.vaval, fmt);
-+	sa.flags = flags;
++	sa.flags = 0;
 +	sa.gfp_mask = gfp;
 +	sa.error_code = 0;
 +	sa.result = 0;	/* fake failure: force message to be logged */
@@ -405,7 +422,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + * @profile: profile to check against
 + * @sa: audit event
 + */
-+int aa_audit(struct aa_profile *profile, const struct aa_audit *sa)
++int aa_audit(struct aa_profile *profile, struct aa_audit *sa)
 +{
 +	struct audit_buffer *ab = NULL;
 +	struct audit_context *audit_cxt;
@@ -418,7 +435,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	    opspec_error = -EACCES;
 +
 +	const gfp_t gfp_mask = sa->gfp_mask;
-+	char comm_buffer[2 * sizeof(current->comm)], *comm;
 +
 +	/*
 +	 * sa->result:	  1 success, 0 failure
@@ -490,12 +506,26 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		goto out;
 +	}
 +
++	if (sa->type & AA_MANGLE_NAME) {
++		sa->name = mangle(sa->name, sa->buffer);
++		if (!sa->name)
++			return -ENAMETOOLONG;
++	}
++	if (sa->type & AA_MANGLE_NAME2) {
++		sa->name2 = mangle(sa->name2, sa->buffer2);
++		if (!sa->name2)
++			return -ENAMETOOLONG;
++
++	}
++
 +	/* log operation */
 +
 +	audit_log_format(ab, "%s ", logcls);	/* REJECTING/ALLOWING/etc */
 +
-+	switch(sa->type) {
-+	case AA_AUDITTYPE_FILE: {
++#define NOFLAGS(x) ((x) & ~(AA_MANGLE_NAME | AA_MANGLE_NAME2))
++
++	switch(NOFLAGS(sa->type)) {
++	case NOFLAGS(AA_AUDITTYPE_FILE): {
 +		int perm = audit ? sa->mask : sa->error_code;
 +
 +		audit_log_format(ab, "%s%s%s%s%s access to %s ",
@@ -505,14 +535,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +				 perm & MAY_EXEC  ? "x" : "",
 +				 perm & AA_MAY_LINK  ? "l" : "",
 +				 sa->name);
-+
 +		opspec_error = -EPERM;
 +		break;
 +	}
-+	case AA_AUDITTYPE_DIR:
++	case NOFLAGS(AA_AUDITTYPE_DIR):
 +		audit_log_format(ab, "%s on %s ", sa->name2, sa->name);
 +		break;
-+	case AA_AUDITTYPE_ATTR: {
++	case NOFLAGS(AA_AUDITTYPE_ATTR): {
 +		struct iattr *iattr = sa->iattr;
 +
 +		audit_log_format(ab,
@@ -529,19 +558,19 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +			sa->name);
 +		break;
 +	}
-+	case AA_AUDITTYPE_XATTR:
++	case NOFLAGS(AA_AUDITTYPE_XATTR):
 +		audit_log_format(ab, "%s on %s ", sa->name2, sa->name);
 +		break;
-+	case AA_AUDITTYPE_LINK:
++	case NOFLAGS(AA_AUDITTYPE_LINK):
 +		audit_log_format(ab, "link access from %s to %s ", sa->name,
-+			sa->name2);
++				 sa->name2);
 +		break;
-+	case AA_AUDITTYPE_CAP:
++	case NOFLAGS(AA_AUDITTYPE_CAP):
 +		audit_log_format(ab, "access to capability '%s' ",
 +			capability_names[sa->capability]);
 +		opspec_error = -EPERM;
 +		break;
-+	case AA_AUDITTYPE_SYSCALL:
++	case NOFLAGS(AA_AUDITTYPE_SYSCALL):
 +		audit_log_format(ab, "access to syscall '%s' ", sa->name);
 +		opspec_error = -EPERM;
 +		break;
@@ -550,15 +579,10 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		return error;
 +	}
 +
-+	comm = comm_buffer + sizeof(comm_buffer) - sizeof(current->comm);
-+	get_task_comm(comm, current);
-+	comm = mangle(comm, comm_buffer);
-+	if (!comm)
-+		comm = "?";
++#undef NOFLAGS
 +
-+	audit_log_format(ab, "(%s(%d) profile %s active %s)",
-+			 comm, current->pid,
-+			 profile->parent->name, profile->name);
++	audit_log_format(ab, "(%d profile %s active %s)",
++			 current->pid, profile->parent->name, profile->name);
 +
 +	audit_log_end(ab);
 +
@@ -647,17 +671,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	struct aa_audit sa;
 +	int error = 0;
 +
-+	if ((check & (AA_CHECK_DIR | AA_CHECK_LEAF)) == AA_CHECK_DIR) {
-+		/*
-+		 * If checking a non-leaf directory, allow traverse and
-+		 * write access: we do not require profile access to
-+		 * non-leaf directories in order to traverse them,
-+		 * create or remove files in them. We do require
-+		 * MAY_WRITE profile access on the actual file or
-+		 * directory being created or removed, though.
-+		 */
-+		mask &= ~(MAY_EXEC | MAY_WRITE);
-+	}
 +	if (mask == 0)
 +		goto out;
 +
@@ -693,8 +706,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	sa.flags = 0;
 +	sa.gfp_mask = GFP_KERNEL;
 +
-+	return aa_perm_dentry(profile, dentry, mnt, &sa, mask,
-+			      AA_CHECK_DIR | AA_CHECK_LEAF);
++	return aa_perm_dentry(profile, dentry, mnt, &sa, mask, AA_CHECK_DIR);
 +}
 +
 +int aa_perm_path(struct aa_profile *profile, const char *name, int mask)
@@ -776,12 +788,14 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	    struct dentry *link, struct vfsmount *link_mnt,
 +	    struct dentry *target, struct vfsmount *target_mnt)
 +{
-+	char *name_buffer = NULL, *name2_buffer = NULL;
-+	int denied_mask = -EPERM, error;
++	int denied_mask = -EPERM, error, check = 0;
 +	struct aa_audit sa;
 +
-+	sa.name = aa_get_name(link, link_mnt, &name_buffer, 0);
-+	sa.name2 = aa_get_name(target, target_mnt, &name2_buffer, 0);
++again:
++	sa.buffer = NULL;
++	sa.name = aa_get_name(link, link_mnt, &sa.buffer, check);
++	sa.buffer2 = NULL;
++	sa.name2 = aa_get_name(target, target_mnt, &sa.buffer2, check);
 +
 +	if (IS_ERR(sa.name)) {
 +		denied_mask = PTR_ERR(sa.name);
@@ -803,8 +817,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +	error = aa_audit(profile, &sa);
 +
-+	aa_put_name_buffer(name_buffer);
-+	aa_put_name_buffer(name2_buffer);
++	aa_put_name_buffer(sa.buffer);
++	aa_put_name_buffer(sa.buffer2);
++	if (error == -ENAMETOOLONG) {
++		BUG_ON(check & AA_CHECK_MANGLE);
++		check |= AA_CHECK_MANGLE;
++		goto again;
++	}
 +
 +	return error;
 +}
@@ -853,8 +872,11 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +		if (APPARMOR_COMPLAIN(child_cxt) &&
 +		    profile == null_complain_profile)
-+			LOG_HINT(profile, GFP_KERNEL, HINT_FORK,
-+				 "child=%d", child->pid);
++			aa_audit_message(profile, GFP_KERNEL,
++					 "LOGPROF-HINT fork child=%d "
++					 "(%d profile %s active %s)",
++					 child->pid, current->pid,
++					 profile->parent->name, profile->name);
 +		aa_put_profile(profile);
 +	} else
 +		aa_free_task_context(child_cxt);
@@ -863,8 +885,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +}
 +
 +static struct aa_profile *
-+aa_register_find(struct aa_profile *profile, const char *name, int mandatory,
-+		 int complain)
++aa_register_find(struct aa_profile *profile, const char *name, char *buffer,
++		 int mandatory, int complain)
 +{
 +	struct aa_profile *new_profile;
 +
@@ -874,15 +896,21 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		AA_DEBUG("%s: setting profile %s\n",
 +			 __FUNCTION__, new_profile->name);
 +	} else if (mandatory && profile) {
++		name = mangle(name, buffer);
 +		if (complain) {
-+			LOG_HINT(profile, GFP_KERNEL, HINT_MANDPROF,
-+				 "image '%s'", name);
++			aa_audit_message(profile, GFP_KERNEL, "LOGPROF-HINT "
++					 "missing_mandatory_profile image '%s' "
++					 "(%d profile %s active %s)",
++					 name, current->pid,
++					 profile->parent->name, profile->name);
 +			profile = aa_dup_profile(null_complain_profile);
 +		} else {
-+			AA_REJECT_MSG(profile, GFP_KERNEL,
-+				      "exec(2) of image '%s'. "
-+				      "Profile mandatory and not found.",
-+				      name);
++			aa_audit_message(profile, GFP_KERNEL, "REJECTING "
++					 "exec(2) of image '%s'. Profile "
++					 "mandatory and not found. "
++					 "(%d profile %s active %s)",
++					 name, current->pid,
++					 profile->parent->name, profile->name);
 +			return ERR_PTR(-EPERM);
 +		}
 +	} else {
@@ -905,14 +933,16 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + */
 +int aa_register(struct linux_binprm *bprm)
 +{
-+	char *filename, *buffer = NULL;
++	const char *filename;
++	char  *buffer = NULL;
 +	struct file *filp = bprm->file;
 +	struct aa_profile *profile, *old_profile, *new_profile = NULL;
 +	int exec_mode = AA_EXEC_UNSAFE, complain = 0;
 +
 +	AA_DEBUG("%s\n", __FUNCTION__);
 +
-+	filename = aa_get_name(filp->f_dentry, filp->f_vfsmnt, &buffer, 0);
++	filename = aa_get_name(filp->f_dentry, filp->f_vfsmnt, &buffer,
++			       AA_CHECK_MANGLE);
 +	if (IS_ERR(filename)) {
 +		AA_ERROR("%s: Failed to get filename", __FUNCTION__);
 +		return -ENOENT;
@@ -951,17 +981,18 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +					 __FUNCTION__,
 +					 filename);
 +				new_profile = aa_register_find(profile,
-+							       filename, 1,
++							       filename,
++							       buffer, 1,
 +							       complain);
 +				break;
 +
 +			default:
 +				AA_ERROR("Rejecting exec(2) of image '%s'. "
 +					 "Unknown exec qualifier %x "
-+					 "(%s (pid %d) profile %s active %s)\n",
++					 "(%d profile %s active %s)\n",
 +					 filename,
 +					 exec_mode & AA_EXEC_MODIFIERS,
-+					 current->comm, current->pid,
++					 current->pid,
 +					 profile->parent->name,
 +					 profile->name);
 +				new_profile = ERR_PTR(-EPERM);
@@ -976,15 +1007,18 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +			new_profile = aa_dup_profile(null_complain_profile);
 +			exec_mode |= AA_EXEC_UNSAFE;
 +		} else {
-+			AA_REJECT_MSG(profile, GFP_KERNEL,
-+				      "exec(2) of image '%s'. "
-+				      "Unable to determine exec qualifier.",
-+				      filename);
++			filename = mangle(filename, buffer);
++			aa_audit_message(profile, GFP_KERNEL, "REJECTING "
++					 "exec(2) of image '%s'. Unable to "
++					 "determine exec qualifier. "
++					 "(%d profile %s active %s)",
++					 filename, current->pid,
++					 profile->parent->name, profile->name);
 +			new_profile = ERR_PTR(-EPERM);
 +		}
 +	} else {
 +		/* Unconfined task, load profile if it exists */
-+		new_profile = aa_register_find(NULL, filename, 0, 0);
++		new_profile = aa_register_find(NULL, filename, buffer, 0, 0);
 +		if (new_profile == NULL)
 +			goto cleanup;
 +	}
@@ -998,11 +1032,16 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		aa_put_profile(profile);
 +		if (PTR_ERR(old_profile) == -ESTALE)
 +			goto repeat;
-+		if (PTR_ERR(old_profile) == -EPERM)
-+			AA_REJECT_MSG(profile, GFP_KERNEL,
-+				"exec(2) of image '%s'. "
-+				"Unable to change profile, ptraced by %d.",
-+				filename, current->parent->pid);
++		if (PTR_ERR(old_profile) == -EPERM) {
++			filename = mangle(filename, buffer);
++			aa_audit_message(profile, GFP_KERNEL,
++					 "REJECTING exec(2) of image '%s'. "
++					 "Unable to change profile, ptraced by "
++					 "%d. (%d profile %s active %s)",
++					 filename, current->parent->pid,
++					 current->pid,
++					 profile->parent->name, profile->name);
++		}
 +		new_profile = old_profile;
 +		goto cleanup;
 +	}
@@ -1027,9 +1066,11 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	}
 +
 +	if (complain && new_profile == null_complain_profile)
-+		LOG_HINT(new_profile, GFP_ATOMIC, HINT_CHGPROF,
-+			 "");
-+
++		aa_audit_message(new_profile, GFP_ATOMIC,
++				 "LOGPROF-HINT changing_profile "
++				 "(%d profile %s active %s)",
++				 current->pid,
++				 new_profile->parent->name, new_profile->name);
 +cleanup:
 +	aa_put_name_buffer(buffer);
 +	if (IS_ERR(new_profile))
@@ -1115,15 +1156,18 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		struct aa_profile *profile = cxt->profile;
 +
 +		if (APPARMOR_COMPLAIN(cxt)) {
-+			LOG_HINT(profile, GFP_ATOMIC, HINT_UNKNOWN_HAT,
-+				 "%s", hat_name);
++			aa_audit_message(profile, GFP_ATOMIC,
++					 "LOGPROF-HINT unknown_hat %s "
++					 "(%d profile %s active %s)",
++					 hat_name, current->pid,
++					 profile->parent->name, profile->name);
 +		} else {
 +			AA_DEBUG("%s: Unknown hatname '%s'. "
 +				"Changing to NULL profile "
-+				"(%s(%d) profile %s active %s)\n",
++				"(%d profile %s active %s)\n",
 +				 __FUNCTION__,
 +				 hat_name,
-+				 current->comm, current->pid,
++				 current->pid,
 +				 profile->parent->name,
 +				 profile->name);
 +			error = -EACCES;
@@ -1161,9 +1205,10 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +	/* Dump out above debugging in WARN mode if we are in AUDIT mode */
 +	if (APPARMOR_AUDIT(aa_task_context(current))) {
-+		AA_WARN(GFP_KERNEL, "change_hat %s, 0x%llx (pid %d)",
-+			hat_name ? hat_name : "NULL",
-+			hat_magic, current->pid);
++		aa_audit_message(NULL, GFP_KERNEL, "change_hat %s, 0x%llx "
++				 "(pid %d)",
++				 hat_name ? hat_name : "NULL", hat_magic,
++				 current->pid);
 +	}
 +
 +	new_cxt = aa_alloc_task_context(GFP_KERNEL);
@@ -1218,11 +1263,10 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +						      cxt->hat_magic);
 +			}
 +		} else if (cxt->hat_magic) {
-+			AA_ERROR("KILLING process %s(%d) "
++			AA_ERROR("KILLING process %d "
 +				 "Invalid change_hat() magic# 0x%llx "
 +				 "(hatname %s profile %s active %s)\n",
-+				 current->comm, current->pid,
-+				 hat_magic,
++				 current->pid, hat_magic,
 +				 hat_name ? hat_name : "NULL",
 +				 profile->parent->name,
 +				 profile->name);
@@ -1230,10 +1274,10 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +			/* terminate current process */
 +			(void)send_sig_info(SIGKILL, NULL, current);
 +		} else {	/* cxt->hat_magic == 0 */
-+			AA_ERROR("KILLING process %s(%d) "
++			AA_ERROR("KILLING process %d "
 +				 "Task was confined to current subprofile "
 +				 "(profile %s active %s)\n",
-+				 current->comm, current->pid,
++				 current->pid,
 +				 profile->parent->name,
 +				 profile->name);
 +

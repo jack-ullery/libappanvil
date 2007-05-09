@@ -12,14 +12,14 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
  security/apparmor/Kconfig      |    9 +
- security/apparmor/Makefile     |   13 +
- security/apparmor/apparmor.h   |  280 +++++++++++++++++++++++++++++++++++++++++
- security/apparmor/apparmorfs.c |  248 ++++++++++++++++++++++++++++++++++++
- security/apparmor/inline.h     |  219 ++++++++++++++++++++++++++++++++
- security/apparmor/list.c       |   94 +++++++++++++
- security/apparmor/locking.txt  |   59 ++++++++
- security/apparmor/procattr.c   |  143 ++++++++++++++++++++
- 8 files changed, 1065 insertions(+)
+ security/apparmor/Makefile     |   13 ++
+ security/apparmor/apparmor.h   |  259 +++++++++++++++++++++++++++++++++++++++++
+ security/apparmor/apparmorfs.c |  250 +++++++++++++++++++++++++++++++++++++++
+ security/apparmor/inline.h     |  219 ++++++++++++++++++++++++++++++++++
+ security/apparmor/list.c       |   94 ++++++++++++++
+ security/apparmor/locking.txt  |   59 +++++++++
+ security/apparmor/procattr.c   |  138 +++++++++++++++++++++
+ 8 files changed, 1041 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/Kconfig
@@ -51,7 +51,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	$(call cmd,make-caps)
 --- /dev/null
 +++ b/security/apparmor/apparmor.h
-@@ -0,0 +1,280 @@
+@@ -0,0 +1,259 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -120,20 +120,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		if (apparmor_debug)					\
 +			printk(KERN_DEBUG "AppArmor: " fmt, ##args);	\
 +	} while (0)
-+#define AA_INFO(gfp, fmt, args...) \
-+	do { \
-+		printk(KERN_INFO "AppArmor: " fmt "\n", ##args); \
-+		aa_audit_message(NULL, (gfp), 0, fmt, ##args); \
-+	} while (0)
-+#define AA_WARN(gfp, fmt, args...) \
-+	aa_audit_message(NULL, (gfp), 0, fmt, ##args);
-+
-+#define AA_REJECT_MSG(p, gfp, fmt, args...) \
-+	aa_audit_message((p), (gfp), 0, \
-+			"REJECTING " fmt \
-+			" (%s(%d) profile %s active %s)", ##args, \
-+			current->comm, current->pid, \
-+			(p)->parent->name, (p)->name)
 +
 +#define AA_ERROR(fmt, args...)	printk(KERN_ERR "AppArmor: " fmt, ##args)
 +
@@ -150,8 +136,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + * @count: reference count of the profile
 + *
 + * The AppArmor profile contains the basic confinement data.  Each profile
-+ * has a name and potentially a list of profile entries. All profiles are
-+ * on the profile_list.
++ * has a name and potentially a list of sub profile entries. All non stale
++ * profiles are on the profile_list.
 + *
 + * The task_contexts list and the isstale flag are protected by the
 + * profile lock.
@@ -218,58 +204,51 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	gfp_t gfp_mask;
 +	int error_code;
 +	const char *name;
++	char *buffer;
 +	union {
 +		int mask;
 +		int capability;
-+		const char *name2;
++		struct {
++			const char *name2;
++			char *buffer2;
++		};
 +		struct iattr *iattr;
 +		va_list vaval;
 +	};
 +};
 +
 +/* audit types */
-+#define AA_AUDITTYPE_FILE	1
-+#define AA_AUDITTYPE_DIR	2
-+#define AA_AUDITTYPE_ATTR	3
-+#define AA_AUDITTYPE_XATTR	4
-+#define AA_AUDITTYPE_LINK	5
++#define AA_MANGLE_NAME		32
++#define AA_MANGLE_NAME2		64
++#define AA_AUDITTYPE_FILE	(1 | AA_MANGLE_NAME)
++#define AA_AUDITTYPE_DIR	(2 | AA_MANGLE_NAME)
++#define AA_AUDITTYPE_ATTR	(3 | AA_MANGLE_NAME)
++#define AA_AUDITTYPE_XATTR	(4 | AA_MANGLE_NAME)
++#define AA_AUDITTYPE_LINK	(5 | AA_MANGLE_NAME | AA_MANGLE_NAME2)
 +#define AA_AUDITTYPE_CAP	6
 +#define AA_AUDITTYPE_MSG	7
 +#define AA_AUDITTYPE_SYSCALL	8
-+#define AA_AUDITTYPE__END	9
 +
 +/* audit flags */
 +#define AA_AUDITFLAG_AUDITSS_SYSCALL 1 /* log syscall context */
 +#define AA_AUDITFLAG_LOGERR	     2 /* log operations that failed due to
 +					   non permission errors  */
 +
-+#define HINT_UNKNOWN_HAT "unknown_hat"
-+#define HINT_FORK "fork"
-+#define HINT_MANDPROF "missing_mandatory_profile"
-+#define HINT_CHGPROF "changing_profile"
-+#define HINT_PTRACE "ptrace"
-+
-+#define LOG_HINT(p, gfp, hint, fmt, args...) \
-+	aa_audit_message((p), (gfp), 0, \
-+			"LOGPROF-HINT " hint " " fmt \
-+			" (%s(%d) profile %s active %s)", ##args, \
-+			current->comm, current->pid, \
-+			(p)->parent->name, (p)->name)
-+
 +/* Flags for the permission check functions */
-+#define AA_CHECK_LEAF	1  /* this is the leaf lookup component */
-+#define AA_CHECK_FD	2  /* coming from a file descriptor */
-+#define AA_CHECK_DIR	4  /* file type is directory */
++#define AA_CHECK_FD	1  /* coming from a file descriptor */
++#define AA_CHECK_DIR	2  /* file type is directory */
++#define AA_CHECK_MANGLE	4  /* leave extra room for name mangling */
 +
 +/* main.c */
 +extern int alloc_null_complain_profile(void);
 +extern void free_null_complain_profile(void);
 +extern int attach_nullprofile(struct aa_profile *profile);
-+extern int aa_audit_message(struct aa_profile *profile, gfp_t gfp, int,
-+			    const char *, ...);
++extern int aa_audit_message(struct aa_profile *profile, gfp_t gfp,
++			    const char *, ...)
++	__attribute__ ((format (printf, 3, 4)));
 +extern int aa_audit_syscallreject(struct aa_profile *profile, gfp_t gfp,
 +				  const char *);
-+extern int aa_audit(struct aa_profile *profile, const struct aa_audit *);
++extern int aa_audit(struct aa_profile *profile, struct aa_audit *);
 +
 +extern int aa_attr(struct aa_profile *profile, struct dentry *dentry,
 +		   struct vfsmount *mnt, struct iattr *iattr);
@@ -334,7 +313,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +#endif  /* __APPARMOR_H */
 --- /dev/null
 +++ b/security/apparmor/apparmorfs.c
-@@ -0,0 +1,248 @@
+@@ -0,0 +1,250 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -375,10 +354,10 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	 */
 +	profile = aa_get_profile(current);
 +	if (profile) {
-+		AA_WARN(GFP_KERNEL, "REJECTING access to profile %s (%s(%d) "
-+			"profile %s active %s)",
-+			msg, current->comm, current->pid,
-+			profile->parent->name, profile->name);
++		aa_audit_message(NULL, GFP_KERNEL, "REJECTING access to "
++				 "profile %s (%d profile %s active %s)",
++				 msg, current->pid, profile->parent->name,
++				 profile->name);
 +		aa_put_profile(profile);
 +
 +		data = ERR_PTR(-EPERM);
@@ -516,8 +495,10 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	struct dentry *dentry;
 +
 +	dentry = lookup_one_len(name, apparmor_dentry, strlen(name));
-+	if (dentry && !IS_ERR(dentry))
++	if (!IS_ERR(dentry)) {
 +		securityfs_remove(dentry);
++		dput(dentry);
++	}
 +}
 +
 +static int aafs_create(const char *name, int mask, struct file_operations *fops)
@@ -966,7 +947,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +context.
 --- /dev/null
 +++ b/security/apparmor/procattr.c
-@@ -0,0 +1,143 @@
+@@ -0,0 +1,138 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -1051,8 +1032,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +{
 +	struct aa_profile *old_profile, *new_profile;
 +
-+	AA_DEBUG("%s: current %s(%d)\n",
-+		 __FUNCTION__, current->comm, current->pid);
++	AA_DEBUG("%s: current %d\n",
++		 __FUNCTION__, current->pid);
 +
 +repeat:
 +	if (strcmp(args, "unconfined") == 0)
@@ -1060,11 +1041,10 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	else {
 +		new_profile = aa_find_profile(args);
 +		if (!new_profile) {
-+			AA_WARN(GFP_KERNEL,
-+				"Unable to switch task %s(%d) to profile"
-+				"'%s'. No such profile.",
-+				task->comm, task->pid,
-+				args);
++			aa_audit_message(NULL, GFP_KERNEL, "Unable to switch "
++					 "task %d to profile '%s'. No such "
++					 "profile.",
++					 task->pid, args);
 +
 +			return -EINVAL;
 +		}
@@ -1082,26 +1062,22 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	}
 +
 +	if (new_profile) {
-+		AA_WARN(GFP_KERNEL,
-+			"Switching task %s(%d) "
-+			"profile %s active %s to new profile %s",
-+			task->comm, task->pid,
-+			old_profile ? old_profile->parent->name :
-+				"unconfined",
-+			old_profile ? old_profile->name : "unconfined",
-+			args);
++		aa_audit_message(NULL, GFP_KERNEL, "Switching task %d profile "
++				 "%s active %s to new profile %s",
++				 task->pid, old_profile ?
++				 old_profile->parent->name : "unconfined",
++				 old_profile ? old_profile->name : "unconfined",
++				 args);
 +	} else {
 +		if (old_profile) {
-+			AA_WARN(GFP_KERNEL,
-+				"Unconfining task %s(%d) "
-+				"profile %s active %s",
-+				task->comm, task->pid,
-+				old_profile->parent->name,
-+				old_profile->name);
++			aa_audit_message(NULL, GFP_KERNEL, "Unconfining task "
++					 "%d profile %s active %s",
++					 task->pid, old_profile->parent->name,
++					 old_profile->name);
 +		} else {
-+			AA_WARN(GFP_KERNEL,
-+				"task %s(%d) is already unconfined",
-+				task->comm, task->pid);
++			aa_audit_message(NULL, GFP_KERNEL, "task %d is already "
++					 "unconfined",
++					 task->pid);
 +		}
 +	}
 +

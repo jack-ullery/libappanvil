@@ -643,8 +643,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	return profile;
 +
 +fail:
-+	AA_WARN(GFP_KERNEL, "Invalid profile %s",
-+		profile && profile->name ? profile->name : "unknown");
++	aa_audit_message(NULL, GFP_KERNEL, "Invalid profile %s",
++			 profile && profile->name ? profile->name : "unknown");
 +
 +	if (profile)
 +		free_aa_profile(profile);
@@ -684,14 +684,14 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +{
 +	/* get the interface version */
 +	if (!aa_is_u32(e, &e->version, "version")) {
-+		AA_WARN(GFP_KERNEL, "Interface version missing");
++		aa_audit_message(NULL, GFP_KERNEL, "Interface version missing");
 +		return -EPROTONOSUPPORT;
 +	}
 +
 +	/* check that the interface version is currently supported */
 +	if (e->version != 3) {
-+		AA_WARN(GFP_KERNEL,
-+			"Unsupported interface version (%d)", e->version);
++		aa_audit_message(NULL, GFP_KERNEL, "Unsupported interface "
++				 "version (%d)", e->version);
 +		return -EPROTONOSUPPORT;
 +	}
 +	return 0;
@@ -746,10 +746,10 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +{
 +	struct aa_task_context *cxt = aa_task_context(task);
 +
-+	AA_DEBUG("%s: replacing profile for task %s(%d) "
++	AA_DEBUG("%s: replacing profile for task %d "
 +		 "profile=%s (%p) hat=%s (%p)\n",
 +		 __FUNCTION__,
-+		 cxt->task->comm, cxt->task->pid,
++		 cxt->task->pid,
 +		 cxt->profile->parent->name, cxt->profile->parent,
 +		 cxt->profile->name, cxt->profile);
 +
