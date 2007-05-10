@@ -3,6 +3,7 @@ security-create.diff
 #proc_sys_setattr.diff
 remove_suid.diff
 vfs-notify_change.diff
+circular-dep-notify_change-remove_suid.diff
 security-setattr.diff
 vfs-mkdir.diff
 security-mkdir.diff

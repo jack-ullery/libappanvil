@@ -1,3 +1,10 @@
+From: Andreas Gruenbacher <agruen@suse.de>
+Subject: Set the LOOKUP_PARENT flag when checking parent permissions
+
+This allows permission functions to tell between parent and leaf checks.
+
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+
 --- a/fs/namei.c
 +++ b/fs/namei.c
 @@ -1411,6 +1411,10 @@ static int may_delete(struct inode *dir,
