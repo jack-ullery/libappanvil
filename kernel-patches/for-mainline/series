@@ -1,4 +1,3 @@
-fix-CONFIG_MMC_DEBUG.diff
 security-create.diff
 #proc_setattr.diff 
 #proc_sys_setattr.diff
@@ -38,6 +37,7 @@ sysctl-pathname.diff
 parent-permission.diff
 apparmor-audit.diff
 apparmor-main.diff
+# apparmor-main-2.diff
 apparmor-lsm.diff
 apparmor-module_interface.diff
 apparmor-misc.diff
