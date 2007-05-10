@@ -56,8 +56,8 @@ RANGE		-
 MODES 		[RrWwXxIiLlUuPpMm]
 WS		[[:blank:]]
 NUMBER		[[:digit:]]+
-ID 		[^ \t\n"^!]
-POST_VAR_ID 	[^ =\+\t\n"^!]
+ID 		[^ \t\n"!]
+POST_VAR_ID 	[^ =\+\t\n"!]
 IP		{NUMBER}\.{NUMBER}\.{NUMBER}\.{NUMBER}
 ALLOWED_QUOTED_ID 	[^\0"]|\\\"
 QUOTED_ID	\"{ALLOWED_QUOTED_ID}*\"
