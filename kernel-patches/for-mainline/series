@@ -38,10 +38,8 @@ sysctl-pathname.diff
 parent-permission.diff
 apparmor-audit.diff
 apparmor-main.diff
-main-doc_book.diff
 # apparmor-main-2.diff
 apparmor-lsm.diff
-lsm-doc_book.diff
 apparmor-module_interface.diff
 apparmor-misc.diff
 apparmor-intree.diff

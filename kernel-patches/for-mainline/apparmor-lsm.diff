@@ -1,15 +1,5 @@
-From: John Johansen <jjohansen@suse.de>
-Subject: AppArmor: Module and LSM hooks
-
-Module parameters, LSM hooks, initialization and teardown.
-
-Signed-off-by: John Johansen <jjohansen@suse.de>
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-
----
- security/apparmor/lsm.c |  790 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 790 insertions(+)
-
+Index: b/security/apparmor/lsm.c
+===================================================================
 --- /dev/null
 +++ b/security/apparmor/lsm.c
 @@ -0,0 +1,790 @@
@@ -127,7 +117,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	struct aa_profile *child_profile;
 +	int error = 0;
 +
-+	/**
++	/*
 +	 * parent can ptrace child when
 +	 * - parent is unconfined
 +	 * - parent & child are in the same namespace &&
@@ -781,7 +771,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +	free_null_complain_profile();
 +
-+	/**
++	/*
 +	 * Delay for an rcu cycle to make sure that all active task
 +	 * context readers have finished, and all profiles have been
 +	 * freed by their rcu callbacks.

@@ -1,18 +1,8 @@
-From: John Johansen <jjohansen@suse.de>
-Subject: AppArmor: Main Part
-
-The underlying functions by which the AppArmor LSM hooks are implemented.
-
-Signed-off-by: John Johansen <jjohansen@suse.de>
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-
----
- security/apparmor/main.c | 1401 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 1401 insertions(+)
-
+Index: b/security/apparmor/main.c
+===================================================================
 --- /dev/null
 +++ b/security/apparmor/main.c
-@@ -0,0 +1,1401 @@
+@@ -0,0 +1,1399 @@
 +/*
 + *	Copyright (C) 2002-2007 Novell/SUSE
 + *
@@ -95,8 +85,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	l_mode = aa_match(profile->file_rules, link);
 +	t_mode = aa_match(profile->file_rules, target);
 +
-+	/**
-+	 * Link always requires 'l' on the link, a subset of the
++	/* Link always requires 'l' on the link, a subset of the
 +	 * target's 'r', 'w', 'x', and 'm' permissions on the link, and
 +	 * if the link has 'x', an exact match of all the execute flags
 +	 * ('i', 'u', 'U', 'p', 'P').
@@ -109,8 +98,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	      (l_mode & AA_EXEC_UNSAFE) == (t_mode & AA_EXEC_UNSAFE))))
 +		return 0;
 +#undef RWXM
-+	/**
-+	 * FIXME: There currenly is no way to report which permissions
++	/* FIXME: There currenly is no way to report which permissions
 +	 * we expect in t_mode, so linking could fail even after learning
 +	 * the required l_mode.
 +	 */

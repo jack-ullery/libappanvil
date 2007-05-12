@@ -1,3 +1,21 @@
+From: John Johansen <jjohansen@suse.de>
+Subject: AppArmor: add lock subtyping so lockdep does not report false dependencies
+
+AppArmor uses lock subtyping to avoid false positives from lockdep.  The
+profile lock is often taken nested, but it is guarenteed to be in
+a lock safe order and not the same lock when done so it is safe.  A third
+lock type (aa_lock_task_release) is given to the profile_lock when it is
+taken in soft irq context during task release (aa_release).  This is to
+avoid a false positive between the task_lock and the profile lock.  In
+task context the profile_lock wraps the task_lock with irqs off, but the
+kernel takes the task_lock with irqs enabled.  This won't ever result
+in a dead lock because aa_release doesn't need to take the task_lock
+of dead task that is released.
+
+Signed-off-by: John Johansen <jjohansen@suse.de>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+CC: mingo@elte.hu
+
 Index: b/security/apparmor/main.c
 ===================================================================
 --- a/security/apparmor/main.c
