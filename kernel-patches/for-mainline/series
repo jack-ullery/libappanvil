@@ -47,26 +47,26 @@ apparmor-intree.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff
-# NOT YET
-nfsd_permission-nameidata.diff
-ecryptfs-d_revalidate.diff
-# statvfs.diff
-# statvfs-2.diff
-# fix-getcwd.diff
-# proc-mounts-cleanup.diff
-# proc-mounts-check-d_path-result.diff
-# fix-d_path.diff
-nfs-nameidata-check.diff
-vfs_create-nameidata.diff
-split-up-nameidata.diff
-xattr_permission.diff
-vfs_create-args.diff
-vfs_mknod-args.diff
-vfs_mkdir-args.diff
-vfs_symlink-args.diff
-vfs_link-args.diff
-vfs_rename-args.diff
-may_create-args.diff
-vfs_rmdir-args.diff
-vfs_unlink-args.diff
-may_delete-args.diff
+# # NOT YET
+# nfsd_permission-nameidata.diff
+# ecryptfs-d_revalidate.diff
+# # statvfs.diff
+# # statvfs-2.diff
+# # fix-getcwd.diff
+# # proc-mounts-cleanup.diff
+# # proc-mounts-check-d_path-result.diff
+# # fix-d_path.diff
+# nfs-nameidata-check.diff
+# vfs_create-nameidata.diff
+# split-up-nameidata.diff
+# xattr_permission.diff
+# vfs_create-args.diff
+# vfs_mknod-args.diff
+# vfs_mkdir-args.diff
+# vfs_symlink-args.diff
+# vfs_link-args.diff
+# vfs_rename-args.diff
+# may_create-args.diff
+# vfs_rmdir-args.diff
+# vfs_unlink-args.diff
+# may_delete-args.diff

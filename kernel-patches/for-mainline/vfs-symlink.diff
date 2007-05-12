@@ -44,7 +44,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (rc || !lower_dentry->d_inode)
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2205,7 +2205,8 @@ asmlinkage long sys_unlink(const char __
+@@ -2203,7 +2203,8 @@ asmlinkage long sys_unlink(const char __
  	return do_unlinkat(AT_FDCWD, pathname);
  }
  
@@ -54,7 +54,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int error = may_create(dir, dentry, NULL);
  
-@@ -2251,7 +2252,8 @@ asmlinkage long sys_symlinkat(const char
+@@ -2249,7 +2250,8 @@ asmlinkage long sys_symlinkat(const char
  	if (IS_ERR(dentry))
  		goto out_unlock;
  

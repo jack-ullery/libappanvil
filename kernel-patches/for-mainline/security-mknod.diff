@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1871,7 +1871,7 @@ int vfs_mknod(struct inode *dir, struct 
+@@ -1869,7 +1869,7 @@ int vfs_mknod(struct inode *dir, struct 
  	if (!dir->i_op || !dir->i_op->mknod)
  		return -EPERM;
  
@@ -33,7 +33,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
   *	@dentry contains the dentry structure of the new file.
 + *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
   *	@mode contains the mode of the new file.
-  *	@dev contains the the device number.
+  *	@dev contains the device number.
   *	Return 0 if permission is granted.
 @@ -1218,7 +1219,7 @@ struct security_operations {
  			    struct vfsmount *mnt, int mode);

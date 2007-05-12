@@ -170,16 +170,16 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -354,7 +355,7 @@ sys_fgetxattr(int fd, char __user *name,
- 	f = fget(fd);
+@@ -355,7 +356,7 @@ sys_fgetxattr(int fd, char __user *name,
  	if (!f)
  		return error;
+ 	audit_inode(NULL, f->f_path.dentry->d_inode);
 -	error = getxattr(f->f_path.dentry, f->f_path.mnt, name, value, size);
 +	error = getxattr(f->f_path.dentry, f->f_path.mnt, name, value, size, f);
  	fput(f);
  	return error;
  }
-@@ -364,7 +365,7 @@ sys_fgetxattr(int fd, char __user *name,
+@@ -365,7 +366,7 @@ sys_fgetxattr(int fd, char __user *name,
   */
  static ssize_t
  listxattr(struct dentry *dentry, struct vfsmount *mnt, char __user *list,
@@ -188,7 +188,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	ssize_t error;
  	char *klist = NULL;
-@@ -377,7 +378,7 @@ listxattr(struct dentry *dentry, struct 
+@@ -378,7 +379,7 @@ listxattr(struct dentry *dentry, struct 
  			return -ENOMEM;
  	}
  
@@ -197,7 +197,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (error > 0) {
  		if (size && copy_to_user(list, klist, error))
  			error = -EFAULT;
-@@ -399,7 +400,7 @@ sys_listxattr(char __user *path, char __
+@@ -400,7 +401,7 @@ sys_listxattr(char __user *path, char __
  	error = user_path_walk(path, &nd);
  	if (error)
  		return error;
@@ -206,7 +206,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -413,7 +414,7 @@ sys_llistxattr(char __user *path, char _
+@@ -414,7 +415,7 @@ sys_llistxattr(char __user *path, char _
  	error = user_path_walk_link(path, &nd);
  	if (error)
  		return error;
@@ -215,16 +215,16 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -427,7 +428,7 @@ sys_flistxattr(int fd, char __user *list
- 	f = fget(fd);
+@@ -429,7 +430,7 @@ sys_flistxattr(int fd, char __user *list
  	if (!f)
  		return error;
+ 	audit_inode(NULL, f->f_path.dentry->d_inode);
 -	error = listxattr(f->f_path.dentry, f->f_path.mnt, list, size);
 +	error = listxattr(f->f_path.dentry, f->f_path.mnt, list, size, f);
  	fput(f);
  	return error;
  }
-@@ -436,7 +437,8 @@ sys_flistxattr(int fd, char __user *list
+@@ -438,7 +439,8 @@ sys_flistxattr(int fd, char __user *list
   * Extended attribute REMOVE operations
   */
  static long
@@ -234,7 +234,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int error;
  	char kname[XATTR_NAME_MAX + 1];
-@@ -447,7 +449,7 @@ removexattr(struct dentry *dentry, struc
+@@ -449,7 +451,7 @@ removexattr(struct dentry *dentry, struc
  	if (error < 0)
  		return error;
  
@@ -243,7 +243,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
  
  asmlinkage long
-@@ -459,7 +461,7 @@ sys_removexattr(char __user *path, char 
+@@ -461,7 +463,7 @@ sys_removexattr(char __user *path, char 
  	error = user_path_walk(path, &nd);
  	if (error)
  		return error;
@@ -252,7 +252,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -473,7 +475,7 @@ sys_lremovexattr(char __user *path, char
+@@ -475,7 +477,7 @@ sys_lremovexattr(char __user *path, char
  	error = user_path_walk_link(path, &nd);
  	if (error)
  		return error;
@@ -261,7 +261,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  	return error;
  }
-@@ -490,7 +492,7 @@ sys_fremovexattr(int fd, char __user *na
+@@ -492,7 +494,7 @@ sys_fremovexattr(int fd, char __user *na
  		return error;
  	dentry = f->f_path.dentry;
  	audit_inode(NULL, dentry->d_inode);

@@ -66,7 +66,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	return rc;
 --- a/fs/exec.c
 +++ b/fs/exec.c
-@@ -1555,7 +1555,8 @@ int do_coredump(long signr, int exit_cod
+@@ -1564,7 +1564,8 @@ int do_coredump(long signr, int exit_cod
  		goto close_fail;
  	if (!file->f_op->write)
  		goto close_fail;

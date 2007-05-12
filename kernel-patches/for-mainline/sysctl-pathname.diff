@@ -17,7 +17,7 @@
  		      void __user *newval, size_t newlen);
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
-@@ -1098,6 +1098,33 @@ struct ctl_table_header *sysctl_head_nex
+@@ -1110,6 +1110,33 @@ struct ctl_table_header *sysctl_head_nex
  	return NULL;
  }
  

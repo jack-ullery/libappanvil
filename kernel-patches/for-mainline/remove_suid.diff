@@ -23,7 +23,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/ntfs/file.c
 +++ b/fs/ntfs/file.c
-@@ -2146,7 +2146,7 @@ static ssize_t ntfs_file_aio_write_noloc
+@@ -2121,7 +2121,7 @@ static ssize_t ntfs_file_aio_write_noloc
  		goto out;
  	if (!count)
  		goto out;

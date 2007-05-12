@@ -5,9 +5,13 @@ This allows permission functions to tell between parent and leaf checks.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
+---
+ fs/namei.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1411,6 +1411,10 @@ static int may_delete(struct inode *dir,
+@@ -1409,6 +1409,10 @@ static int may_delete(struct inode *dir,
  	BUG_ON(victim->d_parent->d_inode != dir);
  	audit_inode_child(victim->d_name.name, victim->d_inode, dir);
  
@@ -18,7 +22,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	error = permission(dir,MAY_WRITE | MAY_EXEC, NULL);
  	if (error)
  		return error;
-@@ -1448,6 +1452,8 @@ static inline int may_create(struct inod
+@@ -1446,6 +1450,8 @@ static inline int may_create(struct inod
  		return -EEXIST;
  	if (IS_DEADDIR(dir))
  		return -ENOENT;

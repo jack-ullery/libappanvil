@@ -36,7 +36,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1857,7 +1857,8 @@ fail:
+@@ -1855,7 +1855,8 @@ fail:
  }
  EXPORT_SYMBOL_GPL(lookup_create);
  
@@ -46,7 +46,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int error = may_create(dir, dentry, NULL);
  
-@@ -1909,11 +1910,12 @@ asmlinkage long sys_mknodat(int dfd, con
+@@ -1907,11 +1908,12 @@ asmlinkage long sys_mknodat(int dfd, con
  			error = vfs_create(nd.dentry->d_inode,dentry,mode,&nd);
  			break;
  		case S_IFCHR: case S_IFBLK:
