@@ -1,9 +1,9 @@
 From: Andreas Gruenbacher <agruen@suse.de>
 Subject: Pass struct file down to remove_suid and children
 
-Pass struct path to remove_suid and should_remove_suid instead of
-only the dentry. Required by a later patch that adds a struct
-vfsmount parameter to notify_change().
+Pass struct path to remove_suid instead of only the dentry.
+Required by a later patch that adds a struct vfsmount
+parameter to notify_change().
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
@@ -13,13 +13,13 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  fs/ntfs/file.c             |    2 +-
  fs/ocfs2/file.c            |   10 +++++-----
  fs/reiserfs/file.c         |    2 +-
- fs/splice.c                |    6 +++---
+ fs/splice.c                |    4 ++--
  fs/xfs/linux-2.6/xfs_lrw.c |    2 +-
- include/linux/fs.h         |    6 +++---
- mm/filemap.c               |   16 ++++++++--------
+ include/linux/fs.h         |    4 ++--
+ mm/filemap.c               |   12 ++++++------
  mm/filemap_xip.c           |    2 +-
  mm/shmem.c                 |    2 +-
- 9 files changed, 24 insertions(+), 24 deletions(-)
+ 9 files changed, 20 insertions(+), 20 deletions(-)
 
 --- a/fs/ntfs/file.c
 +++ b/fs/ntfs/file.c
@@ -56,7 +56,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		 * can be lost via setattr during extending writes (we
  		 * set inode->i_size at the end of a write. */
 -		if (should_remove_suid(dentry)) {
-+		if (should_remove_suid(path)) {
++		if (should_remove_suid(path.dentry)) {
  			if (meta_level == 0) {
  				ocfs2_meta_unlock(inode, meta_level);
  				meta_level = 1;
@@ -80,7 +80,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		mlog_errno(ret);
 --- a/fs/reiserfs/file.c
 +++ b/fs/reiserfs/file.c
-@@ -1352,7 +1352,7 @@ static ssize_t reiserfs_file_write(struc
+@@ -1335,7 +1335,7 @@ static ssize_t reiserfs_file_write(struc
  	if (count == 0)
  		goto out;
  
@@ -100,12 +100,8 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (unlikely(err))
  		return err;
  
-@@ -842,10 +842,10 @@ generic_file_splice_write(struct pipe_in
- 	ssize_t ret;
- 	int err;
- 
--	err = should_remove_suid(out->f_path.dentry);
-+	err = should_remove_suid(&out->f_path);
+@@ -845,7 +845,7 @@ generic_file_splice_write(struct pipe_in
+ 	err = should_remove_suid(out->f_path.dentry);
  	if (unlikely(err)) {
  		mutex_lock(&inode->i_mutex);
 -		err = __remove_suid(out->f_path.dentry, err);
@@ -131,29 +127,16 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  extern void destroy_inode(struct inode *);
  extern struct inode *new_inode(struct super_block *);
 -extern int __remove_suid(struct dentry *, int);
--extern int should_remove_suid(struct dentry *);
--extern int remove_suid(struct dentry *);
 +extern int __remove_suid(struct path *, int);
-+extern int should_remove_suid(struct path *);
+ extern int should_remove_suid(struct dentry *);
+-extern int remove_suid(struct dentry *);
 +extern int remove_suid(struct path *);
  
  extern void __insert_inode_hash(struct inode *, unsigned long hashval);
  extern void remove_inode_hash(struct inode *);
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -1880,9 +1880,9 @@ repeat:
-  *	if suid or (sgid and xgrp)
-  *		remove privs
-  */
--int should_remove_suid(struct dentry *dentry)
-+int should_remove_suid(struct path *path)
- {
--	mode_t mode = dentry->d_inode->i_mode;
-+	mode_t mode = path->dentry->d_inode->i_mode;
- 	int kill = 0;
- 
- 	/* suid always must be killed */
-@@ -1903,20 +1903,20 @@ int should_remove_suid(struct dentry *de
+@@ -1905,20 +1905,20 @@ int should_remove_suid(struct dentry *de
  }
  EXPORT_SYMBOL(should_remove_suid);
  
@@ -171,7 +154,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 +int remove_suid(struct path *path)
  {
 -	int kill = should_remove_suid(dentry);
-+	int kill = should_remove_suid(path);
++	int kill = should_remove_suid(path->dentry);
  
  	if (unlikely(kill))
 -		return __remove_suid(dentry, kill);
@@ -179,7 +162,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
  	return 0;
  }
-@@ -2267,7 +2267,7 @@ __generic_file_aio_write_nolock(struct k
+@@ -2269,7 +2269,7 @@ __generic_file_aio_write_nolock(struct k
  	if (count == 0)
  		goto out;
  

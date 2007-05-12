@@ -3,7 +3,7 @@ security-create.diff
 #proc_sys_setattr.diff
 remove_suid.diff
 vfs-notify_change.diff
-circular-dep-notify_change-remove_suid.diff
+#should_remove_suid.diff
 security-setattr.diff
 vfs-mkdir.diff
 security-mkdir.diff
@@ -43,6 +43,7 @@ apparmor-lsm.diff
 apparmor-module_interface.diff
 apparmor-misc.diff
 apparmor-intree.diff
+apparmor_inline2.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff

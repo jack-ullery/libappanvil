@@ -1,0 +1,55 @@
+---
+ security/apparmor/inline.h |   22 ++++++++++++++++------
+ 1 file changed, 16 insertions(+), 6 deletions(-)
+
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -12,6 +12,11 @@
+ 
+ #include <linux/sched.h>
+ 
++enum apparmor_lock_class {
++	aa_lock_normal,
++	aa_lock_second
++};
++
+ static inline int mediated_filesystem(struct inode *inode)
+ {
+ 	return !(inode->i_sb->s_flags & MS_NOUSER);
+@@ -112,7 +117,8 @@ static inline void lock_profile(struct a
+ 	 * the task_free_security hook, which may run in RCU context.
+ 	 */
+ 	if (profile)
+-		spin_lock_irqsave(&profile->lock, profile->int_flags);
++		spin_lock_irqsave_nested(&profile->lock, profile->int_flags,
++					 aa_lock_normal);
+ }
+ 
+ /**
+@@ -161,17 +167,21 @@ static inline void lock_both_profiles(st
+ 	 */
+ 	if (!profile1 || profile1 == profile2) {
+ 		if (profile2)
+-			spin_lock_irqsave(&profile2->lock, profile2->int_flags);
++			spin_lock_irqsave_nested(&profile2->lock,
++						 profile2->int_flags,
++						 aa_lock_normal);
+ 	} else if (profile1 > profile2) {
+ 		/* profile1 cannot be NULL here. */
+-		spin_lock_irqsave(&profile1->lock, profile1->int_flags);
++		spin_lock_irqsave_nested(&profile1->lock, profile1->int_flags,
++					 aa_lock_normal);
+ 		if (profile2)
+-			spin_lock(&profile2->lock);
++			spin_lock_nested(&profile2->lock, aa_lock_second);
+ 
+ 	} else {
+ 		/* profile2 cannot be NULL here. */
+-		spin_lock_irqsave(&profile2->lock, profile2->int_flags);
+-		spin_lock(&profile1->lock);
++		spin_lock_irqsave_nested(&profile2->lock, profile2->int_flags,
++					 aa_lock_normal);
++		spin_lock_nested(&profile1->lock, aa_lock_second);
+ 	}
+ }
+ 

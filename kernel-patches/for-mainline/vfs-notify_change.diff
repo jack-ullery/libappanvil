@@ -100,7 +100,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  				goto again;
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1600,7 +1600,8 @@ int may_open(struct nameidata *nd, int a
+@@ -1598,7 +1598,8 @@ int may_open(struct nameidata *nd, int a
  		if (!error) {
  			DQUOT_INIT(inode);
  			
@@ -291,7 +291,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
        out_dir:
 --- a/fs/sysfs/file.c
 +++ b/fs/sysfs/file.c
-@@ -583,7 +583,7 @@ int sysfs_chmod_file(struct kobject *kob
+@@ -554,7 +554,7 @@ int sysfs_chmod_file(struct kobject *kob
  			newattrs.ia_mode = (mode & S_IALLUGO) |
  						(inode->i_mode & ~S_IALLUGO);
  			newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
@@ -365,7 +365,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		int (*check_acl)(struct inode *, int));
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -1908,7 +1908,7 @@ int __remove_suid(struct path *path, int
+@@ -1910,7 +1910,7 @@ int __remove_suid(struct path *path, int
  	struct iattr newattrs;
  
  	newattrs.ia_valid = ATTR_FORCE | kill;
