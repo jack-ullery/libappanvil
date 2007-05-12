@@ -1,7 +1,100 @@
----
- security/apparmor/locking.txt |   16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
-
+Index: b/security/apparmor/main.c
+===================================================================
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -1081,8 +1081,8 @@ void aa_release(struct task_struct *task
+ 	 * sufficient to prevent the replacement race so we do not lock
+ 	 * the task.
+ 	 *
+-	 * lock_dep reports a false 'possible irq lock inversion dependency'
+-	 * between the profile lock and the task_lock.
++	 * Use lock subtyping to avoid lockdep reporting a false irq
++	 * possible inversion between the task_lock and profile_lock
+ 	 *
+ 	 * We also avoid taking the task_lock here because lock_dep
+ 	 * would report another false {softirq-on-W} potential irq_lock
+@@ -1095,7 +1095,10 @@ void aa_release(struct task_struct *task
+ repeat:
+ 	profile = aa_get_profile(task);
+ 	if (profile) {
+-		lock_profile(profile);
++		struct aa_profile *lock_profile = profile->parent;
++		spin_lock_irqsave_nested(&lock_profile->lock,
++					 lock_profile->int_flags,
++					 aa_lock_task_release);
+ 		cxt = aa_task_context(task);
+ 		if (unlikely(!cxt || cxt->profile != profile)) {
+ 			unlock_profile(profile);
+@@ -1103,7 +1106,7 @@ repeat:
+ 			goto repeat;
+ 		}
+ 		aa_change_task_context(task, NULL, NULL, 0);
+-		unlock_profile(profile);
++		unlock_profile(lock_profile);
+ 		aa_put_profile(profile);
+ 	}
+ }
+Index: b/security/apparmor/apparmor.h
+===================================================================
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -185,6 +185,13 @@ struct aa_audit {
+ #define AA_CHECK_DIR	2  /* file type is directory */
+ #define AA_CHECK_MANGLE	4  /* leave extra room for name mangling */
+ 
++/* lock subtypes so lockdep does not raise false dependencies */
++enum apparmor_lock_class {
++	aa_lock_normal,
++	aa_lock_nested,
++	aa_lock_task_release
++};
++
+ /* main.c */
+ extern int alloc_null_complain_profile(void);
+ extern void free_null_complain_profile(void);
+Index: b/security/apparmor/inline.h
+===================================================================
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -112,7 +112,8 @@ static inline void lock_profile(struct a
+ 	 * the task_free_security hook, which may run in RCU context.
+ 	 */
+ 	if (profile)
+-		spin_lock_irqsave(&profile->lock, profile->int_flags);
++		spin_lock_irqsave_nested(&profile->lock, profile->int_flags,
++					 aa_lock_normal);
+ }
+ 
+ /**
+@@ -161,17 +162,21 @@ static inline void lock_both_profiles(st
+ 	 */
+ 	if (!profile1 || profile1 == profile2) {
+ 		if (profile2)
+-			spin_lock_irqsave(&profile2->lock, profile2->int_flags);
++			spin_lock_irqsave_nested(&profile2->lock,
++						 profile2->int_flags,
++						 aa_lock_normal);
+ 	} else if (profile1 > profile2) {
+ 		/* profile1 cannot be NULL here. */
+-		spin_lock_irqsave(&profile1->lock, profile1->int_flags);
++		spin_lock_irqsave_nested(&profile1->lock, profile1->int_flags,
++					 aa_lock_normal);
+ 		if (profile2)
+-			spin_lock(&profile2->lock);
++			spin_lock_nested(&profile2->lock, aa_lock_nested);
+ 
+ 	} else {
+ 		/* profile2 cannot be NULL here. */
+-		spin_lock_irqsave(&profile2->lock, profile2->int_flags);
+-		spin_lock(&profile1->lock);
++		spin_lock_irqsave_nested(&profile2->lock, profile2->int_flags,
++					 aa_lock_normal);
++		spin_lock_nested(&profile1->lock, aa_lock_nested);
+ 	}
+ }
+ 
+Index: b/security/apparmor/locking.txt
+===================================================================
 --- a/security/apparmor/locking.txt
 +++ b/security/apparmor/locking.txt
 @@ -51,9 +51,13 @@ list, and can sleep. This ensures that p
