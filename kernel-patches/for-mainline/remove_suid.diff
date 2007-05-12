@@ -1,5 +1,5 @@
 From: Andreas Gruenbacher <agruen@suse.de>
-Subject: Pass struct file down to remove_suid and children
+Subject: Pass struct path down to remove_suid and children
 
 Pass struct path to remove_suid instead of only the dentry.
 Required by a later patch that adds a struct vfsmount
@@ -11,7 +11,6 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
  fs/ntfs/file.c             |    2 +-
- fs/ocfs2/file.c            |   10 +++++-----
  fs/reiserfs/file.c         |    2 +-
  fs/splice.c                |    4 ++--
  fs/xfs/linux-2.6/xfs_lrw.c |    2 +-
@@ -19,7 +18,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  mm/filemap.c               |   12 ++++++------
  mm/filemap_xip.c           |    2 +-
  mm/shmem.c                 |    2 +-
- 9 files changed, 20 insertions(+), 20 deletions(-)
+ 8 files changed, 15 insertions(+), 15 deletions(-)
 
 --- a/fs/ntfs/file.c
 +++ b/fs/ntfs/file.c
@@ -32,52 +31,6 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (err)
  		goto out;
  	file_update_time(file);
---- a/fs/ocfs2/file.c
-+++ b/fs/ocfs2/file.c
-@@ -1158,14 +1158,14 @@ out:
- 	return ret;
- }
- 
--static int ocfs2_prepare_inode_for_write(struct dentry *dentry,
-+static int ocfs2_prepare_inode_for_write(struct path *path,
- 					 loff_t *ppos,
- 					 size_t count,
- 					 int appending,
- 					 int *direct_io)
- {
- 	int ret = 0, meta_level = appending;
--	struct inode *inode = dentry->d_inode;
-+	struct inode *inode = path->dentry->d_inode;
- 	u32 clusters;
- 	loff_t newsize, saved_pos;
- 
-@@ -1191,7 +1191,7 @@ static int ocfs2_prepare_inode_for_write
- 		 * inode. There's also the dinode i_size state which
- 		 * can be lost via setattr during extending writes (we
- 		 * set inode->i_size at the end of a write. */
--		if (should_remove_suid(dentry)) {
-+		if (should_remove_suid(path->dentry)) {
- 			if (meta_level == 0) {
- 				ocfs2_meta_unlock(inode, meta_level);
- 				meta_level = 1;
-@@ -1499,7 +1499,7 @@ relock:
- 	}
- 
- 	can_do_direct = direct_io;
--	ret = ocfs2_prepare_inode_for_write(file->f_path.dentry, ppos,
-+	ret = ocfs2_prepare_inode_for_write(&file->f_path, ppos,
- 					    iocb->ki_left, appending,
- 					    &can_do_direct);
- 	if (ret < 0) {
-@@ -1704,7 +1704,7 @@ static ssize_t ocfs2_file_splice_write(s
- 		goto out;
- 	}
- 
--	ret = ocfs2_prepare_inode_for_write(out->f_path.dentry, ppos, len, 0,
-+	ret = ocfs2_prepare_inode_for_write(&out->f_path, ppos, len, 0,
- 					    NULL);
- 	if (ret < 0) {
- 		mlog_errno(ret);
 --- a/fs/reiserfs/file.c
 +++ b/fs/reiserfs/file.c
 @@ -1335,7 +1335,7 @@ static ssize_t reiserfs_file_write(struc
