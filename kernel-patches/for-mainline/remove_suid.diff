@@ -56,7 +56,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		 * can be lost via setattr during extending writes (we
  		 * set inode->i_size at the end of a write. */
 -		if (should_remove_suid(dentry)) {
-+		if (should_remove_suid(path.dentry)) {
++		if (should_remove_suid(path->dentry)) {
  			if (meta_level == 0) {
  				ocfs2_meta_unlock(inode, meta_level);
  				meta_level = 1;
