@@ -78,12 +78,11 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  fs/msdos/namei.c               |    4 +--
  fs/namei.c                     |   45 ++++++++++++++++++++---------------------
  fs/ncpfs/dir.c                 |   14 ++++++------
- fs/nfs/dir.c                   |   32 ++++++++++++++---------------
+ fs/nfs/dir.c                   |   30 +++++++++++++--------------
  fs/nfs/nfs3proc.c              |    2 -
  fs/nfs/nfs4_fs.h               |    4 +--
  fs/nfs/nfs4proc.c              |    8 +++----
  fs/nfs/proc.c                  |    2 -
- fs/nfsd/vfs.c                  |    6 ++---
  fs/ntfs/namei.c                |    2 -
  fs/ocfs2/dcache.c              |    2 -
  fs/ocfs2/dlm/dlmfs.c           |    2 -
@@ -91,7 +90,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  fs/ocfs2/file.h                |    2 -
  fs/ocfs2/namei.c               |    4 +--
  fs/open.c                      |   15 +++++++------
- fs/proc/base.c                 |   18 ++++++++--------
+ fs/proc/base.c                 |   22 ++++++++++----------
  fs/proc/generic.c              |    2 -
  fs/proc/proc_sysctl.c          |    6 ++---
  fs/proc/root.c                 |    2 -
@@ -106,7 +105,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  fs/sysv/namei.c                |    4 +--
  fs/udf/namei.c                 |    4 +--
  fs/ufs/namei.c                 |    4 +--
- fs/utimes.c                    |    4 +--
+ fs/utimes.c                    |    2 -
  fs/vfat/namei.c                |    6 ++---
  fs/xfs/linux-2.6/xfs_iops.c    |    6 ++---
  include/linux/coda_linux.h     |    2 -
@@ -121,18 +120,18 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  include/linux/reiserfs_xattr.h |    2 -
  include/linux/security.h       |    6 ++---
  include/linux/shmem_fs.h       |    2 -
- ipc/mqueue.c                   |    4 +--
+ ipc/mqueue.c                   |    2 -
  mm/shmem.c                     |    2 -
  mm/shmem_acl.c                 |    2 -
  net/unix/af_unix.c             |    2 -
  security/apparmor/lsm.c        |    2 -
  security/dummy.c               |    2 -
  security/selinux/hooks.c       |    2 -
- 112 files changed, 286 insertions(+), 267 deletions(-)
+ 111 files changed, 282 insertions(+), 263 deletions(-)
 
 --- a/fs/9p/vfs_inode.c
 +++ b/fs/9p/vfs_inode.c
-@@ -457,7 +457,7 @@ v9fs_open_created(struct inode *inode, s
+@@ -456,7 +456,7 @@ v9fs_open_created(struct inode *inode, s
  
  static int
  v9fs_vfs_create(struct inode *dir, struct dentry *dentry, int mode,
@@ -141,7 +140,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	int err;
  	u32 fid, perm, iounit;
-@@ -615,7 +615,7 @@ error:
+@@ -614,7 +614,7 @@ error:
   */
  
  static struct dentry *v9fs_vfs_lookup(struct inode *dir, struct dentry *dentry,
@@ -217,7 +216,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  static int afs_mkdir(struct inode *dir, struct dentry *dentry, int mode);
  static int afs_rmdir(struct inode *dir, struct dentry *dentry);
  static int afs_unlink(struct inode *dir, struct dentry *dentry);
-@@ -484,7 +484,7 @@ static int afs_do_lookup(struct inode *d
+@@ -482,7 +482,7 @@ static int afs_do_lookup(struct inode *d
   * look up an entry in a directory
   */
  static struct dentry *afs_lookup(struct inode *dir, struct dentry *dentry,
@@ -226,7 +225,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct afs_vnode *vnode;
  	struct afs_fid fid;
-@@ -560,7 +560,7 @@ static struct dentry *afs_lookup(struct 
+@@ -558,7 +558,7 @@ static struct dentry *afs_lookup(struct 
   * - NOTE! the hit can be a negative hit too, so we can't assume we have an
   *   inode
   */
@@ -235,7 +234,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct afs_vnode *vnode, *dir;
  	struct afs_fid fid;
-@@ -906,7 +906,7 @@ error:
+@@ -904,7 +904,7 @@ error:
   * create a regular file on an AFS filesystem
   */
  static int afs_create(struct inode *dir, struct dentry *dentry, int mode,
@@ -246,7 +245,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	struct afs_callback cb;
 --- a/fs/afs/internal.h
 +++ b/fs/afs/internal.h
-@@ -422,8 +422,6 @@ extern bool afs_cm_incoming_call(struct 
+@@ -458,8 +458,6 @@ extern bool afs_cm_incoming_call(struct 
  extern const struct inode_operations afs_dir_inode_operations;
  extern const struct file_operations afs_dir_file_operations;
  
@@ -255,9 +254,9 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  /*
   * file.c
   */
-@@ -535,7 +533,7 @@ extern int afs_extract_data(struct afs_c
- extern void afs_clear_permits(struct afs_vnode *);
+@@ -578,7 +576,7 @@ extern void afs_clear_permits(struct afs
  extern void afs_cache_permit(struct afs_vnode *, struct key *, long);
+ extern void afs_zap_permits(struct rcu_head *);
  extern struct key *afs_request_key(struct afs_cell *);
 -extern int afs_permission(struct inode *, int, struct nameidata *);
 +extern int afs_permission(struct inode *, int, struct nameidata2 *);
@@ -275,7 +274,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  static int afs_mntpt_open(struct inode *inode, struct file *file);
  static void *afs_mntpt_follow_link(struct dentry *dentry, struct nameidata *nd);
  static void afs_mntpt_expiry_timed_out(struct work_struct *work);
-@@ -104,7 +104,7 @@ out:
+@@ -103,7 +103,7 @@ out:
   */
  static struct dentry *afs_mntpt_lookup(struct inode *dir,
  				       struct dentry *dentry,
@@ -286,7 +285,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	       dir,
 --- a/fs/afs/security.c
 +++ b/fs/afs/security.c
-@@ -281,7 +281,7 @@ static int afs_check_permit(struct afs_v
+@@ -283,7 +283,7 @@ static int afs_check_permit(struct afs_v
   * - AFS ACLs are attached to directories only, and a file is controlled by its
   *   parent directory's ACL
   */
@@ -326,7 +325,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	int oz_mode;
 --- a/fs/autofs4/root.c
 +++ b/fs/autofs4/root.c
-@@ -29,7 +29,7 @@ static int autofs4_dir_open(struct inode
+@@ -28,7 +28,7 @@ static int autofs4_dir_open(struct inode
  static int autofs4_dir_close(struct inode *inode, struct file *file);
  static int autofs4_dir_readdir(struct file * filp, void * dirent, filldir_t filldir);
  static int autofs4_root_readdir(struct file * filp, void * dirent, filldir_t filldir);
@@ -335,7 +334,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  static void *autofs4_follow_link(struct dentry *, struct nameidata *);
  
  const struct file_operations autofs4_root_operations = {
-@@ -123,7 +123,7 @@ static int autofs4_dir_open(struct inode
+@@ -122,7 +122,7 @@ static int autofs4_dir_open(struct inode
  
  	status = -ENOENT;
  	if (!d_mountpoint(dentry) && dentry->d_op && dentry->d_op->d_revalidate) {
@@ -344,7 +343,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  		int empty, ret;
  
  		/* In case there are stale directory dentrys from a failed mount */
-@@ -393,7 +393,7 @@ out_error:
+@@ -392,7 +392,7 @@ out_error:
   * yet completely filled in, and revalidate has to delay such
   * lookups..
   */
@@ -353,7 +352,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct inode *dir = dentry->d_parent->d_inode;
  	struct autofs_sb_info *sbi = autofs4_sbi(dir->i_sb);
-@@ -566,7 +566,7 @@ next:
+@@ -565,7 +565,7 @@ next:
  }
  
  /* Lookups in the root directory */
@@ -364,7 +363,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	struct dentry *unhashed;
 --- a/fs/bad_inode.c
 +++ b/fs/bad_inode.c
-@@ -194,13 +194,13 @@ static const struct file_operations bad_
+@@ -193,13 +193,13 @@ static const struct file_operations bad_
  };
  
  static int bad_inode_create (struct inode *dir, struct dentry *dentry,
@@ -380,7 +379,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	return ERR_PTR(-EIO);
  }
-@@ -252,7 +252,7 @@ static int bad_inode_readlink(struct den
+@@ -251,7 +251,7 @@ static int bad_inode_readlink(struct den
  }
  
  static int bad_inode_permission(struct inode *inode, int mask,
@@ -574,7 +573,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	struct configfs_dirent * sd;
 --- a/fs/cramfs/inode.c
 +++ b/fs/cramfs/inode.c
-@@ -404,7 +404,7 @@ static int cramfs_readdir(struct file *f
+@@ -405,7 +405,7 @@ static int cramfs_readdir(struct file *f
  /*
   * Lookup and fill in the inode data..
   */
@@ -654,7 +653,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
 --- a/fs/exec.c
 +++ b/fs/exec.c
-@@ -136,7 +136,7 @@ asmlinkage long sys_uselib(const char __
+@@ -138,7 +138,7 @@ asmlinkage long sys_uselib(const char __
  	if (!S_ISREG(nd.dentry->d_inode->i_mode))
  		goto exit;
  
@@ -663,7 +662,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (error)
  		goto exit;
  
-@@ -168,7 +168,7 @@ asmlinkage long sys_uselib(const char __
+@@ -170,7 +170,7 @@ asmlinkage long sys_uselib(const char __
  out:
    	return error;
  exit:
@@ -672,7 +671,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	path_release(&nd);
  	goto out;
  }
-@@ -484,7 +484,7 @@ struct file *open_exec(const char *name)
+@@ -486,7 +486,7 @@ struct file *open_exec(const char *name)
  		file = ERR_PTR(-EACCES);
  		if (!(nd.mnt->mnt_flags & MNT_NOEXEC) &&
  		    S_ISREG(inode->i_mode)) {
@@ -681,7 +680,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  			file = ERR_PTR(err);
  			if (!err) {
  				file = nameidata_to_filp(&nd, O_RDONLY);
-@@ -499,7 +499,7 @@ out:
+@@ -501,7 +501,7 @@ out:
  				return file;
  			}
  		}
@@ -765,7 +764,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct inode * inode;
  	struct ext3_dir_entry_2 * de;
-@@ -1641,7 +1641,7 @@ static int ext3_add_nondir(handle_t *han
+@@ -1644,7 +1644,7 @@ static int ext3_add_nondir(handle_t *han
   * with d_instantiate().
   */
  static int ext3_create (struct inode * dir, struct dentry * dentry, int mode,
@@ -807,7 +806,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct inode * inode;
  	struct ext4_dir_entry_2 * de;
-@@ -1639,7 +1639,7 @@ static int ext4_add_nondir(handle_t *han
+@@ -1642,7 +1642,7 @@ static int ext4_add_nondir(handle_t *han
   * with d_instantiate().
   */
  static int ext4_create (struct inode * dir, struct dentry * dentry, int mode,
@@ -907,7 +906,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  int gfs2_rmdiri(struct gfs2_inode *dip, const struct qstr *name,
 --- a/fs/gfs2/ops_dentry.c
 +++ b/fs/gfs2/ops_dentry.c
-@@ -34,7 +34,7 @@
+@@ -33,7 +33,7 @@
   * Returns: 1 if the dentry is ok, 0 if it isn't
   */
  
@@ -1071,7 +1070,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	unsigned len = dentry->d_name.len;
 --- a/fs/hugetlbfs/inode.c
 +++ b/fs/hugetlbfs/inode.c
-@@ -415,7 +415,7 @@ static int hugetlbfs_mkdir(struct inode 
+@@ -419,7 +419,7 @@ static int hugetlbfs_mkdir(struct inode 
  	return retval;
  }
  
@@ -1262,7 +1261,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	struct inode *inode = NULL;
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -225,7 +225,7 @@ int generic_permission(struct inode *ino
+@@ -224,7 +224,7 @@ int generic_permission(struct inode *ino
  	return -EACCES;
  }
  
@@ -1271,7 +1270,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	umode_t mode = inode->i_mode;
  	int retval, submask;
-@@ -278,7 +278,7 @@ int permission(struct inode *inode, int 
+@@ -277,7 +277,7 @@ int permission(struct inode *inode, int 
   * for filesystem access without changing the "normal" uids which
   * are used for other things.
   */
@@ -1280,7 +1279,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	return permission(nd->dentry->d_inode, mask, nd);
  }
-@@ -297,7 +297,7 @@ int vfs_permission(struct nameidata *nd,
+@@ -296,7 +296,7 @@ int vfs_permission(struct nameidata *nd,
   */
  int file_permission(struct file *file, int mask)
  {
@@ -1289,7 +1288,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	
  	nd.dentry = file->f_path.dentry;
  	nd.mnt = file->f_path.mnt;
-@@ -372,7 +372,7 @@ void path_release_on_umount(struct namei
+@@ -371,7 +371,7 @@ void path_release_on_umount(struct namei
   * release_open_intent - free up open intent resources
   * @nd: pointer to nameidata
   */
@@ -1298,7 +1297,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	if (nd->intent.open.file->f_path.dentry == NULL)
  		put_filp(nd->intent.open.file);
-@@ -383,7 +383,7 @@ void release_open_intent(struct nameidat
+@@ -382,7 +382,7 @@ void release_open_intent(struct nameidat
  static inline struct dentry *
  do_revalidate(struct dentry *dentry, struct nameidata *nd)
  {
@@ -1307,7 +1306,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (unlikely(status <= 0)) {
  		/*
  		 * The dentry failed validation.
-@@ -434,8 +434,7 @@ static struct dentry * cached_lookup(str
+@@ -433,8 +433,7 @@ static struct dentry * cached_lookup(str
   * short-cut DAC fails, then call permission() to do more
   * complete permission check.
   */
@@ -1317,7 +1316,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	umode_t	mode = inode->i_mode;
  
-@@ -497,7 +496,7 @@ static struct dentry * real_lookup(struc
+@@ -496,7 +495,7 @@ static struct dentry * real_lookup(struc
  		struct dentry * dentry = d_alloc(parent, name);
  		result = ERR_PTR(-ENOMEM);
  		if (dentry) {
@@ -1326,7 +1325,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  			if (result)
  				dput(dentry);
  			else
-@@ -836,9 +835,9 @@ static fastcall int __link_path_walk(con
+@@ -835,9 +834,9 @@ static fastcall int __link_path_walk(con
  		unsigned int c;
  
  		nd->flags |= LOOKUP_CONTINUE;
@@ -1338,7 +1337,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
   		if (err)
  			break;
  
-@@ -984,7 +983,8 @@ return_reval:
+@@ -983,7 +982,8 @@ return_reval:
  		    (nd->dentry->d_sb->s_type->fs_flags & FS_REVAL_DOT)) {
  			err = -ESTALE;
  			/* Note: we do not d_invalidate() */
@@ -1348,7 +1347,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  				break;
  		}
  return_base:
-@@ -1149,7 +1149,7 @@ static int fastcall do_path_lookup(int d
+@@ -1148,7 +1148,7 @@ static int fastcall do_path_lookup(int d
  		if (!S_ISDIR(nd->dentry->d_inode->i_mode))
  			goto fput_fail;
  
@@ -1357,7 +1356,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  		if (retval)
  			goto fput_fail;
  
-@@ -1199,7 +1199,7 @@ static int __path_lookup_intent_open(int
+@@ -1196,7 +1196,7 @@ static int __path_lookup_intent_open(int
  			path_release(nd);
  		}
  	} else if (err != 0)
@@ -1366,7 +1365,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	return err;
  }
  
-@@ -1273,7 +1273,7 @@ static inline struct dentry *__lookup_ha
+@@ -1270,7 +1270,7 @@ static inline struct dentry *__lookup_ha
  		dentry = ERR_PTR(-ENOMEM);
  		if (!new)
  			goto out;
@@ -1375,7 +1374,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  		if (!dentry)
  			dentry = new;
  		else
-@@ -1296,7 +1296,7 @@ static inline struct dentry * __lookup_h
+@@ -1293,7 +1293,7 @@ static inline struct dentry * __lookup_h
  
  	inode = base->d_inode;
  
@@ -1384,7 +1383,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	dentry = ERR_PTR(err);
  	if (err)
  		goto out;
-@@ -1463,7 +1463,7 @@ static int may_delete(struct inode *dir,
+@@ -1449,7 +1449,7 @@ static int may_delete(struct inode *dir,
   *  4. We can't do it if dir is immutable (done in permission())
   */
  static inline int may_create(struct inode *dir, struct dentry *child,
@@ -1393,7 +1392,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	if (child->d_inode)
  		return -EEXIST;
-@@ -1535,7 +1535,7 @@ void unlock_rename(struct dentry *p1, st
+@@ -1521,7 +1521,7 @@ void unlock_rename(struct dentry *p1, st
  }
  
  int vfs_create(struct inode *dir, struct dentry *dentry, int mode,
@@ -1402,7 +1401,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	int error = may_create(dir, dentry, nd);
  
-@@ -1571,7 +1571,7 @@ int may_open(struct nameidata *nd, int a
+@@ -1557,7 +1557,7 @@ int may_open(struct nameidata *nd, int a
  	if (S_ISDIR(inode->i_mode) && (flag & FMODE_WRITE))
  		return -EISDIR;
  
@@ -1411,7 +1410,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (error)
  		return error;
  
-@@ -1644,7 +1644,7 @@ static int open_namei_create(struct name
+@@ -1630,7 +1630,7 @@ static int open_namei_create(struct name
  
  	if (!IS_POSIXACL(dir->d_inode))
  		mode &= ~current->fs->umask;
@@ -1420,7 +1419,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	mutex_unlock(&dir->d_inode->i_mutex);
  	dput(nd->dentry);
  	nd->dentry = path->dentry;
-@@ -1777,7 +1777,7 @@ exit_dput:
+@@ -1763,7 +1763,7 @@ exit_dput:
  	dput_path(&path, nd);
  exit:
  	if (!IS_ERR(nd->intent.open.file))
@@ -1429,7 +1428,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	path_release(nd);
  	return error;
  
-@@ -1805,7 +1805,7 @@ do_link:
+@@ -1791,7 +1791,7 @@ do_link:
  		 * me so stupid? Anathema to whoever designed this non-sense
  		 * with "intent.open".
  		 */
@@ -1438,7 +1437,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  		return error;
  	}
  	nd->flags &= ~LOOKUP_PARENT;
-@@ -1930,7 +1930,8 @@ asmlinkage long sys_mknodat(int dfd, con
+@@ -1916,7 +1916,8 @@ asmlinkage long sys_mknodat(int dfd, con
  	if (!IS_ERR(dentry)) {
  		switch (mode & S_IFMT) {
  		case 0: case S_IFREG:
@@ -1508,7 +1507,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  }
 --- a/fs/nfs/dir.c
 +++ b/fs/nfs/dir.c
-@@ -43,8 +43,8 @@
+@@ -42,8 +42,8 @@
  
  static int nfs_opendir(struct inode *, struct file *);
  static int nfs_readdir(struct file *, void *, filldir_t);
@@ -1519,7 +1518,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  static int nfs_mkdir(struct inode *, struct dentry *, int);
  static int nfs_rmdir(struct inode *, struct dentry *);
  static int nfs_unlink(struct inode *, struct dentry *);
-@@ -103,7 +103,7 @@ const struct inode_operations nfs3_dir_i
+@@ -102,7 +102,7 @@ const struct inode_operations nfs3_dir_i
  
  #ifdef CONFIG_NFS_V4
  
@@ -1528,7 +1527,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  const struct inode_operations nfs4_dir_inode_operations = {
  	.create		= nfs_create,
  	.lookup		= nfs_atomic_lookup,
-@@ -674,7 +674,7 @@ static inline void nfs_renew_times(struc
+@@ -686,7 +686,7 @@ static inline void nfs_renew_times(struc
   * component of the path.
   * We check for this using LOOKUP_CONTINUE and LOOKUP_PARENT.
   */
@@ -1537,7 +1536,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	if (nd->flags & (LOOKUP_CONTINUE|LOOKUP_PARENT))
  		return 0;
-@@ -690,7 +690,7 @@ static inline unsigned int nfs_lookup_ch
+@@ -702,7 +702,7 @@ static inline unsigned int nfs_lookup_ch
   *
   */
  static inline
@@ -1546,7 +1545,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct nfs_server *server = NFS_SERVER(inode);
  
-@@ -719,7 +719,7 @@ out_force:
+@@ -731,7 +731,7 @@ out_force:
   */
  static inline
  int nfs_neg_need_reval(struct inode *dir, struct dentry *dentry,
@@ -1555,7 +1554,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	/* Don't revalidate a negative dentry if we're creating a new file */
  	if (nd != NULL && nfs_lookup_check_intent(nd, LOOKUP_CREATE) != 0)
-@@ -738,7 +738,7 @@ int nfs_neg_need_reval(struct inode *dir
+@@ -750,7 +750,7 @@ int nfs_neg_need_reval(struct inode *dir
   * If the parent directory is seen to have changed, we throw out the
   * cached dentry and do a new lookup.
   */
@@ -1564,7 +1563,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct inode *dir;
  	struct inode *inode;
-@@ -871,7 +871,7 @@ struct dentry_operations nfs_dentry_oper
+@@ -887,7 +887,7 @@ struct dentry_operations nfs_dentry_oper
   * an O_EXCL create using this path component.
   */
  static inline
@@ -1573,17 +1572,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	if (NFS_PROTO(dir)->version == 2)
  		return 0;
-@@ -880,7 +880,7 @@ int nfs_is_exclusive_create(struct inode
- 	return (nd->intent.open.flags & O_EXCL) != 0;
- }
- 
--static inline int nfs_reval_fsid(struct nameidata *nd, struct inode *dir,
-+static inline int nfs_reval_fsid(struct nameidata2 *nd, struct inode *dir,
- 				 struct nfs_fh *fh, struct nfs_fattr *fattr)
- {
- 	struct nfs_server *server = NFS_SERVER(dir);
-@@ -891,7 +891,7 @@ static inline int nfs_reval_fsid(struct 
- 	return __nfs_revalidate_inode(server, nd->mnt->mnt_root->d_inode);
+@@ -907,7 +907,7 @@ static inline int nfs_reval_fsid(struct 
+ 	return 0;
  }
  
 -static struct dentry *nfs_lookup(struct inode *dir, struct dentry * dentry, struct nameidata *nd)
@@ -1591,7 +1581,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct dentry *res;
  	struct inode *inode = NULL;
-@@ -961,7 +961,7 @@ out:
+@@ -977,7 +977,7 @@ out:
  }
  
  #ifdef CONFIG_NFS_V4
@@ -1600,7 +1590,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
  struct dentry_operations nfs4_dentry_operations = {
  	.d_revalidate	= nfs_open_revalidate,
-@@ -973,7 +973,7 @@ struct dentry_operations nfs4_dentry_ope
+@@ -989,7 +989,7 @@ struct dentry_operations nfs4_dentry_ope
   * Use intent information to determine whether we need to substitute
   * the NFSv4-style stateful OPEN for the LOOKUP call
   */
@@ -1609,7 +1599,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	if (nd == NULL || nfs_lookup_check_intent(nd, LOOKUP_OPEN) == 0)
  		return 0;
-@@ -986,7 +986,7 @@ static int is_atomic_open(struct inode *
+@@ -1002,7 +1002,7 @@ static int is_atomic_open(struct inode *
  	return 1;
  }
  
@@ -1618,7 +1608,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct dentry *res = NULL;
  	int error;
-@@ -1055,7 +1055,7 @@ no_open:
+@@ -1071,7 +1071,7 @@ no_open:
  	return nfs_lookup(dir, dentry, nd);
  }
  
@@ -1627,7 +1617,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct dentry *parent = NULL;
  	struct inode *inode = dentry->d_inode;
-@@ -1215,7 +1215,7 @@ int nfs_instantiate(struct dentry *dentr
+@@ -1231,7 +1231,7 @@ int nfs_instantiate(struct dentry *dentr
   * reply path made it appear to have failed.
   */
  static int nfs_create(struct inode *dir, struct dentry *dentry, int mode,
@@ -1636,7 +1626,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct iattr attr;
  	int error;
-@@ -1950,7 +1950,7 @@ out:
+@@ -1954,7 +1954,7 @@ out:
  	return -EACCES;
  }
  
@@ -1647,7 +1637,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	int res = 0;
 --- a/fs/nfs/nfs3proc.c
 +++ b/fs/nfs/nfs3proc.c
-@@ -259,7 +259,7 @@ static int nfs3_proc_readlink(struct ino
+@@ -258,7 +258,7 @@ static int nfs3_proc_readlink(struct ino
   */
  static int
  nfs3_proc_create(struct inode *dir, struct dentry *dentry, struct iattr *sattr,
@@ -1709,7 +1699,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	struct rpc_cred *cred;
 --- a/fs/nfs/proc.c
 +++ b/fs/nfs/proc.c
-@@ -188,7 +188,7 @@ static int nfs_proc_readlink(struct inod
+@@ -187,7 +187,7 @@ static int nfs_proc_readlink(struct inod
  
  static int
  nfs_proc_create(struct inode *dir, struct dentry *dentry, struct iattr *sattr,
@@ -1718,35 +1708,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct nfs_fh		fhandle;
  	struct nfs_fattr	fattr;
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -1121,7 +1121,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
- 		char *fname, int flen, struct iattr *iap,
- 		int type, dev_t rdev, struct svc_fh *resfhp)
- {
--	struct nameidata nd = {};
-+	struct nameidata2 nd = {};
- 	struct dentry	*dchild = NULL;
- 	struct svc_export *exp;
- 	struct inode	*dirp;
-@@ -1254,7 +1254,7 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
- 		struct svc_fh *resfhp, int createmode, u32 *verifier,
- 	        int *truncp, int *created)
- {
--	struct nameidata nd = {};
-+	struct nameidata2 nd = {};
- 	struct dentry	*dchild = NULL;
- 	struct svc_export *exp;
- 	struct inode	*dirp;
-@@ -1802,7 +1802,7 @@ nfsd_statfs(struct svc_rqst *rqstp, stru
- __be32
- nfsd_permission(struct svc_export *exp, struct dentry *dentry, int acc)
- {
--	struct nameidata nd = {
-+	struct nameidata2 nd = {
- 		.dentry = dentry,
- 		.mnt = exp->ex_mnt,
- 		.flags = LOOKUP_ACCESS,
 --- a/fs/ntfs/namei.c
 +++ b/fs/ntfs/namei.c
 @@ -99,7 +99,7 @@
@@ -1771,7 +1732,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	int ret = 0;    /* if all else fails, just return false */
 --- a/fs/ocfs2/dlm/dlmfs.c
 +++ b/fs/ocfs2/dlm/dlmfs.c
-@@ -463,7 +463,7 @@ bail:
+@@ -461,7 +461,7 @@ bail:
  static int dlmfs_create(struct inode *dir,
  			struct dentry *dentry,
  			int mode,
@@ -1782,7 +1743,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	struct inode *inode;
 --- a/fs/ocfs2/file.c
 +++ b/fs/ocfs2/file.c
-@@ -1047,7 +1047,7 @@ bail:
+@@ -1048,7 +1048,7 @@ bail:
  	return err;
  }
  
@@ -1800,8 +1761,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 -		     struct nameidata *nd);
 +		     struct nameidata2 *nd);
  
- int ocfs2_set_inode_size(handle_t *handle,
- 			 struct inode *inode,
+ int ocfs2_should_update_atime(struct inode *inode,
+ 			      struct vfsmount *vfsmnt);
 --- a/fs/ocfs2/namei.c
 +++ b/fs/ocfs2/namei.c
 @@ -138,7 +138,7 @@ static inline int ocfs2_add_entry(handle
@@ -1813,7 +1774,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	int status;
  	u64 blkno;
-@@ -625,7 +625,7 @@ static int ocfs2_mkdir(struct inode *dir
+@@ -626,7 +626,7 @@ static int ocfs2_mkdir(struct inode *dir
  static int ocfs2_create(struct inode *dir,
  			struct dentry *dentry,
  			int mode,
@@ -1824,7 +1785,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
 --- a/fs/open.c
 +++ b/fs/open.c
-@@ -241,7 +241,7 @@ static long do_sys_truncate(const char _
+@@ -243,7 +243,7 @@ static long do_sys_truncate(const char _
  	if (!S_ISREG(inode->i_mode))
  		goto dput_and_out;
  
@@ -1833,7 +1794,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (error)
  		goto dput_and_out;
  
-@@ -390,7 +390,7 @@ asmlinkage long sys_faccessat(int dfd, c
+@@ -392,7 +392,7 @@ asmlinkage long sys_faccessat(int dfd, c
  	if (res)
  		goto out;
  
@@ -1842,7 +1803,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	/* SuS v2 requires we report a read only fs too */
  	if(res || !(mode & S_IWOTH) ||
  	   special_file(nd.dentry->d_inode->i_mode))
-@@ -424,7 +424,7 @@ asmlinkage long sys_chdir(const char __u
+@@ -426,7 +426,7 @@ asmlinkage long sys_chdir(const char __u
  	if (error)
  		goto out;
  
@@ -1851,7 +1812,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (error)
  		goto dput_and_out;
  
-@@ -438,7 +438,7 @@ out:
+@@ -440,7 +440,7 @@ out:
  
  asmlinkage long sys_fchdir(unsigned int fd)
  {
@@ -1860,7 +1821,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	struct file *file;
  	int error;
  
-@@ -473,7 +473,7 @@ asmlinkage long sys_chroot(const char __
+@@ -475,7 +475,7 @@ asmlinkage long sys_chroot(const char __
  	if (error)
  		goto out;
  
@@ -1869,7 +1830,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (error)
  		goto dput_and_out;
  
-@@ -794,8 +794,9 @@ EXPORT_SYMBOL(filp_open);
+@@ -796,8 +796,9 @@ EXPORT_SYMBOL(filp_open);
   * If the open callback is set to NULL, then the standard f_op->open()
   * filesystem callback is substituted.
   */
@@ -1883,7 +1844,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  		goto out;
 --- a/fs/proc/base.c
 +++ b/fs/proc/base.c
-@@ -1079,7 +1079,7 @@ static int pid_getattr(struct vfsmount *
+@@ -1097,7 +1097,7 @@ static int pid_getattr(struct vfsmount *
   * made this apply to all per process world readable and executable
   * directories.
   */
@@ -1892,8 +1853,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct inode *inode = dentry->d_inode;
  	struct task_struct *task = get_proc_task(inode);
-@@ -1227,7 +1227,7 @@ static int proc_fd_link(struct inode *in
- 	return -ENOENT;
+@@ -1263,7 +1263,7 @@ static int proc_fd_link(struct inode *in
+ 	return proc_fd_info(inode, dentry, mnt, NULL);
  }
  
 -static int tid_fd_revalidate(struct dentry *dentry, struct nameidata *nd)
@@ -1901,16 +1862,34 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct inode *inode = dentry->d_inode;
  	struct task_struct *task = get_proc_task(inode);
-@@ -1322,7 +1322,7 @@ out_iput:
- 	goto out;
+@@ -1441,7 +1441,7 @@ out_no_task:
  }
  
--static struct dentry *proc_lookupfd(struct inode * dir, struct dentry * dentry, struct nameidata *nd)
-+static struct dentry *proc_lookupfd(struct inode * dir, struct dentry * dentry, struct nameidata2 *nd)
+ static struct dentry *proc_lookupfd(struct inode *dir, struct dentry *dentry,
+-				    struct nameidata *nd)
++				    struct nameidata2 *nd)
  {
- 	struct task_struct *task = get_proc_task(dir);
- 	unsigned fd = name_to_int(dentry);
-@@ -1638,7 +1638,7 @@ static const struct file_operations proc
+ 	return proc_lookupfd_common(dir, dentry, proc_fd_instantiate);
+ }
+@@ -1476,7 +1476,7 @@ static const struct file_operations proc
+  * access /proc/self/fd after it has executed a setuid().
+  */
+ static int proc_fd_permission(struct inode *inode, int mask,
+-				struct nameidata *nd)
++				struct nameidata2 *nd)
+ {
+ 	int rv;
+ 
+@@ -1524,7 +1524,7 @@ static struct dentry *proc_fdinfo_instan
+ 
+ static struct dentry *proc_lookupfdinfo(struct inode *dir,
+ 					struct dentry *dentry,
+-					struct nameidata *nd)
++					struct nameidata2 *nd)
+ {
+ 	return proc_lookupfd_common(dir, dentry, proc_fdinfo_instantiate);
+ }
+@@ -1769,7 +1769,7 @@ static const struct file_operations proc
  };
  
  static struct dentry *proc_attr_dir_lookup(struct inode *dir,
@@ -1919,7 +1898,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	return proc_pident_lookup(dir, dentry,
  				  attr_dir_stuff, ARRAY_SIZE(attr_dir_stuff));
-@@ -1692,7 +1692,7 @@ static struct pid_entry proc_base_stuff[
+@@ -1823,7 +1823,7 @@ static const struct pid_entry proc_base_
   * directory. In this case, however, we can do it - no aliasing problems
   * due to the way we treat inodes.
   */
@@ -1928,7 +1907,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct inode *inode = dentry->d_inode;
  	struct task_struct *task = get_proc_task(inode);
-@@ -1887,7 +1887,7 @@ static const struct file_operations proc
+@@ -2020,7 +2020,7 @@ static const struct file_operations proc
  	.readdir	= proc_tgid_base_readdir,
  };
  
@@ -1937,7 +1916,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	return proc_pident_lookup(dir, dentry,
  				  tgid_base_stuff, ARRAY_SIZE(tgid_base_stuff));
  }
-@@ -1995,7 +1995,7 @@ out:
+@@ -2128,7 +2128,7 @@ out:
  	return error;
  }
  
@@ -1946,7 +1925,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct dentry *result = ERR_PTR(-ENOENT);
  	struct task_struct *task;
-@@ -2160,7 +2160,7 @@ static int proc_tid_base_readdir(struct 
+@@ -2295,7 +2295,7 @@ static int proc_tid_base_readdir(struct 
  				   tid_base_stuff,ARRAY_SIZE(tid_base_stuff));
  }
  
@@ -1955,7 +1934,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	return proc_pident_lookup(dir, dentry,
  				  tid_base_stuff, ARRAY_SIZE(tid_base_stuff));
  }
-@@ -2204,7 +2204,7 @@ out:
+@@ -2339,7 +2339,7 @@ out:
  	return error;
  }
  
@@ -2028,7 +2007,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	struct qnx4_inode_entry *de;
 --- a/fs/ramfs/inode.c
 +++ b/fs/ramfs/inode.c
-@@ -117,7 +117,7 @@ static int ramfs_mkdir(struct inode * di
+@@ -116,7 +116,7 @@ static int ramfs_mkdir(struct inode * di
  	return retval;
  }
  
@@ -2039,7 +2018,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  }
 --- a/fs/reiserfs/namei.c
 +++ b/fs/reiserfs/namei.c
-@@ -325,7 +325,7 @@ static int reiserfs_find_entry(struct in
+@@ -324,7 +324,7 @@ static int reiserfs_find_entry(struct in
  }
  
  static struct dentry *reiserfs_lookup(struct inode *dir, struct dentry *dentry,
@@ -2048,7 +2027,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	int retval;
  	struct inode *inode = NULL;
-@@ -601,7 +601,7 @@ static int new_inode_init(struct inode *
+@@ -600,7 +600,7 @@ static int new_inode_init(struct inode *
  }
  
  static int reiserfs_create(struct inode *dir, struct dentry *dentry, int mode,
@@ -2059,7 +2038,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	struct inode *inode;
 --- a/fs/reiserfs/xattr.c
 +++ b/fs/reiserfs/xattr.c
-@@ -1298,7 +1298,7 @@ static int reiserfs_check_acl(struct ino
+@@ -1294,7 +1294,7 @@ static int reiserfs_check_acl(struct ino
  	return error;
  }
  
@@ -2152,7 +2131,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	struct sysfs_dirent * sd;
 --- a/fs/sysv/namei.c
 +++ b/fs/sysv/namei.c
-@@ -43,7 +43,7 @@ struct dentry_operations sysv_dentry_ope
+@@ -42,7 +42,7 @@ struct dentry_operations sysv_dentry_ope
  	.d_hash		= sysv_hash,
  };
  
@@ -2161,7 +2140,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct inode * inode = NULL;
  	ino_t ino;
-@@ -81,7 +81,7 @@ static int sysv_mknod(struct inode * dir
+@@ -80,7 +80,7 @@ static int sysv_mknod(struct inode * dir
  	return err;
  }
  
@@ -2212,16 +2191,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	int err;
 --- a/fs/utimes.c
 +++ b/fs/utimes.c
-@@ -58,7 +58,7 @@ asmlinkage long sys_utime(char __user * 
-                         goto dput_and_out;
- 
- 		if (current->fsuid != inode->i_uid &&
--		    (error = vfs_permission(&nd, MAY_WRITE)) != 0)
-+		    (error = vfs_permission(ND2(&nd), MAY_WRITE)) != 0)
- 			goto dput_and_out;
- 	}
- 	mutex_lock(&inode->i_mutex);
-@@ -111,7 +111,7 @@ long do_utimes(int dfd, char __user *fil
+@@ -108,7 +108,7 @@ long do_utimes(int dfd, char __user *fil
                          goto dput_and_out;
  
  		if (current->fsuid != inode->i_uid &&
@@ -2331,7 +2301,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -289,6 +289,7 @@ extern int dir_notify_enable;
+@@ -291,6 +291,7 @@ extern int dir_notify_enable;
  struct hd_geometry;
  struct iovec;
  struct nameidata;
@@ -2339,7 +2309,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  struct kiocb;
  struct pipe_inode_info;
  struct poll_table_struct;
-@@ -986,8 +987,8 @@ extern void unlock_super(struct super_bl
+@@ -993,8 +994,8 @@ extern void unlock_super(struct super_bl
  /*
   * VFS helper functions..
   */
@@ -2350,7 +2320,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
  extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
  extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
-@@ -1111,8 +1112,8 @@ struct file_operations {
+@@ -1118,8 +1119,8 @@ struct file_operations {
  };
  
  struct inode_operations {
@@ -2361,7 +2331,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	int (*link) (struct dentry *,struct inode *,struct dentry *);
  	int (*unlink) (struct inode *,struct dentry *);
  	int (*symlink) (struct inode *,struct dentry *,const char *);
-@@ -1125,7 +1126,7 @@ struct inode_operations {
+@@ -1132,7 +1133,7 @@ struct inode_operations {
  	void * (*follow_link) (struct dentry *, struct nameidata *);
  	void (*put_link) (struct dentry *, struct nameidata *, void *);
  	void (*truncate) (struct inode *);
@@ -2370,7 +2340,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	int (*setattr) (struct dentry *, struct iattr *);
  	int (*getattr) (struct vfsmount *mnt, struct dentry *, struct kstat *);
  	int (*setxattr) (struct dentry *, const char *,const void *,size_t,int);
-@@ -1621,7 +1622,7 @@ extern int do_remount_sb(struct super_bl
+@@ -1628,7 +1629,7 @@ extern int do_remount_sb(struct super_bl
  extern sector_t bmap(struct inode *, sector_t);
  #endif
  extern int notify_change(struct dentry *, struct vfsmount *, struct iattr *);
@@ -2379,7 +2349,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  extern int generic_permission(struct inode *, int,
  		int (*check_acl)(struct inode *, int));
  
-@@ -1878,7 +1879,7 @@ extern int simple_prepare_write(struct f
+@@ -1887,7 +1888,7 @@ extern int simple_prepare_write(struct f
  extern int simple_commit_write(struct file *file, struct page *page,
  				unsigned offset, unsigned to);
  
@@ -2483,7 +2453,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  int proc_pid_readdir(struct file * filp, void * dirent, filldir_t filldir);
  unsigned long task_vsize(struct mm_struct *);
  int task_statm(struct mm_struct *, int *, int *, int *, int *);
-@@ -121,7 +121,7 @@ extern struct inode *proc_get_inode(stru
+@@ -125,7 +125,7 @@ extern struct inode *proc_get_inode(stru
   * of the /proc/<pid> subdirectories.
   */
  extern int proc_readdir(struct file *, void *, filldir_t);
@@ -2556,7 +2526,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
 --- a/ipc/mqueue.c
 +++ b/ipc/mqueue.c
-@@ -268,7 +268,7 @@ static void mqueue_delete_inode(struct i
+@@ -267,7 +267,7 @@ static void mqueue_delete_inode(struct i
  }
  
  static int mqueue_create(struct inode *dir, struct dentry *dentry,
@@ -2565,15 +2535,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  {
  	struct inode *inode;
  	struct mq_attr *attr = dentry->d_fsdata;
-@@ -604,7 +604,7 @@ static int mq_attr_ok(struct mq_attr *at
- static struct file *do_create(struct dentry *dir, struct dentry *dentry,
- 			int oflag, mode_t mode, struct mq_attr __user *u_attr)
- {
--	struct nameidata nd = {
-+	struct nameidata2 nd = {
- 		.dentry = dir,
- 		/* Not a mounted filesystem, so set .mnt to NULL. */
- 	};
 --- a/mm/shmem.c
 +++ b/mm/shmem.c
 @@ -1796,7 +1796,7 @@ static int shmem_mkdir(struct inode *dir
@@ -2598,7 +2559,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  }
 --- a/net/unix/af_unix.c
 +++ b/net/unix/af_unix.c
-@@ -703,7 +703,7 @@ static struct sock *unix_find_other(stru
+@@ -702,7 +702,7 @@ static struct sock *unix_find_other(stru
  		err = path_lookup(sunname->sun_path, LOOKUP_FOLLOW, &nd);
  		if (err)
  			goto fail;
@@ -2631,7 +2592,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2241,7 +2241,7 @@ static int selinux_inode_follow_link(str
+@@ -2239,7 +2239,7 @@ static int selinux_inode_follow_link(str
  }
  
  static int selinux_inode_permission(struct inode *inode, int mask,

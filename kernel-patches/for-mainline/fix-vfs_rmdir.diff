@@ -1,5 +1,5 @@
 From: John Johansen <jjohansen@suse.de>
-Subject: call lsm hook before unhashing dentry in vfs_rmdir()
+Subject: Call lsm hook before unhashing dentry in vfs_rmdir()
 
 If we unhash the dentry before calling the security_inode_rmdir hook,
 we cannot compute the file's pathname in the hook anymore. AppArmor

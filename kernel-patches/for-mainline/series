@@ -53,18 +53,18 @@ do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff
 # # NOT YET
-# nfsd_permission-nameidata.diff
 # ecryptfs-d_revalidate.diff
+# nfs-nameidata-check.diff
 # # statvfs.diff
 # # statvfs-2.diff
 # # fix-getcwd.diff
 # # proc-mounts-cleanup.diff
 # # proc-mounts-check-d_path-result.diff
 # # fix-d_path.diff
-# nfs-nameidata-check.diff
-# vfs_create-nameidata.diff
-# split-up-nameidata.diff
-# xattr_permission.diff
+split-up-nameidata.diff
+vfs_create-nameidata.diff
+xattr_permission.diff
+nfsd_permission-nameidata.diff
 # vfs_create-args.diff
 # vfs_mknod-args.diff
 # vfs_mkdir-args.diff

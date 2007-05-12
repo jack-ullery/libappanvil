@@ -1,7 +1,8 @@
 From: Andreas Gruenbacher <agruen@suse.de>
-Subject: Set the LOOKUP_CONTINUE flag when checking parent permissions
+Subject: Allow permission functions to tell between parent and leaf checks
 
-This allows permission functions to tell between parent and leaf checks.
+Set the LOOKUP_CONTINUE flag when checking parent permissions. This allows
+permission functions to tell between parent and leaf checks.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 

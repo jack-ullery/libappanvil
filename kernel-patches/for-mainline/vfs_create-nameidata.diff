@@ -3,13 +3,13 @@ Subject: Never pass a NULL nameidata to vfs_create()
 
 ---
  fs/namei.c    |    2 +-
- fs/nfsd/vfs.c |   40 +++++++++++++++++++++++-----------------
- ipc/mqueue.c  |    6 +++++-
- 3 files changed, 29 insertions(+), 19 deletions(-)
+ fs/nfsd/vfs.c |   42 +++++++++++++++++++++++++-----------------
+ ipc/mqueue.c  |    7 ++++++-
+ 3 files changed, 32 insertions(+), 19 deletions(-)
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1546,7 +1546,7 @@ int vfs_create(struct inode *dir, struct
+@@ -1532,7 +1532,7 @@ int vfs_create(struct inode *dir, struct
  		return -EACCES;	/* shouldn't it be ENOSYS? */
  	mode &= S_IALLUGO;
  	mode |= S_IFREG;
@@ -25,12 +25,12 @@ Subject: Never pass a NULL nameidata to vfs_create()
  		int type, dev_t rdev, struct svc_fh *resfhp)
  {
 -	struct dentry	*dentry, *dchild = NULL;
-+	struct nameidata nd = {};
++	struct nameidata2 nd;
 +	struct dentry	*dchild = NULL;
  	struct svc_export *exp;
  	struct inode	*dirp;
  	__be32		err;
-@@ -1138,9 +1139,10 @@ nfsd_create(struct svc_rqst *rqstp, stru
+@@ -1138,9 +1139,11 @@ nfsd_create(struct svc_rqst *rqstp, stru
  	if (err)
  		goto out;
  
@@ -39,11 +39,12 @@ Subject: Never pass a NULL nameidata to vfs_create()
  	exp = fhp->fh_export;
 -	dirp = dentry->d_inode;
 +	nd.mnt = exp->ex_mnt;
++	nd.flags = 0;
 +	dirp = nd.dentry->d_inode;
  
  	err = nfserr_notdir;
  	if(!dirp->i_op || !dirp->i_op->lookup)
-@@ -1152,7 +1154,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+@@ -1152,7 +1155,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
  	if (!resfhp->fh_dentry) {
  		/* called from nfsd_proc_mkdir, or possibly nfsd3_proc_create */
  		fh_lock_nested(fhp, I_MUTEX_PARENT);
@@ -52,7 +53,7 @@ Subject: Never pass a NULL nameidata to vfs_create()
  		host_err = PTR_ERR(dchild);
  		if (IS_ERR(dchild))
  			goto out_nfserr;
-@@ -1166,8 +1168,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
+@@ -1166,8 +1169,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
  			/* not actually possible */
  			printk(KERN_ERR
  				"nfsd_create: parent %s/%s not locked!\n",
@@ -63,7 +64,7 @@ Subject: Never pass a NULL nameidata to vfs_create()
  			err = nfserr_io;
  			goto out;
  		}
-@@ -1178,7 +1180,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+@@ -1178,7 +1181,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
  	err = nfserr_exist;
  	if (dchild->d_inode) {
  		dprintk("nfsd_create: dentry %s/%s not negative!\n",
@@ -72,7 +73,7 @@ Subject: Never pass a NULL nameidata to vfs_create()
  		goto out; 
  	}
  
-@@ -1192,7 +1194,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+@@ -1192,7 +1195,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
  	err = 0;
  	switch (type) {
  	case S_IFREG:
@@ -81,7 +82,7 @@ Subject: Never pass a NULL nameidata to vfs_create()
  		break;
  	case S_IFDIR:
  		host_err = vfs_mkdir(dirp, dchild, exp->ex_mnt, iap->ia_mode);
-@@ -1212,7 +1214,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+@@ -1212,7 +1215,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
  		goto out_nfserr;
  
  	if (EX_ISSYNC(exp)) {
@@ -90,18 +91,18 @@ Subject: Never pass a NULL nameidata to vfs_create()
  		write_inode_now(dchild->d_inode, 1);
  	}
  
-@@ -1252,7 +1254,9 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
+@@ -1252,7 +1255,9 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
  		struct svc_fh *resfhp, int createmode, u32 *verifier,
  	        int *truncp, int *created)
  {
 -	struct dentry	*dentry, *dchild = NULL;
-+	struct nameidata nd = {};
++	struct nameidata2 nd;
 +	struct dentry	*dchild = NULL;
 +	struct svc_export *exp;
  	struct inode	*dirp;
  	__be32		err;
  	int		host_err;
-@@ -1270,8 +1274,10 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
+@@ -1270,8 +1275,11 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
  	if (err)
  		goto out;
  
@@ -110,11 +111,12 @@ Subject: Never pass a NULL nameidata to vfs_create()
 +	nd.dentry = fhp->fh_dentry;
 +	exp = fhp->fh_export;
 +	nd.mnt = exp->ex_mnt;
++	nd.flags = 0;
 +	dirp = nd.dentry->d_inode;
  
  	/* Get all the sanity checks out of the way before
  	 * we lock the parent. */
-@@ -1283,12 +1289,12 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
+@@ -1283,12 +1291,12 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
  	/*
  	 * Compose the response file handle.
  	 */
@@ -129,7 +131,7 @@ Subject: Never pass a NULL nameidata to vfs_create()
  	if (err)
  		goto out;
  
-@@ -1334,14 +1340,14 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
+@@ -1334,14 +1342,14 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
  		goto out;
  	}
  
@@ -149,18 +151,22 @@ Subject: Never pass a NULL nameidata to vfs_create()
  
 --- a/ipc/mqueue.c
 +++ b/ipc/mqueue.c
-@@ -604,6 +604,10 @@ static int mq_attr_ok(struct mq_attr *at
+@@ -603,9 +603,14 @@ static int mq_attr_ok(struct mq_attr *at
  static struct file *do_create(struct dentry *dir, struct dentry *dentry,
  			int oflag, mode_t mode, struct mq_attr __user *u_attr)
  {
-+	struct nameidata nd = {
-+		.dentry = dir,
-+		/* Not a mounted filesystem, so set .mnt to NULL. */
-+	};
++	struct nameidata2 nd;
  	struct mq_attr attr;
  	int ret;
  
-@@ -619,7 +623,7 @@ static struct file *do_create(struct den
++	nd.dentry = dir;
++	nd.mnt = NULL;  /* Not a mounted filesystem */
++	nd.flags = 0;
++
+ 	if (u_attr) {
+ 		ret = -EFAULT;
+ 		if (copy_from_user(&attr, u_attr, sizeof(attr)))
+@@ -618,7 +623,7 @@ static struct file *do_create(struct den
  	}
  
  	mode &= ~current->fs->umask;

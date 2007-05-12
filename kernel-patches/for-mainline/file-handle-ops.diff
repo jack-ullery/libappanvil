@@ -1,5 +1,5 @@
 From: Andreas Gruenbacher <agruen@suse.de>
-Subject: Enable LSM hooks to distinguish operations on file descriptors from operations on pathnames.
+Subject: Enable LSM hooks to distinguish operations on file descriptors from operations on pathnames
 
 Struct iattr already contains ia_file since commit cc4e69de from 
 Miklos (which is related to commit befc649c). Use this to pass

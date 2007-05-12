@@ -1,3 +1,12 @@
+From: Andreas Gruenbacher <agruen@suse.de>
+Subject: Factor out sysctl pathname code
+
+Convert the selinux sysctl pathname computation code into a standalone
+function.
+
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
+
 ---
  include/linux/sysctl.h   |    2 ++
  kernel/sysctl.c          |   27 +++++++++++++++++++++++++++
