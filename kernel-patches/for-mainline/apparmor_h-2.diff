@@ -1,0 +1,20 @@
+---
+ security/apparmor/apparmor.h |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -185,6 +185,13 @@ struct aa_audit {
+ #define AA_CHECK_DIR	2  /* file type is directory */
+ #define AA_CHECK_MANGLE	4  /* leave extra room for name mangling */
+ 
++/* lock subtypes so lockdep does raise false positives */
++enum apparmor_lock_class {
++	aa_lock_normal,
++	aa_lock_nested,
++	aa_lock_task_release
++};
++
+ /* main.c */
+ extern int alloc_null_complain_profile(void);
+ extern void free_null_complain_profile(void);

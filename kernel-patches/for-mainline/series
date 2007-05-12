@@ -39,11 +39,16 @@ parent-permission.diff
 apparmor-audit.diff
 apparmor-main.diff
 # apparmor-main-2.diff
+main-doc_book.diff
+apparmor-main-3.diff
 apparmor-lsm.diff
+lsm-doc_book.diff
 apparmor-module_interface.diff
 apparmor-misc.diff
+apparmor_h-2.diff
+apparmor_inline2.diff
+apparmor-locking-2.diff
 apparmor-intree.diff
-# apparmor_inline2.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff
@@ -70,5 +75,3 @@ file_permission-nameidata.diff
 # vfs_rmdir-args.diff
 # vfs_unlink-args.diff
 # may_delete-args.diff
-lsm-doc_book.diff
-main-doc_book.diff

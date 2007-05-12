@@ -1,0 +1,26 @@
+---
+ security/apparmor/locking.txt |   16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
+
+--- a/security/apparmor/locking.txt
++++ b/security/apparmor/locking.txt
+@@ -51,9 +51,13 @@ list, and can sleep. This ensures that p
+ won't race with itself. We release the profile_list_lock as soon as
+ possible to avoid stalling exec during profile loading/replacement/removal.
+ 
+-lock_dep reports a false 'possible irq lock inversion dependency detected'
+-when the profile lock is taken in aa_release.  This is due to that the
+-task_lock is often taken inside the profile lock but other kernel code
+-takes the task_lock with interrupts enabled.  A deadlock will not actually
+-occur because apparmor does not take the task_lock in hard_irq or soft_irq
+-context.
++AppArmor uses lock subtyping to avoid false positives from lockdep.  The
++profile lock is often taken nested, but it is guarenteed to be in
++a lock safe order and not the same lock when done so it is safe.  A third
++lock type (aa_lock_task_release) is given to the profile_lock when it is
++taken in soft irq context during task release (aa_release).  This is to
++avoid a false positive between the task_lock and the profile lock.  In
++task context the profile_lock wraps the task_lock with irqs off, but the
++kernel takes the task_lock with irqs enabled.  This won't ever result
++in a dead lock because aa_release doesn't need to take the task_lock
++of dead task that is released.
