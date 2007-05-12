@@ -43,7 +43,7 @@ apparmor-lsm.diff
 apparmor-module_interface.diff
 apparmor-misc.diff
 apparmor-intree.diff
-apparmor_inline2.diff
+# apparmor_inline2.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff
