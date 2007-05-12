@@ -1,0 +1,26 @@
+---
+ security/apparmor/main.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -80,8 +80,7 @@ static int aa_link_denied(struct aa_prof
+ 	l_mode = aa_match(profile->file_rules, link);
+ 	t_mode = aa_match(profile->file_rules, target);
+ 
+-	/**
+-	 * Link always requires 'l' on the link, a subset of the
++	/* Link always requires 'l' on the link, a subset of the
+ 	 * target's 'r', 'w', 'x', and 'm' permissions on the link, and
+ 	 * if the link has 'x', an exact match of all the execute flags
+ 	 * ('i', 'u', 'U', 'p', 'P').
+@@ -94,8 +93,7 @@ static int aa_link_denied(struct aa_prof
+ 	      (l_mode & AA_EXEC_UNSAFE) == (t_mode & AA_EXEC_UNSAFE))))
+ 		return 0;
+ #undef RWXM
+-	/**
+-	 * FIXME: There currenly is no way to report which permissions
++	/* FIXME: There currenly is no way to report which permissions
+ 	 * we expect in t_mode, so linking could fail even after learning
+ 	 * the required l_mode.
+ 	 */

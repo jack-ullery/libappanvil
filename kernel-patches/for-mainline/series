@@ -70,3 +70,5 @@ file_permission-nameidata.diff
 # vfs_rmdir-args.diff
 # vfs_unlink-args.diff
 # may_delete-args.diff
+lsm-doc_book.diff
+main-doc_book.diff
