@@ -1,3 +1,11 @@
+From: John Johansen <jjohansen@suse.de>
+Subject: AppArmor: Main Part
+
+The underlying functions by which the AppArmor LSM hooks are implemented.
+
+Signed-off-by: John Johansen <jjohansen@suse.de>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+
 Index: b/security/apparmor/main.c
 ===================================================================
 --- /dev/null
