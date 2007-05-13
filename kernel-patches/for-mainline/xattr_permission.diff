@@ -1,6 +1,9 @@
 From: Andreas Gruenbacher <agruen@suse.de>
 Subject: Don't use a NULL nameidata in xattr_permission()
 
+Create nameidata2 struct xattr_permission so that it does not pass NULL
+to permission.
+
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
