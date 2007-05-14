@@ -20,9 +20,9 @@ Cc: Ingo Molnar <mingo@elte.hu>
 ---
  security/apparmor/apparmor.h  |    7 +++++++
  security/apparmor/inline.h    |   25 ++++++++++++++++++-------
- security/apparmor/locking.txt |   17 +++++++++++------
+ security/apparmor/locking.txt |   21 +++++++++++++++------
  security/apparmor/main.c      |    6 +++---
- 4 files changed, 39 insertions(+), 16 deletions(-)
+ 4 files changed, 43 insertions(+), 16 deletions(-)
 
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
@@ -96,7 +96,7 @@ Cc: Ingo Molnar <mingo@elte.hu>
  
 --- a/security/apparmor/locking.txt
 +++ b/security/apparmor/locking.txt
-@@ -51,9 +51,14 @@ list, and can sleep. This ensures that p
+@@ -51,9 +51,18 @@ list, and can sleep. This ensures that p
  won't race with itself. We release the profile_list_lock as soon as
  possible to avoid stalling exec during profile loading/replacement/removal.
  
@@ -115,8 +115,12 @@ Cc: Ingo Molnar <mingo@elte.hu>
 +This is to avoid a false positive between the task lock and the profile
 +lock.  In task context the profile lock wraps the task lock with irqs
 +off, but the kernel takes the task lock with irqs enabled.  This won't
-+ever result in a deadlock because aa_release doesn't need to take the
-+task lock of the dead task that is released.
++result in a deadlock because for a deadlock to occur the kernel must
++take dead task A's lock (irqs on), the rcu callback hook freeing
++dead task A must be run and AppArmor must be changing the profile on
++dead task A.  The kernel should not be taking a dead task's task_lock
++at the same time the task is being freed by task rcu cleanup other wise
++the task would not be out of its quiescent period.
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
 @@ -1081,8 +1081,8 @@ void aa_release(struct task_struct *task
