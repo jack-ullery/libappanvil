@@ -173,7 +173,7 @@ fi
 %endif
 
 %changelog
-- Sat Apr 21 2007 - aj@suse.de
+* Sat Apr 21 2007 - aj@suse.de
 - Use texlive for building.
 * Fri Apr 13 2007 - sbeattie@suse.de
 - Resurrect apparmor-docs as subpackage of apparmor-parser
