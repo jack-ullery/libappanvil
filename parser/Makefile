@@ -112,12 +112,12 @@ po/${NAME}.pot: ${SRCS} ${HDRS}
 	make -C po ${NAME}.pot NAME=${NAME} SOURCES="${SRCS} ${HDRS}"
 
 techdoc.pdf: techdoc.tex
-	while pdflatex $< || exit 1; \
+	while pdflatex $< ${BUILD_OUTPUT} || exit 1 ; \
 		grep -q "Label(s) may have changed" techdoc.log; \
 	do :; done
 
 techdoc/index.html: techdoc.pdf
-	latex2html -show_section_numbers -split 0 -noinfo -nonavigation -noaddress techdoc.tex
+	latex2html -show_section_numbers -split 0 -noinfo -nonavigation -noaddress techdoc.tex ${BUILD_OUTPUT}
 
 techdoc.txt: techdoc/index.html
 	w3m -dump $< > $@
