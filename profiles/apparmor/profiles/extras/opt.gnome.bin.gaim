@@ -43,9 +43,7 @@
 
   /opt/MozillaFirefox/bin/firefox.sh Px,
   /opt/gnome/bin/gaim mixr,
-  /opt/gnome/bin/gnome-open Ux,
   /opt/gnome/lib/GConf/2/gconfd-2 Px,
-  /opt/gnome/lib/bonobo/bonobo-activation-server Uxr,
   /opt/gnome/lib/gaim r,
   /opt/gnome/lib/gaim/*.so mr,
   /opt/gnome/lib/gtk-*/*/engines/*.so mr,
@@ -59,8 +57,6 @@
   /opt/gnome/share/sounds/gaim/* r,
   /opt/gnome/share/themes/** r,
   /opt/kde3/bin/kde-config mixr,
-  /opt/kde3/bin/kfmclient Ux,
-  /opt/kde3/bin/kcminit rUx,
   /opt/mozilla/lib/lib*so* mr,
   /opt/mozilla/lib64/lib*so* mr,
   /proc/cpuinfo r,

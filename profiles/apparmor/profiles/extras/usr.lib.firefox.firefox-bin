@@ -76,7 +76,6 @@
   /usr/bin/m4 rmix,
   /usr/bin/mozplugger-helper rmix,
   /usr/java/jre*/plugin/*/ns*/libjavaplugin_oji.so mr,
-  /usr/lib/RealPlayer10/realplay Ux,
   /usr/lib/browser-extensions/firefox r,
   /usr/lib/browser-plugins r,
   /usr/lib/browser-plugins/*.so mr,

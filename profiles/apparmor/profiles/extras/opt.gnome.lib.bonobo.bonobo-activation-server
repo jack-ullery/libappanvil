@@ -22,7 +22,6 @@
   /opt/gnome/lib/bonobo/servers r,
   /opt/gnome/lib/bonobo/servers/*.server r,
   /opt/gnome/lib/evolution-data-server-1.2/evolution-data-server-1.4 Px,
-  /opt/gnome/lib/evolution/2.4/evolution-alarm-notify Ux,
   /opt/gnome/lib/lib*so* mr,
   /usr/X11R6/lib/X11/locale/* r,
 }

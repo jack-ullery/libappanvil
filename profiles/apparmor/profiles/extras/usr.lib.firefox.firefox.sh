@@ -23,7 +23,6 @@
   /bin/gawk mixr,
   /bin/grep mixr,
   /etc/magic r,
-  /usr/bin/aoss Ux,
   /usr/bin/file mixr,
   /usr/bin/which mixr,
   /usr/lib/firefox/* r,

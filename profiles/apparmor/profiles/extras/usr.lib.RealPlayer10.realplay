@@ -33,7 +33,6 @@
   /opt/gnome/lib/pango/1.4.0/modules/* mr,
   /opt/gnome/share/icons r,
   /opt/gnome/share/icons/** r,
-  /opt/gnome/bin/nautilus rUx,
   /opt/gnome/share/themes/** r,
   /dev/dsp0 w,
   /etc/lsb-release r,
