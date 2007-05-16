@@ -1,3 +1,4 @@
+# $Id$
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
@@ -7,18 +8,19 @@
 #    License published by the Free Software Foundation.
 #
 # ------------------------------------------------------------------
+# vim:syntax=apparmor
+# Last Modified: Wed Aug 31 11:14:09 2005
+#include <tunables/global>
 
+/usr/sbin/popper {
+  #include <abstractions/authentication>
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/user-mail>
 
-  # $Id$
+  capability setgid,
+  capability setuid,
 
-  # per-user storage of configration
-  /root/.ethereal/**           rw,
-  /home/*/.ethereal/**         rw,
-
-  # ethereal needs this if you want to save or open a capture file in
-  # /tmp
-  /                            r,
-  /tmp                         r,
-  /home                        r,
-  /home/*/tmp                  r,
-  /home/*/tmp/**               rw,
+  /usr/sbin/popper mr,
+  /var/spool/mail/* rw,
+}

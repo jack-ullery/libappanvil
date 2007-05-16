@@ -33,21 +33,25 @@ common/Make.rules: $(COMMONDIR)/Make.rules
 endif
 
 DESTDIR=/
-EXTRASDIR=${DESTDIR}/usr/src/immunix/SubDomain/profiles/extras
+PROFILES_DEST=${DESTDIR}/etc/apparmor.d
+EXTRAS_DEST=${DESTDIR}/etc/apparmor/profiles/extras/
+PROFILES_SOURCE=./apparmor.d
+EXTRAS_SOURCE=./apparmor/profiles/extras/
+SUBDIRS_MUST_BE_SKIPPED=${PROFILES_SOURCE}/abstractions ${PROFILES_SOURCE}/program-chunks ${PROFILES_SOURCE}/tunables
+PROFILES_TO_COPY=$(filter-out ${SUBDIRS_MUST_BE_SKIPPED}, $(wildcard ${PROFILES_SOURCE}/*))
 
 .PHONY: install
 install: 
-	install -d ${DESTDIR}/etc/apparmor.d
-	install -m 644 enabled/* ${DESTDIR}/etc/apparmor.d
-	install -d ${EXTRASDIR}
-	install -m 644 extras/* ${EXTRASDIR}
-	install -m 755 -d ${DESTDIR}/etc/apparmor.d/abstractions \
-                   ${DESTDIR}/etc/apparmor.d/program-chunks \
-                   ${DESTDIR}/etc/apparmor.d/tunables
-	install -m 644 abstractions/* ${DESTDIR}/etc/apparmor.d/abstractions
-	install -m 644 program-chunks/* ${DESTDIR}/etc/apparmor.d/program-chunks
-	install -m 644 tunables/* ${DESTDIR}/etc/apparmor.d/tunables
-
+	install -m 755 -d ${PROFILES_DEST}
+	install -m 755 -d ${PROFILES_DEST}/abstractions \
+                          ${PROFILES_DEST}/program-chunks \
+                          ${PROFILES_DEST}/tunables
+	install -m 644 ${PROFILES_TO_COPY} ${PROFILES_DEST}
+	install -m 644 ${PROFILES_SOURCE}/abstractions/* ${PROFILES_DEST}/abstractions
+	install -m 644 ${PROFILES_SOURCE}/program-chunks/* ${PROFILES_DEST}/program-chunks
+	install -m 644 ${PROFILES_SOURCE}/tunables/* ${PROFILES_DEST}/tunables
+	install -m 755 -d ${EXTRAS_DEST}
+	install -m 644 ${EXTRAS_SOURCE}/* ${EXTRAS_DEST}
 
 .PHONY: clean
 clean:
@@ -69,21 +73,15 @@ ifndef LOGPROF
 LOGPROF=/usr/sbin/aa-logprof
 endif
 
-ENABLED_PATH=./enabled
-EXTRAS_PATH=./extras
+EXTRAS_PATH=${EXTRAS_SOURCE}/profiles/extras
 IGNORE_FILES=${EXTRAS_PATH}/README
-CHECK_PROFILES=$(filter-out ${IGNORE_FILES}, $(wildcard ${ENABLED_PATH}/*) $(wildcard ${EXTRAS_PATH}/*))
-CHECK_INCLUDES=${PWD}
+CHECK_PROFILES=$(filter-out ${IGNORE_FILES}, $(wildcard ${PROFILES_SOURCE}/*) $(wildcard ${EXTRAS_PATH}/*))
 
 .PHONY: check
 check:
-	@echo "*** Checking profiles against apparmor_parser"
+	@echo "*** Checking profiles from ${PROFILES_SOURCE} and ${EXTRAS_PATH} against apparmor_parser"
 	$(Q)for profile in ${CHECK_PROFILES} ; do \
-		${PARSER} -S -b ${CHECK_INCLUDES} $${profile} > /dev/null ; \
+		${PARSER} -S -I ${PWD}/apparmor.d $${profile} > /dev/null ; \
 	done
-
-.PHONY: check-install
-check-install:
-	$(Q)make check ENABLED_PATH=${DESTDIR}/etc/apparmor.d EXTRAS_PATH=${EXTRASDIR} CHECK_INCLUDES=${DESTDIR}/etc/apparmor.d
-	@echo "*** Checking profiles against logprof"
-	$(Q)${LOGPROF} -d ${DESTDIR}/etc/apparmor.d -f /dev/null
+	@echo "*** Checking profiles from ${PROFILES_SOURCE} against logprof"
+	$(Q)${LOGPROF} -d ${PROFILES_SOURCE} -f /dev/null

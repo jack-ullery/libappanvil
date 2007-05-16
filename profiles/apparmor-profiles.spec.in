@@ -55,8 +55,7 @@ This package is part of a suite of tools that used to be named SubDomain.
 
 %install
 [ "${RPM_BUILD_ROOT}" != "/" ] && rm -rf ${RPM_BUILD_ROOT}
-make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro} \
-	     EXTRASDIR=${RPM_BUILD_ROOT}/%{extras_dir}/
+make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro}
 
 %clean 
 [ "${RPM_BUILD_ROOT}" != "/" ] && rm -rf $RPM_BUILD_ROOT
