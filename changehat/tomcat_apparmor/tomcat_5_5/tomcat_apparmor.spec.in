@@ -1,0 +1,86 @@
+# $Id:$
+# ----------------------------------------------------------------------
+#    Copyright (c) 2006 NOVELL (All rights reserved)
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, contact Novell, Inc.
+# ----------------------------------------------------------------------
+# norootforbuild
+
+# Check first to see if distro is already defined.
+
+%if ! %{?distro:1}0
+  %define distro suse
+%endif
+
+%if %{distro} == "suse"
+%define CATALINA_HOME /usr/share/tomcat5
+%endif 
+%define APPARMOR_DOC_DIR /usr/share/doc/packages/apparmor-docs/
+%define JNI_SO libJNIChangeHat.so
+%define JAR_FILE changeHatValve.jar
+
+
+Summary: Tomcat 5 plugin for AppArmor change_hat
+Name: tomcat_apparmor
+Version: @@immunix_version@@
+Release: @@repo_version@@
+Group:  System/Libraries
+Source0: %{name}-%{version}-@@repo_version@@.tar.gz
+License: LGPL
+BuildRoot: %{?_tmppath:}%{!?_tmppath:/var/tmp}/%{name}-%{version}-build
+Url: http://developer.novell.com/wiki/index.php/Novell_AppArmor
+Prereq: tomcat5, servletapi5, libapparmor
+BuildRequires: tomcat5, servletapi5 ant, java, libapparmor, java2-devel-packages, apparmor-docs
+Provides: tomcat_apparmor
+
+%description
+tomcat_apparmor - is a plugin for Apache Tomcat version 5.x that provides
+support for AppArmor change_hat for creating AppArmor containers that are
+bound to discrete elements of processing within the Tomcat servlet 
+container. The AppArmor containers, or "hats", can be created for invidual
+URL processing or per servlet. 
+
+%prep
+
+%setup -q 
+
+%build
+[ "${RPM_BUILD_ROOT}" != "/" ] && rm -rf ${RPM_BUILD_ROOT}
+
+ant -Ddist=${RPM_BUILD_DIR}/%{name}-%{version} -Dtarget=1.4 jar jni_so
+
+%install
+ant -Ddist=${RPM_BUILD_DIR}/%{name}-%{version} -Dversion=%{version} -Drelease=%{release} -Dcatalina_home=%{CATALINA_HOME} -Dinstall_root=${RPM_BUILD_ROOT} -Dinstall_lib=%{_lib} install_jar install_jni
+
+mkdir -p ${RPM_BUILD_ROOT}%{APPARMOR_DOC_DIR}
+install ${RPM_BUILD_DIR}/%{name}-%{version}/README.tomcat_apparmor  ${RPM_BUILD_ROOT}%{APPARMOR_DOC_DIR}
+
+%clean 
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root)
+%{CATALINA_HOME}/server/lib/%{JAR_FILE}
+/%{_lib}/lib*
+/%{_libdir}/lib*
+%{APPARMOR_DOC_DIR}/README.tomcat_apparmor
+
+%post
+ldconfig 
+
+%postun
+ldconfig 
+
+%changelog
+* Mon Oct 9 2006 - dreynolds@suse.de 
+- Initial package creation.
