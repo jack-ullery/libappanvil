@@ -18,10 +18,10 @@
         <include name="**/*.jar"/>
     </fileset>
 
-    <fileset id="tomcat.jars" dir="/usr/share/tomcat5/server/lib">
+    <fileset id="tomcat.jars" dir="${catalina_home}/server/lib">
 	   <include name="**/*.jar"/>
 	</fileset>
-    <fileset id="servlet.jars" dir="/usr/share/tomcat5/common/lib">
+    <fileset id="servlet.jars" dir="${catalina_home}/common/lib">
 	   <include name="**/*.jar"/>
 	</fileset>
 	
@@ -54,6 +54,7 @@
     <target name="jni_so" depends="compile" description="Build JNI library">
         <mkdir dir="${dist}"/>
         <exec dir="${jni_src}" executable="/usr/bin/make">
+              <arg value="LIB=${install_lib}"/>
               <arg value="DESTDIR=${dist}"/>
               <arg value="VERSION=${version}"/>
               <arg value="RELEASE=${release}"/>

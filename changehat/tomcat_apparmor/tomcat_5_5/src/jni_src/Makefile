@@ -1,15 +1,15 @@
-INCLUDE=/usr/lib/jvm/java/include
-TOP=../..
-CLASSPATH=${TOP}/build
-CFLAGS=-g -O2 -Wall -Wstrict-prototypes -Wl,-soname,$@.${SO_VERS} -pipe  -fpic -D_REENTRANT
-INCLUDES=-I$(INCLUDE)  -I$(INCLUDE)/linux
-CLASSFILE=${CLASSPATH}/com/novell/apparmor/${JAVA_CLASSNAME}.class
-DESTDIR=${TOP}/dist
-SO_VERS         = 1
-LIB             = lib/
-LIBDIR          = /usr/${LIB}
-JAVA_CLASSNAME=JNIChangeHat
-TARGET=lib${JAVA_CLASSNAME}
+TOP            = ../..
+CLASSPATH      = ${TOP}/build
+LIB            = lib/
+LIBDIR         = /usr/${LIB}
+INCLUDE        = ${LIBDIR}/jvm/java/include
+CFLAGS         = -g -O2 -Wall -Wstrict-prototypes -Wl,-soname,$@.${SO_VERS} -pipe  -fpic -D_REENTRANT
+INCLUDES       = -I$(INCLUDE)  -I$(INCLUDE)/linux
+CLASSFILE      = ${CLASSPATH}/com/novell/apparmor/${JAVA_CLASSNAME}.class
+DESTDIR        = ${TOP}/dist
+SO_VERS        = 1
+JAVA_CLASSNAME = JNIChangeHat
+TARGET         = lib${JAVA_CLASSNAME}
 
 all: ${TARGET}.so
 

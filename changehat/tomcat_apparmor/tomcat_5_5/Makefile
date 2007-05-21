@@ -27,11 +27,11 @@ common/Make.rules: $(COMMONDIR)/Make.rules
 endif
 
 LIB		= lib
-CATALINA_HOME 	= /usr/share/tomcat5
+CATALINA_HOME 	= /usr/share/tomcat55
 
-# By default build 1.4 bytecode
+
 all:
-	ant -Dtarget=1.4 jar jni_so
+	ant -Dcatalina_home=${CATALINA_HOME} -Dtarget=1.5 jar jni_so
 
 clean:
 	ant clean

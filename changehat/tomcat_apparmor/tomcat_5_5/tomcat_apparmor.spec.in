@@ -23,7 +23,7 @@
 %endif
 
 %if %{distro} == "suse"
-%define CATALINA_HOME /usr/share/tomcat5
+%define CATALINA_HOME /usr/share/tomcat55
 %endif 
 %define APPARMOR_DOC_DIR /usr/share/doc/packages/apparmor-docs/
 %define JNI_SO libJNIChangeHat.so
@@ -39,9 +39,8 @@ Source0: %{name}-%{version}-@@repo_version@@.tar.gz
 License: LGPL
 BuildRoot: %{?_tmppath:}%{!?_tmppath:/var/tmp}/%{name}-%{version}-build
 Url: http://developer.novell.com/wiki/index.php/Novell_AppArmor
-Prereq: tomcat5, servletapi5, libapparmor
-BuildRequires: tomcat5, servletapi5 ant, java, libapparmor, java2-devel-packages, apparmor-docs
-Provides: tomcat_apparmor
+Prereq: tomcat55, servletapi5, libapparmor
+BuildRequires: tomcat55, servletapi5, ant, java, libapparmor, java2-devel-packages, apparmor-docs
 
 %description
 tomcat_apparmor - is a plugin for Apache Tomcat version 5.x that provides
@@ -57,7 +56,7 @@ URL processing or per servlet.
 %build
 [ "${RPM_BUILD_ROOT}" != "/" ] && rm -rf ${RPM_BUILD_ROOT}
 
-ant -Ddist=${RPM_BUILD_DIR}/%{name}-%{version} -Dtarget=1.4 jar jni_so
+ant -Dinstall_lib=%{_lib} -Dcatalina_home=%{CATALINA_HOME} -Ddist=${RPM_BUILD_DIR}/%{name}-%{version} -Dtarget=1.4 jar jni_so
 
 %install
 ant -Ddist=${RPM_BUILD_DIR}/%{name}-%{version} -Dversion=%{version} -Drelease=%{release} -Dcatalina_home=%{CATALINA_HOME} -Dinstall_root=${RPM_BUILD_ROOT} -Dinstall_lib=%{_lib} install_jar install_jni
