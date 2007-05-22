@@ -185,25 +185,25 @@ sub debug ($) {
 my %arrows = ( A => "UP", B => "DOWN", C => "RIGHT", D => "LEFT" );
 
 sub getkey {
-  # change to raw mode
-  ReadMode(4);
+    # change to raw mode
+    ReadMode(4);
 
-  my $key = ReadKey(0);
+    my $key = ReadKey(0);
 
-  # decode arrow key control sequences
-  if ($key eq "\x1B") {
-    $key = ReadKey(0);
-    if ($key eq "[") {
-      $key = ReadKey(0);
-      if ($arrows{$key}) {
-        $key = $arrows{$key};
-      }
+    # decode arrow key control sequences
+    if ($key eq "\x1B") {
+        $key = ReadKey(0);
+        if ($key eq "[") {
+            $key = ReadKey(0);
+            if ($arrows{$key}) {
+                $key = $arrows{$key};
+            }
+        }
     }
-    }
 
-  # return to cooked mode
-  ReadMode(0);
-  return $key;
+    # return to cooked mode
+    ReadMode(0);
+    return $key;
 }
 
 BEGIN {
@@ -308,7 +308,7 @@ sub setup_yast {
                 # something's broken, die a horrible, painful death
                 fatal_error "Yast frontend is out of sync from backend agent.";
             }
-      $DEBUGGING && debug "Initial handshake ok";
+            $DEBUGGING && debug "Initial handshake ok";
 
             # the yast connection seems to be working okay
             return 1;
@@ -608,8 +608,8 @@ sub get_profile {
     my $fqdbin = shift;
     my $profile_data;
 
-    my $distro     = $cfg->{settings}{distro};
-    my $repository = $cfg->{settings}{repository};
+    my $distro     = $cfg->{repository}{distro};
+    my $repository = $cfg->{repository}{url};
     my @profiles;
     my @profile_list;
 
@@ -678,8 +678,26 @@ sub get_profile {
 
     return undef if ( @profile_list == 0 ); # No repo profiles, no inactive
                                             # profile
+    my @options;
+    my @tmp_list;
+    my %users_list_idx =  ();
+    my $preferred_present = 0;
+    my $preferred_user  = $cfg->{repository}{preferred_user} || "NOVELL";
 
-    my @options = map { $_->{username} } @profile_list;
+    for (my $i = 0; $i < scalar(@profile_list); $i++) {
+        $users_list_idx{$profile_list[$i]->{username}} = $i;
+        if ( $profile_list[$i]->{username} eq $preferred_user ) {
+             $preferred_present = 1;
+        } else {
+            push @tmp_list, $profile_list[$i]->{username};
+        }
+    }
+
+    if ( $preferred_present ) {
+        push  @options, $preferred_user;
+    }
+    push  @options, @tmp_list;
+
     my $q = {};
     $q->{headers} = [];
     push @{ $q->{headers} }, gettext("Profile"), $fqdbin;
@@ -695,10 +713,9 @@ sub get_profile {
     my ($p, $ans, $arg);
     do {
         ($ans, $arg) = UI_PromptUser($q);
-
-        for (my $i = 0; $i < scalar(@profile_list); $i++) {
-            if ($profile_list[$i]->{username} eq $options[$arg]) {
-                $p = $profile_list[$i];
+        $p = $profile_list[$users_list_idx{$options[$arg]}];
+        for (my $i = 0; $i < scalar(@options); $i++) {
+            if ($options[$i] eq $options[$arg]) {
                 $q->{selected} = $i;
             }
         }
@@ -715,7 +732,8 @@ sub get_profile {
                 );
                 my ($ypath, $yarg) = GetDataFromYast();
             } else {
-                open(PAGER, "| less");
+                my $pager = get_pager();
+                open(PAGER, "| $pager");
                 print PAGER gettext("Profile submitted by") .
                                     " $options[$arg]:\n\n$p->{profile}\n\n";
                 close(PAGER);
@@ -737,30 +755,30 @@ sub get_profile {
 }
 
 sub set_repo_info {
-  my ($profile_data, $repo_url, $username, $id) = @_;
+    my ($profile_data, $repo_url, $username, $id) = @_;
 
-  # save repository metadata
-  $profile_data->{repo}{url}  = $repo_url;
-  $profile_data->{repo}{user} = $username;
-  $profile_data->{repo}{id}   = $id;
+    # save repository metadata
+    $profile_data->{repo}{url}  = $repo_url;
+    $profile_data->{repo}{user} = $username;
+    $profile_data->{repo}{id}   = $id;
 }
 
 sub use_repo_profile {
-  my ($fqdbin, $repo_url, $profile) = @_;
+    my ($fqdbin, $repo_url, $profile) = @_;
 
-  my $profile_data = eval {
-    parse_profile_data($profile->{profile}, "repository profile");
-  };
-  if ($@) {
-    $profile_data = undef;
-  }
+    my $profile_data = eval {
+        parse_profile_data($profile->{profile}, "repository profile");
+    };
+    if ($@) {
+        $profile_data = undef;
+    }
 
-  if ($profile_data) {
-    set_repo_info($profile_data->{$fqdbin}{$fqdbin}, $repo_url,
-                  $profile->{username}, $profile->{id});
-  }
+    if ($profile_data) {
+        set_repo_info($profile_data->{$fqdbin}{$fqdbin}, $repo_url,
+                      $profile->{username}, $profile->{id});
+    }
 
-  return $profile_data;
+    return $profile_data;
 }
 
 
@@ -771,7 +789,7 @@ sub create_new_profile {
       $fqdbin => {
           flags   => "complain",
           include => { "abstractions/base" => 1    },
-      path    => { $fqdbin             => "mr" },
+          path    => { $fqdbin             => "mr" },
       }
     };
 
@@ -795,7 +813,7 @@ sub create_new_profile {
     # create required infrastructure hats if it's a known change_hat app
   for my $hatglob (keys %{$cfg->{required_hats}}) {
         if ($fqdbin =~ /$hatglob/) {
-      for my $hat (sort split(/\s+/, $cfg->{required_hats}{$hatglob})) {
+            for my $hat (sort split(/\s+/, $cfg->{required_hats}{$hatglob})) {
                 $profile->{$hat} = { flags => "complain" };
             }
         }
@@ -1899,10 +1917,11 @@ sub read_log {
     close(LOG);
 }
 
+
 sub check_repo_for_newer {
     my $profile = shift;
 
-    my $distro = $cfg->{settings}{distro};
+    my $distro = $cfg->{repository}{distro};
     my $url    = $sd{$profile}{$profile}{repo}{url};
     my $user   = $sd{$profile}{$profile}{repo}{user};
     my $id     = $sd{$profile}{$profile}{repo}{id};
@@ -2397,7 +2416,7 @@ sub ask_to_enable_repo {
 
     my $q = { };
     $q->{headers} = [
-      "Repository", $cfg->{settings}{repository},
+      "Repository", $cfg->{repository}{url},
     ];
     $q->{explanation} = 
       gettext( "Would you like to enable access to the profile repository?" );
@@ -2439,7 +2458,7 @@ sub get_repo_user_pass {
 
 sub setup_repo_client {
     unless ($repo_client) {
-        $repo_client = new RPC::XML::Client $cfg->{settings}{repository};
+        $repo_client = new RPC::XML::Client $cfg->{repository}{url};
     }
 }
 
@@ -2474,7 +2493,7 @@ sub ask_signup_info {
                 SendDataToYast(
                     {
                         type     => "dialog-repo-sign-in",
-                        repo_url => $cfg->{settings}{repository}
+                        repo_url => $cfg->{repository}{url}
                     }
                 );
                 my ($ypath, $yarg) = GetDataFromYast();
@@ -2503,7 +2522,7 @@ sub ask_signup_info {
             if ($newuser eq "y") {
                 $res = $repo_client->send_request('Signup', $user, $pass, $email);
                 if (did_result_succeed($res)) {
-                  $signup_okay = 1;
+                    $signup_okay = 1;
                 } else {
                     my $error  = get_result_error($res);
                     my $errmsg = gettext("The Profile Repository server returned the following error:") . "\n" .  $error .  "\n" .  gettext("Please re-enter registration information or contact the administrator");
@@ -2622,13 +2641,13 @@ sub do_logprof_pass {
 
     save_profiles();
 
-  if (repo_is_enabled()) {
-    unless ($repo_cfg->{repository}{neversubmit}) {
-      submit_created_profiles();
-      submit_changed_profiles();
-    }
+    if (repo_is_enabled()) {
+        unless ($repo_cfg->{repository}{neversubmit}) {
+            submit_created_profiles();
+            submit_changed_profiles();
+        }
         @created = ();
-  }
+    }
 
     # if they hit "Finish" we need to tell the caller that so we can exit
     # all the way instead of just going back to the genprof prompt
@@ -2720,9 +2739,16 @@ sub is_repo_profile {
 }
 
 sub submit_created_profiles {
-    my $url = $cfg->{settings}{repository};
+    my $url = $cfg->{repository}{url};
 
     my @new_profiles;
+    # FIXME add code to detect that a changed profile (locally) will be a newly
+    # created one for the repository
+    # in the case that:
+    # profile is a repo profile but NOT owned by the current user AND
+    # current user doesn't have a profile for the program
+    # This happens when we choose a profile from another user and make changes
+    # to it.
     if ($repo_client && @created) {
         my @new_profiles;
         for my $profile (@created) {
@@ -2758,7 +2784,7 @@ sub submit_created_profiles {
 
 sub submit_changed_profiles {
 
-    my $url = $cfg->{settings}{repository};
+    my $url = $cfg->{repository}{url};
 
     my @repo_profiles;
     for my $profile (sort keys %sd) {
@@ -2767,6 +2793,10 @@ sub submit_changed_profiles {
         }
     }
 
+    # FIXME detect that profile in the repo doesn't belong to the current user
+    # and throw out as a change unless a profile exists for the same program in
+    # the repo for the current user (in this case show the diff for the profile
+    # owned by the current user vs the original used profile)
     if (@repo_profiles) {
         if ($repo_client) {
             my @changed_profiles;
@@ -2787,7 +2817,7 @@ sub submit_changed_profiles {
             if (@changed_profiles) {
                 if ($UI_Mode eq "yast") {
                     my $explanation =
-                      gettext("Select which of the changes profiles you would".
+                      gettext("Select which of the changed profiles you would".
                       " like to upload\nto the repository");
                     my $title       = gettext("Changed profiles");
                     yast_select_and_upload_profiles($title,
@@ -2811,7 +2841,7 @@ sub submit_changed_profiles {
 sub yast_select_and_upload_profiles {
 
     my ($title, $explanation, @profiles) = @_;
-    my $url = $cfg->{settings}{repository};
+    my $url = $cfg->{repository}{url};
     my %profile_changes;
 
     foreach my $prof (@profiles) {
@@ -2849,7 +2879,7 @@ sub yast_select_and_upload_profiles {
             if (!$single_changelog) {
                 $changelog = $changelogs->{$profile};
             }
-            my @args = ('Create', $user, $pass, $cfg->{settings}{distro},
+            my @args = ('Create', $user, $pass, $cfg->{repository}{distro},
                         $profile, $profile_string, $changelog);
             my $res = $repo_client->send_request(@args);
             if (ref $res) {
@@ -2902,7 +2932,7 @@ sub set_profiles_local_only {
 
 sub console_select_and_upload_profiles {
     my ($title, $explanation, @profiles) = @_;
-    my $url = $cfg->{settings}{repository};
+    my $url = $cfg->{repository}{url};
 
     my $q = {};
     $q->{title} = $title;
@@ -2941,7 +2971,7 @@ sub console_select_and_upload_profiles {
                 my $profile        = $p_data->[0];
                 my $profile_string = $p_data->[1];
                 my @args           = ('Create', $user, $pass,
-                                      $cfg->{settings}{distro}, $profile,
+                                      $cfg->{repository}{distro}, $profile,
                                       $profile_string, $changelog);
                 my $res            = $repo_client->send_request(@args);
                 if (ref $res) {
@@ -2962,10 +2992,22 @@ sub console_select_and_upload_profiles {
     }
 }
 
+sub get_pager {
+
+    if ( $ENV{PAGER} and (-x "/usr/bin/$ENV{PAGER}" ||
+                          -x "/usr/sbin/$ENV{PAGER}" )
+       ) {
+        return $ENV{PAGER};
+    } else {
+        return "less"
+    }
+}
+
+
 sub display_text {
     my ($header, $body) = @_;
-
-    if (open(PAGER, "| less")) {
+    my $pager = get_pager();
+    if (open(PAGER, "| $pager")) {
         print PAGER "$header\n\n$body";
         close(PAGER);
     }
@@ -3958,23 +4000,20 @@ sub read_config {
 
 sub write_config {
     my ($filename, $config) = @_;
-
-    if (open(CONF, ">$confdir/$filename")) {
+    if (open(my $CONF, ">$confdir/$filename")) {
         for my $section (sort keys %$config) {
-            print CONF "[$section]\n";
+            print $CONF "[$section]\n";
 
             for my $key (sort keys %{$config->{$section}}) {
-                print CONF "  $key = $config->{$section}{$key}\n"
+                print $CONF "  $key = $config->{$section}{$key}\n"
                     if ($config->{$section}{$key});
             }
         }
-        close(CONF);
+        chmod(0600, $CONF);
+        close($CONF);
     } else {
         fatal_error "Can't write config file $filename: $!";
     }
-
-    my $mode = 0600;
-    chmod $mode, "$confdir/$filename";
 }
 
 sub find_first_file {
