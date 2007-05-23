@@ -21,7 +21,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/ntfs/file.c
 +++ b/fs/ntfs/file.c
-@@ -2121,7 +2121,7 @@ static ssize_t ntfs_file_aio_write_noloc
+@@ -2122,7 +2122,7 @@ static ssize_t ntfs_file_aio_write_noloc
  		goto out;
  	if (!count)
  		goto out;
@@ -88,7 +88,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  extern void remove_inode_hash(struct inode *);
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -1905,20 +1905,20 @@ int should_remove_suid(struct dentry *de
+@@ -1906,20 +1906,20 @@ int should_remove_suid(struct dentry *de
  }
  EXPORT_SYMBOL(should_remove_suid);
  
@@ -114,7 +114,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
  	return 0;
  }
-@@ -2269,7 +2269,7 @@ __generic_file_aio_write_nolock(struct k
+@@ -2270,7 +2270,7 @@ __generic_file_aio_write_nolock(struct k
  	if (count == 0)
  		goto out;
  
@@ -125,7 +125,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
 --- a/mm/filemap_xip.c
 +++ b/mm/filemap_xip.c
-@@ -405,7 +405,7 @@ xip_file_write(struct file *filp, const 
+@@ -406,7 +406,7 @@ xip_file_write(struct file *filp, const 
  	if (count == 0)
  		goto out_backing;
  

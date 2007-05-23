@@ -87,7 +87,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  /*
 --- a/ipc/mqueue.c
 +++ b/ipc/mqueue.c
-@@ -749,7 +749,7 @@ asmlinkage long sys_mq_unlink(const char
+@@ -748,7 +748,7 @@ asmlinkage long sys_mq_unlink(const char
  	if (inode)
  		atomic_inc(&inode->i_count);
  

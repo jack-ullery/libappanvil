@@ -1,6 +1,9 @@
 From: Tony Jones <tonyj@suse.de>
 Subject: Export audit subsystem for use by modules
 
+Update kenel audit range comments to show AppArmor's registered range of
+1500-1599.  This range used to be reserved for LSPP but LSPP uses the
+SE Linux range and the range was given to AppArmor.
 Adds necessary export symbols for audit subsystem routines.
 Changes audit_log_vformat to be externally visible (analagous to vprintf)
 Patch is not in mainline -- pending AppArmor code submission to lkml
@@ -9,12 +12,21 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- include/linux/audit.h |    5 +++++
+ include/linux/audit.h |    7 ++++++-
  kernel/audit.c        |    6 ++++--
- 2 files changed, 9 insertions(+), 2 deletions(-)
+ 2 files changed, 10 insertions(+), 3 deletions(-)
 
 --- a/include/linux/audit.h
 +++ b/include/linux/audit.h
+@@ -33,7 +33,7 @@
+  * 1200 - 1299 messages internal to the audit daemon
+  * 1300 - 1399 audit event messages
+  * 1400 - 1499 SE Linux use
+- * 1500 - 1599 kernel LSPP events
++ * 1500 - 1599 AppArmor use
+  * 1600 - 1699 kernel crypto events
+  * 1700 - 1799 kernel anomaly records
+  * 1800 - 1999 future kernel use (maybe integrity labels and related events)
 @@ -114,6 +114,8 @@
  #define AUDIT_ANOM_PROMISCUOUS      1700 /* Device changed promiscuous mode */
  #define AUDIT_ANOM_ABEND            1701 /* Process ended abnormally */
