@@ -112,13 +112,16 @@ fi
 case "$1" in
 	start)
 		start_aa_event
+		rc=$?
 		;;
 	stop)
 		stop_aa_event
+		rc=$?
 		;;
 	restart|reload|force-reload|try-restart)
 		stop_aa_event
 		start_aa_event
+		rc=$?
 		;;
 	status)
         	echo -n "Checking for service AppArmor Event daemon:"
@@ -134,4 +137,4 @@ case "$1" in
 		exit 1
 		;;
 	esac
-exit 0
+exit $rc
