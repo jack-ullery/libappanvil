@@ -71,26 +71,32 @@ fi
 case "$1" in
 	start)
 		apparmor_start
+		rc=$?
 		;;
 	stop)
 		apparmor_stop
+		rc=$?
 		;;
 	restart|reload|force-reload)
 		apparmor_restart
+		rc=$?
 		;;
 	try-restart)
 		apparmor_try_restart
+		rc=$?
 		;;
 	kill)
 		apparmor_kill
+		rc=$?
 		;;
 	status)
 		apparmor_status
+		rc=$?
 		;;
 	*)
 		usage
 		exit 1
 		;;
 	esac
-exit 0
+exit $rc
 

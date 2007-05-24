@@ -422,7 +422,7 @@ apparmor_restart() {
 
 apparmor_try_restart() {
 	if ! is_apparmor_loaded ; then
-		return 1
+		return 0
 	fi
 
 	__apparmor_restart
