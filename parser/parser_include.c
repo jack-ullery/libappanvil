@@ -195,12 +195,12 @@ int add_search_dir(char *dir)
 	if (!dir || strlen(dir) <= 0)
 		return 1;
 
-	t = malloc(strlen(dir) + 1);
+	t = strdup(dir);
 	if (t == NULL) {
 		PERROR(_("Error: Could not allocate memory.\n"));
 		return 0;
 	}
-	strcpy(t, dir);
+
 	/*strip trailing /'s */
 	while (t[strlen(t) - 1] == '/')
 		t[strlen(t) - 1] = 0;
