@@ -89,6 +89,30 @@ B<apparmor_status> must be run as root to read the state of the loaded
 policy from the apparmor module. It uses the /proc filesystem to determine
 which processes are confined and so is susceptible to race conditions.
 
+Upon exiting, B<apparmor_status> will set its return value to the
+following values:
+
+=item 0
+
+if apparmor is enabled and policy is loaded.
+
+=item 1
+
+if apparmor is not enabled/loaded.
+
+=item 2
+
+if apparmor is enabled but no policy is loaded.
+
+=item 3
+
+if the apparmor control files aren't available under /sys/kernel/security/.
+
+=item 4
+
+if the user running the script doesn't have enough privileges to read
+the apparmor control files.
+
 If you find any additional bugs, please report them to bugzilla at
 L<http://bugzilla.novell.com>.
 

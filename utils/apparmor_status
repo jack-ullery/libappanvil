@@ -101,7 +101,7 @@ sub count_processes {
       if ($file =~ m/^\d+/ && open(CURRENT, "/proc/$file/attr/current")) {
 	while (<CURRENT>) {
 	  $processes++;
-	  $confined++ if not m/^unconstrained$/;
+	  $confined++ if not m/^uncon(stra|f)ined$/;
 	  $enforced++ if m/\(enforce\)$/;
 	  $complain++ if m/\(complain\)$/;
 	}
