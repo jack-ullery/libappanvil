@@ -742,7 +742,7 @@ Index: b/security/apparmor/main.c
 +		return error;
 +	} else
 +		/* don't worry about rcu replacement of the cxt here.
-+		 * caps_logged is a cache to reduce the occurance of
++		 * caps_logged is a cache to reduce the occurence of
 +		 * duplicate messages in the log.  The worst that can
 +		 * happen is duplicate capability messages shows up in
 +		 * the audit log
