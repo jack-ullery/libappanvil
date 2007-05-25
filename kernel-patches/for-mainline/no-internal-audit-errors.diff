@@ -1,0 +1,21 @@
+---
+ security/apparmor/main.c |    8 --------
+ 1 file changed, 8 deletions(-)
+
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -432,14 +432,6 @@ int aa_audit(struct aa_profile *profile,
+ 			audit = 1;
+ 			logcls = "AUDITING";
+ 		}
+-	} else if (sa->error_code < 0) {
+-		audit_log(current->audit_context, gfp_mask, AUDIT_APPARMOR,
+-			"Internal error auditing event type %d (error %d)",
+-			sa->type, sa->error_code);
+-		AA_ERROR("Internal error auditing event type %d (error %d)\n",
+-			sa->type, sa->error_code);
+-		error = sa->error_code;
+-		goto out;
+ 	} else if (sa->type == AA_AUDITTYPE_SYSCALL) {
+ 		/* Currently AA_AUDITTYPE_SYSCALL is for rejects only.
+ 		 * Values set by aa_audit_syscallreject will get us here.

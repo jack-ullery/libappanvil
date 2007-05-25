@@ -40,10 +40,14 @@ apparmor-audit.diff
 apparmor-main.diff
 # apparmor-main-2.diff
 apparmor-lsm.diff
+apparmor_ptrace-cleanup.diff
 apparmor-module_interface.diff
 apparmor-misc.diff
 apparmor-intree.diff
 apparmor-lockdep.diff
+get-rid-of-sa-flags.diff
+no-internal-audit-errors.diff
+simplify-audit-status.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff
