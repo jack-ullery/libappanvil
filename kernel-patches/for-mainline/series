@@ -74,14 +74,3 @@ file_permission-nameidata.diff
 # vfs_rmdir-args.diff
 # vfs_unlink-args.diff
 # may_delete-args.diff
-multi-profile-load.diff
-#change_hat-to-change_profile.diff
-#filp_caching.diff
-#audit_rework.diff
-expand_module_interface.diff
-rlimits.diff
-reload.diff
-apparmor-append.diff
-apparmor-lock-mediation.diff
-apparmor-dac-like-perms.diff
-named_transitions.diff
