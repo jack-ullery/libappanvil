@@ -33,12 +33,8 @@
 
   # bash inspects filesystems at startup
   /etc/mtab                        r,
-  /proc/sys/kernel/ngroups_max     r,
-  /proc/*/mounts                   r,
-  /proc/filesystems                r,
-
-  # bash wants, not sure why.
-  /proc/meminfo                    r,
+  @{PROC}/[0-9]*/mounts            r,
+  @{PROC}/filesystems              r,
 
   # probably readline wants to know terminal capabilities
   /usr/share/terminfo/**           r,

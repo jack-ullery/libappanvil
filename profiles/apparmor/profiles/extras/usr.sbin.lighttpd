@@ -27,8 +27,6 @@
   capability setgid,
   capability setuid,
 
-  /proc/sys/kernel/ngroups_max r,
-
   /etc/lighttpd r,
   /etc/lighttpd/*.conf r,
   /etc/lighttpd/conf.d/*.conf r,

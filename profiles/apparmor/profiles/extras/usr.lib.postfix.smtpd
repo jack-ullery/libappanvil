@@ -55,9 +55,5 @@
 
   /var/run/sasl2/mux                             w,
 
-  /proc/net/if_inet6                          r,
-  /proc/cpuinfo                               r,
-  /proc/stat                                  r,
-  /proc/sys/kernel/ngroups_max                r,
-
+  @{PROC}/net/if_inet6                          r,
 }

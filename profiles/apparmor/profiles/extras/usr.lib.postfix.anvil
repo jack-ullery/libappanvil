@@ -25,6 +25,5 @@
   /etc/postfix/main.cf                        r,
   /{var/spool/postfix/,}private/anvil         rw,
   /{var/spool/postfix/,}pid/unix.anvil        rw,
-  /proc/net/if_inet6                          r,
-  /proc/sys/kernel/ngroups_max                r,
+  @{PROC}/net/if_inet6                        r,
 }

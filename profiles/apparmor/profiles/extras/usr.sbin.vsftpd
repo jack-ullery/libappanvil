@@ -24,7 +24,6 @@
   /etc/shells	             r,
   /etc/vsftpd.*              r,
   /etc/vsftpd/*              r,
-  /proc/meminfo              r,
   /usr/sbin/vsftpd	     rmix,
   /var/log/vsftpd.log        w,
   /var/log/xferlog           w,

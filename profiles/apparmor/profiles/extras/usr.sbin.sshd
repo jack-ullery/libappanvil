@@ -42,8 +42,8 @@
   /var/run w,
   /var/run/sshd{,.init}.pid wl,
 
-  /proc/[0-9]*/fd/ r,
-  /proc/[0-9]*/loginuid w,
+  @{PROC}/[0-9]*/fd/ r,
+  @{PROC}/[0-9]*/loginuid w,
 
 # should only be here for use in non-change-hat openssh
 # duplicated from EXEC hat
@@ -67,8 +67,7 @@
 
   /dev/pts/[0-9]* rw,
   /etc/ssh/moduli r,
-  /proc/sys/kernel/ngroups_max r,
-  /proc/[0-9]*/mounts r,
+  @{PROC}/[0-9]*/mounts r,
 
 # duplicated from AUTHENTICATED
   /etc/motd r,
@@ -134,8 +133,7 @@
     /etc/hosts.allow r,
     /etc/hosts.deny r,
     /etc/ssh/moduli r,
-    /proc/sys/kernel/ngroups_max r,
-    /proc/[0-9]*/mounts r,
+    @{PROC}/[0-9]*/mounts r,
 
 # for debugging
 #  /dev/pts/[0-9]*                                              rw,
@@ -160,7 +158,6 @@
     /etc/localtime r,
     /etc/login.defs r,
     /etc/motd r,
-    /proc/sys/kernel/ngroups_max r,
     /tmp/ssh-*/agent.[0-9]* rwl,
     /tmp/ssh-*[0-9]*/ w,
 

@@ -33,7 +33,6 @@
   /etc/{postfix/,}aliases.db                            r,
   # mailman on SuSE is configed to have its own alias file
   /var/lib/mailman/data/aliases.db                      r,
-  /proc/{cpuinfo,stat}                                  r,
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/*         rw,
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]*          rw,
   /{var/spool/postfix/,}active/[0-9A-F]*                   rw,

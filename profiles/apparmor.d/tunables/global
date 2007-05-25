@@ -13,3 +13,4 @@
 # should be included here
 
 #include <tunables/home>
+#include <tunables/proc>

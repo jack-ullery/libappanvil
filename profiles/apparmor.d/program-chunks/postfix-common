@@ -17,7 +17,7 @@
 
   /etc/postfix/*.cf     r,
   /etc/postfix/*.db     r,
-  /proc/net/if_inet6    r,
+  @{PROC}/net/if_inet6  r,
   /usr/lib/postfix/*.so mr,
   /usr/lib64/sasl2/*    mr,
   /usr/lib64/sasl2/     r,

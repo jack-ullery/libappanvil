@@ -24,7 +24,4 @@
   /etc/postfix/virtual.db                     r,
   /etc/{m,fs}tab                              r,
   /var/spool/postfix/pid/unix.rewrite         rw,
-
-  /proc/{cpuinfo,stat}                        r,
-  /proc/sys/kernel/ngroups_max                r,
 }

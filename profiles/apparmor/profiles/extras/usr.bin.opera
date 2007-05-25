@@ -37,10 +37,9 @@
   /etc/opera6rc	rw,
   /etc/opera6rc.fixed rw,
   /opt r,
-  /proc/*/stat r,
-  /proc/net/if_inet6 r,
-  /proc/stat r,
-  /proc/sys/vm/heap-stack-gap r,
+  @{PROC}/[0-9]*/stat r,
+  @{PROC}/net/if_inet6 r,
+  @{PROC}/sys/vm/heap-stack-gap r,
 
   @{HOME}/.fonts.cache-* r,
   @{HOME}/.fonts r,

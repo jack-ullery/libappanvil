@@ -43,6 +43,5 @@
   /{var/spool/postfix/,}pid/unix.trace           rw,
 
   /etc/postfix/main.cf                        r,
-  /proc/net/if_inet6                          r,
-  /proc/sys/kernel/ngroups_max                r,
+  @{PROC}/net/if_inet6                        r,
 }

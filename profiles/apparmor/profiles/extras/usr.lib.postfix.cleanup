@@ -31,6 +31,4 @@
   /{var/spool/postfix/,}pid/unix.cleanup         rw,
   /etc/{m,fs}tab                              r,
   /etc/postfix/*                              r,
-  /proc/sys/kernel/ngroups_max                r,
-  /proc/{stat,cpuinfo}                        r,
 }

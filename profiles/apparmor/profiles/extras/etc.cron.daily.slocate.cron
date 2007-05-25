@@ -21,7 +21,6 @@
   /dev/tty                         wr  ,
   /etc/cron.daily/slocate.cron     r   ,
   /etc/mtab                        r   ,
-  /proc/meminfo                    r   ,
   /usr/bin/slocate                 mixr,
   /usr/bin/renice                  mixr,
   /**                              r   ,

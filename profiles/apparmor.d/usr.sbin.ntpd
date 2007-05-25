@@ -33,7 +33,7 @@
   /etc/ntp/drift* rwl,
   /etc/ntp/keys r,
   /etc/ntp/step-tickers r,
-  /proc/net/if_inet6 r,
+  @{PROC}/net/if_inet6 r,
   /tmp/ntp* rwl,
   /usr/sbin/ntpd rmix,
   /var/lib/ntp/etc/ntp.conf.iburst  r,

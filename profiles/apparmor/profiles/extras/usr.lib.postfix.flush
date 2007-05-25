@@ -48,7 +48,4 @@
 
   @{HOME}/.forward                            r,
 
-  /proc/stat                                  r,
-  /proc/sys/kernel/ngroups_max                r,
-
 }

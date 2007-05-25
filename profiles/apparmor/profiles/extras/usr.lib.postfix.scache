@@ -19,6 +19,5 @@
 
   /usr/lib/postfix/scache rmix,
 
-  /proc/sys/kernel/ngroups_max r,
   /var/run/nscd/group r,
 }

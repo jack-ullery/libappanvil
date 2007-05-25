@@ -25,7 +25,7 @@
   /etc/postfix r,
   /etc/postfix/main.cf r,
   /etc/postfix/postfix-script mixr,
-  /proc/net/if_inet6 r,
+  @{PROC}/net/if_inet6 r,
   /usr/sbin/postdrop rmix,
   /var/spool/postfix r,
   /var/spool/postfix/maildrop r,

@@ -21,8 +21,6 @@
   /etc/mtab                         r,
   /etc/postfix/*                    r,
   /etc/postfix/*.db                 rwl,
-  /proc/cpuinfo                     r,
-  /proc/net/if_inet6                r,
-  /proc/stat                        r,
+  @{PROC}/net/if_inet6              r,
   /usr/sbin/postmap                 rmix,
 }

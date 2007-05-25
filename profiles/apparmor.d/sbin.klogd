@@ -17,7 +17,7 @@
   capability sys_admin,
 
   /boot/System.map*     r,
-  /proc/kmsg		r,
+  @{PROC}/kmsg		r,
   /sbin/klogd		rmix,
   /var/log/boot.msg     rwl,
   /var/run/klogd.pid    rwl,

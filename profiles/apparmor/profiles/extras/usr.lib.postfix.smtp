@@ -38,12 +38,9 @@
   /{var/spool/postfix/,}pid/unix.relay           rw,
   /etc/postfix/{ssl/,}*.pem                   r,
   /etc/postfix/prng_exch                      rw,
-  /proc/sys/kernel/ngroups_max                r,
   /usr/share/ssl/certs/ca-bundle.crt          r,
   /usr/share/ssl/openssl.cnf                  r,
   /etc/postfix/virtual.db                     r,
   /etc/postfix/sasl_passwd.db                 r,
   /etc/mtab                                   r,
-  /proc/stat                                  r,
-  /proc/meminfo                               r,
 }

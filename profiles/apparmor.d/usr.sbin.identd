@@ -21,7 +21,7 @@
   /etc/identd.key          r,
   /etc/identd.pid          w,
   /usr/sbin/identd	   rmix,
-  /proc/net/tcp            r,
-  /proc/net/tcp6           r,
+  @{PROC}/net/tcp          r,
+  @{PROC}/net/tcp6         r,
   /var/run/identd.pid      w,
 }

@@ -33,7 +33,6 @@
   /etc/papersize r,
   /etc/termcap r,
   /opt/gnome/man/** r,
-  /proc/sys/kernel/ngroups_max r,
   /usr/bin/apropos Px,
   /usr/bin/cmp rmix,
   /usr/bin/groff rmix,

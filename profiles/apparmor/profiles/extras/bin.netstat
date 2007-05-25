@@ -25,9 +25,9 @@
 
   /bin/netstat rmix,
   /etc/networks r,
-  /proc r,
-  /proc/[0-9]*/cmdline r,
-  /proc/[0-9]*/fd r,
-  /proc/net r,
-  /proc/net/* r,
+  @{PROC} r,
+  @{PROC}/[0-9]*/cmdline r,
+  @{PROC}/[0-9]*/fd r,
+  @{PROC}/net r,
+  @{PROC}/net/* r,
 }

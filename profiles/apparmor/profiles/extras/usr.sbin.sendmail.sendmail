@@ -15,8 +15,7 @@
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
-  /proc/loadavg               r,
-  /proc/cpuinfo               r,
+  @{PROC}/loadavg             r,
   /etc/aliases                rw,
   /etc/aliases.db             rw,
   /etc/fstab                  r,
@@ -29,7 +28,6 @@
   /etc/sendmail.cf            r,
   /etc/sendmail.cw            r,
   /etc/shells                 r,
-  /proc/stat                  r,
   /root/.forward              rw,
   /root/dead.letter           w,
   /usr/bin/procmail           Px,

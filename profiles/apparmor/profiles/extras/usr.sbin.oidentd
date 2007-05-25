@@ -22,8 +22,8 @@
 
   /etc/oidentd.conf        r,
   /etc/oidentd_masq.conf   r,
-  /proc/net/tcp            r,
-  /proc/net/tcp6           r,
+  @{PROC}/net/tcp          r,
+  @{PROC}/net/tcp6         r,
 
   # spoofing feature of oidentd
   @{HOME}/.ispoof          r,

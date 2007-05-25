@@ -30,7 +30,6 @@
 
   @{HOME}/.spamassassin/* lrw,
 
-  /proc/stat r,
   /tmp/spamd-*-init r,
   /tmp/spamd-*-init/** lrw,
   /usr/bin/perl mix,

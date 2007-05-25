@@ -52,6 +52,4 @@
   /{var/spool/postfix/,}maildrop                                   r,
   /{var/spool/postfix/,}maildrop/[0-9A-F]*                         r,
   /{var/spool/postfix/,}pid/unix.showq                             rw,
-
-  /proc/sys/kernel/ngroups_max                r,
 }

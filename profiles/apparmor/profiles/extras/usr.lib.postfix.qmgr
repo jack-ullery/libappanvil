@@ -18,7 +18,6 @@
   #include <program-chunks/postfix-common>
 
   /usr/lib/postfix/qmgr                       rmix,
-  /proc/sys/kernel/ngroups_max                                    r,
   /{var/spool/postfix/,}active                                    r,
   /{var/spool/postfix/,}active/[0-9A-F]                           r,
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]                  rwl,
