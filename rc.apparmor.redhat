@@ -35,8 +35,8 @@
 # Default-Stop: 0 1 2 6
 # Short-Description: AppArmor initialization
 # Description: AppArmor rc file. This rc script inserts the apparmor
-# 	       module and runs the parser on the /etc/apparmor.d/
-#	       directory.
+#	module and runs the parser on the /etc/apparmor.d/
+#	directory.
 ### END INIT INFO
 APPARMOR_FUNCTIONS=/lib/apparmor/rc.apparmor.functions
 
