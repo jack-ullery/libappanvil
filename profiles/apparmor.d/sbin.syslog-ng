@@ -23,7 +23,7 @@
   capability fowner,
 
   /dev/log w,
-  /dev/tty10 w,
+  /dev/tty10 rw,
   /dev/xconsole rw,
   /etc/syslog-ng/* r,
   /sbin/syslog-ng mr,
