@@ -76,7 +76,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	        printk("nfsd: bad file type %o in nfsd_create\n", type);
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -993,7 +993,7 @@ extern void unlock_super(struct super_bl
+@@ -994,7 +994,7 @@ extern void unlock_super(struct super_bl
  extern int vfs_permission(struct nameidata *, int);
  extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
  extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);

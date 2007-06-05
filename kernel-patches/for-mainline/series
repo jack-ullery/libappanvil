@@ -48,6 +48,13 @@ apparmor-lockdep.diff
 get-rid-of-sa-flags.diff
 no-internal-audit-errors.diff
 simplify-audit-status.diff
+no-unknown-exec-mod.diff
+audit-defines.diff
+fix-link-name2.diff
+audit-remove-mangle.diff
+audit-pairs.diff
+audit-link-perms.diff
+audit-remove-buffer.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff

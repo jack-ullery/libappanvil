@@ -343,7 +343,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (f)
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -1470,8 +1470,8 @@ static inline int break_lease(struct ino
+@@ -1471,8 +1471,8 @@ static inline int break_lease(struct ino
  
  /* fs/open.c */
  
@@ -354,7 +354,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  extern long do_sys_open(int fdf, const char __user *filename, int flags,
  			int mode);
  extern struct file *filp_open(const char *, int, int);
-@@ -1624,7 +1624,7 @@ extern int do_remount_sb(struct super_bl
+@@ -1625,7 +1625,7 @@ extern int do_remount_sb(struct super_bl
  #ifdef CONFIG_BLOCK
  extern sector_t bmap(struct inode *, sector_t);
  #endif

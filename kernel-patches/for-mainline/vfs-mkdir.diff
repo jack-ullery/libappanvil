@@ -114,7 +114,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	}
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -992,7 +992,7 @@ extern void unlock_super(struct super_bl
+@@ -993,7 +993,7 @@ extern void unlock_super(struct super_bl
   */
  extern int vfs_permission(struct nameidata *, int);
  extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);

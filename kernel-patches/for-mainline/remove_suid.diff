@@ -74,7 +74,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		}
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -1697,9 +1697,9 @@ extern void __iget(struct inode * inode)
+@@ -1698,9 +1698,9 @@ extern void __iget(struct inode * inode)
  extern void clear_inode(struct inode *);
  extern void destroy_inode(struct inode *);
  extern struct inode *new_inode(struct super_block *);
