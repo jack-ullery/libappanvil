@@ -1,0 +1,15 @@
+---
+ security/apparmor/main.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -735,7 +735,7 @@ again:
+ 	if (IS_ERR(sa.name2)) {
+ 		sa.requested_mask = 0;
+ 		sa.denied_mask = 0;
+-		sa.error_code = PTR_ERR(sa.name);
++		sa.error_code = PTR_ERR(sa.name2);
+ 		sa.name2 = NULL;
+ 	}
+ 
