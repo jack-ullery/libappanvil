@@ -1,0 +1,87 @@
+---
+ security/apparmor/main.c |   43 +++++++++++++++++++++++--------------------
+ 1 file changed, 23 insertions(+), 20 deletions(-)
+
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -58,35 +58,41 @@ static int aa_file_denied(struct aa_prof
+  * @profile: profile to check against
+  * @link: pathname of link being created
+  * @target: pathname of target to be linked to
+- *
++ * @request_mask: the permissions subset valid only if link succeeds
+  * Return %0 on success, or else the permissions that the profile denies.
+  */
+ static int aa_link_denied(struct aa_profile *profile, const char *link,
+-			  const char *target)
++			  const char *target, int *request_mask)
+ {
+-	int l_mode, t_mode;
++	int l_mode, t_mode, denied_mask;
+ 
+ 	l_mode = aa_match(profile->file_rules, link);
+ 	t_mode = aa_match(profile->file_rules, target);
++	*request_mask = l_mode;
+ 
+ 	/* Link always requires 'l' on the link, a subset of the
+ 	 * target's 'r', 'w', 'x', and 'm' permissions on the link, and
+ 	 * if the link has 'x', an exact match of all the execute flags
+ 	 * ('i', 'u', 'U', 'p', 'P').
+ 	 */
+-#define RWXM (MAY_READ | MAY_WRITE | MAY_EXEC | AA_EXEC_MMAP)
+-	if ((l_mode & AA_MAY_LINK) &&
+-	    (l_mode & RWXM) && !(l_mode & ~t_mode & RWXM) &&
+-	    (!(l_mode & MAY_EXEC) ||
+-	     ((l_mode & AA_EXEC_MODIFIERS) == (t_mode & AA_EXEC_MODIFIERS) &&
+-	      (l_mode & AA_EXEC_UNSAFE) == (t_mode & AA_EXEC_UNSAFE))))
+-		return 0;
+-#undef RWXM
+-	/* FIXME: There currenly is no way to report which permissions
+-	 * we expect in t_mode, so linking could fail even after learning
+-	 * the required l_mode.
++	denied_mask = ~l_mode & AA_MAY_LINK;
++	denied_mask |= l_mode & ~t_mode;
++	if (denied_mask & AA_EXEC_MODIFIERS)
++		denied_mask |= MAY_EXEC;
++
++	/* FIXME: denied mask has no way of reporting that the secure
++	 * execmode required is safe exec.  This means that if link
++	 * has safe exec and target unsafe exec, the difference is not
++	 * reported, back, this isn't a significant problem since
++	 * safe exec is a subset of unsafe exec, but it violates the
++	 * exec should be exactly equal rule.
++	 *
++	 * The reverse situation does not cause a problem, if link
++	 * requires an unsafe exec and target a safe exec we report
++	 * the missing unsafe exec bit.
+ 	 */
+-	return AA_MAY_LINK;
++
++	return denied_mask;
+ }
+ 
+ /**
+@@ -639,21 +645,18 @@ int aa_link(struct aa_profile *profile,
+ 	sa.name2 = aa_get_name(target, target_mnt, &sa.buffer2, check);
+ 
+ 	if (IS_ERR(sa.name)) {
+-		sa.requested_mask = 0;
+-		sa.denied_mask = 0;
+ 		sa.error_code = PTR_ERR(sa.name);
+ 		sa.name = NULL;
+ 	}
+ 	if (IS_ERR(sa.name2)) {
+-		sa.requested_mask = 0;
+-		sa.denied_mask = 0;
+ 		sa.error_code = PTR_ERR(sa.name2);
+ 		sa.name2 = NULL;
+ 	}
+ 
+ 	if (sa.name && sa.name2) {
+ 		sa.requested_mask = AA_MAY_LINK;
+-		sa.denied_mask = aa_link_denied(profile, sa.name, sa.name2);
++		sa.denied_mask = aa_link_denied(profile, sa.name, sa.name2,
++						&sa.requested_mask);
+ 		sa.error_code = sa.denied_mask ? -EACCES : 0;
+ 	}
+ 
