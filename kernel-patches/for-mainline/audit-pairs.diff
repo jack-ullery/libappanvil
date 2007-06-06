@@ -1,11 +1,11 @@
 ---
  security/apparmor/apparmor.h         |   44 +--
- security/apparmor/apparmorfs.c       |   20 -
+ security/apparmor/apparmorfs.c       |   22 -
  security/apparmor/lsm.c              |  116 +++++----
  security/apparmor/main.c             |  435 ++++++++++++++++-------------------
  security/apparmor/module_interface.c |   48 ++-
  security/apparmor/procattr.c         |   37 +-
- 6 files changed, 358 insertions(+), 342 deletions(-)
+ 6 files changed, 359 insertions(+), 343 deletions(-)
 
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
@@ -81,6 +81,15 @@
  		   struct dentry *target, struct vfsmount *target_mnt);
 --- a/security/apparmor/apparmorfs.c
 +++ b/security/apparmor/apparmorfs.c
+@@ -20,7 +20,7 @@
+ 
+ static char *aa_simple_write_to_buffer(const char __user *userbuf,
+ 				       size_t alloc_size, size_t copy_size,
+-				       loff_t *pos, const char *msg)
++				       loff_t *pos, const char *operation)
+ {
+ 	struct aa_profile *profile;
+ 	char *data;
 @@ -38,13 +38,13 @@ static char *aa_simple_write_to_buffer(c
  	 */
  	profile = aa_get_profile(current);
@@ -91,7 +100,7 @@
 -				 profile->name);
 +		struct aa_audit sa;
 +		memset(&sa, 0, sizeof(sa));
-+		sa.operation = msg;
++		sa.operation = operation;
 +		sa.gfp_mask = GFP_KERNEL;
 +		sa.error_code = -EACCES;
 +		data = ERR_PTR(aa_audit_reject(profile, &sa));
@@ -1110,11 +1119,11 @@
   * @e: serialized data extent information
 - * @error: error code returned if unpacking fails
 + * @depth: recursion depth of unpack
-+ * @op: operation profile is being unpacked for
++ * @operation: operation profile is being unpacked for
   */
 -static struct aa_profile *aa_unpack_profile(struct aa_ext *e, int depth)
 +static struct aa_profile *aa_unpack_profile(struct aa_ext *e, int depth,
-+					    const char *op)
++					    const char *operation)
  {
  	struct aa_profile *profile = NULL;
 +	struct aa_audit sa;
@@ -1126,7 +1135,7 @@
  		while (!aa_is_nameX(e, AA_LISTEND, NULL)) {
  			struct aa_profile *subprofile;
 -			subprofile = aa_unpack_profile(e, depth + 1);
-+			subprofile = aa_unpack_profile(e, depth + 1, op);
++			subprofile = aa_unpack_profile(e, depth + 1, operation);
  			if (IS_ERR(subprofile)) {
  				error = PTR_ERR(subprofile);
  				goto fail;
@@ -1137,7 +1146,7 @@
 -	aa_audit_message(NULL, GFP_KERNEL, "Invalid profile %s",
 -			 profile && profile->name ? profile->name : "unknown");
 +	memset(&sa, 0, sizeof(sa));
-+	sa.operation = op;
++	sa.operation = operation;
 +	sa.gfp_mask = GFP_KERNEL;
 +	sa.name = profile && profile->name ? profile->name : "unknown";
 +	sa.info = "failed to unpack profile";
@@ -1151,10 +1160,10 @@
   */
 -static struct aa_profile *aa_unpack_profile_wrapper(struct aa_ext *e)
 +static struct aa_profile *aa_unpack_profile_wrapper(struct aa_ext *e,
-+						    const char *op)
++						    const char *operation)
  {
 -	struct aa_profile *profile = aa_unpack_profile(e, 0);
-+	struct aa_profile *profile = aa_unpack_profile(e, 0, op);
++	struct aa_profile *profile = aa_unpack_profile(e, 0, operation);
  	if (!IS_ERR(profile) &&
  	    (!list_empty(&profile->sub) || profile->flags.complain)) {
  		int error;
@@ -1162,19 +1171,19 @@
  /**
   * aa_verify_head - unpack serialized stream header
   * @e: serialized data read head
-+ * @op: operation header is being verified for
++ * @operation: operation header is being verified for
   *
   * returns error or 0 if header is good
   */
 -static int aa_verify_header(struct aa_ext *e)
-+static int aa_verify_header(struct aa_ext *e, const char *op)
++static int aa_verify_header(struct aa_ext *e, const char *operation)
  {
  	/* get the interface version */
  	if (!aa_is_u32(e, &e->version, "version")) {
 -		aa_audit_message(NULL, GFP_KERNEL, "Interface version missing");
 +		struct aa_audit sa;
 +		memset(&sa, 0, sizeof(sa));
-+		sa.operation = op;
++		sa.operation = operation;
 +		sa.gfp_mask = GFP_KERNEL;
 +		sa.info = "invalid profile format";
 +		aa_audit_status(NULL, &sa);
@@ -1187,7 +1196,7 @@
 -				 "version (%d)", e->version);
 +		struct aa_audit sa;
 +		memset(&sa, 0, sizeof(sa));
-+		sa.operation = op;
++		sa.operation = operation;
 +		sa.gfp_mask = GFP_KERNEL;
 +		sa.info = "unsupported interface version";
 +		aa_audit_status(NULL, &sa);
