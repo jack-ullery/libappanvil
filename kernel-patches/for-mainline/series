@@ -54,6 +54,7 @@ audit-defines.diff
 fix-link-name2.diff
 audit-remove-mangle.diff
 audit-pairs.diff
+audit-pairs-2.diff
 audit-link-perms.diff
 audit-remove-buffer.diff
 do_path_lookup-nameidata.diff
