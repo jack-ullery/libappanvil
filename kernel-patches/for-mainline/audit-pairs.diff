@@ -632,7 +632,7 @@
 -	audit_log_format(ab, "%s ", logcls);	/* REJECTING/ALLOWING/etc */
 -
 -	switch(sa->type) {
--	case AA_AUDITTYPE_FIL): {
+-	case AA_AUDITTYPE_FILE: {
 -		int mask = PROFILE_AUDIT(profile) ?
 -				sa->requested_mask : sa->denied_mask;
 -

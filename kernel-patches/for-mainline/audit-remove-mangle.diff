@@ -154,7 +154,7 @@
 -	switch(NOFLAGS(sa->type)) {
 -	case NOFLAGS(AA_AUDITTYPE_FILE): {
 +	switch(sa->type) {
-+	case AA_AUDITTYPE_FIL): {
++	case AA_AUDITTYPE_FILE: {
  		int mask = PROFILE_AUDIT(profile) ?
  				sa->requested_mask : sa->denied_mask;
  
