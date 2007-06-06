@@ -1,8 +1,8 @@
 ---
  security/apparmor/apparmor.h |    5 +++++
  security/apparmor/main.c     |   12 ------------
- security/apparmor/match.c    |   15 +++++++++++++++
- 3 files changed, 20 insertions(+), 12 deletions(-)
+ security/apparmor/match.c    |   16 ++++++++++++++++
+ 3 files changed, 21 insertions(+), 12 deletions(-)
 
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
@@ -51,20 +51,21 @@
  #include "match.h"
  
  static struct table_header *unpack_table(void *blob, size_t bsize)
-@@ -170,6 +171,20 @@ int verify_dfa(struct aa_dfa *dfa)
+@@ -170,6 +171,21 @@ int verify_dfa(struct aa_dfa *dfa)
  			goto out;
  	}
  
 +	/* verify accept permissions */
 +	for (i = 0; i < state_count; i++) {
 +		int mode = ACCEPT_TABLE(dfa)[i];
++
 +		if (mode & ~AA_VALID_PERM_MASK)
 +			goto out;
 +
-+		/* if MAY_EXEC, exactly 1 exec modifier must be set */
++		/* if MAY_EXEC, exactly one exec modifier must be set */
 +		if (mode & MAY_EXEC) {
 +			mode &= AA_EXEC_MODIFIERS;
-+			if (mode & (mode -1))
++			if (mode & (mode - 1))
 +				goto out;
 +		}
 +	}
