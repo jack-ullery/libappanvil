@@ -38,7 +38,7 @@
  
  	return error;
  }
-@@ -635,14 +635,13 @@ int aa_link(struct aa_profile *profile,
+@@ -645,14 +645,13 @@ int aa_link(struct aa_profile *profile,
  {
  	int error, check = 0;
  	struct aa_audit sa;
@@ -56,7 +56,7 @@
  
  	if (IS_ERR(sa.name)) {
  		sa.error_code = PTR_ERR(sa.name);
-@@ -662,8 +661,8 @@ int aa_link(struct aa_profile *profile,
+@@ -672,8 +671,8 @@ int aa_link(struct aa_profile *profile,
  
  	error = aa_audit(profile, &sa);
  

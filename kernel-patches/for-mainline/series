@@ -55,8 +55,13 @@ fix-link-name2.diff
 audit-remove-mangle.diff
 audit-pairs.diff
 audit-pairs-2.diff
+audit-pairs-3.diff
 audit-link-perms.diff
 audit-remove-buffer.diff
+#multi-profile-load.diff
+#flatten-hats.diff
+#change_profile.diff
+#change_hat-to-change_profile.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff

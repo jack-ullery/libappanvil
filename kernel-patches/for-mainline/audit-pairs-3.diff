@@ -1,0 +1,65 @@
+---
+ security/apparmor/main.c |   38 ++++++++++++++++++++++++--------------
+ 1 file changed, 24 insertions(+), 14 deletions(-)
+
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -274,6 +274,22 @@ void free_null_complain_profile(void)
+ 	null_complain_profile = NULL;
+ }
+ 
++static void aa_audit_file_mask(struct audit_buffer *ab, const char *name,
++			       int mask)
++{
++	audit_log_format(ab, " %s=\"%s%s%s%s%s%s%s%s%s\"",
++			 name,
++			 mask & AA_EXEC_UNSAFE ? "unsafe " : "",
++			 mask & AA_EXEC_MMAP ? "m" : "",
++			 mask & MAY_READ  ? "r" : "",
++			 mask & MAY_WRITE ? "w" : "",
++			 mask & AA_EXEC_INHEIT ? "i" : "",
++			 mask & AA_EXEC_UNCONFINED ? "u" : "",
++			 mask & AA_EXEC_PROFILE ? "p" : "",
++			 mask & MAY_EXEC  ? "x" : "",
++			 mask & AA_MAY_LINK  ? "l" : "");
++}
++
+ /**
+  * aa_audit - Log an audit event to the audit subsystem
+  * @profile: profile to check against
+@@ -291,9 +307,9 @@ static int aa_audit_base(struct aa_profi
+ 	if (!ab) {
+ 		AA_ERROR("Unable to log event (%d) to audit subsys\n",
+ 			 type);
+-		/* FIXME: do we want to keep old behavior - as below
+-		 * don't fail operations in complain mode even if logging
+-		 * fails */
++		/* don't fail operations in complain mode even when
++		 * logging fails
++		 */
+ 		return type == AUDIT_APPARMOR_COMPLAIN ? 0 : -ENOMEM;
+ 	}
+ 
+@@ -303,17 +319,11 @@ static int aa_audit_base(struct aa_profi
+ 	if (sa->info)
+ 		audit_log_format(ab, " info=\"%s\"", sa->info);
+ 
+-	if (sa->requested_mask | sa->denied_mask) {
+-		int mask = sa->denied_mask ? sa->denied_mask :
+-			sa->requested_mask;
+-
+-		audit_log_format(ab, " mask=\"%s%s%s%s%s\"",
+-				 mask & AA_EXEC_MMAP ? "m" : "",
+-				 mask & MAY_READ  ? "r" : "",
+-				 mask & MAY_WRITE ? "w" : "",
+-				 mask & MAY_EXEC  ? "x" : "",
+-				 mask & AA_MAY_LINK  ? "l" : "");
+-	}
++	if (sa->requested_mask)
++		aa_audit_file_mask(ab, "requested_mask", sa->requested_mask);
++
++	if (sa->denied_mask)
++		aa_audit_file_mask(an, "denied_mask", sa->denied_mask);
+ 
+ 	if (sa->iattr) {
+ 		struct iattr *iattr = sa->iattr;

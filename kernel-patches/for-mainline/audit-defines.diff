@@ -9,8 +9,8 @@
  #define AUDIT_MAC_IPSEC_DELSPD	1414	/* Delete a XFRM policy */
  
 +#define AUDIT_APPARMOR_AUDIT	1501	/* AppArmor audited grants */
-+#define AUDIT_APPARMOR_COMPLAIN	1502	/* Allowed Access for learning */
-+#define AUDIT_APPARMOR_REJECT	1503	/* Denied Access */
++#define AUDIT_APPARMOR_ALLOWED	1502	/* Allowed Access for learning */
++#define AUDIT_APPARMOR_DENIED	1503	/* Denied Access */
 +#define AUDIT_APPARMOR_HINT	1504	/* Process Tracking information */
 +#define AUDIT_APPARMOR_STATUS	1505	/* Changes in config */
 +#define AUDIT_APPARMOR_ERROR	1506	/* Internal AppArmor Errors */
