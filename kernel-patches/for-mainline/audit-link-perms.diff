@@ -61,7 +61,7 @@
  }
  
  /**
-@@ -649,21 +655,18 @@ int aa_link(struct aa_profile *profile,
+@@ -648,21 +654,18 @@ int aa_link(struct aa_profile *profile,
  	sa.name2 = aa_get_name(target, target_mnt, &sa.buffer2, check);
  
  	if (IS_ERR(sa.name)) {

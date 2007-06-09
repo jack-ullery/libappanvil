@@ -457,7 +457,7 @@
 +		/* FIXME: do we want to keep old behavior - as below
 +		 * don't fail operations in complain mode even if logging
 +		 * fails */
-+		return type == AUDIT_APPARMOR_COMPLAIN ? 0 : -ENOMEM;
++		return type == AUDIT_APPARMOR_ALLOWED ? 0 : -ENOMEM;
 +	}
 +
 +	if (sa->operation)
@@ -523,7 +523,7 @@
 +	audit_log_end(ab);
  
 -	va_end(sa.vaval);
-+	return type == AUDIT_APPARMOR_COMPLAIN ? 0 : sa->error_code;
++	return type == AUDIT_APPARMOR_ALLOWED ? 0 : sa->error_code;
  }
  
  /**
@@ -549,7 +549,7 @@
  
 -	return aa_audit(profile, &sa);
 +	return aa_audit_base(profile, &sa, current->audit_context,
-+			     AUDIT_APPARMOR_REJECT);
++			     AUDIT_APPARMOR_DENIED);
 +}
 +
 +int aa_audit_message(struct aa_profile *profile, struct aa_audit *sa,
@@ -573,7 +573,7 @@
 +
 +int aa_audit_reject(struct aa_profile *profile, struct aa_audit *sa)
 +{
-+	return aa_audit_message(profile, sa, AUDIT_APPARMOR_REJECT);
++	return aa_audit_message(profile, sa, AUDIT_APPARMOR_DENIED);
  }
  
  /**
@@ -582,7 +582,7 @@
  int aa_audit(struct aa_profile *profile, struct aa_audit *sa)
  {
 -	struct audit_buffer *ab = NULL;
-+	int type = AUDIT_APPARMOR_REJECT;
++	int type = AUDIT_APPARMOR_DENIED;
  	struct audit_context *audit_cxt;
  
 -	const char *logcls;
@@ -608,7 +608,7 @@
 +		else
 +			type = AUDIT_APPARMOR_AUDIT;
 +	} else if (PROFILE_COMPLAIN(profile)) {
-+		type = AUDIT_APPARMOR_COMPLAIN;
++		type = AUDIT_APPARMOR_ALLOWED;
  	}
  
 -	/* Force full audit syscall logging regardless of global setting if
