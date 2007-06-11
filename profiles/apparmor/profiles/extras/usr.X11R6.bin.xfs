@@ -11,7 +11,7 @@
 
 #include <tunables/global>
 
-/usr/X11R6/bin/xfs {
+/usr/bin/xfs {
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
@@ -20,7 +20,6 @@
   /etc/X11/fs/config			r,
   /etc/mtab				r,
   /tmp/.font-unix/fs710[0-9]		wl,
-  /usr/X11R6/bin/xfs                    rmix,
-  /usr/X11R6/lib/lib*.so*               mr,
+  /usr/bin/xfs                    	rmix,
   /var/run/xfs.pid			rw,
 }
