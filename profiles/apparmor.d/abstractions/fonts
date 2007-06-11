@@ -11,12 +11,7 @@
 
   /usr/share/AbiSuite/fonts/**          r,
 
-  /usr/X11R6/lib/X11/fonts/**           r,
-  /usr/X11R6/lib/modules/fonts/**       mr,
-  /usr/X11R6/lib64/X11/fonts/**         r,
-  /usr/X11R6/lib64/modules/fonts/**     mr,
-
-  /usr/X11R6/include/X11/fonts/**       r,
+  /usr/lib/xorg/modules/fonts/**.so*    mr,
 
   /usr/share/fonts/**                   r,
 
@@ -26,16 +21,6 @@
 
   /usr/lib/openoffice/share/fonts/**    r,
   /usr/lib64/openoffice/share/fonts/**  r,
-
-  /opt/OpenOffice.org/share/fonts/**    r,
-  /opt/OpenOffice.org/share/psprint/fontmetric/** r,
-  /opt/OpenOffice.org/user/psprint/fontmetric/**  r,
-
-  /opt/gnome/share/gimp/*/fonts/**      r,
-  /opt/gnome/share/fonts/**             r,
-
-  /opt/mozilla/lib/res/fonts/**         r,
-  /opt/mozilla/lib64/res/fonts/**       r,
 
   /var/cache/fonts/**                   r,
   /var/cache/fontconfig/**              mr,

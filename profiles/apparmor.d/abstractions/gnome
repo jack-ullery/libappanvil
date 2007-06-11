@@ -27,10 +27,6 @@
   /usr/share/icons/**             r,
   /usr/share/pixmaps/**           r,
 
-  # gnome libs
-  /opt/gnome/lib/**               mr,
-  /opt/gnome/lib64/**             mr,
-
   # per-user gtk configuration
   @{HOME}/.gnome/Gnome            r,
   @{HOME}/.gtk                    r,
@@ -44,15 +40,6 @@
   # per-user font business
   @{HOME}/.fonts.cache-*          rwl,
 
-
-  # suse likes some odd pathnames
-  /etc/opt/gnome/**           r,
-  /opt/gnome/share/**         r,
-
   # icon caches
   /var/cache/**/icon-theme.cache  r,
   /usr/share/**/icon-theme.cache  r,
-
-  # buggy software
-  /opt/gnome/lib/libgnomeui/gnome_segv2 mixr,
-  /opt/gnome/bin/bug-buddy Uxr,

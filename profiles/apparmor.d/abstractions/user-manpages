@@ -22,11 +22,3 @@
   /usr/local/share/man/man?/**          r,
   /usr/{share,X11R6,local,kerberos}/man/**	 r,
   /usr/man/**				r,
-
-  # suseism
-  /opt/gnome/share/man/man?/            r,
-  /opt/gnome/share/man/man?/**          r,
-  /opt/gnome/man/man?/                  r,
-  /opt/gnome/man/man?/**                r,
-  /usr/openwin/man/man?/                r,
-  /usr/openwin/man/man?/**              r,
