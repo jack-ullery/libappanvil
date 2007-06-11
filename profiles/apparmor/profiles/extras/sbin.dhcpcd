@@ -28,14 +28,19 @@
   capability sys_admin,
 
   /bin/bash rmix,
+  /bin/touch rmix,
+  /dev/tty rw,
   /etc/dhcpc/* rwl,
+  /etc/init.d/syslog Ux, # fixme
   /etc/resolv.conf{,.sv} rwl,
   /etc/ntp.conf{,.sv} rwl,
   /etc/sysconfig/network/scripts/dhcpcd-hook rmix,
   /etc/yp.conf{,.sv} rwl,
   /sbin/dhcpcd rmix,
+  /sbin/ifup Ux, # fixme
   /sbin/modify_resolvconf rmix,
   /var/lib/dhcpcd/dhcpcd-*.cache rw,
   /var/lib/dhcpcd/dhcpcd-*.info rw,
+  /var/lib/dhcpcd/dhcpcd-*.info.old rw,
   /var/run/dhcpcd-*.pid rwl,
 }
