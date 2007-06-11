@@ -24,8 +24,8 @@
   /usr/lib/postfix/smtp                        rmix,
 
   /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/*      rwl,
-  /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]*       rwl,
-  /{var/spool/postfix/,}active/[0-9A-F]*                rwl,
+  /{var/spool/postfix/,}active/[0-9A-F]/[0-9A-F]/       rwl,
+  /{var/spool/postfix/,}active/[0-9A-F]/                rwl,
   /{var/spool/postfix/,}private/anvil                   w,
   /{var/spool/postfix/,}private/bounce                  w,
   /{var/spool/postfix/,}private/defer                   w,

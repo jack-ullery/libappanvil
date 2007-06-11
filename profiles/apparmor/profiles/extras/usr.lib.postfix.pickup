@@ -21,6 +21,6 @@
 
   /{var/spool/postfix/,}public/cleanup           w,
   /{var/spool/postfix/,}public/pickup            r,
-  /{var/spool/postfix/,}maildrop                 r,
+  /{var/spool/postfix/,}maildrop/                r,
   /{var/spool/postfix/,}maildrop/*               rwl,
 }

@@ -38,9 +38,9 @@
   /etc/postfix/main.cf                        r,
   /etc/postfix/prng_exch                      rw,
 
-  /usr/lib64/sasl2                            mr,
+  /usr/lib64/sasl2/                           mr,
   /usr/lib64/sasl2/*                          mr,
-  /usr/lib/sasl2                              mr,
+  /usr/lib/sasl2/                             mr,
   /usr/lib/sasl2/*                            mr,
 
   /usr/share/ssl/certs/ca-bundle.crt          r,
