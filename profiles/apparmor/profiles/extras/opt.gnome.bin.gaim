@@ -13,7 +13,7 @@
 
 #include <tunables/global>
 
-/opt/gnome/bin/gaim {
+/usr/bin/gaim {
   #include <abstractions/audio>
   #include <abstractions/base>
   #include <abstractions/bash>
@@ -27,8 +27,8 @@
   /bin/bash mixr,
   /dev/random r,
   /etc/esd.conf r,
-  /etc/opt/gnome/pango/pango.modules r,
-  /etc/opt/gnome/pango/pango64.modules r,
+  /etc/pango/pango.modules r,
+  /etc/pango/pango64.modules r,
 
   @{HOME}/.fonts r,
   @{HOME}/.gaim r,
@@ -42,35 +42,24 @@
   @{HOME}/.themes/** r,
 
   /opt/MozillaFirefox/bin/firefox.sh Px,
-  /opt/gnome/bin/gaim mixr,
-  /opt/gnome/lib/GConf/2/gconfd-2 Px,
-  /opt/gnome/lib/gaim r,
-  /opt/gnome/lib/gaim/*.so mr,
-  /opt/gnome/lib/gtk-*/*/engines/*.so mr,
-  /opt/gnome/lib/gtk-*/*/loaders/*.so mr,
-  /opt/gnome/lib/lib*so* mr,
-  /opt/gnome/lib/pango/*/modules/*.so mr,
-  /opt/gnome/share/icons r,
-  /opt/gnome/share/icons/** r,
-  /opt/gnome/share/pixmaps r,
-  /opt/gnome/share/pixmaps/gaim/** r,
-  /opt/gnome/share/sounds/gaim/* r,
-  /opt/gnome/share/themes/** r,
+  /usr/bin/gaim mixr,
+  /usr/lib/GConf/2/gconfd-2 Px,
+  /usr/share/icons r,
+  /usr/share/icons/** r,
+  /usr/share/pixmaps r,
+  /usr/share/pixmaps/gaim/** r,
+  /usr/share/sounds/gaim/* r,
+  /usr/share/themes/** r,
   /opt/kde3/bin/kde-config mixr,
-  /opt/mozilla/lib/lib*so* mr,
-  /opt/mozilla/lib64/lib*so* mr,
   @{PROC}/*/cmdline r,
   /usr/X11R6/lib/Acrobat*/Resource/Font/* r,
   /usr/X11R6/lib/Acrobat*/Resource/Font/PFM/* r,
-  /usr/X11R6/lib/lib*so* mr,
   /usr/lib/ao/plugins-* r,
-  /usr/lib/ao/plugins-*/lib*.so mr,
   /usr/lib/aspell-** mr,
   /usr/lib/jvm/java-*/jre/lib/fonts/** r,
   /usr/lib/ooo-*/share/fonts/** r,
   /usr/lib/tcl*/encoding/* r,
   /usr/lib64/ao/plugins-* r,
-  /usr/lib64/ao/plugins-*/lib*.so mr,
   /usr/lib64/aspell-* r,
   /usr/share/alsa/alsa.conf r,
   /usr/share/icons r,

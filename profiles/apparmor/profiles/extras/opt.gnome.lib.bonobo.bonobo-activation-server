@@ -12,16 +12,14 @@
 
 #include <tunables/global>
 
-/opt/gnome/lib/bonobo/bonobo-activation-server {
+/usr/lib/bonobo/bonobo-activation-server {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/user-tmp>
 
   /etc/bonobo-activation/bonobo-activation-config.xml r,
-  /opt/gnome/lib/bonobo/bonobo-activation-server r,
-  /opt/gnome/lib/bonobo/servers r,
-  /opt/gnome/lib/bonobo/servers/*.server r,
-  /opt/gnome/lib/evolution-data-server-1.2/evolution-data-server-1.4 Px,
-  /opt/gnome/lib/lib*so* mr,
-  /usr/X11R6/lib/X11/locale/* r,
+  /usr/lib/bonobo/bonobo-activation-server r,
+  /usr/lib/bonobo/servers r,
+  /usr/lib/bonobo/servers/*.server r,
+  /usr/lib/evolution-data-server-*/evolution-data-server-* Px,
 }

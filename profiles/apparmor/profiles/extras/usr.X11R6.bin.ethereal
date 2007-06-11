@@ -13,7 +13,7 @@
 
 #include <tunables/global>
 
-/usr/X11R6/bin/ethereal {
+/usr/bin/wireshark {
   #include <abstractions/base>
   #include <abstractions/bash>
   #include <abstractions/consoles>
@@ -27,26 +27,16 @@
 
   /etc/ethers r,
 
-  @{HOME}/.ethereal/* rw,
+  @{HOME}/.wireshark/* rw,
   @{HOME}/.fonts.cache-* r,
 
-  /etc/opt/gnome/pango/pango.modules r,
-  /opt/gnome/lib/gtk-2.0/2.4.0/loaders/* mr,
-  /opt/gnome/lib/lib*so* mr,
-  /opt/gnome/lib/pango/1.4.0/modules/* mr,
-  /opt/gnome/share/* r,
-  /opt/gnome/share/icons/** r,
-  /opt/gnome/share/mime/* r,
-  /opt/mozilla/bin/mozilla.sh rPx,
-  /opt/MozillaFirefox/bin/firefox.sh rPx,
-  /usr/X11R6/bin/ethereal mixr,
-  /usr/X11R6/lib/Acrobat7/Resource/Font/PFM/fonts.cache-1 r,
-  /usr/X11R6/lib/Acrobat7/Resource/Font/fonts.cache-1 r,
-  /usr/X11R6/lib/ethereal/** mr,
-  /usr/X11R6/lib/lib*so* mr,
-  /usr/X11R6/share/ethereal/** r,
-  /usr/lib/jvm/java-1.4.2-sun-1.4.2.06/jre/lib/fonts/** r,
-  /usr/lib/ooo-2.0/share/fonts/** r,
+  /etc/pango/pango.modules r,
+  /usr/lib/gtk-*/*/loaders/* mr,
+  /usr/share/* r,
+  /usr/share/icons/** r,
+  /usr/share/mime/* r,
+  /usr/lib/firefox/firefox.sh rPx,
+  /usr/bin/wireshark mixr,
   /usr/share/icons r,
   /usr/share/mime/* r,
   /usr/share/snmp/mibs r,

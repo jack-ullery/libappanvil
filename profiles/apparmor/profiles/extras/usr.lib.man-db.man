@@ -21,9 +21,6 @@
   /etc/manpath.config r,
   /usr/lib/man-db/man rmix,
 
-
-
-
   /bin/bash rmix,
   /bin/cat rmix,
   /bin/gunzip rmix,
@@ -32,7 +29,7 @@
   /etc/man.config r,
   /etc/papersize r,
   /etc/termcap r,
-  /opt/gnome/man/** r,
+  /usr/man/** r,
   /usr/bin/apropos Px,
   /usr/bin/cmp rmix,
   /usr/bin/groff rmix,

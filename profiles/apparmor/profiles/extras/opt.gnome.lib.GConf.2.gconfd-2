@@ -13,25 +13,23 @@
 
 #include <tunables/global>
 
-/opt/gnome/lib/GConf/2/gconfd-2 {
+/usr/lib/GConf/2/gconfd-2 {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/user-tmp>
 
-  /etc/opt/gnome/gconf/2/path r,
-  /etc/opt/gnome/gconf/gconf.xml.defaults r,
-  /etc/opt/gnome/gconf/gconf.xml.defaults/** r,
-  /etc/opt/gnome/gconf/gconf.xml.defaults/schemas/** r,
-  /etc/opt/gnome/gconf/gconf.xml.mandatory r,
+  /etc/gconf/2/path r,
+  /etc/gconf/gconf.xml.defaults r,
+  /etc/gconf/gconf.xml.defaults/** r,
+  /etc/gconf/gconf.xml.defaults/schemas/** r,
+  /etc/gconf/gconf.xml.mandatory r,
 
   @{HOME}/.gconf r,
   @{HOME}/.gconf/** lrw,
   @{HOME}/.gconfd/** lrw,
 
-  /opt/gnome/lib/GConf/2/gconfd-2 r,
-  /opt/gnome/lib/GConf/2/libgconfbackend-xml.so mr,
-  /opt/gnome/lib64/GConf/2/libgconfbackend-xml.so mr,
-  /opt/gnome/lib/lib*so* mr,
-  /opt/gnome/lib64/lib*so* mr,
-  /opt/gnome/share/locale/** r,
+  /usr/lib/GConf/2/gconfd-2 r,
+  /usr/lib/GConf/2/libgconfbackend-xml.so mr,
+  /usr/lib64/GConf/2/libgconfbackend-xml.so mr,
+  /usr/share/locale/** r,
 }

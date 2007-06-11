@@ -13,13 +13,13 @@
 
 #include <tunables/global>
 
-/opt/gnome/lib/evolution-data-server-1.2/evolution-data-server-1.4 {
+/usr/lib/evolution-data-server/evolution-data-server-1.10 {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/user-tmp>
 
   /etc/mtab r,
-  /etc/opt/gnome/** r,
+  /etc/** r,
 
   @{HOME}/.evolution/addressbook/local/** lrw,
   @{HOME}/.evolution/cache/calendar/** lrw,
@@ -29,14 +29,13 @@
   @{HOME}/.gconf/** lrw,
   @{HOME}/.gnome2_private w,
 
-  /opt/gnome/lib/GConf/**.so mr,
-  /opt/gnome/lib/GConf/2/gconfd-2 Pxr,
-  /opt/gnome/lib/evolution-data-server-*/evolution-data-server-* r,
-  /opt/gnome/lib/evolution-data-server-*/extensions r,
-  /opt/gnome/lib/evolution-data-server-*/extensions/lib*.so r,
-  /opt/gnome/lib/gnome-vfs** mr,
-  /opt/gnome/lib/lib*so* mr,
-  /opt/gnome/share/evolution-data-server-*/** mr,
-  /usr/X11R6/lib/X11/locale/* r,
+  /usr/lib/GConf/**.so mr,
+  /usr/lib/GConf/2/gconfd-2 Pxr,
+  /usr/lib64/GConf/2/gconfd-2 Pxr,
+  /usr/lib/evolution-data-server/evolution-data-server-* rmix,
+  /usr/lib/evolution-data-server*/extensions r,
+  /usr/lib/evolution-data-server*/extensions/lib*.so r,
+  /usr/lib/gnome-vfs** mr,
+  /usr/share/evolution-data-server*/** mr,
 
 }

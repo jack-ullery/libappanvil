@@ -18,5 +18,4 @@
 
   /usr/lib/mozilla/lib*so* mr,
   /usr/lib/firefox/mozilla-xremote-client rmix,
-  /usr/X11R6/lib/lib*so* mr,
 }
