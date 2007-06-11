@@ -56,6 +56,7 @@ audit-remove-mangle.diff
 audit-pairs.diff
 audit-pairs-2.diff
 audit-pairs-3.diff
+audit-pairs-4.diff
 audit-link-perms.diff
 audit-remove-buffer.diff
 #multi-profile-load.diff
@@ -65,6 +66,7 @@ audit-remove-buffer.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff
+foobar.diff
 # # NOT YET
 # ecryptfs-d_revalidate.diff
 # nfs-nameidata-check.diff
