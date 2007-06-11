@@ -22,7 +22,7 @@
 
   /dev/** rw,
   /etc/resmgr.conf r,
-  /etc/resmgr.conf.d r,
+  /etc/resmgr.conf.d/ r,
   /etc/resmgr.conf.d/*.conf r,
   /sbin/resmgrd r,
   /var/run/.resmgr_socket lrw,
