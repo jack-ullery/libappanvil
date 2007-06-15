@@ -74,10 +74,17 @@ for my $profiling (@profiling) {
         chomp($fqdbin);
     } else {
         if ($profiling !~ /\//) {
-            my $which = which($profiling);
-            if ($which) {
-                $fqdbin = get_full_path($which);
-            }
+	    opendir(DIR,$profiledir);
+	    my @tmp_fqdbin = grep ( /$profiling/, readdir(DIR));
+	    closedir(DIR);
+	    if (scalar @tmp_fqdbin eq 1) {
+		    $fqdbin = "$profiledir/$tmp_fqdbin[0]";
+	    } else {
+            	    my $which = which($profiling);
+            	    if ($which) {
+                	$fqdbin = get_full_path($which);
+            	    }
+	    }
         }
     }
 
