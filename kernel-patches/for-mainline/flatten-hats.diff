@@ -3,9 +3,9 @@
  security/apparmor/inline.h           |   38 ++---
  security/apparmor/list.c             |   25 +++
  security/apparmor/main.c             |  240 +++++++----------------------------
- security/apparmor/module_interface.c |   84 ------------
+ security/apparmor/module_interface.c |   86 +-----------
  security/apparmor/procattr.c         |   26 +--
- 6 files changed, 110 insertions(+), 312 deletions(-)
+ 6 files changed, 111 insertions(+), 313 deletions(-)
 
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
@@ -21,9 +21,9 @@
   * @flags: flags controlling profile behavior
 - * @null_profile: if needed per profile learning and null confinement profile
   * @isstale: flag indicating if profile is stale
-  * @replacement: profile replacing this profile
   * @capabilities: capabilities granted by the process
-@@ -101,16 +98,13 @@ extern unsigned int apparmor_path_max;
+  * @count: reference count of the profile
+@@ -100,16 +97,13 @@ extern unsigned int apparmor_path_max;
   * way.
   */
  struct aa_profile {
@@ -38,9 +38,9 @@
  	} flags;
 -	struct aa_profile *null_profile;
  	int isstale;
- 	struct aa_profile *replacement;
  
-@@ -226,6 +220,9 @@ extern int aa_change_hat(const char *id,
+ 	kernel_cap_t capabilities;
+@@ -224,6 +218,9 @@ extern int aa_change_hat(const char *id,
  extern int aa_change_profile(const char *name, u64 token);
  extern struct aa_profile *__aa_find_profile(const char *name,
  					    struct list_head *list);
@@ -324,7 +324,7 @@
  		unlock_task_and_profiles(task, cxt, profile);
  		aa_put_profile(profile);
  		goto repeat;
-@@ -1020,6 +1000,7 @@ out:
+@@ -1022,6 +1002,7 @@ out:
  		aa_free_task_context(new_cxt);
  	unlock_task_and_profiles(task, cxt, profile);
  	aa_put_profile(profile);
@@ -332,7 +332,7 @@
  	return error;
  }
  
-@@ -1124,7 +1105,7 @@ int aa_change_profile(const char *name, 
+@@ -1126,7 +1107,7 @@ int aa_change_profile(const char *name, 
  			return -EACCES;
  		}
  
@@ -341,7 +341,7 @@
  	} else {
  		error = do_restore_profile(current, token, &sa);
  	}
-@@ -1133,159 +1114,36 @@ int aa_change_profile(const char *name, 
+@@ -1135,159 +1116,36 @@ int aa_change_profile(const char *name, 
  	return error;
  }
  
@@ -513,7 +513,7 @@
  	return error;
  }
  
-@@ -1418,7 +1276,7 @@ void aa_change_task_context(struct task_
+@@ -1420,7 +1278,7 @@ void aa_change_task_context(struct task_
  		new_cxt->task = task;
  		new_cxt->profile = aa_dup_profile(profile);
  		new_cxt->token_profile = aa_dup_profile(token_profile);
@@ -588,17 +588,17 @@
 -/**
   * aa_verify_head - unpack serialized stream header
   * @e: serialized data read head
-  * @log: log a message on failure
-@@ -403,7 +363,7 @@ static int aa_unpack_profile_set(struct 
+  * @operation: operation header is being verified for
+@@ -393,7 +353,7 @@ ssize_t aa_add_profile(void *data, size_
+ 	if (error)
  		return error;
  
- 	while (aa_inbounds(e, 1)) {
--		profile = aa_unpack_profile_wrapper(e, op);
-+		profile = aa_unpack_profile(e, op);
- 		if (IS_ERR(profile)) {
- 			free_list_of_profiles(lh);
- 			return PTR_ERR(profile);
-@@ -472,29 +432,13 @@ static inline void task_replace(struct t
+-	profile = aa_unpack_profile_wrapper(&e, "profile_load");
++	profile = aa_unpack_profile(&e, "profile_load");
+ 	if (IS_ERR(profile))
+ 		return PTR_ERR(profile);
+ 
+@@ -426,29 +386,13 @@ static inline void task_replace(struct t
  	struct aa_task_context *cxt = aa_task_context(task);
  
  	AA_DEBUG("%s: replacing profile for task %d "
@@ -630,8 +630,17 @@
 +			       cxt->token_profile);
  }
  
- static void replace_profiles_context_list(struct aa_profile *old_profile,
-@@ -645,9 +589,7 @@ struct aa_profile *alloc_aa_profile(void
+ /**
+@@ -473,7 +417,7 @@ ssize_t aa_replace_profile(void *udata, 
+ 	if (error)
+ 		return error;
+ 
+-	new_profile = aa_unpack_profile_wrapper(&e, "profile_replace");
++	new_profile = aa_unpack_profile(&e, "profile_replace");
+ 	if (IS_ERR(new_profile))
+ 		return PTR_ERR(new_profile);
+ 
+@@ -582,9 +526,7 @@ struct aa_profile *alloc_aa_profile(void
  	profile = kzalloc(sizeof(*profile), GFP_KERNEL);
  	AA_DEBUG("%s(%p)\n", __FUNCTION__, profile);
  	if (profile) {
@@ -641,7 +650,7 @@
  		kref_init(&profile->count);
  		INIT_LIST_HEAD(&profile->task_contexts);
  		spin_lock_init(&profile->lock);
-@@ -667,8 +609,6 @@ struct aa_profile *alloc_aa_profile(void
+@@ -604,8 +546,6 @@ struct aa_profile *alloc_aa_profile(void
   */
  void free_aa_profile(struct aa_profile *profile)
  {
@@ -650,7 +659,7 @@
  	AA_DEBUG("%s(%p)\n", __FUNCTION__, profile);
  
  	if (!profile)
-@@ -685,18 +625,6 @@ void free_aa_profile(struct aa_profile *
+@@ -622,18 +562,6 @@ void free_aa_profile(struct aa_profile *
  
  	aa_match_free(profile->file_rules);
  
@@ -669,7 +678,7 @@
  	if (profile->name) {
  		AA_DEBUG("%s: %s\n", __FUNCTION__, profile->name);
  		kfree(profile->name);
-@@ -718,7 +646,7 @@ void aa_unconfine_tasks(struct aa_profil
+@@ -655,7 +583,7 @@ void aa_unconfine_tasks(struct aa_profil
  			list_entry(profile->task_contexts.next,
  				   struct aa_task_context, list)->task;
  		task_lock(task);
