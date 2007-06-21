@@ -1,0 +1,45 @@
+link perms were failing when 1 of the permissions was empty
+
+---
+ security/apparmor/main.c |   20 +++++++-------------
+ 1 file changed, 7 insertions(+), 13 deletions(-)
+
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -68,29 +68,23 @@ static int aa_link_denied(struct aa_prof
+ 
+ 	l_mode = aa_match(profile->file_rules, link);
+ 	t_mode = aa_match(profile->file_rules, target);
+-	*request_mask = l_mode;
++	*request_mask = l_mode | AA_MAY_LINK;
+ 
+ 	/* Link always requires 'l' on the link, a subset of the
+ 	 * target's 'r', 'w', 'x', and 'm' permissions on the link, and
+ 	 * if the link has 'x', an exact match of all the execute flags
+ 	 * ('i', 'u', 'U', 'p', 'P').
+ 	 */
++#define RWXM (MAY_READ | MAY_WRITE | MAY_EXEC | AA_EXEC_MMAP)
+ 	denied_mask = ~l_mode & AA_MAY_LINK;
+-	denied_mask |= l_mode & ~t_mode;
++	if (l_mode & RWXM)
++		denied_mask |= (l_mode & ~ AA_MAY_LINK) & ~t_mode;
++	else
++		denied_mask |= t_mode | AA_MAY_LINK;
+ 	if (denied_mask & AA_EXEC_MODIFIERS)
+ 		denied_mask |= MAY_EXEC;
+ 
+-	/* FIXME: denied mask has no way of reporting that the secure
+-	 * execmode required is safe exec.  This means that if link
+-	 * has safe exec and target unsafe exec, the difference is not
+-	 * reported, back, this isn't a significant problem since
+-	 * safe exec is a subset of unsafe exec, but it violates the
+-	 * exec should be exactly equal rule.
+-	 *
+-	 * The reverse situation does not cause a problem, if link
+-	 * requires an unsafe exec and target a safe exec we report
+-	 * the missing unsafe exec bit.
+-	 */
++#undef RWXM
+ 
+ 	return denied_mask;
+ }

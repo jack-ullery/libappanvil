@@ -60,11 +60,16 @@ audit-pairs-4.diff
 audit-link-perms.diff
 audit-remove-buffer.diff
 #multi-profile-load.diff
+fix_link_perm.diff
 change_profile.diff
 flatten-hats.diff
 flatten-hats-2.diff
 #change_hat-to-change_profile.diff
 use-interface_lock.diff
+change_profile-current.diff
+change_profile-permenent.diff
+change_profile-spin-onstale.diff
+change_profile-no-return.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff

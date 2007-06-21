@@ -1,0 +1,216 @@
+change the way change_profile/change_hat work so that they spin on stale
+instead of taking the interface lock
+
+---
+ security/apparmor/main.c     |   85 ++++++++++++++++++++++++++++---------------
+ security/apparmor/procattr.c |    4 --
+ 2 files changed, 56 insertions(+), 33 deletions(-)
+
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -931,8 +931,8 @@ repeat:
+ 
+ enum { change_profile, permanent_change_profile, restore_profile };
+ 
+-static int do_change_profile(const char *name, u64 cookie, int mode,
+-			     struct aa_audit *sa)
++static int do_change_profile(struct aa_profile *expected, const char *name,
++			     u64 cookie, int mode, struct aa_audit *sa)
+ {
+ 	struct aa_profile *profile = NULL, *previous_profile = NULL;
+ 	struct aa_task_context *new_cxt, *cxt;
+@@ -954,6 +954,11 @@ static int do_change_profile(const char 
+ 		goto out;
+ 	}
+ 
++	if (cxt->profile != expected) {
++		error = -ESTALE;
++		goto out;
++	}
++
+ 	if (cxt->previous_profile) {
+ 		if (cxt->cookie != cookie) {
+ 			error = -EACCES;
+@@ -1020,7 +1025,7 @@ out:
+  */
+ int aa_change_profile(const char *name, u64 cookie, int permanent)
+ {
+-	struct aa_task_context *cxt;
++	struct aa_profile *profile;
+ 	struct aa_audit sa;
+ 	int error = 0;
+ 
+@@ -1029,41 +1034,49 @@ int aa_change_profile(const char *name, 
+ 	sa.cookie = cookie;
+ 	sa.operation = "change_profile";
+ 
+-	mutex_lock(&aa_interface_lock);
+-
+-	cxt = aa_task_context(current);
+-	if (!cxt) {
+-		mutex_unlock(&aa_interface_lock);
++repeat:
++	profile = aa_get_profile(current);
++	if (!profile)
+ 		return -EPERM;
+-	}
+ 
+ 	if (name) {
+-		if (cxt->profile != null_complain_profile &&
+-		    !(aa_match(cxt->profile->file_rules, name) &
++		if (profile != null_complain_profile &&
++		    !(aa_match(profile->file_rules, name) &
+ 		      AA_CHANGE_PROFILE)) {
+ 			/* no permission to transition to profile @name */
+-			mutex_unlock(&aa_interface_lock);
++			aa_put_profile(profile);
+ 			return -EACCES;
+ 		}
+ 		if (permanent)
+-			error = do_change_profile(name, cookie,
++			error = do_change_profile(profile, name, cookie,
+ 						  permanent_change_profile,
+ 						  &sa);
+ 		else
+-			error = do_change_profile(name, cookie, change_profile,
+-						  &sa);
++			error = do_change_profile(profile, name, cookie,
++						  change_profile, &sa);
+ 	} else {
+-		if (cxt->previous_profile)
+-			error = do_change_profile(cxt->previous_profile->name,
++		struct aa_profile *previous_profile;
++		task_lock(current);
++		previous_profile =
++		    aa_dup_profile(aa_task_context(current)->previous_profile);
++		task_unlock(current);
++
++		if (previous_profile)
++			error = do_change_profile(profile,
++						  previous_profile->name,
+ 						  cookie, restore_profile,
+ 						  &sa);
++		aa_put_profile(previous_profile);
+ 		/* else
+ 		 * Ignore change_profile to restore_previous profile when
+ 		 * it doesn't exist
+ 		 */
+ 	}
+ 
+-	mutex_unlock(&aa_interface_lock);
++	aa_put_profile(profile);
++	if (error == -ESTALE)
++		goto repeat;
++
+ 	return error;
+ }
+ 
+@@ -1081,6 +1094,7 @@ int aa_change_profile(const char *name, 
+ int aa_change_hat(const char *hat_name, u64 cookie)
+ {
+ 	struct aa_task_context *cxt;
++	struct aa_profile *profile, *previous_profile;
+ 	struct aa_audit sa;
+ 	int error = 0;
+ 
+@@ -1089,35 +1103,42 @@ int aa_change_hat(const char *hat_name, 
+ 	sa.cookie = cookie;
+ 	sa.operation = "change_hat";
+ 
+-	mutex_lock(&aa_interface_lock);
++repeat:
++	task_lock(current);
+ 	cxt = aa_task_context(current);
+ 	if (!cxt) {
+-		mutex_unlock(&aa_interface_lock);
++		task_unlock(current);
+ 		return -EPERM;
+ 	}
+ 	/* FIXME: there is currently no way to tell if a profile doesn't have
+ 	 * hats so that we can return -ECHILD
+ 	 */
+ 
++	profile = aa_dup_profile(cxt->profile);
++	previous_profile = aa_dup_profile(cxt->previous_profile);
++	task_unlock(current);
++
+ 	if (hat_name) {
+ 		char *name, *profile_name;
+-		if (cxt->previous_profile)
+-			profile_name = cxt->previous_profile->name;
++		if (previous_profile)
++			profile_name = previous_profile->name;
+ 		else
+-			profile_name = cxt->profile->name;
++			profile_name = profile->name;
+ 
+ 		name = kmalloc(strlen(hat_name) + 3 + strlen(profile_name),
+ 			       GFP_KERNEL);
+ 		if (!name) {
+-			mutex_unlock(&aa_interface_lock);
+-			return -ENOMEM;
++			error = -ENOMEM;
++			goto out;
+ 		}
+ 		sprintf(name, "%s//%s", profile_name, hat_name);
+-		error = do_change_profile(name, cookie, change_profile, &sa);
++		error = do_change_profile(profile, name, cookie,
++					  change_profile, &sa);
+ 		kfree(name);
+ 	} else {
+-		if (cxt->previous_profile)
+-			error = do_change_profile(cxt->previous_profile->name,
++		if (previous_profile)
++			error = do_change_profile(profile,
++						  previous_profile->name,
+ 						  cookie, restore_profile,
+ 						  &sa);
+ 		/* else
+@@ -1125,7 +1146,13 @@ int aa_change_hat(const char *hat_name, 
+ 		 * no profile to restore
+ 		 */
+ 	}
+-	mutex_unlock(&aa_interface_lock);
++
++out:
++	aa_put_profile(previous_profile);
++	aa_put_profile(profile);
++	if (error == -ESTALE)
++		goto repeat;
++
+ 	return error;
+ }
+ 
+--- a/security/apparmor/procattr.c
++++ b/security/apparmor/procattr.c
+@@ -118,7 +118,6 @@ int aa_setprocattr_setprofile(struct tas
+ 	AA_DEBUG("%s: current %d\n",
+ 		 __FUNCTION__, current->pid);
+ 
+-	mutex_lock(&aa_interface_lock);
+ repeat:
+ 	if (strcmp(args, "unconfined") == 0)
+ 		new_profile = NULL;
+@@ -128,7 +127,6 @@ repeat:
+ 			sa.name = args;
+ 			sa.info = "unknown profile";
+ 			aa_audit_reject(NULL, &sa);
+-			mutex_unlock(&aa_interface_lock);
+ 			return -EINVAL;
+ 		}
+ 	}
+@@ -141,7 +139,6 @@ repeat:
+ 		error = PTR_ERR(old_profile);
+ 		if (error == -ESTALE)
+ 			goto repeat;
+-		mutex_unlock(&aa_interface_lock);
+ 		return error;
+ 	}
+ 
+@@ -162,6 +159,5 @@ repeat:
+ 	}
+ 	aa_put_profile(old_profile);
+ 	aa_put_profile(new_profile);
+-	mutex_unlock(&aa_interface_lock);
+ 	return 0;
+ }

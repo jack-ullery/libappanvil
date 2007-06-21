@@ -1,0 +1,259 @@
+Make change_profile one way only, this way it doesn't need to deal
+with the change_hat logic
+
+---
+ security/apparmor/apparmor.h |    3 -
+ security/apparmor/lsm.c      |    2 -
+ security/apparmor/main.c     |   82 ++++++++++++-------------------------------
+ security/apparmor/procattr.c |   27 ++------------
+ 4 files changed, 29 insertions(+), 85 deletions(-)
+
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -215,7 +215,7 @@ extern int aa_clone(struct task_struct *
+ extern int aa_register(struct linux_binprm *bprm);
+ extern void aa_release(struct task_struct *task);
+ extern int aa_change_hat(const char *id, u64 hat_magic);
+-extern int aa_change_profile(const char *name, u64 cookie, int permanent);
++extern int aa_change_profile(const char *name);
+ extern struct aa_profile *__aa_find_profile(const char *name,
+ 					    struct list_head *list);
+ extern struct aa_profile *__aa_find_profile2(const char *name,
+@@ -251,7 +251,6 @@ extern void aa_unconfine_tasks(struct aa
+ extern int aa_getprocattr(struct aa_profile *profile, char **string,
+ 			  unsigned *len);
+ extern int aa_setprocattr_changehat(char *args);
+-extern int aa_setprocattr_changeprofile(char *args);
+ extern int aa_setprocattr_setprofile(struct task_struct *task, char *args);
+ 
+ /* apparmorfs.c */
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -632,7 +632,7 @@ static int apparmor_setprocattr(struct t
+ 	} else if (strcmp(command, "changeprofile") == 0) {
+ 		if (current != task)
+ 			return -EACCES;
+-		error = aa_setprocattr_changeprofile(args);
++		error = aa_change_profile(args);
+ 	} else if (strcmp(command, "setprofile")) {
+ 		struct aa_profile *profile;
+ 
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -932,9 +932,10 @@ repeat:
+ enum { change_profile, permanent_change_profile, restore_profile };
+ 
+ static int do_change_profile(struct aa_profile *expected, const char *name,
+-			     u64 cookie, int mode, struct aa_audit *sa)
++			     u64 cookie, struct aa_profile *previous_profile,
++			     struct aa_audit *sa)
+ {
+-	struct aa_profile *profile = NULL, *previous_profile = NULL;
++	struct aa_profile *profile = NULL;
+ 	struct aa_task_context *new_cxt, *cxt;
+ 	int error = 0;
+ 
+@@ -945,7 +946,7 @@ static int do_change_profile(struct aa_p
+ 		return -ENOMEM;
+ 
+ 	profile = aa_find_profile(name);
+-	if (!profile && mode != restore_profile)
++	if (!profile)
+ 		profile = aa_dup_profile(null_complain_profile);
+ 
+ 	cxt = lock_task_and_profiles(current, profile);
+@@ -959,27 +960,6 @@ static int do_change_profile(struct aa_p
+ 		goto out;
+ 	}
+ 
+-	if (cxt->previous_profile) {
+-		if (cxt->cookie != cookie) {
+-			error = -EACCES;
+-			sa->info = "killing process";
+-			aa_audit_reject(profile, sa);
+-			/* terminate process */
+-			(void)send_sig_info(SIGKILL, NULL, current);
+-			goto out;
+-		}
+-
+-		previous_profile = cxt->previous_profile;
+-	} else {
+-		previous_profile = cxt->profile;
+-	}
+-
+-	if (mode == permanent_change_profile) {
+-		previous_profile = NULL;
+-		cookie = 0;
+-		sa->info = "permanent";
+-	}
+-
+ 	if ((current->ptrace & PT_PTRACED) && aa_may_ptrace(cxt, profile)) {
+ 		error = -EACCES;
+ 		goto out;
+@@ -996,11 +976,8 @@ static int do_change_profile(struct aa_p
+ 
+ 	if (APPARMOR_AUDIT(cxt))
+ 		aa_audit_message(cxt->profile, sa, AUDIT_APPARMOR_AUDIT);
+-	if (mode == restore_profile)
+-		aa_change_task_context(current, new_cxt, profile, 0, NULL);
+-	else
+-		aa_change_task_context(current, new_cxt, profile, cookie,
+-				       previous_profile);
++	aa_change_task_context(current, new_cxt, profile, cookie,
++			       previous_profile);
+ 
+ out:
+ 	if (aa_task_context(current) != new_cxt)
+@@ -1014,8 +991,6 @@ out:
+ /**
+  * aa_change_profile - change profile to/from previous stored profile
+  * @name: name of profile to change to
+- * @cookie: magic value to validate the profile change
+- * @permanent: whether the profile change is permanent
+  *
+  * Change to new profile @name, and store the @cookie in the current task
+  * context.  If the new @name is %NULL and the @cookie matches that
+@@ -1023,7 +998,7 @@ out:
+  *
+  * Returns %0 on success, error otherwise.
+  */
+-int aa_change_profile(const char *name, u64 cookie, int permanent)
++int aa_change_profile(const char *name)
+ {
+ 	struct aa_profile *profile;
+ 	struct aa_audit sa;
+@@ -1031,7 +1006,6 @@ int aa_change_profile(const char *name, 
+ 
+ 	memset(&sa, 0, sizeof(sa));
+ 	sa.gfp_mask = GFP_ATOMIC;
+-	sa.cookie = cookie;
+ 	sa.operation = "change_profile";
+ 
+ repeat:
+@@ -1047,30 +1021,9 @@ repeat:
+ 			aa_put_profile(profile);
+ 			return -EACCES;
+ 		}
+-		if (permanent)
+-			error = do_change_profile(profile, name, cookie,
+-						  permanent_change_profile,
+-						  &sa);
+-		else
+-			error = do_change_profile(profile, name, cookie,
+-						  change_profile, &sa);
++		error = do_change_profile(profile, name, 0, NULL, &sa);
+ 	} else {
+-		struct aa_profile *previous_profile;
+-		task_lock(current);
+-		previous_profile =
+-		    aa_dup_profile(aa_task_context(current)->previous_profile);
+-		task_unlock(current);
+-
+-		if (previous_profile)
+-			error = do_change_profile(profile,
+-						  previous_profile->name,
+-						  cookie, restore_profile,
+-						  &sa);
+-		aa_put_profile(previous_profile);
+-		/* else
+-		 * Ignore change_profile to restore_previous profile when
+-		 * it doesn't exist
+-		 */
++		error = -EPERM;
+ 	}
+ 
+ 	aa_put_profile(profile);
+@@ -1116,6 +1069,18 @@ repeat:
+ 
+ 	profile = aa_dup_profile(cxt->profile);
+ 	previous_profile = aa_dup_profile(cxt->previous_profile);
++
++	if (previous_profile) {
++		if (cxt->cookie != cookie) {
++			task_unlock(current);
++			error = -EACCES;
++			sa.info = "killing process";
++			aa_audit_reject(profile, &sa);
++			/* terminate process */
++			(void)send_sig_info(SIGKILL, NULL, current);
++			goto out;
++		}
++	}
+ 	task_unlock(current);
+ 
+ 	if (hat_name) {
+@@ -1133,14 +1098,13 @@ repeat:
+ 		}
+ 		sprintf(name, "%s//%s", profile_name, hat_name);
+ 		error = do_change_profile(profile, name, cookie,
+-					  change_profile, &sa);
++					  previous_profile, &sa);
+ 		kfree(name);
+ 	} else {
+ 		if (previous_profile)
+ 			error = do_change_profile(profile,
+ 						  previous_profile->name,
+-						  cookie, restore_profile,
+-						  &sa);
++						  0, NULL, &sa);
+ 		/* else
+ 		 * Ignore change_hat to restore profile when there is
+ 		 * no profile to restore
+--- a/security/apparmor/procattr.c
++++ b/security/apparmor/procattr.c
+@@ -50,20 +50,16 @@ int aa_getprocattr(struct aa_profile *pr
+ 	return 0;
+ }
+ 
+-static char *split_token_from_name(const char *op, int *cookie_set,
+-				   char *args, u64 *cookie)
++static char *split_token_from_name(const char *op, char *args, u64 *cookie)
+ {
+ 	char *name;
+ 
+ 	*cookie = simple_strtoull(args, &name, 16);
+-	if ((name == args && *cookie_set) || *name != '^') {
++	if ((name == args) || *name != '^') {
+ 		AA_ERROR("%s: Invalid input '%s'", op, args);
+ 		return ERR_PTR(-EINVAL);
+-	} else if (name == args) {
+-		*cookie_set = 0;
+-	} else {
+-		*cookie_set = 1;
+ 	}
++
+ 	name++;  /* skip ^ */
+ 	if (!*name)
+ 		name = NULL;
+@@ -74,9 +70,8 @@ int aa_setprocattr_changehat(char *args)
+ {
+ 	char *hat;
+ 	u64 cookie;
+-	int cookie_set = 1;
+ 
+-	hat = split_token_from_name("change_hat", &cookie_set, args, &cookie);
++	hat = split_token_from_name("change_hat", args, &cookie);
+ 	if (IS_ERR(hat))
+ 		return PTR_ERR(hat);
+ 
+@@ -91,20 +86,6 @@ int aa_setprocattr_changehat(char *args)
+ 	return aa_change_hat(hat, cookie);
+ }
+ 
+-int aa_setprocattr_changeprofile(char *args)
+-{
+-	char *name;
+-	u64 cookie;
+-	int cookie_set = 0;
+-
+-	name = split_token_from_name("change_profile", &cookie_set, args,
+-				     &cookie);
+-	if (IS_ERR(name))
+-		return PTR_ERR(name);
+-
+-	return aa_change_profile(name, cookie, !cookie_set);
+-}
+-
+ int aa_setprocattr_setprofile(struct task_struct *task, char *args)
+ {
+ 	struct aa_profile *old_profile, *new_profile;
