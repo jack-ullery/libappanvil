@@ -13,13 +13,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 ---
  security/apparmor/Kconfig      |    9 +
  security/apparmor/Makefile     |   13 ++
- security/apparmor/apparmor.h   |  259 +++++++++++++++++++++++++++++++++++++++++
- security/apparmor/apparmorfs.c |  250 +++++++++++++++++++++++++++++++++++++++
- security/apparmor/inline.h     |  219 ++++++++++++++++++++++++++++++++++
+ security/apparmor/apparmor.h   |  262 +++++++++++++++++++++++++++++++++++++++++
+ security/apparmor/apparmorfs.c |  252 +++++++++++++++++++++++++++++++++++++++
+ security/apparmor/inline.h     |  230 +++++++++++++++++++++++++++++++++++
  security/apparmor/list.c       |   94 ++++++++++++++
- security/apparmor/locking.txt  |   59 +++++++++
- security/apparmor/procattr.c   |  138 +++++++++++++++++++++
- 8 files changed, 1041 insertions(+)
+ security/apparmor/locking.txt  |   68 ++++++++++
+ security/apparmor/procattr.c   |  137 +++++++++++++++++++++
+ 8 files changed, 1065 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/Kconfig
@@ -51,7 +51,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	$(call cmd,make-caps)
 --- /dev/null
 +++ b/security/apparmor/apparmor.h
-@@ -0,0 +1,259 @@
+@@ -0,0 +1,262 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -86,7 +86,12 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +					 AA_EXEC_UNCONFINED | \
 +					 AA_EXEC_PROFILE)
 +
++#define AA_VALID_PERM_MASK		(MAY_READ | MAY_WRITE | MAY_EXEC | \
++					AA_MAY_LINK | AA_EXEC_MODIFIERS | \
++					AA_EXEC_MMAP | AA_EXEC_UNSAFE)
++
 +#define AA_SECURE_EXEC_NEEDED		1
++
 +
 +/* Control parameters (0 or 1), settable thru module/boot flags or
 + * via /sys/kernel/security/apparmor/control */
@@ -199,68 +204,66 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + */
 +
 +struct aa_audit {
-+	unsigned short type, flags;
-+	unsigned int result;
++	const char *operation;
 +	gfp_t gfp_mask;
-+	int error_code;
++	const char *info;
 +	const char *name;
-+	char *buffer;
-+	union {
-+		int mask;
-+		int capability;
-+		struct {
-+			const char *name2;
-+			char *buffer2;
-+		};
-+		struct iattr *iattr;
-+		va_list vaval;
-+	};
++	const char *name2;
++	int requested_mask, denied_mask;
++	struct iattr *iattr;
++	pid_t task, parent;
++	u64 magic_token;
++	int error_code;
 +};
 +
 +/* audit types */
-+#define AA_MANGLE_NAME		32
-+#define AA_MANGLE_NAME2		64
-+#define AA_AUDITTYPE_FILE	(1 | AA_MANGLE_NAME)
-+#define AA_AUDITTYPE_DIR	(2 | AA_MANGLE_NAME)
-+#define AA_AUDITTYPE_ATTR	(3 | AA_MANGLE_NAME)
-+#define AA_AUDITTYPE_XATTR	(4 | AA_MANGLE_NAME)
-+#define AA_AUDITTYPE_LINK	(5 | AA_MANGLE_NAME | AA_MANGLE_NAME2)
++#define AA_AUDITTYPE_FILE	1
++#define AA_AUDITTYPE_DIR	2
++#define AA_AUDITTYPE_ATTR	3
++#define AA_AUDITTYPE_XATTR	4
++#define AA_AUDITTYPE_LINK	5
 +#define AA_AUDITTYPE_CAP	6
 +#define AA_AUDITTYPE_MSG	7
 +#define AA_AUDITTYPE_SYSCALL	8
 +
-+/* audit flags */
-+#define AA_AUDITFLAG_AUDITSS_SYSCALL 1 /* log syscall context */
-+#define AA_AUDITFLAG_LOGERR	     2 /* log operations that failed due to
-+					   non permission errors  */
-+
 +/* Flags for the permission check functions */
 +#define AA_CHECK_FD	1  /* coming from a file descriptor */
 +#define AA_CHECK_DIR	2  /* file type is directory */
-+#define AA_CHECK_MANGLE	4  /* leave extra room for name mangling */
++
++/* lock subtypes so lockdep does not raise false dependencies */
++enum aa_lock_class {
++	aa_lock_normal,
++	aa_lock_nested,
++	aa_lock_task_release
++};
 +
 +/* main.c */
 +extern int alloc_null_complain_profile(void);
 +extern void free_null_complain_profile(void);
 +extern int attach_nullprofile(struct aa_profile *profile);
-+extern int aa_audit_message(struct aa_profile *profile, gfp_t gfp,
-+			    const char *, ...)
-+	__attribute__ ((format (printf, 3, 4)));
++extern int aa_audit_message(struct aa_profile *profile, struct aa_audit *sa,
++			    int type);
++void aa_audit_hint(struct aa_profile *profile, struct aa_audit *sa);
++void aa_audit_status(struct aa_profile *profile, struct aa_audit *sa);
++int aa_audit_reject(struct aa_profile *profile, struct aa_audit *sa);
 +extern int aa_audit_syscallreject(struct aa_profile *profile, gfp_t gfp,
 +				  const char *);
 +extern int aa_audit(struct aa_profile *profile, struct aa_audit *);
 +
 +extern int aa_attr(struct aa_profile *profile, struct dentry *dentry,
 +		   struct vfsmount *mnt, struct iattr *iattr);
-+extern int aa_perm_xattr(struct aa_profile *profile, struct dentry *dentry,
-+			 struct vfsmount *mnt, const char *operation, int mask,
-+			 int check);
++extern int aa_perm_xattr(struct aa_profile *profile, const char *operation,
++			 struct dentry *dentry, struct vfsmount *mnt,
++			 int mask, int check);
 +extern int aa_capability(struct aa_task_context *cxt, int cap);
-+extern int aa_perm(struct aa_profile *profile, struct dentry *dentry,
-+		   struct vfsmount *mnt, int mask, int check);
-+extern int aa_perm_dir(struct aa_profile *profile, struct dentry *dentry,
-+		       struct vfsmount *mnt, const char *operation, int mask);
-+extern int aa_perm_path(struct aa_profile *, const char *, int);
++extern int aa_perm(struct aa_profile *profile, const char *operation,
++		   struct dentry *dentry, struct vfsmount *mnt, int mask,
++		   int check);
++extern int aa_perm_dir(struct aa_profile *profile, const char *operation,
++		       struct dentry *dentry, struct vfsmount *mnt,
++		       int mask);
++extern int aa_perm_path(struct aa_profile *, const char *operation,
++			const char *name, int);
 +extern int aa_link(struct aa_profile *profile,
 +		   struct dentry *link, struct vfsmount *link_mnt,
 +		   struct dentry *target, struct vfsmount *target_mnt);
@@ -313,7 +316,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +#endif  /* __APPARMOR_H */
 --- /dev/null
 +++ b/security/apparmor/apparmorfs.c
-@@ -0,0 +1,250 @@
+@@ -0,0 +1,252 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -336,7 +339,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +static char *aa_simple_write_to_buffer(const char __user *userbuf,
 +				       size_t alloc_size, size_t copy_size,
-+				       loff_t *pos, const char *msg)
++				       loff_t *pos, const char *operation)
 +{
 +	struct aa_profile *profile;
 +	char *data;
@@ -354,13 +357,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	 */
 +	profile = aa_get_profile(current);
 +	if (profile) {
-+		aa_audit_message(NULL, GFP_KERNEL, "REJECTING access to "
-+				 "profile %s (%d profile %s active %s)",
-+				 msg, current->pid, profile->parent->name,
-+				 profile->name);
++		struct aa_audit sa;
++		memset(&sa, 0, sizeof(sa));
++		sa.operation = operation;
++		sa.gfp_mask = GFP_KERNEL;
++		sa.error_code = -EACCES;
++		data = ERR_PTR(aa_audit_reject(profile, &sa));
 +		aa_put_profile(profile);
-+
-+		data = ERR_PTR(-EPERM);
 +		goto out;
 +	}
 +
@@ -422,7 +425,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	char *data;
 +	ssize_t error;
 +
-+	data = aa_simple_write_to_buffer(buf, size, size, pos, "load");
++	data = aa_simple_write_to_buffer(buf, size, size, pos, "profile_load");
 +
 +	error = PTR_ERR(data);
 +	if (!IS_ERR(data)) {
@@ -445,7 +448,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	char *data;
 +	ssize_t error;
 +
-+	data = aa_simple_write_to_buffer(buf, size, size, pos, "replacement");
++	data = aa_simple_write_to_buffer(buf, size, size, pos,
++					 "profile_replace");
 +
 +	error = PTR_ERR(data);
 +	if (!IS_ERR(data)) {
@@ -472,7 +476,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	 * aa_remove_profile needs a null terminated string so 1 extra
 +	 * byte is allocated and the copied data is null terminated.
 +	 */
-+	data = aa_simple_write_to_buffer(buf, size + 1, size, pos, "removal");
++	data = aa_simple_write_to_buffer(buf, size + 1, size, pos,
++					 "profile_remove");
 +
 +	error = PTR_ERR(data);
 +	if (!IS_ERR(data)) {
@@ -566,7 +571,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 --- /dev/null
 +++ b/security/apparmor/inline.h
-@@ -0,0 +1,219 @@
+@@ -0,0 +1,230 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -668,7 +673,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + * While the profile is locked, local interrupts are disabled. This also
 + * gives us RCU reader safety.
 + */
-+static inline void lock_profile(struct aa_profile *profile)
++static inline void lock_profile_nested(struct aa_profile *profile,
++				       enum aa_lock_class lock_class)
 +{
 +	/* We always lock top-level profiles instead of children. */
 +	if (profile)
@@ -681,7 +687,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	 * the task_free_security hook, which may run in RCU context.
 +	 */
 +	if (profile)
-+		spin_lock_irqsave(&profile->lock, profile->int_flags);
++		spin_lock_irqsave_nested(&profile->lock, profile->int_flags,
++					 lock_class);
++}
++
++static inline void lock_profile(struct aa_profile *profile)
++{
++	lock_profile_nested(profile, aa_lock_normal);
 +}
 +
 +/**
@@ -730,17 +742,21 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	 */
 +	if (!profile1 || profile1 == profile2) {
 +		if (profile2)
-+			spin_lock_irqsave(&profile2->lock, profile2->int_flags);
++			spin_lock_irqsave_nested(&profile2->lock,
++						 profile2->int_flags,
++						 aa_lock_normal);
 +	} else if (profile1 > profile2) {
 +		/* profile1 cannot be NULL here. */
-+		spin_lock_irqsave(&profile1->lock, profile1->int_flags);
++		spin_lock_irqsave_nested(&profile1->lock, profile1->int_flags,
++					 aa_lock_normal);
 +		if (profile2)
-+			spin_lock(&profile2->lock);
++			spin_lock_nested(&profile2->lock, aa_lock_nested);
 +
 +	} else {
 +		/* profile2 cannot be NULL here. */
-+		spin_lock_irqsave(&profile2->lock, profile2->int_flags);
-+		spin_lock(&profile1->lock);
++		spin_lock_irqsave_nested(&profile2->lock, profile2->int_flags,
++					 aa_lock_normal);
++		spin_lock_nested(&profile1->lock, aa_lock_nested);
 +	}
 +}
 +
@@ -885,7 +901,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +};
 --- /dev/null
 +++ b/security/apparmor/locking.txt
-@@ -0,0 +1,59 @@
+@@ -0,0 +1,68 @@
 +Locking in AppArmor
 +===================
 +
@@ -939,15 +955,24 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +won't race with itself. We release the profile_list_lock as soon as
 +possible to avoid stalling exec during profile loading/replacement/removal.
 +
-+lock_dep reports a false 'possible irq lock inversion dependency detected'
-+when the profile lock is taken in aa_release.  This is due to that the
-+task_lock is often taken inside the profile lock but other kernel code
-+takes the task_lock with interrupts enabled.  A deadlock will not actually
-+occur because apparmor does not take the task_lock in hard_irq or soft_irq
-+context.
++AppArmor uses lock subtyping to avoid false positives from lockdep.  The
++profile lock is often taken nested, but it is guaranteed to be in a lock
++safe order and not the same lock when done, so it is safe.
++
++A third lock type (aa_lock_task_release) is given to the profile lock
++when it is taken in soft irq context during task release (aa_release).
++This is to avoid a false positive between the task lock and the profile
++lock.  In task context the profile lock wraps the task lock with irqs
++off, but the kernel takes the task lock with irqs enabled.  This won't
++result in a deadlock because for a deadlock to occur the kernel must
++take dead task A's lock (irqs on), the rcu callback hook freeing
++dead task A must be run and AppArmor must be changing the profile on
++dead task A.  The kernel should not be taking a dead task's task_lock
++at the same time the task is being freed by task rcu cleanup other wise
++the task would not be out of its quiescent period.
 --- /dev/null
 +++ b/security/apparmor/procattr.c
-@@ -0,0 +1,138 @@
+@@ -0,0 +1,137 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -1031,6 +1056,12 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +int aa_setprocattr_setprofile(struct task_struct *task, char *args)
 +{
 +	struct aa_profile *old_profile, *new_profile;
++	struct aa_audit sa;
++
++	memset(&sa, 0, sizeof(sa));
++	sa.operation = "profile_set";
++	sa.gfp_mask = GFP_KERNEL;
++	sa.task = task->pid;
 +
 +	AA_DEBUG("%s: current %d\n",
 +		 __FUNCTION__, current->pid);
@@ -1041,11 +1072,9 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	else {
 +		new_profile = aa_find_profile(args);
 +		if (!new_profile) {
-+			aa_audit_message(NULL, GFP_KERNEL, "Unable to switch "
-+					 "task %d to profile '%s'. No such "
-+					 "profile.",
-+					 task->pid, args);
-+
++			sa.name = args;
++			sa.info = "unknown profile";
++			aa_audit_reject(NULL, &sa);
 +			return -EINVAL;
 +		}
 +	}
@@ -1062,25 +1091,20 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	}
 +
 +	if (new_profile) {
-+		aa_audit_message(NULL, GFP_KERNEL, "Switching task %d profile "
-+				 "%s active %s to new profile %s",
-+				 task->pid, old_profile ?
-+				 old_profile->parent->name : "unconfined",
-+				 old_profile ? old_profile->name : "unconfined",
-+				 args);
++		sa.name = args;
++		sa.name2 = old_profile ? old_profile->parent->name :
++			"unconfined";
++		aa_audit_status(NULL, &sa);
 +	} else {
 +		if (old_profile) {
-+			aa_audit_message(NULL, GFP_KERNEL, "Unconfining task "
-+					 "%d profile %s active %s",
-+					 task->pid, old_profile->parent->name,
-+					 old_profile->name);
++			sa.name = "unconfined";
++			sa.name2 = old_profile->parent->name;
++			aa_audit_status(NULL, &sa);
 +		} else {
-+			aa_audit_message(NULL, GFP_KERNEL, "task %d is already "
-+					 "unconfined",
-+					 task->pid);
++			sa.info = "task is unconfined";
++			aa_audit_status(NULL, &sa);
 +		}
 +	}
-+
 +	aa_put_profile(old_profile);
 +	aa_put_profile(new_profile);
 +

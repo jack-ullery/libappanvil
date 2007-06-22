@@ -12,9 +12,9 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- include/linux/audit.h |    7 ++++++-
+ include/linux/audit.h |   12 +++++++++++-
  kernel/audit.c        |    6 ++++--
- 2 files changed, 10 insertions(+), 3 deletions(-)
+ 2 files changed, 15 insertions(+), 3 deletions(-)
 
 --- a/include/linux/audit.h
 +++ b/include/linux/audit.h
@@ -27,16 +27,21 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
   * 1600 - 1699 kernel crypto events
   * 1700 - 1799 kernel anomaly records
   * 1800 - 1999 future kernel use (maybe integrity labels and related events)
-@@ -114,6 +114,8 @@
- #define AUDIT_ANOM_PROMISCUOUS      1700 /* Device changed promiscuous mode */
- #define AUDIT_ANOM_ABEND            1701 /* Process ended abnormally */
+@@ -109,6 +109,13 @@
+ #define AUDIT_MAC_IPSEC_ADDSPD	1413	/* Add a XFRM policy */
+ #define AUDIT_MAC_IPSEC_DELSPD	1414	/* Delete a XFRM policy */
  
-+#define AUDIT_APPARMOR		1500	/* AppArmor audit */
++#define AUDIT_APPARMOR_AUDIT	1501	/* AppArmor audited grants */
++#define AUDIT_APPARMOR_ALLOWED	1502	/* Allowed Access for learning */
++#define AUDIT_APPARMOR_DENIED	1503
++#define AUDIT_APPARMOR_HINT	1504	/* Process Tracking information */
++#define AUDIT_APPARMOR_STATUS	1505	/* Changes in config */
++#define AUDIT_APPARMOR_ERROR	1506	/* Internal AppArmor Errors */
 +
- #define AUDIT_KERNEL		2000	/* Asynchronous audit record. NOT A REQUEST. */
- 
- /* Rule flags */
-@@ -499,6 +501,9 @@ extern void		    audit_log(struct audit_
+ #define AUDIT_FIRST_KERN_ANOM_MSG   1700
+ #define AUDIT_LAST_KERN_ANOM_MSG    1799
+ #define AUDIT_ANOM_PROMISCUOUS      1700 /* Device changed promiscuous mode */
+@@ -499,6 +506,9 @@ extern void		    audit_log(struct audit_
  				      __attribute__((format(printf,4,5)));
  
  extern struct audit_buffer *audit_log_start(struct audit_context *ctx, gfp_t gfp_mask, int type);
