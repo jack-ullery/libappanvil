@@ -70,6 +70,7 @@ change_profile-current.diff
 change_profile-permenent.diff
 change_profile-spin-onstale.diff
 change_profile-no-return.diff
+unused.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff
