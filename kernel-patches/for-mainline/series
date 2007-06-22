@@ -62,6 +62,7 @@ audit-remove-buffer.diff
 #multi-profile-load.diff
 fix_link_perm.diff
 change_profile.diff
+change_profile-2.diff
 flatten-hats.diff
 flatten-hats-2.diff
 #change_hat-to-change_profile.diff
