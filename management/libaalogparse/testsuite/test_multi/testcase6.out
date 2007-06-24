@@ -1,0 +1,9 @@
+START
+File: test_multi/testcase6.in
+Event type: AA_RECORD_ALLOWED
+Operation: rmdir
+Profile: /bin/freak-aa-out
+Name: /path/to/something
+Info: bash
+PID: 23415
+Active hat: /bin/freak-aa-out

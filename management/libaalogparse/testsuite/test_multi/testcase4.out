@@ -1,0 +1,10 @@
+START
+File: test_multi/testcase4.in
+Event type: AA_RECORD_DENIED
+Operation: access
+Mask: r
+Profile: /bin/freak-aa-out
+Name: /bin/freak-aa-out
+Info: bash
+PID: 23415
+Active hat: /bin/freak-aa-out

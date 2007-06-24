@@ -1,0 +1,9 @@
+START
+File: test_multi/testcase9.in
+Event type: AA_RECORD_ALLOWED
+Operation: capability
+Profile: /bin/freak-aa-out
+Name: cap
+Info: bash
+PID: 23415
+Active hat: /bin/freak-aa-out

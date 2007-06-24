@@ -1,0 +1,6 @@
+START
+File: test_multi/testcase11.in
+Event type: AA_RECORD_HINT
+Operation: clone
+Task: 38229
+PID: 27764

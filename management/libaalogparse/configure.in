@@ -1,0 +1,38 @@
+AC_INIT(configure.in)
+
+AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE(libaalogparse, 0.6)
+
+AM_PROG_LEX
+AC_PROG_YACC
+
+AC_PATH_PROG([SWIG], [swig])
+
+AC_PATH_PROG([PYTHON], [python])
+AM_CONDITIONAL(HAVE_PYTHON, test "x${PYTHON}" != "x")
+AM_PATH_PYTHON
+
+AC_PATH_PROG([PERL], [perl])
+AM_CONDITIONAL(HAVE_PERL, test "x${PERL}" != "x")
+
+AC_PATH_PROG([RUBY], [ruby])
+AM_CONDITIONAL(HAVE_RUBY, test "x${RUBY}" != "x")
+
+AC_HEADER_STDC
+AC_CHECK_HEADERS(unistd.h stdint.h)
+
+AC_C_CONST
+AM_PROG_LIBTOOL
+
+AC_OUTPUT(
+Makefile
+src/Makefile
+swig/Makefile
+swig/perl/Makefile
+swig/python/Makefile
+swig/ruby/Makefile
+testsuite/Makefile
+testsuite/config/Makefile
+testsuite/libaalogparse.test/Makefile
+testsuite/lib/Makefile
+)

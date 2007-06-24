@@ -1,0 +1,10 @@
+START
+File: test_multi/testcase7.in
+Event type: AA_RECORD_DENIED
+Operation: xattr
+Profile: /bin/freak-aa-out
+Name: /path/to/something
+Attribute: set
+Info: bash
+PID: 23415
+Active hat: /bin/freak-aa-out

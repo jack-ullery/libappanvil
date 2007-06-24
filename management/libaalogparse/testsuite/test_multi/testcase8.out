@@ -1,0 +1,10 @@
+START
+File: test_multi/testcase8.in
+Event type: AA_RECORD_ALLOWED
+Operation: setattr
+Profile: /bin/freak-aa-out
+Name: /else
+Attribute: something
+Info: bash
+PID: 23415
+Active hat: /bin/freak-aa-out
