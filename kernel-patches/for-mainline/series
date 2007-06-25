@@ -1,7 +1,4 @@
-var-name.diff
 security-create.diff
-#proc_setattr.diff 
-#proc_sys_setattr.diff
 remove_suid.diff
 vfs-notify_change.diff
 #should_remove_suid.diff
@@ -39,9 +36,7 @@ sysctl-pathname.diff
 parent-permission.diff
 apparmor-audit.diff
 apparmor-main.diff
-# apparmor-main-2.diff
 apparmor-lsm.diff
-apparmor_ptrace-cleanup.diff
 apparmor-module_interface.diff
 apparmor-misc.diff
 apparmor-intree.diff
