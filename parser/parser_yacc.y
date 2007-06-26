@@ -85,6 +85,7 @@ void free_value_list(struct value_list *list);
 %token TOK_ELSE
 %token TOK_NOT
 %token TOK_DEFINED
+%token TOK_CHANGE_PROFILE
 
 /* network tokens */
 %token TOK_IP
@@ -200,6 +201,7 @@ void free_value_list(struct value_list *list);
 %type <flags>	flagval
 %type <cap>	cap
 %type <cap>	capability
+%type <user_entry> change_profile
 %type <set_var> TOK_SET_VAR
 %type <bool_var> TOK_BOOL_VAR
 %type <var_val>	TOK_VALUE
@@ -417,6 +419,17 @@ rules: rules netrule
 		$$ = $1;
 	};
 
+rules:	rules change_profile
+	{
+		PDEBUG("matched: rules change_profile\n");
+		PDEBUG("rules change_profile: (%s)\n", $2->name);
+		if (!$2)
+			yyerror(_("Assert: `change_profile' returned NULL."));
+  fprintf(stderr, "Hello adding change_profile\n");
+		add_entry_to_policy($1, $2);
+		$$ = $1;
+	};
+
 rules:	rules capability
 	{
 		$1->capabilities = $1->capabilities | CAP_TO_MASK($2);
@@ -522,7 +535,7 @@ rule:	TOK_ID TOK_MODE TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 		PDEBUG("Matched: tok_id (%s) tok_mode (%s)\n", $1, $2);
-		entry = new_entry($1, $2);
+		entry = new_entry($1, parse_mode($2));
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("rule.entry: (%s)\n", entry->name);
@@ -534,7 +547,7 @@ rule:	TOK_SET_VAR TOK_MODE TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 		PDEBUG("Matched: tok_id (%s) tok_mode (%s)\n", $1, $2);
-		entry = new_entry($1, $2);
+		entry = new_entry($1, parse_mode($2));
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("rule.entry: (%s)\n", entry->name);
@@ -828,6 +841,19 @@ ports:		TOK_COLON TOK_NUM TOK_RANGE TOK_NUM
 		}
 		
 		$$ = ports;
+	};
+
+change_profile:	TOK_CHANGE_PROFILE TOK_ID TOK_END_OF_RULE
+	{
+		struct cod_entry *entry;
+		PDEBUG("Matched change_profile: tok_id (%s)\n", $2);
+		fprintf(stderr, "change_profile\n");
+		entry = new_entry($2, AA_CHANGE_PROFILE);
+		if (!entry)
+			yyerror(_("Memory allocation error."));
+		PDEBUG("change_profile.entry: (%s)\n", entry->name);
+		$$ = entry;
+		fprintf(stderr, "change_prifle got entry\n");
 	};
 
 capability:	TOK_CAPABILITY cap TOK_END_OF_RULE
