@@ -5,6 +5,7 @@ Set the LOOKUP_CONTINUE flag when checking parent permissions. This allows
 permission functions to tell between parent and leaf checks.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
  fs/namei.c |    6 ++++++

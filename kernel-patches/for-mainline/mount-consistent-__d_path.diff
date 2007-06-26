@@ -12,6 +12,7 @@ Fix this by grabbing the vfsmount_lock when the first mount point is reached,
 and holding onto it until the d_cache lookup is completed.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
  fs/dcache.c |   14 ++++++++------

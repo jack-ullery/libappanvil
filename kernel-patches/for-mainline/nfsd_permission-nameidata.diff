@@ -8,6 +8,7 @@ Note that confining nfsd with AppArmor makes no sense, and so this
 patch is not necessary for AppArmor alone.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
  fs/nfsd/vfs.c |    9 +++++++--

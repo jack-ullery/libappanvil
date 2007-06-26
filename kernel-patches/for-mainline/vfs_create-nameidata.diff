@@ -5,6 +5,7 @@ Create a nameidata2 struct in nfsd and mqueue so that vfs_create does
 need to conditionally pass the vfsmnt.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
  fs/namei.c    |    2 +-

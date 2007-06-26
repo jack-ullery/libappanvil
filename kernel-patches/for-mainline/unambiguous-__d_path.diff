@@ -21,6 +21,7 @@ except for bind-mounted directories; for them, it reports ``/foo/bar'' instead
 of ``foobar'' in the example described above.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
 
 ---
