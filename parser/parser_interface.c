@@ -18,6 +18,7 @@
  */
 
 #define _GNU_SOURCE    /* for asprintf */
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -538,15 +539,31 @@ int count_pcre_ents(struct cod_entry *list)
 	return count;
 }
 
-int sd_serialize_profile(sd_serialize *p, struct codomain *profile)
+int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
+			 int flattened)
 {
 	struct cod_entry *entry;
 	struct cod_net_entry *net_entry;
 
 	if (!sd_write_struct(p, "profile"))
 		return 0;
-	if (!sd_write_string(p, profile->name, NULL))
-		return 0;
+	if (flattened) {
+		assert(profile->parent);
+		int res;
+
+		char *name = malloc(3 + strlen(profile->name) +
+				    strlen(profile->parent->name));
+		if (!name)
+			return 0;
+		sprintf(name, "%s//%s", profile->parent->name, profile->name);
+		res = sd_write_string(p, name, NULL);
+		free(name);
+		if (!res)
+			return 0;
+	} else {
+		if (!sd_write_string(p, profile->name, NULL))
+			return 0;
+	}
 	if (!sd_write_struct(p, "flags"))
 		return 0;
 	/* used to be flags.debug, but that's no longer supported */
@@ -621,7 +638,7 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile)
 
 	}
 
-	if (profile->hat_table) {
+	if (profile->hat_table && regex_type != AARE_DFA) {
 		if (!sd_write_list(p, "hats"))
 			return 0;
 		if (load_hats(p, profile) != 0)
@@ -651,7 +668,7 @@ int sd_serialize_top_profile(sd_serialize *p, struct codomain *profile)
 
 	if (!sd_write32(p, version))
 		return 0;
-	return sd_serialize_profile(p, profile);
+	return sd_serialize_profile(p, profile, profile->parent ? 1 : 0);
 }
 
 int sd_serialize_codomain(int option, struct codomain *cod)
@@ -695,11 +712,25 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		free(filename);
 
 	if (option == OPTION_REMOVE) {
-		size = strlen(cod->name) + 1;
-		wsize = write(fd, cod->name, size);
+		char *name;
+		if (cod->parent) {
+			name = malloc(strlen(cod->name) + 3 +
+				      strlen(cod->parent->name));
+			if (!name) {
+				PERROR(_("Unable to remove ^%s\n"), cod->name);
+				error = -errno;
+				goto exit;
+			}
+			sprintf(name, "%s//%s", cod->parent->name, cod->name);
+		} else {
+			name = cod->name;
+		}
+		size = strlen(name) + 1;
+		wsize = write(fd, name, size);
 		if (wsize < 0)
 			error = -errno;
-
+		if (cod->parent)
+			free(name);
 	} else {
 
 		work_area = alloc_sd_serial();
@@ -730,6 +761,12 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 	}
 
 	close(fd);
+
+	if (cod->hat_table && regex_type == AARE_DFA) {
+		if (load_flattened_hats(cod) != 0)
+			return 0;
+	}
+
 
 exit:
 	return error;
