@@ -7,12 +7,12 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- security/apparmor/lsm.c |  813 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 813 insertions(+)
+ security/apparmor/lsm.c |  817 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 817 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/lsm.c
-@@ -0,0 +1,813 @@
+@@ -0,0 +1,817 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -644,6 +644,10 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		if (current != task)
 +			return -EACCES;
 +		error = aa_setprocattr_changehat(args);
++	} else if (strcmp(command, "changeprofile") == 0) {
++		if (current != task)
++			return -EACCES;
++		error = aa_setprocattr_changeprofile(args);
 +	} else if (strcmp(command, "setprofile")) {
 +		struct aa_profile *profile;
 +

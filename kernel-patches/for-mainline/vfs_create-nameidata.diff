@@ -156,7 +156,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
 --- a/ipc/mqueue.c
 +++ b/ipc/mqueue.c
-@@ -603,9 +603,14 @@ static int mq_attr_ok(struct mq_attr *at
+@@ -602,9 +602,14 @@ static int mq_attr_ok(struct mq_attr *at
  static struct file *do_create(struct dentry *dir, struct dentry *dentry,
  			int oflag, mode_t mode, struct mq_attr __user *u_attr)
  {
@@ -171,7 +171,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (u_attr) {
  		ret = -EFAULT;
  		if (copy_from_user(&attr, u_attr, sizeof(attr)))
-@@ -618,7 +623,7 @@ static struct file *do_create(struct den
+@@ -617,7 +622,7 @@ static struct file *do_create(struct den
  	}
  
  	mode &= ~current->fs->umask;

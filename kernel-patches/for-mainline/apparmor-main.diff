@@ -7,12 +7,12 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- security/apparmor/main.c | 1248 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 1248 insertions(+)
+ security/apparmor/main.c | 1255 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 1255 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/main.c
-@@ -0,0 +1,1248 @@
+@@ -0,0 +1,1255 @@
 +/*
 + *	Copyright (C) 2002-2007 Novell/SUSE
 + *
@@ -83,6 +83,11 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +	l_mode = aa_match(profile->file_rules, link);
 +	t_mode = aa_match(profile->file_rules, target);
++
++	/* Ignore valid-profile-transition flags. */
++	l_mode &= ~AA_CHANGE_PROFILE;
++	t_mode &= ~AA_CHANGE_PROFILE;
++
 +	*request_mask = l_mode | AA_MAY_LINK;
 +
 +	/* Link always requires 'l' on the link, a subset of the
@@ -214,42 +219,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +}
 +
 +/**
-+ * attach_nullprofile - allocate and attach a null_profile hat to profile
-+ * @profile: profile to attach a null_profile hat to.
-+ *
-+ * Return %0 (success) or error (-%ENOMEM)
-+ */
-+int attach_nullprofile(struct aa_profile *profile)
-+{
-+	struct aa_profile *hat = NULL;
-+	char *hatname = NULL;
-+
-+	hat = alloc_aa_profile();
-+	if (!hat)
-+		goto fail;
-+	if (profile->flags.complain)
-+		hatname = kstrdup("null-complain-profile", GFP_KERNEL);
-+	else
-+		hatname = kstrdup("null-profile", GFP_KERNEL);
-+	if (!hatname)
-+		goto fail;
-+
-+	hat->flags.complain = profile->flags.complain;
-+	hat->name = hatname;
-+	hat->parent = profile;
-+
-+	profile->null_profile = hat;
-+
-+	return 0;
-+
-+fail:
-+	kfree(hatname);
-+	free_aa_profile(hat);
-+
-+	return -ENOMEM;
-+}
-+
-+/**
 + * alloc_null_complain_profile - Allocate the global null_complain_profile.
 + *
 + * Return %0 (success) or error (-%ENOMEM)
@@ -267,8 +236,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		goto fail;
 +
 +	null_complain_profile->flags.complain = 1;
-+	if (attach_nullprofile(null_complain_profile))
-+		goto fail;
 +
 +	return 0;
 +
@@ -391,14 +358,14 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		audit_log_untrustedstring(ab, sa->name2);
 +	}
 +
-+	if (sa->magic_token)
-+		audit_log_format(ab, " magic_token=%llu", sa->magic_token);
++	if (sa->cookie)
++		audit_log_format(ab, " cookie=%llu", sa->cookie);
 +
 +	audit_log_format(ab, " pid=%d", current->pid);
 +
 +	if (profile) {
 +		audit_log_format(ab, " profile=");
-+		audit_log_untrustedstring(ab, profile->parent->name);
++		audit_log_untrustedstring(ab, profile->name);
 +	}
 +
 +	audit_log_end(ab);
@@ -745,7 +712,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +		/* No need to grab the child's task lock here. */
 +		aa_change_task_context(child, child_cxt, profile,
-+				       cxt->hat_magic);
++				       cxt->cookie, cxt->previous_profile);
 +		unlock_profile(profile);
 +
 +		if (APPARMOR_COMPLAIN(child_cxt) &&
@@ -887,7 +854,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	if (IS_ERR(new_profile))
 +		goto cleanup;
 +
-+	old_profile = __aa_replace_profile(current, new_profile, 0);
++	old_profile = __aa_replace_profile(current, new_profile);
 +	if (IS_ERR(old_profile)) {
 +		aa_put_profile(new_profile);
 +		aa_put_profile(profile);
@@ -976,66 +943,143 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +			aa_put_profile(profile);
 +			goto repeat;
 +		}
-+		aa_change_task_context(task, NULL, NULL, 0);
++		aa_change_task_context(task, NULL, NULL, 0, NULL);
 +		unlock_profile(profile);
 +		aa_put_profile(profile);
 +	}
 +}
 +
-+/**
-+ * do_change_hat - actually switch hats
-+ * @hat_name: name of hat to switch to
-+ * @new_cxt: new aa_task_context to use on profile change
-+ * @hat_magic: new magic value to use
-+ *
-+ * Switch to a new hat.  Returns %0 on success, error otherwise.
-+ */
-+static int do_change_hat(const char *hat_name, struct aa_task_context *new_cxt,
-+			 u64 hat_magic, struct aa_audit *sa)
++static int do_change_profile(struct aa_profile *expected, const char *name,
++			     u64 cookie, int restore, struct aa_audit *sa)
 +{
-+	struct aa_task_context *cxt = aa_task_context(current);
-+	struct aa_profile *sub;
++	struct aa_profile *profile = NULL, *old_profile = NULL,
++		*previous_profile = NULL;
++	struct aa_task_context *new_cxt, *cxt;
 +	int error = 0;
 +
-+	/*
-+	 * Note: the profile and sub-profiles cannot go away under us here;
-+	 * no need to grab an additional reference count.
-+	 */
-+	sub = __aa_find_profile(hat_name, &cxt->profile->parent->sub);
++	sa->name = name;
 +
-+	if ((current->ptrace & PT_PTRACED) && aa_may_ptrace(cxt, sub))
-+		return -EACCES;
++	new_cxt = aa_alloc_task_context(GFP_KERNEL);
++	if (!new_cxt)
++		return -ENOMEM;
 +
-+	if (sub) {
-+		/* change hat */
-+		aa_change_task_context(current, new_cxt, sub, hat_magic);
-+	} else {
-+		struct aa_profile *profile = cxt->profile;
++	profile = aa_find_profile(name);
++	if (!profile && !restore)
++		profile = aa_dup_profile(null_complain_profile);
 +
-+		if (APPARMOR_COMPLAIN(cxt)) {
-+			sa->info = "unknown hat";
-+			aa_audit_hint(profile, sa);
-+		} else {
-+			AA_DEBUG("%s: Unknown hatname '%s'. "
-+				"Changing to NULL profile "
-+				"(%d profile %s active %s)\n",
-+				 __FUNCTION__,
-+				 hat_name,
-+				 current->pid,
-+				 profile->parent->name,
-+				 profile->name);
-+			error = -EACCES;
-+		}
-+		/*
-+		 * Switch to the NULL profile: it grants no accesses, so in
-+		 * learning mode all accesses will get logged, and in enforce
-+		 * mode all accesses will be denied.
-+		 *
-+		 * In learning mode, this allows us to learn about new hats.
-+		 */
-+		aa_change_task_context(current, new_cxt,
-+				       cxt->profile->null_profile, hat_magic);
++	cxt = lock_task_and_profiles(current, profile);
++	if (!cxt) {
++		error = -EPERM;
++		goto out;
 +	}
++	old_profile = cxt->profile;
++
++	if (cxt->profile != expected || (profile && profile->isstale)) {
++		error = -ESTALE;
++		goto out;
++	}
++
++	if (cxt->previous_profile) {
++		if (cxt->cookie != cookie) {
++			error = -EACCES;
++			sa->info = "killing process";
++			aa_audit_reject(cxt->profile, sa);
++			/* terminate process */
++			(void)send_sig_info(SIGKILL, NULL, current);
++			goto out;
++		}
++
++		if (!restore)
++			previous_profile = cxt->previous_profile;
++	} else
++		previous_profile = cxt->profile;
++
++	if ((current->ptrace & PT_PTRACED) && aa_may_ptrace(cxt, profile)) {
++		error = -EACCES;
++		goto out;
++	}
++
++	if (profile == null_complain_profile) {
++		if (APPARMOR_COMPLAIN(cxt)) {
++			aa_audit_hint(cxt->profile, sa);
++		} else {
++			error = -ENOENT;
++			goto out;
++		}
++	}
++
++	if (APPARMOR_AUDIT(cxt))
++		aa_audit_message(cxt->profile, sa, AUDIT_APPARMOR_AUDIT);
++
++	if (!restore && cookie)
++		aa_change_task_context(current, new_cxt, profile, cookie,
++				       previous_profile);
++	else
++		/* either return to previous_profile, or a permanent change */
++		aa_change_task_context(current, new_cxt, profile, 0, NULL);
++
++out:
++	if (aa_task_context(current) != new_cxt)
++		aa_free_task_context(new_cxt);
++	task_unlock(current);
++	unlock_both_profiles(old_profile, profile);
++	aa_put_profile(profile);
++	return error;
++}
++
++
++/**
++ * aa_change_profile - change profile to/from previous stored profile
++ * @name: name of profile to change to
++ * @cookie: magic value to validate the profile change
++ *
++ * Change to new profile @name, and store the @cookie in the current task
++ * context.  If the new @name is %NULL and the @cookie matches that
++ * stored in the current task context, return to the previous profile.
++ *
++ * Returns %0 on success, error otherwise.
++ */
++int aa_change_profile(const char *name, u64 cookie)
++{
++	struct aa_task_context *cxt;
++	struct aa_profile *profile, *previous_profile;
++	struct aa_audit sa;
++	int error = 0;
++
++	memset(&sa, 0, sizeof(sa));
++	sa.gfp_mask = GFP_ATOMIC;
++	sa.cookie = cookie;
++	sa.operation = "change_profile";
++
++repeat:
++	task_lock(current);
++	cxt = aa_task_context(current);
++	if (!cxt) {
++		task_unlock(current);
++		return -EPERM;
++	}
++	profile = aa_dup_profile(cxt->profile);
++	previous_profile = aa_dup_profile(cxt->previous_profile);
++	task_unlock(current);
++
++	if (name) {
++		if (profile != null_complain_profile &&
++		    !(aa_match(profile->file_rules, name) &
++		      AA_CHANGE_PROFILE)) {
++			/* no permission to transition to profile @name */
++			aa_put_profile(profile);
++			return -EACCES;
++		}
++		error = do_change_profile(profile, name, cookie, 0, &sa);
++	} else if (previous_profile)
++		error = do_change_profile(profile, previous_profile->name,
++					  cookie, 1, &sa);
++	/* else ignore restores when there is no saved profile */
++
++	aa_put_profile(previous_profile);
++	aa_put_profile(profile);
++	if (error == -ESTALE)
++		goto repeat;
 +
 +	return error;
 +}
@@ -1043,102 +1087,64 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +/**
 + * aa_change_hat - change hat to/from subprofile
 + * @hat_name: hat to change to
-+ * @hat_magic: magic cookie to validate the hat change
++ * @cookie: magic value to validate the hat change
 + *
 + * Change to new @hat_name, and store the @hat_magic in the current task
-+ * context.  If the new @hat_name is %NULL and the @hat_magic matches that
++ * context.  If the new @hat_name is %NULL and the @cookie matches that
 + * stored in the current task context and is not 0, return to the top level
 + * profile.
 + * Returns %0 on success, error otherwise.
 + */
-+int aa_change_hat(const char *hat_name, u64 hat_magic)
++int aa_change_hat(const char *hat_name, u64 cookie)
 +{
-+	struct aa_task_context *cxt, *new_cxt;
-+	struct aa_profile *profile = NULL;
++	struct aa_task_context *cxt;
++	struct aa_profile *profile, *previous_profile;
 +	struct aa_audit sa;
 +	int error = 0;
 +
 +	memset(&sa, 0, sizeof(sa));
 +	sa.gfp_mask = GFP_ATOMIC;
-+	sa.magic_token = hat_magic;
-+	sa.name = hat_name;
++	sa.cookie = cookie;
++	sa.operation = "change_hat";
 +
-+	new_cxt = aa_alloc_task_context(GFP_KERNEL);
-+	if (!new_cxt)
-+		return -ENOMEM;
-+
-+	cxt = lock_task_and_profiles(current, NULL);
++repeat:
++	task_lock(current);
++	cxt = aa_task_context(current);
 +	if (!cxt) {
-+		/* An unconfined process cannot change_hat(). */
-+		if (APPARMOR_AUDIT(cxt))
-+			aa_audit_message(NULL, &sa, AUDIT_APPARMOR_AUDIT);
-+		error = -EPERM;
-+		goto out;
++		task_unlock(current);
++		return -EPERM;
 +	}
++	profile = aa_dup_profile(cxt->profile);
++	previous_profile = aa_dup_profile(cxt->previous_profile);
++	task_unlock(current);
 +
-+	/* No need to get reference count: we do not sleep. */
-+	profile = cxt->profile;
++	if (hat_name) {
++		char *name, *profile_name;
++		if (previous_profile)
++			profile_name = previous_profile->name;
++		else
++			profile_name = profile->name;
 +
-+	if (APPARMOR_AUDIT(cxt))
-+		aa_audit_message(profile, &sa, AUDIT_APPARMOR_AUDIT);
-+
-+	/* check to see if the confined process has any hats. */
-+	if (list_empty(&profile->parent->sub) && !PROFILE_COMPLAIN(profile)) {
-+		error = -ECHILD;
-+		goto out;
-+	}
-+
-+	if (profile == profile->parent) {
-+		/* We are in the parent profile. */
-+		if (hat_name) {
-+			AA_DEBUG("%s: switching to %s, 0x%llx\n",
-+				 __FUNCTION__,
-+				 hat_name,
-+				 hat_magic);
-+			error = do_change_hat(hat_name, new_cxt, hat_magic,
-+					      &sa);
++		name = kmalloc(strlen(hat_name) + 3 + strlen(profile_name),
++			       GFP_KERNEL);
++		if (!name) {
++			error = -ENOMEM;
++			goto out;
 +		}
-+	} else {
-+		/*
-+		 * We are in a child profile.
-+		 *
-+		 * Check to make sure magic is same as what was passed when
-+		 * we switched into this profile.  Handle special casing of
-+		 * NULL magic which confines task to subprofile and prohibits
-+		 * further change_hats.
-+		 */
-+		if (hat_magic && hat_magic == cxt->hat_magic) {
-+			if (!hat_name) {
-+				/* Return from subprofile back to parent. */
-+				aa_change_task_context(current, new_cxt,
-+						       profile->parent, 0);
-+			} else {
-+				/*
-+				 * Change to another (sibling) profile, and
-+				 * stick with the same hat_magic.
-+				 */
-+				error = do_change_hat(hat_name, new_cxt,
-+						      cxt->hat_magic, &sa);
-+			}
-+		} else if (cxt->hat_magic) {
-+			sa.info = "killing process";
-+			aa_audit_status(profile, &sa);
-+			/* terminate current process */
-+			(void)send_sig_info(SIGKILL, NULL, current);
-+		} else {	/* cxt->hat_magic == 0 */
-+			sa.info = "killing process confined to current hat";
-+			aa_audit_status(profile, &sa);
-+			/* terminate current process */
-+			(void)send_sig_info(SIGKILL, NULL, current);
-+		}
-+
-+	}
++		sprintf(name, "%s//%s", profile_name, hat_name);
++		error = do_change_profile(profile, name, cookie, 0, &sa);
++		kfree(name);
++	} else if (previous_profile)
++		error = do_change_profile(profile, previous_profile->name,
++					  cookie, 1, &sa);
++	/* else ignore restores when there is no saved profile */
 +
 +out:
-+	if (aa_task_context(current) != new_cxt)
-+		aa_free_task_context(new_cxt);
-+	task_unlock(current);
-+	unlock_profile(profile);
++	aa_put_profile(previous_profile);
++	aa_put_profile(profile);
++	if (error == -ESTALE)
++		goto repeat;
++
 +	return error;
 +}
 +
@@ -1146,14 +1152,12 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + * __aa_replace_profile - replace a task's profile
 + * @task: task to switch the profile of
 + * @profile: profile to switch to
-+ * @hat_magic: magic cookie to switch to
 + *
 + * Returns a handle to the previous profile upon success, or else an
 + * error code.
 + */
 +struct aa_profile *__aa_replace_profile(struct task_struct *task,
-+					struct aa_profile *profile,
-+					u32 hat_magic)
++					struct aa_profile *profile)
 +{
 +	struct aa_task_context *cxt, *new_cxt = NULL;
 +	struct aa_profile *old_profile = NULL;
@@ -1179,11 +1183,9 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		return ERR_PTR(-EPERM);
 +	}
 +
-+	if (cxt) {
++	if (cxt)
 +		old_profile = aa_dup_profile(cxt->profile);
-+		aa_change_task_context(task, new_cxt, profile, cxt->hat_magic);
-+	} else
-+		aa_change_task_context(task, new_cxt, profile, 0);
++	aa_change_task_context(task, new_cxt, profile, 0, NULL);
 +
 +	task_unlock(task);
 +	unlock_both_profiles(profile, old_profile);
@@ -1191,9 +1193,9 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +}
 +
 +/**
-+ * lock_task_and_profile - lock the task and confining profiles and @profile
-+ * @task - task to lock
-+ * @profile - extra profile to lock in addition to the current profile
++ * lock_task_and_profiles - lock the task and confining profiles and @profile
++ * @task: task to lock
++ * @profile: extra profile to lock in addition to the current profile
 + *
 + * Handle the spinning on locking to make sure the task context and
 + * profile are consistent once all locks are aquired.
@@ -1212,6 +1214,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	cxt = aa_task_context(task);
 +	if (cxt)
 +		old_profile = cxt->profile;
++
 +	lock_both_profiles(profile, old_profile);
 +	task_lock(task);
 +
@@ -1219,6 +1222,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	if (unlikely(cxt != aa_task_context(task))) {
 +		task_unlock(task);
 +		unlock_both_profiles(profile, old_profile);
++		old_profile = NULL;
 +		goto repeat;
 +	}
 +	rcu_read_unlock();
@@ -1238,11 +1242,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + * @task: task that is having its task context changed
 + * @new_cxt: new task context to use after the switch
 + * @profile: new profile to use after the switch
-+ * @hat_magic: hat value to switch to (0 for no hat)
++ * @cookie: magic value to switch to
++ * @previous_profile: profile the task can return to
 + */
 +void aa_change_task_context(struct task_struct *task,
 +			    struct aa_task_context *new_cxt,
-+			    struct aa_profile *profile, u64 hat_magic)
++			    struct aa_profile *profile, u64 cookie,
++			    struct aa_profile *previous_profile)
 +{
 +	struct aa_task_context *old_cxt = aa_task_context(task);
 +
@@ -1254,10 +1260,11 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		/* clear the caps_logged cache, so that new profile/hat has
 +		 * chance to emit its own set of cap messages */
 +		new_cxt->caps_logged = CAP_EMPTY_SET;
-+		new_cxt->hat_magic = hat_magic;
++		new_cxt->cookie = cookie;
 +		new_cxt->task = task;
 +		new_cxt->profile = aa_dup_profile(profile);
-+		list_move(&new_cxt->list, &profile->parent->task_contexts);
++		new_cxt->previous_profile = aa_dup_profile(previous_profile);
++		list_move(&new_cxt->list, &profile->task_contexts);
 +	}
 +	rcu_assign_pointer(task->security, new_cxt);
 +}

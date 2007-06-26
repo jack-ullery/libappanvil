@@ -13,13 +13,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 ---
  security/apparmor/Kconfig      |    9 +
  security/apparmor/Makefile     |   13 ++
- security/apparmor/apparmor.h   |  262 +++++++++++++++++++++++++++++++++++++++++
- security/apparmor/apparmorfs.c |  252 +++++++++++++++++++++++++++++++++++++++
- security/apparmor/inline.h     |  230 +++++++++++++++++++++++++++++++++++
+ security/apparmor/apparmor.h   |  265 +++++++++++++++++++++++++++++++++++++++++
+ security/apparmor/apparmorfs.c |  252 ++++++++++++++++++++++++++++++++++++++
+ security/apparmor/inline.h     |  211 ++++++++++++++++++++++++++++++++
  security/apparmor/list.c       |   94 ++++++++++++++
  security/apparmor/locking.txt  |   68 ++++++++++
- security/apparmor/procattr.c   |  137 +++++++++++++++++++++
- 8 files changed, 1065 insertions(+)
+ security/apparmor/procattr.c   |  155 +++++++++++++++++++++++
+ 8 files changed, 1067 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/Kconfig
@@ -51,7 +51,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	$(call cmd,make-caps)
 --- /dev/null
 +++ b/security/apparmor/apparmor.h
-@@ -0,0 +1,262 @@
+@@ -0,0 +1,265 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -81,6 +81,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +#define AA_EXEC_PROFILE			0x0080
 +#define AA_EXEC_MMAP			0x0100
 +#define AA_EXEC_UNSAFE			0x0200
++#define AA_CHANGE_PROFILE		0x40000000
 +
 +#define AA_EXEC_MODIFIERS		(AA_EXEC_INHERIT | \
 +					 AA_EXEC_UNCONFINED | \
@@ -88,7 +89,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +#define AA_VALID_PERM_MASK		(MAY_READ | MAY_WRITE | MAY_EXEC | \
 +					AA_MAY_LINK | AA_EXEC_MODIFIERS | \
-+					AA_EXEC_MMAP | AA_EXEC_UNSAFE)
++					AA_EXEC_MMAP | AA_EXEC_UNSAFE | \
++					AA_CHANGE_PROFILE)
 +
 +#define AA_SECURE_EXEC_NEEDED		1
 +
@@ -129,13 +131,10 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +#define AA_ERROR(fmt, args...)	printk(KERN_ERR "AppArmor: " fmt, ##args)
 +
 +/* struct aa_profile - basic confinement data
-+ * @parent: non refcounted pointer to parent profile
 + * @name: the profiles name
 + * @file_rules: dfa containing the profiles file rules
 + * @list: list this profile is on
-+ * @sub: profiles list of subprofiles (HATS)
 + * @flags: flags controlling profile behavior
-+ * @null_profile: if needed per profile learning and null confinement profile
 + * @isstale: flag indicating if profile is stale
 + * @capabilities: capabilities granted by the process
 + * @count: reference count of the profile
@@ -152,16 +151,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + * way.
 + */
 +struct aa_profile {
-+	struct aa_profile *parent;
 +	char *name;
 +	struct aa_dfa *file_rules;
 +	struct list_head list;
-+	struct list_head sub;
 +	struct {
 +		int complain;
 +		int audit;
 +	} flags;
-+	struct aa_profile *null_profile;
 +	int isstale;
 +
 +	kernel_cap_t capabilities;
@@ -178,7 +174,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +/**
 + * struct aa_task_context - primary label for confined tasks
 + * @profile: the current profile
-+ * @hat_magic: the magic token controling the ability to leave a hat
++ * @previous_profile: profile the task may return to
++ * @cookie: magic value the task must know for returning to @previous_profile
 + * @list: list this aa_task_context is on
 + * @task: task that the aa_task_context confines
 + * @rcu: rcu head used when freeing the aa_task_context
@@ -188,8 +185,9 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + * change_hat).  Plus the hat_magic needed during change_hat.
 + */
 +struct aa_task_context {
-+	struct aa_profile *profile;	/* The current profile */
-+	u64 hat_magic;			/* used with change_hat */
++	struct aa_profile *profile;
++	struct aa_profile *previous_profile;
++	u64 cookie;
 +	struct list_head list;
 +	struct task_struct *task;
 +	struct rcu_head rcu;
@@ -212,7 +210,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	int requested_mask, denied_mask;
 +	struct iattr *iattr;
 +	pid_t task, parent;
-+	u64 magic_token;
++	u64 cookie;
 +	int error_code;
 +};
 +
@@ -271,16 +269,20 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +extern int aa_register(struct linux_binprm *bprm);
 +extern void aa_release(struct task_struct *task);
 +extern int aa_change_hat(const char *id, u64 hat_magic);
++extern int aa_change_profile(const char *name, u64 cookie);
 +extern struct aa_profile *__aa_find_profile(const char *name,
 +					    struct list_head *list);
 +extern struct aa_profile *__aa_replace_profile(struct task_struct *task,
-+					       struct aa_profile *profile,
-+					       u32 hat_magic);
++					       struct aa_profile *profile);
 +extern struct aa_task_context *lock_task_and_profiles(struct task_struct *task,
 +						      struct aa_profile *profile);
++extern void unlock_task_and_profiles(struct task_struct *task,
++				     struct aa_task_context *cxt,
++				     struct aa_profile *profile);
 +extern void aa_change_task_context(struct task_struct *task,
 +				   struct aa_task_context *new_cxt,
-+				   struct aa_profile *profile, u64 hat_magic);
++				   struct aa_profile *profile, u64 cookie,
++				   struct aa_profile *previous_profile);
 +extern int aa_may_ptrace(struct aa_task_context *cxt,
 +			 struct aa_profile *tracee);
 +
@@ -300,6 +302,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +extern int aa_getprocattr(struct aa_profile *profile, char **string,
 +			  unsigned *len);
 +extern int aa_setprocattr_changehat(char *args);
++extern int aa_setprocattr_changeprofile(char *args);
 +extern int aa_setprocattr_setprofile(struct task_struct *task, char *args);
 +
 +/* apparmorfs.c */
@@ -571,7 +574,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 --- /dev/null
 +++ b/security/apparmor/inline.h
-@@ -0,0 +1,230 @@
+@@ -0,0 +1,211 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -603,7 +606,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +static inline struct aa_profile *aa_dup_profile(struct aa_profile *p)
 +{
 +	if (p)
-+		kref_get(&(p->parent->count));
++		kref_get(&(p->count));
 +
 +	return p;
 +}
@@ -615,7 +618,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +static inline void aa_put_profile(struct aa_profile *p)
 +{
 +	if (p)
-+		kref_put(&p->parent->count, free_aa_profile_kref);
++		kref_put(&p->count, free_aa_profile_kref);
 +}
 +
 +static inline struct aa_profile *aa_get_profile(struct task_struct *task)
@@ -662,6 +665,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +{
 +	if (cxt) {
 +		aa_put_profile(cxt->profile);
++		aa_put_profile(cxt->previous_profile);
 +		kfree(cxt);
 +	}
 +}
@@ -676,10 +680,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +static inline void lock_profile_nested(struct aa_profile *profile,
 +				       enum aa_lock_class lock_class)
 +{
-+	/* We always lock top-level profiles instead of children. */
-+	if (profile)
-+		profile = profile->parent;
-+
 +	/*
 +	 * Lock the profile.
 +	 *
@@ -702,10 +702,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + */
 +static inline void unlock_profile(struct aa_profile *profile)
 +{
-+	/* We always lock top-level profiles instead of children. */
-+	if (profile)
-+		profile = profile->parent;
-+
 +	/* Unlock the profile. */
 +	if (profile)
 +		spin_unlock_irqrestore(&profile->lock, profile->int_flags);
@@ -724,12 +720,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +static inline void lock_both_profiles(struct aa_profile *profile1,
 +				      struct aa_profile *profile2)
 +{
-+	/* We always lock top-level profiles instead of children. */
-+	if (profile1)
-+		profile1 = profile1->parent;
-+	if (profile2)
-+		profile2 = profile2->parent;
-+
 +	/*
 +	 * Lock the two profiles.
 +	 *
@@ -773,12 +763,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +static inline void unlock_both_profiles(struct aa_profile *profile1,
 +				        struct aa_profile *profile2)
 +{
-+	/* We always lock top-level profiles instead of children. */
-+	if (profile1)
-+		profile1 = profile1->parent;
-+	if (profile2)
-+		profile2 = profile2->parent;
-+
 +	/* Unlock the two profiles. */
 +	if (!profile1 || profile1 == profile2) {
 +		if (profile2)
@@ -972,7 +956,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +the task would not be out of its quiescent period.
 --- /dev/null
 +++ b/security/apparmor/procattr.c
-@@ -0,0 +1,137 @@
+@@ -0,0 +1,155 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -994,24 +978,19 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	if (profile) {
 +		const char *mode_str = PROFILE_COMPLAIN(profile) ?
 +			" (complain)" : " (enforce)";
++		int mode_len, name_len;
 +
-+		*len = ((profile != profile->parent) ?
-+		           strlen(profile->parent->name) + 1 : 0) +
-+		       strlen(mode_str) + strlen(profile->name) + 1;
++		mode_len = strlen(mode_str);
++		name_len = strlen(profile->name);
++		*len = mode_len + name_len + 1;
 +		str = kmalloc(*len, GFP_ATOMIC);
 +		if (!str)
 +			return -ENOMEM;
 +
-+		if (profile != profile->parent) {
-+			memcpy(str, profile->parent->name,
-+			       strlen(profile->parent->name));
-+			str += strlen(profile->parent->name);
-+			*str++ = '^';
-+		}
-+		memcpy(str, profile->name, strlen(profile->name));
-+		str += strlen(profile->name);
-+		memcpy(str, mode_str, strlen(mode_str));
-+		str += strlen(mode_str);
++		memcpy(str, profile->name, name_len);
++		str += name_len;
++		memcpy(str, mode_str, mode_len);
++		str += mode_len;
 +		*str++ = '\n';
 +		str -= *len;
 +	} else {
@@ -1029,28 +1008,52 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	return 0;
 +}
 +
++static char *split_token_from_name(const char *op, char *args, u64 *cookie)
++{
++	char *name;
++
++	*cookie = simple_strtoull(args, &name, 16);
++	if ((name == args) || *name != '^') {
++		AA_ERROR("%s: Invalid input '%s'", op, args);
++		return ERR_PTR(-EINVAL);
++	}
++
++	name++;  /* skip ^ */
++	if (!*name)
++		name = NULL;
++	return name;
++}
++
 +int aa_setprocattr_changehat(char *args)
 +{
 +	char *hat;
-+	u64 magic;
++	u64 cookie;
 +
-+	magic = simple_strtoull(args, &hat, 16);
-+	if (hat == args || *hat != '^') {
-+		AA_ERROR("change_hat: Invalid input '%s'", args);
-+		return -EINVAL;
-+	}
-+	hat++;  /* skip ^ */
-+	if (!*hat)
-+		hat = NULL;
-+	if (!hat && !magic) {
++	hat = split_token_from_name("change_hat", args, &cookie);
++	if (IS_ERR(hat))
++		return PTR_ERR(hat);
++
++	if (!hat && !cookie) {
 +		AA_ERROR("change_hat: Invalid input, NULL hat and NULL magic");
 +		return -EINVAL;
 +	}
 +
 +	AA_DEBUG("%s: Magic 0x%llx Hat '%s'\n",
-+		 __FUNCTION__, magic, hat ? hat : NULL);
++		 __FUNCTION__, cookie, hat ? hat : NULL);
 +
-+	return aa_change_hat(hat, magic);
++	return aa_change_hat(hat, cookie);
++}
++
++int aa_setprocattr_changeprofile(char *args)
++{
++	char *name;
++	u64 cookie;
++
++	name = split_token_from_name("change_profile", args, &cookie);
++	if (IS_ERR(name))
++		return PTR_ERR(name);
++
++	return aa_change_profile(name, cookie);
 +}
 +
 +int aa_setprocattr_setprofile(struct task_struct *task, char *args)
@@ -1079,7 +1082,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		}
 +	}
 +
-+	old_profile = __aa_replace_profile(task, new_profile, 0);
++	old_profile = __aa_replace_profile(task, new_profile);
 +	if (IS_ERR(old_profile)) {
 +		int error;
 +
@@ -1092,13 +1095,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +	if (new_profile) {
 +		sa.name = args;
-+		sa.name2 = old_profile ? old_profile->parent->name :
++		sa.name2 = old_profile ? old_profile->name :
 +			"unconfined";
 +		aa_audit_status(NULL, &sa);
 +	} else {
 +		if (old_profile) {
 +			sa.name = "unconfined";
-+			sa.name2 = old_profile->parent->name;
++			sa.name2 = old_profile->name;
 +			aa_audit_status(NULL, &sa);
 +		} else {
 +			sa.info = "task is unconfined";
@@ -1107,6 +1110,5 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	}
 +	aa_put_profile(old_profile);
 +	aa_put_profile(new_profile);
-+
 +	return 0;
 +}

@@ -43,7 +43,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
 --- a/fs/splice.c
 +++ b/fs/splice.c
-@@ -796,7 +796,7 @@ generic_file_splice_write_nolock(struct 
+@@ -807,7 +807,7 @@ generic_file_splice_write_nolock(struct 
  	ssize_t ret;
  	int err;
  
@@ -52,7 +52,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (unlikely(err))
  		return err;
  
-@@ -845,7 +845,7 @@ generic_file_splice_write(struct pipe_in
+@@ -860,7 +860,7 @@ generic_file_splice_write(struct pipe_in
  	err = should_remove_suid(out->f_path.dentry);
  	if (unlikely(err)) {
  		mutex_lock(&inode->i_mutex);
@@ -74,7 +74,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		}
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -1698,9 +1698,9 @@ extern void __iget(struct inode * inode)
+@@ -1725,9 +1725,9 @@ extern void __iget(struct inode * inode)
  extern void clear_inode(struct inode *);
  extern void destroy_inode(struct inode *);
  extern struct inode *new_inode(struct super_block *);
@@ -136,7 +136,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
 --- a/mm/shmem.c
 +++ b/mm/shmem.c
-@@ -1516,7 +1516,7 @@ shmem_file_write(struct file *file, cons
+@@ -1518,7 +1518,7 @@ shmem_file_write(struct file *file, cons
  	if (err || !count)
  		goto out;
  
