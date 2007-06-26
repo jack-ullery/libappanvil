@@ -62,6 +62,8 @@ struct codomain {
 	char *sub_name;				/* subdomain name or NULL */
 	int default_deny;			/* TRUE or FALSE */
 
+	struct codomain *parent;
+
 	struct flagval flags;
 
 	unsigned int capabilities;
@@ -212,7 +214,8 @@ extern int codomain_merge_rules(struct codomain *cod);
 /* parser_interface.c */
 typedef struct __sdserialize sd_serialize;
 extern int load_codomain(int option, struct codomain *cod);
-extern int sd_serialize_profile(sd_serialize *p, struct codomain *cod);
+extern int sd_serialize_profile(sd_serialize *p, struct codomain *cod,
+				int flatten);
 
 /* parser_policy.c */
 extern void add_to_list(struct codomain *codomain);
@@ -227,6 +230,7 @@ extern int merge_hat_rules(struct codomain *cod);
 extern struct codomain *merge_policy(struct codomain *a, struct codomain *b);
 extern int load_policy(int option);
 extern int load_hats(sd_serialize *p, struct codomain *cod);
+extern int load_flattened_hats(struct codomain *cod);
 extern void free_policy(struct codomain *cod);
 extern void dump_policy(void);
 extern void dump_policy_hats(struct codomain *cod);

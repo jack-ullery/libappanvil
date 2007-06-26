@@ -66,6 +66,8 @@ void add_hat_to_policy(struct codomain *cod, struct codomain *hat)
 {
 	struct codomain **result;
 
+	hat->parent = cod;
+
 	result = (struct codomain **) tsearch(hat, &(cod->hat_table), codomain_compare);
 	if (!result) {
 		PERROR("Memory allocation error\n");
@@ -256,11 +258,30 @@ static void __load_hat(const void *nodep, const VISIT value,
 	if (value == preorder || value == endorder)
 		return;
 
-	if (!sd_serialize_profile(__p, *t)) {
+	if (!sd_serialize_profile(__p, *t, 0)) {
 		PERROR(_("ERROR in profile %s, failed to load\n"),
 		       (*t)->name);
 		exit(1);
 	}
+}
+
+static void __load_flattened_hat(const void *nodep, const VISIT value,
+				 const int __unused depth)
+{
+	struct codomain **t = (struct codomain **) nodep;
+
+	if (value == preorder || value == endorder)
+		return;
+
+	if (load_codomain(__load_option, *t) != 0) {
+		exit(1);
+	}
+}
+
+int load_flattened_hats(struct codomain *cod)
+{
+	twalk(cod->hat_table, __load_flattened_hat);
+	return 0;
 }
 
 int load_hats(sd_serialize *p, struct codomain *cod)
