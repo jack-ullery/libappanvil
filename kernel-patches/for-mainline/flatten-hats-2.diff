@@ -74,7 +74,7 @@
  }
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -323,8 +323,8 @@ static int aa_audit_base(struct aa_profi
+@@ -343,8 +343,8 @@ static int aa_audit_base(struct aa_profi
  		audit_log_untrustedstring(ab, sa->name2);
  	}
  
@@ -85,7 +85,7 @@
  
  	audit_log_format(ab, " pid=%d", current->pid);
  
-@@ -677,7 +677,7 @@ repeat:
+@@ -697,7 +697,7 @@ repeat:
  
  		/* No need to grab the child's task lock here. */
  		aa_change_task_context(child, child_cxt, profile,
@@ -94,7 +94,7 @@
  		unlock_profile(profile);
  
  		if (APPARMOR_COMPLAIN(child_cxt) &&
-@@ -915,9 +915,9 @@ repeat:
+@@ -935,9 +935,9 @@ repeat:
  }
  
  static int do_change_profile(struct task_struct *task, const char *name,
@@ -106,7 +106,7 @@
  		*name_profile = NULL;
  	struct aa_task_context *new_cxt, *cxt, *old_cxt = NULL;
  	int error = 0;
-@@ -948,8 +948,8 @@ repeat:
+@@ -968,8 +968,8 @@ repeat:
  	if (!name || (hat && old_cxt && old_cxt != cxt)) {
  		/* need to find the change_hat name */
  		aa_put_profile(name_profile);
@@ -117,7 +117,7 @@
  		else
  			name_profile = aa_dup_profile(cxt->profile);
  		name = name_profile->name;
-@@ -964,8 +964,8 @@ repeat:
+@@ -984,8 +984,8 @@ repeat:
  		goto repeat;
  	}
  
@@ -128,7 +128,7 @@
  			error = -EACCES;
  			sa->info = "killing process";
  			aa_audit_reject(profile, sa);
-@@ -974,9 +974,9 @@ repeat:
+@@ -994,9 +994,9 @@ repeat:
  			goto out;
  		}
  
@@ -140,7 +140,7 @@
  	}
  
  	if ((task->ptrace & PT_PTRACED) && aa_may_ptrace(cxt, profile)) {
-@@ -995,7 +995,8 @@ repeat:
+@@ -1015,7 +1015,8 @@ repeat:
  
  	if (APPARMOR_AUDIT(cxt))
  		aa_audit_message(cxt->profile, sa, AUDIT_APPARMOR_AUDIT);
@@ -150,7 +150,7 @@
  
  out:
  	if (aa_task_context(task) != new_cxt)
-@@ -1006,7 +1007,7 @@ out:
+@@ -1026,7 +1027,7 @@ out:
  	return error;
  }
  
@@ -159,7 +159,7 @@
  			      struct aa_audit *sa)
  {
  	struct aa_profile *profile = NULL;
-@@ -1025,25 +1026,26 @@ repeat:
+@@ -1045,25 +1046,26 @@ repeat:
  	}
  
  	/* ignore returning to stored profile when there isn't one */
@@ -194,7 +194,7 @@
  		error = -EACCES;
  		sa->info = "killing process";
  		aa_audit_reject(profile, sa);
-@@ -1074,15 +1076,15 @@ out:
+@@ -1094,15 +1096,15 @@ out:
  /**
   * aa_change_profile - change profile to/from previous stored profile
   * @name: name of profile to change to
@@ -215,7 +215,7 @@
  {
  	struct aa_profile *profile;
  	struct aa_audit sa;
-@@ -1090,7 +1092,7 @@ int aa_change_profile(const char *name, 
+@@ -1110,7 +1112,7 @@ int aa_change_profile(const char *name, 
  
  	memset(&sa, 0, sizeof(sa));
  	sa.gfp_mask = GFP_ATOMIC;
@@ -224,7 +224,7 @@
  	sa.name = name;
  	sa.operation = "change_profile";
  
-@@ -1107,9 +1109,9 @@ int aa_change_profile(const char *name, 
+@@ -1127,9 +1129,9 @@ int aa_change_profile(const char *name, 
  			return -EACCES;
  		}
  
@@ -236,7 +236,7 @@
  	}
  
  	aa_put_profile(profile);
-@@ -1119,22 +1121,22 @@ int aa_change_profile(const char *name, 
+@@ -1139,22 +1141,22 @@ int aa_change_profile(const char *name, 
  /**
   * aa_change_hat - change hat to/from subprofile
   * @hat_name: hat to change to
@@ -263,7 +263,7 @@
  	sa.name = hat_name;
  	sa.operation = "change_hat";
  
-@@ -1142,9 +1144,9 @@ int aa_change_hat(const char *hat_name, 
+@@ -1162,9 +1164,9 @@ int aa_change_hat(const char *hat_name, 
  	 * hats so that we can return -ECHILD
  	 */
  	if (hat_name)
@@ -275,7 +275,7 @@
  
  	return error;
  }
-@@ -1214,7 +1216,7 @@ repeat:
+@@ -1234,7 +1236,7 @@ repeat:
  	if (cxt) {
  		old_profile = cxt->profile;
  		if (lock_token)
@@ -284,7 +284,7 @@
  	}
  	lock_both_profiles(profile, old_profile);
  	task_lock(task);
-@@ -1238,7 +1240,7 @@ void unlock_task_and_profiles(struct tas
+@@ -1258,7 +1260,7 @@ void unlock_task_and_profiles(struct tas
  {
  	task_unlock(task);
  	if (cxt && !profile)
@@ -293,7 +293,7 @@
  	unlock_both_profiles(profile, cxt ? cxt->profile : NULL);
  }
  
-@@ -1256,13 +1258,13 @@ static void free_aa_task_context_rcu_cal
+@@ -1276,13 +1278,13 @@ static void free_aa_task_context_rcu_cal
   * @task: task that is having its task context changed
   * @new_cxt: new task context to use after the switch
   * @profile: new profile to use after the switch
@@ -311,7 +311,7 @@
  {
  	struct aa_task_context *old_cxt = aa_task_context(task);
  
-@@ -1274,10 +1276,10 @@ void aa_change_task_context(struct task_
+@@ -1294,10 +1296,10 @@ void aa_change_task_context(struct task_
  		/* clear the caps_logged cache, so that new profile/hat has
  		 * chance to emit its own set of cap messages */
  		new_cxt->caps_logged = CAP_EMPTY_SET;

@@ -7,7 +7,7 @@
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
 @@ -218,9 +218,6 @@ extern int aa_change_hat(const char *id,
- extern int aa_change_profile(const char *name);
+ extern int aa_change_profile(const char *name, u64 cookie);
  extern struct aa_profile *__aa_find_profile(const char *name,
  					    struct list_head *list);
 -extern struct aa_profile *__aa_find_profile2(const char *name,

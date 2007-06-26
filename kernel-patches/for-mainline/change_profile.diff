@@ -113,7 +113,7 @@ change_hat-to-change_profile - convert change_hat to use change_profile
  
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -715,7 +715,7 @@ repeat:
+@@ -730,7 +730,7 @@ repeat:
  
  		/* No need to grab the child's task lock here. */
  		aa_change_task_context(child, child_cxt, profile,
@@ -122,7 +122,7 @@ change_hat-to-change_profile - convert change_hat to use change_profile
  		unlock_profile(profile);
  
  		if (APPARMOR_COMPLAIN(child_cxt) &&
-@@ -946,12 +946,196 @@ repeat:
+@@ -961,12 +961,196 @@ repeat:
  			aa_put_profile(profile);
  			goto repeat;
  		}
@@ -320,7 +320,7 @@ change_hat-to-change_profile - convert change_hat to use change_profile
  /**
   * do_change_hat - actually switch hats
   * @hat_name: name of hat to switch to
-@@ -1091,10 +1275,6 @@ int aa_change_hat(const char *hat_name, 
+@@ -1106,10 +1290,6 @@ int aa_change_hat(const char *hat_name, 
  						      cxt->hat_magic, &sa);
  			}
  		} else if (cxt->hat_magic) {
@@ -331,7 +331,7 @@ change_hat-to-change_profile - convert change_hat to use change_profile
  		} else {	/* cxt->hat_magic == 0 */
  			sa.info = "killing process confined to current hat";
  			aa_audit_status(profile, &sa);
-@@ -1107,8 +1287,7 @@ int aa_change_hat(const char *hat_name, 
+@@ -1122,8 +1302,7 @@ int aa_change_hat(const char *hat_name, 
  out:
  	if (aa_task_context(current) != new_cxt)
  		aa_free_task_context(new_cxt);
@@ -341,7 +341,7 @@ change_hat-to-change_profile - convert change_hat to use change_profile
  	return error;
  }
  
-@@ -1116,14 +1295,12 @@ out:
+@@ -1131,14 +1310,12 @@ out:
   * __aa_replace_profile - replace a task's profile
   * @task: task to switch the profile of
   * @profile: profile to switch to
@@ -357,7 +357,7 @@ change_hat-to-change_profile - convert change_hat to use change_profile
  {
  	struct aa_task_context *cxt, *new_cxt = NULL;
  	struct aa_profile *old_profile = NULL;
-@@ -1136,34 +1313,29 @@ struct aa_profile *__aa_replace_profile(
+@@ -1151,34 +1328,29 @@ struct aa_profile *__aa_replace_profile(
  
  	cxt = lock_task_and_profiles(task, profile);
  	if (unlikely(profile && profile->isstale)) {
@@ -400,7 +400,7 @@ change_hat-to-change_profile - convert change_hat to use change_profile
   *
   * Handle the spinning on locking to make sure the task context and
   * profile are consistent once all locks are aquired.
-@@ -1176,12 +1348,16 @@ lock_task_and_profiles(struct task_struc
+@@ -1191,12 +1363,16 @@ lock_task_and_profiles(struct task_struc
  {
  	struct aa_task_context *cxt;
  	struct aa_profile *old_profile = NULL;
@@ -418,7 +418,7 @@ change_hat-to-change_profile - convert change_hat to use change_profile
  	lock_both_profiles(profile, old_profile);
  	task_lock(task);
  
-@@ -1189,12 +1365,26 @@ repeat:
+@@ -1204,12 +1380,26 @@ repeat:
  	if (unlikely(cxt != aa_task_context(task))) {
  		task_unlock(task);
  		unlock_both_profiles(profile, old_profile);
@@ -445,7 +445,7 @@ change_hat-to-change_profile - convert change_hat to use change_profile
  static void free_aa_task_context_rcu_callback(struct rcu_head *head)
  {
  	struct aa_task_context *cxt;
-@@ -1208,11 +1398,13 @@ static void free_aa_task_context_rcu_cal
+@@ -1223,11 +1413,13 @@ static void free_aa_task_context_rcu_cal
   * @task: task that is having its task context changed
   * @new_cxt: new task context to use after the switch
   * @profile: new profile to use after the switch
@@ -461,7 +461,7 @@ change_hat-to-change_profile - convert change_hat to use change_profile
  {
  	struct aa_task_context *old_cxt = aa_task_context(task);
  
-@@ -1224,9 +1416,10 @@ void aa_change_task_context(struct task_
+@@ -1239,9 +1431,10 @@ void aa_change_task_context(struct task_
  		/* clear the caps_logged cache, so that new profile/hat has
  		 * chance to emit its own set of cap messages */
  		new_cxt->caps_logged = CAP_EMPTY_SET;

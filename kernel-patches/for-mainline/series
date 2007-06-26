@@ -49,7 +49,7 @@ unused.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff
-foobar.diff
+#foobar.diff
 # # NOT YET
 # ecryptfs-d_revalidate.diff
 # nfs-nameidata-check.diff

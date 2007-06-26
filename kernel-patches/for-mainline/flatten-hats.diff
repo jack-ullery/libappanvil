@@ -182,7 +182,7 @@
  void aa_profilelist_release(void)
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -205,42 +205,6 @@ static int aa_perm_dentry(struct aa_prof
+@@ -204,42 +204,6 @@ static int aa_perm_dentry(struct aa_prof
  }
  
  /**
@@ -225,7 +225,7 @@
   * alloc_null_complain_profile - Allocate the global null_complain_profile.
   *
   * Return %0 (success) or error (-%ENOMEM)
-@@ -258,8 +222,6 @@ int alloc_null_complain_profile(void)
+@@ -257,8 +221,6 @@ int alloc_null_complain_profile(void)
  		goto fail;
  
  	null_complain_profile->flags.complain = 1;
@@ -234,7 +234,7 @@
  
  	return 0;
  
-@@ -361,14 +323,14 @@ static int aa_audit_base(struct aa_profi
+@@ -381,14 +343,14 @@ static int aa_audit_base(struct aa_profi
  		audit_log_untrustedstring(ab, sa->name2);
  	}
  
@@ -252,7 +252,7 @@
  	}
  
  	audit_log_end(ab);
-@@ -857,7 +819,7 @@ repeat:
+@@ -877,7 +839,7 @@ repeat:
  	if (IS_ERR(new_profile))
  		goto cleanup;
  
@@ -261,7 +261,7 @@
  	if (IS_ERR(old_profile)) {
  		aa_put_profile(new_profile);
  		aa_put_profile(profile);
-@@ -953,10 +915,11 @@ repeat:
+@@ -973,10 +935,11 @@ repeat:
  }
  
  static int do_change_profile(struct task_struct *task, const char *name,
@@ -276,7 +276,7 @@
  	int error = 0;
  
  	new_cxt = aa_alloc_task_context(GFP_KERNEL);
-@@ -964,21 +927,38 @@ static int do_change_profile(struct task
+@@ -984,21 +947,38 @@ static int do_change_profile(struct task
  		return -ENOMEM;
  
  repeat:
@@ -324,7 +324,7 @@
  		unlock_task_and_profiles(task, cxt, profile);
  		aa_put_profile(profile);
  		goto repeat;
-@@ -1022,6 +1002,7 @@ out:
+@@ -1042,6 +1022,7 @@ out:
  		aa_free_task_context(new_cxt);
  	unlock_task_and_profiles(task, cxt, profile);
  	aa_put_profile(profile);
@@ -332,7 +332,7 @@
  	return error;
  }
  
-@@ -1126,7 +1107,7 @@ int aa_change_profile(const char *name, 
+@@ -1146,7 +1127,7 @@ int aa_change_profile(const char *name, 
  			return -EACCES;
  		}
  
@@ -341,7 +341,7 @@
  	} else {
  		error = do_restore_profile(current, token, &sa);
  	}
-@@ -1135,159 +1116,36 @@ int aa_change_profile(const char *name, 
+@@ -1155,159 +1136,36 @@ int aa_change_profile(const char *name, 
  	return error;
  }
  
@@ -513,7 +513,7 @@
  	return error;
  }
  
-@@ -1420,7 +1278,7 @@ void aa_change_task_context(struct task_
+@@ -1440,7 +1298,7 @@ void aa_change_task_context(struct task_
  		new_cxt->task = task;
  		new_cxt->profile = aa_dup_profile(profile);
  		new_cxt->token_profile = aa_dup_profile(token_profile);
