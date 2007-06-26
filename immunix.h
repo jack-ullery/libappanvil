@@ -39,6 +39,8 @@
 					 AA_EXEC_UNCONSTRAINED | \
 					 AA_EXEC_PROFILE)
 
+#define AA_CHANGE_PROFILE		(1 << 31)
+
 /* Network subdomain extensions.  */
 #define AA_TCP_CONNECT			(1 << 16)
 #define AA_TCP_ACCEPT			(1 << 17)

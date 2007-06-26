@@ -186,7 +186,7 @@ extern char *processunquoted(char *string, int len);
 extern int get_keyword_token(const char *keyword);
 extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);
-extern struct cod_entry *new_entry(char *id, char *mode);
+extern struct cod_entry *new_entry(char *id, int mode);
 extern struct cod_net_entry *new_network_entry(int action,
 					       struct ipv4_endpoints *addrs,
 					       char *interface);

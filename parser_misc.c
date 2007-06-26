@@ -100,6 +100,7 @@ static struct keyword_table keyword_table[] = {
 	{"else",		TOK_ELSE},
 	{"not",			TOK_NOT},
 	{"defined",		TOK_DEFINED},
+	{"change_profile",	TOK_CHANGE_PROFILE},
 	/* terminate */
 	{NULL, 0}
 };
@@ -287,6 +288,9 @@ int parse_mode(const char *str_mode)
 
 	PDEBUG("Parsing mode: %s\n", str_mode);
 
+	if (!str_mode)
+		return 0;
+
 	p = str_mode;
 	while (*p) {
 		char this = *p;
@@ -463,7 +467,7 @@ struct cod_net_entry *new_network_entry(int action,
 	return entry;
 }
 
-struct cod_entry *new_entry(char *id, char *mode)
+struct cod_entry *new_entry(char *id, int mode)
 {
 	struct cod_entry *entry = NULL;
 
@@ -472,7 +476,7 @@ struct cod_entry *new_entry(char *id, char *mode)
 		return NULL;
 
 	entry->name = id ? id : NULL;
-	entry->mode = mode ? parse_mode(mode) : 0;
+	entry->mode = mode;
 	entry->deny = FALSE;
 
 	entry->pattern_type = ePatternInvalid;
