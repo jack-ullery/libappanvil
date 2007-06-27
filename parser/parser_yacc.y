@@ -425,7 +425,6 @@ rules:	rules change_profile
 		PDEBUG("rules change_profile: (%s)\n", $2->name);
 		if (!$2)
 			yyerror(_("Assert: `change_profile' returned NULL."));
-  fprintf(stderr, "Hello adding change_profile\n");
 		add_entry_to_policy($1, $2);
 		$$ = $1;
 	};
@@ -847,13 +846,11 @@ change_profile:	TOK_CHANGE_PROFILE TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 		PDEBUG("Matched change_profile: tok_id (%s)\n", $2);
-		fprintf(stderr, "change_profile\n");
 		entry = new_entry($2, AA_CHANGE_PROFILE);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("change_profile.entry: (%s)\n", entry->name);
 		$$ = entry;
-		fprintf(stderr, "change_prifle got entry\n");
 	};
 
 capability:	TOK_CAPABILITY cap TOK_END_OF_RULE
