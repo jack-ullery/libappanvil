@@ -40,7 +40,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	mode_t mode;
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -870,12 +870,14 @@ static int ecryptfs_setattr(struct dentr
+@@ -889,6 +889,7 @@ static int ecryptfs_setattr(struct dentr
  {
  	int rc = 0;
  	struct dentry *lower_dentry;
@@ -48,14 +48,15 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	struct inode *inode;
  	struct inode *lower_inode;
  	struct ecryptfs_crypt_stat *crypt_stat;
- 
- 	crypt_stat = &ecryptfs_inode_to_private(dentry->d_inode)->crypt_stat;
- 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
-+	lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
+@@ -899,6 +900,7 @@ static int ecryptfs_setattr(struct dentr
  	inode = dentry->d_inode;
  	lower_inode = ecryptfs_inode_to_lower(inode);
- 	if (ia->ia_valid & ATTR_SIZE) {
-@@ -890,7 +892,7 @@ static int ecryptfs_setattr(struct dentr
+ 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
++	lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
+ 	mutex_lock(&crypt_stat->cs_mutex);
+ 	if (S_ISDIR(dentry->d_inode->i_mode))
+ 		crypt_stat->flags &= ~(ECRYPTFS_ENCRYPTED);
+@@ -954,7 +956,7 @@ static int ecryptfs_setattr(struct dentr
  		if (rc < 0)
  			goto out;
  	}
