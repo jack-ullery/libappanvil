@@ -107,10 +107,10 @@ char *string_buf_ptr;
 {ws}+			{ /* Skip whitespace */ }
 
 <audit_id>{
-	{digits} {yylval->t_str = strdup(yytext); BEGIN(INITIAL); return(TOK_DIGITS);}
-	{colon}			{ BEGIN(INITIAL); return(TOK_COLON); }
-	{period}		{ BEGIN(INITIAL); return(TOK_PERIOD); }
-	{open_paren}		{ BEGIN(INITIAL); return(TOK_OPEN_PAREN); }
+	{digits}		{ yylval->t_str = strdup(yytext); return(TOK_AUDIT_DIGITS);}
+	{colon}			{ return(TOK_COLON); }
+	{period}		{ return(TOK_PERIOD); }
+	{open_paren}		{ return(TOK_OPEN_PAREN); }
 	{close_paren}		{ BEGIN(INITIAL); return(TOK_CLOSE_PAREN); }
 }
 

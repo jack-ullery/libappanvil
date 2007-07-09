@@ -97,6 +97,10 @@ int print_results(aa_log_record *record)
 				break;
 			}
 		}
+		if (record->audit_id != NULL)
+		{
+			printf("Audit ID: %s\n", record->audit_id);
+		}
 		if (record->operation != NULL)
 		{
 			printf("Operation: %s\n", record->operation);

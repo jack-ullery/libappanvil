@@ -28,9 +28,10 @@
 aa_log_record *ret_record;
 void libaalogparse_error(void *scanner, char const *s)
 {
-	printf("Error: %s", s);
+	printf("Error: %s\n", s);
 }
 %}
+
 %defines
 %pure_parser
 %output="grammar.c"
@@ -45,7 +46,7 @@ void libaalogparse_error(void *scanner, char const *s)
 
 %type <t_str> old_profile;
 %token <t_long> TOK_DIGITS
-%token <t_str> TOK_QUOTED_STRING TOK_PATH TOK_ID TOK_NULL_COMPLAIN TOK_MODE TOK_SINGLE_QUOTED_STRING
+%token <t_str> TOK_QUOTED_STRING TOK_PATH TOK_ID TOK_NULL_COMPLAIN TOK_MODE TOK_SINGLE_QUOTED_STRING TOK_AUDIT_DIGITS
 
 %token TOK_EQUALS
 %token TOK_COLON
@@ -305,8 +306,23 @@ old_profile:
 		}
 	;
 
-audit_msg: TOK_KEY_MSG TOK_EQUALS TOK_AUDIT TOK_OPEN_PAREN TOK_DIGITS TOK_PERIOD TOK_DIGITS TOK_COLON TOK_DIGITS TOK_CLOSE_PAREN TOK_COLON
-	{ } ;
+audit_msg: TOK_KEY_MSG TOK_EQUALS TOK_AUDIT TOK_OPEN_PAREN TOK_AUDIT_DIGITS TOK_PERIOD TOK_AUDIT_DIGITS TOK_COLON TOK_AUDIT_DIGITS TOK_CLOSE_PAREN TOK_COLON
+	{
+		/* TOK_AUDIT_DIGITS is actually a character string, and this could be done in a better way. */
+		int len1 = strlen($5);
+		int len2 = strlen($7);
+		int len3 = strlen($9);
+		int len = len1 + len2 + len3;
+		ret_record->audit_id = (char *) malloc(len + 3);
+		strncat(ret_record->audit_id, $5, len1);
+		strncat(ret_record->audit_id, ".", 1);
+		strncat(ret_record->audit_id, $7, len2);
+		strncat(ret_record->audit_id, ":", 1);
+		strncat(ret_record->audit_id, $9, len3);
+		free($5);
+		free($7);
+		free($9);
+	} ;
 
 key:
 	  key_list

@@ -23,7 +23,6 @@
 /*
  * TODO:
  *
- * - Store the audit ID
  * - Convert the text permission mask into a bitmask
  * - Clean up parser grammar
  */
@@ -70,6 +69,8 @@ free_record(aa_log_record *record)
 			free(record->info);
 		if (record->active_hat != NULL)
 			free(record->active_hat);
+		if (record->audit_id != NULL)
+			free(record->audit_id);
 		free(record);
 	}
 	return;
@@ -88,6 +89,7 @@ _init_log_record(aa_log_record *record)
 	record->bitmask = 0;
 	record->task = 0;
 
+	record->audit_id = NULL;
 	record->operation = NULL;
 	record->denied_mask = NULL;
 	record->requested_mask = NULL;

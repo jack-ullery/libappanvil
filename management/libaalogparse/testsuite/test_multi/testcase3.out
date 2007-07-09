@@ -1,6 +1,7 @@
 START
 File: test_multi/testcase3.in
 Event type: AA_RECORD_HINT
+Audit ID: 1168661976.062:55
 Operation: change_hat
 Profile: /home/matt/projects/change_hat_test/test_hat
 Name: TESTHAT

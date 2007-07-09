@@ -332,7 +332,7 @@ extern int libaalogparse_lex (YYSTYPE * yylval_param ,yyscan_t yyscanner);
 #undef YY_DECL
 #endif
 
-#line 238 "scanner.l"
+#line 228 "scanner.l"
 
 
 #line 339 "scanner.h"

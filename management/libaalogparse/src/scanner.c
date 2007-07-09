@@ -658,34 +658,23 @@ static yyconst flex_int16_t yy_chk[501] =
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 #line 1 "scanner.l"
-/* Message examples
-
-Old syntax:
-type=APPARMOR msg=audit(1167188680.127:54): REJECTING r access to /bin/freak-aa-out (bash(23415) profile /bin/freak-aa-out active /bin/freak-aa-out)
-type=APPARMOR msg=audit(1168661976.062:55): LOGPROF-HINT unknown_hat TESTHAT pid=27764 profile=/home/matt/projects/change_hat_test/test_hat active=/home/matt/projects/change_hat_test/test_hat 
-type=APPARMOR msg=audit(1168662182.495:58): PERMITTING r access to /home/matt/projects/change_hat_test/test (test_hat(27871) profile /home/matt/projects/change_hat_test/test_hat active null-complain-profile)
-
-New syntax:
-type=APPARMOR_REJECT msg=audit(1181057184.959:7): operation="exec" mask="x" name="/bin/ping" pid="31938" profile="/bin/ping"
-
-Supported keys in the new syntax: 
-
-operation       operation
-name            name
-name2           name2
-denied_mask     mask
-requested_mask  mask
-iattr           attribute
-task            task
-parent          parent
-magic_token     magic_token
-info            info
-
-<none>          pid
-<none>          profile
-
-*/
-#line 36 "scanner.l"
+/*
+ *   Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+ *   NOVELL (All rights reserved)
+ *
+ *   This program is free software; you can redistribute it and/or
+ *   modify it under the terms of version 2 of the GNU General Public
+ *   License published by the Free Software Foundation.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program; if not, contact Novell, Inc.
+ */
+#line 26 "scanner.l"
 
 #include "grammar.h"
 /* New message types */
@@ -695,7 +684,7 @@ info            info
 
 
 
-#line 699 "scanner.c"
+#line 688 "scanner.c"
 
 #define INITIAL 0
 #define quoted_string 1
@@ -926,7 +915,7 @@ YY_DECL
 	register int yy_act;
     struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
 
-#line 109 "scanner.l"
+#line 99 "scanner.l"
 
 
 char string_buf[512];
@@ -935,7 +924,7 @@ char *string_buf_ptr;
 /* yy_flex_debug = 1;  */
 
 
-#line 939 "scanner.c"
+#line 928 "scanner.c"
 
     yylval = yylval_param;
 
@@ -1023,66 +1012,66 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 117 "scanner.l"
+#line 107 "scanner.l"
 { /* Skip whitespace */ }
 	YY_BREAK
 
 case 2:
 YY_RULE_SETUP
-#line 120 "scanner.l"
-{yylval->t_str = strdup(yytext); BEGIN(INITIAL); return(TOK_DIGITS);}
+#line 110 "scanner.l"
+{ yylval->t_str = strdup(yytext); return(TOK_AUDIT_DIGITS);}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 121 "scanner.l"
-{ BEGIN(INITIAL); return(TOK_COLON); }
+#line 111 "scanner.l"
+{ return(TOK_COLON); }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 122 "scanner.l"
-{ BEGIN(INITIAL); return(TOK_PERIOD); }
+#line 112 "scanner.l"
+{ return(TOK_PERIOD); }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 123 "scanner.l"
-{ BEGIN(INITIAL); return(TOK_OPEN_PAREN); }
+#line 113 "scanner.l"
+{ return(TOK_OPEN_PAREN); }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 124 "scanner.l"
+#line 114 "scanner.l"
 { BEGIN(INITIAL); return(TOK_CLOSE_PAREN); }
 	YY_BREAK
 
 
 case 7:
 YY_RULE_SETUP
-#line 128 "scanner.l"
+#line 118 "scanner.l"
 { return(TOK_OPEN_PAREN); }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 129 "scanner.l"
+#line 119 "scanner.l"
 { BEGIN(INITIAL); return(TOK_CLOSE_PAREN); }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 130 "scanner.l"
+#line 120 "scanner.l"
 { string_buf_ptr = string_buf; BEGIN(single_quoted_string); }
 	YY_BREAK
 case 10:
 /* rule 10 can match eol */
 YY_RULE_SETUP
-#line 131 "scanner.l"
+#line 121 "scanner.l"
 { }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 132 "scanner.l"
+#line 122 "scanner.l"
 { string_buf_ptr = string_buf; BEGIN(quoted_string); }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 133 "scanner.l"
+#line 123 "scanner.l"
 {
 			yylval->t_str = strdup(yytext);
 			BEGIN(INITIAL);
@@ -1091,18 +1080,18 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 138 "scanner.l"
+#line 128 "scanner.l"
 { return(TOK_EQUALS); }
 	YY_BREAK
 
 case 14:
 YY_RULE_SETUP
-#line 143 "scanner.l"
+#line 133 "scanner.l"
 { string_buf_ptr = string_buf; BEGIN(single_quoted_string); }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 144 "scanner.l"
+#line 134 "scanner.l"
 { /* End of the quoted string */
 				BEGIN(INITIAL);
 				*string_buf_ptr = '\0';
@@ -1113,12 +1102,12 @@ YY_RULE_SETUP
 case 16:
 /* rule 16 can match eol */
 YY_RULE_SETUP
-#line 152 "scanner.l"
+#line 142 "scanner.l"
 { *string_buf_ptr++ = yytext[1]; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 154 "scanner.l"
+#line 144 "scanner.l"
 {
 				char *yptr = yytext;
 				while (*yptr)
@@ -1130,12 +1119,12 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 163 "scanner.l"
+#line 153 "scanner.l"
 { string_buf_ptr = string_buf; BEGIN(quoted_string); }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 164 "scanner.l"
+#line 154 "scanner.l"
 { /* End of the quoted string */
 				BEGIN(INITIAL);
 				*string_buf_ptr = '\0';
@@ -1146,12 +1135,12 @@ YY_RULE_SETUP
 case 20:
 /* rule 20 can match eol */
 YY_RULE_SETUP
-#line 172 "scanner.l"
+#line 162 "scanner.l"
 { *string_buf_ptr++ = yytext[1]; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 174 "scanner.l"
+#line 164 "scanner.l"
 {
 			char *yptr = yytext;
 				while (*yptr)
@@ -1162,22 +1151,22 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 181 "scanner.l"
+#line 171 "scanner.l"
 { return(TOK_EQUALS); }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 182 "scanner.l"
+#line 172 "scanner.l"
 { yylval->t_long = atol(yytext); return(TOK_DIGITS); }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 183 "scanner.l"
+#line 173 "scanner.l"
 { return(TOK_COLON); }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 184 "scanner.l"
+#line 174 "scanner.l"
 {
 			BEGIN(sub_id);
 			return(TOK_OPEN_PAREN); 
@@ -1185,245 +1174,245 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 188 "scanner.l"
+#line 178 "scanner.l"
 { return(TOK_CLOSE_PAREN); }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 189 "scanner.l"
+#line 179 "scanner.l"
 { yylval->t_str = strdup(yytext); return(TOK_PATH); }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 190 "scanner.l"
+#line 180 "scanner.l"
 { return(TOK_TYPE_REJECT); }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 191 "scanner.l"
+#line 181 "scanner.l"
 { return(TOK_TYPE_AUDIT); }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 192 "scanner.l"
+#line 182 "scanner.l"
 { return(TOK_TYPE_COMPLAIN); }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 193 "scanner.l"
+#line 183 "scanner.l"
 { return(TOK_TYPE_HINT); }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 194 "scanner.l"
+#line 184 "scanner.l"
 { return(TOK_TYPE_STATUS); }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 195 "scanner.l"
+#line 185 "scanner.l"
 { return(TOK_TYPE_ERROR); }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 196 "scanner.l"
+#line 186 "scanner.l"
 { return(TOK_PERIOD); }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 198 "scanner.l"
+#line 188 "scanner.l"
 { return(TOK_OLD_TYPE_APPARMOR); }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 199 "scanner.l"
+#line 189 "scanner.l"
 { return(TOK_OLD_APPARMOR_REJECT); }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 200 "scanner.l"
+#line 190 "scanner.l"
 { return(TOK_OLD_APPARMOR_PERMIT); }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 201 "scanner.l"
+#line 191 "scanner.l"
 { return(TOK_OLD_APPARMOR_LOGPROF_HINT); }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 202 "scanner.l"
+#line 192 "scanner.l"
 { BEGIN(sub_id); return(TOK_OLD_UNKNOWN_HAT); }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 203 "scanner.l"
+#line 193 "scanner.l"
 { return(TOK_OLD_UNKNOWN_PROFILE); }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 204 "scanner.l"
+#line 194 "scanner.l"
 { return(TOK_OLD_MISSING_PROFILE); }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 205 "scanner.l"
+#line 195 "scanner.l"
 { return(TOK_OLD_ACTIVE); }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 206 "scanner.l"
+#line 196 "scanner.l"
 { return(TOK_OLD_ACCESS); }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 207 "scanner.l"
+#line 197 "scanner.l"
 { return(TOK_OLD_TO); }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 208 "scanner.l"
+#line 198 "scanner.l"
 { return(TOK_OLD_PIPE); }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 209 "scanner.l"
+#line 199 "scanner.l"
 { return(TOK_OLD_EXTENDED); }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 210 "scanner.l"
+#line 200 "scanner.l"
 { return(TOK_OLD_MKDIR); }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 211 "scanner.l"
+#line 201 "scanner.l"
 { return(TOK_OLD_RMDIR); }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 212 "scanner.l"
+#line 202 "scanner.l"
 { return(TOK_OLD_ON); }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 213 "scanner.l"
+#line 203 "scanner.l"
 { BEGIN(sub_id); return(TOK_OLD_XATTR); }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 214 "scanner.l"
+#line 204 "scanner.l"
 { return(TOK_OLD_CHANGE); }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 215 "scanner.l"
+#line 205 "scanner.l"
 { BEGIN(sub_id); return(TOK_OLD_CAPABILITY); }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 216 "scanner.l"
+#line 206 "scanner.l"
 { return(TOK_OLD_FORK); }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 217 "scanner.l"
+#line 207 "scanner.l"
 { return(TOK_OLD_CHILD); }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 218 "scanner.l"
+#line 208 "scanner.l"
 { yylval->t_str = strdup(yytext); return(TOK_MODE); }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 220 "scanner.l"
+#line 210 "scanner.l"
 { return(TOK_KEY_TYPE); }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 221 "scanner.l"
+#line 211 "scanner.l"
 { return(TOK_KEY_MSG); }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 222 "scanner.l"
+#line 212 "scanner.l"
 { return(TOK_KEY_OPERATION); }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 223 "scanner.l"
+#line 213 "scanner.l"
 { return(TOK_KEY_NAME); }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 224 "scanner.l"
+#line 214 "scanner.l"
 { return(TOK_KEY_NAME2); }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 225 "scanner.l"
+#line 215 "scanner.l"
 { return(TOK_KEY_DENIED_MASK); }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 226 "scanner.l"
+#line 216 "scanner.l"
 { return(TOK_KEY_REQUESTED_MASK); }
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 227 "scanner.l"
+#line 217 "scanner.l"
 { BEGIN(sub_id); return(TOK_KEY_ATTRIBUTE); }
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 228 "scanner.l"
+#line 218 "scanner.l"
 { return(TOK_KEY_TASK); }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 229 "scanner.l"
+#line 219 "scanner.l"
 { return(TOK_KEY_PARENT); }
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 230 "scanner.l"
+#line 220 "scanner.l"
 { return(TOK_KEY_MAGIC_TOKEN); }
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 231 "scanner.l"
+#line 221 "scanner.l"
 { return(TOK_KEY_INFO); }
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 232 "scanner.l"
+#line 222 "scanner.l"
 { return(TOK_KEY_PID); }
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 233 "scanner.l"
+#line 223 "scanner.l"
 { return(TOK_KEY_PROFILE); }
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 234 "scanner.l"
+#line 224 "scanner.l"
 { BEGIN(audit_id); return(TOK_AUDIT); }
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 235 "scanner.l"
+#line 225 "scanner.l"
 { return(TOK_NULL_COMPLAIN); }
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 236 "scanner.l"
+#line 226 "scanner.l"
 {  BEGIN(sub_id); return(TOK_KEY_IMAGE); }
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 238 "scanner.l"
+#line 228 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 1427 "scanner.c"
+#line 1416 "scanner.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(quoted_string):
 case YY_STATE_EOF(sub_id):
@@ -2546,7 +2535,7 @@ void libaalogparse_free (void * ptr , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 238 "scanner.l"
+#line 228 "scanner.l"
 
 
 

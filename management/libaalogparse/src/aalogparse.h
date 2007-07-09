@@ -119,6 +119,7 @@ typedef struct
 	long task;
 
 	int bitmask;			/* Bitmask containing "r" "w" "x" etc */
+	char *audit_id;
 	char *operation;		/* "Exec" "Ptrace", etc. */
 	char *denied_mask;		/* "r", "w", etc. */
 	char *requested_mask;
