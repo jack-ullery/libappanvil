@@ -34,7 +34,6 @@ void libaalogparse_error(void *scanner, char const *s)
 
 %defines
 %pure_parser
-%output="grammar.c"
 %lex-param{void *scanner}
 %parse-param{void *scanner}
 
