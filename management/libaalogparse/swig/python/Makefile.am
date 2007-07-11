@@ -1,8 +1,8 @@
+if HAVE_PYTHON
+
 BUILT_SOURCES = aalogrecordparse_wrap.c
 
 SWIG_SOURCES = ../SWIG/libaalogparse.i
-
-if HAVE_PYTHON
 
 pkgpython_PYTHON = AppArmorLogRecordParser.py
 pkgpyexec_LTLIBRARIES = _aalogrecordparse.la
@@ -11,8 +11,7 @@ _aalogrecordparse_la_CPPFLAGS = $(SWIG_PYTHON_CFLAGS) -I$(top_srcdir)/src -I/usr
 _aalogrecordparse_la_LDFLAGS = -module
 _aalogrecordparse_la_LIBADD = ../../src/.libs/libaalogparse.so
 
-endif 
-
 aalogrecordparse_wrap.c: $(SWIG_SOURCES)
 	$(SWIG) -python -I$(top_srcdir)/src -o $@ $<
 
+endif 

@@ -1,8 +1,8 @@
+if HAVE_PERL
+
 PERL_MAKEFILE = Makefile.perl
 
 WRAPPER_SOURCES = libaalogparse_wrap.c AppArmorLogRecordParser.pm
-
-if HAVE_PERL
 
 all-local: .build-stamp
 
@@ -24,10 +24,11 @@ clean-local: $(PERL_MAKEFILE)
 $(PERL_MAKEFILE): Makefile.PL
 	$(PERL) Makefile.PL VERSION="0.1" OBJECT="../../src/.libs/libaalogparse.so libaalogparse_wrap.o" CCFLAGS="-I../../src -D_REENTRANT -D_GNU_SOURCE -DTHREADS_HAVE_PIDS -fno-strict-aliasing -pipe -Wdeclaration-after-statement" OPTIMIZE="$(CFLAGS) -shared -I$(includedir) -D_REENTRANT -D_GNU_SOURCE -DTHREADS_HAVE_PIDS -fno-strict-aliasing -pipe -Wdeclaration-after-statement"
 
-endif
 
 $(WRAPPER_SOURCES): ../SWIG/*.i
 	$(SWIG) -perl -I../../src -I../SWIG -o libaalogparse_wrap.c libaalogparse.i
+
+endif
 
 EXTRA_DIST = Makefile.PL $(WRAPPER_SOURCES) examples/*.pl
 
