@@ -32,12 +32,13 @@ Summary:	-
 %postun -n libaalogparse-devel
 /sbin/ldconfig
 
-%package perl
-Requires:	%{name} = %{version} perl-base
+%package -n perl-libaalogparse
+Requires:	%{name} = %{version} 
+Requires:	perl = %{perl_version}
 Group:		Development/Libraries/Perl
 Summary:	-
 
-%description perl
+%description -n perl-libaalogparse
 -
 
 %prep
@@ -73,7 +74,7 @@ rm -rf "$RPM_BUILD_ROOT"
 %dir %{_includedir}/aalogparse
 %{_includedir}/aalogparse/*
 
-%files perl
+%files -n perl-libaalogparse
 %defattr(-,root,root)
 %dir %{perl_vendorarch}/auto/AppArmorLogRecordParser
 %{perl_vendorarch}/auto/AppArmorLogRecordParser/*
@@ -81,3 +82,5 @@ rm -rf "$RPM_BUILD_ROOT"
 
 %changelog
 -
+
+
