@@ -85,7 +85,7 @@ our @EXPORT = qw(
     readprofile
     readprofiles
     writeprofile
-  serialize_profile
+    serialize_profile
 
     check_for_subdomain
 
@@ -828,8 +828,9 @@ sub autodep ($) {
 
     unless ($repo_cfg) {
         $repo_cfg = read_config("repository.conf");
-        unless ($repo_cfg->{repository}{enabled}) {
-            ask_to_enable_repo();
+        if ( (not defined $repo_cfg->{repository}) ||
+             ($repo_cfg->{repository}{enabled} eq "later") ) {
+                ask_to_enable_repo();
         }
     }
 
@@ -1153,6 +1154,8 @@ my %CMDS = (
     CMD_DISABLE_REPO     => "(D)isable Repository",
     CMD_ASK_NEVER        => "(N)ever Ask Again",
     CMD_ASK_LATER        => "Ask Me (L)ater",
+    CMD_YES              => "(Y)es",
+    CMD_NO               => "(N)o",
 );
 
 sub UI_PromptUser ($) {
@@ -1917,6 +1920,23 @@ sub read_log {
     close(LOG);
 }
 
+sub get_repo_profiles_for_user {
+    my $username = shift;
+
+    my $distro = $cfg->{repository}{distro};
+    my $p_hash = {};
+    my $res =
+      $repo_client->send_request('FindProfiles', $distro, "", $username);
+    if (did_result_succeed($res)) {
+        for my $p ( @$res ) {
+            $p_hash->{$p->{name}->value()} = $p->{profile}->value();
+        }
+    } else { #FIXME HANDLE REPO ERROR
+        return;
+    }
+
+    return $p_hash;
+}
 
 sub check_repo_for_newer {
     my $profile = shift;
@@ -1998,9 +2018,7 @@ sub check_repo_for_newer {
 }
 
 sub ask_the_questions {
-    my $found;
-
-    # do the magic foo-foo
+    my $found; # do the magic foo-foo
     for my $sdmode (sort keys %log) {
 
         # let them know what sort of changes we're about to list...
@@ -2422,20 +2440,48 @@ sub ask_to_enable_repo {
       gettext( "Would you like to enable access to the profile repository?" );
     $q->{functions} = [
       "CMD_ENABLE_REPO", "CMD_DISABLE_REPO", "CMD_ASK_LATER",
-      "CMD_ABORT", "CMD_FINISHED",
     ];
 
     my $cmd;
     do {
         $cmd = UI_PromptUser($q);
-    } until $cmd =~ /^CMD_(ENABLE_REPO|DISABLE_REPO|LATER_REPO)/;
+    } until $cmd =~ /^CMD_(ENABLE_REPO|DISABLE_REPO|ASK_LATER)/;
 
     if ($cmd eq "CMD_ENABLE_REPO") {
         $repo_cfg->{repository}{enabled} = "yes";
     } elsif ($cmd eq "CMD_DISABLE_REPO") {
         $repo_cfg->{repository}{enabled} = "no";
-    } elsif ($cmd eq "CMD_LATER_REPO") {
+    } elsif ($cmd eq "CMD_ASK_LATER") {
         $repo_cfg->{repository}{enabled} = "later";
+    }
+
+    write_config("repository.conf", $repo_cfg);
+}
+
+sub ask_to_upload_profiles {
+
+    my $q = { };
+    $q->{headers} = [
+      "Repository", $cfg->{repository}{url},
+    ];
+    $q->{explanation} =
+      gettext( "Would you like to upload newly created and changed profiles to
+      the profile repository?" );
+    $q->{functions} = [
+      "CMD_YES", "CMD_NO", "CMD_ASK_LATER",
+    ];
+
+    my $cmd;
+    do {
+        $cmd = UI_PromptUser($q);
+    } until $cmd =~ /^CMD_(YES|NO|ASK_LATER)/;
+
+    if ($cmd eq "CMD_NO") {
+        $repo_cfg->{repository}{upload} = "no";
+    } elsif ($cmd eq "CMD_YES") {
+        $repo_cfg->{repository}{upload} = "yes";
+    } elsif ($cmd eq "CMD_ASK_LATER") {
+        $repo_cfg->{repository}{upload} = "later";
     }
 
     write_config("repository.conf", $repo_cfg);
@@ -2542,7 +2588,7 @@ sub ask_signup_info {
                     if ($UI_Mode eq "yast") {
                         UI_ShortMessage(gettext("Login Error"), $errmsg);
                     } else {
-                        print STDERR $errmsg;
+                        UI_Important( $errmsg );
                     }
                 }
             }
@@ -2553,7 +2599,7 @@ sub ask_signup_info {
     $repo_cfg->{repository}{pass} = $pass;
     $repo_cfg->{repository}{email} = $email;
 
-    write_config("repository.conf", $repo_cfg);
+    write_config("repository.conf", $repo_cfg) if ( $save_config eq "y" );
 
     return ($user, $pass);
 }
@@ -2588,7 +2634,8 @@ sub do_logprof_pass {
     eval {
         unless ($repo_cfg) {
             $repo_cfg = read_config("repository.conf");
-            unless ($repo_cfg->{repository}{enabled}) {
+            unless ($repo_cfg->{repository}{enabled} eq "yes" ||
+                    $repo_cfg->{repository}{enabled} eq "no") {
                 ask_to_enable_repo();
             }
         }
@@ -2642,9 +2689,12 @@ sub do_logprof_pass {
     save_profiles();
 
     if (repo_is_enabled()) {
-        unless ($repo_cfg->{repository}{neversubmit}) {
-            submit_created_profiles();
-            submit_changed_profiles();
+        if ( (not defined $repo_cfg->{repository}{upload}) ||
+             ($repo_cfg->{repository}{upload} eq "later") ) {
+             ask_to_upload_profiles();
+        }
+        if ($repo_cfg->{repository}{upload} eq "yes") {
+            sync_profiles_with_repo();
         }
         @created = ();
     }
@@ -2665,7 +2715,6 @@ sub save_profiles {
                 my $oldprofile = serialize_profile($original_sd{$prof}, $prof);
                 my $newprofile = serialize_profile($sd{$prof}, $prof);
 
-                # display_changes($oldprofile, $newprofile);
                 $profile_changes{$prof} = get_profile_diff($oldprofile,
                                                            $newprofile);
             }
@@ -2738,111 +2787,143 @@ sub is_repo_profile {
            $profile_data->{repo}{id};
 }
 
-sub submit_created_profiles {
-    my $url = $cfg->{repository}{url};
+sub get_repo_profile {
 
-    my @new_profiles;
-    # FIXME add code to detect that a changed profile (locally) will be a newly
-    # created one for the repository
-    # in the case that:
-    # profile is a repo profile but NOT owned by the current user AND
-    # current user doesn't have a profile for the program
-    # This happens when we choose a profile from another user and make changes
-    # to it.
-    if ($repo_client && @created) {
-        my @new_profiles;
-        for my $profile (@created) {
-            unless (is_repo_profile($sd{$profile}{$profile})) {
-                push @new_profiles, [$profile,
-                                     serialize_profile($sd{$profile}, $profile),
-                                     "" ];
-            }
-        }
-        $DEBUGGING && debug("submit_created_profiles: \n\t " .
-                            " \@new_profiles [" . @created .
-                            "] \$repo_enabled [" . $repo_client . "]");
-
-        if ($UI_Mode eq "yast") {
-            my $title       = gettext("New profiles");
-            my $explanation =
-              gettext("Please choose the newly created profiles that you would".
-              " like\nto store in the repository");
-            yast_select_and_upload_profiles($title,
-                                            $explanation,
-                                            @new_profiles);
-        } else {
-            my $title       =
-              gettext("Submit newly created profiles to the repository");
-            my $explanation =
-              gettext("Would you like to upload the newly created profiles?");
-            console_select_and_upload_profiles($title,
-                                               $explanation,
-                                               @new_profiles);
-        }
+    my $id = shift;
+    my $repo_profile;
+    my $res = $repo_client->send_request('Show', $id);
+    if (did_result_succeed($res)) {
+        my $res_value = $res->value;
+        $repo_profile = $res_value->{profile};
+        $repo_profile = "" if (not defined($repo_profile));
+    } else {
+        UI_Info( gettext("Error retrieving profile from repository: ") .
+                 get_result_error($res)
+               );
     }
+    return $repo_profile;
 }
 
-sub submit_changed_profiles {
 
-    my $url = $cfg->{repository}{url};
+sub sync_profiles_with_repo {
+
+    return if (not $repo_client);
+    my ($user, $pass) = get_repo_user_pass();
+    return unless ( $user && $pass );
 
     my @repo_profiles;
+    my @changed_profiles;
+    my @new_profiles;
+    my $users_repo_profiles = get_repo_profiles_for_user( $user );
+
+    #
+    # Find changes made to non-repo profiles
+    #
     for my $profile (sort keys %sd) {
         if (is_repo_profile($sd{$profile}{$profile})) {
             push @repo_profiles, $profile;
         }
+        if ( grep(/^$profile$/, @created) )  {
+            my $p_local = serialize_profile($sd{$profile}, $profile);
+            if ( defined $users_repo_profiles->{$profile} ) {
+                if ( $p_local ne $users_repo_profiles->{$profile} ) {
+                    push @changed_profiles, [
+                                              $profile,
+                                              $p_local,
+                                              $users_repo_profiles->{$profile}
+                                            ];
+                }
+            } else {
+                push @new_profiles, [ $profile, $p_local, "" ];
+            }
+        }
     }
 
-    # FIXME detect that profile in the repo doesn't belong to the current user
-    # and throw out as a change unless a profile exists for the same program in
-    # the repo for the current user (in this case show the diff for the profile
-    # owned by the current user vs the original used profile)
+    #
+    # Find changes made to local profiles with repo metadata
+    #
     if (@repo_profiles) {
-        if ($repo_client) {
-            my @changed_profiles;
-            for my $profile (@repo_profiles) {
-                my $id = $sd{$profile}{$profile}{repo}{id};
-                my $res = $repo_client->send_request('Show', $id);
-                if (did_result_succeed($res)) {
-                    my $res_value = $res->value;
-                    my $p_repo    = $res_value->{profile};
-                    $p_repo = "" if (not defined($p_repo));
-                    my $p_local = serialize_profile($sd{$profile}, $profile);
-                    if ($p_repo ne $p_local) {
-                        push @changed_profiles, [ $profile, $p_local, $p_repo ];
-                    }
-                }    # FIXME REPO ERROR HANDLING
-            }
-
-            if (@changed_profiles) {
-                if ($UI_Mode eq "yast") {
-                    my $explanation =
-                      gettext("Select which of the changed profiles you would".
-                      " like to upload\nto the repository");
-                    my $title       = gettext("Changed profiles");
-                    yast_select_and_upload_profiles($title,
-                                                    $explanation,
-                                                    @changed_profiles);
-                } else {
-                    my $title       =
-                      gettext("Submit changed profiles to the repository");
-                    my $explanation =
-                      gettext("The following profiles from the repository were".
-                      " changed.\nWould you like to upload your changes?");
-                    console_select_and_upload_profiles($title,
-                                                       $explanation,
-                                                       @changed_profiles);
+        for my $profile (@repo_profiles) {
+            my $p_local = serialize_profile($sd{$profile}, $profile);
+            if ( not defined $users_repo_profiles->{$profile} ) {
+                push @new_profiles,  [ $profile, $p_local, "" ];
+            } else {
+                my $p_repo = "";
+                if ( $sd{$profile}{$profile}{repo}{user} ne $user ) {
+                   $p_repo = $users_repo_profiles->{$profile};
+                }  else {
+                    $p_repo =
+                        get_repo_profile($sd{$profile}{$profile}{repo}{id});
+                }
+                if ( $p_repo ne $p_local ) {
+                    push @changed_profiles, [ $profile, $p_local, $p_repo ];
                 }
             }
+        }
+    }
+
+    if ( @changed_profiles ) {
+       submit_changed_profiles( \@changed_profiles );
+    }
+    if ( @new_profiles ) {
+       submit_created_profiles( \@new_profiles );
+    }
+}
+
+sub submit_created_profiles {
+    my $new_profiles = shift;
+    my $url = $cfg->{repository}{url};
+
+    if ($UI_Mode eq "yast") {
+        my $title       = gettext("New profiles");
+        my $explanation =
+          gettext("Please choose the newly created profiles that you would".
+          " like\nto store in the repository");
+        yast_select_and_upload_profiles($title,
+                                        $explanation,
+                                        $new_profiles);
+    } else {
+        my $title       =
+          gettext("Submit newly created profiles to the repository");
+        my $explanation =
+          gettext("Would you like to upload the newly created profiles?");
+        console_select_and_upload_profiles($title,
+                                           $explanation,
+                                           $new_profiles);
+    }
+}
+
+sub submit_changed_profiles {
+    my $changed_profiles = shift;
+    my $url = $cfg->{repository}{url};
+    if (@$changed_profiles) {
+        if ($UI_Mode eq "yast") {
+            my $explanation =
+              gettext("Select which of the changed profiles you would".
+              " like to upload\nto the repository");
+            my $title       = gettext("Changed profiles");
+            yast_select_and_upload_profiles($title,
+                                            $explanation,
+                                            $changed_profiles);
+        } else {
+            my $title       =
+              gettext("Submit changed profiles to the repository");
+            my $explanation =
+              gettext("The following profiles from the repository were".
+              " changed.\nWould you like to upload your changes?");
+            console_select_and_upload_profiles($title,
+                                               $explanation,
+                                               $changed_profiles);
         }
     }
 }
 
 sub yast_select_and_upload_profiles {
 
-    my ($title, $explanation, @profiles) = @_;
+    my ($title, $explanation, $profiles_ref) = @_;
     my $url = $cfg->{repository}{url};
     my %profile_changes;
+    my @profiles = @$profiles_ref;
 
     foreach my $prof (@profiles) {
         $profile_changes{ $prof->[0] } =
@@ -2872,35 +2953,27 @@ sub yast_select_and_upload_profiles {
             $single_changelog = 1;
         }
     }
-    my ($user, $pass) = get_repo_user_pass();
-    if ($user && $pass) {
-        for my $profile (@selected_profiles) {
-            my $profile_string = serialize_profile($sd{$profile}, $profile);
-            if (!$single_changelog) {
-                $changelog = $changelogs->{$profile};
-            }
-            my @args = ('Create', $user, $pass, $cfg->{repository}{distro},
-                        $profile, $profile_string, $changelog);
-            my $res = $repo_client->send_request(@args);
-            if (ref $res) {
-                my $newprofile = $res->value;
-                my $newid      = $newprofile->{id};
-                set_repo_info($sd{$profile}{$profile}, $url, $user, $newid);
-                writeprofile($profile);
-            } else {
-                UI_ShortMessage(gettext("Repository Error"),
-                "An error occured during the upload of the profile "
-                . $profile);
-            }
+
+    for my $profile (@selected_profiles) {
+        my ($user, $pass) = get_repo_user_pass();
+        my $profile_string = serialize_profile($sd{$profile}, $profile);
+        if (!$single_changelog) {
+            $changelog = $changelogs->{$profile};
+        }
+        my @args = ('Create', $user, $pass, $cfg->{repository}{distro},
+                    $profile, $profile_string, $changelog);
+        my $res = $repo_client->send_request(@args);
+        if (ref $res) {
+            my $newprofile = $res->value;
+            my $newid      = $newprofile->{id};
+            set_repo_info($sd{$profile}{$profile}, $url, $user, $newid);
+            writeprofile($profile);
+        } else {
+            UI_ShortMessage(gettext("Repository Error"),
+            "An error occured during the upload of the profile "
+            . $profile);
         }
         UI_Info(gettext("Uploaded changes to repository."));
-    } else {
-        UI_ShortMessage(gettext("Repository Error"),
-                        gettext(
-                        "Registration or Signin was unsuccessful. User login\n".
-                        " information is required to upload profiles to the".
-                        " repository.\nThese changes have not been sent."
-                        ));
     }
 
     # Check to see if unselected profiles should be marked as local only
@@ -2909,7 +2982,7 @@ sub yast_select_and_upload_profiles {
     if (defined $yarg->{NEVER_ASK_AGAIN}) {
         my @unselected_profiles;
         foreach my $prof (@profiles) {
-            if ( grep($prof->[0], @selected_profiles) == 0 ) {
+            if ( grep(/^$prof->[0]$/, @selected_profiles) == 0 ) {
                 push @unselected_profiles, $prof->[0];
             }
         }
@@ -2931,9 +3004,9 @@ sub set_profiles_local_only {
 }
 
 sub console_select_and_upload_profiles {
-    my ($title, $explanation, @profiles) = @_;
+    my ($title, $explanation, $profiles_ref) = @_;
     my $url = $cfg->{repository}{url};
-
+    my @profiles = @$profiles_ref;
     my $q = {};
     $q->{title} = $title;
     $q->{headers} = [ "Repository", $url, ];
@@ -2960,12 +3033,10 @@ sub console_select_and_upload_profiles {
     } until $ans =~ /^CMD_(UPLOAD_CHANGES|ASK_NEVER)/;
 
     if ($ans eq "CMD_ASK_NEVER") {
-        set_profiles_local_only( [ map { $_->[0] } @profiles ] );
+        set_profiles_local_only(  map { $_->[0] } @profiles  );
     } elsif ($ans eq "CMD_UPLOAD_CHANGES") {
         my $changelog = UI_GetString(gettext("Changelog Entry: "), "");
-
         my ($user, $pass) = get_repo_user_pass();
-
         if ($user && $pass) {
             for my $p_data (@profiles) {
                 my $profile        = $p_data->[0];
@@ -2987,7 +3058,7 @@ sub console_select_and_upload_profiles {
                 }
             }
         } else {
-            UI_ShortMessage(gettext("Repository Error"), gettext("Registration or Signin was unsuccessful. User login information is required to upload profiles to the repository. These changes have not been sent."));
+            UI_Important(gettext("Repository Error") . "\n" .  gettext("Registration or Signin was unsuccessful. User login information is required to upload profiles to the repository. These changes have not been sent."));
         }
     }
 }
@@ -3294,9 +3365,9 @@ sub readprofile ($$$) {
             $@ =~ s/\n$//;
             return &$error_handler($@);
         }
-  } else {
-      $DEBUGGING && debug "readprofile: can't read $file - skipping";
-  }
+    } else {
+        $DEBUGGING && debug "readprofile: can't read $file - skipping";
+    }
 }
 
 sub attach_profile_data {
@@ -3549,13 +3620,13 @@ sub escape ($) {
     return $dangerous;
 }
 
-sub writeheader ($$) {
-    my ($profile_data, $name) = @_;
+sub writeheader ($$$) {
+    my ($profile_data, $name, $is_hat) = @_;
 
     my @data;
     # deal with whitespace in profile names...
     $name = "\"$name\"" if $name =~ /\s/;
-    push @data, "#include <tunables/global>";
+    push @data, "#include <tunables/global>" unless ( $is_hat );
     if ($profile_data->{flags}) {
         push @data, "$name flags=($profile_data->{flags}) {";
     } else {
@@ -3637,7 +3708,7 @@ sub writepiece ($$) {
     my ($profile_data, $name) = @_;
 
     my @data;
-    push @data, writeheader($profile_data->{$name}, $name);
+    push @data, writeheader($profile_data->{$name}, $name, 0);
     push @data, writeincludes($profile_data->{$name});
     push @data, writecapabilities($profile_data->{$name});
     push @data, writenetdomain($profile_data->{$name});
@@ -3645,7 +3716,9 @@ sub writepiece ($$) {
 
     for my $hat (grep { $_ ne $name } sort keys %{$profile_data}) {
         push @data, "";
-        push @data, map { "  $_" } writeheader($profile_data->{$hat}, "^$hat");
+        push @data, map { "  $_" } writeheader($profile_data->{$hat},
+                                               "^$hat",
+                                               1);
         push @data, map { "  $_" } writeincludes($profile_data->{$hat});
         push @data, map { "  $_" } writecapabilities($profile_data->{$hat});
         push @data, map { "  $_" } writenetdomain($profile_data->{$hat});
@@ -3686,7 +3759,7 @@ sub serialize_profile {
         $string .= "$comment\n";
     }
 
-# XXX - FIX THIS
+# XXX - FIXME
 #
 #  # dump variables defined in this file
 #  if ($variables{$filename}) {
