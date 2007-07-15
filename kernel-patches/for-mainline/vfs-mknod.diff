@@ -64,7 +64,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  			error = -EPERM;
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1194,7 +1194,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
+@@ -1210,7 +1210,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
  	case S_IFBLK:
  	case S_IFIFO:
  	case S_IFSOCK:
@@ -87,7 +87,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  extern int vfs_rmdir(struct inode *, struct dentry *);
 --- a/net/unix/af_unix.c
 +++ b/net/unix/af_unix.c
-@@ -807,7 +807,7 @@ static int unix_bind(struct socket *sock
+@@ -808,7 +808,7 @@ static int unix_bind(struct socket *sock
  		 */
  		mode = S_IFSOCK |
  		       (SOCK_INODE(sock)->i_mode & ~current->fs->umask);

@@ -46,7 +46,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  extern int cap_inode_removexattr(struct dentry *dentry, char *name);
  extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid, int flags);
  extern void cap_task_reparent_to_init (struct task_struct *p);
-@@ -384,11 +384,11 @@ struct request_sock;
+@@ -385,11 +385,11 @@ struct request_sock;
   *	inode.
   * @inode_setxattr:
   * 	Check permission before setting the extended attributes
@@ -60,7 +60,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
   * @inode_getxattr:
   * 	Check permission before obtaining the extended attributes
   * 	identified by @name for @dentry.
-@@ -1242,9 +1242,11 @@ struct security_operations {
+@@ -1243,9 +1243,11 @@ struct security_operations {
  			      struct iattr *attr);
  	int (*inode_getattr) (struct vfsmount *mnt, struct dentry *dentry);
          void (*inode_delete) (struct inode *inode);
@@ -75,7 +75,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  				     size_t size, int flags);
  	int (*inode_getxattr) (struct dentry *dentry, char *name);
  	int (*inode_listxattr) (struct dentry *dentry);
-@@ -1760,20 +1762,24 @@ static inline void security_inode_delete
+@@ -1762,20 +1764,24 @@ static inline void security_inode_delete
  	security_ops->inode_delete (inode);
  }
  
@@ -105,7 +105,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
  
  static inline int security_inode_getxattr (struct dentry *dentry, char *name)
-@@ -2467,14 +2473,18 @@ static inline int security_inode_getattr
+@@ -2472,14 +2478,18 @@ static inline int security_inode_getattr
  static inline void security_inode_delete (struct inode *inode)
  { }
  
@@ -168,7 +168,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2305,7 +2305,9 @@ static int selinux_inode_getattr(struct 
+@@ -2306,7 +2306,9 @@ static int selinux_inode_getattr(struct 
  	return dentry_has_perm(current, mnt, dentry, FILE__GETATTR);
  }
  
@@ -179,7 +179,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	struct task_security_struct *tsec = current->security;
  	struct inode *inode = dentry->d_inode;
-@@ -2365,7 +2367,9 @@ static int selinux_inode_setxattr(struct
+@@ -2366,7 +2368,9 @@ static int selinux_inode_setxattr(struct
  			    &ad);
  }
  

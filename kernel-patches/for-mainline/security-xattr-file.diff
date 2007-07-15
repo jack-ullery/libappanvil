@@ -283,7 +283,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid, int flags);
  extern void cap_task_reparent_to_init (struct task_struct *p);
  extern int cap_syslog (int type);
-@@ -1243,16 +1243,18 @@ struct security_operations {
+@@ -1244,16 +1244,18 @@ struct security_operations {
  	int (*inode_getattr) (struct vfsmount *mnt, struct dentry *dentry);
          void (*inode_delete) (struct inode *inode);
  	int (*inode_setxattr) (struct dentry *dentry, struct vfsmount *mnt,
@@ -306,7 +306,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	const char *(*inode_xattr_getsuffix) (void);
    	int (*inode_getsecurity)(const struct inode *inode, const char *name, void *buffer, size_t size, int err);
    	int (*inode_setsecurity)(struct inode *inode, const char *name, const void *value, size_t size, int flags);
-@@ -1766,12 +1768,13 @@ static inline void security_inode_delete
+@@ -1768,12 +1770,13 @@ static inline void security_inode_delete
  
  static inline int security_inode_setxattr (struct dentry *dentry,
  					   struct vfsmount *mnt, char *name,
@@ -322,7 +322,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
  
  static inline void security_inode_post_setxattr (struct dentry *dentry,
-@@ -1781,31 +1784,35 @@ static inline void security_inode_post_s
+@@ -1783,31 +1786,35 @@ static inline void security_inode_post_s
  {
  	if (unlikely (IS_PRIVATE (dentry->d_inode)))
  		return;
@@ -365,7 +365,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
  
  static inline const char *security_inode_xattr_getsuffix(void)
-@@ -2480,9 +2487,10 @@ static inline void security_inode_delete
+@@ -2485,9 +2492,10 @@ static inline void security_inode_delete
  
  static inline int security_inode_setxattr (struct dentry *dentry,
  					   struct vfsmount *mnt, char *name,
@@ -378,7 +378,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
  
  static inline void security_inode_post_setxattr (struct dentry *dentry,
-@@ -2493,21 +2501,24 @@ static inline void security_inode_post_s
+@@ -2498,21 +2506,24 @@ static inline void security_inode_post_s
  { }
  
  static inline int security_inode_getxattr (struct dentry *dentry,
@@ -483,7 +483,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2307,7 +2307,7 @@ static int selinux_inode_getattr(struct 
+@@ -2308,7 +2308,7 @@ static int selinux_inode_getattr(struct 
  
  static int selinux_inode_setxattr(struct dentry *dentry, struct vfsmount *mnt,
  				  char *name, void *value, size_t size,
@@ -492,7 +492,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	struct task_security_struct *tsec = current->security;
  	struct inode *inode = dentry->d_inode;
-@@ -2394,18 +2394,20 @@ static void selinux_inode_post_setxattr(
+@@ -2395,18 +2395,20 @@ static void selinux_inode_post_setxattr(
  }
  
  static int selinux_inode_getxattr (struct dentry *dentry, struct vfsmount *mnt,

@@ -45,7 +45,7 @@ Cc: Miklos Szeredi <mszeredi@suse.cz>
  out:
  	kfree(buf);
  	return error;
-@@ -1992,12 +1992,14 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+@@ -2008,12 +2008,14 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
  
  	mnt = fhp->fh_export->ex_mnt;
  	if (size)

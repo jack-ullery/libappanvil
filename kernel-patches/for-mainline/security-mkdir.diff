@@ -27,7 +27,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -308,6 +308,7 @@ struct request_sock;
+@@ -309,6 +309,7 @@ struct request_sock;
   *	associated with inode strcture @dir. 
   *	@dir containst the inode structure of parent of the directory to be created.
   *	@dentry contains the dentry structure of new directory.
@@ -35,7 +35,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
   *	@mode contains the mode of new directory.
   *	Return 0 if permission is granted.
   * @inode_rmdir:
-@@ -1213,7 +1214,8 @@ struct security_operations {
+@@ -1214,7 +1215,8 @@ struct security_operations {
  	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
  	int (*inode_symlink) (struct inode *dir,
  	                      struct dentry *dentry, const char *old_name);
@@ -45,7 +45,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
  	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
  	                    int mode, dev_t dev);
-@@ -1650,11 +1652,12 @@ static inline int security_inode_symlink
+@@ -1652,11 +1654,12 @@ static inline int security_inode_symlink
  
  static inline int security_inode_mkdir (struct inode *dir,
  					struct dentry *dentry,
@@ -59,7 +59,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
  
  static inline int security_inode_rmdir (struct inode *dir,
-@@ -2371,6 +2374,7 @@ static inline int security_inode_symlink
+@@ -2376,6 +2379,7 @@ static inline int security_inode_symlink
  
  static inline int security_inode_mkdir (struct inode *dir,
  					struct dentry *dentry,
@@ -80,7 +80,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2207,7 +2207,8 @@ static int selinux_inode_symlink(struct 
+@@ -2208,7 +2208,8 @@ static int selinux_inode_symlink(struct 
  	return may_create(dir, dentry, SECCLASS_LNK_FILE);
  }
  

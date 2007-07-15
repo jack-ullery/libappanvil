@@ -37,7 +37,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid, int flags);
  extern void cap_task_reparent_to_init (struct task_struct *p);
  extern int cap_syslog (int type);
-@@ -1251,7 +1251,8 @@ struct security_operations {
+@@ -1252,7 +1252,8 @@ struct security_operations {
  	int (*inode_getxattr) (struct dentry *dentry, struct vfsmount *mnt,
  			       char *name);
  	int (*inode_listxattr) (struct dentry *dentry, struct vfsmount *mnt);
@@ -47,7 +47,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	const char *(*inode_xattr_getsuffix) (void);
    	int (*inode_getsecurity)(const struct inode *inode, const char *name, void *buffer, size_t size, int err);
    	int (*inode_setsecurity)(struct inode *inode, const char *name, const void *value, size_t size, int flags);
-@@ -1799,11 +1800,12 @@ static inline int security_inode_listxat
+@@ -1801,11 +1802,12 @@ static inline int security_inode_listxat
  	return security_ops->inode_listxattr (dentry, mnt);
  }
  
@@ -62,7 +62,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
  
  static inline const char *security_inode_xattr_getsuffix(void)
-@@ -2502,9 +2504,10 @@ static inline int security_inode_listxat
+@@ -2507,9 +2509,10 @@ static inline int security_inode_listxat
  	return 0;
  }
  
@@ -101,7 +101,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2404,7 +2404,8 @@ static int selinux_inode_listxattr (stru
+@@ -2405,7 +2405,8 @@ static int selinux_inode_listxattr (stru
  	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
  }
  

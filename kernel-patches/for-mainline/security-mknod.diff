@@ -27,7 +27,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -323,6 +323,7 @@ struct request_sock;
+@@ -324,6 +324,7 @@ struct request_sock;
   *	and not this hook.
   *	@dir contains the inode structure of parent of the new file.
   *	@dentry contains the dentry structure of the new file.
@@ -35,7 +35,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
   *	@mode contains the mode of the new file.
   *	@dev contains the device number.
   *	Return 0 if permission is granted.
-@@ -1218,7 +1219,7 @@ struct security_operations {
+@@ -1219,7 +1220,7 @@ struct security_operations {
  			    struct vfsmount *mnt, int mode);
  	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
  	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
@@ -44,7 +44,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	int (*inode_rename) (struct inode *old_dir, struct dentry *old_dentry,
  	                     struct inode *new_dir, struct dentry *new_dentry);
  	int (*inode_readlink) (struct dentry *dentry);
-@@ -1670,11 +1671,12 @@ static inline int security_inode_rmdir (
+@@ -1672,11 +1673,12 @@ static inline int security_inode_rmdir (
  
  static inline int security_inode_mknod (struct inode *dir,
  					struct dentry *dentry,
@@ -58,7 +58,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
  
  static inline int security_inode_rename (struct inode *old_dir,
-@@ -2388,6 +2390,7 @@ static inline int security_inode_rmdir (
+@@ -2393,6 +2395,7 @@ static inline int security_inode_rmdir (
  
  static inline int security_inode_mknod (struct inode *dir,
  					struct dentry *dentry,
@@ -79,7 +79,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2218,11 +2218,12 @@ static int selinux_inode_rmdir(struct in
+@@ -2219,11 +2219,12 @@ static int selinux_inode_rmdir(struct in
  	return may_link(dir, dentry, MAY_RMDIR);
  }
  

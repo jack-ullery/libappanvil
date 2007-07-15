@@ -27,7 +27,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  				error = inode->i_op->readlink(nd.dentry, buf, bufsiz);
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -338,6 +338,7 @@ struct request_sock;
+@@ -339,6 +339,7 @@ struct request_sock;
   * @inode_readlink:
   *	Check the permission to read the symbolic link.
   *	@dentry contains the dentry structure for the file link.
@@ -35,7 +35,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
   *	Return 0 if permission is granted.
   * @inode_follow_link:
   *	Check permission to follow a symbolic link when looking up a pathname.
-@@ -1223,7 +1224,7 @@ struct security_operations {
+@@ -1224,7 +1225,7 @@ struct security_operations {
  			    struct vfsmount *mnt, int mode, dev_t dev);
  	int (*inode_rename) (struct inode *old_dir, struct dentry *old_dentry,
  	                     struct inode *new_dir, struct dentry *new_dentry);
@@ -44,7 +44,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	int (*inode_follow_link) (struct dentry *dentry, struct nameidata *nd);
  	int (*inode_permission) (struct inode *inode, int mask, struct nameidata *nd);
  	int (*inode_setattr) (struct dentry *dentry, struct vfsmount *mnt,
-@@ -1693,11 +1694,12 @@ static inline int security_inode_rename 
+@@ -1695,11 +1696,12 @@ static inline int security_inode_rename 
  					   new_dir, new_dentry);
  }
  
@@ -59,7 +59,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
  
  static inline int security_inode_follow_link (struct dentry *dentry,
-@@ -2407,7 +2409,8 @@ static inline int security_inode_rename 
+@@ -2412,7 +2414,8 @@ static inline int security_inode_rename 
  	return 0;
  }
  
@@ -82,7 +82,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2237,7 +2237,7 @@ static int selinux_inode_rename(struct i
+@@ -2238,7 +2238,7 @@ static int selinux_inode_rename(struct i
  	return may_rename(old_inode, old_dentry, new_inode, new_dentry);
  }
  

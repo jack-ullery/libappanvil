@@ -43,7 +43,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
 --- a/fs/splice.c
 +++ b/fs/splice.c
-@@ -807,7 +807,7 @@ generic_file_splice_write_nolock(struct 
+@@ -834,7 +834,7 @@ generic_file_splice_write_nolock(struct 
  	ssize_t ret;
  	int err;
  
@@ -52,7 +52,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (unlikely(err))
  		return err;
  
-@@ -860,7 +860,7 @@ generic_file_splice_write(struct pipe_in
+@@ -889,7 +889,7 @@ generic_file_splice_write(struct pipe_in
  	err = should_remove_suid(out->f_path.dentry);
  	if (unlikely(err)) {
  		mutex_lock(&inode->i_mutex);
@@ -63,7 +63,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  			return err;
 --- a/fs/xfs/linux-2.6/xfs_lrw.c
 +++ b/fs/xfs/linux-2.6/xfs_lrw.c
-@@ -798,7 +798,7 @@ start:
+@@ -754,7 +754,7 @@ start:
  	     !capable(CAP_FSETID)) {
  		error = xfs_write_clear_setuid(xip);
  		if (likely(!error))
@@ -74,7 +74,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		}
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -1725,9 +1725,9 @@ extern void __iget(struct inode * inode)
+@@ -1724,9 +1724,9 @@ extern void __iget(struct inode * inode)
  extern void clear_inode(struct inode *);
  extern void destroy_inode(struct inode *);
  extern struct inode *new_inode(struct super_block *);
@@ -88,7 +88,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  extern void remove_inode_hash(struct inode *);
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -1906,20 +1906,20 @@ int should_remove_suid(struct dentry *de
+@@ -1885,20 +1885,20 @@ int should_remove_suid(struct dentry *de
  }
  EXPORT_SYMBOL(should_remove_suid);
  
@@ -114,7 +114,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
  	return 0;
  }
-@@ -2270,7 +2270,7 @@ __generic_file_aio_write_nolock(struct k
+@@ -2249,7 +2249,7 @@ __generic_file_aio_write_nolock(struct k
  	if (count == 0)
  		goto out;
  
@@ -125,7 +125,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
 --- a/mm/filemap_xip.c
 +++ b/mm/filemap_xip.c
-@@ -406,7 +406,7 @@ xip_file_write(struct file *filp, const 
+@@ -384,7 +384,7 @@ xip_file_write(struct file *filp, const 
  	if (count == 0)
  		goto out_backing;
  
@@ -136,7 +136,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
 --- a/mm/shmem.c
 +++ b/mm/shmem.c
-@@ -1518,7 +1518,7 @@ shmem_file_write(struct file *file, cons
+@@ -1527,7 +1527,7 @@ shmem_file_write(struct file *file, cons
  	if (err || !count)
  		goto out;
  

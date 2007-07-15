@@ -65,7 +65,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1704,7 +1704,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+@@ -1720,7 +1720,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
  			host_err = -EPERM;
  		} else
  #endif

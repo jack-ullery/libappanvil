@@ -38,7 +38,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -336,8 +336,10 @@ struct request_sock;
+@@ -337,8 +337,10 @@ struct request_sock;
   *	Check for permission to rename a file or directory.
   *	@old_dir contains the inode structure for parent of the old link.
   *	@old_dentry contains the dentry structure of the old link.
@@ -49,7 +49,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
   *	Return 0 if permission is granted.
   * @inode_readlink:
   *	Check the permission to read the symbolic link.
-@@ -1230,7 +1232,9 @@ struct security_operations {
+@@ -1231,7 +1233,9 @@ struct security_operations {
  	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
  			    struct vfsmount *mnt, int mode, dev_t dev);
  	int (*inode_rename) (struct inode *old_dir, struct dentry *old_dentry,
@@ -60,7 +60,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	int (*inode_readlink) (struct dentry *dentry, struct vfsmount *mnt);
  	int (*inode_follow_link) (struct dentry *dentry, struct nameidata *nd);
  	int (*inode_permission) (struct inode *inode, int mask, struct nameidata *nd);
-@@ -1696,14 +1700,16 @@ static inline int security_inode_mknod (
+@@ -1698,14 +1702,16 @@ static inline int security_inode_mknod (
  
  static inline int security_inode_rename (struct inode *old_dir,
  					 struct dentry *old_dentry,
@@ -80,7 +80,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
  
  static inline int security_inode_readlink (struct dentry *dentry,
-@@ -2419,8 +2425,10 @@ static inline int security_inode_mknod (
+@@ -2424,8 +2430,10 @@ static inline int security_inode_mknod (
  
  static inline int security_inode_rename (struct inode *old_dir,
  					 struct dentry *old_dentry,
@@ -108,7 +108,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2238,8 +2238,12 @@ static int selinux_inode_mknod(struct in
+@@ -2239,8 +2239,12 @@ static int selinux_inode_mknod(struct in
  	return may_create(dir, dentry, inode_mode_to_security_class(mode));
  }
  

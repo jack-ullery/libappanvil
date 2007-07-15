@@ -26,7 +26,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		      void __user *newval, size_t newlen);
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
-@@ -1110,6 +1110,33 @@ struct ctl_table_header *sysctl_head_nex
+@@ -1200,6 +1200,33 @@ struct ctl_table_header *sysctl_head_nex
  	return NULL;
  }
  

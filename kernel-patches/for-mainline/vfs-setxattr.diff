@@ -68,7 +68,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		if (host_error < 0)
  			goto out_nfserr;
  	}
-@@ -1982,7 +1987,8 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+@@ -1998,7 +2003,8 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
  		size = 0;
  
  	if (size)

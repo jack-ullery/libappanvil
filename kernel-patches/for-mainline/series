@@ -40,11 +40,6 @@ apparmor-lsm.diff
 apparmor-module_interface.diff
 apparmor-misc.diff
 apparmor-intree.diff
-change_profile-4.diff
-change_profile-5.diff
-change_profile-7.diff
-no-audit-token.diff
-remove-audit-types.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff

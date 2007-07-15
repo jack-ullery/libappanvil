@@ -34,7 +34,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  			    (ia_valid & ATTR_GID && attr->ia_gid != inode->i_gid))
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -358,6 +358,7 @@ struct request_sock;
+@@ -359,6 +359,7 @@ struct request_sock;
   *	file attributes change (such as when a file is truncated, chown/chmod
   *	operations, transferring disk quotas, etc).
   *	@dentry contains the dentry structure for the file.
@@ -42,7 +42,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
   *	@attr is the iattr structure containing the new file attributes.
   *	Return 0 if permission is granted.
   * @inode_getattr:
-@@ -1221,7 +1222,8 @@ struct security_operations {
+@@ -1222,7 +1223,8 @@ struct security_operations {
  	int (*inode_readlink) (struct dentry *dentry);
  	int (*inode_follow_link) (struct dentry *dentry, struct nameidata *nd);
  	int (*inode_permission) (struct inode *inode, int mask, struct nameidata *nd);
@@ -52,7 +52,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	int (*inode_getattr) (struct vfsmount *mnt, struct dentry *dentry);
          void (*inode_delete) (struct inode *inode);
  	int (*inode_setxattr) (struct dentry *dentry, char *name, void *value,
-@@ -1708,11 +1710,12 @@ static inline int security_inode_permiss
+@@ -1710,11 +1712,12 @@ static inline int security_inode_permiss
  }
  
  static inline int security_inode_setattr (struct dentry *dentry,
@@ -66,7 +66,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
  
  static inline int security_inode_getattr (struct vfsmount *mnt,
-@@ -2412,6 +2415,7 @@ static inline int security_inode_permiss
+@@ -2417,6 +2420,7 @@ static inline int security_inode_permiss
  }
  
  static inline int security_inode_setattr (struct dentry *dentry,
@@ -88,7 +88,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2267,11 +2267,12 @@ static int selinux_inode_permission(stru
+@@ -2268,11 +2268,12 @@ static int selinux_inode_permission(stru
  			       file_mask_to_av(inode->i_mode, mask), NULL);
  }
  

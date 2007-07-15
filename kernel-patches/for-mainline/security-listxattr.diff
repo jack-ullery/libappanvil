@@ -27,7 +27,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	error = -EOPNOTSUPP;
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -395,7 +395,7 @@ struct request_sock;
+@@ -396,7 +396,7 @@ struct request_sock;
   * 	Return 0 if permission is granted.
   * @inode_listxattr:
   * 	Check permission before obtaining the list of extended attribute 
@@ -36,7 +36,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
   * 	Return 0 if permission is granted.
   * @inode_removexattr:
   * 	Check permission before removing the extended attribute
-@@ -1250,7 +1250,7 @@ struct security_operations {
+@@ -1251,7 +1251,7 @@ struct security_operations {
  				     size_t size, int flags);
  	int (*inode_getxattr) (struct dentry *dentry, struct vfsmount *mnt,
  			       char *name);
@@ -45,7 +45,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	int (*inode_removexattr) (struct dentry *dentry, char *name);
  	const char *(*inode_xattr_getsuffix) (void);
    	int (*inode_getsecurity)(const struct inode *inode, const char *name, void *buffer, size_t size, int err);
-@@ -1791,11 +1791,12 @@ static inline int security_inode_getxatt
+@@ -1793,11 +1793,12 @@ static inline int security_inode_getxatt
  	return security_ops->inode_getxattr (dentry, mnt, name);
  }
  
@@ -60,7 +60,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
  
  static inline int security_inode_removexattr (struct dentry *dentry, char *name)
-@@ -2495,7 +2496,8 @@ static inline int security_inode_getxatt
+@@ -2500,7 +2501,8 @@ static inline int security_inode_getxatt
  	return 0;
  }
  
@@ -83,7 +83,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2399,7 +2399,7 @@ static int selinux_inode_getxattr (struc
+@@ -2400,7 +2400,7 @@ static int selinux_inode_getxattr (struc
  	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
  }
  
