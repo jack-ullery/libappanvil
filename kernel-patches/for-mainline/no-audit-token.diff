@@ -1,0 +1,43 @@
+---
+ security/apparmor/apparmor.h |    1 -
+ security/apparmor/main.c     |    5 -----
+ 2 files changed, 6 deletions(-)
+
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -156,7 +156,6 @@ struct aa_audit {
+ 	int requested_mask, denied_mask;
+ 	struct iattr *iattr;
+ 	pid_t task, parent;
+-	u64 cookie;
+ 	int error_code;
+ };
+ 
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -343,9 +343,6 @@ static int aa_audit_base(struct aa_profi
+ 		audit_log_untrustedstring(ab, sa->name2);
+ 	}
+ 
+-	if (sa->cookie)
+-		audit_log_format(ab, " cookie=%llu", sa->cookie);
+-
+ 	audit_log_format(ab, " pid=%d", current->pid);
+ 
+ 	if (profile) {
+@@ -1029,7 +1026,6 @@ int aa_change_profile(const char *name, 
+ 
+ 	memset(&sa, 0, sizeof(sa));
+ 	sa.gfp_mask = GFP_ATOMIC;
+-	sa.cookie = cookie;
+ 	sa.operation = "change_profile";
+ 
+ repeat:
+@@ -1085,7 +1081,6 @@ int aa_change_hat(const char *hat_name, 
+ 
+ 	memset(&sa, 0, sizeof(sa));
+ 	sa.gfp_mask = GFP_ATOMIC;
+-	sa.cookie = cookie;
+ 	sa.operation = "change_hat";
+ 
+ repeat:

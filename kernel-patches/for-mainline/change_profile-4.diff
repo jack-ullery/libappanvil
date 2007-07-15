@@ -1,0 +1,38 @@
+---
+ security/apparmor/main.c |   17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
+
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -949,8 +949,13 @@ static int do_change_profile(struct aa_p
+ 		return -ENOMEM;
+ 
+ 	profile = aa_find_profile(name);
+-	if (!profile && !restore)
++	if (!profile && !restore) {
++		if (!PROFILE_COMPLAIN(expected)) {
++			error = -ENOENT;
++			goto out;
++		}
+ 		profile = aa_dup_profile(null_complain_profile);
++	}
+ 
+ 	cxt = lock_task_and_profiles(current, profile);
+ 	if (!cxt) {
+@@ -984,14 +989,8 @@ static int do_change_profile(struct aa_p
+ 		goto out;
+ 	}
+ 
+-	if (profile == null_complain_profile) {
+-		if (APPARMOR_COMPLAIN(cxt)) {
+-			aa_audit_hint(cxt->profile, sa);
+-		} else {
+-			error = -ENOENT;
+-			goto out;
+-		}
+-	}
++	if (profile == null_complain_profile)
++		aa_audit_hint(cxt->profile, sa);
+ 
+ 	if (APPARMOR_AUDIT(cxt))
+ 		aa_audit_message(cxt->profile, sa, AUDIT_APPARMOR_AUDIT);
