@@ -7,12 +7,12 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- security/apparmor/main.c | 1255 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 1255 insertions(+)
+ security/apparmor/main.c | 1246 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 1246 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/main.c
-@@ -0,0 +1,1255 @@
+@@ -0,0 +1,1246 @@
 +/*
 + *	Copyright (C) 2002-2007 Novell/SUSE
 + *
@@ -357,9 +357,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		audit_log_format(ab, " name2=");
 +		audit_log_untrustedstring(ab, sa->name2);
 +	}
-+
-+	if (sa->cookie)
-+		audit_log_format(ab, " cookie=%llu", sa->cookie);
 +
 +	audit_log_format(ab, " pid=%d", current->pid);
 +
@@ -952,7 +949,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +static int do_change_profile(struct aa_profile *expected, const char *name,
 +			     u64 cookie, int restore, struct aa_audit *sa)
 +{
-+	struct aa_profile *profile = NULL, *old_profile = NULL,
++	struct aa_profile *new_profile = NULL, *old_profile = NULL,
 +		*previous_profile = NULL;
 +	struct aa_task_context *new_cxt, *cxt;
 +	int error = 0;
@@ -963,18 +960,21 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	if (!new_cxt)
 +		return -ENOMEM;
 +
-+	profile = aa_find_profile(name);
-+	if (!profile && !restore)
-+		profile = aa_dup_profile(null_complain_profile);
++	new_profile = aa_find_profile(name);
++	if (!new_profile && !restore) {
++		if (!PROFILE_COMPLAIN(expected))
++			return -ENOENT;
++		new_profile = aa_dup_profile(null_complain_profile);
++	}
 +
-+	cxt = lock_task_and_profiles(current, profile);
++	cxt = lock_task_and_profiles(current, new_profile);
 +	if (!cxt) {
 +		error = -EPERM;
 +		goto out;
 +	}
 +	old_profile = cxt->profile;
 +
-+	if (cxt->profile != expected || (profile && profile->isstale)) {
++	if (cxt->profile != expected || (new_profile && new_profile->isstale)) {
 +		error = -ESTALE;
 +		goto out;
 +	}
@@ -994,39 +994,32 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	} else
 +		previous_profile = cxt->profile;
 +
-+	if ((current->ptrace & PT_PTRACED) && aa_may_ptrace(cxt, profile)) {
++	if ((current->ptrace & PT_PTRACED) && aa_may_ptrace(cxt, new_profile)) {
 +		error = -EACCES;
 +		goto out;
 +	}
 +
-+	if (profile == null_complain_profile) {
-+		if (APPARMOR_COMPLAIN(cxt)) {
-+			aa_audit_hint(cxt->profile, sa);
-+		} else {
-+			error = -ENOENT;
-+			goto out;
-+		}
-+	}
++	if (new_profile == null_complain_profile)
++		aa_audit_hint(cxt->profile, sa);
 +
 +	if (APPARMOR_AUDIT(cxt))
 +		aa_audit_message(cxt->profile, sa, AUDIT_APPARMOR_AUDIT);
 +
 +	if (!restore && cookie)
-+		aa_change_task_context(current, new_cxt, profile, cookie,
++		aa_change_task_context(current, new_cxt, new_profile, cookie,
 +				       previous_profile);
 +	else
 +		/* either return to previous_profile, or a permanent change */
-+		aa_change_task_context(current, new_cxt, profile, 0, NULL);
++		aa_change_task_context(current, new_cxt, new_profile, 0, NULL);
 +
 +out:
 +	if (aa_task_context(current) != new_cxt)
 +		aa_free_task_context(new_cxt);
 +	task_unlock(current);
-+	unlock_both_profiles(old_profile, profile);
-+	aa_put_profile(profile);
++	unlock_both_profiles(old_profile, new_profile);
++	aa_put_profile(new_profile);
 +	return error;
 +}
-+
 +
 +/**
 + * aa_change_profile - change profile to/from previous stored profile
@@ -1048,7 +1041,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +	memset(&sa, 0, sizeof(sa));
 +	sa.gfp_mask = GFP_ATOMIC;
-+	sa.cookie = cookie;
 +	sa.operation = "change_profile";
 +
 +repeat:
@@ -1104,7 +1096,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +	memset(&sa, 0, sizeof(sa));
 +	sa.gfp_mask = GFP_ATOMIC;
-+	sa.cookie = cookie;
 +	sa.operation = "change_hat";
 +
 +repeat:

@@ -648,7 +648,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		if (current != task)
 +			return -EACCES;
 +		error = aa_setprocattr_changeprofile(args);
-+	} else if (strcmp(command, "setprofile")) {
++	} else if (strcmp(command, "setprofile") == 0) {
 +		struct aa_profile *profile;
 +
 +		/* Only an unconfined process with admin capabilities
