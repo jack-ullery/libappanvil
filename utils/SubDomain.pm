@@ -663,6 +663,8 @@ sub get_profile {
 
     my $inactive_profile = get_inactive_profile($fqdbin);
     if ( defined $inactive_profile && $inactive_profile ne "" ) {
+        # set the profile to complain mode
+        $inactive_profile->{$fqdbin}{$fqdbin}{flags} = "complain";
         push @profile_list,
             {
               "username"     => gettext( "Inactive local profile for ") .
@@ -1359,7 +1361,6 @@ sub handlechildren {
                     $defaulthat = $cfg->{defaulthat}{$hatglob}
                       if $profile =~ /$hatglob/;
                 }
-
                 # keep track of previous answers for this run...
                 my $context = $profile;
                 $context .= " -> ^$uhat";
@@ -1435,6 +1436,7 @@ sub handlechildren {
                 # a "ix" Path dialog for directories
                 my $do_execute  = 0;
                 my $exec_target = $detail;
+
                 if ($mode =~ s/x//g) {
                     if (-d $exec_target) {
                         $mode .= "ix";
@@ -1682,6 +1684,10 @@ sub handlechildren {
 
 sub add_to_tree ($@) {
     my ($pid, $type, @event) = @_;
+    my $eventmsg = Data::Dumper->Dump([@event], [qw(*event)]);
+    $eventmsg =~ s/\n/ /g;
+    $DEBUGGING && debug " ADD_TO_TREE: pid [$pid] type [$type] event [ $eventmsg
+    ]";
 
     unless (exists $pid{$pid}) {
         my $arrayref = [];
@@ -1692,11 +1698,183 @@ sub add_to_tree ($@) {
     push @{ $pid{$pid} }, [ $type, $pid, @event ];
 }
 
+
+sub parse_audit_record ($) {
+    $_ = shift;
+    return if ( ! $_ );
+    my $e = { };
+
+    # first pull out any name="blah blah blah" strings
+    s/\b(\w+)="([^"]+)"\s*/$e->{$1} = $2; "";/ge;
+    #s/\b(\w+)='([^"]+)'\s*/$e->{$1} = $2; "";/ge;
+
+    # yank off any remaining name=value pairs
+    s/\b(\w+)=(\S+)\)\'\s*/$e->{$1} = $2; "";/ge;
+    s/\b(\w+)=(\S+)\,\s*/$e->{$1} = $2; "";/ge;
+    s/\b(\w+)=(\S+)\s*/$e->{$1} = $2; "";/ge;
+
+    s/\s$//;
+
+    for my $key (keys %$e) {
+        # if we have an even number of hex characters...
+        if ($key eq "name" && $e->{$key} =~ /^([0-9a-f]{2})+$/i) {
+            # unpack the hex string.
+            # NOTE: this might need unpack("h", ...) instead of "H"
+            $e->{$key} = pack("H*", $e->{$key});
+        }
+    }
+    return $e;
+}
+
+sub add_audit_event_to_tree ( $$ ) {
+    my ($e,$FD) = @_;
+
+    my $sdmode = "NONE";
+    if ( $e->{type} =~ /(UNKNOWN\[1501\]|APPARMOR_AUDIT)/ ) {
+        $sdmode = "AUDIT";
+    } elsif ( $e->{type} =~ /(UNKNOWN\[1502\]|APPARMOR_ALLOWED)/ ) {
+        $sdmode = "PERMITTING";
+    } elsif ( $e->{type} =~ /(UNKNOWN\[1503\]|APPARMOR_DENIED)/ ) {
+        $sdmode = "REJECTING";
+    } elsif ( $e->{type} =~ /(UNKNOWN\[1504\]|APPARMOR_HINT)/ ) {
+        $sdmode = "HINT";
+    } elsif ( $e->{type} =~ /(UNKNOWN\[1505\]|APPARMOR_STATUS)/ ) {
+        $sdmode = "STATUS";
+        return;
+    } elsif ( $e->{type} =~ /(UNKNOWN\[1506\]|APPARMOR_ERROR)/ ) {
+        $sdmode = "ERROR";
+        return;
+    } else {
+        $sdmode = "UNKNOWN_SD_MODE";
+        return;
+    }
+
+    my ($profile, $hat);
+    ($profile, $hat) = split /\/\//, $e->{profile};
+    if ( $e->{operation} eq "change_hat" ) {
+      ($profile, $hat) = split /\/\//, $e->{name};
+    }
+    $hat = $profile if ( !$hat );
+    my @path = split(/\//, $profile);
+    my $prog = pop @path;
+
+
+    if ($e->{operation} eq "exec") {
+        add_to_tree( $e->{pid},
+                     "exec",
+                     $profile,
+                     $hat,
+                     $prog,
+                     $sdmode,
+                     $e->{denied_mask},
+                     $e->{name}
+                   );
+    } elsif ($e->{operation} =~ "file_") {
+        add_to_tree( $e->{pid},
+                     "path",
+                     $profile,
+                     $hat,
+                     $prog,
+                     $sdmode,
+                     $e->{denied_mask},
+                     $e->{name},
+                   );
+    } elsif ($e->{operation} eq "capable") {
+        add_to_tree( $e->{pid},
+                     "capability",
+                     $profile,
+                     $hat,
+                     $prog,
+                     $sdmode,
+                     $e->{name}
+                   );
+    } elsif ($e->{operation} eq "xattr" ||
+             $e->{operation} eq "setattr") {
+        add_to_tree( $e->{pid},
+                     "path",
+                     $profile,
+                     $hat,
+                     $prog,
+                     $sdmode,
+                     $e->{denied_mask},
+                     $e->{name}
+                    );
+        add_to_tree( $e->{pid},
+                     "path",
+                     $profile,
+                     $hat,
+                     $prog,
+                     $sdmode,
+                     $e->{denied_mask},
+                     $e->{name}
+                    );
+    } elsif ($e->{operation} =~ "inode_") {
+        if ( $e->{operation} eq "inode_permission" &&
+             $e->{denied_mask} eq "x"  &&
+             $sdmode eq "PERMITTING" ) {
+             my $entry = "";
+             do {
+               my $ent = <$FD>;
+               $entry = parse_audit_record( $ent ) if ( $ent );
+             } until ((!$entry) || ( $entry->{type} =~
+                      /(APPARMOR_|UNKNOWN\[150[1-6]\])/));
+             if ( $entry && $entry->{info} &&
+                  $entry->{info} eq "set profile" ) {
+                 add_to_tree( $e->{pid},
+                              "exec",
+                              $profile,
+                              $hat,
+                              $prog,
+                              $sdmode,
+                              $e->{denied_mask},
+                              $e->{name}
+                            );
+             } else {
+                 add_to_tree( $e->{pid},
+                              "path",
+                              $profile,
+                              $hat,
+                              $prog,
+                              $sdmode,
+                              $e->{denied_mask},
+                              $e->{name}
+                            );
+             }
+        } else {
+             add_to_tree( $e->{pid},
+                          "path",
+                          $profile,
+                          $hat,
+                          $prog,
+                          $sdmode,
+                          $e->{denied_mask},
+                          $e->{name}
+                        );
+        }
+    } elsif ($e->{operation} eq "sysctl") {
+        add_to_tree( $e->{pid},
+                     "path",
+                     $profile,
+                     $hat,
+                     $prog,
+                     $sdmode,
+                     $e->{denied_mask},
+                     $e->{name}
+                   );
+    } elsif ($e->{operation} eq "change_hat") {
+        add_to_tree($e->{pid}, "unknown_hat", $profile, $hat, $sdmode, $hat);
+    } else {
+        $DEBUGGING && debug "UNHANDLED: $_";
+    }
+}
+
+
 sub read_log {
     my $logmark = shift;
     my $seenmark = $logmark ? 0 : 1;
     my $stuffed = undef;
     my $last;
+    my $event_type;
 
     # okay, done loading the previous profiles, get on to the good stuff...
     open(LOG, $filename)
@@ -1710,211 +1888,237 @@ sub read_log {
 
         next unless $seenmark;
 
-        # all we care about is subdomain messages
-        next
-          unless (/^.* audit\(/
+        # all we care about is apparmor messages
+        if (/^.* audit\(/
             || /type=(APPARMOR|UNKNOWN\[1500\]) msg=audit\([\d\.\:]+\):/
-            || /SubDomain/);
+            || /SubDomain/) {
+            # workaround for syslog uglyness.
+            if (s/(PERMITTING|REJECTING)-SYSLOGFIX/$1/) {
+                s/%%/%/g;
+            }
 
-        # workaround for syslog uglyness.
-        if (s/(PERMITTING|REJECTING)-SYSLOGFIX/$1/) {
-            s/%%/%/g;
-        }
+            if (m/LOGPROF-HINT unknown_hat (\S+) pid=(\d+) profile=(.+) active=(.+)/) {
+                my ($uhat, $pid, $profile, $hat) = ($1, $2, $3, $4);
 
-        if (m/LOGPROF-HINT unknown_hat (\S+) pid=(\d+) profile=(.+) active=(.+)/) {
-            my ($uhat, $pid, $profile, $hat) = ($1, $2, $3, $4);
+                $last = $&;
 
-            $last = $&;
+                # we want to ignore entries for profiles that don't exist
+                # they're most likely broken entries or old entries for
+                # deleted profiles
+                next
+                  if ( ($profile ne 'null-complain-profile')
+                    && (!profile_exists($profile)));
 
-            # we want to ignore entries for profiles that don't exist - they're
-            # most likely broken entries or old entries for deleted profiles
-            next
-              if ( ($profile ne 'null-complain-profile')
-                && (!profile_exists($profile)));
+                add_to_tree($pid, "unknown_hat", $profile, $hat,
+                            "PERMITTING", $uhat);
+            } elsif (m/LOGPROF-HINT (unknown_profile|missing_mandatory_profile) image=(.+) pid=(\d+) profile=(.+) active=(.+)/) {
+                my ($image, $pid, $profile, $hat) = ($2, $3, $4, $5);
 
-            add_to_tree($pid, "unknown_hat", $profile, $hat, "PERMITTING", $uhat);
-        } elsif (m/LOGPROF-HINT (unknown_profile|missing_mandatory_profile) image=(.+) pid=(\d+) profile=(.+) active=(.+)/) {
-            my ($image, $pid, $profile, $hat) = ($2, $3, $4, $5);
+                next if $last =~ /PERMITTING x access to $image/;
+                $last = $&;
 
-            next if $last =~ /PERMITTING x access to $image/;
-            $last = $&;
+                # we want to ignore entries for profiles that don't exist
+                # they're most likely broken entries or old entries for
+                # deleted profiles
+                next
+                  if ( ($profile ne 'null-complain-profile')
+                    && (!profile_exists($profile)));
 
-            # we want to ignore entries for profiles that don't exist - they're
-            # most likely broken entries or old entries for deleted profiles
-            next
-              if ( ($profile ne 'null-complain-profile')
-                && (!profile_exists($profile)));
+                add_to_tree($pid, "exec", $profile, $hat, "HINT", "PERMITTING", "x", $image);
 
-            add_to_tree($pid, "exec", $profile, $hat, "HINT", "PERMITTING", "x", $image);
+            } elsif (m/(PERMITTING|REJECTING) (\S+) access (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
+                my ($sdmode, $mode, $detail, $prog, $pid, $profile, $hat) =
+                   ($1, $2, $3, $4, $5, $6, $7);
 
-        } elsif (m/(PERMITTING|REJECTING) (\S+) access (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
-            my ($sdmode, $mode, $detail, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
+                my $domainchange = "nochange";
+                if ($mode =~ /x/) {
 
-            my $domainchange = "nochange";
-            if ($mode =~ /x/) {
+                    # we need to try to check if we're doing a domain transition
+                    if ($sdmode eq "PERMITTING") {
+                        do {
+                            $stuffed = <LOG>;
+                        } until ((! $stuffed) || ($stuffed =~ /AppArmor|audit/));
 
-                # we need to try to check if we're doing a domain transition
-                if ($sdmode eq "PERMITTING") {
-                    do {
-                        $stuffed = <LOG>;
-                    } until ((! $stuffed) || ($stuffed =~ /AppArmor|audit/));
-
-                    if ($stuffed && ($stuffed =~ m/changing_profile/)) {
-                        $domainchange = "change";
-                        $stuffed      = undef;
+                        if ($stuffed && ($stuffed =~ m/changing_profile/)) {
+                            $domainchange = "change";
+                            $stuffed      = undef;
+                        }
                     }
+                } else {
+
+                    # we want to ignore duplicates for things other than executes...
+                    next if $seen{$&};
+                    $seen{$&} = 1;
                 }
-            } else {
+
+                $last = $&;
+
+                # we want to ignore entries for profiles that don't exist
+                # they're most likely broken entries or old entries for
+                # deleted profiles
+                if (   ($profile ne 'null-complain-profile')
+                    && (!profile_exists($profile)))
+                {
+                    $stuffed = undef;
+                    next;
+                }
+
+                # currently no way to stick pipe mediation in a profile, ignore
+                # any messages like this
+                next if $detail =~ /to pipe:/;
+
+                # strip out extra extended attribute info since we don't
+                # currently have a way to specify it in the profile and
+                # instead just need to provide the access to the base filename
+                $detail =~ s/\s+extended attribute \S+//;
+
+                # kerberos code checks to see if the krb5.conf file is world
+                # writable in a stupid way so we'll ignore any w accesses to
+                # krb5.conf
+                next if (($detail eq "to /etc/krb5.conf") && contains($mode, "w"));
+
+                # strip off the (deleted) tag that gets added if it's a
+                # deleted file
+                $detail =~ s/\s+\(deleted\)$//;
+
+    #            next if (($detail =~ /to \/lib\/ld-/) && ($mode =~ /x/));
+
+                $detail =~ s/^to\s+//;
+
+                if ($domainchange eq "change") {
+                    add_to_tree($pid, "exec", $profile, $hat, $prog,
+                                $sdmode, $mode, $detail);
+                } else {
+                    add_to_tree($pid, "path", $profile, $hat, $prog,
+                                $sdmode, $mode, $detail);
+                }
+
+            } elsif (m/(PERMITTING|REJECTING) (?:mk|rm)dir on (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
+                my ($sdmode, $path, $prog, $pid, $profile, $hat) =
+                   ($1, $2, $3, $4, $5, $6);
+
+                # we want to ignore duplicates for things other than executes...
+                next if $seen{$&}++;
+
+                $last = $&;
+
+                # we want to ignore entries for profiles that don't exist
+                # they're most likely broken entries or old entries for
+                # deleted profiles
+                next
+                  if ( ($profile ne 'null-complain-profile')
+                    && (!profile_exists($profile)));
+
+                add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode,
+                            "w", $path);
+
+            } elsif (m/(PERMITTING|REJECTING) xattr (\S+) on (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
+                my ($sdmode, $xattr_op, $path, $prog, $pid, $profile, $hat) =
+                   ($1, $2, $3, $4, $5, $6, $7);
+
+                # we want to ignore duplicates for things other than executes...
+                next if $seen{$&}++;
+
+                $last = $&;
+
+                # we want to ignore entries for profiles that don't exist
+                # they're most likely broken entries or old entries for
+                # deleted profiles
+                next
+                  if ( ($profile ne 'null-complain-profile')
+                    && (!profile_exists($profile)));
+
+                my $xattrmode;
+                if ($xattr_op eq "get" || $xattr_op eq "list") {
+                    $xattrmode = "r";
+                } elsif ($xattr_op eq "set" || $xattr_op eq "remove") {
+                    $xattrmode = "w";
+                }
+
+                if ($xattrmode) {
+                    add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode,
+                                $xattrmode, $path);
+                }
+
+            } elsif (m/(PERMITTING|REJECTING) attribute \((.*?)\) change to (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
+                my ($sdmode, $change, $path, $prog, $pid, $profile, $hat) =
+                   ($1, $2, $3, $4, $5, $6, $7);
 
                 # we want to ignore duplicates for things other than executes...
                 next if $seen{$&};
                 $seen{$&} = 1;
-            }
 
-            $last = $&;
+                $last = $&;
 
-            # we want to ignore entries for profiles that don't exist - they're
-            # most likely broken entries or old entries for deleted profiles
-            if (   ($profile ne 'null-complain-profile')
-                && (!profile_exists($profile)))
+                # we want to ignore entries for profiles that don't exist
+                # they're most likely broken entries or old entries for
+                # deleted profiles
+                next
+                  if ( ($profile ne 'null-complain-profile')
+                    && (!profile_exists($profile)));
+
+                # kerberos code checks to see if the krb5.conf file is world
+                # writable in a stupid way so we'll ignore any w accesses to
+                # krb5.conf
+                next if $path eq "/etc/krb5.conf";
+
+                add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode,
+                            "w", $path);
+
+            } elsif (m/(PERMITTING|REJECTING) access to capability '(\S+)' \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
+                my ($sdmode, $capability, $prog, $pid, $profile, $hat) =
+                   ($1, $2, $3, $4, $5, $6);
+
+                next if $seen{$&};
+
+                $seen{$&} = 1;
+                $last = $&;
+
+                # we want to ignore entries for profiles that don't exist - they're
+                # most likely broken entries or old entries for deleted profiles
+                next
+                  if ( ($profile ne 'null-complain-profile')
+                    && (!profile_exists($profile)));
+
+                add_to_tree($pid, "capability", $profile, $hat, $prog,
+                            $sdmode, $capability);
+
+            } elsif (m/Fork parent (\d+) child (\d+) profile (.+) active (.+)/
+                || m/LOGPROF-HINT fork pid=(\d+) child=(\d+) profile=(.+) active=(.+)/
+                || m/LOGPROF-HINT fork pid=(\d+) child=(\d+)/)
             {
-                $stuffed = undef;
-                next;
-            }
+                my ($parent, $child, $profile, $hat) = ($1, $2, $3, $4);
 
-            # currently no way to stick pipe mediation in a profile, ignore
-            # any messages like this
-            next if $detail =~ /to pipe:/;
+                $profile ||= "null-complain-profile";
+                $hat     ||= "null-complain-profile";
 
-            # strip out extra extended attribute info since we don't currently
-            # have a way to specify it in the profile and instead just need to
-            # provide the access to the base filename
-            $detail =~ s/\s+extended attribute \S+//;
+                $last = $&;
 
-            # kerberos code checks to see if the krb5.conf file is world
-            # writable in a stupid way so we'll ignore any w accesses to
-            # krb5.conf
-            next if (($detail eq "to /etc/krb5.conf") && contains($mode, "w"));
+                # we want to ignore entries for profiles that don't exist
+                # they're  most likely broken entries or old entries for
+                # deleted profiles
+                next
+                  if ( ($profile ne 'null-complain-profile')
+                    && (!profile_exists($profile)));
 
-            # strip off the (deleted) tag that gets added if it's a deleted file
-            $detail =~ s/\s+\(deleted\)$//;
-
-#            next if (($detail =~ /to \/lib\/ld-/) && ($mode =~ /x/));
-
-            $detail =~ s/^to\s+//;
-
-            if ($domainchange eq "change") {
-                add_to_tree($pid, "exec", $profile, $hat, $prog, $sdmode, $mode, $detail);
+                my $arrayref = [];
+                if (exists $pid{$parent}) {
+                    push @{ $pid{$parent} }, $arrayref;
+                } else {
+                    push @log, $arrayref;
+                }
+                $pid{$child} = $arrayref;
+                push @{$arrayref}, [ "fork", $child, $profile, $hat ];
             } else {
-                add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode, $mode, $detail);
+                $DEBUGGING && debug "UNHANDLED: $_";
             }
-
-        } elsif (m/(PERMITTING|REJECTING) (?:mk|rm)dir on (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
-            my ($sdmode, $path, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6);
-
-            # we want to ignore duplicates for things other than executes...
-            next if $seen{$&}++;
-
-            $last = $&;
-
-            # we want to ignore entries for profiles that don't exist - they're
-            # most likely broken entries or old entries for deleted profiles
-            next
-              if ( ($profile ne 'null-complain-profile')
-                && (!profile_exists($profile)));
-
-            add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode, "w", $path);
-
-        } elsif (m/(PERMITTING|REJECTING) xattr (\S+) on (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
-            my ($sdmode, $xattr_op, $path, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
-
-            # we want to ignore duplicates for things other than executes...
-            next if $seen{$&}++;
-
-            $last = $&;
-
-            # we want to ignore entries for profiles that don't exist - they're
-            # most likely broken entries or old entries for deleted profiles
-            next
-              if ( ($profile ne 'null-complain-profile')
-                && (!profile_exists($profile)));
-
-            my $xattrmode;
-            if ($xattr_op eq "get" || $xattr_op eq "list") {
-                $xattrmode = "r";
-            } elsif ($xattr_op eq "set" || $xattr_op eq "remove") {
-                $xattrmode = "w";
-            }
-
-            if ($xattrmode) {
-                add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode, $xattrmode, $path);
-            }
-
-        } elsif (m/(PERMITTING|REJECTING) attribute \((.*?)\) change to (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
-            my ($sdmode, $change, $path, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
-
-            # we want to ignore duplicates for things other than executes...
-            next if $seen{$&};
-            $seen{$&} = 1;
-
-            $last = $&;
-
-            # we want to ignore entries for profiles that don't exist - they're
-            # most likely broken entries or old entries for deleted profiles
-            next
-              if ( ($profile ne 'null-complain-profile')
-                && (!profile_exists($profile)));
-
-            # kerberos code checks to see if the krb5.conf file is world
-            # writable in a stupid way so we'll ignore any w accesses to
-            # krb5.conf
-            next if $path eq "/etc/krb5.conf";
-
-            add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode, "w", $path);
-
-        } elsif (m/(PERMITTING|REJECTING) access to capability '(\S+)' \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
-            my ($sdmode, $capability, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6);
-
-            next if $seen{$&};
-
-            $seen{$&} = 1;
-            $last = $&;
-
-            # we want to ignore entries for profiles that don't exist - they're
-            # most likely broken entries or old entries for deleted profiles
-            next
-              if ( ($profile ne 'null-complain-profile')
-                && (!profile_exists($profile)));
-
-            add_to_tree($pid, "capability", $profile, $hat, $prog, $sdmode, $capability);
-
-        } elsif (m/Fork parent (\d+) child (\d+) profile (.+) active (.+)/
-            || m/LOGPROF-HINT fork pid=(\d+) child=(\d+) profile=(.+) active=(.+)/
-            || m/LOGPROF-HINT fork pid=(\d+) child=(\d+)/)
-        {
-            my ($parent, $child, $profile, $hat) = ($1, $2, $3, $4);
-
-            $profile ||= "null-complain-profile";
-            $hat     ||= "null-complain-profile";
-
-            $last = $&;
-
-            # we want to ignore entries for profiles that don't exist - they're
-            # most likely broken entries or old entries for deleted profiles
-            next
-              if ( ($profile ne 'null-complain-profile')
-                && (!profile_exists($profile)));
-
-            my $arrayref = [];
-            if (exists $pid{$parent}) {
-                push @{ $pid{$parent} }, $arrayref;
-            } else {
-                push @log, $arrayref;
-            }
-            $pid{$child} = $arrayref;
-            push @{$arrayref}, [ "fork", $child, $profile, $hat ];
+        } elsif (/UNKNOWN\[150[1-6]\]|APPARMOR_(AUDIT|ALLOWED|DENIED|HINT|STATUS|ERROR)/) {
+            my $event = parse_audit_record($_);
+            add_audit_event_to_tree( $event, *LOG );
+            next;
         } else {
-            $DEBUGGING && debug "UNHANDLED: $_";
+            # not a known apparmor log event
+            next;
         }
     }
     close(LOG);
@@ -2378,12 +2582,24 @@ sub ask_the_questions {
                                 # do globbing if they don't have an include
                                 # selected
                                 my $newpath = $options[$selected];
+                                chomp $newpath ;
                                 unless ($newpath =~ /^#include/) {
-                                    # do we collapse to /* or /**?
-                                    if ($newpath =~ m/\/\*{1,2}$/) {
-                                        $newpath =~ s/\/[^\/]+\/\*{1,2}$/\/\*\*/;
+                                    # is this entry directory specific
+                                    if ( $newpath =~ m/\/$/ ) {
+                                        # do we collapse to /* or /**?
+                                        if ($newpath =~ m/\/\*{1,2}\/$/) {
+                                            $newpath =~
+                                            s/\/[^\/]+\/\*{1,2}\/$/\/\*\*\//;
+                                        } else {
+                                            $newpath =~ s/\/[^\/]+\/$/\/\*\//;
+                                        }
                                     } else {
-                                        $newpath =~ s/\/[^\/]+$/\/\*/;
+                                        # do we collapse to /* or /**?
+                                        if ($newpath =~ m/\/\*{1,2}$/) {
+                                            $newpath =~ s/\/[^\/]+\/\*{1,2}$/\/\*\*/;
+                                        } else {
+                                            $newpath =~ s/\/[^\/]+$/\/\*/;
+                                        }
                                     }
                                     if ($newpath ne $selected) {
                                         push @options, $newpath;
@@ -2707,6 +2923,17 @@ sub do_logprof_pass {
 sub save_profiles {
     # make sure the profile changes we've made are saved to disk...
     my @changed = sort keys %changed;
+    #
+    # first make sure that profiles in %changed are active (or actual profiles
+    # in %sd) - this is to handle the sloppiness of setting profiles as changed
+    # when they are parsed in the case of legacy hat code that we want to write
+    # out in an updated format
+    foreach  my $profile_name ( keys %changed ) {
+        if ( ! is_active_profile( $profile_name ) ) {
+            delete $changed{ $profile_name };
+        }
+    }
+    @changed = sort keys %changed;
 
     if (@changed) {
         if ($UI_Mode eq "yast") {
@@ -2999,7 +3226,6 @@ sub set_profiles_local_only {
     for my $profile (@profiles) {
          $sd{$profile}{$profile}{repo}{neversubmit} = 1;
          writeprofile($profile);
-         $DEBUGGING && debug("set_profiles_local_only: [" . $profile . "]");
     }
 }
 
@@ -3383,7 +3609,9 @@ sub attach_profile_data {
 sub parse_profile_data {
     my ($data, $file) = @_;
 
-    my ($profile_data, $profile, $hat, $in_contained_hat, $repo_data);
+
+    my ($profile_data, $profile, $hat, $in_contained_hat, $repo_data,
+        @parsed_profiles);
     my $initial_comment = "";
     for (split(/\n/, $data)) {
         chomp;
@@ -3406,17 +3634,11 @@ sub parse_profile_data {
             $in_contained_hat = 0;
 
             # hat is same as profile name if we're not in a hat
-            ($profile, $hat) = split /\^/, $profile;
+            ($profile, $hat) = split /\/\//, $profile;
 
             # deal with whitespace in profile and hat names.
             $profile = $1 if $profile =~ /^"(.+)"$/;
             $hat     = $1 if $hat && $hat =~ /^"(.+)"$/;
-
-            # if we run into old-style hat declarations mark the profile as
-            # changed so we'll write it out as new-style
-            if ($hat && $hat ne $profile) {
-                $changed{$profile} = 1;
-            }
 
             $hat ||= $profile;
 
@@ -3427,6 +3649,7 @@ sub parse_profile_data {
             }
 
             $profile_data->{$profile}{$hat}{netdomain} = [];
+            $profile_data->{$profile}{$hat}{path} = { };
 
             # store off initial comment if they have one
             $profile_data->{$profile}{$hat}{initial_comment} = $initial_comment
@@ -3452,27 +3675,12 @@ sub parse_profile_data {
                 $hat = $profile;
                 $in_contained_hat = 0;
             } else {
-
-                # if we're finishing a profile, make sure that any required
-                # infrastructure hats for this changehat application exist
-                for my $hatglob (keys %{$cfg->{required_hats}}) {
-                    if ($profile =~ /$hatglob/) {
-                        for my $hat (split(/\s+/, $cfg->{required_hats}{$hatglob})) {
-                            unless ($profile_data->{$profile}{$hat}) {
-                                $profile_data->{$profile}{$hat} = { };
-                                # if we had to auto-instantiate a hat,
-                                # we want to write out
-                                # an updated version of the profile
-                                $changed{$profile} = 1;
-                            }
-                        }
-                    }
-                }
-
+                push @parsed_profiles, $profile;
                 # mark that we're outside of a profile now...
                 $profile = undef;
-                $initial_comment = "";
             }
+
+            $initial_comment = "";
 
         } elsif (m/^\s*capability\s+(\S+)\s*,\s*$/) {  # capability entry
             if (not $profile) {
@@ -3547,7 +3755,11 @@ sub parse_profile_data {
             # keep track of netdomain entries...
             push @{$profile_data->{$profile}{$hat}{netdomain}}, $_;
 
-        } elsif (m/^\s*\^(\"?.+?)\s+(flags=\(.+\)\s+)*\{\s*$/) { # start of a hat
+        } elsif (m/^\s*\^(\"?.+?)\s+(flags=\(.+\)\s+)*\{\s*$/) {
+            # start of a deprecated syntax hat definition
+            # read in and mark as changed so that will be written out in the new
+            # format
+
             # if we hit the start of a contained hat when we're not in a profile
             # something is wrong...
             if (not $profile) {
@@ -3576,6 +3788,9 @@ sub parse_profile_data {
             $profile_data->{$profile}{$hat}{initial_comment} = $initial_comment
               if $initial_comment;
             $initial_comment = "";
+            # mark as changed so the profile will always be written out
+            $changed{$profile} = 1;
+
 
         } elsif (/^\s*\#/) {
             # we only currently handle initial comments
@@ -3594,7 +3809,27 @@ sub parse_profile_data {
             }
         } else {
             # we hit something we don't understand in a profile...
-            die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
+            die sprintf(gettext('%s contains syntax errors. Line [%s]'), $file, $_) . "\n";
+        }
+    }
+
+    #
+    # Cleanup : add required hats if not present in the
+    #           parsed profiles
+    #
+    for my $hatglob (keys %{$cfg->{required_hats}}) {
+        for my $parsed_profile  ( sort @parsed_profiles )  {
+            if ($parsed_profile =~ /$hatglob/) {
+                for my $hat (split(/\s+/, $cfg->{required_hats}{$hatglob})) {
+                    unless ($profile_data->{$parsed_profile}{$hat}) {
+                        $profile_data->{$parsed_profile}{$hat} = { };
+                        # if we had to auto-instantiate a hat,
+                        # we want to write out
+                        # an updated version of the profile
+                        $changed{$parsed_profile} = 1;
+                    }
+                }
+            }
         }
     }
 
@@ -3604,6 +3839,16 @@ sub parse_profile_data {
     }
 
     return $profile_data;
+}
+
+
+sub is_active_profile ($) {
+    my $pname = shift;
+    if ( $sd{$pname} ) {
+        return 1;
+    }  else {
+        return 0;
+    }
 }
 
 sub escape ($) {
@@ -3713,11 +3958,12 @@ sub writepiece ($$) {
     push @data, writecapabilities($profile_data->{$name});
     push @data, writenetdomain($profile_data->{$name});
     push @data, writepaths($profile_data->{$name});
+    push @data, "}";
 
     for my $hat (grep { $_ ne $name } sort keys %{$profile_data}) {
         push @data, "";
         push @data, map { "  $_" } writeheader($profile_data->{$hat},
-                                               "^$hat",
+                                               "$name//$hat",
                                                1);
         push @data, map { "  $_" } writeincludes($profile_data->{$hat});
         push @data, map { "  $_" } writecapabilities($profile_data->{$hat});
@@ -3726,7 +3972,6 @@ sub writepiece ($$) {
         push @data, "  }";
     }
 
-    push @data, "}";
 
     return @data;
 }
