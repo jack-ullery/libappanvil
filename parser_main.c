@@ -341,11 +341,13 @@ int have_enough_privilege(void)
    command line, or the kernel supplied a match string */
 static void get_match_string(void) {
 
+	FILE *ms = NULL;
+
 	/* has process_args() already assigned a match string? */
 	if (match_string)
 		goto out;
 
-	FILE *ms = fopen(MATCH_STRING, "r");
+	ms = fopen(MATCH_STRING, "r");
 	if (!ms)
 		return;
 
