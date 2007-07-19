@@ -30,6 +30,7 @@
   /var/run/.nscd_socket wl,
   /var/run/nscd/ r,
   /var/run/nscd/db* wl,
+  /var/run/nscd/services w,
   /var/run/nscd/socket wl,
   /var/run/nscd/{passwd,group} w,
   /var/run/{nscd/,}nscd.pid rwl,
