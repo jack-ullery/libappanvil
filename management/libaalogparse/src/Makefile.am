@@ -4,7 +4,7 @@ BUILT_SOURCES = grammar.h scanner.h
 AM_YFLAGS = -d -p libaalogparse_
 
 scanner.h:
-	($LEX) scanner.l
+	$(LEX) scanner.l
 
 libaalogparsedir = $(includedir)/aalogparse
 
