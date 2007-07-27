@@ -171,6 +171,7 @@ void free_value_list(struct value_list *list);
 	unsigned short (*port)[2];
 	int action;
 	struct flagval flags;
+	int fmode;
 	unsigned int cap;
 	unsigned int allowed_protocol;
 	char *set_var;
@@ -182,6 +183,7 @@ void free_value_list(struct value_list *list);
 
 %type <id> 	TOK_ID
 %type <mode> 	TOK_MODE
+%type <fmode>   file_mode
 %type <cod> 	profile
 %type <cod>	rules
 %type <cod>	hat
@@ -560,31 +562,29 @@ expr:	TOK_DEFINED TOK_BOOL_VAR
 		free($2);
 	}
 
-rule:	TOK_ID TOK_MODE TOK_END_OF_RULE
+rule:	TOK_ID file_mode TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 		PDEBUG("Matched: tok_id (%s) tok_mode (%s)\n", $1, $2);
-		entry = new_entry($1, parse_mode($2));
+		entry = new_entry($1, $2);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("rule.entry: (%s)\n", entry->name);
-		free($2);
 		$$ = entry;
 	};
 
-rule:	TOK_SET_VAR TOK_MODE TOK_END_OF_RULE
+rule:	TOK_SET_VAR file_mode TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 		PDEBUG("Matched: tok_id (%s) tok_mode (%s)\n", $1, $2);
-		entry = new_entry($1, parse_mode($2));
+		entry = new_entry($1, $2);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("rule.entry: (%s)\n", entry->name);
-		free($2);
 		$$ = entry;
 	};
 
-rule:  TOK_ID TOK_MODE TOK_ID
+rule:  TOK_ID file_mode TOK_ID
 	{
 		/* Oopsie, we appear to be missing an EOL marker. If we
 		 * were *smart*, we could work around it. Since we're
@@ -688,6 +688,11 @@ action:		TOK_TCP_CONN { $$ = AA_TCP_CONNECT; }
 	|	TOK_UDP_RECV { $$ = AA_UDP_RECEIVE; }
 	;
 	
+file_mode: TOK_MODE
+	{
+		$$ = parse_mode($1);
+		free($1);
+	}
 
 interface:	/* nothing, no interface specified */
 	{
