@@ -176,6 +176,8 @@ enum sd_code {
 	SD_STRUCTEND,
 	SD_LIST,
 	SD_LISTEND,
+	SD_ARRAY,
+	SD_ARRAYEND,
 	SD_OFFSET
 };
 
@@ -392,6 +394,26 @@ inline int sd_write_structend(sd_serialize *p)
 	return 1;
 }
 
+inline int sd_write_array(sd_serialize *p, char *name, int size)
+{
+	u16 tmp;
+	if (!sd_write_name(p, name))
+		return 0;
+	if (!sd_prepare_write(p, SD_ARRAY, 2))
+		return 0;
+	tmp = cpu_to_le16(size);
+	memcpy(p->pos, &tmp, sizeof(tmp));
+	sd_inc(p, sizeof(tmp));
+	return 1;
+}
+
+inline int sd_write_arrayend(sd_serialize *p)
+{
+	if (!sd_prepare_write(p, SD_ARRAYEND, 0))
+		return 0;
+	return 1;
+}
+
 inline int sd_write_list(sd_serialize *p, char *name)
 {
 	if (!sd_write_name(p, name))
@@ -577,6 +599,18 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 		return 0;
 	if (!sd_write32(p, profile->capabilities))
 		return 0;
+
+	if (profile->network_allowed) {
+		int i;
+		if (!sd_write_array(p, "net_allowed_af", AF_MAX))
+			return 0;
+		for (i = 0; i < AF_MAX; i++) {
+			if (!sd_write16(p, profile->network_allowed[i]))
+				return 0;
+		}
+		if (!sd_write_arrayend(p))
+			return 0;
+	}
 
 	/* either have a single dfa or lists of different entry types */
 	if (regex_type == AARE_DFA) {

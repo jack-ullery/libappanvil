@@ -95,6 +95,7 @@ static struct keyword_table keyword_table[] = {
 	{"udp_receive",		TOK_UDP_RECV},
 	{"to",			TOK_TO},
 	{"from",		TOK_FROM},
+	{"network",		TOK_NETWORK},
 	/* misc keywords */
 	{"if",			TOK_IF},
 	{"else",		TOK_ELSE},
@@ -121,6 +122,154 @@ int get_keyword_token(const char *keyword)
 	PDEBUG("Unable to find keyword %s\n", keyword);
 	return -1;
 }
+
+static struct keyword_table address_family[] = {
+/*	{"unix",	AF_UNIX},
+	{"local",	AF_LOCAL},	*/
+	{"inet",	AF_INET},
+/*	{"ax25",	AF_AX25},
+	{"ipx",		AF_IPX},
+	{"appletalk",	AF_APPLETALK},
+	{"netrom",	AF_NETROM},
+	{"bridge",	AF_BRIDGE},
+	{"atmpvc",	AF_ATMPVC},
+	{"x25",		AF_X25}, */
+	{"inet6",	AF_INET6},
+/*	{"rose",	AF_ROSE},
+	{"decnet",	AF_DECnet},
+	{"netbeui",	AF_NETBEUI},
+	{"security",	AF_SECURITY},
+	{"key",		AF_KEY},
+	{"netlink",	AF_NETLINK},
+	{"route",	AF_ROUTE},
+	{"packet",	AF_PACKET},
+	{"ash",		AF_ASH},
+	{"econet",	AF_ECONET},
+	{"atmsvc",	AF_ATMSVC},
+	{"sna",		AF_SNA},
+	{"irda",	AF_IRDA},
+	{"pppox",	AF_PPPOX},
+	{"wanpipe",	AF_WANPIPE},
+	{"llc",		AF_LLC},
+	{"tipc",	AF_TIPC},
+	{"bluetooth",	AF_BLUETOOTH},
+	{"iucv",	AF_IUCV},
+	{"rxrpc",	AF_RXRPC}, */
+	/* terminate */
+	{NULL, 0}
+};
+
+struct network_tuple {
+	char *family_name;
+	unsigned int family;
+	char *type_name;
+	unsigned int type;
+	char *protocol_name;
+	unsigned int protocol;
+};
+
+/* FIXME: currently just treating as a bit mask this will have to change
+ * set up a table of mappings, there can be several mappings for a
+ * given match.
+ * currently the mapping does not set the protocol for stream/dgram to
+ * anything other than 0.
+ *   network inet tcp -> network inet stream 0 instead of
+ *   network inet raw tcp.
+ * some entries are just provided for completeness at this time
+ */
+/* values stolen from /etc/protocols - needs to change */
+#define RAW_TCP 6
+#define RAW_UDP 17
+#define RAW_ICMP 1
+#define RAW_ICMPv6 58
+
+/* used by af_name.h to auto generate table entries for "name", AF_NAME
+ * pair */
+#define AA_GEN_NET_ENT(name, AF) {name, AF, "stream", SOCK_STREAM, "", 0xffffff}, {name, AF, "dgram", SOCK_DGRAM, "", 0xffffff}, {name, AF, "seqpacket", SOCK_SEQPACKET, "", 0xffffff}, {name, AF, "rdm", SOCK_RDM, "", 0xffffff}, {name, AF, "raw", SOCK_RAW, "", 0xffffff}, {name, AF, "packet", SOCK_PACKET, "", 0xffffff},
+/*FIXME: missing {name, AF, "dccp", SOCK_DCCP, "", 0xfffffff}, */
+
+static struct network_tuple network_mappings[] = {
+	/* basic types */
+	#include "af_names.h"
+/* FIXME: af_names.h is missing AF_LLC, AF_TIPC */
+	/* mapped types */
+	{"inet",	AF_INET,	"raw",		SOCK_RAW,
+	 "tcp",	        1 << RAW_TCP},
+	{"inet",	AF_INET,	"raw",		SOCK_RAW,
+	 "udp",		1 << RAW_UDP},
+	{"inet",	AF_INET,	"raw",		SOCK_RAW,
+	 "icmp",	1 << RAW_ICMP},
+	{"inet",	AF_INET,	"tcp",		SOCK_STREAM,
+	 "",		0xffffffff},	/* should we give raw tcp too? */
+	{"inet",	AF_INET,	"udp",		SOCK_DGRAM,
+	 "",		0xffffffff},	/* should these be open masks? */
+	{"inet",	AF_INET,	"icmp",		SOCK_RAW,
+	 "",		1 << RAW_ICMP},
+	{"inet6",	AF_INET6,	"tcp",		SOCK_STREAM,
+	 "",		0xffffffff},
+	{"inet6",	AF_INET6,	"udp",		SOCK_DGRAM,
+	 "",		0xffffffff},
+/* what do we do with icmp on inet6?
+	{"inet6",	AF_INET,	"icmp",		SOCK_RAW,	0},
+	{"inet6",	AF_INET,	"icmpv6",	SOCK_RAW,	0},
+*/
+	/* terminate */
+	{NULL, 0, NULL, 0, NULL, 0}
+};
+
+struct aa_network_entry *new_network_ent(unsigned int family,
+					 unsigned int type,
+					 unsigned int protocol)
+{
+	struct aa_network_entry *new_entry;
+	new_entry = calloc(1, sizeof(struct aa_network_entry));
+	if (new_entry) {
+		new_entry->family = family;
+		new_entry->type = type;
+		new_entry->protocol = protocol;
+		new_entry->next = NULL;
+	}
+	return new_entry;
+}
+
+struct aa_network_entry *network_entry(const char *family, const char *type,
+				       const char *protocol)
+{
+	int i;
+	struct aa_network_entry *new_entry, *entry = NULL;
+
+	for (i = 0; network_mappings[i].family_name; i++) {
+		if (family) {
+			PDEBUG("Checking family %s\n", network_mappings[i].family_name);
+			if (strcmp(family, network_mappings[i].family_name) != 0)
+				continue;
+			PDEBUG("Found family %s\n", family);
+		}
+		if (type) {
+			PDEBUG("Checking type %s\n", network_mappings[i].type_name);
+			if (strcmp(type, network_mappings[i].type_name) != 0)
+				continue;
+			PDEBUG("Found type %s\n", type);
+		}
+		if (protocol) {
+			PDEBUG("Checking protocol type %s\n", network_mappings[i].protocol_name);
+			if (strcmp(type, network_mappings[i].protocol_name) != 0)
+				continue;
+			/* fixme should we allow specifying protocol by #
+			 * without needing the protocol mapping? */
+		}
+		/* if here we have a match */
+		new_entry = new_network_ent(network_mappings[i].family,
+					    network_mappings[i].type,
+					    network_mappings[i].protocol);
+		if (!new_entry)
+			yyerror(_("Memory allocation error."));
+		new_entry->next = entry;
+		entry = new_entry;
+	}
+
+	return entry;
+};
 
 char *processunquoted(char *string, int len)
 {

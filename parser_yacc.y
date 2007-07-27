@@ -86,6 +86,7 @@ void free_value_list(struct value_list *list);
 %token TOK_NOT
 %token TOK_DEFINED
 %token TOK_CHANGE_PROFILE
+%token TOK_NETWORK
 
 /* network tokens */
 %token TOK_IP
@@ -160,6 +161,7 @@ void free_value_list(struct value_list *list);
 	char *via;
 	/* char * port; */
 	unsigned long int num;
+	struct aa_network_entry *network_entry;
 	struct codomain *cod;
 	struct cod_global_entry *entry;
 	struct cod_net_entry *net_entry;
@@ -170,6 +172,7 @@ void free_value_list(struct value_list *list);
 	int action;
 	struct flagval flags;
 	unsigned int cap;
+	unsigned int allowed_protocol;
 	char *set_var;
 	char *bool_var;
 	char *var_val;
@@ -184,6 +187,7 @@ void free_value_list(struct value_list *list);
 %type <cod>	hat
 %type <cod>	cond_rule
 %type <net_entry> netrule
+%type <network_entry> network_rule
 %type <user_entry> rule
 %type <ipv4>	address
 %type <endpoints> addresses
@@ -419,6 +423,32 @@ rules: rules netrule
 		$$ = $1;
 	};
 
+rules: rules network_rule
+	{
+		struct aa_network_entry *entry, *tmp;
+
+		PDEBUG("Matched: network rule\n");
+		if (!$2)
+			yyerror(_("Assert: `network_rule' return invalid protocol."));
+		if (!$1->network_allowed) {
+			$1->network_allowed = calloc(AF_MAX,
+						     sizeof(unsigned int));
+			if (!$1->network_allowed)
+				yyerror(_("Memory allocation error."));
+		}
+		list_for_each_safe($2, entry, tmp) {
+			if (entry->type > SOCK_PACKET) {
+				/* setting mask instead of a bit */
+				$1->network_allowed[entry->family] |= entry->type;
+			} else {
+				$1->network_allowed[entry->family] |= 1 << entry->type;
+			}
+			free(entry);
+		}
+
+		$$ = $1
+	}
+
 rules:	rules change_profile
 	{
 		PDEBUG("matched: rules change_profile\n");
@@ -581,6 +611,44 @@ hat: TOK_SEP TOK_ID flags TOK_OPEN rules TOK_CLOSE
 		$$ = cod;
 	};
 
+network_rule: TOK_NETWORK TOK_END_OF_RULE
+	{
+		int family;
+		struct aa_network_entry *new_entry, *entry = NULL;
+		for (family = AF_UNSPEC; family < AF_MAX; family++) {
+			new_entry = new_network_ent(family, 0xffffffff,
+						    0xffffffff);
+			if (!new_entry)
+				yyerror(_("Memory allocation error."));
+			new_entry->next = entry;
+			entry = new_entry;
+		}
+		$$ = entry;
+	}
+
+network_rule: TOK_NETWORK TOK_ID TOK_END_OF_RULE
+	{
+		struct aa_network_entry *entry;
+		entry = network_entry($2, NULL, NULL);
+		if (!entry)
+			/* test for short circuiting of family */
+			entry = network_entry(NULL, $2, NULL);
+		if (!entry)
+			yyerror(_("Invalid network entry."));
+		free($2);
+		$$ = entry;
+	}
+
+network_rule: TOK_NETWORK TOK_ID TOK_ID TOK_END_OF_RULE
+	{
+		struct aa_network_entry *entry;
+		entry = network_entry($2, $3, NULL);
+		if (!entry)
+			yyerror(_("Invalid network entry."));
+		free($2);
+		free($3);
+		$$ = entry;
+	}
 
 /*
  * The addition of an entirely new grammer set to our (previously) slim 
