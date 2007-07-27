@@ -102,6 +102,7 @@ static struct keyword_table keyword_table[] = {
 	{"not",			TOK_NOT},
 	{"defined",		TOK_DEFINED},
 	{"change_profile",	TOK_CHANGE_PROFILE},
+	{"unsafe",		TOK_UNSAFE},
 	/* terminate */
 	{NULL, 0}
 };
