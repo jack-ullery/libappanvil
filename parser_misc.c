@@ -591,6 +591,8 @@ void debug_cod_entries(struct cod_entry *list)
 			printf("%c", COD_MMAP_CHAR);
 		if (HAS_MAY_EXEC(item->mode))
 			printf("%c", COD_EXEC_CHAR);
+		if (HAS_CHANGE_PROFILE(item->mode))
+			printf(" change_profile");
 
 		if (item->name)
 			printf("\tName:\t(%s)\n", item->name);

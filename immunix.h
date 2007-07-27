@@ -72,6 +72,7 @@ enum pattern_t {
 #define HAS_EXEC_UNCONSTRAINED(mode)	((mode) & AA_EXEC_UNCONSTRAINED)
 #define HAS_EXEC_MMAP(mode) 		((mode) & AA_EXEC_MMAP)
 #define HAS_EXEC_UNSAFE(mode) 		((mode) & AA_EXEC_UNSAFE)
+#define HAS_CHANGE_PROFILE(mode)	((mode) & AA_CHANGE_PROFILE)
 
 #define SINGLE_BIT_SET(X) (!((X) & ((X) - 1)))
 #define AA_EXEC_SINGLE_MODIFIER_SET(X) SINGLE_BIT_SET(((X) & AA_EXEC_MODIFIERS))
