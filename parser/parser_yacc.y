@@ -87,6 +87,7 @@ void free_value_list(struct value_list *list);
 %token TOK_DEFINED
 %token TOK_CHANGE_PROFILE
 %token TOK_NETWORK
+%token TOK_HAT
 
 /* network tokens */
 %token TOK_IP
@@ -593,7 +594,7 @@ rule:  TOK_ID file_mode TOK_ID
 		yyerror(_("missing an end of line character? (entry: %s)"), $1);
 	};
 
-hat: TOK_SEP TOK_ID flags TOK_OPEN rules TOK_CLOSE 
+hat: hat_start TOK_ID flags TOK_OPEN rules TOK_CLOSE
 	{
 		struct codomain *cod = $5;
 		PDEBUG("Matched: sep id (%s) open rules close\n", $2);
@@ -688,6 +689,9 @@ action:		TOK_TCP_CONN { $$ = AA_TCP_CONNECT; }
 	|	TOK_UDP_RECV { $$ = AA_UDP_RECEIVE; }
 	;
 	
+hat_start: TOK_SEP {}
+	| TOK_HAT {}
+
 file_mode: TOK_MODE
 	{
 		$$ = parse_mode($1);

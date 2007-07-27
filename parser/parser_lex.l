@@ -62,6 +62,7 @@ IP		{NUMBER}\.{NUMBER}\.{NUMBER}\.{NUMBER}
 ALLOWED_QUOTED_ID 	[^\0"]|\\\"
 QUOTED_ID	\"{ALLOWED_QUOTED_ID}*\"
 
+HAT		hat[ \t]+
 KEYWORD         [[:alpha:]_]+
 VARIABLE_NAME	[[:alpha:]][[:alnum:]_]*
 SET_VAR_PREFIX  @
@@ -338,6 +339,11 @@ ADD_ASSIGN	\+=
 			yylval = (YYSTYPE) strdup(yytext);
 			PDEBUG("Found modes: %s\n", yylval);
 			return TOK_MODE;
+			}
+
+{HAT}			{
+			BEGIN(SUB_NAME);
+			return TOK_HAT;
 			}
 
 {KEYWORD}		{
