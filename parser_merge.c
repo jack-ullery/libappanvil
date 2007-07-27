@@ -78,7 +78,7 @@ static int process_file_entries(struct codomain *cod)
 #define CHECK_CONFLICT_UNSAFE(a, b) \
 	((HAS_EXEC_UNSAFE(a) ^ HAS_EXEC_UNSAFE(b)) && \
 	 ((HAS_EXEC_PROFILE(a) && HAS_EXEC_PROFILE(b)) || \
-	  (HAS_EXEC_UNCONSTRAINED(a) && HAS_EXEC_UNCONSTRAINED(b))))
+	  (HAS_EXEC_UNCONFINED(a) && HAS_EXEC_UNCONFINED(b))))
 
 	/* walk the sorted table merging similar entries */
 	for (cur = table[0], next = table[1], n = 1; next != NULL; n++, next = table[n]) {
