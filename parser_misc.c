@@ -472,6 +472,11 @@ reeval:
 			mode |= AA_MAY_LINK;
 			break;
 
+		case COD_LOCK_CHAR:
+			PDEBUG("Parsing mode: found LOCK\n");
+			mode |= AA_MAY_LOCK;
+			break;
+
 		case COD_INHERIT_CHAR:
 			PDEBUG("Parsing mode: found INHERIT\n");
 			if (next != COD_EXEC_CHAR && tolower(next) != COD_EXEC_CHAR) {
@@ -734,6 +739,8 @@ void debug_cod_entries(struct cod_entry *list)
 			printf("%c", COD_APPEND_CHAR);
 		if (HAS_MAY_LINK(item->mode))
 			printf("%c", COD_LINK_CHAR);
+		if (HAS_MAY_LOCK(item->mode))
+			printf("%c", COD_LOCK_CHAR);
 		if (HAS_EXEC_INHERIT(item->mode))
 			printf("%c", COD_INHERIT_CHAR);
 		if (HAS_EXEC_UNCONSTRAINED(item->mode)) {

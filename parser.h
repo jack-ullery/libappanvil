@@ -124,13 +124,14 @@ struct var_string {
 #define COD_WRITE_CHAR 		'w'
 #define COD_APPEND_CHAR		'a'
 #define COD_EXEC_CHAR 		'x'
-#define COD_INHERIT_CHAR 	'i'
 #define COD_LINK_CHAR 		'l'
+#define COD_LOCK_CHAR		'k'
+#define COD_MMAP_CHAR		'm'
+#define COD_INHERIT_CHAR 	'i'
 #define COD_UNCONSTRAINED_CHAR	'U'
 #define COD_UNSAFE_UNCONSTRAINED_CHAR	'u'
 #define COD_PROFILE_CHAR	'P'
 #define COD_UNSAFE_PROFILE_CHAR	'p'
-#define COD_MMAP_CHAR		'm'
 
 #define OPTION_ADD      1
 #define OPTION_REMOVE   2
