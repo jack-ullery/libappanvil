@@ -173,6 +173,13 @@ fi
 %endif
 
 %changelog
+* Fri Jul 27 2007 - sbeattie@suse.de
+- Allow inverted character classes in unquoted pathnames
+- Fix return code propogation in initscripts
+- Add change_profile support
+- Add basic network mediation
+- Add mediation modes for append-only and locks
+- Allow reverse ordered file permission rules
 * Sat Apr 21 2007 - aj@suse.de
 - Use texlive for building.
 * Fri Apr 13 2007 - sbeattie@suse.de
