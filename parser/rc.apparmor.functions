@@ -106,6 +106,7 @@ skip_profile() {
 	if [ "${profile%.rpmnew}" != "${profile}" -o \
 	     "${profile%.rpmsave}" != "${profile}" -o \
 	     "${profile%.dpkg-new}" != "${profile}" -o \
+	     "${profile%.dpkg-old}" != "${profile}" -o \
 	     "${profile%\~}" != "${profile}" ] ; then
 		return 0
 	fi
