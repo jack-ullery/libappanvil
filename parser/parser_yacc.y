@@ -67,6 +67,7 @@ struct value_list {
 };
 
 void free_value_list(struct value_list *list);
+struct cod_entry *do_file_rule(char *id, int mode);
 
 %}
 
@@ -88,6 +89,7 @@ void free_value_list(struct value_list *list);
 %token TOK_CHANGE_PROFILE
 %token TOK_NETWORK
 %token TOK_HAT
+%token TOK_UNSAFE
 
 /* network tokens */
 %token TOK_IP
@@ -565,25 +567,37 @@ expr:	TOK_DEFINED TOK_BOOL_VAR
 
 rule:	TOK_ID file_mode TOK_END_OF_RULE
 	{
-		struct cod_entry *entry;
-		PDEBUG("Matched: tok_id (%s) tok_mode (%s)\n", $1, $2);
-		entry = new_entry($1, $2);
-		if (!entry)
-			yyerror(_("Memory allocation error."));
-		PDEBUG("rule.entry: (%s)\n", entry->name);
-		$$ = entry;
+		$$ = do_file_rule($1, $2);
 	};
 
 rule:	TOK_SET_VAR file_mode TOK_END_OF_RULE
 	{
-		struct cod_entry *entry;
-		PDEBUG("Matched: tok_id (%s) tok_mode (%s)\n", $1, $2);
-		entry = new_entry($1, $2);
-		if (!entry)
-			yyerror(_("Memory allocation error."));
-		PDEBUG("rule.entry: (%s)\n", entry->name);
-		$$ = entry;
+		$$ = do_file_rule($1, $2);
 	};
+
+rule:   file_mode TOK_ID TOK_END_OF_RULE
+	{
+		$$ = do_file_rule($2, $1 & ~AA_EXEC_UNSAFE);
+ 	};
+
+rule:   file_mode TOK_SET_VAR TOK_END_OF_RULE
+	{
+		$$ = do_file_rule($2, $1 & ~AA_EXEC_UNSAFE);
+	};
+
+rule:	TOK_UNSAFE file_mode TOK_ID TOK_END_OF_RULE
+	{
+		if (!($2 & AA_MAY_EXEC))
+			yyerror(_("unsafe rule missing exec permissions"));
+		$$ = do_file_rule($3, $2 | AA_EXEC_UNSAFE);
+	};
+
+rule:	TOK_UNSAFE file_mode TOK_SET_VAR TOK_END_OF_RULE
+	{
+		if (!($2 & AA_MAY_EXEC))
+			yyerror(_("unsafe rule missing exec permissions"));
+		$$ = do_file_rule($3, $2 | AA_EXEC_UNSAFE);
+ 	};
 
 rule:  TOK_ID file_mode TOK_ID
 	{
@@ -1003,3 +1017,13 @@ void free_value_list(struct value_list *list)
 	}
 }
 
+struct cod_entry *do_file_rule(char *id, int mode)
+{
+		struct cod_entry *entry;
+		PDEBUG("Matched: tok_id (%s) tok_mode (0x%x)\n", id, mode);
+		entry = new_entry(id, mode);
+		if (!entry)
+			yyerror(_("Memory allocation error."));
+		PDEBUG("rule.entry: (%s)\n", entry->name);
+		return entry;
+}
