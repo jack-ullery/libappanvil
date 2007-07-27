@@ -55,6 +55,13 @@
 
 #define AA_HAT_SIZE	975	/* Maximum size of a subdomain
 					 * ident (hat) */
+#define AA_IP_TCP			0x0001
+#define AA_IP_UDP			0x0002
+#define AA_IP_RDP			0x0004
+#define AA_IP_RAW			0x0008
+#define AA_IPV6_TCP			0x0010
+#define AA_IPV6_UDP			0x0020
+#define AA_NETLINK			0x0040
 
 enum pattern_t {
 	ePatternBasic,

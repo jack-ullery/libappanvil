@@ -57,6 +57,15 @@ struct cod_net_entry {
 	struct cod_net_entry *next;
 };
 
+/* supported AF protocols */
+struct aa_network_entry {
+	unsigned int family;
+	unsigned int type;
+	unsigned int protocol;
+
+	struct aa_network_entry *next;
+};
+
 struct codomain {
 	char *name;				/* codomain name */
 	char *sub_name;				/* subdomain name or NULL */
@@ -67,6 +76,8 @@ struct codomain {
 	struct flagval flags;
 
 	unsigned int capabilities;
+	unsigned int *network_allowed;		/* array of type masks
+						 * indexed by AF_FAMILY */
 
 	struct cod_entry *entries;
 	struct cod_net_entry * net_entries;
@@ -154,6 +165,8 @@ struct var_string {
 
 #define list_for_each(LIST, ENTRY) \
 	for ((ENTRY) = (LIST); (ENTRY); (ENTRY) = (ENTRY)->next)
+#define list_for_each_safe(LIST, ENTRY, TMP) \
+	for ((ENTRY) = (LIST), (TMP) = (LIST) ? (LIST)->next : NULL; (ENTRY); (ENTRY) = (TMP), (TMP) = (TMP) ? (TMP)->next : NULL)
 #define list_last_entry(LIST, ENTRY) \
 	for ((ENTRY) = (LIST); (ENTRY) && (ENTRY)->next; (ENTRY) = (ENTRY)->next)
 
@@ -190,6 +203,13 @@ extern struct cod_entry *new_entry(char *id, int mode);
 extern struct cod_net_entry *new_network_entry(int action,
 					       struct ipv4_endpoints *addrs,
 					       char *interface);
+extern struct aa_network_entry *new_network_ent(unsigned int family,
+						unsigned int type,
+						unsigned int protocol);
+extern struct aa_network_entry *network_entry(const char *family,
+					      const char *type,
+					      const char *protocol);
+
 extern void debug_cod_list(struct codomain *list);
 /* returns -1 if value != true or false, otherwise 0 == false, 1 == true */
 extern int str_to_boolean(const char* str);

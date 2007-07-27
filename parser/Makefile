@@ -141,7 +141,7 @@ parser_lex.c: parser_lex.l parser_yacc.h parser.h
 parser_lex.o: parser_lex.c parser.h parser_yacc.h
 	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_misc.o: parser_misc.c parser.h parser_yacc.h
+parser_misc.o: parser_misc.c parser.h parser_yacc.h af_names.h
 	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_yacc.o: parser_yacc.c parser_yacc.h
@@ -174,6 +174,11 @@ parser_policy.o: parser_policy.c parser.h parser_yacc.h
 parser_version.h: Makefile
 	@echo \#define PARSER_VERSION \"$(VERSION)\" > .ver
 	@mv -f .ver $@
+
+af_names.h: /usr/include/linux/socket.h
+	sed -n -e "/AF_MAX/d" -n -e "/AF_UNSPEC/d" -n -e "/AF_UNIX/d" -n -e "/AF_LOCAL/d" -n -e "/AF_NETLINK/d" -n -e "/AF_LLC/d" -n -e "/AF_IUCV/d" -n -e "/AF_TIPC/d" -e "s/^\#define[ \\t]\\+AF_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9]\\+\\)\\(.*\\)\$$/AA_GEN_NET_ENT(\"\\L\\1\", \\UAF_\\1)/p" $< > $@
+
+
 
 tst_symtab: parser_symtab.c parser.h parser_variable.o
 	$(Q)$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< parser_variable.o $(BUILD_OUTPUT)
@@ -259,6 +264,7 @@ clean: _clean
 	rm -f parser_version.h
 	rm -f $(NAME)*.tar.gz $(NAME)*.tgz
 	rm -f libstdc++.a
+	rm -f af_names.h
 	-rm -rf techdoc.{aux,log,pdf,toc,txt} techdoc/
 	make -s -C $(PCREDIR) clean
 	make -s -C $(AAREDIR) clean

@@ -82,6 +82,7 @@ ADD_ASSIGN	\+=
 %x SUB_NAME
 %x IP_MODE
 %x IF_MODE
+%x NETWORK_MODE
 %x FLAGS_MODE
 %x ASSIGN_MODE
 
@@ -246,6 +247,28 @@ ADD_ASSIGN	\+=
 			}
 }
 
+<NETWORK_MODE>{
+	{WS}+		{ /* Eat whitespace */ }
+
+	{ID}+		{
+			yylval = (YYSTYPE) strdup(yytext);
+			return TOK_ID;
+			}
+	{END_OF_RULE}	{
+			BEGIN(INITIAL);
+			return TOK_END_OF_RULE;
+		}
+	[^\n]		{
+			  /* Something we didn't expect */
+			yylval = (YYSTYPE) strdup(yytext);
+			yyerror(_("(network_mode) Found unexpected character: '%s'"), yylval);
+			}
+
+	\r?\n		{
+			current_lineno++;
+			}
+}
+
 #.*\n			{ /* Comment - ignore */
 			current_lineno++;
 			PDEBUG("Line no++: %d\n", current_lineno);
@@ -331,6 +354,9 @@ ADD_ASSIGN	\+=
 				break;
 			case TOK_FLAGS:
 				BEGIN(FLAGS_MODE);
+				break;
+			case TOK_NETWORK:
+				BEGIN(NETWORK_MODE);
 				break;
 			default: /* nothing */
 				break;
