@@ -53,7 +53,7 @@ COLON		:
 END_OF_RULE	[,]
 SEPERATOR 	{UP}
 RANGE		-
-MODES 		[RrWwaXxIiLlUuPpMm]
+MODES 		([RrWwaLlMmk]|([Pp][Xx])|([Uu][Xx])|([Ii][Xx]))+
 WS		[[:blank:]]
 NUMBER		[[:digit:]]+
 ID 		[^ \t\n"!,]|(,[^ \t\n"!])
@@ -334,7 +334,7 @@ ADD_ASSIGN	\+=
 			return TOK_ID;
 			}
 
-{MODES}+		{
+{MODES}			{
 			yylval = (YYSTYPE) strdup(yytext);
 			PDEBUG("Found modes: %s\n", yylval);
 			return TOK_MODE;
