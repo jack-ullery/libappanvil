@@ -28,7 +28,7 @@
 #define AA_MAY_EXEC			(1 << 0)
 #define AA_MAY_WRITE			(1 << 1)
 #define AA_MAY_READ			(1 << 2)
-/*#define AA_MAY_APPEND			(1 << 3)*/
+#define AA_MAY_APPEND			(1 << 3)
 #define AA_MAY_LINK			(1 << 4)
 #define AA_EXEC_INHERIT 		(1 << 5)
 #define AA_EXEC_UNCONSTRAINED		(1 << 6)
@@ -72,6 +72,7 @@ enum pattern_t {
 
 #define HAS_MAY_READ(mode)		((mode) & AA_MAY_READ)
 #define HAS_MAY_WRITE(mode)		((mode) & AA_MAY_WRITE)
+#define HAS_MAY_APPEND(mode)		((mode) & AA_MAY_APPEND)
 #define HAS_MAY_LINK(mode)		((mode) & AA_MAY_LINK)
 #define HAS_MAY_EXEC(mode)		((mode) & AA_MAY_EXEC)
 #define HAS_EXEC_INHERIT(mode)		((mode) & AA_EXEC_INHERIT)

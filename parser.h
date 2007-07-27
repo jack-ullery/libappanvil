@@ -122,6 +122,7 @@ struct var_string {
 
 #define COD_READ_CHAR 		'r'
 #define COD_WRITE_CHAR 		'w'
+#define COD_APPEND_CHAR		'a'
 #define COD_EXEC_CHAR 		'x'
 #define COD_INHERIT_CHAR 	'i'
 #define COD_LINK_CHAR 		'l'

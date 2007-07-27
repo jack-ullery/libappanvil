@@ -53,7 +53,7 @@ COLON		:
 END_OF_RULE	[,]
 SEPERATOR 	{UP}
 RANGE		-
-MODES 		[RrWwXxIiLlUuPpMm]
+MODES 		[RrWwaXxIiLlUuPpMm]
 WS		[[:blank:]]
 NUMBER		[[:digit:]]+
 ID 		[^ \t\n"!,]|(,[^ \t\n"!])
