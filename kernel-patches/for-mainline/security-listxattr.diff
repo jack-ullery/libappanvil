@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/xattr.c
 +++ b/fs/xattr.c
-@@ -149,7 +149,7 @@ vfs_listxattr(struct dentry *dentry, str
+@@ -148,7 +148,7 @@ vfs_listxattr(struct dentry *dentry, str
  	struct inode *inode = dentry->d_inode;
  	ssize_t error;
  

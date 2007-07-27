@@ -13,7 +13,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1409,6 +1409,10 @@ static int may_delete(struct inode *dir,
+@@ -1442,6 +1442,10 @@ static int may_delete(struct inode *dir,
  	BUG_ON(victim->d_parent->d_inode != dir);
  	audit_inode_child(victim->d_name.name, victim->d_inode, dir);
  
@@ -24,7 +24,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	error = permission(dir,MAY_WRITE | MAY_EXEC, NULL);
  	if (error)
  		return error;
-@@ -1446,6 +1450,8 @@ static inline int may_create(struct inod
+@@ -1479,6 +1483,8 @@ static inline int may_create(struct inod
  		return -EEXIST;
  	if (IS_DEADDIR(dir))
  		return -ENOENT;

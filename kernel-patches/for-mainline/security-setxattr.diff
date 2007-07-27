@@ -17,7 +17,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/xattr.c
 +++ b/fs/xattr.c
-@@ -80,7 +80,7 @@ vfs_setxattr(struct dentry *dentry, stru
+@@ -79,7 +79,7 @@ vfs_setxattr(struct dentry *dentry, stru
  		return error;
  
  	mutex_lock(&inode->i_mutex);
@@ -26,7 +26,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (error)
  		goto out;
  	error = -EOPNOTSUPP;
-@@ -88,7 +88,7 @@ vfs_setxattr(struct dentry *dentry, stru
+@@ -87,7 +87,7 @@ vfs_setxattr(struct dentry *dentry, stru
  		error = inode->i_op->setxattr(dentry, name, value, size, flags);
  		if (!error) {
  			fsnotify_xattr(dentry);

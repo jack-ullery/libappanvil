@@ -17,7 +17,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/xattr.c
 +++ b/fs/xattr.c
-@@ -177,7 +177,7 @@ vfs_removexattr(struct dentry *dentry, s
+@@ -176,7 +176,7 @@ vfs_removexattr(struct dentry *dentry, s
  	if (error)
  		return error;
  

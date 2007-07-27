@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2041,7 +2041,7 @@ int vfs_rmdir(struct inode *dir, struct 
+@@ -2074,7 +2074,7 @@ int vfs_rmdir(struct inode *dir, struct 
  	if (d_mountpoint(dentry))
  		error = -EBUSY;
  	else {

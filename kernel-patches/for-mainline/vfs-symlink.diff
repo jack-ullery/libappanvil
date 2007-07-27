@@ -44,7 +44,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (rc || !lower_dentry->d_inode)
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2203,7 +2203,8 @@ asmlinkage long sys_unlink(const char __
+@@ -2236,7 +2236,8 @@ asmlinkage long sys_unlink(const char __
  	return do_unlinkat(AT_FDCWD, pathname);
  }
  
@@ -54,7 +54,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int error = may_create(dir, dentry, NULL);
  
-@@ -2249,7 +2250,8 @@ asmlinkage long sys_symlinkat(const char
+@@ -2282,7 +2283,8 @@ asmlinkage long sys_symlinkat(const char
  	if (IS_ERR(dentry))
  		goto out_unlock;
  
@@ -66,7 +66,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	mutex_unlock(&nd.dentry->d_inode->i_mutex);
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1452,6 +1452,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+@@ -1461,6 +1461,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
  				struct iattr *iap)
  {
  	struct dentry	*dentry, *dnew;
@@ -74,7 +74,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	__be32		err, cerr;
  	int		host_err;
  	umode_t		mode;
-@@ -1478,6 +1479,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+@@ -1487,6 +1488,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
  	if (iap && (iap->ia_valid & ATTR_MODE))
  		mode = iap->ia_mode & S_IALLUGO;
  
@@ -82,7 +82,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (unlikely(path[plen] != 0)) {
  		char *path_alloced = kmalloc(plen+1, GFP_KERNEL);
  		if (path_alloced == NULL)
-@@ -1485,20 +1487,22 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+@@ -1494,20 +1496,22 @@ nfsd_symlink(struct svc_rqst *rqstp, str
  		else {
  			strncpy(path_alloced, path, plen);
  			path_alloced[plen] = 0;
@@ -111,7 +111,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  out:
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -995,7 +995,7 @@ extern int vfs_permission(struct nameida
+@@ -1012,7 +1012,7 @@ extern int vfs_permission(struct nameida
  extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
  extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
  extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);

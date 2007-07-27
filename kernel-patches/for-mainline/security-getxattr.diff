@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/xattr.c
 +++ b/fs/xattr.c
-@@ -116,7 +116,7 @@ vfs_getxattr(struct dentry *dentry, stru
+@@ -115,7 +115,7 @@ vfs_getxattr(struct dentry *dentry, stru
  	if (error)
  		return error;
  

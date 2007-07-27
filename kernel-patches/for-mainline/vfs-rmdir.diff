@@ -39,7 +39,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		d_delete(lower_dentry);
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2024,7 +2024,7 @@ void dentry_unhash(struct dentry *dentry
+@@ -2057,7 +2057,7 @@ void dentry_unhash(struct dentry *dentry
  	spin_unlock(&dcache_lock);
  }
  
@@ -48,7 +48,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int error = may_delete(dir, dentry, 1);
  
-@@ -2088,7 +2088,7 @@ static long do_rmdir(int dfd, const char
+@@ -2121,7 +2121,7 @@ static long do_rmdir(int dfd, const char
  	error = PTR_ERR(dentry);
  	if (IS_ERR(dentry))
  		goto exit2;
@@ -70,7 +70,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1682,6 +1682,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+@@ -1691,6 +1691,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
  				char *fname, int flen)
  {
  	struct dentry	*dentry, *rdentry;
@@ -78,7 +78,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	struct inode	*dirp;
  	__be32		err;
  	int		host_err;
-@@ -1696,6 +1697,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+@@ -1705,6 +1706,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
  	fh_lock_nested(fhp, I_MUTEX_PARENT);
  	dentry = fhp->fh_dentry;
  	dirp = dentry->d_inode;
@@ -86,7 +86,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
  	rdentry = lookup_one_len(fname, dentry, flen);
  	host_err = PTR_ERR(rdentry);
-@@ -1713,21 +1715,21 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+@@ -1722,21 +1724,21 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
  
  	if (type != S_IFDIR) { /* It's UNLINK */
  #ifdef MSNFS
@@ -124,7 +124,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	} else {
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -997,7 +997,7 @@ extern int vfs_mkdir(struct inode *, str
+@@ -1014,7 +1014,7 @@ extern int vfs_mkdir(struct inode *, str
  extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
  extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
  extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);

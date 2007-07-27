@@ -56,7 +56,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	mutex_lock(&crypt_stat->cs_mutex);
  	if (S_ISDIR(dentry->d_inode->i_mode))
  		crypt_stat->flags &= ~(ECRYPTFS_ENCRYPTED);
-@@ -954,7 +956,7 @@ static int ecryptfs_setattr(struct dentr
+@@ -955,7 +957,7 @@ static int ecryptfs_setattr(struct dentr
  		if (rc < 0)
  			goto out;
  	}
@@ -67,7 +67,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	return rc;
 --- a/fs/exec.c
 +++ b/fs/exec.c
-@@ -1565,7 +1565,8 @@ int do_coredump(long signr, int exit_cod
+@@ -1796,7 +1796,8 @@ int do_coredump(long signr, int exit_cod
  		goto close_fail;
  	if (!file->f_op->write)
  		goto close_fail;
@@ -101,7 +101,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  				goto again;
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1598,7 +1598,8 @@ int may_open(struct nameidata *nd, int a
+@@ -1631,7 +1631,8 @@ int may_open(struct nameidata *nd, int a
  		if (!error) {
  			DQUOT_INIT(inode);
  			
@@ -113,7 +113,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		if (error)
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -358,7 +358,7 @@ nfsd_setattr(struct svc_rqst *rqstp, str
+@@ -375,7 +375,7 @@ nfsd_setattr(struct svc_rqst *rqstp, str
  	err = nfserr_notsync;
  	if (!check_guard || guardtime == inode->i_ctime.tv_sec) {
  		fh_lock(fhp);
@@ -122,7 +122,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		err = nfserrno(host_err);
  		fh_unlock(fhp);
  	}
-@@ -909,13 +909,13 @@ out:
+@@ -918,13 +918,13 @@ out:
  	return err;
  }
  
@@ -138,7 +138,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	mutex_unlock(&dentry->d_inode->i_mutex);
  }
  
-@@ -974,7 +974,7 @@ nfsd_vfs_write(struct svc_rqst *rqstp, s
+@@ -983,7 +983,7 @@ nfsd_vfs_write(struct svc_rqst *rqstp, s
  
  	/* clear setuid/setgid flag after write */
  	if (host_err >= 0 && (inode->i_mode & (S_ISUID | S_ISGID)))
@@ -149,7 +149,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		static ino_t	last_ino;
 --- a/fs/open.c
 +++ b/fs/open.c
-@@ -193,8 +193,8 @@ out:
+@@ -194,8 +194,8 @@ out:
  	return error;
  }
  
@@ -160,7 +160,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int err;
  	struct iattr newattrs;
-@@ -214,7 +214,7 @@ int do_truncate(struct dentry *dentry, l
+@@ -215,7 +215,7 @@ int do_truncate(struct dentry *dentry, l
  	newattrs.ia_valid |= should_remove_suid(dentry);
  
  	mutex_lock(&dentry->d_inode->i_mutex);
@@ -169,7 +169,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	mutex_unlock(&dentry->d_inode->i_mutex);
  	return err;
  }
-@@ -269,7 +269,7 @@ static long do_sys_truncate(const char _
+@@ -270,7 +270,7 @@ static long do_sys_truncate(const char _
  	error = locks_verify_truncate(inode, NULL, length);
  	if (!error) {
  		DQUOT_INIT(inode);
@@ -178,7 +178,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	}
  	put_write_access(inode);
  
-@@ -321,7 +321,8 @@ static long do_sys_ftruncate(unsigned in
+@@ -322,7 +322,8 @@ static long do_sys_ftruncate(unsigned in
  
  	error = locks_verify_truncate(inode, file, length);
  	if (!error)
@@ -188,7 +188,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  out_putf:
  	fput(file);
  out:
-@@ -521,7 +522,7 @@ asmlinkage long sys_fchmod(unsigned int 
+@@ -580,7 +581,7 @@ asmlinkage long sys_fchmod(unsigned int 
  		mode = inode->i_mode;
  	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
  	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
@@ -197,7 +197,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	mutex_unlock(&inode->i_mutex);
  
  out_putf:
-@@ -556,7 +557,7 @@ asmlinkage long sys_fchmodat(int dfd, co
+@@ -615,7 +616,7 @@ asmlinkage long sys_fchmodat(int dfd, co
  		mode = inode->i_mode;
  	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
  	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
@@ -206,7 +206,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	mutex_unlock(&inode->i_mutex);
  
  dput_and_out:
-@@ -570,7 +571,8 @@ asmlinkage long sys_chmod(const char __u
+@@ -629,7 +630,8 @@ asmlinkage long sys_chmod(const char __u
  	return sys_fchmodat(AT_FDCWD, filename, mode);
  }
  
@@ -216,7 +216,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	struct inode * inode;
  	int error;
-@@ -599,7 +601,7 @@ static int chown_common(struct dentry * 
+@@ -658,7 +660,7 @@ static int chown_common(struct dentry * 
  	if (!S_ISDIR(inode->i_mode))
  		newattrs.ia_valid |= ATTR_KILL_SUID|ATTR_KILL_SGID;
  	mutex_lock(&inode->i_mutex);
@@ -225,7 +225,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	mutex_unlock(&inode->i_mutex);
  out:
  	return error;
-@@ -613,7 +615,7 @@ asmlinkage long sys_chown(const char __u
+@@ -672,7 +674,7 @@ asmlinkage long sys_chown(const char __u
  	error = user_path_walk(filename, &nd);
  	if (error)
  		goto out;
@@ -234,7 +234,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  out:
  	return error;
-@@ -633,7 +635,7 @@ asmlinkage long sys_fchownat(int dfd, co
+@@ -692,7 +694,7 @@ asmlinkage long sys_fchownat(int dfd, co
  	error = __user_walk_fd(dfd, filename, follow, &nd);
  	if (error)
  		goto out;
@@ -243,7 +243,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  out:
  	return error;
-@@ -647,7 +649,7 @@ asmlinkage long sys_lchown(const char __
+@@ -706,7 +708,7 @@ asmlinkage long sys_lchown(const char __
  	error = user_path_walk_link(filename, &nd);
  	if (error)
  		goto out;
@@ -252,7 +252,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  out:
  	return error;
-@@ -666,7 +668,7 @@ asmlinkage long sys_fchown(unsigned int 
+@@ -725,7 +727,7 @@ asmlinkage long sys_fchown(unsigned int 
  
  	dentry = file->f_path.dentry;
  	audit_inode(NULL, dentry->d_inode);
@@ -292,7 +292,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
        out_dir:
 --- a/fs/sysfs/file.c
 +++ b/fs/sysfs/file.c
-@@ -523,7 +523,7 @@ int sysfs_chmod_file(struct kobject *kob
+@@ -524,7 +524,7 @@ int sysfs_chmod_file(struct kobject *kob
  	mutex_lock(&inode->i_mutex);
  	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
  	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
@@ -344,7 +344,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (f)
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -1497,8 +1497,8 @@ static inline int break_lease(struct ino
+@@ -1404,8 +1404,8 @@ static inline int break_lease(struct ino
  
  /* fs/open.c */
  
@@ -355,7 +355,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  extern long do_sys_open(int fdf, const char __user *filename, int flags,
  			int mode);
  extern struct file *filp_open(const char *, int, int);
-@@ -1651,7 +1651,7 @@ extern int do_remount_sb(struct super_bl
+@@ -1561,7 +1561,7 @@ extern int do_remount_sb(struct super_bl
  #ifdef CONFIG_BLOCK
  extern sector_t bmap(struct inode *, sector_t);
  #endif
@@ -366,7 +366,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		int (*check_acl)(struct inode *, int));
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -1890,7 +1890,7 @@ int __remove_suid(struct path *path, int
+@@ -1696,7 +1696,7 @@ int __remove_suid(struct path *path, int
  	struct iattr newattrs;
  
  	newattrs.ia_valid = ATTR_FORCE | kill;
