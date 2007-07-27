@@ -492,14 +492,14 @@ reeval:
 			}
 			break;
 
-		case COD_UNSAFE_UNCONSTRAINED_CHAR:
+		case COD_UNSAFE_UNCONFINED_CHAR:
 			mode |= AA_EXEC_UNSAFE;
-			pwarn(_("Unconstrained exec qualifier (%c%c) allows some dangerous environment variables "
+			pwarn(_("Unconfined exec qualifier (%c%c) allows some dangerous environment variables "
 				"to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"),
-			      COD_UNSAFE_UNCONSTRAINED_CHAR, COD_EXEC_CHAR);
+			      COD_UNSAFE_UNCONFINED_CHAR, COD_EXEC_CHAR);
 			/* fall through */
-		case COD_UNCONSTRAINED_CHAR:
-			PDEBUG("Parsing mode: found UNCONSTRAINED\n");
+		case COD_UNCONFINED_CHAR:
+			PDEBUG("Parsing mode: found UNCONFINED\n");
 			if (next != COD_EXEC_CHAR && tolower(next) != COD_EXEC_CHAR) {
 				yyerror(_("Exec qualifier '%c' must be followed by 'x'"),
 					this);
@@ -510,7 +510,7 @@ reeval:
 				if (next != tolower(next))
 					warn_uppercase();
 				mode |=
-				    (AA_EXEC_UNCONSTRAINED |
+				    (AA_EXEC_UNCONFINED |
 				     AA_MAY_EXEC);
 				p++;	/* skip 'x' */
 			}
@@ -743,11 +743,11 @@ void debug_cod_entries(struct cod_entry *list)
 			printf("%c", COD_LOCK_CHAR);
 		if (HAS_EXEC_INHERIT(item->mode))
 			printf("%c", COD_INHERIT_CHAR);
-		if (HAS_EXEC_UNCONSTRAINED(item->mode)) {
+		if (HAS_EXEC_UNCONFINED(item->mode)) {
 			if (HAS_EXEC_UNSAFE(item->mode))
-				printf("%c", COD_UNSAFE_UNCONSTRAINED_CHAR);
+				printf("%c", COD_UNSAFE_UNCONFINED_CHAR);
 			else
-				printf("%c", COD_UNCONSTRAINED_CHAR);
+				printf("%c", COD_UNCONFINED_CHAR);
 		}
 		if (HAS_EXEC_PROFILE(item->mode)) {
 			if (HAS_EXEC_UNSAFE(item->mode))

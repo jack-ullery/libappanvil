@@ -128,8 +128,8 @@ struct var_string {
 #define COD_LOCK_CHAR		'k'
 #define COD_MMAP_CHAR		'm'
 #define COD_INHERIT_CHAR 	'i'
-#define COD_UNCONSTRAINED_CHAR	'U'
-#define COD_UNSAFE_UNCONSTRAINED_CHAR	'u'
+#define COD_UNCONFINED_CHAR	'U'
+#define COD_UNSAFE_UNCONFINED_CHAR	'u'
 #define COD_PROFILE_CHAR	'P'
 #define COD_UNSAFE_PROFILE_CHAR	'p'
 

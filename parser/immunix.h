@@ -35,11 +35,11 @@
 
 #define AA_CHANGE_PROFILE		(1 << 26)
 #define AA_EXEC_INHERIT 		(1 << 27)
-#define AA_EXEC_UNCONSTRAINED		(1 << 28)
+#define AA_EXEC_UNCONFINED		(1 << 28)
 #define AA_EXEC_PROFILE			(1 << 29)
 #define AA_EXEC_UNSAFE			(1 << 30)
 #define AA_EXEC_MODIFIERS		(AA_EXEC_INHERIT | \
-					 AA_EXEC_UNCONSTRAINED | \
+					 AA_EXEC_UNCONFINED | \
 					 AA_EXEC_PROFILE)
 
 
@@ -81,7 +81,7 @@ enum pattern_t {
 #define HAS_EXEC_MMAP(mode) 		((mode) & AA_EXEC_MMAP)
 #define HAS_EXEC_INHERIT(mode)		((mode) & AA_EXEC_INHERIT)
 #define HAS_EXEC_PROFILE(mode)		((mode) & AA_EXEC_PROFILE)
-#define HAS_EXEC_UNCONSTRAINED(mode)	((mode) & AA_EXEC_UNCONSTRAINED)
+#define HAS_EXEC_UNCONFINED(mode)	((mode) & AA_EXEC_UNCONFINED)
 #define HAS_EXEC_UNSAFE(mode) 		((mode) & AA_EXEC_UNSAFE)
 #define HAS_CHANGE_PROFILE(mode)	((mode) & AA_CHANGE_PROFILE)
 

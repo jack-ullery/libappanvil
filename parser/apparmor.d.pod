@@ -97,9 +97,9 @@ modes:
 
 =item B<w> 	- write
 
-=item B<ux> 	- unconstrained execute
+=item B<ux> 	- unconfined execute
 
-=item B<Ux> 	- unconstrained execute -- scrub the environment
+=item B<Ux> 	- unconfined execute -- scrub the environment
 
 =item B<px> 	- discrete profile execute
 
@@ -128,14 +128,14 @@ Allows the program to have write access to the file. Files and directories must 
 this permission if they are to be unlinked (removed.) Write mode is not
 required on a directory to rename or create files within the directory.
 
-=item B<ux - Unconstrained execute mode>
+=item B<ux - Unconfined execute mode>
 
 Allows the program to execute the program without any AppArmor profile
 being applied to the program.
 
 This mode is useful when a confined program needs to be able to perform
 a privileged operation, such as rebooting the machine. By placing the
-privileged section in another executable and granting unconstrained
+privileged section in another executable and granting unconfined
 execution rights, it is possible to bypass the mandatory constraints
 imposed on all confined processes. For more information on what is
 constrained, see the apparmor(7) man page.
@@ -150,7 +150,7 @@ provides negligible security. Use at your own risk.
 
 Incompatible with 'Ux', 'px', 'Px', 'ix'.
 
-=item B<Ux - unconstrained execute -- scrub the environment>
+=item B<Ux - unconfined execute -- scrub the environment>
 
 'Ux' allows the named program to run in 'ux' mode, but AppArmor
 will invoke the Linux Kernel's B<unsafe_exec> routines to scrub
