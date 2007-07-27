@@ -1495,7 +1495,7 @@ extern "C" void aare_delete_ruleset(aare_ruleset_t *rules)
 
 #define ACCUMULATING_FLAGS \
 	(AA_MAY_READ | AA_MAY_WRITE | AA_MAY_EXEC | \
-	 AA_MAY_LINK | AA_EXEC_MMAP)
+	 AA_MAY_LINK | AA_EXEC_MMAP | AA_CHANGE_PROFILE)
 
 /**
  * Compute the permission flags that this state corresponds to. If we
