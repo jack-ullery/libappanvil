@@ -56,8 +56,8 @@ RANGE		-
 MODES 		[RrWwXxIiLlUuPpMm]
 WS		[[:blank:]]
 NUMBER		[[:digit:]]+
-ID 		[^ \t\n"!]
-POST_VAR_ID 	[^ =\+\t\n"!]
+ID 		[^ \t\n"!,]|(,[^ \t\n"!])
+POST_VAR_ID 	[^ =\+\t\n"!,]|(,[^ =\+\t\n"!])
 IP		{NUMBER}\.{NUMBER}\.{NUMBER}\.{NUMBER}
 ALLOWED_QUOTED_ID 	[^\0"]|\\\"
 QUOTED_ID	\"{ALLOWED_QUOTED_ID}*\"
@@ -251,6 +251,8 @@ ADD_ASSIGN	\+=
 			PDEBUG("Line no++: %d\n", current_lineno);
 			}
 
+{END_OF_RULE}		{ return TOK_END_OF_RULE; }
+
 {SEPERATOR}		{
 			PDEBUG("Matched a seperator\n");
 			yylval = (YYSTYPE) yytext;
@@ -279,8 +281,6 @@ ADD_ASSIGN	\+=
 			PDEBUG("Found boolean variable %s\n", yylval);
 			return TOK_BOOL_VAR;
 			}
-
-{END_OF_RULE}		{ return TOK_END_OF_RULE; }
 
 {OPEN_BRACE}		{
 			PDEBUG("Open Brace\n");
