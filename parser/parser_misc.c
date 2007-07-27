@@ -455,7 +455,16 @@ reeval:
 
 		case COD_WRITE_CHAR:
 			PDEBUG("Parsing mode: found WRITE\n");
-			mode |= AA_MAY_WRITE;
+			if ((mode & AA_MAY_APPEND) && !(mode & AA_MAY_WRITE))
+				yyerror(_("Conflict 'a' and 'w' perms are mutually exclusive."));
+			mode |= AA_MAY_WRITE | AA_MAY_APPEND;
+			break;
+
+		case COD_APPEND_CHAR:
+			PDEBUG("Parsing mode: found APPEND\n");
+			if (mode & AA_MAY_WRITE)
+				yyerror(_("Conflict 'a' and 'w' perms are mutually exclusive."));
+			mode |= AA_MAY_APPEND;
 			break;
 
 		case COD_LINK_CHAR:
@@ -539,6 +548,7 @@ reeval:
 			switch (lower) {
 			case COD_READ_CHAR:
 			case COD_WRITE_CHAR:
+			case COD_APPEND_CHAR:
 			case COD_LINK_CHAR:
 			case COD_INHERIT_CHAR:
 			case COD_MMAP_CHAR:
@@ -720,6 +730,8 @@ void debug_cod_entries(struct cod_entry *list)
 			printf("%c", COD_READ_CHAR);
 		if (HAS_MAY_WRITE(item->mode))
 			printf("%c", COD_WRITE_CHAR);
+		if (HAS_MAY_APPEND(item->mode))
+			printf("%c", COD_APPEND_CHAR);
 		if (HAS_MAY_LINK(item->mode))
 			printf("%c", COD_LINK_CHAR);
 		if (HAS_EXEC_INHERIT(item->mode))
