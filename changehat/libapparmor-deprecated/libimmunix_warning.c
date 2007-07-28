@@ -1,4 +1,4 @@
-/*   $Id:$
+/*   $Id$
 
      Copyright (c) 2006 Novell, Inc. (All rights reserved)
      The libimmunix library is licensed under the terms of the GNU
