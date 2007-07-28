@@ -1,0 +1,15 @@
+IMMUNIX_1.0 {
+  global:
+        change_hat;
+  local:
+        *;
+};
+
+APPARMOR_1.0 {
+  global:
+        change_hat;
+        parse_record;
+        free_record;
+  local:
+        *;
+};
