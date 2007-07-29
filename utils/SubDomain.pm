@@ -1782,6 +1782,8 @@ sub add_audit_event_to_tree ( $$ ) {
     #        consistently passed
     my $prog = "HINT";
 
+    return  if ( !profile_exists($profile) );
+
     if ($e->{operation} eq "exec") {
         add_to_tree( $e->{pid},
                      "exec",
