@@ -382,7 +382,12 @@ test "x$exec_prefix" = xNONE && exec_prefix=$prefix
 if test "x$CATOBJEXT" = "x.mo" ; then
   localedir=`eval echo "${libdir}/locale"`
 else
-  localedir=`eval echo "${datadir}/locale"`
+  localedir="${datadir}/locale"
+  while true; do
+    expanded_localedir=`eval echo "$localedir"`
+    test "x$expanded_localedir" = "x$localedir" && break
+    localedir="$expanded_localedir"
+  done
 fi
 prefix="$glib_save_prefix"
 exec_prefix="$glib_save_exec_prefix"

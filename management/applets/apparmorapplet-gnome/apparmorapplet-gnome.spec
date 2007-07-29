@@ -1,7 +1,7 @@
 # norootforbuild
 
 Name:		apparmorapplet-gnome
-Version:	0.6
+Version:	0.7
 Release:	1
 URL:		http://forge.novell.com/modules/xfmod/project/?apparmor
 BuildRequires:	gnome-common gnome-desktop-devel gnome-panel-devel 
@@ -13,6 +13,7 @@ BuildRequires:  dbus-1-devel dbus-1-glib
 Group:		System/GUI/Gnome
 Requires:	apparmor-dbus
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
+Source0:	%{name}-%{version}.tar.bz2
 
 %description
 -
@@ -23,7 +24,7 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-build
 %build
 autoreconf -f -i
 
-%configure --libexecdir=%{_prefix}/lib/apparmorapplet
+%configure --prefix=%{_prefix} --libexecdir=%{_prefix}/lib/apparmorapplet
 make %{?jobs:-j%jobs}
 
 %install
@@ -32,6 +33,11 @@ make %{?jobs:-j%jobs}
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post
-%run_ldconfig
+%files
+%defattr (-, root, root)
+%doc AUTHORS COPYING ChangeLog NEWS README
+%{_libdir}/bonobo/servers/*.server
+%{_prefix}/lib/apparmorapplet
 
+%changelog
+-

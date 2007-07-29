@@ -14,7 +14,7 @@ LIBS = \
 	`$(PKG_CONFIG) --libs dbus-1` \
 	@PACKAGE_LIBS@
 
-bin_PROGRAMS = apparmorapplet
+libexec_PROGRAMS = apparmorapplet
 
 apparmorapplet_SOURCES = \
 	apparmor-applet.c apparmor-applet.h \

@@ -17,9 +17,25 @@ struct _apparmor_applet *apparmor_applet = NULL;
 
 static const BonoboUIVerb apparmor_menu_verbs[] = {
 	BONOBO_UI_UNSAFE_VERB("apparmor_applet_about", applet_about),
-	BONOBO_UI_UNSAFE_VERB("apparmor_applet_preferences", applet_prefs),
+/*	BONOBO_UI_UNSAFE_VERB("apparmor_applet_preferences", applet_prefs),*/
 	BONOBO_UI_VERB_END
 };
+
+// We don't really have any "preferences" to set yet.
+
+// static const char Context_menu_xml [] =
+//    "<popup name=\"button3\">\n"
+//    "   <menuitem name=\"About AppArmor Applet\" "
+//    "             verb=\"apparmor_applet_about\" "
+//    "           _label=\"_About...\"\n"
+//    "          pixtype=\"stock\" "
+//    "          pixname=\"gnome-stock-about\"/>\n"
+//    "   <menuitem name=\"Preferences\" "
+//    "		verb=\"apparmor_applet_preferences\" "
+//    "          _label=\"_Preferences...\"\n"
+//    "         pixtype=\"stock\" "
+//    "         pixname=\"gtk-preferences\"/>\n"
+//    "</popup>\n";
 
 static const char Context_menu_xml [] =
    "<popup name=\"button3\">\n"
@@ -28,11 +44,6 @@ static const char Context_menu_xml [] =
    "           _label=\"_About...\"\n"
    "          pixtype=\"stock\" "
    "          pixname=\"gnome-stock-about\"/>\n"
-   "   <menuitem name=\"Preferences\" "
-   "		verb=\"apparmor_applet_preferences\" "
-   "          _label=\"_Preferences...\"\n"
-   "         pixtype=\"stock\" "
-   "         pixname=\"gtk-preferences\"/>\n"
    "</popup>\n";
 
 void
@@ -93,7 +104,27 @@ static DBusHandlerResult signal_filter
 		apparmor_applet->alert_count++;
 		apparmor_applet->uncleared_alerts = TRUE;
 		dbus_message_iter_init(message, &iter);
-		/* Skip the first three values (full message, mode, and resource) */
+	/*
+	 * 1 - The full string - DBUS_TYPE_STRING
+	 * 2 - The PID (record->pid)  - DBUS_TYPE_INT64
+	 * 3 - The task (record->task) - DBUS_TYPE_INT64
+	 * 4 - The audit ID (record->audit_id) - DBUS_TYPE_STRING
+	 * 5 - The operation (record->operation: "Exec" "ptrace" etc) - DBUS_TYPE_STRING
+	 * 6 - The denied mask (record->denied_mask: "rwx" etc) - DBUS_TYPE_STRING
+	 * 7 - The requested mask (record->requested_mask) - DBUS_TYPE_STRING
+	 * 8 - The name of the profile (record->profile) - DBUS_TYPE_STRING
+	 * 9 - The first name field (record->name) - DBUS_TYPE_STRING
+	 * 10- The second name field (record->name2) - DBUS_TYPE_STRING
+	 * 11- The attribute (record->attribute) - DBUS_TYPE_STRING
+	 * 12- The parent task (record->parent) - DBUS_TYPE_STRING
+	 * 13- The magic token (record->magic_token) - DBUS_TYPE_STRING
+	 * 14- The info field (record->info) - DBUS_TYPE_STRING
+	 * 15- The active hat (record->active_hat) - DBUS_TYPE_STRING
+	 */
+		dbus_message_iter_next(&iter);
+		dbus_message_iter_next(&iter);
+		dbus_message_iter_next(&iter);
+		dbus_message_iter_next(&iter);
 		dbus_message_iter_next(&iter);
 		dbus_message_iter_next(&iter);
 		dbus_message_iter_next(&iter);
@@ -260,7 +291,15 @@ void applet_about(BonoboUIComponent * uic)
 				"license", license,
 				NULL);
 
-	gtk_widget_show(about_apparmor_applet);
+       g_signal_connect (about_apparmor_applet, "response",
+                         G_CALLBACK (gtk_widget_destroy),
+                         about_apparmor_applet);
+
+       g_signal_connect (about_apparmor_applet, "destroy",
+                         G_CALLBACK (gtk_widget_destroyed),
+                         &about_apparmor_applet);
+
+       gtk_widget_show(about_apparmor_applet);
 }
 
 void applet_prefs (BonoboUIComponent *uic)

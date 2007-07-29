@@ -26,7 +26,7 @@ add_columns (GtkTreeView *treeview)
 	/* column for fixed toggles */
 	renderer = gtk_cell_renderer_text_new ();
 	
-	column = gtk_tree_view_column_new_with_attributes ("Program Name",
+	column = gtk_tree_view_column_new_with_attributes ("Profile Name",
 							renderer,
 							"text", 0,
 							NULL);
@@ -221,8 +221,8 @@ display_popup_menu (GtkWidget *treeview, GdkEventButton *event, gpointer userdat
 			"activate",
 			G_CALLBACK(handle_popup_profile),
 			treeview);
-
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), profile_item);
+	/* Disabled until we have an easier way of working with logprof */
+/*	gtk_menu_shell_append(GTK_MENU_SHELL(menu), profile_item);*/
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), remove_item);
 
 	gtk_widget_show_all(menu);
