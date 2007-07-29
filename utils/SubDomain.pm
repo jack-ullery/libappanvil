@@ -1442,7 +1442,6 @@ sub handlechildren {
                 }
 
                 next unless $profile && $hat;
-
                 my $domainchange = ($type eq "exec") ? "change" : "nochange";
 
                 # escape special characters that show up in literal paths
@@ -1688,6 +1687,13 @@ sub handlechildren {
                                 $profilechanges{$pid} = $profile;
                             }
                         }
+                        # if they want to use px, make sure a profile
+                        # exists for the target.
+                        unless (-e getprofilefilename($exec_target)) {
+                               $helpers{$exec_target} = "enforce";
+                               autodep($exec_target);
+                               reload($exec_target);
+                        }
                     } elsif ($ans =~ /^CMD_UNCONFINED/) {
                         $profilechanges{$pid} = "unconstrained";
                         return if $domainchange eq "change";
@@ -1808,15 +1814,27 @@ sub add_audit_event_to_tree ( $$ ) {
     return  if ( !profile_exists($profile) );
 
     if ($e->{operation} eq "exec") {
-        add_to_tree( $e->{pid},
-                     "exec",
-                     $profile,
-                     $hat,
-                     $prog,
-                     $sdmode,
-                     $e->{denied_mask},
-                     $e->{name}
-                   );
+        if ( defined $e->{info} && $e->{info} eq "mandatory profile missing" ) {
+            add_to_tree( $e->{pid},
+                         "exec",
+                         $profile,
+                         $hat,
+                         $sdmode,
+                         "PERMITTING",
+                         $e->{denied_mask},
+                         $e->{name}
+                       );
+        } else {
+            add_to_tree( $e->{pid},
+                         "exec",
+                         $profile,
+                         $hat,
+                         $prog,
+                         $sdmode,
+                         $e->{denied_mask},
+                         $e->{name}
+                       );
+            }
     } elsif ($e->{operation} =~ m/file_/) {
         add_to_tree( $e->{pid},
                      "path",
