@@ -21,7 +21,7 @@
 %option prefix="aalogparse_"
 %option bison-bridge
 %option header-file="scanner.h"
-%option outfile="lex.yy.c" 
+%option outfile="scanner.c" 
 %{
 
 #include "grammar.h"

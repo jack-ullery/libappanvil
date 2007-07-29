@@ -312,12 +312,8 @@ audit_msg: TOK_KEY_MSG TOK_EQUALS TOK_AUDIT TOK_OPEN_PAREN TOK_AUDIT_DIGITS TOK_
 		int len2 = strlen($7);
 		int len3 = strlen($9);
 		int len = len1 + len2 + len3;
-		ret_record->audit_id = (char *) malloc(len + 3);
-		strncat(ret_record->audit_id, $5, len1);
-		strncat(ret_record->audit_id, ".", 1);
-		strncat(ret_record->audit_id, $7, len2);
-		strncat(ret_record->audit_id, ":", 1);
-		strncat(ret_record->audit_id, $9, len3);
+		ret_record->audit_id = (char *) malloc(len + 4);
+		snprintf(ret_record->audit_id, len + 3, "%s.%s:%s", $5, $7, $9);
 		free($5);
 		free($7);
 		free($9);
