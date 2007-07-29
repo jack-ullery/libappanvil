@@ -1745,6 +1745,15 @@ sub parse_audit_record ($) {
             $e->{$key} = pack("H*", $e->{$key});
         }
     }
+
+    if ($e->{requested_perm} && !validate_mode($e->{requested_perm})) {
+        fatal_error(sprintf(gettext('Log contains unknown mode %s.', $e->{requested_perm})));
+    }
+
+    if ($e->{denied_perm} && !validate_mode($e->{denied_perm})) {
+        fatal_error(sprintf(gettext('Log contains unknown mode %s.', $e->{denied_perm})));
+    }
+
     return $e;
 }
 
@@ -1980,6 +1989,10 @@ sub read_log {
             } elsif (m/(PERMITTING|REJECTING) (\S+) access (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
                 my ($sdmode, $mode, $detail, $prog, $pid, $profile, $hat) =
                    ($1, $2, $3, $4, $5, $6, $7);
+
+                if (!validate_mode($mode)) {
+                    fatal_error(sprintf(gettext('Log contains unknown mode %s.', $mode)));
+                }
 
                 my $domainchange = "nochange";
                 if ($mode =~ /x/) {
@@ -3612,12 +3625,24 @@ sub uniq (@) {
     return @result;
 }
 
+our $MODE_RE = "r|w|l|m|k|a|ix|px|ux|Px|Ux";
+
+sub validate_mode ($) {
+    my $mode = shift;
+
+    return ($mode =~ /^($MODE_RE)+$/) ? 1 : 0;
+}
+
 sub collapsemode ($) {
     my $old = shift;
 
     my %seen;
-    my $new = join "", sort
-      grep { !$seen{$_}++ } $old =~ m/\G(r|w|l|m|ix|px|ux|Px|Ux)/g;
+    $seen{$_}++ for ($old =~ m/\G($MODE_RE)/g);
+
+    # "w" implies "a"
+    delete $seen{a} if ($seen{w} && $seen{a});
+
+    my $new = join("", sort keys %seen);
     return $new;
 }
 
@@ -3627,9 +3652,12 @@ sub contains ($$) {
     $glob = "" unless defined $glob;
 
     my %h;
-    $h{$_}++ for ($glob =~ m/\G(r|w|l|m|ix|px|ux|Px|Ux)/g);
+    $h{$_}++ for ($glob =~ m/\G($MODE_RE)/g);
 
-    for my $mode ($single =~ m/\G(r|w|l|m|ix|px|ux|Px|Ux)/g) {
+    # "w" implies "a"
+    $h{a}++ if $h{w};
+
+    for my $mode ($single =~ m/\G($MODE_RE)/g) {
         return 0 unless $h{$mode};
     }
 
@@ -3865,6 +3893,10 @@ sub parse_profile_data {
             if ($@) {
                 die sprintf(gettext('Profile %s contains invalid regexp %s.'),
                                      $file, $path) . "\n";
+            }
+
+            if (!validate_mode($mode)) {
+                fatal_error(sprintf(gettext('Profile %s contains invalid mode %s.', $file, $mode)));
             }
 
             $profile_data->{$profile}{$hat}{path}{$path} = $mode;
@@ -4358,6 +4390,10 @@ sub loadinclude {
                 if ($@) {
                     die sprintf(gettext('Include file %s contains invalid regexp %s.'),
                                         $incfile, $path) . "\n";
+                }
+
+                if (!validate_mode($mode)) {
+                    fatal_error(sprintf(gettext('Include file %s contains invalid mode %s.', $incfile, $mode)));
                 }
 
                 $include{$incfile}{path}{$path} = $mode;
