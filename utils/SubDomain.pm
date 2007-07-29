@@ -1158,6 +1158,8 @@ my %CMDS = (
     CMD_ASK_LATER        => "Ask Me (L)ater",
     CMD_YES              => "(Y)es",
     CMD_NO               => "(N)o",
+    CMD_ALL_NET          => "Allow All (N)etwork",
+    CMD_NET_FAMILY       => "Allow Network Fa(m)ily",
 );
 
 sub UI_PromptUser ($) {
@@ -1677,6 +1679,25 @@ sub handlechildren {
                         return if $domainchange eq "change";
                     }
                 }
+            } elsif ( $type eq "netdomain" ) {
+               my ($pid, $p, $h, $prog, $sdmode, $family, $sock_type, $protocol) =
+                  @entry;
+
+                if (   ($p !~ /null(-complain)*-profile/)
+                    && ($h !~ /null(-complain)*-profile/))
+                {
+                    $profile = $p;
+                    $hat     = $h;
+                }
+
+                next unless $profile && $hat;
+                $prelog{$sdmode}
+                       {$profile}
+                       {$hat}
+                       {netdomain}
+                       {$family}
+                       {$sock_type} = 1 unless ( !$family || !$sock_type );
+
             }
         }
     }
@@ -1684,10 +1705,11 @@ sub handlechildren {
 
 sub add_to_tree ($@) {
     my ($pid, $type, @event) = @_;
-    my $eventmsg = Data::Dumper->Dump([@event], [qw(*event)]);
-    $eventmsg =~ s/\n/ /g;
-    $DEBUGGING && debug " ADD_TO_TREE: pid [$pid] type [$type] event [ $eventmsg
-    ]";
+    if ( $DEBUGGING ) {
+        my $eventmsg = Data::Dumper->Dump([@event], [qw(*event)]);
+        $eventmsg =~ s/\n/ /g;
+        debug " add_to_tree: pid [$pid] type [$type] event [ $eventmsg ]";
+    }
 
     unless (exists $pid{$pid}) {
         my $arrayref = [];
@@ -1874,10 +1896,24 @@ sub add_audit_event_to_tree ( $$ ) {
         }
         $pid{$child} = $arrayref;
         push @{$arrayref}, [ "fork", $child, $profile, $hat ];
+    } elsif ($e->{operation} =~ "socket_") {
+        add_to_tree( $e->{pid},
+                     "netdomain",
+                     $profile,
+                     $hat,
+                     $prog,
+                     $sdmode,
+                     $e->{family},
+                     $e->{sock_type},
+                     $e->{protocol},
+                   );
     } elsif ($e->{operation} eq "change_hat") {
         add_to_tree($e->{pid}, "unknown_hat", $profile, $hat, $sdmode, $hat);
     } else {
-        $DEBUGGING && debug "UNHANDLED: $_";
+        if ( $DEBUGGING ) {
+            my $msg = Data::Dumper->Dump([$e], [qw(*event)]);
+            debug "UNHANDLED: $msg";
+        }
     }
 }
 
@@ -2639,6 +2675,88 @@ sub ask_the_questions {
                             } elsif ($ans =~ /\d/) {
                                 $defaultoption = $ans;
                             }
+                        }
+                    }
+                }
+
+                # and then step through all of the netdomain entries...
+                for my $family (sort keys %{$log{$sdmode}
+                                                {$profile}
+                                                {$hat}
+                                                {netdomain}}) {
+
+                    # TODO - severity handling for net toggles
+                    #my $severity = $sevdb->rank();
+                    for my $sock_type (sort keys %{$log{$sdmode}
+                                                       {$profile}
+                                                       {$hat}
+                                                       {netdomain}
+                                                       {$family}}) {
+
+                        # we don't care about it if we've already added it to the
+                        # profile
+                        next if ( network_access_check( $profile,
+                                                       $hat,
+                                                       $family,
+                                                       $sock_type
+                                                      )
+                                );
+
+                        my $q = {};
+                        $q->{headers} = [];
+                        push @{ $q->{headers} },
+                             gettext("Profile"),
+                             combine_name($profile, $hat);
+                        push @{ $q->{headers} },
+                             gettext("Network Family"),
+                             $family;
+                        push @{ $q->{headers} },
+                             gettext("Socket Type"),
+                             $sock_type;
+
+                        $q->{functions} = [
+                                            "CMD_ALLOW",
+                                            "CMD_DENY",
+                                            "CMD_ABORT",
+                                            "CMD_FINISHED"
+                                          ];
+
+                        # complain-mode events default to allow - enforce defaults
+                        # to deny
+                        $q->{default} = ($sdmode eq "PERMITTING") ? "CMD_ALLOW" :
+                                                                    "CMD_DENY";
+
+                        $seenevents++;
+
+                        # what did the grand exalted master tell us to do?
+                        my $ans = UI_PromptUser($q);
+
+                        if ($ans eq "CMD_ALLOW") {
+
+                            # they picked (a)llow, so...
+
+                            # stick the whole rule into the profile
+                            $sd{$profile}{$hat}{netdomain}{$family}{$sock_type} = 1;
+
+                            # mark this profile as changed
+                            $changed{$profile} = 1;
+
+                            # give a little feedback to the user
+                            UI_Info(sprintf(
+                                   gettext('Adding network access %s %s to profile.'),
+                                            $family,
+                                            $sock_type
+                                           )
+                                   );
+                        } elsif ($ans eq "CMD_DENY") {
+                            UI_Info(sprintf(
+                                    gettext('Denying network access %s %s to profile.'),
+                                            $family,
+                                            $sock_type
+                                           )
+                                   );
+                        } else {
+                            redo;
                         }
                     }
                 }
@@ -3447,6 +3565,24 @@ sub collapselog () {
                         $log{$sdmode}{$profile}{$hat}{capability}{$capability} = 1;
                     }
                 }
+
+                # Network toggle handling
+                my $ndref = $prelog{$sdmode}{$profile}{$hat}{netdomain};
+                for my $family ( keys %{$ndref} ) {
+                    for my $sock_type ( keys %{$ndref->{$family}} ) {
+                        unless ( network_access_check( $profile,
+                                                       $hat,
+                                                       $family,
+                                                       $sock_type ) ) {
+                            $log{$sdmode}
+                                {$profile}
+                                {$hat}
+                                {netdomain}
+                                {$family}
+                                {$sock_type}=1;
+                        }
+                    }
+                }
             }
         }
     }
@@ -3661,7 +3797,7 @@ sub parse_profile_data {
                 $profile_data->{$profile}{$hat}{flags} = $flags;
             }
 
-            $profile_data->{$profile}{$hat}{netdomain} = [];
+            $profile_data->{$profile}{$hat}{netdomain} = { };
             $profile_data->{$profile}{$hat}{path} = { };
 
             # store off initial comment if they have one
@@ -3750,6 +3886,22 @@ sub parse_profile_data {
 
             return $ret if ( $ret != 0 );
 
+        } elsif (/^\s*network/) {
+            if (not $profile) {
+                die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
+            }
+
+            unless ($profile_data->{$profile}{$hat}{netdomain}) {
+                $profile_data->{$profile}{$hat}{netdomain} = { };
+            }
+
+            if ( /^\s*network\s+(\S+)\s*,\s*$/ ) {
+                $profile_data->{$profile}{$hat}{netdomain}{$1} = 1;
+            } elsif ( /^\s*network\s+(\S+)\s+(\S+)\s*,\s*$/ ) {
+                $profile_data->{$profile}{$hat}{netdomain}{$1}{$2} = 1;
+            } else {
+                $profile_data->{$profile}{$hat}{netdomain}{all} = 1;
+            }
         } elsif (/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
@@ -3795,7 +3947,7 @@ sub parse_profile_data {
             }
 
             $profile_data->{$profile}{$hat}{path} = { };
-            $profile_data->{$profile}{$hat}{netdomain} = [];
+            $profile_data->{$profile}{$hat}{netdomain} = { };
 
             # store off initial comment if they have one
             $profile_data->{$profile}{$hat}{initial_comment} = $initial_comment
@@ -3930,12 +4082,22 @@ sub writenetdomain ($) {
     my @data;
     # dump out the netdomain entries...
     if (exists $profile_data->{netdomain}) {
-        for my $nd (sort @{$profile_data->{netdomain}}) {
-            push @data, "  $nd,";
+        if ( $profile_data->{netdomain} == 1 ) {
+            push @data, "  network,";
+        } else {
+            for my $fam (sort keys %{$profile_data->{netdomain}}) {
+                if ( $profile_data->{netdomain}{$fam} == 1 ) {
+                    push @data, "  network $fam,";
+                } else {
+                    for my $type
+                        (sort keys %{$profile_data->{netdomain}{$fam}}) {
+                        push @data, "  network $fam $type,";
+                    }
+                }
+            }
         }
-        push @data, "" if @{$profile_data->{netdomain}};
+        push @data, "" if %{$profile_data->{netdomain}};
     }
-
     return @data;
 }
 
@@ -4096,6 +4258,22 @@ sub matchliteral {
     return undef if $@;
 
     return $matches;
+}
+
+sub network_access_check ($$$$) {
+    my ($profile, $hat, $family, $sock_type) = @_;
+    return 0 if ( not defined $sd{$profile}{$hat}{netdomain} );
+    my %netrules        = %{$sd{$profile}{$hat}{netdomain}};
+    my $all_net         =  defined $netrules{all};
+    my $all_net_family  =  defined $netrules{$family} &&
+                           $netrules{$family} == 1;
+    my $net_family_sock = defined $netrules{$family}{$sock_type};
+
+    if ( $all_net || $all_net_family || $net_family_sock ) {
+        return 1;
+    } else {
+      return 0;
+    }
 }
 
 sub reload ($) {
