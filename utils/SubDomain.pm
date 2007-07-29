@@ -3682,7 +3682,7 @@ sub checkProfileSyntax ($) {
       or fatal_error "Can't read AppArmor profiles in $profiledir.";
     for my $file (grep { -f "$profiledir/$_" } readdir(SDDIR)) {
         next if isSkippableFile($file);
-        my $err = readprofile("$profiledir/$file", \&printMessageErrorHandler);
+        my $err = readprofile("$profiledir/$file", \&printMessageErrorHandler, 1);
         if (defined $err and $err ne "") {
             push @$errors, $err;
         }
