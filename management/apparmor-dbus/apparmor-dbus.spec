@@ -4,9 +4,9 @@
 # norootforbuild
 
 Name:		apparmor-dbus
-BuildRequires:	audit-devel dbus-1-devel pcre-devel pkgconfig
-Requires:	audit dbus-1 pcre
-Version:	1.0
+BuildRequires:	audit-devel dbus-1-devel pkgconfig libapparmor-devel
+Requires:	audit dbus-1 libapparmor
+Version:	1.1
 Release:	0
 License:	GPL
 Group:		System/Management

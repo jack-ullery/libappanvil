@@ -11,7 +11,9 @@
 #include <locale.h>
 #include <libaudit.h>
 #include <dbus/dbus.h>
-#include <pcre.h>
+#include <aalogparse/aalogparse.h>
+
+#define NULLSPACE(x) (x == NULL) ? &empty_string : &x
 
 // Local data
 static volatile int signaled = 0;
@@ -39,7 +41,7 @@ int main(int argc, char *argv[])
 	setlocale (LC_ALL, "");
 	
 #ifndef DEBUG
-	// Make sure we are root
+/*	Make sure we are root */
 	if (getuid() != 0) {
 		printf("You must be root to run this program.\n");
 		return 4;
@@ -68,6 +70,9 @@ int main(int argc, char *argv[])
 	return event_loop();
 }
 
+/* This function is needed for "old" messages which lumped
+ * everything together under one audit ID.
+ */
 static int is_reject (char *data)
 {
 	int ret = -1;
@@ -87,21 +92,23 @@ static int is_reject (char *data)
 static int event_loop(void)
 {
 	void* data;
+	char *empty_string = " "; /* This is a quick way to indicate a 'null' value in our DBUS message */
+
 	struct iovec vec[2];
 	struct audit_dispatcher_header hdr;
+
 	DBusError		error;		/* Error, if any */
 	DBusMessage		*message;	/* Message to send */
 	DBusMessageIter		iter;		/* Iterator for message data */
+
 	const char		*what;		/* What to send */
 	static DBusConnection	*con = NULL;	/* Connection to DBUS server */
-	pcre *reject_regex;
-	const char *pcre_error, *matched_mode, *matched_resource, *matched_program, *matched_pid, *matched_profile, *matched_active;
-	int pcre_reject_vector[30];
-	int pcre_reject_vector_size = 30;
-	int pcre_erroffset, pcre_exec_return;
-	char *line;
 
-	char *pcre_reject_string = "^audit\\(\\d+\\.\\d+:\\d+\\): REJECTING (\\D+) access to (\\S+) \\((\\D+)\\((\\d+)\\) profile (\\S+) active (\\S+)\\)";
+	char *line = NULL, *parsable_line = NULL;
+	int real_data_size;
+	aa_log_record *record;
+	int is_rejection = 0;
+
 	if (con && !dbus_connection_get_is_connected(con))
 	{
 		dbus_connection_unref(con);
@@ -130,20 +137,13 @@ static int event_loop(void)
 		return 1;
 	}
 
-	/* Compile the regular expression */
-	reject_regex = pcre_compile(pcre_reject_string, 0, &pcre_error, &pcre_erroffset, NULL);
-	if (reject_regex == NULL)
-	{
-		printf("Could not compile the reject regular expression.\n");
-		printf("The error message was: %s\n", pcre_error);
-		return 1;
-	}
-
 	memset(data, 0, MAX_AUDIT_MESSAGE_LENGTH);
 	memset(&hdr, 0, sizeof(hdr));
 	do
 	{
 		int rc;
+		parsable_line = NULL;
+		is_rejection = 0;
 		struct timeval tv;
 		fd_set fd;
 		tv.tv_sec = 1;
@@ -170,58 +170,104 @@ static int event_loop(void)
 			printf("rc == %d(%s)\n", rc, strerror(errno));
 			break;
 		}
-		/* Handle the AppArmor events */
-		if ((hdr.type >= 1500) && (hdr.type <= 1599)) 
+
+		/* Handle the AppArmor events.
+		 * 1500 is used for "old" style messages.
+		 * 1503 is used for APPARMOR_DENIED messages. 
+		 */
+		if ((hdr.type == 1500) || (hdr.type == 1503))
 		{
 			line = (char *) data;
+			record = NULL;
+			if (hdr.type == 1503)
+				is_rejection = 1;
+			if ((hdr.type == 1500) && (is_reject(line) == 0))
+				is_rejection = 1;
+
 			/* We only care about REJECTING messages */
-			if (is_reject(line) == 0)
-			{
-				pcre_exec_return = pcre_exec(reject_regex,
-								NULL,
-								line,
-								strlen(line),
-								0,
-								0,
-								pcre_reject_vector,
-								pcre_reject_vector_size);
-				if (pcre_exec_return > 0)
+ 			if (is_rejection == 1)
+ 			{
+				/* parse_record expects things like they appear in audit.log -
+				 * which means we need to prepend TYPE=APPARMOR (if hdr.type is 1500)
+				 * or type=APPARMOR_DENIED (if hdr.type is 1503).  This is not ideal.
+				 */
+				real_data_size = strlen(line);
+				if (hdr.type == 1500)
 				{
-					pcre_get_substring(line, pcre_reject_vector, pcre_exec_return, 1, &matched_mode);
-					pcre_get_substring(line, pcre_reject_vector, pcre_exec_return, 2, &matched_resource);
-					pcre_get_substring(line, pcre_reject_vector, pcre_exec_return, 3, &matched_program);
-					pcre_get_substring(line, pcre_reject_vector, pcre_exec_return, 4, &matched_pid);
-					pcre_get_substring(line, pcre_reject_vector, pcre_exec_return, 5, &matched_profile);
-					pcre_get_substring(line, pcre_reject_vector, pcre_exec_return, 6, &matched_active);
-					message = dbus_message_new_signal("/com/Novell/AppArmor","com.novell.apparmor", "REJECT");
-					dbus_message_iter_init_append(message, &iter);
-					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &data);
-					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &matched_mode);
-					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &matched_resource);
-					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &matched_program);
-					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &matched_pid);
-					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &matched_profile);
-					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &matched_active);
-					dbus_connection_send(con, message, NULL);
-  					dbus_connection_flush(con);
-					dbus_message_unref(message);
-					pcre_free_substring(matched_mode);
-					pcre_free_substring(matched_resource);
-					pcre_free_substring(matched_program);
-					pcre_free_substring(matched_pid);
-					pcre_free_substring(matched_profile);
-					pcre_free_substring(matched_active);
-
+  					parsable_line = (char *) malloc(real_data_size + 20);
+					snprintf(parsable_line, real_data_size + 19, "type=APPARMOR msg=%s", line);			
 				}
-			}
-		}
+				else
+				{
+					parsable_line = (char *) malloc(real_data_size + 27);
+					snprintf(parsable_line, real_data_size + 26, "type=APPARMOR_REJECT msg=%s", line);
+				}
 
+				record = parse_record(parsable_line);
+				message = dbus_message_new_signal("/com/Novell/AppArmor","com.novell.apparmor", "REJECT");
+				dbus_message_iter_init_append(message, &iter);
+
+				/*
+				 * The message has a number of fields appended to it,
+				 * all of which map to the aa_log_record struct that we get back from
+				 * parse_record().  If an entry in the struct is NULL or otherwise invalid,
+				 * the field is still appended as a single blank space (in the case of strings), or a 
+				 * 0 in case of integers (which are all PIDs and unlikely to ever be 0).
+				 *
+				 * TODO: Pass a bitmask int along for the denied & requested masks
+				 *
+				 * 1 - The full string - DBUS_TYPE_STRING
+				 * 2 - The PID (record->pid)  - DBUS_TYPE_INT64
+				 * 3 - The task (record->task) - DBUS_TYPE_INT64
+				 * 4 - The audit ID (record->audit_id) - DBUS_TYPE_STRING
+				 * 5 - The operation (record->operation: "Exec" "ptrace" etc) - DBUS_TYPE_STRING
+				 * 6 - The denied mask (record->denied_mask: "rwx" etc) - DBUS_TYPE_STRING
+				 * 7 - The requested mask (record->requested_mask) - DBUS_TYPE_STRING
+				 * 8 - The name of the profile (record->profile) - DBUS_TYPE_STRING
+				 * 9 - The first name field (record->name) - DBUS_TYPE_STRING
+				 * 10- The second name field (record->name2) - DBUS_TYPE_STRING
+				 * 11- The attribute (record->attribute) - DBUS_TYPE_STRING
+				 * 12- The parent task (record->parent) - DBUS_TYPE_STRING
+				 * 13- The magic token (record->magic_token) - DBUS_TYPE_STRING
+				 * 14- The info field (record->info) - DBUS_TYPE_STRING
+				 * 15- The active hat (record->active_hat) - DBUS_TYPE_STRING
+				 */
+
+				dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &data);
+ 				if (record != NULL)
+ 				{
+					dbus_message_iter_append_basic(&iter, DBUS_TYPE_INT64, &record->pid);
+					dbus_message_iter_append_basic(&iter, DBUS_TYPE_INT64, &record->task);	
+					// Please note: NULLSPACE is defined at the top of this file, and will expand to
+					// a ternary conditional:
+					// (record->audit_id == NULL) ? &empty_string : &record->audit_id
+					// for example.
+					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->audit_id));
+					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->operation));
+					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->denied_mask));
+					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->requested_mask));
+					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->profile));
+					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->name));
+					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->name2));
+					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->attribute));
+					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->parent));
+					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->magic_token));
+					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->info));
+					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->active_hat));
+				}
+				dbus_connection_send(con, message, NULL);
+				dbus_connection_flush(con);
+				dbus_message_unref(message);
+  				free_record(record);
+
+				if (parsable_line != NULL)
+					free(parsable_line);
+ 			}
+		}
 	} while(!signaled);
-	//dbus_message_unref(message);
 
 	if (con)
-	        dbus_connection_close(con);
-	pcre_free(reject_regex);
+	        dbus_connection_unref(con);
+	free(data);
 	return 0;
 }
-
