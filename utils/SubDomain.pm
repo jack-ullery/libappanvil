@@ -1755,9 +1755,10 @@ sub add_audit_event_to_tree ( $$ ) {
       ($profile, $hat) = split /\/\//, $e->{name};
     }
     $hat = $profile if ( !$hat );
-    my @path = split(/\//, $profile);
-    my $prog = pop @path;
-
+    # TODO - refactor add_to_tree as prog is no longer supplied
+    #        HINT is from previous format where prog was not
+    #        consistently passed
+    my $prog = "HINT";
 
     if ($e->{operation} eq "exec") {
         add_to_tree( $e->{pid},
@@ -1861,6 +1862,18 @@ sub add_audit_event_to_tree ( $$ ) {
                      $e->{denied_mask},
                      $e->{name}
                    );
+    } elsif ($e->{operation} eq "clone") {
+        my ($parent, $child)  = ($e->{pid}, $e->{task});
+        $profile ||= "null-complain-profile";
+        $hat     ||= "null-complain-profile";
+        my $arrayref = [];
+        if (exists $pid{$e->{pid}}) {
+            push @{ $pid{$parent} }, $arrayref;
+        } else {
+            push @log, $arrayref;
+        }
+        $pid{$child} = $arrayref;
+        push @{$arrayref}, [ "fork", $child, $profile, $hat ];
     } elsif ($e->{operation} eq "change_hat") {
         add_to_tree($e->{pid}, "unknown_hat", $profile, $hat, $sdmode, $hat);
     } else {
