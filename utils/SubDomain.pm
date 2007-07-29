@@ -377,16 +377,31 @@ sub convert_regexp ($) {
     my $regexp = shift;
 
     # escape regexp-special characters we don't support
-    $regexp =~ s/(?<!\\)(\+|\$)/\\$1/g;
+    $regexp =~ s/(?<!\\)(\.|\+|\$)/\\$1/g;
 
-    # escape . characters
-    $regexp =~ s/(?<!\\)\./SDPROF_INTERNAL_DOT/g;
+    # * and ** globs can't collapse to match an empty string when they're
+    # the only part of the glob at a specific directory level, which
+    # complicates things a little.
 
-    # convert ** globs to match anything
-    $regexp =~ s/(?<!\\)\*\*/.SDPROF_INTERNAL_GLOB/g;
+    # ** globs match multiple directory levels
+    $regexp =~ s{(?<!\\)\*\*+}{
+      my ($pre, $post) = ($`, $');
+      if (($pre =~ /\/$/) && (!$post || $post =~ /^\//)) {
+        'SD_INTERNAL_MULTI_REQUIRED';
+      } else {
+        'SD_INTERNAL_MULTI_OPTIONAL';
+      }
+    }gex;
 
-    # convert * globs to match anything at current path level
-    $regexp =~ s/(?<!\\)\*/[^\/]SDPROF_INTERNAL_GLOB/g;
+    # convert * globs to match anything at the current path level
+    $regexp =~ s{(?<!\\)\*}{
+      my ($pre, $post) = ($`, $');
+      if (($pre =~ /\/$/) && (!$post || $post =~ /^\//)) {
+        'SD_INTERNAL_SINGLE_REQUIRED';
+      } else {
+        'SD_INTERNAL_SINGLE_OPTIONAL';
+      }
+    }gex;
 
     # convert ? globs to match a single character at current path level
     $regexp =~ s/(?<!\\)\?/[^\/]/g;
@@ -394,11 +409,11 @@ sub convert_regexp ($) {
     # convert {foo,baz} to (foo|baz)
     $regexp =~ y/\{\}\,/\(\)\|/ if $regexp =~ /\{.*\,.*\}/;
 
-    # twiddle the escaped * chars back
-    $regexp =~ s/SDPROF_INTERNAL_GLOB/\*/g;
-
-    # twiddle the escaped . chars back
-    $regexp =~ s/SDPROF_INTERNAL_DOT/\\./g;
+    # convert internal markers to their appropriate regexp equivalents
+    $regexp =~ s/SD_INTERNAL_SINGLE_OPTIONAL/[^\/]*/g;
+    $regexp =~ s/SD_INTERNAL_SINGLE_REQUIRED/[^\/]+/g;
+    $regexp =~ s/SD_INTERNAL_MULTI_OPTIONAL/.*/g;
+    $regexp =~ s/SD_INTERNAL_MULTI_REQUIRED/[^\/].*/g;
 
     return $regexp;
 }
@@ -1477,7 +1492,6 @@ sub handlechildren {
                         $mode .= $prelog{$sdmode}{$profile}{$hat}{path}{$path};
                         $mode = collapsemode($mode);
                     }
-
                     $prelog{$sdmode}{$profile}{$hat}{path}{$path} = $mode;
 
                     # print "$pid $profile $hat $prog $sdmode $mode $path\n";
@@ -1803,7 +1817,7 @@ sub add_audit_event_to_tree ( $$ ) {
                      $e->{denied_mask},
                      $e->{name}
                    );
-    } elsif ($e->{operation} =~ "file_") {
+    } elsif ($e->{operation} =~ m/file_/) {
         add_to_tree( $e->{pid},
                      "path",
                      $profile,
@@ -1822,7 +1836,7 @@ sub add_audit_event_to_tree ( $$ ) {
                      $sdmode,
                      $e->{name}
                    );
-    } elsif ($e->{operation} eq "xattr" ||
+    } elsif ($e->{operation} =~  m/xattr/ ||
              $e->{operation} eq "setattr") {
         add_to_tree( $e->{pid},
                      "path",
@@ -1833,16 +1847,7 @@ sub add_audit_event_to_tree ( $$ ) {
                      $e->{denied_mask},
                      $e->{name}
                     );
-        add_to_tree( $e->{pid},
-                     "path",
-                     $profile,
-                     $hat,
-                     $prog,
-                     $sdmode,
-                     $e->{denied_mask},
-                     $e->{name}
-                    );
-    } elsif ($e->{operation} =~ "inode_") {
+    } elsif ($e->{operation} =~ m/inode_/) {
         if ( $e->{operation} eq "inode_permission" &&
              $e->{denied_mask} eq "x"  &&
              $sdmode eq "PERMITTING" ) {
@@ -1907,7 +1912,7 @@ sub add_audit_event_to_tree ( $$ ) {
         }
         $pid{$child} = $arrayref;
         push @{$arrayref}, [ "fork", $child, $profile, $hat ];
-    } elsif ($e->{operation} =~ "socket_") {
+    } elsif ($e->{operation} =~ m/socket_/) {
         add_to_tree( $e->{pid},
                      "netdomain",
                      $profile,
@@ -2451,7 +2456,6 @@ sub ask_the_questions {
                         $combinedmode .= $cm;
                         push @matches, @m;
                     }
-
                     unless ($combinedmode && contains($combinedmode, $mode)) {
 
                         my $defaultoption = 1;
@@ -4435,9 +4439,11 @@ sub rematchfrag {
     for my $entry (keys %{ $frag->{path} }) {
 
         my $regexp = convert_regexp($entry);
+        $DEBUGGING && debug("rematchfrag - entry [$entry] regex[$regexp]");
 
         # check the log entry against our converted regexp...
         if ($path =~ /^$regexp$/) {
+            $DEBUGGING && debug("rematchfrag2 MATCH path [$path] regex[$regexp]");
 
             # regexp matches, add it's mode to the list to check against
             $combinedmode .= $frag->{path}{$entry};
