@@ -3769,7 +3769,7 @@ sub parse_profile_data {
         next if /^\s*$/;
 
         # start of a profile...
-        if (m/^\s*("??\/.+?"??)\s+(flags=\(.+\)\s+)*\{\s*$/) {
+        if (m/^\s*("??\/.+?"??)\s+(flags=\(.+\)\s+)*\{\s*(#.*)?$/) {
 
             # if we run into the start of a profile while we're already in a
             # profile, something's wrong...
@@ -3812,7 +3812,7 @@ sub parse_profile_data {
                 $repo_data = undef;
             }
 
-        } elsif (m/^\s*\}\s*$/) { # end of a profile...
+        } elsif (m/^\s*\}\s*(#.*)?$/) { # end of a profile...
 
             # if we hit the end of a profile when we're not in one, something's
             # wrong...
@@ -3831,7 +3831,7 @@ sub parse_profile_data {
 
             $initial_comment = "";
 
-        } elsif (m/^\s*capability\s+(\S+)\s*,\s*$/) {  # capability entry
+        } elsif (m/^\s*capability\s+(\S+)\s*,\s*(#.*)?$/) {  # capability entry
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
@@ -3839,13 +3839,13 @@ sub parse_profile_data {
             my $capability = $1;
             $profile_data->{$profile}{$hat}{capability}{$capability} = 1;
 
-        } elsif (/^\s*(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*$/i) { # boolean definition
-        } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\+=\s*(.+)\s*$/) { # variable additions
-        } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*=\s*(.+)\s*$/) { # variable definitions
-        } elsif (m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*$/) { # conditional -- boolean
-        } elsif (m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) { # conditional -- variable defined
-        } elsif (m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) { # conditional -- boolean defined
-        } elsif (m/^\s*([\"\@\/].*)\s+(\S+)\s*,\s*$/) {     # path entry
+        } elsif (/^\s*(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*(#.*)?$/i) { # boolean definition
+        } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\+=\s*(.+)\s*(#.*)?$/) { # variable additions
+        } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*=\s*(.+)\s*(#.*)?$/) { # variable definitions
+        } elsif (m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean
+        } elsif (m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- variable defined
+        } elsif (m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean defined
+        } elsif (m/^\s*([\"\@\/].*)\s+(\S+)\s*,\s*(#.*)?$/) {     # path entry
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
@@ -3920,7 +3920,7 @@ sub parse_profile_data {
             # keep track of netdomain entries...
             push @{$profile_data->{$profile}{$hat}{netdomain}}, $_;
 
-        } elsif (m/^\s*\^(\"?.+?)\s+(flags=\(.+\)\s+)*\{\s*$/) {
+        } elsif (m/^\s*\^(\"?.+?)\s+(flags=\(.+\)\s+)*\{\s*(#.*)?$/) {
             # start of a deprecated syntax hat definition
             # read in and mark as changed so that will be written out in the new
             # format
