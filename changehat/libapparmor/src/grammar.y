@@ -307,13 +307,7 @@ old_profile:
 
 audit_msg: TOK_KEY_MSG TOK_EQUALS TOK_AUDIT TOK_OPEN_PAREN TOK_AUDIT_DIGITS TOK_PERIOD TOK_AUDIT_DIGITS TOK_COLON TOK_AUDIT_DIGITS TOK_CLOSE_PAREN TOK_COLON
 	{
-		/* TOK_AUDIT_DIGITS is actually a character string, and this could be done in a better way. */
-		int len1 = strlen($5);
-		int len2 = strlen($7);
-		int len3 = strlen($9);
-		int len = len1 + len2 + len3;
-		ret_record->audit_id = (char *) malloc(len + 4);
-		snprintf(ret_record->audit_id, len + 3, "%s.%s:%s", $5, $7, $9);
+		asprintf(&ret_record->audit_id, "%s.%s:%s", $5, $7, $9);
 		free($5);
 		free($7);
 		free($9);

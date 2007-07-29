@@ -6,7 +6,7 @@
 
 Name:		libapparmor1
 Version:	2.1
-Release:	1
+Release:	2
 License:	LGPL
 Group:		Development/Libraries/C and C++
 BuildRoot:	%{_tmppath}/%{name}-${version}-build
