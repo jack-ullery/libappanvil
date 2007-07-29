@@ -1811,7 +1811,7 @@ sub add_audit_event_to_tree ( $$ ) {
     #        consistently passed
     my $prog = "HINT";
 
-    return  if ( !profile_exists($profile) );
+    return if ($profile ne 'null-complain-profile' && !profile_exists($profile));
 
     if ($e->{operation} eq "exec") {
         if ( defined $e->{info} && $e->{info} eq "mandatory profile missing" ) {
