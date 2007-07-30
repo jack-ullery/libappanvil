@@ -51,6 +51,8 @@ BuildRequires: libapparmor
 %else
 BuildRequires: libapparmor-devel
 %endif
+%else
+BuildRequires: libapparmor-devel
 %endif
 
 %if %{distro} == "suse"
