@@ -18,7 +18,6 @@
 // Local data
 static volatile int signaled = 0;
 static int pipe_fd;
-static const char *pgm = "AppArmorDBUS";
 
 // Local functions
 static int event_loop(void);
@@ -100,8 +99,6 @@ static int event_loop(void)
 	DBusError		error;		/* Error, if any */
 	DBusMessage		*message;	/* Message to send */
 	DBusMessageIter		iter;		/* Iterator for message data */
-
-	const char		*what;		/* What to send */
 	static DBusConnection	*con = NULL;	/* Connection to DBUS server */
 
 	char *line = NULL, *parsable_line = NULL;
@@ -187,6 +184,7 @@ static int event_loop(void)
 			/* We only care about REJECTING messages */
  			if (is_rejection == 1)
  			{
+				printf("It's rejection\n");
 				/* parse_record expects things like they appear in audit.log -
 				 * which means we need to prepend TYPE=APPARMOR (if hdr.type is 1500)
 				 * or type=APPARMOR_DENIED (if hdr.type is 1503).  This is not ideal.
@@ -194,8 +192,10 @@ static int event_loop(void)
 				real_data_size = strlen(line);
 				if (hdr.type == 1500)
 				{
-  					parsable_line = (char *) malloc(real_data_size + 20);
-					snprintf(parsable_line, real_data_size + 19, "type=APPARMOR msg=%s", line);			
+					printf("malloc\n");
+					parsable_line = (char *) malloc(real_data_size + 20);
+					snprintf(parsable_line, real_data_size + 19, "type=APPARMOR msg=%s", line);
+					printf("printed\n");
 				}
 				else
 				{
