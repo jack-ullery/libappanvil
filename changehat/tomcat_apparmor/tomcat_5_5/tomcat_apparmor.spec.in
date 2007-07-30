@@ -39,8 +39,8 @@ Source0: %{name}-%{version}-@@repo_version@@.tar.gz
 License: LGPL
 BuildRoot: %{?_tmppath:}%{!?_tmppath:/var/tmp}/%{name}-%{version}-build
 Url: http://developer.novell.com/wiki/index.php/Novell_AppArmor
-Prereq: tomcat55, servletapi5, libapparmor
-BuildRequires: tomcat55, servletapi5, ant, java, libapparmor, java2-devel-packages, apparmor-docs
+Prereq: tomcat55, servletapi5
+BuildRequires: tomcat55, servletapi5, ant, java, libapparmor-devel, java2-devel-packages, apparmor-docs
 
 %description
 tomcat_apparmor - is a plugin for Apache Tomcat version 5.x that provides
@@ -81,5 +81,7 @@ ldconfig
 ldconfig 
 
 %changelog
+* Mon Jul 20 2007 - sbeattie@suse.de
+- Convert builddep on libapparmor to libapparmor-devel
 * Mon Oct 9 2006 - dreynolds@suse.de 
 - Initial package creation.
