@@ -165,7 +165,7 @@ includedir = ${prefix}/include
 infodir = ${datarootdir}/info
 install_sh = /home/work/forge/trunk/management/applets/apparmorapplet-gnome/install-sh
 libdir = ${exec_prefix}/lib
-libexecdir = /usr/lib/apparmorapplet
+libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
 localstatedir = ${prefix}/var
 mandir = ${datarootdir}/man
@@ -180,7 +180,7 @@ sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
 sysconfdir = ${prefix}/etc
 target_alias = 
-apparmor_applet_pixmapsdir = $(prefix)/@NO_PREFIX_PACKAGE_PIXMAPS_DIR@
+apparmor_applet_pixmapsdir = $(pixmapsdir)
 apparmor_applet_pixmaps_DATA = \
 	apparmor_alert.png  apparmor_default.png
 

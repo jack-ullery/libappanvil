@@ -6,8 +6,10 @@
 #include <panel-applet.h>
 #include <gtk/gtk.h>
 #include <dbus/dbus.h>
+#include <dbus/dbus-glib-lowlevel.h>
 #include <regex.h>
 #include <stdlib.h>
+#include <string.h>
 #include <glib/gi18n.h>
 #include "preferences_dialog.h"
 #include "reject_list.h"
@@ -285,7 +287,7 @@ void applet_about(BonoboUIComponent * uic)
 		g_object_new(GTK_TYPE_ABOUT_DIALOG, 
 				"authors", authors,
 				"logo", GDK_PIXBUF(apparmor_applet->icon),
-				"copyright", ("Copyright (C) 2006 Novell"),
+				"copyright", ("Copyright (C) 2007 Novell"),
 				"name", ("AppArmor Alert Applet"),
 				"version", VERSION,
 				"license", license,

@@ -14,6 +14,8 @@ Group:		System/GUI/Gnome
 Requires:	apparmor-dbus
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
 Source0:	%{name}-%{version}.tar.bz2
+Summary:	An AppArmor event notification applet for GNOME
+License:	GPL
 
 %description
 -
@@ -38,6 +40,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc AUTHORS COPYING ChangeLog NEWS README
 %{_libdir}/bonobo/servers/*.server
 %{_prefix}/lib/apparmorapplet
+%{_datadir}/pixmaps/*
 
 %changelog
 -
