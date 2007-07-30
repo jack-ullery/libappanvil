@@ -4051,10 +4051,6 @@ sub parse_profile_data {
                 for my $hat (split(/\s+/, $cfg->{required_hats}{$hatglob})) {
                     unless ($profile_data->{$parsed_profile}{$hat}) {
                         $profile_data->{$parsed_profile}{$hat} = { };
-                        # if we had to auto-instantiate a hat,
-                        # we want to write out
-                        # an updated version of the profile
-                        $changed{$parsed_profile} = 1;
                     }
                 }
             }
