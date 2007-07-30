@@ -72,7 +72,7 @@ install ${RPM_BUILD_DIR}/%{name}-%{version}/README.tomcat_apparmor  ${RPM_BUILD_
 %{CATALINA_HOME}/server/lib/%{JAR_FILE}
 /%{_lib}/lib*
 /%{_libdir}/lib*
-%{APPARMOR_DOC_DIR}/README.tomcat_apparmor
+doc %attr(0644,root,root) %{APPARMOR_DOC_DIR}/README.tomcat_apparmor
 
 %post
 ldconfig 
