@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jul 30 08:16:39 CEST 2007 - sbeattie@suse.de
+
+- Convert libapparmor builddep to libapparmor-devel
+
+-------------------------------------------------------------------
 Tue Mar 13 10:27:34 PDT 2007 - jmichael@suse.de
 
 - Use pam_modutil_* wrapper functions when possible

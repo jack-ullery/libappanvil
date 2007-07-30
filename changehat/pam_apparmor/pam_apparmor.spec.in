@@ -23,7 +23,7 @@ Summary:      Pam module to add AppArmor change_hat functionality
 URL:          http://forge.novell.com/modules/xfmod/project/?apparmor
 Source:       pam_apparmor-%{version}-@@repo_version@@.tar.gz
 BuildRoot:    %{_tmppath}/%{name}-%{version}-build
-BuildRequires: pam-devel libapparmor
+BuildRequires: pam-devel libapparmor-devel
 Requires:     pam
 Prereq:       pam
 
