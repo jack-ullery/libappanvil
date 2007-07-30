@@ -1766,12 +1766,12 @@ sub parse_audit_record ($) {
         }
     }
 
-    if ($e->{requested_perm} && !validate_mode($e->{requested_perm})) {
-        fatal_error(sprintf(gettext('Log contains unknown mode %s.', $e->{requested_perm})));
+    if ($e->{requested_mask} && !validate_log_mode($e->{requested_mask})) {
+        fatal_error(sprintf(gettext('Log contains unknown mode %s.'), $e->{requested_mask}));
     }
 
-    if ($e->{denied_perm} && !validate_mode($e->{denied_perm})) {
-        fatal_error(sprintf(gettext('Log contains unknown mode %s.', $e->{denied_perm})));
+    if ($e->{denied_mask} && !validate_log_mode($e->{denied_mask})) {
+        fatal_error(sprintf(gettext('Log contains unknown mode %s.'), $e->{denied_mask}));
     }
 
     return $e;
@@ -2013,8 +2013,8 @@ sub read_log {
                 my ($sdmode, $mode, $detail, $prog, $pid, $profile, $hat) =
                    ($1, $2, $3, $4, $5, $6, $7);
 
-                if (!validate_mode($mode)) {
-                    fatal_error(sprintf(gettext('Log contains unknown mode %s.', $mode)));
+                if (!validate_log_mode($mode)) {
+                    fatal_error(sprintf(gettext('Log contains unknown mode %s.'), $mode));
                 }
 
                 my $domainchange = "nochange";
@@ -3647,19 +3647,26 @@ sub uniq (@) {
     return @result;
 }
 
-our $MODE_RE = "r|w|l|m|k|a|ix|px|ux|Px|Ux";
+our $LOG_MODE_RE = "r|w|l|m|k|a|x";
+our $PROFILE_MODE_RE = "r|w|l|m|k|a|ix|px|ux|Px|Ux";
 
-sub validate_mode ($) {
+sub validate_log_mode ($) {
     my $mode = shift;
 
-    return ($mode =~ /^($MODE_RE)+$/) ? 1 : 0;
+    return ($mode =~ /^($LOG_MODE_RE)+$/) ? 1 : 0;
+}
+
+sub validate_profile_mode ($) {
+    my $mode = shift;
+
+    return ($mode =~ /^($PROFILE_MODE_RE)+$/) ? 1 : 0;
 }
 
 sub collapsemode ($) {
     my $old = shift;
 
     my %seen;
-    $seen{$_}++ for ($old =~ m/\G($MODE_RE)/g);
+    $seen{$_}++ for ($old =~ m/\G($PROFILE_MODE_RE)/g);
 
     # "w" implies "a"
     delete $seen{a} if ($seen{w} && $seen{a});
@@ -3674,12 +3681,12 @@ sub contains ($$) {
     $glob = "" unless defined $glob;
 
     my %h;
-    $h{$_}++ for ($glob =~ m/\G($MODE_RE)/g);
+    $h{$_}++ for ($glob =~ m/\G($PROFILE_MODE_RE)/g);
 
     # "w" implies "a"
     $h{a}++ if $h{w};
 
-    for my $mode ($single =~ m/\G($MODE_RE)/g) {
+    for my $mode ($single =~ m/\G($PROFILE_MODE_RE)/g) {
         return 0 unless $h{$mode};
     }
 
@@ -3917,8 +3924,8 @@ sub parse_profile_data {
                                      $file, $path) . "\n";
             }
 
-            if (!validate_mode($mode)) {
-                fatal_error(sprintf(gettext('Profile %s contains invalid mode %s.', $file, $mode)));
+            if (!validate_profile_mode($mode)) {
+                fatal_error(sprintf(gettext('Profile %s contains invalid mode %s.'), $file, $mode));
             }
 
             $profile_data->{$profile}{$hat}{path}{$path} = $mode;
@@ -4414,8 +4421,8 @@ sub loadinclude {
                                         $incfile, $path) . "\n";
                 }
 
-                if (!validate_mode($mode)) {
-                    fatal_error(sprintf(gettext('Include file %s contains invalid mode %s.', $incfile, $mode)));
+                if (!validate_profile_mode($mode)) {
+                    fatal_error(sprintf(gettext('Include file %s contains invalid mode %s.'), $incfile, $mode));
                 }
 
                 $include{$incfile}{path}{$path} = $mode;
