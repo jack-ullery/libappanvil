@@ -42,9 +42,16 @@ Source0: %{name}-%{version}-@@repo_version@@.tar.gz
 License: LGPL
 BuildRoot: %{?_tmppath:}%{!?_tmppath:/var/tmp}/%{name}-%{version}-build
 Url: http://forge.novell.com/modules/xfmod/project/?apparmor
-BuildRequires: libapparmor-devel
 Obsoletes: mod_change_hat mod-change-hat mod-apparmor apache2-mod-apparmor
 Provides: mod_change_hat mod-change-hat mod-apparmor apache2-mod-apparmor
+
+%if %{distro} == "suse"
+%if 0%{?suse_version} < 1030
+BuildRequires: libapparmor
+%else
+BuildRequires: libapparmor-devel
+%endif
+%endif
 
 %if %{distro} == "suse"
 %define apxs /usr/sbin/apxs2
