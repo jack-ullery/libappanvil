@@ -42,8 +42,7 @@ Source0: %{name}-%{version}-@@repo_version@@.tar.gz
 License: LGPL
 BuildRoot: %{?_tmppath:}%{!?_tmppath:/var/tmp}/%{name}-%{version}-build
 Url: http://forge.novell.com/modules/xfmod/project/?apparmor
-Prereq: libapparmor
-BuildRequires: libapparmor
+BuildRequires: libapparmor-devel
 Obsoletes: mod_change_hat mod-change-hat mod-apparmor apache2-mod-apparmor
 Provides: mod_change_hat mod-change-hat mod-apparmor apache2-mod-apparmor
 
@@ -126,6 +125,8 @@ make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro} MANDIR=%{_mandir}
 %endif
 
 %changelog
+* Sun Jul 29 2007 - sbeattie@suse.de
+- Convert builddep on libapparmor to libapparmor-devel
 * Tue Apr  3 2007 - sbeattie@suse.de
 - Add mod_apparmor manpage to package
 * Wed Sep 06 2006 - poeml@suse.de
