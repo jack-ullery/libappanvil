@@ -9,9 +9,6 @@
 #
 
 # norootforbuild
-# neededforbuild  pam-devel libapparmor
-
-BuildRequires: pam-devel libapparmor
 
 Name:         pam_apparmor
 License:      GPL
