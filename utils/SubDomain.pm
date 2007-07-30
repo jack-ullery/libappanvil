@@ -3130,10 +3130,10 @@ sub save_profiles {
                 return;
             } else {
                 my $selected_profiles_ref = $yarg->{PROFILES};
-            }
-            for my $profile (@selected_profiles) {
-                writeprofile($profile);
-                reload($profile);
+                for my $profile (@$selected_profiles_ref) {
+                    writeprofile($profile);
+                    reload($profile);
+                }
             }
         } else {
             my $q = {};
