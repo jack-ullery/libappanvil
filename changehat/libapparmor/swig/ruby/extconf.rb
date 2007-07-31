@@ -2,7 +2,7 @@ require 'mkmf'
 require 'ftools'
 
 $CFLAGS   += " " + (ENV['CFLAGS'] || "") + (ENV['CXXFLAGS'] || "")
-$LDFLAGS = "../../src/.libs/libaalogparse.so"
+$LDFLAGS = "../../src/.libs/libapparmor.so"
 
 def usage
 	puts <<EOF
@@ -37,7 +37,7 @@ Build = Commands.new {
 	if File.exists?("Makefile")
 		File.rename("Makefile", "Makefile.old")
 	end
-	create_makefile('AppArmorLogRecordParser')
+	create_makefile('LibAppArmor')
 	File.rename("Makefile", "Makefile.ruby")
 	if File.exists?("Makefile.old")
 		File.rename("Makefile.old", "Makefile")
@@ -63,9 +63,9 @@ Install = Commands.new {
         libDir     = Config::CONFIG["sitelibdir"]
     end
     [archDir,libDir].each { |path| File.makedirs path }
-     	 binary = 'AppArmorLogRecordParser.so'
+     	 binary = 'LibAppArmor.so'
     File.install "./"+binary, archDir+"/"+binary, 0555, true
-    File.install "./AppArmorLogRecordParser.so", libDir+"/AppArmorLogRecordParser.so", 0555, true
+    File.install "./LibAppArmor.so", libDir+"/LibAppArmor.so", 0555, true
 }
 
 availableCommands = {
