@@ -18,7 +18,8 @@ Summary:	An AppArmor event notification applet for GNOME
 License:	GPL
 
 %description
--
+This taskbar applet receives AppArmor events over DBUS, and notifies
+the user when AppArmor prevents an application from functioning.
 
 %prep
 %setup -q
@@ -43,4 +44,5 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/pixmaps/*
 
 %changelog
--
+* Wed Jul 25 2007 - mbarringer@suse.de
+- Initial package creation
