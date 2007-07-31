@@ -9,7 +9,7 @@ Version:	2.1
 Release:	2
 License:	LGPL
 Group:		Development/Libraries/C and C++
-BuildRoot:	%{_tmppath}/%{name}-${version}-build
+BuildRoot:	%{_tmppath}/%{name}-%{version}-build
 Source0:        %{name}-%{version}.tar.bz2
 BuildRequires:	swig gcc perl
 Provides:	libapparmor
