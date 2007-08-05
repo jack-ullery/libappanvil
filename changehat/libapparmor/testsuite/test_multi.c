@@ -137,9 +137,9 @@ int print_results(aa_log_record *record)
 		{
 			printf("Parent: %s\n", record->parent);
 		}
-		if (record->magic_token != NULL)
+		if (record->magic_token != 0)
 		{
-			printf("Token: %s\n", record->magic_token);
+			printf("Token: %i\n", record->magic_token);
 		}
 		if (record->info != NULL)
 		{

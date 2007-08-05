@@ -1,8 +1,8 @@
-if HAVE_PYTHON
-
 BUILT_SOURCES = libapparmor_wrap.c
 
 SWIG_SOURCES = ../SWIG/libapparmor.i
+
+if HAVE_PYTHON
 
 pkgpython_PYTHON = LibAppArmor.py
 pkgpyexec_LTLIBRARIES = _libapparmor.la

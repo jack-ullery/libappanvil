@@ -117,6 +117,7 @@ typedef struct
 	aa_record_event_type event;	/* Event type */
 	long pid;			/* PID of the program logging the message */
 	long task;
+	long magic_token;
 
 	int bitmask;			/* Bitmask containing "r" "w" "x" etc */
 	char *audit_id;
@@ -127,8 +128,7 @@ typedef struct
 	char *name;
 	char *name2;
 	char *attribute;
-	char *parent;
-	char *magic_token;
+	char *parent;	
 	char *info;
 	char *active_hat;
 } aa_log_record;

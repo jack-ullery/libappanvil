@@ -5,8 +5,8 @@
 %define _unpackaged_files_terminate_build 0
 
 Name:		libapparmor1
-Version:	2.1
-Release:	2
+Version:	2.2
+Release:	1
 License:	LGPL
 Group:		Development/Libraries/C and C++
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
@@ -24,6 +24,7 @@ Summary: A utility library for AppArmor
 %package -n libapparmor-devel
 Requires:	%{name} = %{version}
 Group:		Development/Libraries/C and C++
+Provides:	libapparmor:/usr/include/sys/apparmor.h
 Summary:	-
 
 %description -n libapparmor-devel

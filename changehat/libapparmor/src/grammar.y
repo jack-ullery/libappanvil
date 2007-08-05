@@ -334,12 +334,12 @@ key_list: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->task = atol($3); free($3);}
 	| TOK_KEY_PARENT TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->parent = strdup($3); free($3);}
-	| TOK_KEY_MAGIC_TOKEN TOK_EQUALS TOK_QUOTED_STRING
-	{ ret_record->magic_token = strdup($3); free($3);}
+	| TOK_KEY_MAGIC_TOKEN TOK_EQUALS TOK_DIGITS
+	{ ret_record->magic_token = $3;}
 	| TOK_KEY_INFO TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->info = strdup($3); free($3);}
-	| TOK_KEY_PID TOK_EQUALS TOK_QUOTED_STRING
-	{ ret_record->pid = atol($3); free($3);}
+	| TOK_KEY_PID TOK_EQUALS TOK_DIGITS
+	{ ret_record->pid = $3;}
 	| TOK_KEY_PROFILE TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->profile = strdup($3); free($3);}
 	;

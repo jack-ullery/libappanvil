@@ -63,8 +63,6 @@ free_record(aa_log_record *record)
 			free(record->attribute);
 		if (record->parent != NULL)
 			free(record->parent);
-		if (record->magic_token != NULL)
-			free(record->magic_token);
 		if (record->info != NULL)
 			free(record->info);
 		if (record->active_hat != NULL)
@@ -88,6 +86,7 @@ _init_log_record(aa_log_record *record)
 	record->pid = 0;
 	record->bitmask = 0;
 	record->task = 0;
+	record->magic_token = 0;
 
 	record->audit_id = NULL;
 	record->operation = NULL;
@@ -98,7 +97,6 @@ _init_log_record(aa_log_record *record)
 	record->name2 = NULL;
 	record->attribute = NULL;
 	record->parent = NULL;
-	record->magic_token = NULL;
 	record->info = NULL;
 	record->active_hat = NULL;
 	return;
