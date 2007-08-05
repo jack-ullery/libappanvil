@@ -1,4 +1,3 @@
-#define DBUS_API_SUBJECT_TO_CHANGE 
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -14,6 +13,7 @@
 #include <aalogparse/aalogparse.h>
 
 #define NULLSPACE(x) (x == NULL) ? &empty_string : &x
+#define NULLSTRLEN(x) (x == NULL) ? 1 : strlen(x)
 
 // Local data
 static volatile int signaled = 0;
@@ -98,8 +98,14 @@ static int event_loop(void)
 
 	DBusError		error;		/* Error, if any */
 	DBusMessage		*message;	/* Message to send */
-	DBusMessageIter		iter;		/* Iterator for message data */
 	static DBusConnection	*con = NULL;	/* Connection to DBUS server */
+	DBusMessageIter		iter, 		/* The main message iterator */
+				profileIter,
+				nameIter,
+				name2Iter,
+				parentIter,
+				activeIter,
+				dataIter;
 
 	char *line = NULL, *parsable_line = NULL;
 	int real_data_size;
@@ -184,7 +190,6 @@ static int event_loop(void)
 			/* We only care about REJECTING messages */
  			if (is_rejection == 1)
  			{
-				printf("It's rejection\n");
 				/* parse_record expects things like they appear in audit.log -
 				 * which means we need to prepend TYPE=APPARMOR (if hdr.type is 1500)
 				 * or type=APPARMOR_DENIED (if hdr.type is 1503).  This is not ideal.
@@ -192,10 +197,8 @@ static int event_loop(void)
 				real_data_size = strlen(line);
 				if (hdr.type == 1500)
 				{
-					printf("malloc\n");
 					parsable_line = (char *) malloc(real_data_size + 20);
 					snprintf(parsable_line, real_data_size + 19, "type=APPARMOR msg=%s", line);
-					printf("printed\n");
 				}
 				else
 				{
@@ -216,44 +219,89 @@ static int event_loop(void)
 				 *
 				 * TODO: Pass a bitmask int along for the denied & requested masks
 				 *
-				 * 1 - The full string - DBUS_TYPE_STRING
+				 * 1 - The full string - BYTE ARRAY
 				 * 2 - The PID (record->pid)  - DBUS_TYPE_INT64
 				 * 3 - The task (record->task) - DBUS_TYPE_INT64
 				 * 4 - The audit ID (record->audit_id) - DBUS_TYPE_STRING
 				 * 5 - The operation (record->operation: "Exec" "ptrace" etc) - DBUS_TYPE_STRING
 				 * 6 - The denied mask (record->denied_mask: "rwx" etc) - DBUS_TYPE_STRING
 				 * 7 - The requested mask (record->requested_mask) - DBUS_TYPE_STRING
-				 * 8 - The name of the profile (record->profile) - DBUS_TYPE_STRING
-				 * 9 - The first name field (record->name) - DBUS_TYPE_STRING
-				 * 10- The second name field (record->name2) - DBUS_TYPE_STRING
+				 * 8 - The name of the profile (record->profile) - BYTE ARRAY
+				 * 9 - The first name field (record->name) - BYTE ARRAY
+				 * 10- The second name field (record->name2) - BYTE ARRAY
 				 * 11- The attribute (record->attribute) - DBUS_TYPE_STRING
-				 * 12- The parent task (record->parent) - DBUS_TYPE_STRING
+				 * 12- The parent task (record->parent) - BYTE ARRAY
 				 * 13- The magic token (record->magic_token) - DBUS_TYPE_STRING
-				 * 14- The info field (record->info) - DBUS_TYPE_STRING
-				 * 15- The active hat (record->active_hat) - DBUS_TYPE_STRING
+				 * 14- The info field (record->info) - BYTE ARRAY
+				 * 15- The active hat (record->active_hat) - BYTE ARRAY
 				 */
 
-				dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &data);
  				if (record != NULL)
  				{
+
+					/* Please note: NULLSPACE is defined at the top of this file, and will expand to
+					   a ternary conditional:
+					   (record->audit_id == NULL) ? &empty_string : &record->audit_id
+					   for example.
+
+					   The way we handle strings is ugly - some of the characters we allow (0x80, for example) are invalid Unicode,
+					   which will cause our DBus connection to be dropped if we send them as a DBUS_TYPE_STRING.
+					   Instead, we send a bunch of containers, each with a byte array.  Perhaps a struct would be better? 
+					*/
+
+					dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, DBUS_TYPE_BYTE_AS_STRING, &dataIter);
+					dbus_message_iter_append_fixed_array(&dataIter, DBUS_TYPE_BYTE, &data, strlen(data));
+					dbus_message_iter_close_container(&iter, &dataIter);
+
 					dbus_message_iter_append_basic(&iter, DBUS_TYPE_INT64, &record->pid);
 					dbus_message_iter_append_basic(&iter, DBUS_TYPE_INT64, &record->task);	
-					// Please note: NULLSPACE is defined at the top of this file, and will expand to
-					// a ternary conditional:
-					// (record->audit_id == NULL) ? &empty_string : &record->audit_id
-					// for example.
 					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->audit_id));
 					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->operation));
+
 					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->denied_mask));
 					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->requested_mask));
-					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->profile));
-					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->name));
-					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->name2));
+
+					dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, DBUS_TYPE_BYTE_AS_STRING, &profileIter);
+					dbus_message_iter_append_fixed_array(&profileIter,
+										DBUS_TYPE_BYTE,
+										NULLSPACE(record->profile),
+										NULLSTRLEN(record->profile));
+					dbus_message_iter_close_container(&iter, &profileIter);
+
+					dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, DBUS_TYPE_BYTE_AS_STRING, &nameIter);
+					dbus_message_iter_append_fixed_array(&nameIter,
+										DBUS_TYPE_BYTE,
+										NULLSPACE(record->name),
+										NULLSTRLEN(record->name));
+					dbus_message_iter_close_container(&iter, &nameIter);
+
+					dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, DBUS_TYPE_BYTE_AS_STRING, &name2Iter);
+					dbus_message_iter_append_fixed_array(&name2Iter,
+										DBUS_TYPE_BYTE,
+										NULLSPACE(record->name2),
+										NULLSTRLEN(record->name2));
+					dbus_message_iter_close_container(&iter, &name2Iter);
+
 					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->attribute));
-					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->parent));
+
+					dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, DBUS_TYPE_BYTE_AS_STRING, &parentIter);
+					dbus_message_iter_append_fixed_array(&parentIter,
+										DBUS_TYPE_BYTE,
+										NULLSPACE(record->parent),
+										NULLSTRLEN(record->parent));
+					dbus_message_iter_close_container(&iter, &parentIter);
+
 					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->magic_token));
 					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->info));
-					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->active_hat));
+
+					dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, DBUS_TYPE_BYTE_AS_STRING, &activeIter);
+					dbus_message_iter_append_fixed_array(&activeIter,
+										DBUS_TYPE_BYTE,
+										NULLSPACE(record->active_hat),
+										NULLSTRLEN(record->active_hat));
+					dbus_message_iter_close_container(&iter, &activeIter);
+
+
 				}
 				dbus_connection_send(con, message, NULL);
 				dbus_connection_flush(con);
