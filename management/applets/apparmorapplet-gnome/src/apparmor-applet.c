@@ -93,8 +93,9 @@ static DBusHandlerResult signal_filter
 {
 	GtkTreePath *path;
 	GtkTreeIter listIter;
-	DBusMessageIter	iter;
+	DBusMessageIter	iter, subIter;
 	char *program_name;
+	int arrayLen;
 	/* We are about to be kicked off */
 	if (dbus_message_is_signal
 		(message, DBUS_PATH_LOCAL, "Disconnected"))
@@ -130,8 +131,10 @@ static DBusHandlerResult signal_filter
 		dbus_message_iter_next(&iter);
 		dbus_message_iter_next(&iter);
 		dbus_message_iter_next(&iter);
-		dbus_message_iter_get_basic(&iter, &program_name);
-
+//		dbus_message_iter_get_basic(&iter, &program_name);
+		dbus_message_iter_recurse(&iter, &subIter);
+		dbus_message_iter_get_fixed_array(&subIter, &program_name, &arrayLen);
+		
 		if (program_name == NULL)
 		{
 			return DBUS_HANDLER_RESULT_HANDLED;
