@@ -1,7 +1,7 @@
 # norootforbuild
 
 Name:		apparmorapplet-gnome
-Version:	0.7
+Version:	0.8
 Release:	1
 URL:		http://forge.novell.com/modules/xfmod/project/?apparmor
 BuildRequires:	gnome-common gnome-desktop-devel gnome-panel-devel 
@@ -10,7 +10,7 @@ BuildRequires:  dbus-1-glib-devel
 %else
 BuildRequires:  dbus-1-devel dbus-1-glib
 %endif
-Group:		System/GUI/Gnome
+Group:		System/GUI/GNOME
 Requires:	apparmor-dbus
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
 Source0:	%{name}-%{version}.tar.bz2
