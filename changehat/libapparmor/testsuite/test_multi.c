@@ -153,5 +153,17 @@ int print_results(aa_log_record *record)
 		{
 			printf("Active hat: %s\n", record->active_hat);
 		}
+		if (record->net_family != NULL)
+		{
+			printf("Network family: %s\n", record->net_family);
+		}
+		if (record->net_sock_type != NULL)
+		{
+			printf("Socket type: %s\n", record->net_sock_type);
+		}
+		if (record->net_protocol != NULL)
+		{
+			printf("Protocol: %s\n", record->net_protocol);
+		}
 	return(0);
 }

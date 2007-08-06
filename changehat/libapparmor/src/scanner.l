@@ -89,6 +89,9 @@ key_info		"info"
 key_pid			"pid"
 key_profile		"profile"
 key_image		"image"
+key_family		"family"
+key_sock_type		"sock_type"
+key_protocol		"protocol"
 audit			"audit"
 
 %x quoted_string
@@ -221,6 +224,10 @@ char *string_buf_ptr;
 {key_info}		{ return(TOK_KEY_INFO); }
 {key_pid}		{ return(TOK_KEY_PID); }
 {key_profile}		{ return(TOK_KEY_PROFILE); }
+{key_family}		{ return(TOK_KEY_FAMILY); }
+{key_sock_type}		{ return(TOK_KEY_SOCK_TYPE); }
+{key_protocol}		{ return(TOK_KEY_PROTOCOL); }
+
 {audit}			{ BEGIN(audit_id); return(TOK_AUDIT); }
 {null_complain}		{ return(TOK_NULL_COMPLAIN); }
 {key_image}		{  BEGIN(sub_id); return(TOK_KEY_IMAGE); }

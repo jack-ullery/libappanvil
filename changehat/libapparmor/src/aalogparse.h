@@ -131,6 +131,9 @@ typedef struct
 	char *parent;	
 	char *info;
 	char *active_hat;
+	char *net_family;
+	char *net_protocol;
+	char *net_sock_type;
 } aa_log_record;
 
 /**

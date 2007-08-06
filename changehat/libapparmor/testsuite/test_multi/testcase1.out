@@ -13,3 +13,6 @@ Parent: something
 Token: 29493
 Info: Information
 PID: 31938
+Network family: family
+Socket type: unknown(1234)
+Protocol: tcp

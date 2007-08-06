@@ -97,6 +97,9 @@ void aalogparse_error(void *scanner, char const *s)
 %token TOK_KEY_PROFILE
 %token TOK_AUDIT
 %token TOK_KEY_IMAGE
+%token TOK_KEY_FAMILY
+%token TOK_KEY_SOCK_TYPE
+%token TOK_KEY_PROTOCOL
 
 %%
 
@@ -342,6 +345,12 @@ key_list: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->pid = $3;}
 	| TOK_KEY_PROFILE TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->profile = strdup($3); free($3);}
+	| TOK_KEY_FAMILY TOK_EQUALS TOK_QUOTED_STRING
+	{ ret_record->net_family = strdup($3); free($3);}
+	| TOK_KEY_SOCK_TYPE TOK_EQUALS TOK_QUOTED_STRING
+	{ ret_record->net_sock_type = strdup($3); free($3); }
+	| TOK_KEY_PROTOCOL TOK_EQUALS TOK_QUOTED_STRING
+	{ ret_record->net_protocol = strdup($3); free($3);}
 	;
 
 %%

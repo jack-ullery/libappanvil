@@ -69,6 +69,13 @@ free_record(aa_log_record *record)
 			free(record->active_hat);
 		if (record->audit_id != NULL)
 			free(record->audit_id);
+		if (record->net_family != NULL)
+			free(record->net_family);
+		if (record->net_protocol != NULL)
+			free(record->net_protocol);
+		if (record->net_sock_type != NULL)
+			free(record->net_sock_type);
+
 		free(record);
 	}
 	return;
@@ -99,5 +106,8 @@ _init_log_record(aa_log_record *record)
 	record->parent = NULL;
 	record->info = NULL;
 	record->active_hat = NULL;
+	record->net_family = NULL;
+	record->net_protocol = NULL;
+	record->net_sock_type = NULL;
 	return;
 }
