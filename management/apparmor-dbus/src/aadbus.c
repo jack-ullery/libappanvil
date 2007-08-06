@@ -231,7 +231,7 @@ static int event_loop(void)
 				 * 10- The second name field (record->name2) - BYTE ARRAY
 				 * 11- The attribute (record->attribute) - DBUS_TYPE_STRING
 				 * 12- The parent task (record->parent) - BYTE ARRAY
-				 * 13- The magic token (record->magic_token) - DBUS_TYPE_STRING
+				 * 13- The magic token (record->magic_token) - DBUS_TYPE_INT64
 				 * 14- The info field (record->info) - BYTE ARRAY
 				 * 15- The active hat (record->active_hat) - BYTE ARRAY
 				 */
@@ -291,7 +291,7 @@ static int event_loop(void)
 										NULLSTRLEN(record->parent));
 					dbus_message_iter_close_container(&iter, &parentIter);
 
-					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->magic_token));
+					dbus_message_iter_append_basic(&iter, DBUS_TYPE_INT64, record->magic_token);
 					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->info));
 
 					dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, DBUS_TYPE_BYTE_AS_STRING, &activeIter);
