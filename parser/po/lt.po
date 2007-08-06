@@ -1,18 +1,16 @@
 # translation of apparmor-parser.po to Lietuvių
-# Lithuanian message file for YaST2 (@memory@).
 # Copyright (C) 2005 SUSE Linux Products GmbH.
 # Copyright (C) 2002 SuSE Linux AG.
 # Copyright (C) 2000, 2001 SuSE GmbH.
-#
 # Jonas Gocentas <jonasgocentas@florida.usa.com>, 2001.
 # Linas Spraunius <lsprauni@radio.lt>, 2000.
 # Andrius Štikonas <stikonas@gmail.com>, 2006.
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-parser\n"
+"Project-Id-Version: apparmor-parser.lt\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2006-11-09 19:43+0300\n"
+"PO-Revision-Date: 2007-03-24 16:25+0300\n"
 "Last-Translator: Andrius Štikonas <stikonas@gmail.com>\n"
 "Language-Team: Lietuvių <komp_lt@konf.lt>\n"
 "MIME-Version: 1.0\n"
@@ -22,14 +20,13 @@ msgstr ""
 "X-Generator: KBabel 1.11.4\n"
 
 #: ../parser_include.c:95
-#, fuzzy, c-format
+#, c-format
 msgid "Error: Could not read profile %s: %s.\n"
-msgstr "Klaida, negaliu išskirti laikino failo\n"
+msgstr "Klaida: nepavyksta nuskaityti profilio %s: %s.\n"
 
 #: ../parser_include.c:114
-#, fuzzy
 msgid "Error: Could not allocate temporary file.\n"
-msgstr "Klaida, negaliu išskirti laikino failo\n"
+msgstr "Klaida: nepavyksta išskirti laikinos bylos.\n"
 
 #: ../parser_include.c:165
 msgid "Error: Out of memory.\n"
@@ -41,13 +38,13 @@ msgid "Error: basedir %s is not a directory, skipping.\n"
 msgstr ""
 
 #: ../parser_include.c:189
-#, fuzzy, c-format
+#, c-format
 msgid "Error: Could not add directory %s to search path.\n"
-msgstr "Klaida: Negaliu pridėti aplanko %s į paieškos kataogą\n"
+msgstr "Klaida: nepavyksta pridėti aplanko %s į paieškos kelią.\n"
 
 #: ../parser_include.c:199
 msgid "Error: Could not allocate memory.\n"
-msgstr "Klaida: Negaliu paskirstyti atminies.\n"
+msgstr "Klaida: nepavyksta paskirstyti atminies.\n"
 
 #: ../parser_include.c:332
 #, fuzzy, c-format
@@ -128,7 +125,7 @@ msgstr "%s: Nepavyksta pašalinti \"%s\".  "
 #: ../parser_interface.c:124
 #, c-format
 msgid "%s: Unable to write to stdout\n"
-msgstr ""
+msgstr "%s: Nepavyksta rašyti į stdout\n"
 
 #: ../parser_interface.c:128
 #: ../parser_interface.c:151
@@ -159,7 +156,7 @@ msgstr ""
 #: ../parser_interface.c:644
 #, c-format
 msgid "Unable to open %s - %s\n"
-msgstr ""
+msgstr "Nepavyksta atverti %s - %s\n"
 
 #: ../parser_interface.c:661
 msgid "unable to create work area\n"
@@ -180,7 +177,7 @@ msgstr ""
 #: parser_lex.l:347
 #, c-format
 msgid "Found unexpected character: '%s'"
-msgstr ""
+msgstr "Rastas netikėtas simbolis: „%s“"
 
 #: parser_lex.l:159
 #, c-format
@@ -200,12 +197,12 @@ msgstr ""
 #: parser_lex.l:326
 #, c-format
 msgid "Found unexpected keyword: '%s'"
-msgstr ""
+msgstr "Rastas netikėtas ratinis žodis: „%s“"
 
 #: ../parser_main.c:131
 #, c-format
 msgid "Warning (%s line %d): %s"
-msgstr ""
+msgstr "Dėmesio (%s eilutė %d): %s"
 
 #: ../parser_main.c:255
 #, c-format
@@ -251,6 +248,8 @@ msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
 msgstr ""
+"%s: Apgailestaujame. Kad paleistumėte šią programą, jums reikia root privilegijų.\n"
+"\n"
 
 #: ../parser_main.c:375
 #, c-format
@@ -263,7 +262,7 @@ msgstr ""
 #: ../parser_main.c:442
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
-msgstr ""
+msgstr "%s: byloje rastos klaidos. Nutraukiama.\n"
 
 #: ../parser_misc.c:269
 msgid ""
@@ -337,7 +336,7 @@ msgstr ""
 
 #: ../parser_merge.c:64
 msgid "Couldn't merge entries. Out of Memory\n"
-msgstr ""
+msgstr "Nepavyksta apjungti įrašų. Nepakanka atminties\n"
 
 #: ../parser_merge.c:92
 #, c-format
@@ -386,23 +385,23 @@ msgstr ""
 #: parser_yacc.y:743
 #, c-format
 msgid "`%s' is not a valid ip address."
-msgstr ""
+msgstr "„%s“ nėra galiojantis ip adresas."
 
 #: parser_yacc.y:756
 #, c-format
 msgid "`/%d' is not a valid netmask."
-msgstr ""
+msgstr "„/%d“ nėra galiojanti tinklo kaukė."
 
 #: parser_yacc.y:763
 #, c-format
 msgid "`%s' is not a valid netmask."
-msgstr ""
+msgstr "„%s“ nėra galiojanti tinklo kaukė."
 
 #: parser_yacc.y:789
 #: parser_yacc.y:809
 #, c-format
 msgid "ports must be between %d and %d"
-msgstr ""
+msgstr "prievadai turi būti tarp %d ir %d"
 
 #: parser_yacc.y:876
 #, c-format
@@ -442,7 +441,7 @@ msgstr ""
 #: ../parser_regex.c:357
 #, c-format
 msgid "%s: Unable to parse input line '%s'\n"
-msgstr ""
+msgstr "%s: nepavyksta išnagrinėti įvesties eilutės „%s“\n"
 
 #: ../parser_regex.c:390
 #, c-format
@@ -490,7 +489,7 @@ msgstr ""
 #: ../parser_policy.c:259
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
-msgstr ""
+msgstr "KLAIDA profilyje %s, nepavyko įkelti\n"
 
 #: ../parser_policy.c:413
 #, c-format

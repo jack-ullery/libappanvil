@@ -9,8 +9,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
 "PO-Revision-Date: 2006-11-03 18:15+0100\n"
-"Last-Translator: Ib Larsen <i.la@tele2adsl.dk>\n"
-"Language-Team:  <opensuse-translation@opensuse.org>\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -142,7 +142,6 @@ msgstr "Erstatning lykkedes for \"%s\".\n"
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
 msgstr "Fjernelse lykkedes for \"%s\".\n"
-
 
 #: ../parser_interface.c:236
 #, c-format
@@ -491,4 +490,3 @@ msgstr "%s. Fejl fundet i efterbehandling af kombineringsregler. Afbryder.\n"
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr "%s: Fejl fundet i efterbehandling af reg. udtryk. Afbryder.\n"
-

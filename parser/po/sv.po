@@ -1,18 +1,18 @@
-# translation of apparmor-parser.po to Swedish
+# translation of apparmor-parser.po to
 # @TITLE@
 # Copyright (C) 2006, SUSE Linux GmbH, Nuremberg
 #
 # This file is distributed under the same license as @PACKAGE@ package. FIRST
 #
-# Mattias Newzella <newzella@linux.se>, 2006.
+# Mattias Newzella <newzella@linux.se>, 2006, 2007.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2006-10-22 12:38+0200\n"
+"PO-Revision-Date: 2007-07-26 16:29+0200\n"
 "Last-Translator: Mattias Newzella <newzella@linux.se>\n"
-"Language-Team: Swedish <sv@li.org>\n"
+"Language-Team:  <sv@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -26,7 +26,7 @@ msgstr "Fel: Kunde inte läsa profil %s: %s.\n"
 
 #: ../parser_include.c:114
 msgid "Error: Could not allocate temporary file.\n"
-msgstr ""
+msgstr "Fel: Kunde inte allokera temporär fil.\n"
 
 #: ../parser_include.c:165
 msgid "Error: Out of memory.\n"
@@ -35,16 +35,16 @@ msgstr "Fel: Slut på minne.\n"
 #: ../parser_include.c:175
 #, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
-msgstr ""
+msgstr "Fel: Baskatalog %s är inte en katalog, hoppar över.\n"
 
 #: ../parser_include.c:189
 #, c-format
 msgid "Error: Could not add directory %s to search path.\n"
-msgstr ""
+msgstr "Fel: Kunde inte lägga till katalog %s till sökväg.\n"
 
 #: ../parser_include.c:199
 msgid "Error: Could not allocate memory.\n"
-msgstr ""
+msgstr "Fel: Kunde inte allokera minne.\n"
 
 #: ../parser_include.c:332
 #, c-format
@@ -68,7 +68,7 @@ msgstr ""
 
 #: ../parser_interface.c:65
 msgid "Bad write position\n"
-msgstr ""
+msgstr "Fel skrivposition\n"
 
 #: ../parser_interface.c:68
 msgid "Permission denied\n"
@@ -80,76 +80,76 @@ msgstr "Slut på minne\n"
 
 #: ../parser_interface.c:74
 msgid "Couldn't copy profile Bad memory address\n"
-msgstr ""
+msgstr "Det gick inte att kopiera profilen. Felaktig minnesadress\n"
 
 #: ../parser_interface.c:77
 msgid "Profile doesn't conform to protocol\n"
-msgstr ""
+msgstr "Profilen följer inte protokollet\n"
 
 #: ../parser_interface.c:80
 msgid "Profile does not match signature\n"
-msgstr ""
+msgstr "Profilen matchar inte signaturen\n"
 
 #: ../parser_interface.c:83
 msgid "Profile version not supported by Apparmor module\n"
-msgstr ""
+msgstr "Profilversion stöds inte av Apparmor-modul\n"
 
 #: ../parser_interface.c:86
 msgid "Profile already exists\n"
-msgstr ""
+msgstr "Profilen finns redan\n"
 
 #: ../parser_interface.c:89
 msgid "Profile doesn't exist\n"
-msgstr ""
+msgstr "Profilen finns inte\n"
 
 #: ../parser_interface.c:92
 msgid "Unknown error\n"
 msgstr "Okänt fel\n"
 
 #: ../parser_interface.c:109
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr "Misslyckades med att ladda modulen \"%s\"."
+msgstr "%s: Det går inte att lägga till %s."
 
 #: ../parser_interface.c:114
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr ""
+msgstr "%s: Det går inte att ersätta %s."
 
 #: ../parser_interface.c:119
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr ""
+msgstr "%s: Det går inte att ta bort %s."
 
 #: ../parser_interface.c:124
 #, c-format
 msgid "%s: Unable to write to stdout\n"
-msgstr ""
+msgstr "%s: Det går inte att skriva till stdout\n"
 
 #: ../parser_interface.c:128 ../parser_interface.c:151
 #, c-format
 msgid "%s: ASSERT: Invalid option: %d\n"
-msgstr ""
+msgstr "%s: ASSERT: Felaktigt alternativ: %d\n"
 
 #: ../parser_interface.c:137
 #, c-format
 msgid "Addition succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Tillägg lyckades för %s.\n"
 
 #: ../parser_interface.c:141
 #, c-format
 msgid "Replacement succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Ersättning lyckades för %s.\n"
 
 #: ../parser_interface.c:145
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Borttagning lyckades för %s.\n"
 
 #: ../parser_interface.c:236
 #, c-format
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
-msgstr ""
+msgstr "VARNING! Felaktig stegbuffert %p pos %p tillägg %p storlek %d upplösn %p\n"
 
 #: ../parser_interface.c:644
 #, c-format
@@ -158,42 +158,42 @@ msgstr "Kunde inte öppna %s - %s\n"
 
 #: ../parser_interface.c:661
 msgid "unable to create work area\n"
-msgstr ""
+msgstr "det gick inte att skapa arbetsyta\n"
 
 #: ../parser_interface.c:669
 #, c-format
 msgid "unable to serialize profile %s\n"
-msgstr ""
+msgstr "det gick inte att serialisera profilen %s\n"
 
 #: ../parser_interface.c:679
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
-msgstr ""
+msgstr "%s: Det gick inte att skriva hela profilposten\n"
 
 #: parser_lex.l:119 parser_lex.l:221 parser_lex.l:347
 #, c-format
 msgid "Found unexpected character: '%s'"
-msgstr ""
+msgstr "Oväntat tecken hittades: %s"
 
 #: parser_lex.l:159
 #, c-format
 msgid "(ip_mode) Found unexpected character: '%s'"
-msgstr ""
+msgstr "(ip_mode) Oväntat tecken hittades: %s"
 
 #: parser_lex.l:174
 #, c-format
 msgid "Unexpected character in interface name: '%s'"
-msgstr ""
+msgstr "Oväntat tecken i gränssnittsnamn: \"%s\""
 
 #: parser_lex.l:213
 #, c-format
 msgid "Found unknown flag: '%s'"
-msgstr ""
+msgstr "Hittade okänd flagga: \"%s\""
 
 #: parser_lex.l:326
-#, fuzzy, c-format
+#, c-format
 msgid "Found unexpected keyword: '%s'"
-msgstr "Ansluten till: %s"
+msgstr "Hittade oväntat nyckelord: \"%s\""
 
 #: ../parser_main.c:131
 #, c-format
@@ -203,7 +203,7 @@ msgstr "Varning (%s rad %d): %s"
 #: ../parser_main.c:255
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
-msgstr ""
+msgstr "%s: Det gick inte att tilldela minne för underdomänbasens monteringspunkt\n"
 
 #: ../parser_main.c:274
 #, c-format
@@ -226,6 +226,8 @@ msgid ""
 "%s: Unable to query modules - '%s'\n"
 "Either modules are disabled or your kernel is too old.\n"
 msgstr ""
+"%s: Det gick inte att skicka fråga till modulerna - %s\n"
+"Modulerna är inaktiva eller kärnan är för gammal.\n"
 
 #: ../parser_main.c:352
 #, c-format
@@ -237,6 +239,8 @@ msgid ""
 "!\n"
 "Ensure that it has been loaded.\n"
 msgstr ""
+"!\n"
+"Kontrollera att den har lästs in.\n"
 
 #: ../parser_main.c:368
 #, c-format
@@ -244,6 +248,8 @@ msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
 msgstr ""
+"%s: Du behöver root-behörighet för att köra det här programmet.\n"
+"\n"
 
 #: ../parser_main.c:375
 #, c-format
@@ -256,7 +262,7 @@ msgstr ""
 #: ../parser_main.c:442
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
-msgstr ""
+msgstr "%s: Fel i filen. Avbryter.\n"
 
 #: ../parser_misc.c:269
 msgid ""
@@ -266,11 +272,11 @@ msgstr ""
 
 #: ../parser_misc.c:313
 msgid "Exec qualifier 'i' must be followed by 'x'"
-msgstr ""
+msgstr "Exec-kvalificeraren 'i' måste följas av 'x'"
 
 #: ../parser_misc.c:315
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
-msgstr ""
+msgstr "Exec-kvalificeraren 'i' felaktig, kvalificerare i konflikt med denna har angetts"
 
 #: ../parser_misc.c:327
 #, c-format
@@ -302,22 +308,22 @@ msgstr ""
 #: parser_yacc.y:665 parser_yacc.y:679 parser_yacc.y:707 parser_yacc.y:737
 #: parser_yacc.y:775 parser_yacc.y:792 parser_yacc.y:806
 msgid "Memory allocation error."
-msgstr ""
+msgstr "Minnestilldelningsfel."
 
 #: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
 #: ../parser_variable.c:227
 #, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr ""
+msgstr "AppArmor tydningsfel: %s\n"
 
 #: ../parser_merge.c:64
 msgid "Couldn't merge entries. Out of Memory\n"
-msgstr ""
+msgstr "Det gick inte att koppla posterna. Slut på minne\n"
 
 #: ../parser_merge.c:92
 #, c-format
 msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-msgstr ""
+msgstr "profilen %s: har kopplat regeln %s till flera x-modifierare\n"
 
 #: parser_yacc.y:362
 msgid "flags=(debug) is no longer supported, sorry."
@@ -325,15 +331,15 @@ msgstr ""
 
 #: parser_yacc.y:398
 msgid "Assert: `rule' returned NULL."
-msgstr ""
+msgstr "Förutsättning: `rule' returnerade NULL."
 
 #: parser_yacc.y:407
 msgid "Assert: `netrule' returned NULL."
-msgstr ""
+msgstr "Förutsättning: `netrule' returnerade NULL."
 
 #: parser_yacc.y:424
 msgid "Assert: 'hat rule' returned NULL."
-msgstr ""
+msgstr "Förutsättning: `hat rule' returnerade NULL."
 
 #: parser_yacc.y:487
 #, c-format
@@ -343,64 +349,64 @@ msgstr ""
 #: parser_yacc.y:545
 #, c-format
 msgid "missing an end of line character? (entry: %s)"
-msgstr ""
+msgstr "radslutstecken saknas? (post: %s)"
 
 #: parser_yacc.y:586
 msgid "Assert: `addresses' returned NULL."
-msgstr ""
+msgstr "Förutsättning: `addresses' returnerade NULL."
 
 #: parser_yacc.y:689
 msgid "Network entries can only have one TO address."
-msgstr ""
+msgstr "Nätverksposter kan bara ha en TO-adress."
 
 #: parser_yacc.y:694
 msgid "Network entries can only have one FROM address."
-msgstr ""
+msgstr "Nätverksposter kan bara ha en FROM-adress."
 
 #: parser_yacc.y:712 parser_yacc.y:743
 #, c-format
 msgid "`%s' is not a valid ip address."
-msgstr ""
+msgstr "`%s' är inte en giltig ip-adress."
 
 #: parser_yacc.y:756
 #, c-format
 msgid "`/%d' is not a valid netmask."
-msgstr ""
+msgstr "`/%d' är inte en giltig nätmask."
 
 #: parser_yacc.y:763
 #, c-format
 msgid "`%s' is not a valid netmask."
-msgstr ""
+msgstr "`%s är inte en giltig nätmask."
 
 #: parser_yacc.y:789 parser_yacc.y:809
 #, c-format
 msgid "ports must be between %d and %d"
-msgstr ""
+msgstr "portarna måste vara mellan %d och %d"
 
 #: parser_yacc.y:876
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr ""
+msgstr "AppArmor tydningsfel i %s på rad %d: %s\n"
 
 #: parser_yacc.y:879
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr ""
+msgstr "AppArmor tydningsfel, rad %d: %s\n"
 
 #: ../parser_regex.c:247
 #, c-format
 msgid "%s: Illegal open {, nesting groupings not allowed\n"
-msgstr ""
+msgstr "%s: Otillåten inledande {, nästling av grupper tillåts inte\n"
 
 #: ../parser_regex.c:267
 #, c-format
 msgid "%s: Regex grouping error: Invalid number of items between {}\n"
-msgstr ""
+msgstr "%s: Regex-grupperingsfel: Ogiltigt antal objekt inom {}\n"
 
 #: ../parser_regex.c:273
 #, c-format
 msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
-msgstr ""
+msgstr "%s: Regex-grupperingsfel: Ogiltig avslutande }, ingen inledande { hittades\n"
 
 #: ../parser_regex.c:339
 #, c-format
@@ -410,32 +416,32 @@ msgstr ""
 #: ../parser_regex.c:353
 #, c-format
 msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
-msgstr ""
+msgstr "%s: Internt buffertspill upptäcktes, %d tecken överskreds\n"
 
 #: ../parser_regex.c:357
 #, c-format
 msgid "%s: Unable to parse input line '%s'\n"
-msgstr ""
+msgstr "%s: Det går inte att analysera indataraden %s\n"
 
 #: ../parser_regex.c:390
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-msgstr ""
+msgstr "%s: Det gick inte att kompilera regex %s [ursprungligen: '%s']\n"
 
 #: ../parser_regex.c:394
 #, c-format
 msgid "%s: error near               "
-msgstr ""
+msgstr "%s: fel i närheten av"
 
 #: ../parser_regex.c:404
 #, c-format
 msgid "%s: error reason: '%s'\n"
-msgstr ""
+msgstr "%s: felorsak: '%s'\n"
 
 #: ../parser_regex.c:413
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-msgstr ""
+msgstr "%s: Det gick inte att kompilera regex%s [ursprungligen: '%s'] - malloc misslyckades\n"
 
 #: ../parser_policy.c:102
 #, c-format
@@ -463,12 +469,12 @@ msgstr ""
 #: ../parser_policy.c:259
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
-msgstr ""
+msgstr "FEL i profilen %s, det gick inte att läsa in\n"
 
 #: ../parser_policy.c:413
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
-msgstr ""
+msgstr "%s: Fel i efterbearbetning av regelkombination. Avbryter.\n"
 
 #: ../parser_policy.c:420 ../parser_policy.c:427
 #, c-format

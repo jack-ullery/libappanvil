@@ -1,21 +1,24 @@
-# translation of apparmor-parser.nl.po to Dutch
+# translation of subdomain-parser.po to Dutch
+# translation of subdomain-parser.po to Nederlands
 # This file is distributed under the same license as the PACKAGE package.
-# Copyright (C) YEAR Immunix, Inc.
-#
 # Henk Krus, 2005.
-# Rinse de Vries <rinsedevries@kde.nl>, 2005, 2006.
+# Henk Krus, 2005.
+# Henk Krus, 2005.
+# Copyright (C) YEAR Immunix, Inc.
+# Rinse de Vries <rinsedevries@kde.nl>, 2005.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-parser.nl\n"
+"Project-Id-Version: subdomain-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2006-10-09 22:59+0200\n"
-"Last-Translator: Rinse de Vries <rinsedevries@kde.nl>\n"
-"Language-Team: Dutch <kde-i18n-nl@kde.org>\n"
+"PO-Revision-Date: 2005-11-06 02:24+0100\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.4\n"
+"X-Generator: KBabel 1.10.2\n"
 "Plural-Forms:  nplurals=2; plural=(n != 1);\n"
 
 #: ../parser_include.c:95
@@ -95,7 +98,7 @@ msgstr "Profielversie niet ondersteund door Apparmor-module\n"
 
 #: ../parser_interface.c:86
 msgid "Profile already exists\n"
-msgstr "Profiel bestaat reeds\n"
+msgstr "Profiel bestaat al\n"
 
 #: ../parser_interface.c:89
 msgid "Profile doesn't exist\n"
@@ -290,27 +293,26 @@ msgstr "Exec bepaling 'i' ongeldig, conflicterende bepaling is reeds opgegeven"
 #: ../parser_misc.c:327
 #, c-format
 msgid "Unconstrained exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
-msgstr ""
+msgstr "Door de niet-begrensde exec-bepaling (%c%c) is het mogelijk dat er gevaarlijke omgevingsvariabelen aan het onbegrensde proces worden doorgegeven. Lees 'man 5 apparmor.d' voor meer informatie.\n"
 
 #: ../parser_misc.c:334 ../parser_misc.c:355
-#, fuzzy, c-format
+#, c-format
 msgid "Exec qualifier '%c' must be followed by 'x'"
-msgstr "Exec bepaling 'i' moet gevolgd worden door 'x'"
+msgstr "Exec-bepaling '%c' moet gevolgd worden door 'x'"
 
 #: ../parser_misc.c:337 ../parser_misc.c:358
-#, fuzzy, c-format
+#, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr "Exec bepaling 'i' ongeldig, conflicterende bepaling is reeds opgegeven"
+msgstr "Exec-bepaling '%c' ongeldig; een bepaling, waar deze mee botst, is reeds opgegeven"
 
 #: ../parser_misc.c:376
-#, fuzzy
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "Ongeldige modus, 'x' moet voorafgegaan worden door exec bepaling 'i', 'u' of 'p'"
+msgstr "Ongeldige modus, 'x' moet voorafgegaan worden door exec-bepaling 'i', 'u' of 'p'"
 
 #: ../parser_misc.c:396
-#, fuzzy, c-format
+#, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr "Intern: onverwacht modusteken in invoer"
+msgstr "Intern: onverwacht modusteken '%c' in invoer"
 
 #: ../parser_misc.c:426 parser_yacc.y:222 parser_yacc.y:315 parser_yacc.y:327
 #: parser_yacc.y:387 parser_yacc.y:521 parser_yacc.y:533 parser_yacc.y:553
@@ -322,13 +324,13 @@ msgstr "Fout in geheugenreservering."
 
 #: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
 #: ../parser_variable.c:227
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr "Subdomeinontleedfout, regel %d: %s\n"
+msgstr "AppArmor-ontleedfout, %s\n"
 
 #: ../parser_merge.c:64
 msgid "Couldn't merge entries. Out of Memory\n"
-msgstr "Onvoldoende geheugen. Items konden niet worden samengevoegd.\n"
+msgstr "Kan items niet samenvoegen. Onvoldoende geheugen\n"
 
 #: ../parser_merge.c:92
 #, c-format
@@ -336,9 +338,8 @@ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
 msgstr "Profiel %s: heeft regel %s met meerdere x modifiers samengevoegd\n"
 
 #: parser_yacc.y:362
-#, fuzzy
 msgid "flags=(debug) is no longer supported, sorry."
-msgstr "Helaas, standaard toestaan van subdomeinen wordt niet meer ondersteund. (domein: %s)"
+msgstr "flags=(debug) wordt niet meer ondersteund."
 
 #: parser_yacc.y:398
 msgid "Assert: `rule' returned NULL."
@@ -355,7 +356,7 @@ msgstr "Bewering: `hat rule' gaf NULL terug. "
 #: parser_yacc.y:487
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr ""
+msgstr "Niet-ingestelde boleaanwaarde %s gebruikt in if-expressie"
 
 #: parser_yacc.y:545
 #, c-format
@@ -395,14 +396,14 @@ msgid "ports must be between %d and %d"
 msgstr "Poorten moeten tussen %d en %d zijn"
 
 #: parser_yacc.y:876
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr "Subdomeinontleedfout, regel %d: %s\n"
+msgstr "AppArmor-ontleedfout in %s op regel %d: %s\n"
 
 #: parser_yacc.y:879
-#, fuzzy, c-format
+#, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr "Subdomeinontleedfout, regel %d: %s\n"
+msgstr "AppArmor-ontleedfout, regel %d: %s\n"
 
 #: ../parser_regex.c:247
 #, c-format
@@ -420,9 +421,9 @@ msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
 msgstr "%s: Regex groepfout: Ongeldige close }, geen bijbehorende open { gevonden\n"
 
 #: ../parser_regex.c:339
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
-msgstr "%s: Regex-groepeerfout: Groep niet gesloten, close } werd verwacht.\n"
+msgstr "%s: regex-groepeerfout: groep niet gesloten, sluitend teken } werd verwacht.\n"
 
 #: ../parser_regex.c:353
 #, c-format
@@ -455,9 +456,9 @@ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
 msgstr "%s: Niet in staat om regex '%s' te vertalen [origineel: '%s'] - malloc werd geweigerd\n"
 
 #: ../parser_policy.c:102
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
-msgstr "FOUT in profiel %s, laden mislukt\n"
+msgstr "FOUT bij samenvoegen van regels voor profiel %s: laden niet mogelijk.\n"
 
 #: ../parser_policy.c:134
 #, c-format
@@ -466,16 +467,19 @@ msgid ""
 "\t'*', '?', character ranges, and alternations are not allowed.\n"
 "\t'**' may only be used at the end of a rule.\n"
 msgstr ""
+"FOUT: profiel %s bevat beleidselementen die niet in combinatie met deze kernel gebruikt kunnen worden.\n"
+"\t'*', '?', tekenbereiken en +++alternatiefvoorvoegsels zijn niet toegestaan.\n"
+"\t'**' mag alleen aan het einde van een regel worden gebruikt.\n"
 
 #: ../parser_policy.c:179
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr "FOUT in profiel %s, laden mislukt\n"
+msgstr "FOUT bij verwerken van regexs voor profiel %s: laden niet mogelijk.\n"
 
 #: ../parser_policy.c:206
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr "FOUT in profiel %s, laden mislukt\n"
+msgstr "FOUT bij uitbreiden van variabelen voor profiel %s: laden niet mogelijk\n"
 
 #: ../parser_policy.c:259
 #, c-format
@@ -488,7 +492,6 @@ msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
 msgstr "%s: Fouten gevonden in het combineren van de nabewerkingsregels. Stop.\n"
 
 #: ../parser_policy.c:420 ../parser_policy.c:427
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
-msgstr "%s: Fouten gevonden tijdens de nabewerking van regex regels. Stop.\n"
-
+msgstr "%s: fouten gevonden tijdens de naverwerking van regex. Gestopt.\n"

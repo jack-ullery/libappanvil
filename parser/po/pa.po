@@ -1,43 +1,46 @@
+# translation of apparmor-parser.pa.po to Panjabi
 #
+# A S Alam <aalam@users.sf.net>, 2007.
 msgid ""
 msgstr ""
-"Project-Id-Version: CheckHardware\n"
+"Project-Id-Version: apparmor-parser.pa\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2005-08-15 12:20+0530\n"
-"Last-Translator: Amanpreet Singh Alam <amanpreetalam@yahoo.com>\n"
-"Language-Team: Punjabi <fedora-trans-pa@redhat.com>\n"
+"PO-Revision-Date: 2007-08-03 20:17+0530\n"
+"Last-Translator: A S Alam <aalam@users.sf.net>\n"
+"Language-Team: Panjabi <punjabi-l10n@lists.sf.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.10.1\n"
+"X-Generator: KBabel 1.11.4\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 #: ../parser_include.c:95
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
-msgstr ""
+msgstr "ਗਲਤੀ: ਪਰੋਫਾਇਲ %s ਪੜ੍ਹਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ: %s\n"
 
 #: ../parser_include.c:114
 msgid "Error: Could not allocate temporary file.\n"
-msgstr ""
+msgstr "ਗਲਤੀ: ਆਰਜ਼ੀ ਫਾਇਲ ਜਾਰੀ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕੀ।\n"
 
 #: ../parser_include.c:165
 msgid "Error: Out of memory.\n"
-msgstr ""
+msgstr "ਮੈਮੋਰੀ: ਗਲਤ ਮੈਮੋਰੀ\n"
 
 #: ../parser_include.c:175
 #, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
-msgstr ""
+msgstr "ਗਲਤੀ: basedir %s ਇੱਕ ਡਾਇਰੈਕਟਰੀ ਨਹੀਂ ਹੈ, ਛੱਡਿਆ ਜਾ ਰਿਹਾ ਹੈ।\n"
 
 #: ../parser_include.c:189
 #, c-format
 msgid "Error: Could not add directory %s to search path.\n"
-msgstr ""
+msgstr "ਗਲਤੀ: ਡਾਇਰੈਕਟਰੀ %s ਖੋਜ ਮਾਰਗ 'ਚ ਸ਼ਾਮਲ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕੀ।\n"
 
 #: ../parser_include.c:199
 msgid "Error: Could not allocate memory.\n"
-msgstr ""
+msgstr "ਗਲਤੀ: ਮੈਮੋਰੀ ਜਾਰੀ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕੀ।\n"
 
 #: ../parser_include.c:332
 #, c-format
@@ -61,19 +64,19 @@ msgstr ""
 
 #: ../parser_interface.c:65
 msgid "Bad write position\n"
-msgstr ""
+msgstr "ਗਲਤ ਲਿਖਣ ਸਥਿਤੀ\n"
 
 #: ../parser_interface.c:68
 msgid "Permission denied\n"
-msgstr ""
+msgstr "ਅਧਿਕਾਰ ਪਾਬੰਦੀ\n"
 
 #: ../parser_interface.c:71
 msgid "Out of memory\n"
-msgstr ""
+msgstr "ਮੈਮੋਰੀ ਤੋਂ ਬਾਹਰ\n"
 
 #: ../parser_interface.c:74
 msgid "Couldn't copy profile Bad memory address\n"
-msgstr ""
+msgstr "ਗਲਤ ਮੈਮੋਰੀ ਸਿਰਨਾਵੇਂ ਕਰਕੇ ਪਰੋਫਾਇਲ ਨਕਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ।\n"
 
 #: ../parser_interface.c:77
 msgid "Profile doesn't conform to protocol\n"
@@ -81,39 +84,38 @@ msgstr ""
 
 #: ../parser_interface.c:80
 msgid "Profile does not match signature\n"
-msgstr ""
+msgstr "ਪਰੋਫਾਇਲ ਦਸਤਖਤ ਨਹੀਂ ਮਿਲਦੇ\n"
 
 #: ../parser_interface.c:83
 msgid "Profile version not supported by Apparmor module\n"
-msgstr ""
+msgstr "ਪਰੋਫਾਇਲ ਵਰਜਨ ਅੱਪਾਰਮੋਰ ਮੋਡੀਊਲ ਵਲੋਂ ਸਹਾਇਕ ਨਹੀਂ ਹੈ\n"
 
 #: ../parser_interface.c:86
 msgid "Profile already exists\n"
-msgstr ""
+msgstr "ਪਰੋਫਾਇਲ ਪਹਿਲਾਂ ਹੀ ਮੌਜੂਦ ਹੈ\n"
 
 #: ../parser_interface.c:89
 msgid "Profile doesn't exist\n"
-msgstr ""
+msgstr "ਪਰੋਫਾਇਲ ਮੌਜੂਦ ਨਹੀਂ\n"
 
 #: ../parser_interface.c:92
-#, fuzzy
 msgid "Unknown error\n"
-msgstr "ਅਣਜਾਣ ਮਾਨੀਟਰ:"
+msgstr "ਅਣਜਾਣ ਗਲਤੀ\n"
 
 #: ../parser_interface.c:109
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr "ਮੈਡੀਊਲ \"%s\" ਲੋਡ ਕਰਨ ਲਈ ਫੇਲ ਹੈ।"
+msgstr "%s: \"%s\" ਸ਼ਾਮਲ ਕਰਨ ਲਈ ਅਸਮਰੱਥ। "
 
 #: ../parser_interface.c:114
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr ""
+msgstr "%s: \"%s\" ਬਦਲਣ ਲਈ ਅਸਮਰੱਥ।  "
 
 #: ../parser_interface.c:119
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr ""
+msgstr "%s: \"%s\" ਹਟਾਉਣ ਲਈ ਅਸਮਰੱਥ"
 
 #: ../parser_interface.c:124
 #, c-format
@@ -146,13 +148,13 @@ msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 msgstr ""
 
 #: ../parser_interface.c:644
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to open %s - %s\n"
-msgstr "CD-ROM ਨੂੰ ਮਾਊਟ ਕਰਨ ਲਈ ਅਸਫ਼ਲ ਹੈ।"
+msgstr "%s - %s ਖੋਲ੍ਹਣ ਲਈ ਅਸਫ਼ਲ\n"
 
 #: ../parser_interface.c:661
 msgid "unable to create work area\n"
-msgstr ""
+msgstr "ਕੰਮ ਖੇਤਰ ਬਣਾਉਣ ਲਈ ਅਸਮਰੱਥ\n"
 
 #: ../parser_interface.c:669
 #, c-format
@@ -182,17 +184,17 @@ msgstr ""
 #: parser_lex.l:213
 #, c-format
 msgid "Found unknown flag: '%s'"
-msgstr ""
+msgstr "ਅਣਜਾਣ ਫਲੈਗ ਮਿਲਿਆ: '%s'"
 
 #: parser_lex.l:326
 #, c-format
 msgid "Found unexpected keyword: '%s'"
-msgstr ""
+msgstr "ਅਣਜਾਣ ਸ਼ਬਦ ਮਿਲਿਆ: '%s'"
 
 #: ../parser_main.c:131
 #, c-format
 msgid "Warning (%s line %d): %s"
-msgstr ""
+msgstr "ਚੇਤਾਵਨੀ (%s ਲਾਈਨ %d): %s"
 
 #: ../parser_main.c:255
 #, c-format
@@ -224,13 +226,15 @@ msgstr ""
 #: ../parser_main.c:352
 #, c-format
 msgid "%s: Unable to find "
-msgstr ""
+msgstr "%s: ਖੋਜਣ ਲਈ ਫੇਲ੍ਹ "
 
 #: ../parser_main.c:352
 msgid ""
 "!\n"
 "Ensure that it has been loaded.\n"
 msgstr ""
+"!\n"
+"ਜਾਂਚੋ ਕਿ ਇਹ ਲੋਡ ਹੈ।\n"
 
 #: ../parser_main.c:368
 #, c-format
@@ -238,6 +242,8 @@ msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
 msgstr ""
+"%s: ਅਫਸੋਸ ਤੁਹਾਨੂੰ ਇਹ ਪਰੋਗਰਾਮ ਚਲਾਉਣ ਲਈ ਰੂਟ ਅਧਿਕਾਰ ਚਾਹੀਦੇ ਹਨ।\n"
+"\n"
 
 #: ../parser_main.c:375
 #, c-format
@@ -250,7 +256,7 @@ msgstr ""
 #: ../parser_main.c:442
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
-msgstr ""
+msgstr "%s: ਫਾਇਲ 'ਚ ਗਲਤੀਆਂ ਮਿਲੀਆਂ। ਅਧੂਰਾ ਛੱਡਿਆ ਜਾਂਦਾ ਹੈ\n"
 
 #: ../parser_misc.c:269
 msgid ""
@@ -296,13 +302,13 @@ msgstr ""
 #: parser_yacc.y:665 parser_yacc.y:679 parser_yacc.y:707 parser_yacc.y:737
 #: parser_yacc.y:775 parser_yacc.y:792 parser_yacc.y:806
 msgid "Memory allocation error."
-msgstr ""
+msgstr "ਮੈਮੋਰੀ ਜਾਰੀ ਕਰਨ ਗਲਤੀ।"
 
 #: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
 #: ../parser_variable.c:227
 #, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr ""
+msgstr "AppArmor ਪਾਰਸ ਗਲਤੀ: %s\n"
 
 #: ../parser_merge.c:64
 msgid "Couldn't merge entries. Out of Memory\n"
@@ -354,17 +360,17 @@ msgstr ""
 #: parser_yacc.y:712 parser_yacc.y:743
 #, c-format
 msgid "`%s' is not a valid ip address."
-msgstr ""
+msgstr "`%s' ਇੱਕ ਢੁੱਕਵਾਂ IP ਸਿਰਨਾਵਾਂ ਨਹੀਂ ਹੈ।"
 
 #: parser_yacc.y:756
 #, c-format
 msgid "`/%d' is not a valid netmask."
-msgstr ""
+msgstr "`/%d' ਢੁੱਕਵਾਂ ਨੈੱਟਮਾਸਕ ਨਹੀਂ ਹੈ।"
 
 #: parser_yacc.y:763
 #, c-format
 msgid "`%s' is not a valid netmask."
-msgstr ""
+msgstr "`%s' ਠੀਕ ਨੈਟਮਾਸਕ ਨਹੀਂ ਹੈ।"
 
 #: parser_yacc.y:789 parser_yacc.y:809
 #, c-format
@@ -419,12 +425,12 @@ msgstr ""
 #: ../parser_regex.c:394
 #, c-format
 msgid "%s: error near               "
-msgstr ""
+msgstr "%s: ਗਲਤੀ ਹੈ ਨੇੜੇ               "
 
 #: ../parser_regex.c:404
 #, c-format
 msgid "%s: error reason: '%s'\n"
-msgstr ""
+msgstr "%s: ਗਲਤੀ ਕਾਰਨ: '%s'\n"
 
 #: ../parser_regex.c:413
 #, c-format
@@ -468,3 +474,4 @@ msgstr ""
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr ""
+

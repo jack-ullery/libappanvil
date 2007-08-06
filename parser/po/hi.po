@@ -1,20 +1,15 @@
-# Hindi message file for YaST2 (@memory@).
-# Copyright (C) 2005 SUSE Linux Products GmbH.
-# Prasanth Kurian <prasanth.kurian@agreeya.com>
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: YaST (@memory@)\n"
+"Project-Id-Version: @PACKAGE@\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
 "PO-Revision-Date: 2005-07-29 15:37+0530\n"
-"Last-Translator: Prasanth Kurian <prasanth.kurian@agreeya.com>\n"
-"Language-Team: Hindi <i18n@suse.de>\n"
+"Last-Translator: Priyavert Sharma<priyavert.sharma@agreeya.com>\n"
+"Language-Team: AgreeYa Solutions <linux_team@agreeya.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
-"\n"
 "\n"
 
 #: ../parser_include.c:95
@@ -66,27 +61,27 @@ msgstr ""
 
 #: ../parser_interface.c:65
 msgid "Bad write position\n"
-msgstr ""
+msgstr "बुरी लेखन स्थिति\n"
 
 #: ../parser_interface.c:68
 msgid "Permission denied\n"
-msgstr ""
+msgstr "अनुमति देने से इंकार किया\n"
 
 #: ../parser_interface.c:71
 msgid "Out of memory\n"
-msgstr ""
+msgstr "स्मृति में नहीं है\n"
 
 #: ../parser_interface.c:74
 msgid "Couldn't copy profile Bad memory address\n"
-msgstr ""
+msgstr "प्रोफाइल को कॉपी नहीं कर सकता। बुरी स्मृति पता\n"
 
 #: ../parser_interface.c:77
 msgid "Profile doesn't conform to protocol\n"
-msgstr ""
+msgstr "प्रोफाइल प्रोटोकॉल की पुष्टि नहीं करता\n"
 
 #: ../parser_interface.c:80
 msgid "Profile does not match signature\n"
-msgstr ""
+msgstr "प्रोफाइल हस्ताक्षर से मेल नहीं खाता\n"
 
 #: ../parser_interface.c:83
 msgid "Profile version not supported by Apparmor module\n"
@@ -94,90 +89,89 @@ msgstr ""
 
 #: ../parser_interface.c:86
 msgid "Profile already exists\n"
-msgstr ""
+msgstr "प्रोफाइल पहले से मौजूद है\n"
 
 #: ../parser_interface.c:89
 msgid "Profile doesn't exist\n"
-msgstr ""
+msgstr "प्रोफाइल मौजूद नहीं है\n"
 
 #: ../parser_interface.c:92
-#, fuzzy
 msgid "Unknown error\n"
-msgstr "अनंजान"
+msgstr "अनजान\n"
 
 #: ../parser_interface.c:109
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr ""
+msgstr "%s: \"%s\" को जोड़ने में अक्षम।  "
 
 #: ../parser_interface.c:114
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr ""
+msgstr "%s: \"%s\" को प्रतिस्थापित करने में अक्षम।  "
 
 #: ../parser_interface.c:119
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr ""
+msgstr "%s: \"%s\" को हटाने में अक्षम।  "
 
 #: ../parser_interface.c:124
 #, c-format
 msgid "%s: Unable to write to stdout\n"
-msgstr ""
+msgstr "%s: stdout पर लिखने में अक्षम\n"
 
 #: ../parser_interface.c:128 ../parser_interface.c:151
 #, c-format
 msgid "%s: ASSERT: Invalid option: %d\n"
-msgstr ""
+msgstr "%s: ASSERT: अमान्य विकल्प : %d\n"
 
 #: ../parser_interface.c:137
 #, c-format
 msgid "Addition succeeded for \"%s\".\n"
-msgstr ""
+msgstr "\"%s\" के लिए जोड़ना सफल रहा।\n"
 
 #: ../parser_interface.c:141
 #, c-format
 msgid "Replacement succeeded for \"%s\".\n"
-msgstr ""
+msgstr "\"%s\" के लिए प्रतिस्थापन सफल रहा।\n"
 
 #: ../parser_interface.c:145
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
-msgstr ""
+msgstr "\"%s\" के लिए हटाना सफल रहा।\n"
 
 #: ../parser_interface.c:236
 #, c-format
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
-msgstr ""
+msgstr "पैनिक बैड इंक्रीमेंट बफर %p pos %p ext %p आकार %d res %p\n"
 
 #: ../parser_interface.c:644
 #, c-format
 msgid "Unable to open %s - %s\n"
-msgstr ""
+msgstr "%s - %s को खोलने में अक्षम\n"
 
 #: ../parser_interface.c:661
 msgid "unable to create work area\n"
-msgstr ""
+msgstr "कार्य क्षेत्र सृजित करने में अक्षम\n"
 
 #: ../parser_interface.c:669
 #, c-format
 msgid "unable to serialize profile %s\n"
-msgstr ""
+msgstr "प्रोफाइल %s को क्रमांकित करने में अक्षम\n"
 
 #: ../parser_interface.c:679
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
-msgstr ""
+msgstr "%s: संपूर्ण प्रोफाइल प्रविष्टि को लिखने में अक्षम\n"
 
 #: parser_lex.l:119 parser_lex.l:221 parser_lex.l:347
 #, c-format
 msgid "Found unexpected character: '%s'"
-msgstr ""
+msgstr "अप्रत्याशित वर्ण मिला : '%s'"
 
 #: parser_lex.l:159
 #, c-format
 msgid "(ip_mode) Found unexpected character: '%s'"
-msgstr ""
+msgstr "(आईपी_मोड) अप्रत्याशित वर्ण मिला : '%s'"
 
 #: parser_lex.l:174
 #, c-format
@@ -202,7 +196,7 @@ msgstr ""
 #: ../parser_main.c:255
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
-msgstr ""
+msgstr "%s: सबडोमेनबेस माउंट बिंदु के लिए स्मृति निर्धारित नहीं कर सका\n"
 
 #: ../parser_main.c:274
 #, c-format
@@ -225,17 +219,21 @@ msgid ""
 "%s: Unable to query modules - '%s'\n"
 "Either modules are disabled or your kernel is too old.\n"
 msgstr ""
+"%s: मॉड्यूल से पूछने में अक्षम - '%s'\n"
+"या तो मॉड्यूल अक्षम हैं या आपका कर्नेल बहुत पुराना हो गया है।\n"
 
 #: ../parser_main.c:352
 #, c-format
 msgid "%s: Unable to find "
-msgstr ""
+msgstr "%s: ढूंढने में अक्षम "
 
 #: ../parser_main.c:352
 msgid ""
 "!\n"
 "Ensure that it has been loaded.\n"
 msgstr ""
+"!\n"
+"सुनिश्चित करें कि इसे लोड कर दिया गया है।\n"
 
 #: ../parser_main.c:368
 #, c-format
@@ -255,7 +253,7 @@ msgstr ""
 #: ../parser_main.c:442
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
-msgstr ""
+msgstr "%s: फाइल में त्रुटियां प्राप्त हुईं। रद्द कर रहा है।\n"
 
 #: ../parser_misc.c:269
 msgid ""
@@ -265,11 +263,11 @@ msgstr ""
 
 #: ../parser_misc.c:313
 msgid "Exec qualifier 'i' must be followed by 'x'"
-msgstr ""
+msgstr "Exec क्वालीफायर 'i' के पहले 'x' होना चाहिए"
 
 #: ../parser_misc.c:315
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
-msgstr ""
+msgstr "Exec क्वालीफायर 'i' अमान्य है, टकरावकारी क्वालीफायर को पहले ही निर्दिष्ट कर दिया गया है"
 
 #: ../parser_misc.c:327
 #, c-format
@@ -301,7 +299,7 @@ msgstr ""
 #: parser_yacc.y:665 parser_yacc.y:679 parser_yacc.y:707 parser_yacc.y:737
 #: parser_yacc.y:775 parser_yacc.y:792 parser_yacc.y:806
 msgid "Memory allocation error."
-msgstr ""
+msgstr "स्मृति निर्धारण त्रुटि।"
 
 #: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
 #: ../parser_variable.c:227
@@ -311,12 +309,12 @@ msgstr ""
 
 #: ../parser_merge.c:64
 msgid "Couldn't merge entries. Out of Memory\n"
-msgstr ""
+msgstr "प्रविष्टियों को एक में नहीं मिला सकता। स्मृति में नहीं है\n"
 
 #: ../parser_merge.c:92
 #, c-format
 msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-msgstr ""
+msgstr "प्रोफाइल %s: ने विविध x संशोधकों के साथ नियम %s को मिला लिया\n"
 
 #: parser_yacc.y:362
 msgid "flags=(debug) is no longer supported, sorry."
@@ -324,15 +322,15 @@ msgstr ""
 
 #: parser_yacc.y:398
 msgid "Assert: `rule' returned NULL."
-msgstr ""
+msgstr "Assert: `rule' NULL पर लौट आया।"
 
 #: parser_yacc.y:407
 msgid "Assert: `netrule' returned NULL."
-msgstr ""
+msgstr "Assert: `netrule' NULL पर लौट आया।"
 
 #: parser_yacc.y:424
 msgid "Assert: 'hat rule' returned NULL."
-msgstr ""
+msgstr "Assert: 'hat rule' NULL पर लौट आया।"
 
 #: parser_yacc.y:487
 #, c-format
@@ -342,39 +340,39 @@ msgstr ""
 #: parser_yacc.y:545
 #, c-format
 msgid "missing an end of line character? (entry: %s)"
-msgstr ""
+msgstr "लाइन के अंत का एक वर्ण छूटा है? (प्रविष्टि : %s)"
 
 #: parser_yacc.y:586
 msgid "Assert: `addresses' returned NULL."
-msgstr ""
+msgstr "Assert: `addresses' NULL पर लौट आए।"
 
 #: parser_yacc.y:689
 msgid "Network entries can only have one TO address."
-msgstr ""
+msgstr "नेटवर्क प्रविष्टियों में सिर्फ एक प्राप्तकर्ता पता हो सकता है।"
 
 #: parser_yacc.y:694
 msgid "Network entries can only have one FROM address."
-msgstr ""
+msgstr "नेटवर्क प्रविष्टियों में सिर्फ एक प्रेषक पता हो सकता है।"
 
 #: parser_yacc.y:712 parser_yacc.y:743
 #, c-format
 msgid "`%s' is not a valid ip address."
-msgstr ""
+msgstr "`%s' एक मान्य आईपी पता नहीं है।"
 
 #: parser_yacc.y:756
 #, c-format
 msgid "`/%d' is not a valid netmask."
-msgstr ""
+msgstr "`/%d' एक मान्य नेटमास्क नहीं है।"
 
 #: parser_yacc.y:763
 #, c-format
 msgid "`%s' is not a valid netmask."
-msgstr ""
+msgstr "`%s' एक मान्य नेटमास्क नहीं है।"
 
 #: parser_yacc.y:789 parser_yacc.y:809
 #, c-format
 msgid "ports must be between %d and %d"
-msgstr ""
+msgstr "पोर्टों को %d और %d के बीच होना चाहिए"
 
 #: parser_yacc.y:876
 #, c-format
@@ -389,17 +387,17 @@ msgstr ""
 #: ../parser_regex.c:247
 #, c-format
 msgid "%s: Illegal open {, nesting groupings not allowed\n"
-msgstr ""
+msgstr "%s: गैर-कानूनन खोलना {, नेस्टिंग ग्रुपिंग्स की अनुमति नहीं है\n"
 
 #: ../parser_regex.c:267
 #, c-format
 msgid "%s: Regex grouping error: Invalid number of items between {}\n"
-msgstr ""
+msgstr "%s: Regex ग्रुपिंग त्रुटि : {} के बीच मदों की अमान्य संख्या\n"
 
 #: ../parser_regex.c:273
 #, c-format
 msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
-msgstr ""
+msgstr "%s: Regex ग्रुपिंग त्रुटि : बंद अमान्य }, किसी मेल खाने वाले खोलने का { पता नहीं लगा\n"
 
 #: ../parser_regex.c:339
 #, c-format
@@ -409,32 +407,32 @@ msgstr ""
 #: ../parser_regex.c:353
 #, c-format
 msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
-msgstr ""
+msgstr "%s: आंतरिक बफर के ओवरफ्लो होने का पता लगा, %d वर्ण अधिक हैं\n"
 
 #: ../parser_regex.c:357
 #, c-format
 msgid "%s: Unable to parse input line '%s'\n"
-msgstr ""
+msgstr "%s: इनपुट लाइन '%s' को पार्स करने में अक्षम\n"
 
 #: ../parser_regex.c:390
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-msgstr ""
+msgstr "%s: regex '%s' को कंपाइल करने में असफल रहा [मूल : '%s']\n"
 
 #: ../parser_regex.c:394
 #, c-format
 msgid "%s: error near               "
-msgstr ""
+msgstr "%s: के निकट त्रुटि               "
 
 #: ../parser_regex.c:404
 #, c-format
 msgid "%s: error reason: '%s'\n"
-msgstr ""
+msgstr "%s: त्रुटि का कारण : '%s'\n"
 
 #: ../parser_regex.c:413
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-msgstr ""
+msgstr "%s: regex '%s' को कंपाइल करने में असफल रहा [मूल : '%s'] - malloc असफल रहा\n"
 
 #: ../parser_policy.c:102
 #, c-format
@@ -462,12 +460,12 @@ msgstr ""
 #: ../parser_policy.c:259
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
-msgstr ""
+msgstr "प्रोफाइल %s में त्रुटि है, लोड करने में असफल रहा\n"
 
 #: ../parser_policy.c:413
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
-msgstr ""
+msgstr "%s: संयोगकारी नियमों के प्रसंस्करण-पश्चात में त्रुटियां प्राप्त हुईं। रद्द कर रहा है।\n"
 
 #: ../parser_policy.c:420 ../parser_policy.c:427
 #, c-format

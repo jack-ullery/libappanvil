@@ -1,17 +1,21 @@
-# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
-# This file is distributed under the same license as the package.
+# @TITLE@
+# Copyright (C) 2006, SUSE Linux GmbH, Nuremberg
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+# This file is distributed under the same license as @PACKAGE@ package. FIRST
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-parser\n"
+"Project-Id-Version: @PACKAGE@\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2006-11-17 16:49\n"
+"PO-Revision-Date: 2007-01-10 15:01\n"
 "Last-Translator: Novell Language <language@novell.com>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../parser_include.c:95
 #, c-format
@@ -231,7 +235,7 @@ msgstr ""
 #: ../parser_main.c:352
 #, c-format
 msgid "%s: Unable to find "
-msgstr "%s: Konnte nicht gefunden werden "
+msgstr "%s: Konnte nicht gefunden werden"
 
 #: ../parser_main.c:352
 msgid ""
@@ -435,7 +439,7 @@ msgstr "%s: Fehler beim Kompilieren von regex '%s' [ursprünglich: '%s']\n"
 #: ../parser_regex.c:394
 #, c-format
 msgid "%s: error near               "
-msgstr "%s: Fehler bei                                        "
+msgstr "%s: Fehler bei"
 
 #: ../parser_regex.c:404
 #, c-format

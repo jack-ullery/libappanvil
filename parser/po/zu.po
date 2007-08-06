@@ -1,220 +1,207 @@
-# translation of apparmor-parser.hu.po to
-# translation of apparmor-parser.po to
-# Hungarian message File YaST2 (@memory@).
-# Copyright (C) 2005 SUSE Linux Products GmbH.
-# Copyright (C) 2002 SuSE Linux AG.
-# Copyright (C) 2000, 2001 SuSE GmbH.
+# English translations for subdomain_parser package.
+# Copyright (C) 2005 Immunix, Inc.
+# This file is distributed under the same license as the subdomain_parser package.
+# Steve Beattie <steve@immunix.com>, 2005.
 #
-# Marcel Hilzinger <hili@suselinux.hu>, 2001.
-# Sári Gábor <saga@tux.hu>, 2000.
-# Steve Varadi <svaradi@usa.com>, 2000.
-# Zoltán Levárdy <pogacsa@programmer.net>, 1999.
-# Papp Zsolt <zpapp@novell.com>, 2006.
-# Kalman Kemenczy <kkemenczy@novell.com>, 2006, 2007.
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-parser\n"
+"Project-Id-Version: subdomain-parser 1.1\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2007-07-25 15:50+0200\n"
-"Last-Translator: Kalman Kemenczy <kkemenczy@novell.com>\n"
-"Language-Team:  <hu@li.org>\n"
+"PO-Revision-Date: 2005-11-08 12:26+8\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../parser_include.c:95
-#, c-format
+#, fuzzy, c-format
 msgid "Error: Could not read profile %s: %s.\n"
-msgstr "Hiba: A profil beolvasása sikertelen %s: %s\n"
+msgstr "Ayikwazi ukufunda ifayela  %1."
 
 #: ../parser_include.c:114
+#, fuzzy
 msgid "Error: Could not allocate temporary file.\n"
-msgstr "Hiba: nem sikerült lefoglalni az ideiglenes fájlt\n"
+msgstr "Ayikwazi ukuhluthulela ifayela  '%1' yesikhashana"
 
 #: ../parser_include.c:165
 msgid "Error: Out of memory.\n"
-msgstr "Hiba: nincs elég memória\n"
+msgstr ""
 
 #: ../parser_include.c:175
-#, c-format
+#, fuzzy, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
-msgstr "Hiba: a(z) %s alapkönyvtár nem érvényes könyvtár, ezért kihagyásra kerül.\n"
+msgstr "I-%1 ayiyona i-directory."
 
 #: ../parser_include.c:189
 #, c-format
 msgid "Error: Could not add directory %s to search path.\n"
-msgstr "Hiba: nem sikerült a(z) %s könyvtár hozzáadása a keresési útvonalhoz.\n"
+msgstr ""
 
-# modules/printconf/printconf_write_printer.ycp:30
-# clients/printconf_write.ycp:308
 #: ../parser_include.c:199
 msgid "Error: Could not allocate memory.\n"
-msgstr "Hiba: nem sikerült lefoglalni memóriát\n"
+msgstr ""
 
 #: ../parser_include.c:332
 #, c-format
 msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-msgstr "Hiba: nem sikerült lefoglalni puffert a beágyazáshoz (sor: %d, fájl: %s).\n"
+msgstr ""
 
 #: ../parser_include.c:348 ../parser_include.c:368
 #, c-format
 msgid "Error: Bad include at line %d in %s.\n"
-msgstr "Hiba: nem megfelelő beágyazás (sor: %d, fájl: %s).\n"
+msgstr ""
 
 #: ../parser_include.c:398
 #, c-format
 msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-msgstr "Hiba: több mint %d szintnyi beágyazás.  A(z)%s beágyazás nem került feldolgozásra.\n"
+msgstr ""
 
-# clients/lan_ypclient_write.ycp:61
 #: ../parser_include.c:423
 #, c-format
 msgid "Error: #include %s%c not found at line %d in %s.\n"
-msgstr "Hiba: #include %s%c nem található (sor: %d, fájl: %s).\n"
+msgstr ""
 
 #: ../parser_interface.c:65
 msgid "Bad write position\n"
-msgstr "Rossz írási pozíció\n"
+msgstr "Indawo yokukopisha enganembile\n"
 
 #: ../parser_interface.c:68
 msgid "Permission denied\n"
-msgstr "Engedély megtagadva\n"
+msgstr "Imvume inqatshiwe\n"
 
 #: ../parser_interface.c:71
 msgid "Out of memory\n"
-msgstr "Nincs elég memória\n"
+msgstr "Ilahlekelwe Yimemori\n"
 
 #: ../parser_interface.c:74
 msgid "Couldn't copy profile Bad memory address\n"
-msgstr "A profil másolása sikertelen. Rossz memóriacím\n"
+msgstr "Ayikwazanga ukukopisha ikheli elinememori embi yephrofayili\n"
 
 #: ../parser_interface.c:77
 msgid "Profile doesn't conform to protocol\n"
-msgstr "A profil nem felel meg a protokollnak\n"
+msgstr "Iphrofayili ayivumelani nephrothokholi\n"
 
 #: ../parser_interface.c:80
 msgid "Profile does not match signature\n"
-msgstr "A profil nem egyezik az aláírással\n"
+msgstr "Iphrofayili ayifanelani nesignisha\n"
 
 #: ../parser_interface.c:83
 msgid "Profile version not supported by Apparmor module\n"
-msgstr "A profil verzióját az AppArmor nem támogatja\n"
+msgstr ""
 
 #: ../parser_interface.c:86
 msgid "Profile already exists\n"
-msgstr "A profil már létezik\n"
+msgstr "Iphrofayili isiyatholakala kakade\n"
 
 #: ../parser_interface.c:89
 msgid "Profile doesn't exist\n"
-msgstr "A profil nem létezik\n"
+msgstr "Iphrofayili ayitholakali\n"
 
-# clients/lan_ask_config.ycp:97
 #: ../parser_interface.c:92
 msgid "Unknown error\n"
-msgstr "Ismeretlen hiba\n"
+msgstr "Iphutha elingaziwa\n"
 
 #: ../parser_interface.c:109
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr "%s: \"%s\" nem vehető fel.  "
+msgstr "%s: Ayikwazi ukwenezela i-\"%s\"."
 
 #: ../parser_interface.c:114
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr "%s: \"%s\" nem cserélhető le.  "
+msgstr "%s: Ayikwazi ukushintsha i-\"%s\"."
 
 #: ../parser_interface.c:119
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr "%s: \"%s\" nem távolítható el.  "
+msgstr "%s: Ayikwazi ukususa i-\"%s\"."
 
 #: ../parser_interface.c:124
 #, c-format
 msgid "%s: Unable to write to stdout\n"
-msgstr "%s: Nem sikerült írni a standard kimenetre\n"
+msgstr "%s: Ayikwazi ukukopishela kwi-stdout\n"
 
 #: ../parser_interface.c:128 ../parser_interface.c:151
 #, c-format
 msgid "%s: ASSERT: Invalid option: %d\n"
-msgstr "%s: ASSERT: Érvénytelen paraméter: %d\n"
+msgstr "%s: ASSERT: Okukhethiwe okuyiphutha: %d\n"
 
 #: ../parser_interface.c:137
 #, c-format
 msgid "Addition succeeded for \"%s\".\n"
-msgstr "\"%s\" hozzáadása sikerült.\n"
+msgstr "Ukwenezela okulandelwe nge-\"%s\".\n"
 
 #: ../parser_interface.c:141
 #, c-format
 msgid "Replacement succeeded for \"%s\".\n"
-msgstr "\"%s\" cseréje sikerült.\n"
+msgstr "Ushintsho olulandelwe nge-\"%s\".\n"
 
 #: ../parser_interface.c:145
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
-msgstr "\"%s\" eltávolítása sikerült.\n"
+msgstr "Ukususa okulandelwe nge-\"%s\".\n"
 
 #: ../parser_interface.c:236
 #, c-format
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
-msgstr "PÁNIK rossz növekmény puffer: %p poz: %p kit: %p méret %d felb: %p\n"
+msgstr "Ingobolwazi yesikhashana YOKUTATAZELA okubi %p pos %p ext %p size %d res %p\n"
 
 #: ../parser_interface.c:644
 #, c-format
 msgid "Unable to open %s - %s\n"
-msgstr "%s nem nyitható meg - %s\n"
+msgstr "Ayikwazi ukuvula %s - %s\n"
 
-# clients/lan_nfs_write.ycp:78
 #: ../parser_interface.c:661
 msgid "unable to create work area\n"
-msgstr "a munkaterület létrehozása nem sikerült\n"
+msgstr "Ayikwzi ukwakha indawo yokusebenzela\n"
 
 #: ../parser_interface.c:669
 #, c-format
 msgid "unable to serialize profile %s\n"
-msgstr "A(z) %s profil sorba szedése nem sikerült\n"
+msgstr "Ayikwazi ukwenza iphrofayili ibe nama-serial %s\n"
 
 #: ../parser_interface.c:679
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
-msgstr "%s: Nem sikerült a teljes profilbejegyzés kiírása\n"
+msgstr "%s: Ayikwazi ukuyibhala yonke iphrofayili\n"
 
 #: parser_lex.l:119 parser_lex.l:221 parser_lex.l:347
 #, c-format
 msgid "Found unexpected character: '%s'"
-msgstr "Váratlan karakter: '%s'"
+msgstr "Ithola uhlamvu olungalindelekile: '%s'"
 
 #: parser_lex.l:159
 #, c-format
 msgid "(ip_mode) Found unexpected character: '%s'"
-msgstr "(ip_mode) Váratlan karakter: '%s'"
+msgstr "(ip_mode) Ithola uhlamvu olungalindelekile: '%s'"
 
 #: parser_lex.l:174
 #, c-format
 msgid "Unexpected character in interface name: '%s'"
-msgstr "Váratlan karakter az interfész nevében: '%s'"
+msgstr ""
 
 #: parser_lex.l:213
 #, c-format
 msgid "Found unknown flag: '%s'"
-msgstr "Ismeretlen flag: '%s'"
+msgstr ""
 
 #: parser_lex.l:326
 #, c-format
 msgid "Found unexpected keyword: '%s'"
-msgstr "Váratlan karakter: '%s'"
+msgstr ""
 
 #: ../parser_main.c:131
 #, c-format
 msgid "Warning (%s line %d): %s"
-msgstr "Figyelmeztetés (%s sor %d): %s"
+msgstr ""
 
 #: ../parser_main.c:255
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
-msgstr "%s: Nem sikerült memóriát foglalni az aldomainbase csatolási pontnak\n"
+msgstr "%s: Ayikwazanga ukuthola ingobolwazi yesixhakathisi se-domain engaphansi\n"
 
 #: ../parser_main.c:274
 #, c-format
@@ -222,9 +209,6 @@ msgid ""
 "Warning: unable to open %s, attempting to use %s\n"
 "as the subdomainfs location. Use --subdomainfs to override.\n"
 msgstr ""
-"Figyelmeztetés: %s nem nyitható meg, helyette a rendszer a(z) %s\n"
-"értéket kísérli meg a subdomainfs helyként használni. Ez a --subdomainfs\n"
-"paraméterrel írható felül.\n"
 
 #: ../parser_main.c:305
 #, c-format
@@ -233,9 +217,6 @@ msgid ""
 "Attempting to use %s as the subdomainfs location.\n"
 "Use --subdomainfs to override.\n"
 msgstr ""
-"Figyelmeztetés: %s nem tartalmaz megfelelő fájlrendszert, fel van csatolva?\n"
-"A rendszer a(z) %s értéket kísérli meg a subdomainfs helyként használni.\n"
-"Ez a --subdomainfs paraméterrel írható felül.\n"
 
 #: ../parser_main.c:347
 #, c-format
@@ -243,13 +224,13 @@ msgid ""
 "%s: Unable to query modules - '%s'\n"
 "Either modules are disabled or your kernel is too old.\n"
 msgstr ""
-"%s: Nem sikerült a modulok lekérdezése - '%s'\n"
-"Vagy a modulok vannak letiltva, vagy túl régi a kernel.\n"
+"%s: Ayikwazi ukubuza ngamamoduli - '%s'\n"
+"Kungenzeka ukuthi amamoduli acishiwe noma ukuthi ikheneli yakho isindala kakhulu.\n"
 
 #: ../parser_main.c:352
 #, c-format
 msgid "%s: Unable to find "
-msgstr "%s: Nem található"
+msgstr "%s: Ayikwazi ukuthola"
 
 #: ../parser_main.c:352
 msgid ""
@@ -257,7 +238,7 @@ msgid ""
 "Ensure that it has been loaded.\n"
 msgstr ""
 "!\n"
-"Ellenőrizze, hogy be van-e töltve.\n"
+"Qinisekisa ukuthi kufakiwe.\n"
 
 #: ../parser_main.c:368
 #, c-format
@@ -265,8 +246,6 @@ msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
 msgstr ""
-"%s: Sajnálom. A program futtatásához root jogosultság szükséges.\n"
-"\n"
 
 #: ../parser_main.c:375
 #, c-format
@@ -275,54 +254,49 @@ msgid ""
 "Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 msgstr ""
-"%s: Figyelem! A program setuid root módban futásra van állítva.\n"
-"Bárki, aki futtatja a programot, frissíteni tudja az AppArmor profilokat.\n"
-"\n"
 
 #: ../parser_main.c:442
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
-msgstr "%s: Hiba a fájlban. A program leáll.\n"
+msgstr "%s: Amaphutha atholakale kwifayela. Iyayeka.\n"
 
 #: ../parser_misc.c:269
 msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
 msgstr ""
-"A nagybetűs \"RWLIMX\" minősítők használata elavult, használjon kisbetűket.\n"
-"A részletekkel kapcsolatban lásd az apparmor.d(5) kézikönyvoldalt.\n"
 
 #: ../parser_misc.c:313
 msgid "Exec qualifier 'i' must be followed by 'x'"
-msgstr "Az 'i' végrehajtás-módosító után 'x' kell, hogy álljon"
+msgstr "I-exec qualifier u-‘i’ kumelwe alandelwe ngu-‘x’"
 
 #: ../parser_misc.c:315
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
-msgstr "Az 'i' végrehajtás-módosító érvénytelen, már meg van adva egy ütköző minősítő"
+msgstr "I-exec qualifier u-‘i’ akasebenzi, i-qualifier engqubuzanayo isibonisiwe kakade"
 
 #: ../parser_misc.c:327
 #, c-format
 msgid "Unconstrained exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
-msgstr "A korlátozás nélküli végrehajtás-minősítő (%c%c) lehetővé teszi egyes veszélyes környezeti változók átadását a korlátozás nélküli folyamatnak; a részletekkel kapcsolatban lásd a 'man 5 apparmor.d' kézikönyvoldalt.\n"
+msgstr ""
 
 #: ../parser_misc.c:334 ../parser_misc.c:355
 #, c-format
 msgid "Exec qualifier '%c' must be followed by 'x'"
-msgstr "A(z) '%c' végrehajtás-módosító után 'x' kell, hogy álljon"
+msgstr ""
 
 #: ../parser_misc.c:337 ../parser_misc.c:358
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr "A(z) '%c' végrehajtás-módosító érvénytelen, már meg van adva egy ütköző minősítő"
+msgstr ""
 
 #: ../parser_misc.c:376
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "Érvénytelen mód, az 'x' előtt az 'i', 'p' vagy 'u' végrehajtás-módosító kell, hogy álljon"
+msgstr ""
 
 #: ../parser_misc.c:396
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr "Belső: váratlan módkarakter ('%c') a bemenetben"
+msgstr ""
 
 #: ../parser_misc.c:426 parser_yacc.y:222 parser_yacc.y:315 parser_yacc.y:327
 #: parser_yacc.y:387 parser_yacc.y:521 parser_yacc.y:533 parser_yacc.y:553
@@ -330,146 +304,145 @@ msgstr "Belső: váratlan módkarakter ('%c') a bemenetben"
 #: parser_yacc.y:665 parser_yacc.y:679 parser_yacc.y:707 parser_yacc.y:737
 #: parser_yacc.y:775 parser_yacc.y:792 parser_yacc.y:806
 msgid "Memory allocation error."
-msgstr "Memóriafoglalási hiba."
+msgstr "Iphutha lokwabiwa kwememori."
 
 #: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
 #: ../parser_variable.c:227
 #, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr "AppArmor feldolgozási hiba: %s\n"
+msgstr ""
 
 #: ../parser_merge.c:64
 msgid "Couldn't merge entries. Out of Memory\n"
-msgstr "A bejegyzések nem fésülhetők össze. Nincs elég memória\n"
+msgstr "Aykwazanga ukuhlanganisa ama-entry. Ilahlekelwe Yimemori\n"
 
 #: ../parser_merge.c:92
 #, c-format
 msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-msgstr "%s profil: a(z) %s szabály össze lett fésülve több x módosítóval\n"
+msgstr "iphrofayili %s: ihlanganise umthetho %s kanye nezilungisi ze-x eziningi\n"
 
 #: parser_yacc.y:362
 msgid "flags=(debug) is no longer supported, sorry."
-msgstr "sajnos a flags=(debug) már nem támogatott."
+msgstr ""
 
 #: parser_yacc.y:398
 msgid "Assert: `rule' returned NULL."
-msgstr "Assert: A `rule' NULL értéket adott vissza."
+msgstr "Assert: `i-rule' ibuye IYIZE."
 
 #: parser_yacc.y:407
 msgid "Assert: `netrule' returned NULL."
-msgstr "Assert: A `netrule' NULL értéket adott vissza."
+msgstr "Assert: `i-netrule' ibuye IYIZE."
 
 #: parser_yacc.y:424
 msgid "Assert: 'hat rule' returned NULL."
-msgstr "Assert: A 'hat rule' NULL értéket adott vissza."
+msgstr "Assert: `i-hat rule’ ibuye IYIZE."
 
 #: parser_yacc.y:487
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr "Be nem állított logikai változó (%s) egy feltételes kifejezésben"
+msgstr ""
 
 #: parser_yacc.y:545
 #, c-format
 msgid "missing an end of line character? (entry: %s)"
-msgstr "Lehet, hogy hiányzik egy sorvége karakter? (bejegyzés: %s)"
+msgstr "ilahlekelwe yisiphetho sohlamvu lomugqa? (i-entry: %s)"
 
 #: parser_yacc.y:586
 msgid "Assert: `addresses' returned NULL."
-msgstr "Assert: Az `addresses' NULL értéket adott vissza."
+msgstr "Assert: `amakheli' abuye EYIZE."
 
 #: parser_yacc.y:689
 msgid "Network entries can only have one TO address."
-msgstr "A hálózati bejegyzéseknek csak egy TO címük lehet."
+msgstr "Ama-entry enethiwekhi angaba nekheli elilodwa kuphela elithi KUYA KU-."
 
 #: parser_yacc.y:694
 msgid "Network entries can only have one FROM address."
-msgstr "A hálózati bejegyzéseknek csak egy FROM címük lehet."
+msgstr "Ama-entry enethiwekhi angaba nekheli elilodwa kuphela elithi KUVELA KU-."
 
-# clients/lan_ISDN.ycp:1014 clients/lan_ISDN.ycp:1032
 #: parser_yacc.y:712 parser_yacc.y:743
 #, c-format
 msgid "`%s' is not a valid ip address."
-msgstr "`%s' nem érvényes IP-cím."
+msgstr "`i-%s' ayilona ikheli elifanele le-ip."
 
 #: parser_yacc.y:756
 #, c-format
 msgid "`/%d' is not a valid netmask."
-msgstr "`/%d' nem érvényes hálózati maszk."
+msgstr "`/%d akuyona i-netmask efanele."
 
 #: parser_yacc.y:763
 #, c-format
 msgid "`%s' is not a valid netmask."
-msgstr "`%s' nem érvényes hálózati maszk."
+msgstr "`i-%s akuyona i-netmask efanele."
 
 #: parser_yacc.y:789 parser_yacc.y:809
 #, c-format
 msgid "ports must be between %d and %d"
-msgstr "A port értéke %d és %d közé kell, hogy essen"
+msgstr "ama-port kumelwe abe phakathi kuka-%d no-%d"
 
 #: parser_yacc.y:876
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr "AppArmor feldolgozási hiba (%s sor: %d: %s)\n"
+msgstr ""
 
 #: parser_yacc.y:879
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr "AppArmor feldolgozási hiba, sor %d: %s\n"
+msgstr ""
 
 #: ../parser_regex.c:247
 #, c-format
 msgid "%s: Illegal open {, nesting groupings not allowed\n"
-msgstr "%s: Érvénytelen nyitott {, a csoportosítások nem ágyazhatók egymásba\n"
+msgstr "%s: Ukuvula okungekho emthethweni {, ukuvalela amaqoqo akuvunyelwe\n"
 
 #: ../parser_regex.c:267
 #, c-format
 msgid "%s: Regex grouping error: Invalid number of items between {}\n"
-msgstr "%s: Regex csoportosítási hiba: Érvénytelen számú elem a { és } között\n"
+msgstr "%s: Iphutha lokwenza amaqoqo le-regex: Inombolo eyiphutha yezinto eziphakathi nendawo {}\n"
 
 #: ../parser_regex.c:273
 #, c-format
 msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
-msgstr "%s: Regex csoportosítási hiba: Érvénytelen záró }, nem található hozzá tartozó nyitott { \n"
+msgstr "%s: Iphutha lokwenza amaqoqo le-regex: Ukuvala okuyiphutha }, akukho ukuvula okufanelanayo { ithungathwe yatholwa\n"
 
 #: ../parser_regex.c:339
 #, c-format
 msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
-msgstr "%s: Regex csoportosítási hiba: Be nem zárt csoport, záró } hiányzik\n"
+msgstr ""
 
 #: ../parser_regex.c:353
 #, c-format
 msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
-msgstr "%s: Belső puffer-túlcsordulás, %d karakterrel több\n"
+msgstr "%s: Ingobolwazi yesikhashana yangaphakathi itholakele, %d izinhlamvu ezeqiwe\n"
 
 #: ../parser_regex.c:357
 #, c-format
 msgid "%s: Unable to parse input line '%s'\n"
-msgstr "%s: A '%s' bemeneti sor értelmezése nem sikerült\n"
+msgstr "%s: Ayikwazi ukunqunta umugqa wokufakiwe '%s'\n"
 
 #: ../parser_regex.c:390
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-msgstr "%s: A(z) '%s' reguláris kifejezés lefordítása nem sikerült [eredeti: '%s']\n"
+msgstr "%s: Ihlulekile ukuhlanganisa i-regex '%s' [okokuqala: '%s']\n"
 
 #: ../parser_regex.c:394
 #, c-format
 msgid "%s: error near               "
-msgstr "%s: hiba közel"
+msgstr "%s: iphutha eliseduze"
 
 #: ../parser_regex.c:404
 #, c-format
 msgid "%s: error reason: '%s'\n"
-msgstr "%s: hiba oka: '%s'\n"
+msgstr "%s: isizathu sephutha: '%s'\n"
 
 #: ../parser_regex.c:413
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-msgstr "%s: A(z) '%s' reguláris kifejezés lefordítása nem sikerült [eredeti: '%s'] - malloc meghiúsult\n"
+msgstr "%s: Ihlulekile ukuhlanganisa i-regex '%s' [okokuqala: '%s'] - i-malloc ayiphumelelanga\n"
 
 #: ../parser_policy.c:102
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
-msgstr "HIBA a(z) %s profil szabályainak összefésülésénél, a betöltés nem sikerült\n"
+msgstr ""
 
 #: ../parser_policy.c:134
 #, c-format
@@ -478,32 +451,28 @@ msgid ""
 "\t'*', '?', character ranges, and alternations are not allowed.\n"
 "\t'**' may only be used at the end of a rule.\n"
 msgstr ""
-"HIBA: a(z) %s profil ezzel a kernellel nem használható irányelvelemeket tartalmaz:\n"
-"\t'*', '?', karaktertartományok és alternatívák használata nem megengedett.\n"
-"\t'**' csak a szabály végén használható.\n"
 
 #: ../parser_policy.c:179
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr "HIBA a(z) %s profil reguláris kifejezéseinek feldolgozásakor, a betöltés nem sikerült\n"
+msgstr ""
 
 #: ../parser_policy.c:206
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr "HIBA a(z) %s profil változóinak kibontásakor, a betöltés nem sikerült\n"
+msgstr ""
 
 #: ../parser_policy.c:259
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
-msgstr "HIBA a(z) %s profilban, a betöltés nem sikerült\n"
+msgstr "IPHUTHA kwiphrofayili %s, ihlulekile ukufaka\n"
 
 #: ../parser_policy.c:413
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
-msgstr "%s: Hiba a szabályok egyesítésének utófeldolgozásában. A program leáll.\n"
+msgstr "%s: Amaphutha atholakele ekuhlanganiseni imithetho yangemva kokuphrosesa. Iyayeka.\n"
 
 #: ../parser_policy.c:420 ../parser_policy.c:427
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
-msgstr "%s: Hibák a reguláris kifejezés utófeldolgozása közben. A program leáll.\n"
-
+msgstr ""

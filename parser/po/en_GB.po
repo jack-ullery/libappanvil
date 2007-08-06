@@ -1,207 +1,210 @@
+# translation of apparmor-parser.po to
 # English message file for YaST2 (@memory@).
 # Copyright (C) 2005 SUSE Linux Products GmbH.
 # Copyright (C) 2002 SuSE Linux AG.
 # Copyright (C) 2000, 2001 SuSE GmbH.
-# James Ogley <ogley@suse.co.uk>, 2000, 2001.
 #
+# James Ogley <ogley@suse.co.uk>, 2000, 2001.
+# Benjamin Weber <b.weber@warwick.ac.uk>, 2007.
 msgid ""
 msgstr ""
-"Project-Id-Version: YaST (@memory@)\n"
+"Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2001-07-17 16:27+0200\n"
-"Last-Translator: James Ogley <ogley@suse.co.uk>\n"
-"Language-Team: English <i18n@suse.de>\n"
+"PO-Revision-Date: 2007-07-04 18:01+0100\n"
+"Last-Translator: Benjamin Weber <b.weber@warwick.ac.uk>\n"
+"Language-Team:  <en@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8-bit\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: KBabel 1.11.4\n"
 
 #: ../parser_include.c:95
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
-msgstr ""
+msgstr "Error: Could not read profile %s: %s.\n"
 
 #: ../parser_include.c:114
 msgid "Error: Could not allocate temporary file.\n"
-msgstr ""
+msgstr "Error: Could not allocate temporary file.\n"
 
 #: ../parser_include.c:165
 msgid "Error: Out of memory.\n"
-msgstr ""
+msgstr "Error: Out of memory.\n"
 
 #: ../parser_include.c:175
 #, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
-msgstr ""
+msgstr "Error: basedir %s is not a directory, skipping.\n"
 
 #: ../parser_include.c:189
 #, c-format
 msgid "Error: Could not add directory %s to search path.\n"
-msgstr ""
+msgstr "Error: Could not add directory %s to search path.\n"
 
 #: ../parser_include.c:199
 msgid "Error: Could not allocate memory.\n"
-msgstr ""
+msgstr "Error: Could not allocate memory.\n"
 
 #: ../parser_include.c:332
 #, c-format
 msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-msgstr ""
+msgstr "Error: Could not allocate buffer for include at line %d in %s.\n"
 
 #: ../parser_include.c:348 ../parser_include.c:368
 #, c-format
 msgid "Error: Bad include at line %d in %s.\n"
-msgstr ""
+msgstr "Error: Bad include at line %d in %s.\n"
 
 #: ../parser_include.c:398
 #, c-format
 msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-msgstr ""
+msgstr "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
 
 #: ../parser_include.c:423
 #, c-format
 msgid "Error: #include %s%c not found at line %d in %s.\n"
-msgstr ""
+msgstr "Error: #include %s%c not found at line %d in %s.\n"
 
 #: ../parser_interface.c:65
 msgid "Bad write position\n"
-msgstr ""
+msgstr "Bad write position\n"
 
 #: ../parser_interface.c:68
 msgid "Permission denied\n"
-msgstr ""
+msgstr "Permission denied\n"
 
 #: ../parser_interface.c:71
 msgid "Out of memory\n"
-msgstr ""
+msgstr "Out of memory\n"
 
 #: ../parser_interface.c:74
 msgid "Couldn't copy profile Bad memory address\n"
-msgstr ""
+msgstr "Couldn't copy profile Bad memory address\n"
 
 #: ../parser_interface.c:77
 msgid "Profile doesn't conform to protocol\n"
-msgstr ""
+msgstr "Profile doesn't conform to protocol\n"
 
 #: ../parser_interface.c:80
 msgid "Profile does not match signature\n"
-msgstr ""
+msgstr "Profile does not match signature\n"
 
 #: ../parser_interface.c:83
 msgid "Profile version not supported by Apparmor module\n"
-msgstr ""
+msgstr "Profile version not supported by Apparmor module\n"
 
 #: ../parser_interface.c:86
 msgid "Profile already exists\n"
-msgstr ""
+msgstr "Profile already exists\n"
 
 #: ../parser_interface.c:89
 msgid "Profile doesn't exist\n"
-msgstr ""
+msgstr "Profile doesn't exist\n"
 
 #: ../parser_interface.c:92
 msgid "Unknown error\n"
-msgstr ""
+msgstr "Unknown error\n"
 
 #: ../parser_interface.c:109
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr ""
+msgstr "%s: Unable to add \"%s\".  "
 
 #: ../parser_interface.c:114
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr ""
+msgstr "%s: Unable to replace \"%s\".  "
 
 #: ../parser_interface.c:119
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr ""
+msgstr "%s: Unable to remove \"%s\".  "
 
 #: ../parser_interface.c:124
 #, c-format
 msgid "%s: Unable to write to stdout\n"
-msgstr ""
+msgstr "%s: Unable to write to stdout\n"
 
 #: ../parser_interface.c:128 ../parser_interface.c:151
 #, c-format
 msgid "%s: ASSERT: Invalid option: %d\n"
-msgstr ""
+msgstr "%s: ASSERT: Invalid option: %d\n"
 
 #: ../parser_interface.c:137
 #, c-format
 msgid "Addition succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Addition succeeded for \"%s\".\n"
 
 #: ../parser_interface.c:141
 #, c-format
 msgid "Replacement succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Replacement succeeded for \"%s\".\n"
 
 #: ../parser_interface.c:145
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Removal succeeded for \"%s\".\n"
 
 #: ../parser_interface.c:236
 #, c-format
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
-msgstr ""
+msgstr "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 
 #: ../parser_interface.c:644
 #, c-format
 msgid "Unable to open %s - %s\n"
-msgstr ""
+msgstr "Unable to open %s - %s\n"
 
 #: ../parser_interface.c:661
 msgid "unable to create work area\n"
-msgstr ""
+msgstr "unable to create work area\n"
 
 #: ../parser_interface.c:669
 #, c-format
 msgid "unable to serialize profile %s\n"
-msgstr ""
+msgstr "unable to serialise profile %s\n"
 
 #: ../parser_interface.c:679
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
-msgstr ""
+msgstr "%s: Unable to write entire profile entry\n"
 
 #: parser_lex.l:119 parser_lex.l:221 parser_lex.l:347
 #, c-format
 msgid "Found unexpected character: '%s'"
-msgstr ""
+msgstr "Found unexpected character: '%s'"
 
 #: parser_lex.l:159
 #, c-format
 msgid "(ip_mode) Found unexpected character: '%s'"
-msgstr ""
+msgstr "(ip_mode) Found unexpected character: '%s'"
 
 #: parser_lex.l:174
 #, c-format
 msgid "Unexpected character in interface name: '%s'"
-msgstr ""
+msgstr "Unexpected character in interface name: '%s'"
 
 #: parser_lex.l:213
 #, c-format
 msgid "Found unknown flag: '%s'"
-msgstr ""
+msgstr "Found unknown flag: '%s'"
 
 #: parser_lex.l:326
 #, c-format
 msgid "Found unexpected keyword: '%s'"
-msgstr ""
+msgstr "Found unexpected keyword: '%s'"
 
 #: ../parser_main.c:131
 #, c-format
 msgid "Warning (%s line %d): %s"
-msgstr ""
+msgstr "Warning (%s line %d): %s"
 
 #: ../parser_main.c:255
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
-msgstr ""
+msgstr "%s: Could not allocate memory for subdomainbase mount point\n"
 
 #: ../parser_main.c:274
 #, c-format
@@ -209,6 +212,8 @@ msgid ""
 "Warning: unable to open %s, attempting to use %s\n"
 "as the subdomainfs location. Use --subdomainfs to override.\n"
 msgstr ""
+"Warning: unable to open %s, attempting to use %s\n"
+"as the subdomainfs location. Use --subdomainfs to override.\n"
 
 #: ../parser_main.c:305
 #, c-format
@@ -217,6 +222,9 @@ msgid ""
 "Attempting to use %s as the subdomainfs location.\n"
 "Use --subdomainfs to override.\n"
 msgstr ""
+"Warning: unable to find a suitable fs in %s, is it mounted?\n"
+"Attempting to use %s as the subdomainfs location.\n"
+"Use --subdomainfs to override.\n"
 
 #: ../parser_main.c:347
 #, c-format
@@ -224,17 +232,21 @@ msgid ""
 "%s: Unable to query modules - '%s'\n"
 "Either modules are disabled or your kernel is too old.\n"
 msgstr ""
+"%s: Unable to query modules - '%s'\n"
+"Either modules are disabled or your kernel is too old.\n"
 
 #: ../parser_main.c:352
 #, c-format
 msgid "%s: Unable to find "
-msgstr ""
+msgstr "%s: Unable to find "
 
 #: ../parser_main.c:352
 msgid ""
 "!\n"
 "Ensure that it has been loaded.\n"
 msgstr ""
+"!\n"
+"Ensure that it has been loaded.\n"
 
 #: ../parser_main.c:368
 #, c-format
@@ -242,6 +254,8 @@ msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
 msgstr ""
+"%s: Sorry. You need root privileges to run this programme.\n"
+"\n"
 
 #: ../parser_main.c:375
 #, c-format
@@ -250,49 +264,54 @@ msgid ""
 "Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 msgstr ""
+"%s: Warning! You've set this programme setuid root.\n"
+"Anybody who can run this program can update your AppArmor profiles.\n"
+"\n"
 
 #: ../parser_main.c:442
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
-msgstr ""
+msgstr "%s: Errors found in file. Aborting.\n"
 
 #: ../parser_misc.c:269
 msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
 msgstr ""
+"Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
+"See the apparmor.d(5) manpage for details.\n"
 
 #: ../parser_misc.c:313
 msgid "Exec qualifier 'i' must be followed by 'x'"
-msgstr ""
+msgstr "Exec qualifier 'i' must be followed by 'x'"
 
 #: ../parser_misc.c:315
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
-msgstr ""
+msgstr "Exec qualifier 'i' invalid, conflicting qualifier already specified"
 
 #: ../parser_misc.c:327
 #, c-format
 msgid "Unconstrained exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
-msgstr ""
+msgstr "Unconstrained exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
 
 #: ../parser_misc.c:334 ../parser_misc.c:355
 #, c-format
 msgid "Exec qualifier '%c' must be followed by 'x'"
-msgstr ""
+msgstr "Exec qualifier '%c' must be followed by 'x'"
 
 #: ../parser_misc.c:337 ../parser_misc.c:358
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr ""
+msgstr "Exec qualifier '%c' invalid, conflicting qualifier already specified"
 
 #: ../parser_misc.c:376
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr ""
+msgstr "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
 
 #: ../parser_misc.c:396
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr ""
+msgstr "Internal: unexpected mode character '%c' in input"
 
 #: ../parser_misc.c:426 parser_yacc.y:222 parser_yacc.y:315 parser_yacc.y:327
 #: parser_yacc.y:387 parser_yacc.y:521 parser_yacc.y:533 parser_yacc.y:553
@@ -300,145 +319,145 @@ msgstr ""
 #: parser_yacc.y:665 parser_yacc.y:679 parser_yacc.y:707 parser_yacc.y:737
 #: parser_yacc.y:775 parser_yacc.y:792 parser_yacc.y:806
 msgid "Memory allocation error."
-msgstr ""
+msgstr "Memory allocation error."
 
 #: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
 #: ../parser_variable.c:227
 #, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr ""
+msgstr "AppArmor parser error: %s\n"
 
 #: ../parser_merge.c:64
 msgid "Couldn't merge entries. Out of Memory\n"
-msgstr ""
+msgstr "Couldn't merge entries. Out of Memory\n"
 
 #: ../parser_merge.c:92
 #, c-format
 msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-msgstr ""
+msgstr "profile %s: has merged rule %s with multiple x modifiers\n"
 
 #: parser_yacc.y:362
 msgid "flags=(debug) is no longer supported, sorry."
-msgstr ""
+msgstr "flags=(debug) is no longer supported, sorry."
 
 #: parser_yacc.y:398
 msgid "Assert: `rule' returned NULL."
-msgstr ""
+msgstr "Assert: `rule' returned NULL."
 
 #: parser_yacc.y:407
 msgid "Assert: `netrule' returned NULL."
-msgstr ""
+msgstr "Assert: `netrule' returned NULL."
 
 #: parser_yacc.y:424
 msgid "Assert: 'hat rule' returned NULL."
-msgstr ""
+msgstr "Assert: 'hat rule' returned NULL."
 
 #: parser_yacc.y:487
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr ""
+msgstr "Unset boolean variable %s used in if-expression"
 
 #: parser_yacc.y:545
 #, c-format
 msgid "missing an end of line character? (entry: %s)"
-msgstr ""
+msgstr "missing an end of line character? (entry: %s)"
 
 #: parser_yacc.y:586
 msgid "Assert: `addresses' returned NULL."
-msgstr ""
+msgstr "Assert: `addresses' returned NULL."
 
 #: parser_yacc.y:689
 msgid "Network entries can only have one TO address."
-msgstr ""
+msgstr "Network entries can only have one TO address."
 
 #: parser_yacc.y:694
 msgid "Network entries can only have one FROM address."
-msgstr ""
+msgstr "Network entries can only have one FROM address."
 
 #: parser_yacc.y:712 parser_yacc.y:743
 #, c-format
 msgid "`%s' is not a valid ip address."
-msgstr ""
+msgstr "`%s' is not a valid ip address."
 
 #: parser_yacc.y:756
 #, c-format
 msgid "`/%d' is not a valid netmask."
-msgstr ""
+msgstr "`/%d' is not a valid netmask."
 
 #: parser_yacc.y:763
 #, c-format
 msgid "`%s' is not a valid netmask."
-msgstr ""
+msgstr "`%s' is not a valid netmask."
 
 #: parser_yacc.y:789 parser_yacc.y:809
 #, c-format
 msgid "ports must be between %d and %d"
-msgstr ""
+msgstr "ports must be between %d and %d"
 
 #: parser_yacc.y:876
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr ""
+msgstr "AppArmor parser error in %s at line %d: %s\n"
 
 #: parser_yacc.y:879
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr ""
+msgstr "AppArmor parser error, line %d: %s\n"
 
 #: ../parser_regex.c:247
 #, c-format
 msgid "%s: Illegal open {, nesting groupings not allowed\n"
-msgstr ""
+msgstr "%s: Illegal open {, nesting groupings not allowed\n"
 
 #: ../parser_regex.c:267
 #, c-format
 msgid "%s: Regex grouping error: Invalid number of items between {}\n"
-msgstr ""
+msgstr "%s: Regex grouping error: Invalid number of items between {}\n"
 
 #: ../parser_regex.c:273
 #, c-format
 msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
-msgstr ""
+msgstr "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
 
 #: ../parser_regex.c:339
 #, c-format
 msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
-msgstr ""
+msgstr "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
 
 #: ../parser_regex.c:353
 #, c-format
 msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
-msgstr ""
+msgstr "%s: Internal buffer overflow detected, %d characters exceeded\n"
 
 #: ../parser_regex.c:357
 #, c-format
 msgid "%s: Unable to parse input line '%s'\n"
-msgstr ""
+msgstr "%s: Unable to parse input line '%s'\n"
 
 #: ../parser_regex.c:390
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-msgstr ""
+msgstr "%s: Failed to compile regex '%s' [original: '%s']\n"
 
 #: ../parser_regex.c:394
 #, c-format
 msgid "%s: error near               "
-msgstr ""
+msgstr "%s: error near               "
 
 #: ../parser_regex.c:404
 #, c-format
 msgid "%s: error reason: '%s'\n"
-msgstr ""
+msgstr "%s: error reason: '%s'\n"
 
 #: ../parser_regex.c:413
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-msgstr ""
+msgstr "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
 
 #: ../parser_policy.c:102
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
-msgstr ""
+msgstr "ERROR merging rules for profile %s, failed to load\n"
 
 #: ../parser_policy.c:134
 #, c-format
@@ -447,28 +466,32 @@ msgid ""
 "\t'*', '?', character ranges, and alternations are not allowed.\n"
 "\t'**' may only be used at the end of a rule.\n"
 msgstr ""
+"ERROR profile %s contains policy elements not usable with this kernel:\n"
+"\t'*', '?', character ranges, and alternations are not allowed.\n"
+"\t'**' may only be used at the end of a rule.\n"
 
 #: ../parser_policy.c:179
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr ""
+msgstr "ERROR processing regexs for profile %s, failed to load\n"
 
 #: ../parser_policy.c:206
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr ""
+msgstr "ERROR expanding variables for profile %s, failed to load\n"
 
 #: ../parser_policy.c:259
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
-msgstr ""
+msgstr "ERROR in profile %s, failed to load\n"
 
 #: ../parser_policy.c:413
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
-msgstr ""
+msgstr "%s: Errors found in combining rules postprocessing. Aborting.\n"
 
 #: ../parser_policy.c:420 ../parser_policy.c:427
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
-msgstr ""
+msgstr "%s: Errors found during regex postprocess.  Aborting.\n"
+

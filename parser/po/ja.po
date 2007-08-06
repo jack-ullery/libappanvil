@@ -1,17 +1,22 @@
-# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
-# This file is distributed under the same license as the package.
+# Japanese message file for YaST2 (@memory@).
+# Copyright (C) 2005 SUSE Linux Products GmbH.
+# Copyright (C) 2002 SuSE Linux AG.
+# Copyright (C) 2000, 2001 SuSE GmbH.
+# Mike Fabian <mfabian@suse.de>, 2000, 2001.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-parser\n"
+"Project-Id-Version: base\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2006-11-20 11:36\n"
+"PO-Revision-Date: 2006-06-21 14:02\n"
 "Last-Translator: Novell Language <language@novell.com>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: KBabel 1.9\n"
 
 #: ../parser_include.c:95
 #, c-format
@@ -229,7 +234,7 @@ msgstr "%s: モジュールをクエリできません - 「%s」どちらかの
 #: ../parser_main.c:352
 #, c-format
 msgid "%s: Unable to find "
-msgstr "%s: 検出できません "
+msgstr "%s: 検出できません"
 
 #: ../parser_main.c:352
 msgid ""
@@ -346,7 +351,7 @@ msgstr "Assert:「hat rule」はNULLを返しています。"
 #: parser_yacc.y:487
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr "未設定のブーリアン変数 %s は条件分岐の構文に使用されています"
+msgstr "未設定のブーリアン変数 %s は条件分岐の構文に使用されています。 "
 
 #: parser_yacc.y:545
 #, c-format
@@ -433,7 +438,7 @@ msgstr "%s: regex 「%s」 [original: 「%s」]のコンパイルに失敗しま
 #: ../parser_regex.c:394
 #, c-format
 msgid "%s: error near               "
-msgstr "%s: エラーすれすれ               "
+msgstr "%s: エラーすれすれ"
 
 #: ../parser_regex.c:404
 #, c-format

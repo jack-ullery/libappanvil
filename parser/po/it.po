@@ -1,17 +1,23 @@
-# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
-# This file is distributed under the same license as the package.
+# Italian message file for YaST2 (@memory@).
+# Copyright (C) 2005 SUSE Linux Products GmbH.
+# Copyright (C) 2002 SuSE Linux AG.
+# Copyright (C) 1999, 2000, 2001 SuSE GmbH.
+# Franca Delcarlo <francad@attglobal.net>, 1999, 2000, 2001.
+# Karl Eichwalder <ke@suse.de>, 2000.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-parser\n"
+"Project-Id-Version: base\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2006-11-03 15:41\n"
+"PO-Revision-Date: 2005-03-09 13:54+0100\n"
 "Last-Translator: Novell Language <language@novell.com>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: KBabel 1.9\n"
 
 #: ../parser_include.c:95
 #, c-format
@@ -96,6 +102,7 @@ msgstr "Profilo già esistente\n"
 msgid "Profile doesn't exist\n"
 msgstr "Profilo inesistente\n"
 
+# TLABEL modules/dialup/dialup.ycp:731
 #: ../parser_interface.c:92
 msgid "Unknown error\n"
 msgstr "Errore sconosciuto\n"
@@ -103,17 +110,17 @@ msgstr "Errore sconosciuto\n"
 #: ../parser_interface.c:109
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr "%s: Impossibile aggiungere \"%s\".  "
+msgstr "%s: Impossibile aggiungere \"%s\"."
 
 #: ../parser_interface.c:114
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr "%s: Impossibile sostituire \"%s\".  "
+msgstr "%s: Impossibile sostituire \"%s\"."
 
 #: ../parser_interface.c:119
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr "%s: Impossibile rimuovere \"%s\".  "
+msgstr "%s: Impossibile rimuovere \"%s\"."
 
 #: ../parser_interface.c:124
 #, c-format
@@ -367,6 +374,7 @@ msgstr "Le registrazioni di rete possono avere solo un indirizzo A."
 msgid "Network entries can only have one FROM address."
 msgstr "Le registrazioni di rete possono avere solo un indirizzo DA."
 
+# TLABEL modules/dialup/dialup.ycp:1329
 #: parser_yacc.y:712 parser_yacc.y:743
 #, c-format
 msgid "`%s' is not a valid ip address."
@@ -435,7 +443,7 @@ msgstr "%s: Impossibile compilare regex '%s' [originale: '%s']\n"
 #: ../parser_regex.c:394
 #, c-format
 msgid "%s: error near               "
-msgstr "%s: errore vicino               "
+msgstr "%s: errore vicino"
 
 #: ../parser_regex.c:404
 #, c-format
@@ -481,7 +489,7 @@ msgstr "ERRORE in profilo %s, impossibile caricare\n"
 #: ../parser_policy.c:413
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
-msgstr "%s: Errori individuati durante combinazione post-elaborazione regole. Interruzione in corso.\n"
+msgstr "%s: Errori individuati durante combinazione postelaborazione regole. Interruzione in corso.\n"
 
 #: ../parser_policy.c:420 ../parser_policy.c:427
 #, c-format

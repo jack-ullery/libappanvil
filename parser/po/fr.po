@@ -1,17 +1,24 @@
-# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
-# This file is distributed under the same license as the package.
+# French message file for YaST2 (@memory@).
+# Copyright (C) 2005 SUSE Linux Products GmbH.
+# Copyright (C) 2002, 2003 SuSE Linux AG.
+# Copyright (C) 2000, 2001 SuSE GmbH.
+# Patricia Vaz <patricia@suse.de>, 2003.
+# Francoise Lermen <flermen@suse.de>, 2000, 2001, 2002.
+# Karine Nguyen <karine@suse.de>, 2001.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-parser\n"
+"Project-Id-Version: base\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2006-11-02 14:16\n"
+"PO-Revision-Date: 2005-03-09 13:54+0100\n"
 "Last-Translator: Novell Language <language@novell.com>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: KBabel 1.9\n"
 
 #: ../parser_include.c:95
 #, c-format
@@ -64,10 +71,12 @@ msgstr "Erreur : #include %s%c introuvable (ligne %d dans %s).\n"
 msgid "Bad write position\n"
 msgstr "Mauvaise position d'écriture\n"
 
+# TLABEL printer_2002_08_07_0216__249
 #: ../parser_interface.c:68
 msgid "Permission denied\n"
 msgstr "Autorisation refusée\n"
 
+# TLABEL printer_2002_08_07_0216__38
 #: ../parser_interface.c:71
 msgid "Out of memory\n"
 msgstr "Mémoire insuffisante\n"
@@ -88,6 +97,7 @@ msgstr "Le profil ne correspond pas à la signature\n"
 msgid "Profile version not supported by Apparmor module\n"
 msgstr "Version de profil non prise en charge par le module AppArmor\n"
 
+# TLABEL network_2002_03_14_2340__39
 #: ../parser_interface.c:86
 msgid "Profile already exists\n"
 msgstr "Profil déjà existant\n"
@@ -96,6 +106,7 @@ msgstr "Profil déjà existant\n"
 msgid "Profile doesn't exist\n"
 msgstr "Profil inexistant\n"
 
+# TLABEL network_2002_08_07_0216__133
 #: ../parser_interface.c:92
 msgid "Unknown error\n"
 msgstr "Erreur inconnue\n"
@@ -103,23 +114,27 @@ msgstr "Erreur inconnue\n"
 #: ../parser_interface.c:109
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr "%s : impossible d'ajouter \"%s\".  "
+msgstr "%s : impossible d'ajouter \"%s\"."
 
+# TLABEL profile-manager_2002_08_07_0216__9
 #: ../parser_interface.c:114
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr "%s : impossible de remplacer \"%s\".  "
+msgstr "%s : impossible de remplacer \"%s\"."
 
+# TLABEL profile-manager_2002_08_07_0216__9
 #: ../parser_interface.c:119
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr "%s : impossible de supprimer \"%s\".  "
+msgstr "%s : impossible de supprimer \"%s\"."
 
+# TLABEL profile-manager_2002_08_07_0216__9
 #: ../parser_interface.c:124
 #, c-format
 msgid "%s: Unable to write to stdout\n"
 msgstr "%s : impossible d'écrire vers stdout\n"
 
+# TLABEL packages_2002_01_04_0147__13
 #: ../parser_interface.c:128 ../parser_interface.c:151
 #, c-format
 msgid "%s: ASSERT: Invalid option: %d\n"
@@ -145,11 +160,13 @@ msgstr "Suppression réussie pour \"%s\".\n"
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 msgstr "ALARME tampon d'incrément incorrect %p pos %p ext %p taille %d res %p\n"
 
+# TLABEL profile-manager_2002_08_07_0216__9
 #: ../parser_interface.c:644
 #, c-format
 msgid "Unable to open %s - %s\n"
 msgstr "Impossible d'ouvrir %s - %s\n"
 
+# TLABEL nfs_2002_01_04_0147__3
 #: ../parser_interface.c:661
 msgid "unable to create work area\n"
 msgstr "impossible de créer une zone de travail\n"
@@ -167,7 +184,7 @@ msgstr "%s : impossible d'écrire l'entrée de profil complète\n"
 #: parser_lex.l:119 parser_lex.l:221 parser_lex.l:347
 #, c-format
 msgid "Found unexpected character: '%s'"
-msgstr "A trouvé un caractère inattendu : '%s'"
+msgstr "Caractère inattendu trouvé : '%s'"
 
 #: parser_lex.l:159
 #, c-format
@@ -194,6 +211,7 @@ msgstr "A trouvé un mot-clé inattendu : %s"
 msgid "Warning (%s line %d): %s"
 msgstr "Avertissement (%s ligne %d) : %s"
 
+# TLABEL general_2002_01_04_0147__73
 #: ../parser_main.c:255
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
@@ -228,10 +246,11 @@ msgstr ""
 "%s : impossible d'interroger les modules - '%s'\n"
 "Les modules sont désactivés ou le kernel est trop ancien.\n"
 
+# TLABEL profile-manager_2002_08_07_0216__9
 #: ../parser_main.c:352
 #, c-format
 msgid "%s: Unable to find "
-msgstr "%s : impossible de trouver "
+msgstr "%s : impossible de trouver"
 
 #: ../parser_main.c:352
 msgid ""
@@ -306,6 +325,7 @@ msgstr "Mode non valide (x doit être précédé du qualificatif d'exécution i,
 msgid "Internal: unexpected mode character '%c' in input"
 msgstr "Interne : caractère de mode inattendu %c en entrée"
 
+# TLABEL hwinfo_2002_01_04_0147__84
 #: ../parser_misc.c:426 parser_yacc.y:222 parser_yacc.y:315 parser_yacc.y:327
 #: parser_yacc.y:387 parser_yacc.y:521 parser_yacc.y:533 parser_yacc.y:553
 #: parser_yacc.y:591 parser_yacc.y:623 parser_yacc.y:637 parser_yacc.y:651
@@ -367,6 +387,7 @@ msgstr "Les entrées réseau ne doivent posséder qu'une seule adresse VERS."
 msgid "Network entries can only have one FROM address."
 msgstr "Les entrées réseau ne doivent posséder qu'une seule adresse DEPUIS."
 
+# TLABEL lan_2002_01_04_0147__56
 #: parser_yacc.y:712 parser_yacc.y:743
 #, c-format
 msgid "`%s' is not a valid ip address."
@@ -382,6 +403,7 @@ msgstr "`/%d n'est pas un masque réseau valide."
 msgid "`%s' is not a valid netmask."
 msgstr "`%s n'est pas un masque réseau valide."
 
+# TLABEL autoinst_2002_08_07_0216__375
 #: parser_yacc.y:789 parser_yacc.y:809
 #, c-format
 msgid "ports must be between %d and %d"
@@ -432,10 +454,11 @@ msgstr "%s : impossible d'analyser la ligne en entrée '%s'\n"
 msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
 msgstr "%s : échec de compilation de Regex '%s' [original : '%s']\n"
 
+# TLABEL partitioning_2002_01_04_0147__488
 #: ../parser_regex.c:394
 #, c-format
 msgid "%s: error near               "
-msgstr "%s : erreur à proximité de               "
+msgstr "%s : erreur à proximité de"
 
 #: ../parser_regex.c:404
 #, c-format

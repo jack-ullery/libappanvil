@@ -1,4 +1,6 @@
-# translation of apparmor-parser.pl.po to Polish
+# translation of apparmor-parser.po to 
+# translation of apparmor-parser.po to
+# translation of apparmor-parser.po to Polish
 # English translations for subdomain_parser package.
 # Copyright (C) 2005 Immunix, Inc.
 # This file is distributed under the same license as the subdomain_parser package.
@@ -6,25 +8,26 @@
 # Steve Beattie <steve@immunix.com>, 2006.
 # Zbigniew Braniecki <i18n@suse.de>, 2006.
 # Wojciech Kapusta <wojciech@aviary.pl>, 2006.
-# Sławek Guz <urugan@interia.pl>, 2006.
+#
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2006-11-10 01:22+0100\n"
-"Last-Translator: Stanisław Małolepszy <smalolepszy@aviary.pl>\n"
+"PO-Revision-Date: 2007-02-28 20:41+0100\n"
+"Last-Translator: Marek Stepien <marcoos@aviary.pl>\n"
 "Language-Team:  <pl@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);X-Generator: KBabel 1.11.2\n"
-"X-Generator: KBabel 1.11.2\n"
+"X-Generator: KBabel 1.9.1\n"
 
 #: ../parser_include.c:95
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
-msgstr "Błąd: Nie można odczytać profilu %s: %s.\n"
+msgstr "Błąd: Nie mogę odczytać profilu %s: %s.\n"
 
 #: ../parser_include.c:114
 msgid "Error: Could not allocate temporary file.\n"
@@ -61,7 +64,7 @@ msgstr "Błąd: Nieprawidłowe dołączenie: linia %d w %s.\n"
 #: ../parser_include.c:398
 #, c-format
 msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-msgstr "Błąd: Przekroczono %d poziomów dołączeń. Dołączenie %s nie zostanie przetworzone.\n"
+msgstr "Błąd: Przekroczono %d poziomów dołączeń. %s NIE zostanie przetworzone.\n"
 
 #: ../parser_include.c:423
 #, c-format
@@ -111,27 +114,27 @@ msgstr "Nieokreślony błąd\n"
 #: ../parser_interface.c:109
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr "%s: Dodawanie \"%s\" nie powiodło się."
+msgstr "%s: dodawanie \"%s\" nie powiodło się."
 
 #: ../parser_interface.c:114
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr "%s: Zamiana \"%s\" nie powiodła się."
+msgstr "%s: zamiana \"%s\" nie powiodła się."
 
 #: ../parser_interface.c:119
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr "%s: Usunięcie \"%s\" nie powiodło się."
+msgstr "%s: usunięcie \"%s\" nie powiodło się."
 
 #: ../parser_interface.c:124
 #, c-format
 msgid "%s: Unable to write to stdout\n"
-msgstr "%s: Zapis na wyjście standardowe (stdout) nie powiódł się\n"
+msgstr "%s: zapis na wyjście standardowe nie powiódł się\n"
 
 #: ../parser_interface.c:128 ../parser_interface.c:151
 #, c-format
 msgid "%s: ASSERT: Invalid option: %d\n"
-msgstr "%s: ASSERT: Nieprawidłowa opcja: %d\n"
+msgstr "%s: ASSERT: nieprawidłowa opcja: %d\n"
 
 #: ../parser_interface.c:137
 #, c-format
@@ -156,7 +159,7 @@ msgstr "Nieprawidłowy bufor inkrementujący %p na pozycji %p ext %p rozmiar %d 
 #: ../parser_interface.c:644
 #, c-format
 msgid "Unable to open %s - %s\n"
-msgstr "Otwarcie %s nie powiodło się - %s\n"
+msgstr "Otwarcie %s  nie powiodło się - %s\n"
 
 #: ../parser_interface.c:661
 msgid "unable to create work area\n"
@@ -170,17 +173,17 @@ msgstr "Serializowanie profilu %s nie powiodło się\n"
 #: ../parser_interface.c:679
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
-msgstr "%s: Zapis całego profilu nie powiódł się\n"
+msgstr "%s: zapis wyłącznego profilu nie powiódł się\n"
 
 #: parser_lex.l:119 parser_lex.l:221 parser_lex.l:347
 #, c-format
 msgid "Found unexpected character: '%s'"
-msgstr " Napotkano nieoczekiwany znak: '%s'"
+msgstr " Napotkano nieoczekiwany znak '%s'"
 
 #: parser_lex.l:159
 #, c-format
 msgid "(ip_mode) Found unexpected character: '%s'"
-msgstr "(tryb_ip) napotkano nieoczekiwany znak: '%s'"
+msgstr "(tryb_ip) napotkano nieoczekiwany znak '%s'"
 
 #: parser_lex.l:174
 #, c-format
@@ -205,7 +208,7 @@ msgstr "Ostrzeżenie (%s linia %d): %s"
 #: ../parser_main.c:255
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
-msgstr "%s: Przydzielenie pamięci dla punktu montowania bazy poddomeny nie powiodło się\n"
+msgstr "%s: przydzielenie pamięci dla punktu montowania bazy poddomeny nie powiodło się\n"
 
 #: ../parser_main.c:274
 #, c-format
@@ -214,7 +217,7 @@ msgid ""
 "as the subdomainfs location. Use --subdomainfs to override.\n"
 msgstr ""
 "Ostrzeżenie: Otwarcie %s nie udało się, próba użycia %s\n"
-"jako lokalizacji dla systemu plików poddomeny. Użyj --subdomainfs aby to obejść.\n"
+"jako lokalizacji dla systemu plików poddomeny. Opcja --subdomainfs pozwala to obejść.\n"
 
 #: ../parser_main.c:305
 #, c-format
@@ -226,7 +229,7 @@ msgstr ""
 "Ostrzeżenie: Znalezienie odpowiedniego systemu plików w %s nie udało się,\n"
 "sprawdź czy jest zamontowany. \n"
 "Próba użycia %s jako lokalizacji dla systemu plików poddomeny.\n"
-"Użyj --subdomainfs aby to obejść.\n"
+"Opcja --subdomainfs pozwala to obejść.\n"
 
 #: ../parser_main.c:347
 #, c-format
@@ -234,13 +237,13 @@ msgid ""
 "%s: Unable to query modules - '%s'\n"
 "Either modules are disabled or your kernel is too old.\n"
 msgstr ""
-"%s: Wyszukiwanie modułów nie powiodło się - '%s'.\n"
+"%s: wyszukiwanie modułów nie powiodło się - '%s'.\n"
 "Moduły mogą być wyłączone lub jądro systemu jest nieaktualne.\n"
 
 #: ../parser_main.c:352
 #, c-format
 msgid "%s: Unable to find "
-msgstr "%s: Nie znaleziono"
+msgstr "%s: nie znaleziono"
 
 #: ../parser_main.c:352
 msgid ""
@@ -273,7 +276,7 @@ msgstr ""
 #: ../parser_main.c:442
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
-msgstr "%s: Napotkano błędy w pliku. Przerywam.\n"
+msgstr "%s: napotkano błędy w pliku. Przerwanie.\n"
 
 #: ../parser_misc.c:269
 msgid ""
@@ -336,7 +339,7 @@ msgstr "Łączenie wpisów nie powiodło się. Brak pamięci.\n"
 #: ../parser_merge.c:92
 #, c-format
 msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-msgstr "profil %s: połączył regułę %s z wieloma modyfikatorami x\n"
+msgstr "profil %s: połączono regułę %s z wieloma modyfikatorami x\n"
 
 #: parser_yacc.y:362
 msgid "flags=(debug) is no longer supported, sorry."
@@ -409,17 +412,17 @@ msgstr "Błąd parsera AppArmor, linia %d: %s\n"
 #: ../parser_regex.c:247
 #, c-format
 msgid "%s: Illegal open {, nesting groupings not allowed\n"
-msgstr "%s: nieprawidłowy znak {, zagnieżdżone grupowanie jest niedozwolone.\n"
+msgstr "%s: nieprawidłowy znak {. Zagnieżdżone grupowanie jest niedozwolone.\n"
 
 #: ../parser_regex.c:267
 #, c-format
 msgid "%s: Regex grouping error: Invalid number of items between {}\n"
-msgstr "%s: Błąd grupowania wyrażeń regularnych: Nieprawidłowa ilość elementów pomiędzy {}\n"
+msgstr "%s: błąd grupowania wyrażeń regularnych: nieprawidłowa liczba elementów pomiędzy {}\n"
 
 #: ../parser_regex.c:273
 #, c-format
 msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
-msgstr "%s: Błąd grupowania wyrażeń regularnych: Nieprawidłowy znak }, nie znaleziono {\n"
+msgstr "%s: błąd grupowania wyrażeń regularnych: nieprawidłowy znak }; nie znaleziono {\n"
 
 #: ../parser_regex.c:339
 #, c-format
@@ -429,22 +432,22 @@ msgstr "%s: Błąd grupowania wyrażeń regularnych: Niedomknięte grupowanie; o
 #: ../parser_regex.c:353
 #, c-format
 msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
-msgstr "%s: Wewnętrzne przepełnienie bufora, przekroczono %d znaków\n"
+msgstr "%s: wewnętrzne przepełnienie bufora; przekroczono %d znaków\n"
 
 #: ../parser_regex.c:357
 #, c-format
 msgid "%s: Unable to parse input line '%s'\n"
-msgstr "%s: Analiza linii wejściowej '%s' nie powiodła się\n"
+msgstr "%s: analiza linii '%s' nie powiodła się\n"
 
 #: ../parser_regex.c:390
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-msgstr "%s: Błąd kompilacji wyrażenia regularnego '%s' [oryginał: '%s']\n"
+msgstr "%s: błąd kompilacji wyrażenia regularnego '%s' [oryginał: '%s']\n"
 
 #: ../parser_regex.c:394
 #, c-format
 msgid "%s: error near               "
-msgstr "%s: bliskość błędu              "
+msgstr "%s: bliskość błędu"
 
 #: ../parser_regex.c:404
 #, c-format
@@ -454,7 +457,7 @@ msgstr "%s: powód błędu: '%s'\n"
 #: ../parser_regex.c:413
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-msgstr "%s: Błąd kompilacji wyrażenia regularnego '%s' [oryginał: '%s'] - błąd malloc\n"
+msgstr "%s: błąd kompilacji wyrażenia regularnego '%s' [oryginał: '%s'] - błąd malloc\n"
 
 #: ../parser_policy.c:102
 #, c-format
@@ -485,12 +488,12 @@ msgstr "BŁĄÐ w profilu %s. Wczytywanie nie powiodło się.\n"
 #: ../parser_policy.c:259
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
-msgstr "BŁĄÐ w profilu %s. Wczytywanie nie powiodło się.\n"
+msgstr "Błąd w profilu %s. Wczytywanie nie powiodło się.\n"
 
 #: ../parser_policy.c:413
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
-msgstr "%s: Napotkano błędy w łączonym przetwarzaniu reguł. Przerwanie.\n"
+msgstr "%s: napotkano błędy w łączonym przetwarzaniu reguł. Przerwanie.\n"
 
 #: ../parser_policy.c:420 ../parser_policy.c:427
 #, c-format
