@@ -1,5 +1,4 @@
-# vim:syntax=apparmor
-# Last Modified: Sun Jan 22 00:12:50 2006
+# Last Modified: Thu Aug  2 14:28:49 2007
 # $Id$
 # ------------------------------------------------------------------
 #
@@ -12,7 +11,6 @@
 # ------------------------------------------------------------------
 
 #include <tunables/global>
-
 /usr/sbin/nscd {
   #include <abstractions/base>
   #include <abstractions/consoles>
@@ -20,21 +18,22 @@
 
   capability net_bind_service,
 
+  network inet dgram,
+
   /etc/nscd.conf r,
+  /tmp/.winbindd/pipe rw,
+  /usr/sbin/nscd rmix,
+  /var/lib/samba/winbindd_privileged/pipe rw,
+  /var/run/.nscd_socket wl,
+  /var/run/nscd/ r,
+  /var/run/nscd/db* wl,
+  /var/run/nscd/services rw,
+  /var/run/nscd/socket wl,
+  /var/run/nscd/{passwd,group} w,
+  /var/run/{nscd/,}nscd.pid rwl,
   @{PROC}/[0-9]*/fd/ r,
   @{PROC}/[0-9]*/fd/* r,
   @{PROC}/[0-9]*/maps r,
   @{PROC}/[0-9]*/mounts r,
   @{PROC}/filesystems r,
-  /usr/sbin/nscd rmix,
-  /var/run/.nscd_socket wl,
-  /var/run/nscd/ r,
-  /var/run/nscd/db* wl,
-  /var/run/nscd/services w,
-  /var/run/nscd/socket wl,
-  /var/run/nscd/{passwd,group} w,
-  /var/run/{nscd/,}nscd.pid rwl,
-
-  /tmp/.winbindd/pipe  rw,
-  /var/lib/samba/winbindd_privileged/pipe  rw,
 }

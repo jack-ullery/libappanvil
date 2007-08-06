@@ -1,5 +1,5 @@
+# Last Modified: Thu Aug  2 14:28:48 2007
 # $Id$
-# vim:syntax=apparmor
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
@@ -11,7 +11,6 @@
 # ------------------------------------------------------------------
 
 #include <tunables/global>
-
 /bin/ping {
   #include <abstractions/base>
   #include <abstractions/consoles>
@@ -19,6 +18,8 @@
 
   capability net_raw,
   capability setuid,
+
+  network inet raw,
 
   /bin/ping mixr,
   /etc/modules.conf r,

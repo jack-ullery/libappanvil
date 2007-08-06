@@ -1,0 +1,33 @@
+# Last Modified: Thu Aug  2 14:44:25 2007
+#include <tunables/global>
+/usr/sbin/cupsd flags=(complain) {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  capability chown,
+  capability dac_override,
+  capability fsetid,
+  capability net_bind_service,
+
+  network inet dgram,
+  network inet stream,
+  network inet6 dgram,
+  network inet6 stream,
+
+  /etc/cups/ r,
+  /etc/cups/* r,
+  /etc/printcap w,
+  /proc/net/ r,
+  /proc/net/unix r,
+  /usr/lib/cups/notifier/ r,
+  /usr/sbin/cupsd mr,
+  /usr/share/cups/** r,
+  /var/cache/cups/job.cache rw,
+  /var/cache/cups/remote.cache rw,
+  /var/log/cups/access_log w,
+  /var/log/cups/error_log rw,
+  /var/run/cups/certs/* w,
+  /var/run/cups/cups.sock w,
+  /var/run/nscd/services r,
+  /var/spool/cups/tmp/ r,
+}

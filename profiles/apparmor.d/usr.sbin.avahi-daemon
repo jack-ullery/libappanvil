@@ -1,0 +1,27 @@
+# Last Modified: Thu Aug  2 14:39:23 2007
+#include <tunables/global>
+/usr/sbin/avahi-daemon flags=(complain) {
+  #include <abstractions/base>
+  #include <abstractions/consoles>
+  #include <abstractions/nameservice>
+
+  capability chown,
+  capability dac_override,
+  capability kill,
+  capability setgid,
+  capability setuid,
+
+  network inet dgram,
+
+  /etc/avahi/ r,
+  /etc/avahi/avahi-daemon.conf r,
+  /etc/avahi/hosts r,
+  /etc/avahi/services/ r,
+  /etc/avahi/services/*.service r,
+  /proc/*/fd/ r,
+  /usr/sbin/avahi-daemon mr,
+  /var/run/avahi-daemon/ w,
+  /var/run/avahi-daemon/pid krw,
+  /var/run/avahi-daemon/socket w,
+  /var/run/dbus/system_bus_socket w,
+}
