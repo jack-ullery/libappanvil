@@ -203,7 +203,7 @@ static int event_loop(void)
 				else
 				{
 					parsable_line = (char *) malloc(real_data_size + 27);
-					snprintf(parsable_line, real_data_size + 26, "type=APPARMOR_REJECT msg=%s", line);
+					snprintf(parsable_line, real_data_size + 26, "type=APPARMOR_DENIED msg=%s", line);
 				}
 
 				record = parse_record(parsable_line);
