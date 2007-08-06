@@ -1,18 +1,18 @@
-# translation of apparmor-utils.po to Swedish
+# translation of apparmor-utils.po to
 # @TITLE@
 # Copyright (C) 2006, SUSE Linux GmbH, Nuremberg
 #
 # This file is distributed under the same license as @PACKAGE@ package. FIRST
 #
-# Mattias Newzella <newzella@linux.se>, 2006.
+# Mattias Newzella <newzella@linux.se>, 2006, 2007.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-11-03 13:51-0800\n"
-"PO-Revision-Date: 2006-11-16 18:53+0100\n"
+"PO-Revision-Date: 2007-07-26 16:40+0200\n"
 "Last-Translator: Mattias Newzella <newzella@linux.se>\n"
-"Language-Team: Swedish <sv@li.org>\n"
+"Language-Team:  <sv@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -22,82 +22,82 @@ msgstr ""
 #: audit:102
 #, perl-format
 msgid "Setting %s to audit mode."
-msgstr ""
+msgstr "Anger %s till granskningsläge."
 
 #: audit:109 autodep:114 complain:109 enforce:108
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
-msgstr ""
+msgstr "Det går inte att hitta %s i systemsökvägslistan. Om programnamnet är fel kör du which %s som användare med rätt PATH-miljö angiven för att söka efter den fullständiga sökvägen."
 
 #: audit:112 autodep:117 complain:112 enforce:111 genprof:89
 #, perl-format
 msgid "%s does not exist, please double-check the path."
-msgstr ""
+msgstr "%s finns inte. Kontrollera sökvägen."
 
 #: audit:121
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
-msgstr ""
+msgstr "syntax: %s [-d /sökväg/till/profiler] [program att växla till granskningsläge]"
 
 #: autodep:64
 #, perl-format
 msgid "Can't find subdomain profiles in %s."
-msgstr ""
+msgstr "Det går inte att hitta några underdomänprofiler i %s."
 
 #: autodep:75
 msgid "Please enter the program to create a profile for: "
-msgstr ""
+msgstr "Ange det program du vill skapa en profil för: "
 
 #: autodep:99 genprof:100
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
-msgstr ""
+msgstr "%s är för närvarande markerat som ett program som inte bör ha en egen profil. Program brukar markeras på det sättet om det övriga systemet antas störas av en profil för dem. Om du vet att det fungerar och du fortfarande vill skapa en profil för det här programmet, redigerar du motsvarande post i satsen [qualifiers] i /etc/apparmor/logprof. conf."
 
 #: autodep:107
 #, perl-format
 msgid "Profile for %s already exists - skipping."
-msgstr ""
+msgstr "Det finns redan en profil för %s - hoppar över."
 
 #: complain:67
 msgid "Please enter the program to switch to complain mode: "
-msgstr ""
+msgstr "Ange det program som ska växlas till varningsläge: "
 
 #: complain:102 SubDomain.pm:427
 #, perl-format
 msgid "Setting %s to complain mode."
-msgstr ""
+msgstr "Växlar %s till varningsläge."
 
 #: complain:121
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
-msgstr ""
+msgstr "syntax: %s [-d /sökväg/till/profiler] [program som ska växlas till varningsläge]"
 
 #: enforce:67
 msgid "Please enter the program to switch to enforce mode: "
-msgstr ""
+msgstr "Ange det program som ska växlas till spärrläge: "
 
 #: enforce:101 SubDomain.pm:441
 #, perl-format
 msgid "Setting %s to enforce mode."
-msgstr ""
+msgstr "Växlar %s till spärrläge."
 
 #: enforce:120
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
-msgstr ""
+msgstr "syntax: %s [-d /sökväg/till/profiler] [program som ska växlas till spärrläge]"
 
 #: genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr ""
+msgstr "Underdomänen verkar inte ha startats. Aktivera underdomänen och försök igen."
 
 #: genprof:69
 msgid "Please enter the program to profile: "
-msgstr ""
+msgstr "Ange det program som ska ha en profil: "
 
 #: genprof:87
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
-msgstr ""
+msgstr "Hittar inte %s i systemsökvägslistan. Om programnamnet är fel kör du which %s i det andra fönstret för att söka efter den fullständiga sökvägen."
 
 #: genprof:121
 msgid ""
@@ -111,30 +111,38 @@ msgid ""
 "opportunity to choose whether the access should be  \n"
 "allowed or denied."
 msgstr ""
+"Starta det program du vill skapa en profil för i \n"
+"ett annat fönster och prova funktionaliteten nu.\n"
+" \n"
+" När du är klar väljer du knappen Sök nedan \n"
+" för att söka igenom systemloggarna efter AppArmor-händelser.  \n"
+" \n"
+" För varje AppArmor-händelse får du möjlighet  \n"
+" att välja om åtkomst ska  \n"
+" tillåtas eller nekas."
 
 #: genprof:140
-#, fuzzy
 msgid "Profiling"
-msgstr "Rullning"
+msgstr "Skapa profiler"
 
 #: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr ""
+msgstr "Underdomänprofilerna lästes in på nytt i spärrläge."
 
 #: genprof:168
 #, perl-format
 msgid "Finished generating profile for %s."
-msgstr ""
+msgstr "Profilen för %s har genererats."
 
 #: genprof:172
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
-msgstr ""
+msgstr "syntax: %s [-d /sökväg/till/profiler] [-f /sökväg/till/loggfil] [program som ska få en profil]"
 
 #: logprof:75
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
-msgstr ""
+msgstr "syntax: %s [ -d /sökväg/till/profiler ] [ -f /sökväg/till/loggfil ] [ -m märke i logg efter vilket bearbetningen ska startas"
 
 #: SubDomain.pm:422 SubDomain.pm:436
 #, perl-format
@@ -159,26 +167,25 @@ msgid "Profile"
 msgstr "Profil"
 
 #: SubDomain.pm:1013
-#, fuzzy
 msgid "Default Hat"
-msgstr "Standardrutt"
+msgstr "Standardstopp"
 
 #: SubDomain.pm:1015
 msgid "Requested Hat"
-msgstr ""
+msgstr "Begärt stopp"
 
 #: SubDomain.pm:1045 SubDomain.pm:1231 SubDomain.pm:1665 SubDomain.pm:1972
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
-msgstr ""
+msgstr "Vill du avbryta den här profiländringen och avsluta?"
 
 #: SubDomain.pm:1047 SubDomain.pm:1234 SubDomain.pm:1661 SubDomain.pm:1667
 #: SubDomain.pm:1974
 msgid "Abandoning all changes."
-msgstr ""
+msgstr "Alla ändringar avbryts."
 
 #: SubDomain.pm:1052 SubDomain.pm:1239 SubDomain.pm:1681 SubDomain.pm:1979
 msgid "Are you sure you want to save the current set of profile changes and exit?"
-msgstr ""
+msgstr "Vill du spara den här profiländringen och avsluta?"
 
 #: SubDomain.pm:1054 SubDomain.pm:1241 SubDomain.pm:1676 SubDomain.pm:1683
 #: SubDomain.pm:1981
@@ -206,6 +213,12 @@ msgid ""
 "but some applications depend on the presence\n"
 "of LD_PRELOAD or LD_LIBRARY_PATH."
 msgstr ""
+"Vill du att AppArmor ska sanera miljön vid\n"
+"profilbyte?\n"
+" \n"
+" Sanering ger bäst säkerhet, men för en del\n"
+" program måste LD_PRELOAD eller\n"
+" LD_LIBRARY_PATH vara tillgängligt."
 
 #: SubDomain.pm:1250
 msgid ""
@@ -217,6 +230,13 @@ msgid ""
 "or LD_LIBRARY_PATH and clearing these could\n"
 "cause functionality problems."
 msgstr ""
+"Vill du att AppArmor ska sanera miljön vid\n"
+"profilbyte?\n"
+" \n"
+" Sanering ger bäst säkerhet, men det här\n"
+" programmet verkar utnyttja LD_PRELOAD eller\n"
+" LD_LIBRARY_PATH och att rensa dem kan ge\n"
+" funktionsstörningar."
 
 #: SubDomain.pm:1257
 #, perl-format
@@ -227,6 +247,11 @@ msgid ""
 "Are you absolutely certain you wish to remove all\n"
 "AppArmor protection when executing %s?"
 msgstr ""
+"Start av processer i obegränsat läge är mycket\n"
+"riskabelt och kan orsaka allvarliga säkerhetsbrister.\n"
+" \n"
+" Är du säker på att du vill ta bort allt\n"
+" AppArmor-skydd när du kör %s?"
 
 #: SubDomain.pm:1259
 msgid ""
@@ -237,16 +262,22 @@ msgid ""
 "a program opens up significant security holes\n"
 "and should be avoided if at all possible."
 msgstr ""
+"Vill du att AppArmor ska sanera miljön när det här\n"
+"programmet körs i obegränsat läge?\n"
+" \n"
+" Att inte sanera miljön för ett obegränsat program\n"
+" öppnar väsentliga säkerhetshål och bör undvikas\n"
+" så långt det är möjligt."
 
 #: SubDomain.pm:1362
 #, perl-format
 msgid "Reading log entries from %s."
-msgstr ""
+msgstr "Läser loggposter från %s."
 
 #: SubDomain.pm:1363
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
-msgstr ""
+msgstr "Uppdaterar AppArmor-profiler i %s."
 
 #: SubDomain.pm:1369
 msgid "unknown"
@@ -254,30 +285,30 @@ msgstr "okänd"
 
 #: SubDomain.pm:1598
 msgid "Complain-mode changes:"
-msgstr ""
+msgstr "Ändringar i varningsläge:"
 
 #: SubDomain.pm:1600
 msgid "Enforce-mode changes:"
-msgstr ""
+msgstr "Ändringar i spärrläge:"
 
 #: SubDomain.pm:1605
-#, fuzzy, perl-format
+#, perl-format
 msgid "Invalid mode found: %s"
-msgstr "Ogiltig standardrutt:"
+msgstr "Ogiltigt läge upptäcktes: %s"
 
 #: SubDomain.pm:1632
 msgid "Capability"
-msgstr ""
+msgstr "Kompablitetsläge"
 
 #: SubDomain.pm:1655
 #, perl-format
 msgid "Adding capability %s to profile."
-msgstr ""
+msgstr "Funktionen %s läggs till i profilen."
 
 #: SubDomain.pm:1657
 #, perl-format
 msgid "Denying capability %s to profile."
-msgstr ""
+msgstr "Funktionen %s nekas för profilen."
 
 #: SubDomain.pm:1838
 msgid "Path"
@@ -298,17 +329,17 @@ msgstr "Läge"
 #: SubDomain.pm:1885
 #, perl-format
 msgid "Adding #include <%s> to profile."
-msgstr ""
+msgstr "#include <%s>läggs till i profilen."
 
 #: SubDomain.pm:1886 SubDomain.pm:1911
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
-msgstr ""
+msgstr "%s tidigare matchande profilposter togs bort."
 
 #: SubDomain.pm:1910
 #, perl-format
 msgid "Adding %s %s to profile."
-msgstr ""
+msgstr "%s %s läggs till i profilen."
 
 #: SubDomain.pm:1918
 msgid "Enter new path: "
@@ -316,19 +347,19 @@ msgstr "Ange ny sökväg: "
 
 #: SubDomain.pm:1921
 msgid "The specified path does not match this log entry:"
-msgstr ""
+msgstr "Den angivna sökvägen matchar inte denna loggpost:"
 
 #: SubDomain.pm:1922
 msgid "Log Entry"
-msgstr ""
+msgstr "Loggpost"
 
 #: SubDomain.pm:1923
 msgid "Entered Path"
-msgstr ""
+msgstr "Angiven sökväg"
 
 #: SubDomain.pm:1924
 msgid "Do you really want to use this path?"
-msgstr ""
+msgstr "Vill du använda den här sökvägen?"
 
 #: SubDomain.pm:1998
 msgid ""
@@ -336,97 +367,269 @@ msgid ""
 "\n"
 "All updated profiles will be reloaded"
 msgstr ""
+"Profilanalyseraren har slutfört bearbetningen av loggfilerna.\n"
+"\n"
+"Alla uppdaterade profiler kommer att läsas in på nytt."
 
 #: SubDomain.pm:2006
 msgid "No unhandled AppArmor events were found in the system log."
-msgstr ""
+msgstr "Inga ohanterade AppArmor-händelser hittades i systemloggen."
 
 #: SubDomain.pm:2267 SubDomain.pm:2297 SubDomain.pm:2311 SubDomain.pm:2346
 #: SubDomain.pm:2366 SubDomain.pm:2403
 #, perl-format
 msgid "%s contains syntax errors."
-msgstr ""
+msgstr "%s innehåller syntaxfel."
 
 #: SubDomain.pm:2325
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
-msgstr ""
+msgstr "Profilen %s innehåller ogiltig regexp %s."
 
 #: SubDomain.pm:2534
 #, perl-format
 msgid "Writing updated profile for %s."
-msgstr ""
+msgstr "Profilen för %s skrivs."
 
 #: SubDomain.pm:2667
 #, perl-format
 msgid "Include file %s contains invalid regexp %s."
-msgstr ""
+msgstr "Include-filen %s innehåller ett ogiltigt reguljärt uttryck: %s."
 
 #: SubDomain.pm:2690
 #, perl-format
 msgid "Include file %s contains syntax errors or is not a valid #include file."
-msgstr ""
+msgstr "Include-filen %s innehåller syntaxfel eller är ingen giltig #include-fil."
 
 #: unconfined:51
 #, perl-format
 msgid "Usage: %s [ --paranoid ]\n"
-msgstr ""
+msgstr "Syntax: %s [--paranoid]\n"
 
 #: unconfined:57
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr ""
+msgstr "Underdomänen verkar inte ha startats. Aktivera underdomänen och försök igen."
 
 #: unconfined:61
 msgid "Can't read /proc\n"
 msgstr "Kan inte läsa /proc\n"
 
 #: unconfined:91 unconfined:93
-#, fuzzy
 msgid "not confined\n"
-msgstr "Inte inställd"
+msgstr "ej begränsad\n"
 
 #: unconfined:102 unconfined:104
-#, fuzzy
 msgid "confined by"
-msgstr "Inte inställd"
+msgstr "begränsad av"
 
 # %s is either BOOTP or DHCP
-#, fuzzy
-#~ msgid "DBI Execution failed: %s."
-#~ msgstr "%s-inställning misslyckades."
+msgid "DBI Execution failed: %s."
+msgstr "DBI-körning misslyckades: %s."
+
+msgid "Couldn't open file: %s."
+msgstr "Kan inte öppna fil: %s."
+
+msgid "No type value passed.  Unable to determine page count."
+msgstr ""
+
+msgid "Failed copying %s."
+msgstr "Misslyckades med att kopiera %s."
+
+msgid "Export Log Error: Couldn't open %s"
+msgstr ""
+
+msgid "Fatal error.  No report name given. Exiting."
+msgstr ""
+
+msgid ""
+"Unable to get configuration info for %s.\n"
+"                Unable to find %s."
+msgstr ""
+
+msgid "Failed to parse: %s."
+msgstr "Misslyckades med att tyda: %s."
+
+msgid "Fatal Error.  Couldn't open %s."
+msgstr "Allvarligt fel: Kunde inte öppna %s."
+
+msgid "Fatal Error.  Can't run %s.  Exiting."
+msgstr "Allvarligt fel: Kunde inte köra %s. Avslutar."
+
+msgid "Fatal Error.  No directory, %s, found.  Exiting."
+msgstr "Allvarligt fel: Ingen katalog, %s, hittades. Avslutar."
+
+msgid "Fatal Error.  Couldn't open %s.  Exiting"
+msgstr "Allvarligt fel: Kunde inte öppna %s. Avslutar."
+
+# %s is either BOOTP or DHCP
+msgid "DBI Execution failed: %s"
+msgstr "DBI-körning misslyckades: %s"
+
+msgid "Fatal Error.  getArchReport() couldn't open %s"
+msgstr ""
+
+msgid "(I)nherit"
+msgstr "(Ä)rv"
+
+msgid "(P)rofile"
+msgstr "(P)rofil"
+
+msgid "(D)eny"
+msgstr "(N)eka"
+
+msgid "Abo(r)t"
+msgstr "Avb(r)yt"
+
+msgid "(F)inish"
+msgstr "Slut(f)ör"
+
+msgid "(A)llow"
+msgstr "(T)illåt"
+
+msgid "(N)ew"
+msgstr "(N)y"
 
 #, fuzzy
-#~ msgid "Failed to parse: %s."
-#~ msgstr "Misslyckades med att ladda modulen \"%s\"."
+msgid "(G)lob"
+msgstr "(N)ej"
+
+msgid "Glob w/(E)xt"
+msgstr ""
+
+msgid "&Browse"
+msgstr "&Bläddra"
+
+msgid "&Create Profile"
+msgstr "&Skapa profil"
+
+msgid "&Yes"
+msgstr "&Ja"
+
+msgid "&No"
+msgstr "&Nej"
+
+msgid "&Abort"
+msgstr "&Avbryt"
+
+msgid "&Back"
+msgstr "Till&baka"
+
+msgid "(S)can system log for SubDomain events"
+msgstr ""
+
+msgid "Unable to open"
+msgstr "Kunde inte öppna"
+
+msgid "Couldn't save query."
+msgstr "Kunde inte spara förfrågning."
+
+msgid "Couldn't retrieve query."
+msgstr "Kunde inte hämta förfrågning."
+
+msgid "# Security Incident Report - Generated by AppArmor\n"
+msgstr "# Rapport för säkerhetsincident – Skapad av AppArmor\n"
+
+msgid "# Period: %s - %s\n"
+msgstr "# Period: %s–%s\n"
+
+msgid "<h3>Security Incident Report - Generated by AppArmor</h3>\n"
+msgstr "<h3>Rapport för säkerhetsincident – Skapad av AppArmor</h3>\n"
+
+msgid "<h4>Period: %s - %s</h4>\n"
+msgstr "<h4>Period: %s–%s</h4>\n"
 
 #, fuzzy
-#~ msgid "(F)inish"
-#~ msgstr "Finsk"
+msgid "ag_reports_confined: Couldn't open %s for writing."
+msgstr "Kan inte öppna fil för skrivning."
 
-#~ msgid "&Yes"
-#~ msgstr "&Ja"
+msgid "Failure in readMultiAudLog() - couldn't open %s."
+msgstr ""
 
-#~ msgid "&No"
-#~ msgstr "&Nej"
+msgid "Problem in readMultiAudLog() - couldn't open %s/%s."
+msgstr ""
+
+msgid "readAudLog() wasn't passed an input file."
+msgstr ""
+
+msgid "readAudLog() couldn't open %s."
+msgstr ""
+
+msgid "Can't run %s.  Exiting."
+msgstr "Kan inte köra %s. Avslutar."
 
 #, fuzzy
-#~ msgid "&Abort"
-#~ msgstr "Avbryt"
+msgid "ag_reports_confined: Missing instruction or argument!"
+msgstr "Kan inte öppna fil för skrivning."
+
+msgid "Failure in readMultiEssLog() - couldn't open"
+msgstr ""
+
+msgid "Problem in readMultiEssLog() - couldn't open"
+msgstr ""
+
+msgid "readEssLog() wasn't passed an input file."
+msgstr ""
+
+msgid "readEssLog() couldn't open %s"
+msgstr ""
+
+msgid "ag_logparse: Unknown instruction %s or argument: %s"
+msgstr ""
 
 #, fuzzy
-#~ msgid "&Back"
-#~ msgstr "Tillbaka"
+msgid "ag_reports_parse: Couldn't open %s for writing."
+msgstr "Kan inte öppna fil för skrivning."
 
-#, fuzzy
-#~ msgid "ag_reports_confined: Couldn't open %s for writing."
-#~ msgstr "Kan inte öppna fil för skrivning."
+msgid "ag_reports_parse: No archived reports found."
+msgstr ""
 
-# ok button label
-#~ msgid "OK"
-#~ msgstr "OK"
+msgid "ag_reports_parse: Can't open directory %s: %s"
+msgstr ""
 
-# ok button label
-#, fuzzy
-#~ msgid "&OK"
-#~ msgstr "OK"
+msgid "ag_reports_parse: Unknown instruction %s or argument: %s"
+msgstr ""
+
+msgid "Couldn't find %s.  Unable to create crontab.  Exiting."
+msgstr ""
+
+msgid "Couldn't open %s."
+msgstr "Kan inte öppna %s."
+
+msgid "Couldn't open %s.  Unable to add report: %s"
+msgstr "Kunde inte öppna %s. Kan inte lägga till rapport: %s"
+
+msgid "Duplicate report name not allowed. Didn't schedule new report: %s"
+msgstr ""
+
+msgid "Couldn't open %s.  No changes performed."
+msgstr "Kunde inte öppna %s. Inga ändringar utförda."
+
+msgid "ag_reports_sched: Unknown instruction %s or arg: %s"
+msgstr ""
+
+msgid "&Create"
+msgstr "&Skapa"
+
+msgid "Select Program to Profile"
+msgstr "Ange program att skapa profil för"
+
+msgid ""
+"%s is currently marked as a program that should not have\n"
+"it's own profile.  Usually, programs are marked this way\n"
+"if creating a profile for them is likely to break the\n"
+"rest of the system.  If you know what you're doing and\n"
+"are certain you want to create a profile for this program,\n"
+"edit the corresponding entry in the [qualifiers] section\n"
+"in /etc/apparmor/logprof.conf."
+msgstr ""
+"%s är för närvarande markerat som ett program som inte bör\n"
+" ha en egen profil.  Program brukar markeras på det sättet om\n"
+" det övriga systemet antas störas av en profil för\n"
+" dem.  Om du vet att det fungerar och du\n"
+" fortfarande vill skapa en profil för det här programmet,\n"
+" redigerar du motsvarande post i sektionen [qualifiers]\n"
+" i /etc/apparmor/logprof.conf."
+
+msgid "Are you sure you want to exit?"
+msgstr "Vill du avsluta?"
 

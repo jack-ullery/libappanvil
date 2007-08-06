@@ -1,21 +1,20 @@
-# @TITLE@
-# Copyright (C) 2006, SUSE Linux GmbH, Nuremberg
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-# This file is distributed under the same license as @PACKAGE@ package. FIRST
+# Translation into the walloon language.
+# Copyright (C) 2007 SUSE Linux Products GmbH.
+# Pablo Saratxaga <pablo@walon.org>, 2001, 2004.
+# Jean Cayron <jean.cayron@gmail.com>, 2007.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: @PACKAGE@\n"
+"Project-Id-Version: lcn memory\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-11-03 13:51-0800\n"
-"PO-Revision-Date: 2005-08-18 21:16+0300\n"
-"Last-Translator: Borislav Mitev <morbid_viper@tkzs.org>\n"
-"Language-Team: Bulgarian <bg@li.org>\n"
+"PO-Revision-Date: 2004-04-05 17:37+0200\n"
+"Last-Translator: Jean Cayron <jean.cayron@gmail.com>\n"
+"Language-Team: Walloon <i18n@suse.de>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: audit:102
 #, perl-format
@@ -43,9 +42,8 @@ msgid "Can't find subdomain profiles in %s."
 msgstr ""
 
 #: autodep:75
-#, fuzzy
 msgid "Please enter the program to create a profile for: "
-msgstr "Въведете устройството за обновяване на драйверите."
+msgstr ""
 
 #: autodep:99 genprof:100
 #, perl-format
@@ -58,9 +56,8 @@ msgid "Profile for %s already exists - skipping."
 msgstr ""
 
 #: complain:67
-#, fuzzy
 msgid "Please enter the program to switch to complain mode: "
-msgstr "Въведете устройството за обновяване на драйверите."
+msgstr ""
 
 #: complain:102 SubDomain.pm:427
 #, perl-format
@@ -73,9 +70,8 @@ msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]
 msgstr ""
 
 #: enforce:67
-#, fuzzy
 msgid "Please enter the program to switch to enforce mode: "
-msgstr "Въведете устройството за обновяване на драйверите."
+msgstr ""
 
 #: enforce:101 SubDomain.pm:441
 #, perl-format
@@ -92,9 +88,8 @@ msgid "SubDomain does not appear to be started.  Please enable SubDomain and try
 msgstr ""
 
 #: genprof:69
-#, fuzzy
 msgid "Please enter the program to profile: "
-msgstr "Въведете устройството за обновяване на драйверите."
+msgstr ""
 
 #: genprof:87
 #, perl-format
@@ -115,18 +110,17 @@ msgid ""
 msgstr ""
 
 #: genprof:140
-#, fuzzy
 msgid "Profiling"
-msgstr "Прелистване"
+msgstr ""
 
 #: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
 msgstr ""
 
 #: genprof:168
-#, fuzzy, perl-format
+#, perl-format
 msgid "Finished generating profile for %s."
-msgstr "Променени файлове с настройки за %s:"
+msgstr ""
 
 #: genprof:172
 #, perl-format
@@ -151,11 +145,10 @@ msgstr ""
 msgid "(N)o"
 msgstr ""
 
-# cancel button label
 #: SubDomain.pm:745
 #, fuzzy
 msgid "(C)ancel"
-msgstr "Прекъсване"
+msgstr "&Rinoncî"
 
 #: SubDomain.pm:1011 SubDomain.pm:1202 SubDomain.pm:1631 SubDomain.pm:1837
 msgid "Profile"
@@ -164,33 +157,39 @@ msgstr ""
 #: SubDomain.pm:1013
 #, fuzzy
 msgid "Default Hat"
-msgstr "Маршрутизиране по подразбиране"
+msgstr "Tchoezi por vos"
 
 #: SubDomain.pm:1015
+#, fuzzy
 msgid "Requested Hat"
-msgstr ""
+msgstr "Modeles k' on -z a dandjî"
 
 #: SubDomain.pm:1045 SubDomain.pm:1231 SubDomain.pm:1665 SubDomain.pm:1972
+#, fuzzy
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
-msgstr ""
+msgstr "Estoz seur ki vs voloz abandner l' astalaedje des Prodûts d' rawete?"
 
 #: SubDomain.pm:1047 SubDomain.pm:1234 SubDomain.pm:1661 SubDomain.pm:1667
 #: SubDomain.pm:1974
+#, fuzzy
 msgid "Abandoning all changes."
-msgstr ""
+msgstr "Vos alez piede tos les candjmints."
 
 #: SubDomain.pm:1052 SubDomain.pm:1239 SubDomain.pm:1681 SubDomain.pm:1979
+#, fuzzy
 msgid "Are you sure you want to save the current set of profile changes and exit?"
-msgstr ""
+msgstr "Estoz seur ki vs voloz abandner l' astalaedje des Prodûts d' rawete?"
 
 #: SubDomain.pm:1054 SubDomain.pm:1241 SubDomain.pm:1676 SubDomain.pm:1683
 #: SubDomain.pm:1981
+#, fuzzy
 msgid "Saving all changes."
-msgstr ""
+msgstr "Dji schape li lingaedje..."
 
 #: SubDomain.pm:1204
+#, fuzzy
 msgid "Program"
-msgstr ""
+msgstr "Progrès"
 
 #: SubDomain.pm:1206
 msgid "Execute"
@@ -199,7 +198,7 @@ msgstr ""
 #: SubDomain.pm:1207 SubDomain.pm:1633 SubDomain.pm:1849
 #, fuzzy
 msgid "Severity"
-msgstr "Сигурност"
+msgstr "&Såvrité"
 
 #: SubDomain.pm:1248
 msgid ""
@@ -254,7 +253,7 @@ msgstr ""
 
 #: SubDomain.pm:1369
 msgid "unknown"
-msgstr "неизвестно"
+msgstr "nén cnoxhou"
 
 #: SubDomain.pm:1598
 msgid "Complain-mode changes:"
@@ -265,13 +264,14 @@ msgid "Enforce-mode changes:"
 msgstr ""
 
 #: SubDomain.pm:1605
-#, fuzzy, perl-format
+#, perl-format
 msgid "Invalid mode found: %s"
-msgstr "Невалидно маршрутизиране по подразбиране:"
+msgstr ""
 
 #: SubDomain.pm:1632
+#, fuzzy
 msgid "Capability"
-msgstr ""
+msgstr "Veyåve"
 
 #: SubDomain.pm:1655
 #, perl-format
@@ -284,23 +284,23 @@ msgid "Denying capability %s to profile."
 msgstr ""
 
 #: SubDomain.pm:1838
+#, fuzzy
 msgid "Path"
-msgstr ""
+msgstr "&Tchimin:"
 
 #: SubDomain.pm:1843
 #, fuzzy
 msgid "Old Mode"
-msgstr "Dual Head режим"
+msgstr "Mode"
 
 #: SubDomain.pm:1845
 #, fuzzy
 msgid "New Mode"
-msgstr "Модел на мишката"
+msgstr "Mode"
 
 #: SubDomain.pm:1847
-#, fuzzy
 msgid "Mode"
-msgstr "Модем"
+msgstr "Mode"
 
 #: SubDomain.pm:1885
 #, perl-format
@@ -318,21 +318,22 @@ msgid "Adding %s %s to profile."
 msgstr ""
 
 #: SubDomain.pm:1918
-#, fuzzy
 msgid "Enter new path: "
-msgstr "<Въведете нова парола>"
+msgstr ""
 
 #: SubDomain.pm:1921
+#, fuzzy
 msgid "The specified path does not match this log entry:"
-msgstr ""
+msgstr "Ci fitchî la n' egzistêye nén."
 
 #: SubDomain.pm:1922
 msgid "Log Entry"
 msgstr ""
 
 #: SubDomain.pm:1923
+#, fuzzy
 msgid "Entered Path"
-msgstr ""
+msgstr "Coridjaedjes d' astalés"
 
 #: SubDomain.pm:1924
 msgid "Do you really want to use this path?"
@@ -391,28 +392,25 @@ msgstr ""
 #: unconfined:91 unconfined:93
 #, fuzzy
 msgid "not confined\n"
-msgstr "Не е настроено"
+msgstr "Nén co apontyî."
 
 #: unconfined:102 unconfined:104
 #, fuzzy
 msgid "confined by"
-msgstr "Не е настроено"
+msgstr "Nén co apontyî."
 
-# %s is either BOOTP or DHCP
-#, fuzzy
 msgid "DBI Execution failed: %s."
-msgstr "Настройването чрез %s бе неуспешно."
+msgstr "DBI Execution failed: %s."
 
 #, fuzzy
 msgid "Couldn't open file: %s."
-msgstr "файлът '%1' не може да бъде отворен"
+msgstr "Dji n' pout nén drovi l' fitchî '%1'"
 
 msgid "No type value passed.  Unable to determine page count."
 msgstr "No type value passed.  Unable to determine page count."
 
-#, fuzzy
 msgid "Failed copying %s."
-msgstr "Неуспешно зареждане на модула \"%s\"."
+msgstr "Failed copying %s."
 
 msgid "Export Log Error: Couldn't open %s"
 msgstr "Export Log Error: Couldn't open %s"
@@ -426,9 +424,8 @@ msgid ""
 "                Unable to find %s."
 msgstr "Unable to get configuration information for %s.  Unable to find %s."
 
-#, fuzzy
 msgid "Failed to parse: %s."
-msgstr "Неуспешно зареждане на модула \"%s\"."
+msgstr "Failed to parse: %s."
 
 msgid "Fatal Error.  Couldn't open %s."
 msgstr "Fatal Error.  Couldn't open %s."
@@ -439,14 +436,11 @@ msgstr "Fatal Error.  Can't run %s.  Exiting."
 msgid "Fatal Error.  No directory, %s, found.  Exiting."
 msgstr "Fatal Error.  No directory, %s, found.  Exiting."
 
-#, fuzzy
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
-msgstr "Файлът не може да бъде отворен за запис."
+msgstr "Fatal Error.  Couldn't open %s.  Exiting"
 
-# %s is either BOOTP or DHCP
-#, fuzzy
 msgid "DBI Execution failed: %s"
-msgstr "Настройването чрез %s бе неуспешно."
+msgstr "DBI Execution failed: %s"
 
 msgid "Fatal Error.  getArchReport() couldn't open %s"
 msgstr "Fatal Error.  getArchReport() couldn't open %s"
@@ -454,20 +448,18 @@ msgstr "Fatal Error.  getArchReport() couldn't open %s"
 msgid "(I)nherit"
 msgstr "(I)nherit"
 
-#, fuzzy
 msgid "(P)rofile"
-msgstr "Прелистване"
+msgstr "(P)rofile"
 
 msgid "(D)eny"
 msgstr "(D)eny"
 
-#, fuzzy
 msgid "Abo(r)t"
-msgstr "Прекъсване"
+msgstr "Abo(r)t"
 
 #, fuzzy
 msgid "(F)inish"
-msgstr "Финландска"
+msgstr "&Fini"
 
 msgid "(A)llow"
 msgstr "(A)llow"
@@ -482,40 +474,37 @@ msgid "Glob w/(E)xt"
 msgstr "Glob w/(E)xt"
 
 msgid "&Browse"
-msgstr "&Browse"
+msgstr "&Foyter"
 
 #, fuzzy
 msgid "&Create Profile"
-msgstr "Избор на профил"
+msgstr "Problinmes di metaedje a djoû"
 
 msgid "&Yes"
-msgstr "&Да"
+msgstr "&Oyi"
 
 msgid "&No"
-msgstr "&Не"
+msgstr "&Nonna"
 
-#, fuzzy
 msgid "&Abort"
-msgstr "Прекъсване"
+msgstr "&Abort"
 
-#, fuzzy
 msgid "&Back"
-msgstr "Назад"
+msgstr "&En erî"
 
 msgid "(S)can system log for SubDomain events"
 msgstr "Scan system log for SubDomain events"
 
-#, fuzzy
+# ###############################################################################
+# Old yast2-agents.po
 msgid "Unable to open"
-msgstr "Разрешаване на авто-спирането"
+msgstr "Unable to open"
 
-#, fuzzy
 msgid "Couldn't save query."
-msgstr "Избраният ред не може да бъде премахнат."
+msgstr "Couldn't save query."
 
-#, fuzzy
 msgid "Couldn't retrieve query."
-msgstr "Избраният ред не може да бъде премахнат."
+msgstr "Couldn't retrieve query."
 
 msgid "# Security Incident Report - Generated by AppArmor\n"
 msgstr "# Security Incident Report--Generated by AppArmor\n"
@@ -529,9 +518,8 @@ msgstr "<h3>Security Incident Report--Generated by AppArmor</h3>\n"
 msgid "<h4>Period: %s - %s</h4>\n"
 msgstr "<h4>Period: %s-%s</h4>\n"
 
-#, fuzzy
 msgid "ag_reports_confined: Couldn't open %s for writing."
-msgstr "Файлът не може да бъде отворен за запис."
+msgstr "ag_reports_confined: Couldn't open %s for writing."
 
 msgid "Failure in readMultiAudLog() - couldn't open %s."
 msgstr "Failure in readMultiAudLog() - couldn't open %s."
@@ -548,9 +536,8 @@ msgstr "readAudLog() could not open %s."
 msgid "Can't run %s.  Exiting."
 msgstr "Can't run %s.  Exiting."
 
-#, fuzzy
 msgid "ag_reports_confined: Missing instruction or argument!"
-msgstr "Файлът не може да бъде отворен за запис."
+msgstr "ag_reports_confined: Missing instruction or argument."
 
 msgid "Failure in readMultiEssLog() - couldn't open"
 msgstr "Failure in readMultiEssLog() - couldn't open"
@@ -567,9 +554,8 @@ msgstr "readEssLog() could not open %s."
 msgid "ag_logparse: Unknown instruction %s or argument: %s"
 msgstr "ag_logparse: Unknown instruction %s or argument: %s"
 
-#, fuzzy
 msgid "ag_reports_parse: Couldn't open %s for writing."
-msgstr "Файлът не може да бъде отворен за запис."
+msgstr "ag_reports_parse: Couldn't open %s for writing."
 
 msgid "ag_reports_parse: No archived reports found."
 msgstr "ag_reports_parse: No archived reports found."
@@ -583,9 +569,8 @@ msgstr "ag_reports_parse: Unknown instruction %s or argument: %s"
 msgid "Couldn't find %s.  Unable to create crontab.  Exiting."
 msgstr "Couldn't find %s.  Unable to create crontab.  Exiting."
 
-#, fuzzy
 msgid "Couldn't open %s."
-msgstr "Възникнала е грешка при отварянето на %s: %m"
+msgstr "Couldn't open %s."
 
 msgid "Couldn't open %s.  Unable to add report: %s"
 msgstr "Couldn't open %s.  Unable to add report: %s"
@@ -601,11 +586,11 @@ msgstr "ag_reports_sched: Unknown instruction %s or arg: %s"
 
 #, fuzzy
 msgid "&Create"
-msgstr "&Create Profile"
+msgstr "As&kepyî"
 
 #, fuzzy
 msgid "Select Program to Profile"
-msgstr "Въведете устройството за обновяване на драйверите."
+msgstr "Program to Profile"
 
 #, fuzzy
 msgid ""
@@ -620,13 +605,4 @@ msgstr "%s is currently marked as a program that should not have its own profile
 
 #, fuzzy
 msgid "Are you sure you want to exit?"
-msgstr "Do you really want to use this path?"
-
-# ok button label
-#~ msgid "OK"
-#~ msgstr "Добре"
-
-# ok button label
-#, fuzzy
-#~ msgid "&OK"
-#~ msgstr "Добре"
+msgstr "Estoz seur ki vs voloz abandner l' astalaedje des Prodûts d' rawete?"

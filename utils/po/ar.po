@@ -9,8 +9,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-11-03 13:51-0800\n"
 "PO-Revision-Date: 2006-11-10 10:06:00+CET\n"
-"Last-Translator: ar <i18n@suse.de>\n"
-"Language-Team: ar <i18n@suse.de>\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -18,98 +18,82 @@ msgstr ""
 #: audit:102
 #, perl-format
 msgid "Setting %s to audit mode."
-msgstr ""
+msgstr "إعداد %s إلى وضع المراجعة."
 
 #: audit:109 autodep:114 complain:109 enforce:108
 #, perl-format
-msgid ""
-"Can't find %s in the system path list.  If the name of the application is "
-"correct, please run 'which %s' as a user with the correct PATH environment "
-"set up in order to find the fully-qualified path."
-msgstr ""
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
+msgstr "تعذر العثور على %s في قائمة مسارات النظام.  إذا كان اسم التطبيق صحيحًا، الرجاء تشغيل 'which %s' باعتباره مستخدمًا مع إعداد بيئة PATH الصحيح للعثور على المسار المؤهل بالكامل."
 
 #: audit:112 autodep:117 complain:112 enforce:111 genprof:89
 #, perl-format
 msgid "%s does not exist, please double-check the path."
-msgstr ""
+msgstr "%s غير موجود، الرجاء التحقق من المسار مرة أخرى."
 
 #: audit:121
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
-msgstr ""
+msgstr "الاستخدام: %s [ -d /مسار/إلى/ملفات التعريف ] [ برنامج للتبديل إلى وضع المراجعة ]"
 
 #: autodep:64
 #, perl-format
 msgid "Can't find subdomain profiles in %s."
-msgstr ""
+msgstr "تعذر العثور على ملفات تعريف المجال الفرعي في %s."
 
 #: autodep:75
 msgid "Please enter the program to create a profile for: "
-msgstr ""
+msgstr "الرجاء إدخال البرنامج لإنشاء ملف تعريف لـ:"
 
 #: autodep:99 genprof:100
 #, perl-format
-msgid ""
-"%s is currently marked as a program that should not have it's own profile.  "
-"Usually, programs are marked this way if creating a profile for them is "
-"likely to break the rest of the system.  If you know what you're doing and "
-"are certain you want to create a profile for this program, edit the "
-"corresponding entry in the [qualifiers] section in /etc/apparmor/logprof."
-"conf."
-msgstr ""
+msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
+msgstr "تم وضع علامة للبرنامج %sباعتباره برنامجًا لا يجب أن يحتوي على ملف تعريف خاص به.   عادةً، يتم تحديد البرامج بهذه الطريقة إذا كان إنشاء ملفات تعريف لها قد يؤدي إلى إتلاف باقي النظام.  إذا كنت تعلم تمامًا ما تفعله، وترغب في إنشاء ملف تعريف لهذا البرنامج، قم بتحرير الإدخال المقابل في قسم [المؤهلات] في /etc/apparmor/logprof. conf."
 
 #: autodep:107
 #, perl-format
 msgid "Profile for %s already exists - skipping."
-msgstr ""
+msgstr "يوجد بالفعل ملف تعريف لـ %s- يتم الآن تخطي ذلك."
 
 #: complain:67
 msgid "Please enter the program to switch to complain mode: "
-msgstr ""
+msgstr "الرجاء إدخال البرنامج للتبديل إلى وضع الشكوى:"
 
 #: complain:102 SubDomain.pm:427
 #, perl-format
 msgid "Setting %s to complain mode."
-msgstr ""
+msgstr "إعداد %s إلى وضع الشكوى."
 
 #: complain:121
 #, perl-format
-msgid ""
-"usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
-msgstr ""
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
+msgstr "الاستخدام: %s [ -d /مسار/إلى/ملفات التعريف ] [ برنامج للتبديل إلى وضع الشكوى ]"
 
 #: enforce:67
 msgid "Please enter the program to switch to enforce mode: "
-msgstr ""
+msgstr "الرجاء إدخال البرنامج للتبديل إلى وضع الفرض:"
 
 #: enforce:101 SubDomain.pm:441
 #, perl-format
 msgid "Setting %s to enforce mode."
-msgstr ""
+msgstr "إعداد %s إلى وضع الفرض."
 
 #: enforce:120
 #, perl-format
-msgid ""
-"usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
-msgstr ""
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
+msgstr "الاستخدام: %s [ -d /مسار/إلى/ملفات التعريف ] [ برنامج للتبديل إلى وضع الفرض ]"
 
 #: genprof:55
-msgid ""
-"SubDomain does not appear to be started.  Please enable SubDomain and try "
-"again."
-msgstr ""
+msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
+msgstr "يبدو أنه لم يتم بدء تشغيل المجال الفرعي.  الرجاء تمكين المجال الفرعي، ثم إعادة المحاولة."
 
 #: genprof:69
 msgid "Please enter the program to profile: "
-msgstr ""
+msgstr "الرجاء إدخال برنامج ليتم إنشاء ملف تعريف له:"
 
 #: genprof:87
 #, perl-format
-msgid ""
-"Can't find %s in the system path list.  If the name of the application is "
-"correct, please run 'which %s' in the other window in order to find the "
-"fully-qualified path."
-msgstr ""
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
+msgstr "تعذر العثور على %s في قائمة مسارات النظام.  إذا كان اسم التطبيق صحيحًا، الرجاء تشغيل 'which %s' في الإطار الآخر للعثور على المسار المؤهل بالكامل."
 
 #: genprof:121
 msgid ""
@@ -123,93 +107,97 @@ msgid ""
 "opportunity to choose whether the access should be  \n"
 "allowed or denied."
 msgstr ""
+"الرجاء بدء تشغيل التطبيق ليتم إنشاء ملف تعريف له في إطار آخر لـ \n"
+" وتجربة وظيفته الآن.\n"
+" \n"
+"بمجرد اكتماله، حدد زر \"مسح\" في \n"
+" لمسح سجلات النظام لأحداث AppArmor.  \n"
+" \n"
+" لكل حدث AppArmor، سيتم إتاحة \n"
+" فرصة لك لاختيار السماح بالوصول \n"
+" أو رفضه."
 
 #: genprof:140
 msgid "Profiling"
-msgstr ""
+msgstr "إنشاء ملفات تعريف"
 
 #: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr ""
+msgstr "ملفات تعريف مجال فرعي تم إعادة تحميلها في وضع الفرض."
 
 #: genprof:168
 #, perl-format
 msgid "Finished generating profile for %s."
-msgstr ""
+msgstr "تم الانتهاء من إنشاء ملفات تعريف لـ %s."
 
 #: genprof:172
 #, perl-format
-msgid ""
-"usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to "
-"profile ]"
-msgstr ""
+msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
+msgstr "الاستخدام: %s [ -d /مسار/إلى/ملفات التعريف ] [ -f /مسار/إلى/ملف سجل ] [ برنامج لإنشاء ملف تعريف ]"
 
 #: logprof:75
 #, perl-format
-msgid ""
-"usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in "
-"log to start processing after\""
-msgstr ""
+msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
+msgstr "الاستخدام: %s [ -d /مسار/إلى/ملفات التعريف ] [ -f /مسار/إلى/ملف سجل ] [ -m \" علامة في السجل لبدء المعالجة بعدها\""
 
 #: SubDomain.pm:422 SubDomain.pm:436
 #, perl-format
 msgid "Can't find %s."
-msgstr ""
+msgstr "تعذر العثور على %s."
 
 #: SubDomain.pm:704 SubDomain.pm:743
 msgid "(Y)es"
-msgstr ""
+msgstr "(ن) نعم"
 
 #: SubDomain.pm:705 SubDomain.pm:744
 msgid "(N)o"
-msgstr ""
+msgstr "(ل) لا"
 
 #: SubDomain.pm:745
 msgid "(C)ancel"
-msgstr ""
+msgstr "(غ) إلغاء"
 
 #: SubDomain.pm:1011 SubDomain.pm:1202 SubDomain.pm:1631 SubDomain.pm:1837
 msgid "Profile"
-msgstr ""
+msgstr "ملف التعريف"
 
 #: SubDomain.pm:1013
 msgid "Default Hat"
-msgstr ""
+msgstr "Hat الافتراضية"
 
 #: SubDomain.pm:1015
 msgid "Requested Hat"
-msgstr ""
+msgstr "Hat المطلوبة"
 
 #: SubDomain.pm:1045 SubDomain.pm:1231 SubDomain.pm:1665 SubDomain.pm:1972
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
-msgstr ""
+msgstr "هل ترغب بالفعل في إلغاء مجموعة التغييرات التي تم إجراؤها على ملف التعريف والخروج؟"
 
 #: SubDomain.pm:1047 SubDomain.pm:1234 SubDomain.pm:1661 SubDomain.pm:1667
 #: SubDomain.pm:1974
 msgid "Abandoning all changes."
-msgstr ""
+msgstr "يتم الآن إلغاء كافة التغييرات."
 
 #: SubDomain.pm:1052 SubDomain.pm:1239 SubDomain.pm:1681 SubDomain.pm:1979
-msgid ""
-"Are you sure you want to save the current set of profile changes and exit?"
-msgstr ""
+msgid "Are you sure you want to save the current set of profile changes and exit?"
+msgstr "هل ترغب بالفعل في حفظ مجموعة التغييرات الحالية التي تم إجراؤها على ملف التعريف والخروج؟"
 
 #: SubDomain.pm:1054 SubDomain.pm:1241 SubDomain.pm:1676 SubDomain.pm:1683
 #: SubDomain.pm:1981
 msgid "Saving all changes."
-msgstr ""
+msgstr "يتم الآن حفظ كافة التغييرات."
 
 #: SubDomain.pm:1204
 msgid "Program"
-msgstr ""
+msgstr "البرنامج"
 
 #: SubDomain.pm:1206
 msgid "Execute"
-msgstr ""
+msgstr "تنفيذ"
 
 #: SubDomain.pm:1207 SubDomain.pm:1633 SubDomain.pm:1849
 msgid "Severity"
-msgstr ""
+msgstr "الخطورة"
 
 #: SubDomain.pm:1248
 msgid ""
@@ -220,6 +208,12 @@ msgid ""
 "but some applications depend on the presence\n"
 "of LD_PRELOAD or LD_LIBRARY_PATH."
 msgstr ""
+"هل ترغب في أن يقوم AppArmor بتأمين البيئة عند\n"
+"تبديل ملفات التعريف؟\n"
+" \n"
+" إن تأمين البيئة يعتبر أكثر أمنًا،\n"
+" لكن بعض التطبيقات تعتمد على وجود \n"
+" LD_PRELOAD or LD_LIBRARY_PATH."
 
 #: SubDomain.pm:1250
 msgid ""
@@ -231,6 +225,13 @@ msgid ""
 "or LD_LIBRARY_PATH and clearing these could\n"
 "cause functionality problems."
 msgstr ""
+"هل ترغب في أن يقوم AppArmor بتأمين البيئة عند\n"
+"تبديل ملفات التعريف؟\n"
+" \n"
+" يعتبر تأمين البيئة أكثر أمنًا،\n"
+" لكن يبدو أن هذا التطبيق يستخدم LD_PRELOAD\n"
+" أو LD_LIBRARY_PATH وقد يؤدي مسحه\n"
+" إلى حدوث مشكلات وظيفية."
 
 #: SubDomain.pm:1257
 #, perl-format
@@ -241,6 +242,11 @@ msgid ""
 "Are you absolutely certain you wish to remove all\n"
 "AppArmor protection when executing %s?"
 msgstr ""
+"يعتبر بدء تشغيل العمليات في حالة غير مقيدة عملية\n"
+"خطيرة جدًا وقد تؤدي إلى حدوث ثغرات أمنية.\n"
+" \n"
+"هل أنت متأكد تمامًا من رغبتك في إزالة كل\n"
+" حماية AppArmor عند تنفيذ %s؟"
 
 #: SubDomain.pm:1259
 msgid ""
@@ -251,98 +257,104 @@ msgid ""
 "a program opens up significant security holes\n"
 "and should be avoided if at all possible."
 msgstr ""
+"هل ترغب في أن يقوم AppArmor بتأمين البيئة عند\n"
+"تشغيل هذا البرنامج غير مقيد؟\n"
+" \n"
+" عدم تأمين البيئة عند إلغاء تقييد برنامج\n"
+" يعمل على فتح ثغرات أمنية ملحوظة\n"
+" ويجب تجنب ذلك نهائيًا إن كان ذلك ممكنًا."
 
 #: SubDomain.pm:1362
 #, perl-format
 msgid "Reading log entries from %s."
-msgstr ""
+msgstr "قراءة إدخالات السجل من %s."
 
 #: SubDomain.pm:1363
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
-msgstr ""
+msgstr "تحديث ملفات تعريف AppArmor في %s."
 
 #: SubDomain.pm:1369
 msgid "unknown"
-msgstr ""
+msgstr "غير معروف"
 
 #: SubDomain.pm:1598
 msgid "Complain-mode changes:"
-msgstr ""
+msgstr "تغييرات وضع الشكوى:"
 
 #: SubDomain.pm:1600
 msgid "Enforce-mode changes:"
-msgstr ""
+msgstr "تغييرات وضع الفرض:"
 
 #: SubDomain.pm:1605
 #, perl-format
 msgid "Invalid mode found: %s"
-msgstr ""
+msgstr "تم العثور على وضع غير صالح: %s"
 
 #: SubDomain.pm:1632
 msgid "Capability"
-msgstr ""
+msgstr "الإمكانية"
 
 #: SubDomain.pm:1655
 #, perl-format
 msgid "Adding capability %s to profile."
-msgstr ""
+msgstr "إضافة إمكانية %s إلى ملف تعريف."
 
 #: SubDomain.pm:1657
 #, perl-format
 msgid "Denying capability %s to profile."
-msgstr ""
+msgstr "رفض إمكانية %s لملف التعريف."
 
 #: SubDomain.pm:1838
 msgid "Path"
-msgstr ""
+msgstr "المسار"
 
 #: SubDomain.pm:1843
 msgid "Old Mode"
-msgstr ""
+msgstr "الوضع القديم"
 
 #: SubDomain.pm:1845
 msgid "New Mode"
-msgstr ""
+msgstr "الوضع الحديث"
 
 #: SubDomain.pm:1847
 msgid "Mode"
-msgstr ""
+msgstr "الوضع"
 
 #: SubDomain.pm:1885
 #, perl-format
 msgid "Adding #include <%s> to profile."
-msgstr ""
+msgstr "إضافة #include <%s> إلى ملف تعريف."
 
 #: SubDomain.pm:1886 SubDomain.pm:1911
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
-msgstr ""
+msgstr "تم حذف %s إدخالات ملف التعريف المطابقة السابقة."
 
 #: SubDomain.pm:1910
 #, perl-format
 msgid "Adding %s %s to profile."
-msgstr ""
+msgstr "إضافة %s %s إلى ملف تعريف."
 
 #: SubDomain.pm:1918
 msgid "Enter new path: "
-msgstr ""
+msgstr "أدخل مسارًا جديدًا:"
 
 #: SubDomain.pm:1921
 msgid "The specified path does not match this log entry:"
-msgstr ""
+msgstr "المسار الجديد لا يطابق إدخال السجل هذا:"
 
 #: SubDomain.pm:1922
 msgid "Log Entry"
-msgstr ""
+msgstr "إدخال سجل"
 
 #: SubDomain.pm:1923
 msgid "Entered Path"
-msgstr ""
+msgstr "المسار المُدخَل"
 
 #: SubDomain.pm:1924
 msgid "Do you really want to use this path?"
-msgstr ""
+msgstr "هل ترغب حقًا في استخدام هذا المسار؟"
 
 #: SubDomain.pm:1998
 msgid ""
@@ -350,63 +362,266 @@ msgid ""
 "\n"
 "All updated profiles will be reloaded"
 msgstr ""
+"أتمت أداة تحليل ملف التعريف معالجة ملفات السجلات.\n"
+"\n"
+" سيتم إعادة تحميل كافة ملفات التعريف التي تم تحديثها"
 
 #: SubDomain.pm:2006
 msgid "No unhandled AppArmor events were found in the system log."
-msgstr ""
+msgstr "لم يتم العثور على أي أحداث AppArmor لم تتم معالجتها في سجل النظام."
 
 #: SubDomain.pm:2267 SubDomain.pm:2297 SubDomain.pm:2311 SubDomain.pm:2346
 #: SubDomain.pm:2366 SubDomain.pm:2403
 #, perl-format
 msgid "%s contains syntax errors."
-msgstr ""
+msgstr "%s يحتوي على أخطاء في بناء الجملة."
 
 #: SubDomain.pm:2325
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
-msgstr ""
+msgstr "ملف التعريف %s يحتوي على regexp غير صالح %s."
 
 #: SubDomain.pm:2534
 #, perl-format
 msgid "Writing updated profile for %s."
-msgstr ""
+msgstr "يتم الآن كتابة ملف تعريف مُحدَّث لـ %s."
 
 #: SubDomain.pm:2667
 #, perl-format
 msgid "Include file %s contains invalid regexp %s."
-msgstr ""
+msgstr "ملف Include %s يحتوي على regexp غير صالح %s."
 
 #: SubDomain.pm:2690
 #, perl-format
 msgid "Include file %s contains syntax errors or is not a valid #include file."
-msgstr ""
+msgstr "ملف Include %s يحتوي على أخطاء في بناء الجملة أو أنه يحتوي على ملف #include غير صالح."
 
 #: unconfined:51
 #, perl-format
 msgid "Usage: %s [ --paranoid ]\n"
-msgstr ""
+msgstr "الاستخدام: %s [ --paranoid ]\n"
 
 #: unconfined:57
-msgid ""
-"SubDomain does not appear to be started. Please enable SubDomain and try "
-"again."
-msgstr ""
+msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
+msgstr "يبدو أنه لم يتم بدء تشغيل المجال الفرعي. الرجاء تمكين المجال الفرعي، ثم إعادة المحاولة."
 
 #: unconfined:61
 msgid "Can't read /proc\n"
-msgstr ""
+msgstr "تعذرت القراءة/المعالجة\n"
 
 #: unconfined:91 unconfined:93
 msgid "not confined\n"
-msgstr ""
+msgstr "غير مقيد\n"
 
 #: unconfined:102 unconfined:104
 msgid "confined by"
+msgstr "مقيد بواسطة"
+
+msgid "DBI Execution failed: %s."
+msgstr "فشل تنفيذ DBI: %s."
+
+msgid "Couldn't open file: %s."
+msgstr "تعذر فتح الملف: %s."
+
+msgid "No type value passed.  Unable to determine page count."
+msgstr "لم يتم إدخال قيمة نوع.  تعذر تحديد عدد الصفحات."
+
+msgid "Failed copying %s."
+msgstr "فشل النسخ %s."
+
+msgid "Export Log Error: Couldn't open %s"
+msgstr "خطأ في سجل التصدير: تعذر فتح %s"
+
+msgid "Fatal error.  No report name given. Exiting."
+msgstr "خطأ فادح.  لم يتم إدخال اسم تقرير. خروج."
+
+msgid ""
+"Unable to get configuration info for %s.\n"
+"                Unable to find %s."
 msgstr ""
+"تعذر الحصول على معلومات تكوين لـ %s.\n"
+"                تعذر العثور على %s."
 
-#, fuzzy
-#~ msgid "(F)inish"
-#~ msgstr "ﺔﻳﺪﻨﻠﻨﻓ"
+msgid "Failed to parse: %s."
+msgstr "فشل التحليل: %s."
 
-#~ msgid "&No"
-#~ msgstr "&ﻻ"
+msgid "Fatal Error.  Couldn't open %s."
+msgstr "خطأ فادح.  تعذر فتح %s."
+
+msgid "Fatal Error.  Can't run %s.  Exiting."
+msgstr "خطأ فادح.  تعذر تشغيل %s.  خروج."
+
+msgid "Fatal Error.  No directory, %s, found.  Exiting."
+msgstr "خطأ فادح.  لم يتم العثور على دليل، %s.  خروج."
+
+msgid "Fatal Error.  Couldn't open %s.  Exiting"
+msgstr "خطأ فادح.  تعذر فتح %s.  خروج"
+
+msgid "DBI Execution failed: %s"
+msgstr "فشل تنفيذ DBI: %s"
+
+msgid "Fatal Error.  getArchReport() couldn't open %s"
+msgstr "خطأ فادح. تعذر فتح getArchReport() %s"
+
+msgid "(I)nherit"
+msgstr "(ت) توارث"
+
+msgid "(P)rofile"
+msgstr "(م) ملف تعريف"
+
+msgid "(D)eny"
+msgstr "(ر) رفض"
+
+msgid "Abo(r)t"
+msgstr "(ق) إيقاف"
+
+msgid "(F)inish"
+msgstr "ﺔﻳﺪﻨﻠﻨﻓ"
+
+msgid "(A)llow"
+msgstr "(س) سماح"
+
+msgid "(N)ew"
+msgstr "(ج) جديد"
+
+msgid "(G)lob"
+msgstr "(ث) تمثيل أسماء الملفات"
+
+msgid "Glob w/(E)xt"
+msgstr "تمثيل أسماء الملفات w/(E)xt"
+
+msgid "&Browse"
+msgstr "استعرا&ض"
+
+msgid "&Create Profile"
+msgstr "إ&نشاء ملف تعريف"
+
+msgid "&Yes"
+msgstr "&نعم"
+
+msgid "&No"
+msgstr "&ﻻ"
+
+msgid "&Abort"
+msgstr "إيقا&ف"
+
+msgid "&Back"
+msgstr "ال&خلف"
+
+msgid "(S)can system log for SubDomain events"
+msgstr "مس&ح سجل النظام لأحداث المجال الفرعي"
+
+# ###############################################################################
+# Old yast2-agents.po
+msgid "Unable to open"
+msgstr "تعذر الفتح"
+
+msgid "Couldn't save query."
+msgstr "تعذر حفظ الاستعلام."
+
+msgid "Couldn't retrieve query."
+msgstr "تعذر استرداد الاستعلام."
+
+msgid "# Security Incident Report - Generated by AppArmor\n"
+msgstr "# تقرير حدث الأمان - تم إنشاؤه بواسطة AppArmor\n"
+
+msgid "# Period: %s - %s\n"
+msgstr "# فترة: %s - %s\n"
+
+msgid "<h3>Security Incident Report - Generated by AppArmor</h3>\n"
+msgstr "<h3> تقرير حدث الأمان - تم إنشاؤه بواسطة AppArmor</h3>\n"
+
+msgid "<h4>Period: %s - %s</h4>\n"
+msgstr "<h4>الفترة: %s - %s</h4>\n"
+
+msgid "ag_reports_confined: Couldn't open %s for writing."
+msgstr "ag_reports_confined: تعذر فتح %s للكتابة."
+
+msgid "Failure in readMultiAudLog() - couldn't open %s."
+msgstr "فشل readMultiAudLog() - تعذر فتح %s."
+
+msgid "Problem in readMultiAudLog() - couldn't open %s/%s."
+msgstr "حدثت مشكلة في readMultiAudLog() - تعذر فتح %s/%s."
+
+msgid "readAudLog() wasn't passed an input file."
+msgstr "لم يتم تمرير ملف إدخال إلى readAudLog()."
+
+msgid "readAudLog() couldn't open %s."
+msgstr "تعذر فتح readAudLog() %s."
+
+msgid "Can't run %s.  Exiting."
+msgstr "تعذر تشغيل %s.  خروج."
+
+msgid "ag_reports_confined: Missing instruction or argument!"
+msgstr "ag_reports_confined: تم فقد إرشاد أو وسيطة!"
+
+msgid "Failure in readMultiEssLog() - couldn't open"
+msgstr "فشل readMultiEssLog() - تعذر الفتح"
+
+msgid "Problem in readMultiEssLog() - couldn't open"
+msgstr "حدثت مشكلة في readMultiEssLog() - تعذر الفتح"
+
+msgid "readEssLog() wasn't passed an input file."
+msgstr "لم يتم تمرير ملف إدخال إلى readEssLog()."
+
+msgid "readEssLog() couldn't open %s"
+msgstr "تعذر فتح readEssLog() %s"
+
+msgid "ag_logparse: Unknown instruction %s or argument: %s"
+msgstr "ag_logparse: إرشاد غير معروف %s أو وسيطة غير معروفة: %s"
+
+msgid "ag_reports_parse: Couldn't open %s for writing."
+msgstr "ag_reports_parse: تعذر فتح %s للكتابة."
+
+msgid "ag_reports_parse: No archived reports found."
+msgstr "ag_reports_parse: لم يتم العثور على تقارير مؤرشفة."
+
+msgid "ag_reports_parse: Can't open directory %s: %s"
+msgstr "ag_reports_parse: تعذر فتح الدليل %s: %s"
+
+msgid "ag_reports_parse: Unknown instruction %s or argument: %s"
+msgstr "ag_reports_parse: إرشاد غير معروف %s أو وسيطة غير معروفة: %s"
+
+msgid "Couldn't find %s.  Unable to create crontab.  Exiting."
+msgstr "تعذر العثور على %s.  تعذر إنشاء crontab.  خروج."
+
+msgid "Couldn't open %s."
+msgstr "تعذر فتح %s."
+
+msgid "Couldn't open %s.  Unable to add report: %s"
+msgstr "تعذر فتح %s.  تعذرت إضافة تقرير: %s"
+
+msgid "Duplicate report name not allowed. Didn't schedule new report: %s"
+msgstr "غير مسموح باسم تقرير مكرر. لم تتم جدولة تقرير جديد: %s"
+
+msgid "Couldn't open %s.  No changes performed."
+msgstr "تعذر فتح %s.  لم يتم إجراء تغييرات."
+
+msgid "ag_reports_sched: Unknown instruction %s or arg: %s"
+msgstr "ag_reports_sched: إرشاد غير معروف %s أو وسيطة غير معروفة: %s"
+
+msgid "&Create"
+msgstr "إن&شاء"
+
+msgid "Select Program to Profile"
+msgstr "حدد برنامجًا ليتم إنشاء ملف تعريف له"
+
+msgid ""
+"%s is currently marked as a program that should not have\n"
+"it's own profile.  Usually, programs are marked this way\n"
+"if creating a profile for them is likely to break the\n"
+"rest of the system.  If you know what you're doing and\n"
+"are certain you want to create a profile for this program,\n"
+"edit the corresponding entry in the [qualifiers] section\n"
+"in /etc/apparmor/logprof.conf."
+msgstr ""
+"تم وضع علامة لـ %s باعتباره برنامجًا لا يجب أن يحتوي على \n"
+"ملف تعريف خاص به.  عادةً، يتم تحديد البرامج بهذه الطريقة\n"
+" إذا كان إنشاء ملفات تعريف لها قد يؤدي إلى إتلاف \n"
+" باقي النظام.  إذا كنت تعلم تمامًا ما تفعله\n"
+" وترغب في إنشاء ملف تعريف لهذا البرنامج،\n"
+" قم بتحرير الإدخال المقابل في قسم [المؤهلات]\n"
+" في /etc/apparmor/logprof.conf."
+
+msgid "Are you sure you want to exit?"
+msgstr "هل تريد الخروج بالفعل؟"

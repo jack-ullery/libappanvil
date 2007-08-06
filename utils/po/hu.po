@@ -3,36 +3,36 @@
 # Copyright (C) 2005 SUSE Linux Products GmbH.
 # Copyright (C) 2002 SuSE Linux AG.
 # Copyright (C) 2000, 2001 SuSE GmbH.
+#
 # Marcel Hilzinger <hili@suselinux.hu>, 2001.
 # Sári Gábor <saga@tux.hu>, 2000.
 # Steve Varadi <svaradi@usa.com>, 2000.
 # Zoltán Levárdy <pogacsa@programmer.net>, 1999.
 # Papp Zsolt <zpapp@novell.com>, 2006.
-# Kalman Kemenczy <kkemenczy@novell.com>, 2006.
-# Kéménczy Kálmán <kkemenczy@novell.com>, 2006.
-#
+# Kalman Kemenczy <kkemenczy@novell.com>, 2006, 2007.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils.hu\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-11-03 13:51-0800\n"
-"PO-Revision-Date: 2006-11-06 16:21+0100\n"
-"Last-Translator: \n"
+"PO-Revision-Date: 2007-07-26 09:24+0200\n"
+"Last-Translator: Kalman Kemenczy <kkemenczy@novell.com>\n"
 "Language-Team:  <hu@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: audit:102
 #, perl-format
 msgid "Setting %s to audit mode."
-msgstr "m%s beállítása audit módba."
+msgstr "%s beállítása audit módba."
 
 #: audit:109 autodep:114 complain:109 enforce:108
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
-msgstr "%s nem található a rendszer elérési útvonal listában. Ha az alkalmazás neve pontos, akkor futtassa le a 'which %s' paranccsot felhasználóként a megfelelő PATH környezettel, hogy megtalálja a teljes képzésű elérési utat."
+msgstr "%s nem található a rendszer elérési útvonal listában. Ha az alkalmazás neve pontos, akkor futtassa le a 'which %s' parancsot felhasználóként a megfelelő PATH környezettel, hogy megtalálja a teljes képzésű elérési utat."
 
 #: audit:112 autodep:117 complain:112 enforce:111 genprof:89
 #, perl-format
@@ -47,7 +47,7 @@ msgstr "használat: %s [ -d /profilok/elérési/útja] [ audit módba kapcsoland
 #: autodep:64
 #, perl-format
 msgid "Can't find subdomain profiles in %s."
-msgstr "Az aldomain-prfil nem található (%s)."
+msgstr "Az aldomain-profil nem található (%s)."
 
 #: autodep:75
 msgid "Please enter the program to create a profile for: "
@@ -436,4 +436,221 @@ msgstr "nem bezárt\n"
 #: unconfined:102 unconfined:104
 msgid "confined by"
 msgstr "bezárt: "
+
+msgid "DBI Execution failed: %s."
+msgstr "DBI végrehajtása meghiúsult: %s."
+
+msgid "Couldn't open file: %s."
+msgstr "A fájl megnyitása nem sikerült: %s."
+
+msgid "No type value passed.  Unable to determine page count."
+msgstr "Nem lett átadva típusérték. Az oldalszám nem határozható meg."
+
+msgid "Failed copying %s."
+msgstr "%s másolása nem sikerült."
+
+msgid "Export Log Error: Couldn't open %s"
+msgstr "Exportálási napló hiba: %s nem nyitható meg"
+
+msgid "Fatal error.  No report name given. Exiting."
+msgstr "Végzetes hiba. Nem lett megadva a jelentés neve. A program leáll."
+
+msgid ""
+"Unable to get configuration info for %s.\n"
+"                Unable to find %s."
+msgstr ""
+"%s konfigurációs adatainak lekérése nem sikerült.\n"
+"                %s nem található."
+
+msgid "Failed to parse: %s."
+msgstr "Nem sikerült az értelmezés: %s."
+
+msgid "Fatal Error.  Couldn't open %s."
+msgstr "Végzetes hiba. %s nem nyitható meg."
+
+msgid "Fatal Error.  Can't run %s.  Exiting."
+msgstr "Végzetes hiba. %s nem futtatható. A program leáll."
+
+msgid "Fatal Error.  No directory, %s, found.  Exiting."
+msgstr "Végzetes hiba. %s nevű könyvtár nem található. A program leáll."
+
+msgid "Fatal Error.  Couldn't open %s.  Exiting"
+msgstr "Végzetes hiba.  %s nem nyitható meg. A program leáll"
+
+msgid "DBI Execution failed: %s"
+msgstr "DBI végrehajtása meghiúsult: %s"
+
+msgid "Fatal Error.  getArchReport() couldn't open %s"
+msgstr "Végzetes hiba.  A getArchReport() nem tudta megnyitni a(z) %s nevű fájlt"
+
+msgid "(I)nherit"
+msgstr "Öröklés"
+
+msgid "(P)rofile"
+msgstr "Profil"
+
+msgid "(D)eny"
+msgstr "Visszautasítás"
+
+# modules/inst_custom_part.ycp:287 modules/inst_custom_part.ycp:293
+# modules/inst_custom_part.ycp:372 modules/inst_custom_part.ycp:378
+msgid "Abo(r)t"
+msgstr "Elvet"
+
+msgid "(F)inish"
+msgstr "Befejezés"
+
+msgid "(A)llow"
+msgstr "Engedélyezés"
+
+msgid "(N)ew"
+msgstr "Új"
+
+msgid "(G)lob"
+msgstr "Globális"
+
+msgid "Glob w/(E)xt"
+msgstr "Glob és (E)xt"
+
+msgid "&Browse"
+msgstr "&Böngészés"
+
+# modules/inst_custom_part.ycp:623
+msgid "&Create Profile"
+msgstr "Profil &létrehozása"
+
+msgid "&Yes"
+msgstr "&Igen"
+
+msgid "&No"
+msgstr "&Nem"
+
+# modules/inst_custom_part.ycp:287 modules/inst_custom_part.ycp:293
+# modules/inst_custom_part.ycp:372 modules/inst_custom_part.ycp:378
+msgid "&Abort"
+msgstr "&Elvet"
+
+# modules/installation.ycp:43
+# modules/installation.ycp:169 modules/installation.ycp:423
+msgid "&Back"
+msgstr "V&issza"
+
+msgid "(S)can system log for SubDomain events"
+msgstr "Aldomain események keresése a rendszernaplóban"
+
+# ###############################################################################
+# Old yast2-agents.po
+msgid "Unable to open"
+msgstr "Nem nyitható meg"
+
+msgid "Couldn't save query."
+msgstr "A lekérdezés nem menthető el."
+
+msgid "Couldn't retrieve query."
+msgstr "A lekérdezés nem olvasható be."
+
+msgid "# Security Incident Report - Generated by AppArmor\n"
+msgstr "# Biztonsági esemény jelentés - az AppArmor állította elő\n"
+
+msgid "# Period: %s - %s\n"
+msgstr "# Időtartam: %s - %s\n"
+
+msgid "<h3>Security Incident Report - Generated by AppArmor</h3>\n"
+msgstr "<h3>Biztonsági esemény jelentés - az AppArmor állította elő</h3>\n"
+
+msgid "<h4>Period: %s - %s</h4>\n"
+msgstr "<h4>Időtartam: %s - %s</h4>\n"
+
+msgid "ag_reports_confined: Couldn't open %s for writing."
+msgstr "ag_reports_confined: %s nem nyitható meg írásra."
+
+msgid "Failure in readMultiAudLog() - couldn't open %s."
+msgstr "Hiba a readMultiAudLog()-ban - %s nem nyitható meg."
+
+msgid "Problem in readMultiAudLog() - couldn't open %s/%s."
+msgstr "Hiba a readMultiAudLog()-ban - %s/%s nem nyitható meg."
+
+msgid "readAudLog() wasn't passed an input file."
+msgstr "A readAudLog() nem kapott bemeneti fájlt."
+
+msgid "readAudLog() couldn't open %s."
+msgstr "A readAudLog() nem tudta megnyitni a(z) %s fájlt."
+
+msgid "Can't run %s.  Exiting."
+msgstr "%s nem futtatható.  A program leáll."
+
+msgid "ag_reports_confined: Missing instruction or argument!"
+msgstr "ag_reports_confined: Hiányzó utasítás vagy argumentum!"
+
+msgid "Failure in readMultiEssLog() - couldn't open"
+msgstr "Hiba a readMultiEssLog()-ban - nem nyitható meg"
+
+msgid "Problem in readMultiEssLog() - couldn't open"
+msgstr "Probléma a readMultiEssLog()-ban - nem nyitható meg"
+
+msgid "readEssLog() wasn't passed an input file."
+msgstr "A readEssLog() nem kapott bemeneti fájlt."
+
+msgid "readEssLog() couldn't open %s"
+msgstr "A readEssLog() nem tudta megnyitni a(z) %s fájlt"
+
+msgid "ag_logparse: Unknown instruction %s or argument: %s"
+msgstr "ag_logparse: Ismeretlen utasítás (%s) vagy argumentum: %s"
+
+msgid "ag_reports_parse: Couldn't open %s for writing."
+msgstr "ag_reports_parse: %s nem nyitható meg írásra."
+
+msgid "ag_reports_parse: No archived reports found."
+msgstr "ag_reports_parse: Nem találhatók archivált jelentések."
+
+msgid "ag_reports_parse: Can't open directory %s: %s"
+msgstr "ag_reports_parse: Nem nyitható meg a(z) %s könyvtár: %s"
+
+msgid "ag_reports_parse: Unknown instruction %s or argument: %s"
+msgstr "ag_reports_parse: Ismeretlen utasítás (%s) vagy argumentum: %s"
+
+msgid "Couldn't find %s.  Unable to create crontab.  Exiting."
+msgstr "%s nem található. A crontab nem hozható létre.  A program leáll."
+
+msgid "Couldn't open %s."
+msgstr "%s nem nyitható meg."
+
+msgid "Couldn't open %s.  Unable to add report: %s"
+msgstr "%s nem nyitható meg.  A jelentés nem adható hozzá: %s"
+
+msgid "Duplicate report name not allowed. Didn't schedule new report: %s"
+msgstr "Két ugyanolyan nevű jelentés nem létezhet. Az új jelentés nem került ütemezésre: %s"
+
+msgid "Couldn't open %s.  No changes performed."
+msgstr "%s nem nyitható meg.  Semmilyen módosítás nem történt."
+
+msgid "ag_reports_sched: Unknown instruction %s or arg: %s"
+msgstr "ag_reports_sched: Ismeretlen utasítás (%s) vagy argumentum: %s"
+
+# modules/inst_custom_part.ycp:623
+msgid "&Create"
+msgstr "&Létrehozás"
+
+msgid "Select Program to Profile"
+msgstr "Adja meg a profilírozni kívánt program nevét"
+
+msgid ""
+"%s is currently marked as a program that should not have\n"
+"it's own profile.  Usually, programs are marked this way\n"
+"if creating a profile for them is likely to break the\n"
+"rest of the system.  If you know what you're doing and\n"
+"are certain you want to create a profile for this program,\n"
+"edit the corresponding entry in the [qualifiers] section\n"
+"in /etc/apparmor/logprof.conf."
+msgstr ""
+"%s jelenleg olyan programként van megjelölve, amely ne\n"
+"rendelkezzen saját profillal. Általában a programokat azért\n"
+"jelöljük meg így, mert a saját profiljuk létrehozása\n"
+"tönkretenné a rendszer maradékát. Ha biztos a dolgában,\n"
+"és tudja, hogy létre akar hozni egy profilt a programhoz,\n"
+"akkor módosítsa a hozzá tartozó bejegyzést az\n"
+"/etc/apparmor/logprof.conf [qualifiers] szakaszában."
+
+msgid "Are you sure you want to exit?"
+msgstr "Biztosan ki akar lépni?"
 

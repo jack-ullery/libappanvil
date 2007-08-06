@@ -1,4 +1,4 @@
-# translation of apparmor-utils.ru.po to Russian
+# translation of apparmor-utils.po to
 # Russian message file for YaST2 (@memory@).
 # Copyright (C) 2005, 2006 SUSE Linux Products GmbH.
 # Copyright (C) 2002 SuSE Linux AG.
@@ -6,20 +6,21 @@
 #
 # Aleksey Novodvorksy <aen@logic.ru>, 2000.
 # Eugene Osintsev <osgene@omskelecom.ru>, 1999, 2000.
-# Aleksey Osipov <aliks-os@yandex.ru>, 2005, 2006.
+# Aleksey Osipov <aliks-os@yandex.ru>, 2005, 2006, 2007.
+# Nikolay Derkach <nderkach@gmail.com>, 2007.
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-utils.ru\n"
+"Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-11-03 13:51-0800\n"
-"PO-Revision-Date: 2006-11-07 17:17+0200\n"
-"Last-Translator: Aleksey Osipov <aliks-os@yandex.ru>\n"
-"Language-Team: Russian <i18n@suse.de>\n"
+"PO-Revision-Date: 2007-08-03 02:08+0400\n"
+"Last-Translator: Nikolay Derkach <nderkach@gmail.com>\n"
+"Language-Team:  <ru@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: KBabel 1.11.2\n"
+"X-Generator: KBabel 1.11.4\n"
 
 #: audit:102
 #, perl-format
@@ -44,7 +45,7 @@ msgstr "использование: %s [ -d /path/to/profiles ] [ програм
 #: autodep:64
 #, perl-format
 msgid "Can't find subdomain profiles in %s."
-msgstr "Невозможно найти профили ПодДоенов в %s."
+msgstr "Невозможно найти профили ПодДоменов в %s."
 
 #: autodep:75
 msgid "Please enter the program to create a profile for: "
@@ -129,7 +130,7 @@ msgstr "Профилирование"
 
 #: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "Перегрузить ПдДомены в вынужденном режиме."
+msgstr "Перегрузить ПодДомены в вынужденном режиме."
 
 #: genprof:168
 #, perl-format
@@ -153,16 +154,16 @@ msgstr "Невозможно найти %s."
 
 #: SubDomain.pm:704 SubDomain.pm:743
 msgid "(Y)es"
-msgstr "(Д)а"
+msgstr "(Y)Да"
 
 #: SubDomain.pm:705 SubDomain.pm:744
 msgid "(N)o"
-msgstr "(Н)ет"
+msgstr "(N)Нет"
 
 # cancel button label
 #: SubDomain.pm:745
 msgid "(C)ancel"
-msgstr "(О)тмена"
+msgstr "(C)Отмена"
 
 #: SubDomain.pm:1011 SubDomain.pm:1202 SubDomain.pm:1631 SubDomain.pm:1837
 msgid "Profile"
@@ -174,7 +175,7 @@ msgstr "Покрытие по умолчанию"
 
 #: SubDomain.pm:1015
 msgid "Requested Hat"
-msgstr "Запршенное покрытие"
+msgstr "Запрошенное покрытие"
 
 #: SubDomain.pm:1045 SubDomain.pm:1231 SubDomain.pm:1665 SubDomain.pm:1972
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
@@ -424,48 +425,210 @@ msgstr "не ограничен\n"
 msgid "confined by"
 msgstr "ограничен"
 
-#~ msgid "DBI Execution failed: %s."
-#~ msgstr "Ошибка выполнения DBI: %s"
+msgid "DBI Execution failed: %s."
+msgstr "Ошибка выполнения DBI: %s"
 
-#~ msgid "Couldn't open file: %s."
-#~ msgstr "Невозможно открыть файл: %s."
+msgid "Couldn't open file: %s."
+msgstr "Невозможно открыть файл: %s."
 
-#~ msgid "No type value passed.  Unable to determine page count."
-#~ msgstr "Не передано значение типа. Невозможно определить количество страниц."
+msgid "No type value passed.  Unable to determine page count."
+msgstr "Не передано значение типа. Невозможно определить количество страниц."
 
-#~ msgid "Failed copying %s."
-#~ msgstr "Не удалось скопировать %s."
+msgid "Failed copying %s."
+msgstr "Не удалось скопировать %s."
 
-#~ msgid "Export Log Error: Couldn't open %s"
-#~ msgstr "Ошибка экспорта журнала: Невозможно открыть %s"
+msgid "Export Log Error: Couldn't open %s"
+msgstr "Ошибка экспорта журнала: Невозможно открыть %s"
 
-#~ msgid "Fatal error.  No report name given. Exiting."
-#~ msgstr "Fatal error.  Отчету не присвоено имя. Выход."
+msgid "Fatal error.  No report name given. Exiting."
+msgstr "Fatal error.  Отчету не присвоено имя. Выход."
 
-#~ msgid ""
-#~ "Unable to get configuration info for %s.\n"
-#~ "                Unable to find %s."
-#~ msgstr ""
-#~ "Невозможно получить информация по конфигурации для %s.\n"
-#~ "                Невозможно найти %s."
+msgid ""
+"Unable to get configuration info for %s.\n"
+"                Unable to find %s."
+msgstr ""
+"Невозможно получить информация по конфигурации для %s.\n"
+"                Невозможно найти %s."
 
-#~ msgid "Failed to parse: %s."
-#~ msgstr "Не удалось обработать: %s."
+msgid "Failed to parse: %s."
+msgstr "Не удалось обработать: %s."
 
-#~ msgid "Fatal Error.  Couldn't open %s."
-#~ msgstr "Фатальная ошибка.  Невозможно открыть %s."
+msgid "Fatal Error.  Couldn't open %s."
+msgstr "Фатальная ошибка.  Невозможно открыть %s."
 
-#~ msgid "Fatal Error.  Can't run %s.  Exiting."
-#~ msgstr "Fatal Error.  Невозможно выполнить %s.  Выход."
+msgid "Fatal Error.  Can't run %s.  Exiting."
+msgstr "Fatal Error.  Невозможно выполнить %s.  Выход."
 
-#~ msgid "Fatal Error.  No directory, %s, found.  Exiting."
-#~ msgstr "Fatal Error.  Каталог %s не найден.  Выход."
+msgid "Fatal Error.  No directory, %s, found.  Exiting."
+msgstr "Fatal Error.  Каталог %s не найден.  Выход."
 
-#~ msgid "Fatal Error.  Couldn't open %s.  Exiting"
-#~ msgstr "Fatal Error. Невозможно открыть %s.  Выход."
+msgid "Fatal Error.  Couldn't open %s.  Exiting"
+msgstr "Fatal Error. Невозможно открыть %s.  Выход."
 
-#~ msgid "DBI Execution failed: %s"
-#~ msgstr "Ошибка выполнения DBI: %s"
+msgid "DBI Execution failed: %s"
+msgstr "Ошибка выполнения DBI: %s"
 
-#~ msgid "Fatal Error.  getArchReport() couldn't open %s"
-#~ msgstr "Fatal Error.  getArchReport() не может открыть %s"
+msgid "Fatal Error.  getArchReport() couldn't open %s"
+msgstr "Fatal Error.  getArchReport() не может открыть %s"
+
+msgid "(I)nherit"
+msgstr "(I)Наследовать"
+
+msgid "(P)rofile"
+msgstr "(P)Профиль"
+
+msgid "(D)eny"
+msgstr "(D)Запретить"
+
+msgid "Abo(r)t"
+msgstr "(r)Прервать"
+
+msgid "(F)inish"
+msgstr "(F)Завершить"
+
+msgid "(A)llow"
+msgstr "(A)Разрешить"
+
+msgid "(N)ew"
+msgstr "(N)Новый"
+
+msgid "(G)lob"
+msgstr "(G)lob"
+
+msgid "Glob w/(E)xt"
+msgstr "Glob w/(E)xt"
+
+msgid "&Browse"
+msgstr "Обзор"
+
+msgid "&Create Profile"
+msgstr "Создать профиль"
+
+msgid "&Yes"
+msgstr "&Да"
+
+msgid "&No"
+msgstr "&Нет"
+
+msgid "&Abort"
+msgstr "&Прервать"
+
+msgid "&Back"
+msgstr "Назад"
+
+msgid "(S)can system log for SubDomain events"
+msgstr "(S)Сканировать системный журнал на поиск событий ПодДомена"
+
+msgid "Unable to open"
+msgstr "Невозможно открыть"
+
+msgid "Couldn't save query."
+msgstr "Невозможно сохранить запрос"
+
+msgid "Couldn't retrieve query."
+msgstr "Невозможно получить запрос."
+
+msgid "# Security Incident Report - Generated by AppArmor\n"
+msgstr "# Отчет о событиях в системе безопасности - создан модулем AppArmor\n"
+
+msgid "# Period: %s - %s\n"
+msgstr "# Период: %s - %s\n"
+
+msgid "<h3>Security Incident Report - Generated by AppArmor</h3>\n"
+msgstr "<h3>Отчет о событиях в системе безопасности - создан модулем AppArmor</h3>\n"
+
+msgid "<h4>Period: %s - %s</h4>\n"
+msgstr "<h4>Период: %s - %s</h4>\n"
+
+msgid "ag_reports_confined: Couldn't open %s for writing."
+msgstr "ag_reports_confined: Невозможно открыть %s на запись."
+
+msgid "Failure in readMultiAudLog() - couldn't open %s."
+msgstr "Ошибка в readMultiAudLog() - невозможно открыть %s."
+
+msgid "Problem in readMultiAudLog() - couldn't open %s/%s."
+msgstr "Проблема в readMultiAudLog() - невозможно открыть %s/%s."
+
+msgid "readAudLog() wasn't passed an input file."
+msgstr "readAudLog() не был передан файлу вывода."
+
+msgid "readAudLog() couldn't open %s."
+msgstr "readAudLog() невозможно открыть %s."
+
+msgid "Can't run %s.  Exiting."
+msgstr "Невозможно выполнить %s.  Выход."
+
+msgid "ag_reports_confined: Missing instruction or argument!"
+msgstr "ag_reports_confined: Отсутствует инструкция или параметр!"
+
+msgid "Failure in readMultiEssLog() - couldn't open"
+msgstr "Ошибка в readMultiEssLog() - невозможно открыть"
+
+msgid "Problem in readMultiEssLog() - couldn't open"
+msgstr "Проблема в readMultiEssLog() - невозможно открыть"
+
+msgid "readEssLog() wasn't passed an input file."
+msgstr "readEssLog() не был передан файлу вывода."
+
+msgid "readEssLog() couldn't open %s"
+msgstr "readEssLog() невозможно открыть %s"
+
+msgid "ag_logparse: Unknown instruction %s or argument: %s"
+msgstr "ag_logparse: Неизвестная инструкция %s или параметр: %s"
+
+msgid "ag_reports_parse: Couldn't open %s for writing."
+msgstr "ag_reports_parse: Невозможно открыть %s на запись."
+
+msgid "ag_reports_parse: No archived reports found."
+msgstr "ag_reports_parse: Архивные отчеты не найдены."
+
+msgid "ag_reports_parse: Can't open directory %s: %s"
+msgstr "ag_reports_parse: Невозможно открыть каталог %s: %s"
+
+msgid "ag_reports_parse: Unknown instruction %s or argument: %s"
+msgstr "ag_reports_parse: Неизвестная инструкция %s или параметр: %s"
+
+msgid "Couldn't find %s.  Unable to create crontab.  Exiting."
+msgstr "Невозможно найти %s.  Невозможно создать crontab.  Выход."
+
+msgid "Couldn't open %s."
+msgstr "Невозможно открыть %s."
+
+msgid "Couldn't open %s.  Unable to add report: %s"
+msgstr "Невозможно открыть %s. Невозможно добавить к отчету: %s"
+
+msgid "Duplicate report name not allowed. Didn't schedule new report: %s"
+msgstr "Дублирование имени отчета не допускается. Новый отчет не введен в расписание: %s"
+
+msgid "Couldn't open %s.  No changes performed."
+msgstr "Невозможно открыть %s. Изменения не будут сделаны."
+
+msgid "ag_reports_sched: Unknown instruction %s or arg: %s"
+msgstr "ag_reports_sched: Неизвестная инструкция %s или параметр: %s"
+
+msgid "&Create"
+msgstr "&Создать"
+
+msgid "Select Program to Profile"
+msgstr "Выберите программу для профиля"
+
+msgid ""
+"%s is currently marked as a program that should not have\n"
+"it's own profile.  Usually, programs are marked this way\n"
+"if creating a profile for them is likely to break the\n"
+"rest of the system.  If you know what you're doing and\n"
+"are certain you want to create a profile for this program,\n"
+"edit the corresponding entry in the [qualifiers] section\n"
+"in /etc/apparmor/logprof.conf."
+msgstr ""
+"%s в настоящий момент помечена как программа, которая не должна иметь\n"
+"собственного профиля.  Обычно программы помечаются таким образом,\n"
+" если создание профиля для них может привести к нарушениям работы\n"
+" системы в целом.  Если вы знаете, что делаете, и\n"
+" уверены, что хотите создать профиль для данной программы,\n"
+" отредактируйте соответствующую запись в разделе [qualifiers]\n"
+" файла /etc/apparmor/logprof.conf."
+
+msgid "Are you sure you want to exit?"
+msgstr "Вы действительно хотите выйти?"
+

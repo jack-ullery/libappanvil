@@ -8,16 +8,15 @@
 # Ilkka Pirskanen <ilkka.pirskanen@kolumbus.fi>, 2005.
 # Jyri Palokangas <jmp@netti.fi>, 2005, 2006.
 # Jyri Palokangas <jyri.palokangas@netikka.fi>, 2005.
-# Erkka Hakkarainen <erkka.hakkarainen@pp.inet.fi>, 2006.
-# Joonas Niilola <juippis@roskakori.org>, 2006.
+# Jyri Palokangas <jmp@opensuse.fi>, 2007.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils.fi\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-11-03 13:51-0800\n"
-"PO-Revision-Date: 2006-11-06 22:04+0200\n"
-"Last-Translator: Jyri Palokangas <jmp@netti.fi>\n"
-"Language-Team: Suomi <yast-trans-fi@kotoistaminen.novell.fi>\n"
+"PO-Revision-Date: 2007-05-30 06:47+0300\n"
+"Last-Translator: Jyri Palokangas <jmp@opensuse.fi>\n"
+"Language-Team: Suomi <fi@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -41,12 +40,12 @@ msgstr "%s ei ole olemassa, tarkista antamasi polku."
 #: audit:121
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
-msgstr "käyttö: %s [ -d /polku/profiileihin ] [ ohjelma joka vaihdetaan, tarkastus-tilaan ]"
+msgstr "käyttö: %s [ -d /polku/profiileihin ] [ ohjelma joka vaihdetaan, kirjanpitotilaan ]"
 
 #: autodep:64
 #, perl-format
 msgid "Can't find subdomain profiles in %s."
-msgstr "Alitoimialueiden profiileja ei löydy %s :stä."
+msgstr "Alitoimialueiden profiileja ei löydy %s."
 
 #: autodep:75
 msgid "Please enter the program to create a profile for: "
@@ -60,7 +59,7 @@ msgstr "%s on tällä hetkellä merkitty ohjelmaksi, jolla ei tulisi olla omaa p
 #: autodep:107
 #, perl-format
 msgid "Profile for %s already exists - skipping."
-msgstr "Profiili ohjelmaa %s varten on jo olemassa - ohitetaan."
+msgstr "Profiili %s varten on jo olemassa - ohitetaan."
 
 #: complain:67
 msgid "Please enter the program to switch to complain mode: "
@@ -69,26 +68,26 @@ msgstr "Syötä ohjelma, jonka haluat muutettavan valitustilaan."
 #: complain:102 SubDomain.pm:427
 #, perl-format
 msgid "Setting %s to complain mode."
-msgstr "Asetetaan %s tarkkailutilaan (complain mode)."
+msgstr "Asetetaan %s tarkkailutilaan."
 
 #: complain:121
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
-msgstr "käyttö: %s [ -d /polku/profiileihin ] [ ohjelma joka vaihdetaan valitustilaan ]"
+msgstr "käyttö: %s [ -d /polku/profiileihin ] [ ohjelma joka vaihdetaan tarkkailutilaan ]"
 
 #: enforce:67
 msgid "Please enter the program to switch to enforce mode: "
-msgstr "Syötä ohjelma, jonka haluat muutettavan pakottamistilaan (enforce mode)."
+msgstr "Syötä ohjelma, jonka haluat muutettavan pakottamistilaan."
 
 #: enforce:101 SubDomain.pm:441
 #, perl-format
 msgid "Setting %s to enforce mode."
-msgstr "Asetetaan %s pakotustilaan (enforce mode)."
+msgstr "Asetetaan %s pakottamistilaan."
 
 #: enforce:120
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
-msgstr "käyttö: %s [ -d /polku/profiileihin ] [ ohjelma, joka vaihdetaan pakotustilaan (enforce mode)]"
+msgstr "käyttö: %s [ -d /polku/profiileihin ] [ ohjelma, joka vaihdetaan pakottamistilaan ]"
 
 #: genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
@@ -101,7 +100,7 @@ msgstr "Syötä profiloitava ohjelma: "
 #: genprof:87
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
-msgstr "%s ei löytynyt järjestelmäpolkujen luettelosta.  Jos sovelluksen nimi on oikein, suorita 'which %s' toisessa ikkunassa löytääksesi täysin määritellyn (FQ) polun."
+msgstr "%s ei löytynyt järjestelmäpolun luettelosta.  Jos sovelluksen nimi on oikein, suorita 'which %s' toisessa ikkunassa löytääksesi täysin määritellyn polun."
 
 #: genprof:121
 msgid ""
@@ -130,7 +129,7 @@ msgstr "Profiloidaan"
 
 #: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "Uudelleen ladattiin SubDomain profiilit pakotus-tilaan."
+msgstr "Ladattiin SubDomain profiilit pakottamistilaan uudelleen."
 
 #: genprof:168
 #, perl-format
@@ -171,15 +170,15 @@ msgstr "Profiili"
 
 #: SubDomain.pm:1013
 msgid "Default Hat"
-msgstr "Oletushattu (Hat)"
+msgstr "Oletushattu (hat)"
 
 #: SubDomain.pm:1015
 msgid "Requested Hat"
-msgstr "Pyydetty hattu (Hat)"
+msgstr "Pyydetty hattu"
 
 #: SubDomain.pm:1045 SubDomain.pm:1231 SubDomain.pm:1665 SubDomain.pm:1972
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
-msgstr "Haluatko varmasti hylätä nämä profiiliasetusten muutokset ja lopettaa?"
+msgstr "Oletko varma, että tahdot hylätä nämä profiiliasetusten muutokset ja lopettaa?"
 
 #: SubDomain.pm:1047 SubDomain.pm:1234 SubDomain.pm:1661 SubDomain.pm:1667
 #: SubDomain.pm:1974
@@ -188,7 +187,7 @@ msgstr "Kaikki muutokset hylätään."
 
 #: SubDomain.pm:1052 SubDomain.pm:1239 SubDomain.pm:1681 SubDomain.pm:1979
 msgid "Are you sure you want to save the current set of profile changes and exit?"
-msgstr "Haluatko varmasti tallentaa tämänhetkiset profiiliasetusten muutokset ja lopettaa?"
+msgstr "Oletko varma, että haluat tallentaa tämänhetkiset profiiliasetusten muutokset ja lopettaa?"
 
 #: SubDomain.pm:1054 SubDomain.pm:1241 SubDomain.pm:1676 SubDomain.pm:1683
 #: SubDomain.pm:1981
@@ -216,11 +215,11 @@ msgid ""
 "but some applications depend on the presence\n"
 "of LD_PRELOAD or LD_LIBRARY_PATH."
 msgstr ""
-"Tulisiko AppArmorin puhdistaa ympäristö profiilien vaihdossa?\n"
+"Tulisiko AppArmorin puhdistaa ympäristö herkästä tiedosta profiilien vaihdossa?\n"
 "\n"
-"Ympäristön puhdistus on turvallisempaa, \n"
+"Ympäristön putsaaminen on tietoturvallinen keino, \n"
 "mutta jotkut ohjelmat vaativat LD_PRELOAD tai \n"
-"LD_LIBRARY_PATH -arvojen olemassaolon."
+"LD_LIBRARY_PATH -arvojen paikalla olon."
 
 #: SubDomain.pm:1250
 msgid ""
@@ -232,11 +231,11 @@ msgid ""
 "or LD_LIBRARY_PATH and clearing these could\n"
 "cause functionality problems."
 msgstr ""
-"Tulisiko AppArmorin puhdistaa ympäristö profiilien vaihdossa?\n"
+"Tulisiko AppArmorin puhdistaa ympäristö herkästä tiedosta profiilien vaihdossa?\n"
 "\n"
-"Ympäristön putsaaminen on turvallisempaa,\n"
+"Ympäristön putsaaminen on tietoturvallinen keino,\n"
 "mutta tämä ohjelma näyttäisi käyttävän LD_PRELOAD \n"
-"tai LD_LIBRARY_PATH -arvoja, jolloin niiden tyhjentäminen \n"
+"tai LD_LIBRARY_PATH -arvoa ja niiden tyhjentäminen \n"
 "voi aiheuttaa ongelmia."
 
 #: SubDomain.pm:1257
@@ -248,7 +247,7 @@ msgid ""
 "Are you absolutely certain you wish to remove all\n"
 "AppArmor protection when executing %s?"
 msgstr ""
-"Prosessin käynnistäminen \"rajoittamattomassa\" -tilassa on erittäin\n"
+"Prosessin käynnistäminen \"Rajoittamattomassa\" -tilassa on erittäin\n"
 "vaarallista ja saattaa aikaansaada vakavia tietoturva-aukkoja.\n"
 "\n"
 "Oletko aivan varma että haluat poistaa kaikki\n"
@@ -263,22 +262,22 @@ msgid ""
 "a program opens up significant security holes\n"
 "and should be avoided if at all possible."
 msgstr ""
-"Tulisiko AppArmorin puhdistaa ympäristö,\n"
-"kun ajetaan tätä ohjelmaa rajoittamattomassa-tilassa?\n"
+"Tulisiko AppArmorin puhdistaa ympäristö herkästä \n"
+" tiedosta, kun ajetaan tätä ohjelmaa rajoittamattomassa-tilassa?\n"
 "\n"
-"Puhdistamattomassa ympäristössä ohjelma voi avata vakavia \n"
-"tietoturva-aukkoja. Tätä tulisi välttää kaikin \n"
+"Jos ei, niin ohjelma voi avata vakavia \n"
+"tietoturva-aukkoja ja tätä tulisi välttää kaikin \n"
 "mahdollisin keinoin."
 
 #: SubDomain.pm:1362
 #, perl-format
 msgid "Reading log entries from %s."
-msgstr "Luetaan lokitapahtumat tiedostosta %s."
+msgstr "Luetaan kirjaustapahtumat tiedostosta %s."
 
 #: SubDomain.pm:1363
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
-msgstr "PäivitetäänAppArmor profiilit tiedostossa %s."
+msgstr "Päivitetään AppArmor profiilit tiedostossa %s."
 
 #: SubDomain.pm:1369
 msgid "unknown"
@@ -286,11 +285,11 @@ msgstr "tuntematon"
 
 #: SubDomain.pm:1598
 msgid "Complain-mode changes:"
-msgstr "Tarkkailutilan (complain mode) muutokset:"
+msgstr "Tarkkailutilan muutokset:"
 
 #: SubDomain.pm:1600
 msgid "Enforce-mode changes:"
-msgstr "Pakotustilan (enforce mode) muutokset:"
+msgstr "Pakottamistilan muutokset:"
 
 #: SubDomain.pm:1605
 #, perl-format
@@ -348,11 +347,11 @@ msgstr "Anna uusi polku: "
 
 #: SubDomain.pm:1921
 msgid "The specified path does not match this log entry:"
-msgstr "Annettu polku ei täsmää tähän lokimerkintään:"
+msgstr "Annettu polku ei täsmää tähän kirjausmerkintään:"
 
 #: SubDomain.pm:1922
 msgid "Log Entry"
-msgstr "Lokimerkintä"
+msgstr "Kirjausmerkintä"
 
 #: SubDomain.pm:1923
 msgid "Entered Path"
@@ -360,7 +359,7 @@ msgstr "Annettu polku"
 
 #: SubDomain.pm:1924
 msgid "Do you really want to use this path?"
-msgstr "Haluatko varmasti käyttää tätä polkua?"
+msgstr "Halutaanko varmasti käyttää tätä polkua?"
 
 #: SubDomain.pm:1998
 msgid ""
@@ -368,24 +367,24 @@ msgid ""
 "\n"
 "All updated profiles will be reloaded"
 msgstr ""
-"Profiilianalysaattori on lopettanut lokitiedostojen käsittelyn.\n"
+"Profiilianalysaattori on lopettanut kirjaustiedostojen käsittelyn.\n"
 "\n"
 "Kaikki päivitetyt profiilit ladataan uudelleen"
 
 #: SubDomain.pm:2006
 msgid "No unhandled AppArmor events were found in the system log."
-msgstr "Käsittelemättömiä AppArmor-tapahtumia ei löydetty järjestelmälokista."
+msgstr "Käsittelemättömiä AppArmor-tapahtumia ei löydetty järjestelmäkirjauksista."
 
 #: SubDomain.pm:2267 SubDomain.pm:2297 SubDomain.pm:2311 SubDomain.pm:2346
 #: SubDomain.pm:2366 SubDomain.pm:2403
 #, perl-format
 msgid "%s contains syntax errors."
-msgstr "%s sisältää syntaksivirheitä."
+msgstr "%s sisältää lauserakennevirheitä."
 
 #: SubDomain.pm:2325
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
-msgstr "Profiili %s sisältää epäkelvon regex:in %s."
+msgstr "Profiili %s sisältää epäkelvon säännöllisen lausekkeen %s."
 
 #: SubDomain.pm:2534
 #, perl-format
@@ -421,5 +420,217 @@ msgstr "ei rajoitettu\n"
 
 #: unconfined:102 unconfined:104
 msgid "confined by"
-msgstr "rajoitettu/rajoittaja"
+msgstr "rajoitettu"
+
+msgid "DBI Execution failed: %s."
+msgstr "DBI-suoritus epäonnistui: %s."
+
+msgid "Couldn't open file: %s."
+msgstr "Ei voitu avata tiedostoa: %s."
+
+msgid "No type value passed.  Unable to determine page count."
+msgstr "Tyyppiarvoa ei välitetty.  Sivumäärän selvittäminen ei onnistunut."
+
+msgid "Failed copying %s."
+msgstr "%s kopiointi epäonnistui."
+
+msgid "Export Log Error: Couldn't open %s"
+msgstr "Vientikirjausvirhe: Ei voitu avata %s"
+
+msgid "Fatal error.  No report name given. Exiting."
+msgstr "Vakava virhe.  Raportin nimeä ei annettu. Poistutaan."
+
+msgid ""
+"Unable to get configuration info for %s.\n"
+"                Unable to find %s."
+msgstr ""
+"Määritystietojen saaminen %s varten ei onnistu.\n"
+"                %s ei löydetty."
+
+msgid "Failed to parse: %s."
+msgstr "Koostaminen ei onnistunut: %s."
+
+msgid "Fatal Error.  Couldn't open %s."
+msgstr "Vakava virhe.  Ei voitu avata %s."
+
+msgid "Fatal Error.  Can't run %s.  Exiting."
+msgstr "Vakava virhe.  Ei voitu suorittaa %s. Poistutaan."
+
+msgid "Fatal Error.  No directory, %s, found.  Exiting."
+msgstr "Vakava virhe.  Hakemistoa %s ei löydetty.  Poistutaan."
+
+msgid "Fatal Error.  Couldn't open %s.  Exiting"
+msgstr "Vakava virhe.  Ei voitu avata %s.  Poistutaan"
+
+msgid "DBI Execution failed: %s"
+msgstr "DBI-suoritus epäonnistui. %s"
+
+msgid "Fatal Error.  getArchReport() couldn't open %s"
+msgstr "Vakava virhe.  getArchReport() ei voinut avata %s"
+
+msgid "(I)nherit"
+msgstr "Per(i)"
+
+msgid "(P)rofile"
+msgstr "(P)rofiili"
+
+msgid "(D)eny"
+msgstr "Ki(e)llä"
+
+msgid "Abo(r)t"
+msgstr "(K)eskeytä"
+
+msgid "(F)inish"
+msgstr "(V)almis"
+
+msgid "(A)llow"
+msgstr "S(a)lli"
+
+msgid "(N)ew"
+msgstr "(U)usi"
+
+msgid "(G)lob"
+msgstr "(Y)leiset"
+
+msgid "Glob w/(E)xt"
+msgstr "Yleiset laa(j)ennuksilla"
+
+msgid "&Browse"
+msgstr "&Selaa"
+
+msgid "&Create Profile"
+msgstr "&Luo profiili"
+
+msgid "&Yes"
+msgstr "&Kyllä"
+
+msgid "&No"
+msgstr "&Ei"
+
+msgid "&Abort"
+msgstr "&Keskeytä"
+
+msgid "&Back"
+msgstr "&Takaisin"
+
+msgid "(S)can system log for SubDomain events"
+msgstr "Hae (S)ubDomain-tapahtumat järjestelmälokista"
+
+# ###############################################################################
+# Old yast2-agents.po
+# translation of yast2-agents.po to Finnish
+# translation of yast2-agents.po to suomi
+# Ilkka Pirskanen <ilkka.pirskanen@kolumbus.fi>, 2005.
+# Jyri Palokangas <jmp@netti.fi>, 2005.
+msgid "Unable to open"
+msgstr "Ei voitu avata"
+
+msgid "Couldn't save query."
+msgstr "Ei voitu tallentaa kyselyä."
+
+msgid "Couldn't retrieve query."
+msgstr "Ei voitu hakea kyselyä."
+
+msgid "# Security Incident Report - Generated by AppArmor\n"
+msgstr "# Tietoturvatapausraportti - Luonut AppArmor\n"
+
+msgid "# Period: %s - %s\n"
+msgstr "# Ajanjakso: %s - %s\n"
+
+msgid "<h3>Security Incident Report - Generated by AppArmor</h3>\n"
+msgstr "<h3>Tietoturvatapausraportti - Luonut AppArmor</h3>\n"
+
+msgid "<h4>Period: %s - %s</h4>\n"
+msgstr "<h4>Ajanjakso: %s - %s</h4>\n"
+
+msgid "ag_reports_confined: Couldn't open %s for writing."
+msgstr "ag_reports_confined: Ei voitua avata %s kirjoittamiselle."
+
+msgid "Failure in readMultiAudLog() - couldn't open %s."
+msgstr "Virhe kutsuttaessa readMultiAudLog() - ei voitu avata %s."
+
+msgid "Problem in readMultiAudLog() - couldn't open %s/%s."
+msgstr "readMultiAudLog()-ongelma - %s/%s avaaminen epäonnistui."
+
+msgid "readAudLog() wasn't passed an input file."
+msgstr "readAudLog():lle ei välitetty syötetiedostoa."
+
+msgid "readAudLog() couldn't open %s."
+msgstr "readAudLog() %s avaaminen epäonnistui."
+
+msgid "Can't run %s.  Exiting."
+msgstr "Ei voida suorittaa %s.  Poistutaan."
+
+msgid "ag_reports_confined: Missing instruction or argument!"
+msgstr "ag_reports_confined: Puuttuva käsky tai argumentti!"
+
+msgid "Failure in readMultiEssLog() - couldn't open"
+msgstr "Virhe kutsuttaessa readMultiEssLog() - ei voitu avata"
+
+msgid "Problem in readMultiEssLog() - couldn't open"
+msgstr "Ongelma kutsuttaessa readMultiEssLog() - ei voitu avata"
+
+msgid "readEssLog() wasn't passed an input file."
+msgstr "readEssLog():lle ei välitetty syötetiedostoa."
+
+msgid "readEssLog() couldn't open %s"
+msgstr "readEssLog() %s avaaminen epäonnistui"
+
+msgid "ag_logparse: Unknown instruction %s or argument: %s"
+msgstr "ag_logparse: Tuntematon käsky %s tai argumentti: %s"
+
+msgid "ag_reports_parse: Couldn't open %s for writing."
+msgstr "ag_reports_parse: Ei voitua avata %s kirjoittamiselle."
+
+msgid "ag_reports_parse: No archived reports found."
+msgstr "ag_reports_parse: Arkistoituja raportteja ei löytynyt."
+
+msgid "ag_reports_parse: Can't open directory %s: %s"
+msgstr "ag_reports_parse: Ei voitu avata hakemistoa %s: %s"
+
+msgid "ag_reports_parse: Unknown instruction %s or argument: %s"
+msgstr "ag_reports_parse: Tuntematon käsky %s tai argumentti: %s"
+
+msgid "Couldn't find %s.  Unable to create crontab.  Exiting."
+msgstr "Ei löydetty %s.  crontab:in luonti ei onnistunut.  Poistutaan."
+
+msgid "Couldn't open %s."
+msgstr "Ei voitu avata %s."
+
+msgid "Couldn't open %s.  Unable to add report: %s"
+msgstr "Ei voitu avata %s.  Raportin %s lisäys ei onnistunut."
+
+msgid "Duplicate report name not allowed. Didn't schedule new report: %s"
+msgstr "Raportin nimi on oltava yksilöivä. Ei ajastettu uutta raporttia: %s"
+
+msgid "Couldn't open %s.  No changes performed."
+msgstr "Ei voitu avata %s.  Muutoksia ei tehty."
+
+msgid "ag_reports_sched: Unknown instruction %s or arg: %s"
+msgstr "ag_reports_sched: Tuntematon käsky %s tai argumentti: %s"
+
+msgid "&Create"
+msgstr "&Luo"
+
+msgid "Select Program to Profile"
+msgstr "Valitse profiloitava ohjelma"
+
+msgid ""
+"%s is currently marked as a program that should not have\n"
+"it's own profile.  Usually, programs are marked this way\n"
+"if creating a profile for them is likely to break the\n"
+"rest of the system.  If you know what you're doing and\n"
+"are certain you want to create a profile for this program,\n"
+"edit the corresponding entry in the [qualifiers] section\n"
+"in /etc/apparmor/logprof.conf."
+msgstr ""
+"%s on tällä hetkellä merkitty ohjelmaksi, jolla ei tulisi olla omaa\n"
+"profiilia.  Yleensä ohjelmat on merkitty tällä tavoin, jos profiilin\n"
+"luominen rikkoisi jotain muuta järjestelmästä.  Jos tiedät\n"
+"mitä olet tekemässä ja olet varma että haluat luoda profiilin\n"
+"tälle ohjelmalle, muokkaa vastaavaa merkintää\n"
+"/etc/apparmor/logprof.conf tiedoston [qualifiers] kohdassa."
+
+msgid "Are you sure you want to exit?"
+msgstr "Haluatko varmasti lopettaa?"
 

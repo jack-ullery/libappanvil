@@ -1,17 +1,15 @@
-# translation of apparmor-utils.pl.po to Polish
 # translation of apparmor-utils.po to
 #
 # Wojciech Kapusta <wojciech@aviary.pl>, 2006.
-# Sławomir Guz <urugan@interia.pl>, 2006.
-# Maciej Pilichowski <macias@mat.uni.torun.pl>, 2006.
+# Wojciech Kapusta <wkapusta@aviary.pl>, 2007.
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-utils.pl\n"
+"Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2006-11-03 13:51-0800\n"
-"PO-Revision-Date: 2006-11-10 00:14+0100\n"
-"Last-Translator: wadim dziedzic <nikdo@aviary.pl>\n"
-"Language-Team: Polish <en@li.org>\n"
+"PO-Revision-Date: 2007-03-14 19:25+0100\n"
+"Last-Translator: Wojciech Kapusta <wkapusta@aviary.pl>\n"
+"Language-Team:  <pl@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -26,17 +24,17 @@ msgstr "Ustawianie %s w tryb audytu."
 #: audit:109 autodep:114 complain:109 enforce:108
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
-msgstr "Nie można odnaleźć %s w katalogach systemowych. Jeśli nazwa aplikacji jest prawidłowa, proszę uruchomić 'which %s' przy poprawnie ustawionej zmiennej środowiskowej PATH, aby znaleźć pełną ścieżkę do programu. "
+msgstr "Nie można odnaleźć %s w ścieżkach systemowych. Jeśli nazwa aplikacji jest prawidłowa, to aby znaleźć pełną ścieżkę do programu proszę uruchomić polecenie 'which %s' jako użytkownik z poprawnie ustawionymi ścieżkami systemowymi "
 
 #: audit:112 autodep:117 complain:112 enforce:111 genprof:89
 #, perl-format
 msgid "%s does not exist, please double-check the path."
-msgstr "%s nie istnieje, proszę ponownie sprawdzić ścieżkę."
+msgstr "%s nie istnieje. Proszę ponownie sprawdzić ścieżkę."
 
 #: audit:121
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
-msgstr "użycie: %s [ -d /ścieżka/do/profili ] [ program do przełączenia w tryb audytu ]"
+msgstr "użycie: %s [ -d /ścieżka/do/profili ] [ program do zmiany trybu kontroli ]"
 
 #: autodep:64
 #, perl-format
@@ -50,26 +48,26 @@ msgstr "Proszę podać program, dla którego ma być stworzony profil:"
 #: autodep:99 genprof:100
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
-msgstr "Program %s jest określony jako program bez własnego profilu. W ten sposób oznaczane są programy, których profile mogłyby uszkodzić system. Jeżeli mimo wszystko, chcesz utworzyć profil dla tego programu, zmień wpis w sekcji [qualifiers] w pliku /etc/apparmor/logprof.conf."
+msgstr "Program %s jest określony jako program bez własnego profilu. W ten sposób oznaczane są programy, których profile mogłyby uszkodzić system. W przypadku absolutnej pewności, profil dla tego programu można utworzyć edytując sekcję [qualifiers] w pliku /etc/apparmor/logprof.conf."
 
 #: autodep:107
 #, perl-format
 msgid "Profile for %s already exists - skipping."
-msgstr "Profil dla %s już istnieje - pominięto."
+msgstr "Profil dla %s już istnieje - pominięcie."
 
 #: complain:67
 msgid "Please enter the program to switch to complain mode: "
-msgstr "Proszę podać program do przełączenia w tryb szczegółowy:"
+msgstr "Proszę podać program do przełączenia w tryb głośny:"
 
 #: complain:102 SubDomain.pm:427
 #, perl-format
 msgid "Setting %s to complain mode."
-msgstr "Ustawianie %s w tryb szczegółowy."
+msgstr "Ustawianie %s w tryb głośny."
 
 #: complain:121
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
-msgstr "użycie: %s [ -d /ścieżka/do/profili ] [ program do przełączenia w tryb szczegółowy ]"
+msgstr "użycie: %s [ -d /ścieżka/do/profili ] [ program do zmiany trybu głośnego ]"
 
 #: enforce:67
 msgid "Please enter the program to switch to enforce mode: "
@@ -83,7 +81,7 @@ msgstr "Ustawianie %s w tryb wymuszania."
 #: enforce:120
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
-msgstr "użycie: %s [ -d /ścieżka/do/profili ] [ program do przełączenia w tryb wymuszania ]"
+msgstr "użycie: %s [ -d /ścieżka/do/profili ] [ program do zmiany trybu wymuszania ]"
 
 #: genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
@@ -91,12 +89,12 @@ msgstr "Program SubDomain nie jest uruchomiony. Proszę go włączyć i spróbow
 
 #: genprof:69
 msgid "Please enter the program to profile: "
-msgstr "Proszę podać program do profilowania: "
+msgstr "Proszę podać program do profilowania:"
 
 #: genprof:87
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
-msgstr "Nie można odnaleźć %s w katalogach systemowych. Jeśli nazwa aplikacji jest prawidłowa, proszę uruchomić polecenie 'which %s' w innym oknie, aby odnaleźć pełną ścieżkę."
+msgstr "Nie można odnaleźć %s w ścieżkach systemowych. Jeśli nazwa aplikacji jest prawidłowa, proszę uruchomić polecenie 'which %s' w innym oknie, aby odnaleźć pełną ścieżkę."
 
 #: genprof:121
 msgid ""
@@ -110,12 +108,12 @@ msgid ""
 "opportunity to choose whether the access should be  \n"
 "allowed or denied."
 msgstr ""
-"Proszę uruchomić w innym oknie aplikację, która ma być profilowana i sprawdź jej funkcje. \n"
+"Proszę uruchomić w innym oknie aplikację, która ma być profilowana. \n"
 "\n"
 "Po zakończeniu proszę nacisnąć przycisk \"Szukaj\", \n"
-"aby wyszukać zdarzenia AppArmor w dziennikach systemowych.\n"
+"aby przeszukać dzienniki systemowe pod kątem zdarzeń AppArmor.\n"
 "\n"
-"Dla każdego zdarzenia AppArmor będzie można określić, czy\n"
+"Dla każdego zdarzenia AppArmora będzie można określić, czy\n"
 "dostęp ma być dozwolony czy zabroniony."
 
 #: genprof:140
@@ -134,12 +132,12 @@ msgstr "Zakończono generowanie profilu dla %s."
 #: genprof:172
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
-msgstr "użycie: %s [ -d /ścieżka/do/profili ] [ -f /scieżka/dziennika] [ program do profilowania ]"
+msgstr "użycie: %s [ -d /ścieżka/do/profili ] [ -f /ścieżka/dziennika] [ program do profilowania ]"
 
 #: logprof:75
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
-msgstr "użycie: %s [ -d /ścieżka/do/profili ] [ -f /scieżka/dziennika] [ -m \"oznaczenie w dzienniku, od którego zacznie się przetwarzanie\" ]"
+msgstr "użycie: %s [ -d /ścieżka/do/profili ] [ -f /scieżka/dziennika] [ -m \"znak w dzienniku od którego zacznie się przetwarzanie\" ]"
 
 #: SubDomain.pm:422 SubDomain.pm:436
 #, perl-format
@@ -165,11 +163,11 @@ msgstr "Profil"
 
 #: SubDomain.pm:1013
 msgid "Default Hat"
-msgstr "Domyślny podprofil"
+msgstr "Domyślny podprofil (hat)"
 
 #: SubDomain.pm:1015
 msgid "Requested Hat"
-msgstr "Żądany Hat"
+msgstr "Żądany podprofil (hat)"
 
 #: SubDomain.pm:1045 SubDomain.pm:1231 SubDomain.pm:1665 SubDomain.pm:1972
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
@@ -199,7 +197,7 @@ msgstr "Wykonaj"
 
 #: SubDomain.pm:1207 SubDomain.pm:1633 SubDomain.pm:1849
 msgid "Severity"
-msgstr "Dokuczliwość"
+msgstr "Poziom"
 
 #: SubDomain.pm:1248
 msgid ""
@@ -211,7 +209,7 @@ msgid ""
 "of LD_PRELOAD or LD_LIBRARY_PATH."
 msgstr ""
 "Czy AppArmor powinien wyzerować środowisko \n"
-"przy przełączaniu profili?\n"
+"w momencie przełączania profili?\n"
 "\n"
 "Jest to bardziej bezpieczne, ale niektóre aplikacje\n"
 "wymagają obecności LD_PRELOAD lub LD_LIBRARY_PATH."
@@ -231,7 +229,7 @@ msgstr ""
 "\n"
 "Jest to bardziej bezpieczne, ale ta aplikacja wydaje się\n"
 "używać zmiennych LD_PRELOAD lub LD_LIBRARY_PATH \n"
-"i wyzerowanie ich może spowodować problemy z działaniem."
+"i wyzerowanie ich może spowodować problemy z funkcjonalnością."
 
 #: SubDomain.pm:1257
 #, perl-format
@@ -242,10 +240,10 @@ msgid ""
 "Are you absolutely certain you wish to remove all\n"
 "AppArmor protection when executing %s?"
 msgstr ""
-"Uruchamianie procesów w stanie nieograniczonym jest bardzo \n"
+"Uruchamianie procesów w stanie nieograniczanym jest bardzo \n"
 "niebezpieczne i może powodować poważne luki bezpieczeństwa.\n"
 "\n"
-"Czy jesteś absolutnie pewien, że chcesz usunąć \n"
+"Czy istnieje absolutna pewność, że należy usunąć \n"
 "wszelką ochronę AppArmor podczas wykonywania programu %s?"
 
 #: SubDomain.pm:1259
@@ -329,7 +327,7 @@ msgstr "Dodawanie #include <%s> do profilu."
 #: SubDomain.pm:1886 SubDomain.pm:1911
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
-msgstr "Usunięto %s poprzednich pasujących wpisów z profilu."
+msgstr "Usunięto %s pasujących wpisów z profilu."
 
 #: SubDomain.pm:1910
 #, perl-format
@@ -389,12 +387,12 @@ msgstr "Zapisywanie uaktualnionego profilu dla %s."
 #: SubDomain.pm:2667
 #, perl-format
 msgid "Include file %s contains invalid regexp %s."
-msgstr "Dołączenie %s zawiera nieprawidłowe wyrażenie regularne %s."
+msgstr "Dołączony plik %s zawiera nieprawidłowe wyrażenie regularne %s."
 
 #: SubDomain.pm:2690
 #, perl-format
 msgid "Include file %s contains syntax errors or is not a valid #include file."
-msgstr "Dołączony plik %s zaiwea błedy składniowe lub nie jest poprawnym plikiem #include."
+msgstr "Dołączony plik %s zawiera błędy składniowe lub nie jest poprawnym plikiem #include."
 
 #: unconfined:51
 #, perl-format
@@ -407,58 +405,219 @@ msgstr "Program SubDomain nie jest uruchomiony. Proszę go włączyć i spróbow
 
 #: unconfined:61
 msgid "Can't read /proc\n"
-msgstr "Nie mogę odczytać z /proc\n"
+msgstr "Nie można odczytać z /proc\n"
 
 #: unconfined:91 unconfined:93
 msgid "not confined\n"
-msgstr "nie ograniczony\n"
+msgstr "nieograniczany\n"
 
 #: unconfined:102 unconfined:104
 msgid "confined by"
-msgstr "ograniczony przez"
+msgstr "ograniczany przez"
 
-#~ msgid "DBI Execution failed: %s."
-#~ msgstr "Uruchomienie DBI nie powiodło się: %s"
+msgid "DBI Execution failed: %s."
+msgstr "Uruchomienie DBI nie powiodło się: %s"
 
-#~ msgid "Couldn't open file: %s."
-#~ msgstr "Otwarcie pliku %s nie powiodło się."
+msgid "Couldn't open file: %s."
+msgstr "Otwarcie pliku %s nie powiodło się."
 
-#~ msgid "No type value passed.  Unable to determine page count."
-#~ msgstr "Nie podano wartości typu. Nie można określić liczby stron."
+msgid "No type value passed.  Unable to determine page count."
+msgstr "Nie podano wartości typu. Nie można określić liczby stron."
 
-#~ msgid "Failed copying %s."
-#~ msgstr "Kopiowanie %s nie powiodło się."
+msgid "Failed copying %s."
+msgstr "Kopiowanie %s nie powiodło się."
 
-#~ msgid "Export Log Error: Couldn't open %s"
-#~ msgstr "Błąd eksportu: otwarcie %s nie powiodło się."
+msgid "Export Log Error: Couldn't open %s"
+msgstr "Błąd eksportu: otwarcie %s nie powiodło się."
 
-#~ msgid "Fatal error.  No report name given. Exiting."
-#~ msgstr "Błąd krytyczny. Nie podano nazwy raportu. Zakończenie."
+msgid "Fatal error.  No report name given. Exiting."
+msgstr "Błąd krytyczny. Nie podano nazwy raportu. Zakończenie."
 
-#~ msgid ""
-#~ "Unable to get configuration info for %s.\n"
-#~ "                Unable to find %s."
-#~ msgstr ""
-#~ "Pobranie konfiguracji dla %s nie powiodło się.\n"
-#~ "                Nie można znaleźć %s."
+msgid ""
+"Unable to get configuration info for %s.\n"
+"                Unable to find %s."
+msgstr ""
+"Pobranie konfiguracji dla %s nie powiodło się.\n"
+"                Nie można znaleźć %s."
 
-#~ msgid "Failed to parse: %s."
-#~ msgstr "Parsowanie nie powiodło się: %s"
+msgid "Failed to parse: %s."
+msgstr "Parsowanie nie powiodło się: %s"
 
-#~ msgid "Fatal Error.  Couldn't open %s."
-#~ msgstr "Błąd krytyczny. Otwarcie %s nie powiodło się."
+msgid "Fatal Error.  Couldn't open %s."
+msgstr "Błąd krytyczny. Otwarcie %s nie powiodło się."
 
-#~ msgid "Fatal Error.  Can't run %s.  Exiting."
-#~ msgstr "Błąd krytyczny. Uruchomienie %s nie powiodło się. Zakończenie."
+msgid "Fatal Error.  Can't run %s.  Exiting."
+msgstr "Błąd krytyczny. Uruchomienie %s nie powiodło się. Zakończenie."
 
-#~ msgid "Fatal Error.  No directory, %s, found.  Exiting."
-#~ msgstr "Błąd krytyczny. Nie znaleziono katalogu %s. Zakończenie."
+msgid "Fatal Error.  No directory, %s, found.  Exiting."
+msgstr "Błąd krytyczny. Nie znaleziono katalogu %s. Zakończenie."
 
-#~ msgid "Fatal Error.  Couldn't open %s.  Exiting"
-#~ msgstr "Błąd krytyczny. Otwarcie %s nie powiodło się. Zakończenie."
+msgid "Fatal Error.  Couldn't open %s.  Exiting"
+msgstr "Błąd krytyczny. Otwarcie %s nie powiodło się. Zakończenie."
 
-#~ msgid "DBI Execution failed: %s"
-#~ msgstr "Uruchomienie DBI nie powiodło się: %s"
+msgid "DBI Execution failed: %s"
+msgstr "Uruchomienie DBI nie powiodło się: %s"
 
-#~ msgid "Fatal Error.  getArchReport() couldn't open %s"
-#~ msgstr "Błąd krytyczny. getArchReport() - otwarcie %s nie powiodło się."
+msgid "Fatal Error.  getArchReport() couldn't open %s"
+msgstr "Błąd krytyczny. getArchReport() - otwarcie %s nie powiodło się."
+
+msgid "(I)nherit"
+msgstr "Dz(i)edzicz"
+
+msgid "(P)rofile"
+msgstr "(P)rofiluj"
+
+msgid "(D)eny"
+msgstr "O(d)mów"
+
+msgid "Abo(r)t"
+msgstr "P(r)zerwij"
+
+msgid "(F)inish"
+msgstr "(Z)akończ"
+
+msgid "(A)llow"
+msgstr "Z(e)zwól"
+
+msgid "(N)ew"
+msgstr "(N)owy"
+
+msgid "(G)lob"
+msgstr "(G)lobalny"
+
+msgid "Glob w/(E)xt"
+msgstr "Globalny / Ze(w)nętrzny"
+
+msgid "&Browse"
+msgstr "&Przeglądaj"
+
+msgid "&Create Profile"
+msgstr "&Utwórz profil"
+
+msgid "&Yes"
+msgstr "&Tak"
+
+msgid "&No"
+msgstr "&Nie"
+
+msgid "&Abort"
+msgstr "P&rzerwij"
+
+msgid "&Back"
+msgstr "&Wstecz"
+
+msgid "(S)can system log for SubDomain events"
+msgstr "(S)zukaj zdarzeń SubDomain w dzienniki systemowym"
+
+# ###############################################################################
+# Old yast2-agents.po
+msgid "Unable to open"
+msgstr "Otwarcie nie powiodło się."
+
+msgid "Couldn't save query."
+msgstr "Zapis zapytania nie powiódł się."
+
+msgid "Couldn't retrieve query."
+msgstr "Odzyskanie zapytania nie powiodło się."
+
+msgid "# Security Incident Report - Generated by AppArmor\n"
+msgstr "# Raport o incydentach bezpieczeństwa wygenerowany przez AppArmor\n"
+
+msgid "# Period: %s - %s\n"
+msgstr "# Okres: %s - %s\n"
+
+msgid "<h3>Security Incident Report - Generated by AppArmor</h3>\n"
+msgstr "<h3>Raport o incydentach bezpieczeństwa wygenerowany przez AppArmor</h3>\n"
+
+msgid "<h4>Period: %s - %s</h4>\n"
+msgstr "<h4>Okres: %s - %s</h4>\n"
+
+msgid "ag_reports_confined: Couldn't open %s for writing."
+msgstr "ag_reports_confined: otwarcie %s do odczytu nie powiodło się."
+
+msgid "Failure in readMultiAudLog() - couldn't open %s."
+msgstr "Błąd w readMultiAudLog() - otwarcie %s nie powiodło się."
+
+msgid "Problem in readMultiAudLog() - couldn't open %s/%s."
+msgstr "Błąd w readMultiAudLog() - otwarcie %s/%s nie powiodło się."
+
+msgid "readAudLog() wasn't passed an input file."
+msgstr "readAudLog() - plik wejściowy nie został przyjęty."
+
+msgid "readAudLog() couldn't open %s."
+msgstr "readAudLog() - otwarcie %s nie powiodło się."
+
+msgid "Can't run %s.  Exiting."
+msgstr "Uruchomienie %s nie powiodło się. Zakończenie."
+
+msgid "ag_reports_confined: Missing instruction or argument!"
+msgstr "ag_reports_confined: brak polecenia lub parametru"
+
+msgid "Failure in readMultiEssLog() - couldn't open"
+msgstr "Błąd w readMultiEssLog() - otwarcie nie powiodło się"
+
+msgid "Problem in readMultiEssLog() - couldn't open"
+msgstr "Problem w readMultiEssLog() - otwarcie nie powiodło się"
+
+msgid "readEssLog() wasn't passed an input file."
+msgstr "readEssLog() - plik wejściowy nie został przyjęty."
+
+msgid "readEssLog() couldn't open %s"
+msgstr "readEssLog() - otwarcie %s nie powiodło się."
+
+msgid "ag_logparse: Unknown instruction %s or argument: %s"
+msgstr "ag_logparse: nieznane polecenie %s lub parametr %s."
+
+msgid "ag_reports_parse: Couldn't open %s for writing."
+msgstr "ag_reports_parse: otwarcie %s do zapisu nie powiodło się."
+
+msgid "ag_reports_parse: No archived reports found."
+msgstr "ag_reports_parse: nie znaleziono zarchiwizowanych raportów."
+
+msgid "ag_reports_parse: Can't open directory %s: %s"
+msgstr "ag_reports_parse: otwarcie katalogu %s nie powiodło się: %s"
+
+msgid "ag_reports_parse: Unknown instruction %s or argument: %s"
+msgstr "ag_reports_parse: nieznane polecenie %s lub parametr %s."
+
+msgid "Couldn't find %s.  Unable to create crontab.  Exiting."
+msgstr "Nie można znaleźć %s. Tworzenie pliku crontab nie powiodło się. Zakończenie."
+
+msgid "Couldn't open %s."
+msgstr "Otwarcie %s nie powiodło się."
+
+msgid "Couldn't open %s.  Unable to add report: %s"
+msgstr "Otwarcie %s i dodanie raportu nie powiodło się: %s"
+
+msgid "Duplicate report name not allowed. Didn't schedule new report: %s"
+msgstr "Nie można tworzyć raportów o tych samych nazwach. Raport %s nie został zaplanowany."
+
+msgid "Couldn't open %s.  No changes performed."
+msgstr "Otwarcie %s nie powiodło się. Nie wprowadzono zmian."
+
+msgid "ag_reports_sched: Unknown instruction %s or arg: %s"
+msgstr "ag_reports_sched: nieznane polecenie %s lub parametr %s."
+
+msgid "&Create"
+msgstr "&Utwórz"
+
+msgid "Select Program to Profile"
+msgstr "Program do profilowania"
+
+msgid ""
+"%s is currently marked as a program that should not have\n"
+"it's own profile.  Usually, programs are marked this way\n"
+"if creating a profile for them is likely to break the\n"
+"rest of the system.  If you know what you're doing and\n"
+"are certain you want to create a profile for this program,\n"
+"edit the corresponding entry in the [qualifiers] section\n"
+"in /etc/apparmor/logprof.conf."
+msgstr ""
+"Program %s jest określony jako program bez własnego \n"
+"profilu. W ten sposób oznaczane są programy, których \n"
+"profile mogłyby uszkodzić system. W przypadku absolutnej \n"
+"pewności, profil dla tego programu można utworzyć edytując \n"
+"sekcję [qualifiers] w pliku /etc/apparmor/logprof.conf."
+
+msgid "Are you sure you want to exit?"
+msgstr "Czy na pewno zakończyć?"
