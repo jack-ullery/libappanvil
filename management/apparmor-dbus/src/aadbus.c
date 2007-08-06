@@ -291,7 +291,7 @@ static int event_loop(void)
 										NULLSTRLEN(record->parent));
 					dbus_message_iter_close_container(&iter, &parentIter);
 
-					dbus_message_iter_append_basic(&iter, DBUS_TYPE_INT64, record->magic_token);
+					dbus_message_iter_append_basic(&iter, DBUS_TYPE_INT64, &record->magic_token);
 					dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, NULLSPACE(record->info));
 
 					dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, DBUS_TYPE_BYTE_AS_STRING, &activeIter);
