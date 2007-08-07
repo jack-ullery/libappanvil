@@ -20,6 +20,7 @@
   capability setuid,
 
   network inet raw,
+  network inet dgram,
 
   /bin/ping mixr,
   /etc/modules.conf r,

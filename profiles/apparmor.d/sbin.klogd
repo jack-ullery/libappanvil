@@ -20,7 +20,7 @@
   @{PROC}/kmsg		r,
   /sbin/klogd		rmix,
   /var/log/boot.msg     rwl,
-  /var/run/klogd.pid    rwl,
-  /var/run/klogd/klogd.pid rwl,
+  /var/run/klogd.pid    krwl,
+  /var/run/klogd/klogd.pid krwl,
   /var/run/klogd/kmsg   r,
 }
