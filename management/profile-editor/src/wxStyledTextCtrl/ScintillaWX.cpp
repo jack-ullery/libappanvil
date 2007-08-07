@@ -907,9 +907,13 @@ int  ScintillaWX::DoKeyDown(const wxKeyEvent& evt, bool* consumed)
     case WXK_RIGHT:             key = SCK_RIGHT;    break;
     case WXK_HOME:              key = SCK_HOME;     break;
     case WXK_END:               key = SCK_END;      break;
+#ifndef WXWIN_COMPATIBILITY_2_6
     case WXK_PAGEUP:            // fall through
+#endif
     case WXK_PRIOR:             key = SCK_PRIOR;    break;
+#ifndef WXWIN_COMPATIBILITY_2_6
     case WXK_PAGEDOWN:          // fall through
+#endif
     case WXK_NEXT:              key = SCK_NEXT;     break;
     case WXK_DELETE:            key = SCK_DELETE;   break;
     case WXK_INSERT:            key = SCK_INSERT;   break;
