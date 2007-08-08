@@ -1,3 +1,4 @@
+#define DBUS_API_SUBJECT_TO_CHANGE
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/uio.h>
