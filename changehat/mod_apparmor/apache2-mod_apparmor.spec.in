@@ -46,14 +46,10 @@ Obsoletes: mod_change_hat mod-change-hat mod-apparmor apache2-mod-apparmor
 Provides: mod_change_hat mod-change-hat mod-apparmor apache2-mod-apparmor
 
 %if %{distro} == "suse"
-%if 0%{?suse_version} < 1010
-BuildRequires: libimmunix
-%else
 %if 0%{?suse_version} < 1030
 BuildRequires: libapparmor
 %else
 BuildRequires: libapparmor-devel
-%endif
 %endif
 %else
 BuildRequires: libapparmor-devel
