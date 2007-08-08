@@ -1,6 +1,5 @@
 AC_INIT(configure.in)
 
-AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libapparmor1, 2.2)
 
 AM_PROG_LEX
