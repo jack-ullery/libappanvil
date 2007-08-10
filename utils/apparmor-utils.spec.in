@@ -42,7 +42,7 @@ Requires: perl-DateManip
 %else
 Requires: perl-TimeDate
 %endif
-Requires: perl-DBI perl-DBD-SQLite perl-File-Tail perl-gettext perl-RPC-XML
+Requires: perl-DBI perl-DBD-SQLite perl-File-Tail perl-gettext perl-RPC-XML perl-TermReadKey
 Obsoletes: subdomain-utils
 Provides: subdomain-utils
 
