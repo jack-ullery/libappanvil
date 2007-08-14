@@ -45,7 +45,7 @@ DESTDIR=/
 SECDIR=${DESTDIR}/lib/security
 
 .PHONY: install
-install:
+install: $(NAME).so
 	install -m 755 -d $(SECDIR)
 	install -m 555 $(NAME).so $(SECDIR)/
 	
