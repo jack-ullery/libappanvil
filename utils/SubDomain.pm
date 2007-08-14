@@ -51,6 +51,7 @@ our @EXPORT = qw(
     $filename
     $profiledir
     $parser
+    $logger
     $UI_Mode
     $running_under_genprof
 
@@ -135,6 +136,7 @@ our $filename;
 
 our $parser;
 our $ldd;
+our $logger;
 our $profiledir;
 our $extraprofiledir;
 
@@ -4972,6 +4974,9 @@ unless (-f $filename) { fatal_error "Can't find system log."; }
 
 $ldd = find_first_file($cfg->{settings}{ldd}) || "/usr/bin/ldd";
 unless (-x $ldd) { fatal_error "Can't find ldd."; }
+
+$logger = find_first_file($cfg->{settings}{logger}) || "/bin/logger";
+unless (-x $logger) { fatal_error "Can't find logger."; }
 
 1;
 

@@ -95,6 +95,8 @@ fi
 
 
 %changelog
+* Tue Aug 14 2007 - sbeattie@suse.de
+- Support configurable locations of logger
 * Tue Apr  3 2007 - sbeattie@suse.de
 - Add manpages to package
 * Fri Mar 23 2007 - sbeattie@suse.de

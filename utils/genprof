@@ -125,7 +125,7 @@ while (not $done_profiling) {
         $logmark = `date | md5sum`;
         chomp $logmark;
         $logmark = $1 if $logmark =~ /^([0-9a-f]+)/;
-        system("/bin/logger -p kern.warn 'GenProf: $logmark'");
+        system("$logger -p kern.warn 'GenProf: $logmark'");
     } else {
         $logmark = last_audit_entry_time();
     }
