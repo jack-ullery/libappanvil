@@ -33,6 +33,10 @@ APXS:=$(shell if [ -x "/usr/sbin/apxs2" ] ; then \
 		echo "/usr/sbin/apxs2" ; \
               elif [ -x "/usr/sbin/apxs" ] ; then \
 	        echo "/usr/sbin/apxs" ; \
+              elif [ -x "/usr/bin/apxs2" ] ; then \
+	        echo "/usr/bin/apxs2" ; \
+              elif [ -x "/usr/bin/apxs" ] ; then \
+	        echo "/usr/bin/apxs" ; \
               else \
 	        echo "apxs" ; \
 	      fi ) 
