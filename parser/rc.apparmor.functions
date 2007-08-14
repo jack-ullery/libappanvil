@@ -101,6 +101,8 @@ fi
 # keep exit status from parser during profile load.  0 is good, 1 is bad
 STATUS=0
 
+# This set of patterns to skip needs to be kept in sync with
+# SubDomain.pm::isSkippableFile()
 skip_profile() {
 	local profile=$1
 	if [ "${profile%.rpmnew}" != "${profile}" -o \

@@ -3695,11 +3695,14 @@ sub contains ($$) {
 
 # isSkippableFile - return true if filename matches something that
 # should be skipped (rpm backup files, dotfiles, emacs backup files
+# Annoyingly, this needs to be kept in sync with the skipped files
+# in the apparmor initscript.
 sub isSkippableFile($) {
     my $path = shift;
 
     return ($path =~ /(^|\/)\.[^\/]*$/
             || $path =~ /\.rpm(save|new)$/
+            || $path =~ /\.dpkg-(old|new)$/
             || $path =~ /\~$/);
 }
 
