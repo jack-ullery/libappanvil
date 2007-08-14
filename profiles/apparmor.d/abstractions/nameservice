@@ -21,7 +21,12 @@
   /etc/nsswitch.conf      r,
   /etc/passwd             r,
   /etc/protocols          r,
+
   /etc/resolv.conf        r,
+  # on systems using resolvconf, /etc/resolv.conf is a symlink to
+  # /etc/resolvconf/run/resolv.conf
+  /etc/resolvconf/run/resolv.conf r,
+
   /etc/samba/lmhosts      r,
   /etc/services           r,
   # all openldap config
