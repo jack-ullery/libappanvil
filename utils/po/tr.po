@@ -88,7 +88,7 @@ msgstr ""
 
 #: genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "SubDomain başlatılmış gözükmüyor. Lütfen SubDomain'i başlatın ve yeniden deneyin."
+msgstr "AppArmor başlatılmış gözükmüyor. Lütfen AppArmor'i başlatın ve yeniden deneyin."
 
 #: genprof:69
 msgid "Please enter the program to profile: "
@@ -126,7 +126,7 @@ msgstr "Profil oluşturuluyor"
 
 #: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "Zorla uygulama modunda yeniden yüklenmiş SubDomain profilleri."
+msgstr "Zorla uygulama modunda yeniden yüklenmiş AppArmor profilleri."
 
 #: genprof:168
 #, perl-format
@@ -503,7 +503,7 @@ msgid "&Back"
 msgstr "&Back"
 
 msgid "(S)can system log for SubDomain events"
-msgstr "Scan system log for SubDomain events"
+msgstr "(S)can system log for AppArmor events"
 
 #, fuzzy
 msgid "Unable to open"

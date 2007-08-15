@@ -89,7 +89,7 @@ msgstr "usage: %s [ -d /path/to/profiles ] [ programme to switch to enforce mode
 
 #: genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "SubDomain does not appear to be started.  Please enable SubDomain and try again."
+msgstr "AppArmor does not appear to be started.  Please enable AppArmor and try again."
 
 #: genprof:69
 msgid "Please enter the program to profile: "
@@ -128,7 +128,7 @@ msgstr "Profiling"
 
 #: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "Reloaded SubDomain profiles in enforce mode."
+msgstr "Reloaded AppArmor profiles in enforce mode."
 
 #: genprof:168
 #, perl-format
@@ -408,7 +408,7 @@ msgstr "Usage: %s [ --paranoid ]\n"
 
 #: unconfined:57
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "SubDomain does not appear to be started. Please enable SubDomain and try again."
+msgstr "AppArmor does not appear to be started. Please enable AppArmor and try again."
 
 #: unconfined:61
 msgid "Can't read /proc\n"
@@ -514,7 +514,7 @@ msgid "&Back"
 msgstr "&Back"
 
 msgid "(S)can system log for SubDomain events"
-msgstr "Scan system log for SubDomain events"
+msgstr "(S)can system log for AppArmor events"
 
 # ###############################################################################
 # Old yast2-agents.po

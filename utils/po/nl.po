@@ -410,7 +410,7 @@ msgstr "Gebruik: %s [ --paranoid ]\n"
 
 #: unconfined:57
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "SubDomain schijnt niet te zijn gestart. Activeer SubDomain en probeer het opnieuw."
+msgstr "AppArmor schijnt niet te zijn gestart. Activeer AppArmor en probeer het opnieuw."
 
 #: unconfined:61
 msgid "Can't read /proc\n"

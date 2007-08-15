@@ -86,7 +86,7 @@ msgstr "Syntax: %s [ -d /pfad/zu/profilen ] [ programm, das in den erzwingen-mod
 
 #: genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "SubDomain wurde offenbar nicht gestartet. Aktivieren Sie SubDomain und versuchen Sie es erneut."
+msgstr "AppArmor wurde offenbar nicht gestartet. Aktivieren Sie AppArmor und versuchen Sie es erneut."
 
 #: genprof:69
 msgid "Please enter the program to profile: "
@@ -125,7 +125,7 @@ msgstr "Profilerstellung"
 
 #: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "SubDomain-Profile wurden im Erzwingen-Modus neu geladen."
+msgstr "AppArmor-Profile wurden im Erzwingen-Modus neu geladen."
 
 #: genprof:168
 #, perl-format
@@ -405,7 +405,7 @@ msgstr "Syntax: %s [ --paranoid ]\n"
 
 #: unconfined:57
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "SubDomain wurde offenbar nicht gestartet. Aktivieren Sie SubDomain und versuchen Sie es erneut."
+msgstr "AppArmor wurde offenbar nicht gestartet. Aktivieren Sie AppArmor und versuchen Sie es erneut."
 
 #: unconfined:61
 msgid "Can't read /proc\n"
@@ -510,7 +510,7 @@ msgid "&Back"
 msgstr "&Zurück"
 
 msgid "(S)can system log for SubDomain events"
-msgstr "(S)ystemprotokoll nach SubDomain-Ereignissen durchsuchen"
+msgstr "(S)ystemprotokoll nach AppArmor-Ereignissen durchsuchen"
 
 # ###############################################################################
 # Old yast-agents.po

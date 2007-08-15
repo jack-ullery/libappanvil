@@ -89,7 +89,7 @@ msgstr "použití: %s [ -d /cesta/k/profilům ] [ program pro přepnutí do enfo
 
 #: genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "SubDomain zřejmě není spuštěna. Povolte prosím SubDomain a zkuste to znovu."
+msgstr "AppArmor zřejmě není spuštěna. Povolte prosím AppArmor a zkuste to znovu."
 
 #: genprof:69
 msgid "Please enter the program to profile: "
@@ -410,7 +410,7 @@ msgstr "Použití: %s [ --paranoid ]\n"
 
 #: unconfined:57
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "SubDomain zřejmě není spuštěna. Povolte prosím SubDomain a zkuste to znovu."
+msgstr "AppArmor zřejmě není spuštěna. Povolte prosím AppArmor a zkuste to znovu."
 
 #: unconfined:61
 msgid "Can't read /proc\n"

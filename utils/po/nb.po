@@ -85,7 +85,7 @@ msgstr "bruk: %s [ -d /sti/til/profiler ] [ program som skal kjøres i overstyrt
 
 #: genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "SubDomain ser ikke ut til å kjøre.  Aktiver SubDomain og forsøk igjen."
+msgstr "AppArmor ser ikke ut til å kjøre.  Aktiver AppArmor og forsøk igjen."
 
 #: genprof:69
 msgid "Please enter the program to profile: "
@@ -124,7 +124,7 @@ msgstr "Tilordne profil"
 
 #: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "SubDomain-profiler i overstyringsmodus lastet på nytt."
+msgstr "AppArmor-profiler i overstyringsmodus lastet på nytt."
 
 #: genprof:168
 #, perl-format
@@ -405,7 +405,7 @@ msgstr "Bruk: %s [ --paranoid ]\n"
 
 #: unconfined:57
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "SubDomain ser ikke ut til å kjøre.  Aktiver SubDomain og forsøk igjen."
+msgstr "AppArmor ser ikke ut til å kjøre.  Aktiver AppArmor og forsøk igjen."
 
 #: unconfined:61
 msgid "Can't read /proc\n"
@@ -511,7 +511,7 @@ msgid "&Back"
 msgstr "&Tilbake"
 
 msgid "(S)can system log for SubDomain events"
-msgstr "(S)øk etter SubDomain-hendelser i systemloggen"
+msgstr "(S)øk etter AppArmor-hendelser i systemloggen"
 
 # ###############################################################################
 # Old yast2-agents.po

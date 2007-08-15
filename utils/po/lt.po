@@ -519,7 +519,7 @@ msgid "&Back"
 msgstr "&Atgal"
 
 msgid "(S)can system log for SubDomain events"
-msgstr "Scan system log for SubDomain events"
+msgstr "(S)can system log for AppArmor events"
 
 msgid "Unable to open"
 msgstr "Neįmanoma atverti"

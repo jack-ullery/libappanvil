@@ -85,7 +85,7 @@ msgstr "użycie: %s [ -d /ścieżka/do/profili ] [ program do zmiany trybu wymus
 
 #: genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "Program SubDomain nie jest uruchomiony. Proszę go włączyć i spróbować ponownie."
+msgstr "Program AppArmor nie jest uruchomiony. Proszę go włączyć i spróbować ponownie."
 
 #: genprof:69
 msgid "Please enter the program to profile: "
@@ -122,7 +122,7 @@ msgstr "Profilowanie"
 
 #: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "Wczytano ponownie profile SubDomain w trybie wymuszania."
+msgstr "Wczytano ponownie profile AppArmor w trybie wymuszania."
 
 #: genprof:168
 #, perl-format
@@ -401,7 +401,7 @@ msgstr "Użycie: %s [ --paranoid ]\n"
 
 #: unconfined:57
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "Program SubDomain nie jest uruchomiony. Proszę go włączyć i spróbować ponownie."
+msgstr "Program AppArmor nie jest uruchomiony. Proszę go włączyć i spróbować ponownie."
 
 #: unconfined:61
 msgid "Can't read /proc\n"
@@ -507,7 +507,7 @@ msgid "&Back"
 msgstr "&Wstecz"
 
 msgid "(S)can system log for SubDomain events"
-msgstr "(S)zukaj zdarzeń SubDomain w dzienniki systemowym"
+msgstr "(S)zukaj zdarzeń AppArmor w dzienniki systemowym"
 
 # ###############################################################################
 # Old yast2-agents.po

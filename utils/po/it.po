@@ -107,7 +107,7 @@ msgstr "utilizzo: %s [ -d /percorso/in/profili ] [ programma da attivare in moda
 # TLABEL modules/inst_custom_part.ycp:1787
 #: genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "SubDomain non è stato avviato.  Attivare SubDomain e riprovare."
+msgstr "AppArmor non è stato avviato.  Attivare AppArmor e riprovare."
 
 # TLABEL modules/inst_user.ycp:71
 #: genprof:69
@@ -150,7 +150,7 @@ msgstr "Rilevamento"
 # TLABEL modules/inst_user.ycp:71
 #: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "Profili SubDomain ricaricati in modalità applica."
+msgstr "Profili AppArmor ricaricati in modalità applica."
 
 # TLABEL modules/inst_user.ycp:71
 #: genprof:168
@@ -497,7 +497,7 @@ msgstr "Utilizzo: %s [ --paranoid ]\n"
 
 #: unconfined:57
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "SubDomain non è stato avviato. Attivare SubDomain e riprovare."
+msgstr "AppArmor non è stato avviato. Attivare AppArmor e riprovare."
 
 #: unconfined:61
 msgid "Can't read /proc\n"
@@ -622,7 +622,7 @@ msgstr "&Indietro"
 
 # TLABEL modules/inst_user.ycp:71
 msgid "(S)can system log for SubDomain events"
-msgstr "Cerca eventi SubDomain nel registro di sistema"
+msgstr "(C)erca eventi AppArmor nel registro di sistema"
 
 # ###############################################################################
 # Old yast2-agents.po

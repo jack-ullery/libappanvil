@@ -83,7 +83,7 @@ msgstr "gebruik: %s [ -d /pad/na/profiele ] [ program om na afdwingmodus oor te 
 
 #: genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "Dit lyk nie asof SubDomain begin het nie.  Ontsper SubDomain asseblief en probeer weer."
+msgstr "Dit lyk nie asof AppArmor begin het nie.  Ontsper AppArmor asseblief en probeer weer."
 
 #: genprof:69
 msgid "Please enter the program to profile: "
@@ -122,7 +122,7 @@ msgstr "Profieldraer"
 
 #: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "Herlaaide SubDomain-profiele in afdwingmodus."
+msgstr "Herlaaide AppArmor-profiele in afdwingmodus."
 
 #: genprof:168
 #, perl-format
@@ -402,7 +402,7 @@ msgstr "Gebruik: %s [ --paranoïes ]\n"
 
 #: unconfined:57
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "Dit lyk nie asof SubDomain begin het nie. Ontsper SubDomain asseblief en probeer weer."
+msgstr "Dit lyk nie asof AppArmor begin het nie. Ontsper AppArmor asseblief en probeer weer."
 
 #: unconfined:61
 msgid "Can't read /proc\n"
@@ -507,7 +507,7 @@ msgid "&Back"
 msgstr "&Back"
 
 msgid "(S)can system log for SubDomain events"
-msgstr "Scan system log for SubDomain events"
+msgstr "(S)can system log for AppArmor events"
 
 # ###############################################################################
 # Old yast2-agents.po

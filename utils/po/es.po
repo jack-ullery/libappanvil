@@ -113,7 +113,7 @@ msgstr "uso: %s [ -d /vía/a/perfiles ] [ programa que desea cambiar al modo de 
 # include/partitioning/partition_defines.ycp:2078
 #: genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "Parece que SubDomain no se ha iniciado. Habilite SubDomain e inténtelo de nuevo."
+msgstr "Parece que AppArmor no se ha iniciado. Habilite AppArmor e inténtelo de nuevo."
 
 # clients/support_registration.ycp:225 include/support/registration.ycp:77
 # clients/support_askkey.ycp:246 include/support/supportio.ycp:79
@@ -170,7 +170,7 @@ msgstr "Perfiles"
 # clients/support_askkey.ycp:246 include/support/supportio.ycp:79
 #: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "Perfiles de SubDomain en modo de aplicación actualizados."
+msgstr "Perfiles de AppArmor en modo de aplicación actualizados."
 
 # clients/support_registration.ycp:225 include/support/registration.ycp:77
 # clients/support_askkey.ycp:246 include/support/supportio.ycp:79
@@ -558,7 +558,7 @@ msgstr "Uso: %s [ --paranoid ]\n"
 
 #: unconfined:57
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "Parece que SubDomain no se ha iniciado. Habilite SubDomain e inténtelo de nuevo."
+msgstr "Parece que AppArmor no se ha iniciado. Habilite AppArmor e inténtelo de nuevo."
 
 #: unconfined:61
 msgid "Can't read /proc\n"
@@ -690,7 +690,7 @@ msgstr "&Atrás"
 # 
 # clients/support_askkey.ycp:246 include/support/supportio.ycp:79
 msgid "(S)can system log for SubDomain events"
-msgstr "(E)xplorar registro del sistema para eventos SubDomain"
+msgstr "(E)xplorar registro del sistema para eventos AppArmor"
 
 # ###############################################################################
 # Old yast2-agents.po

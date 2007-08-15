@@ -493,7 +493,7 @@ msgid "&Back"
 msgstr "&En erî"
 
 msgid "(S)can system log for SubDomain events"
-msgstr "Scan system log for SubDomain events"
+msgstr "(S)can system log for AppArmor events"
 
 # ###############################################################################
 # Old yast2-agents.po

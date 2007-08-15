@@ -508,7 +508,7 @@ msgid "&Back"
 msgstr "上一步(&B)"
 
 msgid "(S)can system log for SubDomain events"
-msgstr "掃描 SubDomain 事件的系統記錄(S)"
+msgstr "掃描 AppArmor 事件的系統記錄(S)"
 
 # ###############################################################################
 # Old yast2-agents.po

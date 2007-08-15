@@ -475,7 +475,7 @@ msgid "&Back"
 msgstr "&Tagasi"
 
 msgid "(S)can system log for SubDomain events"
-msgstr "Scan system log for SubDomain events"
+msgstr "(S)can system log for AppArmor events"
 
 msgid "Unable to open"
 msgstr "Ei saa avada"

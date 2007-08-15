@@ -88,7 +88,7 @@ msgstr "χρήση: %s [ -d /path/to/profiles ] [ πρόγραμμα προς π
 
 #: genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "Το SubDomain δεν φαίνεται να ξεκινά. Παρακαλώ ενεργοποιήστε το SubDomain και ξαναπροσπαθήστε."
+msgstr "Το AppArmor δεν φαίνεται να ξεκινά. Παρακαλώ ενεργοποιήστε το AppArmor και ξαναπροσπαθήστε."
 
 #: genprof:69
 msgid "Please enter the program to profile: "
@@ -125,7 +125,7 @@ msgstr "Δημιουργώντας Προφίλ"
 
 #: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "Επαναφόρτωση των προφίλ SubDomain σε εξαναγκασμένη λειτουργία."
+msgstr "Επαναφόρτωση των προφίλ AppArmor σε εξαναγκασμένη λειτουργία."
 
 #: genprof:168
 #, perl-format
@@ -405,7 +405,7 @@ msgstr "Χρήση: %s [ --paranoid ]\n"
 
 #: unconfined:57
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "Το SubDomain δεν φαίνεται να ξεκινά. Παρακαλώ ενεργοποιήστε το SubDomain και ξαναπροσπαθήστε."
+msgstr "Το AppArmor δεν φαίνεται να ξεκινά. Παρακαλώ ενεργοποιήστε το AppArmor και ξαναπροσπαθήστε."
 
 #: unconfined:61
 msgid "Can't read /proc\n"
@@ -513,7 +513,7 @@ msgid "&Back"
 msgstr "&Πίσω"
 
 msgid "(S)can system log for SubDomain events"
-msgstr "(Σ)άρωση αρχείων καταγραφής συστήματος για γεγονότα SubDomain"
+msgstr "(Σ)άρωση αρχείων καταγραφής συστήματος για γεγονότα AppArmor"
 
 # ###############################################################################
 # Old yast2-agents.po

@@ -91,7 +91,7 @@ msgstr "käyttö: %s [ -d /polku/profiileihin ] [ ohjelma, joka vaihdetaan pakot
 
 #: genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "SubDomain ei vaikuta olevan käynnistetty.  Ota SubDomain käyttöön ja yritä uudelleen."
+msgstr "AppArmor ei vaikuta olevan käynnistetty.  Ota AppArmor käyttöön ja yritä uudelleen."
 
 #: genprof:69
 msgid "Please enter the program to profile: "
@@ -129,7 +129,7 @@ msgstr "Profiloidaan"
 
 #: genprof:167
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "Ladattiin SubDomain profiilit pakottamistilaan uudelleen."
+msgstr "Ladattiin AppArmor profiilit pakottamistilaan uudelleen."
 
 #: genprof:168
 #, perl-format
@@ -408,7 +408,7 @@ msgstr "Käyttö: %s [ --paranoid ]\n"
 
 #: unconfined:57
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "SubDomain ei vaikuta olevan käynnistetty. Ota SubDomain käyttöön ja yritä uudelleen."
+msgstr "AppArmor ei vaikuta olevan käynnistetty. Ota AppArmor käyttöön ja yritä uudelleen."
 
 #: unconfined:61
 msgid "Can't read /proc\n"

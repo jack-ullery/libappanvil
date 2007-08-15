@@ -503,7 +503,7 @@ msgid "&Back"
 msgstr "Назад"
 
 msgid "(S)can system log for SubDomain events"
-msgstr "Scan system log for SubDomain events"
+msgstr "(S)can system log for AppArmor events"
 
 #, fuzzy
 msgid "Unable to open"
