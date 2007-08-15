@@ -41,7 +41,7 @@
   /var/lib/ntp/drift.TEMP rwl,
   /var/lib/ntp/drift/ntp.drift rw,
   /var/lib/ntp/drift/ntp.drift.TEMP rw,
-  /var/lib/ntp/etc/ntp.conf.iburst r,
+  /var/lib/ntp/etc/* r,
   /var/lib/ntp/ntp.drift rw,
   /var/lib/ntp/ntp.drift.TEMP rw,
   /var/lib/ntp/var/run/ntp/ntpd.pid w,
