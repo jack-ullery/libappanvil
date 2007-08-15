@@ -601,7 +601,7 @@ sub handle_binfmt ($$) {
         push @reqs, get_reqs($library) unless $reqs{$library}++;
 
         # does path match anything pulled in by includes in original profile?
-        my $combinedmode = matchincludes($profile, $library);
+        my $combinedmode = matchpathincludes($profile, $library);
 
         # if we found any matching entries, do the modes match?
         next if $combinedmode;
@@ -1513,7 +1513,7 @@ sub handlechildren {
 
                     # does path match anything pulled in by includes in
                     # original profile?
-                    ($cm, @m) = matchincludes($sd{$profile}{$hat}, $exec_target);
+                    ($cm, @m) = matchpathincludes($sd{$profile}{$hat}, $exec_target);
                     $combinedmode .= $cm if $cm;
 
                     my $exec_mode;
@@ -2348,11 +2348,33 @@ sub ask_the_questions {
 
                     # we don't care about it if we've already added it to the
                     # profile
-                    next if $sd{$profile}{$hat}{capability}{$capability};
+                    next if profile_capability_access_check($profile,
+                                                            $hat,
+                                                            $capability);
 
                     my $severity = $sevdb->rank(uc("cap_$capability"));
 
+                    my $defaultoption = 1;
+                    my @options       = ();
+                    my @newincludes;
+                    @newincludes = matchcapincludes($profile,
+                                                    $hat,
+                                                    $capability);
+
+
                     my $q = {};
+
+                    if (@newincludes) {
+                        push @options,
+                          map { "#include <$_>" } sort(uniq(@newincludes));
+                    }
+
+                    if ( @options ) {
+                        push @options, "capability $capability";
+                        $q->{options}  = [@options];
+                        $q->{selected} = $defaultoption - 1;
+                    }
+
                     $q->{headers} = [];
                     push @{ $q->{headers} }, gettext("Profile"), combine_name($profile, $hat);
                     push @{ $q->{headers} }, gettext("Capability"), $capability;
@@ -2367,26 +2389,49 @@ sub ask_the_questions {
                     $q->{default} = ($sdmode eq "PERMITTING") ? "CMD_ALLOW" : "CMD_DENY";
 
                     $seenevents++;
+                    my $done = 0;
+                    while ( not $done ) {
+                        # what did the grand exalted master tell us to do?
+                        my ($ans, $selected) = UI_PromptUser($q);
 
-                    # what did the grand exalted master tell us to do?
-                    my $ans = UI_PromptUser($q);
+                        if ($ans eq "CMD_ALLOW") {
 
-                    if ($ans eq "CMD_ALLOW") {
+                            # they picked (a)llow, so...
 
-                        # they picked (a)llow, so...
+                            my $selection = $options[$selected];
+                            $done = 1;
+                            if ($selection &&
+                                $selection =~ m/^#include <(.+)>$/) {
+                                my $deleted = 0;
+                                my $inc = $1;
+                                $deleted = delete_duplicates( $profile,
+                                                               $hat,
+                                                               $inc
+                                                             );
+                                $sd{$profile}{$hat}{include}{$inc} = 1;
 
-                        # stick the capability into the profile
-                        $sd{$profile}{$hat}{capability}{$capability} = 1;
+                                $changed{$profile} = 1;
+                                UI_Info(sprintf(
+                                  gettext('Adding #include <%s> to profile.'),
+                                          $inc));
+                                UI_Info(sprintf(
+                                  gettext('Deleted %s previous matching profile entries.'),
+                                           $deleted)) if $deleted;
+                            }
+                            # stick the capability into the profile
+                            $sd{$profile}{$hat}{capability}{$capability} = 1;
 
-                        # mark this profile as changed
-                        $changed{$profile} = 1;
-
-                        # give a little feedback to the user
-                        UI_Info(sprintf(gettext('Adding capability %s to profile.'), $capability));
-                    } elsif ($ans eq "CMD_DENY") {
-                        UI_Info(sprintf(gettext('Denying capability %s to profile.'), $capability));
-                    } else {
-                        redo;
+                            # mark this profile as changed
+                            $changed{$profile} = 1;
+                            $done = 1;
+                            # give a little feedback to the user
+                            UI_Info(sprintf(gettext('Adding capability %s to profile.'), $capability));
+                        } elsif ($ans eq "CMD_DENY") {
+                            UI_Info(sprintf(gettext('Denying capability %s to profile.'), $capability));
+                            $done = 1;
+                        } else {
+                            redo;
+                        }
                     }
                 }
 
@@ -2415,7 +2460,7 @@ sub ask_the_questions {
 
                         # does path match anything pulled in by includes in
                         # original profile?
-                        ($cm, @m) = matchincludes($sd{$profile}{$hat}, $path);
+                        ($cm, @m) = matchpathincludes($sd{$profile}{$hat}, $path);
                         $combinedmode .= $cm if $cm;
 
                         if ($combinedmode) {
@@ -2445,7 +2490,7 @@ sub ask_the_questions {
 
                         # does path match anything pulled in by includes in
                         # original profile?
-                        ($cm, @m) = matchincludes($sd{$profile}{$hat}, $path);
+                        ($cm, @m) = matchpathincludes($sd{$profile}{$hat}, $path);
                         $combinedmode .= $cm if $cm;
 
                         # ix implies m.  don't ask if they want to add an "m"
@@ -2471,7 +2516,7 @@ sub ask_the_questions {
 
                     # does path match anything pulled in by includes in
                     # original profile?
-                    ($cm, @m) = matchincludes($sd{$profile}{$hat}, $path);
+                    ($cm, @m) = matchpathincludes($sd{$profile}{$hat}, $path);
                     if ($cm) {
                         $combinedmode .= $cm;
                         push @matches, @m;
@@ -2502,7 +2547,7 @@ sub ask_the_questions {
                             $includevalid = 1 if $incname =~ /abstractions/;
                             next if ($includevalid == 0);
 
-                            ($cm, @m) = matchinclude($incname, $path);
+                            ($cm, @m) = matchpathinclude($incname, $path);
                             if ($cm && contains($cm, $mode)) {
                                 unless (grep { $_ eq "/**" } @m) {
                                     push @newincludes, $incname;
@@ -2577,7 +2622,6 @@ sub ask_the_questions {
                               : "CMD_DENY";
 
                             $seenevents++;
-
                             # if they just hit return, use the default answer
                             my ($ans, $selected) = UI_PromptUser($q);
 
@@ -2586,20 +2630,11 @@ sub ask_the_questions {
                                 $done = 1;
                                 if ($path =~ m/^#include <(.+)>$/) {
                                     my $inc = $1;
-
                                     my $deleted = 0;
-                                    for my $entry (keys %{ $sd{$profile}{$hat}{path} }) {
 
-                                        next if $path eq $entry;
-
-                                        my $cm = matchinclude($inc, $entry);
-                                        if ($cm
-                                            && contains($cm, $sd{$profile}{$hat}{path}{$entry}))
-                                        {
-                                            delete $sd{$profile}{$hat}{path}{$entry};
-                                            $deleted++;
-                                        }
-                                    }
+                                    $deleted = delete_duplicates( $profile,
+                                                                  $hat,
+                                                                  $inc );
 
                                     # record the new entry
                                     $sd{$profile}{$hat}{include}{$inc} = 1;
@@ -2734,14 +2769,34 @@ sub ask_the_questions {
 
                         # we don't care about it if we've already added it to the
                         # profile
-                        next if ( network_access_check( $profile,
-                                                       $hat,
-                                                       $family,
-                                                       $sock_type
-                                                      )
+                        next if ( profile_network_access_check(
+                                                               $profile,
+                                                               $hat,
+                                                               $family,
+                                                               $sock_type
+                                                              )
                                 );
+                        my $defaultoption = 1;
+                        my @options       = ();
+                        my @newincludes;
+                        @newincludes = matchnetincludes($profile,
+                                                        $hat,
+                                                        $family,
+                                                        $sock_type);
 
                         my $q = {};
+
+                        if (@newincludes) {
+                            push @options,
+                              map { "#include <$_>" } sort(uniq(@newincludes));
+                        }
+
+                        if ( @options ) {
+                            push @options, "network $family $sock_type";
+                            $q->{options}  = [@options];
+                            $q->{selected} = $defaultoption - 1;
+                        }
+
                         $q->{headers} = [];
                         push @{ $q->{headers} },
                              gettext("Profile"),
@@ -2768,40 +2823,214 @@ sub ask_the_questions {
                         $seenevents++;
 
                         # what did the grand exalted master tell us to do?
-                        my $ans = UI_PromptUser($q);
+                        my $done = 0;
+                        while ( not $done ) {
+                            my ($ans, $selected) = UI_PromptUser($q);
 
-                        if ($ans eq "CMD_ALLOW") {
+                            if ($ans eq "CMD_ALLOW") {
+                                my $selection = $options[$selected];
+                                $done = 1;
+                                if ($selection &&
+                                    $selection =~ m/^#include <(.+)>$/) {
+                                    my $inc = $1;
+                                    my $deleted = 0;
+                                    $deleted = delete_duplicates( $profile,
+                                                                   $hat,
+                                                                   $inc
+                                                                 );
+                                    # record the new entry
+                                    $sd{$profile}{$hat}{include}{$inc} = 1;
 
-                            # they picked (a)llow, so...
+                                    $changed{$profile} = 1;
+                                    UI_Info(
+                                      sprintf(
+                                        gettext('Adding #include <%s> to profile.'),
+                                                $inc));
+                                    UI_Info(
+                                      sprintf(
+                                        gettext('Deleted %s previous matching profile entries.'),
+                                                 $deleted)) if $deleted;
+                                } else {
 
-                            # stick the whole rule into the profile
-                            $sd{$profile}{$hat}{netdomain}{$family}{$sock_type} = 1;
+                                    # stick the whole rule into the profile
+                                    $sd{$profile}
+                                       {$hat}
+                                       {netdomain}
+                                       {$family}
+                                       {$sock_type} = 1;
 
-                            # mark this profile as changed
-                            $changed{$profile} = 1;
+                                    # mark this profile as changed
+                                    $changed{$profile} = 1;
 
-                            # give a little feedback to the user
-                            UI_Info(sprintf(
-                                   gettext('Adding network access %s %s to profile.'),
-                                            $family,
-                                            $sock_type
-                                           )
-                                   );
-                        } elsif ($ans eq "CMD_DENY") {
-                            UI_Info(sprintf(
-                                    gettext('Denying network access %s %s to profile.'),
-                                            $family,
-                                            $sock_type
-                                           )
-                                   );
-                        } else {
-                            redo;
+                                    # give a little feedback to the user
+                                    UI_Info(sprintf(
+                                           gettext('Adding network access %s %s to profile.'),
+                                                    $family,
+                                                    $sock_type
+                                                   )
+                                           );
+                                }
+                            } elsif ($ans eq "CMD_DENY") {
+                                UI_Info(sprintf(
+                                        gettext('Denying network access %s %s to profile.'),
+                                                $family,
+                                                $sock_type
+                                               )
+                                       );
+                            } else {
+                                redo;
+                            }
                         }
                     }
                 }
             }
         }
     }
+}
+
+sub delete_duplicates ($$$) {
+    my ( $profile, $hat, $incname ) = @_;
+    my $deleted = 0;
+
+    ## network rules
+    my $netrules = $sd{$profile}{$hat}{netdomain};
+    my $incnetrules = $include{$incname}{netdomain};
+    if ( $incnetrules && $netrules ) {
+        my $incnetglob = defined $incnetrules->{all};
+
+        # See which if any profile rules are matched by the include and can be
+        # deleted
+        for my $fam ( keys %$netrules ) {
+            if ( $incnetglob || (ref($incnetrules->{$fam}) ne "HASH" &&
+                                 $incnetrules->{$fam} == 1)) { # include allows
+                                                               # all net or
+                                                               # all fam
+                if ( ref($netrules->{$fam}) eq "HASH" ) {
+                    $deleted += ( keys %{$netrules->{$fam}} );
+                } else {
+                    $deleted++;
+                }
+                delete $netrules->{$fam};
+            } elsif ( ref($netrules->{$fam}) ne "HASH" &&
+                      $netrules->{$fam} == 1 ){
+                next; # profile has all family
+            } else {
+                for my $socket_type ( keys %{$netrules->{$fam}} )  {
+                    if ( defined $incnetrules->{$fam}{$socket_type} ) {
+                        delete $netrules->{$fam}{$socket_type};
+                        $deleted++;
+                    }
+                }
+            }
+        }
+    }
+
+    ## capabilities
+    my $profilecaps = $sd{$profile}{$hat}{capability};
+    my $inccaps = $include{$incname}{capability};
+    if ( $profilecaps && $inccaps ) {
+        for my $capname ( keys %$profilecaps ) {
+            if ( defined $inccaps->{$capname} && $inccaps->{$capname} == 1 ) {
+               delete $profilecaps->{$capname};
+               $deleted++;
+            }
+        }
+    }
+
+    ## path rules
+    for my $entry (keys %{ $sd{$profile}{$hat}{path} }) {
+        next if $entry eq "#include <$incname>";
+        my $cm = matchpathinclude($incname, $entry);
+        if ($cm
+            && contains($cm, $sd{$profile}{$hat}{path}{$entry}))
+        {
+            delete $sd{$profile}{$hat}{path}{$entry};
+            $deleted++;
+        }
+    }
+    return $deleted;
+}
+
+sub matchnetinclude ($$$) {
+    my ($incname, $family, $type) = @_;
+
+    my @matches;
+
+    # scan the include fragments for this profile looking for matches
+    my @includelist = ($incname);
+    my @checked;
+    while (my $name = shift @includelist) {
+        push @checked, $name;
+        return 1
+          if netrules_access_check($include{$name}{netdomain}, $family, $type);
+        # if this fragment includes others, check them too
+        if (keys %{ $include{$name}{include} } &&
+            (grep($name, @checked) == 0) ) {
+            push @includelist, keys %{ $include{$name}{include} };
+        }
+    }
+    return 0;
+}
+
+sub matchcapincludes ($$$) {
+        my ($profile, $hat, $cap) = @_;
+
+        # check the path against the available set of include
+        # files
+        my @newincludes;
+        my $includevalid;
+        for my $incname (keys %include) {
+            $includevalid = 0;
+
+            # don't suggest it if we're already including it,
+            # that's dumb
+            next if $sd{$profile}{$hat}{include}{$incname};
+
+            # only match includes that can be suggested to
+            # the user
+            for my $incm (split(/\s+/,
+                                $cfg->{settings}{custom_includes})
+                         ) {
+                $includevalid = 1 if $incname =~ /$incm/;
+            }
+            $includevalid = 1 if $incname =~ /abstractions/;
+            next if ($includevalid == 0);
+
+            push @newincludes, $incname
+              if ( defined $include{$incname}{capability}{$cap} &&
+                   $include{$incname}{capability}{$cap} == 1 );
+        }
+        return @newincludes;
+}
+
+sub matchnetincludes ($$$$) {
+        my ($profile, $hat, $family, $type) = @_;
+
+        # check the path against the available set of include
+        # files
+        my @newincludes;
+        my $includevalid;
+        for my $incname (keys %include) {
+            $includevalid = 0;
+
+            # don't suggest it if we're already including it,
+            # that's dumb
+            next if $sd{$profile}{$hat}{include}{$incname};
+
+            # only match includes that can be suggested to
+            # the user
+            for my $incm (split(/\s+/,
+                                $cfg->{settings}{custom_includes})
+                         ) {
+                $includevalid = 1 if $incname =~ /$incm/;
+            }
+            $includevalid = 1 if $incname =~ /abstractions/;
+            next if ($includevalid == 0);
+
+            push @newincludes, $incname
+              if matchnetinclude($incname, $family, $type);
+        }
+        return @newincludes;
 }
 
 sub repo_is_enabled {
@@ -3581,7 +3810,7 @@ sub collapselog () {
 
                     # does path match anything pulled in by includes in
                     # original profile?
-                    $combinedmode .= matchincludes($sd{$profile}{$hat}, $path);
+                    $combinedmode .= matchpathincludes($sd{$profile}{$hat}, $path);
 
                     # if we found any matching entries, do the modes match?
                     unless ($combinedmode && contains($combinedmode, $mode)) {
@@ -3609,10 +3838,12 @@ sub collapselog () {
                 my $ndref = $prelog{$sdmode}{$profile}{$hat}{netdomain};
                 for my $family ( keys %{$ndref} ) {
                     for my $sock_type ( keys %{$ndref->{$family}} ) {
-                        unless ( network_access_check( $profile,
-                                                       $hat,
-                                                       $family,
-                                                       $sock_type ) ) {
+                        unless ( profile_network_access_check(
+                                                              $profile,
+                                                              $hat,
+                                                              $family,
+                                                              $sock_type
+                                                             ) ) {
                             $log{$sdmode}
                                 {$profile}
                                 {$hat}
@@ -4324,14 +4555,40 @@ sub matchliteral {
     return $matches;
 }
 
-sub network_access_check ($$$$) {
+sub profile_capability_access_check ($$$) {
+    my ($profile, $hat, $capname) = @_;
+    for my $incname ( keys %{$sd{$profile}{$hat}{include}} ) {
+        return 1 if $include{$incname}{capability}{$capname};
+    }
+    return 1 if $sd{$profile}{$hat}{capability}{$capname};
+    return 0;
+}
+
+sub profile_network_access_check ($$$$) {
     my ($profile, $hat, $family, $sock_type) = @_;
-    return 0 if ( not defined $sd{$profile}{$hat}{netdomain} );
-    my %netrules        = %{$sd{$profile}{$hat}{netdomain}};
-    my $all_net         =  defined $netrules{all};
-    my $all_net_family  =  defined $netrules{$family} &&
-                           $netrules{$family} == 1;
-    my $net_family_sock = defined $netrules{$family}{$sock_type};
+
+    for my $incname ( keys %{$sd{$profile}{$hat}{include}} ) {
+        return 1 if netrules_access_check( $include{$incname}{netdomain},
+                                           $family,
+                                           $sock_type
+                                         );
+    }
+    return 1 if netrules_access_check( $sd{$profile}{$hat}{netdomain},
+                                       $family,
+                                       $sock_type
+                                     );
+    return 0;
+}
+
+sub netrules_access_check ($$$) {
+    my ($netrules, $family, $sock_type) = @_;
+    return 0 if ( not defined $netrules );
+    my %netrules        = %$netrules;;
+    my $all_net         = defined $netrules{all};
+    my $all_net_family  = defined $netrules{$family} && $netrules{$family} == 1;
+    my $net_family_sock = defined $netrules{$family} &&
+                          ref($netrules{$family}) eq "HASH" &&
+                          defined $netrules{$family}{$sock_type};
 
     if ( $all_net || $all_net_family || $net_family_sock ) {
         return 1;
@@ -4440,6 +4697,14 @@ sub loadinclude {
                 $include{$incfile}{include}{$newinclude} = 1;
 
             } elsif (/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
+            } elsif (/^\s*network/) {
+                if ( /^\s*network\s+(\S+)\s*,\s*$/ ) {
+                    $include{$incfile}{netdomain}{$1} = 1;
+                } elsif ( /^\s*network\s+(\S+)\s+(\S+)\s*,\s*$/ ) {
+                    $include{$incfile}{netdomain}{$1}{$2} = 1;
+                } else {
+                    $include{$incfile}{netdomain}{all} = 1;
+                }
             } else {
 
                 # we don't care about blank lines or comments
@@ -4465,11 +4730,9 @@ sub rematchfrag {
     for my $entry (keys %{ $frag->{path} }) {
 
         my $regexp = convert_regexp($entry);
-        $DEBUGGING && debug("rematchfrag - entry [$entry] regex[$regexp]");
 
         # check the log entry against our converted regexp...
         if ($path =~ /^$regexp$/) {
-            $DEBUGGING && debug("rematchfrag2 MATCH path [$path] regex[$regexp]");
 
             # regexp matches, add it's mode to the list to check against
             $combinedmode .= $frag->{path}{$entry};
@@ -4480,7 +4743,7 @@ sub rematchfrag {
     return wantarray ? ($combinedmode, @matches) : $combinedmode;
 }
 
-sub matchincludes {
+sub matchpathincludes {
     my ($frag, $path) = @_;
 
     my $combinedmode = "";
@@ -4489,8 +4752,8 @@ sub matchincludes {
     # scan the include fragments for this profile looking for matches
     my @includelist = keys %{ $frag->{include} };
     while (my $include = shift @includelist) {
-    my $ret = eval { loadinclude($include); };
-    if ($@) { fatal_error $@; }
+        my $ret = eval { loadinclude($include); };
+        if ($@) { fatal_error $@; }
         my ($cm, @m) = rematchfrag($include{$include}, $path);
         if ($cm) {
             $combinedmode .= $cm;
@@ -4511,7 +4774,7 @@ sub matchincludes {
     return wantarray ? ($combinedmode, @matches) : $combinedmode;
 }
 
-sub matchinclude {
+sub matchpathinclude {
     my ($incname, $path) = @_;
 
     my $combinedmode = "";
