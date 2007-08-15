@@ -118,9 +118,11 @@ typedef struct
 	long pid;			/* PID of the program logging the message */
 	long task;
 	long magic_token;
+	long epoch;			/* example: 12345679 */
+	unsigned int audit_sub_id;		/* example: 12 */
 
 	int bitmask;			/* Bitmask containing "r" "w" "x" etc */
-	char *audit_id;
+	char *audit_id;			/* example: 12345679.1234:12 */
 	char *operation;		/* "Exec" "Ptrace", etc. */
 	char *denied_mask;		/* "r", "w", etc. */
 	char *requested_mask;

@@ -165,5 +165,7 @@ int print_results(aa_log_record *record)
 		{
 			printf("Protocol: %s\n", record->net_protocol);
 		}
+		printf("Epoch: %lu\n", record->epoch);
+		printf("Audit subid: %u\n", record->audit_sub_id);
 	return(0);
 }

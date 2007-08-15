@@ -311,6 +311,8 @@ old_profile:
 audit_msg: TOK_KEY_MSG TOK_EQUALS TOK_AUDIT TOK_OPEN_PAREN TOK_AUDIT_DIGITS TOK_PERIOD TOK_AUDIT_DIGITS TOK_COLON TOK_AUDIT_DIGITS TOK_CLOSE_PAREN TOK_COLON
 	{
 		asprintf(&ret_record->audit_id, "%s.%s:%s", $5, $7, $9);
+		ret_record->epoch = atol($5);
+		ret_record->audit_sub_id = atoi($9);
 		free($5);
 		free($7);
 		free($9);

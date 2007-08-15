@@ -94,6 +94,8 @@ _init_log_record(aa_log_record *record)
 	record->bitmask = 0;
 	record->task = 0;
 	record->magic_token = 0;
+	record->epoch = 0;
+	record->audit_sub_id = 0;
 
 	record->audit_id = NULL;
 	record->operation = NULL;
