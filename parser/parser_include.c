@@ -359,15 +359,18 @@ static int process_include(char *inc, char *name, int line, FILE *out, int nest)
 
 	if (*inc == '\"') {
 		buf = strdup(inc + 1);
-		newf = fopen(buf, "r");
+		if (buf)
+			newf = fopen(buf, "r");
 	} else {
 		int i;
 		for (i = 0; i < npath; i++) {
-			asprintf(&buf, "%s/%s", path[i], inc + 1);
-			newf = fopen(buf, "r");
-			if (newf)
-				break;
-			free(buf);
+			if (asprintf(&buf, "%s/%s", path[i], inc + 1) != -1) {
+				newf = fopen(buf, "r");
+				if (newf)
+					break;
+				free(buf);
+			}
+			buf = NULL;
 		}
 	}
 
