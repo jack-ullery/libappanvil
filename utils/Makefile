@@ -29,7 +29,7 @@ endif
 TOOLS = genprof logprof autodep audit complain enforce \
 	unconfined aa-eventd apparmor_status
 
-AA_MANPAGES = autodep.8 complain.8 enforce.8 logprof.8 genprof.8 unconfined.8
+AA_MANPAGES = autodep.8 complain.8 enforce.8 logprof.8 genprof.8 unconfined.8 audit.8
 MANPAGES    = ${AA_MANPAGES} logprof.conf.5 apparmor_status.8
 
 all: ${MANPAGES} ${HTMLMANPAGES}
