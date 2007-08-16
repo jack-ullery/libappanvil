@@ -1,6 +1,6 @@
 POD2MAN = pod2man
 
-man_MANS = change_hat.2
+man_MANS = aa_change_hat.2
 
 PODS = $(subst .2,.pod,$(man_MANS))
 
