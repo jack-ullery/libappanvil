@@ -26,28 +26,28 @@
 #define default_symbol_version(real, name, version) \
 		__asm__ (".symver " #real "," #name "@@" #version)
 
-int __change_hat(char *subprofile, unsigned int token)
+static int do_change_x(const char *cmd, const char *name, unsigned long token)
 {
 	int rc = -1;
 	int fd, ret, len = 0, ctlerr = 0;
 	char *buf = NULL;
-	const char *cmd = "changehat";
+	const char *fmt = "%s %016x^%s";
 	char *ctl = NULL;
 	pid_t tid = syscall(SYS_gettid);
 
 	/* both may not be null */
-	if (!(token || subprofile)) {
+	if (!(token || name)) {
 		errno = EINVAL;
 		goto out;
 	}
 
-	if (subprofile && strnlen(subprofile, PATH_MAX + 1) > PATH_MAX) {
+	if (name && strnlen(name, PATH_MAX + 1) > PATH_MAX) {
 		errno = EPROTO;
 		goto out;
 	}
 
-	len = asprintf(&buf, "%s %08x^%s", cmd, token,
-		       subprofile ? subprofile : "");
+	len = asprintf(&buf, fmt, cmd, token,
+		       name ? name : "");
 	if (len < 0) {
 		goto out;
 	}
@@ -87,6 +87,17 @@ out:
 		free(ctl);
 	}
 	return rc;
+}
+
+int aa_change_hat(const char *subprofile, unsigned long token)
+{
+	return do_change_x("changehat", subprofile, token);
+}
+
+/* original change_hat interface */
+int __change_hat(char *subprofile, unsigned int token)
+{
+	return aa_change_hat(subprofile, (unsigned long) token);
 }
 
 /* create an alias for the old change_hat@IMMUNIX_1.0 symbol */

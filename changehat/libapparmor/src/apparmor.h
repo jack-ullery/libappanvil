@@ -16,7 +16,10 @@ __BEGIN_DECLS
    <http://forge.novell.com/modules/xfmod/project/?apparmor>
    Please see the change_hat(2) manpage for information. */
 
-extern int change_hat (const char *subprofile, unsigned int magic_token);
+extern int (change_hat)(const char *subprofile, unsigned int magic_token);
+extern int aa_change_hat(const char *subprofile, unsigned long magic_token);
+
+#define change_hat(X, Y) aa_change_hat((X), (Y))
 
 __END_DECLS
 

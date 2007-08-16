@@ -13,3 +13,12 @@ APPARMOR_1.0 {
   local:
         *;
 } IMMUNIX_1.0;
+
+APPARMOR_1.1 {
+  global:
+        aa_change_hat;
+        parse_record;
+        free_record;
+  local:
+	*;
+} APPARMOR_1.0;

@@ -24,13 +24,13 @@
 
 =head1 NAME
 
-change_hat  - change to or from a "hat" within a AppArmor profile
+aa_change_hat  - change to or from a "hat" within a AppArmor profile
 
 =head1 SYNOPSIS
 
 B<#include E<lt>sys/apparmor.hE<gt>>
 
-B<int change_hat (char *subprofile, unsigned int magic_token);>
+B<int aa_change_hat (char *subprofile, unsigned long magic_token);>
 
 Link with B<-lapparmor> when compiling.
 
@@ -39,13 +39,13 @@ Link with B<-lapparmor> when compiling.
 An AppArmor profile applies to an executable program; if a portion of
 the program needs different access permissions than other portions,
 the program can "change hats" to a different role, also known as a
-subprofile. To change into a new hat, it calls the change_hat() function
-to do so. It passes in a pointer to the I<subprofile> which it wants to
-change into, and a 32bit I<magic_token>.  The I<magic_token> is used to
-return out of the subprofile at a later time.
+subprofile. To change into a new hat, it calls the aa_change_hat()
+function to do so. It passes in a pointer to the I<subprofile> which it
+wants to change into, and a 64bit I<magic_token>.  The I<magic_token>
+is used to return out of the subprofile at a later time.
 
 If a program wants to return out of the current subprofile to the
-original profile, it calls change_hat() with a pointer to NULL as
+original profile, it calls aa_change_hat() with a pointer to NULL as
 the I<subprofile>, and the original I<magic_token> value. If the
 I<magic_token> does not match the original I<magic_token> passed into the
 kernel when the program entered the subprofile, the change back to the
@@ -54,7 +54,7 @@ If the I<magic_token> matches the original token, then the process will
 change back to the original profile.
 
 If the program wants to change to a subprofile that it can never
-change back out of, the application should call change_hat() with a
+change back out of, the application should call aa_change_hat() with a
 I<magic_token> of I<0>.
 
 As both read(2) and write(2) are mediated, a file must be listed in a
@@ -97,19 +97,19 @@ process tried to change another process's domain.
 =head1 EXAMPLE
 
 The following code examples shows simple, if contrived, uses of
-change_hat(); a typical use of change_hat() will separate privileged
-portions of a process from unprivileged portions of a process, such as
-keeping unauthenticated network traffic handling separate from
-authenticated network traffic handling in OpenSSH or executing
+aa_change_hat(); a typical use of aa_change_hat() will separate
+privileged portions of a process from unprivileged portions of a process,
+such as keeping unauthenticated network traffic handling separate
+from authenticated network traffic handling in OpenSSH or executing
 user-supplied CGI scripts in apache.
 
 The use of random(3) is simply illustrative. Use of F</dev/urandom> is
 recommended.
 
-First, a simple high-level overview of change_hat() use:
+First, a simple high-level overview of aa_change_hat() use:
 
  void foo (void) {
- 	int magic_token;
+ 	unsigned long magic_token;
   
  	/* get a random magic token value
  	from our huge entropy pool */
@@ -117,7 +117,7 @@ First, a simple high-level overview of change_hat() use:
  
  	/* change into the subprofile while
  	 * we do stuff we don't trust */
- 	change_hat ("stuff_we_dont_trust", magic_token);
+ 	aa_change_hat("stuff_we_dont_trust", magic_token);
 
  	/* Go do stuff we don't trust -- this is all
  	 * done in *this* process space, no separate
@@ -125,11 +125,11 @@ First, a simple high-level overview of change_hat() use:
  	interpret_perl_stuff(stuff_from_user);
 
  	/* now change back to our original profile */
- 	change_hat (NULL, magic_token);
+ 	aa_change_hat(NULL, magic_token);
  }
 
-Second, an example to show that files not listed in a subprofile
-("hat") aren't accessible after a change_hat() call:
+Second, an example to show that files not listed in a subprofile ("hat")
+aren't accessible after an aa_change_hat() call:
 
  #include <stdlib.h>
  #include <string.h>
@@ -143,7 +143,7 @@ Second, an example to show that files not listed in a subprofile
  
  int main(int argc, char *argv[]) {
         int fd;
-        int tok;
+        unsigned long tok;
         char buf[10];
  
         /* random() is a poor choice */
@@ -164,8 +164,8 @@ Second, an example to show that files not listed in a subprofile
  
         /* change hat to the "hat" subprofile, which should not have
          * read access to /etc/passwd -- even though we have a valid
-         * file descriptor at the time of the change_hat() call. */
-        if (change_hat("hat", tok)) {
+         * file descriptor at the time of the aa_change_hat() call. */
+        if (aa_change_hat("hat", tok)) {
                 perror("Failure changing hat -- aborting");
                 _exit(1);
         }
@@ -221,7 +221,7 @@ The output when run:
 =head1 BUGS
 
 None known. If you find any, please report them to bugzilla at
-L<http://bugzilla.novell.com>. Note that change_hat(2) provides no 
+L<http://bugzilla.novell.com>. Note that aa_change_hat(2) provides no
 memory barriers between different areas of a program; if address space
 separation is required, then separate processes should be used.
 

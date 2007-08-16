@@ -2,11 +2,11 @@
 
 %{
 #include "aalogparse.h"
-extern int change_hat (const char *subprofile, unsigned int magic_token);
+extern int aa_change_hat(const char *subprofile, unsigned long magic_token);
 
 %}
 
 %include "typemaps.i"
 %include "aalogparse.h"
-extern int change_hat (const char *subprofile, unsigned int magic_token);
+extern int aa_change_hat(const char *subprofile, unsigned long magic_token);
 

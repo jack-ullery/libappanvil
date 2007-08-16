@@ -58,10 +58,10 @@ mkdir ${RPM_BUILD_ROOT}/%{_lib}
 # this is really hacky
 rm ${RPM_BUILD_ROOT}/%{_libdir}/libapparmor.so
 rm ${RPM_BUILD_ROOT}/%{_libdir}/libimmunix.so
-cp ${RPM_BUILD_ROOT}/%{_libdir}/libapparmor.so.1.0.0 ${RPM_BUILD_ROOT}/%{_lib}
-cp ${RPM_BUILD_ROOT}/%{_libdir}/libimmunix.so.1.0.0 ${RPM_BUILD_ROOT}/%{_lib}
-ln -s /%{_lib}/libapparmor.so.1.0.0 ${RPM_BUILD_ROOT}/%{_libdir}/libapparmor.so
-ln -s /%{_lib}/libimmunix.so.1.0.0 ${RPM_BUILD_ROOT}/%{_libdir}/libimmunix.so
+cp ${RPM_BUILD_ROOT}/%{_libdir}/libapparmor.so.1.0.1 ${RPM_BUILD_ROOT}/%{_lib}
+cp ${RPM_BUILD_ROOT}/%{_libdir}/libimmunix.so.1.0.1 ${RPM_BUILD_ROOT}/%{_lib}
+ln -s /%{_lib}/libapparmor.so.1.0.1 ${RPM_BUILD_ROOT}/%{_libdir}/libapparmor.so
+ln -s /%{_lib}/libimmunix.so.1.0.1 ${RPM_BUILD_ROOT}/%{_libdir}/libimmunix.so
 
 find $RPM_BUILD_ROOT -name .packlist -exec rm -f {} \;
 find $RPM_BUILD_ROOT -name perllocal.pod -exec rm -f {} \;
@@ -77,8 +77,8 @@ rm -rf "$RPM_BUILD_ROOT"
 
 %files
 %defattr(-,root,root)
-/%{_lib}/libapparmor.so.1.0.0
-/%{_lib}/libimmunix.so.1.0.0
+/%{_lib}/libapparmor.so.*
+/%{_lib}/libimmunix.so.*
 
 %files -n libapparmor-devel
 %defattr(-,root,root)
@@ -103,5 +103,6 @@ rm -rf "$RPM_BUILD_ROOT"
 * Wed Aug 15 2007 - sbeattie@suse.de
 - fix braindead symbol versioning issue with old version name
 - re-enable CFLAGS=RPM_OPT_FLAGS for build
-
+- convert change_hat(2) to aa_change_hat(2)
+- use 64bit magic token
 
