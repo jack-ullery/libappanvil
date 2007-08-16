@@ -1,6 +1,7 @@
 #
 # $Id$
 #
+OVERRIDE_TARBALL=yes
 
 include common/Make.rules
 
@@ -10,17 +11,28 @@ DIRS=parser \
      changehat/libapparmor \
      changehat/mod_apparmor \
      changehat/pam_apparmor \
+     management/apparmor-dbus \
+     management/applets/apparmorapplet-gnome \
      management/yastui \
      common \
      tests
 
 RELEASE_DIR=apparmor-${VERSION}-${REPO_VERSION}
 
-_dist: clean
+.PHONY: tarball
+tarball: _dist
+	tar cvzf ${RELEASE_DIR}.tar.gz ${RELEASE_DIR}
+
+${RELEASE_DIR}:
 	mkdir ${RELEASE_DIR}
-	for dir in ${DIRS} ; do \
-		svn export -r $(REPO_VERSION) $(REPO_URL)/$${dir} $(RELEASE_DIR)/$${dir} ; \
-	done
+
+.PHONY: _dist
+.PHONY: ${DIRS}
+
+_dist: clean ${DIRS}
 	
+${DIRS}: ${RELEASE_DIR}
+	svn export -r $(REPO_VERSION) $(REPO_URL)/$@ $(RELEASE_DIR)/$@ ; \
+
 clean:
 	-rm -rf ${RELEASE_DIR}

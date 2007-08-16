@@ -140,8 +140,10 @@ ${TARBALL}: clean ${SPECFILE}
 	$(TAR) -f $@ $(RELEASE_DIR)
 	rm -rf $(RELEASE_DIR)
 
+ifndef OVERRIDE_TARBALL
 .PHONY: tarball
 tarball: clean $(TARBALL)
+endif
 
 .PHONY: dist
 dist: clean $(SPECFILE)
