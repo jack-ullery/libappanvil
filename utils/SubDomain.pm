@@ -1445,7 +1445,6 @@ sub handlechildren {
 
                 next unless $profile && $hat;
                 my $domainchange = ($type eq "exec") ? "change" : "nochange";
-
                 # escape special characters that show up in literal paths
                 $detail =~ s/(\[|\]|\+|\*|\{|\})/\\$1/g;
 
@@ -1826,17 +1825,7 @@ sub add_audit_event_to_tree ( $$ ) {
                          $e->{denied_mask},
                          $e->{name}
                        );
-        } else {
-            add_to_tree( $e->{pid},
-                         "exec",
-                         $profile,
-                         $hat,
-                         $prog,
-                         $sdmode,
-                         $e->{denied_mask},
-                         $e->{name}
-                       );
-            }
+        }
     } elsif ($e->{operation} =~ m/file_/) {
         add_to_tree( $e->{pid},
                      "path",
@@ -3048,6 +3037,7 @@ sub repo_is_enabled {
 sub ask_to_enable_repo {
 
     my $q = { };
+    return if ( not defined $cfg->{repository}{url} );
     $q->{headers} = [
       "Repository", $cfg->{repository}{url},
     ];
@@ -4860,7 +4850,7 @@ sub write_config {
 
 sub find_first_file {
     my $list = shift;
-
+    return if ( not defined $list );
     my $filename;
     for my $f (split(/\s+/, $list)) {
         if (-f $f) {
@@ -4874,7 +4864,7 @@ sub find_first_file {
 
 sub find_first_dir {
     my $list = shift;
-
+    return if ( not defined $list );
     my $dirname;
     for my $f (split(/\s+/, $list)) {
         if (-d $f) {
