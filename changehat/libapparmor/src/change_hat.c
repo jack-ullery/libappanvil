@@ -21,7 +21,12 @@
 #include <errno.h>
 #include <limits.h>
 
-int change_hat(char *subprofile, unsigned int token)
+#define symbol_version(real, name, version) \
+		__asm__ (".symver " #real "," #name "@" #version)
+#define default_symbol_version(real, name, version) \
+		__asm__ (".symver " #real "," #name "@@" #version)
+
+int __change_hat(char *subprofile, unsigned int token)
 {
 	int rc = -1;
 	int fd, ret, len = 0, ctlerr = 0;
@@ -83,3 +88,8 @@ out:
 	}
 	return rc;
 }
+
+/* create an alias for the old change_hat@IMMUNIX_1.0 symbol */
+extern typeof((__change_hat)) __old_change_hat __attribute__((alias ("__change_hat")));
+symbol_version(__old_change_hat, change_hat, IMMUNIX_1.0);
+default_symbol_version(__change_hat, change_hat, APPARMOR_1.0);

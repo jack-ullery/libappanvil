@@ -22,7 +22,7 @@ Summary: A utility library for AppArmor
 -
 
 %package -n libapparmor-devel
-Requires:	%{name} = %{version}
+Requires:	%{name} = %{version}-%{release}
 Group:		Development/Libraries/C and C++
 Provides:	libapparmor:/usr/include/sys/apparmor.h
 Summary:	-
@@ -50,7 +50,7 @@ Summary:	-
 
 %build
 ./configure --prefix=%{_prefix} --libdir=%{_libdir} --with-perl
-make
+make CFLAGS="${RPM_OPT_FLAGS}"
 
 %install
 make install DESTDIR="$RPM_BUILD_ROOT"
@@ -100,6 +100,8 @@ rm -rf "$RPM_BUILD_ROOT"
 %{perl_vendorarch}/LibAppArmor.pm
 
 %changelog
--
+* Wed Aug 15 2007 - sbeattie@suse.de
+- fix braindead symbol versioning issue with old version name
+- re-enable CFLAGS=RPM_OPT_FLAGS for build
 
 

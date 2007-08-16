@@ -12,4 +12,4 @@ APPARMOR_1.0 {
         free_record;
   local:
         *;
-};
+} IMMUNIX_1.0;
