@@ -100,6 +100,11 @@ int __change_hat(char *subprofile, unsigned int token)
 	return aa_change_hat(subprofile, (unsigned long) token);
 }
 
+int aa_change_profile(const char *profile, unsigned long token)
+{
+	return do_change_x("changeprofile", profile, token);
+}
+
 /* create an alias for the old change_hat@IMMUNIX_1.0 symbol */
 extern typeof((__change_hat)) __old_change_hat __attribute__((alias ("__change_hat")));
 symbol_version(__old_change_hat, change_hat, IMMUNIX_1.0);

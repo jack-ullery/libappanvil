@@ -17,6 +17,7 @@ APPARMOR_1.0 {
 APPARMOR_1.1 {
   global:
         aa_change_hat;
+        aa_change_profile;
         parse_record;
         free_record;
   local:

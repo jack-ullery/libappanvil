@@ -105,4 +105,4 @@ rm -rf "$RPM_BUILD_ROOT"
 - re-enable CFLAGS=RPM_OPT_FLAGS for build
 - convert change_hat(2) to aa_change_hat(2)
 - use 64bit magic token
-
+- add aa_change_profile(2) interface
