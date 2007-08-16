@@ -456,7 +456,7 @@ msgstr "(I)nherit"
 
 #, fuzzy
 msgid "(P)rofile"
-msgstr "Profil oluşturuluyor"
+msgstr "(P)rofil oluşturuluyor"
 
 msgid "(D)eny"
 msgstr "(D)eny"
@@ -467,7 +467,7 @@ msgstr "Abo(r)t"
 # /usr/lib/YaST2/keyboard_raw.ycp:470
 #, fuzzy
 msgid "(F)inish"
-msgstr "Fince"
+msgstr "(F)ince"
 
 msgid "(A)llow"
 msgstr "(A)llow"

@@ -152,7 +152,7 @@ msgstr ""
 #: SubDomain.pm:745
 #, fuzzy
 msgid "(C)ancel"
-msgstr "Zrušiť"
+msgstr "(Z)rušiť"
 
 #: SubDomain.pm:1011 SubDomain.pm:1202 SubDomain.pm:1631 SubDomain.pm:1837
 msgid "Profile"
@@ -461,11 +461,11 @@ msgstr "(D)eny"
 # internal key used: Cancel
 #, fuzzy
 msgid "Abo(r)t"
-msgstr "Prerušiť"
+msgstr "(P)rerušiť"
 
 #, fuzzy
 msgid "(F)inish"
-msgstr "Fínska"
+msgstr "(F)ínska"
 
 msgid "(A)llow"
 msgstr "(A)llow"

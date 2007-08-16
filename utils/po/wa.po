@@ -148,7 +148,7 @@ msgstr ""
 #: SubDomain.pm:745
 #, fuzzy
 msgid "(C)ancel"
-msgstr "&Rinoncî"
+msgstr "(R)inoncî"
 
 #: SubDomain.pm:1011 SubDomain.pm:1202 SubDomain.pm:1631 SubDomain.pm:1837
 msgid "Profile"

@@ -187,7 +187,7 @@ msgstr "(S)ì"
 #: SubDomain.pm:705
 #: SubDomain.pm:744
 msgid "(N)o"
-msgstr "No"
+msgstr "(N)o"
 
 #: SubDomain.pm:745
 msgid "(C)ancel"
@@ -566,7 +566,7 @@ msgstr "(E)redita"
 
 # TLABEL modules/inst_config_x11.ycp:578
 msgid "(P)rofile"
-msgstr "Nuovo profilo"
+msgstr "Nuovo (p)rofilo"
 
 # TLABEL modules/inst_config_x11.ycp:578
 msgid "(D)eny"
@@ -574,7 +574,7 @@ msgstr "(N)ega"
 
 # TLABEL modules/inst_config_x11.ycp:578
 msgid "Abo(r)t"
-msgstr "Interrompi"
+msgstr "Inte(r)rompi"
 
 # TLABEL modules/inst_config_x11.ycp:578
 msgid "(F)inish"
@@ -582,11 +582,11 @@ msgstr "(F)inisci"
 
 # TLABEL modules/inst_config_x11.ycp:578
 msgid "(A)llow"
-msgstr "Tutte"
+msgstr "(T)utte"
 
 # TLABEL modules/dialup/dialup.ycp:731
 msgid "(N)ew"
-msgstr "Nuovo"
+msgstr "(N)uovo"
 
 # TLABEL timezone.ycp.in:354
 msgid "(G)lob"

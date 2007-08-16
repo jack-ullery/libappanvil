@@ -475,7 +475,7 @@ msgstr "Abo(r)t"
 
 #, fuzzy
 msgid "(F)inish"
-msgstr "Finès"
+msgstr "(F)inès"
 
 msgid "(A)llow"
 msgstr "(A)llow"

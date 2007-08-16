@@ -155,7 +155,7 @@ msgstr "(S)im"
 
 #: SubDomain.pm:705 SubDomain.pm:744
 msgid "(N)o"
-msgstr "Não"
+msgstr "(N)ão"
 
 #: SubDomain.pm:745
 msgid "(C)ancel"
@@ -470,25 +470,25 @@ msgid "(I)nherit"
 msgstr "(H)erdar"
 
 msgid "(P)rofile"
-msgstr "Novo Perfil"
+msgstr "Novo (P)erfil"
 
 msgid "(D)eny"
 msgstr "(N)egar"
 
 msgid "Abo(r)t"
-msgstr "Abortar"
+msgstr "Abo(r)tar"
 
 msgid "(F)inish"
 msgstr "(C)oncluir"
 
 msgid "(A)llow"
-msgstr "Todos"
+msgstr "(T)odos"
 
 msgid "(N)ew"
 msgstr "(N)ovo"
 
 msgid "(G)lob"
-msgstr "Global"
+msgstr "(G)lobal"
 
 msgid "Glob w/(E)xt"
 msgstr "Glob c/(E)xt"

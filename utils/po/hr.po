@@ -477,7 +477,7 @@ msgstr "(I)nherit"
 
 #, fuzzy
 msgid "(P)rofile"
-msgstr "Profil"
+msgstr "(P)rofil"
 
 msgid "(D)eny"
 msgstr "(D)eny"
@@ -487,7 +487,7 @@ msgstr "Abo(r)t"
 
 #, fuzzy
 msgid "(F)inish"
-msgstr "Finski"
+msgstr "(F)inski"
 
 msgid "(A)llow"
 msgstr "(A)llow"

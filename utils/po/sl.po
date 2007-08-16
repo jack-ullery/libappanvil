@@ -154,7 +154,7 @@ msgstr ""
 #: SubDomain.pm:745
 #, fuzzy
 msgid "(C)ancel"
-msgstr "Prekini"
+msgstr "P(r)ekini"
 
 #: SubDomain.pm:1011 SubDomain.pm:1202 SubDomain.pm:1631 SubDomain.pm:1837
 #, fuzzy
@@ -459,18 +459,18 @@ msgstr "(I)nherit"
 
 #, fuzzy
 msgid "(P)rofile"
-msgstr "&Profili"
+msgstr "(P)rofili"
 
 msgid "(D)eny"
 msgstr "(D)eny"
 
 #, fuzzy
 msgid "Abo(r)t"
-msgstr "Prekini"
+msgstr "P(r)ekini"
 
 #, fuzzy
 msgid "(F)inish"
-msgstr "Finska"
+msgstr "(F)inska"
 
 msgid "(A)llow"
 msgstr "(A)llow"

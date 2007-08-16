@@ -156,16 +156,16 @@ msgstr "%s nem található."
 
 #: SubDomain.pm:704 SubDomain.pm:743
 msgid "(Y)es"
-msgstr "Igen"
+msgstr "(I)gen"
 
 #: SubDomain.pm:705 SubDomain.pm:744
 msgid "(N)o"
-msgstr "Nem"
+msgstr "(N)em"
 
 # cancel button label
 #: SubDomain.pm:745
 msgid "(C)ancel"
-msgstr "Mégsem"
+msgstr "(M)égsem"
 
 #: SubDomain.pm:1011 SubDomain.pm:1202 SubDomain.pm:1631 SubDomain.pm:1837
 msgid "Profile"
@@ -484,30 +484,30 @@ msgid "Fatal Error.  getArchReport() couldn't open %s"
 msgstr "Végzetes hiba.  A getArchReport() nem tudta megnyitni a(z) %s nevű fájlt"
 
 msgid "(I)nherit"
-msgstr "Öröklés"
+msgstr "Ö(r)öklés"
 
 msgid "(P)rofile"
-msgstr "Profil"
+msgstr "(P)rofil"
 
 msgid "(D)eny"
-msgstr "Visszautasítás"
+msgstr "(V)isszautasítás"
 
 # modules/inst_custom_part.ycp:287 modules/inst_custom_part.ycp:293
 # modules/inst_custom_part.ycp:372 modules/inst_custom_part.ycp:378
 msgid "Abo(r)t"
-msgstr "Elvet"
+msgstr "E(l)vet"
 
 msgid "(F)inish"
-msgstr "Befejezés"
+msgstr "(B)efejezés"
 
 msgid "(A)llow"
-msgstr "Engedélyezés"
+msgstr "E(n)gedélyezés"
 
 msgid "(N)ew"
-msgstr "Új"
+msgstr "Ú(j)"
 
 msgid "(G)lob"
-msgstr "Globális"
+msgstr "(G)lobális"
 
 msgid "Glob w/(E)xt"
 msgstr "Glob és (E)xt"
@@ -536,7 +536,7 @@ msgid "&Back"
 msgstr "V&issza"
 
 msgid "(S)can system log for SubDomain events"
-msgstr "Aldomain események keresése a rendszernaplóban"
+msgstr "(A)ldomain események keresése a rendszernaplóban"
 
 # ###############################################################################
 # Old yast2-agents.po

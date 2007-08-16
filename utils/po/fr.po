@@ -552,7 +552,7 @@ msgstr "(A)utoriser"
 
 # TLABEL network_2002_03_14_2340__57
 msgid "(N)ew"
-msgstr "Nouveau"
+msgstr "(N)ouveau"
 
 # TLABEL timezone_db_2002_01_04_0147__145
 msgid "(G)lob"

@@ -148,7 +148,7 @@ msgstr ""
 #: SubDomain.pm:745
 #, fuzzy
 msgid "(C)ancel"
-msgstr "Renunţă"
+msgstr "(R)enunţă"
 
 #: SubDomain.pm:1011 SubDomain.pm:1202 SubDomain.pm:1631 SubDomain.pm:1837
 msgid "Profile"
@@ -442,7 +442,7 @@ msgstr "Abo(r)t"
 
 #, fuzzy
 msgid "(F)inish"
-msgstr "Finlandeză"
+msgstr "(F)inlandeză"
 
 msgid "(A)llow"
 msgstr "(A)llow"

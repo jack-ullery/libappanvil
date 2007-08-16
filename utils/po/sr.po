@@ -443,7 +443,7 @@ msgstr "Abo(r)t"
 
 #, fuzzy
 msgid "(F)inish"
-msgstr "Finska"
+msgstr "(F)inska"
 
 msgid "(A)llow"
 msgstr "(A)llow"

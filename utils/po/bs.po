@@ -443,11 +443,11 @@ msgstr "(D)eny"
 
 #, fuzzy
 msgid "Abo(r)t"
-msgstr "Odustani"
+msgstr "(O)dustani"
 
 #, fuzzy
 msgid "(F)inish"
-msgstr "Finski"
+msgstr "(F)inski"
 
 msgid "(A)llow"
 msgstr "(A)llow"

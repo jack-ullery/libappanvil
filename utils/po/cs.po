@@ -483,10 +483,10 @@ msgid "Abo(r)t"
 msgstr "Pře(r)ušit"
 
 msgid "(F)inish"
-msgstr "Konec"
+msgstr "(K)onec"
 
 msgid "(A)llow"
-msgstr "Povolit"
+msgstr "P(o)volit"
 
 msgid "(N)ew"
 msgstr "(N)ový"

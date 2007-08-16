@@ -444,7 +444,7 @@ msgstr "Abo(r)t"
 
 #, fuzzy
 msgid "(F)inish"
-msgstr "Yn gorffen"
+msgstr "Yn (g)orffen"
 
 msgid "(A)llow"
 msgstr "(A)llow"

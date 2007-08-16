@@ -217,7 +217,7 @@ msgstr "(S)í"
 # include/ui/common_messages.ycp:51
 #: SubDomain.pm:705 SubDomain.pm:744
 msgid "(N)o"
-msgstr "No"
+msgstr "(N)o"
 
 #: SubDomain.pm:745
 msgid "(C)ancel"
@@ -624,7 +624,7 @@ msgstr "(H)eredar"
 
 # include/nis_server/io.ycp:567
 msgid "(P)rofile"
-msgstr "Nuevo perfil"
+msgstr "Nuevo (p)erfil"
 
 # include/nis_server/io.ycp:567
 msgid "(D)eny"
@@ -645,7 +645,7 @@ msgstr "(P)ermitir"
 
 # include/network/summary.ycp:101
 msgid "(N)ew"
-msgstr "Nuevo"
+msgstr "(N)uevo"
 
 # /usr/lib/YaST2/timezone_raw.ycp:146
 msgid "(G)lob"
