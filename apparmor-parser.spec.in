@@ -160,9 +160,11 @@ fi
 %preun
 if [ "$1" = 0 ] ; then
 %if %{distro} == "suse"
+  /sbin/insserv -r aaeventd
   /sbin/insserv -r boot.apparmor
 %endif
 %if %{distro} == "redhat" || %{distro} == "rhel4"
+  chkconfig --del aaeventd
   chkconfig --del apparmor
 %endif
 fi
@@ -173,6 +175,8 @@ fi
 %endif
 
 %changelog
+* Fri Aug 17 2007 - sbeattie@suse.de
+- disable aaeventd before uninstall [#301418]
 * Fri Jul 27 2007 - sbeattie@suse.de
 - Allow inverted character classes in unquoted pathnames
 - Fix return code propogation in initscripts
