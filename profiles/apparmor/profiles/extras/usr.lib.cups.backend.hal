@@ -1,0 +1,7 @@
+# Last Modified: Tue Aug 14 21:25:26 2007
+#include <tunables/global>
+/usr/lib/cups/backend/hal  {
+  #include <abstractions/base>
+
+  /usr/lib/cups/backend/hal mr,
+}

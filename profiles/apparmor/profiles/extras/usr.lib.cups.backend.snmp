@@ -1,0 +1,9 @@
+# Last Modified: Tue Aug 14 21:25:30 2007
+#include <tunables/global>
+/usr/lib/cups/backend/snmp  {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+
+  /usr/lib/cups/backend/snmp mr,
+}

@@ -1,4 +1,4 @@
-# Last Modified: Thu Aug  2 14:28:49 2007
+# Last Modified: Wed Aug 15 10:55:46 2007
 # $Id$
 # ------------------------------------------------------------------
 #
@@ -25,6 +25,7 @@
   /usr/sbin/nscd rmix,
   /var/lib/samba/winbindd_privileged/pipe rw,
   /var/run/.nscd_socket wl,
+  /var/run/avahi-daemon/socket w,
   /var/run/nscd/ r,
   /var/run/nscd/db* wl,
   /var/run/nscd/services rw,

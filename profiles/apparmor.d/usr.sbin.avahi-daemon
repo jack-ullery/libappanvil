@@ -1,6 +1,6 @@
-# Last Modified: Thu Aug  2 14:39:23 2007
+# Last Modified: Wed Aug 15 10:55:46 2007
 #include <tunables/global>
-/usr/sbin/avahi-daemon flags=(complain) {
+/usr/sbin/avahi-daemon {
   #include <abstractions/base>
   #include <abstractions/consoles>
   #include <abstractions/nameservice>
@@ -8,10 +8,8 @@
   capability chown,
   capability dac_override,
   capability kill,
-  capability setgid,
   capability setuid,
-
-  network inet dgram,
+  capability setgid,
 
   /etc/avahi/ r,
   /etc/avahi/avahi-daemon.conf r,
