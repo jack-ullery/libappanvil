@@ -468,25 +468,25 @@ msgid "(I)nherit"
 msgstr "(V)ererben"
 
 msgid "(P)rofile"
-msgstr "Neues Profil"
+msgstr "Neues (P)rofil"
 
 msgid "(D)eny"
 msgstr "(V)erweigern"
 
 msgid "Abo(r)t"
-msgstr "Abbrechen"
+msgstr "Abb(r)echen"
 
 msgid "(F)inish"
 msgstr "(B)eenden"
 
 msgid "(A)llow"
-msgstr "Alle"
+msgstr "(A)lle"
 
 msgid "(N)ew"
 msgstr "(N)eu"
 
 msgid "(G)lob"
-msgstr "Global"
+msgstr "(G)lobal"
 
 msgid "Glob w/(E)xt"
 msgstr "Glob mit (E)xt"
