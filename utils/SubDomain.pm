@@ -845,7 +845,7 @@ sub autodep ($) {
     my $bin = shift;
     %extras = ();
 
-    unless ($repo_cfg) {
+    unless ($repo_cfg || not defined $cfg->{repository}{url}) {
         $repo_cfg = read_config("repository.conf");
         if ( (not defined $repo_cfg->{repository}) ||
              ($repo_cfg->{repository}{enabled} eq "later") ) {
@@ -3025,7 +3025,8 @@ sub matchnetincludes ($$$$) {
 sub repo_is_enabled {
 
     my $enabled;
-    if ($repo_cfg &&
+    if ($cfg->{repository}{url} &&
+        $repo_cfg &&
         $repo_cfg->{repository}{enabled} &&
         $repo_cfg->{repository}{enabled} eq "yes") {
         $enabled = 1;
@@ -3237,7 +3238,7 @@ sub do_logprof_pass {
     # we need to be able to break all the way out of deep into subroutine calls
     # if they select "Finish" so we can take them back out to the genprof prompt
     eval {
-        unless ($repo_cfg) {
+        unless ($repo_cfg || not defined $cfg->{repository}{url}) {
             $repo_cfg = read_config("repository.conf");
             unless ($repo_cfg->{repository}{enabled} eq "yes" ||
                     $repo_cfg->{repository}{enabled} eq "no") {
