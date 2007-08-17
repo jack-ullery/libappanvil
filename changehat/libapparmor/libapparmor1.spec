@@ -37,7 +37,7 @@ Summary:	-
 /sbin/ldconfig
 
 %package -n perl-libapparmor
-Requires:	%{name} = %{version} 
+Requires:	%{name} = %{version}
 Requires:	perl = %{perl_version}
 Group:		Development/Libraries/Perl
 Summary:	-
@@ -66,7 +66,7 @@ find $RPM_BUILD_ROOT -name .packlist -exec rm -f {} \;
 find $RPM_BUILD_ROOT -name perllocal.pod -exec rm -f {} \;
 
 # create symlink for old change_hat(2) manpage
-ln -s aa_change_hat ${RPM_BUILD_ROOT}/%{_mandir}/man2/change_hat
+ln -s aa_change_hat.2 ${RPM_BUILD_ROOT}/%{_mandir}/man2/change_hat.2
 %clean
 rm -rf "$RPM_BUILD_ROOT"
 
@@ -100,6 +100,8 @@ rm -rf "$RPM_BUILD_ROOT"
 %{perl_vendorarch}/LibAppArmor.pm
 
 %changelog
+* Fri Aug 17 2007 - sbeattie@suse.de
+- Fix broken symlink for old change_hat(2) manpage
 * Wed Aug 15 2007 - sbeattie@suse.de
 - fix braindead symbol versioning issue with old version name
 - re-enable CFLAGS=RPM_OPT_FLAGS for build
