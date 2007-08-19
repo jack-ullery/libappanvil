@@ -1,0 +1,7 @@
+AUTOMAKE_OPTIONS = foreign 1.4
+
+SRCDIR = src
+
+SUBDIRS = src
+
+EXTRA_DIST = AUTHORS ChangeLog COPYING INSTALL NEWS README doxygen.cfg
