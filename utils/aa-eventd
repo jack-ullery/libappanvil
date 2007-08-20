@@ -33,6 +33,7 @@ use Time::Local;
 use File::Tail;
 
 use Immunix::Severity;
+require LibAppArmor;
 
 ##########################################################################
 # locations
@@ -93,6 +94,7 @@ my $inserts = 0;
 my $total   = 0;
 
 my @commit_buffer;
+my @debug_buffer;
 
 my @verbose_buffer;
 my @summary_buffer;
@@ -101,31 +103,41 @@ my @terse_buffer;
 my $date_module = "None";
 
 my %templates = (
-    "path"                => "(time,counter,type,profile,sdmode,mode,resource,prog,pid,severity)   VALUES(?,?,'path',?,?,?,?,?,?,?)",
-    "link"                => "(time,counter,type,profile,sdmode,resource,target,prog,pid,severity) VALUES(?,?,'link',?,?,?,?,?,?,?)",
-    "chattr"              => "(time,counter,type,profile,sdmode,resource,mode,prog,pid,severity)   VALUES(?,?,'chattr',?,?,?,?,?,?,?)",
-    "capability"          => "(time,counter,type,profile,sdmode,resource,prog,pid,severity)        VALUES(?,?,'capability',?,?,?,?,?,?)",
-    "unknown_hat"         => "(time,counter,type,profile,sdmode,resource,pid)                      VALUES(?,?,'unknown_hat',?,?,?,?)",
-    "fork"                => "(time,counter,type,profile,sdmode,pid,resource)                      VALUES(?,?,'fork',?,?,?,?)",
-    "changing_profile"    => "(time,counter,type,profile,sdmode,pid)                               VALUES(?,?,'changing_profile',?,?,?)",
-    "profile_replacement" => "(time,counter,type,profile,sdmode,prog,pid,severity)                 VALUES(?,?,'profile_replacement',?,?,?,?,?)",
-    "removed"             => "(time,counter,type,severity)                                         VALUES(?,?,'removed',?)",
-    "initialized"         => "(time,counter,type,resource,severity)                                VALUES(?,?,'initialized',?,?)",
-    "ctrl_var"            => "(time,counter,type,resource,mode,severity)                           VALUES(?,?,'ctrl_var',?,?,?)",
+    "path"                => "(time,counter,type,op,profile,sdmode,mode_deny,resource,prog,pid,severity) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+    "link"                => "(time,counter,type,op,profile,sdmode,resource,target,prog,pid,severity)    VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+    "chattr"              => "(time,counter,type,op,profile,sdmode,resource,mode_deny,prog,pid,severity) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+    "capability"          => "(time,counter,type,op,profile,sdmode,resource,prog,pid,severity)           VALUES(?,?,?,?,?,?,?,?,?,?)",
+    "capable"             => "(time,counter,type,op,prog,pid,profile)                                    VALUES(?,?,?,?,?,?,?)",
+    "unknown_hat"         => "(time,counter,type,op,profile,sdmode,resource,pid)                         VALUES(?,?,?,?,?,?,?,?)",
+    "fork"                => "(time,counter,type,op,profile,sdmode,pid,resource)                         VALUES(?,?,?,?,?,?,?,?)",
+    "changing_profile"    => "(time,counter,type,op,profile,sdmode,pid)                                  VALUES(?,?,?,?,?,?,?)",
+    "profile_replacement" => "(time,counter,type,op,profile,sdmode,prog,pid,severity)                    VALUES(?,?,?,?,?,?,?,?,?)",
+	"net"                 => "(time,counter,type,op,net_family,net_socktype,net_proto,pid,profile)       VALUES(?,?,?,?,?,?,?,?,?)",
+    "removed"             => "(time,counter,type,op,severity)                                            VALUES(?,?,?,?,?)",
+    "initialized"         => "(time,counter,type,op,resource,severity)                                   VALUES(?,?,?,?,?,?)",
+    "ctrl_var"            => "(time,counter,type,op,resource,mode_deny,severity)                         VALUES(?,?,?,?,?,?,?)",
+	"profile_load"        => "(time,counter,type,op,resource,prog,pid)                                   VALUES(?,?,?,?,?,?,?)",
 );
 
 ##########################################################################
 # generic functions
 
+sub new_errlog {
+	my @msgList = @_;
+    my $localtime = localtime(time);
+	for my $arr (@msgList) { 
+		my $msg = join(", ", @msgList);
+	    print ERRLOG "[$localtime] $msg\n";
+	}
+}
+
 sub errlog ($) {
     my $mesg = shift;
-
     my $localtime = localtime(time);
     print ERRLOG "[$localtime] $mesg\n";
 }
 
 sub readconfig () {
-
     my $cfg = {};
 
     # record when we read the config file
@@ -174,7 +186,7 @@ sub parsedate ($) {
 sub connect_database ($) {
     my $dbdir = shift;
 
-    my $dbh = DBI->connect("dbi:SQLite:dbname=$dbdir/events.db", "", "");
+    my $dbh = DBI->connect("dbi:SQLite:dbname=$dbdir/events.db", "", "", {RaiseError=>1});
 
     # we'll do the commits ourselves so performance doesn't suck
     $dbh->{AutoCommit} = 0;
@@ -199,36 +211,45 @@ sub connect_database ($) {
 
         $dbh->do("CREATE TABLE info (name,value)");
         $sth = $dbh->prepare("INSERT INTO info(name,value) VALUES(?,?)");
-        $sth->execute("version", "0.1");
+        $sth->execute("version", "0.2");
         $sth->execute("host",    "$host");
     }
 
-    # create the events table
+	# create the events table
     unless ($existing_tables{events}) {
         $dbh->do(
             "CREATE TABLE events (
                 id       INTEGER PRIMARY KEY AUTOINCREMENT,
                 time     INTEGER NOT NULL,
                 counter  INTEGER NOT NULL,
+                op,
                 pid,
                 sdmode,
                 type,
-                mode,
+                mode_deny,
+                mode_req,
                 resource,
                 target,
                 profile,
                 prog,
+                name_alt,
+                attr,
+                parent,
+                active_hat,
+                net_family,
+                net_proto,
+                net_socktype,
                 severity INTEGER
-              )"
+             )"
         );
 
         # set up the indexes we want
-        my @indexes = qw(time type sdmode mode resource profile prog severity);
+        #my @indexes = qw(time type sdmode mode resource profile prog severity);
+        my @indexes = qw(time type op sdmode mode_deny resource profile prog severity);
         for my $index (@indexes) {
             $dbh->do("CREATE INDEX " . $index . "_idx ON events($index)");
         }
     }
-
     # make sure our changes actually get saved
     $dbh->commit || errlog "Error commiting changes: $!";
 
@@ -401,35 +422,82 @@ sub fork_into_background {
 }
 
 ##########################################################################
+# Parse event record into key-value pairs
+sub parseEvent($) {
+
+    my %ev = ();
+    my $msg = shift;
+	chomp($msg);
+
+	errlog "Event: $msg";
+    my $event = LibAppArmor::parse_record($msg);
+
+	# resource is an alternate term for 'name1' below
+	# mode is an alternate term for 'mode-deny' below
+    $ev{'op'} = LibAppArmor::aa_log_record::swig_operation_get($event);
+    $ev{'pid'} = LibAppArmor::aa_log_record::swig_pid_get($event);
+    $ev{'mode-deny'} = LibAppArmor::aa_log_record::swig_denied_mask_get($event);
+    $ev{'mode-req'} = LibAppArmor::aa_log_record::swig_requested_mask_get($event);
+    $ev{'profile'}= LibAppArmor::aa_log_record::swig_profile_get($event);
+    $ev{'prog'} = LibAppArmor::aa_log_record::swig_name_get($event);
+    $ev{'name2'} = LibAppArmor::aa_log_record::swig_name2_get($event);
+    $ev{'attr'} = LibAppArmor::aa_log_record::swig_attribute_get($event);
+    $ev{'parent'} = LibAppArmor::aa_log_record::swig_parent_get($event);
+    $ev{'magic_token'} = LibAppArmor::aa_log_record::swig_magic_token_get($event);
+    $ev{'resource'} = LibAppArmor::aa_log_record::swig_info_get($event);
+    $ev{'active_hat'} = LibAppArmor::aa_log_record::swig_active_hat_get($event);
+    $ev{'sdmode'} = LibAppArmor::aa_log_record::swig_event_get($event);
+
+	# NetDomain 
+	if ( $ev{'op'} && $ev{'op'} =~ /socket/ ) {
+		next if $ev{'op'} =~ /create/;
+		$ev{'net_family'} = LibAppArmor::aa_log_record::swig_net_family_get($event);
+		$ev{'net_proto'} = LibAppArmor::aa_log_record::swig_net_protocol_get($event);
+		$ev{'net_socktype'} = LibAppArmor::aa_log_record::swig_net_sock_type_get($event);
+	}
+
+    LibAppArmor::free_record($event);
+
+    # remove null responses
+    for (keys(%ev)) {
+        if ( $ev{$_} !~ /\w+/) {delete($ev{$_}); }
+		#errlog "EVENT:  $_ is $ev{$_}";
+    }
+
+    if ( $ev{'sdmode'} ) {
+        #0 = invalid, 1 = error, 2 = AUDIT, 3 = ALLOW/PERMIT,
+        #4 = DENIED/REJECTED, 5 = HINT, 6 = STATUS/config change
+        if    ( $ev{'sdmode'} == 2 ) { $ev{'sdmode'} = "AUDITING"; }
+        elsif ( $ev{'sdmode'} == 3 ) { $ev{'sdmode'} = "PERMITING"; }
+        elsif ( $ev{'sdmode'} == 4 ) { $ev{'sdmode'} = "REJECTING"; }
+        else  { delete($ev{'action'}); }
+    }
+
+    return \%ev;
+}
 
 sub process_event ($$) {
+
     my $dbh    = shift;
     my $logmsg = shift;
     my $sth;
+    my $severity = "";
+	my @eventList = ();
+	my $type = undef;
+	my $time = undef;
 
-    my ($time, $mesg);
-    if ($logmsg =~ /^(?:type=(?:APPARMOR|UNKNOWN\[1500\]) msg=|$REdate\s+\S+\s+(?:kernel:\s+)*)audit\((\d+).\d+:\d+\): (.+)$/) {
-        ($time, $mesg) = ($1, $2);
+	return unless $logmsg && $logmsg =~ /APPARMOR/;
+	my $ev = parseEvent($logmsg);
 
-        # have we rolled over to another second yet?
-        if ($time ne $lasttime) {
-            $counter   = 0;
-            $timestamp = $time;
-            $lasttime  = $time;
-        }
-    } elsif ($logmsg =~ /^\s*($REdate)\s+\S+\s+(?:kernel:\s+)*(SubDomain|AppArmor):\s+(.+)$/) {
-        ($time, $mesg) = ($1, $3);
+    # skip logprof hints
+    if ( ! $ev->{'op'} || $ev->{'op'} eq 'clone') { return; }
 
-        # have we rolled over to another second yet?
-        if ($time ne $lasttime) {
-            $counter   = 0;
-            $timestamp = parsedate($time);
-            $lasttime  = $time;
-        }
-    } else {
+	$time = time;		# XXX - do we want current time or $ev->{'time'}?
 
-        # not one of ours, just return
-        return;
+    if ($time ne $lasttime) {
+        $counter   = 0;
+        $timestamp = $time;
+        $lasttime  = $time;
     }
 
     $counter++;
@@ -449,290 +517,9 @@ sub process_event ($$) {
         $last_inserted_time = undef;
     }
 
-    # workaround for syslog uglyness.
-    if ($mesg =~ s/(PERMITTING|REJECTING|AUDITING)-SYSLOGFIX/$1/) {
-        $mesg =~ s/%%/%/g;
-    }
-
-    if ($mesg =~ /(PERMITTING|REJECTING|AUDITING) (\S+) access to (.+?) \((\S+)\((\d+)\) profile (\S+) active (\S+)\)/) {
-        my ($sdmode, $mode, $resource, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
-
-        $profile .= "^$hat" if $profile ne $hat;
-
-        my $severity = "";
-        if ($sdmode eq "REJECTING") {
-            $severity = $sevdb->rank($resource, $mode);
-
-            # we only do notification for enforce mode events
-            if ($config->{verbose_freq}) {
-                if (   ($severity >= $config->{verbose_level})
-                    || (($severity == -1) && $config->{verbose_unknown}))
-                {
-                    push @verbose_buffer, [ $timestamp, $counter, $logmsg ];
-                }
-            }
-
-            if ($config->{summary_freq}) {
-                if (   ($severity >= $config->{summary_level})
-                    || (($severity == -1) && $config->{summary_unknown}))
-                {
-                    push @summary_buffer, [ $timestamp, $counter, "path", $prog, $mode, $resource ];
-                }
-            }
-
-            if ($config->{terse_freq}) {
-                if (   ($severity >= $config->{terse_level})
-                    || (($severity == -1) && $config->{terse_unknown}))
-                {
-                    push @terse_buffer, [ $timestamp, $counter, "dummy" ];
-                }
-            }
-
-        }
-
-        push @commit_buffer, [ "path", $timestamp, $counter, $profile, $sdmode, $mode, $resource, $prog, $pid, $severity ];
-        $inserts++;
-
-    } elsif ($mesg =~ /(PERMITTING|REJECTING|AUDITING) link access from (.+?) to (.+?) \((\S+)\((\d+)\) profile (\S+) active (\S+)\)/) {
-        my ($sdmode, $link, $target, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
-
-        $profile .= "^$hat" if $profile ne $hat;
-
-        my $severity = "";
-        if ($sdmode eq "REJECTING") {
-            $severity = $sevdb->rank($target, "l");
-
-            # we only do notification for enforce mode events
-            if ($config->{verbose_freq}) {
-                if (   ($severity >= $config->{verbose_level})
-                    || (($severity == -1) && $config->{verbose_unknown}))
-                {
-                    push @verbose_buffer, [ $timestamp, $counter, $logmsg ];
-                }
-            }
-
-            if ($config->{summary_freq}) {
-                if (   ($severity >= $config->{summary_level})
-                    || (($severity == -1) && $config->{summary_unknown}))
-                {
-                    push @summary_buffer, [ $timestamp, $counter, "link", $prog, $link, $target ];
-                }
-            }
-
-            if ($config->{terse_freq}) {
-                if (   ($severity >= $config->{terse_level})
-                    || (($severity == -1) && $config->{terse_unknown}))
-                {
-                    push @terse_buffer, [ $timestamp, $counter ];
-                }
-            }
-        }
-
-        push @commit_buffer, [ "link", $timestamp, $counter, $profile, $sdmode, $link, $target, $prog, $pid, $severity ];
-        $inserts++;
-
-    } elsif ($mesg =~ /(PERMITTING|REJECTING|AUDITING) attribute \((\S*)\) change to (.+)? \((\S+)\((\d+)\) profile (\S+) active (\S+)\)/) {
-        my ($sdmode, $attrch, $resource, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
-
-        $profile .= "^$hat" if $profile ne $hat;
-
-        my $severity = "";
-        if ($sdmode eq "REJECTING") {
-            $severity = $sevdb->rank($resource, "w");
-
-            # we only do notification for enforce mode events
-            if ($config->{verbose_freq}) {
-                if (   ($severity >= $config->{verbose_level})
-                    || (($severity == -1) && $config->{verbose_unknown}))
-                {
-                    push @verbose_buffer, [ $timestamp, $counter, $logmsg ];
-                }
-            }
-
-            if ($config->{summary_freq}) {
-                if (   ($severity >= $config->{summary_level})
-                    || (($severity == -1) && $config->{summary_unknown}))
-                {
-                    push @summary_buffer, [ $timestamp, $counter, "attrch", $prog, $resource, $attrch ];
-                }
-            }
-
-            if ($config->{terse_freq}) {
-                if (   ($severity >= $config->{terse_level})
-                    || (($severity == -1) && $config->{terse_unknown}))
-                {
-                    push @terse_buffer, [ $timestamp, $counter ];
-                }
-            }
-        }
-
-        push @commit_buffer, [ "chattr", $timestamp, $counter, $profile, $sdmode, $resource, $attrch, $prog, $pid, $severity ];
-        $inserts++;
-
-    } elsif (m/(PERMITTING|REJECTING) (?:mk|rm)dir on (.+) \((\S+)\((\d+)\) profile (\S+) active (\S+)\)/) {
-        my ($sdmode, $resource, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6);
-
-        $profile .= "^$hat" if $profile ne $hat;
-
-        my $mode = "w";
-
-        my $severity = "";
-        if ($sdmode eq "REJECTING") {
-            $severity = $sevdb->rank($resource, $mode);
-
-            # we only do notification for enforce mode events
-            if ($config->{verbose_freq}) {
-                if (   ($severity >= $config->{verbose_level})
-                    || (($severity == -1) && $config->{verbose_unknown}))
-                {
-                    push @verbose_buffer, [ $timestamp, $counter, $logmsg ];
-                }
-            }
-
-            if ($config->{summary_freq}) {
-                if (   ($severity >= $config->{summary_level})
-                    || (($severity == -1) && $config->{summary_unknown}))
-                {
-                    push @summary_buffer, [ $timestamp, $counter, "path", $prog, $mode, $resource ];
-                }
-            }
-
-            if ($config->{terse_freq}) {
-                if (   ($severity >= $config->{terse_level})
-                    || (($severity == -1) && $config->{terse_unknown}))
-                {
-                    push @terse_buffer, [ $timestamp, $counter, "dummy" ];
-                }
-            }
-
-        }
-
-        push @commit_buffer, [ "path", $timestamp, $counter, $profile, $sdmode, $mode, $resource, $prog, $pid, $severity ];
-        $inserts++;
-    } elsif (/(PERMITTING|REJECTING) xattr (\S+) on (.+) \((\S+)\((\d+)\) profile (\S+) active (\S+)\)/) {
-        my ($sdmode, $xattr_op, $resource, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
-
-        $profile .= "^$hat" if $profile ne $hat;
-
-        my $mode;
-        if ($xattr_op eq "get" || $xattr_op eq "list") {
-            $mode = "r";
-        } elsif ($xattr_op eq "set" || $xattr_op eq "remove") {
-            $mode = "w";
-        }
-
-        my $severity = "";
-        if ($sdmode eq "REJECTING") {
-            $severity = $sevdb->rank($resource, $mode);
-
-            # we only do notification for enforce mode events
-            if ($config->{verbose_freq}) {
-                if (   ($severity >= $config->{verbose_level})
-                    || (($severity == -1) && $config->{verbose_unknown}))
-                {
-                    push @verbose_buffer, [ $timestamp, $counter, $logmsg ];
-                }
-            }
-
-            if ($config->{summary_freq}) {
-                if (   ($severity >= $config->{summary_level})
-                    || (($severity == -1) && $config->{summary_unknown}))
-                {
-                    push @summary_buffer, [ $timestamp, $counter, "path", $prog, $mode, $resource ];
-                }
-            }
-
-            if ($config->{terse_freq}) {
-                if (   ($severity >= $config->{terse_level})
-                    || (($severity == -1) && $config->{terse_unknown}))
-                {
-                    push @terse_buffer, [ $timestamp, $counter, "dummy" ];
-                }
-            }
-
-        }
-
-        push @commit_buffer, [ "path", $timestamp, $counter, $profile, $sdmode, $mode, $resource, $prog, $pid, $severity ];
-        $inserts++;
-
-    } elsif ($mesg =~ /(PERMITTING|REJECTING|AUDITING) access to capability '(.+?)' \((\S+)\((\d+)\) profile (\S+) active (\S+)\)/) {
-        my ($sdmode, $capability, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
-
-        $profile .= "^$hat" if $profile ne $hat;
-
-        my $severity = "";
-        if ($sdmode eq "REJECTING") {
-            $severity = $sevdb->rank(uc("cap_$capability"));
-
-            # we only do notification for enforce mode events
-            if ($config->{verbose_freq}) {
-                if (   ($severity >= $config->{verbose_level})
-                    || (($severity == -1) && $config->{verbose_unknown}))
-                {
-                    push @verbose_buffer, [ $timestamp, $counter, $logmsg ];
-                }
-            }
-
-            if ($config->{summary_freq}) {
-                if (   ($severity >= $config->{summary_level})
-                    || (($severity == -1) && $config->{summary_unknown}))
-                {
-                    push @summary_buffer, [ $timestamp, $counter, "capability", $prog, $capability ];
-                }
-            }
-
-            if ($config->{terse_freq}) {
-                if (   ($severity >= $config->{terse_level})
-                    || (($severity == -1) && $config->{terse_unknown}))
-                {
-                    push @terse_buffer, [ $timestamp, $counter ];
-                }
-            }
-        }
-
-        push @commit_buffer, [ "capability", $timestamp, $counter, $profile, $sdmode, $capability, $prog, $pid, $severity ];
-        $inserts++;
-
-    } elsif ($mesg =~ /LOGPROF-HINT unknown_hat (\S+) pid=(\d+) profile=(\S+) active=(\S+)/) {
-        my ($uhat, $pid, $profile, $hat) = ($1, $2, $3, $4);
-
-        $profile .= "^$hat" if $profile ne $hat;
-
-        push @commit_buffer, [ "unknown_hat", $timestamp, $counter, $profile, "PERMITTING", $uhat, $pid ];
-        $inserts++;
-
-    } elsif ($mesg =~ /LOGPROF-HINT fork pid=(\d+) child=(\d+) profile=(\S+) active=(\S+)/) {
-        my ($pid, $child, $profile, $hat) = ($1, $2, $3, $4);
-
-        $profile .= "^$hat" if $profile ne $hat;
-
-        push @commit_buffer, [ "fork", $timestamp, $counter, $profile, "PERMITTING", $pid, $child ];
-        $inserts++;
-
-    } elsif ($mesg =~ /LOGPROF-HINT changing_profile pid=(\d+) newprofile=(\S+)/) {
-        my ($pid, $newprofile) = ($1, $2);
-
-        push @commit_buffer, [ "changing_profile", $timestamp, $counter, $newprofile, "PERMITTING", $pid ];
-        $inserts++;
-
-    } elsif ($mesg =~ /LOGPROF-HINT fork pid=(\d+) child=(\d+)/) {
-        my ($pid, $child) = ($1, $2);
-
-        push @commit_buffer, [ "fork", $timestamp, $counter, "null-complain-profile", "PERMITTING", $pid, $child ];
-        $inserts++;
-
-    } elsif ($mesg =~ /LOGPROF-HINT changing_profile pid=(\d+)/) {
-        my $pid = $1;
-
-        push @commit_buffer, [ "changing_profile", $timestamp, $counter, "null-complain-profile", "PERMITTING", $pid ];
-        $inserts++;
-
-    } elsif ($mesg =~ /(PERMITTING|REJECTING|AUDITING) access to profile replacement \((\S+)\((\d+)\) profile (\S+) active (\S+)\)/) {
-        my ($sdmode, $prog, $pid, $profile, $hat) = ($1, $2, $3, $4, $5, $6, $7);
-
-        $profile .= "^$hat" if $profile ne $hat;
-
-        my $severity = 10;
+    if ( $ev->{'sdmode'} && $ev->{'sdmode'} eq "REJECTING") {
+        $severity = $sevdb->rank($ev->{'prog'}, $ev->{'mode'});
+		if ( ! $severity ) { $severity = "-1"; }
 
         # we only do notification for enforce mode events
         if ($config->{verbose_freq}) {
@@ -747,7 +534,8 @@ sub process_event ($$) {
             if (   ($severity >= $config->{summary_level})
                 || (($severity == -1) && $config->{summary_unknown}))
             {
-                push @summary_buffer, [ $timestamp, $counter, "profile_replacement", $prog ];
+                push @summary_buffer, [ $timestamp, $counter, "path",
+					$ev->{'prog'}, $ev->{'mode'}, $ev->{'resource'} ];
             }
         }
 
@@ -755,34 +543,85 @@ sub process_event ($$) {
             if (   ($severity >= $config->{terse_level})
                 || (($severity == -1) && $config->{terse_unknown}))
             {
-                push @terse_buffer, [ $timestamp, $counter ];
+                push @terse_buffer, [ $timestamp, $counter, "dummy" ];
             }
         }
 
-        push @commit_buffer, [ "profile_replacement", $timestamp, $counter, $profile, $sdmode, $prog, $pid, $severity ];
-        $inserts++;
-
-    } elsif ($mesg =~ /(SubDomain|AppArmor) protection removed/) {
-
-        push @commit_buffer, [ "removed", $timestamp, $counter, 10 ];
-        $inserts++;
-
-    } elsif ($mesg =~ /(SubDomain|AppArmor) \(version (\S+)\) initialized/) {
-        my $version = $1;
-
-        push @commit_buffer, [ "initialized", $timestamp, $counter, $version, 10 ];
-        $inserts++;
-
-    } elsif ($mesg =~ /Control variable '(\S+)' changed to (\S+)/) {
-        my ($variable, $value) = ($1, $2);
-
-        push @commit_buffer, [ "ctrl_var", $timestamp, $counter, $variable, $value, 10 ];
-        $inserts++;
-
-    } else {
-        chomp $logmsg;
-        errlog "Unhandled log message: $logmsg";
     }
+
+	unless ( $ev->{'op'} ) {
+		my $errmsg = "ERROR: No operation found: ";
+		for my $k (sort keys(%$ev)) {
+			$errmsg .= "$k is $ev->{$k}, ";
+		}
+		errlog("$errmsg\n");
+		return;
+	}
+
+    # Format the message to match the db template 
+    if ($ev->{'op'} eq 'link' ) {
+		$type = 'link';
+        push(@eventList, [$time,$counter,$type,$ev->{'profile'},$ev->{'sdmode'},
+			$ev->{'resource'},$ev->{'target'},$ev->{'prog'},$ev->{'pid'},$severity]); 
+    } elsif ($ev->{'op'} eq 'attribute') {
+		$type = 'chattr';
+        push(@eventList, []);
+        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},$ev->{'sdmode'},
+			$ev->{'resource'},$ev->{'mode'},$ev->{'prog'},$ev->{'pid'},$severity]); 
+    } elsif ($ev->{'op'} eq 'capability') {
+		$type = 'capability';
+        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},$ev->{'sdmode'},
+			$ev->{'resource'},$ev->{'prog'},$ev->{'pid'},$severity]); 
+    } elsif ($ev->{'op'} eq 'capable') {
+		$type = 'capable';
+        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'prog'},$ev->{'profile'},$ev->{'pid'}]); 
+    } elsif ($ev->{'op'} =~ /ontrol variable/ ) {
+        $type = 'ctrl_var';
+        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'resource'},$ev->{'mode'},$severity]); 
+	} elsif ($ev->{'op'} eq 'unknown_hat') {
+		$type = 'unknown_hat';
+        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},$ev->{'sdmode'},
+			$ev->{'resource'},$ev->{'pid'},$severity]); 
+	} elsif ($ev->{'op'} eq 'fork') {
+		$type = 'fork';
+        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},$ev->{'sdmode'},
+			$ev->{'pid'},$ev->{'resource'}]); 
+	} elsif ($ev->{'op'} eq 'changing_profile') {
+		$type = 'changing_profile';
+        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},$ev->{'sdmode'},
+			$ev->{'pid'}]); 
+	} elsif ($ev->{'op'} eq 'profile_load') {
+		$type = 'profile_load';
+		push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'resource'},$ev->{'prog'},$ev->{'pid'}]);
+	} elsif ($ev->{'op'} eq 'profile_replace') {
+		$type = 'profile_replacement';
+        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},$ev->{'sdmode'},
+			$ev->{'prog'},$ev->{'pid'},$severity]); 
+	} elsif ($ev->{'op'} eq 'removed') {
+	    $type = 'removed';
+        push(@eventList, [$time,$counter,$type,$ev->{'op'},$severity]); 
+	} elsif ($ev->{'op'} eq 'initialized') {
+		$type = 'initialized';
+        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'resource'},$severity]); 
+	} elsif ( $ev->{'op'} =~ /socket/) {
+		$type = 'net';
+		push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'net_family'},
+			$ev->{'net_sock_type'},$ev->{'net_proto'},$ev->{'pid'},$ev->{'profile'}]);
+    } else {
+        $type = 'path';
+		if ( ! $ev->{'prog'} ) { $ev->{'prog'} = "NIL"; }
+        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},$ev->{'sdmode'},
+			$ev->{'mode'},$ev->{'resource'},$ev->{'prog'},$ev->{'pid'},$severity]); 
+    }
+
+#type=APPARMOR_ALLOWED msg=audit(1187300010.953:1833): operation="file_mprotect" requested_mask="r" denied_mask="r" name="/lib/libc-2.6.so" pid=10273 profile="null-complain-profile"
+#type=APPARMOR_ALLOWED msg=audit(1187300010.953:1834): operation="socket_create" family="inet" sock_type="raw" protocol=1 pid=10273 profile="null-complain-profile"
+
+
+
+    push(@commit_buffer, @eventList);
+    $inserts++;
+
 }
 
 sub dump_events {
@@ -818,17 +657,28 @@ sub check_timers ($) {
 
         for my $event (sort { $a->[0] cmp $b->[0] } @commit_buffer) {
             my @event = @{$event};
-            my $type  = shift @event;
 
-            if ($type ne $last_prepare) {
-                $sth          = $dbh->prepare("INSERT INTO events $templates{$type};");
-                $last_prepare = $type;
-            }
+            #my $type  = shift @event;
+            my $type  = $event[2];
 
-            $sth->execute(@event);
+		    eval {
+		        if ($type ne $last_prepare) {
+		            $sth          = $dbh->prepare("INSERT INTO events $templates{$type}");
+		            $last_prepare = $type;
+		        }
+
+		        $sth->execute(@event);
+		    };
+
+		    if ($@) {
+		        print ERRLOG "DBI Execution failed: $DBI::errstr\n";
+		    }
+
+            #$sth->execute(@event);
         }
 
         $dbh->commit || errlog "Error commiting changes: $!";
+errlog "Just commited";
 
         # need to get the time again to include how much time it takes to
         # actually write all this crap to the db
