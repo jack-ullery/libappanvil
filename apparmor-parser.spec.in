@@ -160,8 +160,8 @@ fi
 %preun
 if [ "$1" = 0 ] ; then
 %if %{distro} == "suse"
-  /sbin/insserv -r aaeventd
-  /sbin/insserv -r boot.apparmor
+  %{stop_on_removal aaeventd}
+  %{stop_on_removal boot.apparmor}
 %endif
 %if %{distro} == "redhat" || %{distro} == "rhel4"
   chkconfig --del aaeventd
