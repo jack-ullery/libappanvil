@@ -131,7 +131,7 @@ int print_results(aa_log_record *record)
 		}
 		if (record->task != 0)
 		{
-			printf("Task: %i\n", record->task);
+			printf("Task: %ld\n", record->task);
 		}
 		if (record->parent != NULL)
 		{
@@ -139,7 +139,7 @@ int print_results(aa_log_record *record)
 		}
 		if (record->magic_token != 0)
 		{
-			printf("Token: %i\n", record->magic_token);
+			printf("Token: %lu\n", record->magic_token);
 		}
 		if (record->info != NULL)
 		{
@@ -147,7 +147,7 @@ int print_results(aa_log_record *record)
 		}
 		if (record->pid != 0)
 		{
-			printf("PID: %i\n", record->pid);
+			printf("PID: %ld\n", record->pid);
 		}
 		if (record->active_hat != NULL)
 		{

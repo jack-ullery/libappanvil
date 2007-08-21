@@ -102,7 +102,7 @@ audit			"audit"
 %%
 %{
 char string_buf[512];
-char *string_buf_ptr;
+char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 
 /* yy_flex_debug = 1;  */
 %}

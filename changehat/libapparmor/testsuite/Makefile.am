@@ -5,11 +5,12 @@ AUTOMAKE_OPTIONS = dejagnu
 INCLUDES = -I. -I$(top_srcdir)/src
 
 AM_CPPFLAGS = $(DEBUG_FLAGS) -DLOCALEDIR=\"${localedir}\"
+AM_CFLAGS = -Wall
 
 noinst_PROGRAMS = test_multi.multi
 
 test_multi_multi_SOURCES	= test_multi.c
-test_multi_multi_CFLAGS		= $(CFLAGS)
+test_multi_multi_CFLAGS		= $(CFLAGS) -Wall
 test_multi_multi_LDFLAGS	= $(LDFLAGS) ../src/.libs/libapparmor.a
 
 clean-local:

@@ -2,9 +2,11 @@ INCLUDES = $(all_includes)
 
 BUILT_SOURCES = grammar.h scanner.h
 AM_YFLAGS = -d -p aalogparse_
-
-scanner.h:
+AM_CFLAGS = @CFLAGS@ -D_GNU_SOURCE -Wall
+scanner.h: scanner.l
 	$(LEX) scanner.l
+
+scanner.c: scanner.l
 
 changehatdir = $(includedir)/sys
 changehat_HEADERS = apparmor.h

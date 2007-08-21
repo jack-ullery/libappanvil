@@ -8,8 +8,6 @@
 
 */
 
-#define _GNU_SOURCE	/* for asprintf */
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

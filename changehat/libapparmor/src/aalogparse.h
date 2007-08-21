@@ -117,7 +117,7 @@ typedef struct
 	aa_record_event_type event;	/* Event type */
 	long pid;			/* PID of the program logging the message */
 	long task;
-	long magic_token;
+	unsigned long magic_token;
 	long epoch;			/* example: 12345679 */
 	unsigned int audit_sub_id;		/* example: 12 */
 
