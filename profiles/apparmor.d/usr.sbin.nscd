@@ -19,6 +19,7 @@
   capability net_bind_service,
 
   network inet dgram,
+  network inet stream,
 
   /etc/nscd.conf r,
   /tmp/.winbindd/pipe rw,
