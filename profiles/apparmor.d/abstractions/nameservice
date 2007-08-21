@@ -24,8 +24,8 @@
 
   /etc/resolv.conf        r,
   # on systems using resolvconf, /etc/resolv.conf is a symlink to
-  # /etc/resolvconf/run/resolv.conf
-  /etc/resolvconf/run/resolv.conf r,
+  # /var/run/resolvconf/resolv.conf
+  /var/run/resolvconf/resolv.conf r,
 
   /etc/samba/lmhosts      r,
   /etc/services           r,
