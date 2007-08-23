@@ -19,9 +19,7 @@
 
   # the unix socket to use to connect to the display
   /tmp/.X11-unix/*           w,
-  # The X tree changes and is large -- grant read access to the whole thing
-  /usr/X11R6/**                   r,
-  /usr/X11R6/**.so*               mr,
+
 
   /usr/share/X11/ r,
   /usr/share/X11/** r,
