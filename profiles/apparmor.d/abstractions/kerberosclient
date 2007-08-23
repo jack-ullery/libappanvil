@@ -29,3 +29,6 @@
   /etc/krb.conf               r,
   /etc/krb.realms             r,
   /etc/srvtab                 r,
+
+  # credential caches
+  /tmp/krb5cc* r,

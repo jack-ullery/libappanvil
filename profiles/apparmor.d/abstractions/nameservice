@@ -58,6 +58,9 @@
   # mdnsd
   #include <abstractions/mdns>
  
+  # kerberos
+  #include <abstractions/kerberosclient>
+ 
   # TCP/UDP network access
   network inet  stream,
   network inet6 stream,
