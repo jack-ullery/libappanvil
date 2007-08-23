@@ -15,6 +15,7 @@
   #include <abstractions/base>
   #include <abstractions/consoles>
   #include <abstractions/nameservice>
+  #include <abstractions/ssl_certs>
 
   capability net_bind_service,
 
