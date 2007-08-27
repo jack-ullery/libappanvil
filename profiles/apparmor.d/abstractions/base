@@ -20,13 +20,17 @@
   # and localisations of date should be available EVERYWHERE, so
   # StackGuard, FormatGuard, etc., alerts can be properly logged.
   /dev/log                       w,
+  /dev/random                    r,
   /dev/urandom                   r,
   /etc/locale/**                 r,
+  /etc/locale.alias              r,
   /etc/localtime                 r,
   /usr/share/locale/**           r,
   /usr/share/zoneinfo/**         r,
 
   /usr/lib64/locale/**           mr,
+  /usr/lib32/gconv/*.so          mr,
+  /usr/lib32/gconv/gconv-modules*  mr,
   /usr/lib64/gconv/*.so          mr,
   /usr/lib64/gconv/gconv-modules*  mr,
   /usr/lib/locale/**             mr,
@@ -43,26 +47,39 @@
   /lib64/ld-*.so                 mrix,
   /lib/ld64-*.so                 mrix,
   /lib64/ld64-*.so               mrix,
+  /lib32/ld-*.so                 mrix,
+  /lib/ld32-*.so                 mrix,
+  /lib32/ld32-*.so               mrix,
+  /lib/tls/i686/cmov/ld-*.so     mrix,
   /opt/*-linux-uclibc/lib/ld-uClibc*so* mrix,
 
   # we might as well allow everything to use common libraries
   /lib/lib*.so*                  mr,
+  /lib32/lib*.so*                mr,
+  /lib64/lib*.so*                mr,
   /lib/*/lib*.so*                mr,
+  /lib/tls/i686/cmov/lib*.so*    mr,
+  /usr/lib/**                    r,
   /lib64/*/lib*.so*              mr,
   /usr/lib/*.so*                 mr,
   /usr/lib/*/lib*.so*            mr,
+  /usr/lib32/**                  r,
+  /usr/lib32/*.so*               mr,
+  /usr/lib64/**                  r,
   /lib64/lib*.so*                mr,
   /lib64/*/lib*.so*              mr,
   /usr/lib64/*.so*               mr,
   /usr/lib64/*/lib*.so*          mr,
   /usr/lib/sasl2/*.so*           mr,
+  /usr/lib/**/lib*.so*           mr,
+  /usr/lib32/*/lib*.so*          mr,
   /usr/lib64/sasl2/*.so*         mr,
 
 
   # /dev/null is pretty harmless and frequently used
   /dev/null                      rw,
   # as is /dev/zero
-  /dev/zero                      rw,
+  /dev/zero                      mrw,
   # recent glibc uses /dev/full in preference to /dev/null for programs
   # that don't have open fds at exec()
   /dev/full                      rw,

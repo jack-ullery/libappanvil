@@ -1,3 +1,4 @@
+# vim:syntax=apparmor
 # $Id$
 # ------------------------------------------------------------------
 #
@@ -24,6 +25,7 @@
 
   /var/cache/fonts/**                   r,
   /var/cache/fontconfig/**              mr,
+  /var/lib/defoma/**                    mr,
 
   /usr/share/a2ps/fonts/**              r,
   /usr/share/xfce/fonts/**              r,

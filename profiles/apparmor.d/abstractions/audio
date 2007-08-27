@@ -37,6 +37,8 @@
 @{PROC}/asound/** rw,
 
 /usr/share/alsa/** r,
+/usr/share/sounds/** r,
 
 @{HOME}/.esd_auth  r,
+@{HOME}/.asoundrc  r,
 /etc/esd.conf   r,
