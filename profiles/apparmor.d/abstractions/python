@@ -1,3 +1,4 @@
+# vim:syntax=apparmor
 # $Id$
 # ------------------------------------------------------------------
 #
@@ -18,3 +19,16 @@
   /usr/local/lib64/python2.[45]/site-packages/ r,
   /usr/local/lib/python2.[45]/**.{egg,py,pyc,pth,so} mr,
   /usr/local/lib/python2.[45]/site-packages/ r,
+
+  # Site-wide configuration
+  /etc/python2.[45]/site.py r,
+
+  # python-central paths
+  /usr/share/pycentral/** r,
+  /usr/share/python-support/** r,
+  /var/lib/python-support/** r,
+  /var/lib/python-support/**.so mr,
+  /usr/lib/python-support/**.so mr,
+
+  # wx paths
+  /usr/lib/wx/python/*.pth r,
