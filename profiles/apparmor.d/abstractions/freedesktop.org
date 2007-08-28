@@ -2,9 +2,9 @@
 # freedesktop.org shared desktop FSH
 
   # system configuration
-  /usr/share/icons                r,
+  /usr/share/icons/               r,
   /usr/share/icons/**             r,
-  /usr/share/pixmaps              r,
+  /usr/share/pixmaps/             r,
   /usr/share/pixmaps/**           r,
 
   # this should probably go elsewhere
