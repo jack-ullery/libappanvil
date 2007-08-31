@@ -175,6 +175,8 @@ fi
 %endif
 
 %changelog
+* Fri Aug 31 2007 - sbeattie@suse.de
+- run initscript once on boot (suse only, #286749)
 * Fri Aug 17 2007 - sbeattie@suse.de
 - disable aaeventd before uninstall [#301418]
 * Fri Jul 27 2007 - sbeattie@suse.de

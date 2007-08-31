@@ -34,7 +34,7 @@
 # Required-Start:
 # Required-Stop:
 # Should-Start: $local_fs
-# Default-Start: B 2 3 5
+# Default-Start: B
 # Default-Stop:
 # Short-Description: AppArmor initialization
 # Description: AppArmor rc file. This rc script inserts the apparmor
