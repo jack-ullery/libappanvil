@@ -302,7 +302,7 @@ void applet_about(BonoboUIComponent * uic)
 
        g_signal_connect (about_apparmor_applet, "destroy",
                          G_CALLBACK (gtk_widget_destroyed),
-                         &about_apparmor_applet);
+                         NULL);
 
        gtk_widget_show(about_apparmor_applet);
 }
