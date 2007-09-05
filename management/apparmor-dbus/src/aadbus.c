@@ -14,7 +14,7 @@
 #include <aalogparse/aalogparse.h>
 
 #define NULLSPACE(x) (x == NULL) ? &empty_string : &x
-#define NULLSTRLEN(x) (x == NULL) ? 1 : strlen(x)
+#define NULLSTRLEN(x) (x == NULL) ? 1 : (strlen(x) + 1)
 
 // Local data
 static volatile int signaled = 0;
@@ -251,7 +251,7 @@ static int event_loop(void)
 					*/
 
 					dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, DBUS_TYPE_BYTE_AS_STRING, &dataIter);
-					dbus_message_iter_append_fixed_array(&dataIter, DBUS_TYPE_BYTE, &data, strlen(data));
+					dbus_message_iter_append_fixed_array(&dataIter, DBUS_TYPE_BYTE, &data, strlen(data) + 1);
 					dbus_message_iter_close_container(&iter, &dataIter);
 
 					dbus_message_iter_append_basic(&iter, DBUS_TYPE_INT64, &record->pid);
