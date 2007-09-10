@@ -621,6 +621,7 @@ sub get_inactive_profile {
     }
 }
 
+
 sub get_profile {
     my $fqdbin = shift;
     my $profile_data;
@@ -631,10 +632,12 @@ sub get_profile {
     my @profile_list;
 
     if (repo_is_enabled() && $repo_client) {
+        UI_BusyStart( gettext("Connecting to repository.....") );
         my $res = $repo_client->send_request('FindProfiles',
                                              $distro,
                                              $fqdbin,
                                              "");
+        UI_BusyStop();
         if (did_result_succeed($res)) {
             @profile_list = @{ $res->value };
 
@@ -651,10 +654,11 @@ sub get_profile {
                 }
 
                 if (@uids) {
-
+                    UI_BusyStart( gettext("Connecting to repository.....") );
                     my $res =
                       $repo_client->send_request( 'LoginNamesFromUserIds',
                                                   [@uids] );
+                    UI_BusyStop();
                     if (did_result_succeed($res)) {
                         my @usernames = @{ $res->value };
                         for my $uid (@uids) {
@@ -1141,6 +1145,31 @@ sub UI_GetFile ($) {
 
     return $filename;
 }
+
+sub UI_BusyStart ($) {
+    my $message = shift;
+    $DEBUGGING && debug "UI_BusyStart: $UI_Mode";
+
+    if ($UI_Mode eq "text") {
+      UI_Info( $message );
+    } else {
+        SendDataToYast({
+                        type    => "dialog-busy-start",
+                        message => $message,
+                       });
+        my ($ypath, $yarg) = GetDataFromYast();
+    }
+}
+
+sub UI_BusyStop  {
+    $DEBUGGING && debug "UI_BusyStop: $UI_Mode";
+
+    if ($UI_Mode ne "text") {
+        SendDataToYast({ type    => "dialog-busy-stop" });
+        my ($ypath, $yarg) = GetDataFromYast();
+    }
+}
+
 
 my %CMDS = (
     CMD_ALLOW            => "(A)llow",
@@ -2202,13 +2231,16 @@ sub read_log {
     close(LOG);
 }
 
+
 sub get_repo_profiles_for_user {
     my $username = shift;
 
     my $distro = $cfg->{repository}{distro};
     my $p_hash = {};
+    UI_BusyStart( gettext("Connecting to repository.....") );
     my $res =
       $repo_client->send_request('FindProfiles', $distro, "", $username);
+    UI_BusyStop();
     if (did_result_succeed($res)) {
         for my $p ( @$res ) {
             $p_hash->{$p->{name}->value()} = $p->{profile}->value();
@@ -2232,8 +2264,10 @@ sub check_repo_for_newer {
 
     my $p;
     if ($repo_client) {
+        UI_BusyStart( gettext("Connecting to repository.....") );
         my $res =
           $repo_client->send_request('FindProfiles', $distro, $profile, $user);
+        UI_BusyStop();
         if (did_result_succeed($res)) {
             my @profiles;
             my @profile_list = @{$res->value};
