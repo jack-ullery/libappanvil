@@ -103,9 +103,9 @@ my @terse_buffer;
 my $date_module = "None";
 
 my %templates = (
-    "path"                => "(time,counter,type,op,profile,sdmode,mode_deny,resource,prog,pid,severity) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+    "path"                => "(time,counter,type,op,profile,sdmode,mode_deny,mode_req,resource,prog,pid,severity) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
     "link"                => "(time,counter,type,op,profile,sdmode,resource,target,prog,pid,severity)    VALUES(?,?,?,?,?,?,?,?,?,?,?)",
-    "chattr"              => "(time,counter,type,op,profile,sdmode,resource,mode_deny,prog,pid,severity) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+    "chattr"              => "(time,counter,type,op,profile,sdmode,resource,mode_deny,mode_req,prog,pid,severity) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
     "capability"          => "(time,counter,type,op,profile,sdmode,resource,prog,pid,severity)           VALUES(?,?,?,?,?,?,?,?,?,?)",
     "capable"             => "(time,counter,type,op,prog,pid,profile)                                    VALUES(?,?,?,?,?,?,?)",
     "unknown_hat"         => "(time,counter,type,op,profile,sdmode,resource,pid)                         VALUES(?,?,?,?,?,?,?,?)",
@@ -115,21 +115,12 @@ my %templates = (
 	"net"                 => "(time,counter,type,op,net_family,net_socktype,net_proto,pid,profile)       VALUES(?,?,?,?,?,?,?,?,?)",
     "removed"             => "(time,counter,type,op,severity)                                            VALUES(?,?,?,?,?)",
     "initialized"         => "(time,counter,type,op,resource,severity)                                   VALUES(?,?,?,?,?,?)",
-    "ctrl_var"            => "(time,counter,type,op,resource,mode_deny,severity)                         VALUES(?,?,?,?,?,?,?)",
+    "ctrl_var"            => "(time,counter,type,op,resource,mode_deny,mode_req,severity)                VALUES(?,?,?,?,?,?,?,?)",
 	"profile_load"        => "(time,counter,type,op,resource,prog,pid)                                   VALUES(?,?,?,?,?,?,?)",
 );
 
 ##########################################################################
 # generic functions
-
-sub new_errlog {
-	my @msgList = @_;
-    my $localtime = localtime(time);
-	for my $arr (@msgList) { 
-		my $msg = join(", ", @msgList);
-	    print ERRLOG "[$localtime] $msg\n";
-	}
-}
 
 sub errlog ($) {
     my $mesg = shift;
@@ -432,12 +423,11 @@ sub parseEvent($) {
 	errlog "Event: $msg";
     my $event = LibAppArmor::parse_record($msg);
 
-	# resource is an alternate term for 'name1' below
-	# mode is an alternate term for 'mode-deny' below
+	# the old 'mode' is now 'mode_deny' below
     $ev{'op'} = LibAppArmor::aa_log_record::swig_operation_get($event);
     $ev{'pid'} = LibAppArmor::aa_log_record::swig_pid_get($event);
-    $ev{'mode-deny'} = LibAppArmor::aa_log_record::swig_denied_mask_get($event);
-    $ev{'mode-req'} = LibAppArmor::aa_log_record::swig_requested_mask_get($event);
+    $ev{'mode_deny'} = LibAppArmor::aa_log_record::swig_denied_mask_get($event);
+    $ev{'mode_req'} = LibAppArmor::aa_log_record::swig_requested_mask_get($event);
     $ev{'profile'}= LibAppArmor::aa_log_record::swig_profile_get($event);
     $ev{'prog'} = LibAppArmor::aa_log_record::swig_name_get($event);
     $ev{'name2'} = LibAppArmor::aa_log_record::swig_name2_get($event);
@@ -470,7 +460,7 @@ sub parseEvent($) {
         if    ( $ev{'sdmode'} == 2 ) { $ev{'sdmode'} = "AUDITING"; }
         elsif ( $ev{'sdmode'} == 3 ) { $ev{'sdmode'} = "PERMITING"; }
         elsif ( $ev{'sdmode'} == 4 ) { $ev{'sdmode'} = "REJECTING"; }
-        else  { delete($ev{'action'}); }
+        else  { delete($ev{'sdmode'}); }
     }
 
     return \%ev;
@@ -518,7 +508,8 @@ sub process_event ($$) {
     }
 
     if ( $ev->{'sdmode'} && $ev->{'sdmode'} eq "REJECTING") {
-        $severity = $sevdb->rank($ev->{'prog'}, $ev->{'mode'});
+    #if ( $ev->{'sdmode'} && $ev->{'sdmode'} eq "4") {
+        $severity = $sevdb->rank($ev->{'prog'}, $ev->{'mode_deny'});
 		if ( ! $severity ) { $severity = "-1"; }
 
         # we only do notification for enforce mode events
@@ -535,7 +526,7 @@ sub process_event ($$) {
                 || (($severity == -1) && $config->{summary_unknown}))
             {
                 push @summary_buffer, [ $timestamp, $counter, "path",
-					$ev->{'prog'}, $ev->{'mode'}, $ev->{'resource'} ];
+					$ev->{'prog'}, $ev->{'mode_deny'}, $ev->{'resource'} ];
             }
         }
 
@@ -567,7 +558,7 @@ sub process_event ($$) {
 		$type = 'chattr';
         push(@eventList, []);
         push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},$ev->{'sdmode'},
-			$ev->{'resource'},$ev->{'mode'},$ev->{'prog'},$ev->{'pid'},$severity]); 
+			$ev->{'resource'},$ev->{'mode_deny'},$ev->{'mode_req'},$ev->{'prog'},$ev->{'pid'},$severity]); 
     } elsif ($ev->{'op'} eq 'capability') {
 		$type = 'capability';
         push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},$ev->{'sdmode'},
@@ -577,7 +568,7 @@ sub process_event ($$) {
         push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'prog'},$ev->{'profile'},$ev->{'pid'}]); 
     } elsif ($ev->{'op'} =~ /ontrol variable/ ) {
         $type = 'ctrl_var';
-        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'resource'},$ev->{'mode'},$severity]); 
+        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'resource'},$ev->{'mode_deny'},$ev->{'mode_req'},,$severity]); 
 	} elsif ($ev->{'op'} eq 'unknown_hat') {
 		$type = 'unknown_hat';
         push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},$ev->{'sdmode'},
@@ -611,13 +602,8 @@ sub process_event ($$) {
         $type = 'path';
 		if ( ! $ev->{'prog'} ) { $ev->{'prog'} = "NIL"; }
         push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},$ev->{'sdmode'},
-			$ev->{'mode'},$ev->{'resource'},$ev->{'prog'},$ev->{'pid'},$severity]); 
+			$ev->{'mode_deny'},$ev->{'mode_req'},$ev->{'resource'},$ev->{'prog'},$ev->{'pid'},$severity]); 
     }
-
-#type=APPARMOR_ALLOWED msg=audit(1187300010.953:1833): operation="file_mprotect" requested_mask="r" denied_mask="r" name="/lib/libc-2.6.so" pid=10273 profile="null-complain-profile"
-#type=APPARMOR_ALLOWED msg=audit(1187300010.953:1834): operation="socket_create" family="inet" sock_type="raw" protocol=1 pid=10273 profile="null-complain-profile"
-
-
 
     push(@commit_buffer, @eventList);
     $inserts++;
@@ -678,7 +664,6 @@ sub check_timers ($) {
         }
 
         $dbh->commit || errlog "Error commiting changes: $!";
-errlog "Just commited";
 
         # need to get the time again to include how much time it takes to
         # actually write all this crap to the db
