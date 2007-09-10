@@ -1770,15 +1770,305 @@ sub add_to_tree ($@) {
     push @{ $pid{$pid} }, [ $type, $pid, @event ];
 }
 
+#
+# variables used in the logparsing routines
+#
+our $LOG;
+our $next_log_entry;
+our $logmark;
+our $seenmark;
+my $RE_LOG_v2_0_syslog = qr/SubDomain/;
+my $RE_LOG_v2_1_syslog = qr/kernel:\s+audit\([\d\.\:]+\):\s+type=150[1-6]/;
+my $RE_LOG_v2_0_audit  =
+    qr/type=(APPARMOR|UNKNOWN\[1500\]) msg=audit\([\d\.\:]+\):/;
+my $RE_LOG_v2_1_audit  =
+    qr/type=(UNKNOWN\[150[1-6]\]|APPARMOR_(AUDIT|ALLOWED|DENIED|HINT|STATUS|ERROR))/;
 
-sub parse_audit_record ($) {
+sub prefetch_next_log_entry {
+    # if we already have an existing cache entry, something's broken
+    if ($next_log_entry) {
+        print STDERR "Already had next log entry: $next_log_entry";
+    }
+
+    # read log entries until we either hit the end or run into an
+    # AA event message format we recognize
+    do {
+        $next_log_entry = <$LOG>;
+    } until (!$next_log_entry || $next_log_entry =~ m{
+        $RE_LOG_v2_0_syslog |
+        $RE_LOG_v2_0_audit  |
+        $RE_LOG_v2_1_audit  |
+        $RE_LOG_v2_1_syslog |
+        $logmark
+    }x);
+}
+
+sub get_next_log_entry {
+    # make sure we've got a next log entry if there is one
+    prefetch_next_log_entry() unless $next_log_entry;
+
+    # save a copy of the next log entry...
+    my $log_entry = $next_log_entry;
+
+    # zero out our cache of the next log entry
+    $next_log_entry = undef;
+
+    return $log_entry;
+}
+
+sub peek_at_next_log_entry {
+    # make sure we've got a next log entry if there is one
+    prefetch_next_log_entry() unless $next_log_entry;
+
+    # return a copy of the next log entry without pulling it out of the cache
+    return $next_log_entry;
+}
+
+sub throw_away_next_log_entry {
+    $next_log_entry = undef;
+}
+
+sub parse_log_record_v_2_0 ($@) {
+    my ($record, $last) = @_;
+    $DEBUGGING && debug "parse_log_record_v_2_0: $_";
+
+    # What's this early out for?  As far as I can tell, parse_log_record_v_2_0
+    # won't ever be called without something in $record
+    return $last if ( ! $record );
+
+    $_ = $record;
+
+    if (s/(PERMITTING|REJECTING)-SYSLOGFIX/$1/) {
+        s/%%/%/g;
+    }
+
+    if (m/LOGPROF-HINT unknown_hat (\S+) pid=(\d+) profile=(.+) active=(.+)/) {
+        my ($uhat, $pid, $profile, $hat) = ($1, $2, $3, $4);
+
+        $last = $&;
+
+        # we want to ignore entries for profiles that don't exist
+        # they're most likely broken entries or old entries for
+        # deleted profiles
+        return $&
+          if ( ($profile ne 'null-complain-profile')
+            && (!profile_exists($profile)));
+
+        add_to_tree($pid, "unknown_hat", $profile, $hat,
+                    "PERMITTING", $uhat);
+    } elsif (m/LOGPROF-HINT (unknown_profile|missing_mandatory_profile) image=(.+) pid=(\d+) profile=(.+) active=(.+)/) {
+        my ($image, $pid, $profile, $hat) = ($2, $3, $4, $5);
+
+        return $& if $last =~ /PERMITTING x access to $image/;
+        $last = $&;
+
+        # we want to ignore entries for profiles that don't exist
+        # they're most likely broken entries or old entries for
+        # deleted profiles
+        return $&
+          if ( ($profile ne 'null-complain-profile')
+            && (!profile_exists($profile)));
+
+        add_to_tree($pid, "exec", $profile, $hat, "HINT", "PERMITTING", "x", $image);
+
+    } elsif (m/(PERMITTING|REJECTING) (\S+) access (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
+        my ($sdmode, $mode, $detail, $prog, $pid, $profile, $hat) =
+           ($1, $2, $3, $4, $5, $6, $7);
+
+        if (!validate_log_mode($mode)) {
+            fatal_error(sprintf(gettext('Log contains unknown mode %s.'), $mode));
+        }
+
+        my $domainchange = "nochange";
+        if ($mode =~ /x/) {
+
+            # we need to try to check if we're doing a domain transition
+            if ($sdmode eq "PERMITTING") {
+                my $following = peek_at_next_log_entry();
+
+                if ($following && ($following =~ m/changing_profile/)) {
+                    $domainchange = "change";
+                    throw_away_next_log_entry();
+                }
+            }
+        } else {
+
+            # we want to ignore duplicates for things other than executes...
+            return $& if $seen{$&};
+            $seen{$&} = 1;
+        }
+
+        $last = $&;
+
+        # we want to ignore entries for profiles that don't exist
+        # they're most likely broken entries or old entries for
+        # deleted profiles
+        if (($profile ne 'null-complain-profile')
+            && (!profile_exists($profile)))
+        {
+            return $&;
+        }
+
+        # currently no way to stick pipe mediation in a profile, ignore
+        # any messages like this
+        return $& if $detail =~ /to pipe:/;
+
+        # strip out extra extended attribute info since we don't
+        # currently have a way to specify it in the profile and
+        # instead just need to provide the access to the base filename
+        $detail =~ s/\s+extended attribute \S+//;
+
+        # kerberos code checks to see if the krb5.conf file is world
+        # writable in a stupid way so we'll ignore any w accesses to
+        # krb5.conf
+        return $& if (($detail eq "to /etc/krb5.conf") && contains($mode, "w"));
+
+        # strip off the (deleted) tag that gets added if it's a
+        # deleted file
+        $detail =~ s/\s+\(deleted\)$//;
+
+    #            next if (($detail =~ /to \/lib\/ld-/) && ($mode =~ /x/));
+
+        $detail =~ s/^to\s+//;
+
+        if ($domainchange eq "change") {
+            add_to_tree($pid, "exec", $profile, $hat, $prog,
+                        $sdmode, $mode, $detail);
+        } else {
+            add_to_tree($pid, "path", $profile, $hat, $prog,
+                        $sdmode, $mode, $detail);
+        }
+
+    } elsif (m/(PERMITTING|REJECTING) (?:mk|rm)dir on (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
+        my ($sdmode, $path, $prog, $pid, $profile, $hat) =
+           ($1, $2, $3, $4, $5, $6);
+
+        # we want to ignore duplicates for things other than executes...
+        return $& if $seen{$&}++;
+
+        $last = $&;
+
+        # we want to ignore entries for profiles that don't exist
+        # they're most likely broken entries or old entries for
+        # deleted profiles
+        return $&
+          if ( ($profile ne 'null-complain-profile')
+            && (!profile_exists($profile)));
+
+        add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode,
+                    "w", $path);
+
+    } elsif (m/(PERMITTING|REJECTING) xattr (\S+) on (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
+        my ($sdmode, $xattr_op, $path, $prog, $pid, $profile, $hat) =
+           ($1, $2, $3, $4, $5, $6, $7);
+
+        # we want to ignore duplicates for things other than executes...
+        return $& if $seen{$&}++;
+
+        $last = $&;
+
+        # we want to ignore entries for profiles that don't exist
+        # they're most likely broken entries or old entries for
+        # deleted profiles
+        return $&
+          if ( ($profile ne 'null-complain-profile')
+            && (!profile_exists($profile)));
+
+        my $xattrmode;
+        if ($xattr_op eq "get" || $xattr_op eq "list") {
+            $xattrmode = "r";
+        } elsif ($xattr_op eq "set" || $xattr_op eq "remove") {
+            $xattrmode = "w";
+        }
+
+        if ($xattrmode) {
+            add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode,
+                        $xattrmode, $path);
+        }
+
+    } elsif (m/(PERMITTING|REJECTING) attribute \((.*?)\) change to (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
+        my ($sdmode, $change, $path, $prog, $pid, $profile, $hat) =
+           ($1, $2, $3, $4, $5, $6, $7);
+
+        # we want to ignore duplicates for things other than executes...
+        return $& if $seen{$&};
+        $seen{$&} = 1;
+
+        $last = $&;
+
+        # we want to ignore entries for profiles that don't exist
+        # they're most likely broken entries or old entries for
+        # deleted profiles
+        return $&
+          if ( ($profile ne 'null-complain-profile')
+            && (!profile_exists($profile)));
+
+        # kerberos code checks to see if the krb5.conf file is world
+        # writable in a stupid way so we'll ignore any w accesses to
+        # krb5.conf
+        return $& if $path eq "/etc/krb5.conf";
+
+        add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode,
+                    "w", $path);
+
+    } elsif (m/(PERMITTING|REJECTING) access to capability '(\S+)' \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
+        my ($sdmode, $capability, $prog, $pid, $profile, $hat) =
+           ($1, $2, $3, $4, $5, $6);
+
+        return $& if $seen{$&};
+
+        $seen{$&} = 1;
+        $last = $&;
+
+        # we want to ignore entries for profiles that don't exist - they're
+        # most likely broken entries or old entries for deleted profiles
+        return $&
+          if ( ($profile ne 'null-complain-profile')
+            && (!profile_exists($profile)));
+
+        add_to_tree($pid, "capability", $profile, $hat, $prog,
+                    $sdmode, $capability);
+
+    } elsif (m/Fork parent (\d+) child (\d+) profile (.+) active (.+)/
+        || m/LOGPROF-HINT fork pid=(\d+) child=(\d+) profile=(.+) active=(.+)/
+        || m/LOGPROF-HINT fork pid=(\d+) child=(\d+)/)
+    {
+        my ($parent, $child, $profile, $hat) = ($1, $2, $3, $4);
+
+        $profile ||= "null-complain-profile";
+        $hat     ||= "null-complain-profile";
+
+        $last = $&;
+
+        # we want to ignore entries for profiles that don't exist
+        # they're  most likely broken entries or old entries for
+        # deleted profiles
+        return $&
+          if ( ($profile ne 'null-complain-profile')
+            && (!profile_exists($profile)));
+
+        my $arrayref = [];
+        if (exists $pid{$parent}) {
+            push @{ $pid{$parent} }, $arrayref;
+        } else {
+            push @log, $arrayref;
+        }
+        $pid{$child} = $arrayref;
+        push @{$arrayref}, [ "fork", $child, $profile, $hat ];
+    } else {
+        $DEBUGGING && debug "UNHANDLED: $_";
+    }
+    return $last;
+}
+
+sub parse_log_record_v_2_1 ($) {
     $_ = shift;
+    $DEBUGGING && debug "parse_log_record_v_2_1: $_";
     return if ( ! $_ );
     my $e = { };
 
     # first pull out any name="blah blah blah" strings
     s/\b(\w+)="([^"]+)"\s*/$e->{$1} = $2; "";/ge;
-    #s/\b(\w+)='([^"]+)'\s*/$e->{$1} = $2; "";/ge;
 
     # yank off any remaining name=value pairs
     s/\b(\w+)=(\S+)\)\'\s*/$e->{$1} = $2; "";/ge;
@@ -1807,22 +2097,22 @@ sub parse_audit_record ($) {
     return $e;
 }
 
-sub add_audit_event_to_tree ( $$ ) {
-    my ($e,$FD) = @_;
+sub add_event_to_tree ($) {
+    my $e = shift;
 
     my $sdmode = "NONE";
-    if ( $e->{type} =~ /(UNKNOWN\[1501\]|APPARMOR_AUDIT)/ ) {
+    if ( $e->{type} =~ /(UNKNOWN\[1501\]|APPARMOR_AUDIT|1501)/ ) {
         $sdmode = "AUDIT";
-    } elsif ( $e->{type} =~ /(UNKNOWN\[1502\]|APPARMOR_ALLOWED)/ ) {
+    } elsif ( $e->{type} =~ /(UNKNOWN\[1502\]|APPARMOR_ALLOWED|1502)/ ) {
         $sdmode = "PERMITTING";
-    } elsif ( $e->{type} =~ /(UNKNOWN\[1503\]|APPARMOR_DENIED)/ ) {
+    } elsif ( $e->{type} =~ /(UNKNOWN\[1503\]|APPARMOR_DENIED|1503)/ ) {
         $sdmode = "REJECTING";
-    } elsif ( $e->{type} =~ /(UNKNOWN\[1504\]|APPARMOR_HINT)/ ) {
+    } elsif ( $e->{type} =~ /(UNKNOWN\[1504\]|APPARMOR_HINT|1504)/ ) {
         $sdmode = "HINT";
-    } elsif ( $e->{type} =~ /(UNKNOWN\[1505\]|APPARMOR_STATUS)/ ) {
+    } elsif ( $e->{type} =~ /(UNKNOWN\[1505\]|APPARMOR_STATUS|1505)/ ) {
         $sdmode = "STATUS";
         return;
-    } elsif ( $e->{type} =~ /(UNKNOWN\[1506\]|APPARMOR_ERROR)/ ) {
+    } elsif ( $e->{type} =~ /(UNKNOWN\[1506\]|APPARMOR_ERROR|1506)/ ) {
         $sdmode = "ERROR";
         return;
     } else {
@@ -1833,7 +2123,7 @@ sub add_audit_event_to_tree ( $$ ) {
     my ($profile, $hat);
     ($profile, $hat) = split /\/\//, $e->{profile};
     if ( $e->{operation} eq "change_hat" ) {
-      ($profile, $hat) = split /\/\//, $e->{name};
+        ($profile, $hat) = split /\/\//, $e->{name};
     }
     $hat = $profile if ( !$hat );
     # TODO - refactor add_to_tree as prog is no longer supplied
@@ -1886,37 +2176,35 @@ sub add_audit_event_to_tree ( $$ ) {
                      $e->{name}
                     );
     } elsif ($e->{operation} =~ m/inode_/) {
-        if ( $e->{operation} eq "inode_permission" &&
-             $e->{denied_mask} eq "x"  &&
-             $sdmode eq "PERMITTING" ) {
-             my $entry = "";
-             do {
-               my $ent = <$FD>;
-               $entry = parse_audit_record( $ent ) if ( $ent );
-             } until ((!$entry) || ( $entry->{type} =~
-                      /(APPARMOR_|UNKNOWN\[150[1-6]\])/));
-             if ( $entry && $entry->{info} &&
-                  $entry->{info} eq "set profile" ) {
-                 add_to_tree( $e->{pid},
-                              "exec",
-                              $profile,
-                              $hat,
-                              $prog,
-                              $sdmode,
-                              $e->{denied_mask},
-                              $e->{name}
-                            );
-             } else {
-                 add_to_tree( $e->{pid},
-                              "path",
-                              $profile,
-                              $hat,
-                              $prog,
-                              $sdmode,
-                              $e->{denied_mask},
-                              $e->{name}
-                            );
-             }
+        my $is_domain_change = 0;
+
+        if ($e->{operation}   eq "inode_permission" &&
+            $e->{denied_mask} eq "x"                &&
+            $sdmode           eq "PERMITTING") {
+
+            my $following = peek_at_next_log_entry();
+            if ($following) {
+                my $entry = parse_log_record_v_2_1($following);
+                if ($entry &&
+                    $entry->{info} &&
+                    $entry->{info} eq "set profile" ) {
+
+                    $is_domain_change = 1;
+                    throw_away_next_log_entry();
+                }
+            }
+        }
+
+        if ($is_domain_change) {
+            add_to_tree( $e->{pid},
+                          "exec",
+                          $profile,
+                          $hat,
+                          $prog,
+                          $sdmode,
+                          $e->{denied_mask},
+                          $e->{name}
+                        );
         } else {
              add_to_tree( $e->{pid},
                           "path",
@@ -1971,264 +2259,38 @@ sub add_audit_event_to_tree ( $$ ) {
     }
 }
 
-
 sub read_log {
-    my $logmark = shift;
-    my $seenmark = $logmark ? 0 : 1;
-    my $stuffed = undef;
+    $logmark = shift;
+    $seenmark = $logmark ? 0 : 1;
     my $last;
     my $event_type;
 
     # okay, done loading the previous profiles, get on to the good stuff...
-    open(LOG, $filename)
+    open($LOG, $filename)
       or fatal_error "Can't read AppArmor logfile $filename: $!";
-    while (($_ = $stuffed) || ($_ = <LOG>)) {
+    while ($_ = get_next_log_entry()) {
         chomp;
-
-        $stuffed = undef;
 
         $seenmark = 1 if /$logmark/;
 
         next unless $seenmark;
 
+        my $last_match = ""; # v_2_0 syslog record parsing requires
+                             # the previous aa record in the mandatory profile
+                             # case
         # all we care about is apparmor messages
-        if (/^.* audit\(/
-            || /type=(APPARMOR|UNKNOWN\[1500\]) msg=audit\([\d\.\:]+\):/
-            || /SubDomain/) {
-            # workaround for syslog uglyness.
-            if (s/(PERMITTING|REJECTING)-SYSLOGFIX/$1/) {
-                s/%%/%/g;
-            }
-
-            if (m/LOGPROF-HINT unknown_hat (\S+) pid=(\d+) profile=(.+) active=(.+)/) {
-                my ($uhat, $pid, $profile, $hat) = ($1, $2, $3, $4);
-
-                $last = $&;
-
-                # we want to ignore entries for profiles that don't exist
-                # they're most likely broken entries or old entries for
-                # deleted profiles
-                next
-                  if ( ($profile ne 'null-complain-profile')
-                    && (!profile_exists($profile)));
-
-                add_to_tree($pid, "unknown_hat", $profile, $hat,
-                            "PERMITTING", $uhat);
-            } elsif (m/LOGPROF-HINT (unknown_profile|missing_mandatory_profile) image=(.+) pid=(\d+) profile=(.+) active=(.+)/) {
-                my ($image, $pid, $profile, $hat) = ($2, $3, $4, $5);
-
-                next if $last =~ /PERMITTING x access to $image/;
-                $last = $&;
-
-                # we want to ignore entries for profiles that don't exist
-                # they're most likely broken entries or old entries for
-                # deleted profiles
-                next
-                  if ( ($profile ne 'null-complain-profile')
-                    && (!profile_exists($profile)));
-
-                add_to_tree($pid, "exec", $profile, $hat, "HINT", "PERMITTING", "x", $image);
-
-            } elsif (m/(PERMITTING|REJECTING) (\S+) access (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
-                my ($sdmode, $mode, $detail, $prog, $pid, $profile, $hat) =
-                   ($1, $2, $3, $4, $5, $6, $7);
-
-                if (!validate_log_mode($mode)) {
-                    fatal_error(sprintf(gettext('Log contains unknown mode %s.'), $mode));
-                }
-
-                my $domainchange = "nochange";
-                if ($mode =~ /x/) {
-
-                    # we need to try to check if we're doing a domain transition
-                    if ($sdmode eq "PERMITTING") {
-                        do {
-                            $stuffed = <LOG>;
-                        } until ((! $stuffed) || ($stuffed =~ /AppArmor|audit/));
-
-                        if ($stuffed && ($stuffed =~ m/changing_profile/)) {
-                            $domainchange = "change";
-                            $stuffed      = undef;
-                        }
-                    }
-                } else {
-
-                    # we want to ignore duplicates for things other than executes...
-                    next if $seen{$&};
-                    $seen{$&} = 1;
-                }
-
-                $last = $&;
-
-                # we want to ignore entries for profiles that don't exist
-                # they're most likely broken entries or old entries for
-                # deleted profiles
-                if (   ($profile ne 'null-complain-profile')
-                    && (!profile_exists($profile)))
-                {
-                    $stuffed = undef;
-                    next;
-                }
-
-                # currently no way to stick pipe mediation in a profile, ignore
-                # any messages like this
-                next if $detail =~ /to pipe:/;
-
-                # strip out extra extended attribute info since we don't
-                # currently have a way to specify it in the profile and
-                # instead just need to provide the access to the base filename
-                $detail =~ s/\s+extended attribute \S+//;
-
-                # kerberos code checks to see if the krb5.conf file is world
-                # writable in a stupid way so we'll ignore any w accesses to
-                # krb5.conf
-                next if (($detail eq "to /etc/krb5.conf") && contains($mode, "w"));
-
-                # strip off the (deleted) tag that gets added if it's a
-                # deleted file
-                $detail =~ s/\s+\(deleted\)$//;
-
-    #            next if (($detail =~ /to \/lib\/ld-/) && ($mode =~ /x/));
-
-                $detail =~ s/^to\s+//;
-
-                if ($domainchange eq "change") {
-                    add_to_tree($pid, "exec", $profile, $hat, $prog,
-                                $sdmode, $mode, $detail);
-                } else {
-                    add_to_tree($pid, "path", $profile, $hat, $prog,
-                                $sdmode, $mode, $detail);
-                }
-
-            } elsif (m/(PERMITTING|REJECTING) (?:mk|rm)dir on (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
-                my ($sdmode, $path, $prog, $pid, $profile, $hat) =
-                   ($1, $2, $3, $4, $5, $6);
-
-                # we want to ignore duplicates for things other than executes...
-                next if $seen{$&}++;
-
-                $last = $&;
-
-                # we want to ignore entries for profiles that don't exist
-                # they're most likely broken entries or old entries for
-                # deleted profiles
-                next
-                  if ( ($profile ne 'null-complain-profile')
-                    && (!profile_exists($profile)));
-
-                add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode,
-                            "w", $path);
-
-            } elsif (m/(PERMITTING|REJECTING) xattr (\S+) on (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
-                my ($sdmode, $xattr_op, $path, $prog, $pid, $profile, $hat) =
-                   ($1, $2, $3, $4, $5, $6, $7);
-
-                # we want to ignore duplicates for things other than executes...
-                next if $seen{$&}++;
-
-                $last = $&;
-
-                # we want to ignore entries for profiles that don't exist
-                # they're most likely broken entries or old entries for
-                # deleted profiles
-                next
-                  if ( ($profile ne 'null-complain-profile')
-                    && (!profile_exists($profile)));
-
-                my $xattrmode;
-                if ($xattr_op eq "get" || $xattr_op eq "list") {
-                    $xattrmode = "r";
-                } elsif ($xattr_op eq "set" || $xattr_op eq "remove") {
-                    $xattrmode = "w";
-                }
-
-                if ($xattrmode) {
-                    add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode,
-                                $xattrmode, $path);
-                }
-
-            } elsif (m/(PERMITTING|REJECTING) attribute \((.*?)\) change to (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
-                my ($sdmode, $change, $path, $prog, $pid, $profile, $hat) =
-                   ($1, $2, $3, $4, $5, $6, $7);
-
-                # we want to ignore duplicates for things other than executes...
-                next if $seen{$&};
-                $seen{$&} = 1;
-
-                $last = $&;
-
-                # we want to ignore entries for profiles that don't exist
-                # they're most likely broken entries or old entries for
-                # deleted profiles
-                next
-                  if ( ($profile ne 'null-complain-profile')
-                    && (!profile_exists($profile)));
-
-                # kerberos code checks to see if the krb5.conf file is world
-                # writable in a stupid way so we'll ignore any w accesses to
-                # krb5.conf
-                next if $path eq "/etc/krb5.conf";
-
-                add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode,
-                            "w", $path);
-
-            } elsif (m/(PERMITTING|REJECTING) access to capability '(\S+)' \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
-                my ($sdmode, $capability, $prog, $pid, $profile, $hat) =
-                   ($1, $2, $3, $4, $5, $6);
-
-                next if $seen{$&};
-
-                $seen{$&} = 1;
-                $last = $&;
-
-                # we want to ignore entries for profiles that don't exist - they're
-                # most likely broken entries or old entries for deleted profiles
-                next
-                  if ( ($profile ne 'null-complain-profile')
-                    && (!profile_exists($profile)));
-
-                add_to_tree($pid, "capability", $profile, $hat, $prog,
-                            $sdmode, $capability);
-
-            } elsif (m/Fork parent (\d+) child (\d+) profile (.+) active (.+)/
-                || m/LOGPROF-HINT fork pid=(\d+) child=(\d+) profile=(.+) active=(.+)/
-                || m/LOGPROF-HINT fork pid=(\d+) child=(\d+)/)
-            {
-                my ($parent, $child, $profile, $hat) = ($1, $2, $3, $4);
-
-                $profile ||= "null-complain-profile";
-                $hat     ||= "null-complain-profile";
-
-                $last = $&;
-
-                # we want to ignore entries for profiles that don't exist
-                # they're  most likely broken entries or old entries for
-                # deleted profiles
-                next
-                  if ( ($profile ne 'null-complain-profile')
-                    && (!profile_exists($profile)));
-
-                my $arrayref = [];
-                if (exists $pid{$parent}) {
-                    push @{ $pid{$parent} }, $arrayref;
-                } else {
-                    push @log, $arrayref;
-                }
-                $pid{$child} = $arrayref;
-                push @{$arrayref}, [ "fork", $child, $profile, $hat ];
-            } else {
-                $DEBUGGING && debug "UNHANDLED: $_";
-            }
-        } elsif (/UNKNOWN\[150[1-6]\]|APPARMOR_(AUDIT|ALLOWED|DENIED|HINT|STATUS|ERROR)/) {
-            my $event = parse_audit_record($_);
-            add_audit_event_to_tree( $event, *LOG );
-            next;
+        if (/$RE_LOG_v2_0_syslog/ || /$RE_LOG_v2_0_audit/) {
+           $last_match = parse_log_record_v_2_0( $_, $last_match );
+        } elsif (/$RE_LOG_v2_1_audit/ || /$RE_LOG_v2_1_syslog/) {
+            my $event = parse_log_record_v_2_1($_);
+            add_event_to_tree($event);
         } else {
             # not a known apparmor log event
-            next;
+            $DEBUGGING && debug "read_log UNHANDLED: $_";
         }
     }
-    close(LOG);
+    close($LOG);
+    $logmark = "";
 }
 
 
