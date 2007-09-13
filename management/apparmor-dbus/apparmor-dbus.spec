@@ -6,7 +6,7 @@
 Name:		apparmor-dbus
 BuildRequires:	audit-devel dbus-1-devel pkgconfig libapparmor-devel
 Requires:	libapparmor
-Version:	1.1
+Version:	1.2
 Release:	0
 License:	GPL
 Group:		System/Management
@@ -37,5 +37,7 @@ rm -rf %{buildroot}
 %files
 %defattr(-, root, root)
 %{_prefix}/bin/apparmor-dbus
-%changelog
 
+%changelog
+* Thu Sep 13 2007 - sbeattie@suse.de
+- Bump to revision 1.2
