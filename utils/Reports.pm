@@ -44,6 +44,37 @@ textdomain("Reports");
 my $eventDb   = '/var/log/apparmor/events.db';
 my $numEvents = 1000;
 
+sub YcpDebug ($$) {
+
+    my $argList = "";
+	#my ($script, $args) = @_;
+	my $script = shift;
+	my $args = shift;
+
+    if ($args && ref($args) eq "HASH") {
+
+        for (sort keys(%$args) ) {
+            $argList .= "$_ is ..$args->{$_}.., " if $args->{$_};
+        }
+
+    } elsif ($args && ref($args) eq "ARRAY") {
+
+        for my $row (@$args) {
+            for (sort keys(%$row) ) {
+                $argList .= "$_ is ..$row->{$_}.., " if $row->{$_};
+            }
+        }
+	} elsif ( $args ) {
+		$argList = $args;
+    } else {
+        my $prob = ref($args);
+		$argList = "Type not supported for printing debug: $prob";
+    }
+
+    ycp::y2milestone("[apparmor $script] vars:  $argList");
+
+}
+
 sub month2Num {
     my $lexMon = shift;
     my $months = {
@@ -122,26 +153,140 @@ sub checkFileExists {
     }
 }
 
+sub getNetSockList {
+
+    my @netsockList = (
+        "All", "UNIX Domain Sockets", "IP v4", "Radio AX.25",
+        "Novell IPX", "Appletalk", "Radio NET/ROM",
+        "Multiprotocol Bridge", "ATM PVC", "X.25", "IP v6",
+        "Radio X.25 PLP", "DECnet", "NetBEUI", "Security Callback",
+        "PF Key Management", "Netlink", "Packet", "Ash",
+        "Econet", "ATM SVC", "Filler (Ignore)", "Linux SNA",
+        "IRDA", "PPPoX", "Wanpipe", "Linux LLC",
+        "Filler (Ignore)", "Filler (Ignore)", "Filler (Ignore)", "TIPC",
+        "Bluetooth", "IUCV", "RxRPC"
+    );
+
+
+	return \@netsockList;
+}
+
+sub netsock_name2num {
+
+    my $sockName = shift;
+    my $sockNum = '';
+	my $netsockList = getNetSockList();
+
+    my $i;
+
+    for ($i = 0; $i < @$netsockList; $i++) {
+        last if $_ eq @$netsockList[$i];
+    }
+
+	if ($i < @$netsockList) {
+		$sockNum = $i;
+	}
+
+	return $sockNum;
+}
+
+sub netsock_num2name {
+
+	my $sockNum = shift;
+	my $sockName = undef;
+	my $netsockList = getNetSockList();
+
+	if ( $sockNum < @$netsockList) {
+    	$sockName = @$netsockList[$sockNum];
+	}
+
+	if ( $sockName eq "Filler (Ignore)" ) {
+		$sockName = undef;
+	}
+
+	return $sockName;
+}
+
+sub matchFailed ($$) {
+
+	my $args = shift;
+	my $rec = shift;
+
+        # Check filters
+        if ($args->{'pid'} && $args->{'pid'} ne '-') {
+            return(1) unless ($args->{'pid'} eq $rec->{'pid'});
+        }
+        if (   $args->{'severity'}
+            && $args->{'severity'} ne "00"
+            && $args->{'severity'} ne '-')
+        {
+            if ($args->{'severity'} eq "U") { $args->{'severity'} = '-1'; }
+            return(1) unless ($args->{'severity'} eq $rec->{'severity'});
+        }
+        if ($args->{'mode_deny'} && $args->{'mode_deny'} ne '-') {
+            return(1) unless ($args->{'mode_deny'} eq $rec->{'mode_deny'});
+        }
+        if ($args->{'mode_req'} && $args->{'mode_req'} ne '-') {
+            return(1) unless ($args->{'mode_req'} eq $rec->{'mode_req'});
+        }
+
+        if ($args->{'resource'} && $args->{'resource'} ne '-') {
+            return(1) unless ($args->{'resource'} eq $rec->{'resource'});
+        }
+        if ($args->{'sdmode'} && $args->{'sdmode'} ne '-') {
+            # Needs reversal of comparison for sdmode
+            return(1) unless ($rec->{'sdmode'} =~ /$args->{'sdmode'}/);
+        }
+        if ($args->{'op'} && $args->{'op'}  ne '-') {
+            return(1) unless ($args->{'op'} eq $rec->{'op'});
+        }
+        if ($args->{'attr'} && $args->{'attr'}  ne '-') {
+            return(1) unless ($args->{'attr'} eq $rec->{'attr'});
+        }
+        if ($args->{'name_alt'} && $args->{'name_alt'}  ne '-') {
+            return(1) unless ($args->{'name_alt'} eq $rec->{'name_alt'});
+        }
+        if ($args->{'net_family'} && $args->{'net_family'}  ne '-') {
+            return(1) unless ($args->{'net_family'} eq $rec->{'net_family'});
+        }
+        if ($args->{'net_proto'} && $args->{'net_proto'}  ne '-') {
+            return(1) unless ($args->{'net_proto'} eq $rec->{'net_proto'});
+        }
+        if ($args->{'net_socktype'} && $args->{'net_socktype'}  ne '-') {
+            return(1) unless ($args->{'net_socktype'} eq $rec->{'net_socktype'});
+        }
+ 
+	return 0;
+}
+
 # Translate mode & sdmode for parsing
 sub rewriteModes {
     my $filts = shift;
 
     # Mode wrangling - Rewrite for better matches
-    if ($filts->{'mode'} && $filts->{'mode'} ne "All") {
+    for ('mode_req','mode_deny') {
 
-        my @mode    = ();
-        my $tmpMode = undef;
+        if ($filts->{$_} && $filts->{$_} ne "All") {
 
-        @mode = split(//, $filts->{'mode'});
+            my @mode    = ();
+            my $tmpMode = undef;
 
-        if (@mode > 0) {
-            $tmpMode = join("|", @mode);
-        } else {
-            delete($filts->{'mode'});
-        }
+            @mode = split(//, $filts->{$_});
 
-        if ($tmpMode) {
-            $filts->{'mode'} = $tmpMode;
+            if (@mode > 0) {
+                #$tmpMode = join("|", @mode);
+                $tmpMode = join("", @mode);
+				if ($tmpMode =~ /m/) {
+					$tmpMode =~ s/m//g;
+					$tmpMode = "m" . $tmpMode;
+				}
+            } else {
+                delete($filts->{$_});
+            }
+
+            if ($tmpMode) {
+                $filts->{$_} = $tmpMode;
+            }
         }
     }
 
@@ -158,6 +303,34 @@ sub rewriteModes {
         }
     }
 
+    return $filts;
+}
+
+sub getFilterList ($) {
+
+    my $args = shift;
+	my $filts = undef;
+
+    if ($args->{'prog'})     { $filts->{'prog'}     = $args->{'prog'}; }
+    if ($args->{'profile'})  { $filts->{'profile'}  = $args->{'profile'}; }
+    if ($args->{'pid'})      { $filts->{'pid'}      = $args->{'pid'}; }
+    if ($args->{'resource'}) { $filts->{'resource'} = $args->{'resource'}; }
+    if ($args->{'severity'}) { $filts->{'severity'} = $args->{'severity'}; }
+    if ($args->{'sdmode'})   { $filts->{'sdmode'}   = $args->{'sdmode'}; }
+    if ($args->{'mode_req'}) { $filts->{'mode_req'} = $args->{'mode_req'}; }
+    if ($args->{'mode_deny'}) { $filts->{'mode_deny'} = $args->{'mode_deny'}; }
+    if ($args->{'op'})       { $filts->{'op'}       = $args->{'op'}; }
+    if ($args->{'attr'})     { $filts->{'attr'}     = $args->{'attr'}; }
+    if ($args->{'name_alt'}) { $filts->{'name_alt'} = $args->{'name_alt'}; }
+    if ($args->{'net_family'}) { $filts->{'net_family'} = $args->{'net_family'}; }
+    if ($args->{'net_proto'})  { $filts->{'net_proto'}  = $args->{'net_proto'}; }
+    if ($args->{'net_socktype'}) { $filts->{'net_socktype'} = $args->{'net_socktype'}; }
+
+    for (sort(keys(%$filts))) {
+        if ($filts->{$_} eq '-' || $filts->{$_} eq 'All') {
+            delete($filts->{$_});
+        }
+    }
     return $filts;
 }
 
@@ -281,9 +454,8 @@ sub checkEventDb {
 }
 
 # Called from ag_reports_parse
-sub getNumPages {
+sub getNumPages ($) {
     my $args     = shift;
-
     my $db       = ();
     my $numPages = 0;
     my $count    = 0;
@@ -313,13 +485,13 @@ sub getNumPages {
         }
     }
 
-    if ($args->{'mode'}) {
-        $args->{'mode'} =~ s/\&//g;
-        $args->{'mode'} =~ s/Mode\://g;
-        $args->{'mode'} =~ s/\s//g;
+    if ($args->{'mode_req'}) {
+        $args->{'mode_req'} =~ s/\&//g;
+        $args->{'mode_req'} =~ s/Mode\://g;
+        $args->{'mode_req'} =~ s/\s//g;
 
-        if ($args->{'mode'} eq "All") {
-            delete($args->{'mode'});
+        if ($args->{'mode_req'} eq "All") {
+            delete($args->{'mode_req'});
         }
     }
     ########################################
@@ -342,27 +514,9 @@ sub getNumPages {
         my $query = "SELECT count(*) FROM events ";
 
         # We need filter information for getting a correct count
-        #my $filts = getSirFilters($args);					# these should be sent from YaST
-        my $filts = undef;
-
-        if ($args->{'prog'})     { $filts->{'prog'}     = $args->{'prog'}; }
-        if ($args->{'profile'})  { $filts->{'profile'}  = $args->{'profile'}; }
-        if ($args->{'pid'})      { $filts->{'pid'}      = $args->{'pid'}; }
-        if ($args->{'resource'}) { $filts->{'resource'} = $args->{'resource'}; }
-        if ($args->{'severity'}) { $filts->{'severity'} = $args->{'severity'}; }
-        if ($args->{'sdmode'})   { $filts->{'sdmode'}   = $args->{'sdmode'}; }
-        if ($args->{'mode'})     { $filts->{'mode'}     = $args->{'mode'}; }
-
-        for (sort(keys(%$filts))) {
-            if ($filts->{$_} eq '-' || $filts->{$_} eq 'All') {
-                delete($filts->{$_});
-            }
-        }
-
+        my $filts = getFilterList($args);
         my $midQuery = getQueryFilters($filts, $start, $end);
-
-        $query .= "$midQuery";
-
+        if ($midQuery) { $query .= "$midQuery"; }
         # Pull stuff from db
         my $dbh = DBI->connect("dbi:SQLite:dbname=$eventDb", "", "", { RaiseError => 1, AutoCommit => 1 });
 
@@ -380,8 +534,6 @@ sub getNumPages {
         }
 
         $dbh->disconnect();
-
-        #ycp::y2milestone("Numpages Query: $query");		# debug
 
         $numPages = pageRound($count / $numEvents);
         if ($numPages < 1) { $numPages = 1; }
@@ -453,8 +605,6 @@ sub getEpochFromStr {
     my $lexDate = shift;
 
     my ($lexMonth, $dateDay, $fullTime, $year) = split(/\s+/, $lexDate);
-
-    #my ($lexDay, $lexMonth, $dateDay, $fullTime, $year) = split(/\s+/, $lexDate);
     my ($hour, $min, $sec) = split(/\:/, $fullTime);
 
     if (!$year) { $year = (split(/\s+/, localtime))[4]; }
@@ -493,21 +643,30 @@ sub exportFormattedText {
     my $date = localtime;
     open(LOG, ">$logFile") || die "Couldn't open $logFile";
 
-    # Date Profile PID Mesg
     print LOG "$repName: Log generated by Novell AppArmor, $date\n\n";
-    printf LOG "%-21s%-32s%-8s%-51s", "Host", "Date", "Program", "Profile", "PID", "Severity", "Mode", "Detail", "Access Type";
+    printf LOG "%-21s%-32s%-8s%-51s", "Host", "Date", "Program", "Profile",
+		"PID", "Severity", "Mode Deny", "Mode Request","Detail", "Access Type",
+		"Operation", "Attribute", "Additional Name", "Parent", "Active Hat",
+		"Net Family", "Net Protocol", "Net Socket Type";
+
     print LOG "\n";
 
     for (sort (@$db)) {
         print LOG "$_->{'host'},$_->{'time'},$_->{'prog'},$_->{'profile'},";
-        print LOG "$_->{'pid'},$_->{'severity'},$->{'mode'},$_->{'resource'},$_->{'sdmode'}\n";
+        print LOG "$_->{'pid'},$_->{'severity'},$_->{'mode_deny'},$_->{'mode_req'},";
+		print LOG "$_->{'resource'},$_->{'sdmode'},$_->{'op'},$_->{'attr'},";
+		print LOG "$_->{'name_alt'},$_->{'parent'},$_->{'active_hat'},";
+		print LOG "$_->{'net_family'},$_->{'net_proto'},$_->{'net_socktype'}\n";
     }
 
     close LOG;
 }
 
 sub exportLog {
+
     my ($exportLog, $db, $header) = @_;
+
+	return unless $db;
 
     if (open(LOG, ">$exportLog")) {
 
@@ -519,12 +678,11 @@ sub exportLog {
             if ($header) { print LOG "$header\n\n"; }
 
             for (@$db) {
-
-# host time prog profile pid severity resource sdmode mode
-#print LOG "$_->{'host'},$_->{'time'},$_->{'prog'},$_->{'profile'},$_->{'pid'},";
-                print LOG "$_->{'host'},$_->{'date'},$_->{'prog'},$_->{'profile'},$_->{'pid'},";
-                print LOG "$_->{'severity'},$_->{'mode'},$_->{'resource'},$_->{'sdmode'}\n";
-
+		        print LOG "$_->{'host'},$_->{'time'},$_->{'prog'},$_->{'profile'},";
+		        print LOG "$_->{'pid'},$_->{'severity'},$_->{'mode_deny'},$_->{'mode_req'},";
+				print LOG "$_->{'resource'},$_->{'sdmode'},$_->{'op'},$_->{'attr'},";
+				print LOG "$_->{'name_alt'},$_->{'parent'},$_->{'active_hat'},";
+				print LOG "$_->{'net_family'},$_->{'net_proto'},$_->{'net_socktype'}\n";
             }
 
         } elsif ($exportLog =~ /html/) {
@@ -541,40 +699,46 @@ sub exportLog {
 
             print LOG "<hr><br><table border='1' cellpadding='2'>\n";
 
-#print LOG "<tr bgcolor='edefff'><th>Date</th><th>Profile</th><th>PID</th><th>Message</th></tr>\n";
-            print LOG "<tr bgcolor='edefff'><th>Host</th><th>Date</th><th>Program</th><th>Profile</th><th>PID</th>"
-              . "<th>Severity</th><th>Mode</th><th>Detail</th><th>Access Type</th></tr>\n";
+            print LOG "<tr bgcolor='edefff'><th>Host</th><th>Date</th><th>Program</th>" .
+				"<th>Profile</th><th>PID</th><th>Severity</th><th>Mode Deny</th>" .
+				"<th>Mode Request</th><th>Detail</th><th>Access Type</th><th>Operation</th>" .
+				"<th>Attribute</th><th>Additional Name</th><th>Parent</th><th>Active Hat</th>" .
+				"<th>Net Family</th><th>Net Protocol</th><th>Net Socket Type</th></tr>\n";
 
             my $idx = 1;
 
             for (@$db) {
                 $idx++;
+
+				my $logLine = 
+					"<td>&nbsp;$_->{'date'}&nbsp;</td>"
+                      . "<td>&nbsp;$_->{'prog'}&nbsp;</td>"
+                      . "<td>&nbsp;$_->{'profile'}&nbsp;</td>"
+                      . "<td>&nbsp;$_->{'pid'}&nbsp;</td>"
+                      . "<td>&nbsp;$_->{'severity'}&nbsp;</td>"
+                      . "<td>&nbsp;$_->{'mode_deny'}&nbsp;</td>"
+                      . "<td>&nbsp;$_->{'mode_req'}&nbsp;</td>"
+                      . "<td>&nbsp;$_->{'resource'}&nbsp;</td>"
+                      . "<td>&nbsp;$_->{'sdmode'}&nbsp;</td>"
+                      . "<td>&nbsp;$_->{'op'}&nbsp;</td>"
+                      . "<td>&nbsp;$_->{'attr'}&nbsp;</td>"
+                      . "<td>&nbsp;$_->{'name_alt'}&nbsp;</td>"
+                      . "<td>&nbsp;$_->{'parent'}&nbsp;</td>"
+                      . "<td>&nbsp;$_->{'active_hat'}&nbsp;</td>"
+                      . "<td>&nbsp;$_->{'net_family'}&nbsp;</td>"
+                      . "<td>&nbsp;$_->{'net_proto'}&nbsp;</td>"
+                      . "<td>&nbsp;$_->{'net_socktype'}&nbsp;</td></tr>";
+
+	            my $plainCell = "<tr><td>&nbsp;$_->{'host'}&nbsp;</td>";
+				my $shadedCell = "<tr='edefef'><td>&nbsp;$_->{'host'}&nbsp;</td>";
+				my $logLinePlain = $plainCell . $logLine;
+				my $logLineShaded = $shadedCell . $logLine; 
+
                 if ($idx % 2 == 0) {
-
-                    #"<td>&nbsp;$_->{'time'}&nbsp;</td>" .
-                    print LOG "<tr><td>&nbsp;$_->{'host'}&nbsp;</td>"
-                      . "<td>&nbsp;$_->{'date'}&nbsp;</td>"
-                      . "<td>&nbsp;$_->{'prog'}&nbsp;</td>"
-                      . "<td>&nbsp;$_->{'profile'}&nbsp;</td>"
-                      . "<td>&nbsp;$_->{'pid'}&nbsp;</td>"
-                      . "<td>&nbsp;$_->{'severity'}&nbsp;</td>"
-                      . "<td>&nbsp;$_->{'mode'}&nbsp;</td>"
-                      . "<td>&nbsp;$_->{'resource'}&nbsp;</td>"
-                      . "<td>&nbsp;$_->{'sdmode'}&nbsp;</td></tr>\n";
-
+                    print LOG "$logLinePlain\n"; 
                 } else {
-
                     # Shade every other row
-                    print LOG "<tr='edefef'><td>&nbsp;$_->{'host'}&nbsp;</td>"
-                      . "<td>&nbsp;$_->{'date'}&nbsp;</td>"
-                      . "<td>&nbsp;$_->{'prog'}&nbsp;</td>"
-                      . "<td>&nbsp;$_->{'profile'}&nbsp;</td>"
-                      . "<td>&nbsp;$_->{'pid'}&nbsp;</td>"
-                      . "<td>&nbsp;$_->{'severity'}&nbsp;</td>"
-                      . "<td>&nbsp;$_->{'mode'}&nbsp;</td>"
-                      . "<td>&nbsp;$_->{'resource'}&nbsp;</td>"
-                      . "<td>&nbsp;$_->{'sdmode'}&nbsp;</td></tr>\n";
-
+                    print LOG "$logLineShaded\n"; 
                 }
             }
 
@@ -586,7 +750,6 @@ sub exportLog {
         ycp::y2error(sprintf(gettext("Export Log Error: Couldn't open %s"), $exportLog));
     }
 
-    # return($error);
 }
 
 # Pulls info on single report from apparmor xml file
@@ -634,7 +797,6 @@ sub getXmlReport {
 
             if (/\<name\>/) {
 
-                #my $name = (split(/\"/, $_))[1];
                 /\<name\>(.+)\<\/name\>/;
                 my $name = $1;
                 if ($name eq $repName) {
@@ -771,8 +933,6 @@ sub getEssStats {
       . "MAX(time) FROM events WHERE sdmode='REJECTING' AND "
       . "time >= $startdate AND time <= $enddate";
 
-#                "MAX(time) FROM events join info WHERE sdmode='REJECTING' AND " .
-
     # Get list of hosts to scan
     if (opendir(TDIR, $targetDir)) {
 
@@ -792,8 +952,6 @@ sub getEssStats {
         my $ess   = undef;
         my $ret   = undef;
         my $count = undef;
-
-        #my $eventDb = '/var/log/apparmor/events.db';
 
         my $dbh = DBI->connect("dbi:SQLite:dbname=$eventDb", "", "", { RaiseError => 1, AutoCommit => 1 });
 
@@ -1044,34 +1202,15 @@ sub grabEvents {
     my $query = "SELECT * FROM events ";
 
     # Clear unnecessary filters
-    if ($rep->{'prog'})   { $rep->{'prog'}   =~ s/\s+//g; }
-    if ($rep->{'prof'})   { $rep->{'prof'}   =~ s/\s+//g; }
-    if ($rep->{'mode'})   { $rep->{'mode'}   =~ s/\s+//g; }
-    if ($rep->{'sdmode'}) { $rep->{'sdmode'} =~ s/\s+//g; }
-    if ($rep->{'sev'})    { $rep->{'sev'}    =~ s/\s+//g; }
-    if ($rep->{'res'})    { $rep->{'res'}    =~ s/\s+//g; }
-
-    if ($rep->{'prog'} && ($rep->{'prog'} eq "-" || $rep->{'prog'} eq "All")) {
-        delete($rep->{'prog'});
-    }
-    if ($rep->{'prof'} && $rep->{'prof'} eq "-") { delete($rep->{'prof'}); }
-    if ($rep->{'pid'}  && $rep->{'pid'}  eq "-") { delete($rep->{'pid'}); }
-    if ($rep->{'sev'} && ($rep->{'sev'} eq "-" || $rep->{'sev'} eq "All")) {
-        delete($rep->{'sev'});
-    }
-    if ($rep->{'resource'} && $rep->{'resource'} eq "-") {
-        delete($rep->{'resource'});
-    }
-
-    if ($rep->{'mode'} && ($rep->{'mode'} eq "-" || $rep->{'mode'} eq "All")) {
-        delete($rep->{'mode'});
-    }
-
-    if ($rep->{'sdmode'}
-        && ($rep->{'sdmode'} eq "-" || $rep->{'sdmode'} eq "All"))
-    {
-        delete($rep->{'sdmode'});
-    }
+	for my $filt (%$rep) {
+		next unless $filt && $rep->{$filt};
+		$rep->{$filt} =~ s/\s+//g; 	# repname won't be in here, so no spaces
+		if ( $rep->{$filt} eq "-" || $rep->{$filt} eq 'All' || 
+			$rep->{$filt} eq '*' )
+		{
+			delete($rep->{$filt});
+		}	
+	}
 
     $rep = rewriteModes($rep);
 
@@ -1101,90 +1240,60 @@ sub getQueryFilters {
 
         # Match any requested filters or drop record
         ############################################################
-        if ($filts->{'prog'}) {
-            $query .= "WHERE events.prog = \'$filts->{'prog'}\' ";
-            $wFlag = 1;
-        }
+		for my $key(keys(%$filts)) {
 
-        if ($filts->{'profile'} && $_->{'profile'}) {
-            if ($wFlag == 1) {
-                $query .= "AND events.profile = \'$filts->{'profile'}\' ";
-            } else {
-                $query .= "WHERE events.profile = \'$filts->{'profile'}\' ";
-            }
-            $wFlag = 1;
-        }
+			# Special case for severity
+	        if ( $key eq 'severity' ) {
 
-        if ($filts->{'pid'}) {
-            if ($wFlag == 1) {
-                $query .= "AND events.pid = \'$filts->{'pid'}\' ";
-            } else {
-                $query .= "WHERE events.pid = \'$filts->{'pid'}\' ";
-            }
-            $wFlag = 1;
-        }
+	            if ($filts->{$key} eq "-" || $filts->{$key} eq "All") {
+	                delete($filts->{$key});
+	            } elsif ($filts->{$key} eq "-1"
+	                || $filts->{$key} eq "U")
+	            {
+	                if ($wFlag == 1) {
+	                    $query .= "AND events.severity = '-1' ";
+	                } else {
+	                    $query .= "WHERE events.severity = '-1' ";
+	                }
+	                $wFlag = 1;
+	            } else {
+	                if ($wFlag == 1) {
+	                    $query .= "AND events.severity >= \'$filts->{$key}\' ";
+	                } else {
+	                    $query .= "WHERE events.severity >= \'$filts->{$key}\' ";
+	                }
+	                $wFlag = 1;
+	            }
 
-        if ($filts->{'severity'}) {
-            if ($filts->{'severity'} eq "-" || $filts->{'severity'} eq "All") {
-                delete($filts->{'severity'});
-            } elsif ($filts->{'severity'} eq "-1"
-                || $filts->{'severity'} eq "U")
-            {
-                if ($wFlag == 1) {
-                    $query .= "AND events.severity = '-1' ";
-                } else {
-                    $query .= "WHERE events.severity = '-1' ";
-                }
-                $wFlag = 1;
-            } else {
-                if ($wFlag == 1) {
-                    $query .= "AND events.severity >= \'$filts->{'severity'}\' ";
-                } else {
-                    $query .= "WHERE events.severity >= \'$filts->{'severity'}\' ";
-                }
-                $wFlag = 1;
-            }
-        }
+			# Special case for sdmode
+	        } elsif ($filts->{'sdmode'}) {
 
-        if ($filts->{'resource'}) {
-            if ($wFlag == 1) {
-                $query .= "AND events.resource LIKE '%$filts->{'resource'}%' ";
-            } else {
-                $query .= "WHERE events.resource LIKE '%$filts->{'resource'}%' ";
-            }
-            $wFlag = 1;
-        }
+	            if ($filts->{'sdmode'} =~ /\|/) {
 
-        if ($filts->{'mode'}) {
-            if ($wFlag == 1) {
-                $query .= "AND events.mode LIKE '%$filts->{'mode'}%' ";
-            } else {
-                $query .= "WHERE events.mode LIKE '%$filts->{'mode'}%' ";
-            }
-            $wFlag = 1;
-        }
+	                my @sdmunge = split(/\|/, $filts->{'sdmode'});
+	                for (@sdmunge) { $_ = "\'\%" . "$_" . "\%\'"; }
 
-        if ($filts->{'sdmode'}) {
+	                $filts->{'sdmode'} = join(" OR events.sdmode LIKE ", @sdmunge);
 
-            if ($filts->{'sdmode'} =~ /\|/) {
+	            } else {
+	                $filts->{'sdmode'} = "\'\%" . "$filts->{'sdmode'}" . "\%\'";
+	            }
 
-                my @sdmunge = split(/\|/, $filts->{'sdmode'});
-                for (@sdmunge) { $_ = "\'\%" . "$_" . "\%\'"; }
+	            if ($wFlag == 1) {
+	                $query .= "AND events.sdmode LIKE $filts->{'sdmode'} ";
+	            } else {
+	                $query .= "WHERE events.sdmode LIKE $filts->{'sdmode'} ";
+	            }
+	            $wFlag = 1;
 
-                $filts->{'sdmode'} = join(" OR events.sdmode LIKE ", @sdmunge);
-
-            } else {
-                $filts->{'sdmode'} = "\'\%" . "$filts->{'sdmode'}" . "\%\'";
-            }
-
-            if ($wFlag == 1) {
-                $query .= "AND events.sdmode LIKE $filts->{'sdmode'} ";
-            } else {
-                $query .= "WHERE events.sdmode LIKE $filts->{'sdmode'} ";
-            }
-            $wFlag = 1;
-
-        }
+			# All other filters
+			} elsif ($wFlag == 0) {	
+	            $query .= "WHERE events.$key LIKE \'\%$filts->{$key}\%\' ";
+	            $wFlag = 1;
+			} else {
+                $query .= "AND events.$key LIKE \'\%$filts->{$key}\%\' ";
+			}
+		}
     }
 
     if ($start && $start =~ /\d+/ && $start > 0) {
@@ -1220,111 +1329,13 @@ sub getQuery {
 
     if ($filts) {
         my $midQuery = getQueryFilters($filts);
-        $query .= "$midQuery";
+        if ($midQuery) { $query .= "$midQuery"; }
     }
 
     # Finish query
     $query .= "Order by $sortKey LIMIT $limit,$numEvents";
 
     return $query;
-}
-
-# - This should exec AFTER the initial select (should limit the number of records
-#   that we'll be mangling
-# - There may be a way to do this with a creative query statement generator
-
-sub queryPostProcess {
-    my $db       = shift;
-
-    my @newDb    = ();
-    my $prevTime = 0;
-    my $prevDate = 0;
-
-    for (@$db) {
-
-        # Shuffle special events into appropriate column variables
-        ############################################################
-        if ($_->{'attrch'}) { $_->{'sdmode'} .= " $_->{'attrch'}"; }
-
-        if ($_->{'type'}) {
-
-            if ($_->{'type'} eq 'control_variable') {
-
-                # OWLSM gets special treatment
-                if ($_->{'variable'} eq 'owlsm') {
-
-                    #if ( $_->{'value'} ) {}
-                    if ($_->{'value'} == '0') {
-                        $_->{'resource'} = "GLOBAL MODULE CHANGE: OWLSM DISABLED";
-                    } elsif ($_->{'value'} == '1') {
-                        $_->{'resource'} = "GLOBAL MODULE CHANGE: OWLSM ENABLED";
-                    } else {
-                        $_->{'resource'} = "Unrecognized OWLSM activity.";
-                    }
-                } else {
-                    $_->{'resource'} = "$_->{'variable'}";
-                }
-            } elsif ($_->{'type'} eq 'capability') {
-                $_->{'resource'} .= " $_->{'capability'}";
-
-            } elsif ($_->{'type'} eq 'attribute_change') {
-                $_->{'sdmode'} .= " $_->{'attribute'} change";
-            } elsif ($_->{'type'} eq 'subdomain_insmod') {
-                $_->{'resource'} = "AppArmor Started";
-            } elsif ($_->{'type'} eq 'subdomain_rmmod') {
-                $_->{'resource'} = "AppArmor Stopped";
-
-                # DROP logprof-hints
-            } elsif ($_->{'type'} eq 'unknown_hat') {
-                next;
-
-                # DROP logprof-hints
-            } elsif ($_->{'type'} eq 'changing_profile') {
-                next;
-
-                # DROP logprof-hints
-            } elsif ($_->{'type'} eq 'fork') {
-                next;
-            } elsif ($_->{'type'} ne 'path') {
-                $_->{'resource'} .= " $_->{'type'}";
-            }
-        }
-
-        # Convert Epoch Time to Date
-        if ($_->{'time'} && $_->{'time'} == $prevTime) {
-            $_->{'date'} = $prevDate;
-        } elsif ($_->{'time'}) {
-            my $newDate = getDate("$_->{'time'}");
-            $_->{'date'} = $newDate;
-            $prevDate    = $newDate;
-            $prevTime    = $_->{'time'};
-        } else {
-            $_->{'date'} = "0000-00-00 00:00:00";
-        }
-
-        # $_->{'time'} = undef;         # Don't need 'time', only 'date'
-        if (!$_->{'host'})     { $_->{'host'}     = "-"; }
-        if (!$_->{'date'})     { $_->{'date'}     = "-"; }
-        if (!$_->{'prog'})     { $_->{'prog'}     = "-"; }
-        if (!$_->{'profile'})  { $_->{'profile'}  = "-"; }
-        if (!$_->{'pid'})      { $_->{'pid'}      = "-"; }
-        if (!$_->{'mode'})     { $_->{'mode'}     = "-"; }
-        if (!$_->{'resource'}) { $_->{'resource'} = "-"; }
-        if (!$_->{'sdmode'})   { $_->{'sdmode'}   = "-"; }
-
-        if (!$_->{'severity'}) {
-            $_->{'severity'} = "-";
-        } elsif ($_->{'severity'} eq "-1") {
-            $_->{'severity'} = "U";
-        }    # else {
-             #   $_->{'severity'} = sprintf("%02d", $_->{'severity'});
-             #}
-
-        push(@newDb, $_);    # Don't quote the $_ (breaks hash)
-
-    }
-
-    return \@newDb;
 }
 
 # Creates single hashref for the various filters
@@ -1341,7 +1352,9 @@ sub setFormFilters {
         if ($args->{'resource'}) { $filts->{'resource'} = $args->{'resource'}; }
         if ($args->{'severity'}) { $filts->{'severity'} = $args->{'severity'}; }
         if ($args->{'sdmode'})   { $filts->{'sdmode'}   = $args->{'sdmode'}; }
-        if ($args->{'mode'})     { $filts->{'mode'}     = $args->{'mode'}; }
+        if ($args->{'mode'})     { $filts->{'mode_req'} = $args->{'mode'}; }
+        if ($args->{'mode_req'}) { $filts->{'mode_req'} = $args->{'mode_req'}; }
+        if ($args->{'mode_deny'}) { $filts->{'mode_deny'} = $args->{'mode_deny'}; }
 
     }
 
@@ -1376,10 +1389,10 @@ sub rewriteFilters {
         delete($filts->{'resource'});
     }
 
-    if ($filts->{'mode'}
-        && ($filts->{'mode'} eq "-" || $filts->{'mode'} eq "All"))
+    if ($filts->{'mode_req'}
+        && ($filts->{'mode_req'} eq "-" || $filts->{'mode_req'} eq "All"))
     {
-        delete($filts->{'mode'});
+        delete($filts->{'mode_req'});
     }
 
     if ($filts->{'sdmode'}
@@ -1387,10 +1400,8 @@ sub rewriteFilters {
     {
         delete($filts->{'sdmode'});
     }
-    ############################################################
 
     $filts = rewriteModes($filts);
-
     return $filts;
 }
 
@@ -1435,72 +1446,6 @@ sub getSirFilters {
     return $filts;
 }
 
-# deprecated (pre-xml)
-sub OldgetSirFilters {
-    my $args    = shift;
-
-    my $repName = undef;
-
-    if ($args && $args->{'name'}) {
-        $repName = $args->{'name'};
-    }
-
-    my $repConf = '/etc/apparmor/reports.conf';
-    my $rec     = undef;
-
-    if (!$repName) {
-        $repName = "\"Security.Incident.Report\"";
-    } else {
-        $repName = "\"$repName\"";
-    }
-
-    if (open(CF, "<$repConf")) {
-
-        while (<CF>) {
-            next if /^#/;
-            chomp;
-            my ($cfRptName) = (split(/:/, $_))[0];
-            $cfRptName =~ s/\s+$//;    # remove trailing spaces
-
-            next unless ($cfRptName eq "$repName");
-
-# Name : csv.html : prog, prof, pid, res, sev, sdmode, mode : (up to 3) email addresses : last run time
-            my ($name, $info) = split(/:/, $_, 2);
-            $info =~ s/\s+//g;
-            $name =~ s/^\s+//;
-            $name =~ s/\s+$//;
-            my ($mailtype, $filters, $email, $lastRun) =
-              split(/\s*:\s*/, $info, 4);
-
-            $rec->{'name'} = $name;
-            $rec->{'name'} =~ s/\"//g;
-            ($rec->{'prog'}, $rec->{'profile'}, $rec->{'pid'}, $rec->{'resource'}, $rec->{'severity'}, $rec->{'sdmode'}, $rec->{'mode'}) =
-              split(/\,/, $filters, 7);
-
-        }
-
-        close CF;
-    } else {
-        logError("Couldn't open $repConf.  No filters will be used in report generation.");
-        return;
-    }
-
-    # Clean hash of useless refs
-    for (sort keys(%$rec)) {
-        if ($rec->{$_} eq "-") {
-            delete($rec->{$_});
-        }
-    }
-
-    $rec = rewriteModes($rec);
-
-    if (!$args->{'gui'} || $args->{'gui'} ne "1") {
-        $rec = rewriteFilters($rec);
-    }
-
-    return $rec;
-}
-
 # Main SIR report generator
 sub getEvents {
     my ($query, $start, $end, $dbFile) = @_;
@@ -1521,8 +1466,10 @@ sub getEvents {
     # make sure they don't give us a bad range
     ($start, $end) = ($end, $start) if $start > $end;
 
-# Events Schema
-# - (id,time,counter,pid,sdmode,type,mode,resource,target,profile,prog,severity);
+	# Events Schema
+	#   id, time, counter, op, pid, sdmode, type, mode_deny, mode_req,
+	#   resource, target, profile, prog, name_alt, attr, parent, active_hat,
+	#   net_family, net_proto, net_socktype, severity
 
     # Pull stuff from db
     my $dbh = DBI->connect("dbi:SQLite:dbname=$eventDb", "", "", { RaiseError => 1, AutoCommit => 1 });
@@ -1538,7 +1485,13 @@ sub getEvents {
 
     for my $row (@$all) {
         my $rec = undef;
-        ($rec->{'id'}, $rec->{'time'}, $rec->{'counter'}, $rec->{'pid'}, $rec->{'sdmode'}, $rec->{'type'}, $rec->{'mode'}, $rec->{'resource'}, $rec->{'target'}, $rec->{'profile'}, $rec->{'prog'}, $rec->{'severity'}) = @$row;
+
+        ($rec->{'id'},$rec->{'time'},$rec->{'counter'},$rec->{'op'},$rec->{'pid'},
+		$rec->{'sdmode'},$rec->{'type'},$rec->{'mode_deny'},$rec->{'mode_req'},
+		$rec->{'resource'},$rec->{'target'},$rec->{'profile'}, $rec->{'prog'},
+		$rec->{'name_alt'},$rec->{'attr'},$rec->{'parent'},$rec->{'active_hat'},
+		$rec->{'net_family'},$rec->{'net_proto'},$rec->{'net_socktype'},
+		$rec->{'severity'}) = @$row;
 
         # Give empty record values a default value
         if (!$rec->{'host'}) { $rec->{'host'} = $hostName; }
@@ -1575,11 +1528,9 @@ sub getEvents {
 ################################################################################
 sub getArchReport {
     my $args     = shift;
-
     my @rec      = ();
     my $eventRep = "/var/log/apparmor/reports/events.rpt";
 
-    #if ( $args->{'type'} && $args->{'type'} eq 'archRep' ) {}
     if ($args->{'logFile'}) {
         $eventRep = $args->{'logFile'};
     }
@@ -1593,8 +1544,6 @@ sub getArchReport {
         my $id    = 1;
         my $slurp = 0;
 
-        #my $numPages = 0;
-
         my $prevTime = undef;
         my $prevDate = undef;
 
@@ -1604,8 +1553,6 @@ sub getArchReport {
 
             # Why not get rid of page and just do divide by $i later?
             if (/Page/) {
-
-                #		$numPages++;
                 chomp;
                 if ($_ eq "Page $page") {
                     $slurp = 1;
@@ -1616,7 +1563,12 @@ sub getArchReport {
 
                 chomp;
 
-                ($db->{'host'}, $db->{'time'}, $db->{'prog'}, $db->{'profile'}, $db->{'pid'}, $db->{'severity'}, $db->{'mode'}, $db->{'denyRes'}, $db->{'sdmode'}) = split(/\,/, $_);
+				($db->{'host'},$db->{'time'},$db->{'prog'},$db->{'profile'},
+				$db->{'pid'},$db->{'severity'},$db->{'mode_deny'},$db->{'mode_req'},
+				$db->{'resource'},$db->{'sdmode'},$db->{'op'},$db->{'attr'},
+				$db->{'name_alt'},$db->{'parent'},$db->{'active_hat'},
+				$db->{'net_family'},$db->{'net_proto'},$db->{'net_socktype'}) 
+				= split(/\,/, $_);
 
                 # Convert epoch time to date
                 if ($db->{'time'} == $prevTime) {
@@ -1645,13 +1597,9 @@ sub getArchReport {
 }
 
 sub writeEventReport {
+
     my ($db, $args) = @_;    # Filters for date, && regexp
-#    my $type = shift || undef;
-
     my $eventRep = "/var/log/apparmor/reports/events.rpt";
-
-    # Not sure if this is needed anymore, but it messes up archived SIR reports
-    # if ( $args->{'logFile'} ) { $eventRep = $args->{'logFile'}; }
 
     if (open(REP, ">$eventRep")) {
 
@@ -1667,7 +1615,11 @@ sub writeEventReport {
 
         for (@$db) {
 
-            print REP "$_->{'host'},$_->{'date'},$_->{'prog'},$_->{'profile'},$_->{'pid'},$_->{'severity'},$_->{'mode'},$_->{'resource'},$_->{'sdmode'}\n";
+			print REP "$_->{'host'},$_->{'time'},$_->{'prog'},$_->{'profile'},";
+        	print REP "$_->{'pid'},$_->{'severity'},$_->{'mode_deny'},$_->{'mode_req'},";
+		    print REP "$_->{'resource'},$_->{'sdmode'},$_->{'op'},$_->{'attr'},";
+		    print REP "$_->{'name_alt'},$_->{'parent'},$_->{'active_hat'},";
+		    print REP "$_->{'net_family'},$_->{'net_proto'},$_->{'net_socktype'}\n";
 
             if (($i % $numEvents) == 0 && $skip == 0) {
                 print REP "Page $page\n";
@@ -1697,8 +1649,7 @@ sub prepSingleLog {
     my @errors   = ();                                             # For non-fatal errors
     my @repList  = ();
     my $readFile = "";
-    my $eventRep = "/var/log/apparmor/reports/all-reports.rpt";    # write summary to this file - changed 04-14-2005
-                                                                   #my $eventRep = "/tmp/events.rpt";			# write summary to this file
+    my $eventRep = "/var/log/apparmor/reports/all-reports.rpt";    # write summary here 
 
     if ($args->{'logFile'}) { $readFile = $args->{'logFile'}; }
     if ($args->{'repPath'}) { $dir      = $args->{'repPath'}; }
@@ -1713,7 +1664,6 @@ sub prepSingleLog {
 
         if (open(WREP, ">$eventRep")) {
 
-#	            print WREP "Page $numPages\n";
             $numPages++;
 
             while (<RREP>) {
@@ -1771,11 +1721,17 @@ sub prepArchivedLogs {
     }
 
     # Check to see if we need to use filters
-    if ($args->{'mode'}
-        && ($args->{'mode'} =~ /All/ || $args->{'mode'} =~ /^\s*-\s*$/))
+    if ($args->{'mode_req'}
+        && ($args->{'mode_req'} =~ /All/ || $args->{'mode_req'} =~ /^\s*-\s*$/))
     {
-        delete($args->{'mode'});
+        delete($args->{'mode_req'});
     }
+    if ($args->{'mode_deny'}
+        && ($args->{'mode_deny'} =~ /All/ || $args->{'mode_deny'} =~ /^\s*-\s*$/))
+    {
+        delete($args->{'mode_deny'});
+    }
+
     if ($args->{'sdmode'}
         && ($args->{'sdmode'} =~ /All/ || $args->{'sdmode'} =~ /^\s*-\s*$/))
     {
@@ -1786,23 +1742,22 @@ sub prepArchivedLogs {
     {
         delete($args->{'resource'});
     }
-    if ($args->{'sevLevel'}
-        && ($args->{'sevLevel'} =~ /All/ || $args->{'sevLevel'} =~ /^\s*-\s*$/))
+    if ($args->{'severity'}
+        && ($args->{'severity'} =~ /All/ || $args->{'severity'} =~ /^\s*-\s*$/))
     {
-        delete($args->{'sevLevel'});
+        delete($args->{'severity'});
     }
 
-    if (   $args->{'prog'}
-        || $args->{'profile'}
-        || $args->{'pid'}
-        || $args->{'denyRes'}
-        || $args->{'mode'}
-        || $args->{'sdmode'}
-        || ($args->{'startdate'} && $args->{'enddate'}))
-    {
+    my $regExp = 'prog|profile|pid|resource|mode|severity|date|op|target|attr|net_|name_alt';
 
+    # get list of keys
+    my @keyList = keys(%$args);
+
+    # find filters in @keyList
+    if ( grep(/$regExp/, @keyList) == 1 ) {
         $useFilters = 1;
     }
+
     ############################################################
 
     # Get list of files in archived report directory
@@ -1921,38 +1876,23 @@ sub parseMultiDb {
         if ($args->{'profile'}) { next unless /$args->{'profile'}/; }
 
         # Need (epoch) 'time' element here, do we want to store 'date' instead?
-        ($rec->{'host'}, $rec->{'time'}, $rec->{'prog'}, $rec->{'profile'}, $rec->{'pid'}, $rec->{'sevLevel'}, $rec->{'mode'}, $rec->{'resource'}, $rec->{'sdmode'}) = split(/\,/, $_);
+        ($rec->{'host'},$rec->{'time'},$rec->{'prog'},$rec->{'profile'},
+        $rec->{'pid'},$rec->{'severity'},$rec->{'mode_deny'},$rec->{'mode_req'},
+        $rec->{'resource'},$rec->{'sdmode'},$rec->{'op'},$rec->{'attr'},
+        $rec->{'name_alt'},$rec->{'parent'},$rec->{'active_hat'},
+        $rec->{'net_family'},$rec->{'net_proto'},$rec->{'net_socktype'})
+        = split(/\,/, $_);
 
-# Make sure we get the time/date ref. name right.  If it's $args->"time",
-# the arg will be converted to a human-friendly "date" ref in writeEventReport().
+
+		# Get the time/date ref. name right.  If it's $args->"time",
+		# the arg will be converted to a human-friendly "date" ref in writeEventReport().
         if ($rec->{'time'} =~ /\:|\-/) {
             $rec->{'date'} = $rec->{'time'};
             delete $rec->{'time'};
         }
 
         # Check filters
-        if ($args->{'pid'} && $args->{'pid'} ne '-') {
-            next unless ($args->{'pid'} eq $rec->{'pid'});
-        }
-        if (   $args->{'sevLevel'}
-            && $args->{'sevLevel'} ne "00"
-            && $args->{'sevLevel'} ne '-')
-        {
-            if ($args->{'sevLevel'} eq "U") { $args->{'sevLevel'} = '-1'; }
-            next unless ($args->{'sevLevel'} eq $rec->{'sevLevel'});
-        }
-        if ($args->{'mode'} && $args->{'mode'} ne '-') {
-            next unless ($args->{'mode'} eq $rec->{'mode'});
-        }
-
-        if ($args->{'denyRes'} && $args->{'denyRes'} ne '-') {
-            next unless ($args->{'denyRes'} eq $rec->{'denyRes'});
-        }
-        if ($args->{'sdmode'} && $args->{'sdmode'} ne '-') {
-
-            # Needs reversal of comparison for sdmode
-            next unless ($rec->{'sdmode'} =~ /$args->{'sdmode'}/);
-        }
+		next if matchFailed($args,$rec);
 
         push(@newDb, $line);
 
@@ -1972,8 +1912,6 @@ sub parseLog {
         $eventRep = $args->{'logFile'};
     }
 
-    #my $id = keys(%$db);
-    #my $rec = undef;
     my $error     = undef;
     my $startDate = undef;
     my $endDate   = undef;
@@ -1984,12 +1922,18 @@ sub parseLog {
         $endDate   = getEpochFromNum("$args->{'enddate'}",   'end');
     }
 
-#if ( $args->{'mode'} && ( $args->{'mode'} =~ /All/ || $args->{'mode'} =~ /\s*\-\s*/) ) {}
-    if ($args->{'mode'}
-        && ($args->{'mode'} =~ /All/ || $args->{'mode'} =~ /^\s*-\s*$/))
+    if ($args->{'mode_req'}
+        && ($args->{'mode_req'} =~ /All/ || $args->{'mode_req'} =~ /^\s*-\s*$/))
     {
-        delete($args->{'mode'});
+        delete($args->{'mode_req'});
     }
+
+    if ($args->{'mode_deny'}
+        && ($args->{'mode_deny'} =~ /All/ || $args->{'mode_deny'} =~ /^\s*-\s*$/))
+    {
+        delete($args->{'mode_deny'});
+    }
+
     if ($args->{'sdmode'}
         && ($args->{'sdmode'} =~ /All/ || $args->{'sdmode'} =~ /^\s*-\s*$/))
     {
@@ -2000,10 +1944,10 @@ sub parseLog {
     {
         delete($args->{'resource'});
     }
-    if ($args->{'sevLevel'}
-        && ($args->{'sevLevel'} =~ /All/ || $args->{'sevLevel'} =~ /^\s*-\s*$/))
+    if ($args->{'severity'}
+        && ($args->{'severity'} =~ /All/ || $args->{'severity'} =~ /^\s*-\s*$/))
     {
-        delete($args->{'sevLevel'});
+        delete($args->{'severity'});
     }
 
     $args = rewriteModes($args);
@@ -2025,37 +1969,19 @@ sub parseLog {
             if ($args->{'prog'})    { next unless /$args->{'prog'}/; }
             if ($args->{'profile'}) { next unless /$args->{'profile'}/; }
 
-            # Need (epoch) 'time' element here, do we want to store 'date' instead?
-            ($rec->{'host'}, $rec->{'time'}, $rec->{'prog'}, $rec->{'profile'}, $rec->{'pid'}, $rec->{'sevLevel'}, $rec->{'mode'}, $rec->{'resource'}, $rec->{'sdmode'}) = split(/\,/, $_);
+            ($rec->{'host'}, $rec->{'time'}, $rec->{'prog'}, $rec->{'profile'},
+			$rec->{'pid'}, $rec->{'severity'}, $rec->{'mode_req'}, $rec->{'resource'},
+			$rec->{'sdmode'}) = split(/\,/, $_);
 
-# Make sure we get the time/date ref. name right.  If it's $args->"time",
-# the arg will be converted to a human-friendly "date" ref in writeEventReport().
+			# Get the time/date ref. name right.  If it's $args->{'time'}, the arg
+			# will be converted to a human-friendly date ref in writeEventReport().
             if ($rec->{'time'} =~ /\:|\-/) {
                 $rec->{'date'} = $rec->{'time'};
                 delete $rec->{'time'};
             }
 
             # Check filters
-            if ($args->{'pid'} && $args->{'pid'} ne '-') {
-                next unless ($args->{'pid'} eq $rec->{'pid'});
-            }
-            if (   $args->{'sevLevel'}
-                && $args->{'sevLevel'} ne "00"
-                && $args->{'sevLevel'} ne '-')
-            {
-                next unless ($args->{'sevLevel'} eq $rec->{'sevLevel'});
-            }
-            if ($args->{'mode'} && $args->{'mode'} ne '-') {
-                next unless ($args->{'mode'} eq $rec->{'mode'});
-            }
-            if ($args->{'denyRes'} && $args->{'denyRes'} ne '-') {
-                next unless ($args->{'denyRes'} eq $rec->{'denyRes'});
-            }
-            if ($args->{'sdmode'} && $args->{'sdmode'} ne '-') {
-
-                # Needs reversal of comparison for sdmode
-                next unless ($rec->{'sdmode'} =~ /$args->{'sdmode'}/);
-            }
+			next if matchFailed($args,$rec);
 
             push(@db, $rec);
 
@@ -2086,12 +2012,6 @@ sub parseLog {
             }
         }
 
-        # write out files to single sorted file (for state, and to speed up yast)
-        #if (! $args->{'single'} ) {
-        #	$error = writeEventReport(\@db, $args);
-        #}
-
-        # changed 04-13-05 - should probably do this, regardless
         $error = writeEventReport(\@db, $args);
 
     } else {
@@ -2099,161 +2019,6 @@ sub parseLog {
     }
 
     return $error;
-}
-
-# OLD STUFF -- delete
-
-# deprecated -- replaced by better SQL queries
-sub OLDgetEssStats {
-    my $args = shift;
-
-    my $prevTime  = '0';
-    my $prevDate  = '0';
-    my $startDate = '1104566401';    # Jan 1, 2005
-    my $endDate   = time;
-
-    if ($args->{'startdate'}) { $startDate = $args->{'startdate'}; }
-    if ($args->{'enddate'})   { $endDate   = $args->{'enddate'}; }
-
-    my $query = "SELECT * FROM events";
-
-    # hostIp, startDate, endDate, sevHi,  sevMean, numRejects
-    my $eventDb = getEvents($query, "", "$startDate", "$endDate");
-
-    my @hostIdx = ();                # Simple index to all hosts for quick host matching
-    my @hostDb  = ();                # Host-keyed data for doing REJECT stats
-
-    # Outer Loop for Raw Event db
-    for (@$eventDb) {
-
-        my $ev = $_;                 # current event record
-
-        if ($ev->{'host'}) {
-
-            # Create new host entry, or add to existing
-            if (grep(/$ev->{'host'}/, @hostIdx) == 1) {
-
-                # Inner loop, but the number of hosts should be small
-                for my $hdb (@hostDb) {
-
-                    if ($hdb->{'host'} eq $ev->{'host'}) {
-
-                        if ($hdb->{'startdate'} gt $ev->{'date'}) {
-                            $hdb->{'startdate'} = $ev->{'date'};    # Find earliest start date
-                        }
-
-                        $hdb->{'numEvents'}++;                      # tally all events reported for host
-
-                        if ($ev->{'sdmode'}) {
-                            if ($ev->{'sdmode'} =~ /PERMIT/) {
-                                $hdb->{'numPermits'}++;
-                            }
-                            if ($ev->{'sdmode'} =~ /REJECT/) {
-                                $hdb->{'numRejects'}++;
-                            }
-                            if ($ev->{'sdmode'} =~ /AUDIT/) {
-                                $hdb->{'numAudits'}++;
-                            }
-                        }
-
-                        # Add stats to host entry
-                        #if ( $ev->{'severity'} && $ev->{'severity'} =~ /\b\d+\b/ ) {}
-                        if ($ev->{'severity'} && $ev->{'severity'} != -1) {
-
-                            $hdb->{'sevNum'}++;
-                            $hdb->{'sevTotal'} = $hdb->{'sevTotal'} + $ev->{'severity'};
-
-                            if ($ev->{'severity'} > $hdb->{'sevHi'}) {
-                                $hdb->{'sevHi'} = $ev->{'severity'};
-                            }
-                        } else {
-                            $hdb->{'unknown'}++;
-                        }
-                    }
-                }
-
-            } else {
-
-                # New host
-                my $rec = undef;
-                push(@hostIdx, $ev->{'host'});    # Add host entry to index
-
-                $rec->{'host'}      = $ev->{'host'};
-                $rec->{'startdate'} = $startDate;
-
-                #$rec->{'startdate'} = $ev->{'date'};
-
-                if ($endDate) {
-                    $rec->{'enddate'} = $endDate;
-                } else {
-                    $rec->{'enddate'} = time;
-                }
-
-                # Add stats to host entry
-                if ($ev->{'sev'} && $ev->{'sev'} ne "U") {
-
-                    $rec->{'sevHi'}    = $ev->{'sev'};
-                    $rec->{'sevTotal'} = $ev->{'sev'};
-                    $rec->{'sevNum'}   = 1;
-                    $rec->{'unknown'}  = 0;
-
-                } else {
-                    $rec->{'sevHi'}    = 0;
-                    $rec->{'sevTotal'} = 0;
-                    $rec->{'sevNum'}   = 0;
-                    $rec->{'unknown'}  = 1;
-                }
-
-                # Start sdmode stats
-                $rec->{'numPermits'} = 0;
-                $rec->{'numRejects'} = 0;
-                $rec->{'numAudits'}  = 0;
-                $rec->{'numEvents'}  = 1;    # tally all events reported for host
-
-                if ($ev->{'sdmode'}) {
-                    if ($ev->{'sdmode'} =~ /PERMIT/) { $rec->{'numPermits'}++; }
-                    if ($ev->{'sdmode'} =~ /REJECT/) { $rec->{'numRejects'}++; }
-                    if ($ev->{'sdmode'} =~ /AUDIT/)  { $rec->{'numAudits'}++; }
-                }
-
-                push(@hostDb, $rec);         # Add new records to host data list
-            }
-
-        } else {
-            next;                            # Missing host info -- big problem
-        }
-    }    # END @eventDb loop
-
-    # Process simple REJECT-related stats (for Executive Security Summaries)
-    for (@hostDb) {
-
-# In the end, we want this info:
-#   - Hostname, Startdate, Enddate, # Events, # Rejects, Ave. Severity, High Severity
-
-        if ($_->{'sevTotal'} > 0 && $_->{'sevNum'} > 0) {
-            $_->{'sevMean'} = Immunix::Reports::round($_->{'sevTotal'} / $_->{'sevNum'});
-        } else {
-            $_->{'sevMean'} = 0;
-        }
-
-        # Convert dates
-        if ($_->{'startdate'} !~ /:/) {
-            $_->{'startdate'} = Immunix::Reports::getDate($startDate);
-        }
-        if ($_->{'enddate'} !~ /:/) {
-            $_->{'enddate'} = Immunix::Reports::getDate($_->{'enddate'});
-        }
-
-# Delete stuff that we may use in later versions (YaST is a silly, silly data handler)
-        delete($_->{'sevTotal'});
-        delete($_->{'sevNum'});
-        delete($_->{'numPermits'});
-        delete($_->{'numAudits'});
-        delete($_->{'unknown'});
-
-    }
-
-    return (\@hostDb);
 }
 
 1;

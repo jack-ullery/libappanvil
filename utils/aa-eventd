@@ -103,9 +103,9 @@ my @terse_buffer;
 my $date_module = "None";
 
 my %templates = (
-    "path"                => "(time,counter,type,op,profile,sdmode,mode_deny,mode_req,resource,prog,pid,severity) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+    "path"                => "(time,counter,type,op,profile,sdmode,mode_req,mode_deny,resource,prog,pid,severity) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
     "link"                => "(time,counter,type,op,profile,sdmode,resource,target,prog,pid,severity)    VALUES(?,?,?,?,?,?,?,?,?,?,?)",
-    "chattr"              => "(time,counter,type,op,profile,sdmode,resource,mode_deny,mode_req,prog,pid,severity) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+    "chattr"              => "(time,counter,type,op,profile,sdmode,resource,mode_req,mode_deny,prog,pid,severity) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
     "capability"          => "(time,counter,type,op,profile,sdmode,resource,prog,pid,severity)           VALUES(?,?,?,?,?,?,?,?,?,?)",
     "capable"             => "(time,counter,type,op,prog,pid,profile)                                    VALUES(?,?,?,?,?,?,?)",
     "unknown_hat"         => "(time,counter,type,op,profile,sdmode,resource,pid)                         VALUES(?,?,?,?,?,?,?,?)",
@@ -115,7 +115,7 @@ my %templates = (
 	"net"                 => "(time,counter,type,op,net_family,net_socktype,net_proto,pid,profile)       VALUES(?,?,?,?,?,?,?,?,?)",
     "removed"             => "(time,counter,type,op,severity)                                            VALUES(?,?,?,?,?)",
     "initialized"         => "(time,counter,type,op,resource,severity)                                   VALUES(?,?,?,?,?,?)",
-    "ctrl_var"            => "(time,counter,type,op,resource,mode_deny,mode_req,severity)                VALUES(?,?,?,?,?,?,?,?)",
+    "ctrl_var"            => "(time,counter,type,op,resource,mode_req,mode_deny,severity)                         VALUES(?,?,?,?,?,?,?,?)",
 	"profile_load"        => "(time,counter,type,op,resource,prog,pid)                                   VALUES(?,?,?,?,?,?,?)",
 );
 
@@ -236,7 +236,7 @@ sub connect_database ($) {
 
         # set up the indexes we want
         #my @indexes = qw(time type sdmode mode resource profile prog severity);
-        my @indexes = qw(time type op sdmode mode_deny resource profile prog severity);
+        my @indexes = qw(time type op sdmode mode_req mode_deny resource profile prog severity);
         for my $index (@indexes) {
             $dbh->do("CREATE INDEX " . $index . "_idx ON events($index)");
         }
@@ -420,10 +420,11 @@ sub parseEvent($) {
     my $msg = shift;
 	chomp($msg);
 
-	errlog "Event: $msg";
     my $event = LibAppArmor::parse_record($msg);
 
-	# the old 'mode' is now 'mode_deny' below
+    # resource is an alternate term for 'name1' below
+    # mode is an alternate term for 'mode_deny' below
+    $ev{'time'} = LibAppArmor::aa_log_record::swig_epoch_get($event);
     $ev{'op'} = LibAppArmor::aa_log_record::swig_operation_get($event);
     $ev{'pid'} = LibAppArmor::aa_log_record::swig_pid_get($event);
     $ev{'mode_deny'} = LibAppArmor::aa_log_record::swig_denied_mask_get($event);
@@ -448,9 +449,11 @@ sub parseEvent($) {
 
     LibAppArmor::free_record($event);
 
+    if ( ! $ev{'time'} ) { $ev{'time'} = time; }
+
     # remove null responses
     for (keys(%ev)) {
-        if ( $ev{$_} !~ /\w+/) {delete($ev{$_}); }
+		if ( ! $ev{$_} || $ev{$_} !~ /\w+/) {delete($ev{$_}); }
 		#errlog "EVENT:  $_ is $ev{$_}";
     }
 
@@ -508,8 +511,7 @@ sub process_event ($$) {
     }
 
     if ( $ev->{'sdmode'} && $ev->{'sdmode'} eq "REJECTING") {
-    #if ( $ev->{'sdmode'} && $ev->{'sdmode'} eq "4") {
-        $severity = $sevdb->rank($ev->{'prog'}, $ev->{'mode_deny'});
+        $severity = $sevdb->rank($ev->{'prog'}, $ev->{'mode_req'});
 		if ( ! $severity ) { $severity = "-1"; }
 
         # we only do notification for enforce mode events
@@ -526,7 +528,7 @@ sub process_event ($$) {
                 || (($severity == -1) && $config->{summary_unknown}))
             {
                 push @summary_buffer, [ $timestamp, $counter, "path",
-					$ev->{'prog'}, $ev->{'mode_deny'}, $ev->{'resource'} ];
+					$ev->{'prog'}, $ev->{'mode_req'}, $ev->{'resource'} ];
             }
         }
 
@@ -558,17 +560,20 @@ sub process_event ($$) {
 		$type = 'chattr';
         push(@eventList, []);
         push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},$ev->{'sdmode'},
-			$ev->{'resource'},$ev->{'mode_deny'},$ev->{'mode_req'},$ev->{'prog'},$ev->{'pid'},$severity]); 
+			$ev->{'resource'},$ev->{'mode_req'},$ev->{'mode_deny'},$ev->{'prog'},
+			$ev->{'pid'},$severity]); 
     } elsif ($ev->{'op'} eq 'capability') {
 		$type = 'capability';
         push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},$ev->{'sdmode'},
 			$ev->{'resource'},$ev->{'prog'},$ev->{'pid'},$severity]); 
     } elsif ($ev->{'op'} eq 'capable') {
 		$type = 'capable';
-        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'prog'},$ev->{'profile'},$ev->{'pid'}]); 
+        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'prog'},
+			$ev->{'profile'},$ev->{'pid'}]); 
     } elsif ($ev->{'op'} =~ /ontrol variable/ ) {
         $type = 'ctrl_var';
-        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'resource'},$ev->{'mode_deny'},$ev->{'mode_req'},,$severity]); 
+        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'resource'},
+			$ev->{'mode_req'},$ev->{'mode_deny'},$severity]); 
 	} elsif ($ev->{'op'} eq 'unknown_hat') {
 		$type = 'unknown_hat';
         push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},$ev->{'sdmode'},
@@ -583,7 +588,8 @@ sub process_event ($$) {
 			$ev->{'pid'}]); 
 	} elsif ($ev->{'op'} eq 'profile_load') {
 		$type = 'profile_load';
-		push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'resource'},$ev->{'prog'},$ev->{'pid'}]);
+		push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'resource'},
+			$ev->{'prog'},$ev->{'pid'}]);
 	} elsif ($ev->{'op'} eq 'profile_replace') {
 		$type = 'profile_replacement';
         push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},$ev->{'sdmode'},
@@ -601,8 +607,9 @@ sub process_event ($$) {
     } else {
         $type = 'path';
 		if ( ! $ev->{'prog'} ) { $ev->{'prog'} = "NIL"; }
-        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},$ev->{'sdmode'},
-			$ev->{'mode_deny'},$ev->{'mode_req'},$ev->{'resource'},$ev->{'prog'},$ev->{'pid'},$severity]); 
+        push(@eventList, [$time,$counter,$type,$ev->{'op'},$ev->{'profile'},
+			$ev->{'sdmode'},$ev->{'mode_req'},$ev->{'mode_deny'},$ev->{'resource'},
+			$ev->{'prog'},$ev->{'pid'},$severity]); 
     }
 
     push(@commit_buffer, @eventList);
@@ -850,8 +857,6 @@ open(ERRLOG, ">>$dbdir/event-dispatch.log");
 my $oldfd = select(ERRLOG);
 $| = 1;
 select($oldfd);
-
-errlog "Starting...";
 
 $config = readconfig();
 
