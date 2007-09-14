@@ -342,15 +342,9 @@ old_logprof_fork_addition:
 	;
 
 old_profile:
-	  TOK_PATH
-		{
-			$$ = strdup($1);
-			free($1);
-		}
-	| TOK_NULL_COMPLAIN
-		{
-			$$ = strdup("null-complain-profile");
-		}
+	  TOK_PATH { $$ = strdup($1); free($1); }
+	| TOK_ID   { $$ = strdup($1); free($1); }
+	| TOK_NULL_COMPLAIN { $$ = strdup("null-complain-profile"); }
 	;
 
 audit_msg: TOK_KEY_MSG TOK_EQUALS audit_id

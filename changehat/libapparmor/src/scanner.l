@@ -214,7 +214,7 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {old_unknown_hat}	{ BEGIN(sub_id); return(TOK_OLD_UNKNOWN_HAT); }
 {old_unknown_profile}	{ return(TOK_OLD_UNKNOWN_PROFILE); }
 {old_missing_profile}	{ return(TOK_OLD_MISSING_PROFILE); }
-{old_active}		{ return(TOK_OLD_ACTIVE); }
+{old_active}		{ BEGIN(sub_id); return(TOK_OLD_ACTIVE); }
 {old_access}		{ return(TOK_OLD_ACCESS); }
 {old_to}		{ return(TOK_OLD_TO); }
 {old_pipe}		{ return(TOK_OLD_PIPE); }
