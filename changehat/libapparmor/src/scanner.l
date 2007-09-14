@@ -40,6 +40,7 @@ ID		[^ \t\n\(\)="'!]
 path		"/"{ID}*
 period		"\."
 modes           [RrWwXxIiLlUuPpMm]
+
 /* New message types */
 
 reject_type		"APPARMOR_DENIED"
@@ -97,10 +98,19 @@ key_sock_type		"sock_type"
 key_protocol		"protocol"
 audit			"audit"
 
+/* syslog tokens */
+syslog_kernel		kernel{colon}
+syslog_month 		Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?
+syslog_time 		{digits}{digits}{colon}{digits}{digits}{colon}{digits}{digits}
+syslog_hostname		[[:alnum:]_-]+
+dmesg_timestamp		\[[[:digit:] ]{5,}\.[[:digit:]]{6,}\]
+
 %x quoted_string
 %x sub_id
 %x audit_id
 %x single_quoted_string
+%x hostname
+%x dmesg_timestamp
 
 %%
 %{
@@ -133,7 +143,6 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 		}
 	{equals}		{ return(TOK_EQUALS); }
 	}
-
 
 
 "'"			{ string_buf_ptr = string_buf; BEGIN(single_quoted_string); }
@@ -192,7 +201,8 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {unknown_type}		{ char *yptr = yytext;
 			  while (*yptr && *yptr != '[')
 			  	yptr++;
-			  yylval->t_long = atol(yptr + 1); /* skip '[' */
+			  if (*yptr)
+			  	yylval->t_long = atol(yptr + 1); /* skip '[' */
 			  return(TOK_TYPE_UNKNOWN);
 			}
 {period}		{ return(TOK_PERIOD); }
@@ -237,8 +247,24 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {key_sock_type}		{ return(TOK_KEY_SOCK_TYPE); }
 {key_protocol}		{ return(TOK_KEY_PROTOCOL); }
 
+{syslog_kernel}		{ BEGIN(dmesg_timestamp); return(TOK_SYSLOG_KERNEL); }
+{syslog_month}		{ yylval->t_str = strdup(yytext); return(TOK_DATE_MONTH); }
+{syslog_time}		{ yylval->t_str = strdup(yytext); BEGIN(hostname); return(TOK_DATE_TIME); }
+
+<hostname>{
+	{ws}+		{ /* eat whitespace */ }
+	{syslog_hostname} { yylval->t_str = strdup(yytext); BEGIN(INITIAL); return(TOK_ID); }
+}
+
+<dmesg_timestamp>{
+	{ws}+		{ /* eat whitespace */ }
+	{dmesg_timestamp} { yylval->t_str = strdup(yytext); BEGIN(INITIAL); return(TOK_DMESG_STAMP); }
+	.		{ BEGIN(INITIAL); yyless(0); }
+}
+
 {audit}			{ BEGIN(audit_id); return(TOK_AUDIT); }
 {null_complain}		{ return(TOK_NULL_COMPLAIN); }
-{key_image}		{  BEGIN(sub_id); return(TOK_KEY_IMAGE); }
+{key_image}		{ BEGIN(sub_id); return(TOK_KEY_IMAGE); }
+
 
 %%

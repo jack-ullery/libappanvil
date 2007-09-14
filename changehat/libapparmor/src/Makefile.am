@@ -1,10 +1,11 @@
 INCLUDES = $(all_includes)
 
 BUILT_SOURCES = grammar.h scanner.h
+AM_LFLAGS = -v
 AM_YFLAGS = -d -p aalogparse_
 AM_CFLAGS = @CFLAGS@ -D_GNU_SOURCE -Wall
 scanner.h: scanner.l
-	$(LEX) scanner.l
+	$(LEX) -v $<
 
 scanner.c: scanner.l
 

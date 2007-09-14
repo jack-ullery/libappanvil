@@ -71,7 +71,8 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 
 %type <t_str> old_profile;
 %token <t_long> TOK_DIGITS TOK_TYPE_UNKNOWN
-%token <t_str> TOK_QUOTED_STRING TOK_PATH TOK_ID TOK_NULL_COMPLAIN TOK_MODE TOK_SINGLE_QUOTED_STRING TOK_AUDIT_DIGITS
+%token <t_str> TOK_QUOTED_STRING TOK_PATH TOK_ID TOK_NULL_COMPLAIN TOK_MODE TOK_DMESG_STAMP
+%token <t_str> TOK_SINGLE_QUOTED_STRING TOK_AUDIT_DIGITS TOK_DATE_MONTH TOK_DATE_TIME
 
 %token TOK_EQUALS
 %token TOK_COLON
@@ -85,7 +86,6 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_TYPE_HINT
 %token TOK_TYPE_STATUS
 %token TOK_TYPE_ERROR
-%token TOK_TYPE_UNKNOWN
 %token TOK_OLD_TYPE_APPARMOR
 %token TOK_OLD_APPARMOR_REJECT
 %token TOK_OLD_APPARMOR_PERMIT
@@ -128,24 +128,36 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_SOCK_TYPE
 %token TOK_KEY_PROTOCOL
 
+%token TOK_SYSLOG_KERNEL
+
 %%
 
-type: TOK_KEY_TYPE TOK_EQUALS type_syntax ;
+log_message: audit_type
+	| syslog_type
+	;
+
+audit_type: TOK_KEY_TYPE TOK_EQUALS type_syntax ;
 
 type_syntax: old_syntax { ret_record->version = AA_RECORD_SYNTAX_V1; }
-	 | new_syntax { ret_record->version = AA_RECORD_SYNTAX_V2; }
+	| new_syntax { ret_record->version = AA_RECORD_SYNTAX_V2; }
 	;
 
 old_syntax: TOK_OLD_TYPE_APPARMOR audit_msg old_msg ;
 
 new_syntax: 
-	  TOK_TYPE_REJECT audit_msg key { ret_record->event = AA_RECORD_DENIED; }
-	| TOK_TYPE_AUDIT audit_msg key { ret_record->event = AA_RECORD_AUDIT; }
-	| TOK_TYPE_COMPLAIN audit_msg key { ret_record->event = AA_RECORD_ALLOWED; }
-	| TOK_TYPE_HINT audit_msg key { ret_record->event = AA_RECORD_HINT; }
-	| TOK_TYPE_STATUS audit_msg key { ret_record->event = AA_RECORD_STATUS; }
-	| TOK_TYPE_ERROR audit_msg key { ret_record->event = AA_RECORD_ERROR; }
-	| TOK_TYPE_UNKNOWN audit_msg key { ret_record->event = lookup_aa_event($1); }
+	  TOK_TYPE_REJECT audit_msg key_list { ret_record->event = AA_RECORD_DENIED; }
+	| TOK_TYPE_AUDIT audit_msg key_list { ret_record->event = AA_RECORD_AUDIT; }
+	| TOK_TYPE_COMPLAIN audit_msg key_list { ret_record->event = AA_RECORD_ALLOWED; }
+	| TOK_TYPE_HINT audit_msg key_list { ret_record->event = AA_RECORD_HINT; }
+	| TOK_TYPE_STATUS audit_msg key_list { ret_record->event = AA_RECORD_STATUS; }
+	| TOK_TYPE_ERROR audit_msg key_list { ret_record->event = AA_RECORD_ERROR; }
+	| TOK_TYPE_UNKNOWN audit_msg key_list { ret_record->event = lookup_aa_event($1); }
+	;
+
+syslog_type:
+	  syslog_date TOK_ID TOK_SYSLOG_KERNEL audit_id old_msg { ret_record->version = AA_RECORD_SYNTAX_V1; }
+	| syslog_date TOK_ID TOK_SYSLOG_KERNEL audit_id key_list { ret_record->version = AA_RECORD_SYNTAX_V2; }
+	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP audit_id key_list { ret_record->version = AA_RECORD_SYNTAX_V2; }
 	;
 
 old_msg:
@@ -336,22 +348,26 @@ old_profile:
 		}
 	;
 
-audit_msg: TOK_KEY_MSG TOK_EQUALS TOK_AUDIT TOK_OPEN_PAREN TOK_AUDIT_DIGITS TOK_PERIOD TOK_AUDIT_DIGITS TOK_COLON TOK_AUDIT_DIGITS TOK_CLOSE_PAREN TOK_COLON
+audit_msg: TOK_KEY_MSG TOK_EQUALS audit_id
+
+audit_id: TOK_AUDIT TOK_OPEN_PAREN TOK_AUDIT_DIGITS TOK_PERIOD TOK_AUDIT_DIGITS TOK_COLON TOK_AUDIT_DIGITS TOK_CLOSE_PAREN TOK_COLON
 	{
-		asprintf(&ret_record->audit_id, "%s.%s:%s", $5, $7, $9);
-		ret_record->epoch = atol($5);
-		ret_record->audit_sub_id = atoi($9);
+		asprintf(&ret_record->audit_id, "%s.%s:%s", $3, $5, $7);
+		ret_record->epoch = atol($3);
+		ret_record->audit_sub_id = atoi($7);
+		free($3);
 		free($5);
 		free($7);
-		free($9);
 	} ;
 
-key:
-	  key_list
-	| key key_list
+syslog_date: TOK_DATE_MONTH TOK_DIGITS TOK_DATE_TIME { /* do nothing? */ }
 	;
 
-key_list: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
+key_list: key
+	| key_list key
+	;
+
+key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->operation = strdup($3); free($3); }
 	| TOK_KEY_NAME TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->name = strdup($3); free($3); }
