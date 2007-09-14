@@ -30,6 +30,32 @@ void aalogparse_error(void *scanner, char const *s)
 {
 	printf("Error: %s\n", s);
 }
+
+struct aa_type_table {
+	unsigned int audit_type;
+	aa_record_event_type event;
+};
+
+static struct aa_type_table aa_type_table[] = {
+	{AUDIT_APPARMOR_AUDIT,   AA_RECORD_AUDIT},
+	{AUDIT_APPARMOR_ALLOWED, AA_RECORD_ALLOWED},
+	{AUDIT_APPARMOR_DENIED,  AA_RECORD_DENIED},
+	{AUDIT_APPARMOR_HINT,    AA_RECORD_HINT},
+	{AUDIT_APPARMOR_STATUS,  AA_RECORD_STATUS},
+	{AUDIT_APPARMOR_ERROR,   AA_RECORD_ERROR},
+	{0,                      AA_RECORD_INVALID},
+};
+
+aa_record_event_type lookup_aa_event(unsigned int type)
+{
+	int i;
+
+	for (i = 0; aa_type_table[i].audit_type != 0; i++)
+		if (type == aa_type_table[i].audit_type)
+			break;
+
+	return aa_type_table[i].event;
+}
 %}
 
 %defines
@@ -44,7 +70,7 @@ void aalogparse_error(void *scanner, char const *s)
 }
 
 %type <t_str> old_profile;
-%token <t_long> TOK_DIGITS
+%token <t_long> TOK_DIGITS TOK_TYPE_UNKNOWN
 %token <t_str> TOK_QUOTED_STRING TOK_PATH TOK_ID TOK_NULL_COMPLAIN TOK_MODE TOK_SINGLE_QUOTED_STRING TOK_AUDIT_DIGITS
 
 %token TOK_EQUALS
@@ -59,6 +85,7 @@ void aalogparse_error(void *scanner, char const *s)
 %token TOK_TYPE_HINT
 %token TOK_TYPE_STATUS
 %token TOK_TYPE_ERROR
+%token TOK_TYPE_UNKNOWN
 %token TOK_OLD_TYPE_APPARMOR
 %token TOK_OLD_APPARMOR_REJECT
 %token TOK_OLD_APPARMOR_PERMIT
@@ -118,6 +145,7 @@ new_syntax:
 	| TOK_TYPE_HINT audit_msg key { ret_record->event = AA_RECORD_HINT; }
 	| TOK_TYPE_STATUS audit_msg key { ret_record->event = AA_RECORD_STATUS; }
 	| TOK_TYPE_ERROR audit_msg key { ret_record->event = AA_RECORD_ERROR; }
+	| TOK_TYPE_UNKNOWN audit_msg key { ret_record->event = lookup_aa_event($1); }
 	;
 
 old_msg:
@@ -353,6 +381,8 @@ key_list: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->net_sock_type = strdup($3); free($3); }
 	| TOK_KEY_PROTOCOL TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->net_protocol = strdup($3); free($3);}
+	| TOK_KEY_TYPE TOK_EQUALS TOK_DIGITS
+	{ ret_record->event = lookup_aa_event($3);}
 	;
 
 %%

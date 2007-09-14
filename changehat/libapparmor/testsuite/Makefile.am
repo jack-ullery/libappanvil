@@ -11,7 +11,8 @@ noinst_PROGRAMS = test_multi.multi
 
 test_multi_multi_SOURCES	= test_multi.c
 test_multi_multi_CFLAGS		= $(CFLAGS) -Wall
-test_multi_multi_LDFLAGS	= $(LDFLAGS) ../src/.libs/libapparmor.a
+test_multi_multi_LDFLAGS	= $(LDFLAGS)
+test_multi_multi_LDADD		= ../src/.libs/libapparmor.a
 
 clean-local:
 	rm -f tmp.err.* tmp.out.* site.exp site.bak

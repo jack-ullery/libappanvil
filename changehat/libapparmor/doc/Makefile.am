@@ -1,3 +1,5 @@
+## Process this file with automake to produce Makefile.in
+
 POD2MAN = pod2man
 
 man_MANS = aa_change_hat.2

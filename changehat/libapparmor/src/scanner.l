@@ -25,6 +25,8 @@
 %{
 
 #include "grammar.h"
+#include "aalogparse.h"
+#include "parser.h"
 %}
 
 ws		[ \t\r\n]
@@ -46,6 +48,7 @@ complain_type		"APPARMOR_ALLOWED"
 hint_type		"APPARMOR_HINT"
 status_type		"APPARMOR_STATUS"
 error_type		"APPARMOR_ERROR"
+unknown_type		UNKNOWN\[{digits}+\]
 
 /* Old message tokens */
 
@@ -186,6 +189,12 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {hint_type}		{ return(TOK_TYPE_HINT); }
 {status_type}		{ return(TOK_TYPE_STATUS); }
 {error_type}		{ return(TOK_TYPE_ERROR); }
+{unknown_type}		{ char *yptr = yytext;
+			  while (*yptr && *yptr != '[')
+			  	yptr++;
+			  yylval->t_long = atol(yptr + 1); /* skip '[' */
+			  return(TOK_TYPE_UNKNOWN);
+			}
 {period}		{ return(TOK_PERIOD); }
 
 {old_apparmor_type}	{ return(TOK_OLD_TYPE_APPARMOR); }

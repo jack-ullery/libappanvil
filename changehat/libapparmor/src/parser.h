@@ -22,5 +22,14 @@
 extern void _init_log_record(aa_log_record *record);
 extern aa_log_record *_parse_yacc(char *str);
 
+/* FIXME: this ought to be pulled from <linux/audit.h> but there's no
+ * guarantee these will exist there. */
+#define AUDIT_APPARMOR_AUDIT    1501    /* AppArmor audited grants */
+#define AUDIT_APPARMOR_ALLOWED  1502    /* Allowed Access for learning */
+#define AUDIT_APPARMOR_DENIED   1503
+#define AUDIT_APPARMOR_HINT     1504    /* Process Tracking information */
+#define AUDIT_APPARMOR_STATUS   1505    /* Changes in config */
+#define AUDIT_APPARMOR_ERROR    1506    /* Internal AppArmor Errors */
+
 #endif
 
