@@ -148,6 +148,7 @@ type_syntax: old_syntax { ret_record->version = AA_RECORD_SYNTAX_V1; }
 	;
 
 old_syntax: TOK_OLD_TYPE_APPARMOR audit_msg old_msg ;
+	| TOK_TYPE_UNKNOWN audit_msg old_msg;
 
 new_syntax: 
 	  TOK_TYPE_REJECT audit_msg key_list { ret_record->event = AA_RECORD_DENIED; }
