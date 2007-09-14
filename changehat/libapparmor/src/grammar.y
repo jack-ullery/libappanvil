@@ -99,6 +99,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_OLD_ACTIVE
 %token TOK_OLD_UNKNOWN_PROFILE
 %token TOK_OLD_MISSING_PROFILE
+%token TOK_OLD_CHANGING_PROFILE
 %token TOK_OLD_ACCESS
 %token TOK_OLD_TO
 %token TOK_OLD_PIPE
@@ -284,17 +285,20 @@ old_permit_reject_path_pipe_extended:
 		}
 	;
 old_logprof_syntax:
-		  old_logprof_syntax2 TOK_KEY_PID TOK_EQUALS TOK_DIGITS 
-			TOK_KEY_PROFILE TOK_EQUALS old_profile TOK_OLD_ACTIVE TOK_EQUALS old_profile
-			{
-				ret_record->pid = $4;
-				ret_record->profile = strdup($7);
-				free($7);
-				ret_record->active_hat = strdup($10);
-				free($10);
-			}
-		| old_logprof_fork_syntax
-		;
+	  old_logprof_syntax2 key_pid
+		TOK_KEY_PROFILE TOK_EQUALS old_profile TOK_OLD_ACTIVE TOK_EQUALS old_profile
+		{
+			ret_record->profile = strdup($5);
+			free($5);
+			ret_record->active_hat = strdup($8);
+			free($8);
+		}
+	| old_logprof_fork_syntax
+	| TOK_OLD_CHANGING_PROFILE key_pid
+		{
+			ret_record->profile = strdup("null-complain-profile");
+		}
+	;
 
 old_logprof_syntax2:
 	  TOK_OLD_UNKNOWN_PROFILE TOK_KEY_IMAGE TOK_EQUALS TOK_ID
@@ -304,7 +308,7 @@ old_logprof_syntax2:
 			ret_record->name = strdup($4);
 			free($4);
 		}
-	| TOK_OLD_MISSING_PROFILE TOK_KEY_IMAGE TOK_EQUALS TOK_ID 
+	| TOK_OLD_MISSING_PROFILE TOK_KEY_IMAGE TOK_EQUALS TOK_ID
 		{
 			ret_record->operation = strdup("exec");
 			ret_record->info = strdup("mandatory profile missing");
@@ -314,7 +318,7 @@ old_logprof_syntax2:
 	| TOK_OLD_UNKNOWN_HAT TOK_ID
 		{
 			ret_record->operation = strdup("change_hat");
-			ret_record->name = strdup($2); 
+			ret_record->name = strdup($2);
 			free($2);
 			ret_record->info = strdup("unknown_hat");
 		}
@@ -322,12 +326,11 @@ old_logprof_syntax2:
 
 /* TODO: Clean this up */
 old_logprof_fork_syntax:
-	  TOK_OLD_FORK TOK_KEY_PID TOK_EQUALS TOK_DIGITS
+	  TOK_OLD_FORK key_pid
 		TOK_OLD_CHILD TOK_EQUALS TOK_DIGITS old_logprof_fork_addition
 	{
 		ret_record->operation = strdup("clone");
-		ret_record->task = $7;
-		ret_record->pid = $4;
+		ret_record->task = $5;
 	}
 	;
 
@@ -349,6 +352,7 @@ old_profile:
 	;
 
 audit_msg: TOK_KEY_MSG TOK_EQUALS audit_id
+	;
 
 audit_id: TOK_AUDIT TOK_OPEN_PAREN TOK_AUDIT_DIGITS TOK_PERIOD TOK_AUDIT_DIGITS TOK_COLON TOK_AUDIT_DIGITS TOK_CLOSE_PAREN TOK_COLON
 	{
@@ -387,8 +391,7 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->magic_token = $3;}
 	| TOK_KEY_INFO TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->info = strdup($3); free($3);}
-	| TOK_KEY_PID TOK_EQUALS TOK_DIGITS
-	{ ret_record->pid = $3;}
+	| key_pid
 	| TOK_KEY_PROFILE TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->profile = strdup($3); free($3);}
 	| TOK_KEY_FAMILY TOK_EQUALS TOK_QUOTED_STRING
@@ -401,6 +404,8 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->event = lookup_aa_event($3);}
 	;
 
+key_pid: TOK_KEY_PID TOK_EQUALS TOK_DIGITS { ret_record->pid = $3; }
+	;
 %%
 
 aa_log_record *
