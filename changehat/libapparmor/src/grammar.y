@@ -26,9 +26,14 @@
 #include "scanner.h"
 
 aa_log_record *ret_record;
+
+/* Since we're a library, on any errors we don't want to print out any
+ * error messages. We should probably add a debug interface that does
+ * emit messages when asked for. */
 void aalogparse_error(void *scanner, char const *s)
 {
-	printf("Error: %s\n", s);
+	/* printf("Error: %s\n", s); */
+	ret_record->event = AA_RECORD_INVALID;
 }
 
 struct aa_type_table {
