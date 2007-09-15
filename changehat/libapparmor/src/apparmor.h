@@ -1,6 +1,6 @@
 /*   $Id: apparmor.h 132 2006-09-28 07:45:55Z steve-beattie $
 
-     Copyright (c) 2003, 2004, 2005, 2006 Novell, Inc. (All rights reserved)
+     Copyright (c) 2003-2007 Novell, Inc. (All rights reserved)
 
      The libapparmor library is licensed under the terms of the GNU
      Lesser General Public License, version 2.1. Please see the file
@@ -18,7 +18,7 @@ __BEGIN_DECLS
 
 extern int (change_hat)(const char *subprofile, unsigned int magic_token);
 extern int aa_change_hat(const char *subprofile, unsigned long magic_token);
-extern int aa_change_profile(const char *profile, unsigned long magic_token);
+extern int aa_change_profile(const char *profile);
 
 #define change_hat(X, Y) aa_change_hat((X), (Y))
 

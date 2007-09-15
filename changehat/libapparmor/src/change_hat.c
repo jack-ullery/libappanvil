@@ -1,6 +1,6 @@
 /*   $Id: change_hat.c 13 2006-04-12 21:43:34Z steve-beattie $
 
-     Copyright (c) 2003, 2004, 2005, 2006 Novell, Inc. (All rights reserved)
+     Copyright (c) 2003-2007 Novell, Inc. (All rights reserved)
 
      The libapparmor library is licensed under the terms of the GNU
      Lesser General Public License, version 2.1. Please see the file
@@ -24,29 +24,15 @@
 #define default_symbol_version(real, name, version) \
 		__asm__ (".symver " #real "," #name "@@" #version)
 
-static int do_change_x(const char *cmd, const char *name, unsigned long token)
+static int setprocattr(const char *buf, int len)
 {
 	int rc = -1;
-	int fd, ret, len = 0, ctlerr = 0;
-	char *buf = NULL;
-	const char *fmt = "%s %016x^%s";
+	int fd, ret, ctlerr = 0;
 	char *ctl = NULL;
 	pid_t tid = syscall(SYS_gettid);
 
-	/* both may not be null */
-	if (!(token || name)) {
+	if (!buf) {
 		errno = EINVAL;
-		goto out;
-	}
-
-	if (name && strnlen(name, PATH_MAX + 1) > PATH_MAX) {
-		errno = EPROTO;
-		goto out;
-	}
-
-	len = asprintf(&buf, fmt, cmd, token,
-		       name ? name : "");
-	if (len < 0) {
 		goto out;
 	}
 
@@ -76,11 +62,6 @@ static int do_change_x(const char *cmd, const char *name, unsigned long token)
 	(void)close(fd);
 
 out:
-	if (buf) {
-		/* clear local copy of magic token before freeing */
-		memset(buf, '\0', len);
-		free(buf);
-	}
 	if (ctl) {
 		free(ctl);
 	}
@@ -89,7 +70,35 @@ out:
 
 int aa_change_hat(const char *subprofile, unsigned long token)
 {
-	return do_change_x("changehat", subprofile, token);
+	int rc = -1;
+	int len = 0;
+	char *buf = NULL;
+	const char *fmt = "changehat %016x^%s";
+
+	/* both may not be null */
+	if (!(token || subprofile)) {
+		errno = EINVAL;
+		goto out;
+	}
+
+	if (subprofile && strnlen(subprofile, PATH_MAX + 1) > PATH_MAX) {
+		errno = EPROTO;
+		goto out;
+	}
+
+	len = asprintf(&buf, fmt, token, subprofile ? subprofile : "");
+	if (len < 0) {
+		goto out;
+	}
+
+	rc = setprocattr(buf, len);
+out:
+	if (buf) {
+		/* clear local copy of magic token before freeing */
+		memset(buf, '\0', len);
+		free(buf);
+	}
+	return rc;
 }
 
 /* original change_hat interface */
@@ -98,9 +107,25 @@ int __change_hat(char *subprofile, unsigned int token)
 	return aa_change_hat(subprofile, (unsigned long) token);
 }
 
-int aa_change_profile(const char *profile, unsigned long token)
+int aa_change_profile(const char *profile)
 {
-	return do_change_x("changeprofile", profile, token);
+	char *buf = NULL;
+	int len;
+	int rc;
+
+	if (!profile) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	len = asprintf(&buf, "changeprofile %s", profile);
+	if (len < 0)
+		return -1;
+
+	rc = setprocattr(buf, len);
+
+	free(buf);
+	return rc;
 }
 
 /* create an alias for the old change_hat@IMMUNIX_1.0 symbol */
