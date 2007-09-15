@@ -6,7 +6,7 @@
 
 Name:		libapparmor1
 Version:	2.2
-Release:	1
+Release:	2.20070914
 License:	LGPL
 Group:		Development/Libraries/C and C++
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
@@ -17,6 +17,8 @@ Provides:	libimmunix
 Obsoletes:	libapparmor
 Obsoletes:	libimmunix
 Summary: A utility library for AppArmor
+
+%define aalibversion 1.0.2
 
 %description
 -
@@ -58,9 +60,9 @@ mkdir ${RPM_BUILD_ROOT}/%{_lib}
 # this is really hacky
 rm ${RPM_BUILD_ROOT}/%{_libdir}/libapparmor.so
 rm ${RPM_BUILD_ROOT}/%{_libdir}/libimmunix.so
-cp ${RPM_BUILD_ROOT}/%{_libdir}/libapparmor.so.1.0.1 ${RPM_BUILD_ROOT}/%{_lib}
-cp ${RPM_BUILD_ROOT}/%{_libdir}/libimmunix.so.1.0.1 ${RPM_BUILD_ROOT}/%{_lib}
-ln -s /%{_lib}/libapparmor.so.1.0.1 ${RPM_BUILD_ROOT}/%{_libdir}/libapparmor.so
+cp ${RPM_BUILD_ROOT}/%{_libdir}/libapparmor.so.%{aalibversion} ${RPM_BUILD_ROOT}/%{_lib}
+cp ${RPM_BUILD_ROOT}/%{_libdir}/libimmunix.so.%{aalibversion} ${RPM_BUILD_ROOT}/%{_lib}
+ln -s /%{_lib}/libapparmor.so.%{aalibversion} ${RPM_BUILD_ROOT}/%{_libdir}/libapparmor.so
 
 find $RPM_BUILD_ROOT -name .packlist -exec rm -f {} \;
 find $RPM_BUILD_ROOT -name perllocal.pod -exec rm -f {} \;
@@ -100,6 +102,11 @@ rm -rf "$RPM_BUILD_ROOT"
 %{perl_vendorarch}/LibAppArmor.pm
 
 %changelog
+* Fri Sep 14 2007 - sbeattie@suse.de
+- aalogparse: add support for type=15xx audit field
+- aalogparse: add support for audit messages thru syslog
+- aalogparse: reduce noise to stdout on syntax errors
+- aalogparse: add support for more missing message types
 * Fri Aug 17 2007 - sbeattie@suse.de
 - Fix broken symlink for old change_hat(2) manpage
 * Wed Aug 15 2007 - sbeattie@suse.de
