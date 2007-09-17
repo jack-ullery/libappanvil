@@ -2070,11 +2070,13 @@ sub parse_log_record_v_2_1 ($) {
 
     s/\s$//;
 
+    # audit_log_untrustedstring() is used for name, name2, and profile in
+    # order to escape strings with special characters
     for my $key (keys %$e) {
-        # if we have an even number of hex characters...
-        if ($key eq "name" && $e->{$key} =~ /^([0-9a-f]{2})+$/i) {
-            # unpack the hex string.
-            # NOTE: this might need unpack("h", ...) instead of "H"
+        next unless $key =~ /^(name|name2|profile)$/;
+        # needs to be an even number of hex characters
+        if ($e->{$key} =~ /^([0-9a-f]{2})+$/i) {
+            # convert the hex string back to a raw string
             $e->{$key} = pack("H*", $e->{$key});
         }
     }
