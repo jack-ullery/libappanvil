@@ -4464,7 +4464,8 @@ sub writenetdomain ($) {
     my @data;
     # dump out the netdomain entries...
     if (exists $profile_data->{netdomain}) {
-        if ( $profile_data->{netdomain} == 1 ) {
+        if ( $profile_data->{netdomain} == 1 ||
+             $profile_data->{netdomain} eq "all") {
             push @data, "  network,";
         } else {
             for my $fam (sort keys %{$profile_data->{netdomain}}) {
