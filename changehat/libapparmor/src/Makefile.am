@@ -25,4 +25,9 @@ libapparmor_la_LDFLAGS = -version-info 1:2:0 -XCClinker -dynamic \
 libimmunix_la_SOURCES = change_hat.c libimmunix_warning.c
 libimmunix_la_LDFLAGS = -version-info 1:2:0 -Wl,--version-script=libapparmor.map -Wl,-soname=libimmunix.so.1
 
+tst_aalogmisc_SOURCES = tst_aalogmisc.c
+tst_aalogmisc_LDADD = .libs/libapparmor.a
+check_PROGRAMS = tst_aalogmisc
+TESTS = $(check_PROGRAMS)
+
 EXTRA_DIST = grammar.y scanner.l libapparmor.map

@@ -6,7 +6,7 @@
 
 Name:		libapparmor1
 Version:	2.2
-Release:	2.20070914
+Release:	3.20070916
 License:	LGPL
 Group:		Development/Libraries/C and C++
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
@@ -102,11 +102,12 @@ rm -rf "$RPM_BUILD_ROOT"
 %{perl_vendorarch}/LibAppArmor.pm
 
 %changelog
-* Fri Sep 14 2007 - sbeattie@suse.de
+* Sun Sep 16 2007 - sbeattie@suse.de
 - aalogparse: add support for type=15xx audit field
 - aalogparse: add support for audit messages thru syslog
 - aalogparse: reduce noise to stdout on syntax errors
 - aalogparse: add support for more missing message types
+- aalogparse: parse messages w/safe (hex) string encodings
 * Fri Aug 17 2007 - sbeattie@suse.de
 - Fix broken symlink for old change_hat(2) manpage
 * Wed Aug 15 2007 - sbeattie@suse.de

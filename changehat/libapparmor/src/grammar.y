@@ -74,10 +74,11 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 	long	t_long;
 }
 
-%type <t_str> old_profile;
+%type <t_str> old_profile, safe_string;
 %token <t_long> TOK_DIGITS TOK_TYPE_UNKNOWN
 %token <t_str> TOK_QUOTED_STRING TOK_PATH TOK_ID TOK_NULL_COMPLAIN TOK_MODE TOK_DMESG_STAMP
 %token <t_str> TOK_SINGLE_QUOTED_STRING TOK_AUDIT_DIGITS TOK_DATE_MONTH TOK_DATE_TIME
+%token <t_str> TOK_HEXSTRING
 
 %token TOK_EQUALS
 %token TOK_COLON
@@ -373,9 +374,9 @@ key_list: key
 
 key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->operation = strdup($3); free($3); }
-	| TOK_KEY_NAME TOK_EQUALS TOK_QUOTED_STRING
+	| TOK_KEY_NAME TOK_EQUALS safe_string
 	{ ret_record->name = strdup($3); free($3); }
-	| TOK_KEY_NAME2 TOK_EQUALS TOK_QUOTED_STRING
+	| TOK_KEY_NAME2 TOK_EQUALS safe_string
 	{ ret_record->name2 = strdup($3); free($3); }
 	| TOK_KEY_DENIED_MASK TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->denied_mask = strdup($3); free($3);}
@@ -392,7 +393,7 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	| TOK_KEY_INFO TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->info = strdup($3); free($3);}
 	| key_pid
-	| TOK_KEY_PROFILE TOK_EQUALS TOK_QUOTED_STRING
+	| TOK_KEY_PROFILE TOK_EQUALS safe_string
 	{ ret_record->profile = strdup($3); free($3);}
 	| TOK_KEY_FAMILY TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->net_family = strdup($3); free($3);}
@@ -406,6 +407,11 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 
 key_pid: TOK_KEY_PID TOK_EQUALS TOK_DIGITS { ret_record->pid = $3; }
 	;
+
+safe_string: TOK_QUOTED_STRING
+	| TOK_HEXSTRING
+	;
+
 %%
 
 aa_log_record *

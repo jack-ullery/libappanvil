@@ -33,11 +33,13 @@ ws		[ \t\r\n]
 
 equals		"="
 digits		[0-9]+
+hex		[A-F0-9]
 colon		":"
 open_paren	"("
 close_paren	")"
 ID		[^ \t\n\(\)="'!]
 path		"/"{ID}*
+hexstring	({hex}{hex})+
 period		"\."
 modes           [RrWwXxIiLlUuPpMm]
 
@@ -112,6 +114,7 @@ dmesg_timestamp		\[[[:digit:] ]{5,}\.[[:digit:]]{6,}\]
 %x single_quoted_string
 %x hostname
 %x dmesg_timestamp
+%x safe_string
 
 %%
 %{
@@ -184,6 +187,15 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 					*string_buf_ptr++ = *yptr++;
 				}
 			}
+
+<safe_string>{
+	"'"		{ string_buf_ptr = string_buf; BEGIN(single_quoted_string); }
+	\"		{ string_buf_ptr = string_buf; BEGIN(quoted_string); }
+	{hexstring}	{ yylval->t_str = hex_to_string(yytext); BEGIN(INITIAL); return(TOK_HEXSTRING);}
+	{equals}	{ return(TOK_EQUALS); }
+	.		{ /* eek, error! try another state */ BEGIN(INITIAL); yyless(0); }
+	}
+
 {equals}		{ return(TOK_EQUALS); }
 {digits}		{ yylval->t_long = atol(yytext); return(TOK_DIGITS); }
 {colon}			{ return(TOK_COLON); }
@@ -234,8 +246,8 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {key_type}		{ return(TOK_KEY_TYPE); }
 {key_msg}		{ return(TOK_KEY_MSG); }
 {key_operation}		{ return(TOK_KEY_OPERATION); }
-{key_name}		{ return(TOK_KEY_NAME); }
-{key_name2}		{ return(TOK_KEY_NAME2); }
+{key_name}		{ BEGIN(safe_string); return(TOK_KEY_NAME); }
+{key_name2}		{ BEGIN(safe_string); return(TOK_KEY_NAME2); }
 {key_denied_mask}	{ return(TOK_KEY_DENIED_MASK); }
 {key_requested_mask}	{ return(TOK_KEY_REQUESTED_MASK); }
 {key_attribute}		{ BEGIN(sub_id); return(TOK_KEY_ATTRIBUTE); }
@@ -244,7 +256,7 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {key_magic_token}	{ return(TOK_KEY_MAGIC_TOKEN); }
 {key_info}		{ return(TOK_KEY_INFO); }
 {key_pid}		{ return(TOK_KEY_PID); }
-{key_profile}		{ return(TOK_KEY_PROFILE); }
+{key_profile}		{ BEGIN(safe_string); return(TOK_KEY_PROFILE); }
 {key_family}		{ return(TOK_KEY_FAMILY); }
 {key_sock_type}		{ return(TOK_KEY_SOCK_TYPE); }
 {key_protocol}		{ return(TOK_KEY_PROTOCOL); }
@@ -261,7 +273,7 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 <dmesg_timestamp>{
 	{ws}+		{ /* eat whitespace */ }
 	{dmesg_timestamp} { yylval->t_str = strdup(yytext); BEGIN(INITIAL); return(TOK_DMESG_STAMP); }
-	.		{ BEGIN(INITIAL); yyless(0); }
+	.		{ /* no timestamp in this message */ BEGIN(INITIAL); yyless(0); }
 }
 
 {audit}			{ BEGIN(audit_id); return(TOK_AUDIT); }
