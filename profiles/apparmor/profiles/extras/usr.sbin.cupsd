@@ -1,38 +1,49 @@
-# Last Modified: Wed Aug 15 11:17:18 2007
+# Last Modified: Sun Sep 16 18:11:15 2007
 #include <tunables/global>
-/usr/sbin/cupsd  {
-  #include <abstractions/authentication>
+/usr/sbin/cupsd {
   #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/dbus>
   #include <abstractions/nameservice>
+  #include <abstractions/perl>
 
+  capability chown,
   capability dac_override,
+  capability fowner,
   capability fsetid,
   capability net_bind_service,
+  capability setgid,
+  capability setuid,
 
-
+  /bin/bash ixr,
+  /dev/lp0 rw,
+  /dev/tty rw,
+  /dev/ttyS? w,
+  /etc/cups rw,
   /etc/cups/ r,
   /etc/cups/* r,
-  /etc/cups/cupsd.conf* rw,
-  /etc/cups/ppd/ w,
-  /etc/cups/ssl/ w,
-  /etc/printcap w,
-  /proc/net/ r,
-  /proc/net/unix r,
-  /usr/lib/cups/backend/ipp Px,
-  /usr/lib/cups/daemon/cups-deviced Px,
-  /usr/lib/cups/notifier/ r,
+  /etc/cups/certs w,
+  /etc/cups/certs/* w,
+  /etc/cups/classes.conf rw,
+  /etc/cups/cupsd.conf rw,
+  /etc/cups/ppd rw,
+  /etc/cups/printcap rw,
+  /etc/cups/printers.conf rw,
+  /etc/cups/ssl rw,
+  /etc/hosts.allow r,
+  /etc/hosts.deny r,
+  /proc/meminfo r,
+  /proc/sys/dev/parport/** r,
+  /sys/class/usb r,
+  /usr/bin/perl ix,
+  /usr/bin/smbspool ixr,
+  /usr/lib/cups/backend/* ixr,
+  /usr/lib/cups/filter/* ixr,
   /usr/sbin/cupsd mr,
   /usr/share/cups/** r,
-  /var/cache/cups/ w,
-  /var/cache/cups/** rw,
-  /var/cache/cups/remote.cache rw,
   /var/log/cups/access_log rw,
   /var/log/cups/error_log rw,
-  /var/log/cups/page_log rw,
-  /var/run/cups/ w,
-  /var/run/cups/certs/* w,
-  /var/run/cups/cups.sock w,
-  /var/run/nscd/services r,
-  /var/spool/cups/ w,
-  /var/spool/cups/** rw,
+  /var/spool/cups rw,
+  /var/spool/cups/tmp w,
+  /var/spool/cups/tmp/ r,
 }

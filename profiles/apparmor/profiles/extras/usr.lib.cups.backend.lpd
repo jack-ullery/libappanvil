@@ -1,7 +1,0 @@
-# Last Modified: Tue Aug 14 21:25:27 2007
-#include <tunables/global>
-/usr/lib/cups/backend/lpd {
-  #include <abstractions/base>
-
-  /usr/lib/cups/backend/lpd mr,
-}
