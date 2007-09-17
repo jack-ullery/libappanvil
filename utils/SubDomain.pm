@@ -1349,14 +1349,7 @@ sub confirm_and_abort {
 }
 
 sub confirm_and_finish {
-    my $ans = UI_YesNo(gettext("Are you sure you want to save the current set of profile changes and exit?"), "n");
-    if ($ans eq "y") {
-        UI_Info(gettext("Saving all changes."));
-
-        # need to wrap any calls to ui functions with eval { } blocks in order
-        # to catch this exception
-        die "FINISHING\n";
-    }
+    die "FINISHING\n";
 }
 
 ##########################################################################
