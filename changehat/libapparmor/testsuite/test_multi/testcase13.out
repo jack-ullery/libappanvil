@@ -9,6 +9,7 @@ Profile: /bin/ping
 Name: /bin/ping
 Name2: ping2
 Attribute: attr
+Task: 123456789
 Parent: something
 Token: 29493
 Info: Information

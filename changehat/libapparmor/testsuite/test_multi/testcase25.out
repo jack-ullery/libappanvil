@@ -3,8 +3,8 @@ File: test_multi/testcase25.in
 Event type: AA_RECORD_HINT
 Audit ID: 1190503291.842:27382
 Operation: clone
-Task: 20401
-Pid: 20400
 Profile: null-complain-profile
+Task: 20401
+PID: 20400
 Epoch: 1190503291
 Audit subid: 27382
