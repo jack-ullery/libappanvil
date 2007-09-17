@@ -10,7 +10,7 @@ Name: /bin/ping
 Name2: ping2
 Attribute: attr
 Task: 1
-Parent: something
+Parent: 1
 Token: 29493
 Info: Information
 PID: 31938

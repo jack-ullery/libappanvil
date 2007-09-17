@@ -115,8 +115,8 @@ typedef struct
 {
 	aa_record_syntax_version version;
 	aa_record_event_type event;	/* Event type */
-	long pid;			/* PID of the program logging the message */
-	long task;
+	unsigned long pid;			/* PID of the program logging the message */
+	unsigned long task;
 	unsigned long magic_token;
 	long epoch;			/* example: 12345679 */
 	unsigned int audit_sub_id;		/* example: 12 */
@@ -130,7 +130,7 @@ typedef struct
 	char *name;
 	char *name2;
 	char *attribute;
-	char *parent;	
+	unsigned long parent;	
 	char *info;
 	char *active_hat;
 	char *net_family;

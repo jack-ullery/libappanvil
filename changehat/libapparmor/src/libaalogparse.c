@@ -35,8 +35,7 @@
 #include "parser.h"
 
 /* This is mostly just a wrapper around the code in grammar.y */
-aa_log_record *
-parse_record(char *str)
+aa_log_record *parse_record(char *str)
 {
 	if (str == NULL)
 		return NULL;
@@ -44,8 +43,7 @@ parse_record(char *str)
 	return _parse_yacc(str);
 }
 
-void
-free_record(aa_log_record *record)
+void free_record(aa_log_record *record)
 {
 	if (record != NULL)
 	{
@@ -63,8 +61,6 @@ free_record(aa_log_record *record)
 			free(record->name2);
 		if (record->attribute != NULL)
 			free(record->attribute);
-		if (record->parent != NULL)
-			free(record->parent);
 		if (record->info != NULL)
 			free(record->info);
 		if (record->active_hat != NULL)
@@ -84,8 +80,7 @@ free_record(aa_log_record *record)
 }
 
 /* Set all of the fields to appropriate values */
-void
-_init_log_record(aa_log_record *record)
+void _init_log_record(aa_log_record *record)
 {
 	if (record == NULL)
 		return;
@@ -107,7 +102,7 @@ _init_log_record(aa_log_record *record)
 	record->name = NULL;
 	record->name2 = NULL;
 	record->attribute = NULL;
-	record->parent = NULL;
+	record->parent = 0;
 	record->info = NULL;
 	record->active_hat = NULL;
 	record->net_family = NULL;
@@ -117,8 +112,7 @@ _init_log_record(aa_log_record *record)
 }
 
 /* convert a hex-encoded string to its char* version */
-char *
-hex_to_string(char *hexstring)
+char *hex_to_string(char *hexstring)
 {
 	char *ret = NULL;
 	char buf[3], *endptr;

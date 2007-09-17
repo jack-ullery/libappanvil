@@ -386,8 +386,8 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->attribute = strdup($3); free($3);}
 	| TOK_KEY_TASK TOK_EQUALS TOK_DIGITS
 	{ ret_record->task = $3; }
-	| TOK_KEY_PARENT TOK_EQUALS TOK_QUOTED_STRING
-	{ ret_record->parent = strdup($3); free($3);}
+	| TOK_KEY_PARENT TOK_EQUALS TOK_DIGITS
+	{ ret_record->parent = $3; }
 	| TOK_KEY_MAGIC_TOKEN TOK_EQUALS TOK_DIGITS
 	{ ret_record->magic_token = $3;}
 	| TOK_KEY_INFO TOK_EQUALS TOK_QUOTED_STRING

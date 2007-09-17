@@ -133,9 +133,9 @@ int print_results(aa_log_record *record)
 		{
 			printf("Task: %ld\n", record->task);
 		}
-		if (record->parent != NULL)
+		if (record->parent != 0)
 		{
-			printf("Parent: %s\n", record->parent);
+			printf("Parent: %ld\n", record->parent);
 		}
 		if (record->magic_token != 0)
 		{
