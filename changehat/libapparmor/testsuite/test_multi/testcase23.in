@@ -1,0 +1,1 @@
+Sep 13 13:11:13 lizaveta kernel: AppArmor: REJECTING exec(2) of image '/usr/lib/mailman/mail/mailman'. Profile mandatory and not found (local(20700) profile /usr/lib/postfix/local active /usr/lib/postfix/local)
