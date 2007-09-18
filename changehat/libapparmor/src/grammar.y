@@ -74,7 +74,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 	long	t_long;
 }
 
-%type <t_str> old_profile, safe_string;
+%type <t_str> old_profile safe_string protocol
 %token <t_long> TOK_DIGITS TOK_TYPE_UNKNOWN
 %token <t_str> TOK_QUOTED_STRING TOK_PATH TOK_ID TOK_NULL_COMPLAIN TOK_MODE TOK_DMESG_STAMP
 %token <t_str> TOK_SINGLE_QUOTED_STRING TOK_AUDIT_DIGITS TOK_DATE_MONTH TOK_DATE_TIME
@@ -399,8 +399,8 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->net_family = strdup($3); free($3);}
 	| TOK_KEY_SOCK_TYPE TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->net_sock_type = strdup($3); free($3); }
-	| TOK_KEY_PROTOCOL TOK_EQUALS TOK_QUOTED_STRING
-	{ ret_record->net_protocol = strdup($3); free($3);}
+	| TOK_KEY_PROTOCOL TOK_EQUALS protocol
+	{ ret_record->net_protocol = $3; }
 	| TOK_KEY_TYPE TOK_EQUALS TOK_DIGITS
 	{ ret_record->event = lookup_aa_event($3);}
 	;
@@ -412,6 +412,15 @@ safe_string: TOK_QUOTED_STRING
 	| TOK_HEXSTRING
 	;
 
+protocol: TOK_QUOTED_STRING
+	| TOK_DIGITS
+	{ /* FIXME: this should probably convert back to a string proto name */
+	  char *ret = NULL;
+	  if (asprintf(&ret, "%ld", $1) < 0)
+	  	yyerror(NULL, "Unable to allocate protocol string");
+	  $$ = ret;
+	}
+	;
 %%
 
 aa_log_record *
