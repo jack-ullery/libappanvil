@@ -58,6 +58,7 @@ unknown_type		UNKNOWN\[{digits}+\]
 old_apparmor_type	"APPARMOR"
 old_apparmor_reject	"REJECTING"
 old_apparmor_permit	"PERMITTING"
+old_apparmor_audit	"AUDITING"
 old_apparmor_logprof	"LOGPROF-HINT"
 old_unknown_hat		"unknown_hat"
 old_unknown_profile	"unknown_profile"
@@ -223,6 +224,7 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {old_apparmor_type}	{ return(TOK_OLD_TYPE_APPARMOR); }
 {old_apparmor_reject}	{ return(TOK_OLD_APPARMOR_REJECT); }
 {old_apparmor_permit}	{ return(TOK_OLD_APPARMOR_PERMIT); }
+{old_apparmor_audit}	{ return(TOK_OLD_APPARMOR_AUDIT); }
 {old_apparmor_logprof}	{ return(TOK_OLD_APPARMOR_LOGPROF_HINT); }
 {old_unknown_hat}	{ BEGIN(sub_id); return(TOK_OLD_UNKNOWN_HAT); }
 {old_unknown_profile}	{ return(TOK_OLD_UNKNOWN_PROFILE); }

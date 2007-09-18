@@ -95,6 +95,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_OLD_TYPE_APPARMOR
 %token TOK_OLD_APPARMOR_REJECT
 %token TOK_OLD_APPARMOR_PERMIT
+%token TOK_OLD_APPARMOR_AUDIT
 %token TOK_OLD_APPARMOR_LOGPROF_HINT
 %token TOK_OLD_UNKNOWN_HAT
 %token TOK_OLD_ACTIVE
@@ -176,6 +177,7 @@ old_msg:
 old_permit_reject_syntax:
 	  TOK_OLD_APPARMOR_REJECT { ret_record->event = AA_RECORD_DENIED; }
 	| TOK_OLD_APPARMOR_PERMIT { ret_record->event = AA_RECORD_ALLOWED; }
+	| TOK_OLD_APPARMOR_AUDIT  { ret_record->event = AA_RECORD_AUDIT; }
 	;
 
 old_permit_reject_syntax2:
