@@ -191,57 +191,47 @@ old_permit_reject_syntax:
 	  TOK_MODE TOK_OLD_ACCESS old_permit_reject_path_pipe_extended
 		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
 	{
-		ret_record->requested_mask = strdup($1);
-		free($1);
+		ret_record->requested_mask = $1;
 		ret_record->operation = strdup("access");
 	}
 	| dir_action TOK_OLD_ON TOK_PATH
 		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
 	{
-		ret_record->name = strdup($3);
-		free($3);
+		ret_record->name = $3;
 	}
 	| TOK_OLD_XATTR TOK_ID TOK_OLD_ON TOK_PATH
 		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
 	{
 		ret_record->operation = strdup("xattr");
-		ret_record->attribute = strdup($2);
-		free($2);
-		ret_record->name = strdup($4);
-		free($4);
+		ret_record->attribute = $2;
+		ret_record->name = $4;
 	}
 	| TOK_KEY_ATTRIBUTE TOK_OPEN_PAREN TOK_ID TOK_CLOSE_PAREN
 		TOK_OLD_CHANGE TOK_OLD_TO TOK_PATH
 		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
 	{
 		ret_record->operation = strdup("setattr");
-		ret_record->attribute = strdup($3);
-		free($3);
-		ret_record->name = strdup($7);
-		free($7);
+		ret_record->attribute = $3;
+		ret_record->name = $7;
 	}
 	| TOK_OLD_ACCESS TOK_OLD_TO TOK_OLD_CAPABILITY TOK_SINGLE_QUOTED_STRING
 		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
 	{
 		ret_record->operation = strdup("capability");
-		ret_record->name = strdup($4);
-		free($4);
+		ret_record->name = $4;
 	}
 	| TOK_OLD_ACCESS TOK_OLD_TO TOK_OLD_SYSCALL TOK_SINGLE_QUOTED_STRING
 		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
 	{
 		ret_record->operation = strdup("syscall");
-		ret_record->name = strdup($4);
-		free($4);
+		ret_record->name = $4;
 	}
 	| TOK_OLD_LINK TOK_OLD_ACCESS TOK_OLD_FROM TOK_PATH TOK_OLD_TO TOK_PATH
 		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
 	{
 		ret_record->requested_mask = strdup("l");
-		ret_record->name = strdup($4);
-		free($4);
-		ret_record->name2 = strdup($6);
-		free($6);
+		ret_record->name = $4;
+		ret_record->name2 = $6;
 	}
 	;
 
@@ -253,8 +243,7 @@ dir_action:
 old_process_state:
 	  TOK_ID TOK_OPEN_PAREN TOK_ID TOK_CLOSE_PAREN old_profile_names
 	{
-		ret_record->info = strdup($1);
-		free($1);
+		ret_record->info = $1;
 		ret_record->pid = atol($3);
 		free($3);
 	}
@@ -262,18 +251,15 @@ old_process_state:
 
 old_profile_names:
 	  TOK_KEY_PROFILE old_profile TOK_OLD_ACTIVE old_profile
-	{	ret_record->profile = strdup($2);
-		free($2);
-		ret_record->active_hat = strdup($4);
-		free($4);
+	{	ret_record->profile = $2;
+		ret_record->active_hat = $4;
 	}
 	;
 
 old_permit_reject_path_pipe_extended:
 	  TOK_OLD_TO TOK_PATH
 		{
-			ret_record->name = strdup($2);
-			free($2);
+			ret_record->name = $2;
 		}
 	| TOK_OLD_TO TOK_OLD_PIPE /* Frankly, I don't think this is used */
 		{
@@ -336,16 +322,14 @@ old_logprof_fork_addition:
 	/* Nothin */
 	| TOK_KEY_PROFILE TOK_EQUALS old_profile TOK_OLD_ACTIVE TOK_EQUALS old_profile
 	{
-		ret_record->profile = strdup($3);
-		free($3);
-		ret_record->active_hat = strdup($6);
-		free($6);
+		ret_record->profile = $3;
+		ret_record->active_hat = $6;
 	}
 	;
 
 old_profile:
-	  TOK_PATH { $$ = strdup($1); free($1); }
-	| TOK_ID   { $$ = strdup($1); free($1); }
+	  TOK_PATH { $$ = $1; }
+	| TOK_ID   { $$ = $1; }
 	| TOK_NULL_COMPLAIN { $$ = strdup("null-complain-profile"); }
 	;
 
@@ -370,34 +354,34 @@ key_list: key
 	;
 
 key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
-	{ ret_record->operation = strdup($3); free($3); }
+	{ ret_record->operation = $3;}
 	| TOK_KEY_NAME TOK_EQUALS safe_string
-	{ ret_record->name = strdup($3); free($3); }
+	{ ret_record->name = $3;}
 	| TOK_KEY_NAME2 TOK_EQUALS safe_string
-	{ ret_record->name2 = strdup($3); free($3); }
+	{ ret_record->name2 = $3;}
 	| TOK_KEY_DENIED_MASK TOK_EQUALS TOK_QUOTED_STRING
-	{ ret_record->denied_mask = strdup($3); free($3);}
+	{ ret_record->denied_mask = $3;}
 	| TOK_KEY_REQUESTED_MASK TOK_EQUALS TOK_QUOTED_STRING
-	{ ret_record->requested_mask = strdup($3); free($3);}
+	{ ret_record->requested_mask = $3;}
 	| TOK_KEY_ATTRIBUTE TOK_EQUALS TOK_QUOTED_STRING 
-	{ ret_record->attribute = strdup($3); free($3);}
+	{ ret_record->attribute = $3;}
 	| TOK_KEY_TASK TOK_EQUALS TOK_DIGITS
-	{ ret_record->task = $3; }
+	{ ret_record->task = $3;}
 	| TOK_KEY_PARENT TOK_EQUALS TOK_DIGITS
-	{ ret_record->parent = $3; }
+	{ ret_record->parent = $3;}
 	| TOK_KEY_MAGIC_TOKEN TOK_EQUALS TOK_DIGITS
 	{ ret_record->magic_token = $3;}
 	| TOK_KEY_INFO TOK_EQUALS TOK_QUOTED_STRING
-	{ ret_record->info = strdup($3); free($3);}
+	{ ret_record->info = $3;}
 	| key_pid
 	| TOK_KEY_PROFILE TOK_EQUALS safe_string
-	{ ret_record->profile = strdup($3); free($3);}
+	{ ret_record->profile = $3;}
 	| TOK_KEY_FAMILY TOK_EQUALS TOK_QUOTED_STRING
-	{ ret_record->net_family = strdup($3); free($3);}
+	{ ret_record->net_family = $3;}
 	| TOK_KEY_SOCK_TYPE TOK_EQUALS TOK_QUOTED_STRING
-	{ ret_record->net_sock_type = strdup($3); free($3); }
+	{ ret_record->net_sock_type = $3;}
 	| TOK_KEY_PROTOCOL TOK_EQUALS protocol
-	{ ret_record->net_protocol = $3; }
+	{ ret_record->net_protocol = $3;}
 	| TOK_KEY_TYPE TOK_EQUALS TOK_DIGITS
 	{ ret_record->event = lookup_aa_event($3);}
 	;
