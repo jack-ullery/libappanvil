@@ -1566,7 +1566,7 @@ static inline int do_change_hat(const char *hat_name, struct subdomain *sd)
 				 sd->active->name);
 			error = -EACCES;
 		}
-		aa_switch(sd, sd->active->null_profile);
+		aa_switch(sd, BASE_PROFILE(sd->active)->null_profile);
 	}
 
 	return error;
