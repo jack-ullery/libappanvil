@@ -150,8 +150,9 @@ type_syntax: old_syntax { ret_record->version = AA_RECORD_SYNTAX_V1; }
 	| new_syntax { ret_record->version = AA_RECORD_SYNTAX_V2; }
 	;
 
-old_syntax: TOK_OLD_TYPE_APPARMOR audit_msg old_msg ;
-	| TOK_TYPE_UNKNOWN audit_msg old_msg;
+old_syntax: TOK_OLD_TYPE_APPARMOR audit_msg old_msg
+	| TOK_TYPE_UNKNOWN audit_msg old_msg
+	;
 
 new_syntax: 
 	  TOK_TYPE_REJECT audit_msg key_list { ret_record->event = AA_RECORD_DENIED; }
@@ -164,112 +165,89 @@ new_syntax:
 	;
 
 syslog_type:
-	  syslog_date TOK_ID TOK_SYSLOG_KERNEL audit_id old_msg { ret_record->version = AA_RECORD_SYNTAX_V1; }
-	| syslog_date TOK_ID TOK_SYSLOG_KERNEL audit_id key_list { ret_record->version = AA_RECORD_SYNTAX_V2; }
-	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP audit_id key_list { ret_record->version = AA_RECORD_SYNTAX_V2; }
+	  syslog_date TOK_ID TOK_SYSLOG_KERNEL audit_id old_msg
+	  { ret_record->version = AA_RECORD_SYNTAX_V1; }
+	| syslog_date TOK_ID TOK_SYSLOG_KERNEL audit_id key_list
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
+	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP audit_id key_list
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
 	;
 
 old_msg:
-	  old_permit_reject_syntax old_permit_reject_syntax2
+	  old_permit_reject_type old_permit_reject_syntax
 	| TOK_OLD_APPARMOR_LOGPROF_HINT old_logprof_syntax { ret_record->event = AA_RECORD_HINT; }
 	;
 
-old_permit_reject_syntax:
+old_permit_reject_type:
 	  TOK_OLD_APPARMOR_REJECT { ret_record->event = AA_RECORD_DENIED; }
 	| TOK_OLD_APPARMOR_PERMIT { ret_record->event = AA_RECORD_ALLOWED; }
 	| TOK_OLD_APPARMOR_AUDIT  { ret_record->event = AA_RECORD_AUDIT; }
 	;
 
-old_permit_reject_syntax2:
+old_permit_reject_syntax:
 	  TOK_MODE TOK_OLD_ACCESS old_permit_reject_path_pipe_extended
-		TOK_OPEN_PAREN TOK_ID TOK_OPEN_PAREN TOK_ID TOK_CLOSE_PAREN
-		TOK_KEY_PROFILE old_profile TOK_OLD_ACTIVE old_profile TOK_CLOSE_PAREN
+		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
 	{
 		ret_record->requested_mask = strdup($1);
 		free($1);
-		ret_record->info = strdup($5);
-		free($5);
-		ret_record->pid = atol($7);
-		free($7);
-		ret_record->profile = strdup($10);
-		free($10);
-		ret_record->active_hat = strdup($12);
-		free($12);
 		ret_record->operation = strdup("access");
 	}
-	| mkdir_or_rmdir TOK_OLD_ON TOK_PATH
-		TOK_OPEN_PAREN TOK_ID TOK_OPEN_PAREN TOK_ID TOK_CLOSE_PAREN
-		TOK_KEY_PROFILE old_profile TOK_OLD_ACTIVE old_profile TOK_CLOSE_PAREN
+	| dir_action TOK_OLD_ON TOK_PATH
+		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
 	{
 		ret_record->name = strdup($3);
 		free($3);
-		ret_record->info = strdup($5);
-		free($5);
-		ret_record->pid = atol($7);
-		free($7);
-		ret_record->profile = strdup($10);
-		free($10);
-		ret_record->active_hat = strdup($12);
-		free($12);
 	}
 	| TOK_OLD_XATTR TOK_ID TOK_OLD_ON TOK_PATH
-		TOK_OPEN_PAREN TOK_ID TOK_OPEN_PAREN TOK_ID TOK_CLOSE_PAREN
-		TOK_KEY_PROFILE old_profile TOK_OLD_ACTIVE old_profile TOK_CLOSE_PAREN
+		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
 	{
 		ret_record->operation = strdup("xattr");
 		ret_record->attribute = strdup($2);
 		free($2);
 		ret_record->name = strdup($4);
 		free($4);
-		ret_record->info = strdup($6);
-		free($6);
-		ret_record->pid = atol($8);
-		free($8);
-		ret_record->profile = strdup($11);
-		free($11);
-		ret_record->active_hat = strdup($13);
-		free($13);
 	}
 	| TOK_KEY_ATTRIBUTE TOK_OPEN_PAREN TOK_ID TOK_CLOSE_PAREN
 		TOK_OLD_CHANGE TOK_OLD_TO TOK_PATH
-		TOK_OPEN_PAREN TOK_ID TOK_OPEN_PAREN TOK_ID TOK_CLOSE_PAREN
-		TOK_KEY_PROFILE old_profile TOK_OLD_ACTIVE old_profile TOK_CLOSE_PAREN
+		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
 	{
 		ret_record->operation = strdup("setattr");
 		ret_record->attribute = strdup($3);
 		free($3);
 		ret_record->name = strdup($7);
 		free($7);
-		ret_record->info = strdup($9);
-		free($9);
-		ret_record->pid = atol($11);
-		free($11);
-		ret_record->profile = strdup($14);
-		free($14);
-		ret_record->active_hat = strdup($16);
-		free($16);
 	}
 	| TOK_OLD_ACCESS TOK_OLD_TO TOK_OLD_CAPABILITY TOK_SINGLE_QUOTED_STRING
-		TOK_OPEN_PAREN TOK_ID TOK_OPEN_PAREN TOK_ID TOK_CLOSE_PAREN
-		TOK_KEY_PROFILE old_profile TOK_OLD_ACTIVE old_profile TOK_CLOSE_PAREN
+		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
 	{
 		ret_record->operation = strdup("capability");
 		ret_record->name = strdup($4);
 		free($4);
-		ret_record->info = strdup($6);
-		free($6);
-		ret_record->pid = atol($8);
-		free($8);
-		ret_record->profile = strdup($11);
-		free($11);
-		ret_record->active_hat = strdup($13);
-		free($13);
 	}
 	;
 
-mkdir_or_rmdir:
+dir_action:
 	  TOK_OLD_MKDIR { ret_record->operation = strdup("mkdir"); }
 	| TOK_OLD_RMDIR { ret_record->operation = strdup("rmdir"); }
+	;
+
+old_process_state:
+	  TOK_ID TOK_OPEN_PAREN TOK_ID TOK_CLOSE_PAREN old_profile_names
+	{
+		ret_record->info = strdup($1);
+		free($1);
+		ret_record->pid = atol($3);
+		free($3);
+	}
+	;
+
+old_profile_names:
+	  TOK_KEY_PROFILE old_profile TOK_OLD_ACTIVE old_profile
+	{	ret_record->profile = strdup($2);
+		free($2);
+		ret_record->active_hat = strdup($4);
+		free($4);
+	}
 	;
 
 old_permit_reject_path_pipe_extended:
@@ -298,9 +276,7 @@ old_logprof_syntax:
 		}
 	| old_logprof_fork_syntax
 	| TOK_OLD_CHANGING_PROFILE key_pid
-		{
-			ret_record->profile = strdup("null-complain-profile");
-		}
+	  { ret_record->profile = strdup("null-complain-profile"); }
 	;
 
 old_logprof_syntax2:
