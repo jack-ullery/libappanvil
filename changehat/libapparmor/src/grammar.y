@@ -104,6 +104,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_OLD_CHANGING_PROFILE
 %token TOK_OLD_ACCESS
 %token TOK_OLD_TO
+%token TOK_OLD_FROM
 %token TOK_OLD_PIPE
 %token TOK_OLD_EXTENDED
 %token TOK_OLD_ATTRIBUTE
@@ -114,6 +115,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_OLD_CHANGE
 %token TOK_OLD_CAPABILITY
 %token TOK_OLD_SYSCALL
+%token TOK_OLD_LINK
 %token TOK_OLD_FORK
 %token TOK_OLD_CHILD
 
@@ -231,6 +233,15 @@ old_permit_reject_syntax:
 		ret_record->operation = strdup("syscall");
 		ret_record->name = strdup($4);
 		free($4);
+	}
+	| TOK_OLD_LINK TOK_OLD_ACCESS TOK_OLD_FROM TOK_PATH TOK_OLD_TO TOK_PATH
+		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
+	{
+		ret_record->requested_mask = strdup("l");
+		ret_record->name = strdup($4);
+		free($4);
+		ret_record->name2 = strdup($6);
+		free($6);
 	}
 	;
 

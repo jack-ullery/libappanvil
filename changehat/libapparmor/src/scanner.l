@@ -66,6 +66,7 @@ old_missing_profile	"missing_mandatory_profile"
 old_changing_profile	"changing_profile"
 old_active		"active"
 old_access		"access"
+old_from		"from"
 old_to			"to"
 old_pipe		"pipe"
 old_extended		"extended"
@@ -75,9 +76,10 @@ old_on			"on"
 old_xattr		"xattr"
 old_change		"change"
 old_capability		"capability"
+old_syscall		"syscall"
+old_link		"link"
 old_fork		"fork"
 old_child		"child"
-old_syscall		"syscall"
 
 null_complain		"null-complain-profile"
 
@@ -234,6 +236,7 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {old_active}		{ BEGIN(sub_id); return(TOK_OLD_ACTIVE); }
 {old_access}		{ return(TOK_OLD_ACCESS); }
 {old_to}		{ return(TOK_OLD_TO); }
+{old_from}		{ return(TOK_OLD_FROM); }
 {old_pipe}		{ return(TOK_OLD_PIPE); }
 {old_extended}		{ return(TOK_OLD_EXTENDED); }
 {old_mkdir}		{ return(TOK_OLD_MKDIR); }
@@ -242,9 +245,10 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {old_xattr}		{ BEGIN(sub_id); return(TOK_OLD_XATTR); }
 {old_change}		{ return(TOK_OLD_CHANGE); }
 {old_capability}	{ BEGIN(sub_id); return(TOK_OLD_CAPABILITY); }
+{old_syscall}		{ return(TOK_OLD_SYSCALL); }
+{old_link}		{ return(TOK_OLD_LINK); }
 {old_fork}		{ return(TOK_OLD_FORK); }
 {old_child}		{ return(TOK_OLD_CHILD); }
-{old_syscall}		{ return(TOK_OLD_SYSCALL); }
 {modes}+		{ yylval->t_str = strdup(yytext); return(TOK_MODE); }
 
 {key_type}		{ return(TOK_KEY_TYPE); }
