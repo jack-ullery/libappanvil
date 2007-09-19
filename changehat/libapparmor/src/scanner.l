@@ -77,6 +77,7 @@ old_change		"change"
 old_capability		"capability"
 old_fork		"fork"
 old_child		"child"
+old_syscall		"syscall"
 
 null_complain		"null-complain-profile"
 
@@ -243,6 +244,7 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {old_capability}	{ BEGIN(sub_id); return(TOK_OLD_CAPABILITY); }
 {old_fork}		{ return(TOK_OLD_FORK); }
 {old_child}		{ return(TOK_OLD_CHILD); }
+{old_syscall}		{ return(TOK_OLD_SYSCALL); }
 {modes}+		{ yylval->t_str = strdup(yytext); return(TOK_MODE); }
 
 {key_type}		{ return(TOK_KEY_TYPE); }
