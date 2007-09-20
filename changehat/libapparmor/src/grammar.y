@@ -78,7 +78,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token <t_long> TOK_DIGITS TOK_TYPE_UNKNOWN
 %token <t_str> TOK_QUOTED_STRING TOK_PATH TOK_ID TOK_NULL_COMPLAIN TOK_MODE TOK_DMESG_STAMP
 %token <t_str> TOK_SINGLE_QUOTED_STRING TOK_AUDIT_DIGITS TOK_DATE_MONTH TOK_DATE_TIME
-%token <t_str> TOK_HEXSTRING
+%token <t_str> TOK_HEXSTRING TOK_TYPE_OTHER TOK_MSG_REST
 
 %token TOK_EQUALS
 %token TOK_COLON
@@ -151,13 +151,14 @@ audit_type: TOK_KEY_TYPE TOK_EQUALS type_syntax ;
 
 type_syntax: old_syntax { ret_record->version = AA_RECORD_SYNTAX_V1; }
 	| new_syntax { ret_record->version = AA_RECORD_SYNTAX_V2; }
+	| other_audit
 	;
 
 old_syntax: TOK_OLD_TYPE_APPARMOR audit_msg old_msg
 	| TOK_TYPE_UNKNOWN audit_msg old_msg
 	;
 
-new_syntax: 
+new_syntax:
 	  TOK_TYPE_REJECT audit_msg key_list { ret_record->event = AA_RECORD_DENIED; }
 	| TOK_TYPE_AUDIT audit_msg key_list { ret_record->event = AA_RECORD_AUDIT; }
 	| TOK_TYPE_COMPLAIN audit_msg key_list { ret_record->event = AA_RECORD_ALLOWED; }
@@ -165,6 +166,14 @@ new_syntax:
 	| TOK_TYPE_STATUS audit_msg key_list { ret_record->event = AA_RECORD_STATUS; }
 	| TOK_TYPE_ERROR audit_msg key_list { ret_record->event = AA_RECORD_ERROR; }
 	| TOK_TYPE_UNKNOWN audit_msg key_list { ret_record->event = lookup_aa_event($1); }
+	;
+
+other_audit: TOK_TYPE_OTHER audit_msg TOK_MSG_REST
+	{
+		ret_record->operation = $1;
+		ret_record->event = AA_RECORD_INVALID;
+		ret_record->info = $3;
+	}
 	;
 
 syslog_type:

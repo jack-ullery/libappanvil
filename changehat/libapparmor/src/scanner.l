@@ -15,13 +15,13 @@
  *   along with this program; if not, contact Novell, Inc.
  */
 
-
 %option noyywrap
 %option reentrant
 %option prefix="aalogparse_"
 %option bison-bridge
 %option header-file="scanner.h"
 %option outfile="scanner.c" 
+%option stack
 %{
 
 #include "grammar.h"
@@ -52,6 +52,7 @@ hint_type		"APPARMOR_HINT"
 status_type		"APPARMOR_STATUS"
 error_type		"APPARMOR_ERROR"
 unknown_type		UNKNOWN\[{digits}+\]
+other_audit_type	[[:alnum:]\[\]_-]+
 
 /* Old message tokens */
 
@@ -119,6 +120,9 @@ dmesg_timestamp		\[[[:digit:] ]{5,}\.[[:digit:]]{6,}\]
 %x hostname
 %x dmesg_timestamp
 %x safe_string
+%x audit_types
+%x other_audit
+%x unknown_message
 
 %%
 %{
@@ -135,7 +139,7 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 	{colon}			{ return(TOK_COLON); }
 	{period}		{ return(TOK_PERIOD); }
 	{open_paren}		{ return(TOK_OPEN_PAREN); }
-	{close_paren}		{ BEGIN(INITIAL); return(TOK_CLOSE_PAREN); }
+	{close_paren}		{ yy_pop_state(yyscanner); return(TOK_CLOSE_PAREN); }
 }
 
 <sub_id>{
@@ -200,6 +204,30 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 	.		{ /* eek, error! try another state */ BEGIN(INITIAL); yyless(0); }
 	}
 
+<audit_types>{
+	{equals}	{ return(TOK_EQUALS); }
+	{digits}	{ yylval->t_long = atol(yytext); BEGIN(INITIAL); return(TOK_DIGITS); }
+	{reject_type}	{ BEGIN(INITIAL); return(TOK_TYPE_REJECT); }
+	{audit_type}	{ BEGIN(INITIAL); return(TOK_TYPE_AUDIT); }
+	{complain_type}	{ BEGIN(INITIAL); return(TOK_TYPE_COMPLAIN); }
+	{hint_type}	{ BEGIN(INITIAL); return(TOK_TYPE_HINT); }
+	{status_type}	{ BEGIN(INITIAL); return(TOK_TYPE_STATUS); }
+	{error_type}	{ BEGIN(INITIAL); return(TOK_TYPE_ERROR); }
+	{unknown_type}	{ char *yptr = yytext;
+			  while (*yptr && *yptr != '[')
+			  	yptr++;
+			  if (*yptr)
+			  	yylval->t_long = atol(yptr + 1); /* skip '[' */
+			  BEGIN(INITIAL);
+			  return(TOK_TYPE_UNKNOWN);
+			}
+	{old_apparmor_type} { BEGIN(INITIAL); return(TOK_OLD_TYPE_APPARMOR); }
+	{other_audit_type}  { yylval->t_str = strdup(yytext);
+			      BEGIN(other_audit);
+			      return(TOK_TYPE_OTHER);
+			}
+	}
+
 {equals}		{ return(TOK_EQUALS); }
 {digits}		{ yylval->t_long = atol(yytext); return(TOK_DIGITS); }
 {colon}			{ return(TOK_COLON); }
@@ -209,22 +237,8 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 			}
 {close_paren}		{ return(TOK_CLOSE_PAREN); }
 {path}			{ yylval->t_str = strdup(yytext); return(TOK_PATH); }
-{reject_type}		{ return(TOK_TYPE_REJECT); }
-{audit_type}		{ return(TOK_TYPE_AUDIT); }
-{complain_type}		{ return(TOK_TYPE_COMPLAIN); }
-{hint_type}		{ return(TOK_TYPE_HINT); }
-{status_type}		{ return(TOK_TYPE_STATUS); }
-{error_type}		{ return(TOK_TYPE_ERROR); }
-{unknown_type}		{ char *yptr = yytext;
-			  while (*yptr && *yptr != '[')
-			  	yptr++;
-			  if (*yptr)
-			  	yylval->t_long = atol(yptr + 1); /* skip '[' */
-			  return(TOK_TYPE_UNKNOWN);
-			}
 {period}		{ return(TOK_PERIOD); }
 
-{old_apparmor_type}	{ return(TOK_OLD_TYPE_APPARMOR); }
 {old_apparmor_reject}	{ return(TOK_OLD_APPARMOR_REJECT); }
 {old_apparmor_permit}	{ return(TOK_OLD_APPARMOR_PERMIT); }
 {old_apparmor_audit}	{ return(TOK_OLD_APPARMOR_AUDIT); }
@@ -251,7 +265,7 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {old_child}		{ return(TOK_OLD_CHILD); }
 {modes}+		{ yylval->t_str = strdup(yytext); return(TOK_MODE); }
 
-{key_type}		{ return(TOK_KEY_TYPE); }
+{key_type}		{ BEGIN(audit_types); return(TOK_KEY_TYPE); }
 {key_msg}		{ return(TOK_KEY_MSG); }
 {key_operation}		{ return(TOK_KEY_OPERATION); }
 {key_name}		{ BEGIN(safe_string); return(TOK_KEY_NAME); }
@@ -273,6 +287,10 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {syslog_month}		{ yylval->t_str = strdup(yytext); return(TOK_DATE_MONTH); }
 {syslog_time}		{ yylval->t_str = strdup(yytext); BEGIN(hostname); return(TOK_DATE_TIME); }
 
+{audit}			{ yy_push_state(audit_id, yyscanner); return(TOK_AUDIT); }
+{null_complain}		{ return(TOK_NULL_COMPLAIN); }
+{key_image}		{ BEGIN(sub_id); return(TOK_KEY_IMAGE); }
+
 <hostname>{
 	{ws}+		{ /* eat whitespace */ }
 	{syslog_hostname} { yylval->t_str = strdup(yytext); BEGIN(INITIAL); return(TOK_ID); }
@@ -284,9 +302,18 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 	.		{ /* no timestamp in this message */ BEGIN(INITIAL); yyless(0); }
 }
 
-{audit}			{ BEGIN(audit_id); return(TOK_AUDIT); }
-{null_complain}		{ return(TOK_NULL_COMPLAIN); }
-{key_image}		{ BEGIN(sub_id); return(TOK_KEY_IMAGE); }
+<other_audit>{
+	{ws}+		{ /* eat whitespace */ }
+	{audit}		{ yy_push_state(audit_id, yyscanner); return(TOK_AUDIT); }
+	{key_msg}	{ return(TOK_KEY_MSG); }
+	{equals}	{ return(TOK_EQUALS); }
+	{colon}		{ return(TOK_COLON); }
+	.		{ BEGIN(unknown_message); yyless(0); /* dump the rest */ }
+}
 
+<unknown_message>{
+	.*		{ yylval->t_str = strdup(yytext); return(TOK_MSG_REST); }
+	\n		{ /* not sure why needed here and not elsewhere */ }
+	}
 
 %%
