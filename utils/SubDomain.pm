@@ -3962,7 +3962,7 @@ sub uniq (@) {
     return @result;
 }
 
-our $LOG_MODE_RE = "r|w|l|m|k|a|x";
+our $LOG_MODE_RE = "r|w|l|m|k|a|x|Ix|Px|Ux";
 our $PROFILE_MODE_RE = "r|w|l|m|k|a|ix|px|ux|Px|Ux";
 
 sub validate_log_mode ($) {
