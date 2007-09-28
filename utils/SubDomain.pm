@@ -4084,6 +4084,7 @@ sub readprofiles () {
 }
 
 sub readinactiveprofiles () {
+    return if ( ! -e $extraprofiledir );
     opendir(ESDDIR, $extraprofiledir) or
       fatal_error "Can't read AppArmor profiles in $extraprofiledir.";
     for my $file (grep { -f "$extraprofiledir/$_" } readdir(ESDDIR)) {
