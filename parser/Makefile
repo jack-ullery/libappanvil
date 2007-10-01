@@ -192,6 +192,10 @@ tst_misc: parser_misc.c parser.h parser_yacc.h
 tst_regex: parser_regex.c parser.h parser_yacc.h $(PCREOBJECTS)
 	$(Q)$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< $(PCREOBJECTS) $(BUILD_OUTPUT)
 
+.SILENT: check
+.PHONY: check
+check: tests
+
 .SILENT: tests
 tests: ${TESTS}
 	for test in ${TESTS} ; do echo "*** running $${test}" && ./$${test} $(BUILD_OUTPUT) ; done
