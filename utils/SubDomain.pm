@@ -1395,6 +1395,12 @@ sub handlechildren {
                     $hat = $uhat;
                     next;
                 }
+                my $new_p = fetch_newer_repo_profile($profile);
+                if ( UI_SelectUpdatedRepoProfile($profile, $new_p) and
+                     $sd{$profile}{$uhat} ) {
+                    $hat = $uhat;
+                    next;
+                }
 
                 # figure out what our default hat for this application is.
                 my $defaulthat;
@@ -1520,7 +1526,16 @@ sub handlechildren {
                 }
 
                 if ($do_execute) {
-
+                    next if ( profile_exec_access_check( $profile,
+                                                         $hat,
+                                                         "exec",
+                                                         $exec_target ) );
+                    my $p = fetch_newer_repo_profile($profile);
+                    next if ( UI_SelectUpdatedRepoProfile($profile, $p) and
+                              profile_exec_access_check( $profile,
+                                                         $hat,
+                                                         "exec",
+                                                         $exec_target ) );
                     my $context = $profile;
                     $context .= "^$hat" if $profile ne $hat;
                     $context .= " -> $exec_target";
@@ -2309,17 +2324,16 @@ sub get_repo_profiles_for_user {
     return $p_hash;
 }
 
-sub check_repo_for_newer {
+sub fetch_newer_repo_profile {
     my $profile = shift;
 
     my $distro = $cfg->{repository}{distro};
     my $url    = $sd{$profile}{$profile}{repo}{url};
     my $user   = $sd{$profile}{$profile}{repo}{user};
     my $id     = $sd{$profile}{$profile}{repo}{id};
-
-    return unless ($distro && $url && $user && $id);
-
     my $p;
+
+    return undef unless ($distro && $url && $user && $id);
     if ($repo_client) {
         UI_BusyStart( gettext("Connecting to repository.....") );
         my $res =
@@ -2336,6 +2350,17 @@ sub check_repo_for_newer {
             }
         }
     }
+    return $p;
+}
+
+sub UI_SelectUpdatedRepoProfile ($$) {
+
+    my ($profile, $p) = @_;
+    my $distro        = $cfg->{repository}{distro};
+    my $url           = $sd{$profile}{$profile}{repo}{url};
+    my $user          = $sd{$profile}{$profile}{repo}{user};
+    my $id            = $sd{$profile}{$profile}{repo}{id};
+    my $updated       = 0;
 
     if ($p) {
         my $q = { };
@@ -2385,9 +2410,12 @@ sub check_repo_for_newer {
 
             if ($@) {
                 UI_Info(gettext("Error parsing repository profile."));
+            } else {
+                $updated = 1;
             }
         }
     }
+    return $updated;
 }
 
 sub ask_the_questions {
@@ -2409,7 +2437,8 @@ sub ask_the_questions {
 
         for my $profile (sort keys %{ $log{$sdmode} }) {
 
-            check_repo_for_newer($profile);
+            my $p = fetch_newer_repo_profile($profile);
+            UI_SelectUpdatedRepoProfile($profile, $p) if ( $p );
 
             $found++;
 
@@ -4637,6 +4666,31 @@ sub matchliteral {
     return undef if $@;
 
     return $matches;
+}
+
+sub profile_exec_access_check ($$$$) {
+    my ($profile, $hat, $type, $exec_target) = @_;
+    if ( $type eq "exec" ) {
+        my ($combinedmode, $cm, @m);
+
+        # does path match any regexps in original profile?
+        ($cm, @m) = rematchfrag($sd{$profile}{$hat}, $exec_target);
+        $combinedmode .= $cm if $cm;
+
+        # does path match anything pulled in by includes in
+        # original profile?
+        ($cm, @m) = matchpathincludes($sd{$profile}{$hat}, $exec_target);
+        $combinedmode .= $cm if $cm;
+
+        if (contains($combinedmode, "ix") ||
+            contains($combinedmode, "px") ||
+            contains($combinedmode, "ux") ||
+            contains($combinedmode, "Px") ||
+            contains($combinedmode, "Ux")) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 sub profile_capability_access_check ($$$) {
