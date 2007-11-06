@@ -2315,12 +2315,18 @@ sub get_repo_profiles_for_user {
     UI_BusyStop();
     if (did_result_succeed($res)) {
         for my $p ( @$res ) {
-            $p_hash->{$p->{name}->value()} = $p->{profile}->value();
+            #
+            # Parse and serialize the profile repo
+            # to strip out any flags and check for parsability
+            #
+            my $p_repo = serialize_repo_profile( $p->{name}->value(),
+                                                 $p->{profile}->value()
+                                               );
+            $p_hash->{$p->{name}->value()} = $p_repo if ($p_repo ne "");
         }
     } else { #FIXME HANDLE REPO ERROR
         return;
     }
-
     return $p_hash;
 }
 
@@ -2370,7 +2376,7 @@ sub UI_SelectUpdatedRepoProfile ($$) {
           "Old Revision", $id,
           "New Revision", $p->{id},
         ];
-        $q->{explanation} = 
+        $q->{explanation} =
           gettext( "An updated version of this profile has been found in the profile repository.  Would you like to use it?");
         $q->{functions} = [
           "CMD_VIEW_CHANGES", "CMD_UPDATE_PROFILE", "CMD_IGNORE_UPDATE",
@@ -2394,7 +2400,6 @@ sub UI_SelectUpdatedRepoProfile ($$) {
                   parse_profile_data($p->{profile}, "repository profile");
                 if ($profile_data) {
                     attach_profile_data(\%sd, $profile_data);
-                    attach_profile_data(\%original_sd, $profile_data);
                     $changed{$profile} = 1;
                 }
 
@@ -3162,11 +3167,9 @@ sub ask_to_enable_repo {
     $q->{headers} = [
       "Repository", $cfg->{repository}{url},
     ];
-    $q->{explanation} = 
-      gettext( "Would you like to enable access to the profile repository?" );
-    $q->{functions} = [
-      "CMD_ENABLE_REPO", "CMD_DISABLE_REPO", "CMD_ASK_LATER",
-    ];
+    $q->{explanation} = gettext( "Would you like to enable access to the
+profile repository?" ); $q->{functions} = [ "CMD_ENABLE_REPO",
+"CMD_DISABLE_REPO", "CMD_ASK_LATER", ];
 
     my $cmd;
     do {
@@ -3532,7 +3535,8 @@ sub get_repo_profile {
     if (did_result_succeed($res)) {
         my $res_value = $res->value;
         $repo_profile = $res_value->{profile};
-        $repo_profile = "" if (not defined($repo_profile));
+        $repo_profile = serialize_repo_profile( $res_value->{name},
+                                                 $res_value->{profile} );
     } else {
         UI_Info( gettext("Error retrieving profile from repository: ") .
                  get_result_error($res)
@@ -3541,6 +3545,30 @@ sub get_repo_profile {
     return $repo_profile;
 }
 
+#
+# Parse a repository profile (already in string format)
+# stripping any flags and meta data and serialize the result
+#
+sub serialize_repo_profile ($$)  {
+    my($name, $repo_profile_data) = @_;
+    my $serialize_opts = { };
+    my $p_repo = "";
+    $serialize_opts->{NO_FLAGS} = 1;
+
+   return "" if ( not defined $repo_profile_data);
+
+    # parse_repo_profile
+    my $profile_data = eval {
+        parse_profile_data($repo_profile_data, "repository profile");
+    };
+    if ($@) {
+       $profile_data = undef;
+    }
+    if ( $profile_data ) {
+       $p_repo = serialize_profile($profile_data->{$name}, $name, $serialize_opts);
+    }
+    return $p_repo;
+}
 
 sub sync_profiles_with_repo {
 
@@ -3552,6 +3580,8 @@ sub sync_profiles_with_repo {
     my @changed_profiles;
     my @new_profiles;
     my $users_repo_profiles = get_repo_profiles_for_user( $user );
+    my $serialize_opts = { };
+    $serialize_opts->{NO_FLAGS} = 1;
 
     #
     # Find changes made to non-repo profiles
@@ -3561,17 +3591,16 @@ sub sync_profiles_with_repo {
             push @repo_profiles, $profile;
         }
         if ( grep(/^$profile$/, @created) )  {
-            my $p_local = serialize_profile($sd{$profile}, $profile);
-            if ( defined $users_repo_profiles->{$profile} ) {
-                if ( $p_local ne $users_repo_profiles->{$profile} ) {
-                    push @changed_profiles, [
-                                              $profile,
-                                              $p_local,
-                                              $users_repo_profiles->{$profile}
-                                            ];
-                }
+            my $p_local = serialize_profile($sd{$profile},
+                                            $profile,
+                                            $serialize_opts);
+            if ( not defined $users_repo_profiles->{$profile} ) {
+                push @new_profiles,  [ $profile, $p_local, "" ];
             } else {
-                push @new_profiles, [ $profile, $p_local, "" ];
+                my $p_repo = $users_repo_profiles->{$profile};
+                if ( $p_local ne $p_repo ) {
+                    push @changed_profiles, [ $profile, $p_local, $p_repo ];
+                }
             }
         }
     }
@@ -3581,12 +3610,14 @@ sub sync_profiles_with_repo {
     #
     if (@repo_profiles) {
         for my $profile (@repo_profiles) {
-            my $p_local = serialize_profile($sd{$profile}, $profile);
-            if ( not defined $users_repo_profiles->{$profile} ) {
+            my $p_local = serialize_profile($sd{$profile},
+                                            $profile,
+                                            $serialize_opts);
+            if ( not exists $users_repo_profiles->{$profile} ) {
                 push @new_profiles,  [ $profile, $p_local, "" ];
             } else {
                 my $p_repo = "";
-                if ( $sd{$profile}{$profile}{repo}{user} ne $user ) {
+                if ( $sd{$profile}{$profile}{repo}{user} eq $user ) {
                    $p_repo = $users_repo_profiles->{$profile};
                 }  else {
                     $p_repo =
@@ -4437,14 +4468,14 @@ sub escape ($) {
     return $dangerous;
 }
 
-sub writeheader ($$$) {
-    my ($profile_data, $name, $is_hat) = @_;
+sub writeheader ($$$$) {
+    my ($profile_data, $name, $is_hat, $write_flags) = @_;
 
     my @data;
     # deal with whitespace in profile names...
     $name = "\"$name\"" if $name =~ /\s/;
     push @data, "#include <tunables/global>" unless ( $is_hat );
-    if ($profile_data->{flags}) {
+    if ($write_flags and  $profile_data->{flags}) {
         push @data, "$name flags=($profile_data->{flags}) {";
     } else {
         push @data, "$name {";
@@ -4532,11 +4563,11 @@ sub writepaths ($) {
     return @data;
 }
 
-sub writepiece ($$) {
-    my ($profile_data, $name) = @_;
+sub writepiece ($$$) {
+    my ($profile_data, $name, $write_flags) = @_;
 
     my @data;
-    push @data, writeheader($profile_data->{$name}, $name, 0);
+    push @data, writeheader($profile_data->{$name}, $name, 0, $write_flags);
     push @data, writeincludes($profile_data->{$name});
     push @data, writecapabilities($profile_data->{$name});
     push @data, writenetdomain($profile_data->{$name});
@@ -4547,7 +4578,8 @@ sub writepiece ($$) {
         push @data, "";
         push @data, map { "  $_" } writeheader($profile_data->{$hat},
                                                "$name//$hat",
-                                               1);
+                                               1,
+                                               $write_flags);
         push @data, map { "  $_" } writeincludes($profile_data->{$hat});
         push @data, map { "  $_" } writecapabilities($profile_data->{$hat});
         push @data, map { "  $_" } writenetdomain($profile_data->{$hat});
@@ -4555,14 +4587,19 @@ sub writepiece ($$) {
         push @data, "  }";
     }
 
-
     return @data;
 }
 
 sub serialize_profile {
-    my ($profile_data, $name, $include_metadata) = @_;
+    my ($profile_data, $name, $options) = @_;
 
     my $string = "";
+    my $include_metadata = 0;  # By default don't write out metadata
+    my $include_flags = 1;
+    if ( $options and ref($options) eq "HASH" ) {
+       $include_metadata = 1 if ( defined $options->{METADATA} );
+       $include_flags    = 0 if ( defined $options->{NO_FLAGS} );
+    }
 
     if ($include_metadata) {
         # keep track of when the file was last updated
@@ -4610,7 +4647,7 @@ sub serialize_profile {
 #    }
 #  }
 
-    $string .= join("\n", writepiece($profile_data, $name));
+    $string .= join("\n", writepiece($profile_data, $name, $include_flags));
 
     return "$string\n";
 }
@@ -4624,7 +4661,9 @@ sub writeprofile ($) {
 
     open(SDPROF, ">$filename") or
       fatal_error "Can't write new AppArmor profile $filename: $!";
-    my $profile_string = serialize_profile($sd{$profile}, $profile, 1);
+    my $serialize_opts = { };
+    $serialize_opts->{METADATA} = 1;
+    my $profile_string = serialize_profile($sd{$profile}, $profile, $serialize_opts);
     print SDPROF $profile_string;
     close(SDPROF);
 
