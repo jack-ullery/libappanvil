@@ -129,26 +129,34 @@ while (not $done_profiling) {
     } else {
         $logmark = last_audit_entry_time();
     }
+    eval {
 
-    my $q = {};
-    $q->{headers} = [ gettext("Profiling"), $fqdbin ];
-    $q->{functions} = [ "CMD_SCAN", "CMD_FINISHED" ];
-    $q->{default} = "CMD_SCAN";
+        my $q = {};
+        $q->{headers} = [ gettext("Profiling"), $fqdbin ];
+        $q->{functions} = [ "CMD_SCAN", "CMD_FINISHED" ];
+        $q->{default} = "CMD_SCAN";
 
-    my ($ans, $arg) = UI_PromptUser($q);
+        my ($ans, $arg) = UI_PromptUser($q);
 
-    if ($ans eq "CMD_SCAN") {
+        if ($ans eq "CMD_SCAN") {
 
-        my $lp_ret = do_logprof_pass($logmark);
+            my $lp_ret = do_logprof_pass($logmark);
 
-        $done_profiling = 1 if $lp_ret eq "FINISHED";
+            $done_profiling = 1 if $lp_ret eq "FINISHED";
 
-    } else {
+        } else {
 
-        $done_profiling = 1;
+            $done_profiling = 1;
 
+        }
+    };
+    if ($@) {
+        if ($@ =~ /FINISHING/) {
+            $done_profiling = 1;
+        } else {
+            die $@;
+        }
     }
-
 }
 
 for my $p (sort keys %helpers) {
