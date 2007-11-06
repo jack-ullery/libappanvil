@@ -1771,7 +1771,7 @@ our $next_log_entry;
 our $logmark;
 our $seenmark;
 my $RE_LOG_v2_0_syslog = qr/SubDomain/;
-my $RE_LOG_v2_1_syslog = qr/kernel:\s+audit\([\d\.\:]+\):\s+type=150[1-6]/;
+my $RE_LOG_v2_1_syslog = qr/kernel:\s+(\[[\d\.\s]+\]\s+)?audit\([\d\.\:]+\):\s+type=150[1-6]/;
 my $RE_LOG_v2_0_audit  =
     qr/type=(APPARMOR|UNKNOWN\[1500\]) msg=audit\([\d\.\:]+\):/;
 my $RE_LOG_v2_1_audit  =
