@@ -1,0 +1,22 @@
+fix bug where the error code and mask are not being set correctly
+when pathname lookup fails.
+
+---
+ security/apparmor/main.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -191,8 +191,10 @@ static int aa_perm_dentry(struct aa_prof
+ 		 */
+ 		if (PTR_ERR(sa->name) == -ENOENT && (check & AA_CHECK_FD))
+ 			sa->denied_mask = 0;
+-		else
+-			sa->denied_mask = PTR_ERR(sa->name);
++		else {
++			sa->denied_mask = sa->requested_mask;
++			sa->error_code = PTR_ERR(sa->name);
++		}
+ 		sa->name = NULL;
+ 	} else
+ 		sa->denied_mask = aa_file_denied(profile, sa->name,

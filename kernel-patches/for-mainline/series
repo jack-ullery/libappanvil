@@ -41,6 +41,17 @@ apparmor-module_interface.diff
 apparmor-misc.diff
 apparmor-intree.diff
 apparmor-network.diff
+fix-rcu-deref.diff
+fix-name-errorpath.diff
+fix-net.diff
+change-profile-kernel-v2.diff
+expand-dfa.diff
+slash-null-dfa.diff
+profile-namespaces.diff
+owner-perm-set.diff
+apparmor-link-pairs.diff
+apparmor-bootdisable.diff
+apparmor-builtin-only.diff
 do_path_lookup-nameidata.diff
 sys_fchdir-nameidata.diff
 file_permission-nameidata.diff
