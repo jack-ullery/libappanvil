@@ -90,26 +90,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode);
 %token TOK_NETWORK
 %token TOK_HAT
 %token TOK_UNSAFE
-
-/* network tokens */
-%token TOK_IP
-%token TOK_IFACE
-%token TOK_ACTION
-%token TOK_PORT
-%token TOK_PORT_IDENT
-%token TOK_NUM
 %token TOK_COLON
-%token TOK_SLASH
-%token TOK_RANGE
-%token TOK_VIA
-%token TOK_TO
-%token TOK_FROM
-%token TOK_TCP_CONN
-%token TOK_TCP_ACPT
-%token TOK_TCP_CONN_ESTB
-%token TOK_TCP_ACPT_ESTB
-%token TOK_UDP_SEND
-%token TOK_UDP_RECV
 
 /* capabilities */
 %token TOK_CAPABILITY
@@ -124,23 +105,12 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode);
 %union {
 	char *id;
 	char *flag_id;
-	char *ip;
-	char *iface;
 	char *mode;
-	char *eth;
-	/* char * action; */
-	char *via;
-	/* char * port; */
-	unsigned long int num;
 	struct aa_network_entry *network_entry;
 	struct codomain *cod;
 	struct cod_global_entry *entry;
 	struct cod_net_entry *net_entry;
 	struct cod_entry *user_entry;
-	struct ipv4_desc *ipv4;
-	struct ipv4_endpoints *endpoints;
-	unsigned short (*port)[2];
-	int action;
 	struct flagval flags;
 	int fmode;
 	unsigned int cap;
@@ -159,20 +129,8 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode);
 %type <cod>	rules
 %type <cod>	hat
 %type <cod>	cond_rule
-%type <net_entry> netrule
 %type <network_entry> network_rule
 %type <user_entry> rule
-%type <ipv4>	address
-%type <endpoints> addresses
-%type <num>     mask
-%type <port>    ports
-%type <ip>	TOK_IP
-%type <iface>	TOK_IFACE interface
-%type <action>	TOK_ACTION
-%type <via>	TOK_VIA
-%type <port>    TOK_PORT_IDENT
-%type <num>	TOK_NUM
-%type <action>	action
 %type <flags>	flags
 %type <flags>	flagvals
 %type <flags>	flagval
@@ -413,17 +371,6 @@ rules:  rules rule
 		$$ = $1;
 	};
 
-rules: rules netrule 
-	{
-		PDEBUG("Matched: netrules rule\n");
-		if (!$2)
-			yyerror(_("Assert: `netrule' returned NULL."));
-		PDEBUG("Assigning %s\n", inet_ntoa(*$2->saddr));
-		PDEBUG("Assigning %s\n", inet_ntoa(*$2->daddr));
-		add_netrule_to_policy($1, $2);
-		$$ = $1;
-	};
-
 rules: rules network_rule
 	{
 		struct aa_network_entry *entry, *tmp;
@@ -647,44 +594,6 @@ network_rule: TOK_NETWORK TOK_ID TOK_ID TOK_END_OF_RULE
 		$$ = entry;
 	}
 
-/*
- * The addition of an entirely new grammer set to our (previously) slim 
- * profile spec is below.  It's designed to look quite similar to 
- * (Free|Open)BSD's ipfw rules:
- * 
- * 'tcp_connect to 10.0.0.40:80 via eth0' for example.
- * 
- * 
- * mb:
- * We need to verify the following rules:
- */
-  
-netrule:   action addresses interface TOK_END_OF_RULE
-	{
-		struct cod_net_entry *entry;
-
-		entry = NULL;
-		
-		if (!$2)
-			yyerror(_("Assert: `addresses' returned NULL."));
-
-		PDEBUG("Matched action (%d) via (%s)\n", $1, $3);
-		entry = new_network_entry($1, $2, $3);
-		if (!entry)
-			yyerror(_("Memory allocation error."));
-
-		free_ipv4_endpoints($2);
-		$$ = entry;
-	};
-	
-action:		TOK_TCP_CONN { $$ = AA_TCP_CONNECT; }
-	|	TOK_TCP_ACPT { $$ = AA_TCP_ACCEPT; }
-	|	TOK_TCP_CONN_ESTB { $$ = AA_TCP_CONNECTED; }
-	|       TOK_TCP_ACPT_ESTB { $$ = AA_TCP_ACCEPTED; }
-	|	TOK_UDP_SEND { $$ = AA_UDP_SEND; }
-	|	TOK_UDP_RECV { $$ = AA_UDP_RECEIVE; }
-	;
-	
 hat_start: TOK_SEP {}
 	| TOK_HAT {}
 
@@ -693,227 +602,6 @@ file_mode: TOK_MODE
 		$$ = parse_mode($1);
 		free($1);
 	}
-
-interface:	/* nothing, no interface specified */
-	{
-		$$ = NULL;
-	};
-interface:	TOK_VIA TOK_IFACE
-	{
-		PDEBUG ("Matched an interface (%s)\n", $2);
-		$$ = $2;
-	};
-
-addresses:	/* Nothing */
-	{
-		struct ipv4_endpoints *addresses;
-
-		addresses = (struct ipv4_endpoints *) 
-				malloc (sizeof (struct ipv4_endpoints));
-		if (!addresses)
-			yyerror(_("Memory allocation error."));
-		addresses->src = NULL;
-		addresses->dest = NULL;
-
-		$$ = addresses;
-	};
-
-addresses:	TOK_TO address
-	{
-		struct ipv4_endpoints *addresses;
-
-		addresses = (struct ipv4_endpoints *) 
-				malloc(sizeof (struct ipv4_endpoints));
-		if (!addresses)
-			yyerror(_("Memory allocation error."));
-		addresses->src = NULL;
-		addresses->dest = $2;
-
-		$$ = addresses;
-	};
-		
-addresses:	TOK_FROM address
-	{
-		struct ipv4_endpoints *addresses;
-
-		addresses = (struct ipv4_endpoints *) 
-				malloc(sizeof (struct ipv4_endpoints));
-		if (!addresses)
-			yyerror(_("Memory allocation error."));
-		addresses->src = $2;
-		addresses->dest = NULL;
-
-		$$ = addresses;
-	};
-		
-addresses:	TOK_FROM address TOK_TO address
-	{
-		struct ipv4_endpoints *addresses;
-
-		addresses = (struct ipv4_endpoints *) 
-				malloc (sizeof (struct ipv4_endpoints));
-		if (!addresses)
-			yyerror(_("Memory allocation error."));
-		addresses->src = $2;
-		addresses->dest = $4;
-
-		$$ = addresses;
-	};
-		
-addresses:	TOK_TO address TOK_FROM address
-	{
-		struct ipv4_endpoints *addresses;
-
-		addresses = (struct ipv4_endpoints *) 
-				malloc(sizeof (struct ipv4_endpoints));
-		if (!addresses)
-			yyerror(_("Memory allocation error."));
-		addresses->src = $4;
-		addresses->dest = $2;
-
-		$$ = addresses;
-	};
-		
-addresses:	TOK_TO address TOK_TO
-	{
-		/* better error warnings (hopefully) */
-		yyerror(_("Network entries can only have one TO address."));
-	};
-addresses:	TOK_FROM address TOK_FROM
-	{
-		/* better error warnings (hopefully) */
-		yyerror(_("Network entries can only have one FROM address."));
-	};
-address:	TOK_IP ports
-	{
-		/* Bleah, I have to handle address as two rules, because
-		 * if the user provides an ip of 0.0.0.0 and no mask, we
-		 * treat it as 0.0.0.0/0 instead of 0.0.0.0/32. */
-
-		struct ipv4_desc *address;
-
-		address = (struct ipv4_desc *) 
-				malloc (sizeof (struct ipv4_desc));
-		if (!address)
-			yyerror(_("Memory allocation error."));
-
-		address->port[0] = (*$2)[0];
-		address->port[1] = (*$2)[1];
-		if (inet_aton($1, &(address->addr)) == 0)
-			yyerror(_("`%s' is not a valid ip address."), $1);
-		if (address->addr.s_addr == 0) {
-			/* the user specified 0.0.0.0 without giving an
-			 * explicit mask, so treat it as 0.0.0.0/0 */
-			address->mask = htonl (0UL);
-		} else {
-			/* otherwise, treat it as /32 */
-			address->mask = htonl (0xffffffff);
-		}
-		PDEBUG("Matched an IP (%s/%d:%d-%d)\n",
-				inet_ntoa(address->addr), address->mask,
-				address->port[0], address->port[1]);
-
-		free($1);
-		free(*$2);
-		$$ = address;
-	};
-		
-address:	TOK_IP mask ports
-	{
-		struct ipv4_desc *address;
-
-		address = (struct ipv4_desc *) 
-				malloc(sizeof (struct ipv4_desc));
-		if (!address)
-			yyerror(_("Memory allocation error."));
-
-		address->mask = $2;
-		address->port[0] = (*$3)[0];
-		address->port[1] = (*$3)[1];
-		if (inet_aton($1, &(address->addr)) == 0)
-			yyerror(_("`%s' is not a valid ip address."), $1);
-		PDEBUG("Matched an IP (%s/%d:%d-%d)\n",
-				inet_ntoa(address->addr), address->mask,
-				address->port[0], address->port[1]);
-		free($1);
-		free(*$3);
-		$$ = address;
-	};
-		
-mask:		TOK_SLASH TOK_NUM
-	{
-		PDEBUG("Matched a netmask (%d)\n", $2);
-		if (($2 < 0) || ($2 > 32))
-			yyerror(_("`/%d' is not a valid netmask."), $2);
-		$$ = htonl(0xffffffff << (32 - $2));
-	};
-mask:		TOK_SLASH TOK_IP
-	{
-		struct in_addr mask;
-		if (inet_aton($2, &mask) == 0)
-			yyerror(_("`%s' is not a valid netmask."), $2);
-		PDEBUG("Matched a netmask (%d)\n", mask.s_addr);
-		$$ = mask.s_addr;
-	};
-		
-ports:	{
-		/* nothing, return all ports */
-		unsigned short (*ports)[2];
-
-		ports = (unsigned short (*)[2]) 
-				malloc(sizeof (unsigned short [2]));
-		if (!ports)
-			yyerror(_("Memory allocation error."));
-		(*ports)[0] = MIN_PORT;
-		(*ports)[1] = MAX_PORT;
-		
-		$$ = ports;
-	};
-ports:		TOK_COLON TOK_NUM
-	{
-		unsigned short (*ports)[2];
-		
-		PDEBUG("Matched a single port (%d)\n", $2);
-		ports = (unsigned short (*)[2]) 
-				malloc(sizeof (unsigned short [2]));
-		if (($2 < MIN_PORT) || ($2 > MAX_PORT))
-			yyerror(_("ports must be between %d and %d"),
-				MIN_PORT, MAX_PORT);
-		if (!ports)
-			yyerror(_("Memory allocation error."));
-		(*ports)[0] = $2;
-		(*ports)[1] = $2;
-		
-		$$ = ports;
-	};
-ports:		TOK_COLON TOK_NUM TOK_RANGE TOK_NUM
-	{
-		unsigned short (*ports)[2];
-
-		PDEBUG("Matched a port range (%d,%d)\n", $2, $4);
-		ports = (unsigned short (*)[2]) 
-				malloc(sizeof (unsigned short [2]));
-		if (!ports)
-			yyerror(_("Memory allocation error."));
-		if (($2 < MIN_PORT) || ($4 > MAX_PORT) 
-		 || ($2 < MIN_PORT) || ($4 > MAX_PORT))
-			yyerror(_("ports must be between %d and %d"),
-				 MIN_PORT, MAX_PORT);
-		(*ports)[0] = $2;
-		(*ports)[1] = $4;
-
-		if ((*ports)[0] > (*ports)[1])
-		{
-			unsigned short tmp;
-			pwarn("expected first port number to be less than the second, swapping (%ld,%ld)\n",
-				$2, $4);
-			tmp = (*ports)[0];
-			(*ports)[0] = (*ports)[1];
-			(*ports)[1] = tmp;
-		}
-		
-		$$ = ports;
-	};
 
 change_profile:	TOK_CHANGE_PROFILE TOK_ID TOK_END_OF_RULE
 	{

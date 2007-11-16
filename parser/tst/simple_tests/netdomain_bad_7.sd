@@ -1,6 +1,7 @@
 #
-# $Id$
+# $Id: tcp_client_ok3.sd 66 2006-06-01 18:02:28Z steve-beattie $
 #=DESCRIPTION netdomain tcp connect to,from,via
+#=EXRESULT FAIL
 /tmp/tcp/tcp_client {
   tcp_connect to 10.0.0.17/16:50-100 from 127.0.0.1 via eth1,
   tcp_connect to 127.0.0.1,

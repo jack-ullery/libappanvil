@@ -1,7 +1,7 @@
 #
-# $Id$
+# $Id: tcp_client_ok1.sd 66 2006-06-01 18:02:28Z steve-beattie $
 #=DESCRIPTION netdomain tcp connect simple parse test (to,via)
-#=EXRESULT PASS
+#=EXRESULT FAIL
 #
 /tmp/tcp/tcp_client {
   tcp_connect to 127.0.0.1,

@@ -430,42 +430,6 @@ inline int sd_write_listend(sd_serialize *p)
 	return 1;
 }
 
-int
-sd_serialize_net_entry(sd_serialize *p, struct cod_net_entry *net_entry)
-{
-
-	if (!sd_write_struct(p, "ne"))
-		return 0;
-	if (!sd_write32(p, net_entry->mode))
-		return 0;
-
-	if (!sd_write32(p, net_entry->saddr->s_addr))
-		return 0;
-	if (!sd_write32(p, net_entry->smask->s_addr))
-		return 0;
-	if (!sd_write16(p, net_entry->src_port[0]))
-		return 0;
-	if (!sd_write16(p, net_entry->src_port[1]))
-		return 0;
-	if (!sd_write32(p, net_entry->daddr->s_addr))
-		return 0;
-	if (!sd_write32(p, net_entry->dmask->s_addr))
-		return 0;
-	if (!sd_write16(p, net_entry->dst_port[0]))
-		return 0;
-	if (!sd_write16(p, net_entry->dst_port[1]))
-		return 0;
-
-	if (net_entry->iface)
-		if (!sd_write_string(p, net_entry->iface, NULL))
-			return 0;
-
-	if (!sd_write_structend(p))
-		return 0;
-
-	return 1;
-}
-
 int sd_serialize_pattern(sd_serialize *p, pcre *pat)
 {
 	if (!sd_write_struct(p, "pcre"))
@@ -565,7 +529,6 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 			 int flattened)
 {
 	struct cod_entry *entry;
-	struct cod_net_entry *net_entry;
 
 	if (!sd_write_struct(p, "profile"))
 		return 0;
@@ -658,18 +621,6 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 			if (!sd_write_listend(p))
 				return 0;
 		}
-	}
-
-	if (profile->net_entries && (regex_type != AARE_DFA)) {
-		if (!sd_write_list(p, "net"))
-			return 0;
-		list_for_each(profile->net_entries, net_entry) {
-			if (!sd_serialize_net_entry(p, net_entry))
-				return 0;
-		}
-		if (!sd_write_listend(p))
-			return 0;
-
 	}
 
 	if (profile->hat_table && regex_type != AARE_DFA) {

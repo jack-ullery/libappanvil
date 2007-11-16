@@ -29,15 +29,6 @@
 #include "parser.h"
 
 
-static inline int count_net_entries(struct codomain *cod)
-{
-	struct cod_net_entry *list;
-	int count = 0;
-	for (list = cod->net_entries; list; list = list->next)
-		count++;
-	return count;
-}
-
 static int file_comp(const void *c1, const void *c2)
 {
 	struct cod_entry **e1, **e2;
@@ -127,16 +118,9 @@ static int process_file_entries(struct codomain *cod)
 	return 1;
 }
 
-static int process_net_entries(struct codomain __unused *cod)
-{
-	return 1;
-}
-
 int codomain_merge_rules(struct codomain *cod)
 {
 	if (!process_file_entries(cod))
-		goto fail;
-	if (!process_net_entries(cod))
 		goto fail;
 
 	/* XXX  return error from this */

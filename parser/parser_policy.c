@@ -99,12 +99,6 @@ void add_entry_to_policy(struct codomain *cod, struct cod_entry *entry)
 	cod->entries = entry;
 }
 
-void add_netrule_to_policy(struct codomain *cod, struct cod_net_entry *net_entry)
-{
-	net_entry->next = cod->net_entries;
-	cod->net_entries = net_entry;
-}
-
 static void __merge_rules(const void *nodep, const VISIT value,
 			  const int __unused depth)
 {
@@ -392,7 +386,6 @@ struct codomain *merge_policy(struct codomain *a, struct codomain *b)
 {
 	struct codomain *ret = a;
 	struct cod_entry *last;
-	struct cod_net_entry *lastnet;
 	if (!a) {
 		ret = b;
 		goto out;
@@ -414,14 +407,6 @@ struct codomain *merge_policy(struct codomain *a, struct codomain *b)
 		a->entries = b->entries;
 	}
 	b->entries = NULL;
-
-	if (a->net_entries) {
-		list_last_entry(a->net_entries, lastnet);
-		lastnet->next = b->net_entries;
-	} else {
-		a->net_entries = b->net_entries;
-	}
-	b->net_entries = NULL;
 
 	a->flags.complain = a->flags.complain || b->flags.complain;
 	a->flags.audit = a->flags.audit || b->flags.audit;
@@ -482,7 +467,6 @@ void free_policy(struct codomain *cod)
 		return;
 	free_hat_table(cod->hat_table);
 	free_cod_entries(cod->entries);
-	free_net_entries(cod->net_entries);
 	if (cod->dfarules)
 		aare_delete_ruleset(cod->dfarules);
 	if (cod->dfa)

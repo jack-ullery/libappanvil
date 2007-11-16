@@ -51,15 +51,6 @@ static struct keyword_table keyword_table[] = {
 	/* flags */
 	{"flags",		TOK_FLAGS},
 	/* network */
-	{"via",			TOK_VIA},
-	{"tcp_connect",		TOK_TCP_CONN},
-	{"tcp_accept",		TOK_TCP_ACPT},
-	{"tcp_connected",	TOK_TCP_CONN_ESTB},
-	{"tcp_accepted",	TOK_TCP_ACPT_ESTB},
-	{"udp_send",		TOK_UDP_SEND},
-	{"udp_receive",		TOK_UDP_RECV},
-	{"to",			TOK_TO},
-	{"from",		TOK_FROM},
 	{"network",		TOK_NETWORK},
 	/* misc keywords */
 	{"capability",		TOK_CAPABILITY},
@@ -564,58 +555,6 @@ reeval:
 	return mode;
 }
 
-struct cod_net_entry *new_network_entry(int action,
-					struct ipv4_endpoints *addrs,
-					char *interface)
-{
-	struct cod_net_entry *entry = NULL;
-
-	entry = (struct cod_net_entry *)
-	    			malloc(sizeof(struct cod_net_entry));
-	entry->saddr = (struct in_addr *)malloc(sizeof(struct in_addr));
-	entry->smask = (struct in_addr *)malloc(sizeof(struct in_addr));
-	entry->daddr = (struct in_addr *)malloc(sizeof(struct in_addr));
-	entry->dmask = (struct in_addr *)malloc(sizeof(struct in_addr));
-
-	if (!addrs || !entry || !entry->saddr || !entry->smask ||
-	    !entry->daddr || !entry->dmask) {
-		yyerror(_("Memory allocation error."));
-		return NULL;
-	}
-
-	entry->next = NULL;
-	entry->mode = action;
-	entry->iface = interface ? interface : NULL;
-
-	if (addrs->src) {
-		PDEBUG("Assigning source\n");
-		entry->saddr->s_addr = addrs->src->addr.s_addr & addrs->src->mask;
-		entry->smask->s_addr = addrs->src->mask;
-		entry->src_port[0] = addrs->src->port[0];
-		entry->src_port[1] = addrs->src->port[1];
-	} else {
-		entry->saddr->s_addr = 0;
-		entry->smask->s_addr = 0;
-		entry->src_port[0] = MIN_PORT;
-		entry->src_port[1] = MAX_PORT;
-	}
-
-	if (addrs->dest) {
-		PDEBUG("Assigning source\n");
-		entry->daddr->s_addr = addrs->dest->addr.s_addr & addrs->dest->mask;
-		entry->dmask->s_addr = addrs->dest->mask;
-		entry->dst_port[0] = addrs->dest->port[0];
-		entry->dst_port[1] = addrs->dest->port[1];
-	} else {
-		entry->daddr->s_addr = 0;
-		entry->dmask->s_addr = 0;
-		entry->dst_port[0] = MIN_PORT;
-		entry->dst_port[1] = MAX_PORT;
-	}
-
-	return entry;
-}
-
 struct cod_entry *new_entry(char *namespace, char *id, int mode)
 {
 	struct cod_entry *entry = NULL;
@@ -662,17 +601,6 @@ struct cod_entry *copy_cod_entry(struct cod_entry *orig)
 	return entry;
 }
 
-void free_ipv4_endpoints(struct ipv4_endpoints *addrs)
-{
-	if (!addrs)
-		return;
-	if (addrs->src)
-		free(addrs->src);
-	if (addrs->dest)
-		free(addrs->dest);
-	free(addrs);
-}
-
 void free_cod_entries(struct cod_entry *list)
 {
 	if (!list)
@@ -687,25 +615,6 @@ void free_cod_entries(struct cod_entry *list)
 		free(list->pat.regex);
 	if (list->pat.compiled)
 		free(list->pat.compiled);
-	free(list);
-}
-
-void free_net_entries(struct cod_net_entry *list)
-{
-	if (!list)
-		return;
-	if (list->next)
-		free_net_entries(list->next);
-	if (list->saddr)
-		free(list->saddr);
-	if (list->smask)
-		free(list->smask);
-	if (list->daddr)
-		free(list->daddr);
-	if (list->dmask)
-		free(list->dmask);
-	if (list->iface)
-		free(list->iface);
 	free(list);
 }
 
@@ -760,54 +669,6 @@ void debug_cod_entries(struct cod_entry *list)
 		if (item->namespace)
 			printf("\tNamespace:\t(%s)\n", item->namespace);
 
-	}
-}
-
-void debug_cod_net_entries(struct cod_net_entry *list)
-{
-	struct cod_net_entry *item = NULL;
-	struct in_addr src_addr, dst_addr;
-	unsigned long smask;
-	unsigned long dmask;
-
-	printf("--- NetwerkEntries --- \n");
-
-	list_for_each(list, item) {
-		if (!item)
-			printf("Item is NULL");
-
-		src_addr.s_addr = item->saddr->s_addr;
-		dst_addr.s_addr = item->daddr->s_addr;
-		smask = ntohl(item->smask->s_addr);
-		dmask = ntohl(item->dmask->s_addr);
-
-		printf("Source IP: %s\n", inet_ntoa(src_addr));
-		printf("Source Port: (%hu) - (%hu)\n", item->src_port[0],
-		       item->src_port[1]);
-		printf("Source netmask: %lx\n", smask);
-		fflush(stdout);
-		printf("Destination IP: %s\n", inet_ntoa(dst_addr));
-		printf("Destination Port: %hu - %hu\n", item->dst_port[0],
-		       item->dst_port[1]);
-		printf("Destination netmask: %lx\n", dmask);
-		fflush(stdout);
-		printf("Mode:\t");
-		if (item->mode & AA_TCP_ACCEPT)
-			printf("TA");
-		if (item->mode & AA_TCP_CONNECT)
-			printf("TC");
-		if (item->mode & AA_TCP_ACCEPTED)
-			printf("Ta");
-		if (item->mode & AA_TCP_CONNECTED)
-			printf("Tc");
-		if (item->mode & AA_UDP_SEND)
-			printf("US");
-		if (item->mode & AA_UDP_RECEIVE)
-			printf("UR");
-		if (item->iface != NULL)
-			printf("\nInterface: %s\n", item->iface);
-
-		printf("\n");
 	}
 }
 
@@ -886,9 +747,6 @@ void debug_cod_list(struct codomain *cod)
 
 	if (cod->entries)
 		debug_cod_entries(cod->entries);
-
-	if (cod->net_entries)
-		debug_cod_net_entries(cod->net_entries);
 
 	printf("\n");
 	dump_policy_hats(cod);
