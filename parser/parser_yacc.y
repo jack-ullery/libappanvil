@@ -67,7 +67,8 @@ struct value_list {
 };
 
 void free_value_list(struct value_list *list);
-struct cod_entry *do_file_rule(char *namespace, char *id, int mode);
+struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
+			       char *link_id);
 
 %}
 
@@ -78,6 +79,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode);
 %token TOK_MODE
 %token TOK_END_OF_RULE
 %token TOK_EQUALS
+%token TOK_ARROW
 %token TOK_ADD_ASSIGN
 %token TOK_SET_VAR
 %token TOK_BOOL_VAR
@@ -91,6 +93,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode);
 %token TOK_HAT
 %token TOK_UNSAFE
 %token TOK_COLON
+%token TOK_LINK
 
 /* capabilities */
 %token TOK_CAPABILITY
@@ -513,12 +516,12 @@ id_or_var: TOK_SET_VAR { $$ = $1; };
 
 rule:	id_or_var file_mode TOK_END_OF_RULE
 	{
-		$$ = do_file_rule(NULL, $1, $2);
+		$$ = do_file_rule(NULL, $1, $2, NULL);
 	};
 
 rule:   file_mode id_or_var TOK_END_OF_RULE
 	{
-		$$ = do_file_rule(NULL, $2, $1 & ~ALL_AA_EXEC_UNSAFE);
+		$$ = do_file_rule(NULL, $2, $1 & ~ALL_AA_EXEC_UNSAFE, NULL);
  	};
 
 rule:	TOK_UNSAFE file_mode id_or_var TOK_END_OF_RULE
@@ -526,7 +529,8 @@ rule:	TOK_UNSAFE file_mode id_or_var TOK_END_OF_RULE
 		int mode = (($2 & AA_EXEC_BITS) << 7) & ALL_AA_EXEC_UNSAFE;
 		if (!($2 & AA_EXEC_BITS))
 			yyerror(_("unsafe rule missing exec permissions"));
-		$$ = do_file_rule(NULL, $3, ($2 & ~ALL_AA_EXEC_UNSAFE) | mode);
+		$$ = do_file_rule(NULL, $3, ($2 & ~ALL_AA_EXEC_UNSAFE) | mode,
+				  NULL);
 	};
 
 rule:  id_or_var file_mode id_or_var
@@ -536,6 +540,32 @@ rule:  id_or_var file_mode id_or_var
 		 * obviously not smart, we'll just punt with a more
 		 * sensible error. */
 		yyerror(_("missing an end of line character? (entry: %s)"), $1);
+	};
+
+rule: TOK_LINK TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
+	{
+		struct cod_entry *entry;
+		PDEBUG("Matched: link tok_id (%s) -> (%s)\n", $2, $4);
+		entry = new_entry(NULL, $2, AA_LINK_BITS, $4);
+		if (!entry)
+			yyerror(_("Memory allocation error."));
+		PDEBUG("rule.entry: link (%s)\n", entry->name);
+		$$ = entry;
+	};
+
+rule: TOK_LINK file_mode TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
+	{
+		struct cod_entry *entry;
+		PDEBUG("Matched: link tok_id (%s) -> (%s)\n", $3, $5);
+		if ($2 & ~AA_LINK_BITS) {
+			yyerror(_("only link perms can be specified in a link rule."));
+		} else {
+			entry = new_entry(NULL, $3, $2, $5);
+			if (!entry)
+				yyerror(_("Memory allocation error."));
+		}
+		PDEBUG("rule.entry: link (%s)\n", entry->name);
+		$$ = entry;
 	};
 
 hat: hat_start TOK_ID flags TOK_OPEN rules TOK_CLOSE
@@ -610,7 +640,7 @@ change_profile:	TOK_CHANGE_PROFILE TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 		PDEBUG("Matched change_profile: tok_id (%s)\n", $2);
-		entry = new_entry(NULL, $2, AA_CHANGE_PROFILE);
+		entry = new_entry(NULL, $2, AA_CHANGE_PROFILE, NULL);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("change_profile.entry: (%s)\n", entry->name);
@@ -621,7 +651,7 @@ change_profile:	TOK_CHANGE_PROFILE TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 		PDEBUG("Matched change_profile: tok_id (%s:%s)\n", $2, $4);
-		entry = new_entry($2, $4, AA_CHANGE_PROFILE);
+		entry = new_entry($2, $4, AA_CHANGE_PROFILE, NULL);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("change_profile.entry: (%s)\n", entry->name);
@@ -685,11 +715,12 @@ void free_value_list(struct value_list *list)
 	}
 }
 
-struct cod_entry *do_file_rule(char *namespace, char *id, int mode)
+struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
+			       char *link_id)
 {
 		struct cod_entry *entry;
 		PDEBUG("Matched: tok_id (%s) tok_mode (0x%x)\n", id, mode);
-		entry = new_entry(namespace, id, mode);
+		entry = new_entry(namespace, id, mode, link_id);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("rule.entry: (%s)\n", entry->name);

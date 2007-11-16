@@ -38,6 +38,7 @@ struct cod_pattern {
 struct cod_entry {
 	char *namespace;
 	char *name;
+	char *link_name;
 	struct codomain *codomain; 	/* Special codomain defined
 					 * just for this executable */
 	int mode;			/* mode is 'or' of AA_* bits */
@@ -194,7 +195,8 @@ extern int get_keyword_token(const char *keyword);
 extern int name_to_capability(const char *keyword);
 extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);
-extern struct cod_entry *new_entry(char *namespace, char *id, int mode);
+extern struct cod_entry *new_entry(char *namespace, char *id, int mode,
+				   char *link_id);
 extern struct aa_network_entry *new_network_ent(unsigned int family,
 						unsigned int type,
 						unsigned int protocol);

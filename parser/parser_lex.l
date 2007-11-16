@@ -78,6 +78,7 @@ FLAGCLOSE_PAREN	\)
 FLAGSEP		\,
 EQUALS		=
 ADD_ASSIGN	\+=
+ARROW		->
 
 %x SUB_NAME
 %x NETWORK_MODE
@@ -210,6 +211,11 @@ ADD_ASSIGN	\+=
 			yylval = (YYSTYPE) yytext;
 			BEGIN(SUB_NAME);
 			return TOK_SEP;
+			}
+{ARROW}			{
+			PDEBUG("Matched a arrow\n");
+			yylval = (YYSTYPE) yytext;
+			return TOK_ARROW;
 			}
 {EQUALS}		{
 			PDEBUG("Matched equals for assignment\n");

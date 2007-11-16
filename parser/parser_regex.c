@@ -512,8 +512,12 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 		/* add the pair rule */
 		char lbuf[PATH_MAX + 8];
 		int perms = AA_LINK_BITS & entry->mode;
-		perms |= LINK_TO_LINK_SUBSET(perms);
-		sprintf(lbuf, "%s///**", entry->name);
+		if (entry->link_name) {
+			sprintf(lbuf, "%s//%s", entry->name, entry->link_name);
+		} else {
+			perms |= LINK_TO_LINK_SUBSET(perms);
+			sprintf(lbuf, "%s///**", entry->name);
+		}
 		ptype = convert_aaregex_to_pcre(lbuf, 0, tbuf, PATH_MAX + 8);
 		if (ptype == ePatternInvalid)
 			return FALSE;
