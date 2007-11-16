@@ -113,37 +113,6 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode);
 
 /* capabilities */
 %token TOK_CAPABILITY
-%token TOK_CAP_CHOWN
-%token TOK_CAP_DAC_OVERRIDE
-%token TOK_CAP_DAC_READ_SEARCH
-%token TOK_CAP_FOWNER
-%token TOK_CAP_FSETID
-%token TOK_CAP_KILL
-%token TOK_CAP_SETGID
-%token TOK_CAP_SETUID
-%token TOK_CAP_SETPCAP
-%token TOK_CAP_LINUX_IMMUTABLE
-%token TOK_CAP_NET_BIND_SERVICE
-%token TOK_CAP_NET_BROADCAST
-%token TOK_CAP_NET_ADMIN
-%token TOK_CAP_NET_RAW
-%token TOK_CAP_IPC_LOCK
-%token TOK_CAP_IPC_OWNER
-%token TOK_CAP_SYS_MODULE
-%token TOK_CAP_SYS_RAWIO
-%token TOK_CAP_SYS_CHROOT
-%token TOK_CAP_SYS_PTRACE
-%token TOK_CAP_SYS_PACCT
-%token TOK_CAP_SYS_ADMIN
-%token TOK_CAP_SYS_BOOT
-%token TOK_CAP_SYS_NICE
-%token TOK_CAP_SYS_RESOURCE
-%token TOK_CAP_SYS_TIME
-%token TOK_CAP_SYS_TTY_CONFIG
-%token TOK_CAP_MKNOD
-%token TOK_CAP_LEASE
-%token TOK_CAP_AUDIT_WRITE
-%token TOK_CAP_AUDIT_CONTROL
 
 /* debug flag values */
 %token TOK_FLAGS
@@ -208,7 +177,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode);
 %type <flags>	flagvals
 %type <flags>	flagval
 %type <flag_id>	TOK_FLAG_ID
-%type <cap>	cap
+%type <cap>	caps
 %type <cap>	capability
 %type <user_entry> change_profile
 %type <set_var> TOK_SET_VAR
@@ -493,7 +462,7 @@ rules:	rules change_profile
 
 rules:	rules capability
 	{
-		$1->capabilities = $1->capabilities | CAP_TO_MASK($2);
+		$1->capabilities = $1->capabilities | $2;
 		$$ = $1;
 	};
 
@@ -968,43 +937,27 @@ change_profile:	TOK_CHANGE_PROFILE TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
 		$$ = entry;
 	};
 
-capability:	TOK_CAPABILITY cap TOK_END_OF_RULE
+capability:	TOK_CAPABILITY caps TOK_END_OF_RULE
 	{
 		$$ = $2;		
 	};
 
-cap: 	TOK_CAP_CHOWN			{ $$ = CAP_CHOWN; }
-	| TOK_CAP_DAC_OVERRIDE		{ $$ = CAP_DAC_OVERRIDE; }
-	| TOK_CAP_DAC_READ_SEARCH	{ $$ = CAP_DAC_READ_SEARCH; }
-	| TOK_CAP_FOWNER		{ $$ = CAP_FOWNER; }
-	| TOK_CAP_FSETID		{ $$ = CAP_FSETID; }
-	| TOK_CAP_KILL			{ $$ = CAP_KILL; }
-	| TOK_CAP_SETGID		{ $$ = CAP_SETGID; }
-	| TOK_CAP_SETUID		{ $$ = CAP_SETUID; }
-	| TOK_CAP_SETPCAP		{ $$ = CAP_SETPCAP; }
-	| TOK_CAP_LINUX_IMMUTABLE	{ $$ = CAP_LINUX_IMMUTABLE; }
-	| TOK_CAP_NET_BIND_SERVICE	{ $$ = CAP_NET_BIND_SERVICE; }
-	| TOK_CAP_NET_BROADCAST		{ $$ = CAP_NET_BROADCAST; }
-	| TOK_CAP_NET_ADMIN		{ $$ = CAP_NET_ADMIN; }
-	| TOK_CAP_NET_RAW		{ $$ = CAP_NET_RAW; }
-	| TOK_CAP_IPC_LOCK		{ $$ = CAP_IPC_LOCK; }
-	| TOK_CAP_IPC_OWNER		{ $$ = CAP_IPC_OWNER; }
-	| TOK_CAP_SYS_MODULE		{ $$ = CAP_SYS_MODULE; }
-	| TOK_CAP_SYS_RAWIO		{ $$ = CAP_SYS_RAWIO; }
-	| TOK_CAP_SYS_CHROOT		{ $$ = CAP_SYS_CHROOT; }
-	| TOK_CAP_SYS_PTRACE		{ $$ = CAP_SYS_PTRACE; }
-	| TOK_CAP_SYS_PACCT		{ $$ = CAP_SYS_PACCT; }
-	| TOK_CAP_SYS_ADMIN		{ $$ = CAP_SYS_ADMIN; }
-	| TOK_CAP_SYS_BOOT		{ $$ = CAP_SYS_BOOT; }
-	| TOK_CAP_SYS_NICE		{ $$ = CAP_SYS_NICE; }
-	| TOK_CAP_SYS_RESOURCE		{ $$ = CAP_SYS_RESOURCE; }
-	| TOK_CAP_SYS_TIME		{ $$ = CAP_SYS_TIME; }
-	| TOK_CAP_SYS_TTY_CONFIG	{ $$ = CAP_SYS_TTY_CONFIG; }
-	| TOK_CAP_MKNOD			{ $$ = CAP_MKNOD; }
-	| TOK_CAP_LEASE			{ $$ = CAP_LEASE; }
-	| TOK_CAP_AUDIT_WRITE		{ $$ = CAP_AUDIT_WRITE; }
-	| TOK_CAP_AUDIT_CONTROL		{ $$ = CAP_AUDIT_CONTROL; }
-		
+caps: caps TOK_ID
+	{
+		int cap = name_to_capability($2);
+		if (cap == -1)
+			yyerror(_("Invalid capability %s."), $2);
+		$$ = $1 | CAP_TO_MASK(cap);
+	}
+
+caps: TOK_ID
+	{
+		int cap = name_to_capability($1);
+		if (cap == -1)
+			yyerror(_("Invalid capability %s."), $1);
+		$$ = CAP_TO_MASK(cap);
+	};
+
 %%
 #define MAXBUFSIZE 4096
 

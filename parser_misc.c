@@ -29,6 +29,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <linux/capability.h>
 
 #include "parser.h"
 #include "parser_yacc.h"
@@ -47,39 +48,6 @@ struct keyword_table {
 };
 
 static struct keyword_table keyword_table[] = {
-	/* capabilities */
-	{"capability",		TOK_CAPABILITY},
-	{"chown",		TOK_CAP_CHOWN},
-	{"dac_override",	TOK_CAP_DAC_OVERRIDE},
-	{"dac_read_search",	TOK_CAP_DAC_READ_SEARCH},
-	{"fowner",		TOK_CAP_FOWNER},
-	{"fsetid",		TOK_CAP_FSETID},
-	{"kill",		TOK_CAP_KILL},
-	{"setgid",		TOK_CAP_SETGID},
-	{"setuid",		TOK_CAP_SETUID},
-	{"setpcap",		TOK_CAP_SETPCAP},
-	{"linux_immutable",	TOK_CAP_LINUX_IMMUTABLE},
-	{"net_bind_service",	TOK_CAP_NET_BIND_SERVICE},
-	{"net_broadcast",	TOK_CAP_NET_BROADCAST},
-	{"net_admin",		TOK_CAP_NET_ADMIN},
-	{"net_raw",		TOK_CAP_NET_RAW},
-	{"ipc_lock",		TOK_CAP_IPC_LOCK},
-	{"ipc_owner",		TOK_CAP_IPC_OWNER},
-	{"sys_module",		TOK_CAP_SYS_MODULE},
-	{"sys_rawio",		TOK_CAP_SYS_RAWIO},
-	{"sys_chroot",		TOK_CAP_SYS_CHROOT},
-	{"sys_ptrace",		TOK_CAP_SYS_PTRACE},
-	{"sys_pacct",		TOK_CAP_SYS_PACCT},
-	{"sys_admin",		TOK_CAP_SYS_ADMIN},
-	{"sys_boot",		TOK_CAP_SYS_BOOT},
-	{"sys_nice",		TOK_CAP_SYS_NICE},
-	{"sys_resource",	TOK_CAP_SYS_RESOURCE},
-	{"sys_time",		TOK_CAP_SYS_TIME},
-	{"sys_tty_config",	TOK_CAP_SYS_TTY_CONFIG},
-	{"mknod",		TOK_CAP_MKNOD},
-	{"lease",		TOK_CAP_LEASE},
-	{"audit_write",		TOK_CAP_AUDIT_WRITE},
-	{"audit_control",	TOK_CAP_AUDIT_CONTROL},
 	/* flags */
 	{"flags",		TOK_FLAGS},
 	/* network */
@@ -94,6 +62,7 @@ static struct keyword_table keyword_table[] = {
 	{"from",		TOK_FROM},
 	{"network",		TOK_NETWORK},
 	/* misc keywords */
+	{"capability",		TOK_CAPABILITY},
 	{"if",			TOK_IF},
 	{"else",		TOK_ELSE},
 	{"not",			TOK_NOT},
@@ -105,20 +74,39 @@ static struct keyword_table keyword_table[] = {
 };
 
 /* for alpha matches, check for keywords */
-int get_keyword_token(const char *keyword)
+static int get_table_token(const char *name, struct keyword_table *table,
+			   const char *keyword)
 {
 	int i;
 
-	for (i = 0; keyword_table[i].keyword; i++) {
-		PDEBUG("Checking keyword %s\n", keyword_table[i].keyword);
-		if (strcmp(keyword, keyword_table[i].keyword) == 0) {
-			PDEBUG("Found keyword %s\n", keyword_table[i].keyword);
-			return keyword_table[i].token;
+	for (i = 0; table[i].keyword; i++) {
+		PDEBUG("Checking %s %s\n", name, table[i].keyword);
+		if (strcmp(keyword, table[i].keyword) == 0) {
+			PDEBUG("Found %s %s\n", name, table[i].keyword);
+			return table[i].token;
 		}
 	}
 
-	PDEBUG("Unable to find keyword %s\n", keyword);
+	PDEBUG("Unable to find %s %s\n", name, keyword);
 	return -1;
+}
+
+static struct keyword_table capability_table[] = {
+	/* capabilities */
+	#include "cap_names.h"
+	/* terminate */
+	{NULL, 0}
+};
+
+/* for alpha matches, check for keywords */
+int get_keyword_token(const char *keyword)
+{
+	return get_table_token("keyword", keyword_table, keyword);
+}
+
+int name_to_capability(const char *keyword)
+{
+	return get_table_token("capability", capability_table, keyword);
 }
 
 static struct keyword_table address_family[] = {
