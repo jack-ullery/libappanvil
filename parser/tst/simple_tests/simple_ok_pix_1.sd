@@ -7,4 +7,9 @@
   /bin/foo Pix,
   /bin/bar pIx,
   /bin/a   PIx,
+
+  unsafe pix /bin/cat,
+  pix /bin/foo,
+  unsafe pix /bin/bar,
+  pix /bin/a,
 }
