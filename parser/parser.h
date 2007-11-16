@@ -202,6 +202,7 @@ extern void free_var_string(struct var_string *var);
 extern char *processquoted(char *string, int len);
 extern char *processunquoted(char *string, int len);
 extern int get_keyword_token(const char *keyword);
+extern int name_to_capability(const char *keyword);
 extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);
 extern struct cod_entry *new_entry(char *namespace, char *id, int mode);

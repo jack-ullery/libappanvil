@@ -141,7 +141,7 @@ parser_lex.c: parser_lex.l parser_yacc.h parser.h
 parser_lex.o: parser_lex.c parser.h parser_yacc.h
 	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_misc.o: parser_misc.c parser.h parser_yacc.h af_names.h
+parser_misc.o: parser_misc.c parser.h parser_yacc.h af_names.h cap_names.h
 	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_yacc.o: parser_yacc.c parser_yacc.h
@@ -178,6 +178,8 @@ parser_version.h: Makefile
 af_names.h: /usr/include/linux/socket.h
 	LC_ALL=C sed -n -e "/AF_RXRPC/d" -n -e "/AF_MAX/d" -n -e "/AF_UNSPEC/d" -n -e "/AF_UNIX/d" -n -e "/AF_LOCAL/d" -n -e "/AF_NETLINK/d" -n -e "/AF_LLC/d" -n -e "/AF_IUCV/d" -n -e "/AF_TIPC/d" -e "s/^\#define[ \\t]\\+AF_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9]\\+\\)\\(.*\\)\$$/AA_GEN_NET_ENT(\"\\L\\1\", \\UAF_\\1)/p" $< > $@
 
+cap_names.h: /usr/include/linux/capability.h
+	LC_ALL=C sed -n -e "/CAP_EMPTY_SET/d" -e "s/^\#define[ \\t]\\+CAP_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9xa-f]\\+\\)\\(.*\\)\$$/\{\"\\L\\1\", \\UCAP_\\1\},/p" $< > $@
 
 
 tst_symtab: parser_symtab.c parser.h parser_variable.o
@@ -269,6 +271,7 @@ clean: _clean
 	rm -f $(NAME)*.tar.gz $(NAME)*.tgz
 	rm -f libstdc++.a
 	rm -f af_names.h
+	rm -f cap_names.h
 	-rm -rf techdoc.{aux,log,pdf,toc,txt} techdoc/
 	make -s -C $(PCREDIR) clean
 	make -s -C $(AAREDIR) clean
