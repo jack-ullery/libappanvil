@@ -33,6 +33,21 @@
 #define AA_MAY_LOCK			(1 << 5)
 #define AA_EXEC_MMAP			(1 << 6)
 
+#define AA_BASE_PERMS			(AA_MAY_EXEC | AA_MAY_WRITE | \
+					 AA_MAY_READ | AA_MAY_APPEND | \
+					 AA_MAY_LINK | AA_MAY_LOCK | \
+					 AA_EXEC_MMAP)
+#define AA_USER_SHIFT			0
+#define AA_GROUP_SHIFT			7
+#define AA_OTHER_SHIFT			14
+
+#define AA_USER_PERMS			(AA_BASE_PERMS << AA_USER_SHIFT)
+#define AA_GROUP_PERMS			(AA_BASE_PERMS << AA_GROUP_SHIFT)
+#define AA_OTHER_PERMS			(AA_BASE_PERMS << AA_OTHER_SHIFT)
+
+#define AA_FILE_PERMS			(AA_USER_PERMS | AA_GROUP_PERMS | \
+					 AA_OTHER_PERMS)
+
 #define AA_CHANGE_PROFILE		(1 << 26)
 
 #define AA_EXEC_UNSAFE			(1 << 27)
@@ -51,6 +66,17 @@
 #define AA_EXEC_PROFILE			(AA_EXEC_MOD_1)
 #define AA_EXEC_PROFILE_OR_INHERIT	(AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
 
+#define AA_VALID_PERMS			(AA_FILE_PERMS | AA_CHANGE_PROFILE | \
+					 AA_EXEC_UNSAFE | AA_EXEC_MODIFIERS)
+
+#define AA_EXEC_BITS			((AA_MAY_EXEC << AA_USER_SHIFT) | \
+					 (AA_MAY_EXEC << AA_GROUP_SHIFT) | \
+					 (AA_MAY_EXEC << AA_OTHER_SHIFT))
+
+#define SHIFT_MODE(MODE, SHIFT)		((((MODE) & AA_BASE_PERMS) << (SHIFT))\
+					 | ((MODE) & ~AA_FILE_PERMS))
+#define SHIFT_TO_BASE(MODE, SHIFT)	((((MODE) & AA_FILE_PERMS) >> (SHIFT))\
+					 | ((MODE) & ~AA_FILE_PERMS))
 
 #define AA_HAT_SIZE	975	/* Maximum size of a subdomain
 					 * ident (hat) */

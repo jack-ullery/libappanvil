@@ -1529,7 +1529,6 @@ if (exact_match_perms)
 fprintf(stderr, "exact match perms without exec modifiers!!!\n");
 	    perms |= exact_match_perms;
     }
-if ((perms & AA_EXEC_MODIFIERS) > AA_EXEC_PROFILE_OR_INHERIT) fprintf(stderr, "bad accept perm 0x%x\n", perms);
  if (perms & AA_ERROR_BIT) {
      fprintf(stderr, "error bit 0x%x\n", perms);
      exit(255);
@@ -1544,8 +1543,8 @@ if ((perms & AA_EXEC_MODIFIERS) > AA_EXEC_PROFILE_OR_INHERIT) fprintf(stderr, "b
 extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
 {
     static MatchFlag *match_flags[sizeof(perms) * 8 - 4 + 8];
-    static MatchFlag *exec_match_flags[8];
-    static ExactMatchFlag *exact_match_flags[8];
+    static MatchFlag *exec_match_flags[8 * 3];
+    static ExactMatchFlag *exact_match_flags[8 * 3];
     Node *tree, *accept;
     int exact_match;
 
@@ -1554,8 +1553,7 @@ extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
     if (regexp_parse(&tree, rule))
 	return 0;
 
-if ((perms & AA_EXEC_MODIFIERS) > AA_EXEC_PROFILE_OR_INHERIT) fprintf(stderr, "bad accept perm 0x%x when adding rule\n", perms);
- if ((perms & AA_MAY_EXEC) && !(perms & AA_EXEC_MODIFIERS))
+ if ((perms & AA_EXEC_BITS) && !(perms & AA_EXEC_MODIFIERS))
      fprintf(stderr, "Rule with exec bits and not exec modifiers\n\t 0x%x %s\n", perms, rule);
     /*
      * Check if we have an expression with or without wildcards. This
@@ -1583,8 +1581,13 @@ if ((perms & AA_EXEC_MODIFIERS) > AA_EXEC_PROFILE_OR_INHERIT) fprintf(stderr, "b
 	    perms &= ~mask;
 
 	    Node *flag;
-	    if ((mask & AA_MAY_EXEC) && (perms & AA_EXEC_MODIFIERS)) {
+	    if ((mask & AA_EXEC_BITS) && (perms & AA_EXEC_MODIFIERS)) {
 		    int index = (perms & AA_EXEC_MODIFIERS) >> AA_EXEC_MOD_SHIFT;
+		    if (mask & (AA_MAY_EXEC << AA_GROUP_SHIFT))
+			    index += 8;
+		    else if (mask & (AA_MAY_EXEC << AA_OTHER_SHIFT))
+			    index += 16;
+
 		    if (exact_match) {
 			    if (exact_match_flags[index])
 				    flag = exact_match_flags[index]->dup();
@@ -1617,8 +1620,8 @@ if ((perms & AA_EXEC_MODIFIERS) > AA_EXEC_PROFILE_OR_INHERIT) fprintf(stderr, "b
     rules->root = new AltNode(rules->root, new CatNode(tree, accept));
 
     return 1;
-}
 
+}
 
 /* create a dfa from the ruleset
  * returns: buffer contain dfa tables, @size set to the size of the tables

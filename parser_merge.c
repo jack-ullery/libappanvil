@@ -80,7 +80,7 @@ static int process_file_entries(struct codomain *cod)
 	table[count] = NULL;
 
 #define X_CONFLICT(a, b) \
-	(HAS_MAY_EXEC(a) && HAS_MAY_EXEC(b) && \
+	(((a) & AA_EXEC_BITS) && ((b) & AA_EXEC_BITS) && \
 	 (((a) & (AA_EXEC_MODIFIERS | AA_EXEC_UNSAFE)) != \
 	  ((b) & (AA_EXEC_MODIFIERS | AA_EXEC_UNSAFE))))
 
