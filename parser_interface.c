@@ -702,6 +702,15 @@ int sd_serialize_top_profile(sd_serialize *p, struct codomain *profile)
 
 	if (!sd_write32(p, version))
 		return 0;
+
+	if (profile_namespace) {
+		if (!sd_write_string(p, profile_namespace, "namespace"))
+			return 0;
+	} else if (profile->namespace) {
+		if (!sd_write_string(p, profile->namespace, "namespace"))
+			return 0;
+	}
+
 	return sd_serialize_profile(p, profile, profile->parent ? 1 : 0);
 }
 
@@ -746,16 +755,38 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		free(filename);
 
 	if (option == OPTION_REMOVE) {
-		char *name;
+		char *name, *ns = NULL;
+		int len = 0;
+
+		if (profile_namespace) {
+			len += strlen(profile_namespace) + 1;
+			ns = profile_namespace;
+		} else if (cod->namespace) {
+			len += strlen(cod->namespace) + 1;
+			ns = cod->namespace;
+		}
 		if (cod->parent) {
 			name = malloc(strlen(cod->name) + 3 +
-				      strlen(cod->parent->name));
+				      strlen(cod->parent->name) + len);
 			if (!name) {
-				PERROR(_("Unable to remove ^%s\n"), cod->name);
+				PERROR(_("Memory Allocation Error: Unable to remove ^%s\n"), cod->name);
 				error = -errno;
 				goto exit;
 			}
-			sprintf(name, "%s//%s", cod->parent->name, cod->name);
+			if (ns)
+				sprintf(name, "%s:%s//%s", ns,
+					cod->parent->name, cod->name);
+			else
+				sprintf(name, "%s//%s", cod->parent->name,
+					cod->name);
+		} else if (ns) {
+			name = malloc(len + strlen(cod->name) + 1);
+			if (!name) {
+				PERROR(_("Memory Allocation Error: Unable to remove %s:%s."), ns, cod->name);
+				error = -errno;
+				goto exit;
+			}
+			sprintf(name, "%s:%s", ns, cod->name);
 		} else {
 			name = cod->name;
 		}
@@ -763,7 +794,7 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		wsize = write(fd, name, size);
 		if (wsize < 0)
 			error = -errno;
-		if (cod->parent)
+		if (cod->parent || ns)
 			free(name);
 	} else {
 

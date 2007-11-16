@@ -67,7 +67,7 @@ struct value_list {
 };
 
 void free_value_list(struct value_list *list);
-struct cod_entry *do_file_rule(char *id, int mode);
+struct cod_entry *do_file_rule(char *namespace, char *id, int mode);
 
 %}
 
@@ -238,8 +238,37 @@ profile:	TOK_ID flags TOK_OPEN rules TOK_CLOSE
 		if (!cod) {
 			yyerror(_("Memory allocation error."));
 		}
+
+		if ($1[0] != '/')
+			yyerror(_("Profile names must begin with a '/'."));
+
 		cod->name = $1;
 		cod->flags = $2;
+		if (force_complain)
+			cod->flags = force_complain_flags;
+
+		PDEBUG("%s: flags='%s%s'\n",
+		       $1,
+		       cod->flags.complain ? "complain, " : "",
+		       cod->flags.audit ? "audit" : "");
+
+		$$ = cod;
+	};
+
+profile:	TOK_ID TOK_COLON TOK_ID flags TOK_OPEN rules TOK_CLOSE
+	{
+		struct codomain *cod = $6;
+		PDEBUG("Matched: id (%s:%s) open rules close\n", $1, $3);
+		if (!cod) {
+			yyerror(_("Memory allocation error."));
+		}
+
+		if ($3[0] != '/')
+			yyerror(_("Profile names must begin with a '/'."));
+
+		cod->namespace = $1;
+		cod->name = $3;
+		cod->flags = $4;
 		if (force_complain)
 			cod->flags = force_complain_flags;
 
@@ -567,36 +596,36 @@ expr:	TOK_DEFINED TOK_BOOL_VAR
 
 rule:	TOK_ID file_mode TOK_END_OF_RULE
 	{
-		$$ = do_file_rule($1, $2);
+		$$ = do_file_rule(NULL, $1, $2);
 	};
 
 rule:	TOK_SET_VAR file_mode TOK_END_OF_RULE
 	{
-		$$ = do_file_rule($1, $2);
+		$$ = do_file_rule(NULL, $1, $2);
 	};
 
 rule:   file_mode TOK_ID TOK_END_OF_RULE
 	{
-		$$ = do_file_rule($2, $1 & ~AA_EXEC_UNSAFE);
+		$$ = do_file_rule(NULL, $2, $1 & ~AA_EXEC_UNSAFE);
  	};
 
 rule:   file_mode TOK_SET_VAR TOK_END_OF_RULE
 	{
-		$$ = do_file_rule($2, $1 & ~AA_EXEC_UNSAFE);
+		$$ = do_file_rule(NULL, $2, $1 & ~AA_EXEC_UNSAFE);
 	};
 
 rule:	TOK_UNSAFE file_mode TOK_ID TOK_END_OF_RULE
 	{
 		if (!($2 & AA_MAY_EXEC))
 			yyerror(_("unsafe rule missing exec permissions"));
-		$$ = do_file_rule($3, $2 | AA_EXEC_UNSAFE);
+		$$ = do_file_rule(NULL, $3, $2 | AA_EXEC_UNSAFE);
 	};
 
 rule:	TOK_UNSAFE file_mode TOK_SET_VAR TOK_END_OF_RULE
 	{
 		if (!($2 & AA_MAY_EXEC))
 			yyerror(_("unsafe rule missing exec permissions"));
-		$$ = do_file_rule($3, $2 | AA_EXEC_UNSAFE);
+		$$ = do_file_rule(NULL, $3, $2 | AA_EXEC_UNSAFE);
  	};
 
 rule:  TOK_ID file_mode TOK_ID
@@ -937,7 +966,18 @@ change_profile:	TOK_CHANGE_PROFILE TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 		PDEBUG("Matched change_profile: tok_id (%s)\n", $2);
-		entry = new_entry($2, AA_CHANGE_PROFILE);
+		entry = new_entry(NULL, $2, AA_CHANGE_PROFILE);
+		if (!entry)
+			yyerror(_("Memory allocation error."));
+		PDEBUG("change_profile.entry: (%s)\n", entry->name);
+		$$ = entry;
+	};
+
+change_profile:	TOK_CHANGE_PROFILE TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
+	{
+		struct cod_entry *entry;
+		PDEBUG("Matched change_profile: tok_id (%s:%s)\n", $2, $4);
+		entry = new_entry($2, $4, AA_CHANGE_PROFILE);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("change_profile.entry: (%s)\n", entry->name);
@@ -1017,11 +1057,11 @@ void free_value_list(struct value_list *list)
 	}
 }
 
-struct cod_entry *do_file_rule(char *id, int mode)
+struct cod_entry *do_file_rule(char *namespace, char *id, int mode)
 {
 		struct cod_entry *entry;
 		PDEBUG("Matched: tok_id (%s) tok_mode (0x%x)\n", id, mode);
-		entry = new_entry(id, mode);
+		entry = new_entry(namespace, id, mode);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("rule.entry: (%s)\n", entry->name);

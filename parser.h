@@ -36,7 +36,8 @@ struct cod_pattern {
 };
 
 struct cod_entry {
-	char * name ;
+	char *namespace;
+	char *name ;
 	struct codomain *codomain ; 	/* Special codomain defined
 					 * just for this executable */
 	int mode ;			/* mode is 'or' of AA_* bits */
@@ -67,6 +68,7 @@ struct aa_network_entry {
 };
 
 struct codomain {
+	char *namespace;
 	char *name;				/* codomain name */
 	char *sub_name;				/* subdomain name or NULL */
 	int default_deny;			/* TRUE or FALSE */
@@ -176,6 +178,7 @@ struct var_string {
 extern char *progname;
 extern char *subdomainbase;
 extern char *profilename;
+extern char *profile_namespace;
 
 /* from parser_main */
 extern int force_complain;
@@ -201,7 +204,7 @@ extern char *processunquoted(char *string, int len);
 extern int get_keyword_token(const char *keyword);
 extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);
-extern struct cod_entry *new_entry(char *id, int mode);
+extern struct cod_entry *new_entry(char *namespace, char *id, int mode);
 extern struct cod_net_entry *new_network_entry(int action,
 					       struct ipv4_endpoints *addrs,
 					       char *interface);

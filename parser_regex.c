@@ -502,6 +502,18 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 	if (!aare_add_rule(dfarules, tbuf, entry->mode))
 		ret = FALSE;
 
+	if (entry->mode & AA_CHANGE_PROFILE) {
+		char lbuf[2*PATH_MAX + 8];
+		if (entry->namespace)
+			sprintf(lbuf, "%s//%s", entry->namespace, entry->name);
+		else
+			sprintf(lbuf, "%s", entry->namespace, entry->name);
+		ptype = convert_aaregex_to_pcre(lbuf, 0, tbuf, 2*PATH_MAX + 8);
+		if (ptype == ePatternInvalid)
+			return FALSE;
+		if (!aare_add_rule(dfarules, tbuf, AA_CHANGE_PROFILE))
+			return FALSE;
+	}
 	return ret;
 }
 

@@ -346,14 +346,21 @@ ADD_ASSIGN	\+=
 			return TOK_HAT;
 			}
 
-{KEYWORD}		{
+{COLON}			{
+			PDEBUG("Found a colon\n");
+			return TOK_COLON;
+			}
+
+{VARIABLE_NAME}		{
 			int token = get_keyword_token(yytext);
 
 			/* special cases */
 			switch (token) {
 			case -1:
 				/* no token found */
-				yyerror(_("Found unexpected keyword: '%s'"), yytext);
+				yylval = (YYSTYPE) processunquoted(yytext, yyleng);
+				PDEBUG("Found id: \"%s\"\n", yylval);
+				return TOK_ID;
 				break;
 			case TOK_VIA:
 				BEGIN(IF_MODE);	/* look for an interface name next */

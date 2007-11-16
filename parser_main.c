@@ -67,6 +67,7 @@ char *subdomainbase = NULL;
 char *profilename;
 char *match_string = NULL;
 int regex_type = AARE_DFA;
+char *profile_namespace = NULL;
 
 extern int current_lineno;
 
@@ -89,6 +90,7 @@ struct option long_options[] = {
 	{"stdout",		0, 0, 'S'},
 	{"match-string",	1, 0, 'm'},
 	{"quiet",		0, 0, 'q'},
+	{"namespace",		1, 0, 'n'},
 	{NULL, 0, 0, 0},
 };
 
@@ -119,6 +121,7 @@ static void display_usage(char *command)
 	       "-f n, --subdomainfs n	Set location of apparmor filesystem\n"
 	       "-S, --stdout		Write output to stdout\n"
 	       "-m n, --match-string n  Use only match features n\n"
+	       "-n n, --namespace n	Set Namespace for the profile\n"
 	       "-q, --quiet		Don't emit warnings\n", command);
 }
 
@@ -149,7 +152,7 @@ static int process_args(int argc, char *argv[])
 	int count = 0;
 	option = OPTION_ADD;
 
-	while ((c = getopt_long(argc, argv, "adf:hrRvpI:b:CNSm:q", long_options, &o)) != -1)
+	while ((c = getopt_long(argc, argv, "adf:hrRvpI:b:CNSm:qn:", long_options, &o)) != -1)
 	{
 		switch (c) {
 		case 0:
@@ -214,6 +217,9 @@ static int process_args(int argc, char *argv[])
 			break;
 		case 'q':
 			conf_quiet = 1;
+			break;
+		case 'n':
+			profile_namespace = strdup(optarg);
 			break;
 		default:
 			display_usage(progname);

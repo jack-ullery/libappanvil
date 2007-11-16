@@ -43,7 +43,20 @@ static int file_comp(const void *c1, const void *c2)
 	struct cod_entry **e1, **e2;
 	e1 = (struct cod_entry **)c1;
 	e2 = (struct cod_entry **)c2;
+	int res = 0;
+
 	//PERROR("strcmp %s %s\n", (*e1)->name, (*e2)->name);
+	if ((*e1)->namespace) {
+		if ((*e2)->namespace)
+			res = strcmp((*e1)->namespace, (*e2)->namespace);
+		else
+			return 1;
+	} else if ((*e2)->namespace) {
+		return -1;
+	}
+	if (res)
+		return res;
+
 	return strcmp((*e1)->name, (*e2)->name);
 }
 

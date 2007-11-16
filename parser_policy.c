@@ -41,8 +41,20 @@ void *policy_list = NULL;
 
 static int codomain_compare(const void *a, const void *b)
 {
-	return strcmp(((struct codomain *) a)->name,
-		      ((struct codomain *) b)->name);
+	struct codomain *A = (struct codomain *) a;
+	struct codomain *B = (struct codoamin *) b;
+
+	int res = 0;
+	if (A->namespace) {
+		if (B->namespace)
+			res = strcmp(A->namespace, B->namespace);
+		else
+			res = -1;
+	} else if (B->namespace)
+		res = 1;
+	if (res)
+		return res;
+	return strcmp(A->name, B->name);
 }
 
 void add_to_list(struct codomain *codomain)
