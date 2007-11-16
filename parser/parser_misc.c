@@ -560,7 +560,7 @@ out:
 int parse_mode(const char *str_mode)
 {
 	const char *next, *pos = str_mode;
-	int tmp, mode = 0;
+	int tmp, exec_mods, mode = 0;
 	next = strchr(str_mode, ':');
 	if (!next) {
 		tmp = parse_sub_mode(str_mode, "");
@@ -572,23 +572,32 @@ int parse_mode(const char *str_mode)
 		return mode;
 	}
 	/* user:group:other */
-	if (next > pos)
+	if (next > pos) {
+		exec_mods = mode & AA_EXEC_MODIFIERS;
 		mode = SHIFT_MODE(parse_sub_mode(pos, "user"), AA_USER_SHIFT);
+	}
 	pos = next + 1;
 	next = strchr(pos, ':');
 	if (next > pos) {
 		tmp = parse_sub_mode(pos, "group");
+/* we can allow different mods per labeling, just not when named transitions
+   are present.
 		if ((mode & AA_EXEC_BITS) && (tmp & AA_EXEC_BITS) &&
-		    (mode & AA_EXEC_MODIFIERS) != (tmp & AA_EXEC_MODIFIERS))
+		    (exec_mods != (tmp & AA_EXEC_MODIFIERS)))
 			yyerror(_("conflicting x modifiers between user and group permissions."));
+*/
+		exec_mods = tmp & AA_EXEC_MODIFIERS;
 		mode |= SHIFT_MODE(tmp, AA_GROUP_SHIFT);
 	}
 	pos = next + 1;
 	if (*pos) {
 		tmp = parse_sub_mode(pos, "other");
+/* allow different x mods per ugo
 		if ((mode & AA_EXEC_BITS) && (tmp & AA_EXEC_BITS) &&
-		    (mode & AA_EXEC_MODIFIERS) != (tmp & AA_EXEC_MODIFIERS))
+		    (exec_mods != (tmp & AA_EXEC_MODIFIERS)))
 			yyerror(_("conflicting x modifiers between other and user:group permissions."));
+*/
+		exec_mods = tmp & AA_EXEC_MODIFIERS;
 		mode |= SHIFT_MODE(tmp, AA_OTHER_SHIFT);
 	}
 	if (mode & ~AA_VALID_PERMS)

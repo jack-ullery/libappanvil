@@ -1512,23 +1512,32 @@ uint32_t accept_perms(State *state)
 	    if (!(match= dynamic_cast<MatchFlag *>(*i)))
 		continue;
 	    if (dynamic_cast<ExactMatchFlag *>(match)) {
-		    if (diff_qualifiers(exact_match_perms, match->flag))
+		    if (!is_merged_x_consistent(exact_match_perms,
+						match->flag))
 			    exact_match_perms |= AA_ERROR_BIT;
 		    exact_match_perms |= match->flag;
 	    } else {
-		    if (diff_qualifiers(perms, match->flag))
+		    if (!is_merged_x_consistent(perms, match->flag))
 			    perms |= AA_ERROR_BIT;
 		    perms |= match->flag;
 	    }
     }
 
-    if (exact_match_perms & AA_EXEC_MODIFIERS)
-	    perms = exact_match_perms | (perms & ~AA_EXEC_MODIFIERS);
-    else {
-if (exact_match_perms)
-fprintf(stderr, "exact match perms without exec modifiers!!!\n");
-	    perms |= exact_match_perms;
-    }
+    perms |= exact_match_perms &
+	    ~(AA_USER_EXEC_TYPE | AA_GROUP_EXEC_TYPE | AA_OTHER_EXEC_TYPE);
+
+    if (exact_match_perms & AA_USER_EXEC_TYPE)
+	    perms = (exact_match_perms & AA_USER_EXEC_TYPE) |
+		    (perms & ~AA_USER_EXEC_TYPE);
+
+    if (exact_match_perms & AA_GROUP_EXEC_TYPE)
+	    perms = (exact_match_perms & AA_GROUP_EXEC_TYPE) |
+		    (perms & ~AA_GROUP_EXEC_TYPE);
+
+    if (exact_match_perms & AA_OTHER_EXEC_TYPE)
+	    perms = (exact_match_perms & AA_OTHER_EXEC_TYPE) |
+		    (perms & ~AA_OTHER_EXEC_TYPE);
+
  if (perms & AA_ERROR_BIT) {
      fprintf(stderr, "error bit 0x%x\n", perms);
      exit(255);
@@ -1542,7 +1551,7 @@ fprintf(stderr, "exact match perms without exec modifiers!!!\n");
 
 extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
 {
-    static MatchFlag *match_flags[sizeof(perms) * 8 - 4 + 8];
+    static MatchFlag *match_flags[sizeof(perms) * 8 - 1];
     static MatchFlag *exec_match_flags[8 * 3];
     static ExactMatchFlag *exact_match_flags[8 * 3];
     Node *tree, *accept;
@@ -1553,8 +1562,6 @@ extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
     if (regexp_parse(&tree, rule))
 	return 0;
 
- if ((perms & AA_EXEC_BITS) && !(perms & AA_EXEC_MODIFIERS))
-     fprintf(stderr, "Rule with exec bits and not exec modifiers\n\t 0x%x %s\n", perms, rule);
     /*
      * Check if we have an expression with or without wildcards. This
      * determines how exec modifiers are merged in accept_perms() based
@@ -1573,36 +1580,51 @@ extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
     if (rules->reverse)
 	flip_tree(tree);
 
+#define ALL_EXEC_TYPE (AA_USER_EXEC_TYPE | AA_GROUP_EXEC_TYPE | \
+		       AA_OTHER_EXEC_TYPE)
+#define EXTRACT_X_INDEX(perm, shift) (((perm) >> (shift + 7)) & 0x7)
+
+if (perms & ALL_EXEC_TYPE && (!perms & AA_EXEC_BITS))
+	fprintf(stderr, "adding X rule without MAY_EXEC: 0x%x %s\n", perms, rule);
     accept = NULL;
-    for (unsigned int n = 0; perms && n < (sizeof(perms) * 8) - 4; n++) {
+    for (unsigned int n = 0; perms && n < (sizeof(perms) * 8) - 1; n++) {
 	uint32_t mask = 1 << n;
 
 	if (perms & mask) {
 	    perms &= ~mask;
 
 	    Node *flag;
-	    if ((mask & AA_EXEC_BITS) && (perms & AA_EXEC_MODIFIERS)) {
-		    int index = (perms & AA_EXEC_MODIFIERS) >> AA_EXEC_MOD_SHIFT;
-		    if (mask & (AA_MAY_EXEC << AA_GROUP_SHIFT))
-			    index += 8;
-		    else if (mask & (AA_MAY_EXEC << AA_OTHER_SHIFT))
-			    index += 16;
-
+	    if (mask & AA_EXEC_BITS) {
+		    uint32_t eperm = 0;
+		    uint32_t index = 0;
+		    if (mask & (AA_MAY_EXEC << AA_USER_SHIFT)) {
+			    eperm = mask | perms & AA_USER_EXEC_TYPE;
+			    index = EXTRACT_X_INDEX(perms, AA_USER_SHIFT);
+		    } else if (mask & (AA_MAY_EXEC << AA_GROUP_SHIFT)) {
+			    eperm = mask | perms & AA_GROUP_EXEC_TYPE;
+			    index = EXTRACT_X_INDEX(perms, AA_GROUP_SHIFT) + 8;
+		    } else {
+			    eperm = mask | perms & AA_OTHER_EXEC_TYPE;
+			    index = EXTRACT_X_INDEX(perms, AA_OTHER_SHIFT) + 16;
+		    }
 		    if (exact_match) {
 			    if (exact_match_flags[index])
 				    flag = exact_match_flags[index]->dup();
 			    else {
-				    exact_match_flags[index] = new ExactMatchFlag(mask | (perms & AA_EXEC_MODIFIERS));
+				    exact_match_flags[index] = new ExactMatchFlag(eperm);
 				    flag = exact_match_flags[index];
 			    }
 		    } else {
 			    if (exec_match_flags[index])
 				    flag = exec_match_flags[index]->dup();
 			    else {
-				    exec_match_flags[index] = new MatchFlag(mask | (perms & AA_EXEC_MODIFIERS));
+				    exec_match_flags[index] = new MatchFlag(eperm);
 				    flag = exec_match_flags[index];
 			    }
 		    }
+	    } else if (mask & ALL_EXEC_TYPE) {
+		    /* these cases are covered by EXEC_BITS */
+		    continue;
 	    } else {
 		    if (match_flags[n])
 		        flag = match_flags[n]->dup();

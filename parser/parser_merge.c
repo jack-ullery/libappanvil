@@ -79,16 +79,12 @@ static int process_file_entries(struct codomain *cod)
 	qsort(table, count, sizeof(struct cod_entry *), file_comp);
 	table[count] = NULL;
 
-#define X_CONFLICT(a, b) \
-	(((a) & AA_EXEC_BITS) && ((b) & AA_EXEC_BITS) && \
-	 (((a) & (AA_EXEC_MODIFIERS | AA_EXEC_UNSAFE)) != \
-	  ((b) & (AA_EXEC_MODIFIERS | AA_EXEC_UNSAFE))))
 
 	/* walk the sorted table merging similar entries */
 	for (cur = table[0], next = table[1], n = 1; next != NULL; n++, next = table[n]) {
 		if (file_comp(&cur, &next) == 0) {
 			/* check for merged x consistency */
-			if (X_CONFLICT(cur->mode, next->mode)) {
+			if (!is_merged_x_consistent(cur->mode, next->mode)) {
 				PERROR(_("profile %s: has merged rule %s with multiple x modifiers\n"),
 				       cod->name, cur->name);
 				return 0;
