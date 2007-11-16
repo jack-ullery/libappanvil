@@ -482,7 +482,6 @@ static int process_pcre_entry(struct cod_entry *entry)
 static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 {
 	char tbuf[PATH_MAX + 3];	/* +3 for ^, $ and \0 */
-	int ret = TRUE;
 	pattern_t ptype;
 
 	if (!entry) 		/* shouldn't happen */
@@ -508,8 +507,23 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 		entry->mode |= AA_EXEC_MMAP << AA_USER_SHIFT;
 
 	if (!aare_add_rule(dfarules, tbuf, entry->mode))
-		ret = FALSE;
-
+		return FALSE;
+	if (entry->mode & (AA_LINK_BITS)) {
+		/* add the pair rule */
+		char lbuf[PATH_MAX + 8];
+		int perms = AA_LINK_BITS & entry->mode;
+		perms |= LINK_TO_LINK_SUBSET(perms);
+		sprintf(lbuf, "%s///**", entry->name);
+		ptype = convert_aaregex_to_pcre(lbuf, 0, tbuf, PATH_MAX + 8);
+		if (ptype == ePatternInvalid)
+			return FALSE;
+		if (!aare_add_rule(dfarules, tbuf, perms))
+			return FALSE;
+/*		if (!aare_add_vec_rule(dfarules, perms,
+				       tbuf, "/**", NULL))
+			return FALSE;
+*/
+	}
 	if (entry->mode & AA_CHANGE_PROFILE) {
 		char lbuf[2*PATH_MAX + 8];
 		if (entry->namespace)
@@ -522,7 +536,7 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 		if (!aare_add_rule(dfarules, tbuf, AA_CHANGE_PROFILE))
 			return FALSE;
 	}
-	return ret;
+	return TRUE;
 }
 
 int post_process_entries(struct codomain *cod)

@@ -80,10 +80,21 @@
 #define AA_GROUP_EXEC_TYPE		(AA_EXEC_TYPE << AA_GROUP_SHIFT)
 #define AA_OTHER_EXEC_TYPE		(AA_EXEC_TYPE << AA_OTHER_SHIFT)
 
+#define AA_LINK_BITS			((AA_MAY_LINK << AA_USER_SHIFT) | \
+					 (AA_MAY_LINK << AA_GROUP_SHIFT) | \
+					 (AA_MAY_LINK << AA_OTHER_SHIFT))
+
 #define SHIFT_MODE(MODE, SHIFT)		((((MODE) & AA_BASE_PERMS) << (SHIFT))\
 					 | ((MODE) & ~AA_FILE_PERMS))
 #define SHIFT_TO_BASE(MODE, SHIFT)	((((MODE) & AA_FILE_PERMS) >> (SHIFT))\
 					 | ((MODE) & ~AA_FILE_PERMS))
+
+
+#define AA_LINK_SUBSET_TEST		(AA_MAY_LINK << 1)
+#define LINK_SUBSET_BITS	((AA_LINK_SUBSET_TEST << AA_USER_SHIFT) | \
+				 (AA_LINK_SUBSET_TEST << AA_GROUP_SHIFT) | \
+				 (AA_LINK_SUBSET_TEST << AA_OTHER_SHIFT))
+#define LINK_TO_LINK_SUBSET(X)		(((X) << 1) & AA_LINK_SUBSET_TEST)
 
 #define AA_HAT_SIZE	975	/* Maximum size of a subdomain
 					 * ident (hat) */
