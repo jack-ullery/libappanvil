@@ -632,7 +632,7 @@ struct cod_net_entry *new_network_entry(int action,
 	return entry;
 }
 
-struct cod_entry *new_entry(char *id, int mode)
+struct cod_entry *new_entry(char *namespace, char *id, int mode)
 {
 	struct cod_entry *entry = NULL;
 
@@ -640,7 +640,8 @@ struct cod_entry *new_entry(char *id, int mode)
 	if (!entry)
 		return NULL;
 
-	entry->name = id ? id : NULL;
+	entry->namespace = namespace;
+	entry->name = id;
 	entry->mode = mode;
 	entry->deny = FALSE;
 
@@ -662,6 +663,7 @@ struct cod_entry *copy_cod_entry(struct cod_entry *orig)
 	if (!entry)
 		return NULL;
 
+	entry->namespace = orig->namespace ? strdup(orig->namespace) : NULL;
 	entry->name = strdup(orig->name);
 	entry->mode = orig->mode;
 	entry->deny = orig->deny;
@@ -693,6 +695,8 @@ void free_cod_entries(struct cod_entry *list)
 		return;
 	if (list->next)
 		free_cod_entries(list->next);
+	if (list->namespace)
+		free(list->namespace);
 	if (list->name)
 		free(list->name);
 	if (list->pat.regex)
@@ -765,8 +769,13 @@ void debug_cod_entries(struct cod_entry *list)
 
 		if (item->name)
 			printf("\tName:\t(%s)\n", item->name);
+
 		else
 			printf("\tName:\tNULL\n");
+
+		if (item->namespace)
+			printf("\tNamespace:\t(%s)\n", item->namespace);
+
 	}
 }
 
@@ -865,6 +874,9 @@ const char *capability_to_name(unsigned int cap)
 void debug_cod_list(struct codomain *cod)
 {
 	unsigned int i;
+	if (cod->namespace)
+		printf("Namespcae:\t\t%s\n", cod->namespace);
+
 	if (cod->name)
 		printf("Name:\t\t%s\n", cod->name);
 	else
