@@ -49,15 +49,6 @@ struct cod_entry {
 	struct cod_entry *next;
 };
 
-struct cod_net_entry {
-	struct in_addr *saddr, *smask;
-	struct in_addr *daddr, *dmask;
-	unsigned short src_port[2], dst_port[2];
-	char *iface;
-	int mode;
-	struct cod_net_entry *next;
-};
-
 /* supported AF protocols */
 struct aa_network_entry {
 	unsigned int family;
@@ -82,7 +73,6 @@ struct codomain {
 						 * indexed by AF_FAMILY */
 
 	struct cod_entry *entries;
-	struct cod_net_entry * net_entries;
 	void *hat_table;
 	//struct codomain *next;
 
@@ -94,7 +84,6 @@ struct codomain {
 
 struct cod_global_entry {
 	struct cod_entry *entry;
-	struct cod_net_entry *net_entry;
 	struct codomain *hats ;
 	unsigned int capabilities;
 };
@@ -206,9 +195,6 @@ extern int name_to_capability(const char *keyword);
 extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);
 extern struct cod_entry *new_entry(char *namespace, char *id, int mode);
-extern struct cod_net_entry *new_network_entry(int action,
-					       struct ipv4_endpoints *addrs,
-					       char *interface);
 extern struct aa_network_entry *new_network_ent(unsigned int family,
 						unsigned int type,
 						unsigned int protocol);
@@ -221,8 +207,6 @@ extern void debug_cod_list(struct codomain *list);
 extern int str_to_boolean(const char* str);
 extern struct cod_entry *copy_cod_entry(struct cod_entry *cod);
 extern void free_cod_entries(struct cod_entry *list);
-extern void free_net_entries(struct cod_net_entry *list);
-extern void free_ipv4_endpoints(struct ipv4_endpoints *addrs);
 
 /* parser_symtab.c */
 extern int add_boolean_var(const char *var, int boolean);
@@ -247,7 +231,6 @@ extern int sd_serialize_profile(sd_serialize *p, struct codomain *cod,
 extern void add_to_list(struct codomain *codomain);
 extern void add_hat_to_policy(struct codomain *policy, struct codomain *hat);
 extern void add_entry_to_policy(struct codomain *policy, struct cod_entry *entry);
-extern void add_netrule_to_policy(struct codomain *policy, struct cod_net_entry *net_entry);
 extern int post_process_policy(void);
 extern int process_hat_regex(struct codomain *cod);
 extern int process_hat_variables(struct codomain *cod);

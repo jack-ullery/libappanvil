@@ -1,7 +1,7 @@
 #
-# $Id$
+# $Id: tcp_client_ok4.sd 66 2006-06-01 18:02:28Z steve-beattie $
 #=DESCRIPTION netdomain tcp (accept,connect), udp (send,receive) conglomerate test
-#=EXRESULT PASS
+#=EXRESULT FAIL
 #
 /tmp/tcp/tcp_client {
   tcp_connect to 10.0.0.17/16:50-100 from 0.0.0.0:50-100 via eth1,

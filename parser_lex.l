@@ -73,8 +73,6 @@ BOOL_VARIABLE	$(\{{VARIABLE_NAME}\}|{VARIABLE_NAME})
 PATHNAME	(\/|{SET_VARIABLE}{POST_VAR_ID}){ID}*
 QPATHNAME	\"(\/|{SET_VAR_PREFIX})([^\0"]|\\\")*\"
 
-IFACE		[[:alnum:]:]+
-
 FLAGOPEN_PAREN 	\(
 FLAGCLOSE_PAREN	\)
 FLAGSEP		\,
@@ -82,8 +80,6 @@ EQUALS		=
 ADD_ASSIGN	\+=
 
 %x SUB_NAME
-%x IP_MODE
-%x IF_MODE
 %x NETWORK_MODE
 %x FLAGS_MODE
 %x ASSIGN_MODE
@@ -121,61 +117,6 @@ ADD_ASSIGN	\+=
 	[^\n]	{
 			/* Something we didn't expect */
 			yyerror(_("Found unexpected character: '%s'"), yytext);
-		}
-}
-
-<IP_MODE>{
-	{COLON}	{
-			PDEBUG("(ip_mode) Found a colon\n");
-			return TOK_COLON;
-		}
-	{NUMBER}	{
-			yylval = (YYSTYPE) strtoul(yytext, NULL, 10);
-			PDEBUG("(ip_mode) Found a number %d\n", yylval);
-			return TOK_NUM;
-		}
-	{IP}		{
-			yylval = (YYSTYPE) strdup(yytext);
-			PDEBUG("Found ip %s\n", yylval);
-			return TOK_IP;
-			}
-	{SLASH}	{
-			PDEBUG("(ip_mode) Found a slash\n");
-			return TOK_SLASH;
-			}
-	{RANGE}	{
-			PDEBUG("(ip_mode) Found a slash\n");
-			return TOK_RANGE;
-			}
-	{WS}	{
-			/* Ignoring whitespace */
-			PDEBUG("Ending ip mode\n");
-			BEGIN(INITIAL);
-		}
-	{END_OF_RULE}	{ /* Ugh, need this so we don't require a space
-			     before the EoL marker */
-			BEGIN(INITIAL);
-			return TOK_END_OF_RULE;
-		}
-	[^\n]	{
-			  /* Something we didn't expect */
-			yylval = (YYSTYPE) strdup(yytext);
-			yyerror(_("(ip_mode) Found unexpected character: '%s'"), yylval);
-		}
-}
-
-<IF_MODE>{
-	{WS}+	{ /* Eat whitespace preceding interface */ }
-
-	{IFACE}	{
-			yylval = (YYSTYPE) strdup(yytext);
-			PDEBUG("Found interface: %s\n", yylval);
-			BEGIN(INITIAL);
-			return TOK_IFACE;
-		}
-	[^\n]	{
-			/* Something we didn't expect */
-			yyerror(_("Unexpected character in interface name: '%s'"), yytext);
 		}
 }
 
@@ -302,14 +243,6 @@ ADD_ASSIGN	\+=
 			return TOK_CLOSE;
 			}
 
-
-{IP}			{
-			yylval = (YYSTYPE) strdup(yytext);
-			PDEBUG("Found ip %s\n", yylval);
-			BEGIN(IP_MODE);
-			return TOK_IP;
-			}
-
 {PATHNAME}		{  
 			yylval = (YYSTYPE) processunquoted(yytext, yyleng);
 			PDEBUG("Found id: \"%s\"\n", yylval);
@@ -354,9 +287,6 @@ ADD_ASSIGN	\+=
 				yylval = (YYSTYPE) processunquoted(yytext, yyleng);
 				PDEBUG("Found id: \"%s\"\n", yylval);
 				return TOK_ID;
-				break;
-			case TOK_VIA:
-				BEGIN(IF_MODE);	/* look for an interface name next */
 				break;
 			case TOK_FLAGS:
 				BEGIN(FLAGS_MODE);

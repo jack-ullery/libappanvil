@@ -52,18 +52,6 @@
 #define AA_EXEC_PROFILE_OR_INHERIT	(AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
 
 
-/* Network subdomain extensions.  */
-#define AA_TCP_CONNECT			(1 << 16)
-#define AA_TCP_ACCEPT			(1 << 17)
-#define AA_TCP_CONNECTED		(1 << 18)
-#define AA_TCP_ACCEPTED			(1 << 19)
-#define AA_UDP_SEND			(1 << 20)
-#define AA_UDP_RECEIVE			(1 << 21)
-
-/* logging only */
-#define AA_LOGTCP_SEND			(1 << 22)
-#define AA_LOGTCP_RECEIVE		(1 << 23)
-
 #define AA_HAT_SIZE	975	/* Maximum size of a subdomain
 					 * ident (hat) */
 #define AA_IP_TCP			0x0001
