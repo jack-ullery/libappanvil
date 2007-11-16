@@ -60,6 +60,7 @@ static struct keyword_table keyword_table[] = {
 	{"defined",		TOK_DEFINED},
 	{"change_profile",	TOK_CHANGE_PROFILE},
 	{"unsafe",		TOK_UNSAFE},
+	{"link",		TOK_LINK},
 	/* terminate */
 	{NULL, 0}
 };
@@ -608,7 +609,7 @@ int parse_mode(const char *str_mode)
 	return mode;
 }
 
-struct cod_entry *new_entry(char *namespace, char *id, int mode)
+struct cod_entry *new_entry(char *namespace, char *id, int mode, char *link_id)
 {
 	struct cod_entry *entry = NULL;
 
@@ -618,6 +619,7 @@ struct cod_entry *new_entry(char *namespace, char *id, int mode)
 
 	entry->namespace = namespace;
 	entry->name = id;
+	entry->link_name = link_id;
 	entry->mode = mode;
 	entry->deny = FALSE;
 
@@ -641,6 +643,7 @@ struct cod_entry *copy_cod_entry(struct cod_entry *orig)
 
 	entry->namespace = orig->namespace ? strdup(orig->namespace) : NULL;
 	entry->name = strdup(orig->name);
+	entry->link_name = orig->link_name ? strdup(orig->link_name) : NULL;
 	entry->mode = orig->mode;
 	entry->deny = orig->deny;
 
@@ -664,6 +667,8 @@ void free_cod_entries(struct cod_entry *list)
 		free(list->namespace);
 	if (list->name)
 		free(list->name);
+	if (list->link_name)
+		free(list->link_name);
 	if (list->pat.regex)
 		free(list->pat.regex);
 	if (list->pat.compiled)
@@ -731,6 +736,9 @@ void debug_cod_entries(struct cod_entry *list)
 
 		if (item->namespace)
 			printf("\tNamespace:\t(%s)\n", item->namespace);
+
+		if (AA_LINK_BITS & item->mode)
+			printf("\tlink:\t(%s)\n", item->link_name ? item->link_name : "/**");
 
 	}
 }

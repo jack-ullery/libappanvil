@@ -91,6 +91,8 @@ static int process_file_entries(struct codomain *cod)
 			}
 			cur->mode |= next->mode;
 			free(next->name);
+			if (next->link_name)
+				free(next->link_name);
 			free(next);
 			table[n] = NULL;
 		} else {
