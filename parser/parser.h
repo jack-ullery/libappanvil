@@ -37,11 +37,11 @@ struct cod_pattern {
 
 struct cod_entry {
 	char *namespace;
-	char *name ;
-	struct codomain *codomain ; 	/* Special codomain defined
+	char *name;
+	struct codomain *codomain; 	/* Special codomain defined
 					 * just for this executable */
-	int mode ;			/* mode is 'or' of AA_* bits */
-	int deny ;			/* TRUE or FALSE */
+	int mode;			/* mode is 'or' of AA_* bits */
+	int deny;			/* TRUE or FALSE */
 
 	pattern_t pattern_type;
 	struct cod_pattern pat;
@@ -84,7 +84,7 @@ struct codomain {
 
 struct cod_global_entry {
 	struct cod_entry *entry;
-	struct codomain *hats ;
+	struct codomain *hats;
 	unsigned int capabilities;
 };
 
