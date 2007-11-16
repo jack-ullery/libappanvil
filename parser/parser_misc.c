@@ -430,11 +430,10 @@ int parse_mode(const char *str_mode)
 	/* The 'check' int is a bit of a kludge, but we need some context
 	   when we're doing permission checking */
 
-#define IS_DIFF_QUAL(q) (qual && qual != (q) ? TRUE : (qual = (q), FALSE))
+#define IS_DIFF_QUAL(mode, q) (((mode) & AA_MAY_EXEC) && (((mode) & (AA_EXEC_MODIFIERS | AA_EXEC_UNSAFE)) != (q)))
 
 	int mode = 0;
 	const char *p;
-	char qual = 0;
 
 	PDEBUG("Parsing mode: %s\n", str_mode);
 
@@ -446,6 +445,7 @@ int parse_mode(const char *str_mode)
 		char this = *p;
 		char next = *(p + 1);
 		char lower;
+		int tmode = 0;
 
 reeval:
 		switch (this) {
@@ -480,61 +480,60 @@ reeval:
 
 		case COD_INHERIT_CHAR:
 			PDEBUG("Parsing mode: found INHERIT\n");
-			if (next != COD_EXEC_CHAR && tolower(next) != COD_EXEC_CHAR) {
-				yyerror(_("Exec qualifier 'i' must be followed by 'x'"));
-			} else if (IS_DIFF_QUAL(this)) {
+			if (IS_DIFF_QUAL(mode, AA_EXEC_INHERIT)) {
 				yyerror(_("Exec qualifier 'i' invalid, conflicting qualifier already specified"));
 			} else {
 				if (next != tolower(next))
 					warn_uppercase();
-				mode |=
-				    (AA_EXEC_INHERIT | AA_MAY_EXEC);
+				mode |= (AA_EXEC_INHERIT | AA_MAY_EXEC);
 				p++;	/* skip 'x' */
 			}
 			break;
 
 		case COD_UNSAFE_UNCONFINED_CHAR:
-			mode |= AA_EXEC_UNSAFE;
+			tmode = AA_EXEC_UNSAFE;
 			pwarn(_("Unconfined exec qualifier (%c%c) allows some dangerous environment variables "
 				"to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"),
 			      COD_UNSAFE_UNCONFINED_CHAR, COD_EXEC_CHAR);
 			/* fall through */
 		case COD_UNCONFINED_CHAR:
 			PDEBUG("Parsing mode: found UNCONFINED\n");
-			if (next != COD_EXEC_CHAR && tolower(next) != COD_EXEC_CHAR) {
-				yyerror(_("Exec qualifier '%c' must be followed by 'x'"),
-					this);
-			} else if (IS_DIFF_QUAL(this)) {
+			if (IS_DIFF_QUAL(mode, tmode | AA_EXEC_UNCONFINED)) {
 				yyerror(_("Exec qualifier '%c' invalid, conflicting qualifier already specified"),
 					this);
 			} else {
 				if (next != tolower(next))
 					warn_uppercase();
-				mode |=
-				    (AA_EXEC_UNCONFINED |
-				     AA_MAY_EXEC);
+				mode |= tmode | AA_EXEC_UNCONFINED |
+				    AA_MAY_EXEC;
 				p++;	/* skip 'x' */
 			}
+			tmode = 0;
 			break;
 
 		case COD_UNSAFE_PROFILE_CHAR:
-			mode |= AA_EXEC_UNSAFE;
+			tmode = AA_EXEC_UNSAFE;
 			/* fall through */
 		case COD_PROFILE_CHAR:
 			PDEBUG("Parsing mode: found PROFILE\n");
-			if (next != COD_EXEC_CHAR && tolower(next) != COD_EXEC_CHAR) {
-				yyerror(_("Exec qualifier '%c' must be followed by 'x'"),
-					this);
-			} else if (IS_DIFF_QUAL(this)) {
+			if (tolower(next) == COD_INHERIT_CHAR) {
+				if (IS_DIFF_QUAL(mode, tmode | AA_EXEC_PROFILE_OR_INHERIT)) {
+					yyerror(_("Exec qualifier '%c%c' invalid, conflicting qualifier already specified"), this, next);
+				} else {
+					mode |= tmode | AA_MAY_EXEC |
+					    AA_EXEC_PROFILE_OR_INHERIT;
+					p += 2;		/* skip x */
+				}
+			} else if (IS_DIFF_QUAL(mode, tmode | AA_EXEC_PROFILE)) {
 				yyerror(_("Exec qualifier '%c' invalid, conflicting qualifier already specified"),
 					this);
 			} else {
 				if (next != tolower(next))
 					warn_uppercase();
-				mode |=
-				    (AA_EXEC_PROFILE | AA_MAY_EXEC);
+				mode |= tmode | AA_EXEC_PROFILE | AA_MAY_EXEC;
 				p++;	/* skip 'x' */
 			}
+			tmode = 0;
 			break;
 
 		case COD_MMAP_CHAR:

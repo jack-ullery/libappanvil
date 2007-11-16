@@ -497,7 +497,7 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 	/* ix implies m but the apparmor module does not add m bit to
 	 * dfa states like it does for pcre
 	 */
-	if (entry->mode & AA_EXEC_INHERIT)
+	if ((entry->mode & AA_EXEC_MODIFIERS) == AA_EXEC_INHERIT)
 		entry->mode |= AA_EXEC_MMAP;
 	if (!aare_add_rule(dfarules, tbuf, entry->mode))
 		ret = FALSE;
