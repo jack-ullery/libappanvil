@@ -1,0 +1,10 @@
+#
+#=DESCRIPTION test pix
+#=EXRESULT PASS
+#
+/usr/bin/foo {
+  /bin/cat pix,
+  /bin/foo Pix,
+  /bin/bar pIx,
+  /bin/a   PIx,
+}

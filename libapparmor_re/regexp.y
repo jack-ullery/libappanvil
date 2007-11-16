@@ -871,9 +871,8 @@ State *DFA::verify_perms(void)
     for (States::iterator i = states.begin(); i != states.end(); i++) {
 	uint32_t accept = accept_perms(*i);
 	if (*i == start || accept) {
-	    if ((accept & AA_EXEC_MODIFIERS) &&
-		!AA_EXEC_SINGLE_MODIFIER_SET(accept))
-		return *i;
+	    if (accept & AA_ERROR_BIT)
+		    return *i;
 	}
     }
     return NULL;
@@ -1493,9 +1492,11 @@ extern "C" void aare_delete_ruleset(aare_ruleset_t *rules)
     }
 }
 
-#define ACCUMULATING_FLAGS \
-	(AA_MAY_READ | AA_MAY_WRITE | AA_MAY_APPEND | AA_MAY_EXEC | \
-	 AA_MAY_LINK | AA_MAY_LOCK | AA_EXEC_MMAP | AA_CHANGE_PROFILE)
+static inline int diff_qualifiers(uint32_t perm1, uint32_t perm2)
+{
+	return ((perm1 & AA_EXEC_MODIFIERS) && (perm2 & AA_EXEC_MODIFIERS) &&
+		(perm1 & AA_EXEC_MODIFIERS) != (perm2 & AA_EXEC_MODIFIERS));
+}
 
 /**
  * Compute the permission flags that this state corresponds to. If we
@@ -1507,24 +1508,44 @@ uint32_t accept_perms(State *state)
     uint32_t perms = 0, exact_match_perms = 0;
 
     for (State::iterator i = state->begin(); i != state->end(); i++) {
-	if (MatchFlag *match = dynamic_cast<MatchFlag *>(*i)) {
-		perms |= match->flag;
-		if (dynamic_cast<ExactMatchFlag *>(match))
-			exact_match_perms |= match->flag;
-	}
+	    MatchFlag *match;
+	    if (!(match= dynamic_cast<MatchFlag *>(*i)))
+		continue;
+	    if (dynamic_cast<ExactMatchFlag *>(match)) {
+		    if (diff_qualifiers(exact_match_perms, match->flag))
+			    exact_match_perms |= AA_ERROR_BIT;
+		    exact_match_perms |= match->flag;
+	    } else {
+		    if (diff_qualifiers(perms, match->flag))
+			    perms |= AA_ERROR_BIT;
+		    perms |= match->flag;
+	    }
     }
 
-    if (exact_match_perms & ~ACCUMULATING_FLAGS)
-	perms = (exact_match_perms & ~ACCUMULATING_FLAGS) |
-		(perms & ACCUMULATING_FLAGS);
-
+    if (exact_match_perms & AA_EXEC_MODIFIERS)
+	    perms = exact_match_perms | (perms & ~AA_EXEC_MODIFIERS);
+    else {
+if (exact_match_perms)
+fprintf(stderr, "exact match perms without exec modifiers!!!\n");
+	    perms |= exact_match_perms;
+    }
+if ((perms & AA_EXEC_MODIFIERS) > AA_EXEC_PROFILE_OR_INHERIT) fprintf(stderr, "bad accept perm 0x%x\n", perms);
+ if (perms & AA_ERROR_BIT) {
+     fprintf(stderr, "error bit 0x%x\n", perms);
+     exit(255);
+}
+ /*
+     if (perms & ~AA_VALID_PERMS)
+ 	yyerror(_("Internal error accumulated invalid perm 0x%llx\n"), perms);
+ */
     return perms;
 }
 
 extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
 {
-    static MatchFlag *match_flags[sizeof(perms) * 8];
-    static ExactMatchFlag *exact_match_flags[sizeof(perms) * 8];
+    static MatchFlag *match_flags[sizeof(perms) * 8 - 4 + 8];
+    static MatchFlag *exec_match_flags[8];
+    static ExactMatchFlag *exact_match_flags[8];
     Node *tree, *accept;
     int exact_match;
 
@@ -1533,6 +1554,9 @@ extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
     if (regexp_parse(&tree, rule))
 	return 0;
 
+if ((perms & AA_EXEC_MODIFIERS) > AA_EXEC_PROFILE_OR_INHERIT) fprintf(stderr, "bad accept perm 0x%x when adding rule\n", perms);
+ if ((perms & AA_MAY_EXEC) && !(perms & AA_EXEC_MODIFIERS))
+     fprintf(stderr, "Rule with exec bits and not exec modifiers\n\t 0x%x %s\n", perms, rule);
     /*
      * Check if we have an expression with or without wildcards. This
      * determines how exec modifiers are merged in accept_perms() based
@@ -1552,19 +1576,29 @@ extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
 	flip_tree(tree);
 
     accept = NULL;
-    for (unsigned int n = 0; perms && n < sizeof(perms) * 8; n++) {
+    for (unsigned int n = 0; perms && n < (sizeof(perms) * 8) - 4; n++) {
 	uint32_t mask = 1 << n;
 
 	if (perms & mask) {
 	    perms &= ~mask;
 
 	    Node *flag;
-	    if (exact_match && (mask & ~ACCUMULATING_FLAGS)) {
-		    if (exact_match_flags[n])
-			flag = exact_match_flags[n]->dup();
-		    else {
-			exact_match_flags[n] = new ExactMatchFlag(mask);
-			flag = exact_match_flags[n];
+	    if ((mask & AA_MAY_EXEC) && (perms & AA_EXEC_MODIFIERS)) {
+		    int index = (perms & AA_EXEC_MODIFIERS) >> AA_EXEC_MOD_SHIFT;
+		    if (exact_match) {
+			    if (exact_match_flags[index])
+				    flag = exact_match_flags[index]->dup();
+			    else {
+				    exact_match_flags[index] = new ExactMatchFlag(mask | (perms & AA_EXEC_MODIFIERS));
+				    flag = exact_match_flags[index];
+			    }
+		    } else {
+			    if (exec_match_flags[index])
+				    flag = exec_match_flags[index]->dup();
+			    else {
+				    exec_match_flags[index] = new MatchFlag(mask | (perms & AA_EXEC_MODIFIERS));
+				    flag = exec_match_flags[index];
+			    }
 		    }
 	    } else {
 		    if (match_flags[n])
@@ -1585,7 +1619,6 @@ extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
     return 1;
 }
 
-#undef ACCUMULATING_FLAGS
 
 /* create a dfa from the ruleset
  * returns: buffer contain dfa tables, @size set to the size of the tables

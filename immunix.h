@@ -34,13 +34,22 @@
 #define AA_EXEC_MMAP			(1 << 6)
 
 #define AA_CHANGE_PROFILE		(1 << 26)
-#define AA_EXEC_INHERIT 		(1 << 27)
-#define AA_EXEC_UNCONFINED		(1 << 28)
-#define AA_EXEC_PROFILE			(1 << 29)
-#define AA_EXEC_UNSAFE			(1 << 30)
-#define AA_EXEC_MODIFIERS		(AA_EXEC_INHERIT | \
-					 AA_EXEC_UNCONFINED | \
-					 AA_EXEC_PROFILE)
+
+#define AA_EXEC_UNSAFE			(1 << 27)
+#define AA_EXEC_MOD_SHIFT		28
+#define AA_EXEC_MOD_0			(1 << 28)
+#define AA_EXEC_MOD_1			(1 << 29)
+#define AA_EXEC_MOD_2			(1 << 30)
+#define AA_ERROR_BIT			(1 << 31)
+
+#define AA_EXEC_MODIFIERS		(AA_EXEC_MOD_0 | \
+					 AA_EXEC_MOD_1 | \
+					 AA_EXEC_MOD_2)
+
+#define AA_EXEC_UNCONFINED		(AA_EXEC_MOD_2)
+#define AA_EXEC_INHERIT			(AA_EXEC_MOD_0)
+#define AA_EXEC_PROFILE			(AA_EXEC_MOD_1)
+#define AA_EXEC_PROFILE_OR_INHERIT	(AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
 
 
 /* Network subdomain extensions.  */
@@ -79,12 +88,15 @@ enum pattern_t {
 #define HAS_MAY_LINK(mode)		((mode) & AA_MAY_LINK)
 #define HAS_MAY_LOCK(mode)		((mode) & AA_MAY_LOCK)
 #define HAS_EXEC_MMAP(mode) 		((mode) & AA_EXEC_MMAP)
-#define HAS_EXEC_INHERIT(mode)		((mode) & AA_EXEC_INHERIT)
-#define HAS_EXEC_PROFILE(mode)		((mode) & AA_EXEC_PROFILE)
-#define HAS_EXEC_UNCONFINED(mode)	((mode) & AA_EXEC_UNCONFINED)
+#define HAS_EXEC_INHERIT(mode)		(((mode) & AA_EXEC_MODIFIERS) == \
+					 AA_EXEC_INHERIT)
+#define HAS_EXEC_PROFILE(mode)		(((mode) & AA_EXEC_MODIFIERS) == \
+					 AA_EXEC_PROFILE)
+#define HAS_EXEC_UNCONFINED(mode)	(((mode) & AA_EXEC_MODIFIERS) == \
+					 AA_EXEC_UNCONFINED)
+#define HAS_EXEC_PROFILE_OR_INHERIT(mode) (((mode) & AA_EXEC_MODIFIERS) == \
+					   AA_EXEC_PROFILE_OR_INHERIT)
 #define HAS_EXEC_UNSAFE(mode) 		((mode) & AA_EXEC_UNSAFE)
 #define HAS_CHANGE_PROFILE(mode)	((mode) & AA_CHANGE_PROFILE)
 
-#define SINGLE_BIT_SET(X) (!((X) & ((X) - 1)))
-#define AA_EXEC_SINGLE_MODIFIER_SET(X) SINGLE_BIT_SET(((X) & AA_EXEC_MODIFIERS))
 #endif				/* ! _IMMUNIX_H */

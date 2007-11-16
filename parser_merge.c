@@ -88,25 +88,21 @@ static int process_file_entries(struct codomain *cod)
 	qsort(table, count, sizeof(struct cod_entry *), file_comp);
 	table[count] = NULL;
 
-#define CHECK_CONFLICT_UNSAFE(a, b) \
-	((HAS_EXEC_UNSAFE(a) ^ HAS_EXEC_UNSAFE(b)) && \
-	 ((HAS_EXEC_PROFILE(a) && HAS_EXEC_PROFILE(b)) || \
-	  (HAS_EXEC_UNCONFINED(a) && HAS_EXEC_UNCONFINED(b))))
+#define X_CONFLICT(a, b) \
+	(HAS_MAY_EXEC(a) && HAS_MAY_EXEC(b) && \
+	 (((a) & (AA_EXEC_MODIFIERS | AA_EXEC_UNSAFE)) != \
+	  ((b) & (AA_EXEC_MODIFIERS | AA_EXEC_UNSAFE))))
 
 	/* walk the sorted table merging similar entries */
 	for (cur = table[0], next = table[1], n = 1; next != NULL; n++, next = table[n]) {
 		if (file_comp(&cur, &next) == 0) {
-			int conflict = CHECK_CONFLICT_UNSAFE(cur->mode, next->mode);
-
-			cur->mode |= next->mode;
 			/* check for merged x consistency */
-			if (HAS_MAY_EXEC(cur->mode) &&
-			    (!AA_EXEC_SINGLE_MODIFIER_SET(cur->mode) ||
-			     conflict)) {
+			if (X_CONFLICT(cur->mode, next->mode)) {
 				PERROR(_("profile %s: has merged rule %s with multiple x modifiers\n"),
 				       cod->name, cur->name);
 				return 0;
 			}
+			cur->mode |= next->mode;
 			free(next->name);
 			free(next);
 			table[n] = NULL;
