@@ -32,14 +32,18 @@
 #define AA_MAY_LINK			(1 << 4)
 #define AA_MAY_LOCK			(1 << 5)
 #define AA_EXEC_MMAP			(1 << 6)
+#define AA_EXEC_UNSAFE			(1 << 7)
+#define AA_EXEC_MOD_0			(1 << 8)
+#define AA_EXEC_MOD_1			(1 << 9)
 
 #define AA_BASE_PERMS			(AA_MAY_EXEC | AA_MAY_WRITE | \
 					 AA_MAY_READ | AA_MAY_APPEND | \
 					 AA_MAY_LINK | AA_MAY_LOCK | \
-					 AA_EXEC_MMAP)
+					 AA_EXEC_MMAP | AA_EXEC_UNSAFE | \
+					 AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
 #define AA_USER_SHIFT			0
-#define AA_GROUP_SHIFT			7
-#define AA_OTHER_SHIFT			14
+#define AA_GROUP_SHIFT			10
+#define AA_OTHER_SHIFT			20
 
 #define AA_USER_PERMS			(AA_BASE_PERMS << AA_USER_SHIFT)
 #define AA_GROUP_PERMS			(AA_BASE_PERMS << AA_GROUP_SHIFT)
@@ -48,30 +52,33 @@
 #define AA_FILE_PERMS			(AA_USER_PERMS | AA_GROUP_PERMS | \
 					 AA_OTHER_PERMS)
 
-#define AA_CHANGE_PROFILE		(1 << 26)
-
-#define AA_EXEC_UNSAFE			(1 << 27)
-#define AA_EXEC_MOD_SHIFT		28
-#define AA_EXEC_MOD_0			(1 << 28)
-#define AA_EXEC_MOD_1			(1 << 29)
-#define AA_EXEC_MOD_2			(1 << 30)
+#define AA_CHANGE_PROFILE		(1 << 30)
 #define AA_ERROR_BIT			(1 << 31)
+#define AA_SHARED_PERMS			(AA_CHANGE_PROFILE | AA_ERROR_BIT)
 
-#define AA_EXEC_MODIFIERS		(AA_EXEC_MOD_0 | \
-					 AA_EXEC_MOD_1 | \
-					 AA_EXEC_MOD_2)
 
-#define AA_EXEC_UNCONFINED		(AA_EXEC_MOD_2)
+#define AA_EXEC_MODIFIERS		(AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
+#define AA_EXEC_TYPE			(AA_MAY_EXEC | AA_EXEC_UNSAFE | \
+					 AA_EXEC_MODIFIERS)
+
+#define AA_EXEC_UNCONFINED		0
 #define AA_EXEC_INHERIT			(AA_EXEC_MOD_0)
 #define AA_EXEC_PROFILE			(AA_EXEC_MOD_1)
 #define AA_EXEC_PROFILE_OR_INHERIT	(AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
 
-#define AA_VALID_PERMS			(AA_FILE_PERMS | AA_CHANGE_PROFILE | \
-					 AA_EXEC_UNSAFE | AA_EXEC_MODIFIERS)
+#define AA_VALID_PERMS			(AA_FILE_PERMS | AA_CHANGE_PROFILE)
 
 #define AA_EXEC_BITS			((AA_MAY_EXEC << AA_USER_SHIFT) | \
 					 (AA_MAY_EXEC << AA_GROUP_SHIFT) | \
 					 (AA_MAY_EXEC << AA_OTHER_SHIFT))
+
+#define ALL_AA_EXEC_UNSAFE		((AA_EXEC_UNSAFE << AA_USER_SHIFT) | \
+					 (AA_EXEC_UNSAFE << AA_GROUP_SHIFT) | \
+					 (AA_EXEC_UNSAFE << AA_OTHER_SHIFT))
+
+#define AA_USER_EXEC_TYPE		(AA_EXEC_TYPE << AA_USER_SHIFT)
+#define AA_GROUP_EXEC_TYPE		(AA_EXEC_TYPE << AA_GROUP_SHIFT)
+#define AA_OTHER_EXEC_TYPE		(AA_EXEC_TYPE << AA_OTHER_SHIFT)
 
 #define SHIFT_MODE(MODE, SHIFT)		((((MODE) & AA_BASE_PERMS) << (SHIFT))\
 					 | ((MODE) & ~AA_FILE_PERMS))
@@ -112,5 +119,20 @@ enum pattern_t {
 					   AA_EXEC_PROFILE_OR_INHERIT)
 #define HAS_EXEC_UNSAFE(mode) 		((mode) & AA_EXEC_UNSAFE)
 #define HAS_CHANGE_PROFILE(mode)	((mode) & AA_CHANGE_PROFILE)
+
+static inline int is_merged_x_consistent(int a, int b)
+{
+	if ((a & AA_USER_EXEC_TYPE) && (b & AA_USER_EXEC_TYPE) &&
+	    ((a & AA_USER_EXEC_TYPE) != (b & AA_USER_EXEC_TYPE)))
+		return 0;
+	if ((a & AA_GROUP_EXEC_TYPE) && (b & AA_GROUP_EXEC_TYPE) &&
+	    ((a & AA_GROUP_EXEC_TYPE) != (b & AA_GROUP_EXEC_TYPE)))
+		return 0;
+	if ((a & AA_OTHER_EXEC_TYPE) && (b & AA_OTHER_EXEC_TYPE) &&
+	    ((a & AA_OTHER_EXEC_TYPE) != (b & AA_OTHER_EXEC_TYPE)))
+		return 0;
+
+	return 1;
+}
 
 #endif				/* ! _IMMUNIX_H */

@@ -518,14 +518,15 @@ rule:	id_or_var file_mode TOK_END_OF_RULE
 
 rule:   file_mode id_or_var TOK_END_OF_RULE
 	{
-		$$ = do_file_rule(NULL, $2, $1 & ~AA_EXEC_UNSAFE);
+		$$ = do_file_rule(NULL, $2, $1 & ~ALL_AA_EXEC_UNSAFE);
  	};
 
 rule:	TOK_UNSAFE file_mode id_or_var TOK_END_OF_RULE
 	{
+		int mode = (($2 & AA_EXEC_BITS) << 7) & ALL_AA_EXEC_UNSAFE;
 		if (!($2 & AA_EXEC_BITS))
 			yyerror(_("unsafe rule missing exec permissions"));
-		$$ = do_file_rule(NULL, $3, $2 | AA_EXEC_UNSAFE);
+		$$ = do_file_rule(NULL, $3, ($2 & ~ALL_AA_EXEC_UNSAFE) | mode);
 	};
 
 rule:  id_or_var file_mode id_or_var
