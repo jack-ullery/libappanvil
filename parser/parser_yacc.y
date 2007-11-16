@@ -216,6 +216,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode);
 %type <var_val>	TOK_VALUE
 %type <val_list> valuelist
 %type <boolean> expr
+%type <id>	id_or_var
 
 %%
 
@@ -594,41 +595,27 @@ expr:	TOK_DEFINED TOK_BOOL_VAR
 		free($2);
 	}
 
-rule:	TOK_ID file_mode TOK_END_OF_RULE
+id_or_var: TOK_ID { $$ = $1; }
+id_or_var: TOK_SET_VAR { $$ = $1; };
+
+rule:	id_or_var file_mode TOK_END_OF_RULE
 	{
 		$$ = do_file_rule(NULL, $1, $2);
 	};
 
-rule:	TOK_SET_VAR file_mode TOK_END_OF_RULE
-	{
-		$$ = do_file_rule(NULL, $1, $2);
-	};
-
-rule:   file_mode TOK_ID TOK_END_OF_RULE
+rule:   file_mode id_or_var TOK_END_OF_RULE
 	{
 		$$ = do_file_rule(NULL, $2, $1 & ~AA_EXEC_UNSAFE);
  	};
 
-rule:   file_mode TOK_SET_VAR TOK_END_OF_RULE
-	{
-		$$ = do_file_rule(NULL, $2, $1 & ~AA_EXEC_UNSAFE);
-	};
-
-rule:	TOK_UNSAFE file_mode TOK_ID TOK_END_OF_RULE
+rule:	TOK_UNSAFE file_mode id_or_var TOK_END_OF_RULE
 	{
 		if (!($2 & AA_MAY_EXEC))
 			yyerror(_("unsafe rule missing exec permissions"));
 		$$ = do_file_rule(NULL, $3, $2 | AA_EXEC_UNSAFE);
 	};
 
-rule:	TOK_UNSAFE file_mode TOK_SET_VAR TOK_END_OF_RULE
-	{
-		if (!($2 & AA_MAY_EXEC))
-			yyerror(_("unsafe rule missing exec permissions"));
-		$$ = do_file_rule(NULL, $3, $2 | AA_EXEC_UNSAFE);
- 	};
-
-rule:  TOK_ID file_mode TOK_ID
+rule:  id_or_var file_mode id_or_var
 	{
 		/* Oopsie, we appear to be missing an EOL marker. If we
 		 * were *smart*, we could work around it. Since we're
