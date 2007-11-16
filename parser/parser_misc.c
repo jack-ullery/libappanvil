@@ -82,9 +82,6 @@ static struct keyword_table keyword_table[] = {
 	{"audit_control",	TOK_CAP_AUDIT_CONTROL},
 	/* flags */
 	{"flags",		TOK_FLAGS},
-	{"debug",		TOK_FLAG_DEBUG},
-	{"complain",		TOK_FLAG_COMPLAIN},
-	{"audit",		TOK_FLAG_AUDIT},
 	/* network */
 	{"via",			TOK_VIA},
 	{"tcp_connect",		TOK_TCP_CONN},
