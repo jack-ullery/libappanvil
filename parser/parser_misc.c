@@ -401,10 +401,9 @@ static void warn_uppercase(void)
 		warned_uppercase = 1;
 	}
 }
-int parse_mode(const char *str_mode)
+
+static int parse_sub_mode(const char *str_mode, const char *mode_desc)
 {
-	/* The 'check' int is a bit of a kludge, but we need some context
-	   when we're doing permission checking */
 
 #define IS_DIFF_QUAL(mode, q) (((mode) & AA_MAY_EXEC) && (((mode) & (AA_EXEC_MODIFIERS | AA_EXEC_UNSAFE)) != (q)))
 
@@ -426,31 +425,31 @@ int parse_mode(const char *str_mode)
 reeval:
 		switch (this) {
 		case COD_READ_CHAR:
-			PDEBUG("Parsing mode: found READ\n");
+			PDEBUG("Parsing mode: found %s READ\n", mode_desc);
 			mode |= AA_MAY_READ;
 			break;
 
 		case COD_WRITE_CHAR:
-			PDEBUG("Parsing mode: found WRITE\n");
+			PDEBUG("Parsing mode: found %s WRITE\n", mode_desc);
 			if ((mode & AA_MAY_APPEND) && !(mode & AA_MAY_WRITE))
 				yyerror(_("Conflict 'a' and 'w' perms are mutually exclusive."));
 			mode |= AA_MAY_WRITE | AA_MAY_APPEND;
 			break;
 
 		case COD_APPEND_CHAR:
-			PDEBUG("Parsing mode: found APPEND\n");
+			PDEBUG("Parsing mode: found %s APPEND\n", mode_desc);
 			if (mode & AA_MAY_WRITE)
 				yyerror(_("Conflict 'a' and 'w' perms are mutually exclusive."));
 			mode |= AA_MAY_APPEND;
 			break;
 
 		case COD_LINK_CHAR:
-			PDEBUG("Parsing mode: found LINK\n");
+			PDEBUG("Parsing mode: found %s LINK\n", mode_desc);
 			mode |= AA_MAY_LINK;
 			break;
 
 		case COD_LOCK_CHAR:
-			PDEBUG("Parsing mode: found LOCK\n");
+			PDEBUG("Parsing mode: found %s LOCK\n", mode_desc);
 			mode |= AA_MAY_LOCK;
 			break;
 
@@ -513,15 +512,18 @@ reeval:
 			break;
 
 		case COD_MMAP_CHAR:
-			PDEBUG("Parsing mode: found MMAP\n");
+			PDEBUG("Parsing mode: found %s MMAP\n", mode_desc);
 			mode |= AA_EXEC_MMAP;
 			break;
 
 		case COD_EXEC_CHAR:
-			PDEBUG("Parsing mode: found EXEC\n");
+			PDEBUG("Parsing mode: found %s EXEC\n", mode_desc);
 			yyerror(_("Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"));
 			break;
 
+		case ':':
+			goto out;
+			break;
  		/* error cases */
 
 		default:
@@ -549,8 +551,50 @@ reeval:
 
 		p++;
 	}
-
+out:
 	PDEBUG("Parsed mode: %s 0x%x\n", str_mode, mode);
+
+	return mode;
+}
+
+int parse_mode(const char *str_mode)
+{
+	const char *next, *pos = str_mode;
+	int tmp, mode = 0;
+	next = strchr(str_mode, ':');
+	if (!next) {
+		tmp = parse_sub_mode(str_mode, "");
+		mode = SHIFT_MODE(tmp, AA_USER_SHIFT);
+		mode |= SHIFT_MODE(tmp, AA_GROUP_SHIFT);
+		mode |= SHIFT_MODE(tmp, AA_OTHER_SHIFT);
+		if (mode & ~AA_VALID_PERMS)
+			yyerror(_("Internal error generated invalid perm 0x%llx\n"), mode);
+		return mode;
+	}
+	/* user:group:other */
+	if (next > pos)
+		mode = SHIFT_MODE(parse_sub_mode(pos, "user"), AA_USER_SHIFT);
+	pos = next + 1;
+	next = strchr(pos, ':');
+	if (next > pos) {
+		tmp = parse_sub_mode(pos, "group");
+		if ((mode & AA_EXEC_BITS) && (tmp & AA_EXEC_BITS) &&
+		    (mode & AA_EXEC_MODIFIERS) != (tmp & AA_EXEC_MODIFIERS))
+			yyerror(_("conflicting x modifiers between user and group permissions."));
+		mode |= SHIFT_MODE(tmp, AA_GROUP_SHIFT);
+	}
+	pos = next + 1;
+	if (*pos) {
+		tmp = parse_sub_mode(pos, "other");
+		if ((mode & AA_EXEC_BITS) && (tmp & AA_EXEC_BITS) &&
+		    (mode & AA_EXEC_MODIFIERS) != (tmp & AA_EXEC_MODIFIERS))
+			yyerror(_("conflicting x modifiers between other and user:group permissions."));
+		mode |= SHIFT_MODE(tmp, AA_OTHER_SHIFT);
+	}
+	if (mode & ~AA_VALID_PERMS)
+		yyerror(_("Internal error generated invalid perm 0x%llx\n"), mode);
+	if (!mode)
+		yyerror(_("Invalid permission permission \"::\" - no permission specified."));
 
 	return mode;
 }
@@ -618,6 +662,38 @@ void free_cod_entries(struct cod_entry *list)
 	free(list);
 }
 
+static void debug_base_perm_mask(int mask)
+{
+	if (HAS_MAY_READ(mask))
+		printf("%c", COD_READ_CHAR);
+	if (HAS_MAY_WRITE(mask))
+		printf("%c", COD_WRITE_CHAR);
+	if (HAS_MAY_APPEND(mask))
+		printf("%c", COD_APPEND_CHAR);
+	if (HAS_MAY_LINK(mask))
+		printf("%c", COD_LINK_CHAR);
+	if (HAS_MAY_LOCK(mask))
+		printf("%c", COD_LOCK_CHAR);
+	if (HAS_EXEC_INHERIT(mask))
+		printf("%c", COD_INHERIT_CHAR);
+	if (HAS_EXEC_UNCONFINED(mask)) {
+		if (HAS_EXEC_UNSAFE(mask))
+			printf("%c", COD_UNSAFE_UNCONFINED_CHAR);
+		else
+			printf("%c", COD_UNCONFINED_CHAR);
+	}
+	if (HAS_EXEC_PROFILE(mask)) {
+		if (HAS_EXEC_UNSAFE(mask))
+			printf("%c", COD_UNSAFE_PROFILE_CHAR);
+		else
+			printf("%c", COD_PROFILE_CHAR);
+	}
+	if (HAS_EXEC_MMAP(mask))
+		printf("%c", COD_MMAP_CHAR);
+	if (HAS_MAY_EXEC(mask))
+		printf("%c", COD_EXEC_CHAR);
+}
+
 void debug_cod_entries(struct cod_entry *list)
 {
 	struct cod_entry *item = NULL;
@@ -629,37 +705,15 @@ void debug_cod_entries(struct cod_entry *list)
 			printf("Item is NULL!\n");
 
 		printf("Mode:\t");
-		if (HAS_MAY_READ(item->mode))
-			printf("%c", COD_READ_CHAR);
-		if (HAS_MAY_WRITE(item->mode))
-			printf("%c", COD_WRITE_CHAR);
-		if (HAS_MAY_APPEND(item->mode))
-			printf("%c", COD_APPEND_CHAR);
-		if (HAS_MAY_LINK(item->mode))
-			printf("%c", COD_LINK_CHAR);
-		if (HAS_MAY_LOCK(item->mode))
-			printf("%c", COD_LOCK_CHAR);
-		if (HAS_EXEC_INHERIT(item->mode))
-			printf("%c", COD_INHERIT_CHAR);
-		if (HAS_EXEC_UNCONFINED(item->mode)) {
-			if (HAS_EXEC_UNSAFE(item->mode))
-				printf("%c", COD_UNSAFE_UNCONFINED_CHAR);
-			else
-				printf("%c", COD_UNCONFINED_CHAR);
-		}
-		if (HAS_EXEC_PROFILE(item->mode)) {
-			if (HAS_EXEC_UNSAFE(item->mode))
-				printf("%c", COD_UNSAFE_PROFILE_CHAR);
-			else
-				printf("%c", COD_PROFILE_CHAR);
-		}
-		if (HAS_EXEC_MMAP(item->mode))
-			printf("%c", COD_MMAP_CHAR);
-		if (HAS_MAY_EXEC(item->mode))
-			printf("%c", COD_EXEC_CHAR);
 		if (HAS_CHANGE_PROFILE(item->mode))
 			printf(" change_profile");
-
+		if (HAS_EXEC_UNSAFE(item->mode))
+			printf(" unsafe");
+		debug_base_perm_mask(SHIFT_TO_BASE(item->mode, AA_USER_SHIFT));
+		printf(":");
+		debug_base_perm_mask(SHIFT_TO_BASE(item->mode, AA_GROUP_SHIFT));
+		printf(":");
+		debug_base_perm_mask(SHIFT_TO_BASE(item->mode, AA_OTHER_SHIFT));
 		if (item->name)
 			printf("\tName:\t(%s)\n", item->name);
 

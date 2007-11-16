@@ -523,7 +523,7 @@ rule:   file_mode id_or_var TOK_END_OF_RULE
 
 rule:	TOK_UNSAFE file_mode id_or_var TOK_END_OF_RULE
 	{
-		if (!($2 & AA_MAY_EXEC))
+		if (!($2 & AA_EXEC_BITS))
 			yyerror(_("unsafe rule missing exec permissions"));
 		$$ = do_file_rule(NULL, $3, $2 | AA_EXEC_UNSAFE);
 	};
@@ -599,6 +599,8 @@ hat_start: TOK_SEP {}
 
 file_mode: TOK_MODE
 	{
+		/* A single TOK_MODE maps to the same permission in all
+		 * of user:group:other */
 		$$ = parse_mode($1);
 		free($1);
 	}

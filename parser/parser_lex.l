@@ -54,7 +54,7 @@ END_OF_RULE	[,]
 SEPERATOR 	{UP}
 RANGE		-
 MODE_CHARS 	([RrWwaLlMmk])|([Pp][Xx])|([Uu][Xx])|([Ii][Xx])|([Pp][Ii][Xx])
-MODES		{MODE_CHARS}+
+MODES		({MODE_CHARS}+)|({MODE_CHARS}*:{MODE_CHARS}*:{MODE_CHARS}*)
 WS		[[:blank:]]
 NUMBER		[[:digit:]]+
 ID 		[^ \t\n"!,]|(,[^ \t\n"!])
