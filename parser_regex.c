@@ -515,7 +515,7 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 		if (entry->namespace)
 			sprintf(lbuf, "%s//%s", entry->namespace, entry->name);
 		else
-			sprintf(lbuf, "%s", entry->namespace, entry->name);
+			sprintf(lbuf, "%s", entry->name);
 		ptype = convert_aaregex_to_pcre(lbuf, 0, tbuf, 2*PATH_MAX + 8);
 		if (ptype == ePatternInvalid)
 			return FALSE;
