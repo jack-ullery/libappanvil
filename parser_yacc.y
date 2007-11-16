@@ -150,12 +150,11 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode);
 %token TOK_FLAG_OPENPAREN
 %token TOK_FLAG_CLOSEPAREN
 %token TOK_FLAG_SEP
-%token TOK_FLAG_DEBUG
-%token TOK_FLAG_COMPLAIN
-%token TOK_FLAG_AUDIT
+%token TOK_FLAG_ID
 
 %union {
 	char *id;
+	char *flag_id;
 	char *ip;
 	char *iface;
 	char *mode;
@@ -208,6 +207,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode);
 %type <flags>	flags
 %type <flags>	flagvals
 %type <flags>	flagval
+%type <flag_id>	TOK_FLAG_ID
 %type <cap>	cap
 %type <cap>	capability
 %type <user_entry> change_profile
@@ -390,6 +390,11 @@ flags:	TOK_FLAGS TOK_EQUALS TOK_FLAG_OPENPAREN flagvals TOK_FLAG_CLOSEPAREN
 		$$ = $4;
 	};
 
+flags: TOK_FLAG_OPENPAREN flagvals TOK_FLAG_CLOSEPAREN
+	{
+		$$ = $2;
+	}
+
 flagvals:	flagvals TOK_FLAG_SEP flagval
 	{
 		$1.complain = $1.complain || $3.complain;
@@ -403,27 +408,19 @@ flagvals:	flagval
 		$$ = $1;
 	};
 
-flagval:	TOK_FLAG_DEBUG 
+flagval:	TOK_FLAG_ID
 	{
-		PDEBUG("Matched: flag debug\n");
-		yyerror(_("flags=(debug) is no longer supported, sorry."));
-	};
-
-flagval:	TOK_FLAG_COMPLAIN
-	{
-		struct flagval fv = { 0, 1, 0 };
-
-		PDEBUG("Matched: flag complain\n");
-
-		$$ = fv;
-	};
-
-flagval:	TOK_FLAG_AUDIT
-	{
-		struct flagval fv = { 0, 0, 1 };
-
-		PDEBUG("Matched: flag audit\n");
-
+		struct flagval fv = {0, 0, 0};
+		if (strcmp($1, "debug") == 0) {
+			yyerror(_("Profile flag 'debug' is no longer valid."));
+		} else if (strcmp($1, "complain") == 0) {
+			fv.complain = 1;
+		} else if (strcmp($1, "audit") == 0) {
+			fv.audit = 1;
+		} else {
+			yyerror(_("Invalid profile flag: %s."), $1);
+		}
+		free($1);
 		$$ = fv;
 	};
 

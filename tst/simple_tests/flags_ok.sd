@@ -39,3 +39,38 @@
   /usr/X11R6/lib/lib*so* r,
   /does/not/exist8 r,
 }
+
+/does/not/exist6 (complain) {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist r,
+}
+
+/does/not/exist7 (audit) {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist2 r,
+}
+
+/does/not/exist8 (complain,audit) {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist5 r,
+}
+
+/does/not/exist9 (audit,complain) {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist7 r,
+}
+
+/does/not/exist10 (audit,complain,audit) {
+  #include <includes/base>
+
+  /usr/X11R6/lib/lib*so* r,
+  /does/not/exist8 r,
+}

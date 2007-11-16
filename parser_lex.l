@@ -190,7 +190,7 @@ ADD_ASSIGN	\+=
 			return TOK_FLAG_CLOSEPAREN;
 			}
 
-	{WS}+	{ /* Eat whitespace */ }
+	{WS}+		{ /* Eat whitespace */ }
 
 	{FLAGSEP}	{
 			PDEBUG("Flag , \n");
@@ -201,26 +201,12 @@ ADD_ASSIGN	\+=
 			PDEBUG("Flag = \n");
 			return TOK_EQUALS;
 			}
-
 	{KEYWORD}	{
-			int token = get_keyword_token(yytext);
-
-			/* special cases */
-			switch (token) {
-			case TOK_FLAG_AUDIT:
-			case TOK_FLAG_COMPLAIN:
-			case TOK_FLAG_DEBUG:
-				/* legit */
-				break;
-			default:
-				/* bad keyword or no token found */
-				yyerror(_("Found unknown flag: '%s'"), yytext);
-				break;
+			yylval = (YYSTYPE) strdup(yytext);
+			return TOK_FLAG_ID;
 			}
-			return token;
-  			}
 
-	[^\n] 		{
+	[^\n]		{
 			/* Something we didn't expect */
 			yyerror(_("Found unexpected character: '%s'"), yytext);
 			}
@@ -350,6 +336,12 @@ ADD_ASSIGN	\+=
 {COLON}			{
 			PDEBUG("Found a colon\n");
 			return TOK_COLON;
+			}
+
+{FLAGOPEN_PAREN}	{
+			PDEBUG("FLag (\n");
+			BEGIN(FLAGS_MODE);
+			return TOK_FLAG_OPENPAREN;
 			}
 
 {VARIABLE_NAME}		{
