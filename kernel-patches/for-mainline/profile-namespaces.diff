@@ -44,8 +44,8 @@ echo "setprofile namespace:/profile" >/proc/<pid>/attr/current
  security/apparmor/lsm.c              |   30 +---
  security/apparmor/main.c             |  143 ++++++++++++----------
  security/apparmor/module_interface.c |  227 +++++++++++++++++++++++++++++++----
- security/apparmor/procattr.c         |   65 ++++++++--
- 7 files changed, 502 insertions(+), 163 deletions(-)
+ security/apparmor/procattr.c         |   62 ++++++++-
+ 7 files changed, 504 insertions(+), 158 deletions(-)
 
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
@@ -1061,17 +1061,13 @@ echo "setprofile namespace:/profile" >/proc/<pid>/attr/current
  		memcpy(str, profile->name, name_len);
  		str += name_len;
  		memcpy(str, mode_str, mode_len);
-@@ -87,20 +94,26 @@ int aa_setprocattr_changehat(char *args)
+@@ -87,13 +94,26 @@ int aa_setprocattr_changehat(char *args)
  
  int aa_setprocattr_changeprofile(char *args)
  {
--	char *name;
--	u64 cookie;
+-	return aa_change_profile(args);
 +	char *name = args, *ns_name = NULL;
- 
--	name = split_token_from_name("change_profile", args, &cookie);
--	if (IS_ERR(name))
--		return PTR_ERR(name);
++
 +	if (name[0] != '/') {
 +		char *split = strchr(name, ':');
 +		if (split) {
@@ -1080,8 +1076,7 @@ echo "setprofile namespace:/profile" >/proc/<pid>/attr/current
 +			name = split + 1;
 +		}
 +	}
- 
--	return aa_change_profile(name, cookie);
++
 +	return aa_change_profile(ns_name, name);
  }
  
@@ -1094,7 +1089,7 @@ echo "setprofile namespace:/profile" >/proc/<pid>/attr/current
  
  	memset(&sa, 0, sizeof(sa));
  	sa.operation = "profile_set";
-@@ -110,15 +123,38 @@ int aa_setprocattr_setprofile(struct tas
+@@ -103,15 +123,38 @@ int aa_setprocattr_setprofile(struct tas
  	AA_DEBUG("%s: current %d\n",
  		 __FUNCTION__, current->pid);
  
@@ -1136,7 +1131,7 @@ echo "setprofile namespace:/profile" >/proc/<pid>/attr/current
  			return -EINVAL;
  		}
  	}
-@@ -131,12 +167,14 @@ repeat:
+@@ -124,12 +167,14 @@ repeat:
  		error = PTR_ERR(old_profile);
  		if (error == -ESTALE)
  			goto repeat;
@@ -1153,7 +1148,7 @@ echo "setprofile namespace:/profile" >/proc/<pid>/attr/current
  			"unconfined";
  		aa_audit_status(NULL, &sa);
  	} else {
-@@ -149,6 +187,7 @@ repeat:
+@@ -142,6 +187,7 @@ repeat:
  			aa_audit_status(NULL, &sa);
  		}
  	}

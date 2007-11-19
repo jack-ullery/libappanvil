@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1988,6 +1988,7 @@ nfsd_get_posix_acl(struct svc_fh *fhp, i
+@@ -2016,6 +2016,7 @@ nfsd_get_posix_acl(struct svc_fh *fhp, i
  int
  nfsd_set_posix_acl(struct svc_fh *fhp, int type, struct posix_acl *acl)
  {
@@ -24,7 +24,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	struct inode *inode = fhp->fh_dentry->d_inode;
  	char *name;
  	void *value = NULL;
-@@ -2020,14 +2021,14 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+@@ -2048,14 +2049,14 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
  	} else
  		size = 0;
  
@@ -92,7 +92,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 @@ -491,7 +491,7 @@ sys_fremovexattr(int fd, char __user *na
  		return error;
  	dentry = f->f_path.dentry;
- 	audit_inode(NULL, dentry->d_inode);
+ 	audit_inode(NULL, dentry);
 -	error = removexattr(dentry, name);
 +	error = removexattr(dentry, f->f_path.mnt, name);
  	fput(f);

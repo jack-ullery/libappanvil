@@ -1,11 +1,11 @@
 Allow the dfa to return its state, which will allow for pair matches.
 
 ---
- security/apparmor/apparmor.h |    5 ++
- security/apparmor/inline.h   |   19 +++++++++++
- security/apparmor/match.c    |   73 +++++++++++++++++++++++++++++++++++++------
- security/apparmor/match.h    |    2 +
- 4 files changed, 88 insertions(+), 11 deletions(-)
+ security/apparmor/apparmor.h |    7 ++-
+ security/apparmor/inline.h   |    2 
+ security/apparmor/match.c    |   99 ++++++++++++++++++++++++++++++++++++++-----
+ security/apparmor/match.h    |    2 
+ 4 files changed, 99 insertions(+), 11 deletions(-)
 
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
@@ -17,12 +17,14 @@ Allow the dfa to return its state, which will allow for pair matches.
  /* Control parameters (0 or 1), settable thru module/boot flags or
   * via /sys/kernel/security/apparmor/control */
  extern int apparmor_complain;
-@@ -260,5 +259,9 @@ extern void aa_match_free(struct aa_dfa 
+@@ -260,5 +259,11 @@ extern void aa_match_free(struct aa_dfa 
  extern int unpack_dfa(struct aa_dfa *dfa, void *blob, size_t size);
  extern int verify_dfa(struct aa_dfa *dfa);
  extern unsigned int aa_dfa_match(struct aa_dfa *dfa, const char *str);
 +extern unsigned int aa_dfa_next_state(struct aa_dfa *dfa, unsigned int start,
 +				      const char *str);
++extern unsigned int aa_match_state(struct aa_dfa *dfa, unsigned int start,
++				   const char *str, unsigned int *final);
 +extern unsigned int aa_dfa_null_transition(struct aa_dfa *dfa,
 +					   unsigned int start);
  
@@ -38,28 +40,6 @@ Allow the dfa to return its state, which will allow for pair matches.
  static inline int mediated_filesystem(struct inode *inode)
  {
  	return !(inode->i_sb->s_flags & MS_NOUSER);
-@@ -208,4 +210,21 @@ static inline unsigned int aa_match(stru
- 	        return dfa ? aa_dfa_match(dfa, pathname) : 0;
- }
- 
-+static inline unsigned int aa_match_state(struct aa_dfa *dfa,
-+					  unsigned int start,
-+					  const char *pathname,
-+					  unsigned int *finish)
-+{
-+	unsigned int state;
-+	if (dfa) {
-+		state = aa_dfa_next_state(dfa, start, pathname);
-+		if (finish)
-+			*finish = state;
-+		return ACCEPT_TABLE(dfa)[state];
-+	}
-+	if (finish)
-+		*finish = 0;
-+	return 0;
-+}
-+
- #endif /* __INLINE_H__ */
 --- a/security/apparmor/match.c
 +++ b/security/apparmor/match.c
 @@ -208,22 +208,26 @@ void aa_match_free(struct aa_dfa *dfa)
@@ -98,7 +78,7 @@ Allow the dfa to return its state, which will allow for pair matches.
  
  	/* current state is <state>, matching character *str */
  	if (dfa->tables[YYTD_ID_EC - 1]) {
-@@ -244,5 +248,54 @@ unsigned int aa_dfa_match(struct aa_dfa 
+@@ -244,5 +248,80 @@ unsigned int aa_dfa_match(struct aa_dfa 
  				state = def[state];
  		}
  	}
@@ -143,9 +123,9 @@ Allow the dfa to return its state, which will allow for pair matches.
 +}
 +
 +/**
-+ * aa_dfa_match - find accept perm for @str in @state
++ * aa_dfa_match - find accept perm for @str in @dfa
 + * @dfa: the dfa to match @str against
-+ * @str: the path to match against the dfa
++ * @str: the string to match against the dfa
 + *
 + * aa_dfa_match will match @str and return the accept perms for the
 + * final state.
@@ -154,6 +134,32 @@ Allow the dfa to return its state, which will allow for pair matches.
 +{
 +	return ACCEPT_TABLE(dfa)[aa_dfa_next_state(dfa, DFA_START, str)];
  }
++
++/**
++ * aa_match_state - find accept perm and state for @str in @dfa
++ * @dfa: the dfa to match @str against
++ * @start: the state to start the match from
++ * @str: the string to match against the dfa
++ * @final: the state that the match finished in
++ *
++ * aa_match_state will match @str and return the accept perms, and @final
++ * state, the match occured in.
++ */
++unsigned int aa_match_state(struct aa_dfa *dfa, unsigned int start,
++			    const char *str, unsigned int *final)
++{
++	unsigned int state;
++	if (dfa) {
++		state = aa_dfa_next_state(dfa, start, str);
++		if (final)
++			*final = state;
++		return ACCEPT_TABLE(dfa)[state];
++	}
++	if (final)
++		*final = 0;
++	return 0;
++}
++
 --- a/security/apparmor/match.h
 +++ b/security/apparmor/match.h
 @@ -12,6 +12,8 @@

@@ -13,7 +13,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1132,25 +1132,24 @@ static int fastcall do_path_lookup(int d
+@@ -1147,25 +1147,24 @@ static int fastcall do_path_lookup(int d
  		nd->dentry = dget(fs->pwd);
  		read_unlock(&fs->lock);
  	} else {

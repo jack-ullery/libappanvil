@@ -89,7 +89,7 @@
 +	return error;
 +}
 +
-+static int apparmor_socket_post_create(struct socket * sock, int family,
++static int apparmor_socket_post_create(struct socket *sock, int family,
 +					int type, int protocol, int kern)
 +{
 +	struct sock *sk = sock->sk;
@@ -100,67 +100,67 @@
 +	return aa_revalidate_sk(sk, "socket_post_create");
 +}
 +
-+static int apparmor_socket_bind(struct socket * sock,
-+				struct sockaddr * address, int addrlen)
++static int apparmor_socket_bind(struct socket *sock,
++				struct sockaddr *address, int addrlen)
 +{
 +	struct sock *sk = sock->sk;
 +
 +	return aa_revalidate_sk(sk, "socket_bind");
 +}
 +
-+static int apparmor_socket_connect(struct socket * sock,
-+					struct sockaddr * address, int addrlen)
++static int apparmor_socket_connect(struct socket *sock,
++					struct sockaddr *address, int addrlen)
 +{
 +	struct sock *sk = sock->sk;
 +
 +	return aa_revalidate_sk(sk, "socket_connect");
 +}
 +
-+static int apparmor_socket_listen(struct socket * sock, int backlog)
++static int apparmor_socket_listen(struct socket *sock, int backlog)
 +{
 +	struct sock *sk = sock->sk;
 +
 +	return aa_revalidate_sk(sk, "socket_listen");
 +}
 +
-+static int apparmor_socket_accept(struct socket * sock, struct socket * newsock)
++static int apparmor_socket_accept(struct socket *sock, struct socket *newsock)
 +{
 +	struct sock *sk = sock->sk;
 +
 +	return aa_revalidate_sk(sk, "socket_accept");
 +}
 +
-+static int apparmor_socket_sendmsg(struct socket * sock,
-+					struct msghdr * msg, int size)
++static int apparmor_socket_sendmsg(struct socket *sock,
++					struct msghdr *msg, int size)
 +{
 +	struct sock *sk = sock->sk;
 +
 +	return aa_revalidate_sk(sk, "socket_sendmsg");
 +}
 +
-+static int apparmor_socket_recvmsg(struct socket * sock,
-+				   struct msghdr * msg, int size, int flags)
++static int apparmor_socket_recvmsg(struct socket *sock,
++				   struct msghdr *msg, int size, int flags)
 +{
 +	struct sock *sk = sock->sk;
 +
 +	return aa_revalidate_sk(sk, "socket_recvmsg");
 +}
 +
-+static int apparmor_socket_getsockname(struct socket * sock)
++static int apparmor_socket_getsockname(struct socket *sock)
 +{
 +	struct sock *sk = sock->sk;
 +
 +	return aa_revalidate_sk(sk, "socket_getsockname");
 +}
 +
-+static int apparmor_socket_getpeername(struct socket * sock)
++static int apparmor_socket_getpeername(struct socket *sock)
 +{
 +	struct sock *sk = sock->sk;
 +
 +	return aa_revalidate_sk(sk, "socket_getpeername");
 +}
 +
-+static int apparmor_socket_getsockopt(struct socket * sock, int level,
++static int apparmor_socket_getsockopt(struct socket *sock, int level,
 +					int optname)
 +{
 +	struct sock *sk = sock->sk;
@@ -168,7 +168,7 @@
 +	return aa_revalidate_sk(sk, "socket_getsockopt");
 +}
 +
-+static int apparmor_socket_setsockopt(struct socket * sock, int level,
++static int apparmor_socket_setsockopt(struct socket *sock, int level,
 +					int optname)
 +{
 +	struct sock *sk = sock->sk;
@@ -176,7 +176,7 @@
 +	return aa_revalidate_sk(sk, "socket_setsockopt");
 +}
 +
-+static int apparmor_socket_shutdown(struct socket * sock, int how)
++static int apparmor_socket_shutdown(struct socket *sock, int how)
 +{
 +	struct sock *sk = sock->sk;
 +

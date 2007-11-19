@@ -16,7 +16,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -413,7 +413,8 @@ static ssize_t nfsd_getxattr(struct dent
+@@ -426,7 +426,8 @@ static ssize_t nfsd_getxattr(struct dent
  
  #if defined(CONFIG_NFSD_V4)
  static int
@@ -26,7 +26,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int len;
  	size_t buflen;
-@@ -432,7 +433,7 @@ set_nfsv4_acl_one(struct dentry *dentry,
+@@ -445,7 +446,7 @@ set_nfsv4_acl_one(struct dentry *dentry,
  		goto out;
  	}
  
@@ -35,7 +35,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  out:
  	kfree(buf);
  	return error;
-@@ -445,6 +446,7 @@ nfsd4_set_nfs4_acl(struct svc_rqst *rqst
+@@ -458,6 +459,7 @@ nfsd4_set_nfs4_acl(struct svc_rqst *rqst
  	__be32 error;
  	int host_error;
  	struct dentry *dentry;
@@ -43,7 +43,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	struct inode *inode;
  	struct posix_acl *pacl = NULL, *dpacl = NULL;
  	unsigned int flags = 0;
-@@ -455,6 +457,7 @@ nfsd4_set_nfs4_acl(struct svc_rqst *rqst
+@@ -468,6 +470,7 @@ nfsd4_set_nfs4_acl(struct svc_rqst *rqst
  		return error;
  
  	dentry = fhp->fh_dentry;
@@ -51,7 +51,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	inode = dentry->d_inode;
  	if (S_ISDIR(inode->i_mode))
  		flags = NFS4_ACL_DIR;
-@@ -465,12 +468,14 @@ nfsd4_set_nfs4_acl(struct svc_rqst *rqst
+@@ -478,12 +481,14 @@ nfsd4_set_nfs4_acl(struct svc_rqst *rqst
  	} else if (host_error < 0)
  		goto out_nfserr;
  
@@ -68,7 +68,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
  out_release:
  	posix_acl_release(pacl);
-@@ -2013,7 +2018,8 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+@@ -2041,7 +2046,8 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
  		size = 0;
  
  	if (size)
@@ -132,7 +132,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 @@ -268,7 +268,7 @@ sys_fsetxattr(int fd, char __user *name,
  		return error;
  	dentry = f->f_path.dentry;
- 	audit_inode(NULL, dentry->d_inode);
+ 	audit_inode(NULL, dentry);
 -	error = setxattr(dentry, name, value, size, flags);
 +	error = setxattr(dentry, f->f_vfsmnt, name, value, size, flags);
  	fput(f);

@@ -14,7 +14,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -298,7 +298,13 @@ int vfs_permission(struct nameidata *nd,
+@@ -313,7 +313,13 @@ int vfs_permission(struct nameidata *nd,
   */
  int file_permission(struct file *file, int mask)
  {

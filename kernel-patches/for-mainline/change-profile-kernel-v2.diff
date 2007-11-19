@@ -10,7 +10,8 @@ Signed-off-by: Seth Arnold <seth.arnold@suse.de>
 ---
  security/apparmor/apparmor.h |    2 +-
  security/apparmor/main.c     |   21 +++++++--------------
- 2 files changed, 8 insertions(+), 15 deletions(-)
+ security/apparmor/procattr.c |    9 +--------
+ 3 files changed, 9 insertions(+), 23 deletions(-)
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
 @@ -211,7 +211,7 @@ extern int aa_clone(struct task_struct *
@@ -74,3 +75,21 @@ Signed-off-by: Seth Arnold <seth.arnold@suse.de>
  	aa_put_profile(profile);
  	if (error == -ESTALE)
  		goto repeat;
+--- a/security/apparmor/procattr.c
++++ b/security/apparmor/procattr.c
+@@ -87,14 +87,7 @@ int aa_setprocattr_changehat(char *args)
+ 
+ int aa_setprocattr_changeprofile(char *args)
+ {
+-	char *name;
+-	u64 cookie;
+-
+-	name = split_token_from_name("change_profile", args, &cookie);
+-	if (IS_ERR(name))
+-		return PTR_ERR(name);
+-
+-	return aa_change_profile(name, cookie);
++	return aa_change_profile(args);
+ }
+ 
+ int aa_setprocattr_setprofile(struct task_struct *task, char *args)

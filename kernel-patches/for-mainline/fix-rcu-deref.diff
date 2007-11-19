@@ -7,7 +7,7 @@ the newer rcu_dereference macro.
 
 --- a/security/apparmor/inline.h
 +++ b/security/apparmor/inline.h
-@@ -21,7 +21,7 @@ static inline int mediated_filesystem(st
+@@ -19,7 +19,7 @@ static inline int mediated_filesystem(st
  
  static inline struct aa_task_context *aa_task_context(struct task_struct *task)
  {
@@ -15,4 +15,4 @@ the newer rcu_dereference macro.
 +	return (struct aa_task_context *) rcu_dereference(task->security);
  }
  
- static inline struct aa_namespace *aa_get_namespace(struct aa_namespace *ns)
+ /**

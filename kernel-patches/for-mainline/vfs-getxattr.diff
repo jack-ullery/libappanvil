@@ -18,7 +18,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/nfsd/nfs4xdr.c
 +++ b/fs/nfsd/nfs4xdr.c
-@@ -1491,7 +1491,7 @@ nfsd4_encode_fattr(struct svc_fh *fhp, s
+@@ -1496,7 +1496,7 @@ nfsd4_encode_fattr(struct svc_fh *fhp, s
  	}
  	if (bmval0 & (FATTR4_WORD0_ACL | FATTR4_WORD0_ACLSUPPORT
  			| FATTR4_WORD0_SUPPORTED_ATTRS)) {
@@ -29,7 +29,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  			if (err == -EOPNOTSUPP)
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -395,11 +395,12 @@ out_nfserr:
+@@ -408,11 +408,12 @@ out_nfserr:
  #if defined(CONFIG_NFSD_V2_ACL) || \
      defined(CONFIG_NFSD_V3_ACL) || \
      defined(CONFIG_NFSD_V4)
@@ -44,7 +44,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (buflen <= 0)
  		return buflen;
  
-@@ -407,7 +408,7 @@ static ssize_t nfsd_getxattr(struct dent
+@@ -420,7 +421,7 @@ static ssize_t nfsd_getxattr(struct dent
  	if (!*buf)
  		return -ENOMEM;
  
@@ -53,7 +53,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
  #endif
  
-@@ -488,13 +489,13 @@ out_nfserr:
+@@ -501,13 +502,13 @@ out_nfserr:
  }
  
  static struct posix_acl *
@@ -69,7 +69,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (!buflen)
  		buflen = -ENODATA;
  	if (buflen <= 0)
-@@ -506,14 +507,15 @@ _get_posix_acl(struct dentry *dentry, ch
+@@ -519,14 +520,15 @@ _get_posix_acl(struct dentry *dentry, ch
  }
  
  int
@@ -87,7 +87,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (IS_ERR(pacl) && PTR_ERR(pacl) == -ENODATA)
  		pacl = posix_acl_from_mode(inode->i_mode, GFP_KERNEL);
  	if (IS_ERR(pacl)) {
-@@ -523,7 +525,7 @@ nfsd4_get_nfs4_acl(struct svc_rqst *rqst
+@@ -536,7 +538,7 @@ nfsd4_get_nfs4_acl(struct svc_rqst *rqst
  	}
  
  	if (S_ISDIR(inode->i_mode)) {
@@ -96,7 +96,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		if (IS_ERR(dpacl) && PTR_ERR(dpacl) == -ENODATA)
  			dpacl = NULL;
  		else if (IS_ERR(dpacl)) {
-@@ -1973,7 +1975,8 @@ nfsd_get_posix_acl(struct svc_fh *fhp, i
+@@ -2001,7 +2003,8 @@ nfsd_get_posix_acl(struct svc_fh *fhp, i
  		return ERR_PTR(-EOPNOTSUPP);
  	}
  
@@ -158,7 +158,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 @@ -350,7 +352,7 @@ sys_fgetxattr(int fd, char __user *name,
  	if (!f)
  		return error;
- 	audit_inode(NULL, f->f_path.dentry->d_inode);
+ 	audit_inode(NULL, f->f_path.dentry);
 -	error = getxattr(f->f_path.dentry, name, value, size);
 +	error = getxattr(f->f_path.dentry, f->f_path.mnt, name, value, size);
  	fput(f);

@@ -17,7 +17,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/dcache.c
 +++ b/fs/dcache.c
-@@ -1784,9 +1784,9 @@ shouldnt_be_hashed:
+@@ -1782,9 +1782,9 @@ shouldnt_be_hashed:
   *
   * Returns the buffer or an error code.
   */
@@ -32,7 +32,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
-@@ -1863,3 +1863,30 @@ void __put_mnt_ns(struct mnt_namespace *
+@@ -1883,3 +1883,30 @@ void __put_mnt_ns(struct mnt_namespace *
  	release_mounts(&umount_list);
  	kfree(ns);
  }
@@ -65,7 +65,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 +EXPORT_SYMBOL(d_namespace_path);
 --- a/include/linux/dcache.h
 +++ b/include/linux/dcache.h
-@@ -299,6 +299,8 @@ extern int d_validate(struct dentry *, s
+@@ -300,6 +300,8 @@ extern int d_validate(struct dentry *, s
   */
  extern char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
  

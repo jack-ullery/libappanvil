@@ -18,7 +18,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -560,11 +560,14 @@ ecryptfs_mknod(struct inode *dir, struct
+@@ -551,11 +551,14 @@ ecryptfs_mknod(struct inode *dir, struct
  {
  	int rc;
  	struct dentry *lower_dentry;
@@ -36,7 +36,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1888,7 +1888,8 @@ fail:
+@@ -1918,7 +1918,8 @@ fail:
  }
  EXPORT_SYMBOL_GPL(lookup_create);
  
@@ -46,7 +46,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int error = may_create(dir, dentry, NULL);
  
-@@ -1940,11 +1941,12 @@ asmlinkage long sys_mknodat(int dfd, con
+@@ -1970,11 +1971,12 @@ asmlinkage long sys_mknodat(int dfd, con
  			error = vfs_create(nd.dentry->d_inode,dentry,mode,&nd);
  			break;
  		case S_IFCHR: case S_IFBLK:
@@ -64,7 +64,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  			error = -EPERM;
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1219,7 +1219,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
+@@ -1244,7 +1244,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
  	case S_IFBLK:
  	case S_IFIFO:
  	case S_IFSOCK:
@@ -76,7 +76,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	        printk("nfsd: bad file type %o in nfsd_create\n", type);
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -1011,7 +1011,7 @@ extern void unlock_super(struct super_bl
+@@ -1069,7 +1069,7 @@ extern void unlock_super(struct super_bl
  extern int vfs_permission(struct nameidata *, int);
  extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
  extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
@@ -87,7 +87,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  extern int vfs_rmdir(struct inode *, struct dentry *);
 --- a/net/unix/af_unix.c
 +++ b/net/unix/af_unix.c
-@@ -808,7 +808,7 @@ static int unix_bind(struct socket *sock
+@@ -839,7 +839,7 @@ static int unix_bind(struct socket *sock
  		 */
  		mode = S_IFSOCK |
  		       (SOCK_INODE(sock)->i_mode & ~current->fs->umask);

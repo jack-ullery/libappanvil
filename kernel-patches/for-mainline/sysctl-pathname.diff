@@ -15,8 +15,8 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/include/linux/sysctl.h
 +++ b/include/linux/sysctl.h
-@@ -963,6 +963,8 @@ extern int proc_doulongvec_minmax(ctl_ta
- extern int proc_doulongvec_ms_jiffies_minmax(ctl_table *table, int,
+@@ -983,6 +983,8 @@ extern int proc_doulongvec_minmax(struct
+ extern int proc_doulongvec_ms_jiffies_minmax(struct ctl_table *table, int,
  				      struct file *, void __user *, size_t *, loff_t *);
  
 +extern char *sysctl_pathname(ctl_table *, char *, int);
@@ -26,7 +26,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		      void __user *newval, size_t newlen);
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
-@@ -1297,6 +1297,33 @@ struct ctl_table_header *sysctl_head_nex
+@@ -1327,6 +1327,33 @@ struct ctl_table_header *sysctl_head_nex
  	return NULL;
  }
  
@@ -62,7 +62,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	       void __user *newval, size_t newlen)
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -1427,40 +1427,15 @@ static int selinux_capable(struct task_s
+@@ -1431,40 +1431,15 @@ static int selinux_capable(struct task_s
  
  static int selinux_sysctl_get_sid(ctl_table *table, u16 tclass, u32 *sid)
  {

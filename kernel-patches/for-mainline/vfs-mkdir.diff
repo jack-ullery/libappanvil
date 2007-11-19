@@ -18,7 +18,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -509,11 +509,14 @@ static int ecryptfs_mkdir(struct inode *
+@@ -500,11 +500,14 @@ static int ecryptfs_mkdir(struct inode *
  {
  	int rc;
  	struct dentry *lower_dentry;
@@ -36,7 +36,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1967,7 +1967,8 @@ asmlinkage long sys_mknod(const char __u
+@@ -1997,7 +1997,8 @@ asmlinkage long sys_mknod(const char __u
  	return sys_mknodat(AT_FDCWD, filename, mode, dev);
  }
  
@@ -46,7 +46,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int error = may_create(dir, dentry, NULL);
  
-@@ -2011,7 +2012,7 @@ asmlinkage long sys_mkdirat(int dfd, con
+@@ -2041,7 +2042,7 @@ asmlinkage long sys_mkdirat(int dfd, con
  
  	if (!IS_POSIXACL(nd.dentry->d_inode))
  		mode &= ~current->fs->umask;
@@ -57,7 +57,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	mutex_unlock(&nd.dentry->d_inode->i_mutex);
 --- a/fs/nfsd/nfs4recover.c
 +++ b/fs/nfsd/nfs4recover.c
-@@ -156,7 +156,8 @@ nfsd4_create_clid_dir(struct nfs4_client
+@@ -154,7 +154,8 @@ nfsd4_create_clid_dir(struct nfs4_client
  		dprintk("NFSD: nfsd4_create_clid_dir: DIRECTORY EXISTS\n");
  		goto out_put;
  	}
@@ -69,7 +69,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  out_unlock:
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1140,6 +1140,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+@@ -1165,6 +1165,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
  		int type, dev_t rdev, struct svc_fh *resfhp)
  {
  	struct dentry	*dentry, *dchild = NULL;
@@ -77,7 +77,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	struct inode	*dirp;
  	__be32		err;
  	int		host_err;
-@@ -1156,6 +1157,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+@@ -1181,6 +1182,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
  		goto out;
  
  	dentry = fhp->fh_dentry;
@@ -85,7 +85,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	dirp = dentry->d_inode;
  
  	err = nfserr_notdir;
-@@ -1172,7 +1174,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+@@ -1197,7 +1199,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
  		host_err = PTR_ERR(dchild);
  		if (IS_ERR(dchild))
  			goto out_nfserr;
@@ -94,7 +94,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		if (err)
  			goto out;
  	} else {
-@@ -1211,7 +1213,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+@@ -1236,7 +1238,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
  		host_err = vfs_create(dirp, dchild, iap->ia_mode, NULL);
  		break;
  	case S_IFDIR:
@@ -103,7 +103,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		break;
  	case S_IFCHR:
  	case S_IFBLK:
-@@ -1226,7 +1228,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+@@ -1251,7 +1253,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
  	if (host_err < 0)
  		goto out_nfserr;
  
@@ -114,7 +114,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	}
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -1010,7 +1010,7 @@ extern void unlock_super(struct super_bl
+@@ -1068,7 +1068,7 @@ extern void unlock_super(struct super_bl
   */
  extern int vfs_permission(struct nameidata *, int);
  extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);

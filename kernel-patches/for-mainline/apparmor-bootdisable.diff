@@ -1,11 +1,11 @@
 ---
- security/apparmor/Kconfig |   16 ++++++++++++++++
+ security/apparmor/Kconfig |   17 +++++++++++++++++
  security/apparmor/lsm.c   |   16 ++++++++++++++++
- 2 files changed, 32 insertions(+)
+ 2 files changed, 33 insertions(+)
 
 --- a/security/apparmor/Kconfig
 +++ b/security/apparmor/Kconfig
-@@ -7,4 +7,20 @@ config SECURITY_APPARMOR
+@@ -7,4 +7,21 @@ config SECURITY_APPARMOR
  	  Required userspace tools (if they are not included in your
  	  distribution) and further information may be found at
  	  <http://forge.novell.com/modules/xfmod/project/?apparmor>
@@ -19,16 +19,17 @@
 +	default 1
 +	help
 +	  This option sets the default value for the kernel parameter
-+	  'apparmor', which controls whether AppArmor is enabled at
-+          boot.  If this option is set to 0 (zero), AppArmor will
-+          be disabled by default, requiring the kernel parameter
-+          be set to 1 (one) to enable it.  If this option is
-+          set to 1 (one), AppArmor will be enabled by default.
++	  'apparmor', which allows AppArmor to be enabled or disabled
++          at boot.  If this option is set to 0 (zero), the AppArmor
++	  kernel parameter will default to 0, disabling AppArmor at
++	  bootup.  If this option is set to 1 (one), the AppArmor
++	  kernel parameter will default to 1, enabling AppArmor at
++	  bootup.
 +
 +	  If you are unsure how to answer this question, answer 1.
 --- a/security/apparmor/lsm.c
 +++ b/security/apparmor/lsm.c
-@@ -22,6 +22,17 @@
+@@ -23,6 +23,17 @@
  #include "apparmor.h"
  #include "inline.h"
  
@@ -46,7 +47,7 @@
  static int param_set_aabool(const char *val, struct kernel_param *kp);
  static int param_get_aabool(char *buffer, struct kernel_param *kp);
  #define param_check_aabool(name, p) __param_check(name, p, int)
-@@ -760,6 +771,11 @@ static int __init apparmor_init(void)
+@@ -882,6 +893,11 @@ static int __init apparmor_init(void)
  {
  	int error;
  

@@ -15,7 +15,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  fs/exec.c           |    3 ++-
  fs/fat/file.c       |    2 +-
  fs/hpfs/namei.c     |    2 +-
- fs/namei.c          |    3 ++-
+ fs/namei.c          |    2 +-
  fs/nfsd/vfs.c       |    8 ++++----
  fs/open.c           |   28 +++++++++++++++-------------
  fs/reiserfs/xattr.c |    6 +++---
@@ -24,7 +24,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  include/linux/fs.h  |    6 +++---
  mm/filemap.c        |    2 +-
  mm/tiny-shmem.c     |    2 +-
- 14 files changed, 45 insertions(+), 37 deletions(-)
+ 14 files changed, 44 insertions(+), 37 deletions(-)
 
 --- a/fs/attr.c
 +++ b/fs/attr.c
@@ -37,10 +37,10 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 +		  struct iattr *attr)
  {
  	struct inode *inode = dentry->d_inode;
- 	mode_t mode;
+ 	mode_t mode = inode->i_mode;
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -889,6 +889,7 @@ static int ecryptfs_setattr(struct dentr
+@@ -862,6 +862,7 @@ static int ecryptfs_setattr(struct dentr
  {
  	int rc = 0;
  	struct dentry *lower_dentry;
@@ -48,7 +48,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	struct inode *inode;
  	struct inode *lower_inode;
  	struct ecryptfs_crypt_stat *crypt_stat;
-@@ -899,6 +900,7 @@ static int ecryptfs_setattr(struct dentr
+@@ -872,6 +873,7 @@ static int ecryptfs_setattr(struct dentr
  	inode = dentry->d_inode;
  	lower_inode = ecryptfs_inode_to_lower(inode);
  	lower_dentry = ecryptfs_dentry_to_lower(dentry);
@@ -56,10 +56,10 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	mutex_lock(&crypt_stat->cs_mutex);
  	if (S_ISDIR(dentry->d_inode->i_mode))
  		crypt_stat->flags &= ~(ECRYPTFS_ENCRYPTED);
-@@ -955,7 +957,7 @@ static int ecryptfs_setattr(struct dentr
- 		if (rc < 0)
- 			goto out;
- 	}
+@@ -922,7 +924,7 @@ static int ecryptfs_setattr(struct dentr
+ 	if (ia->ia_valid & (ATTR_KILL_SUID | ATTR_KILL_SGID))
+ 		ia->ia_valid &= ~ATTR_MODE;
+ 
 -	rc = notify_change(lower_dentry, ia);
 +	rc = notify_change(lower_dentry, lower_mnt, ia);
  out:
@@ -67,7 +67,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	return rc;
 --- a/fs/exec.c
 +++ b/fs/exec.c
-@@ -1796,7 +1796,8 @@ int do_coredump(long signr, int exit_cod
+@@ -1784,7 +1784,8 @@ int do_coredump(long signr, int exit_cod
  		goto close_fail;
  	if (!file->f_op->write)
  		goto close_fail;
@@ -76,7 +76,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 +	    do_truncate(file->f_path.dentry, file->f_path.mnt, 0, 0, file) != 0)
  		goto close_fail;
  
- 	retval = binfmt->core_dump(signr, regs, file);
+ 	retval = binfmt->core_dump(signr, regs, file, core_limit);
 --- a/fs/fat/file.c
 +++ b/fs/fat/file.c
 @@ -92,7 +92,7 @@ int fat_generic_ioctl(struct inode *inod
@@ -101,19 +101,18 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  				goto again;
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1631,7 +1631,8 @@ int may_open(struct nameidata *nd, int a
+@@ -1660,7 +1660,7 @@ int may_open(struct nameidata *nd, int a
  		if (!error) {
  			DQUOT_INIT(inode);
- 			
--			error = do_truncate(dentry, 0, ATTR_MTIME|ATTR_CTIME, NULL);
+ 
+-			error = do_truncate(dentry, 0,
 +			error = do_truncate(dentry, nd->mnt, 0,
-+					    ATTR_MTIME|ATTR_CTIME, NULL);
+ 					    ATTR_MTIME|ATTR_CTIME|ATTR_OPEN,
+ 					    NULL);
  		}
- 		put_write_access(inode);
- 		if (error)
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -375,7 +375,7 @@ nfsd_setattr(struct svc_rqst *rqstp, str
+@@ -388,7 +388,7 @@ nfsd_setattr(struct svc_rqst *rqstp, str
  	err = nfserr_notsync;
  	if (!check_guard || guardtime == inode->i_ctime.tv_sec) {
  		fh_lock(fhp);
@@ -122,7 +121,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		err = nfserrno(host_err);
  		fh_unlock(fhp);
  	}
-@@ -918,13 +918,13 @@ out:
+@@ -943,13 +943,13 @@ out:
  	return err;
  }
  
@@ -130,7 +129,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 +static void kill_suid(struct dentry *dentry, struct vfsmount *mnt)
  {
  	struct iattr	ia;
- 	ia.ia_valid = ATTR_KILL_SUID | ATTR_KILL_SGID;
+ 	ia.ia_valid = ATTR_KILL_SUID | ATTR_KILL_SGID | ATTR_KILL_PRIV;
  
  	mutex_lock(&dentry->d_inode->i_mutex);
 -	notify_change(dentry, &ia);
@@ -138,7 +137,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	mutex_unlock(&dentry->d_inode->i_mutex);
  }
  
-@@ -983,7 +983,7 @@ nfsd_vfs_write(struct svc_rqst *rqstp, s
+@@ -1008,7 +1008,7 @@ nfsd_vfs_write(struct svc_rqst *rqstp, s
  
  	/* clear setuid/setgid flag after write */
  	if (host_err >= 0 && (inode->i_mode & (S_ISUID | S_ISGID)))
@@ -169,16 +168,16 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	mutex_unlock(&dentry->d_inode->i_mutex);
  	return err;
  }
-@@ -270,7 +270,7 @@ static long do_sys_truncate(const char _
+@@ -271,7 +271,7 @@ static long do_sys_truncate(const char _
  	error = locks_verify_truncate(inode, NULL, length);
  	if (!error) {
  		DQUOT_INIT(inode);
 -		error = do_truncate(nd.dentry, length, 0, NULL);
 +		error = do_truncate(nd.dentry, nd.mnt, length, 0, NULL);
  	}
- 	put_write_access(inode);
  
-@@ -322,7 +322,8 @@ static long do_sys_ftruncate(unsigned in
+ put_write_and_out:
+@@ -324,7 +324,8 @@ static long do_sys_ftruncate(unsigned in
  
  	error = locks_verify_truncate(inode, file, length);
  	if (!error)
@@ -188,7 +187,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  out_putf:
  	fput(file);
  out:
-@@ -580,7 +581,7 @@ asmlinkage long sys_fchmod(unsigned int 
+@@ -582,7 +583,7 @@ asmlinkage long sys_fchmod(unsigned int 
  		mode = inode->i_mode;
  	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
  	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
@@ -197,7 +196,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	mutex_unlock(&inode->i_mutex);
  
  out_putf:
-@@ -615,7 +616,7 @@ asmlinkage long sys_fchmodat(int dfd, co
+@@ -617,7 +618,7 @@ asmlinkage long sys_fchmodat(int dfd, co
  		mode = inode->i_mode;
  	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
  	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
@@ -206,7 +205,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	mutex_unlock(&inode->i_mutex);
  
  dput_and_out:
-@@ -629,7 +630,8 @@ asmlinkage long sys_chmod(const char __u
+@@ -631,7 +632,8 @@ asmlinkage long sys_chmod(const char __u
  	return sys_fchmodat(AT_FDCWD, filename, mode);
  }
  
@@ -216,16 +215,16 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	struct inode * inode;
  	int error;
-@@ -658,7 +660,7 @@ static int chown_common(struct dentry * 
- 	if (!S_ISDIR(inode->i_mode))
- 		newattrs.ia_valid |= ATTR_KILL_SUID|ATTR_KILL_SGID;
+@@ -661,7 +663,7 @@ static int chown_common(struct dentry * 
+ 		newattrs.ia_valid |=
+ 			ATTR_KILL_SUID | ATTR_KILL_SGID | ATTR_KILL_PRIV;
  	mutex_lock(&inode->i_mutex);
 -	error = notify_change(dentry, &newattrs);
 +	error = notify_change(dentry, mnt, &newattrs);
  	mutex_unlock(&inode->i_mutex);
  out:
  	return error;
-@@ -672,7 +674,7 @@ asmlinkage long sys_chown(const char __u
+@@ -675,7 +677,7 @@ asmlinkage long sys_chown(const char __u
  	error = user_path_walk(filename, &nd);
  	if (error)
  		goto out;
@@ -234,7 +233,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  out:
  	return error;
-@@ -692,7 +694,7 @@ asmlinkage long sys_fchownat(int dfd, co
+@@ -695,7 +697,7 @@ asmlinkage long sys_fchownat(int dfd, co
  	error = __user_walk_fd(dfd, filename, follow, &nd);
  	if (error)
  		goto out;
@@ -243,7 +242,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  out:
  	return error;
-@@ -706,7 +708,7 @@ asmlinkage long sys_lchown(const char __
+@@ -709,7 +711,7 @@ asmlinkage long sys_lchown(const char __
  	error = user_path_walk_link(filename, &nd);
  	if (error)
  		goto out;
@@ -252,10 +251,10 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_release(&nd);
  out:
  	return error;
-@@ -725,7 +727,7 @@ asmlinkage long sys_fchown(unsigned int 
+@@ -728,7 +730,7 @@ asmlinkage long sys_fchown(unsigned int 
  
  	dentry = file->f_path.dentry;
- 	audit_inode(NULL, dentry->d_inode);
+ 	audit_inode(NULL, dentry);
 -	error = chown_common(dentry, user, group);
 +	error = chown_common(dentry, file->f_path.mnt, user, group);
  	fput(file);
@@ -263,25 +262,25 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	return error;
 --- a/fs/reiserfs/xattr.c
 +++ b/fs/reiserfs/xattr.c
-@@ -479,7 +479,7 @@ reiserfs_xattr_set(struct inode *inode, 
+@@ -485,7 +485,7 @@ reiserfs_xattr_set(struct inode *inode, 
  	newattrs.ia_size = buffer_size;
  	newattrs.ia_valid = ATTR_SIZE | ATTR_CTIME;
- 	mutex_lock(&xinode->i_mutex);
+ 	mutex_lock_nested(&xinode->i_mutex, I_MUTEX_XATTR);
 -	err = notify_change(fp->f_path.dentry, &newattrs);
 +	err = notify_change(fp->f_path.dentry, NULL, &newattrs);
  	if (err)
  		goto out_filp;
  
-@@ -819,7 +819,7 @@ reiserfs_chown_xattrs_filler(void *buf, 
+@@ -825,7 +825,7 @@ reiserfs_chown_xattrs_filler(void *buf, 
  	}
  
  	if (!S_ISDIR(xafile->d_inode->i_mode))
 -		err = notify_change(xafile, attrs);
-+		err = notify_change(xafile, NULL, attrs);
++	    err = notify_change(xafile, NULL, attrs);
  	dput(xafile);
  
  	return err;
-@@ -871,7 +871,7 @@ int reiserfs_chown_xattrs(struct inode *
+@@ -877,7 +877,7 @@ int reiserfs_chown_xattrs(struct inode *
  		goto out_dir;
  	}
  
@@ -292,18 +291,18 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
        out_dir:
 --- a/fs/sysfs/file.c
 +++ b/fs/sysfs/file.c
-@@ -524,7 +524,7 @@ int sysfs_chmod_file(struct kobject *kob
- 	mutex_lock(&inode->i_mutex);
+@@ -610,7 +610,7 @@ int sysfs_chmod_file(struct kobject *kob
+ 
  	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
  	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
 -	rc = notify_change(victim, &newattrs);
 +	rc = notify_change(victim, NULL, &newattrs);
- 	mutex_unlock(&inode->i_mutex);
-  out:
- 	dput(victim);
+ 
+ 	if (rc == 0) {
+ 		mutex_lock(&sysfs_mutex);
 --- a/fs/utimes.c
 +++ b/fs/utimes.c
-@@ -46,7 +46,7 @@ long do_utimes(int dfd, char __user *fil
+@@ -54,7 +54,7 @@ long do_utimes(int dfd, char __user *fil
  {
  	int error;
  	struct nameidata nd;
@@ -312,7 +311,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	struct inode *inode;
  	struct iattr newattrs;
  	struct file *f = NULL;
-@@ -64,16 +64,17 @@ long do_utimes(int dfd, char __user *fil
+@@ -77,16 +77,17 @@ long do_utimes(int dfd, char __user *fil
  		f = fget(dfd);
  		if (!f)
  			goto out;
@@ -333,7 +332,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
  	error = -EROFS;
  	if (IS_RDONLY(inode))
-@@ -118,7 +119,7 @@ long do_utimes(int dfd, char __user *fil
+@@ -131,7 +132,7 @@ long do_utimes(int dfd, char __user *fil
  		}
  	}
  	mutex_lock(&inode->i_mutex);
@@ -344,7 +343,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	if (f)
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -1404,8 +1404,8 @@ static inline int break_lease(struct ino
+@@ -1536,8 +1536,8 @@ static inline int break_lease(struct ino
  
  /* fs/open.c */
  
@@ -352,10 +351,10 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 -		       struct file *filp);
 +extern int do_truncate(struct dentry *, struct vfsmount *, loff_t start,
 +		       unsigned int time_attrs, struct file *filp);
- extern long do_sys_open(int fdf, const char __user *filename, int flags,
+ extern long do_sys_open(int dfd, const char __user *filename, int flags,
  			int mode);
  extern struct file *filp_open(const char *, int, int);
-@@ -1561,7 +1561,7 @@ extern int do_remount_sb(struct super_bl
+@@ -1693,7 +1693,7 @@ extern int do_remount_sb(struct super_bl
  #ifdef CONFIG_BLOCK
  extern sector_t bmap(struct inode *, sector_t);
  #endif
@@ -366,7 +365,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  		int (*check_acl)(struct inode *, int));
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -1696,7 +1696,7 @@ int __remove_suid(struct path *path, int
+@@ -1615,7 +1615,7 @@ int __remove_suid(struct path *path, int
  	struct iattr newattrs;
  
  	newattrs.ia_valid = ATTR_FORCE | kill;
@@ -377,8 +376,8 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  int remove_suid(struct path *path)
 --- a/mm/tiny-shmem.c
 +++ b/mm/tiny-shmem.c
-@@ -86,7 +86,7 @@ struct file *shmem_file_setup(char *name
- 	file->f_mode = FMODE_WRITE | FMODE_READ;
+@@ -81,7 +81,7 @@ struct file *shmem_file_setup(char *name
+ 	inode->i_nlink = 0;	/* It is unlinked */
  
  	/* notify everyone as to the change of file size */
 -	error = do_truncate(dentry, size, 0, file);
