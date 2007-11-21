@@ -59,6 +59,7 @@ owner-perm-set.diff
 apparmor-link-pairs.diff
 apparmor-bootdisable.diff
 apparmor-builtin-only.diff
+apparmor-security-goal.diff
 #foobar.diff
 # # NOT YET
 # ecryptfs-d_revalidate.diff
