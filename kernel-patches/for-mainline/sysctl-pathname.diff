@@ -6,6 +6,7 @@ function.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
+Reviewed-by: James Morris <jmorris@namei.org>
 
 ---
  include/linux/sysctl.h   |    2 ++
