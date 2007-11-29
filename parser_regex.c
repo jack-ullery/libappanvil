@@ -499,9 +499,6 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 	if (((entry->mode >> AA_OTHER_SHIFT) & AA_EXEC_MODIFIERS) ==
 	    AA_EXEC_INHERIT)
 		entry->mode |= AA_EXEC_MMAP << AA_OTHER_SHIFT;
-	if (((entry->mode >> AA_GROUP_SHIFT) & AA_EXEC_MODIFIERS) ==
-	    AA_EXEC_INHERIT)
-		entry->mode |= AA_EXEC_MMAP << AA_GROUP_SHIFT;
 	if (((entry->mode >> AA_USER_SHIFT) & AA_EXEC_MODIFIERS) ==
 	    AA_EXEC_INHERIT)
 		entry->mode |= AA_EXEC_MMAP << AA_USER_SHIFT;

@@ -61,6 +61,7 @@ static struct keyword_table keyword_table[] = {
 	{"change_profile",	TOK_CHANGE_PROFILE},
 	{"unsafe",		TOK_UNSAFE},
 	{"link",		TOK_LINK},
+	{"owner",		TOK_OWNER},
 	/* terminate */
 	{NULL, 0}
 };
@@ -522,9 +523,6 @@ reeval:
 			yyerror(_("Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"));
 			break;
 
-		case ':':
-			goto out;
-			break;
  		/* error cases */
 
 		default:
@@ -552,7 +550,7 @@ reeval:
 
 		p++;
 	}
-out:
+
 	PDEBUG("Parsed mode: %s 0x%x\n", str_mode, mode);
 
 	return mode;
@@ -560,52 +558,12 @@ out:
 
 int parse_mode(const char *str_mode)
 {
-	const char *next, *pos = str_mode;
-	int tmp, exec_mods, mode = 0;
-	next = strchr(str_mode, ':');
-	if (!next) {
-		tmp = parse_sub_mode(str_mode, "");
-		mode = SHIFT_MODE(tmp, AA_USER_SHIFT);
-		mode |= SHIFT_MODE(tmp, AA_GROUP_SHIFT);
-		mode |= SHIFT_MODE(tmp, AA_OTHER_SHIFT);
-		if (mode & ~AA_VALID_PERMS)
-			yyerror(_("Internal error generated invalid perm 0x%llx\n"), mode);
-		return mode;
-	}
-	/* user:group:other */
-	if (next > pos) {
-		exec_mods = mode & AA_EXEC_MODIFIERS;
-		mode = SHIFT_MODE(parse_sub_mode(pos, "user"), AA_USER_SHIFT);
-	}
-	pos = next + 1;
-	next = strchr(pos, ':');
-	if (next > pos) {
-		tmp = parse_sub_mode(pos, "group");
-/* we can allow different mods per labeling, just not when named transitions
-   are present.
-		if ((mode & AA_EXEC_BITS) && (tmp & AA_EXEC_BITS) &&
-		    (exec_mods != (tmp & AA_EXEC_MODIFIERS)))
-			yyerror(_("conflicting x modifiers between user and group permissions."));
-*/
-		exec_mods = tmp & AA_EXEC_MODIFIERS;
-		mode |= SHIFT_MODE(tmp, AA_GROUP_SHIFT);
-	}
-	pos = next + 1;
-	if (*pos) {
-		tmp = parse_sub_mode(pos, "other");
-/* allow different x mods per ugo
-		if ((mode & AA_EXEC_BITS) && (tmp & AA_EXEC_BITS) &&
-		    (exec_mods != (tmp & AA_EXEC_MODIFIERS)))
-			yyerror(_("conflicting x modifiers between other and user:group permissions."));
-*/
-		exec_mods = tmp & AA_EXEC_MODIFIERS;
-		mode |= SHIFT_MODE(tmp, AA_OTHER_SHIFT);
-	}
+	int tmp, mode = 0;
+	tmp = parse_sub_mode(str_mode, "");
+	mode = SHIFT_MODE(tmp, AA_USER_SHIFT);
+	mode |= SHIFT_MODE(tmp, AA_OTHER_SHIFT);
 	if (mode & ~AA_VALID_PERMS)
 		yyerror(_("Internal error generated invalid perm 0x%llx\n"), mode);
-	if (!mode)
-		yyerror(_("Invalid permission permission \"::\" - no permission specified."));
-
 	return mode;
 }
 
@@ -724,8 +682,6 @@ void debug_cod_entries(struct cod_entry *list)
 		if (HAS_EXEC_UNSAFE(item->mode))
 			printf(" unsafe");
 		debug_base_perm_mask(SHIFT_TO_BASE(item->mode, AA_USER_SHIFT));
-		printf(":");
-		debug_base_perm_mask(SHIFT_TO_BASE(item->mode, AA_GROUP_SHIFT));
 		printf(":");
 		debug_base_perm_mask(SHIFT_TO_BASE(item->mode, AA_OTHER_SHIFT));
 		if (item->name)

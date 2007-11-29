@@ -42,15 +42,12 @@
 					 AA_EXEC_MMAP | AA_EXEC_UNSAFE | \
 					 AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
 #define AA_USER_SHIFT			0
-#define AA_GROUP_SHIFT			10
-#define AA_OTHER_SHIFT			20
+#define AA_OTHER_SHIFT			10
 
 #define AA_USER_PERMS			(AA_BASE_PERMS << AA_USER_SHIFT)
-#define AA_GROUP_PERMS			(AA_BASE_PERMS << AA_GROUP_SHIFT)
 #define AA_OTHER_PERMS			(AA_BASE_PERMS << AA_OTHER_SHIFT)
 
-#define AA_FILE_PERMS			(AA_USER_PERMS | AA_GROUP_PERMS | \
-					 AA_OTHER_PERMS)
+#define AA_FILE_PERMS			(AA_USER_PERMS | AA_OTHER_PERMS )
 
 #define AA_CHANGE_PROFILE		(1 << 30)
 #define AA_ERROR_BIT			(1 << 31)
@@ -69,19 +66,15 @@
 #define AA_VALID_PERMS			(AA_FILE_PERMS | AA_CHANGE_PROFILE)
 
 #define AA_EXEC_BITS			((AA_MAY_EXEC << AA_USER_SHIFT) | \
-					 (AA_MAY_EXEC << AA_GROUP_SHIFT) | \
 					 (AA_MAY_EXEC << AA_OTHER_SHIFT))
 
 #define ALL_AA_EXEC_UNSAFE		((AA_EXEC_UNSAFE << AA_USER_SHIFT) | \
-					 (AA_EXEC_UNSAFE << AA_GROUP_SHIFT) | \
 					 (AA_EXEC_UNSAFE << AA_OTHER_SHIFT))
 
 #define AA_USER_EXEC_TYPE		(AA_EXEC_TYPE << AA_USER_SHIFT)
-#define AA_GROUP_EXEC_TYPE		(AA_EXEC_TYPE << AA_GROUP_SHIFT)
 #define AA_OTHER_EXEC_TYPE		(AA_EXEC_TYPE << AA_OTHER_SHIFT)
 
 #define AA_LINK_BITS			((AA_MAY_LINK << AA_USER_SHIFT) | \
-					 (AA_MAY_LINK << AA_GROUP_SHIFT) | \
 					 (AA_MAY_LINK << AA_OTHER_SHIFT))
 
 #define SHIFT_MODE(MODE, SHIFT)		((((MODE) & AA_BASE_PERMS) << (SHIFT))\
@@ -92,7 +85,6 @@
 
 #define AA_LINK_SUBSET_TEST		(AA_MAY_LINK << 1)
 #define LINK_SUBSET_BITS	((AA_LINK_SUBSET_TEST << AA_USER_SHIFT) | \
-				 (AA_LINK_SUBSET_TEST << AA_GROUP_SHIFT) | \
 				 (AA_LINK_SUBSET_TEST << AA_OTHER_SHIFT))
 #define LINK_TO_LINK_SUBSET(X)		(((X) << 1) & AA_LINK_SUBSET_TEST)
 
@@ -135,9 +127,6 @@ static inline int is_merged_x_consistent(int a, int b)
 {
 	if ((a & AA_USER_EXEC_TYPE) && (b & AA_USER_EXEC_TYPE) &&
 	    ((a & AA_USER_EXEC_TYPE) != (b & AA_USER_EXEC_TYPE)))
-		return 0;
-	if ((a & AA_GROUP_EXEC_TYPE) && (b & AA_GROUP_EXEC_TYPE) &&
-	    ((a & AA_GROUP_EXEC_TYPE) != (b & AA_GROUP_EXEC_TYPE)))
 		return 0;
 	if ((a & AA_OTHER_EXEC_TYPE) && (b & AA_OTHER_EXEC_TYPE) &&
 	    ((a & AA_OTHER_EXEC_TYPE) != (b & AA_OTHER_EXEC_TYPE)))
