@@ -94,6 +94,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %token TOK_UNSAFE
 %token TOK_COLON
 %token TOK_LINK
+%token TOK_OWNER
 
 /* capabilities */
 %token TOK_CAPABILITY
@@ -134,6 +135,8 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %type <cod>	cond_rule
 %type <network_entry> network_rule
 %type <user_entry> rule
+%type <user_entry> owner_rule
+%type <user_entry> owner_rules
 %type <flags>	flags
 %type <flags>	flagvals
 %type <flags>	flagval
@@ -373,6 +376,31 @@ rules:  rules rule
 		add_entry_to_policy($1, $2);
 		$$ = $1;
 	};
+/*
+rules:  rules owner_rule
+	{
+		PDEBUG("matched: rules owner_rule\n");
+		PDEBUG("rules owner_rule: (%s)\n", $2->name);
+		if (!$2)
+			yyerror(_("Assert: `owner_rule' returned NULL."));
+		add_entry_to_policy($1, $2);
+		$$ = $1;
+	};
+*/
+rules:  rules TOK_OWNER owner_rule
+	{
+		struct cod_entry *entry, *tmp;
+
+		PDEBUG("matched: rules owner_rules\n");
+		PDEBUG("rules owner_rules: (%s)\n", $3->name);
+		if ($3) {
+			list_for_each_safe($3, entry, tmp) {
+				entry->next = NULL;
+				add_entry_to_policy($1, entry);
+			}
+		}
+		$$ = $1;
+	};
 
 rules: rules network_rule
 	{
@@ -513,6 +541,31 @@ expr:	TOK_DEFINED TOK_BOOL_VAR
 
 id_or_var: TOK_ID { $$ = $1; }
 id_or_var: TOK_SET_VAR { $$ = $1; };
+
+owner_rule: TOK_OPEN owner_rules TOK_CLOSE
+	{
+		$$ = $2;
+	};
+
+owner_rule: rule
+	{
+		/* mask mode to owner permissions */
+		if ($1) {
+			$1->mode &= (AA_USER_PERMS | AA_SHARED_PERMS);
+		}
+		$$ = $1;
+	};
+
+owner_rules: { $$ = NULL; };
+
+owner_rules: owner_rules rule
+	{
+		if ($2) {
+			$2->mode &= (AA_USER_PERMS | AA_SHARED_PERMS);
+			$2->next = $1;
+		}
+		$$ = $2;
+	};
 
 rule:	id_or_var file_mode TOK_END_OF_RULE
 	{

@@ -1524,15 +1524,11 @@ uint32_t accept_perms(State *state)
     }
 
     perms |= exact_match_perms &
-	    ~(AA_USER_EXEC_TYPE | AA_GROUP_EXEC_TYPE | AA_OTHER_EXEC_TYPE);
+	    ~(AA_USER_EXEC_TYPE | AA_OTHER_EXEC_TYPE);
 
     if (exact_match_perms & AA_USER_EXEC_TYPE)
 	    perms = (exact_match_perms & AA_USER_EXEC_TYPE) |
 		    (perms & ~AA_USER_EXEC_TYPE);
-
-    if (exact_match_perms & AA_GROUP_EXEC_TYPE)
-	    perms = (exact_match_perms & AA_GROUP_EXEC_TYPE) |
-		    (perms & ~AA_GROUP_EXEC_TYPE);
 
     if (exact_match_perms & AA_OTHER_EXEC_TYPE)
 	    perms = (exact_match_perms & AA_OTHER_EXEC_TYPE) |
@@ -1552,8 +1548,8 @@ uint32_t accept_perms(State *state)
 extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
 {
     static MatchFlag *match_flags[sizeof(perms) * 8 - 1];
-    static MatchFlag *exec_match_flags[8 * 3];
-    static ExactMatchFlag *exact_match_flags[8 * 3];
+    static MatchFlag *exec_match_flags[8 * 2];
+    static ExactMatchFlag *exact_match_flags[8 * 2];
     Node *tree, *accept;
     int exact_match;
 
@@ -1580,8 +1576,7 @@ extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
     if (rules->reverse)
 	flip_tree(tree);
 
-#define ALL_EXEC_TYPE (AA_USER_EXEC_TYPE | AA_GROUP_EXEC_TYPE | \
-		       AA_OTHER_EXEC_TYPE)
+#define ALL_EXEC_TYPE (AA_USER_EXEC_TYPE | AA_OTHER_EXEC_TYPE)
 #define EXTRACT_X_INDEX(perm, shift) (((perm) >> (shift + 7)) & 0x7)
 
 if (perms & ALL_EXEC_TYPE && (!perms & AA_EXEC_BITS))
@@ -1600,9 +1595,6 @@ if (perms & ALL_EXEC_TYPE && (!perms & AA_EXEC_BITS))
 		    if (mask & (AA_MAY_EXEC << AA_USER_SHIFT)) {
 			    eperm = mask | perms & AA_USER_EXEC_TYPE;
 			    index = EXTRACT_X_INDEX(perms, AA_USER_SHIFT);
-		    } else if (mask & (AA_MAY_EXEC << AA_GROUP_SHIFT)) {
-			    eperm = mask | perms & AA_GROUP_EXEC_TYPE;
-			    index = EXTRACT_X_INDEX(perms, AA_GROUP_SHIFT) + 8;
 		    } else {
 			    eperm = mask | perms & AA_OTHER_EXEC_TYPE;
 			    index = EXTRACT_X_INDEX(perms, AA_OTHER_SHIFT) + 16;
