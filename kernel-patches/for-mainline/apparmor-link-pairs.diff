@@ -41,9 +41,9 @@ is mapped to
   /linkname rw,
 
 ---
- security/apparmor/apparmor.h |    1 +
- security/apparmor/main.c     |   41 ++++++++++++++++++++++++++++++-----------
- 2 files changed, 31 insertions(+), 11 deletions(-)
+ security/apparmor/apparmor.h |    4 +++
+ security/apparmor/main.c     |   45 ++++++++++++++++++++++++++++++++-----------
+ 2 files changed, 38 insertions(+), 11 deletions(-)
 
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
@@ -55,6 +55,16 @@ is mapped to
  
  #define AA_EXEC_UNCONFINED		0
  #define AA_EXEC_INHERIT			AA_EXEC_MOD_0
+@@ -59,6 +60,9 @@
+ #define AA_USER_EXEC_MODS		(AA_EXEC_MODIFIERS << AA_USER_SHIFT)
+ #define AA_OTHER_EXEC_MODS		(AA_EXEC_MODIFIERS << AA_OTHER_SHIFT)
+ 
++#define AA_USER_EXEC_UNSAFE		(AA_EXEC_UNSAFE << AA_USER_SHIFT)
++#define AA_OTHER_EXEC_UNSAFE		(AA_EXEC_UNSAFE << AA_OTHER_SHIFT)
++
+ #define AA_EXEC_BITS			(AA_USER_EXEC | AA_OTHER_EXEC)
+ 
+ #define AA_ALL_EXEC_MODS		(AA_USER_EXEC_MODS | \
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
 @@ -67,10 +67,27 @@ static int aa_link_denied(struct aa_prof
@@ -87,7 +97,7 @@ is mapped to
  	t_mode = aa_match(profile->file_rules, target);
  
  	/* Ignore valid-profile-transition flags. */
-@@ -79,13 +96,16 @@ static int aa_link_denied(struct aa_prof
+@@ -79,23 +96,30 @@ static int aa_link_denied(struct aa_prof
  
  	*request_mask = l_mode | link_mask;
  
@@ -101,7 +111,7 @@ is mapped to
 +	 * target's 'r', 'w', 'x', 'a', 'z', and 'm' permissions.
 +	 *
 +	 * If the link has 'x', an exact match of all the execute flags
-+	 * ('i', 'u', 'U', 'p', 'P').
++	 * ('i', 'u', 'p').  safe exec is treated as a subset of unsafe exec
   	 */
  #define SUBSET_PERMS (AA_FILE_PERMS & ~AA_LINK_BITS)
 -	denied_mask = ~l_mode & link_mask;
@@ -109,7 +119,21 @@ is mapped to
  	if (l_mode & SUBSET_PERMS) {
  		denied_mask |= (l_mode & SUBSET_PERMS) & ~t_mode;
  		if (denied_mask & AA_EXEC_BITS)
-@@ -703,15 +723,15 @@ int aa_link(struct aa_profile *profile,
+ 			denied_mask |= l_mode & AA_ALL_EXEC_MODS;
+ 		else if (l_mode & AA_EXEC_BITS) {
++			if (!(l_mode & AA_USER_EXEC_UNSAFE))
++				l_mode |= t_mode & AA_USER_EXEC_UNSAFE;
+ 			if (l_mode & AA_USER_EXEC &&
+ 			    (l_mode & AA_USER_EXEC_MODS) !=
+ 			    (t_mode & AA_USER_EXEC_MODS))
+ 				denied_mask |= AA_USER_EXEC |
+ 					(l_mode & AA_USER_EXEC_MODS);
++			if (!(l_mode & AA_OTHER_EXEC_UNSAFE))
++				l_mode |= t_mode & AA_OTHER_EXEC_UNSAFE;
+ 			if (l_mode & AA_OTHER_EXEC &&
+ 			    (l_mode & AA_OTHER_EXEC_MODS) !=
+ 			    (t_mode & AA_OTHER_EXEC_MODS))
+@@ -703,15 +727,15 @@ int aa_link(struct aa_profile *profile,
  	    struct dentry *link, struct vfsmount *link_mnt,
  	    struct dentry *target, struct vfsmount *target_mnt)
  {
@@ -128,7 +152,7 @@ is mapped to
  
  	if (IS_ERR(sa.name)) {
  		sa.error_code = PTR_ERR(sa.name);
-@@ -723,7 +743,6 @@ int aa_link(struct aa_profile *profile,
+@@ -723,7 +747,6 @@ int aa_link(struct aa_profile *profile,
  	}
  
  	if (sa.name && sa.name2) {

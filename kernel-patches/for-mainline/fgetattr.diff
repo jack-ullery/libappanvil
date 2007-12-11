@@ -38,7 +38,7 @@ Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 
 --- a/fs/fuse/file.c
 +++ b/fs/fuse/file.c
-@@ -847,6 +847,17 @@ static int fuse_file_flock(struct file *
+@@ -871,6 +871,17 @@ static int fuse_file_flock(struct file *
  	return err;
  }
  
@@ -56,7 +56,7 @@ Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
  static sector_t fuse_bmap(struct address_space *mapping, sector_t block)
  {
  	struct inode *inode = mapping->host;
-@@ -896,6 +907,7 @@ static const struct file_operations fuse
+@@ -920,6 +931,7 @@ static const struct file_operations fuse
  	.fsync		= fuse_fsync,
  	.lock		= fuse_file_lock,
  	.flock		= fuse_file_flock,
@@ -64,7 +64,7 @@ Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
  	.splice_read	= generic_file_splice_read,
  };
  
-@@ -909,6 +921,7 @@ static const struct file_operations fuse
+@@ -933,6 +945,7 @@ static const struct file_operations fuse
  	.fsync		= fuse_fsync,
  	.lock		= fuse_file_lock,
  	.flock		= fuse_file_flock,
