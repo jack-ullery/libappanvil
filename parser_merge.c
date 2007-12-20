@@ -48,6 +48,17 @@ static int file_comp(const void *c1, const void *c2)
 	if (res)
 		return res;
 
+	if ((*e1)->link_name) {
+		if ((*e2)->link_name)
+			res = strcmp((*e1)->link_name, (*e2)->link_name);
+		else
+			return 1;
+	} else if ((*e2)->link_name) {
+		return -1;
+	}
+	if (res)
+		return res;
+
 	return strcmp((*e1)->name, (*e2)->name);
 }
 
