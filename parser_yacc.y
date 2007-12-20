@@ -376,17 +376,7 @@ rules:  rules rule
 		add_entry_to_policy($1, $2);
 		$$ = $1;
 	};
-/*
-rules:  rules owner_rule
-	{
-		PDEBUG("matched: rules owner_rule\n");
-		PDEBUG("rules owner_rule: (%s)\n", $2->name);
-		if (!$2)
-			yyerror(_("Assert: `owner_rule' returned NULL."));
-		add_entry_to_policy($1, $2);
-		$$ = $1;
-	};
-*/
+
 rules:  rules TOK_OWNER owner_rule
 	{
 		struct cod_entry *entry, *tmp;
