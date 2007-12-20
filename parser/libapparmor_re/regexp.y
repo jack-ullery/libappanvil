@@ -852,7 +852,7 @@ public:
     }
 
     uint32_t flag;
-};
+ };
 
 class ExactMatchFlag : public MatchFlag {
 public:
@@ -890,7 +890,7 @@ void DFA::dump(ostream& os)
 	    if (*i == start)
 		os << " <==";
 	    if (accept) {
-		os << " (" << accept << ')';
+		os << " (0x" << hex << accept << dec << ')';
 	    }
 	    os << endl;
 	}
@@ -1581,6 +1581,7 @@ extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
 
 if (perms & ALL_EXEC_TYPE && (!perms & AA_EXEC_BITS))
 	fprintf(stderr, "adding X rule without MAY_EXEC: 0x%x %s\n", perms, rule);
+
     accept = NULL;
     for (unsigned int n = 0; perms && n < (sizeof(perms) * 8) - 1; n++) {
 	uint32_t mask = 1 << n;
@@ -1592,25 +1593,25 @@ if (perms & ALL_EXEC_TYPE && (!perms & AA_EXEC_BITS))
 	    if (mask & AA_EXEC_BITS) {
 		    uint32_t eperm = 0;
 		    uint32_t index = 0;
-		    if (mask & (AA_MAY_EXEC << AA_USER_SHIFT)) {
-			    eperm = mask | perms & AA_USER_EXEC_TYPE;
-			    index = EXTRACT_X_INDEX(perms, AA_USER_SHIFT);
+		    if (mask & AA_USER_EXEC_TYPE) {
+			    eperm = mask | (perms & AA_USER_EXEC_TYPE);
+			    index = EXTRACT_X_INDEX(eperm, AA_USER_SHIFT);
 		    } else {
-			    eperm = mask | perms & AA_OTHER_EXEC_TYPE;
-			    index = EXTRACT_X_INDEX(perms, AA_OTHER_SHIFT) + 16;
+			    eperm = mask | (perms & AA_OTHER_EXEC_TYPE);
+			    index = EXTRACT_X_INDEX(eperm, AA_OTHER_SHIFT) + 8;
 		    }
 		    if (exact_match) {
-			    if (exact_match_flags[index])
+			    if (exact_match_flags[index]) {
 				    flag = exact_match_flags[index]->dup();
-			    else {
-				    exact_match_flags[index] = new ExactMatchFlag(eperm);
+			    } else {
+				exact_match_flags[index] = new ExactMatchFlag(eperm);
 				    flag = exact_match_flags[index];
 			    }
 		    } else {
-			    if (exec_match_flags[index])
+			    if (exec_match_flags[index]) {
 				    flag = exec_match_flags[index]->dup();
-			    else {
-				    exec_match_flags[index] = new MatchFlag(eperm);
+			    } else {
+				exec_match_flags[index] = new MatchFlag(eperm);
 				    flag = exec_match_flags[index];
 			    }
 		    }
@@ -1618,9 +1619,9 @@ if (perms & ALL_EXEC_TYPE && (!perms & AA_EXEC_BITS))
 		    /* these cases are covered by EXEC_BITS */
 		    continue;
 	    } else {
-		    if (match_flags[n])
+		    if (match_flags[n]) {
 		        flag = match_flags[n]->dup();
-		    else {
+		    } else {
 			match_flags[n] = new MatchFlag(mask);
 			flag = match_flags[n];
 		    }
@@ -1631,6 +1632,7 @@ if (perms & ALL_EXEC_TYPE && (!perms & AA_EXEC_BITS))
 		    accept = flag;
 	}
     }
+
     rules->root = new AltNode(rules->root, new CatNode(tree, accept));
 
     return 1;
@@ -1648,6 +1650,7 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes,
 
     label_nodes(rules->root);
     DFA dfa(rules->root);
+
     map<uchar, uchar> eq;
     if (equiv_classes) {
 	eq = dfa.equivalence_classes();
