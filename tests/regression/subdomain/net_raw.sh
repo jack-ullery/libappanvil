@@ -28,6 +28,6 @@ genprofile
 runchecktest "RAW SOCKET (no cap)" fail
 
 # NET_RAW PASS (?)
-genprofile cap:net_raw
+genprofile cap:net_raw network:
 runchecktest "RAW SOCKET (cap net_raw)" pass
 

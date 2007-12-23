@@ -80,6 +80,7 @@ syscall_ptrace_args=sub
 # if a testcase requires extra subdomain rules, add them here
 syscall_chroot_extra_entries="/:r ${tmpdir}/:r"
 syscall_ptrace_extra_entries="hat:sub"
+net_raw_extra_entries="network:"
 
 testwrapper=changehat_wrapper
 
