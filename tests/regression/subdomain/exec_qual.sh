@@ -66,6 +66,7 @@ local_runchecktest()
 	fi
 }
 
+
 # ENFORCE mode
 
 # confined parent, exec child with 'px'
@@ -131,13 +132,13 @@ local_runchecktest "enforce ix case4" pass $test1 $test2 $file
 #	  expected behaviour, child should be able to access resource
 
 genprofile $test2:ux $file:$fileperm
-local_runchecktest "enforce ux case1" pass "unconstrained" $test2 $file
+local_runchecktest "enforce ux case1" pass "unconfined" $test2 $file
 
 # case 2: parent profile denies access (should be irrelevant)
 #	  expected behaviour, child should be able to access resource
 
 genprofile $test2:ux
-local_runchecktest "enforce ux case1" pass "unconstrained" $test2 $file
+local_runchecktest "enforce ux case1" pass "unconfined" $test2 $file
 
 # confined parent, exec child with conflicting exec qualifiers
 # that overlap in such away that px is prefered (ix is glob, px is exact
@@ -165,7 +166,7 @@ local_runchecktest "enforce unconfined case2" fail $test2 $test2 $file
 #	  expected behaviour: child should be able to access resource
 
 removeprofile
-local_runchecktest "enforce unconfined case3" pass "unconstrained" $test2 $file
+local_runchecktest "enforce unconfined case3" pass "unconfined" $test2 $file
 
 # -----------------------------------------------------------------------
 
