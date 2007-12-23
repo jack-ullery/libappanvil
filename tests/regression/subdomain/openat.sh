@@ -73,7 +73,7 @@ runchecktest "OPENAT R+dac_override" fail $dir $file
 # This test currently passes when it should fail because of the o_creat bug
 resettest
 genprofile ${dir}/:r ${filepath}:$badperm2
-runchecktest "OPENAT W (create)" fail $dir $file
+runchecktest "OPENAT W (create)" known_fail $dir $file
 
 # PASS rename of directory in between opendir/openat
 resettest

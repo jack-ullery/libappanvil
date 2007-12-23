@@ -178,10 +178,17 @@ runtestbg()
 		trap "error_handler" ERR
 	fi
 
-	# global _testdesc _pfmode _pid outfile
+	# global _testdesc _pfmode _known _pid outfile
 	
 	_testdesc=$1
-	_pfmode=$2
+	if [ ${2:0:6} == "known_" ] ; then
+		_pfmode=${2#known_}
+		_known=" (known problem)"
+        else
+		_pfmode=$2
+		_known=""
+        fi
+
 	shift 2
 	
 	genrunscript "$@"
@@ -207,9 +214,15 @@ checktestbg()
 
 runtestfg()
 {
-	# global _testdesc _pfmode outfile
+	# global _testdesc _pfmode _known outfile
 	_testdesc=$1
-	_pfmode=$2
+	if [ ${2:0:6} == "known_" ] ; then
+		_pfmode=${2#known_}
+		_known=" (known problem)"
+        else
+		_pfmode=$2
+		_known=""
+        fi
 	shift 2
 	
 	genrunscript "$@"
@@ -224,7 +237,7 @@ runtestfg()
 
 checktestfg()
 {
-	# global _pfmode _testdesc outfile teststatus testname
+	# global _pfmode _known _testdesc outfile teststatus testname
 	local ret expectedsig killedsig
 
 	ret=`cat $outfile 2>/dev/null`
@@ -233,26 +246,26 @@ checktestfg()
 	case "$ret" in
 		PASS)	if [ "$_pfmode" != "pass" ]
 			then
-				echo "Error: ${testname} passed. Test '${_testdesc}' was expected to '${_pfmode}'"
+				echo "Error: ${testname} passed. Test '${_testdesc}' was expected to '${_pfmode}'${_known}"
 				testfailed
 			fi
 			;;
 		FAIL*)  if [ "$_pfmode" != "fail" ]
 			then
-				echo "Error: ${testname} failed. Test '${_testdesc}' was expected to '${_pfmode}'. Reason for failure '${ret}'"
+				echo "Error: ${testname} failed. Test '${_testdesc}' was expected to '${_pfmode}'${_known}. Reason for failure '${ret}'"
 				testfailed
 			fi
 			;;
 		SIGNAL*) killedsig=`echo $ret | sed 's/SIGNAL//'`
 			case "$_pfmode" in
-			signal*) expectedsig=`echo $_pfmode | sed 's/signal//'`
+			signal*) expectedsig=`echo ${_pfmode} | sed 's/signal//'`
 				if [ -n "${expectedsig}" -a ${expectedsig} != ${killedsig} ]
 				then
-					echo "Error: ${testname} failed. Test '${_testdesc}' was expected to terminate with signal ${expectedsig}. Instead it terminated with signal ${killedsig}"
+					echo "Error: ${testname} failed. Test '${_testdesc}' was expected to terminate with signal ${expectedsig}${_known}. Instead it terminated with signal ${killedsig}"
 					testfailed
 				fi
 				;;
-			*) 	echo "Error: ${testname} failed. Test '${_testdesc}' was expected to '${_pfmode}'. Reason for failure 'killed by signal ${killedsig}'"
+			*) 	echo "Error: ${testname} failed. Test '${_testdesc}' was expected to '${_pfmode}'${_known}. Reason for failure 'killed by signal ${killedsig}'"
 				testfailed
 				;;	
 			esac
@@ -287,7 +300,7 @@ runchecktest_errno()
 	if [ "$test_rc" == "$errno" ] ; then
 		checktestfg
 	else
-		echo "Error: ${testname} failed. Test '${_testdesc}' was expected to '${_pfmode}'. Reason for failure expect errno ${errno} != ${test_rc}"
+		echo "Error: ${testname} failed. Test '${_testdesc}' was expected to '${_pfmode}'${_known}. Reason for failure expect errno ${errno} != ${test_rc}"
 		testfailed
 	fi
 }

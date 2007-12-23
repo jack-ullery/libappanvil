@@ -55,4 +55,4 @@ runchecktest "OPEN R+dac_override" fail $file
 # to be required.
 rm -f ${file}
 genprofile $file:$badperm2
-runchecktest "OPEN W (create)" fail $file
+runchecktest "OPEN W (create)" known_fail $file
