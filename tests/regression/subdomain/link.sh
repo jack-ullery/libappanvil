@@ -30,7 +30,6 @@ okperm=rwixl
 badperm=rwl
 nolinkperm=rwix
 
-touch $target
 
 #test for $1 in $2
 function perm_is_subset () {
@@ -47,16 +46,23 @@ function perm_is_subset () {
 	#handle the special cases
 	#ix implies mix
 	local target=${2/ix/mix}
-
 	case "$target" in
 	*$1*) echo ${target##${target/$1*/}}; return 0;;
         esac
 
+	# treat safe PUx as subset of unsafe pux
+	local linkfile=${1/Px/px}
+	linkfile=${linkfile/Ux/ux}
+	case "$target" in
+	*$linkfile*) echo ${target##${target/$linkfile*/}}; return 0;
+	esac
+	
 	# permute rw to do string match of rm rwm
 	target=${target/rw/wr}
 	case "$target" in
-        *$1*) echo ${target##${target/$1*/}}; return 0;;
+        *$1*) echo ${target##${target/$linkfile*/}}; return 0;;
 	esac
+
 }
 
 PERMS="r w m ix px ux Px Ux l rw rm rix rpx rux rPx rUx rl wm wix wpx wux \
@@ -67,11 +73,21 @@ PERMS="r w m ix px ux Px Ux l rw rm rix rpx rux rPx rUx rl wm wix wpx wux \
 	rwmUxl"
 
 
+# unconfined test - no target file
+runchecktest "unconfined - no target" fail $target $linkfile
+
+touch $target
 # unconfined test
 runchecktest "unconfined" pass $target $linkfile
 
-# Link no perms on link or target
+rm -rf $target
+# Link no perms on link or target - no target file
 genprofile
+runchecktest "link no target (no perms) -> target (no perms)" fail $target $linkfile
+rm -rf $linkfile
+
+touch $target
+# Link no perms on link or target 
 runchecktest "link (no perms) -> target (no perms)" fail $target $linkfile
 rm -rf $linkfile
 
