@@ -22,7 +22,7 @@ bin=$pwd
 
 . $bin/prologue.inc
 
-dir=$tmpdir/tmpdir
+dir=$tmpdir/tmpdir/
 
 mkdir $dir
 
@@ -32,5 +32,5 @@ mkdir $dir
 runchecktest "FCHDIR/no profile" pass $dir
 
 # null profile, verify fchdir (x) functions
-genprofile
+genprofile $dir:r
 runchecktest "FCHDIR/profile" pass $dir
