@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id:$
+# $Id$
 
 #	Copyright (C) 2002-2005 Novell/SUSE
 #

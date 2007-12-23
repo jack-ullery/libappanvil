@@ -2,7 +2,15 @@ Index: subdomain/exec_qual.sh
 ===================================================================
 --- subdomain.orig/exec_qual.sh
 +++ subdomain/exec_qual.sh
-@@ -131,13 +131,13 @@ local_runchecktest "enforce ix case4" pa
+@@ -66,6 +66,7 @@ local_runchecktest()
+ 	fi
+ }
+ 
++
+ # ENFORCE mode
+ 
+ # confined parent, exec child with 'px'
+@@ -131,13 +132,13 @@ local_runchecktest "enforce ix case4" pa
  #	  expected behaviour, child should be able to access resource
  
  genprofile $test2:ux $file:$fileperm
@@ -18,7 +26,7 @@ Index: subdomain/exec_qual.sh
  
  # confined parent, exec child with conflicting exec qualifiers
  # that overlap in such away that px is prefered (ix is glob, px is exact
-@@ -165,7 +165,7 @@ local_runchecktest "enforce unconfined c
+@@ -165,7 +166,7 @@ local_runchecktest "enforce unconfined c
  #	  expected behaviour: child should be able to access resource
  
  removeprofile

@@ -6,8 +6,17 @@ ptrace.patch
 dir-files.patch
 link_perms.patch
 confined.patch
+basename.patch
 change_hat_profile_access.patch
 sysctl.patch
+prolog-inc2.patch
 access.patch
 chdir.patch
 openat.patch
+link_exist.patch
+network-base.patch
+net-raw.patch
+changehat-no-hats.patch
+fix_changehat_fork.patch
+link_subset.diff
+known_fail.patch

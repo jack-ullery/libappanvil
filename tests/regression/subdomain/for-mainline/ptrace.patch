@@ -94,11 +94,204 @@ Index: subdomain/ptrace.sh
  
  # Test Matrix:
  # 1. unconfined parent, unconfined child, parent attaches		PASS
-@@ -76,5 +72,5 @@ runchecktest "test 9" pass -- /bin/bash 
- #genprofile image=$helper /bin/true:ux
- #runchecktest "test 10" fail -h -n 100 $helper /bin/true
+@@ -58,9 +54,9 @@ runchecktest "test 3a" pass -h -n 100 $h
+ runchecktest "test 4a" pass -h -n 100 -c $helper
+ 
+ # lack of 'r' perm is currently not working
+-#genprofile image=ix$helper
+-#runchecktest "test 3b" pass -h -n 100 $helper
+-#runchecktest "test 4b" pass -h -n 100 -c $helper
++genprofile image=ix$helper
++runchecktest "test 3b" pass -h -n 100 $helper
++runchecktest "test 4b" pass -h -n 100 -c $helper
+ 
+ genprofile $helper:ux
+ runchecktest "test 5" fail -h -n 100 $helper
+@@ -73,8 +69,8 @@ runchecktest "test 8" fail -h -n 100 -c 
+ genprofile image=/bin/true
+ runchecktest "test 9" pass -- /bin/bash -c /bin/true
+ 
+-#genprofile image=$helper /bin/true:ux
+-#runchecktest "test 10" fail -h -n 100 $helper /bin/true
++genprofile image=$helper /bin/true:ux
++runchecktest "test 10" fail -h -n 100 $helper /bin/true
  
 -#genprofile image=$helper /bin/true:rix
 -#runchecktest "test 11" fail -h -n 1000 $helper /bin/true
 +genprofile image=$helper /bin/true:rix
-+runchecktest "test 11" pass -h -n 1000 $helper /bin/true
++runchecktest "test 11" fail -h -n 2000 $helper /bin/true
+Index: subdomain/ptrace.c
+===================================================================
+--- subdomain.orig/ptrace.c
++++ subdomain/ptrace.c
+@@ -7,15 +7,10 @@
+ #include <sys/ptrace.h>
+ #include <signal.h>
+ #include <sys/user.h>
++#include <errno.h>
+ 
+ #define NUM_CHLD_SYSCALLS 10
+ 
+-#define RET_FAILURE 0
+-#define RET_SUCCESS 1
+-#define RET_CHLD_SUCCESS 2
+-#define RET_CHLD_FAILURE 3
+-#define RET_CHLD_SIGNAL 4
+-
+ #define PARENT_TRACE 0
+ #define CHILD_TRACE 1
+ #define HELPER_TRACE 2
+@@ -28,17 +23,21 @@ int interp_status(int status)
+ 
+ 	if (WIFEXITED(status)) {
+ 		if (WEXITSTATUS(status) == 0) {
+-			rc = RET_CHLD_SUCCESS;
++//			rc = RET_CHLD_SUCCESS;
++			rc = 0;
+ 		} else {
+-			rc = RET_CHLD_FAILURE;
++//			rc = RET_CHLD_FAILURE;
++			rc = -WEXITSTATUS(status);
+ 		}
+ 	} else {
+-		rc = RET_CHLD_SIGNAL;
++//		rc = RET_CHLD_SIGNAL;
++		rc = -ECONNABORTED;	/* overload to mean child signal */
+ 	}
+ 
+ 	return rc;
+ }
+ 
++/* return 0 on success.  Child failure -errorno, parent failure errno */
+ int do_parent(pid_t pid, int trace, int num_syscall)
+ {
+ 	struct user regs;
+@@ -48,13 +47,13 @@ int do_parent(pid_t pid, int trace, int 
+ 	rc = alarm(5);
+ 	if (rc != 0) {
+ 		fprintf(stderr, "FAIL: unexpected alarm already set\n");
+-		return 0;
++		return errno;
+ 	}
+ 
+ 	if (trace) {
+ 		if (ptrace(PTRACE_ATTACH, pid, NULL, NULL) == -1) {
+ 			perror("FAIL: parent ptrace(PTRACE_ATTACH) failed - ");
+-			return 0;		
++			return errno;
+ 		}
+ 
+ 		/* this sends a child SIGSTOP */
+@@ -69,7 +68,7 @@ int do_parent(pid_t pid, int trace, int 
+ 		/* this will restart stopped child */
+ 		if (ptrace(PTRACE_SYSCALL, pid, NULL, 0) == -1) {
+ 			perror("FAIL: parent ptrace(PTRACE_SINGLESTEP) failed - ");
+-			return RET_FAILURE;
++			return errno;
+ 		}
+ 
+ 		while (wait(&status) != pid);
+@@ -80,18 +79,19 @@ int do_parent(pid_t pid, int trace, int 
+ 		memset(&regs, 0, sizeof(regs));
+ 		if (ptrace(PTRACE_GETREGS, pid, NULL, &regs) == -1) {
+ 			perror("FAIL:  parent ptrace(PTRACE_GETREGS) failed - ");
+-			return RET_FAILURE;
++			return errno;
+ 		}
+ 	}
+ 
+ 	if (ptrace(PTRACE_DETACH, pid, NULL, NULL) == -1) {
+ 		perror("FAIL:  parent ptrace(PTRACE_DETACH) failed - ");
+-		return RET_FAILURE;
++		return errno;
+ 	}
+ 
+-	return RET_SUCCESS;
++	return 0;
+ }
+ 
++/* returns 0 on success or error code of failure */
+ int do_child(char *argv[], int child_trace, int helper)
+ {
+ 	if (helper) {
+@@ -104,13 +104,13 @@ int do_child(char *argv[], int child_tra
+ 		if (child_trace) {
+ 			if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) == -1){
+ 				perror("FAIL: child ptrace(PTRACE_TRACEME) failed - ");
+-				return RET_FAILURE;
++				return errno;
+ 			}
+ 		}
+ 
+ 		if (raise(SIGSTOP) != 0){
+ 			perror("FAIL: child SIGSTOP itself failed -");
+-			return RET_FAILURE;
++			return errno;
+ 		}
+ 		/* ok were stopped, wait for parent to trace (continue) us */
+ 	}
+@@ -119,7 +119,7 @@ int do_child(char *argv[], int child_tra
+ 
+ 	perror("FAIL: child exec failed - ");
+ 
+-	return RET_FAILURE;
++	return errno;
+ }
+ 
+ void sigalrm_handler(int sig) {
+@@ -133,7 +133,8 @@ int main(int argc, char *argv[])
+ 	int parent_trace = 1,
+ 	    use_helper = 0,
+ 	    num_syscall = NUM_CHLD_SYSCALLS, 
+-	    opt;
++	    opt,
++	    ret = 0;
+ 	const char *usage = "usage: %s [-c] [-n #syscall] program [args ...]\n";
+ 	char **args;
+ 
+@@ -170,27 +171,29 @@ int main(int argc, char *argv[])
+ 
+ 	pid = fork();
+ 	if (pid > 0){	/*parent */
+-		int stat, ret;
++		int stat;
+ 
+ 		ret = do_parent(pid, parent_trace, num_syscall);
+ 
+ 		kill(pid, SIGKILL);
+ 
+-		if (ret < RET_CHLD_SUCCESS) {
++		if (ret >= 0) {
+ 			/* wait for child */
+ 			while (wait(&stat) != pid);
+ 		}
+ 
+-		if (ret == RET_FAILURE) {
+-			fprintf(stderr, "FAIL: parent failed\n");
+-		} else if (ret == RET_CHLD_SUCCESS || 
+-			  (ret == RET_SUCCESS && WIFSIGNALED(stat) && WTERMSIG(stat) == SIGKILL)) {
++		if (ret > 0) {
++			perror("FAIL: parent failed: ");
++		} else if (ret == 0) { //||
++//			  (ret == RET_SUCCESS && WIFSIGNALED(stat) && WTERMSIG(stat) == SIGKILL)) {
+ 			printf("PASS\n");
+ 			return 0;
+-		} else if (ret == RET_CHLD_SIGNAL) {
+-			fprintf(stderr, "FAIL: child killed\n");
++		} else if (ret == -ECONNABORTED) {
++			errno = -ret;
++			perror("FAIL: child killed: ");
+ 		} else {
+-			fprintf(stderr, "FAIL: child failed\n");
++			errno = -ret;
++			perror("FAIL: child failed: ");
+ 		}
+ 	} else if (pid == 0) {	/* child */
+ 		if (do_child(args, !parent_trace, use_helper))
+@@ -200,5 +203,5 @@ int main(int argc, char *argv[])
+ 		perror("FAIL: fork failed - ");
+ 	}
+ 
+-	return 1;
++	return ret;
+ }
