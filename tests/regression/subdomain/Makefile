@@ -59,6 +59,7 @@ SRC=access.c \
     syscall_setdomainname.c \
     syscall_setscheduler.c \
     syscall_sysctl.c \
+    sysctl_proc.c \
     tcp.c \
     unix_fd_client.c \
     unix_fd_server.c \

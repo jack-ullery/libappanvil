@@ -31,7 +31,7 @@ bin=$pwd
 
 . ./prologue.inc
 
-TESTS="syscall_ptrace syscall_sysctl syscall_sethostname \
+TESTS="syscall_ptrace syscall_sethostname \
        syscall_setdomainname syscall_setpriority syscall_setscheduler \
        syscall_reboot syscall_chroot \
        syscall_mlockall net_raw"

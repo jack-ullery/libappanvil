@@ -114,24 +114,9 @@ rm -f $mknod_file
 runchecktest "MKNOD sock (permissions)" fail s $mknod_file
 
 ##
-## C. SYSCTL
+## D. SETHOSTNAME
 ##
-settest syscall_sysctl
-
-# TEST C1
-runchecktest "SYSCTL (no confinement)" pass
-
-# TEST C2
-genprofile
-runchecktest "SYSCTL (confinement/read only)" pass ro
-
-# TEST C3.  sysctl will fail
-genprofile
-runchecktest "SYSCTL (confinement/write access)" fail
-
-# TEST C3.  sysctl write will pass with cap_sys_admin
-genprofile cap:sys_admin
-runchecktest "SYSCTL (confinement/write access/CAP_SYS_ADMIN)" pass
+sh syscall_sysctl.sh
 
 ##
 ## D. SETHOSTNAME 
