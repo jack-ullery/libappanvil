@@ -33,6 +33,7 @@ SRC=access.c \
     fchown.c \
     fork.c \
     link.c \
+    link_subset.c \
     mmap.c \
     mkdir.c \
     mount.c \
@@ -118,6 +119,7 @@ TESTS=access \
       fork \
       i18n \
       link \
+      link_subset \
       mkdir \
       mmap \
       mount \
