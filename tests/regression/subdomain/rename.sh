@@ -24,8 +24,8 @@ bin=$pwd
 
 file1=$tmpdir/file1
 file2=$tmpdir/file2
-dir1=$tmpdir/dir1
-dir2=$tmpdir/dir2
+dir1=$tmpdir/dir1/
+dir2=$tmpdir/dir2/
 
 okfile1perm=rw
 badfile1perm1=r

@@ -48,8 +48,8 @@ file1b=$mp1/file2
 file2a=$mp2/file
 file2b=$mp2/file2
 
-dir1=$mp1/dir
-dir2=$mp2/dir
+dir1=$mp1/dir/
+dir2=$mp2/dir/
 
 mkdirperm=w
 mkdirperm_fail=r

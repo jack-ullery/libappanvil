@@ -30,12 +30,12 @@ mkdir $dir
 
 # CHDIR TEST
 
-genprofile $dir:$okperm
+genprofile $dir/:$okperm
 
 runchecktest "READDIR" pass $dir
 
 # CHDIR TEST (no perm)
 
-genprofile $dir:$badperm
+genprofile $dir/:$badperm
 
 runchecktest "READDIR (no perm)" fail $dir

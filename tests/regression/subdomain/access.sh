@@ -22,7 +22,7 @@ bin=$pwd
 
 file=$tmpdir/file
 
-dir=$tmpdir/dir
+dir=$tmpdir/dir/
 rperm=r
 rwxperm=rwix
 wxperm=wix

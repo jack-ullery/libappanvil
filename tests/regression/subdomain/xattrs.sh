@@ -40,7 +40,7 @@ bin=$pwd
 
 file=$tmpdir/testfile
 link=$tmpdir/testlink
-dir=$tmpdir/testdir
+dir=$tmpdir/testdir/
 okperm=rw
 badperm=r
 

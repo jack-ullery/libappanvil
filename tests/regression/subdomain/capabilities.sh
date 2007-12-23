@@ -74,11 +74,11 @@ syscall_sethostname_args=a.dumb.example.com
 syscall_setdomainname_args=dumb.example.com
 syscall_ioperm_args="0 0x3ff"
 syscall_iopl_args=3
-syscall_chroot_args=${tmpdir}
+syscall_chroot_args=${tmpdir}/
 syscall_ptrace_args=sub
 
 # if a testcase requires extra subdomain rules, add them here
-syscall_chroot_extra_entries="/:r ${tmpdir}:r"
+syscall_chroot_extra_entries="/:r ${tmpdir}/:r"
 syscall_ptrace_extra_entries="hat:sub"
 
 testwrapper=changehat_wrapper

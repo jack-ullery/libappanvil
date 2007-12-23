@@ -18,7 +18,7 @@ bin=$pwd
 
 . $bin/prologue.inc
 
-dir=$tmpdir/tmpdir
+dir=$tmpdir/tmpdir/
 perms=w
 excess_perms=wl
 badperms=r
