@@ -585,7 +585,7 @@ chmod 755 ${tmpdir}
 export tmpdir
 
 #set initial testname based on name of script
-settest `basename $0 | sed 's/\.sh$//'`
+settest `basename $0 .sh`
 
 profile=$tmpdir/profile
 profilenames=$tmpdir/profile.names
