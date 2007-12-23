@@ -43,6 +43,12 @@ sub emit_netdomain {
   push (@{$output_rules{$hat}}, "  @rules,\n");
 }
 
+sub emit_network {
+  my $rule = shift;
+  my @rules = split (/:/, $rule);
+  push (@{$output_rules{$hat}}, "  @rules,\n");
+}
+
 sub emit_cap {
   my $rule = shift;
   my @rules = split (/:/, $rule);
@@ -101,6 +107,8 @@ for my $rule (@ARGV) {
   if ($rule =~ /^(tcp|udp)/) {
     # netdomain rules
     emit_netdomain($rule);
+  } elsif ($rule =~ /^network:/) {
+    emit_network($rule);
   } elsif ($rule =~ /^cap:/) {
     emit_cap($rule);
   } elsif ($rule =~ /^flag:/) {
