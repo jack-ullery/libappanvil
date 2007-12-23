@@ -21,6 +21,8 @@
 #include <limits.h>
 #include <string.h>
 
+#include "changehat.h"
+
 #define FALSE 0
 #define TRUE !FALSE
 
@@ -29,7 +31,7 @@ int main(int argc, char *argv[])
 	pid_t pid;
 	int retval = 0;
 
-	if (argc != 1){
+	if (argc != 2){
 		fprintf(stderr, "usage: %s\n", argv[0]);
 		return 1;
 	}
@@ -43,6 +45,14 @@ int main(int argc, char *argv[])
 		while (wait(&status) != pid);
 		retval = WEXITSTATUS(status);
 	}else{
+		/* change profile so that ptrace can fail */
+		if (change_hat(argv[1], SD_ID_MAGIC + 1) == -1 &&
+		    errno != EPERM) {
+			/* confined process failed to change_hat */
+			fprintf(stderr, "FAIL: changehat %s failed - %s\n",
+				argv[1], strerror(errno));
+			return errno;
+		}
 		if (ptrace(PTRACE_TRACEME, 0, 0, 0) == -1){
 			fprintf(stderr, "FAIL: ptrace failed - %s\n",
 				strerror(errno));

@@ -28,10 +28,6 @@ bin=$pwd
 # using ptrace.  This stopped being required or functioning correctly 
 # somewhere between 2.4.18 and 2.4.20.
 #
-# Tests 10 and 11
-# Requires a patch which prevents confined traced task from attempting exec.
-# Unsure of usefulness of this.  We are concerned about confined task being
-# the tracer not the tracee
 
 # Test Matrix:
 # 1. unconfined parent, unconfined child, parent attaches		PASS
@@ -58,9 +54,9 @@ runchecktest "test 3a" pass -h -n 100 $helper
 runchecktest "test 4a" pass -h -n 100 -c $helper
 
 # lack of 'r' perm is currently not working
-#genprofile image=ix$helper
-#runchecktest "test 3b" pass -h -n 100 $helper
-#runchecktest "test 4b" pass -h -n 100 -c $helper
+genprofile image=ix$helper
+runchecktest "test 3b" pass -h -n 100 $helper
+runchecktest "test 4b" pass -h -n 100 -c $helper
 
 genprofile $helper:ux
 runchecktest "test 5" fail -h -n 100 $helper
@@ -73,8 +69,8 @@ runchecktest "test 8" fail -h -n 100 -c $helper
 genprofile image=/bin/true
 runchecktest "test 9" pass -- /bin/bash -c /bin/true
 
-#genprofile image=$helper /bin/true:ux
-#runchecktest "test 10" fail -h -n 100 $helper /bin/true
+genprofile image=$helper /bin/true:ux
+runchecktest "test 10" fail -h -n 100 $helper /bin/true
 
-#genprofile image=$helper /bin/true:rix
-#runchecktest "test 11" fail -h -n 1000 $helper /bin/true
+genprofile image=$helper /bin/true:rix
+runchecktest "test 11" fail -h -n 2000 $helper /bin/true

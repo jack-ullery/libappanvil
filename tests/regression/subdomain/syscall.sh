@@ -28,12 +28,12 @@ bin=$pwd
 settest syscall_ptrace
 
 # TEST A1
-runchecktest "PTRACE with no profile" pass
+runchecktest "PTRACE with no profile" pass sub
 
 # TEST A2.  ptrace will fail
 genprofile
 
-runchecktest "PTRACE with confinement" fail
+runchecktest "PTRACE with confinement" fail sub
 
 ##
 ## B. MKNOD

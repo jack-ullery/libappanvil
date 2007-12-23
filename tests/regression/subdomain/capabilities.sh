@@ -66,7 +66,7 @@ net_raw_net_raw=TRUE
 
 # we completely disable ptrace(), but it's not clear if we should allow it
 # when the sys_ptrace cap is specified.
-# syscall_ptrace_sys_ptrace=TRUE
+syscall_ptrace_sys_ptrace=TRUE
 
 # if a test case requires arguments, add them here.
 syscall_reboot_args=off
@@ -75,9 +75,11 @@ syscall_setdomainname_args=dumb.example.com
 syscall_ioperm_args="0 0x3ff"
 syscall_iopl_args=3
 syscall_chroot_args=${tmpdir}
+syscall_ptrace_args=sub
 
 # if a testcase requires extra subdomain rules, add them here
 syscall_chroot_extra_entries="/:r ${tmpdir}:r"
+syscall_ptrace_extra_entries="hat:sub"
 
 testwrapper=changehat_wrapper
 
