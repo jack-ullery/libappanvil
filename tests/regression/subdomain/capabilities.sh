@@ -29,7 +29,7 @@ pwd=`dirname $0`
 pwd=`cd $pwd ; /bin/pwd`
 bin=$pwd
 
-. ./prologue.inc
+. $bin/prologue.inc
 
 TESTS="syscall_ptrace syscall_sethostname \
        syscall_setdomainname syscall_setpriority syscall_setscheduler \
