@@ -103,7 +103,8 @@ STATUS=0
 
 # Test if the apparmor "module" is present.
 is_apparmor_present() {
-	local modules=""
+	local modules=$1
+	shift
 
 	while [ $# -gt 0 ] ; do
 		modules="$modules|$1"
