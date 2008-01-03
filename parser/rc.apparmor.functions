@@ -101,6 +101,25 @@ fi
 # keep exit status from parser during profile load.  0 is good, 1 is bad
 STATUS=0
 
+# Test if the apparmor "module" is present.
+is_apparmor_present() {
+	local modules=""
+
+	while [ $# -gt 0 ] ; do
+		modules="$modules|$1"
+		shift
+	done
+
+	# check for subdomainfs version of module
+	grep -qE "^($modules)[[:space:]]" /proc/modules
+	
+	if [ $? -ne 0 ] ; then
+		ls /sys/module/apparmor | grep -qE "^($modules)" 
+	fi
+
+	return $?
+}
+
 # This set of patterns to skip needs to be kept in sync with
 # SubDomain.pm::isSkippableFile()
 skip_profile() {
@@ -242,7 +261,8 @@ is_apparmor_loaded() {
 	fi
 
 	# check for subdomainfs version of module
-	grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules
+	is_apparmor_present apparmor subdomain
+
 	return $?
 }
 
@@ -288,7 +308,7 @@ load_module() {
 		MODULE=${OLD_MODULE}
 	fi
 
-	if ! grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules ; then
+	if ! is_apparmor_present apparmor subdomain ; then
 		aa_action "Loading AppArmor module" /sbin/modprobe -q $MODULE $1
 		rc=$?
 		if [ $rc -ne 0 ] ; then
@@ -380,9 +400,9 @@ apparmor_kill() {
 	fi
 
 	unmount_subdomainfs
-	if grep -qE "^apparmor[[:space:]]" /proc/modules ; then
+	if is_apparmor_present apparmor ; then
 		MODULE=apparmor
-	elif grep -qE "^subdomain[[:space:]]" /proc/modules ; then
+	elif is_apparmor_present subdomain ; then
 		MODULE=subdomain
 	else
 		aa_log_failure_msg "Killing AppArmor module - failed, AppArmor is builtin"
@@ -453,7 +473,7 @@ apparmor_status () {
 		${SD_STATUS} --verbose
 		return $?
 	fi
-	if ! grep -qE "^(subdomain|apparmor)[[:space:]]" /proc/modules ; then
+	if ! is_apparmor_present apparmor subdomain ; then
 		echo "AppArmor is not loaded."
 		rc=1
 	else
