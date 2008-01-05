@@ -50,6 +50,7 @@ $verbose = 1 if ($count_complain + $check_enabled + $count_enforced + $count_pro
 usage() if $help or ($count_complain + $check_enabled + $count_enforced + $count_profiled + $verbose > 1);
 
 sub is_subdomain_loaded() {
+  return 1 if (-d "/sys/module/apparmor");
   if(open(MODULES, "/proc/modules")) {
     while(<MODULES>) {
       return 1 if m/^(subdomain|apparmor)\s+/;
