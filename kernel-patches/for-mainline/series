@@ -84,3 +84,6 @@ apparmor-security-goal.diff
 # vfs_rmdir-args.diff
 # vfs_unlink-args.diff
 # may_delete-args.diff
+apparmor-matching-string.diff
+apparmor-features.diff
+split_init.diff

@@ -14,6 +14,7 @@ separate file operation for this, so remove ia_file, ATTR_FILE and
 convert existing users: fuse and AFS.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz> ---
+Signed-off-by: John Johansen <jjohansen@suse.de> ---
 
 ---
  fs/afs/dir.c       |    1 +
