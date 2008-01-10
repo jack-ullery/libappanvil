@@ -1,8 +1,9 @@
 ---
  security/apparmor/Kconfig      |   15 ++++++
+ security/apparmor/apparmor.h   |    5 ++
  security/apparmor/apparmorfs.c |   12 +++++
  security/apparmor/lsm.c        |   93 +++++++++++++++++++++++++++++++++--------
- 3 files changed, 103 insertions(+), 17 deletions(-)
+ 4 files changed, 108 insertions(+), 17 deletions(-)
 
 --- a/security/apparmor/Kconfig
 +++ b/security/apparmor/Kconfig
@@ -25,6 +26,20 @@
 +	  parameters are difficult to employ.
 +
 +	  If you are unsure how to answer this question, answer N.
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -284,6 +284,11 @@ extern int aa_net_perm(struct aa_profile
+ 			int family, int type, int protocol);
+ extern int aa_revalidate_sk(struct sock *sk, char *operation);
+ 
++/* lsm.c */
++extern int apparmor_initialized;
++extern void info_message(const char *str);
++extern void apparmor_disable(void);
++
+ /* list.c */
+ extern struct aa_namespace *__aa_find_namespace(const char *name,
+ 						struct list_head *list);
 --- a/security/apparmor/apparmorfs.c
 +++ b/security/apparmor/apparmorfs.c
 @@ -231,6 +231,9 @@ int create_apparmorfs(void)
