@@ -1,9 +1,9 @@
 ---
  security/apparmor/Kconfig      |   15 ++++++
  security/apparmor/apparmor.h   |    5 ++
- security/apparmor/apparmorfs.c |   12 +++++
- security/apparmor/lsm.c        |   93 +++++++++++++++++++++++++++++++++--------
- 4 files changed, 108 insertions(+), 17 deletions(-)
+ security/apparmor/apparmorfs.c |    8 +++
+ security/apparmor/lsm.c        |   88 ++++++++++++++++++++++++++++++++++-------
+ 4 files changed, 102 insertions(+), 14 deletions(-)
 
 --- a/security/apparmor/Kconfig
 +++ b/security/apparmor/Kconfig
@@ -52,16 +52,12 @@
  	if (apparmor_dentry) {
  		AA_ERROR("%s: AppArmor securityfs already exists\n",
  			__FUNCTION__);
-@@ -262,11 +265,20 @@ int create_apparmorfs(void)
+@@ -262,11 +265,16 @@ int create_apparmorfs(void)
  	if (error)
  		goto error;
  
-+	/* Report that AppArmor has been successfully initialized */
-+	if (apparmor_complain)
-+		info_message("AppArmor initialized: complainmode enabled");
-+	else
-+		info_message("AppArmor initialized");
-+
++	/* Report that AppArmor fs is enabled */
++	info_message("AppArmor Filesystem Enabled");
  	return 0;
  
  error:
@@ -149,7 +145,7 @@
  static int aa_reject_syscall(struct task_struct *task, gfp_t flags,
  			     const char *name)
  {
-@@ -879,13 +912,13 @@ struct security_operations apparmor_ops 
+@@ -879,14 +912,15 @@ struct security_operations apparmor_ops 
  	.socket_shutdown =		apparmor_socket_shutdown,
  };
  
@@ -161,28 +157,23 @@
  	sa.gfp_mask = GFP_KERNEL;
  	sa.info = str;
 -	printk(KERN_INFO "AppArmor: %s", str);
+-	aa_audit_message(NULL, &sa, AUDIT_APPARMOR_STATUS);
 +	printk(KERN_INFO "AppArmor: %s\n", str);
- 	aa_audit_message(NULL, &sa, AUDIT_APPARMOR_STATUS);
++	if (audit_enabled)
++		aa_audit_message(NULL, &sa, AUDIT_APPARMOR_STATUS);
  }
  
-@@ -913,10 +946,12 @@ static int __init apparmor_init(void)
+ static int __init apparmor_init(void)
+@@ -913,6 +947,8 @@ static int __init apparmor_init(void)
  		goto register_security_out;
  	}
  
--	if (apparmor_complain)
--		info_message("AppArmor initialized: complainmode enabled");
--	else
--		info_message("AppArmor initialized");
-+	/* Report that AppArmor successfully registered but delay
-+	 * reporting on success/failure of initialization until apparmorfs
-+	 * is created
-+	 */
++	/* Report that AppArmor successfully initialized */
 +	apparmor_initialized = 1;
-+	info_message("AppArmor registered");
- 
- 	return error;
- 
-@@ -931,7 +966,31 @@ createfs_out:
+ 	if (apparmor_complain)
+ 		info_message("AppArmor initialized: complainmode enabled");
+ 	else
+@@ -931,7 +967,31 @@ createfs_out:
  
  }
  
