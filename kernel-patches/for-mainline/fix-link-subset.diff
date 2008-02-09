@@ -52,8 +52,8 @@
 +	/* For actual subset test ignore valid-profile-transition flags,
 +	 * and link bits
 +	 */
-+	l_mode &= ~(AA_SHARED_PERMS & AA_LINK_BITS);
-+	t_mode &= ~(AA_SHARED_PERMS & AA_LINK_BITS);
++	l_mode &= ~(AA_SHARED_PERMS | AA_LINK_BITS);
++	t_mode &= ~(AA_SHARED_PERMS | AA_LINK_BITS);
 +	l_subset = l_mode & AA_FILE_PERMS;
 +
 +	*request_mask = l_mode | link_mask;
