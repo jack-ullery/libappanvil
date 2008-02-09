@@ -1,3 +1,5 @@
+#unionfs-2.2.2_for_2.6.24-rc7.diff
+#unionfs-2.1.11_for_2.6.24-rc4.diff
 security-create.diff
 remove_suid.diff
 vfs-notify_change.diff
@@ -60,6 +62,11 @@ apparmor-link-pairs.diff
 apparmor-bootdisable.diff
 apparmor-builtin-only.diff
 apparmor-security-goal.diff
+apparmor-features.diff
+split_init.diff
+apparmor-fix-sysctl-refcount.diff
+apparmor-fix-lock-letter.diff
+fix-link-subset.diff
 #foobar.diff
 # # NOT YET
 # ecryptfs-d_revalidate.diff
@@ -84,5 +91,6 @@ apparmor-security-goal.diff
 # vfs_rmdir-args.diff
 # vfs_unlink-args.diff
 # may_delete-args.diff
-apparmor-features.diff
-split_init.diff
+FS2.2.2_fix-unionfs-with-AppArmor.patch
+#FS2.1.3_fix-unionfs-with-AppArmor.patch
+

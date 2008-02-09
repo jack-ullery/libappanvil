@@ -14,11 +14,12 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  fs/nfsd/nfs4recover.c |    3 ++-
  fs/nfsd/vfs.c         |    8 +++++---
  include/linux/fs.h    |    2 +-
- 5 files changed, 15 insertions(+), 8 deletions(-)
+ kernel/cgroup.c       |    2 +-
+ 6 files changed, 16 insertions(+), 9 deletions(-)
 
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -500,11 +500,14 @@ static int ecryptfs_mkdir(struct inode *
+@@ -488,11 +488,14 @@ static int ecryptfs_mkdir(struct inode *
  {
  	int rc;
  	struct dentry *lower_dentry;
@@ -36,7 +37,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1997,7 +1997,8 @@ asmlinkage long sys_mknod(const char __u
+@@ -1998,7 +1998,8 @@ asmlinkage long sys_mknod(const char __u
  	return sys_mknodat(AT_FDCWD, filename, mode, dev);
  }
  
@@ -46,7 +47,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  {
  	int error = may_create(dir, dentry, NULL);
  
-@@ -2041,7 +2042,7 @@ asmlinkage long sys_mkdirat(int dfd, con
+@@ -2042,7 +2043,7 @@ asmlinkage long sys_mkdirat(int dfd, con
  
  	if (!IS_POSIXACL(nd.dentry->d_inode))
  		mode &= ~current->fs->umask;
@@ -123,3 +124,14 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  extern int vfs_mknod(struct inode *, struct dentry *, int, dev_t);
  extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
  extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -2611,7 +2611,7 @@ int cgroup_clone(struct task_struct *tsk
+ 	}
+ 
+ 	/* Create the cgroup directory, which also creates the cgroup */
+-	ret = vfs_mkdir(inode, dentry, S_IFDIR | 0755);
++	ret = vfs_mkdir(inode, dentry, NULL, S_IFDIR | 0755);
+ 	child = __d_cgrp(dentry);
+ 	dput(dentry);
+ 	if (ret) {
