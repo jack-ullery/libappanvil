@@ -21,15 +21,18 @@
   capability dac_override,
   capability fsetid,
   capability fowner,
+  capability sys_tty_config,
 
   /dev/log w,
   /dev/tty10 rw,
   /dev/xconsole rw,
   /etc/syslog-ng/* r,
+  /etc/hosts.deny r,
+  /etc/hosts.allow r,
   /sbin/syslog-ng mr,
   # chrooted applications
   /var/lib/*/dev/log w,
   /var/log/** w,
-  /var/run/syslog-ng.pid w,
+  /var/run/syslog-ng.pid krw,
 }
 

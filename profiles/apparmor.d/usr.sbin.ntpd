@@ -35,6 +35,7 @@
   /etc/ntp/keys r,
   /etc/ntp/step-tickers r,
   /etc/ntpd.conf r,
+  /etc/ntpd.conf.tmp r,
   /tmp/ntp* rwl,
   /usr/sbin/ntpd rmix,
   /var/lib/ntp/drift rwl,

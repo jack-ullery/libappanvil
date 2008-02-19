@@ -32,8 +32,12 @@
   /usr/share/ghostscript/fonts/**       r,
   /usr/share/texmf/*/fonts/**           r,
 
+  @{HOME}/.fonts.conf                   r,
+  @{HOME}/.fonts/                       r,
   @{HOME}/.fonts/**                     r,
   @{HOME}/.fonts.cache-2               mr,
+  @{HOME}/.fontconfig/                  r,
+  @{HOME}/.fontconfig/**                r,
 
   /usr/local/share/fonts/               r,
   /usr/local/share/fonts/**             r,

@@ -33,6 +33,7 @@
   /var/run/nscd/socket wl,
   /var/run/nscd/{passwd,group,services,hosts} rw,
   /var/run/{nscd/,}nscd.pid rwl,
+  /var/log/nscd.log rw,
   @{PROC}/[0-9]*/fd/ r,
   @{PROC}/[0-9]*/fd/* r,
   @{PROC}/[0-9]*/maps r,

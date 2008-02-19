@@ -10,6 +10,7 @@
   capability kill,
   capability setuid,
   capability setgid,
+  capability sys_chroot,
 
   /etc/avahi/ r,
   /etc/avahi/avahi-daemon.conf r,

@@ -11,10 +11,10 @@
 
   # per-user tmp directories
   @{HOME}/tmp/**  rwl,
-  @{HOME}/tmp/    r,
+  @{HOME}/tmp/    rw,
 
   # global tmp directories
   /var/tmp/**     rwl,
-  /var/tmp/        r,
+  /var/tmp/        rw,
   /tmp/**         rwl,
-  /tmp/            r,
+  /tmp/            rw,
