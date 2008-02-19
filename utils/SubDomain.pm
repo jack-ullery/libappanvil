@@ -32,8 +32,6 @@ use Data::Dumper;
 
 use Locale::gettext;
 use POSIX;
-use RPC::XML;
-use RPC::XML::Client;
 use Storable qw(dclone);
 
 use Term::ReadKey;
@@ -150,6 +148,8 @@ our $seenevents = 0;
 # behaviour tweaking
 our $cfg;
 our $repo_cfg;
+
+our $is_rpc_xml = 0;
 
 # these are globs that the user specifically entered.  we'll keep track of
 # them so that if one later matches, we'll suggest it again.
@@ -3150,7 +3150,8 @@ sub matchnetincludes ($$$$) {
 sub repo_is_enabled {
 
     my $enabled;
-    if ($cfg->{repository}{url} &&
+    if ($is_rpc_xml == 1 &&
+	$cfg->{repository}{url} &&
         $repo_cfg &&
         $repo_cfg->{repository}{enabled} &&
         $repo_cfg->{repository}{enabled} eq "yes") {
@@ -3164,6 +3165,7 @@ sub ask_to_enable_repo {
 
     my $q = { };
     return if ( not defined $cfg->{repository}{url} );
+    return if ($is_rpc_xml == 0);
     $q->{headers} = [
       "Repository", $cfg->{repository}{url},
     ];
@@ -3363,8 +3365,8 @@ sub do_logprof_pass {
     eval {
         unless ($repo_cfg || not defined $cfg->{repository}{url}) {
             $repo_cfg = read_config("repository.conf");
-            unless ($repo_cfg->{repository}{enabled} eq "yes" ||
-                    $repo_cfg->{repository}{enabled} eq "no") {
+            unless ($repo_cfg && $repo_cfg->{repository}{enabled} eq "yes" ||
+                    $repo_cfg && $repo_cfg->{repository}{enabled} eq "no") {
                 ask_to_enable_repo();
             }
         }
@@ -5399,6 +5401,24 @@ sub Text_PromptUser ($) {
 # required initialization
 
 $cfg = read_config("logprof.conf");
+
+eval "use RPC::XML";
+if (!$@) {
+    eval "use RPC::XML::Client";
+    if (!$@) {
+        $is_rpc_xml = 1;
+    } else {
+        $is_rpc_xml = 0;
+    }
+} else {
+    $is_rpc_xml = 0;
+    if ($repo_cfg &&
+        $repo_cfg->{repository}{enabled} &&
+        $repo_cfg->{repository}{enabled} eq "yes") {
+#hmm log message that repository is disabled because rpc-xml is not found
+#or abort with message to disable repository or install rpc-xml
+    }
+}
 
 $profiledir = find_first_dir($cfg->{settings}{profiledir}) || "/etc/apparmor.d";
 unless (-d $profiledir) { fatal_error "Can't find AppArmor profiles."; }
