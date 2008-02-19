@@ -11,8 +11,8 @@
 # vim:syntax=apparmor
 # Last Modified: Thu Aug 25 14:49:56 2005
 
+# Last Modified: Tue Sep 11 20:27:42 2007
 #include <tunables/global>
-
 /usr/bin/opera {
   #include <abstractions/base>
   #include <abstractions/bash>
@@ -25,7 +25,6 @@
 
   capability dac_override,
 
-  / r,
   /bin/bash mix,
   /bin/sed mixr,
   /bin/true mixr,
@@ -34,7 +33,7 @@
   /etc/X11/.qtrc.lock rw,
   /etc/cups/client.conf r,
   /etc/cups/lpoptions r,
-  /etc/opera6rc	rw,
+  /etc/opera6rc        rw,
   /etc/opera6rc.fixed rw,
   /opt r,
   @{PROC}/[0-9]*/stat r,
@@ -66,4 +65,10 @@
   /usr/share/opera/** r,
   /var/run/.resmgr_socket w,
   /var/spool/cups/tmp/* lrw,
+
+  /usr/bin/opera mr,
+  /usr/lib/jvm/java-1.5.0-sun-1.5.0_update12/jre/lib/i386/*.so mr,
+  /usr/lib/jvm/java-1.5.0-sun-1.5.0_update12/jre/lib/i386/client/*.so mr,
+#  /usr/lib/opera/9.23-20070809.6/opera px,
+  /usr/lib/opera/*/works ixr,
 }
