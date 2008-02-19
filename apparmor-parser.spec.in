@@ -175,6 +175,19 @@ fi
 %endif
 
 %changelog
+* Thu Jan 24 2008 - jjohansen@suse.de
+- Fix parser to be able to load policy for multiple versions of AppArmor.
+* Wed Oct 17 2007 - dominic_r@mercenarylinux.com
+- Maintenance branch for AppArmor 2.1
+* Mon Oct  1 2007 - steve@nxnw.org
+- Basic change_profile testcases, basic network rules testcases, testcases
+- around carat symbols and commas in file rules, and basic permission
+- modes first testcases from jjohansen@suse.de.
+* Mon Oct  1 2007 - steve@nxnw.org
+- lock mode bit tests from jjohansen@suse.de
+- Also, make 'check' toplevel target be an alias for 'tests'
+* Mon Oct  1 2007 - steve@nxnw.org
+- Append testcases from jjohansen@suse.de.
 * Fri Aug 31 2007 - sbeattie@suse.de
 - run initscript once on boot (suse only, #286749)
 * Fri Aug 17 2007 - sbeattie@suse.de
