@@ -50,12 +50,20 @@ B<COMMENT> = '#' I<TEXT>
 
 B<TEXT> = any characters
 
-B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> ) ... ] '}'
+B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> | I<NETWORK RULE> ) ... ] '}'
 
 B<SUBPROFILE> = [ I<COMMENT> ... ] I<PROGRAMHAT> '{' [ ( I<FILE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}'
 
 B<CAPABILITY> = (lowercase capability name without 'CAP_' prefix; see
 capabilities(7))
+
+B<NETWORK RULE> = 'network' [ [ I<DOMAIN> ] [ I<TYPE> ] [ I <PROTOCOL> ] ] ','
+
+B<DOMAIN> = ( 'inet' | 'ax25' | 'ipx' | 'appletalk' | 'netrom' | 'bridge' | 'atmpvc' | 'x25' | 'inet6' | 'rose' | 'netbeui' | 'security' | 'key' | 'packet' | 'ash' | 'econet' | 'atmsvc' | 'sna' | 'irda' | 'pppox' | 'wanpipe' | 'bluetooth' ) ','
+
+B<TYPE> = ( 'stream' | 'dgram' | 'seqpacket' |  'rdm' | 'raw' | 'packet' )
+
+B<PROTOCOL> = ( 'tcp' | 'udp' | 'icmp' )
 
 B<PROGRAM> = (non-whitespace characters except for '^', must start with '/'. Embedded spaces or tabs must be quoted.)
 
@@ -95,7 +103,9 @@ modes:
 
 =item B<r> 	- read
 
-=item B<w> 	- write
+=item B<w> 	- write -- conflicts with append
+
+=item B<a>	- append -- conflicts with write
 
 =item B<ux> 	- unconfined execute
 
@@ -111,6 +121,8 @@ modes:
 
 =item B<l> 	- link
 
+=item B<k>	- lock
+
 =back
 
 =head2 Access Modes Details
@@ -124,9 +136,19 @@ required for shell scripts and other interpreted content.
 
 =item B<w - Write mode>
 
-Allows the program to have write access to the file. Files and directories must have
-this permission if they are to be unlinked (removed.) Write mode is not
-required on a directory to rename or create files within the directory.
+Allows the program to have write access to the file. Files and directories
+must have this permission if they are to be unlinked (removed.)  Write mode
+is not required on a directory to rename or create files within the directory.
+
+This mode conflicts with append mode.
+
+=item B<a - Append mode>
+
+Allows the program to have a limited appending only write access to the file.
+Append mode will prevent an application from opening the file for write unless
+it passes the O_APPEND parameter flag on open.
+
+The mode conflicts with Write mode.
 
 =item B<ux - Unconfined execute mode>
 
@@ -218,6 +240,11 @@ the original file (with the exception that
 the destination does not have to have link access.) If there is an 'x' rule
 on the new link, it must match the original file exactly.
 
+=item B<k - lock mode>
+
+Allows the program to be able lock a file with this name.  This permission
+covers both advisory and mandatory locking.
+
 =back
 
 =head2 Comments
@@ -239,6 +266,27 @@ and other operations that are typically reserved for the root user.
 The only operations that cannot be controlled in this manner are mount(2),
 umount(2), and loading new AppArmor policy into the kernel, which are
 always denied to confined processes.
+
+=head2 Network Rules
+
+AppArmor supports simple coarse grained network mediation.  The network
+rule restrict all socket(2) based operations.  The mediation done is
+a course grained check on whether a socket of a given type and family
+can be created, read, or written.  There is no mediation based of port
+number or protocol beyond tcp, udp, and raw.
+
+AppArmor network rules are accumulated so that the granted network
+permissions are the union of all the listed network rule permissions.
+
+AppArmor network rules are broad and general and become more restrictive
+as further information is specified.
+
+eg.
+
+network,		#allow access to all networking
+network tcp,		#allow access to tcp
+network inet tcp,	#allow access to tcp only for inet4 addresses
+network inet6 tcp,	#allow access to tcp only for inet6 addresses
 
 =head2 Variables
 
