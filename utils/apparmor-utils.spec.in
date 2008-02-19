@@ -95,6 +95,93 @@ fi
 
 
 %changelog
+* Tue Nov  6 2007 - dominic_r@mercenarylinux.com
+- (Merged from trunk -r1015)
+  Added handling to correctly check the result of the profile development
+  run and reset the profile mode to enforce when the profile development
+  run exits without an error.
+  Addresses novell bug: https://bugzilla.novell.com/show_bug.cgi?id=328045
+* Tue Nov  6 2007 - dominic_r@mercenarylinux.com
+- (Merged from trunk -r1014)
+  Ignore complain flags when up|down loading profiles to|from the
+  repository. This makes the repository agnostic to profile mode
+  (complain/enforce) - users must manage this locally via
+  aa-complain/aa-enforce.
+  Addresses novell bug: https://bugzilla.novell.com/show_bug.cgi?id=328033
+* Tue Nov  6 2007 - dominic_r@mercenarylinux.com
+- (Merged from trunk -r 1013)
+  Modified code to check the repository for new profile when:
+   - processing an unknown hat/execute rejection if its not already in
+     the profile
+   - at the start of processing all the remain events for the profile
+  Addresses novell bug: https://bugzilla.novell.com/show_bug.cgi?id=328707
+* Tue Nov  6 2007 - dominic_r@mercenarylinux.com
+- (Merged from trunk)
+  Updated regex used to detect syslog messages (from bug reported against
+  Ubuntu gutsy)
+* Wed Oct 17 2007 - dominic_r@mercenarylinux.com
+- Maintenance branch for AppArmor 2.1
+* Fri Sep 28 2007 - ddrewelow@suse.de
+- Fix for bug #329476.  The mode validation regexp has been updated to
+  support additional values.
+* Fri Sep 28 2007 - dreynolds@suse.de
+- Don't try to read inactive profile directory if it doesn't exist. Fix
+  based on feedback from mathiaz@ubuntu.com and from bug report:
+  https://bugs.launchpad.net/ubuntu/+source/apparmor/+bug/141128.
+* Sun Sep 16 2007 - dreynolds@suse.de
+- Change the default repository to
+  http://apparmor.opensuse.org/backend/api - the host for the production
+  repository.
+* Sun Sep 16 2007 - dreynolds@suse.de
+- Update to log parsing to correctly unpack the hex encoded values passed
+  from the module: name, name2, and profile. (fix from jmichael@suse.de)
+* Sun Sep 16 2007 - dreynolds@suse.de
+- Remove the confirmation prompt for confirm_and_finish - this was a
+  duplicate prompt after the repository changes to save_profiles.
+* Sun Sep 16 2007 - dreynolds@suse.de
+- Add support for network toggles, append, and locking  to the YaST2
+  EditProfile wizard.
+* Fri Sep 14 2007 - ddrewelow@suse.de
+- Fixes (#310454) to support new audit log format and new libapparmor1.
+* Mon Sep 10 2007 - dreynolds@suse.de
+- Update the logfile parsing in the tools to support syslog (in addition
+  to LAF) as a source of AppArmor module messages.
+* Mon Sep 10 2007 - dreynolds@suse.de
+- Very basic user feedback when connections are made to a remote
+  repository. For genprof/logprof just report "Connecting to the
+  repository". For yast display a dialog.
+* Mon Sep 10 2007 - dreynolds@suse.de
+- Update the eventd schema to support the mode_deny mode_req types
+  reported by the latest apparmor module in its rejection/permitting
+  messages.
+* Mon Aug 20 2007 - ddrewelow@suse.de
+- Updated requirements for changes to libapparmor.
+* Mon Aug 20 2007 - ddrewelow@suse.de
+- Updated sqlite db and related functions to support new parser and
+  libapparmor.
+* Fri Aug 17 2007 - dreynolds@suse.de
+- Missing shortcut fixes for german.
+* Fri Aug 17 2007 - dreynolds@suse.de
+- Minor changes to ensure that removal of the repository section in
+  logprof.conf disables repository integration.
+* Fri Aug 17 2007 - dreynolds@suse.de
+- Remove default/required hats for ssh in logprof.conf
+* Thu Aug 16 2007 - dreynolds@suse.de
+- Fixes for "mandatory profile not found" profiling bug, empty configs in
+  logprof.conf generating undefined value errors, repository code
+  prompting user even if no configuration is present that specifies a
+  default repository.
+* Thu Aug 16 2007 - dreynolds@suse.de
+- Updated translations for missing shortcuts in msgstr fields.
+* Wed Aug 15 2007 - seth_arnold@suse.de
+- new audit manpage from Mathias Gug
+* Wed Aug 15 2007 - dreynolds@suse.de
+- utitlity to look for problems in the po files.
+* Wed Aug 15 2007 - dreynolds@suse.de
+- Fix problems with missing hotkey for "(S)can for SubDomain Events" in
+  genprof. Replace occurances of SubDomain in msgstr with AppArmor.
+* Wed Aug 15 2007 - dreynolds@suse.de
+- Added support for capablities and network toggles in #includes.
 * Tue Aug 14 2007 - sbeattie@suse.de
 - Support configurable locations of logger
 * Tue Apr  3 2007 - sbeattie@suse.de
