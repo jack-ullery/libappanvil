@@ -42,7 +42,7 @@ CONFDIR=${DESTDIR}/etc/apparmor
 PERLDIR=${DESTDIR}/usr/lib/perl5/vendor_perl/Immunix
 
 po/${NAME}.pot: ${TOOLS}
-	make -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} SubDomain.pm Reports.pm"
+	make -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} SubDomain.pm Repository.pm Config.pm Reports.pm"
 
 .PHONY: install
 install: ${MANPAGES} ${HTMLMANPAGES}
@@ -59,7 +59,7 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 	ln -sf unconfined ${BINDIR}/aa-unconfined
 	install -m 755 ${TOOLS} ${BINDIR}
 	install -d ${PERLDIR}
-	install -m 755 SubDomain.pm Reports.pm Severity.pm ${PERLDIR}
+	install -m 755 SubDomain.pm Repository.pm Config.pm Reports.pm Severity.pm ${PERLDIR}
 	make -C po install DESTDIR=${DESTDIR} NAME=${NAME}
 	mkdir -m 0700 -p $(DESTDIR)/var/log/apparmor
 	make install_manpages DESTDIR=${DESTDIR}
