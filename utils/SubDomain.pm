@@ -60,6 +60,7 @@ our @EXPORT = qw(
     getprofilefilename
     get_full_path
     fatal_error
+    get_pager
 
     getprofileflags
     setprofileflags
@@ -1469,6 +1470,7 @@ my %CMDS = (
     CMD_SAVE_CHANGES     => "(S)ave Changes",
     CMD_UPLOAD_CHANGES   => "(U)pload Changes",
     CMD_VIEW_CHANGES     => "(V)iew Changes",
+    CMD_VIEW             => "(V)iew",
     CMD_ENABLE_REPO      => "(E)nable Repository",
     CMD_DISABLE_REPO     => "(D)isable Repository",
     CMD_ASK_NEVER        => "(N)ever Ask Again",
