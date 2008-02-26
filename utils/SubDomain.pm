@@ -39,6 +39,7 @@ use Term::ReadKey;
 use Immunix::Severity;
 use Immunix::Repository;
 use Immunix::Config;
+use LibAppArmor;
 
 require Exporter;
 our @ISA    = qw(Exporter);
@@ -2113,7 +2114,7 @@ sub throw_away_next_log_entry {
 
 sub parse_log_record_v_2_0 ($@) {
     my ($record, $last) = @_;
-    $DEBUGGING && debug "parse_log_record_v_2_0: $_";
+    $DEBUGGING && debug "parse_log_record_v_2_0: $record";
 
     # What's this early out for?  As far as I can tell, parse_log_record_v_2_0
     # won't ever be called without something in $record
@@ -2344,33 +2345,10 @@ sub parse_log_record_v_2_0 ($@) {
     return $last;
 }
 
-sub parse_log_record_v_2_1 ($) {
-    $_ = shift;
-    $DEBUGGING && debug "parse_log_record_v_2_1: $_";
-    return if ( ! $_ );
-    my $e = { };
-
-    # first pull out any name="blah blah blah" strings
-    s/\b(\w+)="([^"]+)"\s*/$e->{$1} = $2; "";/ge;
-
-    # yank off any remaining name=value pairs
-    s/\b(\w+)=(\S+)\)\'\s*/$e->{$1} = $2; "";/ge;
-    s/\b(\w+)=(\S+)\,\s*/$e->{$1} = $2; "";/ge;
-    s/\b(\w+)=(\S+)\s*/$e->{$1} = $2; "";/ge;
-
-    s/\s$//;
-
-    # audit_log_untrustedstring() is used for name, name2, and profile in
-    # order to escape strings with special characters
-    for my $key (keys %$e) {
-        next unless $key =~ /^(name|name2|profile)$/;
-        # needs to be an even number of hex characters
-        if ($e->{$key} =~ /^([0-9a-f]{2})+$/i) {
-            # convert the hex string back to a raw string
-            $e->{$key} = pack("H*", $e->{$key});
-        }
-    }
-
+sub parse_log_record ($) {
+    my $record = shift;
+    $DEBUGGING && debug "parse_log_record: $record";
+    my $e = parse_event($record);
     if ($e->{requested_mask} && !validate_log_mode($e->{requested_mask})) {
         fatal_error(sprintf(gettext('Log contains unknown mode %s.'),
                             $e->{requested_mask}));
@@ -2380,32 +2358,32 @@ sub parse_log_record_v_2_1 ($) {
         fatal_error(sprintf(gettext('Log contains unknown mode %s.'),
                     $e->{denied_mask}));
     }
-
     return $e;
 }
+
 
 sub add_event_to_tree ($) {
     my $e = shift;
 
-    my $sdmode = "NONE";
-    if ( $e->{type} =~ /(UNKNOWN\[1501\]|APPARMOR_AUDIT|1501)/ ) {
-        $sdmode = "AUDIT";
-    } elsif ( $e->{type} =~ /(UNKNOWN\[1502\]|APPARMOR_ALLOWED|1502)/ ) {
-        $sdmode = "PERMITTING";
-    } elsif ( $e->{type} =~ /(UNKNOWN\[1503\]|APPARMOR_DENIED|1503)/ ) {
-        $sdmode = "REJECTING";
-    } elsif ( $e->{type} =~ /(UNKNOWN\[1504\]|APPARMOR_HINT|1504)/ ) {
-        $sdmode = "HINT";
-    } elsif ( $e->{type} =~ /(UNKNOWN\[1505\]|APPARMOR_STATUS|1505)/ ) {
-        $sdmode = "STATUS";
-        return;
-    } elsif ( $e->{type} =~ /(UNKNOWN\[1506\]|APPARMOR_ERROR|1506)/ ) {
-        $sdmode = "ERROR";
-        return;
-    } else {
-        $sdmode = "UNKNOWN_SD_MODE";
-        return;
+    my $sdmode = $e->{sdmode}?$e->{sdmode}:"UNKNOWN";
+    if ( $e->{type} ) {
+        if ( $e->{type} =~ /(UNKNOWN\[1501\]|APPARMOR_AUDIT|1501)/ ) {
+            $sdmode = "AUDIT";
+        } elsif ( $e->{type} =~ /(UNKNOWN\[1502\]|APPARMOR_ALLOWED|1502)/ ) {
+            $sdmode = "PERMITTING";
+        } elsif ( $e->{type} =~ /(UNKNOWN\[1503\]|APPARMOR_DENIED|1503)/ ) {
+            $sdmode = "REJECTING";
+        } elsif ( $e->{type} =~ /(UNKNOWN\[1504\]|APPARMOR_HINT|1504)/ ) {
+            $sdmode = "HINT";
+        } elsif ( $e->{type} =~ /(UNKNOWN\[1505\]|APPARMOR_STATUS|1505)/ ) {
+            $sdmode = "STATUS";
+        } elsif ( $e->{type} =~ /(UNKNOWN\[1506\]|APPARMOR_ERROR|1506)/ ) {
+            $sdmode = "ERROR";
+        } else {
+            $sdmode = "UNKNOWN";
+        }
     }
+    return if ( $sdmode =~ /UNKNOWN|STATUS|ERROR/ );
 
     my ($profile, $hat);
     ($profile, $hat) = split /\/\//, $e->{profile};
@@ -2471,7 +2449,7 @@ sub add_event_to_tree ($) {
 
             my $following = peek_at_next_log_entry();
             if ($following) {
-                my $entry = parse_log_record_v_2_1($following);
+                my $entry = parse_log_record($following);
                 if ($entry &&
                     $entry->{info} &&
                     $entry->{info} eq "set profile" ) {
@@ -2568,12 +2546,9 @@ sub read_log {
         # all we care about is apparmor messages
         if (/$RE_LOG_v2_0_syslog/ || /$RE_LOG_v2_0_audit/) {
            $last_match = parse_log_record_v_2_0( $_, $last_match );
-        } elsif (/$RE_LOG_v2_1_audit/ || /$RE_LOG_v2_1_syslog/) {
-            my $event = parse_log_record_v_2_1($_);
-            add_event_to_tree($event);
         } else {
-            # not a known apparmor log event
-            $DEBUGGING && debug "read_log UNHANDLED: $_";
+            my $event = parse_log_record($_);
+            add_event_to_tree($event) if ( $event );
         }
     }
     close($LOG);
@@ -5287,6 +5262,70 @@ sub Text_PromptUser ($) {
     $ans = $keys{$ans} if $keys{$ans};
     return ($ans, $selected);
 
+}
+
+# Parse event record into key-value pairs
+sub parse_event($) {
+    my %ev = ();
+    my $msg = shift;
+    chomp($msg);
+    my $event = LibAppArmor::parse_record($msg);
+
+    $ev{'resource'}   = LibAppArmor::aa_log_record::swig_info_get($event);
+    $ev{'active_hat'} = LibAppArmor::aa_log_record::swig_active_hat_get($event);
+    $ev{'sdmode'}     = LibAppArmor::aa_log_record::swig_event_get($event);
+    $ev{'time'}       = LibAppArmor::aa_log_record::swig_epoch_get($event);
+    $ev{'operation'}  = LibAppArmor::aa_log_record::swig_operation_get($event);
+    $ev{'profile'}    = LibAppArmor::aa_log_record::swig_profile_get($event);
+    $ev{'name'}       = LibAppArmor::aa_log_record::swig_name_get($event);
+    $ev{'name2'}      = LibAppArmor::aa_log_record::swig_name2_get($event);
+    $ev{'attr'}       = LibAppArmor::aa_log_record::swig_attribute_get($event);
+    $ev{'parent'}     = LibAppArmor::aa_log_record::swig_parent_get($event);
+    $ev{'pid'}        = LibAppArmor::aa_log_record::swig_pid_get($event);
+    $ev{'denied_mask'}  =
+        LibAppArmor::aa_log_record::swig_denied_mask_get($event);
+    $ev{'request_mask'} =
+        LibAppArmor::aa_log_record::swig_requested_mask_get($event);
+    $ev{'magic_token'}  =
+       LibAppArmor::aa_log_record::swig_magic_token_get($event);
+
+    # NetDomain
+    if ( $ev{'operation'} && $ev{'operation'} =~ /socket/ ) {
+        $ev{'family'}    =
+            LibAppArmor::aa_log_record::swig_net_family_get($event);
+        $ev{'protocol'}  =
+            LibAppArmor::aa_log_record::swig_net_protocol_get($event);
+        $ev{'sock_type'} =
+            LibAppArmor::aa_log_record::swig_net_sock_type_get($event);
+    }
+
+    LibAppArmor::free_record($event);
+
+    if ( ! $ev{'time'} ) { $ev{'time'} = time; }
+
+    # remove null responses
+    for (keys(%ev)) {
+        if ( ! $ev{$_} || $ev{$_} !~ /\w+/)  { delete($ev{$_}); }
+    }
+
+    if ( $ev{'sdmode'} ) {
+        #0 = invalid, 1 = error, 2 = AUDIT, 3 = ALLOW/PERMIT,
+        #4 = DENIED/REJECTED, 5 = HINT, 6 = STATUS/config change
+        if    ( $ev{'sdmode'} == 0 ) { $ev{'sdmode'} = "UNKNOWN"; }
+        elsif ( $ev{'sdmode'} == 1 ) { $ev{'sdmode'} = "ERROR"; }
+        elsif ( $ev{'sdmode'} == 2 ) { $ev{'sdmode'} = "AUDITING"; }
+        elsif ( $ev{'sdmode'} == 3 ) { $ev{'sdmode'} = "PERMITTING"; }
+        elsif ( $ev{'sdmode'} == 4 ) { $ev{'sdmode'} = "REJECTING"; }
+        elsif ( $ev{'sdmode'} == 5 ) { $ev{'sdmode'} = "HINT"; }
+        elsif ( $ev{'sdmode'} == 6 ) { $ev{'sdmode'} = "STATUS"; }
+        else  { delete($ev{'sdmode'}); }
+    }
+    if ( $ev{sdmode} ) {
+       $DEBUGGING && debug( Data::Dumper->Dump([%ev], [qw(*event)]));
+       return \%ev;
+    } else {
+       return( undef );
+    }
 }
 
 ###############################################################################
