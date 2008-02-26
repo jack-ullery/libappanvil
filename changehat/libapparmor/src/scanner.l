@@ -41,8 +41,8 @@ ID		[^ \t\n\(\)="'!]
 path		"/"{ID}*
 hexstring	({hex}{hex})+
 period		"\."
-modes           [RrWwXxIiLlUuPpMm]
-
+mode_chars      ([RrWwaLlMmkXx])|([Pp][Xx])|([Uu][Xx])|([Ii][Xx])|([Pp][Ii][Xx])
+modes		({mode_chars}+)|({mode_chars}*::{mode_chars}*)
 /* New message types */
 
 reject_type		"APPARMOR_DENIED"
@@ -91,6 +91,7 @@ key_msg			"msg"
 key_operation		"operation"
 key_name		"name"
 key_name2		"name2"
+key_namespace		"namespace"
 key_denied_mask		"denied_mask"
 key_requested_mask	"requested_mask"
 key_attribute		"attribute"
@@ -129,7 +130,7 @@ dmesg_timestamp		\[[[:digit:] ]{5,}\.[[:digit:]]{6,}\]
 char string_buf[512];
 char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 
-/* yy_flex_debug = 1;  */
+ yy_flex_debug = 0;
 %}
 
 {ws}+			{ /* Skip whitespace */ }
@@ -263,13 +264,14 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {old_link}		{ return(TOK_OLD_LINK); }
 {old_fork}		{ return(TOK_OLD_FORK); }
 {old_child}		{ return(TOK_OLD_CHILD); }
-{modes}+		{ yylval->t_str = strdup(yytext); return(TOK_MODE); }
+{modes}			{ yylval->t_str = strdup(yytext); return(TOK_MODE); }
 
 {key_type}		{ BEGIN(audit_types); return(TOK_KEY_TYPE); }
 {key_msg}		{ return(TOK_KEY_MSG); }
 {key_operation}		{ return(TOK_KEY_OPERATION); }
 {key_name}		{ BEGIN(safe_string); return(TOK_KEY_NAME); }
 {key_name2}		{ BEGIN(safe_string); return(TOK_KEY_NAME2); }
+{key_namespace}		{ BEGIN(safe_string); return(TOK_KEY_NAMESPACE); }
 {key_denied_mask}	{ return(TOK_KEY_DENIED_MASK); }
 {key_requested_mask}	{ return(TOK_KEY_REQUESTED_MASK); }
 {key_attribute}		{ BEGIN(sub_id); return(TOK_KEY_ATTRIBUTE); }

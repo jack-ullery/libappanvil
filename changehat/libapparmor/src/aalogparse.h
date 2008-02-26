@@ -129,6 +129,7 @@ typedef struct
 	char *profile;			/* The name of the profile */
 	char *name;
 	char *name2;
+	char *namespace;
 	char *attribute;
 	unsigned long parent;	
 	char *info;

@@ -32,7 +32,7 @@ aa_log_record *ret_record;
  * emit messages when asked for. */
 void aalogparse_error(void *scanner, char const *s)
 {
-	/* printf("Error: %s\n", s); */
+        //printf("ERROR: %s\n", s);
 	ret_record->event = AA_RECORD_INVALID;
 }
 
@@ -61,6 +61,8 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 
 	return aa_type_table[i].event;
 }
+
+
 %}
 
 %defines
@@ -138,6 +140,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_FAMILY
 %token TOK_KEY_SOCK_TYPE
 %token TOK_KEY_PROTOCOL
+%token TOK_KEY_NAMESPACE
 
 %token TOK_SYSLOG_KERNEL
 
@@ -366,6 +369,8 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->operation = $3;}
 	| TOK_KEY_NAME TOK_EQUALS safe_string
 	{ ret_record->name = $3;}
+	| TOK_KEY_NAMESPACE TOK_EQUALS safe_string
+	{ ret_record->namespace = $3;}
 	| TOK_KEY_NAME2 TOK_EQUALS safe_string
 	{ ret_record->name2 = $3;}
 	| TOK_KEY_DENIED_MASK TOK_EQUALS TOK_QUOTED_STRING
