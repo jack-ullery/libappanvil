@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase24.in
+File: test_multi/testcase33.in
 Event type: AA_RECORD_DENIED
 Audit ID: 1190503205.837:27088
 Operation: socket_create
@@ -7,6 +7,6 @@ Profile: /home/steve/aa-regression-tests/changehat_wrapper//net_raw
 PID: 16196
 Network family: packet
 Socket type: raw
-Protocol: unknown(768)
+Protocol: tcp
 Epoch: 1190503205
 Audit subid: 27088

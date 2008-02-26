@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <netinet/in.h>
 #include "aalogparse.h"
 #include "parser.h"
 
@@ -137,3 +138,36 @@ char *hex_to_string(char *hexstring)
 out:
 	return ret;
 }
+
+struct ipproto_pairs {
+	unsigned int protocol;
+	char *protocol_name;
+};
+
+#define AA_GEN_PROTO_ENT(name, IP) {name, IP},
+
+static struct ipproto_pairs ipproto_mappings[] = {
+#include "af_protos.h"
+	/* terminate */
+	{0, NULL}
+};
+
+/* convert an ip protocol number to a string */
+char *ipproto_to_string(unsigned int proto)
+{
+	char *ret = NULL;
+	struct ipproto_pairs *current = ipproto_mappings;
+
+	while (current->protocol != proto && current->protocol_name != NULL) {
+		current++;
+	}
+
+	if (current->protocol_name) {
+		ret = strdup(current->protocol_name);
+	} else {
+		asprintf(&ret, "unknown(%u)", proto);
+	}
+
+	return ret;
+}
+

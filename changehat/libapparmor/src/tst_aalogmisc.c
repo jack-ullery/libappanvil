@@ -16,6 +16,7 @@ int main(void)
 	int rc = 0;
 	char *retstr = NULL;
 
+	/* hex_to_string() tests */
 	retstr = hex_to_string(NULL);
 	MY_TEST(!retstr, "basic NULL test");
 
@@ -29,6 +30,12 @@ int main(void)
 	retstr = hex_to_string("");
 	MY_TEST(strcmp(retstr, "") == 0, "empty string");
 
+	/* ipproto_to_string() tests */
+	retstr = ipproto_to_string((unsigned) 99999);
+	MY_TEST(strcmp(retstr, "unknown(99999)") == 0, "invalid protocol test");
+
+	retstr = ipproto_to_string((unsigned) 6);
+	MY_TEST(strcmp(retstr, "tcp") == 0, "protocol=tcp");
 	return rc;
 }
 

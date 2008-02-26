@@ -1,6 +1,6 @@
 INCLUDES = $(all_includes)
 
-BUILT_SOURCES = grammar.h scanner.h
+BUILT_SOURCES = grammar.h scanner.h af_protos.h
 AM_LFLAGS = -v
 AM_YFLAGS = -d -p aalogparse_
 AM_CFLAGS = @CFLAGS@ -D_GNU_SOURCE -Wall
@@ -9,6 +9,9 @@ scanner.h: scanner.l
 
 scanner.c: scanner.l
 
+af_protos.h: /usr/include/netinet/in.h
+	 LC_ALL=C  sed  -n -e "/IPPROTO_MAX/d"  -e "s/^\#define[ \\t]\\+IPPROTO_\\([A-Z0-9_]\\+\\)\\(.*\\)$$/AA_GEN_PROTO_ENT(\\UIPPROTO_\\1, \"\\L\\1\")/p" $< > $@
+
 changehatdir = $(includedir)/sys
 changehat_HEADERS = apparmor.h
 
@@ -16,7 +19,7 @@ aalogparsedir = $(includedir)/aalogparse
 aalogparse_HEADERS = aalogparse.h
 
 lib_LTLIBRARIES = libapparmor.la libimmunix.la
-noinst_HEADERS = grammar.h parser.h scanner.h
+noinst_HEADERS = grammar.h parser.h scanner.h af_protos.h
 
 libapparmor_la_SOURCES = grammar.y libaalogparse.c change_hat.c scanner.c
 libapparmor_la_LDFLAGS = -version-info 1:2:0 -XCClinker -dynamic \

@@ -410,10 +410,7 @@ safe_string: TOK_QUOTED_STRING
 protocol: TOK_QUOTED_STRING
 	| TOK_DIGITS
 	{ /* FIXME: this should probably convert back to a string proto name */
-	  char *ret = NULL;
-	  if (asprintf(&ret, "%ld", $1) < 0)
-	  	yyerror(NULL, "Unable to allocate protocol string");
-	  $$ = ret;
+	  $$ = ipproto_to_string($1);
 	}
 	;
 %%
