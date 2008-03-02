@@ -42,7 +42,7 @@ path		"/"{ID}*
 hexstring	({hex}{hex})+
 period		"\."
 mode_chars      ([RrWwaLlMmkXx])|([Pp][Xx])|([Uu][Xx])|([Ii][Xx])|([Pp][Ii][Xx])
-modes		({mode_chars}+)|({mode_chars}*::{mode_chars}*)
+modes		({mode_chars}+)|({mode_chars}+::{mode_chars}*)|(::{mode_chars}*)
 /* New message types */
 
 reject_type		"APPARMOR_DENIED"

@@ -148,6 +148,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 
 log_message: audit_type
 	| syslog_type
+	| audit_dispatch
 	;
 
 audit_type: TOK_KEY_TYPE TOK_EQUALS type_syntax ;
@@ -186,6 +187,12 @@ syslog_type:
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
 	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP audit_id key_list
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
+	;
+
+/* when audit dispatches a message it doesn't prepend the audit type string */
+audit_dispatch:
+	audit_msg old_msg  { ret_record->version = AA_RECORD_SYNTAX_V1; }
+	audit_msg key_list { ret_record->version = AA_RECORD_SYNTAX_V2; }
 	;
 
 old_msg:
