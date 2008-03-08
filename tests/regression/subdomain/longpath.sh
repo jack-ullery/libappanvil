@@ -13,6 +13,13 @@
 # Verify handling of long pathnames.
 #=END
 
+pwd=`dirname $0`
+pwd=`cd $pwd ; /bin/pwd`
+
+bin=$pwd
+
+. $bin/prologue.inc
+
 genrandname()
 {
 	_goal=$1
@@ -28,16 +35,27 @@ genrandname()
 
 	echo $_s
 }
-pwd=`dirname $0`
-pwd=`cd $pwd ; /bin/pwd`
-
-bin=$pwd
-
-. $bin/prologue.inc
 
 name_max=255 #NAME_MAX
 direlem_max=235 #Length for intermediate dirs, slightly less than name_max
-buf_max=4096 #PAGE
+#if [ -f /sys/module/apparmor/parameters/path_max ] ; then
+#	buf_max=`cat /sys/module/apparmor/parameters/path_max`
+#else
+#	buf_max=4096		#standard x86 page size
+#fi
+
+#sigh this isn't right but bash's  cd/getcwd limit path to a pagesize
+buf_max=4096			#standard x86 page size
+
+# change apparmor's path buffer to something less than buf_max so we can
+# actually test overflowing apparmor's max buffer
+if [ -f /sys/module/apparmor/parameters/path_max ] ; then
+	buf_max=2048			#standard x86 page size/2
+	old_max=`cat /sys/module/apparmor/parameters/path_max`
+	echo $buf_max > /sys/module/apparmor/parameters/path_max
+else
+	echo "WARNING: This version of AppArmor does not support changing buffer size."
+fi
 
 # generate 255 character filename
 file=`genrandname $name_max`
@@ -54,13 +72,15 @@ file_expected_fail=0
 link_expected_fail=0
 
 iter=1
+_dpwd=`pwd`
 while true
 do
 	direlem=`genrandname $direlem_max`
+#echo "loop ${iter}: ${#_dpwd} ${#direlem}"
 
-	_dpath=`pwd`/$direlem
+	_dpath=${_dpwd}/$direlem
 
-	if [ ${#_dpath} -lt 4096 ]
+	if [ ${#_dpath} -lt ${buf_max} ]
 	then
 		dstatus=pass
 	else
@@ -77,6 +97,7 @@ do
 		then
 			#echo "mkdir ($iter) passed at length ${#_dpath}"
 			cd $direlem
+			_dpwd="${_dpwd}/${direlem}"
 		else
 			echo "FAIL: $direlem ($_iter) was not created" >&2
 		fi
@@ -91,8 +112,8 @@ do
 		:
 	fi
 
-	_fpath=`pwd`/$file
-	if [ ${#_fpath} -lt 4096 ]
+	_fpath=${_dpath}/$file
+	if [ ${#_fpath} -lt ${buf_max} ]
 	then
 		fstatus=pass
 	else
@@ -167,3 +188,8 @@ do
 	
 	: $((iter++))
 done
+
+#restore buffer_max if present
+if [ -f /sys/module/apparmor/parameters/path_max ] ; then
+	echo $old_max > /sys/module/apparmor/parameters/path_max
+fi

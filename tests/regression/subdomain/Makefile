@@ -142,10 +142,11 @@ TESTS=access \
       syscall \
       unix_fd_server \
       unlink\
-      xattrs
+      xattrs\
+      longpath
 
 # Tests that can crash the kernel should be placed here
-RISKY_TESTS=longpath
+RISKY_TESTS=
 
 all: $(EXEC) changehat.h
 
