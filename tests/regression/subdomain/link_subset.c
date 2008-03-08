@@ -25,19 +25,26 @@
 
 #define AA_MAY_LINK			0x0010
 #define AA_MAY_LOCK			0x0020
-#define AA_EXEC_MMAP			0x0040
+#define AA_MAY_MOUNT			0x0040
+#define AA_EXEC_MMAP			0x0080
+#define AA_EXEC_UNSAFE			0x0100
 
-#define AA_EXEC_INHERIT			0x080
-#define AA_EXEC_UNCONFINED		0x100
-#define AA_EXEC_PROFILE			0x200
-#define AA_EXEC_UNSAFE			0x400
+#define AA_EXEC_MOD_0			0x0200
+#define AA_EXEC_MOD_1			0x0400
+#define AA_EXEC_MOD_2			0x0800
 
-#define AA_EXEC_MODIFIERS		(AA_EXEC_INHERIT | \
-					 AA_EXEC_UNCONFINED | \
-					 AA_EXEC_PROFILE)
+#define AA_EXEC_MODIFIERS		(AA_EXEC_MOD_0 | \
+					 AA_EXEC_MOD_1 | \
+					 AA_EXEC_MOD_2)
+
 #define AA_EXEC_BITS (AA_MAY_EXEC | AA_EXEC_MODIFIERS | AA_EXEC_UNSAFE)
 
-#define MAX_PERM (AA_EXEC_UNSAFE << 1)
+#define AA_EXEC_UNCONFINED AA_EXEC_MOD_0
+#define AA_EXEC_INHERIT    AA_EXEC_MOD_1
+#define AA_EXEC_PROFILE    (AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
+#define AA_EXEC_PIX        AA_EXEC_MOD_2
+
+#define MAX_PERM (AA_EXEC_MOD_2 << 1)
 #define MAX_PERM_LEN 10
 
 
@@ -56,12 +63,12 @@ int valid_link_perm_subset(int tperm, int lperm)
 
 	/* an empty permission set is always a subset of target */
 	if (!lperm)
-		return 0;
+		return 1;
 
 	/* ix implies mix */
-	if (lperm & AA_EXEC_INHERIT)
+	if ((lperm & AA_EXEC_MODIFIERS) == AA_EXEC_INHERIT)
 		lperm |= AA_EXEC_MMAP;
-	if (tperm & AA_EXEC_INHERIT)
+	if ((tperm & AA_EXEC_MODIFIERS) == AA_EXEC_INHERIT)
 		tperm |= AA_EXEC_MMAP;
 
 	/* w implies a */
@@ -72,12 +79,12 @@ int valid_link_perm_subset(int tperm, int lperm)
 
 	/* currently no such thing as a safe ix - probably should be
 	 * depending on how the rule is written */
-	if (tperm & AA_EXEC_INHERIT && !(tperm & AA_EXEC_UNSAFE))
-		tperm |= AA_EXEC_UNSAFE;
+//	if ((tperm & AA_EXEC_MODIFIERS) == AA_EXEC_INHERIT && !(tperm & AA_EXEC_UNSAFE))
+//		tperm |= AA_EXEC_UNSAFE;
 
 	/* treat safe exec as subset of unsafe exec */
-	if (!(lperm & AA_EXEC_UNSAFE))
-		lperm |= AA_EXEC_UNSAFE & tperm;
+//	if (!(lperm & AA_EXEC_UNSAFE))
+//		lperm |= AA_EXEC_UNSAFE & tperm;
 
 	/* check that exec mode, if present, matches */
 	if ((lperm & AA_MAY_EXEC) && ((lperm & AA_EXEC_BITS) != (tperm & AA_EXEC_BITS)))
@@ -104,8 +111,8 @@ void permstring(char *buffer, int mask)
 			case AA_EXEC_UNCONFINED:
 				*b++ = 'u';
 				break;
-//			case AA_EXEC_PIX:
-//				*b++ = 'p';
+			case AA_EXEC_PIX:
+				*b++ = 'p';
 				/* fall through */
 			case AA_EXEC_INHERIT:
 				*b++ = 'i';
@@ -119,9 +126,10 @@ void permstring(char *buffer, int mask)
 			case AA_EXEC_UNCONFINED:
 				*b++ = 'U';
 				break;
-//			case AA_EXEC_PIX:
-//				*b++ = 'P';
-				/* fall through */
+			case AA_EXEC_PIX:
+				*b++ = 'P';
+				*b++ = 'i';
+				break;
 			case AA_EXEC_INHERIT:
 				*b++ = 'I';
 				break;
@@ -154,13 +162,23 @@ int is_valid_perm_set(int perm) {
 			return 0;
 		if (!(perm & AA_EXEC_MODIFIERS))
 			return 0;
-		/* exactly 1 exec modifier can be set */
-		if ((perm & AA_EXEC_MODIFIERS) & ((perm & AA_EXEC_MODIFIERS) - 1))
+
+		/* no such thing as an unsafe ix */
+		if ((perm & AA_EXEC_MODIFIERS) == AA_EXEC_INHERIT && (perm & AA_EXEC_UNSAFE))
+			return 0;
+
+		/* check exec_modifiers in range */
+		if (!((perm & AA_EXEC_MODIFIERS) > 0 && (perm & AA_EXEC_MODIFIERS) < AA_EXEC_PIX +1))
 			return 0;
 	}
 	/* only 1 of append or write should be set */
 	if ((perm & AA_MAY_WRITE) && (perm & AA_MAY_APPEND))
 		return 0;
+
+	/* not using mount yet, how should mount perms affect link? */
+	if (perm & AA_MAY_MOUNT)
+		return 0;
+
 	return 1;
 }
 
@@ -223,6 +241,8 @@ int main(int argc, char *argv[])
 				       strerror(errno), lname, tname,
 				       res ? "passed" : "failed", res ? "fail" : "pass");
 				fail++;
+//				if (fail > 5)
+//				  return 1;
 			} else {
 				pass++;
 			}
