@@ -113,6 +113,10 @@ int print_results(aa_log_record *record)
 		{
 			printf("Denied Mask: %s\n", record->denied_mask);
 		}
+		if (record->fsuid != (unsigned long) -1)
+		{
+			printf("fsuid: %d\n", record->fsuid);
+		}
 		if (record->profile != NULL)
 		{
 			printf("Profile: %s\n", record->profile);
@@ -124,6 +128,10 @@ int print_results(aa_log_record *record)
 		if (record->name2 != NULL)
 		{
 			printf("Name2: %s\n", record->name2);
+		}
+		if (record->namespace != NULL)
+		{
+			printf("Namespace: %s\n", record->namespace);
 		}
 		if (record->attribute != NULL)
 		{
@@ -144,6 +152,10 @@ int print_results(aa_log_record *record)
 		if (record->info != NULL)
 		{
 			printf("Info: %s\n", record->info);
+		}
+		if (record->error_code)
+		{
+			printf("ErrorCode: %d\n", record->error_code);
 		}
 		if (record->pid != 0)
 		{

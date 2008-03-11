@@ -115,17 +115,18 @@ typedef struct
 {
 	aa_record_syntax_version version;
 	aa_record_event_type event;	/* Event type */
-	unsigned long pid;			/* PID of the program logging the message */
+	unsigned long pid;		/* PID of the program logging the message */
 	unsigned long task;
 	unsigned long magic_token;
 	long epoch;			/* example: 12345679 */
-	unsigned int audit_sub_id;		/* example: 12 */
+	unsigned int audit_sub_id;	/* example: 12 */
 
 	int bitmask;			/* Bitmask containing "r" "w" "x" etc */
 	char *audit_id;			/* example: 12345679.1234:12 */
 	char *operation;		/* "Exec" "Ptrace", etc. */
 	char *denied_mask;		/* "r", "w", etc. */
 	char *requested_mask;
+	unsigned long fsuid;		/* fsuid of task - if logged */
 	char *profile;			/* The name of the profile */
 	char *name;
 	char *name2;
@@ -133,6 +134,7 @@ typedef struct
 	char *attribute;
 	unsigned long parent;	
 	char *info;
+	int error_code;			/* error_code returned if logged */
 	char *active_hat;
 	char *net_family;
 	char *net_protocol;

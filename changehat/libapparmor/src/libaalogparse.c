@@ -60,6 +60,8 @@ void free_record(aa_log_record *record)
 			free(record->name);
 		if (record->name2 != NULL)
 			free(record->name2);
+		if (record->namespace != NULL)
+			free(record->namespace);
 		if (record->attribute != NULL)
 			free(record->attribute);
 		if (record->info != NULL)
@@ -86,29 +88,12 @@ void _init_log_record(aa_log_record *record)
 	if (record == NULL)
 		return;
 
+	memset(record, 0, sizeof(aa_log_record));
+
 	record->version = AA_RECORD_SYNTAX_UNKNOWN;
 	record->event = AA_RECORD_INVALID;
-	record->pid = 0;
-	record->bitmask = 0;
-	record->task = 0;
-	record->magic_token = 0;
-	record->epoch = 0;
-	record->audit_sub_id = 0;
+	record->fsuid = (unsigned long) -1;
 
-	record->audit_id = NULL;
-	record->operation = NULL;
-	record->denied_mask = NULL;
-	record->requested_mask = NULL;
-	record->profile = NULL;
-	record->name = NULL;
-	record->name2 = NULL;
-	record->attribute = NULL;
-	record->parent = 0;
-	record->info = NULL;
-	record->active_hat = NULL;
-	record->net_family = NULL;
-	record->net_protocol = NULL;
-	record->net_sock_type = NULL;
 	return;
 }
 

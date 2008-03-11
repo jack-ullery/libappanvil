@@ -105,6 +105,8 @@ key_image		"image"
 key_family		"family"
 key_sock_type		"sock_type"
 key_protocol		"protocol"
+key_error		"error"
+key_fsuid		"fsuid"
 audit			"audit"
 
 /* syslog tokens */
@@ -284,6 +286,8 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {key_family}		{ return(TOK_KEY_FAMILY); }
 {key_sock_type}		{ return(TOK_KEY_SOCK_TYPE); }
 {key_protocol}		{ return(TOK_KEY_PROTOCOL); }
+{key_error}		{ return(TOK_KEY_ERROR); }
+{key_fsuid}		{ return(TOK_KEY_FSUID); }
 
 {syslog_kernel}		{ BEGIN(dmesg_timestamp); return(TOK_SYSLOG_KERNEL); }
 {syslog_month}		{ yylval->t_str = strdup(yytext); return(TOK_DATE_MONTH); }

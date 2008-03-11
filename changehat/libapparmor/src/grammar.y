@@ -141,6 +141,8 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_SOCK_TYPE
 %token TOK_KEY_PROTOCOL
 %token TOK_KEY_NAMESPACE
+%token TOK_KEY_ERROR
+%token TOK_KEY_FSUID
 
 %token TOK_SYSLOG_KERNEL
 
@@ -405,6 +407,10 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->net_protocol = $3;}
 	| TOK_KEY_TYPE TOK_EQUALS TOK_DIGITS
 	{ ret_record->event = lookup_aa_event($3);}
+	| TOK_KEY_ERROR TOK_EQUALS TOK_DIGITS
+	{ ret_record->error_code = $3;}
+	| TOK_KEY_FSUID TOK_EQUALS TOK_DIGITS
+	{ ret_record->fsuid = $3;}
 	;
 
 key_pid: TOK_KEY_PID TOK_EQUALS TOK_DIGITS { ret_record->pid = $3; }
