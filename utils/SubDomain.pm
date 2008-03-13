@@ -2161,6 +2161,9 @@ sub parse_log_record_v_2_0 ($@) {
         my ($sdmode, $mode, $detail, $prog, $pid, $profile, $hat) =
            ($1, $2, $3, $4, $5, $6, $7);
 
+	if ($mode eq "link") {
+	    $mode = "l";
+	}
         if (!validate_log_mode($mode)) {
             fatal_error(sprintf(gettext('Log contains unknown mode %s.'), $mode));
         }
