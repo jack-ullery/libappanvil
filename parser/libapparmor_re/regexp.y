@@ -1547,16 +1547,32 @@ uint32_t accept_perms(State *state)
 
 extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
 {
+    return aare_add_rule_vec(rules, perms, 1, &rule);
+}
+
+extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, uint32_t perms,
+				 int count, char **rulev)
+{
     static MatchFlag *match_flags[sizeof(perms) * 8 - 1];
     static MatchFlag *exec_match_flags[8 * 2];
     static ExactMatchFlag *exact_match_flags[8 * 2];
-    Node *tree, *accept;
+    Node *tree = NULL, *accept;
     int exact_match;
 
     assert(perms != 0);
 
-    if (regexp_parse(&tree, rule))
+    if (regexp_parse(&tree, rulev[0]))
 	return 0;
+    for (int i = 1; i < count; i++) {
+	    Node *subtree = NULL;
+	    Node *node = new CharNode(0);
+	    if (!node)
+		return 0;
+	    tree = new CatNode(tree, node);
+	    if (regexp_parse(&subtree, rulev[i]))
+		return 0;
+	    tree = new CatNode(tree, subtree);
+    }
 
     /*
      * Check if we have an expression with or without wildcards. This
@@ -1580,7 +1596,7 @@ extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
 #define EXTRACT_X_INDEX(perm, shift) (((perm) >> (shift + 7)) & 0x7)
 
 if (perms & ALL_EXEC_TYPE && (!perms & AA_EXEC_BITS))
-	fprintf(stderr, "adding X rule without MAY_EXEC: 0x%x %s\n", perms, rule);
+	fprintf(stderr, "adding X rule without MAY_EXEC: 0x%x %s\n", perms, rulev[0]);
 
     accept = NULL;
     for (unsigned int n = 0; perms && n < (sizeof(perms) * 8) - 1; n++) {

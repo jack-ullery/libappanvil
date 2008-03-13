@@ -21,7 +21,10 @@ typedef struct aare_ruleset aare_ruleset_t;
 
 aare_ruleset_t *aare_new_ruleset(int reverse);
 void aare_delete_ruleset(aare_ruleset_t *rules);
-int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms);
+int aare_add_rule(aare_ruleset_t *rules, char *rule, int deny,
+		  uint32_t perms, uint32_t audit);
+int aare_add_rule_vec(aare_ruleset_t *rules, int deny, uint32_t perms,
+		      uint32_t audit, int count, char **rulev);
 void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes, size_t *size);
 
 #ifdef __cplusplus

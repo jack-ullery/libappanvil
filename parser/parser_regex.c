@@ -509,33 +509,31 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 		/* add the pair rule */
 		char lbuf[PATH_MAX + 8];
 		int perms = AA_LINK_BITS & entry->mode;
+		char *vec[2];
+		vec[0] = tbuf;
 		if (entry->link_name) {
-			sprintf(lbuf, "%s//%s", entry->name, entry->link_name);
+			ptype = convert_aaregex_to_pcre(entry->link_name, 0, lbuf, PATH_MAX + 8);
+			if (ptype == ePatternInvalid)
+				return FALSE;
+			vec[1] = lbuf;
 		} else {
 			perms |= LINK_TO_LINK_SUBSET(perms);
-			sprintf(lbuf, "%s///**", entry->name);
+			vec[1] = "/[^/].*";
 		}
-		ptype = convert_aaregex_to_pcre(lbuf, 0, tbuf, PATH_MAX + 8);
-		if (ptype == ePatternInvalid)
+		if (!aare_add_rule_vec(dfarules, perms, 2, vec))
 			return FALSE;
-		if (!aare_add_rule(dfarules, tbuf, perms))
-			return FALSE;
-/*		if (!aare_add_vec_rule(dfarules, perms,
-				       tbuf, "/**", NULL))
-			return FALSE;
-*/
 	}
 	if (entry->mode & AA_CHANGE_PROFILE) {
-		char lbuf[2*PATH_MAX + 8];
-		if (entry->namespace)
-			sprintf(lbuf, "%s//%s", entry->namespace, entry->name);
-		else
-			sprintf(lbuf, "%s", entry->name);
-		ptype = convert_aaregex_to_pcre(lbuf, 0, tbuf, 2*PATH_MAX + 8);
-		if (ptype == ePatternInvalid)
-			return FALSE;
-		if (!aare_add_rule(dfarules, tbuf, AA_CHANGE_PROFILE))
-			return FALSE;
+		if (entry->namespace) {
+			char *vec[2];
+			vec[0] = entry->namespace;
+			vec[1] = entry->name;
+			if (!aare_add_rule_vec(dfarules, AA_CHANGE_PROFILE, 2, vec))
+			    return FALSE;
+		} else {
+			if (!aare_add_rule(dfarules, entry->name, AA_CHANGE_PROFILE))
+				return FALSE;
+		}
 	}
 	return TRUE;
 }
