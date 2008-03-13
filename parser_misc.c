@@ -62,6 +62,7 @@ static struct keyword_table keyword_table[] = {
 	{"unsafe",		TOK_UNSAFE},
 	{"link",		TOK_LINK},
 	{"owner",		TOK_OWNER},
+	{"subset",		TOK_SUBSET},
 	/* terminate */
 	{NULL, 0}
 };

@@ -68,9 +68,14 @@
 #define AA_EXEC_MODIFIERS		(AA_EXEC_MOD_0 | AA_EXEC_MOD_1 | \
 					 AA_EXEC_MOD_2 | AA_EXEC_MOD_3 | \
 					 AA_EXEC_MOD_4)
+#define AA_EXEC_COUNT			32
 
-#define AA_EXEC_TYPE			(AA_MAY_EXEC | AA_EXEC_UNSAFE | \
-					 AA_EXEC_MODIFIERS)
+#define AA_USER_EXEC_MODIFIERS		(AA_EXEC_MODIFIERS << AA_USER_SHIFT)
+#define AA_OTHER_EXEC_MODIFIERS		(AA_EXEC_MODIFIERS << AA_OTHER_SHIFT)
+#define AA_ALL_EXEC_MODIFIERS		(AA_USER_EXEC_MODIFIERS | \
+					 AA_OTHER_EXEC_MODIFIERS)
+
+#define AA_EXEC_TYPE			(AA_EXEC_UNSAFE | AA_EXEC_MODIFIERS)
 
 #define AA_EXEC_UNCONFINED		(AA_EXEC_MOD_0)
 #define AA_EXEC_INHERIT			(AA_EXEC_MOD_1)
@@ -79,14 +84,18 @@
 
 #define AA_VALID_PERMS			(AA_FILE_PERMS | AA_CHANGE_PROFILE)
 
-#define AA_EXEC_BITS			((AA_MAY_EXEC << AA_USER_SHIFT) | \
-					 (AA_MAY_EXEC << AA_OTHER_SHIFT))
+#define AA_USER_EXEC			(AA_MAY_EXEC << AA_USER_SHIFT)
+#define AA_OTHER_EXEC			(AA_MAY_EXEC << AA_OTHER_SHIFT)
+
+#define AA_EXEC_BITS			(AA_USER_EXEC | AA_OTHER_EXEC)
 
 #define ALL_AA_EXEC_UNSAFE		((AA_EXEC_UNSAFE << AA_USER_SHIFT) | \
 					 (AA_EXEC_UNSAFE << AA_OTHER_SHIFT))
 
 #define AA_USER_EXEC_TYPE		(AA_EXEC_TYPE << AA_USER_SHIFT)
 #define AA_OTHER_EXEC_TYPE		(AA_EXEC_TYPE << AA_OTHER_SHIFT)
+
+#define ALL_AA_EXEC_TYPE		(AA_USER_EXEC_TYPE | AA_OTHER_EXEC_TYPE)
 
 #define AA_LINK_BITS			((AA_MAY_LINK << AA_USER_SHIFT) | \
 					 (AA_MAY_LINK << AA_OTHER_SHIFT))
@@ -101,6 +110,13 @@
 #define LINK_SUBSET_BITS	((AA_LINK_SUBSET_TEST << AA_USER_SHIFT) | \
 				 (AA_LINK_SUBSET_TEST << AA_OTHER_SHIFT))
 #define LINK_TO_LINK_SUBSET(X)		(((X) << 1) & AA_LINK_SUBSET_TEST)
+
+
+/* Pack the audit, and quiet masks into a single 28 bit field in the
+ * format oq:oa:uq:ua
+ */
+#define PACK_AUDIT_CTL(audit, quiet)	(((audit) & 0x1fc07f) | \
+					 (((quiet) & 0x1fc07f) << 7))
 
 #define AA_HAT_SIZE	975	/* Maximum size of a subdomain
 					 * ident (hat) */
