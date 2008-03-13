@@ -1,6 +1,6 @@
 ---
- security/apparmor/main.c |   35 +++++++++++++++++++----------------
- 1 file changed, 19 insertions(+), 16 deletions(-)
+ security/apparmor/main.c |   37 ++++++++++++++++++++-----------------
+ 1 file changed, 20 insertions(+), 17 deletions(-)
 
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
@@ -63,9 +63,12 @@
  		if (denied_mask & AA_EXEC_BITS)
  			denied_mask |= l_mode & AA_ALL_EXEC_MODS;
  		else if (l_mode & AA_EXEC_BITS) {
-@@ -128,7 +132,6 @@ static int aa_link_denied(struct aa_prof
+@@ -126,9 +130,8 @@ static int aa_link_denied(struct aa_prof
+ 				denied_mask |= AA_OTHER_EXEC |
+ 					(l_mode & AA_OTHER_EXEC_MODS);
  		}
- 	} else
+-	} else
++	} else if (t_mode & AA_FILE_PERMS)
  		denied_mask |= t_mode | link_mask;
 -#undef SUBSET_PERMS
  

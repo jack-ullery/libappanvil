@@ -10,7 +10,7 @@
  			       size_t size, loff_t *ppos)
  {
 -	const char *matching = "pattern=aadfa perms=rwxamlz user:other";
-+	const char *matching = "pattern=aadfa perms=rwxamlk/ user:other";
++	const char *matching = "pattern=aadfa perms=rwxamlk/ user::other";
  
  	return simple_read_from_buffer(buf, size, ppos, matching,
  				       strlen(matching));

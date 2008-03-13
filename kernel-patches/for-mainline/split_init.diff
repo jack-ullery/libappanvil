@@ -2,8 +2,8 @@
  security/apparmor/Kconfig      |   15 ++++++
  security/apparmor/apparmor.h   |    5 ++
  security/apparmor/apparmorfs.c |    8 +++
- security/apparmor/lsm.c        |   88 ++++++++++++++++++++++++++++++++++-------
- 4 files changed, 102 insertions(+), 14 deletions(-)
+ security/apparmor/lsm.c        |   95 ++++++++++++++++++++++++++++++++++-------
+ 4 files changed, 109 insertions(+), 14 deletions(-)
 
 --- a/security/apparmor/Kconfig
 +++ b/security/apparmor/Kconfig
@@ -90,7 +90,7 @@
  
  static int param_set_aabool(const char *val, struct kernel_param *kp);
  static int param_get_aabool(char *buffer, struct kernel_param *kp);
-@@ -75,6 +67,19 @@ unsigned int apparmor_path_max = 2 * PAT
+@@ -75,6 +67,25 @@ unsigned int apparmor_path_max = 2 * PAT
  module_param_named(path_max, apparmor_path_max, aauint, S_IRUSR | S_IWUSR);
  MODULE_PARM_DESC(apparmor_path_max, "Maximum pathname length allowed");
  
@@ -106,14 +106,21 @@
 +		  &apparmor_enabled, AA_ENABLED_PERMS);
 +MODULE_PARM_DESC(apparmor_enabled, "Enable/Disable Apparmor on boot");
 +
++static int __init apparmor_enabled_setup(char *str)
++{
++	apparmor_enabled = simple_strtol(str, NULL, 0);
++	return 1;
++}
++__setup("apparmor=", apparmor_enabled_setup);
 +
  static int param_set_aabool(const char *val, struct kernel_param *kp)
  {
  	if (aa_task_context(current))
-@@ -103,6 +108,34 @@ static int param_get_aauint(char *buffer
+@@ -103,6 +114,35 @@ static int param_get_aauint(char *buffer
  	return param_get_uint(buffer, kp);
  }
  
++/* allow run time disabling of apparmor */
 +static int param_set_aa_enabled(const char *val, struct kernel_param *kp)
 +{
 +	char *endp;
@@ -145,7 +152,7 @@
  static int aa_reject_syscall(struct task_struct *task, gfp_t flags,
  			     const char *name)
  {
-@@ -879,14 +912,15 @@ struct security_operations apparmor_ops 
+@@ -879,14 +919,15 @@ struct security_operations apparmor_ops 
  	.socket_shutdown =		apparmor_socket_shutdown,
  };
  
@@ -164,7 +171,7 @@
  }
  
  static int __init apparmor_init(void)
-@@ -913,6 +947,8 @@ static int __init apparmor_init(void)
+@@ -913,6 +954,8 @@ static int __init apparmor_init(void)
  		goto register_security_out;
  	}
  
@@ -173,7 +180,7 @@
  	if (apparmor_complain)
  		info_message("AppArmor initialized: complainmode enabled");
  	else
-@@ -931,7 +967,31 @@ createfs_out:
+@@ -931,7 +974,31 @@ createfs_out:
  
  }
  

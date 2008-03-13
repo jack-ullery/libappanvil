@@ -55,7 +55,7 @@ fix-name-errorpath.diff
 fix-net.diff
 change-profile-kernel-v2.diff
 expand-dfa.diff
-slash-null-dfa.diff
+#slash-null-dfa.diff
 profile-namespaces.diff
 owner-perm-set.diff
 apparmor-link-pairs.diff
@@ -91,6 +91,17 @@ fix-link-subset.diff
 # vfs_rmdir-args.diff
 # vfs_unlink-args.diff
 # may_delete-args.diff
-FS2.2.2_fix-unionfs-with-AppArmor.patch
+#fix-change_profile-namespace.diff
+hat_perm.diff
+extend-x-mods.diff
+no-safex-link-subset.diff
+apparmor-create-append.diff
+apparmor-failed-name-error.diff
+audit-uid.diff
+apparmor-secondary-accept.diff
+apparmor-audit-flags2.diff
+audit-log-type-in-syslog.diff
+apparmor-audit-flags.diff
+#FS2.2.2_fix-unionfs-with-AppArmor.patch
 #FS2.1.3_fix-unionfs-with-AppArmor.patch
 
