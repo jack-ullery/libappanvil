@@ -4620,10 +4620,9 @@ sub getprofileflags {
 
     if (open(PROFILE, "$filename")) {
         while (<PROFILE>) {
-            if (m/^\s*\/\S+\s+(flags=\(.+\)\s+)*{\s*$/) {
+            if (m/^\s*\/\S+\s+flags=\((.+)\)\s+{\s*$/) {
                 $flags = $1;
                 close(PROFILE);
-                $flags =~ s/flags=\((.+)\)/$1/;
                 return $flags;
             }
         }
