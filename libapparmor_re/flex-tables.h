@@ -22,6 +22,7 @@ struct table_set_header {
 #define YYTD_ID_DEF	4
 #define YYTD_ID_EC	5
 #define YYTD_ID_META	6
+#define YYTD_ID_ACCEPT2 7
 #define YYTD_ID_NXT	8
 
 #define YYTD_DATA8	1
