@@ -569,7 +569,7 @@ rule:   file_mode id_or_var TOK_END_OF_RULE
 
 rule:	TOK_UNSAFE file_mode id_or_var TOK_END_OF_RULE
 	{
-		int mode = (($2 & AA_EXEC_BITS) << 7) & ALL_AA_EXEC_UNSAFE;
+		int mode = (($2 & AA_EXEC_BITS) << 8) & ALL_AA_EXEC_UNSAFE;
 		if (!($2 & AA_EXEC_BITS))
 			yyerror(_("unsafe rule missing exec permissions"));
 		$$ = do_file_rule(NULL, $3, ($2 & ~ALL_AA_EXEC_UNSAFE) | mode,

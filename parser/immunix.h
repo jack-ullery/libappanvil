@@ -32,36 +32,50 @@
 #define AA_MAY_LINK			(1 << 4)
 #define AA_MAY_LOCK			(1 << 5)
 #define AA_EXEC_MMAP			(1 << 6)
-#define AA_EXEC_UNSAFE			(1 << 7)
-#define AA_EXEC_MOD_0			(1 << 8)
-#define AA_EXEC_MOD_1			(1 << 9)
+#define AA_MAY_MOUNT			(1 << 7)
+#define AA_EXEC_UNSAFE			(1 << 8)
+#define AA_EXEC_MOD_0			(1 << 9)
+#define AA_EXEC_MOD_1			(1 << 10)
+#define AA_EXEC_MOD_2			(1 << 11)
+#define AA_EXEC_MOD_3			(1 << 12)
+#define AA_EXEC_MOD_4			(1 << 13)
 
 #define AA_BASE_PERMS			(AA_MAY_EXEC | AA_MAY_WRITE | \
 					 AA_MAY_READ | AA_MAY_APPEND | \
 					 AA_MAY_LINK | AA_MAY_LOCK | \
-					 AA_EXEC_MMAP | AA_EXEC_UNSAFE | \
-					 AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
+					 AA_MAY_MOUNT | AA_EXEC_MMAP | \
+					 AA_EXEC_UNSAFE | \
+					 AA_EXEC_MOD_0 | AA_EXEC_MOD_1 | \
+					 AA_EXEC_MOD_2 | AA_EXEC_MOD_3 | \
+					 AA_EXEC_MOD_4)
+
 #define AA_USER_SHIFT			0
-#define AA_OTHER_SHIFT			10
+#define AA_OTHER_SHIFT			14
 
 #define AA_USER_PERMS			(AA_BASE_PERMS << AA_USER_SHIFT)
 #define AA_OTHER_PERMS			(AA_BASE_PERMS << AA_OTHER_SHIFT)
 
 #define AA_FILE_PERMS			(AA_USER_PERMS | AA_OTHER_PERMS )
 
+#define AA_AUDIT_FIELD			(1 << 28)
+#define AA_CHANGE_HAT			(1 << 29)
 #define AA_CHANGE_PROFILE		(1 << 30)
 #define AA_ERROR_BIT			(1 << 31)
-#define AA_SHARED_PERMS			(AA_CHANGE_PROFILE | AA_ERROR_BIT)
+#define AA_SHARED_PERMS			(AA_CHANGE_HAT | AA_CHANGE_PROFILE | \
+					 AA_AUDIT_FIELD | AA_ERROR_BIT)
 
 
-#define AA_EXEC_MODIFIERS		(AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
+#define AA_EXEC_MODIFIERS		(AA_EXEC_MOD_0 | AA_EXEC_MOD_1 | \
+					 AA_EXEC_MOD_2 | AA_EXEC_MOD_3 | \
+					 AA_EXEC_MOD_4)
+
 #define AA_EXEC_TYPE			(AA_MAY_EXEC | AA_EXEC_UNSAFE | \
 					 AA_EXEC_MODIFIERS)
 
-#define AA_EXEC_UNCONFINED		0
-#define AA_EXEC_INHERIT			(AA_EXEC_MOD_0)
-#define AA_EXEC_PROFILE			(AA_EXEC_MOD_1)
-#define AA_EXEC_PROFILE_OR_INHERIT	(AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
+#define AA_EXEC_UNCONFINED		(AA_EXEC_MOD_0)
+#define AA_EXEC_INHERIT			(AA_EXEC_MOD_1)
+#define AA_EXEC_PROFILE			(AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
+#define AA_EXEC_PROFILE_OR_INHERIT	(AA_EXEC_MOD_2)
 
 #define AA_VALID_PERMS			(AA_FILE_PERMS | AA_CHANGE_PROFILE)
 
