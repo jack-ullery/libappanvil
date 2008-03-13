@@ -95,7 +95,10 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %token TOK_COLON
 %token TOK_LINK
 %token TOK_OWNER
+%token TOK_OTHER
 %token TOK_SUBSET
+%token TOK_AUDIT
+%token TOK_DENY
 
 /* capabilities */
 %token TOK_CAPABILITY
@@ -136,8 +139,6 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %type <cod>	cond_rule
 %type <network_entry> network_rule
 %type <user_entry> rule
-%type <user_entry> owner_rule
-%type <user_entry> owner_rules
 %type <flags>	flags
 %type <flags>	flagvals
 %type <flags>	flagval
@@ -152,6 +153,8 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %type <boolean> expr
 %type <id>	id_or_var
 %type <boolean> opt_subset_flag
+%type <boolean> opt_audit_flag
+%type <boolean> opt_owner_flag
 %%
 
 
@@ -291,7 +294,7 @@ varassign:	TOK_BOOL_VAR TOK_EQUALS TOK_VALUE
 
 valuelist:	TOK_VALUE
 	{
-		struct value_list *new = malloc(sizeof(struct value_list));
+		struct value_list *new = calloc(1, sizeof(struct value_list));
 		if (!new)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("Matched: value (%s)\n", $1);
@@ -303,7 +306,7 @@ valuelist:	TOK_VALUE
 
 valuelist:	valuelist TOK_VALUE
 	{
-		struct value_list *new = malloc(sizeof(struct value_list));
+		struct value_list *new = calloc(1, sizeof(struct value_list));
 		if (!new)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("Matched: value (%s)\n", $1);
@@ -361,6 +364,13 @@ flagval:	TOK_FLAG_ID
 opt_subset_flag: { /* nothing */ $$ = 0; }
 	| TOK_SUBSET { $$ = 1; }
 
+opt_audit_flag: { /* nothing */ $$ = 0; }
+	| TOK_AUDIT { $$ = 1; };
+
+opt_owner_flag: { /* nothing */ $$ = 0; }
+	| TOK_OWNER { $$ = 1; };
+	| TOK_OTHER { $$ = 2; };
+
 rules:	{ /* nothing */ 
 		struct codomain *cod = NULL;
 		cod = (struct codomain *) calloc(1, sizeof(struct codomain));
@@ -371,50 +381,151 @@ rules:	{ /* nothing */
 		$$ = cod;
 	};
 
-rules:  rules rule
+/*  can't fold TOK_DENY in as opt_deny_flag as it messes up the generated
+ * parser, even though it shouldn't
+ */
+rules:  rules opt_audit_flag TOK_DENY opt_owner_flag rule
 	{
 		PDEBUG("matched: rules rule\n");
-		PDEBUG("rules rule: (%s)\n", $2->name);
-		if (!$2)
+		PDEBUG("rules rule: (%s)\n", $5->name);
+		if (!$5)
 			yyerror(_("Assert: `rule' returned NULL."));
-		add_entry_to_policy($1, $2);
+		$5->deny = 1;
+		if (($5->mode & AA_EXEC_BITS) && ($5->mode & ALL_AA_EXEC_TYPE))
+			yyerror(_("Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"));
+
+		if ($4 == 1)
+			$5->mode &= (AA_USER_PERMS | AA_SHARED_PERMS);
+		else if ($4 == 2)
+			$5->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS);
+		/* only set audit ctl quieting if the rule is not audited */
+		if (!$2)
+			$5->audit = $5->mode & ~ALL_AA_EXEC_TYPE;
+
+		add_entry_to_policy($1, $5);
 		$$ = $1;
 	};
 
-rules:  rules TOK_OWNER owner_rule
+rules:  rules opt_audit_flag opt_owner_flag rule
+	{
+		PDEBUG("matched: rules rule\n");
+		PDEBUG("rules rule: (%s)\n", $4->name);
+		if (!$4)
+			yyerror(_("Assert: `rule' returned NULL."));
+		if (($4->mode & AA_EXEC_BITS) && !($4->mode & ALL_AA_EXEC_TYPE))
+			yyerror(_("Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"));
+
+		if ($3 == 1)
+			$4->mode &= (AA_USER_PERMS | AA_SHARED_PERMS);
+		else if ($3 == 2)
+			$4->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS);
+		if ($2)
+			$4->audit = $4->mode & ~ALL_AA_EXEC_TYPE;
+
+		add_entry_to_policy($1, $4);
+		$$ = $1;
+	};
+
+rules: rules opt_audit_flag opt_owner_flag TOK_OPEN rules TOK_CLOSE
 	{
 		struct cod_entry *entry, *tmp;
-
-		PDEBUG("matched: rules owner_rules\n");
-		PDEBUG("rules owner_rules: (%s)\n", $3->name);
-		if ($3) {
-			list_for_each_safe($3, entry, tmp) {
-				entry->next = NULL;
-				add_entry_to_policy($1, entry);
+		PDEBUG("matched: audit block\n");
+		list_for_each_safe($5->entries, entry, tmp) {
+			entry->next = NULL;
+			if (entry->mode & AA_EXEC_BITS) {
+				if (entry->deny &&
+				    (entry->mode & ALL_AA_EXEC_TYPE))
+					yyerror(_("Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"));
+				else if (!entry->deny &&
+					 !(entry->mode & ALL_AA_EXEC_TYPE))
+					yyerror(_("Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"));
 			}
+			if ($3 == 1)
+ 				entry->mode &= (AA_USER_PERMS | AA_SHARED_PERMS);
+			else if ($3 == 2)
+				entry->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS);
+
+			if ($2 && !entry->deny)
+				entry->audit = entry->mode & ~ALL_AA_EXEC_TYPE;
+			else if (!$2 && entry->deny)
+				 entry->audit = entry->mode & ~ALL_AA_EXEC_TYPE;
+			add_entry_to_policy($1, entry);
 		}
+		$5->entries = NULL;
+		// fix me transfer rules and free sub codomain
+		free_policy($5);
 		$$ = $1;
 	};
 
-rules: rules network_rule
+rules: rules opt_audit_flag TOK_DENY network_rule
 	{
 		struct aa_network_entry *entry, *tmp;
 
 		PDEBUG("Matched: network rule\n");
-		if (!$2)
+		if (!$4)
 			yyerror(_("Assert: `network_rule' return invalid protocol."));
 		if (!$1->network_allowed) {
 			$1->network_allowed = calloc(AF_MAX,
 						     sizeof(unsigned int));
-			if (!$1->network_allowed)
+			$1->audit_network = calloc(AF_MAX,
+						   sizeof(unsigned int));
+			$1->deny_network = calloc(AF_MAX,
+						     sizeof(unsigned int));
+			$1->quiet_network = calloc(AF_MAX,
+						     sizeof(unsigned int));
+			if (!$1->network_allowed || !$1->audit_network ||
+			    !$1->deny_network || !$1->quiet_network)
 				yyerror(_("Memory allocation error."));
 		}
-		list_for_each_safe($2, entry, tmp) {
+		list_for_each_safe($4, entry, tmp) {
+			if (entry->type > SOCK_PACKET) {
+				/* setting mask instead of a bit */
+				$1->deny_network[entry->family] |= entry->type;
+				if (!$2)
+					$1->quiet_network[entry->family] |= entry->type;
+
+			} else {
+				$1->deny_network[entry->family] |= 1 << entry->type;
+				if (!$2)
+					$1->quiet_network[entry->family] |= 1 << entry->type;
+			}
+			free(entry);
+		}
+
+		$$ = $1
+	}
+
+rules: rules opt_audit_flag network_rule
+	{
+		struct aa_network_entry *entry, *tmp;
+
+		PDEBUG("Matched: network rule\n");
+		if (!$3)
+			yyerror(_("Assert: `network_rule' return invalid protocol."));
+		if (!$1->network_allowed) {
+			$1->network_allowed = calloc(AF_MAX,
+						     sizeof(unsigned int));
+			$1->audit_network = calloc(AF_MAX,
+						   sizeof(unsigned int));
+			$1->deny_network = calloc(AF_MAX,
+						     sizeof(unsigned int));
+			$1->quiet_network = calloc(AF_MAX,
+						     sizeof(unsigned int));
+			if (!$1->network_allowed || !$1->audit_network ||
+			    !$1->deny_network || !$1->quiet_network)
+				yyerror(_("Memory allocation error."));
+		}
+		list_for_each_safe($3, entry, tmp) {
 			if (entry->type > SOCK_PACKET) {
 				/* setting mask instead of a bit */
 				$1->network_allowed[entry->family] |= entry->type;
+				if ($2)
+					$1->audit_network[entry->family] |= entry->type;
+
 			} else {
 				$1->network_allowed[entry->family] |= 1 << entry->type;
+				if ($2)
+					$1->audit_network[entry->family] |= 1 << entry->type;
 			}
 			free(entry);
 		}
@@ -432,9 +543,19 @@ rules:	rules change_profile
 		$$ = $1;
 	};
 
-rules:	rules capability
+rules:	rules opt_audit_flag TOK_DENY capability
 	{
-		$1->capabilities = $1->capabilities | $2;
+		$1->deny_caps |= $4;
+		if (!$2)
+			$1->quiet_caps |= $4;
+		$$ = $1;
+	};
+
+rules:	rules opt_audit_flag capability
+	{
+		$1->capabilities |= $3;
+		if ($2)
+			$1->audit_caps |= $3;
 		$$ = $1;
 	};
 
@@ -535,31 +656,6 @@ expr:	TOK_DEFINED TOK_BOOL_VAR
 
 id_or_var: TOK_ID { $$ = $1; }
 id_or_var: TOK_SET_VAR { $$ = $1; };
-
-owner_rule: TOK_OPEN owner_rules TOK_CLOSE
-	{
-		$$ = $2;
-	};
-
-owner_rule: rule
-	{
-		/* mask mode to owner permissions */
-		if ($1) {
-			$1->mode &= (AA_USER_PERMS | AA_SHARED_PERMS);
-		}
-		$$ = $1;
-	};
-
-owner_rules: { $$ = NULL; };
-
-owner_rules: owner_rules rule
-	{
-		if ($2) {
-			$2->mode &= (AA_USER_PERMS | AA_SHARED_PERMS);
-			$2->next = $1;
-		}
-		$$ = $2;
-	};
 
 rule:	id_or_var file_mode TOK_END_OF_RULE
 	{
@@ -680,7 +776,7 @@ hat_start: TOK_SEP {}
 file_mode: TOK_MODE
 	{
 		/* A single TOK_MODE maps to the same permission in all
-		 * of user:group:other */
+		 * of user::other */
 		$$ = parse_mode($1);
 		free($1);
 	}
@@ -709,7 +805,7 @@ change_profile:	TOK_CHANGE_PROFILE TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
 
 capability:	TOK_CAPABILITY caps TOK_END_OF_RULE
 	{
-		$$ = $2;		
+		$$ = $2;
 	};
 
 caps: caps TOK_ID

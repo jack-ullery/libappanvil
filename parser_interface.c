@@ -58,7 +58,7 @@
 #define SD_STR_LEN (sizeof(u16))
 
 #define SUBDOMAIN_INTERFACE_VERSION 2
-#define SUBDOMAIN_INTERFACE_DFA_VERSION 3
+#define SUBDOMAIN_INTERFACE_DFA_VERSION 4
 
 int sd_serialize_codomain(int option, struct codomain *cod);
 
@@ -206,7 +206,7 @@ struct __sdserialize {
 
 sd_serialize *alloc_sd_serial(void)
 {
-	sd_serialize *p = malloc(sizeof(sd_serialize));
+	sd_serialize *p = calloc(1, sizeof(sd_serialize));
 	if (!p)
 		return NULL;
 	p->buffer = malloc(BUFFERINC);
@@ -529,6 +529,7 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 			 int flattened)
 {
 	struct cod_entry *entry;
+	u32 allowed_caps;
 
 	if (!sd_write_struct(p, "profile"))
 		return 0;
@@ -560,7 +561,12 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 		return 0;
 	if (!sd_write_structend(p))
 		return 0;
-	if (!sd_write32(p, profile->capabilities))
+	allowed_caps = profile->capabilities & ~profile->deny_caps;
+	if (!sd_write32(p, allowed_caps))
+		return 0;
+	if (!sd_write32(p, allowed_caps & profile->audit_caps))
+		return 0;
+	if (!sd_write32(p, profile->deny_caps & profile->quiet_caps))
 		return 0;
 
 	if (profile->network_allowed) {
@@ -568,7 +574,13 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 		if (!sd_write_array(p, "net_allowed_af", AF_MAX))
 			return 0;
 		for (i = 0; i < AF_MAX; i++) {
-			if (!sd_write16(p, profile->network_allowed[i]))
+		    u16 allowed = profile->network_allowed[i] &
+			~profile->deny_network[i];
+			if (!sd_write16(p, allowed))
+				return 0;
+			if (!sd_write16(p, allowed & profile->audit_network[i]))
+				return 0;
+			if (!sd_write16(p, profile->deny_network[i] & profile->quiet_network[i]))
 				return 0;
 		}
 		if (!sd_write_arrayend(p))

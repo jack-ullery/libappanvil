@@ -503,8 +503,21 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 	    AA_EXEC_INHERIT)
 		entry->mode |= AA_EXEC_MMAP << AA_USER_SHIFT;
 
-	if (!aare_add_rule(dfarules, tbuf, entry->mode))
-		return FALSE;
+	/* the link bit on the first pair entry should not get masked
+	 * out by a deny rule, as both pieces of the link pair must
+	 * match.  audit info for the link is carried on the second
+	 * entry of the pair
+	 */
+	if (entry->deny && (entry->mode & AA_LINK_BITS)) {
+		if (!aare_add_rule(dfarules, tbuf, entry->deny,
+				   entry->mode & ~AA_LINK_BITS,
+				   entry->audit & ~AA_LINK_BITS))
+			return FALSE;
+	} else {
+		if (!aare_add_rule(dfarules, tbuf, entry->deny, entry->mode,
+				   entry->audit))
+			return FALSE;
+	}
 	if (entry->mode & (AA_LINK_BITS)) {
 		/* add the pair rule */
 		char lbuf[PATH_MAX + 8];
@@ -522,7 +535,7 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 			perms |= LINK_TO_LINK_SUBSET(perms);
 			vec[1] = "/[^/].*";
 		}
-		if (!aare_add_rule_vec(dfarules, perms, 2, vec))
+		if (!aare_add_rule_vec(dfarules, entry->deny, perms, entry->audit & AA_LINK_BITS, 2, vec))
 			return FALSE;
 	}
 	if (entry->mode & AA_CHANGE_PROFILE) {
@@ -530,10 +543,10 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 			char *vec[2];
 			vec[0] = entry->namespace;
 			vec[1] = entry->name;
-			if (!aare_add_rule_vec(dfarules, AA_CHANGE_PROFILE, 2, vec))
+			if (!aare_add_rule_vec(dfarules, 0, AA_CHANGE_PROFILE, 0, 2, vec))
 			    return FALSE;
 		} else {
-			if (!aare_add_rule(dfarules, entry->name, AA_CHANGE_PROFILE))
+			if (!aare_add_rule(dfarules, entry->name, 0, AA_CHANGE_PROFILE, 0))
 				return FALSE;
 		}
 	}
