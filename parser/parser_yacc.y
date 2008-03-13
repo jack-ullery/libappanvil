@@ -95,6 +95,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %token TOK_COLON
 %token TOK_LINK
 %token TOK_OWNER
+%token TOK_SUBSET
 
 /* capabilities */
 %token TOK_CAPABILITY
@@ -150,7 +151,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %type <val_list> valuelist
 %type <boolean> expr
 %type <id>	id_or_var
-
+%type <boolean> opt_subset_flag
 %%
 
 
@@ -356,6 +357,9 @@ flagval:	TOK_FLAG_ID
 		free($1);
 		$$ = fv;
 	};
+
+opt_subset_flag: { /* nothing */ $$ = 0; }
+	| TOK_SUBSET { $$ = 1; }
 
 rules:	{ /* nothing */ 
 		struct codomain *cod = NULL;
@@ -585,27 +589,29 @@ rule:  id_or_var file_mode id_or_var
 		yyerror(_("missing an end of line character? (entry: %s)"), $1);
 	};
 
-rule: TOK_LINK TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
+rule: TOK_LINK opt_subset_flag TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
-		PDEBUG("Matched: link tok_id (%s) -> (%s)\n", $2, $4);
-		entry = new_entry(NULL, $2, AA_LINK_BITS, $4);
+		PDEBUG("Matched: link tok_id (%s) -> (%s)\n", $3, $5);
+		entry = new_entry(NULL, $3, AA_LINK_BITS, $5);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
+		entry->subset = $2;
 		PDEBUG("rule.entry: link (%s)\n", entry->name);
 		$$ = entry;
 	};
 
-rule: TOK_LINK file_mode TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
+rule: file_mode opt_subset_flag TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 		PDEBUG("Matched: link tok_id (%s) -> (%s)\n", $3, $5);
-		if ($2 & ~AA_LINK_BITS) {
+		if ($1 & ~AA_LINK_BITS) {
 			yyerror(_("only link perms can be specified in a link rule."));
 		} else {
-			entry = new_entry(NULL, $3, $2, $5);
+			entry = new_entry(NULL, $3, AA_LINK_BITS, $5);
 			if (!entry)
 				yyerror(_("Memory allocation error."));
+			entry->subset = $2;
 		}
 		PDEBUG("rule.entry: link (%s)\n", entry->name);
 		$$ = entry;

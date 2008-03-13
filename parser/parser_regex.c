@@ -515,6 +515,8 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 			ptype = convert_aaregex_to_pcre(entry->link_name, 0, lbuf, PATH_MAX + 8);
 			if (ptype == ePatternInvalid)
 				return FALSE;
+			if (entry->subset)
+				perms |= LINK_TO_LINK_SUBSET(perms);
 			vec[1] = lbuf;
 		} else {
 			perms |= LINK_TO_LINK_SUBSET(perms);

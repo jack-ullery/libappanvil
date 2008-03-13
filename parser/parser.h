@@ -44,6 +44,8 @@ struct cod_entry {
 	int mode;			/* mode is 'or' of AA_* bits */
 	int deny;			/* TRUE or FALSE */
 
+	int subset;
+
 	pattern_t pattern_type;
 	struct cod_pattern pat;
 
