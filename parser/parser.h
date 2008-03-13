@@ -42,6 +42,7 @@ struct cod_entry {
 	struct codomain *codomain; 	/* Special codomain defined
 					 * just for this executable */
 	int mode;			/* mode is 'or' of AA_* bits */
+	int audit;			/* audit flags for mode */
 	int deny;			/* TRUE or FALSE */
 
 	int subset;
@@ -72,8 +73,15 @@ struct codomain {
 	struct flagval flags;
 
 	unsigned int capabilities;
+	unsigned int audit_caps;
+	unsigned int deny_caps;
+	unsigned int quiet_caps;
+
 	unsigned int *network_allowed;		/* array of type masks
 						 * indexed by AF_FAMILY */
+	unsigned int *audit_network;
+	unsigned int *deny_network;
+	unsigned int *quiet_network;
 
 	struct cod_entry *entries;
 	void *hat_table;

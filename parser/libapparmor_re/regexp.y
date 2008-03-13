@@ -845,21 +845,27 @@ DFA::~DFA()
 
 class MatchFlag : public AcceptNode {
 public:
-    MatchFlag(uint32_t flag) : flag(flag) {}
+MatchFlag(uint32_t flag, uint32_t audit) : flag(flag), audit(audit) {}
     ostream& dump(ostream& os)
     {
 	return os << '<' << flag << '>';
     }
 
     uint32_t flag;
+    uint32_t audit;
  };
 
 class ExactMatchFlag : public MatchFlag {
 public:
-    ExactMatchFlag(uint32_t flag) : MatchFlag(flag) {}
+    ExactMatchFlag(uint32_t flag, uint32_t audit) : MatchFlag(flag, audit) {}
 };
 
-uint32_t accept_perms(State *state);
+class DenyMatchFlag : public MatchFlag {
+public:
+    DenyMatchFlag(uint32_t flag, uint32_t quiet) : MatchFlag(flag, quiet) {}
+};
+
+uint32_t accept_perms(State *state, uint32_t *audit_ctl);
 
 /**
  * verify that there are no conflicting X permissions on the dfa
@@ -869,7 +875,7 @@ uint32_t accept_perms(State *state);
 State *DFA::verify_perms(void)
 {
     for (States::iterator i = states.begin(); i != states.end(); i++) {
-	uint32_t accept = accept_perms(*i);
+	    uint32_t accept = accept_perms(*i, NULL);
 	if (*i == start || accept) {
 	    if (accept & AA_ERROR_BIT)
 		    return *i;
@@ -884,13 +890,14 @@ State *DFA::verify_perms(void)
 void DFA::dump(ostream& os)
 {
     for (States::iterator i = states.begin(); i != states.end(); i++) {
-	uint32_t accept = accept_perms(*i);
+	    uint32_t accept, audit;
+	    accept = accept_perms(*i, &audit);
 	if (*i == start || accept) {
 	    os << **i;
 	    if (*i == start)
 		os << " <==";
 	    if (accept) {
-		os << " (0x" << hex << accept << dec << ')';
+		os << " (0x" << hex << accept << " " << audit << dec << ')';
 	    }
 	    os << endl;
 	}
@@ -923,7 +930,7 @@ void DFA::dump_dot_graph(ostream& os)
 	if (*i == start) {
 	    os << "\t\tstyle=bold" << endl;
 	}
-	uint32_t perms = accept_perms(*i);
+	uint32_t perms = accept_perms(*i, NULL);
 	if (perms) {
 	    os << "\t\tlabel=\"" << **i << "\\n("
 	       << perms << ")\"" << endl;
@@ -1096,6 +1103,7 @@ public:
 
 private:
     vector<uint32_t> accept;
+    vector<uint32_t> accept2;
     DefaultBase default_base;
     NextCheck next_check;
     map<const State *, size_t> num;
@@ -1142,8 +1150,12 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq)
     }
 
     accept.resize(dfa.states.size());
-    for (States::iterator i = dfa.states.begin(); i != dfa.states.end(); i++)
-	accept[num[*i]] = accept_perms(*i);
+    accept2.resize(dfa.states.size());
+    for (States::iterator i = dfa.states.begin(); i != dfa.states.end(); i++) {
+	uint32_t audit_ctl;
+	accept[num[*i]] = accept_perms(*i, &audit_ctl);
+	accept2[num[*i]] = audit_ctl;
+    }
 }
 
 /**
@@ -1397,6 +1409,7 @@ void TransitionTable::flex_table(ostream& os, const char *name)
     th.th_hsize = htonl(hsize);
     th.th_ssize = htonl(hsize +
 	    flex_table_size(accept.begin(), accept.end()) +
+	    flex_table_size(accept2.begin(), accept2.end()) +
 	    (eq.size() ?
 		flex_table_size(equiv_vec.begin(), equiv_vec.end()) : 0) +
 	    flex_table_size(base_vec.begin(), base_vec.end()) +
@@ -1409,6 +1422,7 @@ void TransitionTable::flex_table(ostream& os, const char *name)
 
 
     write_flex_table(os, YYTD_ID_ACCEPT, accept.begin(), accept.end());
+    write_flex_table(os, YYTD_ID_ACCEPT2, accept2.begin(), accept2.end());
     if (eq.size())
 	write_flex_table(os, YYTD_ID_EC, equiv_vec.begin(), equiv_vec.end());
     write_flex_table(os, YYTD_ID_BASE, base_vec.begin(), base_vec.end());
@@ -1503,41 +1517,66 @@ static inline int diff_qualifiers(uint32_t perm1, uint32_t perm2)
  * have any exact matches, then they override the execute and safe
  * execute flags.
  */
-uint32_t accept_perms(State *state)
+uint32_t accept_perms(State *state, uint32_t *audit_ctl)
 {
-    uint32_t perms = 0, exact_match_perms = 0;
+    uint32_t perms = 0, exact_match_perms = 0, audit = 0, exact_audit = 0,
+	    quiet = 0, deny = 0;
 
     for (State::iterator i = state->begin(); i != state->end(); i++) {
 	    MatchFlag *match;
 	    if (!(match= dynamic_cast<MatchFlag *>(*i)))
 		continue;
 	    if (dynamic_cast<ExactMatchFlag *>(match)) {
+		    /* exact match only ever happens with x */
 		    if (!is_merged_x_consistent(exact_match_perms,
 						match->flag))
 			    exact_match_perms |= AA_ERROR_BIT;
 		    exact_match_perms |= match->flag;
+		    exact_audit |= match->audit;
+	    } else if (dynamic_cast<DenyMatchFlag *>(match)) {
+		    deny |= match->flag;
+		    quiet |= match->audit;
 	    } else {
 		    if (!is_merged_x_consistent(perms, match->flag))
 			    perms |= AA_ERROR_BIT;
 		    perms |= match->flag;
+		    audit |= match->audit;
 	    }
     }
+
+//if (audit || quiet)
+//fprintf(stderr, "perms: 0x%x, audit: 0x%x exact: 0x%x eaud: 0x%x deny: 0x%x quiet: 0x%x\n", perms, audit, exact_match_perms, exact_audit, deny, quiet);
 
     perms |= exact_match_perms &
 	    ~(AA_USER_EXEC_TYPE | AA_OTHER_EXEC_TYPE);
 
-    if (exact_match_perms & AA_USER_EXEC_TYPE)
+    if (exact_match_perms & AA_USER_EXEC_TYPE) {
 	    perms = (exact_match_perms & AA_USER_EXEC_TYPE) |
 		    (perms & ~AA_USER_EXEC_TYPE);
-
-    if (exact_match_perms & AA_OTHER_EXEC_TYPE)
+	    audit = (exact_audit & AA_USER_EXEC_TYPE) |
+		    (audit & ~ AA_USER_EXEC_TYPE);
+    }
+    if (exact_match_perms & AA_OTHER_EXEC_TYPE) {
 	    perms = (exact_match_perms & AA_OTHER_EXEC_TYPE) |
 		    (perms & ~AA_OTHER_EXEC_TYPE);
+	    audit = (exact_audit & AA_OTHER_EXEC_TYPE) |
+		    (audit & ~AA_OTHER_EXEC_TYPE);
+    }
+    if (perms & AA_USER_EXEC & deny)
+	    perms &= ~AA_USER_EXEC_TYPE;
 
- if (perms & AA_ERROR_BIT) {
-     fprintf(stderr, "error bit 0x%x\n", perms);
-     exit(255);
-}
+    if (perms & AA_OTHER_EXEC & deny)
+	    perms &= ~AA_OTHER_EXEC_TYPE;
+
+    perms &= ~deny;
+
+    if (audit_ctl)
+	    *audit_ctl = PACK_AUDIT_CTL(audit, quiet & deny);
+
+// if (perms & AA_ERROR_BIT) {
+//     fprintf(stderr, "error bit 0x%x\n", perms);
+//     exit(255);
+//}
 
  //if (perms & AA_EXEC_BITS)
  //fprintf(stderr, "accept perm: 0x%x\n", perms);
@@ -1548,17 +1587,20 @@ uint32_t accept_perms(State *state)
     return perms;
 }
 
-extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, uint32_t perms)
+extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, int deny,
+			     uint32_t perms, uint32_t audit)
 {
-    return aare_add_rule_vec(rules, perms, 1, &rule);
+	return aare_add_rule_vec(rules, deny, perms, audit, 1, &rule);
 }
 
-extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, uint32_t perms,
+extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
+				 uint32_t perms, uint32_t audit,
 				 int count, char **rulev)
 {
-    static MatchFlag *match_flags[sizeof(perms) * 8 - 1];
-    static MatchFlag *exec_match_flags[64 * 2];		/* mods + unsafe *u::o*/
-    static ExactMatchFlag *exact_match_flags[64 * 2];	/* mods + unsafe *u::o*/
+    static MatchFlag *match_flags[2][sizeof(perms) * 8 - 1];
+    static DenyMatchFlag *deny_flags[2][sizeof(perms) * 8 - 1];
+    static MatchFlag *exec_match_flags[2][(AA_EXEC_COUNT << 1) * 2];	/* mods + unsafe *u::o*/
+    static ExactMatchFlag *exact_match_flags[2][(AA_EXEC_COUNT << 1) * 2];/* mods + unsafe *u::o*/
     Node *tree = NULL, *accept;
     int exact_match;
 
@@ -1595,58 +1637,73 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, uint32_t perms,
     if (rules->reverse)
 	flip_tree(tree);
 
-#define ALL_EXEC_TYPE (AA_USER_EXEC_TYPE | AA_OTHER_EXEC_TYPE)
+
+/* 0x3f == 5 bits x mods + 1 bit unsafe mask, after shift */
 #define EXTRACT_X_INDEX(perm, shift) (((perm) >> (shift + 8)) & 0x3f)
 
-if (perms & ALL_EXEC_TYPE && (!perms & AA_EXEC_BITS))
-	fprintf(stderr, "adding X rule without MAY_EXEC: 0x%x %s\n", perms, rulev[0]);
+//if (perms & ALL_AA_EXEC_TYPE && (!perms & AA_EXEC_BITS))
+//	fprintf(stderr, "adding X rule without MAY_EXEC: 0x%x %s\n", perms, rulev[0]);
 
 //if (perms & ALL_EXEC_TYPE)
 //    fprintf(stderr, "adding X rule %s 0x%x\n", rulev[0], perms);
 
+//if (audit)
+//fprintf(stderr, "adding rule with audit bits set: 0x%x %s\n", audit, rulev[0]);
+
+/* the permissions set is assumed to be non-empty if any audit
+ * bits are specified */
     accept = NULL;
     for (unsigned int n = 0; perms && n < (sizeof(perms) * 8) - 1; n++) {
 	uint32_t mask = 1 << n;
 
 	if (perms & mask) {
+	    int ai = audit & mask ? 1 : 0;
 	    perms &= ~mask;
 
 	    Node *flag;
-	    if (mask & AA_EXEC_BITS) {
+	    if (mask & ALL_AA_EXEC_TYPE)
+		    /* these cases are covered by EXEC_BITS */
+		    continue;
+	    if (deny) {
+		    if (deny_flags[ai][n]) {
+			    flag = deny_flags[ai][n]->dup();
+		    } else {
+//fprintf(stderr, "Adding deny ai %d mask 0x%x audit 0x%x\n", ai, mask, audit & mask);
+			    deny_flags[ai][n] = new DenyMatchFlag(mask, audit&mask);
+			    flag = deny_flags[ai][n];
+		    }
+	    } else if (mask & AA_EXEC_BITS) {
 		    uint32_t eperm = 0;
 		    uint32_t index = 0;
-		    if (mask & AA_USER_EXEC_TYPE) {
+		    if (mask & AA_USER_EXEC) {
 			    eperm = mask | (perms & AA_USER_EXEC_TYPE);
 			    index = EXTRACT_X_INDEX(eperm, AA_USER_SHIFT);
 		    } else {
 			    eperm = mask | (perms & AA_OTHER_EXEC_TYPE);
-			    index = EXTRACT_X_INDEX(eperm, AA_OTHER_SHIFT) + 16;
+			    index = EXTRACT_X_INDEX(eperm, AA_OTHER_SHIFT) + (AA_EXEC_COUNT << 1);
 		    }
 //fprintf(stderr, "index %d eperm 0x%x\n", index, eperm);
 		    if (exact_match) {
-			    if (exact_match_flags[index]) {
-				    flag = exact_match_flags[index]->dup();
+			    if (exact_match_flags[ai][index]) {
+				    flag = exact_match_flags[ai][index]->dup();
 			    } else {
-				exact_match_flags[index] = new ExactMatchFlag(eperm);
-				    flag = exact_match_flags[index];
+				    exact_match_flags[ai][index] = new ExactMatchFlag(eperm, audit&mask);
+				    flag = exact_match_flags[ai][index];
 			    }
 		    } else {
-			    if (exec_match_flags[index]) {
-				    flag = exec_match_flags[index]->dup();
+			    if (exec_match_flags[ai][index]) {
+				    flag = exec_match_flags[ai][index]->dup();
 			    } else {
-				exec_match_flags[index] = new MatchFlag(eperm);
-				    flag = exec_match_flags[index];
+				    exec_match_flags[ai][index] = new MatchFlag(eperm, audit&mask);
+				    flag = exec_match_flags[ai][index];
 			    }
 		    }
-	    } else if (mask & ALL_EXEC_TYPE) {
-		    /* these cases are covered by EXEC_BITS */
-		    continue;
 	    } else {
-		    if (match_flags[n]) {
-		        flag = match_flags[n]->dup();
+		    if (match_flags[ai][n]) {
+		        flag = match_flags[ai][n]->dup();
 		    } else {
-			match_flags[n] = new MatchFlag(mask);
-			flag = match_flags[n];
+			    match_flags[ai][n] = new MatchFlag(mask, audit&mask);
+			flag = match_flags[ai][n];
 		    }
 	    }
 	    if (accept)

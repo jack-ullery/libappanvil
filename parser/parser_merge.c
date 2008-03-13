@@ -64,6 +64,9 @@ static int file_comp(const void *c1, const void *c2)
 	if (res)
 		return res;
 
+	if ((*e1)->deny != (*e2)->deny)
+		return (*e1)->deny < (*e2)->deny ? -1 : 1;
+
 	return strcmp((*e1)->name, (*e2)->name);
 }
 
@@ -105,7 +108,10 @@ static int process_file_entries(struct codomain *cod)
 				       cod->name, cur->name);
 				return 0;
 			}
+//if (next->audit)
+//fprintf(stderr, "warning: merging rule 0x%x %s\n", next->audit, next->name);
 			cur->mode |= next->mode;
+			cur->audit |= next->audit;
 			free(next->name);
 			if (next->link_name)
 				free(next->link_name);

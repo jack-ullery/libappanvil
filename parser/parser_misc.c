@@ -62,7 +62,11 @@ static struct keyword_table keyword_table[] = {
 	{"unsafe",		TOK_UNSAFE},
 	{"link",		TOK_LINK},
 	{"owner",		TOK_OWNER},
+	{"user",		TOK_OWNER},
+	{"other",		TOK_OTHER},
 	{"subset",		TOK_SUBSET},
+	{"audit",		TOK_AUDIT},
+	{"deny",		TOK_DENY},
 	/* terminate */
 	{NULL, 0}
 };
@@ -520,8 +524,11 @@ reeval:
 			break;
 
 		case COD_EXEC_CHAR:
-			PDEBUG("Parsing mode: found %s EXEC\n", mode_desc);
-			yyerror(_("Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"));
+			/* this is valid for deny rules, and named transitions
+			 * but invalid for regular x transitions
+			 * sort it out later.
+			 */
+			mode |= AA_MAY_EXEC;
 			break;
 
  		/* error cases */
@@ -572,7 +579,7 @@ struct cod_entry *new_entry(char *namespace, char *id, int mode, char *link_id)
 {
 	struct cod_entry *entry = NULL;
 
-	entry = (struct cod_entry *)malloc(sizeof(struct cod_entry));
+	entry = (struct cod_entry *)calloc(1, sizeof(struct cod_entry));
 	if (!entry)
 		return NULL;
 
@@ -580,6 +587,7 @@ struct cod_entry *new_entry(char *namespace, char *id, int mode, char *link_id)
 	entry->name = id;
 	entry->link_name = link_id;
 	entry->mode = mode;
+	entry->audit = 0;
 	entry->deny = FALSE;
 
 	entry->pattern_type = ePatternInvalid;
@@ -596,7 +604,7 @@ struct cod_entry *copy_cod_entry(struct cod_entry *orig)
 {
 	struct cod_entry *entry = NULL;
 
-	entry = (struct cod_entry *)malloc(sizeof(struct cod_entry));
+	entry = (struct cod_entry *)calloc(1, sizeof(struct cod_entry));
 	if (!entry)
 		return NULL;
 
