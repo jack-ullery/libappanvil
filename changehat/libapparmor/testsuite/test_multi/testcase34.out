@@ -1,0 +1,13 @@
+START
+File: test_multi/testcase34.in
+Event type: AA_RECORD_ALLOWED
+Audit ID: 1201615421.935:4837
+Mask: l
+Profile: null-complain-profile
+Name: /home/jj/.fonts.cache-2.LCK
+Name2: /home/jj/.fonts.cache-2.TMP-IyT7AP
+Info: firefox-bin
+PID: 16844
+Active hat: null-complain-profile
+Epoch: 1201615421
+Audit subid: 4837
