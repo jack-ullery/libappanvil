@@ -1538,6 +1538,9 @@ uint32_t accept_perms(State *state)
      fprintf(stderr, "error bit 0x%x\n", perms);
      exit(255);
 }
+
+ //if (perms & AA_EXEC_BITS)
+ //fprintf(stderr, "accept perm: 0x%x\n", perms);
  /*
      if (perms & ~AA_VALID_PERMS)
  	yyerror(_("Internal error accumulated invalid perm 0x%llx\n"), perms);
@@ -1554,8 +1557,8 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, uint32_t perms,
 				 int count, char **rulev)
 {
     static MatchFlag *match_flags[sizeof(perms) * 8 - 1];
-    static MatchFlag *exec_match_flags[8 * 2];
-    static ExactMatchFlag *exact_match_flags[8 * 2];
+    static MatchFlag *exec_match_flags[64 * 2];		/* mods + unsafe *u::o*/
+    static ExactMatchFlag *exact_match_flags[64 * 2];	/* mods + unsafe *u::o*/
     Node *tree = NULL, *accept;
     int exact_match;
 
@@ -1593,10 +1596,13 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, uint32_t perms,
 	flip_tree(tree);
 
 #define ALL_EXEC_TYPE (AA_USER_EXEC_TYPE | AA_OTHER_EXEC_TYPE)
-#define EXTRACT_X_INDEX(perm, shift) (((perm) >> (shift + 7)) & 0x7)
+#define EXTRACT_X_INDEX(perm, shift) (((perm) >> (shift + 8)) & 0x3f)
 
 if (perms & ALL_EXEC_TYPE && (!perms & AA_EXEC_BITS))
 	fprintf(stderr, "adding X rule without MAY_EXEC: 0x%x %s\n", perms, rulev[0]);
+
+//if (perms & ALL_EXEC_TYPE)
+//    fprintf(stderr, "adding X rule %s 0x%x\n", rulev[0], perms);
 
     accept = NULL;
     for (unsigned int n = 0; perms && n < (sizeof(perms) * 8) - 1; n++) {
@@ -1614,8 +1620,9 @@ if (perms & ALL_EXEC_TYPE && (!perms & AA_EXEC_BITS))
 			    index = EXTRACT_X_INDEX(eperm, AA_USER_SHIFT);
 		    } else {
 			    eperm = mask | (perms & AA_OTHER_EXEC_TYPE);
-			    index = EXTRACT_X_INDEX(eperm, AA_OTHER_SHIFT) + 8;
+			    index = EXTRACT_X_INDEX(eperm, AA_OTHER_SHIFT) + 16;
 		    }
+//fprintf(stderr, "index %d eperm 0x%x\n", index, eperm);
 		    if (exact_match) {
 			    if (exact_match_flags[index]) {
 				    flag = exact_match_flags[index]->dup();
