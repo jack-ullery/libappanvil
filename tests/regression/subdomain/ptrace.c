@@ -23,14 +23,11 @@ int interp_status(int status)
 
 	if (WIFEXITED(status)) {
 		if (WEXITSTATUS(status) == 0) {
-//			rc = RET_CHLD_SUCCESS;
 			rc = 0;
 		} else {
-//			rc = RET_CHLD_FAILURE;
 			rc = -WEXITSTATUS(status);
 		}
 	} else {
-//		rc = RET_CHLD_SIGNAL;
 		rc = -ECONNABORTED;	/* overload to mean child signal */
 	}
 
@@ -44,25 +41,37 @@ int do_parent(pid_t pid, int trace, int num_syscall)
 	int status, i;
 	unsigned int rc;
 
+	/* child is paused */
 	rc = alarm(5);
 	if (rc != 0) {
 		fprintf(stderr, "FAIL: unexpected alarm already set\n");
 		return errno;
 	}
 
+//fprintf(stderr, "waiting ... ");
+	if (waitpid(pid, &status, WUNTRACED) == -1)
+		return errno;
+	if (!WIFSTOPPED(status))
+		return interp_status(status);
+//fprintf(stderr, " done initial wait\n");
 	if (trace) {
+		/* this sends a child SIGSTOP */
 		if (ptrace(PTRACE_ATTACH, pid, NULL, NULL) == -1) {
 			perror("FAIL: parent ptrace(PTRACE_ATTACH) failed - ");
 			return errno;
 		}
-
-		/* this sends a child SIGSTOP */
-	}
-
-	while (wait(&status) != pid);
+	} else {
+		/* continue child so it can attach to parent */
+		kill(pid, SIGCONT);
+//fprintf(stderr, "waiting2 ... ");
+	if (waitpid(pid, &status, WUNTRACED) == -1)
+		return errno;
+//fprintf(stderr, " done\n");
 
 	if (!WIFSTOPPED(status))
 		return interp_status(status);
+
+	}
 
 	for (i = 0; i < num_syscall * 2; i++){
 		/* this will restart stopped child */
@@ -71,7 +80,10 @@ int do_parent(pid_t pid, int trace, int num_syscall)
 			return errno;
 		}
 
-		while (wait(&status) != pid);
+//fprintf(stderr, "waiting3 ... ");
+		if (waitpid(pid, &status, WUNTRACED) == -1)
+			return errno;
+//fprintf(stderr, " done\n");
 
 		if (!WIFSTOPPED(status))
 			return interp_status(status);
@@ -87,7 +99,6 @@ int do_parent(pid_t pid, int trace, int num_syscall)
 		perror("FAIL:  parent ptrace(PTRACE_DETACH) failed - ");
 		return errno;
 	}
-
 	return 0;
 }
 
@@ -95,24 +106,34 @@ int do_parent(pid_t pid, int trace, int num_syscall)
 int do_child(char *argv[], int child_trace, int helper)
 {
 	if (helper) {
+		/* for helper we want to transition before ptrace occurs
+		 * so don't stop here, let the helper do that
+		 */
 		if (child_trace) {
 			 putenv("_tracer=child");
 		} else {
 			 putenv("_tracer=parent");
 		}
+//fprintf(stderr, "child trace %d\n", child_trace);
 	} else {
+		/* stop child to ensure it doesn't finish before it is traced */
+		if (raise(SIGSTOP) != 0){
+			perror("FAIL: child/helper SIGSTOP itself failed -");
+			return errno;
+		}
+
 		if (child_trace) {
 			if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) == -1){
 				perror("FAIL: child ptrace(PTRACE_TRACEME) failed - ");
 				return errno;
 			}
+			if (raise(SIGSTOP) != 0){
+				perror("FAIL: child SIGSTOP itself failed -");
+				return errno;
+			}
+			/* ok we're stopped, wait for parent to trace (continue) us */
 		}
 
-		if (raise(SIGSTOP) != 0){
-			perror("FAIL: child SIGSTOP itself failed -");
-			return errno;
-		}
-		/* ok were stopped, wait for parent to trace (continue) us */
 	}
 
 	execve(argv[0], argv, environ);
@@ -122,14 +143,17 @@ int do_child(char *argv[], int child_trace, int helper)
 	return errno;
 }
 
+/* make pid_t global so the alarm handler can kill off children */
+pid_t pid;
+
 void sigalrm_handler(int sig) {
 	fprintf(stderr, "FAIL: parent timed out waiting for child\n");
+	kill(pid, SIGKILL);
 	exit(1);
 }
 
 int main(int argc, char *argv[])
 {
-	pid_t pid;
 	int parent_trace = 1,
 	    use_helper = 0,
 	    num_syscall = NUM_CHLD_SYSCALLS, 
@@ -179,13 +203,12 @@ int main(int argc, char *argv[])
 
 		if (ret >= 0) {
 			/* wait for child */
-			while (wait(&stat) != pid);
+			waitpid(pid, &stat, 0);
 		}
 
 		if (ret > 0) {
 			perror("FAIL: parent failed: ");
-		} else if (ret == 0) { //||
-//			  (ret == RET_SUCCESS && WIFSIGNALED(stat) && WTERMSIG(stat) == SIGKILL)) {
+		} else if (ret == 0) {
 			printf("PASS\n");
 			return 0;
 		} else if (ret == -ECONNABORTED) {

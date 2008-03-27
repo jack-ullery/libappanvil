@@ -4,8 +4,9 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/ptrace.h>
+#include <errno.h>
 
-#define RET_FAILURE 0
+#define RET_FAILURE -1
 
 int main(int argc, char *argv[])
 {
@@ -23,21 +24,35 @@ int child_traces;
 		return RET_FAILURE;
 	}
 
-	if (child_traces == 1 && 
-	    ptrace(PTRACE_TRACEME, 0, NULL, NULL) == -1){
-		perror("FAIL: child/helper ptrace(PTRACE_TRACEME) failed - ");
-		return RET_FAILURE;
+//fprintf(stderr, "helper traces %d\n", child_traces);
+	/* keep behavior of ptrace.c child and wait parent to continue */
+	if (raise(SIGSTOP) != 0){
+		perror("FAIL: helper SIGSTOP itself failed -");
+		return errno;
 	}
 
-	if (raise(SIGSTOP) != 0){
-		perror("FAIL: child/helper SIGSTOP itself failed -");
-		return RET_FAILURE;
+
+	if (child_traces == 1) {
+		if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) == -1){
+			perror("FAIL: child/helper ptrace(PTRACE_TRACEME) failed - ");
+			return RET_FAILURE;
+		}
+//fprintf(stderr, "helper stopping ... ");
+		if (raise(SIGSTOP) != 0){
+			perror("FAIL: child/helper SIGSTOP itself failed -");
+			return RET_FAILURE;
+		}
+//fprintf(stderr, "helper done\n");
+
 	}
 	/* ok were stopped, wait for parent to trace (continue) us */
 
 	if (*args) {
 		execve(args[0], args, environ);
 	} else {
+		/* spin forever */
+//fprintf(stderr, "helper looper ...\n ");
+
 		for (;;) kill(getpid(), 0);
 	}
 
