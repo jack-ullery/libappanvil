@@ -68,5 +68,5 @@ runchecktest "EXEC unconfined -> confined" pass $file
 
 # UNCONFINED -> CONFINED no access to self binary
 
-genprofile -N image=$file  "/lib/ld*.so*:rix" "/lib/lib*.so*:rm"
+genprofile -N image=$file  "/lib{64,}/ld*.so*:rix" "/lib{64,}/lib*.so*:rm"
 runchecktest "EXEC unconfined -> confined/no access to self" pass $file
