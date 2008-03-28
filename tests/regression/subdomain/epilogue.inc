@@ -15,4 +15,8 @@ else
 	rm -rf $tmpdir
 fi
 
-exit $num_testfailures
+if [ -n "$_fatal" ] ; then
+	exit 127
+else
+	exit $num_testfailures
+fi
