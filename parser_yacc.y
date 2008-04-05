@@ -178,8 +178,10 @@ profile:	TOK_ID flags TOK_OPEN rules TOK_CLOSE
 			yyerror(_("Memory allocation error."));
 		}
 
+		/*
 		if ($1[0] != '/')
 			yyerror(_("Profile names must begin with a '/'."));
+		*/
 
 		cod->name = $1;
 		cod->flags = $2;
