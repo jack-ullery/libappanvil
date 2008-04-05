@@ -146,6 +146,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %type <cap>	caps
 %type <cap>	capability
 %type <user_entry> change_profile
+%type <user_entry> change_hat
 %type <set_var> TOK_SET_VAR
 %type <bool_var> TOK_BOOL_VAR
 %type <var_val>	TOK_VALUE
@@ -542,6 +543,15 @@ rules:	rules change_profile
 		add_entry_to_policy($1, $2);
 		$$ = $1;
 	};
+rules:	rules change_hat
+	{
+		PDEBUG("matched: rules change_hat\n");
+		PDEBUG("rules change_hat: (%s)\n", $2->name);
+		if (!$2)
+			yyerror(_("Assert: `change_hat' returned NULL."));
+		add_entry_to_policy($1, $2);
+		$$ = $1;
+	};
 
 rules:	rules opt_audit_flag TOK_DENY capability
 	{
@@ -710,6 +720,18 @@ rule: file_mode opt_subset_flag TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
 			entry->subset = $2;
 		}
 		PDEBUG("rule.entry: link (%s)\n", entry->name);
+		$$ = entry;
+	};
+
+change_hat:	hat_start TOK_ID TOK_END_OF_RULE
+	{
+		/* allow change_hat to external hats */
+		struct cod_entry *entry;
+		PDEBUG("Matched change_hat: tok_id (%s)\n", $2);
+		entry = new_entry(NULL, $2, AA_CHANGE_HAT, NULL);
+		if (!entry)
+			yyerror(_("Memory allocation error."));
+		PDEBUG("change_hat.entry: (%s)\n", entry->name);
 		$$ = entry;
 	};
 

@@ -230,6 +230,60 @@ int process_hat_variables(struct codomain *cod)
 	return 0;
 }
 
+#define CHANGEHAT_PATH "/proc/[0-9]*/attr/current"
+
+/* add file rules to access /proc files to call change_hat() */
+static void __add_hat_rules(const void *nodep, const VISIT value,
+			    const int __unused depth)
+{
+	struct codomain **t = (struct codomain **) nodep;
+	struct cod_entry *entry;
+
+	if (value == preorder || value == endorder)
+		return;
+
+	/* don't add hat rules if a parent profile with no hats */
+	if (!(*t)->hat_table && !(*t)->parent)
+		return;
+
+	/* add rule to grant permission to change_hat - AA 2.3 requirement,
+	 * rules are added to the parent of the hat
+	 */
+	if ((*t)->parent) {
+		char *buffer = malloc(strlen((*t)->name) + 1);
+		if (!buffer) {
+			PERROR("Memory allocation error\n");
+			exit(1);
+		}
+
+		strcpy(buffer, (*t)->name);
+
+		entry = new_entry(NULL, buffer, AA_CHANGE_HAT, NULL);
+		if (!entry) {
+			PERROR("Memory allocation error\n");
+			exit(1);
+		}
+		add_entry_to_policy((*t)->parent, entry);
+	}
+
+/* later
+	entry = new_entry(strdup(CHANGEHAT_PATH), AA_MAY_WRITE);
+	if (!entry) {
+		PERROR(_("ERROR adding hat access rule for profile %s\n"),
+		       (*t)->name);
+		exit(1);
+	}
+	add_entry_to_policy(*t, entry);
+*/
+	twalk((*t)->hat_table, __add_hat_rules);
+}
+
+static int add_hat_rules(void)
+{
+	twalk(policy_list, __add_hat_rules);
+	return 0;
+}
+
 /* Yuck, is their no other way to pass arguments to a twalk action */
 static int __load_option;
 
@@ -424,6 +478,13 @@ out:
 int post_process_policy(void)
 {
 	int retval = 0;
+
+	retval = add_hat_rules();
+	if (retval != 0) {
+		PERROR(_("%s: Errors found during postprocessing.  Aborting.\n"),
+		       progname);
+		return retval;
+	}
 
 	retval = post_process_variables();
 	if (retval != 0) {
