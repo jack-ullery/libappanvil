@@ -101,7 +101,9 @@ audit-uid.diff
 apparmor-secondary-accept.diff
 apparmor-audit-flags2.diff
 audit-log-type-in-syslog.diff
-apparmor-audit-flags.diff
+#audit_denied.diff
+#apparmor-audit-flags.diff
 #FS2.2.2_fix-unionfs-with-AppArmor.patch
 #FS2.1.3_fix-unionfs-with-AppArmor.patch
 
+fix-profile-namespaces.diff
