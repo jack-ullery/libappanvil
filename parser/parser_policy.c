@@ -232,9 +232,13 @@ int process_hat_variables(struct codomain *cod)
 
 #define CHANGEHAT_PATH "/proc/[0-9]*/attr/current"
 
-/* add file rules to access /proc files to call change_hat() */
-static void __add_hat_rules(const void *nodep, const VISIT value,
-			    const int __unused depth)
+/* add file rules to access /proc files to call change_hat()
+ * add file rules to be able to change_hat, this restriction keeps
+ * change_hat from being able to access local profiles that are not
+ * meant to be used as hats
+ */
+static void __add_hat_rules_parent(const void *nodep, const VISIT value,
+				   const int __unused depth)
 {
 	struct codomain **t = (struct codomain **) nodep;
 	struct cod_entry *entry;
@@ -275,12 +279,54 @@ static void __add_hat_rules(const void *nodep, const VISIT value,
 	}
 	add_entry_to_policy(*t, entry);
 */
-	twalk((*t)->hat_table, __add_hat_rules);
+	twalk((*t)->hat_table, __add_hat_rules_parent);
+}
+
+/* add the same hat rules to the hats as the parent so that hats can
+ * change to sibling hats
+ */
+static void __add_hat_rules_hats(const void *nodep, const VISIT value,
+				 const int __unused depth)
+{
+	struct codomain **t = (struct codomain **) nodep;
+
+	if (value == preorder || value == endorder)
+		return;
+
+	/* don't add hat rules if a parent profile with no hats */
+	if (!(*t)->hat_table && !(*t)->parent)
+		return;
+
+	/* hat */
+	if ((*t)->parent) {
+		struct cod_entry *entry, *new_ent;
+		list_for_each((*t)->parent->entries, entry) {
+			if (entry->mode & AA_CHANGE_HAT) {
+				char *buffer = strdup(entry->name);
+				if (!buffer) {
+					PERROR("Memory allocation error\n");
+					exit(1);
+				}
+
+				new_ent = new_entry(NULL, buffer,
+						    AA_CHANGE_HAT, NULL);
+				if (!entry) {
+					PERROR("Memory allocation error\n");
+					exit(1);
+				}
+				add_entry_to_policy((*t), new_ent);
+			}
+		}
+	}
+
+	twalk((*t)->hat_table, __add_hat_rules_hats);
 }
 
 static int add_hat_rules(void)
 {
-	twalk(policy_list, __add_hat_rules);
+	twalk(policy_list, __add_hat_rules_parent);
+
+	twalk(policy_list, __add_hat_rules_hats);
 	return 0;
 }
 

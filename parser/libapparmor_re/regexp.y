@@ -1154,7 +1154,9 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq)
     for (States::iterator i = dfa.states.begin(); i != dfa.states.end(); i++) {
 	uint32_t audit_ctl;
 	accept[num[*i]] = accept_perms(*i, &audit_ctl);
-	accept2[num[*i]] = audit_ctl;
+//if (accept[num[*i]] & AA_CHANGE_HAT)
+//    fprintf(stderr, "change_hat state %d - 0x%x\n", num[*i], accept[num[*i]]);
+//	accept2[num[*i]] = audit_ctl;
     }
 }
 
@@ -1584,6 +1586,10 @@ uint32_t accept_perms(State *state, uint32_t *audit_ctl)
      if (perms & ~AA_VALID_PERMS)
  	yyerror(_("Internal error accumulated invalid perm 0x%llx\n"), perms);
  */
+
+//if (perms & AA_CHANGE_HAT)
+//     fprintf(stderr, "change_hat 0x%x\n", perms);
+
     return perms;
 }
 
@@ -1649,6 +1655,9 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 
 //if (audit)
 //fprintf(stderr, "adding rule with audit bits set: 0x%x %s\n", audit, rulev[0]);
+
+//if (perms & AA_CHANGE_HAT)
+//    fprintf(stderr, "adding change_hat rule %s\n", rulev[0]);
 
 /* the permissions set is assumed to be non-empty if any audit
  * bits are specified */

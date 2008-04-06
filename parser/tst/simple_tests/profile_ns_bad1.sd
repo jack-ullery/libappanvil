@@ -5,7 +5,7 @@
 # vim:syntax=subdomain
 # Last Modified: Sun Apr 17 19:44:44 2005
 #
-:foo:/exists {
+foo:/does/not/exist {
   #include <includes/base>
 
   /usr/X11R6/lib/lib*so* rrr,
@@ -17,7 +17,7 @@
   /bin/echo uxuxuxuxux,
 }
 
-:foo:/exists {
+foo:/does/not/exist {
   #include <includes/base>
 
   /usr/X11R6/lib/lib*so* rrr,

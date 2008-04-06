@@ -178,10 +178,8 @@ profile:	TOK_ID flags TOK_OPEN rules TOK_CLOSE
 			yyerror(_("Memory allocation error."));
 		}
 
-		/*
 		if ($1[0] != '/')
 			yyerror(_("Profile names must begin with a '/'."));
-		*/
 
 		cod->name = $1;
 		cod->flags = $2;
@@ -196,22 +194,25 @@ profile:	TOK_ID flags TOK_OPEN rules TOK_CLOSE
 		$$ = cod;
 	};
 
-profile:	TOK_COLON TOK_ID TOK_COLON TOK_ID flags TOK_OPEN rules TOK_CLOSE
+profile:	TOK_ID TOK_COLON TOK_ID flags TOK_OPEN rules TOK_CLOSE
 	{
-		struct codomain *cod = $7;
-		PDEBUG("Matched: id (%s:%s) open rules close\n", $2, $4);
+		struct codomain *cod = $6;
+		PDEBUG("Matched: id (%s:%s) open rules close\n", $1, $3);
 		if (!cod) {
 			yyerror(_("Memory allocation error."));
 		}
 
-		cod->namespace = $2;
-		cod->name = $4;
-		cod->flags = $5;
+		if ($3[0] != '/')
+			yyerror(_("Profile names must begin with a '/'."));
+
+		cod->namespace = $1;
+		cod->name = $3;
+		cod->flags = $4;
 		if (force_complain)
 			cod->flags = force_complain_flags;
 
 		PDEBUG("%s: flags='%s%s'\n",
-		       $2,
+		       $1,
 		       cod->flags.complain ? "complain, " : "",
 		       cod->flags.audit ? "audit" : "");
 
@@ -813,11 +814,11 @@ change_profile:	TOK_CHANGE_PROFILE TOK_ID TOK_END_OF_RULE
 		$$ = entry;
 	};
 
-change_profile:	TOK_CHANGE_PROFILE TOK_COLON TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
+change_profile:	TOK_CHANGE_PROFILE TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
-		PDEBUG("Matched change_profile: tok_id (%s:%s)\n", $3, $5);
-		entry = new_entry($3, $5, AA_CHANGE_PROFILE, NULL);
+		PDEBUG("Matched change_profile: tok_id (%s:%s)\n", $2, $4);
+		entry = new_entry($2, $4, AA_CHANGE_PROFILE, NULL);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("change_profile.entry: (%s)\n", entry->name);
