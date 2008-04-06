@@ -100,6 +100,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %token TOK_AUDIT
 %token TOK_DENY
 %token TOK_PROFILE
+%token TOK_SET
 
 /* capabilities */
 %token TOK_CAPABILITY
@@ -146,6 +147,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %type <flag_id>	TOK_FLAG_ID
 %type <cap>	caps
 %type <cap>	capability
+%type <cap>	set_caps
 %type <user_entry> change_profile
 %type <user_entry> change_hat
 %type <set_var> TOK_SET_VAR
@@ -571,6 +573,12 @@ rules:	rules opt_audit_flag capability
 		$$ = $1;
 	};
 
+rules: rules set_caps
+	{
+		$1->set_caps |= $2;
+		$$ = $1;
+	};
+
 rules:	rules hat
 	{
 		PDEBUG("Matched: hat rule\n");
@@ -825,6 +833,12 @@ change_profile:	TOK_CHANGE_PROFILE TOK_COLON TOK_ID TOK_COLON TOK_ID TOK_END_OF_
 			yyerror(_("Memory allocation error."));
 		PDEBUG("change_profile.entry: (%s)\n", entry->name);
 		$$ = entry;
+	};
+
+
+set_caps:	TOK_SET TOK_CAPABILITY caps TOK_END_OF_RULE
+	{
+		$$ = $3;
 	};
 
 capability:	TOK_CAPABILITY caps TOK_END_OF_RULE
