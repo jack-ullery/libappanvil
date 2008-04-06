@@ -107,3 +107,6 @@ audit-log-type-in-syslog.diff
 #FS2.1.3_fix-unionfs-with-AppArmor.patch
 
 fix-profile-namespaces.diff
+fix-dfa.diff
+cap-set.diff
+rlimits.diff

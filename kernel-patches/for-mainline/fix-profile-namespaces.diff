@@ -1,8 +1,8 @@
 ---
  security/apparmor/list.c     |    2 +-
- security/apparmor/main.c     |   19 +++++++++++--------
+ security/apparmor/main.c     |   20 +++++++++++---------
  security/apparmor/procattr.c |   13 +++++++------
- 3 files changed, 19 insertions(+), 15 deletions(-)
+ 3 files changed, 19 insertions(+), 16 deletions(-)
 
 --- a/security/apparmor/list.c
 +++ b/security/apparmor/list.c
@@ -30,7 +30,7 @@
  	}
  
  	audit_log_end(ab);
-@@ -1364,15 +1366,16 @@ repeat:
+@@ -1364,15 +1366,15 @@ repeat:
  
  	if (hat_name) {
  		char *name, *profile_name;
@@ -39,17 +39,17 @@
 -		   become more generic then this will be needed.
 -		if (!(aa_match(profile->file_rules, hat_name) &
 -		      AA_CHANGE_PROFILE)) {
-+/*
-+		int foo = aa_match(profile->file_rules, hat_name, NULL);
+-			error = -EACCES;
 +		if (!PROFILE_COMPLAIN(profile) &&
-+		    !(aa_match(profile->file_rules, hat_name, NULL) &
-+		      AA_CHANGE_HAT)) {
-+printk("failed to change_hat %s 0x%x\n", hat_name, foo);
- 			error = -EACCES;
++		    !(aa_match(profile->file_rules, hat_name, NULL)
++		      & AA_CHANGE_HAT)) {
++			/* missing permission to change_hat is treated the
++			 * same as a failed hat search */
++			error = -ENOENT;
  			goto out;
  		}
 -		*/
-+*/
++
  		if (previous_profile)
  			profile_name = previous_profile->name;
  		else
