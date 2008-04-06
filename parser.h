@@ -18,6 +18,7 @@
  */
 
 #include <netinet/in.h>
+#include <sys/resource.h>
 #include "pcre/internal.h"
 #include "immunix.h"
 #include "libapparmor_re/apparmor_re.h"
@@ -62,6 +63,11 @@ struct aa_network_entry {
 	struct aa_network_entry *next;
 };
 
+struct aa_rlimits {
+	unsigned int specified;			/* limits that are set */
+	rlim_t limits[RLIMIT_NLIMITS];
+};
+
 struct codomain {
 	char *namespace;
 	char *name;				/* codomain name */
@@ -84,6 +90,8 @@ struct codomain {
 	unsigned int *deny_network;
 	unsigned int *quiet_network;
 
+	struct aa_rlimits rlimits;
+
 	struct cod_entry *entries;
 	void *hat_table;
 	//struct codomain *next;
@@ -92,7 +100,7 @@ struct codomain {
 	int dfarule_count;
 	void *dfa;
 	size_t dfa_size;
-} ;
+};
 
 struct cod_global_entry {
 	struct cod_entry *entry;
@@ -204,6 +212,7 @@ extern char *processquoted(char *string, int len);
 extern char *processunquoted(char *string, int len);
 extern int get_keyword_token(const char *keyword);
 extern int name_to_capability(const char *keyword);
+extern int get_rlimit(const char *name);
 extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);
 extern struct cod_entry *new_entry(char *namespace, char *id, int mode,

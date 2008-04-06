@@ -81,6 +81,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %token TOK_EQUALS
 %token TOK_ARROW
 %token TOK_ADD_ASSIGN
+%token TOK_LE
 %token TOK_SET_VAR
 %token TOK_BOOL_VAR
 %token TOK_VALUE
@@ -101,6 +102,26 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %token TOK_DENY
 %token TOK_PROFILE
 %token TOK_SET
+
+ /* rlimits */
+%token TOK_RLIMIT
+%token TOK_SOFT_RLIMIT
+%token TOK_RLIMIT_CPU
+%token TOK_RLIMIT_FSIZE
+%token TOK_RLIMIT_DATA
+%token TOK_RLIMIT_STACK
+%token TOK_RLIMIT_CORE
+%token TOK_RLIMIT_RSS
+%token TOK_RLIMIT_NOFILE
+%token TOK_RLIMIT_OFILE
+%token TOK_RLIMIT_AS
+%token TOK_RLIMIT_NPROC
+%token TOK_RLIMIT_MEMLOCK
+%token TOK_RLIMIT_LOCKS
+%token TOK_RLIMIT_SIGPENDING
+%token TOK_RLIMIT_MSGQUEUE
+%token TOK_RLIMIT_NICE
+%token TOK_RLIMIT_RTPRIO
 
 /* capabilities */
 %token TOK_CAPABILITY
@@ -594,6 +615,72 @@ rules:	rules cond_rule
 		$$ = merge_policy($1, $2);
 	}
 
+rules: rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE TOK_END_OF_RULE
+	{
+		rlim_t value = RLIM_INFINITY;
+		long long tmp;
+		char *end;
+
+		int limit = get_rlimit($4);
+		if (limit == -1)
+			yyerror("INVALID RLIMIT '%s'\n", $4);
+
+		if (strcmp($6, "infinity") == 0) {
+			value = RLIM_INFINITY;
+		} else {
+			tmp = strtoll($6, &end, 0);
+			switch (limit) {
+			case RLIMIT_CPU:
+			case RLIMIT_NOFILE:
+			case RLIMIT_NPROC:
+			case RLIMIT_LOCKS:
+			case RLIMIT_SIGPENDING:
+			case RLIMIT_RTPRIO:
+				if ($6 == end || *end != '\0' || tmp < 0)
+					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
+				value = tmp;
+				break;
+
+			case RLIMIT_NICE:
+				if ($6 == end || *end != '\0')
+					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
+				if (tmp < -20 || tmp > 19)
+					yyerror("RLIMIT '%s' out of range (-20 .. 19) %d\n", $4, tmp);
+				value = tmp + 20;
+				break;
+			case RLIMIT_FSIZE:
+			case RLIMIT_DATA:
+			case RLIMIT_STACK:
+			case RLIMIT_CORE:
+			case RLIMIT_RSS:
+			case RLIMIT_AS:
+			case RLIMIT_MEMLOCK:
+			case RLIMIT_MSGQUEUE:
+				if ($6 == end || tmp < 0)
+					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
+				if (strcmp(end, "K") == 0) {
+					tmp *= 1024;
+				} else if (strcmp(end, "M") == 0) {
+					tmp *= 1024*1024;
+				} else if (strcmp(end, "G") == 0) {
+					tmp *= 1024*1024*1024;
+				} else if (*end != '\0') {
+					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
+				}
+				value = tmp;
+				break;
+			default:
+				yyerror("Unknown RLIMIT %d\n", $4);
+			}
+		}
+		$1->rlimits.specified |= 1 << limit;
+		$1->rlimits.limits[limit] = value;
+		free($4);
+		free($6);
+		$$ = $1;
+	};
+
+
 cond_rule: TOK_IF expr TOK_OPEN rules TOK_CLOSE
 	{
 		struct codomain *ret = NULL;
@@ -721,14 +808,13 @@ rule: file_mode opt_subset_flag TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 		PDEBUG("Matched: link tok_id (%s) -> (%s)\n", $3, $5);
-		if ($1 & ~AA_LINK_BITS) {
+		if ($1 & ~AA_LINK_BITS)
 			yyerror(_("only link perms can be specified in a link rule."));
-		} else {
-			entry = new_entry(NULL, $3, AA_LINK_BITS, $5);
-			if (!entry)
-				yyerror(_("Memory allocation error."));
-			entry->subset = $2;
-		}
+		entry = new_entry(NULL, $3, AA_LINK_BITS, $5);
+		if (!entry)
+			yyerror(_("Memory allocation error."));
+		entry->subset = $2;
+
 		PDEBUG("rule.entry: link (%s)\n", entry->name);
 		$$ = entry;
 	};
