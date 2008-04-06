@@ -561,12 +561,14 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 		return 0;
 	if (!sd_write_structend(p))
 		return 0;
-	allowed_caps = profile->capabilities & ~profile->deny_caps;
+	allowed_caps = (profile->capabilities | profile->set_caps) & ~profile->deny_caps;
 	if (!sd_write32(p, allowed_caps))
 		return 0;
 	if (!sd_write32(p, allowed_caps & profile->audit_caps))
 		return 0;
 	if (!sd_write32(p, profile->deny_caps & profile->quiet_caps))
+		return 0;
+	if (!sd_write32(p, profile->set_caps & ~profile->deny_caps))
 		return 0;
 
 	if (profile->network_allowed) {

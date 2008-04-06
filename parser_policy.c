@@ -486,6 +486,7 @@ struct codomain *merge_policy(struct codomain *a, struct codomain *b)
 {
 	struct codomain *ret = a;
 	struct cod_entry *last;
+
 	if (!a) {
 		ret = b;
 		goto out;
@@ -512,6 +513,21 @@ struct codomain *merge_policy(struct codomain *a, struct codomain *b)
 	a->flags.audit = a->flags.audit || b->flags.audit;
 
 	a->capabilities = a->capabilities | b->capabilities;
+	a->audit_caps = a->audit_caps | b->audit_caps;
+	a->deny_caps = a->deny_caps | b->deny_caps;
+	a->quiet_caps = a->quiet_caps | b->quiet_caps;
+	a->set_caps = a->set_caps | b->set_caps;
+
+	if (a->network_allowed) {
+		int i;
+		for (i = 0; i < AF_MAX; i++) {
+			a->network_allowed[i] |= b->network_allowed[i];
+			a->audit_network[i] |= b->audit_network[i];
+			a->deny_network[i] |= b->deny_network[i];
+			a->quiet_network[i] |= b->quiet_network[i];
+		}
+	}
+
 	merge_hats(a, b->hat_table);
 	tdestroy(b->hat_table, &empty_destroy);
 	b->hat_table = NULL;

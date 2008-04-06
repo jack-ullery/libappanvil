@@ -76,6 +76,7 @@ struct codomain {
 	unsigned int audit_caps;
 	unsigned int deny_caps;
 	unsigned int quiet_caps;
+	unsigned int set_caps;
 
 	unsigned int *network_allowed;		/* array of type masks
 						 * indexed by AF_FAMILY */
