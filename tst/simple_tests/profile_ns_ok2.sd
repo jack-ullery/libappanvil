@@ -14,7 +14,7 @@
   /bin/ls ixixixix,
 }
 
-:foo:/does/not/exist {
+foo:/does/not/exist {
   /usr/X11R6/lib/lib*so* rrr,
   /does/not/exist r,
   /var/log/messages www,
@@ -23,7 +23,7 @@
   /bin/ls ixixixix,
 }
 
-:bar:/does/not/exist {
+bar:/does/not/exist {
   /usr/X11R6/lib/lib*so* rrr,
   /does/not/exist r,
   /var/log/messages www,
