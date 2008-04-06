@@ -99,6 +99,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %token TOK_SUBSET
 %token TOK_AUDIT
 %token TOK_DENY
+%token TOK_PROFILE
 
 /* capabilities */
 %token TOK_CAPABILITY
@@ -156,6 +157,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %type <boolean> opt_subset_flag
 %type <boolean> opt_audit_flag
 %type <boolean> opt_owner_flag
+%type <boolean> opt_profile_flag
 %%
 
 
@@ -170,46 +172,49 @@ profilelist:	profilelist profile
 		add_to_list($2);
 	};
 
-profile:	TOK_ID flags TOK_OPEN rules TOK_CLOSE
+opt_profile_flag: { /* nothing */ $$ = 0; }
+	| TOK_PROFILE { $$ = 1; }
+
+profile:	opt_profile_flag TOK_ID flags TOK_OPEN rules TOK_CLOSE
 	{
-		struct codomain *cod = $4;
-		PDEBUG("Matched: id (%s) open rules close\n", $1);
+		struct codomain *cod = $5;
+		PDEBUG("Matched: id (%s) open rules close\n", $2);
 		if (!cod) {
 			yyerror(_("Memory allocation error."));
 		}
 
-		if ($1[0] != '/')
-			yyerror(_("Profile names must begin with a '/'."));
+		if (!$1 && $2[0] != '/')
+			yyerror(_("Profile names must begin with a '/', or keyword 'profile'."));
 
-		cod->name = $1;
-		cod->flags = $2;
+		cod->name = $2;
+		cod->flags = $3;
 		if (force_complain)
 			cod->flags = force_complain_flags;
 
 		PDEBUG("%s: flags='%s%s'\n",
-		       $1,
+		       $2,
 		       cod->flags.complain ? "complain, " : "",
 		       cod->flags.audit ? "audit" : "");
 
 		$$ = cod;
 	};
 
-profile:	TOK_COLON TOK_ID TOK_COLON TOK_ID flags TOK_OPEN rules TOK_CLOSE
+profile:	opt_profile_flag TOK_COLON TOK_ID TOK_COLON TOK_ID flags TOK_OPEN rules TOK_CLOSE
 	{
-		struct codomain *cod = $7;
-		PDEBUG("Matched: id (%s:%s) open rules close\n", $2, $4);
+		struct codomain *cod = $8;
+		PDEBUG("Matched: id (%s:%s) open rules close\n", $3, $5);
 		if (!cod) {
 			yyerror(_("Memory allocation error."));
 		}
 
-		cod->namespace = $2;
-		cod->name = $4;
-		cod->flags = $5;
+		cod->namespace = $3;
+		cod->name = $5;
+		cod->flags = $6;
 		if (force_complain)
 			cod->flags = force_complain_flags;
 
 		PDEBUG("%s: flags='%s%s'\n",
-		       $2,
+		       $3,
 		       cod->flags.complain ? "complain, " : "",
 		       cod->flags.audit ? "audit" : "");
 
