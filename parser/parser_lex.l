@@ -79,11 +79,13 @@ FLAGSEP		\,
 EQUALS		=
 ADD_ASSIGN	\+=
 ARROW		->
+LT_EQUAL	<=
 
 %x SUB_NAME
 %x NETWORK_MODE
 %x FLAGS_MODE
 %x ASSIGN_MODE
+%x RLIMIT_MODE
 
 %%
 
@@ -227,6 +229,39 @@ ARROW		->
 			BEGIN(ASSIGN_MODE);
 			return TOK_ADD_ASSIGN;
 			}
+<RLIMIT_MODE>{
+	{WS}+		{ /* Eat whitespace */ }
+
+
+	-?{NUMBER}[kKMG]?  {
+		        yylval = (YYSTYPE) strdup(yytext);
+		        return TOK_VALUE;
+			}
+
+	{KEYWORD}	{
+		        yylval = (YYSTYPE) strdup(yytext);
+			if (strcmp(yytext, "infinity") == 0)
+				return TOK_VALUE;
+			return TOK_ID;
+			}
+
+	{LT_EQUAL}	{ return TOK_LE; }
+
+	{END_OF_RULE}	{
+			BEGIN(INITIAL);
+			return TOK_END_OF_RULE;
+			}
+
+	\\\n		{
+			current_lineno++;
+			BEGIN(INITIAL);
+			}
+
+	\r?\n		{
+			current_lineno++;
+			BEGIN(INITIAL);
+			}
+}
 
 {SET_VARIABLE}		{
 			yylval = (YYSTYPE) strdup(yytext);
@@ -296,6 +331,9 @@ ARROW		->
 				break;
 			case TOK_FLAGS:
 				BEGIN(FLAGS_MODE);
+				break;
+			case TOK_RLIMIT:
+				BEGIN(RLIMIT_MODE);
 				break;
 			case TOK_NETWORK:
 				BEGIN(NETWORK_MODE);

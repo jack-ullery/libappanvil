@@ -69,6 +69,28 @@ static struct keyword_table keyword_table[] = {
 	{"deny",		TOK_DENY},
 	{"profile",		TOK_PROFILE},
 	{"set",			TOK_SET},
+	{"rlimit",		TOK_RLIMIT},
+	/* terminate */
+	{NULL, 0}
+};
+
+static struct keyword_table rlimit_table[] = {
+	{"cpu",			RLIMIT_CPU},
+	{"fsize",		RLIMIT_FSIZE},
+	{"data",		RLIMIT_DATA},
+	{"stack",		RLIMIT_STACK},
+	{"core",		RLIMIT_CORE},
+	{"rss",			RLIMIT_RSS},
+	{"nofile",		RLIMIT_NOFILE},
+	{"ofile",		RLIMIT_OFILE},
+	{"as",			RLIMIT_AS},
+	{"nproc",		RLIMIT_NPROC},
+	{"memlock",		RLIMIT_MEMLOCK},
+	{"locks",		RLIMIT_LOCKS},
+	{"sigpending",		RLIMIT_SIGPENDING},
+	{"msgqueue",		RLIMIT_MSGQUEUE},
+	{"nice",		RLIMIT_NICE},
+	{"rtprio",		RLIMIT_RTPRIO},
 	/* terminate */
 	{NULL, 0}
 };
@@ -107,6 +129,11 @@ int get_keyword_token(const char *keyword)
 int name_to_capability(const char *keyword)
 {
 	return get_table_token("capability", capability_table, keyword);
+}
+
+int get_rlimit(const char *name)
+{
+	return get_table_token("rlimit", rlimit_table, name);
 }
 
 static struct keyword_table address_family[] = {

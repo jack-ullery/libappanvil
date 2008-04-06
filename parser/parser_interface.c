@@ -40,8 +40,9 @@
 #define _(s) gettext(s)
 
 #define u8  unsigned char
-#define u16 unsigned short
-#define u32 unsigned int
+#define u16 uint16_t
+#define u32 uint32_t
+#define u64 uint64_t
 
 #define BUFFERINC 65536
 //#define BUFFERINC 16
@@ -49,9 +50,11 @@
 #if __BYTE_ORDER == __BIG_ENDIAN
 #  define cpu_to_le16(x) ((u16)(bswap_16 ((u16) x)))
 #  define cpu_to_le32(x) ((u32)(bswap_32 ((u32) x)))
+#  define cpu_to_le64(x) ((u64)(bswap_64 ((u64) x)))
 #else
 #  define cpu_to_le16(x) ((u16)(x))
 #  define cpu_to_le32(x) ((u32)(x))
+#  define cpu_to_le64(x) ((u64)(x))
 #endif
 
 #define SD_CODE_SIZE (sizeof(u8))
@@ -193,6 +196,8 @@ const char *sd_code_names[] = {
 	"SD_STRUCTEND",
 	"SD_LIST",
 	"SD_LISTEND",
+	"SD_ARRAY",
+	"SD_ARRAYEND",
 	"SD_OFFSET"
 };
 
@@ -302,6 +307,17 @@ inline int sd_write32(sd_serialize *p, u32 b)
 	if (!sd_prepare_write(p, SD_U32, sizeof(b)))
 		return 0;
 	tmp = cpu_to_le32(b);
+	memcpy(p->pos, &tmp, sizeof(tmp));
+	sd_inc(p, sizeof(tmp));
+	return 1;
+}
+
+inline int sd_write64(sd_serialize *p, u64 b)
+{
+	u64 tmp;
+	if (!sd_prepare_write(p, SD_U64, sizeof(b)))
+		return 0;
+	tmp = cpu_to_le64(b);
 	memcpy(p->pos, &tmp, sizeof(tmp));
 	sd_inc(p, sizeof(tmp));
 	return 1;
@@ -489,6 +505,28 @@ int sd_serialize_dfa(sd_serialize *p, void *dfa, size_t size)
 	return 1;
 }
 
+int sd_serialize_rlimits(sd_serialize *p, struct aa_rlimits *limits)
+{
+	int i;
+	if (!limits->specified)
+		return 1;
+	if (!sd_write_struct(p, "rlimits"))
+		return 0;
+	if (!sd_write32(p, limits->specified))
+		return 0;
+	if (!sd_write_array(p, NULL, RLIM_NLIMITS))
+		return 0;
+	for (i = 0; i < RLIM_NLIMITS; i++) {
+		if (!sd_write64(p, limits->limits[i]))
+			return 0;
+	}
+	if (!sd_write_arrayend(p))
+		return 0;
+	if (!sd_write_structend(p))
+		return 0;
+	return 1;
+}
+
 int count_file_ents(struct cod_entry *list)
 {
 	struct cod_entry *entry;
@@ -569,6 +607,9 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 	if (!sd_write32(p, profile->deny_caps & profile->quiet_caps))
 		return 0;
 	if (!sd_write32(p, profile->set_caps & ~profile->deny_caps))
+		return 0;
+
+	if (!sd_serialize_rlimits(p, &profile->rlimits))
 		return 0;
 
 	if (profile->network_allowed) {
