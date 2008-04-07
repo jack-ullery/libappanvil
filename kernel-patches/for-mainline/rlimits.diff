@@ -1,9 +1,9 @@
 ---
  security/apparmor/apparmor.h         |   23 ++++++
  security/apparmor/lsm.c              |   16 ++++
- security/apparmor/main.c             |  133 +++++++++++++++++++++++++++++++----
+ security/apparmor/main.c             |  132 +++++++++++++++++++++++++++++++----
  security/apparmor/module_interface.c |   56 ++++++++++++++
- 4 files changed, 215 insertions(+), 13 deletions(-)
+ 4 files changed, 214 insertions(+), 13 deletions(-)
 
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
@@ -116,7 +116,7 @@
  	if (sa->iattr) {
  		struct iattr *iattr = sa->iattr;
  
-@@ -873,6 +876,80 @@ int aa_revalidate_sk(struct sock *sk, ch
+@@ -873,6 +876,79 @@ int aa_revalidate_sk(struct sock *sk, ch
  
  	return error;
  }
@@ -163,7 +163,6 @@
 +	if (!profile)
 +		return;
 +
-+	return;
 +	if (!profile->rlimits.mask)
 +		return;
 +
@@ -197,7 +196,7 @@
  
  /*******************************
   * Global task related functions
-@@ -886,6 +963,7 @@ int aa_revalidate_sk(struct sock *sk, ch
+@@ -886,6 +962,7 @@ int aa_revalidate_sk(struct sock *sk, ch
   */
  int aa_clone(struct task_struct *child)
  {
@@ -205,7 +204,7 @@
  	struct aa_task_context *cxt, *child_cxt;
  	struct aa_profile *profile;
  
-@@ -895,6 +973,11 @@ int aa_clone(struct task_struct *child)
+@@ -895,6 +972,11 @@ int aa_clone(struct task_struct *child)
  	if (!child_cxt)
  		return -ENOMEM;
  
@@ -217,7 +216,7 @@
  repeat:
  	profile = aa_get_profile(current);
  	if (profile) {
-@@ -911,18 +994,22 @@ repeat:
+@@ -911,18 +993,22 @@ repeat:
  			goto repeat;
  		}
  
@@ -245,7 +244,7 @@
  			aa_audit_hint(profile, &sa);
  		}
  		aa_put_profile(profile);
-@@ -1100,6 +1187,10 @@ repeat:
+@@ -1100,6 +1186,10 @@ repeat:
  			sa.task = current->parent->pid;
  			aa_audit_reject(profile, &sa);
  		}
@@ -256,7 +255,7 @@
  		new_profile = old_profile;
  		goto cleanup;
  	}
-@@ -1239,6 +1330,12 @@ static int do_change_profile(struct aa_p
+@@ -1239,6 +1329,12 @@ static int do_change_profile(struct aa_p
  		goto out;
  	}
  
@@ -269,7 +268,7 @@
  	if (new_profile == ns->null_complain_profile)
  		aa_audit_hint(cxt->profile, sa);
  
-@@ -1427,17 +1524,18 @@ struct aa_profile *__aa_replace_profile(
+@@ -1427,17 +1523,18 @@ struct aa_profile *__aa_replace_profile(
  
  	cxt = lock_task_and_profiles(task, profile);
  	if (unlikely(profile && profile->isstale)) {
@@ -296,7 +295,7 @@
  	}
  
  	if (cxt)
-@@ -1445,8 +1543,15 @@ struct aa_profile *__aa_replace_profile(
+@@ -1445,8 +1542,15 @@ struct aa_profile *__aa_replace_profile(
  	aa_change_task_context(task, new_cxt, profile, 0, NULL);
  
  	task_unlock(task);
@@ -312,7 +311,7 @@
  }
  
  /**
-@@ -1511,6 +1616,7 @@ void aa_change_task_context(struct task_
+@@ -1511,6 +1615,7 @@ void aa_change_task_context(struct task_
  
  	if (old_cxt) {
  		list_del_init(&old_cxt->list);
@@ -320,7 +319,7 @@
  		call_rcu(&old_cxt->rcu, free_aa_task_context_rcu_callback);
  	}
  	if (new_cxt) {
-@@ -1522,6 +1628,7 @@ void aa_change_task_context(struct task_
+@@ -1522,6 +1627,7 @@ void aa_change_task_context(struct task_
  		new_cxt->cookie = cookie;
  		new_cxt->task = task;
  		new_cxt->profile = aa_dup_profile(profile);
