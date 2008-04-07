@@ -1,6 +1,6 @@
 AC_INIT(configure.in)
 
-AM_INIT_AUTOMAKE(apparmor-dbus, 1.2)
+AM_INIT_AUTOMAKE(apparmor-dbus, 2.3)
 
 AC_LANG_C
 AC_PROG_CC

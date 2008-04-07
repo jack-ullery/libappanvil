@@ -6,7 +6,7 @@
 Name:		apparmor-dbus
 BuildRequires:	audit-devel dbus-1-devel pkgconfig libapparmor-devel
 Requires:	libapparmor
-Version:	1.2
+Version:	2.3
 Release:	0
 License:	GPL
 Group:		System/Management
