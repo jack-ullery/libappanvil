@@ -112,5 +112,5 @@ apparmor-intree.diff
 
 apparmor-network.diff
 #fix-net.diff
-rlimits.diff
+apparmor-rlimits.diff
 audit-log-type-in-syslog.diff
