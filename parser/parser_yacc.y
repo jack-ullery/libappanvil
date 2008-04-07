@@ -631,6 +631,8 @@ rules: rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE TOK_END_OF_RULE
 			tmp = strtoll($6, &end, 0);
 			switch (limit) {
 			case RLIMIT_CPU:
+				yyerror("RLIMIT '%s' is currently unsupported\n", $4);
+				break;
 			case RLIMIT_NOFILE:
 			case RLIMIT_NPROC:
 			case RLIMIT_LOCKS:
