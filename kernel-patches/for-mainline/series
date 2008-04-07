@@ -49,10 +49,9 @@ apparmor-lsm.diff
 apparmor-module_interface.diff
 apparmor-misc.diff
 apparmor-intree.diff
-apparmor-network.diff
+
 fix-rcu-deref.diff
 fix-name-errorpath.diff
-fix-net.diff
 change-profile-kernel-v2.diff
 expand-dfa.diff
 #slash-null-dfa.diff
@@ -67,6 +66,17 @@ split_init.diff
 apparmor-fix-sysctl-refcount.diff
 apparmor-fix-lock-letter.diff
 fix-link-subset.diff
+hat_perm.diff
+extend-x-mods.diff
+no-safex-link-subset.diff
+apparmor-create-append.diff
+apparmor-failed-name-error.diff
+audit-uid.diff
+apparmor-secondary-accept.diff
+apparmor-audit-flags2.diff
+fix-profile-namespaces.diff
+fix-dfa.diff
+cap-set.diff
 #foobar.diff
 # # NOT YET
 # ecryptfs-d_revalidate.diff
@@ -92,21 +102,13 @@ fix-link-subset.diff
 # vfs_unlink-args.diff
 # may_delete-args.diff
 #fix-change_profile-namespace.diff
-hat_perm.diff
-extend-x-mods.diff
-no-safex-link-subset.diff
-apparmor-create-append.diff
-apparmor-failed-name-error.diff
-audit-uid.diff
-apparmor-secondary-accept.diff
-apparmor-audit-flags2.diff
-audit-log-type-in-syslog.diff
+
 #audit_denied.diff
 #apparmor-audit-flags.diff
 #FS2.2.2_fix-unionfs-with-AppArmor.patch
 #FS2.1.3_fix-unionfs-with-AppArmor.patch
 
-fix-profile-namespaces.diff
-fix-dfa.diff
-cap-set.diff
+apparmor-network.diff
+fix-net.diff
 rlimits.diff
+audit-log-type-in-syslog.diff

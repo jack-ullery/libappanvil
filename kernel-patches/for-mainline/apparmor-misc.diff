@@ -11,7 +11,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- security/apparmor/Kconfig      |    9 +
+ security/apparmor/Kconfig      |   10 +
  security/apparmor/Makefile     |   13 ++
  security/apparmor/apparmor.h   |  257 +++++++++++++++++++++++++++++++++++++++++
  security/apparmor/apparmorfs.c |  252 ++++++++++++++++++++++++++++++++++++++++
@@ -19,14 +19,15 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  security/apparmor/list.c       |   94 ++++++++++++++
  security/apparmor/locking.txt  |   68 ++++++++++
  security/apparmor/procattr.c   |  155 ++++++++++++++++++++++++
- 8 files changed, 1059 insertions(+)
+ 8 files changed, 1060 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/Kconfig
-@@ -0,0 +1,9 @@
+@@ -0,0 +1,10 @@
 +config SECURITY_APPARMOR
 +	tristate "AppArmor support"
-+	depends on SECURITY!=n
++	depends on SECURITY
++	select AUDIT
 +	help
 +	  This enables the AppArmor security module.
 +	  Required userspace tools (if they are not included in your

@@ -1,15 +1,15 @@
 ---
- security/apparmor/apparmor.h         |   16 -
+ security/apparmor/apparmor.h         |   14 -
  security/apparmor/apparmorfs.c       |    2 
- security/apparmor/inline.h           |   14 
- security/apparmor/main.c             |  502 +++++++++++++++++++----------------
+ security/apparmor/inline.h           |   14 -
+ security/apparmor/main.c             |  490 +++++++++++++++++++----------------
  security/apparmor/match.c            |    9 
  security/apparmor/module_interface.c |   10 
- 6 files changed, 322 insertions(+), 231 deletions(-)
+ 6 files changed, 309 insertions(+), 230 deletions(-)
 
 --- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
-@@ -46,8 +46,7 @@
+@@ -44,8 +44,7 @@
  					 AA_EXEC_MOD_2 | AA_EXEC_MOD_3 | \
  					 AA_EXEC_MOD_4)
  
@@ -19,7 +19,7 @@
  
  #define AA_EXEC_UNCONFINED		AA_EXEC_MOD_0
  #define AA_EXEC_INHERIT			AA_EXEC_MOD_1
-@@ -87,6 +86,10 @@
+@@ -85,6 +84,10 @@
  					 AA_AUDIT_FIELD)
  
  #define AA_VALID_PERM_MASK		(AA_FILE_PERMS | AA_SHARED_PERMS)
@@ -30,7 +30,7 @@
  #define AA_VALID_PERM2_MASK		0x0fffffff
  
  #define AA_SECURE_EXEC_NEEDED		1
-@@ -181,11 +184,16 @@ struct aa_profile {
+@@ -179,6 +182,9 @@ struct aa_profile {
  	int isstale;
  
  	kernel_cap_t capabilities;
@@ -40,14 +40,7 @@
  	struct kref count;
  	struct list_head task_contexts;
  	spinlock_t lock;
- 	unsigned long int_flags;
- 	u16 network_families[AF_MAX];
-+	u16 audit_network[AF_MAX];
-+	u16 quiet_network[AF_MAX];
- };
- 
- extern struct list_head profile_ns_list;
-@@ -229,7 +237,7 @@ struct aa_audit {
+@@ -226,7 +232,7 @@ struct aa_audit {
  	const char *name;
  	const char *name2;
  	const char *name3;
@@ -55,8 +48,8 @@
 +	int request_mask, denied_mask, audit_mask;
  	struct iattr *iattr;
  	pid_t task, parent;
- 	int family, type, protocol;
-@@ -338,7 +346,7 @@ extern struct aa_dfa *aa_match_alloc(voi
+ 	int error_code;
+@@ -331,7 +337,7 @@ extern struct aa_dfa *aa_match_alloc(voi
  extern void aa_match_free(struct aa_dfa *dfa);
  extern int unpack_dfa(struct aa_dfa *dfa, void *blob, size_t size);
  extern int verify_dfa(struct aa_dfa *dfa);
@@ -102,7 +95,7 @@
  #endif /* __INLINE_H__ */
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -39,204 +39,6 @@ static int aa_inode_mode(struct inode *i
+@@ -36,204 +36,6 @@ static int aa_inode_mode(struct inode *i
  	return AA_OTHER_SHIFT;
  }
  
@@ -307,7 +300,7 @@
  int alloc_default_namespace(void)
  {
  	struct aa_namespace *ns;
-@@ -510,20 +312,259 @@ int aa_audit(struct aa_profile *profile,
+@@ -471,20 +273,259 @@ int aa_audit(struct aa_profile *profile,
  	int type = AUDIT_APPARMOR_DENIED;
  	struct audit_context *audit_cxt;
  
@@ -575,7 +568,7 @@
  /**
   * aa_attr - check if attribute change is allowed
   * @profile: profile to check against
-@@ -660,10 +701,11 @@ int aa_perm_path(struct aa_profile *prof
+@@ -621,10 +662,11 @@ int aa_perm_path(struct aa_profile *prof
  	else
  		sa.request_mask = mask << AA_OTHER_SHIFT;
  
@@ -589,7 +582,7 @@
  }
  
  /**
-@@ -699,7 +741,7 @@ int aa_capability(struct aa_task_context
+@@ -660,7 +702,7 @@ int aa_capability(struct aa_task_context
  	sa.name = capability_names[cap];
  	sa.error_code = error;
  
@@ -598,7 +591,7 @@
  
  	return error;
  }
-@@ -748,11 +790,12 @@ int aa_link(struct aa_profile *profile,
+@@ -709,11 +751,12 @@ int aa_link(struct aa_profile *profile,
  	if (sa.name && sa.name2) {
  		sa.denied_mask = aa_link_denied(profile, sa.name, sa.name2,
  						aa_inode_mode(target->d_inode),
@@ -613,40 +606,7 @@
  
  	aa_put_name_buffer(buffer);
  	aa_put_name_buffer(buffer2);
-@@ -765,7 +808,7 @@ int aa_net_perm(struct aa_profile *profi
- {
- 	struct aa_audit sa;
- 	int error = 0;
--	u16 family_mask;
-+	u16 family_mask, audit_mask, quiet_mask;
- 
- 	if ((family < 0) || (family >= AF_MAX))
- 		return -EINVAL;
-@@ -778,6 +821,8 @@ int aa_net_perm(struct aa_profile *profi
- 		return 0;
- 
- 	family_mask = profile->network_families[family];
-+	audit_mask = profile->audit_network[family];
-+	quiet_mask = profile->quiet_network[family];
- 
- 	error = (family_mask & (1 << type)) ? 0 : -EACCES;
- 
-@@ -789,6 +834,14 @@ int aa_net_perm(struct aa_profile *profi
- 	sa.protocol = protocol;
- 	sa.error_code = error;
- 
-+	if (likely(!error)) {
-+		if (!PROFILE_AUDIT(profile) && !(family_mask & audit_mask))
-+			return 0;
-+	} else if (!((1 << type) & ~quiet_mask)) {
-+//printk("Quieting network %d family 0x%x audit 0x%x quiet 0x%x\n", family, family_mask, audit_mask, quiet_mask);
-+		return error;
-+	}
-+//printk("auditing network\n");
- 	error = aa_audit(profile, &sa);
- 
- 	return error;
-@@ -898,8 +951,8 @@ aa_register_find(struct aa_profile *prof
+@@ -802,8 +845,8 @@ aa_register_find(struct aa_profile *prof
  			new_profile =
  			    aa_dup_profile(profile->ns->null_complain_profile);
  		} else {
@@ -657,7 +617,7 @@
  		}
  	} else {
  		/* Only way we can get into this code is if task
-@@ -959,7 +1012,8 @@ repeat:
+@@ -863,7 +906,8 @@ repeat:
  		/* Confined task, determine what mode inherit, unconfined or
  		 * mandatory to load new profile
  		 */
@@ -667,7 +627,7 @@
  
  		if (exec_mode & sa.request_mask) {
  			switch ((exec_mode >> shift) & AA_EXEC_MODIFIERS) {
-@@ -1002,6 +1056,9 @@ repeat:
+@@ -906,6 +950,9 @@ repeat:
  				break;
  			}
  
@@ -677,7 +637,7 @@
  		} else if (complain) {
  			/* There was no entry in calling profile
  			 * describing mode to execute image in.
-@@ -1012,8 +1069,8 @@ repeat:
+@@ -916,8 +963,8 @@ repeat:
  			exec_mode |= AA_EXEC_UNSAFE << shift;
  		} else {
  			sa.denied_mask = sa.request_mask;
@@ -688,7 +648,7 @@
  		}
  	} else {
  		/* Unconfined task, load profile if it exists */
-@@ -1069,6 +1126,7 @@ repeat:
+@@ -973,6 +1020,7 @@ repeat:
  		sa.info = "set profile";
  		aa_audit_hint(new_profile, &sa);
  	}
@@ -696,7 +656,7 @@
  cleanup:
  	aa_put_name_buffer(buffer);
  	if (IS_ERR(new_profile))
-@@ -1245,7 +1303,7 @@ repeat:
+@@ -1149,7 +1197,7 @@ repeat:
  
  	if (PROFILE_COMPLAIN(profile) ||
  	    (ns == profile->ns &&
@@ -705,7 +665,7 @@
  		error = do_change_profile(profile, ns, name, 0, 0, &sa);
  	else {
  		/* check for a rule with a namespace prepended */
-@@ -1452,9 +1510,11 @@ void aa_change_task_context(struct task_
+@@ -1356,9 +1404,11 @@ void aa_change_task_context(struct task_
  		call_rcu(&old_cxt->rcu, free_aa_task_context_rcu_callback);
  	}
  	if (new_cxt) {
@@ -752,7 +712,7 @@
  /**
 --- a/security/apparmor/module_interface.c
 +++ b/security/apparmor/module_interface.c
-@@ -312,6 +312,10 @@ static struct aa_profile *aa_unpack_prof
+@@ -310,6 +310,10 @@ static struct aa_profile *aa_unpack_prof
  
  	if (!aa_is_u32(e, &(profile->capabilities), NULL))
  		goto fail;
@@ -761,20 +721,20 @@
 +	if (!aa_is_u32(e, &(profile->quiet_caps), NULL))
 +		goto fail;
  
- 	size = aa_is_array(e, "net_allowed_af");
- 	if (size) {
-@@ -321,6 +325,10 @@ static struct aa_profile *aa_unpack_prof
- 		for (i = 0; i < size; i++) {
- 			if (!aa_is_u16(e, &profile->network_families[i], NULL))
- 				goto fail;
+ 	/* get file rules */
+ 	profile->file_rules = aa_unpack_dfa(e);
+@@ -317,6 +321,10 @@ static struct aa_profile *aa_unpack_prof
+ 		error = PTR_ERR(profile->file_rules);
+ 		profile->file_rules = NULL;
+ 		goto fail;
 +			if (!aa_is_u16(e, &profile->audit_network[i], NULL))
 +				goto fail;
 +			if (!aa_is_u16(e, &profile->quiet_network[i], NULL))
 +				goto fail;
- 		}
- 		if (!aa_is_nameX(e, AA_ARRAYEND, NULL))
- 			goto fail;
-@@ -380,7 +388,7 @@ static int aa_verify_header(struct aa_ex
+ 	}
+ 
+ 	if (!aa_is_nameX(e, AA_STRUCTEND, NULL))
+@@ -360,7 +368,7 @@ static int aa_verify_header(struct aa_ex
  	}
  
  	/* check that the interface version is currently supported */

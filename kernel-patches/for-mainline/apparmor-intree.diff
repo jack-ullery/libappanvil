@@ -5,10 +5,9 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- security/Kconfig          |    1 +
- security/Makefile         |    1 +
- security/apparmor/Kconfig |    3 ++-
- 3 files changed, 4 insertions(+), 1 deletion(-)
+ security/Kconfig  |    1 +
+ security/Makefile |    1 +
+ 2 files changed, 2 insertions(+)
 
 --- a/security/Kconfig
 +++ b/security/Kconfig
@@ -29,14 +28,3 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +obj-$(CONFIG_SECURITY_APPARMOR)		+= commoncap.o apparmor/
  obj-$(CONFIG_SECURITY_CAPABILITIES)	+= commoncap.o capability.o
  obj-$(CONFIG_SECURITY_ROOTPLUG)		+= commoncap.o root_plug.o
---- a/security/apparmor/Kconfig
-+++ b/security/apparmor/Kconfig
-@@ -1,6 +1,7 @@
- config SECURITY_APPARMOR
- 	tristate "AppArmor support"
--	depends on SECURITY!=n
-+	depends on SECURITY
-+	select AUDIT
- 	help
- 	  This enables the AppArmor security module.
- 	  Required userspace tools (if they are not included in your
