@@ -61,7 +61,7 @@
 #define SD_STR_LEN (sizeof(u16))
 
 #define SUBDOMAIN_INTERFACE_VERSION 2
-#define SUBDOMAIN_INTERFACE_DFA_VERSION 4
+#define SUBDOMAIN_INTERFACE_DFA_VERSION 5
 
 int sd_serialize_codomain(int option, struct codomain *cod);
 
