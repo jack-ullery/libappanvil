@@ -481,9 +481,9 @@ rules: rules opt_audit_flag opt_owner_flag TOK_OPEN rules TOK_CLOSE
 					yyerror(_("Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"));
 			}
 			if ($3 == 1)
- 				entry->mode &= (AA_USER_PERMS | AA_SHARED_PERMS);
+ 				entry->mode &= (AA_USER_PERMS | AA_SHARED_PERMS | AA_USER_PTRACE);
 			else if ($3 == 2)
-				entry->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS);
+				entry->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS | AA_OTHER_PTRACE);
 
 			if ($2 && !entry->deny)
 				entry->audit = entry->mode & ~ALL_AA_EXEC_TYPE;

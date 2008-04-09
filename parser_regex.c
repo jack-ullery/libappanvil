@@ -503,6 +503,8 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 	    AA_EXEC_INHERIT)
 		entry->mode |= AA_EXEC_MMAP << AA_USER_SHIFT;
 
+	/* relying on ptrace and change_profile not getting merged earlier */
+
 	/* the link bit on the first pair entry should not get masked
 	 * out by a deny rule, as both pieces of the link pair must
 	 * match.  audit info for the link is carried on the second
@@ -518,6 +520,7 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 				   entry->audit))
 			return FALSE;
 	}
+
 	if (entry->mode & (AA_LINK_BITS)) {
 		/* add the pair rule */
 		char lbuf[PATH_MAX + 8];
