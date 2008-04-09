@@ -103,6 +103,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %token TOK_PROFILE
 %token TOK_SET
 %token TOK_ALIAS
+%token TOK_PTRACE
 
  /* rlimits */
 %token TOK_RLIMIT
@@ -434,9 +435,9 @@ rules:  rules opt_audit_flag TOK_DENY opt_owner_flag rule
 			yyerror(_("Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"));
 
 		if ($4 == 1)
-			$5->mode &= (AA_USER_PERMS | AA_SHARED_PERMS);
+			$5->mode &= (AA_USER_PERMS | AA_SHARED_PERMS | AA_USER_PTRACE);
 		else if ($4 == 2)
-			$5->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS);
+			$5->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS | AA_OTHER_PTRACE);
 		/* only set audit ctl quieting if the rule is not audited */
 		if (!$2)
 			$5->audit = $5->mode & ~ALL_AA_EXEC_TYPE;
@@ -455,9 +456,9 @@ rules:  rules opt_audit_flag opt_owner_flag rule
 			yyerror(_("Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"));
 
 		if ($3 == 1)
-			$4->mode &= (AA_USER_PERMS | AA_SHARED_PERMS);
+			$4->mode &= (AA_USER_PERMS | AA_SHARED_PERMS | AA_USER_PTRACE);
 		else if ($3 == 2)
-			$4->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS);
+			$4->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS | AA_OTHER_PTRACE);
 		if ($2)
 			$4->audit = $4->mode & ~ALL_AA_EXEC_TYPE;
 
@@ -831,6 +832,24 @@ rule: file_mode opt_subset_flag TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
 		entry->subset = $2;
 
 		PDEBUG("rule.entry: link (%s)\n", entry->name);
+		$$ = entry;
+	};
+
+rule: TOK_PTRACE TOK_ID TOK_END_OF_RULE
+	{
+		struct cod_entry *entry;
+		entry = new_entry(NULL, $2, AA_USER_PTRACE | AA_OTHER_PTRACE, NULL);
+		if (!entry)
+			yyerror(_("Memory allocation error."));
+		$$ = entry;
+	};
+
+rule: TOK_PTRACE TOK_COLON TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
+	{
+		struct cod_entry *entry;
+		entry = new_entry($3, $5, AA_USER_PTRACE | AA_OTHER_PTRACE, NULL);
+		if (!entry)
+			yyerror(_("Memory allocation error."));
 		$$ = entry;
 	};
 
