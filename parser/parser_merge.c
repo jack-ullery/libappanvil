@@ -67,6 +67,12 @@ static int file_comp(const void *c1, const void *c2)
 	if ((*e1)->deny != (*e2)->deny)
 		return (*e1)->deny < (*e2)->deny ? -1 : 1;
 
+	/* rules with ptrace and change_profile can only merge with
+	 * rules with exact same perm */
+	if (((*e1)->mode & (AA_CHANGE_PROFILE | AA_PTRACE_PERMS)) !=
+	    ((*e2)->mode & (AA_CHANGE_PROFILE | AA_PTRACE_PERMS)))
+		return 1;
+
 	return strcmp((*e1)->name, (*e2)->name);
 }
 
