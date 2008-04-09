@@ -230,6 +230,28 @@ int process_hat_variables(struct codomain *cod)
 	return 0;
 }
 
+
+static void __process_alias(const void *nodep, const VISIT value,
+			    const int __unused depth)
+{
+	struct codomain **t = (struct codomain **) nodep;
+
+	if (value == preorder || value == endorder)
+		return;
+
+	if ((*t)->entries)
+		replace_aliases((*t)->entries);
+
+	if ((*t)->hat_table)
+		twalk((*t)->hat_table, __process_alias);
+}
+
+int post_process_alias(void)
+{
+	twalk(policy_list, __process_alias);
+	return 0;
+}
+
 #define CHANGEHAT_PATH "/proc/[0-9]*/attr/current"
 
 /* add file rules to access /proc files to call change_hat()
@@ -551,6 +573,13 @@ int post_process_policy(void)
 	retval = post_process_variables();
 	if (retval != 0) {
 		PERROR(_("%s: Errors found during regex postprocess.  Aborting.\n"),
+		       progname);
+		return retval;
+	}
+
+	retval = post_process_alias();
+	if (retval != 0) {
+		PERROR(_("%s: Errors found during postprocess.  Aborting.\n"),
 		       progname);
 		return retval;
 	}

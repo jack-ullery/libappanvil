@@ -240,6 +240,11 @@ extern char *get_next_set_value(void **context);
 extern void dump_symtab(void);
 extern void dump_expanded_symtab(void);
 
+/* parser_alias.c */
+extern int new_alias(const char *from, const char *to);
+extern void replace_aliases(struct entry *list);
+extern void free_aliases(void);
+
 /* parser_merge.c */
 extern int codomain_merge_rules(struct codomain *cod);
 

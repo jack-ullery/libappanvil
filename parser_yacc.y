@@ -102,6 +102,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %token TOK_DENY
 %token TOK_PROFILE
 %token TOK_SET
+%token TOK_ALIAS
 
  /* rlimits */
 %token TOK_RLIMIT
@@ -184,7 +185,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %%
 
 
-list:	 varlist profilelist
+list:	 aliaslist varlist profilelist
 	{ /* nothing */ };
 
 profilelist:	{ /* nothing */ };
@@ -242,6 +243,17 @@ profile:	opt_profile_flag TOK_COLON TOK_ID TOK_COLON TOK_ID flags TOK_OPEN rules
 		       cod->flags.audit ? "audit" : "");
 
 		$$ = cod;
+	};
+
+aliaslist: { /* nothing */ }
+	| aliaslist alias { /* nothing */ };
+
+alias: TOK_ALIAS TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
+	{
+		if (!new_alias($2, $4))
+			yyerror(_("Failed to create alias %s -> %s\n"), $2, $4);
+		free($2);
+		free($4);
 	};
 
 varlist:	{ /* nothing */ }
