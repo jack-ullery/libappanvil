@@ -550,6 +550,19 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 				return FALSE;
 		}
 	}
+	if (entry->mode & (AA_USER_PTRACE | AA_OTHER_PTRACE)) {
+		int mode = entry->mode & (AA_USER_PTRACE | AA_OTHER_PTRACE);
+		if (entry->namespace) {
+			char *vec[2];
+			vec[0] = entry->namespace;
+			vec[1] = entry->name;
+			if (!aare_add_rule_vec(dfarules, 0, mode, 0, 2, vec))
+			    return FALSE;
+		} else {
+			if (!aare_add_rule(dfarules, entry->name, 0, mode, 0))
+				return FALSE;
+		}
+	}
 	return TRUE;
 }
 

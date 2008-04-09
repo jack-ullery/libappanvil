@@ -57,13 +57,11 @@
 
 #define AA_FILE_PERMS			(AA_USER_PERMS | AA_OTHER_PERMS )
 
-#define AA_AUDIT_FIELD			(1 << 28)
-#define AA_CHANGE_HAT			(1 << 29)
-#define AA_CHANGE_PROFILE		(1 << 30)
-#define AA_ERROR_BIT			(1 << 31)
-#define AA_SHARED_PERMS			(AA_CHANGE_HAT | AA_CHANGE_PROFILE | \
-					 AA_AUDIT_FIELD | AA_ERROR_BIT)
-
+#define AA_USER_PTRACE			(1 << 28)
+#define AA_OTHER_PTRACE			(1 << 29)
+#define AA_CHANGE_HAT			(1 << 30)
+#define AA_CHANGE_PROFILE		(1 << 31)
+#define AA_SHARED_PERMS			(AA_CHANGE_HAT | AA_CHANGE_PROFILE)
 
 #define AA_EXEC_MODIFIERS		(AA_EXEC_MOD_0 | AA_EXEC_MOD_1 | \
 					 AA_EXEC_MOD_2 | AA_EXEC_MOD_3 | \

@@ -865,7 +865,7 @@ public:
     DenyMatchFlag(uint32_t flag, uint32_t quiet) : MatchFlag(flag, quiet) {}
 };
 
-uint32_t accept_perms(State *state, uint32_t *audit_ctl);
+uint32_t accept_perms(State *state, uint32_t *audit_ctl, int *error);
 
 /**
  * verify that there are no conflicting X permissions on the dfa
@@ -874,10 +874,11 @@ uint32_t accept_perms(State *state, uint32_t *audit_ctl);
  */
 State *DFA::verify_perms(void)
 {
+    int error = 0;
     for (States::iterator i = states.begin(); i != states.end(); i++) {
-	    uint32_t accept = accept_perms(*i, NULL);
+	    uint32_t accept = accept_perms(*i, NULL, &error);
 	if (*i == start || accept) {
-	    if (accept & AA_ERROR_BIT)
+	    if (error)
 		    return *i;
 	}
     }
@@ -889,9 +890,10 @@ State *DFA::verify_perms(void)
  */
 void DFA::dump(ostream& os)
 {
+    int error = 0;
     for (States::iterator i = states.begin(); i != states.end(); i++) {
 	    uint32_t accept, audit;
-	    accept = accept_perms(*i, &audit);
+	    accept = accept_perms(*i, &audit, &error);
 	if (*i == start || accept) {
 	    os << **i;
 	    if (*i == start)
@@ -930,7 +932,8 @@ void DFA::dump_dot_graph(ostream& os)
 	if (*i == start) {
 	    os << "\t\tstyle=bold" << endl;
 	}
-	uint32_t perms = accept_perms(*i, NULL);
+	int error = 0;
+	uint32_t perms = accept_perms(*i, NULL, &error);
 	if (perms) {
 	    os << "\t\tlabel=\"" << **i << "\\n("
 	       << perms << ")\"" << endl;
@@ -1152,11 +1155,12 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq)
     accept.resize(dfa.states.size());
     accept2.resize(dfa.states.size());
     for (States::iterator i = dfa.states.begin(); i != dfa.states.end(); i++) {
+	int error = 0;
 	uint32_t audit_ctl;
-	accept[num[*i]] = accept_perms(*i, &audit_ctl);
+	accept[num[*i]] = accept_perms(*i, &audit_ctl, &error);
+	accept2[num[*i]] = audit_ctl;
 //if (accept[num[*i]] & AA_CHANGE_HAT)
 //    fprintf(stderr, "change_hat state %d - 0x%x\n", num[*i], accept[num[*i]]);
-//	accept2[num[*i]] = audit_ctl;
     }
 }
 
@@ -1519,11 +1523,12 @@ static inline int diff_qualifiers(uint32_t perm1, uint32_t perm2)
  * have any exact matches, then they override the execute and safe
  * execute flags.
  */
-uint32_t accept_perms(State *state, uint32_t *audit_ctl)
+uint32_t accept_perms(State *state, uint32_t *audit_ctl, int *error)
 {
     uint32_t perms = 0, exact_match_perms = 0, audit = 0, exact_audit = 0,
 	    quiet = 0, deny = 0;
 
+    *error = 0;
     for (State::iterator i = state->begin(); i != state->end(); i++) {
 	    MatchFlag *match;
 	    if (!(match= dynamic_cast<MatchFlag *>(*i)))
@@ -1532,7 +1537,7 @@ uint32_t accept_perms(State *state, uint32_t *audit_ctl)
 		    /* exact match only ever happens with x */
 		    if (!is_merged_x_consistent(exact_match_perms,
 						match->flag))
-			    exact_match_perms |= AA_ERROR_BIT;
+			    *error = 1;;
 		    exact_match_perms |= match->flag;
 		    exact_audit |= match->audit;
 	    } else if (dynamic_cast<DenyMatchFlag *>(match)) {
@@ -1540,7 +1545,7 @@ uint32_t accept_perms(State *state, uint32_t *audit_ctl)
 		    quiet |= match->audit;
 	    } else {
 		    if (!is_merged_x_consistent(perms, match->flag))
-			    perms |= AA_ERROR_BIT;
+			    *error = 1;
 		    perms |= match->flag;
 		    audit |= match->audit;
 	    }
@@ -1662,7 +1667,7 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 /* the permissions set is assumed to be non-empty if any audit
  * bits are specified */
     accept = NULL;
-    for (unsigned int n = 0; perms && n < (sizeof(perms) * 8) - 1; n++) {
+    for (unsigned int n = 0; perms && n < (sizeof(perms) * 8) ; n++) {
 	uint32_t mask = 1 << n;
 
 	if (perms & mask) {
