@@ -71,13 +71,13 @@ EXTRA_CFLAGS+=-DSUBDOMAIN_CONFDIR=\"${CONFDIR}\"
 
 SRCS = parser_include.c parser_interface.c parser_lex.c parser_main.c \
        parser_misc.c parser_merge.c parser_symtab.c parser_yacc.c \
-       parser_regex.c parser_variable.c parser_policy.c
+       parser_regex.c parser_variable.c parser_policy.c parser_alias.c
 HDRS = parser.h parser_include.h immunix.h
 TOOLS = apparmor_parser
 
 OBJECTS = parser_lex.o parser_yacc.o parser_main.o parser_interface.o \
 	  parser_include.o parser_merge.o parser_symtab.o parser_misc.o \
-	  parser_regex.o parser_variable.o parser_policy.o
+	  parser_regex.o parser_variable.o parser_policy.o parser_alias.o
 
 AAREDIR= libapparmor_re
 AAREOBJECTS = ${AAREDIR}/libapparmor_re.a
@@ -169,6 +169,9 @@ parser_variable.o: parser_variable.c parser.h
 	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_policy.o: parser_policy.c parser.h parser_yacc.h
+	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+
+parser_alias.o: parser_alias.c parser.h
 	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_version.h: Makefile

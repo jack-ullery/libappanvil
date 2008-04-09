@@ -70,6 +70,7 @@ static struct keyword_table keyword_table[] = {
 	{"profile",		TOK_PROFILE},
 	{"set",			TOK_SET},
 	{"rlimit",		TOK_RLIMIT},
+	{"alias",		TOK_ALIAS},
 	/* terminate */
 	{NULL, 0}
 };
