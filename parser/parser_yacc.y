@@ -389,6 +389,7 @@ flagval:	TOK_FLAG_ID
 
 opt_subset_flag: { /* nothing */ $$ = 0; }
 	| TOK_SUBSET { $$ = 1; }
+	| TOK_LE { $$ = 1; }
 
 opt_audit_flag: { /* nothing */ $$ = 0; }
 	| TOK_AUDIT { $$ = 1; };
