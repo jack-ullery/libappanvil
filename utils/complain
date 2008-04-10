@@ -107,8 +107,13 @@ for my $profiling (@profiling) {
         print "\n";
         setprofileflags($filename, "complain");
 
-        system("cat $filename | $parser -I$profiledir -r >/dev/null 2>&1")
-          if check_for_subdomain();
+        my $cmd_info = qx(cat $filename | $parser -I$profiledir -r 2>&1 1>/dev/null)
+	if ($? != 0) {
+	    UI_Info($cmd_info);
+	    exit $?;
+	}
+
+#          if check_for_subdomain();
     } else {
         if ($profiling =~ /^[^\/]+$/) {
             UI_Info(sprintf(gettext('Can\'t find %s in the system path list.  If the name of the application is correct, please run \'which %s\' as a user with the correct PATH environment set up in order to find the fully-qualified path.'), $profiling, $profiling));
