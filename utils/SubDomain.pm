@@ -129,7 +129,8 @@ eval {
 };
 
 # initialize the local poo
-setlocale(LC_MESSAGES, "");
+setlocale(LC_MESSAGES, "")
+    unless defined(LC_MESSAGES);
 textdomain("apparmor-utils");
 
 # where do we get our log messages from?
