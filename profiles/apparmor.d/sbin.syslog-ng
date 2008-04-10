@@ -12,6 +12,9 @@
 
 #include <tunables/global>
 
+#define this to be where syslog-ng is chrooted
+@{CHROOT_BASE}=
+
 /sbin/syslog-ng {
   #include <abstractions/base>
   #include <abstractions/consoles>
@@ -31,8 +34,8 @@
   /etc/hosts.allow r,
   /sbin/syslog-ng mr,
   # chrooted applications
-  /var/lib/*/dev/log w,
-  /var/log/** w,
-  /var/run/syslog-ng.pid krw,
+  @{CHROOT_BASE}/var/lib/*/dev/log w,
+  @{CHROOT_BASE}/var/log/** w,
+  @{CHROOT_BASE}/var/run/syslog-ng.pid krw,
 }
 

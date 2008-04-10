@@ -11,6 +11,7 @@
 # ------------------------------------------------------------------
 
 #include <tunables/global>
+#include <tunables/ntpd>
 /usr/sbin/ntpd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
@@ -54,5 +55,6 @@
   /var/run/nscd/services r,
   /var/run/ntpd.pid w,
   /var/tmp/ntp* rwl,
-  @{PROC}/net/if_inet6 r,
+  @{PROC}/*/net/if_inet6 r,
+  @{NTPD_DEVICE} r,
 }

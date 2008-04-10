@@ -28,7 +28,7 @@
   /etc/syslog.conf              r,
   /sbin/syslogd                 rmix,
   /var/log/**                   rw,
-  /var/run/syslogd.pid          rwl,
+  /var/run/syslogd.pid          krwl,
   /var/run/utmp                 rw,
   /var/spool/compaq/nic/messages_fifo rw,
 }
