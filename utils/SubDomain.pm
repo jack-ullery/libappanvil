@@ -4016,6 +4016,7 @@ sub isSkippableFile($) {
     return ($path =~ /(^|\/)\.[^\/]*$/
             || $path =~ /\.rpm(save|new)$/
             || $path =~ /\.dpkg-(old|new)$/
+	    || $path =~ /\.swp$/
             || $path =~ /\~$/);
 }
 
