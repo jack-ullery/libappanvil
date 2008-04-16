@@ -102,6 +102,8 @@ static int add_named_transition(struct codomain *cod, struct cod_entry *entry)
 	if (!entry->namespace) {
 		char *sub = strstr(entry->nt_name, "//");
 		/* does the subprofile name match the rule */
+#if 0
+/* disable cix checking as cod->name is not available.  Need to rework */
 		if (sub && strncmp(cod->name, sub, sub - entry->nt_name) &&
 		    strcmp(sub + 2, entry->name) == 0) {
 			free(entry->nt_name);
@@ -127,6 +129,7 @@ static int add_named_transition(struct codomain *cod, struct cod_entry *entry)
 			free(entry->nt_name);
 			entry->nt_name = name;
 		}
+#endif
 	}
 	if (entry->namespace) {
 		name = malloc(strlen(entry->namespace) + strlen(entry->nt_name) + 3);
