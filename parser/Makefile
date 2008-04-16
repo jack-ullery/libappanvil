@@ -96,6 +96,9 @@ TEST_OBJECTS = $(filter-out parser_lex.o, \
 	       $(filter-out parser_yacc.o, \
 	       $(filter-out parser_main.o, ${OBJECTS} ${PCREOBJECTS})))
 
+ifdef V
+  VERBOSE = 1
+endif
 ifndef VERBOSE
   VERBOSE = 0
 endif
