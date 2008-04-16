@@ -194,7 +194,7 @@ tst_symtab: parser_symtab.c parser.h parser_variable.o
 tst_variable: parser_variable.c parser.h $(filter-out parser_variable.o, ${TEST_OBJECTS})
 	$(Q)$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< $(filter-out parser_variable.o, ${TEST_OBJECTS}) $(BUILD_OUTPUT)
 
-tst_misc: parser_misc.c parser.h parser_yacc.h
+tst_misc: parser_misc.c parser.h parser_yacc.h af_names.h cap_names.h
 	$(Q)$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< $(BUILD_OUTPUT)
 
 tst_regex: parser_regex.c parser.h parser_yacc.h $(PCREOBJECTS)
