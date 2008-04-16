@@ -1514,8 +1514,8 @@ extern "C" void aare_delete_ruleset(aare_ruleset_t *rules)
 
 static inline int diff_qualifiers(uint32_t perm1, uint32_t perm2)
 {
-	return ((perm1 & AA_EXEC_MODIFIERS) && (perm2 & AA_EXEC_MODIFIERS) &&
-		(perm1 & AA_EXEC_MODIFIERS) != (perm2 & AA_EXEC_MODIFIERS));
+	return ((perm1 & AA_EXEC_TYPE) && (perm2 & AA_EXEC_TYPE) &&
+		(perm1 & AA_EXEC_TYPE) != (perm2 & AA_EXEC_TYPE));
 }
 
 /**
@@ -1610,8 +1610,8 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 {
     static MatchFlag *match_flags[2][sizeof(perms) * 8 - 1];
     static DenyMatchFlag *deny_flags[2][sizeof(perms) * 8 - 1];
-    static MatchFlag *exec_match_flags[2][(AA_EXEC_COUNT << 1) * 2];	/* mods + unsafe *u::o*/
-    static ExactMatchFlag *exact_match_flags[2][(AA_EXEC_COUNT << 1) * 2];/* mods + unsafe *u::o*/
+    static MatchFlag *exec_match_flags[2][(AA_EXEC_COUNT << 2) * 2];	/* mods + unsafe + ix *u::o*/
+    static ExactMatchFlag *exact_match_flags[2][(AA_EXEC_COUNT << 2) * 2];/* mods + unsafe +ix *u::o*/
     Node *tree = NULL, *accept;
     int exact_match;
 
@@ -1649,7 +1649,7 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 	flip_tree(tree);
 
 
-/* 0x3f == 5 bits x mods + 1 bit unsafe mask, after shift */
+/* 0x3f == 4 bits x mods + 1 bit unsafe mask + 1 bit ix, after shift */
 #define EXTRACT_X_INDEX(perm, shift) (((perm) >> (shift + 8)) & 0x3f)
 
 //if (perms & ALL_AA_EXEC_TYPE && (!perms & AA_EXEC_BITS))
@@ -1694,7 +1694,7 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 			    index = EXTRACT_X_INDEX(eperm, AA_USER_SHIFT);
 		    } else {
 			    eperm = mask | (perms & AA_OTHER_EXEC_TYPE);
-			    index = EXTRACT_X_INDEX(eperm, AA_OTHER_SHIFT) + (AA_EXEC_COUNT << 1);
+			    index = EXTRACT_X_INDEX(eperm, AA_OTHER_SHIFT) + (AA_EXEC_COUNT << 2);
 		    }
 //fprintf(stderr, "index %d eperm 0x%x\n", index, eperm);
 		    if (exact_match) {

@@ -34,20 +34,19 @@
 #define AA_EXEC_MMAP			(1 << 6)
 #define AA_MAY_MOUNT			(1 << 7)
 #define AA_EXEC_UNSAFE			(1 << 8)
-#define AA_EXEC_MOD_0			(1 << 9)
-#define AA_EXEC_MOD_1			(1 << 10)
-#define AA_EXEC_MOD_2			(1 << 11)
-#define AA_EXEC_MOD_3			(1 << 12)
-#define AA_EXEC_MOD_4			(1 << 13)
+#define AA_EXEC_INHERIT			(1 << 9)
+#define AA_EXEC_MOD_0			(1 << 10)
+#define AA_EXEC_MOD_1			(1 << 11)
+#define AA_EXEC_MOD_2			(1 << 12)
+#define AA_EXEC_MOD_3			(1 << 13)
 
 #define AA_BASE_PERMS			(AA_MAY_EXEC | AA_MAY_WRITE | \
 					 AA_MAY_READ | AA_MAY_APPEND | \
 					 AA_MAY_LINK | AA_MAY_LOCK | \
 					 AA_MAY_MOUNT | AA_EXEC_MMAP | \
-					 AA_EXEC_UNSAFE | \
+					 AA_EXEC_UNSAFE | AA_EXEC_INHERIT | \
 					 AA_EXEC_MOD_0 | AA_EXEC_MOD_1 | \
-					 AA_EXEC_MOD_2 | AA_EXEC_MOD_3 | \
-					 AA_EXEC_MOD_4)
+					 AA_EXEC_MOD_2 | AA_EXEC_MOD_3)
 
 #define AA_USER_SHIFT			0
 #define AA_OTHER_SHIFT			14
@@ -66,22 +65,20 @@
 #define AA_SHARED_PERMS			(AA_CHANGE_HAT | AA_CHANGE_PROFILE)
 
 #define AA_EXEC_MODIFIERS		(AA_EXEC_MOD_0 | AA_EXEC_MOD_1 | \
-					 AA_EXEC_MOD_2 | AA_EXEC_MOD_3 | \
-					 AA_EXEC_MOD_4)
-#define AA_EXEC_COUNT			32
+					 AA_EXEC_MOD_2 | AA_EXEC_MOD_3)
+#define AA_EXEC_COUNT			16
 
 #define AA_USER_EXEC_MODIFIERS		(AA_EXEC_MODIFIERS << AA_USER_SHIFT)
 #define AA_OTHER_EXEC_MODIFIERS		(AA_EXEC_MODIFIERS << AA_OTHER_SHIFT)
 #define AA_ALL_EXEC_MODIFIERS		(AA_USER_EXEC_MODIFIERS | \
 					 AA_OTHER_EXEC_MODIFIERS)
 
-#define AA_EXEC_TYPE			(AA_EXEC_UNSAFE | AA_EXEC_MODIFIERS)
+#define AA_EXEC_TYPE			(AA_EXEC_UNSAFE | AA_EXEC_INHERIT | \
+					 AA_EXEC_MODIFIERS)
 
 #define AA_EXEC_UNCONFINED		(AA_EXEC_MOD_0)
-#define AA_EXEC_INHERIT			(AA_EXEC_MOD_1)
-#define AA_EXEC_PROFILE			(AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
-#define AA_EXEC_PROFILE_OR_INHERIT	(AA_EXEC_MOD_2)
-#define AA_EXEC_LOCAL			(AA_EXEC_MOD_2 | AA_EXEC_MOD_0)
+#define AA_EXEC_PROFILE			(AA_EXEC_MOD_1)
+#define AA_EXEC_LOCAL			(AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
 
 #define AA_VALID_PERMS			(AA_FILE_PERMS | AA_PTRACE_PERMS | \
 					 AA_OTHER_PERMS)
@@ -144,26 +141,23 @@ enum pattern_t {
 #define HAS_MAY_LINK(mode)		((mode) & AA_MAY_LINK)
 #define HAS_MAY_LOCK(mode)		((mode) & AA_MAY_LOCK)
 #define HAS_EXEC_MMAP(mode) 		((mode) & AA_EXEC_MMAP)
-#define HAS_EXEC_INHERIT(mode)		(((mode) & AA_EXEC_MODIFIERS) == \
-					 AA_EXEC_INHERIT)
-#define HAS_EXEC_PROFILE(mode)		(((mode) & AA_EXEC_MODIFIERS) == \
-					 AA_EXEC_PROFILE)
-#define HAS_EXEC_UNCONFINED(mode)	(((mode) & AA_EXEC_MODIFIERS) == \
-					 AA_EXEC_UNCONFINED)
-#define HAS_EXEC_PROFILE_OR_INHERIT(mode) (((mode) & AA_EXEC_MODIFIERS) == \
-					   AA_EXEC_PROFILE_OR_INHERIT)
+
 #define HAS_EXEC_UNSAFE(mode) 		((mode) & AA_EXEC_UNSAFE)
 #define HAS_CHANGE_PROFILE(mode)	((mode) & AA_CHANGE_PROFILE)
 
+#include <stdio.h>
 static inline int is_merged_x_consistent(int a, int b)
 {
 	if ((a & AA_USER_EXEC_TYPE) && (b & AA_USER_EXEC_TYPE) &&
 	    ((a & AA_USER_EXEC_TYPE) != (b & AA_USER_EXEC_TYPE)))
+{ fprintf(stderr, "failed user merge 0x%x 0x%x\n", a, b);
 		return 0;
+}
 	if ((a & AA_OTHER_EXEC_TYPE) && (b & AA_OTHER_EXEC_TYPE) &&
 	    ((a & AA_OTHER_EXEC_TYPE) != (b & AA_OTHER_EXEC_TYPE)))
+{ fprintf(stderr, "failed other merge 0x%x 0x%x\n", a, b);
 		return 0;
-
+}
 	return 1;
 }
 

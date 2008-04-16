@@ -443,7 +443,7 @@ static void warn_uppercase(void)
 static int parse_sub_mode(const char *str_mode, const char *mode_desc)
 {
 
-#define IS_DIFF_QUAL(mode, q) (((mode) & AA_MAY_EXEC) && (((mode) & (AA_EXEC_MODIFIERS | AA_EXEC_UNSAFE)) != (q)))
+#define IS_DIFF_QUAL(mode, q) (((mode) & AA_MAY_EXEC) && (((mode) & AA_EXEC_TYPE) != ((q) & AA_EXEC_TYPE)))
 
 	int mode = 0;
 	const char *p;
@@ -493,7 +493,7 @@ reeval:
 
 		case COD_INHERIT_CHAR:
 			PDEBUG("Parsing mode: found INHERIT\n");
-			if (IS_DIFF_QUAL(mode, AA_EXEC_INHERIT)) {
+			if (mode & AA_EXEC_MODIFIERS) {
 				yyerror(_("Exec qualifier 'i' invalid, conflicting qualifier already specified"));
 			} else {
 				if (next != tolower(next))
@@ -510,40 +510,48 @@ reeval:
 			      COD_UNSAFE_UNCONFINED_CHAR, COD_EXEC_CHAR);
 			/* fall through */
 		case COD_UNCONFINED_CHAR:
+			tmode |= AA_EXEC_UNCONFINED | AA_MAY_EXEC;
 			PDEBUG("Parsing mode: found UNCONFINED\n");
-			if (IS_DIFF_QUAL(mode, tmode | AA_EXEC_UNCONFINED)) {
+			if (IS_DIFF_QUAL(mode, tmode)) {
 				yyerror(_("Exec qualifier '%c' invalid, conflicting qualifier already specified"),
 					this);
 			} else {
 				if (next != tolower(next))
 					warn_uppercase();
-				mode |= tmode | AA_EXEC_UNCONFINED |
-				    AA_MAY_EXEC;
+				mode |=  tmode;
 				p++;	/* skip 'x' */
 			}
 			tmode = 0;
 			break;
 
 		case COD_UNSAFE_PROFILE_CHAR:
+		case COD_UNSAFE_LOCAL_CHAR:
 			tmode = AA_EXEC_UNSAFE;
 			/* fall through */
 		case COD_PROFILE_CHAR:
+		case COD_LOCAL_CHAR:
+			if (tolower(this) == COD_UNSAFE_PROFILE_CHAR)
+				tmode |= AA_EXEC_PROFILE | AA_MAY_EXEC;
+			else
+			{
+				tmode |= AA_EXEC_LOCAL | AA_MAY_EXEC;
+			}
 			PDEBUG("Parsing mode: found PROFILE\n");
 			if (tolower(next) == COD_INHERIT_CHAR) {
-				if (IS_DIFF_QUAL(mode, tmode | AA_EXEC_PROFILE_OR_INHERIT)) {
+				tmode |= AA_EXEC_INHERIT;
+				if (IS_DIFF_QUAL(mode, tmode)) {
 					yyerror(_("Exec qualifier '%c%c' invalid, conflicting qualifier already specified"), this, next);
 				} else {
-					mode |= tmode | AA_MAY_EXEC |
-					    AA_EXEC_PROFILE_OR_INHERIT;
+					mode |= tmode;
 					p += 2;		/* skip x */
 				}
-			} else if (IS_DIFF_QUAL(mode, tmode | AA_EXEC_PROFILE)) {
-				yyerror(_("Exec qualifier '%c' invalid, conflicting qualifier already specified"),
-					this);
+			} else if (IS_DIFF_QUAL(mode, tmode)) {
+				yyerror(_("Exec qualifier '%c' invalid, conflicting qualifier already specified"), this);
+
 			} else {
 				if (next != tolower(next))
 					warn_uppercase();
-				mode |= tmode | AA_EXEC_PROFILE | AA_MAY_EXEC;
+				mode |= tmode;
 				p++;	/* skip 'x' */
 			}
 			tmode = 0;
@@ -686,20 +694,6 @@ static void debug_base_perm_mask(int mask)
 		printf("%c", COD_LINK_CHAR);
 	if (HAS_MAY_LOCK(mask))
 		printf("%c", COD_LOCK_CHAR);
-	if (HAS_EXEC_INHERIT(mask))
-		printf("%c", COD_INHERIT_CHAR);
-	if (HAS_EXEC_UNCONFINED(mask)) {
-		if (HAS_EXEC_UNSAFE(mask))
-			printf("%c", COD_UNSAFE_UNCONFINED_CHAR);
-		else
-			printf("%c", COD_UNCONFINED_CHAR);
-	}
-	if (HAS_EXEC_PROFILE(mask)) {
-		if (HAS_EXEC_UNSAFE(mask))
-			printf("%c", COD_UNSAFE_PROFILE_CHAR);
-		else
-			printf("%c", COD_PROFILE_CHAR);
-	}
 	if (HAS_EXEC_MMAP(mask))
 		printf("%c", COD_MMAP_CHAR);
 	if (HAS_MAY_EXEC(mask))

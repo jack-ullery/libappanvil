@@ -496,11 +496,9 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 	/* ix implies m but the apparmor module does not add m bit to
 	 * dfa states like it does for pcre
 	 */
-	if (((entry->mode >> AA_OTHER_SHIFT) & AA_EXEC_MODIFIERS) ==
-	    AA_EXEC_INHERIT)
+	if ((entry->mode >> AA_OTHER_SHIFT) & AA_EXEC_INHERIT)
 		entry->mode |= AA_EXEC_MMAP << AA_OTHER_SHIFT;
-	if (((entry->mode >> AA_USER_SHIFT) & AA_EXEC_MODIFIERS) ==
-	    AA_EXEC_INHERIT)
+	if ((entry->mode >> AA_USER_SHIFT) & AA_EXEC_INHERIT)
 		entry->mode |= AA_EXEC_MMAP << AA_USER_SHIFT;
 
 	/* relying on ptrace and change_profile not getting merged earlier */
