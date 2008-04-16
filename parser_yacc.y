@@ -68,7 +68,11 @@ struct value_list {
 
 void free_value_list(struct value_list *list);
 struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
-			       char *link_id);
+			       char *link_id, char *nt);
+
+void add_local_entry(struct codomain *cod);
+
+struct codomain *do_local_profile(struct codomain *cod, char *name, int mode, int audit);
 
 %}
 
@@ -153,6 +157,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 	char *var_val;
 	struct value_list *val_list;
 	int boolean;
+	struct named_transition transition;
 }
 
 %type <id> 	TOK_ID
@@ -161,6 +166,7 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %type <cod> 	profile
 %type <cod>	rules
 %type <cod>	hat
+%type <cod>	local_profile
 %type <cod>	cond_rule
 %type <network_entry> network_rule
 %type <user_entry> rule
@@ -183,6 +189,8 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 %type <boolean> opt_audit_flag
 %type <boolean> opt_owner_flag
 %type <boolean> opt_profile_flag
+%type <transition> opt_named_transition
+
 %%
 
 
@@ -623,6 +631,18 @@ rules:	rules hat
 		$$ = $1;
 	};
 
+/*
+rules:	rules local_profile
+	{
+		PDEBUG("Matched: hat rule\n");
+		if (!$2)
+			yyerror(_("Assert: 'local_profile rule' returned NULL."));
+		add_hat_to_policy($1, $2);
+		add_local_entry($2);
+		$$ = $1;
+	};
+*/
+
 rules:	rules cond_rule
 	{
 		PDEBUG("Matched: conditional rules\n");
@@ -780,23 +800,61 @@ expr:	TOK_DEFINED TOK_BOOL_VAR
 id_or_var: TOK_ID { $$ = $1; }
 id_or_var: TOK_SET_VAR { $$ = $1; };
 
-rule:	id_or_var file_mode TOK_END_OF_RULE
+opt_named_transition:
+	{ /* nothing */
+		$$.present = 0;
+		$$.namespace = NULL;
+		$$.name = NULL;
+	}
+	| TOK_ARROW id_or_var
 	{
-		$$ = do_file_rule(NULL, $1, $2, NULL);
+		$$.present = 1;
+		$$.namespace = NULL;
+		$$.name = $2;
+	}
+	| TOK_ARROW TOK_COLON id_or_var TOK_COLON id_or_var
+	{
+		$$.present = 1;
+		$$.namespace = $3;
+		$$.name = $5;
 	};
 
-rule:   file_mode id_or_var TOK_END_OF_RULE
+rule:	id_or_var file_mode opt_named_transition TOK_END_OF_RULE
 	{
-		$$ = do_file_rule(NULL, $2, $1 & ~ALL_AA_EXEC_UNSAFE, NULL);
+		$$ = do_file_rule($3.namespace, $1, $2, NULL, $3.name);
+	};
+
+rule:   file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE
+	{
+		if ($2 && ($1 & ~AA_LINK_BITS))
+			yyerror(_("subset can only be used with link rules."));
+		if ($4.present && ($1 & AA_LINK_BITS) && ($1 & AA_EXEC_BITS))
+			yyerror(_("link and exec perms conflict on a file rule using ->"));
+		if ($4.present && $4.namespace && ($1 & AA_LINK_BITS))
+			yyerror(_("link perms are not allowed on a named profile transition.\n"));
+		if (($1 & AA_LINK_BITS)) {
+			$$ = do_file_rule(NULL, $3, $1 & ~ALL_AA_EXEC_UNSAFE,
+					  $4.name, NULL);
+			$$->subset = $2;
+
+		} else {
+			$$ = do_file_rule($4.namespace, $3, $1 & ~ALL_AA_EXEC_UNSAFE, NULL, $4.name);
+		}
  	};
 
-rule:	TOK_UNSAFE file_mode id_or_var TOK_END_OF_RULE
+rule:	TOK_UNSAFE file_mode id_or_var opt_named_transition TOK_END_OF_RULE
 	{
 		int mode = (($2 & AA_EXEC_BITS) << 8) & ALL_AA_EXEC_UNSAFE;
+
 		if (!($2 & AA_EXEC_BITS))
 			yyerror(_("unsafe rule missing exec permissions"));
-		$$ = do_file_rule(NULL, $3, ($2 & ~ALL_AA_EXEC_UNSAFE) | mode,
-				  NULL);
+
+		if ($4.present && ($2 & AA_LINK_BITS))
+			yyerror(_("link perms are not allowed on a named profile transtion.\n"));
+
+		$$ = do_file_rule($4.namespace, $3,
+				  ($2 & ~ALL_AA_EXEC_UNSAFE) | mode,
+				  NULL, $4.name);
 	};
 
 rule:  id_or_var file_mode id_or_var
@@ -813,24 +871,7 @@ rule: TOK_LINK opt_subset_flag TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
 		struct cod_entry *entry;
 		PDEBUG("Matched: link tok_id (%s) -> (%s)\n", $3, $5);
 		entry = new_entry(NULL, $3, AA_LINK_BITS, $5);
-		if (!entry)
-			yyerror(_("Memory allocation error."));
 		entry->subset = $2;
-		PDEBUG("rule.entry: link (%s)\n", entry->name);
-		$$ = entry;
-	};
-
-rule: file_mode opt_subset_flag TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
-	{
-		struct cod_entry *entry;
-		PDEBUG("Matched: link tok_id (%s) -> (%s)\n", $3, $5);
-		if ($1 & ~AA_LINK_BITS)
-			yyerror(_("only link perms can be specified in a link rule."));
-		entry = new_entry(NULL, $3, AA_LINK_BITS, $5);
-		if (!entry)
-			yyerror(_("Memory allocation error."));
-		entry->subset = $2;
-
 		PDEBUG("rule.entry: link (%s)\n", entry->name);
 		$$ = entry;
 	};
@@ -880,6 +921,54 @@ hat: hat_start TOK_ID flags TOK_OPEN rules TOK_CLOSE
 		       $2,
 		       cod->flags.complain ? "complain, " : "",
 		       cod->flags.audit ? "audit" : "");
+		$$ = cod;
+	};
+
+local_profile:   opt_audit_flag opt_owner_flag TOK_ID file_mode TOK_ARROW TOK_OPEN rules TOK_CLOSE
+	{
+		int audit = 0, mode = $4;
+		if ($2 == 1)
+			mode &= (AA_USER_PERMS | AA_SHARED_PERMS | AA_USER_PTRACE);
+		else if ($2 == 2)
+			mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS | AA_OTHER_PTRACE);
+		if ($1)
+			audit = mode & ~ALL_AA_EXEC_TYPE;
+
+		$$ = do_local_profile($7, $3, mode, audit);
+	};
+
+local_profile:   opt_audit_flag opt_owner_flag file_mode TOK_ID TOK_ARROW TOK_OPEN rules TOK_CLOSE
+	{
+		int audit = 0, mode = $3;
+		mode &= ~ALL_AA_EXEC_UNSAFE;
+		if ($2 == 1)
+			mode &= (AA_USER_PERMS | AA_SHARED_PERMS | AA_USER_PTRACE);
+		else if ($2 == 2)
+			mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS | AA_OTHER_PTRACE);
+		if ($1)
+			audit = mode & ~ALL_AA_EXEC_TYPE;
+
+		$$ = do_local_profile($7, $4, mode, audit);
+	};
+
+local_profile:   opt_audit_flag opt_owner_flag TOK_UNSAFE file_mode TOK_ID TOK_ARROW TOK_OPEN rules TOK_CLOSE
+	{
+		int unsafe = (($4 & AA_EXEC_BITS) << 8) & ALL_AA_EXEC_UNSAFE;
+		int audit = 0, mode = ($4 & ~ALL_AA_EXEC_UNSAFE) | unsafe;
+		if ($2 == 1)
+			mode &= (AA_USER_PERMS | AA_SHARED_PERMS | AA_USER_PTRACE);
+		else if ($2 == 2)
+			mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS | AA_OTHER_PTRACE);
+		if ($1)
+			audit = mode & ~ALL_AA_EXEC_TYPE;
+
+		$$ = do_local_profile($8, $5, mode, audit);
+	};
+
+local_profile:   TOK_PROFILE TOK_ID flags TOK_OPEN rules TOK_CLOSE
+	{
+		struct codomain *cod = do_local_profile($5, $2, 0, 0);
+		cod->flags = $3;
 		$$ = cod;
 	};
 
@@ -933,22 +1022,22 @@ file_mode: TOK_MODE
 		free($1);
 	}
 
-change_profile:	TOK_CHANGE_PROFILE TOK_ID TOK_END_OF_RULE
+change_profile:	TOK_CHANGE_PROFILE TOK_ARROW TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
-		PDEBUG("Matched change_profile: tok_id (%s)\n", $2);
-		entry = new_entry(NULL, $2, AA_CHANGE_PROFILE, NULL);
+		PDEBUG("Matched change_profile: tok_id (%s)\n", $3);
+		entry = new_entry(NULL, $3, AA_CHANGE_PROFILE, NULL);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("change_profile.entry: (%s)\n", entry->name);
 		$$ = entry;
 	};
 
-change_profile:	TOK_CHANGE_PROFILE TOK_COLON TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
+change_profile:	TOK_CHANGE_PROFILE TOK_ARROW TOK_COLON TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
-		PDEBUG("Matched change_profile: tok_id (%s:%s)\n", $3, $5);
-		entry = new_entry($3, $5, AA_CHANGE_PROFILE, NULL);
+		PDEBUG("Matched change_profile: tok_id (%s:%s)\n", $4, $6);
+		entry = new_entry($4, $6, AA_CHANGE_PROFILE, NULL);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("change_profile.entry: (%s)\n", entry->name);
@@ -1019,13 +1108,58 @@ void free_value_list(struct value_list *list)
 }
 
 struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
-			       char *link_id)
+			       char *link_id, char *nt)
 {
 		struct cod_entry *entry;
 		PDEBUG("Matched: tok_id (%s) tok_mode (0x%x)\n", id, mode);
 		entry = new_entry(namespace, id, mode, link_id);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
+		entry->nt_name = nt;
 		PDEBUG("rule.entry: (%s)\n", entry->name);
 		return entry;
+}
+
+void add_local_entry(struct codomain *cod)
+{
+	/* ugh this has to be called after the hat is attached to its parent */
+	if (cod->local_mode) {
+		struct cod_entry *entry;
+		char *trans = malloc(strlen(cod->parent->name) +
+				    strlen(cod->name) + 3);
+		char *name = strdup(cod->name);
+		if (!trans)
+			yyerror(_("Memory allocation error."));
+		sprintf(name, "%s//%s", cod->parent->name, cod->name);
+
+		entry = new_entry(NULL, name, cod->local_mode, NULL);
+		entry->audit = cod->local_audit;
+		entry->nt_name = trans;
+		if (!entry)
+			yyerror(_("Memory allocation error."));
+
+		add_entry_to_policy(cod, entry);
+	}
+}
+
+struct codomain *do_local_profile(struct codomain *cod, char *name, int mode,
+	int audit)
+{
+	PDEBUG("Matched: local profile trans (%s) open rules close\n", $1);
+	if (!cod) {
+		yyerror(_("Memory allocation error."));
+	}
+	cod->name = name;
+	if (force_complain)
+		cod->flags = force_complain_flags;
+	PDEBUG("profile %s: flags='%s%s'\n",
+	       name,
+	       cod->flags.complain ? "complain, " : "",
+	       cod->flags.audit ? "audit" : "");
+
+	cod->local = 1;
+	cod->local_mode = mode;
+	cod->local_audit = audit;
+
+	return cod;
 }
