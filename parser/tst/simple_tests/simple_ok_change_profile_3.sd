@@ -3,5 +3,5 @@
 #=EXRESULT PASS
 #
 /usr/bin/foo {
-   change_profile :foo:/bin/foo,
+   change_profile -> :foo:/bin/foo,
 }

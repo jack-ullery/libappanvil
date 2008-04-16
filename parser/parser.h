@@ -31,6 +31,12 @@ struct flagval {
   	int audit;
 };
 
+struct named_transition {
+	int present;
+	char *namespace;
+	char *name;
+};
+
 struct cod_pattern {
 	char *regex;		// posix regex
 	pcre *compiled;		// compiled regex, size is compiled->size
@@ -40,6 +46,7 @@ struct cod_entry {
 	char *namespace;
 	char *name;
 	char *link_name;
+	char *nt_name;
 	struct codomain *codomain; 	/* Special codomain defined
 					 * just for this executable */
 	int mode;			/* mode is 'or' of AA_* bits */
@@ -73,6 +80,9 @@ struct codomain {
 	char *name;				/* codomain name */
 	char *sub_name;				/* subdomain name or NULL */
 	int default_deny;			/* TRUE or FALSE */
+	int local;
+	int local_mode;				/* true if local, not hat */
+	int local_audit;
 
 	struct codomain *parent;
 
@@ -92,6 +102,7 @@ struct codomain {
 
 	struct aa_rlimits rlimits;
 
+	char *exec_table[AA_EXEC_COUNT];
 	struct cod_entry *entries;
 	void *hat_table;
 	//struct codomain *next;

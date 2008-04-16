@@ -93,8 +93,62 @@ void add_hat_to_policy(struct codomain *cod, struct codomain *hat)
 	}
 }
 
+static int add_named_transition(struct codomain *cod, char *namespace, char *trans)
+{
+	char *name = NULL;
+	int i;
+
+	/* check to see if it is a local transition */
+	if (!namespace) {
+		if (strstr(name, "//")) {
+			free(trans);
+			return AA_EXEC_LOCAL;
+		}
+	}
+	if (namespace) {
+		name = malloc(strlen(namespace) + strlen(trans) + 3);
+		if (!name) {
+			PERROR("Memory allocation error\n");
+			exit(1);
+		}
+		sprintf(name, ":%s:%s", namespace, trans);
+		free(namespace);
+		free(trans);
+	} else {
+		name = trans;
+	}
+
+	for (i = (AA_EXEC_LOCAL + 1) >> 10; i < AA_EXEC_COUNT; i++) {
+		if (!cod->exec_table[i]) {
+			cod->exec_table[i] = name;
+			return i;
+		} else if (strcmp(cod->exec_table[i], name) == 0) {
+			/* name already in table */
+			free(name);
+			return i;
+		}
+	}
+	free(name);
+	return 0;
+}
+
 void add_entry_to_policy(struct codomain *cod, struct cod_entry *entry)
 {
+	if (entry->nt_name) {
+		int mode = 0;
+		int n = add_named_transition(cod, entry->namespace, entry->nt_name);
+		if (!n)
+			PERROR("Profile %s has to many specified profile transitions.\n", cod->name);
+		exit(1);
+		if (entry->mode & AA_USER_EXEC)
+			mode |= SHIFT_MODE(n << 10, AA_USER_SHIFT);
+		if (entry->mode & AA_OTHER_EXEC)
+			mode |= SHIFT_MODE(n << 10, AA_OTHER_SHIFT);
+		entry->mode = ((entry->mode & ~AA_ALL_EXEC_MODIFIERS) |
+			       (mode & AA_ALL_EXEC_MODIFIERS));
+		entry->namespace = NULL;
+		entry->nt_name = NULL;
+	}
 	entry->next = cod->entries;
 	cod->entries = entry;
 }
@@ -272,6 +326,10 @@ static void __add_hat_rules_parent(const void *nodep, const VISIT value,
 	if (!(*t)->hat_table && !(*t)->parent)
 		return;
 
+	/* don't add hat rules for local_profiles */
+	if ((*t)->local)
+		return;
+
 	/* add rule to grant permission to change_hat - AA 2.3 requirement,
 	 * rules are added to the parent of the hat
 	 */
@@ -317,6 +375,10 @@ static void __add_hat_rules_hats(const void *nodep, const VISIT value,
 
 	/* don't add hat rules if a parent profile with no hats */
 	if (!(*t)->hat_table && !(*t)->parent)
+		return;
+
+	/* don't add hat rules for local_profiles */
+	if ((*t)->local)
 		return;
 
 	/* hat */

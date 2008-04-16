@@ -377,13 +377,11 @@ inline int sd_write_aligned_blob(sd_serialize *p, void *b, int buf_size,
 	return 1;
 }
 
-inline int sd_write_string(sd_serialize *p, char *b, char *name)
+static int sd_write_strn(sd_serialize *p, char *b, int size, char *name)
 {
 	u16 tmp;
-	int size;
 	if (!sd_write_name(p, name))
 		return 0;
-	size = strlen(b) + 1;
 	if (!sd_prepare_write(p, SD_STRING, SD_STR_LEN + size))
 		return 0;
 	tmp = cpu_to_le16(size);
@@ -392,6 +390,11 @@ inline int sd_write_string(sd_serialize *p, char *b, char *name)
 	memcpy(p->pos, b, size);
 	sd_inc(p, size);
 	return 1;
+}
+
+inline int sd_write_string(sd_serialize *p, char *b, char *name)
+{
+	return sd_write_strn(p, b, strlen(b) + 1, name);
 }
 
 inline int sd_write_struct(sd_serialize *p, char *name)
@@ -527,6 +530,41 @@ int sd_serialize_rlimits(sd_serialize *p, struct aa_rlimits *limits)
 	return 1;
 }
 
+int sd_serialize_xtable(sd_serialize *p, char **table)
+{
+	int count, i;
+	if (!table[4])
+		return 1;
+	if (!sd_write_struct(p, "xtable"))
+		return 0;
+	count = 0;
+	for (i = 4; i < AA_EXEC_COUNT; i++) {
+		if (table[i])
+			count++;
+	}
+
+	if (!sd_write_array(p, NULL, count))
+		return 0;
+	for (i = 4; i < count + 4; i++) {
+		int len = strlen(table[i]) + 1;
+
+		/* if its a namespace make sure the second : is overwritten
+		 * with 0, so that the namespace and name are \0 seperated
+		 */
+		if (*table[i] == ':') {
+			char *tmp = table[i] + 1;
+			strsep(&tmp, ":");
+		}
+		if (!sd_write_strn(p, table[i], len, NULL));
+			return 0;
+	}
+	if (!sd_write_arrayend(p))
+		return 0;
+	if (!sd_write_structend(p))
+		return 0;
+	return 1;
+}
+
 int count_file_ents(struct cod_entry *list)
 {
 	struct cod_entry *entry;
@@ -633,6 +671,9 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 	/* either have a single dfa or lists of different entry types */
 	if (regex_type == AARE_DFA) {
 		if (!sd_serialize_dfa(p, profile->dfa, profile->dfa_size))
+			return 0;
+
+		if (!sd_serialize_xtable(p, profile->exec_table))
 			return 0;
 	} else {
 		/* pcre globbing entries */
