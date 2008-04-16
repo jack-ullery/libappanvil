@@ -545,6 +545,7 @@ int sd_serialize_xtable(sd_serialize *p, char **table)
 
 	if (!sd_write_array(p, NULL, count))
 		return 0;
+
 	for (i = 4; i < count + 4; i++) {
 		int len = strlen(table[i]) + 1;
 
@@ -555,11 +556,13 @@ int sd_serialize_xtable(sd_serialize *p, char **table)
 			char *tmp = table[i] + 1;
 			strsep(&tmp, ":");
 		}
-		if (!sd_write_strn(p, table[i], len, NULL));
+		if (!sd_write_strn(p, table[i], len, NULL))
 			return 0;
+
 	}
 	if (!sd_write_arrayend(p))
 		return 0;
+
 	if (!sd_write_structend(p))
 		return 0;
 	return 1;

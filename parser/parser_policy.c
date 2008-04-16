@@ -93,32 +93,57 @@ void add_hat_to_policy(struct codomain *cod, struct codomain *hat)
 	}
 }
 
-static int add_named_transition(struct codomain *cod, char *namespace, char *trans)
+static int add_named_transition(struct codomain *cod, struct cod_entry *entry)
 {
 	char *name = NULL;
 	int i;
 
 	/* check to see if it is a local transition */
-	if (!namespace) {
-		if (strstr(name, "//")) {
-			free(trans);
-			return AA_EXEC_LOCAL;
+	if (!entry->namespace) {
+		char *sub = strstr(entry->nt_name, "//");
+		/* does the subprofile name match the rule */
+		if (sub && strncmp(cod->name, sub, sub - entry->nt_name) &&
+		    strcmp(sub + 2, entry->name) == 0) {
+			free(entry->nt_name);
+			entry->nt_name = NULL;
+			return AA_EXEC_LOCAL >> 10;
+		} else if (((entry->mode & AA_USER_EXEC_MODIFIERS) ==
+			     SHIFT_MODE(AA_EXEC_LOCAL, AA_USER_SHIFT)) ||
+			    ((entry->mode & AA_OTHER_EXEC_MODIFIERS) ==
+			     SHIFT_MODE(AA_EXEC_LOCAL, AA_OTHER_SHIFT))) {
+			if (strcmp(entry->nt_name, entry->name) == 0) {
+				free(entry->nt_name);
+				entry->nt_name = NULL;
+				return AA_EXEC_LOCAL >> 10;
+			}
+			/* specified as cix so profile name is implicit */
+			name = malloc(strlen(cod->name) + strlen(entry->nt_name)
+				      + 3);
+			if (!name) {
+				PERROR("Memory allocation error\n");
+				exit(1);
+			}
+			sprintf(name, "%s//%s", cod->name, entry->nt_name);
+			free(entry->nt_name);
+			entry->nt_name = name;
 		}
 	}
-	if (namespace) {
-		name = malloc(strlen(namespace) + strlen(trans) + 3);
+	if (entry->namespace) {
+		name = malloc(strlen(entry->namespace) + strlen(entry->nt_name) + 3);
 		if (!name) {
 			PERROR("Memory allocation error\n");
 			exit(1);
 		}
-		sprintf(name, ":%s:%s", namespace, trans);
-		free(namespace);
-		free(trans);
+		sprintf(name, ":%s:%s", entry->namespace, entry->nt_name);
+		free(entry->namespace);
+		free(entry->nt_name);
+		entry->namespace = NULL;
+		entry->nt_name = NULL;
 	} else {
-		name = trans;
+		name = entry->nt_name;
 	}
 
-	for (i = (AA_EXEC_LOCAL + 1) >> 10; i < AA_EXEC_COUNT; i++) {
+	for (i = (AA_EXEC_LOCAL >> 10) + 1; i < AA_EXEC_COUNT; i++) {
 		if (!cod->exec_table[i]) {
 			cod->exec_table[i] = name;
 			return i;
@@ -136,10 +161,11 @@ void add_entry_to_policy(struct codomain *cod, struct cod_entry *entry)
 {
 	if (entry->nt_name) {
 		int mode = 0;
-		int n = add_named_transition(cod, entry->namespace, entry->nt_name);
-		if (!n)
+		int n = add_named_transition(cod, entry);
+		if (!n) {
 			PERROR("Profile %s has to many specified profile transitions.\n", cod->name);
-		exit(1);
+			exit(1);
+		}
 		if (entry->mode & AA_USER_EXEC)
 			mode |= SHIFT_MODE(n << 10, AA_USER_SHIFT);
 		if (entry->mode & AA_OTHER_EXEC)

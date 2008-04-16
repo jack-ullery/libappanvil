@@ -631,7 +631,6 @@ rules:	rules hat
 		$$ = $1;
 	};
 
-/*
 rules:	rules local_profile
 	{
 		PDEBUG("Matched: hat rule\n");
@@ -641,7 +640,6 @@ rules:	rules local_profile
 		add_local_entry($2);
 		$$ = $1;
 	};
-*/
 
 rules:	rules cond_rule
 	{
@@ -924,6 +922,7 @@ hat: hat_start TOK_ID flags TOK_OPEN rules TOK_CLOSE
 		$$ = cod;
 	};
 
+/*
 local_profile:   opt_audit_flag opt_owner_flag TOK_ID file_mode TOK_ARROW TOK_OPEN rules TOK_CLOSE
 	{
 		int audit = 0, mode = $4;
@@ -964,6 +963,7 @@ local_profile:   opt_audit_flag opt_owner_flag TOK_UNSAFE file_mode TOK_ID TOK_A
 
 		$$ = do_local_profile($8, $5, mode, audit);
 	};
+*/
 
 local_profile:   TOK_PROFILE TOK_ID flags TOK_OPEN rules TOK_CLOSE
 	{
