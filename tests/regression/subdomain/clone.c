@@ -45,12 +45,6 @@ static int do_child(void *arg)
 	int rc;
 
 	close(filedes[0]);
-	fclose(stdout);
-	rc = dup2(filedes[1], STDOUT_FILENO);
-	if (rc < 0) {
-		perror("FAIL: pipe failed");
-		return 1;
-	}
 
 	rc = write(filedes[1], "PASS\n", strlen("PASS\n"));
 	if (rc < 0) {
