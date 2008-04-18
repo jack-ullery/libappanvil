@@ -178,7 +178,7 @@ our %helpers;    # we want to preserve this one between passes
 
 ### THESE VARIABLES ARE USED WITHIN LOGPROF
 
-my %variables;   # variables in config files
+my %filelist;   # file level stuff including variables in config files
 
 my $AA_MAY_EXEC = 1;
 my $AA_MAY_WRITE = 2;
@@ -908,10 +908,10 @@ sub autodep ($) {
     if (-f "$profiledir/tunables/global") {
         my $file = getprofilefilename($fqdbin);
 
-        unless (exists $variables{$file}) {
-            $variables{$file} = { };
+        unless (exists $filelist{$file}) {
+            $filelist{$file} = { };
         }
-        $variables{$file}{includes}{'tunables/global'} = 1; # sorry
+        $filelist{$file}{includes}{'tunables/global'} = 1; # sorry
     }
 
     # write out the profile...
@@ -3631,7 +3631,7 @@ sub do_logprof_pass {
     %log            = ( );
     %changed        = ( );
     %skip           = ( );
-    %variables      = ( );
+    %filelist       = ( );
 
     UI_Info(sprintf(gettext('Reading log entries from %s.'), $filename));
     UI_Info(sprintf(gettext('Updating AppArmor profiles in %s.'), $profiledir));
@@ -4259,7 +4259,10 @@ sub parse_profile_data {
 
             $hat ||= $profile;
 
+	    # save off the name and filename
 	    $profile_data->{$profile}{$hat}{name} = $profile;
+	    $profile_data->{$profile}{$hat}{filename} = $file;
+	    $filelist{$file}{profiles}{$profile}{$hat} = 1;
 
             # keep track of profile flags
 	    $profile_data->{$profile}{$hat}{flags} = $flags;
@@ -4339,10 +4342,10 @@ sub parse_profile_data {
             if ($profile) {
 		$profile_data->{$profile}{$hat}{alias}{$from} = $to;
 	    } else {
-		unless (exists $variables{$file}) {
-		    $variables{$file} = { };
+		unless (exists $filelist{$file}) {
+		    $filelist{$file} = { };
 		}
-		$variables{$file}{alias}{$from} = $to;
+		$filelist{$file}{alias}{$from} = $to;
 	    }
 
        } elsif (m/^\s*set\s+rlimit\s+(.+)\s+<=\s*(.+)\s*,(#.*)?$/) { # never do anything with rlimits just keep them
@@ -4375,13 +4378,13 @@ sub parse_profile_data {
 
 	       store_list_var($profile_data->{$profile}{$hat}{lvar}, $list_var, $value);
 	   } else {
-	       unless (exists $variables{$file}{lvar}) {
+	       unless (exists $filelist{$file}{lvar}) {
 		   # create lval hash by sticking an empty list into list_var
 		   my @empty = ();
-		   $variables{$file}{lvar}{$list_var} = \@empty;
+		   $filelist{$file}{lvar}{$list_var} = \@empty;
 	       }
 
-	       store_list_var($variables{$file}{lvar}, $list_var, $value);
+	       store_list_var($filelist{$file}{lvar}, $list_var, $value);
 	   }
         } elsif (m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- variable defined
@@ -4418,10 +4421,10 @@ sub parse_profile_data {
             if ($profile) {
                 $profile_data->{$profile}{$hat}{include}{$include} = 1;
             } else {
-                unless (exists $variables{$file}) {
-                   $variables{$file} = { };
+                unless (exists $filelist{$file}) {
+                   $filelist{$file} = { };
                 }
-                $variables{$file}{include}{$include} = 1;
+                $filelist{$file}{include}{$include} = 1;
             }
 
             # try to load the include...
@@ -4510,6 +4513,8 @@ sub parse_profile_data {
             #don't mark profile as changed just because it has an embedded
 	    #hat.
             #$changed{$profile} = 1;
+
+	    $filelist{$file}{profiles}{$profile}{$hat} = 1;
 
         } elsif (/^\s*\#/) {
             # we only currently handle initial comments
@@ -4897,10 +4902,10 @@ sub serialize_profile {
     #bleah this is stupid the data structure needs to be reworked
     my $filename = getprofilefilename($name);
     my @data;
-    if ($variables{$filename}) {
-	push @data, writeincludes($variables{$filename});
-	push @data, writealiases($variables{$filename});
-	push @data, writelistvars($variables{$filename});
+    if ($filelist{$filename}) {
+	push @data, writeincludes($filelist{$filename});
+	push @data, writealiases($filelist{$filename});
+	push @data, writelistvars($filelist{$filename});
     }
 
 
@@ -4942,12 +4947,14 @@ sub writeprofile_ui_feedback ($) {
 sub writeprofile ($) {
     my ($profile) = shift;
 
-    my $filename = getprofilefilename($profile);
+    my $filename = $sd{$profile}{$profile}{filename} || getprofilefilename($profile);
 
     open(SDPROF, ">$filename") or
       fatal_error "Can't write new AppArmor profile $filename: $!";
     my $serialize_opts = { };
     $serialize_opts->{METADATA} = 1;
+
+    #make sure to write out all the profiles in the file
     my $profile_string = serialize_profile($sd{$profile}, $profile, $serialize_opts);
     print SDPROF $profile_string;
     close(SDPROF);
