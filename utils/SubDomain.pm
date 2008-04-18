@@ -660,7 +660,7 @@ sub handle_binfmt ($$) {
         chomp $library;
         next unless $library;
 
-        $profile->{path}->{$library}{mode} = str_to_mode("mr");
+        $profile->{allow}{path}->{$library}{mode} = str_to_mode("mr");
     }
 }
 
@@ -689,7 +689,7 @@ sub create_new_profile {
         my $hashbang = head($fqdbin);
         if ($hashbang =~ /^#!\s*(\S+)/) {
             my $interpreter = get_full_path($1);
-            $profile->{$fqdbin}{path}->{$interpreter}{mode} = str_to_mode("ix");
+            $profile->{$fqdbin}{allow}{path}->{$interpreter}{mode} = str_to_mode("ix");
             if ($interpreter =~ /perl/) {
                 $profile->{$fqdbin}{include}->{"abstractions/perl"} = 1;
             } elsif ($interpreter =~ m/\/bin\/(bash|sh)/) {
@@ -2006,7 +2006,7 @@ sub handlechildren {
                             }
                             $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target} |= $exec_mode;
                             $log{PERMITTING}{$profile}              = {};
-                            $sd{$profile}{$hat}{path}{$exec_target}{mode} = $exec_mode;
+                            $sd{$profile}{$hat}{allow}{path}{$exec_target}{mode} = $exec_mode;
 
                             # mark this profile as changed
                             $changed{$profile} = 1;
@@ -3008,7 +3008,7 @@ sub ask_the_questions {
                                            $deleted)) if $deleted;
                             }
                             # stick the capability into the profile
-                            $sd{$profile}{$hat}{capability}{$capability} = 1;
+                            $sd{$profile}{$hat}{allow}{capability}{$capability} = 1;
 
                             # mark this profile as changed
                             $changed{$profile} = 1;
@@ -3230,12 +3230,12 @@ sub ask_the_questions {
                                     UI_Info(sprintf(gettext('Adding #include <%s> to profile.'), $inc));
                                     UI_Info(sprintf(gettext('Deleted %s previous matching profile entries.'), $deleted)) if $deleted;
                                 } else {
-                                    if ($sd{$profile}{$hat}{path}{$path}{mode}) {
-                                        $mode = $mode | $sd{$profile}{$hat}{path}{$path}{mode};
+                                    if ($sd{$profile}{$hat}{allow}{path}{$path}{mode}) {
+                                        $mode = $mode | $sd{$profile}{$hat}{allow}{path}{$path}{mode};
                                     }
 
                                     my $deleted = 0;
-                                    for my $entry (keys %{ $sd{$profile}{$hat}{path} }) {
+                                    for my $entry (keys %{ $sd{$profile}{$hat}{allow}{path} }) {
 
                                         next if $path eq $entry;
 
@@ -3244,15 +3244,15 @@ sub ask_the_questions {
                                             # regexp matches, add it's mode to
                                             # the list to check against
                                             if (mode_contains($mode,
-                                                $sd{$profile}{$hat}{path}{$entry}{mode})) {
-                                                delete $sd{$profile}{$hat}{path}{$entry};
+                                                $sd{$profile}{$hat}{allow}{path}{$entry}{mode})) {
+                                                delete $sd{$profile}{$hat}{allow}{path}{$entry};
                                                 $deleted++;
                                             }
                                         }
                                     }
 
                                     # record the new entry
-                                    $sd{$profile}{$hat}{path}{$path}{mode} = $mode;
+                                    $sd{$profile}{$hat}{allow}{path}{$path}{mode} = $mode;
 
                                     $changed{$profile} = 1;
                                     UI_Info(sprintf(gettext('Adding %s %s to profile.'), $path, mode_to_str($mode)));
@@ -3438,6 +3438,7 @@ sub ask_the_questions {
                                     # stick the whole rule into the profile
                                     $sd{$profile}
                                        {$hat}
+				       {allow}
                                        {netdomain}
                                        {$family}
                                        {$sock_type} = 1;
@@ -3476,8 +3477,8 @@ sub delete_duplicates (\%$) {
     my $deleted = 0;
 
     ## network rules
-    my $netrules = $profile->{netdomain};
-    my $incnetrules = $include{$incname}{netdomain};
+    my $netrules = $profile->{allow}{netdomain};
+    my $incnetrules = $include{$incname}{allow}{netdomain};
     if ( $incnetrules && $netrules ) {
         my $incnetglob = defined $incnetrules->{all};
 
@@ -3509,8 +3510,8 @@ sub delete_duplicates (\%$) {
     }
 
     ## capabilities
-    my $profilecaps = $profile->{capability};
-    my $inccaps = $include{$incname}{capability};
+    my $profilecaps = $profile->{allow}{capability};
+    my $inccaps = $include{$incname}{allow}{capability};
     if ( $profilecaps && $inccaps ) {
         for my $capname ( keys %$profilecaps ) {
             if ( defined $inccaps->{$capname} && $inccaps->{$capname} == 1 ) {
@@ -3521,13 +3522,13 @@ sub delete_duplicates (\%$) {
     }
 
     ## path rules
-    for my $entry (keys %{ $profile->{path} }) {
+    for my $entry (keys %{ $profile->{allow}{path} }) {
         next if $entry eq "#include <$incname>";
         my $cm = matchpathinclude($incname, $entry);
         if ($cm
-            && mode_contains($cm, $profile->{path}{$entry}{mode}))
+            && mode_contains($cm, $profile->{allow}{path}{$entry}{mode}))
         {
-            delete $profile->{path}{$entry};
+            delete $profile->{allow}{path}{$entry};
             $deleted++;
         }
     }
@@ -3545,7 +3546,7 @@ sub matchnetinclude ($$$) {
     while (my $name = shift @includelist) {
         push @checked, $name;
         return 1
-          if netrules_access_check($include{$name}{netdomain}, $family, $type);
+          if netrules_access_check($include{$name}{allow}{netdomain}, $family, $type);
         # if this fragment includes others, check them too
         if (keys %{ $include{$name}{include} } &&
             (grep($name, @checked) == 0) ) {
@@ -3580,8 +3581,8 @@ sub matchcapincludes (\%$) {
             next if ($includevalid == 0);
 
             push @newincludes, $incname
-              if ( defined $include{$incname}{capability}{$cap} &&
-                   $include{$incname}{capability}{$cap} == 1 );
+              if ( defined $include{$incname}{allow}{capability}{$cap} &&
+                   $include{$incname}{allow}{capability}{$cap} == 1 );
         }
         return @newincludes;
 }
@@ -3914,8 +3915,8 @@ sub collapselog () {
                     my $combinedmode = 0;
 
                     # is it in the original profile?
-                    if ($sd{$profile}{$hat}{path}{$path}) {
-                        $combinedmode |= $sd{$profile}{$hat}{path}{$path}{mode};
+                    if ($sd{$profile}{$hat}{allow}{path}{$path}) {
+                        $combinedmode |= $sd{$profile}{$hat}{allow}{path}{$path}{mode};
                     }
 
                     # does path match any regexps in original profile?
@@ -3929,8 +3930,8 @@ sub collapselog () {
                     unless ($combinedmode && mode_contains($combinedmode, $mode)) {
 
                         # merge in any previous modes from this run
-                        if ($log{$sdmode}{$profile}{$hat}{path}{$path}) {
-                            $mode |= $log{$sdmode}{$profile}{$hat}{path}{$path}{mode};
+                        if ($log{$sdmode}{$profile}{$hat}{$path}) {
+                            $mode |= $log{$sdmode}{$profile}{$hat}{path}{$path};
                         }
 
                         # record the new entry
@@ -3942,7 +3943,7 @@ sub collapselog () {
 
                     # if we don't already have this capability in the profile,
                     # add it
-                    unless ($sd{$profile}{$hat}{capability}{$capability}) {
+                    unless ($sd{$profile}{$hat}{allow}{capability}{$capability}) {
                         $log{$sdmode}{$profile}{$hat}{capability}{$capability} = 1;
                     }
                 }
@@ -4267,8 +4268,8 @@ sub parse_profile_data {
             # keep track of profile flags
 	    $profile_data->{$profile}{$hat}{flags} = $flags;
 
-            $profile_data->{$profile}{$hat}{netdomain} = { };
-            $profile_data->{$profile}{$hat}{path} = { };
+            $profile_data->{$profile}{$hat}{allow}{netdomain} = { };
+            $profile_data->{$profile}{$hat}{allow}{path} = { };
 
             # store off initial comment if they have one
             $profile_data->{$profile}{$hat}{initial_comment} = $initial_comment
@@ -4307,7 +4308,7 @@ sub parse_profile_data {
             }
 
             my $capability = $1;
-            $profile_data->{$profile}{$hat}{capability}{$capability} = 1;
+            $profile_data->{$profile}{$hat}{allow}{capability}{$capability} = 1;
         } elsif (m/^\s*set capability\s+(\S+)\s*,\s*(#.*)?$/) {  # capability entry
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
@@ -4324,9 +4325,9 @@ sub parse_profile_data {
             my $link = strip_quotes($5);
 	    my $value = strip_quotes($6);
 	    if ($subset) {
-		$profile_data->{$profile}{$hat}{sublink}{$link} = $value;
+		$profile_data->{$profile}{$hat}{allow}{sublink}{$link} = $value;
 	    } else {
-		$profile_data->{$profile}{$hat}{link}{$link} = $value;
+		$profile_data->{$profile}{$hat}{allow}{link}{$link} = $value;
 	    }
 	} elsif (m/^\s*change_profile\s+->\s*("??.+?"??),(#.*)?$/) { # for now just keep change_profile
             if (not $profile) {
@@ -4413,7 +4414,7 @@ sub parse_profile_data {
                 fatal_error(sprintf(gettext('Profile %s contains invalid mode %s.'), $file, $mode));
             }
 
-            $profile_data->{$profile}{$hat}{path}{$path}{mode} = str_to_mode($mode);
+            $profile_data->{$profile}{$hat}{allow}{path}{$path}{mode} = str_to_mode($mode);
 
         } elsif (m/^\s*#include <(.+)>\s*$/) {     # include stuff
             my $include = $1;
@@ -4439,16 +4440,16 @@ sub parse_profile_data {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
 
-            unless ($profile_data->{$profile}{$hat}{netdomain}) {
-                $profile_data->{$profile}{$hat}{netdomain} = { };
+            unless ($profile_data->{$profile}{$hat}{allow}{netdomain}) {
+                $profile_data->{$profile}{$hat}{allow}{netdomain} = { };
             }
 
             if ( /^\s*network\s+(\S+)\s*,\s*$/ ) {
-                $profile_data->{$profile}{$hat}{netdomain}{$1} = 1;
+                $profile_data->{$profile}{$hat}{allow}{netdomain}{$1} = 1;
             } elsif ( /^\s*network\s+(\S+)\s+(\S+)\s*,\s*$/ ) {
-                $profile_data->{$profile}{$hat}{netdomain}{$1}{$2} = 1;
+                $profile_data->{$profile}{$hat}{allow}{netdomain}{$1}{$2} = 1;
             } else {
-                $profile_data->{$profile}{$hat}{netdomain}{all} = 1;
+                $profile_data->{$profile}{$hat}{allow}{netdomain}{all} = 1;
             }
         } elsif (/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
             if (not $profile) {
@@ -4457,8 +4458,8 @@ sub parse_profile_data {
 
             # XXX - BUGBUGBUG - don't strip netdomain entries
 
-            unless ($profile_data->{$profile}{$hat}{netdomain}) {
-                $profile_data->{$profile}{$hat}{netdomain} = [ ];
+            unless ($profile_data->{$profile}{$hat}{allow}{netdomain}) {
+                $profile_data->{$profile}{$hat}{allow}{netdomain} = [ ];
             }
 
             # strip leading spaces and trailing comma
@@ -4466,7 +4467,7 @@ sub parse_profile_data {
             s/,\s*$//;
 
             # keep track of netdomain entries...
-            push @{$profile_data->{$profile}{$hat}{netdomain}}, $_;
+            push @{$profile_data->{$profile}{$hat}{allow}{netdomain}}, $_;
 
         } elsif (m/^\s*\^(\"??.+?\"??)\s*,\s*(#.*)?$/) {
 	    # change_hat declaration - needed to change_hat to an external
@@ -4503,8 +4504,8 @@ sub parse_profile_data {
 
 	    # we have seen more than a declaration so clear it
 	    $profile_data->{$profile}{$hat}{'declared'} = 0;
-            $profile_data->{$profile}{$hat}{path} = { };
-            $profile_data->{$profile}{$hat}{netdomain} = { };
+            $profile_data->{$profile}{$hat}{allow}{path} = { };
+            $profile_data->{$profile}{$hat}{allow}{netdomain} = { };
 
             # store off initial comment if they have one
             $profile_data->{$profile}{$hat}{initial_comment} = $initial_comment
@@ -4665,33 +4666,49 @@ sub qin_trans ($) {
     return quote_if_needed($value);
 }
 
-sub write_single ($$$$) {
-    my ($profile_data, $name, $prefix, $tail) = @_;
-
+sub write_single ($$$$$) {
+    my ($profile_data, $allow, $name, $prefix, $tail) = @_;
+    my $ref;
     my @data;
+
+    if ($allow) {
+	$ref = $profile_data->{$allow};
+#	$allow .= " ";
+    } else {
+	$ref = $profile_data;
+    }
+
     # dump out the data
-    if (exists $profile_data->{$name}) {
-        for my $key (sort keys %{$profile_data->{$name}}) {
+    if (exists $ref->{$name}) {
+        for my $key (sort keys %{$ref->{$name}}) {
 	    my $qkey = quote_if_needed($key);
-            push @data, "  ${prefix}${qkey}${tail}";
+	    push @data, "  ${allow}${prefix}${qkey}${tail}";
         }
-        push @data, "" if keys %{$profile_data->{$name}};
+        push @data, "" if keys %{$ref->{$name}};
     }
 
     return @data;
 }
 
-sub write_pair ($$$$$$) {
-    my ($profile_data, $name, $prefix, $sep, $tail, $fn) = @_;
-
+sub write_pair ($$$$$$$) {
+    my ($profile_data, $allow, $name, $prefix, $sep, $tail, $fn) = @_;
+    my $ref;
     my @data;
+
+    if ($allow) {
+	$ref = $profile_data->{$allow};
+#	$allow .= " ";
+    } else {
+	$ref = $profile_data;
+    }
+
     # dump out the data
-    if (exists $profile_data->{$name}) {
-        for my $key (sort keys %{$profile_data->{$name}}) {
-	    my $value = &{$fn}($profile_data->{$name}{$key});
-            push @data, "  ${prefix}${key}${sep}${value}${tail}";
+    if (exists $ref->{$name}) {
+        for my $key (sort keys %{$ref->{$name}}) {
+	    my $value = &{$fn}($ref->{$name}{$key});
+            push @data, "  ${allow}${prefix}${key}${sep}${value}${tail}";
         }
-        push @data, "" if keys %{$profile_data->{$name}};
+        push @data, "" if keys %{$ref->{$name}};
     }
 
     return @data;
@@ -4699,14 +4716,14 @@ sub write_pair ($$$$$$) {
 
 sub writeincludes ($) {
     my $profile_data = shift;
-    return write_single($profile_data, 'include', "#include <", ">");
+    return write_single($profile_data, ,'', 'include', "#include <", ">");
 }
 
 sub writecapabilities ($) {
     my $profile_data = shift;
     my @data;
-    push @data, write_single($profile_data, 'set_capability', "set capability ", ",");
-    push @data, write_single($profile_data, 'capability', "capability ", ",");
+    push @data, write_single($profile_data, '', 'set_capability', "set capability ", ",");
+    push @data, write_single($profile_data, 'allow', 'capability', "capability ", ",");
     return @data;
 }
 
@@ -4714,27 +4731,27 @@ sub writelinks ($) {
     my $profile_data = shift;
     my @data;
 
-    push @data, write_pair($profile_data, 'link', "link ", " -> ", ",", \&qin_trans);
-    push @data, write_pair($profile_data, 'sublink', "link subset ", " -> ", ",", \&qin_trans);
+    push @data, write_pair($profile_data, 'allow', 'link', "link ", " -> ", ",", \&qin_trans);
+    push @data, write_pair($profile_data, 'allow', 'sublink', "link subset ", " -> ", ",", \&qin_trans);
     return @data;
 }
 
 sub writechange_profile ($) {
     my $profile_data = shift;
 
-    return write_single($profile_data, 'change_profile', "change_profile -> ", ",");
+    return write_single($profile_data, '', 'change_profile', "change_profile -> ", ",");
 }
 
 sub writealiases ($) {
     my $profile_data = shift;
 
-    return write_pair($profile_data, 'alias', "alias ", " -> ", ",", \&qin_trans);
+    return write_pair($profile_data, '', 'alias', "alias ", " -> ", ",", \&qin_trans);
 }
 
 sub writerlimits ($) {
     my $profile_data = shift;
 
-    return write_pair($profile_data, 'rlimit', "set rlimit ", " <= ", ",", \&qin_trans);
+    return write_pair($profile_data, '', 'rlimit', "set rlimit ", " <= ", ",", \&qin_trans);
 }
 
 # take a list references and process it
@@ -4753,7 +4770,7 @@ sub var_transform($) {
 sub writelistvars ($) {
     my $profile_data = shift;
 
-    return write_pair($profile_data, 'lvar', "", " = ", ",", \&var_transform);
+    return write_pair($profile_data, '', 'lvar', "", " = ", ",", \&var_transform);
 }
 
 sub writenetdomain ($) {
@@ -4761,23 +4778,23 @@ sub writenetdomain ($) {
 
     my @data;
     # dump out the netdomain entries...
-    if (exists $profile_data->{netdomain}) {
-        if ( $profile_data->{netdomain} == 1 ||
-             $profile_data->{netdomain} eq "all") {
+    if (exists $profile_data->{allow}{netdomain}) {
+        if ( $profile_data->{allow}{netdomain} == 1 ||
+             $profile_data->{allow}{netdomain} eq "all") {
             push @data, "  network,";
         } else {
-            for my $fam (sort keys %{$profile_data->{netdomain}}) {
-                if ( $profile_data->{netdomain}{$fam} == 1 ) {
+            for my $fam (sort keys %{$profile_data->{allow}{netdomain}}) {
+                if ( $profile_data->{allow}{netdomain}{$fam} == 1 ) {
                     push @data, "  network $fam,";
                 } else {
                     for my $type
-                        (sort keys %{$profile_data->{netdomain}{$fam}}) {
+                        (sort keys %{$profile_data->{allow}{netdomain}{$fam}}) {
                         push @data, "  network $fam $type,";
                     }
                 }
             }
         }
-        push @data, "" if %{$profile_data->{netdomain}};
+        push @data, "" if %{$profile_data->{allow}{netdomain}};
     }
     return @data;
 }
@@ -4786,9 +4803,9 @@ sub writepaths ($) {
     my $profile_data = shift;
 
     my @data;
-    if (exists $profile_data->{path}) {
-        for my $path (sort keys %{$profile_data->{path}}) {
-            my $mode = mode_to_str($profile_data->{path}{$path}{mode});
+    if (exists $profile_data->{allow}{path}) {
+        for my $path (sort keys %{$profile_data->{allow}{path}}) {
+            my $mode = mode_to_str($profile_data->{allow}{path}{$path}{mode});
 
             # strip out any fake access() modes that might have slipped through
             $mode =~ s/X//g;
@@ -5027,9 +5044,9 @@ sub profile_exec_access_check (\%$$) {
 sub profile_capability_access_check (\%$) {
     my ($profile, $capname) = @_;
     for my $incname ( keys %{$profile->{include}} ) {
-        return 1 if $include{$incname}{capability}{$capname};
+        return 1 if $include{$incname}{allow}{capability}{$capname};
     }
-    return 1 if $profile->{capability}{$capname};
+    return 1 if $profile->{allow}{capability}{$capname};
     return 0;
 }
 
@@ -5037,12 +5054,12 @@ sub profile_network_access_check (\%$$) {
     my ($profile, $family, $sock_type) = @_;
 
     for my $incname ( keys %{$profile->{include}} ) {
-        return 1 if netrules_access_check($include{$incname}{netdomain},
+        return 1 if netrules_access_check($include{$incname}{allow}{netdomain},
 					  $family,
 					  $sock_type
                                          );
     }
-    return 1 if netrules_access_check( $profile->{netdomain},
+    return 1 if netrules_access_check( $profile->{allow}{netdomain},
                                        $family,
                                        $sock_type
                                      );
@@ -5152,11 +5169,11 @@ sub loadinclude {
                     fatal_error(sprintf(gettext('Include file %s contains invalid mode %s.'), $incfile, $mode));
                 }
 
-                $include{$incfile}{path}{$path}{mode} = str_to_mode($mode);
+                $include{$incfile}{allow}{path}{$path}{mode} = str_to_mode($mode);
             } elsif (/^\s*capability\s+(.+)\s*,\s*$/) {
 
                 my $capability = $1;
-                $include{$incfile}{capability}{$capability} = 1;
+                $include{$incfile}{allow}{capability}{$capability} = 1;
 
             } elsif (/^\s*#include <(.+)>\s*$/) {
                 # include stuff
@@ -5168,11 +5185,11 @@ sub loadinclude {
             } elsif (/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
             } elsif (/^\s*network/) {
                 if ( /^\s*network\s+(\S+)\s*,\s*$/ ) {
-                    $include{$incfile}{netdomain}{$1} = 1;
+                    $include{$incfile}{allow}{netdomain}{$1} = 1;
                 } elsif ( /^\s*network\s+(\S+)\s+(\S+)\s*,\s*$/ ) {
-                    $include{$incfile}{netdomain}{$1}{$2} = 1;
+                    $include{$incfile}{allow}{netdomain}{$1}{$2} = 1;
                 } else {
-                    $include{$incfile}{netdomain}{all} = 1;
+                    $include{$incfile}{allow}{netdomain}{all} = 1;
                 }
             } else {
 
@@ -5196,7 +5213,7 @@ sub rematchfrag {
     my $combinedmode = 0;
     my @matches;
 
-    for my $entry (keys %{ $frag->{path} }) {
+    for my $entry (keys %{ $frag->{allow}{path} }) {
 
         my $regexp = convert_regexp($entry);
 
@@ -5204,7 +5221,7 @@ sub rematchfrag {
         if ($path =~ /^$regexp$/) {
 
             # regexp matches, add it's mode to the list to check against
-            $combinedmode |= $frag->{path}{$entry}{mode};
+            $combinedmode |= $frag->{allow}{path}{$entry}{mode};
             push @matches, $entry;
         }
     }
@@ -5230,8 +5247,8 @@ sub matchpathincludes {
         }
 
         # check if a literal version is in the current include fragment
-        if ($include{$include}{path}{$path}) {
-            $combinedmode |= $include{$include}{path}{$path}{mode};
+        if ($include{$include}{allow}{path}{$path}) {
+            $combinedmode |= $include{$include}{allow}{path}{$path}{mode};
         }
 
         # if this fragment includes others, check them too
@@ -5259,8 +5276,8 @@ sub matchpathinclude {
         }
 
         # check if a literal version is in the current include fragment
-        if ($include{$include}{path}{$path}) {
-            $combinedmode |= $include{$include}{path}{$path}{mode};
+        if ($include{$include}{allow}{path}{$path}) {
+            $combinedmode |= $include{$include}{allow}{path}{$path}{mode};
         }
 
         # if this fragment includes others, check them too
