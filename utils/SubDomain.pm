@@ -4269,9 +4269,27 @@ sub parse_profile_data {
 
 	   $profile_data->{$profile}{$hat}{rlimit}{$from} = $to;
 
-        } elsif (/^\s*(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*(#.*)?$/i) { # boolean definition
-        } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\+=\s*(.+)\s*(#.*)?$/) { # variable additions
-        } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*=\s*(.+)\s*(#.*)?$/) { # variable definitions
+        } elsif (/^\s*(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*,?\s*(#.*)?$/i) { # boolean definition
+	   if (not $profile) {
+	       die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
+	   }
+	   my $bool_var = $1;
+           my $value = $2;
+
+	   $profile_data->{$profile}{$hat}{lvar}{$bool_var} = $value;
+        } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\+?=\s*(.+?)\s*,?\s*(#.*)?$/) { # variable additions both += and = doesn't mater
+	   if (not $profile) {
+	       die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
+	   }
+	   my $list_var = $1;
+           my $value = $2;
+
+	   unless (exists $profile_data->{$profile}{$hat}{lvar}) {
+	       # create lval hash by sticking an empty list into list_var
+	       my @empty = ();
+	       $profile_data->{$profile}{$hat}{lvar}{$list_var} = \@empty;
+	   }
+	   store_list_var($profile_data->{$profile}{$hat}{lvar}, $list_var, $value);
         } elsif (m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- variable defined
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean defined
@@ -4444,6 +4462,28 @@ sub parse_profile_data {
     return $profile_data;
 }
 
+sub eliminate_duplicates(@) {
+    my @data =@_;
+
+    my %set = map { $_ => 1 } @_;
+    @data = keys %set;
+
+    return @data;
+}
+
+sub separate_vars($) {
+    my $vs = shift;
+    my @data;
+
+#    while ($vs =~ /\s*(((\"([^\"]|\\\"))+?\")|\S*)\s*(.*)$/) {
+    while ($vs =~ /\s*((\".+?\")|([^\"]\S+))\s*(.*)$/) {
+	my $tmp = $1;
+	push @data, strip_quotes($tmp);
+	$vs = $4;
+    }
+
+    return @data;
+}
 
 sub is_active_profile ($) {
     my $pname = shift;
@@ -4454,6 +4494,27 @@ sub is_active_profile ($) {
     }
 }
 
+sub store_list_var (\%$$) {
+    my ($vars, $list_var, $value) = @_;
+
+    my @vlist = (separate_vars($value));
+
+#	   if (exists $profile_data->{$profile}{$hat}{lvar}{$list_var}) {
+#	       @vlist = (@vlist, @{$profile_data->{$profile}{$hat}{lvar}{$list_var}});
+#	   }
+#
+#	   @vlist = eliminate_duplicates(@vlist);
+#	   $profile_data->{$profile}{$hat}{lvar}{$list_var} = \@vlist;
+
+    if (exists $vars->{$list_var}) {
+	@vlist = (@vlist, @{$vars->{$list_var}});
+    }
+
+    @vlist = eliminate_duplicates(@vlist);
+    $vars->{$list_var} = \@vlist;
+
+
+}
 
 sub strip_quotes ($) {
     my $data = shift;
@@ -4499,6 +4560,11 @@ sub writeheader ($$$$) {
     return @data;
 }
 
+sub qin_trans ($) {
+    my $value = shift;
+    return quote_if_needed($value);
+}
+
 sub write_single ($$$$) {
     my ($profile_data, $name, $prefix, $tail) = @_;
 
@@ -4515,15 +4581,15 @@ sub write_single ($$$$) {
     return @data;
 }
 
-sub write_pair ($$$$$) {
-    my ($profile_data, $name, $prefix, $sep, $tail) = @_;
+sub write_pair ($$$$$$) {
+    my ($profile_data, $name, $prefix, $sep, $tail, $fn) = @_;
 
     my @data;
     # dump out the data
     if (exists $profile_data->{$name}) {
         for my $key (sort keys %{$profile_data->{$name}}) {
 	    my $qkey = quote_if_needed($key);
-	    my $value = quote_if_needed($profile_data->{$name}{$key});
+	    my $value = &{$fn}($profile_data->{$name}{$key});
             push @data, "  ${prefix}${key}${sep}${value}${tail}";
         }
         push @data, "" if keys %{$profile_data->{$name}};
@@ -4548,7 +4614,7 @@ sub writecapabilities ($) {
 sub writelinks ($) {
     my $profile_data = shift;
 
-    return write_pair($profile_data, 'link', "link ", " -> ", ",");
+    return write_pair($profile_data, 'link', "link ", " -> ", ",", \&qin_trans);
 }
 
 sub writechange_profile ($) {
@@ -4560,13 +4626,32 @@ sub writechange_profile ($) {
 sub writealiases ($) {
     my $profile_data = shift;
 
-    return write_pair($profile_data, 'alias', "alias ", " -> ", ",");
+    return write_pair($profile_data, 'alias', "alias ", " -> ", ",", \&qin_trans);
 }
 
 sub writerlimits ($) {
     my $profile_data = shift;
 
-    return write_pair($profile_data, 'rlimit', "set rlimit ", " <= ", ",");
+    return write_pair($profile_data, 'rlimit', "set rlimit ", " <= ", ",", \&qin_trans);
+}
+
+# take a list references and process it
+sub var_transform($) {
+    my $ref = shift;
+    my @in = @{$ref};
+    my @data;
+
+    foreach my $value (@in) {
+	push @data, quote_if_needed($value);
+    }
+
+    return join " ", @data;
+}
+
+sub writelistvars ($) {
+    my $profile_data = shift;
+
+    return write_pair($profile_data, 'lvar', "", " = ", ",", \&var_transform);
 }
 
 sub writenetdomain ($) {
@@ -4630,6 +4715,7 @@ sub writepiece ($$$) {
     push @data, writechange_profile($profile_data->{$name});
     push @data, writealiases($profile_data->{$name});
     push @data, writerlimits($profile_data->{$name});
+    push @data, writelistvars($profile_data->{$name});
     push @data, writepaths($profile_data->{$name});
     push @data, "}";
 
