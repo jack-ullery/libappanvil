@@ -4233,6 +4233,14 @@ sub parse_profile_data {
             my $capability = $1;
             $profile_data->{$profile}{$hat}{capability}{$capability} = 1;
 
+	} elsif (m/^\s*link\s+("??\/.*"??)\s+->\s*("??\/.*"??)\s*,\s*(#.*)?$/) { # for now just keep link
+            if (not $profile) {
+                die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
+            }
+            my $link = $1;
+	    my $value = $2;
+            $profile_data->{$profile}{$hat}{link}{$link} = $value;
+
         } elsif (/^\s*(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*(#.*)?$/i) { # boolean definition
         } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\+=\s*(.+)\s*(#.*)?$/) { # variable additions
         } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*=\s*(.+)\s*(#.*)?$/) { # variable definitions
@@ -4496,6 +4504,12 @@ sub writecapabilities ($) {
     return write_single($profile_data, 'capability', "capability ", ",");
 }
 
+sub writelinks ($) {
+    my $profile_data = shift;
+
+    return write_pair($profile_data, 'link', "link ", " -> ", ",");
+}
+
 sub writenetdomain ($) {
     my $profile_data = shift;
 
@@ -4553,6 +4567,7 @@ sub writepiece ($$$) {
     push @data, writeincludes($profile_data->{$name});
     push @data, writecapabilities($profile_data->{$name});
     push @data, writenetdomain($profile_data->{$name});
+    push @data, writelinks($profile_data->{$name});
     push @data, writepaths($profile_data->{$name});
     push @data, "}";
 
