@@ -2647,7 +2647,7 @@ sub UI_SelectUpdatedRepoProfile ($$) {
         if ($ans eq "CMD_UPDATE_PROFILE") {
             eval {
                 my $profile_data =
-                  parse_profile_data($p->{profile}, "repository profile");
+                  parse_profile_data($p->{profile}, "repository profile", 0);
                 if ($profile_data) {
                     attach_profile_data(\%sd, $profile_data);
                     $changed{$profile} = 1;
@@ -2808,7 +2808,7 @@ sub parse_repo_profile {
     my ($fqdbin, $repo_url, $profile) = @_;
 
     my $profile_data = eval {
-        parse_profile_data($profile->{profile}, "repository profile");
+        parse_profile_data($profile->{profile}, "repository profile", 0);
     };
     if ($@) {
         print STDERR "PARSING ERROR: $@\n";
@@ -3550,14 +3550,14 @@ sub delete_duplicates (\%$) {
     # of deny with different perms.
 
     ## network rules
-    $deleted += delete_net_duplicates($profile->{allow}{netdomain}, $include{$incname}{allow}{netdomain});
-    $deleted += delete_net_duplicates($profile->{deny}{netdomain}, $include{$incname}{deny}{netdomain});
+    $deleted += delete_net_duplicates($profile->{allow}{netdomain}, $include{$incname}{$incname}{allow}{netdomain});
+    $deleted += delete_net_duplicates($profile->{deny}{netdomain}, $include{$incname}{$incname}{deny}{netdomain});
 
     ## capabilities
     $deleted += delete_cap_duplicates($profile->{allow}{capability},
-				     $include{$incname}{allow}{capability});
+				     $include{$incname}{$incname}{allow}{capability});
     $deleted += delete_cap_duplicates($profile->{deny}{capability},
-				     $include{$incname}{deny}{capability});
+				     $include{$incname}{$incname}{deny}{capability});
 
     ## paths
     $deleted += delete_path_duplicates($profile, $incname, 'allow');
@@ -3577,11 +3577,11 @@ sub matchnetinclude ($$$) {
     while (my $name = shift @includelist) {
         push @checked, $name;
         return 1
-          if netrules_access_check($include{$name}{allow}{netdomain}, $family, $type);
+          if netrules_access_check($include{$name}{$name}{allow}{netdomain}, $family, $type);
         # if this fragment includes others, check them too
-        if (keys %{ $include{$name}{include} } &&
+        if (keys %{ $include{$name}{$name}{include} } &&
             (grep($name, @checked) == 0) ) {
-            push @includelist, keys %{ $include{$name}{include} };
+            push @includelist, keys %{ $include{$name}{$name}{include} };
         }
     }
     return 0;
@@ -3611,8 +3611,8 @@ sub matchcapincludes (\%$) {
 	next if ($includevalid == 0);
 
 	push @newincludes, $incname
-	    if ( defined $include{$incname}{allow}{capability}{$cap}{set} &&
-		 $include{$incname}{allow}{capability}{$cap}{set} == 1 );
+	    if ( defined $include{$incname}{$incname}{allow}{capability}{$cap}{set} &&
+		 $include{$incname}{$incname}{allow}{capability}{$cap}{set} == 1 );
     }
     return @newincludes;
 }
@@ -4223,7 +4223,7 @@ sub readprofile ($$$) {
         close(SDPROF);
 
         eval {
-            my $profile_data = parse_profile_data($data, $file);
+            my $profile_data = parse_profile_data($data, $file, 0);
             if ($profile_data && $active_profile) {
                 attach_profile_data(\%sd, $profile_data);
                 attach_profile_data(\%original_sd, $profile_data);
@@ -4253,12 +4253,18 @@ sub attach_profile_data {
 }
 
 sub parse_profile_data {
-    my ($data, $file) = @_;
+    my ($data, $file, $do_include) = @_;
 
 
     my ($profile_data, $profile, $hat, $in_contained_hat, $repo_data,
         @parsed_profiles);
     my $initial_comment = "";
+
+    if ($do_include) {
+	$profile = $file;
+	$hat = $file;
+    }
+
     for (split(/\n/, $data)) {
         chomp;
 
@@ -4267,6 +4273,9 @@ sub parse_profile_data {
 
         # start of a profile...
         if (m/^\s*(("??\/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$/) {
+	    if ($do_include) {
+		die "include <$file> contains syntax errors.\n";
+	    }
 
             # if we run into the start of a profile while we're already in a
             # profile, something's wrong...
@@ -4319,6 +4328,9 @@ sub parse_profile_data {
 
             # if we hit the end of a profile when we're not in one, something's
             # wrong...
+	    if ($do_include) {
+		die "include <$file> contains syntax errors.";
+	    }
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
@@ -4423,7 +4435,7 @@ sub parse_profile_data {
 	       }
 
 	       store_list_var($profile_data->{$profile}{$hat}{lvar}, $list_var, $value);
-	   } else {
+	   } else  {
 	       unless (exists $filelist{$file}{lvar}) {
 		   # create lval hash by sticking an empty list into list_var
 		   my @empty = ();
@@ -4527,6 +4539,9 @@ sub parse_profile_data {
             push @{$profile_data->{$profile}{$hat}{allow}{netdomain}{rule}}, $_;
 
         } elsif (m/^\s*\^(\"??.+?\"??)\s*,\s*(#.*)?$/) {
+	    if (not $profile) {
+		die "$file contains syntax errors.";
+	    }
 	    # change_hat declaration - needed to change_hat to an external
 	    # hat
             $hat = $1;
@@ -4537,6 +4552,9 @@ sub parse_profile_data {
 		unless exists($profile_data->{$profile}{$hat}{declared});
 
         } elsif (m/^\s*\^(\"??.+?\"??)\s+(flags=\(.+\)\s+)*\{\s*(#.*)?$/) {
+	    if ($do_include) {
+		die "include <$file> contains syntax errors.";
+	    }
             # start of embedded hat syntax hat definition
             # read in and mark as changed so that will be written out in the new
             # format
@@ -4590,8 +4608,8 @@ sub parse_profile_data {
                 }
             }
         } else {
-            # we hit something we don't understand in a profile...
-            die sprintf(gettext('%s contains syntax errors. Line [%s]'), $file, $_) . "\n";
+	    # we hit something we don't understand in a profile...
+	    die sprintf(gettext('%s contains syntax errors. Line [%s]'), $file, $_) . "\n";
         }
     }
 
@@ -4599,6 +4617,7 @@ sub parse_profile_data {
     # Cleanup : add required hats if not present in the
     #           parsed profiles
     #
+if (not $do_include) {
     for my $hatglob (keys %{$cfg->{required_hats}}) {
         for my $parsed_profile  ( sort @parsed_profiles )  {
             if ($parsed_profile =~ /$hatglob/) {
@@ -4611,8 +4630,8 @@ sub parse_profile_data {
         }
     }
 
-    # if we're still in a profile when we hit the end of the file, it's bad
-    if ($profile) {
+}    # if we're still in a profile when we hit the end of the file, it's bad
+    if ($profile and not $do_include) {
         die "Reached the end of $file while we were still inside the $profile profile.\n";
     }
 
@@ -5210,8 +5229,8 @@ sub profile_known_capability (\%$) {
     return -1 if $profile->{deny}{capability}{$capname}{set};
     return 1 if $profile->{allow}{capability}{$capname}{set};
     for my $incname ( keys %{$profile->{include}} ) {
-	return -1 if $include{$incname}{deny}{capability}{$capname}{set};
-	return 1 if $include{$incname}{allow}{capability}{$capname}{set};
+	return -1 if $include{$incname}{$incname}{deny}{capability}{$capname}{set};
+	return 1 if $include{$incname}{$incname}{allow}{capability}{$capname}{set};
     }
     return 0;
 }
@@ -5225,7 +5244,7 @@ sub profile_known_network (\%$$) {
                                        $family, $sock_type);
 
     for my $incname ( keys %{$profile->{include}} ) {
-        return -1 if netrules_access_check($include{$incname}{deny}{netdomain},
+        return -1 if netrules_access_check($include{$incname}{$incname}{deny}{netdomain},
                                         $family, $sock_type);
         return 1 if netrules_access_check($include{$incname}{allow}{netdomain},
 					  $family, $sock_type);
@@ -5292,86 +5311,17 @@ sub loadinclude {
     my $which = shift;
 
     # don't bother loading it again if we already have
-    return 0 if $include{$which};
+    return 0 if $include{$which}{$which};
 
     my @loadincludes = ($which);
     while (my $incfile = shift @loadincludes) {
 
         my $data = get_include_data($incfile);
-        for (split(/\n/, $data)) {
-            chomp;
-
-            if (/^\s*(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*$/i) {
-                # boolean definition
-            } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\+=\s*(.+)\s*$/) {
-                # variable additions
-            } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*=\s*(.+)\s*$/) {
-                # variable definitions
-            } elsif (m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*$/) {
-                # conditional -- boolean
-            } elsif (m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) {
-                # conditional -- variable defined
-            } elsif (m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*$/) {
-                # conditional -- boolean defined
-            } elsif (m/^\s*\}\s*$/) {
-                # end of a profile or conditional
-            } elsif (m/^\s*([\"\@\/].*)\s+(\S+)\s*,\s*$/) {
-                # path entry
-
-                my ($path, $mode) = ($1, $2);
-
-                # strip off any trailing spaces.
-                $path =~ s/\s+$//;
-
-                $path = strip_quotes($path);
-
-                # make sure they don't have broken regexps in the profile
-                my $p_re = convert_regexp($path);
-                eval { "foo" =~ m/^$p_re$/; };
-                if ($@) {
-                    die sprintf(gettext('Include file %s contains invalid regexp %s.'),
-                                        $incfile, $path) . "\n";
-                }
-
-                if (!validate_profile_mode($mode, 'allow')) {
-                    fatal_error(sprintf(gettext('Include file %s contains invalid mode %s.'), $incfile, $mode));
-                }
-
-                $include{$incfile}{allow}{path}{$path}{mode} = str_to_mode($mode);
-            } elsif (/^\s*capability\s+(.+)\s*,\s*$/) {
-
-                my $capability = $1;
-                $include{$incfile}{allow}{capability}{$capability}{set} = 1;
-
-            } elsif (/^\s*#include <(.+)>\s*$/) {
-                # include stuff
-
-                my $newinclude = $1;
-                push @loadincludes, $newinclude unless $include{$newinclude};
-                $include{$incfile}{include}{$newinclude} = 1;
-
-            } elsif (/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
-            } elsif (/^\s*network/) {
-                if ( /^\s*network\s+(\S+)\s*,\s*$/ ) {
-                    $include{$incfile}{allow}{netdomain}{rule}{$1} = 1;
-                } elsif ( /^\s*network\s+(\S+)\s+(\S+)\s*,\s*$/ ) {
-                    $include{$incfile}{allow}{netdomain}{rule}{$1}{$2} = 1;
-                } else {
-                    $include{$incfile}{allow}{netdomain}{rule}{all} = 1;
-                }
-            } else {
-
-                # we don't care about blank lines or comments
-                next if /^\s*$/;
-                next if /^\s*\#/;
-
-                # we hit something we don't understand in a profile...
-                die sprintf(gettext('Include file %s contains syntax errors or is not a valid #include file.'), $incfile) . "\n";
-            }
-        }
-        close(INCLUDE);
+	my $incdata = parse_profile_data($data, $incfile, 1);
+	if ($incdata) {
+                    attach_profile_data(\%include, $incdata);
+	}
     }
-
     return 0;
 }
 
@@ -5407,20 +5357,20 @@ sub match_include_to_path ($$$) {
     while (my $incfile = shift @includelist) {
         my $ret = eval { loadinclude($incfile); };
         if ($@) { fatal_error $@; }
-        my ($cm, @m) = rematchfrag($include{$incfile}, $allow, $path);
+        my ($cm, @m) = rematchfrag($include{$incfile}{$incfile}, $allow, $path);
         if ($cm) {
             $combinedmode |= $cm;
             push @matches, @m;
         }
 
         # check if a literal version is in the current include fragment
-        if ($include{$incfile}{$allow}{path}{$path}) {
-            $combinedmode |= $include{$incfile}{$allow}{path}{$path}{mode};
+        if ($include{$incfile}{$incfile}{$allow}{path}{$path}) {
+            $combinedmode |= $include{$incfile}{$incfile}{$allow}{path}{$path}{mode};
         }
 
         # if this fragment includes others, check them too
-        if (keys %{ $include{$incfile}{include} }) {
-            push @includelist, keys %{ $include{$incfile}{include} };
+        if (keys %{ $include{$incfile}{$incfile}{include} }) {
+            push @includelist, keys %{ $include{$incfile}{$incfile}{include} };
         }
     }
 
@@ -5457,20 +5407,20 @@ sub suggest_incs_for_path {
     # scan the include fragments looking for matches
     my @includelist = ($incname);
     while (my $include = shift @includelist) {
-        my ($cm, @m) = rematchfrag($include{$include}, 'allow', $path);
+        my ($cm, @m) = rematchfrag($include{$include}{$include}, 'allow', $path);
         if ($cm) {
             $combinedmode |= $cm;
             push @matches, @m;
         }
 
         # check if a literal version is in the current include fragment
-        if ($include{$include}{allow}{path}{$path}) {
-            $combinedmode |= $include{$include}{allow}{path}{$path}{mode};
+        if ($include{$include}{$include}{allow}{path}{$path}) {
+            $combinedmode |= $include{$include}{$include}{allow}{path}{$path}{mode};
         }
 
         # if this fragment includes others, check them too
-        if (keys %{ $include{$include}{include} }) {
-            push @includelist, keys %{ $include{$include}{include} };
+        if (keys %{ $include{$include}{$include}{include} }) {
+            push @includelist, keys %{ $include{$include}{$include}{include} };
         }
     }
 
