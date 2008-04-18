@@ -4163,7 +4163,7 @@ sub parse_profile_data {
         next if /^\s*$/;
 
         # start of a profile...
-        if (m/^\s*("??\/.+?"??)\s+(flags=\(.+\)\s+)*\{\s*(#.*)?$/) {
+        if (m/^\s*(("??\/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$/) {
 
             # if we run into the start of a profile while we're already in a
             # profile, something's wrong...
@@ -4172,8 +4172,8 @@ sub parse_profile_data {
             }
 
             # we hit the start of a profile, keep track of it...
-            $profile  = $1;
-            my $flags = $2;
+            $profile  = $2 || $4;
+            my $flags = $7;
             $in_contained_hat = 0;
 
             # hat is same as profile name if we're not in a hat
@@ -4186,10 +4186,7 @@ sub parse_profile_data {
             $hat ||= $profile;
 
             # keep track of profile flags
-            if ($flags && $flags =~ /^flags=\((.+)\)\s*$/) {
-                $flags = $1;
-                $profile_data->{$profile}{$hat}{flags} = $flags;
-            }
+	    $profile_data->{$profile}{$hat}{flags} = $flags;
 
             $profile_data->{$profile}{$hat}{netdomain} = { };
             $profile_data->{$profile}{$hat}{path} = { };
@@ -4482,6 +4479,8 @@ sub writeheader ($$$$) {
     my @data;
     # deal with whitespace in profile names...
     $name = quote_if_needed($name);
+    $name = "profile $name" if $name =~ /^[^\/]|^"[^\/]/;
+
     push @data, "#include <tunables/global>" unless ( $is_hat );
     if ($write_flags and  $profile_data->{flags}) {
         push @data, "$name flags=($profile_data->{flags}) {";
