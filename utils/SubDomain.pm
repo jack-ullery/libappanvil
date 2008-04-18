@@ -4714,14 +4714,14 @@ sub writepiece ($$$) {
 
     my @data;
     push @data, writeheader($profile_data->{$name}, $name, 0, $write_flags);
+    push @data, writealiases($profile_data->{$name});
+    push @data, writelistvars($profile_data->{$name});
     push @data, writeincludes($profile_data->{$name});
+    push @data, writechange_profile($profile_data->{$name});
+    push @data, writerlimits($profile_data->{$name});
     push @data, writecapabilities($profile_data->{$name});
     push @data, writenetdomain($profile_data->{$name});
     push @data, writelinks($profile_data->{$name});
-    push @data, writechange_profile($profile_data->{$name});
-    push @data, writealiases($profile_data->{$name});
-    push @data, writerlimits($profile_data->{$name});
-    push @data, writelistvars($profile_data->{$name});
     push @data, writepaths($profile_data->{$name});
     push @data, "}";
 
