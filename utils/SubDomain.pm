@@ -191,7 +191,8 @@ my $AA_EXEC_UNSAFE = 128;
 my $AA_EXEC_INHERIT = 256;
 my $AA_EXEC_UNCONFINED = 512;
 my $AA_EXEC_PROFILE = 1024;
-my $AA_EXEC_NT = 2048;
+my $AA_EXEC_CHILD = 2048;
+my $AA_EXEC_NT = 4096;
 
 my $AA_EXEC_TYPE = $AA_MAY_EXEC | $AA_EXEC_UNSAFE | $AA_EXEC_INHERIT |
 		    $AA_EXEC_UNCONFINED | $AA_EXEC_PROFILE | $AA_EXEC_NT;
@@ -220,6 +221,10 @@ my %MODE_HASH = (
     U => $AA_EXEC_UNCONFINED,
     p => $AA_EXEC_PROFILE + $AA_EXEC_UNSAFE,		# P + Unsafe
     P => $AA_EXEC_PROFILE,
+    c => $AA_EXEC_CHILD + $AA_EXEC_UNSAFE,
+    C => $AA_EXEC_CHILD,
+    n => $AA_EXEC_NT + $AA_EXEC_UNSAFE,
+    N => $AA_EXEC_NT,
     );
 
 sub debug ($) {
@@ -3986,9 +3991,9 @@ sub uniq (@) {
     return @result;
 }
 
-our $MODE_MAP_RE = "r|w|l|m|k|a|x|i|p|u|I|P|U";
-our $LOG_MODE_RE = "r|w|l|m|k|a|x|ix|px|ux|Ix|Px|Ux";
-our $PROFILE_MODE_RE = "r|w|l|m|k|a|ix|px|ux|Px|Ux";
+our $MODE_MAP_RE = "r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N";
+our $LOG_MODE_RE = "r|w|l|m|k|a|x|ix|ux|px|cx|nx|pix|cix|Ix|Ux|Px|Cx|Nx|Pix|Cix";
+our $PROFILE_MODE_RE = "r|w|l|m|k|a|ix|ux|px|cx|pix|cix|Ux|Px|Cx|Pix|Cix";
 
 sub map_log_mode($) {
     my $mode = shift;
@@ -4812,6 +4817,7 @@ sub writepiece ($$$) {
 
     # write external hat declarations
     for my $hat (grep { $_ ne $name } sort keys %{$profile_data}) {
+	print "foo: $hat\n";
 	if ($profile_data->{$hat}{declared}) {
 	    push @data, "  ^$hat,";
 	}
