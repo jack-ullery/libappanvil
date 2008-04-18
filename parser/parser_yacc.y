@@ -460,8 +460,10 @@ rules:  rules opt_audit_flag opt_owner_flag rule
 		PDEBUG("rules rule: (%s)\n", $4->name);
 		if (!$4)
 			yyerror(_("Assert: `rule' returned NULL."));
-		if (($4->mode & AA_EXEC_BITS) && !($4->mode & ALL_AA_EXEC_TYPE))
-			yyerror(_("Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"));
+		if (($4->mode & AA_EXEC_BITS) &&
+		    !($4->mode & ALL_AA_EXEC_TYPE) &&
+		    !($4->nt_name))
+			yyerror(_("Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"));
 
 		if ($3 == 1)
 			$4->mode &= (AA_USER_PERMS | AA_SHARED_PERMS | AA_USER_PTRACE);
