@@ -651,7 +651,7 @@ sub handle_binfmt ($$) {
         push @reqs, get_reqs($library) unless $reqs{$library}++;
 
         # does path match anything pulled in by includes in original profile?
-        my $combinedmode = matchpathincludes($profile, $library);
+        my $combinedmode = match_prof_incs_to_path($profile, 'allow', $library);
 
         # if we found any matching entries, do the modes match?
         next if $combinedmode;
@@ -1856,14 +1856,13 @@ sub handlechildren {
                 }
 
                 if ($do_execute) {
-                    next if ( profile_exec_access_check($sd{$profile}{$hat},
-                                                         "exec",
-                                                         $exec_target ) );
+                    next if ( profile_known_exec($sd{$profile}{$hat},
+						 "exec", $exec_target ) );
+
                     my $p = update_repo_profile($sd{$profile}{$profile});
                     next if ( UI_SelectUpdatedRepoProfile($profile, $p) and
-                              profile_exec_access_check($sd{$profile}{$hat},
-                                                         "exec",
-                                                         $exec_target ) );
+                              profile_known_exec($sd{$profile}{$hat},
+						"exec", $exec_target ) );
                     my $context = $profile;
                     $context .= "^$hat" if $profile ne $hat;
                     $context .= " -> $exec_target";
@@ -1874,12 +1873,12 @@ sub handlechildren {
 		    $combinedmode = 0;
 
                     # does path match any regexps in original profile?
-                    ($cm, @m) = rematchfrag($sd{$profile}{$hat}, $exec_target);
+                    ($cm, @m) = rematchfrag($sd{$profile}{$hat}, 'allow', $exec_target);
                     $combinedmode |= $cm if $cm;
 
                     # does path match anything pulled in by includes in
                     # original profile?
-                    ($cm, @m) = matchpathincludes($sd{$profile}{$hat}, $exec_target);
+                    ($cm, @m) = match_prof_incs_to_path($sd{$profile}{$hat}, 'allow', $exec_target);
                     $combinedmode |= $cm if $cm;
 
                     my $exec_mode = 0;
@@ -1994,6 +1993,10 @@ sub handlechildren {
                         } elsif ($ans eq "CMD_UNCONFINED_CLEAN") {
                             $exec_mode = str_to_mode("Ux");
                         } else {
+			    if ($ans eq "CMD_DENY") {
+				$sd{$profile}{$hat}{deny}{path}{$exec_target}{mode} |= $AA_MAY_EXEC;
+				$changed{$profile} = 1;
+			    }
 
                             # skip all remaining events if they say to deny
                             # the exec
@@ -2002,7 +2005,7 @@ sub handlechildren {
 
                         unless ($ans eq "CMD_DENY") {
                             if (defined $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target}) {
-                                $exec_mode = $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target};
+#                                $exec_mode = $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target};
                             }
                             $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target} |= $exec_mode;
                             $log{PERMITTING}{$profile}              = {};
@@ -2940,8 +2943,8 @@ sub ask_the_questions {
 
                     # we don't care about it if we've already added it to the
                     # profile
-                    next if profile_capability_access_check($sd{$profile}{$hat},
-                                                            $capability);
+                    next if profile_known_capability($sd{$profile}{$hat},
+						     $capability);
 
                     my $severity = $sevdb->rank(uc("cap_$capability"));
 
@@ -3016,6 +3019,9 @@ sub ask_the_questions {
                             # give a little feedback to the user
                             UI_Info(sprintf(gettext('Adding capability %s to profile.'), $capability));
                         } elsif ($ans eq "CMD_DENY") {
+                            $sd{$profile}{$hat}{deny}{capability}{$capability} = 1;
+                            # mark this profile as changed
+                            $changed{$profile} = 1;
                             UI_Info(sprintf(gettext('Denying capability %s to profile.'), $capability));
                             $done = 1;
                         } else {
@@ -3029,6 +3035,30 @@ sub ask_the_questions {
 
                     my $mode = $log{$sdmode}{$profile}{$hat}{path}{$path};
 
+		    # do original profile lookup once.
+
+		    my $allow_mode = 0;
+		    my $deny_mode = 0;
+
+		    my ($fmode, $imode, @fm, @im, $cm, @m);
+		    ($fmode, @fm) = rematchfrag($sd{$profile}{$hat}, 'allow', $path);
+		    $allow_mode |= $fmode if $fmode;
+		    ($imode, @im) = match_prof_incs_to_path($sd{$profile}{$hat}, 'allow', $path);
+		    $allow_mode |= $imode if $imode;
+
+		    ($cm, @m) = rematchfrag($sd{$profile}{$hat}, 'deny', $path);
+		    $deny_mode |= $cm if $cm;
+		    ($cm, @m) = match_prof_incs_to_path($sd{$profile}{$hat}, 'deny', $path);
+		    $deny_mode |= $cm if $cm;
+
+		    if ($deny_mode & $AA_MAY_EXEC) {
+			$deny_mode |= $ALL_AA_EXEC_TYPE;
+		    }
+
+		    # mask off the modes that have been denied
+		    $mode &= ~$deny_mode;
+		    $allow_mode &= ~$deny_mode;
+
                     # if we had an access(X_OK) request or some other kind of
                     # event that generates a "PERMITTING x" syslog entry,
                     # first check if it was already dealt with by a i/p/x
@@ -3039,30 +3069,7 @@ sub ask_the_questions {
                         # get rid of the access() markers.
                         $mode &= (~$ALL_AA_EXEC_TYPE);
 
-                        my $combinedmode = 0;
-
-                        my ($cm, @m);
-
-                        # does path match any regexps in original profile?
-                        ($cm, @m) = rematchfrag($sd{$profile}{$hat}, $path);
-                        $combinedmode |= $cm if $cm;
-
-                        # does path match anything pulled in by includes in
-                        # original profile?
-                        ($cm, @m) = matchpathincludes($sd{$profile}{$hat}, $path);
-                        $combinedmode |= $cm if $cm;
-
-                        if ($combinedmode) {
-                            if (   contains($combinedmode, "ix")
-                                || contains($combinedmode, "px")
-                                || contains($combinedmode, "ux")
-                                || contains($combinedmode, "Px")
-                                || contains($combinedmode, "Ux"))
-                            {
-                            } else {
-                                $mode |= str_to_mode("ix");
-                            }
-                        } else {
+                        unless ($allow_mode & $allow_mode & $AA_MAY_EXEC) {
                             $mode |= str_to_mode("ix");
                         }
                     }
@@ -3070,47 +3077,26 @@ sub ask_the_questions {
                     # if we had an mmap(PROT_EXEC) request, first check if we
                     # already have added an ix rule to the profile
                     if ($mode & $AA_EXEC_MMAP) {
-                        my $combinedmode = 0;
-                        my ($cm, @m);
-
-                        # does path match any regexps in original profile?
-                        ($cm, @m) = rematchfrag($sd{$profile}{$hat}, $path);
-                        $combinedmode |= $cm if $cm;
-
-                        # does path match anything pulled in by includes in
-                        # original profile?
-                        ($cm, @m) = matchpathincludes($sd{$profile}{$hat}, $path);
-                        $combinedmode |= $cm if $cm;
-
                         # ix implies m.  don't ask if they want to add an "m"
                         # rule when we already have a matching ix rule.
-                        if ($combinedmode && contains($combinedmode, "ix")) {
+                        if ($allow_mode && contains($allow_mode, "ix")) {
                             $mode &= (~$AA_EXEC_MMAP);
                         }
                     }
 
                     next unless $mode;
 
-                    my $combinedmode = 0;
+
                     my @matches;
 
-                    my ($cm, @m);
-
-                    # does path match any regexps in original profile?
-                    ($cm, @m) = rematchfrag($sd{$profile}{$hat}, $path);
-                    if ($cm) {
-                        $combinedmode |= $cm;
-                        push @matches, @m;
+                    if ($fmode) {
+                        push @matches, @fm;
+                    }
+                    if ($imode) {
+                        push @matches, @im;
                     }
 
-                    # does path match anything pulled in by includes in
-                    # original profile?
-                    ($cm, @m) = matchpathincludes($sd{$profile}{$hat}, $path);
-                    if ($cm) {
-                        $combinedmode |= $cm;
-                        push @matches, @m;
-                    }
-                    unless ($combinedmode && mode_contains($combinedmode, $mode)) {
+                    unless ($allow_mode && mode_contains($allow_mode, $mode)) {
 
                         my $defaultoption = 1;
                         my @options       = ();
@@ -3136,13 +3122,16 @@ sub ask_the_questions {
                             $includevalid = 1 if $incname =~ /abstractions/;
                             next if ($includevalid == 0);
 
-                            ($cm, @m) = matchpathinclude($incname, $path);
+                            ($cm, @m) = match_include_to_path($incname, 'allow', $path);
                             if ($cm && mode_contains($cm, $mode)) {
-                                unless (grep { $_ eq "/**" } @m) {
+				#make sure it doesn't deny $mode
+				my $dm = match_include_to_path($incname, 'deny', $path);
+				unless (($mode & $dm) || (grep { $_ eq "/**" } @m)) {
                                     push @newincludes, $incname;
                                 }
                             }
                         }
+
 
                         # did any match?  add them to the option list...
                         if (@newincludes) {
@@ -3187,9 +3176,9 @@ sub ask_the_questions {
                             push @{ $q->{headers} }, gettext("Path"), $path;
 
                             # merge in any previous modes from this run
-                            if ($combinedmode) {
-                                push @{ $q->{headers} }, gettext("Old Mode"), mode_to_str($combinedmode);
-                                $mode |= $combinedmode;
+                            if ($allow_mode) {
+                                push @{ $q->{headers} }, gettext("Old Mode"), mode_to_str($allow_mode);
+                                $mode |= $allow_mode;
                                 push @{ $q->{headers} }, gettext("New Mode"), mode_to_str($mode);
                             } else {
                                 push @{ $q->{headers} }, gettext("Mode"), mode_to_str($mode);
@@ -3259,6 +3248,10 @@ sub ask_the_questions {
                                     UI_Info(sprintf(gettext('Deleted %s previous matching profile entries.'), $deleted)) if $deleted;
                                 }
                             } elsif ($ans eq "CMD_DENY") {
+				# record the new entry
+				$sd{$profile}{$hat}{deny}{path}{$path}{mode} |= $mode & ~$allow_mode;
+
+				$changed{$profile} = 1;
 
                                 # go on to the next entry without saving this
                                 # one
@@ -3356,11 +3349,9 @@ sub ask_the_questions {
 
                         # we don't care about it if we've already added it to the
                         # profile
-                        next if ( profile_network_access_check($sd{$profile}{$hat},
-                                                               $family,
-                                                               $sock_type
-                                                              )
-                                );
+                        next if ( profile_known_network($sd{$profile}{$hat},
+							$family,
+							$sock_type));
                         my $defaultoption = 1;
                         my @options       = ();
                         my @newincludes;
@@ -3455,6 +3446,15 @@ sub ask_the_questions {
                                            );
                                 }
                             } elsif ($ans eq "CMD_DENY") {
+				# record the new entry
+                                    $sd{$profile}
+                                       {$hat}
+				       {deny}
+                                       {netdomain}
+                                       {$family}
+                                       {$sock_type} = 1;
+
+				$changed{$profile} = 1;
                                 UI_Info(sprintf(
                                         gettext('Denying network access %s %s to profile.'),
                                                 $family,
@@ -3472,13 +3472,9 @@ sub ask_the_questions {
     }
 }
 
-sub delete_duplicates (\%$) {
-    my ( $profile, $incname ) = @_;
+sub delete_net_duplicates {
+    my ($netrules, $incnetrules) = @_;
     my $deleted = 0;
-
-    ## network rules
-    my $netrules = $profile->{allow}{netdomain};
-    my $incnetrules = $include{$incname}{allow}{netdomain};
     if ( $incnetrules && $netrules ) {
         my $incnetglob = defined $incnetrules->{all};
 
@@ -3508,10 +3504,12 @@ sub delete_duplicates (\%$) {
             }
         }
     }
+    return $deleted;
+}
 
-    ## capabilities
-    my $profilecaps = $profile->{allow}{capability};
-    my $inccaps = $include{$incname}{allow}{capability};
+sub delete_cap_duplicates ($$) {
+    my ($profilecaps, $inccaps) = @_;
+    my $deleted = 0;
     if ( $profilecaps && $inccaps ) {
         for my $capname ( keys %$profilecaps ) {
             if ( defined $inccaps->{$capname} && $inccaps->{$capname} == 1 ) {
@@ -3520,18 +3518,48 @@ sub delete_duplicates (\%$) {
             }
         }
     }
+    return $deleted;
+}
 
-    ## path rules
-    for my $entry (keys %{ $profile->{allow}{path} }) {
+sub delete_path_duplicates ($$$) {
+    my ($profile, $incname, $allow) = @_;
+    my $deleted = 0;
+
+    for my $entry (keys %{ $profile->{$allow}{path} }) {
         next if $entry eq "#include <$incname>";
-        my $cm = matchpathinclude($incname, $entry);
+	my $cm = match_include_to_path($incname, $allow, $entry);
         if ($cm
-            && mode_contains($cm, $profile->{allow}{path}{$entry}{mode}))
+            && mode_contains($cm, $profile->{$allow}{path}{$entry}{mode}))
         {
-            delete $profile->{allow}{path}{$entry};
+            delete $profile->{$allow}{path}{$entry};
             $deleted++;
         }
     }
+    return $deleted;
+}
+
+sub delete_duplicates (\%$) {
+    my ( $profile, $incname ) = @_;
+    my $deleted = 0;
+
+    # don't cross delete allow rules covered by denied rules as the coverage
+    # may not be complete.  ie. want to deny a subset of allow, allow a subset
+    # of deny with different perms.
+
+    ## network rules
+    $deleted += delete_net_duplicates($profile->{allow}{netdomain}, $include{$incname}{allow}{netdomain});
+    $deleted += delete_net_duplicates($profile->{deny}{netdomain}, $include{$incname}{deny}{netdomain});
+
+    ## capabilities
+    $deleted += delete_cap_duplicates($profile->{allow}{capability},
+				     $include{$incname}{allow}{capability});
+    $deleted += delete_cap_duplicates($profile->{deny}{capability},
+				     $include{$incname}{deny}{capability});
+
+    ## paths
+    $deleted += delete_path_duplicates($profile, $incname, 'allow');
+    $deleted += delete_path_duplicates($profile, $incname, 'deny');
+
     return $deleted;
 }
 
@@ -3557,64 +3585,61 @@ sub matchnetinclude ($$$) {
 }
 
 sub matchcapincludes (\%$) {
-        my ($profile, $cap) = @_;
+    my ($profile, $cap) = @_;
 
-        # check the path against the available set of include
-        # files
-        my @newincludes;
-        my $includevalid;
-        for my $incname (keys %include) {
-            $includevalid = 0;
+    # check the path against the available set of include
+    # files
+    my @newincludes;
+    my $includevalid;
+    for my $incname (keys %include) {
+	$includevalid = 0;
 
-            # don't suggest it if we're already including it,
-            # that's dumb
-            next if $profile->{include}{$incname};
+	# don't suggest it if we're already including it,
+	# that's dumb
+	next if $profile->{include}{$incname};
 
-            # only match includes that can be suggested to
-            # the user
-            for my $incm (split(/\s+/,
-                                $cfg->{settings}{custom_includes})
-                         ) {
-                $includevalid = 1 if $incname =~ /$incm/;
-            }
-            $includevalid = 1 if $incname =~ /abstractions/;
-            next if ($includevalid == 0);
+	# only match includes that can be suggested to
+	# the user
+	for my $incm (split(/\s+/,
+			    $cfg->{settings}{custom_includes})) {
+	    $includevalid = 1 if $incname =~ /$incm/;
+	}
+	$includevalid = 1 if $incname =~ /abstractions/;
+	next if ($includevalid == 0);
 
-            push @newincludes, $incname
-              if ( defined $include{$incname}{allow}{capability}{$cap} &&
-                   $include{$incname}{allow}{capability}{$cap} == 1 );
-        }
-        return @newincludes;
+	push @newincludes, $incname
+	    if ( defined $include{$incname}{allow}{capability}{$cap} &&
+		 $include{$incname}{allow}{capability}{$cap} == 1 );
+    }
+    return @newincludes;
 }
 
 sub matchnetincludes (\%$$) {
-        my ($profile, $family, $type) = @_;
+    my ($profile, $family, $type) = @_;
 
-        # check the path against the available set of include
-        # files
-        my @newincludes;
-        my $includevalid;
-        for my $incname (keys %include) {
-            $includevalid = 0;
+    # check the path against the available set of include
+    # files
+    my @newincludes;
+    my $includevalid;
+    for my $incname (keys %include) {
+	$includevalid = 0;
 
-            # don't suggest it if we're already including it,
-            # that's dumb
-            next if $profile->{include}{$incname};
+	# don't suggest it if we're already including it,
+	# that's dumb
+	next if $profile->{include}{$incname};
 
-            # only match includes that can be suggested to
-            # the user
-            for my $incm (split(/\s+/,
-                                $cfg->{settings}{custom_includes})
-                         ) {
-                $includevalid = 1 if $incname =~ /$incm/;
-            }
-            $includevalid = 1 if $incname =~ /abstractions/;
-            next if ($includevalid == 0);
+	# only match includes that can be suggested to
+	# the user
+	for my $incm (split(/\s+/, $cfg->{settings}{custom_includes})) {
+	    $includevalid = 1 if $incname =~ /$incm/;
+	}
+	$includevalid = 1 if $incname =~ /abstractions/;
+	next if ($includevalid == 0);
 
-            push @newincludes, $incname
-              if matchnetinclude($incname, $family, $type);
-        }
-        return @newincludes;
+	push @newincludes, $incname
+	    if matchnetinclude($incname, $family, $type);
+    }
+    return @newincludes;
 }
 
 
@@ -3638,9 +3663,9 @@ sub do_logprof_pass {
     UI_Info(sprintf(gettext('Updating AppArmor profiles in %s.'), $profiledir));
 
     readprofiles();
-
     unless ($sevdb) {
-        $sevdb = new Immunix::Severity("$confdir/severity.db", gettext("unknown"));
+        $sevdb = new Immunix::Severity("$confdir/severity.db", gettext("unknown
+"));
     }
 
     # we need to be able to break all the way out of deep into subroutine calls
@@ -3701,7 +3726,7 @@ sub do_logprof_pass {
     if (repo_is_enabled()) {
         if ( (not defined $repo_cfg->{repository}{upload}) ||
              ($repo_cfg->{repository}{upload} eq "later") ) {
-             UI_ask_to_upload_profiles();
+	    UI_ask_to_upload_profiles();
         }
         if ($repo_cfg->{repository}{upload} eq "yes") {
             sync_profiles();
@@ -3920,11 +3945,11 @@ sub collapselog () {
                     }
 
                     # does path match any regexps in original profile?
-                    $combinedmode |= rematchfrag($sd{$profile}{$hat}, $path);
+                    $combinedmode |= rematchfrag($sd{$profile}{$hat}, 'allow', $path);
 
                     # does path match anything pulled in by includes in
                     # original profile?
-                    $combinedmode |= matchpathincludes($sd{$profile}{$hat}, $path);
+                    $combinedmode |= match_prof_incs_to_path($sd{$profile}{$hat}, 'allow', $path);
 
                     # if we found any matching entries, do the modes match?
                     unless ($combinedmode && mode_contains($combinedmode, $mode)) {
@@ -3952,10 +3977,8 @@ sub collapselog () {
                 my $ndref = $prelog{$sdmode}{$profile}{$hat}{netdomain};
                 for my $family ( keys %{$ndref} ) {
                     for my $sock_type ( keys %{$ndref->{$family}} ) {
-                        unless ( profile_network_access_check($sd{$profile}{$hat},
-                                                              $family,
-                                                              $sock_type
-                                                             ) ) {
+                        unless ( profile_known_network($sd{$profile}{$hat},
+						       $family, $sock_type)) {
                             $log{$sdmode}
                                 {$profile}
                                 {$hat}
@@ -3995,6 +4018,7 @@ sub uniq (@) {
 our $MODE_MAP_RE = "r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N";
 our $LOG_MODE_RE = "r|w|l|m|k|a|x|ix|ux|px|cx|nx|pix|cix|Ix|Ux|Px|Cx|Nx|Pix|Cix";
 our $PROFILE_MODE_RE = "r|w|l|m|k|a|ix|ux|px|cx|pix|cix|Ux|Px|Cx|Pix|Cix";
+our $PROFILE_MODE_DENY_RE = "r|w|l|m|k|a|x";
 
 sub map_log_mode($) {
     my $mode = shift;
@@ -4012,8 +4036,12 @@ sub validate_log_mode ($) {
     return ($mode =~ /^($LOG_MODE_RE)+$/) ? 1 : 0;
 }
 
-sub validate_profile_mode ($) {
-    my $mode = shift;
+sub validate_profile_mode ($$) {
+    my ($mode, $allow) = @_;
+
+    if ($allow eq 'deny') {
+	return ($mode =~ /^($PROFILE_MODE_DENY_RE)+$/) ? 1 : 0;
+    }
 
     return ($mode =~ /^($PROFILE_MODE_RE)+$/) ? 1 : 0;
 }
@@ -4302,13 +4330,15 @@ sub parse_profile_data {
 
             $initial_comment = "";
 
-        } elsif (m/^\s*capability\s+(\S+)\s*,\s*(#.*)?$/) {  # capability entry
+        } elsif (m/^\s*(deny\s+)?capability\s+(\S+)\s*,\s*(#.*)?$/) {  # capability entry
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
 
-            my $capability = $1;
-            $profile_data->{$profile}{$hat}{allow}{capability}{$capability} = 1;
+	    my $allow = 'allow';
+	    $allow = 'deny' if ($1);
+            my $capability = $2;
+            $profile_data->{$profile}{$hat}{$allow}{capability}{$capability} = 1;
         } elsif (m/^\s*set capability\s+(\S+)\s*,\s*(#.*)?$/) {  # capability entry
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
@@ -4317,17 +4347,20 @@ sub parse_profile_data {
             my $capability = $1;
             $profile_data->{$profile}{$hat}{set_capability}{$capability} = 1;
 
-	} elsif (m/^\s*link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)\s*,\s*(#.*)?$/) { # for now just keep link
+	} elsif (m/^\s*(deny\s+)?link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)\s*,\s*(#.*)?$/) { # for now just keep link
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
-	    my $subset = $2;
-            my $link = strip_quotes($5);
-	    my $value = strip_quotes($6);
+	    my $allow = 'allow';
+	    $allow = 'deny' if ($1);
+
+	    my $subset = $3;
+            my $link = strip_quotes($6);
+	    my $value = strip_quotes($7);
 	    if ($subset) {
-		$profile_data->{$profile}{$hat}{allow}{sublink}{$link} = $value;
+		$profile_data->{$profile}{$hat}{$allow}{sublink}{$link} = $value;
 	    } else {
-		$profile_data->{$profile}{$hat}{allow}{link}{$link} = $value;
+		$profile_data->{$profile}{$hat}{$allow}{link}{$link} = $value;
 	    }
 	} elsif (m/^\s*change_profile\s+->\s*("??.+?"??),(#.*)?$/) { # for now just keep change_profile
             if (not $profile) {
@@ -4390,12 +4423,15 @@ sub parse_profile_data {
         } elsif (m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- variable defined
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean defined
-        } elsif (m/^\s*([\"\@\/].*)\s+(\S+)\s*,\s*(#.*)?$/) {     # path entry
+        } elsif (m/^\s*(deny\s+)?([\"\@\/].*)\s+(\S+)\s*,\s*(#.*)?$/) {     # path entry
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
 
-            my ($path, $mode) = ($1, $2);
+            my ($path, $mode) = ($2, $3);
+
+	    my $allow = 'allow';
+	    $allow = 'deny' if ($1);
 
             # strip off any trailing spaces.
             $path =~ s/\s+$//;
@@ -4410,11 +4446,11 @@ sub parse_profile_data {
                                      $file, $path) . "\n";
             }
 
-            if (!validate_profile_mode($mode)) {
+            if (!validate_profile_mode($mode, $allow)) {
                 fatal_error(sprintf(gettext('Profile %s contains invalid mode %s.'), $file, $mode));
             }
 
-            $profile_data->{$profile}{$hat}{allow}{path}{$path}{mode} = str_to_mode($mode);
+            $profile_data->{$profile}{$hat}{$allow}{path}{$path}{mode} = str_to_mode($mode);
 
         } elsif (m/^\s*#include <(.+)>\s*$/) {     # include stuff
             my $include = $1;
@@ -4435,21 +4471,23 @@ sub parse_profile_data {
 
             return $ret if ( $ret != 0 );
 
-        } elsif (/^\s*network/) {
+        } elsif (/^\s*(deny\s+)?network/) {
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
+	    my $allow = 'allow';
+	    $allow = 'deny' if ($1);
 
-            unless ($profile_data->{$profile}{$hat}{allow}{netdomain}) {
-                $profile_data->{$profile}{$hat}{allow}{netdomain} = { };
+            unless ($profile_data->{$profile}{$hat}{$allow}{netdomain}) {
+                $profile_data->{$profile}{$hat}{$allow}{netdomain} = { };
             }
 
             if ( /^\s*network\s+(\S+)\s*,\s*$/ ) {
-                $profile_data->{$profile}{$hat}{allow}{netdomain}{$1} = 1;
+                $profile_data->{$profile}{$hat}{$allow}{netdomain}{$1} = 1;
             } elsif ( /^\s*network\s+(\S+)\s+(\S+)\s*,\s*$/ ) {
-                $profile_data->{$profile}{$hat}{allow}{netdomain}{$1}{$2} = 1;
+                $profile_data->{$profile}{$hat}{$allow}{netdomain}{$1}{$2} = 1;
             } else {
-                $profile_data->{$profile}{$hat}{allow}{netdomain}{all} = 1;
+                $profile_data->{$profile}{$hat}{$allow}{netdomain}{all} = 1;
             }
         } elsif (/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
             if (not $profile) {
@@ -4673,9 +4711,14 @@ sub write_single ($$$$$) {
 
     if ($allow) {
 	$ref = $profile_data->{$allow};
-#	$allow .= " ";
+	if ($allow eq 'deny') {
+	    $allow .= " ";
+	} else {
+	    $allow = "";
+	}
     } else {
 	$ref = $profile_data;
+	$allow = "";
     }
 
     # dump out the data
@@ -4697,9 +4740,14 @@ sub write_pair ($$$$$$$) {
 
     if ($allow) {
 	$ref = $profile_data->{$allow};
-#	$allow .= " ";
+	if ($allow eq 'deny') {
+	    $allow .= " ";
+	} else {
+	    $allow = "";
+	}
     } else {
 	$ref = $profile_data;
+	$allow = "";
     }
 
     # dump out the data
@@ -4723,6 +4771,7 @@ sub writecapabilities ($) {
     my $profile_data = shift;
     my @data;
     push @data, write_single($profile_data, '', 'set_capability', "set capability ", ",");
+    push @data, write_single($profile_data, 'deny', 'capability', "capability ", ",");
     push @data, write_single($profile_data, 'allow', 'capability', "capability ", ",");
     return @data;
 }
@@ -4731,6 +4780,8 @@ sub writelinks ($) {
     my $profile_data = shift;
     my @data;
 
+    push @data, write_pair($profile_data, 'deny', 'link', "link ", " -> ", ",", \&qin_trans);
+    push @data, write_pair($profile_data, 'deny', 'sublink', "link subset ", " -> ", ",", \&qin_trans);
     push @data, write_pair($profile_data, 'allow', 'link', "link ", " -> ", ",", \&qin_trans);
     push @data, write_pair($profile_data, 'allow', 'sublink', "link subset ", " -> ", ",", \&qin_trans);
     return @data;
@@ -4773,29 +4824,68 @@ sub writelistvars ($) {
     return write_pair($profile_data, '', 'lvar', "", " = ", ",", \&var_transform);
 }
 
-sub writenetdomain ($) {
-    my $profile_data = shift;
+sub writenet_rules ($$) {
+    my ($profile_data, $allow) = @_;
+
+    my $allowstr = $allow eq 'deny' ? 'deny ' : '';
 
     my @data;
     # dump out the netdomain entries...
-    if (exists $profile_data->{allow}{netdomain}) {
-        if ( $profile_data->{allow}{netdomain} == 1 ||
-             $profile_data->{allow}{netdomain} eq "all") {
+    if (exists $profile_data->{$allow}{netdomain}) {
+        if ( $profile_data->{$allow}{netdomain} == 1 ||
+             $profile_data->{$allow}{netdomain} eq "all") {
             push @data, "  network,";
         } else {
-            for my $fam (sort keys %{$profile_data->{allow}{netdomain}}) {
-                if ( $profile_data->{allow}{netdomain}{$fam} == 1 ) {
-                    push @data, "  network $fam,";
+            for my $fam (sort keys %{$profile_data->{$allow}{netdomain}}) {
+                if ( $profile_data->{$allow}{netdomain}{$fam} == 1 ) {
+                    push @data, "  ${allowstr}network $fam,";
                 } else {
                     for my $type
-                        (sort keys %{$profile_data->{allow}{netdomain}{$fam}}) {
-                        push @data, "  network $fam $type,";
+                        (sort keys %{$profile_data->{$allow}{netdomain}{$fam}}) {
+                        push @data, "  ${allowstr}network $fam $type,";
                     }
                 }
             }
         }
-        push @data, "" if %{$profile_data->{allow}{netdomain}};
+        push @data, "" if %{$profile_data->{$allow}{netdomain}};
     }
+    return @data;
+
+}
+
+sub writenetdomain ($) {
+    my $profile_data = shift;
+    my @data;
+
+    push @data, writenet_rules($profile_data, 'deny');
+    push @data, writenet_rules($profile_data, 'allow');
+
+    return @data;
+}
+
+sub writepath_rules ($$) {
+    my ($profile_data, $allow) = @_;
+
+    my $allowstr = $allow eq 'deny' ? 'deny ' : '';
+
+    my @data;
+    if (exists $profile_data->{$allow}{path}) {
+        for my $path (sort keys %{$profile_data->{$allow}{path}}) {
+            my $mode = mode_to_str($profile_data->{$allow}{path}{$path}{mode});
+
+            # strip out any fake access() modes that might have slipped through
+            $mode =~ s/X//g;
+
+            # deal with whitespace in path names
+            if ($path =~ /\s/) {
+                push @data, "  ${allowstr}\"$path\" $mode,";
+            } else {
+                push @data, "  ${allowstr}$path $mode,";
+            }
+        }
+	push @data, "";
+    }
+
     return @data;
 }
 
@@ -4803,22 +4893,8 @@ sub writepaths ($) {
     my $profile_data = shift;
 
     my @data;
-    if (exists $profile_data->{allow}{path}) {
-        for my $path (sort keys %{$profile_data->{allow}{path}}) {
-            my $mode = mode_to_str($profile_data->{allow}{path}{$path}{mode});
-
-            # strip out any fake access() modes that might have slipped through
-            $mode =~ s/X//g;
-
-            # deal with whitespace in path names
-            if ($path =~ /\s/) {
-                push @data, "  \"$path\" $mode,";
-            } else {
-                push @data, "  $path $mode,";
-            }
-        }
-	push @data, "";
-    }
+    push @data, writepath_rules($profile_data, 'deny');
+    push @data, writepath_rules($profile_data, 'allow');
 
     return @data;
 }
@@ -5015,54 +5091,63 @@ sub matchliteral {
     return $matches;
 }
 
-sub profile_exec_access_check (\%$$) {
+# test if profile has exec rule for $exec_target
+sub profile_known_exec (\%$$) {
     my ($profile, $type, $exec_target) = @_;
     if ( $type eq "exec" ) {
-        my ($combinedmode, $cm, @m);
+        my ($cm, @m);
 
-	$combinedmode = 0;
-        # does path match any regexps in original profile?
-        ($cm, @m) = rematchfrag($profile, $exec_target);
-        $combinedmode |= $cm if $cm;
+        # test denies first
+        ($cm, @m) = rematchfrag($profile, 'deny', $exec_target);
+	if ($cm & $AA_MAY_EXEC) {
+	    return -1;
+	}
+        ($cm, @m) = match_prof_incs_to_path($profile, 'deny', $exec_target);
+	if ($cm & $AA_MAY_EXEC) {
+	    return -1;
+	}
 
-        # does path match anything pulled in by includes in
-        # original profile?
-        ($cm, @m) = matchpathincludes($profile, $exec_target);
-        $combinedmode |= $cm if $cm;
+	# now test the generally longer allow lists
+        ($cm, @m) = rematchfrag($profile, 'allow', $exec_target);
+	if ($cm & $AA_MAY_EXEC) {
+	    return 1;
+	}
 
-        if (contains($combinedmode, "ix") ||
-            contains($combinedmode, "px") ||
-            contains($combinedmode, "ux") ||
-            contains($combinedmode, "Px") ||
-            contains($combinedmode, "Ux")) {
-            return 1;
-        }
+        ($cm, @m) = match_prof_incs_to_path($profile, 'allow', $exec_target);
+	if ($cm & $AA_MAY_EXEC) {
+	    return 1;
+	}
     }
     return 0;
 }
 
-sub profile_capability_access_check (\%$) {
+sub profile_known_capability (\%$) {
     my ($profile, $capname) = @_;
-    for my $incname ( keys %{$profile->{include}} ) {
-        return 1 if $include{$incname}{allow}{capability}{$capname};
-    }
+
+    return -1 if $profile->{deny}{capability}{$capname};
     return 1 if $profile->{allow}{capability}{$capname};
+    for my $incname ( keys %{$profile->{include}} ) {
+	return -1 if $include{$incname}{deny}{capability}{$capname};
+	return 1 if $include{$incname}{allow}{capability}{$capname};
+    }
     return 0;
 }
 
-sub profile_network_access_check (\%$$) {
+sub profile_known_network (\%$$) {
     my ($profile, $family, $sock_type) = @_;
 
-    for my $incname ( keys %{$profile->{include}} ) {
-        return 1 if netrules_access_check($include{$incname}{allow}{netdomain},
-					  $family,
-					  $sock_type
-                                         );
-    }
+    return -1 if netrules_access_check( $profile->{deny}{netdomain},
+                                       $family, $sock_type);
     return 1 if netrules_access_check( $profile->{allow}{netdomain},
-                                       $family,
-                                       $sock_type
-                                     );
+                                       $family, $sock_type);
+
+    for my $incname ( keys %{$profile->{include}} ) {
+        return -1 if netrules_access_check($include{$incname}{deny}{netdomain},
+                                        $family, $sock_type);
+        return 1 if netrules_access_check($include{$incname}{allow}{netdomain},
+					  $family, $sock_type);
+    }
+
     return 0;
 }
 
@@ -5165,7 +5250,7 @@ sub loadinclude {
                                         $incfile, $path) . "\n";
                 }
 
-                if (!validate_profile_mode($mode)) {
+                if (!validate_profile_mode($mode, 'allow')) {
                     fatal_error(sprintf(gettext('Include file %s contains invalid mode %s.'), $incfile, $mode));
                 }
 
@@ -5207,13 +5292,13 @@ sub loadinclude {
     return 0;
 }
 
-sub rematchfrag {
-    my ($frag, $path) = @_;
+sub rematchfrag ($$$) {
+    my ($frag, $allow, $path) = @_;
 
     my $combinedmode = 0;
     my @matches;
 
-    for my $entry (keys %{ $frag->{allow}{path} }) {
+    for my $entry (keys %{ $frag->{$allow}{path} }) {
 
         my $regexp = convert_regexp($entry);
 
@@ -5221,7 +5306,7 @@ sub rematchfrag {
         if ($path =~ /^$regexp$/) {
 
             # regexp matches, add it's mode to the list to check against
-            $combinedmode |= $frag->{allow}{path}{$entry}{mode};
+            $combinedmode |= $frag->{$allow}{path}{$entry}{mode};
             push @matches, $entry;
         }
     }
@@ -5229,8 +5314,38 @@ sub rematchfrag {
     return wantarray ? ($combinedmode, @matches) : $combinedmode;
 }
 
-sub matchpathincludes {
-    my ($frag, $path) = @_;
+sub match_include_to_path ($$$) {
+    my ($incname, $allow, $path) = @_;
+
+    my $combinedmode = 0;
+    my @matches;
+
+    my @includelist = ( $incname );
+    while (my $incfile = shift @includelist) {
+        my $ret = eval { loadinclude($incfile); };
+        if ($@) { fatal_error $@; }
+        my ($cm, @m) = rematchfrag($include{$incfile}, $allow, $path);
+        if ($cm) {
+            $combinedmode |= $cm;
+            push @matches, @m;
+        }
+
+        # check if a literal version is in the current include fragment
+        if ($include{$incfile}{$allow}{path}{$path}) {
+            $combinedmode |= $include{$incfile}{$allow}{path}{$path}{mode};
+        }
+
+        # if this fragment includes others, check them too
+        if (keys %{ $include{$incfile}{include} }) {
+            push @includelist, keys %{ $include{$incfile}{include} };
+        }
+    }
+
+    return wantarray ? ($combinedmode, @matches) : $combinedmode;
+}
+
+sub match_prof_incs_to_path ($$$) {
+    my ($frag, $allow, $path) = @_;
 
     my $combinedmode = 0;
     my @matches;
@@ -5238,38 +5353,28 @@ sub matchpathincludes {
     # scan the include fragments for this profile looking for matches
     my @includelist = keys %{ $frag->{include} };
     while (my $include = shift @includelist) {
-        my $ret = eval { loadinclude($include); };
-        if ($@) { fatal_error $@; }
-        my ($cm, @m) = rematchfrag($include{$include}, $path);
+	my ($cm, @m) = match_include_to_path($include, $allow, $path);
         if ($cm) {
             $combinedmode |= $cm;
             push @matches, @m;
-        }
-
-        # check if a literal version is in the current include fragment
-        if ($include{$include}{allow}{path}{$path}) {
-            $combinedmode |= $include{$include}{allow}{path}{$path}{mode};
-        }
-
-        # if this fragment includes others, check them too
-        if (keys %{ $include{$include}{include} }) {
-            push @includelist, keys %{ $include{$include}{include} };
         }
     }
 
     return wantarray ? ($combinedmode, @matches) : $combinedmode;
 }
 
-sub matchpathinclude {
-    my ($incname, $path) = @_;
+#find includes that match the path to suggest
+sub suggest_incs_for_path {
+    my ($incname, $path, $allow) = @_;
+
 
     my $combinedmode = 0;
     my @matches;
 
-    # scan the include fragments for this profile looking for matches
+    # scan the include fragments looking for matches
     my @includelist = ($incname);
     while (my $include = shift @includelist) {
-        my ($cm, @m) = rematchfrag($include{$include}, $path);
+        my ($cm, @m) = rematchfrag($include{$include}, 'allow', $path);
         if ($cm) {
             $combinedmode |= $cm;
             push @matches, @m;
@@ -5302,8 +5407,6 @@ sub check_qualifiers {
         }
     }
 }
-
-
 
 sub loadincludes {
     if (opendir(SDDIR, $profiledir)) {
