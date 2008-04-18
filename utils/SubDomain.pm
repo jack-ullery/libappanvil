@@ -4410,12 +4410,25 @@ sub is_active_profile ($) {
     }
 }
 
+
+sub strip_quotes ($) {
+    my $data = shift;
+    $data = $1 if $data =~ /^\"(.*)\"$/;
+    return $data;
+}
+
+sub quote_if_needed ($) {
+    my $data = shift;
+    $data = "\"$data\"" if $data =~ /\s/;
+
+    return $data;
+}
+
 sub escape ($) {
     my $dangerous = shift;
 
-    if ($dangerous =~ m/^"(.+)"$/) {
-        $dangerous = $1;
-    }
+    $dangerous = strip_quotes($dangerous);
+
     $dangerous =~ s/((?<!\\))"/$1\\"/g;
     if ($dangerous =~ m/(\s|^$|")/) {
         $dangerous = "\"$dangerous\"";
@@ -4429,7 +4442,7 @@ sub writeheader ($$$$) {
 
     my @data;
     # deal with whitespace in profile names...
-    $name = "\"$name\"" if $name =~ /\s/;
+    $name = quote_if_needed($name);
     push @data, "#include <tunables/global>" unless ( $is_hat );
     if ($write_flags and  $profile_data->{flags}) {
         push @data, "$name flags=($profile_data->{flags}) {";
@@ -4440,34 +4453,47 @@ sub writeheader ($$$$) {
     return @data;
 }
 
-sub writeincludes ($) {
-    my $profile_data = shift;
+sub write_single ($$$$) {
+    my ($profile_data, $name, $prefix, $tail) = @_;
 
     my @data;
-    # dump out the includes
-    if (exists $profile_data->{include}) {
-        for my $include (sort keys %{$profile_data->{include}}) {
-            push @data, "  #include <$include>";
+    # dump out the data
+    if (exists $profile_data->{$name}) {
+        for my $key (sort keys %{$profile_data->{$name}}) {
+	    my $qkey = quote_if_needed($key);
+            push @data, "  ${prefix}${qkey}${tail}";
         }
-        push @data, "" if keys %{$profile_data->{include}};
+        push @data, "" if keys %{$profile_data->{$name}};
     }
 
     return @data;
 }
 
-sub writecapabilities ($) {
-    my $profile_data = shift;
+sub write_pair ($$$$$) {
+    my ($profile_data, $name, $prefix, $sep, $tail) = @_;
 
     my @data;
-    # dump out the capability entries...
-    if (exists $profile_data->{capability}) {
-        for my $capability (sort keys %{$profile_data->{capability}}) {
-            push @data, "  capability $capability,";
+    # dump out the data
+    if (exists $profile_data->{$name}) {
+        for my $key (sort keys %{$profile_data->{$name}}) {
+	    my $qkey = quote_if_needed($key);
+	    my $value = quote_if_needed($profile_data->{$name}{$key});
+            push @data, "  ${prefix}${key}${sep}${value}${tail}";
         }
-        push @data, "" if keys %{$profile_data->{capability}};
+        push @data, "" if keys %{$profile_data->{$name}};
     }
 
     return @data;
+}
+
+sub writeincludes ($) {
+    my $profile_data = shift;
+    return write_single($profile_data, 'include', "#include <", ">");
+}
+
+sub writecapabilities ($) {
+    my $profile_data = shift;
+    return write_single($profile_data, 'capability', "capability ", ",");
 }
 
 sub writenetdomain ($) {
