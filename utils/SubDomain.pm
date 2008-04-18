@@ -193,6 +193,7 @@ my $AA_EXEC_UNCONFINED = 512;
 my $AA_EXEC_PROFILE = 1024;
 my $AA_EXEC_CHILD = 2048;
 my $AA_EXEC_NT = 4096;
+my $AA_LINK_SUBSET = 8192;
 
 my $AA_EXEC_TYPE = $AA_MAY_EXEC | $AA_EXEC_UNSAFE | $AA_EXEC_INHERIT |
 		    $AA_EXEC_UNCONFINED | $AA_EXEC_PROFILE | $AA_EXEC_NT;
@@ -3431,6 +3432,7 @@ sub ask_the_questions {
                                        {$hat}
 				       {allow}
                                        {netdomain}
+				       {rule}
                                        {$family}
                                        {$sock_type} = 1;
 
@@ -3451,6 +3453,7 @@ sub ask_the_questions {
                                        {$hat}
 				       {deny}
                                        {netdomain}
+				       {rule}
                                        {$family}
                                        {$sock_type} = 1;
 
@@ -3481,21 +3484,21 @@ sub delete_net_duplicates {
         # See which if any profile rules are matched by the include and can be
         # deleted
         for my $fam ( keys %$netrules ) {
-            if ( $incnetglob || (ref($incnetrules->{$fam}) ne "HASH" &&
-                                 $incnetrules->{$fam} == 1)) { # include allows
+            if ( $incnetglob || (ref($incnetrules->{rule}{$fam}) ne "HASH" &&
+                                 $incnetrules->{rule}{$fam} == 1)) { # include allows
                                                                # all net or
                                                                # all fam
-                if ( ref($netrules->{$fam}) eq "HASH" ) {
-                    $deleted += ( keys %{$netrules->{$fam}} );
+                if ( ref($netrules->{rule}{$fam}) eq "HASH" ) {
+                    $deleted += ( keys %{$netrules->{rule}{$fam}} );
                 } else {
                     $deleted++;
                 }
-                delete $netrules->{$fam};
-            } elsif ( ref($netrules->{$fam}) ne "HASH" &&
-                      $netrules->{$fam} == 1 ){
+                delete $netrules->{rule}{$fam};
+            } elsif ( ref($netrules->{rule}{$fam}) ne "HASH" &&
+                      $netrules->{rule}{$fam} == 1 ){
                 next; # profile has all family
             } else {
-                for my $socket_type ( keys %{$netrules->{$fam}} )  {
+                for my $socket_type ( keys %{$netrules->{rule}{$fam}} )  {
                     if ( defined $incnetrules->{$fam}{$socket_type} ) {
                         delete $netrules->{$fam}{$socket_type};
                         $deleted++;
@@ -3512,7 +3515,7 @@ sub delete_cap_duplicates ($$) {
     my $deleted = 0;
     if ( $profilecaps && $inccaps ) {
         for my $capname ( keys %$profilecaps ) {
-            if ( defined $inccaps->{$capname} && $inccaps->{$capname} == 1 ) {
+            if ( defined $inccaps->{$capname}{set} && $inccaps->{$capname}{set} == 1 ) {
                delete $profilecaps->{$capname};
                $deleted++;
             }
@@ -3974,7 +3977,7 @@ sub collapselog () {
                 }
 
                 # Network toggle handling
-                my $ndref = $prelog{$sdmode}{$profile}{$hat}{netdomain};
+                my $ndref = $prelog{$sdmode}{$profile}{$hat}{netdomain}{rule};
                 for my $family ( keys %{$ndref} ) {
                     for my $sock_type ( keys %{$ndref->{$family}} ) {
                         unless ( profile_known_network($sd{$profile}{$hat},
@@ -3983,6 +3986,7 @@ sub collapselog () {
                                 {$profile}
                                 {$hat}
                                 {netdomain}
+			        {rule}
                                 {$family}
                                 {$sock_type}=1;
                         }
@@ -4330,15 +4334,17 @@ sub parse_profile_data {
 
             $initial_comment = "";
 
-        } elsif (m/^\s*(deny\s+)?capability\s+(\S+)\s*,\s*(#.*)?$/) {  # capability entry
+        } elsif (m/^\s*(audit\s+)?(deny\s+)?capability\s+(\S+)\s*,\s*(#.*)?$/) {  # capability entry
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
 
-	    my $allow = 'allow';
-	    $allow = 'deny' if ($1);
-            my $capability = $2;
+	    my $audit = $1 ? 1 : 0;
+	    my $allow = $2 ? 'deny' : 'allow';
+	    $allow = 'deny' if ($2);
+            my $capability = $3;
             $profile_data->{$profile}{$hat}{$allow}{capability}{$capability}{set} = 1;
+            $profile_data->{$profile}{$hat}{$allow}{capability}{$capability}{audit} = $audit;
         } elsif (m/^\s*set capability\s+(\S+)\s*,\s*(#.*)?$/) {  # capability entry
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
@@ -4347,21 +4353,27 @@ sub parse_profile_data {
             my $capability = $1;
             $profile_data->{$profile}{$hat}{set_capability}{$capability} = 1;
 
-	} elsif (m/^\s*(deny\s+)?link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)\s*,\s*(#.*)?$/) { # for now just keep link
+	} elsif (m/^\s*(audit\s+)?(deny\s+)?link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)\s*,\s*(#.*)?$/) { # for now just keep link
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
-	    my $allow = 'allow';
-	    $allow = 'deny' if ($1);
+	    my $audit = $1 ? 1 : 0;
+	    my $allow = $2 ? 'deny' : 'allow';
 
-	    my $subset = $3;
-            my $link = strip_quotes($6);
-	    my $value = strip_quotes($7);
+	    my $subset = $4;
+            my $link = strip_quotes($7);
+	    my $value = strip_quotes($8);
+	    $profile_data->{$profile}{$hat}{$allow}{link}{$link}{to} = $value;
+	    $profile_data->{$profile}{$hat}{$allow}{link}{$link}{mode} = $AA_MAY_LINK;
 	    if ($subset) {
-		$profile_data->{$profile}{$hat}{$allow}{sublink}{$link} = $value;
-	    } else {
-		$profile_data->{$profile}{$hat}{$allow}{link}{$link} = $value;
+		$profile_data->{$profile}{$hat}{$allow}{link}{$link}{mode} = $AA_LINK_SUBSET;
 	    }
+	    if ($audit) {
+		$profile_data->{$profile}{$hat}{$allow}{link}{$link}{audit} = $AA_LINK_SUBSET;
+	    } else {
+		$profile_data->{$profile}{$hat}{$allow}{link}{$link}{audit} = 0;
+	    }
+
 	} elsif (m/^\s*change_profile\s+->\s*("??.+?"??),(#.*)?$/) { # for now just keep change_profile
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
@@ -4471,23 +4483,30 @@ sub parse_profile_data {
 
             return $ret if ( $ret != 0 );
 
-        } elsif (/^\s*(deny\s+)?network/) {
+        } elsif (/^\s*(audit\s+)?(deny\s+)?network(.*)/) {
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
-	    my $allow = 'allow';
-	    $allow = 'deny' if ($1);
+	    my $audit = $1 ? 1 : 0;
+	    my $allow = $2 ? 'deny' : 'allow';
+	    my $network = $3;
 
-            unless ($profile_data->{$profile}{$hat}{$allow}{netdomain}) {
-                $profile_data->{$profile}{$hat}{$allow}{netdomain} = { };
+            unless ($profile_data->{$profile}{$hat}{$allow}{netdomain}{rule}) {
+                $profile_data->{$profile}{$hat}{$allow}{netdomain}{rule} = { };
             }
 
-            if ( /^\s*network\s+(\S+)\s*,\s*$/ ) {
-                $profile_data->{$profile}{$hat}{$allow}{netdomain}{$1} = 1;
-            } elsif ( /^\s*network\s+(\S+)\s+(\S+)\s*,\s*$/ ) {
-                $profile_data->{$profile}{$hat}{$allow}{netdomain}{$1}{$2} = 1;
+            if ( $network =~ /\s+(\S+)\s*,\s*(#.*)?$/ ) {
+		my $fam = $1;
+                $profile_data->{$profile}{$hat}{$allow}{netdomain}{rule}{$fam} = 1;
+		$profile_data->{$profile}{$hat}{$allow}{netdomain}{audit}{$fam} = $audit;
+            } elsif ($network =~ /\s+(\S+)\s+(\S+)\s*,\s*(#.*)?$/ ) {
+		my $fam = $1;
+		my $type = $2;
+                $profile_data->{$profile}{$hat}{$allow}{netdomain}{rule}{$fam}{$type} = 1;
+                $profile_data->{$profile}{$hat}{$allow}{netdomain}{audit}{$fam}{$type} = $audit;
             } else {
-                $profile_data->{$profile}{$hat}{$allow}{netdomain}{all} = 1;
+                $profile_data->{$profile}{$hat}{$allow}{netdomain}{rule}{all} = 1;
+                $profile_data->{$profile}{$hat}{$allow}{netdomain}{audit}{all} = 1;
             }
         } elsif (/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
             if (not $profile) {
@@ -4505,7 +4524,7 @@ sub parse_profile_data {
             s/,\s*$//;
 
             # keep track of netdomain entries...
-            push @{$profile_data->{$profile}{$hat}{allow}{netdomain}}, $_;
+            push @{$profile_data->{$profile}{$hat}{allow}{netdomain}{rule}}, $_;
 
         } elsif (m/^\s*\^(\"??.+?\"??)\s*,\s*(#.*)?$/) {
 	    # change_hat declaration - needed to change_hat to an external
@@ -4680,20 +4699,21 @@ sub escape ($) {
     return $dangerous;
 }
 
-sub writeheader ($$$$) {
-    my ($profile_data, $name, $is_hat, $write_flags) = @_;
+sub writeheader ($$$$$) {
+    my ($profile_data, $depth, $name, $embedded_hat, $write_flags) = @_;
 
+    my $pre = '  ' x $depth;
     my @data;
     # deal with whitespace in profile names...
     $name = quote_if_needed($name);
 
-    $name = "profile $name" if ((not $is_hat) and ($name =~ /^[^\/]|^"[^\/]/));
+    $name = "profile $name" if (!$embedded_hat && $name =~ /^[^\/]|^"[^\/]/);
 
     #push @data, "#include <tunables/global>" unless ( $is_hat );
     if ($write_flags and  $profile_data->{flags}) {
-        push @data, "$name flags=($profile_data->{flags}) {";
+        push @data, "${pre}$name flags=($profile_data->{flags}) {";
     } else {
-        push @data, "$name {";
+        push @data, "${pre}$name {";
     }
 
     return @data;
@@ -4704,8 +4724,8 @@ sub qin_trans ($) {
     return quote_if_needed($value);
 }
 
-sub write_single ($$$$$) {
-    my ($profile_data, $allow, $name, $prefix, $tail) = @_;
+sub write_single ($$$$$$) {
+    my ($profile_data, $depth, $allow, $name, $prefix, $tail) = @_;
     my $ref;
     my @data;
 
@@ -4720,12 +4740,15 @@ sub write_single ($$$$$) {
 	$ref = $profile_data;
 	$allow = "";
     }
+
+    my $pre = "  " x $depth;
+
 
     # dump out the data
     if (exists $ref->{$name}) {
         for my $key (sort keys %{$ref->{$name}}) {
 	    my $qkey = quote_if_needed($key);
-	    push @data, "  ${allow}${prefix}${qkey}${tail}";
+	    push @data, "${pre}${allow}${prefix}${qkey}${tail}";
         }
         push @data, "" if keys %{$ref->{$name}};
     }
@@ -4733,8 +4756,8 @@ sub write_single ($$$$$) {
     return @data;
 }
 
-sub write_pair ($$$$$$$) {
-    my ($profile_data, $allow, $name, $prefix, $sep, $tail, $fn) = @_;
+sub write_pair ($$$$$$$$) {
+    my ($profile_data, $depth, $allow, $name, $prefix, $sep, $tail, $fn) = @_;
     my $ref;
     my @data;
 
@@ -4750,11 +4773,13 @@ sub write_pair ($$$$$$$) {
 	$allow = "";
     }
 
+    my $pre = "  " x $depth;
+
     # dump out the data
     if (exists $ref->{$name}) {
         for my $key (sort keys %{$ref->{$name}}) {
 	    my $value = &{$fn}($ref->{$name}{$key});
-            push @data, "  ${allow}${prefix}${key}${sep}${value}${tail}";
+            push @data, "${pre}${allow}${prefix}${key}${sep}${value}${tail}";
         }
         push @data, "" if keys %{$ref->{$name}};
     }
@@ -4762,47 +4787,28 @@ sub write_pair ($$$$$$$) {
     return @data;
 }
 
-sub writeincludes ($) {
-    my $profile_data = shift;
-    return write_single($profile_data, ,'', 'include', "#include <", ">");
+sub writeincludes ($$) {
+    my ($prof_data, $depth) = @_;
+
+    return write_single($prof_data, $depth,'', 'include', "#include <", ">");
 }
 
-sub writecapabilities ($) {
-    my $profile_data = shift;
-    my @data;
-    push @data, write_single($profile_data, '', 'set_capability', "set capability ", ",");
-    push @data, write_single($profile_data, 'deny', 'capability', "capability ", ",");
-    push @data, write_single($profile_data, 'allow', 'capability', "capability ", ",");
-    return @data;
+sub writechange_profile ($$) {
+    my ($prof_data, $depth) = @_;
+
+    return write_single($prof_data, $depth, '', 'change_profile', "change_profile -> ", ",");
 }
 
-sub writelinks ($) {
-    my $profile_data = shift;
-    my @data;
+sub writealiases ($$) {
+    my ($prof_data, $depth) = @_;
 
-    push @data, write_pair($profile_data, 'deny', 'link', "link ", " -> ", ",", \&qin_trans);
-    push @data, write_pair($profile_data, 'deny', 'sublink', "link subset ", " -> ", ",", \&qin_trans);
-    push @data, write_pair($profile_data, 'allow', 'link', "link ", " -> ", ",", \&qin_trans);
-    push @data, write_pair($profile_data, 'allow', 'sublink', "link subset ", " -> ", ",", \&qin_trans);
-    return @data;
+    return write_pair($prof_data, $depth, '', 'alias', "alias ", " -> ", ",", \&qin_trans);
 }
 
-sub writechange_profile ($) {
-    my $profile_data = shift;
+sub writerlimits ($$) {
+    my ($prof_data, $depth) = @_;
 
-    return write_single($profile_data, '', 'change_profile', "change_profile -> ", ",");
-}
-
-sub writealiases ($) {
-    my $profile_data = shift;
-
-    return write_pair($profile_data, '', 'alias', "alias ", " -> ", ",", \&qin_trans);
-}
-
-sub writerlimits ($) {
-    my $profile_data = shift;
-
-    return write_pair($profile_data, '', 'rlimit', "set rlimit ", " <= ", ",", \&qin_trans);
+    return write_pair($prof_data, $depth, '', 'rlimit', "set rlimit ", " <= ", ",", \&qin_trans);
 }
 
 # take a list references and process it
@@ -4818,31 +4824,64 @@ sub var_transform($) {
     return join " ", @data;
 }
 
-sub writelistvars ($) {
-    my $profile_data = shift;
+sub writelistvars ($$) {
+    my ($prof_data, $depth) = @_;
 
-    return write_pair($profile_data, '', 'lvar', "", " = ", ",", \&var_transform);
+    return write_pair($prof_data, $depth, '', 'lvar', "", " = ", ",", \&var_transform);
 }
 
-sub writenet_rules ($$) {
-    my ($profile_data, $allow) = @_;
+sub writecap_rules ($$$) {
+    my ($profile_data, $depth, $allow) = @_;
 
     my $allowstr = $allow eq 'deny' ? 'deny ' : '';
+    my $pre = "  " x $depth;
+
+    my @data;
+    if (exists $profile_data->{$allow}{capability}) {
+        for my $cap (sort keys %{$profile_data->{$allow}{capability}}) {
+	    my $audit = ($profile_data->{$allow}{capability}{$cap}{audit}) ? 'audit ' : '';
+	    push @data, "${pre}${audit}${allowstr}capability ${cap},";
+        }
+	push @data, "";
+    }
+
+    return @data;
+}
+
+sub writecapabilities ($$) {
+    my ($prof_data, $depth) = @_;
+    my @data;
+    push @data, write_single($prof_data, $depth, '', 'set_capability', "set capability ", ",");
+    push @data, writecap_rules($prof_data, $depth, 'deny');
+    push @data, writecap_rules($prof_data, $depth, 'allow');
+    return @data;
+}
+
+sub writenet_rules ($$$) {
+    my ($profile_data, $depth, $allow) = @_;
+
+    my $allowstr = $allow eq 'deny' ? 'deny ' : '';
+
+    my $pre = "  " x $depth;
+    my $audit = "";
 
     my @data;
     # dump out the netdomain entries...
     if (exists $profile_data->{$allow}{netdomain}) {
-        if ( $profile_data->{$allow}{netdomain} == 1 ||
-             $profile_data->{$allow}{netdomain} eq "all") {
-            push @data, "  network,";
+        if ( $profile_data->{$allow}{netdomain}{rule} &&
+             $profile_data->{$allow}{netdomain}{rule} eq 'all') {
+	    $audit = "audit " if $profile_data->{$allow}{netdomain}{audit}{all};
+            push @data, "${pre}${audit}network,";
         } else {
-            for my $fam (sort keys %{$profile_data->{$allow}{netdomain}}) {
-                if ( $profile_data->{$allow}{netdomain}{$fam} == 1 ) {
-                    push @data, "  ${allowstr}network $fam,";
+            for my $fam (sort keys %{$profile_data->{$allow}{netdomain}{rule}}) {
+                if ( $profile_data->{$allow}{netdomain}{rule}{$fam} == 1 ) {
+		    $audit = "audit " if $profile_data->{$allow}{netdomain}{audit}{$fam};
+                    push @data, "${pre}${audit}${allowstr}network $fam,";
                 } else {
-                    for my $type
-                        (sort keys %{$profile_data->{$allow}{netdomain}{$fam}}) {
-                        push @data, "  ${allowstr}network $fam $type,";
+                    for my $type 
+                        (sort keys %{$profile_data->{$allow}{netdomain}{rule}{$fam}}) {
+			    $audit = "audit " if $profile_data->{$allow}{netdomain}{audit}{$fam}{$type};
+			    push @data, "${pre}${audit}${allowstr}network $fam $type,";
                     }
                 }
             }
@@ -4853,34 +4892,65 @@ sub writenet_rules ($$) {
 
 }
 
-sub writenetdomain ($) {
-    my $profile_data = shift;
+sub writenetdomain ($$) {
+    my ($prof_data, $depth) = @_;
     my @data;
 
-    push @data, writenet_rules($profile_data, 'deny');
-    push @data, writenet_rules($profile_data, 'allow');
+    push @data, writenet_rules($prof_data, $depth, 'deny');
+    push @data, writenet_rules($prof_data, $depth, 'allow');
 
     return @data;
 }
 
-sub writepath_rules ($$) {
-    my ($profile_data, $allow) = @_;
+sub writelink_rules ($$$) {
+    my ($profile_data, $depth, $allow) = @_;
 
     my $allowstr = $allow eq 'deny' ? 'deny ' : '';
+    my $pre = "  " x $depth;
+
+    my @data;
+    if (exists $profile_data->{$allow}{link}) {
+        for my $path (sort keys %{$profile_data->{$allow}{link}}) {
+            my $to = $profile_data->{$allow}{link}{$path}{to};
+	    my $subset = ($profile_data->{$allow}{link}{$path}{mode} & $AA_LINK_SUBSET) ? 'subset ' : '';
+	    my $audit = ($profile_data->{$allow}{link}{$path}{audit}) ? 'audit ' : '';
+            # deal with whitespace in path names
+            $path = quote_if_needed($path);
+	    $to = quote_if_needed($to);
+	    push @data, "${pre}${audit}${allowstr}link ${subset}${path} -> ${to},";
+        }
+	push @data, "";
+    }
+
+    return @data;
+}
+
+sub writelinks ($$) {
+    my ($profile_data, $depth) = @_;
+    my @data;
+
+    push @data, writelink_rules($profile_data, $depth, 'deny');
+    push @data, writelink_rules($profile_data, $depth, 'allow');
+
+    return @data;
+}
+
+sub writepath_rules ($$$) {
+    my ($profile_data, $depth, $allow) = @_;
+
+    my $allowstr = $allow eq 'deny' ? 'deny ' : '';
+    my $pre = "  " x $depth;
 
     my @data;
     if (exists $profile_data->{$allow}{path}) {
         for my $path (sort keys %{$profile_data->{$allow}{path}}) {
             my $mode = mode_to_str($profile_data->{$allow}{path}{$path}{mode});
 
-            # strip out any fake access() modes that might have slipped through
-            $mode =~ s/X//g;
-
             # deal with whitespace in path names
             if ($path =~ /\s/) {
-                push @data, "  ${allowstr}\"$path\" $mode,";
+                push @data, "${pre}${allowstr}\"$path\" $mode,";
             } else {
-                push @data, "  ${allowstr}$path $mode,";
+                push @data, "${pre}${allowstr}$path $mode,";
             }
         }
 	push @data, "";
@@ -4889,70 +4959,83 @@ sub writepath_rules ($$) {
     return @data;
 }
 
-sub writepaths ($) {
-    my $profile_data = shift;
+sub writepaths ($$) {
+    my ($prof_data, $depth) = @_;
 
     my @data;
-    push @data, writepath_rules($profile_data, 'deny');
-    push @data, writepath_rules($profile_data, 'allow');
+    push @data, writepath_rules($prof_data, $depth, 'deny');
+    push @data, writepath_rules($prof_data, $depth, 'allow');
 
     return @data;
 }
 
-sub writepiece ($$$) {
-    my ($profile_data, $name, $write_flags) = @_;
+sub write_rules ($$) {
+    my ($prof_data, $depth) = @_;
 
     my @data;
-    push @data, writeheader($profile_data->{$name}, $name, 0, $write_flags);
-    push @data, writealiases($profile_data->{$name});
-    push @data, writelistvars($profile_data->{$name});
-    push @data, writeincludes($profile_data->{$name});
-    push @data, writerlimits($profile_data->{$name});
-    push @data, writecapabilities($profile_data->{$name});
-    push @data, writenetdomain($profile_data->{$name});
-    push @data, writelinks($profile_data->{$name});
-    push @data, writepaths($profile_data->{$name});
-    push @data, writechange_profile($profile_data->{$name});
+    push @data, writealiases($prof_data, $depth);
+    push @data, writelistvars($prof_data, $depth);
+    push @data, writeincludes($prof_data, $depth);
+    push @data, writerlimits($prof_data, $depth);
+    push @data, writecapabilities($prof_data, $depth);
+    push @data, writenetdomain($prof_data, $depth);
+    push @data, writelinks($prof_data, $depth);
+    push @data, writepaths($prof_data, $depth);
+    push @data, writechange_profile($prof_data, $depth);
 
+    return @data;
+}
+
+sub writepiece ($$$$$);
+sub writepiece ($$$$$) {
+    my ($profile_data, $depth, $name, $nhat, $write_flags) = @_;
+
+    my $pre = '  ' x $depth;
+    my @data;
+    my $wname;
+    my $inhat = 0;
+    if ($name eq $nhat) {
+	$wname = $name;
+    } else {
+	$wname = "$name//$nhat";
+	$name = $nhat;
+	$inhat = 1;
+    }
+    push @data, writeheader($profile_data->{$name}, $depth, $wname, 0, $write_flags);
+    push @data, write_rules($profile_data->{$name}, $depth + 1);
+
+    my $pre2 = '  ' x ($depth + 1);
     # write external hat declarations
     for my $hat (grep { $_ ne $name } sort keys %{$profile_data}) {
-	print "foo: $hat\n";
 	if ($profile_data->{$hat}{declared}) {
-	    push @data, "  ^$hat,";
+	    push @data, "${pre2}^$hat,";
 	}
     }
 
-    # write embedded hats
-    for my $hat (grep { $_ ne $name } sort keys %{$profile_data}) {
-	if ((not $profile_data->{$hat}{external}) and
-	    (not $profile_data->{$hat}{declared})) {
-	    push @data, "";
-	    push @data, map { "  $_" } writeheader($profile_data->{$hat},
-						   "^$hat",
-						   1,
-						   $write_flags);
-	    push @data, map { "  $_" } writeincludes($profile_data->{$hat});
-	    push @data, map { "  $_" } writecapabilities($profile_data->{$hat});
-	    push @data, map { "  $_" } writenetdomain($profile_data->{$hat});
-	    push @data, map { "  $_" } writepaths($profile_data->{$hat});
-	    push @data, "  }";
+    if (!$inhat) {
+	# write embedded hats
+	for my $hat (grep { $_ ne $name } sort keys %{$profile_data}) {
+	    if ((not $profile_data->{$hat}{external}) and
+		(not $profile_data->{$hat}{declared})) {
+		push @data, "";
+		push @data, map { "$_" } writeheader($profile_data->{$hat},
+						     $depth + 1, "^$hat",
+						     1, $write_flags);
+		push @data, map { "$_" } write_rules($profile_data->{$hat},
+						     $depth + 2);
+		push @data, "${pre2}}";
+	    }
 	}
-    }
-    push @data, "}";
+	push @data, "${pre}}";
 
-    #write external hats
-    for my $hat (grep { $_ ne $name } sort keys %{$profile_data}) {
-	if ($profile_data->{$hat}{external}) {
-	    push @data, "";
-	    push @data, map { "  $_" } writeheader($profile_data->{$hat},
-						   "$name//$hat",
-						   1,
-						   $write_flags);
-	    push @data, map { "  $_" } writeincludes($profile_data->{$hat});
-	    push @data, map { "  $_" } writecapabilities($profile_data->{$hat});
-	    push @data, map { "  $_" } writenetdomain($profile_data->{$hat});
-	    push @data, map { "  $_" } writepaths($profile_data->{$hat});
-	    push @data, "  }";
+	#write external hats
+	for my $hat (grep { $_ ne $name } sort keys %{$profile_data}) {
+	    if (($name eq $nhat) and $profile_data->{$hat}{external}) {
+		push @data, "";
+		push @data, map { "  $_" } writepiece($profile_data, $depth,
+						      $name, $hat, $write_flags);
+		push @data, "  }";
+	    }
 	}
     }
     return @data;
@@ -4996,9 +5079,9 @@ sub serialize_profile {
     my $filename = getprofilefilename($name);
     my @data;
     if ($filelist{$filename}) {
-	push @data, writeincludes($filelist{$filename});
-	push @data, writealiases($filelist{$filename});
-	push @data, writelistvars($filelist{$filename});
+	push @data, writealiases($filelist{$filename}, 0);
+	push @data, writelistvars($filelist{$filename}, 0);
+	push @data, writeincludes($filelist{$filename}, 0);
     }
 
 
@@ -5025,7 +5108,7 @@ sub serialize_profile {
 #    }
 #  }
 
-    push @data, writepiece($profile_data, $name, $include_flags);
+    push @data, writepiece($profile_data, 0, $name, $name, $include_flags);
     $string .= join("\n", @data);
 
     return "$string\n";
@@ -5155,11 +5238,11 @@ sub netrules_access_check ($$$) {
     my ($netrules, $family, $sock_type) = @_;
     return 0 if ( not defined $netrules );
     my %netrules        = %$netrules;;
-    my $all_net         = defined $netrules{all};
-    my $all_net_family  = defined $netrules{$family} && $netrules{$family} == 1;
-    my $net_family_sock = defined $netrules{$family} &&
-                          ref($netrules{$family}) eq "HASH" &&
-                          defined $netrules{$family}{$sock_type};
+    my $all_net         = defined $netrules{rule}{all};
+    my $all_net_family  = defined $netrules{rule}{$family} && $netrules{rule}{$family} == 1;
+    my $net_family_sock = defined $netrules{rule}{$family} &&
+                          ref($netrules{rule}{$family}) eq "HASH" &&
+                          defined $netrules{rule}{$family}{$sock_type};
 
     if ( $all_net || $all_net_family || $net_family_sock ) {
         return 1;
@@ -5270,11 +5353,11 @@ sub loadinclude {
             } elsif (/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
             } elsif (/^\s*network/) {
                 if ( /^\s*network\s+(\S+)\s*,\s*$/ ) {
-                    $include{$incfile}{allow}{netdomain}{$1} = 1;
+                    $include{$incfile}{allow}{netdomain}{rule}{$1} = 1;
                 } elsif ( /^\s*network\s+(\S+)\s+(\S+)\s*,\s*$/ ) {
-                    $include{$incfile}{allow}{netdomain}{$1}{$2} = 1;
+                    $include{$incfile}{allow}{netdomain}{rule}{$1}{$2} = 1;
                 } else {
-                    $include{$incfile}{allow}{netdomain}{all} = 1;
+                    $include{$incfile}{allow}{netdomain}{rule}{all} = 1;
                 }
             } else {
 
