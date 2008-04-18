@@ -1720,7 +1720,7 @@ sub handlechildren {
                     next;
                 }
 
-                my $new_p = update_repo_profile($profile);
+                my $new_p = update_repo_profile($sd{$profile}{$profile});
                 if ( $new_p and
                      UI_SelectUpdatedRepoProfile($profile, $new_p) and
                      $sd{$profile}{$uhat} ) {
@@ -1851,14 +1851,12 @@ sub handlechildren {
                 }
 
                 if ($do_execute) {
-                    next if ( profile_exec_access_check( $profile,
-                                                         $hat,
+                    next if ( profile_exec_access_check($sd{$profile}{$hat},
                                                          "exec",
                                                          $exec_target ) );
-                    my $p = update_repo_profile($profile);
+                    my $p = update_repo_profile($sd{$profile}{$profile});
                     next if ( UI_SelectUpdatedRepoProfile($profile, $p) and
-                              profile_exec_access_check( $profile,
-                                                         $hat,
+                              profile_exec_access_check($sd{$profile}{$hat},
                                                          "exec",
                                                          $exec_target ) );
                     my $context = $profile;
@@ -2873,18 +2871,18 @@ sub repo_is_enabled () {
 sub update_repo_profile {
     my $profile = shift;
 
-    return undef if ( not is_repo_profile($sd{$profile}{$profile}) );
+    return undef if ( not is_repo_profile($profile) );
     my $distro = $cfg->{repository}{distro};
-    my $url    = $sd{$profile}{$profile}{repo}{url};
-    my $user   = $sd{$profile}{$profile}{repo}{user};
-    my $id     = $sd{$profile}{$profile}{repo}{id};
+    my $url    = $profile->{repo}{url};
+    my $user   = $profile->{repo}{user};
+    my $id     = $profile->{repo}{id};
 
     UI_BusyStart( gettext("Connecting to repository.....") );
     my ($status_ok,$res) = fetch_newer_profile( $url,
                                                 $distro,
                                                 $user,
                                                 $id,
-                                                $profile
+                                                $profile->{name}
                                               );
     UI_BusyStop();
     if ( ! $status_ok ) {
@@ -2917,7 +2915,7 @@ sub ask_the_questions {
         }
 
         for my $profile (sort keys %{ $log{$sdmode} }) {
-            my $p = update_repo_profile($profile);
+            my $p = update_repo_profile($sd{$profile}{$profile});
             UI_SelectUpdatedRepoProfile($profile, $p) if ( $p );
 
             $found++;
@@ -2937,8 +2935,7 @@ sub ask_the_questions {
 
                     # we don't care about it if we've already added it to the
                     # profile
-                    next if profile_capability_access_check($profile,
-                                                            $hat,
+                    next if profile_capability_access_check($sd{$profile}{$hat},
                                                             $capability);
 
                     my $severity = $sevdb->rank(uc("cap_$capability"));
@@ -2946,8 +2943,7 @@ sub ask_the_questions {
                     my $defaultoption = 1;
                     my @options       = ();
                     my @newincludes;
-                    @newincludes = matchcapincludes($profile,
-                                                    $hat,
+                    @newincludes = matchcapincludes($sd{$profile}{$hat},
                                                     $capability);
 
 
@@ -2993,8 +2989,7 @@ sub ask_the_questions {
                                 $selection =~ m/^#include <(.+)>$/) {
                                 my $deleted = 0;
                                 my $inc = $1;
-                                $deleted = delete_duplicates( $profile,
-                                                               $hat,
+                                $deleted = delete_duplicates($sd{$profile}{$hat},
                                                                $inc
                                                              );
                                 $sd{$profile}{$hat}{include}{$inc} = 1;
@@ -3220,8 +3215,7 @@ sub ask_the_questions {
                                     my $inc = $1;
                                     my $deleted = 0;
 
-                                    $deleted = delete_duplicates( $profile,
-                                                                  $hat,
+                                    $deleted = delete_duplicates($sd{$profile}{$hat},
                                                                   $inc );
 
                                     # record the new entry
@@ -3357,9 +3351,7 @@ sub ask_the_questions {
 
                         # we don't care about it if we've already added it to the
                         # profile
-                        next if ( profile_network_access_check(
-                                                               $profile,
-                                                               $hat,
+                        next if ( profile_network_access_check($sd{$profile}{$hat},
                                                                $family,
                                                                $sock_type
                                                               )
@@ -3367,8 +3359,7 @@ sub ask_the_questions {
                         my $defaultoption = 1;
                         my @options       = ();
                         my @newincludes;
-                        @newincludes = matchnetincludes($profile,
-                                                        $hat,
+                        @newincludes = matchnetincludes($sd{$profile}{$hat},
                                                         $family,
                                                         $sock_type);
 
@@ -3422,8 +3413,7 @@ sub ask_the_questions {
                                     $selection =~ m/^#include <(.+)>$/) {
                                     my $inc = $1;
                                     my $deleted = 0;
-                                    $deleted = delete_duplicates( $profile,
-                                                                   $hat,
+                                    $deleted = delete_duplicates($sd{$profile}{$hat},
                                                                    $inc
                                                                  );
                                     # record the new entry
@@ -3476,12 +3466,12 @@ sub ask_the_questions {
     }
 }
 
-sub delete_duplicates ($$$) {
-    my ( $profile, $hat, $incname ) = @_;
+sub delete_duplicates (\%$) {
+    my ( $profile, $incname ) = @_;
     my $deleted = 0;
 
     ## network rules
-    my $netrules = $sd{$profile}{$hat}{netdomain};
+    my $netrules = $profile->{netdomain};
     my $incnetrules = $include{$incname}{netdomain};
     if ( $incnetrules && $netrules ) {
         my $incnetglob = defined $incnetrules->{all};
@@ -3514,7 +3504,7 @@ sub delete_duplicates ($$$) {
     }
 
     ## capabilities
-    my $profilecaps = $sd{$profile}{$hat}{capability};
+    my $profilecaps = $profile->{capability};
     my $inccaps = $include{$incname}{capability};
     if ( $profilecaps && $inccaps ) {
         for my $capname ( keys %$profilecaps ) {
@@ -3526,13 +3516,13 @@ sub delete_duplicates ($$$) {
     }
 
     ## path rules
-    for my $entry (keys %{ $sd{$profile}{$hat}{path} }) {
+    for my $entry (keys %{ $profile->{path} }) {
         next if $entry eq "#include <$incname>";
         my $cm = matchpathinclude($incname, $entry);
         if ($cm
-            && mode_contains($cm, $sd{$profile}{$hat}{path}{$entry}{mode}))
+            && mode_contains($cm, $profile->{path}{$entry}{mode}))
         {
-            delete $sd{$profile}{$hat}{path}{$entry};
+            delete $profile->{path}{$entry};
             $deleted++;
         }
     }
@@ -3560,8 +3550,8 @@ sub matchnetinclude ($$$) {
     return 0;
 }
 
-sub matchcapincludes ($$$) {
-        my ($profile, $hat, $cap) = @_;
+sub matchcapincludes (\%$) {
+        my ($profile, $cap) = @_;
 
         # check the path against the available set of include
         # files
@@ -3572,7 +3562,7 @@ sub matchcapincludes ($$$) {
 
             # don't suggest it if we're already including it,
             # that's dumb
-            next if $sd{$profile}{$hat}{include}{$incname};
+            next if $profile->{include}{$incname};
 
             # only match includes that can be suggested to
             # the user
@@ -3591,8 +3581,8 @@ sub matchcapincludes ($$$) {
         return @newincludes;
 }
 
-sub matchnetincludes ($$$$) {
-        my ($profile, $hat, $family, $type) = @_;
+sub matchnetincludes (\%$$) {
+        my ($profile, $family, $type) = @_;
 
         # check the path against the available set of include
         # files
@@ -3603,7 +3593,7 @@ sub matchnetincludes ($$$$) {
 
             # don't suggest it if we're already including it,
             # that's dumb
-            next if $sd{$profile}{$hat}{include}{$incname};
+            next if $profile->{include}{$incname};
 
             # only match includes that can be suggested to
             # the user
@@ -3956,9 +3946,7 @@ sub collapselog () {
                 my $ndref = $prelog{$sdmode}{$profile}{$hat}{netdomain};
                 for my $family ( keys %{$ndref} ) {
                     for my $sock_type ( keys %{$ndref->{$family}} ) {
-                        unless ( profile_network_access_check(
-                                                              $profile,
-                                                              $hat,
+                        unless ( profile_network_access_check($sd{$profile}{$hat},
                                                               $family,
                                                               $sock_type
                                                              ) ) {
@@ -4257,14 +4245,16 @@ sub parse_profile_data {
             ($profile, $hat) = split /\/\//, $profile;
 
             # deal with whitespace in profile and hat names.
-            $profile = $1 if $profile =~ /^"(.+)"$/;
-            $hat     = $1 if $hat && $hat =~ /^"(.+)"$/;
+            $profile = strip_quotes($profile);
+            $hat     = strip_quotes($hat) if $hat;
 
 	    if ($hat) {
 		$profile_data->{$profile}{$hat}{external} = 1;
 	    }
 
             $hat ||= $profile;
+
+	    $profile_data->{$profile}{$hat}{name} = $profile;
 
             # keep track of profile flags
 	    $profile_data->{$profile}{$hat}{flags} = $flags;
@@ -4994,19 +4984,19 @@ sub matchliteral {
     return $matches;
 }
 
-sub profile_exec_access_check ($$$$) {
-    my ($profile, $hat, $type, $exec_target) = @_;
+sub profile_exec_access_check (\%$$) {
+    my ($profile, $type, $exec_target) = @_;
     if ( $type eq "exec" ) {
         my ($combinedmode, $cm, @m);
 
 	$combinedmode = 0;
         # does path match any regexps in original profile?
-        ($cm, @m) = rematchfrag($sd{$profile}{$hat}, $exec_target);
+        ($cm, @m) = rematchfrag($profile, $exec_target);
         $combinedmode |= $cm if $cm;
 
         # does path match anything pulled in by includes in
         # original profile?
-        ($cm, @m) = matchpathincludes($sd{$profile}{$hat}, $exec_target);
+        ($cm, @m) = matchpathincludes($profile, $exec_target);
         $combinedmode |= $cm if $cm;
 
         if (contains($combinedmode, "ix") ||
@@ -5020,25 +5010,25 @@ sub profile_exec_access_check ($$$$) {
     return 0;
 }
 
-sub profile_capability_access_check ($$$) {
-    my ($profile, $hat, $capname) = @_;
-    for my $incname ( keys %{$sd{$profile}{$hat}{include}} ) {
+sub profile_capability_access_check (\%$) {
+    my ($profile, $capname) = @_;
+    for my $incname ( keys %{$profile->{include}} ) {
         return 1 if $include{$incname}{capability}{$capname};
     }
-    return 1 if $sd{$profile}{$hat}{capability}{$capname};
+    return 1 if $profile->{capability}{$capname};
     return 0;
 }
 
-sub profile_network_access_check ($$$$) {
-    my ($profile, $hat, $family, $sock_type) = @_;
+sub profile_network_access_check (\%$$) {
+    my ($profile, $family, $sock_type) = @_;
 
-    for my $incname ( keys %{$sd{$profile}{$hat}{include}} ) {
-        return 1 if netrules_access_check( $include{$incname}{netdomain},
-                                           $family,
-                                           $sock_type
+    for my $incname ( keys %{$profile->{include}} ) {
+        return 1 if netrules_access_check($include{$incname}{netdomain},
+					  $family,
+					  $sock_type
                                          );
     }
-    return 1 if netrules_access_check( $sd{$profile}{$hat}{netdomain},
+    return 1 if netrules_access_check( $profile->{netdomain},
                                        $family,
                                        $sock_type
                                      );
