@@ -4354,7 +4354,17 @@ sub parse_profile_data {
             # keep track of netdomain entries...
             push @{$profile_data->{$profile}{$hat}{netdomain}}, $_;
 
-        } elsif (m/^\s*\^(\"?.+?)\s+(flags=\(.+\)\s+)*\{\s*(#.*)?$/) {
+        } elsif (m/^\s*\^(\"??.+?\"??)\s*,\s*(#.*)?$/) {
+	    # change_hat declaration - needed to change_hat to an external
+	    # hat
+            $hat = $1;
+            $hat = $1 if $hat =~ /^"(.+)"$/;
+
+	    #store we have a declaration if the hat hasn't been seen
+	    $profile_data->{$profile}{$hat}{'declared'} = 1
+		unless exists($profile_data->{$profile}{$hat}{declared});
+
+        } elsif (m/^\s*\^(\"??.+?\"??)\s+(flags=\(.+\)\s+)*\{\s*(#.*)?$/) {
             # start of a deprecated syntax hat definition
             # read in and mark as changed so that will be written out in the new
             # format
@@ -4369,17 +4379,16 @@ sub parse_profile_data {
 
             # we hit the start of a hat inside the current profile
             $hat = $1;
-            my $flags = $2;
+            my $flags = $3;
 
-            # deal with whitespace in hat names.
+            # strip quotes.
             $hat = $1 if $hat =~ /^"(.+)"$/;
 
             # keep track of profile flags
-            if ($flags && $flags =~ /^flags=\((.+)\)\s*$/) {
-                $flags = $1;
-                $profile_data->{$profile}{$hat}{flags} = $flags;
-            }
+	    $profile_data->{$profile}{$hat}{flags} = $flags;
 
+	    # we have seen more than a declaration so clear it
+	    $profile_data->{$profile}{$hat}{'declared'} = 0;
             $profile_data->{$profile}{$hat}{path} = { };
             $profile_data->{$profile}{$hat}{netdomain} = { };
 
@@ -4389,7 +4398,6 @@ sub parse_profile_data {
             $initial_comment = "";
             # mark as changed so the profile will always be written out
             $changed{$profile} = 1;
-
 
         } elsif (/^\s*\#/) {
             # we only currently handle initial comments
