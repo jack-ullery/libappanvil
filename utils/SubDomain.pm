@@ -613,7 +613,7 @@ sub handle_binfmt ($$) {
         chomp $library;
         next unless $library;
 
-        $profile->{path}->{$library} = "mr";
+        $profile->{path}->{$library}{mode} = "mr";
     }
 }
 
@@ -633,7 +633,7 @@ sub create_new_profile {
       $fqdbin => {
           flags   => "complain",
           include => { "abstractions/base" => 1    },
-          path    => { $fqdbin             => "mr" },
+          path    => { $fqdbin => { mode => "mr" } },
       }
     };
 
@@ -642,7 +642,7 @@ sub create_new_profile {
         my $hashbang = head($fqdbin);
         if ($hashbang =~ /^#!\s*(\S+)/) {
             my $interpreter = get_full_path($1);
-            $profile->{$fqdbin}{path}->{$interpreter} = "ix";
+            $profile->{$fqdbin}{path}->{$interpreter}{mode} = "ix";
             if ($interpreter =~ /perl/) {
                 $profile->{$fqdbin}{include}->{"abstractions/perl"} = 1;
             } elsif ($interpreter =~ m/\/bin\/(bash|sh)/) {
@@ -1961,7 +1961,7 @@ sub handlechildren {
                             }
                             $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target} = $exec_mode;
                             $log{PERMITTING}{$profile}              = {};
-                            $sd{$profile}{$hat}{path}{$exec_target} = $exec_mode;
+                            $sd{$profile}{$hat}{path}{$exec_target}{mode} = $exec_mode;
 
                             # mark this profile as changed
                             $changed{$profile} = 1;
@@ -1975,7 +1975,7 @@ sub handlechildren {
                                 my $hashbang = head($exec_target);
                                 if ($hashbang =~ /^#!\s*(\S+)/) {
                                     my $interpreter = get_full_path($1);
-                                    $sd{$profile}{$hat}{path}->{$interpreter} = "ix";
+                                    $sd{$profile}{$hat}{path}->{$interpreter}{mode} = "ix";
                                     if ($interpreter =~ /perl/) {
                                         $sd{$profile}{$hat}{include}{"abstractions/perl"} = 1;
                                     } elsif ($interpreter =~ m/\/bin\/(bash|sh)/) {
@@ -3205,8 +3205,8 @@ sub ask_the_questions {
                                     UI_Info(sprintf(gettext('Adding #include <%s> to profile.'), $inc));
                                     UI_Info(sprintf(gettext('Deleted %s previous matching profile entries.'), $deleted)) if $deleted;
                                 } else {
-                                    if ($sd{$profile}{$hat}{path}{$path}) {
-                                        $mode = collapsemode($mode . $sd{$profile}{$hat}{path}{$path});
+                                    if ($sd{$profile}{$hat}{path}{$path}{mode}) {
+                                        $mode = collapsemode($mode . $sd{$profile}{$hat}{path}{$path}{mode});
                                     }
 
                                     my $deleted = 0;
@@ -3219,7 +3219,7 @@ sub ask_the_questions {
                                             # regexp matches, add it's mode to
                                             # the list to check against
                                             if (contains($mode,
-                                                $sd{$profile}{$hat}{path}{$entry})) {
+                                                $sd{$profile}{$hat}{path}{$entry}{mode})) {
                                                 delete $sd{$profile}{$hat}{path}{$entry};
                                                 $deleted++;
                                             }
@@ -3227,7 +3227,7 @@ sub ask_the_questions {
                                     }
 
                                     # record the new entry
-                                    $sd{$profile}{$hat}{path}{$path} = $mode;
+                                    $sd{$profile}{$hat}{path}{$path}{mode} = $mode;
 
                                     $changed{$profile} = 1;
                                     UI_Info(sprintf(gettext('Adding %s %s to profile.'), $path, $mode));
@@ -3504,7 +3504,7 @@ sub delete_duplicates ($$$) {
         next if $entry eq "#include <$incname>";
         my $cm = matchpathinclude($incname, $entry);
         if ($cm
-            && contains($cm, $sd{$profile}{$hat}{path}{$entry}))
+            && contains($cm, $sd{$profile}{$hat}{path}{$entry}{mode}))
         {
             delete $sd{$profile}{$hat}{path}{$entry};
             $deleted++;
@@ -3894,7 +3894,7 @@ sub collapselog () {
 
                     # is it in the original profile?
                     if ($sd{$profile}{$hat}{path}{$path}) {
-                        $combinedmode .= $sd{$profile}{$hat}{path}{$path};
+                        $combinedmode .= $sd{$profile}{$hat}{path}{$path}{mode};
                     }
 
                     # does path match any regexps in original profile?
@@ -3909,7 +3909,7 @@ sub collapselog () {
 
                         # merge in any previous modes from this run
                         if ($log{$sdmode}{$profile}{$hat}{path}{$path}) {
-                            $mode = collapsemode($mode . $log{$sdmode}{$profile}{$hat}{path}{$path});
+                            $mode = collapsemode($mode . $log{$sdmode}{$profile}{$hat}{path}{$path}{mode});
                         }
 
                         # record the new entry
@@ -4328,7 +4328,7 @@ sub parse_profile_data {
             # strip off any trailing spaces.
             $path =~ s/\s+$//;
 
-            $path = $1 if $path =~ /^"(.+)"$/;
+            $path = strip_quotes($path);
 
             # make sure they don't have broken regexps in the profile
             my $p_re = convert_regexp($path);
@@ -4342,7 +4342,7 @@ sub parse_profile_data {
                 fatal_error(sprintf(gettext('Profile %s contains invalid mode %s.'), $file, $mode));
             }
 
-            $profile_data->{$profile}{$hat}{path}{$path} = $mode;
+            $profile_data->{$profile}{$hat}{path}{$path}{mode} = $mode;
 
         } elsif (m/^\s*#include <(.+)>\s*$/) {     # include stuff
             my $include = $1;
@@ -4714,7 +4714,7 @@ sub writepaths ($) {
     my @data;
     if (exists $profile_data->{path}) {
         for my $path (sort keys %{$profile_data->{path}}) {
-            my $mode = $profile_data->{path}{$path};
+            my $mode = $profile_data->{path}{$path}{mode};
 
             # strip out any fake access() modes that might have slipped through
             $mode =~ s/X//g;
@@ -5060,7 +5060,7 @@ sub loadinclude {
                 # strip off any trailing spaces.
                 $path =~ s/\s+$//;
 
-                $path = $1 if $path =~ /^"(.+)"$/;
+                $path = strip_quotes($path);
 
                 # make sure they don't have broken regexps in the profile
                 my $p_re = convert_regexp($path);
@@ -5074,7 +5074,7 @@ sub loadinclude {
                     fatal_error(sprintf(gettext('Include file %s contains invalid mode %s.'), $incfile, $mode));
                 }
 
-                $include{$incfile}{path}{$path} = $mode;
+                $include{$incfile}{path}{$path}{mode} = $mode;
             } elsif (/^\s*capability\s+(.+)\s*,\s*$/) {
 
                 my $capability = $1;
@@ -5126,7 +5126,7 @@ sub rematchfrag {
         if ($path =~ /^$regexp$/) {
 
             # regexp matches, add it's mode to the list to check against
-            $combinedmode .= $frag->{path}{$entry};
+            $combinedmode .= $frag->{path}{$entry}{mode};
             push @matches, $entry;
         }
     }
@@ -5153,7 +5153,7 @@ sub matchpathincludes {
 
         # check if a literal version is in the current include fragment
         if ($include{$include}{path}{$path}) {
-            $combinedmode .= $include{$include}{path}{$path};
+            $combinedmode .= $include{$include}{path}{$path}{mode};
         }
 
         # if this fragment includes others, check them too
@@ -5182,7 +5182,7 @@ sub matchpathinclude {
 
         # check if a literal version is in the current include fragment
         if ($include{$include}{path}{$path}) {
-            $combinedmode .= $include{$include}{path}{$path};
+            $combinedmode .= $include{$include}{path}{$path}{mode};
         }
 
         # if this fragment includes others, check them too
