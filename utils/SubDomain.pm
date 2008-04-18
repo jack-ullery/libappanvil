@@ -4232,6 +4232,13 @@ sub parse_profile_data {
 
             my $capability = $1;
             $profile_data->{$profile}{$hat}{capability}{$capability} = 1;
+        } elsif (m/^\s*set capability\s+(\S+)\s*,\s*(#.*)?$/) {  # capability entry
+            if (not $profile) {
+                die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
+            }
+
+            my $capability = $1;
+            $profile_data->{$profile}{$hat}{set_capability}{$capability} = 1;
 
 	} elsif (m/^\s*link\s+("??\/.*"??)\s+->\s*("??\/.*"??)\s*,\s*(#.*)?$/) { # for now just keep link
             if (not $profile) {
@@ -4525,7 +4532,10 @@ sub writeincludes ($) {
 
 sub writecapabilities ($) {
     my $profile_data = shift;
-    return write_single($profile_data, 'capability', "capability ", ",");
+    my @data;
+    push @data, write_single($profile_data, 'set_capability', "set capability ", ",");
+    push @data, write_single($profile_data, 'capability', "capability ", ",");
+    return @data;
 }
 
 sub writelinks ($) {
