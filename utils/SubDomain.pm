@@ -875,7 +875,11 @@ sub getprofilefilename ($) {
     my $profile = shift;
 
     my $filename = $profile;
-    $filename =~ s/\///;                              # strip leading /
+    if ($filename =~ /^\//) {
+	$filename =~ s/^\///;                              # strip leading /
+    } else {
+	$filename = "profile_$filename";
+    }
     $filename =~ s/\//./g;                            # convert /'s to .'s
 
     return "$profiledir/$filename";
