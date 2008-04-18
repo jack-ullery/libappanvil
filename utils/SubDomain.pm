@@ -864,7 +864,7 @@ sub autodep ($) {
         unless (exists $variables{$file}) {
             $variables{$file} = { };
         }
-        $variables{$file}{"#tunables/global"} = 1; # sorry
+        $variables{$file}{includes}{'tunables/global'} = 1; # sorry
     }
 
     # write out the profile...
@@ -4183,6 +4183,10 @@ sub parse_profile_data {
             $profile = $1 if $profile =~ /^"(.+)"$/;
             $hat     = $1 if $hat && $hat =~ /^"(.+)"$/;
 
+	    if ($hat) {
+		$profile_data->{$profile}{$hat}{external} = 1;
+	    }
+
             $hat ||= $profile;
 
             # keep track of profile flags
@@ -4257,13 +4261,18 @@ sub parse_profile_data {
 
             $profile_data->{$profile}{$hat}{change_profile}{$cp} = 1;
 	} elsif (m/^\s*alias\s+("??.+?"??)\s+->\s*("??.+?"??)\s*,(#.*)?$/) { # never do anything with aliases just keep them
-            if (not $profile) {
-                die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
-            }
             my $from = strip_quotes($1);
 	    my $to = strip_quotes($2);
 
-            $profile_data->{$profile}{$hat}{alias}{$from} = $to;
+            if ($profile) {
+		$profile_data->{$profile}{$hat}{alias}{$from} = $to;
+	    } else {
+		unless (exists $variables{$file}) {
+		    $variables{$file} = { };
+		}
+		$variables{$file}{alias}{$from} = $to;
+	    }
+
        } elsif (m/^\s*set\s+rlimit\s+(.+)\s+<=\s*(.+)\s*,(#.*)?$/) { # never do anything with rlimits just keep them
 	   if (not $profile) {
 	       die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
@@ -4282,18 +4291,26 @@ sub parse_profile_data {
 
 	   $profile_data->{$profile}{$hat}{lvar}{$bool_var} = $value;
         } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\+?=\s*(.+?)\s*,?\s*(#.*)?$/) { # variable additions both += and = doesn't mater
-	   if (not $profile) {
-	       die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
-	   }
 	   my $list_var = strip_quotes($1);
            my $value = strip_quotes($2);
 
-	   unless (exists $profile_data->{$profile}{$hat}{lvar}) {
-	       # create lval hash by sticking an empty list into list_var
-	       my @empty = ();
-	       $profile_data->{$profile}{$hat}{lvar}{$list_var} = \@empty;
+	   if ($profile) {
+	       unless (exists $profile_data->{$profile}{$hat}{lvar}) {
+		   # create lval hash by sticking an empty list into list_var
+		   my @empty = ();
+		   $profile_data->{$profile}{$hat}{lvar}{$list_var} = \@empty;
+	       }
+
+	       store_list_var($profile_data->{$profile}{$hat}{lvar}, $list_var, $value);
+	   } else {
+	       unless (exists $variables{$file}{lvar}) {
+		   # create lval hash by sticking an empty list into list_var
+		   my @empty = ();
+		   $variables{$file}{lvar}{$list_var} = \@empty;
+	       }
+
+	       store_list_var($variables{$file}{lvar}, $list_var, $value);
 	   }
-	   store_list_var($profile_data->{$profile}{$hat}{lvar}, $list_var, $value);
         } elsif (m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- variable defined
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean defined
@@ -4332,7 +4349,7 @@ sub parse_profile_data {
                 unless (exists $variables{$file}) {
                    $variables{$file} = { };
                 }
-                $variables{$file}{"#" . $include} = 1; # sorry
+                $variables{$file}{include}{$include} = 1;
             }
 
             # try to load the include...
@@ -4387,7 +4404,7 @@ sub parse_profile_data {
 		unless exists($profile_data->{$profile}{$hat}{declared});
 
         } elsif (m/^\s*\^(\"??.+?\"??)\s+(flags=\(.+\)\s+)*\{\s*(#.*)?$/) {
-            # start of a deprecated syntax hat definition
+            # start of embedded hat syntax hat definition
             # read in and mark as changed so that will be written out in the new
             # format
 
@@ -4552,9 +4569,10 @@ sub writeheader ($$$$) {
     my @data;
     # deal with whitespace in profile names...
     $name = quote_if_needed($name);
-    $name = "profile $name" if $name =~ /^[^\/]|^"[^\/]/;
 
-    push @data, "#include <tunables/global>" unless ( $is_hat );
+    $name = "profile $name" if ((not $is_hat) and ($name =~ /^[^\/]|^"[^\/]/));
+
+    #push @data, "#include <tunables/global>" unless ( $is_hat );
     if ($write_flags and  $profile_data->{flags}) {
         push @data, "$name flags=($profile_data->{flags}) {";
     } else {
@@ -4704,6 +4722,7 @@ sub writepaths ($) {
                 push @data, "  $path $mode,";
             }
         }
+	push @data, "";
     }
 
     return @data;
@@ -4717,27 +4736,53 @@ sub writepiece ($$$) {
     push @data, writealiases($profile_data->{$name});
     push @data, writelistvars($profile_data->{$name});
     push @data, writeincludes($profile_data->{$name});
-    push @data, writechange_profile($profile_data->{$name});
     push @data, writerlimits($profile_data->{$name});
     push @data, writecapabilities($profile_data->{$name});
     push @data, writenetdomain($profile_data->{$name});
     push @data, writelinks($profile_data->{$name});
     push @data, writepaths($profile_data->{$name});
-    push @data, "}";
+    push @data, writechange_profile($profile_data->{$name});
 
+    # write external hat declarations
     for my $hat (grep { $_ ne $name } sort keys %{$profile_data}) {
-        push @data, "";
-        push @data, map { "  $_" } writeheader($profile_data->{$hat},
-                                               "$name//$hat",
-                                               1,
-                                               $write_flags);
-        push @data, map { "  $_" } writeincludes($profile_data->{$hat});
-        push @data, map { "  $_" } writecapabilities($profile_data->{$hat});
-        push @data, map { "  $_" } writenetdomain($profile_data->{$hat});
-        push @data, map { "  $_" } writepaths($profile_data->{$hat});
-        push @data, "  }";
+	if ($profile_data->{$hat}{declared}) {
+	    push @data, "  ^$hat,";
+	}
     }
 
+    # write embedded hats
+    for my $hat (grep { $_ ne $name } sort keys %{$profile_data}) {
+	if ((not $profile_data->{$hat}{external}) and
+	    (not $profile_data->{$hat}{declared})) {
+	    push @data, "";
+	    push @data, map { "  $_" } writeheader($profile_data->{$hat},
+						   "^$hat",
+						   1,
+						   $write_flags);
+	    push @data, map { "  $_" } writeincludes($profile_data->{$hat});
+	    push @data, map { "  $_" } writecapabilities($profile_data->{$hat});
+	    push @data, map { "  $_" } writenetdomain($profile_data->{$hat});
+	    push @data, map { "  $_" } writepaths($profile_data->{$hat});
+	    push @data, "  }";
+	}
+    }
+    push @data, "}";
+
+    #write external hats
+    for my $hat (grep { $_ ne $name } sort keys %{$profile_data}) {
+	if ($profile_data->{$hat}{external}) {
+	    push @data, "";
+	    push @data, map { "  $_" } writeheader($profile_data->{$hat},
+						   "$name//$hat",
+						   1,
+						   $write_flags);
+	    push @data, map { "  $_" } writeincludes($profile_data->{$hat});
+	    push @data, map { "  $_" } writecapabilities($profile_data->{$hat});
+	    push @data, map { "  $_" } writenetdomain($profile_data->{$hat});
+	    push @data, map { "  $_" } writepaths($profile_data->{$hat});
+	    push @data, "  }";
+	}
+    }
     return @data;
 }
 
@@ -4775,6 +4820,16 @@ sub serialize_profile {
         $string .= "$comment\n";
     }
 
+    #bleah this is stupid the data structure needs to be reworked
+    my $filename = getprofilefilename($name);
+    my @data;
+    if ($variables{$filename}) {
+	push @data, writeincludes($variables{$filename});
+	push @data, writealiases($variables{$filename});
+	push @data, writelistvars($variables{$filename});
+    }
+
+
 # XXX - FIXME
 #
 #  # dump variables defined in this file
@@ -4798,7 +4853,8 @@ sub serialize_profile {
 #    }
 #  }
 
-    $string .= join("\n", writepiece($profile_data, $name, $include_flags));
+    push @data, writepiece($profile_data, $name, $include_flags);
+    $string .= join("\n", @data);
 
     return "$string\n";
 }
