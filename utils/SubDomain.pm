@@ -2356,6 +2356,13 @@ sub parse_log_record ($) {
     my $record = shift;
     $DEBUGGING && debug "parse_log_record: $record";
     my $e = parse_event($record);
+    # for now just remove :: from new log mode
+    if ($e->{requested_mask}) {
+	$e->{requested_mask} = map_log_mode($e->{requested_mask});
+    }
+    if ($e->{denied_mask}) {
+	$e->{denied_mask} = map_log_mode($e->{denied_mask});
+    }
     if ($e->{requested_mask} && !validate_log_mode($e->{requested_mask})) {
         fatal_error(sprintf(gettext('Log contains unknown mode %s.'),
                             $e->{requested_mask}));
@@ -3961,8 +3968,17 @@ sub uniq (@) {
     return @result;
 }
 
-our $LOG_MODE_RE = "r|w|l|m|k|a|x|Ix|Px|Ux";
+our $LOG_MODE_RE = "r|w|l|m|k|a|x|ix|px|ux|Ix|Px|Ux";
 our $PROFILE_MODE_RE = "r|w|l|m|k|a|ix|px|ux|Px|Ux";
+
+sub map_log_mode($) {
+    my $mode = shift;
+    $mode =~ s/(.*l.*)::.*/$1/ge;
+    $mode =~ s/.*::(.*l.*)/$1/ge;
+    $mode =~ s/:://;
+
+    return $mode;
+}
 
 sub validate_log_mode ($) {
     my $mode = shift;
