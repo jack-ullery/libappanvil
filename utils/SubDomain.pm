@@ -4256,6 +4256,14 @@ sub parse_profile_data {
 	    my $to = $2;
 
             $profile_data->{$profile}{$hat}{alias}{$from} = $to;
+       } elsif (m/^\s*set\s+rlimit\s+(.+)\s+<=\s*(.+)\s*,(#.*)?$/) { # never do anything with rlimits just keep them
+	   if (not $profile) {
+	       die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
+	   }
+	   my $from = $1;
+           my $to = $2;
+
+	   $profile_data->{$profile}{$hat}{rlimit}{$from} = $to;
 
         } elsif (/^\s*(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*(#.*)?$/i) { # boolean definition
         } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\+=\s*(.+)\s*(#.*)?$/) { # variable additions
@@ -4538,6 +4546,12 @@ sub writealiases ($) {
     return write_pair($profile_data, 'alias', "alias ", " -> ", ",");
 }
 
+sub writerlimits ($) {
+    my $profile_data = shift;
+
+    return write_pair($profile_data, 'rlimit', "set rlimit ", " <= ", ",");
+}
+
 sub writenetdomain ($) {
     my $profile_data = shift;
 
@@ -4598,6 +4612,7 @@ sub writepiece ($$$) {
     push @data, writelinks($profile_data->{$name});
     push @data, writechange_profile($profile_data->{$name});
     push @data, writealiases($profile_data->{$name});
+    push @data, writerlimits($profile_data->{$name});
     push @data, writepaths($profile_data->{$name});
     push @data, "}";
 
