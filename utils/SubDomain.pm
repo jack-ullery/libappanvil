@@ -271,7 +271,8 @@ sub fatal_error ($) {
     # the yast frontend goes away and we try to notify the user of that
     # problem by trying to send the yast frontend a pretty dialog box
     my $caller = (caller(1))[3];
-    exit 1 if $caller =~ /::(Send|Get)Data(To|From)Yast$/;
+
+    exit 1 if defined($caller) && $caller =~ /::(Send|Get)Data(To|From)Yast$/;
 
     # tell the user what the hell happened
     UI_Important($details);
