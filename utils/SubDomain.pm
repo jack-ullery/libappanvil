@@ -195,6 +195,9 @@ my $AA_EXEC_CHILD = 2048;
 my $AA_EXEC_NT = 4096;
 my $AA_LINK_SUBSET = 8192;
 
+my $AA_OTHER_SHIFT = 14;
+my $AA_USER_MASK = 16384 -1;
+
 my $AA_EXEC_TYPE = $AA_MAY_EXEC | $AA_EXEC_UNSAFE | $AA_EXEC_INHERIT |
 		    $AA_EXEC_UNCONFINED | $AA_EXEC_PROFILE | $AA_EXEC_NT;
 
@@ -1506,6 +1509,7 @@ my %CMDS = (
     CMD_AUDIT_NEW	 => "Audit (N)ew",
     CMD_AUDIT_FULL	 => "Audit (F)ull",
     CMD_OTHER		 => "(O)pts",
+    CMD_USER_TOGGLE	 => "(T)oggle owner permissions",
     CMD_DENY             => "(D)eny",
     CMD_ABORT            => "Abo(r)t",
     CMD_FINISHED         => "(F)inish",
@@ -2918,8 +2922,8 @@ sub update_repo_profile {
     return( $res );
 }
 
-sub UI_ask_mode_toggles ($$) {
-    my ($audit_toggle, $oldmode) = @_;
+sub UI_ask_mode_toggles ($$$) {
+    my ($audit_toggle, $owner_toggle, $oldmode) = @_;
     my $q = { };
     $q->{headers} = [ ];
 #      "Repository", $cfg->{repository}{url},
@@ -2927,15 +2931,15 @@ sub UI_ask_mode_toggles ($$) {
     $q->{explanation} = gettext( "Change mode modifiers");
 
     if ($oldmode) {
-	$q->{functions} = [ "CMD_AUDIT_NONE", "CMD_AUDIT_NEW", "CMD_AUDIT_FULL", "CMD_CONTINUE" ];
+	$q->{functions} = [ "CMD_AUDIT_NONE", "CMD_AUDIT_NEW", "CMD_AUDIT_FULL","CMD_USER_TOGGLE", "CMD_CONTINUE" ];
     } else {
-	$q->{functions} = [ "CMD_AUDIT_NONE", "CMD_AUDIT_NEW", "CMD_CONTINUE" ];
+	$q->{functions} = [ "CMD_AUDIT_NONE", "CMD_AUDIT_NEW", "CMD_USER_TOGGLE", "CMD_CONTINUE" ];
     }
 
     my $cmd;
     do {
         $cmd = UI_PromptUser($q);
-    } until $cmd =~ /^CMD_(AUDIT_NONE|AUDIT_NEW|AUDIT_FULL|CONTINUE)/;
+    } until $cmd =~ /^CMD_(AUDIT_NONE|AUDIT_NEW|AUDIT_FULL|USER_TOGGLE|CONTINUE)/;
 
     if ($cmd eq "CMD_AUDIT_NONE") {
 	$audit_toggle = 0;
@@ -2943,8 +2947,12 @@ sub UI_ask_mode_toggles ($$) {
 	$audit_toggle = 1;
     } elsif ($cmd eq "CMD_AUDIT_FULL") {
 	$audit_toggle = 2;
+    } elsif ($cmd eq "CMD_USER_TOGGLE") {
+	$owner_toggle++;
+	$owner_toggle++ if (!$oldmode && $owner_toggle == 2);
+	$owner_toggle = 0 if ($owner_toggle > 3);
     }
-    return $audit_toggle;
+    return ($audit_toggle, $owner_toggle);
 }
 
 sub ask_the_questions {
@@ -3216,6 +3224,7 @@ sub ask_the_questions {
                         my $severity = $sevdb->rank($path, mode_to_str($mode));
 
 			my $audit_toggle = 0;
+			my $owner_toggle = $cfg->{settings}{default_owner_prompt};
                         my $done = 0;
                         while (not $done) {
 
@@ -3227,23 +3236,53 @@ sub ask_the_questions {
                             # merge in any previous modes from this run
                             if ($allow_mode) {
 				my $str;
-				if ($audit_toggle == 1) {
-				    $str = mode_to_str($allow_mode);
-				    $str .= ", audit " . mode_to_str($mode & ~$allow_mode);
-				} elsif ($audit_toggle == 2) {
-				    $str = "audit " . mode_to_str($mode);
-				} else {
-				    $str = mode_to_str($mode);
-				}
-                                push @{ $q->{headers} }, gettext("Old Mode"), mode_to_str($allow_mode);
+#print "mode: " . print_mode($mode) . " allow: " . print_mode($allow_mode) . "\n";
                                 $mode |= $allow_mode;
+				my $tail;
+				my $prompt_mode;
+				if ($owner_toggle == 0) {
+				    $prompt_mode = flatten_mode($mode);
+				    $tail = "     " . gettext("(owner permissions off");
+				} elsif ($owner_toggle == 1) {
+				    $prompt_mode = $mode;
+				    $tail = "";
+				} elsif ($owner_toggle == 2) {
+				    $prompt_mode = $allow_mode | owner_flatten_mode($mode & ~$allow_mode);
+				    $tail = "     " . gettext("(force new perms to owner)");
+				} else {
+				    $prompt_mode = owner_flatten_mode($mode);
+				    $tail = "     " . gettext("(force all rule perms to owner)");
+				}
+
+				if ($audit_toggle == 1) {
+				    $str = mode_to_str_user($allow_mode);
+				    $str .= ", " if ($allow_mode);
+				    $str .= "audit " . mode_to_str_user($prompt_mode & ~$allow_mode) . $tail;
+				} elsif ($audit_toggle == 2) {
+				    $str = "audit " . mode_to_str_user($prompt_mode) . $tail;
+				} else {
+				    $str = mode_to_str_user($prompt_mode) . $tail;
+				}
+                                push @{ $q->{headers} }, gettext("Old Mode"), mode_to_str_user($allow_mode);
                                 push @{ $q->{headers} }, gettext("New Mode"), $str;
                             } else {
 				my $str = "";
 				if ($audit_toggle) {
 				    $str = "audit ";
 				}
-				$str .= mode_to_str($mode);
+				my $tail;
+				my $prompt_mode;
+				if ($owner_toggle == 0) {
+				    $prompt_mode = flatten_mode($mode);
+				    $tail = "     " . gettext("(owner permissions off)");
+				} elsif ($owner_toggle == 1) {
+				    $prompt_mode = $mode;
+				    $tail = "";
+				} else {
+				    $prompt_mode = owner_flatten_mode($mode);
+				    $tail = "     " . gettext("(force perms to owner)");
+				}
+				$str .= mode_to_str_user($prompt_mode) . $tail;
                                 push @{ $q->{headers} }, gettext("Mode"), $str; 
                             }
                             push @{ $q->{headers} }, gettext("Severity"), $severity;
@@ -3267,7 +3306,11 @@ sub ask_the_questions {
 
 			    if ($ans eq "CMD_OTHER") {
 
-				$audit_toggle = UI_ask_mode_toggles($audit_toggle, $allow_mode); 
+				($audit_toggle, $owner_toggle) = UI_ask_mode_toggles($audit_toggle, $owner_toggle, $allow_mode);
+			    } elsif ($ans eq "CMD_USER_TOGGLE") {
+				$owner_toggle++;
+				$owner_toggle++ if (!$allow_mode && $owner_toggle == 2);
+				$owner_toggle = 0 if ($owner_toggle > 3);
 			    } elsif ($ans eq "CMD_ALLOW") {
                                 $path = $options[$selected];
                                 $done = 1;
@@ -3307,13 +3350,22 @@ sub ask_the_questions {
                                     }
 
                                     # record the new entry
+				    if ($owner_toggle == 0) {
+					$mode = flatten($mode);
+				    } elsif ($owner_toggle == 1) {
+					$mode = $mode;
+				    } elsif ($owner_toggle == 2) {
+					$mode = $allow_mode | owner_flatten_mode($mode & ~$allow_mode);
+				    } elsif  ($owner_toggle == 3) {
+					$mode = owner_flatten_mode($mode);
+				    }
                                     $sd{$profile}{$hat}{allow}{path}{$path}{mode} = $mode;
 				    my $tmpmode = ($audit_toggle == 1) ? $mode & ~$allow_mode : 0;
 				    $tmpmode = ($audit_toggle == 2) ? $mode : $tmpmode;
                                     $sd{$profile}{$hat}{allow}{path}{$path}{audit} |= $tmpmode;
 
                                     $changed{$profile} = 1;
-                                    UI_Info(sprintf(gettext('Adding %s %s to profile.'), $path, mode_to_str($mode)));
+                                    UI_Info(sprintf(gettext('Adding %s %s to profile.'), $path, mode_to_str_user($mode)));
                                     UI_Info(sprintf(gettext('Deleted %s previous matching profile entries.'), $deleted)) if $deleted;
                                 }
                             } elsif ($ans eq "CMD_DENY") {
@@ -4094,15 +4146,37 @@ our $LOG_MODE_RE = "r|w|l|m|k|a|x|ix|ux|px|cx|nx|pix|cix|Ix|Ux|Px|Cx|Nx|Pix|Cix"
 our $PROFILE_MODE_RE = "r|w|l|m|k|a|ix|ux|px|cx|pix|cix|Ux|Px|Cx|Pix|Cix";
 our $PROFILE_MODE_DENY_RE = "r|w|l|m|k|a|x";
 
-sub map_log_mode($) {
+sub split_log_mode($) {
     my $mode = shift;
-    $mode =~ s/(.*l.*)::.*/$1/ge;
-    $mode =~ s/.*::(.*l.*)/$1/ge;
-    $mode =~ s/:://;
+    my $user = "";
+    my $other = "";
 
-    return $mode;
+    if ($mode =~ /(.*?)::(.*)/) {
+	$user = $1 if ($1);
+	$other = $2 if ($2);
+    } else {
+	$user = $mode;
+	$other = $mode;
+    }
+    return ($user, $other);
 }
 
+sub map_log_mode ($) {
+    my $mode = shift;
+    return $mode;
+#    $mode =~ s/(.*l.*)::.*/$1/ge;
+#    $mode =~ s/.*::(.*l.*)/$1/ge;
+#    $mode =~ s/:://;
+#     return $mode;
+#    return $1;
+}
+
+sub hide_log_mode($) {
+    my $mode = shift;
+
+    $mode =~ s/:://;
+    return $mode;
+}
 
 sub validate_log_mode ($) {
     my $mode = shift;
@@ -4121,7 +4195,7 @@ sub validate_profile_mode ($$) {
 }
 
 # modes internally are stored as a bit Mask
-sub str_to_mode($) {
+sub sub_str_to_mode($) {
     my $str = shift;
     my $mode = 0;
 
@@ -4134,7 +4208,7 @@ sub str_to_mode($) {
 	if ($tmp && $MODE_HASH{$tmp}) {
 	    $mode |= $MODE_HASH{$tmp};
 	} else {
-print "found mode $tmp\n";
+#print "found mode $tmp\n";
 	}
     }
 
@@ -4143,7 +4217,56 @@ print "found mode $tmp\n";
     return $mode;
 }
 
-sub mode_to_str($) {
+sub print_mode ($) {
+    my $mode = shift;
+
+    my ($user, $other) = split_mode($mode);
+
+    my $str = sub_str_to_mode($user) . "::" . sub_str_to_mode($other);
+
+    return $str;
+}
+
+sub str_to_mode ($) {
+    my $str = shift;
+
+    return 0 if (not $str);
+
+    my ($user, $other) = split_log_mode($str);
+
+#print "str: $str  user: $user, other $other\n";
+    # we only allow user or all
+    $user = $other if (!$user);
+
+    my $mode = sub_str_to_mode($user);
+    $mode |= (sub_str_to_mode($other) << $AA_OTHER_SHIFT);
+
+#print "user: $user " .sub_str_to_mode($user) . " other: $other " . (sub_str_to_mode($other) << $AA_OTHER_SHIFT) . " mode = $mode\n";
+
+    return $mode;
+}
+
+sub split_mode ($) {
+    my $mode = shift;
+
+    my $user = $mode & $AA_USER_MASK;
+    my $other = ($mode >> $AA_OTHER_SHIFT) & $AA_USER_MASK;
+
+    return ($user, $other);
+}
+
+sub is_user_mode ($) {
+    my $mode = shift;
+
+    my ($user, $other) = split_mode($mode);
+
+    if ($user && !$other) {
+	return 1;
+    }
+    return 0;
+}
+
+sub sub_mode_to_str($) {
     my $mode = shift;
     my $str = "";
 
@@ -4175,6 +4298,48 @@ sub mode_to_str($) {
     return $str;
 }
 
+sub flatten_mode ($) {
+    my $mode = shift;
+
+    return 0 if (!$mode);
+
+    $mode = ($mode & $AA_USER_MASK) | (($mode >> $AA_OTHER_SHIFT) & $AA_USER_MASK);
+    $mode |= ($mode << $AA_OTHER_SHIFT);
+}
+
+sub mode_to_str ($) {
+    my $mode = shift;
+    $mode = flatten_mode($mode);
+    return sub_mode_to_str($mode);
+}
+
+sub owner_flatten_mode($) {
+    my $mode = shift;
+    $mode = flatten_mode($mode) & $AA_USER_MASK;
+    return $mode;
+}
+
+sub mode_to_str_user ($) {
+    my $mode = shift;
+
+    my ($user, $other) = split_mode($mode);
+
+    my $str = "";
+    $user = 0 if (!$user);
+    $other = 0 if (!$other);
+
+    if ($user & ~$other) {
+	# more user perms than other
+	$str = sub_mode_to_str($other). " + " if ($other);
+	$str .= "owner " . sub_mode_to_str($user & ~$other);
+    } elsif (is_user_mode($mode)) {
+	$str = "owner " . sub_mode_to_str($user);
+    } else {
+	$str = sub_mode_to_str(flatten_mode($mode));
+    }
+    return $str;
+}
+
 sub mode_contains ($$) {
     my ($mode, $subset) = @_;
 
@@ -4182,9 +4347,16 @@ sub mode_contains ($$) {
     if ($mode & $AA_MAY_WRITE) {
 	$mode |= $AA_MAY_APPEND;
     }
+    if ($mode & ($AA_MAY_WRITE << $AA_OTHER_SHIFT)) {
+	$mode |= ($AA_MAY_APPEND << $AA_OTHER_SHIFT);
+    }
+
     # "?ix" implies "m"
     if ($mode & $AA_EXEC_INHERIT) {
-	$mode |= $ AA_EXEC_MMAP;
+	$mode |= $AA_EXEC_MMAP;
+    }
+    if ($mode & ($AA_EXEC_INHERIT << $AA_OTHER_SHIFT)) {
+	$mode |= ($AA_EXEC_MMAP << $AA_OTHER_SHIFT);
     }
 
     return (($mode & $subset) == $subset);
@@ -4517,15 +4689,15 @@ sub parse_profile_data {
         } elsif (m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- variable defined
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean defined
-        } elsif (m/^\s*(audit\s+)?(deny\s+)?([\"\@\/].*)\s+(\S+)\s*,\s*(#.*)?$/) {     # path entry
+        } elsif (m/^\s*(audit\s+)?(deny\s+)?(user\s+)?([\"\@\/].*)\s+(\S+)\s*,\s*(#.*)?$/) {     # path entry
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
 
-            my ($path, $mode) = ($3, $4);
+            my ($path, $mode) = ($4, $5);
 	    my $audit = ($1) ? 1 : 0;
 	    my $allow = ($2) ? 'deny' : 'allow';
-
+	    my $user = ($3) ? 1 : 0;
 
             # strip off any trailing spaces.
             $path =~ s/\s+$//;
@@ -4544,9 +4716,11 @@ sub parse_profile_data {
                 fatal_error(sprintf(gettext('Profile %s contains invalid mode %s.'), $file, $mode));
             }
 
-            $profile_data->{$profile}{$hat}{$allow}{path}{$path}{mode} = str_to_mode($mode);
+	    my $tmpmode = ($user) ? str_to_mode("$mode::") : str_to_mode($mode);
+
+            $profile_data->{$profile}{$hat}{$allow}{path}{$path}{mode} = $tmpmode;
 	    if ($audit) {
-		$profile_data->{$profile}{$hat}{$allow}{path}{$path}{audit} = str_to_mode($mode);
+		$profile_data->{$profile}{$hat}{$allow}{path}{$path}{audit} = $tmpmode;
 	    } else {
 		$profile_data->{$profile}{$hat}{$allow}{path}{$path}{audit} = 0;
 	    }
@@ -5040,24 +5214,84 @@ sub writepath_rules ($$$) {
             my $mode = $profile_data->{$allow}{path}{$path}{mode};
             my $audit = $profile_data->{$allow}{path}{$path}{audit};
 
-	    if ($mode & $audit) {
-		my $amode = $mode & $audit;
-		my $modestr = mode_to_str($amode);
-		if ($path =~ /\s/) {
-		    push @data, "${pre}audit ${allowstr}\"$path\" $modestr,";
-		} else {
-		    push @data, "${pre}audit ${allowstr}$path $modestr,";
+	    my ($user, $other) = split_mode($mode);
+	    if ($user & ~$other) {
+		$user = $user & ~$other;
+		$mode = $other;
+
+		if ($user & $audit) {
+		    my $amode = $user & $audit;
+		    my $modestr = mode_to_str_user($amode);
+		    my $str = $allowstr;
+		    $str .= "owner " if $modestr =~ s/owner //;
+		    if ($path =~ /\s/) {
+			push @data, "${pre}audit ${str}\"$path\" $modestr,";
+		    } else {
+			push @data, "${pre}audit ${str}$path $modestr,";
+		    }
+		    # mask off the bits we have already written
+		    $user &= ~$audit;
 		}
-		# mask off the bits we have already written
-		$mode &= ~$audit;
-	    }
-	    if ($mode) {
-		my $modestr = mode_to_str($mode);
-		# deal with whitespace in path names
-		if ($path =~ /\s/) {
-		    push @data, "${pre}${allowstr}\"$path\" $modestr,";
-		} else {
-		    push @data, "${pre}${allowstr}$path $modestr,";
+		if ($user) {
+		    my $modestr = mode_to_str_user($user & ~$audit);
+		    my $str = $allowstr;
+		    $str .= "owner " if $modestr =~ s/owner //;
+
+		    # deal with whitespace in path names
+		    if ($path =~ /\s/) {
+			push @data, "${pre}${str}\"$path\" $modestr,";
+		    } else {
+			push @data, "${pre}${str}$path $modestr,";
+		    }
+		}
+		if ($mode & $audit) {
+		    my $amode = $mode & $audit;
+		    my $modestr = mode_to_str_user($amode);
+		    my $str = $allowstr;
+		    $str .= "owner " if $modestr =~ s/owner //;
+		    if ($path =~ /\s/) {
+			push @data, "${pre}audit ${str}\"$path\" $modestr,";
+		    } else {
+			push @data, "${pre}audit ${str}$path $modestr,";
+		    }
+		    # mask off the bits we have already written
+		    $mode &= ~$audit;
+		}
+		if ($mode) {
+		    my $modestr = mode_to_str_user($mode & ~$audit);
+		    my $str = $allowstr;
+		    $str .= "owner " if $modestr =~ s/owner //;
+		    # deal with whitespace in path names
+		    if ($path =~ /\s/) {
+			push @data, "${pre}${str}\"$path\" $modestr,";
+		    } else {
+			push @data, "${pre}${str}$path $modestr,";
+		    }
+		}
+	    } else {
+		if ($mode & $audit) {
+		    my $amode = $mode & $audit;
+		    my $modestr = mode_to_str_user($amode);
+		    my $str = $allowstr;
+		    $str .= "owner " if $modestr =~ s/owner //;
+		    if ($path =~ /\s/) {
+			push @data, "${pre}audit ${str}\"$path\" $modestr,";
+		    } else {
+			push @data, "${pre}audit ${str}$path $modestr,";
+		    }
+		    # mask off the bits we have already written
+		    $mode &= ~$audit;
+		}
+		if ($mode) {
+		    my $modestr = mode_to_str_user($mode & ~$audit);
+		    my $str = $allowstr;
+		    $str .= "owner " if $modestr =~ s/owner //;
+		    # deal with whitespace in path names
+		    if ($path =~ /\s/) {
+			push @data, "${pre}${str}\"$path\" $modestr,";
+		    } else {
+			push @data, "${pre}${str}$path $modestr,";
+		    }
 		}
 	    }
         }
@@ -5913,15 +6147,18 @@ sub parse_event($) {
     $rmask = map_log_mode($rmask) if $rmask;
     $dmask = map_log_mode($dmask) if $dmask;
 
-    if ($rmask && !validate_log_mode($rmask)) {
+    if ($rmask && !validate_log_mode(hide_log_mode($rmask))) {
         fatal_error(sprintf(gettext('Log contains unknown mode %s.'),
                             $rmask));
     }
 
-    if ($dmask && !validate_log_mode($dmask)) {
+    if ($dmask && !validate_log_mode(hide_log_mode($dmask))) {
         fatal_error(sprintf(gettext('Log contains unknown mode %s.'),
                     $dmask));
     }
+#print "str_to_mode deny $dmask = " . str_to_mode($dmask) . "\n" if ($dmask);
+#print "str_to_mode req $rmask = "  . str_to_mode($rmask) . "\n" if ($rmask);
+
     $ev{'denied_mask'} = str_to_mode($dmask);
     $ev{'request_mask'} = str_to_mode($rmask);
 
