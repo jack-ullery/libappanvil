@@ -4248,6 +4248,14 @@ sub parse_profile_data {
             my $cp = $1;
 
             $profile_data->{$profile}{$hat}{change_profile}{$cp} = 1;
+	} elsif (m/^\s*alias\s+("??.+"??)\s+->\s*("??.+"??)\s*,(#.*)?$/) { # never do anything with aliases just keep them
+            if (not $profile) {
+                die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
+            }
+            my $from = $1;
+	    my $to = $2;
+
+            $profile_data->{$profile}{$hat}{alias}{$from} = $to;
 
         } elsif (/^\s*(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*(#.*)?$/i) { # boolean definition
         } elsif (/^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\+=\s*(.+)\s*(#.*)?$/) { # variable additions
@@ -4524,6 +4532,12 @@ sub writechange_profile ($) {
     return write_single($profile_data, 'change_profile', "change_profile -> ", ",");
 }
 
+sub writealiases ($) {
+    my $profile_data = shift;
+
+    return write_pair($profile_data, 'alias', "alias ", " -> ", ",");
+}
+
 sub writenetdomain ($) {
     my $profile_data = shift;
 
@@ -4583,6 +4597,7 @@ sub writepiece ($$$) {
     push @data, writenetdomain($profile_data->{$name});
     push @data, writelinks($profile_data->{$name});
     push @data, writechange_profile($profile_data->{$name});
+    push @data, writealiases($profile_data->{$name});
     push @data, writepaths($profile_data->{$name});
     push @data, "}";
 
