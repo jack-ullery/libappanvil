@@ -2002,7 +2002,7 @@ sub handlechildren {
 
                         unless ($ans eq "CMD_DENY") {
                             if (defined $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target}) {
-#                                $exec_mode = $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target};
+                                $exec_mode = $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target};
                             }
                             $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target} |= $exec_mode;
                             $log{PERMITTING}{$profile}              = {};
