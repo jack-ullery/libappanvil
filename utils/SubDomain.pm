@@ -4507,8 +4507,9 @@ sub parse_profile_data {
             $profile_data->{$profile}{$hat}{initial_comment} = $initial_comment
               if $initial_comment;
             $initial_comment = "";
-            # mark as changed so the profile will always be written out
-            $changed{$profile} = 1;
+            #don't mark profile as changed just because it has an embedded
+	    #hat.
+            #$changed{$profile} = 1;
 
         } elsif (/^\s*\#/) {
             # we only currently handle initial comments
