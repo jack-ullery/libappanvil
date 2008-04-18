@@ -4237,27 +4237,31 @@ sub parse_profile_data {
             my $capability = $1;
             $profile_data->{$profile}{$hat}{set_capability}{$capability} = 1;
 
-	} elsif (m/^\s*link\s+("??\/.*"??)\s+->\s*("??\/.*"??)\s*,\s*(#.*)?$/) { # for now just keep link
+	} elsif (m/^\s*link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)\s*,\s*(#.*)?$/) { # for now just keep link
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
-            my $link = $1;
-	    my $value = $2;
-            $profile_data->{$profile}{$hat}{link}{$link} = $value;
-
-	} elsif (m/^\s*change_profile\s+->\s*("??.+"??),(#.*)?$/) { # for now just keep change_profile
+	    my $subset = $2;
+            my $link = strip_quotes($5);
+	    my $value = strip_quotes($6);
+	    if ($subset) {
+		$profile_data->{$profile}{$hat}{sublink}{$link} = $value;
+	    } else {
+		$profile_data->{$profile}{$hat}{link}{$link} = $value;
+	    }
+	} elsif (m/^\s*change_profile\s+->\s*("??.+?"??),(#.*)?$/) { # for now just keep change_profile
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
-            my $cp = $1;
+            my $cp = strip_quotes($1);
 
             $profile_data->{$profile}{$hat}{change_profile}{$cp} = 1;
-	} elsif (m/^\s*alias\s+("??.+"??)\s+->\s*("??.+"??)\s*,(#.*)?$/) { # never do anything with aliases just keep them
+	} elsif (m/^\s*alias\s+("??.+?"??)\s+->\s*("??.+?"??)\s*,(#.*)?$/) { # never do anything with aliases just keep them
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
-            my $from = $1;
-	    my $to = $2;
+            my $from = strip_quotes($1);
+	    my $to = strip_quotes($2);
 
             $profile_data->{$profile}{$hat}{alias}{$from} = $to;
        } elsif (m/^\s*set\s+rlimit\s+(.+)\s+<=\s*(.+)\s*,(#.*)?$/) { # never do anything with rlimits just keep them
@@ -4281,8 +4285,8 @@ sub parse_profile_data {
 	   if (not $profile) {
 	       die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
 	   }
-	   my $list_var = $1;
-           my $value = $2;
+	   my $list_var = strip_quotes($1);
+           my $value = strip_quotes($2);
 
 	   unless (exists $profile_data->{$profile}{$hat}{lvar}) {
 	       # create lval hash by sticking an empty list into list_var
@@ -4588,7 +4592,6 @@ sub write_pair ($$$$$$) {
     # dump out the data
     if (exists $profile_data->{$name}) {
         for my $key (sort keys %{$profile_data->{$name}}) {
-	    my $qkey = quote_if_needed($key);
 	    my $value = &{$fn}($profile_data->{$name}{$key});
             push @data, "  ${prefix}${key}${sep}${value}${tail}";
         }
@@ -4613,8 +4616,11 @@ sub writecapabilities ($) {
 
 sub writelinks ($) {
     my $profile_data = shift;
+    my @data;
 
-    return write_pair($profile_data, 'link', "link ", " -> ", ",", \&qin_trans);
+    push @data, write_pair($profile_data, 'link', "link ", " -> ", ",", \&qin_trans);
+    push @data, write_pair($profile_data, 'sublink', "link subset ", " -> ", ",", \&qin_trans);
+    return @data;
 }
 
 sub writechange_profile ($) {
