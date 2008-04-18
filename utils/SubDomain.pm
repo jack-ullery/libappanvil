@@ -5289,6 +5289,7 @@ sub parse_event($) {
     $ev{'attr'}       = LibAppArmor::aa_log_record::swig_attribute_get($event);
     $ev{'parent'}     = LibAppArmor::aa_log_record::swig_parent_get($event);
     $ev{'pid'}        = LibAppArmor::aa_log_record::swig_pid_get($event);
+    $ev{'task'}        = LibAppArmor::aa_log_record::swig_task_get($event);
     $ev{'denied_mask'}  =
         LibAppArmor::aa_log_record::swig_denied_mask_get($event);
     $ev{'request_mask'} =
