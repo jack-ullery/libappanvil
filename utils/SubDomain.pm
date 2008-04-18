@@ -3011,7 +3011,7 @@ sub ask_the_questions {
                                            $deleted)) if $deleted;
                             }
                             # stick the capability into the profile
-                            $sd{$profile}{$hat}{allow}{capability}{$capability} = 1;
+                            $sd{$profile}{$hat}{allow}{capability}{$capability}{set} = 1;
 
                             # mark this profile as changed
                             $changed{$profile} = 1;
@@ -3019,7 +3019,7 @@ sub ask_the_questions {
                             # give a little feedback to the user
                             UI_Info(sprintf(gettext('Adding capability %s to profile.'), $capability));
                         } elsif ($ans eq "CMD_DENY") {
-                            $sd{$profile}{$hat}{deny}{capability}{$capability} = 1;
+                            $sd{$profile}{$hat}{deny}{capability}{$capability}{set} = 1;
                             # mark this profile as changed
                             $changed{$profile} = 1;
                             UI_Info(sprintf(gettext('Denying capability %s to profile.'), $capability));
@@ -3608,8 +3608,8 @@ sub matchcapincludes (\%$) {
 	next if ($includevalid == 0);
 
 	push @newincludes, $incname
-	    if ( defined $include{$incname}{allow}{capability}{$cap} &&
-		 $include{$incname}{allow}{capability}{$cap} == 1 );
+	    if ( defined $include{$incname}{allow}{capability}{$cap}{set} &&
+		 $include{$incname}{allow}{capability}{$cap}{set} == 1 );
     }
     return @newincludes;
 }
@@ -3968,7 +3968,7 @@ sub collapselog () {
 
                     # if we don't already have this capability in the profile,
                     # add it
-                    unless ($sd{$profile}{$hat}{allow}{capability}{$capability}) {
+                    unless ($sd{$profile}{$hat}{allow}{capability}{$capability}{set}) {
                         $log{$sdmode}{$profile}{$hat}{capability}{$capability} = 1;
                     }
                 }
@@ -4338,7 +4338,7 @@ sub parse_profile_data {
 	    my $allow = 'allow';
 	    $allow = 'deny' if ($1);
             my $capability = $2;
-            $profile_data->{$profile}{$hat}{$allow}{capability}{$capability} = 1;
+            $profile_data->{$profile}{$hat}{$allow}{capability}{$capability}{set} = 1;
         } elsif (m/^\s*set capability\s+(\S+)\s*,\s*(#.*)?$/) {  # capability entry
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
@@ -5124,11 +5124,11 @@ sub profile_known_exec (\%$$) {
 sub profile_known_capability (\%$) {
     my ($profile, $capname) = @_;
 
-    return -1 if $profile->{deny}{capability}{$capname};
-    return 1 if $profile->{allow}{capability}{$capname};
+    return -1 if $profile->{deny}{capability}{$capname}{set};
+    return 1 if $profile->{allow}{capability}{$capname}{set};
     for my $incname ( keys %{$profile->{include}} ) {
-	return -1 if $include{$incname}{deny}{capability}{$capname};
-	return 1 if $include{$incname}{allow}{capability}{$capname};
+	return -1 if $include{$incname}{deny}{capability}{$capname}{set};
+	return 1 if $include{$incname}{allow}{capability}{$capname}{set};
     }
     return 0;
 }
@@ -5258,7 +5258,7 @@ sub loadinclude {
             } elsif (/^\s*capability\s+(.+)\s*,\s*$/) {
 
                 my $capability = $1;
-                $include{$incfile}{allow}{capability}{$capability} = 1;
+                $include{$incfile}{allow}{capability}{$capability}{set} = 1;
 
             } elsif (/^\s*#include <(.+)>\s*$/) {
                 # include stuff
