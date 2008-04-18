@@ -176,9 +176,51 @@ my @created;
 my %skip;
 our %helpers;    # we want to preserve this one between passes
 
+### THESE VARIABLES ARE USED WITHIN LOGPROF
+
 my %variables;   # variables in config files
 
-### THESE VARIABLES ARE USED WITHIN LOGPROF
+my $AA_MAY_EXEC = 1;
+my $AA_MAY_WRITE = 2;
+my $AA_MAY_READ = 4;
+my $AA_MAY_APPEND = 8;
+my $AA_MAY_LINK = 16;
+my $AA_MAY_LOCK = 32;
+my $AA_EXEC_MMAP = 64;
+my $AA_EXEC_UNSAFE = 128;
+my $AA_EXEC_INHERIT = 256;
+my $AA_EXEC_UNCONFINED = 512;
+my $AA_EXEC_PROFILE = 1024;
+my $AA_EXEC_NT = 2048;
+
+my $AA_EXEC_TYPE = $AA_MAY_EXEC | $AA_EXEC_UNSAFE | $AA_EXEC_INHERIT |
+		    $AA_EXEC_UNCONFINED | $AA_EXEC_PROFILE | $AA_EXEC_NT;
+
+my $ALL_AA_EXEC_TYPE = $AA_EXEC_TYPE;
+
+my %MODE_HASH = (
+    x => $AA_MAY_EXEC,
+    X => $AA_MAY_EXEC,
+    w => $AA_MAY_WRITE,
+    W => $AA_MAY_WRITE,
+    r => $AA_MAY_READ,
+    R => $AA_MAY_READ,
+    a => $AA_MAY_APPEND,
+    A => $AA_MAY_APPEND,
+    l => $AA_MAY_LINK,
+    L => $AA_MAY_LINK,
+    k => $AA_MAY_LOCK,
+    K => $AA_MAY_LOCK,
+    m => $AA_EXEC_MMAP,
+    M => $AA_EXEC_MMAP,
+#   Unsafe => 128,
+    i => $AA_EXEC_INHERIT,
+    I => $AA_EXEC_INHERIT,
+    u => $AA_EXEC_UNCONFINED + $AA_EXEC_UNSAFE,		# U + Unsafe
+    U => $AA_EXEC_UNCONFINED,
+    p => $AA_EXEC_PROFILE + $AA_EXEC_UNSAFE,		# P + Unsafe
+    P => $AA_EXEC_PROFILE,
+    );
 
 sub debug ($) {
     my $message = shift;
@@ -613,7 +655,7 @@ sub handle_binfmt ($$) {
         chomp $library;
         next unless $library;
 
-        $profile->{path}->{$library}{mode} = "mr";
+        $profile->{path}->{$library}{mode} = str_to_mode("mr");
     }
 }
 
@@ -633,7 +675,7 @@ sub create_new_profile {
       $fqdbin => {
           flags   => "complain",
           include => { "abstractions/base" => 1    },
-          path    => { $fqdbin => { mode => "mr" } },
+          path    => { $fqdbin => { mode => str_to_mode("mr") } },
       }
     };
 
@@ -642,7 +684,7 @@ sub create_new_profile {
         my $hashbang = head($fqdbin);
         if ($hashbang =~ /^#!\s*(\S+)/) {
             my $interpreter = get_full_path($1);
-            $profile->{$fqdbin}{path}->{$interpreter}{mode} = "ix";
+            $profile->{$fqdbin}{path}->{$interpreter}{mode} = str_to_mode("ix");
             if ($interpreter =~ /perl/) {
                 $profile->{$fqdbin}{include}->{"abstractions/perl"} = 1;
             } elsif ($interpreter =~ m/\/bin\/(bash|sh)/) {
@@ -1748,6 +1790,8 @@ sub handlechildren {
             } elsif (($type eq "path") || ($type eq "exec")) {
                 my ($pid, $p, $h, $prog, $sdmode, $mode, $detail) = @entry;
 
+		$mode = 0 unless ($mode);
+
                 if (   ($p !~ /null(-complain)*-profile/)
                     && ($h !~ /null(-complain)*-profile/))
                 {
@@ -1766,31 +1810,29 @@ sub handlechildren {
                 my $do_execute  = 0;
                 my $exec_target = $detail;
 
-                if ($mode =~ s/x//g) {
+                if ($mode & $AA_MAY_EXEC) {
+		    $mode &= (~$ALL_AA_EXEC_TYPE);
                     if (-d $exec_target) {
-                        $mode .= "ix";
+                        $mode |= str_to_mode("ix");
                     } else {
                         $do_execute = 1;
                     }
                 }
 
-                if ($mode eq "link") {
-                    $mode = "l";
+		if ($mode & $AA_MAY_LINK) {
                     if ($detail =~ m/^from (.+) to (.+)$/) {
                         my ($path, $target) = ($1, $2);
 
-                        my $frommode = "lr";
+                        my $frommode = str_to_mode("lr");
                         if (defined $prelog{$sdmode}{$profile}{$hat}{path}{$path}) {
-                            $frommode .= $prelog{$sdmode}{$profile}{$hat}{path}{$path};
+                            $frommode |= $prelog{$sdmode}{$profile}{$hat}{path}{$path};
                         }
-                        $frommode = collapsemode($frommode);
                         $prelog{$sdmode}{$profile}{$hat}{path}{$path} = $frommode;
 
-                        my $tomode = "lr";
+                        my $tomode = str_to_mode("lr");
                         if (defined $prelog{$sdmode}{$profile}{$hat}{path}{$target}) {
-                            $tomode .= $prelog{$sdmode}{$profile}{$hat}{path}{$target};
+                            $tomode |= $prelog{$sdmode}{$profile}{$hat}{path}{$target};
                         }
-                        $tomode = collapsemode($tomode);
                         $prelog{$sdmode}{$profile}{$hat}{path}{$target} = $tomode;
 
                         # print "$pid $profile $hat $prog $sdmode $path:$frommode -> $target:$tomode\n";
@@ -1801,8 +1843,7 @@ sub handlechildren {
                     my $path = $detail;
 
                     if (defined $prelog{$sdmode}{$profile}{$hat}{path}{$path}) {
-                        $mode .= $prelog{$sdmode}{$profile}{$hat}{path}{$path};
-                        $mode = collapsemode($mode);
+                        $mode |= $prelog{$sdmode}{$profile}{$hat}{path}{$path};
                     }
                     $prelog{$sdmode}{$profile}{$hat}{path}{$path} = $mode;
 
@@ -1827,31 +1868,33 @@ sub handlechildren {
 
                     my ($combinedmode, $cm, @m);
 
+		    $combinedmode = 0;
+
                     # does path match any regexps in original profile?
                     ($cm, @m) = rematchfrag($sd{$profile}{$hat}, $exec_target);
-                    $combinedmode .= $cm if $cm;
+                    $combinedmode |= $cm if $cm;
 
                     # does path match anything pulled in by includes in
                     # original profile?
                     ($cm, @m) = matchpathincludes($sd{$profile}{$hat}, $exec_target);
-                    $combinedmode .= $cm if $cm;
+                    $combinedmode |= $cm if $cm;
 
-                    my $exec_mode;
+                    my $exec_mode = 0;
                     if (contains($combinedmode, "ix")) {
                         $ans       = "CMD_INHERIT";
-                        $exec_mode = "ixr";
+                        $exec_mode = str_to_mode("ixr");
                     } elsif (contains($combinedmode, "px")) {
                         $ans       = "CMD_PROFILE";
-                        $exec_mode = "px";
+                        $exec_mode = str_to_mode("px");
                     } elsif (contains($combinedmode, "ux")) {
                         $ans       = "CMD_UNCONFINED";
-                        $exec_mode = "ux";
+                        $exec_mode = str_to_mode("ux");
                     } elsif (contains($combinedmode, "Px")) {
                         $ans       = "CMD_PROFILE_CLEAN";
-                        $exec_mode = "Px";
+                        $exec_mode = str_to_mode("Px");
                     } elsif (contains($combinedmode, "Ux")) {
                         $ans       = "CMD_UNCONFINED_CLEAN";
-                        $exec_mode = "Ux";
+                        $exec_mode = str_to_mode("Ux");
                     } else {
                         my $options = $cfg->{qualifiers}{$exec_target} || "ipu";
 
@@ -1938,15 +1981,15 @@ sub handlechildren {
 
                         # if we're inheriting, things'll bitch unless we have r
                         if ($ans eq "CMD_INHERIT") {
-                            $exec_mode = "ixr";
+                            $exec_mode = str_to_mode("ixr");
                         } elsif ($ans eq "CMD_PROFILE") {
-                            $exec_mode = "px";
+                            $exec_mode = str_to_mode("px");
                         } elsif ($ans eq "CMD_UNCONFINED") {
-                            $exec_mode = "ux";
+                            $exec_mode = str_to_mode("ux");
                         } elsif ($ans eq "CMD_PROFILE_CLEAN") {
-                            $exec_mode = "Px";
+                            $exec_mode = str_to_mode("Px");
                         } elsif ($ans eq "CMD_UNCONFINED_CLEAN") {
-                            $exec_mode = "Ux";
+                            $exec_mode = str_to_mode("Ux");
                         } else {
 
                             # skip all remaining events if they say to deny
@@ -1956,10 +1999,9 @@ sub handlechildren {
 
                         unless ($ans eq "CMD_DENY") {
                             if (defined $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target}) {
-                                $exec_mode .= $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target};
-                                $exec_mode = collapsemode($exec_mode);
+#                                $exec_mode = $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target};
                             }
-                            $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target} = $exec_mode;
+                            $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target} |= $exec_mode;
                             $log{PERMITTING}{$profile}              = {};
                             $sd{$profile}{$hat}{path}{$exec_target}{mode} = $exec_mode;
 
@@ -1975,7 +2017,7 @@ sub handlechildren {
                                 my $hashbang = head($exec_target);
                                 if ($hashbang =~ /^#!\s*(\S+)/) {
                                     my $interpreter = get_full_path($1);
-                                    $sd{$profile}{$hat}{path}->{$interpreter}{mode} = "ix";
+                                    $sd{$profile}{$hat}{path}->{$interpreter}{mode} = str_to_mode("ix");
                                     if ($interpreter =~ /perl/) {
                                         $sd{$profile}{$hat}{include}{"abstractions/perl"} = 1;
                                     } elsif ($interpreter =~ m/\/bin\/(bash|sh)/) {
@@ -2228,10 +2270,10 @@ sub parse_log_record_v_2_0 ($@) {
 
         if ($domainchange eq "change") {
             add_to_tree($pid, "exec", $profile, $hat, $prog,
-                        $sdmode, $mode, $detail);
+                        $sdmode, str_to_mode($mode), $detail);
         } else {
             add_to_tree($pid, "path", $profile, $hat, $prog,
-                        $sdmode, $mode, $detail);
+                        $sdmode, str_to_mode($mode), $detail);
         }
 
     } elsif (m/(PERMITTING|REJECTING) (?:mk|rm)dir on (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
@@ -2278,7 +2320,7 @@ sub parse_log_record_v_2_0 ($@) {
 
         if ($xattrmode) {
             add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode,
-                        $xattrmode, $path);
+                        str_to_mode($xattrmode), $path);
         }
 
     } elsif (m/(PERMITTING|REJECTING) attribute \((.*?)\) change to (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
@@ -2304,7 +2346,7 @@ sub parse_log_record_v_2_0 ($@) {
         return $& if $path eq "/etc/krb5.conf";
 
         add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode,
-                    "w", $path);
+                    str_to_mode("w"), $path);
 
     } elsif (m/(PERMITTING|REJECTING) access to capability '(\S+)' \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
         my ($sdmode, $capability, $prog, $pid, $profile, $hat) =
@@ -2360,22 +2402,7 @@ sub parse_log_record ($) {
     my $record = shift;
     $DEBUGGING && debug "parse_log_record: $record";
     my $e = parse_event($record);
-    # for now just remove :: from new log mode
-    if ($e->{requested_mask}) {
-	$e->{requested_mask} = map_log_mode($e->{requested_mask});
-    }
-    if ($e->{denied_mask}) {
-	$e->{denied_mask} = map_log_mode($e->{denied_mask});
-    }
-    if ($e->{requested_mask} && !validate_log_mode($e->{requested_mask})) {
-        fatal_error(sprintf(gettext('Log contains unknown mode %s.'),
-                            $e->{requested_mask}));
-    }
 
-    if ($e->{denied_mask} && !validate_log_mode($e->{denied_mask})) {
-        fatal_error(sprintf(gettext('Log contains unknown mode %s.'),
-                    $e->{denied_mask}));
-    }
     return $e;
 }
 
@@ -2462,7 +2489,7 @@ sub add_event_to_tree ($) {
         my $is_domain_change = 0;
 
         if ($e->{operation}   eq "inode_permission" &&
-            $e->{denied_mask} eq "x"                &&
+            $e->{denied_mask} & $AA_MAY_EXEC                &&
             $sdmode           eq "PERMITTING") {
 
             my $following = peek_at_next_log_entry();
@@ -3007,23 +3034,23 @@ sub ask_the_questions {
                     # first check if it was already dealt with by a i/p/x
                     # question due to a exec().  if not, ask about adding ix
                     # permission.
-                    if ($mode =~ /X/) {
+                    if ($mode & $AA_MAY_EXEC) {
 
                         # get rid of the access() markers.
-                        $mode =~ s/X//g;
+                        $mode &= (~$ALL_AA_EXEC_TYPE);
 
-                        my $combinedmode = "";
+                        my $combinedmode = 0;
 
                         my ($cm, @m);
 
                         # does path match any regexps in original profile?
                         ($cm, @m) = rematchfrag($sd{$profile}{$hat}, $path);
-                        $combinedmode .= $cm if $cm;
+                        $combinedmode |= $cm if $cm;
 
                         # does path match anything pulled in by includes in
                         # original profile?
                         ($cm, @m) = matchpathincludes($sd{$profile}{$hat}, $path);
-                        $combinedmode .= $cm if $cm;
+                        $combinedmode |= $cm if $cm;
 
                         if ($combinedmode) {
                             if (   contains($combinedmode, "ix")
@@ -3033,38 +3060,38 @@ sub ask_the_questions {
                                 || contains($combinedmode, "Ux"))
                             {
                             } else {
-                                $mode .= "ix";
+                                $mode |= str_to_mode("ix");
                             }
                         } else {
-                            $mode .= "ix";
+                            $mode |= str_to_mode("ix");
                         }
                     }
 
                     # if we had an mmap(PROT_EXEC) request, first check if we
                     # already have added an ix rule to the profile
-                    if ($mode =~ /m/) {
-                        my $combinedmode = "";
+                    if ($mode & $AA_EXEC_MMAP) {
+                        my $combinedmode = 0;
                         my ($cm, @m);
 
                         # does path match any regexps in original profile?
                         ($cm, @m) = rematchfrag($sd{$profile}{$hat}, $path);
-                        $combinedmode .= $cm if $cm;
+                        $combinedmode |= $cm if $cm;
 
                         # does path match anything pulled in by includes in
                         # original profile?
                         ($cm, @m) = matchpathincludes($sd{$profile}{$hat}, $path);
-                        $combinedmode .= $cm if $cm;
+                        $combinedmode |= $cm if $cm;
 
                         # ix implies m.  don't ask if they want to add an "m"
                         # rule when we already have a matching ix rule.
                         if ($combinedmode && contains($combinedmode, "ix")) {
-                            $mode =~ s/m//g;
+                            $mode &= (~$AA_EXEC_MMAP);
                         }
                     }
 
                     next unless $mode;
 
-                    my $combinedmode = "";
+                    my $combinedmode = 0;
                     my @matches;
 
                     my ($cm, @m);
@@ -3072,7 +3099,7 @@ sub ask_the_questions {
                     # does path match any regexps in original profile?
                     ($cm, @m) = rematchfrag($sd{$profile}{$hat}, $path);
                     if ($cm) {
-                        $combinedmode .= $cm;
+                        $combinedmode |= $cm;
                         push @matches, @m;
                     }
 
@@ -3080,10 +3107,10 @@ sub ask_the_questions {
                     # original profile?
                     ($cm, @m) = matchpathincludes($sd{$profile}{$hat}, $path);
                     if ($cm) {
-                        $combinedmode .= $cm;
+                        $combinedmode |= $cm;
                         push @matches, @m;
                     }
-                    unless ($combinedmode && contains($combinedmode, $mode)) {
+                    unless ($combinedmode && mode_contains($combinedmode, $mode)) {
 
                         my $defaultoption = 1;
                         my @options       = ();
@@ -3110,7 +3137,7 @@ sub ask_the_questions {
                             next if ($includevalid == 0);
 
                             ($cm, @m) = matchpathinclude($incname, $path);
-                            if ($cm && contains($cm, $mode)) {
+                            if ($cm && mode_contains($cm, $mode)) {
                                 unless (grep { $_ eq "/**" } @m) {
                                     push @newincludes, $incname;
                                 }
@@ -3149,7 +3176,7 @@ sub ask_the_questions {
                           uniq(@matches);
                         $defaultoption = $#options + 1;
 
-                        my $severity = $sevdb->rank($path, $mode);
+                        my $severity = $sevdb->rank($path, mode_to_str($mode));
 
                         my $done = 0;
                         while (not $done) {
@@ -3161,12 +3188,11 @@ sub ask_the_questions {
 
                             # merge in any previous modes from this run
                             if ($combinedmode) {
-                                $combinedmode = collapsemode($combinedmode);
-                                push @{ $q->{headers} }, gettext("Old Mode"), $combinedmode;
-                                $mode = collapsemode("$mode$combinedmode");
-                                push @{ $q->{headers} }, gettext("New Mode"), $mode;
+                                push @{ $q->{headers} }, gettext("Old Mode"), mode_to_str($combinedmode);
+                                $mode |= $combinedmode;
+                                push @{ $q->{headers} }, gettext("New Mode"), mode_to_str($mode);
                             } else {
-                                push @{ $q->{headers} }, gettext("Mode"), $mode;
+                                push @{ $q->{headers} }, gettext("Mode"), mode_to_str($mode);
                             }
                             push @{ $q->{headers} }, gettext("Severity"), $severity;
 
@@ -3206,7 +3232,7 @@ sub ask_the_questions {
                                     UI_Info(sprintf(gettext('Deleted %s previous matching profile entries.'), $deleted)) if $deleted;
                                 } else {
                                     if ($sd{$profile}{$hat}{path}{$path}{mode}) {
-                                        $mode = collapsemode($mode . $sd{$profile}{$hat}{path}{$path}{mode});
+                                        $mode = $mode | $sd{$profile}{$hat}{path}{$path}{mode};
                                     }
 
                                     my $deleted = 0;
@@ -3218,7 +3244,7 @@ sub ask_the_questions {
 
                                             # regexp matches, add it's mode to
                                             # the list to check against
-                                            if (contains($mode,
+                                            if (mode_contains($mode,
                                                 $sd{$profile}{$hat}{path}{$entry}{mode})) {
                                                 delete $sd{$profile}{$hat}{path}{$entry};
                                                 $deleted++;
@@ -3230,7 +3256,7 @@ sub ask_the_questions {
                                     $sd{$profile}{$hat}{path}{$path}{mode} = $mode;
 
                                     $changed{$profile} = 1;
-                                    UI_Info(sprintf(gettext('Adding %s %s to profile.'), $path, $mode));
+                                    UI_Info(sprintf(gettext('Adding %s %s to profile.'), $path, mode_to_str($mode)));
                                     UI_Info(sprintf(gettext('Deleted %s previous matching profile entries.'), $deleted)) if $deleted;
                                 }
                             } elsif ($ans eq "CMD_DENY") {
@@ -3504,7 +3530,7 @@ sub delete_duplicates ($$$) {
         next if $entry eq "#include <$incname>";
         my $cm = matchpathinclude($incname, $entry);
         if ($cm
-            && contains($cm, $sd{$profile}{$hat}{path}{$entry}{mode}))
+            && mode_contains($cm, $sd{$profile}{$hat}{path}{$entry}{mode}))
         {
             delete $sd{$profile}{$hat}{path}{$entry};
             $deleted++;
@@ -3890,30 +3916,30 @@ sub collapselog () {
 
                     # we want to ignore anything from the log that's already
                     # in the profile
-                    my $combinedmode = "";
+                    my $combinedmode = 0;
 
                     # is it in the original profile?
                     if ($sd{$profile}{$hat}{path}{$path}) {
-                        $combinedmode .= $sd{$profile}{$hat}{path}{$path}{mode};
+                        $combinedmode |= $sd{$profile}{$hat}{path}{$path}{mode};
                     }
 
                     # does path match any regexps in original profile?
-                    $combinedmode .= rematchfrag($sd{$profile}{$hat}, $path);
+                    $combinedmode |= rematchfrag($sd{$profile}{$hat}, $path);
 
                     # does path match anything pulled in by includes in
                     # original profile?
-                    $combinedmode .= matchpathincludes($sd{$profile}{$hat}, $path);
+                    $combinedmode |= matchpathincludes($sd{$profile}{$hat}, $path);
 
                     # if we found any matching entries, do the modes match?
-                    unless ($combinedmode && contains($combinedmode, $mode)) {
+                    unless ($combinedmode && mode_contains($combinedmode, $mode)) {
 
                         # merge in any previous modes from this run
                         if ($log{$sdmode}{$profile}{$hat}{path}{$path}) {
-                            $mode = collapsemode($mode . $log{$sdmode}{$profile}{$hat}{path}{$path}{mode});
+                            $mode |= $log{$sdmode}{$profile}{$hat}{path}{$path}{mode};
                         }
 
                         # record the new entry
-                        $log{$sdmode}{$profile}{$hat}{path}{$path} = collapsemode($mode);
+                        $log{$sdmode}{$profile}{$hat}{path}{$path} = $mode;
                     }
                 }
 
@@ -3972,6 +3998,7 @@ sub uniq (@) {
     return @result;
 }
 
+our $MODE_MAP_RE = "r|w|l|m|k|a|x|i|p|u|I|P|U";
 our $LOG_MODE_RE = "r|w|l|m|k|a|x|ix|px|ux|Ix|Px|Ux";
 our $PROFILE_MODE_RE = "r|w|l|m|k|a|ix|px|ux|Px|Ux";
 
@@ -3983,6 +4010,7 @@ sub map_log_mode($) {
 
     return $mode;
 }
+
 
 sub validate_log_mode ($) {
     my $mode = shift;
@@ -3996,35 +4024,80 @@ sub validate_profile_mode ($) {
     return ($mode =~ /^($PROFILE_MODE_RE)+$/) ? 1 : 0;
 }
 
-sub collapsemode ($) {
-    my $old = shift;
+# modes internally are stored as a bit Mask
+sub str_to_mode($) {
+    my $str = shift;
+    my $mode = 0;
 
-    my %seen;
-    $seen{$_}++ for ($old =~ m/\G($PROFILE_MODE_RE)/g);
+    return 0 if (not $str);
+
+    while ($str =~ s/(${MODE_MAP_RE})//) {
+	my $tmp = $1;
+#print "found mode $1\n";
+
+	if ($tmp && $MODE_HASH{$tmp}) {
+	    $mode |= $MODE_HASH{$tmp};
+	} else {
+print "found mode $tmp\n";
+	}
+    }
+
+#my $tmp = mode_to_str($mode);
+#print "parsed_mode $mode\n";
+    return $mode;
+}
+
+sub mode_to_str($) {
+    my $mode = shift;
+    my $str = "";
 
     # "w" implies "a"
-    delete $seen{a} if ($seen{w} && $seen{a});
+    $mode &= (~$AA_MAY_APPEND) if ($mode & $AA_MAY_WRITE);
+    $str .= "m" if ($mode & $AA_EXEC_MMAP);
+    $str .= "r" if ($mode & $AA_MAY_READ);
+    $str .= "w" if ($mode & $AA_MAY_WRITE);
+    $str .= "a" if ($mode & $AA_MAY_APPEND);
+    $str .= "l" if ($mode & $AA_MAY_LINK);
+    $str .= "k" if ($mode & $AA_MAY_LOCK);
+    if ($mode & $AA_EXEC_UNCONFINED) {
+	if ($mode & $AA_EXEC_UNSAFE) {
+	    $str .= "u";
+	} else {
+	    $str .= "U";
+	}
+    }
+    if ($mode & ($AA_EXEC_PROFILE | $AA_EXEC_NT)) {
+	if ($mode & $AA_EXEC_UNSAFE) {
+	    $str .= "p";
+	} else {
+	    $str .= "P";
+	}
+    }
+    $str .= "i" if ($mode & $AA_EXEC_INHERIT);
+    $str .= "x" if ($mode & $AA_MAY_EXEC);
 
-    my $new = join("", sort keys %seen);
-    return $new;
+    return $str;
+}
+
+sub mode_contains ($$) {
+    my ($mode, $subset) = @_;
+
+    # "w" implies "a"
+    if ($mode & $AA_MAY_WRITE) {
+	$mode |= $AA_MAY_APPEND;
+    }
+    # "?ix" implies "m"
+    if ($mode & $AA_EXEC_INHERIT) {
+	$mode |= $ AA_EXEC_MMAP;
+    }
+
+    return (($mode & $subset) == $subset);
 }
 
 sub contains ($$) {
-    my ($glob, $single) = @_;
+    my ($mode, $str) = @_;
 
-    $glob = "" unless defined $glob;
-
-    my %h;
-    $h{$_}++ for ($glob =~ m/\G($PROFILE_MODE_RE)/g);
-
-    # "w" implies "a"
-    $h{a}++ if $h{w};
-
-    for my $mode ($single =~ m/\G($PROFILE_MODE_RE)/g) {
-        return 0 unless $h{$mode};
-    }
-
-    return 1;
+    return mode_contains($mode, str_to_mode($str));
 }
 
 # isSkippableFile - return true if filename matches something that
@@ -4342,7 +4415,7 @@ sub parse_profile_data {
                 fatal_error(sprintf(gettext('Profile %s contains invalid mode %s.'), $file, $mode));
             }
 
-            $profile_data->{$profile}{$hat}{path}{$path}{mode} = $mode;
+            $profile_data->{$profile}{$hat}{path}{$path}{mode} = str_to_mode($mode);
 
         } elsif (m/^\s*#include <(.+)>\s*$/) {     # include stuff
             my $include = $1;
@@ -4714,7 +4787,7 @@ sub writepaths ($) {
     my @data;
     if (exists $profile_data->{path}) {
         for my $path (sort keys %{$profile_data->{path}}) {
-            my $mode = $profile_data->{path}{$path}{mode};
+            my $mode = mode_to_str($profile_data->{path}{$path}{mode});
 
             # strip out any fake access() modes that might have slipped through
             $mode =~ s/X//g;
@@ -4926,14 +4999,15 @@ sub profile_exec_access_check ($$$$) {
     if ( $type eq "exec" ) {
         my ($combinedmode, $cm, @m);
 
+	$combinedmode = 0;
         # does path match any regexps in original profile?
         ($cm, @m) = rematchfrag($sd{$profile}{$hat}, $exec_target);
-        $combinedmode .= $cm if $cm;
+        $combinedmode |= $cm if $cm;
 
         # does path match anything pulled in by includes in
         # original profile?
         ($cm, @m) = matchpathincludes($sd{$profile}{$hat}, $exec_target);
-        $combinedmode .= $cm if $cm;
+        $combinedmode |= $cm if $cm;
 
         if (contains($combinedmode, "ix") ||
             contains($combinedmode, "px") ||
@@ -5074,7 +5148,7 @@ sub loadinclude {
                     fatal_error(sprintf(gettext('Include file %s contains invalid mode %s.'), $incfile, $mode));
                 }
 
-                $include{$incfile}{path}{$path}{mode} = $mode;
+                $include{$incfile}{path}{$path}{mode} = str_to_mode($mode);
             } elsif (/^\s*capability\s+(.+)\s*,\s*$/) {
 
                 my $capability = $1;
@@ -5115,7 +5189,7 @@ sub loadinclude {
 sub rematchfrag {
     my ($frag, $path) = @_;
 
-    my $combinedmode = "";
+    my $combinedmode = 0;
     my @matches;
 
     for my $entry (keys %{ $frag->{path} }) {
@@ -5126,7 +5200,7 @@ sub rematchfrag {
         if ($path =~ /^$regexp$/) {
 
             # regexp matches, add it's mode to the list to check against
-            $combinedmode .= $frag->{path}{$entry}{mode};
+            $combinedmode |= $frag->{path}{$entry}{mode};
             push @matches, $entry;
         }
     }
@@ -5137,7 +5211,7 @@ sub rematchfrag {
 sub matchpathincludes {
     my ($frag, $path) = @_;
 
-    my $combinedmode = "";
+    my $combinedmode = 0;
     my @matches;
 
     # scan the include fragments for this profile looking for matches
@@ -5147,13 +5221,13 @@ sub matchpathincludes {
         if ($@) { fatal_error $@; }
         my ($cm, @m) = rematchfrag($include{$include}, $path);
         if ($cm) {
-            $combinedmode .= $cm;
+            $combinedmode |= $cm;
             push @matches, @m;
         }
 
         # check if a literal version is in the current include fragment
         if ($include{$include}{path}{$path}) {
-            $combinedmode .= $include{$include}{path}{$path}{mode};
+            $combinedmode |= $include{$include}{path}{$path}{mode};
         }
 
         # if this fragment includes others, check them too
@@ -5168,7 +5242,7 @@ sub matchpathincludes {
 sub matchpathinclude {
     my ($incname, $path) = @_;
 
-    my $combinedmode = "";
+    my $combinedmode = 0;
     my @matches;
 
     # scan the include fragments for this profile looking for matches
@@ -5176,13 +5250,13 @@ sub matchpathinclude {
     while (my $include = shift @includelist) {
         my ($cm, @m) = rematchfrag($include{$include}, $path);
         if ($cm) {
-            $combinedmode .= $cm;
+            $combinedmode |= $cm;
             push @matches, @m;
         }
 
         # check if a literal version is in the current include fragment
         if ($include{$include}{path}{$path}) {
-            $combinedmode .= $include{$include}{path}{$path}{mode};
+            $combinedmode |= $include{$include}{path}{$path}{mode};
         }
 
         # if this fragment includes others, check them too
@@ -5548,6 +5622,7 @@ sub parse_event($) {
     my $msg = shift;
     chomp($msg);
     my $event = LibAppArmor::parse_record($msg);
+    my ($rmask, $dmask);
 
     $ev{'resource'}   = LibAppArmor::aa_log_record::swig_info_get($event);
     $ev{'active_hat'} = LibAppArmor::aa_log_record::swig_active_hat_get($event);
@@ -5561,10 +5636,8 @@ sub parse_event($) {
     $ev{'parent'}     = LibAppArmor::aa_log_record::swig_parent_get($event);
     $ev{'pid'}        = LibAppArmor::aa_log_record::swig_pid_get($event);
     $ev{'task'}        = LibAppArmor::aa_log_record::swig_task_get($event);
-    $ev{'denied_mask'}  =
-        LibAppArmor::aa_log_record::swig_denied_mask_get($event);
-    $ev{'request_mask'} =
-        LibAppArmor::aa_log_record::swig_requested_mask_get($event);
+    $dmask = LibAppArmor::aa_log_record::swig_denied_mask_get($event);
+    $rmask = LibAppArmor::aa_log_record::swig_requested_mask_get($event);
     $ev{'magic_token'}  =
        LibAppArmor::aa_log_record::swig_magic_token_get($event);
 
@@ -5579,6 +5652,22 @@ sub parse_event($) {
     }
 
     LibAppArmor::free_record($event);
+
+    # for now just remove :: from new log mode
+    $rmask = map_log_mode($rmask) if $rmask;
+    $dmask = map_log_mode($dmask) if $dmask;
+
+    if ($rmask && !validate_log_mode($rmask)) {
+        fatal_error(sprintf(gettext('Log contains unknown mode %s.'),
+                            $rmask));
+    }
+
+    if ($dmask && !validate_log_mode($dmask)) {
+        fatal_error(sprintf(gettext('Log contains unknown mode %s.'),
+                    $dmask));
+    }
+    $ev{'denied_mask'} = str_to_mode($dmask);
+    $ev{'request_mask'} = str_to_mode($rmask);
 
     if ( ! $ev{'time'} ) { $ev{'time'} = time; }
 
