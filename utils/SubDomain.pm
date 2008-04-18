@@ -662,6 +662,7 @@ sub handle_binfmt ($$) {
         next unless $library;
 
         $profile->{allow}{path}->{$library}{mode} = str_to_mode("mr");
+        $profile->{allow}{path}->{$library}{audit} = 0;
     }
 }
 
@@ -691,6 +692,7 @@ sub create_new_profile {
         if ($hashbang =~ /^#!\s*(\S+)/) {
             my $interpreter = get_full_path($1);
             $profile->{$fqdbin}{allow}{path}->{$interpreter}{mode} = str_to_mode("ix");
+            $profile->{$fqdbin}{allow}{path}->{$interpreter}{audit} = 0;
             if ($interpreter =~ /perl/) {
                 $profile->{$fqdbin}{include}->{"abstractions/perl"} = 1;
             } elsif ($interpreter =~ m/\/bin\/(bash|sh)/) {
@@ -1499,6 +1501,11 @@ sub UI_BusyStop  {
 
 my %CMDS = (
     CMD_ALLOW            => "(A)llow",
+    CMD_OTHER		 => "(M)ore",
+    CMD_AUDIT_NONE	 => "No (A)udit",
+    CMD_AUDIT_NEW	 => "Audit (N)ew",
+    CMD_AUDIT_FULL	 => "Audit (F)ull",
+    CMD_OTHER		 => "(O)pts",
     CMD_DENY             => "(D)eny",
     CMD_ABORT            => "Abo(r)t",
     CMD_FINISHED         => "(F)inish",
@@ -1869,18 +1876,21 @@ sub handlechildren {
                     $context .= " -> $exec_target";
                     my $ans = $transitions{$context} || "";
 
-                    my ($combinedmode, $cm, @m);
+                    my ($combinedmode, $combinedaudit, $cm, $am, @m);
 
 		    $combinedmode = 0;
+		    $combinedaudit = 0;
 
                     # does path match any regexps in original profile?
-                    ($cm, @m) = rematchfrag($sd{$profile}{$hat}, 'allow', $exec_target);
+                    ($cm, $am, @m) = rematchfrag($sd{$profile}{$hat}, 'allow', $exec_target);
                     $combinedmode |= $cm if $cm;
+		    $combinedaudit |= $am if $am;
 
                     # does path match anything pulled in by includes in
                     # original profile?
-                    ($cm, @m) = match_prof_incs_to_path($sd{$profile}{$hat}, 'allow', $exec_target);
+                    ($cm, $am, @m) = match_prof_incs_to_path($sd{$profile}{$hat}, 'allow', $exec_target);
                     $combinedmode |= $cm if $cm;
+                    $combinedaudit |= $am if $am;
 
                     my $exec_mode = 0;
                     if (contains($combinedmode, "ix")) {
@@ -1996,6 +2006,8 @@ sub handlechildren {
                         } else {
 			    if ($ans eq "CMD_DENY") {
 				$sd{$profile}{$hat}{deny}{path}{$exec_target}{mode} |= $AA_MAY_EXEC;
+
+				$sd{$profile}{$hat}{deny}{path}{$exec_target}{audit} |= 0;
 				$changed{$profile} = 1;
 			    }
 
@@ -2011,6 +2023,7 @@ sub handlechildren {
                             $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target} |= $exec_mode;
                             $log{PERMITTING}{$profile}              = {};
                             $sd{$profile}{$hat}{allow}{path}{$exec_target}{mode} = $exec_mode;
+                            $sd{$profile}{$hat}{allow}{path}{$exec_target}{audit} |= 0;
 
                             # mark this profile as changed
                             $changed{$profile} = 1;
@@ -2025,6 +2038,7 @@ sub handlechildren {
                                 if ($hashbang =~ /^#!\s*(\S+)/) {
                                     my $interpreter = get_full_path($1);
                                     $sd{$profile}{$hat}{path}->{$interpreter}{mode} = str_to_mode("ix");
+                                    $sd{$profile}{$hat}{path}->{$interpreter}{audit} |= 0;
                                     if ($interpreter =~ /perl/) {
                                         $sd{$profile}{$hat}{include}{"abstractions/perl"} = 1;
                                     } elsif ($interpreter =~ m/\/bin\/(bash|sh)/) {
@@ -2739,7 +2753,6 @@ sub UI_repo_signup {
     return ($user, $pass);
 }
 
-
 sub UI_ask_to_enable_repo {
 
     my $q = { };
@@ -2905,6 +2918,34 @@ sub update_repo_profile {
     return( $res );
 }
 
+sub UI_ask_mode_toggles ($$) {
+    my ($audit_toggle, $oldmode) = @_;
+    my $q = { };
+    $q->{headers} = [ ];
+#      "Repository", $cfg->{repository}{url},
+#    ];
+    $q->{explanation} = gettext( "Change mode modifiers");
+
+    if ($oldmode) {
+	$q->{functions} = [ "CMD_AUDIT_NONE", "CMD_AUDIT_NEW", "CMD_AUDIT_FULL", "CMD_CONTINUE" ];
+    } else {
+	$q->{functions} = [ "CMD_AUDIT_NONE", "CMD_AUDIT_NEW", "CMD_CONTINUE" ];
+    }
+
+    my $cmd;
+    do {
+        $cmd = UI_PromptUser($q);
+    } until $cmd =~ /^CMD_(AUDIT_NONE|AUDIT_NEW|AUDIT_FULL|CONTINUE)/;
+
+    if ($cmd eq "CMD_AUDIT_NONE") {
+	$audit_toggle = 0;
+    } elsif ($cmd eq "CMD_AUDIT_NEW") {
+	$audit_toggle = 1;
+    } elsif ($cmd eq "CMD_AUDIT_FULL") {
+	$audit_toggle = 2;
+    }
+    return $audit_toggle;
+}
 
 sub ask_the_questions {
     my $found; # do the magic foo-foo
@@ -3039,18 +3080,24 @@ sub ask_the_questions {
 		    # do original profile lookup once.
 
 		    my $allow_mode = 0;
+		    my $allow_audit = 0;
 		    my $deny_mode = 0;
+		    my $deny_audit = 0;
 
-		    my ($fmode, $imode, @fm, @im, $cm, @m);
-		    ($fmode, @fm) = rematchfrag($sd{$profile}{$hat}, 'allow', $path);
+		    my ($fmode, $famode, $imode, $iamode, @fm, @im, $cm, $am, $cam, @m);
+		    ($fmode, $famode, @fm) = rematchfrag($sd{$profile}{$hat}, 'allow', $path);
 		    $allow_mode |= $fmode if $fmode;
-		    ($imode, @im) = match_prof_incs_to_path($sd{$profile}{$hat}, 'allow', $path);
+		    $allow_audit |= $famode if $famode;
+		    ($imode, $iamode, @im) = match_prof_incs_to_path($sd{$profile}{$hat}, 'allow', $path);
 		    $allow_mode |= $imode if $imode;
+		    $allow_audit |= $iamode if $iamode;
 
-		    ($cm, @m) = rematchfrag($sd{$profile}{$hat}, 'deny', $path);
+		    ($cm, $cam, @m) = rematchfrag($sd{$profile}{$hat}, 'deny', $path);
 		    $deny_mode |= $cm if $cm;
-		    ($cm, @m) = match_prof_incs_to_path($sd{$profile}{$hat}, 'deny', $path);
+		    $deny_audit |= $cam if $cam;
+		    ($cm, $cam, @m) = match_prof_incs_to_path($sd{$profile}{$hat}, 'deny', $path);
 		    $deny_mode |= $cm if $cm;
+		    $deny_audit |= $cam if $cam;
 
 		    if ($deny_mode & $AA_MAY_EXEC) {
 			$deny_mode |= $ALL_AA_EXEC_TYPE;
@@ -3123,7 +3170,7 @@ sub ask_the_questions {
                             $includevalid = 1 if $incname =~ /abstractions/;
                             next if ($includevalid == 0);
 
-                            ($cm, @m) = match_include_to_path($incname, 'allow', $path);
+                            ($cm, $am, @m) = match_include_to_path($incname, 'allow', $path);
                             if ($cm && mode_contains($cm, $mode)) {
 				#make sure it doesn't deny $mode
 				my $dm = match_include_to_path($incname, 'deny', $path);
@@ -3168,6 +3215,7 @@ sub ask_the_questions {
 
                         my $severity = $sevdb->rank($path, mode_to_str($mode));
 
+			my $audit_toggle = 0;
                         my $done = 0;
                         while (not $done) {
 
@@ -3178,11 +3226,25 @@ sub ask_the_questions {
 
                             # merge in any previous modes from this run
                             if ($allow_mode) {
+				my $str;
+				if ($audit_toggle == 1) {
+				    $str = mode_to_str($allow_mode);
+				    $str .= ", audit " . mode_to_str($mode & ~$allow_mode);
+				} elsif ($audit_toggle == 2) {
+				    $str = "audit " . mode_to_str($mode);
+				} else {
+				    $str = mode_to_str($mode);
+				}
                                 push @{ $q->{headers} }, gettext("Old Mode"), mode_to_str($allow_mode);
                                 $mode |= $allow_mode;
-                                push @{ $q->{headers} }, gettext("New Mode"), mode_to_str($mode);
+                                push @{ $q->{headers} }, gettext("New Mode"), $str;
                             } else {
-                                push @{ $q->{headers} }, gettext("Mode"), mode_to_str($mode);
+				my $str = "";
+				if ($audit_toggle) {
+				    $str = "audit ";
+				}
+				$str .= mode_to_str($mode);
+                                push @{ $q->{headers} }, gettext("Mode"), $str; 
                             }
                             push @{ $q->{headers} }, gettext("Severity"), $severity;
 
@@ -3191,7 +3253,7 @@ sub ask_the_questions {
 
                             $q->{functions} = [
                               "CMD_ALLOW", "CMD_DENY", "CMD_GLOB", "CMD_GLOBEXT", "CMD_NEW",
-                              "CMD_ABORT", "CMD_FINISHED"
+                              "CMD_ABORT", "CMD_FINISHED", "CMD_OTHER"
                             ];
 
                             $q->{default} =
@@ -3203,7 +3265,10 @@ sub ask_the_questions {
                             # if they just hit return, use the default answer
                             my ($ans, $selected) = UI_PromptUser($q);
 
-                            if ($ans eq "CMD_ALLOW") {
+			    if ($ans eq "CMD_OTHER") {
+
+				$audit_toggle = UI_ask_mode_toggles($audit_toggle, $allow_mode); 
+			    } elsif ($ans eq "CMD_ALLOW") {
                                 $path = $options[$selected];
                                 $done = 1;
                                 if ($path =~ m/^#include <(.+)>$/) {
@@ -3243,6 +3308,9 @@ sub ask_the_questions {
 
                                     # record the new entry
                                     $sd{$profile}{$hat}{allow}{path}{$path}{mode} = $mode;
+				    my $tmpmode = ($audit_toggle == 1) ? $mode & ~$allow_mode : 0;
+				    $tmpmode = ($audit_toggle == 2) ? $mode : $tmpmode;
+                                    $sd{$profile}{$hat}{allow}{path}{$path}{audit} |= $tmpmode;
 
                                     $changed{$profile} = 1;
                                     UI_Info(sprintf(gettext('Adding %s %s to profile.'), $path, mode_to_str($mode)));
@@ -3251,6 +3319,7 @@ sub ask_the_questions {
                             } elsif ($ans eq "CMD_DENY") {
 				# record the new entry
 				$sd{$profile}{$hat}{deny}{path}{$path}{mode} |= $mode & ~$allow_mode;
+				$sd{$profile}{$hat}{deny}{path}{$path}{audit} |= 0;
 
 				$changed{$profile} = 1;
 
@@ -3530,9 +3599,10 @@ sub delete_path_duplicates ($$$) {
 
     for my $entry (keys %{ $profile->{$allow}{path} }) {
         next if $entry eq "#include <$incname>";
-	my $cm = match_include_to_path($incname, $allow, $entry);
+	my ($cm, $am, @m) = match_include_to_path($incname, $allow, $entry);
         if ($cm
-            && mode_contains($cm, $profile->{$allow}{path}{$entry}{mode}))
+            && mode_contains($cm, $profile->{$allow}{path}{$entry}{mode})
+	    && mode_contains($am, $profile->{$allow}{path}{$entry}{audit}))
         {
             delete $profile->{$allow}{path}{$entry};
             $deleted++;
@@ -4447,15 +4517,15 @@ sub parse_profile_data {
         } elsif (m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- variable defined
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean defined
-        } elsif (m/^\s*(deny\s+)?([\"\@\/].*)\s+(\S+)\s*,\s*(#.*)?$/) {     # path entry
+        } elsif (m/^\s*(audit\s+)?(deny\s+)?([\"\@\/].*)\s+(\S+)\s*,\s*(#.*)?$/) {     # path entry
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
 
-            my ($path, $mode) = ($2, $3);
+            my ($path, $mode) = ($3, $4);
+	    my $audit = ($1) ? 1 : 0;
+	    my $allow = ($2) ? 'deny' : 'allow';
 
-	    my $allow = 'allow';
-	    $allow = 'deny' if ($1);
 
             # strip off any trailing spaces.
             $path =~ s/\s+$//;
@@ -4475,7 +4545,11 @@ sub parse_profile_data {
             }
 
             $profile_data->{$profile}{$hat}{$allow}{path}{$path}{mode} = str_to_mode($mode);
-
+	    if ($audit) {
+		$profile_data->{$profile}{$hat}{$allow}{path}{$path}{audit} = str_to_mode($mode);
+	    } else {
+		$profile_data->{$profile}{$hat}{$allow}{path}{$path}{audit} = 0;
+	    }
         } elsif (m/^\s*#include <(.+)>\s*$/) {     # include stuff
             my $include = $1;
 
@@ -4963,14 +5037,29 @@ sub writepath_rules ($$$) {
     my @data;
     if (exists $profile_data->{$allow}{path}) {
         for my $path (sort keys %{$profile_data->{$allow}{path}}) {
-            my $mode = mode_to_str($profile_data->{$allow}{path}{$path}{mode});
+            my $mode = $profile_data->{$allow}{path}{$path}{mode};
+            my $audit = $profile_data->{$allow}{path}{$path}{audit};
 
-            # deal with whitespace in path names
-            if ($path =~ /\s/) {
-                push @data, "${pre}${allowstr}\"$path\" $mode,";
-            } else {
-                push @data, "${pre}${allowstr}$path $mode,";
-            }
+	    if ($mode & $audit) {
+		my $amode = $mode & $audit;
+		my $modestr = mode_to_str($amode);
+		if ($path =~ /\s/) {
+		    push @data, "${pre}audit ${allowstr}\"$path\" $modestr,";
+		} else {
+		    push @data, "${pre}audit ${allowstr}$path $modestr,";
+		}
+		# mask off the bits we have already written
+		$mode &= ~$audit;
+	    }
+	    if ($mode) {
+		my $modestr = mode_to_str($mode);
+		# deal with whitespace in path names
+		if ($path =~ /\s/) {
+		    push @data, "${pre}${allowstr}\"$path\" $modestr,";
+		} else {
+		    push @data, "${pre}${allowstr}$path $modestr,";
+		}
+	    }
         }
 	push @data, "";
     }
@@ -5197,25 +5286,25 @@ sub matchliteral {
 sub profile_known_exec (\%$$) {
     my ($profile, $type, $exec_target) = @_;
     if ( $type eq "exec" ) {
-        my ($cm, @m);
+        my ($cm, $am, @m);
 
         # test denies first
-        ($cm, @m) = rematchfrag($profile, 'deny', $exec_target);
+        ($cm, $am, @m) = rematchfrag($profile, 'deny', $exec_target);
 	if ($cm & $AA_MAY_EXEC) {
 	    return -1;
 	}
-        ($cm, @m) = match_prof_incs_to_path($profile, 'deny', $exec_target);
+        ($cm, $am, @m) = match_prof_incs_to_path($profile, 'deny', $exec_target);
 	if ($cm & $AA_MAY_EXEC) {
 	    return -1;
 	}
 
 	# now test the generally longer allow lists
-        ($cm, @m) = rematchfrag($profile, 'allow', $exec_target);
+        ($cm, $am, @m) = rematchfrag($profile, 'allow', $exec_target);
 	if ($cm & $AA_MAY_EXEC) {
 	    return 1;
 	}
 
-        ($cm, @m) = match_prof_incs_to_path($profile, 'allow', $exec_target);
+        ($cm, $am, @m) = match_prof_incs_to_path($profile, 'allow', $exec_target);
 	if ($cm & $AA_MAY_EXEC) {
 	    return 1;
 	}
@@ -5329,6 +5418,7 @@ sub rematchfrag ($$$) {
     my ($frag, $allow, $path) = @_;
 
     my $combinedmode = 0;
+    my $combinedaudit = 0;
     my @matches;
 
     for my $entry (keys %{ $frag->{$allow}{path} }) {
@@ -5340,32 +5430,36 @@ sub rematchfrag ($$$) {
 
             # regexp matches, add it's mode to the list to check against
             $combinedmode |= $frag->{$allow}{path}{$entry}{mode};
+            $combinedaudit |= $frag->{$allow}{path}{$entry}{audit};
             push @matches, $entry;
         }
     }
 
-    return wantarray ? ($combinedmode, @matches) : $combinedmode;
+    return wantarray ? ($combinedmode, $combinedaudit, @matches) : $combinedmode;
 }
 
 sub match_include_to_path ($$$) {
     my ($incname, $allow, $path) = @_;
 
     my $combinedmode = 0;
+    my $combinedaudit = 0;
     my @matches;
 
     my @includelist = ( $incname );
     while (my $incfile = shift @includelist) {
         my $ret = eval { loadinclude($incfile); };
         if ($@) { fatal_error $@; }
-        my ($cm, @m) = rematchfrag($include{$incfile}{$incfile}, $allow, $path);
+        my ($cm, $am, @m) = rematchfrag($include{$incfile}{$incfile}, $allow, $path);
         if ($cm) {
             $combinedmode |= $cm;
+	    $combinedaudit |= $am;
             push @matches, @m;
         }
 
         # check if a literal version is in the current include fragment
         if ($include{$incfile}{$incfile}{$allow}{path}{$path}) {
             $combinedmode |= $include{$incfile}{$incfile}{$allow}{path}{$path}{mode};
+            $combinedaudit |= $include{$incfile}{$incfile}{$allow}{path}{$path}{audit};
         }
 
         # if this fragment includes others, check them too
@@ -5374,26 +5468,28 @@ sub match_include_to_path ($$$) {
         }
     }
 
-    return wantarray ? ($combinedmode, @matches) : $combinedmode;
+    return wantarray ? ($combinedmode, $combinedaudit, @matches) : $combinedmode;
 }
 
 sub match_prof_incs_to_path ($$$) {
     my ($frag, $allow, $path) = @_;
 
     my $combinedmode = 0;
+    my $combinedaudit = 0;
     my @matches;
 
     # scan the include fragments for this profile looking for matches
     my @includelist = keys %{ $frag->{include} };
     while (my $include = shift @includelist) {
-	my ($cm, @m) = match_include_to_path($include, $allow, $path);
+	my ($cm, $am, @m) = match_include_to_path($include, $allow, $path);
         if ($cm) {
             $combinedmode |= $cm;
+            $combinedaudit |= $am;
             push @matches, @m;
         }
     }
 
-    return wantarray ? ($combinedmode, @matches) : $combinedmode;
+    return wantarray ? ($combinedmode, $combinedaudit, @matches) : $combinedmode;
 }
 
 #find includes that match the path to suggest
@@ -5402,20 +5498,23 @@ sub suggest_incs_for_path {
 
 
     my $combinedmode = 0;
+    my $combinedaudit = 0;
     my @matches;
 
     # scan the include fragments looking for matches
     my @includelist = ($incname);
     while (my $include = shift @includelist) {
-        my ($cm, @m) = rematchfrag($include{$include}{$include}, 'allow', $path);
+        my ($cm, $am, @m) = rematchfrag($include{$include}{$include}, 'allow', $path);
         if ($cm) {
             $combinedmode |= $cm;
+            $combinedaudit |= $am;
             push @matches, @m;
         }
 
         # check if a literal version is in the current include fragment
         if ($include{$include}{$include}{allow}{path}{$path}) {
             $combinedmode |= $include{$include}{$include}{allow}{path}{$path}{mode};
+            $combinedaudit |= $include{$include}{$include}{allow}{path}{$path}{audit};
         }
 
         # if this fragment includes others, check them too
@@ -5425,7 +5524,7 @@ sub suggest_incs_for_path {
     }
 
     if ($combinedmode) {
-        return wantarray ? ($combinedmode, @matches) : $combinedmode;
+        return wantarray ? ($combinedmode, $combinedaudit, @matches) : $combinedmode;
     } else {
         return;
     }
