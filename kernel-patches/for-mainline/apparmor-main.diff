@@ -7,12 +7,12 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- security/apparmor/main.c | 1421 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 1421 insertions(+)
+ security/apparmor/main.c | 1479 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 1479 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/main.c
-@@ -0,0 +1,1421 @@
+@@ -0,0 +1,1479 @@
 +/*
 + *	Copyright (C) 2002-2007 Novell/SUSE
 + *
@@ -84,6 +84,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +static void aa_audit_file_sub_mask(struct audit_buffer *ab, char *buffer,
 +				   int mask)
 +{
++	const char unsafex[] = "upcn";
++	const char safex[] = "UPCN";
 +	char *m = buffer;
 +
 +	if (mask & AA_EXEC_MMAP)
@@ -95,37 +97,18 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	else if (mask & MAY_APPEND)
 +		*m++ = 'a';
 +	if (mask & MAY_EXEC) {
-+		if (mask & AA_EXEC_UNSAFE) {
-+			switch(mask & AA_EXEC_MODIFIERS) {
-+			case AA_EXEC_UNCONFINED:
-+				*m++ = 'u';
-+				break;
-+			case AA_EXEC_PIX:
-+				*m++ = 'p';
-+				/* fall through */
-+			case AA_EXEC_INHERIT:
-+				*m++ = 'i';
-+				break;
-+			case AA_EXEC_PROFILE:
-+				*m++ = 'p';
-+				break;
-+			}
-+		} else {
-+			switch(mask & AA_EXEC_MODIFIERS) {
-+			case AA_EXEC_UNCONFINED:
-+				*m++ = 'U';
-+				break;
-+			case AA_EXEC_PIX:
-+				*m++ = 'P';
-+				/* fall through */
-+			case AA_EXEC_INHERIT:
-+				*m++ = 'I';
-+				break;
-+			case AA_EXEC_PROFILE:
-+				*m++ = 'P';
-+				break;
-+			}
++		int index = AA_EXEC_INDEX(mask);
++		/* all indexes > 4 are also named transitions */
++		if (index > 4)
++			index = 4;
++		if (index > 0) {
++			if (mask & AA_EXEC_UNSAFE)
++				*m++ = unsafex[index - 1];
++			else
++				*m++ = safex[index - 1];
 +		}
++		if (mask & AA_EXEC_INHERIT)
++			*m++ = 'i';
 +		*m++ = 'x';
 +	}
 +	if (mask & AA_MAY_LINK)
@@ -369,7 +352,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +			  int *request_mask, int *audit_mask)
 +{
 +	unsigned int state;
-+	int l_mode, t_mode, denied_mask = 0;
++	int l_mode, t_mode, l_x, t_x, denied_mask = 0;
 +	int link_mask = AA_MAY_LINK << target_mode;
 +
 +	*request_mask = link_mask;
@@ -393,7 +376,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +			return denied_mask;
 +	}
 +
-+	/* Do link perm subset test
++	/* Do link perm subset test requiring permission on link are a
++	 * subset of the permissions on target.
 +	 * If a subset test is required a permission subset test of the
 +	 * perms for the link are done against the user::other of the
 +	 * target's 'r', 'w', 'x', 'a', 'k', and 'm' permissions.
@@ -405,6 +389,9 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +	t_mode = aa_match(profile->file_rules, target, NULL);
 +
++	l_x = l_mode & (ALL_AA_EXEC_TYPE | AA_EXEC_BITS);
++	t_x = t_mode & (ALL_AA_EXEC_TYPE | AA_EXEC_BITS);
++
 +	/* For actual subset test ignore valid-profile-transition flags,
 +	 * and link bits
 +	 */
@@ -414,12 +401,20 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	*request_mask = l_mode | link_mask;
 +
 +	if (l_mode) {
++		int x = l_x | (t_x & ALL_AA_EXEC_UNSAFE);
 +		denied_mask |= l_mode & ~t_mode;
-+		if ((l_mode & AA_EXEC_BITS) &&
-+		    (l_mode & ALL_AA_EXEC_TYPE) !=
-+		    (t_mode & ALL_AA_EXEC_TYPE))
-+			denied_mask = (denied_mask & ~ALL_AA_EXEC_TYPE) |
-+				(l_mode & (ALL_AA_EXEC_TYPE | AA_EXEC_BITS));
++		/* mask off x modes not used by link */
++
++		/* handle exec subset
++		 * - link safe exec issubset of unsafe exec
++		 * - no link x perm is subset of target having x perm
++		 */
++		if ((l_mode & AA_USER_EXEC) &&
++		    (x & AA_USER_EXEC_TYPE) != (t_x & AA_USER_EXEC_TYPE))
++			denied_mask = AA_USER_EXEC | (l_x & AA_USER_EXEC_TYPE);
++		if ((l_mode & AA_OTHER_EXEC) &&
++		    (x & AA_OTHER_EXEC_TYPE) != (t_x & AA_OTHER_EXEC_TYPE))
++			denied_mask = AA_OTHER_EXEC | (l_x & AA_OTHER_EXEC_TYPE);
 +	}
 +
 +	return denied_mask;
@@ -484,6 +479,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	}
 +}
 +
++static char *new_compound_name(const char *n1, const char *n2)
++{
++	char *name = kmalloc(strlen(n1) + strlen(n2) + 3, GFP_KERNEL);
++	if (name)
++		sprintf(name, "%s//%s", n1, n2);
++	return name;
++}
 +static inline void aa_put_name_buffer(char *buffer)
 +{
 +	kfree(buffer);
@@ -840,16 +842,37 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +}
 +
 +static struct aa_profile *
-+aa_register_find(struct aa_profile *profile, const char *name, int mandatory,
-+		 int complain, struct aa_audit *sa)
++aa_register_find(struct aa_profile *profile, const char* ns_name,
++		 const char *name, int mandatory, int complain,
++		 struct aa_audit *sa)
 +{
++	struct aa_namespace *ns;
 +	struct aa_profile *new_profile;
++	int ns_ref = 0;
++
++	if (profile)
++		ns = profile->ns;
++	else
++		ns = default_namespace;
++
++	if (ns_name) {
++		/* locate the profile namespace */
++		ns = aa_find_namespace(ns_name);
++		if (!ns) {
++			if (mandatory) {
++				sa->info = "profile namespace not found";
++				sa->denied_mask = sa->request_mask;
++				sa->error_code = -ENOENT;
++				return ERR_PTR(-ENOENT);
++			} else {
++				return NULL;
++			}
++		}
++		ns_ref++;
++	}
 +
 +	/* Locate new profile */
-+	if (profile)
-+		new_profile = aa_find_profile(profile->ns, name);
-+	else
-+		new_profile = aa_find_profile(default_namespace, name);
++	new_profile = aa_find_profile(ns, name);
 +
 +	if (new_profile) {
 +		AA_DEBUG("%s: setting profile %s\n",
@@ -863,16 +886,82 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +			    aa_dup_profile(profile->ns->null_complain_profile);
 +		} else {
 +			sa->error_code = -EACCES;
-+			return ERR_PTR(aa_audit_file(profile, sa));
++			if (ns_ref)
++				aa_put_namespace(ns);
++			return ERR_PTR(-EACCES);
 +		}
 +	} else {
 +		/* Only way we can get into this code is if task
-+		 * is unconfined, or pix.
++		 * is unconfined, pix, nix.
 +		 */
 +		AA_DEBUG("%s: No profile found for exec image '%s'\n",
 +			 __FUNCTION__,
 +			 name);
 +	}
++	if (ns_ref)
++		aa_put_namespace(ns);
++	return new_profile;
++}
++
++static struct aa_profile *
++aa_x_to_profile(struct aa_profile *profile, const char *filename, int xmode,
++		struct aa_audit *sa, char **child)
++{
++	struct aa_profile *new_profile = NULL;
++	int ix = xmode & AA_EXEC_INHERIT;
++	int complain = PROFILE_COMPLAIN(profile);
++	int index;
++
++	*child = NULL;
++	switch (xmode & AA_EXEC_MODIFIERS) {
++	case 0:
++		/* only valid with ix flag */
++		ix = 1;
++		break;
++	case AA_EXEC_UNCONFINED:
++		/* only valid without ix flag */
++		ix = 0;
++		break;
++	case AA_EXEC_PROFILE:
++		new_profile = aa_register_find(profile, NULL, filename, !ix,
++					       complain, sa);
++		break;
++	case AA_EXEC_CHILD:
++		*child = new_compound_name(profile->name, filename);
++		sa->name2 = *child;
++		if (!*child) {
++			sa->info = "Failed name resolution - exec failed";
++			sa->error_code = -ENOMEM;
++			new_profile = ERR_PTR(-ENOMEM);
++		} else {
++			new_profile = aa_register_find(profile, NULL, *child,
++						       !ix, complain, sa);
++		}
++		break;
++	default:
++		/* all other indexes are named transitions */
++		index = AA_EXEC_INDEX(xmode);
++		if (index - 4 > profile->exec_table_size) {
++			sa->info = "invalid named transition - exec failed";
++			sa->error_code = -EACCES;
++			new_profile = ERR_PTR(-EACCES);
++		} else {
++			char *ns_name = NULL;
++			char *name = profile->exec_table[index - 4];
++			if (*name == ':') {
++				ns_name = name + 1;
++				name = ns_name + strlen(ns_name) + 1;
++			}
++			sa->name2 = name;
++			sa->name3 = ns_name;
++			new_profile =
++				aa_register_find(profile, ns_name, name,
++						 !ix, complain, sa);
++		}
++	}
++	if (IS_ERR(new_profile))
++		/* all these failures must be audited - no quieting */
++		return ERR_PTR(aa_audit_reject(profile, sa));
 +	return new_profile;
 +}
 +
@@ -886,7 +975,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +int aa_register(struct linux_binprm *bprm)
 +{
 +	const char *filename;
-+	char  *buffer = NULL;
++	char  *buffer = NULL, *child = NULL;
 +	struct file *filp = bprm->file;
 +	struct aa_profile *profile, *old_profile, *new_profile = NULL;
 +	int exec_mode, complain = 0, shift;
@@ -907,7 +996,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		if (profile) {
 +			sa.info = "Failed name resolution - exec failed";
 +			sa.error_code = PTR_ERR(filename);
-+			aa_audit_reject(profile, &sa);
++			aa_audit_file(profile, &sa);
 +			return sa.error_code;
 +		} else
 +			return 0;
@@ -926,46 +1015,16 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		exec_mode = aa_match(profile->file_rules, filename,
 +				     &sa.audit_mask);
 +
++
 +		if (exec_mode & sa.request_mask) {
-+			switch ((exec_mode >> shift) & AA_EXEC_MODIFIERS) {
-+			case AA_EXEC_INHERIT:
-+				AA_DEBUG("%s: INHERIT %s\n",
-+					 __FUNCTION__,
-+					 filename);
-+				/* nothing to be done here */
++			int xm = exec_mode >> shift;
++			new_profile = aa_x_to_profile(profile, filename,
++						      xm, &sa, &child);
++
++			if (!new_profile && (xm & AA_EXEC_INHERIT))
++				/* (p|c|n|)ix - don't change profile */
 +				goto cleanup;
-+
-+			case AA_EXEC_UNCONFINED:
-+				AA_DEBUG("%s: UNCONFINED %s\n",
-+					 __FUNCTION__,
-+					 filename);
-+
-+				/* detach current profile */
-+				new_profile = NULL;
-+				break;
-+
-+			case AA_EXEC_PROFILE:
-+				AA_DEBUG("%s: PROFILE %s\n",
-+					 __FUNCTION__,
-+					 filename);
-+				new_profile = aa_register_find(profile,
-+							       filename,
-+							       1, complain,
-+							       &sa);
-+				break;
-+			case AA_EXEC_PIX:
-+				AA_DEBUG("%s: PROFILE %s\n",
-+					 __FUNCTION__,
-+					 filename);
-+				new_profile = aa_register_find(profile,
-+							       filename,
-+							       0, complain,
-+							       &sa);
-+				if (!new_profile)
-+					/* inherit - nothing to be done here */
-+					goto cleanup;
-+				break;
-+			}
++			/* error case caught below */
 +
 +		} else if (sa.request_mask & AUDIT_QUIET_MASK(sa.audit_mask)) {
 +			/* quiet failed exit */
@@ -985,7 +1044,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		}
 +	} else {
 +		/* Unconfined task, load profile if it exists */
-+		new_profile = aa_register_find(NULL, filename, 0, 0, &sa);
++		new_profile = aa_register_find(NULL, NULL, filename, 0, 0, &sa);
 +		if (new_profile == NULL)
 +			goto cleanup;
 +	}
@@ -1039,6 +1098,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	}
 +
 +cleanup:
++	aa_put_name_buffer(child);
 +	aa_put_name_buffer(buffer);
 +	if (IS_ERR(new_profile))
 +		return PTR_ERR(new_profile);
@@ -1180,7 +1240,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +int aa_change_profile(const char *ns_name, const char *name)
 +{
 +	struct aa_task_context *cxt;
-+	struct aa_profile *profile;
++	struct aa_profile *profile = NULL;
 +	struct aa_namespace *ns = NULL;
 +	struct aa_audit sa;
 +	unsigned int state;
@@ -1196,23 +1256,23 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +repeat:
 +	task_lock(current);
 +	cxt = aa_task_context(current);
-+	if (!cxt) {
-+		task_unlock(current);
-+		return -EPERM;
-+	}
-+	profile = aa_dup_profile(cxt->profile);
++	if (cxt)
++		profile = aa_dup_profile(cxt->profile);
 +	task_unlock(current);
 +
 +	if (ns_name)
 +		ns = aa_find_namespace(ns_name);
-+	else
++	else if (profile)
 +		ns = aa_get_namespace(profile->ns);
++	else
++		ns = aa_get_namespace(default_namespace);
++
 +	if (!ns) {
 +		aa_put_profile(profile);
 +		return -ENOENT;
 +	}
 +
-+	if (PROFILE_COMPLAIN(profile) ||
++	if (!profile || PROFILE_COMPLAIN(profile) ||
 +	    (ns == profile->ns &&
 +	     (aa_match(profile->file_rules, name, NULL) & AA_CHANGE_PROFILE)))
 +		error = do_change_profile(profile, ns, name, 0, 0, &sa);
@@ -1287,16 +1347,14 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		else
 +			profile_name = profile->name;
 +
-+		name = kmalloc(strlen(hat_name) + 3 + strlen(profile_name),
-+			       GFP_KERNEL);
++		name = new_compound_name(profile_name, hat_name);
 +		if (!name) {
 +			error = -ENOMEM;
 +			goto out;
 +		}
-+		sprintf(name, "%s//%s", profile_name, hat_name);
 +		error = do_change_profile(profile, profile->ns, name, cookie,
 +					  0, &sa);
-+		kfree(name);
++		aa_put_name_buffer(name);
 +	} else if (previous_profile)
 +		error = do_change_profile(profile, profile->ns,
 +					  previous_profile->name, cookie, 1,

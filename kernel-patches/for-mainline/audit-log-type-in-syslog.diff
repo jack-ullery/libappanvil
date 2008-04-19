@@ -4,7 +4,7 @@
 
 --- a/security/apparmor/main.c
 +++ b/security/apparmor/main.c
-@@ -176,8 +176,10 @@ static int aa_audit_base(struct aa_profi
+@@ -159,8 +159,10 @@ static int aa_audit_base(struct aa_profi
  		return type == AUDIT_APPARMOR_ALLOWED ? 0 : -ENOMEM;
  	}
  

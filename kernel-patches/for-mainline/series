@@ -110,6 +110,7 @@ apparmor-intree.diff
 #FS2.2.2_fix-unionfs-with-AppArmor.patch
 #FS2.1.3_fix-unionfs-with-AppArmor.patch
 
+#named-transitions.diff
 apparmor-network.diff
 #fix-net.diff
 apparmor-rlimits.diff

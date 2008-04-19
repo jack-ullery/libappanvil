@@ -8,10 +8,10 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- security/apparmor/match.c            |  364 +++++++++++++++
+ security/apparmor/match.c            |  364 ++++++++++++++
  security/apparmor/match.h            |   87 +++
- security/apparmor/module_interface.c |  815 +++++++++++++++++++++++++++++++++++
- 3 files changed, 1266 insertions(+)
+ security/apparmor/module_interface.c |  874 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 1325 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/match.c
@@ -472,7 +472,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +#endif /* __MATCH_H */
 --- /dev/null
 +++ b/security/apparmor/module_interface.c
-@@ -0,0 +1,815 @@
+@@ -0,0 +1,874 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -716,7 +716,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + *
 + * returns dfa or ERR_PTR
 + */
-+struct aa_dfa *aa_unpack_dfa(struct aa_ext *e)
++static struct aa_dfa *aa_unpack_dfa(struct aa_ext *e)
 +{
 +	char *blob = NULL;
 +	size_t size, error = 0;
@@ -748,16 +748,53 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	return dfa;
 +}
 +
++static int aa_unpack_exec_table(struct aa_ext *e, struct aa_profile *profile)
++{
++	void *pos = e->pos;
++
++	/* exec table is optional */
++	if (aa_is_nameX(e, AA_STRUCT, "xtable")) {
++		int i, size;
++
++		size = aa_is_array(e, NULL);
++		/* currently 4 exec bits and entries 0-3 are reserved iupcx */
++		if (size > 16 - 4)
++			goto fail;
++		profile->exec_table = kzalloc(sizeof(char *) * size,
++					      GFP_KERNEL);
++		if (!profile->exec_table)
++			goto fail;
++
++		for (i = 0; i < size; i++) {
++		    char *tmp;
++			if (!aa_is_dynstring(e, &tmp, NULL))
++				goto fail;
++			/* note: strings beginning with a : have an embedded
++			   \0 seperating the profile ns name from the profile
++			   name */
++			profile->exec_table[i] = tmp;
++		}
++		if (!aa_is_nameX(e, AA_ARRAYEND, NULL))
++			goto fail;
++		if (!aa_is_nameX(e, AA_STRUCTEND, NULL))
++			goto fail;
++	}
++	return 1;
++
++fail:
++	e->pos = pos;
++	return 0;
++}
++
 +/**
 + * aa_unpack_profile - unpack a serialized profile
 + * @e: serialized data extent information
-+ * @operation: operation profile is being unpacked for
++ * @sa: audit struct for the operation
 + */
 +static struct aa_profile *aa_unpack_profile(struct aa_ext *e,
-+					    const char *operation)
++					    struct aa_audit *sa)
 +{
 +	struct aa_profile *profile = NULL;
-+	struct aa_audit sa;
 +
 +	int error = -EPROTO;
 +
@@ -798,11 +835,10 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		error = PTR_ERR(profile->file_rules);
 +		profile->file_rules = NULL;
 +		goto fail;
-+			if (!aa_is_u16(e, &profile->audit_network[i], NULL))
-+				goto fail;
-+			if (!aa_is_u16(e, &profile->quiet_network[i], NULL))
-+				goto fail;
 +	}
++
++	if (!aa_unpack_exec_table(e, profile))
++		goto fail;
 +
 +	if (!aa_is_nameX(e, AA_STRUCTEND, NULL))
 +		goto fail;
@@ -810,13 +846,10 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	return profile;
 +
 +fail:
-+	memset(&sa, 0, sizeof(sa));
-+	sa.operation = operation;
-+	sa.gfp_mask = GFP_KERNEL;
-+	sa.name = profile && profile->name ? profile->name : "unknown";
-+	if (!sa.info)
-+		sa.info = "failed to unpack profile";
-+	aa_audit_status(NULL, &sa);
++	sa->name = profile && profile->name ? profile->name : "unknown";
++	if (!sa->info)
++		sa->info = "failed to unpack profile";
++	aa_audit_status(NULL, sa);
 +
 +	if (profile)
 +		free_aa_profile(profile);
@@ -831,27 +864,19 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 + *
 + * returns error or 0 if header is good
 + */
-+static int aa_verify_header(struct aa_ext *e, const char *operation)
++static int aa_verify_header(struct aa_ext *e, struct aa_audit *sa)
 +{
 +	/* get the interface version */
 +	if (!aa_is_u32(e, &e->version, "version")) {
-+		struct aa_audit sa;
-+		memset(&sa, 0, sizeof(sa));
-+		sa.operation = operation;
-+		sa.gfp_mask = GFP_KERNEL;
-+		sa.info = "invalid profile format";
-+		aa_audit_status(NULL, &sa);
++		sa->info = "invalid profile format";
++		aa_audit_status(NULL, sa);
 +		return -EPROTONOSUPPORT;
 +	}
 +
 +	/* check that the interface version is currently supported */
-+	if (e->version != 4) {
-+		struct aa_audit sa;
-+		memset(&sa, 0, sizeof(sa));
-+		sa.operation = operation;
-+		sa.gfp_mask = GFP_KERNEL;
-+		sa.info = "unsupported interface version";
-+		aa_audit_status(NULL, &sa);
++	if (e->version != 5) {
++		sa->info = "unsupported interface version";
++		aa_audit_status(NULL, sa);
 +		return -EPROTONOSUPPORT;
 +	}
 +
@@ -878,11 +903,17 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		.pos = data,
 +		.ns_name = NULL
 +	};
-+	ssize_t error = aa_verify_header(&e, "profile_load");
++	ssize_t error;
++	struct aa_audit sa;
++	memset(&sa, 0, sizeof(sa));
++	sa.operation = "profile_load";
++	sa.gfp_mask = GFP_KERNEL;
++
++	error = aa_verify_header(&e, &sa);
 +	if (error)
 +		return error;
 +
-+	profile = aa_unpack_profile(&e, "profile_load");
++	profile = aa_unpack_profile(&e, &sa);
 +	if (IS_ERR(profile))
 +		return PTR_ERR(profile);
 +
@@ -914,6 +945,10 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		/* A profile with this name exists already. */
 +		write_unlock(&ns->lock);
 +		write_unlock(&profile_ns_list_lock);
++		sa.name = profile->name;
++		sa.name2 = ns->name;
++		sa.info = "failed: profile already loaded";
++		aa_audit_status(NULL, &sa);
 +		mutex_unlock(&aa_interface_lock);
 +		aa_put_profile(profile);
 +		return -EEXIST;
@@ -923,8 +958,11 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	list_add(&profile->list, &ns->profiles);
 +	write_unlock(&ns->lock);
 +	write_unlock(&profile_ns_list_lock);
-+	mutex_unlock(&aa_interface_lock);
 +
++	sa.name = profile->name;
++	sa.name2 = ns->name;
++	aa_audit_status(NULL, &sa);
++	mutex_unlock(&aa_interface_lock);
 +	return size;
 +}
 +
@@ -970,12 +1008,17 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		.pos = udata,
 +		.ns_name = NULL
 +	};
++	ssize_t error;
++	struct aa_audit sa;
++	memset(&sa, 0, sizeof(sa));
++	sa.operation = "profile_replace";
++	sa.gfp_mask = GFP_KERNEL;
 +
-+	ssize_t error = aa_verify_header(&e, "profile_replace");
++	error = aa_verify_header(&e, &sa);
 +	if (error)
 +		return error;
 +
-+	new_profile = aa_unpack_profile(&e, "profile_replace");
++	new_profile = aa_unpack_profile(&e, &sa);
 +	if (IS_ERR(new_profile))
 +		return PTR_ERR(new_profile);
 +
@@ -1013,13 +1056,16 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	}
 +	new_profile->ns = aa_get_namespace(ns);
 +	ns->profile_count++;
++	/* not don't need an extra ref count to keep new_profile as
++	 * it is protect by the interface mutex */
 +	list_add(&new_profile->list, &ns->profiles);
 +	write_unlock(&ns->lock);
 +	write_unlock(&profile_ns_list_lock);
 +
-+	if (!old_profile)
++	if (!old_profile) {
++		sa.operation = "profile_load";
 +		goto out;
-+
++	}
 +	/*
 +	 * Replacement needs to allocate a new aa_task_context for each
 +	 * task confined by old_profile.  To do this the profile locks
@@ -1048,6 +1094,9 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	aa_put_profile(old_profile);
 +
 +out:
++	sa.name = new_profile->name;
++	sa.name2 = ns->name;
++	aa_audit_status(NULL, &sa);
 +	mutex_unlock(&aa_interface_lock);
 +	return size;
 +}
@@ -1064,29 +1113,35 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +{
 +	struct aa_namespace *ns;
 +	struct aa_profile *profile;
++	struct aa_audit sa;
++	memset(&sa, 0, sizeof(sa));
++	sa.operation = "profile_remove";
++	sa.gfp_mask = GFP_KERNEL;
 +
 +	mutex_lock(&aa_interface_lock);
 +	write_lock(&profile_ns_list_lock);
 +
-+	if (name[0] == '/') {
-+		ns = default_namespace;
-+	} else {
-+		char *split = strchr(name, ':');
++	if (name[0] == ':') {
++		char *split = strchr(name + 1, ':');
 +		if (!split)
 +			goto noent;
 +		*split = 0;
-+		ns = __aa_find_namespace(name, &profile_ns_list);
++		ns = __aa_find_namespace(name + 1, &profile_ns_list);
 +		name = split + 1;
++	} else {
++		ns = default_namespace;
 +	}
 +
 +	if (!ns)
 +		goto noent;
++	sa.name2 = ns->name;
 +	write_lock(&ns->lock);
 +	profile = __aa_find_profile(name, &ns->profiles);
 +	if (!profile) {
 +		write_unlock(&ns->lock);
 +		goto noent;
 +	}
++	sa.name = profile->name;
 +
 +	/* Remove the profile from each task context it is on. */
 +	lock_profile(profile);
@@ -1103,6 +1158,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +		aa_put_namespace(ns);
 +	}
 +	write_unlock(&profile_ns_list_lock);
++
++	aa_audit_status(NULL, &sa);
 +	mutex_unlock(&aa_interface_lock);
 +	aa_put_profile(profile);
 +
@@ -1110,6 +1167,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +noent:
 +	write_unlock(&profile_ns_list_lock);
++	sa.info = "failed: profile does not exist";
++	aa_audit_status(NULL, &sa);
 +	mutex_unlock(&aa_interface_lock);
 +	return -ENOENT;
 +}

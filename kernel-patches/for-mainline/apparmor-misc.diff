@@ -13,13 +13,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 ---
  security/apparmor/Kconfig      |   42 ++++
  security/apparmor/Makefile     |   13 +
- security/apparmor/apparmor.h   |  358 +++++++++++++++++++++++++++++++++++++++++
- security/apparmor/apparmorfs.c |  280 ++++++++++++++++++++++++++++++++
- security/apparmor/inline.h     |  250 ++++++++++++++++++++++++++++
+ security/apparmor/apparmor.h   |  367 +++++++++++++++++++++++++++++++++++++++++
+ security/apparmor/apparmorfs.c |  280 +++++++++++++++++++++++++++++++
+ security/apparmor/inline.h     |  250 +++++++++++++++++++++++++++
  security/apparmor/list.c       |  156 +++++++++++++++++
  security/apparmor/locking.txt  |   68 +++++++
- security/apparmor/procattr.c   |  195 ++++++++++++++++++++++
- 8 files changed, 1362 insertions(+)
+ security/apparmor/procattr.c   |  195 +++++++++++++++++++++
+ 8 files changed, 1371 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/Kconfig
@@ -84,7 +84,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	$(call cmd,make-caps)
 --- /dev/null
 +++ b/security/apparmor/apparmor.h
-@@ -0,0 +1,358 @@
+@@ -0,0 +1,367 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -113,30 +113,31 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +#define AA_EXEC_MMAP			0x0040
 +#define AA_MAY_MOUNT			0x0080	/* no direct audit mapping */
 +#define AA_EXEC_UNSAFE			0x0100
-+#define AA_EXEC_MOD_0			0x0200
-+#define AA_EXEC_MOD_1			0x0400
-+#define AA_EXEC_MOD_2			0x0800
-+#define AA_EXEC_MOD_3			0x1000
-+#define AA_EXEC_MOD_4			0x2000
++#define AA_EXEC_INHERIT			0x0200
++#define AA_EXEC_MOD_0			0x0400
++#define AA_EXEC_MOD_1			0x0800
++#define AA_EXEC_MOD_2			0x1000
++#define AA_EXEC_MOD_3			0x2000
 +
 +#define AA_BASE_PERMS			(MAY_READ | MAY_WRITE | MAY_EXEC | \
 +					 MAY_APPEND | AA_MAY_LINK | \
 +					 AA_MAY_LOCK | AA_EXEC_MMAP | \
 +					 AA_MAY_MOUNT | AA_EXEC_UNSAFE | \
-+					 AA_EXEC_MOD_0 | AA_EXEC_MOD_1 | \
-+					 AA_EXEC_MOD_2 | AA_EXEC_MOD_3 | \
-+					 AA_EXEC_MOD_4)
++					 AA_EXEC_INHERIT | AA_EXEC_MOD_0 | \
++					 AA_EXEC_MOD_1 | AA_EXEC_MOD_2 | \
++					 AA_EXEC_MOD_3)
 +
 +#define AA_EXEC_MODIFIERS		(AA_EXEC_MOD_0 | AA_EXEC_MOD_1 | \
-+					 AA_EXEC_MOD_2 | AA_EXEC_MOD_3 | \
-+					 AA_EXEC_MOD_4)
++					 AA_EXEC_MOD_2 | AA_EXEC_MOD_3)
 +
-+#define AA_EXEC_TYPE			(AA_EXEC_UNSAFE | AA_EXEC_MODIFIERS)
++#define AA_EXEC_TYPE			(AA_EXEC_UNSAFE | AA_EXEC_INHERIT | \
++					 AA_EXEC_MODIFIERS)
 +
 +#define AA_EXEC_UNCONFINED		AA_EXEC_MOD_0
-+#define AA_EXEC_INHERIT			AA_EXEC_MOD_1
-+#define AA_EXEC_PROFILE			(AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
-+#define AA_EXEC_PIX			 AA_EXEC_MOD_2
++#define AA_EXEC_PROFILE			AA_EXEC_MOD_1
++#define AA_EXEC_CHILD			(AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
++/* remaining exec modes are index into profile name table */
++#define AA_EXEC_INDEX(mode)		((mode & AA_EXEC_MODIFIERS) >> 10)
 +
 +#define AA_USER_SHIFT			0
 +#define AA_OTHER_SHIFT			14
@@ -157,20 +158,26 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +#define AA_EXEC_BITS			(AA_USER_EXEC | AA_OTHER_EXEC)
 +
++#define ALL_AA_EXEC_UNSAFE		((AA_EXEC_UNSAFE << AA_USER_SHIFT) | \
++					 (AA_EXEC_UNSAFE << AA_OTHER_SHIFT))
++
 +#define ALL_AA_EXEC_TYPE		(AA_USER_EXEC_TYPE | AA_OTHER_EXEC_TYPE)
 +
 +/* overloaded permissions for link pairs */
 +#define AA_LINK_SUBSET_TEST		0x0020
 +
++#define AA_USER_PTRACE			0x10000000
++#define AA_OTHER_PTRACE			0x20000000
++#define AA_PTRACE_PERMS			(AA_USER_PTRACE | AA_OTHER_PTRACE)
++
 +/* shared permissions that are not duplicated in user::other */
-+#define AA_AUDIT_FIELD			0x10000000
-+#define AA_CHANGE_HAT			0x20000000
-+#define AA_CHANGE_PROFILE		0x40000000
++#define AA_CHANGE_HAT			0x40000000
++#define AA_CHANGE_PROFILE		0x80000000
 +
-+#define AA_SHARED_PERMS			(AA_CHANGE_HAT | AA_CHANGE_PROFILE | \
-+					 AA_AUDIT_FIELD)
++#define AA_SHARED_PERMS			(AA_CHANGE_HAT | AA_CHANGE_PROFILE)
 +
-+#define AA_VALID_PERM_MASK		(AA_FILE_PERMS | AA_SHARED_PERMS)
++#define AA_VALID_PERM_MASK		(AA_FILE_PERMS | AA_PTRACE_PERMS | \
++					 AA_SHARED_PERMS)
 +
 +/* audit bits for the second accept field */
 +#define AUDIT_FILE_MASK 0x1fc07f
@@ -270,6 +277,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	struct list_head list;
 +	struct aa_namespace *ns;
 +
++	int exec_table_size;
++	char **exec_table;
 +	struct aa_dfa *file_rules;
 +	struct {
 +		int complain;
