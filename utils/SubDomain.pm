@@ -199,7 +199,7 @@ my $AA_OTHER_SHIFT = 14;
 my $AA_USER_MASK = 16384 -1;
 
 my $AA_EXEC_TYPE = $AA_MAY_EXEC | $AA_EXEC_UNSAFE | $AA_EXEC_INHERIT |
-		    $AA_EXEC_UNCONFINED | $AA_EXEC_PROFILE | $AA_EXEC_NT;
+		    $AA_EXEC_UNCONFINED | $AA_EXEC_PROFILE | $AA_EXEC_CHILD | $AA_EXEC_NT;
 
 my $ALL_AA_EXEC_TYPE = $AA_EXEC_TYPE;
 
@@ -541,32 +541,56 @@ sub findexecutable ($) {
     return $fqdbin;
 }
 
-sub complain ($) {
+sub name_to_prof_filename($) {
     my $bin    = shift;
-    my $fqdbin = findexecutable($bin)
-      or fatal_error(sprintf(gettext('Can\'t find %s.'), $bin));
+    my $filename;
 
-    # skip directories
-    return unless -f $fqdbin;
+    unless ($bin =~ /^($profiledir|profile_)/) {
+	my $fqdbin = findexecutable($bin);
+	if ($fqdbin) {
+	    $filename = getprofilefilename($fqdbin);
+	    return ($filename, $fqdbin) if -f $filename;
+	}
+    }
 
-    UI_Info(sprintf(gettext('Setting %s to complain mode.'), $fqdbin));
+    if ($bin =~ /^$profiledir(.*)/) {
+	my $profile = $1;
+	return ($bin, $profile) if -f $bin;
+    } elsif ($bin =~ /^\//) {
+	$filename = getprofilefilename($bin);
+	return ($filename, $bin) if -f $filename;
+    } else {
+	# not an absolute path try it as a profile_
+	$bin = $1 if ($bin !~ /^profile_(.*)/);
+	$filename = getprofilefilename($bin);
+	return ($filename, "profile_${bin}") if -f $filename;
+    }
+    return undef;
+}
 
-    my $filename = getprofilefilename($fqdbin);
+sub complain ($) {
+    my $bin = shift;
+
+    return if (!$bin);
+
+    my ($filename, $name) = name_to_prof_filename($bin)
+	or fatal_error(sprintf(gettext('Can\'t find %s.'), $bin));
+
+    UI_Info(sprintf(gettext('Setting %s to complain mode.'), $name));
+
     setprofileflags($filename, "complain");
 }
 
 sub enforce ($) {
     my $bin = shift;
 
-    my $fqdbin = findexecutable($bin)
-      or fatal_error(sprintf(gettext('Can\'t find %s.'), $bin));
+    return if (!$bin);
 
-    # skip directories
-    return unless -f $fqdbin;
+    my ($filename, $name) = name_to_prof_filename($bin)
+	or fatal_error(sprintf(gettext('Can\'t find %s.'), $bin));
 
-    UI_Info(sprintf(gettext('Setting %s to enforce mode.'), $fqdbin));
+    UI_Info(sprintf(gettext('Setting %s to enforce mode.'), $name));
 
-    my $filename = getprofilefilename($fqdbin);
     setprofileflags($filename, "");
 }
 
@@ -681,13 +705,23 @@ sub get_inactive_profile {
 sub create_new_profile {
     my $fqdbin = shift;
 
-    my $profile = {
-      $fqdbin => {
-          flags   => "complain",
-          include => { "abstractions/base" => 1    },
-          path    => { $fqdbin => { mode => str_to_mode("mr") } },
-      }
-    };
+    my $profile;
+    if ($fqdbin =~ /^\// ) {
+	$profile = {
+	    $fqdbin => {
+		flags   => "complain",
+		include => { "abstractions/base" => 1    },
+		path    => { $fqdbin => { mode => str_to_mode("mr") } },
+	    }
+	};
+    } else {
+	$profile = {
+	    $fqdbin => {
+		flags   => "complain",
+		include => { "abstractions/base" => 1    },
+	    }
+	};
+    }
 
     # if the executable exists on this system, pull in extra dependencies
     if (-f $fqdbin) {
@@ -708,7 +742,7 @@ sub create_new_profile {
     }
 
     # create required infrastructure hats if it's a known change_hat app
-  for my $hatglob (keys %{$cfg->{required_hats}}) {
+    for my $hatglob (keys %{$cfg->{required_hats}}) {
         if ($fqdbin =~ /$hatglob/) {
             for my $hat (sort split(/\s+/, $cfg->{required_hats}{$hatglob})) {
                 $profile->{$hat} = { flags => "complain" };
@@ -742,6 +776,7 @@ sub get_profile {
     if (repo_is_enabled()) {
        my $results;
        UI_BusyStart( gettext("Connecting to repository.....") );
+
        my ($status_ok,$ret) =
            fetch_profiles_by_name($repo_url, $distro, $fqdbin );
        UI_BusyStop();
@@ -873,9 +908,11 @@ sub activate_repo_profiles ($$$) {
     }
 }
 
-sub autodep ($) {
-    my $bin = shift;
+sub autodep_base($$) {
+    my ($bin, $pname) = @_;
     %extras = ();
+
+    $bin = $pname if (! $bin) && ($pname =~ /^\//);
 
     unless ($repo_cfg || not defined $cfg->{repository}{url}) {
         $repo_cfg = read_config("repository.conf");
@@ -885,25 +922,32 @@ sub autodep ($) {
         }
     }
 
-    # findexecutable() might fail if we're running on a different system
-    # than the logs were collected on.  ugly.  we'll just hope for the best.
-    my $fqdbin = findexecutable($bin) || $bin;
+    my $fqdbin;
+    if ($bin) {
+	# findexecutable() might fail if we're running on a different system
+	# than the logs were collected on.  ugly.  we'll just hope for the best.
+	$fqdbin = findexecutable($bin) || $bin;
 
-    # try to make sure we have a full path in case findexecutable failed
-    return unless $fqdbin =~ /^\//;
+	# try to make sure we have a full path in case findexecutable failed
+	return unless $fqdbin =~ /^\//;
 
-    # ignore directories
-    return if -d $fqdbin;
+	# ignore directories
+	return if -d $fqdbin;
+    }
+
+    $pname = $fqdbin if $fqdbin;
 
     my $profile_data;
 
     readinactiveprofiles(); # need to read the profiles to see if an
                             # inactive local profile is present
-    $profile_data = eval { get_profile($fqdbin) };
+    $profile_data = eval { get_profile($pname) };
 
     unless ($profile_data) {
-        $profile_data = create_new_profile($fqdbin);
+        $profile_data = create_new_profile($pname);
     }
+
+    my $file = getprofilefilename($pname);
 
     # stick the profile into our data structure.
     attach_profile_data(\%sd, $profile_data);
@@ -912,16 +956,19 @@ sub autodep ($) {
     attach_profile_data(\%original_sd, $profile_data);
 
     if (-f "$profiledir/tunables/global") {
-        my $file = getprofilefilename($fqdbin);
-
         unless (exists $filelist{$file}) {
             $filelist{$file} = { };
         }
-        $filelist{$file}{includes}{'tunables/global'} = 1; # sorry
+        $filelist{$file}{include}{'tunables/global'} = 1; # sorry
     }
 
     # write out the profile...
-    writeprofile_ui_feedback($fqdbin);
+    writeprofile_ui_feedback($pname);
+}
+
+sub autodep ($) {
+    my $bin = shift;
+    return autodep_base($bin, "");
 }
 
 sub getprofilefilename ($) {
@@ -1218,6 +1265,7 @@ sub console_select_and_upload_profiles {
 
     $q->{functions} = [ "CMD_UPLOAD_CHANGES",
                         "CMD_VIEW_CHANGES",
+                        "CMD_ASK_LATER",
                         "CMD_ASK_NEVER",
                         "CMD_ABORT", ];
 
@@ -1233,7 +1281,7 @@ sub console_select_and_upload_profiles {
         if ($ans eq "CMD_VIEW_CHANGES") {
             display_changes($profiles[$arg]->[2], $profiles[$arg]->[1]);
         }
-    } until $ans =~ /^CMD_(UPLOAD_CHANGES|ASK_NEVER)/;
+    } until $ans =~ /^CMD_(UPLOAD_CHANGES|ASK_NEVER|ASK_LATER)/;
 
     if ($ans eq "CMD_ASK_NEVER") {
         set_profiles_local_only(  map { $_->[0] } @profiles  );
@@ -1505,19 +1553,32 @@ sub UI_BusyStop  {
 my %CMDS = (
     CMD_ALLOW            => "(A)llow",
     CMD_OTHER		 => "(M)ore",
-    CMD_AUDIT_NONE	 => "No (A)udit",
-    CMD_AUDIT_NEW	 => "Audit (N)ew",
-    CMD_AUDIT_FULL	 => "Audit (F)ull",
+    CMD_AUDIT_NEW	 => "Audi(t)",
+    CMD_AUDIT_OFF	 => "Audi(t) off",
+    CMD_AUDIT_FULL	 => "Audit (A)ll",
     CMD_OTHER		 => "(O)pts",
-    CMD_USER_TOGGLE	 => "(T)oggle owner permissions",
+    CMD_USER_ON		 => "(O)wner permissions on",
+    CMD_USER_OFF	 => "(O)wner permissions off",
     CMD_DENY             => "(D)eny",
     CMD_ABORT            => "Abo(r)t",
     CMD_FINISHED         => "(F)inish",
-    CMD_INHERIT          => "(I)nherit",
-    CMD_PROFILE          => "(P)rofile",
-    CMD_PROFILE_CLEAN    => "(P)rofile Clean Exec",
-    CMD_UNCONFINED       => "(U)nconfined",
-    CMD_UNCONFINED_CLEAN => "(U)nconfined Clean Exec",
+    CMD_ix               => "(I)nherit",
+    CMD_px               => "(P)rofile",
+    CMD_px_safe		 => "(P)rofile Clean Exec",
+    CMD_cx		 => "(C)hild",
+    CMD_cx_safe		 => "(C)hild Clean Exec",
+    CMD_nx		 => "(N)ame",
+    CMD_nx_safe		 => "(N)amed Clean Exec",
+    CMD_ux               => "(U)nconfined",
+    CMD_ux_safe		 => "(U)nconfined Clean Exec",
+    CMD_pix		 => "(P)rofile ix",
+    CMD_pix_safe	 => "(P)rofile ix Clean Exec",
+    CMD_cix		 => "(C)hild ix",
+    CMD_cix_safe	 => "(C)hild ix Cx Clean Exec",
+    CMD_nix		 => "(N)ame ix",
+    CMD_nix_safe	 => "(N)ame ix",
+    CMD_EXEC_IX_ON	 => "(X)ix",
+    CMD_EXEC_IX_OFF	 => "(X)ix",
     CMD_SAVE             => "(S)ave Changes",
     CMD_CONTINUE         => "(C)ontinue Profiling",
     CMD_NEW              => "(N)ew",
@@ -1693,6 +1754,31 @@ sub confirm_and_finish {
     die "FINISHING\n";
 }
 
+sub build_x_functions($$$) {
+    my ($default, $options, $exec_toggle) = @_;
+    my @{list};
+    if ($exec_toggle) {
+	push @list, "CMD_ix" if $options =~ /i/;
+	push @list, "CMD_pix" if $options =~ /p/ and $options =~ /i/;
+	push @list, "CMD_cix" if $options =~ /c/ and $options =~ /i/;
+	push @list, "CMD_nix" if $options =~ /n/ and $options =~ /i/;
+	push @list, "CMD_ux" if $options =~ /u/;
+    } else {
+	push @list, "CMD_ix" if $options =~ /i/;
+	push @list, "CMD_px" if $options =~ /p/;
+	push @list, "CMD_cx" if $options =~ /c/;
+	push @list, "CMD_nx" if $options =~ /n/;
+	push @list, "CMD_ux" if $options =~ /u/;
+    }
+    if ($exec_toggle) {
+	push @list, "CMD_EXEC_IX_OFF" if $options =~/p|c|n/;
+    } else {
+	push @list, "CMD_EXEC_IX_ON" if $options =~/p|c|n/;
+    }
+    push @list, "CMD_DENY", "CMD_ABORT", "CMD_FINISHED";
+    return @list;
+}
+
 ##########################################################################
 # this is the hideously ugly function that descends down the flow/event
 # trees that we've generated by parsing the logfile
@@ -1723,8 +1809,11 @@ sub handlechildren {
                     $hat     = $h;
                 }
 
-                $profilechanges{$pid} = $profile;
-
+		if ($hat) {
+		    $profilechanges{$pid} = $profile . "//" . $hat;
+		} else {
+		    $profilechanges{$pid} = $profile;
+		}
             } elsif ($type eq "unknown_hat") {
                 my ($pid, $p, $h, $sdmode, $uhat) = @entry;
 
@@ -1805,7 +1894,7 @@ sub handlechildren {
 
                 $prelog{$sdmode}{$profile}{$hat}{capability}{$capability} = 1;
             } elsif (($type eq "path") || ($type eq "exec")) {
-                my ($pid, $p, $h, $prog, $sdmode, $mode, $detail) = @entry;
+                my ($pid, $p, $h, $prog, $sdmode, $mode, $detail, $to_name) = @entry;
 
 		$mode = 0 unless ($mode);
 
@@ -1818,6 +1907,7 @@ sub handlechildren {
 
                 next unless $profile && $hat;
                 my $domainchange = ($type eq "exec") ? "change" : "nochange";
+
                 # escape special characters that show up in literal paths
                 $detail =~ s/(\[|\]|\+|\*|\{|\})/\\$1/g;
 
@@ -1827,9 +1917,9 @@ sub handlechildren {
                 my $do_execute  = 0;
                 my $exec_target = $detail;
 
-                if ($mode & $AA_MAY_EXEC) {
-		    $mode &= (~$ALL_AA_EXEC_TYPE);
+                if ($mode & str_to_mode("x")) {
                     if (-d $exec_target) {
+			$mode &= (~$ALL_AA_EXEC_TYPE);
                         $mode |= str_to_mode("ix");
                     } else {
                         $do_execute = 1;
@@ -1872,16 +1962,24 @@ sub handlechildren {
 						 "exec", $exec_target ) );
 
                     my $p = update_repo_profile($sd{$profile}{$profile});
-                    next if ( UI_SelectUpdatedRepoProfile($profile, $p) and
-                              profile_known_exec($sd{$profile}{$hat},
-						"exec", $exec_target ) );
+
+		    if ($to_name) {
+			next if ( $to_name and
+				  UI_SelectUpdatedRepoProfile($profile, $p) and
+				  profile_known_exec($sd{$profile}{$hat},
+						     "exec", $to_name ) );
+		    } else {
+			next if ( UI_SelectUpdatedRepoProfile($profile, $p) and
+				  profile_known_exec($sd{$profile}{$hat},
+						     "exec", $exec_target ) );
+		    }
+
                     my $context = $profile;
                     $context .= "^$hat" if $profile ne $hat;
                     $context .= " -> $exec_target";
                     my $ans = $transitions{$context} || "";
 
                     my ($combinedmode, $combinedaudit, $cm, $am, @m);
-
 		    $combinedmode = 0;
 		    $combinedaudit = 0;
 
@@ -1890,34 +1988,123 @@ sub handlechildren {
                     $combinedmode |= $cm if $cm;
 		    $combinedaudit |= $am if $am;
 
+		    # find the named transition if is present
+		    if ($combinedmode & str_to_mode("x")) {
+			my $nt_name;
+			foreach my $entry (@m) {
+			    if ($sd{$profile}{$hat}{allow}{path}{$entry}{to}) {
+				$nt_name = $sd{$profile}{$hat}{allow}{path}{$entry}{to};
+				last;
+			    }
+			}
+			if ($to_name and $nt_name and ($to_name ne $nt_name)) {
+			    #fatal_error "transition name from "
+			} elsif ($nt_name) {
+			    $to_name = $nt_name;
+			}
+		    }
+
                     # does path match anything pulled in by includes in
                     # original profile?
                     ($cm, $am, @m) = match_prof_incs_to_path($sd{$profile}{$hat}, 'allow', $exec_target);
                     $combinedmode |= $cm if $cm;
                     $combinedaudit |= $am if $am;
+		    if ($combinedmode & str_to_mode("x")) {
+			my $nt_name;
+			foreach my $entry (@m) {
+			    if ($sd{$profile}{$hat}{allow}{path}{$entry}{to}) {
+				$nt_name = $sd{$profile}{$hat}{allow}{path}{$entry}{to};
+				last;
+			    }
+			}
+			if ($to_name and $nt_name and ($to_name ne $nt_name)) {
+			    #fatal_error "transition name from "
+			} elsif ($nt_name) {
+			    $to_name = $nt_name;
+			}
+		    }
 
+
+		    #nx does not exist in profiles.  It does in log
+		    #files however.  The log parsing routines will convert
+		    #it to its profile form.
+		    #nx is internally represented by cx/px/cix/pix + to_name
                     my $exec_mode = 0;
-                    if (contains($combinedmode, "ix")) {
-                        $ans       = "CMD_INHERIT";
+		    if (contains($combinedmode, "pix")) {
+			if ($to_name) {
+			    $ans = "CMD_nix";
+			} else {
+			    $ans = "CMD_pix";
+			}
+			$exec_mode = str_to_mode("pixr");
+		    } elsif (contains($combinedmode, "cix")) {
+			if ($to_name) {
+			    $ans = "CMD_nix";
+			} else {
+			    $ans = "CMD_cix";
+			}
+			$exec_mode = str_to_mode("cixr");
+		    } elsif (contains($combinedmode, "Pix")) {
+			if ($to_name) {
+			    $ans = "CMD_nix_safe";
+			} else {
+			    $ans = "CMD_pix_safe";
+			}
+			$exec_mode = str_to_mode("Pixr");
+		    } elsif (contains($combinedmode, "Cix")) {
+			if ($to_name) {
+			    $ans = "CMD_nix_safe";
+			} else {
+			    $ans = "CMD_cix_safe";
+			}
+			$exec_mode = str_to_mode("Cixr");
+		    } elsif (contains($combinedmode, "ix")) {
+                        $ans       = "CMD_ix";
                         $exec_mode = str_to_mode("ixr");
                     } elsif (contains($combinedmode, "px")) {
-                        $ans       = "CMD_PROFILE";
+			if ($to_name) {
+			    $ans = "CMD_nx";
+			} else {
+			    $ans = "CMD_px";
+			}
                         $exec_mode = str_to_mode("px");
+		    } elsif (contains($combinedmode, "cx")) {
+			if ($to_name) {
+			    $ans = "CMD_nx";
+			} else {
+			    $ans = "CMD_cx";
+			}
+			$exec_mode = str_to_mode("cx");
                     } elsif (contains($combinedmode, "ux")) {
-                        $ans       = "CMD_UNCONFINED";
+                        $ans       = "CMD_ux";
                         $exec_mode = str_to_mode("ux");
                     } elsif (contains($combinedmode, "Px")) {
-                        $ans       = "CMD_PROFILE_CLEAN";
+			if ($to_name) {
+			    $ans = "CMD_nx_safe";
+			} else {
+			    $ans       = "CMD_px_safe";
+			}
                         $exec_mode = str_to_mode("Px");
+		    } elsif (contains($combinedmode, "Cx")) {
+			if ($to_name) {
+			    $ans = "CMD_nx_safe";
+			} else {
+			    $ans = "CMD_cx_safe";
+			}
+			$exec_mode = str_to_mode("Cx");
                     } elsif (contains($combinedmode, "Ux")) {
-                        $ans       = "CMD_UNCONFINED_CLEAN";
+                        $ans       = "CMD_ux_safe";
                         $exec_mode = str_to_mode("Ux");
                     } else {
-                        my $options = $cfg->{qualifiers}{$exec_target} || "ipu";
+                        my $options = $cfg->{qualifiers}{$exec_target} || "ipcnu";
+			fatal_error "$entry has transition name but not transition mode" if $to_name;
 
                         # force "ix" as the only option when the profiled
                         # program executes itself
                         $options = "i" if $exec_target eq $profile;
+
+			# for now don't allow hats to cx
+			$options =~ s/c// if $hat and $hat ne $profile;
 
                         # we always need deny...
                         $options .= "d";
@@ -1927,9 +2114,13 @@ sub handlechildren {
                         if ($options =~ /p/
                             && -e getprofilefilename($exec_target))
                         {
-                            $default = "CMD_PROFILE";
+                            $default = "CMD_px";
                         } elsif ($options =~ /i/) {
-                            $default = "CMD_INHERIT";
+                            $default = "CMD_ix";
+                        } elsif ($options =~ /c/) {
+                            $default = "CMD_cx";
+                        } elsif ($options =~ /n/) {
+                            $default = "CMD_nx";
                         } else {
                             $default = "CMD_DENY";
                         }
@@ -1949,45 +2140,79 @@ sub handlechildren {
                         if ($prog && $prog ne "HINT") {
                             push @{ $q->{headers} }, gettext("Program"), $prog;
                         }
+			# $to_name should NOT exist here other wise we know what
+			# mode we are supposed to be transitioning to
+			# which is handled above.
                         push @{ $q->{headers} }, gettext("Execute"),  $exec_target;
                         push @{ $q->{headers} }, gettext("Severity"), $severity;
 
                         $q->{functions} = [];
 
                         my $prompt = "\n$context\n";
-                        push @{ $q->{functions} }, "CMD_INHERIT"
-                          if $options =~ /i/;
-                        push @{ $q->{functions} }, "CMD_PROFILE"
-                          if $options =~ /p/;
-                        push @{ $q->{functions} }, "CMD_UNCONFINED"
-                          if $options =~ /u/;
-                        push @{$q->{functions}}, "CMD_DENY", "CMD_ABORT",
-                          "CMD_FINISHED";
-                        $q->{default} = $default;
+			my $exec_toggle = 0;
+
+			push @{ $q->{functions} }, build_x_functions($default, $options, $exec_toggle);
 
                         $options = join("|", split(//, $options));
 
                         $seenevents++;
 
-                        while ($ans !~ m/^CMD_(INHERIT|PROFILE|PROFILE_CLEAN|UNCONFINED|UNCONFINED_CLEAN|DENY)$/) {
-                            $ans = UI_PromptUser($q);
+			while ($ans !~ m/^CMD_(ix|px|cx|nx|pix|cix|nix|px_safe|cx_safe|nx_safe|pix_safe|cix_safe|nix_safe|ux|ux_safe|EXEC_TOGGLE|DENY)$/) {
+			    $ans = UI_PromptUser($q);
 
-                            if ($ans eq "CMD_PROFILE") {
+			    if ($ans =~ /CMD_EXEC_IX_/) {
+				$exec_toggle = !$exec_toggle;
+
+				$q->{functions} = [ ];
+				push @{ $q->{functions} }, build_x_functions($default, $options, $exec_toggle);
+				$ans = "";
+				next;
+			    }
+			    if ($ans =~ /CMD_(nx|nix)/) {
+                                my $arg = $exec_target;
+
+				my $ynans = "n";
+				if ($profile eq $hat) {
+				    $ynans = UI_YesNo("Are you specifying a transition to a local profile?", "n");
+				}
+
+				if ($ynans eq "y") {
+				    if ($ans eq "CMD_nx") {
+					$ans = "CMD_cx";
+				    } else {
+					$ans = "CMD_cix";
+				    }
+				} else {
+				    if ($ans eq "CMD_nx") {
+					$ans = "CMD_px";
+				    } else {
+					$ans = "CMD_pix";
+				    }
+				}
+				$to_name = UI_GetString(gettext("Enter profile name to transition to: "), $arg);
+			    }
+			    if ($ans =~ /CMD_ix/) {
+				$exec_mode = str_to_mode("ix");
+                            } elsif ($ans =~ /CMD_(px|cx|nx|pix|cix|nix)/) {
+				my $match = $1;
+				$exec_mode = str_to_mode($match);
                                 my $px_default = "n";
                                 my $px_mesg    = gettext("Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH.");
                                 if ($parent_uses_ld_xxx) {
                                     $px_mesg = gettext("Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut this application appears to use LD_PRELOAD\nor LD_LIBRARY_PATH and clearing these could\ncause functionality problems.");
                                 }
                                 my $ynans = UI_YesNo($px_mesg, $px_default);
+				$ans = "CMD_$match";
                                 if ($ynans eq "y") {
-                                    $ans = "CMD_PROFILE_CLEAN";
+                                    $exec_mode &= ~$AA_EXEC_UNSAFE;
                                 }
-                            } elsif ($ans eq "CMD_UNCONFINED") {
+                            } elsif ($ans eq "CMD_ux") {
+				$exec_mode = str_to_mode("ux");
                                 my $ynans = UI_YesNo(sprintf(gettext("Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing \%s?"), $exec_target), "n");
                                 if ($ynans eq "y") {
                                     my $ynans = UI_YesNo(gettext("Should AppArmor sanitize the environment when\nrunning this program unconfined?\n\nNot sanitizing the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."), "y");
                                     if ($ynans eq "y") {
-                                        $ans = "CMD_UNCONFINED_CLEAN";
+					$exec_mode &= ~($AA_EXEC_UNSAFE | ($AA_EXEC_UNSAFE << $AA_OTHER_SHIFT));
                                     }
                                 } else {
                                     $ans = "INVALID";
@@ -1996,20 +2221,15 @@ sub handlechildren {
                         }
                         $transitions{$context} = $ans;
 
-                        # if we're inheriting, things'll bitch unless we have r
-                        if ($ans eq "CMD_INHERIT") {
-                            $exec_mode = str_to_mode("ixr");
-                        } elsif ($ans eq "CMD_PROFILE") {
-                            $exec_mode = str_to_mode("px");
-                        } elsif ($ans eq "CMD_UNCONFINED") {
-                            $exec_mode = str_to_mode("ux");
-                        } elsif ($ans eq "CMD_PROFILE_CLEAN") {
-                            $exec_mode = str_to_mode("Px");
-                        } elsif ($ans eq "CMD_UNCONFINED_CLEAN") {
-                            $exec_mode = str_to_mode("Ux");
-                        } else {
+			if ($ans =~ /CMD_(ix|px|cx|nx|pix|cix|nix)/) {
+			    # if we're inheriting, things'll bitch unless we have r
+			    if ($exec_mode & str_to_mode("i")) {
+				$exec_mode |= str_to_mode("r");
+			    }
+
+			} else {
 			    if ($ans eq "CMD_DENY") {
-				$sd{$profile}{$hat}{deny}{path}{$exec_target}{mode} |= $AA_MAY_EXEC;
+				$sd{$profile}{$hat}{deny}{path}{$exec_target}{mode} |= str_to_mode("x");
 
 				$sd{$profile}{$hat}{deny}{path}{$exec_target}{audit} |= 0;
 				$changed{$profile} = 1;
@@ -2020,7 +2240,8 @@ sub handlechildren {
                             return if $domainchange eq "change";
                         }
 
-                        unless ($ans eq "CMD_DENY") {
+			unless ($ans eq "CMD_DENY") {
+# ???? if its defined in the prelog we shouldn't have asked
                             if (defined $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target}) {
 #                                $exec_mode = $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target};
                             }
@@ -2028,11 +2249,12 @@ sub handlechildren {
                             $log{PERMITTING}{$profile}              = {};
                             $sd{$profile}{$hat}{allow}{path}{$exec_target}{mode} = $exec_mode;
                             $sd{$profile}{$hat}{allow}{path}{$exec_target}{audit} |= 0;
+                            $sd{$profile}{$hat}{allow}{path}{$exec_target}{to} = $to_name if ($to_name);
 
                             # mark this profile as changed
                             $changed{$profile} = 1;
 
-                            if ($ans eq "CMD_INHERIT") {
+                            if ($exec_mode & str_to_mode("i")) {
                                 if ($exec_target =~ /perl/) {
                                     $sd{$profile}{$hat}{include}{"abstractions/perl"} = 1;
                                 } elsif ($detail =~ m/\/bin\/(bash|sh)/) {
@@ -2049,26 +2271,22 @@ sub handlechildren {
                                         $sd{$profile}{$hat}{include}{"abstractions/bash"} = 1;
                                     }
                                 }
-                            } elsif ($ans =~ /^CMD_PROFILE/) {
-
-                                # if they want to use px, make sure a profile
-                                # exists for the target.
-                                unless (-e getprofilefilename($exec_target)) {
-                                    $helpers{$exec_target} = "enforce";
-                                    autodep($exec_target);
-                                    reload($exec_target);
-                                }
                             }
                         }
-                    }
+		    }
 
                     # print "$pid $profile $hat EXEC $exec_target $ans $exec_mode\n";
 
                     # update our tracking info based on what kind of change
                     # this is...
-                    if ($ans eq "CMD_INHERIT") {
-                        $profilechanges{$pid} = $profile;
-                    } elsif ($ans =~ /^CMD_PROFILE/) {
+                    if ($ans eq "CMD_ix") {
+			if ($hat) {
+			    $profilechanges{$pid} = $profile . "//" . $hat;
+			} else {
+			    $profilechanges{$pid} = $profile;
+			}
+                    } elsif ($ans =~ /^CMD_(px|nx|pix|nix)/) {
+			$exec_target = $to_name if ($to_name);
                         if ($sdmode eq "PERMITTING") {
                             if ($domainchange eq "change") {
                                 $profile              = $exec_target;
@@ -2079,11 +2297,53 @@ sub handlechildren {
                         # if they want to use px, make sure a profile
                         # exists for the target.
                         unless (-e getprofilefilename($exec_target)) {
-                               $helpers{$exec_target} = "enforce";
-                               autodep($exec_target);
-                               reload($exec_target);
+			    my $ynans = "y";
+			    if ($exec_mode & str_to_mode("i")) {
+				$ynans = UI_YesNo(sprintf(gettext("A profile for %s does not exist create one?"), $exec_target), "n");
+			    }
+			    if ($ynans eq "y") {
+				$helpers{$exec_target} = "enforce";
+				if ($to_name) {
+				    autodep_base("", $exec_target);
+				} else {
+				    autodep_base($exec_target, "");
+				}
+				reload_base($exec_target);
+			    }
                         }
-                    } elsif ($ans =~ /^CMD_UNCONFINED/) {
+                    } elsif ($ans =~ /^CMD_(cx|cix)/) {
+			$exec_target = $to_name if ($to_name);
+                        if ($sdmode eq "PERMITTING") {
+                            if ($domainchange eq "change") {
+                                $profilechanges{$pid} = "${profile}//${exec_target}";
+#                                $profile              = $exec_target;
+#                                $hat                  = $exec_target;
+                            }
+                        }
+
+                        # if they want to use cx, make sure a profile
+                        # exists for the target.
+			unless ($sd{$profile}{$exec_target}) {
+			    my $ynans = "y";
+			    if ($exec_mode & str_to_mode("i")) {
+				$ynans = UI_YesNo(sprintf(gettext("A local profile for %s does not exist create one?"), $exec_target), "n");
+			    }
+			    if ($ynans eq "y") {
+				$hat = $exec_target;
+				# keep track of profile flags
+				#$profile_data->{$profile}{$hat}{flags} = ;
+
+				# we have seen more than a declaration so clear it
+				$sd{$profile}{$hat}{'declared'} = 0;
+				$sd{$profile}{$hat}{profile} = 1;
+				$sd{$profile}{$hat}{allow}{path} = { };
+				$sd{$profile}{$hat}{allow}{netdomain} = { };
+				my $file = $sd{$profile}{$profile}{filename};
+				$filelist{$file}{profiles}{$profile}{$hat} = 1;
+
+			    }
+                        }
+                    } elsif ($ans =~ /^CMD_ux/) {
                         $profilechanges{$pid} = "unconstrained";
                         return if $domainchange eq "change";
                     }
@@ -2453,7 +2713,7 @@ sub add_event_to_tree ($) {
             $sdmode = "UNKNOWN";
         }
     }
-    return if ( $sdmode =~ /UNKNOWN|STATUS|ERROR/ );
+    return if ( $sdmode =~ /UNKNOWN|AUDIT|STATUS|ERROR/ );
 
     my ($profile, $hat);
     ($profile, $hat) = split /\/\//, $e->{profile};
@@ -2477,7 +2737,8 @@ sub add_event_to_tree ($) {
                          $sdmode,
                          "PERMITTING",
                          $e->{denied_mask},
-                         $e->{name}
+                         $e->{name},
+                         $e->{name2}
                        );
         }
     } elsif ($e->{operation} =~ m/file_/) {
@@ -2489,6 +2750,7 @@ sub add_event_to_tree ($) {
                      $sdmode,
                      $e->{denied_mask},
                      $e->{name},
+		     "",
                    );
     } elsif ($e->{operation} eq "capable") {
         add_to_tree( $e->{pid},
@@ -2508,7 +2770,8 @@ sub add_event_to_tree ($) {
                      $prog,
                      $sdmode,
                      $e->{denied_mask},
-                     $e->{name}
+                     $e->{name},
+		     ""
                     );
     } elsif ($e->{operation} =~ m/inode_/) {
         my $is_domain_change = 0;
@@ -2538,7 +2801,8 @@ sub add_event_to_tree ($) {
                           $prog,
                           $sdmode,
                           $e->{denied_mask},
-                          $e->{name}
+                          $e->{name},
+			  $e->{name2}
                         );
         } else {
              add_to_tree( $e->{pid},
@@ -2548,7 +2812,8 @@ sub add_event_to_tree ($) {
                           $prog,
                           $sdmode,
                           $e->{denied_mask},
-                          $e->{name}
+                          $e->{name},
+			  ""
                         );
         }
     } elsif ($e->{operation} eq "sysctl") {
@@ -2559,7 +2824,8 @@ sub add_event_to_tree ($) {
                      $prog,
                      $sdmode,
                      $e->{denied_mask},
-                     $e->{name}
+                     $e->{name},
+		     ""
                    );
     } elsif ($e->{operation} eq "clone") {
         my ($parent, $child)  = ($e->{pid}, $e->{task});
@@ -2624,7 +2890,6 @@ sub read_log {
     close($LOG);
     $logmark = "";
 }
-
 
 
 sub UI_SelectUpdatedRepoProfile ($$) {
@@ -2930,27 +3195,38 @@ sub UI_ask_mode_toggles ($$$) {
 #    ];
     $q->{explanation} = gettext( "Change mode modifiers");
 
-    if ($oldmode) {
-	$q->{functions} = [ "CMD_AUDIT_NONE", "CMD_AUDIT_NEW", "CMD_AUDIT_FULL","CMD_USER_TOGGLE", "CMD_CONTINUE" ];
+    if ($audit_toggle) {
+	$q->{functions} = [ "CMD_AUDIT_OFF" ];
     } else {
-	$q->{functions} = [ "CMD_AUDIT_NONE", "CMD_AUDIT_NEW", "CMD_USER_TOGGLE", "CMD_CONTINUE" ];
+	$q->{functions} = [ "CMD_AUDIT_NEW" ];
+	push @{$q->{functions}}, "CMD_AUDIT_FULL" if ($oldmode);
     }
+
+    if ($owner_toggle) {
+	push @{$q->{functions}}, "CMD_USER_OFF";
+    } else {
+	push @{$q->{functions}}, "CMD_USER_ON";
+    }
+    push @{$q->{functions}}, "CMD_CONTINUE";
 
     my $cmd;
     do {
         $cmd = UI_PromptUser($q);
-    } until $cmd =~ /^CMD_(AUDIT_NONE|AUDIT_NEW|AUDIT_FULL|USER_TOGGLE|CONTINUE)/;
+    } until $cmd =~ /^CMD_(AUDIT_OFF|AUDIT_NEW|AUDIT_FULL|USER_ON|USER_OFF|CONTINUE)/;
 
-    if ($cmd eq "CMD_AUDIT_NONE") {
+    if ($cmd eq "CMD_AUDIT_OFF") {
 	$audit_toggle = 0;
     } elsif ($cmd eq "CMD_AUDIT_NEW") {
 	$audit_toggle = 1;
     } elsif ($cmd eq "CMD_AUDIT_FULL") {
 	$audit_toggle = 2;
-    } elsif ($cmd eq "CMD_USER_TOGGLE") {
-	$owner_toggle++;
-	$owner_toggle++ if (!$oldmode && $owner_toggle == 2);
-	$owner_toggle = 0 if ($owner_toggle > 3);
+    } elsif ($cmd eq "CMD_USER_ON") {
+	$owner_toggle = 1;
+    } elsif ($cmd eq "CMD_USER_OFF") {
+	$owner_toggle = 0;
+#	$owner_toggle++;
+#	$owner_toggle++ if (!$oldmode && $owner_toggle == 2);
+#	$owner_toggle = 0 if ($owner_toggle > 3);
     }
     return ($audit_toggle, $owner_toggle);
 }
@@ -3023,9 +3299,10 @@ sub ask_the_questions {
                     push @{ $q->{headers} }, gettext("Capability"), $capability;
                     push @{ $q->{headers} }, gettext("Severity"),   $severity;
 
-                    $q->{functions} = [
-                      "CMD_ALLOW", "CMD_DENY", "CMD_ABORT", "CMD_FINISHED"
-                    ];
+		    my $audit_toggle = 0;
+		    $q->{functions} = [
+			"CMD_ALLOW", "CMD_DENY", "CMD_AUDIT_NEW", "CMD_ABORT", "CMD_FINISHED"
+			];
 
                     # complain-mode events default to allow - enforce defaults
                     # to deny
@@ -3037,7 +3314,25 @@ sub ask_the_questions {
                         # what did the grand exalted master tell us to do?
                         my ($ans, $selected) = UI_PromptUser($q);
 
-                        if ($ans eq "CMD_ALLOW") {
+			if ($ans =~ /^CMD_AUDIT/) {
+			    $audit_toggle = !$audit_toggle;
+			    my $audit = "";
+			    if ($audit_toggle) {
+				$q->{functions} = [
+				    "CMD_ALLOW", "CMD_DENY", "CMD_AUDIT_OFF", "CMD_ABORT", "CMD_FINISHED"
+				    ];
+				$audit = "audit ";
+			    } else {
+				$q->{functions} = [
+				    "CMD_ALLOW", "CMD_DENY", "CMD_AUDIT_NEW", "CMD_ABORT", "CMD_FINISHED"
+				    ];
+			    }
+			    $q->{headers} = [];
+			    push @{ $q->{headers} }, gettext("Profile"), combine_name($profile, $hat);
+			    push @{ $q->{headers} }, gettext("Capability"), $audit . $capability;
+			    push @{ $q->{headers} }, gettext("Severity"),   $severity;
+
+                        } if ($ans eq "CMD_ALLOW") {
 
                             # they picked (a)llow, so...
 
@@ -3062,6 +3357,7 @@ sub ask_the_questions {
                             }
                             # stick the capability into the profile
                             $sd{$profile}{$hat}{allow}{capability}{$capability}{set} = 1;
+                            $sd{$profile}{$hat}{allow}{capability}{$capability}{audit} = $audit_toggle;
 
                             # mark this profile as changed
                             $changed{$profile} = 1;
@@ -3170,11 +3466,13 @@ sub ask_the_questions {
 
                             # only match includes that can be suggested to
                             # the user
+			    if ($cfg->{settings}{custom_includes}) {
                             for my $incm (split(/\s+/,
                                                 $cfg->{settings}{custom_includes})
                                          ) {
                                 $includevalid = 1 if $incname =~ /$incm/;
                             }
+			    }
                             $includevalid = 1 if $incname =~ /abstractions/;
                             next if ($includevalid == 0);
 
@@ -3351,7 +3649,7 @@ sub ask_the_questions {
 
                                     # record the new entry
 				    if ($owner_toggle == 0) {
-					$mode = flatten($mode);
+					$mode = flatten_mode($mode);
 				    } elsif ($owner_toggle == 1) {
 					$mode = $mode;
 				    } elsif ($owner_toggle == 2) {
@@ -3505,9 +3803,12 @@ sub ask_the_questions {
                              gettext("Socket Type"),
                              $sock_type;
 
+			my $audit_toggle = 0;
+
                         $q->{functions} = [
                                             "CMD_ALLOW",
                                             "CMD_DENY",
+					    "CMD_AUDIT_NEW",
                                             "CMD_ABORT",
                                             "CMD_FINISHED"
                                           ];
@@ -3523,8 +3824,37 @@ sub ask_the_questions {
                         my $done = 0;
                         while ( not $done ) {
                             my ($ans, $selected) = UI_PromptUser($q);
-
-                            if ($ans eq "CMD_ALLOW") {
+			    if ($ans =~ /^CMD_AUDIT/) {
+				$audit_toggle = !$audit_toggle;
+				my $audit = $audit_toggle ? "audit " : "";
+				if ($audit_toggle) {
+				    $q->{functions} = [
+					"CMD_ALLOW",
+					"CMD_DENY",
+					"CMD_AUDIT_OFF",
+					"CMD_ABORT",
+					"CMD_FINISHED"
+					];
+				} else {
+				    $q->{functions} = [
+					"CMD_ALLOW",
+					"CMD_DENY",
+					"CMD_AUDIT_NEW",
+					"CMD_ABORT",
+					"CMD_FINISHED"
+					];
+				}
+				$q->{headers} = [];
+				push @{ $q->{headers} },
+				gettext("Profile"),
+				combine_name($profile, $hat);
+				push @{ $q->{headers} },
+				gettext("Network Family"),
+				$audit . $family;
+				push @{ $q->{headers} },
+				gettext("Socket Type"),
+				$sock_type;
+                            } elsif ($ans eq "CMD_ALLOW") {
                                 my $selection = $options[$selected];
                                 $done = 1;
                                 if ($selection &&
@@ -3553,6 +3883,14 @@ sub ask_the_questions {
                                        {$hat}
 				       {allow}
                                        {netdomain}
+				       {audit}
+                                       {$family}
+                                       {$sock_type} = $audit_toggle;
+
+                                    $sd{$profile}
+                                       {$hat}
+				       {allow}
+                                       {netdomain}
 				       {rule}
                                        {$family}
                                        {$sock_type} = 1;
@@ -3569,6 +3907,7 @@ sub ask_the_questions {
                                            );
                                 }
                             } elsif ($ans eq "CMD_DENY") {
+                                $done = 1;
 				# record the new entry
                                     $sd{$profile}
                                        {$hat}
@@ -3725,9 +4064,11 @@ sub matchcapincludes (\%$) {
 
 	# only match includes that can be suggested to
 	# the user
-	for my $incm (split(/\s+/,
-			    $cfg->{settings}{custom_includes})) {
-	    $includevalid = 1 if $incname =~ /$incm/;
+	if ($cfg->{settings}{custom_includes}) {
+	    for my $incm (split(/\s+/,
+				$cfg->{settings}{custom_includes})) {
+		$includevalid = 1 if $incname =~ /$incm/;
+	    }
 	}
 	$includevalid = 1 if $incname =~ /abstractions/;
 	next if ($includevalid == 0);
@@ -3755,8 +4096,10 @@ sub matchnetincludes (\%$$) {
 
 	# only match includes that can be suggested to
 	# the user
-	for my $incm (split(/\s+/, $cfg->{settings}{custom_includes})) {
-	    $includevalid = 1 if $incname =~ /$incm/;
+	if ($cfg->{settings}{custom_includes}) {
+	    for my $incm (split(/\s+/, $cfg->{settings}{custom_includes})) {
+		$includevalid = 1 if $incname =~ /$incm/;
+	    }
 	}
 	$includevalid = 1 if $incname =~ /abstractions/;
 	next if ($includevalid == 0);
@@ -3908,7 +4251,7 @@ sub save_profiles {
                 my $selected_profiles_ref = $yarg->{PROFILES};
                 for my $profile (@$selected_profiles_ref) {
                     writeprofile_ui_feedback($profile);
-                    reload($profile);
+                    reload_base($profile);
                 }
             }
         } else {
@@ -3944,7 +4287,7 @@ sub save_profiles {
 
             for my $profile (sort keys %changed) {
                 writeprofile_ui_feedback($profile);
-                reload($profile);
+                reload_base($profile);
             }
         }
     }
@@ -4099,7 +4442,7 @@ sub collapselog () {
                 }
 
                 # Network toggle handling
-                my $ndref = $prelog{$sdmode}{$profile}{$hat}{netdomain}{rule};
+                my $ndref = $prelog{$sdmode}{$profile}{$hat}{netdomain};
                 for my $family ( keys %{$ndref} ) {
                     for my $sock_type ( keys %{$ndref->{$family}} ) {
                         unless ( profile_known_network($sd{$profile}{$hat},
@@ -4108,7 +4451,6 @@ sub collapselog () {
                                 {$profile}
                                 {$hat}
                                 {netdomain}
-			        {rule}
                                 {$family}
                                 {$sock_type}=1;
                         }
@@ -4144,6 +4486,7 @@ sub uniq (@) {
 our $MODE_MAP_RE = "r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N";
 our $LOG_MODE_RE = "r|w|l|m|k|a|x|ix|ux|px|cx|nx|pix|cix|Ix|Ux|Px|Cx|Nx|Pix|Cix";
 our $PROFILE_MODE_RE = "r|w|l|m|k|a|ix|ux|px|cx|pix|cix|Ux|Px|Cx|Pix|Cix";
+our $PROFILE_MODE_NT_RE = "r|w|l|m|k|a|x|ix|ux|px|cx|pix|cix|Ux|Px|Cx|Pix|Cix";
 our $PROFILE_MODE_DENY_RE = "r|w|l|m|k|a|x";
 
 sub split_log_mode($) {
@@ -4184,11 +4527,13 @@ sub validate_log_mode ($) {
     return ($mode =~ /^($LOG_MODE_RE)+$/) ? 1 : 0;
 }
 
-sub validate_profile_mode ($$) {
-    my ($mode, $allow) = @_;
+sub validate_profile_mode ($$$) {
+    my ($mode, $allow, $nt_name) = @_;
 
     if ($allow eq 'deny') {
 	return ($mode =~ /^($PROFILE_MODE_DENY_RE)+$/) ? 1 : 0;
+    } elsif ($nt_name) {
+	return ($mode =~ /^($PROFILE_MODE_NT_RE)+$/) ? 1 : 0;
     }
 
     return ($mode =~ /^($PROFILE_MODE_RE)+$/) ? 1 : 0;
@@ -4246,6 +4591,42 @@ sub str_to_mode ($) {
     return $mode;
 }
 
+sub log_str_to_mode($$$) {
+    my ($profile, $str, $nt_name) = @_;
+
+    my $mode = str_to_mode($str);
+
+    # this will cover both nx and nix
+    if (contains($mode, "Nx")) {
+	# need to transform to px, cx
+
+	if ($nt_name =~ /(.+?)\/\/(.+?)/) {
+	    my ($lprofile, $lhat) = @_;
+	    my $tmode = 0;
+	    if ($profile eq $profile) {
+		if ($mode & ($AA_MAY_EXEC)) {
+		    $tmode = str_to_mode("Cx::");
+		}
+		if ($mode & ($AA_MAY_EXEC << $AA_OTHER_SHIFT)) {
+		    $tmode |= str_to_mode("Cx");
+		}
+		$nt_name = $lhat;
+	    } else {
+		if ($mode & ($AA_MAY_EXEC)) {
+		    $tmode = str_to_mode("Px::");
+		}
+		if ($mode & ($AA_MAY_EXEC << $AA_OTHER_SHIFT)) {
+		    $tmode |= str_to_mode("Px");
+		}
+		$nt_name = $lhat;
+	    }
+	    $mode = ($mode & ~(str_to_mode("Nx")));
+	    $mode |= $tmode;
+	}
+    }
+    return ($mode, $nt_name);
+}
+
 sub split_mode ($) {
     my $mode = shift;
 
@@ -4290,6 +4671,13 @@ sub sub_mode_to_str($) {
 	    $str .= "p";
 	} else {
 	    $str .= "P";
+	}
+    }
+    if ($mode & $AA_EXEC_CHILD) {
+	if ($mode & $AA_EXEC_UNSAFE) {
+	    $str .= "c";
+	} else {
+	    $str .= "C";
 	}
     }
     $str .= "i" if ($mode & $AA_EXEC_INHERIT);
@@ -4522,26 +4910,34 @@ sub parse_profile_data {
             # if we run into the start of a profile while we're already in a
             # profile, something's wrong...
             if ($profile) {
-                die "$profile profile in $file contains syntax errors.\n";
-            }
+		unless (($profile eq $hat) and $4) {
+		    die "$profile profile in $file contains syntax errors.\n";
+		}
+	    }
 
             # we hit the start of a profile, keep track of it...
-            $profile  = $2 || $4;
-            my $flags = $7;
-            $in_contained_hat = 0;
+	    if ($profile && ($profile eq $hat) && $4) {
+		# local profile
+		$hat = $4;
+		$in_contained_hat = 1;
+		$profile_data->{$profile}{$hat}{profile} = 1;
+	    } else {
+		$profile  = $2 || $4;
+		# hat is same as profile name if we're not in a hat
+		($profile, $hat) = split /\/\//, $profile;
+		$in_contained_hat = 0;
+		if ($hat) {
+		    $profile_data->{$profile}{$hat}{external} = 1;
+		}
 
-            # hat is same as profile name if we're not in a hat
-            ($profile, $hat) = split /\/\//, $profile;
+		$hat ||= $profile;
+	    }
+
+            my $flags = $7;
 
             # deal with whitespace in profile and hat names.
             $profile = strip_quotes($profile);
             $hat     = strip_quotes($hat) if $hat;
-
-	    if ($hat) {
-		$profile_data->{$profile}{$hat}{external} = 1;
-	    }
-
-            $hat ||= $profile;
 
 	    # save off the name and filename
 	    $profile_data->{$profile}{$hat}{name} = $profile;
@@ -4689,20 +5085,22 @@ sub parse_profile_data {
         } elsif (m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- variable defined
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean defined
-        } elsif (m/^\s*(audit\s+)?(deny\s+)?(user\s+)?([\"\@\/].*)\s+(\S+)\s*,\s*(#.*)?$/) {     # path entry
+        } elsif (m/^\s*(audit\s+)?(deny\s+)?(owner\s+)?([\"\@\/].*?)\s+(\S+)(\s+->\s*(.*?))?\s*,\s*(#.*)?$/) {     # path entry
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
 
-            my ($path, $mode) = ($4, $5);
-	    my $audit = ($1) ? 1 : 0;
-	    my $allow = ($2) ? 'deny' : 'allow';
-	    my $user = ($3) ? 1 : 0;
+	    my $audit = $1 ? 1 : 0;
+	    my $allow = $2 ? 'deny' : 'allow';
+	    my $user = $3 ? 1 : 0;
+            my ($path, $mode, $nt_name) = ($4, $5, $7);
 
             # strip off any trailing spaces.
             $path =~ s/\s+$//;
+            $nt_name =~ s/\s+$// if $nt_name;
 
             $path = strip_quotes($path);
+            $nt_name = strip_quotes($nt_name) if $nt_name;
 
             # make sure they don't have broken regexps in the profile
             my $p_re = convert_regexp($path);
@@ -4712,13 +5110,18 @@ sub parse_profile_data {
                                      $file, $path) . "\n";
             }
 
-            if (!validate_profile_mode($mode, $allow)) {
+            if (!validate_profile_mode($mode, $allow, $nt_name)) {
                 fatal_error(sprintf(gettext('Profile %s contains invalid mode %s.'), $file, $mode));
             }
 
-	    my $tmpmode = ($user) ? str_to_mode("$mode::") : str_to_mode($mode);
-
+	    my $tmpmode;
+	    if ($user) {
+		$tmpmode = str_to_mode("${mode}::");
+	    } else {
+		$tmpmode = str_to_mode($mode);
+	    }
             $profile_data->{$profile}{$hat}{$allow}{path}{$path}{mode} = $tmpmode;
+            $profile_data->{$profile}{$hat}{$allow}{path}{$path}{to} = $nt_name if $nt_name;
 	    if ($audit) {
 		$profile_data->{$profile}{$hat}{$allow}{path}{$path}{audit} = $tmpmode;
 	    } else {
@@ -4769,22 +5172,8 @@ sub parse_profile_data {
                 $profile_data->{$profile}{$hat}{$allow}{netdomain}{audit}{all} = 1;
             }
         } elsif (/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
-            if (not $profile) {
-                die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
-            }
-
-            # XXX - BUGBUGBUG - don't strip netdomain entries
-
-            unless ($profile_data->{$profile}{$hat}{allow}{netdomain}) {
-                $profile_data->{$profile}{$hat}{allow}{netdomain} = [ ];
-            }
-
-            # strip leading spaces and trailing comma
-            s/^\s+//;
-            s/,\s*$//;
-
-            # keep track of netdomain entries...
-            push @{$profile_data->{$profile}{$hat}{allow}{netdomain}{rule}}, $_;
+# just ignore and drop old style network
+#	    die sprintf(gettext('%s contains old style network rules.'), $file) . "\n";
 
         } elsif (m/^\s*\^(\"??.+?\"??)\s*,\s*(#.*)?$/) {
 	    if (not $profile) {
@@ -4974,7 +5363,8 @@ sub writeheader ($$$$$) {
     # deal with whitespace in profile names...
     $name = quote_if_needed($name);
 
-    $name = "profile $name" if (!$embedded_hat && $name =~ /^[^\/]|^"[^\/]/);
+    $name = "profile $name" if ((!$embedded_hat && $name =~ /^[^\/]|^"[^\/]/)
+				|| ($embedded_hat && $name =~/^[^^]/));
 
     #push @data, "#include <tunables/global>" unless ( $is_hat );
     if ($write_flags and  $profile_data->{flags}) {
@@ -5107,7 +5497,9 @@ sub writecap_rules ($$$) {
     if (exists $profile_data->{$allow}{capability}) {
         for my $cap (sort keys %{$profile_data->{$allow}{capability}}) {
 	    my $audit = ($profile_data->{$allow}{capability}{$cap}{audit}) ? 'audit ' : '';
-	    push @data, "${pre}${audit}${allowstr}capability ${cap},";
+	    if ($profile_data->{$allow}{capability}{$cap}{set}) {
+		push @data, "${pre}${audit}${allowstr}capability ${cap},";
+	    }
         }
 	push @data, "";
     }
@@ -5213,7 +5605,8 @@ sub writepath_rules ($$$) {
         for my $path (sort keys %{$profile_data->{$allow}{path}}) {
             my $mode = $profile_data->{$allow}{path}{$path}{mode};
             my $audit = $profile_data->{$allow}{path}{$path}{audit};
-
+	    my $tail = "";
+	    $tail = " -> " . $profile_data->{$allow}{path}{$path}{to} if ($profile_data->{$allow}{path}{$path}{to});
 	    my ($user, $other) = split_mode($mode);
 	    if ($user & ~$other) {
 		$user = $user & ~$other;
@@ -5225,9 +5618,9 @@ sub writepath_rules ($$$) {
 		    my $str = $allowstr;
 		    $str .= "owner " if $modestr =~ s/owner //;
 		    if ($path =~ /\s/) {
-			push @data, "${pre}audit ${str}\"$path\" $modestr,";
+			push @data, "${pre}audit ${str}\"$path\" ${modestr}${tail},";
 		    } else {
-			push @data, "${pre}audit ${str}$path $modestr,";
+			push @data, "${pre}audit ${str}$path ${modestr}${tail},";
 		    }
 		    # mask off the bits we have already written
 		    $user &= ~$audit;
@@ -5239,9 +5632,9 @@ sub writepath_rules ($$$) {
 
 		    # deal with whitespace in path names
 		    if ($path =~ /\s/) {
-			push @data, "${pre}${str}\"$path\" $modestr,";
+			push @data, "${pre}${str}\"$path\" ${modestr}${tail},";
 		    } else {
-			push @data, "${pre}${str}$path $modestr,";
+			push @data, "${pre}${str}$path ${modestr}${tail},";
 		    }
 		}
 		if ($mode & $audit) {
@@ -5250,9 +5643,9 @@ sub writepath_rules ($$$) {
 		    my $str = $allowstr;
 		    $str .= "owner " if $modestr =~ s/owner //;
 		    if ($path =~ /\s/) {
-			push @data, "${pre}audit ${str}\"$path\" $modestr,";
+			push @data, "${pre}audit ${str}\"$path\" ${modestr}${tail},";
 		    } else {
-			push @data, "${pre}audit ${str}$path $modestr,";
+			push @data, "${pre}audit ${str}$path ${modestr}${tail},";
 		    }
 		    # mask off the bits we have already written
 		    $mode &= ~$audit;
@@ -5263,9 +5656,9 @@ sub writepath_rules ($$$) {
 		    $str .= "owner " if $modestr =~ s/owner //;
 		    # deal with whitespace in path names
 		    if ($path =~ /\s/) {
-			push @data, "${pre}${str}\"$path\" $modestr,";
+			push @data, "${pre}${str}\"$path\" ${modestr}${tail},";
 		    } else {
-			push @data, "${pre}${str}$path $modestr,";
+			push @data, "${pre}${str}$path ${modestr}${tail},";
 		    }
 		}
 	    } else {
@@ -5275,9 +5668,9 @@ sub writepath_rules ($$$) {
 		    my $str = $allowstr;
 		    $str .= "owner " if $modestr =~ s/owner //;
 		    if ($path =~ /\s/) {
-			push @data, "${pre}audit ${str}\"$path\" $modestr,";
+			push @data, "${pre}audit ${str}\"$path\" ${modestr}${tail},";
 		    } else {
-			push @data, "${pre}audit ${str}$path $modestr,";
+			push @data, "${pre}audit ${str}$path ${modestr}${tail},";
 		    }
 		    # mask off the bits we have already written
 		    $mode &= ~$audit;
@@ -5288,9 +5681,9 @@ sub writepath_rules ($$$) {
 		    $str .= "owner " if $modestr =~ s/owner //;
 		    # deal with whitespace in path names
 		    if ($path =~ /\s/) {
-			push @data, "${pre}${str}\"$path\" $modestr,";
+			push @data, "${pre}${str}\"$path\" ${modestr}${tail},";
 		    } else {
-			push @data, "${pre}${str}$path $modestr,";
+			push @data, "${pre}${str}$path ${modestr}${tail},";
 		    }
 		}
 	    }
@@ -5360,9 +5753,15 @@ sub writepiece ($$$$$) {
 	    if ((not $profile_data->{$hat}{external}) and
 		(not $profile_data->{$hat}{declared})) {
 		push @data, "";
-		push @data, map { "$_" } writeheader($profile_data->{$hat},
-						     $depth + 1, "^$hat",
-						     1, $write_flags);
+		if ($profile_data->{$hat}{profile}) {
+		    push @data, map { "$_" } writeheader($profile_data->{$hat},
+							 $depth + 1, $hat,
+							 1, $write_flags);
+		} else {
+		    push @data, map { "$_" } writeheader($profile_data->{$hat},
+							 $depth + 1, "^$hat",
+							 1, $write_flags);
+		}
 		push @data, map { "$_" } write_rules($profile_data->{$hat},
 						     $depth + 2);
 		push @data, "${pre2}}";
@@ -5374,7 +5773,7 @@ sub writepiece ($$$$$) {
 	for my $hat (grep { $_ ne $name } sort keys %{$profile_data}) {
 	    if (($name eq $nhat) and $profile_data->{$hat}{external}) {
 		push @data, "";
-		push @data, map { "  $_" } writepiece($profile_data, $depth,
+		push @data, map { "  $_" } writepiece($profile_data, $depth - 1,
 						      $name, $hat, $write_flags);
 		push @data, "  }";
 	    }
@@ -5569,7 +5968,7 @@ sub profile_known_network (\%$$) {
     for my $incname ( keys %{$profile->{include}} ) {
         return -1 if netrules_access_check($include{$incname}{$incname}{deny}{netdomain},
                                         $family, $sock_type);
-        return 1 if netrules_access_check($include{$incname}{allow}{netdomain},
+        return 1 if netrules_access_check($include{$incname}{$incname}{allow}{netdomain},
 					  $family, $sock_type);
     }
 
@@ -5593,18 +5992,24 @@ sub netrules_access_check ($$$) {
     }
 }
 
-sub reload ($) {
+sub reload_base($) {
     my $bin = shift;
 
     # don't try to reload profile if AppArmor is not running
     return unless check_for_subdomain();
 
+    my $filename = getprofilefilename($bin);
+
+    system("/bin/cat '$filename' | $parser -I$profiledir -r >/dev/null 2>&1");
+}
+
+sub reload ($) {
+    my $bin = shift;
+
     # don't reload the profile if the corresponding executable doesn't exist
     my $fqdbin = findexecutable($bin) or return;
 
-    my $filename = getprofilefilename($fqdbin);
-
-    system("/bin/cat '$filename' | $parser -I$profiledir -r >/dev/null 2>&1");
+    return reload_base($fqdbin);
 }
 
 sub read_include_from_file {
@@ -6126,6 +6531,7 @@ sub parse_event($) {
     $ev{'parent'}     = LibAppArmor::aa_log_record::swig_parent_get($event);
     $ev{'pid'}        = LibAppArmor::aa_log_record::swig_pid_get($event);
     $ev{'task'}        = LibAppArmor::aa_log_record::swig_task_get($event);
+    $ev{'info'}        = LibAppArmor::aa_log_record::swig_info_get($event);
     $dmask = LibAppArmor::aa_log_record::swig_denied_mask_get($event);
     $rmask = LibAppArmor::aa_log_record::swig_requested_mask_get($event);
     $ev{'magic_token'}  =
@@ -6143,10 +6549,6 @@ sub parse_event($) {
 
     LibAppArmor::free_record($event);
 
-    # for now just remove :: from new log mode
-    $rmask = map_log_mode($rmask) if $rmask;
-    $dmask = map_log_mode($dmask) if $dmask;
-
     if ($rmask && !validate_log_mode(hide_log_mode($rmask))) {
         fatal_error(sprintf(gettext('Log contains unknown mode %s.'),
                             $rmask));
@@ -6159,8 +6561,14 @@ sub parse_event($) {
 #print "str_to_mode deny $dmask = " . str_to_mode($dmask) . "\n" if ($dmask);
 #print "str_to_mode req $rmask = "  . str_to_mode($rmask) . "\n" if ($rmask);
 
-    $ev{'denied_mask'} = str_to_mode($dmask);
-    $ev{'request_mask'} = str_to_mode($rmask);
+    my ($mask, $name);
+    ($mask, $name) = log_str_to_mode($ev{profile}, $dmask, $ev{name2});
+    $ev{'denied_mask'} = $mask;
+    $ev{name2} = $name;
+
+    ($mask, $name) = log_str_to_mode($ev{profile}, $rmask, $ev{name2});
+    $ev{'request_mask'} = $mask;
+    $ev{name2} = $name;
 
     if ( ! $ev{'time'} ) { $ev{'time'} = time; }
 
