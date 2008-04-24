@@ -106,7 +106,7 @@ for my $profiling (@profiling) {
         print "\n";
         setprofileflags($filename, "");
 
-        my $cmd_info = qx(cat $filename | $parser -I$profiledir -r 2>&1 1>/dev/null)
+        my $cmd_info = qx(cat $filename | $parser -I$profiledir -r 2>&1 1>/dev/null);
 	if ($? != 0) {
 	    UI_Info($cmd_info);
 	    exit $?;
