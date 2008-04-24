@@ -374,6 +374,9 @@ remove_profiles() {
 
 	retval=0
 	sed -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" | while read profile ; do
+		if [ ${profile:0:1} eq "/" ] ; then
+			$profile = "profile_$profile";
+		fi
 		echo "\"$profile\" { }" | $PARSER -R >/dev/null
 		rc=$?
 		if [ ${rc} -ne 0 ] ; then 
