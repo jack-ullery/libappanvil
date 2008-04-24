@@ -32,7 +32,7 @@ security-removexattr.diff
 unambiguous-__d_path.diff
 mount-consistent-__d_path.diff
 d_namespace_path.diff
-fgetattr.diff
+__d_path-keep-connected.diff
 fsetattr.diff
 #fix-fuse.diff
 fsetattr-reintro-ATTR_FILE.diff
@@ -115,3 +115,4 @@ apparmor-network.diff
 #fix-net.diff
 apparmor-rlimits.diff
 audit-log-type-in-syslog.diff
+fix-named-transitions.diff

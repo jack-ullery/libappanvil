@@ -146,7 +146,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  EXPORT_SYMBOL(notify_change);
 --- a/fs/fuse/dir.c
 +++ b/fs/fuse/dir.c
-@@ -1032,21 +1032,22 @@ static int fuse_dir_fsync(struct file *f
+@@ -1063,21 +1063,22 @@ static int fuse_dir_fsync(struct file *f
  	return file ? fuse_fsync_common(file, de, datasync, 1) : 0;
  }
  
@@ -172,7 +172,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  {
  	unsigned ivalid = iattr->ia_valid;
  
-@@ -1065,7 +1066,7 @@ static void iattr_to_fattr(struct iattr 
+@@ -1096,7 +1097,7 @@ static void iattr_to_fattr(struct iattr 
  		if (!(ivalid & ATTR_ATIME_SET))
  			arg->valid |= FATTR_ATIME_NOW;
  	}
@@ -181,7 +181,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  		arg->valid |= FATTR_MTIME;
  		arg->mtime = iattr->ia_mtime.tv_sec;
  		arg->mtimensec = iattr->ia_mtime.tv_nsec;
-@@ -1082,8 +1083,8 @@ static void iattr_to_fattr(struct iattr 
+@@ -1113,8 +1114,8 @@ static void iattr_to_fattr(struct iattr 
   * vmtruncate() doesn't allow for this case, so do the rlimit checking
   * and the actual truncation by hand.
   */
@@ -192,7 +192,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  {
  	struct inode *inode = entry->d_inode;
  	struct fuse_conn *fc = get_fuse_conn(inode);
-@@ -1121,7 +1122,7 @@ static int fuse_do_setattr(struct dentry
+@@ -1152,7 +1153,7 @@ static int fuse_do_setattr(struct dentry
  
  	memset(&inarg, 0, sizeof(inarg));
  	memset(&outarg, 0, sizeof(outarg));
@@ -201,7 +201,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  	if (file) {
  		struct fuse_file *ff = file->private_data;
  		inarg.valid |= FATTR_FH;
-@@ -1163,10 +1164,7 @@ static int fuse_do_setattr(struct dentry
+@@ -1194,10 +1195,7 @@ static int fuse_do_setattr(struct dentry
  
  static int fuse_setattr(struct dentry *entry, struct iattr *attr)
  {
@@ -215,7 +215,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  static int fuse_getattr(struct vfsmount *mnt, struct dentry *entry,
 --- a/fs/fuse/file.c
 +++ b/fs/fuse/file.c
-@@ -894,6 +894,11 @@ static sector_t fuse_bmap(struct address
+@@ -907,6 +907,11 @@ static sector_t fuse_bmap(struct address
  	return err ? 0 : outarg.block;
  }
  
@@ -227,19 +227,19 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  static const struct file_operations fuse_file_operations = {
  	.llseek		= generic_file_llseek,
  	.read		= do_sync_read,
-@@ -908,6 +913,7 @@ static const struct file_operations fuse
+@@ -920,6 +925,7 @@ static const struct file_operations fuse
+ 	.fsync		= fuse_fsync,
  	.lock		= fuse_file_lock,
  	.flock		= fuse_file_flock,
- 	.fgetattr	= fuse_file_fgetattr,
-+	.fsetattr	= fuse_fsetattr,
++	.fsetattr       = fuse_fsetattr,
  	.splice_read	= generic_file_splice_read,
  };
  
-@@ -922,6 +928,7 @@ static const struct file_operations fuse
+@@ -933,6 +939,7 @@ static const struct file_operations fuse
+ 	.fsync		= fuse_fsync,
  	.lock		= fuse_file_lock,
  	.flock		= fuse_file_flock,
- 	.fgetattr	= fuse_file_fgetattr,
-+	.fsetattr	= fuse_fsetattr,
++	.fsetattr       = fuse_fsetattr,
  	/* no mmap and splice_read */
  };
  
@@ -374,15 +374,15 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  };
  
  /*
-@@ -1189,6 +1181,7 @@ struct file_operations {
+@@ -1188,6 +1180,7 @@ struct file_operations {
+ 	ssize_t (*splice_write)(struct pipe_inode_info *, struct file *, loff_t *, size_t, unsigned int);
  	ssize_t (*splice_read)(struct file *, loff_t *, struct pipe_inode_info *, size_t, unsigned int);
  	int (*setlease)(struct file *, long, struct file_lock **);
- 	int (*fgetattr)(struct file *, struct kstat *);
 +	int (*fsetattr)(struct file *, struct iattr *);
  };
  
  struct inode_operations {
-@@ -1695,6 +1688,7 @@ extern int do_remount_sb(struct super_bl
+@@ -1694,6 +1687,7 @@ extern int do_remount_sb(struct super_bl
  extern sector_t bmap(struct inode *, sector_t);
  #endif
  extern int notify_change(struct dentry *, struct vfsmount *, struct iattr *);
