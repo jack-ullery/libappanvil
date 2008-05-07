@@ -13,7 +13,7 @@
 #include <tunables/global>
 
 #define this to be where syslog-ng is chrooted
-@{CHROOT_BASE}=
+@{CHROOT_BASE}=""
 
 /sbin/syslog-ng {
   #include <abstractions/base>
