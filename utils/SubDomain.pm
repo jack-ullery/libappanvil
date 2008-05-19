@@ -920,6 +920,9 @@ sub autodep_base($$) {
              ($repo_cfg->{repository}{enabled} eq "later") ) {
                 UI_ask_to_enable_repo();
         }
+	if ((not defined $owner_toggle)) {
+	    $owner_toggle = 0;
+	}
     }
 
     my $fqdbin;
@@ -3540,7 +3543,7 @@ sub ask_the_questions {
 				my $prompt_mode;
 				if ($owner_toggle == 0) {
 				    $prompt_mode = flatten_mode($mode);
-				    $tail = "     " . gettext("(owner permissions off");
+				    $tail = "     " . gettext("(owner permissions off)");
 				} elsif ($owner_toggle == 1) {
 				    $prompt_mode = $mode;
 				    $tail = "";
