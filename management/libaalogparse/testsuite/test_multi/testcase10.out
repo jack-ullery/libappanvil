@@ -1,9 +1,0 @@
-START
-File: test_multi/testcase10.in
-Event type: AA_RECORD_HINT
-Audit ID: 1168661976.062:55
-Operation: clone
-Profile: /home/matt/projects/change_hat_test/test_hat
-Task: 38229
-PID: 27764
-Active hat: /home/matt/projects/change_hat_test/test_hat

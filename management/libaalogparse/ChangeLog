@@ -1,4 +1,0 @@
--------------------------------------------------------------------
-Mon Jul  9 12:48:29 PDT 2007 Matt Barringer <mbarringer@suse.de>
-
-- Added aa_log_record->audit_id

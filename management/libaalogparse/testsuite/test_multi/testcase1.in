@@ -1,1 +1,0 @@
-type=APPARMOR_DENIED msg=audit(1181057184.959:7): operation="exec" denied_mask="x" name="/bin/ping" pid="31938" profile="/bin/ping" name2="ping2" requested_mask="rwx" attribute="attr" task="something" parent="something" magic_token="29493103210" info="Information"

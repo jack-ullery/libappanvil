@@ -1,7 +1,0 @@
-AUTOMAKE_OPTIONS = foreign 1.4
-
-SRCDIR = src
-
-SUBDIRS = src swig testsuite
-
-EXTRA_DIST = AUTHORS ChangeLog COPYING INSTALL NEWS README
