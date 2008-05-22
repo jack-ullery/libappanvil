@@ -6,472 +6,563 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: YaST (@memory@)\n"
+"Project-Id-Version: apparmor-parser.ko\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-09-26 13:01-0600\n"
-"PO-Revision-Date: 2001-07-18 11:05+0200\n"
-"Last-Translator: Hwang, Sang-Jin <violiet@suse.de>\n"
-"Language-Team: Korean <i18n@suse.de>\n"
+"POT-Creation-Date: 2008-04-21 00:30-0700\n"
+"PO-Revision-Date: 2008-04-28 18:59+0900\n"
+"Last-Translator: YunSeok Choi <xein@naver.com>\n"
+"Language-Team: Korean <xein@naver.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Poedit-Language: Korean\n"
+"X-Poedit-Country: KOREA, REPUBLIC OF\n"
+"X-Poedit-SourceCharset: utf-8\n"
 
-#: ../parser_include.c:95
-#, fuzzy, c-format
+#: ../parser_include.c:96
+#, c-format
 msgid "Error: Could not read profile %s: %s.\n"
-msgstr "%d: '%s'(으)로 부터 읽을 수 없습니다: %s\n"
+msgstr "오류: 프로필 %s를 읽을 수 없음: %s.\n"
 
-#: ../parser_include.c:114
-#, fuzzy
+#: ../parser_include.c:115
 msgid "Error: Could not allocate temporary file.\n"
-msgstr "%d: 임시 파일을 만들 수 없습니다: %s\n"
+msgstr "오류: 임시 파일을 할당 할 수 없습니다.\n"
 
-#: ../parser_include.c:165
+#: ../parser_include.c:166
 msgid "Error: Out of memory.\n"
-msgstr ""
+msgstr "오류: 메모리 부족.\n"
 
-#: ../parser_include.c:175
+#: ../parser_include.c:176
 #, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
-msgstr ""
+msgstr "오류: basedir %s 는 디렉토리가 아닙니다. 건너뜁니다.\n"
 
-#: ../parser_include.c:189
+#: ../parser_include.c:190
 #, c-format
 msgid "Error: Could not add directory %s to search path.\n"
-msgstr ""
+msgstr "오류: 디렉토리 %s 를 검색 경로에 추가할 수 없습니다.\n"
 
-#: ../parser_include.c:199
-#, fuzzy
+#: ../parser_include.c:200
 msgid "Error: Could not allocate memory.\n"
-msgstr "%d: 임시 파일을 만들 수 없습니다: %s\n"
+msgstr "오류: 메모리를 할당 할 수 없습니다.\n"
 
-#: ../parser_include.c:332
+#: ../parser_include.c:297
 #, c-format
 msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-msgstr ""
+msgstr "오류: %d 행(%s 안의)에 포함하는 버퍼를 할당 할 수 없습니다 .\n"
 
-#: ../parser_include.c:348 ../parser_include.c:368
+#: ../parser_include.c:313
+#: ../parser_include.c:333
 #, c-format
 msgid "Error: Bad include at line %d in %s.\n"
-msgstr ""
+msgstr "오류: %d 행(%s 안의)잘못됨.\n"
 
-#: ../parser_include.c:398
-#, c-format
-msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-msgstr ""
-
-#: ../parser_include.c:423
+#: ../parser_include.c:378
 #, c-format
 msgid "Error: #include %s%c not found at line %d in %s.\n"
-msgstr ""
+msgstr "오류: #include %s%c 를 %d 행(%s 안의)에서 찾을 수 없습니다.\n"
 
-#: ../parser_interface.c:65
+#: ../parser_include.c:459
+#, c-format
+msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
+msgstr "오류: include가 %d 레벨을 넘었습니다.  %s include 는 처리되지 않습니다.\n"
+
+#: ../parser_interface.c:72
 msgid "Bad write position\n"
-msgstr ""
+msgstr "잘못된 기록 위치\n"
 
-#: ../parser_interface.c:68
+#: ../parser_interface.c:75
 msgid "Permission denied\n"
-msgstr ""
+msgstr "권한 없음\n"
 
-#: ../parser_interface.c:71
+#: ../parser_interface.c:78
 msgid "Out of memory\n"
-msgstr ""
+msgstr "메모리 부족\n"
 
-#: ../parser_interface.c:74
+#: ../parser_interface.c:81
 msgid "Couldn't copy profile Bad memory address\n"
-msgstr ""
+msgstr "잘못된 메모리 주소 때문에 프로필을 복사 할 수 없음\n"
 
-#: ../parser_interface.c:77
+#: ../parser_interface.c:84
 msgid "Profile doesn't conform to protocol\n"
-msgstr ""
+msgstr "프로필이 프로토콜에 준거하고 있지 않음\n"
 
-#: ../parser_interface.c:80
+#: ../parser_interface.c:87
 msgid "Profile does not match signature\n"
-msgstr ""
+msgstr "프로필과 서명이 일치하지 않음\n"
 
-#: ../parser_interface.c:83
+#: ../parser_interface.c:90
 msgid "Profile version not supported by Apparmor module\n"
-msgstr ""
+msgstr "Apparmor 모듈이 지원하지 않는 프로필 버전\n"
 
-#: ../parser_interface.c:86
+#: ../parser_interface.c:93
 msgid "Profile already exists\n"
-msgstr ""
+msgstr "프로필이 있음\n"
 
-#: ../parser_interface.c:89
+#: ../parser_interface.c:96
 msgid "Profile doesn't exist\n"
-msgstr ""
+msgstr "프로필이 없음\n"
 
-#: ../parser_interface.c:92
-#, fuzzy
+#: ../parser_interface.c:99
 msgid "Unknown error\n"
-msgstr "알수 없음`"
+msgstr "알 수 없는 오류\n"
 
-#: ../parser_interface.c:109
+#: ../parser_interface.c:116
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr ""
+msgstr "%s: \"%s\"를 추가할 수 없습니다.  "
 
-#: ../parser_interface.c:114
+#: ../parser_interface.c:121
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr ""
+msgstr "%s: \"%s\"를 바꿀 수 없습니다.  "
 
-#: ../parser_interface.c:119
+#: ../parser_interface.c:126
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr ""
+msgstr "%s: \"%s\"를 제거할 수 없습니다.  "
 
-#: ../parser_interface.c:124
+#: ../parser_interface.c:131
 #, c-format
 msgid "%s: Unable to write to stdout\n"
-msgstr ""
+msgstr "%s: 표준 출력에 쓸 수 없음\n"
 
-#: ../parser_interface.c:128 ../parser_interface.c:151
+#: ../parser_interface.c:135
+#: ../parser_interface.c:158
 #, c-format
 msgid "%s: ASSERT: Invalid option: %d\n"
-msgstr ""
+msgstr "%s: ASSERT: 잘못된 옵션: %d\n"
 
-#: ../parser_interface.c:137
+#: ../parser_interface.c:144
 #, c-format
 msgid "Addition succeeded for \"%s\".\n"
-msgstr ""
+msgstr "\"%s\"의 추가에 성공했습니다.\n"
 
-#: ../parser_interface.c:141
+#: ../parser_interface.c:148
 #, c-format
 msgid "Replacement succeeded for \"%s\".\n"
-msgstr ""
+msgstr "\"%s\"의 변경에 성공했습니다.\n"
 
-#: ../parser_interface.c:145
+#: ../parser_interface.c:152
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
-msgstr ""
+msgstr "\"%s\"의 제거에 성고앻습니다.\n"
 
-#: ../parser_interface.c:236
+#: ../parser_interface.c:247
 #, c-format
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
-msgstr ""
+msgstr "PANIC 잘못된 증가 버퍼 %p pos %p ext %p 크기 %d res %p\n"
 
-#: ../parser_interface.c:644
+#: ../parser_interface.c:798
 #, c-format
 msgid "Unable to open %s - %s\n"
-msgstr ""
+msgstr "%s - %s 를 열 수 없음\n"
 
-#: ../parser_interface.c:661
+# ###############################################################################
+# Old yast2-agents.po
+#: ../parser_interface.c:822
+#, c-format
+msgid "Memory Allocation Error: Unable to remove ^%s\n"
+msgstr "메모리 할당 오류: ^%s를 제거 할 수 없음\n"
+
+#: ../parser_interface.c:835
+#, c-format
+msgid "Memory Allocation Error: Unable to remove %s:%s."
+msgstr "메모리 할당 오류: %s:%s를 제거할 수 없습니다."
+
+#: ../parser_interface.c:854
 msgid "unable to create work area\n"
-msgstr ""
+msgstr "작업 영역을 만들 수 없음\n"
 
-#: ../parser_interface.c:669
+#: ../parser_interface.c:862
 #, c-format
 msgid "unable to serialize profile %s\n"
-msgstr ""
+msgstr "%s 프로필을 serialize 할 수 없음\n"
 
-#: ../parser_interface.c:679
+#: ../parser_interface.c:872
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
-msgstr ""
+msgstr "%s: 전체 프로필 항목에 기록 할 수 없음\n"
 
-#: parser_lex.l:119 parser_lex.l:221 parser_lex.l:347
+#: parser_lex.l:122
+#: parser_lex.l:155
+#: parser_lex.l:354
 #, c-format
 msgid "Found unexpected character: '%s'"
-msgstr ""
+msgstr "예상하지 못한 문자 발견: '%s'"
 
-#: parser_lex.l:159
+#: parser_lex.l:196
 #, c-format
-msgid "(ip_mode) Found unexpected character: '%s'"
-msgstr ""
+msgid "(network_mode) Found unexpected character: '%s'"
+msgstr "(network_mode) 예상하지 못한 문자 발견: '%s'"
 
-#: parser_lex.l:174
-#, c-format
-msgid "Unexpected character in interface name: '%s'"
-msgstr ""
-
-#: parser_lex.l:213
-#, c-format
-msgid "Found unknown flag: '%s'"
-msgstr ""
-
-#: parser_lex.l:326
-#, c-format
-msgid "Found unexpected keyword: '%s'"
-msgstr ""
-
-#: ../parser_main.c:131
+#: ../parser_main.c:137
 #, c-format
 msgid "Warning (%s line %d): %s"
-msgstr ""
+msgstr "위험 (%s의 %d행): %s"
 
-#: ../parser_main.c:255
+#: ../parser_main.c:264
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
-msgstr ""
+msgstr "%s: 서브도메인베이스 마운트 포인트에 대해 메모리를 할당 할 수 없음\n"
 
-#: ../parser_main.c:274
-#, c-format
-msgid ""
-"Warning: unable to open %s, attempting to use %s\n"
-"as the subdomainfs location. Use --subdomainfs to override.\n"
-msgstr ""
-
-#: ../parser_main.c:305
+#: ../parser_main.c:310
 #, c-format
 msgid ""
 "Warning: unable to find a suitable fs in %s, is it mounted?\n"
-"Attempting to use %s as the subdomainfs location.\n"
 "Use --subdomainfs to override.\n"
 msgstr ""
+"위험: %s에 적절한 파일시스템이 발견되지 않습니다. 마운트 되어 있습니까?\n"
+"--subdomainfs 를 사용하여 무시할 수 있습니다.\n"
 
-#: ../parser_main.c:347
-#, c-format
-msgid ""
-"%s: Unable to query modules - '%s'\n"
-"Either modules are disabled or your kernel is too old.\n"
-msgstr ""
-
-#: ../parser_main.c:352
-#, c-format
-msgid "%s: Unable to find "
-msgstr ""
-
-#: ../parser_main.c:352
-msgid ""
-"!\n"
-"Ensure that it has been loaded.\n"
-msgstr ""
-
-#: ../parser_main.c:368
+#: ../parser_main.c:330
 #, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
 msgstr ""
+"%s: 미안요. 이 프로그램을 사용하려면 root 권한이 필요해요.\n"
+"\n"
 
-#: ../parser_main.c:375
+#: ../parser_main.c:337
 #, c-format
 msgid ""
 "%s: Warning! You've set this program setuid root.\n"
 "Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 msgstr ""
+"%s: 주의! 이 프로그램은 setuid root 로 설정되어 있습니다.\n"
+"이 프로그램을 실행 할 수 있으면 누구라도 AppArmor 프로필 갱신이 가능합니다.\n"
+"\n"
 
-#: ../parser_main.c:442
+#: ../parser_main.c:415
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
-msgstr ""
+msgstr "%s: 파일에 오류가 있습니다. 중단 중.\n"
 
-#: ../parser_misc.c:269
+#: ../parser_misc.c:281
+#: parser_yacc.y:216
+#: parser_yacc.y:240
+#: parser_yacc.y:346
+#: parser_yacc.y:358
+#: parser_yacc.y:426
+#: parser_yacc.y:528
+#: parser_yacc.y:566
+#: parser_yacc.y:884
+#: parser_yacc.y:893
+#: parser_yacc.y:904
+#: parser_yacc.y:914
+#: parser_yacc.y:985
+#: parser_yacc.y:1033
+#: parser_yacc.y:1044
+#: parser_yacc.y:1119
+#: parser_yacc.y:1134
+#: parser_yacc.y:1141
+#: parser_yacc.y:1152
+msgid "Memory allocation error."
+msgstr "메모리 할당 오류."
+
+#: ../parser_misc.c:437
 msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
 msgstr ""
+"대문자 수식어 \"RWLIMX\" 는 낡은 표현입니다. 소문자로 변경 해주세요.\n"
+"자세한 것은 man 페이지의 apparmor.d(5) 에서 확인하세요.\n"
 
-#: ../parser_misc.c:313
-msgid "Exec qualifier 'i' must be followed by 'x'"
-msgstr ""
+#: ../parser_misc.c:473
+#: ../parser_misc.c:480
+msgid "Conflict 'a' and 'w' perms are mutually exclusive."
+msgstr "'a' 와 'w' 의 매개변수를 동시에 설정 할 수 없습니다."
 
-#: ../parser_misc.c:315
+#: ../parser_misc.c:497
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
-msgstr ""
+msgstr "실행 수식 'i' 는 잘못 되었습니다. 같은 수식이 이미 지정되어 있습니다"
 
-#: ../parser_misc.c:327
+#: ../parser_misc.c:508
 #, c-format
-msgid "Unconstrained exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
-msgstr ""
+msgid "Unconfined exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
+msgstr "무제한의 실행 수식 (%c%c) 에 의해 제한이 없는 프로세스에 대해 위험한 환경변수를 전달합니다; 'man 5 apparmor.d' 에서 자세한 내용을 살펴보세요.\n"
 
-#: ../parser_misc.c:334 ../parser_misc.c:355
-#, c-format
-msgid "Exec qualifier '%c' must be followed by 'x'"
-msgstr ""
-
-#: ../parser_misc.c:337 ../parser_misc.c:358
+#: ../parser_misc.c:516
+#: ../parser_misc.c:549
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr ""
+msgstr "실행 수식 '%c' 는 잘못 되었습니다. 같은 수식이 이미 지정되어 있습니다"
 
-#: ../parser_misc.c:376
-msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr ""
+#: ../parser_misc.c:543
+#, c-format
+msgid "Exec qualifier '%c%c' invalid, conflicting qualifier already specified"
+msgstr "실행 수식 '%c%c' 는 잘못 되었습니다. 같은 수식이 이미 지정되어 있음"
 
-#: ../parser_misc.c:396
+#: ../parser_misc.c:591
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr ""
+msgstr "내부: 예기치 않은 모드 문자 '%c'가 입력 됨"
 
-#: ../parser_misc.c:426 parser_yacc.y:222 parser_yacc.y:315 parser_yacc.y:327
-#: parser_yacc.y:387 parser_yacc.y:521 parser_yacc.y:533 parser_yacc.y:553
-#: parser_yacc.y:591 parser_yacc.y:623 parser_yacc.y:637 parser_yacc.y:651
-#: parser_yacc.y:665 parser_yacc.y:679 parser_yacc.y:707 parser_yacc.y:737
-#: parser_yacc.y:775 parser_yacc.y:792 parser_yacc.y:806
-msgid "Memory allocation error."
-msgstr ""
+#: ../parser_misc.c:613
+#, c-format
+msgid "Internal error generated invalid perm 0x%llx\n"
+msgstr "내부 오류가 발생, 허가 설정이 올바르지 않음 0x%llx\n"
 
-#: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
+#: ../parser_misc.c:833
+#: ../parser_symtab.c:556
+#: ../parser_regex.c:658
 #: ../parser_variable.c:227
 #, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr ""
+msgstr "AppArmor 구문 분석 오류: %s\n"
 
-#: ../parser_merge.c:64
+#: ../parser_merge.c:94
 msgid "Couldn't merge entries. Out of Memory\n"
-msgstr ""
+msgstr "항목을 병합 할 수 없습니다. 메모리 부족\n"
 
-#: ../parser_merge.c:92
+#: ../parser_merge.c:113
 #, c-format
 msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-msgstr ""
+msgstr "프로필 %s: 다중 x 변경자로 규칙 %s 가 통함됨\n"
 
-#: parser_yacc.y:362
-msgid "flags=(debug) is no longer supported, sorry."
-msgstr ""
+#: parser_yacc.y:220
+msgid "Profile names must begin with a '/', or keyword 'profile'."
+msgstr "프로필 이름은 '/' 나 키워드 'profile' 로 시작해야 합니다."
 
-#: parser_yacc.y:398
+#: parser_yacc.y:263
+#, c-format
+msgid "Failed to create alias %s -> %s\n"
+msgstr "%s 의 별칭 만들기에 실패 -> %s\n"
+
+#: parser_yacc.y:399
+msgid "Profile flag 'debug' is no longer valid."
+msgstr "'debug' 프로필 플래그는 이미 이용 할 수 없습니다."
+
+#: parser_yacc.y:405
+#, c-format
+msgid "Invalid profile flag: %s."
+msgstr "잘못된 프로필 플래그: %s."
+
+#: parser_yacc.y:440
+#: parser_yacc.y:462
 msgid "Assert: `rule' returned NULL."
-msgstr ""
+msgstr "Assert: `rule' 은 NULL을 반환했습니다."
 
-#: parser_yacc.y:407
-msgid "Assert: `netrule' returned NULL."
-msgstr ""
+#: parser_yacc.y:443
+#: parser_yacc.y:488
+msgid "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"
+msgstr "잘못된 모드, 거부 규칙 'x' 의 앞에 실행 수식 'i', 'p' 또는 'u'를 붙여서는 안됨"
 
-#: parser_yacc.y:424
+#: parser_yacc.y:466
+msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
+msgstr "잘못된 모드, 'x'의 앞에는 실행 수식 'i', 'p', 'c' 또는 'u'가 필요함"
+
+#: parser_yacc.y:491
+msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
+msgstr "잘못된 모드, 'x'의 앞에는 실행 수식 'i', 'p' 또는 'u'가 필요함"
+
+#: parser_yacc.y:516
+#: parser_yacc.y:554
+msgid "Assert: `network_rule' return invalid protocol."
+msgstr "Assert: `network_rule' 은 잘못된 프로토콜을 반환합니다."
+
+#: parser_yacc.y:591
+msgid "Assert: `change_profile' returned NULL."
+msgstr "Assert: `change_profile' 은 NULL을 반환했습니다."
+
+#: parser_yacc.y:600
+msgid "Assert: `change_hat' returned NULL."
+msgstr "Assert: `change_profile' 은 NULL을 반환했습니다."
+
+#: parser_yacc.y:631
 msgid "Assert: 'hat rule' returned NULL."
-msgstr ""
+msgstr "Assert: 'hat rule' 은 NULL을 반환했습니다."
 
-#: parser_yacc.y:487
+#: parser_yacc.y:640
+msgid "Assert: 'local_profile rule' returned NULL."
+msgstr "Assert: `change_profile' 은 NULL을 반환했습니다."
+
+#: parser_yacc.y:772
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr ""
+msgstr "설정되지 않은 논리 변수 %s가 if 문 내에 사용되고 있음"
 
-#: parser_yacc.y:545
+#: parser_yacc.y:830
+msgid "subset can only be used with link rules."
+msgstr "부분집합은 링크 규칙과 함께(만) 사용 할 수 있습니다."
+
+#: parser_yacc.y:832
+msgid "link and exec perms conflict on a file rule using ->"
+msgstr "이하의 파일 규칙 내에서 링크와 실행 허가가 모순되고 있습니다 ->"
+
+#: parser_yacc.y:834
+msgid "link perms are not allowed on a named profile transition.\n"
+msgstr "링크 허가는 명명된 프로필의 전환에서 허용되지 않습니다.\n"
+
+#: parser_yacc.y:850
+msgid "unsafe rule missing exec permissions"
+msgstr "실행권한이 설정되어 있지 않은 안전하지 않은 규칙"
+
+#: parser_yacc.y:853
+msgid "link perms are not allowed on a named profile transtion.\n"
+msgstr "링크 허가는 명명된 프로필의 전환에서 허용되지 않습니다.\n"
+
+#: parser_yacc.y:866
 #, c-format
 msgid "missing an end of line character? (entry: %s)"
-msgstr ""
+msgstr "행의 끝 문자가 빠져 있지 않습니까? (항목: %s)"
 
-#: parser_yacc.y:586
-msgid "Assert: `addresses' returned NULL."
-msgstr ""
+#: parser_yacc.y:1000
+#: parser_yacc.y:1010
+msgid "Invalid network entry."
+msgstr "잘못된 네트워크 항목입니다."
 
-#: parser_yacc.y:689
-msgid "Network entries can only have one TO address."
-msgstr ""
-
-#: parser_yacc.y:694
-msgid "Network entries can only have one FROM address."
-msgstr ""
-
-#: parser_yacc.y:712 parser_yacc.y:743
+#: parser_yacc.y:1064
+#: parser_yacc.y:1072
 #, c-format
-msgid "`%s' is not a valid ip address."
-msgstr ""
+msgid "Invalid capability %s."
+msgstr "잘못된 %s 기능설정 입니다."
 
-#: parser_yacc.y:756
-#, c-format
-msgid "`/%d' is not a valid netmask."
-msgstr ""
-
-#: parser_yacc.y:763
-#, c-format
-msgid "`%s' is not a valid netmask."
-msgstr ""
-
-#: parser_yacc.y:789 parser_yacc.y:809
-#, c-format
-msgid "ports must be between %d and %d"
-msgstr ""
-
-#: parser_yacc.y:876
+#: parser_yacc.y:1089
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr ""
+msgstr "%s의 %d행에서 AppArmor 분석 오류: %s\n"
 
-#: parser_yacc.y:879
+#: parser_yacc.y:1092
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr ""
+msgstr "%d 행에서 AppArmor 분석 오류: %s\n"
 
-#: ../parser_regex.c:247
+#: ../parser_regex.c:283
 #, c-format
 msgid "%s: Illegal open {, nesting groupings not allowed\n"
-msgstr ""
+msgstr "%s: 부정 { 열기, 상자 그룹은 허용되지 않음\n"
 
-#: ../parser_regex.c:267
+#: ../parser_regex.c:303
 #, c-format
 msgid "%s: Regex grouping error: Invalid number of items between {}\n"
-msgstr ""
+msgstr "%s: 정규 표현 그룹 나누기 오류: {} 사이에 잘못된 항목수\n"
 
-#: ../parser_regex.c:273
+#: ../parser_regex.c:309
 #, c-format
 msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
-msgstr ""
+msgstr "%s: 정규 표현 그룹 나누기 오류: 잘못된 } 닫기, { 열기 와 일치하지 않는 곳이 검출\n"
 
-#: ../parser_regex.c:339
+#: ../parser_regex.c:375
 #, c-format
 msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
-msgstr ""
+msgstr "%s: 정규 표현 그룹 나누기 오류: 닫혀지지 않은 그룹 나누기 또는 문자 클래스가 있음, } 로 닫을 필요가 있음\n"
 
-#: ../parser_regex.c:353
+#: ../parser_regex.c:389
 #, c-format
 msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
-msgstr ""
+msgstr "%s: 내부 버퍼 넘침 검출, %d 문자를 넘음\n"
 
-#: ../parser_regex.c:357
-#, fuzzy, c-format
+#: ../parser_regex.c:393
+#, c-format
 msgid "%s: Unable to parse input line '%s'\n"
-msgstr "%d: 마운트 위치 '%s'(을)를 지우는데 실패했습니다: %s\n"
+msgstr "%s: 입력 행 '%s'를 해석 할 수 없음\n"
 
-#: ../parser_regex.c:390
-#, fuzzy, c-format
+#: ../parser_regex.c:445
+#, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-msgstr "%d: '%s'(을)를 '%s'(으)로 바꾸는데 실패했습니다: %s\n"
+msgstr "%s: 정규 표현 '%s' [original: '%s'] 의 컴파일에 실패\n"
 
-#: ../parser_regex.c:394
+#: ../parser_regex.c:449
 #, c-format
 msgid "%s: error near               "
-msgstr ""
+msgstr "%s: 가까이 오류               "
 
-#: ../parser_regex.c:404
-#, fuzzy, c-format
+#: ../parser_regex.c:459
+#, c-format
 msgid "%s: error reason: '%s'\n"
-msgstr "%d: '%s' 잠금 푸는데 오류\n"
+msgstr "%s: 오류의 이유: '%s'\n"
 
-#: ../parser_regex.c:413
+#: ../parser_regex.c:468
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-msgstr ""
+msgstr "%s: 정규 표현 '%s' [원문: '%s'] 의 컴파일에 실패 - malloc 의 실패\n"
 
-#: ../parser_policy.c:102
+#: ../parser_policy.c:194
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
-msgstr ""
+msgstr "프로필 %s의 규칙 통합 오류, 불러오기에 실패\n"
 
-#: ../parser_policy.c:134
+#: ../parser_policy.c:226
 #, c-format
 msgid ""
 "ERROR profile %s contains policy elements not usable with this kernel:\n"
 "\t'*', '?', character ranges, and alternations are not allowed.\n"
 "\t'**' may only be used at the end of a rule.\n"
 msgstr ""
+"프로필 %s 의 오류는 이 커널로 사용할 수 없는 정책을 포함하고 있습니다:\n"
+"\t'*', '?', 문자 범위 및 변경은 허용되지 않습니다.\n"
+"\t'**' 는 규칙의 마지막 부분에만 사용 할 수 있습니다.\n"
 
-#: ../parser_policy.c:179
+#: ../parser_policy.c:271
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr ""
+msgstr "프로필 %s 의 정규표현 처리 오류, 불러오기에 실패\n"
 
-#: ../parser_policy.c:206
+#: ../parser_policy.c:298
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr ""
+msgstr "프로필 %s의 변수 전개에 오류, 불러오기에 실패\n"
 
-#: ../parser_policy.c:259
+#: ../parser_policy.c:481
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
-msgstr ""
+msgstr "프로필 %s에 오류, 불러오기에 실패\n"
 
-#: ../parser_policy.c:413
+#: ../parser_policy.c:659
 #, c-format
-msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
-msgstr ""
+msgid "%s: Errors found during postprocessing.  Aborting.\n"
+msgstr "%s: 정규표현 후처리하는 도중 오류 발견.  중단 중.\n"
 
-#: ../parser_policy.c:420 ../parser_policy.c:427
+#: ../parser_policy.c:666
+#: ../parser_policy.c:687
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
-msgstr ""
+msgstr "%s: 정규표현 후처리시에 오류 발견.  중단 중.\n"
+
+#: ../parser_policy.c:673
+#, c-format
+msgid "%s: Errors found during postprocess.  Aborting.\n"
+msgstr "%s: 정규표현 후처리 도중 오류 발견.  중단 중.\n"
+
+#: ../parser_policy.c:680
+#, c-format
+msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
+msgstr "%s: 규칙의 후처리를 결합 할 때 오류 발견. 중단 중.\n"
+
+#~ msgid "only link perms can be specified in a link rule."
+#~ msgstr "링그 규칙에는 링크 허용만 지정할 수 있습니다."
+#~ msgid "(ip_mode) Found unexpected character: '%s'"
+#~ msgstr "(ip_mode) 예상하지 못한 문자 발견: '%s'"
+#~ msgid "Unexpected character in interface name: '%s'"
+#~ msgstr "인터페이스 이름에 예상하지 못한 문자: '%s'"
+#~ msgid "Found unknown flag: '%s'"
+#~ msgstr "알 수 없는 플래그 발견: '%s'"
+#~ msgid "Found unexpected keyword: '%s'"
+#~ msgstr "예상하지 못한 키워드 발견: '%s'"
+#~ msgid "Exec qualifier 'i' must be followed by 'x'"
+#~ msgstr "실행 수식 'i'는 'x'와 함께 지정해야 함"
+#~ msgid "Exec qualifier '%c' must be followed by 'x'"
+#~ msgstr "실행 수식 '%c'는 'x'와 함께 지정해야 함"
+#~ msgid "flags=(debug) is no longer supported, sorry."
+#~ msgstr "flags=(debug) 는 지원되지 않음. 죄송합니다."
+#~ msgid "Assert: `netrule' returned NULL."
+#~ msgstr "Assert: `netrule' 은 NULL을 반환했습니다."
+#~ msgid "Assert: `addresses' returned NULL."
+#~ msgstr "Assert: `addresses' 는 NULL을 반환합니다."
+#~ msgid "Network entries can only have one TO address."
+#~ msgstr "네트워크 항목은 TO 주소를 한개만 지정 할 수 있습니다."
+#~ msgid "Network entries can only have one FROM address."
+#~ msgstr "네트워크 항목은 FROM 주소를 한개만 지정 할 수 있습니다."
+#~ msgid "`%s' is not a valid ip address."
+#~ msgstr "`%s' 는 정확하지 않은 IP 주소 입니다."
+#~ msgid "`/%d' is not a valid netmask."
+#~ msgstr "`/%d' 는 정확하지 않은 넷마스크 입니다."
+#~ msgid "`%s' is not a valid netmask."
+#~ msgstr "`%s' 는 정확하지 않은 넷마스크 입니다."
+#~ msgid "ports must be between %d and %d"
+#~ msgstr "포트는 %d 와 %d 의 사이에 있어야 함"
+

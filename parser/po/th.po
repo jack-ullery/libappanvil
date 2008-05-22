@@ -1,222 +1,207 @@
-# translation of apparmor-parser.po to Hungarian
-# translation of apparmor-parser.hu.po to
-# translation of apparmor-parser.po to
-# Hungarian message File YaST2 (@memory@).
-# Copyright (C) 2005 SUSE Linux Products GmbH.
-# Copyright (C) 2002 SuSE Linux AG.
-# Copyright (C) 2000, 2001 SuSE GmbH.
+# Thai message file for YaST2 (@memory@).
+# Copyright (C) 2008 SUSE Linux Products GmbH.
 #
-# Marcel Hilzinger <hili@suselinux.hu>, 2001.
-# Sári Gábor <saga@tux.hu>, 2000.
-# Steve Varadi <svaradi@usa.com>, 2000.
-# Zoltán Levárdy <pogacsa@programmer.net>, 1999.
-# Papp Zsolt <zpapp@novell.com>, 2006.
-# Kalman Kemenczy <kkemenczy@novell.com>, 2006, 2007, 2008.
-# Ervin Novak <enovak@novell.com>, 2008.
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-parser\n"
+"Project-Id-Version: YaST (@memory@)\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2008-04-21 00:30-0700\n"
-"PO-Revision-Date: 2008-04-23 17:36+0200\n"
-"Last-Translator: Ervin Novak <enovak@novell.com>\n"
-"Language-Team: Hungarian <hu@li.org>\n"
+"PO-Revision-Date: 2008-01-04 08:58+0100\n"
+"Last-Translator: i18n@suse.de\n"
+"Language-Team: Thai <i18n@suse.de>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.4\n"
-"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 #: ../parser_include.c:96
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
-msgstr "Hiba: A profil beolvasása sikertelen %s: %s\n"
+msgstr ""
 
 #: ../parser_include.c:115
 msgid "Error: Could not allocate temporary file.\n"
-msgstr "Hiba: nem sikerült lefoglalni az ideiglenes fájlt\n"
+msgstr ""
 
 #: ../parser_include.c:166
+#, fuzzy
 msgid "Error: Out of memory.\n"
-msgstr "Hiba: nincs elég memória\n"
+msgstr "ผิดพลาด: พื้นที่ดิสก์เต็ม !"
 
 #: ../parser_include.c:176
 #, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
 msgstr ""
-"Hiba: a(z) %s alapkönyvtár nem érvényes könyvtár, ezért kihagyásra kerül.\n"
 
 #: ../parser_include.c:190
 #, c-format
 msgid "Error: Could not add directory %s to search path.\n"
 msgstr ""
-"Hiba: nem sikerült a(z) %s könyvtár hozzáadása a keresési útvonalhoz.\n"
 
-# modules/printconf/printconf_write_printer.ycp:30
-# clients/printconf_write.ycp:308
 #: ../parser_include.c:200
 msgid "Error: Could not allocate memory.\n"
-msgstr "Hiba: nem sikerült lefoglalni memóriát\n"
+msgstr ""
 
 #: ../parser_include.c:297
 #, c-format
 msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
 msgstr ""
-"Hiba: nem sikerült lefoglalni puffert a beágyazáshoz (sor: %d, fájl: %s).\n"
 
 #: ../parser_include.c:313 ../parser_include.c:333
 #, c-format
 msgid "Error: Bad include at line %d in %s.\n"
-msgstr "Hiba: nem megfelelő beágyazás (sor: %d, fájl: %s).\n"
+msgstr ""
 
-# clients/lan_ypclient_write.ycp:61
 #: ../parser_include.c:378
 #, c-format
 msgid "Error: #include %s%c not found at line %d in %s.\n"
-msgstr "Hiba: #include %s%c nem található (sor: %d, fájl: %s).\n"
+msgstr ""
 
 #: ../parser_include.c:459
 #, c-format
 msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
 msgstr ""
-"Hiba: több mint %d szintnyi beágyazás.  A(z)%s beágyazás nem került "
-"feldolgozásra.\n"
 
 #: ../parser_interface.c:72
 msgid "Bad write position\n"
-msgstr "Rossz írási pozíció\n"
+msgstr ""
 
 #: ../parser_interface.c:75
 msgid "Permission denied\n"
-msgstr "Engedély megtagadva\n"
+msgstr ""
 
 #: ../parser_interface.c:78
 msgid "Out of memory\n"
-msgstr "Nincs elég memória\n"
+msgstr ""
 
 #: ../parser_interface.c:81
 msgid "Couldn't copy profile Bad memory address\n"
-msgstr "A profil másolása sikertelen. Rossz memóriacím\n"
+msgstr ""
 
 #: ../parser_interface.c:84
 msgid "Profile doesn't conform to protocol\n"
-msgstr "A profil nem felel meg a protokollnak\n"
+msgstr ""
 
 #: ../parser_interface.c:87
 msgid "Profile does not match signature\n"
-msgstr "A profil nem egyezik az aláírással\n"
+msgstr ""
 
 #: ../parser_interface.c:90
 msgid "Profile version not supported by Apparmor module\n"
-msgstr "A profil verzióját az AppArmor nem támogatja\n"
+msgstr ""
 
 #: ../parser_interface.c:93
+#, fuzzy
 msgid "Profile already exists\n"
-msgstr "A profil már létezik\n"
+msgstr "มีผู้ให้บริการที่ชื่อ %1 อยู่แล้ว"
 
 #: ../parser_interface.c:96
+#, fuzzy
 msgid "Profile doesn't exist\n"
-msgstr "A profil nem létezik\n"
+msgstr "ยังไม่มีบริการ %1 อยู่"
 
-# clients/lan_ask_config.ycp:97
 #: ../parser_interface.c:99
+#, fuzzy
 msgid "Unknown error\n"
-msgstr "Ismeretlen hiba\n"
+msgstr "ไม่รู้จักรหัสข้อผิดพลาด"
 
 #: ../parser_interface.c:116
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr "%s: \"%s\" nem vehető fel.  "
+msgstr ""
 
 #: ../parser_interface.c:121
-#, c-format
+#, fuzzy, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr "%s: \"%s\" nem cserélhető le.  "
+msgstr "ผิดพลาด:ไม่สามารถลบแพกเกจได้"
 
 #: ../parser_interface.c:126
-#, c-format
+#, fuzzy, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr "%s: \"%s\" nem távolítható el.  "
+msgstr "ผิดพลาด:ไม่สามารถลบแพกเกจได้"
 
 #: ../parser_interface.c:131
 #, c-format
 msgid "%s: Unable to write to stdout\n"
-msgstr "%s: Nem sikerült írni a standard kimenetre\n"
+msgstr ""
 
 #: ../parser_interface.c:135 ../parser_interface.c:158
 #, c-format
 msgid "%s: ASSERT: Invalid option: %d\n"
-msgstr "%s: ASSERT: Érvénytelen paraméter: %d\n"
+msgstr ""
 
 #: ../parser_interface.c:144
 #, c-format
 msgid "Addition succeeded for \"%s\".\n"
-msgstr "\"%s\" hozzáadása sikerült.\n"
+msgstr ""
 
 #: ../parser_interface.c:148
 #, c-format
 msgid "Replacement succeeded for \"%s\".\n"
-msgstr "\"%s\" cseréje sikerült.\n"
+msgstr ""
 
 #: ../parser_interface.c:152
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
-msgstr "\"%s\" eltávolítása sikerült.\n"
+msgstr ""
 
 #: ../parser_interface.c:247
 #, c-format
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
-msgstr "PÁNIK rossz növekmény puffer: %p poz: %p kit: %p méret %d felb: %p\n"
+msgstr ""
 
 #: ../parser_interface.c:798
-#, c-format
+#, fuzzy, c-format
 msgid "Unable to open %s - %s\n"
-msgstr "%s nem nyitható meg - %s\n"
+msgstr ""
+"ไม่สามารถเปิดการใช้งานบริการ %1 ได้:\n"
+"%2"
 
 #: ../parser_interface.c:822
-#, c-format
+#, fuzzy, c-format
 msgid "Memory Allocation Error: Unable to remove ^%s\n"
-msgstr "Memóriafoglalási hiba: A(z) ^%s eltávolítása sikertelen\n"
+msgstr "ผิดพลาด:ไม่สามารถลบแพกเกจได้"
 
 #: ../parser_interface.c:835
-#, c-format
+#, fuzzy, c-format
 msgid "Memory Allocation Error: Unable to remove %s:%s."
-msgstr "Memóriafoglalási hiba. A(z) %s:%s eltávolítása sikertelen."
+msgstr "ผิดพลาด:ไม่สามารถลบแพกเกจได้"
 
-# clients/lan_nfs_write.ycp:78
 #: ../parser_interface.c:854
 msgid "unable to create work area\n"
-msgstr "a munkaterület létrehozása nem sikerült\n"
+msgstr ""
 
 #: ../parser_interface.c:862
-#, c-format
+#, fuzzy, c-format
 msgid "unable to serialize profile %s\n"
-msgstr "A(z) %s profil sorba szedése nem sikerült\n"
+msgstr ""
+"ไม่สามารถเปิดการใช้งานบริการ %1 ได้:\n"
+"%2"
 
 #: ../parser_interface.c:872
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
-msgstr "%s: Nem sikerült a teljes profilbejegyzés kiírása\n"
+msgstr ""
 
 #: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354
 #, c-format
 msgid "Found unexpected character: '%s'"
-msgstr "Váratlan karakter: '%s'"
+msgstr ""
 
 #: parser_lex.l:196
 #, c-format
 msgid "(network_mode) Found unexpected character: '%s'"
-msgstr "(network_mode) Váratlan karakter: '%s'"
+msgstr ""
 
 #: ../parser_main.c:137
 #, c-format
 msgid "Warning (%s line %d): %s"
-msgstr "Figyelmeztetés (%s sor %d): %s"
+msgstr ""
 
 #: ../parser_main.c:264
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
-msgstr "%s: Nem sikerült memóriát foglalni az aldomainbase csatolási pontnak\n"
+msgstr ""
 
 #: ../parser_main.c:310
 #, c-format
@@ -224,8 +209,6 @@ msgid ""
 "Warning: unable to find a suitable fs in %s, is it mounted?\n"
 "Use --subdomainfs to override.\n"
 msgstr ""
-"Figyelem: A(z) %s nem tartalmaz megfelelő fájlrendszert, fel van csatolva?\n"
-"Ez a --subdomainfs paraméterrel írható felül.\n"
 
 #: ../parser_main.c:330
 #, c-format
@@ -233,8 +216,6 @@ msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
 msgstr ""
-"%s: Sajnálom. A program futtatásához root jogosultság szükséges.\n"
-"\n"
 
 #: ../parser_main.c:337
 #, c-format
@@ -243,268 +224,235 @@ msgid ""
 "Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 msgstr ""
-"%s: Figyelem! A program setuid root módban futásra van állítva.\n"
-"Bárki, aki futtatja a programot, frissíteni tudja az AppArmor profilokat.\n"
-"\n"
 
 #: ../parser_main.c:415
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
-msgstr "%s: Hiba a fájlban. A program leáll.\n"
+msgstr ""
 
 #: ../parser_misc.c:281 parser_yacc.y:216 parser_yacc.y:240 parser_yacc.y:346
 #: parser_yacc.y:358 parser_yacc.y:426 parser_yacc.y:528 parser_yacc.y:566
 #: parser_yacc.y:884 parser_yacc.y:893 parser_yacc.y:904 parser_yacc.y:914
 #: parser_yacc.y:985 parser_yacc.y:1033 parser_yacc.y:1044 parser_yacc.y:1119
 #: parser_yacc.y:1134 parser_yacc.y:1141 parser_yacc.y:1152
+#, fuzzy
 msgid "Memory allocation error."
-msgstr "Memóriafoglalási hiba."
+msgstr "ตัวควบคุมหน่วยความจำ"
 
 #: ../parser_misc.c:437
 msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
 msgstr ""
-"A nagybetűs \"RWLIMX\" minősítők használata elavult, használjon kisbetűket.\n"
-"A részletekkel kapcsolatban lásd az apparmor.d(5) kézikönyvoldalt.\n"
 
 #: ../parser_misc.c:473 ../parser_misc.c:480
 msgid "Conflict 'a' and 'w' perms are mutually exclusive."
-msgstr "Ütközés: 'a' és 'w' kölcsönösen kizáró."
+msgstr ""
 
 #: ../parser_misc.c:497
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
 msgstr ""
-"Az 'i' végrehajtás-módosító érvénytelen, már meg van adva egy ütköző minősítő"
 
 #: ../parser_misc.c:508
 #, c-format
-msgid ""
-"Unconfined exec qualifier (%c%c) allows some dangerous environment variables "
-"to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
+msgid "Unconfined exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
 msgstr ""
-"A korlátozás nélküli végrehajtás-minősítő (%c%c) lehetővé teszi egyes "
-"veszélyes környezeti változók átadását a korlátozás nélküli folyamatnak; a "
-"részletekkel kapcsolatban lásd a 'man 5 apparmor.d' kézikönyvoldalt.\n"
 
 #: ../parser_misc.c:516 ../parser_misc.c:549
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
 msgstr ""
-"A(z) '%c' végrehajtás-módosító érvénytelen, már meg van adva egy ütköző "
-"minősítő"
 
 #: ../parser_misc.c:543
 #, c-format
 msgid "Exec qualifier '%c%c' invalid, conflicting qualifier already specified"
 msgstr ""
-"A(z) '%c%c' végrehajtás-módosító érvénytelen, már meg van adva egy ütköző "
-"minősítő"
 
 #: ../parser_misc.c:591
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr "Belső: váratlan módkarakter ('%c') a bemenetben"
+msgstr ""
 
 #: ../parser_misc.c:613
 #, c-format
 msgid "Internal error generated invalid perm 0x%llx\n"
-msgstr "A belső hiba érvénytelen perm 0x%llx létrehozását okozta\n"
+msgstr ""
 
 #: ../parser_misc.c:833 ../parser_symtab.c:556 ../parser_regex.c:658
 #: ../parser_variable.c:227
 #, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr "AppArmor feldolgozási hiba: %s\n"
+msgstr ""
 
 #: ../parser_merge.c:94
 msgid "Couldn't merge entries. Out of Memory\n"
-msgstr "A bejegyzések nem fésülhetők össze. Nincs elég memória\n"
+msgstr ""
 
 #: ../parser_merge.c:113
 #, c-format
 msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-msgstr "%s profil: a(z) %s szabály össze lett fésülve több x módosítóval\n"
+msgstr ""
 
 #: parser_yacc.y:220
 msgid "Profile names must begin with a '/', or keyword 'profile'."
 msgstr ""
-"A profil nevének '/' karakterrel, vagy a 'profil' kulcsszóval kell kezdődnie."
 
 #: parser_yacc.y:263
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to create alias %s -> %s\n"
-msgstr "%s -> %s álnév létrehozása sikertelen\n"
+msgstr ""
+"ไม่สามารถเปิดการใช้งานบริการ %1 ได้:\n"
+"%2"
 
 #: parser_yacc.y:399
 msgid "Profile flag 'debug' is no longer valid."
-msgstr "A 'debug' profiljelző már nem érvényes."
+msgstr ""
 
 #: parser_yacc.y:405
 #, c-format
 msgid "Invalid profile flag: %s."
-msgstr "Érvénytelen profiljelző: %s."
+msgstr ""
 
 #: parser_yacc.y:440 parser_yacc.y:462
 msgid "Assert: `rule' returned NULL."
-msgstr "Assert: A `rule' NULL értéket adott vissza."
+msgstr ""
 
 #: parser_yacc.y:443 parser_yacc.y:488
-msgid ""
-"Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', "
-"'p', or 'u'"
+msgid "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"
 msgstr ""
-"Érvénytelen mód, az 'x' előtt az 'i', 'p' vagy 'u' végrehajtás-módosító "
-"kell, hogy álljon"
 
 #: parser_yacc.y:466
-msgid ""
-"Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
+msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
 msgstr ""
-"Érvénytelen mód, az 'x' előtt az 'i', 'p', 'c' vagy 'u' végrehajtás-módosító "
-"kell, hogy álljon"
 
 #: parser_yacc.y:491
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
 msgstr ""
-"Érvénytelen mód, az 'x' előtt az 'i', 'p' vagy 'u' végrehajtás-módosító "
-"kell, hogy álljon"
 
 #: parser_yacc.y:516 parser_yacc.y:554
 msgid "Assert: `network_rule' return invalid protocol."
-msgstr "Assert: A `network_rule' érvénytelen protokollt adott vissza."
+msgstr ""
 
 #: parser_yacc.y:591
 msgid "Assert: `change_profile' returned NULL."
-msgstr "Assert: A `change_profile' NULL értéket adott vissza."
+msgstr ""
 
 #: parser_yacc.y:600
 msgid "Assert: `change_hat' returned NULL."
-msgstr "Assert: A `change_hat' NULL értéket adott vissza."
+msgstr ""
 
 #: parser_yacc.y:631
 msgid "Assert: 'hat rule' returned NULL."
-msgstr "Assert: A 'hat rule' NULL értéket adott vissza."
+msgstr ""
 
 #: parser_yacc.y:640
 msgid "Assert: 'local_profile rule' returned NULL."
-msgstr "Assert: A `local_profile rule' NULL értéket adott vissza."
+msgstr ""
 
 #: parser_yacc.y:772
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr "Be nem állított logikai változó (%s) egy feltételes kifejezésben"
+msgstr ""
 
 #: parser_yacc.y:830
+#, fuzzy
 msgid "subset can only be used with link rules."
-msgstr "A részhalmaz csak a link szabályokkal használható."
+msgstr "คุณสามารถทำได้เพียงการแก้ไขโวลุมลอจิคัลเท่านั้น"
 
 #: parser_yacc.y:832
 msgid "link and exec perms conflict on a file rule using ->"
-msgstr "A link és futtatás jogosultságok ütköznek egy fájl szabályon -> "
+msgstr ""
 
 #: parser_yacc.y:834
 msgid "link perms are not allowed on a named profile transition.\n"
 msgstr ""
-"link jogosultságok nem engedélyezettek egy nevezett profil átmenetében.\n"
 
 #: parser_yacc.y:850
 msgid "unsafe rule missing exec permissions"
-msgstr "nem biztonságos szabályból hiányzik a futtatási jogosultság"
+msgstr ""
 
 #: parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transtion.\n"
 msgstr ""
-"link jogosultságok nem engedélyezettek egy nevezett profil átmenetében.\n"
 
 #: parser_yacc.y:866
 #, c-format
 msgid "missing an end of line character? (entry: %s)"
-msgstr "Lehet, hogy hiányzik egy sorvége karakter? (bejegyzés: %s)"
+msgstr ""
 
 #: parser_yacc.y:1000 parser_yacc.y:1010
 msgid "Invalid network entry."
-msgstr "Érvénytelen hálózati bejegyzés."
+msgstr ""
 
 #: parser_yacc.y:1064 parser_yacc.y:1072
 #, c-format
 msgid "Invalid capability %s."
-msgstr "Érvénytelen tulajdonság: %s."
+msgstr ""
 
 #: parser_yacc.y:1089
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr "AppArmor feldolgozási hiba (%s sor: %d: %s)\n"
+msgstr ""
 
 #: parser_yacc.y:1092
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr "AppArmor feldolgozási hiba, sor %d: %s\n"
+msgstr ""
 
 #: ../parser_regex.c:283
 #, c-format
 msgid "%s: Illegal open {, nesting groupings not allowed\n"
-msgstr "%s: Érvénytelen nyitott {, a csoportosítások nem ágyazhatók egymásba\n"
+msgstr ""
 
 #: ../parser_regex.c:303
 #, c-format
 msgid "%s: Regex grouping error: Invalid number of items between {}\n"
 msgstr ""
-"%s: Regex csoportosítási hiba: Érvénytelen számú elem a { és } között\n"
 
 #: ../parser_regex.c:309
 #, c-format
-msgid ""
-"%s: Regex grouping error: Invalid close }, no matching open { detected\n"
+msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
 msgstr ""
-"%s: Regex csoportosítási hiba: Érvénytelen záró }, nem található hozzá "
-"tartozó nyitott { \n"
 
 #: ../parser_regex.c:375
 #, c-format
-msgid ""
-"%s: Regex grouping error: Unclosed grouping or character class, expecting "
-"close }\n"
-msgstr "%s: Regex csoportosítási hiba: Be nem zárt csoport, záró } hiányzik\n"
+msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
+msgstr ""
 
 #: ../parser_regex.c:389
 #, c-format
 msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
-msgstr "%s: Belső puffer-túlcsordulás, %d karakterrel több\n"
+msgstr ""
 
 #: ../parser_regex.c:393
 #, c-format
 msgid "%s: Unable to parse input line '%s'\n"
-msgstr "%s: A '%s' bemeneti sor értelmezése nem sikerült\n"
+msgstr ""
 
 #: ../parser_regex.c:445
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
 msgstr ""
-"%s: A(z) '%s' reguláris kifejezés lefordítása nem sikerült [eredeti: '%s']\n"
 
 #: ../parser_regex.c:449
-#, c-format
+#, fuzzy, c-format
 msgid "%s: error near               "
-msgstr "%s: hiba közel"
+msgstr "        ประเเภท        "
 
 #: ../parser_regex.c:459
 #, c-format
 msgid "%s: error reason: '%s'\n"
-msgstr "%s: hiba oka: '%s'\n"
+msgstr ""
 
 #: ../parser_regex.c:468
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
 msgstr ""
-"%s: A(z) '%s' reguláris kifejezés lefordítása nem sikerült [eredeti: '%s'] - "
-"malloc meghiúsult\n"
 
 #: ../parser_policy.c:194
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
 msgstr ""
-"HIBA a(z) %s profil szabályainak összefésülésénél, a betöltés nem sikerült\n"
 
 #: ../parser_policy.c:226
 #, c-format
@@ -513,47 +461,38 @@ msgid ""
 "\t'*', '?', character ranges, and alternations are not allowed.\n"
 "\t'**' may only be used at the end of a rule.\n"
 msgstr ""
-"HIBA: a(z) %s profil ezzel a kernellel nem használható irányelvelemeket "
-"tartalmaz:\n"
-"\t'*', '?', karaktertartományok és alternatívák használata nem megengedett.\n"
-"\t'**' csak a szabály végén használható.\n"
 
 #: ../parser_policy.c:271
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
 msgstr ""
-"HIBA a(z) %s profil reguláris kifejezéseinek feldolgozásakor, a betöltés nem "
-"sikerült\n"
 
 #: ../parser_policy.c:298
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
 msgstr ""
-"HIBA a(z) %s profil változóinak kibontásakor, a betöltés nem sikerült\n"
 
 #: ../parser_policy.c:481
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
-msgstr "HIBA a(z) %s profilban, a betöltés nem sikerült\n"
+msgstr ""
 
 #: ../parser_policy.c:659
 #, c-format
 msgid "%s: Errors found during postprocessing.  Aborting.\n"
-msgstr "%s: Hibák az utófeldolgozás közben. A program leáll.\n"
+msgstr ""
 
 #: ../parser_policy.c:666 ../parser_policy.c:687
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr ""
-"%s: Hibák a reguláris kifejezés utófeldolgozása közben. A program leáll.\n"
 
 #: ../parser_policy.c:673
 #, c-format
 msgid "%s: Errors found during postprocess.  Aborting.\n"
-msgstr "%s: Hibák az utófeldolgozás közben. A program leáll.\n"
+msgstr ""
 
 #: ../parser_policy.c:680
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
 msgstr ""
-"%s: Hiba a szabályok egyesítésének utófeldolgozásában. A program leáll.\n"

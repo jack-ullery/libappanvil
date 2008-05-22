@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: YaST (@memory@)\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-09-26 13:01-0600\n"
+"POT-Creation-Date: 2008-04-21 00:30-0700\n"
 "PO-Revision-Date: 2006-10-18 05:04+0100\n"
 "Last-Translator: Ömer Kehri <xanathar@gmx.com.tr>\n"
 "Language-Team: turkish <i18n@suse.de>\n"
@@ -19,239 +19,198 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../parser_include.c:95
+#: ../parser_include.c:96
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
 msgstr "Hata: %s profili okunamadı: %s.\n"
 
-#: ../parser_include.c:114
+#: ../parser_include.c:115
 msgid "Error: Could not allocate temporary file.\n"
 msgstr "Hata: Geçici dosya tahsis edilemedi.\n"
 
-#: ../parser_include.c:165
+#: ../parser_include.c:166
 msgid "Error: Out of memory.\n"
 msgstr "Hata: Yetersiz bellek.\n"
 
-#: ../parser_include.c:175
+#: ../parser_include.c:176
 #, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
 msgstr "Hata: %s temel dizini bir dizin değil, atlanıyor.\n"
 
-#: ../parser_include.c:189
+#: ../parser_include.c:190
 #, c-format
 msgid "Error: Could not add directory %s to search path.\n"
 msgstr "Hata:  %s dizini arama yollarına eklenemedi.\n"
 
-#: ../parser_include.c:199
+#: ../parser_include.c:200
 msgid "Error: Could not allocate memory.\n"
 msgstr "Hata: Bellek tahsis edilemedi.\n"
 
-#: ../parser_include.c:332
+#: ../parser_include.c:297
 #, c-format
 msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
 msgstr "Hata: %d. satırdaki içerme için ara bellek ayrılamadı. Dosya %s.\n"
 
-#: ../parser_include.c:348
-#: ../parser_include.c:368
+#: ../parser_include.c:313 ../parser_include.c:333
 #, c-format
 msgid "Error: Bad include at line %d in %s.\n"
 msgstr "Hata: %d. satırda hatalı içerme. Dosya %s.\n"
 
-#: ../parser_include.c:398
-#, c-format
-msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-msgstr "Hata: %d seviye içerme aşıldı. %s içerme işlenmeyecek.\n"
-
-#: ../parser_include.c:423
+#: ../parser_include.c:378
 #, c-format
 msgid "Error: #include %s%c not found at line %d in %s.\n"
 msgstr "Hata: #include %s%c bulunamadı. %d. satır, %s dosyası.\n"
 
-#: ../parser_interface.c:65
+#: ../parser_include.c:459
+#, c-format
+msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
+msgstr "Hata: %d seviye içerme aşıldı. %s içerme işlenmeyecek.\n"
+
+#: ../parser_interface.c:72
 msgid "Bad write position\n"
 msgstr "Hatalı yazma pozisyonu\n"
 
-#: ../parser_interface.c:68
+#: ../parser_interface.c:75
 msgid "Permission denied\n"
 msgstr "İzin verilmedi\n"
 
-#: ../parser_interface.c:71
+#: ../parser_interface.c:78
 msgid "Out of memory\n"
 msgstr "Yetersiz bellek\n"
 
-#: ../parser_interface.c:74
+#: ../parser_interface.c:81
 msgid "Couldn't copy profile Bad memory address\n"
 msgstr "Hatalı bellek adresi, profil kopyalanamadı\n"
 
-#: ../parser_interface.c:77
+#: ../parser_interface.c:84
 msgid "Profile doesn't conform to protocol\n"
 msgstr "Profil protokole uymuyor\n"
 
-#: ../parser_interface.c:80
+#: ../parser_interface.c:87
 msgid "Profile does not match signature\n"
 msgstr "Profil imzası tutmuyor\n"
 
-#: ../parser_interface.c:83
+#: ../parser_interface.c:90
 msgid "Profile version not supported by Apparmor module\n"
 msgstr "Profil sürümü Apparmor modülü tarafından desteklenmiyor\n"
 
-#: ../parser_interface.c:86
+#: ../parser_interface.c:93
 msgid "Profile already exists\n"
 msgstr "Profil zaten mevcut\n"
 
-#: ../parser_interface.c:89
+#: ../parser_interface.c:96
 msgid "Profile doesn't exist\n"
 msgstr "Profil mevcut değil\n"
 
-#: ../parser_interface.c:92
+#: ../parser_interface.c:99
 msgid "Unknown error\n"
 msgstr "Bilinmeyen hata\n"
 
-#: ../parser_interface.c:109
+#: ../parser_interface.c:116
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
 msgstr "%s: \"%s\" eklenemedi."
 
-#: ../parser_interface.c:114
+#: ../parser_interface.c:121
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
 msgstr "%s: \"%s\" değiştirilemedi."
 
-#: ../parser_interface.c:119
+#: ../parser_interface.c:126
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
 msgstr "%s: \"%s\" silinemedi."
 
-#: ../parser_interface.c:124
+#: ../parser_interface.c:131
 #, c-format
 msgid "%s: Unable to write to stdout\n"
 msgstr "%s: stdout'a yazılamadı.\n"
 
-#: ../parser_interface.c:128
-#: ../parser_interface.c:151
+#: ../parser_interface.c:135 ../parser_interface.c:158
 #, c-format
 msgid "%s: ASSERT: Invalid option: %d\n"
 msgstr "%s: ASSERT: Geçersiz seçenek: %d\n"
 
-#: ../parser_interface.c:137
+#: ../parser_interface.c:144
 #, c-format
 msgid "Addition succeeded for \"%s\".\n"
 msgstr "\"%s\" için ekleme başarılı oldu.\n"
 
-#: ../parser_interface.c:141
+#: ../parser_interface.c:148
 #, c-format
 msgid "Replacement succeeded for \"%s\".\n"
 msgstr "\"%s\" için değiştirme başarılı oldu.\n"
 
-#: ../parser_interface.c:145
+#: ../parser_interface.c:152
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
 msgstr "\"%s\" için silme başarılı oldu.\n"
 
-#: ../parser_interface.c:236
+#: ../parser_interface.c:247
 #, c-format
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 msgstr "PANİK hatalı arttırma arabelleği %p pozisyon %p ext %p boyut %d res %p\n"
 
-#: ../parser_interface.c:644
+#: ../parser_interface.c:798
 #, c-format
 msgid "Unable to open %s - %s\n"
 msgstr "%s açılamadı - %s\n"
 
-#: ../parser_interface.c:661
+#: ../parser_interface.c:822
+#, fuzzy, c-format
+msgid "Memory Allocation Error: Unable to remove ^%s\n"
+msgstr "%s: \"%s\" silinemedi."
+
+#: ../parser_interface.c:835
+#, fuzzy, c-format
+msgid "Memory Allocation Error: Unable to remove %s:%s."
+msgstr "Bellek ayırma hatası."
+
+#: ../parser_interface.c:854
 msgid "unable to create work area\n"
 msgstr "çalışma alanı oluşturulamadı\n"
 
-#: ../parser_interface.c:669
+#: ../parser_interface.c:862
 #, c-format
 msgid "unable to serialize profile %s\n"
 msgstr "%s profili seri hale getirilemedi\n"
 
-#: ../parser_interface.c:679
+#: ../parser_interface.c:872
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
 msgstr "%s: Profil girdisinin tamamı yazılamadı\n"
 
-#: parser_lex.l:119
-#: parser_lex.l:221
-#: parser_lex.l:347
+#: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354
 #, c-format
 msgid "Found unexpected character: '%s'"
 msgstr "Beklenmeyen karakter bulundu: '%s'"
 
-#: parser_lex.l:159
-#, c-format
-msgid "(ip_mode) Found unexpected character: '%s'"
+#: parser_lex.l:196
+#, fuzzy, c-format
+msgid "(network_mode) Found unexpected character: '%s'"
 msgstr "(ip_mode) Beklenmeyen karakter bulundu: '%s'"
 
-#: parser_lex.l:174
-#, c-format
-msgid "Unexpected character in interface name: '%s'"
-msgstr "Arabirim adında beklenmeyen karakter bulundu: '%s'"
-
-#: parser_lex.l:213
-#, c-format
-msgid "Found unknown flag: '%s'"
-msgstr "Bilinmeyen bayrak bulundu: '%s'"
-
-#: parser_lex.l:326
-#, c-format
-msgid "Found unexpected keyword: '%s'"
-msgstr "Beklenmeyen anahtar kelime bulundu: '%s'"
-
-#: ../parser_main.c:131
+#: ../parser_main.c:137
 #, c-format
 msgid "Warning (%s line %d): %s"
 msgstr "Uyarı (%s satır %d): %s"
 
-#: ../parser_main.c:255
+#: ../parser_main.c:264
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
 msgstr "%s: subdomainbase bağlantı noktası için bellek ayrılamadı\n"
 
-#: ../parser_main.c:274
-#, c-format
-msgid ""
-"Warning: unable to open %s, attempting to use %s\n"
-"as the subdomainfs location. Use --subdomainfs to override.\n"
-msgstr ""
-"Uyarı: %s açılamadı, subdomainfs yeri için %s kullanılmaya çalışılacak.\n"
-"--subdomainfs ile bu değiştirilebilir.\n"
-
-#: ../parser_main.c:305
-#, c-format
+#: ../parser_main.c:310
+#, fuzzy, c-format
 msgid ""
 "Warning: unable to find a suitable fs in %s, is it mounted?\n"
-"Attempting to use %s as the subdomainfs location.\n"
 "Use --subdomainfs to override.\n"
 msgstr ""
 "Uyarı: %s içinde uygun bir dosya sistemi bulunamadı, sisteme bağlı mı?\n"
 "%s subdomainfs yeri olarak kullanılmaya çalışılacak.\n"
 "--subdomainfs ile bu değiştirilebilir.\n"
 
-#: ../parser_main.c:347
-#, c-format
-msgid ""
-"%s: Unable to query modules - '%s'\n"
-"Either modules are disabled or your kernel is too old.\n"
-msgstr ""
-"%s: Modüller sorgulanamadı - '%s'\n"
-"Ya modüller kapatılmış ya da kernel çok eski.\n"
-
-#: ../parser_main.c:352
-#, c-format
-msgid "%s: Unable to find "
-msgstr "%s: Bulunamadı"
-
-#: ../parser_main.c:352
-msgid ""
-"!\n"
-"Ensure that it has been loaded.\n"
-msgstr ""
-"!\n"
-"Yüklendiğine emin olun.\n"
-
-#: ../parser_main.c:368
+#: ../parser_main.c:330
 #, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
@@ -260,7 +219,7 @@ msgstr ""
 "%s: Bu programı çalıştırabilmek için root yetkilerine ihtiyacınız var.\n"
 "\n"
 
-#: ../parser_main.c:375
+#: ../parser_main.c:337
 #, c-format
 msgid ""
 "%s: Warning! You've set this program setuid root.\n"
@@ -271,12 +230,20 @@ msgstr ""
 "Bu programı çalıştıracak herkes AppArmor profillerinizi değiştirebilir.\n"
 "\n"
 
-#: ../parser_main.c:442
+#: ../parser_main.c:415
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
 msgstr "%s: Dosyada hatalar bulundu. Durduruluyor.\n"
 
-#: ../parser_misc.c:269
+#: ../parser_misc.c:281 parser_yacc.y:216 parser_yacc.y:240 parser_yacc.y:346
+#: parser_yacc.y:358 parser_yacc.y:426 parser_yacc.y:528 parser_yacc.y:566
+#: parser_yacc.y:884 parser_yacc.y:893 parser_yacc.y:904 parser_yacc.y:914
+#: parser_yacc.y:985 parser_yacc.y:1033 parser_yacc.y:1044 parser_yacc.y:1119
+#: parser_yacc.y:1134 parser_yacc.y:1141 parser_yacc.y:1152
+msgid "Memory allocation error."
+msgstr "Bellek ayırma hatası."
+
+#: ../parser_misc.c:437
 msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
@@ -284,205 +251,221 @@ msgstr ""
 "Büyük harfli niteleyiciler \"RWLIMX\" yakında eskiyecektir, bunları küçük harfe çevirin\n"
 "Ayrıntılar için apparmor.d(5) manual sayfasına bakın.\n"
 
-#: ../parser_misc.c:313
-msgid "Exec qualifier 'i' must be followed by 'x'"
-msgstr "Çalıştırma niteleyicisi 'i'yi 'x' takip etmelidir"
+#: ../parser_misc.c:473 ../parser_misc.c:480
+msgid "Conflict 'a' and 'w' perms are mutually exclusive."
+msgstr ""
 
-#: ../parser_misc.c:315
+#: ../parser_misc.c:497
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
 msgstr "Çalıştırma niteleyicisi 'i' geçersiz, çakışan niteleyici zaten belirtilmiş"
 
-#: ../parser_misc.c:327
-#, c-format
-msgid "Unconstrained exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
+#: ../parser_misc.c:508
+#, fuzzy, c-format
+msgid "Unconfined exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
 msgstr "Sınırlanmamış çalıştırma niteleyicisi (%c%c) sınırlanmamış program sürecine bazı tehlikeli ortam değişkenleri aktarımına izin verir; ayrıntılar için: 'man 5 apparmor.d'\n"
 
-#: ../parser_misc.c:334
-#: ../parser_misc.c:355
-#, c-format
-msgid "Exec qualifier '%c' must be followed by 'x'"
-msgstr "Çalıştırma niteleyicisi '%c' değerini 'x' takip etmelidir"
-
-#: ../parser_misc.c:337
-#: ../parser_misc.c:358
+#: ../parser_misc.c:516 ../parser_misc.c:549
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
 msgstr "Çalıştırma niteleyicisi '%c' geçersiz, çakışan niteleyici zaten belirtilmiş"
 
-#: ../parser_misc.c:376
-msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "Geçersiz mod; 'x', çalıştırma değişkenleri 'i', 'p' ya da 'u'dan sonra gelmelidir."
+#: ../parser_misc.c:543
+#, fuzzy, c-format
+msgid "Exec qualifier '%c%c' invalid, conflicting qualifier already specified"
+msgstr "Çalıştırma niteleyicisi '%c' geçersiz, çakışan niteleyici zaten belirtilmiş"
 
-#: ../parser_misc.c:396
+#: ../parser_misc.c:591
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
 msgstr "Dahili: girdide beklenmeyen mod karakteri '%c'"
 
-#: ../parser_misc.c:426
-#: parser_yacc.y:222
-#: parser_yacc.y:315
-#: parser_yacc.y:327
-#: parser_yacc.y:387
-#: parser_yacc.y:521
-#: parser_yacc.y:533
-#: parser_yacc.y:553
-#: parser_yacc.y:591
-#: parser_yacc.y:623
-#: parser_yacc.y:637
-#: parser_yacc.y:651
-#: parser_yacc.y:665
-#: parser_yacc.y:679
-#: parser_yacc.y:707
-#: parser_yacc.y:737
-#: parser_yacc.y:775
-#: parser_yacc.y:792
-#: parser_yacc.y:806
-msgid "Memory allocation error."
-msgstr "Bellek ayırma hatası."
+#: ../parser_misc.c:613
+#, c-format
+msgid "Internal error generated invalid perm 0x%llx\n"
+msgstr ""
 
-#: ../parser_misc.c:738
-#: ../parser_symtab.c:555
-#: ../parser_regex.c:488
+#: ../parser_misc.c:833 ../parser_symtab.c:556 ../parser_regex.c:658
 #: ../parser_variable.c:227
 #, c-format
 msgid "AppArmor parser error: %s\n"
 msgstr "AppArmor inceleyici hatası: %s\n"
 
-#: ../parser_merge.c:64
+#: ../parser_merge.c:94
 msgid "Couldn't merge entries. Out of Memory\n"
 msgstr "Girdiler birleştirilemiyor. Yetersiz bellek\n"
 
-#: ../parser_merge.c:92
+#: ../parser_merge.c:113
 #, c-format
 msgid "profile %s: has merged rule %s with multiple x modifiers\n"
 msgstr "profil %s: çoklu x değiştiricili, birleştirilmiş bir kuralı (%s) içeriyor\n"
 
-#: parser_yacc.y:362
-msgid "flags=(debug) is no longer supported, sorry."
-msgstr "flags(debug) artık desteklenmiyor."
+#: parser_yacc.y:220
+msgid "Profile names must begin with a '/', or keyword 'profile'."
+msgstr ""
 
-#: parser_yacc.y:398
+#: parser_yacc.y:263
+#, fuzzy, c-format
+msgid "Failed to create alias %s -> %s\n"
+msgstr "%s açılamadı - %s\n"
+
+#: parser_yacc.y:399
+msgid "Profile flag 'debug' is no longer valid."
+msgstr ""
+
+#: parser_yacc.y:405
+#, c-format
+msgid "Invalid profile flag: %s."
+msgstr ""
+
+#: parser_yacc.y:440 parser_yacc.y:462
 msgid "Assert: `rule' returned NULL."
 msgstr "Assert: `rule' NULL döndürdü."
 
-#: parser_yacc.y:407
-msgid "Assert: `netrule' returned NULL."
+#: parser_yacc.y:443 parser_yacc.y:488
+#, fuzzy
+msgid "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"
+msgstr "Geçersiz mod; 'x', çalıştırma değişkenleri 'i', 'p' ya da 'u'dan sonra gelmelidir."
+
+#: parser_yacc.y:466
+#, fuzzy
+msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
+msgstr "Geçersiz mod; 'x', çalıştırma değişkenleri 'i', 'p' ya da 'u'dan sonra gelmelidir."
+
+#: parser_yacc.y:491
+msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
+msgstr "Geçersiz mod; 'x', çalıştırma değişkenleri 'i', 'p' ya da 'u'dan sonra gelmelidir."
+
+#: parser_yacc.y:516 parser_yacc.y:554
+#, fuzzy
+msgid "Assert: `network_rule' return invalid protocol."
 msgstr "Assert: `netrule' NULL döndürdü."
 
-#: parser_yacc.y:424
+#: parser_yacc.y:591
+#, fuzzy
+msgid "Assert: `change_profile' returned NULL."
+msgstr "Assert: `netrule' NULL döndürdü."
+
+#: parser_yacc.y:600
+#, fuzzy
+msgid "Assert: `change_hat' returned NULL."
+msgstr "Assert: `netrule' NULL döndürdü."
+
+#: parser_yacc.y:631
 msgid "Assert: 'hat rule' returned NULL."
 msgstr "Assert: `hat rule' NULL döndürdü."
 
-#: parser_yacc.y:487
+#: parser_yacc.y:640
+#, fuzzy
+msgid "Assert: 'local_profile rule' returned NULL."
+msgstr "Assert: `netrule' NULL döndürdü."
+
+#: parser_yacc.y:772
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
 msgstr "If deyimi içinde ayarlanmamış boolean değişkeni %s"
 
-#: parser_yacc.y:545
+#: parser_yacc.y:830
+msgid "subset can only be used with link rules."
+msgstr ""
+
+#: parser_yacc.y:832
+msgid "link and exec perms conflict on a file rule using ->"
+msgstr ""
+
+#: parser_yacc.y:834
+msgid "link perms are not allowed on a named profile transition.\n"
+msgstr ""
+
+#: parser_yacc.y:850
+msgid "unsafe rule missing exec permissions"
+msgstr ""
+
+#: parser_yacc.y:853
+msgid "link perms are not allowed on a named profile transtion.\n"
+msgstr ""
+
+#: parser_yacc.y:866
 #, c-format
 msgid "missing an end of line character? (entry: %s)"
 msgstr "eksik satır sonu karakteri? (girdi: %s)"
 
-#: parser_yacc.y:586
-msgid "Assert: `addresses' returned NULL."
-msgstr "Assert: `addresses' NULL döndürdü."
+# clients/support_question.ycp:27
+#: parser_yacc.y:1000 parser_yacc.y:1010
+#, fuzzy
+msgid "Invalid network entry."
+msgstr "Hatalı ilişki"
 
-#: parser_yacc.y:689
-msgid "Network entries can only have one TO address."
-msgstr "Ağ girdilerinin sadece bir TO adresi olabilir."
-
-#: parser_yacc.y:694
-msgid "Network entries can only have one FROM address."
-msgstr "Ağ girdilerinin sadece bir FROM adresi olabilir."
-
-#: parser_yacc.y:712
-#: parser_yacc.y:743
+#: parser_yacc.y:1064 parser_yacc.y:1072
 #, c-format
-msgid "`%s' is not a valid ip address."
-msgstr "`%s' geçerli bir ip adresi değil."
+msgid "Invalid capability %s."
+msgstr ""
 
-#: parser_yacc.y:756
-#, c-format
-msgid "`/%d' is not a valid netmask."
-msgstr "`/%d' geçerli bir ağ maskesi değil."
-
-#: parser_yacc.y:763
-#, c-format
-msgid "`%s' is not a valid netmask."
-msgstr "`%s' geçerli bir ağ maskesi değil."
-
-#: parser_yacc.y:789
-#: parser_yacc.y:809
-#, c-format
-msgid "ports must be between %d and %d"
-msgstr "portlar %d ile %d arasında olmalıdır."
-
-#: parser_yacc.y:876
+#: parser_yacc.y:1089
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
 msgstr "AppArmor inceleme hatası, %s dosyası, satır %d: %s\n"
 
-#: parser_yacc.y:879
+#: parser_yacc.y:1092
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
 msgstr "AppArmor inceleme hatası, satır %d: %s\n"
 
-#: ../parser_regex.c:247
+#: ../parser_regex.c:283
 #, c-format
 msgid "%s: Illegal open {, nesting groupings not allowed\n"
 msgstr "%s: Kural dışı açık {, iç içe konan gruplamalara izin verilmez\n"
 
-#: ../parser_regex.c:267
+#: ../parser_regex.c:303
 #, c-format
 msgid "%s: Regex grouping error: Invalid number of items between {}\n"
 msgstr "%s: Regex gruplama hatası: {} içinde geçersiz öğe sayısı\n"
 
-#: ../parser_regex.c:273
+#: ../parser_regex.c:309
 #, c-format
 msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
 msgstr "%s: Regex gruplama hatası: Geçersiz kapama }, karşılığı olan bir { bulunamadı\n"
 
-#: ../parser_regex.c:339
+#: ../parser_regex.c:375
 #, c-format
 msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
 msgstr "%s: Regex gruplama hatası: Kapatılmamış gruplama ya da karakter sınıfı, kapama karakteri } bekleniyor\n"
 
-#: ../parser_regex.c:353
+#: ../parser_regex.c:389
 #, c-format
 msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
 msgstr "%s: Dahili ara bellek taşması saptandı, %d karakter aşıldı\n"
 
-#: ../parser_regex.c:357
+#: ../parser_regex.c:393
 #, c-format
 msgid "%s: Unable to parse input line '%s'\n"
 msgstr "%s: Giriş satırı '%s' incelenemedi\n"
 
-#: ../parser_regex.c:390
+#: ../parser_regex.c:445
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
 msgstr "%s: Regex '%s' derlenemedi [orijinal: '%s']\n"
 
-#: ../parser_regex.c:394
+#: ../parser_regex.c:449
 #, c-format
 msgid "%s: error near               "
 msgstr "%s: yakınında hata: "
 
-#: ../parser_regex.c:404
+#: ../parser_regex.c:459
 #, c-format
 msgid "%s: error reason: '%s'\n"
 msgstr "%s: hata nedeni: '%s'\n"
 
-#: ../parser_regex.c:413
+#: ../parser_regex.c:468
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
 msgstr "%s: Regex '%s' derlenemedi [orijinal: '%s'] - malloc başarısız oldu\n"
 
-#: ../parser_policy.c:102
+#: ../parser_policy.c:194
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
 msgstr "HATA: %s profilinin kuralları birleştirilemedi, yükleme başarısız oldu\n"
 
-#: ../parser_policy.c:134
+#: ../parser_policy.c:226
 #, c-format
 msgid ""
 "ERROR profile %s contains policy elements not usable with this kernel:\n"
@@ -493,29 +476,106 @@ msgstr ""
 "\t'*', '?', karakter aralıkları ve sırayla birbirini izlemelere izin verilmiyor.\n"
 "\t'**' sadece bir kuralın sonunda kullanılabilir.\n"
 
-#: ../parser_policy.c:179
+#: ../parser_policy.c:271
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
 msgstr "HATA: %s profilinin regex'leri işlenemedi, yükleme başarısız oldu\n"
 
-#: ../parser_policy.c:206
+#: ../parser_policy.c:298
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
 msgstr "HATA: %s profili için değişkenler genişletilemedi, yükleme başarısız oldu\n"
 
-#: ../parser_policy.c:259
+#: ../parser_policy.c:481
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
 msgstr "HATA: %s profili, yükleme başarısız oldu\n"
 
-#: ../parser_policy.c:413
-#, c-format
-msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
-msgstr "%s: Kural birleştirme sonrası işlemlerde hata bulundu. Durduruluyor.\n"
+#: ../parser_policy.c:659
+#, fuzzy, c-format
+msgid "%s: Errors found during postprocessing.  Aborting.\n"
+msgstr "%s: Regex sonrası işlemlerde hata bulundu. Durduruluyor.\n"
 
-#: ../parser_policy.c:420
-#: ../parser_policy.c:427
+#: ../parser_policy.c:666 ../parser_policy.c:687
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr "%s: Regex sonrası işlemlerde hata bulundu. Durduruluyor.\n"
 
+#: ../parser_policy.c:673
+#, fuzzy, c-format
+msgid "%s: Errors found during postprocess.  Aborting.\n"
+msgstr "%s: Regex sonrası işlemlerde hata bulundu. Durduruluyor.\n"
+
+#: ../parser_policy.c:680
+#, c-format
+msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
+msgstr "%s: Kural birleştirme sonrası işlemlerde hata bulundu. Durduruluyor.\n"
+
+#~ msgid "(ip_mode) Found unexpected character: '%s'"
+#~ msgstr "(ip_mode) Beklenmeyen karakter bulundu: '%s'"
+
+#~ msgid "Unexpected character in interface name: '%s'"
+#~ msgstr "Arabirim adında beklenmeyen karakter bulundu: '%s'"
+
+#~ msgid "Found unknown flag: '%s'"
+#~ msgstr "Bilinmeyen bayrak bulundu: '%s'"
+
+#~ msgid "Found unexpected keyword: '%s'"
+#~ msgstr "Beklenmeyen anahtar kelime bulundu: '%s'"
+
+#~ msgid "Exec qualifier 'i' must be followed by 'x'"
+#~ msgstr "Çalıştırma niteleyicisi 'i'yi 'x' takip etmelidir"
+
+#~ msgid "Exec qualifier '%c' must be followed by 'x'"
+#~ msgstr "Çalıştırma niteleyicisi '%c' değerini 'x' takip etmelidir"
+
+#~ msgid "flags=(debug) is no longer supported, sorry."
+#~ msgstr "flags(debug) artık desteklenmiyor."
+
+#~ msgid "Assert: `netrule' returned NULL."
+#~ msgstr "Assert: `netrule' NULL döndürdü."
+
+#~ msgid "Assert: `addresses' returned NULL."
+#~ msgstr "Assert: `addresses' NULL döndürdü."
+
+#~ msgid "Network entries can only have one TO address."
+#~ msgstr "Ağ girdilerinin sadece bir TO adresi olabilir."
+
+#~ msgid "Network entries can only have one FROM address."
+#~ msgstr "Ağ girdilerinin sadece bir FROM adresi olabilir."
+
+#~ msgid "`%s' is not a valid ip address."
+#~ msgstr "`%s' geçerli bir ip adresi değil."
+
+#~ msgid "`/%d' is not a valid netmask."
+#~ msgstr "`/%d' geçerli bir ağ maskesi değil."
+
+#~ msgid "`%s' is not a valid netmask."
+#~ msgstr "`%s' geçerli bir ağ maskesi değil."
+
+#~ msgid "ports must be between %d and %d"
+#~ msgstr "portlar %d ile %d arasında olmalıdır."
+
+#~ msgid ""
+#~ "Warning: unable to open %s, attempting to use %s\n"
+#~ "as the subdomainfs location. Use --subdomainfs to override.\n"
+#~ msgstr ""
+#~ "Uyarı: %s açılamadı, subdomainfs yeri için %s kullanılmaya çalışılacak.\n"
+#~ "--subdomainfs ile bu değiştirilebilir.\n"
+
+#~ msgid ""
+#~ "%s: Unable to query modules - '%s'\n"
+#~ "Either modules are disabled or your kernel is too old.\n"
+#~ msgstr ""
+#~ "%s: Modüller sorgulanamadı - '%s'\n"
+#~ "Ya modüller kapatılmış ya da kernel çok eski.\n"
+
+#~ msgid "%s: Unable to find "
+#~ msgstr "%s: Bulunamadı"
+
+#~ msgid ""
+#~ "!\n"
+#~ "Ensure that it has been loaded.\n"
+#~ msgstr ""
+#~ "!\n"
+#~ "Yüklendiğine emin olun.\n"

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: YaST2 (@memory@)\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-09-26 13:01-0600\n"
+"POT-Creation-Date: 2008-04-21 00:30-0700\n"
 "PO-Revision-Date: 2003-08-14 10:47+0200\n"
 "Last-Translator: Priyavert Sharma<priyavert.sharma@agreeya.com>\n"
 "Language-Team: AgreeYa Solutions<linux_team@agreeya.com>\n"
@@ -11,237 +11,202 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: ../parser_include.c:95
+#: ../parser_include.c:96
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
 msgstr ""
 
-#: ../parser_include.c:114
+#: ../parser_include.c:115
 msgid "Error: Could not allocate temporary file.\n"
 msgstr ""
 
-#: ../parser_include.c:165
+#: ../parser_include.c:166
 msgid "Error: Out of memory.\n"
 msgstr ""
 
-#: ../parser_include.c:175
+#: ../parser_include.c:176
 #, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
 msgstr ""
 
-#: ../parser_include.c:189
+#: ../parser_include.c:190
 #, c-format
 msgid "Error: Could not add directory %s to search path.\n"
 msgstr ""
 
-#: ../parser_include.c:199
+#: ../parser_include.c:200
 msgid "Error: Could not allocate memory.\n"
 msgstr ""
 
-#: ../parser_include.c:332
+#: ../parser_include.c:297
 #, c-format
 msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
 msgstr ""
 
-#: ../parser_include.c:348 ../parser_include.c:368
+#: ../parser_include.c:313 ../parser_include.c:333
 #, c-format
 msgid "Error: Bad include at line %d in %s.\n"
 msgstr ""
 
-#: ../parser_include.c:398
-#, c-format
-msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-msgstr ""
-
-#: ../parser_include.c:423
+#: ../parser_include.c:378
 #, c-format
 msgid "Error: #include %s%c not found at line %d in %s.\n"
 msgstr ""
 
-#: ../parser_interface.c:65
+#: ../parser_include.c:459
+#, c-format
+msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
+msgstr ""
+
+#: ../parser_interface.c:72
 msgid "Bad write position\n"
 msgstr "மோசமான எழுதுநிலை\n"
 
-#: ../parser_interface.c:68
+#: ../parser_interface.c:75
 msgid "Permission denied\n"
 msgstr "அனுமதி மறுக்கப்படுகிறது\n"
 
-#: ../parser_interface.c:71
+#: ../parser_interface.c:78
 msgid "Out of memory\n"
 msgstr "நினைவில் இல்லை\n"
 
-#: ../parser_interface.c:74
+#: ../parser_interface.c:81
 msgid "Couldn't copy profile Bad memory address\n"
 msgstr "விவரத்தை பிரதியெடுக்க முடியவில்லை மோசமான நினைவக முகவரி\n"
 
-#: ../parser_interface.c:77
+#: ../parser_interface.c:84
 msgid "Profile doesn't conform to protocol\n"
 msgstr "விவரம் நெறிமுறையுடன் பொருந்தவில்லை\n"
 
-#: ../parser_interface.c:80
+#: ../parser_interface.c:87
 msgid "Profile does not match signature\n"
 msgstr "விவரம் கையொப்பத்துடன் பொருந்தவில்லை\n"
 
-#: ../parser_interface.c:83
+#: ../parser_interface.c:90
 msgid "Profile version not supported by Apparmor module\n"
 msgstr ""
 
-#: ../parser_interface.c:86
+#: ../parser_interface.c:93
 msgid "Profile already exists\n"
 msgstr "விவரம் ஏற்கனவே உள்ளது\n"
 
-#: ../parser_interface.c:89
+#: ../parser_interface.c:96
 msgid "Profile doesn't exist\n"
 msgstr "விவரம் இல்லை\n"
 
-#: ../parser_interface.c:92
+#: ../parser_interface.c:99
 msgid "Unknown error\n"
 msgstr "அறியப்படாத பிழை\n"
 
-#: ../parser_interface.c:109
+#: ../parser_interface.c:116
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
 msgstr "%s: \"%s\" சேர்க்க முடியவில்லை.  "
 
-#: ../parser_interface.c:114
+#: ../parser_interface.c:121
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
 msgstr "%s: \"%s\" மாற்றியமைக்க முடியவில்லை.  "
 
-#: ../parser_interface.c:119
+#: ../parser_interface.c:126
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
 msgstr "%s: \"%s\" நீக்க முடியவில்லை.  "
 
-#: ../parser_interface.c:124
+#: ../parser_interface.c:131
 #, c-format
 msgid "%s: Unable to write to stdout\n"
 msgstr "%s: stdout-ல் எழுத முடியவில்லை\n"
 
-#: ../parser_interface.c:128 ../parser_interface.c:151
+#: ../parser_interface.c:135 ../parser_interface.c:158
 #, c-format
 msgid "%s: ASSERT: Invalid option: %d\n"
 msgstr "%s: உறுதிசெய்தல்: செல்லாத விருப்பத்தேர்வு: %d\n"
 
-#: ../parser_interface.c:137
+#: ../parser_interface.c:144
 #, c-format
 msgid "Addition succeeded for \"%s\".\n"
 msgstr "\"%s\"க்கான கூடுதல் சேர்ப்பு வெற்றி பெற்றது.\n"
 
-#: ../parser_interface.c:141
+#: ../parser_interface.c:148
 #, c-format
 msgid "Replacement succeeded for \"%s\".\n"
 msgstr "\"%s\"க்கான மாற்று வெற்றி பெற்றது.\n"
 
-#: ../parser_interface.c:145
+#: ../parser_interface.c:152
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
 msgstr "\"%s\"க்கான நீக்கம் வெற்றி பெற்றது.\n"
 
-#: ../parser_interface.c:236
+#: ../parser_interface.c:247
 #, c-format
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 msgstr "பேனிக் மோசமான கூடுதல் பஃபர் %p pos %p ext %p அளவு %d res %p\n"
 
-#: ../parser_interface.c:644
+#: ../parser_interface.c:798
 #, c-format
 msgid "Unable to open %s - %s\n"
 msgstr "%s - %s திறக்க முடியவில்லை\n"
 
-#: ../parser_interface.c:661
+#: ../parser_interface.c:822
+#, fuzzy, c-format
+msgid "Memory Allocation Error: Unable to remove ^%s\n"
+msgstr "%s: \"%s\" நீக்க முடியவில்லை.  "
+
+#: ../parser_interface.c:835
+#, fuzzy, c-format
+msgid "Memory Allocation Error: Unable to remove %s:%s."
+msgstr "நினைவக ஒதுக்கீட்டு பிழை."
+
+#: ../parser_interface.c:854
 msgid "unable to create work area\n"
 msgstr "பணி பகுதியை உருவாக்க முடியவில்லை\n"
 
-#: ../parser_interface.c:669
+#: ../parser_interface.c:862
 #, c-format
 msgid "unable to serialize profile %s\n"
 msgstr "%s விவரத்தை வரிசைப்படுத்த முடியவில்லை\n"
 
-#: ../parser_interface.c:679
+#: ../parser_interface.c:872
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
 msgstr "%s: முழு விவர உள்ளீட்டையும் எழுத முடியவில்லை\n"
 
-#: parser_lex.l:119 parser_lex.l:221 parser_lex.l:347
+#: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354
 #, c-format
 msgid "Found unexpected character: '%s'"
 msgstr "எதிர்பாராத எழுத்தை கண்டுள்ளது: '%s'"
 
-#: parser_lex.l:159
-#, c-format
-msgid "(ip_mode) Found unexpected character: '%s'"
+#: parser_lex.l:196
+#, fuzzy, c-format
+msgid "(network_mode) Found unexpected character: '%s'"
 msgstr "(ip_mode) எதிர்பாராத எழுத்தை கண்டுள்ளது: '%s'"
 
-#: parser_lex.l:174
-#, c-format
-msgid "Unexpected character in interface name: '%s'"
-msgstr ""
-
-#: parser_lex.l:213
-#, c-format
-msgid "Found unknown flag: '%s'"
-msgstr ""
-
-#: parser_lex.l:326
-#, c-format
-msgid "Found unexpected keyword: '%s'"
-msgstr ""
-
-#: ../parser_main.c:131
+#: ../parser_main.c:137
 #, c-format
 msgid "Warning (%s line %d): %s"
 msgstr ""
 
-#: ../parser_main.c:255
+#: ../parser_main.c:264
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
 msgstr "%s: துணைக்களதள ஏற்ற நிலைக்கு நினைவகத்தை ஒதுக்க முடியவில்லை\n"
 
-#: ../parser_main.c:274
-#, c-format
-msgid ""
-"Warning: unable to open %s, attempting to use %s\n"
-"as the subdomainfs location. Use --subdomainfs to override.\n"
-msgstr ""
-
-#: ../parser_main.c:305
+#: ../parser_main.c:310
 #, c-format
 msgid ""
 "Warning: unable to find a suitable fs in %s, is it mounted?\n"
-"Attempting to use %s as the subdomainfs location.\n"
 "Use --subdomainfs to override.\n"
 msgstr ""
 
-#: ../parser_main.c:347
-#, c-format
-msgid ""
-"%s: Unable to query modules - '%s'\n"
-"Either modules are disabled or your kernel is too old.\n"
-msgstr ""
-"%s: கூறுகளை கேள்வி கேட்க முடியவில்லை - '%s'\n"
-"கூறுகள் செயலிழக்கப்பட்டிருக்க வேண்டும் அல்லது உங்கள் கெர்னல் மிகப் பழையதாக இருக்க வேண்டும்.\n"
-
-#: ../parser_main.c:352
-#, c-format
-msgid "%s: Unable to find "
-msgstr "%s: கண்டுபிடிக்க முடியவில்லை "
-
-#: ../parser_main.c:352
-msgid ""
-"!\n"
-"Ensure that it has been loaded.\n"
-msgstr ""
-"!\n"
-"அது ஏற்றப்பட்டிருப்பதை உறுதி செய்து கொள்ளவும்.\n"
-
-#: ../parser_main.c:368
+#: ../parser_main.c:330
 #, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
 msgstr ""
 
-#: ../parser_main.c:375
+#: ../parser_main.c:337
 #, c-format
 msgid ""
 "%s: Warning! You've set this program setuid root.\n"
@@ -249,196 +214,237 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../parser_main.c:442
+#: ../parser_main.c:415
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
 msgstr "%s: கோப்பில் பிழைகள் உள்ளன. இடைனிருத்தப்படுகிறது.\n"
 
-#: ../parser_misc.c:269
+#: ../parser_misc.c:281 parser_yacc.y:216 parser_yacc.y:240 parser_yacc.y:346
+#: parser_yacc.y:358 parser_yacc.y:426 parser_yacc.y:528 parser_yacc.y:566
+#: parser_yacc.y:884 parser_yacc.y:893 parser_yacc.y:904 parser_yacc.y:914
+#: parser_yacc.y:985 parser_yacc.y:1033 parser_yacc.y:1044 parser_yacc.y:1119
+#: parser_yacc.y:1134 parser_yacc.y:1141 parser_yacc.y:1152
+msgid "Memory allocation error."
+msgstr "நினைவக ஒதுக்கீட்டு பிழை."
+
+#: ../parser_misc.c:437
 msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
 msgstr ""
 
-#: ../parser_misc.c:313
-msgid "Exec qualifier 'i' must be followed by 'x'"
-msgstr "செயலாக்க தகுதி 'i'யை தொடர்ந்து 'x' வர வேண்டும்"
+#: ../parser_misc.c:473 ../parser_misc.c:480
+msgid "Conflict 'a' and 'w' perms are mutually exclusive."
+msgstr ""
 
-#: ../parser_misc.c:315
+#: ../parser_misc.c:497
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
 msgstr "செயலாக்க தகுதி 'i' செல்லாது, முரண்படும் தகுதி ஏற்கனவே குறிப்பிடப்பட்டுள்ளது"
 
-#: ../parser_misc.c:327
+#: ../parser_misc.c:508
 #, c-format
-msgid "Unconstrained exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
+msgid "Unconfined exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
 msgstr ""
 
-#: ../parser_misc.c:334 ../parser_misc.c:355
-#, c-format
-msgid "Exec qualifier '%c' must be followed by 'x'"
-msgstr ""
-
-#: ../parser_misc.c:337 ../parser_misc.c:358
+#: ../parser_misc.c:516 ../parser_misc.c:549
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
 msgstr ""
 
-#: ../parser_misc.c:376
-msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr ""
+#: ../parser_misc.c:543
+#, fuzzy, c-format
+msgid "Exec qualifier '%c%c' invalid, conflicting qualifier already specified"
+msgstr "செயலாக்க தகுதி 'i' செல்லாது, முரண்படும் தகுதி ஏற்கனவே குறிப்பிடப்பட்டுள்ளது"
 
-#: ../parser_misc.c:396
+#: ../parser_misc.c:591
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
 msgstr ""
 
-#: ../parser_misc.c:426 parser_yacc.y:222 parser_yacc.y:315 parser_yacc.y:327
-#: parser_yacc.y:387 parser_yacc.y:521 parser_yacc.y:533 parser_yacc.y:553
-#: parser_yacc.y:591 parser_yacc.y:623 parser_yacc.y:637 parser_yacc.y:651
-#: parser_yacc.y:665 parser_yacc.y:679 parser_yacc.y:707 parser_yacc.y:737
-#: parser_yacc.y:775 parser_yacc.y:792 parser_yacc.y:806
-msgid "Memory allocation error."
-msgstr "நினைவக ஒதுக்கீட்டு பிழை."
+#: ../parser_misc.c:613
+#, c-format
+msgid "Internal error generated invalid perm 0x%llx\n"
+msgstr ""
 
-#: ../parser_misc.c:738 ../parser_symtab.c:555 ../parser_regex.c:488
+#: ../parser_misc.c:833 ../parser_symtab.c:556 ../parser_regex.c:658
 #: ../parser_variable.c:227
 #, c-format
 msgid "AppArmor parser error: %s\n"
 msgstr ""
 
-#: ../parser_merge.c:64
+#: ../parser_merge.c:94
 msgid "Couldn't merge entries. Out of Memory\n"
 msgstr "உள்ளீடுகளை சேர்க்க முடியவில்லை. நினைவில் இல்லை\n"
 
-#: ../parser_merge.c:92
+#: ../parser_merge.c:113
 #, c-format
 msgid "profile %s: has merged rule %s with multiple x modifiers\n"
 msgstr "விவரம் %s: விதி %sஐ பல x மாற்றிகளுடன் சேர்த்துள்ளது\n"
 
-#: parser_yacc.y:362
-msgid "flags=(debug) is no longer supported, sorry."
+#: parser_yacc.y:220
+msgid "Profile names must begin with a '/', or keyword 'profile'."
 msgstr ""
 
-#: parser_yacc.y:398
+#: parser_yacc.y:263
+#, fuzzy, c-format
+msgid "Failed to create alias %s -> %s\n"
+msgstr "%s - %s திறக்க முடியவில்லை\n"
+
+#: parser_yacc.y:399
+msgid "Profile flag 'debug' is no longer valid."
+msgstr ""
+
+#: parser_yacc.y:405
+#, fuzzy, c-format
+msgid "Invalid profile flag: %s."
+msgstr "செல்லாத நோக்கம் %1."
+
+#: parser_yacc.y:440 parser_yacc.y:462
 msgid "Assert: `rule' returned NULL."
 msgstr "உறுதிசெய்தல்: ‘விதி’ மதிப்பின்றி திருப்பப்பட்டது."
 
-#: parser_yacc.y:407
-msgid "Assert: `netrule' returned NULL."
+#: parser_yacc.y:443 parser_yacc.y:488
+msgid "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"
+msgstr ""
+
+#: parser_yacc.y:466
+msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
+msgstr ""
+
+#: parser_yacc.y:491
+msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
+msgstr ""
+
+#: parser_yacc.y:516 parser_yacc.y:554
+#, fuzzy
+msgid "Assert: `network_rule' return invalid protocol."
 msgstr "உறுதிசெய்தல்: ‘நெட்விதி’ மதிப்பின்றி திருப்பப்பட்டது."
 
-#: parser_yacc.y:424
+#: parser_yacc.y:591
+#, fuzzy
+msgid "Assert: `change_profile' returned NULL."
+msgstr "உறுதிசெய்தல்: ‘நெட்விதி’ மதிப்பின்றி திருப்பப்பட்டது."
+
+#: parser_yacc.y:600
+#, fuzzy
+msgid "Assert: `change_hat' returned NULL."
+msgstr "உறுதிசெய்தல்: ‘நெட்விதி’ மதிப்பின்றி திருப்பப்பட்டது."
+
+#: parser_yacc.y:631
 msgid "Assert: 'hat rule' returned NULL."
 msgstr "உறுதிசெய்தல்: ‘ஹேட் விதி’ மதிப்பின்றி திருப்பப்பட்டது."
 
-#: parser_yacc.y:487
+#: parser_yacc.y:640
+#, fuzzy
+msgid "Assert: 'local_profile rule' returned NULL."
+msgstr "உறுதிசெய்தல்: ‘நெட்விதி’ மதிப்பின்றி திருப்பப்பட்டது."
+
+#: parser_yacc.y:772
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
 msgstr ""
 
-#: parser_yacc.y:545
+#: parser_yacc.y:830
+msgid "subset can only be used with link rules."
+msgstr ""
+
+#: parser_yacc.y:832
+msgid "link and exec perms conflict on a file rule using ->"
+msgstr ""
+
+#: parser_yacc.y:834
+msgid "link perms are not allowed on a named profile transition.\n"
+msgstr ""
+
+#: parser_yacc.y:850
+msgid "unsafe rule missing exec permissions"
+msgstr ""
+
+#: parser_yacc.y:853
+msgid "link perms are not allowed on a named profile transtion.\n"
+msgstr ""
+
+#: parser_yacc.y:866
 #, c-format
 msgid "missing an end of line character? (entry: %s)"
 msgstr "வரிசை எழுத்தின் முடிவு காணப்படவில்லை? (உள்ளீடு: %s)"
 
-#: parser_yacc.y:586
-msgid "Assert: `addresses' returned NULL."
-msgstr "உறுதிசெய்தல்: ‘முகவரிகள்’ மதிப்பின்றி திருப்பப்பட்டது."
+#: parser_yacc.y:1000 parser_yacc.y:1010
+#, fuzzy
+msgid "Invalid network entry."
+msgstr "புதிய உள்ளிடுதல் உள்செலுத்தப்பட்டுள்ளது."
 
-#: parser_yacc.y:689
-msgid "Network entries can only have one TO address."
-msgstr "வலையமைப்பு உள்ளீடுகளுக்கு ஒரு பெறுநர் முகவரி மட்டும் இருக்க வேண்டும்."
+#: parser_yacc.y:1064 parser_yacc.y:1072
+#, fuzzy, c-format
+msgid "Invalid capability %s."
+msgstr "செல்லாத வகை %1."
 
-#: parser_yacc.y:694
-msgid "Network entries can only have one FROM address."
-msgstr "வலையமைப்பு உள்ளீடுகளுக்கு ஒரு அனுப்புனர் முகவரி மட்டும் இருக்க வேண்டும்."
-
-#: parser_yacc.y:712 parser_yacc.y:743
-#, c-format
-msgid "`%s' is not a valid ip address."
-msgstr "`%s' ஒரு செல்லத்தக்க ip முகவரி அல்ல."
-
-#: parser_yacc.y:756
-#, c-format
-msgid "`/%d' is not a valid netmask."
-msgstr "`/%d' ஒரு செல்லத்தக்க வலைமாஸ்க் அல்ல."
-
-#: parser_yacc.y:763
-#, c-format
-msgid "`%s' is not a valid netmask."
-msgstr "`%s' ஒரு செல்லத்தக்க வலைமாஸ்க் அல்ல."
-
-#: parser_yacc.y:789 parser_yacc.y:809
-#, c-format
-msgid "ports must be between %d and %d"
-msgstr "%d மற்றும் %dக்கு இடையில் முணையங்கள் இருக்க வேண்டும்"
-
-#: parser_yacc.y:876
+#: parser_yacc.y:1089
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
 msgstr ""
 
-#: parser_yacc.y:879
+#: parser_yacc.y:1092
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
 msgstr ""
 
-#: ../parser_regex.c:247
+#: ../parser_regex.c:283
 #, c-format
 msgid "%s: Illegal open {, nesting groupings not allowed\n"
 msgstr "%s: சட்டவிரோத திறப்பு {, நெஸ்டிங் குழுக்களுக்கு அனுமதி இல்லை\n"
 
-#: ../parser_regex.c:267
+#: ../parser_regex.c:303
 #, c-format
 msgid "%s: Regex grouping error: Invalid number of items between {}\n"
 msgstr "%s: ரீஜெக்ஸ் குழு சேர்ப்பில் பிழை: {} இடையிலான பொருட்களின் செல்லாத எண்ணிக்கை\n"
 
-#: ../parser_regex.c:273
+#: ../parser_regex.c:309
 #, c-format
 msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
 msgstr "%s: ரீஜெக்ஸ் குழு சேர்ப்பில் பிழை: செல்லாத மூடுதல் }, பொருந்தும் திறப்பு { கண்டறியப்படவில்லை\n"
 
-#: ../parser_regex.c:339
+#: ../parser_regex.c:375
 #, c-format
 msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
 msgstr ""
 
-#: ../parser_regex.c:353
+#: ../parser_regex.c:389
 #, c-format
 msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
 msgstr "%s: உள் பஃபரின் வரம்புமீறல் கண்டறியப்பட்டுள்ளது, %d எழுத்துக்கள் மீறப்பட்டுள்ளன\n"
 
-#: ../parser_regex.c:357
+#: ../parser_regex.c:393
 #, c-format
 msgid "%s: Unable to parse input line '%s'\n"
 msgstr "%s: உள்ளீட்டு வரி '%s'யை விளக்க முடியவில்லை\n"
 
-#: ../parser_regex.c:390
+#: ../parser_regex.c:445
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
 msgstr "%s: ரீஜெக்ஸ் '%s' தொகுப்பது தோல்வியுற்றது [அசல்: '%s']\n"
 
-#: ../parser_regex.c:394
+#: ../parser_regex.c:449
 #, c-format
 msgid "%s: error near               "
 msgstr "%s: அருகில் பிழை               "
 
-#: ../parser_regex.c:404
+#: ../parser_regex.c:459
 #, c-format
 msgid "%s: error reason: '%s'\n"
 msgstr "%s: பிழை காரணம்: '%s'\n"
 
-#: ../parser_regex.c:413
+#: ../parser_regex.c:468
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
 msgstr "%s: ரீஜெக்ஸ் '%s' தொகுப்பது தோல்வியுற்றது [அசல்: '%s'] - malloc தோல்வியுற்றது\n"
 
-#: ../parser_policy.c:102
+#: ../parser_policy.c:194
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
 msgstr ""
 
-#: ../parser_policy.c:134
+#: ../parser_policy.c:226
 #, c-format
 msgid ""
 "ERROR profile %s contains policy elements not usable with this kernel:\n"
@@ -446,27 +452,84 @@ msgid ""
 "\t'**' may only be used at the end of a rule.\n"
 msgstr ""
 
-#: ../parser_policy.c:179
+#: ../parser_policy.c:271
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
 msgstr ""
 
-#: ../parser_policy.c:206
+#: ../parser_policy.c:298
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
 msgstr ""
 
-#: ../parser_policy.c:259
+#: ../parser_policy.c:481
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
 msgstr "%s விவரத்தில் பிழை, எற்றுதல் தோல்வியுற்றது\n"
 
-#: ../parser_policy.c:413
+#: ../parser_policy.c:659
+#, fuzzy, c-format
+msgid "%s: Errors found during postprocessing.  Aborting.\n"
+msgstr "%s: பின்செயல்முறை விதிகளை இணைப்பதில் பிழைகள் உள்ளன. இடைனிருத்தப்படுகிறது.\n"
+
+#: ../parser_policy.c:666 ../parser_policy.c:687
+#, c-format
+msgid "%s: Errors found during regex postprocess.  Aborting.\n"
+msgstr ""
+
+#: ../parser_policy.c:673
+#, fuzzy, c-format
+msgid "%s: Errors found during postprocess.  Aborting.\n"
+msgstr "%s: பின்செயல்முறை விதிகளை இணைப்பதில் பிழைகள் உள்ளன. இடைனிருத்தப்படுகிறது.\n"
+
+#: ../parser_policy.c:680
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
 msgstr "%s: பின்செயல்முறை விதிகளை இணைப்பதில் பிழைகள் உள்ளன. இடைனிருத்தப்படுகிறது.\n"
 
-#: ../parser_policy.c:420 ../parser_policy.c:427
-#, c-format
-msgid "%s: Errors found during regex postprocess.  Aborting.\n"
-msgstr ""
+#~ msgid "(ip_mode) Found unexpected character: '%s'"
+#~ msgstr "(ip_mode) எதிர்பாராத எழுத்தை கண்டுள்ளது: '%s'"
+
+#~ msgid "Exec qualifier 'i' must be followed by 'x'"
+#~ msgstr "செயலாக்க தகுதி 'i'யை தொடர்ந்து 'x' வர வேண்டும்"
+
+#~ msgid "Assert: `netrule' returned NULL."
+#~ msgstr "உறுதிசெய்தல்: ‘நெட்விதி’ மதிப்பின்றி திருப்பப்பட்டது."
+
+#~ msgid "Assert: `addresses' returned NULL."
+#~ msgstr "உறுதிசெய்தல்: ‘முகவரிகள்’ மதிப்பின்றி திருப்பப்பட்டது."
+
+#~ msgid "Network entries can only have one TO address."
+#~ msgstr "வலையமைப்பு உள்ளீடுகளுக்கு ஒரு பெறுநர் முகவரி மட்டும் இருக்க வேண்டும்."
+
+#~ msgid "Network entries can only have one FROM address."
+#~ msgstr "வலையமைப்பு உள்ளீடுகளுக்கு ஒரு அனுப்புனர் முகவரி மட்டும் இருக்க வேண்டும்."
+
+#~ msgid "`%s' is not a valid ip address."
+#~ msgstr "`%s' ஒரு செல்லத்தக்க ip முகவரி அல்ல."
+
+#~ msgid "`/%d' is not a valid netmask."
+#~ msgstr "`/%d' ஒரு செல்லத்தக்க வலைமாஸ்க் அல்ல."
+
+#~ msgid "`%s' is not a valid netmask."
+#~ msgstr "`%s' ஒரு செல்லத்தக்க வலைமாஸ்க் அல்ல."
+
+#~ msgid "ports must be between %d and %d"
+#~ msgstr "%d மற்றும் %dக்கு இடையில் முணையங்கள் இருக்க வேண்டும்"
+
+#~ msgid ""
+#~ "%s: Unable to query modules - '%s'\n"
+#~ "Either modules are disabled or your kernel is too old.\n"
+#~ msgstr ""
+#~ "%s: கூறுகளை கேள்வி கேட்க முடியவில்லை - '%s'\n"
+#~ "கூறுகள் செயலிழக்கப்பட்டிருக்க வேண்டும் அல்லது உங்கள் கெர்னல் மிகப் பழையதாக இருக்க வேண்டும்.\n"
+
+#~ msgid "%s: Unable to find "
+#~ msgstr "%s: கண்டுபிடிக்க முடியவில்லை "
+
+#~ msgid ""
+#~ "!\n"
+#~ "Ensure that it has been loaded.\n"
+#~ msgstr ""
+#~ "!\n"
+#~ "அது ஏற்றப்பட்டிருப்பதை உறுதி செய்து கொள்ளவும்.\n"
