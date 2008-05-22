@@ -329,6 +329,9 @@ LT_EQUAL	<=
 				PDEBUG("Found id: \"%s\"\n", yylval);
 				return TOK_ID;
 				break;
+			case TOK_PROFILE:
+				BEGIN(SUB_NAME);
+				break;
 			case TOK_FLAGS:
 				BEGIN(FLAGS_MODE);
 				break;
