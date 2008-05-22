@@ -82,6 +82,7 @@ ARROW		->
 LT_EQUAL	<=
 
 %x SUB_NAME
+%x SUB_NAME2
 %x NETWORK_MODE
 %x FLAGS_MODE
 %x ASSIGN_MODE
@@ -117,6 +118,41 @@ LT_EQUAL	<=
 			return TOK_ID;
 		}
 
+	[^\n]	{
+			/* Something we didn't expect */
+			yyerror(_("Found unexpected character: '%s'"), yytext);
+		}
+}
+
+<SUB_NAME2>{
+	{ID}+	{
+			  /* Ugh, this is a gross hack. I used to use
+			   * {ID}+ to match all TOK_IDs, but that would
+			   * also match TOK_MODE + TOK_END_OF_RULE
+			   * without any spaces in between (because it's
+			   * a longer match). So now, when I want to
+			   * match any random string, I go into a
+			   * seperate state. */
+			yylval = (YYSTYPE) processunquoted(yytext, yyleng);
+			PDEBUG("Found sub name: \"%s\"\n", yylval);
+			BEGIN(INITIAL);
+			return TOK_ID;
+		}
+	{QUOTED_ID}	{
+			  /* Ugh, this is a gross hack. I used to use
+			   * {ID}+ to match all TOK_IDs, but that would
+			   * also match TOK_MODE + TOK_END_OF_RULE
+			   * without any spaces in between (because it's
+			   * a longer match). So now, when I want to
+			   * match any random string, I go into a
+			   * seperate state. */
+			yylval = (YYSTYPE) processquoted(yytext, yyleng);
+			PDEBUG("Found sub name: \"%s\"\n", yylval);
+			BEGIN(INITIAL);
+			return TOK_ID;
+		}
+
+	{WS}+			{  /* Ignoring whitespace */ }
 	[^\n]	{
 			/* Something we didn't expect */
 			yyerror(_("Found unexpected character: '%s'"), yytext);
@@ -303,7 +339,7 @@ LT_EQUAL	<=
 			}
 
 {HAT}			{
-			BEGIN(SUB_NAME);
+			BEGIN(SUB_NAME2);
 			return TOK_HAT;
 			}
 
@@ -330,7 +366,7 @@ LT_EQUAL	<=
 				return TOK_ID;
 				break;
 			case TOK_PROFILE:
-				BEGIN(SUB_NAME);
+				BEGIN(SUB_NAME2);
 				break;
 			case TOK_FLAGS:
 				BEGIN(FLAGS_MODE);
