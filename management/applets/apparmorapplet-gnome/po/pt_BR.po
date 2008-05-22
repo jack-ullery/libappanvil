@@ -1,0 +1,62 @@
+# translation of apparmorapplet.po to Brazilian Portuguese
+# translation of apparmorapplet.po to
+# @TITLE@
+# Copyright (C) 2006, SUSE Linux GmbH, Nuremberg
+#
+# This file is distributed under the same license as @PACKAGE@ package. FIRST
+#
+# Rafael Reuber <psico.indie@gmail.com>, 2008.
+# Luiz Fernando Ranghetti <elchevive68@gmail.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmorapplet\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-02-06 14:27-0800\n"
+"PO-Revision-Date: 2008-05-18 13:45-0300\n"
+"Last-Translator: Luiz Fernando Ranghetti <elchevive68@gmail.com>\n"
+"Language-Team: Brazilian Portuguese <opensuse-pt@opensuse.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+"Plural-Forms: nplurals=2; plural=n>1;\n"
+"X-Poedit-Language: Portuguese\n"
+"X-Poedit-Country: BRAZIL\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: src/apparmor-applet.c:244
+msgid ""
+"AppArmorApplet is free software; you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation; either version 2 of the License, or\n"
+"(at your option) any later version."
+msgstr ""
+"O Miniaplicativo AppArmor é um software livre; você pode redistribuí-lo e/ou alterá-lo\n"
+"seguindo os termos da licença GNU General Public License(GPL) tal como\n"
+"publicada pela Free Software Foundation; na versão 2 da Licença ou\n"
+"(por sua opção) qualquer versão posterior."
+
+#: src/preferences_dialog.c:31
+msgid "AppArmor Desktop Preferences"
+msgstr "Preferências de Área de Trabalho do AppArmor"
+
+#: src/preferences_dialog.c:46
+msgid "Profile Generation"
+msgstr "Geração de Perfil"
+
+#: src/preferences_dialog.c:54
+msgid "Path"
+msgstr "Caminho"
+
+#: src/preferences_dialog.c:76
+msgid "YAST"
+msgstr "YAST"
+
+#: src/preferences_dialog.c:77
+msgid "genprof"
+msgstr "genprof"
+
+#: src/reject_list.c:58
+msgid "AppArmor Rejections"
+msgstr "Rejeições do AppArmor"
+

@@ -1,0 +1,52 @@
+# translation of apparmorapplet.km.po to Khmer
+# Khoem Sokhem <khoemsokhem@khmeros.info>, 2007.
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmorapplet.km\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-02-06 14:27-0800\n"
+"PO-Revision-Date: 2007-08-13 14:34+0700\n"
+"Last-Translator: Khoem Sokhem <khoemsokhem@khmeros.info>\n"
+"Language-Team: Khmer <support@khmeros.info>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#: src/apparmor-applet.c:244
+msgid ""
+"AppArmorApplet is free software; you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation; either version 2 of the License, or\n"
+"(at your option) any later version."
+msgstr ""
+"AppArmorApplet គឺ​ជា​កម្មវិធី​ឥតគិតថ្លៃ អ្នក​អាច​ចែកចាយវា និង/ឬ​កែប្រែ​បាន\n"
+"ប៉ុន្តែ​ត្រូវ​នៅ​ក្រោម​អាជ្ញាបណ្ណ GNU ព្រោះ​ថា​បាន​បោះពុម្ព​ផ្សាយ​ដោយ\n"
+"មូលនិធិ​កម្មវិធី​ឥតគិតថ្លៃ កំណែ ២ របស់​អាជ្ញាបណ្ណ ឬ\n"
+"(ជម្រើស​របស់​អ្នក) នៅ​កំណែ​ក្រោយ ។"
+
+#: src/preferences_dialog.c:31
+msgid "AppArmor Desktop Preferences"
+msgstr "ចំណូល​ចិត្ត​ផ្ទៃតុ​របស់ AppArmor"
+
+#: src/preferences_dialog.c:46
+msgid "Profile Generation"
+msgstr "ការ​បង្កើត​ទម្រង់"
+
+#: src/preferences_dialog.c:54
+msgid "Path"
+msgstr "ផ្លូវ"
+
+#: src/preferences_dialog.c:76
+msgid "YAST"
+msgstr "YAST"
+
+#: src/preferences_dialog.c:77
+msgid "genprof"
+msgstr "genprof"
+
+#: src/reject_list.c:58
+msgid "AppArmor Rejections"
+msgstr "ការ​ច្រាន ​AppArmor ចេញ"
+

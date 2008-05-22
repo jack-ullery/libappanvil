@@ -1,0 +1,59 @@
+# translation of apparmorapplet.el.po to Hellenic
+# translation of apparmorapplet.el to Greek
+# @TITLE@
+# Copyright (C) 2006, SUSE Linux GmbH, Nuremberg
+#
+# This file is distributed under the same license as @PACKAGE@ package. FIRST
+#
+# Vasileios Giannakopoulos <billg@hellug.gr>, 2007.
+# Kostas Boukouvalas <quantis@hellug.gr>, 2007.
+# Vasileios Giannakopoulos <billg@billg.gr>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmorapplet.el\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-07-31 16:48-0600\n"
+"PO-Revision-Date: 2008-03-31 11:20+0100\n"
+"Last-Translator: Vasileios Giannakopoulos <billg@billg.gr>\n"
+"Language-Team: Hellenic <billg@billg.gr>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#: src/apparmor-applet.c:244
+msgid ""
+"AppArmorApplet is free software; you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation; either version 2 of the License, or\n"
+"(at your option) any later version."
+msgstr ""
+"Το AppArmorApplet είναι ελεύθερο λογισμικό; μπορείτε να το επαναδιανείμετε ή/και να το τροποποιήσετε\n"
+"υπό τους όρους της GNU General Public License όπως εκδόθηκε από\n"
+"το Free Software Foundation; είτε στην έκδοση 2 της Άδειας, ή\n"
+"(κατα την άποψή σας) σε νεότερη έκδοση."
+
+#: src/preferences_dialog.c:31
+msgid "AppArmor Desktop Preferences"
+msgstr "Προτιμήσεις Επιφάνειας Εργασίας AppArmor"
+
+#: src/preferences_dialog.c:46
+msgid "Profile Generation"
+msgstr "Δημιουργία Προφίλ"
+
+#: src/preferences_dialog.c:54
+msgid "Path"
+msgstr "Διαδρομή"
+
+#: src/preferences_dialog.c:76
+msgid "YAST"
+msgstr "YAST"
+
+#: src/preferences_dialog.c:77
+msgid "genprof"
+msgstr "genprof"
+
+#: src/reject_list.c:58
+msgid "AppArmor Rejections"
+msgstr "Απορριφθέντα AppArmor"
+
