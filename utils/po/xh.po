@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils 1.2\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2006-11-03 13:51-0800\n"
+"POT-Creation-Date: 2008-05-20 04:51-0700\n"
 "PO-Revision-Date: 2007-01-03 16:07-0800\n"
 "Last-Translator: Novell Language <language@novell.com>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
@@ -14,87 +14,25 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: audit:102
-#, perl-format
-msgid "Setting %s to audit mode."
-msgstr "Misela %s ukuphicotha imo esebenzayo."
-
-#: audit:109 autodep:114 complain:109 enforce:108
-#, fuzzy, perl-format
-msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
-msgstr "Ayikwazi kufumana %s kuluhlu lwendlela yesixokelelwano.  Ukuba igama lenkqubo lichanekile, nceda sebenzisa 'nayiphi %es' njengomsebenzisi ngobume bendawo yeNDLELA echanekileyo khon’ukuze ufumane indlela efanelekileyo ngokupheleleyo."
-
-#: audit:112 autodep:117 complain:112 enforce:111 genprof:89
-#, perl-format
-msgid "%s does not exist, please double-check the path."
-msgstr "%s ayikho, nceda qinisekisa-kabini indlela."
-
-#: audit:121
-#, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
-msgstr "ukusetyenziswa: %s [ -d /indlela/kwi/nkangeleko ] [ inkqubo yokutshintshela kwimo esebenzayo yokuphicotha ]"
-
-#: autodep:64
-#, perl-format
-msgid "Can't find subdomain profiles in %s."
-msgstr "Ayikwazi kufumana iinkangeleko yommandlana ku %s."
-
-#: autodep:75
-msgid "Please enter the program to create a profile for: "
-msgstr "Nceda faka inkqubo ukudala inkangeleko ka:"
-
-#: autodep:99 genprof:100
-#, perl-format
-msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
-msgstr "%s okwangoku iphawulwe njengenkqubo ekungafunekanga ukuba ibe nenkangeleko yayo.  Ngokuqhelekileyo, iinkqubo ziphawulwe ngale ndlela xa kudalwa inkangeleko yazo zilindeleke ukuba zakwaphule sonke isixokelelwano.  Ukuba uyayazi into oyenzayo kwaye uqinisekile ukuba ufuna ukudala inkangeleko yale nkqubo, hlela ungeniso oluhambelanayo kwi[izichazi] sahluko kwi /njl/apparmor/logprof.conf."
-
-#: autodep:107
-#, perl-format
-msgid "Profile for %s already exists - skipping."
-msgstr "Inkangeleko ka %s sele ikhona - ukutsiba."
-
-#: complain:67
-msgid "Please enter the program to switch to complain mode: "
-msgstr "Nceda faka inkqubo ukutshintshela kwimo esebenzayo yokukhalaza:"
-
-#: complain:102 SubDomain.pm:427
-#, perl-format
-msgid "Setting %s to complain mode."
-msgstr "Misela %s kwimo esebenzayo yokukhalaza."
-
-#: complain:121
-#, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
-msgstr "ukusetyenziswa: %s [ -d /indlela/kwi/nkangeleko ] [ inkqubo yokutshintshela kwimo esebenzayo yokukhalaza ]"
-
-#: enforce:67
-msgid "Please enter the program to switch to enforce mode: "
-msgstr "Nceda faka inkqubo ukutshintshela kwimo esebenzayo yokuxhasa:"
-
-#: enforce:101 SubDomain.pm:441
-#, perl-format
-msgid "Setting %s to enforce mode."
-msgstr "Misela %s imo yokuxhasa esebenzayo."
-
-#: enforce:120
-#, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
-msgstr "ukusetyenziswa: %s [ -d /indlela/kwi/nkangeleko ] [ inkqubo yokutshintshela kwimo yokuxhasa esebenzayo ]"
-
-#: genprof:55
+#: ../genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
 msgstr "Ummandlana awubonakali uqalisiwe.  Nceda yenza ummandlana usebenza kwaye zama kwakhona."
 
-#: genprof:69
+#: ../genprof:69
 msgid "Please enter the program to profile: "
 msgstr "Nceda faka inkqubo kwinkangeleko:"
 
-#: genprof:87
+#: ../genprof:88
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
 msgstr "Ayikwazi kufumana %s kuluhlu lwendlela yesixokelelwano.  Ukuba igama lenkqubo lichanekile, nceda sebenzisa 'nayiphi %s kwenye ifestile khon'ukuze ufumane indlela egcweleyo efanelekileyo."
 
-#: genprof:121
+#: ../genprof:90 ../autodep:112 ../audit:122 ../complain:122 ../enforce:122
+#, perl-format
+msgid "%s does not exist, please double-check the path."
+msgstr "%s ayikho, nceda qinisekisa-kabini indlela."
+
+#: ../genprof:115
 msgid ""
 "Please start the application to be profiled in \n"
 "another window and exercise its functionality now.\n"
@@ -115,89 +53,278 @@ msgstr ""
 " ithuba lokukhetha ukuba ufikelelo kufuneka  \n"
 " livunyelwe okanye laliwe."
 
-#: genprof:140
+#: ../genprof:135
 msgid "Profiling"
 msgstr "Ukuhlohla kwakhona"
 
-#: genprof:167
+#: ../genprof:169
 msgid "Reloaded SubDomain profiles in enforce mode."
 msgstr "Iinkangeleko zemimandlana ezifakiweyo kwakhona kwimo yokunyanzela esebenzayo."
 
-#: genprof:168
+#: ../genprof:170
 #, perl-format
 msgid "Finished generating profile for %s."
 msgstr "Igqibile ukwenza inkangeleko ka %s."
 
-#: genprof:172
+#: ../genprof:174
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
 msgstr "ukusetyenziswa: %s [ -d /indlela/kwi/nkangeleko ] [ -f /indlela/kwi/fayili ye-log ] [ inkqubo ukukhangela ]"
 
-#: logprof:75
+#: ../logprof:72
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
 msgstr "ukusetyenziswa: %s [ -d /indlela/kwii/nkangeleko ] [ -f /indlela/kwi/fayili ye-log ] [ -m \"phawula kwi-log ukuqalisa inkqubo yokulungiselela mva\""
 
-#: SubDomain.pm:422 SubDomain.pm:436
+#: ../autodep:63
+#, perl-format
+msgid "Can't find subdomain profiles in %s."
+msgstr "Ayikwazi kufumana iinkangeleko yommandlana ku %s."
+
+#: ../autodep:71
+msgid "Please enter the program to create a profile for: "
+msgstr "Nceda faka inkqubo ukudala inkangeleko ka:"
+
+#: ../autodep:95 ../SubDomain.pm:6180
+#, perl-format
+msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
+msgstr "%s okwangoku iphawulwe njengenkqubo ekungafunekanga ukuba ibe nenkangeleko yayo.  Ngokuqhelekileyo, iinkqubo ziphawulwe ngale ndlela xa kudalwa inkangeleko yazo zilindeleke ukuba zakwaphule sonke isixokelelwano.  Ukuba uyayazi into oyenzayo kwaye uqinisekile ukuba ufuna ukudala inkangeleko yale nkqubo, hlela ungeniso oluhambelanayo kwi[izichazi] sahluko kwi /njl/apparmor/logprof.conf."
+
+#: ../autodep:102
+#, perl-format
+msgid "Profile for %s already exists - skipping."
+msgstr "Inkangeleko ka %s sele ikhona - ukutsiba."
+
+#: ../autodep:109 ../audit:119 ../complain:119 ../enforce:119
+#, fuzzy, perl-format
+msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
+msgstr "Ayikwazi kufumana %s kuluhlu lwendlela yesixokelelwano.  Ukuba igama lenkqubo lichanekile, nceda sebenzisa 'nayiphi %es' njengomsebenzisi ngobume bendawo yeNDLELA echanekileyo khon’ukuze ufumane indlela efanelekileyo ngokupheleleyo."
+
+#: ../audit:106
+#, perl-format
+msgid "Setting %s to audit mode."
+msgstr "Misela %s ukuphicotha imo esebenzayo."
+
+#: ../audit:131
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
+msgstr "ukusetyenziswa: %s [ -d /indlela/kwi/nkangeleko ] [ inkqubo yokutshintshela kwimo esebenzayo yokuphicotha ]"
+
+#: ../complain:64
+msgid "Please enter the program to switch to complain mode: "
+msgstr "Nceda faka inkqubo ukutshintshela kwimo esebenzayo yokukhalaza:"
+
+#: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:899
+#, perl-format
+msgid "Setting %s to complain mode."
+msgstr "Misela %s kwimo esebenzayo yokukhalaza."
+
+#: ../complain:131
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
+msgstr "ukusetyenziswa: %s [ -d /indlela/kwi/nkangeleko ] [ inkqubo yokutshintshela kwimo esebenzayo yokukhalaza ]"
+
+#: ../enforce:64
+msgid "Please enter the program to switch to enforce mode: "
+msgstr "Nceda faka inkqubo ukutshintshela kwimo esebenzayo yokuxhasa:"
+
+#: ../enforce:105 ../SubDomain.pm:592
+#, perl-format
+msgid "Setting %s to enforce mode."
+msgstr "Misela %s imo yokuxhasa esebenzayo."
+
+#: ../enforce:131
+#, perl-format
+msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
+msgstr "ukusetyenziswa: %s [ -d /indlela/kwi/nkangeleko ] [ inkqubo yokutshintshela kwimo yokuxhasa esebenzayo ]"
+
+#: ../unconfined:50
+#, perl-format
+msgid "Usage: %s [ --paranoid ]\n"
+msgstr "Ukusetyenziswa: %s [ --paranoid ]\n"
+
+#: ../unconfined:56
+msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
+msgstr "Ummandlana awubonakali uqalisiwe. Nceda yenza ummandlana usebenza kwaye zama kwakhona."
+
+#: ../unconfined:61
+msgid "Can't read /proc\n"
+msgstr "Ayikwazi kufunda i /proc\n"
+
+#: ../unconfined:93 ../unconfined:95
+msgid "not confined\n"
+msgstr "Ayixinananga\n"
+
+#: ../unconfined:105 ../unconfined:107
+msgid "confined by"
+msgstr "ixinene nge"
+
+#: ../SubDomain.pm:577 ../SubDomain.pm:590
 #, perl-format
 msgid "Can't find %s."
 msgstr "Ayikwazi kufumana %s."
 
-#: SubDomain.pm:704 SubDomain.pm:743
-msgid "(Y)es"
-msgstr "(E)we"
+#: ../SubDomain.pm:778 ../SubDomain.pm:3174
+#, fuzzy
+msgid "Connecting to repository....."
+msgstr "Uqhagamshelo kwiseva lulahlekile."
 
-#: SubDomain.pm:705 SubDomain.pm:744
-msgid "(N)o"
-msgstr "(H)ayi"
+#: ../SubDomain.pm:787
+#, perl-format
+msgid ""
+"WARNING: Error fetching profiles from the repository:\n"
+"%s\n"
+msgstr ""
 
-#: SubDomain.pm:745
-msgid "(C)ancel"
-msgstr "(H)laba"
+#: ../SubDomain.pm:796
+#, fuzzy
+msgid "Inactive local profile for "
+msgstr "Inkangeleko esebenzayo"
 
-#: SubDomain.pm:1011 SubDomain.pm:1202 SubDomain.pm:1631 SubDomain.pm:1837
+#: ../SubDomain.pm:832 ../SubDomain.pm:1854 ../SubDomain.pm:2142
+#: ../SubDomain.pm:3301 ../SubDomain.pm:3334 ../SubDomain.pm:3534
+#: ../SubDomain.pm:3800 ../SubDomain.pm:3852
 msgid "Profile"
 msgstr "Inkangeleko"
 
-#: SubDomain.pm:1013
-msgid "Default Hat"
-msgstr "I-Hat Ehlala ikhona"
+#: ../SubDomain.pm:866
+#, fuzzy
+msgid "Profile submitted by"
+msgstr "Izakhelo zenkangelo"
 
-#: SubDomain.pm:1015
-msgid "Requested Hat"
-msgstr "I-Hat Efunekayo"
+#: ../SubDomain.pm:907
+#, fuzzy, perl-format
+msgid "Error activating profiles: %s\n"
+msgstr "Imposiso xa kusenziwa ukusebenza kwesithuba sotshintshiselwano."
 
-#: SubDomain.pm:1045 SubDomain.pm:1231 SubDomain.pm:1665 SubDomain.pm:1972
+#: ../SubDomain.pm:1057 ../SubDomain.pm:1110
+#, perl-format
+msgid ""
+"WARNING: Error syncronizing profiles with the repository:\n"
+"%s\n"
+msgstr ""
+
+#: ../SubDomain.pm:1137
+#, fuzzy
+msgid "New profiles"
+msgstr "Iinkangeleko Ezifumanekayo"
+
+#: ../SubDomain.pm:1139
+msgid ""
+"Please choose the newly created profiles that you would like\n"
+"to store in the repository"
+msgstr ""
+
+#: ../SubDomain.pm:1146
+msgid "Submit newly created profiles to the repository"
+msgstr ""
+
+#: ../SubDomain.pm:1148
+#, fuzzy
+msgid "Would you like to upload the newly created profiles?"
+msgstr "Ingaba uyafuna ukuthatha ngaphandle uludwe lwabangathandekiyo oluchazwe kwangaphambili?"
+
+#: ../SubDomain.pm:1161
+msgid ""
+"Select which of the changed profiles you would like to upload\n"
+"to the repository"
+msgstr ""
+
+#: ../SubDomain.pm:1163
+#, fuzzy
+msgid "Changed profiles"
+msgstr "Ikhuphela inkangeleko"
+
+#: ../SubDomain.pm:1169
+msgid "Submit changed profiles to the repository"
+msgstr ""
+
+#: ../SubDomain.pm:1171
+msgid ""
+"The following profiles from the repository were changed.\n"
+"Would you like to upload your changes?"
+msgstr ""
+
+#: ../SubDomain.pm:1238 ../SubDomain.pm:1318
+#, fuzzy, perl-format
+msgid ""
+"WARNING: An error occured while uploading the profile %s\n"
+"%s\n"
+msgstr "Kwenzeke imposiso xa bekufundwa kukavimba wokuhlohla."
+
+#: ../SubDomain.pm:1243
+msgid "Uploaded changes to repository."
+msgstr ""
+
+#: ../SubDomain.pm:1292
+#, fuzzy
+msgid "Changelog Entry: "
+msgstr "I-log yoNgeniso"
+
+#: ../SubDomain.pm:1313
+#, fuzzy, perl-format
+msgid "Uploaded %s to repository."
+msgstr "Ifayili %1 ayifunyenwanga elugcinweni."
+
+#: ../SubDomain.pm:1324
+msgid ""
+"Repository Error\n"
+"Registration or Signin was unsuccessful. User login\n"
+"information is required to upload profiles to the\n"
+"repository. These changes have not been sent.\n"
+msgstr ""
+
+#: ../SubDomain.pm:1381 ../SubDomain.pm:1421
+msgid "(Y)es"
+msgstr "(E)we"
+
+#: ../SubDomain.pm:1382 ../SubDomain.pm:1422
+msgid "(N)o"
+msgstr "(H)ayi"
+
+#: ../SubDomain.pm:1385 ../SubDomain.pm:1426
+#, fuzzy
+msgid "Invalid hotkey for"
+msgstr "Iinkcukacha zeqhosha azisebenziseki."
+
+#: ../SubDomain.pm:1423
+msgid "(C)ancel"
+msgstr "(H)laba"
+
+#: ../SubDomain.pm:1748
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
 msgstr "Uqinisekile ukuba ufuna ukuyeka le seti yotshintsho lwenkangeleko uphume?"
 
-#: SubDomain.pm:1047 SubDomain.pm:1234 SubDomain.pm:1661 SubDomain.pm:1667
-#: SubDomain.pm:1974
+#: ../SubDomain.pm:1750
 msgid "Abandoning all changes."
 msgstr "Kuyekwa lonke utshintsho."
 
-#: SubDomain.pm:1052 SubDomain.pm:1239 SubDomain.pm:1681 SubDomain.pm:1979
-msgid "Are you sure you want to save the current set of profile changes and exit?"
-msgstr "Uqinisekile ukuba ufuna ukugcina iseti yangoku yotshintsho lwenkangeleko uphume?"
+#: ../SubDomain.pm:1856
+msgid "Default Hat"
+msgstr "I-Hat Ehlala ikhona"
 
-#: SubDomain.pm:1054 SubDomain.pm:1241 SubDomain.pm:1676 SubDomain.pm:1683
-#: SubDomain.pm:1981
-msgid "Saving all changes."
-msgstr "Kugcinwa lonke utshintsho."
+#: ../SubDomain.pm:1858
+msgid "Requested Hat"
+msgstr "I-Hat Efunekayo"
 
-#: SubDomain.pm:1204
+#: ../SubDomain.pm:2144
 msgid "Program"
 msgstr "Inkqubo"
 
-#: SubDomain.pm:1206
+#: ../SubDomain.pm:2149
 msgid "Execute"
 msgstr "Phumeza"
 
-#: SubDomain.pm:1207 SubDomain.pm:1633 SubDomain.pm:1849
+#: ../SubDomain.pm:2150 ../SubDomain.pm:3303 ../SubDomain.pm:3336
+#: ../SubDomain.pm:3589
 msgid "Severity"
 msgstr "Ubukhali"
 
-#: SubDomain.pm:1248
+#: ../SubDomain.pm:2195
+msgid "Enter profile name to transition to: "
+msgstr ""
+
+#: ../SubDomain.pm:2203
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -213,7 +340,7 @@ msgstr ""
 " kodwa ezinye iinkqubo zixhomekeke kubukho\n"
 " bo-KUHLOHLA KWANGAPHAMBILI kwe-LD okanye INDLELA_YETHALA _LENCWADI ye-LD."
 
-#: SubDomain.pm:1250
+#: ../SubDomain.pm:2205
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -231,7 +358,7 @@ msgstr ""
 "okanye _INDLELA YETHALA _LENCWADI ye-LD kwaye ukususa oku\n"
 " kungabangela iingxaki zokusebenziseka."
 
-#: SubDomain.pm:1257
+#: ../SubDomain.pm:2214
 #, perl-format
 msgid ""
 "Launching processes in an unconfined state is a very\n"
@@ -246,7 +373,7 @@ msgstr ""
 " Ingaba uqiniseke ngokupheleleyo ukuba ufuna ukushenxisa lonke\n"
 " ukhuseleko lwe-AppArmor xa uphumeza %s?"
 
-#: SubDomain.pm:1259
+#: ../SubDomain.pm:2216
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "running this program unconfined?\n"
@@ -262,99 +389,234 @@ msgstr ""
 " inkqubo kuvula imingxuma ebalulekileyo yokhuseleko\n"
 " kwaye kufuneka iphetshwe ukuba kuyenzeka."
 
-#: SubDomain.pm:1362
+#: ../SubDomain.pm:2305
+#, fuzzy, perl-format
+msgid "A profile for %s does not exist create one?"
+msgstr "inkangeleko ye-VAR1 ayikho"
+
+#: ../SubDomain.pm:2332
+#, fuzzy, perl-format
+msgid "A local profile for %s does not exist create one?"
+msgstr "inkangeleko ye-VAR1 ayikho"
+
+#: ../SubDomain.pm:2504 ../SubDomain.pm:6556 ../SubDomain.pm:6561
+#, fuzzy, perl-format
+msgid "Log contains unknown mode %s."
+msgstr "Layisha Iimodyuli Ezingaziwayo"
+
+#: ../SubDomain.pm:2916
+msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
+msgstr ""
+
+#: ../SubDomain.pm:2946
+#, fuzzy, perl-format
+msgid "Updated profile %s to revision %s."
+msgstr "Kubhalwa inkangeleko ehlaziyiweyo ka %s."
+
+#: ../SubDomain.pm:2953
+#, fuzzy
+msgid "Error parsing repository profile."
+msgstr "Imposiso xa bekusahlulwa i-CRL."
+
+#: ../SubDomain.pm:2989
+#, fuzzy
+msgid "Create New User?"
+msgstr "Dala Iqhosha Elitsha le-TSIG"
+
+#: ../SubDomain.pm:2990
+#, fuzzy
+msgid "Username: "
+msgstr "&Igama Lomsebenzisi:"
+
+#: ../SubDomain.pm:2991
+msgid "Password: "
+msgstr "Igama lokugqithisa:"
+
+#: ../SubDomain.pm:2992
+msgid "Email Addr: "
+msgstr ""
+
+#: ../SubDomain.pm:2994
+#, fuzzy
+msgid "Save Configuration? "
+msgstr "Gcina ubumbeko"
+
+#: ../SubDomain.pm:3003
+msgid "The Profile Repository server returned the following error:"
+msgstr ""
+
+#: ../SubDomain.pm:3005
+msgid "Please re-enter registration information or contact the administrator."
+msgstr ""
+
+#: ../SubDomain.pm:3006
+#, fuzzy
+msgid "Login Error\n"
+msgstr "Iimposiso Zokungena: %1"
+
+#: ../SubDomain.pm:3013
+msgid ""
+"Login failure\n"
+" Please check username and password and try again."
+msgstr ""
+
+#: ../SubDomain.pm:3035
+#, fuzzy
+msgid ""
+"Would you like to enable access to the\n"
+"profile repository?"
+msgstr "Ingaba uyafuna ukuthatha ngaphandle uludwe lwabangathandekiyo oluchazwe kwangaphambili?"
+
+#: ../SubDomain.pm:3066
+msgid ""
+"Would you like to upload newly created and changed profiles to\n"
+"      the profile repository?"
+msgstr ""
+
+#: ../SubDomain.pm:3185
 #, perl-format
-msgid "Reading log entries from %s."
-msgstr "Kufundwa amangeniso e-log ukusuka ku %s."
+msgid ""
+"WARNING: Profile update check failed\n"
+"Error Detail:\n"
+"%s"
+msgstr ""
 
-#: SubDomain.pm:1363
-#, perl-format
-msgid "Updating AppArmor profiles in %s."
-msgstr "Kuhlaziywa iinkangeleko ze-AppArmor ku %s."
+#: ../SubDomain.pm:3199
+#, fuzzy
+msgid "Change mode modifiers"
+msgstr "Ikhuphela inkangeleko"
 
-#: SubDomain.pm:1369
-msgid "unknown"
-msgstr "akwaziwa"
-
-#: SubDomain.pm:1598
+#: ../SubDomain.pm:3243
 msgid "Complain-mode changes:"
 msgstr "Utshintsho-lwemo yokukhalaza esebenzayo:"
 
-#: SubDomain.pm:1600
+#: ../SubDomain.pm:3245
 msgid "Enforce-mode changes:"
 msgstr "Utshintsho-lwemo yokunyanzela esebenzayo:"
 
-#: SubDomain.pm:1605
+#: ../SubDomain.pm:3251
 #, perl-format
 msgid "Invalid mode found: %s"
 msgstr "Kufunyenwe imo engasebenzi: %s"
 
-#: SubDomain.pm:1632
+#: ../SubDomain.pm:3302 ../SubDomain.pm:3335
 msgid "Capability"
 msgstr "Ukukwazi"
 
-#: SubDomain.pm:1655
-#, perl-format
-msgid "Adding capability %s to profile."
-msgstr "Kufakwa ukukwazi %s kwinkangeleko."
-
-#: SubDomain.pm:1657
-#, perl-format
-msgid "Denying capability %s to profile."
-msgstr "Kwaliwa ukukwazi %s kwinkangeleko."
-
-#: SubDomain.pm:1838
-msgid "Path"
-msgstr "Indlela yothungelwano"
-
-#: SubDomain.pm:1843
-msgid "Old Mode"
-msgstr "Imo yokusebenza Endala"
-
-#: SubDomain.pm:1845
-msgid "New Mode"
-msgstr "Imo yokusebenza Entsha"
-
-#: SubDomain.pm:1847
-msgid "Mode"
-msgstr "Imo yokusebenza"
-
-#: SubDomain.pm:1885
+#: ../SubDomain.pm:3355 ../SubDomain.pm:3629 ../SubDomain.pm:3876
 #, perl-format
 msgid "Adding #include <%s> to profile."
 msgstr "Ukufaka #kuquka <%s> kwinkangeleko."
 
-#: SubDomain.pm:1886 SubDomain.pm:1911
+#: ../SubDomain.pm:3358 ../SubDomain.pm:3630 ../SubDomain.pm:3670
+#: ../SubDomain.pm:3880
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
 msgstr "Ukucima %s amangeniso enkangeleko ahambelanayo angaphambili."
 
-#: SubDomain.pm:1910
+#: ../SubDomain.pm:3369
+#, perl-format
+msgid "Adding capability %s to profile."
+msgstr "Kufakwa ukukwazi %s kwinkangeleko."
+
+#: ../SubDomain.pm:3374
+#, perl-format
+msgid "Denying capability %s to profile."
+msgstr "Kwaliwa ukukwazi %s kwinkangeleko."
+
+#: ../SubDomain.pm:3535
+msgid "Path"
+msgstr "Indlela yothungelwano"
+
+#: ../SubDomain.pm:3546 ../SubDomain.pm:3578
+msgid "(owner permissions off)"
+msgstr ""
+
+#: ../SubDomain.pm:3552
+msgid "(force new perms to owner)"
+msgstr ""
+
+#: ../SubDomain.pm:3555
+msgid "(force all rule perms to owner)"
+msgstr ""
+
+#: ../SubDomain.pm:3567
+msgid "Old Mode"
+msgstr "Imo yokusebenza Endala"
+
+#: ../SubDomain.pm:3568
+msgid "New Mode"
+msgstr "Imo yokusebenza Entsha"
+
+#: ../SubDomain.pm:3584
+msgid "(force perms to owner)"
+msgstr ""
+
+#: ../SubDomain.pm:3587
+msgid "Mode"
+msgstr "Imo yokusebenza"
+
+#: ../SubDomain.pm:3669
 #, perl-format
 msgid "Adding %s %s to profile."
 msgstr "Ukufaka %s %s kwinkangeleko."
 
-#: SubDomain.pm:1918
+#: ../SubDomain.pm:3685
 msgid "Enter new path: "
 msgstr "Faka indlela yothungelwano entsha:"
 
-#: SubDomain.pm:1921
+#: ../SubDomain.pm:3688
 msgid "The specified path does not match this log entry:"
 msgstr "Indlela yothungelwano ebaluliweyo ayingqamani nolu ngeniso lwe-log:"
 
-#: SubDomain.pm:1922
+#: ../SubDomain.pm:3689
 msgid "Log Entry"
 msgstr "I-log yoNgeniso"
 
-#: SubDomain.pm:1923
+#: ../SubDomain.pm:3690
 msgid "Entered Path"
 msgstr "Indlela yothungelwano Olufakiweyo"
 
-#: SubDomain.pm:1924
+#: ../SubDomain.pm:3691
 msgid "Do you really want to use this path?"
 msgstr "Ingaba uyafuna ngenene ukusebenzisa le ndlela yothungelwano?"
 
-#: SubDomain.pm:1998
+#: ../SubDomain.pm:3803 ../SubDomain.pm:3855
+#, fuzzy
+msgid "Network Family"
+msgstr "Iziqulathi Zeefayili Zomsebenzi Wothungelwano"
+
+#: ../SubDomain.pm:3806 ../SubDomain.pm:3858
+#, fuzzy
+msgid "Socket Type"
+msgstr "Igama Lesixhobo"
+
+#: ../SubDomain.pm:3906
+#, fuzzy, perl-format
+msgid "Adding network access %s %s to profile."
+msgstr "Ukufaka %s %s kwinkangeleko."
+
+#: ../SubDomain.pm:3925
+#, fuzzy, perl-format
+msgid "Denying network access %s %s to profile."
+msgstr "Kwaliwa ukukwazi %s kwinkangeleko."
+
+#: ../SubDomain.pm:4133
+#, perl-format
+msgid "Reading log entries from %s."
+msgstr "Kufundwa amangeniso e-log ukusuka ku %s."
+
+#: ../SubDomain.pm:4134
+#, perl-format
+msgid "Updating AppArmor profiles in %s."
+msgstr "Kuhlaziywa iinkangeleko ze-AppArmor ku %s."
+
+#: ../SubDomain.pm:4138
+#, fuzzy
+msgid "unknown\n"
+msgstr "akwaziwa"
+
+#: ../SubDomain.pm:4171
 msgid ""
 "The profile analyzer has completed processing the log files.\n"
 "\n"
@@ -364,260 +626,325 @@ msgstr ""
 "\n"
 " Zonke iinkangeleko ezihlaziyiweyo ziza kufakwa kwakhona"
 
-#: SubDomain.pm:2006
+#: ../SubDomain.pm:4177
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "Akukho ziganeko ezingaphathwanga ze-AppArmor ziye zafunyanwa kwi-log yesixokelelwano."
 
-#: SubDomain.pm:2267 SubDomain.pm:2297 SubDomain.pm:2311 SubDomain.pm:2346
-#: SubDomain.pm:2366 SubDomain.pm:2403
+#: ../SubDomain.pm:4238
+msgid ""
+"Select which profile changes you would like to save to the\n"
+"local profile set"
+msgstr ""
+
+#: ../SubDomain.pm:4239
+#, fuzzy
+msgid "Local profile changes"
+msgstr "akukho nkangeleko isebenzayo"
+
+#: ../SubDomain.pm:4266
+msgid "The following local profiles were changed.  Would you like to save them?"
+msgstr ""
+
+#: ../SubDomain.pm:4363
+#, fuzzy
+msgid "Profile Changes"
+msgstr "Izakhelo zenkangelo"
+
+#: ../SubDomain.pm:4976 ../SubDomain.pm:4992 ../SubDomain.pm:5003
+#: ../SubDomain.pm:5011 ../SubDomain.pm:5032 ../SubDomain.pm:5052
+#: ../SubDomain.pm:5061 ../SubDomain.pm:5093 ../SubDomain.pm:5154
+#: ../SubDomain.pm:5205
 #, perl-format
 msgid "%s contains syntax errors."
 msgstr "%s iqulethe iimposiso zobumbo-zivakalisi."
 
-#: SubDomain.pm:2325
+#: ../SubDomain.pm:5112
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
 msgstr "Inkangeleko %s iqulethe i-regexp engasebenzi %s."
 
-#: SubDomain.pm:2534
+#: ../SubDomain.pm:5117
+#, fuzzy, perl-format
+msgid "Profile %s contains invalid mode %s."
+msgstr "Inkangeleko %s iqulethe i-regexp engasebenzi %s."
+
+#: ../SubDomain.pm:5252
+#, fuzzy, perl-format
+msgid "%s contains syntax errors. Line [%s]"
+msgstr "%s iqulethe iimposiso zobumbo-zivakalisi."
+
+#: ../SubDomain.pm:5863
 #, perl-format
 msgid "Writing updated profile for %s."
 msgstr "Kubhalwa inkangeleko ehlaziyiweyo ka %s."
 
-#: SubDomain.pm:2667
+#: ../SubDomain.pm:6368
+msgid "Unknown command"
+msgstr "Umyalelo ongaziwa"
+
+#: ../SubDomain.pm:6376
+#, fuzzy
+msgid "Invalid hotkey in"
+msgstr "Iinkcukacha zeqhosha azisebenziseki."
+
+#: ../SubDomain.pm:6386
+msgid "Duplicate hotkey for"
+msgstr ""
+
+#: ../SubDomain.pm:6407
+#, fuzzy
+msgid "Invalid hotkey in default item"
+msgstr "Indlela ehlala ikhona ayisebenzi:"
+
+#: ../SubDomain.pm:6416
+#, fuzzy
+msgid "Invalid default"
+msgstr "Indlela ehlala ikhona ayisebenzi:"
+
+#: ../Reports.pm:443 ../Reports.pm:532 ../Reports.pm:1480
 #, perl-format
-msgid "Include file %s contains invalid regexp %s."
-msgstr "Ifayili equka %s equlethe i-regexp engasebenzi %s."
-
-#: SubDomain.pm:2690
-#, perl-format
-msgid "Include file %s contains syntax errors or is not a valid #include file."
-msgstr "Iquka ifayili %s equlethe iimposiso zobumbo-sivakalisi okanye yifayili equka#engasebenzi."
-
-#: unconfined:51
-#, perl-format
-msgid "Usage: %s [ --paranoid ]\n"
-msgstr "Ukusetyenziswa: %s [ --paranoid ]\n"
-
-#: unconfined:57
-msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "Ummandlana awubonakali uqalisiwe. Nceda yenza ummandlana usebenza kwaye zama kwakhona."
-
-#: unconfined:61
-msgid "Can't read /proc\n"
-msgstr "Ayikwazi kufunda i /proc\n"
-
-#: unconfined:91 unconfined:93
-msgid "not confined\n"
-msgstr "Ayixinananga\n"
-
-#: unconfined:102 unconfined:104
-msgid "confined by"
-msgstr "ixinene nge"
-
 msgid "DBI Execution failed: %s."
 msgstr "DBI Execution failed: %s."
 
+#: ../Reports.pm:556
+#, perl-format
 msgid "Couldn't open file: %s."
 msgstr "Couldn't open file: %s."
 
+#: ../Reports.pm:560
 msgid "No type value passed.  Unable to determine page count."
 msgstr "No type value passed.  Unable to determine page count."
 
+#: ../Reports.pm:626
+#, perl-format
 msgid "Failed copying %s."
 msgstr "Failed copying %s."
 
+#: ../Reports.pm:750
+#, perl-format
 msgid "Export Log Error: Couldn't open %s"
 msgstr "Export Log Error: Couldn't open %s"
 
+#: ../Reports.pm:772
 msgid "Fatal error.  No report name given. Exiting."
 msgstr "Fatal error.  No report name given. Exiting."
 
-#, fuzzy
+#: ../Reports.pm:781
+#, fuzzy, perl-format
 msgid ""
 "Unable to get configuration info for %s.\n"
 "                Unable to find %s."
 msgstr "Unable to get configuration information for %s.  Unable to find %s."
 
+#: ../Reports.pm:828
+#, perl-format
 msgid "Failed to parse: %s."
 msgstr "Failed to parse: %s."
 
+#: ../Reports.pm:837
+#, perl-format
 msgid "Fatal Error.  Couldn't open %s."
 msgstr "Fatal Error.  Couldn't open %s."
 
+#: ../Reports.pm:885
+#, perl-format
 msgid "Fatal Error.  Can't run %s.  Exiting."
 msgstr "Fatal Error.  Can't run %s.  Exiting."
 
+#: ../Reports.pm:925
+#, perl-format
 msgid "Fatal Error.  No directory, %s, found.  Exiting."
 msgstr "Fatal Error.  No directory, %s, found.  Exiting."
 
+#: ../Reports.pm:943
+#, perl-format
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
 msgstr "Fatal Error.  Couldn't open %s.  Exiting"
 
+#: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
+#, perl-format
 msgid "DBI Execution failed: %s"
 msgstr "DBI Execution failed: %s"
 
+#: ../Reports.pm:1592
+#, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"
 msgstr "Fatal Error.  getArchReport() couldn't open %s"
 
-msgid "(I)nherit"
-msgstr "(I)nherit"
+#~ msgid "Are you sure you want to save the current set of profile changes and exit?"
+#~ msgstr "Uqinisekile ukuba ufuna ukugcina iseti yangoku yotshintsho lwenkangeleko uphume?"
 
-msgid "(P)rofile"
-msgstr "(P)rofile"
+#~ msgid "Saving all changes."
+#~ msgstr "Kugcinwa lonke utshintsho."
 
-msgid "(D)eny"
-msgstr "(D)eny"
+#~ msgid "Include file %s contains invalid regexp %s."
+#~ msgstr "Ifayili equka %s equlethe i-regexp engasebenzi %s."
 
-msgid "Abo(r)t"
-msgstr "Abo(r)t"
+#, fuzzy
+#~ msgid "Include file %s contains invalid mode %s."
+#~ msgstr "Ifayili equka %s equlethe i-regexp engasebenzi %s."
 
-msgid "(F)inish"
-msgstr "(F)inish"
+#~ msgid "Include file %s contains syntax errors or is not a valid #include file."
+#~ msgstr "Iquka ifayili %s equlethe iimposiso zobumbo-sivakalisi okanye yifayili equka#engasebenzi."
 
-msgid "(A)llow"
-msgstr "(A)llow"
+#~ msgid "(I)nherit"
+#~ msgstr "(I)nherit"
 
-msgid "(N)ew"
-msgstr "(N)ew"
+#~ msgid "(P)rofile"
+#~ msgstr "(P)rofile"
 
-msgid "(G)lob"
-msgstr "(G)lob"
+#~ msgid "(D)eny"
+#~ msgstr "(D)eny"
 
-msgid "Glob w/(E)xt"
-msgstr "Glob w/(E)xt"
+#~ msgid "Abo(r)t"
+#~ msgstr "Abo(r)t"
 
-msgid "&Browse"
-msgstr "&Browse"
+#~ msgid "(F)inish"
+#~ msgstr "(F)inish"
 
-msgid "&Create Profile"
-msgstr "&Create Profile"
+#~ msgid "(A)llow"
+#~ msgstr "(A)llow"
 
-msgid "&Yes"
-msgstr "&Yes"
+#~ msgid "(N)ew"
+#~ msgstr "(N)ew"
 
-msgid "&No"
-msgstr "&No"
+#~ msgid "(G)lob"
+#~ msgstr "(G)lob"
 
-msgid "&Abort"
-msgstr "&Abort"
+#~ msgid "Glob w/(E)xt"
+#~ msgstr "Glob w/(E)xt"
 
-msgid "&Back"
-msgstr "&Back"
+#~ msgid "&Browse"
+#~ msgstr "&Browse"
 
-msgid "(S)can system log for SubDomain events"
-msgstr "(S)can system log for AppArmor events"
+#~ msgid "&Create Profile"
+#~ msgstr "&Create Profile"
+
+#~ msgid "&Yes"
+#~ msgstr "&Yes"
+
+#~ msgid "&No"
+#~ msgstr "&No"
+
+#~ msgid "&Abort"
+#~ msgstr "&Abort"
+
+#~ msgid "&Back"
+#~ msgstr "&Back"
+
+#~ msgid "(S)can system log for SubDomain events"
+#~ msgstr "Scan system log for SubDomain events"
 
 # ###############################################################################
 # Old yast2-agents.po
-msgid "Unable to open"
-msgstr "Unable to open"
+#~ msgid "Unable to open"
+#~ msgstr "Unable to open"
 
-msgid "Couldn't save query."
-msgstr "Couldn't save query."
+#~ msgid "Couldn't save query."
+#~ msgstr "Couldn't save query."
 
-msgid "Couldn't retrieve query."
-msgstr "Couldn't retrieve query."
+#~ msgid "Couldn't retrieve query."
+#~ msgstr "Couldn't retrieve query."
 
-msgid "# Security Incident Report - Generated by AppArmor\n"
-msgstr "# Security Incident Report--Generated by AppArmor\n"
+#~ msgid "# Security Incident Report - Generated by AppArmor\n"
+#~ msgstr "# Security Incident Report--Generated by AppArmor\n"
 
-msgid "# Period: %s - %s\n"
-msgstr "# Period: %s-%s\n"
+#~ msgid "# Period: %s - %s\n"
+#~ msgstr "# Period: %s-%s\n"
 
-msgid "<h3>Security Incident Report - Generated by AppArmor</h3>\n"
-msgstr "<h3>Security Incident Report--Generated by AppArmor</h3>\n"
+#~ msgid "<h3>Security Incident Report - Generated by AppArmor</h3>\n"
+#~ msgstr "<h3>Security Incident Report--Generated by AppArmor</h3>\n"
 
-msgid "<h4>Period: %s - %s</h4>\n"
-msgstr "<h4>Period: %s-%s</h4>\n"
+#~ msgid "<h4>Period: %s - %s</h4>\n"
+#~ msgstr "<h4>Period: %s-%s</h4>\n"
 
-msgid "ag_reports_confined: Couldn't open %s for writing."
-msgstr "ag_reports_confined: Couldn't open %s for writing."
+#~ msgid "ag_reports_confined: Couldn't open %s for writing."
+#~ msgstr "ag_reports_confined: Couldn't open %s for writing."
 
-msgid "Failure in readMultiAudLog() - couldn't open %s."
-msgstr "Failure in readMultiAudLog() - couldn't open %s."
+#~ msgid "Failure in readMultiAudLog() - couldn't open %s."
+#~ msgstr "Failure in readMultiAudLog() - couldn't open %s."
 
-msgid "Problem in readMultiAudLog() - couldn't open %s/%s."
-msgstr "Problem in readMultiAudLog()--could not open %s/%s."
+#~ msgid "Problem in readMultiAudLog() - couldn't open %s/%s."
+#~ msgstr "Problem in readMultiAudLog()--could not open %s/%s."
 
-msgid "readAudLog() wasn't passed an input file."
-msgstr "readAudLog() wasn't passed an input file."
+#~ msgid "readAudLog() wasn't passed an input file."
+#~ msgstr "readAudLog() wasn't passed an input file."
 
-msgid "readAudLog() couldn't open %s."
-msgstr "readAudLog() could not open %s."
+#~ msgid "readAudLog() couldn't open %s."
+#~ msgstr "readAudLog() could not open %s."
 
-msgid "Can't run %s.  Exiting."
-msgstr "Can't run %s.  Exiting."
+#~ msgid "Can't run %s.  Exiting."
+#~ msgstr "Can't run %s.  Exiting."
 
-msgid "ag_reports_confined: Missing instruction or argument!"
-msgstr "ag_reports_confined: Missing instruction or argument."
+#~ msgid "ag_reports_confined: Missing instruction or argument!"
+#~ msgstr "ag_reports_confined: Missing instruction or argument."
 
-msgid "Failure in readMultiEssLog() - couldn't open"
-msgstr "Failure in readMultiEssLog() - couldn't open"
+#~ msgid "Failure in readMultiEssLog() - couldn't open"
+#~ msgstr "Failure in readMultiEssLog() - couldn't open"
 
-msgid "Problem in readMultiEssLog() - couldn't open"
-msgstr "Problem in readMultiEssLog() - couldn't open"
+#~ msgid "Problem in readMultiEssLog() - couldn't open"
+#~ msgstr "Problem in readMultiEssLog() - couldn't open"
 
-msgid "readEssLog() wasn't passed an input file."
-msgstr "readEssLog() wasn't passed an input file."
+#~ msgid "readEssLog() wasn't passed an input file."
+#~ msgstr "readEssLog() wasn't passed an input file."
 
-msgid "readEssLog() couldn't open %s"
-msgstr "readEssLog() could not open %s."
+#~ msgid "readEssLog() couldn't open %s"
+#~ msgstr "readEssLog() could not open %s."
 
-msgid "ag_logparse: Unknown instruction %s or argument: %s"
-msgstr "ag_logparse: Unknown instruction %s or argument: %s"
+#~ msgid "ag_logparse: Unknown instruction %s or argument: %s"
+#~ msgstr "ag_logparse: Unknown instruction %s or argument: %s"
 
-msgid "ag_reports_parse: Couldn't open %s for writing."
-msgstr "ag_reports_parse: Couldn't open %s for writing."
+#~ msgid "ag_reports_parse: Couldn't open %s for writing."
+#~ msgstr "ag_reports_parse: Couldn't open %s for writing."
 
-msgid "ag_reports_parse: No archived reports found."
-msgstr "ag_reports_parse: No archived reports found."
+#~ msgid "ag_reports_parse: No archived reports found."
+#~ msgstr "ag_reports_parse: No archived reports found."
 
-msgid "ag_reports_parse: Can't open directory %s: %s"
-msgstr "ag_reports_parse: Can't open directory %s: %s"
+#~ msgid "ag_reports_parse: Can't open directory %s: %s"
+#~ msgstr "ag_reports_parse: Can't open directory %s: %s"
 
-msgid "ag_reports_parse: Unknown instruction %s or argument: %s"
-msgstr "ag_reports_parse: Unknown instruction %s or argument: %s"
+#~ msgid "ag_reports_parse: Unknown instruction %s or argument: %s"
+#~ msgstr "ag_reports_parse: Unknown instruction %s or argument: %s"
 
-msgid "Couldn't find %s.  Unable to create crontab.  Exiting."
-msgstr "Couldn't find %s.  Unable to create crontab.  Exiting."
+#~ msgid "Couldn't find %s.  Unable to create crontab.  Exiting."
+#~ msgstr "Couldn't find %s.  Unable to create crontab.  Exiting."
 
-msgid "Couldn't open %s."
-msgstr "Couldn't open %s."
+#~ msgid "Couldn't open %s."
+#~ msgstr "Couldn't open %s."
 
-msgid "Couldn't open %s.  Unable to add report: %s"
-msgstr "Couldn't open %s.  Unable to add report: %s"
+#~ msgid "Couldn't open %s.  Unable to add report: %s"
+#~ msgstr "Couldn't open %s.  Unable to add report: %s"
 
-msgid "Duplicate report name not allowed. Didn't schedule new report: %s"
-msgstr "Duplicate report name not allowed. Didn't schedule new report: %s"
+#~ msgid "Duplicate report name not allowed. Didn't schedule new report: %s"
+#~ msgstr "Duplicate report name not allowed. Didn't schedule new report: %s"
 
-msgid "Couldn't open %s.  No changes performed."
-msgstr "Couldn't open %s.  No changes performed."
+#~ msgid "Couldn't open %s.  No changes performed."
+#~ msgstr "Couldn't open %s.  No changes performed."
 
-msgid "ag_reports_sched: Unknown instruction %s or arg: %s"
-msgstr "ag_reports_sched: Unknown instruction %s or arg: %s"
+#~ msgid "ag_reports_sched: Unknown instruction %s or arg: %s"
+#~ msgstr "ag_reports_sched: Unknown instruction %s or arg: %s"
 
-msgid "&Create"
-msgstr "&Dala"
+#~ msgid "&Create"
+#~ msgstr "&Dala"
 
-msgid "Select Program to Profile"
-msgstr "Khetha iProgram kwiProfayili"
+#~ msgid "Select Program to Profile"
+#~ msgstr "Khetha iProgram kwiProfayili"
 
-msgid ""
-"%s is currently marked as a program that should not have\n"
-"it's own profile.  Usually, programs are marked this way\n"
-"if creating a profile for them is likely to break the\n"
-"rest of the system.  If you know what you're doing and\n"
-"are certain you want to create a profile for this program,\n"
-"edit the corresponding entry in the [qualifiers] section\n"
-"in /etc/apparmor/logprof.conf."
-msgstr ""
-"%s okwangoku iphawulwe njengenkqubo ekungafunekanga\n"
-"ukuba ibe nenkangeleko yayo.  Ngokuqhelekileyo, iinkqubo ziphawulwe ngale ndlela\n"
-"  xa kudalwa inkangeleko yazo zilindeleke ukuba zakwaphule sonke isixokelelwano.  Ukuba uyayazi into oyenzayo kwaye\n"
-" uqinisekile ukuba ufuna ukudala inkangeleko yale nkqubo, \n"
-" hlela ungeniso oluhambelanayo kwi[izichazi] sahluko\n"
-"  kwi /njl/apparmor/logprof.conf."
+#~ msgid ""
+#~ "%s is currently marked as a program that should not have\n"
+#~ "it's own profile.  Usually, programs are marked this way\n"
+#~ "if creating a profile for them is likely to break the\n"
+#~ "rest of the system.  If you know what you're doing and\n"
+#~ "are certain you want to create a profile for this program,\n"
+#~ "edit the corresponding entry in the [qualifiers] section\n"
+#~ "in /etc/apparmor/logprof.conf."
+#~ msgstr ""
+#~ "%s okwangoku iphawulwe njengenkqubo ekungafunekanga\n"
+#~ "ukuba ibe nenkangeleko yayo.  Ngokuqhelekileyo, iinkqubo ziphawulwe ngale ndlela\n"
+#~ "  xa kudalwa inkangeleko yazo zilindeleke ukuba zakwaphule sonke isixokelelwano.  Ukuba uyayazi into oyenzayo kwaye\n"
+#~ " uqinisekile ukuba ufuna ukudala inkangeleko yale nkqubo, \n"
+#~ " hlela ungeniso oluhambelanayo kwi[izichazi] sahluko\n"
+#~ "  kwi /njl/apparmor/logprof.conf."
 
-msgid "Are you sure you want to exit?"
-msgstr "Uqinisekile ukuba ufuphuma?"
+#~ msgid "Are you sure you want to exit?"
+#~ msgstr "Uqinisekile ukuba ufuphuma?"
