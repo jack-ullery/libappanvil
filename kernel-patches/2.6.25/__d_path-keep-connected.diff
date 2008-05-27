@@ -9,10 +9,10 @@ after the fact.
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/dcache.c            |   26 +++++++-------------------
- fs/namespace.c         |    2 +-
- include/linux/dcache.h |    2 +-
- 3 files changed, 9 insertions(+), 21 deletions(-)
+ fs/dcache.c            |   56 ++++++++++++++++++-------------------------------
+ fs/namespace.c         |    2 -
+ include/linux/dcache.h |    2 -
+ 3 files changed, 23 insertions(+), 37 deletions(-)
 
 --- a/fs/dcache.c
 +++ b/fs/dcache.c
@@ -24,34 +24,58 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
   *
   * Convert a dentry into an ASCII path name. If the entry has been deleted,
   * then if @fail_deleted is true, ERR_PTR(-ENOENT) is returned. Otherwise,
-@@ -1768,7 +1769,7 @@ shouldnt_be_hashed:
+@@ -1768,9 +1769,10 @@ shouldnt_be_hashed:
   */
  char *__d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
  	       struct path *root, char *buffer, int buflen,
 -	       int fail_deleted)
 +	       int fail_deleted, int disconnect)
  {
- 	int namelen, is_slash, vfsmount_locked = 0;
+-	int namelen, is_slash, vfsmount_locked = 0;
++	int namelen, vfsmount_locked = 0;
++	const unsigned char *name;
  
-@@ -1833,7 +1834,7 @@ global_root:
+ 	if (buflen < 2)
+ 		return ERR_PTR(-ENAMETOOLONG);
+@@ -1832,22 +1834,21 @@ global_root:
+ 	 * unconnected dentry, or the file is on a pseudo filesystem.
  	 */
  	namelen = dentry->d_name.len;
- 	is_slash = (namelen == 1 && *dentry->d_name.name == '/');
+-	is_slash = (namelen == 1 && *dentry->d_name.name == '/');
 -	if (is_slash || (dentry->d_sb->s_flags & MS_NOUSER)) {
-+	if (disconnect && (is_slash || (dentry->d_sb->s_flags & MS_NOUSER))) {
- 		/*
- 		 * Make sure we won't return a pathname starting with '/'.
- 		 *
-@@ -1848,6 +1849,8 @@ global_root:
- 		}
- 		if (is_slash)
- 			goto out;
-+	} else if (is_slash && *buffer == '/') {
-+		goto out;
+-		/*
+-		 * Make sure we won't return a pathname starting with '/'.
+-		 *
+-		 * Historically, we also glue together the root dentry and
+-		 * remaining name for pseudo filesystems like pipefs, which
+-		 * have the MS_NOUSER flag set. This results in pathnames
+-		 * like "pipe:[439336]".
+-		 */
+-		if (*buffer == '/') {
+-			buffer++;
+-			buflen++;
+-		}
+-		if (is_slash)
+-			goto out;
++	name = dentry->d_name.name;
++
++	/*
++	 * If this is a root dentry, then overwrite the slash.  This
++	 * will also DTRT with pseudo filesystems which have root
++	 * dentries named "foo:".
++	 */
++	if (IS_ROOT(dentry)) {
++		buffer++;
++		buflen++;
++	}
++	if (disconnect && *name == '/') {
++	    /* Make sure we won't return a pathname starting with '/' */
++		name++;
++		namelen--;
  	}
  	if (buflen < namelen)
  		goto Elong;
-@@ -1860,19 +1863,6 @@ Elong:
+@@ -1860,19 +1861,6 @@ Elong:
  	goto out;
  }
  
@@ -71,7 +95,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  /**
   * d_path - return the path of a dentry
   * @path: path to report
-@@ -1905,8 +1895,7 @@ char *d_path(struct path *path, char *bu
+@@ -1905,8 +1893,7 @@ char *d_path(struct path *path, char *bu
  	root = current->fs->root;
  	path_get(&current->fs->root);
  	read_unlock(&current->fs->lock);
@@ -81,7 +105,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  	path_put(&root);
  	return res;
  }
-@@ -1966,8 +1955,7 @@ asmlinkage long sys_getcwd(char __user *
+@@ -1966,8 +1953,7 @@ asmlinkage long sys_getcwd(char __user *
  	path_get(&current->fs->root);
  	read_unlock(&current->fs->lock);
  
