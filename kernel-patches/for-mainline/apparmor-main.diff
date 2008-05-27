@@ -941,7 +941,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	default:
 +		/* all other indexes are named transitions */
 +		index = AA_EXEC_INDEX(xmode);
-+		if (index - 4 > profile->exec_table_size) {
++		if (index - 4 >= profile->exec_table_size) {
 +			sa->info = "invalid named transition - exec failed";
 +			sa->error_code = -EACCES;
 +			new_profile = ERR_PTR(-EACCES);

@@ -10,8 +10,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 ---
  security/apparmor/match.c            |  364 ++++++++++++++
  security/apparmor/match.h            |   87 +++
- security/apparmor/module_interface.c |  874 +++++++++++++++++++++++++++++++++++
- 3 files changed, 1325 insertions(+)
+ security/apparmor/module_interface.c |  875 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 1326 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/match.c
@@ -472,7 +472,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +#endif /* __MATCH_H */
 --- /dev/null
 +++ b/security/apparmor/module_interface.c
-@@ -0,0 +1,874 @@
+@@ -0,0 +1,875 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -778,6 +778,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +			goto fail;
 +		if (!aa_is_nameX(e, AA_STRUCTEND, NULL))
 +			goto fail;
++		profile->exec_table_size = size;
 +	}
 +	return 1;
 +

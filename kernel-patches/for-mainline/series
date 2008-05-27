@@ -115,9 +115,9 @@ apparmor-network.diff
 #fix-net.diff
 apparmor-rlimits.diff
 audit-log-type-in-syslog.diff
-fix-named-transitions.diff
-apparmor-xmods-accept-entry.diff
-apparmor-split-audit-deny.diff
-apparmor-cond-uid.diff
-apparmor-quiet-control.diff
-apparmor-direct-complain.diff
+#fix-named-transitions.diff
+#apparmor-xmods-accept-entry.diff
+#apparmor-split-audit-deny.diff
+#apparmor-cond-uid.diff
+#apparmor-quiet-control.diff
+#apparmor-direct-complain.diff
