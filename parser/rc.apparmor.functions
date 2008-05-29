@@ -374,10 +374,7 @@ remove_profiles() {
 
 	retval=0
 	sed -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" | while read profile ; do
-		if ( echo "${profile}" | grep -q "^/" ] ; then
-			profile="profile_$profile";
-		fi
-		echo "\"$profile\" { }" | $PARSER -R >/dev/null
+		echo -n "$profile" > "$SFS_MOUNTPOINT/.remove"
 		rc=$?
 		if [ ${rc} -ne 0 ] ; then 
 			retval=${rc}
