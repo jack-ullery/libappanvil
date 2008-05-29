@@ -542,7 +542,11 @@ static void __dump_policy_hatnames(const void *nodep, const VISIT value,
 	if (value == preorder || value == endorder)
 		return;
 
-	printf("%s^%s\n", __dump_policy_name->name, (*t)->sub_name);
+	if (regex_type == AARE_DFA) {
+	    printf("%s//%s\n", __dump_policy_name->name, (*t)->name);
+	} else {
+	    printf("%s^%s\n", __dump_policy_name->name, (*t)->name);
+	}
 }
 
 void dump_policy_hatnames(struct codomain *cod)
