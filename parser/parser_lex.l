@@ -389,8 +389,7 @@ LT_EQUAL	<=
 
 [^\n]			{
 			  /* Something we didn't expect */
-			yylval = (YYSTYPE) strdup(yytext);
-			yyerror(_("Found unexpected character: '%s'"), yylval);
+			yyerror(_("Found unexpected character: '%s'"), yytext);
 			}
 
 %%
