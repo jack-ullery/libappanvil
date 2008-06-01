@@ -920,8 +920,8 @@ sub autodep_base($$) {
              ($repo_cfg->{repository}{enabled} eq "later") ) {
                 UI_ask_to_enable_repo();
         }
-	if ((not defined $owner_toggle)) {
-	    $owner_toggle = 0;
+	if ((not defined $default_owner_prompt)) {
+	    $default_owner_prompt = 0;
 	}
     }
 
