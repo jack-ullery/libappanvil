@@ -920,9 +920,6 @@ sub autodep_base($$) {
              ($repo_cfg->{repository}{enabled} eq "later") ) {
                 UI_ask_to_enable_repo();
         }
-	if ((not defined $default_owner_prompt)) {
-	    $default_owner_prompt = 0;
-	}
     }
 
     my $fqdbin;
@@ -6604,6 +6601,9 @@ sub parse_event($) {
 # required initialization
 
 $cfg = read_config("logprof.conf");
+if ((not defined $cfg->{settings}{default_owner_prompt})) {
+    $cfg->{settings}{default_owner_prompt} = 0;
+}
 
 $profiledir = find_first_dir($cfg->{settings}{profiledir}) || "/etc/apparmor.d";
 unless (-d $profiledir) { fatal_error "Can't find AppArmor profiles."; }
