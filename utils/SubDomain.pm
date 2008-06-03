@@ -545,7 +545,7 @@ sub name_to_prof_filename($) {
     my $bin    = shift;
     my $filename;
 
-    unless ($bin =~ /^($profiledir|profile_)/) {
+    unless ($bin =~ /^($profiledir)/) {
 	my $fqdbin = findexecutable($bin);
 	if ($fqdbin) {
 	    $filename = getprofilefilename($fqdbin);
@@ -555,15 +555,15 @@ sub name_to_prof_filename($) {
 
     if ($bin =~ /^$profiledir(.*)/) {
 	my $profile = $1;
-	return ($bin, $profile) if -f $bin;
+	return ($bin, $profile);
     } elsif ($bin =~ /^\//) {
 	$filename = getprofilefilename($bin);
-	return ($filename, $bin) if -f $filename;
+	return ($filename, $bin);
     } else {
 	# not an absolute path try it as a profile_
 	$bin = $1 if ($bin !~ /^profile_(.*)/);
 	$filename = getprofilefilename($bin);
-	return ($filename, "profile_${bin}") if -f $filename;
+	return ($filename, "profile_${bin}");
     }
     return undef;
 }
@@ -726,7 +726,7 @@ sub create_new_profile {
     # if the executable exists on this system, pull in extra dependencies
     if (-f $fqdbin) {
         my $hashbang = head($fqdbin);
-        if ($hashbang =~ /^#!\s*(\S+)/) {
+        if ($hashband && $hashbang =~ /^#!\s*(\S+)/) {
             my $interpreter = get_full_path($1);
             $profile->{$fqdbin}{allow}{path}->{$interpreter}{mode} = str_to_mode("ix");
             $profile->{$fqdbin}{allow}{path}->{$interpreter}{audit} = 0;
@@ -2930,7 +2930,7 @@ sub UI_SelectUpdatedRepoProfile ($$) {
         if ($ans eq "CMD_UPDATE_PROFILE") {
             eval {
                 my $profile_data =
-                  parse_profile_data($p->{profile}, "repository profile", 0);
+                  parse_profile_data($p->{profile}, getprofilefilename($profile), 0);
                 if ($profile_data) {
                     attach_profile_data(\%sd, $profile_data);
                     $changed{$profile} = 1;
@@ -3090,7 +3090,7 @@ sub parse_repo_profile {
     my ($fqdbin, $repo_url, $profile) = @_;
 
     my $profile_data = eval {
-        parse_profile_data($profile->{profile}, "repository profile", 0);
+        parse_profile_data($profile->{profile}, getprofilefilename($fqdbin), 0);
     };
     if ($@) {
         print STDERR "PARSING ERROR: $@\n";
