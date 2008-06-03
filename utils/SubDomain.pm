@@ -726,7 +726,7 @@ sub create_new_profile {
     # if the executable exists on this system, pull in extra dependencies
     if (-f $fqdbin) {
         my $hashbang = head($fqdbin);
-        if ($hashband && $hashbang =~ /^#!\s*(\S+)/) {
+        if ($hashbang && $hashbang =~ /^#!\s*(\S+)/) {
             my $interpreter = get_full_path($1);
             $profile->{$fqdbin}{allow}{path}->{$interpreter}{mode} = str_to_mode("ix");
             $profile->{$fqdbin}{allow}{path}->{$interpreter}{audit} = 0;
@@ -795,12 +795,13 @@ sub get_profile {
         # set the profile to complain mode
         my $uname = gettext( "Inactive local profile for ") . $fqdbin;
         $inactive_profile->{$fqdbin}{$fqdbin}{flags} = "complain";
+	# inactive profiles store where they came from
+	delete $inactive_profile->{$fqdbin}{$fqdbin}{filename};
         $profile_hash{$uname} =
             {
               "username"     => $uname,
               "profile_type" => "INACTIVE_LOCAL",
-              "profile"      => serialize_profile(
-                                  ${%$inactive_profile}{$fqdbin},
+              "profile"      => serialize_profile($inactive_profile->{$fqdbin},
                                   $fqdbin
                                 ),
               "profile_data" => $inactive_profile,

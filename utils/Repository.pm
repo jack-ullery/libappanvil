@@ -289,6 +289,13 @@ sub fetch_usernames_from_uids ($) {
     }
     if (@uids) {
         my $repo_client = get_repo_client( $repo_url );
+	#RPC::XML will serialize the array into XML with the is_utf8 flag set
+	#which causes, HTTP:Message to fail.  Looping on the array elements
+	#stops this from happening, and since these are all numbers it
+	#will not cause problems.
+	my $foo (@uids) {
+	    Encode::_utf8_off($foo);
+	}
         my $res = $repo_client->send_request('LoginNamesFromUserIds', [@uids]);
         if (did_result_succeed($res)) {
             my @usernames = @{ $res->value };
