@@ -426,7 +426,7 @@ __apparmor_restart() {
 	MODULE_PLIST=$(mktemp ${APPARMOR_TMPDIR}/tmp.XXXXXXXX)
 	sed  -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" | sort >"$MODULE_PLIST"
 	sort "$PNAMES_LIST" | comm -2 -3 "$MODULE_PLIST" - | while read profile ; do
-		echo "\"$profile\" {}" | $PARSER -R >/dev/null
+		echo -n "$profile" > "$SFS_MOUNTPOINT/.remove"
 	done
 	rm "$MODULE_PLIST"
 	rm "$PNAMES_LIST"

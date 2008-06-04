@@ -102,8 +102,7 @@ static int add_named_transition(struct codomain *cod, struct cod_entry *entry)
 	if (!entry->namespace) {
 		char *sub = strstr(entry->nt_name, "//");
 		/* does the subprofile name match the rule */
-#if 0
-/* disable cix checking as cod->name is not available.  Need to rework */
+
 		if (sub && strncmp(cod->name, sub, sub - entry->nt_name) &&
 		    strcmp(sub + 2, entry->name) == 0) {
 			free(entry->nt_name);
@@ -129,7 +128,6 @@ static int add_named_transition(struct codomain *cod, struct cod_entry *entry)
 			free(entry->nt_name);
 			entry->nt_name = name;
 		}
-#endif
 	}
 	if (entry->namespace) {
 		name = malloc(strlen(entry->namespace) + strlen(entry->nt_name) + 3);
@@ -162,24 +160,32 @@ static int add_named_transition(struct codomain *cod, struct cod_entry *entry)
 
 void add_entry_to_policy(struct codomain *cod, struct cod_entry *entry)
 {
-	if (entry->nt_name) {
-		int mode = 0;
-		int n = add_named_transition(cod, entry);
-		if (!n) {
-			PERROR("Profile %s has to many specified profile transitions.\n", cod->name);
-			exit(1);
-		}
-		if (entry->mode & AA_USER_EXEC)
-			mode |= SHIFT_MODE(n << 10, AA_USER_SHIFT);
-		if (entry->mode & AA_OTHER_EXEC)
-			mode |= SHIFT_MODE(n << 10, AA_OTHER_SHIFT);
-		entry->mode = ((entry->mode & ~AA_ALL_EXEC_MODIFIERS) |
-			       (mode & AA_ALL_EXEC_MODIFIERS));
-		entry->namespace = NULL;
-		entry->nt_name = NULL;
-	}
 	entry->next = cod->entries;
 	cod->entries = entry;
+}
+
+void post_process_nt_entries(struct codomain *cod)
+{
+	struct cod_entry *entry;
+
+	list_for_each(cod->entries, entry) {
+		if (entry->nt_name) {
+			int mode = 0;
+			int n = add_named_transition(cod, entry);
+			if (!n) {
+				PERROR("Profile %s has to many specified profile transitions.\n", cod->name);
+				exit(1);
+			}
+			if (entry->mode & AA_USER_EXEC)
+				mode |= SHIFT_MODE(n << 10, AA_USER_SHIFT);
+			if (entry->mode & AA_OTHER_EXEC)
+				mode |= SHIFT_MODE(n << 10, AA_OTHER_SHIFT);
+			entry->mode = ((entry->mode & ~AA_ALL_EXEC_MODIFIERS) |
+				       (mode & AA_ALL_EXEC_MODIFIERS));
+			entry->namespace = NULL;
+			entry->nt_name = NULL;
+		}
+	}
 }
 
 static void __merge_rules(const void *nodep, const VISIT value,

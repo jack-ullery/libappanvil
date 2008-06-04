@@ -224,6 +224,7 @@ profile:	opt_profile_flag TOK_ID flags TOK_OPEN rules TOK_CLOSE
 		if (force_complain)
 			cod->flags = force_complain_flags;
 
+		post_process_nt_entries(cod);
 		PDEBUG("%s: flags='%s%s'\n",
 		       $2,
 		       cod->flags.complain ? "complain, " : "",
@@ -245,7 +246,7 @@ profile:	opt_profile_flag TOK_COLON TOK_ID TOK_COLON TOK_ID flags TOK_OPEN rules
 		cod->flags = $6;
 		if (force_complain)
 			cod->flags = force_complain_flags;
-
+		post_process_nt_entries(cod);
 		PDEBUG("%s: flags='%s%s'\n",
 		       $3,
 		       cod->flags.complain ? "complain, " : "",
@@ -1122,6 +1123,9 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 		return entry;
 }
 
+/* Note: NOT currently in use, used for 
+ * /foo x -> { /bah, }   style transitions
+ */
 void add_local_entry(struct codomain *cod)
 {
 	/* ugh this has to be called after the hat is attached to its parent */
