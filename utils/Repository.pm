@@ -293,7 +293,7 @@ sub fetch_usernames_from_uids ($) {
 	#which causes, HTTP:Message to fail.  Looping on the array elements
 	#stops this from happening, and since these are all numbers it
 	#will not cause problems.
-	my $foo (@uids) {
+	for my $foo (@uids) {
 	    Encode::_utf8_off($foo);
 	}
         my $res = $repo_client->send_request('LoginNamesFromUserIds', [@uids]);
