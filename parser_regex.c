@@ -602,7 +602,9 @@ int process_regex(struct codomain *cod)
 
 	if (regex_type == AARE_DFA && cod->dfarule_count > 0) {
 		cod->dfa = aare_create_dfa(cod->dfarules, 0, &cod->dfa_size);
-		if (!cod->dfa)
+		aare_delete_ruleset(cod->dfarules);
+		cod->dfarules = NULL;
+ 		if (!cod->dfa)
 			goto out;
 /*
 		if (cod->dfa_size == 0) {

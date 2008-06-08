@@ -1684,7 +1684,7 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 		    } else {
 //fprintf(stderr, "Adding deny ai %d mask 0x%x audit 0x%x\n", ai, mask, audit & mask);
 			    deny_flags[ai][n] = new DenyMatchFlag(mask, audit&mask);
-			    flag = deny_flags[ai][n];
+			    flag = deny_flags[ai][n]->dup();
 		    }
 	    } else if (mask & AA_EXEC_BITS) {
 		    uint32_t eperm = 0;
@@ -1702,14 +1702,14 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 				    flag = exact_match_flags[ai][index]->dup();
 			    } else {
 				    exact_match_flags[ai][index] = new ExactMatchFlag(eperm, audit&mask);
-				    flag = exact_match_flags[ai][index];
+				    flag = exact_match_flags[ai][index]->dup();
 			    }
 		    } else {
 			    if (exec_match_flags[ai][index]) {
 				    flag = exec_match_flags[ai][index]->dup();
 			    } else {
 				    exec_match_flags[ai][index] = new MatchFlag(eperm, audit&mask);
-				    flag = exec_match_flags[ai][index];
+				    flag = exec_match_flags[ai][index]->dup();
 			    }
 		    }
 	    } else {
@@ -1717,7 +1717,7 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 		        flag = match_flags[ai][n]->dup();
 		    } else {
 			    match_flags[ai][n] = new MatchFlag(mask, audit&mask);
-			flag = match_flags[ai][n];
+			    flag = match_flags[ai][n]->dup();
 		    }
 	    }
 	    if (accept)
