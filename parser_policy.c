@@ -362,15 +362,14 @@ static void __add_hat_rules_parent(const void *nodep, const VISIT value,
 	if ((*t)->local)
 		return;
 
-/* later
-	entry = new_entry(strdup(CHANGEHAT_PATH), AA_MAY_WRITE);
+	entry = new_entry(NULL, strdup(CHANGEHAT_PATH), AA_MAY_WRITE, NULL);
 	if (!entry) {
 		PERROR(_("ERROR adding hat access rule for profile %s\n"),
 		       (*t)->name);
 		exit(1);
 	}
 	add_entry_to_policy(*t, entry);
-*/
+
 	twalk((*t)->hat_table, __add_hat_rules_parent);
 }
 
