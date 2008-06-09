@@ -7,12 +7,12 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- security/apparmor/main.c | 1479 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 1479 insertions(+)
+ security/apparmor/main.c | 1471 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 1471 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/main.c
-@@ -0,0 +1,1479 @@
+@@ -0,0 +1,1471 @@
 +/*
 + *	Copyright (C) 2002-2007 Novell/SUSE
 + *
@@ -1333,14 +1333,6 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +
 +	if (hat_name) {
 +		char *name, *profile_name;
-+		if (!PROFILE_COMPLAIN(profile) &&
-+		    !(aa_match(profile->file_rules, hat_name, NULL)
-+		      & AA_CHANGE_HAT)) {
-+			/* missing permission to change_hat is treated the
-+			 * same as a failed hat search */
-+			error = -ENOENT;
-+			goto out;
-+		}
 +
 +		if (previous_profile)
 +			profile_name = previous_profile->name;

@@ -13,13 +13,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 ---
  security/apparmor/Kconfig      |   42 ++++
  security/apparmor/Makefile     |   13 +
- security/apparmor/apparmor.h   |  367 +++++++++++++++++++++++++++++++++++++++++
+ security/apparmor/apparmor.h   |  368 +++++++++++++++++++++++++++++++++++++++++
  security/apparmor/apparmorfs.c |  280 +++++++++++++++++++++++++++++++
  security/apparmor/inline.h     |  250 +++++++++++++++++++++++++++
- security/apparmor/list.c       |  156 +++++++++++++++++
+ security/apparmor/list.c       |  174 +++++++++++++++++++
  security/apparmor/locking.txt  |   68 +++++++
  security/apparmor/procattr.c   |  195 +++++++++++++++++++++
- 8 files changed, 1371 insertions(+)
+ 8 files changed, 1390 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/Kconfig
@@ -84,7 +84,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	$(call cmd,make-caps)
 --- /dev/null
 +++ b/security/apparmor/apparmor.h
-@@ -0,0 +1,367 @@
+@@ -0,0 +1,368 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -281,6 +281,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	char **exec_table;
 +	struct aa_dfa *file_rules;
 +	struct {
++		int hat;
 +		int complain;
 +		int audit;
 +	} flags;
@@ -990,7 +991,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +#endif /* __INLINE_H__ */
 --- /dev/null
 +++ b/security/apparmor/list.c
-@@ -0,0 +1,156 @@
+@@ -0,0 +1,174 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -1084,19 +1085,44 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	write_unlock(&profile_ns_list_lock);
 +}
 +
-+static void *p_start(struct seq_file *f, loff_t *pos)
++
++static struct aa_profile *next_profile(struct aa_profile *profile)
 +{
++	struct aa_profile *next = profile;
 +	struct aa_namespace *ns;
-+	struct aa_profile *profile;
-+	loff_t l = *pos;
-+	read_lock(&profile_ns_list_lock);
-+	if (l--)
-+		return NULL;
-+	list_for_each_entry(ns, &profile_ns_list, list) {
++
++	list_for_each_entry_continue(next, &profile->ns->profiles, list)
++		return next;
++
++	ns = profile->ns;
++	read_unlock(&ns->lock);
++	list_for_each_entry_continue(ns, &profile_ns_list, list) {
 +		read_lock(&ns->lock);
 +		list_for_each_entry(profile, &ns->profiles, list)
 +			return profile;
 +		read_unlock(&ns->lock);
++	}
++	return NULL;
++}
++
++static void *p_start(struct seq_file *f, loff_t *pos)
++{
++	struct aa_namespace *ns;
++	loff_t l = *pos;
++
++	read_lock(&profile_ns_list_lock);
++	if (!list_empty(&profile_ns_list)) {
++		struct aa_profile *profile = NULL;
++		ns = list_first_entry(&profile_ns_list, typeof(*ns), list);
++		read_lock(&ns->lock);
++		if (!list_empty(&ns->profiles))
++			profile = list_first_entry(&ns->profiles,
++						   typeof(*profile), list);
++		else
++			read_unlock(&ns->lock);
++		for ( ; profile && l > 0; l--)
++			profile = next_profile(profile);
++		return profile;
 +	}
 +	return NULL;
 +}
@@ -1104,33 +1130,26 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +static void *p_next(struct seq_file *f, void *p, loff_t *pos)
 +{
 +	struct aa_profile *profile = (struct aa_profile *) p;
-+	struct list_head *lh = profile->list.next;
-+	struct aa_namespace *ns;
-+	(*pos)++;
-+	if (lh != &profile->ns->profiles)
-+		return list_entry(lh, struct aa_profile, list);
 +
-+	lh = profile->ns->list.next;
-+	read_unlock(&profile->ns->lock);
-+	while (lh != &profile_ns_list) {
-+		ns = list_entry(lh, struct aa_namespace, list);
-+		read_lock(&ns->lock);
-+		list_for_each_entry(profile, &ns->profiles, list)
-+			return profile;
-+		read_unlock(&ns->lock);
-+		lh = ns->list.next;
-+	}
-+	return NULL;
++	(*pos)++;
++	profile = next_profile(profile);
++
++	return profile;
 +}
 +
-+static void p_stop(struct seq_file *f, void *v)
++static void p_stop(struct seq_file *f, void *p)
 +{
++	struct aa_profile *profile = (struct aa_profile *) p;
++
++	if (profile)
++		read_unlock(&profile->ns->lock);
 +	read_unlock(&profile_ns_list_lock);
 +}
 +
-+static int seq_show_profile(struct seq_file *f, void *v)
++static int seq_show_profile(struct seq_file *f, void *p)
 +{
-+	struct aa_profile *profile = (struct aa_profile *)v;
++	struct aa_profile *profile = (struct aa_profile *)p;
++
 +	if (profile->ns == default_namespace)
 +	    seq_printf(f, "%s (%s)\n", profile->name,
 +		       PROFILE_COMPLAIN(profile) ? "complain" : "enforce");
