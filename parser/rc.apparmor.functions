@@ -373,13 +373,18 @@ remove_profiles() {
 	fi
 
 	retval=0
-	sed -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" | while read profile ; do
+	#the list of profiles isn't stable once we start adding or removing
+	#them so stor to tmp first
+	MODULE_PLIST=$(mktemp ${APPARMOR_TMPDIR}/tmp.XXXXXXXX)
+	sed -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" | sort >"$MODULE_PLIST"
+	cat "$MODULE_PLIST" | while read profile ; do
 		echo -n "$profile" > "$SFS_MOUNTPOINT/.remove"
 		rc=$?
 		if [ ${rc} -ne 0 ] ; then 
 			retval=${rc}
 		fi
 	done
+	rm "$MODULE_PLIST"
 	if [ ${retval} -eq 0 ] ; then
 		aa_log_success_msg
 	else
