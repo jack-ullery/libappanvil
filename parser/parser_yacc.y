@@ -668,12 +668,14 @@ rules: rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE TOK_END_OF_RULE
 			case RLIMIT_NPROC:
 			case RLIMIT_LOCKS:
 			case RLIMIT_SIGPENDING:
+#ifdef RLIMIT_RTPRIO
 			case RLIMIT_RTPRIO:
 				if ($6 == end || *end != '\0' || tmp < 0)
 					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
 				value = tmp;
 				break;
-
+#endif
+#ifdef RLIMIT_NICE
 			case RLIMIT_NICE:
 				if ($6 == end || *end != '\0')
 					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
@@ -681,6 +683,7 @@ rules: rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE TOK_END_OF_RULE
 					yyerror("RLIMIT '%s' out of range (-20 .. 19) %d\n", $4, tmp);
 				value = tmp + 20;
 				break;
+#endif
 			case RLIMIT_FSIZE:
 			case RLIMIT_DATA:
 			case RLIMIT_STACK:

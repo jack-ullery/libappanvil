@@ -91,8 +91,12 @@ static struct keyword_table rlimit_table[] = {
 	{"locks",		RLIMIT_LOCKS},
 	{"sigpending",		RLIMIT_SIGPENDING},
 	{"msgqueue",		RLIMIT_MSGQUEUE},
+#ifdef RLIMIT_NICE
 	{"nice",		RLIMIT_NICE},
+#endif
+#ifdef RLIMIT_RTPRIO
 	{"rtprio",		RLIMIT_RTPRIO},
+#endif
 	/* terminate */
 	{NULL, 0}
 };
