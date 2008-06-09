@@ -206,6 +206,7 @@ profilelist:	profilelist profile
 
 opt_profile_flag: { /* nothing */ $$ = 0; }
 	| TOK_PROFILE { $$ = 1; }
+	| TOK_HAT { $$ = 2; }
 
 profile:	opt_profile_flag TOK_ID flags TOK_OPEN rules TOK_CLOSE
 	{
@@ -216,12 +217,14 @@ profile:	opt_profile_flag TOK_ID flags TOK_OPEN rules TOK_CLOSE
 		}
 
 		if (!$1 && $2[0] != '/')
-			yyerror(_("Profile names must begin with a '/', or keyword 'profile'."));
+			yyerror(_("Profile names must begin with a '/', or keyword 'profile' or 'hat'."));
 
 		cod->name = $2;
 		cod->flags = $3;
 		if (force_complain)
 			cod->flags = force_complain_flags;
+		if ($1 == 2)
+			cod->flags.hat = 1;
 
 		post_process_nt_entries(cod);
 		PDEBUG("%s: flags='%s%s'\n",
@@ -245,6 +248,9 @@ profile:	opt_profile_flag TOK_COLON TOK_ID TOK_COLON TOK_ID flags TOK_OPEN rules
 		cod->flags = $6;
 		if (force_complain)
 			cod->flags = force_complain_flags;
+		if ($1 == 2)
+			cod->flags.hat = 1;
+
 		post_process_nt_entries(cod);
 		PDEBUG("%s: flags='%s%s'\n",
 		       $3,
