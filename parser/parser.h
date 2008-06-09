@@ -26,7 +26,7 @@
 typedef enum pattern_t pattern_t;
 
 struct flagval {
-  	int debug;
+  	int hat;
   	int complain;
   	int audit;
 };

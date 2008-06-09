@@ -632,7 +632,7 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 	if (!sd_write_struct(p, "flags"))
 		return 0;
 	/* used to be flags.debug, but that's no longer supported */
-	if (!sd_write32(p, 0))
+	if (!sd_write32(p, profile->flags.hat))
 		return 0;
 	if (!sd_write32(p, profile->flags.complain))
 		return 0;
