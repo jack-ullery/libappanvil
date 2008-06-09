@@ -59,6 +59,7 @@ const char *parser_copyright	= "Copyright (C) 1999, 2000, 2003, 2004, 2005, 2006
 char *progname;
 int option = OPTION_ADD;
 int force_complain = 0;
+int binary_input = 0;
 int names_only = 0;
 int dump_vars = 0;
 int dump_expanded_vars = 0;
@@ -73,6 +74,7 @@ extern int current_lineno;
 
 struct option long_options[] = {
 	{"add", 		0, 0, 'a'},
+	{"binary",		0, 0, 'B'},
 	{"base",		1, 0, 'b'},
 	{"debug",		0, 0, 'd'},
 	{"subdomainfs",		0, 0, 'f'},
@@ -120,6 +122,7 @@ static void display_usage(char *command)
 	       "-b n, --base n		Set base dir and cwd\n"
 	       "-f n, --subdomainfs n	Set location of apparmor filesystem\n"
 	       "-S, --stdout		Write output to stdout\n"
+	       "-B, --binary		Input is precompiled profile\n"
 	       "-m n, --match-string n  Use only match features n\n"
 	       "-n n, --namespace n	Set Namespace for the profile\n"
 	       "-q, --quiet		Don't emit warnings\n", command);
@@ -152,7 +155,7 @@ static int process_args(int argc, char *argv[])
 	int count = 0;
 	option = OPTION_ADD;
 
-	while ((c = getopt_long(argc, argv, "adf:hrRvpI:b:CNSm:qn:", long_options, &o)) != -1)
+	while ((c = getopt_long(argc, argv, "adf:hrRvpI:b:BCNSm:qn:", long_options, &o)) != -1)
 	{
 		switch (c) {
 		case 0:
@@ -192,6 +195,9 @@ static int process_args(int argc, char *argv[])
 			break;
 		case 'b':
 			set_base_dir(optarg);
+			break;
+		case 'B':
+			binary_input =1;
 			break;
 		case 'C':
 			force_complain = 1;
@@ -395,6 +401,52 @@ static int regex_support(void) {
 	return 0;
 }
 
+int process_binary(int option, char *profilename)
+{
+	char *buffer = NULL;
+	int retval = 0, size = 0, asize = 0, rsize;
+	int chunksize = 1 << 14;
+	int fd;
+
+	if (profilename) {
+		fd = open(profilename, O_RDONLY);
+		if (fd == -1) {
+			PERROR(_("Error: Could not read profile %s: %s.\n"),
+			       profilename, strerror(errno));
+			exit(errno);
+		}
+	} else {
+		fd = dup(0);
+	}
+
+	do {
+		if (asize - size == 0) {
+			buffer = realloc(buffer, chunksize);
+			asize = chunksize;
+			chunksize <<= 1;
+			if (!buffer) {
+				PERROR(_("Memory allocation error."));
+				exit(errno);
+			}
+		}
+
+		rsize = read(fd, buffer + size, asize - size);
+		if (rsize)
+			size += rsize;
+	} while (rsize > 0);
+
+	close(fd);
+
+	if (rsize == 0)
+		retval = sd_load_buffer(option, buffer, size);
+	else
+		retval = rsize;
+
+	free(buffer);
+
+	return retval;
+}
+
 int process_profile(int option, char *profilename)
 {
 	int retval = 0;
@@ -478,10 +530,12 @@ int main(int argc, char *argv[])
 		return retval;
 	}
 
-	parse_default_paths();
-	retval = process_profile(option, profilename);
-	if (retval != 0)
-		return retval;
+	if (binary_input) {
+		retval = process_binary(option, profilename);
+	} else {
+		parse_default_paths();
+		retval = process_profile(option, profilename);
+	}
 
 	return retval;
 }

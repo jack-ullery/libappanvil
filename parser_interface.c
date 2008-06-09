@@ -886,3 +886,44 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 exit:
 	return error;
 }
+
+int sd_load_buffer(int option, char *buffer, int size)
+{
+	int fd;
+	int error = 0, wsize;
+	char *filename = NULL;
+
+	switch (option) {
+	case OPTION_ADD:
+		asprintf(&filename, "%s/.load", subdomainbase);
+		fd = open(filename, O_WRONLY);
+		break;
+	case OPTION_REPLACE:
+		asprintf(&filename, "%s/.replace", subdomainbase);
+		fd = open(filename, O_WRONLY);
+		break;
+	default:
+		error = -EINVAL;
+		goto exit;
+		break;
+	}
+
+	if (fd < 0) {
+		PERROR(_("Unable to open %s - %s\n"), filename,
+		       strerror(errno));
+		error = -errno;
+		goto exit;
+	}
+
+	wsize = write(fd, buffer, size);
+	if (wsize < 0) {
+		error = -errno;
+	} else if (wsize < size) {
+		PERROR(_("%s: Unable to write entire profile entry\n"),
+		       progname);
+	}
+	close(fd);
+exit:
+	free(filename);
+	return error;
+}

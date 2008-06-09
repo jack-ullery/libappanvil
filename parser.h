@@ -266,6 +266,8 @@ typedef struct __sdserialize sd_serialize;
 extern int load_codomain(int option, struct codomain *cod);
 extern int sd_serialize_profile(sd_serialize *p, struct codomain *cod,
 				int flatten);
+extern int sd_load_buffer(int option, char *buffer, int size);
+
 
 /* parser_policy.c */
 extern void add_to_list(struct codomain *codomain);
