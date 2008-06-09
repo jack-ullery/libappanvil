@@ -88,7 +88,7 @@ struct option long_options[] = {
 	{"dump-expanded-variables",	0, 0, 'E'},
 	{"Include",		1, 0, 'I'},
 	{"remove",		0, 0, 'R'},
-	{"names",		0, 0, 'N'},	/* undocumented only emit profilenames */
+	{"names",		0, 0, 'N'},
 	{"stdout",		0, 0, 'S'},
 	{"match-string",	1, 0, 'm'},
 	{"quiet",		0, 0, 'q'},
@@ -111,21 +111,22 @@ static void display_usage(char *command)
 	       "Options:\n"
 	       "--------\n"
 	       "-a, --add		Add apparmor definitions [default]\n"
-	       "-d, --debug 		Debug apparmor definitions\n"
-	       "-h, --help		Display this text and exit\n"
 	       "-r, --replace		Replace apparmor definitions\n"
 	       "-R, --remove		Remove apparmor definitions\n"
-	       "-v, --version		Display version info and exit\n"
-	       "-p, --preprocess	Preprocess only\n"
 	       "-C, --Complain		Force the profile into complain mode\n"
-	       "-I n, --Include n	Add n to the search path\n"
-	       "-b n, --base n		Set base dir and cwd\n"
-	       "-f n, --subdomainfs n	Set location of apparmor filesystem\n"
-	       "-S, --stdout		Write output to stdout\n"
 	       "-B, --binary		Input is precompiled profile\n"
+	       "-p, --preprocess	Dump profiles with includes expanded\n"
+	       "-N, --names		Dump names of profiles in input.\n"
+	       "-S, --stdout		Dump compiled profile to stdout\n"
+	       "-b n, --base n		Set base dir and cwd\n"
+	       "-I n, --Include n	Add n to the search path\n"
+	       "-f n, --subdomainfs n	Set location of apparmor filesystem\n"
 	       "-m n, --match-string n  Use only match features n\n"
 	       "-n n, --namespace n	Set Namespace for the profile\n"
 	       "-q, --quiet		Don't emit warnings\n", command);
+	       "-v, --version		Display version info and exit\n"
+	       "-d, --debug 		Debug apparmor definitions\n"
+	       "-h, --help		Display this text and exit\n"
 }
 
 void pwarn(char *fmt, ...)
