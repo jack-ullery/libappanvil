@@ -459,6 +459,11 @@ int process_profile(int option, char *profilename)
 	if (retval != 0)
 		goto out;
 
+	if (names_only) {
+		dump_policy_names();
+		goto out;
+	}
+
 	/* Get the match string to determine type of regex support needed */
 	get_match_string();
 
@@ -484,11 +489,6 @@ int process_profile(int option, char *profilename)
 			printf("----- Debugging built structures -----\n");
 			dump_policy();
 		}
-		goto out;
-	}
-
-	if (names_only) {
-		dump_policy_names();
 		goto out;
 	}
 
