@@ -178,7 +178,6 @@ struct codomain *do_local_profile(struct codomain *cod, char *name, int mode, in
 %type <cap>	capability
 %type <cap>	set_caps
 %type <user_entry> change_profile
-%type <user_entry> change_hat
 %type <set_var> TOK_SET_VAR
 %type <bool_var> TOK_BOOL_VAR
 %type <var_val>	TOK_VALUE
@@ -593,15 +592,6 @@ rules:	rules change_profile
 		add_entry_to_policy($1, $2);
 		$$ = $1;
 	};
-rules:	rules change_hat
-	{
-		PDEBUG("matched: rules change_hat\n");
-		PDEBUG("rules change_hat: (%s)\n", $2->name);
-		if (!$2)
-			yyerror(_("Assert: `change_hat' returned NULL."));
-		add_entry_to_policy($1, $2);
-		$$ = $1;
-	};
 
 rules:	rules opt_audit_flag TOK_DENY capability
 	{
@@ -895,18 +885,6 @@ rule: TOK_PTRACE TOK_COLON TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
 		$$ = entry;
 	};
 
-change_hat:	hat_start TOK_ID TOK_END_OF_RULE
-	{
-		/* allow change_hat to external hats */
-		struct cod_entry *entry;
-		PDEBUG("Matched change_hat: tok_id (%s)\n", $2);
-		entry = new_entry(NULL, $2, AA_CHANGE_HAT, NULL);
-		if (!entry)
-			yyerror(_("Memory allocation error."));
-		PDEBUG("change_hat.entry: (%s)\n", entry->name);
-		$$ = entry;
-	};
-
 hat: hat_start TOK_ID flags TOK_OPEN rules TOK_CLOSE
 	{
 		struct codomain *cod = $5;
@@ -916,6 +894,7 @@ hat: hat_start TOK_ID flags TOK_OPEN rules TOK_CLOSE
 		}
 		cod->name = $2;
 		cod->flags = $3;
+		cod->flags.hat = 1;
 		if (force_complain)
 			cod->flags = force_complain_flags;
 		PDEBUG("^%s: flags='%s%s'\n",
