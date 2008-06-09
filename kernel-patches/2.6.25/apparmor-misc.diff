@@ -13,13 +13,13 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 ---
  security/apparmor/Kconfig      |   42 ++++
  security/apparmor/Makefile     |   13 +
- security/apparmor/apparmor.h   |  368 +++++++++++++++++++++++++++++++++++++++++
- security/apparmor/apparmorfs.c |  280 +++++++++++++++++++++++++++++++
+ security/apparmor/apparmor.h   |  371 +++++++++++++++++++++++++++++++++++++++++
+ security/apparmor/apparmorfs.c |  280 ++++++++++++++++++++++++++++++
  security/apparmor/inline.h     |  250 +++++++++++++++++++++++++++
  security/apparmor/list.c       |  174 +++++++++++++++++++
  security/apparmor/locking.txt  |   68 +++++++
  security/apparmor/procattr.c   |  195 +++++++++++++++++++++
- 8 files changed, 1390 insertions(+)
+ 8 files changed, 1393 insertions(+)
 
 --- /dev/null
 +++ b/security/apparmor/Kconfig
@@ -84,7 +84,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	$(call cmd,make-caps)
 --- /dev/null
 +++ b/security/apparmor/apparmor.h
-@@ -0,0 +1,368 @@
+@@ -0,0 +1,371 @@
 +/*
 + *	Copyright (C) 1998-2007 Novell/SUSE
 + *
@@ -207,6 +207,9 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +#define APPARMOR_AUDIT(_cxt) \
 +	(apparmor_audit == 1 || \
 +	 ((_cxt) && (_cxt)->profile && (_cxt)->profile->flags.audit))
++
++#define PROFILE_IS_HAT(_profile) \
++	((_profile) && (_profile)->flags.hat)
 +
 +/*
 + * DEBUG remains global (no per profile flag) since it is mostly used in sysctl
