@@ -38,6 +38,7 @@ hi sdEntryW     ctermfg=yellow
 "hi sdCap	ctermfg=lightblue
 "hi sdCapKey	cterm=underline ctermfg=lightblue
 hi link sdCapKey  Label
+hi link sdLimKey  Label
 hi def link sdEntryR Normal
 hi sdError      cterm=bold ctermbg=red
 hi link sdFlagKey  Label
@@ -48,8 +49,10 @@ hi sdCapDanger ctermfg=red
 " that many rules and profiles shouldn't be _extremely_ large...
 syn sync fromstart
 
-syn keyword 	sdCapKey	chown dac_override dac_read_search fowner fsetid kill setgid setuid setpcap linux_immutable net_bind_service net_broadcast net_admin net_raw ipc_lock ipc_owner sys_module sys_rawio sys_chroot sys_ptrace sys_pacct sys_boot sys_nice sys_resource sys_time sys_tty_config mknod lease
+syn keyword 	sdCapKey	chown dac_override dac_read_search fowner fsetid kill setgid setuid setpcap linux_immutable net_bind_service net_broadcast net_admin net_raw ipc_lock ipc_owner sys_module sys_rawio sys_chroot sys_ptrace sys_pacct sys_boot sys_nice sys_resource sys_time sys_tty_config mknod lease audit_write audit_control setfcap mac_override mac_admin
 syn keyword sdCapDanger sys_admin
+
+syn keyword	sdLimKey	cpu fsize data stack core rss nofile ofile as nproc memlock locks sigpending msgqueue nice rtprio
 
 syn keyword	sdFlagKey	complain audit debug
 
@@ -60,7 +63,7 @@ syn match sdError /}/
 
 syn match sdGlob /\v\?|\*|\{.*,.*\}|[[^\]]\+\]/
 
-syn cluster sdEntry contains=sdEntryR,sdEntryW,sdEntryIX,sdEntryPX,sdEntryUX,sdCap
+syn cluster sdEntry contains=sdEntryR,sdEntryW,sdEntryIX,sdEntryPX,sdEntryUX,sdCap,sdLim
 
 " unconstrained entry, flag the line red
 syn match  sdEntryUX /\v^\s*\/\S*\s+(l|r|w|ux)+\s*,(\s*$|(\s*#.*$)\@=)/ contained contains=sdGlob nextgroup=@sdEntry,sdComment,sdError
@@ -74,6 +77,8 @@ syn match  sdError /\v^\s*\/\S*\s+(l|r|w|u|p|i)+\s*,(\s*$|(\s*#.*$)\@=)/ contain
 syn match  sdEntryW /\v^\s*\/\S*\s+(l|r|w)+\s*,(\s*$|(\s*#.*$)\@=)/ contained contains=sdGlob nextgroup=@sdEntry,sdComment,sdError
 " Capability line
 syn match  sdCap /\v^\s*capability\s+\S+\s*,(\s*$|(\s*#.*$)\@=)/ contained contains=sdCapKey,sdCapDanger nextgroup=@sdEntry,sdComment,sdError
+" Rlimits
+syn match  sdLim /\v^\s*set\s+rlimit\s+\S+\s*\<\=\s*(|-)[0-9]+(|K|M|G)+\s*,(\s*$|(\s*#.*$)\@=)/ contained contains=sdLimKey nextgroup=@sdEntry,sdComment,sdError
 " read entry, no highlighting
 syn match  sdEntryR /\v^\s*\/\S*\s+[rl]+\s*,(\s*$|(\s*#.*$)\@=)/ contained contains=sdGlob nextgroup=@sdEntry,sdComment,sdError
 
