@@ -401,7 +401,7 @@ linux limitations.
 +		profile->rlimits.mask = tmp;
 +
 +		size = aa_is_array(e, NULL);
-+		if (size <= RLIM_NLIMITS)
++		if (size > RLIM_NLIMITS)
 +			goto fail;
 +		for (i = 0; i < size; i++) {
 +			u64 tmp = 0;
