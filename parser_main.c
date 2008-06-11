@@ -123,10 +123,11 @@ static void display_usage(char *command)
 	       "-f n, --subdomainfs n	Set location of apparmor filesystem\n"
 	       "-m n, --match-string n  Use only match features n\n"
 	       "-n n, --namespace n	Set Namespace for the profile\n"
-	       "-q, --quiet		Don't emit warnings\n", command);
+	       "-q, --quiet		Don't emit warnings\n"
 	       "-v, --version		Display version info and exit\n"
 	       "-d, --debug 		Debug apparmor definitions\n"
 	       "-h, --help		Display this text and exit\n"
+	       ,command);
 }
 
 void pwarn(char *fmt, ...)
@@ -266,8 +267,7 @@ static inline char *try_subdomainfs_mountpoint(const char *mntpnt,
 	char *retval = NULL;
 	struct stat buf;
 
-	asprintf(&proposed_base, "%s%s", mntpnt, path);
-	if (!proposed_base) {
+	if (asprintf(&proposed_base, "%s%s", mntpnt, path)<0 || !proposed_base) {
 		PERROR(_("%s: Could not allocate memory for subdomainbase mount point\n"),
 		       progname);
 		exit(ENOMEM);
