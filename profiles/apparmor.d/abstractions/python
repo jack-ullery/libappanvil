@@ -21,9 +21,10 @@
   /usr/local/lib/python2.[45]/site-packages/ r,
 
   # Site-wide configuration
-  /etc/python2.[45]/site.py r,
+  /etc/python2.[45]/** r,
 
   # python-central paths
+  /usr/share/pyshared/** r,
   /usr/share/pycentral/** r,
   /usr/share/python-support/** r,
   /var/lib/python-support/** r,

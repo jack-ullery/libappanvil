@@ -9,9 +9,7 @@
 #
 # ------------------------------------------------------------------
 # vim:syntax=apparmor
-# Last Modified: Thu Aug 25 14:49:56 2005
 
-# Last Modified: Tue Sep 11 20:27:42 2007
 #include <tunables/global>
 /usr/bin/opera {
   #include <abstractions/base>

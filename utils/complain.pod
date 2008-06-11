@@ -24,15 +24,15 @@
 
 =head1 NAME
 
-complain - set a AppArmor security profile to I<complain> mode.
+aa-complain - set a AppArmor security profile to I<complain> mode.
 
 =head1 SYNOPSIS
 
-B<complain I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...]>
+B<aa-complain I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...]>
 
 =head1 DESCRIPTION
 
-B<complain> is used to set the enforcement mode for one or more profiles to complain.
+B<aa-complain> is used to set the enforcement mode for one or more profiles to complain.
 In this mode security policy is not enforced but rather access violations are logged
 to the system log.  
 
@@ -43,7 +43,7 @@ L<http://bugzilla.novell.com>.
 
 =head1 SEE ALSO
 
-apparmor(7), apparmor.d(5), enforce(1), change_hat(2), and
+apparmor(7), apparmor.d(5), aa-enforce(1), change_hat(2), and
 L<http://forge.novell.com/modules/xfmod/project/?apparmor>.
 
 =cut

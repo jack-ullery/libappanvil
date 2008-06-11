@@ -2,15 +2,15 @@
 
 =head1 NAME
 
-audit - set a AppArmor security profile to I<audit> mode.
+aa-audit - set a AppArmor security profile to I<audit> mode.
 
 =head1 SYNOPSIS
 
-B<audit I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...]>
+B<aa-audit I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...]>
 
 =head1 DESCRIPTION
 
-B<audit> is used to set the audit mode for one or more profiles to audit.
+B<aa-audit> is used to set the audit mode for one or more profiles to audit.
 In this mode security policy is enforced and all access (successes and failures) are logged to the system log.
 
 =head1 BUGS
@@ -20,7 +20,7 @@ L<http://bugzilla.novell.com>.
 
 =head1 SEE ALSO
 
-apparmor(7), apparmor.d(5), enforce(1), complain(1), change_hat(2), and
+apparmor(7), apparmor.d(5), aa-enforce(1), aa-complain(1), change_hat(2), and
 L<http://forge.novell.com/modules/xfmod/project/?apparmor>.
 
 =cut

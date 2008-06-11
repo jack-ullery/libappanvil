@@ -1,3 +1,4 @@
+# vim:syntax=apparmor
 # $Id$
 # ------------------------------------------------------------------
 #
@@ -41,4 +42,4 @@
 
 @{HOME}/.esd_auth  r,
 @{HOME}/.asoundrc  r,
-/etc/esd.conf   r,
+/etc/esound/esd.conf r,

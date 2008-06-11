@@ -28,8 +28,10 @@ fi
 if [ -z "`grep '^subdomain ' /proc/modules`" ]
 then
 	if [ -z "`grep '^apparmor ' /proc/modules`" ] ; then
-		echo "$0: subdomain module not loaded" >&2
-		exit 1
+		if [ ! -d "/sys/module/apparmor" ] ; then
+			echo "$0: apparmor module not loaded" >&2
+			exit 1
+		fi
 	fi
 fi
 

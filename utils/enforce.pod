@@ -24,19 +24,19 @@
 
 =head1 NAME
 
-enforce - set an AppArmor security profile to I<enforce> mode from
+aa-enforce - set an AppArmor security profile to I<enforce> mode from
 I<complain> mode.
 
 =head1 SYNOPSIS
 
-B<enforce I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...]>
+B<aa-enforce I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...]>
 
 =head1 DESCRIPTION
 
-B<enforce> is used to set the enforcement mode for one or more profiles
+B<aa-enforce> is used to set the enforcement mode for one or more profiles
 to I<enforce>.  This command is only relevant is conjuction with the
 utility I<complain> which sets a profile to complain mode. The default
-mode for a security policy is enforce and the I<complain> utility must
+mode for a security policy is enforce and the I<aa-complain> utility must
 be run to change this behavior.
 
 =head1 BUGS
@@ -46,7 +46,7 @@ L<http://bugzilla.novell.com>.
 
 =head1 SEE ALSO
 
-apparmor(7), apparmor.d(5), complain(1), change_hat(2), and
+apparmor(7), apparmor.d(5), aa-complain(1), change_hat(2), and
 L<http://forge.novell.com/modules/xfmod/project/?apparmor>.
 
 =cut

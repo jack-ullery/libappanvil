@@ -24,11 +24,11 @@
 
 =head1 NAME
 
-genprof - profile generation utility for AppArmor
+aa-genprof - profile generation utility for AppArmor
 
 =head1 SYNOPSIS
 
-B<genprof I<E<lt>executableE<gt>> [I<-d /path/to/profiles>]>
+B<aa-genprof I<E<lt>executableE<gt>> [I<-d /path/to/profiles>]>
 
 =head1 OPTIONS
 
@@ -40,12 +40,12 @@ B<-d --dir /path/to/profiles>
 
 =head1 DESCRIPTION
 
-When running genprof, you must specify a program to profile.  If the 
-specified program is not a fully-qualified path, genprof will search $PATH
+When running aa-genprof, you must specify a program to profile.  If the
+specified program is not a fully-qualified path, aa-genprof will search $PATH
 in order to find the program.
 
-If a profile does not exist for the program, genprof will create one using
-autodep(1).
+If a profile does not exist for the program, aa-genprof will create one using
+aa-autodep(1).
 
 Genprof will then:
 
@@ -59,17 +59,17 @@ Genprof will then:
 It then presents the user with two options, (S)can system log for entries 
 to add to profile and (F)inish.
 
-If the user selects (S)can or hits return, genprof will parse 
+If the user selects (S)can or hits return, aa-genprof will parse
 the complain mode logs and iterate through generated violations
 using logprof(1). 
 
 After the user finishes selecting profile entries based on violations 
-that were detected during the program execution, genprof will reload 
+that were detected during the program execution, aa-genprof will reload
 the updated profiles in complain mode and again prompt the user for (S)can and 
 (D)one. This cycle can then be repeated as neccesary until all application 
 functionality has been exercised without generating access violations.
 
-When the user eventually hits (F)inish, genprof will set the main profile,
+When the user eventually hits (F)inish, aa-genprof will set the main profile,
 and any other profiles that were generated, into enforce mode and exit.
 
 =head1 BUGS
@@ -79,8 +79,8 @@ L<http://bugzilla.novell.com>.
 
 =head1 SEE ALSO
 
-apparmor(7), apparmor.d(5), enforce(1), complain(1), change_hat(2),
-logprof(1), logprof.conf(5), and
+apparmor(7), apparmor.d(5), aa-enforce(1), aa-complain(1), change_hat(2),
+aa-logprof(1), logprof.conf(5), and
 L<http://forge.novell.com/modules/xfmod/project/?apparmor>.
 
 =cut

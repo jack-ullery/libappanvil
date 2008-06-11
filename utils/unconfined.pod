@@ -24,21 +24,21 @@
 
 =head1 NAME
 
-unconfined - output a list of processes with tcp or udp ports that do
+aa-unconfined - output a list of processes with tcp or udp ports that do
 not have AppArmor profiles loaded
 
 =head1 SYNOPSIS
 
-B<unconfined>
+B<aa-unconfined>
 
 =head1 DESCRIPTION
 
-B<unconfined> will use netstat(8) to determine which processes have open
+B<aa-unconfined> will use netstat(8) to determine which processes have open
 network sockets and do not have AppArmor profiles loaded into the kernel.
 
 =head1 BUGS
 
-B<unconfined> must be run as root to retrieve the process executable
+B<aa-unconfined> must be run as root to retrieve the process executable
 link from the F</proc> filesystem. This program is susceptible to race
 conditions of several flavours: an unlinked executable will be mishandled;
 an executable started before a AppArmor profile is loaded will not

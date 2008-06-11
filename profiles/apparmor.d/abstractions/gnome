@@ -15,7 +15,6 @@
 #include <abstractions/freedesktop.org>
 #include <abstractions/user-tmp>
 
-
   # systemwide gtk defaults
   /etc/gnome/gtkrc*               r,
   /etc/gtk/*                      r,
@@ -51,6 +50,6 @@
   /usr/share/**/icon-theme.cache  r,
 
   # gnome VFS modules
-  /etc/gnome-vfs-2.0/modules r,
+  /etc/gnome-vfs-2.0/modules/ r,
   /etc/gnome-vfs-2.0/modules/* r,
   /usr/lib/gnome-vfs-2.0/modules/*.so mr,

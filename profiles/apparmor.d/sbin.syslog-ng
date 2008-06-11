@@ -30,6 +30,7 @@
   /dev/tty10 rw,
   /dev/xconsole rw,
   /etc/syslog-ng/* r,
+  @{PROC}/kmsg r,
   /etc/hosts.deny r,
   /etc/hosts.allow r,
   /sbin/syslog-ng mr,

@@ -15,4 +15,4 @@
   # connection information
   /var/log/lastlog  rw,
   /var/log/wtmp     w,
-  /var/run/utmp     rw,
+  /var/run/utmp     rwk,

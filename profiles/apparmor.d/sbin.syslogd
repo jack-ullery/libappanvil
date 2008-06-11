@@ -19,6 +19,8 @@
   capability sys_tty_config,
   capability dac_override,
   capability dac_read_search,
+  capability setuid,
+  capability setgid,
 
   /dev/log                      wl,
   /var/lib/*/dev/log            wl,
