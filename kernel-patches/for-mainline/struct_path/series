@@ -1,5 +1,0 @@
-struct_path-nameidata.diff
-struct_path-vfs_getattr.diff
-struct_path-getattr-iop.diff
-struct_path-security-getattr.diff
-struct_path-nfsfh.diff

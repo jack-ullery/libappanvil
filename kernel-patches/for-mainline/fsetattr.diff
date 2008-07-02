@@ -21,14 +21,14 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  fs/afs/file.c      |    1 +
  fs/afs/inode.c     |   19 +++++++++++++++----
  fs/afs/internal.h  |    1 +
- fs/attr.c          |   18 ++++++++++++++----
+ fs/attr.c          |   19 +++++++++++++++----
  fs/fuse/dir.c      |   20 +++++++++-----------
  fs/fuse/file.c     |    7 +++++++
  fs/fuse/fuse_i.h   |    4 ++++
  fs/open.c          |   20 ++++++++------------
  fs/utimes.c        |    2 +-
  include/linux/fs.h |   10 ++--------
- 11 files changed, 63 insertions(+), 40 deletions(-)
+ 11 files changed, 64 insertions(+), 40 deletions(-)
 
 --- a/fs/afs/dir.c
 +++ b/fs/afs/dir.c
@@ -52,7 +52,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  const struct inode_operations afs_file_inode_operations = {
 --- a/fs/afs/inode.c
 +++ b/fs/afs/inode.c
-@@ -360,7 +360,8 @@ void afs_clear_inode(struct inode *inode
+@@ -358,7 +358,8 @@ void afs_clear_inode(struct inode *inode
  /*
   * set the attributes of an inode
   */
@@ -62,7 +62,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  {
  	struct afs_vnode *vnode = AFS_FS_I(dentry->d_inode);
  	struct key *key;
-@@ -382,8 +383,8 @@ int afs_setattr(struct dentry *dentry, s
+@@ -380,8 +381,8 @@ int afs_setattr(struct dentry *dentry, s
  		afs_writeback_all(vnode);
  	}
  
@@ -73,7 +73,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  	} else {
  		key = afs_request_key(vnode->volume->cell);
  		if (IS_ERR(key)) {
-@@ -393,10 +394,20 @@ int afs_setattr(struct dentry *dentry, s
+@@ -391,10 +392,20 @@ int afs_setattr(struct dentry *dentry, s
  	}
  
  	ret = afs_vnode_setattr(vnode, key, attr);
@@ -133,20 +133,22 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  	} else {
  		error = inode_change_ok(inode, attr);
  		if (!error)
-@@ -184,4 +188,10 @@ int notify_change(struct dentry *dentry,
+@@ -183,5 +187,12 @@ int notify_change(struct dentry *dentry,
+ 
  	return error;
  }
- 
++EXPORT_SYMBOL_GPL(fnotify_change);
++
 +int notify_change(struct dentry *dentry, struct vfsmount *mnt,
 +		  struct iattr *attr)
 +{
 +	return fnotify_change(dentry, mnt, attr, NULL);
 +}
-+
+ 
  EXPORT_SYMBOL(notify_change);
 --- a/fs/fuse/dir.c
 +++ b/fs/fuse/dir.c
-@@ -1063,21 +1063,22 @@ static int fuse_dir_fsync(struct file *f
+@@ -1064,21 +1064,22 @@ static int fuse_dir_fsync(struct file *f
  	return file ? fuse_fsync_common(file, de, datasync, 1) : 0;
  }
  
@@ -172,7 +174,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  {
  	unsigned ivalid = iattr->ia_valid;
  
-@@ -1096,7 +1097,7 @@ static void iattr_to_fattr(struct iattr 
+@@ -1097,7 +1098,7 @@ static void iattr_to_fattr(struct iattr 
  		if (!(ivalid & ATTR_ATIME_SET))
  			arg->valid |= FATTR_ATIME_NOW;
  	}
@@ -181,7 +183,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  		arg->valid |= FATTR_MTIME;
  		arg->mtime = iattr->ia_mtime.tv_sec;
  		arg->mtimensec = iattr->ia_mtime.tv_nsec;
-@@ -1113,8 +1114,8 @@ static void iattr_to_fattr(struct iattr 
+@@ -1158,8 +1159,8 @@ void fuse_release_nowrite(struct inode *
   * vmtruncate() doesn't allow for this case, so do the rlimit checking
   * and the actual truncation by hand.
   */
@@ -192,7 +194,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  {
  	struct inode *inode = entry->d_inode;
  	struct fuse_conn *fc = get_fuse_conn(inode);
-@@ -1152,7 +1153,7 @@ static int fuse_do_setattr(struct dentry
+@@ -1203,7 +1204,7 @@ static int fuse_do_setattr(struct dentry
  
  	memset(&inarg, 0, sizeof(inarg));
  	memset(&outarg, 0, sizeof(outarg));
@@ -201,7 +203,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  	if (file) {
  		struct fuse_file *ff = file->private_data;
  		inarg.valid |= FATTR_FH;
-@@ -1194,10 +1195,7 @@ static int fuse_do_setattr(struct dentry
+@@ -1273,10 +1274,7 @@ error:
  
  static int fuse_setattr(struct dentry *entry, struct iattr *attr)
  {
@@ -215,8 +217,8 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  static int fuse_getattr(struct vfsmount *mnt, struct dentry *entry,
 --- a/fs/fuse/file.c
 +++ b/fs/fuse/file.c
-@@ -907,6 +907,11 @@ static sector_t fuse_bmap(struct address
- 	return err ? 0 : outarg.block;
+@@ -1458,6 +1458,11 @@ static loff_t fuse_file_llseek(struct fi
+ 	return retval;
  }
  
 +static int fuse_fsetattr(struct file *file, struct iattr *attr)
@@ -225,27 +227,27 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
 +}
 +
  static const struct file_operations fuse_file_operations = {
- 	.llseek		= generic_file_llseek,
+ 	.llseek		= fuse_file_llseek,
  	.read		= do_sync_read,
-@@ -920,6 +925,7 @@ static const struct file_operations fuse
+@@ -1471,6 +1476,7 @@ static const struct file_operations fuse
  	.fsync		= fuse_fsync,
  	.lock		= fuse_file_lock,
  	.flock		= fuse_file_flock,
-+	.fsetattr       = fuse_fsetattr,
++	.fsetattr	= fuse_fsetattr,
  	.splice_read	= generic_file_splice_read,
  };
  
-@@ -933,6 +939,7 @@ static const struct file_operations fuse
+@@ -1484,6 +1490,7 @@ static const struct file_operations fuse
  	.fsync		= fuse_fsync,
  	.lock		= fuse_file_lock,
  	.flock		= fuse_file_flock,
-+	.fsetattr       = fuse_fsetattr,
++	.fsetattr	= fuse_fsetattr,
  	/* no mmap and splice_read */
  };
  
 --- a/fs/fuse/fuse_i.h
 +++ b/fs/fuse/fuse_i.h
-@@ -505,6 +505,10 @@ void fuse_change_attributes(struct inode
+@@ -543,6 +543,10 @@ void fuse_truncate(struct address_space 
   */
  int fuse_dev_init(void);
  
@@ -258,7 +260,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
   */
 --- a/fs/open.c
 +++ b/fs/open.c
-@@ -206,16 +206,12 @@ int do_truncate(struct dentry *dentry, s
+@@ -207,16 +207,12 @@ int do_truncate(struct dentry *dentry, s
  
  	newattrs.ia_size = length;
  	newattrs.ia_valid = ATTR_SIZE | time_attrs;
@@ -276,7 +278,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  	mutex_unlock(&dentry->d_inode->i_mutex);
  	return err;
  }
-@@ -583,7 +579,7 @@ asmlinkage long sys_fchmod(unsigned int 
+@@ -591,7 +587,7 @@ asmlinkage long sys_fchmod(unsigned int 
  		mode = inode->i_mode;
  	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
  	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
@@ -284,8 +286,8 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
 +	err = fnotify_change(dentry, file->f_path.mnt, &newattrs, file);
  	mutex_unlock(&inode->i_mutex);
  
- out_putf:
-@@ -633,7 +629,7 @@ asmlinkage long sys_chmod(const char __u
+ out_drop_write:
+@@ -645,7 +641,7 @@ asmlinkage long sys_chmod(const char __u
  }
  
  static int chown_common(struct dentry * dentry, struct vfsmount *mnt,
@@ -294,7 +296,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  {
  	struct inode * inode;
  	int error;
-@@ -663,7 +659,7 @@ static int chown_common(struct dentry * 
+@@ -672,7 +668,7 @@ static int chown_common(struct dentry * 
  		newattrs.ia_valid |=
  			ATTR_KILL_SUID | ATTR_KILL_SGID | ATTR_KILL_PRIV;
  	mutex_lock(&inode->i_mutex);
@@ -303,56 +305,56 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  	mutex_unlock(&inode->i_mutex);
  out:
  	return error;
-@@ -677,7 +673,7 @@ asmlinkage long sys_chown(const char __u
- 	error = user_path_walk(filename, &nd);
+@@ -689,7 +685,7 @@ asmlinkage long sys_chown(const char __u
+ 	error = mnt_want_write(nd.path.mnt);
  	if (error)
- 		goto out;
--	error = chown_common(nd.dentry, nd.mnt, user, group);
-+	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
- 	path_release(&nd);
- out:
- 	return error;
-@@ -697,7 +693,7 @@ asmlinkage long sys_fchownat(int dfd, co
- 	error = __user_walk_fd(dfd, filename, follow, &nd);
+ 		goto out_release;
+-	error = chown_common(nd.path.dentry, nd.path.mnt, user, group);
++	error = chown_common(nd.path.dentry, nd.path.mnt, user, group, NULL);
+ 	mnt_drop_write(nd.path.mnt);
+ out_release:
+ 	path_put(&nd.path);
+@@ -714,7 +710,7 @@ asmlinkage long sys_fchownat(int dfd, co
+ 	error = mnt_want_write(nd.path.mnt);
  	if (error)
- 		goto out;
--	error = chown_common(nd.dentry, nd.mnt, user, group);
-+	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
- 	path_release(&nd);
- out:
- 	return error;
-@@ -711,7 +707,7 @@ asmlinkage long sys_lchown(const char __
- 	error = user_path_walk_link(filename, &nd);
+ 		goto out_release;
+-	error = chown_common(nd.path.dentry, nd.path.mnt, user, group);
++	error = chown_common(nd.path.dentry, nd.path.mnt, user, group, NULL);
+ 	mnt_drop_write(nd.path.mnt);
+ out_release:
+ 	path_put(&nd.path);
+@@ -733,7 +729,7 @@ asmlinkage long sys_lchown(const char __
+ 	error = mnt_want_write(nd.path.mnt);
  	if (error)
- 		goto out;
--	error = chown_common(nd.dentry, nd.mnt, user, group);
-+	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
- 	path_release(&nd);
- out:
- 	return error;
-@@ -730,7 +726,7 @@ asmlinkage long sys_fchown(unsigned int 
- 
+ 		goto out_release;
+-	error = chown_common(nd.path.dentry, nd.path.mnt, user, group);
++	error = chown_common(nd.path.dentry, nd.path.mnt, user, group, NULL);
+ 	mnt_drop_write(nd.path.mnt);
+ out_release:
+ 	path_put(&nd.path);
+@@ -757,7 +753,7 @@ asmlinkage long sys_fchown(unsigned int 
+ 		goto out_fput;
  	dentry = file->f_path.dentry;
  	audit_inode(NULL, dentry);
 -	error = chown_common(dentry, file->f_path.mnt, user, group);
 +	error = chown_common(dentry, file->f_path.mnt, user, group, file);
+ 	mnt_drop_write(file->f_path.mnt);
+ out_fput:
  	fput(file);
- out:
- 	return error;
 --- a/fs/utimes.c
 +++ b/fs/utimes.c
-@@ -132,7 +132,7 @@ long do_utimes(int dfd, char __user *fil
+@@ -151,7 +151,7 @@ long do_utimes(int dfd, char __user *fil
  		}
  	}
  	mutex_lock(&inode->i_mutex);
 -	error = notify_change(path.dentry, path.mnt, &newattrs);
 +	error = fnotify_change(path.dentry, path.mnt, &newattrs, f);
  	mutex_unlock(&inode->i_mutex);
- dput_and_out:
- 	if (f)
+ mnt_drop_write_and_out:
+ 	mnt_drop_write(path.mnt);
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -329,7 +329,6 @@ typedef void (dio_iodone_t)(struct kiocb
+@@ -330,7 +330,6 @@ typedef void (dio_iodone_t)(struct kiocb
  #define ATTR_ATTR_FLAG	1024
  #define ATTR_KILL_SUID	2048
  #define ATTR_KILL_SGID	4096
@@ -360,7 +362,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  #define ATTR_KILL_PRIV	16384
  #define ATTR_OPEN	32768	/* Truncating from open(O_TRUNC) */
  
-@@ -351,13 +350,6 @@ struct iattr {
+@@ -352,13 +351,6 @@ struct iattr {
  	struct timespec	ia_atime;
  	struct timespec	ia_mtime;
  	struct timespec	ia_ctime;
@@ -374,7 +376,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  };
  
  /*
-@@ -1188,6 +1180,7 @@ struct file_operations {
+@@ -1244,6 +1236,7 @@ struct file_operations {
  	ssize_t (*splice_write)(struct pipe_inode_info *, struct file *, loff_t *, size_t, unsigned int);
  	ssize_t (*splice_read)(struct file *, loff_t *, struct pipe_inode_info *, size_t, unsigned int);
  	int (*setlease)(struct file *, long, struct file_lock **);
@@ -382,7 +384,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de> ---
  };
  
  struct inode_operations {
-@@ -1694,6 +1687,7 @@ extern int do_remount_sb(struct super_bl
+@@ -1752,6 +1745,7 @@ extern int do_remount_sb(struct super_bl
  extern sector_t bmap(struct inode *, sector_t);
  #endif
  extern int notify_change(struct dentry *, struct vfsmount *, struct iattr *);

@@ -17,7 +17,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 --- a/fs/xattr.c
 +++ b/fs/xattr.c
-@@ -115,7 +115,7 @@ vfs_getxattr(struct dentry *dentry, stru
+@@ -141,7 +141,7 @@ vfs_getxattr(struct dentry *dentry, stru
  	if (error)
  		return error;
  
@@ -28,66 +28,66 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -405,7 +405,7 @@ struct request_sock;
+@@ -450,7 +450,7 @@ static inline void security_free_mnt_opt
   * 	@value identified by @name for @dentry and @mnt.
   * @inode_getxattr:
-  * 	Check permission before obtaining the extended attributes
-- * 	identified by @name for @dentry.
+  *	Check permission before obtaining the extended attributes
+- *	identified by @name for @dentry.
 + * 	identified by @name for @dentry and @mnt.
-  * 	Return 0 if permission is granted.
+  *	Return 0 if permission is granted.
   * @inode_listxattr:
-  * 	Check permission before obtaining the list of extended attribute 
-@@ -1291,7 +1291,8 @@ struct security_operations {
+  *	Check permission before obtaining the list of extended attribute
+@@ -1401,7 +1401,8 @@ struct security_operations {
  				     struct vfsmount *mnt,
- 				     char *name, void *value,
+ 				     const char *name, const void *value,
  				     size_t size, int flags);
--	int (*inode_getxattr) (struct dentry *dentry, char *name);
+-	int (*inode_getxattr) (struct dentry *dentry, const char *name);
 +	int (*inode_getxattr) (struct dentry *dentry, struct vfsmount *mnt,
-+			       char *name);
++			       const char *name);
  	int (*inode_listxattr) (struct dentry *dentry);
- 	int (*inode_removexattr) (struct dentry *dentry, char *name);
+ 	int (*inode_removexattr) (struct dentry *dentry, const char *name);
  	int (*inode_need_killpriv) (struct dentry *dentry);
-@@ -1554,7 +1555,8 @@ int security_inode_setxattr(struct dentr
+@@ -1682,7 +1683,8 @@ int security_inode_setxattr(struct dentr
  void security_inode_post_setxattr(struct dentry *dentry, struct vfsmount *mnt,
- 				  char *name, void *value, size_t size,
- 				  int flags);
--int security_inode_getxattr(struct dentry *dentry, char *name);
+ 				  const char *name, const void *value,
+ 				  size_t size, int flags);
+-int security_inode_getxattr(struct dentry *dentry, const char *name);
 +int security_inode_getxattr(struct dentry *dentry, struct vfsmount *mnt,
-+			    char *name);
++			    const char *name);
  int security_inode_listxattr(struct dentry *dentry);
- int security_inode_removexattr(struct dentry *dentry, char *name);
+ int security_inode_removexattr(struct dentry *dentry, const char *name);
  int security_inode_need_killpriv(struct dentry *dentry);
-@@ -1954,7 +1956,8 @@ static inline void security_inode_post_s
- 						 int flags)
+@@ -2114,7 +2116,8 @@ static inline void security_inode_post_s
  { }
  
--static inline int security_inode_getxattr (struct dentry *dentry, char *name)
-+static inline int security_inode_getxattr (struct dentry *dentry,
-+					    struct vfsmount *mnt, char *name)
+ static inline int security_inode_getxattr(struct dentry *dentry,
+-			const char *name)
++					  struct vfsmount *mnt,
++					  const char *name)
  {
  	return 0;
  }
 --- a/security/dummy.c
 +++ b/security/dummy.c
-@@ -365,7 +365,8 @@ static void dummy_inode_post_setxattr (s
+@@ -392,7 +392,8 @@ static void dummy_inode_post_setxattr (s
  {
  }
  
--static int dummy_inode_getxattr (struct dentry *dentry, char *name)
-+static int dummy_inode_getxattr (struct dentry *dentry,
-+			          struct vfsmount *mnt, char *name)
+-static int dummy_inode_getxattr (struct dentry *dentry, const char *name)
++static int dummy_inode_getxattr (struct dentry *dentry, struct vfsmount *mnt,
++				 const char *name)
  {
  	return 0;
  }
 --- a/security/security.c
 +++ b/security/security.c
-@@ -458,11 +458,12 @@ void security_inode_post_setxattr(struct
- 	security_ops->inode_post_setxattr(dentry, mnt, name, value, size, flags);
+@@ -520,11 +520,12 @@ void security_inode_post_setxattr(struct
+ 					  flags);
  }
  
--int security_inode_getxattr(struct dentry *dentry, char *name)
+-int security_inode_getxattr(struct dentry *dentry, const char *name)
 +int security_inode_getxattr(struct dentry *dentry, struct vfsmount *mnt,
-+			    char *name)
++			    const char *name)
  {
  	if (unlikely(IS_PRIVATE(dentry->d_inode)))
  		return 0;
@@ -98,13 +98,13 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  int security_inode_listxattr(struct dentry *dentry)
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2409,7 +2409,8 @@ static void selinux_inode_post_setxattr(
+@@ -2732,7 +2732,8 @@ static void selinux_inode_post_setxattr(
  	return;
  }
  
--static int selinux_inode_getxattr (struct dentry *dentry, char *name)
-+static int selinux_inode_getxattr (struct dentry *dentry, struct vfsmount *mnt,
-+				   char *name)
+-static int selinux_inode_getxattr(struct dentry *dentry, const char *name)
++static int selinux_inode_getxattr(struct dentry *dentry, struct vfsmount *mnt,
++				  const char *name)
  {
  	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
  }

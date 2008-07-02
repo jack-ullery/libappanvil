@@ -9,15 +9,15 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
  fs/namei.c               |    3 ++-
- include/linux/security.h |   16 +++++++++++-----
+ include/linux/security.h |   18 ++++++++++++------
  security/dummy.c         |    6 ++++--
  security/security.c      |    8 +++++---
  security/selinux/hooks.c |    9 +++++++--
- 5 files changed, 29 insertions(+), 13 deletions(-)
+ 5 files changed, 30 insertions(+), 14 deletions(-)
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2356,7 +2356,8 @@ int vfs_link(struct dentry *old_dentry, 
+@@ -2506,7 +2506,8 @@ int vfs_link(struct dentry *old_dentry, 
  	if (S_ISDIR(old_dentry->d_inode->i_mode))
  		return -EPERM;
  
@@ -29,7 +29,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -303,8 +303,10 @@ struct request_sock;
+@@ -347,8 +347,10 @@ static inline void security_free_mnt_opt
   * @inode_link:
   *	Check permission before creating a new hard link to a file.
   *	@old_dentry contains the dentry structure for an existing link to the file.
@@ -39,20 +39,20 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 + *	@new_mnt is the vfsmount corresponding to @new_dentry (may be NULL).
   *	Return 0 if permission is granted.
   * @inode_unlink:
-  *	Check the permission to remove a hard link to a file. 
-@@ -1255,8 +1257,9 @@ struct security_operations {
+  *	Check the permission to remove a hard link to a file.
+@@ -1363,8 +1365,9 @@ struct security_operations {
  				    char **name, void **value, size_t *len);
  	int (*inode_create) (struct inode *dir, struct dentry *dentry,
  			     struct vfsmount *mnt, int mode);
 -	int (*inode_link) (struct dentry *old_dentry,
--	                   struct inode *dir, struct dentry *new_dentry);
+-			   struct inode *dir, struct dentry *new_dentry);
 +	int (*inode_link) (struct dentry *old_dentry, struct vfsmount *old_mnt,
 +	                   struct inode *dir, struct dentry *new_dentry,
 +			   struct vfsmount *new_mnt);
  	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
  	int (*inode_symlink) (struct inode *dir, struct dentry *dentry,
  			      struct vfsmount *mnt, const char *old_name);
-@@ -1513,8 +1516,9 @@ int security_inode_init_security(struct 
+@@ -1638,8 +1641,9 @@ int security_inode_init_security(struct 
  				  char **name, void **value, size_t *len);
  int security_inode_create(struct inode *dir, struct dentry *dentry,
  			  struct vfsmount *mnt, int mode);
@@ -64,21 +64,22 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  int security_inode_unlink(struct inode *dir, struct dentry *dentry);
  int security_inode_symlink(struct inode *dir, struct dentry *dentry,
  			   struct vfsmount *mnt, const char *old_name);
-@@ -1832,8 +1836,10 @@ static inline int security_inode_create 
+@@ -1987,8 +1991,10 @@ static inline int security_inode_create(
  }
  
- static inline int security_inode_link (struct dentry *old_dentry,
-+				       struct vfsmount *old_mnt,
- 				       struct inode *dir,
+ static inline int security_inode_link(struct dentry *old_dentry,
+-				       struct inode *dir,
 -				       struct dentry *new_dentry)
-+				       struct dentry *new_dentry,
-+				       struct vfsmount *new_mnt)
++				      struct vfsmount *old_mnt,
++				      struct inode *dir,
++				      struct dentry *new_dentry,
++				      struct vfsmount *new_mnt)
  {
  	return 0;
  }
 --- a/security/dummy.c
 +++ b/security/dummy.c
-@@ -267,8 +267,10 @@ static int dummy_inode_create (struct in
+@@ -294,8 +294,10 @@ static int dummy_inode_create (struct in
  	return 0;
  }
  
@@ -93,7 +94,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  }
 --- a/security/security.c
 +++ b/security/security.c
-@@ -336,12 +336,14 @@ int security_inode_create(struct inode *
+@@ -396,12 +396,14 @@ int security_inode_create(struct inode *
  	return security_ops->inode_create(dir, dentry, mnt, mode);
  }
  
@@ -113,7 +114,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
  int security_inode_unlink(struct inode *dir, struct dentry *dentry)
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2190,11 +2190,16 @@ static int selinux_inode_create(struct i
+@@ -2513,11 +2513,16 @@ static int selinux_inode_create(struct i
  	return may_create(dir, dentry, SECCLASS_FILE);
  }
  
@@ -121,12 +122,12 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 +static int selinux_inode_link(struct dentry *old_dentry,
 +			      struct vfsmount *old_mnt,
 +			      struct inode *dir,
-+			      struct dentry *new_dentry,
++			      struct dentry *new_dentry
 +			      struct vfsmount *new_mnt)
  {
  	int rc;
  
--	rc = secondary_ops->inode_link(old_dentry,dir,new_dentry);
+-	rc = secondary_ops->inode_link(old_dentry, dir, new_dentry);
 +	rc = secondary_ops->inode_link(old_dentry, old_mnt, dir, new_dentry,
 +				       new_mnt);
  	if (rc)

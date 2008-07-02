@@ -11,12 +11,12 @@ Reviewed-by: James Morris <jmorris@namei.org>
 ---
  include/linux/sysctl.h   |    2 ++
  kernel/sysctl.c          |   27 +++++++++++++++++++++++++++
- security/selinux/hooks.c |   35 +++++------------------------------
- 3 files changed, 34 insertions(+), 30 deletions(-)
+ security/selinux/hooks.c |   34 +++++-----------------------------
+ 3 files changed, 34 insertions(+), 29 deletions(-)
 
 --- a/include/linux/sysctl.h
 +++ b/include/linux/sysctl.h
-@@ -983,6 +983,8 @@ extern int proc_doulongvec_minmax(struct
+@@ -980,6 +980,8 @@ extern int proc_doulongvec_minmax(struct
  extern int proc_doulongvec_ms_jiffies_minmax(struct ctl_table *table, int,
  				      struct file *, void __user *, size_t *, loff_t *);
  
@@ -27,11 +27,11 @@ Reviewed-by: James Morris <jmorris@namei.org>
  		      void __user *newval, size_t newlen);
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
-@@ -1327,6 +1327,33 @@ struct ctl_table_header *sysctl_head_nex
- 	return NULL;
+@@ -1435,6 +1435,33 @@ void register_sysctl_root(struct ctl_tab
+ 	spin_unlock(&sysctl_lock);
  }
  
-+char *sysctl_pathname(ctl_table *table, char *buffer, int buflen)
++char *sysctl_pathname(struct ctl_table *table, char *buffer, int buflen)
 +{
 +	if (buflen < 1)
 +		return NULL;
@@ -56,14 +56,14 @@ Reviewed-by: James Morris <jmorris@namei.org>
 +
 +	return buffer;
 +}
-+EXPORT_SYMBOL(sysctl_pathname);
++EXPORT_SYMBOL_GPL(sysctl_pathname);
 +
  #ifdef CONFIG_SYSCTL_SYSCALL
- int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user *oldlenp,
- 	       void __user *newval, size_t newlen)
+ /* Perform the actual read/write of a sysctl table entry. */
+ static int do_sysctl_strategy(struct ctl_table_root *root,
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -1431,40 +1431,15 @@ static int selinux_capable(struct task_s
+@@ -1736,40 +1736,16 @@ static int selinux_capable(struct task_s
  
  static int selinux_sysctl_get_sid(ctl_table *table, u16 tclass, u32 *sid)
  {
@@ -73,10 +73,10 @@ Reviewed-by: James Morris <jmorris@namei.org>
 +	int rc = -ENOMEM;
  
 -	rc = -ENOMEM;
- 	buffer = (char*)__get_free_page(GFP_KERNEL);
+ 	buffer = (char *)__get_free_page(GFP_KERNEL);
  	if (!buffer)
  		goto out;
--
+ 
 -	buflen = PAGE_SIZE;
 -	end = buffer+buflen;
 -	*--end = '\0';

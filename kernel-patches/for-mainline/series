@@ -1,9 +1,6 @@
-#unionfs-2.2.2_for_2.6.24-rc7.diff
-#unionfs-2.1.11_for_2.6.24-rc4.diff
 security-create.diff
 remove_suid.diff
 vfs-notify_change.diff
-#should_remove_suid.diff
 security-setattr.diff
 vfs-mkdir.diff
 security-mkdir.diff
@@ -30,12 +27,10 @@ security-listxattr.diff
 vfs-removexattr.diff
 security-removexattr.diff
 unambiguous-__d_path.diff
-mount-consistent-__d_path.diff
 d_namespace_path.diff
-__d_path-keep-connected.diff
 fsetattr.diff
-#fix-fuse.diff
 fsetattr-reintro-ATTR_FILE.diff
+fsetattr-restore-ia_file.diff
 file-handle-ops.diff
 security-xattr-file.diff
 sysctl-pathname.diff
@@ -49,75 +44,7 @@ apparmor-lsm.diff
 apparmor-module_interface.diff
 apparmor-misc.diff
 apparmor-intree.diff
-
-#fix-rcu-deref.diff
-#fix-name-errorpath.diff
-#change-profile-kernel-v2.diff
-#expand-dfa.diff
-#slash-null-dfa.diff
-#profile-namespaces.diff
-#owner-perm-set.diff
-#apparmor-link-pairs.diff
-#apparmor-bootdisable.diff
-#apparmor-builtin-only.diff
-#apparmor-security-goal.diff
-#apparmor-features.diff
-#split_init.diff
-#apparmor-fix-sysctl-refcount.diff
-#apparmor-fix-lock-letter.diff
-#fix-link-subset.diff
-#hat_perm.diff
-#extend-x-mods.diff
-#no-safex-link-subset.diff
-#apparmor-create-append.diff
-#apparmor-failed-name-error.diff
-#audit-uid.diff
-#apparmor-secondary-accept.diff
-#apparmor-audit-flags2.diff
-#fix-profile-namespaces.diff
-#fix-dfa.diff
-#cap-set.diff
-
-
-#foobar.diff
-# # NOT YET
-# ecryptfs-d_revalidate.diff
-# nfs-nameidata-check.diff
-# # statvfs.diff
-# # statvfs-2.diff
-# # fix-getcwd.diff
-# # proc-mounts-cleanup.diff
-# # proc-mounts-check-d_path-result.diff
-# # fix-d_path.diff
-##split-up-nameidata.diff
-##vfs_create-nameidata.diff
-##xattr_permission.diff
-##nfsd_permission-nameidata.diff
-# vfs_create-args.diff
-# vfs_mknod-args.diff
-# vfs_mkdir-args.diff
-# vfs_symlink-args.diff
-# vfs_link-args.diff
-# vfs_rename-args.diff
-# may_create-args.diff
-# vfs_rmdir-args.diff
-# vfs_unlink-args.diff
-# may_delete-args.diff
-#fix-change_profile-namespace.diff
-
-#audit_denied.diff
-#apparmor-audit-flags.diff
-#FS2.2.2_fix-unionfs-with-AppArmor.patch
-#FS2.1.3_fix-unionfs-with-AppArmor.patch
-
-#named-transitions.diff
 apparmor-network.diff
-#fix-net.diff
 apparmor-rlimits.diff
-audit-log-type-in-syslog.diff
-#fix-named-transitions.diff
-#apparmor-xmods-accept-entry.diff
-#apparmor-split-audit-deny.diff
-#apparmor-cond-uid.diff
-#apparmor-quiet-control.diff
-#apparmor-direct-complain.diff
+apparmor-2.6.25.diff
+apparmor-stack_secondary.diff

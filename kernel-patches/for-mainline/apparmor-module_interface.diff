@@ -812,7 +812,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +	/* per profile debug flags (complain, audit) */
 +	if (!aa_is_nameX(e, AA_STRUCT, "flags"))
 +		goto fail;
-+	if (!aa_is_u32(e, NULL, NULL))
++	if (!aa_is_u32(e, &(profile->flags.hat), NULL))
 +		goto fail;
 +	if (!aa_is_u32(e, &(profile->flags.complain), NULL))
 +		goto fail;
