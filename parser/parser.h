@@ -166,6 +166,11 @@ struct var_string {
 #define AARE_PCRE 1
 #define AARE_DFA 2
 
+#define FLAG_CHANGEHAT_1_4  2
+#define FLAG_CHANGEHAT_1_5  3
+extern int flag_changehat_version;
+
+
 #ifdef DEBUG
 #define PDEBUG(fmt, args...) printf("parser: " fmt, ## args)
 #else
