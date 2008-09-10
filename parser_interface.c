@@ -887,11 +887,30 @@ exit:
 	return error;
 }
 
+/* bleah the kernel should just loop and do multiple load, but to support
+ * older systems we need to do this
+ */
+#define PROFILE_HEADER_SIZE
+static char header_version[] = "\x04\x08\x00version";
+
+static char *next_profile_buffer(char *buffer, int size)
+{
+	char *b = buffer;
+
+	for (; size - sizeof(header_version); b++, size--) {
+		if (memcmp(b, header_version, sizeof(header_version)) == 0) {
+			return b;
+		}
+	}
+	return NULL;
+}
+
 int sd_load_buffer(int option, char *buffer, int size)
 {
 	int fd;
-	int error = 0, wsize;
+	int error = 0, wsize, bsize;
 	char *filename = NULL;
+	char *b;
 
 	switch (option) {
 	case OPTION_ADD:
@@ -915,12 +934,15 @@ int sd_load_buffer(int option, char *buffer, int size)
 		goto exit;
 	}
 
-	wsize = write(fd, buffer, size);
-	if (wsize < 0) {
-		error = -errno;
-	} else if (wsize < size) {
-		PERROR(_("%s: Unable to write entire profile entry\n"),
-		       progname);
+	for (b = buffer; b ; b = next_profile_buffer(b + sizeof(header_version), bsize)) {
+		bsize = size - (b - buffer);
+		wsize = write(fd, b, bsize);
+		if (wsize < 0) {
+			error = -errno;
+		} else if (wsize < bsize) {
+			PERROR(_("%s: Unable to write entire profile entry\n"),
+			       progname);
+		}
 	}
 	close(fd);
 exit:
