@@ -688,8 +688,8 @@ sub handle_binfmt ($$) {
         chomp $library;
         next unless $library;
 
-        $profile->{allow}{path}->{$library}{mode} = str_to_mode("mr");
-        $profile->{allow}{path}->{$library}{audit} = 0;
+        $profile->{allow}{path}->{$library}{mode} |= str_to_mode("mr");
+        $profile->{allow}{path}->{$library}{audit} |= 0;
     }
 }
 
@@ -728,8 +728,8 @@ sub create_new_profile {
         my $hashbang = head($fqdbin);
         if ($hashbang && $hashbang =~ /^#!\s*(\S+)/) {
             my $interpreter = get_full_path($1);
-            $profile->{$fqdbin}{allow}{path}->{$interpreter}{mode} = str_to_mode("ix");
-            $profile->{$fqdbin}{allow}{path}->{$interpreter}{audit} = 0;
+            $profile->{$fqdbin}{allow}{path}->{$interpreter}{mode} |= str_to_mode("ix");
+            $profile->{$fqdbin}{allow}{path}->{$interpreter}{audit} |= 0;
             if ($interpreter =~ /perl/) {
                 $profile->{$fqdbin}{include}->{"abstractions/perl"} = 1;
             } elsif ($interpreter =~ m/\/bin\/(bash|sh)/) {
@@ -2248,7 +2248,7 @@ sub handlechildren {
                             }
                             $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target} |= $exec_mode;
                             $log{PERMITTING}{$profile}              = {};
-                            $sd{$profile}{$hat}{allow}{path}{$exec_target}{mode} = $exec_mode;
+                            $sd{$profile}{$hat}{allow}{path}{$exec_target}{mode} |= $exec_mode;
                             $sd{$profile}{$hat}{allow}{path}{$exec_target}{audit} |= 0;
                             $sd{$profile}{$hat}{allow}{path}{$exec_target}{to} = $to_name if ($to_name);
 
@@ -2264,7 +2264,7 @@ sub handlechildren {
                                 my $hashbang = head($exec_target);
                                 if ($hashbang =~ /^#!\s*(\S+)/) {
                                     my $interpreter = get_full_path($1);
-                                    $sd{$profile}{$hat}{path}->{$interpreter}{mode} = str_to_mode("ix");
+                                    $sd{$profile}{$hat}{path}->{$interpreter}{mode} |= str_to_mode("ix");
                                     $sd{$profile}{$hat}{path}->{$interpreter}{audit} |= 0;
                                     if ($interpreter =~ /perl/) {
                                         $sd{$profile}{$hat}{include}{"abstractions/perl"} = 1;
@@ -3628,7 +3628,7 @@ sub ask_the_questions {
                                     UI_Info(sprintf(gettext('Deleted %s previous matching profile entries.'), $deleted)) if $deleted;
                                 } else {
                                     if ($sd{$profile}{$hat}{allow}{path}{$path}{mode}) {
-                                        $mode = $mode | $sd{$profile}{$hat}{allow}{path}{$path}{mode};
+                                        $mode |= $sd{$profile}{$hat}{allow}{path}{$path}{mode};
                                     }
 
                                     my $deleted = 0;
@@ -3658,7 +3658,7 @@ sub ask_the_questions {
 				    } elsif  ($owner_toggle == 3) {
 					$mode = owner_flatten_mode($mode);
 				    }
-                                    $sd{$profile}{$hat}{allow}{path}{$path}{mode} = $mode;
+                                    $sd{$profile}{$hat}{allow}{path}{$path}{mode} |= $mode;
 				    my $tmpmode = ($audit_toggle == 1) ? $mode & ~$allow_mode : 0;
 				    $tmpmode = ($audit_toggle == 2) ? $mode : $tmpmode;
                                     $sd{$profile}{$hat}{allow}{path}{$path}{audit} |= $tmpmode;
@@ -4567,8 +4567,7 @@ sub print_mode ($) {
     my $mode = shift;
 
     my ($user, $other) = split_mode($mode);
-
-    my $str = sub_str_to_mode($user) . "::" . sub_str_to_mode($other);
+    my $str = sub_mode_to_str($user) . "::" . sub_mode_to_str($other);
 
     return $str;
 }
@@ -5015,14 +5014,14 @@ sub parse_profile_data {
             my $link = strip_quotes($7);
 	    my $value = strip_quotes($8);
 	    $profile_data->{$profile}{$hat}{$allow}{link}{$link}{to} = $value;
-	    $profile_data->{$profile}{$hat}{$allow}{link}{$link}{mode} = $AA_MAY_LINK;
+	    $profile_data->{$profile}{$hat}{$allow}{link}{$link}{mode} |= $AA_MAY_LINK;
 	    if ($subset) {
-		$profile_data->{$profile}{$hat}{$allow}{link}{$link}{mode} = $AA_LINK_SUBSET;
+		$profile_data->{$profile}{$hat}{$allow}{link}{$link}{mode} |= $AA_LINK_SUBSET;
 	    }
 	    if ($audit) {
-		$profile_data->{$profile}{$hat}{$allow}{link}{$link}{audit} = $AA_LINK_SUBSET;
+		$profile_data->{$profile}{$hat}{$allow}{link}{$link}{audit} |= $AA_LINK_SUBSET;
 	    } else {
-		$profile_data->{$profile}{$hat}{$allow}{link}{$link}{audit} = 0;
+		$profile_data->{$profile}{$hat}{$allow}{link}{$link}{audit} |= 0;
 	    }
 
 	} elsif (m/^\s*change_profile\s+->\s*("??.+?"??),(#.*)?$/) { # for now just keep change_profile
@@ -5121,12 +5120,13 @@ sub parse_profile_data {
 	    } else {
 		$tmpmode = str_to_mode($mode);
 	    }
-            $profile_data->{$profile}{$hat}{$allow}{path}{$path}{mode} = $tmpmode;
+
+            $profile_data->{$profile}{$hat}{$allow}{path}{$path}{mode} |= $tmpmode;
             $profile_data->{$profile}{$hat}{$allow}{path}{$path}{to} = $nt_name if $nt_name;
 	    if ($audit) {
-		$profile_data->{$profile}{$hat}{$allow}{path}{$path}{audit} = $tmpmode;
+		$profile_data->{$profile}{$hat}{$allow}{path}{$path}{audit} |= $tmpmode;
 	    } else {
-		$profile_data->{$profile}{$hat}{$allow}{path}{$path}{audit} = 0;
+		$profile_data->{$profile}{$hat}{$allow}{path}{$path}{audit} |= 0;
 	    }
         } elsif (m/^\s*#include <(.+)>\s*$/) {     # include stuff
             my $include = $1;
@@ -5189,7 +5189,7 @@ sub parse_profile_data {
 	    $profile_data->{$profile}{$hat}{'declared'} = 1
 		unless exists($profile_data->{$profile}{$hat}{declared});
 
-        } elsif (m/^\s*\^(\"??.+?\"??)\s+(flags=\(.+\)\s+)*\{\s*(#.*)?$/) {
+        } elsif (m/^\s*\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$/) {
 	    if ($do_include) {
 		die "include <$file> contains syntax errors.";
 	    }
@@ -5207,14 +5207,13 @@ sub parse_profile_data {
 
             # we hit the start of a hat inside the current profile
             $hat = $1;
-            my $flags = $3;
+            my $flags = $4;
 
             # strip quotes.
             $hat = $1 if $hat =~ /^"(.+)"$/;
 
             # keep track of profile flags
 	    $profile_data->{$profile}{$hat}{flags} = $flags;
-
 	    # we have seen more than a declaration so clear it
 	    $profile_data->{$profile}{$hat}{'declared'} = 0;
             $profile_data->{$profile}{$hat}{allow}{path} = { };
@@ -5609,85 +5608,63 @@ sub writepath_rules ($$$) {
 	    my $tail = "";
 	    $tail = " -> " . $profile_data->{$allow}{path}{$path}{to} if ($profile_data->{$allow}{path}{$path}{to});
 	    my ($user, $other) = split_mode($mode);
-	    if ($user & ~$other) {
-		$user = $user & ~$other;
-		$mode = $other;
+	    my ($user_audit, $other_audit) = split_mode($audit);
+	    # determine whether the rule contains any owner only components
 
-		if ($user & $audit) {
-		    my $amode = $user & $audit;
-		    my $modestr = mode_to_str_user($amode);
-		    my $str = $allowstr;
-		    $str .= "owner " if $modestr =~ s/owner //;
-		    if ($path =~ /\s/) {
-			push @data, "${pre}audit ${str}\"$path\" ${modestr}${tail},";
+	    while ($user || $other) {
+		my $ownerstr = "";
+		my ($tmpmode, $tmpaudit) = 0;
+		if ($user & ~$other) {
+		    # user contains bits not set in other
+		    $ownerstr = "owner ";
+		    $tmpmode = $user & ~$other;
+		    $tmpaudit = $user_audit;
+		    $user &= ~$tmpmode;
+		} elsif ($other & ~$user) {
+		    $ownerstr = "other ";
+		    $tmpmode = $other & ~$user;
+		    $tmpaudit = $other_audit;
+		    $other &= ~$tmpmode;
+		} else {
+		    if ($user_audit & ~$other_audit & $user) {
+			$ownerstr = "owner ";
+			$tmpaudit = $user_audit & ~$other_audit & $user;
+			$tmpmode = $user & $tmpaudit;
+			$user &= ~$tmpmode;
+		    } elsif ($other_audit & ~$user_audit & $other) {
+			$ownerstr = "other ";
+			$tmpaudit = $other_audit & ~$user_audit & $other;
+			$tmpmode = $other & $tmpaudit;
+			$other &= ~$tmpmode;
 		    } else {
-			push @data, "${pre}audit ${str}$path ${modestr}${tail},";
+			# user == other && user_audit == other_audit
+			$ownerstr = "";
+			$tmpmode = $user;
+			$tmpaudit = $user_audit;
+			$user &= ~$tmpmode;
+			$other &= ~$tmpmode;
 		    }
-		    # mask off the bits we have already written
-		    $user &= ~$audit;
 		}
-		if ($user) {
-		    my $modestr = mode_to_str_user($user & ~$audit);
-		    my $str = $allowstr;
-		    $str .= "owner " if $modestr =~ s/owner //;
 
-		    # deal with whitespace in path names
+		if ($tmpmode & $tmpaudit) {
+		    my $modestr = mode_to_str($tmpmode & $tmpaudit);
 		    if ($path =~ /\s/) {
-			push @data, "${pre}${str}\"$path\" ${modestr}${tail},";
+			push @data, "${pre}audit ${allowstr}${ownerstr}\"$path\" ${modestr}${tail},";
 		    } else {
-			push @data, "${pre}${str}$path ${modestr}${tail},";
+			push @data, "${pre}audit ${allowstr}${ownerstr}$path ${modestr}${tail},";
 		    }
+		    $tmpmode &= ~$tmpaudit;
 		}
-		if ($mode & $audit) {
-		    my $amode = $mode & $audit;
-		    my $modestr = mode_to_str_user($amode);
-		    my $str = $allowstr;
-		    $str .= "owner " if $modestr =~ s/owner //;
+		if ($tmpmode) {
+		    my $modestr = mode_to_str($tmpmode);
 		    if ($path =~ /\s/) {
-			push @data, "${pre}audit ${str}\"$path\" ${modestr}${tail},";
+			push @data, "${pre}${allowstr}${ownerstr}\"$path\" ${modestr}${tail},";
 		    } else {
-			push @data, "${pre}audit ${str}$path ${modestr}${tail},";
-		    }
-		    # mask off the bits we have already written
-		    $mode &= ~$audit;
-		}
-		if ($mode) {
-		    my $modestr = mode_to_str_user($mode & ~$audit);
-		    my $str = $allowstr;
-		    $str .= "owner " if $modestr =~ s/owner //;
-		    # deal with whitespace in path names
-		    if ($path =~ /\s/) {
-			push @data, "${pre}${str}\"$path\" ${modestr}${tail},";
-		    } else {
-			push @data, "${pre}${str}$path ${modestr}${tail},";
-		    }
-		}
-	    } else {
-		if ($mode & $audit) {
-		    my $amode = $mode & $audit;
-		    my $modestr = mode_to_str_user($amode);
-		    my $str = $allowstr;
-		    $str .= "owner " if $modestr =~ s/owner //;
-		    if ($path =~ /\s/) {
-			push @data, "${pre}audit ${str}\"$path\" ${modestr}${tail},";
-		    } else {
-			push @data, "${pre}audit ${str}$path ${modestr}${tail},";
-		    }
-		    # mask off the bits we have already written
-		    $mode &= ~$audit;
-		}
-		if ($mode) {
-		    my $modestr = mode_to_str_user($mode & ~$audit);
-		    my $str = $allowstr;
-		    $str .= "owner " if $modestr =~ s/owner //;
-		    # deal with whitespace in path names
-		    if ($path =~ /\s/) {
-			push @data, "${pre}${str}\"$path\" ${modestr}${tail},";
-		    } else {
-			push @data, "${pre}${str}$path ${modestr}${tail},";
+			push @data, "${pre}${allowstr}${ownerstr}$path ${modestr}${tail},";
 		    }
 		}
 	    }
+
         }
 	push @data, "";
     }
