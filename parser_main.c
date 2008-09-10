@@ -46,6 +46,7 @@
 #define PROC_MODULES "/proc/modules"
 #define DEFAULT_APPARMORFS "/sys/kernel/security/" MODULE_NAME
 #define MATCH_STRING "/sys/kernel/security/" MODULE_NAME "/matching"
+#define FLAGS_FILE "/sys/kernel/security/" MODULE_NAME "/features"
 #define MOUNTED_FS "/proc/mounts"
 #define PCRE "pattern=pcre"
 #define AADFA "pattern=aadfa"
@@ -67,8 +68,11 @@ int conf_quiet = 0;
 char *subdomainbase = NULL;
 char *profilename;
 char *match_string = NULL;
+char *flags_string = NULL;
 int regex_type = AARE_DFA;
 char *profile_namespace = NULL;
+int flag_changehat_version = FLAG_CHANGEHAT_1_5;
+
 
 extern int current_lineno;
 
@@ -388,6 +392,37 @@ out:
 	return;
 }
 
+static void get_flags_string(void) {
+	char *pos;
+	FILE *f = fopen(FLAGS_FILE, "r");
+	if (!f)
+		return;
+
+	flags_string = malloc(1024);
+	if (!flags_string)
+		goto fail;
+
+	if (!fgets(flags_string, 1024, f))
+		goto fail;
+
+	fclose(f);
+	pos = strstr(flags_string, "change_hat=");
+	if (pos) {
+		if (strncmp(pos, "change_hat=1.4", 14) == 0)
+			flag_changehat_version = FLAG_CHANGEHAT_1_4;
+//fprintf(stderr, "flags string: %s\n", flags_string);
+//fprintf(stderr, "changehat %d\n", flag_changehat_version);
+	}
+	return;
+
+fail:
+	free(flags_string);
+	flags_string = NULL;
+	if (f)
+		fclose(f);
+	return;
+}
+
 /* return 1 --> PCRE should work fine
    return 0 --> no PCRE support */
 static int regex_support(void) {
@@ -467,6 +502,7 @@ int process_profile(int option, char *profilename)
 
 	/* Get the match string to determine type of regex support needed */
 	get_match_string();
+	get_flags_string();
 
 	retval = post_process_policy();
   	if (retval != 0) {
