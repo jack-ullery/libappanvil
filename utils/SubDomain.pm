@@ -2715,6 +2715,7 @@ sub add_event_to_tree ($) {
         }
     }
     return if ( $sdmode =~ /UNKNOWN|AUDIT|STATUS|ERROR/ );
+    return if ($e->{operation} =~ /profile_set/);
 
     my ($profile, $hat);
     ($profile, $hat) = split /\/\//, $e->{profile};
@@ -5159,15 +5160,15 @@ sub parse_profile_data {
                 $profile_data->{$profile}{$hat}{$allow}{netdomain}{rule} = { };
             }
 
-            if ( $network =~ /\s+(\S+)\s*,\s*(#.*)?$/ ) {
-		my $fam = $1;
-                $profile_data->{$profile}{$hat}{$allow}{netdomain}{rule}{$fam} = 1;
-		$profile_data->{$profile}{$hat}{$allow}{netdomain}{audit}{$fam} = $audit;
-            } elsif ($network =~ /\s+(\S+)\s+(\S+)\s*,\s*(#.*)?$/ ) {
+            if ($network =~ /\s+(\S+)\s+(\S+)\s*,\s*(#.*)?$/ ) {
 		my $fam = $1;
 		my $type = $2;
                 $profile_data->{$profile}{$hat}{$allow}{netdomain}{rule}{$fam}{$type} = 1;
                 $profile_data->{$profile}{$hat}{$allow}{netdomain}{audit}{$fam}{$type} = $audit;
+            } elsif ( $network =~ /\s+(\S+)\s*,\s*(#.*)?$/ ) {
+		my $fam = $1;
+                $profile_data->{$profile}{$hat}{$allow}{netdomain}{rule}{$fam} = 1;
+		$profile_data->{$profile}{$hat}{$allow}{netdomain}{audit}{$fam} = $audit;
             } else {
                 $profile_data->{$profile}{$hat}{$allow}{netdomain}{rule}{all} = 1;
                 $profile_data->{$profile}{$hat}{$allow}{netdomain}{audit}{all} = 1;
@@ -5956,7 +5957,7 @@ sub profile_known_network (\%$$) {
 sub netrules_access_check ($$$) {
     my ($netrules, $family, $sock_type) = @_;
     return 0 if ( not defined $netrules );
-    my %netrules        = %$netrules;;
+    my %netrules        = %$netrules;
     my $all_net         = defined $netrules{rule}{all};
     my $all_net_family  = defined $netrules{rule}{$family} && $netrules{rule}{$family} == 1;
     my $net_family_sock = defined $netrules{rule}{$family} &&
