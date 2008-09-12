@@ -850,7 +850,7 @@ rule:	TOK_UNSAFE file_mode id_or_var opt_named_transition TOK_END_OF_RULE
 			yyerror(_("unsafe rule missing exec permissions"));
 
 		if ($4.present && ($2 & AA_LINK_BITS))
-			yyerror(_("link perms are not allowed on a named profile transtion.\n"));
+			yyerror(_("link perms are not allowed on a named profile transition.\n"));
 
 		$$ = do_file_rule($4.namespace, $3,
 				  ($2 & ~ALL_AA_EXEC_UNSAFE) | mode,
