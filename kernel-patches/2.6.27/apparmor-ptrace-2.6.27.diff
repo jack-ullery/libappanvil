@@ -23,7 +23,7 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 -static int apparmor_ptrace(struct task_struct *parent,
 -			   struct task_struct *child, unsigned int mode)
 +static int apparmor_ptrace(struct task_struct *tracer,
-+			   struct task_struct *tracee, unsigned int mode)
++			   struct task_struct *tracee)
  {
  	struct aa_task_context *cxt;
  	int error = 0;
