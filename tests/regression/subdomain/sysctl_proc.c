@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 		lseek(fd, 0, SEEK_SET);
 		read_size = read(fd, &verify_buffer, sizeof(verify_buffer));
 		if (read_size == -1 || read_size != write_size) {
-			fprintf(stderr, "FAIL: proc sysctl verify(rw) failed || %d != %d - %s\n", read_size, write_size,
+			fprintf(stderr, "FAIL: proc sysctl verify(rw) failed || %zd != %zd - %s\n", read_size, write_size,
 				strerror(errno));
 			return 1;
 		}
