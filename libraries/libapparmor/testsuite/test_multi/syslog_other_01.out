@@ -1,0 +1,5 @@
+START
+File: test_multi/syslog_other_01.in
+Event type: AA_RECORD_INVALID
+Epoch: 0
+Audit subid: 0
