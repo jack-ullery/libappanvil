@@ -4143,8 +4143,9 @@ sub do_logprof_pass {
     eval {
         unless ($repo_cfg || not defined $cfg->{repository}{url}) {
             $repo_cfg = read_config("repository.conf");
-            unless ($repo_cfg->{repository}{enabled} eq "yes" ||
-                    $repo_cfg->{repository}{enabled} eq "no") {
+            unless ($repo_cfg->{repository}{enabled} &&
+                    ($repo_cfg->{repository}{enabled} eq "yes" ||
+                     $repo_cfg->{repository}{enabled} eq "no")) {
                 UI_ask_to_enable_repo();
             }
         }
