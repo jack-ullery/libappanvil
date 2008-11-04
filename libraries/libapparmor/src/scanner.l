@@ -229,6 +229,7 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 			      BEGIN(other_audit);
 			      return(TOK_TYPE_OTHER);
 			}
+	.		{ BEGIN(unknown_message); yyless(0); /* dump the rest */ }
 	}
 
 {equals}		{ return(TOK_EQUALS); }
@@ -296,6 +297,8 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {audit}			{ yy_push_state(audit_id, yyscanner); return(TOK_AUDIT); }
 {null_complain}		{ return(TOK_NULL_COMPLAIN); }
 {key_image}		{ BEGIN(sub_id); return(TOK_KEY_IMAGE); }
+
+.			{ /* ignore any non-matched input */ BEGIN(unknown_message); yyless(0); }
 
 <hostname>{
 	{ws}+		{ /* eat whitespace */ }

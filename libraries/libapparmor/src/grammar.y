@@ -187,7 +187,11 @@ syslog_type:
 	  { ret_record->version = AA_RECORD_SYNTAX_V1; }
 	| syslog_date TOK_ID TOK_SYSLOG_KERNEL audit_id key_list
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
+	| syslog_date TOK_ID TOK_SYSLOG_KERNEL key_type audit_id key_list
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
 	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP audit_id key_list
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
+	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP key_type audit_id key_list
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
 	;
 
@@ -414,6 +418,9 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	;
 
 key_pid: TOK_KEY_PID TOK_EQUALS TOK_DIGITS { ret_record->pid = $3; }
+	;
+
+key_type: TOK_KEY_TYPE TOK_EQUALS TOK_DIGITS { ret_record->event = lookup_aa_event($3); }
 	;
 
 safe_string: TOK_QUOTED_STRING
