@@ -59,9 +59,11 @@
   /var/run/ntpd.pid w,
   /var/tmp/ntp* rwl,
   @{PROC}/*/net/if_inet6 r,
+  @{PROC}/*/sys/kernel/ngroups_max r,
 
   # allow access for when chrooted
-  /var/lib/@{PROC}/*/net/if_inet6 r,
-
-  @{NTPD_DEVICE} r,
+  /var/lib/ntp/@{PROC}/*/net/if_inet6 r,
+  /var/lib/ntp/@{PROC}/*/sys/kernel/ngroups_max r,
+ 
+  @{NTPD_DEVICE} rw,
 }

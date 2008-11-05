@@ -12,4 +12,4 @@
 
 #Add your ntpd devices here eg. if you have a DCF clock
 # @{NTPD_DEVICE}=/dev/ttyS*
-@{NTPD_DEVICE}=""
+@{NTPD_DEVICE}="/dev/tty10"
