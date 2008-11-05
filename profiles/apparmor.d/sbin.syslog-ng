@@ -27,6 +27,7 @@
   capability sys_tty_config,
 
   /dev/log w,
+  /dev/syslog w,
   /dev/tty10 rw,
   /dev/xconsole rw,
   /etc/syslog-ng/* r,
