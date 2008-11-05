@@ -33,7 +33,7 @@
   /drift/ntp.drift.TEMP rwl,
   /etc/ntp.conf r,
   /etc/ntp/drift* rwl,
-  /etc/ntp/keys r,
+  /etc/ntp.keys r,
   /etc/ntp/step-tickers r,
   /etc/ntpd.conf r,
   /etc/ntpd.conf.tmp r,
@@ -58,5 +58,9 @@
   /var/run/ntpd.pid w,
   /var/tmp/ntp* rwl,
   @{PROC}/*/net/if_inet6 r,
+
+  # allow access for when chrooted
+  /var/lib/@{PROC}/*/net/if_inet6 r,
+
   @{NTPD_DEVICE} r,
 }
