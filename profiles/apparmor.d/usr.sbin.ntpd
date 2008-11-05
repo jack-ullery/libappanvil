@@ -17,6 +17,7 @@
   #include <abstractions/nameservice>
   #include <abstractions/xad>
 
+  capability dac_override,
   capability ipc_lock,
   capability net_bind_service,
   capability setgid,
