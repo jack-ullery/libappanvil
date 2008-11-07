@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2008-04-21 00:30-0700\n"
+"POT-Creation-Date: 2008-09-22 23:04-0700\n"
 "PO-Revision-Date: 2008-05-10 09:03+0800\n"
 "Last-Translator: swyear <swyear@gmail.com>\n"
 "Language-Team: Chinese Traditional <zh@li.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: KBabel 1.11.4\n"
 
-#: ../parser_include.c:96
+#: ../parser_include.c:96 ../parser_main.c:450
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
 msgstr "錯誤：無法讀取設定檔：%s：%s。\n"
@@ -151,7 +151,7 @@ msgstr "\"%s\" 移除成功。\n"
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 msgstr "PANIC 不良的增量緩衝區 %p pos %p ext %p size %d res %p\n"
 
-#: ../parser_interface.c:798
+#: ../parser_interface.c:798 ../parser_interface.c:931
 #, c-format
 msgid "Unable to open %s - %s\n"
 msgstr "無法開啟 %s - %s\n"
@@ -175,32 +175,33 @@ msgstr "無法建立工作區\n"
 msgid "unable to serialize profile %s\n"
 msgstr "無法序列化設定檔 %s\n"
 
-#: ../parser_interface.c:872
+#: ../parser_interface.c:872 ../parser_interface.c:943
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
 msgstr "%s: 無法寫入整個設定檔項目\n"
 
-#: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354
+#: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354 parser_lex.l:123
+#: parser_lex.l:158 parser_lex.l:191 parser_lex.l:392
 #, c-format
 msgid "Found unexpected character: '%s'"
 msgstr "找到非預期的字元： '%s'"
 
-#: parser_lex.l:196
+#: parser_lex.l:196 parser_lex.l:232
 #, c-format
 msgid "(network_mode) Found unexpected character: '%s'"
 msgstr "(network_mode) 找到非預期的字元： '%s'"
 
-#: ../parser_main.c:137
+#: ../parser_main.c:137 ../parser_main.c:146
 #, c-format
 msgid "Warning (%s line %d): %s"
 msgstr "警告 (%s 行 %d)：%s"
 
-#: ../parser_main.c:264
+#: ../parser_main.c:264 ../parser_main.c:275
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
 msgstr "%s: 無法為子領域基地裝載點配置記憶體\n"
 
-#: ../parser_main.c:310
+#: ../parser_main.c:310 ../parser_main.c:321
 #, c-format
 msgid ""
 "Warning: unable to find a suitable fs in %s, is it mounted?\n"
@@ -209,7 +210,7 @@ msgstr ""
 "警告：在 %s 中無法找到合適的 fs，是否已掛載 fs？\n"
 "使用 --subdomainfs 來忽略他。\n"
 
-#: ../parser_main.c:330
+#: ../parser_main.c:330 ../parser_main.c:341
 #, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
@@ -218,7 +219,7 @@ msgstr ""
 "%s：很抱歉，您必須有 root 權限才能執行此程式。\n"
 "\n"
 
-#: ../parser_main.c:337
+#: ../parser_main.c:337 ../parser_main.c:348
 #, c-format
 msgid ""
 "%s: Warning! You've set this program setuid root.\n"
@@ -229,7 +230,7 @@ msgstr ""
 "任何可執行此程式的人均可更新您的 AppArmor 設定檔。\n"
 "\n"
 
-#: ../parser_main.c:415
+#: ../parser_main.c:415 ../parser_main.c:509
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
 msgstr "%s: 檔案中發現錯誤。正在中止。\n"
@@ -239,10 +240,15 @@ msgstr "%s: 檔案中發現錯誤。正在中止。\n"
 #: parser_yacc.y:884 parser_yacc.y:893 parser_yacc.y:904 parser_yacc.y:914
 #: parser_yacc.y:985 parser_yacc.y:1033 parser_yacc.y:1044 parser_yacc.y:1119
 #: parser_yacc.y:1134 parser_yacc.y:1141 parser_yacc.y:1152
+#: ../parser_main.c:464 ../parser_misc.c:288 parser_yacc.y:243
+#: parser_yacc.y:352 parser_yacc.y:364 parser_yacc.y:432 parser_yacc.y:534
+#: parser_yacc.y:572 parser_yacc.y:902 parser_yacc.y:974 parser_yacc.y:1022
+#: parser_yacc.y:1108 parser_yacc.y:1126 parser_yacc.y:1133 parser_yacc.y:1144
+#: ../parser_misc.c:292
 msgid "Memory allocation error."
 msgstr "記憶體配置錯誤。"
 
-#: ../parser_misc.c:437
+#: ../parser_misc.c:437 ../parser_misc.c:444 ../parser_misc.c:448
 msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
@@ -250,41 +256,44 @@ msgstr ""
 "已取代大寫修識語 \"RWLIMX\"，請轉換為小寫\n"
 "如需詳細資訊，請參閱 apparmor.d(5) 管理。\n"
 
-#: ../parser_misc.c:473 ../parser_misc.c:480
+#: ../parser_misc.c:473 ../parser_misc.c:480 ../parser_misc.c:487
+#: ../parser_misc.c:484 ../parser_misc.c:491
 msgid "Conflict 'a' and 'w' perms are mutually exclusive."
 msgstr "'a' 和 'w' 衝突，這兩個參數是互不相容的。"
 
-#: ../parser_misc.c:497
+#: ../parser_misc.c:497 ../parser_misc.c:504 ../parser_misc.c:508
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
 msgstr "Exec 修飾語「i」是無效的，已指定衝突的修飾語"
 
-#: ../parser_misc.c:508
+#: ../parser_misc.c:508 ../parser_misc.c:515 ../parser_misc.c:519
 #, c-format
 msgid "Unconfined exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
 msgstr "未限制的 exec 修飾語 (%c%c) 可讓一些危險的環境變數傳遞至不受限制的程序；'man 5 apparmor.d' 以取得詳細資訊。\n"
 
-#: ../parser_misc.c:516 ../parser_misc.c:549
+#: ../parser_misc.c:516 ../parser_misc.c:549 ../parser_misc.c:523
+#: ../parser_misc.c:556 ../parser_misc.c:527 ../parser_misc.c:560
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr ""
+msgstr "Exec 修飾語 '%c' 無效，已指定衝突的修飾語"
 
-#: ../parser_misc.c:543
+#: ../parser_misc.c:543 ../parser_misc.c:550 ../parser_misc.c:554
 #, c-format
 msgid "Exec qualifier '%c%c' invalid, conflicting qualifier already specified"
 msgstr ""
 
-#: ../parser_misc.c:591
+#: ../parser_misc.c:591 ../parser_misc.c:598 ../parser_misc.c:602
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
 msgstr "內部：在輸入中有未預期的模式字元 '%c'"
 
-#: ../parser_misc.c:613
+#: ../parser_misc.c:613 ../parser_misc.c:620 ../parser_misc.c:624
 #, c-format
 msgid "Internal error generated invalid perm 0x%llx\n"
 msgstr ""
 
 #: ../parser_misc.c:833 ../parser_symtab.c:556 ../parser_regex.c:658
-#: ../parser_variable.c:227
+#: ../parser_variable.c:227 ../parser_misc.c:840 ../parser_regex.c:660
+#: ../parser_misc.c:844
 #, c-format
 msgid "AppArmor parser error: %s\n"
 msgstr "AppArmor 剖析器錯誤：%s\n"
@@ -302,41 +311,41 @@ msgstr "設定檔 %s：已結合規則 %s 與多個 x Modifier\n"
 msgid "Profile names must begin with a '/', or keyword 'profile'."
 msgstr ""
 
-#: parser_yacc.y:263
+#: parser_yacc.y:263 parser_yacc.y:269
 #, c-format
 msgid "Failed to create alias %s -> %s\n"
 msgstr "無法建立別名 %s -> %s\n"
 
-#: parser_yacc.y:399
+#: parser_yacc.y:399 parser_yacc.y:405
 msgid "Profile flag 'debug' is no longer valid."
 msgstr ""
 
-#: parser_yacc.y:405
+#: parser_yacc.y:405 parser_yacc.y:411
 #, c-format
 msgid "Invalid profile flag: %s."
 msgstr ""
 
-#: parser_yacc.y:440 parser_yacc.y:462
+#: parser_yacc.y:440 parser_yacc.y:462 parser_yacc.y:446 parser_yacc.y:468
 msgid "Assert: `rule' returned NULL."
 msgstr "顯示：`rule' 傳回 NULL。"
 
-#: parser_yacc.y:443 parser_yacc.y:488
+#: parser_yacc.y:443 parser_yacc.y:488 parser_yacc.y:449 parser_yacc.y:494
 msgid "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"
 msgstr ""
 
-#: parser_yacc.y:466
+#: parser_yacc.y:466 parser_yacc.y:472
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
 msgstr ""
 
-#: parser_yacc.y:491
+#: parser_yacc.y:491 parser_yacc.y:497
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
 msgstr "無效模式，'x' 必須在 Exec 修飾語 'i'、'p' 或 'u' 之前"
 
-#: parser_yacc.y:516 parser_yacc.y:554
+#: parser_yacc.y:516 parser_yacc.y:554 parser_yacc.y:522 parser_yacc.y:560
 msgid "Assert: `network_rule' return invalid protocol."
 msgstr "顯示：`network_rule' 傳回不適用的通訊協定。"
 
-#: parser_yacc.y:591
+#: parser_yacc.y:591 parser_yacc.y:597
 msgid "Assert: `change_profile' returned NULL."
 msgstr "顯示：`change_profile' 傳回 NULL。"
 
@@ -344,11 +353,11 @@ msgstr "顯示：`change_profile' 傳回 NULL。"
 msgid "Assert: `change_hat' returned NULL."
 msgstr "顯示：`change_hat' 傳回 NULL。"
 
-#: parser_yacc.y:631
+#: parser_yacc.y:631 parser_yacc.y:628
 msgid "Assert: 'hat rule' returned NULL."
 msgstr "顯示：'hat rule' 傳回 NULL。"
 
-#: parser_yacc.y:640
+#: parser_yacc.y:640 parser_yacc.y:637
 msgid "Assert: 'local_profile rule' returned NULL."
 msgstr "顯示：'local_profile rule' 傳回 NULL。"
 
@@ -365,7 +374,7 @@ msgstr ""
 msgid "link and exec perms conflict on a file rule using ->"
 msgstr ""
 
-#: parser_yacc.y:834
+#: parser_yacc.y:834 parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transition.\n"
 msgstr ""
 
@@ -382,21 +391,21 @@ msgstr ""
 msgid "missing an end of line character? (entry: %s)"
 msgstr "找不到行尾字元？(項目： %s)"
 
-#: parser_yacc.y:1000 parser_yacc.y:1010
+#: parser_yacc.y:1000 parser_yacc.y:1010 parser_yacc.y:989 parser_yacc.y:999
 msgid "Invalid network entry."
 msgstr "不適用的網路項目。"
 
-#: parser_yacc.y:1064 parser_yacc.y:1072
+#: parser_yacc.y:1064 parser_yacc.y:1072 parser_yacc.y:1053 parser_yacc.y:1061
 #, c-format
 msgid "Invalid capability %s."
 msgstr ""
 
-#: parser_yacc.y:1089
+#: parser_yacc.y:1089 parser_yacc.y:1078
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
 msgstr "於第 %2$d 行的 %1$s 處發生 AppArmor 剖析器錯誤：%3$s\n"
 
-#: parser_yacc.y:1092
+#: parser_yacc.y:1092 parser_yacc.y:1081
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
 msgstr "第 %d 行發生 AppArmor 剖析器錯誤：%s\n"
@@ -451,12 +460,12 @@ msgstr "%s: 錯誤原因： '%s'\n"
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
 msgstr "%s: 無法編譯 regex '%s' [原始：'%s'] - malloc 失敗\n"
 
-#: ../parser_policy.c:194
+#: ../parser_policy.c:194 ../parser_policy.c:200
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
 msgstr "合併設定檔 %s 的規則時發生錯誤，無法載入\n"
 
-#: ../parser_policy.c:226
+#: ../parser_policy.c:226 ../parser_policy.c:232
 #, c-format
 msgid ""
 "ERROR profile %s contains policy elements not usable with this kernel:\n"
@@ -467,38 +476,57 @@ msgstr ""
 "\t不允許 '*'、'?'、字元範圍和替代。\n"
 "\t'**' 僅能用於規則結束處。\n"
 
-#: ../parser_policy.c:271
+#: ../parser_policy.c:271 ../parser_policy.c:277
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
 msgstr "處理設定檔 %s 的 regexs 時發生錯誤，無法載入\n"
 
-#: ../parser_policy.c:298
+#: ../parser_policy.c:298 ../parser_policy.c:304
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
 msgstr "展開設定檔 %s 變數時發生錯誤，無法載入\n"
 
-#: ../parser_policy.c:481
+#: ../parser_policy.c:481 ../parser_policy.c:486
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
 msgstr "設定檔 %s 中有錯誤，載入失敗\n"
 
-#: ../parser_policy.c:659
+#: ../parser_policy.c:659 ../parser_policy.c:668
 #, c-format
 msgid "%s: Errors found during postprocessing.  Aborting.\n"
 msgstr "%s：後處理時發現錯誤。正在中止。\n"
 
-#: ../parser_policy.c:666 ../parser_policy.c:687
+#: ../parser_policy.c:666 ../parser_policy.c:687 ../parser_policy.c:675
+#: ../parser_policy.c:696
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr "%s：regex 後處理時發現錯誤。正在中止。\n"
 
-#: ../parser_policy.c:673
+#: ../parser_policy.c:673 ../parser_policy.c:682
 #, c-format
 msgid "%s: Errors found during postprocess.  Aborting.\n"
 msgstr "%s：後處理時發現錯誤。正在中止。\n"
 
-#: ../parser_policy.c:680
+#: ../parser_policy.c:680 ../parser_policy.c:689
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
 msgstr "%s: 結合規則後處理時發現錯誤。正在中止。\n"
 
+#: ../parser_misc.c:37 ../parser_misc.c:38
+#, c-format
+msgid "%s permission: not supported on current system.\n"
+msgstr ""
+
+#: ../parser_misc.c:38 ../parser_misc.c:39
+#, c-format
+msgid "%s rule: not supported on current system.\n"
+msgstr ""
+
+#: parser_yacc.y:220
+msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
+msgstr ""
+
+#: ../parser_policy.c:389
+#, fuzzy, c-format
+msgid "ERROR adding hat access rule for profile %s\n"
+msgstr "展開設定檔 %s 變數時發生錯誤，無法載入\n"

@@ -1,4 +1,4 @@
-# translation of apparmor-parser.el.po to Hellenic
+# translation of apparmor-parser.el.po to Ελληνικά
 # @TITLE@
 # Copyright (C) 2006, SUSE Linux GmbH, Nuremberg
 #
@@ -11,16 +11,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-parser.el\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2008-04-21 00:30-0700\n"
-"PO-Revision-Date: 2008-03-31 11:20+0100\n"
+"POT-Creation-Date: 2008-09-22 23:04-0700\n"
+"PO-Revision-Date: 2008-06-06 01:04+0100\n"
 "Last-Translator: Vasileios Giannakopoulos <billg@billg.gr>\n"
-"Language-Team: Hellenic <billg@billg.gr>\n"
+"Language-Team: Ελληνικά <billg@billg.gr>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
 
-#: ../parser_include.c:96
+#: ../parser_include.c:96 ../parser_main.c:450
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
 msgstr "Σφάλμα: Αδυναμία ανάγνωσης profile %s: %s.\n"
@@ -152,7 +152,7 @@ msgstr "Removal succeeded for \"%s\".\n"
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 msgstr "PANIC κακή ζώνη ποσοτήτων %p pos %p ext %p size %d res %p\n"
 
-#: ../parser_interface.c:798
+#: ../parser_interface.c:798 ../parser_interface.c:931
 #, c-format
 msgid "Unable to open %s - %s\n"
 msgstr "Αδυναμία ανοίγματος %s - %s\n"
@@ -176,32 +176,33 @@ msgstr "αδυναμία δημιουργίας χώρου εργασίας\n"
 msgid "unable to serialize profile %s\n"
 msgstr "αδυναμία σειριοποίησης προφίλ %s\n"
 
-#: ../parser_interface.c:872
+#: ../parser_interface.c:872 ../parser_interface.c:943
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
 msgstr "%s: Αδυναμία εγγραφής ολόκληρου του προφίλ\n"
 
-#: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354
+#: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354 parser_lex.l:123
+#: parser_lex.l:158 parser_lex.l:191 parser_lex.l:392
 #, c-format
 msgid "Found unexpected character: '%s'"
 msgstr "Βρέθηκε μη αναμενόμενος χαρακτήρας: '%s'"
 
-#: parser_lex.l:196
+#: parser_lex.l:196 parser_lex.l:232
 #, fuzzy, c-format
 msgid "(network_mode) Found unexpected character: '%s'"
 msgstr "(ip_mod) Βρέθηκε μη αναμενόμενος χαρακτήρας: '%s'"
 
-#: ../parser_main.c:137
+#: ../parser_main.c:137 ../parser_main.c:146
 #, c-format
 msgid "Warning (%s line %d): %s"
 msgstr "Προειδοποίηση (%s γραμμή %d): %s"
 
-#: ../parser_main.c:264
+#: ../parser_main.c:264 ../parser_main.c:275
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
 msgstr "%s: Αδυναμία προσδιορισμού μνήμης για subdomainbase σημείο προσάρτησης\n"
 
-#: ../parser_main.c:310
+#: ../parser_main.c:310 ../parser_main.c:321
 #, fuzzy, c-format
 msgid ""
 "Warning: unable to find a suitable fs in %s, is it mounted?\n"
@@ -211,7 +212,7 @@ msgstr ""
 "Προσπάθεια χρησιμοποίησης %s ως την διεύθυνση subdomainfs.\n"
 "Χρησιμοποιήστε --subdomainfs για παράβλεψη.\n"
 
-#: ../parser_main.c:330
+#: ../parser_main.c:330 ../parser_main.c:341
 #, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
@@ -220,7 +221,7 @@ msgstr ""
 "%s: Συγγνώμη. Δεν έχετε δικαιώματα υπερχρήστη για να τρέξετε αυτό το πρόγραμμα.\n"
 "\n"
 
-#: ../parser_main.c:337
+#: ../parser_main.c:337 ../parser_main.c:348
 #, c-format
 msgid ""
 "%s: Warning! You've set this program setuid root.\n"
@@ -231,7 +232,7 @@ msgstr ""
 "Οποιοσδήποτε μπορεί να τρέξει αυτό το πρόγραμμα, μπορεί να ενημερώσει τα προφίλ AppArmor.\n"
 "\n"
 
-#: ../parser_main.c:415
+#: ../parser_main.c:415 ../parser_main.c:509
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
 msgstr "%s: Βρέθηκαν σφάλματα στο αρχείο. Αποχώρηση.\n"
@@ -241,10 +242,15 @@ msgstr "%s: Βρέθηκαν σφάλματα στο αρχείο. Αποχώρ�
 #: parser_yacc.y:884 parser_yacc.y:893 parser_yacc.y:904 parser_yacc.y:914
 #: parser_yacc.y:985 parser_yacc.y:1033 parser_yacc.y:1044 parser_yacc.y:1119
 #: parser_yacc.y:1134 parser_yacc.y:1141 parser_yacc.y:1152
+#: ../parser_main.c:464 ../parser_misc.c:288 parser_yacc.y:243
+#: parser_yacc.y:352 parser_yacc.y:364 parser_yacc.y:432 parser_yacc.y:534
+#: parser_yacc.y:572 parser_yacc.y:902 parser_yacc.y:974 parser_yacc.y:1022
+#: parser_yacc.y:1108 parser_yacc.y:1126 parser_yacc.y:1133 parser_yacc.y:1144
+#: ../parser_misc.c:292
 msgid "Memory allocation error."
 msgstr "Σφάλμα προσδιορισμού μνήμης."
 
-#: ../parser_misc.c:437
+#: ../parser_misc.c:437 ../parser_misc.c:444 ../parser_misc.c:448
 msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
@@ -252,41 +258,44 @@ msgstr ""
 "Κεφαλαίοι χαρακτήρες \"RWLIMX\" αποφεύγονται, παρακαλώ αλλάξτε σε μικρά\n"
 "Δείτε το apparmor.d(5) για λεπτομέρειες.\n"
 
-#: ../parser_misc.c:473 ../parser_misc.c:480
+#: ../parser_misc.c:473 ../parser_misc.c:480 ../parser_misc.c:487
+#: ../parser_misc.c:484 ../parser_misc.c:491
 msgid "Conflict 'a' and 'w' perms are mutually exclusive."
 msgstr ""
 
-#: ../parser_misc.c:497
+#: ../parser_misc.c:497 ../parser_misc.c:504 ../parser_misc.c:508
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
 msgstr "Χαρακτήρας exec 'i' λάθος, συμπλέκεται με ήδη υπάρχων χαρακτήρα"
 
-#: ../parser_misc.c:508
+#: ../parser_misc.c:508 ../parser_misc.c:515 ../parser_misc.c:519
 #, fuzzy, c-format
 msgid "Unconfined exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
 msgstr "Μη δεσμευόμενος exec χαρακτήρας (%c%c) επιτρέπει κάποιες επικίνδυνες μεταβλητές περιβάλλοντος να περάσουν στην μη περιοριζόμενη διαδικασία; 'man 5 apparmor.d' για λεπτομέρειες.\n"
 
-#: ../parser_misc.c:516 ../parser_misc.c:549
+#: ../parser_misc.c:516 ../parser_misc.c:549 ../parser_misc.c:523
+#: ../parser_misc.c:556 ../parser_misc.c:527 ../parser_misc.c:560
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
 msgstr "Χαρακτήρας exc '%c' λανθασμένος, συμπλέκεται με ήδη καθορισμένο χαρακτήρα"
 
-#: ../parser_misc.c:543
+#: ../parser_misc.c:543 ../parser_misc.c:550 ../parser_misc.c:554
 #, fuzzy, c-format
 msgid "Exec qualifier '%c%c' invalid, conflicting qualifier already specified"
 msgstr "Χαρακτήρας exc '%c' λανθασμένος, συμπλέκεται με ήδη καθορισμένο χαρακτήρα"
 
-#: ../parser_misc.c:591
+#: ../parser_misc.c:591 ../parser_misc.c:598 ../parser_misc.c:602
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
 msgstr "Εσωτερικό: μη αναμενόμενη λειτουργία χαρακτήρα '%c' στην είσοδο"
 
-#: ../parser_misc.c:613
-#, c-format
+#: ../parser_misc.c:613 ../parser_misc.c:620 ../parser_misc.c:624
+#, fuzzy, c-format
 msgid "Internal error generated invalid perm 0x%llx\n"
-msgstr ""
+msgstr "σφάλμα"
 
 #: ../parser_misc.c:833 ../parser_symtab.c:556 ../parser_regex.c:658
-#: ../parser_variable.c:227
+#: ../parser_variable.c:227 ../parser_misc.c:840 ../parser_regex.c:660
+#: ../parser_misc.c:844
 #, c-format
 msgid "AppArmor parser error: %s\n"
 msgstr "Σφάλμα αναλυτή AppArmor: %s\n"
@@ -301,47 +310,49 @@ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
 msgstr "το προφίλ %s: έχει συγχωνεύσει τον κανόνα %s με πολλαπλούς μετατροπείς x\n"
 
 #: parser_yacc.y:220
+#, fuzzy
 msgid "Profile names must begin with a '/', or keyword 'profile'."
-msgstr ""
+msgstr "Προφίλ."
 
-#: parser_yacc.y:263
+#: parser_yacc.y:263 parser_yacc.y:269
 #, fuzzy, c-format
 msgid "Failed to create alias %s -> %s\n"
 msgstr "Αδυναμία ανοίγματος %s - %s\n"
 
-#: parser_yacc.y:399
+#: parser_yacc.y:399 parser_yacc.y:405
+#, fuzzy
 msgid "Profile flag 'debug' is no longer valid."
-msgstr ""
+msgstr "Προφίλ όχι."
 
-#: parser_yacc.y:405
+#: parser_yacc.y:405 parser_yacc.y:411
 #, fuzzy, c-format
 msgid "Invalid profile flag: %s."
 msgstr "Λανθασμένος σκοπός %1."
 
-#: parser_yacc.y:440 parser_yacc.y:462
+#: parser_yacc.y:440 parser_yacc.y:462 parser_yacc.y:446 parser_yacc.y:468
 msgid "Assert: `rule' returned NULL."
 msgstr "Παρέμβαση: 'rule' επέστρεψε ΜΗΔΕΝ."
 
-#: parser_yacc.y:443 parser_yacc.y:488
+#: parser_yacc.y:443 parser_yacc.y:488 parser_yacc.y:449 parser_yacc.y:494
 #, fuzzy
 msgid "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"
 msgstr "Σφάλμα λειτουργίας, το 'x' θα πρέπει να προηγείται του χαρακτήρα exec 'i', 'p' ή 'u'"
 
-#: parser_yacc.y:466
+#: parser_yacc.y:466 parser_yacc.y:472
 #, fuzzy
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
 msgstr "Σφάλμα λειτουργίας, το 'x' θα πρέπει να προηγείται του χαρακτήρα exec 'i', 'p' ή 'u'"
 
-#: parser_yacc.y:491
+#: parser_yacc.y:491 parser_yacc.y:497
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
 msgstr "Σφάλμα λειτουργίας, το 'x' θα πρέπει να προηγείται του χαρακτήρα exec 'i', 'p' ή 'u'"
 
-#: parser_yacc.y:516 parser_yacc.y:554
+#: parser_yacc.y:516 parser_yacc.y:554 parser_yacc.y:522 parser_yacc.y:560
 #, fuzzy
 msgid "Assert: `network_rule' return invalid protocol."
 msgstr "Παρέμβαση: 'netrule' επέστρεψε ΜΗΔΕΝ."
 
-#: parser_yacc.y:591
+#: parser_yacc.y:591 parser_yacc.y:597
 #, fuzzy
 msgid "Assert: `change_profile' returned NULL."
 msgstr "Παρέμβαση: 'netrule' επέστρεψε ΜΗΔΕΝ."
@@ -351,11 +362,11 @@ msgstr "Παρέμβαση: 'netrule' επέστρεψε ΜΗΔΕΝ."
 msgid "Assert: `change_hat' returned NULL."
 msgstr "Παρέμβαση: 'netrule' επέστρεψε ΜΗΔΕΝ."
 
-#: parser_yacc.y:631
+#: parser_yacc.y:631 parser_yacc.y:628
 msgid "Assert: 'hat rule' returned NULL."
 msgstr "Παρέμβαση: 'hat rule' επέστρεψε ΜΗΔΕΝ."
 
-#: parser_yacc.y:640
+#: parser_yacc.y:640 parser_yacc.y:637
 #, fuzzy
 msgid "Assert: 'local_profile rule' returned NULL."
 msgstr "Παρέμβαση: 'netrule' επέστρεψε ΜΗΔΕΝ."
@@ -373,7 +384,7 @@ msgstr ""
 msgid "link and exec perms conflict on a file rule using ->"
 msgstr ""
 
-#: parser_yacc.y:834
+#: parser_yacc.y:834 parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transition.\n"
 msgstr ""
 
@@ -390,22 +401,22 @@ msgstr ""
 msgid "missing an end of line character? (entry: %s)"
 msgstr "λείπει ένα τέλος στη γραμή χαρακτήρα; (εγγραφή: %s)"
 
-#: parser_yacc.y:1000 parser_yacc.y:1010
+#: parser_yacc.y:1000 parser_yacc.y:1010 parser_yacc.y:989 parser_yacc.y:999
 #, fuzzy
 msgid "Invalid network entry."
 msgstr "Εισαγωγή νέας εγγραφής."
 
-#: parser_yacc.y:1064 parser_yacc.y:1072
+#: parser_yacc.y:1064 parser_yacc.y:1072 parser_yacc.y:1053 parser_yacc.y:1061
 #, fuzzy, c-format
 msgid "Invalid capability %s."
 msgstr "Λανθασμένος τύπος %1."
 
-#: parser_yacc.y:1089
+#: parser_yacc.y:1089 parser_yacc.y:1078
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
 msgstr "Σφάλμα του αναλυτή AppArmor στο %s στη γραμμή %d: %s\n"
 
-#: parser_yacc.y:1092
+#: parser_yacc.y:1092 parser_yacc.y:1081
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
 msgstr "Σφάλμα αναλυτή AppArmor, γραμμή %d: %s\n"
@@ -460,12 +471,12 @@ msgstr "%s: λόγος σφάλματος: '%s'\n"
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
 msgstr "%s: Αδυναμία αποσφαλμάτωσης regex '%s' [original: '%s'] - αποτυχία malloc\n"
 
-#: ../parser_policy.c:194
+#: ../parser_policy.c:194 ../parser_policy.c:200
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
 msgstr "ΣΦΑΛΜΑ συγχώνευσης κανόνων για το προφίλ %s, αδυναμία φόρτωσης\n"
 
-#: ../parser_policy.c:226
+#: ../parser_policy.c:226 ../parser_policy.c:232
 #, c-format
 msgid ""
 "ERROR profile %s contains policy elements not usable with this kernel:\n"
@@ -476,82 +487,58 @@ msgstr ""
 "\t'*', '?', πεδία χαρακτήρων και αλλαγές δεν επιτρέπονται.\n"
 "\t'**' μπορεί να χρησιμοποιηθεί μόνο στο τέλος.\n"
 
-#: ../parser_policy.c:271
+#: ../parser_policy.c:271 ../parser_policy.c:277
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
 msgstr "ΣΦΑΛΜΑ επεξεργασίας regexs για το προφίλ %s, αδυναμία φόρτωσης\n"
 
-#: ../parser_policy.c:298
+#: ../parser_policy.c:298 ../parser_policy.c:304
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
 msgstr "ΣΦΑΛΜΑ επέκτασης μεταβλητών για προφίλ %s, αδυναμία φόρτωσης\n"
 
-#: ../parser_policy.c:481
+#: ../parser_policy.c:481 ../parser_policy.c:486
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
 msgstr "ΣΦΑΛΜΑ το προφίλ %s, αδυναμία φόρτωσης\n"
 
-#: ../parser_policy.c:659
+#: ../parser_policy.c:659 ../parser_policy.c:668
 #, fuzzy, c-format
 msgid "%s: Errors found during postprocessing.  Aborting.\n"
 msgstr "%s: Βρέθηκαν σφάλματα κατα τη διάρκεια της μετεπεξεργασίας regex.  Αποχώρηση.\n"
 
-#: ../parser_policy.c:666 ../parser_policy.c:687
+#: ../parser_policy.c:666 ../parser_policy.c:687 ../parser_policy.c:675
+#: ../parser_policy.c:696
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr "%s: Βρέθηκαν σφάλματα κατα τη διάρκεια της μετεπεξεργασίας regex.  Αποχώρηση.\n"
 
-#: ../parser_policy.c:673
+#: ../parser_policy.c:673 ../parser_policy.c:682
 #, fuzzy, c-format
 msgid "%s: Errors found during postprocess.  Aborting.\n"
 msgstr "%s: Βρέθηκαν σφάλματα κατα τη διάρκεια της μετεπεξεργασίας regex.  Αποχώρηση.\n"
 
-#: ../parser_policy.c:680
+#: ../parser_policy.c:680 ../parser_policy.c:689
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
 msgstr "%s: Βρέθηκαν σφάλματα στους συνδυαστικούς κανόνες μετεπεξεργασίας. Αποχώρηση.\n"
 
-#~ msgid "(ip_mode) Found unexpected character: '%s'"
-#~ msgstr "(ip_mod) Βρέθηκε μη αναμενόμενος χαρακτήρας: '%s'"
+#: ../parser_misc.c:37 ../parser_misc.c:38
+#, c-format
+msgid "%s permission: not supported on current system.\n"
+msgstr ""
 
-#~ msgid "Unexpected character in interface name: '%s'"
-#~ msgstr "Μη αναμενόμενος χαρακτήρας στο όνομα διεπαφής: '%s'"
+#: ../parser_misc.c:38 ../parser_misc.c:39
+#, c-format
+msgid "%s rule: not supported on current system.\n"
+msgstr ""
 
-#~ msgid "Found unknown flag: '%s'"
-#~ msgstr "Βρέθηκε άγνωστο flag: '%s'"
+#: parser_yacc.y:220
+#, fuzzy
+msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
+msgstr "Προφίλ."
 
-#~ msgid "Found unexpected keyword: '%s'"
-#~ msgstr "Βρέθηκε μη αναμενόμενο keyword: '%s'"
-
-#~ msgid "Exec qualifier 'i' must be followed by 'x'"
-#~ msgstr "Χαρακτήρας exec 'i' πρέπει να ακολουθείται από 'x'"
-
-#~ msgid "Exec qualifier '%c' must be followed by 'x'"
-#~ msgstr "Χαρακτήρας exec '%c' πρέπει να ακολουθείται από 'x'"
-
-#~ msgid "flags=(debug) is no longer supported, sorry."
-#~ msgstr "flags=(αποσφαλμάτωση) δεν υποστηρίζεται πλέον, λυπούμαστε."
-
-#~ msgid "Assert: `netrule' returned NULL."
-#~ msgstr "Παρέμβαση: 'netrule' επέστρεψε ΜΗΔΕΝ."
-
-#~ msgid "Assert: `addresses' returned NULL."
-#~ msgstr "Παρέμβαση: 'addresses' επέτρεψε ΜΗΔΕΝ."
-
-#~ msgid "Network entries can only have one TO address."
-#~ msgstr "Οι διευθύνσεις δικτύου έχουν μόνο μια διεύθυνση TO."
-
-#~ msgid "Network entries can only have one FROM address."
-#~ msgstr "Οι εγγραφές δικτύου έχουν μόνο μια διεύθυνση FROM."
-
-#~ msgid "`%s' is not a valid ip address."
-#~ msgstr "Το '%s' δεν είναι έγκυρη διεύθυνση ip."
-
-#~ msgid "`/%d' is not a valid netmask."
-#~ msgstr "το '%d' δεν είναι μια έγκυρη μάσκα δικτύου."
-
-#~ msgid "`%s' is not a valid netmask."
-#~ msgstr "Το '%s' δεν είναι μια έγκυρη μάσκα δικτύου."
-
-#~ msgid "ports must be between %d and %d"
-#~ msgstr "οι θύρες πρέπει να είναι μεταξύ %d και %d"
+#: ../parser_policy.c:389
+#, fuzzy, c-format
+msgid "ERROR adding hat access rule for profile %s\n"
+msgstr "ΣΦΑΛΜΑ επέκτασης μεταβλητών για προφίλ %s, αδυναμία φόρτωσης\n"

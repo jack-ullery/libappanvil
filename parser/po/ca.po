@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: YaST (@memory@)\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2008-04-21 00:30-0700\n"
+"POT-Creation-Date: 2008-09-22 23:04-0700\n"
 "PO-Revision-Date: 2007-02-26 19:36+0100\n"
 "Last-Translator: Olga López\n"
 "Language-Team: Catalan\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../parser_include.c:96
+#: ../parser_include.c:96 ../parser_main.c:450
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
 msgstr ""
@@ -148,7 +148,7 @@ msgstr "\"%s\" s'ha eliminat correctament.\n"
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 msgstr "EMERGÈNCIA: increment incorrecte de la memòria intermèdia %p pos. %p ext. %p mida %d res. %p\n"
 
-#: ../parser_interface.c:798
+#: ../parser_interface.c:798 ../parser_interface.c:931
 #, c-format
 msgid "Unable to open %s - %s\n"
 msgstr "No es pot obrir %s - %s\n"
@@ -172,46 +172,47 @@ msgstr "no es pot crear l'àrea de treball\n"
 msgid "unable to serialize profile %s\n"
 msgstr "no es pot serialitzar el perfil %s\n"
 
-#: ../parser_interface.c:872
+#: ../parser_interface.c:872 ../parser_interface.c:943
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
 msgstr "%s: no es pot escriure tota l'entrada del perfil\n"
 
-#: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354
+#: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354 parser_lex.l:123
+#: parser_lex.l:158 parser_lex.l:191 parser_lex.l:392
 #, c-format
 msgid "Found unexpected character: '%s'"
 msgstr "S'ha trobat un caràcter inesperat: '%s'"
 
-#: parser_lex.l:196
+#: parser_lex.l:196 parser_lex.l:232
 #, fuzzy, c-format
 msgid "(network_mode) Found unexpected character: '%s'"
 msgstr "(ip_mode) S'ha trobat un caràcter inesperat: '%s'"
 
-#: ../parser_main.c:137
+#: ../parser_main.c:137 ../parser_main.c:146
 #, c-format
 msgid "Warning (%s line %d): %s"
 msgstr ""
 
-#: ../parser_main.c:264
+#: ../parser_main.c:264 ../parser_main.c:275
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
 msgstr "%s: no s'ha pogut assignar memòria per al punt de muntatge de la base de subdomini\n"
 
-#: ../parser_main.c:310
+#: ../parser_main.c:310 ../parser_main.c:321
 #, c-format
 msgid ""
 "Warning: unable to find a suitable fs in %s, is it mounted?\n"
 "Use --subdomainfs to override.\n"
 msgstr ""
 
-#: ../parser_main.c:330
+#: ../parser_main.c:330 ../parser_main.c:341
 #, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
 msgstr ""
 
-#: ../parser_main.c:337
+#: ../parser_main.c:337 ../parser_main.c:348
 #, c-format
 msgid ""
 "%s: Warning! You've set this program setuid root.\n"
@@ -219,7 +220,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../parser_main.c:415
+#: ../parser_main.c:415 ../parser_main.c:509
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
 msgstr "%s: s'han detectat errors al fitxer. S'avortarà l'operació.\n"
@@ -229,50 +230,58 @@ msgstr "%s: s'han detectat errors al fitxer. S'avortarà l'operació.\n"
 #: parser_yacc.y:884 parser_yacc.y:893 parser_yacc.y:904 parser_yacc.y:914
 #: parser_yacc.y:985 parser_yacc.y:1033 parser_yacc.y:1044 parser_yacc.y:1119
 #: parser_yacc.y:1134 parser_yacc.y:1141 parser_yacc.y:1152
+#: ../parser_main.c:464 ../parser_misc.c:288 parser_yacc.y:243
+#: parser_yacc.y:352 parser_yacc.y:364 parser_yacc.y:432 parser_yacc.y:534
+#: parser_yacc.y:572 parser_yacc.y:902 parser_yacc.y:974 parser_yacc.y:1022
+#: parser_yacc.y:1108 parser_yacc.y:1126 parser_yacc.y:1133 parser_yacc.y:1144
+#: ../parser_misc.c:292
 msgid "Memory allocation error."
 msgstr "S'ha produït un error d'assignació de memòria."
 
-#: ../parser_misc.c:437
+#: ../parser_misc.c:437 ../parser_misc.c:444 ../parser_misc.c:448
 msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
 msgstr ""
 
-#: ../parser_misc.c:473 ../parser_misc.c:480
+#: ../parser_misc.c:473 ../parser_misc.c:480 ../parser_misc.c:487
+#: ../parser_misc.c:484 ../parser_misc.c:491
 msgid "Conflict 'a' and 'w' perms are mutually exclusive."
 msgstr ""
 
-#: ../parser_misc.c:497
+#: ../parser_misc.c:497 ../parser_misc.c:504 ../parser_misc.c:508
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
 msgstr "El qualificador d'execució 'i' no és vàlid; entra en conflicte amb un qualificador ja especificat"
 
-#: ../parser_misc.c:508
+#: ../parser_misc.c:508 ../parser_misc.c:515 ../parser_misc.c:519
 #, c-format
 msgid "Unconfined exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
 msgstr ""
 
-#: ../parser_misc.c:516 ../parser_misc.c:549
+#: ../parser_misc.c:516 ../parser_misc.c:549 ../parser_misc.c:523
+#: ../parser_misc.c:556 ../parser_misc.c:527 ../parser_misc.c:560
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
 msgstr ""
 
-#: ../parser_misc.c:543
+#: ../parser_misc.c:543 ../parser_misc.c:550 ../parser_misc.c:554
 #, fuzzy, c-format
 msgid "Exec qualifier '%c%c' invalid, conflicting qualifier already specified"
 msgstr "El qualificador d'execució 'i' no és vàlid; entra en conflicte amb un qualificador ja especificat"
 
-#: ../parser_misc.c:591
+#: ../parser_misc.c:591 ../parser_misc.c:598 ../parser_misc.c:602
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
 msgstr ""
 
-#: ../parser_misc.c:613
+#: ../parser_misc.c:613 ../parser_misc.c:620 ../parser_misc.c:624
 #, c-format
 msgid "Internal error generated invalid perm 0x%llx\n"
 msgstr ""
 
 #: ../parser_misc.c:833 ../parser_symtab.c:556 ../parser_regex.c:658
-#: ../parser_variable.c:227
+#: ../parser_variable.c:227 ../parser_misc.c:840 ../parser_regex.c:660
+#: ../parser_misc.c:844
 #, c-format
 msgid "AppArmor parser error: %s\n"
 msgstr ""
@@ -290,42 +299,42 @@ msgstr "el perfil %s: ha fusionat la regla %s amb diversos modificadors x\n"
 msgid "Profile names must begin with a '/', or keyword 'profile'."
 msgstr ""
 
-#: parser_yacc.y:263
+#: parser_yacc.y:263 parser_yacc.y:269
 #, fuzzy, c-format
 msgid "Failed to create alias %s -> %s\n"
 msgstr "No es pot obrir %s - %s\n"
 
-#: parser_yacc.y:399
+#: parser_yacc.y:399 parser_yacc.y:405
 msgid "Profile flag 'debug' is no longer valid."
 msgstr ""
 
-#: parser_yacc.y:405
+#: parser_yacc.y:405 parser_yacc.y:411
 #, fuzzy, c-format
 msgid "Invalid profile flag: %s."
 msgstr "La finalitat %1 no és vàlida."
 
-#: parser_yacc.y:440 parser_yacc.y:462
+#: parser_yacc.y:440 parser_yacc.y:462 parser_yacc.y:446 parser_yacc.y:468
 msgid "Assert: `rule' returned NULL."
 msgstr "Confirmació: `rule' ha retornat NULL."
 
-#: parser_yacc.y:443 parser_yacc.y:488
+#: parser_yacc.y:443 parser_yacc.y:488 parser_yacc.y:449 parser_yacc.y:494
 msgid "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"
 msgstr ""
 
-#: parser_yacc.y:466
+#: parser_yacc.y:466 parser_yacc.y:472
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
 msgstr ""
 
-#: parser_yacc.y:491
+#: parser_yacc.y:491 parser_yacc.y:497
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
 msgstr ""
 
-#: parser_yacc.y:516 parser_yacc.y:554
+#: parser_yacc.y:516 parser_yacc.y:554 parser_yacc.y:522 parser_yacc.y:560
 #, fuzzy
 msgid "Assert: `network_rule' return invalid protocol."
 msgstr "Confirmació: `netrule' ha retornat NULL."
 
-#: parser_yacc.y:591
+#: parser_yacc.y:591 parser_yacc.y:597
 #, fuzzy
 msgid "Assert: `change_profile' returned NULL."
 msgstr "Confirmació: `netrule' ha retornat NULL."
@@ -335,11 +344,11 @@ msgstr "Confirmació: `netrule' ha retornat NULL."
 msgid "Assert: `change_hat' returned NULL."
 msgstr "Confirmació: `netrule' ha retornat NULL."
 
-#: parser_yacc.y:631
+#: parser_yacc.y:631 parser_yacc.y:628
 msgid "Assert: 'hat rule' returned NULL."
 msgstr "Confirmació: 'hat rule' ha retornat NULL."
 
-#: parser_yacc.y:640
+#: parser_yacc.y:640 parser_yacc.y:637
 #, fuzzy
 msgid "Assert: 'local_profile rule' returned NULL."
 msgstr "Confirmació: `netrule' ha retornat NULL."
@@ -357,7 +366,7 @@ msgstr ""
 msgid "link and exec perms conflict on a file rule using ->"
 msgstr ""
 
-#: parser_yacc.y:834
+#: parser_yacc.y:834 parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transition.\n"
 msgstr ""
 
@@ -374,22 +383,22 @@ msgstr ""
 msgid "missing an end of line character? (entry: %s)"
 msgstr "falta un caràcter de final de línia? (entrada: %s)"
 
-#: parser_yacc.y:1000 parser_yacc.y:1010
+#: parser_yacc.y:1000 parser_yacc.y:1010 parser_yacc.y:989 parser_yacc.y:999
 #, fuzzy
 msgid "Invalid network entry."
 msgstr "L'entrada d'exportació no és vàlida a la línia %1."
 
-#: parser_yacc.y:1064 parser_yacc.y:1072
+#: parser_yacc.y:1064 parser_yacc.y:1072 parser_yacc.y:1053 parser_yacc.y:1061
 #, fuzzy, c-format
 msgid "Invalid capability %s."
 msgstr "Tipus %1 no vàlid."
 
-#: parser_yacc.y:1089
+#: parser_yacc.y:1089 parser_yacc.y:1078
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
 msgstr ""
 
-#: parser_yacc.y:1092
+#: parser_yacc.y:1092 parser_yacc.y:1081
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
 msgstr ""
@@ -444,12 +453,12 @@ msgstr "%s: el motiu de l'error és '%s'\n"
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
 msgstr "%s: no s'ha pogut compilar l'expressió regular '%s' [original: '%s'] - el malloc ha fallat\n"
 
-#: ../parser_policy.c:194
+#: ../parser_policy.c:194 ../parser_policy.c:200
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
 msgstr ""
 
-#: ../parser_policy.c:226
+#: ../parser_policy.c:226 ../parser_policy.c:232
 #, c-format
 msgid ""
 "ERROR profile %s contains policy elements not usable with this kernel:\n"
@@ -457,40 +466,60 @@ msgid ""
 "\t'**' may only be used at the end of a rule.\n"
 msgstr ""
 
-#: ../parser_policy.c:271
+#: ../parser_policy.c:271 ../parser_policy.c:277
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
 msgstr ""
 
-#: ../parser_policy.c:298
+#: ../parser_policy.c:298 ../parser_policy.c:304
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
 msgstr ""
 
-#: ../parser_policy.c:481
+#: ../parser_policy.c:481 ../parser_policy.c:486
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
 msgstr "ERROR al perfil %s, no s'ha pogut carregar\n"
 
-#: ../parser_policy.c:659
+#: ../parser_policy.c:659 ../parser_policy.c:668
 #, fuzzy, c-format
 msgid "%s: Errors found during postprocessing.  Aborting.\n"
 msgstr "%s: s'han detectat errors en combinar el postprocessament de regles. S'avortarà l'operació.\n"
 
-#: ../parser_policy.c:666 ../parser_policy.c:687
+#: ../parser_policy.c:666 ../parser_policy.c:687 ../parser_policy.c:675
+#: ../parser_policy.c:696
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr ""
 
-#: ../parser_policy.c:673
+#: ../parser_policy.c:673 ../parser_policy.c:682
 #, fuzzy, c-format
 msgid "%s: Errors found during postprocess.  Aborting.\n"
 msgstr "%s: s'han detectat errors en combinar el postprocessament de regles. S'avortarà l'operació.\n"
 
-#: ../parser_policy.c:680
+#: ../parser_policy.c:680 ../parser_policy.c:689
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
 msgstr "%s: s'han detectat errors en combinar el postprocessament de regles. S'avortarà l'operació.\n"
+
+#: ../parser_misc.c:37 ../parser_misc.c:38
+#, c-format
+msgid "%s permission: not supported on current system.\n"
+msgstr ""
+
+#: ../parser_misc.c:38 ../parser_misc.c:39
+#, c-format
+msgid "%s rule: not supported on current system.\n"
+msgstr ""
+
+#: parser_yacc.y:220
+msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
+msgstr ""
+
+#: ../parser_policy.c:389
+#, c-format
+msgid "ERROR adding hat access rule for profile %s\n"
+msgstr ""
 
 #~ msgid "(ip_mode) Found unexpected character: '%s'"
 #~ msgstr "(ip_mode) S'ha trobat un caràcter inesperat: '%s'"

@@ -1,3 +1,4 @@
+# translation of apparmor-parser.fi.po to suomi
 # translation of apparmor-parser.fi.po to
 # translation of apparmor-parser.po to
 # translation of subdomain-parser.po to
@@ -8,21 +9,23 @@
 # Ilkka Pirskanen <ilkka.pirskanen@kolumbus.fi>, 2005.
 # Jyri Palokangas <jmp@opensuse.fi>, 2007.
 # Mikko Piippo <mikko.piippo@opensuse.fi>, 2008.
+# Jyri Palokagas <jyri.palokangas@opensuse.org>, 2008.
+# Sami Ojanen <sami.ojanen@kapsi.fi>, 2008.
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-parser\n"
+"Project-Id-Version: apparmor-parser.fi\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2008-04-21 00:30-0700\n"
-"PO-Revision-Date: 2008-05-06 05:25+0300\n"
-"Last-Translator: Mikko Piippo <mikko.piippo@opensuse.fi>\n"
-"Language-Team:  <fi@li.org>\n"
+"POT-Creation-Date: 2008-09-22 23:04-0700\n"
+"PO-Revision-Date: 2008-10-10 15:59+0300\n"
+"Last-Translator: Sami Ojanen <sami.ojanen@kapsi.fi>\n"
+"Language-Team: Suomi <fi@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
 "Plural-Forms:  nplurals=2; plural=n != 1;\n"
 
-#: ../parser_include.c:96
+#: ../parser_include.c:96 ../parser_main.c:450
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
 msgstr "Virhe: Ei voitu lukea profiilia %s: %s\n"
@@ -83,7 +86,7 @@ msgstr "Muisti loppui\n"
 
 #: ../parser_interface.c:81
 msgid "Couldn't copy profile Bad memory address\n"
-msgstr "Profiilin kopiointi ei onnistunut. Viallinen muistiosoite\n"
+msgstr "Profiilin kopiointi ei onnistunut. Virheellinen muistiosoite\n"
 
 #: ../parser_interface.c:84
 msgid "Profile doesn't conform to protocol\n"
@@ -127,7 +130,7 @@ msgstr "%s: \"%s\" poisto ei onnistunut.  "
 #: ../parser_interface.c:131
 #, c-format
 msgid "%s: Unable to write to stdout\n"
-msgstr "%s: Kirjoittaminen stdout:iin ei onnistunut\n"
+msgstr "%s: Kirjoittaminen stdout-tulostusvirtaan ei onnistunut\n"
 
 #: ../parser_interface.c:135 ../parser_interface.c:158
 #, c-format
@@ -154,7 +157,7 @@ msgstr "\"%s\" poisto onnistui.\n"
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 msgstr "PANIIKKI viallinen lisäyspuskuri %p pos %p ext %p koko %d res %p\n"
 
-#: ../parser_interface.c:798
+#: ../parser_interface.c:798 ../parser_interface.c:931
 #, c-format
 msgid "Unable to open %s - %s\n"
 msgstr "Ei voitu avata %s - %s\n"
@@ -178,32 +181,33 @@ msgstr "työalueen luominen ei onnistunut\n"
 msgid "unable to serialize profile %s\n"
 msgstr "profiilin %s sarjallistaminen ei onnistunut\n"
 
-#: ../parser_interface.c:872
+#: ../parser_interface.c:872 ../parser_interface.c:943
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
 msgstr "%s: Koko profiilimerkinnän kirjoittaminen ei onnistunut\n"
 
-#: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354
+#: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354 parser_lex.l:123
+#: parser_lex.l:158 parser_lex.l:191 parser_lex.l:392
 #, c-format
 msgid "Found unexpected character: '%s'"
 msgstr "Löytyi odottamaton merkki: '%s'"
 
-#: parser_lex.l:196
+#: parser_lex.l:196 parser_lex.l:232
 #, c-format
 msgid "(network_mode) Found unexpected character: '%s'"
 msgstr "(network_mode) Löytyi odottamaton merkki: '%s'"
 
-#: ../parser_main.c:137
+#: ../parser_main.c:137 ../parser_main.c:146
 #, c-format
 msgid "Warning (%s line %d): %s"
 msgstr "Varoitus (%s rivi %d): %s"
 
-#: ../parser_main.c:264
+#: ../parser_main.c:264 ../parser_main.c:275
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
 msgstr "%s: Muistin varaaminen alitoimialuepohjan liitoskohdalle ei onnistunut\n"
 
-#: ../parser_main.c:310
+#: ../parser_main.c:310 ../parser_main.c:321
 #, c-format
 msgid ""
 "Warning: unable to find a suitable fs in %s, is it mounted?\n"
@@ -212,7 +216,7 @@ msgstr ""
 "Varoitus: ei löydetä sopivaa tiedostojärjestelmää kohteesta %s, onko osio liitetty?\n"
 "Käytä --subdomainfs ohittaaksesi.\n"
 
-#: ../parser_main.c:330
+#: ../parser_main.c:330 ../parser_main.c:341
 #, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
@@ -221,7 +225,7 @@ msgstr ""
 "%s: Ohjelman suorittamiseen tarvitaan pääkäyttäjän oikeudet.\n"
 "\n"
 
-#: ../parser_main.c:337
+#: ../parser_main.c:337 ../parser_main.c:348
 #, c-format
 msgid ""
 "%s: Warning! You've set this program setuid root.\n"
@@ -232,7 +236,7 @@ msgstr ""
 "Kaikki, jotka voivat suorittaa tämän ohjelman, voivat muuttaa AppArmor-profiileja.\n"
 "\n"
 
-#: ../parser_main.c:415
+#: ../parser_main.c:415 ../parser_main.c:509
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
 msgstr "%s: Tiedostosta löytyi virheitä. Keskeytetään.\n"
@@ -242,52 +246,60 @@ msgstr "%s: Tiedostosta löytyi virheitä. Keskeytetään.\n"
 #: parser_yacc.y:884 parser_yacc.y:893 parser_yacc.y:904 parser_yacc.y:914
 #: parser_yacc.y:985 parser_yacc.y:1033 parser_yacc.y:1044 parser_yacc.y:1119
 #: parser_yacc.y:1134 parser_yacc.y:1141 parser_yacc.y:1152
+#: ../parser_main.c:464 ../parser_misc.c:288 parser_yacc.y:243
+#: parser_yacc.y:352 parser_yacc.y:364 parser_yacc.y:432 parser_yacc.y:534
+#: parser_yacc.y:572 parser_yacc.y:902 parser_yacc.y:974 parser_yacc.y:1022
+#: parser_yacc.y:1108 parser_yacc.y:1126 parser_yacc.y:1133 parser_yacc.y:1144
+#: ../parser_misc.c:292
 msgid "Memory allocation error."
 msgstr "Muistivarausvirhe."
 
-#: ../parser_misc.c:437
+#: ../parser_misc.c:437 ../parser_misc.c:444 ../parser_misc.c:448
 msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
 msgstr ""
-"Isoilla kirjoitetut määritteet \"RWLIMX\" eivät ole suosittuja. Ole hyvä ja korjaa ne pienellä kirjoitetuiksi.\n"
+"Isoilla kirjoitetut määritteet \"RWLIMX\" eivät ole suositeltavia. Ole hyvä ja korjaa ne pienellä kirjoitetuiksi.\n"
 "Lue apparmor.d(5) manuaalisivu jos haluat aiheesta lisätietoja.\n"
 
-#: ../parser_misc.c:473 ../parser_misc.c:480
+#: ../parser_misc.c:473 ../parser_misc.c:480 ../parser_misc.c:487
+#: ../parser_misc.c:484 ../parser_misc.c:491
 msgid "Conflict 'a' and 'w' perms are mutually exclusive."
 msgstr "Ristiriita 'a' ja 'w' oikeudet ovat toisensa pois sulkevia."
 
-#: ../parser_misc.c:497
+#: ../parser_misc.c:497 ../parser_misc.c:504 ../parser_misc.c:508
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
 msgstr "Exec-valitsin 'i' virheellinen, ristiriitainen valitsin mainittu aiemmin"
 
-#: ../parser_misc.c:508
+#: ../parser_misc.c:508 ../parser_misc.c:515 ../parser_misc.c:519
 #, c-format
 msgid "Unconfined exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
 msgstr "Vapaa exec-valitsin (%c%c) sallii joidenkin vaarallisten ympäristömuuttujien lähettämisen varmistamattomille prosesseille; man 5 apparmor.d jos haluat lisätietoja aiheesta.\n"
 
-#: ../parser_misc.c:516 ../parser_misc.c:549
+#: ../parser_misc.c:516 ../parser_misc.c:549 ../parser_misc.c:523
+#: ../parser_misc.c:556 ../parser_misc.c:527 ../parser_misc.c:560
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
 msgstr "Exec-valitsin '%c' virheellinen, ristiriidan aiheuttava valitsin määritetty jo aiemmin"
 
-#: ../parser_misc.c:543
+#: ../parser_misc.c:543 ../parser_misc.c:550 ../parser_misc.c:554
 #, c-format
 msgid "Exec qualifier '%c%c' invalid, conflicting qualifier already specified"
 msgstr "Exec-valitsin '%c%c' virheellinen, ristiriidan aiheuttava valitsin määritetty jo aiemmin"
 
-#: ../parser_misc.c:591
+#: ../parser_misc.c:591 ../parser_misc.c:598 ../parser_misc.c:602
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr "Sisäinen: odottamaton tila -merkki '%c' syötteessä"
+msgstr "Sisäinen: odottamaton tila merkki '%c' syötteessä"
 
-#: ../parser_misc.c:613
+#: ../parser_misc.c:613 ../parser_misc.c:620 ../parser_misc.c:624
 #, c-format
 msgid "Internal error generated invalid perm 0x%llx\n"
 msgstr "Sisäinen virhe, aiheuttaja virheellinen määritys 0x%llx\n"
 
 #: ../parser_misc.c:833 ../parser_symtab.c:556 ../parser_regex.c:658
-#: ../parser_variable.c:227
+#: ../parser_variable.c:227 ../parser_misc.c:840 ../parser_regex.c:660
+#: ../parser_misc.c:844
 #, c-format
 msgid "AppArmor parser error: %s\n"
 msgstr "AppArmor parser -virhe: %s\n"
@@ -305,41 +317,41 @@ msgstr "profiili %s: yhdistetty sääntö %s, jossa on monta x-muuntajaa\n"
 msgid "Profile names must begin with a '/', or keyword 'profile'."
 msgstr "Profiilin nimen täytyy alkaa merkillä / tai sanalla 'profile'."
 
-#: parser_yacc.y:263
+#: parser_yacc.y:263 parser_yacc.y:269
 #, c-format
 msgid "Failed to create alias %s -> %s\n"
 msgstr "Ei voitu luoda aliasta %s -> %s\n"
 
-#: parser_yacc.y:399
+#: parser_yacc.y:399 parser_yacc.y:405
 msgid "Profile flag 'debug' is no longer valid."
 msgstr "Profiilin lippu 'debug' ei ole enää kelvollinen."
 
-#: parser_yacc.y:405
+#: parser_yacc.y:405 parser_yacc.y:411
 #, c-format
 msgid "Invalid profile flag: %s."
 msgstr "Virheellinen profiilin lippu: %s."
 
-#: parser_yacc.y:440 parser_yacc.y:462
+#: parser_yacc.y:440 parser_yacc.y:462 parser_yacc.y:446 parser_yacc.y:468
 msgid "Assert: `rule' returned NULL."
 msgstr "Assert: `rule' palautti NULL."
 
-#: parser_yacc.y:443 parser_yacc.y:488
+#: parser_yacc.y:443 parser_yacc.y:488 parser_yacc.y:449 parser_yacc.y:494
 msgid "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"
 msgstr "Virheellinen tila, kieltosäännöissä valitsinta 'x' ei saa edeltää valitsin 'i', 'p' tai 'u'"
 
-#: parser_yacc.y:466
+#: parser_yacc.y:466 parser_yacc.y:472
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
 msgstr "Virheellinen tila, valitsinta 'x' pitää edeltää valitsin 'i', 'p', 'c' tai 'u'"
 
-#: parser_yacc.y:491
+#: parser_yacc.y:491 parser_yacc.y:497
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
 msgstr "Virheellinen tila, valitsinta 'x' pitää edeltää valitsin 'i', 'p' tai 'u'"
 
-#: parser_yacc.y:516 parser_yacc.y:554
+#: parser_yacc.y:516 parser_yacc.y:554 parser_yacc.y:522 parser_yacc.y:560
 msgid "Assert: `network_rule' return invalid protocol."
 msgstr "Assert: `network_rule' palautti virheellisen protokollan."
 
-#: parser_yacc.y:591
+#: parser_yacc.y:591 parser_yacc.y:597
 msgid "Assert: `change_profile' returned NULL."
 msgstr "Assert: `change_profile' palautti NULL."
 
@@ -347,11 +359,11 @@ msgstr "Assert: `change_profile' palautti NULL."
 msgid "Assert: `change_hat' returned NULL."
 msgstr "Assert: `change_hat' palautti NULL."
 
-#: parser_yacc.y:631
+#: parser_yacc.y:631 parser_yacc.y:628
 msgid "Assert: 'hat rule' returned NULL."
 msgstr "Assert: 'hat rule' palautti NULL."
 
-#: parser_yacc.y:640
+#: parser_yacc.y:640 parser_yacc.y:637
 msgid "Assert: 'local_profile rule' returned NULL."
 msgstr "Assert: 'local_profile rule' palautti NULL."
 
@@ -368,7 +380,7 @@ msgstr "aliryhmää voidaan käyttää vain linkkisäännöissä."
 msgid "link and exec perms conflict on a file rule using ->"
 msgstr "linkki ja suoritusoikeudet ristiriidassa tiedostossa, joka käyttää ->"
 
-#: parser_yacc.y:834
+#: parser_yacc.y:834 parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transition.\n"
 msgstr "linkkioikeuksia ei sallita nimetyssä profiilinsiirrossa\n"
 
@@ -385,21 +397,21 @@ msgstr "linkkioikeuksia ei sallita nimetyssä profiilinsiirrossa.\n"
 msgid "missing an end of line character? (entry: %s)"
 msgstr "puuttuuko rivin lopetinmerkki? (merkintä: %s)"
 
-#: parser_yacc.y:1000 parser_yacc.y:1010
+#: parser_yacc.y:1000 parser_yacc.y:1010 parser_yacc.y:989 parser_yacc.y:999
 msgid "Invalid network entry."
 msgstr "Virheellinen verkkomerkintä."
 
-#: parser_yacc.y:1064 parser_yacc.y:1072
+#: parser_yacc.y:1064 parser_yacc.y:1072 parser_yacc.y:1053 parser_yacc.y:1061
 #, c-format
 msgid "Invalid capability %s."
 msgstr "Virheellinen kyky %s."
 
-#: parser_yacc.y:1089
+#: parser_yacc.y:1089 parser_yacc.y:1078
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
 msgstr "AppArmor parser -virhe %s -tiedostossa, rivillä %d: %s\n"
 
-#: parser_yacc.y:1092
+#: parser_yacc.y:1092 parser_yacc.y:1081
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
 msgstr "AppArmor parser -virhe, rivi %d: %s\n"
@@ -454,12 +466,12 @@ msgstr "%s: virheen syy: '%s'\n"
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
 msgstr "%s: Säännöllisen lausekkeen '%s' kääntäminen ei onnistunut [alkuperäinen: '%s'] - malloc epäonnistui\n"
 
-#: ../parser_policy.c:194
+#: ../parser_policy.c:194 ../parser_policy.c:200
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
 msgstr "VIRHE yhdistettäessä profiilin %s sääntöjä, lataaminen ei onnistunut\n"
 
-#: ../parser_policy.c:226
+#: ../parser_policy.c:226 ../parser_policy.c:232
 #, c-format
 msgid ""
 "ERROR profile %s contains policy elements not usable with this kernel:\n"
@@ -470,38 +482,58 @@ msgstr ""
 "\t'*', '?', merkkialueet ja muunnokset eivät ole sallittuja.\n"
 "\t'**' voidaan käyttää vain säännön lopussa.\n"
 
-#: ../parser_policy.c:271
+#: ../parser_policy.c:271 ../parser_policy.c:277
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
 msgstr "VIRHE käsiteltäessä profiilin %s säännöllisiä lausekkeita, lataaminen ei onnistunut\n"
 
-#: ../parser_policy.c:298
+#: ../parser_policy.c:298 ../parser_policy.c:304
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
 msgstr "VIRHE laajennettaessa muuttujia profiilille %s, lataaminen ei onnistunut\n"
 
-#: ../parser_policy.c:481
+#: ../parser_policy.c:481 ../parser_policy.c:486
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
 msgstr "VIRHE profiilissa %s, lataaminen ei onnistunut\n"
 
-#: ../parser_policy.c:659
+#: ../parser_policy.c:659 ../parser_policy.c:668
 #, c-format
 msgid "%s: Errors found during postprocessing.  Aborting.\n"
 msgstr "%s: Löydettiin virheitä jälkikäsittelyssä.  Keskeytetään.\n"
 
-#: ../parser_policy.c:666 ../parser_policy.c:687
+#: ../parser_policy.c:666 ../parser_policy.c:687 ../parser_policy.c:675
+#: ../parser_policy.c:696
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr "%s: Löydettiin virheitä säännöllisten lausekkeiden jälkikäsittelyssä.  Keskeytetään.\n"
 
-#: ../parser_policy.c:673
+#: ../parser_policy.c:673 ../parser_policy.c:682
 #, c-format
 msgid "%s: Errors found during postprocess.  Aborting.\n"
 msgstr "%s: Löydettiin virheitä jälkikäsittelyssä.  Keskeytetään.\n"
 
-#: ../parser_policy.c:680
+#: ../parser_policy.c:680 ../parser_policy.c:689
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
 msgstr "%s: Löydettiin virheitä yhdistyssääntöjen jälkikäsittelyssä. Keskeytetään.\n"
+
+#: ../parser_misc.c:37 ../parser_misc.c:38
+#, c-format
+msgid "%s permission: not supported on current system.\n"
+msgstr "%s oikeus: ei tuettu nykyisessä järjestelmässä.\n"
+
+#: ../parser_misc.c:38 ../parser_misc.c:39
+#, c-format
+msgid "%s rule: not supported on current system.\n"
+msgstr "%s sääntö: ei tuettu nykyisessä järjestelmässä.\n"
+
+#: parser_yacc.y:220
+msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
+msgstr "Profiilin nimen täytyy alkaa merkillä '/' tai sanalla 'profile' tai 'hat'."
+
+#: ../parser_policy.c:389
+#, c-format
+msgid "ERROR adding hat access rule for profile %s\n"
+msgstr "VIRHE lisättäessä hattua profiilin %s käyttösääntöön\n"
 

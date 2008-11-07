@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-parser.hr\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2008-04-21 00:30-0700\n"
+"POT-Creation-Date: 2008-09-22 23:04-0700\n"
 "PO-Revision-Date: 2008-04-24 20:30+0200\n"
 "Last-Translator: Krešimir Jozić <kjozic@gmail.com>\n"
 "Language-Team: Croatian <en@li.org>\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 "X-Generator: KBabel 1.11.4\n"
 
-#: ../parser_include.c:96
+#: ../parser_include.c:96 ../parser_main.c:450
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
 msgstr "Greška: Ne mogu učitati profil %s: %s.\n"
@@ -152,7 +152,7 @@ msgstr "Uklanjanje je uspjelo za \"%s\".\n"
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 msgstr "PANIKA neispravan inkrementalni spremnik %p pol %p ekst %p vel %d raz %p\n"
 
-#: ../parser_interface.c:798
+#: ../parser_interface.c:798 ../parser_interface.c:931
 #, c-format
 msgid "Unable to open %s - %s\n"
 msgstr "Ne mogu otvoriti %s - %s\n"
@@ -176,32 +176,33 @@ msgstr "Ne mogu napraviti radni prostor\n"
 msgid "unable to serialize profile %s\n"
 msgstr "Ne mogu serijalizirati profil %s\n"
 
-#: ../parser_interface.c:872
+#: ../parser_interface.c:872 ../parser_interface.c:943
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
 msgstr "%s: Ne mogu zapisati cjeli unos profila\n"
 
-#: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354
+#: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354 parser_lex.l:123
+#: parser_lex.l:158 parser_lex.l:191 parser_lex.l:392
 #, c-format
 msgid "Found unexpected character: '%s'"
 msgstr "Pronađen neočekivani znak: '%s'"
 
-#: parser_lex.l:196
+#: parser_lex.l:196 parser_lex.l:232
 #, c-format
 msgid "(network_mode) Found unexpected character: '%s'"
 msgstr "(network_mode) Pronađen neočekivani znak: '%s'"
 
-#: ../parser_main.c:137
+#: ../parser_main.c:137 ../parser_main.c:146
 #, c-format
 msgid "Warning (%s line %d): %s"
 msgstr "Upozorenje (%s red %d): %s"
 
-#: ../parser_main.c:264
+#: ../parser_main.c:264 ../parser_main.c:275
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
 msgstr "%s: Ne mogu rezervirati memoriju za točku montiranja poddomene\n"
 
-#: ../parser_main.c:310
+#: ../parser_main.c:310 ../parser_main.c:321
 #, c-format
 msgid ""
 "Warning: unable to find a suitable fs in %s, is it mounted?\n"
@@ -210,7 +211,7 @@ msgstr ""
 "Upozorenje: ne mogu pronaći prikladan datotečni sustav u %s, da li je montiran?\n"
 "Koristite --subdomainfs za premoštenje.\n"
 
-#: ../parser_main.c:330
+#: ../parser_main.c:330 ../parser_main.c:341
 #, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
@@ -219,7 +220,7 @@ msgstr ""
 "%s: Ispričavamo se. Trebate root privilegije za pokretanje ovog programa.\n"
 "\n"
 
-#: ../parser_main.c:337
+#: ../parser_main.c:337 ../parser_main.c:348
 #, c-format
 msgid ""
 "%s: Warning! You've set this program setuid root.\n"
@@ -230,7 +231,7 @@ msgstr ""
 "Svatko tko može pokrenuti ovaj program može manipulirati AppArmor profilima.\n"
 "\n"
 
-#: ../parser_main.c:415
+#: ../parser_main.c:415 ../parser_main.c:509
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
 msgstr "%s Pronađene su greške u datoteci. Prekidam.\n"
@@ -240,10 +241,15 @@ msgstr "%s Pronađene su greške u datoteci. Prekidam.\n"
 #: parser_yacc.y:884 parser_yacc.y:893 parser_yacc.y:904 parser_yacc.y:914
 #: parser_yacc.y:985 parser_yacc.y:1033 parser_yacc.y:1044 parser_yacc.y:1119
 #: parser_yacc.y:1134 parser_yacc.y:1141 parser_yacc.y:1152
+#: ../parser_main.c:464 ../parser_misc.c:288 parser_yacc.y:243
+#: parser_yacc.y:352 parser_yacc.y:364 parser_yacc.y:432 parser_yacc.y:534
+#: parser_yacc.y:572 parser_yacc.y:902 parser_yacc.y:974 parser_yacc.y:1022
+#: parser_yacc.y:1108 parser_yacc.y:1126 parser_yacc.y:1133 parser_yacc.y:1144
+#: ../parser_misc.c:292
 msgid "Memory allocation error."
 msgstr "Greška kod rezerviranja memorije."
 
-#: ../parser_misc.c:437
+#: ../parser_misc.c:437 ../parser_misc.c:444 ../parser_misc.c:448
 msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
@@ -251,41 +257,44 @@ msgstr ""
 "Kvalifikatori s velikim slovima \"RWLIMX\" su zastarjeli, molimo vas da ih pretvorite u mala slova\n"
 "Pogledajte apparmor.d(5) man stranice za detalje.\n"
 
-#: ../parser_misc.c:473 ../parser_misc.c:480
+#: ../parser_misc.c:473 ../parser_misc.c:480 ../parser_misc.c:487
+#: ../parser_misc.c:484 ../parser_misc.c:491
 msgid "Conflict 'a' and 'w' perms are mutually exclusive."
 msgstr "Sukob 'a' i 'w' dozvole su međusobno isključive."
 
-#: ../parser_misc.c:497
+#: ../parser_misc.c:497 ../parser_misc.c:504 ../parser_misc.c:508
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
 msgstr "Kvalifikator izvršavanja 'i' nije ispravan, sukobljeni kvalifikator je već naveden"
 
-#: ../parser_misc.c:508
+#: ../parser_misc.c:508 ../parser_misc.c:515 ../parser_misc.c:519
 #, c-format
 msgid "Unconfined exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
 msgstr "Neograničeni kvalifikator izvršavanja (%c%c) dozvoljava da neke opasne varijable okoline budu proslijeđene neprovjerenim procesima, pogledajte 'man 5 apparmor.d' za detalje.\n"
 
-#: ../parser_misc.c:516 ../parser_misc.c:549
+#: ../parser_misc.c:516 ../parser_misc.c:549 ../parser_misc.c:523
+#: ../parser_misc.c:556 ../parser_misc.c:527 ../parser_misc.c:560
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
 msgstr "Kvalifikator izvršavanja '%c' nije ispravan, sukobljeni kvalifikator je već naveden"
 
-#: ../parser_misc.c:543
+#: ../parser_misc.c:543 ../parser_misc.c:550 ../parser_misc.c:554
 #, c-format
 msgid "Exec qualifier '%c%c' invalid, conflicting qualifier already specified"
 msgstr "Kvalifikator izvršavanja '%c%c' nije ispravan, sukobljeni kvalifikator je već naveden"
 
-#: ../parser_misc.c:591
+#: ../parser_misc.c:591 ../parser_misc.c:598 ../parser_misc.c:602
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
 msgstr "Unutrašnje: neočekivani oblik znaka '%c' u ulazu"
 
-#: ../parser_misc.c:613
+#: ../parser_misc.c:613 ../parser_misc.c:620 ../parser_misc.c:624
 #, c-format
 msgid "Internal error generated invalid perm 0x%llx\n"
 msgstr "Unutrašnja greška je stvorila neispravne dozvole 0x%llx\n"
 
 #: ../parser_misc.c:833 ../parser_symtab.c:556 ../parser_regex.c:658
-#: ../parser_variable.c:227
+#: ../parser_variable.c:227 ../parser_misc.c:840 ../parser_regex.c:660
+#: ../parser_misc.c:844
 #, c-format
 msgid "AppArmor parser error: %s\n"
 msgstr "AppArmor greška parsera: %s\n"
@@ -303,41 +312,41 @@ msgstr "profil %s: spojeno je pravilo %s sa višestrukim x modifikatorima\n"
 msgid "Profile names must begin with a '/', or keyword 'profile'."
 msgstr "Ime profila mora počinjati s '/' ili ključnom riječi 'profile'."
 
-#: parser_yacc.y:263
+#: parser_yacc.y:263 parser_yacc.y:269
 #, c-format
 msgid "Failed to create alias %s -> %s\n"
 msgstr "Ne mogu napraviti alias %s -> %s\n"
 
-#: parser_yacc.y:399
+#: parser_yacc.y:399 parser_yacc.y:405
 msgid "Profile flag 'debug' is no longer valid."
 msgstr "Zastavica profila 'uklanjanje grešaka' više nije ispravna."
 
-#: parser_yacc.y:405
+#: parser_yacc.y:405 parser_yacc.y:411
 #, c-format
 msgid "Invalid profile flag: %s."
 msgstr "Neispravna zastavica profila: %s."
 
-#: parser_yacc.y:440 parser_yacc.y:462
+#: parser_yacc.y:440 parser_yacc.y:462 parser_yacc.y:446 parser_yacc.y:468
 msgid "Assert: `rule' returned NULL."
 msgstr "Potvrda: `rule' je vratilo NULL."
 
-#: parser_yacc.y:443 parser_yacc.y:488
+#: parser_yacc.y:443 parser_yacc.y:488 parser_yacc.y:449 parser_yacc.y:494
 msgid "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"
 msgstr "Neispravan način, u pravilima odbijanja 'x' ne smije imati kvalifikatore izvršavanja 'i', 'p', ili 'u' u prefiksu"
 
-#: parser_yacc.y:466
+#: parser_yacc.y:466 parser_yacc.y:472
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
 msgstr "Neispravan oblik, ispred 'x' moraju biti kvalifikatori izvršavanja 'i', 'p', 'c' ili 'u'"
 
-#: parser_yacc.y:491
+#: parser_yacc.y:491 parser_yacc.y:497
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
 msgstr "Neispravan oblik, ispred 'x' moraju biti kvalifikatori izvršavanja 'i', 'p' ili 'u'"
 
-#: parser_yacc.y:516 parser_yacc.y:554
+#: parser_yacc.y:516 parser_yacc.y:554 parser_yacc.y:522 parser_yacc.y:560
 msgid "Assert: `network_rule' return invalid protocol."
 msgstr "Potvrda: `network_rule' je vratilo neispravan protokol."
 
-#: parser_yacc.y:591
+#: parser_yacc.y:591 parser_yacc.y:597
 msgid "Assert: `change_profile' returned NULL."
 msgstr "Potvrda: `change_profile' je vratilo NULL."
 
@@ -346,11 +355,11 @@ msgstr "Potvrda: `change_profile' je vratilo NULL."
 msgid "Assert: `change_hat' returned NULL."
 msgstr "Potvrda: `change_profile' je vratilo NULL."
 
-#: parser_yacc.y:631
+#: parser_yacc.y:631 parser_yacc.y:628
 msgid "Assert: 'hat rule' returned NULL."
 msgstr "Potvrda: `hat rule' je vratilo NULL."
 
-#: parser_yacc.y:640
+#: parser_yacc.y:640 parser_yacc.y:637
 #, fuzzy
 msgid "Assert: 'local_profile rule' returned NULL."
 msgstr "Potvrda: `change_profile' je vratilo NULL."
@@ -368,7 +377,7 @@ msgstr ""
 msgid "link and exec perms conflict on a file rule using ->"
 msgstr ""
 
-#: parser_yacc.y:834
+#: parser_yacc.y:834 parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transition.\n"
 msgstr ""
 
@@ -385,21 +394,21 @@ msgstr ""
 msgid "missing an end of line character? (entry: %s)"
 msgstr "nedostaje oznaka kraja niza? (unos: %s)"
 
-#: parser_yacc.y:1000 parser_yacc.y:1010
+#: parser_yacc.y:1000 parser_yacc.y:1010 parser_yacc.y:989 parser_yacc.y:999
 msgid "Invalid network entry."
 msgstr "Neispravan mrežni unos."
 
-#: parser_yacc.y:1064 parser_yacc.y:1072
+#: parser_yacc.y:1064 parser_yacc.y:1072 parser_yacc.y:1053 parser_yacc.y:1061
 #, c-format
 msgid "Invalid capability %s."
 msgstr "Neispravna mogućnost %s."
 
-#: parser_yacc.y:1089
+#: parser_yacc.y:1089 parser_yacc.y:1078
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
 msgstr "AppArmor greška parsera u %s u redu %d: %s\n"
 
-#: parser_yacc.y:1092
+#: parser_yacc.y:1092 parser_yacc.y:1081
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
 msgstr "AppArmor greška parsera, red %d: %s\n"
@@ -454,12 +463,12 @@ msgstr "%s: uzrok greške: '%s'\n"
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
 msgstr "%s: Ne mogu kompajlirati regularni izraz '%s' [original: '%s'] - malloc nije uspio\n"
 
-#: ../parser_policy.c:194
+#: ../parser_policy.c:194 ../parser_policy.c:200
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
 msgstr "GREŠKA kod spajanja pravila za profil %s, ne mogu učitati\n"
 
-#: ../parser_policy.c:226
+#: ../parser_policy.c:226 ../parser_policy.c:232
 #, c-format
 msgid ""
 "ERROR profile %s contains policy elements not usable with this kernel:\n"
@@ -470,38 +479,58 @@ msgstr ""
 "\t'*', '?', raspon znakova i alternative nisu dozvoljene.\n"
 "\t'**' se može koristiti samo na kraju pravila.\n"
 
-#: ../parser_policy.c:271
+#: ../parser_policy.c:271 ../parser_policy.c:277
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
 msgstr "GREŠKA kod obrade regularnih izraza za profil %s, ne mogu učitati\n"
 
-#: ../parser_policy.c:298
+#: ../parser_policy.c:298 ../parser_policy.c:304
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
 msgstr "GREŠKA kod učitavanja varijabli za profil %s, ne mogu učitati\n"
 
-#: ../parser_policy.c:481
+#: ../parser_policy.c:481 ../parser_policy.c:486
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
 msgstr "GREŠKA u profilu %s, ne mogu učitati\n"
 
-#: ../parser_policy.c:659
+#: ../parser_policy.c:659 ../parser_policy.c:668
 #, fuzzy, c-format
 msgid "%s: Errors found during postprocessing.  Aborting.\n"
 msgstr "%s: Nađene su greške prilikom postprocesiranja regularnih izraza.  Prekidam.\n"
 
-#: ../parser_policy.c:666 ../parser_policy.c:687
+#: ../parser_policy.c:666 ../parser_policy.c:687 ../parser_policy.c:675
+#: ../parser_policy.c:696
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr "%s: Nađene su greške prilikom postprocesiranja regularnih izraza.  Prekidam.\n"
 
-#: ../parser_policy.c:673
+#: ../parser_policy.c:673 ../parser_policy.c:682
 #, fuzzy, c-format
 msgid "%s: Errors found during postprocess.  Aborting.\n"
 msgstr "%s: Nađene su greške prilikom postprocesiranja regularnih izraza.  Prekidam.\n"
 
-#: ../parser_policy.c:680
+#: ../parser_policy.c:680 ../parser_policy.c:689
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
 msgstr "%s: Nađene su greške prilikom postprocesiranja kombiniranja pravila. Prekidam.\n"
 
+#: ../parser_misc.c:37 ../parser_misc.c:38
+#, c-format
+msgid "%s permission: not supported on current system.\n"
+msgstr ""
+
+#: ../parser_misc.c:38 ../parser_misc.c:39
+#, c-format
+msgid "%s rule: not supported on current system.\n"
+msgstr ""
+
+#: parser_yacc.y:220
+#, fuzzy
+msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
+msgstr "Ime profila mora počinjati s '/' ili ključnom riječi 'profile'."
+
+#: ../parser_policy.c:389
+#, fuzzy, c-format
+msgid "ERROR adding hat access rule for profile %s\n"
+msgstr "GREŠKA kod učitavanja varijabli za profil %s, ne mogu učitati\n"

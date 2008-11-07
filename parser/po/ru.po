@@ -1,6 +1,5 @@
-# translation of apparmor-parser.ru.po to Russian
-# translation of apparmor-parser.ru.po to
-# Russian message file for YaST2 (@memory@).
+# Translation of apparmor-parser.po to russian
+# Russian message file for YaST2 (apparmor-parser.ru.po).
 # Copyright (C) 2005, 2006 SUSE Linux Products GmbH.
 # Copyright (C) 2002 SuSE Linux AG.
 # Copyright (C) 1999, 2000, 2001 SuSE GmbH.
@@ -9,21 +8,22 @@
 # Eugene Osintsev <osgene@omskelecom.ru>, 1999, 2000.
 # Aleksey Osipov <aliks-os@yandex.ru>, 2005, 2006, 2007 ,2008.
 # Igor Kondrashkin <poseidos@mail.ru>, 2007.
+# Alexander Melentiev <alex239@gmail.com>, 2008.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-parser.ru\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2008-04-21 00:30-0700\n"
-"PO-Revision-Date: 2008-05-02 13:19+0300\n"
-"Last-Translator: Aleksey Osipov <aliks-os@yandex.ru>\n"
+"POT-Creation-Date: 2008-09-22 23:04-0700\n"
+"PO-Revision-Date: 2008-09-04 00:30+0400\n"
+"Last-Translator: Alexander Melentiev <alex239@gmail.com>\n"
 "Language-Team: Russian <opensuse-translation-ru@opensuse.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: KBabel 1.11.4\n"
+"X-Generator: Lokalize 0.2\n"
 
-#: ../parser_include.c:96
+#: ../parser_include.c:96 ../parser_main.c:450
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
 msgstr "Ошибка: Не удалось прочитать профиль %s: %s.\n"
@@ -39,7 +39,7 @@ msgstr "Ошибка: Недостаточно памяти.\n"
 #: ../parser_include.c:176
 #, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
-msgstr "Ошибка: базовый каталог %s не является каталогом (пропускается).\n"
+msgstr "Ошибка: базовый каталог %s не является каталогом, пропускается.\n"
 
 #: ../parser_include.c:190
 #, c-format
@@ -155,7 +155,7 @@ msgstr "Удаление для \"%s\" выполнено.\n"
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 msgstr "ТРЕВОГА! неправильный инкрементный буфер %p pos %p ext %p size %d res %p\n"
 
-#: ../parser_interface.c:798
+#: ../parser_interface.c:798 ../parser_interface.c:931
 #, c-format
 msgid "Unable to open %s - %s\n"
 msgstr "Невозможно открыть %s - %s\n"
@@ -179,32 +179,33 @@ msgstr "невозможно создать рабочую область\n"
 msgid "unable to serialize profile %s\n"
 msgstr "невозможно сериализировать профиль %s\n"
 
-#: ../parser_interface.c:872
+#: ../parser_interface.c:872 ../parser_interface.c:943
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
 msgstr "%s: Невозможно записать всю запись профиля\n"
 
-#: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354
+#: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354 parser_lex.l:123
+#: parser_lex.l:158 parser_lex.l:191 parser_lex.l:392
 #, c-format
 msgid "Found unexpected character: '%s'"
-msgstr "Найден неожиданный знак: '%s'"
+msgstr "Найден неожиданный символ: '%s'"
 
-#: parser_lex.l:196
+#: parser_lex.l:196 parser_lex.l:232
 #, c-format
 msgid "(network_mode) Found unexpected character: '%s'"
-msgstr "(network_mode) Найден неожиданный знак: '%s'"
+msgstr "(network_mode) Найден неожиданный символ: '%s'"
 
-#: ../parser_main.c:137
+#: ../parser_main.c:137 ../parser_main.c:146
 #, c-format
 msgid "Warning (%s line %d): %s"
 msgstr "Предупреждение (%s строка %d): %s"
 
-#: ../parser_main.c:264
+#: ../parser_main.c:264 ../parser_main.c:275
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
-msgstr "%s: Не удалось выделить память для точки монтирования базовой подобласти\n"
+msgstr "%s: Не удалось выделить память для точки монтирования subdomainbase\n"
 
-#: ../parser_main.c:310
+#: ../parser_main.c:310 ../parser_main.c:321
 #, c-format
 msgid ""
 "Warning: unable to find a suitable fs in %s, is it mounted?\n"
@@ -213,7 +214,7 @@ msgstr ""
 "Предупреждение: невозможно обнаружить подходящую файловую систему в %s, смонтирована ли она?\n"
 "Используйте --subdomainfs для замены.\n"
 
-#: ../parser_main.c:330
+#: ../parser_main.c:330 ../parser_main.c:341
 #, c-format
 msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
@@ -222,31 +223,36 @@ msgstr ""
 "%s: Извините. Для запуска этой программы необходимы права администратора.\n"
 "\n"
 
-#: ../parser_main.c:337
+#: ../parser_main.c:337 ../parser_main.c:348
 #, c-format
 msgid ""
 "%s: Warning! You've set this program setuid root.\n"
 "Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 msgstr ""
-"%s: Предупреждение! Вы установили setuid этой программы как root.\n"
+"%s: Предупреждение! Вы установили для этой программы setuid root.\n"
 "Любой запустивший эту программу может изменить профили AppArmor.\n"
 "\n"
 
-#: ../parser_main.c:415
+#: ../parser_main.c:415 ../parser_main.c:509
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
-msgstr "%s: Обнаружены ошибки в файле. Процесс прерывается.\n"
+msgstr "%s: Обнаружены ошибки в файле. Прерывание.\n"
 
 #: ../parser_misc.c:281 parser_yacc.y:216 parser_yacc.y:240 parser_yacc.y:346
 #: parser_yacc.y:358 parser_yacc.y:426 parser_yacc.y:528 parser_yacc.y:566
 #: parser_yacc.y:884 parser_yacc.y:893 parser_yacc.y:904 parser_yacc.y:914
 #: parser_yacc.y:985 parser_yacc.y:1033 parser_yacc.y:1044 parser_yacc.y:1119
 #: parser_yacc.y:1134 parser_yacc.y:1141 parser_yacc.y:1152
+#: ../parser_main.c:464 ../parser_misc.c:288 parser_yacc.y:243
+#: parser_yacc.y:352 parser_yacc.y:364 parser_yacc.y:432 parser_yacc.y:534
+#: parser_yacc.y:572 parser_yacc.y:902 parser_yacc.y:974 parser_yacc.y:1022
+#: parser_yacc.y:1108 parser_yacc.y:1126 parser_yacc.y:1133 parser_yacc.y:1144
+#: ../parser_misc.c:292
 msgid "Memory allocation error."
 msgstr "Ошибка выделения памяти."
 
-#: ../parser_misc.c:437
+#: ../parser_misc.c:437 ../parser_misc.c:444 ../parser_misc.c:448
 msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
@@ -254,42 +260,45 @@ msgstr ""
 "Ключи в верхнем регистре \"RWLIMX\" устарели, переведите их в нижний регистр.\n"
 "Дополнительные сведения имеются в справке man для apparmor.d(5).\n"
 
-#: ../parser_misc.c:473 ../parser_misc.c:480
+#: ../parser_misc.c:473 ../parser_misc.c:480 ../parser_misc.c:487
+#: ../parser_misc.c:484 ../parser_misc.c:491
 msgid "Conflict 'a' and 'w' perms are mutually exclusive."
 msgstr "Конфликт: разрешения 'a' и 'w' взаимоисключающие."
 
-#: ../parser_misc.c:497
+#: ../parser_misc.c:497 ../parser_misc.c:504 ../parser_misc.c:508
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
-msgstr "Недопустимый ключ запуска 'i', уже определен конфликтующий ключ"
+msgstr "Недопустимый ключ запуска 'i', уже определён конфликтующий ключ"
 
-#: ../parser_misc.c:508
+#: ../parser_misc.c:508 ../parser_misc.c:515 ../parser_misc.c:519
 #, c-format
 msgid "Unconfined exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
 msgstr "Действующий ключ запуска (%c%c) разрешает передачу некоторых опасных переменных окружения неограниченным процессам; для получения дополнительных сведений введите команду 'man 5 apparmor.d' в терминале.\n"
 
-#: ../parser_misc.c:516 ../parser_misc.c:549
+#: ../parser_misc.c:516 ../parser_misc.c:549 ../parser_misc.c:523
+#: ../parser_misc.c:556 ../parser_misc.c:527 ../parser_misc.c:560
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr "Недопустимый ключ запуска '%c', уже определен конфликтующий ключ"
+msgstr "Недопустимый ключ запуска '%c', уже определён конфликтующий ключ"
 
-#: ../parser_misc.c:543
+#: ../parser_misc.c:543 ../parser_misc.c:550 ../parser_misc.c:554
 #, c-format
 msgid "Exec qualifier '%c%c' invalid, conflicting qualifier already specified"
-msgstr "Недопустимый ключ запуска '%c%c', уже определен конфликтующий ключ"
+msgstr "Недопустимый ключ запуска '%c%c', уже определён конфликтующий ключ"
 
-#: ../parser_misc.c:591
+#: ../parser_misc.c:591 ../parser_misc.c:598 ../parser_misc.c:602
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr "Внутреннее: неожиданный знак режима '%c' во вводе"
+msgstr "Внутреннее: неожиданный символ режима '%c' во вводе"
 
-#: ../parser_misc.c:613
+#: ../parser_misc.c:613 ../parser_misc.c:620 ../parser_misc.c:624
 #, c-format
 msgid "Internal error generated invalid perm 0x%llx\n"
 msgstr "Неверное разрешение 0x%llx вызвало внутреннюю ошибку\n"
 
 # 62889 AttribValues/label
 #: ../parser_misc.c:833 ../parser_symtab.c:556 ../parser_regex.c:658
-#: ../parser_variable.c:227
+#: ../parser_variable.c:227 ../parser_misc.c:840 ../parser_regex.c:660
+#: ../parser_misc.c:844
 #, c-format
 msgid "AppArmor parser error: %s\n"
 msgstr "Ошибка анализатора AppArmor: %s\n"
@@ -301,47 +310,47 @@ msgstr "Не удалось объединить записи. Недостат�
 #: ../parser_merge.c:113
 #, c-format
 msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-msgstr "в профиле %s: имеется объединенное правило %s с несколькими модификаторами x\n"
+msgstr "профиль %s: имеется объединённое правило %s с несколькими модификаторами x\n"
 
 #: parser_yacc.y:220
 msgid "Profile names must begin with a '/', or keyword 'profile'."
 msgstr "Имя профиля должно начинаться с '/' или ключевого слова 'profile'."
 
-#: parser_yacc.y:263
+#: parser_yacc.y:263 parser_yacc.y:269
 #, c-format
 msgid "Failed to create alias %s -> %s\n"
-msgstr "Невозможно создать всевдоним %s -> %s\n"
+msgstr "Не удалось создать псевдоним %s -> %s\n"
 
-#: parser_yacc.y:399
+#: parser_yacc.y:399 parser_yacc.y:405
 msgid "Profile flag 'debug' is no longer valid."
 msgstr "Флаг профиля 'debug' больше не используется."
 
-#: parser_yacc.y:405
+#: parser_yacc.y:405 parser_yacc.y:411
 #, c-format
 msgid "Invalid profile flag: %s."
 msgstr "Неверное назначение флага: %s."
 
-#: parser_yacc.y:440 parser_yacc.y:462
+#: parser_yacc.y:440 parser_yacc.y:462 parser_yacc.y:446 parser_yacc.y:468
 msgid "Assert: `rule' returned NULL."
 msgstr "Предупреждение: `rule' возвратило NULL."
 
-#: parser_yacc.y:443 parser_yacc.y:488
+#: parser_yacc.y:443 parser_yacc.y:488 parser_yacc.y:449 parser_yacc.y:494
 msgid "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"
 msgstr "Недопустимый режим, в правилах запрещения перед 'x' не должен стоять ключ запуска 'i', 'p' или 'u'"
 
-#: parser_yacc.y:466
+#: parser_yacc.y:466 parser_yacc.y:472
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
 msgstr "Недопустимый режим, перед 'x' должен стоять ключ запуска 'i', 'p', 'c', или 'u'"
 
-#: parser_yacc.y:491
+#: parser_yacc.y:491 parser_yacc.y:497
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
 msgstr "Недопустимый режим, перед 'x' должен стоять ключ запуска 'i', 'p' или 'u'"
 
-#: parser_yacc.y:516 parser_yacc.y:554
+#: parser_yacc.y:516 parser_yacc.y:554 parser_yacc.y:522 parser_yacc.y:560
 msgid "Assert: `network_rule' return invalid protocol."
 msgstr "Предупреждение: `network_rule' возвратило недопустимый протокол."
 
-#: parser_yacc.y:591
+#: parser_yacc.y:591 parser_yacc.y:597
 msgid "Assert: `change_profile' returned NULL."
 msgstr "Предупреждение: `change_profile' возвратило NULL."
 
@@ -349,11 +358,11 @@ msgstr "Предупреждение: `change_profile' возвратило NULL
 msgid "Assert: `change_hat' returned NULL."
 msgstr "Предупрждение: `change_hat' возвратило NULL."
 
-#: parser_yacc.y:631
+#: parser_yacc.y:631 parser_yacc.y:628
 msgid "Assert: 'hat rule' returned NULL."
 msgstr "Предупреждение: 'hat rule' возвратило NULL."
 
-#: parser_yacc.y:640
+#: parser_yacc.y:640 parser_yacc.y:637
 msgid "Assert: 'local_profile rule' returned NULL."
 msgstr "Предупреждение: 'local_profile rule'  возвратило NULL."
 
@@ -364,13 +373,13 @@ msgstr "Неинициализированная логическая перем
 
 #: parser_yacc.y:830
 msgid "subset can only be used with link rules."
-msgstr ""
+msgstr "поднабор может использоваться только с правилами связи."
 
 #: parser_yacc.y:832
 msgid "link and exec perms conflict on a file rule using ->"
 msgstr "права на выполнение и связь конфликтуют с правилом файла использующим ->"
 
-#: parser_yacc.y:834
+#: parser_yacc.y:834 parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transition.\n"
 msgstr "права связи не допускаются при перемещении именнованного профиля.\n"
 
@@ -385,23 +394,23 @@ msgstr "права связи не допускаются при перемещ�
 #: parser_yacc.y:866
 #, c-format
 msgid "missing an end of line character? (entry: %s)"
-msgstr "отсутствует знак конца строки? (запись: %s)"
+msgstr "отсутствует символ конца строки? (запись: %s)"
 
-#: parser_yacc.y:1000 parser_yacc.y:1010
+#: parser_yacc.y:1000 parser_yacc.y:1010 parser_yacc.y:989 parser_yacc.y:999
 msgid "Invalid network entry."
 msgstr "Недопустимая сетевая запись."
 
-#: parser_yacc.y:1064 parser_yacc.y:1072
+#: parser_yacc.y:1064 parser_yacc.y:1072 parser_yacc.y:1053 parser_yacc.y:1061
 #, c-format
 msgid "Invalid capability %s."
 msgstr "Недопустимая способность %s."
 
-#: parser_yacc.y:1089
+#: parser_yacc.y:1089 parser_yacc.y:1078
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
 msgstr "Ошибка анализатора AppArmor в %s в строке %d: %s\n"
 
-#: parser_yacc.y:1092
+#: parser_yacc.y:1092 parser_yacc.y:1081
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
 msgstr "Ошибка анализатора AppArmor, строка %d: %s\n"
@@ -456,12 +465,12 @@ msgstr "%s: причина ошибки: '%s'\n"
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
 msgstr "%s: Сбой при компиляции регулярного выражения '%s' [прототип: '%s'] - ошибка malloc\n"
 
-#: ../parser_policy.c:194
+#: ../parser_policy.c:194 ../parser_policy.c:200
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
 msgstr "ОШИБКА при объединении правил для профиля %s, сбой загрузки\n"
 
-#: ../parser_policy.c:226
+#: ../parser_policy.c:226 ../parser_policy.c:232
 #, c-format
 msgid ""
 "ERROR profile %s contains policy elements not usable with this kernel:\n"
@@ -472,38 +481,58 @@ msgstr ""
 "\t'*', '?', знаковые диапазоны и дизъюнкции не допускаются.\n"
 "\t'**' можно использовать только в конце правила.\n"
 
-#: ../parser_policy.c:271
+#: ../parser_policy.c:271 ../parser_policy.c:277
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
 msgstr "ОШИБКА обработки регулярных выражений для профиля %s, сбой загрузки\n"
 
-#: ../parser_policy.c:298
+#: ../parser_policy.c:298 ../parser_policy.c:304
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
 msgstr "ОШИБКА расширения переменных для профиля %s, сбой загрузки\n"
 
-#: ../parser_policy.c:481
+#: ../parser_policy.c:481 ../parser_policy.c:486
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
 msgstr "ОШИБКА в профиле %s, сбой загрузки\n"
 
-#: ../parser_policy.c:659
+#: ../parser_policy.c:659 ../parser_policy.c:668
 #, c-format
 msgid "%s: Errors found during postprocessing.  Aborting.\n"
-msgstr "%s: Обнаружены ошибки во время послебработки. Процесс прерывается.\n"
+msgstr "%s: Обнаружены ошибки во время постобработки. Процесс прерывается.\n"
 
-#: ../parser_policy.c:666 ../parser_policy.c:687
+#: ../parser_policy.c:666 ../parser_policy.c:687 ../parser_policy.c:675
+#: ../parser_policy.c:696
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
-msgstr "%s: Обнаружены ошибки во время послебработки регулярного выражения. Процесс прерывается.\n"
+msgstr "%s: Обнаружены ошибки во время постобработки регулярного выражения. Процесс прерывается.\n"
 
-#: ../parser_policy.c:673
+#: ../parser_policy.c:673 ../parser_policy.c:682
 #, c-format
 msgid "%s: Errors found during postprocess.  Aborting.\n"
-msgstr "%s: Обнаружены ошибки во время послебработки. Процесс прерывается.\n"
+msgstr "%s: Обнаружены ошибки во время постобработки. Процесс прерывается.\n"
 
-#: ../parser_policy.c:680
+#: ../parser_policy.c:680 ../parser_policy.c:689
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
-msgstr "%s: Обнаружены ошибки при послеобработке комбинированных правил. Процесс прерывается.\n"
+msgstr "%s: Обнаружены ошибки при постобработке комбинированных правил. Процесс прерывается.\n"
 
+#: ../parser_misc.c:37 ../parser_misc.c:38
+#, c-format
+msgid "%s permission: not supported on current system.\n"
+msgstr ""
+
+#: ../parser_misc.c:38 ../parser_misc.c:39
+#, c-format
+msgid "%s rule: not supported on current system.\n"
+msgstr ""
+
+#: parser_yacc.y:220
+#, fuzzy
+msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
+msgstr "Имя профиля должно начинаться с '/' или ключевого слова 'profile'."
+
+#: ../parser_policy.c:389
+#, fuzzy, c-format
+msgid "ERROR adding hat access rule for profile %s\n"
+msgstr "ОШИБКА расширения переменных для профиля %s, сбой загрузки\n"
