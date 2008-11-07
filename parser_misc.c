@@ -34,6 +34,13 @@
 #include "parser.h"
 #include "parser_yacc.h"
 
+foo() {
+char *unsupported_perm = _("%s permission: not supported on current system.\n");
+char *unsupported_rule = _("%s rule: not supported on current system.\n");
+
+printf("%s%s\n", unsupported_perm, unsupported_rule);
+}
+
 /* #define DEBUG */
 #ifdef DEBUG
 #define PDEBUG(fmt, args...) printf("Lexer: " fmt, ## args)
