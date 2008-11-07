@@ -31,7 +31,7 @@
 #
 ### BEGIN INIT INFO
 # Provides: apparmor
-# Required-Start:
+# Required-Start: boot.cleanup
 # Required-Stop:
 # Should-Start: $local_fs
 # Default-Start: B
