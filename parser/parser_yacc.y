@@ -206,7 +206,7 @@ profilelist:	profilelist profile
 
 opt_profile_flag: { /* nothing */ $$ = 0; }
 	| TOK_PROFILE { $$ = 1; }
-	| hat_start { $$ = 2; }
+	| TOK_HAT { $$ = 2; }
 
 profile:	opt_profile_flag TOK_ID flags TOK_OPEN rules TOK_CLOSE
 	{

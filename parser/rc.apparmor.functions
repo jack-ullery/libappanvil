@@ -344,8 +344,7 @@ apparmor_start() {
 
 	configure_owlsm
 
-	# if there is anything in the profiles file don't load
-	cat "$SFS_MOUNTPOINT/profiles" | if ! read line ; then
+	if [ $(wc -l "$SFS_MOUNTPOINT/profiles" | awk '{print $1}') -eq 0 ] ; then
 		parse_profiles load
 	else
 		aa_log_skipped_msg "Loading AppArmor profiles - AppArmor already loaded with profiles."

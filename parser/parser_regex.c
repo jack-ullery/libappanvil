@@ -278,9 +278,15 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 				/* { is a PCRE special character */
 				STORE("\\{", dptr, 2);
 			} else {
-					ingrouping++;
+				if (ingrouping) {
+					error = e_parse_error;
+					PERROR(_("%s: Illegal open {, nesting groupings not allowed\n"),
+					       progname);
+				} else {
+					ingrouping = 1;
 					ptype = ePatternRegex;
 					STORE("(", dptr, 1);
+				}
 			}
 			break;
 
@@ -289,7 +295,7 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 				/* { is a PCRE special character */
 				STORE("\\}", dptr, 2);
 			} else {
-				if (ingrouping < 1) {
+				if (ingrouping <= 1) {
 
 					error = e_parse_error;
 
@@ -304,7 +310,7 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 						       progname);
 					}
 				} else {	/* ingrouping > 1 */
-					ingrouping--;
+					ingrouping = 0;
 					STORE(")", dptr, 1);
 				}
 			}	/* bEscape */
@@ -320,7 +326,7 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 				STORE(sptr, dptr, 1);
 			} else {
 				if (ingrouping) {
-//					++ingrouping;
+					++ingrouping;
 					STORE("|", dptr, 1);
 				} else {
 					STORE(sptr, dptr, 1);
@@ -582,11 +588,10 @@ int post_process_entries(struct codomain *cod)
 	return ret;
 }
 
-extern void p_node_count(void);
-
 int process_regex(struct codomain *cod)
 {
 	int error = -1;
+
 	if (regex_type == AARE_DFA) {
 		cod->dfarules = aare_new_ruleset(0);
 		if (!cod->dfarules)
@@ -596,7 +601,6 @@ int process_regex(struct codomain *cod)
 		goto out;
 
 	if (regex_type == AARE_DFA && cod->dfarule_count > 0) {
-
 		cod->dfa = aare_create_dfa(cod->dfarules, 0, &cod->dfa_size);
 		aare_delete_ruleset(cod->dfarules);
 		cod->dfarules = NULL;
