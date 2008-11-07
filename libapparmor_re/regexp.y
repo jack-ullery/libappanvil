@@ -20,6 +20,8 @@
     #include <set>
     #include <map>
     #include <ostream>
+    #include <iostream>
+    #include <fstream>
 
     using namespace std;
 
@@ -64,21 +66,22 @@
 	State *otherwise;
     } Cases;
 
+
     /* An abstract node in the syntax tree. */
     class Node {
     public:
 	Node() :
-	    nullable(false), left(0), right(0), refcount(1) { }
+	    nullable(false), refcount(1) { child[0] = child[1] = 0; }
 	Node(Node *left) :
-	    nullable(false), left(left), right(0), refcount(1) { }
+	    nullable(false), refcount(1) { child[0] = left; child[1] = 0; }
 	Node(Node *left, Node *right) :
-	    nullable(false), left(left), right(right), refcount(1) { }
+	    nullable(false), refcount(1) { child[0] = left; child[1] = right; }
 	virtual ~Node()
 	{
-	    if (left)
-		left->release();
-	    if (right)
-		right->release();
+	    if (child[0])
+		    child[0]->release();
+	    if (child[1])
+		    child[1]->release();
 	}
 
 	/**
@@ -89,12 +92,13 @@
 	virtual void compute_firstpos() = 0;
 	virtual void compute_lastpos() = 0;
 	virtual void compute_followpos() { }
-
+	virtual int eq(Node *other) = 0;
 	virtual ostream& dump(ostream& os) = 0;
 
 	bool nullable;
 	State firstpos, lastpos, followpos;
-	Node *left, *right;
+	/* child 0 is left, child 1 is right */
+	Node *child[2];
 
 	/**
 	 * We need reference counting for AcceptNodes: sharing AcceptNodes
@@ -107,8 +111,9 @@
 	    return this;
 	}
 	void release(void) {
-	    if (--refcount == 0)
-		delete this;
+		if (--refcount == 0) {
+			delete this;
+		}
 	}
     };
 
@@ -124,6 +129,11 @@
 	}
 	void compute_lastpos()
 	{
+	}
+	int eq(Node *other) {
+		if (dynamic_cast<EpsNode *>(other))
+			return 1;
+		return 0;
 	}
 	ostream& dump(ostream& os)
 	{
@@ -164,6 +174,13 @@
 	    }
 	    (*x)->insert(followpos.begin(), followpos.end());
 	}
+	int eq(Node *other) {
+		CharNode *o = dynamic_cast<CharNode *>(other);
+		if (o) {
+			return c == o->c;
+		}
+		return 0;
+	}
 	ostream& dump(ostream& os)
 	{
 	    return os << c;
@@ -188,6 +205,19 @@
 		}
 		(*x)->insert(followpos.begin(), followpos.end());
 	    }
+	}
+	int eq(Node *other) {
+		CharSetNode *o = dynamic_cast<CharSetNode *>(other);
+		if (!o || chars.size() != o->chars.size())
+			return 0;
+
+		for (Chars::iterator i = chars.begin(), j = o->chars.begin();
+		     i != chars.end() && j != o->chars.end();
+		     i++, j++) {
+			if (*i != *j)
+				return 0;
+		}
+		return 1;
 	}
 	ostream& dump(ostream& os)
 	{
@@ -223,6 +253,19 @@
 		    i->second->insert(followpos.begin(), followpos.end());
 	    }
 	}
+	int eq(Node *other) {
+		NotCharSetNode *o = dynamic_cast<NotCharSetNode *>(other);
+		if (!o || chars.size() != o->chars.size())
+			return 0;
+
+		for (Chars::iterator i = chars.begin(), j = o->chars.begin();
+		     i != chars.end() && j != o->chars.end();
+		     i++, j++) {
+			if (*i != *j)
+				return 0;
+		}
+		return 1;
+	}
 	ostream& dump(ostream& os)
 	{
 	    os << "[^";
@@ -246,6 +289,11 @@
 	    for (Cases::iterator i = cases.begin(); i != cases.end(); i++)
 		i->second->insert(followpos.begin(), followpos.end());
 	}
+	int eq(Node *other) {
+		if (dynamic_cast<AnyCharNode *>(other))
+			return 1;
+		return 0;
+	}
 	ostream& dump(ostream& os) {
 	    return os << ".";
 	}
@@ -262,6 +310,12 @@
 	{
 	    /* Nothing to follow. */
 	}
+	/* requires accept nodes to be common by pointer */
+	int eq(Node *other) {
+		if (dynamic_cast<AcceptNode *>(other))
+			return (this == other);
+		return 0;
+	}
     };
 
     /* Match a pair of consecutive nodes. */
@@ -271,31 +325,41 @@
 	    Node(left, right) { }
 	void compute_nullable()
 	{
-	    nullable = left->nullable && right->nullable;
+	    nullable = child[0]->nullable && child[1]->nullable;
 	}
 	void compute_firstpos()
 	{
-	    if (left->nullable)
-		firstpos = left->firstpos + right->firstpos;
+	    if (child[0]->nullable)
+		firstpos = child[0]->firstpos + child[1]->firstpos;
 	    else
-		firstpos = left->firstpos;
+		firstpos = child[0]->firstpos;
 	}
 	void compute_lastpos()
 	{
-	    if (right->nullable)
-		lastpos = left->lastpos + right->lastpos;
+	    if (child[1]->nullable)
+		lastpos = child[0]->lastpos + child[1]->lastpos;
 	    else
-		lastpos = right->lastpos;
+		lastpos = child[1]->lastpos;
 	}
 	void compute_followpos()
 	{
-	    State from = left->lastpos, to = right->firstpos;
+	    State from = child[0]->lastpos, to = child[1]->firstpos;
 	    for(State::iterator i = from.begin(); i != from.end(); i++) {
 		(*i)->followpos.insert(to.begin(), to.end());
 	    }
 	}
+	int eq(Node *other) {
+		if (dynamic_cast<CatNode *>(other)) {
+			if (!child[0]->eq(other->child[0]))
+				return 0;
+			return child[1]->eq(other->child[1]);
+		}
+		return 0;
+	}
 	ostream& dump(ostream& os)
 	{
+	    child[0]->dump(os);
+	    child[1]->dump(os);
 	    return os;
 	    //return os << ' ';
 	}
@@ -311,22 +375,29 @@
 	}
 	void compute_firstpos()
 	{
-	    firstpos = left->firstpos;
+	    firstpos = child[0]->firstpos;
 	}
 	void compute_lastpos()
 	{
-	    lastpos = left->lastpos;
+	    lastpos = child[0]->lastpos;
 	}
 	void compute_followpos()
 	{
-	    State from = left->lastpos, to = left->firstpos;
+	    State from = child[0]->lastpos, to = child[0]->firstpos;
 	    for(State::iterator i = from.begin(); i != from.end(); i++) {
 		(*i)->followpos.insert(to.begin(), to.end());
 	    }
 	}
+	int eq(Node *other) {
+		if (dynamic_cast<StarNode *>(other))
+			return child[0]->eq(other->child[0]);
+		return 0;
+	}
 	ostream& dump(ostream& os)
 	{
-	    return os << '*';
+	    os << '(';
+	    child[0]->dump(os);
+	    return os << ")*";
 	}
     };
 
@@ -337,26 +408,33 @@
 	    Node(left) { }
 	void compute_nullable()
 	{
-	    nullable = left->nullable;
+	    nullable = child[0]->nullable;
 	}
 	void compute_firstpos()
 	{
-	    firstpos = left->firstpos;
+	    firstpos = child[0]->firstpos;
 	}
 	void compute_lastpos()
 	{
-	    lastpos = left->lastpos;
+	    lastpos = child[0]->lastpos;
 	}
 	void compute_followpos()
 	{
-	    State from = left->lastpos, to = left->firstpos;
+	    State from = child[0]->lastpos, to = child[0]->firstpos;
 	    for(State::iterator i = from.begin(); i != from.end(); i++) {
 		(*i)->followpos.insert(to.begin(), to.end());
 	    }
 	}
+	int eq(Node *other) {
+		if (dynamic_cast<PlusNode *>(other))
+			return child[0]->eq(other->child[0]);
+		return 0;
+	}
 	ostream& dump(ostream& os)
 	{
-	    return os << '+';
+	    os << '(';
+	    child[0]->dump(os);
+	    return os << ")+";
 	}
     };
 
@@ -367,21 +445,306 @@
 	    Node(left, right) { }
 	void compute_nullable()
 	{
-	    nullable = left->nullable || right->nullable;
+	    nullable = child[0]->nullable || child[1]->nullable;
 	}
 	void compute_lastpos()
 	{
-	    lastpos = left->lastpos + right->lastpos;
+	    lastpos = child[0]->lastpos + child[1]->lastpos;
 	}
 	void compute_firstpos()
 	{
-	    firstpos = left->firstpos + right->firstpos;
+	    firstpos = child[0]->firstpos + child[1]->firstpos;
+	}
+	int eq(Node *other) {
+		if (dynamic_cast<AltNode *>(other)) {
+			if (!child[0]->eq(other->child[0]))
+				return 0;
+			return child[1]->eq(other->child[1]);
+		}
+		return 0;
 	}
 	ostream& dump(ostream& os)
 	{
-	    return os << '|';
+	    os << '(';
+	    child[0]->dump(os);
+	    os << '|';
+	    child[1]->dump(os);
+	    os << ')';
+	    return os;
+//	    return os << '|';
 	}
     };
+
+/*
+ * Normalize the regex parse tree for factoring and cancelations
+ * left normalization (dir == 0) uses these rules
+ * (E | a) -> (a | E)
+ * (a | b) | c -> a | (b | c)
+ * (ab)c -> a(bc)
+ *
+ * right normalization (dir == 1) uses the same rules but reversed
+ * (a | E) -> (E | a)
+ * a | (b | c) -> (a | b) | c
+ * a(bc) -> (ab)c
+ */
+bool normalize_tree(Node *t, int dir)
+{
+	bool update = false;
+	if (dynamic_cast<ImportantNode *>(t))
+		return false;
+
+	for (;; update=true) {
+		if ((dynamic_cast<AltNode *>(t) &&
+		     dynamic_cast<EpsNode *>(t->child[dir])) ||
+		    (dynamic_cast<CatNode *>(t) &&
+		     dynamic_cast<EpsNode *>(t->child[dir]))) {
+			// (E | a) -> (a | E)
+			// Ea -> aE
+			Node *c = t->child[dir];
+			t->child[dir] = t->child[!dir];
+			t->child[!dir] = c;
+		}
+		if ((dynamic_cast<AltNode *>(t) &&
+		     dynamic_cast<AltNode *>(t->child[dir])) ||
+		    (dynamic_cast<CatNode *>(t) &&
+		     dynamic_cast<CatNode *>(t->child[dir]))) {
+			// (a | b) | c -> a | (b | c)
+			// (ab)c -> a(bc)
+			Node *c = t->child[dir];
+			t->child[dir] = c->child[dir];
+			c->child[dir] = c->child[!dir];
+			c->child[!dir] = t->child[!dir];
+			t->child[!dir] = c;
+		} else {
+			if (t->child[dir] && normalize_tree(t->child[dir], dir))
+				continue;
+			if (t->child[!dir] && normalize_tree(t->child[!dir], dir))
+				continue;
+			break;
+		}
+	}
+	return update;
+}
+
+/*
+ * assumes a normalized tree.  reductions shown for left normalization
+ * aE -> a
+ * (a | a) -> a
+ ** factoring patterns
+ * a | (a | b) -> (a | b)
+ * a | (ab) -> a (E | b) -> a (b | E)
+ * (ab) | (ac) -> a(b|c)
+ *
+ * returns t - if no simplifications were made
+ *         a new root node - if simplifications were made
+ */
+Node *simplify_tree_base(Node *t, int dir)
+{
+	if (dynamic_cast<ImportantNode *>(t))
+		return t;
+
+	for (int i=0; i < 2; i++) {
+		if (t->child[i]) {
+			for (Node *c = simplify_tree_base(t->child[i], dir);
+			     c != t->child[i];
+			     c = simplify_tree_base(t->child[i], dir)) {
+				t->child[i]->release();
+				t->child[i] = c;
+			}
+		}
+	}
+
+	if (dynamic_cast<CatNode *>(t) &&
+	    dynamic_cast<EpsNode *>(t->child[!dir])) {
+		// aE -> a
+		return t->child[dir]->dup();
+	}
+	if (dynamic_cast<AltNode *>(t) && t->child[dir]->eq(t->child[!dir])) {
+		// (a | a) -> a
+		return t->child[dir]->dup();
+	}
+
+	if (dynamic_cast<AltNode *>(t) &&
+	    dynamic_cast<AltNode *>(t->child[!dir])) {
+		// a | (a | b) -> (a | b)
+		// a | (b | (c | a)) -> (b | (c | a))
+		Node *i = t->child[!dir];
+		Node *l = i;
+		for (;dynamic_cast<AltNode *>(i); l = i, i = i->child[!dir]) {
+			if (t->child[dir]->eq(i->child[dir])) {
+				return t->child[!dir]->dup();
+			}
+		}
+		// last altnode of chain check other dir as well
+		if (t->child[dir]->eq(l->child[!dir])) {
+			return t->child[!dir]->dup();
+		}
+
+		//exact match didn't work, try factoring front
+		//a | (ac | (ad | () -> (a (E | c)) | (...)
+		//ab | (ac | (...)) -> (a (b | c)) | (...)
+		//ab | (a | (...)) -> (a (b | E)) | (...)
+		Node *a = t->child[dir];
+		if (dynamic_cast<CatNode *>(a))
+			a = a->child[dir];
+
+		for (l = t, i = t->child[!dir];; l = i, i = i->child[!dir]) {
+			if ((dynamic_cast<CatNode *>(i->child[dir]) &&
+			     a->eq(i->child[dir]->child[dir])) ||
+			    (a->eq(i->child[dir]))) {
+				goto alt_factor;
+			}
+			// termination test
+			if (!dynamic_cast<AltNode *>(i->child[!dir])) {
+				// last altnode of chain check other dir as well
+				if ((dynamic_cast<CatNode *>(i->child[!dir]) &&
+				     a->eq(i->child[!dir]->child[dir])) ||
+				    (a->eq(i->child[!dir]))) {
+					// flip alt node to make it dir factor
+					Node *tmp = i->child[dir];
+					i->child[dir] = i->child[!dir];
+					i->child[!dir] = tmp;
+					goto alt_factor;
+				}
+				break;
+			}
+		}
+		goto no_alt_factor;
+
+		alt_factor:
+		// if the match is not the first entry on the
+		// alt tree move it ups so it is
+		if (i != t->child[!dir]) {  // equiv to l != t
+			// i == child[!dir]
+			l->child[!dir] = i->child[!dir];
+			i->child[!dir] = t->child[!dir];
+			t->child[!dir] = i;
+		}
+
+		// now factor
+		Node *b, *c, *altnode, *cnode = NULL;
+		if (a == t->child[dir]) {
+			b = new EpsNode();
+		} else {
+			b = t->child[dir]->child[!dir]->dup();
+		}
+
+		if (dynamic_cast<CatNode *>(i->child[dir])) {
+			c = i->child[dir]->child[!dir];
+			cnode = i->child[dir];
+			cnode->child[dir]->release();
+		} else {
+			c = new EpsNode();
+			i->child[dir]->release();
+		}
+
+		altnode = new AltNode(b, c);
+		if (cnode) {
+			cnode->child[dir] = a->dup();
+			cnode->child[!dir] = altnode;
+		} else {
+			cnode = new CatNode(a->dup(), altnode);
+		}
+		i->child[dir] = cnode;
+
+		normalize_tree(i, dir);
+		return i->dup();
+	}
+no_alt_factor:
+
+	// a | (ab) -> a (E | b) -> a (b | E)
+	if (dynamic_cast<AltNode *>(t) &&
+	    dynamic_cast<CatNode *>(t->child[!dir])) {
+
+		if (t->child[dir]->eq(t->child[!dir]->child[dir])) {
+			// a | (ab) -> a (E | b) -> a (b | E)
+			Node *c = t->child[!dir];
+			t->child[dir]->release();
+			t->child[dir] = c->child[!dir];
+			t->child[!dir] = new EpsNode();
+			c->child[!dir] = t->dup();
+			normalize_tree(c, dir);
+			return c;
+		}
+	}
+
+	// ab | (a) -> a (b | E)
+	if (dynamic_cast<AltNode *>(t) &&
+	    dynamic_cast<CatNode *>(t->child[dir])) {
+
+		if (t->child[dir]->child[dir]->eq(t->child[!dir])) {
+			Node *c = t->child[dir];
+			t->child[!dir]->release();
+			t->child[dir] = c->child[!dir];
+			t->child[!dir] = new EpsNode();
+			c->child[!dir] = t->dup();
+			normalize_tree(c, dir);
+			return c;
+		}
+	}
+
+	// (ab) | (ac) -> a(b|c)
+	if (dynamic_cast<AltNode *>(t) &&
+	    dynamic_cast<CatNode *>(t->child[dir]) &&
+	    dynamic_cast<CatNode *>(t->child[!dir])) {
+		if (t->child[dir]->child[dir]->eq(t->child[!dir]->child[dir])) {
+			// (ab) | (ac) -> a(b|c)
+			Node *right = t->child[!dir];
+			Node *left = t->child[dir];
+			t->child[dir] = left->child[!dir];
+			t->child[!dir] = right->child[!dir]->dup();
+			left->child[!dir] = t->dup();
+			right->release();
+			normalize_tree(left, dir);
+			return left;
+		}
+	}
+	return t;
+}
+
+int debug_tree(Node *t)
+{
+	int nodes = 1;
+
+	if (t->refcount > 1 && !dynamic_cast<AcceptNode *>(t)) {
+		fprintf(stderr, "Node %p has a refcount of %d\n", t, t->refcount);
+	}
+
+	if (!dynamic_cast<ImportantNode *>(t)) {
+		if (t->child[0])
+			nodes += debug_tree(t->child[0]);
+		if (t->child[1])
+			nodes += debug_tree(t->child[1]);
+	}
+	return nodes;
+}
+
+Node *simplify_tree(Node *t)
+{
+	int update;
+	do {
+		update = 0;
+		//do right normalize first as this reduces the number
+		//of trailing nodes which might follow an internal *
+		//or **, which is where state explosion can happen
+		//eg. in one test this makes the difference between
+		//    the dfa having about 7 thousands states,
+		//    and it having about  1.25 million states
+		for (int dir = 1; dir >= 0 ; dir--) {
+			while (normalize_tree(t, dir));
+			for (Node *c = simplify_tree_base(t, dir);
+			     c != t;
+			     c = simplify_tree_base(t, dir)) {
+				t->release();
+				t = c;
+				update = 1;
+			}
+		}
+	} while(update);
+	return t;
+}
+
+
 %}
 
 %union {
@@ -529,10 +892,10 @@ class depth_first_traversal {
 public:
     depth_first_traversal(Node *node) {
 	stack.push_back(node);
-	while (node->left) {
+	while (node->child[0]) {
 	    visited.push_back(false);
-	    stack.push_back(node->left);
-	    node = node->left;
+	    stack.push_back(node->child[0]);
+	    node = node->child[0];
 	}
     }
     Node *operator*()
@@ -551,13 +914,13 @@ public:
     {
 	stack.pop_back();
 	if (!stack.empty()) {
-	    if (!visited.back() && stack.back()->right) {
+	    if (!visited.back() && stack.back()->child[1]) {
 		visited.pop_back();
 		visited.push_back(true);
-		stack.push_back(stack.back()->right);
-		while (stack.back()->left) {
+		stack.push_back(stack.back()->child[1]);
+		while (stack.back()->child[0]) {
 		    visited.push_back(false);
-		    stack.push_back(stack.back()->left);
+		    stack.push_back(stack.back()->child[0]);
 		}
 	    } else
 		visited.pop_back();
@@ -729,14 +1092,14 @@ ostream& operator<<(ostream& os, const State& state)
 void dump_syntax_tree(ostream& os, Node *node) {
     for (depth_first_traversal i(node); i; i++) {
 	os << node_label[*i] << '\t';
-	if ((*i)->left == 0)
+	if ((*i)->child[0] == 0)
 	    os << **i << '\t' << (*i)->followpos << endl;
 	else {
-	    if ((*i)->right == 0)
-		os << node_label[(*i)->left] << **i;
+	    if ((*i)->child[1] == 0)
+		os << node_label[(*i)->child[0]] << **i;
 	    else
-		os << node_label[(*i)->left] << **i
-		   << node_label[(*i)->right];
+		os << node_label[(*i)->child[0]] << **i
+		   << node_label[(*i)->child[1]];
 	    os << '\t' << (*i)->firstpos
 		       << (*i)->lastpos << endl;
 	}
@@ -1089,7 +1452,7 @@ void flip_tree(Node *node)
 {
     for (depth_first_traversal i(node); i; i++) {
 	if (CatNode *cat = dynamic_cast<CatNode *>(*i)) {
-	    swap(cat->left, cat->right);
+	    swap(cat->child[0], cat->child[1]);
 	}
     }
 }
@@ -1470,11 +1833,11 @@ map<ImportantNode *, AcceptNodes> dominance(DFA& dfa)
 
 void dump_regexp_rec(ostream& os, Node *tree)
 {
-    if (tree->left)
-	dump_regexp_rec(os, tree->left);
+    if (tree->child[0])
+	dump_regexp_rec(os, tree->child[0]);
     os << *tree;
-    if (tree->right)
-	dump_regexp_rec(os, tree->right);
+    if (tree->child[1])
+	dump_regexp_rec(os, tree->child[1]);
 }
 
 void dump_regexp(ostream& os, Node *tree)
@@ -1743,6 +2106,7 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes,
     char *buffer = NULL;
 
     label_nodes(rules->root);
+    rules->root = simplify_tree(rules->root);
     DFA dfa(rules->root);
 
     map<uchar, uchar> eq;
@@ -1765,6 +2129,7 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes,
     buf->pubseekpos(0);
     *size = buf->in_avail();
 
+//fprintf(stderr, "created dfa: size %d\n", *size);
     buffer = (char *)malloc(*size);
     if (!buffer)
 	return NULL;
