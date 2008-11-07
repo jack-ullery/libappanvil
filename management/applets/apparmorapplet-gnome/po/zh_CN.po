@@ -1,6 +1,6 @@
 # @TITLE@
 # Copyright (C) 2006, SUSE Linux GmbH, Nuremberg
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Thruth Wang <lihaow@opera.com>, 2007, 2008.
 #
 # This file is distributed under the same license as @PACKAGE@ package. FIRST
 #
