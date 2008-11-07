@@ -32,7 +32,7 @@
 ### BEGIN INIT INFO
 # Provides: apparmor
 # Required-Start: boot.cleanup
-# Required-Stop:
+# Required-Stop: $null
 # Should-Start: $local_fs
 # Default-Start: B
 # Default-Stop:
