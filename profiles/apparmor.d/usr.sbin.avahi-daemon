@@ -19,6 +19,7 @@
   /etc/avahi/services/*.service r,
   /proc/*/fd/ r,
   /usr/sbin/avahi-daemon mr,
+  /usr/share/avahi/introspection/*.introspect r,
   /var/run/avahi-daemon/ w,
   /var/run/avahi-daemon/pid krw,
   /var/run/avahi-daemon/socket w,
