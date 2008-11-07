@@ -1,39 +1,36 @@
-# translation of apparmor-utils.ro.po to
-# Romanian message file for YaST2 (@memory@).
-# Copyright (C) 2005 SUSE Linux Products GmbH.
-# Copyright (C) 2003 SuSE Linux AG.
-#
+# translation of apparmor-utils.po to romana
+# Andrei Cipu <traduceri@strainu.ro>, 2008
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-utils.ro\n"
+"Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2008-05-20 04:51-0700\n"
-"PO-Revision-Date: 2007-12-04 15:44+0100\n"
-"Last-Translator: \n"
-"Language-Team:  <en@li.org>\n"
+"POT-Creation-Date: 2008-09-22 22:56-0700\n"
+"PO-Revision-Date: 2008-11-02 18:25+0100\n"
+"Last-Translator: openSUSE translation\n"
+"Language-Team: romana\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: KBabel 1.11.2\n"
+"Plural-Forms:  nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2;\n"
+"X-Generator: KBabel 1.11.4\n"
 
 #: ../genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "Probabil SubDomain nu a fost pornit.  Activaţi SubDomain şi încercaţi din nou."
+msgstr "SubDomain nu pare a fi pornit.  Activați SubDomain și încercați din nou."
 
 #: ../genprof:69
 msgid "Please enter the program to profile: "
-msgstr "Introduceţi programul pentru care va fi creat un profil: "
+msgstr "Introduceți programul pentru care va fi creat un profil: "
 
 #: ../genprof:88
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
-msgstr "Nu am putut găsi %s în lista de căi sistem.  Dacă numele aplicaţiei este corect, rulaţi 'which %s' în cealaltă fereastră pentru a obţine calea completă."
+msgstr "Nu am putut găsi %s în lista de căi sistem.  Dacă numele aplicației este corect, rulați 'which %s' în cealaltă fereastră pentru a obține calea completă."
 
 #: ../genprof:90 ../autodep:112 ../audit:122 ../complain:122 ../enforce:122
 #, perl-format
 msgid "%s does not exist, please double-check the path."
-msgstr "%s nu există, verificaţi calea din nou."
+msgstr "%s nu există, verificați calea din nou."
 
 #: ../genprof:115
 msgid ""
@@ -47,14 +44,14 @@ msgid ""
 "opportunity to choose whether the access should be  \n"
 "allowed or denied."
 msgstr ""
-"Porniţi aplicaţia căreia doriţi crearea profilului în \n"
-"altă fereastră şi utilizaţi-i funcţionalităţileacum.\n"
+"Porniți aplicația căreia doriți crearea profilului în \n"
+"altă fereastră și utilizați-i funcționalitățileacum.\n"
 "\n"
-"Când aţi terminat, selectaţi butonul \"Scanează\" de mai\n"
+"Când ați terminat, selectați butonul \"Scanează\" de mai\n"
 "jos, pentru a scana jurnalele sistem după evenimente AppArmor.  \n"
 "\n"
-"Pentru fiecare eveniment AppArmor, veţi avea posibilitatea\n"
-"de a selecta dacă doriţi ca accesul să fie permis\n"
+"Pentru fiecare eveniment AppArmor, veți avea posibilitatea\n"
+"de a selecta dacă doriți ca accesul să fie permis\n"
 "sau respins."
 
 #: ../genprof:135
@@ -87,12 +84,12 @@ msgstr "Nu am putut găsi profilele subdomeniu în %s."
 
 #: ../autodep:71
 msgid "Please enter the program to create a profile for: "
-msgstr "Introduceţi programul pentru care va fi creat profilul: "
+msgstr "Introduceți programul pentru care va fi creat profilul: "
 
-#: ../autodep:95 ../SubDomain.pm:6180
+#: ../autodep:95 ../SubDomain.pm:6156
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
-msgstr "%s este momentan marcat ca program fără profil propriu.  De obicei, programele primesc acest marcaj în cazul în care crearea unui profil propriu periclitează integritatea sistemului.  Dacă sunteţi absolut sigur că doriţi să creaţi totuşi un profil pentru acest program, editaţi intrarea corespunzătoare din secţiunea [qualifiers] a fişierului /etc/apparmor/logprof.conf."
+msgstr "%s este momentan marcat ca program fără profil propriu.  De obicei, programele primesc acest marcaj în cazul în care crearea unui profil propriu periclitează integritatea sistemului.  Dacă sunteți absolut sigur că doriți să creați totuși un profil pentru acest program, editați intrarea corespunzătoare din secțiunea [qualifiers] a fișierului /etc/apparmor/logprof.conf."
 
 #: ../autodep:102
 #, perl-format
@@ -102,7 +99,7 @@ msgstr "Profilul pentru %s există deja - omit."
 #: ../autodep:109 ../audit:119 ../complain:119 ../enforce:119
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
-msgstr "Nu am putut găsi %s în lista de căi sistem.  Dacă numele aplicaţiei este corect, rulaţi 'which %s' ca utilizator cu mediul PATH configurat corecte, pentru a obţine calea completă."
+msgstr "Nu am putut găsi %s în lista de căi sistem.  Dacă numele aplicației este corect, rulați 'which %s' ca utilizator cu mediul PATH configurat corecte, pentru a obține calea completă."
 
 #: ../audit:106
 #, perl-format
@@ -116,9 +113,9 @@ msgstr "utilizare: %s [ -d /cale/catre/profile ] [ program ce va fi comutat pe m
 
 #: ../complain:64
 msgid "Please enter the program to switch to complain mode: "
-msgstr "Introduceţi programul ce va fi trecut pe modul complain: "
+msgstr "Introduceți programul ce va fi trecut pe modul complain: "
 
-#: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:899
+#: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:900
 #, perl-format
 msgid "Setting %s to complain mode."
 msgstr "Setez %s pe modul complain."
@@ -130,7 +127,7 @@ msgstr "utilizare: %s [ -d /cale/catre/profile ] [ program ce va fi comutat pe m
 
 #: ../enforce:64
 msgid "Please enter the program to switch to enforce mode: "
-msgstr "Introduceţi programul ce va fi trecut pe modul enforce: "
+msgstr "Introduceți programul ce va fi trecut pe modul enforce: "
 
 #: ../enforce:105 ../SubDomain.pm:592
 #, perl-format
@@ -149,7 +146,7 @@ msgstr "Utilizare: %s [ --paranoid ]\n"
 
 #: ../unconfined:56
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "Probabil SubDomain nu a fost pornit. Activaţi SubDomain şi încercaţi din nou."
+msgstr "Probabil SubDomain nu a fost pornit. Activați SubDomain și încercați din nou."
 
 #: ../unconfined:61
 msgid "Can't read /proc\n"
@@ -168,168 +165,176 @@ msgstr "limitat de"
 msgid "Can't find %s."
 msgstr "Nu am putut găsi %s."
 
-#: ../SubDomain.pm:778 ../SubDomain.pm:3174
-#, fuzzy
+#: ../SubDomain.pm:778 ../SubDomain.pm:3173
 msgid "Connecting to repository....."
-msgstr "Am încărcat modificările pe sursă."
+msgstr "Mă conectez la sursă....."
 
 #: ../SubDomain.pm:787
-#, fuzzy, perl-format
+#, perl-format
 msgid ""
 "WARNING: Error fetching profiles from the repository:\n"
 "%s\n"
-msgstr "Eroare la obţinerea profilului de la sursă: "
+msgstr ""
+"ATENȚIE: Eroare la obținerea profilelor din sursa de instalare:\n"
+"%s\n"
 
 #: ../SubDomain.pm:796
 msgid "Inactive local profile for "
 msgstr "Profil local inactiv pentru "
 
-#: ../SubDomain.pm:832 ../SubDomain.pm:1854 ../SubDomain.pm:2142
-#: ../SubDomain.pm:3301 ../SubDomain.pm:3334 ../SubDomain.pm:3534
-#: ../SubDomain.pm:3800 ../SubDomain.pm:3852
+#: ../SubDomain.pm:833 ../SubDomain.pm:1852 ../SubDomain.pm:2140
+#: ../SubDomain.pm:3300 ../SubDomain.pm:3333 ../SubDomain.pm:3533
+#: ../SubDomain.pm:3799 ../SubDomain.pm:3851
 msgid "Profile"
 msgstr "Profil"
 
-#: ../SubDomain.pm:866
+#: ../SubDomain.pm:867
 msgid "Profile submitted by"
 msgstr "Profil trimis de"
 
-#: ../SubDomain.pm:907
-#, fuzzy, perl-format
+#: ../SubDomain.pm:908
+#, perl-format
 msgid "Error activating profiles: %s\n"
-msgstr "Eroare la activarea %s (%m)\n"
+msgstr "Eroare la activarea profilelor: %s\n"
 
-#: ../SubDomain.pm:1057 ../SubDomain.pm:1110
-#, fuzzy, perl-format
+#: ../SubDomain.pm:1055 ../SubDomain.pm:1108
+#, perl-format
 msgid ""
 "WARNING: Error syncronizing profiles with the repository:\n"
 "%s\n"
-msgstr "Eroare la obţinerea profilului de la sursă: "
+msgstr ""
+"ATENȚIE: Eroare la sincronizarea profilelor cu sursa de instalare:\n"
+"%s\n"
 
-#: ../SubDomain.pm:1137
+#: ../SubDomain.pm:1135
 msgid "New profiles"
 msgstr "Profile noi"
 
-#: ../SubDomain.pm:1139
+#: ../SubDomain.pm:1137
 msgid ""
 "Please choose the newly created profiles that you would like\n"
 "to store in the repository"
 msgstr ""
-"Alegeţi profilele nou create pe care doriţi să le stocaţi\n"
+"Alegeți profilele nou create pe care doriți să le stocați\n"
 "în sursa de profile"
 
-#: ../SubDomain.pm:1146
+#: ../SubDomain.pm:1144
 msgid "Submit newly created profiles to the repository"
 msgstr "Trimite profilele nou create spre sursa de profile"
 
-#: ../SubDomain.pm:1148
+#: ../SubDomain.pm:1146
 msgid "Would you like to upload the newly created profiles?"
-msgstr "Doriţi să încărcaţi noile profile create?"
+msgstr "Doriți să încărcați noile profile create?"
 
-#: ../SubDomain.pm:1161
+#: ../SubDomain.pm:1159
 msgid ""
 "Select which of the changed profiles you would like to upload\n"
 "to the repository"
 msgstr ""
-"Selectaţi ce modificări ale profilelor doriţi să încărcaţi\n"
+"Selectați ce modificări ale profilelor doriți să încărcați\n"
 "pe sursa de instalare"
 
-#: ../SubDomain.pm:1163
+#: ../SubDomain.pm:1161
 msgid "Changed profiles"
 msgstr "Profile modificate"
 
-#: ../SubDomain.pm:1169
+#: ../SubDomain.pm:1167
 msgid "Submit changed profiles to the repository"
 msgstr "Trimite profilele modificate spre sursa de profile"
 
-#: ../SubDomain.pm:1171
+#: ../SubDomain.pm:1169
 msgid ""
 "The following profiles from the repository were changed.\n"
 "Would you like to upload your changes?"
 msgstr ""
 "Următoarele profile din sursă au fost modificate.\n"
-"Doriţi să încărcaţi modificările?"
+"Doriți să încărcați modificările?"
 
-#: ../SubDomain.pm:1238 ../SubDomain.pm:1318
-#, fuzzy, perl-format
+#: ../SubDomain.pm:1236 ../SubDomain.pm:1316
+#, perl-format
 msgid ""
 "WARNING: An error occured while uploading the profile %s\n"
 "%s\n"
-msgstr "A apărut o eroare la citirea sursei de instalare."
+msgstr ""
+"ATENȚIE: A apărut o eroare la încărcarea pe server a profilului %s\n"
+"%s\n"
 
-#: ../SubDomain.pm:1243
+#: ../SubDomain.pm:1241
 msgid "Uploaded changes to repository."
 msgstr "Am încărcat modificările pe sursă."
 
-#: ../SubDomain.pm:1292
+#: ../SubDomain.pm:1290
 msgid "Changelog Entry: "
 msgstr "Intrare jurnal modificări: "
 
-#: ../SubDomain.pm:1313
+#: ../SubDomain.pm:1311
 #, perl-format
 msgid "Uploaded %s to repository."
 msgstr "Am încărcat %s pe sursă."
 
-#: ../SubDomain.pm:1324
-#, fuzzy
+#: ../SubDomain.pm:1322
 msgid ""
 "Repository Error\n"
 "Registration or Signin was unsuccessful. User login\n"
 "information is required to upload profiles to the\n"
 "repository. These changes have not been sent.\n"
-msgstr "Înregistrarea sau autentificarea a eşuat. Pentru încărcarea profilelor pe sursă sunt necesare informaţiile de autentificare. Aceste modificări nu au fost expediate."
+msgstr ""
+"Eroare de sursă\n"
+"Înregistrarea sau logarea a fost nereușită. Informațiile\n"
+"de login sunt necesare pentru a încărca profiluri în\n"
+"sursa de instalare. Aceste schimbări nu au fost trimise.\n"
 
-#: ../SubDomain.pm:1381 ../SubDomain.pm:1421
+#: ../SubDomain.pm:1379 ../SubDomain.pm:1419
 msgid "(Y)es"
 msgstr "(D)a"
 
-#: ../SubDomain.pm:1382 ../SubDomain.pm:1422
+#: ../SubDomain.pm:1380 ../SubDomain.pm:1420
 msgid "(N)o"
 msgstr "(N)u"
 
-#: ../SubDomain.pm:1385 ../SubDomain.pm:1426
+#: ../SubDomain.pm:1383 ../SubDomain.pm:1424
 msgid "Invalid hotkey for"
 msgstr "Tastă rapidă incorectă pentru"
 
 # cancel button label
-#: ../SubDomain.pm:1423
+#: ../SubDomain.pm:1421
 msgid "(C)ancel"
-msgstr "(R)enunţă"
+msgstr "(R)enunță"
+
+#: ../SubDomain.pm:1746
+msgid "Are you sure you want to abandon this set of profile changes and exit?"
+msgstr "Sunteți sigur că doriți să renunțați la aceste modificări ale profilului și să părăsiți aplicația?"
 
 #: ../SubDomain.pm:1748
-msgid "Are you sure you want to abandon this set of profile changes and exit?"
-msgstr "Sunteţi sigur că doriţi să renunţaţi la aceste modificări ale profilului şi să părăsiţi aplicaţia?"
-
-#: ../SubDomain.pm:1750
 msgid "Abandoning all changes."
 msgstr "Abandonez toate modificările."
 
-#: ../SubDomain.pm:1856
+#: ../SubDomain.pm:1854
 msgid "Default Hat"
 msgstr "Hat implicit"
 
-#: ../SubDomain.pm:1858
+#: ../SubDomain.pm:1856
 msgid "Requested Hat"
 msgstr "Hat cerut"
 
-#: ../SubDomain.pm:2144
+#: ../SubDomain.pm:2142
 msgid "Program"
 msgstr "Program"
 
-#: ../SubDomain.pm:2149
+#: ../SubDomain.pm:2147
 msgid "Execute"
 msgstr "Execută"
 
-#: ../SubDomain.pm:2150 ../SubDomain.pm:3303 ../SubDomain.pm:3336
-#: ../SubDomain.pm:3589
+#: ../SubDomain.pm:2148 ../SubDomain.pm:3302 ../SubDomain.pm:3335
+#: ../SubDomain.pm:3588
 msgid "Severity"
 msgstr "Severitate"
 
-#: ../SubDomain.pm:2195
+#: ../SubDomain.pm:2193
 msgid "Enter profile name to transition to: "
-msgstr ""
+msgstr "Introduceți numele profilului către care doriți să faceți tranziția: "
 
-#: ../SubDomain.pm:2203
+#: ../SubDomain.pm:2201
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -338,14 +343,14 @@ msgid ""
 "but some applications depend on the presence\n"
 "of LD_PRELOAD or LD_LIBRARY_PATH."
 msgstr ""
-"Doriţi ca AppArmor să cureţe mediul la \n"
+"Doriți ca AppArmor să curețe mediul la \n"
 "comutarea între profile?\n"
 "\n"
-"Curăţarea mediului este metoda mai sigură,\n"
-"dar unele aplicaţii depind de prezenţa\n"
-"LD_PRELOAD sau LD_LIBRARY_PATH."
+"Curățarea mediului este metoda mai sigură,\n"
+"dar unele aplicații depind de prezența\n"
+"LD_PRELOAD sau LD_LIBRARYPATH."
 
-#: ../SubDomain.pm:2205
+#: ../SubDomain.pm:2203
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -355,15 +360,15 @@ msgid ""
 "or LD_LIBRARY_PATH and clearing these could\n"
 "cause functionality problems."
 msgstr ""
-"Doriţi ca AppArmor să cureţe mediul la \n"
+"Doriți ca AppArmor să curețe mediul la \n"
 "comutarea între profile?\n"
 "\n"
-"Curăţarea mediului este metoda mai sigură, dar\n"
-"această aplicaţie probabil utilizează LD_PRELOAD\n"
-"sau LD_LIBRARY_PATH şi eliminarea acestor\n"
-"valori poate cauza probleme de funcţionare."
+"Curățarea mediului este metoda mai sigură, dar\n"
+"această aplicație probabil utilizează LD_PRELOAD\n"
+"sau LD_LIBRARYPATH și eliminarea acestor\n"
+"valori poate cauza probleme de funcționare."
 
-#: ../SubDomain.pm:2214
+#: ../SubDomain.pm:2212
 #, perl-format
 msgid ""
 "Launching processes in an unconfined state is a very\n"
@@ -372,13 +377,13 @@ msgid ""
 "Are you absolutely certain you wish to remove all\n"
 "AppArmor protection when executing %s?"
 msgstr ""
-"Lansarea proceselor în stare fără limitări este o operaţie\n"
-"foarte periculoasă şi poate cauza probleme majore de securitarte.\n"
+"Lansarea proceselor în stare fără limitări este o operație\n"
+"foarte periculoasă și poate cauza probleme majore de securitarte.\n"
 "\n"
-"Suneţi absolut sigur că doriţi să îndepărtaţi întreaga\n"
-"protecţie AppArmor la execuţia %s?"
+"Suneți absolut sigur că doriți să îndepărtați întreaga\n"
+"protecție AppArmor la execuția %s?"
 
-#: ../SubDomain.pm:2216
+#: ../SubDomain.pm:2214
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "running this program unconfined?\n"
@@ -387,330 +392,331 @@ msgid ""
 "a program opens up significant security holes\n"
 "and should be avoided if at all possible."
 msgstr ""
-"Doriţi ca AppArmor să cureţe mediul la \n"
+"Doriți ca AppArmor să curețe mediul la \n"
 "rulaera fără limitări a acestui program?\n"
 "\n"
-"Rularea fără limitări a unui program fără curăţarea\n"
-"mediului deschide breşe în securitatea sistemului\n"
-"şi ar trebui pe cât posibil evitată."
+"Rularea fără limitări a unui program fără curățarea\n"
+"mediului deschide breșe în securitatea sistemului\n"
+"și ar trebui pe cât posibil evitată."
 
-#: ../SubDomain.pm:2305
+#: ../SubDomain.pm:2303
 #, perl-format
 msgid "A profile for %s does not exist create one?"
-msgstr ""
+msgstr "Nu există un profil pentru %s. Creez unul?"
 
-#: ../SubDomain.pm:2332
+#: ../SubDomain.pm:2330
 #, perl-format
 msgid "A local profile for %s does not exist create one?"
-msgstr ""
+msgstr "Nu există un profil local pentru %s. Creez unul?"
 
-#: ../SubDomain.pm:2504 ../SubDomain.pm:6556 ../SubDomain.pm:6561
+#: ../SubDomain.pm:2502 ../SubDomain.pm:6532 ../SubDomain.pm:6537
 #, perl-format
 msgid "Log contains unknown mode %s."
-msgstr "Jurnalul conţine modul necunoscut %s."
+msgstr "Jurnalul conține modul necunoscut %s."
 
-#: ../SubDomain.pm:2916
+#: ../SubDomain.pm:2915
 msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
-msgstr "În sursa de profile a fost găsită o versiune actualizată a acestui profil.  Doriţi să o utilizaţi?"
+msgstr "În sursa de profile a fost găsită o versiune actualizată a acestui profil.  Doriți să o utilizați?"
 
-#: ../SubDomain.pm:2946
+#: ../SubDomain.pm:2945
 #, perl-format
 msgid "Updated profile %s to revision %s."
 msgstr "Am actualizat profilul %s la versiunea %s."
 
-#: ../SubDomain.pm:2953
+#: ../SubDomain.pm:2952
 msgid "Error parsing repository profile."
 msgstr "Eroare la parcurgerea profilului sursă."
 
-#: ../SubDomain.pm:2989
+#: ../SubDomain.pm:2988
 msgid "Create New User?"
-msgstr "Creaţi un utilizator nou?"
+msgstr "Creați un utilizator nou?"
 
-#: ../SubDomain.pm:2990
+#: ../SubDomain.pm:2989
 msgid "Username: "
 msgstr "Nume utilizator: "
 
 # password dialog title
-#: ../SubDomain.pm:2991
+#: ../SubDomain.pm:2990
 msgid "Password: "
 msgstr "Parolă: "
 
-#: ../SubDomain.pm:2992
+#: ../SubDomain.pm:2991
 msgid "Email Addr: "
 msgstr "Adresă mail: "
 
-#: ../SubDomain.pm:2994
+#: ../SubDomain.pm:2993
 msgid "Save Configuration? "
-msgstr "Salvez configuraţia? "
+msgstr "Salvez configurația? "
 
-#: ../SubDomain.pm:3003
+#: ../SubDomain.pm:3002
 msgid "The Profile Repository server returned the following error:"
 msgstr "Serverul sursă a profilelor a returnat următoarea eroare:"
 
-#: ../SubDomain.pm:3005
-#, fuzzy
+#: ../SubDomain.pm:3004
 msgid "Please re-enter registration information or contact the administrator."
-msgstr "Reintroduceţi datele de înregistrare sau contactaţi administratorul"
+msgstr "Vă rugăm reintroduceți informațiile de înregistrare sau contactați administratorul."
 
-#: ../SubDomain.pm:3006
-#, fuzzy
+#: ../SubDomain.pm:3005
 msgid "Login Error\n"
-msgstr "Eroare la autentificare"
+msgstr "Eroare de login\n"
 
-#: ../SubDomain.pm:3013
-#, fuzzy
+#: ../SubDomain.pm:3012
 msgid ""
 "Login failure\n"
 " Please check username and password and try again."
-msgstr "Autentificare eşuată. Verificaţi numele de utilizator şi parola şi încercaţi din nou"
+msgstr ""
+"Login eșuat\n"
+" Verificați numele și parola și reîncercați."
 
-#: ../SubDomain.pm:3035
-#, fuzzy
+#: ../SubDomain.pm:3034
 msgid ""
 "Would you like to enable access to the\n"
 "profile repository?"
-msgstr "Doriţi să activaţi accesul la sursa de profile?"
+msgstr ""
+"Doriți să activați accesul la \n"
+"sursa de profile?"
 
-#: ../SubDomain.pm:3066
+#: ../SubDomain.pm:3065
 msgid ""
 "Would you like to upload newly created and changed profiles to\n"
 "      the profile repository?"
 msgstr ""
-"Doriţi să încărcaţi profilele nou create sau modificate în\n"
+"Doriți să încărcați profilele nou create sau modificate în\n"
 "      sursa de profile?"
 
-#: ../SubDomain.pm:3185
+#: ../SubDomain.pm:3184
 #, perl-format
 msgid ""
 "WARNING: Profile update check failed\n"
 "Error Detail:\n"
 "%s"
 msgstr ""
+"ATENȚIE: Verificarea la actualizarea profilului a eșuat\n"
+"Detaliile erorii:\n"
+"%s"
 
-#: ../SubDomain.pm:3199
-#, fuzzy
+#: ../SubDomain.pm:3198
 msgid "Change mode modifiers"
-msgstr "Profile modificate"
+msgstr "Schimbă modificatorii de mod"
 
-#: ../SubDomain.pm:3243
+#: ../SubDomain.pm:3242
 msgid "Complain-mode changes:"
 msgstr "Modificări mod complain:"
 
-#: ../SubDomain.pm:3245
+#: ../SubDomain.pm:3244
 msgid "Enforce-mode changes:"
 msgstr "Modificări mod enforce:"
 
-#: ../SubDomain.pm:3251
+#: ../SubDomain.pm:3250
 #, perl-format
 msgid "Invalid mode found: %s"
 msgstr "Mod invalid găsit: %s"
 
-#: ../SubDomain.pm:3302 ../SubDomain.pm:3335
+#: ../SubDomain.pm:3301 ../SubDomain.pm:3334
 msgid "Capability"
 msgstr "Capabilitate"
 
-#: ../SubDomain.pm:3355 ../SubDomain.pm:3629 ../SubDomain.pm:3876
+#: ../SubDomain.pm:3354 ../SubDomain.pm:3628 ../SubDomain.pm:3875
 #, perl-format
 msgid "Adding #include <%s> to profile."
 msgstr "Adaug profilului #include <%s>."
 
-#: ../SubDomain.pm:3358 ../SubDomain.pm:3630 ../SubDomain.pm:3670
-#: ../SubDomain.pm:3880
+#: ../SubDomain.pm:3357 ../SubDomain.pm:3629 ../SubDomain.pm:3669
+#: ../SubDomain.pm:3879
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
-msgstr "Am şters %s intrări corespunzătoare anterioare din profil."
+msgstr "Am șters %s intrări corespunzătoare anterioare din profil."
 
-#: ../SubDomain.pm:3369
+#: ../SubDomain.pm:3368
 #, perl-format
 msgid "Adding capability %s to profile."
 msgstr "Adaug profilului capabilitatea %s."
 
-#: ../SubDomain.pm:3374
+#: ../SubDomain.pm:3373
 #, perl-format
 msgid "Denying capability %s to profile."
 msgstr "Interzic profilului capabilitatea %s."
 
-#: ../SubDomain.pm:3535
+#: ../SubDomain.pm:3534
 msgid "Path"
 msgstr "Cale"
 
-#: ../SubDomain.pm:3546 ../SubDomain.pm:3578
+#: ../SubDomain.pm:3545 ../SubDomain.pm:3577
 msgid "(owner permissions off)"
-msgstr ""
+msgstr "(permisiunile posesorului dezactivate)"
 
-#: ../SubDomain.pm:3552
+#: ../SubDomain.pm:3551
 msgid "(force new perms to owner)"
-msgstr ""
+msgstr "(forțează noile permisiuni la posesor)"
 
-#: ../SubDomain.pm:3555
+#: ../SubDomain.pm:3554
 msgid "(force all rule perms to owner)"
-msgstr ""
+msgstr "(forțează toate regulile la posesor)"
 
-#: ../SubDomain.pm:3567
+#: ../SubDomain.pm:3566
 msgid "Old Mode"
 msgstr "Mod vechi"
 
-#: ../SubDomain.pm:3568
+#: ../SubDomain.pm:3567
 msgid "New Mode"
 msgstr "Mod nou"
 
-#: ../SubDomain.pm:3584
+#: ../SubDomain.pm:3583
 msgid "(force perms to owner)"
-msgstr ""
+msgstr "(forțează permisiunile la posesor)"
 
-#: ../SubDomain.pm:3587
+#: ../SubDomain.pm:3586
 msgid "Mode"
 msgstr "Mod"
 
-#: ../SubDomain.pm:3669
+#: ../SubDomain.pm:3668
 #, perl-format
 msgid "Adding %s %s to profile."
 msgstr "Adaug %s %s la profil."
 
-#: ../SubDomain.pm:3685
+#: ../SubDomain.pm:3684
 msgid "Enter new path: "
-msgstr "Introduceţi noua cale: "
+msgstr "Introduceți noua cale: "
 
-#: ../SubDomain.pm:3688
+#: ../SubDomain.pm:3687
 msgid "The specified path does not match this log entry:"
 msgstr "Calea specificată nu corespunde acestei intrări de jurnal:"
 
-#: ../SubDomain.pm:3689
+#: ../SubDomain.pm:3688
 msgid "Log Entry"
 msgstr "Intrare jurnal"
 
-#: ../SubDomain.pm:3690
+#: ../SubDomain.pm:3689
 msgid "Entered Path"
 msgstr "Cale introdusă"
 
-#: ../SubDomain.pm:3691
+#: ../SubDomain.pm:3690
 msgid "Do you really want to use this path?"
-msgstr "Chiar doriţi să utilizaţi această cale?"
+msgstr "Chiar doriți să utilizați această cale?"
 
-#: ../SubDomain.pm:3803 ../SubDomain.pm:3855
+#: ../SubDomain.pm:3802 ../SubDomain.pm:3854
 msgid "Network Family"
-msgstr "Familie de reţele"
+msgstr "Familie de rețele"
 
-#: ../SubDomain.pm:3806 ../SubDomain.pm:3858
+#: ../SubDomain.pm:3805 ../SubDomain.pm:3857
 msgid "Socket Type"
 msgstr "Tip socket"
 
-#: ../SubDomain.pm:3906
+#: ../SubDomain.pm:3905
 #, perl-format
 msgid "Adding network access %s %s to profile."
-msgstr "Adaug profilului accesul la reţea %s %s."
+msgstr "Adaug profilului accesul la rețea %s %s."
 
-#: ../SubDomain.pm:3925
+#: ../SubDomain.pm:3924
 #, perl-format
 msgid "Denying network access %s %s to profile."
-msgstr "Interzic profilului accesul la reţea %s %s."
+msgstr "Interzic profilului accesul la rețea %s %s."
 
-#: ../SubDomain.pm:4133
+#: ../SubDomain.pm:4132
 #, perl-format
 msgid "Reading log entries from %s."
 msgstr "Citesc intrările din jurnalul %s."
 
-#: ../SubDomain.pm:4134
+#: ../SubDomain.pm:4133
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
 msgstr "Actualizez profilele AppArmor în %s."
 
-#: ../SubDomain.pm:4138
-#, fuzzy
+#: ../SubDomain.pm:4137
 msgid "unknown\n"
-msgstr "necunoscut"
+msgstr "necunoscut\n"
 
-#: ../SubDomain.pm:4171
+#: ../SubDomain.pm:4170
 msgid ""
 "The profile analyzer has completed processing the log files.\n"
 "\n"
 "All updated profiles will be reloaded"
 msgstr ""
-"Aplicaţia de analiză a profilelor a finalizat procesarea jurnalelor.\n"
+"Aplicația de analiză a profilelor a finalizat procesarea jurnalelor.\n"
 "\n"
 "Toate profilele actualizate vor fi reîncărcate"
 
-#: ../SubDomain.pm:4177
+#: ../SubDomain.pm:4176
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "În jurnalul sistem nu au fost găsite evenimente AppArmor netratate."
 
-#: ../SubDomain.pm:4238
+#: ../SubDomain.pm:4237
 msgid ""
 "Select which profile changes you would like to save to the\n"
 "local profile set"
 msgstr ""
-"Selectaţi ce modificări ale profilelor doriţi să salvaţi în\n"
+"Selectați ce modificări ale profilelor doriți să salvați în\n"
 "setul de profile local"
 
-#: ../SubDomain.pm:4239
+#: ../SubDomain.pm:4238
 msgid "Local profile changes"
 msgstr "Modificări profile locale"
 
-#: ../SubDomain.pm:4266
+#: ../SubDomain.pm:4265
 msgid "The following local profiles were changed.  Would you like to save them?"
-msgstr "Următoarele profile locale au fost modificate.  Doriţi să le salvaţi?"
+msgstr "Următoarele profile locale au fost modificate.  Doriți să le salvați?"
 
-#: ../SubDomain.pm:4363
+#: ../SubDomain.pm:4362
 msgid "Profile Changes"
 msgstr "Modificări profile"
 
-#: ../SubDomain.pm:4976 ../SubDomain.pm:4992 ../SubDomain.pm:5003
-#: ../SubDomain.pm:5011 ../SubDomain.pm:5032 ../SubDomain.pm:5052
-#: ../SubDomain.pm:5061 ../SubDomain.pm:5093 ../SubDomain.pm:5154
-#: ../SubDomain.pm:5205
+#: ../SubDomain.pm:4974 ../SubDomain.pm:4990 ../SubDomain.pm:5001
+#: ../SubDomain.pm:5009 ../SubDomain.pm:5030 ../SubDomain.pm:5050
+#: ../SubDomain.pm:5059 ../SubDomain.pm:5091 ../SubDomain.pm:5153
+#: ../SubDomain.pm:5204
 #, perl-format
 msgid "%s contains syntax errors."
-msgstr "%s conţine erori de sintaxă."
+msgstr "%s conține erori de sintaxă."
 
-#: ../SubDomain.pm:5112
+#: ../SubDomain.pm:5110
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
-msgstr "Profilul %s conţine regexp invalid %s."
+msgstr "Profilul %s conține regexp invalid %s."
 
-#: ../SubDomain.pm:5117
+#: ../SubDomain.pm:5115
 #, perl-format
 msgid "Profile %s contains invalid mode %s."
-msgstr "Profilul %s conţine modul invalid %s."
+msgstr "Profilul %s conține modul invalid %s."
 
-#: ../SubDomain.pm:5252
+#: ../SubDomain.pm:5250
 #, perl-format
 msgid "%s contains syntax errors. Line [%s]"
-msgstr "%s conţine erori desintaxă. Linia [%s]"
+msgstr "%s conține erori desintaxă. Linia [%s]"
 
-#: ../SubDomain.pm:5863
+#: ../SubDomain.pm:5839
 #, perl-format
 msgid "Writing updated profile for %s."
 msgstr "Scriu profilul actualizat pentru %s."
 
-#: ../SubDomain.pm:6368
+#: ../SubDomain.pm:6344
 msgid "Unknown command"
 msgstr "Comandă necunoscută"
 
-#: ../SubDomain.pm:6376
+#: ../SubDomain.pm:6352
 msgid "Invalid hotkey in"
 msgstr "Tastă rapidă invalidă în"
 
-#: ../SubDomain.pm:6386
+#: ../SubDomain.pm:6362
 msgid "Duplicate hotkey for"
 msgstr "Tastă rapidă duplicat pentru"
 
-#: ../SubDomain.pm:6407
+#: ../SubDomain.pm:6383
 msgid "Invalid hotkey in default item"
 msgstr "Tastă rapidă invalidă în elementul implicit"
 
-#: ../SubDomain.pm:6416
+#: ../SubDomain.pm:6392
 msgid "Invalid default"
 msgstr "Valori implicite invalide"
 
 #: ../Reports.pm:443 ../Reports.pm:532 ../Reports.pm:1480
 #, perl-format
 msgid "DBI Execution failed: %s."
-msgstr "Execuţia DBI a eşuat: %s."
+msgstr "Execuția DBI a eșuat: %s."
 
 #: ../Reports.pm:556
 #, perl-format
 msgid "Couldn't open file: %s."
-msgstr "Nu am putut deschide fişierul: %s."
+msgstr "Nu am putut deschide fișierul: %s."
 
 #: ../Reports.pm:560
 msgid "No type value passed.  Unable to determine page count."
@@ -719,7 +725,7 @@ msgstr "Nu a fost transmisă nici o valoare pentru tip.  Nu am putut determina n
 #: ../Reports.pm:626
 #, perl-format
 msgid "Failed copying %s."
-msgstr "Copierea %s a eşuat."
+msgstr "Copierea %s a eșuat."
 
 #: ../Reports.pm:750
 #, perl-format
@@ -728,7 +734,7 @@ msgstr "Eroare jurnal export: Nu am putut deschide %s"
 
 #: ../Reports.pm:772
 msgid "Fatal error.  No report name given. Exiting."
-msgstr "Eroare fatală.  Nu a fost indicat nici un nume de raport. Părăsesc aplicaţia."
+msgstr "Eroare fatală.  Nu a fost indicat nici un nume de raport. Părăsesc aplicația."
 
 #: ../Reports.pm:781
 #, perl-format
@@ -736,13 +742,13 @@ msgid ""
 "Unable to get configuration info for %s.\n"
 "                Unable to find %s."
 msgstr ""
-"Nu am putut obţine informaţiile de configurare pentru %s.\n"
+"Nu am putut obține informațiile de configurare pentru %s.\n"
 "                Nu pot găsi %s."
 
 #: ../Reports.pm:828
 #, perl-format
 msgid "Failed to parse: %s."
-msgstr "Eşec la parcurgere: %s."
+msgstr "Eșec la parcurgere: %s."
 
 #: ../Reports.pm:837
 #, perl-format
@@ -752,42 +758,25 @@ msgstr "Eroare fatală.  Nu am putut deschide %s."
 #: ../Reports.pm:885
 #, perl-format
 msgid "Fatal Error.  Can't run %s.  Exiting."
-msgstr "Eroare fatală. Nu pot rula %s.  Părăsesc aplicaţia."
+msgstr "Eroare fatală. Nu pot rula %s.  Părăsesc aplicația."
 
 #: ../Reports.pm:925
 #, perl-format
 msgid "Fatal Error.  No directory, %s, found.  Exiting."
-msgstr "Eroare fatală.  Nu am găsit nici un director, %s.  Părăsesc aplicaţia."
+msgstr "Eroare fatală.  Nu am găsit nici un director, %s.  Părăsesc aplicația."
 
 #: ../Reports.pm:943
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
-msgstr "Eroare fatală. Nu am putut deschide %s.  Părăsesc aplicaţia"
+msgstr "Eroare fatală. Nu am putut deschide %s.  Părăsesc aplicația"
 
 #: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
 #, perl-format
 msgid "DBI Execution failed: %s"
-msgstr "Execuţia DBI a eşuat: %s"
+msgstr "Execuția DBI a eșuat: %s"
 
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"
 msgstr "Eroare fatală.  getArchReport() nu a putut deschide %s"
 
-#~ msgid "Are you sure you want to save the current set of profile changes and exit?"
-#~ msgstr "Sunteţi sigur că doriţi să salvaţi aceste modificări ale profilului şi să părăsiţi aplicaţia?"
-
-#~ msgid "Saving all changes."
-#~ msgstr "Salvez toate modificările."
-
-#~ msgid "Repository Error"
-#~ msgstr "Eroare pe sursa de instalare"
-
-#~ msgid "Include file %s contains invalid regexp %s."
-#~ msgstr "Fişierul include %s conţine regexp invalid %s."
-
-#~ msgid "Include file %s contains invalid mode %s."
-#~ msgstr "Fişierul include %s conţine modul invalid %s."
-
-#~ msgid "Include file %s contains syntax errors or is not a valid #include file."
-#~ msgstr "Fişierul include %s conţine erori de sintaxă sau nu este un fişier #include valid."

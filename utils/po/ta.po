@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nis\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2008-05-20 04:51-0700\n"
+"POT-Creation-Date: 2008-09-22 22:56-0700\n"
 "PO-Revision-Date: 2006-11-11 18:41+0530\n"
 "Last-Translator: Priyavert Sharma<priyavert.sharma@agreeya.com>\n"
 "Language-Team: AgreeYa Solutions<linux_team@agreeya.com>\n"
@@ -83,7 +83,7 @@ msgstr "%s-ல் துணைக்களத்தின் விவரங்�
 msgid "Please enter the program to create a profile for: "
 msgstr "இதற்கான விவரத்தை உருவாக்குவதற்கு தயவுசெய்து நிரலை உள்ளிடு: "
 
-#: ../autodep:95 ../SubDomain.pm:6180
+#: ../autodep:95 ../SubDomain.pm:6156
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
 msgstr "%s தற்போது தனது சொந்த விவரங்களை கொண்டிருக்கக்கூடாத நிரலாக குறிக்கப்பட்டுள்ளது. சாதாரணமாக, விவரம் உருவாக்கப்பட்டால் மீதமுள்ள அமைப்பை உடைக்கக்கூடிய நிரல்களுக்கு இம்மாதிரி குறிக்கப்படும்.நீங்கள் செய்வதை நீங்கள் அறிந்து மற்றும் இந்த நிரலுக்கு நீங்கள் ஒரு விவரத்தை உருவாக்க விரும்பினால், /etc/apparmor/logprof.conf [தகுதிபெறுவோர்] பகுதியிலுள்ள தொடர்புள்ள குறிப்பை திருத்தம் செய்யவும்."
@@ -112,7 +112,7 @@ msgstr "பயன்பாடு: %s [ -d /பாதை/லிருந்து
 msgid "Please enter the program to switch to complain mode: "
 msgstr "புகார் மோடுக்கு மாறுவதற்கான நிரலை தயவுசெய்து உள்ளிடு: "
 
-#: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:899
+#: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:900
 #, perl-format
 msgid "Setting %s to complain mode."
 msgstr "புகார் மோடுக்கு %s அமைக்கப்படுகிறது."
@@ -162,7 +162,7 @@ msgstr "இதனால் உள்ளடக்கப்பட்டது"
 msgid "Can't find %s."
 msgstr "%s கண்பிடிக்க முடியவில்லை."
 
-#: ../SubDomain.pm:778 ../SubDomain.pm:3174
+#: ../SubDomain.pm:778 ../SubDomain.pm:3173
 #, fuzzy
 msgid "Connecting to repository....."
 msgstr "சேவகனுடனான இணைப்பு துண்டிக்கப்பட்டது."
@@ -179,92 +179,92 @@ msgstr ""
 msgid "Inactive local profile for "
 msgstr "செயல்பாட்டிலுள்ள விவரம்"
 
-#: ../SubDomain.pm:832 ../SubDomain.pm:1854 ../SubDomain.pm:2142
-#: ../SubDomain.pm:3301 ../SubDomain.pm:3334 ../SubDomain.pm:3534
-#: ../SubDomain.pm:3800 ../SubDomain.pm:3852
+#: ../SubDomain.pm:833 ../SubDomain.pm:1852 ../SubDomain.pm:2140
+#: ../SubDomain.pm:3300 ../SubDomain.pm:3333 ../SubDomain.pm:3533
+#: ../SubDomain.pm:3799 ../SubDomain.pm:3851
 msgid "Profile"
 msgstr "விவரம்"
 
-#: ../SubDomain.pm:866
+#: ../SubDomain.pm:867
 #, fuzzy
 msgid "Profile submitted by"
 msgstr "விவர அமைப்புகள்"
 
-#: ../SubDomain.pm:907
+#: ../SubDomain.pm:908
 #, fuzzy, perl-format
 msgid "Error activating profiles: %s\n"
 msgstr "மாற்ற இடைவெளியை செயல்படுத்துவதில் பிழை."
 
-#: ../SubDomain.pm:1057 ../SubDomain.pm:1110
+#: ../SubDomain.pm:1055 ../SubDomain.pm:1108
 #, perl-format
 msgid ""
 "WARNING: Error syncronizing profiles with the repository:\n"
 "%s\n"
 msgstr ""
 
-#: ../SubDomain.pm:1137
+#: ../SubDomain.pm:1135
 #, fuzzy
 msgid "New profiles"
 msgstr "கிடைக்கக்கூடிய விவரங்கள்"
 
-#: ../SubDomain.pm:1139
+#: ../SubDomain.pm:1137
 msgid ""
 "Please choose the newly created profiles that you would like\n"
 "to store in the repository"
 msgstr ""
 
-#: ../SubDomain.pm:1146
+#: ../SubDomain.pm:1144
 msgid "Submit newly created profiles to the repository"
 msgstr ""
 
-#: ../SubDomain.pm:1148
+#: ../SubDomain.pm:1146
 #, fuzzy
 msgid "Would you like to upload the newly created profiles?"
 msgstr "அறுதியிட்ட பிழைப்பட்டியலை இறக்குமதி செய்ய விரும்புகிறீர்களா?"
 
-#: ../SubDomain.pm:1161
+#: ../SubDomain.pm:1159
 msgid ""
 "Select which of the changed profiles you would like to upload\n"
 "to the repository"
 msgstr ""
 
-#: ../SubDomain.pm:1163
+#: ../SubDomain.pm:1161
 #, fuzzy
 msgid "Changed profiles"
 msgstr "விவரம் நகலெடுக்கப்படுகிறது"
 
-#: ../SubDomain.pm:1169
+#: ../SubDomain.pm:1167
 msgid "Submit changed profiles to the repository"
 msgstr ""
 
-#: ../SubDomain.pm:1171
+#: ../SubDomain.pm:1169
 msgid ""
 "The following profiles from the repository were changed.\n"
 "Would you like to upload your changes?"
 msgstr ""
 
-#: ../SubDomain.pm:1238 ../SubDomain.pm:1318
+#: ../SubDomain.pm:1236 ../SubDomain.pm:1316
 #, perl-format
 msgid ""
 "WARNING: An error occured while uploading the profile %s\n"
 "%s\n"
 msgstr ""
 
-#: ../SubDomain.pm:1243
+#: ../SubDomain.pm:1241
 msgid "Uploaded changes to repository."
 msgstr ""
 
-#: ../SubDomain.pm:1292
+#: ../SubDomain.pm:1290
 #, fuzzy
 msgid "Changelog Entry: "
 msgstr "மாற்றக்குறிப்பேடு"
 
-#: ../SubDomain.pm:1313
+#: ../SubDomain.pm:1311
 #, fuzzy, perl-format
 msgid "Uploaded %s to repository."
 msgstr "சேமிப்பிடத்தில் கோப்பு %1 காணப்படவில்லை."
 
-#: ../SubDomain.pm:1324
+#: ../SubDomain.pm:1322
 msgid ""
 "Repository Error\n"
 "Registration or Signin was unsuccessful. User login\n"
@@ -272,57 +272,57 @@ msgid ""
 "repository. These changes have not been sent.\n"
 msgstr ""
 
-#: ../SubDomain.pm:1381 ../SubDomain.pm:1421
+#: ../SubDomain.pm:1379 ../SubDomain.pm:1419
 msgid "(Y)es"
 msgstr "(ஆ)ம்"
 
-#: ../SubDomain.pm:1382 ../SubDomain.pm:1422
+#: ../SubDomain.pm:1380 ../SubDomain.pm:1420
 msgid "(N)o"
 msgstr "(இ)ல்லை"
 
-#: ../SubDomain.pm:1385 ../SubDomain.pm:1426
+#: ../SubDomain.pm:1383 ../SubDomain.pm:1424
 #, fuzzy
 msgid "Invalid hotkey for"
 msgstr "செல்லாத விசை தரவு."
 
-#: ../SubDomain.pm:1423
+#: ../SubDomain.pm:1421
 msgid "(C)ancel"
 msgstr "(ர)த்து செய்யவும்"
 
-#: ../SubDomain.pm:1748
+#: ../SubDomain.pm:1746
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
 msgstr "விவர மாற்றங்களின் இத்தொகுப்பை கைவிட்டு நீங்கள் உறுதியாக வெளியேற விரும்புகிறீர்களா?"
 
-#: ../SubDomain.pm:1750
+#: ../SubDomain.pm:1748
 msgid "Abandoning all changes."
 msgstr "அனைத்து மாற்றங்களும் கைவிடப்படுகின்றன."
 
-#: ../SubDomain.pm:1856
+#: ../SubDomain.pm:1854
 msgid "Default Hat"
 msgstr "முன்னிருந்த ஹாட்"
 
-#: ../SubDomain.pm:1858
+#: ../SubDomain.pm:1856
 msgid "Requested Hat"
 msgstr "கோரப்பட்ட ஹாட்"
 
-#: ../SubDomain.pm:2144
+#: ../SubDomain.pm:2142
 msgid "Program"
 msgstr "நிரல்"
 
-#: ../SubDomain.pm:2149
+#: ../SubDomain.pm:2147
 msgid "Execute"
 msgstr "நிறைவேற்று"
 
-#: ../SubDomain.pm:2150 ../SubDomain.pm:3303 ../SubDomain.pm:3336
-#: ../SubDomain.pm:3589
+#: ../SubDomain.pm:2148 ../SubDomain.pm:3302 ../SubDomain.pm:3335
+#: ../SubDomain.pm:3588
 msgid "Severity"
 msgstr "தீவிரத்தன்மை"
 
-#: ../SubDomain.pm:2195
+#: ../SubDomain.pm:2193
 msgid "Enter profile name to transition to: "
 msgstr ""
 
-#: ../SubDomain.pm:2203
+#: ../SubDomain.pm:2201
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -338,7 +338,7 @@ msgstr ""
 "ஆனால் சில பயன்பாடுகள் LD_PRELOAD அல்லது LD_LIBRARY_PATH\n"
 "காணப்படுவதை சார்துள்ளன."
 
-#: ../SubDomain.pm:2205
+#: ../SubDomain.pm:2203
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -356,7 +356,7 @@ msgstr ""
 "பயன்படுத்துவதைப்போல் தெரிகிறது மற்றும் இவற்றை காலி செய்வது\n"
 "செயல்பாட்டு பிரச்னைகளை ஏற்படுத்தக்கூடும்."
 
-#: ../SubDomain.pm:2214
+#: ../SubDomain.pm:2212
 #, perl-format
 msgid ""
 "Launching processes in an unconfined state is a very\n"
@@ -371,7 +371,7 @@ msgstr ""
 "%s நிறைவேற்றும்போது அனைத்து AppArmor பாதுகாப்பையும் நீக்குவதற்கு\n"
 "நீங்கள் உறுதியாக இருக்கிறீர்களா?"
 
-#: ../SubDomain.pm:2216
+#: ../SubDomain.pm:2214
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "running this program unconfined?\n"
@@ -387,92 +387,92 @@ msgstr ""
 "இருப்பது மிகப்பெரிய பாதுகாப்பு குறைபாடுகளை ஏற்படுத்தும் மற்றும்;\n"
 "இயலுமானால் இது தவிர்க்கப்பட வேண்டும்."
 
-#: ../SubDomain.pm:2305
+#: ../SubDomain.pm:2303
 #, fuzzy, perl-format
 msgid "A profile for %s does not exist create one?"
 msgstr "VAR1 விவரம் காணப்படவில்லை"
 
-#: ../SubDomain.pm:2332
+#: ../SubDomain.pm:2330
 #, fuzzy, perl-format
 msgid "A local profile for %s does not exist create one?"
 msgstr "VAR1 விவரம் காணப்படவில்லை"
 
-#: ../SubDomain.pm:2504 ../SubDomain.pm:6556 ../SubDomain.pm:6561
+#: ../SubDomain.pm:2502 ../SubDomain.pm:6532 ../SubDomain.pm:6537
 #, fuzzy, perl-format
 msgid "Log contains unknown mode %s."
 msgstr "தெரியாத கூறுகளை ஏற்றவும்"
 
-#: ../SubDomain.pm:2916
+#: ../SubDomain.pm:2915
 msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
 msgstr ""
 
-#: ../SubDomain.pm:2946
+#: ../SubDomain.pm:2945
 #, fuzzy, perl-format
 msgid "Updated profile %s to revision %s."
 msgstr "%sகாக புதுப்பிக்கப்பட்ட விவரம் எழுதப்படுகிறது."
 
-#: ../SubDomain.pm:2953
+#: ../SubDomain.pm:2952
 #, fuzzy
 msgid "Error parsing repository profile."
 msgstr "CRLஐ விளக்குவதில் பிழை."
 
-#: ../SubDomain.pm:2989
+#: ../SubDomain.pm:2988
 #, fuzzy
 msgid "Create New User?"
 msgstr "ஒரு புதிய விவரத்தை உருவாக்கவும்"
 
-#: ../SubDomain.pm:2990
+#: ../SubDomain.pm:2989
 #, fuzzy
 msgid "Username: "
 msgstr "பயனாளர் பெயர்:"
 
-#: ../SubDomain.pm:2991
+#: ../SubDomain.pm:2990
 msgid "Password: "
 msgstr "கடவுச்சொல்:"
 
-#: ../SubDomain.pm:2992
+#: ../SubDomain.pm:2991
 msgid "Email Addr: "
 msgstr ""
 
-#: ../SubDomain.pm:2994
+#: ../SubDomain.pm:2993
 #, fuzzy
 msgid "Save Configuration? "
 msgstr "உள்ளமைவை பார்க்கவும்"
 
-#: ../SubDomain.pm:3003
+#: ../SubDomain.pm:3002
 msgid "The Profile Repository server returned the following error:"
 msgstr ""
 
-#: ../SubDomain.pm:3005
+#: ../SubDomain.pm:3004
 msgid "Please re-enter registration information or contact the administrator."
 msgstr ""
 
-#: ../SubDomain.pm:3006
+#: ../SubDomain.pm:3005
 #, fuzzy
 msgid "Login Error\n"
 msgstr "பிழை!"
 
-#: ../SubDomain.pm:3013
+#: ../SubDomain.pm:3012
 #, fuzzy
 msgid ""
 "Login failure\n"
 " Please check username and password and try again."
 msgstr "பயனாளர் பெயர் மற்றும் பாஸ்வேர்ட் ஏற்கப்படாத காரணத்தால் விபிஎன் லாகின் தோல்வியுற்றது."
 
-#: ../SubDomain.pm:3035
+#: ../SubDomain.pm:3034
 #, fuzzy
 msgid ""
 "Would you like to enable access to the\n"
 "profile repository?"
 msgstr "அறுதியிட்ட பிழைப்பட்டியலை இறக்குமதி செய்ய விரும்புகிறீர்களா?"
 
-#: ../SubDomain.pm:3066
+#: ../SubDomain.pm:3065
 msgid ""
 "Would you like to upload newly created and changed profiles to\n"
 "      the profile repository?"
 msgstr ""
 
-#: ../SubDomain.pm:3185
+#: ../SubDomain.pm:3184
 #, perl-format
 msgid ""
 "WARNING: Profile update check failed\n"
@@ -480,142 +480,142 @@ msgid ""
 "%s"
 msgstr ""
 
-#: ../SubDomain.pm:3199
+#: ../SubDomain.pm:3198
 #, fuzzy
 msgid "Change mode modifiers"
 msgstr "விவரம் நகலெடுக்கப்படுகிறது"
 
-#: ../SubDomain.pm:3243
+#: ../SubDomain.pm:3242
 msgid "Complain-mode changes:"
 msgstr "புகார்-மோட் மாற்றங்கள்:"
 
-#: ../SubDomain.pm:3245
+#: ../SubDomain.pm:3244
 msgid "Enforce-mode changes:"
 msgstr "அமலாக்க-மோட் மாற்றங்கள்:"
 
-#: ../SubDomain.pm:3251
+#: ../SubDomain.pm:3250
 #, perl-format
 msgid "Invalid mode found: %s"
 msgstr "செல்லாத மோட் கண்டறியப்பட்டது: %s"
 
-#: ../SubDomain.pm:3302 ../SubDomain.pm:3335
+#: ../SubDomain.pm:3301 ../SubDomain.pm:3334
 msgid "Capability"
 msgstr "திறன்"
 
-#: ../SubDomain.pm:3355 ../SubDomain.pm:3629 ../SubDomain.pm:3876
+#: ../SubDomain.pm:3354 ../SubDomain.pm:3628 ../SubDomain.pm:3875
 #, perl-format
 msgid "Adding #include <%s> to profile."
 msgstr "விவரத்திற்கு #சேர்ப்பு <%s> சேர்க்கப்படுகிறது."
 
-#: ../SubDomain.pm:3358 ../SubDomain.pm:3630 ../SubDomain.pm:3670
-#: ../SubDomain.pm:3880
+#: ../SubDomain.pm:3357 ../SubDomain.pm:3629 ../SubDomain.pm:3669
+#: ../SubDomain.pm:3879
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
 msgstr "%s முந்தைய பொருந்தும் விவர உள்ளீடுகள் நீக்கப்பட்டன."
 
-#: ../SubDomain.pm:3369
+#: ../SubDomain.pm:3368
 #, perl-format
 msgid "Adding capability %s to profile."
 msgstr "விவரத்திற்கு %s ஆற்றல் சேர்க்கப்படுகிறது."
 
-#: ../SubDomain.pm:3374
+#: ../SubDomain.pm:3373
 #, perl-format
 msgid "Denying capability %s to profile."
 msgstr "விவரத்திற்கு %s ஆற்றல் மறுக்கப்படுகிறது."
 
-#: ../SubDomain.pm:3535
+#: ../SubDomain.pm:3534
 msgid "Path"
 msgstr "பாதை"
 
-#: ../SubDomain.pm:3546 ../SubDomain.pm:3578
+#: ../SubDomain.pm:3545 ../SubDomain.pm:3577
 msgid "(owner permissions off)"
 msgstr ""
 
-#: ../SubDomain.pm:3552
+#: ../SubDomain.pm:3551
 msgid "(force new perms to owner)"
 msgstr ""
 
-#: ../SubDomain.pm:3555
+#: ../SubDomain.pm:3554
 msgid "(force all rule perms to owner)"
 msgstr ""
 
-#: ../SubDomain.pm:3567
+#: ../SubDomain.pm:3566
 msgid "Old Mode"
 msgstr "பழைய மோட்"
 
-#: ../SubDomain.pm:3568
+#: ../SubDomain.pm:3567
 msgid "New Mode"
 msgstr "புதிய மோட்"
 
-#: ../SubDomain.pm:3584
+#: ../SubDomain.pm:3583
 msgid "(force perms to owner)"
 msgstr ""
 
-#: ../SubDomain.pm:3587
+#: ../SubDomain.pm:3586
 msgid "Mode"
 msgstr "மோட்"
 
-#: ../SubDomain.pm:3669
+#: ../SubDomain.pm:3668
 #, perl-format
 msgid "Adding %s %s to profile."
 msgstr "%s %s விவரத்தில் சேர்க்கப்படுகிறது."
 
-#: ../SubDomain.pm:3685
+#: ../SubDomain.pm:3684
 msgid "Enter new path: "
 msgstr "புதிய பாதையை உள்ளிடு: "
 
-#: ../SubDomain.pm:3688
+#: ../SubDomain.pm:3687
 msgid "The specified path does not match this log entry:"
 msgstr "குறிப்பிட்ட பாதை இக்குறிப்பு உள்ளீட்டுடன் பொருந்தவில்லை:"
 
-#: ../SubDomain.pm:3689
+#: ../SubDomain.pm:3688
 msgid "Log Entry"
 msgstr "குறிப்பு உள்ளீடு"
 
-#: ../SubDomain.pm:3690
+#: ../SubDomain.pm:3689
 msgid "Entered Path"
 msgstr "உள்ளிடப்பட்ட பாதை"
 
-#: ../SubDomain.pm:3691
+#: ../SubDomain.pm:3690
 msgid "Do you really want to use this path?"
 msgstr "நீங்கள் உண்மையில் இந்த பாதையை பயன்படுத்த விரும்புகிறீர்களா?"
 
-#: ../SubDomain.pm:3803 ../SubDomain.pm:3855
+#: ../SubDomain.pm:3802 ../SubDomain.pm:3854
 #, fuzzy
 msgid "Network Family"
 msgstr "வலையமைப்பு கோப்புறைகள்"
 
-#: ../SubDomain.pm:3806 ../SubDomain.pm:3858
+#: ../SubDomain.pm:3805 ../SubDomain.pm:3857
 #, fuzzy
 msgid "Socket Type"
 msgstr "சாதன வகை"
 
-#: ../SubDomain.pm:3906
+#: ../SubDomain.pm:3905
 #, fuzzy, perl-format
 msgid "Adding network access %s %s to profile."
 msgstr "%s %s விவரத்தில் சேர்க்கப்படுகிறது."
 
-#: ../SubDomain.pm:3925
+#: ../SubDomain.pm:3924
 #, fuzzy, perl-format
 msgid "Denying network access %s %s to profile."
 msgstr "விவரத்திற்கு %s ஆற்றல் மறுக்கப்படுகிறது."
 
-#: ../SubDomain.pm:4133
+#: ../SubDomain.pm:4132
 #, perl-format
 msgid "Reading log entries from %s."
 msgstr "%sலிருந்து குறிப்பேட்டு குறிப்புகள் படிக்கப்படுகின்றன."
 
-#: ../SubDomain.pm:4134
+#: ../SubDomain.pm:4133
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
 msgstr "%sல் AppArmor விவரங்கள் புதுப்பிக்கப்படுகின்றன."
 
-#: ../SubDomain.pm:4138
+#: ../SubDomain.pm:4137
 #, fuzzy
 msgid "unknown\n"
 msgstr "அறியப்படாதது"
 
-#: ../SubDomain.pm:4171
+#: ../SubDomain.pm:4170
 msgid ""
 "The profile analyzer has completed processing the log files.\n"
 "\n"
@@ -625,77 +625,77 @@ msgstr ""
 "\n"
 "அனைத்து புதுப்பிக்கப்பட்ட விவரங்களும் மறுஏற்றம் செய்யப்படும்"
 
-#: ../SubDomain.pm:4177
+#: ../SubDomain.pm:4176
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "கையாளப்படாத AppArmor நிகழ்வுகள் எதுவும் அமைப்பின் குறிப்பில் இல்லை."
 
-#: ../SubDomain.pm:4238
+#: ../SubDomain.pm:4237
 msgid ""
 "Select which profile changes you would like to save to the\n"
 "local profile set"
 msgstr ""
 
-#: ../SubDomain.pm:4239
+#: ../SubDomain.pm:4238
 #, fuzzy
 msgid "Local profile changes"
 msgstr "எந்த விவரமும் செயல்பாட்டில் இல்லை"
 
-#: ../SubDomain.pm:4266
+#: ../SubDomain.pm:4265
 msgid "The following local profiles were changed.  Would you like to save them?"
 msgstr ""
 
-#: ../SubDomain.pm:4363
+#: ../SubDomain.pm:4362
 #, fuzzy
 msgid "Profile Changes"
 msgstr "விவர அமைப்புகள்"
 
-#: ../SubDomain.pm:4976 ../SubDomain.pm:4992 ../SubDomain.pm:5003
-#: ../SubDomain.pm:5011 ../SubDomain.pm:5032 ../SubDomain.pm:5052
-#: ../SubDomain.pm:5061 ../SubDomain.pm:5093 ../SubDomain.pm:5154
-#: ../SubDomain.pm:5205
+#: ../SubDomain.pm:4974 ../SubDomain.pm:4990 ../SubDomain.pm:5001
+#: ../SubDomain.pm:5009 ../SubDomain.pm:5030 ../SubDomain.pm:5050
+#: ../SubDomain.pm:5059 ../SubDomain.pm:5091 ../SubDomain.pm:5153
+#: ../SubDomain.pm:5204
 #, perl-format
 msgid "%s contains syntax errors."
 msgstr "%sல் இலக்கணப் பிழைகள் உள்ளன."
 
-#: ../SubDomain.pm:5112
+#: ../SubDomain.pm:5110
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
 msgstr "%s விவரம் செல்லாத regexp %s கொண்டுள்ளது."
 
-#: ../SubDomain.pm:5117
+#: ../SubDomain.pm:5115
 #, fuzzy, perl-format
 msgid "Profile %s contains invalid mode %s."
 msgstr "%s விவரம் செல்லாத regexp %s கொண்டுள்ளது."
 
-#: ../SubDomain.pm:5252
+#: ../SubDomain.pm:5250
 #, fuzzy, perl-format
 msgid "%s contains syntax errors. Line [%s]"
 msgstr "%sல் இலக்கணப் பிழைகள் உள்ளன."
 
-#: ../SubDomain.pm:5863
+#: ../SubDomain.pm:5839
 #, perl-format
 msgid "Writing updated profile for %s."
 msgstr "%sகாக புதுப்பிக்கப்பட்ட விவரம் எழுதப்படுகிறது."
 
-#: ../SubDomain.pm:6368
+#: ../SubDomain.pm:6344
 msgid "Unknown command"
 msgstr "தெரியாத ஆணை"
 
-#: ../SubDomain.pm:6376
+#: ../SubDomain.pm:6352
 #, fuzzy
 msgid "Invalid hotkey in"
 msgstr "செல்லாத விசை தரவு."
 
-#: ../SubDomain.pm:6386
+#: ../SubDomain.pm:6362
 msgid "Duplicate hotkey for"
 msgstr ""
 
-#: ../SubDomain.pm:6407
+#: ../SubDomain.pm:6383
 #, fuzzy
 msgid "Invalid hotkey in default item"
 msgstr "செல்லாத முன்னிருந்த வழி:"
 
-#: ../SubDomain.pm:6416
+#: ../SubDomain.pm:6392
 #, fuzzy
 msgid "Invalid default"
 msgstr "செல்லாத முன்னிருந்த வழி:"

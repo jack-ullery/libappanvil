@@ -15,10 +15,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2008-05-20 04:51-0700\n"
+"POT-Creation-Date: 2008-09-22 22:56-0700\n"
 "PO-Revision-Date: 2008-05-23 16:52+0200\n"
 "Last-Translator: Lluis Martinez <lmartinez@sct.ictnet.es>\n"
-"Language-Team: español <OS-trans-es <opensuse-translation-es@opensuse.org>>\n"
+"Language-Team: Spanish <opensuse-translation-es@opensuse.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -135,7 +135,7 @@ msgid "Please enter the program to create a profile for: "
 msgstr "Indique el programa para el que desea crear un perfil: "
 
 # clients/printconf_write.ycp:121
-#: ../autodep:95 ../SubDomain.pm:6180
+#: ../autodep:95 ../SubDomain.pm:6156
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
 msgstr "%s está marcado actualmente como un programa que no debe disponer de su propio perfil. Normalmente, los programas están marcados de este modo cuando es probable que crear un perfil para ellos corrompa el resto del sistema. Si está seguro de lo que hace y de que desea crear un perfil para este programa, edite la entrada correspondiente en la sección [qualifiers] del archivo /etc/apparmor/logprof.conf."
@@ -170,7 +170,7 @@ msgid "Please enter the program to switch to complain mode: "
 msgstr "Indique el programa que desee cambiar al modo de queja: "
 
 #
-#: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:899
+#: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:900
 #, perl-format
 msgid "Setting %s to complain mode."
 msgstr "Estableciendo %s en el modo de queja."
@@ -230,7 +230,7 @@ msgstr "limitado por"
 msgid "Can't find %s."
 msgstr "No es posible encontrar %s."
 
-#: ../SubDomain.pm:778 ../SubDomain.pm:3174
+#: ../SubDomain.pm:778 ../SubDomain.pm:3173
 msgid "Connecting to repository....."
 msgstr "Conectando al repositorio."
 
@@ -248,22 +248,22 @@ msgid "Inactive local profile for "
 msgstr "Perfil local inactivo para"
 
 #
-#: ../SubDomain.pm:832 ../SubDomain.pm:1854 ../SubDomain.pm:2142
-#: ../SubDomain.pm:3301 ../SubDomain.pm:3334 ../SubDomain.pm:3534
-#: ../SubDomain.pm:3800 ../SubDomain.pm:3852
+#: ../SubDomain.pm:833 ../SubDomain.pm:1852 ../SubDomain.pm:2140
+#: ../SubDomain.pm:3300 ../SubDomain.pm:3333 ../SubDomain.pm:3533
+#: ../SubDomain.pm:3799 ../SubDomain.pm:3851
 msgid "Profile"
 msgstr "Perfil"
 
-#: ../SubDomain.pm:866
+#: ../SubDomain.pm:867
 msgid "Profile submitted by"
 msgstr "Perfil enviado por"
 
-#: ../SubDomain.pm:907
+#: ../SubDomain.pm:908
 #, perl-format
 msgid "Error activating profiles: %s\n"
 msgstr "Error al activar perfiles %s\n"
 
-#: ../SubDomain.pm:1057 ../SubDomain.pm:1110
+#: ../SubDomain.pm:1055 ../SubDomain.pm:1108
 #, perl-format
 msgid ""
 "WARNING: Error syncronizing profiles with the repository:\n"
@@ -272,11 +272,11 @@ msgstr ""
 "ATENCIÓN: Error al sincronizar los perfiles con el repositorio:\n"
 "%s\n"
 
-#: ../SubDomain.pm:1137
+#: ../SubDomain.pm:1135
 msgid "New profiles"
 msgstr "Nuevos perfiles"
 
-#: ../SubDomain.pm:1139
+#: ../SubDomain.pm:1137
 msgid ""
 "Please choose the newly created profiles that you would like\n"
 "to store in the repository"
@@ -284,15 +284,15 @@ msgstr ""
 "Por favor, seleccione los perfiles creados recientemente que le gustaría\n"
 "almacenar en el repositorio"
 
-#: ../SubDomain.pm:1146
+#: ../SubDomain.pm:1144
 msgid "Submit newly created profiles to the repository"
 msgstr "Enviar los perfiles creados recientemente al repositorio"
 
-#: ../SubDomain.pm:1148
+#: ../SubDomain.pm:1146
 msgid "Would you like to upload the newly created profiles?"
 msgstr "¿Desea cargar los perfiles creados recientemente?"
 
-#: ../SubDomain.pm:1161
+#: ../SubDomain.pm:1159
 msgid ""
 "Select which of the changed profiles you would like to upload\n"
 "to the repository"
@@ -300,15 +300,15 @@ msgstr ""
 "Seleccione cuáles de los perfiles modificados le gustaría cargar\n"
 "al repositorio"
 
-#: ../SubDomain.pm:1163
+#: ../SubDomain.pm:1161
 msgid "Changed profiles"
 msgstr "Perfiles cambiados"
 
-#: ../SubDomain.pm:1169
+#: ../SubDomain.pm:1167
 msgid "Submit changed profiles to the repository"
 msgstr "Enviar los perfiles modificados al repositorio"
 
-#: ../SubDomain.pm:1171
+#: ../SubDomain.pm:1169
 msgid ""
 "The following profiles from the repository were changed.\n"
 "Would you like to upload your changes?"
@@ -316,7 +316,7 @@ msgstr ""
 "Los siguientes perfiles del repositorio han sido modificados.\n"
 "¿Le gustaría cargar sus cambios?"
 
-#: ../SubDomain.pm:1238 ../SubDomain.pm:1318
+#: ../SubDomain.pm:1236 ../SubDomain.pm:1316
 #, perl-format
 msgid ""
 "WARNING: An error occured while uploading the profile %s\n"
@@ -325,20 +325,20 @@ msgstr ""
 "ATENCIÓN: Error mientras se cargaba(upload) el perfil %s\n"
 "%s\n"
 
-#: ../SubDomain.pm:1243
+#: ../SubDomain.pm:1241
 msgid "Uploaded changes to repository."
 msgstr "Cambios cargados en el repositorio."
 
-#: ../SubDomain.pm:1292
+#: ../SubDomain.pm:1290
 msgid "Changelog Entry: "
 msgstr "Entrada del registro de cambios: "
 
-#: ../SubDomain.pm:1313
+#: ../SubDomain.pm:1311
 #, perl-format
 msgid "Uploaded %s to repository."
 msgstr "%s cargado al repositorio."
 
-#: ../SubDomain.pm:1324
+#: ../SubDomain.pm:1322
 msgid ""
 "Repository Error\n"
 "Registration or Signin was unsuccessful. User login\n"
@@ -353,72 +353,72 @@ msgstr ""
 # include/ui/wizard_dialog.ycp:41
 # include/ui/common_messages.ycp:51
 # include/ui/common_messages.ycp:51
-#: ../SubDomain.pm:1381 ../SubDomain.pm:1421
+#: ../SubDomain.pm:1379 ../SubDomain.pm:1419
 msgid "(Y)es"
 msgstr "(S)í"
 
 # include/ui/wizard_dialog.ycp:41
 # include/ui/common_messages.ycp:51
 # include/ui/common_messages.ycp:51
-#: ../SubDomain.pm:1382 ../SubDomain.pm:1422
+#: ../SubDomain.pm:1380 ../SubDomain.pm:1420
 msgid "(N)o"
 msgstr "(No)"
 
 # clients/inst_source.ycp:191
 # clients/inst_source.ycp:168
-#: ../SubDomain.pm:1385 ../SubDomain.pm:1426
+#: ../SubDomain.pm:1383 ../SubDomain.pm:1424
 msgid "Invalid hotkey for"
 msgstr "Tecla rápida no válida para"
 
-#: ../SubDomain.pm:1423
+#: ../SubDomain.pm:1421
 msgid "(C)ancel"
 msgstr "(C)ancelar"
 
 # include/partitioning/partition_defines.ycp:2024
 # include/partitioning/partition_defines.ycp:2011
 # include/partitioning/partition_defines.ycp:2078
-#: ../SubDomain.pm:1748
+#: ../SubDomain.pm:1746
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
 msgstr "¿Está seguro de que desea abandonar este conjunto de cambios de perfiles y salir?"
 
 #
 # include/lilo/widgets.ycp:60
-#: ../SubDomain.pm:1750
+#: ../SubDomain.pm:1748
 msgid "Abandoning all changes."
 msgstr "Abandonando todos los cambios."
 
 #
 # include/lilo/widgets.ycp:60
-#: ../SubDomain.pm:1856
+#: ../SubDomain.pm:1854
 msgid "Default Hat"
 msgstr "Hat por defecto"
 
 #
 # include/lilo/widgets.ycp:60
-#: ../SubDomain.pm:1858
+#: ../SubDomain.pm:1856
 msgid "Requested Hat"
 msgstr "Puerto requerido"
 
-#: ../SubDomain.pm:2144
+#: ../SubDomain.pm:2142
 msgid "Program"
 msgstr "Programa"
 
 # include/nis_server/io.ycp:567
-#: ../SubDomain.pm:2149
+#: ../SubDomain.pm:2147
 msgid "Execute"
 msgstr "Ejecutar"
 
 # clients/printconf_write.ycp:121
-#: ../SubDomain.pm:2150 ../SubDomain.pm:3303 ../SubDomain.pm:3336
-#: ../SubDomain.pm:3589
+#: ../SubDomain.pm:2148 ../SubDomain.pm:3302 ../SubDomain.pm:3335
+#: ../SubDomain.pm:3588
 msgid "Severity"
 msgstr "Severidad"
 
-#: ../SubDomain.pm:2195
+#: ../SubDomain.pm:2193
 msgid "Enter profile name to transition to: "
 msgstr "Introduzca el nombre de perfil hacia el que cambiar:"
 
-#: ../SubDomain.pm:2203
+#: ../SubDomain.pm:2201
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -434,7 +434,7 @@ msgstr ""
 "pero algunas aplicaciones dependen de la presencia\n"
 "de LD_PRELOAD o LD_LIBRARY_PATH."
 
-#: ../SubDomain.pm:2205
+#: ../SubDomain.pm:2203
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -452,7 +452,7 @@ msgstr ""
 "LD_LIBRARY_PATH y borrarlos podría causar\n"
 "problemas de funcionamiento."
 
-#: ../SubDomain.pm:2214
+#: ../SubDomain.pm:2212
 #, perl-format
 msgid ""
 "Launching processes in an unconfined state is a very\n"
@@ -467,7 +467,7 @@ msgstr ""
 "¿Está totalmente seguro de que desea eliminar\n"
 "toda la protección de AppArmor al ejecutar %s?"
 
-#: ../SubDomain.pm:2216
+#: ../SubDomain.pm:2214
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "running this program unconfined?\n"
@@ -483,71 +483,71 @@ msgstr ""
 "sin limitaciones, se crearán problemas importantes de seguridad\n"
 "que deberían evitarse en lo posilble."
 
-#: ../SubDomain.pm:2305
+#: ../SubDomain.pm:2303
 #, perl-format
 msgid "A profile for %s does not exist create one?"
 msgstr "El perfil %s no existe, ¿Crear uno?"
 
-#: ../SubDomain.pm:2332
+#: ../SubDomain.pm:2330
 #, perl-format
 msgid "A local profile for %s does not exist create one?"
 msgstr "El perfil local %s no existe, ¿Crear uno?"
 
-#: ../SubDomain.pm:2504 ../SubDomain.pm:6556 ../SubDomain.pm:6561
+#: ../SubDomain.pm:2502 ../SubDomain.pm:6532 ../SubDomain.pm:6537
 #, perl-format
 msgid "Log contains unknown mode %s."
 msgstr "El registro contiene un modo desconocido %s."
 
-#: ../SubDomain.pm:2916
+#: ../SubDomain.pm:2915
 msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
 msgstr "Se ha encontrado una versión actualizada de este perfil en el repositorio de perfiles. ¿Le gustaría utilizarla?"
 
 # include/nis_server/ui.ycp:45
-#: ../SubDomain.pm:2946
+#: ../SubDomain.pm:2945
 #, perl-format
 msgid "Updated profile %s to revision %s."
 msgstr "Perfil actualizado %s a la revisión %s."
 
-#: ../SubDomain.pm:2953
+#: ../SubDomain.pm:2952
 msgid "Error parsing repository profile."
 msgstr "Error al procesar el perfil del repositorio."
 
-#: ../SubDomain.pm:2989
+#: ../SubDomain.pm:2988
 msgid "Create New User?"
 msgstr "¿Crear Nuevo Usuario?"
 
-#: ../SubDomain.pm:2990
+#: ../SubDomain.pm:2989
 msgid "Username: "
 msgstr "Nombre de usuario: "
 
-#: ../SubDomain.pm:2991
+#: ../SubDomain.pm:2990
 msgid "Password: "
 msgstr "Contraseña: "
 
-#: ../SubDomain.pm:2992
+#: ../SubDomain.pm:2991
 msgid "Email Addr: "
 msgstr "Dirección de correo electrónico: "
 
 #
 # include/network/isdn/wizards.ycp:68 include/network/isdn/wizards.ycp:87
 # menuentries/menuentry_isdn.y2cc:11
-#: ../SubDomain.pm:2994
+#: ../SubDomain.pm:2993
 msgid "Save Configuration? "
 msgstr "¿Guardar la configuración? "
 
-#: ../SubDomain.pm:3003
+#: ../SubDomain.pm:3002
 msgid "The Profile Repository server returned the following error:"
 msgstr "El servidor de Repositorio de Perfiles ha devuelto el siguiente error:"
 
-#: ../SubDomain.pm:3005
+#: ../SubDomain.pm:3004
 msgid "Please re-enter registration information or contact the administrator."
 msgstr "Por favor, vuelva a introducir la información de registro o contacte con el administrador."
 
-#: ../SubDomain.pm:3006
+#: ../SubDomain.pm:3005
 msgid "Login Error\n"
 msgstr "Error al iniciar la sesión\n"
 
-#: ../SubDomain.pm:3013
+#: ../SubDomain.pm:3012
 msgid ""
 "Login failure\n"
 " Please check username and password and try again."
@@ -555,7 +555,7 @@ msgstr ""
 "Error al iniciar la sesión\n"
 "Por favor, verifique su nombre de usuario y contraseña e inténtelo de nuevo."
 
-#: ../SubDomain.pm:3035
+#: ../SubDomain.pm:3034
 msgid ""
 "Would you like to enable access to the\n"
 "profile repository?"
@@ -563,7 +563,7 @@ msgstr ""
 "¿Desea habilitar el acceso al\n"
 "repositorio de perfiles?"
 
-#: ../SubDomain.pm:3066
+#: ../SubDomain.pm:3065
 msgid ""
 "Would you like to upload newly created and changed profiles to\n"
 "      the profile repository?"
@@ -571,7 +571,7 @@ msgstr ""
 "¿Le gustaría cargar los perfiles creados recientemente al\n"
 "         repositorio del perfil?"
 
-#: ../SubDomain.pm:3185
+#: ../SubDomain.pm:3184
 #, perl-format
 msgid ""
 "WARNING: Profile update check failed\n"
@@ -582,30 +582,30 @@ msgstr ""
 "Detalles del error:\n"
 "%s"
 
-#: ../SubDomain.pm:3199
+#: ../SubDomain.pm:3198
 msgid "Change mode modifiers"
 msgstr "Modificadores de cambio de modo"
 
 # include/nis_server/ui.ycp:45
-#: ../SubDomain.pm:3243
+#: ../SubDomain.pm:3242
 msgid "Complain-mode changes:"
 msgstr "Cambios del modo de queja:"
 
 # include/nis_server/ui.ycp:45
-#: ../SubDomain.pm:3245
+#: ../SubDomain.pm:3244
 msgid "Enforce-mode changes:"
 msgstr "Cambios del modo de aplicación:"
 
 # clients/inst_source.ycp:191
 # clients/inst_source.ycp:168
-#: ../SubDomain.pm:3251
+#: ../SubDomain.pm:3250
 #, perl-format
 msgid "Invalid mode found: %s"
 msgstr "Detectado modo no válido: %s"
 
 # clients/inst_source.ycp:191
 # clients/inst_source.ycp:168
-#: ../SubDomain.pm:3302 ../SubDomain.pm:3335
+#: ../SubDomain.pm:3301 ../SubDomain.pm:3334
 msgid "Capability"
 msgstr "Capacidad"
 
@@ -615,7 +615,7 @@ msgstr "Capacidad"
 # clients/inst_custom_part.ycp:2373
 # include/backup/ui.ycp:1094
 #
-#: ../SubDomain.pm:3355 ../SubDomain.pm:3629 ../SubDomain.pm:3876
+#: ../SubDomain.pm:3354 ../SubDomain.pm:3628 ../SubDomain.pm:3875
 #, perl-format
 msgid "Adding #include <%s> to profile."
 msgstr "Añadiendo #include <%s> al perfil."
@@ -626,8 +626,8 @@ msgstr "Añadiendo #include <%s> al perfil."
 # clients/inst_custom_part.ycp:2373
 # include/backup/ui.ycp:1094
 #
-#: ../SubDomain.pm:3358 ../SubDomain.pm:3630 ../SubDomain.pm:3670
-#: ../SubDomain.pm:3880
+#: ../SubDomain.pm:3357 ../SubDomain.pm:3629 ../SubDomain.pm:3669
+#: ../SubDomain.pm:3879
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
 msgstr "Eliminadas %s entradas anteriores de perfiles coincidentes."
@@ -635,7 +635,7 @@ msgstr "Eliminadas %s entradas anteriores de perfiles coincidentes."
 # include/partitioning/partition_defines.ycp:404
 # include/partitioning/partition_defines.ycp:404
 # include/partitioning/partition_defines.ycp:413
-#: ../SubDomain.pm:3369
+#: ../SubDomain.pm:3368
 #, perl-format
 msgid "Adding capability %s to profile."
 msgstr "Añadiendo capacidad %s al perfil."
@@ -643,7 +643,7 @@ msgstr "Añadiendo capacidad %s al perfil."
 # include/partitioning/partition_defines.ycp:404
 # include/partitioning/partition_defines.ycp:404
 # include/partitioning/partition_defines.ycp:413
-#: ../SubDomain.pm:3374
+#: ../SubDomain.pm:3373
 #, perl-format
 msgid "Denying capability %s to profile."
 msgstr "Denegando capacidad %s al perfil."
@@ -651,37 +651,37 @@ msgstr "Denegando capacidad %s al perfil."
 # include/partitioning/partition_defines.ycp:404
 # include/partitioning/partition_defines.ycp:404
 # include/partitioning/partition_defines.ycp:413
-#: ../SubDomain.pm:3535
+#: ../SubDomain.pm:3534
 msgid "Path"
 msgstr "Ruta"
 
-#: ../SubDomain.pm:3546 ../SubDomain.pm:3578
+#: ../SubDomain.pm:3545 ../SubDomain.pm:3577
 msgid "(owner permissions off)"
 msgstr "(permisos de usuario inhabilitados)"
 
-#: ../SubDomain.pm:3552
+#: ../SubDomain.pm:3551
 msgid "(force new perms to owner)"
 msgstr "(forzar nuevos permisos al usuario)"
 
-#: ../SubDomain.pm:3555
+#: ../SubDomain.pm:3554
 msgid "(force all rule perms to owner)"
 msgstr "(forzar permisos de todas las reglas al usuario)"
 
 # include/network/modem/dialogs.ycp:128
-#: ../SubDomain.pm:3567
+#: ../SubDomain.pm:3566
 msgid "Old Mode"
 msgstr "Modo anterior"
 
 # include/network/summary.ycp:101
-#: ../SubDomain.pm:3568
+#: ../SubDomain.pm:3567
 msgid "New Mode"
 msgstr "Nuevo modo"
 
-#: ../SubDomain.pm:3584
+#: ../SubDomain.pm:3583
 msgid "(force perms to owner)"
 msgstr "(forzar permisos al usuario)"
 
-#: ../SubDomain.pm:3587
+#: ../SubDomain.pm:3586
 msgid "Mode"
 msgstr "Modo"
 
@@ -691,7 +691,7 @@ msgstr "Modo"
 # clients/inst_custom_part.ycp:2373
 # include/backup/ui.ycp:1094
 #
-#: ../SubDomain.pm:3669
+#: ../SubDomain.pm:3668
 #, perl-format
 msgid "Adding %s %s to profile."
 msgstr "Añadiendo %s %s al perfil."
@@ -702,7 +702,7 @@ msgstr "Añadiendo %s %s al perfil."
 # clients/inst_custom_part.ycp:2373
 # include/backup/ui.ycp:1094
 #
-#: ../SubDomain.pm:3685
+#: ../SubDomain.pm:3684
 msgid "Enter new path: "
 msgstr "Introduzca la nueva ruta: "
 
@@ -712,32 +712,32 @@ msgstr "Introduzca la nueva ruta: "
 # clients/inst_custom_part.ycp:2373
 # include/backup/ui.ycp:1094
 #
-#: ../SubDomain.pm:3688
+#: ../SubDomain.pm:3687
 msgid "The specified path does not match this log entry:"
 msgstr "La ruta especificada no se ajusta a esta entrada del registro:"
 
 # clients/rc_config_step1.ycp:296
-#: ../SubDomain.pm:3689
+#: ../SubDomain.pm:3688
 msgid "Log Entry"
 msgstr "Entrada de registro"
 
 # clients/inst_sw_single.ycp:1116 clients/inst_sw_single.ycp:1176
 # clients/inst_sw_single.ycp:1232 clients/inst_sw_single.ycp:1290
-#: ../SubDomain.pm:3690
+#: ../SubDomain.pm:3689
 msgid "Entered Path"
 msgstr "Ruta introducida"
 
 # clients/inst_sw_single.ycp:1116 clients/inst_sw_single.ycp:1176
 # clients/inst_sw_single.ycp:1232 clients/inst_sw_single.ycp:1290
-#: ../SubDomain.pm:3691
+#: ../SubDomain.pm:3690
 msgid "Do you really want to use this path?"
 msgstr "¿Desea realmente usar esta ruta?"
 
-#: ../SubDomain.pm:3803 ../SubDomain.pm:3855
+#: ../SubDomain.pm:3802 ../SubDomain.pm:3854
 msgid "Network Family"
 msgstr "Familia de Red"
 
-#: ../SubDomain.pm:3806 ../SubDomain.pm:3858
+#: ../SubDomain.pm:3805 ../SubDomain.pm:3857
 msgid "Socket Type"
 msgstr "Tipo de conector (socket)"
 
@@ -747,7 +747,7 @@ msgstr "Tipo de conector (socket)"
 # clients/inst_custom_part.ycp:2373
 # include/backup/ui.ycp:1094
 #
-#: ../SubDomain.pm:3906
+#: ../SubDomain.pm:3905
 #, perl-format
 msgid "Adding network access %s %s to profile."
 msgstr "Añadiendo acceso a la red %s %s al perfil."
@@ -755,19 +755,19 @@ msgstr "Añadiendo acceso a la red %s %s al perfil."
 # include/partitioning/partition_defines.ycp:404
 # include/partitioning/partition_defines.ycp:404
 # include/partitioning/partition_defines.ycp:413
-#: ../SubDomain.pm:3925
+#: ../SubDomain.pm:3924
 #, perl-format
 msgid "Denying network access %s %s to profile."
 msgstr "Denegando acceso a la red %s %s al perfil."
 
 # include/nis_server/ui.ycp:45
-#: ../SubDomain.pm:4133
+#: ../SubDomain.pm:4132
 #, perl-format
 msgid "Reading log entries from %s."
 msgstr "Leyendo entradas de registro desde %s."
 
 # include/nis_server/ui.ycp:45
-#: ../SubDomain.pm:4134
+#: ../SubDomain.pm:4133
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
 msgstr "Actualizando perfiles de AppArmor en %s."
@@ -775,12 +775,12 @@ msgstr "Actualizando perfiles de AppArmor en %s."
 # clients/support_registration.ycp:225 include/support/registration.ycp:77
 # clients/support_askkey.ycp:246 include/support/supportio.ycp:79
 # clients/support_askkey.ycp:246 include/support/supportio.ycp:79
-#: ../SubDomain.pm:4138
+#: ../SubDomain.pm:4137
 msgid "unknown\n"
 msgstr "desconocido\n"
 
 # clients/printconf_write.ycp:121
-#: ../SubDomain.pm:4171
+#: ../SubDomain.pm:4170
 msgid ""
 "The profile analyzer has completed processing the log files.\n"
 "\n"
@@ -791,11 +791,11 @@ msgstr ""
 " Se volverán a cargar todos los perfiles actualizados"
 
 # clients/printconf_write.ycp:121
-#: ../SubDomain.pm:4177
+#: ../SubDomain.pm:4176
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "No se han encontrado eventos AppArmor sin gestionar en el registro del sistema."
 
-#: ../SubDomain.pm:4238
+#: ../SubDomain.pm:4237
 msgid ""
 "Select which profile changes you would like to save to the\n"
 "local profile set"
@@ -803,75 +803,75 @@ msgstr ""
 "Seleccione qué modificaciones del perfil le gustaría guardar en el\n"
 "la configuración de perfil local"
 
-#: ../SubDomain.pm:4239
+#: ../SubDomain.pm:4238
 msgid "Local profile changes"
 msgstr "Cambios del perfil local"
 
-#: ../SubDomain.pm:4266
+#: ../SubDomain.pm:4265
 msgid "The following local profiles were changed.  Would you like to save them?"
 msgstr "Los siguientes perfiles locales han sido modificados. ¿Desea guardarlos?"
 
-#: ../SubDomain.pm:4363
+#: ../SubDomain.pm:4362
 msgid "Profile Changes"
 msgstr "Cambios de perfil"
 
 # clients/printconf_write.ycp:121
-#: ../SubDomain.pm:4976 ../SubDomain.pm:4992 ../SubDomain.pm:5003
-#: ../SubDomain.pm:5011 ../SubDomain.pm:5032 ../SubDomain.pm:5052
-#: ../SubDomain.pm:5061 ../SubDomain.pm:5093 ../SubDomain.pm:5154
-#: ../SubDomain.pm:5205
+#: ../SubDomain.pm:4974 ../SubDomain.pm:4990 ../SubDomain.pm:5001
+#: ../SubDomain.pm:5009 ../SubDomain.pm:5030 ../SubDomain.pm:5050
+#: ../SubDomain.pm:5059 ../SubDomain.pm:5091 ../SubDomain.pm:5153
+#: ../SubDomain.pm:5204
 #, perl-format
 msgid "%s contains syntax errors."
 msgstr "%s contiene errores de sintaxis."
 
 # clients/inst_sw_single.ycp:1116 clients/inst_sw_single.ycp:1176
 # clients/inst_sw_single.ycp:1232 clients/inst_sw_single.ycp:1290
-#: ../SubDomain.pm:5112
+#: ../SubDomain.pm:5110
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
 msgstr "El perfil %s contiene una entrada regexp no válida: %s."
 
 # clients/inst_sw_single.ycp:1116 clients/inst_sw_single.ycp:1176
 # clients/inst_sw_single.ycp:1232 clients/inst_sw_single.ycp:1290
-#: ../SubDomain.pm:5117
+#: ../SubDomain.pm:5115
 #, perl-format
 msgid "Profile %s contains invalid mode %s."
 msgstr "El perfil %s contiene un modo inválido %s."
 
 # clients/printconf_write.ycp:121
-#: ../SubDomain.pm:5252
+#: ../SubDomain.pm:5250
 #, perl-format
 msgid "%s contains syntax errors. Line [%s]"
 msgstr "%s contiene errores de sintaxis. Línea [%s]"
 
 #
 # modules/Modem.ycp:187
-#: ../SubDomain.pm:5863
+#: ../SubDomain.pm:5839
 #, perl-format
 msgid "Writing updated profile for %s."
 msgstr "Escribiendo perfil actualizado para %s."
 
-#: ../SubDomain.pm:6368
+#: ../SubDomain.pm:6344
 msgid "Unknown command"
 msgstr "Comando desconocido"
 
 # clients/inst_source.ycp:191
 # clients/inst_source.ycp:168
-#: ../SubDomain.pm:6376
+#: ../SubDomain.pm:6352
 msgid "Invalid hotkey in"
 msgstr "Tecla rápida no válida en"
 
-#: ../SubDomain.pm:6386
+#: ../SubDomain.pm:6362
 msgid "Duplicate hotkey for"
 msgstr "Tecla rápida duplicada para"
 
-#: ../SubDomain.pm:6407
+#: ../SubDomain.pm:6383
 msgid "Invalid hotkey in default item"
 msgstr "Tecla rápida no válida en el elemento predeterminado"
 
 # clients/inst_source.ycp:191
 # clients/inst_source.ycp:168
-#: ../SubDomain.pm:6416
+#: ../SubDomain.pm:6392
 msgid "Invalid default"
 msgstr "Valor por defecto no válido"
 
@@ -947,4 +947,3 @@ msgstr "Error de ejecución DBI: %s"
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"
 msgstr "Error fatal. getArchReport() no ha podido abrir %s"
-

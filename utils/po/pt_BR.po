@@ -1,3 +1,4 @@
+# translation of apparmor-utils.po to Brazilian Portuguese
 # translation of apparmor-utils.po to
 # Portugese (Brasilian) message file for YaST2 (@memory@).
 # Copyright (C) 2005 SUSE Linux Products GmbH.
@@ -7,18 +8,20 @@
 # Karl Eichwalder <ke@suse.de>, 1999.
 # Ralf Lanz <rlanz@genix.com.br>, 1999.
 # Rafael Reuber <psico.indie@gmail.com>, 2008.
+# Luiz Fernando Ranghetti <elchevive68@gmail.com>, 2008.
+# Luiz Fernando Ranghetti <elchevive@opensuse.org>, 2008.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2008-05-20 04:51-0700\n"
-"PO-Revision-Date: 2008-05-20 17:06-0300\n"
-"Last-Translator: Luiz Fernando Ranghetti <elchevive68@gmail.com>\n"
+"POT-Creation-Date: 2008-09-22 22:56-0700\n"
+"PO-Revision-Date: 2008-11-02 23:48-0200\n"
+"Last-Translator: Luiz Fernando Ranghetti <elchevive@opensuse.org>\n"
 "Language-Team: Brazilian Portuguese <opensuse-pt@opensuse.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms:  nplurals=2; plural=(n > 1);\n"
 "X-Generator: KBabel 1.11.4\n"
 "X-Poedit-Language: Portuguese\n"
 "X-Poedit-Country: BRAZIL\n"
@@ -26,7 +29,7 @@ msgstr ""
 
 #: ../genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "Subdomínio não parece ter sido inicializado. Habilite o Subdomínio e tente novamente."
+msgstr "SubDomain não parece ter sido inicializado. Habilite o SubDomain e tente novamente."
 
 #: ../genprof:69
 msgid "Please enter the program to profile: "
@@ -35,13 +38,9 @@ msgstr "Favor informar o programa a ser criado o perfil:"
 #: ../genprof:88
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
-msgstr "Não foi possível encontrar %s na lista de caminhos do sistema.  Se o nome do aplicativo estiver correto, execute 'which %s' na outra janela para encontrar o caminho completo."
+msgstr "Não foi possível encontrar %s na lista de caminhos do sistema. Se o nome do aplicativo estiver correto, execute 'which %s' na outra janela para encontrar o caminho completo."
 
-#: ../genprof:90
-#: ../autodep:112
-#: ../audit:122
-#: ../complain:122
-#: ../enforce:122
+#: ../genprof:90 ../autodep:112 ../audit:122 ../complain:122 ../enforce:122
 #, perl-format
 msgid "%s does not exist, please double-check the path."
 msgstr "%s não existe. Verifique o caminho novamente."
@@ -60,61 +59,57 @@ msgid ""
 msgstr ""
 "Inicie o aplicativo (cujo perfil será criado) em \n"
 "outra janela e execute sua funcionalidade agora.\n"
-" \n"
-" Ao terminar, selecione o botão \"Explorar\" abaixo para \n"
-" pesquisar eventos do AppArmor nos logs do sistema.  \n"
-" \n"
-" Para cada evento do AppArmor, você poderá \n"
-" escolher se o acesso deve ser \n"
-" permitido ou negado."
+"\n"
+"Ao terminar, selecione o botão \"Explorar\" abaixo para \n"
+"pesquisar eventos do AppArmor nos logs do sistema.\n"
+"\n"
+"Para cada evento do AppArmor, você poderá \n"
+"escolher se o acesso deve ser \n"
+"permitido ou negado."
 
 #: ../genprof:135
 msgid "Profiling"
-msgstr "Criando o Perfil"
+msgstr "Criando o perfil"
 
 #: ../genprof:169
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "Perfis de Subdomínio recarregados no modo forçado."
+msgstr "Perfis do SubDomain recarregados no modo forçado."
 
 #: ../genprof:170
 #, perl-format
 msgid "Finished generating profile for %s."
-msgstr "Geração de perfil encerrada para %s."
+msgstr "Concluída a geração de perfil para %s."
 
 #: ../genprof:174
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
-msgstr "uso: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ programa para perfil ]"
+msgstr "uso: %s [ -d /caminho/para/perfil ] [ -f /caminho/para/log ] [ programa para perfil ]"
 
 #: ../logprof:72
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
-msgstr "uso: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"marcar no registro para iniciar processamento após\" ]"
+msgstr "uso: %s [ -d /caminho/par/perfil ] [ -f /caminho/par/log ] [ -m \"marcar no log para iniciar processamento após\" ]"
 
 #: ../autodep:63
 #, perl-format
 msgid "Can't find subdomain profiles in %s."
-msgstr "Não é possível localizar os perfis de subdomínio em %s."
+msgstr "Não foi possível localizar os perfis do SubDomain em %s."
 
 #: ../autodep:71
 msgid "Please enter the program to create a profile for: "
 msgstr "Digite o programa para o qual deve ser criado um perfil: "
 
-#: ../autodep:95
-#: ../SubDomain.pm:6180
+#: ../autodep:95 ../SubDomain.pm:6156
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
-msgstr "%s está atualmente marcado como um programa que não deve ter o seu próprio perfil.  Normalmente, os programas são marcados dessa maneira se a criação de um perfil para eles tiver probabilidade de interromper o resto do sistema.  Se você sabe o que está fazendo e tem certeza de que deseja criar um perfil para este programa, edite a entrada correspondente na seção [qualificadores] em /etc/apparmor/logprof.conf."
+msgstr "%s está atualmente marcado como um programa que não deve ter o seu próprio perfil. Normalmente, os programas são marcados dessa maneira se a criação de um perfil para eles tiver probabilidade de interromper o resto do sistema. Se você sabe o que está fazendo e tem certeza de que deseja criar um perfil para este programa, edite a entrada correspondente na seção [qualificadores] em /etc/apparmor/logprof.conf."
 
 #: ../autodep:102
 #, perl-format
 msgid "Profile for %s already exists - skipping."
-msgstr "Nome do Provedor %s já existe."
+msgstr "O perfil para %s já existe - ignorando."
 
-#: ../autodep:109
-#: ../audit:119
-#: ../complain:119
-#: ../enforce:119
+#: ../autodep:109 ../audit:119 ../complain:119 ../enforce:119
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
 msgstr "Não é possível localizar %s na lista de caminhos do sistema. Se o nome do aplicativo estiver correto, execute 'which %s' como um usuário com o ambiente PATH correto configurado para localizar o caminho completo."
@@ -133,9 +128,7 @@ msgstr "uso: %s [ -d /path/to/profiles ] [ programa para alternar para modo de a
 msgid "Please enter the program to switch to complain mode: "
 msgstr "Digite o programa para alternar para o modo de reclamação: "
 
-#: ../complain:106
-#: ../SubDomain.pm:579
-#: ../SubDomain.pm:899
+#: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:900
 #, perl-format
 msgid "Setting %s to complain mode."
 msgstr "Configurando %s para modo de reclamação."
@@ -149,11 +142,10 @@ msgstr "uso: %s [ -d /path/to/profiles ] [ programa para alternar para modo de r
 msgid "Please enter the program to switch to enforce mode: "
 msgstr "Digite o programa para alternar para o modo forçado: "
 
-#: ../enforce:105
-#: ../SubDomain.pm:592
+#: ../enforce:105 ../SubDomain.pm:592
 #, perl-format
 msgid "Setting %s to enforce mode."
-msgstr "Configurações%s de Zona"
+msgstr "Definindo %s para o modo forçado."
 
 #: ../enforce:131
 #, perl-format
@@ -167,30 +159,26 @@ msgstr "Uso: %s [ --paranoid ]\n"
 
 #: ../unconfined:56
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "O Subdomínio não parece ter sido inicializado. Habilite-o e tente novamente."
+msgstr "O SubDomain parece não ter sido inicializado. Por favor, habilite o SubDomain e tente novamente."
 
 #: ../unconfined:61
 msgid "Can't read /proc\n"
 msgstr "Não é possível ler /proc\n"
 
-#: ../unconfined:93
-#: ../unconfined:95
+#: ../unconfined:93 ../unconfined:95
 msgid "not confined\n"
 msgstr "não delimitado\n"
 
-#: ../unconfined:105
-#: ../unconfined:107
+#: ../unconfined:105 ../unconfined:107
 msgid "confined by"
 msgstr "delimitado por"
 
-#: ../SubDomain.pm:577
-#: ../SubDomain.pm:590
+#: ../SubDomain.pm:577 ../SubDomain.pm:590
 #, perl-format
 msgid "Can't find %s."
-msgstr "Não foi possível gravar %s."
+msgstr "Não foi possível encontrar %s."
 
-#: ../SubDomain.pm:778
-#: ../SubDomain.pm:3174
+#: ../SubDomain.pm:778 ../SubDomain.pm:3173
 msgid "Connecting to repository....."
 msgstr "Conectando-se ao repositório..."
 
@@ -207,28 +195,22 @@ msgstr ""
 msgid "Inactive local profile for "
 msgstr "Perfil local inativo para"
 
-#: ../SubDomain.pm:832
-#: ../SubDomain.pm:1854
-#: ../SubDomain.pm:2142
-#: ../SubDomain.pm:3301
-#: ../SubDomain.pm:3334
-#: ../SubDomain.pm:3534
-#: ../SubDomain.pm:3800
-#: ../SubDomain.pm:3852
+#: ../SubDomain.pm:833 ../SubDomain.pm:1852 ../SubDomain.pm:2140
+#: ../SubDomain.pm:3300 ../SubDomain.pm:3333 ../SubDomain.pm:3533
+#: ../SubDomain.pm:3799 ../SubDomain.pm:3851
 msgid "Profile"
 msgstr "Perfil"
 
-#: ../SubDomain.pm:866
+#: ../SubDomain.pm:867
 msgid "Profile submitted by"
 msgstr "Perfil submetido por"
 
-#: ../SubDomain.pm:907
+#: ../SubDomain.pm:908
 #, perl-format
 msgid "Error activating profiles: %s\n"
 msgstr "Erro ao ativar perfis: %s\n"
 
-#: ../SubDomain.pm:1057
-#: ../SubDomain.pm:1110
+#: ../SubDomain.pm:1055 ../SubDomain.pm:1108
 #, perl-format
 msgid ""
 "WARNING: Error syncronizing profiles with the repository:\n"
@@ -237,11 +219,11 @@ msgstr ""
 "AVISO: Erro ao sincronizar os perfis com o repositório:\n"
 "%s\n"
 
-#: ../SubDomain.pm:1137
+#: ../SubDomain.pm:1135
 msgid "New profiles"
 msgstr "Novos perfis"
 
-#: ../SubDomain.pm:1139
+#: ../SubDomain.pm:1137
 msgid ""
 "Please choose the newly created profiles that you would like\n"
 "to store in the repository"
@@ -249,15 +231,15 @@ msgstr ""
 "Por favor, selecione os novos perfis criados que gostaria de \n"
 "armazenar no repositório"
 
-#: ../SubDomain.pm:1146
+#: ../SubDomain.pm:1144
 msgid "Submit newly created profiles to the repository"
 msgstr "Enviar novos perfis criados ao repositório"
 
-#: ../SubDomain.pm:1148
+#: ../SubDomain.pm:1146
 msgid "Would you like to upload the newly created profiles?"
 msgstr "Deseja fazer o upload dos novos perfis?"
 
-#: ../SubDomain.pm:1161
+#: ../SubDomain.pm:1159
 msgid ""
 "Select which of the changed profiles you would like to upload\n"
 "to the repository"
@@ -265,15 +247,15 @@ msgstr ""
 "Selecione qual dos perfis modificados você deseja enviar\n"
 "ao repositório"
 
-#: ../SubDomain.pm:1163
+#: ../SubDomain.pm:1161
 msgid "Changed profiles"
 msgstr "Perfis modificados"
 
-#: ../SubDomain.pm:1169
+#: ../SubDomain.pm:1167
 msgid "Submit changed profiles to the repository"
 msgstr "Enviar os perfis alterados para o repositório"
 
-#: ../SubDomain.pm:1171
+#: ../SubDomain.pm:1169
 msgid ""
 "The following profiles from the repository were changed.\n"
 "Would you like to upload your changes?"
@@ -281,96 +263,90 @@ msgstr ""
 "Os seguintes perfis do repositório foram modificados.\n"
 "Deseja armazenar suas mudanças?"
 
-#: ../SubDomain.pm:1238
-#: ../SubDomain.pm:1318
+#: ../SubDomain.pm:1236 ../SubDomain.pm:1316
 #, perl-format
 msgid ""
 "WARNING: An error occured while uploading the profile %s\n"
 "%s\n"
 msgstr ""
-"ALERTA: Ocorreu um erro enquanto atualizava o perfil %s\n"
+"AVISO: Ocorreu um erro enquanto atualizava o perfil %s\n"
 "%s\n"
 
-#: ../SubDomain.pm:1243
+#: ../SubDomain.pm:1241
 msgid "Uploaded changes to repository."
-msgstr "Mudanças enviadas ao repositório"
+msgstr "Mudanças enviadas ao repositório."
 
-#: ../SubDomain.pm:1292
+#: ../SubDomain.pm:1290
 msgid "Changelog Entry: "
-msgstr "Entrada do Changelog"
+msgstr "Entrada do changelog:"
 
-#: ../SubDomain.pm:1313
+#: ../SubDomain.pm:1311
 #, perl-format
 msgid "Uploaded %s to repository."
 msgstr "O %s foi armazenado no repositório."
 
-#: ../SubDomain.pm:1324
+#: ../SubDomain.pm:1322
 msgid ""
 "Repository Error\n"
 "Registration or Signin was unsuccessful. User login\n"
 "information is required to upload profiles to the\n"
 "repository. These changes have not been sent.\n"
 msgstr ""
-"Erro no Repositório\n"
-"Cadastro ou Login sem sucesso. É necessário\n"
+"Erro no repositório\n"
+"Cadastro ou login sem sucesso. É necessário\n"
 "informar o login de Usuário para enviar os perfis para o repositório\n"
 "Essas alterações podem não serem enviadas.\n"
 
-#: ../SubDomain.pm:1381
-#: ../SubDomain.pm:1421
+#: ../SubDomain.pm:1379 ../SubDomain.pm:1419
 msgid "(Y)es"
 msgstr "(S)im"
 
-#: ../SubDomain.pm:1382
-#: ../SubDomain.pm:1422
+#: ../SubDomain.pm:1380 ../SubDomain.pm:1420
 msgid "(N)o"
-msgstr "Não"
+msgstr "(N)ão"
 
-#: ../SubDomain.pm:1385
-#: ../SubDomain.pm:1426
+#: ../SubDomain.pm:1383 ../SubDomain.pm:1424
 msgid "Invalid hotkey for"
 msgstr "Tecla de atalho inválida para"
 
-#: ../SubDomain.pm:1423
+#: ../SubDomain.pm:1421
 msgid "(C)ancel"
 msgstr "(C)ancelar"
 
-#: ../SubDomain.pm:1748
+#: ../SubDomain.pm:1746
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
 msgstr "Tem certeza de que deseja descartar este conjunto de mudanças de perfil e sair?"
 
-#: ../SubDomain.pm:1750
+#: ../SubDomain.pm:1748
 msgid "Abandoning all changes."
-msgstr "Descartar todas as mudanças?"
+msgstr "Descartando todas as mudanças."
+
+#: ../SubDomain.pm:1854
+msgid "Default Hat"
+msgstr "Hat padrão"
 
 #: ../SubDomain.pm:1856
-msgid "Default Hat"
-msgstr "Host padrão"
-
-#: ../SubDomain.pm:1858
 msgid "Requested Hat"
-msgstr "Hat Solicitado"
+msgstr "Hat solicitado"
 
-#: ../SubDomain.pm:2144
+#: ../SubDomain.pm:2142
 msgid "Program"
 msgstr "Programa"
 
-#: ../SubDomain.pm:2149
+#: ../SubDomain.pm:2147
 msgid "Execute"
-msgstr "Especialista"
+msgstr "Executar"
 
-#: ../SubDomain.pm:2150
-#: ../SubDomain.pm:3303
-#: ../SubDomain.pm:3336
-#: ../SubDomain.pm:3589
+#: ../SubDomain.pm:2148 ../SubDomain.pm:3302 ../SubDomain.pm:3335
+#: ../SubDomain.pm:3588
 msgid "Severity"
-msgstr "Segurança"
+msgstr "Severidade"
 
-#: ../SubDomain.pm:2195
+#: ../SubDomain.pm:2193
 msgid "Enter profile name to transition to: "
 msgstr "Digite o nome do perfil à mudar para: "
 
-#: ../SubDomain.pm:2203
+#: ../SubDomain.pm:2201
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -386,7 +362,7 @@ msgstr ""
 "mas alguns aplicativos dependem da presença\n"
 "de LD_PRELOAD ou LD_LIBRARY_PATH."
 
-#: ../SubDomain.pm:2205
+#: ../SubDomain.pm:2203
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -404,7 +380,7 @@ msgstr ""
 "ou LD_LIBRARY_PATH, e a limpeza dos perfis poderia\n"
 "causar problemas de funcionalidade."
 
-#: ../SubDomain.pm:2214
+#: ../SubDomain.pm:2212
 #, perl-format
 msgid ""
 "Launching processes in an unconfined state is a very\n"
@@ -419,7 +395,7 @@ msgstr ""
 "Tem certeza absoluta de que deseja remover toda a\n"
 "proteção do AppArmor ao executar %s?"
 
-#: ../SubDomain.pm:2216
+#: ../SubDomain.pm:2214
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "running this program unconfined?\n"
@@ -435,69 +411,67 @@ msgstr ""
 "confinamento de um programa, isso poderá causar brechas de segurança significativas.\n"
 "Esse procedimento deve ser evitado, se possível."
 
-#: ../SubDomain.pm:2305
+#: ../SubDomain.pm:2303
 #, perl-format
 msgid "A profile for %s does not exist create one?"
 msgstr "Não existe um perfil para %s, deseja criar?"
 
-#: ../SubDomain.pm:2332
+#: ../SubDomain.pm:2330
 #, perl-format
 msgid "A local profile for %s does not exist create one?"
 msgstr "Não existe um perfil local para %s, deseja criar?"
 
-#: ../SubDomain.pm:2504
-#: ../SubDomain.pm:6556
-#: ../SubDomain.pm:6561
+#: ../SubDomain.pm:2502 ../SubDomain.pm:6532 ../SubDomain.pm:6537
 #, perl-format
 msgid "Log contains unknown mode %s."
 msgstr "O log contém modo inválido %s."
 
-#: ../SubDomain.pm:2916
+#: ../SubDomain.pm:2915
 msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
 msgstr "Uma versão atualizada deste perfil foi encontrada no repositório de perfis. Você gostaria de usá-lo?"
 
-#: ../SubDomain.pm:2946
+#: ../SubDomain.pm:2945
 #, perl-format
 msgid "Updated profile %s to revision %s."
 msgstr "Perfil %s atualizado para revisão %s."
 
-#: ../SubDomain.pm:2953
+#: ../SubDomain.pm:2952
 msgid "Error parsing repository profile."
 msgstr "Erro ao analisar o perfil do repositório."
 
-#: ../SubDomain.pm:2989
+#: ../SubDomain.pm:2988
 msgid "Create New User?"
-msgstr "Criar Novo Usuário?"
+msgstr "Criar novo usuário?"
 
-#: ../SubDomain.pm:2990
+#: ../SubDomain.pm:2989
 msgid "Username: "
 msgstr "Nome de usuário: "
 
-#: ../SubDomain.pm:2991
+#: ../SubDomain.pm:2990
 msgid "Password: "
 msgstr "Senha:"
 
-#: ../SubDomain.pm:2992
+#: ../SubDomain.pm:2991
 msgid "Email Addr: "
-msgstr "Endereço de Email:"
+msgstr "Endereço de e-mail:"
 
-#: ../SubDomain.pm:2994
+#: ../SubDomain.pm:2993
 msgid "Save Configuration? "
-msgstr "Salvar a Configuração?"
+msgstr "Salvar a configuração?"
 
-#: ../SubDomain.pm:3003
+#: ../SubDomain.pm:3002
 msgid "The Profile Repository server returned the following error:"
-msgstr "O servidor do Repositório de Perfil retornou o seguinte erro:"
+msgstr "O servidor do repositório de perfis retornou o seguinte erro:"
+
+#: ../SubDomain.pm:3004
+msgid "Please re-enter registration information or contact the administrator."
+msgstr "Por favor, digite novamente a informação de registro ou contate o administrador."
 
 #: ../SubDomain.pm:3005
-msgid "Please re-enter registration information or contact the administrator."
-msgstr "Por favor, digite novamente a informação de registro ou contate o administrador"
-
-#: ../SubDomain.pm:3006
 msgid "Login Error\n"
-msgstr "Erro de Login\n"
+msgstr "Erro de login\n"
 
-#: ../SubDomain.pm:3013
+#: ../SubDomain.pm:3012
 msgid ""
 "Login failure\n"
 " Please check username and password and try again."
@@ -505,7 +479,7 @@ msgstr ""
 "Falha no login\n"
 " Por favor cheque o nome de usuário e a senha e tente novamente."
 
-#: ../SubDomain.pm:3035
+#: ../SubDomain.pm:3034
 msgid ""
 "Would you like to enable access to the\n"
 "profile repository?"
@@ -513,7 +487,7 @@ msgstr ""
 "Você deseja habilitar o acesso ao\n"
 "repositório de perfil?"
 
-#: ../SubDomain.pm:3066
+#: ../SubDomain.pm:3065
 msgid ""
 "Would you like to upload newly created and changed profiles to\n"
 "      the profile repository?"
@@ -521,171 +495,163 @@ msgstr ""
 "Deseja enviar os perfis novos e modificados para\n"
 "      o repositório de perfis?"
 
-#: ../SubDomain.pm:3185
+#: ../SubDomain.pm:3184
 #, perl-format
 msgid ""
 "WARNING: Profile update check failed\n"
 "Error Detail:\n"
 "%s"
 msgstr ""
-"ALERTA: Verificação de atualização do perfil falhou\n"
+"AVISO: falha na verificação da atualização do perfil\n"
 "Detalhes do erro:\n"
 "%s"
 
-#: ../SubDomain.pm:3199
+#: ../SubDomain.pm:3198
 msgid "Change mode modifiers"
 msgstr "Mudar o modificador do modo"
 
-#: ../SubDomain.pm:3243
+#: ../SubDomain.pm:3242
 msgid "Complain-mode changes:"
 msgstr "Mudanças do modo de reclamação:"
 
-#: ../SubDomain.pm:3245
+#: ../SubDomain.pm:3244
 msgid "Enforce-mode changes:"
 msgstr "Mudanças do modo forçado:"
 
-#: ../SubDomain.pm:3251
+#: ../SubDomain.pm:3250
 #, perl-format
 msgid "Invalid mode found: %s"
 msgstr "Opção inválida: %s"
 
-#: ../SubDomain.pm:3302
-#: ../SubDomain.pm:3335
+#: ../SubDomain.pm:3301 ../SubDomain.pm:3334
 msgid "Capability"
 msgstr "Recurso"
 
-#: ../SubDomain.pm:3355
-#: ../SubDomain.pm:3629
-#: ../SubDomain.pm:3876
+#: ../SubDomain.pm:3354 ../SubDomain.pm:3628 ../SubDomain.pm:3875
 #, perl-format
 msgid "Adding #include <%s> to profile."
-msgstr "Adicionando inclusão <%s> ao perfil."
+msgstr "Adicionando #include <%s> ao perfil."
 
-#: ../SubDomain.pm:3358
-#: ../SubDomain.pm:3630
-#: ../SubDomain.pm:3670
-#: ../SubDomain.pm:3880
+#: ../SubDomain.pm:3357 ../SubDomain.pm:3629 ../SubDomain.pm:3669
+#: ../SubDomain.pm:3879
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
-msgstr "Entradas apagadas de perfis %s correspondentes anteriores."
+msgstr "Entradas removidas de perfis %s correspondentes anteriores."
 
-#: ../SubDomain.pm:3369
+#: ../SubDomain.pm:3368
 #, perl-format
 msgid "Adding capability %s to profile."
 msgstr "Adicionando recurso %s ao perfil."
 
-#: ../SubDomain.pm:3374
+#: ../SubDomain.pm:3373
 #, perl-format
 msgid "Denying capability %s to profile."
 msgstr "Negando recurso %s para perfil."
 
-#: ../SubDomain.pm:3535
+#: ../SubDomain.pm:3534
 msgid "Path"
 msgstr "Caminho"
 
-#: ../SubDomain.pm:3546
-#: ../SubDomain.pm:3578
+#: ../SubDomain.pm:3545 ../SubDomain.pm:3577
 msgid "(owner permissions off)"
 msgstr "(permissões do proprietário desligada)"
 
-#: ../SubDomain.pm:3552
+#: ../SubDomain.pm:3551
 msgid "(force new perms to owner)"
 msgstr "(forçar novas permissões para o proprietário)"
 
-#: ../SubDomain.pm:3555
+#: ../SubDomain.pm:3554
 msgid "(force all rule perms to owner)"
 msgstr "(forçar todas as regras para o proprietário)"
 
-#: ../SubDomain.pm:3567
+#: ../SubDomain.pm:3566
 msgid "Old Mode"
-msgstr "Modo Antigo"
+msgstr "Modo antigo"
 
-#: ../SubDomain.pm:3568
+#: ../SubDomain.pm:3567
 msgid "New Mode"
-msgstr "Modo de Texto"
+msgstr "Novo modo"
 
-#: ../SubDomain.pm:3584
+#: ../SubDomain.pm:3583
 msgid "(force perms to owner)"
 msgstr "(forçar permissões para o proprietário)"
 
-#: ../SubDomain.pm:3587
+#: ../SubDomain.pm:3586
 msgid "Mode"
 msgstr "Modo"
 
-#: ../SubDomain.pm:3669
+#: ../SubDomain.pm:3668
 #, perl-format
 msgid "Adding %s %s to profile."
-msgstr "Lendo %s %s os perfis..."
+msgstr "Adicionando %s %s ao perfil."
 
-#: ../SubDomain.pm:3685
+#: ../SubDomain.pm:3684
 msgid "Enter new path: "
 msgstr "Digite o novo caminho:"
 
-#: ../SubDomain.pm:3688
+#: ../SubDomain.pm:3687
 msgid "The specified path does not match this log entry:"
-msgstr "A placa especificada não existe."
+msgstr "A caminho especificado não coincide com a entrada do log:"
+
+#: ../SubDomain.pm:3688
+msgid "Log Entry"
+msgstr "Entrada de log"
 
 #: ../SubDomain.pm:3689
-msgid "Log Entry"
-msgstr "Entrada de Registro"
+msgid "Entered Path"
+msgstr "Caminho digitado"
 
 #: ../SubDomain.pm:3690
-msgid "Entered Path"
-msgstr "Patches Instalados"
-
-#: ../SubDomain.pm:3691
 msgid "Do you really want to use this path?"
 msgstr "Deseja realmente usar este caminho?"
 
-#: ../SubDomain.pm:3803
-#: ../SubDomain.pm:3855
+#: ../SubDomain.pm:3802 ../SubDomain.pm:3854
 msgid "Network Family"
-msgstr "Família da Rede"
+msgstr "Família da rede"
 
-#: ../SubDomain.pm:3806
-#: ../SubDomain.pm:3858
+#: ../SubDomain.pm:3805 ../SubDomain.pm:3857
 msgid "Socket Type"
-msgstr "Tipo de Socket"
+msgstr "Tipo de soquete"
 
-#: ../SubDomain.pm:3906
+#: ../SubDomain.pm:3905
 #, perl-format
 msgid "Adding network access %s %s to profile."
 msgstr "Adicionado acesso a rede %s %s ao perfil."
 
-#: ../SubDomain.pm:3925
+#: ../SubDomain.pm:3924
 #, perl-format
 msgid "Denying network access %s %s to profile."
 msgstr "Negando acesso a rede %s %s ao perfil."
 
-#: ../SubDomain.pm:4133
+#: ../SubDomain.pm:4132
 #, perl-format
 msgid "Reading log entries from %s."
-msgstr "Lendo domínios de servidor de mail %s..."
+msgstr "Lendo as entradas de log de %s."
 
-#: ../SubDomain.pm:4134
+#: ../SubDomain.pm:4133
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
 msgstr "Atualizando perfis do AppArmor em %s."
 
-#: ../SubDomain.pm:4138
+#: ../SubDomain.pm:4137
 msgid "unknown\n"
 msgstr "desconhecido\n"
 
-#: ../SubDomain.pm:4171
+#: ../SubDomain.pm:4170
 msgid ""
 "The profile analyzer has completed processing the log files.\n"
 "\n"
 "All updated profiles will be reloaded"
 msgstr ""
-"O analisador de perfis concluiu o processamento dos arquivos de registro.\n"
+"O analisador de perfis concluiu o processamento dos arquivos de log.\n"
 "\n"
 " Todos os perfis atualizados serão recarregados"
 
-#: ../SubDomain.pm:4177
+#: ../SubDomain.pm:4176
 msgid "No unhandled AppArmor events were found in the system log."
-msgstr "Nenhum evento do AppArmor não tratado foi encontrado no registro do sistema."
+msgstr "Nenhum evento do AppArmor não tratado foi encontrado no log do sistema."
 
-#: ../SubDomain.pm:4238
+#: ../SubDomain.pm:4237
 msgid ""
 "Select which profile changes you would like to save to the\n"
 "local profile set"
@@ -693,75 +659,67 @@ msgstr ""
 "Selecione quais mudanças do perfil deseja salvar no\n"
 "conjunto de perfis locais"
 
-#: ../SubDomain.pm:4239
+#: ../SubDomain.pm:4238
 msgid "Local profile changes"
 msgstr "Mudanças no perfil local"
 
-#: ../SubDomain.pm:4266
+#: ../SubDomain.pm:4265
 msgid "The following local profiles were changed.  Would you like to save them?"
 msgstr "Os seguintes perfis locais foram modificados. Gostaria de salvá-los?"
 
-#: ../SubDomain.pm:4363
+#: ../SubDomain.pm:4362
 msgid "Profile Changes"
-msgstr "Mudanças no Perfil"
+msgstr "Mudanças no perfil"
 
-#: ../SubDomain.pm:4976
-#: ../SubDomain.pm:4992
-#: ../SubDomain.pm:5003
-#: ../SubDomain.pm:5011
-#: ../SubDomain.pm:5032
-#: ../SubDomain.pm:5052
-#: ../SubDomain.pm:5061
-#: ../SubDomain.pm:5093
-#: ../SubDomain.pm:5154
-#: ../SubDomain.pm:5205
+#: ../SubDomain.pm:4974 ../SubDomain.pm:4990 ../SubDomain.pm:5001
+#: ../SubDomain.pm:5009 ../SubDomain.pm:5030 ../SubDomain.pm:5050
+#: ../SubDomain.pm:5059 ../SubDomain.pm:5091 ../SubDomain.pm:5153
+#: ../SubDomain.pm:5204
 #, perl-format
 msgid "%s contains syntax errors."
 msgstr "%s contém erros de sintaxe."
 
-#: ../SubDomain.pm:5112
+#: ../SubDomain.pm:5110
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
 msgstr "Perfil %s contém expressão regular %s inválida."
 
-#: ../SubDomain.pm:5117
+#: ../SubDomain.pm:5115
 #, perl-format
 msgid "Profile %s contains invalid mode %s."
 msgstr "Perfil %s contém modo %s inválido."
 
-#: ../SubDomain.pm:5252
+#: ../SubDomain.pm:5250
 #, perl-format
 msgid "%s contains syntax errors. Line [%s]"
 msgstr "%s contém erros de sintaxe. Linha [%s]"
 
-#: ../SubDomain.pm:5863
+#: ../SubDomain.pm:5839
 #, perl-format
 msgid "Writing updated profile for %s."
-msgstr "Gravando perfil atualizado para %s."
+msgstr "Salvando o perfil atualizado para %s."
 
-#: ../SubDomain.pm:6368
+#: ../SubDomain.pm:6344
 msgid "Unknown command"
 msgstr "Comando desconhecido"
 
-#: ../SubDomain.pm:6376
+#: ../SubDomain.pm:6352
 msgid "Invalid hotkey in"
 msgstr "Tecla de atalho inválida em"
 
-#: ../SubDomain.pm:6386
+#: ../SubDomain.pm:6362
 msgid "Duplicate hotkey for"
 msgstr "Duplicar tecla de atalho para"
 
-#: ../SubDomain.pm:6407
+#: ../SubDomain.pm:6383
 msgid "Invalid hotkey in default item"
 msgstr "Tecla de atalho inválida em item padrão"
 
-#: ../SubDomain.pm:6416
+#: ../SubDomain.pm:6392
 msgid "Invalid default"
 msgstr "Padrão inválido"
 
-#: ../Reports.pm:443
-#: ../Reports.pm:532
-#: ../Reports.pm:1480
+#: ../Reports.pm:443 ../Reports.pm:532 ../Reports.pm:1480
 #, perl-format
 msgid "DBI Execution failed: %s."
 msgstr "Falha na execução de DBI: %s."
@@ -769,11 +727,11 @@ msgstr "Falha na execução de DBI: %s."
 #: ../Reports.pm:556
 #, perl-format
 msgid "Couldn't open file: %s."
-msgstr "Impossível abrir arquivo: %s."
+msgstr "Não foi possível abrir arquivo: %s."
 
 #: ../Reports.pm:560
 msgid "No type value passed.  Unable to determine page count."
-msgstr "Nenhum valor de tipo foi passado.  Impossível determinar a contagem de páginas."
+msgstr "Nenhum valor de tipo foi passado. Não foi possível determinar a contagem de páginas."
 
 #: ../Reports.pm:626
 #, perl-format
@@ -783,11 +741,11 @@ msgstr "Falha ao copiar %s."
 #: ../Reports.pm:750
 #, perl-format
 msgid "Export Log Error: Couldn't open %s"
-msgstr "Erro de Registro de Exportação: Impossível abrir %s"
+msgstr "Erro ao exportar log: Não foi possível abrir %s"
 
 #: ../Reports.pm:772
 msgid "Fatal error.  No report name given. Exiting."
-msgstr "Erro fatal.  Nenhum nome de relatório fornecido. Saindo."
+msgstr "Erro fatal. Nenhum nome de relatório fornecido. Saindo."
 
 #: ../Reports.pm:781
 #, perl-format
@@ -795,8 +753,8 @@ msgid ""
 "Unable to get configuration info for %s.\n"
 "                Unable to find %s."
 msgstr ""
-"Impossível obter informações de configuração para %s.\n"
-"                Impossível localizar %s."
+"Não foi possível obter informações de configuração para %s.\n"
+"                Não foi possível localizar %s."
 
 #: ../Reports.pm:828
 #, perl-format
@@ -806,26 +764,24 @@ msgstr "Falha ao analisar: %s."
 #: ../Reports.pm:837
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s."
-msgstr "Erro Fatal.  Impossível abrir %s."
+msgstr "Erro fatal. Não foi possível abrir %s."
 
 #: ../Reports.pm:885
 #, perl-format
 msgid "Fatal Error.  Can't run %s.  Exiting."
-msgstr "Erro Fatal.  Impossível executar %s.  Saindo."
+msgstr "Erro fatal. Não foi possível executar %s. Saindo."
 
 #: ../Reports.pm:925
 #, perl-format
 msgid "Fatal Error.  No directory, %s, found.  Exiting."
-msgstr "Erro Fatal.  Nenhum diretório, %s, localizado.  Saindo."
+msgstr "Erro fatal. Nenhum diretório, %s, localizado. Saindo."
 
 #: ../Reports.pm:943
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
-msgstr "Erro Fatal.  Impossível abrir %s.  Saindo."
+msgstr "Erro fatal. Não foi possível abrir %s. Saindo."
 
-#: ../Reports.pm:970
-#: ../Reports.pm:983
-#: ../Reports.pm:991
+#: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
 #, perl-format
 msgid "DBI Execution failed: %s"
 msgstr "Falha na execução de DBI: %s"
@@ -833,5 +789,5 @@ msgstr "Falha na execução de DBI: %s"
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"
-msgstr "Erro fatal. getArchReport() não pôde abrir %s"
+msgstr "Erro fatal. getArchReport() não pode abrir %s"
 

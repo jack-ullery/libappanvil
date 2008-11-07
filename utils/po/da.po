@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2008-05-20 04:51-0700\n"
+"POT-Creation-Date: 2008-09-22 22:56-0700\n"
 "PO-Revision-Date: 2008-05-22 14:11+0200\n"
 "Last-Translator: Martin Schlander <mschlander@opensuse.org>\n"
 "Language-Team:  <dansk@dansk-gruppen.dk>\n"
@@ -89,7 +89,7 @@ msgstr "Kan ikke finde subdomæne-profiler i %s."
 msgid "Please enter the program to create a profile for: "
 msgstr "Angiv venligst programmet, der skal oprettes en profil for: "
 
-#: ../autodep:95 ../SubDomain.pm:6180
+#: ../autodep:95 ../SubDomain.pm:6156
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
 msgstr "%s er aktuelt markeret som et program, der ikke skal have sin egen profil.  Sædvanligvis er programmer markeret på denne måde, hvis oprettelse af en profil for dem sandsynligvis vil ødelægge resten af systemet. Hvis du ved hvad du gør, og er sikker på at du ønsker at oprette en profil for dette program, rediger den tilsvarende indgang i [qualifiers]-sektionen i /etc/apparmor/logprof.conf."
@@ -118,7 +118,7 @@ msgstr "brug: %s [ -d /søgesti/til/profiler ] [ program som skal skifte til rev
 msgid "Please enter the program to switch to complain mode: "
 msgstr "Angiv venligst programmet som skal skifte til klagetilstand: "
 
-#: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:899
+#: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:900
 #, perl-format
 msgid "Setting %s to complain mode."
 msgstr "Indstiller %s til klagetilstand."
@@ -168,7 +168,7 @@ msgstr "indskrænket af"
 msgid "Can't find %s."
 msgstr "Kan ikke finde %s."
 
-#: ../SubDomain.pm:778 ../SubDomain.pm:3174
+#: ../SubDomain.pm:778 ../SubDomain.pm:3173
 msgid "Connecting to repository....."
 msgstr "Forbinder til depot..."
 
@@ -185,22 +185,22 @@ msgstr ""
 msgid "Inactive local profile for "
 msgstr "Inaktiv lokal profil for "
 
-#: ../SubDomain.pm:832 ../SubDomain.pm:1854 ../SubDomain.pm:2142
-#: ../SubDomain.pm:3301 ../SubDomain.pm:3334 ../SubDomain.pm:3534
-#: ../SubDomain.pm:3800 ../SubDomain.pm:3852
+#: ../SubDomain.pm:833 ../SubDomain.pm:1852 ../SubDomain.pm:2140
+#: ../SubDomain.pm:3300 ../SubDomain.pm:3333 ../SubDomain.pm:3533
+#: ../SubDomain.pm:3799 ../SubDomain.pm:3851
 msgid "Profile"
 msgstr "Profil"
 
-#: ../SubDomain.pm:866
+#: ../SubDomain.pm:867
 msgid "Profile submitted by"
 msgstr "Profil indsendt af"
 
-#: ../SubDomain.pm:907
+#: ../SubDomain.pm:908
 #, perl-format
 msgid "Error activating profiles: %s\n"
 msgstr "Fejl under aktivering af profiler: %s\n"
 
-#: ../SubDomain.pm:1057 ../SubDomain.pm:1110
+#: ../SubDomain.pm:1055 ../SubDomain.pm:1108
 #, perl-format
 msgid ""
 "WARNING: Error syncronizing profiles with the repository:\n"
@@ -209,11 +209,11 @@ msgstr ""
 "ADVARSEL: Fejl under synkronisering af profiler med depot:\n"
 "%s\n"
 
-#: ../SubDomain.pm:1137
+#: ../SubDomain.pm:1135
 msgid "New profiles"
 msgstr "Nye profiler"
 
-#: ../SubDomain.pm:1139
+#: ../SubDomain.pm:1137
 msgid ""
 "Please choose the newly created profiles that you would like\n"
 "to store in the repository"
@@ -221,15 +221,15 @@ msgstr ""
 "Vælg venligst de nyoprettede profiler som du ønsker\n"
 "at gemme i depotet"
 
-#: ../SubDomain.pm:1146
+#: ../SubDomain.pm:1144
 msgid "Submit newly created profiles to the repository"
 msgstr "Indsend nyoprettede profiler til depotet"
 
-#: ../SubDomain.pm:1148
+#: ../SubDomain.pm:1146
 msgid "Would you like to upload the newly created profiles?"
 msgstr "Vil du gerne uploade de nyoprettede profiler?"
 
-#: ../SubDomain.pm:1161
+#: ../SubDomain.pm:1159
 msgid ""
 "Select which of the changed profiles you would like to upload\n"
 "to the repository"
@@ -237,15 +237,15 @@ msgstr ""
 "Vælg hvilke af de ændrede profiler du gerne vil uploade\n"
 "til depotet"
 
-#: ../SubDomain.pm:1163
+#: ../SubDomain.pm:1161
 msgid "Changed profiles"
 msgstr "Ændrede profiler"
 
-#: ../SubDomain.pm:1169
+#: ../SubDomain.pm:1167
 msgid "Submit changed profiles to the repository"
 msgstr "Indsend ændrede profiler til depotet"
 
-#: ../SubDomain.pm:1171
+#: ../SubDomain.pm:1169
 msgid ""
 "The following profiles from the repository were changed.\n"
 "Would you like to upload your changes?"
@@ -253,7 +253,7 @@ msgstr ""
 "Følgende profiler fra depotet blev ændret.\n"
 "Vil du gerne uploade dine ændringer?"
 
-#: ../SubDomain.pm:1238 ../SubDomain.pm:1318
+#: ../SubDomain.pm:1236 ../SubDomain.pm:1316
 #, perl-format
 msgid ""
 "WARNING: An error occured while uploading the profile %s\n"
@@ -262,20 +262,20 @@ msgstr ""
 "ADVARSEL: En fejl opstod under upload af profilen %s\n"
 "%s\n"
 
-#: ../SubDomain.pm:1243
+#: ../SubDomain.pm:1241
 msgid "Uploaded changes to repository."
 msgstr "Uploadede ændringer til depot."
 
-#: ../SubDomain.pm:1292
+#: ../SubDomain.pm:1290
 msgid "Changelog Entry: "
 msgstr "Indgang i ændringslog: "
 
-#: ../SubDomain.pm:1313
+#: ../SubDomain.pm:1311
 #, perl-format
 msgid "Uploaded %s to repository."
 msgstr "Uploadede %s til depot."
 
-#: ../SubDomain.pm:1324
+#: ../SubDomain.pm:1322
 msgid ""
 "Repository Error\n"
 "Registration or Signin was unsuccessful. User login\n"
@@ -287,57 +287,57 @@ msgstr ""
 "-information kræves for at uploade profiler til\n"
 "depotet. Disse ændringer er ikke blevet sendt.\n"
 
-#: ../SubDomain.pm:1381 ../SubDomain.pm:1421
+#: ../SubDomain.pm:1379 ../SubDomain.pm:1419
 msgid "(Y)es"
 msgstr "(J)a"
 
-#: ../SubDomain.pm:1382 ../SubDomain.pm:1422
+#: ../SubDomain.pm:1380 ../SubDomain.pm:1420
 msgid "(N)o"
 msgstr "(N)ej"
 
-#: ../SubDomain.pm:1385 ../SubDomain.pm:1426
+#: ../SubDomain.pm:1383 ../SubDomain.pm:1424
 msgid "Invalid hotkey for"
 msgstr "Ugyldig genvej til"
 
 # cancel button label
-#: ../SubDomain.pm:1423
+#: ../SubDomain.pm:1421
 msgid "(C)ancel"
 msgstr "(A)nnullér"
 
-#: ../SubDomain.pm:1748
+#: ../SubDomain.pm:1746
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
 msgstr "Er du sikker på at du ønsker at opgive dette sæt af profilændringer og afslutte?"
 
-#: ../SubDomain.pm:1750
+#: ../SubDomain.pm:1748
 msgid "Abandoning all changes."
 msgstr "Opgiver alle ændringer."
 
-#: ../SubDomain.pm:1856
+#: ../SubDomain.pm:1854
 msgid "Default Hat"
 msgstr "Standard hat"
 
-#: ../SubDomain.pm:1858
+#: ../SubDomain.pm:1856
 msgid "Requested Hat"
 msgstr "Forespurgt hat"
 
-#: ../SubDomain.pm:2144
+#: ../SubDomain.pm:2142
 msgid "Program"
 msgstr "Program"
 
-#: ../SubDomain.pm:2149
+#: ../SubDomain.pm:2147
 msgid "Execute"
 msgstr "Udfør"
 
-#: ../SubDomain.pm:2150 ../SubDomain.pm:3303 ../SubDomain.pm:3336
-#: ../SubDomain.pm:3589
+#: ../SubDomain.pm:2148 ../SubDomain.pm:3302 ../SubDomain.pm:3335
+#: ../SubDomain.pm:3588
 msgid "Severity"
 msgstr "Alvor"
 
-#: ../SubDomain.pm:2195
+#: ../SubDomain.pm:2193
 msgid "Enter profile name to transition to: "
 msgstr "Indtast profilnavn at overgå til: "
 
-#: ../SubDomain.pm:2203
+#: ../SubDomain.pm:2201
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -353,7 +353,7 @@ msgstr ""
 "men nogle programmer afhænger af tilstedeværelsen\n"
 "af LD_PRELOAD eller LD_LIBRARY_PATH."
 
-#: ../SubDomain.pm:2205
+#: ../SubDomain.pm:2203
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -371,7 +371,7 @@ msgstr ""
 "eller LD_LIBRARY_PATH og at rydde disse kan \n"
 "forårsage problemer med funktionaliteten."
 
-#: ../SubDomain.pm:2214
+#: ../SubDomain.pm:2212
 #, perl-format
 msgid ""
 "Launching processes in an unconfined state is a very\n"
@@ -386,7 +386,7 @@ msgstr ""
 "Er du fuldstændigt sikker på du ønsker at slette al\n"
 "AppArmorbeskyttelse når du afslutter %s?"
 
-#: ../SubDomain.pm:2216
+#: ../SubDomain.pm:2214
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "running this program unconfined?\n"
@@ -402,67 +402,67 @@ msgstr ""
 "på et program fjernes, åbner for betydelige sikkerhedshuller,\n"
 "og bør undgås hvis det overhovedet er muligt."
 
-#: ../SubDomain.pm:2305
+#: ../SubDomain.pm:2303
 #, perl-format
 msgid "A profile for %s does not exist create one?"
 msgstr "En profil for %s eksisterer ikke. Vil du oprette en?"
 
-#: ../SubDomain.pm:2332
+#: ../SubDomain.pm:2330
 #, perl-format
 msgid "A local profile for %s does not exist create one?"
 msgstr "En lokal profil for %s eksisterer ikke. Vil du oprette en?"
 
-#: ../SubDomain.pm:2504 ../SubDomain.pm:6556 ../SubDomain.pm:6561
+#: ../SubDomain.pm:2502 ../SubDomain.pm:6532 ../SubDomain.pm:6537
 #, perl-format
 msgid "Log contains unknown mode %s."
 msgstr "Loggen indeholder ukendt tilstand %s."
 
-#: ../SubDomain.pm:2916
+#: ../SubDomain.pm:2915
 msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
 msgstr "En opdateret version af denne profil er blevet fundet i profil-depotet. Vil du gerne bruge den?"
 
-#: ../SubDomain.pm:2946
+#: ../SubDomain.pm:2945
 #, perl-format
 msgid "Updated profile %s to revision %s."
 msgstr "Opdaterede profil %s til revision %s."
 
-#: ../SubDomain.pm:2953
+#: ../SubDomain.pm:2952
 msgid "Error parsing repository profile."
 msgstr "Fejl under fortolkning af depot-profil."
 
-#: ../SubDomain.pm:2989
+#: ../SubDomain.pm:2988
 msgid "Create New User?"
 msgstr "Opret ny bruger?"
 
-#: ../SubDomain.pm:2990
+#: ../SubDomain.pm:2989
 msgid "Username: "
 msgstr "Brugernavn: "
 
-#: ../SubDomain.pm:2991
+#: ../SubDomain.pm:2990
 msgid "Password: "
 msgstr "Adgangskode: "
 
-#: ../SubDomain.pm:2992
+#: ../SubDomain.pm:2991
 msgid "Email Addr: "
 msgstr "E-mail-adr.: "
 
-#: ../SubDomain.pm:2994
+#: ../SubDomain.pm:2993
 msgid "Save Configuration? "
 msgstr "Gem konfiguration? "
 
-#: ../SubDomain.pm:3003
+#: ../SubDomain.pm:3002
 msgid "The Profile Repository server returned the following error:"
 msgstr "Profil-depot-serveren returnerede følgende fejl:"
 
-#: ../SubDomain.pm:3005
+#: ../SubDomain.pm:3004
 msgid "Please re-enter registration information or contact the administrator."
 msgstr "Indtast venligst registreringsinformation igen eller kontakt administratoren."
 
-#: ../SubDomain.pm:3006
+#: ../SubDomain.pm:3005
 msgid "Login Error\n"
 msgstr "Login-fejl\n"
 
-#: ../SubDomain.pm:3013
+#: ../SubDomain.pm:3012
 msgid ""
 "Login failure\n"
 " Please check username and password and try again."
@@ -470,7 +470,7 @@ msgstr ""
 "Login-fejl\n"
 " Tjek venligst brugernavn og adgangskode og forsøg igen."
 
-#: ../SubDomain.pm:3035
+#: ../SubDomain.pm:3034
 msgid ""
 "Would you like to enable access to the\n"
 "profile repository?"
@@ -478,7 +478,7 @@ msgstr ""
 "Vil du gerne aktivere adgang til\n"
 "profil-depotet?"
 
-#: ../SubDomain.pm:3066
+#: ../SubDomain.pm:3065
 msgid ""
 "Would you like to upload newly created and changed profiles to\n"
 "      the profile repository?"
@@ -486,7 +486,7 @@ msgstr ""
 "Vil du gerne uploade nyoprettede og ændrede profiler til\n"
 "      profil-depotet?"
 
-#: ../SubDomain.pm:3185
+#: ../SubDomain.pm:3184
 #, perl-format
 msgid ""
 "WARNING: Profile update check failed\n"
@@ -497,138 +497,138 @@ msgstr ""
 "Fejldetaljer:\n"
 "%s"
 
-#: ../SubDomain.pm:3199
+#: ../SubDomain.pm:3198
 msgid "Change mode modifiers"
 msgstr "Ændr tilstandsændring"
 
-#: ../SubDomain.pm:3243
+#: ../SubDomain.pm:3242
 msgid "Complain-mode changes:"
 msgstr "Klagetilstandsændringer:"
 
-#: ../SubDomain.pm:3245
+#: ../SubDomain.pm:3244
 msgid "Enforce-mode changes:"
 msgstr "Tvangstilstandsændringer:"
 
-#: ../SubDomain.pm:3251
+#: ../SubDomain.pm:3250
 #, perl-format
 msgid "Invalid mode found: %s"
 msgstr "Ugyldig tilstand fundet: %s"
 
-#: ../SubDomain.pm:3302 ../SubDomain.pm:3335
+#: ../SubDomain.pm:3301 ../SubDomain.pm:3334
 msgid "Capability"
 msgstr "Evne"
 
-#: ../SubDomain.pm:3355 ../SubDomain.pm:3629 ../SubDomain.pm:3876
+#: ../SubDomain.pm:3354 ../SubDomain.pm:3628 ../SubDomain.pm:3875
 #, perl-format
 msgid "Adding #include <%s> to profile."
 msgstr "Tilføjer #include <%s> til profilen."
 
-#: ../SubDomain.pm:3358 ../SubDomain.pm:3630 ../SubDomain.pm:3670
-#: ../SubDomain.pm:3880
+#: ../SubDomain.pm:3357 ../SubDomain.pm:3629 ../SubDomain.pm:3669
+#: ../SubDomain.pm:3879
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
 msgstr "Slettede %s tidligere matchende profilindgange."
 
-#: ../SubDomain.pm:3369
+#: ../SubDomain.pm:3368
 #, perl-format
 msgid "Adding capability %s to profile."
 msgstr "Tilføjer evnen %s til profilen."
 
-#: ../SubDomain.pm:3374
+#: ../SubDomain.pm:3373
 #, perl-format
 msgid "Denying capability %s to profile."
 msgstr "Nægter evnen %s for profilen."
 
-#: ../SubDomain.pm:3535
+#: ../SubDomain.pm:3534
 msgid "Path"
 msgstr "Søgesti"
 
-#: ../SubDomain.pm:3546 ../SubDomain.pm:3578
+#: ../SubDomain.pm:3545 ../SubDomain.pm:3577
 msgid "(owner permissions off)"
 msgstr "(ejertilladelser fra)"
 
-#: ../SubDomain.pm:3552
+#: ../SubDomain.pm:3551
 msgid "(force new perms to owner)"
 msgstr "(gennemtving nye tilladelser til ejer)"
 
-#: ../SubDomain.pm:3555
+#: ../SubDomain.pm:3554
 msgid "(force all rule perms to owner)"
 msgstr "(gennemtving alle regeltilladelser til ejer)"
 
-#: ../SubDomain.pm:3567
+#: ../SubDomain.pm:3566
 msgid "Old Mode"
 msgstr "Gammel tilstand"
 
-#: ../SubDomain.pm:3568
+#: ../SubDomain.pm:3567
 msgid "New Mode"
 msgstr "Ny tilstand"
 
-#: ../SubDomain.pm:3584
+#: ../SubDomain.pm:3583
 msgid "(force perms to owner)"
 msgstr "(gennemtving tillad. til ejer)"
 
-#: ../SubDomain.pm:3587
+#: ../SubDomain.pm:3586
 msgid "Mode"
 msgstr "Tilstand"
 
-#: ../SubDomain.pm:3669
+#: ../SubDomain.pm:3668
 #, perl-format
 msgid "Adding %s %s to profile."
 msgstr "Tilføjer %s %s til profilen."
 
-#: ../SubDomain.pm:3685
+#: ../SubDomain.pm:3684
 msgid "Enter new path: "
 msgstr "Angiv ny søgesti: "
 
-#: ../SubDomain.pm:3688
+#: ../SubDomain.pm:3687
 msgid "The specified path does not match this log entry:"
 msgstr "Den specifikke søgesti matcher ikke denne logindgang:"
 
-#: ../SubDomain.pm:3689
+#: ../SubDomain.pm:3688
 msgid "Log Entry"
 msgstr "Logindgang"
 
-#: ../SubDomain.pm:3690
+#: ../SubDomain.pm:3689
 msgid "Entered Path"
 msgstr "Angivet søgesti"
 
-#: ../SubDomain.pm:3691
+#: ../SubDomain.pm:3690
 msgid "Do you really want to use this path?"
 msgstr "Vil du virkelig anvende denne søgesti?"
 
-#: ../SubDomain.pm:3803 ../SubDomain.pm:3855
+#: ../SubDomain.pm:3802 ../SubDomain.pm:3854
 msgid "Network Family"
 msgstr "Netværksfamilie"
 
-#: ../SubDomain.pm:3806 ../SubDomain.pm:3858
+#: ../SubDomain.pm:3805 ../SubDomain.pm:3857
 msgid "Socket Type"
 msgstr "Stiktype"
 
-#: ../SubDomain.pm:3906
+#: ../SubDomain.pm:3905
 #, perl-format
 msgid "Adding network access %s %s to profile."
 msgstr "Tilføjer netværksadgang %s %s til profilen."
 
-#: ../SubDomain.pm:3925
+#: ../SubDomain.pm:3924
 #, perl-format
 msgid "Denying network access %s %s to profile."
 msgstr "Nægter netværksadgang %s %s til profilen."
 
-#: ../SubDomain.pm:4133
+#: ../SubDomain.pm:4132
 #, perl-format
 msgid "Reading log entries from %s."
 msgstr "Læser logindgange fra %s."
 
-#: ../SubDomain.pm:4134
+#: ../SubDomain.pm:4133
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
 msgstr "Opdaterer AppArmor-profiler i %s."
 
-#: ../SubDomain.pm:4138
+#: ../SubDomain.pm:4137
 msgid "unknown\n"
 msgstr "ukendt\n"
 
-#: ../SubDomain.pm:4171
+#: ../SubDomain.pm:4170
 msgid ""
 "The profile analyzer has completed processing the log files.\n"
 "\n"
@@ -638,11 +638,11 @@ msgstr ""
 "\n"
 "Alle opdaterede profiler vil blive genindlæst"
 
-#: ../SubDomain.pm:4177
+#: ../SubDomain.pm:4176
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "Ingen ubehandlede AppArmor-hændelser blev fundet i systemloggen."
 
-#: ../SubDomain.pm:4238
+#: ../SubDomain.pm:4237
 msgid ""
 "Select which profile changes you would like to save to the\n"
 "local profile set"
@@ -650,63 +650,63 @@ msgstr ""
 "Vælg hvilke profil-ændringer du gerne vil gemme til \n"
 "det lokale profil-sæt"
 
-#: ../SubDomain.pm:4239
+#: ../SubDomain.pm:4238
 msgid "Local profile changes"
 msgstr "Ændringer af lokal profil"
 
-#: ../SubDomain.pm:4266
+#: ../SubDomain.pm:4265
 msgid "The following local profiles were changed.  Would you like to save them?"
 msgstr "Følgende lokale profiler blev ændret. Vil du gerne gemme dem?"
 
-#: ../SubDomain.pm:4363
+#: ../SubDomain.pm:4362
 msgid "Profile Changes"
 msgstr "Profil-ændringer"
 
-#: ../SubDomain.pm:4976 ../SubDomain.pm:4992 ../SubDomain.pm:5003
-#: ../SubDomain.pm:5011 ../SubDomain.pm:5032 ../SubDomain.pm:5052
-#: ../SubDomain.pm:5061 ../SubDomain.pm:5093 ../SubDomain.pm:5154
-#: ../SubDomain.pm:5205
+#: ../SubDomain.pm:4974 ../SubDomain.pm:4990 ../SubDomain.pm:5001
+#: ../SubDomain.pm:5009 ../SubDomain.pm:5030 ../SubDomain.pm:5050
+#: ../SubDomain.pm:5059 ../SubDomain.pm:5091 ../SubDomain.pm:5153
+#: ../SubDomain.pm:5204
 #, perl-format
 msgid "%s contains syntax errors."
 msgstr "%s indeholder syntaksfejl."
 
-#: ../SubDomain.pm:5112
+#: ../SubDomain.pm:5110
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
 msgstr "Profilen %s indeholder ugyldige reg.-udtryk %s."
 
-#: ../SubDomain.pm:5117
+#: ../SubDomain.pm:5115
 #, perl-format
 msgid "Profile %s contains invalid mode %s."
 msgstr "Profilen %s indeholder ugyldig tilstand %s."
 
-#: ../SubDomain.pm:5252
+#: ../SubDomain.pm:5250
 #, perl-format
 msgid "%s contains syntax errors. Line [%s]"
 msgstr "%s indeholder syntaksfejl. Linie [%s]"
 
-#: ../SubDomain.pm:5863
+#: ../SubDomain.pm:5839
 #, perl-format
 msgid "Writing updated profile for %s."
 msgstr "Skriver opdateret profil for %s."
 
-#: ../SubDomain.pm:6368
+#: ../SubDomain.pm:6344
 msgid "Unknown command"
 msgstr "Ukendt kommando"
 
-#: ../SubDomain.pm:6376
+#: ../SubDomain.pm:6352
 msgid "Invalid hotkey in"
 msgstr "Ugyldig genvejstast i"
 
-#: ../SubDomain.pm:6386
+#: ../SubDomain.pm:6362
 msgid "Duplicate hotkey for"
 msgstr "Duplikeret genvejstast til"
 
-#: ../SubDomain.pm:6407
+#: ../SubDomain.pm:6383
 msgid "Invalid hotkey in default item"
 msgstr "Ugyldig genvejstast i standardpunkt"
 
-#: ../SubDomain.pm:6416
+#: ../SubDomain.pm:6392
 msgid "Invalid default"
 msgstr "Ugyldig standard"
 
@@ -782,4 +782,3 @@ msgstr "Afvikling af DBI fejlede: %s"
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"
 msgstr "Alvorlig fejl.  getArchReport() Kunne ikke åbne %s"
-
