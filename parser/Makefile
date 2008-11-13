@@ -182,7 +182,7 @@ parser_version.h: Makefile
 	@mv -f .ver $@
 
 af_names.h: /usr/include/linux/socket.h
-	LC_ALL=C sed -n -e "/AF_RXRPC/d" -n -e "/AF_MAX/d" -n -e "/AF_UNSPEC/d" -n -e "/AF_UNIX/d" -n -e "/AF_LOCAL/d" -n -e "/AF_NETLINK/d" -n -e "/AF_LLC/d" -n -e "/AF_IUCV/d" -n -e "/AF_TIPC/d" -n -e "/AF_CAN/d" -e "s/^\#define[ \\t]\\+AF_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9]\\+\\)\\(.*\\)\$$/AA_GEN_NET_ENT(\"\\L\\1\", \\UAF_\\1)/p" $< > $@
+	LC_ALL=C sed -n -e '/AF_RXRPC\|AF_MAX\|AF_UNSPEC\|AF_UNIX\|AF_LOCAL\|AF_NETLINK\|AF_LLC\|AF_IUCV\|AF_TIPC\|AF_CAN\|AF_ISDN/d' -e "s/^\#define[ \\t]\\+AF_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9]\\+\\)\\(.*\\)\$$/AA_GEN_NET_ENT(\"\\L\\1\", \\UAF_\\1)/p" $< > $@
 
 cap_names.h: /usr/include/linux/capability.h
 	LC_ALL=C sed -n -e "/CAP_EMPTY_SET/d" -e "s/^\#define[ \\t]\\+CAP_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9xa-f]\\+\\)\\(.*\\)\$$/\{\"\\L\\1\", \\UCAP_\\1\},/p" $< > $@
@@ -208,6 +208,9 @@ check: tests
 tests: ${TESTS}
 	for test in ${TESTS} ; do echo "*** running $${test}" && ./$${test} $(BUILD_OUTPUT) ; done
 	$(Q)make -s -C tst tests
+
+.SILENT: check
+check: tests
 
 # always need to rebuild.
 .SILENT: $(AAREOBJECTS)
