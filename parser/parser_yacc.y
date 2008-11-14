@@ -193,7 +193,7 @@ struct codomain *do_local_profile(struct codomain *cod, char *name, int mode, in
 %%
 
 
-list:	 aliaslist varlist profilelist
+list:	 preamble profilelist
 	{ /* nothing */ };
 
 profilelist:	{ /* nothing */ };
@@ -260,8 +260,9 @@ profile:	opt_profile_flag TOK_COLON TOK_ID TOK_COLON TOK_ID flags TOK_OPEN rules
 		$$ = cod;
 	};
 
-aliaslist: { /* nothing */ }
-	| aliaslist alias { /* nothing */ };
+preamble: { /* nothing */ }
+	| preamble alias { /* nothing */ };
+	| preamble varassign { /* nothing */ };
 
 alias: TOK_ALIAS TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
 	{
@@ -270,11 +271,6 @@ alias: TOK_ALIAS TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
 		free($2);
 		free($4);
 	};
-
-varlist:	{ /* nothing */ }
-
-varlist: 	varlist varassign
-		{ /* nothing */ }
 
 varassign:	TOK_SET_VAR TOK_EQUALS valuelist
 	{
