@@ -136,7 +136,7 @@ apparmor_parser: $(OBJECTS) $(PCREOBJECTS) $(AAREOBJECTS)
 	      ${LEXLIB}  $(AAREOBJECTS) -static-libgcc -L.
 
 parser_yacc.c parser_yacc.h: parser_yacc.y parser.h
-	$(YACC) $(YFLAGS) -o parser_yacc.c parser_yacc.y 
+	$(YACC) $(YFLAGS) -o parser_yacc.c parser_yacc.y
 
 parser_lex.c: parser_lex.l parser_yacc.h parser.h
 	$(LEX) ${LEXFLAGS} -o$@ $<
