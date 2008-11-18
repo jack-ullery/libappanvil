@@ -544,7 +544,7 @@ rules: rules opt_audit_flag TOK_DENY network_rule
 			free(entry);
 		}
 
-		$$ = $1
+		$$ = $1;
 	}
 
 rules: rules opt_audit_flag network_rule
@@ -582,7 +582,7 @@ rules: rules opt_audit_flag network_rule
 			free(entry);
 		}
 
-		$$ = $1
+		$$ = $1;
 	}
 
 rules:	rules change_profile
