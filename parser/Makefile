@@ -252,6 +252,9 @@ install-slackware:
 .PHONY: install-debian
 install-debian:
 
+.PHONY: install-unknown
+install-unknown:
+
 INSTALLDEPS=$(TOOLS)
 ifdef DISTRO
 INSTALLDEPS+=install-$(DISTRO)

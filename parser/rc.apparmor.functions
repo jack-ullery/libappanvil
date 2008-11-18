@@ -68,7 +68,7 @@ else
 fi
 
 # SUBDOMAIN_DIR and APPARMOR_DIR might be defined in subdomain.conf|apparmor.conf
-if [ -d "${APPAMROR_DIR}" ] ; then
+if [ -d "${APPARMOR_DIR}" ] ; then
 	PROFILE_DIR=${APPARMOR_DIR}
 elif [ -d "${SUBDOMAIN_DIR}" ] ; then
 	PROFILE_DIR=${SUBDOMAIN_DIR}
@@ -115,7 +115,7 @@ is_apparmor_present() {
 	grep -qE "^($modules)[[:space:]]" /proc/modules
 	
 	if [ $? -ne 0 ] ; then
-		ls /sys/module/apparmor | grep -qE "^($modules)" 
+		ls /sys/module/apparmor 2>/dev/null | grep -qE "^($modules)"
 	fi
 
 	return $?
