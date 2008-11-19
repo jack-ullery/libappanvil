@@ -487,13 +487,12 @@
  * a | (b | c) -> (a | b) | c
  * a(bc) -> (ab)c
  */
-bool normalize_tree(Node *t, int dir)
+void normalize_tree(Node *t, int dir)
 {
-	bool update = false;
 	if (dynamic_cast<ImportantNode *>(t))
-		return false;
+		return;
 
-	for (;; update=true) {
+	for (;;) {
 		if ((dynamic_cast<AltNode *>(t) &&
 		     dynamic_cast<EpsNode *>(t->child[dir])) ||
 		    (dynamic_cast<CatNode *>(t) &&
@@ -503,8 +502,7 @@ bool normalize_tree(Node *t, int dir)
 			Node *c = t->child[dir];
 			t->child[dir] = t->child[!dir];
 			t->child[!dir] = c;
-		}
-		if ((dynamic_cast<AltNode *>(t) &&
+		} else if ((dynamic_cast<AltNode *>(t) &&
 		     dynamic_cast<AltNode *>(t->child[dir])) ||
 		    (dynamic_cast<CatNode *>(t) &&
 		     dynamic_cast<CatNode *>(t->child[dir]))) {
@@ -516,14 +514,13 @@ bool normalize_tree(Node *t, int dir)
 			c->child[!dir] = t->child[!dir];
 			t->child[!dir] = c;
 		} else {
-			if (t->child[dir] && normalize_tree(t->child[dir], dir))
-				continue;
-			if (t->child[!dir] && normalize_tree(t->child[!dir], dir))
-				continue;
 			break;
 		}
 	}
-	return update;
+	if (t->child[dir])
+		normalize_tree(t->child[dir], dir);
+	if (t->child[!dir])
+		normalize_tree(t->child[!dir], dir);
 }
 
 /*
@@ -647,7 +644,7 @@ Node *simplify_tree_base(Node *t, int dir)
 		}
 		i->child[dir] = cnode;
 
-		normalize_tree(i, dir);
+//		normalize_tree(i, dir);
 		return i->dup();
 	}
 no_alt_factor:
@@ -663,7 +660,7 @@ no_alt_factor:
 			t->child[dir] = c->child[!dir];
 			t->child[!dir] = new EpsNode();
 			c->child[!dir] = t->dup();
-			normalize_tree(c, dir);
+//			normalize_tree(c, dir);
 			return c;
 		}
 	}
@@ -678,7 +675,7 @@ no_alt_factor:
 			t->child[dir] = c->child[!dir];
 			t->child[!dir] = new EpsNode();
 			c->child[!dir] = t->dup();
-			normalize_tree(c, dir);
+//			normalize_tree(c, dir);
 			return c;
 		}
 	}
@@ -695,7 +692,7 @@ no_alt_factor:
 			t->child[!dir] = right->child[!dir]->dup();
 			left->child[!dir] = t->dup();
 			right->release();
-			normalize_tree(left, dir);
+//			normalize_tree(left, dir);
 			return left;
 		}
 	}
@@ -731,12 +728,13 @@ Node *simplify_tree(Node *t)
 		//    the dfa having about 7 thousands states,
 		//    and it having about  1.25 million states
 		for (int dir = 1; dir >= 0 ; dir--) {
-			while (normalize_tree(t, dir));
+			normalize_tree(t, dir);
 			for (Node *c = simplify_tree_base(t, dir);
 			     c != t;
 			     c = simplify_tree_base(t, dir)) {
 				t->release();
 				t = c;
+				normalize_tree(t, dir);
 				update = 1;
 			}
 		}
