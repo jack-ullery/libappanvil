@@ -902,6 +902,7 @@ hat: hat_start TOK_ID flags TOK_OPEN rules TOK_CLOSE
 		cod->flags.hat = 1;
 		if (force_complain)
 			cod->flags = force_complain_flags;
+		post_process_nt_entries(cod);
 		PDEBUG("^%s: flags='%s%s'\n",
 		       $2,
 		       cod->flags.complain ? "complain, " : "",
@@ -1142,6 +1143,7 @@ struct codomain *do_local_profile(struct codomain *cod, char *name, int mode,
 	cod->name = name;
 	if (force_complain)
 		cod->flags = force_complain_flags;
+	post_process_nt_entries(cod);
 	PDEBUG("profile %s: flags='%s%s'\n",
 	       name,
 	       cod->flags.complain ? "complain, " : "",
