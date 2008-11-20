@@ -513,6 +513,12 @@ void normalize_tree(Node *t, int dir)
 			c->child[dir] = c->child[!dir];
 			c->child[!dir] = t->child[!dir];
 			t->child[!dir] = c;
+		} else if (dynamic_cast<AltNode *>(t) &&
+			   dynamic_cast<CharSetNode *>(t->child[dir]) &&
+			   dynamic_cast<CharNode *>(t->child[!dir])) {
+			Node *c = t->child[dir];
+			t->child[dir] = t->child[!dir];
+			t->child[!dir] = c;
 		} else {
 			break;
 		}
@@ -559,10 +565,35 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 		t = t->child[dir]->dup();
 		continue;
 	}
-	if (dynamic_cast<AltNode *>(t) && t->child[dir]->eq(t->child[!dir])) {
-		// (a | a) -> a
-		t = t->child[dir]->dup();
-		continue;
+
+	if (dynamic_cast<AltNode *>(t)) {
+		if (t->child[dir]->eq(t->child[!dir])) {
+			// (a | a) -> a
+                       t = t->child[dir]->dup();
+		       continue;
+		} else if (dynamic_cast<CharNode *>(t->child[dir]) &&
+			   dynamic_cast<CharNode *>(t->child[!dir])) {
+			Chars chars;
+			chars.insert(dynamic_cast<CharNode *>(t->child[dir])->c);
+			chars.insert(dynamic_cast<CharNode *>(t->child[!dir])->c);
+			CharSetNode *n = new CharSetNode(chars);
+			t = n;
+			continue;
+               } else if (dynamic_cast<CharNode *>(t->child[dir]) &&
+                          dynamic_cast<CharSetNode *>(t->child[!dir])) {
+                       Chars *chars = &dynamic_cast<CharSetNode *>(t->child[!dir])->chars;
+                       chars->insert(dynamic_cast<CharNode *>(t->child[dir])->c);
+                       t = t->child[!dir]->dup();
+		       continue;
+               } else if (dynamic_cast<CharSetNode *>(t->child[dir]) &&
+                          dynamic_cast<CharSetNode *>(t->child[!dir])) {
+                       Chars *from = &dynamic_cast<CharSetNode *>(t->child[dir])->chars;
+                       Chars *to = &dynamic_cast<CharSetNode *>(t->child[!dir])->chars;
+                       for (Chars::iterator i = from->begin(); i != from->end(); i++)
+                               to->insert(*i);
+                       t = t->child[!dir]->dup();
+		       continue;
+               }
 	}
 
 	if (dynamic_cast<AltNode *>(t) &&
