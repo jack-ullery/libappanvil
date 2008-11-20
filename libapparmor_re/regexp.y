@@ -535,21 +535,23 @@ void normalize_tree(Node *t, int dir)
  * returns t - if no simplifications were made
  *         a new root node - if simplifications were made
  */
-Node *simplify_tree_base(Node *t, int dir)
+Node *simplify_tree_base(Node *t, int dir, bool &mod)
 {
 	if (dynamic_cast<ImportantNode *>(t))
 		return t;
 
 	for (int i=0; i < 2; i++) {
 		if (t->child[i]) {
-			Node *c = simplify_tree_base(t->child[i], dir);
-			if (c != t->child[i])
+			Node *c = simplify_tree_base(t->child[i], dir, mod);
+			if (c != t->child[i]) {
 				t->child[i] = c;
+				mod = true;
+			}
 		}
 	}
 
 	// only iterate on loop if t changed
-	for (Node *t_start = t;;t_start->release(), t_start = t) {
+	for (Node *t_start = t;;t_start->release(), t_start = t, mod = true) {
 
 	if (dynamic_cast<CatNode *>(t) &&
 	    dynamic_cast<EpsNode *>(t->child[!dir])) {
@@ -728,7 +730,7 @@ int debug_tree(Node *t)
 
 Node *simplify_tree(Node *t)
 {
-	int update;
+	bool update;
 	do {
 		update = 0;
 		//do right normalize first as this reduces the number
@@ -739,9 +741,9 @@ Node *simplify_tree(Node *t)
 		//    and it having about  1.25 million states
 		for (int dir = 1; dir >= 0 ; dir--) {
 			normalize_tree(t, dir);
-			for (Node *c = simplify_tree_base(t, dir);
-			     c != t;
-			     c = simplify_tree_base(t, dir)) {
+			for (Node *c = simplify_tree_base(t, dir, update);
+			     c != t ;
+			     c = simplify_tree_base(t, dir, update)) {
 				t = c;
 				normalize_tree(t, dir);
 				update = 1;
