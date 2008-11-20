@@ -493,19 +493,20 @@ void normalize_tree(Node *t, int dir)
 		return;
 
 	for (;;) {
-		if ((dynamic_cast<AltNode *>(t) &&
-		     dynamic_cast<EpsNode *>(t->child[dir])) ||
-		    (dynamic_cast<CatNode *>(t) &&
-		     dynamic_cast<EpsNode *>(t->child[dir]))) {
+		if (!dynamic_cast<EpsNode *>(t->child[!dir]) &&
+		    ((dynamic_cast<AltNode *>(t) &&
+		      dynamic_cast<EpsNode *>(t->child[dir])) ||
+		     (dynamic_cast<CatNode *>(t) &&
+		      dynamic_cast<EpsNode *>(t->child[dir])))) {
 			// (E | a) -> (a | E)
 			// Ea -> aE
 			Node *c = t->child[dir];
 			t->child[dir] = t->child[!dir];
 			t->child[!dir] = c;
 		} else if ((dynamic_cast<AltNode *>(t) &&
-		     dynamic_cast<AltNode *>(t->child[dir])) ||
-		    (dynamic_cast<CatNode *>(t) &&
-		     dynamic_cast<CatNode *>(t->child[dir]))) {
+			    dynamic_cast<AltNode *>(t->child[dir])) ||
+			   (dynamic_cast<CatNode *>(t) &&
+			    dynamic_cast<CatNode *>(t->child[dir]))) {
 			// (a | b) | c -> a | (b | c)
 			// (ab)c -> a(bc)
 			Node *c = t->child[dir];
