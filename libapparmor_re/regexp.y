@@ -542,23 +542,25 @@ Node *simplify_tree_base(Node *t, int dir)
 
 	for (int i=0; i < 2; i++) {
 		if (t->child[i]) {
-			for (Node *c = simplify_tree_base(t->child[i], dir);
-			     c != t->child[i];
-			     c = simplify_tree_base(t->child[i], dir)) {
-				t->child[i]->release();
+			Node *c = simplify_tree_base(t->child[i], dir);
+			if (c != t->child[i])
 				t->child[i] = c;
-			}
 		}
 	}
+
+	// only iterate on loop if t changed
+	for (Node *t_start = t;;t_start->release(), t_start = t) {
 
 	if (dynamic_cast<CatNode *>(t) &&
 	    dynamic_cast<EpsNode *>(t->child[!dir])) {
 		// aE -> a
-		return t->child[dir]->dup();
+		t = t->child[dir]->dup();
+		continue;
 	}
 	if (dynamic_cast<AltNode *>(t) && t->child[dir]->eq(t->child[!dir])) {
 		// (a | a) -> a
-		return t->child[dir]->dup();
+		t = t->child[dir]->dup();
+		continue;
 	}
 
 	if (dynamic_cast<AltNode *>(t) &&
@@ -569,12 +571,14 @@ Node *simplify_tree_base(Node *t, int dir)
 		Node *l = i;
 		for (;dynamic_cast<AltNode *>(i); l = i, i = i->child[!dir]) {
 			if (t->child[dir]->eq(i->child[dir])) {
-				return t->child[!dir]->dup();
+				t = t->child[!dir]->dup();
+				continue;
 			}
 		}
 		// last altnode of chain check other dir as well
 		if (t->child[dir]->eq(l->child[!dir])) {
-			return t->child[!dir]->dup();
+			t = t->child[!dir]->dup();
+			continue;
 		}
 
 		//exact match didn't work, try factoring front
@@ -645,7 +649,8 @@ Node *simplify_tree_base(Node *t, int dir)
 		i->child[dir] = cnode;
 
 //		normalize_tree(i, dir);
-		return i->dup();
+		t = i->dup();
+		continue;
 	}
 no_alt_factor:
 
@@ -661,7 +666,8 @@ no_alt_factor:
 			t->child[!dir] = new EpsNode();
 			c->child[!dir] = t->dup();
 //			normalize_tree(c, dir);
-			return c;
+			t = c;
+			continue;
 		}
 	}
 
@@ -676,7 +682,8 @@ no_alt_factor:
 			t->child[!dir] = new EpsNode();
 			c->child[!dir] = t->dup();
 //			normalize_tree(c, dir);
-			return c;
+			t = c;
+			continue;
 		}
 	}
 
@@ -693,9 +700,12 @@ no_alt_factor:
 			left->child[!dir] = t->dup();
 			right->release();
 //			normalize_tree(left, dir);
-			return left;
+			t = left;
+			continue;
 		}
 	}
+	break;
+}
 	return t;
 }
 
@@ -732,7 +742,6 @@ Node *simplify_tree(Node *t)
 			for (Node *c = simplify_tree_base(t, dir);
 			     c != t;
 			     c = simplify_tree_base(t, dir)) {
-				t->release();
 				t = c;
 				normalize_tree(t, dir);
 				update = 1;
