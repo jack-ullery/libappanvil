@@ -5,12 +5,13 @@
 #
 use strict;
 use Getopt::Long;
-use Test::More; 
+use Test::More;
 
 my $__VERSION__='$Id$';
 my %config;
 $config{'parser'} = "/sbin/subdomain_parser";
 $config{'profiledir'} = "./simple_tests/";
+$config{'timeout'} = 120; # in seconds
 
 my $help;
 my $pwd = `pwd`;
@@ -27,7 +28,7 @@ sub usage {
   print STDOUT "Bail out! Got the usage statement\n";
   exit 0;
 }
-  
+
 &usage if ($help);
 read_config();
 
@@ -66,31 +67,46 @@ sub test_profile {
   my $expass = 1;
   my $istodo = 0;
   my $isdisabled = 0;
+  my $result = 0;
+  my $child;
 
-  open(PARSER, "| $config{'parser'} -S -I $config{'includedir'} > /dev/null 2>&1") or die "Bail out! couldn't open parser";
+  eval {
+    local $SIG{ALRM} = sub {
+      $result = 1;
+      kill PIPE => $child;
+      $description = "$description - TESTCASE TIMED OUT";
+    };
 
-  open(PROFILE, $profile) or die "Bail out! couldn't open profile $profile";
-  while (<PROFILE>) {
-    if (/^#=DESCRIPTION\s*(.*)/) {
-      $description = $1;
-    } elsif (/^#=EXRESULT\s*(\w+)/) {
-      if ($1 eq "PASS") {
-        $expass = 1;
-      } elsif ($1 eq "FAIL") {
-        $expass = 0;
+    alarm $config{'timeout'};
+
+    $child = open(PARSER, "| $config{'parser'} -S -I $config{'includedir'} > /dev/null 2>&1") or die "Bail out! couldn't open parser";
+
+    open(PROFILE, $profile) or die "Bail out! couldn't open profile $profile";
+    while (<PROFILE>) {
+      if (/^#=DESCRIPTION\s*(.*)/) {
+        $description = $1;
+      } elsif (/^#=EXRESULT\s*(\w+)/) {
+        if ($1 eq "PASS") {
+          $expass = 1;
+        } elsif ($1 eq "FAIL") {
+          $expass = 0;
+        } else {
+          die "Bail out! unknown expected result '$1' in $profile";
+        }
+      } elsif (/^#=TODO\s*/) {
+          $istodo = 1;
+      } elsif (/^#=DISABLED\s*/) {
+          $isdisabled = 1;
       } else {
-        die "Bail out! unknown expected result '$1' in $profile";
+        print PARSER if not $isdisabled;
       }
-    } elsif (/^#=TODO\s*/) {
-        $istodo = 1;
-    } elsif (/^#=DISABLED\s*/) {
-        $isdisabled = 1;
-    } else {
-      print PARSER if not $isdisabled;
     }
-  }
 
-  my $result = close(PARSER);
+    $result = close(PARSER);
+    alarm 0;
+  };
+
+  alarm 0;
   if ($isdisabled) {
     TODO: {
       local $TODO = "Disabled testcase.";
