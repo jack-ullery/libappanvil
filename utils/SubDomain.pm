@@ -6574,7 +6574,7 @@ sub parse_event($) {
 
     # remove null responses
     for (keys(%ev)) {
-        if ( ! $ev{$_} || $ev{$_} !~ /\w+/)  { delete($ev{$_}); }
+        if ( ! $ev{$_} || $ev{$_} !~ /[\/\w]+/)  { delete($ev{$_}); }
     }
 
     if ( $ev{'sdmode'} ) {
