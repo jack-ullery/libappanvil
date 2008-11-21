@@ -79,8 +79,16 @@ sub test_profile {
 
     alarm $config{'timeout'};
 
-    $child = open(PARSER, "| $config{'parser'} -S -I $config{'includedir'} > /dev/null 2>&1") or die "Bail out! couldn't open parser";
+    $child = open(PARSER, "|-");
+    if ($child == 0) {
+      # child
+      open(STDOUT, ">/dev/null") or die "Failed to redirect STDOUT";
+      open(STDERR, ">/dev/null") or die "Failed to redirect STDERR";
+      exec("$config{'parser'}", "-S", "-I", "$config{'includedir'}") or die "Bail out! couldn't open parser";
+      # noreturn
+    }
 
+    # parent
     open(PROFILE, $profile) or die "Bail out! couldn't open profile $profile";
     while (<PROFILE>) {
       if (/^#=DESCRIPTION\s*(.*)/) {
