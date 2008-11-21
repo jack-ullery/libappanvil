@@ -2346,7 +2346,7 @@ sub handlechildren {
 			    }
                         }
                     } elsif ($ans =~ /^CMD_ux/) {
-                        $profilechanges{$pid} = "unconstrained";
+                        $profilechanges{$pid} = "unconfined";
                         return if $domainchange eq "change";
                     }
                 }
