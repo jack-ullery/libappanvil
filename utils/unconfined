@@ -25,6 +25,7 @@
 #    audit local system for processes listening on network connections
 #    that are not currently running with a profile.
 
+use strict;
 use Getopt::Long;
 
 use Immunix::SubDomain;
@@ -82,29 +83,34 @@ for my $pid (sort { $a <=> $b } @pids) {
         }
         close(CURRENT);
     }
+    my $cmdline = `cat /proc/$pid/cmdline`;
+    my $pname = (split(/\0/, $cmdline))[0];
+    if ($pname =~ /\// && !($pname eq $prog)) {
+	$pname = "($pname) ";
+    } else {
+	$pname = "";
+    }
     if (not $attr) {
         if ($prog =~ m/^(\/usr\/bin\/python|\/usr\/bin\/perl|\/bin\/bash)$/) {
 
             #my $scriptname = (split(/\0/, `cat /proc/$pid/cmdline`))[1];
-            my $cmdline = `cat /proc/$pid/cmdline`;
             $cmdline =~ s/\0/ /g;
             $cmdline =~ s/\s+$//;
             chomp $cmdline;
             print "$pid $prog ($cmdline) " . gettext("not confined\n");
         } else {
-            print "$pid $prog " . gettext("not confined\n");
+            print "$pid $prog $pname" . gettext("not confined\n");
         }
     } else {
         if ($prog =~ m/^(\/usr\/bin\/python|\/usr\/bin\/perl|\/bin\/bash)$/) {
 
             #my $scriptname = (split(/\0/, `cat /proc/$pid/cmdline`))[1];
-            my $cmdline = `cat /proc/$pid/cmdline`;
             $cmdline =~ s/\0/ /g;
             $cmdline =~ s/\s+$//;
             chomp $cmdline;
             print "$pid $prog ($cmdline) " . gettext("confined by") . " '$attr'\n";
         } else {
-            print "$pid $prog " . gettext("confined by") . " '$attr'\n";
+            print "$pid $prog $pname" . gettext("confined by") . " '$attr'\n";
         }
     }
 }
