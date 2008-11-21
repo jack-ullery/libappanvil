@@ -16,12 +16,17 @@
 
   capability sys_admin,
 
+  network inet stream,
+
   /boot/System.map*     r,
   @{PROC}/kmsg		r,
   @{PROC}/kallsyms		r,
+  /dev/tty		rw,
+
   /sbin/klogd		rmix,
   /var/log/boot.msg     rwl,
   /var/run/klogd.pid    krwl,
   /var/run/klogd/klogd.pid krwl,
   /var/run/klogd/kmsg   r,
+
 }
