@@ -2234,11 +2234,11 @@ sub handlechildren {
 
 				$sd{$profile}{$hat}{deny}{path}{$exec_target}{audit} |= 0;
 				$changed{$profile} = 1;
+                                # skip all remaining events if they say to deny
+                                # the exec
+                                return if $domainchange eq "change";
 			    }
 
-                            # skip all remaining events if they say to deny
-                            # the exec
-                            return if $domainchange eq "change";
                         }
 
 			unless ($ans eq "CMD_DENY") {
@@ -2246,6 +2246,7 @@ sub handlechildren {
                             if (defined $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target}) {
 #                                $exec_mode = $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target};
                             }
+
                             $prelog{PERMITTING}{$profile}{$hat}{path}{$exec_target} |= $exec_mode;
                             $log{PERMITTING}{$profile}              = {};
                             $sd{$profile}{$hat}{allow}{path}{$exec_target}{mode} |= $exec_mode;
@@ -2374,7 +2375,7 @@ sub handlechildren {
 }
 
 sub add_to_tree ($@) {
-    my ($pid, $type, @event) = @_;
+    my ($pid, $parent, $type, @event) = @_;
     if ( $DEBUGGING ) {
         my $eventmsg = Data::Dumper->Dump([@event], [qw(*event)]);
         $eventmsg =~ s/\n/ /g;
@@ -2382,9 +2383,20 @@ sub add_to_tree ($@) {
     }
 
     unless (exists $pid{$pid}) {
-        my $arrayref = [];
-        push @log, $arrayref;
-        $pid{$pid} = $arrayref;
+	my $profile = $event[0];
+	my $hat = $event[1];
+	if ($parent && exists $pid{$parent}) {
+	    # fork entry is missing fake one so that fork tracking will work
+	    $hat     ||= "null-complain-profile";
+	    my $arrayref = [];
+            push @{ $pid{$parent} }, $arrayref;
+	    $pid{$pid} = $arrayref;
+	    push @{$arrayref}, [ "fork", $pid, $profile, $hat ];
+	} else {
+	    my $arrayref = [];
+	    push @log, $arrayref;
+	    $pid{$pid} = $arrayref;
+	}
     }
 
     push @{ $pid{$pid} }, [ $type, $pid, @event ];
@@ -2474,7 +2486,7 @@ sub parse_log_record_v_2_0 ($@) {
           if ( ($profile ne 'null-complain-profile')
             && (!profile_exists($profile)));
 
-        add_to_tree($pid, "unknown_hat", $profile, $hat,
+        add_to_tree($pid, 0, "unknown_hat", $profile, $hat,
                     "PERMITTING", $uhat);
     } elsif (m/LOGPROF-HINT (unknown_profile|missing_mandatory_profile) image=(.+) pid=(\d+) profile=(.+) active=(.+)/) {
         my ($image, $pid, $profile, $hat) = ($2, $3, $4, $5);
@@ -2489,7 +2501,7 @@ sub parse_log_record_v_2_0 ($@) {
           if ( ($profile ne 'null-complain-profile')
             && (!profile_exists($profile)));
 
-        add_to_tree($pid, "exec", $profile, $hat, "HINT", "PERMITTING", "x", $image);
+        add_to_tree($pid, 0, "exec", $profile, $hat, "HINT", "PERMITTING", "x", $image);
 
     } elsif (m/(PERMITTING|REJECTING) (\S+) access (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
         my ($sdmode, $mode, $detail, $prog, $pid, $profile, $hat) =
@@ -2555,10 +2567,10 @@ sub parse_log_record_v_2_0 ($@) {
         $detail =~ s/^to\s+//;
 
         if ($domainchange eq "change") {
-            add_to_tree($pid, "exec", $profile, $hat, $prog,
+            add_to_tree($pid, 0, "exec", $profile, $hat, $prog,
                         $sdmode, str_to_mode($mode), $detail);
         } else {
-            add_to_tree($pid, "path", $profile, $hat, $prog,
+            add_to_tree($pid, 0, "path", $profile, $hat, $prog,
                         $sdmode, str_to_mode($mode), $detail);
         }
 
@@ -2578,7 +2590,7 @@ sub parse_log_record_v_2_0 ($@) {
           if ( ($profile ne 'null-complain-profile')
             && (!profile_exists($profile)));
 
-        add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode,
+        add_to_tree($pid, 0, "path", $profile, $hat, $prog, $sdmode,
                     "w", $path);
 
     } elsif (m/(PERMITTING|REJECTING) xattr (\S+) on (.+) \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
@@ -2605,7 +2617,7 @@ sub parse_log_record_v_2_0 ($@) {
         }
 
         if ($xattrmode) {
-            add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode,
+            add_to_tree($pid, 0, "path", $profile, $hat, $prog, $sdmode,
                         str_to_mode($xattrmode), $path);
         }
 
@@ -2631,7 +2643,7 @@ sub parse_log_record_v_2_0 ($@) {
         # krb5.conf
         return $& if $path eq "/etc/krb5.conf";
 
-        add_to_tree($pid, "path", $profile, $hat, $prog, $sdmode,
+        add_to_tree($pid, 0, "path", $profile, $hat, $prog, $sdmode,
                     str_to_mode("w"), $path);
 
     } elsif (m/(PERMITTING|REJECTING) access to capability '(\S+)' \((.+)\((\d+)\) profile (.+) active (.+)\)/) {
@@ -2649,7 +2661,7 @@ sub parse_log_record_v_2_0 ($@) {
           if ( ($profile ne 'null-complain-profile')
             && (!profile_exists($profile)));
 
-        add_to_tree($pid, "capability", $profile, $hat, $prog,
+        add_to_tree($pid, 0, "capability", $profile, $hat, $prog,
                     $sdmode, $capability);
 
     } elsif (m/Fork parent (\d+) child (\d+) profile (.+) active (.+)/
@@ -2733,6 +2745,7 @@ sub add_event_to_tree ($) {
     if ($e->{operation} eq "exec") {
         if ( defined $e->{info} && $e->{info} eq "mandatory profile missing" ) {
             add_to_tree( $e->{pid},
+			 $e->{parent},
                          "exec",
                          $profile,
                          $hat,
@@ -2745,6 +2758,7 @@ sub add_event_to_tree ($) {
         }
     } elsif ($e->{operation} =~ m/file_/) {
         add_to_tree( $e->{pid},
+		     $e->{parent},
                      "path",
                      $profile,
                      $hat,
@@ -2756,6 +2770,7 @@ sub add_event_to_tree ($) {
                    );
     } elsif ($e->{operation} eq "capable") {
         add_to_tree( $e->{pid},
+		     $e->{parent},
                      "capability",
                      $profile,
                      $hat,
@@ -2766,6 +2781,7 @@ sub add_event_to_tree ($) {
     } elsif ($e->{operation} =~  m/xattr/ ||
              $e->{operation} eq "setattr") {
         add_to_tree( $e->{pid},
+		     $e->{parent},
                      "path",
                      $profile,
                      $hat,
@@ -2797,6 +2813,7 @@ sub add_event_to_tree ($) {
 
         if ($is_domain_change) {
             add_to_tree( $e->{pid},
+			 $e->{parent},
                           "exec",
                           $profile,
                           $hat,
@@ -2808,6 +2825,7 @@ sub add_event_to_tree ($) {
                         );
         } else {
              add_to_tree( $e->{pid},
+			  $e->{parent},
                           "path",
                           $profile,
                           $hat,
@@ -2820,6 +2838,7 @@ sub add_event_to_tree ($) {
         }
     } elsif ($e->{operation} eq "sysctl") {
         add_to_tree( $e->{pid},
+		     $e->{parent},
                      "path",
                      $profile,
                      $hat,
@@ -2834,7 +2853,7 @@ sub add_event_to_tree ($) {
         $profile ||= "null-complain-profile";
         $hat     ||= "null-complain-profile";
         my $arrayref = [];
-        if (exists $pid{$e->{pid}}) {
+        if (exists $pid{$parent}) {
             push @{ $pid{$parent} }, $arrayref;
         } else {
             push @log, $arrayref;
@@ -2843,6 +2862,7 @@ sub add_event_to_tree ($) {
         push @{$arrayref}, [ "fork", $child, $profile, $hat ];
     } elsif ($e->{operation} =~ m/socket_/) {
         add_to_tree( $e->{pid},
+		     $e->{parent},
                      "netdomain",
                      $profile,
                      $hat,
@@ -2853,7 +2873,7 @@ sub add_event_to_tree ($) {
                      $e->{protocol},
                    );
     } elsif ($e->{operation} eq "change_hat") {
-        add_to_tree($e->{pid}, "unknown_hat", $profile, $hat, $sdmode, $hat);
+        add_to_tree($e->{pid}, $e->{parent}, "unknown_hat", $profile, $hat, $sdmode, $hat);
     } else {
         if ( $DEBUGGING ) {
             my $msg = Data::Dumper->Dump([$e], [qw(*event)]);
