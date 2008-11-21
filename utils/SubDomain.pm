@@ -5642,27 +5642,30 @@ sub writepath_rules ($$$) {
 		    $tmpmode = $user & ~$other;
 		    $tmpaudit = $user_audit;
 		    $user &= ~$tmpmode;
-		} elsif ($other & ~$user) {
-		    $ownerstr = "other ";
-		    $tmpmode = $other & ~$user;
-		    $tmpaudit = $other_audit;
-		    $other &= ~$tmpmode;
+#		} elsif ($other & ~$user) {
+#		    $ownerstr = "other ";
+#		    $tmpmode = $other & ~$user;
+#		    $tmpaudit = $other_audit;
+#		    $other &= ~$tmpmode;
 		} else {
 		    if ($user_audit & ~$other_audit & $user) {
 			$ownerstr = "owner ";
 			$tmpaudit = $user_audit & ~$other_audit & $user;
 			$tmpmode = $user & $tmpaudit;
 			$user &= ~$tmpmode;
-		    } elsif ($other_audit & ~$user_audit & $other) {
-			$ownerstr = "other ";
-			$tmpaudit = $other_audit & ~$user_audit & $other;
-			$tmpmode = $other & $tmpaudit;
-			$other &= ~$tmpmode;
+#		    } elsif ($other_audit & ~$user_audit & $other) {
+#			$ownerstr = "other ";
+#			$tmpaudit = $other_audit & ~$user_audit & $other;
+#			$tmpmode = $other & $tmpaudit;
+#			$other &= ~$tmpmode;
 		    } else {
 			# user == other && user_audit == other_audit
 			$ownerstr = "";
-			$tmpmode = $user;
-			$tmpaudit = $user_audit;
+#include exclusive other for now
+#			$tmpmode = $user;
+#			$tmpaudit = $user_audit;
+			$tmpmode = $user | $other;
+			$tmpaudit = $user_audit | $other_audit;
 			$user &= ~$tmpmode;
 			$other &= ~$tmpmode;
 		    }
