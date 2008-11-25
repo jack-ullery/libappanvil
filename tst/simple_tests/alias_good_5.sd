@@ -2,8 +2,8 @@
 #=EXRESULT PASS
 
 alias /tmp -> /var/tmp,
-#include <includes/vars>
-#include <includes/aliases>
+#include <includes-preamble/vars>
+#include <includes-preamble/aliases>
 @{FOO} += /etc/
 alias /etc/ -> /Config/,
 
