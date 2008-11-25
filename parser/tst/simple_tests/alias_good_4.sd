@@ -2,8 +2,8 @@
 #=EXRESULT PASS
 
 alias /tmp -> /var/tmp,
-#include <includes/aliases>
-#include <includes/vars>
+#include <includes-preamble/aliases>
+#include <includes-preamble/vars>
 
 /bin/foo {
   #include <includes/base>
