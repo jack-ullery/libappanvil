@@ -1,3 +1,4 @@
+securit_default.diff
 security-create.diff
 remove_suid.diff
 vfs-notify_change.diff
@@ -52,3 +53,11 @@ export-security_inode_permission-for-aufs
 
 #aufs/aa-hack
 #aufs/aufs-fsetattr
+fix-security-param.diff
+fix-complain.diff
+fix-d_namespace_path.diff
+fork-tracking.diff
+mount-capability.diff
+fix-config.diff
+AppArmor-checkpatch.diff
+AppArmor-misc-cleanups.diff
