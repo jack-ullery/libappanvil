@@ -48,3 +48,15 @@ apparmor-network.diff
 apparmor-rlimits.diff
 apparmor-2.6.25.diff
 apparmor-stack_secondary.diff
+fix-ptrace-complain.diff
+export-security_inode_permission-for-aufs
+fix-security-param.diff
+fix-complain.diff
+fix-d_namespace_path.diff
+fix-d_namespace_path-tmp-root.diff
+fix-get_cwd.diff
+fork-tracking.diff
+mount-capability.diff
+fix-config.diff
+AppArmor-checkpatch.diff
+AppArmor-misc-cleanups.diff
