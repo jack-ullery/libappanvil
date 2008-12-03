@@ -530,6 +530,145 @@ void normalize_tree(Node *t, int dir)
 		normalize_tree(t->child[!dir], dir);
 }
 
+//charset conversion is disabled for now,
+//it hinders tree optimization in some cases, so it need to be either
+//done post optimization, or have extra factoring rules added
+#if 0
+static Node *merge_charset(Node *a, Node *b)
+{
+	if (dynamic_cast<CharNode *>(a) &&
+	    dynamic_cast<CharNode *>(b)) {
+		Chars chars;
+		chars.insert(dynamic_cast<CharNode *>(a)->c);
+		chars.insert(dynamic_cast<CharNode *>(b)->c);
+		CharSetNode *n = new CharSetNode(chars);
+		return n;
+	} else if (dynamic_cast<CharNode *>(a) &&
+		   dynamic_cast<CharSetNode *>(b)) {
+		Chars *chars = &dynamic_cast<CharSetNode *>(b)->chars;
+		chars->insert(dynamic_cast<CharNode *>(a)->c);
+		return b->dup();
+	} else if (dynamic_cast<CharSetNode *>(a) &&
+		   dynamic_cast<CharSetNode *>(b)) {
+		Chars *from = &dynamic_cast<CharSetNode *>(a)->chars;
+		Chars *to = &dynamic_cast<CharSetNode *>(b)->chars;
+		for (Chars::iterator i = from->begin(); i != from->end(); i++)
+			to->insert(*i);
+		return b->dup();
+	}
+
+	//return ???;
+}
+
+static Node *alt_to_charsets(Node *t, int dir)
+{
+/*
+	Node *first = NULL;
+	Node *p = t;
+	Node *i = t;
+	for (;dynamic_cast<AltNode *>(i);) {
+		if (dynamic_cast<CharNode *>(i->child[dir]) ||
+		    dynamic_cast<CharNodeSet *>(i->child[dir])) {
+			if (!first) {
+				first = i;
+				p = i;
+				i = i->child[!dir];
+			} else {
+				first->child[dir] = merge_charset(first->child[dir],
+						      i->child[dir]);
+				p->child[!dir] = i->child[!dir]->dup();
+				Node *tmp = i;
+				i = i->child[!dir];
+				tmp->release();
+			}
+		} else {
+			p = i;
+			i = i->child[!dir];
+		}
+	}
+	// last altnode of chain check other dir as well
+	if (first && (dynamic_cast<charNode *>(i) ||
+		      dynamic_cast<charNodeSet *>(i))) {
+		
+	}
+*/
+
+/*
+		if (dynamic_cast<CharNode *>(t->child[dir]) ||
+		    dynamic_cast<CharSetNode *>(t->child[dir]))
+		    char_test = true;
+			    (char_test &&
+			     (dynamic_cast<CharNode *>(i->child[dir]) ||
+			      dynamic_cast<CharSetNode *>(i->child[dir])))) {
+*/
+	return t;
+}
+#endif
+
+static Node *basic_alt_factor(Node *t, int dir)
+{
+	if (!dynamic_cast<AltNode *>(t))
+		return t;
+
+	if (t->child[dir]->eq(t->child[!dir])) {
+		// (a | a) -> a
+		Node *tmp = t->child[dir]->dup();
+		t->release();
+		return tmp;
+	}
+
+	// (ab) | (ac) -> a(b|c)
+	if (dynamic_cast<CatNode *>(t->child[dir]) &&
+	    dynamic_cast<CatNode *>(t->child[!dir]) &&
+	    t->child[dir]->child[dir]->eq(t->child[!dir]->child[dir])) {
+		// (ab) | (ac) -> a(b|c)
+		Node *left = t->child[dir];
+		Node *right = t->child[!dir];
+		t->child[dir] = left->child[!dir];
+		t->child[!dir] = right->child[!dir]->dup();
+		left->child[!dir] = t;
+		right->release();
+		return left;
+	}
+
+	// a | (ab) -> a (E | b) -> a (b | E)
+	if (dynamic_cast<CatNode *>(t->child[!dir]) &&
+	    t->child[dir]->eq(t->child[!dir]->child[dir])) {
+		Node *c = t->child[!dir];
+		t->child[dir]->release();
+		t->child[dir] = c->child[!dir];
+		t->child[!dir] = new EpsNode();
+		c->child[!dir] = t;
+		return c;
+	}
+
+	// ab | (a) -> a (b | E)
+	if (dynamic_cast<CatNode *>(t->child[dir]) &&
+	    t->child[dir]->child[dir]->eq(t->child[!dir])) {
+		Node *c = t->child[dir];
+		t->child[!dir]->release();
+		t->child[dir] = c->child[!dir];
+		t->child[!dir] = new EpsNode();
+		c->child[!dir] = t;
+		return c;
+	}
+
+	return t;
+}
+
+static Node *basic_simplify(Node *t, int dir)
+{
+	if (dynamic_cast<CatNode *>(t) &&
+	    dynamic_cast<EpsNode *>(t->child[!dir])) {
+		// aE -> a
+		Node *tmp = t->child[dir]->dup();
+		t->release();
+		return tmp;
+	}
+
+	return basic_alt_factor(t, dir);
+}
+
 /*
  * assumes a normalized tree.  reductions shown for left normalization
  * aE -> a
@@ -557,61 +696,38 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 		}
 	}
 
-	// only iterate on loop if t changed
-	for (Node *t_start = t;;t_start->release(), t_start = t, mod = true) {
+	// only iterate on loop if modification made
+	for (;; mod = true) {
 
-	if (dynamic_cast<CatNode *>(t) &&
-	    dynamic_cast<EpsNode *>(t->child[!dir])) {
-		// aE -> a
-		t = t->child[dir]->dup();
-		continue;
-	}
-
-	if (dynamic_cast<AltNode *>(t)) {
-		if (t->child[dir]->eq(t->child[!dir])) {
-			// (a | a) -> a
-                       t = t->child[dir]->dup();
-		       continue;
-		} else if (dynamic_cast<CharNode *>(t->child[dir]) &&
-			   dynamic_cast<CharNode *>(t->child[!dir])) {
-			Chars chars;
-			chars.insert(dynamic_cast<CharNode *>(t->child[dir])->c);
-			chars.insert(dynamic_cast<CharNode *>(t->child[!dir])->c);
-			CharSetNode *n = new CharSetNode(chars);
-			t = n;
+		Node *tmp = basic_simplify(t, dir);
+		if (tmp != t) {
+			t = tmp;
 			continue;
-               } else if (dynamic_cast<CharNode *>(t->child[dir]) &&
-                          dynamic_cast<CharSetNode *>(t->child[!dir])) {
-                       Chars *chars = &dynamic_cast<CharSetNode *>(t->child[!dir])->chars;
-                       chars->insert(dynamic_cast<CharNode *>(t->child[dir])->c);
-                       t = t->child[!dir]->dup();
-		       continue;
-               } else if (dynamic_cast<CharSetNode *>(t->child[dir]) &&
-                          dynamic_cast<CharSetNode *>(t->child[!dir])) {
-                       Chars *from = &dynamic_cast<CharSetNode *>(t->child[dir])->chars;
-                       Chars *to = &dynamic_cast<CharSetNode *>(t->child[!dir])->chars;
-                       for (Chars::iterator i = from->begin(); i != from->end(); i++)
-                               to->insert(*i);
-                       t = t->child[!dir]->dup();
-		       continue;
-               }
-	}
+		}
 
-	if (dynamic_cast<AltNode *>(t) &&
-	    dynamic_cast<AltNode *>(t->child[!dir])) {
+
+		/* all tests after this must meet 2 alt node condition */
+		if (!dynamic_cast<AltNode *>(t) ||
+		    !dynamic_cast<AltNode *>(t->child[!dir]))
+			break;
+
 		// a | (a | b) -> (a | b)
 		// a | (b | (c | a)) -> (b | (c | a))
+		Node *p = t;
 		Node *i = t->child[!dir];
-		Node *l = i;
-		for (;dynamic_cast<AltNode *>(i); l = i, i = i->child[!dir]) {
+		for (;dynamic_cast<AltNode *>(i); p = i, i = i->child[!dir]) {
 			if (t->child[dir]->eq(i->child[dir])) {
-				t = t->child[!dir]->dup();
+				t->child[!dir]->dup();
+				t->release();
+				t = t->child[!dir];
 				continue;
 			}
 		}
 		// last altnode of chain check other dir as well
-		if (t->child[dir]->eq(l->child[!dir])) {
-			t = t->child[!dir]->dup();
+		if (t->child[dir]->eq(p->child[!dir])) {
+			t->child[!dir]->dup();
+			t->release();
+			t = t->child[!dir];
 			continue;
 		}
 
@@ -619,127 +735,53 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 		//a | (ac | (ad | () -> (a (E | c)) | (...)
 		//ab | (ac | (...)) -> (a (b | c)) | (...)
 		//ab | (a | (...)) -> (a (b | E)) | (...)
-		Node *a = t->child[dir];
+		Node *pp;
+		int count = 0;
+		Node *subject = t->child[dir];
+		Node *a = subject;
 		if (dynamic_cast<CatNode *>(a))
-			a = a->child[dir];
+		    a = a->child[dir];
+		a->dup();
 
-		for (l = t, i = t->child[!dir];; l = i, i = i->child[!dir]) {
+		for (pp = p = t, i = t->child[!dir];
+		     dynamic_cast<AltNode *>(i); ) {
 			if ((dynamic_cast<CatNode *>(i->child[dir]) &&
 			     a->eq(i->child[dir]->child[dir])) ||
 			    (a->eq(i->child[dir]))) {
-				goto alt_factor;
-			}
-			// termination test
-			if (!dynamic_cast<AltNode *>(i->child[!dir])) {
-				// last altnode of chain check other dir as well
-				if ((dynamic_cast<CatNode *>(i->child[!dir]) &&
-				     a->eq(i->child[!dir]->child[dir])) ||
-				    (a->eq(i->child[!dir]))) {
-					// flip alt node to make it dir factor
-					Node *tmp = i->child[dir];
-					i->child[dir] = i->child[!dir];
-					i->child[!dir] = tmp;
-					goto alt_factor;
-				}
-				break;
+				// extract matching alt node
+				p->child[!dir] = i->child[!dir];
+				i->child[!dir] = subject;
+				subject = basic_simplify(i, dir);
+
+				i = p->child[!dir];
+				count++;
+			} else {
+				pp = p; p = i; i = i->child[!dir];
 			}
 		}
-		goto no_alt_factor;
 
-		alt_factor:
-		// if the match is not the first entry on the
-		// alt tree move it ups so it is
-		if (i != t->child[!dir]) {  // equiv to l != t
-			// i == child[!dir]
-			l->child[!dir] = i->child[!dir];
-			i->child[!dir] = t->child[!dir];
-			t->child[!dir] = i;
-		}
-
-		// now factor
-		Node *b, *c, *altnode, *cnode = NULL;
-		if (a == t->child[dir]) {
-			b = new EpsNode();
+		// last altnode in chain check other dir as well
+		if ((dynamic_cast<CatNode *>(i) &&
+		     a->eq(i->child[dir])) ||
+		    (a->eq(i))) {
+			count++;
+			if (t == p) {
+				t->child[dir] = subject;
+				t = basic_simplify(t, dir);
+			} else {
+				t->child[dir] = p->child[dir];
+				p->child[dir] = subject;
+				pp->child[!dir] = basic_simplify(p, dir);
+			}
 		} else {
-			b = t->child[dir]->child[!dir]->dup();
+			t->child[dir] = i;
+			p->child[!dir] = subject;
 		}
+		a->release();
 
-		if (dynamic_cast<CatNode *>(i->child[dir])) {
-			c = i->child[dir]->child[!dir];
-			cnode = i->child[dir];
-			cnode->child[dir]->release();
-		} else {
-			c = new EpsNode();
-			i->child[dir]->release();
-		}
-
-		altnode = new AltNode(b, c);
-		if (cnode) {
-			cnode->child[dir] = a->dup();
-			cnode->child[!dir] = altnode;
-		} else {
-			cnode = new CatNode(a->dup(), altnode);
-		}
-		i->child[dir] = cnode;
-
-//		normalize_tree(i, dir);
-		t = i->dup();
-		continue;
+		if (count == 0)
+			break;
 	}
-no_alt_factor:
-
-	// a | (ab) -> a (E | b) -> a (b | E)
-	if (dynamic_cast<AltNode *>(t) &&
-	    dynamic_cast<CatNode *>(t->child[!dir])) {
-
-		if (t->child[dir]->eq(t->child[!dir]->child[dir])) {
-			// a | (ab) -> a (E | b) -> a (b | E)
-			Node *c = t->child[!dir];
-			t->child[dir]->release();
-			t->child[dir] = c->child[!dir];
-			t->child[!dir] = new EpsNode();
-			c->child[!dir] = t->dup();
-//			normalize_tree(c, dir);
-			t = c;
-			continue;
-		}
-	}
-
-	// ab | (a) -> a (b | E)
-	if (dynamic_cast<AltNode *>(t) &&
-	    dynamic_cast<CatNode *>(t->child[dir])) {
-
-		if (t->child[dir]->child[dir]->eq(t->child[!dir])) {
-			Node *c = t->child[dir];
-			t->child[!dir]->release();
-			t->child[dir] = c->child[!dir];
-			t->child[!dir] = new EpsNode();
-			c->child[!dir] = t->dup();
-//			normalize_tree(c, dir);
-			t = c;
-			continue;
-		}
-	}
-
-	// (ab) | (ac) -> a(b|c)
-	if (dynamic_cast<AltNode *>(t) &&
-	    dynamic_cast<CatNode *>(t->child[dir]) &&
-	    dynamic_cast<CatNode *>(t->child[!dir])) {
-		if (t->child[dir]->child[dir]->eq(t->child[!dir]->child[dir])) {
-			// (ab) | (ac) -> a(b|c)
-			Node *right = t->child[!dir];
-			Node *left = t->child[dir];
-			t->child[dir] = left->child[!dir];
-			t->child[!dir] = right->child[!dir]->dup();
-			left->child[!dir] = t->dup();
-			right->release();
-//			normalize_tree(left, dir);
-			t = left;
-			continue;
-		}
-	}
-	break;
-}
 	return t;
 }
 
@@ -764,7 +806,7 @@ Node *simplify_tree(Node *t)
 {
 	bool update;
 	do {
-		update = 0;
+		update = false;
 		//do right normalize first as this reduces the number
 		//of trailing nodes which might follow an internal *
 		//or **, which is where state explosion can happen
@@ -772,14 +814,14 @@ Node *simplify_tree(Node *t)
 		//    the dfa having about 7 thousands states,
 		//    and it having about  1.25 million states
 		for (int dir = 1; dir >= 0 ; dir--) {
-			normalize_tree(t, dir);
-			for (Node *c = simplify_tree_base(t, dir, update);
-			     c != t ;
-			     c = simplify_tree_base(t, dir, update)) {
-				t = c;
-				normalize_tree(t, dir);
-				update = 1;
-			}
+			bool modified;
+			do {
+			    modified = false;
+			    normalize_tree(t, dir);
+			    t = simplify_tree_base(t, dir, modified);
+			    if (modified)
+				update = true;
+			} while (modified);
 		}
 	} while(update);
 	return t;
@@ -1902,7 +1944,7 @@ extern "C" aare_ruleset_t *aare_new_ruleset(int reverse)
     if (!container)
 	return NULL;
 
-    container->root = new EpsNode();
+    container->root = NULL;
     container->reverse = reverse;
 
     return container;
@@ -1911,7 +1953,8 @@ extern "C" aare_ruleset_t *aare_new_ruleset(int reverse)
 extern "C" void aare_delete_ruleset(aare_ruleset_t *rules)
 {
     if (rules) {
-	rules->root->release();
+	if (rules->root)
+	    rules->root->release();
 	free(rules);
     }
 }
@@ -2131,7 +2174,10 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 	}
     }
 
-    rules->root = new AltNode(rules->root, new CatNode(tree, accept));
+    if (rules->root)
+	rules->root = new AltNode(rules->root, new CatNode(tree, accept));
+    else
+	rules->root = new CatNode(tree, accept);
 
     return 1;
 
