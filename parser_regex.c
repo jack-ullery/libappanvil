@@ -212,7 +212,7 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 					while (*s == '*')
 						s++;
 					if (*s == '/' || !*s) {
-						STORE("[^/]", dptr, 4);
+						STORE("[^/\\x00]", dptr, 8);
 					}
 				}
 				if (*(sptr + 1) == '*') {
@@ -229,11 +229,11 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 						ptype = ePatternRegex;
 					}
 
-					STORE(".*", dptr, 2);
+					STORE("[^\\x00]*", dptr, 8);
 					sptr++;
 				} else {
 					ptype = ePatternRegex;
-					STORE("[^/]*", dptr, 5);
+					STORE("[^/\\x00]*", dptr, 9);
 				}	/* *(sptr+1) == '*' */
 			}	/* bEscape */
 
@@ -248,7 +248,7 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 				STORE(sptr, dptr, 1);
 			} else {
 				ptype = ePatternRegex;
-				STORE("[^/]", dptr, 4);
+				STORE("[^/\\x00]", dptr, 8);
 			}
 			break;
 
