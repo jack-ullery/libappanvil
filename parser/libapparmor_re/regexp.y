@@ -1073,6 +1073,8 @@ regexp_lex(YYSTYPE *val, const char **pos)
 	    switch(*(*pos)++) {
 		case '\0':
 		    (*pos)--;
+		    /* fall through */
+		case '\\':
 		    val->c = '\\';
 		    break;
 
