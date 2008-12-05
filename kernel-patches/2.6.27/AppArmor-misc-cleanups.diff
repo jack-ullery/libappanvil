@@ -5,8 +5,8 @@
  security/apparmor/lsm.c              |   22 ++++++----------------
  security/apparmor/main.c             |    5 +++--
  security/apparmor/match.c            |    5 +++--
- security/apparmor/module_interface.c |   15 +++++++--------
- 8 files changed, 27 insertions(+), 34 deletions(-)
+ security/apparmor/module_interface.c |   13 ++++++-------
+ 8 files changed, 26 insertions(+), 33 deletions(-)
 
 --- a/security/apparmor/Kconfig
 +++ b/security/apparmor/Kconfig
@@ -130,7 +130,7 @@
  
  static int __init apparmor_enabled_setup(char *str)
  {
-@@ -582,7 +575,7 @@ static int apparmor_file_permission(stru
+@@ -557,7 +550,7 @@ static int apparmor_file_permission(stru
  				  aa_mask_permissions(mask));
  }
  
@@ -139,7 +139,7 @@
  {
  	int mask = AA_MAY_LOCK;
  	if (cmd == F_WRLCK)
-@@ -608,8 +601,8 @@ static void apparmor_file_free_security(
+@@ -583,8 +576,8 @@ static void apparmor_file_free_security(
  	aa_put_profile(file_profile);
  }
  
@@ -150,7 +150,7 @@
  {
  	struct dentry *dentry;
  	int mask = 0;
-@@ -908,7 +901,7 @@ static int apparmor_task_setrlimit(unsig
+@@ -883,7 +876,7 @@ static int apparmor_task_setrlimit(unsig
  	return error;
  }
  
@@ -159,7 +159,7 @@
  	.name =				"apparmor",
  	.ptrace_may_access =		apparmor_ptrace_may_access,
  	.ptrace_traceme =		apparmor_ptrace_traceme,
-@@ -1057,6 +1050,3 @@ void apparmor_disable(void)
+@@ -1029,6 +1022,3 @@ void apparmor_disable(void)
  	info_message("AppArmor protection removed");
  }
  
@@ -221,15 +221,6 @@
  {
  	if (!aa_inbounds(e, 1))
  		return 0;
-@@ -126,7 +126,7 @@ static int aa_is_nameX(struct aa_ext *e,
- 	 * AA_NAME tag value is a u16.
- 	 */
- 	if (aa_is_X(e, AA_NAME)) {
--		char *tag;
-+		char *tag = NULL;
- 		size_t size = aa_is_u16_chunk(e, &tag);
- 		/* if a name is specified it must match. otherwise skip tag */
- 		if (name && (!size || strcmp(name, tag)))
 @@ -369,7 +369,7 @@ fail:
  static struct aa_profile *aa_unpack_profile(struct aa_ext *e,
  					    struct aa_audit *sa)
