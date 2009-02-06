@@ -1260,7 +1260,7 @@ sub console_select_and_upload_profiles {
     my @profiles = @$profiles_ref;
     my $q = {};
     $q->{title} = $title;
-    $q->{headers} = [ "Repository", $url, ];
+    $q->{headers} = [ gettext("Repository"), $url, ];
 
     $q->{explanation} = $explanation;
 
@@ -3049,7 +3049,7 @@ sub UI_ask_to_enable_repo {
     my $q = { };
     return if ( not defined $cfg->{repository}{url} );
     $q->{headers} = [
-      "Repository", $cfg->{repository}{url},
+      gettext("Repository"), $cfg->{repository}{url},
     ];
     $q->{explanation} = gettext( "Would you like to enable access to the
 profile repository?" ); $q->{functions} = [ "CMD_ENABLE_REPO",
@@ -3079,7 +3079,7 @@ sub UI_ask_to_upload_profiles {
 
     my $q = { };
     $q->{headers} = [
-      "Repository", $cfg->{repository}{url},
+      gettext("Repository"), $cfg->{repository}{url},
     ];
     $q->{explanation} =
       gettext( "Would you like to upload newly created and changed profiles to
