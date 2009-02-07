@@ -1,29 +1,22 @@
-# translation of apparmor-parser.de.po to German
-# @TITLE@
-# Copyright (C) 2006, SUSE Linux GmbH, Nuremberg
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
 #
-# This file is distributed under the same license as @PACKAGE@ package. FIRST
-#
-# Michael Skiba <trans@michael-skiba.de>, 2007,2008.
-# Hermann J. Beckers <hj.beckers@onlinehome.de>, 2008.
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-parser.de\n"
+"Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2008-09-22 23:04-0700\n"
-"PO-Revision-Date: 2008-10-11 09:39+0200\n"
-"Last-Translator: Hermann J. Beckers <hj.beckers@onlinehome.de>\n"
-"Language-Team: German <kde-i18n-de@lists.kde.org>\n"
+"PO-Revision-Date: 2009-02-05 13:38\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
-"X-Generator: Lokalize 0.2\n"
 
 #: ../parser_include.c:96 ../parser_main.c:450
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
-msgstr "Fehler: Profil %s konnte nicht gelesen werden: %s.\n"
+msgstr "Fehler: Profil '%s' konnte nicht gelesen werden: '%s'.\n"
 
 #: ../parser_include.c:115
 msgid "Error: Could not allocate temporary file.\n"
@@ -36,12 +29,12 @@ msgstr "Fehler: Kein Speicher vorhanden.\n"
 #: ../parser_include.c:176
 #, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
-msgstr "Fehler: basedir %s ist kein Verzeichnis. Es wird übersprungen.\n"
+msgstr "Fehler: basedir '%s' ist kein Verzeichnis - überspringen.\n"
 
 #: ../parser_include.c:190
 #, c-format
 msgid "Error: Could not add directory %s to search path.\n"
-msgstr "Fehler: Verzeichnis %s konnte nicht zum Suchpfad hinzugefügt werden.\n"
+msgstr "Fehler: Verzeichnis '%s' konnte nicht zu Suchpfad hinzugefügt werden.\n"
 
 #: ../parser_include.c:200
 msgid "Error: Could not allocate memory.\n"
@@ -50,22 +43,22 @@ msgstr "Fehler: Es konnte kein Speicher zugeordnet werden.\n"
 #: ../parser_include.c:297
 #, c-format
 msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-msgstr "Fehler: Für Include in Zeile %d in %s konnte kein Puffer zugeordnet werden.\n"
+msgstr "Fehler: Es konnte kein Puffer zum Einfügen in Zeile '%d' in '%s' zugeordnet werden.\n"
 
 #: ../parser_include.c:313 ../parser_include.c:333
 #, c-format
 msgid "Error: Bad include at line %d in %s.\n"
-msgstr "Fehler: Ungültiges Include in Zeile %d in %s.\n"
+msgstr "Fehler: Ungültige Einfügung in Zeile '%d' in '%s'.\n"
 
 #: ../parser_include.c:378
 #, c-format
 msgid "Error: #include %s%c not found at line %d in %s.\n"
-msgstr "Fehler: #include %s%c nicht in Zeile %d in %s gefunden.\n"
+msgstr "Fehler: #include '%s%c' nicht gefunden in Zeile '%d' in '%s'.\n"
 
 #: ../parser_include.c:459
 #, c-format
 msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-msgstr "Fehler: %d Include-Stufen überschritten. %s-Include wird nicht verarbeitet.\n"
+msgstr "Fehler: '%d' Include-Stufen überschritten. '%s'-Include wird nicht verarbeitet.\n"
 
 #: ../parser_interface.c:72
 msgid "Bad write position\n"
@@ -93,7 +86,7 @@ msgstr "Das Profil stimmt nicht mit der Signatur überein\n"
 
 #: ../parser_interface.c:90
 msgid "Profile version not supported by Apparmor module\n"
-msgstr "Die Profilversion wird vom Apparmor-Modul nicht unterstützt.\n"
+msgstr "Profilversion von AppArmor-Modul nicht unterstützt\n"
 
 #: ../parser_interface.c:93
 msgid "Profile already exists\n"
@@ -110,17 +103,17 @@ msgstr "Unbekannter Fehler\n"
 #: ../parser_interface.c:116
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr "%s: Hinzufügen von \"%s\" nicht möglich."
+msgstr "%s: Hinzufügen von \"%s\" nicht möglich.  "
 
 #: ../parser_interface.c:121
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr "%s: \"%s\" kann nicht ersetzt werden."
+msgstr "%s: \"%s\" kann nicht ersetzt werden.  "
 
 #: ../parser_interface.c:126
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr "%s: \"%s\" kann nicht entfernt werden."
+msgstr "%s: \"%s\" kann nicht entfernt werden.  "
 
 #: ../parser_interface.c:131
 #, c-format
@@ -160,12 +153,12 @@ msgstr "%s kann nicht geöffnet werden - %s\n"
 #: ../parser_interface.c:822
 #, c-format
 msgid "Memory Allocation Error: Unable to remove ^%s\n"
-msgstr "Speicherzuordnungsfehler: Unfähig ^%s zu entfernen\n"
+msgstr "Speicherzuordnungsfehler: ^%s kann nicht entfernt werden\n"
 
 #: ../parser_interface.c:835
 #, c-format
 msgid "Memory Allocation Error: Unable to remove %s:%s."
-msgstr "Speicherzuordnungsfehler: Unfähig %s:%s zu entfernen."
+msgstr "Speicherzuordnungsfehler: %s:%s kann nicht entfernt werden."
 
 #: ../parser_interface.c:854
 msgid "unable to create work area\n"
@@ -195,7 +188,7 @@ msgstr "(network_mode) Unerwartetes Zeichen gefunden: '%s'"
 #: ../parser_main.c:137 ../parser_main.c:146
 #, c-format
 msgid "Warning (%s line %d): %s"
-msgstr "Warnung (%s Zeile %d): %s"
+msgstr "Warnung ('%s' Zeile '%d'): '%s'"
 
 #: ../parser_main.c:264 ../parser_main.c:275
 #, c-format
@@ -204,37 +197,23 @@ msgstr "%s: Dem Mountpunkt der Unterdomänenbasis konnte kein Speicher zugeordne
 
 #: ../parser_main.c:310 ../parser_main.c:321
 #, c-format
-msgid ""
-"Warning: unable to find a suitable fs in %s, is it mounted?\n"
-"Use --subdomainfs to override.\n"
-msgstr ""
-"Warnung: konnte kein geeignetes Dateisystem in %s finden, ist es eingehängt?\n"
-" Benutzen Sie --subdomainfs zum überschreiben.\n"
+msgid "Warning: unable to find a suitable fs in %s, is it mounted?\nUse --subdomainfs to override.\n"
+msgstr "Warnung: Es konnte kein geeignetes Dateisystem in '%s' gefunden werden. Ist es eingehängt?\nVerwenden Sie --subdomainfs, um es außer Kraft zu setzen.\n"
 
 #: ../parser_main.c:330 ../parser_main.c:341
 #, c-format
-msgid ""
-"%s: Sorry. You need root privileges to run this program.\n"
-"\n"
-msgstr ""
-"%s: Zur Ausführung dieses Programms benötigen Sie Root-Berechtigungen.\n"
-"\n"
+msgid "%s: Sorry. You need root privileges to run this program.\n\n"
+msgstr "'%s': Sie benötigen Root-Rechte, um dieses Programm ausführen zu können.\n\n"
 
 #: ../parser_main.c:337 ../parser_main.c:348
 #, c-format
-msgid ""
-"%s: Warning! You've set this program setuid root.\n"
-"Anybody who can run this program can update your AppArmor profiles.\n"
-"\n"
-msgstr ""
-"%s: Warnung! Sie haben für dieses Programm 'setuid root' festgelegt.\n"
-"Alle Personen, die dieses Programm ausführen können, können Ihre AppArmor-Profile aktualisieren.\n"
-"\n"
+msgid "%s: Warning! You've set this program setuid root.\nAnybody who can run this program can update your AppArmor profiles.\n\n"
+msgstr "'%s': Warnung! Sie haben für dieses Programm 'setuid root' festgelegt.\nAlle Personen, die dieses Programm ausführen können, können auch Ihre AppArmor-Profile aktualisieren.\n\n"
 
 #: ../parser_main.c:415 ../parser_main.c:509
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
-msgstr "%s: In der Datei wurden Fehler gefunden. Der Vorgang wird abgebrochen.\n"
+msgstr "%s: In der Datei wurde ein Fehler gefunden. Der Vorgang wird abgebrochen.\n"
 
 #: ../parser_misc.c:281 parser_yacc.y:216 parser_yacc.y:240 parser_yacc.y:346
 #: parser_yacc.y:358 parser_yacc.y:426 parser_yacc.y:528 parser_yacc.y:566
@@ -250,17 +229,13 @@ msgid "Memory allocation error."
 msgstr "Speicherzuordnungsfehler."
 
 #: ../parser_misc.c:437 ../parser_misc.c:444 ../parser_misc.c:448
-msgid ""
-"Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
-"See the apparmor.d(5) manpage for details.\n"
-msgstr ""
-"Großgeschriebene Qualifizierer \"RWLIMX\" werden in der Regel abgelehnt. Schreiben Sie Qualifizierer bitte klein.\n"
-"Weitere Informationen finden Sie auf der Manpage apparmor.d(5).\n"
+msgid "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\nSee the apparmor.d(5) manpage for details.\n"
+msgstr "Qualifizierer in Großbuchstaben \"RWLIMX\" werden außer Kraft gesetzt. Bitte ändern Sie diese in Kleinbuchstaben\nWeitere Details finden Sie auf der apparmor.d(5)-Manpage.\n"
 
 #: ../parser_misc.c:473 ../parser_misc.c:480 ../parser_misc.c:487
 #: ../parser_misc.c:484 ../parser_misc.c:491
 msgid "Conflict 'a' and 'w' perms are mutually exclusive."
-msgstr "Konflikt 'a-' und 'w'-Rechte schließen sich gegenseitig aus."
+msgstr "Konfliktive permanente Werte für 'a' und 'W' schließen sich gegenseitig aus."
 
 #: ../parser_misc.c:497 ../parser_misc.c:504 ../parser_misc.c:508
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
@@ -269,13 +244,13 @@ msgstr "Exec-Qualifizierer 'i' ist ungültig, ein Qualifizierer, mit dem ein Kon
 #: ../parser_misc.c:508 ../parser_misc.c:515 ../parser_misc.c:519
 #, c-format
 msgid "Unconfined exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
-msgstr "Unbeschränkter exec-Qualifizierer (%c%c) erlaubt, dass einige gefährliche Umgebungsvariablen zu dem uneingeschränkten Prozess gelangen; 'man 5 apparmor.d' für Details.\n"
+msgstr "Aufgrund uneingeschränkter Exec-Qualifizierer ('%c%c') können einige gefährliche Umgebungsvariablen an den uneingeschränkten Prozess übergeben werden. Weitere Details in 'man 5 apparmor.d'.\n"
 
 #: ../parser_misc.c:516 ../parser_misc.c:549 ../parser_misc.c:523
 #: ../parser_misc.c:556 ../parser_misc.c:527 ../parser_misc.c:560
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr "Exec-Qualifizierer '%c' ist ungültig, ein Qualifizierer, mit dem ein Konflikt besteht, wurde bereits angegeben"
+msgstr "Exec-Qualifizierer '%c' ist ungültig. Ein Qualifizierer, mit dem ein Konflikt besteht, wurde bereits angegeben"
 
 #: ../parser_misc.c:543 ../parser_misc.c:550 ../parser_misc.c:554
 #, c-format
@@ -285,7 +260,7 @@ msgstr "Exec-Qualifizierer '%c%c' ist ungültig, ein Qualifizierer, mit dem ein 
 #: ../parser_misc.c:591 ../parser_misc.c:598 ../parser_misc.c:602
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr "Intern: Unerwartetes Moduszeichen '%c' in Eingabe"
+msgstr "Intern: Unerwartetes Moduszeichen '%c'  in Eingabe"
 
 #: ../parser_misc.c:613 ../parser_misc.c:620 ../parser_misc.c:624
 #, c-format
@@ -297,7 +272,7 @@ msgstr "Interner Fehler generierte eine ungültige Berechtigung 0x%llx\n"
 #: ../parser_misc.c:844
 #, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr "AppArmor-Analysefehler: %s\n"
+msgstr "AppArmor-Analysefehler: '%s'\n"
 
 #: ../parser_merge.c:94
 msgid "Couldn't merge entries. Out of Memory\n"
@@ -315,7 +290,7 @@ msgstr "Profilnamen müssen mit einem '/' oder dem Schlüsselwort 'profile' begi
 #: parser_yacc.y:263 parser_yacc.y:269
 #, c-format
 msgid "Failed to create alias %s -> %s\n"
-msgstr "Konnte Alias nicht erstellen %s -> %s\n"
+msgstr "Alias %s -> %s konnte nicht erstellt werden\n"
 
 #: parser_yacc.y:399 parser_yacc.y:405
 msgid "Profile flag 'debug' is no longer valid."
@@ -332,11 +307,11 @@ msgstr "Assert: Für 'rule' wurde NULL zurückgegeben."
 
 #: parser_yacc.y:443 parser_yacc.y:488 parser_yacc.y:449 parser_yacc.y:494
 msgid "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "Üngültiger Modus. In den Ablehnungs-Regeln darf 'x' kein Exec-Qualifizierer 'i','p' oder 'u' vorranstehen."
+msgstr "Üngültiger Modus. In den Ablehnungs-Regeln darf 'x' kein Exec-Qualifizierer 'i','p' oder 'u' vorangehen."
 
 #: parser_yacc.y:466 parser_yacc.y:472
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
-msgstr "Ungültiger Modus. Vor 'x' muss ein Exec-Qualifizierer 'i', 'p','c' oder 'u' stehen"
+msgstr "Ungültiger Modus. Vor 'x' muss der Exec-Qualifizierer 'i', 'p','c' oder 'u' stehen"
 
 #: parser_yacc.y:491 parser_yacc.y:497
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
@@ -344,11 +319,11 @@ msgstr "Ungültiger Modus. Vor 'x' muss Exec-Qualifizierer 'i', 'p' oder 'u' ste
 
 #: parser_yacc.y:516 parser_yacc.y:554 parser_yacc.y:522 parser_yacc.y:560
 msgid "Assert: `network_rule' return invalid protocol."
-msgstr "Assert: `network_rule' hat ungültiges Protokoll zurückgegeben."
+msgstr "Assert: Für `network_rule' wurde ein ungültiges Protokoll zurückgegeben."
 
 #: parser_yacc.y:591 parser_yacc.y:597
 msgid "Assert: `change_profile' returned NULL."
-msgstr "Assert: `change_profile' hat NULL zurückgegeben"
+msgstr "Assert: Für `change_profile' wurde NULL zurückgegeben."
 
 #: parser_yacc.y:600
 msgid "Assert: `change_hat' returned NULL."
@@ -360,32 +335,32 @@ msgstr "Assert: Für 'hat rule' wurde NULL zurückgegeben."
 
 #: parser_yacc.y:640 parser_yacc.y:637
 msgid "Assert: 'local_profile rule' returned NULL."
-msgstr "Assert: 'local_profile-Regel' hat NULL zurückgegeben."
+msgstr "Assert: 'llocal_profile rulel' hat NULL zurückgegeben."
 
 #: parser_yacc.y:772
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr "Im if-Ausdruck wurde die nicht gesetzte Boolesche Variable %s verwendet"
+msgstr "In Bedingungssatz verwendete Boolesche Variable '%s' deaktivieren"
 
 #: parser_yacc.y:830
 msgid "subset can only be used with link rules."
-msgstr "Subset kann nur mit Link-Regeln verwendet werden."
+msgstr "Teilmenge kann nur mit Link-Regeln verwendet werden."
 
 #: parser_yacc.y:832
 msgid "link and exec perms conflict on a file rule using ->"
-msgstr "Link- und Exec-Berechtigungen geraten in Konflikt mit einer benutzen Datei-Regel ->"
+msgstr "Link- und Exec-Berechtigungen stehen in Konflikt mit einer Dateiregel, in der '->' verwendet wird"
 
 #: parser_yacc.y:834 parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transition.\n"
-msgstr "Link-Berechtigungen sind in einem benannten Übergangsprofil nicht erlaubt.\n"
+msgstr "Link-Berechtigungen sind bei einem benannten Profilübergang nicht erlaubt.\n"
 
 #: parser_yacc.y:850
 msgid "unsafe rule missing exec permissions"
-msgstr "Unsichere Regel, fehlende exec-Zugriffsrechte"
+msgstr "Unsichere Exec-Berechtigungen bei fehlender Regel"
 
 #: parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transtion.\n"
-msgstr "Link-Berechtigungen sind in einem benannten Übergangsprofil nicht erlaubt.\n"
+msgstr "Link-Berechtigungen sind bei einem benannten Profilübergang nicht erlaubt.\n"
 
 #: parser_yacc.y:866
 #, c-format
@@ -399,22 +374,22 @@ msgstr "Ungültiger Netzwerkeintrag."
 #: parser_yacc.y:1064 parser_yacc.y:1072 parser_yacc.y:1053 parser_yacc.y:1061
 #, c-format
 msgid "Invalid capability %s."
-msgstr "Ungültige Fähigkeit %s."
+msgstr "Ungültige Funktion %s."
 
 #: parser_yacc.y:1089 parser_yacc.y:1078
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr "AppArmor-Analysefehler in %s in Zeile %d: %s\n"
+msgstr "AppArmor-Analysefehler in '%s' in Zeile '%d': '%s'\n"
 
 #: parser_yacc.y:1092 parser_yacc.y:1081
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr "AppArmor-Analysefehler, Zeile %d: %s\n"
+msgstr "AppArmor-Analysefehler, Zeile '%d': '%s'\n"
 
 #: ../parser_regex.c:283
 #, c-format
 msgid "%s: Illegal open {, nesting groupings not allowed\n"
-msgstr "%s: Ungültige öffnende Klammer \"{\": verschachtelte Gruppierungen sind nicht zulässig\n"
+msgstr "%s: Öffnen ungültig {, verschachtelte Gruppierungen sind nicht zulässig\n"
 
 #: ../parser_regex.c:303
 #, c-format
@@ -429,7 +404,7 @@ msgstr "%s: Regex-Gruppierungsfehler: Ungültiges schließendes Zeichen }, kein 
 #: ../parser_regex.c:375
 #, c-format
 msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
-msgstr "%s: Regex-Gruppierungsfehler: Nicht geschlossene Gruppierung oder Zeichenklasse, schließendes Zeichen } erwartet\n"
+msgstr "'%s': Regex-Gruppierungsfehler: Nicht geschlossene Gruppierung oder Zeichenklasse, schließendes Zeichen } erwartet\n"
 
 #: ../parser_regex.c:389
 #, c-format
@@ -464,28 +439,22 @@ msgstr "%s: Fehler beim Kompilieren von regex '%s' [ursprünglich: '%s'] - mallo
 #: ../parser_policy.c:194 ../parser_policy.c:200
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
-msgstr "FEHLER beim Zusammenführen der Regeln für Profil %s; Laden nicht möglich\n"
+msgstr "FEHLER beim Zusammenführen der Regeln für Profil '%s'. Fehler beim Laden\n"
 
 #: ../parser_policy.c:226 ../parser_policy.c:232
 #, c-format
-msgid ""
-"ERROR profile %s contains policy elements not usable with this kernel:\n"
-"\t'*', '?', character ranges, and alternations are not allowed.\n"
-"\t'**' may only be used at the end of a rule.\n"
-msgstr ""
-"FEHLER: Profil %s enthält für diesen Kernel ungeeignete Richtlinienelemente:\n"
-"\t'*', '?', Zeichenbereiche und Alternativvorschläge sind nicht zulässig.\n"
-"\t'**' darf nur am Ende einer Regel verwendet werden.\n"
+msgid "ERROR profile %s contains policy elements not usable with this kernel:\n\t'*', '?', character ranges, and alternations are not allowed.\n\t'**' may only be used at the end of a rule.\n"
+msgstr "FEHLER Profil '%s' enthält Richtlinienelemente, die mit diesem Kernel nicht verwendbar sind:\n\t'*', '?', Zeichenbereiche und abwechselnde Verwendung sind nicht zulässig.\n\t'**' darf nur am Ende einer Regel verwendet werden.\n"
 
 #: ../parser_policy.c:271 ../parser_policy.c:277
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr "FEHLER bei Verarbeitung der Regexs für Profil %s; Laden nicht möglich\n"
+msgstr "FEHLER bei der Verarbeitung von regexs für Profil '%s'. Fehler beim Laden\n"
 
 #: ../parser_policy.c:298 ../parser_policy.c:304
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr "FEHLER bei Erweiterung der Variablen für Profil %s; Laden nicht möglich\n"
+msgstr "FEHLER bei der Erweiterung von Variablen für Profil '%s'. Fehler beim Laden\n"
 
 #: ../parser_policy.c:481 ../parser_policy.c:486
 #, c-format
@@ -495,18 +464,18 @@ msgstr "FEHLER in Profil %s, konnte nicht geladen werden\n"
 #: ../parser_policy.c:659 ../parser_policy.c:668
 #, c-format
 msgid "%s: Errors found during postprocessing.  Aborting.\n"
-msgstr "%s: Fehler bei der Nachbearbeitung. Der Vorgang wird abgebrochen.\n"
+msgstr "%s: Fehler bei der Nachbearbeitung. Vorgang wird abgebrochen.\n"
 
 #: ../parser_policy.c:666 ../parser_policy.c:687 ../parser_policy.c:675
 #: ../parser_policy.c:696
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
-msgstr "%s: Bei der Regex-Nachverarbeitung sind Fehler aufgetreten.  Der Vorgang wird abgebrochen.\n"
+msgstr "'%s': Bei der Regex-Nachverarbeitung sind Fehler aufgetreten. Der Vorgang wird abgebrochen.\n"
 
 #: ../parser_policy.c:673 ../parser_policy.c:682
 #, c-format
 msgid "%s: Errors found during postprocess.  Aborting.\n"
-msgstr "%s: Bei der Nachverarbeitung sind Fehler aufgetreten.  Der Vorgang wird abgebrochen.\n"
+msgstr "%s: Fehler bei der Nachbearbeitung. Vorgang wird abgebrochen.\n"
 
 #: ../parser_policy.c:680 ../parser_policy.c:689
 #, c-format
@@ -521,7 +490,7 @@ msgstr "Berechtigung %s: auf diesem System nicht unterstützt.\n"
 #: ../parser_misc.c:38 ../parser_misc.c:39
 #, c-format
 msgid "%s rule: not supported on current system.\n"
-msgstr "Regel%s: auf diesem System nicht unterstützt.\n"
+msgstr "Regel %s: auf diesem System nicht unterstützt.\n"
 
 #: parser_yacc.y:220
 msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."

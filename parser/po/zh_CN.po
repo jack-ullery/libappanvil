@@ -1,26 +1,22 @@
-# Chinese message file for YaST2 (@memory@)
-# Copyright (C) 2005 SUSE Linux Products GmbH.
-# Copyright (C) 2002 SuSE Linux AG.
-# Copyright (C) 2001 SuSE GmbH.
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: base\n"
+"Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2008-09-22 23:04-0700\n"
-"PO-Revision-Date: 2008-04-26 19:08+0800\n"
-"Last-Translator: Eric Shan <ericalways@gmail.com>\n"
-"Language-Team: Simplified Chinese\n"
+"PO-Revision-Date: 2009-02-05 09:53\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: KBabel 1.9\n"
 
 #: ../parser_include.c:96 ../parser_main.c:450
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
-msgstr "错误：无法读取配置文件 %s：%s。\n"
+msgstr "错误：无法读取配置文件 %s: %s。\n"
 
 #: ../parser_include.c:115
 msgid "Error: Could not allocate temporary file.\n"
@@ -47,22 +43,22 @@ msgstr "错误：无法分配内存。\n"
 #: ../parser_include.c:297
 #, c-format
 msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-msgstr "错误：无法为 %2$s 中行 %1$d 处的 include 分配缓冲区。\n"
+msgstr "错误：无法为 %2$s 中第 %1$d 行的 include 分配缓存区。\n"
 
 #: ../parser_include.c:313 ../parser_include.c:333
 #, c-format
 msgid "Error: Bad include at line %d in %s.\n"
-msgstr "错误：%2$s 中行 %1$d 处的 include 错误。\n"
+msgstr "错误：%2$s 中第 %1$d 行的 include 无效。\n"
 
 #: ../parser_include.c:378
 #, c-format
 msgid "Error: #include %s%c not found at line %d in %s.\n"
-msgstr "错误：未在 %4$s 中的行 %3$d 处找到 #include %1$s%2$c。\n"
+msgstr "错误：未找到 #include %1$s%2$c（在 %4$s 中第 %3$d 行）。\n"
 
 #: ../parser_include.c:459
 #, c-format
 msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-msgstr "错误：include 超过 %d 层。不处理 %s include。\n"
+msgstr "错误：include 超过 %d 级。不处理 %s include。\n"
 
 #: ../parser_interface.c:72
 msgid "Bad write position\n"
@@ -78,15 +74,15 @@ msgstr "内存不足\n"
 
 #: ../parser_interface.c:81
 msgid "Couldn't copy profile Bad memory address\n"
-msgstr "无法复制简档，内存地址无效\n"
+msgstr "无法复制配置文件，内存地址无效\n"
 
 #: ../parser_interface.c:84
 msgid "Profile doesn't conform to protocol\n"
-msgstr "简档未遵守协议\n"
+msgstr "配置文件未遵守协议\n"
 
 #: ../parser_interface.c:87
 msgid "Profile does not match signature\n"
-msgstr "简档和签名不匹配\n"
+msgstr "配置文件和签名不匹配\n"
 
 #: ../parser_interface.c:90
 msgid "Profile version not supported by Apparmor module\n"
@@ -94,11 +90,11 @@ msgstr "配置文件版本不受 Apparmor 模块支持\n"
 
 #: ../parser_interface.c:93
 msgid "Profile already exists\n"
-msgstr "简档已存在\n"
+msgstr "配置文件已存在\n"
 
 #: ../parser_interface.c:96
 msgid "Profile doesn't exist\n"
-msgstr "简档不存在\n"
+msgstr "配置文件不存在\n"
 
 #: ../parser_interface.c:99
 msgid "Unknown error\n"
@@ -157,12 +153,12 @@ msgstr "无法打开 %s － %s\n"
 #: ../parser_interface.c:822
 #, c-format
 msgid "Memory Allocation Error: Unable to remove ^%s\n"
-msgstr "内存分配错误：无法移除 ^%s\n"
+msgstr "内存分配错误：无法去除 ^%s\n"
 
 #: ../parser_interface.c:835
 #, c-format
 msgid "Memory Allocation Error: Unable to remove %s:%s."
-msgstr "内存分配错误：无法移除 %s:%s。"
+msgstr "内存分配错误：无法去除 %s:%s。"
 
 #: ../parser_interface.c:854
 msgid "unable to create work area\n"
@@ -171,12 +167,12 @@ msgstr "无法创建工作区域\n"
 #: ../parser_interface.c:862
 #, c-format
 msgid "unable to serialize profile %s\n"
-msgstr "无法序列化简档 %s\n"
+msgstr "无法序列化配置文件 %s\n"
 
 #: ../parser_interface.c:872 ../parser_interface.c:943
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
-msgstr "%s: 无法写入整个简档项\n"
+msgstr "%s: 无法写入整个配置文件项\n"
 
 #: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354 parser_lex.l:123
 #: parser_lex.l:158 parser_lex.l:191 parser_lex.l:392
@@ -187,12 +183,12 @@ msgstr "发现意外字符： '%s'"
 #: parser_lex.l:196 parser_lex.l:232
 #, c-format
 msgid "(network_mode) Found unexpected character: '%s'"
-msgstr "(network_mode) 发现意外字符：'%s'"
+msgstr "(network_mode) 发现意外字符：“%s”"
 
 #: ../parser_main.c:137 ../parser_main.c:146
 #, c-format
 msgid "Warning (%s line %d): %s"
-msgstr "警告（%s 的行 %d）：%s"
+msgstr "警告（%s 第 %d 行）：%s"
 
 #: ../parser_main.c:264 ../parser_main.c:275
 #, c-format
@@ -201,32 +197,18 @@ msgstr "%s: 无法为子域基底装入点分配内存\n"
 
 #: ../parser_main.c:310 ../parser_main.c:321
 #, c-format
-msgid ""
-"Warning: unable to find a suitable fs in %s, is it mounted?\n"
-"Use --subdomainfs to override.\n"
-msgstr ""
-"警告：无法在 %s 中找到适用的文件系统，是否已挂装文件系统？\n"
-"请使用 --subdomainfs 覆盖。\n"
+msgid "Warning: unable to find a suitable fs in %s, is it mounted?\nUse --subdomainfs to override.\n"
+msgstr "警告：无法在 %s 中找到合适的 fs，是否已装入？\n使用 --subdomainfs 覆盖。\n"
 
 #: ../parser_main.c:330 ../parser_main.c:341
 #, c-format
-msgid ""
-"%s: Sorry. You need root privileges to run this program.\n"
-"\n"
-msgstr ""
-"%s：很抱歉。您需要 root 权限来运行此程序。\n"
-"\n"
+msgid "%s: Sorry. You need root privileges to run this program.\n\n"
+msgstr "%s：对不起。您需要 root 特权才能运行此程序。\n\n"
 
 #: ../parser_main.c:337 ../parser_main.c:348
 #, c-format
-msgid ""
-"%s: Warning! You've set this program setuid root.\n"
-"Anybody who can run this program can update your AppArmor profiles.\n"
-"\n"
-msgstr ""
-"%s：警告！您已将此程序设置为 setuid root。\n"
-"运行此程序的所有用户都可以更新您的 AppArmor 配置文件。\n"
-"\n"
+msgid "%s: Warning! You've set this program setuid root.\nAnybody who can run this program can update your AppArmor profiles.\n\n"
+msgstr "%s：警告！您已将此程序设置为 setuid root。\n任何可以运行此程序的人都可以更新 AppArmor 配置文件。\n\n"
 
 #: ../parser_main.c:415 ../parser_main.c:509
 #, c-format
@@ -247,17 +229,13 @@ msgid "Memory allocation error."
 msgstr "内存分配错误。"
 
 #: ../parser_misc.c:437 ../parser_misc.c:444 ../parser_misc.c:448
-msgid ""
-"Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
-"See the apparmor.d(5) manpage for details.\n"
-msgstr ""
-"不支持大写限定符“RWLIMX”，请转换为小写\n"
-" 请参阅 apparmor.d(5) 手册页以获取详细信息。\n"
+msgid "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\nSee the apparmor.d(5) manpage for details.\n"
+msgstr "不允许使用大写限定符 “RWLIMX”，请转换为小写\n有关细节，请参见 apparmor.d(5) 手册页。\n"
 
 #: ../parser_misc.c:473 ../parser_misc.c:480 ../parser_misc.c:487
 #: ../parser_misc.c:484 ../parser_misc.c:491
 msgid "Conflict 'a' and 'w' perms are mutually exclusive."
-msgstr "'a' 和 'w' 权限是互斥冲突的。"
+msgstr "冲突的“a”和“w”许可权限互相排斥。"
 
 #: ../parser_misc.c:497 ../parser_misc.c:504 ../parser_misc.c:508
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
@@ -266,23 +244,23 @@ msgstr "Exec 限定符'i'无效，已指定了和其冲突的限定符"
 #: ../parser_misc.c:508 ../parser_misc.c:515 ../parser_misc.c:519
 #, c-format
 msgid "Unconfined exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
-msgstr "未限制的 exec 限定符（%c%c）允许向未限制进程传递危险环境变量；'man 5 apparmor.d' 以获取详细信息。\n"
+msgstr "无限制 exec 限定符 (%c%c) 允许将一些危险的环境变量传递到无限制的进程；有关细节，请参见“man 5 apparmor.d”。\n"
 
 #: ../parser_misc.c:516 ../parser_misc.c:549 ../parser_misc.c:523
 #: ../parser_misc.c:556 ../parser_misc.c:527 ../parser_misc.c:560
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr "Exec 限定符“%c”无效，指定的限定符冲突"
+msgstr "Exec 限定符“%c”无效，已指定了与其冲突的限定符"
 
 #: ../parser_misc.c:543 ../parser_misc.c:550 ../parser_misc.c:554
 #, c-format
 msgid "Exec qualifier '%c%c' invalid, conflicting qualifier already specified"
-msgstr "Exec 限定符“%c%c”无效，与已经指定的限定符冲突"
+msgstr "执行限定符“%c%c”无效，与已经指定的限定符冲突"
 
 #: ../parser_misc.c:591 ../parser_misc.c:598 ../parser_misc.c:602
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr "内部：输入中有意外模式字符“%c”"
+msgstr "内部：输入中有意外方式字符“%c”"
 
 #: ../parser_misc.c:613 ../parser_misc.c:620 ../parser_misc.c:624
 #, c-format
@@ -294,7 +272,7 @@ msgstr "内部错误产生无效的权限 0x%llx\n"
 #: ../parser_misc.c:844
 #, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr "AppArmor 语法分析程序错误：%s\n"
+msgstr "AppArmor 语法分析器错误：%s\n"
 
 #: ../parser_merge.c:94
 msgid "Couldn't merge entries. Out of Memory\n"
@@ -303,11 +281,11 @@ msgstr "无法合并项。内存不足\n"
 #: ../parser_merge.c:113
 #, c-format
 msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-msgstr "简档 %s：已将规则 %s 和多个 x 修改程序并合\n"
+msgstr "配置文件 %s：已将规则 %s 和多个 x 修改程序并合\n"
 
 #: parser_yacc.y:220
 msgid "Profile names must begin with a '/', or keyword 'profile'."
-msgstr "简档名称必须以 '/' 或关键字 'profile' 开始。"
+msgstr "配置文件名称必须以“/”或关键字“profile”开始。"
 
 #: parser_yacc.y:263 parser_yacc.y:269
 #, c-format
@@ -316,12 +294,12 @@ msgstr "无法创建别名 %s -> %s\n"
 
 #: parser_yacc.y:399 parser_yacc.y:405
 msgid "Profile flag 'debug' is no longer valid."
-msgstr "简档标记“debug”不再有效。"
+msgstr "配置文件标志“debug”不再有效。"
 
 #: parser_yacc.y:405 parser_yacc.y:411
 #, c-format
 msgid "Invalid profile flag: %s."
-msgstr "无效的简档标记：%s。"
+msgstr "无效的配置文件标志：%s。"
 
 #: parser_yacc.y:440 parser_yacc.y:462 parser_yacc.y:446 parser_yacc.y:468
 msgid "Assert: `rule' returned NULL."
@@ -329,27 +307,27 @@ msgstr "声明：`rule'返回 NULL。"
 
 #: parser_yacc.y:443 parser_yacc.y:488 parser_yacc.y:449 parser_yacc.y:494
 msgid "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "模式无效，在拒绝规则中，“x”不能在 exec 限定符“i”、“p”或“u”之后"
+msgstr "模式无效，在拒绝规则中，“x”不能在执行限定符“i”、“p”或“u”之后"
 
 #: parser_yacc.y:466 parser_yacc.y:472
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
-msgstr "模式无效，“x”必须在 exec 限定符“i”、“p”、“c”或“u”之后"
+msgstr "模式无效，“x”必须在执行限定符“i”、“p”、“c”或“u”之后"
 
 #: parser_yacc.y:491 parser_yacc.y:497
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "模式无效，“x”必须在 exec 限定符“i”、“p”或“u”之后"
+msgstr "方式无效，“x”前面必须带有 exec 限定符“i”、“p”或“u”"
 
 #: parser_yacc.y:516 parser_yacc.y:554 parser_yacc.y:522 parser_yacc.y:560
 msgid "Assert: `network_rule' return invalid protocol."
-msgstr "声明：`network_rule' 返回无效协议"
+msgstr "声明：“network_rule”返回无效协议。"
 
 #: parser_yacc.y:591 parser_yacc.y:597
 msgid "Assert: `change_profile' returned NULL."
-msgstr "声明：`change_profile' 返回 NULL。"
+msgstr "声明：“change_profile”返回 NULL。"
 
 #: parser_yacc.y:600
 msgid "Assert: `change_hat' returned NULL."
-msgstr "声明：`change_hat' 返回 NULL。"
+msgstr "声明：“change_hat”返回 NULL。"
 
 #: parser_yacc.y:631 parser_yacc.y:628
 msgid "Assert: 'hat rule' returned NULL."
@@ -357,12 +335,12 @@ msgstr "声明：'hat rule'返回 NULL。"
 
 #: parser_yacc.y:640 parser_yacc.y:637
 msgid "Assert: 'local_profile rule' returned NULL."
-msgstr "声明：'local_profile' 返回 NULL。"
+msgstr "声明：“local_profile rule”返回 NULL。"
 
 #: parser_yacc.y:772
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr "在 if 表达式中使用了未设置的布尔变量 %s"
+msgstr "取消设置 if 表达式中使用的布尔变量 %s"
 
 #: parser_yacc.y:830
 msgid "subset can only be used with link rules."
@@ -374,15 +352,15 @@ msgstr "链接和执行权限冲突，由于一个文件规则使用 ->"
 
 #: parser_yacc.y:834 parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transition.\n"
-msgstr "在命名的简档转换中，链接权限不被允许。\n"
+msgstr "在命名的配置文件转换中，链接权限不受允许。\n"
 
 #: parser_yacc.y:850
 msgid "unsafe rule missing exec permissions"
-msgstr "不安全规则缺失 exec 权限"
+msgstr "不安全规则缺少 exec 许可权限"
 
 #: parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transtion.\n"
-msgstr "在命名的简档转换中，链接权限不被允许。\n"
+msgstr "在命名的配置文件转换中，链接权限不受允许。\n"
 
 #: parser_yacc.y:866
 #, c-format
@@ -391,22 +369,22 @@ msgstr "是否缺少行结束字符？（项：%s）"
 
 #: parser_yacc.y:1000 parser_yacc.y:1010 parser_yacc.y:989 parser_yacc.y:999
 msgid "Invalid network entry."
-msgstr "无效网络条目。"
+msgstr "无效网络项。"
 
 #: parser_yacc.y:1064 parser_yacc.y:1072 parser_yacc.y:1053 parser_yacc.y:1061
 #, c-format
 msgid "Invalid capability %s."
-msgstr "容量 %s 无效。"
+msgstr "功能 %s 无效。"
 
 #: parser_yacc.y:1089 parser_yacc.y:1078
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr "%s 中的行 %d 处有 AppArmor 语法分析程序错误：%s\n"
+msgstr "AppArmor 语法分析器在 %s 的第 %d 行出错：%s\n"
 
 #: parser_yacc.y:1092 parser_yacc.y:1081
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr "AppArmor 语法分析程序错误，行 %d：%s\n"
+msgstr "AppArmor 语法分析器错误，第 %d 行：%s\n"
 
 #: ../parser_regex.c:283
 #, c-format
@@ -426,7 +404,7 @@ msgstr "%s: Regex 分组错误：无效的右侧花括号 }，未检测到匹配
 #: ../parser_regex.c:375
 #, c-format
 msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
-msgstr "%s：Regex 分组错误：未括起分组或字符类，应使用括号 }\n"
+msgstr "%s: Regex 分组错误：组或字符类未关闭，需要右侧花括号 }\n"
 
 #: ../parser_regex.c:389
 #, c-format
@@ -461,33 +439,27 @@ msgstr "%s: 未能编译 regex'%s'[原始：'%s'] － malloc 失败\n"
 #: ../parser_policy.c:194 ../parser_policy.c:200
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
-msgstr "合并配置文件 %s 的规则时出错，未能装入\n"
+msgstr "合并配置文件 %s 的规则时出错，无法装载\n"
 
 #: ../parser_policy.c:226 ../parser_policy.c:232
 #, c-format
-msgid ""
-"ERROR profile %s contains policy elements not usable with this kernel:\n"
-"\t'*', '?', character ranges, and alternations are not allowed.\n"
-"\t'**' may only be used at the end of a rule.\n"
-msgstr ""
-"错误：配置文件 %s 包含不可与此内核一起使用的策略元素：\n"
-"\t不允许字符范围“*”和“?”以及转义符。\n"
-"\t只能在规则末尾使用“**”。\n"
+msgid "ERROR profile %s contains policy elements not usable with this kernel:\n\t'*', '?', character ranges, and alternations are not allowed.\n\t'**' may only be used at the end of a rule.\n"
+msgstr "错误 配置文件 %s 包含不能与此内核一起使用的策略元素：\n\t不允许“*”、“?”、字符范围，也不允许“或”操作。\n\t“**”只能在规则结尾处使用。\n"
 
 #: ../parser_policy.c:271 ../parser_policy.c:277
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr "为配置文件 %s 处理 regexs 时出错，未能装入\n"
+msgstr "处理配置文件 %s 的 regex 时出错，无法装载\n"
 
 #: ../parser_policy.c:298 ../parser_policy.c:304
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr "为配置文件 %s 展开变量时出错，未能装入\n"
+msgstr "扩展配置文件 %s 的变量时出错，无法装载\n"
 
 #: ../parser_policy.c:481 ../parser_policy.c:486
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
-msgstr "简档 %s 中存在错误，未能装载\n"
+msgstr "配置文件 %s 中存在错误，未能装载\n"
 
 #: ../parser_policy.c:659 ../parser_policy.c:668
 #, c-format
@@ -513,19 +485,19 @@ msgstr "%s: 在组合规则后处理中发现错误。正在中止。\n"
 #: ../parser_misc.c:37 ../parser_misc.c:38
 #, c-format
 msgid "%s permission: not supported on current system.\n"
-msgstr ""
+msgstr "%s 许可权限：不受当前系统支持。\n"
 
 #: ../parser_misc.c:38 ../parser_misc.c:39
 #, c-format
 msgid "%s rule: not supported on current system.\n"
-msgstr ""
+msgstr "%s 规则：不受当前系统支持。\n"
 
 #: parser_yacc.y:220
-#, fuzzy
 msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
-msgstr "简档名称必须以 '/' 或关键字 'profile' 开始。"
+msgstr "配置文件名称必须以“/”或者关键字“profile”或“hat”开头。"
 
 #: ../parser_policy.c:389
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR adding hat access rule for profile %s\n"
-msgstr "为配置文件 %s 展开变量时出错，未能装入\n"
+msgstr "为配置文件 %s 添加 hat 访问规则时出错\n"
+

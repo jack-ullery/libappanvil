@@ -43,12 +43,14 @@ msgstr "Hiba: nincs elég memória\n"
 #: ../parser_include.c:176
 #, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
-msgstr "Hiba: a(z) %s alapkönyvtár nem érvényes könyvtár, ezért kihagyásra kerül.\n"
+msgstr ""
+"Hiba: a(z) %s alapkönyvtár nem érvényes könyvtár, ezért kihagyásra kerül.\n"
 
 #: ../parser_include.c:190
 #, c-format
 msgid "Error: Could not add directory %s to search path.\n"
-msgstr "Hiba: nem sikerült a(z) %s könyvtár hozzáadása a keresési útvonalhoz.\n"
+msgstr ""
+"Hiba: nem sikerült a(z) %s könyvtár hozzáadása a keresési útvonalhoz.\n"
 
 # modules/printconf/printconf_write_printer.ycp:30
 # clients/printconf_write.ycp:308
@@ -59,7 +61,8 @@ msgstr "Hiba: nem sikerült lefoglalni memóriát\n"
 #: ../parser_include.c:297
 #, c-format
 msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-msgstr "Hiba: nem sikerült lefoglalni puffert a beágyazáshoz (sor: %d, fájl: %s).\n"
+msgstr ""
+"Hiba: nem sikerült lefoglalni puffert a beágyazáshoz (sor: %d, fájl: %s).\n"
 
 #: ../parser_include.c:313 ../parser_include.c:333
 #, c-format
@@ -75,7 +78,9 @@ msgstr "Hiba: #include %s%c nem található (sor: %d, fájl: %s).\n"
 #: ../parser_include.c:459
 #, c-format
 msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-msgstr "Hiba: több mint %d szintnyi beágyazás.  A(z)%s beágyazás nem került feldolgozásra.\n"
+msgstr ""
+"Hiba: több mint %d szintnyi beágyazás.  A(z)%s beágyazás nem került "
+"feldolgozásra.\n"
 
 #: ../parser_interface.c:72
 msgid "Bad write position\n"
@@ -276,23 +281,33 @@ msgstr "Ütközés: 'a' és 'w' kölcsönösen kizáró."
 
 #: ../parser_misc.c:497 ../parser_misc.c:504 ../parser_misc.c:508
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
-msgstr "Az 'i' végrehajtás-módosító érvénytelen, már meg van adva egy ütköző minősítő"
+msgstr ""
+"Az 'i' végrehajtás-módosító érvénytelen, már meg van adva egy ütköző minősítő"
 
 #: ../parser_misc.c:508 ../parser_misc.c:515 ../parser_misc.c:519
 #, c-format
-msgid "Unconfined exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
-msgstr "A korlátozás nélküli végrehajtás-minősítő (%c%c) lehetővé teszi egyes veszélyes környezeti változók átadását a korlátozás nélküli folyamatnak; a részletekkel kapcsolatban lásd a 'man 5 apparmor.d' kézikönyvoldalt.\n"
+msgid ""
+"Unconfined exec qualifier (%c%c) allows some dangerous environment variables "
+"to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
+msgstr ""
+"A korlátozás nélküli végrehajtás-minősítő (%c%c) lehetővé teszi egyes "
+"veszélyes környezeti változók átadását a korlátozás nélküli folyamatnak; a "
+"részletekkel kapcsolatban lásd a 'man 5 apparmor.d' kézikönyvoldalt.\n"
 
 #: ../parser_misc.c:516 ../parser_misc.c:549 ../parser_misc.c:523
 #: ../parser_misc.c:556 ../parser_misc.c:527 ../parser_misc.c:560
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr "A(z) '%c' végrehajtás-módosító érvénytelen, már meg van adva egy ütköző minősítő"
+msgstr ""
+"A(z) '%c' végrehajtás-módosító érvénytelen, már meg van adva egy ütköző "
+"minősítő"
 
 #: ../parser_misc.c:543 ../parser_misc.c:550 ../parser_misc.c:554
 #, c-format
 msgid "Exec qualifier '%c%c' invalid, conflicting qualifier already specified"
-msgstr "A(z) '%c%c' végrehajtás-módosító érvénytelen, már meg van adva egy ütköző minősítő"
+msgstr ""
+"A(z) '%c%c' végrehajtás-módosító érvénytelen, már meg van adva egy ütköző "
+"minősítő"
 
 #: ../parser_misc.c:591 ../parser_misc.c:598 ../parser_misc.c:602
 #, c-format
@@ -322,7 +337,8 @@ msgstr "%s profil: a(z) %s szabály össze lett fésülve több x módosítóval
 
 #: parser_yacc.y:220
 msgid "Profile names must begin with a '/', or keyword 'profile'."
-msgstr "A profil nevének '/' karakterrel, vagy a 'profil' kulcsszóval kell kezdődnie."
+msgstr ""
+"A profil nevének '/' karakterrel, vagy a 'profil' kulcsszóval kell kezdődnie."
 
 #: parser_yacc.y:263 parser_yacc.y:269
 #, c-format
@@ -343,16 +359,25 @@ msgid "Assert: `rule' returned NULL."
 msgstr "Assert: A `rule' NULL értéket adott vissza."
 
 #: parser_yacc.y:443 parser_yacc.y:488 parser_yacc.y:449 parser_yacc.y:494
-msgid "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "Érvénytelen mód, az 'x' előtt az 'i', 'p' vagy 'u' végrehajtás-módosító kell, hogy álljon"
+msgid ""
+"Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', "
+"'p', or 'u'"
+msgstr ""
+"Érvénytelen mód, az 'x' előtt az 'i', 'p' vagy 'u' végrehajtás-módosító "
+"kell, hogy álljon"
 
 #: parser_yacc.y:466 parser_yacc.y:472
-msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
-msgstr "Érvénytelen mód, az 'x' előtt az 'i', 'p', 'c' vagy 'u' végrehajtás-módosító kell, hogy álljon"
+msgid ""
+"Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
+msgstr ""
+"Érvénytelen mód, az 'x' előtt az 'i', 'p', 'c' vagy 'u' végrehajtás-módosító "
+"kell, hogy álljon"
 
 #: parser_yacc.y:491 parser_yacc.y:497
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "Érvénytelen mód, az 'x' előtt az 'i', 'p' vagy 'u' végrehajtás-módosító kell, hogy álljon"
+msgstr ""
+"Érvénytelen mód, az 'x' előtt az 'i', 'p' vagy 'u' végrehajtás-módosító "
+"kell, hogy álljon"
 
 #: parser_yacc.y:516 parser_yacc.y:554 parser_yacc.y:522 parser_yacc.y:560
 msgid "Assert: `network_rule' return invalid protocol."
@@ -389,7 +414,8 @@ msgstr "A link és futtatás jogosultságok ütköznek egy fájl szabályon -> "
 
 #: parser_yacc.y:834 parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transition.\n"
-msgstr "link jogosultságok nem engedélyezettek egy nevezett profil átmenetében.\n"
+msgstr ""
+"link jogosultságok nem engedélyezettek egy nevezett profil átmenetében.\n"
 
 #: parser_yacc.y:850
 msgid "unsafe rule missing exec permissions"
@@ -397,7 +423,8 @@ msgstr "nem biztonságos szabályból hiányzik a futtatási jogosultság"
 
 #: parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transtion.\n"
-msgstr "link jogosultságok nem engedélyezettek egy nevezett profil átmenetében.\n"
+msgstr ""
+"link jogosultságok nem engedélyezettek egy nevezett profil átmenetében.\n"
 
 #: parser_yacc.y:866
 #, c-format
@@ -431,16 +458,22 @@ msgstr "%s: Érvénytelen nyitott {, a csoportosítások nem ágyazhatók egymá
 #: ../parser_regex.c:303
 #, c-format
 msgid "%s: Regex grouping error: Invalid number of items between {}\n"
-msgstr "%s: Regex csoportosítási hiba: Érvénytelen számú elem a { és } között\n"
+msgstr ""
+"%s: Regex csoportosítási hiba: Érvénytelen számú elem a { és } között\n"
 
 #: ../parser_regex.c:309
 #, c-format
-msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
-msgstr "%s: Regex csoportosítási hiba: Érvénytelen záró }, nem található hozzá tartozó nyitott { \n"
+msgid ""
+"%s: Regex grouping error: Invalid close }, no matching open { detected\n"
+msgstr ""
+"%s: Regex csoportosítási hiba: Érvénytelen záró }, nem található hozzá "
+"tartozó nyitott { \n"
 
 #: ../parser_regex.c:375
 #, c-format
-msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
+msgid ""
+"%s: Regex grouping error: Unclosed grouping or character class, expecting "
+"close }\n"
 msgstr "%s: Regex csoportosítási hiba: Be nem zárt csoport, záró } hiányzik\n"
 
 #: ../parser_regex.c:389
@@ -456,7 +489,8 @@ msgstr "%s: A '%s' bemeneti sor értelmezése nem sikerült\n"
 #: ../parser_regex.c:445
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-msgstr "%s: A(z) '%s' reguláris kifejezés lefordítása nem sikerült [eredeti: '%s']\n"
+msgstr ""
+"%s: A(z) '%s' reguláris kifejezés lefordítása nem sikerült [eredeti: '%s']\n"
 
 #: ../parser_regex.c:449
 #, c-format
@@ -471,12 +505,15 @@ msgstr "%s: hiba oka: '%s'\n"
 #: ../parser_regex.c:468
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-msgstr "%s: A(z) '%s' reguláris kifejezés lefordítása nem sikerült [eredeti: '%s'] - malloc meghiúsult\n"
+msgstr ""
+"%s: A(z) '%s' reguláris kifejezés lefordítása nem sikerült [eredeti: '%s'] - "
+"malloc meghiúsult\n"
 
 #: ../parser_policy.c:194 ../parser_policy.c:200
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
-msgstr "HIBA a(z) %s profil szabályainak összefésülésénél, a betöltés nem sikerült\n"
+msgstr ""
+"HIBA a(z) %s profil szabályainak összefésülésénél, a betöltés nem sikerült\n"
 
 #: ../parser_policy.c:226 ../parser_policy.c:232
 #, c-format
@@ -485,19 +522,23 @@ msgid ""
 "\t'*', '?', character ranges, and alternations are not allowed.\n"
 "\t'**' may only be used at the end of a rule.\n"
 msgstr ""
-"HIBA: a(z) %s profil ezzel a kernellel nem használható irányelvelemeket tartalmaz:\n"
+"HIBA: a(z) %s profil ezzel a kernellel nem használható irányelvelemeket "
+"tartalmaz:\n"
 "\t'*', '?', karaktertartományok és alternatívák használata nem megengedett.\n"
 "\t'**' csak a szabály végén használható.\n"
 
 #: ../parser_policy.c:271 ../parser_policy.c:277
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr "HIBA a(z) %s profil reguláris kifejezéseinek feldolgozásakor, a betöltés nem sikerült\n"
+msgstr ""
+"HIBA a(z) %s profil reguláris kifejezéseinek feldolgozásakor, a betöltés nem "
+"sikerült\n"
 
 #: ../parser_policy.c:298 ../parser_policy.c:304
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr "HIBA a(z) %s profil változóinak kibontásakor, a betöltés nem sikerült\n"
+msgstr ""
+"HIBA a(z) %s profil változóinak kibontásakor, a betöltés nem sikerült\n"
 
 #: ../parser_policy.c:481 ../parser_policy.c:486
 #, c-format
@@ -513,7 +554,8 @@ msgstr "%s: Hibák az utófeldolgozás közben. A program leáll.\n"
 #: ../parser_policy.c:696
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
-msgstr "%s: Hibák a reguláris kifejezés utófeldolgozása közben. A program leáll.\n"
+msgstr ""
+"%s: Hibák a reguláris kifejezés utófeldolgozása közben. A program leáll.\n"
 
 #: ../parser_policy.c:673 ../parser_policy.c:682
 #, c-format
@@ -523,7 +565,8 @@ msgstr "%s: Hibák az utófeldolgozás közben. A program leáll.\n"
 #: ../parser_policy.c:680 ../parser_policy.c:689
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
-msgstr "%s: Hiba a szabályok egyesítésének utófeldolgozásában. A program leáll.\n"
+msgstr ""
+"%s: Hiba a szabályok egyesítésének utófeldolgozásában. A program leáll.\n"
 
 #: ../parser_misc.c:37 ../parser_misc.c:38
 #, c-format
@@ -537,10 +580,11 @@ msgstr "%s szabály: ezen a rendszeren nem támogatott.\n"
 
 #: parser_yacc.y:220
 msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
-msgstr "A profil nevének '/' karakterrel, 'profil' vagy 'hat' kulcsszóval kell kezdődnie."
+msgstr ""
+"A profil nevének '/' karakterrel, 'profil' vagy 'hat' kulcsszóval kell "
+"kezdődnie."
 
 #: ../parser_policy.c:389
 #, c-format
 msgid "ERROR adding hat access rule for profile %s\n"
 msgstr "HIBA a hat hozzáférési szabály a(z) %s profilhoz való hozzáadásakor\n"
-

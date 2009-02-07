@@ -1,71 +1,64 @@
-# translation of apparmor-parser.po to Japanese
-# Japanese message file for YaST2 (@memory@).
-# Copyright (C) 2005 SUSE Linux Products GmbH.
-# Copyright (C) 2002 SuSE Linux AG.
-# Copyright (C) 2000, 2001 SuSE GmbH.
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
 #
-# Mike Fabian <mfabian@suse.de>, 2000, 2001.
-# Yasuhiko Kamata <belphegor@belbel.or.jp>, 2007, 2008.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2008-09-22 23:04-0700\n"
-"PO-Revision-Date: 2008-09-23 17:52+0900\n"
-"Last-Translator: Yasuhiko Kamata <belphegor@belbel.or.jp>\n"
-"Language-Team: Japanese <opensuse-ja@opensuse.org>\n"
+"PO-Revision-Date: 2009-02-04 15:11\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: KBabel 1.11.4\n"
 
 #: ../parser_include.c:96 ../parser_main.c:450
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
-msgstr "エラー: プロファイル %s を読み込めませんでした: %s\n"
+msgstr "エラー:プロファイル %s: %s を読み込めませんでした。\n"
 
 #: ../parser_include.c:115
 msgid "Error: Could not allocate temporary file.\n"
-msgstr "エラー: 一時ファイルを割り当てることができませんでした。\n"
+msgstr "エラー:一時ファイルを割り当てることができませんでした。\n"
 
 #: ../parser_include.c:166
 msgid "Error: Out of memory.\n"
-msgstr "エラー: メモリが足りません。\n"
+msgstr "エラー:メモリ不足\n"
 
 #: ../parser_include.c:176
 #, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
-msgstr "エラー: basedir %s はディレクトリではありません。スキップします。\n"
+msgstr "エラー:ベースディレクトリ %s はディレクトリではありません。スキップしています\n"
 
 #: ../parser_include.c:190
 #, c-format
 msgid "Error: Could not add directory %s to search path.\n"
-msgstr "エラー: ディレクトリ %s を検索パスに追加することができませんでした。\n"
+msgstr "エラー:ディレクトリ %s を検索パスに追加できませんでした。\n"
 
 #: ../parser_include.c:200
 msgid "Error: Could not allocate memory.\n"
-msgstr "エラー: メモリを割り当てることができませんでした。\n"
+msgstr "エラー:メモリを割り当てることができませんでした。\n"
 
 #: ../parser_include.c:297
 #, c-format
 msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-msgstr "エラー: %2$s 内 %1$d 行目の取り込み用バッファを割り当てることができませんでした。\n"
+msgstr "エラー:%2$s の行 %1$d のインクルードにバッファを割り当てられませんでした。\n"
 
 #: ../parser_include.c:313 ../parser_include.c:333
 #, c-format
 msgid "Error: Bad include at line %d in %s.\n"
-msgstr "エラー: %2$s 内 %1$d 行目に不正な取り込み指令があります。\n"
+msgstr "エラー:%2$s の行 %1$d に不正なインクルードがあります。\n"
 
 #: ../parser_include.c:378
 #, c-format
 msgid "Error: #include %s%c not found at line %d in %s.\n"
-msgstr "エラー: %4$s 内 %3$d 行目にて '#include %1$s%2$c' が見つかりませんでした\n"
+msgstr "エラー: #include %1$s%2$c が %4$s の行 %3$d に見つかりません。\n"
 
 #: ../parser_include.c:459
 #, c-format
 msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-msgstr "エラー: 取り込み指令が %d レベルを超えました。%s の取り込み指令は処理されません。\n"
+msgstr "エラー:インクルードの %d レベルを超えました。%s インクルードを処理していません\n"
 
 #: ../parser_interface.c:72
 msgid "Bad write position\n"
@@ -73,7 +66,7 @@ msgstr "不正書き込み位置\n"
 
 #: ../parser_interface.c:75
 msgid "Permission denied\n"
-msgstr "アクセスが拒否されました\n"
+msgstr "拒否されたパーミッション\n"
 
 #: ../parser_interface.c:78
 msgid "Out of memory\n"
@@ -81,7 +74,7 @@ msgstr "メモリ不足\n"
 
 #: ../parser_interface.c:81
 msgid "Couldn't copy profile Bad memory address\n"
-msgstr "不正なメモリアドレスのため、プロファイルをコピーできませんでした\n"
+msgstr "プロファイルの不正メモリアドレスをコピーできませんでした\n"
 
 #: ../parser_interface.c:84
 msgid "Profile doesn't conform to protocol\n"
@@ -89,11 +82,11 @@ msgstr "プロファイルがプロトコルに準拠していません\n"
 
 #: ../parser_interface.c:87
 msgid "Profile does not match signature\n"
-msgstr "プロファイルと署名が一致していません\n"
+msgstr "プロファイルが署名に一致していません\n"
 
 #: ../parser_interface.c:90
 msgid "Profile version not supported by Apparmor module\n"
-msgstr "Apparmor モジュールではプロファイルバージョンをサポートしていません。\n"
+msgstr "プロファイルバージョンがApparmorモジュールでサポートされていません\n"
 
 #: ../parser_interface.c:93
 msgid "Profile already exists\n"
@@ -110,42 +103,42 @@ msgstr "不明なエラー\n"
 #: ../parser_interface.c:116
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr "%s: \"%s\"を追加できません。"
+msgstr "%s: 「%s」を追加できません。"
 
 #: ../parser_interface.c:121
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr "%s: \"%s\"を置換できません。"
+msgstr "%s: 「%s」を置換できません。"
 
 #: ../parser_interface.c:126
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr "%s: \"%s\"を削除できません。"
+msgstr "%s: 「%s」を削除できません。"
 
 #: ../parser_interface.c:131
 #, c-format
 msgid "%s: Unable to write to stdout\n"
-msgstr "%s: 標準出力に書き込めません\n"
+msgstr "%s: stdoutに書き込めません\n"
 
 #: ../parser_interface.c:135 ../parser_interface.c:158
 #, c-format
 msgid "%s: ASSERT: Invalid option: %d\n"
-msgstr "%s: ASSERT: 無効なオプション: %d\n"
+msgstr "%s: ASSERT:無効なオプション: %d\n"
 
 #: ../parser_interface.c:144
 #, c-format
 msgid "Addition succeeded for \"%s\".\n"
-msgstr "\"%s\" の追加に成功しました。\n"
+msgstr "「%s」に続く追加。\n"
 
 #: ../parser_interface.c:148
 #, c-format
 msgid "Replacement succeeded for \"%s\".\n"
-msgstr "\"%s\" の置換に成功しました。\n"
+msgstr "「%s」に続く置換。\n"
 
 #: ../parser_interface.c:152
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
-msgstr "\"%s\" の削除に成功しました。\n"
+msgstr "「%s」に続く削除。\n"
 
 #: ../parser_interface.c:247
 #, c-format
@@ -155,7 +148,7 @@ msgstr "PANIC 不正増分バッファ %p pos %p ext %p size %d res %p\n"
 #: ../parser_interface.c:798 ../parser_interface.c:931
 #, c-format
 msgid "Unable to open %s - %s\n"
-msgstr "%s を開くことができませんでした - %s\n"
+msgstr "開けません %s - %s\n"
 
 #: ../parser_interface.c:822
 #, c-format
@@ -174,12 +167,12 @@ msgstr "作業領域を作成できません\n"
 #: ../parser_interface.c:862
 #, c-format
 msgid "unable to serialize profile %s\n"
-msgstr "プロファイル %s をシリアライズすることができません\n"
+msgstr "プロファイル%sを順番に並べることができません\n"
 
 #: ../parser_interface.c:872 ../parser_interface.c:943
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
-msgstr "%s: プロファイル設定全体を書き込むことができませんでした\n"
+msgstr "%s: プロファイルエントリ全体を書き込むことができません\n"
 
 #: parser_lex.l:122 parser_lex.l:155 parser_lex.l:354 parser_lex.l:123
 #: parser_lex.l:158 parser_lex.l:191 parser_lex.l:392
@@ -190,46 +183,32 @@ msgstr "予期しない文字を検出しました: '%s'"
 #: parser_lex.l:196 parser_lex.l:232
 #, c-format
 msgid "(network_mode) Found unexpected character: '%s'"
-msgstr "(ip_mode) 予期しない文字を検出しました: '%s'"
+msgstr "(network_mode) 予期しない文字が見つかりました:「%s」"
 
 #: ../parser_main.c:137 ../parser_main.c:146
 #, c-format
 msgid "Warning (%s line %d): %s"
-msgstr "警告 (%s 行 %d): %s"
+msgstr "警告(%s 行 %d): %s"
 
 #: ../parser_main.c:264 ../parser_main.c:275
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
-msgstr "%s: サブドメインベースのマウントポイントに対してメモリを割り当てることができませんでした\n"
+msgstr "%s: サブドメインベースマウントポイントに対してメモリを割り当てることができませんでした\n"
 
 #: ../parser_main.c:310 ../parser_main.c:321
 #, c-format
-msgid ""
-"Warning: unable to find a suitable fs in %s, is it mounted?\n"
-"Use --subdomainfs to override.\n"
-msgstr ""
-"警告: %s に適切なファイルシステムが見つかりません。マウントされていないかもしれません。\n"
-"--subdomainfs オプションを指定するとこの警告が表示されなくなります。\n"
+msgid "Warning: unable to find a suitable fs in %s, is it mounted?\nUse --subdomainfs to override.\n"
+msgstr "警告:適切なfsが %s に見つかりません。マウントされているか確認してください。\n--subdomainfsを使用して上書きしてください。\n"
 
 #: ../parser_main.c:330 ../parser_main.c:341
 #, c-format
-msgid ""
-"%s: Sorry. You need root privileges to run this program.\n"
-"\n"
-msgstr ""
-"%s: 申し訳ありません。このプログラムを実行するには、 root 権限が必要です。\n"
-"\n"
+msgid "%s: Sorry. You need root privileges to run this program.\n\n"
+msgstr "%s: このプログラムを実行するには、ルート特権が必要です。\n\n"
 
 #: ../parser_main.c:337 ../parser_main.c:348
 #, c-format
-msgid ""
-"%s: Warning! You've set this program setuid root.\n"
-"Anybody who can run this program can update your AppArmor profiles.\n"
-"\n"
-msgstr ""
-"%s: 警告! このプログラムは setuid root 設定されています。\n"
-"このプログラムを実行できれば誰でも AppArmor プロファイルを更新できてしまいます。\n"
-"\n"
+msgid "%s: Warning! You've set this program setuid root.\nAnybody who can run this program can update your AppArmor profiles.\n\n"
+msgstr "%s: 警告! このプログラムのsetuidをルートに設定しました。\nこのプログラムを実行できるユーザはすべて、AppArmorプロファイルを更新できます。\n\n"
 
 #: ../parser_main.c:415 ../parser_main.c:509
 #, c-format
@@ -250,67 +229,63 @@ msgid "Memory allocation error."
 msgstr "メモリ割り当てエラー。"
 
 #: ../parser_misc.c:437 ../parser_misc.c:444 ../parser_misc.c:448
-msgid ""
-"Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
-"See the apparmor.d(5) manpage for details.\n"
-msgstr ""
-"大文字の修飾子 \"RWLIMX\" は古い表現です。小文字に修正してください。\n"
-"詳しくは man ページの apparmor.d(5) をご覧ください。\n"
+msgid "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\nSee the apparmor.d(5) manpage for details.\n"
+msgstr "大文字のクォリファイア「RWLIMX」は推奨されていません。小文字に変換してください。\n詳細は、apparmor.d(5)のマニュアルページを参照してください。\n"
 
 #: ../parser_misc.c:473 ../parser_misc.c:480 ../parser_misc.c:487
 #: ../parser_misc.c:484 ../parser_misc.c:491
 msgid "Conflict 'a' and 'w' perms are mutually exclusive."
-msgstr "'a' と 'w' のパラメータを同時に設定することはできません。"
+msgstr "競合:パーミッション「a」と「w」は互いに排他的です。"
 
 #: ../parser_misc.c:497 ../parser_misc.c:504 ../parser_misc.c:508
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
-msgstr "実行修飾子 'i' は無効です。相反する修飾子が既に指定されています"
+msgstr "Execクォリファイア「i」は無効です、相反するクォリファイアがすでに指定されています"
 
 #: ../parser_misc.c:508 ../parser_misc.c:515 ../parser_misc.c:519
 #, c-format
 msgid "Unconfined exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
-msgstr "無制限の実行修飾子 (%c%c) により制限のないプロセスに対して危険な環境変数を渡してしまいます; 詳細は 'man 5 apparmor.d' をご覧ください。\n"
+msgstr "制限されていないexecクォリファイア(%c%c)によって、危険な環境変数が制限されていないプロセスに渡されます。詳細は、「man 5 apparmor.d」を参照してください。\n"
 
 #: ../parser_misc.c:516 ../parser_misc.c:549 ../parser_misc.c:523
 #: ../parser_misc.c:556 ../parser_misc.c:527 ../parser_misc.c:560
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr "実行修飾子 '%c' は無効です。相反する修飾子がすでに指定されています"
+msgstr "Execクォリファイア「%c」は無効です。競合するクォリファイアがすで指定されています"
 
 #: ../parser_misc.c:543 ../parser_misc.c:550 ../parser_misc.c:554
 #, c-format
 msgid "Exec qualifier '%c%c' invalid, conflicting qualifier already specified"
-msgstr "実行修飾子 '%c%c' は無効です。相反する修飾子がすでに指定されています"
+msgstr "Execクォリファイア'%c%c' は無効です。競合するクォリファイアがすでに指定されています"
 
 #: ../parser_misc.c:591 ../parser_misc.c:598 ../parser_misc.c:602
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr "内部: 予期しないモード文字 '%c' が入力されています"
+msgstr "内部:予期しないモード文字「%c」が入力されています"
 
 #: ../parser_misc.c:613 ../parser_misc.c:620 ../parser_misc.c:624
 #, c-format
 msgid "Internal error generated invalid perm 0x%llx\n"
-msgstr "内部エラーが発生しました。許可設定が正しくありません 0x%llx\n"
+msgstr "内部エラーが発生しました。パーミッシオンが正しくありません 0x%llx\n"
 
 #: ../parser_misc.c:833 ../parser_symtab.c:556 ../parser_regex.c:658
 #: ../parser_variable.c:227 ../parser_misc.c:840 ../parser_regex.c:660
 #: ../parser_misc.c:844
 #, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr "AppArmor 構文解析エラー: %s\n"
+msgstr "AppArmorパーサエラー: %s\n"
 
 #: ../parser_merge.c:94
 msgid "Couldn't merge entries. Out of Memory\n"
-msgstr "項目を統合できませんでした。メモリ不足\n"
+msgstr "エントリをマージできませんでした。メモリ不足\n"
 
 #: ../parser_merge.c:113
 #, c-format
 msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-msgstr "プロファイル %s: 複数の 'x' 修飾子で規則 %s が統合されています\n"
+msgstr "プロファイル%s:複数のx修飾キーで規則%sがマージされています\n"
 
 #: parser_yacc.y:220
 msgid "Profile names must begin with a '/', or keyword 'profile'."
-msgstr "プロファイル名は '/' またはキーワード 'profile' で始める必要があります。"
+msgstr "プロファイル名は'/'またはキーワード'profile'で始める必要があります。"
 
 #: parser_yacc.y:263 parser_yacc.y:269
 #, c-format
@@ -319,7 +294,7 @@ msgstr "別名 %s -> %s を作成することができませんでした\n"
 
 #: parser_yacc.y:399 parser_yacc.y:405
 msgid "Profile flag 'debug' is no longer valid."
-msgstr "プロファイルフラグ 'debug' はもはや利用できません。"
+msgstr "プロファイルフラグ'debug'は現在は利用できません。"
 
 #: parser_yacc.y:405 parser_yacc.y:411
 #, c-format
@@ -328,44 +303,44 @@ msgstr "プロファイルフラグが正しくありません:  %s"
 
 #: parser_yacc.y:440 parser_yacc.y:462 parser_yacc.y:446 parser_yacc.y:468
 msgid "Assert: `rule' returned NULL."
-msgstr "Assert: `rule' は NULL を返しています。"
+msgstr "Assert:「rule」はNULLを返しています。"
 
 #: parser_yacc.y:443 parser_yacc.y:488 parser_yacc.y:449 parser_yacc.y:494
 msgid "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "無効なモードです。拒否ルール内では 'x' の前に実行修飾子 'i' 'p' または 'u' を付けてはいけません。"
+msgstr "無効なモードです。拒否ルール内では「x」の前にExecクォリファイア「i」、「p」、または「u」を付けてはいけません。"
 
 #: parser_yacc.y:466 parser_yacc.y:472
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
-msgstr "無効なモードです。 'x' の前には実行修飾子 'i' 'p' 'c' または 'u' が必要です。"
+msgstr "無効なモードです。「x」の前には実行修飾子「i」、「p」、「c」または「u」が必要です。"
 
 #: parser_yacc.y:491 parser_yacc.y:497
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "無効なモードです。 'x' の前には実行修飾子 'i' 'p' または 'u' が必要です。"
+msgstr "無効なモードです。「x」の前にクォリファイア「i」、「p」、または「u」が必要です"
 
 #: parser_yacc.y:516 parser_yacc.y:554 parser_yacc.y:522 parser_yacc.y:560
 msgid "Assert: `network_rule' return invalid protocol."
-msgstr "Assert: `network_rule' は未定義のプロトコルを返しています。"
+msgstr "Assert:「network_rule」は無効なプロトコルを返しています。"
 
 #: parser_yacc.y:591 parser_yacc.y:597
 msgid "Assert: `change_profile' returned NULL."
-msgstr "Assert: `change profile' は NULL を返しています。"
+msgstr "Assert:「change_profile」はNULLを返しています。"
 
 #: parser_yacc.y:600
 msgid "Assert: `change_hat' returned NULL."
-msgstr "Assert: `change_hat' は NULL を返しています。"
+msgstr "Assert: 「change_hat」は NULL を返しています。"
 
 #: parser_yacc.y:631 parser_yacc.y:628
 msgid "Assert: 'hat rule' returned NULL."
-msgstr "Assert: 'hat rule' は NULL を返しています。"
+msgstr "Assert:「hat rule」はNULLを返しています。"
 
 #: parser_yacc.y:640 parser_yacc.y:637
 msgid "Assert: 'local_profile rule' returned NULL."
-msgstr "Assert: `local_profile rule' は NULL を返しています。"
+msgstr "Assert: 「local_profile rule」は NULL を返しています。"
 
 #: parser_yacc.y:772
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr "未設定の論理値変数 %s が if 文内に使用されています。 "
+msgstr "未設定のブール値変数%sがif式に使用されています"
 
 #: parser_yacc.y:830
 msgid "subset can only be used with link rules."
@@ -373,78 +348,78 @@ msgstr "サブセットはリンクルールと共にのみ使用することが
 
 #: parser_yacc.y:832
 msgid "link and exec perms conflict on a file rule using ->"
-msgstr "以下のファイルルール内でリンクと実行許可が矛盾しています ->"
+msgstr "以下のファイルルール内でリンクとexecパーミッションが矛盾しています ->"
 
 #: parser_yacc.y:834 parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transition.\n"
-msgstr "リンク許可は名前付きプロファイルの変遷で使用することはできません。\n"
+msgstr "リンクパーミッションは名前付きプロファイルの変更で使用することはできません。\n"
 
 #: parser_yacc.y:850
 msgid "unsafe rule missing exec permissions"
-msgstr "実行権限が設定されていない危険な規則"
+msgstr "ルールが安全ではありません。execパーミッションがありません"
 
 #: parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transtion.\n"
-msgstr "リンク許可は名前付きプロファイルの変遷で使用することはできません。\n"
+msgstr "リンクパーミッションは名前付きプロファイルの変更で使用することはできません。\n"
 
 #: parser_yacc.y:866
 #, c-format
 msgid "missing an end of line character? (entry: %s)"
-msgstr "行末文字が欠けていませんか？ (内容: %s)"
+msgstr "行末文字が欠けていますか?(entry: %s)"
 
 #: parser_yacc.y:1000 parser_yacc.y:1010 parser_yacc.y:989 parser_yacc.y:999
 msgid "Invalid network entry."
-msgstr "不正なネットワーク項目です。"
+msgstr "無効なネットワークエントリ"
 
 #: parser_yacc.y:1064 parser_yacc.y:1072 parser_yacc.y:1053 parser_yacc.y:1061
 #, c-format
 msgid "Invalid capability %s."
-msgstr "無効な能力設定です %s"
+msgstr "無効な機能です %s"
 
 #: parser_yacc.y:1089 parser_yacc.y:1078
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr "%s 内 %d 行目において AppArmor 構文解析エラーが発生しました: %s\n"
+msgstr "行 %2$dの %1$sにAppArmorパーサエラー: %3$s\n"
 
 #: parser_yacc.y:1092 parser_yacc.y:1081
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr "%d 行にて AppArmor 構文解析エラー: %s\n"
+msgstr "AppArmorパーサエラー、行 %d: %s\n"
 
 #: ../parser_regex.c:283
 #, c-format
 msgid "%s: Illegal open {, nesting groupings not allowed\n"
-msgstr "%s: 不正な中括弧 '{' 、入れ子グループは許可されていません\n"
+msgstr "%s: 不正オープン{、入れ子グループ分けは許可されていません\n"
 
 #: ../parser_regex.c:303
 #, c-format
 msgid "%s: Regex grouping error: Invalid number of items between {}\n"
-msgstr "%s: 正規表現グループ分けエラー: {} の間にある項目数が不正です\n"
+msgstr "%s: Regexグループ分けエラー:{}の間にある項目の無効数\n"
 
 #: ../parser_regex.c:309
 #, c-format
 msgid "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
-msgstr "%s: 正規表現グループ分けエラー: 無効な閉じ中括弧 '}' 、対応する中括弧 '{' がありません\n"
+msgstr "%s: Regexグループ分けエラー:無効なクローズ}、一致するオープンがありません{ detected\n"
 
 #: ../parser_regex.c:375
 #, c-format
 msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
-msgstr "%s: 正規表現グループ分けエラー: 閉じられていないグループ分けまたは文字クラスがあります、 '}' で閉じる必要があります\n"
+msgstr "%s: Regexグループ分けエラー:グループ分けまたは文字クラスが閉じていません。クローズ}が必要です\n"
 
 #: ../parser_regex.c:389
 #, c-format
 msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
-msgstr "%s: 内部バッファオーバーフローが検出されました、%d 文字を超えています\n"
+msgstr "%s: 内部バッファオーバーフローが検出されました、%d文字超えています\n"
 
 #: ../parser_regex.c:393
 #, c-format
 msgid "%s: Unable to parse input line '%s'\n"
-msgstr "%s: 入力行 '%s' を解析できませんでした\n"
+msgstr "%s: 入力行「%s」を解析できません\n"
 
 #: ../parser_regex.c:445
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-msgstr "%s: 正規表現 '%s' [オリジナル: '%s'] のコンパイルに失敗しました\n"
+msgstr "%s: regex 「%s」 [original: 「%s」]のコンパイルに失敗しました\n"
 
 #: ../parser_regex.c:449
 #, c-format
@@ -459,38 +434,32 @@ msgstr "%s: エラーの理由: '%s'\n"
 #: ../parser_regex.c:468
 #, c-format
 msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-msgstr "%s: 正規表現 '%s' [オリジナル: '%s'] のコンパイルに失敗しました - mallocの失敗です\n"
+msgstr "%s: regex 「%s」 [original: 「%s」]のコンパイルに失敗しました - mallocの失敗\n"
 
 #: ../parser_policy.c:194 ../parser_policy.c:200
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
-msgstr "エラー ロードに失敗したため、プロファイル %s の規則を統合できませんでした\n"
+msgstr "プロファイル %s のルールをマージ中にエラーが発生しました。ロードできませんでした\n"
 
 #: ../parser_policy.c:226 ../parser_policy.c:232
 #, c-format
-msgid ""
-"ERROR profile %s contains policy elements not usable with this kernel:\n"
-"\t'*', '?', character ranges, and alternations are not allowed.\n"
-"\t'**' may only be used at the end of a rule.\n"
-msgstr ""
-"エラー プロファイル %s は、このカーネルで使用できないポリシー要素を含んでいます:\n"
-"\t'*', '?', 文字範囲, 変更は許可されていません。\n"
-"\t'**' は規則の終わり部分にのみ使用できます。\n"
+msgid "ERROR profile %s contains policy elements not usable with this kernel:\n\t'*', '?', character ranges, and alternations are not allowed.\n\t'**' may only be used at the end of a rule.\n"
+msgstr "エラー:プロファイル %s にこのカーネルで使用できないポリシー要素があります:\n\t「*」、「?」、文字範囲、交代は許可されません。\n\t「**」はルールの末尾にのみ使用できます。\n"
 
 #: ../parser_policy.c:271 ../parser_policy.c:277
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr "エラー プロファイル %s 内の正規表現処理が失敗したため、読み込みに失敗しました\n"
+msgstr "プロファイル %s のregex処理中にエラーが発生しました。ロードできませんでした\n"
 
 #: ../parser_policy.c:298 ../parser_policy.c:304
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr "エラー プロファイル %s の変数展開に失敗したため、読み込みに失敗しました\n"
+msgstr "プロファイル %s の変数の拡張中にエラーが発生しました。ロードできませんでした\n"
 
 #: ../parser_policy.c:481 ../parser_policy.c:486
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
-msgstr "プロファイル %s のエラーのため、読み込みに失敗しました\n"
+msgstr "プロファイル%sのエラー、ロードに失敗しました\n"
 
 #: ../parser_policy.c:659 ../parser_policy.c:668
 #, c-format
@@ -501,7 +470,7 @@ msgstr "%s: 後処理の際にエラーが発生しました。中止してい�
 #: ../parser_policy.c:696
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
-msgstr "%s: 正規表現の後処理の際にエラーが見つかりました。中止しています。\n"
+msgstr "%s: regex後処理の間にエラーが見つかりました。中止しています。\n"
 
 #: ../parser_policy.c:673 ../parser_policy.c:682
 #, c-format
@@ -511,12 +480,12 @@ msgstr "%s: 後処理の際にエラーが発生しました。中止してい�
 #: ../parser_policy.c:680 ../parser_policy.c:689
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
-msgstr "%s: 規則の後処理を結合する際にエラーが見つかりました。中断しています。\n"
+msgstr "%s: 規則後処理の結合中にエラーが見つかりました。中断しています。\n"
 
 #: ../parser_misc.c:37 ../parser_misc.c:38
 #, c-format
 msgid "%s permission: not supported on current system.\n"
-msgstr "%s 許可: 現在のシステムではサポートしていません。\n"
+msgstr "%s パーミッション: 現在のシステムではサポートしていません。\n"
 
 #: ../parser_misc.c:38 ../parser_misc.c:39
 #, c-format
@@ -525,7 +494,7 @@ msgstr "%s ルール: 現在のシステムではサポートしていません�
 
 #: parser_yacc.y:220
 msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
-msgstr "プロファイル名は '/' またはキーワード 'profile', 'hat' のいずれかで始める必要があります。"
+msgstr "プロファイル名は「/」またはキーワード「profile」、「hat」のいずれかで始める必要があります。"
 
 #: ../parser_policy.c:389
 #, c-format

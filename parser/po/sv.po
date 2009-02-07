@@ -1,72 +1,64 @@
-# translation of apparmor-parser.sv.po to Swedish
-# translation of apparmor-parser.po to
-# @TITLE@
-# Copyright (C) 2006, SUSE Linux GmbH, Nuremberg
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
 #
-# This file is distributed under the same license as @PACKAGE@ package. FIRST
-#
-# Mattias Newzella <newzella@linux.se>, 2006, 2007.
-# Jonas Björk <jonas@jonasbjork.net>, 2008.
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-parser.sv\n"
+"Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2008-09-22 23:04-0700\n"
-"PO-Revision-Date: 2008-11-06 19:03+0100\n"
-"Last-Translator: \n"
-"Language-Team: Swedish <sv@li.org>\n"
+"PO-Revision-Date: 2009-02-05 07:23\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.4\n"
-"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
 
 #: ../parser_include.c:96 ../parser_main.c:450
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
-msgstr "Fel: Kunde inte läsa profil %s: %s.\n"
+msgstr "Fel: Det gick inte att läsa profilen %s: %s.\n"
 
 #: ../parser_include.c:115
 msgid "Error: Could not allocate temporary file.\n"
-msgstr "Fel: Kunde inte allokera temporär fil.\n"
+msgstr "Fel: Det gick inte att tilldela en temporär fil.\n"
 
 #: ../parser_include.c:166
 msgid "Error: Out of memory.\n"
-msgstr "Fel: Slut på minne.\n"
+msgstr "Fel: Slut på minne\n"
 
 #: ../parser_include.c:176
 #, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
-msgstr "Fel: Baskatalog %s är inte en katalog, hoppar över.\n"
+msgstr "Fel: baskatalogen %s är inte en katalog. Hoppar över.\n"
 
 #: ../parser_include.c:190
 #, c-format
 msgid "Error: Could not add directory %s to search path.\n"
-msgstr "Fel: Kunde inte lägga till katalog %s till sökväg.\n"
+msgstr "Fel: Det gick inte att lägga till katalogen %s i sökvägen.\n"
 
 #: ../parser_include.c:200
 msgid "Error: Could not allocate memory.\n"
-msgstr "Fel: Kunde inte allokera minne.\n"
+msgstr "Fel: Det gick inte att tilldela minne\n"
 
 #: ../parser_include.c:297
 #, c-format
 msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-msgstr "Fel: Kunde inte allokera buffer för inkludering på rad %d i %s.\n"
+msgstr "Fel: Det gick inte att tilldela buffert för inkludering på rad %d i %s.\n"
 
 #: ../parser_include.c:313 ../parser_include.c:333
 #, c-format
 msgid "Error: Bad include at line %d in %s.\n"
-msgstr "Fel: Dålig inkludering på rad %d i %s.\n"
+msgstr "Fel: Ogiltig inkludering på rad %d i %s.\n"
 
 #: ../parser_include.c:378
 #, c-format
 msgid "Error: #include %s%c not found at line %d in %s.\n"
-msgstr "Fel: #include %s%c hittades inte på rad %d i %s.\n"
+msgstr "Fel: Det gick inte att hitta #include %s%c på rad %d i %s.\n"
 
 #: ../parser_include.c:459
 #, c-format
 msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-msgstr "Fel: Överskred %d nivåer av inkluderingar. Bearbetar inte %s inkludering.\n"
+msgstr "Fel: %d inkluderingsnivåer överskreds.  %s-inkluderingen bearbetas inte.\n"
 
 #: ../parser_interface.c:72
 msgid "Bad write position\n"
@@ -94,7 +86,7 @@ msgstr "Profilen matchar inte signaturen\n"
 
 #: ../parser_interface.c:90
 msgid "Profile version not supported by Apparmor module\n"
-msgstr "Profilversion stöds inte av Apparmor-modul\n"
+msgstr "Det finns inte stöd för profilversionen i AppArmor-modulen\n"
 
 #: ../parser_interface.c:93
 msgid "Profile already exists\n"
@@ -161,12 +153,12 @@ msgstr "Kunde inte öppna %s - %s\n"
 #: ../parser_interface.c:822
 #, c-format
 msgid "Memory Allocation Error: Unable to remove ^%s\n"
-msgstr "Minnesallokeringsfel: Kunde inte ta bort ^%s\n"
+msgstr "Minnestilldelningsfel: Det gick inte att ta bort ^%s\n"
 
 #: ../parser_interface.c:835
 #, c-format
 msgid "Memory Allocation Error: Unable to remove %s:%s."
-msgstr "Minnestilldelningsfel. Kunde inte ta bort %s:%s."
+msgstr "Minnestilldelningsfel: Det gick inte att ta bort %s:%s."
 
 #: ../parser_interface.c:854
 msgid "unable to create work area\n"
@@ -191,7 +183,7 @@ msgstr "Oväntat tecken hittades: %s"
 #: parser_lex.l:196 parser_lex.l:232
 #, c-format
 msgid "(network_mode) Found unexpected character: '%s'"
-msgstr "(nätverksläge) Oväntat tecken hittades: %s"
+msgstr "[network_mode] Ett oväntat tecken hittades: %s"
 
 #: ../parser_main.c:137 ../parser_main.c:146
 #, c-format
@@ -205,32 +197,18 @@ msgstr "%s: Det gick inte att tilldela minne för underdomänbasens monteringspu
 
 #: ../parser_main.c:310 ../parser_main.c:321
 #, c-format
-msgid ""
-"Warning: unable to find a suitable fs in %s, is it mounted?\n"
-"Use --subdomainfs to override.\n"
-msgstr ""
-"Varning: omöjligt att hitta ett lämpligt filsystem i %s, är det monterat?\n"
-"Använd --subdomains för att tvinga.\n"
+msgid "Warning: unable to find a suitable fs in %s, is it mounted?\nUse --subdomainfs to override.\n"
+msgstr "Varning: Det gick inte att hitta en lämplig fs i %s. Den kanske inte har monterats.\nÅsidosätt med -subdomainfs.\n"
 
 #: ../parser_main.c:330 ../parser_main.c:341
 #, c-format
-msgid ""
-"%s: Sorry. You need root privileges to run this program.\n"
-"\n"
-msgstr ""
-"%s: Du behöver root-behörighet för att köra det här programmet.\n"
-"\n"
+msgid "%s: Sorry. You need root privileges to run this program.\n\n"
+msgstr "%s: Du måste ha rotbehörigheter om du vill köra det här programmet.\n\n"
 
 #: ../parser_main.c:337 ../parser_main.c:348
 #, c-format
-msgid ""
-"%s: Warning! You've set this program setuid root.\n"
-"Anybody who can run this program can update your AppArmor profiles.\n"
-"\n"
-msgstr ""
-"%s: Varning! Du har setuid root på detta program.\n"
-"Vem som helst som kan köra detta program kan uppdatera dina AppArmor-profiler.\n"
-"\n"
+msgid "%s: Warning! You've set this program setuid root.\nAnybody who can run this program can update your AppArmor profiles.\n\n"
+msgstr "%s: Varning! Du har angett det här programmet som setuid root.\nAlla som kan köra det här programmet kan uppdatera dina AppArmor-profiler.\n\n"
 
 #: ../parser_main.c:415 ../parser_main.c:509
 #, c-format
@@ -251,17 +229,13 @@ msgid "Memory allocation error."
 msgstr "Minnestilldelningsfel."
 
 #: ../parser_misc.c:437 ../parser_misc.c:444 ../parser_misc.c:448
-msgid ""
-"Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
-"See the apparmor.d(5) manpage for details.\n"
-msgstr ""
-"Kapitalärerna \"RWLIMX\" är föråldrade, vänligen konvertera till gemener\n"
-"Se manualsidan apparmor.d(5) för mer information.\n"
+msgid "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\nSee the apparmor.d(5) manpage for details.\n"
+msgstr "Kvalificerarna med versalerna \"RWLIMX\" har tagits bort. Ändra dem till gemener.\nSe man-sidan för apparmor.d(5) om du vill ha mer information.\n"
 
 #: ../parser_misc.c:473 ../parser_misc.c:480 ../parser_misc.c:487
 #: ../parser_misc.c:484 ../parser_misc.c:491
 msgid "Conflict 'a' and 'w' perms are mutually exclusive."
-msgstr "Konflikt 'a' och 'w' rättigheterna kan inte användas tillsammans."
+msgstr "En konflikt har uppstått. Behörigheterna a och w kan inte förekomma samtidigt."
 
 #: ../parser_misc.c:497 ../parser_misc.c:504 ../parser_misc.c:508
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
@@ -270,35 +244,35 @@ msgstr "Exec-kvalificeraren 'i' felaktig, kvalificerare i konflikt med denna har
 #: ../parser_misc.c:508 ../parser_misc.c:515 ../parser_misc.c:519
 #, c-format
 msgid "Unconfined exec qualifier (%c%c) allows some dangerous environment variables to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
-msgstr "Oinskränkt exec-kvalificerare (%c%c) tillåter några farliga miljövariabler att skickas till den oinskränkta processen, se 'man 5 apparmor.d' för mer information.\n"
+msgstr "Med den obegränsade exec-kvalificeraren (%c%c) tillåts det att vissa farliga miljövariabler skickas till den obegränsade processen. Se 'man 5 apparmor.d' om du vill ha mer information.\n"
 
 #: ../parser_misc.c:516 ../parser_misc.c:549 ../parser_misc.c:523
 #: ../parser_misc.c:556 ../parser_misc.c:527 ../parser_misc.c:560
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr "Exec-kvalificeraren '%c' är ogiltig, kvalificerare i konflikt med denna har angetts"
+msgstr "Exec-kvalificeraren %c är ogiltig. En kvalificerare som står i konflikt med den har redan angetts"
 
 #: ../parser_misc.c:543 ../parser_misc.c:550 ../parser_misc.c:554
 #, c-format
 msgid "Exec qualifier '%c%c' invalid, conflicting qualifier already specified"
-msgstr "Exec-kvalificeraren '%c%c' är felaktig, skapar konflikt med en annan kvalificerare"
+msgstr "Exec-kvalificeraren %c%c är ogiltig. En kvalificerare som står i konflikt med den har redan angetts."
 
 #: ../parser_misc.c:591 ../parser_misc.c:598 ../parser_misc.c:602
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr "Internt: oväntat tecken '%c' i inmatning"
+msgstr "Internt: lägestecknet %c i indata var oväntat"
 
 #: ../parser_misc.c:613 ../parser_misc.c:620 ../parser_misc.c:624
 #, c-format
 msgid "Internal error generated invalid perm 0x%llx\n"
-msgstr "Internt fel skapades av ogiltig rättighet 0x%llx\n"
+msgstr "Ett internt fel genererade en ogiltig behörighet 0x%llx\n"
 
 #: ../parser_misc.c:833 ../parser_symtab.c:556 ../parser_regex.c:658
 #: ../parser_variable.c:227 ../parser_misc.c:840 ../parser_regex.c:660
 #: ../parser_misc.c:844
 #, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr "AppArmor tolkningsfel: %s\n"
+msgstr "AppArmor-behandlarfel: %s\n"
 
 #: ../parser_merge.c:94
 msgid "Couldn't merge entries. Out of Memory\n"
@@ -311,21 +285,21 @@ msgstr "profilen %s: har kopplat regeln %s till flera x-modifierare\n"
 
 #: parser_yacc.y:220
 msgid "Profile names must begin with a '/', or keyword 'profile'."
-msgstr "Profilnamn måste börja med ett '/' eller nyckelordet 'profile'."
+msgstr "Profilnamn måste börja med / eller nyckelordet profile."
 
 #: parser_yacc.y:263 parser_yacc.y:269
 #, c-format
 msgid "Failed to create alias %s -> %s\n"
-msgstr "Kunde inte skapa aliaset %s -> %s\n"
+msgstr "Det gick inte att skapa aliaset %s -> %s\n"
 
 #: parser_yacc.y:399 parser_yacc.y:405
 msgid "Profile flag 'debug' is no longer valid."
-msgstr "Profilflaggan 'debug' är inte längre giltig."
+msgstr "Profilflaggan debug är inte längre giltig."
 
 #: parser_yacc.y:405 parser_yacc.y:411
 #, c-format
 msgid "Invalid profile flag: %s."
-msgstr "Ogilig profilflagga: %s."
+msgstr "Ogiltig profilflagga: %s."
 
 #: parser_yacc.y:440 parser_yacc.y:462 parser_yacc.y:446 parser_yacc.y:468
 msgid "Assert: `rule' returned NULL."
@@ -333,19 +307,19 @@ msgstr "Förutsättning: `rule' returnerade NULL."
 
 #: parser_yacc.y:443 parser_yacc.y:488 parser_yacc.y:449 parser_yacc.y:494
 msgid "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "Ogiltigt läge, nekningsregleln 'x' får inte föregås av exec-kvalificerarna 'i', 'p' eller 'u'"
+msgstr "Ogiltigt läge. I nekanderegler måste x föregås av någon av exec-kvalificerarna i, p eller u"
 
 #: parser_yacc.y:466 parser_yacc.y:472
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
-msgstr "Ogiltigt läge, 'x' måste föregås av exec-kvalifiicerarna 'i', 'p', 'c' eller 'u'."
+msgstr "Ogiltigt läge. x måste föregås av någon av exec-kvalificerarna i, p, c eller u"
 
 #: parser_yacc.y:491 parser_yacc.y:497
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
-msgstr "Ogilitigt läge, 'x' måste föregås av exec-kvalificerarna 'i', 'p' eller 'u'"
+msgstr "Ogiltigt läge. x måste föregås av någon av exec-kvalificerarna i, p eller u"
 
 #: parser_yacc.y:516 parser_yacc.y:554 parser_yacc.y:522 parser_yacc.y:560
 msgid "Assert: `network_rule' return invalid protocol."
-msgstr "Förutsättning: `network_rule' returnerade NULL."
+msgstr "Förutsättning: 'network_rule_' returnerade ett ogiltigt protokoll."
 
 #: parser_yacc.y:591 parser_yacc.y:597
 msgid "Assert: `change_profile' returned NULL."
@@ -353,7 +327,7 @@ msgstr "Förutsättning: `change_profile' returnerade NULL."
 
 #: parser_yacc.y:600
 msgid "Assert: `change_hat' returned NULL."
-msgstr "Förutsättning: 'change_hat' returnerade NULL."
+msgstr "Förutsättning: change_hat returnerade NULL."
 
 #: parser_yacc.y:631 parser_yacc.y:628
 msgid "Assert: 'hat rule' returned NULL."
@@ -361,32 +335,32 @@ msgstr "Förutsättning: `hat rule' returnerade NULL."
 
 #: parser_yacc.y:640 parser_yacc.y:637
 msgid "Assert: 'local_profile rule' returned NULL."
-msgstr "Förutsättning: `local_profile rule ' returnerade NULL."
+msgstr "Förutsättning: local_profile rule returnerade NULL."
 
 #: parser_yacc.y:772
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr "Odefinerad boolesk variabel %s användes i if-sats"
+msgstr "Den booleska variabeln %s, som inte har ställts in, används i ett if-uttryck"
 
 #: parser_yacc.y:830
 msgid "subset can only be used with link rules."
-msgstr "subset kan bara användas med link-regler"
+msgstr "deluppsättning kan bara användas med länkregler."
 
 #: parser_yacc.y:832
 msgid "link and exec perms conflict on a file rule using ->"
-msgstr "link och exec rättigheter skapar konflikt med på en fil-regel ->"
+msgstr "link- och exec-behörigheter är i konflikt med en filregel som använder ->"
 
 #: parser_yacc.y:834 parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transition.\n"
-msgstr "link-rättigheter är inte tillåtna på en namngiven profilövergång.\n"
+msgstr "link-behörigheter är inte tillåtna i en namngiven profilövergång.\n"
 
 #: parser_yacc.y:850
 msgid "unsafe rule missing exec permissions"
-msgstr "osäker regel saknar exec-rättigheter"
+msgstr "osäker regel saknar exec-behörigheter"
 
 #: parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transtion.\n"
-msgstr "link-rättigheter är inte tillåtna på en namngiven profilövergång.\n"
+msgstr "link-behörigheter är inte tillåtna i en namngiven profilövergång.\n"
 
 #: parser_yacc.y:866
 #, c-format
@@ -400,17 +374,17 @@ msgstr "Ogiltig nätverkspost."
 #: parser_yacc.y:1064 parser_yacc.y:1072 parser_yacc.y:1053 parser_yacc.y:1061
 #, c-format
 msgid "Invalid capability %s."
-msgstr "Omöjligt %s."
+msgstr "Ogiltig kapacitet %s."
 
 #: parser_yacc.y:1089 parser_yacc.y:1078
 #, c-format
 msgid "AppArmor parser error in %s at line %d: %s\n"
-msgstr "AppArmor tydningsfel i %s på rad %d: %s\n"
+msgstr "AppArmor-behandlarfel i %s på rad %d: %s\n"
 
 #: parser_yacc.y:1092 parser_yacc.y:1081
 #, c-format
 msgid "AppArmor parser error, line %d: %s\n"
-msgstr "AppArmor tydningsfel, rad %d: %s\n"
+msgstr "AppArmor-behandlarfel, rad %d: %s\n"
 
 #: ../parser_regex.c:283
 #, c-format
@@ -430,7 +404,7 @@ msgstr "%s: Regex-grupperingsfel: Ogiltig avslutande }, ingen inledande { hittad
 #: ../parser_regex.c:375
 #, c-format
 msgid "%s: Regex grouping error: Unclosed grouping or character class, expecting close }\n"
-msgstr "%s: Regex grupperingsfel: öppen grupperings- eller teckenklass, saknar ett avslutande }\n"
+msgstr "%s: Regex-grupperingsfel:  Oavslutad gruppering eller teckenklass, avslutande } förväntas\n"
 
 #: ../parser_regex.c:389
 #, c-format
@@ -465,28 +439,22 @@ msgstr "%s: Det gick inte att kompilera regex%s [ursprungligen: '%s'] - malloc m
 #: ../parser_policy.c:194 ../parser_policy.c:200
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
-msgstr "FEL sammanslagning av regler för profilen %s, misslyckades att ladda\n"
+msgstr "FEL vid sammanfogning av regler för profilen %s. Det gick inte att läsa in\n"
 
 #: ../parser_policy.c:226 ../parser_policy.c:232
 #, c-format
-msgid ""
-"ERROR profile %s contains policy elements not usable with this kernel:\n"
-"\t'*', '?', character ranges, and alternations are not allowed.\n"
-"\t'**' may only be used at the end of a rule.\n"
-msgstr ""
-"FEL profilen %s innehåller policyposter som inte fungerar med denna kärna:\n"
-"\t'*', '?', tecken, rader och växling är inte tillåtet.\n"
-"\t'**' kan bara användas i slutet av en regel..\n"
+msgid "ERROR profile %s contains policy elements not usable with this kernel:\n\t'*', '?', character ranges, and alternations are not allowed.\n\t'**' may only be used at the end of a rule.\n"
+msgstr "FEL: Profilen %s innehåller principelement som inte kan användas tillsammans med den här kerneln:\n\t'*', '?', teckenintervall och alterneringar är inte tillåtna.\n\t'**' får endast användas i slutet av en regel.\n"
 
 #: ../parser_policy.c:271 ../parser_policy.c:277
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr "Fel behandlade regexp för profilen %s, den gick inte att läsa in\n"
+msgstr "FEL vid behandling av reguljära uttryck för profilen %s, det gick inte att läsa in\n"
 
 #: ../parser_policy.c:298 ../parser_policy.c:304
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr "FEL expanderade variabler för profilen %s, den gick inte att läsa in \n"
+msgstr "FEL vid expandering av variabler för profilen %s, det gick inte att läsa in\n"
 
 #: ../parser_policy.c:481 ../parser_policy.c:486
 #, c-format
@@ -496,18 +464,18 @@ msgstr "FEL i profilen %s, det gick inte att läsa in\n"
 #: ../parser_policy.c:659 ../parser_policy.c:668
 #, c-format
 msgid "%s: Errors found during postprocessing.  Aborting.\n"
-msgstr "%s: Fel i efterbearbetningen. Avbryter.\n"
+msgstr "%s: Det inträffade fel vid efterbearbetningen. Avbryter.\n"
 
 #: ../parser_policy.c:666 ../parser_policy.c:687 ../parser_policy.c:675
 #: ../parser_policy.c:696
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
-msgstr "%s: Fel i efterbearbetning av regex. Avbryter.\n"
+msgstr "%s: Fel vid efterbearbetning av regex. Avbryter.\n"
 
 #: ../parser_policy.c:673 ../parser_policy.c:682
 #, c-format
 msgid "%s: Errors found during postprocess.  Aborting.\n"
-msgstr "%s: Fel i efterbearbetning. Avbryter.\n"
+msgstr "%s: Det inträffade fel vid efterbearbetningen. Avbryter.\n"
 
 #: ../parser_policy.c:680 ../parser_policy.c:689
 #, c-format
@@ -517,19 +485,19 @@ msgstr "%s: Fel i efterbearbetning av regelkombination. Avbryter.\n"
 #: ../parser_misc.c:37 ../parser_misc.c:38
 #, c-format
 msgid "%s permission: not supported on current system.\n"
-msgstr "Rättigheten %s: stödjs inte på detta system.\n"
+msgstr "%s-behörighet kan inte användas med det nuvarande systemet.\n"
 
 #: ../parser_misc.c:38 ../parser_misc.c:39
 #, c-format
 msgid "%s rule: not supported on current system.\n"
-msgstr "Regeln %s: stödjs inte på detta system.\n"
+msgstr "%s-regel: kan inte användas med det nuvarande systemet.\n"
 
 #: parser_yacc.y:220
 msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
-msgstr "Profilnamn måste börja med ett '/', eller nyckelordet 'profile' eller 'hat'."
+msgstr "Profilnamn måste börja med / eller något av nyckelorden profile och hat."
 
 #: ../parser_policy.c:389
 #, c-format
 msgid "ERROR adding hat access rule for profile %s\n"
-msgstr "FEL försökte lägga till regel för hat-åtkomst till profilen %s\n"
+msgstr "Ett fel inträffade när åtkomstregeln hat skulle läggas till för profilen %s\n"
 
