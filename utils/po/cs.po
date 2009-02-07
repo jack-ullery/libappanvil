@@ -1,27 +1,17 @@
-# translation of apparmor-utils.po to czech
-# translation of apparmor-utils.po to
-# translation of subdomain-utils.po to
-# This file is distributed under the same license as the PACKAGE package.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER.
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
 #
-# Jakub Friedl <jfried@suse.cz>, 2005.
-# Jakub Friedl <jfriedl@suse.cz>, 2005, 2006.
-# Klara Cihlarova <koty@seznam.cz>, 2008.
-# Klára Cihlářová <koty@seznam.cz>, 2008.
-# Vojtěch Zeisek <vojta.sc@seznam.cz>, 2008.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2008-09-22 22:56-0700\n"
-"PO-Revision-Date: 2008-05-25 22:11+0200\n"
-"Last-Translator: Vojtěch Zeisek <vojta.sc@seznam.cz>\n"
-"Language-Team: czech <cs@li.org>\n"
+"PO-Revision-Date: 2009-02-05 14:25\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.4\n"
-"Plural-Forms:  nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 
 #: ../genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
@@ -42,26 +32,8 @@ msgid "%s does not exist, please double-check the path."
 msgstr "%s neexistuje, zkontrolujte prosím cestu."
 
 #: ../genprof:115
-msgid ""
-"Please start the application to be profiled in \n"
-"another window and exercise its functionality now.\n"
-"\n"
-"Once completed, select the \"Scan\" button below in \n"
-"order to scan the system logs for AppArmor events.  \n"
-"\n"
-"For each AppArmor event, you will be given the  \n"
-"opportunity to choose whether the access should be  \n"
-"allowed or denied."
-msgstr ""
-"Prosím spusťte aplikaci určenou k profilaci v jiném\n"
-"okně a vyzkoušejte její funkce.\n"
-"\n"
-"Až budete hotovi, stiskněte tlačítko\"Skenovat\",\n"
-"aby byly v systémových lozích vyhledány AppArmor\n"
-"události.\n"
-"\n"
-"Pak můžete rozhodnout o povolení či zákazu\n"
-"jednotlivých AppArmor událostí."
+msgid "Please start the application to be profiled in \nanother window and exercise its functionality now.\n\nOnce completed, select the \"Scan\" button below in \norder to scan the system logs for AppArmor events.  \n\nFor each AppArmor event, you will be given the  \nopportunity to choose whether the access should be  \nallowed or denied."
+msgstr "Prosím spusťte aplikaci určenou k profilaci v jiném\nokně a vyzkoušejte její funkce.\n\nAž budete hotovi, stiskněte tlačítko\"Skenovat\",\naby byly v systémových lozích vyhledány AppArmor\nudálosti.\n\nPak můžete rozhodnout o povolení či zákazu\njednotlivých událostí modulu AppArmor."
 
 #: ../genprof:135
 msgid "Profiling"
@@ -176,16 +148,12 @@ msgstr "Nelze nalézt %s."
 
 #: ../SubDomain.pm:778 ../SubDomain.pm:3173
 msgid "Connecting to repository....."
-msgstr "Probíhá připojování k repozitáři..."
+msgstr "Připojení k repozitáři..."
 
 #: ../SubDomain.pm:787
 #, perl-format
-msgid ""
-"WARNING: Error fetching profiles from the repository:\n"
-"%s\n"
-msgstr ""
-"VAROVÁNÍ: chyba při získání profilu z repozitáře:\n"
-"%s\n"
+msgid "WARNING: Error fetching profiles from the repository:\n%s\n"
+msgstr "VAROVÁNÍ: chyba při získání profilu z repozitáře:\n%s\n"
 
 #: ../SubDomain.pm:796
 msgid "Inactive local profile for "
@@ -208,24 +176,16 @@ msgstr "Chyba při aktivaci profilů: %s\n"
 
 #: ../SubDomain.pm:1055 ../SubDomain.pm:1108
 #, perl-format
-msgid ""
-"WARNING: Error syncronizing profiles with the repository:\n"
-"%s\n"
-msgstr ""
-"VAROVÁNÍ: Chyba při synchronizaci profilu s repozitářem:\n"
-"%s\n"
+msgid "WARNING: Error syncronizing profiles with the repository:\n%s\n"
+msgstr "VAROVÁNÍ: Chyba při synchronizaci profilu s repozitářem:\n%s\n"
 
 #: ../SubDomain.pm:1135
 msgid "New profiles"
 msgstr "Nové profily"
 
 #: ../SubDomain.pm:1137
-msgid ""
-"Please choose the newly created profiles that you would like\n"
-"to store in the repository"
-msgstr ""
-"Vyberte nově vytvořené profily, které chcete uložit\n"
-"do repozitáře."
+msgid "Please choose the newly created profiles that you would like\nto store in the repository"
+msgstr "Vyberte nově vytvořené profily, které chcete uložit\ndo repozitáře."
 
 #: ../SubDomain.pm:1144
 msgid "Submit newly created profiles to the repository"
@@ -236,12 +196,8 @@ msgid "Would you like to upload the newly created profiles?"
 msgstr "Chcete odeslat nově vytvořené profily?"
 
 #: ../SubDomain.pm:1159
-msgid ""
-"Select which of the changed profiles you would like to upload\n"
-"to the repository"
-msgstr ""
-"Vyberte změněné profily, které chcete odeslat\n"
-"do repozitáře."
+msgid "Select which of the changed profiles you would like to upload\nto the repository"
+msgstr "Vyberte změněné profily, které chcete odeslat\ndo repozitáře."
 
 #: ../SubDomain.pm:1161
 msgid "Changed profiles"
@@ -252,21 +208,13 @@ msgid "Submit changed profiles to the repository"
 msgstr "Odeslat změněné profily do repozitáře"
 
 #: ../SubDomain.pm:1169
-msgid ""
-"The following profiles from the repository were changed.\n"
-"Would you like to upload your changes?"
-msgstr ""
-"Následující profily z repozitáře byly změněny.\n"
-"Chcete odeslat změny?"
+msgid "The following profiles from the repository were changed.\nWould you like to upload your changes?"
+msgstr "Následující profily z repozitáře byly změněny.\nChcete odeslat změny?"
 
 #: ../SubDomain.pm:1236 ../SubDomain.pm:1316
 #, perl-format
-msgid ""
-"WARNING: An error occured while uploading the profile %s\n"
-"%s\n"
-msgstr ""
-"VAROVÁNÍ: Chyba při nahrávání profilu %s do repozitáře\n"
-"%s\n"
+msgid "WARNING: An error occured while uploading the profile %s\n%s\n"
+msgstr "VAROVÁNÍ: Chyba při nahrávání profilu %s do repozitáře\n%s\n"
 
 #: ../SubDomain.pm:1241
 msgid "Uploaded changes to repository."
@@ -282,16 +230,8 @@ msgid "Uploaded %s to repository."
 msgstr "%s bylo odesláno do repozitáře."
 
 #: ../SubDomain.pm:1322
-msgid ""
-"Repository Error\n"
-"Registration or Signin was unsuccessful. User login\n"
-"information is required to upload profiles to the\n"
-"repository. These changes have not been sent.\n"
-msgstr ""
-"Chyba repozitáře\n"
-"Registrace nebo přihlašování bylo neúspěšné.\n"
-"K nahrání profilů do repozitáře je vyžadováno uživatelské\n"
-"jméno. Změny nebyly odeslány.\n"
+msgid "Repository Error\nRegistration or Signin was unsuccessful. User login\ninformation is required to upload profiles to the\nrepository. These changes have not been sent.\n"
+msgstr "Chyba repozitáře\nRegistrace nebo přihlašování bylo neúspěšné.\nK nahrání profilů do repozitáře je vyžadováno uživatelské\njméno. Změny nebyly odeslány.\n"
 
 #: ../SubDomain.pm:1379 ../SubDomain.pm:1419
 msgid "(Y)es"
@@ -305,7 +245,6 @@ msgstr "(N)e"
 msgid "Invalid hotkey for"
 msgstr "Neplatná klávesová zkratka pro"
 
-# cancel button label
 #: ../SubDomain.pm:1421
 msgid "(C)ancel"
 msgstr "(Z)rušit"
@@ -326,7 +265,6 @@ msgstr "Výchozí hat"
 msgid "Requested Hat"
 msgstr "Požadovaný hat"
 
-# 51384 AttribValues/label
 #: ../SubDomain.pm:2142
 msgid "Program"
 msgstr "Program"
@@ -345,69 +283,21 @@ msgid "Enter profile name to transition to: "
 msgstr "Zadejte jméno profilu k přesunu:"
 
 #: ../SubDomain.pm:2201
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"switching profiles?\n"
-"\n"
-"Sanitizing the environment is more secure,\n"
-"but some applications depend on the presence\n"
-"of LD_PRELOAD or LD_LIBRARY_PATH."
-msgstr ""
-"Má AppArmor sanovat prostředí při\n"
-"přepínání profilů?\n"
-"\n"
-"Sanování prostředí je bezpečnější, ale\n"
-"některé aplikace jsou závislé na přítomnosti\n"
-"LD_PRELOAD nebo LD_LIBRARY_PATH."
+msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH."
+msgstr "Má modul AppArmor sanovat prostředí při\npřepínání profilů?\n\nSanování prostředí je bezpečnější, ale\nněkteré aplikace jsou závislé na přítomnosti\nLD_PRELOAD nebo LD_LIBRARY_PATH."
 
 #: ../SubDomain.pm:2203
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"switching profiles?\n"
-"\n"
-"Sanitizing the environment is more secure,\n"
-"but this application appears to use LD_PRELOAD\n"
-"or LD_LIBRARY_PATH and clearing these could\n"
-"cause functionality problems."
-msgstr ""
-"Má AppArmor sanovat prostředí při\n"
-"přepínání profilů?\n"
-"\n"
-"Sanování prostředí je bezpečnější, ale tato\n"
-"aplikace zřejmě používá LD_PRELOAD\n"
-"nebo LD_LIBRARY_PATH a jejich vymazání\n"
-"může způsobit funkční problémy."
+msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut this application appears to use LD_PRELOAD\nor LD_LIBRARY_PATH and clearing these could\ncause functionality problems."
+msgstr "Má modul AppArmor sanovat prostředí při\npřepínání profilů?\n\nSanování prostředí je bezpečnější, ale tato\naplikace zřejmě používá LD_PRELOAD\nnebo LD_LIBRARY_PATH a jejich vymazání\nmůže způsobit funkční problémy."
 
 #: ../SubDomain.pm:2212
 #, perl-format
-msgid ""
-"Launching processes in an unconfined state is a very\n"
-"dangerous operation and can cause serious security holes.\n"
-"\n"
-"Are you absolutely certain you wish to remove all\n"
-"AppArmor protection when executing %s?"
-msgstr ""
-"Spouštění procesů v neomezeném stavu je velmi\n"
-"nebezpečné a představuje vážné riziko.\n"
-"\n"
-"Jste si naprosto jistí, že chcete při spouštění %s\n"
-"odstranit veškerou ochranu AppArmorem?"
+msgid "Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s?"
+msgstr "Spouštění procesů v neomezeném stavu je velmi\nnebezpečné a představuje vážné riziko.\n\nJste si naprosto jistí, že chcete při spouštění %s\nodstranit veškerou ochranu modulu AppArmor?"
 
 #: ../SubDomain.pm:2214
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"running this program unconfined?\n"
-"\n"
-"Not sanitizing the environment when unconfining\n"
-"a program opens up significant security holes\n"
-"and should be avoided if at all possible."
-msgstr ""
-"Má AppArmor sanovat prostředí při\n"
-"přepínání profilů?\n"
-"\n"
-"Nesanování prostředí při zrušení omezení\n"
-"programu otevírá významné bezpečnostní díry.\n"
-"Pokud je to možné, vyhněte se tomu."
+msgid "Should AppArmor sanitize the environment when\nrunning this program unconfined?\n\nNot sanitizing the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."
+msgstr "Má modul AppArmor sanovat prostředí při\npřepínání profilů?\n\nNesanování prostředí při zrušení omezení\nprogramu otevírá významné bezpečnostní díry.\nPokud je to možné, vyhněte se tomu."
 
 #: ../SubDomain.pm:2303
 #, perl-format
@@ -417,7 +307,7 @@ msgstr "Profil pro %s neexistuje. Vytvořit?"
 #: ../SubDomain.pm:2330
 #, perl-format
 msgid "A local profile for %s does not exist create one?"
-msgstr "Lokální profil pro %s neexistuje. Vytvořit?"
+msgstr "Místní profil pro %s neexistuje. Vytvořit?"
 
 #: ../SubDomain.pm:2502 ../SubDomain.pm:6532 ../SubDomain.pm:6537
 #, perl-format
@@ -435,7 +325,7 @@ msgstr "Aktualizovaný profil %s na revizi %s."
 
 #: ../SubDomain.pm:2952
 msgid "Error parsing repository profile."
-msgstr "Chyba při analýze profilu repozitáře."
+msgstr "Chyba při parsování profilu repozitáře."
 
 #: ../SubDomain.pm:2988
 msgid "Create New User?"
@@ -470,39 +360,21 @@ msgid "Login Error\n"
 msgstr "Chyba přihlášení\n"
 
 #: ../SubDomain.pm:3012
-msgid ""
-"Login failure\n"
-" Please check username and password and try again."
-msgstr ""
-"Chyba přihlášení\n"
-" Zkontrolujte uživatelské jméno a heslo a opakujte akci."
+msgid "Login failure\n Please check username and password and try again."
+msgstr "Chyba přihlášení\n Zkontrolujte uživatelské jméno a heslo a opakujte akci."
 
 #: ../SubDomain.pm:3034
-msgid ""
-"Would you like to enable access to the\n"
-"profile repository?"
-msgstr ""
-"Chcete povolit přístup do repozitáře\n"
-"profilů?"
+msgid "Would you like to enable access to the\nprofile repository?"
+msgstr "Opravdu chcete povolit přístup\nk repozitáři profilu?"
 
 #: ../SubDomain.pm:3065
-msgid ""
-"Would you like to upload newly created and changed profiles to\n"
-"      the profile repository?"
-msgstr ""
-"Opravdu chcete odeslat nově vytvořené a změněné profily\n"
-"      do repozitáře profilu?"
+msgid "Would you like to upload newly created and changed profiles to\n      the profile repository?"
+msgstr "Opravdu chcete odeslat nově vytvořené a změněné profily\n      do repozitáře profilu?"
 
 #: ../SubDomain.pm:3184
 #, perl-format
-msgid ""
-"WARNING: Profile update check failed\n"
-"Error Detail:\n"
-"%s"
-msgstr ""
-"VAROVÁNÍ: kontrola profilu selhala\n"
-"Podrobnosti:\n"
-"%s"
+msgid "WARNING: Profile update check failed\nError Detail:\n%s"
+msgstr "VAROVÁNÍ: Kontrola aktualizace profilu selhala\nPodrobnosti chyby:\n%s"
 
 #: ../SubDomain.pm:3198
 msgid "Change mode modifiers"
@@ -629,33 +501,23 @@ msgstr "Čtou se záznamy z %s."
 #: ../SubDomain.pm:4133
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
-msgstr "Aktualizují se AppArmor profily v %s."
+msgstr "Aktualizují se profily modulu AppArmor v %s."
 
 #: ../SubDomain.pm:4137
 msgid "unknown\n"
 msgstr "neznámý\n"
 
 #: ../SubDomain.pm:4170
-msgid ""
-"The profile analyzer has completed processing the log files.\n"
-"\n"
-"All updated profiles will be reloaded"
-msgstr ""
-"Analyzátor profilu dokončil zpracování souborů s logy.\n"
-"\n"
-"Všechny aktualizované profily budou znovu nahrány"
+msgid "The profile analyzer has completed processing the log files.\n\nAll updated profiles will be reloaded"
+msgstr "Analyzátor profilu dokončil zpracování souborů s logy.\n\nVšechny aktualizované profily budou znovu nahrány"
 
 #: ../SubDomain.pm:4176
 msgid "No unhandled AppArmor events were found in the system log."
-msgstr "Systémový log neobsahuje žádné neobsloužené události AppArmor."
+msgstr "Systémový log neobsahuje žádné neobsloužené události modulu AppArmor."
 
 #: ../SubDomain.pm:4237
-msgid ""
-"Select which profile changes you would like to save to the\n"
-"local profile set"
-msgstr ""
-"Vyberte, které změny profilu chcete uložit do místní sady\n"
-"profilu."
+msgid "Select which profile changes you would like to save to the\nlocal profile set"
+msgstr "Vyberte, které změny profilu chcete uložit do místní sady\nprofilu."
 
 #: ../SubDomain.pm:4238
 msgid "Local profile changes"
@@ -720,7 +582,7 @@ msgstr "Neplatné výchozí nastavení"
 #: ../Reports.pm:443 ../Reports.pm:532 ../Reports.pm:1480
 #, perl-format
 msgid "DBI Execution failed: %s."
-msgstr "Spuštění DBI selhalo: %s."
+msgstr "Chyba při spuštění DBI: %s."
 
 #: ../Reports.pm:556
 #, perl-format
@@ -729,62 +591,59 @@ msgstr "Nelze otevřít soubor: %s."
 
 #: ../Reports.pm:560
 msgid "No type value passed.  Unable to determine page count."
-msgstr "Nebyla předána hodnota typu. Nelze určit počet stránek."
+msgstr "Nebyla předána hodnota typu. Nelze zjistit počet stránek."
 
 #: ../Reports.pm:626
 #, perl-format
 msgid "Failed copying %s."
-msgstr "Selhalo kopírování %s."
+msgstr "Chyba při kopírování %s."
 
 #: ../Reports.pm:750
 #, perl-format
 msgid "Export Log Error: Couldn't open %s"
-msgstr "Chyba exp. logu: nelze otevřít %s"
+msgstr "Chyba protokolu exportu: Nelze otevřít %s."
 
 #: ../Reports.pm:772
 msgid "Fatal error.  No report name given. Exiting."
-msgstr "Fatální chyba. Nebylo zadáno jméno zprávy. Konec."
+msgstr "Vážná chyba. Nezadali jste název zprávy. Probíhá ukončení."
 
 #: ../Reports.pm:781
 #, perl-format
-msgid ""
-"Unable to get configuration info for %s.\n"
-"                Unable to find %s."
-msgstr ""
-"Nelze získat konfigurační informace pro %s.\n"
-"                Nelze nalézt %s."
+msgid "Unable to get configuration info for %s.\n                Unable to find %s."
+msgstr "Nelze získat informace o konfiguraci pro %s.\n                Nelze nalézt %s."
 
 #: ../Reports.pm:828
 #, perl-format
 msgid "Failed to parse: %s."
-msgstr "Chyba parsování: %s."
+msgstr "Chyba při parsování: %s."
 
 #: ../Reports.pm:837
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s."
-msgstr "Fatální chyba.  Nelze otevřít %s."
+msgstr "Vážná chyba. Nelze otevřít %s."
 
 #: ../Reports.pm:885
 #, perl-format
 msgid "Fatal Error.  Can't run %s.  Exiting."
-msgstr "Fatální chyba.  Nelze spustit %s.  Konec."
+msgstr "Vážná chyba . Nelze spustit %s.  Probíhá ukončení."
 
 #: ../Reports.pm:925
 #, perl-format
 msgid "Fatal Error.  No directory, %s, found.  Exiting."
-msgstr "Fatální chyba. Nebyl nalezen adresář %s. Konec."
+msgstr "Vážná chyba. Nebyl nalezen adresář, %s. Probíhá ukončení."
 
 #: ../Reports.pm:943
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
-msgstr "Fatální chyba. Nelze otevřít %s. Konec."
+msgstr "Vážná chyba. Nelze otevřít %s. Probíhá ukončení."
 
 #: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
 #, perl-format
 msgid "DBI Execution failed: %s"
-msgstr "Selhalo spuštění DBI: %s"
+msgstr "Chyba při vykonání DBI: %s."
 
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"
-msgstr "Fatální chyba.  getArchReport() nemůže otevřít %s"
+msgstr "Vážná chyba. Funkce getArchReport() nemůže otevřít %s."
+

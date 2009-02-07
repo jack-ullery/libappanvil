@@ -1,35 +1,25 @@
-# translation of apparmor-utils.po to
-# Russian message file for YaST2 (@memory@).
-# Copyright (C) 2005, 2006 SUSE Linux Products GmbH.
-# Copyright (C) 2002 SuSE Linux AG.
-# Copyright (C) 1999, 2000, 2001 SuSE GmbH.
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
 #
-# Aleksey Novodvorksy <aen@logic.ru>, 2000.
-# Eugene Osintsev <osgene@omskelecom.ru>, 1999, 2000.
-# Aleksey Osipov <aliks-os@yandex.ru>, 2005, 2006, 2007, 2008.
-# Nikolay Derkach <nderkach@gmail.com>, 2007.
-# Igor Kondrashkin <poseidos@mail.ru>, 2007.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2008-09-22 22:56-0700\n"
-"PO-Revision-Date: 2007-08-15 02:08+0400\n"
-"Last-Translator: Nikolay Derkach <nderkach@gmail.com>\n"
-"Language-Team:  <ru@li.org>\n"
+"PO-Revision-Date: 2009-02-05 08:14\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: KBabel 1.11.4\n"
 
 #: ../genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "Похоже, подобласти не запущены. Включите подобласть и повторите попытку."
+msgstr "Похоже, ПодДомены не запущены. Включите ПодДомены и повторите попытку."
 
 #: ../genprof:69
 msgid "Please enter the program to profile: "
-msgstr "Укажите программу для создания профиля: "
+msgstr "Пожалуйста укажите программу для этого профиля: "
 
 #: ../genprof:88
 #, perl-format
@@ -39,29 +29,11 @@ msgstr "Невозможно найти %s в списке системных п
 #: ../genprof:90 ../autodep:112 ../audit:122 ../complain:122 ../enforce:122
 #, perl-format
 msgid "%s does not exist, please double-check the path."
-msgstr "%s не существует, пожалуйста, проверьте путь."
+msgstr "%s не существует, проверьте путь."
 
 #: ../genprof:115
-msgid ""
-"Please start the application to be profiled in \n"
-"another window and exercise its functionality now.\n"
-"\n"
-"Once completed, select the \"Scan\" button below in \n"
-"order to scan the system logs for AppArmor events.  \n"
-"\n"
-"For each AppArmor event, you will be given the  \n"
-"opportunity to choose whether the access should be  \n"
-"allowed or denied."
-msgstr ""
-"Запустите приложение, для которого должен быть создан профиль,\n"
-"в другом окне и продемонстрируйте его функциональность.\n"
-"\n"
-"После завершения нажмите кнопку \"Проверить\", чтобы \n"
-"проверить системный журнал на предмет событий AppArmor.  \n"
-"\n"
-"Для каждого события AppArmor вы должны  \n"
-"указать, разрешать доступ  \n"
-"или запретить."
+msgid "Please start the application to be profiled in \nanother window and exercise its functionality now.\n\nOnce completed, select the \"Scan\" button below in \norder to scan the system logs for AppArmor events.  \n\nFor each AppArmor event, you will be given the  \nopportunity to choose whether the access should be  \nallowed or denied."
+msgstr "Пожалуста запустите приложение профиля в \nдругом окне и продемонстрируйте его функциональность.\n\nПосле завершения, нажмите кнопку \"Сканировать\", чтобы \nпросканировать системный журнал на предмет событий AppArmor.  \n\nДля каждого события AppArmor, вы должны  \nуказать разрешать доступ  \nили запретить."
 
 #: ../genprof:135
 msgid "Profiling"
@@ -69,12 +41,12 @@ msgstr "Профилирование"
 
 #: ../genprof:169
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "Профили подобластей перезагружены в вынужденном режиме."
+msgstr "Перегрузить ПодДомены в вынужденном режиме."
 
 #: ../genprof:170
 #, perl-format
 msgid "Finished generating profile for %s."
-msgstr "СОздание профиля %s завершено."
+msgstr "Генерация профиля %s завершена."
 
 #: ../genprof:174
 #, perl-format
@@ -84,12 +56,12 @@ msgstr "использование: %s [ -d /path/to/profiles ] [ -f /path/to/lo
 #: ../logprof:72
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
-msgstr "использование: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"метка в журнале, после которой запустить обработку\""
+msgstr "использование: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"метка в журнале, чтобы после запустить обработку\""
 
 #: ../autodep:63
 #, perl-format
 msgid "Can't find subdomain profiles in %s."
-msgstr "Невозможно найти профили подобластей в %s."
+msgstr "Невозможно найти профили ПодДоменов в %s."
 
 #: ../autodep:71
 msgid "Please enter the program to create a profile for: "
@@ -98,7 +70,7 @@ msgstr "Укажите программу, для которой создает�
 #: ../autodep:95 ../SubDomain.pm:6156
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
-msgstr "%s помечена как программа, которая не должна иметь своего профиля. Обычно так помечаются программы, если создание профиля для них может нарушить рабоу всей системы.  Если вы знаете, что делаете, и уверены в необходимости создать профиль для этой программы, измените соответствующую запись в разделе [qualifiers] в файле /etc/apparmor/logprof.conf."
+msgstr "%s помечено как программа, которая не должна иметь своего профиля. Обычно так помечаются программы, если создание профиля для них может нарушить работу остальной системы. Если вы уверены, что требуется создать профиль для этой программы, измените соответствующую запись в разделе [qualifiers] в файле /etc/apparmor/logprof.conf."
 
 #: ../autodep:102
 #, perl-format
@@ -108,12 +80,12 @@ msgstr "Профиль для %s уже существует - пропуска�
 #: ../autodep:109 ../audit:119 ../complain:119 ../enforce:119
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
-msgstr "Невозможно найти %s в списке системных путей.  Если имя приложения правильно, пожалуйста, запустите 'which %s' с правильными установленной переменной PATH, чтобы определить полный путь."
+msgstr "Невозможно найти %s в списке системных путей.  Если имя приложения правильно, запустите \"which %s\" как пользователь с правильной переменной PATH, чтобы определить полный путь."
 
 #: ../audit:106
 #, perl-format
 msgid "Setting %s to audit mode."
-msgstr "Установка режима аудита для %s."
+msgstr "Настройки %s в режиме аудита."
 
 #: ../audit:131
 #, perl-format
@@ -127,7 +99,7 @@ msgstr "Укажите программу для переключения в щ�
 #: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:900
 #, perl-format
 msgid "Setting %s to complain mode."
-msgstr "Установка щадящего режима для %s."
+msgstr "Настройка %s в щадящем режиме."
 
 #: ../complain:131
 #, perl-format
@@ -141,7 +113,7 @@ msgstr "Укажите программу для переключения в в�
 #: ../enforce:105 ../SubDomain.pm:592
 #, perl-format
 msgid "Setting %s to enforce mode."
-msgstr "Установка вынужденного режима для %s."
+msgstr "Настройка %s в вынужденном режиме."
 
 #: ../enforce:131
 #, perl-format
@@ -155,7 +127,7 @@ msgstr "Использование: %s [ --paranoid ]\n"
 
 #: ../unconfined:56
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "Похоже, подобласти не запущены. Включите подобласть и повторите попытку."
+msgstr "Похоже ПодДомены не запущены. Пожалуйста, включите ПодДомены и попробуйте снова."
 
 #: ../unconfined:61
 msgid "Can't read /proc\n"
@@ -176,20 +148,16 @@ msgstr "Невозможно найти %s."
 
 #: ../SubDomain.pm:778 ../SubDomain.pm:3173
 msgid "Connecting to repository....."
-msgstr "Соединение с репозитарием....."
+msgstr "Подключение к хранилищу..."
 
 #: ../SubDomain.pm:787
 #, perl-format
-msgid ""
-"WARNING: Error fetching profiles from the repository:\n"
-"%s\n"
-msgstr ""
-"ВНИМАНИЕ: Ошибка получения профилей из репозитария:\n"
-"%s\n"
+msgid "WARNING: Error fetching profiles from the repository:\n%s\n"
+msgstr "ВНИМАНИЕ: Ошибка получения профилей из репозитория:\n%s\n"
 
 #: ../SubDomain.pm:796
 msgid "Inactive local profile for "
-msgstr "Неактивные локальные профили для "
+msgstr "Неактивный локальный профиль для"
 
 #: ../SubDomain.pm:833 ../SubDomain.pm:1852 ../SubDomain.pm:2140
 #: ../SubDomain.pm:3300 ../SubDomain.pm:3333 ../SubDomain.pm:3533
@@ -199,7 +167,7 @@ msgstr "Профиль"
 
 #: ../SubDomain.pm:867
 msgid "Profile submitted by"
-msgstr "Профиль отправлен"
+msgstr "Профиль представлен"
 
 #: ../SubDomain.pm:908
 #, perl-format
@@ -208,38 +176,28 @@ msgstr "Ошибка активации профилей: %s\n"
 
 #: ../SubDomain.pm:1055 ../SubDomain.pm:1108
 #, perl-format
-msgid ""
-"WARNING: Error syncronizing profiles with the repository:\n"
-"%s\n"
-msgstr ""
-"ВНИМАНИЕ: Ошибка синхронизации профилей с репозитариям:\n"
-"%s\n"
+msgid "WARNING: Error syncronizing profiles with the repository:\n%s\n"
+msgstr "ВНИМАНИЕ: Ошибка синхронизации профилей с репозитарием:\n%s\n"
 
 #: ../SubDomain.pm:1135
 msgid "New profiles"
 msgstr "Новые профили"
 
 #: ../SubDomain.pm:1137
-msgid ""
-"Please choose the newly created profiles that you would like\n"
-"to store in the repository"
-msgstr ""
-"Выберите новые профили для сохранения\n"
-"их в репозитарии"
+msgid "Please choose the newly created profiles that you would like\nto store in the repository"
+msgstr "Выберите новые профили, которые следует сохранить\nв хранилище"
 
 #: ../SubDomain.pm:1144
 msgid "Submit newly created profiles to the repository"
-msgstr "Отправить вновm созданные профили в htgjpbnfhbq"
+msgstr "Отправить новые профили в хранилище"
 
 #: ../SubDomain.pm:1146
 msgid "Would you like to upload the newly created profiles?"
-msgstr "Выгрузить вновь созданные профили?"
+msgstr "Отправить новые профили?"
 
 #: ../SubDomain.pm:1159
-msgid ""
-"Select which of the changed profiles you would like to upload\n"
-"to the repository"
-msgstr "Выберите измененные профили для выгрузки в репозитарий"
+msgid "Select which of the changed profiles you would like to upload\nto the repository"
+msgstr "Выберите измененные профили, которые следует отправить\nв хранилище"
 
 #: ../SubDomain.pm:1161
 msgid "Changed profiles"
@@ -247,66 +205,49 @@ msgstr "Измененные профили"
 
 #: ../SubDomain.pm:1167
 msgid "Submit changed profiles to the repository"
-msgstr "Отправить измененные профили в репозитарий"
+msgstr "Отправить измененные профили в хранилище"
 
 #: ../SubDomain.pm:1169
-msgid ""
-"The following profiles from the repository were changed.\n"
-"Would you like to upload your changes?"
-msgstr ""
-"Приведенные ниже профили в репозитарии были изменены.\n"
-"Выгрузить изменения?"
+msgid "The following profiles from the repository were changed.\nWould you like to upload your changes?"
+msgstr "Следующие профили из хранилища были изменены.\nОтправить изменения?"
 
 #: ../SubDomain.pm:1236 ../SubDomain.pm:1316
 #, perl-format
-msgid ""
-"WARNING: An error occured while uploading the profile %s\n"
-"%s\n"
-msgstr ""
-"ВНИМАНИЕ: Произошла ошибка при выгрузке профиля %s в репозитарий\n"
-"%s\n"
+msgid "WARNING: An error occured while uploading the profile %s\n%s\n"
+msgstr "ВНИМАНИЕ: Произошла ошибка при выгрузке профиля %s в репозитарий\n%s\n"
 
 #: ../SubDomain.pm:1241
 msgid "Uploaded changes to repository."
-msgstr "Изменения выгружены в репозитарий."
+msgstr "Изменения отправлены в хранилище"
 
 #: ../SubDomain.pm:1290
 msgid "Changelog Entry: "
-msgstr "Запись журнала изменений: "
+msgstr "Запись журнала изменений:"
 
 #: ../SubDomain.pm:1311
 #, perl-format
 msgid "Uploaded %s to repository."
-msgstr "%s выгружен в репозитарий."
+msgstr "Отправлены в хранилище %s."
 
 #: ../SubDomain.pm:1322
-msgid ""
-"Repository Error\n"
-"Registration or Signin was unsuccessful. User login\n"
-"information is required to upload profiles to the\n"
-"repository. These changes have not been sent.\n"
-msgstr ""
-"Ошибка репозитария\n"
-"Регистрация или вход закончились неудачно. Необходима\n"
-"информация о пользователе для выгрузки профилей в \n"
-"репозитарий. Изменения не отправлены.\n"
+msgid "Repository Error\nRegistration or Signin was unsuccessful. User login\ninformation is required to upload profiles to the\nrepository. These changes have not been sent.\n"
+msgstr "Ошибка репозитария\nРегистрация или вход закончились неудачно. Необходима\nинформация о входе пользователя в систему для выгрузки профилей в \nрепозитарий. Изменения не отправлены.\n"
 
 #: ../SubDomain.pm:1379 ../SubDomain.pm:1419
 msgid "(Y)es"
-msgstr "(Y)Да"
+msgstr "(Д)а"
 
 #: ../SubDomain.pm:1380 ../SubDomain.pm:1420
 msgid "(N)o"
-msgstr "(N)Нет"
+msgstr "(Н)ет"
 
 #: ../SubDomain.pm:1383 ../SubDomain.pm:1424
 msgid "Invalid hotkey for"
 msgstr "Неверная клавиша быстрого доступа для"
 
-# cancel button label
 #: ../SubDomain.pm:1421
 msgid "(C)ancel"
-msgstr "(C)Отмена"
+msgstr "(О)тмена"
 
 #: ../SubDomain.pm:1746
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
@@ -322,7 +263,7 @@ msgstr "Покрытие по умолчанию"
 
 #: ../SubDomain.pm:1856
 msgid "Requested Hat"
-msgstr "Запрошенное покрытие"
+msgstr "Запршенное покрытие"
 
 #: ../SubDomain.pm:2142
 msgid "Program"
@@ -342,69 +283,21 @@ msgid "Enter profile name to transition to: "
 msgstr "Введите имя переносимого профиля: "
 
 #: ../SubDomain.pm:2201
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"switching profiles?\n"
-"\n"
-"Sanitizing the environment is more secure,\n"
-"but some applications depend on the presence\n"
-"of LD_PRELOAD or LD_LIBRARY_PATH."
-msgstr ""
-"Должен ли AppArmor санировать среду при\n"
-"переключении профилей?\n"
-"\n"
-"Санирование среды безопаснее,\n"
-"но некоторые приложения зависят от присутствия\n"
-"LD_PRELOAD или LD_LIBRARY_PATH."
+msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH."
+msgstr "Должен ли AppArmor санировать среду при\nпереключении профилей?\n\nСанирование среды это более безопасно,\nно некоторые приложения зависят от присутствия\nLD_PRELOAD или LD_LIBRARY_PATH."
 
 #: ../SubDomain.pm:2203
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"switching profiles?\n"
-"\n"
-"Sanitizing the environment is more secure,\n"
-"but this application appears to use LD_PRELOAD\n"
-"or LD_LIBRARY_PATH and clearing these could\n"
-"cause functionality problems."
-msgstr ""
-"Должен ли AppArmor санировать среду при\n"
-"переключении профилей?\n"
-"\n"
-"Санирование среды безопаснее,\n"
-"но похоже, это приложение использует LD_PRELOAD\n"
-"или LD_LIBRARY_PATH, и очистка их может вызвать\n"
-"проблемы работоспособности."
+msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut this application appears to use LD_PRELOAD\nor LD_LIBRARY_PATH and clearing these could\ncause functionality problems."
+msgstr "Должен ли AppArmor санировать среду при\nпереключении профилей?\n\nСанирование среды это более безопасно,\nно похоже, это приложение использует LD_PRELOAD\nили LD_LIBRARY_PATH и очистка их может вызвать\nпроблемы работоспособности."
 
 #: ../SubDomain.pm:2212
 #, perl-format
-msgid ""
-"Launching processes in an unconfined state is a very\n"
-"dangerous operation and can cause serious security holes.\n"
-"\n"
-"Are you absolutely certain you wish to remove all\n"
-"AppArmor protection when executing %s?"
-msgstr ""
-"Запуск процессов в неограниченном состоянии - очень\n"
-"опасное действие, которое может породить серьезные бреши в безопасности.\n"
-"\n"
-"Вы абсолютно уверены, что вы хотите удалить всю\n"
-"защиту AppArmor при запуске %s?"
+msgid "Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s?"
+msgstr "Запуск процессов в неограниченном состоянии это очень\nопасное действие и может произвести дыры в безопасноит.\n\nВы абсолютно уверены, что вы хотите удалить всю\nзащиту AppArmor при запуске %s?"
 
 #: ../SubDomain.pm:2214
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"running this program unconfined?\n"
-"\n"
-"Not sanitizing the environment when unconfining\n"
-"a program opens up significant security holes\n"
-"and should be avoided if at all possible."
-msgstr ""
-"Должен ли AppArmor санировать среду при запуске\n"
-"этой программы в неограниченном состоянии?\n"
-"\n"
-"Отсутствие санации среды при неограниченном запуске программы\n"
-"может привести к открыитю серьезных брешей в безопасности,\n"
-"так что этого следует по возможности избегать."
+msgid "Should AppArmor sanitize the environment when\nrunning this program unconfined?\n\nNot sanitizing the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."
+msgstr "Должен ли AppArmor санировать среду при запуске\nэтой программы в неограниченном состоянии?\n\nНе санированная среда, при неограниченной программе,\nоткрывает потенциальные дыры безопасности,\nи этого следует по возможности избегать."
 
 #: ../SubDomain.pm:2303
 #, perl-format
@@ -419,20 +312,20 @@ msgstr "Локальный профиль %s не существует, созд
 #: ../SubDomain.pm:2502 ../SubDomain.pm:6532 ../SubDomain.pm:6537
 #, perl-format
 msgid "Log contains unknown mode %s."
-msgstr "В журнале содержится неизветный режим %s."
+msgstr "Журнал содержит неизвестный режим %s."
 
 #: ../SubDomain.pm:2915
 msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
-msgstr "В репозитарии профилей найдена обновленная версия данного профиля. Использовать ее?"
+msgstr "В хранилище профилей найдена обновленная версия профиля. Использовать ее?"
 
 #: ../SubDomain.pm:2945
 #, perl-format
 msgid "Updated profile %s to revision %s."
-msgstr "Профиль %s обновлен до версии %s."
+msgstr "Обновленный профиль %s для редакции %s."
 
 #: ../SubDomain.pm:2952
 msgid "Error parsing repository profile."
-msgstr "Ошибка анализа профиля репозитария."
+msgstr "Ошибка при анализе профиля из хранилища"
 
 #: ../SubDomain.pm:2988
 msgid "Create New User?"
@@ -440,24 +333,23 @@ msgstr "Создать нового пользователя?"
 
 #: ../SubDomain.pm:2989
 msgid "Username: "
-msgstr "Имя пользователя: "
+msgstr "Имя пользователя:"
 
 #: ../SubDomain.pm:2990
 msgid "Password: "
-msgstr "Пароль: "
+msgstr "Пароль:"
 
 #: ../SubDomain.pm:2991
 msgid "Email Addr: "
-msgstr "Адрес электронной почты: "
+msgstr "Адр. эл. почты:"
 
-#  PowerManagement read dialog caption
 #: ../SubDomain.pm:2993
 msgid "Save Configuration? "
-msgstr "Сохранить настройку? "
+msgstr "Сохранить конфигурацию"
 
 #: ../SubDomain.pm:3002
 msgid "The Profile Repository server returned the following error:"
-msgstr "Сервер репозитария профилей возвратил следующую ошибку:"
+msgstr "Сервером хранилища профилей возвращена ошибка:"
 
 #: ../SubDomain.pm:3004
 msgid "Please re-enter registration information or contact the administrator."
@@ -468,40 +360,21 @@ msgid "Login Error\n"
 msgstr "Ошибка входа в систему\n"
 
 #: ../SubDomain.pm:3012
-msgid ""
-"Login failure\n"
-" Please check username and password and try again."
-msgstr ""
-"Сбой входа в систему\n"
-" Проверьте имя пользователя и пароль и повторите попытку."
+msgid "Login failure\n Please check username and password and try again."
+msgstr "Сбой входа в систему\n Проверьте имя пользователя и пароль и повторите попытку."
 
-# power-off message
 #: ../SubDomain.pm:3034
-msgid ""
-"Would you like to enable access to the\n"
-"profile repository?"
-msgstr ""
-"Вы хотите разрешить доступ к\n"
-"репозитарию профилей?"
+msgid "Would you like to enable access to the\nprofile repository?"
+msgstr "Включить доступ к хранилищу\nпрофилей?"
 
 #: ../SubDomain.pm:3065
-msgid ""
-"Would you like to upload newly created and changed profiles to\n"
-"      the profile repository?"
-msgstr ""
-"Выгрузить вновь созданные и измененные профили\n"
-"      в репозитарий профилей?"
+msgid "Would you like to upload newly created and changed profiles to\n      the profile repository?"
+msgstr "Отправить новые и измененные профили в хранилище\n      профилей?"
 
 #: ../SubDomain.pm:3184
 #, perl-format
-msgid ""
-"WARNING: Profile update check failed\n"
-"Error Detail:\n"
-"%s"
-msgstr ""
-"ВНИМАНИЕ: Сбой при проверке обновление профиля\n"
-"Ошибка:\n"
-"%s"
+msgid "WARNING: Profile update check failed\nError Detail:\n%s"
+msgstr "ВНИМАНИЕ: Сбой при проверке обновления профиля\nОшибка:\n%s"
 
 #: ../SubDomain.pm:3198
 msgid "Change mode modifiers"
@@ -527,7 +400,7 @@ msgstr "Возможность"
 #: ../SubDomain.pm:3354 ../SubDomain.pm:3628 ../SubDomain.pm:3875
 #, perl-format
 msgid "Adding #include <%s> to profile."
-msgstr "Добавление #include <%s> в профиль."
+msgstr "Добавляется #include <%s> в профиль."
 
 #: ../SubDomain.pm:3357 ../SubDomain.pm:3629 ../SubDomain.pm:3669
 #: ../SubDomain.pm:3879
@@ -543,7 +416,7 @@ msgstr "Добавление возможности %s в профиль."
 #: ../SubDomain.pm:3373
 #, perl-format
 msgid "Denying capability %s to profile."
-msgstr "Запрет возможности %s в профиле."
+msgstr "Ограничение возможности %s в профиле."
 
 #: ../SubDomain.pm:3534
 msgid "Path"
@@ -551,7 +424,7 @@ msgstr "Путь"
 
 #: ../SubDomain.pm:3545 ../SubDomain.pm:3577
 msgid "(owner permissions off)"
-msgstr "(отключить права)"
+msgstr "(отключить разрешения)"
 
 #: ../SubDomain.pm:3551
 msgid "(force new perms to owner)"
@@ -592,7 +465,7 @@ msgstr "Указанный путь не соответствует этой з�
 
 #: ../SubDomain.pm:3688
 msgid "Log Entry"
-msgstr "Запись журнала"
+msgstr "Записи Журнала"
 
 #: ../SubDomain.pm:3689
 msgid "Entered Path"
@@ -600,11 +473,11 @@ msgstr "Введенный путь"
 
 #: ../SubDomain.pm:3690
 msgid "Do you really want to use this path?"
-msgstr "Действительно использовать этот путь?"
+msgstr "Вы действительно хотите использовать этот путь?"
 
 #: ../SubDomain.pm:3802 ../SubDomain.pm:3854
 msgid "Network Family"
-msgstr "Семейство сетей"
+msgstr "Сетевое семейство"
 
 #: ../SubDomain.pm:3805 ../SubDomain.pm:3857
 msgid "Socket Type"
@@ -613,60 +486,50 @@ msgstr "Тип сокета"
 #: ../SubDomain.pm:3905
 #, perl-format
 msgid "Adding network access %s %s to profile."
-msgstr "Добавление сетевого доступа %s %s в профиль."
+msgstr "Добавление доступа к сети %s %s в профиль."
 
 #: ../SubDomain.pm:3924
 #, perl-format
 msgid "Denying network access %s %s to profile."
-msgstr "Запрет сетевого доступа %s %s в профиле."
+msgstr "Запрет доступа к сети %s %s в профиле."
 
 #: ../SubDomain.pm:4132
 #, perl-format
 msgid "Reading log entries from %s."
-msgstr "Чтение записей журнала из %s."
+msgstr "Читаются записи журнала из %s."
 
 #: ../SubDomain.pm:4133
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
-msgstr "Обновление профилей AppArmor в %s."
+msgstr "Обновляется профили AppArmor в %s."
 
 #: ../SubDomain.pm:4137
 msgid "unknown\n"
 msgstr "неизвестно\n"
 
 #: ../SubDomain.pm:4170
-msgid ""
-"The profile analyzer has completed processing the log files.\n"
-"\n"
-"All updated profiles will be reloaded"
-msgstr ""
-"Анализатор профиля закончил обработку файлов журнала.\n"
-"\n"
-"Все обновленные профили будут перезагружены"
+msgid "The profile analyzer has completed processing the log files.\n\nAll updated profiles will be reloaded"
+msgstr "Анализатор профиля закончил обработку файлов журнала.\n\nВсе обновленные профили будут перезагружены"
 
 #: ../SubDomain.pm:4176
 msgid "No unhandled AppArmor events were found in the system log."
-msgstr "Необработанных событий AppArmor в системном журнале не найдено."
+msgstr "Не обработанные события AppArmor были найдены в системном журнале."
 
 #: ../SubDomain.pm:4237
-msgid ""
-"Select which profile changes you would like to save to the\n"
-"local profile set"
-msgstr ""
-"Выберите, какие изменения в профиле следует сохранить\n"
-"в локальном наборе профилей"
+msgid "Select which profile changes you would like to save to the\nlocal profile set"
+msgstr "Выберите изменения профилей для сохранения в наборе\nлокальных профилей"
 
 #: ../SubDomain.pm:4238
 msgid "Local profile changes"
-msgstr "Изменения в локальном профиле"
+msgstr "Изменения локальных профилей"
 
 #: ../SubDomain.pm:4265
 msgid "The following local profiles were changed.  Would you like to save them?"
-msgstr "Приведенные ниже локальные профили были изменены. Сохранить их?"
+msgstr "Следующие локальные профили были изменены. Сохранить их?"
 
 #: ../SubDomain.pm:4362
 msgid "Profile Changes"
-msgstr "Изменения в профиле"
+msgstr "Изменения профилей"
 
 #: ../SubDomain.pm:4974 ../SubDomain.pm:4990 ../SubDomain.pm:5001
 #: ../SubDomain.pm:5009 ../SubDomain.pm:5030 ../SubDomain.pm:5050
@@ -674,22 +537,22 @@ msgstr "Изменения в профиле"
 #: ../SubDomain.pm:5204
 #, perl-format
 msgid "%s contains syntax errors."
-msgstr "В %s имеются синтаксические ошибки."
+msgstr "%s содержит синтаксические ошибки."
 
 #: ../SubDomain.pm:5110
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
-msgstr "В профиле %s имеется неджопустимоеое регулярное выражение %s."
+msgstr "Профиль %s содержин неверный %s."
 
 #: ../SubDomain.pm:5115
 #, perl-format
 msgid "Profile %s contains invalid mode %s."
-msgstr "В профиле %s имеется недопустимый режим %s."
+msgstr "Профиль %s содержит недопустимый режим %s."
 
 #: ../SubDomain.pm:5250
 #, perl-format
 msgid "%s contains syntax errors. Line [%s]"
-msgstr "В %s имеются синтаксические ошибки. Строка [%s]"
+msgstr "%s содержит ошибки синтаксиса. Строка [%s]"
 
 #: ../SubDomain.pm:5839
 #, perl-format
@@ -702,7 +565,7 @@ msgstr "Неизвестная команда"
 
 #: ../SubDomain.pm:6352
 msgid "Invalid hotkey in"
-msgstr "Недопустимая клавиша быстрого доступа в"
+msgstr "Неверная клавиша быстрого доступа в"
 
 #: ../SubDomain.pm:6362
 msgid "Duplicate hotkey for"
@@ -710,16 +573,16 @@ msgstr "Дублирование клавиши быстрого доступа 
 
 #: ../SubDomain.pm:6383
 msgid "Invalid hotkey in default item"
-msgstr "Недопустимая клавиша быстрого доступа в элементе по умолчанию"
+msgstr "Неверная клавиша быстрого доступа в элементе по умолчанию"
 
 #: ../SubDomain.pm:6392
 msgid "Invalid default"
-msgstr "Недопустимое значение по умолчанию"
+msgstr "Неверное значение по умолчанию"
 
 #: ../Reports.pm:443 ../Reports.pm:532 ../Reports.pm:1480
 #, perl-format
 msgid "DBI Execution failed: %s."
-msgstr "Сбой выполнения DBI: %s"
+msgstr "Ошибка при выполнении DBI: %s."
 
 #: ../Reports.pm:556
 #, perl-format
@@ -728,241 +591,59 @@ msgstr "Не удалось открыть файл: %s."
 
 #: ../Reports.pm:560
 msgid "No type value passed.  Unable to determine page count."
-msgstr "Не передано значение типа. Невозможно определить количество страниц."
+msgstr "Не передано значение типа. Невозможно определить число страниц."
 
 #: ../Reports.pm:626
 #, perl-format
 msgid "Failed copying %s."
-msgstr "Не удалось скопировать %s."
+msgstr "Ошибка при копировании %s."
 
 #: ../Reports.pm:750
 #, perl-format
 msgid "Export Log Error: Couldn't open %s"
-msgstr "Ошибка экспорта журнала: Не удалось открыть %s"
+msgstr "Ошибка при экспорте журнала: не удалось открыть %s"
 
 #: ../Reports.pm:772
 msgid "Fatal error.  No report name given. Exiting."
-msgstr "Фатальная ошибка.  Не указано имя отчета. Выход."
+msgstr "Неустранимая ошибка. Не задано имя отчета. Выполняется выход."
 
 #: ../Reports.pm:781
 #, perl-format
-msgid ""
-"Unable to get configuration info for %s.\n"
-"                Unable to find %s."
-msgstr ""
-"Невозможно получить сведения о настройке для %s.\n"
-"                Невозможно найти %s."
+msgid "Unable to get configuration info for %s.\n                Unable to find %s."
+msgstr "Не удалось получить сведения о конфигурации для %s.\n                Не удалось найти %s."
 
 #: ../Reports.pm:828
 #, perl-format
 msgid "Failed to parse: %s."
-msgstr "Не удалось проанализировать: %s."
+msgstr "Ошибка при анализе: %s."
 
 #: ../Reports.pm:837
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s."
-msgstr "Фатальная ошибка.  Невозможно открыть %s."
+msgstr "Неустранимая ошибка. Не удалось открыть %s."
 
 #: ../Reports.pm:885
 #, perl-format
 msgid "Fatal Error.  Can't run %s.  Exiting."
-msgstr "Фатальная ошибка.  Невозможно выполнить %s.  Выход."
+msgstr "Неустранимая ошибка. Не удалось выполнить %s. Выполняется выход."
 
 #: ../Reports.pm:925
 #, perl-format
 msgid "Fatal Error.  No directory, %s, found.  Exiting."
-msgstr "Фатальная ошибка.  Каталог %s не найден.  Выход."
+msgstr "Неустранимая ошибка. Не найден каталог %s. Выполняется выход."
 
 #: ../Reports.pm:943
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
-msgstr "Фатальная ошибка. Невозможно открыть %s.  Выход."
+msgstr "Неустранимая ошибка. Не удалось открыть %s. Выполняется выход."
 
 #: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
 #, perl-format
 msgid "DBI Execution failed: %s"
-msgstr "Ошибка выполнения DBI: %s"
+msgstr "Ошибка при выполнении DBI: %s."
 
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"
-msgstr "Fatal Error.  getArchReport() не может открыть %s"
+msgstr "Неустранимая ошибка.  getArchReport() не может открыть %s."
 
-#~ msgid "Are you sure you want to save the current set of profile changes and exit?"
-#~ msgstr "Вы уверены, что вы хотите сохранить текущий набор изменений профиля и выйти?"
-
-#~ msgid "Saving all changes."
-#~ msgstr "Сохраняются все изменения"
-
-#~ msgid "Repository Error"
-#~ msgstr "Ошибка репозитария"
-
-#~ msgid "Include file %s contains invalid regexp %s."
-#~ msgstr "Во включаемом файле %s содержится недопустимое регулярное выражение %s."
-
-#~ msgid "Include file %s contains invalid mode %s."
-#~ msgstr "Во включаемом файле %s содержится недопустимый режим %s."
-
-#~ msgid "Include file %s contains syntax errors or is not a valid #include file."
-#~ msgstr "Включаемый файл %s содержит синтаксические ошибки или не является допустимым файлом для директивы #include."
-
-#~ msgid "(I)nherit"
-#~ msgstr "(I)Наследовать"
-
-#~ msgid "(P)rofile"
-#~ msgstr "(P)Профиль"
-
-#~ msgid "(D)eny"
-#~ msgstr "(D)Запретить"
-
-#~ msgid "Abo(r)t"
-#~ msgstr "(r)Прервать"
-
-#~ msgid "(F)inish"
-#~ msgstr "(F)Завершить"
-
-#~ msgid "(A)llow"
-#~ msgstr "(A)Разрешить"
-
-#~ msgid "(N)ew"
-#~ msgstr "(N)Новый"
-
-#~ msgid "(G)lob"
-#~ msgstr "(G)Все"
-
-#~ msgid "Glob w/(E)xt"
-#~ msgstr "(E) Все с расширением"
-
-#~ msgid "&Browse"
-#~ msgstr "Обзор"
-
-#~ msgid "&Create Profile"
-#~ msgstr "Создать профиль"
-
-#~ msgid "&Yes"
-#~ msgstr "&Да"
-
-#~ msgid "&No"
-#~ msgstr "&Нет"
-
-#~ msgid "&Abort"
-#~ msgstr "&Прервать"
-
-#~ msgid "&Back"
-#~ msgstr "Назад"
-
-#~ msgid "(S)can system log for SubDomain events"
-#~ msgstr "(S)Проверить системный журнал на предмет событий подобласти"
-
-#~ msgid "Unable to open"
-#~ msgstr "Невозможно открыть"
-
-#~ msgid "Couldn't save query."
-#~ msgstr "Не удалось сохранить запрос"
-
-#~ msgid "Couldn't retrieve query."
-#~ msgstr "Не удалось получить запрос."
-
-#~ msgid "# Security Incident Report - Generated by AppArmor\n"
-#~ msgstr "# Отчет о событиях в системе безопасности - создан модулем AppArmor\n"
-
-#~ msgid "# Period: %s - %s\n"
-#~ msgstr "# Период: %s - %s\n"
-
-#~ msgid "<h3>Security Incident Report - Generated by AppArmor</h3>\n"
-#~ msgstr "<h3>Отчет о событиях в системе безопасности - создан модулем AppArmor</h3>\n"
-
-#~ msgid "<h4>Period: %s - %s</h4>\n"
-#~ msgstr "<h4>Период: %s - %s</h4>\n"
-
-#~ msgid "ag_reports_confined: Couldn't open %s for writing."
-#~ msgstr "ag_reports_confined: Не удалось открыть %s на запись."
-
-#~ msgid "Failure in readMultiAudLog() - couldn't open %s."
-#~ msgstr "Ошибка в readMultiAudLog() - не удалось открыть %s."
-
-#~ msgid "Problem in readMultiAudLog() - couldn't open %s/%s."
-#~ msgstr "Проблема в readMultiAudLog() - не удалось открыть %s/%s."
-
-#~ msgid "readAudLog() wasn't passed an input file."
-#~ msgstr "readAudLog() не получил входного файла."
-
-#~ msgid "readAudLog() couldn't open %s."
-#~ msgstr "readAudLog() не смог открыть %s."
-
-#~ msgid "Can't run %s.  Exiting."
-#~ msgstr "Невозможно выполнить %s.  Выход."
-
-#~ msgid "ag_reports_confined: Missing instruction or argument!"
-#~ msgstr "ag_reports_confined: Отсутствует инструкция или параметр!"
-
-#~ msgid "Failure in readMultiEssLog() - couldn't open"
-#~ msgstr "Ошибка в readMultiEssLog() - не удалось открыть"
-
-#~ msgid "Problem in readMultiEssLog() - couldn't open"
-#~ msgstr "Проблема в readMultiEssLog() - не удалось открыть"
-
-#~ msgid "readEssLog() wasn't passed an input file."
-#~ msgstr "readEssLog() не получил входного файла."
-
-#~ msgid "readEssLog() couldn't open %s"
-#~ msgstr "readEssLog() не смог открыть %s"
-
-#~ msgid "ag_logparse: Unknown instruction %s or argument: %s"
-#~ msgstr "ag_logparse: Неизвестная инструкция %s или параметр: %s"
-
-#~ msgid "ag_reports_parse: Couldn't open %s for writing."
-#~ msgstr "ag_reports_parse: Не удалось открыть %s на запись."
-
-#~ msgid "ag_reports_parse: No archived reports found."
-#~ msgstr "ag_reports_parse: Архивные отчеты не найдены."
-
-#~ msgid "ag_reports_parse: Can't open directory %s: %s"
-#~ msgstr "ag_reports_parse: Невозможно открыть каталог %s: %s"
-
-#~ msgid "ag_reports_parse: Unknown instruction %s or argument: %s"
-#~ msgstr "ag_reports_parse: Неизвестная инструкция %s или параметр: %s"
-
-#~ msgid "Couldn't find %s.  Unable to create crontab.  Exiting."
-#~ msgstr "Не удалось найти %s. Невозможно создать crontab.  Выход."
-
-#~ msgid "Couldn't open %s."
-#~ msgstr "Не удалось открыть %s."
-
-#~ msgid "Couldn't open %s.  Unable to add report: %s"
-#~ msgstr "Не удалось открыть %s. Невозможно добавить отчет: %s"
-
-#~ msgid "Duplicate report name not allowed. Didn't schedule new report: %s"
-#~ msgstr "Дублирование имени отчета не допускается. Новый отчет не введен в расписание: %s"
-
-#~ msgid "Couldn't open %s.  No changes performed."
-#~ msgstr "Не удалось открыть %s. Изменения не внесены."
-
-#~ msgid "ag_reports_sched: Unknown instruction %s or arg: %s"
-#~ msgstr "ag_reports_sched: Неизвестная инструкция %s или параметр: %s"
-
-#~ msgid "&Create"
-#~ msgstr "&Создать"
-
-#~ msgid "Select Program to Profile"
-#~ msgstr "Выберите программу, для которой следует создать профиль"
-
-#~ msgid ""
-#~ "%s is currently marked as a program that should not have\n"
-#~ "it's own profile.  Usually, programs are marked this way\n"
-#~ "if creating a profile for them is likely to break the\n"
-#~ "rest of the system.  If you know what you're doing and\n"
-#~ "are certain you want to create a profile for this program,\n"
-#~ "edit the corresponding entry in the [qualifiers] section\n"
-#~ "in /etc/apparmor/logprof.conf."
-#~ msgstr ""
-#~ "%s в настоящий момент помечена как программа, которая не должна иметь\n"
-#~ "собственного профиля.  Обычно программы помечаются таким образом,\n"
-#~ " если создание профиля для них может привести к нарушениям работы\n"
-#~ " системы в целом.  Если вы знаете, что делаете, и\n"
-#~ " уверены, что хотите создать профиль для данной программы,\n"
-#~ " отредактируйте соответствующую запись в разделе [qualifiers]\n"
-#~ " файла /etc/apparmor/logprof.conf."
-
-#~ msgid "Are you sure you want to exit?"
-#~ msgstr "Вы действительно хотите выйти?"

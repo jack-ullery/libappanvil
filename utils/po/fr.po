@@ -1,94 +1,58 @@
-# French message file for YaST2 (@memory@).
-# Copyright (C) 2005 SUSE Linux Products GmbH.
-# Copyright (C) 2002, 2003 SuSE Linux AG.
-# Copyright (C) 2000, 2001 SuSE GmbH.
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
 #
-# Patricia Vaz <patricia@suse.de>, 2003.
-# Francoise Lermen <flermen@suse.de>, 2000, 2001, 2002.
-# Karine Nguyen <karine@suse.de>, 2001.
-# Guillaume GARDET <guillaume.gardet@free.fr>, 2008.
 msgid ""
 msgstr ""
-"Project-Id-Version: base\n"
+"Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2008-09-22 22:56-0700\n"
-"PO-Revision-Date: 2008-11-07 09:20+0100\n"
-"Last-Translator: Guillaume GARDET <guillaume.gardet@free.fr>\n"
-"Language-Team: French <opensuse-fr@opensuse.org>\n"
+"PO-Revision-Date: 2009-02-04 15:43\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Lokalize 0.2\n"
 
-# TLABEL partitioning_2002_03_14_2340__18
 #: ../genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
 msgstr "Il semble que le sous-domaine n'ait pas démarré. Activez le sous-domaine et réessayez."
 
-# TLABEL support_2002_03_14_2340__2
 #: ../genprof:69
 msgid "Please enter the program to profile: "
-msgstr "Entrez le programme à profiler :"
+msgstr "Saisissez le programme pour lequel créer un profil : "
 
-# TLABEL support_2002_03_14_2340__2
 #: ../genprof:88
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
 msgstr "%s introuvable dans la liste des chemins du système. Si le nom de l'application est correct, exécutez 'which %s' dans l'autre fenêtre pour trouver le chemin complet."
 
-# TLABEL support_2002_03_14_2340__2
 #: ../genprof:90 ../autodep:112 ../audit:122 ../complain:122 ../enforce:122
 #, perl-format
 msgid "%s does not exist, please double-check the path."
 msgstr "%s n'existe pas, vérifiez le chemin."
 
-# TLABEL autoinst_2002_08_07_0216__459
 #: ../genprof:115
-msgid ""
-"Please start the application to be profiled in \n"
-"another window and exercise its functionality now.\n"
-"\n"
-"Once completed, select the \"Scan\" button below in \n"
-"order to scan the system logs for AppArmor events.  \n"
-"\n"
-"For each AppArmor event, you will be given the  \n"
-"opportunity to choose whether the access should be  \n"
-"allowed or denied."
-msgstr ""
-"Démarrez l'application à profiler dans une \n"
-"autre fenêtre et utilisez sa fonctionnalité maintenant.\n"
-" \n"
-" Lorsque vous avez terminé, sélectionnez le bouton \"Analyser\" ci-dessous \n"
-"afin d'analyser les journaux système et détecter les événements AppArmor. \n"
-" \n"
-"Pour chaque événement AppArmor, vous aurez la \n"
-"possibilité de choisir si l'accès doit être \n"
-"autorisé ou refusé."
+msgid "Please start the application to be profiled in \nanother window and exercise its functionality now.\n\nOnce completed, select the \"Scan\" button below in \norder to scan the system logs for AppArmor events.  \n\nFor each AppArmor event, you will be given the  \nopportunity to choose whether the access should be  \nallowed or denied."
+msgstr "Démarrez l'application pour lequel créer un profil dans une \nautre fenêtre et utilisez sa fonctionnalité maintenant.\n \n Lorsque vous avez terminé, sélectionnez le bouton \"Analyser\" ci-dessous \nafin d'analyser les journaux système et détecter les événements AppArmor. \n \nPour chaque événement AppArmor, vous aurez la \npossibilité de choisir si l'accès doit être \nautorisé ou refusé."
 
-# TLABEL hwinfo_2002_01_04_0147__0
 #: ../genprof:135
 msgid "Profiling"
 msgstr "Création de profil"
 
-# TLABEL support_2002_03_14_2340__2
 #: ../genprof:169
 msgid "Reloaded SubDomain profiles in enforce mode."
 msgstr "Profils de sous-domaine rechargés en mode imposition."
 
-# TLABEL support_2002_03_14_2340__2
 #: ../genprof:170
 #, perl-format
 msgid "Finished generating profile for %s."
 msgstr "Génération du profil terminé pour %s."
 
-# TLABEL support_2002_03_14_2340__2
 #: ../genprof:174
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
-msgstr "Utilisation : %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ programme à profiler ]"
+msgstr "Utilisation : %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ programme pour lequel créer un profil ]"
 
-# TLABEL support_2002_03_14_2340__2
 #: ../logprof:72
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
@@ -103,13 +67,11 @@ msgstr "Impossible de trouver les profils de sous-domaine dans %s."
 msgid "Please enter the program to create a profile for: "
 msgstr "Entrez le programme pour lequel créer un nouveau profil : "
 
-# TLABEL packages_2002_01_04_0147__82
 #: ../autodep:95 ../SubDomain.pm:6156
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
 msgstr "%s est pour l'instant marqué en tant que programme qui ne devrait pas avoir son propre profil. Les programmes sont habituellement marqués ainsi si la création d'un profil pour eux risque fortement de corrompre le reste du système. Si vous savez ce que vous faites et si vous êtes sûr de vouloir créer un profil pour ce programme, modifiez l'entrée correspondante dans la section [qualifiers] du fichier /etc/apparmor/logprof.conf."
 
-# TLABEL network_2002_03_14_2340__39
 #: ../autodep:102
 #, perl-format
 msgid "Profile for %s already exists - skipping."
@@ -125,7 +87,6 @@ msgstr "Impossible de trouver %s dans la liste de chemins système. Si le nom de
 msgid "Setting %s to audit mode."
 msgstr "Définition de %s en mode audit."
 
-# TLABEL support_2002_03_14_2340__2
 #: ../audit:131
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
@@ -135,13 +96,11 @@ msgstr "Utilisation : %s [ -d /path/to/profiles ] [ programme à basculer en mod
 msgid "Please enter the program to switch to complain mode: "
 msgstr "Entrez le programme à basculer en mode réclamation : "
 
-# TLABEL sound_2002_01_04_0147__100
 #: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:900
 #, perl-format
 msgid "Setting %s to complain mode."
 msgstr "Définition de %s en mode réclamation."
 
-# TLABEL support_2002_03_14_2340__2
 #: ../complain:131
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
@@ -151,13 +110,11 @@ msgstr "Utilisation : %s [ -d /path/to/profiles ] [ programme à basculer en mod
 msgid "Please enter the program to switch to enforce mode: "
 msgstr "Entrez le programme à basculer en mode mise en vigueur : "
 
-# TLABEL sound_2002_01_04_0147__100
 #: ../enforce:105 ../SubDomain.pm:592
 #, perl-format
 msgid "Setting %s to enforce mode."
 msgstr "Définition de %s en mode imposition."
 
-# TLABEL support_2002_03_14_2340__2
 #: ../enforce:131
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
@@ -184,7 +141,6 @@ msgstr "non restreint(e)\n"
 msgid "confined by"
 msgstr "restreint(e) par"
 
-# TLABEL printconf_2002_03_14_2340__110
 #: ../SubDomain.pm:577 ../SubDomain.pm:590
 #, perl-format
 msgid "Can't find %s."
@@ -192,22 +148,17 @@ msgstr "%s introuvable."
 
 #: ../SubDomain.pm:778 ../SubDomain.pm:3173
 msgid "Connecting to repository....."
-msgstr "Connexion au dépôt..."
+msgstr "Connexion au référentiel..."
 
 #: ../SubDomain.pm:787
 #, perl-format
-msgid ""
-"WARNING: Error fetching profiles from the repository:\n"
-"%s\n"
-msgstr ""
-"ATTENTION : Erreur lors de la récupération des profils depuis le dépôt :\n"
-"%s\n"
+msgid "WARNING: Error fetching profiles from the repository:\n%s\n"
+msgstr "ATTENTION : erreur lors de la récupération des profils depuis de dépôt :\n%s\n"
 
 #: ../SubDomain.pm:796
 msgid "Inactive local profile for "
 msgstr "Profil local inactif pour "
 
-# TLABEL autoinst_2002_08_07_0216__230
 #: ../SubDomain.pm:833 ../SubDomain.pm:1852 ../SubDomain.pm:2140
 #: ../SubDomain.pm:3300 ../SubDomain.pm:3333 ../SubDomain.pm:3533
 #: ../SubDomain.pm:3799 ../SubDomain.pm:3851
@@ -216,9 +167,8 @@ msgstr "Profil"
 
 #: ../SubDomain.pm:867
 msgid "Profile submitted by"
-msgstr "Profil soumis par "
+msgstr "Profil soumis par"
 
-# TLABEL linuxrc_2002_03_29_0036__175
 #: ../SubDomain.pm:908
 #, perl-format
 msgid "Error activating profiles: %s\n"
@@ -226,40 +176,28 @@ msgstr "Erreur lors de l'activation des profils : %s\n"
 
 #: ../SubDomain.pm:1055 ../SubDomain.pm:1108
 #, perl-format
-msgid ""
-"WARNING: Error syncronizing profiles with the repository:\n"
-"%s\n"
-msgstr ""
-"ATTENTION : Erreur de synchronisation des profils avec le dépôt :\n"
-"%s\n"
+msgid "WARNING: Error syncronizing profiles with the repository:\n%s\n"
+msgstr "ATTENTION : erreur de synchronisation des profils avec le dépôt :\n%s\n"
 
 #: ../SubDomain.pm:1135
 msgid "New profiles"
 msgstr "Nouveaux profils"
 
 #: ../SubDomain.pm:1137
-msgid ""
-"Please choose the newly created profiles that you would like\n"
-"to store in the repository"
-msgstr ""
-"Veuillez sélectionner les profils nouvellement créés que vous souhaitez\n"
-"enregistrer dans le dépôt"
+msgid "Please choose the newly created profiles that you would like\nto store in the repository"
+msgstr "Choisissez les nouveaux profils que vous voulez\nstocker dans le référentiel"
 
 #: ../SubDomain.pm:1144
 msgid "Submit newly created profiles to the repository"
-msgstr "Soumettre les profils nouvellement créés au dépôt"
+msgstr "Soumettre les profils nouvellement créés dans le référentiel"
 
 #: ../SubDomain.pm:1146
 msgid "Would you like to upload the newly created profiles?"
-msgstr "Voulez-vous envoyer les profils nouvellement créés ?"
+msgstr "Voulez-vous charger les profils nouvellement créés ?"
 
 #: ../SubDomain.pm:1159
-msgid ""
-"Select which of the changed profiles you would like to upload\n"
-"to the repository"
-msgstr ""
-"Sélectionnez les profils modifiés que vous souhaitez envoyer\n"
-"au dépôt"
+msgid "Select which of the changed profiles you would like to upload\nto the repository"
+msgstr "Sélectionnez les profils modifiés que vous voulez charger \ndans le référentiel"
 
 #: ../SubDomain.pm:1161
 msgid "Changed profiles"
@@ -267,62 +205,42 @@ msgstr "Profils modifiés"
 
 #: ../SubDomain.pm:1167
 msgid "Submit changed profiles to the repository"
-msgstr "Soumettre les profils modifiés au dépôt"
+msgstr "Soumettre les profils modifiés au référentiel"
 
 #: ../SubDomain.pm:1169
-msgid ""
-"The following profiles from the repository were changed.\n"
-"Would you like to upload your changes?"
-msgstr ""
-"Les profils suivants issus du dépôt ont été modifiés.\n"
-"Voulez-vous envoyer vos changements ?"
+msgid "The following profiles from the repository were changed.\nWould you like to upload your changes?"
+msgstr "Les profils suivants du référentiel ont été modifiés.\nVoulez-vous charger vos modifications ?"
 
-# TLABEL linuxrc_2002_03_29_0036__95
 #: ../SubDomain.pm:1236 ../SubDomain.pm:1316
 #, perl-format
-msgid ""
-"WARNING: An error occured while uploading the profile %s\n"
-"%s\n"
-msgstr ""
-"ATTENTION : Une erreur s'est produite lors de l'envoi du profil %s\n"
-"%s\n"
+msgid "WARNING: An error occured while uploading the profile %s\n%s\n"
+msgstr "ATTENTION : une erreur s'est produite lors de l'envoi du profil %s\n%s\n"
 
 #: ../SubDomain.pm:1241
 msgid "Uploaded changes to repository."
-msgstr "Modifications envoyées au dépôt."
+msgstr "Modifications chargées dans le référentiel."
 
 #: ../SubDomain.pm:1290
 msgid "Changelog Entry: "
-msgstr "Entrée du fichier changelog : "
+msgstr "Entrée du journal de modification : "
 
 #: ../SubDomain.pm:1311
 #, perl-format
 msgid "Uploaded %s to repository."
-msgstr "%s envoyé au dépôt."
+msgstr "Chargement de %s dans le référentiel."
 
 #: ../SubDomain.pm:1322
-msgid ""
-"Repository Error\n"
-"Registration or Signin was unsuccessful. User login\n"
-"information is required to upload profiles to the\n"
-"repository. These changes have not been sent.\n"
-msgstr ""
-"Erreur de dépôt\n"
-"L'enregistrement ou l'identification a échoué. Les informations\n"
-"d'indentification sont necessaires pour envoyer les profils au dépôt.\n"
-"Les modifications n'ont pas été envoyées.\n"
+msgid "Repository Error\nRegistration or Signin was unsuccessful. User login\ninformation is required to upload profiles to the\nrepository. These changes have not been sent.\n"
+msgstr "Erreur de dépôt\nL'enregistrement ou l'identification a échoué. Les informations\nde login sont nécessaires pour envoyer les profils au dépôt.\nLes modifications n'ont pas été envoyées.\n"
 
-# TLABEL autoinst_2002_08_07_0216__451
 #: ../SubDomain.pm:1379 ../SubDomain.pm:1419
 msgid "(Y)es"
 msgstr "(O)ui"
 
-# TLABEL autoinst_2002_08_07_0216__459
 #: ../SubDomain.pm:1380 ../SubDomain.pm:1420
 msgid "(N)o"
 msgstr "(N)on"
 
-# TLABEL packages_2002_01_04_0147__13
 #: ../SubDomain.pm:1383 ../SubDomain.pm:1424
 msgid "Invalid hotkey for"
 msgstr "Raccourci clavier non valide pour"
@@ -331,22 +249,18 @@ msgstr "Raccourci clavier non valide pour"
 msgid "(C)ancel"
 msgstr "(A)nnuler"
 
-# TLABEL partitioning_2002_03_14_2340__18
 #: ../SubDomain.pm:1746
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
 msgstr "Êtes-vous sûr de vouloir abandonner ce jeu de modifications de profil et de vouloir sortir ?"
 
-# TLABEL idedma_2002_03_14_2340__12
 #: ../SubDomain.pm:1748
 msgid "Abandoning all changes."
 msgstr "Abandonner tous les changements ?"
 
-# TLABEL lilo_2002_03_14_2340__6
 #: ../SubDomain.pm:1854
 msgid "Default Hat"
 msgstr "Hat par défaut"
 
-# TLABEL idedma_2002_03_14_2340__12
 #: ../SubDomain.pm:1856
 msgid "Requested Hat"
 msgstr "Hat demandé"
@@ -355,120 +269,67 @@ msgstr "Hat demandé"
 msgid "Program"
 msgstr "Programme"
 
-# TLABEL online_update_2002_01_04_0147__113
 #: ../SubDomain.pm:2147
 msgid "Execute"
 msgstr "Exécuter"
 
-# TLABEL packages_2002_01_04_0147__82
 #: ../SubDomain.pm:2148 ../SubDomain.pm:3302 ../SubDomain.pm:3335
 #: ../SubDomain.pm:3588
 msgid "Severity"
 msgstr "Gravité"
 
 #: ../SubDomain.pm:2193
-#, fuzzy
 msgid "Enter profile name to transition to: "
-msgstr "Entrez un nom de profil pour transition vers : "
+msgstr "Saisissez le nom du profil vers lequel exécuter la transition : "
 
 #: ../SubDomain.pm:2201
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"switching profiles?\n"
-"\n"
-"Sanitizing the environment is more secure,\n"
-"but some applications depend on the presence\n"
-"of LD_PRELOAD or LD_LIBRARY_PATH."
-msgstr ""
-"AppArmor doit-il expurger les éléments de l'environnement lors\n"
-"du changement de profil ?\n"
-"\n"
-"Cette opération garantit une meilleure sécurité\n"
-"mais certaines applications nécessitent\n"
-"LD_PRELOAD ou LD_LIBRARY_PATH."
+msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH."
+msgstr "AppArmor doit-il expurger les éléments de l'environnement lors\ndu changement de profil ?\n\nCette opération garantit une meilleure sécurité\nmais certaines applications nécessitent\nLD_PRELOAD ou LD_LIBRARY_PATH."
 
 #: ../SubDomain.pm:2203
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"switching profiles?\n"
-"\n"
-"Sanitizing the environment is more secure,\n"
-"but this application appears to use LD_PRELOAD\n"
-"or LD_LIBRARY_PATH and clearing these could\n"
-"cause functionality problems."
-msgstr ""
-"AppArmor doit-il expurger les éléments de l'environnement lors\n"
-"du changement de profil ?\n"
-"\n"
-"Cette opération garantit une meilleure sécurité\n"
-"mais cette application semble utiliser LD_PRELOAD\n"
-"ou LD_LIBRARY_PATH. Leur nettoyage peut\n"
-"entraîner des problèmes de fonctionnement."
+msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut this application appears to use LD_PRELOAD\nor LD_LIBRARY_PATH and clearing these could\ncause functionality problems."
+msgstr "AppArmor doit-il expurger les éléments de l'environnement lors\ndu changement de profil ?\n\nCette opération garantit une meilleure sécurité\nmais cette application semble utiliser LD_PRELOAD\nou LD_LIBRARY_PATH. Leur nettoyage peut\nentraîner des problèmes de fonctionnement."
 
 #: ../SubDomain.pm:2212
 #, perl-format
-msgid ""
-"Launching processes in an unconfined state is a very\n"
-"dangerous operation and can cause serious security holes.\n"
-"\n"
-"Are you absolutely certain you wish to remove all\n"
-"AppArmor protection when executing %s?"
-msgstr ""
-"Le lancement de processus non restreints est une opération très\n"
-"dangereuse. Il peut entraîner d'importantes failles de sécurité.\n"
-"\n"
-"Voulez-vous vraiment annuler complètement\n"
-"la protection AppArmor lors de l'exécution de %s ?"
+msgid "Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s?"
+msgstr "Le lancement de processus non restreints est une opération très\ndangereuse. Il peut entraîner d'importantes failles de sécurité.\n\nVoulez-vous vraiment annuler complètement\nla protection AppArmor lors de l'exécution de %s ?"
 
 #: ../SubDomain.pm:2214
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"running this program unconfined?\n"
-"\n"
-"Not sanitizing the environment when unconfining\n"
-"a program opens up significant security holes\n"
-"and should be avoided if at all possible."
-msgstr ""
-"AppArmor doit-il expurger les éléments de l'environnement lors\n"
-"de l'exécution de ce programme non restreint ?\n"
-"\n"
-"La non-réalisation de cette opération,\n"
-"entraîne l'ouverture d'importantes failles de sécurité.\n"
-"Si possible, évitez le problème."
+msgid "Should AppArmor sanitize the environment when\nrunning this program unconfined?\n\nNot sanitizing the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."
+msgstr "AppArmor doit-il expurger les éléments de l'environnement lors\nde l'exécution de ce programme non restreint ?\n\nLa non-réalisation de cette opération,\nentraîne l'ouverture d'importantes failles de sécurité.\nSi possible, évitez le problème."
 
 #: ../SubDomain.pm:2303
 #, perl-format
 msgid "A profile for %s does not exist create one?"
-msgstr "Un profil pour %s n'existe pas. En créer un ?"
+msgstr "%s ne possède pas de profil. Voulez-vous en créer un ?"
 
 #: ../SubDomain.pm:2330
 #, perl-format
 msgid "A local profile for %s does not exist create one?"
-msgstr "Un profil local pour %s n'existe pas. En créer un ?"
+msgstr "%s ne possède pas de profil local. Voulez-vous en créer un ?"
 
-# TLABEL linuxrc_2002_03_29_0036__164
 #: ../SubDomain.pm:2502 ../SubDomain.pm:6532 ../SubDomain.pm:6537
 #, perl-format
 msgid "Log contains unknown mode %s."
-msgstr "Le log contient le mode inconnu %s."
+msgstr "Le journal contient un mode inconnu %s."
 
 #: ../SubDomain.pm:2915
 msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
-msgstr "Une version mise à jour de ce profil a été trouvé dans le dépôt de profils. Voulez-vous l'utiliser ?"
+msgstr "Une version à jour de ce profil a été trouvée dans le référentiel de profils. Voulez-vous l'utiliser ?"
 
-# TLABEL profile-manager_2002_08_07_0216__6
 #: ../SubDomain.pm:2945
 #, perl-format
 msgid "Updated profile %s to revision %s."
-msgstr "Profil %s mis à jour vers la version %s."
+msgstr "Profil mis à jour %s vers la révision %s."
 
 #: ../SubDomain.pm:2952
 msgid "Error parsing repository profile."
-msgstr "Erreur lors de l'analyse du profil de dépôt."
+msgstr "Erreur lors de l'analyse du profil du référentiel."
 
 #: ../SubDomain.pm:2988
 msgid "Create New User?"
-msgstr "Voulez-vous créer un nouvel utilisateur ?"
+msgstr "Créer un nouvel utilisateur ?"
 
 #: ../SubDomain.pm:2989
 msgid "Username: "
@@ -476,259 +337,200 @@ msgstr "Nom d'utilisateur : "
 
 #: ../SubDomain.pm:2990
 msgid "Password: "
-msgstr "Mot de passe :"
+msgstr "Mot de passe : "
 
 #: ../SubDomain.pm:2991
 msgid "Email Addr: "
-msgstr "Email Addr : "
+msgstr "Adresse électronique : "
 
-# TLABEL network_2002_03_14_2340__286
 #: ../SubDomain.pm:2993
 msgid "Save Configuration? "
-msgstr "Enregistrer la configuration ?"
+msgstr "Enregistrer la configuration ? "
 
 #: ../SubDomain.pm:3002
 msgid "The Profile Repository server returned the following error:"
-msgstr "Le serveur du dépôt de profils a retourné l'erreur suivante : "
+msgstr "Le serveur du référentiel de profils a retourné l'erreur suivante :"
 
 #: ../SubDomain.pm:3004
 msgid "Please re-enter registration information or contact the administrator."
-msgstr "Veuillez entrer à nouveau les informations d'enregistrement ou contactez l'administrateur."
+msgstr "Saisissez à nouveau les informations d'enregistrement ou contactez l'administrateur."
 
 #: ../SubDomain.pm:3005
 msgid "Login Error\n"
-msgstr "Erreur d'identification\n"
+msgstr "Erreur de login\n"
 
 #: ../SubDomain.pm:3012
-msgid ""
-"Login failure\n"
-" Please check username and password and try again."
-msgstr ""
-"Echec de l'identification.\n"
-" Veuillez vérifier le nom d'utilisateur et le mot de passe et essayer à nouveau."
+msgid "Login failure\n Please check username and password and try again."
+msgstr "Échec de login.\n Vérifiez le nom d'utilisateur et le mot de passe, puis réessayez."
 
 #: ../SubDomain.pm:3034
-msgid ""
-"Would you like to enable access to the\n"
-"profile repository?"
-msgstr ""
-"Voulez-vous activer l'accès au\n"
-"dépôt de profils ?"
+msgid "Would you like to enable access to the\nprofile repository?"
+msgstr "Voulez-vous activer l'accès au référentiel de profils\n ?"
 
 #: ../SubDomain.pm:3065
-msgid ""
-"Would you like to upload newly created and changed profiles to\n"
-"      the profile repository?"
-msgstr ""
-"Voulez vous envoyer les profils modifiés ou nouvellement créés au\n"
-"      dépôt de profils ?"
+msgid "Would you like to upload newly created and changed profiles to\n      the profile repository?"
+msgstr "Voulez-vous charger les profils nouvellement créés et modifiés vers\n      le référentiel de profils ?"
 
 #: ../SubDomain.pm:3184
 #, perl-format
-msgid ""
-"WARNING: Profile update check failed\n"
-"Error Detail:\n"
-"%s"
-msgstr ""
-"ATTENTION : Echec du controle des mises à jour de profils\n"
-"Détail de l'erreur :\n"
-"%s"
+msgid "WARNING: Profile update check failed\nError Detail:\n%s"
+msgstr "ATTENTION : échec du contrôle des mises à jour de profils\nDétail de l'erreur :\n%s"
 
 #: ../SubDomain.pm:3198
-#, fuzzy
 msgid "Change mode modifiers"
-msgstr "Profils modifiés"
+msgstr "Modifier les modificateurs de mode"
 
-# TLABEL profile-manager_2002_08_07_0216__6
 #: ../SubDomain.pm:3242
 msgid "Complain-mode changes:"
 msgstr "Changements en mode réclamation :"
 
-# TLABEL profile-manager_2002_08_07_0216__6
 #: ../SubDomain.pm:3244
 msgid "Enforce-mode changes:"
 msgstr "Changement en mode imposition :"
 
-# TLABEL packages_2002_01_04_0147__13
 #: ../SubDomain.pm:3250
 #, perl-format
 msgid "Invalid mode found: %s"
 msgstr "Mode incorrect : %s"
 
-# TLABEL packages_2002_01_04_0147__13
 #: ../SubDomain.pm:3301 ../SubDomain.pm:3334
 msgid "Capability"
 msgstr "Mode compatibilité"
 
-# TLABEL backup_2002_03_14_2340__92
 #: ../SubDomain.pm:3354 ../SubDomain.pm:3628 ../SubDomain.pm:3875
 #, perl-format
 msgid "Adding #include <%s> to profile."
 msgstr "Ajout de #include <%s> au profil."
 
-# TLABEL backup_2002_03_14_2340__92
 #: ../SubDomain.pm:3357 ../SubDomain.pm:3629 ../SubDomain.pm:3669
 #: ../SubDomain.pm:3879
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
 msgstr "%s entrées de profil précédemment correspondantes supprimées."
 
-# TLABEL partitioning_2002_01_04_0147__425
 #: ../SubDomain.pm:3368
 #, perl-format
 msgid "Adding capability %s to profile."
 msgstr "Ajout de capacité %s au profil."
 
-# TLABEL partitioning_2002_01_04_0147__425
 #: ../SubDomain.pm:3373
 #, perl-format
 msgid "Denying capability %s to profile."
 msgstr "Refus de capacité %s au profil."
 
-# TLABEL autoinst_2002_08_07_0216__95
 #: ../SubDomain.pm:3534
 msgid "Path"
 msgstr "Chemin d'accès"
 
 #: ../SubDomain.pm:3545 ../SubDomain.pm:3577
-#, fuzzy
 msgid "(owner permissions off)"
-msgstr "(permissions du propriétaire désactivées)"
+msgstr "(autorisations du propriétaire désactivées)"
 
 #: ../SubDomain.pm:3551
-#, fuzzy
 msgid "(force new perms to owner)"
-msgstr "(forcer les nouvelles règles de permissions au propriétaire)"
+msgstr "(forcer les nouvelles autorisations pour le propriétaire)"
 
 #: ../SubDomain.pm:3554
-#, fuzzy
 msgid "(force all rule perms to owner)"
-msgstr "(forcer toutes les règles de permissions au propriétaire)"
+msgstr "(forcer toutes les autorisations de règles pour le propriétaire)"
 
-# TLABEL lan_2002_01_04_0147__172
 #: ../SubDomain.pm:3566
 msgid "Old Mode"
 msgstr "Ancien mode"
 
-# TLABEL network_2002_03_14_2340__57
 #: ../SubDomain.pm:3567
 msgid "New Mode"
 msgstr "Nouveau mode"
 
 #: ../SubDomain.pm:3583
-#, fuzzy
 msgid "(force perms to owner)"
-msgstr "(forcer les permissions au propriétaire)"
+msgstr "(forcer les autorisations pour le propriétaire)"
 
 #: ../SubDomain.pm:3586
 msgid "Mode"
 msgstr "Mode"
 
-# TLABEL profile-manager_2002_08_07_0216__6
 #: ../SubDomain.pm:3668
 #, perl-format
 msgid "Adding %s %s to profile."
 msgstr "Ajout de %s %s au profil."
 
-# TLABEL autoinst_2002_08_07_0216__94
 #: ../SubDomain.pm:3684
 msgid "Enter new path: "
-msgstr "Entrez le nouveau chemin :"
+msgstr "Saisissez le nouveau chemin : "
 
-# TLABEL autoinst_2002_08_07_0216__94
 #: ../SubDomain.pm:3687
 msgid "The specified path does not match this log entry:"
 msgstr "La carte spécifiée n'existe pas."
 
-# TLABEL rc_config_2002_01_04_0147__19
 #: ../SubDomain.pm:3688
 msgid "Log Entry"
 msgstr "Entrée de journal"
 
-# TLABEL packages_2002_01_04_0147__200
 #: ../SubDomain.pm:3689
 msgid "Entered Path"
 msgstr "Chemin entré"
 
-# TLABEL sound_2002_01_04_0147__0
 #: ../SubDomain.pm:3690
 msgid "Do you really want to use this path?"
 msgstr "Voulez-vous vraiment utiliser ce chemin ?"
 
 #: ../SubDomain.pm:3802 ../SubDomain.pm:3854
 msgid "Network Family"
-msgstr "Famille réseau"
+msgstr "Famille d'adresses réseau"
 
 #: ../SubDomain.pm:3805 ../SubDomain.pm:3857
 msgid "Socket Type"
 msgstr "Type de socket"
 
-# TLABEL profile-manager_2002_08_07_0216__6
 #: ../SubDomain.pm:3905
 #, perl-format
 msgid "Adding network access %s %s to profile."
 msgstr "Ajout de l'accès réseau %s %s au profil."
 
-# TLABEL partitioning_2002_01_04_0147__425
 #: ../SubDomain.pm:3924
 #, perl-format
 msgid "Denying network access %s %s to profile."
-msgstr "Refus de l'accès au réseau %s %s au profil."
+msgstr "Refus de l'accès réseau %s %s au profil."
 
-# TLABEL restore_2002_08_07_0216__60
 #: ../SubDomain.pm:4132
 #, perl-format
 msgid "Reading log entries from %s."
 msgstr "Lecture des entrées de journal depuis %s."
 
-# TLABEL profile-manager_2002_08_07_0216__6
 #: ../SubDomain.pm:4133
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
 msgstr "Mise à jour des profils AppArmor dans %s."
 
-# TLABEL printer_2002_08_07_0216__54
 #: ../SubDomain.pm:4137
 msgid "unknown\n"
-msgstr "inconnu\n"
+msgstr "inconnu(e)\n"
 
-# TLABEL printconf_2002_03_14_2340__110
 #: ../SubDomain.pm:4170
-msgid ""
-"The profile analyzer has completed processing the log files.\n"
-"\n"
-"All updated profiles will be reloaded"
-msgstr ""
-"L'analyseur de profil a terminé le traitement des fichiers journaux.\n"
-"\n"
-" Tous les profils mis à jour seront rechargés"
+msgid "The profile analyzer has completed processing the log files.\n\nAll updated profiles will be reloaded"
+msgstr "L'analyseur de profil a terminé le traitement des fichiers journaux.\n\n Tous les profils mis à jour seront rechargés"
 
-# TLABEL printconf_2002_03_14_2340__110
 #: ../SubDomain.pm:4176
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "Aucun événement AppArmor non géré n'a été trouvé dans le journal système."
 
 #: ../SubDomain.pm:4237
-msgid ""
-"Select which profile changes you would like to save to the\n"
-"local profile set"
-msgstr ""
-"Sélectionnez les profils modifiés que vous souhaitez enregistrer\n"
-"parmis le jeu de profils locaux"
+msgid "Select which profile changes you would like to save to the\nlocal profile set"
+msgstr "Sélectionnez les modifications de profil que vous voulez enregistrer dans l'ensemble\nde profils locaux"
 
 #: ../SubDomain.pm:4238
 msgid "Local profile changes"
-msgstr "Modifications du profil local"
+msgstr "Modifications de profil local"
 
 #: ../SubDomain.pm:4265
 msgid "The following local profiles were changed.  Would you like to save them?"
-msgstr "Les profils locaux suivants ont été modifiés. Voulez-vous les sauvegarder ?"
+msgstr "Les profils locaux suivants ont été modifiés. Voulez-vous les enregistrer ?"
 
 #: ../SubDomain.pm:4362
 msgid "Profile Changes"
 msgstr "Modifications de profil"
 
-# TLABEL printconf_2002_03_14_2340__110
 #: ../SubDomain.pm:4974 ../SubDomain.pm:4990 ../SubDomain.pm:5001
 #: ../SubDomain.pm:5009 ../SubDomain.pm:5030 ../SubDomain.pm:5050
 #: ../SubDomain.pm:5059 ../SubDomain.pm:5091 ../SubDomain.pm:5153
@@ -737,25 +539,21 @@ msgstr "Modifications de profil"
 msgid "%s contains syntax errors."
 msgstr "%s contient des erreurs de syntaxe."
 
-# TLABEL sound_2002_01_04_0147__0
 #: ../SubDomain.pm:5110
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
 msgstr "Le profil %s contient une regexp %s incorrecte."
 
-# TLABEL sound_2002_01_04_0147__0
 #: ../SubDomain.pm:5115
 #, perl-format
 msgid "Profile %s contains invalid mode %s."
-msgstr "Le profil %s contient le mode invalide %s."
+msgstr "Le profil %s contient le mode non valide %s."
 
-# TLABEL printconf_2002_03_14_2340__110
 #: ../SubDomain.pm:5250
 #, perl-format
 msgid "%s contains syntax errors. Line [%s]"
-msgstr "%s contient des erreurs de syntaxe. ligne [%s]"
+msgstr "%s contient des erreurs de syntaxe. Ligne [%s]"
 
-# TLABEL network_2002_03_14_2340__300
 #: ../SubDomain.pm:5839
 #, perl-format
 msgid "Writing updated profile for %s."
@@ -765,7 +563,6 @@ msgstr "Écriture du profil à jour pour %s."
 msgid "Unknown command"
 msgstr "Commande inconnue"
 
-# TLABEL packages_2002_01_04_0147__13
 #: ../SubDomain.pm:6352
 msgid "Invalid hotkey in"
 msgstr "Raccourci clavier non valide dans"
@@ -778,7 +575,6 @@ msgstr "Raccourci clavier en double pour"
 msgid "Invalid hotkey in default item"
 msgstr "Raccourci clavier non valide dans l'élément par défaut"
 
-# TLABEL packages_2002_01_04_0147__13
 #: ../SubDomain.pm:6392
 msgid "Invalid default"
 msgstr "Valeur par défaut non valide"
@@ -786,9 +582,8 @@ msgstr "Valeur par défaut non valide"
 #: ../Reports.pm:443 ../Reports.pm:532 ../Reports.pm:1480
 #, perl-format
 msgid "DBI Execution failed: %s."
-msgstr "Échec de l'exécution de DBI : %s."
+msgstr "L'exécution de DBI a échoué : %s."
 
-# TLABEL backup_2002_03_14_2340__125
 #: ../Reports.pm:556
 #, perl-format
 msgid "Couldn't open file: %s."
@@ -798,16 +593,15 @@ msgstr "Impossible d'ouvrir le fichier : %s."
 msgid "No type value passed.  Unable to determine page count."
 msgstr "Aucune valeur de type transmise. Impossible de déterminer le nombre de pages."
 
-# TLABEL restore_2002_08_07_0216__96
 #: ../Reports.pm:626
 #, perl-format
 msgid "Failed copying %s."
-msgstr "Échec lors de la copie de %s."
+msgstr "La copie de %s a échoué."
 
 #: ../Reports.pm:750
 #, perl-format
 msgid "Export Log Error: Couldn't open %s"
-msgstr "Erreur d'exportation du journal : impossible d'ouvrir %s."
+msgstr "Erreur d'exportation du journal : impossible d'ouvrir %s"
 
 #: ../Reports.pm:772
 msgid "Fatal error.  No report name given. Exiting."
@@ -815,43 +609,38 @@ msgstr "Erreur irrécupérable. Aucun nom de rapport indiqué. Sortie."
 
 #: ../Reports.pm:781
 #, perl-format
-msgid ""
-"Unable to get configuration info for %s.\n"
-"                Unable to find %s."
-msgstr ""
-"Impossible d'obtenir les infos de configuration pour %s.\n"
-"                Impossible de trouver %s."
+msgid "Unable to get configuration info for %s.\n                Unable to find %s."
+msgstr "Impossible d'obtenir les infos de configuration pour %s.\n                Impossible de trouver %s."
 
-# TLABEL restore_2002_08_07_0216__88
 #: ../Reports.pm:828
 #, perl-format
 msgid "Failed to parse: %s."
-msgstr "Échec lors de l'analyse : %s."
+msgstr "L'analyse a échoué : %s."
 
 #: ../Reports.pm:837
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s."
-msgstr "Erreur irrécupérable. Ouverture de %s impossible."
+msgstr "Erreur irrécupérable. Impossible d'ouvrir %s."
 
 #: ../Reports.pm:885
 #, perl-format
 msgid "Fatal Error.  Can't run %s.  Exiting."
-msgstr "Erreur irrécupérable. Exécution de %s impossible. Sortie."
+msgstr "Erreur irrécupérable. Impossible d'exécuter %s. Sortie."
 
 #: ../Reports.pm:925
 #, perl-format
 msgid "Fatal Error.  No directory, %s, found.  Exiting."
-msgstr "Erreur irrécupérable. Aucun répertoire %s n'a été trouvé. Sortie."
+msgstr "Erreur irrécupérable. Aucun répertoire, %s, n'a été trouvé. Sortie."
 
 #: ../Reports.pm:943
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
-msgstr "Erreur irrécupérable. Ouverture de %s impossible. Sortie."
+msgstr "Erreur irrécupérable. Impossible d'ouvrir %s. Sortie"
 
 #: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
 #, perl-format
 msgid "DBI Execution failed: %s"
-msgstr "Échec de l'exécution de DBI : %s"
+msgstr "L'exécution de DBI a échoué : %s"
 
 #: ../Reports.pm:1592
 #, perl-format

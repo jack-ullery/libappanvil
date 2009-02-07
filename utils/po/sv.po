@@ -1,38 +1,30 @@
-# translation of apparmor-utils.po to Swedish
-# translation of apparmor-utils.po to
-# @TITLE@
-# Copyright (C) 2006, SUSE Linux GmbH, Nuremberg
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
 #
-# This file is distributed under the same license as @PACKAGE@ package. FIRST
-#
-# Mattias Newzella <newzella@linux.se>, 2006, 2007.
-# Jonas Björk <jonas@jonasbjork.net>, 2008.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2008-09-22 22:56-0700\n"
-"PO-Revision-Date: 2008-11-06 19:21+0100\n"
-"Last-Translator: \n"
-"Language-Team: Swedish <sv@li.org>\n"
+"PO-Revision-Date: 2009-02-05 07:23\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.4\n"
-"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
 
 #: ../genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "Underdomänen verkar inte ha startats. Aktivera underdomänen och försök igen."
+msgstr "Underdomänen verkar inte ha startats.  Aktivera underdomänen och försök igen."
 
 #: ../genprof:69
 msgid "Please enter the program to profile: "
-msgstr "Ange det program som ska ha en profil: "
+msgstr "Ange det program som ska ha en profil:"
 
 #: ../genprof:88
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
-msgstr "Hittar inte %s i systemsökvägslistan. Om programnamnet är fel kör du which %s i det andra fönstret för att söka efter den fullständiga sökvägen."
+msgstr "Hittar inte %s i systemsökvägslistan.  Om programnamnet är fel kör du which %s i det andra fönstret för att söka efter den fullständiga sökvägen."
 
 #: ../genprof:90 ../autodep:112 ../audit:122 ../complain:122 ../enforce:122
 #, perl-format
@@ -40,26 +32,8 @@ msgid "%s does not exist, please double-check the path."
 msgstr "%s finns inte. Kontrollera sökvägen."
 
 #: ../genprof:115
-msgid ""
-"Please start the application to be profiled in \n"
-"another window and exercise its functionality now.\n"
-"\n"
-"Once completed, select the \"Scan\" button below in \n"
-"order to scan the system logs for AppArmor events.  \n"
-"\n"
-"For each AppArmor event, you will be given the  \n"
-"opportunity to choose whether the access should be  \n"
-"allowed or denied."
-msgstr ""
-"Starta det program du vill skapa en profil för i \n"
-"ett annat fönster och prova funktionaliteten nu.\n"
-" \n"
-" När du är klar väljer du knappen Sök nedan \n"
-" för att söka igenom systemloggarna efter AppArmor-händelser.  \n"
-" \n"
-" För varje AppArmor-händelse får du möjlighet  \n"
-" att välja om åtkomst ska  \n"
-" tillåtas eller nekas."
+msgid "Please start the application to be profiled in \nanother window and exercise its functionality now.\n\nOnce completed, select the \"Scan\" button below in \norder to scan the system logs for AppArmor events.  \n\nFor each AppArmor event, you will be given the  \nopportunity to choose whether the access should be  \nallowed or denied."
+msgstr "Starta det program du vill skapa en profil för i \nett annat fönster och prova funktionaliteten nu.\n \n När du är klar väljer du knappen Sök nedan \n för att söka igenom systemloggarna efter AppArmor-händelser.  \n \n För varje AppArmor-händelse får du möjlighet  \n att välja om åtkomst ska  \n tillåtas eller nekas."
 
 #: ../genprof:135
 msgid "Profiling"
@@ -77,7 +51,7 @@ msgstr "Profilen för %s har genererats."
 #: ../genprof:174
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
-msgstr "syntax: %s [-d /sökväg/till/profiler] [-f /sökväg/till/loggfil] [program som ska få en profil]"
+msgstr "syntax: %s [ -d /sökväg/till/profiler ] [ -f /sökväg/till/loggfil ] [ program som ska få en profil ]"
 
 #: ../logprof:72
 #, perl-format
@@ -91,12 +65,12 @@ msgstr "Det går inte att hitta några underdomänprofiler i %s."
 
 #: ../autodep:71
 msgid "Please enter the program to create a profile for: "
-msgstr "Ange det program du vill skapa en profil för: "
+msgstr "Ange det program du vill skapa en profil för:"
 
 #: ../autodep:95 ../SubDomain.pm:6156
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
-msgstr "%s är för närvarande markerat som ett program som inte bör ha en egen profil. Program brukar markeras på det sättet om det övriga systemet antas störas av en profil för dem. Om du vet att det fungerar och du fortfarande vill skapa en profil för det här programmet, redigerar du motsvarande post i satsen [qualifiers] i /etc/apparmor/logprof. conf."
+msgstr "%s är för närvarande markerat som ett program som inte bör ha en egen profil.   Program brukar markeras på det sättet om det övriga systemet antas störas av en profil för dem.  Om du vet att det fungerar och du fortfarande vill skapa en profil för det här programmet, redigerar du motsvarande post i satsen [qualifiers] i /etc/apparmor/logprof. conf."
 
 #: ../autodep:102
 #, perl-format
@@ -106,21 +80,21 @@ msgstr "Det finns redan en profil för %s - hoppar över."
 #: ../autodep:109 ../audit:119 ../complain:119 ../enforce:119
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
-msgstr "Det går inte att hitta %s i systemsökvägslistan. Om programnamnet är fel kör du which %s som användare med rätt PATH-miljö angiven för att söka efter den fullständiga sökvägen."
+msgstr "Det går inte att hitta %s i systemsökvägslistan.  Om programnamnet är fel kör du which %s som användare med rätt PATH-miljö angiven för att söka efter den fullständiga sökvägen."
 
 #: ../audit:106
 #, perl-format
 msgid "Setting %s to audit mode."
-msgstr "Anger %s till granskningsläge."
+msgstr "Ställa in %s till granskningsläge."
 
 #: ../audit:131
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
-msgstr "syntax: %s [-d /sökväg/till/profiler] [program att växla till granskningsläge]"
+msgstr "syntax: %s [ -d /sökväg/till/profiler ] [ program att växla till granskningsläge ]"
 
 #: ../complain:64
 msgid "Please enter the program to switch to complain mode: "
-msgstr "Ange det program som ska växlas till varningsläge: "
+msgstr "Ange det program som ska växlas till varningsläge:"
 
 #: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:900
 #, perl-format
@@ -130,11 +104,11 @@ msgstr "Växlar %s till varningsläge."
 #: ../complain:131
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
-msgstr "syntax: %s [-d /sökväg/till/profiler] [program som ska växlas till varningsläge]"
+msgstr "syntax: %s [ -d /sökväg/till/profiler ] [ program som ska växlas till varningsläge ]"
 
 #: ../enforce:64
 msgid "Please enter the program to switch to enforce mode: "
-msgstr "Ange det program som ska växlas till spärrläge: "
+msgstr "Ange det program som ska växlas till spärrläge:"
 
 #: ../enforce:105 ../SubDomain.pm:592
 #, perl-format
@@ -144,12 +118,12 @@ msgstr "Växlar %s till spärrläge."
 #: ../enforce:131
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
-msgstr "syntax: %s [-d /sökväg/till/profiler] [program som ska växlas till spärrläge]"
+msgstr "syntax: %s [ -d /sökväg/till/profiler ] [ program som ska växlas till spärrläge ]"
 
 #: ../unconfined:50
 #, perl-format
 msgid "Usage: %s [ --paranoid ]\n"
-msgstr "Syntax: %s [--paranoid]\n"
+msgstr "Syntax: %s [ --paranoid ]\n"
 
 #: ../unconfined:56
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
@@ -174,20 +148,16 @@ msgstr "Kan inte hitta %s."
 
 #: ../SubDomain.pm:778 ../SubDomain.pm:3173
 msgid "Connecting to repository....."
-msgstr "Ansluter till förrådet..."
+msgstr "Ansluter till lagringsplats....."
 
 #: ../SubDomain.pm:787
 #, perl-format
-msgid ""
-"WARNING: Error fetching profiles from the repository:\n"
-"%s\n"
-msgstr ""
-"VARNING: Kunde inte hämta profiler från förrådet:\n"
-"%s\n"
+msgid "WARNING: Error fetching profiles from the repository:\n%s\n"
+msgstr "Varning! Ett fel inträffade när profiler skulle hämtas från arkivet:\n%s\n"
 
 #: ../SubDomain.pm:796
 msgid "Inactive local profile for "
-msgstr "Inaktiv lokal profil för "
+msgstr "Inaktiv loka profil för "
 
 #: ../SubDomain.pm:833 ../SubDomain.pm:1852 ../SubDomain.pm:2140
 #: ../SubDomain.pm:3300 ../SubDomain.pm:3333 ../SubDomain.pm:3533
@@ -197,49 +167,37 @@ msgstr "Profil"
 
 #: ../SubDomain.pm:867
 msgid "Profile submitted by"
-msgstr "Profil inskickad av"
+msgstr "Profilen skickades av"
 
 #: ../SubDomain.pm:908
 #, perl-format
 msgid "Error activating profiles: %s\n"
-msgstr "Fel när profilen %s skulle aktiveras\n"
+msgstr "Ett fel inträffade när profiler skulle aktiveras: %s\n"
 
 #: ../SubDomain.pm:1055 ../SubDomain.pm:1108
 #, perl-format
-msgid ""
-"WARNING: Error syncronizing profiles with the repository:\n"
-"%s\n"
-msgstr ""
-"VARNING: Fel vid synkronisering av profiler med förrådet:\n"
-"%s\n"
+msgid "WARNING: Error syncronizing profiles with the repository:\n%s\n"
+msgstr "Varning! Ett fel inträffade när profiler skulle synkroniseras med arkivet:\n%s\n"
 
 #: ../SubDomain.pm:1135
 msgid "New profiles"
 msgstr "Nya profiler"
 
 #: ../SubDomain.pm:1137
-msgid ""
-"Please choose the newly created profiles that you would like\n"
-"to store in the repository"
-msgstr ""
-"Välj en av de nyskapade profilerna som du vill\n"
-"lagra i förrådet"
+msgid "Please choose the newly created profiles that you would like\nto store in the repository"
+msgstr "Ange de nya profilerna som du vill lagra på\nlagringsplatsen"
 
 #: ../SubDomain.pm:1144
 msgid "Submit newly created profiles to the repository"
-msgstr "Skicka in nyskapade profiler till förrådet"
+msgstr "Skicka nya profiler till lagringsplatsen"
 
 #: ../SubDomain.pm:1146
 msgid "Would you like to upload the newly created profiles?"
-msgstr "Vill du ladda upp de nyskapade profilerna?"
+msgstr "Vill du överföra de nya profilerna?"
 
 #: ../SubDomain.pm:1159
-msgid ""
-"Select which of the changed profiles you would like to upload\n"
-"to the repository"
-msgstr ""
-"Välj vilka av de ändrade profilerna du vill ladda upp\n"
-"till förrådet"
+msgid "Select which of the changed profiles you would like to upload\nto the repository"
+msgstr "Ange vilka av de ändrade profilerna som du vill överföra\ntill lagringsplatsen"
 
 #: ../SubDomain.pm:1161
 msgid "Changed profiles"
@@ -247,48 +205,33 @@ msgstr "Ändrade profiler"
 
 #: ../SubDomain.pm:1167
 msgid "Submit changed profiles to the repository"
-msgstr "Skicka in ändrade profiler till förrådet"
+msgstr "Skicka ändrade profiler till lagringsplatsen"
 
 #: ../SubDomain.pm:1169
-msgid ""
-"The following profiles from the repository were changed.\n"
-"Would you like to upload your changes?"
-msgstr ""
-"Följande profiler från förrådet ändrades.\n"
-"Vill du ladda upp dina ändringar?"
+msgid "The following profiles from the repository were changed.\nWould you like to upload your changes?"
+msgstr "Följande profiler från lagringsplatsen har ändrats.\nVill du överföra dina ändringar?"
 
 #: ../SubDomain.pm:1236 ../SubDomain.pm:1316
 #, perl-format
-msgid ""
-"WARNING: An error occured while uploading the profile %s\n"
-"%s\n"
-msgstr ""
-"VARNING: Ett fel uppstod vid uppladdningen av profilen %s\n"
-"%s\n"
+msgid "WARNING: An error occured while uploading the profile %s\n%s\n"
+msgstr "Varning! Ett fel inträffade när profilen %s\n%s skulle överföras\n"
 
 #: ../SubDomain.pm:1241
 msgid "Uploaded changes to repository."
-msgstr "Laddade upp ändringar till förrådet."
+msgstr "Ändringarna har överförts till lagringsplatsen."
 
 #: ../SubDomain.pm:1290
 msgid "Changelog Entry: "
-msgstr "Post i ändringslogg: "
+msgstr "Post i ändringsloggen: "
 
 #: ../SubDomain.pm:1311
 #, perl-format
 msgid "Uploaded %s to repository."
-msgstr "Laddade upp %s till förrådet."
+msgstr "%s har överförts till lagringsplatsen."
 
 #: ../SubDomain.pm:1322
-msgid ""
-"Repository Error\n"
-"Registration or Signin was unsuccessful. User login\n"
-"information is required to upload profiles to the\n"
-"repository. These changes have not been sent.\n"
-msgstr ""
-"Förrådsfel\n"
-"Registering eller inloggning misslyckades. Användarinformation\n"
-"behövs för att ladda upp profiler till förrådet. Ändringarna har inte skickats.\n"
+msgid "Repository Error\nRegistration or Signin was unsuccessful. User login\ninformation is required to upload profiles to the\nrepository. These changes have not been sent.\n"
+msgstr "Fel i arkivet\nRegistreringen eller inloggningen misslyckades. Användarens\ninloggningsinformation krävs om profiler ska kunna överföras till\narkivet. Ändringarna har inte skickats.\n"
 
 #: ../SubDomain.pm:1379 ../SubDomain.pm:1419
 msgid "(Y)es"
@@ -300,9 +243,8 @@ msgstr "(N)ej"
 
 #: ../SubDomain.pm:1383 ../SubDomain.pm:1424
 msgid "Invalid hotkey for"
-msgstr "Ogiltig hotkey för"
+msgstr "Ogiltig snabbtangent för"
 
-# cancel button label
 #: ../SubDomain.pm:1421
 msgid "(C)ancel"
 msgstr "(A)vbryt"
@@ -338,104 +280,56 @@ msgstr "Allvarlighetsgrad"
 
 #: ../SubDomain.pm:2193
 msgid "Enter profile name to transition to: "
-msgstr "Ange ett profilnamn för att övergå till: "
+msgstr "Ange profilnamn som ska överföras till: "
 
 #: ../SubDomain.pm:2201
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"switching profiles?\n"
-"\n"
-"Sanitizing the environment is more secure,\n"
-"but some applications depend on the presence\n"
-"of LD_PRELOAD or LD_LIBRARY_PATH."
-msgstr ""
-"Vill du att AppArmor ska sanera miljön vid\n"
-"profilbyte?\n"
-" \n"
-" Sanering ger bäst säkerhet, men för en del\n"
-" program måste LD_PRELOAD eller\n"
-" LD_LIBRARY_PATH vara tillgängligt."
+msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH."
+msgstr "Vill du att AppArmor ska sanera miljön vid\nprofilbyte?\n \n Sanering ger bäst säkerhet, men för en del\n program måste LD_PRELOAD eller\n LD_LIBRARY_PATH vara tillgängligt."
 
 #: ../SubDomain.pm:2203
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"switching profiles?\n"
-"\n"
-"Sanitizing the environment is more secure,\n"
-"but this application appears to use LD_PRELOAD\n"
-"or LD_LIBRARY_PATH and clearing these could\n"
-"cause functionality problems."
-msgstr ""
-"Vill du att AppArmor ska sanera miljön vid\n"
-"profilbyte?\n"
-" \n"
-" Sanering ger bäst säkerhet, men det här\n"
-" programmet verkar utnyttja LD_PRELOAD eller\n"
-" LD_LIBRARY_PATH och att rensa dem kan ge\n"
-" funktionsstörningar."
+msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut this application appears to use LD_PRELOAD\nor LD_LIBRARY_PATH and clearing these could\ncause functionality problems."
+msgstr "Vill du att AppArmor ska sanera miljön vid\nprofilbyte?\n \n Sanering ger bäst säkerhet, men det här\n programmet verkar utnyttja LD_PRELOAD eller\n LD_LIBRARY_PATH och att rensa dem kan ge\n funktionsstörningar."
 
 #: ../SubDomain.pm:2212
 #, perl-format
-msgid ""
-"Launching processes in an unconfined state is a very\n"
-"dangerous operation and can cause serious security holes.\n"
-"\n"
-"Are you absolutely certain you wish to remove all\n"
-"AppArmor protection when executing %s?"
-msgstr ""
-"Start av processer i obegränsat läge är mycket\n"
-"riskabelt och kan orsaka allvarliga säkerhetsbrister.\n"
-" \n"
-" Är du säker på att du vill ta bort allt\n"
-" AppArmor-skydd när du kör %s?"
+msgid "Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s?"
+msgstr "Start av processer i obegränsat läge är mycket\nriskabelt och kan orsaka allvarliga säkerhetsbrister.\n \n Är du säker på att du vill ta bort allt\n AppArmor-skydd när du kör %s?"
 
 #: ../SubDomain.pm:2214
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"running this program unconfined?\n"
-"\n"
-"Not sanitizing the environment when unconfining\n"
-"a program opens up significant security holes\n"
-"and should be avoided if at all possible."
-msgstr ""
-"Vill du att AppArmor ska sanera miljön när det här\n"
-"programmet körs i obegränsat läge?\n"
-" \n"
-" Att inte sanera miljön för ett obegränsat program\n"
-" öppnar väsentliga säkerhetshål och bör undvikas\n"
-" så långt det är möjligt."
+msgid "Should AppArmor sanitize the environment when\nrunning this program unconfined?\n\nNot sanitizing the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."
+msgstr "Vill du att AppArmor ska sanera miljön när det här\nprogrammet körs i obegränsat läge?\n \n Att inte sanera miljön för ett obegränsat program\n öppnar väsentliga säkerhetshål och bör undvikas\n så långt det är möjligt."
 
 #: ../SubDomain.pm:2303
 #, perl-format
 msgid "A profile for %s does not exist create one?"
-msgstr "Det finns ingen profil för %s, vill du skapa en?"
+msgstr "Det finns ingen profil för %s. Vill du skapa en profil? "
 
 #: ../SubDomain.pm:2330
 #, perl-format
 msgid "A local profile for %s does not exist create one?"
-msgstr "Det finns ingen lokal profil för %s, vill du skapa en?"
+msgstr "Det finns ingen lokal profil för %s. Vill du skapa en profil? "
 
 #: ../SubDomain.pm:2502 ../SubDomain.pm:6532 ../SubDomain.pm:6537
 #, perl-format
 msgid "Log contains unknown mode %s."
-msgstr "Loggen innehåller okänt läge %s."
+msgstr "Loggen innehåller det okända läget %s."
 
 #: ../SubDomain.pm:2915
 msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
-msgstr "En uppdaterad version av denna profil har hittats i profilförrådet. Vill du använda den?"
+msgstr "En uppdaterad version av den här profilen hittades i profilarkivet. Vill du använda den?"
 
 #: ../SubDomain.pm:2945
 #, perl-format
 msgid "Updated profile %s to revision %s."
-msgstr "Uppdaterade profilen %s till version %s."
+msgstr "Profilen %s uppdaterades till revision %s-"
 
 #: ../SubDomain.pm:2952
 msgid "Error parsing repository profile."
-msgstr "Fel när förrådsprofilen skulle tydas."
+msgstr "Det gick inte att analysera lagringsplatsprofilen."
 
 #: ../SubDomain.pm:2988
 msgid "Create New User?"
-msgstr "Skapa ny användare?"
+msgstr "Vill du skapa en ny användare?"
 
 #: ../SubDomain.pm:2989
 msgid "Username: "
@@ -451,56 +345,40 @@ msgstr "E-postadress: "
 
 #: ../SubDomain.pm:2993
 msgid "Save Configuration? "
-msgstr "Sparar inställningar? "
+msgstr "Vill du spara inställningarna? "
 
 #: ../SubDomain.pm:3002
 msgid "The Profile Repository server returned the following error:"
-msgstr "Profilförrådet returnerade följande fel:"
+msgstr "Profilarkivservern returnerade följande fel:"
 
 #: ../SubDomain.pm:3004
 msgid "Please re-enter registration information or contact the administrator."
-msgstr "Vänligen ange registeringsinformationen eller administrationskontakt igen."
+msgstr "Ange registreringsinformation på nytt eller kontakta administratören."
 
 #: ../SubDomain.pm:3005
 msgid "Login Error\n"
 msgstr "Inloggningsfel\n"
 
 #: ../SubDomain.pm:3012
-msgid ""
-"Login failure\n"
-" Please check username and password and try again."
-msgstr ""
-"Inloggning misslyckades\n"
-"Kontrollera användarnamnet och lösenordet och försök igen."
+msgid "Login failure\n Please check username and password and try again."
+msgstr "Inloggningsfel\nKontrollera användarnamnet och lösenordet och försök igen."
 
 #: ../SubDomain.pm:3034
-msgid ""
-"Would you like to enable access to the\n"
-"profile repository?"
-msgstr "Vill du aktivera profilförrådet?"
+msgid "Would you like to enable access to the\nprofile repository?"
+msgstr "Vill du aktivera åtkomst till\nprofillagringsplatsen?"
 
 #: ../SubDomain.pm:3065
-msgid ""
-"Would you like to upload newly created and changed profiles to\n"
-"      the profile repository?"
-msgstr ""
-"Vill du ladda upp dina nyskapade och ändrade profiler till\n"
-"        profilförrådet?"
+msgid "Would you like to upload newly created and changed profiles to\n      the profile repository?"
+msgstr "Vill du skicka nya och ändrade profiler till\n      profilarkivet?"
 
 #: ../SubDomain.pm:3184
 #, perl-format
-msgid ""
-"WARNING: Profile update check failed\n"
-"Error Detail:\n"
-"%s"
-msgstr ""
-"VARNING: Kontroll av profiluppdatering misslyckades\n"
-"FEL:\n"
-"%s"
+msgid "WARNING: Profile update check failed\nError Detail:\n%s"
+msgstr "Varning! Kontrollen av profiluppdateringen misslyckades\nFelinformation:\n%s"
 
 #: ../SubDomain.pm:3198
 msgid "Change mode modifiers"
-msgstr "Ändra lägesordning"
+msgstr "Modifierare för ändringsläge"
 
 #: ../SubDomain.pm:3242
 msgid "Complain-mode changes:"
@@ -546,15 +424,15 @@ msgstr "Sökväg"
 
 #: ../SubDomain.pm:3545 ../SubDomain.pm:3577
 msgid "(owner permissions off)"
-msgstr "(ägarrättigheter av)"
+msgstr "(ägarbehörigheter av)"
 
 #: ../SubDomain.pm:3551
 msgid "(force new perms to owner)"
-msgstr "(påtvinga ägaren de nya rättigheterna)"
+msgstr "(tvinga fram nya behörigheter till ägaren)"
 
 #: ../SubDomain.pm:3554
 msgid "(force all rule perms to owner)"
-msgstr "(påtvinga ägaren alla regelrättigheter)"
+msgstr "(tvinga fram alla regelbehörigheter till ägaren)"
 
 #: ../SubDomain.pm:3566
 msgid "Old Mode"
@@ -566,7 +444,7 @@ msgstr "Nytt läge"
 
 #: ../SubDomain.pm:3583
 msgid "(force perms to owner)"
-msgstr "(påtvinga ägaren rättigheterna)"
+msgstr "(tvinga fram behörigheter till ägaren)"
 
 #: ../SubDomain.pm:3586
 msgid "Mode"
@@ -608,12 +486,12 @@ msgstr "Uttagstyp"
 #: ../SubDomain.pm:3905
 #, perl-format
 msgid "Adding network access %s %s to profile."
-msgstr "Lägger till nätverksåtkomst %s %s till profilen."
+msgstr "Nätverksåtkomst %s %s lades till i profilen."
 
 #: ../SubDomain.pm:3924
 #, perl-format
 msgid "Denying network access %s %s to profile."
-msgstr "Nekar nätverksåtkomst %s %s till profilen."
+msgstr "Nätverksåtkomst %s %s nekades för profilen."
 
 #: ../SubDomain.pm:4132
 #, perl-format
@@ -627,33 +505,23 @@ msgstr "Uppdaterar AppArmor-profiler i %s."
 
 #: ../SubDomain.pm:4137
 msgid "unknown\n"
-msgstr "okänd\n"
+msgstr "okänt\n"
 
 #: ../SubDomain.pm:4170
-msgid ""
-"The profile analyzer has completed processing the log files.\n"
-"\n"
-"All updated profiles will be reloaded"
-msgstr ""
-"Profilanalyseraren har slutfört bearbetningen av loggfilerna.\n"
-"\n"
-"Alla uppdaterade profiler kommer att läsas in på nytt."
+msgid "The profile analyzer has completed processing the log files.\n\nAll updated profiles will be reloaded"
+msgstr "Profilanalyseraren har slutfört bearbetningen av loggfilerna.\n\n Alla uppdaterade profiler kommer att läsas in på nytt."
 
 #: ../SubDomain.pm:4176
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "Inga ohanterade AppArmor-händelser hittades i systemloggen."
 
 #: ../SubDomain.pm:4237
-msgid ""
-"Select which profile changes you would like to save to the\n"
-"local profile set"
-msgstr ""
-"Ange vilka profiländringar du vill spara i den\n"
-"lokala profiluppsättningen"
+msgid "Select which profile changes you would like to save to the\nlocal profile set"
+msgstr "Ange vilka profiländringar du vill spara i den lokala\nprofiluppsättningen"
 
 #: ../SubDomain.pm:4238
 msgid "Local profile changes"
-msgstr "Lokala profiler har ändrats"
+msgstr "Lokala profiländringar"
 
 #: ../SubDomain.pm:4265
 msgid "The following local profiles were changed.  Would you like to save them?"
@@ -679,7 +547,7 @@ msgstr "Profilen %s innehåller ogiltig regexp %s."
 #: ../SubDomain.pm:5115
 #, perl-format
 msgid "Profile %s contains invalid mode %s."
-msgstr "Profilen %s innehåller ogiltigt läge %s."
+msgstr "Profilen %s innehåller det ogiltiga läget %s."
 
 #: ../SubDomain.pm:5250
 #, perl-format
@@ -697,91 +565,85 @@ msgstr "Okänt kommando"
 
 #: ../SubDomain.pm:6352
 msgid "Invalid hotkey in"
-msgstr "Ogiltig hotkey i"
+msgstr "Ogiltig snabbtangent i"
 
 #: ../SubDomain.pm:6362
 msgid "Duplicate hotkey for"
-msgstr "Duplicerad hotkey"
+msgstr "Duplicerad snabbtangent för"
 
 #: ../SubDomain.pm:6383
 msgid "Invalid hotkey in default item"
-msgstr "Ogiltig hotket i standardposten"
+msgstr "Standardobjektets snabbtangent är ogiltig"
 
 #: ../SubDomain.pm:6392
 msgid "Invalid default"
-msgstr "Ogiltig standard"
+msgstr "Standardvalet är ogiltigt"
 
-# %s is either BOOTP or DHCP
 #: ../Reports.pm:443 ../Reports.pm:532 ../Reports.pm:1480
 #, perl-format
 msgid "DBI Execution failed: %s."
-msgstr "DBI-körning misslyckades: %s."
+msgstr "DBI-körningen misslyckades: %s."
 
 #: ../Reports.pm:556
 #, perl-format
 msgid "Couldn't open file: %s."
-msgstr "Kan inte öppna fil: %s."
+msgstr "Det gick inte att öppna filen: %s."
 
 #: ../Reports.pm:560
 msgid "No type value passed.  Unable to determine page count."
-msgstr "Inget typvärde skickades. Omöjligt att bestämma sidantal."
+msgstr "Inget typvärde skickades. Det gick inte att avgöra antalet sidor."
 
 #: ../Reports.pm:626
 #, perl-format
 msgid "Failed copying %s."
-msgstr "Misslyckades med att kopiera %s."
+msgstr "Det gick inte att kopiera %s."
 
 #: ../Reports.pm:750
 #, perl-format
 msgid "Export Log Error: Couldn't open %s"
-msgstr "Exportloggfel: Kunde inte öppna %s"
+msgstr "Exportloggfel: Det gick inte att öppna %s"
 
 #: ../Reports.pm:772
 msgid "Fatal error.  No report name given. Exiting."
-msgstr "Allvarligt fel: Inget rapportnamn angett. Avbryter."
+msgstr "Allvarligt fel. Inget rapportnamn har angetts. Avslutar."
 
 #: ../Reports.pm:781
 #, perl-format
-msgid ""
-"Unable to get configuration info for %s.\n"
-"                Unable to find %s."
-msgstr ""
-"Kunde inte hämta inställningsinfo för %s.\n"
-"                Kunde inte hitta %s."
+msgid "Unable to get configuration info for %s.\n                Unable to find %s."
+msgstr "Det gick inte att hämta konfigurationsinformation för %s.\n                Det gick inte att hitta %s."
 
 #: ../Reports.pm:828
 #, perl-format
 msgid "Failed to parse: %s."
-msgstr "Misslyckades med att tyda: %s."
+msgstr "Det gick inte att analysera: %s"
 
 #: ../Reports.pm:837
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s."
-msgstr "Allvarligt fel: Kunde inte öppna %s."
+msgstr "Allvarligt fel. Det gick inte att öppna %s."
 
 #: ../Reports.pm:885
 #, perl-format
 msgid "Fatal Error.  Can't run %s.  Exiting."
-msgstr "Allvarligt fel: Kunde inte köra %s. Avslutar."
+msgstr "Allvarligt fel. Det gick inte att köra %s. Avslutar."
 
 #: ../Reports.pm:925
 #, perl-format
 msgid "Fatal Error.  No directory, %s, found.  Exiting."
-msgstr "Allvarligt fel: Ingen katalog, %s, hittades. Avslutar."
+msgstr "Allvarligt fel. Det gick inte att hitta katalogen %s. Avslutar."
 
 #: ../Reports.pm:943
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
-msgstr "Allvarligt fel: Kunde inte öppna %s. Avslutar."
+msgstr "Allvarligt fel. Det gick inte att öppna %s. Avslutar."
 
-# %s is either BOOTP or DHCP
 #: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
 #, perl-format
 msgid "DBI Execution failed: %s"
-msgstr "DBI-körning misslyckades: %s"
+msgstr "DBI-körningen misslyckades: %s"
 
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"
-msgstr "Allvarligt fel. getArchReport() kunde inte öppna %s"
+msgstr "Allvarligt fel.  getArchReport() kunde inte öppna %s"
 

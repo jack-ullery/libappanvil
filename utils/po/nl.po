@@ -1,28 +1,21 @@
-# translation of apparmor-utils.po to Dutch
-# This file is distributed under the same license as the PACKAGE package.
-# Copyright (C) YEAR Immunix, Inc.
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
 #
-# Henk Krus, 2005.
-# Henk Krus, 2006.
-# Rinse de Vries <rinsedevries@kde.nl>, 2005, 2007.
-# Freek de Kruijf <f.de.kruijf@hetnet.nl>, 2008.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2008-09-22 22:56-0700\n"
-"PO-Revision-Date: 2008-05-23 11:33+0200\n"
-"Last-Translator: Freek de Kruijf <f.de.kruijf@hetnet.nl>\n"
-"Language-Team: Dutch <vertaling@vrijschrift.org>\n"
+"PO-Revision-Date: 2009-02-05 08:00\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.4\n"
-"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
 
 #: ../genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "SubDomain schijnt niet uitgevoerd te worden. Schakel SubDomain in en probeer het opnieuw. "
+msgstr "SubDomein schijnt niet uitgevoerd te worden. Schakel SubDomein in en probeer opnieuw. "
 
 #: ../genprof:69
 msgid "Please enter the program to profile: "
@@ -39,24 +32,8 @@ msgid "%s does not exist, please double-check the path."
 msgstr "%s bestaat niet, controleer het pad."
 
 #: ../genprof:115
-msgid ""
-"Please start the application to be profiled in \n"
-"another window and exercise its functionality now.\n"
-"\n"
-"Once completed, select the \"Scan\" button below in \n"
-"order to scan the system logs for AppArmor events.  \n"
-"\n"
-"For each AppArmor event, you will be given the  \n"
-"opportunity to choose whether the access should be  \n"
-"allowed or denied."
-msgstr ""
-"Start de applicatie die onderzocht moet worden\n"
-"in een ander venster en probeer de mogelijkheden uit.\n"
-"\n"
-"Eenmaal afgerond, selecteer \"Scan\" onderaan om\n"
-"de systeemlog te scannen op AppArmor gebeurtenissen. \n"
-"Voor elke AppArmor gebeurtenis krijgt u de mogelijkheid\n"
-"om te kiezen of de toegang toegestaan wordt of geweigerd. "
+msgid "Please start the application to be profiled in \nanother window and exercise its functionality now.\n\nOnce completed, select the \"Scan\" button below in \norder to scan the system logs for AppArmor events.  \n\nFor each AppArmor event, you will be given the  \nopportunity to choose whether the access should be  \nallowed or denied."
+msgstr "Start de applicatie die onderzocht moet worden\nin een ander venster en probeer de mogelijkheden uit.\n\nEenmaal afgerond, selecteer \"Scan\" onderaan om\nde systeemlog te scannen op AppArmor gebeurtenissen. \nVoor elke AppArmor gebeurtenis krijgt u de mogelijkheid\nom te kiezen of de toegang toegestaan wordt of geweigerd. "
 
 #: ../genprof:135
 msgid "Profiling"
@@ -64,7 +41,7 @@ msgstr "Onderzoeken"
 
 #: ../genprof:169
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "SubDomain-profielen herladen in afdwingmodus."
+msgstr "SubDomeinprofielen herladen in afdwingmodus."
 
 #: ../genprof:170
 #, perl-format
@@ -103,7 +80,7 @@ msgstr "Profiel voor %s bestaat al. Overgeslagen."
 #: ../autodep:109 ../audit:119 ../complain:119 ../enforce:119
 #, perl-format
 msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
-msgstr "Kan %s niet in de lijst met systeempaden vinden. Als de naam van het programma correct is, probeer 'which %s' als gebruiker met een correct ingesteld zoekpad om het juiste pad te vinden."
+msgstr "Kan %s niet in de lijst met systeempaden vinden. Als de naam van het programma correct is, probeer 'which %s' als gebruiker met een correct ingestelde PATH-omgeving om het juiste pad te vinden."
 
 #: ../audit:106
 #, perl-format
@@ -171,20 +148,16 @@ msgstr "%s kon niet gevonden worden."
 
 #: ../SubDomain.pm:778 ../SubDomain.pm:3173
 msgid "Connecting to repository....."
-msgstr "Verbinden met installatiebron....."
+msgstr "Verbinding maken met depot....."
 
 #: ../SubDomain.pm:787
 #, perl-format
-msgid ""
-"WARNING: Error fetching profiles from the repository:\n"
-"%s\n"
-msgstr ""
-"WAARSCHUWING: Fout bij het ophalen van profielen uit de installatiebron:\n"
-"%s\n"
+msgid "WARNING: Error fetching profiles from the repository:\n%s\n"
+msgstr "WAARSCHUWING: Fout bij het ophalen van profielen uit de opslagruimte:\n%s\n"
 
 #: ../SubDomain.pm:796
 msgid "Inactive local profile for "
-msgstr "Inactief lokaal profiel voor "
+msgstr "Inactief lokaal profiel voor"
 
 #: ../SubDomain.pm:833 ../SubDomain.pm:1852 ../SubDomain.pm:2140
 #: ../SubDomain.pm:3300 ../SubDomain.pm:3333 ../SubDomain.pm:3533
@@ -194,7 +167,7 @@ msgstr "Profiel"
 
 #: ../SubDomain.pm:867
 msgid "Profile submitted by"
-msgstr "Profiel ingediend door"
+msgstr "Profiel verzonden door"
 
 #: ../SubDomain.pm:908
 #, perl-format
@@ -203,40 +176,28 @@ msgstr "Fout bij activeren van profielen: %s\n"
 
 #: ../SubDomain.pm:1055 ../SubDomain.pm:1108
 #, perl-format
-msgid ""
-"WARNING: Error syncronizing profiles with the repository:\n"
-"%s\n"
-msgstr ""
-"WAARSCHUWING: Fout bij synchroniseren van profielen met de installatiebron:\n"
-"%s\n"
+msgid "WARNING: Error syncronizing profiles with the repository:\n%s\n"
+msgstr "WAARSCHUWING: Fout bij synchroniseren van profielen met de opslagruimte:\n%s\n"
 
 #: ../SubDomain.pm:1135
 msgid "New profiles"
 msgstr "Nieuwe profielen"
 
 #: ../SubDomain.pm:1137
-msgid ""
-"Please choose the newly created profiles that you would like\n"
-"to store in the repository"
-msgstr ""
-"Kies de nieuw-aangemaakte profielen die u wilt opslaan\n"
-"in de bron"
+msgid "Please choose the newly created profiles that you would like\nto store in the repository"
+msgstr "Kies de nieuwe profielen die u wilt opslaan in het depot"
 
 #: ../SubDomain.pm:1144
 msgid "Submit newly created profiles to the repository"
-msgstr "Nieuw-aangemaakte profielen opslaan in de bron"
+msgstr "Nieuwe profielen verzenden naar het depot"
 
 #: ../SubDomain.pm:1146
 msgid "Would you like to upload the newly created profiles?"
-msgstr "Wilt u de nieuw-aangemaakte profielen toevoegen?"
+msgstr "Wilt u de nieuwe profielen uploaden?"
 
 #: ../SubDomain.pm:1159
-msgid ""
-"Select which of the changed profiles you would like to upload\n"
-"to the repository"
-msgstr ""
-"Selecteer welke gewijzigde profielen u aan de bron wilt\n"
-"toevoegen"
+msgid "Select which of the changed profiles you would like to upload\nto the repository"
+msgstr "Selecteer welke gewijzigde profielen u wilt uploaden\nnaar het depot"
 
 #: ../SubDomain.pm:1161
 msgid "Changed profiles"
@@ -244,49 +205,33 @@ msgstr "Gewijzigde profielen"
 
 #: ../SubDomain.pm:1167
 msgid "Submit changed profiles to the repository"
-msgstr "Voeg gewijzigde profielen aan de bron toe"
+msgstr "Gewijzigde profielen naar het depot verzenden"
 
 #: ../SubDomain.pm:1169
-msgid ""
-"The following profiles from the repository were changed.\n"
-"Would you like to upload your changes?"
-msgstr ""
-"De volgende profielen zijn gewijzigd.\n"
-"Wilt u uw wijzigingen toevoegen?"
+msgid "The following profiles from the repository were changed.\nWould you like to upload your changes?"
+msgstr "De volgende profielen uit het depot zijn gewijzigd.\nWilt u uw wijzigingen uploaden?"
 
 #: ../SubDomain.pm:1236 ../SubDomain.pm:1316
 #, perl-format
-msgid ""
-"WARNING: An error occured while uploading the profile %s\n"
-"%s\n"
-msgstr ""
-"WAARSCHUWING: Fout bij het uploaden van het profiel %s\n"
-"%s\n"
+msgid "WARNING: An error occured while uploading the profile %s\n%s\n"
+msgstr "WAARSCHUWING: Fout bij het uploaden van het profiel %s\n%s\n"
 
 #: ../SubDomain.pm:1241
 msgid "Uploaded changes to repository."
-msgstr "Wijzigingen aan bron toegevoegd"
+msgstr "Wijzigingen uploaden naar depot."
 
 #: ../SubDomain.pm:1290
 msgid "Changelog Entry: "
-msgstr "Changelog-item: "
+msgstr "Changelog-item:"
 
 #: ../SubDomain.pm:1311
 #, perl-format
 msgid "Uploaded %s to repository."
-msgstr "%s aan bron toegevoegd."
+msgstr "%s is geüpload naar het depot."
 
 #: ../SubDomain.pm:1322
-msgid ""
-"Repository Error\n"
-"Registration or Signin was unsuccessful. User login\n"
-"information is required to upload profiles to the\n"
-"repository. These changes have not been sent.\n"
-msgstr ""
-"Installatiebron-fout\n"
-"De registratie of het aanmelden is mislukt. De aanmeldinfor-\n"
-"matie van de gebruiker is vereist om profielen naar de bron\n"
-"te kunnen uploaden. Deze wijzigingen zijn niet verzonden.\n"
+msgid "Repository Error\nRegistration or Signin was unsuccessful. User login\ninformation is required to upload profiles to the\nrepository. These changes have not been sent.\n"
+msgstr "Opslagruimtefout\nDe registratie of het aanmelden is mislukt. De aanmeldinformatie\n van de gebruiker is vereist om profielen naar de opslagruimte\nte kunnen uploaden. Deze wijzigingen zijn niet verzonden.\n"
 
 #: ../SubDomain.pm:1379 ../SubDomain.pm:1419
 msgid "(Y)es"
@@ -300,18 +245,17 @@ msgstr "(N)ee"
 msgid "Invalid hotkey for"
 msgstr "Ongeldige sneltoets voor"
 
-# cancel button label
 #: ../SubDomain.pm:1421
 msgid "(C)ancel"
 msgstr "(A)nnuleren"
 
 #: ../SubDomain.pm:1746
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
-msgstr "Wilt u de wijzigingen in dit profiel verwerpen en afsluiten?"
+msgstr "Bent U er zeker van de veranderingen in deze profielen af te breken en te beëindigen?"
 
 #: ../SubDomain.pm:1748
 msgid "Abandoning all changes."
-msgstr "Alle wijzigingen zullen worden genegeerd."
+msgstr "Alle veranderingen worden genegeerd."
 
 #: ../SubDomain.pm:1854
 msgid "Default Hat"
@@ -339,73 +283,21 @@ msgid "Enter profile name to transition to: "
 msgstr "Voer de profielnaam in waarop overgeschakeld moet worden: "
 
 #: ../SubDomain.pm:2201
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"switching profiles?\n"
-"\n"
-"Sanitizing the environment is more secure,\n"
-"but some applications depend on the presence\n"
-"of LD_PRELOAD or LD_LIBRARY_PATH."
-msgstr ""
-"Moet AppArmor de omgeving bij een profielwisseling\n"
-"opschonen?\n"
-"\n"
-"Het opschonen van de omgeving is veiliger,\n"
-"maar sommige programma's zijn afhankelijk\n"
-"van de aanwezigheid van \n"
-"LD_PRELOAD of LD_LIBRARY_PATH."
+msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH."
+msgstr "Moet AppArmor de omgeving bij een profielwisseling\nopschonen?\n\nHet opschonen van de omgeving is veiliger,\nmaar sommige programma's zijn afhankelijk\nvan de aanwezigheid van \nLD_PRELOAD of LD_LIBRARY_PATH."
 
 #: ../SubDomain.pm:2203
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"switching profiles?\n"
-"\n"
-"Sanitizing the environment is more secure,\n"
-"but this application appears to use LD_PRELOAD\n"
-"or LD_LIBRARY_PATH and clearing these could\n"
-"cause functionality problems."
-msgstr ""
-"Moet AppArmor de omgeving bij een profielwisseling\n"
-"opschonen?\n"
-"\n"
-"Het opschonen van de omgeving is veiliger,\n"
-"maar dit programma blijkt gebruik te maken van\n"
-"LD_PRELOAD of LD_LIBRARY_PATH.\n"
-"Het opschonen ervan kan problemen in de\n"
-"functionaliteit veroorzaken."
+msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut this application appears to use LD_PRELOAD\nor LD_LIBRARY_PATH and clearing these could\ncause functionality problems."
+msgstr "Moet AppArmor de omgeving bij een profielwisseling\nopschonen?\n\nHet opschonen van de omgeving is veiliger,\nmaar dit programma blijkt gebruik te maken van\nLD_PRELOAD of LD_LIBRARY_PATH.\nHet opschonen ervan kan problemen in de\nfunctionaliteit veroorzaken."
 
 #: ../SubDomain.pm:2212
 #, perl-format
-msgid ""
-"Launching processes in an unconfined state is a very\n"
-"dangerous operation and can cause serious security holes.\n"
-"\n"
-"Are you absolutely certain you wish to remove all\n"
-"AppArmor protection when executing %s?"
-msgstr ""
-"Het starten van processen in een onbegrensde staat|\n"
-"is een zeer gevaarlijke handeling en kan ernstige\n"
-"beveiligingsgaten veroorzaken.\n"
-"\n"
-"Bent u er beslist zeker van dat u  %s zonder enige\n"
-"AppArmor-beveiliging wilt uitvoeren?"
+msgid "Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s?"
+msgstr "Het starten van processen in een onbegrensde staat|\nis een zeer gevaarlijke handeling en kan ernstige\nbeveiligingsgaten veroorzaken.\n\nBent u er beslist zeker van dat u  %s zonder enige\nAppArmor-beveiliging wilt uitvoeren?"
 
 #: ../SubDomain.pm:2214
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"running this program unconfined?\n"
-"\n"
-"Not sanitizing the environment when unconfining\n"
-"a program opens up significant security holes\n"
-"and should be avoided if at all possible."
-msgstr ""
-"Wilt u dat AppArmor de omgeving opschoont\n"
-"als dit programma onbegrensd wordt uitgevoerd?\n"
-"\n"
-"Het niet opschonen van de omgeving voor het\n"
-"onbegrensd uitvoeren van een programma opent\n"
-"flinke gaten in de beveiliging en dient wanneer \n"
-"enigszins mogelijk beslist worden vermeden."
+msgid "Should AppArmor sanitize the environment when\nrunning this program unconfined?\n\nNot sanitizing the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."
+msgstr "Wilt u dat AppArmor de omgeving opschoont\nals dit programma onbegrensd wordt uitgevoerd?\n\nHet niet opschonen van de omgeving voor het\nonbegrensd uitvoeren van een programma opent\nflinke gaten in de beveiliging en dient wanneer \nenigszins mogelijk beslist worden vermeden."
 
 #: ../SubDomain.pm:2303
 #, perl-format
@@ -420,47 +312,44 @@ msgstr "Een lokaal profiel voor %s bestaat niet, aanmaken?"
 #: ../SubDomain.pm:2502 ../SubDomain.pm:6532 ../SubDomain.pm:6537
 #, perl-format
 msgid "Log contains unknown mode %s."
-msgstr "Log bevat onbekende modus %s."
+msgstr "Logbestand bevat onbekende modus %s."
 
 #: ../SubDomain.pm:2915
 msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
-msgstr "Een bijgewerkte versie van dit profiel is gevonden in de profielbron. Wilt u die gebruiken?"
+msgstr "Er is een bijgewerkte versie van dit profiel gevonden in het profieldepot. Wilt u deze gebruiken?"
 
 #: ../SubDomain.pm:2945
 #, perl-format
 msgid "Updated profile %s to revision %s."
-msgstr "Profiel %s bijgewerkt tot revisie %s."
+msgstr "Profiel %s bijgewerkt naar revisie %s."
 
 #: ../SubDomain.pm:2952
 msgid "Error parsing repository profile."
-msgstr "Fout bij analyseren van bronprofiel."
+msgstr "Fout bij het parseren van depotprofiel."
 
 #: ../SubDomain.pm:2988
 msgid "Create New User?"
-msgstr "Nieuwe gebruiker aanmaken?"
+msgstr "Nieuwe gebruiker maken?"
 
-# /usr/lib/YaST2/clients/lan_dns.ycp:85
-# /usr/lib/YaST2/clients/lan_dns.ycp:85
 #: ../SubDomain.pm:2989
 msgid "Username: "
-msgstr "Gebruikersnaam: "
+msgstr "Gebruikersnaam:"
 
 #: ../SubDomain.pm:2990
 msgid "Password: "
-msgstr "Wachtwoord: "
+msgstr "Wachtwoord:"
 
 #: ../SubDomain.pm:2991
 msgid "Email Addr: "
-msgstr "E-mailadres: "
+msgstr "E-mailadres:"
 
-# /usr/lib/YaST2/clients/dialup_dev_cfg.ycp:60
 #: ../SubDomain.pm:2993
 msgid "Save Configuration? "
-msgstr "Configuratie opslaan? "
+msgstr "Configuratie opslaan?"
 
 #: ../SubDomain.pm:3002
 msgid "The Profile Repository server returned the following error:"
-msgstr "De profielbronserver gaf de volgende foutmelding:"
+msgstr "De profieldepotserver heeft de volgende fout geretourneerd:"
 
 #: ../SubDomain.pm:3004
 msgid "Please re-enter registration information or contact the administrator."
@@ -471,37 +360,21 @@ msgid "Login Error\n"
 msgstr "Aanmeldfout\n"
 
 #: ../SubDomain.pm:3012
-msgid ""
-"Login failure\n"
-" Please check username and password and try again."
-msgstr ""
-"Aanmelden mislukt\n"
-" Controleer de gebruikersnaam en het wachtwoord en probeer het opnieuw."
+msgid "Login failure\n Please check username and password and try again."
+msgstr "Aanmelden mislukt\n Controleer de gebruikersnaam en het wachtwoord en probeer het opnieuw."
 
 #: ../SubDomain.pm:3034
-msgid ""
-"Would you like to enable access to the\n"
-"profile repository?"
-msgstr "Wilt u toegang tot de profielbron activeren?"
+msgid "Would you like to enable access to the\nprofile repository?"
+msgstr "Wilt u toegang tot het\nprofieldepot inschakelen?"
 
 #: ../SubDomain.pm:3065
-msgid ""
-"Would you like to upload newly created and changed profiles to\n"
-"      the profile repository?"
-msgstr ""
-"Wilt u nieuw aangemaakte en gewijzigde profielen toevoegen aan\n"
-"de profielbron?"
+msgid "Would you like to upload newly created and changed profiles to\n      the profile repository?"
+msgstr "Wilt u nieuwe en gewijzigde profielen uploaden naar \n      het profieldepot?"
 
 #: ../SubDomain.pm:3184
 #, perl-format
-msgid ""
-"WARNING: Profile update check failed\n"
-"Error Detail:\n"
-"%s"
-msgstr ""
-"WAARSCHUWING: Controle op profiel-opwaardering mislukt\n"
-"Foutendetail:\n"
-"%s"
+msgid "WARNING: Profile update check failed\nError Detail:\n%s"
+msgstr "WAARSCHUWING: Controle op profielupdate mislukt\nFoutendetail:\n%s"
 
 #: ../SubDomain.pm:3198
 msgid "Change mode modifiers"
@@ -509,11 +382,11 @@ msgstr "Wijzig modus-parameters"
 
 #: ../SubDomain.pm:3242
 msgid "Complain-mode changes:"
-msgstr "Wijzigingen in klaagmodus :"
+msgstr "Klaagmodus veranderingen:"
 
 #: ../SubDomain.pm:3244
 msgid "Enforce-mode changes:"
-msgstr "Wijzigingen in afdwingmodus:"
+msgstr "Afdwingmodus veranderingen:"
 
 #: ../SubDomain.pm:3250
 #, perl-format
@@ -613,12 +486,12 @@ msgstr "Sockettype"
 #: ../SubDomain.pm:3905
 #, perl-format
 msgid "Adding network access %s %s to profile."
-msgstr "Voegt netwerktoegang %s %s toe aan profiel."
+msgstr "Netwerktoegang %s %s toevoegen aan profiel."
 
 #: ../SubDomain.pm:3924
 #, perl-format
 msgid "Denying network access %s %s to profile."
-msgstr "Verwerpt netwerktoegang %s %s tot profiel."
+msgstr "Netwerktoegang %s %s weigeren uit profiel."
 
 #: ../SubDomain.pm:4132
 #, perl-format
@@ -635,38 +508,28 @@ msgid "unknown\n"
 msgstr "onbekend\n"
 
 #: ../SubDomain.pm:4170
-msgid ""
-"The profile analyzer has completed processing the log files.\n"
-"\n"
-"All updated profiles will be reloaded"
-msgstr ""
-"De logbestanden zijn geanalyseerd.\n"
-"\n"
-"Alle bijgewerkte profielen worden herladen."
+msgid "The profile analyzer has completed processing the log files.\n\nAll updated profiles will be reloaded"
+msgstr "De logbestanden zijn geanalyseerd.\n\nAlle bijgewerkte profielen worden herladen."
 
 #: ../SubDomain.pm:4176
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "Geen onbehandelde AppArmor gebeurtenissen gevonden in het systeemlogbestand."
 
 #: ../SubDomain.pm:4237
-msgid ""
-"Select which profile changes you would like to save to the\n"
-"local profile set"
-msgstr ""
-"Selecteer de profielwijzigingen die u wilt opslaan in de\n"
-"lokale profielset"
+msgid "Select which profile changes you would like to save to the\nlocal profile set"
+msgstr "Selecteer de wijzigingen in het profiel die u wilt opslaan in de\nlokale profielset"
 
 #: ../SubDomain.pm:4238
 msgid "Local profile changes"
-msgstr "Lokale profielwijzigingen"
+msgstr "Wijzigingen in lokaal profiel"
 
 #: ../SubDomain.pm:4265
 msgid "The following local profiles were changed.  Would you like to save them?"
-msgstr "De volgende lokale profielen zijn gewijzigd. Wilt u ze opslaan?"
+msgstr "De volgende lokale profielen zijn gewijzigd. Wilt u deze opslaan?"
 
 #: ../SubDomain.pm:4362
 msgid "Profile Changes"
-msgstr "Profielwijzigingen"
+msgstr "Wijzigingen in profiel"
 
 #: ../SubDomain.pm:4974 ../SubDomain.pm:4990 ../SubDomain.pm:5001
 #: ../SubDomain.pm:5009 ../SubDomain.pm:5030 ../SubDomain.pm:5050
@@ -719,71 +582,68 @@ msgstr "Ongeldige standaardwaarde"
 #: ../Reports.pm:443 ../Reports.pm:532 ../Reports.pm:1480
 #, perl-format
 msgid "DBI Execution failed: %s."
-msgstr "Uitvoeren van de DBI-module mislukt: %s."
+msgstr "DBI-uitvoering is mislukt: %s."
 
 #: ../Reports.pm:556
 #, perl-format
 msgid "Couldn't open file: %s."
-msgstr "Kon bestand %s niet openen."
+msgstr "Kan bestand niet openen: %s."
 
 #: ../Reports.pm:560
 msgid "No type value passed.  Unable to determine page count."
-msgstr "Geen waarde overgedragen. Het aantal pagina's kon niet worden vastgesteld."
+msgstr "Geen waarde van type doorgegeven. Kan aantal pagina's niet bepalen."
 
 #: ../Reports.pm:626
 #, perl-format
 msgid "Failed copying %s."
-msgstr "%s kon niet gekopieerd worden."
+msgstr "%s kopiëren is mislukt."
 
 #: ../Reports.pm:750
 #, perl-format
 msgid "Export Log Error: Couldn't open %s"
-msgstr "Export Log fout: %s kon niet geopend worden."
+msgstr "Logboekfout exporteren: kan %s niet openen"
 
 #: ../Reports.pm:772
 msgid "Fatal error.  No report name given. Exiting."
-msgstr "Fatale fout. Geen naam opgegeven voor het rapport. Programma wordt beëindigd."
+msgstr "Onherstelbare fout. Geen rapportnaam opgegeven. Bezig met afsluiten."
 
 #: ../Reports.pm:781
 #, perl-format
-msgid ""
-"Unable to get configuration info for %s.\n"
-"                Unable to find %s."
-msgstr ""
-"Informatie over de configuratie van %s kon niet opgevraagd worden.\n"
-"                        %s is niet gevonden."
+msgid "Unable to get configuration info for %s.\n                Unable to find %s."
+msgstr "Kan configuratiegegevens voor %s niet ophalen.\n                Kan %s niet vinden."
 
 #: ../Reports.pm:828
 #, perl-format
 msgid "Failed to parse: %s."
-msgstr "%s kon niet ontleed worden."
+msgstr "Kan niet parseren: %s."
 
 #: ../Reports.pm:837
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s."
-msgstr "Fatale fout: %s kon niet geopend worden."
+msgstr "Onherstelbare fout. Kan %s niet openen."
 
 #: ../Reports.pm:885
 #, perl-format
 msgid "Fatal Error.  Can't run %s.  Exiting."
-msgstr "Fatale fout: %s kon niet uitgevoerd worden. Programma wordt beëindigd."
+msgstr "Onherstelbare fout. Kan %s niet uitvoeren. Bezig met afsluiten."
 
 #: ../Reports.pm:925
 #, perl-format
 msgid "Fatal Error.  No directory, %s, found.  Exiting."
-msgstr "Fatale fout. Map %s niet gevonden. Programma wordt beëindigd."
+msgstr "Onherstelbare fout. Geen directory %s gevonden. Bezig met afsluiten."
 
 #: ../Reports.pm:943
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
-msgstr "Fatale fout. %s kon niet geopend worden. Programma wordt beëindigd."
+msgstr "Onherstelbare fout. Kan %s niet openen. Bezig met afsluiten."
 
 #: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
 #, perl-format
 msgid "DBI Execution failed: %s"
-msgstr "Uitvoeren van de DBI-module mislukt: %s."
+msgstr "DBI-uitvoering is mislukt: %s"
 
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"
-msgstr "Fatale fout.  getArchReport() kon %s niet openen."
+msgstr "Onherstelbare fout. getArchReport() kan %s niet openen."
+

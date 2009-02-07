@@ -1,4 +1,3 @@
-# translation of apparmor-utils.po to Hungarian
 # translation of apparmor-utils.po to
 # translation of apparmor-utils.hu.po to
 # Hungarian message File YaST2 (@memory@).
@@ -11,7 +10,7 @@
 # Steve Varadi <svaradi@usa.com>, 2000.
 # Zoltán Levárdy <pogacsa@programmer.net>, 1999.
 # Papp Zsolt <zpapp@novell.com>, 2006.
-# Kalman Kemenczy <kkemenczy@novell.com>, 2006, 2007.
+# Kalman Kemenczy <kkemenczy@novell.com>, 2006, 2007, 2009.
 # Gabor Kelemen <kelemeng@gnome.hu>, 2007.
 # Ervin Novak <enovak@novell.com>, 2008.
 msgid ""
@@ -19,18 +18,22 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2008-09-22 22:56-0700\n"
-"PO-Revision-Date: 2008-05-20 17:48+0200\n"
-"Last-Translator: Ervin Novak <enovak@novell.com>\n"
-"Language-Team: Hungarian <hu@li.org>\n"
+"PO-Revision-Date: 2009-01-04 00:40+0100\n"
+"Last-Translator: Kalman Kemenczy <kkemenczy@novell.com>\n"
+"Language-Team:  <hu@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../genprof:55
-msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "Úgy tűnik, a SubDomain nem indult el. Kapcsolja be a SubDomaint és próbálja újra."
+msgid ""
+"SubDomain does not appear to be started.  Please enable SubDomain and try "
+"again."
+msgstr ""
+"Úgy tűnik, a SubDomain nem indult el. Kapcsolja be a SubDomaint és próbálja "
+"újra."
 
 #: ../genprof:69
 msgid "Please enter the program to profile: "
@@ -38,8 +41,14 @@ msgstr "Adja meg a profilírozni kívánt program nevét: "
 
 #: ../genprof:88
 #, perl-format
-msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
-msgstr "%s nem található a rendszer elérési útvonal listában. Ha az alkalmazás neve pontos, akkor a másik ablakban futtatott 'which %s' paranccsal meg tudja találni a teljes képzésű elérési utat."
+msgid ""
+"Can't find %s in the system path list.  If the name of the application is "
+"correct, please run 'which %s' in the other window in order to find the "
+"fully-qualified path."
+msgstr ""
+"%s nem található a rendszer elérési útvonal listában. Ha az alkalmazás neve "
+"pontos, akkor a másik ablakban futtatott 'which %s' paranccsal meg tudja "
+"találni a teljes képzésű elérési utat."
 
 #: ../genprof:90 ../autodep:112 ../audit:122 ../complain:122 ../enforce:122
 #, perl-format
@@ -83,13 +92,21 @@ msgstr "%s profiljának előállítása befejeződött."
 
 #: ../genprof:174
 #, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
-msgstr "használat: %s [ -d /profilok/elérési/útja] [ -f /naplófájl/elérési/útja]  [ profilírozandó program ]"
+msgid ""
+"usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to "
+"profile ]"
+msgstr ""
+"használat: %s [ -d /profilok/elérési/útja] [ -f /naplófájl/elérési/útja]  "
+"[ profilírozandó program ]"
 
 #: ../logprof:72
 #, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
-msgstr "használat: %s [ -d /profilok/elérési/útja] [ -f /naplófájl/elérési/útja]  [ -m \"jel a naplóban, hogy innen kezdődjön a feldolgozás\"]"
+msgid ""
+"usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in "
+"log to start processing after\""
+msgstr ""
+"használat: %s [ -d /profilok/elérési/útja] [ -f /naplófájl/elérési/útja]  [ -"
+"m \"jel a naplóban, hogy innen kezdődjön a feldolgozás\"]"
 
 #: ../autodep:63
 #, perl-format
@@ -102,8 +119,20 @@ msgstr "Adja meg a profilírozni kívánt program nevét: "
 
 #: ../autodep:95 ../SubDomain.pm:6156
 #, perl-format
-msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
-msgstr "%s jelenleg olyan programként van megjelölve, amely ne rendelkezzen saját profillal. Általában a programokat azért jelöljük meg így, mert a saját profiljuk létrehozása tönkretenné a rendszer maradékát. Ha biztos a dolgában, és tudja, hogy létre akar hozni egy profilt a programhoz, akkor módosítsa a hozzá tartozó bejegyzést az /etc/apparmor/logprof.conf [qualifiers] szakaszában."
+msgid ""
+"%s is currently marked as a program that should not have it's own profile.  "
+"Usually, programs are marked this way if creating a profile for them is "
+"likely to break the rest of the system.  If you know what you're doing and "
+"are certain you want to create a profile for this program, edit the "
+"corresponding entry in the [qualifiers] section in /etc/apparmor/logprof."
+"conf."
+msgstr ""
+"%s jelenleg olyan programként van megjelölve, amely ne rendelkezzen saját "
+"profillal. Általában a programokat azért jelöljük meg így, mert a saját "
+"profiljuk létrehozása tönkretenné a rendszer maradékát. Ha biztos a "
+"dolgában, és tudja, hogy létre akar hozni egy profilt a programhoz, akkor "
+"módosítsa a hozzá tartozó bejegyzést az /etc/apparmor/logprof.conf "
+"[qualifiers] szakaszában."
 
 #: ../autodep:102
 #, perl-format
@@ -112,8 +141,14 @@ msgstr "%s profilja már létezik - most kimarad."
 
 #: ../autodep:109 ../audit:119 ../complain:119 ../enforce:119
 #, perl-format
-msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
-msgstr "%s nem található a rendszer elérési útvonal listában. Ha az alkalmazás neve pontos, akkor futtassa le a 'which %s' parancsot felhasználóként a megfelelő PATH környezettel, hogy megtalálja a teljes képzésű elérési utat."
+msgid ""
+"Can't find %s in the system path list.  If the name of the application is "
+"correct, please run 'which %s' as a user with the correct PATH environment "
+"set up in order to find the fully-qualified path."
+msgstr ""
+"%s nem található a rendszer elérési útvonal listában. Ha az alkalmazás neve "
+"pontos, akkor futtassa le a 'which %s' parancsot felhasználóként a megfelelő "
+"PATH környezettel, hogy megtalálja a teljes képzésű elérési utat."
 
 #: ../audit:106
 #, perl-format
@@ -123,7 +158,9 @@ msgstr "%s beállítása audit módba."
 #: ../audit:131
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
-msgstr "használat: %s [ -d /profilok/elérési/útja] [ audit módba kapcsolandó program ]"
+msgstr ""
+"használat: %s [ -d /profilok/elérési/útja] [ audit módba kapcsolandó "
+"program ]"
 
 #: ../complain:64
 msgid "Please enter the program to switch to complain mode: "
@@ -137,7 +174,9 @@ msgstr "%s beállítása tanuló módba."
 #: ../complain:131
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
-msgstr "használat: %s [ -d /profilok/elérési/útja] [ tanuló módba kapcsolandó program ]"
+msgstr ""
+"használat: %s [ -d /profilok/elérési/útja] [ tanuló módba kapcsolandó "
+"program ]"
 
 #: ../enforce:64
 msgid "Please enter the program to switch to enforce mode: "
@@ -151,7 +190,9 @@ msgstr "%s beállítása kényszerítés módba."
 #: ../enforce:131
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
-msgstr "használat: %s [ -d /profilok/elérési/útja] [ kényszerítés módba kapcsolandó program ]"
+msgstr ""
+"használat: %s [ -d /profilok/elérési/útja] [ kényszerítés módba kapcsolandó "
+"program ]"
 
 #: ../unconfined:50
 #, perl-format
@@ -159,8 +200,12 @@ msgid "Usage: %s [ --paranoid ]\n"
 msgstr "Használat: %s [ --paranoid ]\n"
 
 #: ../unconfined:56
-msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "Úgy tűnik, a SubDomain nem indult el. Kapcsolja be a SubDomaint és próbálja újra."
+msgid ""
+"SubDomain does not appear to be started. Please enable SubDomain and try "
+"again."
+msgstr ""
+"Úgy tűnik, a SubDomain nem indult el. Kapcsolja be a SubDomaint és próbálja "
+"újra."
 
 #: ../unconfined:61
 msgid "Can't read /proc\n"
@@ -309,11 +354,11 @@ msgstr "Érvénytelen gyorsbillentyű a következőhöz:"
 # cancel button label
 #: ../SubDomain.pm:1421
 msgid "(C)ancel"
-msgstr "Mégsem"
+msgstr "(M)égse"
 
 #: ../SubDomain.pm:1746
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
-msgstr "Biztosan elhagyja a profil legfrissebb módosításait és kilép?"
+msgstr "Biztosan elveti a profil ezen változtatásait, és kilép?"
 
 #: ../SubDomain.pm:1748
 msgid "Abandoning all changes."
@@ -426,8 +471,12 @@ msgid "Log contains unknown mode %s."
 msgstr "A napló az ismeretlen %s módot tartalmazza."
 
 #: ../SubDomain.pm:2915
-msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
-msgstr "A profil frissített verziója megtalálható a profiltárban. Kívánja azt használni?"
+msgid ""
+"An updated version of this profile has been found in the profile "
+"repository.  Would you like to use it?"
+msgstr ""
+"A profil frissített verziója megtalálható a profiltárban. Kívánja azt "
+"használni?"
 
 #: ../SubDomain.pm:2945
 #, perl-format
@@ -466,7 +515,9 @@ msgstr "A profiltároló-kiszolgáló a következő hibát adta vissza:"
 
 #: ../SubDomain.pm:3004
 msgid "Please re-enter registration information or contact the administrator."
-msgstr "Adja meg újra a regisztrációs információkat vagy keresse meg a rendszergazdát."
+msgstr ""
+"Adja meg újra a regisztrációs információkat vagy keresse meg a "
+"rendszergazdát."
 
 #: ../SubDomain.pm:3005
 msgid "Login Error\n"
@@ -485,8 +536,8 @@ msgid ""
 "Would you like to enable access to the\n"
 "profile repository?"
 msgstr ""
-"Kívánja engedélyezni a profiltár\n"
-"elérését?"
+"Engedélyezi a hozzáférést\n"
+"a profiltárhoz?"
 
 #: ../SubDomain.pm:3065
 msgid ""
@@ -798,3 +849,4 @@ msgstr "DBI végrehajtása meghiúsult: %s"
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"
 msgstr "Végzetes hiba.  A getArchReport() nem tudta megnyitni a(z) %s nevű fájlt"
+

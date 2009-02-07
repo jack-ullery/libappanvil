@@ -1,31 +1,25 @@
-# translation of apparmor-utils.po to
-# Chinese message file for YaST2 (@memory@). -*- coding: utf-8 -*-
-# Copyright (C) 2005 SUSE Linux Products GmbH.
-# Copyright (C) 2002 SuSE Linux AG.
-# Copyright (C) 2001 SuSE GmbH.
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
 #
-# swyear <swyear@gmail.com>, 2008.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2008-09-22 22:56-0700\n"
-"PO-Revision-Date: 2008-05-23 14:46+0800\n"
-"Last-Translator: swyear <swyear@gmail.com>\n"
-"Language-Team:  <zh@li.org>\n"
+"PO-Revision-Date: 2009-02-04 15:44\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: KBabel 1.11.4\n"
 
 #: ../genprof:55
 msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "子領域似乎未啟動。請啟用子領域並再試一次。"
+msgstr "子網域似乎未啟動。請啟用子網域並再試一次。"
 
 #: ../genprof:69
 msgid "Please enter the program to profile: "
-msgstr "請輸入要加入設定檔的程式:"
+msgstr "請輸入您的支援金鑰"
 
 #: ../genprof:88
 #, perl-format
@@ -38,34 +32,16 @@ msgid "%s does not exist, please double-check the path."
 msgstr "%s 不存在，請仔細檢查路徑。"
 
 #: ../genprof:115
-msgid ""
-"Please start the application to be profiled in \n"
-"another window and exercise its functionality now.\n"
-"\n"
-"Once completed, select the \"Scan\" button below in \n"
-"order to scan the system logs for AppArmor events.  \n"
-"\n"
-"For each AppArmor event, you will be given the  \n"
-"opportunity to choose whether the access should be  \n"
-"allowed or denied."
-msgstr ""
-"請在別的視窗啟動要加入設定檔的\n"
-"應用程式並立即執行其功能。\n"
-"\n"
-"完成後，請選取下方的「掃描」按鈕，\n"
-"以掃描系統記錄中的 AppArmor 事件。\n"
-" \n"
-"您可以針對每個 AppArmor 事件\n"
-"選擇是否要允許或拒絕\n"
-"存取。"
+msgid "Please start the application to be profiled in \nanother window and exercise its functionality now.\n\nOnce completed, select the \"Scan\" button below in \norder to scan the system logs for AppArmor events.  \n\nFor each AppArmor event, you will be given the  \nopportunity to choose whether the access should be  \nallowed or denied."
+msgstr "請啟動即將在其他視窗顯示的應用程式\n並立即執行其功能。\n\n 完成後，請選取下方的「掃描」按鈕，\n掃描 AppArmor 事件的系統記錄。\n \n您可以針對每個 AppArmor 事件\n選擇是否要允許或拒絕\n存取。"
 
 #: ../genprof:135
 msgid "Profiling"
-msgstr "正在產生設定檔"
+msgstr "正在查探"
 
 #: ../genprof:169
 msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "以強迫模式重新載入子領域設定檔。"
+msgstr "以強迫模式重新載入子網域設定檔。"
 
 #: ../genprof:170
 #, perl-format
@@ -75,17 +51,17 @@ msgstr "已完成產生 %s 設定檔。"
 #: ../genprof:174
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
-msgstr "使用：%s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
+msgstr "使用率：%s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
 
 #: ../logprof:72
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
-msgstr "使用：%s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
+msgstr "使用率：%s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
 
 #: ../autodep:63
 #, perl-format
 msgid "Can't find subdomain profiles in %s."
-msgstr "在 %s 內找不到子領域設定檔。"
+msgstr "在 %s 內找不到子網域設定檔。"
 
 #: ../autodep:71
 msgid "Please enter the program to create a profile for: "
@@ -114,7 +90,7 @@ msgstr "設定 %s 為稽核模式。"
 #: ../audit:131
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
-msgstr "使用：%s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
+msgstr "使用率：%s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
 
 #: ../complain:64
 msgid "Please enter the program to switch to complain mode: "
@@ -128,7 +104,7 @@ msgstr "設定 %s 為抱怨 (complain) 模式。"
 #: ../complain:131
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
-msgstr "使用：%s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
+msgstr "使用率：%s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
 
 #: ../enforce:64
 msgid "Please enter the program to switch to enforce mode: "
@@ -142,16 +118,16 @@ msgstr "設定 %s 為強迫 (enforce) 模式。"
 #: ../enforce:131
 #, perl-format
 msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
-msgstr "使用：%s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
+msgstr "使用率：%s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
 
 #: ../unconfined:50
 #, perl-format
 msgid "Usage: %s [ --paranoid ]\n"
-msgstr "使用：%s [ --paranoid ]\n"
+msgstr "使用率：%s [ --paranoid ]\n"
 
 #: ../unconfined:56
 msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "子領域似乎未啟動。請啟用子領域並再試一次。"
+msgstr "子網域似乎未啟動。請啟用子網域並再試一次。"
 
 #: ../unconfined:61
 msgid "Can't read /proc\n"
@@ -168,24 +144,20 @@ msgstr "限制者"
 #: ../SubDomain.pm:577 ../SubDomain.pm:590
 #, perl-format
 msgid "Can't find %s."
-msgstr "無法找到 %s。"
+msgstr "無法寫入 %s。"
 
 #: ../SubDomain.pm:778 ../SubDomain.pm:3173
 msgid "Connecting to repository....."
-msgstr "連線到套件庫..."
+msgstr "正在連接至儲存庫..."
 
 #: ../SubDomain.pm:787
 #, perl-format
-msgid ""
-"WARNING: Error fetching profiles from the repository:\n"
-"%s\n"
-msgstr ""
-"警告：由套件庫擷取設定檔時發生錯誤：\n"
-"%s\n"
+msgid "WARNING: Error fetching profiles from the repository:\n%s\n"
+msgstr "警告：由儲存庫擷取設定檔時發生錯誤：\n%s\n"
 
 #: ../SubDomain.pm:796
 msgid "Inactive local profile for "
-msgstr "非作用的本機設定檔"
+msgstr "非使用中本地設定檔"
 
 #: ../SubDomain.pm:833 ../SubDomain.pm:1852 ../SubDomain.pm:2140
 #: ../SubDomain.pm:3300 ../SubDomain.pm:3333 ../SubDomain.pm:3533
@@ -195,99 +167,79 @@ msgstr "設定檔 "
 
 #: ../SubDomain.pm:867
 msgid "Profile submitted by"
-msgstr "設定檔遞交者"
+msgstr "設定檔提交者"
 
 #: ../SubDomain.pm:908
 #, perl-format
 msgid "Error activating profiles: %s\n"
-msgstr "啟用設定檔發生錯誤： %s\n"
+msgstr "啟用設定檔時發生錯誤：%s\n"
 
 #: ../SubDomain.pm:1055 ../SubDomain.pm:1108
 #, perl-format
-msgid ""
-"WARNING: Error syncronizing profiles with the repository:\n"
-"%s\n"
-msgstr ""
+msgid "WARNING: Error syncronizing profiles with the repository:\n%s\n"
+msgstr "警告：同步化設定檔與儲存庫時出錯：\n%s\n"
 
 #: ../SubDomain.pm:1135
 msgid "New profiles"
-msgstr "新的設定檔"
+msgstr "新設定檔"
 
 #: ../SubDomain.pm:1137
-msgid ""
-"Please choose the newly created profiles that you would like\n"
-"to store in the repository"
-msgstr ""
-"請選擇您想要儲存到儲存庫中的\n"
-"新建設定檔"
+msgid "Please choose the newly created profiles that you would like\nto store in the repository"
+msgstr "請選擇要儲存在儲存庫\n中的新建設定檔。"
 
 #: ../SubDomain.pm:1144
 msgid "Submit newly created profiles to the repository"
-msgstr "遞交新建的設定檔到儲存庫"
+msgstr "將新建設定檔提交至儲存庫"
 
 #: ../SubDomain.pm:1146
 msgid "Would you like to upload the newly created profiles?"
-msgstr "您要上傳新建的設定檔嗎？"
+msgstr "您要上載新建設定檔嗎？"
 
 #: ../SubDomain.pm:1159
-msgid ""
-"Select which of the changed profiles you would like to upload\n"
-"to the repository"
-msgstr ""
-"選擇您要上傳到儲存庫的\n"
-"已變更設定檔"
+msgid "Select which of the changed profiles you would like to upload\nto the repository"
+msgstr "選擇要上載至儲存庫的\n已變更設定檔"
 
 #: ../SubDomain.pm:1161
 msgid "Changed profiles"
-msgstr "已變更的設定檔"
+msgstr "已變更設定檔"
 
 #: ../SubDomain.pm:1167
 msgid "Submit changed profiles to the repository"
-msgstr "遞交變更的設定檔到儲存庫"
+msgstr "將已變更設定檔提交至儲存庫"
 
 #: ../SubDomain.pm:1169
-msgid ""
-"The following profiles from the repository were changed.\n"
-"Would you like to upload your changes?"
-msgstr ""
-"下列由儲存庫來的設定檔已經變更。\n"
-"您要上傳這些變更嗎？"
+msgid "The following profiles from the repository were changed.\nWould you like to upload your changes?"
+msgstr "儲存庫中的下列設定檔已變更。\n您要上載這些變更嗎？"
 
 #: ../SubDomain.pm:1236 ../SubDomain.pm:1316
 #, perl-format
-msgid ""
-"WARNING: An error occured while uploading the profile %s\n"
-"%s\n"
-msgstr ""
+msgid "WARNING: An error occured while uploading the profile %s\n%s\n"
+msgstr "警告：上載設定檔 %s 時發生錯誤\n%s\n"
 
 #: ../SubDomain.pm:1241
 msgid "Uploaded changes to repository."
-msgstr "上傳變更到儲存庫。"
+msgstr "已將變更上載至儲存庫。"
 
 #: ../SubDomain.pm:1290
 msgid "Changelog Entry: "
-msgstr "變更記錄項目："
+msgstr "變更記錄項目︰"
 
 #: ../SubDomain.pm:1311
 #, perl-format
 msgid "Uploaded %s to repository."
-msgstr "上傳 %s 到儲存庫。"
+msgstr "已將 %s 上載至儲存庫。"
 
 #: ../SubDomain.pm:1322
-msgid ""
-"Repository Error\n"
-"Registration or Signin was unsuccessful. User login\n"
-"information is required to upload profiles to the\n"
-"repository. These changes have not been sent.\n"
-msgstr ""
+msgid "Repository Error\nRegistration or Signin was unsuccessful. User login\ninformation is required to upload profiles to the\nrepository. These changes have not been sent.\n"
+msgstr "註冊錯誤\n註冊或登入失敗。需要提供\n使用者登入資訊才可將設定檔上載至儲存庫。\n所做變更未傳送。\n"
 
 #: ../SubDomain.pm:1379 ../SubDomain.pm:1419
 msgid "(Y)es"
-msgstr "是(Y)"
+msgstr "是(&Y)"
 
 #: ../SubDomain.pm:1380 ../SubDomain.pm:1420
 msgid "(N)o"
-msgstr "否(N)"
+msgstr "無"
 
 #: ../SubDomain.pm:1383 ../SubDomain.pm:1424
 msgid "Invalid hotkey for"
@@ -299,7 +251,7 @@ msgstr "取消(&C)"
 
 #: ../SubDomain.pm:1746
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
-msgstr "您確定要放棄此設定檔變更並離開？"
+msgstr "您確定要放棄此設定檔變更集並離開？"
 
 #: ../SubDomain.pm:1748
 msgid "Abandoning all changes."
@@ -307,7 +259,7 @@ msgstr "放棄所有變更？"
 
 #: ../SubDomain.pm:1854
 msgid "Default Hat"
-msgstr "預設 Hat"
+msgstr "預設主機"
 
 #: ../SubDomain.pm:1856
 msgid "Requested Hat"
@@ -324,100 +276,52 @@ msgstr "執行"
 #: ../SubDomain.pm:2148 ../SubDomain.pm:3302 ../SubDomain.pm:3335
 #: ../SubDomain.pm:3588
 msgid "Severity"
-msgstr "保安"
+msgstr "安全性"
 
 #: ../SubDomain.pm:2193
 msgid "Enter profile name to transition to: "
-msgstr ""
+msgstr "輸入轉換後使用的設定檔名稱："
 
 #: ../SubDomain.pm:2201
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"switching profiles?\n"
-"\n"
-"Sanitizing the environment is more secure,\n"
-"but some applications depend on the presence\n"
-"of LD_PRELOAD or LD_LIBRARY_PATH."
-msgstr ""
-"當切換設定檔時，\n"
-"AppArmor 需淨化環境嗎？s\n"
-"\n"
-"淨化環境會加強安全性，\n"
-"但有些應用程式會依賴\n"
-"LD_PRELOAD 或 LD_LIBRARY_PATH 的存在。"
+msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH."
+msgstr "當切換設定檔時，\nAppArmor 需淨化環境嗎？s\n\n淨化環境會加強安全性，\n但有些應用程式有依賴\n LD_PRELOAD 或 LD_LIBRARY_PATH 的存在。"
 
 #: ../SubDomain.pm:2203
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"switching profiles?\n"
-"\n"
-"Sanitizing the environment is more secure,\n"
-"but this application appears to use LD_PRELOAD\n"
-"or LD_LIBRARY_PATH and clearing these could\n"
-"cause functionality problems."
-msgstr ""
-"當切換設定檔時，\n"
-"AppArmor 需淨化環境嗎？s\n"
-"\n"
-"淨化環境會加強安全性，\n"
-"但此應用程式會使用 LD_PRELOAD\n"
-"或 LD_LIBRARY_PATH，將它們清除會\n"
-"造成功能上的問題。"
+msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut this application appears to use LD_PRELOAD\nor LD_LIBRARY_PATH and clearing these could\ncause functionality problems."
+msgstr "當切換設定檔時，\nAppArmor 需淨化環境嗎？s\n\n淨化環境會加強安全性，\n但此應用程式會使用 LD_PRELOAD\n或 LD_LIBRARY_PATH，將它們清除會\n造成功能上的問題。"
 
 #: ../SubDomain.pm:2212
 #, perl-format
-msgid ""
-"Launching processes in an unconfined state is a very\n"
-"dangerous operation and can cause serious security holes.\n"
-"\n"
-"Are you absolutely certain you wish to remove all\n"
-"AppArmor protection when executing %s?"
-msgstr ""
-"在未限制的狀態下啟動程序是非常\n"
-"危險的作業，會導致嚴重的安全漏洞。\n"
-"\n"
-"您非常確定要在執行 %s 時移除所有\n"
-"AppArmor 保護嗎？"
+msgid "Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s?"
+msgstr "在未限制的狀態下啟動程序是非常\n危險的作業，會導致嚴重的安全漏洞。\n\n您確定要在執行 %s 時移除所有\nAppArmor 保護嗎？"
 
 #: ../SubDomain.pm:2214
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"running this program unconfined?\n"
-"\n"
-"Not sanitizing the environment when unconfining\n"
-"a program opens up significant security holes\n"
-"and should be avoided if at all possible."
-msgstr ""
-"當執行此未限制的程式時，\n"
-"AppArmor 應該淨化環境嗎？\n"
-"\n"
-"當啟用未限制的程式而不淨化環境\n"
-"會開啟嚴重的安全漏洞，且應該\n"
-"盡一切可能來避免。"
+msgid "Should AppArmor sanitize the environment when\nrunning this program unconfined?\n\nNot sanitizing the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."
+msgstr "當執行此未限制的程式時，\nAppArmor 應該淨化環境嗎？\n\n當未限制的程式有嚴重的安全漏洞，\n且應避免一切可能發生的危險時，\n未淨化環境。"
 
 #: ../SubDomain.pm:2303
 #, perl-format
 msgid "A profile for %s does not exist create one?"
-msgstr ""
+msgstr "%s 的設定檔不存在，是否建立一個？"
 
 #: ../SubDomain.pm:2330
 #, perl-format
 msgid "A local profile for %s does not exist create one?"
-msgstr ""
+msgstr "%s 的本地設定檔不存在，是否建立一個？"
 
 #: ../SubDomain.pm:2502 ../SubDomain.pm:6532 ../SubDomain.pm:6537
 #, perl-format
 msgid "Log contains unknown mode %s."
-msgstr "記錄中含有未知的模組 %s。"
+msgstr "記錄包含未知模式 %s。"
 
 #: ../SubDomain.pm:2915
 msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
-msgstr "在設定檔儲存庫中發現此設定檔的更新版本。您要使用它嗎？"
+msgstr "在設定檔儲存庫中找到此設定檔的更新版本。要使用此版本嗎？"
 
 #: ../SubDomain.pm:2945
 #, perl-format
 msgid "Updated profile %s to revision %s."
-msgstr "更新設定檔 %s 到版本 %s。"
+msgstr "已將設定檔 %s 更新至修正版 %s。"
 
 #: ../SubDomain.pm:2952
 msgid "Error parsing repository profile."
@@ -437,7 +341,7 @@ msgstr "密碼："
 
 #: ../SubDomain.pm:2991
 msgid "Email Addr: "
-msgstr "Email："
+msgstr "電子郵件地址︰"
 
 #: ../SubDomain.pm:2993
 msgid "Save Configuration? "
@@ -445,49 +349,36 @@ msgstr "儲存組態？"
 
 #: ../SubDomain.pm:3002
 msgid "The Profile Repository server returned the following error:"
-msgstr "設定檔儲存庫伺服器傳回下列錯誤："
+msgstr "設定檔儲存庫伺服器傳回下列錯誤︰"
 
 #: ../SubDomain.pm:3004
 msgid "Please re-enter registration information or contact the administrator."
-msgstr "請重新輸入註冊資料或連絡管理者。"
+msgstr "請重新輸入註冊資訊或聯絡管理員。"
 
 #: ../SubDomain.pm:3005
 msgid "Login Error\n"
 msgstr "登入錯誤\n"
 
 #: ../SubDomain.pm:3012
-msgid ""
-"Login failure\n"
-" Please check username and password and try again."
-msgstr ""
-"登入失敗\n"
-" 請檢查使用者名稱和密碼，再試一次。"
+msgid "Login failure\n Please check username and password and try again."
+msgstr "登入失敗\n 請檢查使用者名稱和密碼，然後再試一次。"
 
 #: ../SubDomain.pm:3034
-msgid ""
-"Would you like to enable access to the\n"
-"profile repository?"
-msgstr ""
+msgid "Would you like to enable access to the\nprofile repository?"
+msgstr "您要啟用對\n設定檔儲存庫的存取權限嗎？"
 
 #: ../SubDomain.pm:3065
-msgid ""
-"Would you like to upload newly created and changed profiles to\n"
-"      the profile repository?"
-msgstr ""
-"您想要上傳新建立的以及變更的設定檔\n"
-"      到設定檔儲存庫嗎？"
+msgid "Would you like to upload newly created and changed profiles to\n      the profile repository?"
+msgstr "您要將新建的及已變更的設定檔上載至\n設定檔儲存庫嗎？"
 
 #: ../SubDomain.pm:3184
 #, perl-format
-msgid ""
-"WARNING: Profile update check failed\n"
-"Error Detail:\n"
-"%s"
-msgstr ""
+msgid "WARNING: Profile update check failed\nError Detail:\n%s"
+msgstr "警告：設定檔更新檢查失敗\n錯誤詳細資料：\n%s"
 
 #: ../SubDomain.pm:3198
 msgid "Change mode modifiers"
-msgstr ""
+msgstr "變更模式輔助按鍵"
 
 #: ../SubDomain.pm:3242
 msgid "Complain-mode changes:"
@@ -500,7 +391,7 @@ msgstr "強迫模式變更："
 #: ../SubDomain.pm:3250
 #, perl-format
 msgid "Invalid mode found: %s"
-msgstr "發現無效的模式：%s"
+msgstr "無效的選項：%s"
 
 #: ../SubDomain.pm:3301 ../SubDomain.pm:3334
 msgid "Capability"
@@ -525,7 +416,7 @@ msgstr "正在將功能 %s 新增到設定檔。"
 #: ../SubDomain.pm:3373
 #, perl-format
 msgid "Denying capability %s to profile."
-msgstr "拒絕功能 %s 加入設定檔。"
+msgstr "正在拒絕設定檔的 %s 功能。"
 
 #: ../SubDomain.pm:3534
 msgid "Path"
@@ -533,15 +424,15 @@ msgstr "路徑"
 
 #: ../SubDomain.pm:3545 ../SubDomain.pm:3577
 msgid "(owner permissions off)"
-msgstr ""
+msgstr "(擁有者許可權關閉)"
 
 #: ../SubDomain.pm:3551
 msgid "(force new perms to owner)"
-msgstr ""
+msgstr "(將新許可權強加給擁有者)"
 
 #: ../SubDomain.pm:3554
 msgid "(force all rule perms to owner)"
-msgstr ""
+msgstr "(將所有規則許可權強加給擁有者)"
 
 #: ../SubDomain.pm:3566
 msgid "Old Mode"
@@ -553,7 +444,7 @@ msgstr "文字模式"
 
 #: ../SubDomain.pm:3583
 msgid "(force perms to owner)"
-msgstr ""
+msgstr "(將許可權強加給擁有者)"
 
 #: ../SubDomain.pm:3586
 msgid "Mode"
@@ -562,7 +453,7 @@ msgstr "模式"
 #: ../SubDomain.pm:3668
 #, perl-format
 msgid "Adding %s %s to profile."
-msgstr "正在將 %s %s 新增到設定檔。"
+msgstr "正在將 %s %s新增到設定檔。"
 
 #: ../SubDomain.pm:3684
 msgid "Enter new path: "
@@ -570,7 +461,7 @@ msgstr "輸入新路徑："
 
 #: ../SubDomain.pm:3687
 msgid "The specified path does not match this log entry:"
-msgstr "指定的路徑和記錄項目不吻合："
+msgstr "指定的介面卡不存在。"
 
 #: ../SubDomain.pm:3688
 msgid "Log Entry"
@@ -578,7 +469,7 @@ msgstr "記錄項目"
 
 #: ../SubDomain.pm:3689
 msgid "Entered Path"
-msgstr "已輸入的路徑"
+msgstr "已安裝的修補程式"
 
 #: ../SubDomain.pm:3690
 msgid "Do you really want to use this path?"
@@ -586,7 +477,7 @@ msgstr "您確定要使用這個路徑？"
 
 #: ../SubDomain.pm:3802 ../SubDomain.pm:3854
 msgid "Network Family"
-msgstr "網路家庭"
+msgstr "網路系列"
 
 #: ../SubDomain.pm:3805 ../SubDomain.pm:3857
 msgid "Socket Type"
@@ -595,17 +486,17 @@ msgstr "插槽類型"
 #: ../SubDomain.pm:3905
 #, perl-format
 msgid "Adding network access %s %s to profile."
-msgstr "正在將網路存取 %s %s 新增到設定檔。"
+msgstr "正在新增對設定檔的網路存取權限 %s %s。"
 
 #: ../SubDomain.pm:3924
 #, perl-format
 msgid "Denying network access %s %s to profile."
-msgstr "拒絕網路存取 %s %s 到設定檔。"
+msgstr "正在拒絕對設定檔的網路存取權限 %s %s。"
 
 #: ../SubDomain.pm:4132
 #, perl-format
 msgid "Reading log entries from %s."
-msgstr "正在從 %s 讀取記錄項目。"
+msgstr "正在讀取郵件伺服器領域%s..."
 
 #: ../SubDomain.pm:4133
 #, perl-format
@@ -614,37 +505,27 @@ msgstr "正在更新 %s 中的 AppArmor  設定檔。"
 
 #: ../SubDomain.pm:4137
 msgid "unknown\n"
-msgstr "不明的\n"
+msgstr "未知\n"
 
 #: ../SubDomain.pm:4170
-msgid ""
-"The profile analyzer has completed processing the log files.\n"
-"\n"
-"All updated profiles will be reloaded"
-msgstr ""
-"設定檔分析程式已完成處理記錄檔。\n"
-"\n"
-"將重新載入所有已更新的設定檔。"
+msgid "The profile analyzer has completed processing the log files.\n\nAll updated profiles will be reloaded"
+msgstr "設定檔分析程式已完成處理記錄檔。\n\n將重新載入所有已更新的設定檔。"
 
 #: ../SubDomain.pm:4176
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "在系統記錄中找不到尚未處理的 AppArmor 事件。"
 
 #: ../SubDomain.pm:4237
-msgid ""
-"Select which profile changes you would like to save to the\n"
-"local profile set"
-msgstr ""
-"選擇您要儲存在本機設定檔的\n"
-"設定檔變更"
+msgid "Select which profile changes you would like to save to the\nlocal profile set"
+msgstr "選取要儲存至本地設定檔集\n的設定檔變更"
 
 #: ../SubDomain.pm:4238
 msgid "Local profile changes"
-msgstr "本機設定檔變更"
+msgstr "本地設定檔變更"
 
 #: ../SubDomain.pm:4265
 msgid "The following local profiles were changed.  Would you like to save them?"
-msgstr "下列的本機設定檔已變更。您要儲存他們嗎？"
+msgstr "下列本地設定檔已變更。您要儲存這些變更嗎？"
 
 #: ../SubDomain.pm:4362
 msgid "Profile Changes"
@@ -666,17 +547,17 @@ msgstr "設定檔 %s 包含無效的 regexp %s。"
 #: ../SubDomain.pm:5115
 #, perl-format
 msgid "Profile %s contains invalid mode %s."
-msgstr "設定檔 %s 包含無效的模式 %s。"
+msgstr "設定檔 %s 包含無效模式 %s。"
 
 #: ../SubDomain.pm:5250
 #, perl-format
 msgid "%s contains syntax errors. Line [%s]"
-msgstr "%s 包含語法錯誤。第 [%s] 行"
+msgstr "%s 包含語法錯誤。行 [%s]"
 
 #: ../SubDomain.pm:5839
 #, perl-format
 msgid "Writing updated profile for %s."
-msgstr "正在寫入 %s 更新的設定檔。"
+msgstr "正在寫入提供者%s..."
 
 #: ../SubDomain.pm:6344
 msgid "Unknown command"
@@ -701,16 +582,16 @@ msgstr "無效的預設"
 #: ../Reports.pm:443 ../Reports.pm:532 ../Reports.pm:1480
 #, perl-format
 msgid "DBI Execution failed: %s."
-msgstr "DBI 執行失敗： %s."
+msgstr "DBI 執行失敗︰%s。"
 
 #: ../Reports.pm:556
 #, perl-format
 msgid "Couldn't open file: %s."
-msgstr "無法開啟檔案： %s."
+msgstr "無法開啟檔案︰%s。"
 
 #: ../Reports.pm:560
 msgid "No type value passed.  Unable to determine page count."
-msgstr "未傳遞類別值。無法判斷頁數。"
+msgstr "未傳遞任何類型值。無法確定頁面計數。"
 
 #: ../Reports.pm:626
 #, perl-format
@@ -720,25 +601,21 @@ msgstr "複製 %s 失敗。"
 #: ../Reports.pm:750
 #, perl-format
 msgid "Export Log Error: Couldn't open %s"
-msgstr "匯出記錄錯誤：無法開啟 %s"
+msgstr "輸出記錄錯誤︰無法開啟 %s"
 
 #: ../Reports.pm:772
 msgid "Fatal error.  No report name given. Exiting."
-msgstr "嚴重錯誤。沒有指定的報告名稱。離開。"
+msgstr "嚴重錯誤。未指定報告名稱。正在離開。"
 
 #: ../Reports.pm:781
 #, perl-format
-msgid ""
-"Unable to get configuration info for %s.\n"
-"                Unable to find %s."
-msgstr ""
-"無法取得 %s 的組態資訊。\n"
-"                無法尋找 %s。"
+msgid "Unable to get configuration info for %s.\n                Unable to find %s."
+msgstr "無法獲得 %s 的組態資訊。\n                找不到 %s。"
 
 #: ../Reports.pm:828
 #, perl-format
 msgid "Failed to parse: %s."
-msgstr "剖析失敗： %s."
+msgstr "分析失敗︰%s。"
 
 #: ../Reports.pm:837
 #, perl-format
@@ -748,24 +625,25 @@ msgstr "嚴重錯誤。無法開啟 %s。"
 #: ../Reports.pm:885
 #, perl-format
 msgid "Fatal Error.  Can't run %s.  Exiting."
-msgstr "嚴重錯誤。無法執行 %s。離開。"
+msgstr "嚴重錯誤。無法執行 %s。正在離開。"
 
 #: ../Reports.pm:925
 #, perl-format
 msgid "Fatal Error.  No directory, %s, found.  Exiting."
-msgstr "嚴重錯誤。找不到目錄 %s。離開。"
+msgstr "嚴重錯誤。找不到目錄 %s。正在離開。"
 
 #: ../Reports.pm:943
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
-msgstr "嚴重錯誤。無法開啟 %s。離開"
+msgstr "嚴重錯誤。無法開啟 %s。正在離開。"
 
 #: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
 #, perl-format
 msgid "DBI Execution failed: %s"
-msgstr "DBI 執行失敗： %s"
+msgstr "DBI 執行失敗︰%s"
 
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"
-msgstr "嚴重錯誤。  getArchReport() 無法開啟 %s"
+msgstr "嚴重錯誤。getArchReport() 無法開啟 %s"
+

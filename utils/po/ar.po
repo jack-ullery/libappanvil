@@ -1,14 +1,12 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2008-09-22 22:56-0700\n"
-"PO-Revision-Date: 2006-11-10 10:06:00+CET\n"
+"PO-Revision-Date: 2009-02-06 08:04\n"
 "Last-Translator: Novell Language <language@novell.com>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
@@ -34,26 +32,8 @@ msgid "%s does not exist, please double-check the path."
 msgstr "%s غير موجود، الرجاء التحقق من المسار مرة أخرى."
 
 #: ../genprof:115
-msgid ""
-"Please start the application to be profiled in \n"
-"another window and exercise its functionality now.\n"
-"\n"
-"Once completed, select the \"Scan\" button below in \n"
-"order to scan the system logs for AppArmor events.  \n"
-"\n"
-"For each AppArmor event, you will be given the  \n"
-"opportunity to choose whether the access should be  \n"
-"allowed or denied."
-msgstr ""
-"الرجاء بدء تشغيل التطبيق ليتم إنشاء ملف تعريف له في إطار آخر لـ \n"
-" وتجربة وظيفته الآن.\n"
-" \n"
-"بمجرد اكتماله، حدد زر \"مسح\" في \n"
-" لمسح سجلات النظام لأحداث AppArmor.  \n"
-" \n"
-" لكل حدث AppArmor، سيتم إتاحة \n"
-" فرصة لك لاختيار السماح بالوصول \n"
-" أو رفضه."
+msgid "Please start the application to be profiled in \nanother window and exercise its functionality now.\n\nOnce completed, select the \"Scan\" button below in \norder to scan the system logs for AppArmor events.  \n\nFor each AppArmor event, you will be given the  \nopportunity to choose whether the access should be  \nallowed or denied."
+msgstr "الرجاء بدء تشغيل التطبيق ليتم إنشاء ملف تعريف له في إطار آخر لـ \n وتجربة وظيفته الآن.\n \nبمجرد اكتماله، حدد زر \"مسح\" في \n لمسح سجلات النظام لأحداث AppArmor.  \n \n لكل حدث AppArmor، سيتم إتاحة \n فرصة لك لاختيار السماح بالوصول \n أو رفضه."
 
 #: ../genprof:135
 msgid "Profiling"
@@ -167,21 +147,17 @@ msgid "Can't find %s."
 msgstr "تعذر العثور على %s."
 
 #: ../SubDomain.pm:778 ../SubDomain.pm:3173
-#, fuzzy
 msgid "Connecting to repository....."
-msgstr "تم فقد الاتصال بالخادم."
+msgstr "يتم الآن الاتصال بالمخزن....."
 
 #: ../SubDomain.pm:787
 #, perl-format
-msgid ""
-"WARNING: Error fetching profiles from the repository:\n"
-"%s\n"
-msgstr ""
+msgid "WARNING: Error fetching profiles from the repository:\n%s\n"
+msgstr "تحذير: حدث خطأ أثناء إحضار ملفات التعريف من المخزن:\n%s\n"
 
 #: ../SubDomain.pm:796
-#, fuzzy
 msgid "Inactive local profile for "
-msgstr "ملف التعريف النشط"
+msgstr "ملف تعريف محلي غير نشط لـ "
 
 #: ../SubDomain.pm:833 ../SubDomain.pm:1852 ../SubDomain.pm:2140
 #: ../SubDomain.pm:3300 ../SubDomain.pm:3333 ../SubDomain.pm:3533
@@ -190,91 +166,72 @@ msgid "Profile"
 msgstr "ملف التعريف"
 
 #: ../SubDomain.pm:867
-#, fuzzy
 msgid "Profile submitted by"
-msgstr "إعدادات ملف التعريف"
+msgstr "تم تقديم ملف التعريف بواسطة"
 
 #: ../SubDomain.pm:908
-#, fuzzy, perl-format
+#, perl-format
 msgid "Error activating profiles: %s\n"
-msgstr "تعذر تنشيط مساحة التبديل."
+msgstr "خطأ أثناء تنشيط الملفات: %s\n"
 
 #: ../SubDomain.pm:1055 ../SubDomain.pm:1108
 #, perl-format
-msgid ""
-"WARNING: Error syncronizing profiles with the repository:\n"
-"%s\n"
-msgstr ""
+msgid "WARNING: Error syncronizing profiles with the repository:\n%s\n"
+msgstr "تحذير: حدث خطأ أثناء مزامنة ملفات التعريف مع المخزن:\n%s\n"
 
 #: ../SubDomain.pm:1135
-#, fuzzy
 msgid "New profiles"
-msgstr "ملفات التعريف المتاحة"
+msgstr "ملفات التعريف الجديدة"
 
 #: ../SubDomain.pm:1137
-msgid ""
-"Please choose the newly created profiles that you would like\n"
-"to store in the repository"
-msgstr ""
+msgid "Please choose the newly created profiles that you would like\nto store in the repository"
+msgstr "الرجاء اختيار ملفات التعريف التي تم إنشاؤها حديثًا وتريد\nتخزينها في المخزن"
 
 #: ../SubDomain.pm:1144
 msgid "Submit newly created profiles to the repository"
-msgstr ""
+msgstr "تقديم ملفات التعريف التي تم إنشاؤها حديثًا إلى المخزن"
 
 #: ../SubDomain.pm:1146
-#, fuzzy
 msgid "Would you like to upload the newly created profiles?"
-msgstr "هل ترغب في استيراد قائمة سوداء مُعرَّفة مسبقًا؟"
+msgstr "هل تريد تحميل ملفات التعريف التي تم إنشاؤها حديثًا؟"
 
 #: ../SubDomain.pm:1159
-msgid ""
-"Select which of the changed profiles you would like to upload\n"
-"to the repository"
-msgstr ""
+msgid "Select which of the changed profiles you would like to upload\nto the repository"
+msgstr "حدد ملفات التعريف التي تم تغييرها وتريد تحميلها\nإلى المخزن"
 
 #: ../SubDomain.pm:1161
-#, fuzzy
 msgid "Changed profiles"
-msgstr "يتم الآن نسخ ملف التعريف"
+msgstr "ملفات التعريف التي تم تغييرها"
 
 #: ../SubDomain.pm:1167
 msgid "Submit changed profiles to the repository"
-msgstr ""
+msgstr "تقديم ملفات التعريف التي تم تغييرها إلى المخزن"
 
 #: ../SubDomain.pm:1169
-msgid ""
-"The following profiles from the repository were changed.\n"
-"Would you like to upload your changes?"
-msgstr ""
+msgid "The following profiles from the repository were changed.\nWould you like to upload your changes?"
+msgstr "تم تغيير ملفات التعريف التالية من المخزن.\nهل تريد تحميل التغييرات التي قمت بإجرائها؟"
 
 #: ../SubDomain.pm:1236 ../SubDomain.pm:1316
 #, perl-format
-msgid ""
-"WARNING: An error occured while uploading the profile %s\n"
-"%s\n"
-msgstr ""
+msgid "WARNING: An error occured while uploading the profile %s\n%s\n"
+msgstr "تحذير: حدث خطأ أثناء تحميل ملف التعريف %s\n%s\n"
 
 #: ../SubDomain.pm:1241
 msgid "Uploaded changes to repository."
-msgstr ""
+msgstr "تم تحميل التغييرات إلى المخزن."
 
 #: ../SubDomain.pm:1290
-#, fuzzy
 msgid "Changelog Entry: "
-msgstr "سجل التغيير"
+msgstr "إدخال سجل التغيير: "
 
 #: ../SubDomain.pm:1311
-#, fuzzy, perl-format
+#, perl-format
 msgid "Uploaded %s to repository."
-msgstr "لم يتم العثور على الملف %1 في المخزن."
+msgstr "تم تحميل %s إلى المخزن."
 
 #: ../SubDomain.pm:1322
-msgid ""
-"Repository Error\n"
-"Registration or Signin was unsuccessful. User login\n"
-"information is required to upload profiles to the\n"
-"repository. These changes have not been sent.\n"
-msgstr ""
+msgid "Repository Error\nRegistration or Signin was unsuccessful. User login\ninformation is required to upload profiles to the\nrepository. These changes have not been sent.\n"
+msgstr "خطأ في المخزن\nفشل التسجيل أو التوقيع. يلزم إدخال معلومات\nدخول المستخدم لتحميل ملفات التعريف إلى\nالمخزن. لم يتم إرسال هذه التغييرات.\n"
 
 #: ../SubDomain.pm:1379 ../SubDomain.pm:1419
 msgid "(Y)es"
@@ -285,9 +242,8 @@ msgid "(N)o"
 msgstr "(ل) لا"
 
 #: ../SubDomain.pm:1383 ../SubDomain.pm:1424
-#, fuzzy
 msgid "Invalid hotkey for"
-msgstr "بيانات مفتاح غير صالحة."
+msgstr "مفتاح اختصار غير صالح من أجل"
 
 #: ../SubDomain.pm:1421
 msgid "(C)ancel"
@@ -324,168 +280,105 @@ msgstr "الخطورة"
 
 #: ../SubDomain.pm:2193
 msgid "Enter profile name to transition to: "
-msgstr ""
+msgstr "إدخال اسم ملف التعريف للانتقال إلى: "
 
 #: ../SubDomain.pm:2201
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"switching profiles?\n"
-"\n"
-"Sanitizing the environment is more secure,\n"
-"but some applications depend on the presence\n"
-"of LD_PRELOAD or LD_LIBRARY_PATH."
-msgstr ""
-"هل ترغب في أن يقوم AppArmor بتأمين البيئة عند\n"
-"تبديل ملفات التعريف؟\n"
-" \n"
-" إن تأمين البيئة يعتبر أكثر أمنًا،\n"
-" لكن بعض التطبيقات تعتمد على وجود \n"
-" LD_PRELOAD or LD_LIBRARY_PATH."
+msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH."
+msgstr "هل ترغب في أن يقوم AppArmor بتأمين البيئة عند\nتبديل ملفات التعريف؟\n \n إن تأمين البيئة يعتبر أكثر أمنًا،\n لكن بعض التطبيقات تعتمد على وجود \n LD_PRELOAD or LD_LIBRARY_PATH."
 
 #: ../SubDomain.pm:2203
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"switching profiles?\n"
-"\n"
-"Sanitizing the environment is more secure,\n"
-"but this application appears to use LD_PRELOAD\n"
-"or LD_LIBRARY_PATH and clearing these could\n"
-"cause functionality problems."
-msgstr ""
-"هل ترغب في أن يقوم AppArmor بتأمين البيئة عند\n"
-"تبديل ملفات التعريف؟\n"
-" \n"
-" يعتبر تأمين البيئة أكثر أمنًا،\n"
-" لكن يبدو أن هذا التطبيق يستخدم LD_PRELOAD\n"
-" أو LD_LIBRARY_PATH وقد يؤدي مسحه\n"
-" إلى حدوث مشكلات وظيفية."
+msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut this application appears to use LD_PRELOAD\nor LD_LIBRARY_PATH and clearing these could\ncause functionality problems."
+msgstr "هل ترغب في أن يقوم AppArmor بتأمين البيئة عند\nتبديل ملفات التعريف؟\n \n يعتبر تأمين البيئة أكثر أمنًا،\n لكن يبدو أن هذا التطبيق يستخدم LD_PRELOAD\n أو LD_LIBRARY_PATH وقد يؤدي مسحه\n إلى حدوث مشكلات وظيفية."
 
 #: ../SubDomain.pm:2212
 #, perl-format
-msgid ""
-"Launching processes in an unconfined state is a very\n"
-"dangerous operation and can cause serious security holes.\n"
-"\n"
-"Are you absolutely certain you wish to remove all\n"
-"AppArmor protection when executing %s?"
-msgstr ""
-"يعتبر بدء تشغيل العمليات في حالة غير مقيدة عملية\n"
-"خطيرة جدًا وقد تؤدي إلى حدوث ثغرات أمنية.\n"
-" \n"
-"هل أنت متأكد تمامًا من رغبتك في إزالة كل\n"
-" حماية AppArmor عند تنفيذ %s؟"
+msgid "Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s?"
+msgstr "يعتبر بدء تشغيل العمليات في حالة غير مقيدة عملية\nخطيرة جدًا وقد تؤدي إلى حدوث ثغرات أمنية.\n \nهل أنت متأكد تمامًا من رغبتك في إزالة كل\n حماية AppArmor عند تنفيذ %s؟"
 
 #: ../SubDomain.pm:2214
-msgid ""
-"Should AppArmor sanitize the environment when\n"
-"running this program unconfined?\n"
-"\n"
-"Not sanitizing the environment when unconfining\n"
-"a program opens up significant security holes\n"
-"and should be avoided if at all possible."
-msgstr ""
-"هل ترغب في أن يقوم AppArmor بتأمين البيئة عند\n"
-"تشغيل هذا البرنامج غير مقيد؟\n"
-" \n"
-" عدم تأمين البيئة عند إلغاء تقييد برنامج\n"
-" يعمل على فتح ثغرات أمنية ملحوظة\n"
-" ويجب تجنب ذلك نهائيًا إن كان ذلك ممكنًا."
+msgid "Should AppArmor sanitize the environment when\nrunning this program unconfined?\n\nNot sanitizing the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."
+msgstr "هل ترغب في أن يقوم AppArmor بتأمين البيئة عند\nتشغيل هذا البرنامج غير مقيد؟\n \n عدم تأمين البيئة عند إلغاء تقييد برنامج\n يعمل على فتح ثغرات أمنية ملحوظة\n ويجب تجنب ذلك نهائيًا إن كان ذلك ممكنًا."
 
 #: ../SubDomain.pm:2303
-#, fuzzy, perl-format
+#, perl-format
 msgid "A profile for %s does not exist create one?"
-msgstr "ملف التعريف VAR1 غير موجود"
+msgstr "لا يوجد ملف تعريف لـ %s هل تريد إنشاء ملف جديد؟"
 
 #: ../SubDomain.pm:2330
-#, fuzzy, perl-format
+#, perl-format
 msgid "A local profile for %s does not exist create one?"
-msgstr "ملف التعريف VAR1 غير موجود"
+msgstr "لا يوجد ملف تعريف محلي لـ %s هل تريد إنشاء ملف جديد؟"
 
 #: ../SubDomain.pm:2502 ../SubDomain.pm:6532 ../SubDomain.pm:6537
-#, fuzzy, perl-format
+#, perl-format
 msgid "Log contains unknown mode %s."
-msgstr "تحميل الوحدات النمطية غير المعروفة"
+msgstr "يحتوي السجل على وضع غير معروف %s."
 
 #: ../SubDomain.pm:2915
 msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
-msgstr ""
+msgstr "تم العثور على إصدار محدَّث لملف التعريف هذا في مخزن ملف التعريف.  هل تريد استخدامه؟"
 
 #: ../SubDomain.pm:2945
-#, fuzzy, perl-format
+#, perl-format
 msgid "Updated profile %s to revision %s."
-msgstr "يتم الآن كتابة ملف تعريف مُحدَّث لـ %s."
+msgstr "ملف التعريف المحدَّث %s للمراجعة %s."
 
 #: ../SubDomain.pm:2952
-#, fuzzy
 msgid "Error parsing repository profile."
-msgstr "حدث خطأ أثناء تحليل service.xml:"
+msgstr "حدث خطأ أثناء تحليل ملف تعريف المخزن."
 
 #: ../SubDomain.pm:2988
-#, fuzzy
 msgid "Create New User?"
-msgstr "إنشاء إصدار جديد"
+msgstr "هل تريد إنشاء مستخدم جديد؟"
 
 #: ../SubDomain.pm:2989
 msgid "Username: "
-msgstr "اسم المستخدم:"
+msgstr "اسم المستخدم: "
 
 #: ../SubDomain.pm:2990
 msgid "Password: "
-msgstr "كلمة السر:"
+msgstr "كلمة السر: "
 
 #: ../SubDomain.pm:2991
 msgid "Email Addr: "
-msgstr ""
+msgstr "عنوان البريد الإلكتروني: "
 
 #: ../SubDomain.pm:2993
-#, fuzzy
 msgid "Save Configuration? "
-msgstr "عرض التكوين"
+msgstr "هل تريد حفظ التكوين؟ "
 
 #: ../SubDomain.pm:3002
 msgid "The Profile Repository server returned the following error:"
-msgstr ""
+msgstr "أرجع خادم مخزن ملف التعريف الخطأ التالي:"
 
 #: ../SubDomain.pm:3004
 msgid "Please re-enter registration information or contact the administrator."
-msgstr ""
+msgstr "الرجاء إعادة إدخال معلومات التسجيل أو الاتصال بالمسؤول."
 
 #: ../SubDomain.pm:3005
-#, fuzzy
 msgid "Login Error\n"
-msgstr "خطأ!"
+msgstr "خطأ في تسجيل الدخول\n"
 
 #: ../SubDomain.pm:3012
-msgid ""
-"Login failure\n"
-" Please check username and password and try again."
-msgstr ""
+msgid "Login failure\n Please check username and password and try again."
+msgstr "فشل تسجيل الدخول\n الرجاء التحقق من اسم المستخدم وكلمة السر، ثم المحاولة مرة أخرى."
 
 #: ../SubDomain.pm:3034
-#, fuzzy
-msgid ""
-"Would you like to enable access to the\n"
-"profile repository?"
-msgstr "هل ترغب في حذف ملفات القرص، أم الاحتفاظ بها؟"
+msgid "Would you like to enable access to the\nprofile repository?"
+msgstr "هل تريد تمكين الوصول إلى\nمخزن ملف التعريف؟"
 
 #: ../SubDomain.pm:3065
-msgid ""
-"Would you like to upload newly created and changed profiles to\n"
-"      the profile repository?"
-msgstr ""
+msgid "Would you like to upload newly created and changed profiles to\n      the profile repository?"
+msgstr "هل تريد تحميل ملفات التعريف التي تم تغييرها وإنشاؤها حديثًا إلى\n      مخزن ملف التعريف؟"
 
 #: ../SubDomain.pm:3184
 #, perl-format
-msgid ""
-"WARNING: Profile update check failed\n"
-"Error Detail:\n"
-"%s"
-msgstr ""
+msgid "WARNING: Profile update check failed\nError Detail:\n%s"
+msgstr "تحذير: فشل التحقق من تحديث ملف التعريف\nتفاصيل الخطأ:\n%s"
 
 #: ../SubDomain.pm:3198
-#, fuzzy
 msgid "Change mode modifiers"
-msgstr "يتم الآن نسخ ملف التعريف"
+msgstr "تغيير معدِّلات الوضع"
 
 #: ../SubDomain.pm:3242
 msgid "Complain-mode changes:"
@@ -531,15 +424,15 @@ msgstr "المسار"
 
 #: ../SubDomain.pm:3545 ../SubDomain.pm:3577
 msgid "(owner permissions off)"
-msgstr ""
+msgstr "(إيقاف أذونات المالك)"
 
 #: ../SubDomain.pm:3551
 msgid "(force new perms to owner)"
-msgstr ""
+msgstr "(فرض أذونات جديدة للمالك)"
 
 #: ../SubDomain.pm:3554
 msgid "(force all rule perms to owner)"
-msgstr ""
+msgstr "(فرض كافة أذونات القاعدة للمالك)"
 
 #: ../SubDomain.pm:3566
 msgid "Old Mode"
@@ -551,7 +444,7 @@ msgstr "الوضع الحديث"
 
 #: ../SubDomain.pm:3583
 msgid "(force perms to owner)"
-msgstr ""
+msgstr "(فرض أذونات للمالك)"
 
 #: ../SubDomain.pm:3586
 msgid "Mode"
@@ -583,24 +476,22 @@ msgid "Do you really want to use this path?"
 msgstr "هل ترغب حقًا في استخدام هذا المسار؟"
 
 #: ../SubDomain.pm:3802 ../SubDomain.pm:3854
-#, fuzzy
 msgid "Network Family"
-msgstr "مجلدات الشبكة"
+msgstr "عائلة الشبكات"
 
 #: ../SubDomain.pm:3805 ../SubDomain.pm:3857
-#, fuzzy
 msgid "Socket Type"
-msgstr "نوع المشهد"
+msgstr "نوع مأخذ التوصيل"
 
 #: ../SubDomain.pm:3905
-#, fuzzy, perl-format
+#, perl-format
 msgid "Adding network access %s %s to profile."
-msgstr "إضافة %s %s إلى ملف تعريف."
+msgstr "إضافة الوصول إلى الشبكة %s %s إلى ملف التعريف."
 
 #: ../SubDomain.pm:3924
-#, fuzzy, perl-format
+#, perl-format
 msgid "Denying network access %s %s to profile."
-msgstr "رفض إمكانية %s لملف التعريف."
+msgstr "رفض الوصول إلى الشبكة %s %s لملف التعريف."
 
 #: ../SubDomain.pm:4132
 #, perl-format
@@ -613,43 +504,32 @@ msgid "Updating AppArmor profiles in %s."
 msgstr "تحديث ملفات تعريف AppArmor في %s."
 
 #: ../SubDomain.pm:4137
-#, fuzzy
 msgid "unknown\n"
-msgstr "غير معروف"
+msgstr "غير معروف\n"
 
 #: ../SubDomain.pm:4170
-msgid ""
-"The profile analyzer has completed processing the log files.\n"
-"\n"
-"All updated profiles will be reloaded"
-msgstr ""
-"أتمت أداة تحليل ملف التعريف معالجة ملفات السجلات.\n"
-"\n"
-" سيتم إعادة تحميل كافة ملفات التعريف التي تم تحديثها"
+msgid "The profile analyzer has completed processing the log files.\n\nAll updated profiles will be reloaded"
+msgstr "أتمت أداة تحليل ملف التعريف معالجة ملفات السجلات.\n\n سيتم إعادة تحميل كافة ملفات التعريف التي تم تحديثها"
 
 #: ../SubDomain.pm:4176
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "لم يتم العثور على أي أحداث AppArmor لم تتم معالجتها في سجل النظام."
 
 #: ../SubDomain.pm:4237
-msgid ""
-"Select which profile changes you would like to save to the\n"
-"local profile set"
-msgstr ""
+msgid "Select which profile changes you would like to save to the\nlocal profile set"
+msgstr "حدد تغييرات ملف التعريف التي تريد حفظها في\nمجموعة ملفات التعريف المحلية"
 
 #: ../SubDomain.pm:4238
-#, fuzzy
 msgid "Local profile changes"
-msgstr "ملف تعريف غير نشط"
+msgstr "تغييرات ملف التعريف المحلي"
 
 #: ../SubDomain.pm:4265
 msgid "The following local profiles were changed.  Would you like to save them?"
-msgstr ""
+msgstr "تم تغيير ملفات التعريف المحلية التالية.  هل تريد حفظها؟"
 
 #: ../SubDomain.pm:4362
-#, fuzzy
 msgid "Profile Changes"
-msgstr "إعدادات ملف التعريف"
+msgstr "تغييرات ملف التعريف"
 
 #: ../SubDomain.pm:4974 ../SubDomain.pm:4990 ../SubDomain.pm:5001
 #: ../SubDomain.pm:5009 ../SubDomain.pm:5030 ../SubDomain.pm:5050
@@ -665,14 +545,14 @@ msgid "Profile %s contains invalid regexp %s."
 msgstr "ملف التعريف %s يحتوي على regexp غير صالح %s."
 
 #: ../SubDomain.pm:5115
-#, fuzzy, perl-format
+#, perl-format
 msgid "Profile %s contains invalid mode %s."
-msgstr "ملف التعريف %s يحتوي على regexp غير صالح %s."
+msgstr "يحتوي ملف التعريف %s على وضع غير صالح %s."
 
 #: ../SubDomain.pm:5250
-#, fuzzy, perl-format
+#, perl-format
 msgid "%s contains syntax errors. Line [%s]"
-msgstr "%s يحتوي على أخطاء في بناء الجملة."
+msgstr "يحتوي %s على أخطاء في بناء الجملة. السطر [%s]"
 
 #: ../SubDomain.pm:5839
 #, perl-format
@@ -684,23 +564,20 @@ msgid "Unknown command"
 msgstr "أمر غير معروف"
 
 #: ../SubDomain.pm:6352
-#, fuzzy
 msgid "Invalid hotkey in"
-msgstr "بيانات مفتاح غير صالحة."
+msgstr "مفتاح اختصار غير صالح في"
 
 #: ../SubDomain.pm:6362
 msgid "Duplicate hotkey for"
-msgstr ""
+msgstr "مفتاح اختصار مكرر من أجل"
 
 #: ../SubDomain.pm:6383
-#, fuzzy
 msgid "Invalid hotkey in default item"
-msgstr "توجيه افتراضي غير صالح:"
+msgstr "مفتاح اختصار غير صالح في عنصر افتراضي"
 
 #: ../SubDomain.pm:6392
-#, fuzzy
 msgid "Invalid default"
-msgstr "توجيه افتراضي غير صالح:"
+msgstr "قيمة افتراضية غير صحيحة"
 
 #: ../Reports.pm:443 ../Reports.pm:532 ../Reports.pm:1480
 #, perl-format
@@ -719,7 +596,7 @@ msgstr "لم يتم إدخال قيمة نوع.  تعذر تحديد عدد ال
 #: ../Reports.pm:626
 #, perl-format
 msgid "Failed copying %s."
-msgstr "فشل النسخ %s."
+msgstr "فشل نسخ %s."
 
 #: ../Reports.pm:750
 #, perl-format
@@ -728,16 +605,12 @@ msgstr "خطأ في سجل التصدير: تعذر فتح %s"
 
 #: ../Reports.pm:772
 msgid "Fatal error.  No report name given. Exiting."
-msgstr "خطأ فادح.  لم يتم إدخال اسم تقرير. خروج."
+msgstr "خطأ فادح.  لم يتم تحديد أي اسم تقرير. يتم الآن الخروج."
 
 #: ../Reports.pm:781
 #, perl-format
-msgid ""
-"Unable to get configuration info for %s.\n"
-"                Unable to find %s."
-msgstr ""
-"تعذر الحصول على معلومات تكوين لـ %s.\n"
-"                تعذر العثور على %s."
+msgid "Unable to get configuration info for %s.\n                Unable to find %s."
+msgstr "تعذر الحصول على معلومات التكوين لـ %s.\n                تعذر العثور على %s."
 
 #: ../Reports.pm:828
 #, perl-format
@@ -752,17 +625,17 @@ msgstr "خطأ فادح.  تعذر فتح %s."
 #: ../Reports.pm:885
 #, perl-format
 msgid "Fatal Error.  Can't run %s.  Exiting."
-msgstr "خطأ فادح.  تعذر تشغيل %s.  خروج."
+msgstr "خطأ فادح.  تعذر تشغيل %s.  يتم الآن الخروج."
 
 #: ../Reports.pm:925
 #, perl-format
 msgid "Fatal Error.  No directory, %s, found.  Exiting."
-msgstr "خطأ فادح.  لم يتم العثور على دليل، %s.  خروج."
+msgstr "خطأ فادح.  لم يتم العثور على أي دليل %s.  يتم الآن الخروج."
 
 #: ../Reports.pm:943
 #, perl-format
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
-msgstr "خطأ فادح.  تعذر فتح %s.  خروج"
+msgstr "خطأ فادح.  تعذر فتح %s.  يتم الآن الإنهاء"
 
 #: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
 #, perl-format
@@ -772,183 +645,5 @@ msgstr "فشل تنفيذ DBI: %s"
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"
-msgstr "خطأ فادح. تعذر فتح getArchReport() %s"
+msgstr "خطأ فادح.  لم يتمكن getArchReport() من فتح %s"
 
-#~ msgid "Are you sure you want to save the current set of profile changes and exit?"
-#~ msgstr "هل ترغب بالفعل في حفظ مجموعة التغييرات الحالية التي تم إجراؤها على ملف التعريف والخروج؟"
-
-#~ msgid "Saving all changes."
-#~ msgstr "يتم الآن حفظ كافة التغييرات."
-
-#~ msgid "Include file %s contains invalid regexp %s."
-#~ msgstr "ملف Include %s يحتوي على regexp غير صالح %s."
-
-#, fuzzy
-#~ msgid "Include file %s contains invalid mode %s."
-#~ msgstr "ملف Include %s يحتوي على regexp غير صالح %s."
-
-#~ msgid "Include file %s contains syntax errors or is not a valid #include file."
-#~ msgstr "ملف Include %s يحتوي على أخطاء في بناء الجملة أو أنه يحتوي على ملف #include غير صالح."
-
-#~ msgid "(I)nherit"
-#~ msgstr "(ت) توارث"
-
-#~ msgid "(P)rofile"
-#~ msgstr "(م) ملف تعريف"
-
-#~ msgid "(D)eny"
-#~ msgstr "(ر) رفض"
-
-#~ msgid "Abo(r)t"
-#~ msgstr "(ق) إيقاف"
-
-#~ msgid "(F)inish"
-#~ msgstr "ﺔﻳﺪﻨﻠﻨﻓ"
-
-#~ msgid "(A)llow"
-#~ msgstr "(س) سماح"
-
-#~ msgid "(N)ew"
-#~ msgstr "(ج) جديد"
-
-#~ msgid "(G)lob"
-#~ msgstr "(ث) تمثيل أسماء الملفات"
-
-#~ msgid "Glob w/(E)xt"
-#~ msgstr "تمثيل أسماء الملفات w/(E)xt"
-
-#~ msgid "&Browse"
-#~ msgstr "استعرا&ض"
-
-#~ msgid "&Create Profile"
-#~ msgstr "إ&نشاء ملف تعريف"
-
-#~ msgid "&Yes"
-#~ msgstr "&نعم"
-
-#~ msgid "&No"
-#~ msgstr "&ﻻ"
-
-#~ msgid "&Abort"
-#~ msgstr "إيقا&ف"
-
-#~ msgid "&Back"
-#~ msgstr "ال&خلف"
-
-#~ msgid "(S)can system log for SubDomain events"
-#~ msgstr "مس&ح سجل النظام لأحداث المجال الفرعي"
-
-# ###############################################################################
-# Old yast2-agents.po
-#~ msgid "Unable to open"
-#~ msgstr "تعذر الفتح"
-
-#~ msgid "Couldn't save query."
-#~ msgstr "تعذر حفظ الاستعلام."
-
-#~ msgid "Couldn't retrieve query."
-#~ msgstr "تعذر استرداد الاستعلام."
-
-#~ msgid "# Security Incident Report - Generated by AppArmor\n"
-#~ msgstr "# تقرير حدث الأمان - تم إنشاؤه بواسطة AppArmor\n"
-
-#~ msgid "# Period: %s - %s\n"
-#~ msgstr "# فترة: %s - %s\n"
-
-#~ msgid "<h3>Security Incident Report - Generated by AppArmor</h3>\n"
-#~ msgstr "<h3> تقرير حدث الأمان - تم إنشاؤه بواسطة AppArmor</h3>\n"
-
-#~ msgid "<h4>Period: %s - %s</h4>\n"
-#~ msgstr "<h4>الفترة: %s - %s</h4>\n"
-
-#~ msgid "ag_reports_confined: Couldn't open %s for writing."
-#~ msgstr "ag_reports_confined: تعذر فتح %s للكتابة."
-
-#~ msgid "Failure in readMultiAudLog() - couldn't open %s."
-#~ msgstr "فشل readMultiAudLog() - تعذر فتح %s."
-
-#~ msgid "Problem in readMultiAudLog() - couldn't open %s/%s."
-#~ msgstr "حدثت مشكلة في readMultiAudLog() - تعذر فتح %s/%s."
-
-#~ msgid "readAudLog() wasn't passed an input file."
-#~ msgstr "لم يتم تمرير ملف إدخال إلى readAudLog()."
-
-#~ msgid "readAudLog() couldn't open %s."
-#~ msgstr "تعذر فتح readAudLog() %s."
-
-#~ msgid "Can't run %s.  Exiting."
-#~ msgstr "تعذر تشغيل %s.  خروج."
-
-#~ msgid "ag_reports_confined: Missing instruction or argument!"
-#~ msgstr "ag_reports_confined: تم فقد إرشاد أو وسيطة!"
-
-#~ msgid "Failure in readMultiEssLog() - couldn't open"
-#~ msgstr "فشل readMultiEssLog() - تعذر الفتح"
-
-#~ msgid "Problem in readMultiEssLog() - couldn't open"
-#~ msgstr "حدثت مشكلة في readMultiEssLog() - تعذر الفتح"
-
-#~ msgid "readEssLog() wasn't passed an input file."
-#~ msgstr "لم يتم تمرير ملف إدخال إلى readEssLog()."
-
-#~ msgid "readEssLog() couldn't open %s"
-#~ msgstr "تعذر فتح readEssLog() %s"
-
-#~ msgid "ag_logparse: Unknown instruction %s or argument: %s"
-#~ msgstr "ag_logparse: إرشاد غير معروف %s أو وسيطة غير معروفة: %s"
-
-#~ msgid "ag_reports_parse: Couldn't open %s for writing."
-#~ msgstr "ag_reports_parse: تعذر فتح %s للكتابة."
-
-#~ msgid "ag_reports_parse: No archived reports found."
-#~ msgstr "ag_reports_parse: لم يتم العثور على تقارير مؤرشفة."
-
-#~ msgid "ag_reports_parse: Can't open directory %s: %s"
-#~ msgstr "ag_reports_parse: تعذر فتح الدليل %s: %s"
-
-#~ msgid "ag_reports_parse: Unknown instruction %s or argument: %s"
-#~ msgstr "ag_reports_parse: إرشاد غير معروف %s أو وسيطة غير معروفة: %s"
-
-#~ msgid "Couldn't find %s.  Unable to create crontab.  Exiting."
-#~ msgstr "تعذر العثور على %s.  تعذر إنشاء crontab.  خروج."
-
-#~ msgid "Couldn't open %s."
-#~ msgstr "تعذر فتح %s."
-
-#~ msgid "Couldn't open %s.  Unable to add report: %s"
-#~ msgstr "تعذر فتح %s.  تعذرت إضافة تقرير: %s"
-
-#~ msgid "Duplicate report name not allowed. Didn't schedule new report: %s"
-#~ msgstr "غير مسموح باسم تقرير مكرر. لم تتم جدولة تقرير جديد: %s"
-
-#~ msgid "Couldn't open %s.  No changes performed."
-#~ msgstr "تعذر فتح %s.  لم يتم إجراء تغييرات."
-
-#~ msgid "ag_reports_sched: Unknown instruction %s or arg: %s"
-#~ msgstr "ag_reports_sched: إرشاد غير معروف %s أو وسيطة غير معروفة: %s"
-
-#~ msgid "&Create"
-#~ msgstr "إن&شاء"
-
-#~ msgid "Select Program to Profile"
-#~ msgstr "حدد برنامجًا ليتم إنشاء ملف تعريف له"
-
-#~ msgid ""
-#~ "%s is currently marked as a program that should not have\n"
-#~ "it's own profile.  Usually, programs are marked this way\n"
-#~ "if creating a profile for them is likely to break the\n"
-#~ "rest of the system.  If you know what you're doing and\n"
-#~ "are certain you want to create a profile for this program,\n"
-#~ "edit the corresponding entry in the [qualifiers] section\n"
-#~ "in /etc/apparmor/logprof.conf."
-#~ msgstr ""
-#~ "تم وضع علامة لـ %s باعتباره برنامجًا لا يجب أن يحتوي على \n"
-#~ "ملف تعريف خاص به.  عادةً، يتم تحديد البرامج بهذه الطريقة\n"
-#~ " إذا كان إنشاء ملفات تعريف لها قد يؤدي إلى إتلاف \n"
-#~ " باقي النظام.  إذا كنت تعلم تمامًا ما تفعله\n"
-#~ " وترغب في إنشاء ملف تعريف لهذا البرنامج،\n"
-#~ " قم بتحرير الإدخال المقابل في قسم [المؤهلات]\n"
-#~ " في /etc/apparmor/logprof.conf."
-
-#~ msgid "Are you sure you want to exit?"
-#~ msgstr "هل تريد الخروج بالفعل؟"
