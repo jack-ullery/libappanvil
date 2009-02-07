@@ -1,40 +1,21 @@
-# translation of apparmorapplet.po to Spanish
-# Spanish message file for YaST2 (@memory@).
-# Copyright (C) 2005 SUSE Linux Products GmbH.
-# Copyright (C) 2002, 2003 SuSE Linux AG.
-# Copyright (C) 1999, 2000, 2001 SuSE GmbH.
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
 #
-# Ibán josé García Castillo <Iban.Garcia@alufis35.uv.es>, 2000.
-# Javier Moreno <javier.moreno@alufis35.uv.es>, 2000.
-# Jordi Jaen Pallares <jordi@suse.de>, 1999, 2000, 2001.
-# Pablo Iranzo Gómez <Pablo.Iranzo@uv.es>, 2000.
-# Carlos E. Robinson <robin.listas@telefonica.net>, 2007.
-# César Sánchez Alonso <csalinux@gmail.com>, 2007.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmorapplet\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2007-02-06 14:27-0800\n"
-"PO-Revision-Date: 2007-11-25 06:54+0100\n"
-"Last-Translator: César Sánchez Alonso <csalinux@gmail.com>\n"
-"Language-Team: Spanish <opensuse-translation-es@opensuse.org>\n"
+"PO-Revision-Date: 2009-02-04 14:32\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: KBabel 1.11.4\n"
 
 #: src/apparmor-applet.c:244
-msgid ""
-"AppArmorApplet is free software; you can redistribute it and/or modify\n"
-"it under the terms of the GNU General Public License as published by\n"
-"the Free Software Foundation; either version 2 of the License, or\n"
-"(at your option) any later version."
-msgstr ""
-"AppArmorApplet es software libre, puede redistribuirlo y/o\n"
-"modificarlo bajo los términos de la Licencia Pública General GNU\n"
-"tal como la publica la Free Software Foundation; ya sea en la versión 2\n"
-"de la Licencia, o (a su elección) bajo cualquier versión posterior."
+msgid "AppArmorApplet is free software; you can redistribute it and/or modify\nit under the terms of the GNU General Public License as published by\nthe Free Software Foundation; either version 2 of the License, or\n(at your option) any later version."
+msgstr "AppArmorApplet es un programa libre. Puede redistribuirlo y\nmodificarlo bajo los términos de la Licencia Pública General GNU,\ntal como la publica la Free Software Foundation, ya sea la versión 2\nde la licencia o cualquier versión posterior que elija."
 
 #: src/preferences_dialog.c:31
 msgid "AppArmor Desktop Preferences"
@@ -42,18 +23,15 @@ msgstr "Preferencias de AppArmor para el escritorio"
 
 #: src/preferences_dialog.c:46
 msgid "Profile Generation"
-msgstr "Generación del Perfil"
+msgstr "Generación de perfiles"
 
-# include/partitioning/partition_defines.ycp:404
-# include/partitioning/partition_defines.ycp:404
-# include/partitioning/partition_defines.ycp:413
 #: src/preferences_dialog.c:54
 msgid "Path"
-msgstr "Ruta"
+msgstr "Vía"
 
 #: src/preferences_dialog.c:76
 msgid "YAST"
-msgstr "YAST"
+msgstr "YaST"
 
 #: src/preferences_dialog.c:77
 msgid "genprof"

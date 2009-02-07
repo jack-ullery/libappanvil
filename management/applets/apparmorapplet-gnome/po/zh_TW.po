@@ -1,42 +1,29 @@
-# @TITLE@
-# Copyright (C) 2006, SUSE Linux GmbH, Nuremberg
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-# This file is distributed under the same license as @PACKAGE@ package. FIRST
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: @PACKAGE@\n"
+"Project-Id-Version: apparmorapplet\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2007-02-06 14:27-0800\n"
-"PO-Revision-Date: 2005-03-09 13:54+0100\n"
+"PO-Revision-Date: 2009-02-04 15:44\n"
 "Last-Translator: Novell Language <language@novell.com>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.9\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 
 #: src/apparmor-applet.c:244
-msgid ""
-"AppArmorApplet is free software; you can redistribute it and/or modify\n"
-"it under the terms of the GNU General Public License as published by\n"
-"the Free Software Foundation; either version 2 of the License, or\n"
-"(at your option) any later version."
-msgstr ""
-"AppArmorApplet 是一個自由軟體，您可以在 GNU 通用公共授權\n"
-"(GNU General Public License)下任意散佈和/或修改它。\n"
-"GNU 通用公共授權是由自由軟體基金會(Free Software Foundation)\n"
-"發行，您可以選擇第二版或(您的自由)更新的版本。"
+msgid "AppArmorApplet is free software; you can redistribute it and/or modify\nit under the terms of the GNU General Public License as published by\nthe Free Software Foundation; either version 2 of the License, or\n(at your option) any later version."
+msgstr "AppArmorApplet 是一個自由軟體，您可以在 GNU 通用公共授權\n(GNU General Public License) 條款規定之下任意散佈和/或進行修改。\nGNU 通用公共授權是由自由軟體基金會 (Free Software Foundation)\n發行，您可以選擇第二版或 (自行選擇) 更新的版本。"
 
 #: src/preferences_dialog.c:31
 msgid "AppArmor Desktop Preferences"
-msgstr "AppArmor 桌面偏好設定"
+msgstr "AppArmor 桌面優先設定"
 
 #: src/preferences_dialog.c:46
 msgid "Profile Generation"
-msgstr "產生設定檔"
+msgstr "設定檔產生程序"
 
 #: src/preferences_dialog.c:54
 msgid "Path"
@@ -44,12 +31,13 @@ msgstr "路徑"
 
 #: src/preferences_dialog.c:76
 msgid "YAST"
-msgstr "YAST"
+msgstr "YaST"
 
 #: src/preferences_dialog.c:77
 msgid "genprof"
-msgstr "genprof"
+msgstr "產生設定檔"
 
 #: src/reject_list.c:58
 msgid "AppArmor Rejections"
-msgstr "AppArmor 所拒絕"
+msgstr "AppArmor 拒絕項"
+

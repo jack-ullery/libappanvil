@@ -1,27 +1,21 @@
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: @PACKAGE@\n"
+"Project-Id-Version: apparmorapplet\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2007-02-06 14:27-0800\n"
-"PO-Revision-Date: 2007-08-17 12:30+0200\n"
-"Last-Translator: Guillaume GARDET <guillaume.gardet@free.fr>\n"
-"Language-Team: French Team <opensuse-fr@opensuse.org>\n"
+"PO-Revision-Date: 2009-02-04 15:43\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: src/apparmor-applet.c:244
-msgid ""
-"AppArmorApplet is free software; you can redistribute it and/or modify\n"
-"it under the terms of the GNU General Public License as published by\n"
-"the Free Software Foundation; either version 2 of the License, or\n"
-"(at your option) any later version."
-msgstr ""
-"L'applet AppArmor est un logiciel libre, vous poubez le redistribuer et/ou le modifier\n"
-"sous les termes de la Licence Publique Générale GNU (General Public License)\n"
-"tel que publiée par la Free Software Foundation ; soit la\n"
-"version 2 de la license, ou (à votre discrétion), toutes versions suivantes."
+msgid "AppArmorApplet is free software; you can redistribute it and/or modify\nit under the terms of the GNU General Public License as published by\nthe Free Software Foundation; either version 2 of the License, or\n(at your option) any later version."
+msgstr "L'applet AppArmor est un logiciel libre que vous pouvez \ndistribuer et/ou modifier conformément aux termes de la Licence Publique\nGénérale GNU, tel que publié par la Free Software Foundation \n(version 2 de la license ou toute autre version ultérieure, le cas échéant)."
 
 #: src/preferences_dialog.c:31
 msgid "AppArmor Desktop Preferences"
@@ -31,7 +25,6 @@ msgstr "Préférences de bureau AppArmor"
 msgid "Profile Generation"
 msgstr "Génération du profil"
 
-# TLABEL autoinst_2002_08_07_0216__95
 #: src/preferences_dialog.c:54
 msgid "Path"
 msgstr "Chemin d'accès"
@@ -47,3 +40,4 @@ msgstr "genprof"
 #: src/reject_list.c:58
 msgid "AppArmor Rejections"
 msgstr "Rejets AppArmor"
+

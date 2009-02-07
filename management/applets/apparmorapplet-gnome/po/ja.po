@@ -1,38 +1,29 @@
-# translation of apparmorapplet.po to Japanese
-# Yasuhiko Kamata <belphegor@belbel.or.jp>, 2007.
+# Copyright (C) 2006 SuSE Linux Products GmbH, Nuernberg
+# This file is distributed under the same license as the package.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmorapplet\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2007-02-06 14:27-0800\n"
-"PO-Revision-Date: 2007-10-13 17:29+0900\n"
-"Last-Translator: Yasuhiko Kamata <belphegor@belbel.or.jp>\n"
-"Language-Team: Japanese\n"
+"PO-Revision-Date: 2009-02-04 15:11\n"
+"Last-Translator: Novell Language <language@novell.com>\n"
+"Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.4\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 
 #: src/apparmor-applet.c:244
-msgid ""
-"AppArmorApplet is free software; you can redistribute it and/or modify\n"
-"it under the terms of the GNU General Public License as published by\n"
-"the Free Software Foundation; either version 2 of the License, or\n"
-"(at your option) any later version."
-msgstr ""
-"AppArmor アプレットはフリーソフトウェアです。あなたはこれを、フリーソフトウェア\n"
-"財団によって発行された GNU 一般公衆利用許諾契約書(バージョン2か、希望によっては\n"
-"それ以降のバージョンのうちどれか)の定める条件の下で再頒布または改変することが\n"
-"できます。"
+msgid "AppArmorApplet is free software; you can redistribute it and/or modify\nit under the terms of the GNU General Public License as published by\nthe Free Software Foundation; either version 2 of the License, or\n(at your option) any later version."
+msgstr "AppArmorアプレットはフリーソフトウェアです。これを、Free Software\nFoundationが公開しているGNU General Public License(バージョン2か、希望によっては\nそれ以降のバージョンのうちどれか)の定める条件の下で再配布および/または変更することが\nできます。"
 
 #: src/preferences_dialog.c:31
 msgid "AppArmor Desktop Preferences"
-msgstr "AppArmor デスクトップ設定"
+msgstr "AppArmorデスクトップ設定"
 
 #: src/preferences_dialog.c:46
 msgid "Profile Generation"
-msgstr "プロファイル作成"
+msgstr "プロファイル生成"
 
 #: src/preferences_dialog.c:54
 msgid "Path"
@@ -40,7 +31,7 @@ msgstr "パス"
 
 #: src/preferences_dialog.c:76
 msgid "YAST"
-msgstr "YAST"
+msgstr "YaST"
 
 #: src/preferences_dialog.c:77
 msgid "genprof"
@@ -48,5 +39,5 @@ msgstr "genprof"
 
 #: src/reject_list.c:58
 msgid "AppArmor Rejections"
-msgstr "AppArmor による拒否"
+msgstr "AppArmorによる拒否"
 
