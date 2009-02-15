@@ -62,3 +62,4 @@ fix-config.diff
 AppArmor-checkpatch.diff
 AppArmor-misc-cleanups.diff
 fix-config-builtin.diff
+fix-deleted-leak.diff
