@@ -523,10 +523,8 @@ int process_profile(int option, char *profilename)
 	}
 
 	if (debug > 0) {
-		if (debug > 1) {
-			printf("----- Debugging built structures -----\n");
-			dump_policy();
-		}
+		printf("----- Debugging built structures -----\n");
+		dump_policy();
 		goto out;
 	}
 
