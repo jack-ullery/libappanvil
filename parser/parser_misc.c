@@ -785,22 +785,12 @@ void debug_cod_list(struct codomain *cod)
 {
 	unsigned int i;
 	if (cod->namespace)
-		printf("Namespcae:\t\t%s\n", cod->namespace);
+		printf("Namespace:\t\t%s\n", cod->namespace);
 
 	if (cod->name)
 		printf("Name:\t\t%s\n", cod->name);
 	else
 		printf("Name:\t\tNULL\n");
-
-	if (cod->sub_name)
-		printf("Subname:\t%s\n", cod->sub_name);
-	else
-		printf("Subname:\tNULL\n");
-
-	if (cod->default_deny)
-		printf("Type:\t\tDefault Deny\t\n");
-	else
-		printf("Type:\t\tDefault Allow\t\n");
 
 	printf("Capabilities:\t");
 	for (i = 0; i < (sizeof(capnames)/sizeof(char *)); i++) {
