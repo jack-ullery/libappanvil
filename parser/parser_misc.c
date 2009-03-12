@@ -724,7 +724,6 @@ void debug_cod_entries(struct cod_entry *list)
 		debug_base_perm_mask(SHIFT_TO_BASE(item->mode, AA_OTHER_SHIFT));
 		if (item->name)
 			printf("\tName:\t(%s)\n", item->name);
-
 		else
 			printf("\tName:\tNULL\n");
 
@@ -735,6 +734,24 @@ void debug_cod_entries(struct cod_entry *list)
 			printf("\tlink:\t(%s)\n", item->link_name ? item->link_name : "/**");
 
 	}
+}
+
+void debug_flags(struct codomain *cod)
+{
+	printf("Profile Mode:\t");
+
+	if (cod->flags.complain)
+		printf("Complain");
+	else
+		printf("Enforce");
+
+	if (cod->flags.audit)
+		printf(", Audit");
+
+	if (cod->flags.hat)
+		printf(", Hat");
+
+	printf("\n");
 }
 
 static const char *capnames[] = {
@@ -792,6 +809,11 @@ void debug_cod_list(struct codomain *cod)
 	else
 		printf("Name:\t\tNULL\n");
 
+	if (cod->local)
+		printf("Local To:\t%s\n", cod->parent->name);
+
+	debug_flags(cod);
+	
 	printf("Capabilities:\t");
 	for (i = 0; i < (sizeof(capnames)/sizeof(char *)); i++) {
 		if (((1 << i) & cod->capabilities) != 0) {
