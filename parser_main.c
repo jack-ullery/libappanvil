@@ -88,6 +88,7 @@ struct option long_options[] = {
 	{"version",		0, 0, 'v'},
 	{"preprocess",		0, 0, 'p'},
 	{"complain",		0, 0, 'C'},
+	{"Complain",		0, 0, 'C'},	/* Erk, apparently documented as --Complain */
 	{"dump-variables",	0, 0, 'D'},
 	{"dump-expanded-variables",	0, 0, 'E'},
 	{"Include",		1, 0, 'I'},
