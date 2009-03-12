@@ -55,8 +55,6 @@
 
 #define CAP_TO_MASK(x) (1 << (x))
 
-static struct flagval force_complain_flags = {0, 1, 0};
-
 /* from lex_config, for nice error messages */
 /* extern char *current_file; */
 extern int current_lineno;
@@ -222,7 +220,7 @@ profile:	opt_profile_flag TOK_ID flags TOK_OPEN rules TOK_CLOSE
 		cod->name = $2;
 		cod->flags = $3;
 		if (force_complain)
-			cod->flags = force_complain_flags;
+			cod->flags.complain = 1;
 		if ($1 == 2)
 			cod->flags.hat = 1;
 
@@ -247,7 +245,7 @@ profile:	opt_profile_flag TOK_COLON TOK_ID TOK_COLON TOK_ID flags TOK_OPEN rules
 		cod->name = $5;
 		cod->flags = $6;
 		if (force_complain)
-			cod->flags = force_complain_flags;
+			cod->flags.complain = 1;
 		if ($1 == 2)
 			cod->flags.hat = 1;
 
@@ -901,7 +899,7 @@ hat: hat_start TOK_ID flags TOK_OPEN rules TOK_CLOSE
 		cod->flags = $3;
 		cod->flags.hat = 1;
 		if (force_complain)
-			cod->flags = force_complain_flags;
+			cod->flags.complain = 1;
 		post_process_nt_entries(cod);
 		PDEBUG("^%s: flags='%s%s'\n",
 		       $2,
@@ -1142,7 +1140,7 @@ struct codomain *do_local_profile(struct codomain *cod, char *name, int mode,
 	}
 	cod->name = name;
 	if (force_complain)
-		cod->flags = force_complain_flags;
+		cod->flags.complain = 1;
 	post_process_nt_entries(cod);
 	PDEBUG("profile %s: flags='%s%s'\n",
 	       name,
