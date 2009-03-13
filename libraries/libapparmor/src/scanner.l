@@ -124,6 +124,7 @@ dmesg_timestamp		\[[[:digit:] ]{5,}\.[[:digit:]]{6,}\]
 %x dmesg_timestamp
 %x safe_string
 %x audit_types
+%x old_action
 %x other_audit
 %x unknown_message
 
@@ -243,9 +244,9 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {path}			{ yylval->t_str = strdup(yytext); return(TOK_PATH); }
 {period}		{ return(TOK_PERIOD); }
 
-{old_apparmor_reject}	{ return(TOK_OLD_APPARMOR_REJECT); }
-{old_apparmor_permit}	{ return(TOK_OLD_APPARMOR_PERMIT); }
-{old_apparmor_audit}	{ return(TOK_OLD_APPARMOR_AUDIT); }
+{old_apparmor_reject}	{ BEGIN(old_action); return(TOK_OLD_APPARMOR_REJECT); }
+{old_apparmor_permit}	{ BEGIN(old_action); return(TOK_OLD_APPARMOR_PERMIT); }
+{old_apparmor_audit}	{ BEGIN(old_action); return(TOK_OLD_APPARMOR_AUDIT); }
 {old_apparmor_logprof}	{ return(TOK_OLD_APPARMOR_LOGPROF_HINT); }
 {old_unknown_hat}	{ BEGIN(sub_id); return(TOK_OLD_UNKNOWN_HAT); }
 {old_unknown_profile}	{ return(TOK_OLD_UNKNOWN_PROFILE); }
@@ -257,17 +258,24 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {old_from}		{ return(TOK_OLD_FROM); }
 {old_pipe}		{ return(TOK_OLD_PIPE); }
 {old_extended}		{ return(TOK_OLD_EXTENDED); }
-{old_mkdir}		{ return(TOK_OLD_MKDIR); }
-{old_rmdir}		{ return(TOK_OLD_RMDIR); }
 {old_on}		{ return(TOK_OLD_ON); }
-{old_xattr}		{ BEGIN(sub_id); return(TOK_OLD_XATTR); }
 {old_change}		{ return(TOK_OLD_CHANGE); }
 {old_capability}	{ BEGIN(sub_id); return(TOK_OLD_CAPABILITY); }
 {old_syscall}		{ return(TOK_OLD_SYSCALL); }
-{old_link}		{ return(TOK_OLD_LINK); }
 {old_fork}		{ return(TOK_OLD_FORK); }
 {old_child}		{ return(TOK_OLD_CHILD); }
-{modes}			{ yylval->t_str = strdup(yytext); return(TOK_MODE); }
+
+<old_action>{
+	{ws}+		{ /* eat whitespace */ }
+	{modes}		{ /* modes must stay out of INITIAL because of false pos matches e.g. Mar */
+			  yylval->t_str = strdup(yytext); BEGIN(INITIAL); return(TOK_MODE); }
+	{old_link}	{ BEGIN(INITIAL); return(TOK_OLD_LINK); }
+	{old_access}	{ BEGIN(INITIAL); return(TOK_OLD_ACCESS); }
+	{old_mkdir}	{ BEGIN(INITIAL); return(TOK_OLD_MKDIR); }
+	{old_rmdir}	{ BEGIN(INITIAL); return(TOK_OLD_RMDIR); }
+	{old_xattr}	{ BEGIN(sub_id); return(TOK_OLD_XATTR); }
+	{key_attribute}	{ BEGIN(sub_id); return(TOK_KEY_ATTRIBUTE); }
+}
 
 {key_type}		{ BEGIN(audit_types); return(TOK_KEY_TYPE); }
 {key_msg}		{ return(TOK_KEY_MSG); }
