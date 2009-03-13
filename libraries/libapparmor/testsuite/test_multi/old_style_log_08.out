@@ -1,0 +1,13 @@
+START
+File: test_multi/old_style_log_08.in
+Event type: AA_RECORD_ALLOWED
+Audit ID: 1168662182.495:58
+Operation: access
+Mask: r
+Profile: /home/matt/projects/change_hat_test/test_hat
+Name: /home/matt/projects/change_hat_test/test
+Info: test_hat
+PID: 27871
+Active hat: null-complain-profile
+Epoch: 1168662182
+Audit subid: 58

@@ -1,0 +1,12 @@
+START
+File: test_multi/old_style_log_03.in
+Event type: AA_RECORD_DENIED
+Audit ID: 1173790298.651:1662
+Operation: syscall
+Profile: /home/steve/svn/trunk-forge/tests/regression/subdomain/syscall_ptrace
+Name: ptrace
+Info: syscall_ptrace
+PID: 25210
+Active hat: /home/steve/svn/trunk-forge/tests/regression/subdomain/syscall_ptrace
+Epoch: 1173790298
+Audit subid: 1662
