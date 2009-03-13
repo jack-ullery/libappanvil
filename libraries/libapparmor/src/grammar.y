@@ -392,7 +392,7 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->denied_mask = $3;}
 	| TOK_KEY_REQUESTED_MASK TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->requested_mask = $3;}
-	| TOK_KEY_ATTRIBUTE TOK_EQUALS TOK_QUOTED_STRING 
+	| TOK_KEY_ATTRIBUTE TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->attribute = $3;}
 	| TOK_KEY_TASK TOK_EQUALS TOK_DIGITS
 	{ ret_record->task = $3;}
