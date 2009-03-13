@@ -18,6 +18,8 @@
 
 %{
 
+/* set the following to non-zero to get bison to emit debugging
+ * information about tokens given and rules matched. */
 #define YYDEBUG 0
 #include <string.h>
 #include "aalogparse.h"
@@ -450,6 +452,10 @@ _parse_yacc(char *str)
 
 	if (ret_record == NULL)
 		return NULL;
+
+#if (YYDEBUG != 0)
+	yydebug = 1;
+#endif
 
 	aalogparse_lex_init(&scanner);
 	lex_buf = aalogparse__scan_string(str, scanner);

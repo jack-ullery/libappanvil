@@ -237,7 +237,7 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 {colon}			{ return(TOK_COLON); }
 {open_paren}		{
 			BEGIN(sub_id);
-			return(TOK_OPEN_PAREN); 
+			return(TOK_OPEN_PAREN);
 			}
 {close_paren}		{ return(TOK_CLOSE_PAREN); }
 {path}			{ yylval->t_str = strdup(yytext); return(TOK_PATH); }
