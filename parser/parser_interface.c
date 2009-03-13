@@ -95,8 +95,11 @@ static void print_error(int error)
 	case -ENOENT:
 		PERROR(_("Profile doesn't exist\n"));
 		break;
+	case -EACCES:
+		PERROR(_("Permission denied; attempted to load a profile while confined?\n"));
+		break;
 	default:
-		PERROR(_("Unknown error\n"));
+		PERROR(_("Unknown error (%d): %s\n"), -error, strerror(-error));
 		break;
 	}
 }
