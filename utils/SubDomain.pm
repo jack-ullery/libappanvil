@@ -233,6 +233,7 @@ my %MODE_HASH = (
 
 sub debug ($) {
     my $message = shift;
+    chomp($message);
 
     print DEBUG "$message\n" if $DEBUGGING;
 }
@@ -2426,7 +2427,7 @@ sub prefetch_next_log_entry {
     # AA event message format we recognize
     do {
         $next_log_entry = <$LOG>;
-        $DEBUGGING && debug "prefetch_next_log_entry: next_log_entry = $next_log_entry";
+        $DEBUGGING && debug "prefetch_next_log_entry: next_log_entry = " . ($next_log_entry ? $next_log_entry : "empty");
     } until (!$next_log_entry || $next_log_entry =~ m{
         $RE_LOG_v2_0_syslog |
         $RE_LOG_v2_0_audit  |
