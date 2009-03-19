@@ -265,7 +265,7 @@ BEGIN {
     # set things up to log extra info if they want...
     if ($ENV{LOGPROF_DEBUG}) {
         $DEBUGGING = 1;
-        open(DEBUG, ">/tmp/logprof_debug_$$.log");
+        open(DEBUG, ">/var/log/apparmor/logprof_debug_$$.log");
         my $oldfd = select(DEBUG);
         $| = 1;
         select($oldfd);
@@ -2410,7 +2410,7 @@ our $next_log_entry;
 our $logmark;
 our $seenmark;
 my $RE_LOG_v2_0_syslog = qr/SubDomain/;
-my $RE_LOG_v2_1_syslog = qr/kernel:\s+(\[[\d\.\s]+\]\s+)?audit\([\d\.\:]+\):\s+type=150[1-6]/;
+my $RE_LOG_v2_1_syslog = qr/kernel:\s+(\[[\d\.\s]+\]\s+)?(audit\([\d\.\:]+\):\s+)?type=150[1-6]/;
 my $RE_LOG_v2_0_audit  =
     qr/type=(APPARMOR|UNKNOWN\[1500\]) msg=audit\([\d\.\:]+\):/;
 my $RE_LOG_v2_1_audit  =
@@ -2426,6 +2426,7 @@ sub prefetch_next_log_entry {
     # AA event message format we recognize
     do {
         $next_log_entry = <$LOG>;
+        $DEBUGGING && debug "prefetch_next_log_entry: next_log_entry = $next_log_entry";
     } until (!$next_log_entry || $next_log_entry =~ m{
         $RE_LOG_v2_0_syslog |
         $RE_LOG_v2_0_audit  |
@@ -2894,8 +2895,11 @@ sub read_log {
     while ($_ = get_next_log_entry()) {
         chomp;
 
+	$DEBUGGING && debug "read_log: $_";
+
         $seenmark = 1 if /$logmark/;
 
+	$DEBUGGING && debug "read_log: seenmark = $seenmark";
         next unless $seenmark;
 
         my $last_match = ""; # v_2_0 syslog record parsing requires
@@ -6521,6 +6525,8 @@ sub parse_event($) {
     chomp($msg);
     my $event = LibAppArmor::parse_record($msg);
     my ($rmask, $dmask);
+
+    $DEBUGGING && debug("parse_event: $msg");
 
     $ev{'resource'}   = LibAppArmor::aa_log_record::swig_info_get($event);
     $ev{'active_hat'} = LibAppArmor::aa_log_record::swig_active_hat_get($event);
