@@ -172,7 +172,7 @@ parse_profiles() {
 		if skip_profile "${profile}" ; then
 			echo " Skipping profile $profile"
 			logger -t "AppArmor(init)" -p daemon.warn "Skipping profile $profile"
-			STATUS=2
+			[ "$STATUS" -ne 1 ] && STATUS=2
 		elif [ -f "${profile}" ] ; then
 			$PARSER $ABSTRACTIONS $PARSER_ARGS "$profile" > /dev/null
 			if [ $? -ne 0 ]; then
