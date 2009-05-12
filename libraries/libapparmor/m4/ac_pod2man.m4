@@ -1,4 +1,4 @@
-AC_DEFUN(PROG_POD2MAN,[
+AC_DEFUN([PROG_POD2MAN],[
    AC_CHECK_PROG(POD2MAN,pod2man,pod2man,no)
    if test "$POD2MAN" = "no"; then
       AC_MSG_ERROR([
