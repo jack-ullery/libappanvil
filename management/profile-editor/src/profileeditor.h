@@ -34,7 +34,7 @@ class ProfileToolFrame : public wxFrame
 	public:
 		ProfileToolFrame(const wxString& title, 
 				const wxPoint& pos, 
-				const wxSize& pos, 
+				const wxSize& size, 
 				const wxString& startingProfile, 
 				const wxString& startingHighlight);
 		~ProfileToolFrame();
