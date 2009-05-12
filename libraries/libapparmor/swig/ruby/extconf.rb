@@ -1,76 +1,37 @@
+#!/usr/bin/env ruby
+
 require 'mkmf'
-require 'ftools'
 
-$CFLAGS   += " " + (ENV['CFLAGS'] || "") + (ENV['CXXFLAGS'] || "")
-$LDFLAGS = "../../src/.libs/libapparmor.so"
-
-def usage
-	puts <<EOF
-Usage: ruby extconf.rb command
-	build				Build the extension
-	clean				Clean the source directory
-	install				Install the extention
-	test				Test the extension
-	wrap				Generate SWIG wrappers
-EOF
-	exit
+# hack 1: ruby black magic to write a Makefile.new instead of a Makefile
+alias open_orig open
+def open(path, mode=nil, perm=nil)
+  path = 'Makefile.new' if path == 'Makefile'
+  if block_given?
+    open_orig(path, mode, perm) { |io| yield(io) }
+  else
+    open_orig(path, mode, perm)
+  end
 end
 
-cmd = ARGV.shift or usage()
-cmd = cmd.downcase
-
-usage() unless ['build', 'clean', 'install', 'test', 'wrap'].member? cmd
-usage() if ARGV.shift
-
-class Commands
-	def initialize(&block)
-		@block = block
-	end
-	
-	def execute
-		@block.call
-	end
+if ENV['PREFIX']
+  prefix = CONFIG['prefix']
+  %w[ prefix sitedir datadir infodir mandir oldincludedir ].each do |key|
+    CONFIG[key] = CONFIG[key].sub(/#{prefix}/, ENV['PREFIX'])
+  end
 end
 
-Build = Commands.new {
-	# I don't think we can tell mkmf to generate a makefile with a different name
-	if File.exists?("Makefile")
-		File.rename("Makefile", "Makefile.old")
-	end
-	create_makefile('LibAppArmor')
-	File.rename("Makefile", "Makefile.ruby")
-	if File.exists?("Makefile.old")
-		File.rename("Makefile.old", "Makefile")
-	end
-	system("make -f Makefile.ruby")
-}
-Install = Commands.new {
-    Build.execute
-    if defined? Prefix
-        # strip old prefix and add the new one
-        oldPrefix = Config::CONFIG["prefix"]
-        if defined? Debian
-          archDir = Config::CONFIG["archdir"]
-          libDir = Config::CONFIG["rubylibdir"]
-        else
-          archDir = Config::CONFIG["sitearchdir"]
-          libDir = Config::CONFIG["sitelibdir"]
-        end
-        archDir    = Prefix + archDir.gsub(/^#{oldPrefix}/,"")
-        libDir     = Prefix + libDir.gsub(/^#{oldPrefix}/,"")
-    else
-        archDir    = Config::CONFIG["sitearchdir"]
-        libDir     = Config::CONFIG["sitelibdir"]
+dir_config('LibAppArmor')
+if find_library('apparmor', 'parse_record', '../../src/.libs') and
+  have_header('aalogparse.h')
+  create_makefile('LibAppArmor')
+
+  # hack 2: strip all rpath references
+  open('Makefile.ruby', 'w') do |out|
+    IO.foreach('Makefile.new') do |line|
+      out.puts line.gsub(/-Wl,-R'[^']*'/, '')
     end
-    [archDir,libDir].each { |path| File.makedirs path }
-     	 binary = 'LibAppArmor.so'
-    File.install "./"+binary, archDir+"/"+binary, 0555, true
-    File.install "./LibAppArmor.so", libDir+"/LibAppArmor.so", 0555, true
-}
+  end
+else
+  puts 'apparmor lib not found'
+end
 
-availableCommands = {
-	"build"	=> Build,
-	"install" => Install
-}
-
-availableCommands[cmd].execute

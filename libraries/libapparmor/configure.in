@@ -8,6 +8,7 @@ AC_PROG_SED
 
 AC_PATH_PROG([SWIG], [swig])
 
+sinclude(m4/ac_pod2man.m4)
 PROG_POD2MAN
 
 AC_MSG_CHECKING(Checking for Python)
@@ -69,7 +70,9 @@ doc/Makefile
 src/Makefile
 swig/Makefile
 swig/perl/Makefile
+swig/perl/Makefile.PL
 swig/python/Makefile
+swig/python/setup.py
 swig/ruby/Makefile
 testsuite/Makefile
 testsuite/config/Makefile

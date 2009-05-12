@@ -1,17 +1,23 @@
 if HAVE_PYTHON
-BUILT_SOURCES = libapparmor_wrap.c
 
-SWIG_SOURCES = ../SWIG/libapparmor.i
+EXTRA_DIST      = libapparmor_wrap.c
 
+libapparmor_wrap.c: $(srcdir)/../SWIG/libapparmor.i
+	$(SWIG) -python -I$(srcdir)/../../src -module LibAppArmor -o $@ $(srcdir)/../SWIG/libapparmor.i
+	mv LibAppArmor.py __init__.py
 
-pkgpython_PYTHON = LibAppArmor.py
-pkgpyexec_LTLIBRARIES = _libapparmor.la
-_libapparmor_la_SOURCES = libapparmor_wrap.c $(SWIG_SOURCES)
-_libapparmor_la_CPPFLAGS = $(SWIG_PYTHON_CFLAGS) -I$(top_srcdir)/src -I/usr/include/python
-_libapparmor_la_LDFLAGS = -module
-_libapparmor_la_LIBADD = ../../src/.libs/libapparmor.so
+MOSTLYCLEANFILES=libapparmor_wrap.c __init__.py
 
-libapparmor_wrap.c: $(SWIG_SOURCES)
-	$(SWIG) -python -I$(top_srcdir)/src -o $@ $<
+all-local: libapparmor_wrap.c setup.py
+	if test ! -f libapparmor_wrap.c; then cp $(srcdir)/libapparmor_wrap.c . ; fi
+	$(PYTHON) setup.py build
 
-endif 
+install-exec-local:
+	$(PYTHON) setup.py install --root="/$(DESTDIR)" --prefix="$(prefix)"
+
+clean-local:
+	if test -x "$(PYTHON)"; then $(PYTHON) setup.py clean; fi
+	rm -rf build
+	if test $(top_srcdir) != $(top_builddir) ; then rm -f libapparmor_wrap.c ; fi
+
+endif

@@ -1,34 +1,30 @@
+EXTRA_DIST =Makefile.PL libapparmor_wrap.c LibAppArmor.pm examples/*.pl
+noinst_DATA =LibAppArmor.so
+
 if HAVE_PERL
+libapparmor_wrap.c: $(srcdir)/../SWIG/libapparmor.i
+	$(SWIG) -perl -I$(srcdir)/../../src -module LibAppArmor -o $@ $(srcdir)/../SWIG/libapparmor.i
 
-PERL_MAKEFILE = Makefile.perl
+MOSTLYCLEANFILES=libapparmor_wrap.c LibAppArmor.pm
 
-WRAPPER_SOURCES = libapparmor_wrap.c LibAppArmor.pm
+Makefile.perl: Makefile.PL
+	$(PERL) $< PREFIX=$(prefix) MAKEFILE=$@
 
-all-local: .build-stamp
+LibAppArmor.so: libapparmor_wrap.c Makefile.perl
+	if test ! -f libapparmor_wrap.c; then cp $(srcdir)/libapparmor_wrap.c . ; fi
+	$(MAKE) -fMakefile.perl
+	if test $(top_srcdir) != $(top_builddir) ; then rm -f libapparmor_wrap.c ; fi
 
-.build-stamp: $(WRAPPER_SOURCES) $(PERL_MAKEFILE)
-	make -f $(PERL_MAKEFILE)
-	touch .build-stamp
+install-exec-local: Makefile.perl
+	$(MAKE) -fMakefile.perl install_vendor
 
-check-local: .build-stamp
-	make -f $(PERL_MAKEFILE) test
+# sadly there is no make uninstall for perl
+#uninstall-local: Makefile.perl
+#$(MAKE) -fMakefile.perl uninstall
 
-install-exec-local: .build-stamp
-	make -f $(PERL_MAKEFILE) install_vendor
-
-clean-local: $(PERL_MAKEFILE)
-	make -f $(PERL_MAKEFILE) clean
-	rm -f $(PERL_MAKEFILE).old
-	rm -rf build
-
-$(PERL_MAKEFILE): Makefile.PL
-	$(PERL) Makefile.PL VERSION="0.1" OBJECT="../../src/.libs/libapparmor.so libapparmor_wrap.o" CCFLAGS="-I../../src -D_REENTRANT -D_GNU_SOURCE -DTHREADS_HAVE_PIDS -fno-strict-aliasing -pipe -Wdeclaration-after-statement" OPTIMIZE="$(CFLAGS) -shared -I$(includedir) -D_REENTRANT -D_GNU_SOURCE -DTHREADS_HAVE_PIDS -fno-strict-aliasing -pipe -Wdeclaration-after-statement"
-
-
-$(WRAPPER_SOURCES): ../SWIG/*.i
-	$(SWIG) -perl -I../../src -I../SWIG -o libapparmor_wrap.c libapparmor.i
+clean-local:
+	if test -f Makefile.perl; then $(MAKE) -fMakefile.perl realclean; fi
+#rm -f Makefile.perl Makefile.perl.old
+	rm -f *.so # *.o
 
 endif
-
-EXTRA_DIST = Makefile.PL $(WRAPPER_SOURCES) examples/*.pl
-

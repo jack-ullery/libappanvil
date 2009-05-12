@@ -1,24 +1,28 @@
 if HAVE_RUBY
 
-RUBY_MAKEFILE = Makefile.ruby
+EXTRA_DIST =            extconf.rb LibAppArmor_wrap.c examples/*.rb
+noinst_DATA =           LibAppArmor.so
 
-WRAPPER_FILES = LibAppArmor_wrap.* LibAppArmor.so extension.mak .build-stamp
+LibAppArmor_wrap.c : $(srcdir)/../SWIG/libapparmor.i
+	$(SWIG) -ruby -module LibAppArmor -I$(top_srcdir)/src -o $@ $(srcdir)/../SWIG/libapparmor.i
 
-BUILT_SOURCES = LibAppArmor_wrap.c
+MOSTLYCLEANFILES=LibAppArmor_wrap.c
 
-all-local: .build-stamp
+Makefile.ruby: extconf.rb
+	PREFIX=$(prefix) $(RUBY) $< --with-LibAppArmor-include=$(top_srcdir)/src
 
-.build-stamp: LibAppArmor_wrap.c
-	CFLAGS="$(CFLAGS) -I../../src" $(RUBY) extconf.rb build
-	touch .build-stamp
+LibAppArmor.so: LibAppArmor_wrap.c Makefile.ruby
+	$(MAKE) -fMakefile.ruby
 
-install-exec-local: .build-stamp
-	make -f $(RUBY_MAKEFILE) install
+install-exec-local: Makefile.ruby
+	$(MAKE) -fMakefile.ruby install
 
-LibAppArmor_wrap.c: ../SWIG/*.i
-	$(SWIG) -ruby -I../SWIG -I../../src -o ./LibAppArmor_wrap.c libapparmor.i
+#uninstall
+#./lib/ruby/site_ruby/1.8/i686-linux/LibAppArmor.so
 
-endif 
+clean-local:
+	if test -f Makefile.ruby; then $(MAKE) -fMakefile.ruby clean; fi
+	rm -f Makefile.ruby Makefile.new
+	rm -f *.o *.so *.log
 
-EXTRA_DIST = extconf.rb $(BUILT_SOURCES) examples/*.rb
-
+endif
