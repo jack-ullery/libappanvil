@@ -5,9 +5,12 @@ AM_INIT_AUTOMAKE(apparmor-dbus, 2.3)
 AC_LANG_C
 AC_PROG_CC
 
-AC_CHECK_HEADERS(libaudit.h)
-PKG_CHECK_MODULES(DBUS, dbus-1 >= 0.60)
+AC_CHECK_HEADERS(libaudit.h,,AC_MSG_ERROR([libaudit header file not found!]))
+AC_CHECK_LIB(audit, audit_open)
 AC_CHECK_HEADERS(aalogparse/aalogparse.h)
 AC_CHECK_LIB(apparmor, parse_record)
+PKG_CHECK_MODULES(DBUS, dbus-1 >= 0.60)
+CFLAGS="${CFLAGS} ${DBUS_CFLAGS}"
+AC_CHECK_LIB(dbus-1, exit,,AC_MSG_ERROR([dbus-1 not found!]))
 
 AC_OUTPUT(Makefile src/Makefile)
