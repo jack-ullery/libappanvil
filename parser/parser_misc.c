@@ -467,8 +467,12 @@ static int parse_sub_mode(const char *str_mode, const char *mode_desc)
 reeval:
 		switch (this) {
 		case COD_READ_CHAR:
-			PDEBUG("Parsing mode: found %s READ\n", mode_desc);
-			mode |= AA_MAY_READ;
+			if (read_implies_exec) {
+				PDEBUG("Parsing mode: found %s READ imply X\n", mode_desc);				mode |= AA_MAY_READ | AA_EXEC_MMAP;
+			} else {
+				PDEBUG("Parsing mode: found %s READ\n", mode_desc);
+				mode |= AA_MAY_READ;
+			}
 			break;
 
 		case COD_WRITE_CHAR:
