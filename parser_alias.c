@@ -114,7 +114,6 @@ static char *do_alias(struct alias_rule *alias, const char *target)
 }
 
 static struct cod_entry *target_list;
-
 static void process_entries(const void *nodep, VISIT value, int __unused level)
 {
 	struct alias_rule **t = (struct alias_rule **) nodep;
@@ -147,10 +146,36 @@ static void process_entries(const void *nodep, VISIT value, int __unused level)
 	}
 }
 
-void replace_aliases(void *list)
+static struct codomain *target_cod;
+static void process_name(const void *nodep, VISIT value, int __unused level)
 {
-	target_list = list;
-	twalk(alias_table, process_entries);
+	struct alias_rule **t = (struct alias_rule **) nodep;
+	struct codomain *cod = target_cod;
+	int len;
+
+	if (value == preorder || value == endorder)
+		return;
+
+	len = strlen((*t)->from);
+
+	if (cod->name && strncmp((*t)->from, cod->name, len) == 0) {
+		char *new = do_alias(*t, cod->name);
+		if (!new)
+			return;
+		free(cod->name);
+		cod->name = new;
+	}
+}
+
+void replace_aliases(struct codomain *cod)
+{
+	target_cod = cod;
+	twalk(alias_table, process_name);
+
+	if (cod->entries) {
+		target_list = cod->entries;
+		twalk(alias_table, process_entries);
+	}
 }
 
 static void free_alias(void *nodep)

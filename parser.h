@@ -260,7 +260,7 @@ extern void dump_expanded_symtab(void);
 
 /* parser_alias.c */
 extern int new_alias(const char *from, const char *to);
-extern void replace_aliases(void *list);
+extern void replace_aliases(struct codomain *cod);
 extern void free_aliases(void);
 
 /* parser_merge.c */

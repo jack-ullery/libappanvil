@@ -328,8 +328,7 @@ static void __process_alias(const void *nodep, const VISIT value,
 	if (value == preorder || value == endorder)
 		return;
 
-	if ((*t)->entries)
-		replace_aliases((*t)->entries);
+	replace_aliases((*t));
 
 	if ((*t)->hat_table)
 		twalk((*t)->hat_table, __process_alias);
