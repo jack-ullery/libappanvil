@@ -181,8 +181,13 @@ parser_version.h: Makefile
 	@echo \#define PARSER_VERSION \"$(VERSION)\" > .ver
 	@mv -f .ver $@
 
+# These are the families that it doesn't make sense for apparmor to mediate.
+FILTER_FAMILIES=AF_RXRPC AF_MAX AF_UNSPEC AF_UNIX AF_LOCAL AF_NETLINK AF_LLC AF_IUCV AF_TIPC AF_CAN
+
+__FILTER=$(shell echo $(strip $(FILTER_FAMILIES)) | sed -e 's/ /\\\|/g')
+
 af_names.h: /usr/include/linux/socket.h
-	LC_ALL=C sed -n -e '/AF_RXRPC\|AF_MAX\|AF_UNSPEC\|AF_UNIX\|AF_LOCAL\|AF_NETLINK\|AF_LLC\|AF_IUCV\|AF_TIPC\|AF_CAN\|AF_ISDN/d' -e "s/^\#define[ \\t]\\+AF_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9]\\+\\)\\(.*\\)\$$/AA_GEN_NET_ENT(\"\\L\\1\", \\UAF_\\1)/p" $< > $@
+	LC_ALL=C sed -n -e '/$(__FILTER)/d' -e "s/^\#define[ \\t]\\+AF_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9]\\+\\)\\(.*\\)\$$/#ifndef AF_\\1\\n#  define AF_\\1 \\2\\n#endif\\nAA_GEN_NET_ENT(\"\\L\\1\", \\UAF_\\1)\\n/p" $< > $@
 
 cap_names.h: /usr/include/linux/capability.h
 	LC_ALL=C sed -n -e "/CAP_EMPTY_SET/d" -e "s/^\#define[ \\t]\\+CAP_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9xa-f]\\+\\)\\(.*\\)\$$/\{\"\\L\\1\", \\UCAP_\\1\},/p" $< > $@
