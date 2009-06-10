@@ -27,7 +27,7 @@
 #include <libintl.h>
 #define _(s) gettext(s)
 #include <netinet/in.h>
-#include <sys/socket.h>
+#include <linux/socket.h>
 #include <arpa/inet.h>
 #include <linux/capability.h>
 
@@ -468,7 +468,8 @@ reeval:
 		switch (this) {
 		case COD_READ_CHAR:
 			if (read_implies_exec) {
-				PDEBUG("Parsing mode: found %s READ imply X\n", mode_desc);				mode |= AA_MAY_READ | AA_EXEC_MMAP;
+				PDEBUG("Parsing mode: found %s READ imply X\n", mode_desc);
+				mode |= AA_MAY_READ | AA_EXEC_MMAP;
 			} else {
 				PDEBUG("Parsing mode: found %s READ\n", mode_desc);
 				mode |= AA_MAY_READ;
