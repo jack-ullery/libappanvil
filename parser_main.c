@@ -65,6 +65,12 @@ int names_only = 0;
 int dump_vars = 0;
 int dump_expanded_vars = 0;
 int conf_quiet = 0;
+#ifdef FORCE_READ_IMPLIES_EXEC
+int read_implies_exec = 1;
+#else
+int read_implies_exec = 0;
+#endif
+
 char *subdomainbase = NULL;
 char *profilename;
 char *match_string = NULL;
@@ -98,6 +104,7 @@ struct option long_options[] = {
 	{"match-string",	1, 0, 'm'},
 	{"quiet",		0, 0, 'q'},
 	{"namespace",		1, 0, 'n'},
+	{"readimpliesX",	0, 0, 'X'},
 	{NULL, 0, 0, 0},
 };
 
@@ -128,6 +135,7 @@ static void display_usage(char *command)
 	       "-f n, --subdomainfs n	Set location of apparmor filesystem\n"
 	       "-m n, --match-string n  Use only match features n\n"
 	       "-n n, --namespace n	Set Namespace for the profile\n"
+	       "-X, --readimpliesX	Map profile read permissions to mr\n"
 	       "-q, --quiet		Don't emit warnings\n"
 	       "-v, --version		Display version info and exit\n"
 	       "-d, --debug 		Debug apparmor definitions\n"
@@ -233,6 +241,9 @@ static int process_args(int argc, char *argv[])
 			break;
 		case 'n':
 			profile_namespace = strdup(optarg);
+			break;
+		case 'X':
+			read_implies_exec = 1;
 			break;
 		default:
 			display_usage(progname);
