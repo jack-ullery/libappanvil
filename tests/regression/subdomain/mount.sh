@@ -63,16 +63,28 @@ fi
 runchecktest "MOUNT (unconfined)" pass mount ${loop_device} ${mount_point}
 runchecktest "UMOUNT (unconfined)" pass umount ${loop_device} ${mount_point}
 
-# TEST A2.  confine MOUNT
+# TEST A2.  confine MOUNT 
 
-genprofile capability:sys_admin
+genprofile
 runchecktest "MOUNT (confined)" fail mount ${loop_device} ${mount_point}
 
-# TEST A3.  confine UMOUNT
+# TEST A3.  confine MOUNT - cap sys_admin allows mount
+
+genprofile capability:sys_admin
+runchecktest "MOUNT (confined)" pass mount ${loop_device} ${mount_point}
+
+/bin/umount -text2 ${mount_point}
+
+# TEST A4.  confine UMOUNT
 
 /bin/mount -text2 ${loop_device} ${mount_point}
 
+genprofile
 runchecktest "UMOUNT (confined)" fail umount ${loop_device} ${mount_point}
+
+# TEST A4.  confine UMOUNT - cap sys_admin allows unmount
+genprofile capability:sys_admin
+runchecktest "UMOUNT (confined)" pass umount ${loop_device} ${mount_point}
 
 # cleanup, umount file
 /bin/umount ${loop_device} > /dev/null 2> /dev/null  || /sbin/losetup -d ${loop_device} > /dev/null 2> /dev/null
