@@ -131,12 +131,32 @@ sub test_profile {
 }
 
 
-opendir(DIR, $config{'profiledir'}) or die "Bail out! can't opendir $config{'profiledir'}: $!";
-my @profiles = sort grep { /\.sd$/ && -f "$config{'profiledir'}/$_" } readdir(DIR);
-closedir(DIR);
+sub find_all_tests {
+    my $testdir = shift;
+
+    opendir(DIR, $testdir) or die "Bail out! can't opendir $testdir: $!";
+    my @files = sort grep { /\.sd$/ && -f "$testdir/$_" } readdir(DIR);
+    closedir(DIR);
+
+    my @profiles;
+    foreach my $profile (@files) {
+	push (@profiles, "$testdir/$profile");
+    }
+
+    opendir(DIR, $testdir) or die "Bail out! can't opendir $testdir: $!";
+    my @dirs = sort grep { /^[^\.]/ && -d "$testdir/$_" } readdir(DIR);
+    closedir(DIR);
+
+    foreach my $dir (@dirs) {
+	push(@profiles, find_all_tests("$testdir/$dir"));
+    }
+    return @profiles;
+}
+
+my @profiles = find_all_tests($config{'profiledir'});
 
 plan tests => scalar(@profiles);
 
 foreach my $profile (@profiles) {
-  test_profile ("$config{'profiledir'}/$profile");
+    test_profile ("$profile");
 }
