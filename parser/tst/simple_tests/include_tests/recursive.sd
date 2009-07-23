@@ -3,5 +3,5 @@
 #=EXRESULT FAIL
 #
 /does/not/exist {
-  #include <includes_recursive.sd>
+  #include <include_tests/recursive.sd>
 }
