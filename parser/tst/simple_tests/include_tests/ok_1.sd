@@ -4,6 +4,6 @@
 #
 /does/not/exist {
   #include <includes/base>
-  #include <includes_okay_helper.include>
+  #include <include_tests/includes_okay_helper.include>
   #include <includes/base>
 }
