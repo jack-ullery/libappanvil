@@ -487,6 +487,7 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 	if (!entry) 		/* shouldn't happen */
 		return TRUE;
 
+
 	ptype = convert_aaregex_to_pcre(entry->name, 0, tbuf, PATH_MAX + 3);
 	if (ptype == ePatternInvalid)
 		return FALSE;
@@ -513,7 +514,7 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 				   entry->mode & ~AA_LINK_BITS,
 				   entry->audit & ~AA_LINK_BITS))
 			return FALSE;
-	} else {
+	} else if (entry->mode & ~AA_CHANGE_PROFILE) {
 		if (!aare_add_rule(dfarules, tbuf, entry->deny, entry->mode,
 				   entry->audit))
 			return FALSE;
@@ -542,12 +543,14 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 	if (entry->mode & AA_CHANGE_PROFILE) {
 		if (entry->namespace) {
 			char *vec[2];
-			vec[0] = entry->namespace;
-			vec[1] = entry->name;
+			char lbuf[PATH_MAX + 8];
+			ptype = convert_aaregex_to_pcre(entry->namespace, 0, lbuf, PATH_MAX + 8);
+			vec[0] = lbuf;
+			vec[1] = tbuf;
 			if (!aare_add_rule_vec(dfarules, 0, AA_CHANGE_PROFILE, 0, 2, vec))
 			    return FALSE;
 		} else {
-			if (!aare_add_rule(dfarules, entry->name, 0, AA_CHANGE_PROFILE, 0))
+			if (!aare_add_rule(dfarules, tbuf, 0, AA_CHANGE_PROFILE, 0))
 				return FALSE;
 		}
 	}
