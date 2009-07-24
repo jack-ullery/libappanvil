@@ -110,6 +110,7 @@ static void free_symtab(struct symtab *symtab)
 	 	free(symtab->var_name);
 
 	free_values(symtab->values);
+	free_values(symtab->expanded);
 	free(symtab);
 }
 

@@ -728,6 +728,10 @@ void free_policy(struct codomain *cod)
 		aare_delete_ruleset(cod->dfarules);
 	if (cod->dfa)
 		free(cod->dfa);
+	if (cod->name)
+		free(cod->name);
+	if (cod->namespace)
+		free(cod->namespace);
 	free(cod);
 }
 
