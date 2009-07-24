@@ -646,8 +646,8 @@ struct codomain *merge_policy(struct codomain *a, struct codomain *b)
 	a->set_caps = a->set_caps | b->set_caps;
 
 	if (a->network_allowed) {
-		int i;
-		for (i = 0; i < AF_MAX; i++) {
+		size_t i;
+		for (i = 0; i < get_af_max(); i++) {
 			a->network_allowed[i] |= b->network_allowed[i];
 			a->audit_network[i] |= b->audit_network[i];
 			a->deny_network[i] |= b->deny_network[i];
@@ -732,6 +732,14 @@ void free_policy(struct codomain *cod)
 		free(cod->name);
 	if (cod->namespace)
 		free(cod->namespace);
+	if (cod->network_allowed)
+		free(cod->network_allowed);
+	if (cod->audit_network)
+		free(cod->audit_network);
+	if (cod->deny_network)
+		free(cod->deny_network);
+	if (cod->quiet_network)
+		free(cod->quiet_network);
 	free(cod);
 }
 

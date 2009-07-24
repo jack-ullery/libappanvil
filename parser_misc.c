@@ -236,6 +236,22 @@ static struct network_tuple network_mappings[] = {
 	{NULL, 0, NULL, 0, NULL, 0}
 };
 
+/* Yuck. We grab AF_* values to define above from linux/socket.h because
+ * they are more accurate than sys/socket.h for what the kernel actually
+ * supports. However, we can't just include linux/socket.h directly,
+ * because the AF_* definitions are protected with an ifdef KERNEL
+ * wrapper, but we don't want to define that because that can cause
+ * other redefinitions from glibc. However, because the kernel may have
+ * more definitions than glibc, we need make sure AF_MAX reflects this,
+ * hence the wrapping function.
+ */
+size_t get_af_max() {
+#if AA_AF_MAX > AF_MAX
+	return AA_AF_MAX;
+#else
+	return AF_MAX;
+#endif
+}
 struct aa_network_entry *new_network_ent(unsigned int family,
 					 unsigned int type,
 					 unsigned int protocol)
