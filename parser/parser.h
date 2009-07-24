@@ -209,6 +209,7 @@ extern char *profile_namespace;
 
 /* from parser_main */
 extern int force_complain;
+extern int conf_quiet;
 extern int regex_type;
 extern void pwarn(char *fmt, ...) __attribute__((__format__(__printf__, 1, 2)));
 
