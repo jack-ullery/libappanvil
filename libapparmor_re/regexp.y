@@ -15,6 +15,8 @@
  */
 
 %{
+    /* #define DEBUG_TREE */
+
     #include <list>
     #include <vector>
     #include <set>
@@ -2053,14 +2055,36 @@ extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, int deny,
 	return aare_add_rule_vec(rules, deny, perms, audit, 1, &rule);
 }
 
+#define FLAGS_WIDTH 2
+#define MATCH_FLAGS_SIZE (sizeof(uint32_t) * 8 - 1)
+MatchFlag *match_flags[FLAGS_WIDTH][MATCH_FLAGS_SIZE];
+DenyMatchFlag *deny_flags[FLAGS_WIDTH][MATCH_FLAGS_SIZE];
+#define EXEC_MATCH_FLAGS_SIZE ((AA_EXEC_COUNT << 2) * 2)
+MatchFlag *exec_match_flags[FLAGS_WIDTH][EXEC_MATCH_FLAGS_SIZE];	/* mods + unsafe + ix *u::o*/
+ExactMatchFlag *exact_match_flags[FLAGS_WIDTH][EXEC_MATCH_FLAGS_SIZE];/* mods + unsafe +ix *u::o*/
+
+extern "C" void aare_reset_matchflags(void)
+{
+	uint32_t i, j;
+#define RESET_FLAGS(group, size) { \
+	for (i = 0; i < FLAGS_WIDTH; i++) { \
+		for (j = 0; j < size; j++) { \
+			if ((group)[i][j]) (group)[i][j]->release(); \
+			(group)[i][j] = NULL; \
+		} \
+	} \
+}
+	RESET_FLAGS(match_flags,MATCH_FLAGS_SIZE);
+	RESET_FLAGS(deny_flags,MATCH_FLAGS_SIZE);
+	RESET_FLAGS(exec_match_flags,EXEC_MATCH_FLAGS_SIZE);
+	RESET_FLAGS(exact_match_flags,EXEC_MATCH_FLAGS_SIZE);
+#undef RESET_FLAGS
+}
+
 extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 				 uint32_t perms, uint32_t audit,
 				 int count, char **rulev)
 {
-    static MatchFlag *match_flags[2][sizeof(perms) * 8 - 1];
-    static DenyMatchFlag *deny_flags[2][sizeof(perms) * 8 - 1];
-    static MatchFlag *exec_match_flags[2][(AA_EXEC_COUNT << 2) * 2];	/* mods + unsafe + ix *u::o*/
-    static ExactMatchFlag *exact_match_flags[2][(AA_EXEC_COUNT << 2) * 2];/* mods + unsafe +ix *u::o*/
     Node *tree = NULL, *accept;
     int exact_match;
 
@@ -2195,7 +2219,15 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes,
     char *buffer = NULL;
 
     label_nodes(rules->root);
+#ifdef DEBUG_TREE
+    cerr << "pre opt tree\n";
+    rules->root->dump(cerr);
+#endif
     rules->root = simplify_tree(rules->root);
+#ifdef DEBUG_TREE
+    cerr << "post opt tree\n";
+    rules->root->dump(cerr);
+#endif
     DFA dfa(rules->root);
 
     map<uchar, uchar> eq;
