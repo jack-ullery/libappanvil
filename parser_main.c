@@ -17,8 +17,6 @@
  *   along with this program; if not, contact Novell, Inc.
  */
 
-#define _GNU_SOURCE	/* for strndup, asprintf */
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

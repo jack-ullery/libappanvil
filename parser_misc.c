@@ -19,7 +19,6 @@
 
 /* assistance routines */
 
-#define _GNU_SOURCE	/* for strndup */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
