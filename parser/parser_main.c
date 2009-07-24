@@ -169,6 +169,8 @@ void pwarn(char *fmt, ...)
 	va_start(arg, fmt);
 	vfprintf(stderr, newfmt, arg);
 	va_end(arg);
+
+	free(newfmt);
 }
 
 static int process_args(int argc, char *argv[])
@@ -177,7 +179,7 @@ static int process_args(int argc, char *argv[])
 	int count = 0;
 	option = OPTION_ADD;
 
-	while ((c = getopt_long(argc, argv, "adf:hrRvpI:b:BCNSm:qn:", long_options, &o)) != -1)
+	while ((c = getopt_long(argc, argv, "adf:hrRvpI:b:BCDENSm:qn:", long_options, &o)) != -1)
 	{
 		switch (c) {
 		case 0:
