@@ -212,6 +212,8 @@ extern int force_complain;
 extern int regex_type;
 extern void pwarn(char *fmt, ...) __attribute__((__format__(__printf__, 1, 2)));
 
+extern FILE *yyin;
+extern void yyrestart(FILE *fp);
 extern int yyparse(void);
 extern void yyerror(char *msg, ...);
 extern int yylex(void);
@@ -219,6 +221,7 @@ extern int yylex(void);
 /* parser_regex.c */
 extern int process_regex(struct codomain *cod);
 extern int post_process_entry(struct cod_entry *entry);
+extern void reset_regex(void);
 
 /* parser_variable.c */
 extern int process_variables(struct codomain *cod);
@@ -257,6 +260,7 @@ extern void *get_set_var(const char *var);
 extern char *get_next_set_value(void **context);
 extern void dump_symtab(void);
 extern void dump_expanded_symtab(void);
+void free_symtabs(void);
 
 /* parser_alias.c */
 extern int new_alias(const char *from, const char *to);
@@ -293,3 +297,4 @@ extern void dump_policy(void);
 extern void dump_policy_hats(struct codomain *cod);
 extern void dump_policy_names(void);
 extern int die_if_any_regex(void);
+void free_policies(void);

@@ -642,6 +642,11 @@ out:
 	return error;
 }
 
+void reset_regex(void)
+{
+	aare_reset_matchflags();
+}
+
 #ifdef UNIT_TEST
 #define MY_TEST(statement, error)		\
 	if (!(statement)) {			\
