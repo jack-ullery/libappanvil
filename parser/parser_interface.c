@@ -786,21 +786,24 @@ int cache_fd = -1;
 int sd_serialize_codomain(int option, struct codomain *cod)
 {
 	int fd;
-	int error = 0, size, wsize;
+	int error = -ENOMEM, size, wsize;
 	sd_serialize *work_area;
 	char *filename = NULL;
 
 	switch (option) {
 	case OPTION_ADD:
-		asprintf(&filename, "%s/.load", subdomainbase);
+		if (asprintf(&filename, "%s/.load", subdomainbase) == -1)
+			goto exit;
 		fd = open(filename, O_WRONLY);
 		break;
 	case OPTION_REPLACE:
-		asprintf(&filename, "%s/.replace", subdomainbase);
+		if (asprintf(&filename, "%s/.replace", subdomainbase) == -1)
+			goto exit;
 		fd = open(filename, O_WRONLY);
 		break;
 	case OPTION_REMOVE:
-		asprintf(&filename, "%s/.remove", subdomainbase);
+		if (asprintf(&filename, "%s/.remove", subdomainbase) == -1)
+			goto exit;
 		fd = open(filename, O_WRONLY);
 		break;
 	case OPTION_STDOUT:
@@ -819,6 +822,8 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		error = -errno;
 		goto exit;
 	}
+
+	error = 0;
 
 	if (option != OPTION_STDOUT)
 		free(filename);
@@ -938,17 +943,19 @@ static char *next_profile_buffer(char *buffer, int size)
 int sd_load_buffer(int option, char *buffer, int size)
 {
 	int fd;
-	int error = 0, wsize, bsize;
+	int error = -ENOMEM, wsize, bsize;
 	char *filename = NULL;
 	char *b;
 
 	switch (option) {
 	case OPTION_ADD:
-		asprintf(&filename, "%s/.load", subdomainbase);
+		if (asprintf(&filename, "%s/.load", subdomainbase) == -1)
+			goto exit;
 		fd = open(filename, O_WRONLY);
 		break;
 	case OPTION_REPLACE:
-		asprintf(&filename, "%s/.replace", subdomainbase);
+		if (asprintf(&filename, "%s/.replace", subdomainbase) == -1)
+			goto exit;
 		fd = open(filename, O_WRONLY);
 		break;
 	default:
@@ -964,6 +971,7 @@ int sd_load_buffer(int option, char *buffer, int size)
 		goto exit;
 	}
 
+	error = 0;
 	for (b = buffer; b ; b = next_profile_buffer(b + sizeof(header_version), bsize)) {
 		bsize = size - (b - buffer);
 		wsize = write(fd, b, bsize);

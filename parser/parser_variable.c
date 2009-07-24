@@ -152,10 +152,11 @@ static int expand_entry_variables(struct cod_entry *entry)
 			exit(1);
 		}
 		free(entry->name);
-		asprintf(&(entry->name), "%s%s%s",
-			 split_var->prefix ? split_var->prefix : "",
-			 value,
-			 split_var->suffix ? split_var->suffix : "");
+		if (asprintf(&(entry->name), "%s%s%s",
+			     split_var->prefix ? split_var->prefix : "",
+			     value,
+			     split_var->suffix ? split_var->suffix : "") == -1)
+			return FALSE;
 
 		while ((value = get_next_set_value(&valuelist))) {
 			struct cod_entry *dupe = copy_cod_entry(entry);
@@ -167,10 +168,10 @@ static int expand_entry_variables(struct cod_entry *entry)
 			entry->next = dupe;
 
 			free(entry->name);
-			asprintf(&(entry->name), "%s%s%s",
-				 split_var->prefix ? split_var->prefix : "",
-				 value,
-				 split_var->suffix ? split_var->suffix : "");
+			if (asprintf(&(entry->name), "%s%s%s",
+			      split_var->prefix ? split_var->prefix : "", value,
+			      split_var->suffix ? split_var->suffix : "") == -1)
+				return FALSE;
 		}
 
 		free_var_string(split_var);
@@ -268,7 +269,7 @@ int test_split_string(void)
 	char *var = "boogie";
 	char *suffix = "suffixication";
 
-	asprintf(&tst_string, "%s@{%s}%s", prefix, var, suffix);
+	(void) asprintf(&tst_string, "%s@{%s}%s", prefix, var, suffix);
 	var_start = tst_string + strlen(prefix);
 	var_end = var_start + strlen(var) + strlen("@\{");
 	ret_struct = split_string(tst_string, var_start, var_end);
