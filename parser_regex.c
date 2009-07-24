@@ -186,26 +186,25 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 			} else {
 				if ((dptr > pcre) &&  *(dptr - 1) == '/') {
 					#if 0
-					/* handle comment containing use
-					 * of C comment characters
-					 * /* /*/ and /** to describe paths
-					 *
-					 * modify what is emitted for * and **
-					 * when used as the only path
-					 * component
-					 * ex.
-					 * /* /*/ /**/ /**
-					 * this prevents these expressions
-					 * from matching directories or
-					 * invalid paths
-					 * in these case * and ** must
-					 * match at least 1 character to
-					 * get a valid path element.
-					 * ex.
-					 * /foo/* -> should not match /foo/
-					 * /foo/*bar -> should match /foo/bar
-					 * /*/foo -> should not match //foo
-					 */
+					// handle comment containing use
+					// of C comment characters
+					// /* /*/ and /** to describe paths
+					//
+					// modify what is emitted for * and **
+					// when used as the only path
+					// component
+					// ex.
+					// /* /*/ /**/ /**
+					// this prevents these expressions
+					// from matching directories or
+					// invalid paths
+					// in these case * and ** must
+					// match at least 1 character to
+					// get a valid path element.
+					// ex.
+					// /foo/* -> should not match /foo/
+					// /foo/*bar -> should match /foo/bar
+					// /*/foo -> should not match //foo
 					#endif
 					const char *s = sptr;
 					while (*s == '*')
