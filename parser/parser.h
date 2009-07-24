@@ -248,6 +248,7 @@ extern struct aa_network_entry *new_network_ent(unsigned int family,
 extern struct aa_network_entry *network_entry(const char *family,
 					      const char *type,
 					      const char *protocol);
+extern size_t get_af_max(void);
 
 extern void debug_cod_list(struct codomain *list);
 /* returns -1 if value != true or false, otherwise 0 == false, 1 == true */

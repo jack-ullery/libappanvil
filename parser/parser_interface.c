@@ -656,10 +656,10 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 		return 0;
 
 	if (profile->network_allowed) {
-		int i;
-		if (!sd_write_array(p, "net_allowed_af", AF_MAX))
+		size_t i;
+		if (!sd_write_array(p, "net_allowed_af", get_af_max()))
 			return 0;
-		for (i = 0; i < AF_MAX; i++) {
+		for (i = 0; i < get_af_max(); i++) {
 		    u16 allowed = profile->network_allowed[i] &
 			~profile->deny_network[i];
 			if (!sd_write16(p, allowed))

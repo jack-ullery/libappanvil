@@ -188,6 +188,8 @@ __FILTER=$(shell echo $(strip $(FILTER_FAMILIES)) | sed -e 's/ /\\\|/g')
 
 af_names.h: /usr/include/linux/socket.h
 	LC_ALL=C sed -n -e '/$(__FILTER)/d' -e "s/^\#define[ \\t]\\+AF_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9]\\+\\)\\(.*\\)\$$/#ifndef AF_\\1\\n#  define AF_\\1 \\2\\n#endif\\nAA_GEN_NET_ENT(\"\\L\\1\", \\UAF_\\1)\\n/p" $< > $@
+	# define local AF_MAX which may differ from that of bits/socket.h
+	LC_ALL=C sed -n -e "s/^\#define[ \\t]\\+\\(AF_MAX\\)[ \\t]\\+\\([0-9]\\+\\)\\(.*\\)\$$/#define AA_\\1 \\2\n/p" $< >> $@
 
 cap_names.h: /usr/include/linux/capability.h
 	LC_ALL=C sed -n -e "/CAP_EMPTY_SET/d" -e "s/^\#define[ \\t]\\+CAP_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9xa-f]\\+\\)\\(.*\\)\$$/\{\"\\L\\1\", \\UCAP_\\1\},/p" $< > $@

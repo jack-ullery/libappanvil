@@ -34,7 +34,6 @@
 #include "parser.h"
 #include <unistd.h>
 #include <netinet/in.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
 
 #include <linux/capability.h>
@@ -515,13 +514,13 @@ rules: rules opt_audit_flag TOK_DENY network_rule
 		if (!$4)
 			yyerror(_("Assert: `network_rule' return invalid protocol."));
 		if (!$1->network_allowed) {
-			$1->network_allowed = calloc(AF_MAX,
+			$1->network_allowed = calloc(get_af_max(),
 						     sizeof(unsigned int));
-			$1->audit_network = calloc(AF_MAX,
+			$1->audit_network = calloc(get_af_max(),
 						   sizeof(unsigned int));
-			$1->deny_network = calloc(AF_MAX,
+			$1->deny_network = calloc(get_af_max(),
 						     sizeof(unsigned int));
-			$1->quiet_network = calloc(AF_MAX,
+			$1->quiet_network = calloc(get_af_max(),
 						     sizeof(unsigned int));
 			if (!$1->network_allowed || !$1->audit_network ||
 			    !$1->deny_network || !$1->quiet_network)
@@ -553,13 +552,13 @@ rules: rules opt_audit_flag network_rule
 		if (!$3)
 			yyerror(_("Assert: `network_rule' return invalid protocol."));
 		if (!$1->network_allowed) {
-			$1->network_allowed = calloc(AF_MAX,
+			$1->network_allowed = calloc(get_af_max(),
 						     sizeof(unsigned int));
-			$1->audit_network = calloc(AF_MAX,
+			$1->audit_network = calloc(get_af_max(),
 						   sizeof(unsigned int));
-			$1->deny_network = calloc(AF_MAX,
+			$1->deny_network = calloc(get_af_max(),
 						     sizeof(unsigned int));
-			$1->quiet_network = calloc(AF_MAX,
+			$1->quiet_network = calloc(get_af_max(),
 						     sizeof(unsigned int));
 			if (!$1->network_allowed || !$1->audit_network ||
 			    !$1->deny_network || !$1->quiet_network)
@@ -960,9 +959,9 @@ local_profile:   TOK_PROFILE TOK_ID flags TOK_OPEN rules TOK_CLOSE
 
 network_rule: TOK_NETWORK TOK_END_OF_RULE
 	{
-		int family;
+		size_t family;
 		struct aa_network_entry *new_entry, *entry = NULL;
-		for (family = AF_UNSPEC; family < AF_MAX; family++) {
+		for (family = AF_UNSPEC; family < get_af_max(); family++) {
 			new_entry = new_network_ent(family, 0xffffffff,
 						    0xffffffff);
 			if (!new_entry)
