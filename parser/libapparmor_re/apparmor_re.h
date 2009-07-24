@@ -26,6 +26,7 @@ int aare_add_rule(aare_ruleset_t *rules, char *rule, int deny,
 int aare_add_rule_vec(aare_ruleset_t *rules, int deny, uint32_t perms,
 		      uint32_t audit, int count, char **rulev);
 void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes, size_t *size);
+void aare_reset_matchflags(void);
 
 #ifdef __cplusplus
 }
