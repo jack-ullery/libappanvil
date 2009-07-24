@@ -147,6 +147,9 @@ void include_filename(char *filename, int search)
 			free(dirent_path);
 		closedir(dir);
 	}
+
+	if (fullpath)
+		free(fullpath);
 }
 
 %}
@@ -202,16 +205,16 @@ LT_EQUAL	<=
 	{WS}+	{ /* Eat whitespace */ }
 	\<([^\> \t\n]+)\>	{	/* <filename> */
 		char *filename = strdup(yytext);
-		filename[strlen(filename)-1]='\0';
-		include_filename(filename+1, 1);
+		filename[strlen(filename) - 1] = '\0';
+		include_filename(filename + 1, 1);
 		free(filename);
 		BEGIN(INITIAL);
 		}
 
 	\"([^\" \t\n]+)\"	{	/* "filename" */
 		char *filename = strdup(yytext);
-		filename[strlen(filename)-1]='\0';
-		include_filename(filename+1, 0);
+		filename[strlen(filename) - 1] = '\0';
+		include_filename(filename + 1, 0);
 		free(filename);
 		BEGIN(INITIAL);
 		}

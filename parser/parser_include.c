@@ -218,8 +218,10 @@ FILE *search_path(char *filename, char **fullpath)
 			exit(1);
 		}
 		newf = fopen(buf, "r");
-		if (newf && fullpath) *fullpath = buf;
-		else free(buf);
+		if (newf && fullpath)
+			*fullpath = buf;
+		else
+			free(buf);
 		buf = NULL;
 		if (newf)
 			break;
