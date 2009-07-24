@@ -280,6 +280,7 @@ extern int load_codomain(int option, struct codomain *cod);
 extern int sd_serialize_profile(sd_serialize *p, struct codomain *cod,
 				int flatten);
 extern int sd_load_buffer(int option, char *buffer, int size);
+extern int cache_fd;
 
 
 /* parser_policy.c */
