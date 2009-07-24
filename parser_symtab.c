@@ -532,6 +532,13 @@ void dump_expanded_symtab(void)
 	twalk(my_symtab, &dump_expanded_symtab_entry);
 }
 
+void free_symtabs(void)
+{
+	if (my_symtab)
+		tdestroy(my_symtab, (__free_fn_t)&free_symtab);
+	my_symtab = NULL;
+}
+
 #ifdef UNIT_TEST
 #define MY_TEST(statement, error)		\
 	if (!(statement)) {			\

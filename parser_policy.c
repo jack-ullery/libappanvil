@@ -723,3 +723,10 @@ void free_policy(struct codomain *cod)
 		free(cod->dfa);
 	free(cod);
 }
+
+void free_policies(void)
+{
+	if (policy_list)
+		tdestroy(policy_list, (__free_fn_t)&free_policy);
+	policy_list = NULL;
+}

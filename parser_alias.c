@@ -42,17 +42,6 @@ static int compare_alias(const void *a, const void *b)
 	return strcmp(a_name, b_name);
 }
 
-static struct alias_rule *lookup_alias(const char *alias)
-{
-	struct alias_rule tmp = { alias, NULL} , **lookup;
-
-	lookup = (struct alias_rule **) tfind(&tmp, alias_table, (comparison_fn_t) &compare_alias);
-	if (!lookup)
-		return NULL;
-
-	return *lookup;
-}
-
 int new_alias(const char *from, const char *to)
 {
 	struct alias_rule *alias, **result;
@@ -189,4 +178,5 @@ void free_aliases(void)
 {
 	if (alias_table)
 		tdestroy(alias_table, &free_alias);
+	alias_table = NULL;
 }
