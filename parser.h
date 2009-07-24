@@ -88,11 +88,11 @@ struct codomain {
 
 	struct flagval flags;
 
-	unsigned int capabilities;
-	unsigned int audit_caps;
-	unsigned int deny_caps;
-	unsigned int quiet_caps;
-	unsigned int set_caps;
+	uint64_t capabilities;
+	uint64_t audit_caps;
+	uint64_t deny_caps;
+	uint64_t quiet_caps;
+	uint64_t set_caps;
 
 	unsigned int *network_allowed;		/* array of type masks
 						 * indexed by AF_FAMILY */
