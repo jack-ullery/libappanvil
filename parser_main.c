@@ -427,6 +427,7 @@ static void get_flags_string(void) {
 //fprintf(stderr, "flags string: %s\n", flags_string);
 //fprintf(stderr, "changehat %d\n", flag_changehat_version);
 	}
+	free(flags_string);
 	return;
 
 fail:

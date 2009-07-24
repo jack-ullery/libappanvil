@@ -78,13 +78,15 @@ void include_filename(char *filename, int search)
 	struct stat my_stat;
 	char *fullpath = NULL;
 
-	if (search) include_file = search_path(filename, &fullpath);
-	else {
+	if (search) {
+		include_file = search_path(filename, &fullpath);
+	} else {
 		fullpath = strdup(filename);
 		include_file = fopen(fullpath, "r");
 	}
 
-	if (!include_file) yyerror(_("Could not open '%s'"), fullpath);
+	if (!include_file)
+		yyerror(_("Could not open '%s'"), fullpath);
 
         if (fstat(fileno(include_file), &my_stat))
 		yyerror(_("fstat failed for '%s'"), fullpath);
@@ -113,8 +115,9 @@ void include_filename(char *filename, int search)
                         if (dirent->d_name[0] == '.')
                                 continue;
 
-			if (dirent_path) free(dirent_path);
-                        if (asprintf(&dirent_path, "%s/%s", fullpath, dirent->d_name)<0)
+			if (dirent_path)
+				free(dirent_path);
+                        if (asprintf(&dirent_path, "%s/%s", fullpath, dirent->d_name) < 0)
 				yyerror("Out of memory");
 
 			name_len = strlen(dirent->d_name);
@@ -137,10 +140,11 @@ void include_filename(char *filename, int search)
 				if (!(yyin = fopen(dirent_path,"r")))
 					yyerror(_("Could not open '%s'"), filename);
 				PDEBUG("Opened include \"%s\"\n", filename);
-				yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
+				yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
 			}
 		}
-		if (dirent_path) free(dirent_path);
+		if (dirent_path)
+			free(dirent_path);
 		closedir(dir);
 	}
 }
@@ -153,7 +157,7 @@ CLOSE_BRACE 	\}
 SLASH		\/
 COLON		:
 END_OF_RULE	[,]
-SEPERATOR 	{UP}
+SEPARATOR 	{UP}
 RANGE		-
 MODE_CHARS 	([RrWwaLlMmkXx])|(([Uu]|[Pp]|[Cc])[Xx])|(([Pp]|[Cc])?[Ii][Xx])
 MODES		{MODE_CHARS}+
@@ -231,7 +235,7 @@ LT_EQUAL	<=
 			   * without any spaces in between (because it's
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
-			   * seperate state. */
+			   * separate state. */
 			yylval = (YYSTYPE) processunquoted(yytext, yyleng);
 			PDEBUG("Found sub name: \"%s\"\n", yylval);
 			BEGIN(INITIAL);
@@ -244,7 +248,7 @@ LT_EQUAL	<=
 			   * without any spaces in between (because it's
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
-			   * seperate state. */
+			   * separate state. */
 			yylval = (YYSTYPE) processquoted(yytext, yyleng);
 			PDEBUG("Found sub name: \"%s\"\n", yylval);
 			BEGIN(INITIAL);
@@ -265,7 +269,7 @@ LT_EQUAL	<=
 			   * without any spaces in between (because it's
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
-			   * seperate state. */
+			   * separate state. */
 			yylval = (YYSTYPE) processunquoted(yytext, yyleng);
 			PDEBUG("Found sub name: \"%s\"\n", yylval);
 			BEGIN(INITIAL);
@@ -278,7 +282,7 @@ LT_EQUAL	<=
 			   * without any spaces in between (because it's
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
-			   * seperate state. */
+			   * separate state. */
 			yylval = (YYSTYPE) processquoted(yytext, yyleng);
 			PDEBUG("Found sub name: \"%s\"\n", yylval);
 			BEGIN(INITIAL);
@@ -384,7 +388,7 @@ LT_EQUAL	<=
 			   * without any spaces in between (because it's
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
-			   * seperate state. */
+			   * separate state. */
 			yylval = (YYSTYPE) processunquoted(yytext, yyleng);
 			PDEBUG("Found sub name: \"%s\"\n", yylval);
 			BEGIN(INITIAL);
@@ -397,7 +401,7 @@ LT_EQUAL	<=
 			   * without any spaces in between (because it's
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
-			   * seperate state. */
+			   * separate state. */
 			yylval = (YYSTYPE) processquoted(yytext, yyleng);
 			PDEBUG("Found sub name: \"%s\"\n", yylval);
 			BEGIN(INITIAL);
@@ -425,8 +429,8 @@ LT_EQUAL	<=
 
 {END_OF_RULE}		{ return TOK_END_OF_RULE; }
 
-{SEPERATOR}		{
-			PDEBUG("Matched a seperator\n");
+{SEPARATOR}		{
+			PDEBUG("Matched a separator\n");
 			yylval = (YYSTYPE) yytext;
 			BEGIN(SUB_NAME);
 			return TOK_SEP;
