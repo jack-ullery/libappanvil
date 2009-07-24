@@ -766,6 +766,7 @@ int sd_serialize_top_profile(sd_serialize *p, struct codomain *profile)
 	return sd_serialize_profile(p, profile, profile->parent ? 1 : 0);
 }
 
+int cache_fd = -1;
 int sd_serialize_codomain(int option, struct codomain *cod)
 {
 	int fd;
@@ -873,6 +874,17 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		} else if (wsize < size) {
 			PERROR(_("%s: Unable to write entire profile entry\n"),
 			       progname);
+			error = -EIO;
+		}
+		if (cache_fd != -1) {
+			wsize = write(cache_fd, work_area->buffer, size);
+			if (wsize < 0) {
+				error = -errno;
+			} else if (wsize < size) {
+				PERROR(_("%s: Unable to write entire profile entry to cache\n"),
+				       progname);
+				error = -EIO;
+			}
 		}
 		free_sd_serial(work_area);
 	}

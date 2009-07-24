@@ -63,6 +63,9 @@ int names_only = 0;
 int dump_vars = 0;
 int dump_expanded_vars = 0;
 int conf_quiet = 0;
+int skip_cache = 0;
+int show_cache = 0;
+int write_cache = 0;
 #ifdef FORCE_READ_IMPLIES_EXEC
 int read_implies_exec = 1;
 #else
@@ -104,6 +107,9 @@ struct option long_options[] = {
 	{"quiet",		0, 0, 'q'},
 	{"namespace",		1, 0, 'n'},
 	{"readimpliesX",	0, 0, 'X'},
+	{"skip-cache",		0, 0, 'K'},
+	{"write-cache",		0, 0, 'W'},
+	{"show-cache",		0, 0, 'k'},
 	{NULL, 0, 0, 0},
 };
 
@@ -134,6 +140,9 @@ static void display_usage(char *command)
 	       "-m n, --match-string n  Use only match features n\n"
 	       "-n n, --namespace n	Set Namespace for the profile\n"
 	       "-X, --readimpliesX	Map profile read permissions to mr\n"
+	       "-k, --show-cache	Report cache hit/miss details\n"
+	       "-K, --skip-cache	Do not attempt to load or save cached profiles\n"
+	       "-W, --write-cache	Attempt to save cached profiles\n"
 	       "-q, --quiet		Don't emit warnings\n"
 	       "-v, --version		Display version info and exit\n"
 	       "-d, --debug 		Debug apparmor definitions\n"
@@ -213,6 +222,7 @@ static int process_args(int argc, char *argv[])
 			break;
 		case 'N':
 			names_only = 1;
+			skip_cache = 1;
 			break;
 		case 'S':
 			count++;
@@ -223,9 +233,11 @@ static int process_args(int argc, char *argv[])
 			break;
 		case 'D':
 			dump_vars = 1;
+			skip_cache = 1;
 			break;
 		case 'E':
 			dump_expanded_vars = 1;
+			skip_cache = 1;
 			break;
 		case 'm':
 			match_string = strdup(optarg);
@@ -238,6 +250,15 @@ static int process_args(int argc, char *argv[])
 			break;
 		case 'X':
 			read_implies_exec = 1;
+			break;
+		case 'K':
+			skip_cache = 1;
+			break;
+		case 'k':
+			show_cache = 1;
+			break;
+		case 'W':
+			write_cache = 1;
 			break;
 		default:
 			display_usage(progname);
@@ -504,6 +525,8 @@ int process_profile(int option, char *profilename)
 	struct stat stat_text;
 	struct stat stat_bin;
 	int retval = 0;
+	char * cachename = NULL;
+	char * cachetemp = NULL;
 
 	/* per-profile states */
 	force_complain = opt_force_complain;
@@ -516,7 +539,7 @@ int process_profile(int option, char *profilename)
 		}
 	}
 	else {
-		PERROR("%s: cannot disable or force-complain via stdin\n", progname);
+		PERROR("%s: cannot use or update cache, disable, or force-complain via stdin\n", progname);
 	}
 
 	if ( profilename && option != OPTION_REMOVE ) {
@@ -546,7 +569,37 @@ int process_profile(int option, char *profilename)
 			force_complain = 1;
 		}
 		free(target);
+
+		if (!force_complain && !skip_cache) {
+			fstat(fileno(yyin), &stat_text);
+			if (asprintf(&cachename, "%s/%s/%s", basedir, "cache", basename)<0) {
+				perror("asprintf");
+				exit(1);
+			}
+			/* Load a binary cache if it exists and is newest */
+			if (stat(cachename, &stat_bin) == 0 &&
+                            stat_bin.st_size > 0 &&
+                            stat_bin.st_mtime >= stat_text.st_mtime) {
+				if (show_cache) PERROR("Cache hit: %s\n", cachename);
+				retval = process_binary(option, cachename);
+				goto out;
+			}
+			if (write_cache) {
+				/* Otherwise, set up to save a cached copy */
+				if (asprintf(&cachetemp, "%s/%s/%s-XXXXXX", basedir, "cache", basename)<0) {
+					perror("asprintf");
+					exit(1);
+				}
+				if ( (cache_fd = mkstemp(cachetemp)) < 0) {
+					perror("mkstemp");
+					exit(1);
+				}
+			}
+		}
 	}
+
+	if (show_cache)
+		PERROR("Cache miss: %s\n", profilename ? profilename : "stdin");
 
 	if (yyin) yyrestart(yyin);
 	reset_parser();
@@ -594,6 +647,28 @@ int process_profile(int option, char *profilename)
 	retval = load_policy(option);
 
 out:
+	if (cachetemp) {
+		/* Only install the generate cache file if it parsed correctly
+                   and did not have write/close errors */
+		int useable_cache = (cache_fd != -1 && retval == 0);
+		if (cache_fd != -1) {
+			if (close(cache_fd)) useable_cache = 0;
+			cache_fd = -1;
+		}
+
+		if (useable_cache) {
+			rename(cachetemp, cachename);
+			if (show_cache)
+				PERROR("Wrote cache: %s\n", cachename);
+		}
+		else {
+			unlink(cachetemp);
+			if (show_cache)
+				PERROR("Removed cache attempt: %s\n", cachetemp);
+		}
+		free(cachetemp);
+	}
+	if (cachename) free(cachename);
 	return retval;
 }
 
