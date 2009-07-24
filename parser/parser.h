@@ -219,6 +219,9 @@ extern int yyparse(void);
 extern void yyerror(char *msg, ...);
 extern int yylex(void);
 
+/* parser_include.c */
+extern char *basedir;
+
 /* parser_regex.c */
 extern int process_regex(struct codomain *cod);
 extern int post_process_entry(struct cod_entry *entry);

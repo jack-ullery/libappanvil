@@ -49,7 +49,7 @@
 #define PCRE "pattern=pcre"
 #define AADFA "pattern=aadfa"
 
-#define UNPRIVILEGED_OPS (debug || preprocess_only || option == OPTION_STDOUT || names_only || \
+#define UNPRIVILEGED_OPS (debug || option == OPTION_STDOUT || names_only || \
 			  dump_vars || dump_expanded_vars)
 
 const char *parser_title	= "Novell/SUSE AppArmor parser";
@@ -57,7 +57,7 @@ const char *parser_copyright	= "Copyright (C) 1999, 2000, 2003, 2004, 2005, 2006
 
 char *progname;
 int option = OPTION_ADD;
-int force_complain = 0;
+int opt_force_complain = 0;
 int binary_input = 0;
 int names_only = 0;
 int dump_vars = 0;
@@ -70,15 +70,17 @@ int read_implies_exec = 0;
 #endif
 
 char *subdomainbase = NULL;
-char *profilename;
 char *match_string = NULL;
 char *flags_string = NULL;
 int regex_type = AARE_DFA;
 char *profile_namespace = NULL;
 int flag_changehat_version = FLAG_CHANGEHAT_1_5;
 
-
 extern int current_lineno;
+
+/* per-profile settings */
+int force_complain = 0;
+char *profilename = NULL;
 
 struct option long_options[] = {
 	{"add", 		0, 0, 'a'},
@@ -90,7 +92,6 @@ struct option long_options[] = {
 	{"replace",		0, 0, 'r'},
 	{"reload",		0, 0, 'r'},	/* undocumented reload option == replace */
 	{"version",		0, 0, 'v'},
-	{"preprocess",		0, 0, 'p'},
 	{"complain",		0, 0, 'C'},
 	{"Complain",		0, 0, 'C'},	/* Erk, apparently documented as --Complain */
 	{"dump-variables",	0, 0, 'D'},
@@ -125,7 +126,6 @@ static void display_usage(char *command)
 	       "-R, --remove		Remove apparmor definitions\n"
 	       "-C, --Complain		Force the profile into complain mode\n"
 	       "-B, --binary		Input is precompiled profile\n"
-	       "-p, --preprocess	Dump profiles with includes expanded\n"
 	       "-N, --names		Dump names of profiles in input.\n"
 	       "-S, --stdout		Dump compiled profile to stdout\n"
 	       "-b n, --base n		Set base dir and cwd\n"
@@ -199,10 +199,6 @@ static int process_args(int argc, char *argv[])
 			display_version();
 			exit(0);
 			break;
-		case 'p':
-			count++;
-			preprocess_only = 1;
-			break;
 		case 'I':
 			add_search_dir(optarg);
 			break;
@@ -213,7 +209,7 @@ static int process_args(int argc, char *argv[])
 			binary_input =1;
 			break;
 		case 'C':
-			force_complain = 1;
+			opt_force_complain = 1;
 			break;
 		case 'N':
 			names_only = 1;
@@ -251,27 +247,14 @@ static int process_args(int argc, char *argv[])
 	}
 
 	if (count > 1) {
-		PERROR("%s: Too many options given on the command line.\n",
+		PERROR("%s: Too many actions given on the command line.\n",
 		       progname);
-		goto abort;
+		display_usage(progname);
+		exit(1);
 	}
 
 	PDEBUG("optind = %d argc = %d\n", optind, argc);
-	if (optind < argc) {
-		/* we only support one profile at a time */
-		if (argc - optind == 1) {
-			PDEBUG("Using profile in '%s'\n", argv[optind]);
-			profilename = strndup(argv[optind], PATH_MAX);
-		} else {
-			goto abort;
-		}
-	}
-
-	return option;
-
-abort:
-	display_usage(progname);
-	exit(1);
+	return optind;
 }
 
 static inline char *try_subdomainfs_mountpoint(const char *mntpnt,
@@ -490,16 +473,83 @@ int process_binary(int option, char *profilename)
 
 	free(buffer);
 
+	if (!conf_quiet) {
+		switch (option) {
+		case OPTION_ADD:
+			printf(_("Cached load succeeded for \"%s\".\n"),
+			       profilename ? profilename : "stdin");
+			break;
+		case OPTION_REPLACE:
+			printf(_("Cached reload succeeded for \"%s\".\n"),
+			       profilename ? profilename : "stdin");
+			break;
+		default:
+			break;
+		}
+	}
+
 	return retval;
+}
+
+void reset_parser(void)
+{
+	free_aliases();
+	free_symtabs();
+	free_policies();
+	reset_regex();
 }
 
 int process_profile(int option, char *profilename)
 {
+	struct stat stat_text;
+	struct stat stat_bin;
 	int retval = 0;
 
-	retval = do_include_preprocessing(profilename);
-	if (preprocess_only || retval != 0)
-		return retval;
+	/* per-profile states */
+	force_complain = opt_force_complain;
+
+	if ( profilename ) {
+		if ( !(yyin = fopen(profilename, "r")) ) {
+			PERROR(_("Error: Could not read profile %s: %s.\n"),
+			       profilename, strerror(errno));
+			exit(errno);
+		}
+	}
+	else {
+		PERROR("%s: cannot disable or force-complain via stdin\n", progname);
+	}
+
+	if ( profilename && option != OPTION_REMOVE ) {
+		/* make decisions about disabled or complain-mode profiles */
+		char *target = NULL;
+		char *basename = strrchr(profilename, '/');
+		if (basename) basename++;
+		else basename = profilename;
+
+		if (asprintf(&target, "%s/%s/%s", basedir, "disable", basename)<0) {
+			perror("asprintf");
+			exit(1);
+		}
+		if (access(target, R_OK) == 0) {
+			PERROR("Skipped: %s\n", target);
+			free(target);
+			goto out;
+		}
+		free(target);
+
+		if (asprintf(&target, "%s/%s/%s", basedir, "force-complain", basename)<0) {
+			perror("asprintf");
+			exit(1);
+		}
+		if (access(target, R_OK) == 0) {
+			PERROR("Warning: found %s, forcing complain mode\n", target);
+			force_complain = 1;
+		}
+		free(target);
+	}
+
+	if (yyin) yyrestart(yyin);
+	reset_parser();
 
 	retval = yyparse();
 	if (retval != 0)
@@ -517,7 +567,7 @@ int process_profile(int option, char *profilename)
 	retval = post_process_policy();
   	if (retval != 0) {
   		PERROR(_("%s: Errors found in file. Aborting.\n"), progname);
-  		return retval;
+		goto out;
   	}
 
 	if (dump_vars) {
@@ -550,14 +600,15 @@ out:
 int main(int argc, char *argv[])
 {
 	int retval;
-	int option;
+	int i;
+	int optind;
 
 	/* name of executable, for error reporting and usage display */
 	progname = argv[0];
 
 	init_base_dir();
 
-	option = process_args(argc, argv);
+	optind = process_args(argc, argv);
 
 	setlocale(LC_MESSAGES, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
@@ -575,11 +626,26 @@ int main(int argc, char *argv[])
 		return retval;
 	}
 
-	if (binary_input) {
-		retval = process_binary(option, profilename);
-	} else {
-		parse_default_paths();
-		retval = process_profile(option, profilename);
+	if (!binary_input) parse_default_paths();
+
+	retval = 0;
+	for (i = optind; retval == 0 && i <= argc; i++) {
+		if (i < argc && !(profilename = strdup(argv[i]))) {
+			perror("strdup");
+			return -1;
+		}
+		/* skip stdin if we've seen other command line arguments */
+		if (i == argc && optind != argc)
+			continue;
+
+		if (binary_input) {
+			retval = process_binary(option, profilename);
+		} else {
+			retval = process_profile(option, profilename);
+		}
+
+		if (profilename) free(profilename);
+		profilename = NULL;
 	}
 
 	return retval;
