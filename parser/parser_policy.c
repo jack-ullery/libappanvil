@@ -23,6 +23,7 @@
 #include <search.h>
 #include <string.h>
 #include <libintl.h>
+#include <errno.h>
 #define _(s) gettext(s)
 
 #include "parser.h"
@@ -448,69 +449,75 @@ static int add_hat_rules(void)
 
 /* Yuck, is their no other way to pass arguments to a twalk action */
 static int __load_option;
+static int __load_error;
 
 static void __load_policy(const void *nodep, const VISIT value,
 			  const int __unused depth)
 {
 	struct codomain **t = (struct codomain **) nodep;
 
-	if (value == preorder || value == endorder)
+	if (value == preorder || value == endorder || __load_error)
 		return;
 
 	if (load_codomain(__load_option, *t) != 0) {
-		exit(1);
+		__load_error = -EINVAL;
 	}
 }
 
 int load_policy(int option)
 {
 	__load_option = option;
+        __load_error = 0;
 	twalk(policy_list, __load_policy);
-	return 0;
+	return __load_error;
 }
 
 /* Yuck, is their no other way to pass arguments to a twalk action */
 static sd_serialize *__p;
 
+static int __load_hat_error;
 static void __load_hat(const void *nodep, const VISIT value,
 		       const int __unused depth)
 {
 	struct codomain **t = (struct codomain **) nodep;
 
-	if (value == preorder || value == endorder)
+	if (value == preorder || value == endorder || __load_hat_error)
 		return;
 
 	if (!sd_serialize_profile(__p, *t, 0)) {
 		PERROR(_("ERROR in profile %s, failed to load\n"),
 		       (*t)->name);
-		exit(1);
+		__load_hat_error = -EINVAL;
 	}
 }
 
+static int __load_flattened_hat_error;
 static void __load_flattened_hat(const void *nodep, const VISIT value,
 				 const int __unused depth)
 {
 	struct codomain **t = (struct codomain **) nodep;
 
-	if (value == preorder || value == endorder)
+	if (value == preorder || value == endorder || __load_flattened_hat_error)
 		return;
 
 	if (load_codomain(__load_option, *t) != 0) {
-		exit(1);
+		__load_flattened_hat_error = -EINVAL;
 	}
 }
 
 int load_flattened_hats(struct codomain *cod)
 {
+	__load_flattened_hat_error = 0;
 	twalk(cod->hat_table, __load_flattened_hat);
-	return 0;
+	return __load_flattened_hat_error;
 }
 
 int load_hats(sd_serialize *p, struct codomain *cod)
 {
 	__p = p;
+	__load_hat_error = 0;
 	twalk(cod->hat_table, __load_hat);
-	return 0;
+	return __load_hat_error;
 }
 
 static void __dump_policy(const void *nodep, const VISIT value,
