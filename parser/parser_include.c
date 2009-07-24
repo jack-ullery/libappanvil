@@ -186,7 +186,7 @@ void parse_default_paths(void)
 	while (fgetline(f, buf, 1024)) {
 		if (stripcomment(buf) && (t = strstr(buf, "SUBDOMAIN_PATH="))) {
 			t += 15;
-			/* handle : seperating path elements */
+			/* handle : separating path elements */
 			do {
 				s = strchr(t, ':');
 				if (s)

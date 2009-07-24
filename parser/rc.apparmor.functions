@@ -86,9 +86,6 @@ SD_EV_PIDFILE=/var/run/sd-event-dispatch.init.pid
 SD_STATUS=/usr/sbin/subdomain_status
 SECURITYFS=/sys/kernel/security
 
-SUBDOMAINFS_MOUNTPOINT=$(grep subdomainfs /etc/fstab  | \
-	sed -e 's|^[[:space:]]*[^[:space:]]\+[[:space:]]\+\(/[^[:space:]]*\)[[:space:]]\+subdomainfs.*$|\1|' 2> /dev/null)
-
 if [ -d "/var/lib/${MODULE}" ] ; then
 	APPARMOR_TMPDIR="/var/lib/${MODULE}"
 elif [ -d "/var/lib/${OLD_MODULE}" ] ; then
@@ -103,21 +100,9 @@ STATUS=0
 
 # Test if the apparmor "module" is present.
 is_apparmor_present() {
-	local modules=$1
-	shift
+	local module=$1
 
-	while [ $# -gt 0 ] ; do
-		modules="$modules|$1"
-		shift
-	done
-
-	# check for subdomainfs version of module
-	grep -qE "^($modules)[[:space:]]" /proc/modules
-	
-	if [ $? -ne 0 ] ; then
-		ls /sys/module/apparmor 2>/dev/null | grep -qE "^($modules)"
-	fi
-
+	test -d "/sys/module/$module"
 	return $?
 }
 
@@ -256,13 +241,8 @@ is_apparmor_loaded() {
 		return 0
 	fi
 
-	if [ -f "${SUBDOMAINFS_MOUNTPOINT}/profiles" ]; then
-		SFS_MOUNTPOINT=${SUBDOMAINFS_MOUNTPOINT}
-		return 0
-	fi
-
 	# check for subdomainfs version of module
-	is_apparmor_present apparmor subdomain
+	is_apparmor_present ${MODULE}
 
 	return $?
 }
