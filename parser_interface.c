@@ -140,7 +140,7 @@ int load_codomain(int option, struct codomain *cod)
 			break;
 		}
 
-	} else {
+	} else if (!conf_quiet) {
 		switch (option) {
 		case OPTION_ADD:
 			printf(_("Addition succeeded for \"%s\".\n"),
