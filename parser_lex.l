@@ -28,11 +28,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <libintl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <dirent.h>
 #define _(s) gettext(s)
 
 #include "parser.h"
+#include "parser_include.h"
 #include "parser_yacc.h"
 
+#ifdef PDEBUG
+#undef PDEBUG
+#endif
 /* #define DEBUG */
 #ifdef DEBUG
 #define PDEBUG(fmt, args...) printf("Lexer: " fmt, ## args)
@@ -42,6 +50,100 @@
 #define NPDEBUG(fmt, args...)	/* Do nothing */
 
 int current_lineno = 1;
+
+struct ignored_suffix_t {
+	char * text;
+	int len;
+	int silent;
+};
+
+struct ignored_suffix_t ignored_suffixes[] = {
+	/* Debian packging files, which are in flux during install
+           should be silently ignored. */
+	{ ".dpkg-new", 9, 1 },
+	{ ".dpkg-old", 9, 1 },
+	{ ".dpkg-dist", 10, 1 },
+	/* RPM packaging files have traditionally not been silently
+           ignored */
+	{ ".rpmnew", 7, 0 },
+	{ ".rpmsave", 8, 0 },
+	/* Backup files should be mentioned */
+	{ "~", 1, 0 },
+	{ NULL, 0, 0 }
+};
+
+void include_filename(char *filename, int search)
+{
+	FILE *include_file = NULL;
+	struct stat my_stat;
+	char *fullpath = NULL;
+
+	if (search) include_file = search_path(filename, &fullpath);
+	else {
+		fullpath = strdup(filename);
+		include_file = fopen(fullpath, "r");
+	}
+
+	if (!include_file) yyerror(_("Could not open '%s'"), fullpath);
+
+        if (fstat(fileno(include_file), &my_stat))
+		yyerror(_("fstat failed for '%s'"), fullpath);
+
+        if (S_ISREG(my_stat.st_mode)) {
+		yyin = include_file;
+		PDEBUG("Opened include \"%s\"\n", fullpath);
+		yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
+        }
+
+        if (S_ISDIR(my_stat.st_mode)) {
+                DIR *dir = NULL;
+		char *dirent_path = NULL;
+                struct dirent *dirent;
+
+		PDEBUG("Opened include directory \"%s\"\n", fullpath);
+                if (!(dir = opendir(fullpath)))
+			yyerror(_("opendir failed '%s'"), fullpath);
+		fclose(include_file);
+		include_file = NULL;
+
+                while ((dirent = readdir(dir)) != NULL) {
+			int name_len;
+			struct ignored_suffix_t *suffix;
+                        /* skip dotfiles silently. */
+                        if (dirent->d_name[0] == '.')
+                                continue;
+
+			if (dirent_path) free(dirent_path);
+                        if (asprintf(&dirent_path, "%s/%s", fullpath, dirent->d_name)<0)
+				yyerror("Out of memory");
+
+			name_len = strlen(dirent->d_name);
+			/* skip blacklisted suffixes */
+			for (suffix = ignored_suffixes; suffix->text; suffix++) {
+				char *found;
+				if ( (found = strstr(dirent->d_name, suffix->text)) &&
+                                     found - dirent->d_name + suffix->len == name_len ) {
+					name_len = 0;
+					if (!suffix->silent)
+						PERROR("Ignoring: '%s'\n", dirent_path);
+					break;
+				}
+			}
+			if (!name_len) continue;
+
+                        if (stat(dirent_path, &my_stat))
+				yyerror(_("stat failed for '%s'"), dirent_path);
+			if (S_ISREG(my_stat.st_mode)) {
+				if (!(yyin = fopen(dirent_path,"r")))
+					yyerror(_("Could not open '%s'"), filename);
+				PDEBUG("Opened include \"%s\"\n", filename);
+				yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
+			}
+		}
+		if (dirent_path) free(dirent_path);
+		closedir(dir);
+	}
+}
 
 %}
 
@@ -88,8 +190,38 @@ LT_EQUAL	<=
 %x ASSIGN_MODE
 %x RLIMIT_MODE
 %x CHANGE_PROFILE_MODE
+%x INCLUDE
 
 %%
+
+<INCLUDE>{
+	{WS}+	{ /* Eat whitespace */ }
+	\<([^\> \t\n]+)\>	{	/* <filename> */
+		char *filename = strdup(yytext);
+		filename[strlen(filename)-1]='\0';
+		include_filename(filename+1, 1);
+		free(filename);
+		BEGIN(INITIAL);
+		}
+
+	\"([^\" \t\n]+)\"	{	/* "filename" */
+		char *filename = strdup(yytext);
+		filename[strlen(filename)-1]='\0';
+		include_filename(filename+1, 0);
+		free(filename);
+		BEGIN(INITIAL);
+		}
+
+	[^\<\>\"{WS}]+ {	/* filename */
+		include_filename(yytext, 0);
+		BEGIN(INITIAL);
+		}
+}
+
+<<EOF>> {
+	yypop_buffer_state();
+	if ( !YY_CURRENT_BUFFER ) yyterminate();
+}
 
 <SUB_NAME>{
 	{ID}+	{
@@ -279,10 +411,17 @@ LT_EQUAL	<=
 		}
 }
 
-#.*\n			{ /* Comment - ignore */
+#include/.*\r?\n	 { /* include */
+			PDEBUG("Matched #include\n");
 			current_lineno++;
-			PDEBUG("Line no++: %d\n", current_lineno);
+			BEGIN(INCLUDE);
 			}
+
+#.*\r?\n		{ /* normal comment */
+			PDEBUG("comment(%d): %s\n", current_lineno, yytext);
+			current_lineno++;
+			BEGIN(INITIAL);
+}
 
 {END_OF_RULE}		{ return TOK_END_OF_RULE; }
 
