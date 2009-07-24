@@ -1,5 +1,5 @@
 #
-#=DESCRIPTION includes testing - verify that ignored suffixes are ignored
+#=DESCRIPTION includes testing - verify that only suffixes are ignored
 #=EXRESULT PASS
 #
 
