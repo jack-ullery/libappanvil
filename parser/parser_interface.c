@@ -17,7 +17,6 @@
  *   along with this program; if not, contact Novell, Inc.
  */
 
-#define _GNU_SOURCE    /* for asprintf */
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>

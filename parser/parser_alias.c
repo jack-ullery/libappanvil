@@ -17,7 +17,6 @@
  *   along with this program; if not, contact Novell, Inc.
  */
 
-#define _GNU_SOURCE	/* for tdestroy(3) */
 #include <search.h>
 #include <stdlib.h>
 #include <stdarg.h>
