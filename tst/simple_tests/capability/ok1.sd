@@ -37,6 +37,8 @@
   capability lease,
   capability audit_write,
   capability audit_control,
+  capability setfcap,
+  capability mac_override,
 }
 
 /does/not/exist2 {
