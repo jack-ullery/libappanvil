@@ -61,8 +61,9 @@ int main(int argc, char *argv[])
 	int waitstatus;
 	int c;
 	char buf[BUFSIZ];
-	void *child_stack = malloc(PAGE_SIZE << 4);
-	int clone_flags = 0;
+	int stack_size = PAGE_SIZE << 4;
+	void *child_stack = malloc(stack_size);
+	int clone_flags = SIGCHLD;
 
 	while ((c = getopt_long (argc, argv, "+hn", long_options, NULL)) != -1) {
 		switch (c) {
@@ -87,7 +88,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	rc = clone(&do_child, child_stack, clone_flags, NULL);
+	rc = clone(do_child, child_stack + stack_size, clone_flags, argv);
 	if (rc < 0) {
 		perror("FAIL: clone failed");
 		exit(1);
