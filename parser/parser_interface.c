@@ -631,6 +631,14 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 		if (!sd_write_string(p, profile->name, NULL))
 			return 0;
 	}
+
+	if (regex_type == AARE_DFA && profile->xmatch) {
+		if (!sd_serialize_dfa(p, profile->xmatch, profile->xmatch_size))
+			return 0;
+		if (!sd_write32(p, profile->xmatch_len))
+			return 0;
+	}
+
 	if (!sd_write_struct(p, "flags"))
 		return 0;
 	/* used to be flags.debug, but that's no longer supported */
