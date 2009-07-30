@@ -122,7 +122,8 @@ static void filter_slashes(char *path)
 }
 
 static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
-					 char *pcre, size_t pcre_size)
+					 char *pcre, size_t pcre_size,
+					 int *first_re_pos)
 {
 #define STORE(_src, _dest, _len) \
 	if ((const char*)_dest + _len > (pcre + pcre_size)){ \
@@ -131,7 +132,9 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 		memcpy(_dest, _src, _len); \
 		_dest += _len; \
 	}
+#define update_re_pos(X) if (!(*first_re_pos)) { *first_re_pos = (X); }
 
+	*first_re_pos = 0;
 
 	int ret = TRUE;
 	/* flag to indicate input error */
@@ -220,6 +223,7 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 					 * optimised tail globbing rather
 					 * than full regex.
 					 */
+					update_re_pos(sptr - aare);
 					if (*(sptr + 2) == '\0' &&
 					    ptype == ePatternBasic) {
 						ptype = ePatternTailGlob;
@@ -230,6 +234,7 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 					STORE("[^\\x00]*", dptr, 8);
 					sptr++;
 				} else {
+					update_re_pos(sptr - aare);
 					ptype = ePatternRegex;
 					STORE("[^/\\x00]*", dptr, 9);
 				}	/* *(sptr+1) == '*' */
@@ -245,6 +250,7 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 				 */
 				STORE(sptr, dptr, 1);
 			} else {
+				update_re_pos(sptr - aare);
 				ptype = ePatternRegex;
 				STORE("[^/\\x00]", dptr, 8);
 			}
@@ -255,6 +261,7 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 				/* [ is a PCRE special character */
 				STORE("\\[", dptr, 2);
 			} else {
+				update_re_pos(sptr - aare);
 				incharclass = 1;
 				ptype = ePatternRegex;
 				STORE(sptr, dptr, 1);
@@ -281,6 +288,7 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 					PERROR(_("%s: Illegal open {, nesting groupings not allowed\n"),
 					       progname);
 				} else {
+					update_re_pos(sptr - aare);
 					ingrouping = 1;
 					ptype = ePatternRegex;
 					STORE("(", dptr, 1);
@@ -406,11 +414,11 @@ static int process_pcre_entry(struct cod_entry *entry)
 	char tbuf[PATH_MAX + 3];	/* +3 for ^, $ and \0 */
 	int ret = TRUE;
 	pattern_t ptype;
-
+	int pos;
 	if (!entry) 		/* shouldn't happen */
 		return TRUE;
 
-	ptype = convert_aaregex_to_pcre(entry->name, 1, tbuf, PATH_MAX + 3);
+	ptype = convert_aaregex_to_pcre(entry->name, 1, tbuf, PATH_MAX+3, &pos);
 	if (ptype == ePatternInvalid)
 		return FALSE;
 
@@ -477,16 +485,66 @@ static int process_pcre_entry(struct cod_entry *entry)
 	return ret;
 }
 
+static const char *local_name(const char *name)
+{
+	const char *t;
+
+	for (t = strstr(name, "//") ; t ; t = strstr(name, "//"))
+		name = t + 2;
+
+	return name;
+}
+
+static int process_profile_name_xmatch(struct codomain *cod)
+{
+	char tbuf[PATH_MAX + 3];	/* +3 for ^, $ and \0 */
+	pattern_t ptype;
+	const char *name;
+
+	/* don't filter_slashes for profile names */
+	name = local_name(cod->name);
+	ptype = convert_aaregex_to_pcre(name, 0, tbuf, PATH_MAX + 3,
+					&cod->xmatch_len);
+
+	if (ptype == ePatternInvalid) {
+		PERROR(_("%s: Invalid profile name '%s' - bad regular expression\n"), progname, name);
+		return FALSE;
+	} else if (ptype == ePatternBasic) {
+		/* no regex so do not set xmatch */
+		cod->xmatch = NULL;
+		cod->xmatch_len = 0;
+		cod->xmatch_size = 0;
+	} else {
+		/* build a dfa */
+		aare_ruleset_t *rule = aare_new_ruleset(0);
+		if (!rule)
+			return FALSE;
+		if (!aare_add_rule(rule, tbuf, 0, AA_MAY_EXEC, 0)) {
+			aare_delete_ruleset(rule);
+			return FALSE;
+		}
+		cod->xmatch = aare_create_dfa(rule, 0, &cod->xmatch_size);
+		aare_delete_ruleset(rule);
+ 		if (!cod->xmatch)
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
 static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 {
 	char tbuf[PATH_MAX + 3];	/* +3 for ^, $ and \0 */
 	pattern_t ptype;
+	int pos;
 
 	if (!entry) 		/* shouldn't happen */
 		return TRUE;
 
 
-	ptype = convert_aaregex_to_pcre(entry->name, 0, tbuf, PATH_MAX + 3);
+	if (entry->mode & ~AA_CHANGE_PROFILE)
+		filter_slashes(entry->name);
+	ptype = convert_aaregex_to_pcre(entry->name, 0, tbuf, PATH_MAX+3, &pos);
 	if (ptype == ePatternInvalid)
 		return FALSE;
 
@@ -523,9 +581,10 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 		char lbuf[PATH_MAX + 8];
 		int perms = AA_LINK_BITS & entry->mode;
 		char *vec[2];
+		int pos;
 		vec[0] = tbuf;
 		if (entry->link_name) {
-			ptype = convert_aaregex_to_pcre(entry->link_name, 0, lbuf, PATH_MAX + 8);
+			ptype = convert_aaregex_to_pcre(entry->link_name, 0, lbuf, PATH_MAX + 8, &pos);
 			if (ptype == ePatternInvalid)
 				return FALSE;
 			if (entry->subset)
@@ -542,7 +601,8 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 		if (entry->namespace) {
 			char *vec[2];
 			char lbuf[PATH_MAX + 8];
-			ptype = convert_aaregex_to_pcre(entry->namespace, 0, lbuf, PATH_MAX + 8);
+			int pos;
+			ptype = convert_aaregex_to_pcre(entry->namespace, 0, lbuf, PATH_MAX + 8, &pos);
 			vec[0] = lbuf;
 			vec[1] = tbuf;
 			if (!aare_add_rule_vec(dfarules, 0, AA_CHANGE_PROFILE, 0, 2, vec))
@@ -575,11 +635,12 @@ int post_process_entries(struct codomain *cod)
 	int count = 0;
 
 	list_for_each(cod->entries, entry) {
-		filter_slashes(entry->name);
-		if (regex_type == AARE_DFA)
+		if (regex_type == AARE_DFA) {
 			rc = process_dfa_entry(cod->dfarules, entry);
-		else
+		} else {
+			filter_slashes(entry->name);
 			rc = process_pcre_entry(entry);
+		}
 		if (!rc)
 			ret = FALSE;
 		count++;
@@ -594,6 +655,9 @@ int process_regex(struct codomain *cod)
 	int error = -1;
 
 	if (regex_type == AARE_DFA) {
+		if (!process_profile_name_xmatch(cod))
+			goto out;
+
 		cod->dfarules = aare_new_ruleset(0);
 		if (!cod->dfarules)
 			goto out;

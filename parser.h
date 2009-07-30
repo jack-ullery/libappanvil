@@ -78,6 +78,10 @@ struct aa_rlimits {
 struct codomain {
 	char *namespace;
 	char *name;				/* codomain name */
+	void *xmatch;
+	size_t xmatch_size;
+	int xmatch_len;
+
 	/* char *sub_name; */			/* subdomain name or NULL */
 	/* int default_deny; */			/* TRUE or FALSE */
 	int local;
