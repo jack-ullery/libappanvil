@@ -63,8 +63,9 @@ int names_only = 0;
 int dump_vars = 0;
 int dump_expanded_vars = 0;
 int conf_quiet = 0;
-int skip_cache = 0;
 int show_cache = 0;
+int skip_cache = 0;
+int skip_read_cache = 0;
 int write_cache = 0;
 #ifdef FORCE_READ_IMPLIES_EXEC
 int read_implies_exec = 1;
@@ -108,6 +109,7 @@ struct option long_options[] = {
 	{"namespace",		1, 0, 'n'},
 	{"readimpliesX",	0, 0, 'X'},
 	{"skip-cache",		0, 0, 'K'},
+	{"skip-read-cache",	0, 0, 'T'},
 	{"write-cache",		0, 0, 'W'},
 	{"show-cache",		0, 0, 'k'},
 	{NULL, 0, 0, 0},
@@ -142,7 +144,8 @@ static void display_usage(char *command)
 	       "-X, --readimpliesX	Map profile read permissions to mr\n"
 	       "-k, --show-cache	Report cache hit/miss details\n"
 	       "-K, --skip-cache	Do not attempt to load or save cached profiles\n"
-	       "-W, --write-cache	Attempt to save cached profiles\n"
+	       "-T, --skip-read-cache	Do not attempt to load cached profiles\n"
+	       "-W, --write-cache	Save cached profile (force with -T)\n"
 	       "-q, --quiet		Don't emit warnings\n"
 	       "-v, --version		Display version info and exit\n"
 	       "-d, --debug 		Debug apparmor definitions\n"
@@ -261,6 +264,9 @@ static int process_args(int argc, char *argv[])
 			break;
 		case 'W':
 			write_cache = 1;
+			break;
+		case 'T':
+			skip_read_cache = 1;
 			break;
 		default:
 			display_usage(progname);
@@ -580,7 +586,8 @@ int process_profile(int option, char *profilename)
 				exit(1);
 			}
 			/* Load a binary cache if it exists and is newest */
-			if (stat(cachename, &stat_bin) == 0 &&
+			if (!skip_read_cache &&
+                            stat(cachename, &stat_bin) == 0 &&
                             stat_bin.st_size > 0 &&
                             stat_bin.st_mtime >= stat_text.st_mtime) {
 				if (show_cache) PERROR("Cache hit: %s\n", cachename);
