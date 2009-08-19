@@ -64,28 +64,76 @@ Note that it still requires a complete AppArmor definition as described
 in apparmor.d(5) even though the contents of the definition aren't
 used.
 
-=item -p, --preprocess
+=item -C, --Complain
 
-Parse the profile(s) and process include directives and output the
-result to stdout.
+For the profile to load in complain mode.
 
-=item -I n, --Include n
+=item -B, --binary
 
-Add element n to the search path when resolving #include directives
-defined as an absolute paths.
+Load a binary (cached) profile, as produced with the -S option.
+
+=item -N, --names
+
+Produce a list of policies from a given set of profiles (implies -K).
+
+=item -S, --stdout
+
+Writes a binary (cached) profile to stdout (implies -K).
 
 =item -b n, --base n
 
 Set the base directory for resolving #include directives
 defined as relative paths.
 
-=item -C, --Complain
+=item -I n, --Include n
 
-Load the profile in complain mode.
+Add element n to the search path when resolving #include directives
+defined as an absolute paths.
 
-=item -h, --help
+=item -f n, --subdomainfs n
 
-Give a quick reference guide.
+Set the location of the apparmor security filesystem (default is
+"/sys/kernel/security/apparmor").
+
+=item -m n, --match-string n
+
+Only use match features "n".
+
+=item -n n, --namespace-string n
+
+Force a profile to load in the namespace "n".
+
+=item -X, --readimpliesX
+
+In the case of profiles that are loading on systems were READ_IMPLIES_EXEC
+is set in the kernel for a given process, load the profile so that any "r"
+flags are processed as "mr".
+
+=item -k, --show-cache
+
+Report the cache processing (hit/miss details) when loading or saving
+cached profiles.
+
+=item -K, --skip-cache
+
+Perform no caching at all: disables -W, implies -T.
+
+=item -T, --skip-read-cache
+
+By default, if a profile's cache is found in /etc/apparmor.d/cache/ and
+the timestamp is newer than the profile, it will be loaded from the cache.
+This option disables this cache loading behavior.
+
+=item -W, --write-cache
+
+Write out cached profiles to /etc/apparmor.d/cache/.  Off by default.
+In cases where abstractions have been changed, and the parser is running
+with "--replace", it may make sense to also use "--skip-read-cache" with
+the "--write-cache" option.
+
+=item -q, --quiet
+
+Do not report on the profiles as they are loaded.
 
 =item -v, --version
 
@@ -95,6 +143,10 @@ Print the version number and exit.
 
 Given once, only checks the profiles to ensure syntactic correctness.
 Given twice, dumps its interpretation of the profile for checking.
+
+=item -h, --help
+
+Give a quick reference guide.
 
 =back
 
