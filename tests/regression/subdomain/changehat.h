@@ -60,7 +60,7 @@ inline int do_open (char * file)
 		fprintf(stderr, "FAIL: open %s failed - %s\n",
 			file,
 			strerror(errno));
-		return 1;
+		return errno;
 	}
 
         rc=write(fd, data, strlen(data));
@@ -68,7 +68,7 @@ inline int do_open (char * file)
         if (rc != strlen(data)){
                 fprintf(stderr, "FAIL: write failed - %s\n",
                         strerror(errno));
-                return 1;
+                return errno;
         }
 
         (void)lseek(fd, 0, SEEK_SET);
@@ -77,13 +77,13 @@ inline int do_open (char * file)
         if (rc != strlen(data)){
                 fprintf(stderr, "FAIL: read failed - %s\n",
                         strerror(errno));
-                return 1;
+                return errno;
         }
 
         if (memcmp(buf, data, strlen(data)) != 0){
                 fprintf(stderr, "FAIL: comparison failed - %s\n",
                         strerror(errno));
-                return 1;
+                return errno;
         }
 
 	close(fd);
