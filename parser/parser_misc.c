@@ -570,6 +570,14 @@ reeval:
 					mode |= tmode;
 					p += 2;		/* skip x */
 				}
+			} else if (tolower(next) == COD_UNSAFE_UNCONFINED_CHAR) {
+				tmode |= AA_EXEC_PUX;
+				if (IS_DIFF_QUAL(mode, tmode)) {
+					yyerror(_("Exec qualifier '%c%c' invalid, conflicting qualifier already specified"), this, next);
+				} else {
+					mode |= tmode;
+					p += 2;		/* skip x */
+				}
 			} else if (IS_DIFF_QUAL(mode, tmode)) {
 				yyerror(_("Exec qualifier '%c' invalid, conflicting qualifier already specified"), this);
 

@@ -162,7 +162,7 @@ COLON		:
 END_OF_RULE	[,]
 SEPARATOR 	{UP}
 RANGE		-
-MODE_CHARS 	([RrWwaLlMmkXx])|(([Uu]|[Pp]|[Cc])[Xx])|(([Pp]|[Cc])?[Ii][Xx])
+MODE_CHARS 	([RrWwaLlMmkXx])|(([Pp]|[Cc])[Xx])|(([Pp]|[Cc])?([IiUu])[Xx])
 MODES		{MODE_CHARS}+
 WS		[[:blank:]]
 NUMBER		[[:digit:]]+
