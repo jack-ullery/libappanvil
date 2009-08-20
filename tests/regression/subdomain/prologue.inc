@@ -146,7 +146,7 @@ resolve_libs()
 	# Suck. SuSE's ldd has a line "linux-gate.so.1 =>  (0xffffe000)"
 	#       Red Hat's ldd has "/lib/ld-linux.so.2 (0x007b1000)"
 	# good ${DIETY}, what gross kludgage.
-	libs=$(ldd $exec | egrep -v "linux-(vdso(32|64)|gate).so.1" | sed 's~^.*=> \(/.*\) (.*$~\1~' | awk '{print $1}')
+	libs=$(ldd $exec | egrep -v "linux-(vdso(32|64)?|gate).so.1" | sed 's~^.*=> \(/.*\) (.*$~\1~' | awk '{print $1}')
 
 	dynlibs="/etc/ld.so.cache:r"
 
