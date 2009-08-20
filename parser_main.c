@@ -548,7 +548,7 @@ int process_profile(int option, char *profilename)
 		}
 	}
 	else {
-		PERROR("%s: cannot use or update cache, disable, or force-complain via stdin\n", progname);
+		pwarn("%s: cannot use or update cache, disable, or force-complain via stdin\n", progname);
 	}
 
 	if ( profilename && option != OPTION_REMOVE ) {
