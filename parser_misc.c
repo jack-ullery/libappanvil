@@ -806,9 +806,7 @@ static const char *capnames[] = {
 	"mknod",
 	"lease",
 	"audit_write",
-	"audit_control",
-	"setfcap",
-	"mac_override"
+	"audit_control"
 };
 
 const char *capability_to_name(unsigned int cap)
@@ -839,7 +837,7 @@ void debug_cod_list(struct codomain *cod)
 	
 	printf("Capabilities:\t");
 	for (i = 0; i < (sizeof(capnames)/sizeof(char *)); i++) {
-		if (((1ull << i) & cod->capabilities) != 0) {
+		if (((1 << i) & cod->capabilities) != 0) {
 			printf ("%s ", capability_to_name(i));
 		}
 	}
