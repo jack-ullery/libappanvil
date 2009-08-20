@@ -29,6 +29,10 @@ bin=$pwd
 
 helper=$pwd/ptrace_helper
 
+# -n number of syscalls to perform
+# -c have the child call ptrace_me, else parent does ptrace_attach
+# -h transition child to ptrace_helper before doing ptrace (used to test
+#  x transitions with ptrace)
 # test base line of unconfined tracing unconfined
 runchecktest "test 1" pass -n 100 /bin/true
 runchecktest "test 1 -c" pass -c -n 100 /bin/true
@@ -97,27 +101,27 @@ runchecktest "test 7a -hc " pass -h -c -n 100 $helper
 runchecktest "test 7a -h prog" pass -h -n 100 $helper /bin/true
 runchecktest "test 7a -hc prog" pass -h -c -n 100 $helper /bin/true
 
-#traced helper can't do px - should update so depends on tracer
+#traced helper from unconfined
 genprofile image=$helper $helper:ix /bin/true:rpx -- image=/bin/true
 runchecktest "test 8" pass -n 100 /bin/true
 # pass - ptrace_attach is done before exec
 runchecktest "test 8 -c " pass -c -n 100 /bin/true
 runchecktest "test 8 -h" pass -h -n 100 $helper
 runchecktest "test 8 -hc " pass -h -c -n 100 $helper
-# fail - can not px due to ptrace
-runchecktest "test 8 -h prog" fail -h -n 100 $helper /bin/true
-runchecktest "test 8 -hc prog" fail -h -c -n 100 $helper /bin/true
+# pass - can px if tracer can ptrace target
+runchecktest "test 8 -h prog" pass -h -n 100 $helper /bin/true
+runchecktest "test 8 -hc prog" pass -h -c -n 100 $helper /bin/true
 
-#traced helper can't do ux - should update so depends on tracer
+#traced helper from unconfined
 genprofile image=$helper $helper:ix /bin/true:rux -- image=/bin/true
 runchecktest "test 9" pass -n 100 /bin/true
 # pass - ptrace_attach is done before exec
 runchecktest "test 9 -c " pass -c -n 100 /bin/true
 runchecktest "test 9 -h" pass -h -n 100 $helper
 runchecktest "test 9 -hc " pass -h -c -n 100 $helper
-# fail - can not ux due to ptrace
-runchecktest "test 9 -h prog" fail -h -n 100 $helper /bin/true
-runchecktest "test 9 -hc prog" fail -h -c -n 100 $helper /bin/true
+# pass - can ux if tracer can ptrace target
+runchecktest "test 9 -h prog" pass -h -n 100 $helper /bin/true
+runchecktest "test 9 -hc prog" pass -h -c -n 100 $helper /bin/true
 
 genprofile
 # fail due to no exec permission
@@ -148,10 +152,11 @@ runchecktest "test 12 -hc prog" pass -h -c -n 100 $helper /bin/true
 
 #ptraced confined app can't px - fails to unset profile
 genprofile image=$helper $helper:rix /bin/true:rpx
-runchecktest "test 14 -h prog" fail -h -n 100 $helper /bin/true
-runchecktest "test 14 -hc prog" fail -h -c -n 100 $helper /bin/true
+runchecktest "test 13 -h prog" fail -h -n 100 $helper /bin/true
+runchecktest "test 13 -hc prog" fail -h -c -n 100 $helper /bin/true
 
 #ptraced confined app can't ux - fails to unset profile
+#
 genprofile image=$helper $helper:rix /bin/true:rux
 runchecktest "test 14 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 14 -hc prog" fail -h -c -n 100 $helper /bin/true

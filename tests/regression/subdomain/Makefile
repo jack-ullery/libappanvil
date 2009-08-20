@@ -8,6 +8,7 @@
 #	License.
 
 SRC=access.c \
+    changeprofile.c \
     changehat.c \
     changehat_fork.c \
     changehat_misc.c \
