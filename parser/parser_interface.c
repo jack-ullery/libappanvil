@@ -610,7 +610,7 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 			 int flattened)
 {
 	struct cod_entry *entry;
-	u32 allowed_caps;
+	uint64_t allowed_caps;
 
 	if (!sd_write_struct(p, "profile"))
 		return 0;
@@ -650,14 +650,31 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 		return 0;
 	if (!sd_write_structend(p))
 		return 0;
-	allowed_caps = (profile->capabilities | profile->set_caps) & ~profile->deny_caps;
-	if (!sd_write32(p, allowed_caps))
+
+#define low_caps(X) ((u32) ((X) & 0xffffffff))
+#define high_caps(X) ((u32) (((X) >> 32) & 0xffffffff))
+	allowed_caps = (profile->capabilities | profile->set_caps) &
+		~profile->deny_caps;
+	if (!sd_write32(p, low_caps(allowed_caps)))
 		return 0;
-	if (!sd_write32(p, allowed_caps & profile->audit_caps))
+	if (!sd_write32(p, low_caps(allowed_caps & profile->audit_caps)))
 		return 0;
-	if (!sd_write32(p, profile->deny_caps & profile->quiet_caps))
+	if (!sd_write32(p, low_caps(profile->deny_caps & profile->quiet_caps)))
 		return 0;
-	if (!sd_write32(p, profile->set_caps & ~profile->deny_caps))
+	if (!sd_write32(p, low_caps(profile->set_caps & ~profile->deny_caps)))
+		return 0;
+
+	if (!sd_write_struct(p, "caps64"))
+		return 0;
+	if (!sd_write32(p, high_caps(allowed_caps)))
+		return 0;
+	if (!sd_write32(p, high_caps(allowed_caps & profile->audit_caps)))
+		return 0;
+	if (!sd_write32(p, high_caps(profile->deny_caps & profile->quiet_caps)))
+		return 0;
+	if (!sd_write32(p, high_caps(profile->set_caps & ~profile->deny_caps)))
+		return 0;
+	if (!sd_write_structend(p))
 		return 0;
 
 	if (!sd_serialize_rlimits(p, &profile->rlimits))
