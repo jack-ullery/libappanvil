@@ -44,24 +44,15 @@
 #ifndef CAP_AUDIT_CONTROL
 #define CAP_AUDIT_CONTROL 30
 #endif
-#ifndef CAP_SETFCAP
-#define CAP_SETFCAP	     31
-#endif
-#ifndef CAP_MAC_OVERRIDE
-#define CAP_MAC_OVERRIDE     32
-#endif
+
+/* A few utility defines */
 
 #define CIDR_32 htonl(0xffffffff)
 #define CIDR_24 htonl(0xffffff00)
 #define CIDR_16 htonl(0xffff0000)
 #define CIDR_8  htonl(0xff000000)
 
-/* undefine linux/capability.h CAP_TO_MASK */
-#ifdef CAP_TO_MASK
-#undef CAP_TO_MASK
-#endif
-
-#define CAP_TO_MASK(x) (1ull << (x))
+#define CAP_TO_MASK(x) (1 << (x))
 
 /* from lex_config, for nice error messages */
 /* extern char *current_file; */
@@ -156,7 +147,7 @@ struct codomain *do_local_profile(struct codomain *cod, char *name, int mode, in
 	struct cod_entry *user_entry;
 	struct flagval flags;
 	int fmode;
-	uint64_t cap;
+	unsigned int cap;
 	unsigned int allowed_protocol;
 	char *set_var;
 	char *bool_var;
@@ -1054,7 +1045,6 @@ caps: caps TOK_ID
 		int cap = name_to_capability($2);
 		if (cap == -1)
 			yyerror(_("Invalid capability %s."), $2);
-		free($2);
 		$$ = $1 | CAP_TO_MASK(cap);
 	}
 
@@ -1063,7 +1053,6 @@ caps: TOK_ID
 		int cap = name_to_capability($1);
 		if (cap == -1)
 			yyerror(_("Invalid capability %s."), $1);
-		free($1);
 		$$ = CAP_TO_MASK(cap);
 	};
 

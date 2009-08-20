@@ -639,11 +639,11 @@ struct codomain *merge_policy(struct codomain *a, struct codomain *b)
 	a->flags.complain = a->flags.complain || b->flags.complain;
 	a->flags.audit = a->flags.audit || b->flags.audit;
 
-	a->capabilities |= b->capabilities;
-	a->audit_caps |= b->audit_caps;
-	a->deny_caps |= b->deny_caps;
-	a->quiet_caps |= b->quiet_caps;
-	a->set_caps |= b->set_caps;
+	a->capabilities = a->capabilities | b->capabilities;
+	a->audit_caps = a->audit_caps | b->audit_caps;
+	a->deny_caps = a->deny_caps | b->deny_caps;
+	a->quiet_caps = a->quiet_caps | b->quiet_caps;
+	a->set_caps = a->set_caps | b->set_caps;
 
 	if (a->network_allowed) {
 		size_t i;
