@@ -32,7 +32,7 @@
 #define AA_MAY_LINK			(1 << 4)
 #define AA_MAY_LOCK			(1 << 5)
 #define AA_EXEC_MMAP			(1 << 6)
-#define AA_MAY_MOUNT			(1 << 7)
+#define AA_EXEC_PUX			(1 << 7)
 #define AA_EXEC_UNSAFE			(1 << 8)
 #define AA_EXEC_INHERIT			(1 << 9)
 #define AA_EXEC_MOD_0			(1 << 10)
@@ -43,7 +43,7 @@
 #define AA_BASE_PERMS			(AA_MAY_EXEC | AA_MAY_WRITE | \
 					 AA_MAY_READ | AA_MAY_APPEND | \
 					 AA_MAY_LINK | AA_MAY_LOCK | \
-					 AA_MAY_MOUNT | AA_EXEC_MMAP | \
+					 AA_EXEC_PUX | AA_EXEC_MMAP | \
 					 AA_EXEC_UNSAFE | AA_EXEC_INHERIT | \
 					 AA_EXEC_MOD_0 | AA_EXEC_MOD_1 | \
 					 AA_EXEC_MOD_2 | AA_EXEC_MOD_3)
@@ -74,7 +74,7 @@
 					 AA_OTHER_EXEC_MODIFIERS)
 
 #define AA_EXEC_TYPE			(AA_EXEC_UNSAFE | AA_EXEC_INHERIT | \
-					 AA_EXEC_MODIFIERS)
+					 AA_EXEC_PUX | AA_EXEC_MODIFIERS)
 
 #define AA_EXEC_UNCONFINED		(AA_EXEC_MOD_0)
 #define AA_EXEC_PROFILE			(AA_EXEC_MOD_1)
