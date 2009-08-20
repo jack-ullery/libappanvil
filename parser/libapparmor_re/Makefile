@@ -22,4 +22,4 @@ regexp.cc : regexp.y flex-tables.h
 	${BISON} -o $@ $<
 
 clean:
-	rm -f regexp{,.o,.cc,.so,.a} ${TARGET}
+	rm -f regexp.o regexp.cc regexp.so regexp.a regexp ${TARGET}
