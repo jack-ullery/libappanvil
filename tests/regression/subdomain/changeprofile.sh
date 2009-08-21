@@ -27,7 +27,8 @@ okperm=rw
 
 othertest="$pwd/rename"
 subtest="sub"
-fqsubtest="$pwd/changeprofile//$subtest"
+fqsubbase="$pwd/changeprofile"
+fqsubtest="$fqsubbase//$subtest"
 subtest2="$pwd//sub2"
 subtest3="$pwd//sub3"
 
@@ -63,3 +64,11 @@ runchecktest "CHANGEPROFILE (nochange access file)" pass nochange $file
 runchecktest_errno EACCES "CHANGEPROFILE (nochange access subfile)" fail nochange $subfile
 runchecktest_errno EACCES "CHANGEPROFILE (access file)" fail $fqsubtest $file
 runchecktest "CHANGEPROFILE (access sub file)" pass $fqsubtest $subfile
+
+
+# CHANGEPROFILE RE TEST
+genprofile $file:$okperm 'change_profile->':"$fqsubbase//*" hat:$subtest $subfile:$okperm
+runchecktest "CHANGEPROFILE_RE (nochange access file)" pass nochange $file
+runchecktest_errno EACCES "CHANGEPROFILE_RE (nochange access subfile)" fail nochange $subfile
+runchecktest_errno EACCES "CHANGEPROFILE_RE (access file)" fail $fqsubtest $file
+runchecktest "CHANGEPROFILE_RE (access sub file)" pass $fqsubtest $subfile

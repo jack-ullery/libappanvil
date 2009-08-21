@@ -107,6 +107,7 @@ EXEC=$(SRC:%.c=%)
 
 TESTS=access \
       capabilities \
+      changeprofile \
       changehat \
       changehat_fork \
       changehat_misc \
