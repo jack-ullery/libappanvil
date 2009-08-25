@@ -68,7 +68,7 @@ genrunscript()
 	if [ "$retaintmpdir" = "true" ]
 	then
 		runfile=$tmpdir/runtest
-		echo "$subdomain ${parser_args} < $profile" > $runfile
+		echo "$subdomain ${parser_args} $profile" > $runfile
 		echo -n "$testexec " >> $runfile
 		while [ $# -gt 0 ] ; do
 		      echo -n "\"$1\" " >> $runfile
@@ -76,7 +76,7 @@ genrunscript()
 		done
 		echo "2>&1 > $outfile" >> $runfile
 		echo "echo $testname: \`cat $outfile\`" >> $runfile
-		echo "$subdomain ${parser_args} -R < $profile" >> $runfile
+		echo "$subdomain ${parser_args} -R $profile" >> $runfile
 	fi
 }
 
@@ -122,6 +122,7 @@ resolve_symlink()
 		echo ${link}
 		return 0
 	else
+		echo "Could not resolve '$link'" >&2
 		return 1
 	fi
 }
@@ -161,6 +162,8 @@ resolve_libs()
 		libpath=`resolve_symlink $i`		
 		case $libpath in
 		/lib/ld[.-]*) mode=${mode}px
+			   ;;
+		/lib32/ld[.-]*) mode=${mode}px
 			   ;;
 		/lib64/ld[.-]*) mode=${mode}px
 			   ;;
@@ -474,7 +477,7 @@ loadprofile()
 {
 	#global complainflaf profile profileloaded
 
-	$subdomain ${parser_args} $complainflag < $profile > /dev/null
+	$subdomain ${parser_args} $complainflag $profile > /dev/null
 	if [ $? -ne 0 ]
 	then
 		removeprofile
@@ -488,7 +491,7 @@ replaceprofile()
 {
 	#global complainflag profile
 
-	$subdomain ${parser_args} -r $complainflag < $profile > /dev/null
+	$subdomain ${parser_args} -r $complainflag $profile > /dev/null
 	if [ $? -ne 0 ]
 	then
 		fatalerror "Unable to replace profile $profile"
@@ -507,7 +510,7 @@ removeprofile()
 		remprofile=$profile
 	fi
 
-	$subdomain ${parser_args} -R < $remprofile > /dev/null
+	$subdomain ${parser_args} -R $remprofile > /dev/null
 	if [ $? -ne 0 ]
 	then
 		fatalerror "Unable to remove profile $remprofile"
