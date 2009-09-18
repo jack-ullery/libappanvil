@@ -93,6 +93,7 @@ void _init_log_record(aa_log_record *record)
 	record->version = AA_RECORD_SYNTAX_UNKNOWN;
 	record->event = AA_RECORD_INVALID;
 	record->fsuid = (unsigned long) -1;
+	record->ouid = (unsigned long) -1;
 
 	return;
 }

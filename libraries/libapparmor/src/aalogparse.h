@@ -127,6 +127,7 @@ typedef struct
 	char *denied_mask;		/* "r", "w", etc. */
 	char *requested_mask;
 	unsigned long fsuid;		/* fsuid of task - if logged */
+	unsigned long ouid;		/* ouid of task - if logged */
 	char *profile;			/* The name of the profile */
 	char *name;
 	char *name2;

@@ -117,6 +117,10 @@ int print_results(aa_log_record *record)
 		{
 			printf("fsuid: %ld\n", record->fsuid);
 		}
+		if (record->ouid != (unsigned long) -1)
+		{
+			printf("ouid: %ld\n", record->ouid);
+		}
 		if (record->profile != NULL)
 		{
 			printf("Profile: %s\n", record->profile);
