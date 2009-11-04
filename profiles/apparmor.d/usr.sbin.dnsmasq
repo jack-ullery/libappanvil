@@ -1,6 +1,6 @@
 # Author: John Dong <jdong@ubuntu.com>
 #include <tunables/global>
-/usr/sbin/dnsmasq flags=(complain) {
+/usr/sbin/dnsmasq {
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
