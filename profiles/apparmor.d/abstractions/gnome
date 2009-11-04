@@ -2,7 +2,8 @@
 # $Id$
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2002-2006 Novell/SUSE
+#    Copyright (C) 2002-2009 Novell/SUSE
+#    Copyright (C) 2009 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -18,18 +19,18 @@
   # systemwide gtk defaults
   /etc/gnome/gtkrc*               r,
   /etc/gtk/*                      r,
-  /usr/lib/gtk/**                 mr,
-  /usr/lib64/gtk/**               mr,
+  /usr/lib{,32,64}/gtk/**         mr,
   /usr/share/themes/**            r,
+
+  # for gnome 1 applications
+  /etc/orbitrc                    r,
 
   # gtk-2 needed some new rights
   /etc/fonts/*                    r,
   /etc/gtk-*/*                    r,
   /etc/pango/*                    r,
-  /usr/lib64/pango/**             mr,
-  /usr/lib64/gtk-*/**             mr,
-  /usr/lib/pango/**               mr,
-  /usr/lib/gtk-*/**               mr,
+  /usr/lib{,32,64}/pango/**       mr,
+  /usr/lib{,32,64}/gtk-*/**       mr,
 
   # per-user gtk configuration
   @{HOME}/.gnome/Gnome            r,
@@ -37,6 +38,12 @@
   @{HOME}/.gtkrc                  r,
   @{HOME}/.gtkrc-2.0              r,
   @{HOME}/.gtk-bookmarks          r,
+  @{HOME}/.themes/                r,
+  @{HOME}/.themes/**              r,
+
+  # for gtk file dialog
+  @{HOME}/.config/gtk-2.0/**                    r,
+  @{HOME}/.config/gtk-2.0/gtkfilechooser.ini*   rw,
 
   # from evolution-mail
   @{HOME}/.gconfd/lock/*                        r,
@@ -53,3 +60,17 @@
   /etc/gnome-vfs-2.0/modules/ r,
   /etc/gnome-vfs-2.0/modules/* r,
   /usr/lib/gnome-vfs-2.0/modules/*.so mr,
+
+  # gvfs
+  /usr/share/gvfs/remote-volume-monitors/  r,
+  /usr/share/gvfs/remote-volume-monitors/* r,
+  @{PROC}/*/mounts                 r,
+
+  # printing
+  /etc/papersize                   r,
+  /etc/cups/lpoptions              r,
+  /usr/share/cups/charmaps/**      r,
+
+  # holds MIT-MAGIC-COOKIE for gnome
+  owner /var/run/gdm/auth*/database r,
+

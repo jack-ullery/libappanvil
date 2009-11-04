@@ -1,0 +1,23 @@
+# Author: John Dong <jdong@ubuntu.com>
+#include <tunables/global>
+/usr/sbin/dnsmasq flags=(complain) {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  capability net_bind_service,
+  capability setgid,
+  capability setuid,
+  capability dac_override,
+
+  /etc/dnsmasq.conf r,
+  /etc/dnsmasq.d/ r,
+  /etc/dnsmasq.d/* r,
+
+  /usr/sbin/dnsmasq mr,
+
+  /var/run/*dnsmasq*.pid w,
+  /var/run/dnsmasq/ r,
+  /var/run/dnsmasq/* rw,
+
+  /var/lib/misc/dnsmasq.leases rw, # Required only for DHCP server usage
+}

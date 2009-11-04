@@ -2,7 +2,8 @@
 # $Id$
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2002-2006 Novell/SUSE
+#    Copyright (C) 2002-2009 Novell/SUSE
+#    Copyright (C) 2009 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -20,8 +21,7 @@
 
   /opt/kde3/share/fonts/**              r,
 
-  /usr/lib/openoffice/share/fonts/**    r,
-  /usr/lib64/openoffice/share/fonts/**  r,
+  /usr/lib{,32,64}/openoffice/share/fonts/**    r,
 
   /var/cache/fonts/**                   r,
   /var/cache/fontconfig/**              mr,
@@ -37,7 +37,7 @@
   @{HOME}/.fonts/**                     r,
   @{HOME}/.fonts.cache-2               mr,
   @{HOME}/.fontconfig/                  r,
-  @{HOME}/.fontconfig/**                r,
+  @{HOME}/.fontconfig/**               rl,
 
   /usr/local/share/fonts/               r,
   /usr/local/share/fonts/**             r,

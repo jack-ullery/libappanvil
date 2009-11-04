@@ -2,7 +2,8 @@
 # $Id$
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2002-2005 Novell/SUSE
+#    Copyright (C) 2002-2009 Novell/SUSE
+#    Copyright (C) 2009 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -26,18 +27,15 @@
   /etc/locale/**                 r,
   /etc/locale.alias              r,
   /etc/localtime                 r,
+  /usr/share/locale-langpack/**  r,
   /usr/share/locale/**           r,
+  /usr/share/**/locale/**        r,
   /usr/share/zoneinfo/**         r,
   /usr/share/X11/locale/**       r,
 
-  /usr/lib64/locale/**           mr,
-  /usr/lib32/gconv/*.so          mr,
-  /usr/lib32/gconv/gconv-modules*  mr,
-  /usr/lib64/gconv/*.so          mr,
-  /usr/lib64/gconv/gconv-modules*  mr,
-  /usr/lib/locale/**             mr,
-  /usr/lib/gconv/*.so            mr,
-  /usr/lib/gconv/gconv-modules*  mr,
+  /usr/lib{,32,64}/locale/**             mr,
+  /usr/lib{,32,64}/gconv/*.so            mr,
+  /usr/lib{,32,64}/gconv/gconv-modules*  mr,
 
   # used by glibc when binding to ephemeral ports
   /etc/bindresvport.blacklist    r,
@@ -45,47 +43,24 @@
   # ld.so.cache and ld are used to load shared libraries; they are best
   # available everywhere
   /etc/ld.so.cache               mr,
-  /lib/ld-*.so                   mrix,
-  /lib32/ld-*.so                 mrix,
-  /lib64/ld-*.so                 mrix,
-  /lib/ld32-*.so                 mrix,
-  /lib/ld64-*.so                 mrix,
-  /lib32/ld32-*.so               mrix,
-  /lib64/ld64-*.so               mrix,
+  /lib{,32,64}/ld{,32,64}-*.so   mrix,
+  /lib{,32,64}/**/ld{,32,64}-*.so     mrix,
   /lib/tls/i686/{cmov,nosegneg}/ld-*.so     mrix,
   /opt/*-linux-uclibc/lib/ld-uClibc*so* mrix,
 
   # we might as well allow everything to use common libraries
-  /lib/lib*.so*                  mr,
-  /lib32/lib*.so*                mr,
-  /lib64/lib*.so*                mr,
-
-  /lib/*/lib*.so*                mr,
-  /lib32/*/lib*.so*              mr,
-  /lib64/*/lib*.so*              mr,
-
-  /usr/lib/**                    r,
-  /usr/lib/*.so*                 mr,
-  /usr/lib/**/lib*.so*           mr,
-
-  /usr/lib32/**                  r,
-  /usr/lib32/*.so*               mr,
-  /usr/lib32/**/lib*.so*         mr,
-
-  /usr/lib64/**                  r,
-  /usr/lib64/*.so*               mr,
-  /usr/lib64/**/lib*.so*         mr,
-
-  /usr/lib/sasl2/*.so*           mr,
-  /usr/lib32/sasl2/*.so*         mr,
-  /usr/lib64/sasl2/*.so*         mr,
-
+  /lib{,32,64}/**                r,
+  /lib{,32,64}/lib*.so*          mr,
+  /lib{,32,64}/**/lib*.so*       mr,
+  /usr/lib{,32,64}/**            r,
+  /usr/lib{,32,64}/*.so*         mr,
+  /usr/lib{,32,64}/**/lib*.so*   mr,
   /lib/tls/i686/{cmov,nosegneg}/lib*.so*    mr,
 
   # /dev/null is pretty harmless and frequently used
   /dev/null                      rw,
   # as is /dev/zero
-  /dev/zero                      mrw,
+  /dev/zero                      rw,
   # recent glibc uses /dev/full in preference to /dev/null for programs
   # that don't have open fds at exec()
   /dev/full                      rw,
@@ -100,6 +75,12 @@
   @{PROC}/meminfo                r,
   @{PROC}/stat                   r,
   @{PROC}/cpuinfo                r,
+
+  # glibc's *printf protections read the maps file
+  @{PROC}/*/maps                 r,
+
+  # libgcrypt reads some flags from /proc
+  @{PROC}/sys/crypto/*           r,
 
   # some applications will display license information
   /usr/share/common-licenses/**  r,

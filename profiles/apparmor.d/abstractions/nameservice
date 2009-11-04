@@ -1,7 +1,8 @@
 # $Id$
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2002-2005 Novell/SUSE
+#    Copyright (C) 2002-2009 Novell/SUSE
+#    Copyright (C) 2009 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -25,8 +26,10 @@
 
   /etc/resolv.conf        r,
   # on systems using resolvconf, /etc/resolv.conf is a symlink to
-  # /var/run/resolvconf/resolv.conf
+  # /var/run/resolvconf/resolv.conf and a file sometimes referenced in
+  # /etc/resolvconf/run/resolv.conf
   /var/run/resolvconf/resolv.conf r,
+  /etc/resolvconf/run/resolv.conf r,
 
   /etc/samba/lmhosts      r,
   /etc/services           r,
@@ -39,20 +42,16 @@
   # to vast speed increases when working with network-based lookups.
   /var/run/.nscd_socket   rw,
   /var/run/nscd/socket    rw,
-  /var/run/nscd/passwd    rmix,
-  /var/run/nscd/group     rmix,
-  /var/db/nscd/{passwd,group,services,hosts} r,
+  /var/{db,cache,run}/nscd/{passwd,group,services,host}    r,
   # nscd renames and unlinks files in it's operation that clients will
   # have open
   /var/run/nscd/db*  rmix,
 
   # The nss libraries are sometimes used in addition to PAM; make sure
   # they are available
-  /lib64/libnss_*.so*         mr,
-  /lib/libnss_*.so*           mr,
-  /usr/lib64/libnss_*.so*     mr,
-  /usr/lib/libnss_*.so*       mr,
-  /etc/default/nss            r,
+  /lib{,32,64}/libnss_*.so*      mr,
+  /usr/lib{,32,64}/libnss_*.so*  mr,
+  /etc/default/nss               r,
 
   # avahi-daemon is used for mdns4 resolution
   /var/run/avahi-daemon/socket w,
@@ -63,12 +62,15 @@
   # winbind
   #include <abstractions/winbind>
 
+  # likewise
+  #include <abstractions/likewise>
+
   # mdnsd
   #include <abstractions/mdns>
- 
+
   # kerberos
   #include <abstractions/kerberosclient>
- 
+
   # TCP/UDP network access
   network inet  stream,
   network inet6 stream,

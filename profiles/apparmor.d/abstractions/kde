@@ -2,6 +2,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2006 Novell/SUSE
+#    Copyright (C) 2009 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -15,10 +16,14 @@
 #include <abstractions/freedesktop.org>
 #include <abstractions/user-tmp>
 
-/etc/X11/kstylerc r,
-/etc/X11/qt_plugins_3.3rc r,
-/etc/X11/qtrc r,
+/etc/{X11,qt3}/kstylerc r,
+/etc/{X11,qt3}/qt_plugins_3.3rc r,
+/etc/{X11,qt3}/qtrc r,
 /etc/kde3rc r,
+/etc/kde4rc r,
+/etc/kde3/share/config/* r,
+/etc/kde3/share/icons/ r,
+/etc/kde3/share/icons/** r,
 /etc/opt/kde3/share/config/* r,
 /etc/opt/kde3/share/icons/ r,
 /etc/opt/kde3/share/icons/** r,
@@ -27,27 +32,42 @@
 @{HOME}/.ICEauthority r,
 @{HOME}/.fonts.* lrw,
 @{HOME}/.kde/share/config/kdeglobals rw,
+@{HOME}/.kde/share/config/*.lock rwl,
 @{HOME}/.qt/** rw,
+@{HOME}/.config/Trolltech.conf rwk,
 
-/opt/kde3/lib64/kde3/plugins/styles/ r,
-/opt/kde3/lib64/kde3/plugins/styles/* mr,
-/opt/kde3/lib64/lib*so* mr,
-/opt/kde3/lib/kde3/plugins/styles/ r,
-/opt/kde3/lib/kde3/plugins/styles/* mr,
-/opt/kde3/lib/lib*so* mr,
+/usr/X11R6/lib{,32,64}/X11/XKeysymDB r,
+/usr/X11R6/lib{,32,64}/X11/icons/** r,
+/usr/{lib,share}/X11/XKeysymDB r,
 
+/usr/share/icons/ r,
+/usr/share/icons/** r,
+
+# kde3
+/opt/kde3/lib{,32,64}/kde3/plugins/styles/ r,
+/opt/kde3/lib{,32,64}/kde3/plugins/styles/* mr,
+/opt/kde3/lib{,32,64}/lib*so* mr,
 /opt/kde3/share/config/kdeglobals r,
 /opt/kde3/share/icons/ r,
 /opt/kde3/share/icons/** r,
-/usr/X11R6/lib64/X11/XKeysymDB r,
-/usr/X11R6/lib64/X11/icons/** r,
-/usr/X11R6/lib/X11/XKeysymDB r,
-/usr/X11R6/lib/X11/icons/** r,
-/usr/lib/X11/XKeysymDB r,
 
-/usr/lib/qt3/lib64/lib*so* mr,
-/usr/lib64/qt3/plugins/**  mr,
+/usr/lib{,32,64}/qt3/lib{,32,64}/lib*so* mr,
 /usr/lib/qt3/lib/lib*so* mr,
-/usr/lib/qt3/plugins/**  mr,
+/usr/lib{,32,64}/qt3/plugins/**  mr,
+/usr/lib{,32,64}/kde3/lib*so* mr,
+/usr/lib{,32,64}/libqt-mt*so* mr,
+/usr/lib{,32,64}/libqui*so* mr,
+/usr/share/qt3/lib{,32,64}/libqt-mt*so* mr,
+/usr/share/qt3/lib{,32,64}/libqui*so* mr,
 
+# kde4
+/usr/lib{,32,64}/kde4/plugins/*/*.so mr,
+/usr/lib{,32,64}/kde4/plugins/*/ r,
+/usr/lib{,32,64}/kde4/lib*so* mr,
+/usr/lib{,32,64}/qt4/lib{,32,64}/lib*so* mr,
+/usr/lib{,32,64}/qt4/plugins/**  mr,
+/usr/share/qt4/** r,
+
+# YaST
 /usr/share/YaST2/theme/** r,
+
