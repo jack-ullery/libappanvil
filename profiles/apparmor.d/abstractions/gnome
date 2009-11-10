@@ -74,3 +74,5 @@
   # holds MIT-MAGIC-COOKIE for gnome
   owner /var/run/gdm/auth*/database r,
 
+  # mime-types
+  /etc/gnome/defaults.list r,
