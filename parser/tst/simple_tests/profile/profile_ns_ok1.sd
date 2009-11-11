@@ -1,5 +1,5 @@
 #
-# $Id: profile_basic_ok1.sd 81 2006-08-04 18:14:49Z jrjohansen $
+# $Id$
 #=DESCRIPTION Basic namespace test, duplicate mode bits
 #=EXRESULT PASS
 # vim:syntax=subdomain

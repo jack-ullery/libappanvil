@@ -1,4 +1,4 @@
-/*   $Id: apparmor.h 6203 2006-02-02 22:03:41Z steve $
+/*   $Id$
  *
  *   Copyright (c) 2003, 2004, 2005, 2006, 2007 Novell, Inc.
  *   (All rights reserved)

@@ -1,5 +1,5 @@
 #! /bin/bash
-# $Id: changeprofile.sh 1066 2007-12-23 01:06:30Z jrjohansen $
+# $Id$
 
 #	Copyright (C) 2002-2005 Novell/SUSE
 #

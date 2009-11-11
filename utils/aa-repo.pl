@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# $Id: $
+# $Id$
 #
 # ----------------------------------------------------------------------
 #    Copyright (c) 2008 Dominic Reynolds. All Rights Reserved.

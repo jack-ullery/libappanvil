@@ -1,4 +1,4 @@
-# $Id: change_hat.pod 534 2007-04-03 20:08:50Z steve-beattie $
+# $Id$
 # This publication is intellectual property of Novell Inc. Its contents
 # can be duplicated, either in part or in whole, provided that a copyright
 # label is visibly located on each copy.

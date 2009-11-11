@@ -1,5 +1,5 @@
 #
-# $Id: capabilities_ok.sd 211 2006-11-08 10:59:09Z steve-beattie $
+# $Id$
 #=DESCRIPTION validate some uses of capabilties.
 #=EXRESULT PASS
 # vim:syntax=subdomain

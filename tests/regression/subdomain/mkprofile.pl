@@ -5,7 +5,7 @@
 #
 # Gawd, I hate writing perl. It shows, too.
 #
-my $__VERSION__='$Id: mkprofile.pl 5923 2005-12-14 18:49:16Z steve $';
+my $__VERSION__='$Id$';
 
 use strict;
 use Getopt::Long;

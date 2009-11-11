@@ -1,5 +1,5 @@
 #
-# $Id: re_ok2.sd 81 2006-08-04 18:14:49Z jrjohansen $
+# $Id$
 #=DESCRIPTION Basic test that re local profile names are allowed
 #=EXRESULT PASS
 # vim:syntax=subdomain

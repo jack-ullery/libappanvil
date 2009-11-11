@@ -1,4 +1,4 @@
-/*   $Id: change_hat.c 13 2006-04-12 21:43:34Z steve-beattie $
+/*   $Id$
 
      Copyright (c) 2003-2007 Novell, Inc. (All rights reserved)
 

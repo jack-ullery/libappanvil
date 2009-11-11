@@ -1,5 +1,5 @@
 #! /bin/bash
-# $Id: syscall.sh 61 2006-05-19 18:32:14Z steve-beattie $
+# $Id$
 
 #	Copyright (C) 2002-2005 Novell/SUSE
 #

@@ -1,4 +1,4 @@
-/*   $Id: libimmunix_warning.c 13 2006-04-12 21:43:34Z steve-beattie $
+/*   $Id$
 
      Copyright (c) 2006 Novell, Inc. (All rights reserved)
      The libimmunix library is licensed under the terms of the GNU

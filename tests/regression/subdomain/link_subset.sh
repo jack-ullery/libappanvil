@@ -1,5 +1,5 @@
 #! /bin/bash
-# $Id: link.sh 484 2007-03-23 20:10:45Z steve-beattie $
+# $Id$
 
 #	Copyright (C) 2002-2005 Novell/SUSE
 #
