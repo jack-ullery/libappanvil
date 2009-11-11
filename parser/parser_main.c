@@ -613,9 +613,9 @@ int process_profile(int option, char *profilename)
 			if (!skip_read_cache &&
                             stat(cachename, &stat_bin) == 0 &&
                             stat_bin.st_size > 0 &&
-                            (stat_bin.st_mtim.tv_sec > stat_text.st_mtim.tv_sec ||
-                             (stat_bin.st_mtim.tv_sec == stat_text.st_mtim.tv_sec &&
-                              stat_bin.st_mtim.tv_nsec >= stat_text.st_mtim.tv_nsec))) {
+                            (stat_bin.st_mtim.tv_sec > stat_text.st_ctim.tv_sec ||
+                             (stat_bin.st_mtim.tv_sec == stat_text.st_ctim.tv_sec &&
+                              stat_bin.st_mtim.tv_nsec >= stat_text.st_ctim.tv_nsec))) {
 				if (show_cache) PERROR("Cache hit: %s\n", cachename);
 				retval = process_binary(option, cachename);
 				goto out;
