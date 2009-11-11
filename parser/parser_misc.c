@@ -246,6 +246,8 @@ static struct network_tuple network_mappings[] = {
  * hence the wrapping function.
  */
 size_t get_af_max() {
+	/* HACK: declare that version without "create" had a static AF_MAX */
+	if (!perms_create) return 36;
 #if AA_AF_MAX > AF_MAX
 	return AA_AF_MAX;
 #else

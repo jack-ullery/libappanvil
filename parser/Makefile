@@ -181,9 +181,10 @@ parser_version.h: Makefile
 	@echo \#define PARSER_VERSION \"$(VERSION)\" > .ver
 	@mv -f .ver $@
 
+# These are the families that it doesn't make sense for apparmor to mediate.
 # We use PF_ here since that is what is required in bits/socket.h, but we will
 # rewrite these as AF_.
-FILTER_FAMILIES=PF_RXRPC PF_MAX PF_UNSPEC PF_UNIX PF_LOCAL PF_NETLINK PF_LLC PF_IUCV PF_TIPC PF_CAN
+FILTER_FAMILIES=PF_RXRPC PF_MAX PF_UNSPEC PF_UNIX PF_LOCAL PF_NETLINK PF_LLC PF_IUCV PF_TIPC PF_CAN PF_ISDN PF_PHONET
 
 __FILTER=$(shell echo $(strip $(FILTER_FAMILIES)) | sed -e 's/ /\\\|/g')
 
