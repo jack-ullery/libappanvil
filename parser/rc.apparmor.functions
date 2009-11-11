@@ -23,10 +23,14 @@
 # NOTE: rc.apparmor initscripts that source this file need to implement
 # the following set of functions:
 #	aa_action
+#	aa_log_action_start
+#	aa_log_action_end
 #	aa_log_success_msg
 #	aa_log_warning_msg
 #	aa_log_failure_msg
 #	aa_log_skipped_msg
+#	aa_log_daemon_msg
+#	aa_log_end_msg
 
 # Some nice defines that we use
 
@@ -58,14 +62,7 @@ if [ -f "${APPARMOR_CONF}" ] ; then
 	. "${APPARMOR_CONF}"
 fi
 
-if [ -f /sbin/apparmor_parser ] ; then
-	PARSER=/sbin/apparmor_parser
-elif [ -f /sbin/subdomain_parser -o -h /sbin/subdomain_parser ] ; then
-	PARSER=/sbin/subdomain_parser
-else
-	aa_log_failure_msg "Unable to find apparmor_parser, installation problem?"
-	exit 1
-fi
+PARSER=/sbin/apparmor_parser
 
 # SUBDOMAIN_DIR and APPARMOR_DIR might be defined in subdomain.conf|apparmor.conf
 if [ -d "${APPARMOR_DIR}" ] ; then
@@ -113,7 +110,7 @@ is_apparmor_present() {
 
 	# check for subdomainfs version of module
 	grep -qE "^($modules)[[:space:]]" /proc/modules
-	
+
 	if [ $? -ne 0 ] ; then
 		ls /sys/module/apparmor 2>/dev/null | grep -qE "^($modules)"
 	fi
@@ -123,14 +120,37 @@ is_apparmor_present() {
 
 # This set of patterns to skip needs to be kept in sync with
 # SubDomain.pm::isSkippableFile()
+# returns 0 if profile should NOT be skipped
+# returns 1 on verbose skip
+# returns 2 on silent skip
 skip_profile() {
 	local profile=$1
 	if [ "${profile%.rpmnew}" != "${profile}" -o \
 	     "${profile%.rpmsave}" != "${profile}" -o \
-	     "${profile%.dpkg-new}" != "${profile}" -o \
-	     "${profile%.dpkg-old}" != "${profile}" -o \
+	     -e "${PROFILE_DIR}/disable/`basename ${profile}`" -o \
 	     "${profile%\~}" != "${profile}" ] ; then
-		return 0
+		return 1
+	fi
+	# Silently ignore the dpkg files
+	if [ "${profile%.dpkg-new}" != "${profile}" -o \
+	     "${profile%.dpkg-old}" != "${profile}" -o \
+	     "${profile%.dpkg-dist}" != "${profile}" ] ; then
+		return 2
+	fi
+
+	return 0
+}
+
+force_complain() {
+	local profile=$1
+
+	# if profile not in complain mode
+	if ! egrep -q "^/.*[ \t]+flags[ \t]*=[ \t]*\([ \t]*complain[ \t]*\)[ \t]+{" $profile ; then
+		local link="${PROFILE_DIR}/force-complain/`basename ${profile}`"
+		if [ -e "$link" ] ; then
+			aa_log_warning_msg "found $link, forcing complain mode"
+			return 0
+		fi
 	fi
 
 	return 1
@@ -148,47 +168,58 @@ parse_profiles() {
 			PARSER_MSG="Reloading AppArmor profiles "
 			;;
 		*)
+			aa_log_failure_msg "required 'load' or 'reload'"
 			exit 1
 			;;
 	esac
-	echo -n "$PARSER_MSG"
+	aa_log_action_begin "$PARSER_MSG"
 	# run the parser on all of the apparmor profiles
 	if [ ! -f "$PARSER" ]; then
-		aa_log_failure_msg "- AppArmor parser not found"
+		aa_log_failure_msg "AppArmor parser not found"
+		aa_log_action_end 1
 		exit 1
 	fi
 
 	if [ ! -d "$PROFILE_DIR" ]; then
-		aa_log_skipped_msg "- Profile directory not found\nNo AppArmor policy loaded."
-		return 1
+		aa_log_failure_msg "Profile directory not found"
+		aa_log_action_end 1
+		exit 1
 	fi
 
 	if [ -z "$(ls $PROFILE_DIR/)" ]; then
-		aa_log_skipped_msg "- No profiles found\nNo AppArmor policy loaded."
+		aa_log_failure_msg "No profiles found"
+		aa_log_action_end 1
 		return 1
 	fi
 
 	for profile in $PROFILE_DIR/*; do
-		if skip_profile "${profile}" ; then
-			echo " Skipping profile $profile"
+		skip_profile "${profile}"
+		skip=$?
+		# Ignore skip status == 2 (silent skip)
+		if [ "$skip" -eq 1 ] ; then
+			aa_log_skipped_msg "$profile"
 			logger -t "AppArmor(init)" -p daemon.warn "Skipping profile $profile"
-			[ "$STATUS" -ne 1 ] && STATUS=2
-		elif [ -f "${profile}" ] ; then
-			$PARSER $ABSTRACTIONS $PARSER_ARGS "$profile" > /dev/null
+			STATUS=2
+		elif [ "$skip" -ne 0 ]; then
+			continue
+		fi
+		if [ -f "${profile}" ] ; then
+			COMPLAIN=""
+			if force_complain "${profile}" ; then
+				COMPLAIN="-C"
+			fi
+			$PARSER $ABSTRACTIONS $PARSER_ARGS $COMPLAIN "$profile" > /dev/null
 			if [ $? -ne 0 ]; then
-				echo " Profile $profile failed to load"
+				aa_log_failure_msg "$profile failed to load"
 				STATUS=1
 			fi
 		fi
 	done
-	if [ $STATUS -eq 0 ]; then
-		aa_log_success_msg
-	elif [ $STATUS -eq 2 ]; then
-		aa_log_warning_msg
-	else
-		aa_log_failure_msg
-		exit $STATUS
+	if [ $STATUS -eq 2 ]; then
+		STATUS=0
 	fi
+	aa_log_action_end "$STATUS"
+	return $STATUS
 }
 
 profiles_names_list() {
@@ -205,7 +236,7 @@ profiles_names_list() {
 	fi
 
 	for profile in $PROFILE_DIR/*; do
-	        if ! skip_profile "${profile}" && [ -f "${profile}" ] ; then
+	        if skip_profile "${profile}" && [ -f "${profile}" ] ; then
 			LIST_ADD=$($PARSER $ABSTRACTIONS -N "$profile" | grep -v '\^')
 			if [ $? -eq 0 ]; then
 				echo "$LIST_ADD" >>$TMPFILE
@@ -326,19 +357,22 @@ load_module() {
 	fi
 
 	return $rc
-}	
+}
 
 apparmor_start() {
+	aa_log_daemon_msg "Starting AppArmor"
 	if ! is_apparmor_loaded ; then
 		load_module
 		rc=$?
 		if [ $rc -ne 0 ] ; then
+			aa_log_end_msg $rc
 			return $rc
 		fi
 	fi
 
 	if [ ! -w "$SFS_MOUNTPOINT/.load" ] ; then
 		aa_log_failure_msg "Loading AppArmor profiles - failed, Do you have the correct privileges?"
+		aa_log_end_msg 1
 		return 1
 	fi
 
@@ -348,8 +382,10 @@ apparmor_start() {
 	cat "$SFS_MOUNTPOINT/profiles" | if ! read line ; then
 		parse_profiles load
 	else
-		aa_log_skipped_msg "Loading AppArmor profiles - AppArmor already loaded with profiles."
+		aa_log_skipped_msg "AppArmor already loaded with profiles."
 	fi
+	aa_log_end_msg 0
+	return 0
 }
 
 remove_profiles() {
@@ -359,17 +395,17 @@ remove_profiles() {
 	# our position.  Lets hope there are never enough profiles to
 	# overflow the variable
 	if ! is_apparmor_loaded ; then
-		aa_log_failure_msg "- failed, is AppArmor loaded?"
+		aa_log_failure_msg "AppArmor module is not loaded"
 		return 1
 	fi
 
 	if [ ! -w "$SFS_MOUNTPOINT/.remove" ] ; then
-		aa_log_failure_msg "- failed, Do you have the correct privileges?"
+		aa_log_failure_msg "Root privileges not available"
 		return 1
 	fi
 
 	if [ ! -x "${PARSER}" ] ; then
-		aa_log_failure_msg "- failed, unable to execute AppArmor parser"
+		aa_log_failure_msg "Unable to execute AppArmor parser"
 		return 1
 	fi
 
@@ -386,23 +422,21 @@ remove_profiles() {
 		fi
 	done
 	rm "$MODULE_PLIST"
-	if [ ${retval} -eq 0 ] ; then
-		aa_log_success_msg
-	else
-		aa_log_failure_msg
-	fi	
 	return ${retval}
 }
 
 apparmor_stop() {
-	echo -n "Unloading AppArmor profiles "
+	aa_log_daemon_msg "Unloading AppArmor profiles "
 	remove_profiles
-	return $?
+	rc=$?
+	log_end_msg $rc
+	return $rc
 }
 
 apparmor_kill() {
+	aa_log_daemon_msg "Unloading AppArmor modules "
 	if ! is_apparmor_loaded ; then
-		aa_log_failure_msg "Killing AppArmor module - failed, AppArmor is not loaded."
+		aa_log_failure_msg "AppArmor module is not loaded"
 		return 1
 	fi
 
@@ -412,11 +446,13 @@ apparmor_kill() {
 	elif is_apparmor_present subdomain ; then
 		MODULE=subdomain
 	else
-		aa_log_failure_msg "Killing AppArmor module - failed, AppArmor is builtin"
+		aa_log_failure_msg "AppArmor is builtin"
 		return 1
 	fi
-	aa_action "Unloading AppArmor modules" /sbin/modprobe -qr $MODULE
-	return $?
+	/sbin/modprobe -qr $MODULE
+	rc=$?
+	aa_log_end_msg $rc
+	return $rc
 }
 
 __apparmor_restart() {

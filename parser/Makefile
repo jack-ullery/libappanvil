@@ -125,7 +125,7 @@ techdoc/index.html: techdoc.pdf
 techdoc.txt: techdoc/index.html
 	w3m -dump $< > $@
 
-all: 	$(TOOLS) $(MANPAGES) ${HTMLMANPAGES} techdoc.pdf techdoc/index.html
+all: 	$(TOOLS) $(MANPAGES) ${HTMLMANPAGES} techdoc.pdf
 	$(Q)make -C po all
 	$(Q)make -s tests
 
