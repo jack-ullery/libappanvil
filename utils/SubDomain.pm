@@ -105,6 +105,7 @@ our @EXPORT = qw(
     check_qualifiers
 
     isSkippableFile
+    isSkippableDir
 );
 
 our $confdir = "/etc/apparmor";
@@ -2732,8 +2733,17 @@ sub add_event_to_tree ($) {
     return if ($e->{operation} =~ /profile_set/);
 
     my ($profile, $hat);
+    # just convert new null profile style names to old before we begin processing
+    # profile and name can contain multiple layers of null- but all we care about
+    # currently is single level.
+    if ($e->{profile} =~ m/\/\/null-/) {
+        $e->{profile} = "null-complain-profile";
+    }
     ($profile, $hat) = split /\/\//, $e->{profile};
     if ( $e->{operation} eq "change_hat" ) {
+	#screen out change_hat events that aren't part of learning, as before
+	#AppArmor 2.4 these events only happend as hints during learning
+	return if ($sdmode ne "HINT" &&  $sdmode ne "PERMITTING");
         ($profile, $hat) = split /\/\//, $e->{name};
     }
     $hat = $profile if ( !$hat );
@@ -2757,8 +2767,32 @@ sub add_event_to_tree ($) {
                          $e->{name},
                          $e->{name2}
                        );
+        } elsif ( defined $e->{name2} && $e->{name2} =~ m/\/\/null-/) {
+            add_to_tree( $e->{pid},
+			 $e->{parent},
+                          "exec",
+                          $profile,
+                          $hat,
+                          $prog,
+                          $sdmode,
+                          $e->{denied_mask},
+                          $e->{name},
+			  ""
+                        );
         }
     } elsif ($e->{operation} =~ m/file_/) {
+        add_to_tree( $e->{pid},
+		     $e->{parent},
+                     "path",
+                     $profile,
+                     $hat,
+                     $prog,
+                     $sdmode,
+                     $e->{denied_mask},
+                     $e->{name},
+		     "",
+                   );
+    } elsif ($e->{operation} eq "open") {
         add_to_tree( $e->{pid},
 		     $e->{parent},
                      "path",
@@ -4512,9 +4546,9 @@ sub uniq (@) {
 }
 
 our $MODE_MAP_RE = "r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N";
-our $LOG_MODE_RE = "r|w|l|m|k|a|x|ix|ux|px|cx|nx|pix|cix|Ix|Ux|Px|Cx|Nx|Pix|Cix";
-our $PROFILE_MODE_RE = "r|w|l|m|k|a|ix|ux|px|cx|pix|cix|Ux|Px|Cx|Pix|Cix";
-our $PROFILE_MODE_NT_RE = "r|w|l|m|k|a|x|ix|ux|px|cx|pix|cix|Ux|Px|Cx|Pix|Cix";
+our $LOG_MODE_RE = "r|w|l|m|k|a|x|ix|ux|px|cx|nx|pix|cix|Ix|Ux|Px|PUx|Cx|Nx|Pix|Cix";
+our $PROFILE_MODE_RE = "r|w|l|m|k|a|ix|ux|px|cx|pix|cix|Ux|Px|PUx|Cx|Pix|Cix";
+our $PROFILE_MODE_NT_RE = "r|w|l|m|k|a|x|ix|ux|px|cx|pix|cix|Ux|Px|PUx|Cx|Pix|Cix";
 our $PROFILE_MODE_DENY_RE = "r|w|l|m|k|a|x";
 
 sub split_log_mode($) {
@@ -4797,6 +4831,16 @@ sub isSkippableFile($) {
             || $path =~ /\~$/);
 }
 
+# isSkippableDir - return true if directory matches something that
+# should be skipped (cache directory, symlink directories, etc.)
+sub isSkippableDir($) {
+    my $path = shift;
+
+    return ($path eq "disable"
+            || $path eq "cache"
+            || $path eq "force-complain");
+}
+
 sub checkIncludeSyntax($) {
     my $errors = shift;
 
@@ -4804,6 +4848,7 @@ sub checkIncludeSyntax($) {
         my @incdirs = grep { (!/^\./) && (-d "$profiledir/$_") } readdir(SDDIR);
         close(SDDIR);
         while (my $id = shift @incdirs) {
+            next if isSkippableDir($id);
             if (opendir(SDDIR, "$profiledir/$id")) {
                 for my $path (grep { !/^\./ } readdir(SDDIR)) {
                     chomp($path);
@@ -4930,10 +4975,6 @@ sub parse_profile_data {
 
         # start of a profile...
         if (m/^\s*(("??\/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$/) {
-	    if ($do_include) {
-		die "include <$file> contains syntax errors.\n";
-	    }
-
             # if we run into the start of a profile while we're already in a
             # profile, something's wrong...
             if ($profile) {
@@ -4993,9 +5034,6 @@ sub parse_profile_data {
 
             # if we hit the end of a profile when we're not in one, something's
             # wrong...
-	    if ($do_include) {
-		die "include <$file> contains syntax errors.";
-	    }
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
@@ -5167,13 +5205,29 @@ sub parse_profile_data {
                 $filelist{$file}{include}{$include} = 1;
             }
 
-            # try to load the include...
-            my $ret = eval { loadinclude($include); };
-            # propagate errors up the chain
-            if ($@) { die $@; }
-
-            return $ret if ( $ret != 0 );
-
+            # include is a dir
+            if (-d "$profiledir/$include") {
+                if (opendir(SDINCDIR, "$profiledir/$include")) {
+                    for my $path (readdir(SDINCDIR)) {
+                        chomp($path);
+                        next if isSkippableFile($path);
+                        if (-f "$profiledir/$include/$path") {
+                            my $file = "$include/$path";
+                            $file =~ s/$profiledir\///;
+                            my $ret = eval { loadinclude($file); };
+                            if ($@) { die $@; }
+                            return $ret if ( $ret != 0 );
+                        }
+                    }
+                }
+                closedir(SDINCDIR);
+            } else {
+                # try to load the include...
+                my $ret = eval { loadinclude($include); };
+                # propagate errors up the chain
+                if ($@) { die $@; }
+                return $ret if ( $ret != 0 );
+            }
         } elsif (/^\s*(audit\s+)?(deny\s+)?network(.*)/) {
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
@@ -5217,9 +5271,6 @@ sub parse_profile_data {
 		unless exists($profile_data->{$profile}{$hat}{declared});
 
         } elsif (m/^\s*\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$/) {
-	    if ($do_include) {
-		die "include <$file> contains syntax errors.";
-	    }
             # start of embedded hat syntax hat definition
             # read in and mark as changed so that will be written out in the new
             # format
@@ -6193,6 +6244,7 @@ sub loadincludes {
         close(SDDIR);
 
         while (my $id = shift @incdirs) {
+            next if isSkippableDir($id);
             if (opendir(SDDIR, "$profiledir/$id")) {
                 for my $path (readdir(SDDIR)) {
                     chomp($path);
