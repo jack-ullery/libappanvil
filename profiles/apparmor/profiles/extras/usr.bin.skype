@@ -1,35 +1,40 @@
-# Last Modified: Thu Aug 30 11:41:46 2007
+# Last Modified: Mon Oct 26 13:29:13 2009
 # REPOSITORY: http://apparmor.test.opensuse.org/backend/api draglor 53
+# Additional profiling based on work by Андрей Калинин, LP: #226624
 #include <tunables/global>
 /usr/bin/skype flags=(complain) {
   #include <abstractions/audio>
   #include <abstractions/base>
   #include <abstractions/fonts>
+  #include <abstractions/freedesktop.org>
+  #include <abstractions/kde>
   #include <abstractions/nameservice>
+  #include <abstractions/nvidia>
+  #include <abstractions/user-tmp>
+  #include <abstractions/X>
 
-  /home/*/.ICEauthority r,
-  /home/*/.Skype/ rw,
-  /home/*/.Skype/** krw,
-  /home/*/.Xauthority r,
-  /home/*/.config/Trolltech.conf kr,
-  /home/*/.fontconfig/* r,
-  /home/*/.mozilla/ r,
-  /home/*/.mozilla/firefox/ r,
-  /home/*/.mozilla/firefox/*/ r,
-  /home/*/.mozilla/firefox/*/bookmarkbackups/ r,
-  /home/*/.mozilla/firefox/*/chrome/ r,
-  /home/*/.mozilla/firefox/*/extensions/ r,
-  /home/*/.mozilla/firefox/*/prefs.js r,
-  /proc/interrupts r,
-  /tmp/.ICE-unix/* w,
-  /tmp/.X11-unix/X0 w,
-  /usr/bin/skype mr,
-  /usr/lib/qt4/plugins/iconengines/ r,
-  /usr/lib/qt4/plugins/imageformats/ r,
-  /usr/lib/qt4/plugins/imageformats/*.so mr,
-  /usr/lib/qt4/plugins/inputmethods/ r,
-  /usr/share/X11/locale/** r,
-  /usr/share/icons/** r,
-  /usr/share/skype/sounds/*.wav kr,
+  # are these needed?
+  /proc/*/cmdline r,
+  /dev/video* mrw,
   /var/cache/libx11/compose/* r,
+
+  # should this be in a separate KDE abstraction?
+  @{HOME}/.kde/share/config/kioslaverc r,
+
+  /usr/bin/skype mr,
+  /usr/share/skype/** kr,
+  /usr/share/skype/sounds/*.wav kr,
+
+  @{HOME}/.Skype/   rw,
+  @{HOME}/.Skype/** krw,
+  @{HOME}/.config/* kr,
+
+  @{HOME}/.mozilla/ r,
+  @{HOME}/.mozilla/*/ r,
+  @{HOME}/.mozilla/*/*/ r,
+  @{HOME}/.mozilla/*/*/bookmarkbackups/ r,
+  @{HOME}/.mozilla/*/*/chrome/ r,
+  @{HOME}/.mozilla/*/*/extensions/ r,
+  @{HOME}/.mozilla/*/*/prefs.js r,
 }
+

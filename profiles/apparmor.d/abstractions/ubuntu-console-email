@@ -1,0 +1,14 @@
+#
+# abstraction for allowing console email clients in Ubuntu. These will
+# typically also need a terminal, so when using this abstraction, should also
+# do something like:
+#
+# #include <abstractions/ubuntu-gnome-terminal>
+#
+
+  /usr/bin/alpine Ux,
+  /usr/bin/citadel Ux,
+  /usr/bin/cone Ux,
+  /usr/bin/elmo Ux,
+  /usr/bin/mutt Ux,
+

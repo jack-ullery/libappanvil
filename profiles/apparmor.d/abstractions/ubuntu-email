@@ -1,0 +1,19 @@
+#
+# abstraction for allowing graphical email clients in Ubuntu
+#
+
+  /usr/bin/anjal Ux,
+  /usr/bin/balsa Ux,
+  /usr/bin/claws-mail Ux,
+  /usr/bin/evolution Ux,
+  /usr/lib/GNUstep/Applications/GNUMail.app/GNUMail Ux,
+  /usr/bin/kmail Ux,
+  /usr/bin/mailody Ux,
+  /usr/bin/modest Ux,
+  /usr/bin/seamonkey Ux,
+  /usr/bin/sylpheed Ux,
+  /usr/bin/tkrat Ux,
+
+  /usr/lib/thunderbird/thunderbird Ux,
+
+

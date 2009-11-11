@@ -1,0 +1,18 @@
+# Last Modified: Wed Oct  8 00:20:56 2008
+# Author: Kees Cook <kees@ubuntu.com>
+#include <tunables/global>
+/usr/lib/dovecot/imap-login flags=(complain) {
+  #include <abstractions/base>
+  #include <abstractions/ssl_certs>
+  #include <abstractions/ssl_keys>
+
+  capability setgid,
+  capability setuid,
+  capability sys_chroot,
+
+  network inet stream,
+
+  /usr/lib/dovecot/imap-login mr,
+  /var/run/dovecot/login/ r,
+  /var/run/dovecot/login/* rw,
+}

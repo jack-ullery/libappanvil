@@ -1,0 +1,30 @@
+#
+# abstraction for allowing access to graphical browsers in Ubuntu
+#
+
+  /usr/bin/arora Ux,
+  /usr/bin/chromium-browser Ux,
+  /usr/bin/conkeror Ux,
+  /usr/bin/dillo Ux,
+  /usr/bin/Dooble Ux,
+  /usr/bin/epiphany Ux,
+  /usr/bin/epiphany-browser Ux,
+  /usr/bin/epiphany-webkit Ux,
+  /usr/lib/fennec-*/fennec Ux,
+  /usr/bin/galeon Ux,
+  /usr/bin/kazehakase Ux,
+  /usr/bin/konqueror Ux,
+  /usr/bin/midori Ux,
+  /usr/bin/netsurf Ux,
+  /usr/bin/prism Ux,
+  /usr/bin/rekonq Ux,
+  /usr/bin/seamonkey Ux,
+  /usr/lib/chromium-browser/chromium-browser Ux,
+
+  # this should cover all firefox browsers and versions (including shiretoko
+  # and abrowser)
+  /usr/lib/firefox-*/firefox.sh Ux,
+
+  # some unpackaged, but popular browsers
+  /usr/lib/icecat-*/icecat Ux,
+  /usr/bin/opera Ux,

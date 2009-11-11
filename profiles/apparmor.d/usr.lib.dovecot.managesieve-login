@@ -1,0 +1,18 @@
+# Last Modified: Wed Jun 10 00:20:56 2009
+# Author: Dulmandakh Sukhbaatar <dulmandakh@gmail.com>
+#include <tunables/global>
+/usr/lib/dovecot/managesieve-login flags=(complain) {
+  #include <abstractions/base>
+  #include <abstractions/ssl_certs>
+  #include <abstractions/ssl_keys>
+
+  capability setgid,
+  capability setuid,
+  capability sys_chroot,
+
+  network inet stream,
+
+  /usr/lib/dovecot/managesieve-login mr,
+  /var/run/dovecot/login/ r,
+  /var/run/dovecot/login/* rw,
+}

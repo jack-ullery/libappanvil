@@ -1,0 +1,20 @@
+# Last Modified: Fri Oct 10 17:19:26 2008
+# Author: Kees Cook <kees@ubuntu.com>
+#include <tunables/global>
+/usr/lib/dovecot/dovecot-auth flags=(complain) {
+  #include <abstractions/authentication>
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/wutmp>
+
+  capability setgid,
+  capability chown,
+  capability dac_override,
+
+  /proc/*/mounts r,
+  /usr/lib/dovecot/dovecot-auth mr,
+  /var/run/utmp k,
+  /var/run/dovecot/** rw,
+  # required for postfix+dovecot integration
+  /var/spool/postfix/private/dovecot-auth w,
+}

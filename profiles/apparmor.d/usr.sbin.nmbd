@@ -1,0 +1,19 @@
+# vim:syntax=apparmor
+# Last Modified: Wed Jun 20 13:22:50 2007
+#include <tunables/global>
+
+/usr/sbin/nmbd flags=(complain) {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/samba>
+
+  capability net_bind_service,
+
+  /usr/sbin/nmbd mr,
+  /var/cache/samba/browse.dat* rw,
+  /var/lib/samba/wins.dat* rw,
+  /var/run/samba/** rk,
+  /var/run/samba/nmbd.pid rw,
+  /var/log/samba/cores/nmbd/ rw,
+  /var/log/samba/cores/nmbd/** rw,
+}

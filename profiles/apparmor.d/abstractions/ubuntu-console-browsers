@@ -1,0 +1,14 @@
+#
+# abstraction for allowing access to text-only browsers in Ubuntu. These will
+# typically also need a terminal, so when using this abstraction, should also
+# do something like:
+#
+# #include <abstractions/ubuntu-gnome-terminal>
+#
+
+  /usr/bin/elinks Ux,
+  /usr/bin/links Ux,
+  /usr/bin/lynx.cur Ux,
+  /usr/bin/netrik Ux,
+  /usr/bin/w3m Ux,
+
