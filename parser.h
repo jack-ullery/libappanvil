@@ -214,7 +214,10 @@ extern char *profile_namespace;
 /* from parser_main */
 extern int force_complain;
 extern int conf_quiet;
+extern int conf_verbose;
+extern int kernel_load;
 extern int regex_type;
+extern int perms_create;
 extern void pwarn(char *fmt, ...) __attribute__((__format__(__printf__, 1, 2)));
 
 extern FILE *yyin;
