@@ -133,9 +133,13 @@ the "--write-cache" option.
 
 =item -q, --quiet
 
-Do not report on the profiles as they are loaded.
+Do not report on the profiles as they are loaded, and not show warnings.
 
-=item -v, --version
+=item -v, --verbose
+
+Report on the profiles as they are loaded, and show warnings.
+
+=item -V, --version
 
 Print the version number and exit.
 

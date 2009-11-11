@@ -140,7 +140,7 @@ int load_codomain(int option, struct codomain *cod)
 			break;
 		}
 
-	} else if (!conf_quiet) {
+	} else if (conf_verbose) {
 		switch (option) {
 		case OPTION_ADD:
 			printf(_("Addition succeeded for \"%s\".\n"),
@@ -632,11 +632,14 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 			return 0;
 	}
 
-	if (regex_type == AARE_DFA && profile->xmatch) {
-		if (!sd_serialize_dfa(p, profile->xmatch, profile->xmatch_size))
-			return 0;
-		if (!sd_write32(p, profile->xmatch_len))
-			return 0;
+	/* only emit this if current kernel at least supports "create" */
+	if (perms_create) {
+		if (regex_type == AARE_DFA && profile->xmatch) {
+			if (!sd_serialize_dfa(p, profile->xmatch, profile->xmatch_size))
+				return 0;
+			if (!sd_write32(p, profile->xmatch_len))
+				return 0;
+		}
 	}
 
 	if (!sd_write_struct(p, "flags"))
@@ -803,17 +806,17 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 	case OPTION_ADD:
 		if (asprintf(&filename, "%s/.load", subdomainbase) == -1)
 			goto exit;
-		fd = open(filename, O_WRONLY);
+		if (kernel_load) fd = open(filename, O_WRONLY);
 		break;
 	case OPTION_REPLACE:
 		if (asprintf(&filename, "%s/.replace", subdomainbase) == -1)
 			goto exit;
-		fd = open(filename, O_WRONLY);
+		if (kernel_load) fd = open(filename, O_WRONLY);
 		break;
 	case OPTION_REMOVE:
 		if (asprintf(&filename, "%s/.remove", subdomainbase) == -1)
 			goto exit;
-		fd = open(filename, O_WRONLY);
+		if (kernel_load) fd = open(filename, O_WRONLY);
 		break;
 	case OPTION_STDOUT:
 		filename = "stdout";
@@ -825,7 +828,7 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		break;
 	}
 
-	if (fd < 0) {
+	if (kernel_load && fd < 0) {
 		PERROR(_("Unable to open %s - %s\n"), filename,
 		       strerror(errno));
 		error = -errno;
@@ -874,9 +877,11 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 			name = cod->name;
 		}
 		size = strlen(name) + 1;
-		wsize = write(fd, name, size);
-		if (wsize < 0)
-			error = -errno;
+		if (kernel_load) {
+			wsize = write(fd, name, size);
+			if (wsize < 0)
+				error = -errno;
+		}
 		if (cod->parent || ns)
 			free(name);
 	} else {
@@ -898,13 +903,15 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		}
 
 		size = work_area->pos - work_area->buffer;
-		wsize = write(fd, work_area->buffer, size);
-		if (wsize < 0) {
-			error = -errno;
-		} else if (wsize < size) {
-			PERROR(_("%s: Unable to write entire profile entry\n"),
-			       progname);
-			error = -EIO;
+		if (kernel_load) {
+			wsize = write(fd, work_area->buffer, size);
+			if (wsize < 0) {
+				error = -errno;
+			} else if (wsize < size) {
+				PERROR(_("%s: Unable to write entire profile entry\n"),
+				       progname);
+				error = -EIO;
+			}
 		}
 		if (cache_fd != -1) {
 			wsize = write(cache_fd, work_area->buffer, size);
@@ -919,7 +926,7 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		free_sd_serial(work_area);
 	}
 
-	close(fd);
+	if (kernel_load) close(fd);
 
 	if (cod->hat_table && regex_type == AARE_DFA) {
 		if (load_flattened_hats(cod) != 0)
@@ -960,12 +967,12 @@ int sd_load_buffer(int option, char *buffer, int size)
 	case OPTION_ADD:
 		if (asprintf(&filename, "%s/.load", subdomainbase) == -1)
 			goto exit;
-		fd = open(filename, O_WRONLY);
+		if (kernel_load) fd = open(filename, O_WRONLY);
 		break;
 	case OPTION_REPLACE:
 		if (asprintf(&filename, "%s/.replace", subdomainbase) == -1)
 			goto exit;
-		fd = open(filename, O_WRONLY);
+		if (kernel_load) fd = open(filename, O_WRONLY);
 		break;
 	default:
 		error = -EINVAL;
@@ -973,7 +980,7 @@ int sd_load_buffer(int option, char *buffer, int size)
 		break;
 	}
 
-	if (fd < 0) {
+	if (kernel_load && fd < 0) {
 		PERROR(_("Unable to open %s - %s\n"), filename,
 		       strerror(errno));
 		error = -errno;
@@ -983,15 +990,17 @@ int sd_load_buffer(int option, char *buffer, int size)
 	error = 0;
 	for (b = buffer; b ; b = next_profile_buffer(b + sizeof(header_version), bsize)) {
 		bsize = size - (b - buffer);
-		wsize = write(fd, b, bsize);
-		if (wsize < 0) {
-			error = -errno;
-		} else if (wsize < bsize) {
-			PERROR(_("%s: Unable to write entire profile entry\n"),
-			       progname);
+		if (kernel_load) {
+			wsize = write(fd, b, bsize);
+			if (wsize < 0) {
+				error = -errno;
+			} else if (wsize < bsize) {
+				PERROR(_("%s: Unable to write entire profile entry\n"),
+				       progname);
+			}
 		}
 	}
-	close(fd);
+	if (kernel_load) close(fd);
 exit:
 	free(filename);
 	return error;

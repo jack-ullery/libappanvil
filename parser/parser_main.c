@@ -62,7 +62,9 @@ int binary_input = 0;
 int names_only = 0;
 int dump_vars = 0;
 int dump_expanded_vars = 0;
+int conf_verbose = 0;
 int conf_quiet = 0;
+int kernel_load = 1;
 int show_cache = 0;
 int skip_cache = 0;
 int skip_read_cache = 0;
@@ -77,6 +79,7 @@ char *subdomainbase = NULL;
 char *match_string = NULL;
 char *flags_string = NULL;
 int regex_type = AARE_DFA;
+int perms_create = 0;		/* perms contain create flag */
 char *profile_namespace = NULL;
 int flag_changehat_version = FLAG_CHANGEHAT_1_5;
 
@@ -95,7 +98,7 @@ struct option long_options[] = {
 	{"help",		0, 0, 'h'},
 	{"replace",		0, 0, 'r'},
 	{"reload",		0, 0, 'r'},	/* undocumented reload option == replace */
-	{"version",		0, 0, 'v'},
+	{"version",		0, 0, 'V'},
 	{"complain",		0, 0, 'C'},
 	{"Complain",		0, 0, 'C'},	/* Erk, apparently documented as --Complain */
 	{"dump-variables",	0, 0, 'D'},
@@ -106,6 +109,8 @@ struct option long_options[] = {
 	{"stdout",		0, 0, 'S'},
 	{"match-string",	1, 0, 'm'},
 	{"quiet",		0, 0, 'q'},
+	{"skip-kernel-load",	0, 0, 'Q'},
+	{"verbose",		0, 0, 'v'},
 	{"namespace",		1, 0, 'n'},
 	{"readimpliesX",	0, 0, 'X'},
 	{"skip-cache",		0, 0, 'K'},
@@ -147,7 +152,9 @@ static void display_usage(char *command)
 	       "-T, --skip-read-cache	Do not attempt to load cached profiles\n"
 	       "-W, --write-cache	Save cached profile (force with -T)\n"
 	       "-q, --quiet		Don't emit warnings\n"
-	       "-v, --version		Display version info and exit\n"
+	       "-v, --verbose		Show profile nams as they load\n"
+	       "-Q, --skip-kernel-load	Do everything except loading into kernel\n"
+	       "-V, --version		Display version info and exit\n"
 	       "-d, --debug 		Debug apparmor definitions\n"
 	       "-h, --help		Display this text and exit\n"
 	       ,command);
@@ -182,7 +189,7 @@ static int process_args(int argc, char *argv[])
 	int count = 0;
 	option = OPTION_ADD;
 
-	while ((c = getopt_long(argc, argv, "adf:hrRvI:b:BCDENSm:qn:XKTWk", long_options, &o)) != -1)
+	while ((c = getopt_long(argc, argv, "adf:hrRVvI:b:BCDENSm:qQn:XKTWk", long_options, &o)) != -1)
 	{
 		switch (c) {
 		case 0:
@@ -209,7 +216,7 @@ static int process_args(int argc, char *argv[])
 			count++;
 			option = OPTION_REMOVE;
 			break;
-		case 'v':
+		case 'V':
 			display_version();
 			exit(0);
 			break;
@@ -248,7 +255,12 @@ static int process_args(int argc, char *argv[])
 			match_string = strdup(optarg);
 			break;
 		case 'q':
+			conf_verbose = 0;
 			conf_quiet = 1;
+			break;
+		case 'v':
+			conf_verbose = 1;
+			conf_quiet = 0;
 			break;
 		case 'n':
 			profile_namespace = strdup(optarg);
@@ -267,6 +279,9 @@ static int process_args(int argc, char *argv[])
 			break;
 		case 'T':
 			skip_read_cache = 1;
+			break;
+		case 'Q':
+			kernel_load = 0;
 			break;
 		default:
 			display_usage(progname);
@@ -407,6 +422,9 @@ out:
 
 		if (strstr(match_string, AADFA))
 			regex_type = AARE_DFA;
+
+		if (strstr(match_string, " perms=c"))
+			perms_create = 1;
 	}
 
 	if (ms)
@@ -414,33 +432,37 @@ out:
 	return;
 }
 
-static void get_flags_string(void) {
+static void get_flags_string(char **flags, char *flags_file) {
 	char *pos;
-	FILE *f = fopen(FLAGS_FILE, "r");
+	FILE *f = NULL;
+
+	/* abort if missing or already set */
+	if (!flags || *flags) return;
+
+	f = fopen(flags_file, "r");
 	if (!f)
 		return;
 
-	flags_string = malloc(1024);
-	if (!flags_string)
+	*flags = malloc(1024);
+	if (!*flags)
 		goto fail;
 
-	if (!fgets(flags_string, 1024, f))
+	if (!fgets(*flags, 1024, f))
 		goto fail;
 
 	fclose(f);
-	pos = strstr(flags_string, "change_hat=");
+	pos = strstr(*flags, "change_hat=");
 	if (pos) {
 		if (strncmp(pos, "change_hat=1.4", 14) == 0)
 			flag_changehat_version = FLAG_CHANGEHAT_1_4;
 //fprintf(stderr, "flags string: %s\n", flags_string);
 //fprintf(stderr, "changehat %d\n", flag_changehat_version);
 	}
-	free(flags_string);
 	return;
 
 fail:
-	free(flags_string);
-	flags_string = NULL;
+	free(*flags);
+	*flags = NULL;
 	if (f)
 		fclose(f);
 	return;
@@ -503,7 +525,7 @@ int process_binary(int option, char *profilename)
 
 	free(buffer);
 
-	if (!conf_quiet) {
+	if (conf_verbose) {
 		switch (option) {
 		case OPTION_ADD:
 			printf(_("Cached load succeeded for \"%s\".\n"),
@@ -548,7 +570,7 @@ int process_profile(int option, char *profilename)
 		}
 	}
 	else {
-		pwarn("%s: cannot use or update cache, disable, or force-complain via stdin\n", progname);
+		PERROR("%s: cannot use or update cache, disable, or force-complain via stdin\n", progname);
 	}
 
 	if ( profilename && option != OPTION_REMOVE ) {
@@ -563,7 +585,8 @@ int process_profile(int option, char *profilename)
 			exit(1);
 		}
 		if (access(target, R_OK) == 0) {
-			PERROR("Skipped: %s\n", target);
+			if (!conf_quiet)
+				PERROR("Skipping profile in %s/disable: %s\n", basedir, basename);
 			free(target);
 			goto out;
 		}
@@ -574,7 +597,8 @@ int process_profile(int option, char *profilename)
 			exit(1);
 		}
 		if (access(target, R_OK) == 0) {
-			PERROR("Warning: found %s, forcing complain mode\n", target);
+			if (!conf_quiet)
+				PERROR("Warning: found %s in %s/force-complain, forcing complain mode\n", basename, basedir);
 			force_complain = 1;
 		}
 		free(target);
@@ -589,7 +613,9 @@ int process_profile(int option, char *profilename)
 			if (!skip_read_cache &&
                             stat(cachename, &stat_bin) == 0 &&
                             stat_bin.st_size > 0 &&
-                            stat_bin.st_mtime >= stat_text.st_mtime) {
+                            (stat_bin.st_mtim.tv_sec > stat_text.st_mtim.tv_sec ||
+                             (stat_bin.st_mtim.tv_sec == stat_text.st_mtim.tv_sec &&
+                              stat_bin.st_mtim.tv_nsec >= stat_text.st_mtim.tv_nsec))) {
 				if (show_cache) PERROR("Cache hit: %s\n", cachename);
 				retval = process_binary(option, cachename);
 				goto out;
@@ -622,10 +648,6 @@ int process_profile(int option, char *profilename)
 		dump_policy_names();
 		goto out;
 	}
-
-	/* Get the match string to determine type of regex support needed */
-	get_match_string();
-	get_flags_string();
 
 	retval = post_process_policy();
   	if (retval != 0) {
@@ -682,6 +704,59 @@ out:
 	return retval;
 }
 
+static void setup_flags(void)
+{
+	char *cache_features_path = NULL;
+	char *cache_flags = NULL;
+
+	/* Get the match string to determine type of regex support needed */
+	get_match_string();
+	/* Get kernel features string */
+	get_flags_string(&flags_string, FLAGS_FILE);
+
+	/*
+         * Deal with cache directory versioning:
+         *  - If cache/.features is missing, create it if --write-cache.
+         *  - If cache/.features exists, and does not match flags_string,
+         *    force cache reading/writing off.
+         */
+	if (asprintf(&cache_features_path, "%s/cache/.features", basedir) == -1) {
+		perror("asprintf");
+		exit(1);
+	}
+
+	get_flags_string(&cache_flags, cache_features_path);
+	if (cache_flags) {
+		if (strcmp(flags_string, cache_flags) != 0) {
+			if (show_cache) PERROR("Cache read/write disabled: %s does not match %s\n", FLAGS_FILE, cache_features_path);
+			write_cache = 0;
+			skip_read_cache = 1;
+		}
+		free(cache_flags);
+		cache_flags = NULL;
+	}
+	else if (write_cache) {
+		FILE * f = NULL;
+		int failure = 0;
+
+		f = fopen(cache_features_path, "w");
+		if (!f) failure = 1;
+		else {
+			if (fwrite(flags_string, strlen(flags_string), 1, f) != 1 ) {
+				failure = 1;
+			}
+			if (fclose(f) != 0) failure = 1;
+		}
+
+		if (failure) {
+			if (show_cache) PERROR("Cache write disabled: cannot write to %s\n", cache_features_path);
+			write_cache = 0;
+		}
+	}
+
+	free(cache_features_path);
+}
+
 int main(int argc, char *argv[])
 {
 	int retval;
@@ -712,6 +787,8 @@ int main(int argc, char *argv[])
 	}
 
 	if (!binary_input) parse_default_paths();
+
+	setup_flags();
 
 	retval = 0;
 	for (i = optind; retval == 0 && i <= argc; i++) {
