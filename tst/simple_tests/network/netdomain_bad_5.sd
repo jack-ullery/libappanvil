@@ -1,5 +1,5 @@
 #
-# $Id: tcp_client_ok1.sd 66 2006-06-01 18:02:28Z steve-beattie $
+# $Id$
 #=DESCRIPTION netdomain tcp connect simple parse test (to,via)
 #=EXRESULT FAIL
 #

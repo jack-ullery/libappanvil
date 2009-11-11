@@ -1,5 +1,5 @@
 #
-# $Id: re_ok1.sd 81 2006-08-04 18:14:49Z jrjohansen $
+# $Id$
 #=DESCRIPTION Basic test that re profile names are allowed that aren't trailing
 #=EXRESULT PASS
 # vim:syntax=subdomain

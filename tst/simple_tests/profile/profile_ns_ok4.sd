@@ -1,5 +1,5 @@
 #
-# $Id: profile_ns_ok2.sd 81 2006-08-04 18:14:49Z jrjohansen $
+# $Id$
 #=DESCRIPTION same unattached profile different namespaces test, duplicate mode bits
 #=EXRESULT PASS
 # vim:syntax=subdomain

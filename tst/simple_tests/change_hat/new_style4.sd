@@ -1,5 +1,5 @@
 #
-# $Id: change_hat_new_style1.sd 66 2006-06-01 18:02:28Z steve-beattie $
+# $Id$
 #=DESCRIPTION Simple test of new-style hats
 #=EXRESULT PASS
 # vim:syntax=subdomain

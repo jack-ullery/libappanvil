@@ -1,5 +1,5 @@
 #
-# $Id: profile_ns_bad1.sd 81 2006-08-04 18:14:49Z jrjohansen $
+# $Id$
 #=DESCRIPTION collision same profile, same namespace
 #=EXRESULT FAIL
 # vim:syntax=subdomain

@@ -1,5 +1,5 @@
 #
-# $Id: flags_bad2.sd 66 2006-06-01 18:02:28Z steve-beattie $
+# $Id$
 #=DESCRIPTION Don't accept other keyword as a flag
 #=EXRESULT FAIL
 # vim:syntax=subdomain
