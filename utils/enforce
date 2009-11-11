@@ -106,6 +106,16 @@ for my $profiling (@profiling) {
         print "\n";
         setprofileflags($filename, "");
 
+        # remove symlink in $profiledir/force-complain as well
+        my $complainlink = $filename;
+        $complainlink =~ s/^$profiledir/$profiledir\/force-complain/;
+        -e $complainlink and unlink($complainlink);
+
+        # remove symlink in $profiledir/disable as well
+        my $disablelink = $filename;
+        $disablelink =~ s/^$profiledir/$profiledir\/disable/;
+        -e $disablelink and unlink($disablelink);
+
         my $cmd_info = qx(cat $filename | $parser -I$profiledir -r 2>&1 1>/dev/null);
 	if ($? != 0) {
 	    UI_Info($cmd_info);
