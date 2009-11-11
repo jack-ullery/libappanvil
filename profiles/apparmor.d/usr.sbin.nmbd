@@ -2,7 +2,7 @@
 # Last Modified: Wed Jun 20 13:22:50 2007
 #include <tunables/global>
 
-/usr/sbin/nmbd flags=(complain) {
+/usr/sbin/nmbd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/samba>

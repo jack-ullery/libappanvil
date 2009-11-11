@@ -1,7 +1,7 @@
 # Last Modified: Sat Oct 11 09:17:38 2008
 # Author: Kees Cook <kees@ubuntu.com>
 #include <tunables/global>
-/usr/lib/dovecot/imap flags=(complain) {
+/usr/lib/dovecot/imap {
   #include <abstractions/base>
   #include <abstractions/nameservice>
 

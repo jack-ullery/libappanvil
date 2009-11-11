@@ -2,7 +2,7 @@
 # Last Modified: Wed Jun 20 13:34:25 2007
 #include <tunables/global>
 
-/usr/sbin/smbd flags=(complain) {
+/usr/sbin/smbd {
   #include <abstractions/authentication>
   #include <abstractions/base>
   #include <abstractions/consoles>
