@@ -3,7 +3,6 @@
 #
 
   /usr/bin/arora Ux,
-  /usr/bin/chromium-browser Ux,
   /usr/bin/conkeror Ux,
   /usr/bin/dillo Ux,
   /usr/bin/Dooble Ux,
@@ -19,6 +18,8 @@
   /usr/bin/prism Ux,
   /usr/bin/rekonq Ux,
   /usr/bin/seamonkey Ux,
+
+  /usr/bin/chromium-browser Ux,
   /usr/lib/chromium-browser/chromium-browser Ux,
 
   # this should cover all firefox browsers and versions (including shiretoko
@@ -28,3 +29,4 @@
   # some unpackaged, but popular browsers
   /usr/lib/icecat-*/icecat Ux,
   /usr/bin/opera Ux,
+  /opt/google/chrome/google-chrome Ux,
