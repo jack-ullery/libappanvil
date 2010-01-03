@@ -184,11 +184,11 @@ if ($count_complain) {
 if ($verbose) {
   print keys(%profiles) . " profiles are loaded.\n";
   print $#enforced_profiles + 1 . " profiles are in enforce mode.\n";
-  for (@enforced_profiles) {
+  for (sort(@enforced_profiles)) {
     print "   " . $_ . "\n";
   }
   print $#complain_profiles + 1 . " profiles are in complain mode.\n";
-  for (@complain_profiles) {
+  for (sort(@complain_profiles)) {
     print "   " . $_ . "\n";
   }
 }
@@ -203,15 +203,15 @@ if ($verbose) {
   }
   print keys(%processes) . " processes have profiles defined.\n";
   print keys(%enforced_processes) . " processes are in enforce mode :\n";
-  for (keys(%enforced_processes)) {
+  for (sort { $enforced_processes{$a}{'profile'} cmp $enforced_processes{$b}{'profile'} } keys(%enforced_processes)) {
     print "   " . $enforced_processes{$_}{'profile'} . " ($_) \n";
   }
   print keys(%complain_processes) . " processes are in complain mode.\n";
-  for (keys(%complain_processes)) {
+  for (sort { $complain_processes{$a}{'profile'} cmp $complain_processes{$b}{'profile'} } keys(%complain_processes)) {
     print "   " . $complain_processes{$_}{'profile'} . " ($_) \n";
   }
   print keys(%unconfined_processes) . " processes are unconfined but have a profile defined.\n";
-  for (keys(%unconfined_processes)) {
+  for (sort { $unconfined_processes{$a}{'profile'} cmp $unconfined_processes{$b}{'profile'} } keys(%unconfined_processes)) {
     print "   " . $unconfined_processes{$_}{'profile'} . " ($_) \n";
   }
 }
