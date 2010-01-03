@@ -2,6 +2,7 @@
 # Author: Marc Deslauriers <marc.deslauriers@ubuntu.com>
 
   ^phpsysinfo {
+    #include <abstractions/apache2-common>
     #include <abstractions/base>
     #include <abstractions/nameservice>
     #include <abstractions/python>
@@ -17,7 +18,6 @@
     /etc/mtab r,
     /etc/phpsysinfo/config.php r,
     /proc/** r,
-    /proc/*/attr/current w,
     /sys/bus/pci/devices/ r,
     /sys/devices/** r,
     /usr/bin/apt-cache ixr,

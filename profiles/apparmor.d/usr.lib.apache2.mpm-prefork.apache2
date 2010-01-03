@@ -17,10 +17,12 @@
   #    sudo a2enmod apparmor
   #
   # 3- Place an appropriate profile containing the desired hat in the
-  #    /etc/apparmor.d/apache2.d directory
+  #    /etc/apparmor.d/apache2.d directory.  Such profiles should probably
+  #    include the "apache2-common" abstraction.
   #
-  # 4- Use the "AAHatName" apache configuration option to specify a hat to
-  #    be used for a given apache directory or location directive
+  # 4- Use the "AADefaultHatName" apache configuration option to specify a
+  #    hat to be used for a given apache virtualhost or "AAHatName" for
+  #    a given apache directory or location directive.
   #
   #
   # There is an example profile for phpsysinfo included in the

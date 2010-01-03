@@ -1,5 +1,4 @@
 # vim:syntax=apparmor
-# $Id$
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2009 Novell/SUSE
@@ -30,6 +29,7 @@
   /usr/share/locale-langpack/**  r,
   /usr/share/locale/**           r,
   /usr/share/**/locale/**        r,
+  /usr/share/zoneinfo/           r,
   /usr/share/zoneinfo/**         r,
   /usr/share/X11/locale/**       r,
 
