@@ -39,6 +39,7 @@ PROFILES_SOURCE=./apparmor.d
 EXTRAS_SOURCE=./apparmor/profiles/extras/
 SUBDIRS_MUST_BE_SKIPPED=${PROFILES_SOURCE}/abstractions ${PROFILES_SOURCE}/apache2.d ${PROFILES_SOURCE}/program-chunks ${PROFILES_SOURCE}/tunables
 PROFILES_TO_COPY=$(filter-out ${SUBDIRS_MUST_BE_SKIPPED}, $(wildcard ${PROFILES_SOURCE}/*))
+TUNABLES_TO_COPY=$(filter-out ${PROFILES_SOURCE}/tunables/home.d, $(wildcard ${PROFILES_SOURCE}/tunables/*))
 
 .PHONY: install
 install: 
@@ -46,12 +47,14 @@ install:
 	install -m 755 -d ${PROFILES_DEST}/abstractions \
                           ${PROFILES_DEST}/apache2.d \
                           ${PROFILES_DEST}/program-chunks \
-                          ${PROFILES_DEST}/tunables
+                          ${PROFILES_DEST}/tunables \
+                          ${PROFILES_DEST}/tunables/home.d
 	install -m 644 ${PROFILES_TO_COPY} ${PROFILES_DEST}
 	install -m 644 ${PROFILES_SOURCE}/abstractions/* ${PROFILES_DEST}/abstractions
 	install -m 644 ${PROFILES_SOURCE}/apache2.d/* ${PROFILES_DEST}/apache2.d
 	install -m 644 ${PROFILES_SOURCE}/program-chunks/* ${PROFILES_DEST}/program-chunks
-	install -m 644 ${PROFILES_SOURCE}/tunables/* ${PROFILES_DEST}/tunables
+	install -m 644 ${TUNABLES_TO_COPY} ${PROFILES_DEST}/tunables
+	install -m 644 ${PROFILES_SOURCE}/tunables/home.d/* ${PROFILES_DEST}/tunables/home.d
 	install -m 755 -d ${EXTRAS_DEST}
 	install -m 644 ${EXTRAS_SOURCE}/* ${EXTRAS_DEST}
 

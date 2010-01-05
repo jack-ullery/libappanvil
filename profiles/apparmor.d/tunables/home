@@ -1,7 +1,8 @@
 # $Id$
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2006 Novell/SUSE
+#    Copyright (C) 2006-2009 Novell/SUSE
+#    Copyright (C) 2010 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -17,5 +18,9 @@
 
 # @{HOMEDIRS} is a space-separated list of where user home directories
 # are stored, for programs that must enumerate all home directories on a
-# system. 
+# system.
 @{HOMEDIRS}=/home/
+
+# Also, include files in tunables/home.d for site-specific adjustments to
+# @{HOMEDIRS}.
+#include <tunables/home.d>
