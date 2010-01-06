@@ -78,7 +78,7 @@ Produce a list of policies from a given set of profiles (implies -K).
 
 =item -S, --stdout
 
-Writes a binary (cached) profile to stdout (implies -K).
+Writes a binary (cached) profile to stdout (implies -K and -T).
 
 =item -b n, --base n
 

@@ -239,6 +239,7 @@ static int process_args(int argc, char *argv[])
 		case 'S':
 			count++;
 			option = OPTION_STDOUT;
+			skip_read_cache = 1;
 			break;
 		case 'f':
 			subdomainbase = strndup(optarg, PATH_MAX);
