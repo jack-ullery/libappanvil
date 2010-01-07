@@ -151,7 +151,6 @@ struct codomain *do_local_profile(struct codomain *cod, char *name, int mode, in
 	char *mode;
 	struct aa_network_entry *network_entry;
 	struct codomain *cod;
-	struct cod_global_entry *entry;
 	struct cod_net_entry *net_entry;
 	struct cod_entry *user_entry;
 	struct flagval flags;
