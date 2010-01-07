@@ -117,12 +117,6 @@ struct codomain {
 	size_t dfa_size;
 };
 
-struct cod_global_entry {
-	struct cod_entry *entry;
-	struct codomain *hats;
-	unsigned int capabilities;
-};
-
 struct sd_hat {
 	char *hat_name;
 	unsigned int hat_magic;
