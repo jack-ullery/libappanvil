@@ -131,6 +131,12 @@ In cases where abstractions have been changed, and the parser is running
 with "--replace", it may make sense to also use "--skip-read-cache" with
 the "--write-cache" option.
 
+=item -Q, --skip-kernel-load
+
+Perform all actions except the actual loading of a profile into the kernel.
+This is useful for testing profile generation, caching, etc, without making
+changes to the running kernel profiles.
+
 =item -q, --quiet
 
 Do not report on the profiles as they are loaded, and not show warnings.
