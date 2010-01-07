@@ -847,13 +847,18 @@ void debug_capabilities(struct codomain *cod)
 {
 	if (cod->capabilities != 0ull)
 		__debug_capabilities(cod->capabilities, "Capabilities");
+	if (cod->audit_caps != 0ull)
+		__debug_capabilities(cod->audit_caps, "Audit Caps");
+	if (cod->deny_caps != 0ull)
+		__debug_capabilities(cod->deny_caps, "Deny Caps");
+	if (cod->quiet_caps != 0ull)
+		__debug_capabilities(cod->quiet_caps, "Quiet Caps");
 	if (cod->set_caps != 0ull)
 		__debug_capabilities(cod->set_caps, "Set Capabilities");
 }
 
 void debug_cod_list(struct codomain *cod)
 {
-	unsigned int i;
 	if (cod->namespace)
 		printf("Namespace:\t\t%s\n", cod->namespace);
 
