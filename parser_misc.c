@@ -831,6 +831,26 @@ const char *capability_to_name(unsigned int cap)
 	return capname;
 }
 
+void __debug_capabilities(uint64_t capset, const char *name)
+{
+	unsigned int i;
+
+	printf("%s:", name);
+	for (i = 0; i < (sizeof(capnames)/sizeof(char *)); i++) {
+		if (((1ull << i) & capset) != 0) {
+			printf (" %s", capability_to_name(i));
+		}
+	}
+	printf("\n");
+}
+void debug_capabilities(struct codomain *cod)
+{
+	if (cod->capabilities != 0ull)
+		__debug_capabilities(cod->capabilities, "Capabilities");
+	if (cod->set_caps != 0ull)
+		__debug_capabilities(cod->set_caps, "Set Capabilities");
+}
+
 void debug_cod_list(struct codomain *cod)
 {
 	unsigned int i;
@@ -847,13 +867,7 @@ void debug_cod_list(struct codomain *cod)
 
 	debug_flags(cod);
 	
-	printf("Capabilities:\t");
-	for (i = 0; i < (sizeof(capnames)/sizeof(char *)); i++) {
-		if (((1ull << i) & cod->capabilities) != 0) {
-			printf ("%s ", capability_to_name(i));
-		}
-	}
-	printf("\n");
+	debug_capabilities(cod);
 
 	if (cod->entries)
 		debug_cod_entries(cod->entries);
