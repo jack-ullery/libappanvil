@@ -203,6 +203,7 @@ static int process_args(int argc, char *argv[])
 			break;
 		case 'd':
 			debug++;
+			skip_cache = 1;
 			break;
 		case 'h':
 			display_usage(progname);
@@ -563,7 +564,7 @@ int process_profile(int option, char *profilename)
 	/* per-profile states */
 	force_complain = opt_force_complain;
 
-	if ( profilename ) {
+	if (profilename) {
 		if ( !(yyin = fopen(profilename, "r")) ) {
 			PERROR(_("Error: Could not read profile %s: %s.\n"),
 			       profilename, strerror(errno));
@@ -574,17 +575,20 @@ int process_profile(int option, char *profilename)
 		PERROR("%s: cannot use or update cache, disable, or force-complain via stdin\n", progname);
 	}
 
-	if ( profilename && option != OPTION_REMOVE ) {
+	if (profilename && option != OPTION_REMOVE) {
 		/* make decisions about disabled or complain-mode profiles */
 		char *target = NULL;
 		char *basename = strrchr(profilename, '/');
-		if (basename) basename++;
-		else basename = profilename;
+		if (basename)
+			basename++;
+		else
+			basename = profilename;
 
-		if (asprintf(&target, "%s/%s/%s", basedir, "disable", basename)<0) {
+		if (asprintf(&target, "%s/%s/%s", basedir, "disable", basename) < 0) {
 			perror("asprintf");
 			exit(1);
 		}
+
 		if (access(target, R_OK) == 0) {
 			if (!conf_quiet)
 				PERROR("Skipping profile in %s/disable: %s\n", basedir, basename);
@@ -597,6 +601,7 @@ int process_profile(int option, char *profilename)
 			perror("asprintf");
 			exit(1);
 		}
+
 		if (access(target, R_OK) == 0) {
 			if (!conf_quiet)
 				PERROR("Warning: found %s in %s/force-complain, forcing complain mode\n", basename, basedir);
@@ -617,7 +622,8 @@ int process_profile(int option, char *profilename)
                             (stat_bin.st_mtim.tv_sec > stat_text.st_ctim.tv_sec ||
                              (stat_bin.st_mtim.tv_sec == stat_text.st_ctim.tv_sec &&
                               stat_bin.st_mtim.tv_nsec >= stat_text.st_ctim.tv_nsec))) {
-				if (show_cache) PERROR("Cache hit: %s\n", cachename);
+				if (show_cache)
+					PERROR("Cache hit: %s\n", cachename);
 				retval = process_binary(option, cachename);
 				goto out;
 			}
@@ -638,7 +644,8 @@ int process_profile(int option, char *profilename)
 	if (show_cache)
 		PERROR("Cache miss: %s\n", profilename ? profilename : "stdin");
 
-	if (yyin) yyrestart(yyin);
+	if (yyin)
+		yyrestart(yyin);
 	reset_parser();
 
 	retval = yyparse();
@@ -650,17 +657,16 @@ int process_profile(int option, char *profilename)
 		goto out;
 	}
 
-	retval = post_process_policy();
-  	if (retval != 0) {
-  		PERROR(_("%s: Errors found in file. Aborting.\n"), progname);
-		goto out;
-  	}
-
 	if (dump_vars) {
 		dump_symtab();
 		goto out;
 	}
 
+	retval = post_process_policy();
+  	if (retval != 0) {
+  		PERROR(_("%s: Errors found in file. Aborting.\n"), progname);
+		goto out;
+  	}
 
 	if (dump_expanded_vars) {
 		dump_expanded_symtab();
@@ -685,7 +691,8 @@ out:
                    and did not have write/close errors */
 		int useable_cache = (cache_fd != -1 && retval == 0);
 		if (cache_fd != -1) {
-			if (close(cache_fd)) useable_cache = 0;
+			if (close(cache_fd))
+				useable_cache = 0;
 			cache_fd = -1;
 		}
 
@@ -701,7 +708,8 @@ out:
 		}
 		free(cachetemp);
 	}
-	if (cachename) free(cachename);
+	if (cachename)
+		free(cachename);
 	return retval;
 }
 
