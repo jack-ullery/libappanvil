@@ -38,6 +38,7 @@
 #include "parser.h"
 #include "parser_version.h"
 #include "parser_include.h"
+#include "libapparmor_re/apparmor_re.h"
 
 #define MODULE_NAME "apparmor"
 #define OLD_MODULE_NAME "subdomain"
@@ -62,6 +63,7 @@ int binary_input = 0;
 int names_only = 0;
 int dump_vars = 0;
 int dump_expanded_vars = 0;
+dfaflags_t dfaflags = 0;
 int conf_verbose = 0;
 int conf_quiet = 0;
 int kernel_load = 1;
@@ -93,16 +95,13 @@ struct option long_options[] = {
 	{"add", 		0, 0, 'a'},
 	{"binary",		0, 0, 'B'},
 	{"base",		1, 0, 'b'},
-	{"debug",		0, 0, 'd'},
 	{"subdomainfs",		0, 0, 'f'},
-	{"help",		0, 0, 'h'},
+	{"help",		2, 0, 'h'},
 	{"replace",		0, 0, 'r'},
 	{"reload",		0, 0, 'r'},	/* undocumented reload option == replace */
 	{"version",		0, 0, 'V'},
 	{"complain",		0, 0, 'C'},
 	{"Complain",		0, 0, 'C'},	/* Erk, apparently documented as --Complain */
-	{"dump-variables",	0, 0, 'D'},
-	{"dump-expanded-variables",	0, 0, 'E'},
 	{"Include",		1, 0, 'I'},
 	{"remove",		0, 0, 'R'},
 	{"names",		0, 0, 'N'},
@@ -117,6 +116,9 @@ struct option long_options[] = {
 	{"skip-read-cache",	0, 0, 'T'},
 	{"write-cache",		0, 0, 'W'},
 	{"show-cache",		0, 0, 'k'},
+	{"debug",		0, 0, 'd'},
+	{"dump",		1, 0, 'D'},
+	{"Dump",		1, 0, 'D'},
 	{NULL, 0, 0, 0},
 };
 
@@ -156,7 +158,22 @@ static void display_usage(char *command)
 	       "-Q, --skip-kernel-load	Do everything except loading into kernel\n"
 	       "-V, --version		Display version info and exit\n"
 	       "-d, --debug 		Debug apparmor definitions\n"
-	       "-h, --help		Display this text and exit\n"
+	       "-D [n], --dump		Dump internal info for debugging\n"
+	       "-h [command], --help	Display this text or info about command\n"
+	       ,command);
+}
+
+static void display_dump(char *command)
+{
+	display_version();
+	printf("\n%s: --dump [Option]\n\n"
+	       "Options:\n"
+	       "--------\n"
+	       "no option specified	Dump variables\n"
+	       "variables		Dump variables\n"
+	       "expanded-variables	Dump expanded variables\n"
+	       "dfa-tree		Dump expression tree\n"
+	       "dfa-simple-tree		Dump simplified expression tree\n"
 	       ,command);
 }
 
@@ -189,7 +206,7 @@ static int process_args(int argc, char *argv[])
 	int count = 0;
 	option = OPTION_ADD;
 
-	while ((c = getopt_long(argc, argv, "adf:hrRVvI:b:BCDENSm:qQn:XKTWk", long_options, &o)) != -1)
+	while ((c = getopt_long(argc, argv, "adf:h::rRVvI:b:BCD:NSm:qQn:XKTWk", long_options, &o)) != -1)
 	{
 		switch (c) {
 		case 0:
@@ -206,7 +223,15 @@ static int process_args(int argc, char *argv[])
 			skip_cache = 1;
 			break;
 		case 'h':
-			display_usage(progname);
+			if (!optarg) {
+				display_usage(progname);
+			} else if (strcmp(optarg, "dump") == 0) {
+				display_dump(progname);
+			} else {
+				PERROR("%s: Invalid --help option %s\n",
+				       progname, optarg);
+				exit(1);
+			}	
 			exit(0);
 			break;
 		case 'r':
@@ -246,12 +271,22 @@ static int process_args(int argc, char *argv[])
 			subdomainbase = strndup(optarg, PATH_MAX);
 			break;
 		case 'D':
-			dump_vars = 1;
 			skip_cache = 1;
-			break;
-		case 'E':
-			dump_expanded_vars = 1;
-			skip_cache = 1;
+			if (!optarg) {
+				dump_vars = 1;
+			} else if (strcmp(optarg, "variables") == 0) {
+				dump_vars = 1;
+			} else if (strcmp(optarg, "expanded-variables") == 0) {
+				dump_expanded_vars = 1;
+			} else if (strcmp(optarg, "dfa-tree") == 0) {
+				dfaflags |= DFA_DUMP_TREE;
+			} else if (strcmp(optarg, "dfa-simple-tree") == 0) {
+				dfaflags |= DFA_DUMP_SIMPLE_TREE;
+			} else {
+				PERROR("%s: Invalid --Dump option %s\n",
+				       progname, optarg);
+				exit(1);
+			}
 			break;
 		case 'm':
 			match_string = strdup(optarg);

@@ -168,6 +168,7 @@ struct var_string {
 #define FLAG_CHANGEHAT_1_5  3
 extern int flag_changehat_version;
 extern int read_implies_exec;
+extern dfaflags_t dfaflags;
 
 #ifdef DEBUG
 #define PDEBUG(fmt, args...) printf("parser: " fmt, ## args)
