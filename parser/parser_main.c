@@ -119,6 +119,8 @@ struct option long_options[] = {
 	{"debug",		0, 0, 'd'},
 	{"dump",		1, 0, 'D'},
 	{"Dump",		1, 0, 'D'},
+	{"optimize",		1, 0, 'O'},
+	{"Optimize",		1, 0, 'O'},
 	{NULL, 0, 0, 0},
 };
 
@@ -254,10 +256,12 @@ static int process_args(int argc, char *argv[])
 		case 'h':
 			if (!optarg) {
 				display_usage(progname);
-			} else if (strcmp(optarg, "dump") == 0 ||
+			} else if (strcmp(optarg, "Dump") == 0 ||
+				   strcmp(optarg, "dump") == 0 ||
 				   strcmp(optarg, "D") == 0) {
 				display_dump(progname);
 			} else if (strcmp(optarg, "Optimize") == 0 ||
+				   strcmp(optarg, "optimize") == 0 ||
 				   strcmp(optarg, "O") == 0) {
 				display_optimize(progname);
 			} else {
