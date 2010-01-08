@@ -804,9 +804,58 @@ int debug_tree(Node *t)
 	return nodes;
 }
 
-Node *simplify_tree(Node *t)
+struct node_counts {
+	int charnode;
+	int charset;
+	int notcharset;
+	int alt;
+	int plus;
+	int star;
+	int any;
+	int cat;
+};
+
+
+static void count_tree_nodes(Node *t, struct node_counts *counts)
+{
+	if (dynamic_cast<AltNode *>(t)) {
+		counts->alt++;
+		count_tree_nodes(t->child[0], counts);
+		count_tree_nodes(t->child[1], counts);
+	} else if (dynamic_cast<CatNode *>(t)) {
+		counts->cat++;
+		count_tree_nodes(t->child[0], counts);
+		count_tree_nodes(t->child[1], counts);
+	} else if (dynamic_cast<PlusNode *>(t)) {
+		counts->plus++;
+		count_tree_nodes(t->child[0], counts);
+	} else if (dynamic_cast<StarNode *>(t)) {
+		counts->star++;
+		count_tree_nodes(t->child[0], counts);
+	} else if (dynamic_cast<CharNode *>(t)) {
+		counts->charnode++;
+	} else if (dynamic_cast<AnyCharNode *>(t)) {
+		counts->any++;
+	} else if (dynamic_cast<CharSetNode *>(t)) {
+		counts->charset++;
+	} else if (dynamic_cast<NotCharSetNode *>(t)) {
+		counts->notcharset++;
+	}
+}
+
+#include "stdio.h"
+#include "stdint.h"
+#include "apparmor_re.h"
+
+Node *simplify_tree(Node *t, dfaflags_t flags)
 {
 	bool update;
+
+	if (flags & DFA_DUMP_TREE_STATS) {
+		struct node_counts counts = { };
+		count_tree_nodes(t, &counts);
+		fprintf(stderr, "expr tree: c %d, [] %d, [^] %d, | %d, + %d, * %d, . %d, cat %d\n", counts.charnode, counts.charset, counts.notcharset, counts.alt, counts.plus, counts.star, counts.any, counts.cat);
+	}
 	do {
 		update = false;
 		//do right normalize first as this reduces the number
@@ -826,6 +875,11 @@ Node *simplify_tree(Node *t)
 			} while (modified);
 		}
 	} while(update);
+	if (flags & DFA_DUMP_TREE_STATS) {
+		struct node_counts counts = { };
+		count_tree_nodes(t, &counts);
+		fprintf(stderr, "simplified expr tree: c %d, [] %d, [^] %d, | %d, + %d, * %d, . %d, cat %d\n", counts.charnode, counts.charset, counts.notcharset, counts.alt, counts.plus, counts.star, counts.any, counts.cat);
+	}
 	return t;
 }
 
@@ -1215,11 +1269,11 @@ typedef map<State *, Cases> Trans;
 
 class DFA {
 public:
-    DFA(Node *root);
+    DFA(Node *root, dfaflags_t flags);
     virtual ~DFA();
     void dump(ostream& os);
     void dump_dot_graph(ostream& os);
-    map<uchar, uchar> equivalence_classes();
+    map<uchar, uchar> equivalence_classes(dfaflags_t flags);
     void apply_equivalence_classes(map<uchar, uchar>& eq);
     State *verify_perms(void);
     Node *root;
@@ -1231,13 +1285,22 @@ public:
 /**
  * Construct a DFA from a syntax tree.
  */
-DFA::DFA(Node *root) : root(root)
+DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 {
+    int i, match_count, nomatch_count;
+    i = match_count = nomatch_count = 0;
+
+    if (flags & DFA_DUMP_PROGRESS)
+	    fprintf(stderr, "Creating dfa:\r");
+
     for (depth_first_traversal i(root); i; i++) {
 	(*i)->compute_nullable();
 	(*i)->compute_firstpos();
 	(*i)->compute_lastpos();
     }
+
+    if (flags & DFA_DUMP_PROGRESS)
+	    fprintf(stderr, "Creating dfa: followpos\r");
     for (depth_first_traversal i(root); i; i++) {
 	(*i)->compute_followpos();
     }
@@ -1251,6 +1314,10 @@ DFA::DFA(Node *root) : root(root)
     list<State *> work_queue;
     work_queue.push_back(start);
     while (!work_queue.empty()) {
+	if (i % 1000 == 0 && (flags & DFA_DUMP_PROGRESS))
+		fprintf(stderr, "\033[2KCreating dfa: queue %ld\tstates %ld\tmatching %d\tnonmatching %d\r", work_queue.size(), states.size(), match_count, nomatch_count);
+        i++;
+
 	State *from = work_queue.front();
 	work_queue.pop_front();
 	Cases cases;
@@ -1258,18 +1325,22 @@ DFA::DFA(Node *root) : root(root)
 	    (*i)->follow(cases);
 	if (cases.otherwise) {
 	    pair <States::iterator, bool> x = states.insert(cases.otherwise);
-	    if (x.second)
+	    if (x.second) {
+		nomatch_count++;
 		work_queue.push_back(cases.otherwise);
-	    else {
+	    } else {
+		match_count++;
 		delete cases.otherwise;
 		cases.otherwise = *x.first;
 	    }
 	}
 	for (Cases::iterator j = cases.begin(); j != cases.end(); j++) {
 	    pair <States::iterator, bool> x = states.insert(j->second);
-	    if (x.second)
+	    if (x.second) {
+		nomatch_count++;
 		work_queue.push_back(*x.first);
-	    else {
+	    } else {
+		match_count++;
 		delete j->second;
 		j->second = *x.first;
 	    }
@@ -1285,6 +1356,8 @@ DFA::DFA(Node *root) : root(root)
 		here.cases.insert(*j);
 	}
     }
+    if (flags & (DFA_DUMP_STATS | DFA_DUMP_PROGRESS))
+	    fprintf(stderr, "\033[2KCreated dfa: states %ld\tmatching %d\tnonmatching %d\n", states.size(), match_count, nomatch_count);
 }
 
 DFA::~DFA()
@@ -1426,7 +1499,7 @@ void DFA::dump_dot_graph(ostream& os)
  * Compute character equivalence classes in the DFA to save space in the
  * transition table.
  */
-map<uchar, uchar> DFA::equivalence_classes()
+map<uchar, uchar> DFA::equivalence_classes(dfaflags_t flags)
 {
     map<uchar, uchar> classes;
     uchar next_class = 1;
@@ -1487,6 +1560,9 @@ map<uchar, uchar> DFA::equivalence_classes()
 	    }
 	}
     }
+
+    if (flags & DFA_DUMP_EQUIV_STATS)
+	fprintf(stderr, "Equiv class reduces to %d classes\n", next_class - 1);
     return classes;
 }
 
@@ -1548,7 +1624,7 @@ class TransitionTable {
     typedef vector<pair<const State *, size_t> > DefaultBase;
     typedef vector<pair<const State *, const State *> > NextCheck;
 public:
-    TransitionTable(DFA& dfa, map<uchar, uchar>& eq);
+    TransitionTable(DFA& dfa, map<uchar, uchar>& eq, dfaflags_t flags);
     void dump(ostream& os);
     void flex_table(ostream& os, const char *name);
     bool fits_in(size_t base, Cases& cases);
@@ -1568,9 +1644,14 @@ private:
 /**
  * Construct the transition table.
  */
-TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq)
+TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq,
+				 dfaflags_t flags)
     : eq(eq), min_base(0)
 {
+
+    if (flags & DFA_DUMP_TRANS_PROGRESS)
+	    fprintf(stderr, "Creating transtable:\r");
+
     /* Insert the dummy nonmatching transition by hand */
     next_check.push_back(make_pair(dfa.nonmatching, dfa.nonmatching));
 
@@ -1588,18 +1669,30 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq)
      * Insert all the DFA states into the transition table. The nonmatching
      * and start states come first, followed by all other states.
      */
+    int count = 2;
     insert_state(dfa.nonmatching, dfa);
     insert_state(dfa.start, dfa);
     for (States::iterator i = dfa.states.begin(); i != dfa.states.end(); i++) {
 	if (*i != dfa.nonmatching && *i != dfa.start)
 	    insert_state(*i, dfa);
+	if (flags & (DFA_DUMP_TRANS_PROGRESS)) {
+		count++;
+		if (count % 100 == 0)
+			fprintf(stderr, "\033[2KCreating transtable insert state: %d/%ld\r", count, dfa.states.size());
+	}
     }
 
+    count = 2;
     num.insert(make_pair(dfa.nonmatching, num.size()));
     num.insert(make_pair(dfa.start, num.size()));
     for (States::iterator i = dfa.states.begin(); i != dfa.states.end(); i++) {
 	if (*i != dfa.nonmatching && *i != dfa.start)
 	    num.insert(make_pair(*i, num.size()));
+	if (flags & (DFA_DUMP_TRANS_PROGRESS)) {
+		count++;
+		if (count % 100 == 0)
+			fprintf(stderr, "\033[2KCreating transtable insert num: %d/%ld\r", count, dfa.states.size());
+	}
     }
 
     accept.resize(dfa.states.size());
@@ -1612,6 +1705,9 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq)
 //if (accept[num[*i]] & AA_CHANGE_HAT)
 //    fprintf(stderr, "change_hat state %d - 0x%x\n", num[*i], accept[num[*i]]);
     }
+
+    if (flags & (DFA_DUMP_TRANS_STATS | DFA_DUMP_TRANS_PROGRESS))
+	    fprintf(stderr, "\033[2KCreating transtable: states %ld, next/check %ld\n", dfa.states.size(), next_check.size());
 }
 
 /**
@@ -1935,7 +2031,6 @@ void dump_regexp(ostream& os, Node *tree)
 
 #include <sstream>
 #include <ext/stdio_filebuf.h>
-#include "apparmor_re.h"
 
 struct aare_ruleset {
     int reverse;
@@ -2225,7 +2320,7 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes,
 	    cerr << "\n\n";
     }
 
-    rules->root = simplify_tree(rules->root);
+    rules->root = simplify_tree(rules->root, flags);
 
     if (flags & DFA_DUMP_SIMPLE_TREE) {
 	    cerr << "\nDFA: Simplified Expression Tree\n";
@@ -2233,13 +2328,24 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes,
 	    cerr << "\n\n";
     }
 
-    DFA dfa(rules->root);
+    DFA dfa(rules->root, flags);
+
+    if (flags & DFA_DUMP_STATES)
+	dfa.dump(cerr);
+
+    if (flags & DFA_DUMP_GRAPH)
+	dfa.dump_dot_graph(cerr);
 
     map<uchar, uchar> eq;
     if (equiv_classes) {
-	eq = dfa.equivalence_classes();
+	eq = dfa.equivalence_classes(flags);
 	dfa.apply_equivalence_classes(eq);
-    }
+
+	if (flags & DFA_DUMP_EQUIV)
+		cerr << "\nDFA equivalence class\n";
+		dump_equivalence_classes(cerr, eq);
+    } else if (flags & DFA_DUMP_EQUIV)
+	    cerr << "\nDFA did not generate an equivalence class\n";
 
     if (dfa.verify_perms()) {
 	*size = 0;
@@ -2247,7 +2353,9 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes,
     }
 
     stringstream stream;
-    TransitionTable transition_table(dfa, eq);
+    TransitionTable transition_table(dfa, eq, flags);
+    if (flags & DFA_DUMP_TRANS_TABLE)
+	    transition_table.dump(cerr);
     transition_table.flex_table(stream, "");
 
     stringbuf *buf = stream.rdbuf();
@@ -2255,7 +2363,6 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes,
     buf->pubseekpos(0);
     *size = buf->in_avail();
 
-//fprintf(stderr, "created dfa: size %d\n", *size);
     buffer = (char *)malloc(*size);
     if (!buffer)
 	return NULL;
