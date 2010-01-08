@@ -254,8 +254,12 @@ static int process_args(int argc, char *argv[])
 		case 'h':
 			if (!optarg) {
 				display_usage(progname);
-			} else if (strcmp(optarg, "dump") == 0) {
+			} else if (strcmp(optarg, "dump") == 0 ||
+				   strcmp(optarg, "D") == 0) {
 				display_dump(progname);
+			} else if (strcmp(optarg, "Optimize") == 0 ||
+				   strcmp(optarg, "O") == 0) {
+				display_optimize(progname);
 			} else {
 				PERROR("%s: Invalid --help option %s\n",
 				       progname, optarg);
