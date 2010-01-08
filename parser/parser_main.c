@@ -50,8 +50,8 @@
 #define PCRE "pattern=pcre"
 #define AADFA "pattern=aadfa"
 
-#define UNPRIVILEGED_OPS (debug || option == OPTION_STDOUT || names_only || \
-			  dump_vars || dump_expanded_vars)
+#define PRIVILEGED_OPS (write_cache || kernel_load)
+#define UNPRIVILEGED_OPS (!(PRIVILEGED_OPS))
 
 const char *parser_title	= "Novell/SUSE AppArmor parser";
 const char *parser_copyright	= "Copyright (C) 1999, 2000, 2003, 2004, 2005, 2006 Novell Inc.";
