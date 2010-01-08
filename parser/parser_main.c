@@ -359,6 +359,10 @@ static int process_args(int argc, char *argv[])
 				dfaflags |= DFA_CONTROL_TREE_LEFT;
 			} else if (strcmp(optarg, "expr-right-simplify") == 0) {
 				dfaflags &= ~DFA_CONTROL_TREE_LEFT;
+			} else {
+				PERROR("%s: Invalid --Optimize option %s\n",
+				       progname, optarg);
+				exit(1);
 			}
 			break;
 		case 'm':
