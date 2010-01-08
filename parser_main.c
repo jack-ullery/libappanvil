@@ -172,8 +172,18 @@ static void display_dump(char *command)
 	       "no option specified	Dump variables\n"
 	       "variables		Dump variables\n"
 	       "expanded-variables	Dump expanded variables\n"
-	       "dfa-tree		Dump expression tree\n"
-	       "dfa-simple-tree		Dump simplified expression tree\n"
+	       "expr-stats		Dump stats on expr tree\n"
+	       "expr-tree		Dump expression tree\n"
+	       "expr-simple		Dump simplified expression tree\n"
+	       "dfa-progress		Dump dfa creation as in progress\n"
+	       "dfa-stats		Dump dfa creation stats\n"
+	       "dfa-states		Dump dfa state diagram\n"
+	       "dfa-graph		Dump dfa dot (graphviz) graph\n"
+	       "trans-progress		Dump progress of transition table\n"
+	       "trans-stats		Dump stats on transition table\n"
+	       "trans-table		Dump transition table\n"
+	       "equiv-stats		Dump equivance class stats\n"
+	       "equiv			Dump equivance class\n"
 	       ,command);
 }
 
@@ -279,10 +289,30 @@ static int process_args(int argc, char *argv[])
 				dump_vars = 1;
 			} else if (strcmp(optarg, "expanded-variables") == 0) {
 				dump_expanded_vars = 1;
-			} else if (strcmp(optarg, "dfa-tree") == 0) {
+			} else if (strcmp(optarg, "expr-tree") == 0) {
 				dfaflags |= DFA_DUMP_TREE;
-			} else if (strcmp(optarg, "dfa-simple-tree") == 0) {
+			} else if (strcmp(optarg, "expr-simple") == 0) {
 				dfaflags |= DFA_DUMP_SIMPLE_TREE;
+			} else if (strcmp(optarg, "expr-stats") == 0) {
+				dfaflags |= DFA_DUMP_TREE_STATS;
+			} else if (strcmp(optarg, "dfa-progress") == 0) {
+				dfaflags |= DFA_DUMP_PROGRESS;
+			} else if (strcmp(optarg, "dfa-stats") == 0) {
+				dfaflags |= DFA_DUMP_STATS;
+			} else if (strcmp(optarg, "dfa-states") == 0) {
+				dfaflags |= DFA_DUMP_STATES;
+			} else if (strcmp(optarg, "dfa-graph") == 0) {
+				dfaflags |= DFA_DUMP_GRAPH;
+			} else if (strcmp(optarg, "trans-progress") == 0) {
+				dfaflags |= DFA_DUMP_TRANS_PROGRESS;
+			} else if (strcmp(optarg, "trans-stats") == 0) {
+				dfaflags |= DFA_DUMP_TRANS_STATS;
+			} else if (strcmp(optarg, "trans-table") == 0) {
+				dfaflags |= DFA_DUMP_TRANS_TABLE;
+			} else if (strcmp(optarg, "equiv") == 0) {
+				dfaflags |= DFA_DUMP_EQUIV;
+			} else if (strcmp(optarg, "equiv-stats") == 0) {
+				dfaflags |= DFA_DUMP_EQUIV_STATS;
 			} else {
 				PERROR("%s: Invalid --Dump option %s\n",
 				       progname, optarg);

@@ -11,14 +11,24 @@
 #ifndef APPARMOR_RE_H
 #define APPARMOR_RE_H
 
+typedef enum dfaflags {
+  DFA_DUMP_TREE_STATS =		1 << 8,
+  DFA_DUMP_TREE =		1 << 9,
+  DFA_DUMP_SIMPLE_TREE =	1 << 10,
+  DFA_DUMP_PROGRESS =		1 << 11,
+  DFA_DUMP_STATS =		1 << 12,
+  DFA_DUMP_STATES =		1 << 13,
+  DFA_DUMP_GRAPH =		1 << 14,
+  DFA_DUMP_TRANS_PROGRESS =	1 << 15,
+  DFA_DUMP_TRANS_STATS =	1 << 16,
+  DFA_DUMP_TRANS_TABLE =	1 << 17,
+  DFA_DUMP_EQUIV =		1 << 18,
+  DFA_DUMP_EQUIV_STATS =	1 << 19,
+} dfaflags_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef enum dfaflags {
-  DFA_DUMP_TREE = 1,
-  DFA_DUMP_SIMPLE_TREE = 2,
-} dfaflags_t;
 
 struct aare_ruleset;
 
