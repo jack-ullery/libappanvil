@@ -1678,7 +1678,7 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq,
 	if (flags & (DFA_DUMP_TRANS_PROGRESS)) {
 		count++;
 		if (count % 100 == 0)
-			fprintf(stderr, "\033[2KCreating transtable insert state: %d/%ld\r", count, dfa.states.size());
+			fprintf(stderr, "\033[2KCreating transtable: insert state: %d/%ld\r", count, dfa.states.size());
 	}
     }
 
@@ -1691,7 +1691,7 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq,
 	if (flags & (DFA_DUMP_TRANS_PROGRESS)) {
 		count++;
 		if (count % 100 == 0)
-			fprintf(stderr, "\033[2KCreating transtable insert num: %d/%ld\r", count, dfa.states.size());
+			fprintf(stderr, "\033[2KCreating transtable: insert num: %d/%ld\r", count, dfa.states.size());
 	}
     }
 
@@ -1707,7 +1707,7 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq,
     }
 
     if (flags & (DFA_DUMP_TRANS_STATS | DFA_DUMP_TRANS_PROGRESS))
-	    fprintf(stderr, "\033[2KCreating transtable: states %ld, next/check %ld\n", dfa.states.size(), next_check.size());
+	    fprintf(stderr, "\033[2KCreated transtable: states %ld, next/check %ld\n", dfa.states.size(), next_check.size());
 }
 
 /**
