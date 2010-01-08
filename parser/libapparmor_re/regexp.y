@@ -2214,20 +2214,25 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
  *          else NULL on failure
  */
 extern "C" void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes,
-				 size_t *size)
+				 size_t *size, dfaflags_t flags)
 {
     char *buffer = NULL;
 
     label_nodes(rules->root);
-#ifdef DEBUG_TREE
-    cerr << "pre opt tree\n";
-    rules->root->dump(cerr);
-#endif
+    if (flags & DFA_DUMP_TREE) {
+	    cerr << "\nDFA: Expression Tree\n";
+	    rules->root->dump(cerr);
+	    cerr << "\n\n";
+    }
+
     rules->root = simplify_tree(rules->root);
-#ifdef DEBUG_TREE
-    cerr << "post opt tree\n";
-    rules->root->dump(cerr);
-#endif
+
+    if (flags & DFA_DUMP_SIMPLE_TREE) {
+	    cerr << "\nDFA: Simplified Expression Tree\n";
+	    rules->root->dump(cerr);
+	    cerr << "\n\n";
+    }
+
     DFA dfa(rules->root);
 
     map<uchar, uchar> eq;

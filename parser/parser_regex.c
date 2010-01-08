@@ -523,7 +523,8 @@ static int process_profile_name_xmatch(struct codomain *cod)
 			aare_delete_ruleset(rule);
 			return FALSE;
 		}
-		cod->xmatch = aare_create_dfa(rule, 0, &cod->xmatch_size);
+		cod->xmatch = aare_create_dfa(rule, 0, &cod->xmatch_size,
+					      dfaflags);
 		aare_delete_ruleset(rule);
  		if (!cod->xmatch)
 			return FALSE;
@@ -666,7 +667,8 @@ int process_regex(struct codomain *cod)
 		goto out;
 
 	if (regex_type == AARE_DFA && cod->dfarule_count > 0) {
-		cod->dfa = aare_create_dfa(cod->dfarules, 0, &cod->dfa_size);
+		cod->dfa = aare_create_dfa(cod->dfarules, 0, &cod->dfa_size,
+					   dfaflags);
 		aare_delete_ruleset(cod->dfarules);
 		cod->dfarules = NULL;
  		if (!cod->dfa)
