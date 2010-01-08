@@ -858,21 +858,29 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
 	}
 	do {
 		update = false;
-		//do right normalize first as this reduces the number
+		//default to right normalize first as this reduces the number
 		//of trailing nodes which might follow an internal *
 		//or **, which is where state explosion can happen
 		//eg. in one test this makes the difference between
 		//    the dfa having about 7 thousands states,
 		//    and it having about  1.25 million states
-		for (int dir = 1; dir >= 0 ; dir--) {
+		int dir = 1;
+		if (flags & DFA_CONTROL_TREE_LEFT)
+			dir = 0;
+		for (int count = 0; count < 2; count++) {
 			bool modified;
 			do {
 			    modified = false;
-			    normalize_tree(t, dir);
+			    if (!(flags & DFA_CONTROL_NO_TREE_NORMAL))
+				normalize_tree(t, dir);
 			    t = simplify_tree_base(t, dir, modified);
 			    if (modified)
 				update = true;
 			} while (modified);
+			if (flags & DFA_CONTROL_TREE_LEFT)
+				dir++;
+			else
+				dir--;
 		}
 	} while(update);
 	if (flags & DFA_DUMP_TREE_STATS) {
@@ -2308,8 +2316,7 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
  * returns: buffer contain dfa tables, @size set to the size of the tables
  *          else NULL on failure
  */
-extern "C" void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes,
-				 size_t *size, dfaflags_t flags)
+extern "C" void *aare_create_dfa(aare_ruleset_t *rules, size_t *size, dfaflags_t flags)
 {
     char *buffer = NULL;
 
@@ -2320,12 +2327,14 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes,
 	    cerr << "\n\n";
     }
 
-    rules->root = simplify_tree(rules->root, flags);
+    if (!(flags & DFA_CONTROL_NO_TREE_SIMPLE)) {
+	    rules->root = simplify_tree(rules->root, flags);
 
-    if (flags & DFA_DUMP_SIMPLE_TREE) {
-	    cerr << "\nDFA: Simplified Expression Tree\n";
-	    rules->root->dump(cerr);
-	    cerr << "\n\n";
+	    if (flags & DFA_DUMP_SIMPLE_TREE) {
+		    cerr << "\nDFA: Simplified Expression Tree\n";
+		    rules->root->dump(cerr);
+		    cerr << "\n\n";
+	    }
     }
 
     DFA dfa(rules->root, flags);
@@ -2337,13 +2346,14 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes,
 	dfa.dump_dot_graph(cerr);
 
     map<uchar, uchar> eq;
-    if (equiv_classes) {
+    if (flags & DFA_CONTROL_EQUIV) {
 	eq = dfa.equivalence_classes(flags);
 	dfa.apply_equivalence_classes(eq);
 
-	if (flags & DFA_DUMP_EQUIV)
+	if (flags & DFA_DUMP_EQUIV) {
 		cerr << "\nDFA equivalence class\n";
 		dump_equivalence_classes(cerr, eq);
+	}
     } else if (flags & DFA_DUMP_EQUIV)
 	    cerr << "\nDFA did not generate an equivalence class\n";
 

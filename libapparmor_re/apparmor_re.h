@@ -12,6 +12,11 @@
 #define APPARMOR_RE_H
 
 typedef enum dfaflags {
+  DFA_CONTROL_EQUIV =		1 << 0,
+  DFA_CONTROL_NO_TREE_NORMAL =	1 << 1,
+  DFA_CONTROL_NO_TREE_SIMPLE =	1 << 2,
+  DFA_CONTROL_TREE_LEFT =	1 << 3,
+
   DFA_DUMP_TREE_STATS =		1 << 8,
   DFA_DUMP_TREE =		1 << 9,
   DFA_DUMP_SIMPLE_TREE =	1 << 10,
@@ -40,8 +45,7 @@ int aare_add_rule(aare_ruleset_t *rules, char *rule, int deny,
 		  uint32_t perms, uint32_t audit);
 int aare_add_rule_vec(aare_ruleset_t *rules, int deny, uint32_t perms,
 		      uint32_t audit, int count, char **rulev);
-void *aare_create_dfa(aare_ruleset_t *rules, int equiv_classes, size_t *size,
-		      dfaflags_t flags);
+void *aare_create_dfa(aare_ruleset_t *rules, size_t *size, dfaflags_t flags);
 void aare_reset_matchflags(void);
 
 #ifdef __cplusplus

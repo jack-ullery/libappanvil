@@ -159,6 +159,7 @@ static void display_usage(char *command)
 	       "-V, --version		Display version info and exit\n"
 	       "-d, --debug 		Debug apparmor definitions\n"
 	       "-D [n], --dump		Dump internal info for debugging\n"
+	       "-O [n], --Optimize	Control dfa optimizations\n"
 	       "-h [command], --help	Display this text or info about command\n"
 	       ,command);
 }
@@ -184,6 +185,24 @@ static void display_dump(char *command)
 	       "trans-table		Dump transition table\n"
 	       "equiv-stats		Dump equivance class stats\n"
 	       "equiv			Dump equivance class\n"
+	       ,command);
+}
+
+static void display_optimize(char *command)
+{
+	display_version();
+	printf("\n%s: -O [Option]\n\n"
+	       "Options:\n"
+	       "--------\n"
+	       "0			no optimizations\n"
+	       "equiv			use equivalent classes\n"
+	       "no-equiv		don't use equivalent classes\n"
+	       "expr-normalize		do expr normalization\n"
+	       "expr-simplify		do expr tree simplification\n"
+	       "no-expr-normalize      	don't do expr normalization\n"
+	       "no-expr-simplify	don't do expr tree simplification\n"
+	       "expr-left-simplify	do left simplification first\n"
+	       "expr-right-simplify	do right simplification first\n"
 	       ,command);
 }
 
@@ -216,7 +235,7 @@ static int process_args(int argc, char *argv[])
 	int count = 0;
 	option = OPTION_ADD;
 
-	while ((c = getopt_long(argc, argv, "adf:h::rRVvI:b:BCD:NSm:qQn:XKTWk", long_options, &o)) != -1)
+	while ((c = getopt_long(argc, argv, "adf:h::rRVvI:b:BCD:NSm:qQn:XKTWkO:", long_options, &o)) != -1)
 	{
 		switch (c) {
 		case 0:
@@ -317,6 +336,29 @@ static int process_args(int argc, char *argv[])
 				PERROR("%s: Invalid --Dump option %s\n",
 				       progname, optarg);
 				exit(1);
+			}
+			break;
+		case 'O':
+			skip_cache = 1;
+			if (strcmp(optarg, "0") == 0) {
+				dfaflags |= DFA_CONTROL_NO_TREE_NORMAL |
+					DFA_CONTROL_NO_TREE_SIMPLE;
+			} else if (strcmp(optarg, "equiv") == 0) {
+				dfaflags |= DFA_CONTROL_EQUIV;
+			} else if (strcmp(optarg, "no-equiv") == 0) {
+				dfaflags &= ~DFA_CONTROL_EQUIV;
+			} else if (strcmp(optarg, "expr-normalize") == 0) {
+				dfaflags &= ~DFA_CONTROL_NO_TREE_NORMAL;
+			} else if (strcmp(optarg, "no-expr-normalize") == 0) {
+				dfaflags |= DFA_CONTROL_NO_TREE_NORMAL;
+			} else if (strcmp(optarg, "expr-simplify") == 0) {
+				dfaflags &= ~DFA_CONTROL_NO_TREE_SIMPLE;
+			} else if (strcmp(optarg, "no-expr-simplify") == 0) {
+				dfaflags |= DFA_CONTROL_NO_TREE_SIMPLE;
+			} else if (strcmp(optarg, "expr-left-simplify") == 0) {
+				dfaflags |= DFA_CONTROL_TREE_LEFT;
+			} else if (strcmp(optarg, "expr-right-simplify") == 0) {
+				dfaflags &= ~DFA_CONTROL_TREE_LEFT;
 			}
 			break;
 		case 'm':
