@@ -1,7 +1,6 @@
 # $Id$
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2006-2009 Novell/SUSE
 #    Copyright (C) 2010 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
@@ -10,9 +9,9 @@
 #
 # ------------------------------------------------------------------
 
-# All the tunables definitions that should be available to every profile
-# should be included here
-
-#include <tunables/home>
-#include <tunables/proc>
-#include <tunables/alias>
+# Alias rules can be used to rewrite paths and are done after variable
+# resolution. For example, if '/usr' is on removable media:
+# alias /usr/ -> /mnt/usr/,
+#
+# Or if mysql databases are stored in /home:
+# alias /var/lib/mysql/ -> /home/mysql/,

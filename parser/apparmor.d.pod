@@ -1,7 +1,11 @@
 # $Id$
 # ----------------------------------------------------------------------
-#    Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+#    Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+#                  2008, 2009
 #    NOVELL (All rights reserved)
+#
+#    Copyright (c) 2010
+#    Canonical Ltd. (All rights reserved)
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -13,7 +17,8 @@
 #    GNU General Public License for more details.
 #
 #    You should have received a copy of the GNU General Public License
-#    along with this program; if not, contact Novell, Inc.
+#    along with this program; if not, contact Novell, Inc or Canonical
+#    Ltd.
 # ----------------------------------------------------------------------
 
 =pod
@@ -78,6 +83,8 @@ B<ACCESS> = ( 'r' | 'w' | 'l' | 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'm' ) [ I<ACC
 B<VARIABLE> = '@{' I<ALPHA> [ I<ALPHANUMERIC> ... ] '}'
 
 B<VARIABLE ASSIGNMENT> = I<VARIABLE> ('=' | '+=') (space separated values)
+
+B<ALIAS RULE> = I<ABS PATH> '->' I<REWRITTEN ABS PATH> ','
 
 B<ALPHA> = ('a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
@@ -299,10 +306,17 @@ The parser will automatically expand variables to include all values
 that they have been assigned; it is an error to reference a variable
 without setting at least one value.
 
-At the time of this writing, only B<@{HOME}> and B<@{HOMEDIR}>
-are defined in the AppArmor policy provided with SUSE Linux, in the
-F</etc/apparmor.d/tunables/home> file; these variables are used in many
-of the abstractions described later.
+At the time of this writing, only B<@{HOME}> and B<@{HOMEDIRS}> are defined
+in the AppArmor policy provided, in the F</etc/apparmor.d/tunables/home>
+file; these variables are used in many of the abstractions described later.
+You may also add files in F</etc/apparmor.d/tunables/home.d> for
+site-specific customization of B<@{HOMEDIRS}>.
+
+=head2 Alias rules
+
+AppArmor also provides alias rules for remapping paths for site-specific
+layouts. They are an alternative form of path rewriting to using variables,
+and are done after variable resolution.
 
 =head2 Globbing
 
@@ -468,10 +482,10 @@ useful.
 
 Some of the abstractions rely on variables that are set in files in the
 F</etc/apparmor.d/tunables/> directory. These variables are currently
-B<@{HOME}> and B<@{HOMEDIR}>. Variables cannot be set in profile scope;
+B<@{HOME}> and B<@{HOMEDIRS}>. Variables cannot be set in profile scope;
 they can only be set before the profile. Therefore, any profiles that
 use abstractions should either B<#include E<lt>tunables/globalE<gt>> or
-otherwise ensure that B<@{HOME}> and B<@{HOMEDIR}> are set before
+otherwise ensure that B<@{HOME}> and B<@{HOMEDIRS}> are set before
 starting the profile definition. The autodep(8) and genprof(8) utilities
 will automatically emit B<#include E<lt>tunables/globalE<gt>> in
 generated profiles.
