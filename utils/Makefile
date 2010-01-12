@@ -27,10 +27,10 @@ common/Make.rules: $(COMMONDIR)/Make.rules
 endif
 
 TOOLS = genprof logprof autodep audit complain enforce \
-	unconfined aa-eventd apparmor_status
+	unconfined aa-eventd apparmor_status aa-decode
 
 AA_MANPAGES = autodep.8 complain.8 enforce.8 logprof.8 genprof.8 unconfined.8 audit.8
-MANPAGES    = ${AA_MANPAGES} logprof.conf.5 apparmor_status.8
+MANPAGES    = ${AA_MANPAGES} logprof.conf.5 apparmor_status.8 aa-decode.8
 
 all: ${MANPAGES} ${HTMLMANPAGES}
 	make -C po all

@@ -1,0 +1,75 @@
+#!/bin/sh
+#
+#    Copyright (C) 2009-2010 Canonical Ltd.
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, contact Canonical, Ltd.
+#
+
+set -e
+
+help() {
+    cat <<EOM
+USAGE: aa-decode [OPTIONS] <encoded string>
+Decode a hex-encoded string to ASCII. It will also take an audit log on
+standard input and convert any hex-encoded AppArmor log entries and display
+them on standard output.
+
+OPTIONS:
+  --help	display this help
+
+EXAMPLES:
+$ aa-decode 2F746D702F666F6F20626172
+Decoded: /tmp/foo bar
+$ cat /var/log/kern.log | aa-decode
+... denied_mask="r::" fsuid=1000 ouid=1000 name=/tmp/foo bar
+EOM
+}
+
+decode() {
+    decoded=`perl -le "\\$s = '$1' ; print pack 'H*', \\$s"`
+    echo "$decoded"
+}
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    help
+    exit
+fi
+
+# if have an argument, then use it, otherwise process stdin
+if [ -n "$1" ]; then
+    e=`echo "$1" | tr -s '[:lower:]' '[:upper:]'`
+    if ! echo "$e" | egrep -q "^[0-9A-F]+$" ; then
+        echo "String should only contain hex characters (0-9, a-f, A-F)"
+        return
+    fi
+
+    d=`decode $e`
+    if [ -z "$d" ]; then
+        echo "Could not decode string"
+        exit 1
+    fi
+
+    echo "Decoded: $d"
+    exit 0
+fi
+
+# For now just look at 'name=...' which is usually the last in the log entry,
+# so validate input against this and output based on it.
+# TODO: better handle other cases too
+egrep ' name=2[fF][0-9a-fA-F]*$' | while read line ; do
+    e=`echo "$line" | sed 's/.* name=\(.*\)/\\1/g' | tr -s '[:lower:]' '[:upper:]'`
+    d=`decode $e`
+    echo -n "$line" | sed "s/\(.*\) name=.*/\1 name=/g"
+    echo "'$d'"
+done
+
