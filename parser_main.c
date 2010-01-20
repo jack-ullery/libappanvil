@@ -182,6 +182,8 @@ static void display_dump(char *command)
 	       "dfa-stats		Dump dfa creation stats\n"
 	       "dfa-states		Dump dfa state diagram\n"
 	       "dfa-graph		Dump dfa dot (graphviz) graph\n"
+	       "dfa-minimize		Dump dfa minimization\n"
+	       "dfa-unreachable		Dump dfa unreachable states\n"
 	       "trans-progress		Dump progress of transition table\n"
 	       "trans-stats		Dump stats on transition table\n"
 	       "trans-table		Dump transition table\n"
@@ -205,6 +207,9 @@ static void display_optimize(char *command)
 	       "no-expr-simplify	don't do expr tree simplification\n"
 	       "expr-left-simplify	do left simplification first\n"
 	       "expr-right-simplify	do right simplification first\n"
+	       "no-minimize		don't do state minimization\n"
+	       "no-hash-part		don't hash partitions at start of minimization\n"
+	       "no-remove-unreachable	don't do unreachable state removal\n"
 	       ,command);
 }
 
@@ -323,15 +328,20 @@ static int process_args(int argc, char *argv[])
 			} else if (strcmp(optarg, "expr-stats") == 0) {
 				dfaflags |= DFA_DUMP_TREE_STATS;
 			} else if (strcmp(optarg, "dfa-progress") == 0) {
-				dfaflags |= DFA_DUMP_PROGRESS;
+				dfaflags |= DFA_DUMP_PROGRESS | DFA_DUMP_STATS;
 			} else if (strcmp(optarg, "dfa-stats") == 0) {
 				dfaflags |= DFA_DUMP_STATS;
 			} else if (strcmp(optarg, "dfa-states") == 0) {
 				dfaflags |= DFA_DUMP_STATES;
 			} else if (strcmp(optarg, "dfa-graph") == 0) {
 				dfaflags |= DFA_DUMP_GRAPH;
+			} else if (strcmp(optarg, "dfa- minimize") == 0) {
+				dfaflags |= DFA_DUMP_MINIMIZE;
+			} else if (strcmp(optarg, "dfa-unreachable") == 0) {
+				dfaflags |= DFA_DUMP_UNREACHABLE;
 			} else if (strcmp(optarg, "trans-progress") == 0) {
-				dfaflags |= DFA_DUMP_TRANS_PROGRESS;
+				dfaflags |= DFA_DUMP_TRANS_PROGRESS |
+				  DFA_DUMP_TRANS_STATS;
 			} else if (strcmp(optarg, "trans-stats") == 0) {
 				dfaflags |= DFA_DUMP_TRANS_STATS;
 			} else if (strcmp(optarg, "trans-table") == 0) {
@@ -350,7 +360,9 @@ static int process_args(int argc, char *argv[])
 			skip_cache = 1;
 			if (strcmp(optarg, "0") == 0) {
 				dfaflags |= DFA_CONTROL_NO_TREE_NORMAL |
-					DFA_CONTROL_NO_TREE_SIMPLE;
+					DFA_CONTROL_NO_TREE_SIMPLE |
+					DFA_CONTROL_NO_MINIMIZE |
+					DFA_CONTROL_NO_UNREACHABLE;
 			} else if (strcmp(optarg, "equiv") == 0) {
 				dfaflags |= DFA_CONTROL_EQUIV;
 			} else if (strcmp(optarg, "no-equiv") == 0) {
@@ -367,6 +379,18 @@ static int process_args(int argc, char *argv[])
 				dfaflags |= DFA_CONTROL_TREE_LEFT;
 			} else if (strcmp(optarg, "expr-right-simplify") == 0) {
 				dfaflags &= ~DFA_CONTROL_TREE_LEFT;
+			} else if (strcmp(optarg, "minimize") == 0) {
+				dfaflags &= ~DFA_CONTROL_NO_MINIMIZE;
+			} else if (strcmp(optarg, "no-minimize") == 0) {
+				dfaflags |= DFA_CONTROL_NO_MINIMIZE;
+			} else if (strcmp(optarg, "hash-part") == 0) {
+				dfaflags &= ~DFA_CONTROL_NO_HASH_PART;
+			} else if (strcmp(optarg, "no-hash-part") == 0) {
+				dfaflags |= DFA_CONTROL_NO_HASH_PART;
+			} else if (strcmp(optarg, "remove-unreachable") == 0) {
+				dfaflags &= ~DFA_CONTROL_NO_UNREACHABLE;
+			} else if (strcmp(optarg, "no-remove-unreachable") == 0) {
+				dfaflags |= DFA_CONTROL_NO_UNREACHABLE;
 			} else {
 				PERROR("%s: Invalid --Optimize option %s\n",
 				       progname, optarg);

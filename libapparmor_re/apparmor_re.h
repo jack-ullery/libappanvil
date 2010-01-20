@@ -16,6 +16,9 @@ typedef enum dfaflags {
   DFA_CONTROL_NO_TREE_NORMAL =	1 << 1,
   DFA_CONTROL_NO_TREE_SIMPLE =	1 << 2,
   DFA_CONTROL_TREE_LEFT =	1 << 3,
+  DFA_CONTROL_NO_MINIMIZE =	1 << 4,
+  DFA_CONTROL_NO_HASH_PART =    1 << 5,
+  DFA_CONTROL_NO_UNREACHABLE =	1 << 6,
 
   DFA_DUMP_TREE_STATS =		1 << 8,
   DFA_DUMP_TREE =		1 << 9,
@@ -29,6 +32,8 @@ typedef enum dfaflags {
   DFA_DUMP_TRANS_TABLE =	1 << 17,
   DFA_DUMP_EQUIV =		1 << 18,
   DFA_DUMP_EQUIV_STATS =	1 << 19,
+  DFA_DUMP_MINIMIZE =		1 << 20,
+  DFA_DUMP_UNREACHABLE =	1 << 22,
 } dfaflags_t;
 
 #ifdef __cplusplus
