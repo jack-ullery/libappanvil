@@ -1561,6 +1561,8 @@ size_t DFA::hash_trans(State *s)
 		Trans::iterator k = trans.find(i->second.otherwise);
 		hash = ((hash << 5) + hash) + k->second.cases.size();
 	}
+
+	hash = (hash << 8) | i->second.cases.size();
         return hash;
 }
 
