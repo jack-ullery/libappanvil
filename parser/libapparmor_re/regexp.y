@@ -1279,6 +1279,11 @@ class DFA {
 public:
     DFA(Node *root, dfaflags_t flags);
     virtual ~DFA();
+    void remove_unreachable(dfaflags_t flags);
+    bool same_mappings(map <State *, States *> &partition_map, State *s1,
+		       State *s2);
+    size_t hash_trans(State *s);
+    void minimize(dfaflags_t flags);
     void dump(ostream& os);
     void dump_dot_graph(ostream& os);
     map<uchar, uchar> equivalence_classes(dfaflags_t flags);
@@ -1364,8 +1369,15 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 		here.cases.insert(*j);
 	}
     }
-    if (flags & (DFA_DUMP_STATS | DFA_DUMP_PROGRESS))
+    if (flags & (DFA_DUMP_STATS))
 	    fprintf(stderr, "\033[2KCreated dfa: states %ld\tmatching %d\tnonmatching %d\n", states.size(), match_count, nomatch_count);
+
+    if (!(flags & DFA_CONTROL_NO_MINIMIZE))
+	    minimize(flags);
+
+    if (!(flags & DFA_CONTROL_NO_UNREACHABLE))
+	    remove_unreachable(flags);
+
 }
 
 DFA::~DFA()
@@ -1414,6 +1426,297 @@ State *DFA::verify_perms(void)
 	}
     }
     return NULL;
+}
+
+/* Remove dead or unreachable states */
+void DFA::remove_unreachable(dfaflags_t flags)
+{
+	set <State *> reachable;
+	list <State *> work_queue;
+
+	/* find the set of reachable states */
+	reachable.insert(nonmatching);
+	work_queue.push_back(start);
+	while (!work_queue.empty()) {
+		State *from = work_queue.front();
+		work_queue.pop_front();
+		reachable.insert(from);
+
+		Trans::iterator i = trans.find(from);
+		if (i == trans.end() && from != nonmatching)
+			continue;
+
+		if (i->second.otherwise &&
+		    (reachable.find(i->second.otherwise) == reachable.end()))
+			work_queue.push_back(i->second.otherwise);
+
+		for (Cases::iterator j = i->second.begin();
+		     j != i->second.end(); j++) {
+			if (reachable.find(j->second) == reachable.end())
+				work_queue.push_back(j->second);
+		}
+	}
+
+	/* walk the set of states and remove any that aren't reachable */
+	if (reachable.size() < states.size()) {
+		int count = 0;
+		States::iterator i;
+		States::iterator next;
+		for (i = states.begin(); i != states.end(); i = next) {
+			next = i;
+			next++;
+			if (reachable.find(*i) == reachable.end()) {
+				states.erase(*i);
+				Trans::iterator t = trans.find(*i);
+				if (t != trans.end())
+					trans.erase(t);
+				if (flags & DFA_DUMP_UNREACHABLE) {
+					uint32_t audit, accept = accept_perms(*i, &audit, NULL);
+					cerr << "unreachable: "<< **i;
+					if (*i == start)
+						cerr << " <==";
+					if (accept) {
+						cerr << " (0x" << hex << accept
+						 << " " << audit << dec << ')';
+					}
+					cerr << endl;
+				}
+			}
+			delete(*i);
+			count++;
+		}
+
+		if (count && (flags & DFA_DUMP_STATS))
+			cerr << "DFA: states " << states.size() << " removed "
+			     << count << " unreachable states\n";
+	}
+}
+
+/* test if two states have the same transitions under partition_map */
+bool DFA::same_mappings(map <State *, States *> &partition_map, State *s1,
+			State *s2)
+{
+	Trans::iterator i1 = trans.find(s1);
+	Trans::iterator i2 = trans.find(s2);
+
+	if (i1 == trans.end()) {
+		if (i2 == trans.end()) {
+			return true;
+		}
+		return false;
+	} else if (i2 == trans.end()) {
+		return false;
+	}
+
+	if (i1->second.otherwise) {
+		if (!i2->second.otherwise)
+			return false;
+		States *p1 = partition_map.find(i1->second.otherwise)->second;
+		States *p2 = partition_map.find(i2->second.otherwise)->second;
+		if (p1 != p2)
+			return false;
+	} else if (i2->second.otherwise) {
+		return false;
+	}
+
+	if (i1->second.cases.size() != i2->second.cases.size())
+		return false;
+	for (Cases::iterator j1 = i1->second.begin(); j1 != i1->second.end();
+	     j1++){
+		Cases::iterator j2 = i2->second.cases.find(j1->first);
+		if (j2 == i2->second.end())
+			return false;
+		States *p1 = partition_map.find(j1->second)->second;
+		States *p2 = partition_map.find(j2->second)->second;
+		if (p1 != p2)
+			return false;
+	}
+
+	return true;
+}
+
+/* Do simple djb2 hashing against a States transition cases
+ * this provides a rough initial guess at state equivalence as if a state
+ * has a different number of transitions or has transitions on different
+ * cases they will never be equivalent.
+ * Note: this only hashes based off of the alphabet (not destination)
+ * as different destinations could end up being equiv
+ */
+size_t DFA::hash_trans(State *s)
+{
+        unsigned long hash = 5381;
+
+	Trans::iterator i = trans.find(s);
+	if (i == trans.end())
+		return 0;
+
+	for (Cases::iterator j = i->second.begin(); j != i->second.end(); j++){
+		hash = ((hash << 5) + hash) + j->first;
+		Trans::iterator k = trans.find(j->second);
+		hash = ((hash << 5) + hash) + k->second.cases.size();
+	}
+
+	if (i->second.otherwise && i->second.otherwise != nonmatching) {
+		hash = ((hash << 5) + hash) + 5381;
+		Trans::iterator k = trans.find(i->second.otherwise);
+		hash = ((hash << 5) + hash) + k->second.cases.size();
+	}
+        return hash;
+}
+
+/* minimize the number of dfa states */
+void DFA::minimize(dfaflags_t flags)
+{
+	map <pair <uint64_t, size_t>, States *> perm_map;
+	list <States *> partitions;
+	map <State *, States *> partition_map;
+	
+	/* Set up the initial partitions - 1 non accepting, and a
+	 * partion for each unique combination of permissions
+	 *
+	 * Save off accept value for State so we don't have to recompute
+	 * this should be fixed by updating State to store them but this
+	 * will work for now
+	 */
+
+	int accept_count = 0;
+	for (States::iterator i = states.begin(); i != states.end(); i++) {
+		uint32_t accept1, accept2;
+		accept1 = accept_perms(*i, &accept2, NULL);
+		uint64_t combined = ((uint64_t)accept2)<<32 | (uint64_t)accept1;
+		size_t size = 0;
+		if (!(flags & DFA_CONTROL_NO_HASH_PART))
+			size = hash_trans(*i);
+		pair <uint64_t, size_t> group = make_pair(combined, size);
+		map <pair <uint64_t, size_t>, States *>::iterator p = perm_map.find(group);
+		if (p == perm_map.end()) {
+			States *part = new States();
+			part->insert(*i);
+			perm_map.insert(make_pair(group, part));
+			partitions.push_back(part);
+			partition_map.insert(make_pair(*i, part));
+			if (combined)
+				accept_count++;
+		} else {
+			partition_map.insert(make_pair(*i, p->second));
+			p->second->insert(*i);
+		}
+		if ((flags & DFA_DUMP_PROGRESS) &&
+		    (partitions.size() % 1000 == 0))
+			cerr << "\033[2KMinimize dfa: partitions " << partitions.size() << "\tinit " << partitions.size() << "\t(accept " << accept_count << ")\r";
+	}
+
+	int init_count = partitions.size();
+	if (flags & DFA_DUMP_PROGRESS)
+		cerr << "\033[2KMinimize dfa: partitions " << partitions.size() << "\tinit " << init_count << "\t(accept " << accept_count << ")\r";
+
+	/* Now do repartitioning until each partition contains the set of
+	 * states that are the same.  This will happen when the partition
+	 * splitting stables.  With a worse case of 1 state per partition
+	 * ie. already minimized.
+	 */
+	States *new_part;
+	int new_part_count;
+	do {
+		new_part_count = 0;
+		for (list <States *>::iterator p = partitions.begin();
+		     p != partitions.end(); p++) {
+			new_part = NULL;
+			State *rep = *((*p)->begin());
+			States::iterator next;
+			for (States::iterator s = ++(*p)->begin();
+			     s != (*p)->end(); s++) {
+				if (same_mappings(partition_map, rep, *s))
+					continue;
+				if (!new_part) {
+					new_part = new States;
+				}
+				new_part->insert(*s);
+			}
+			if (new_part) {
+				for (States::iterator m = new_part->begin();
+				     m != new_part->end(); m++) {
+					(*p)->erase(*m);
+					partition_map.erase(*m);
+					partition_map.insert(make_pair(*m, new_part));
+				}
+				partitions.push_back(new_part);
+				new_part_count++;
+			}
+		}
+		if ((flags & DFA_DUMP_PROGRESS) &&
+		    (partitions.size() % 1000 == 0))
+			cerr << "\033[2KMinimize dfa: partitions " << partitions.size() << "\tinit " << init_count << "\t(accept " << accept_count << ")\r";
+	} while(new_part_count);
+
+	if (flags & DFA_DUMP_STATS)
+		cerr << "\033[2KMinimize dfa: partitions " << partitions.size() << "\tinit " << init_count << "\t(accept " << accept_count << ")\n";
+
+
+	if (partitions.size() == states.size()) {
+		goto out;
+	}
+
+	/* Remap the dfa so it uses the representative states
+	 * Use the first state of a partition as the representative state
+	 * At this point all states with in a partion have transitions
+	 * to same states within the same partitions
+	 */
+       	for (list <States *>::iterator p = partitions.begin();
+	     p != partitions.end(); p++) {
+		/* representative state for this partition */
+		State *rep = *((*p)->begin());
+
+		/* update representative state's transitions */
+		Trans::iterator i = trans.find(rep);
+		if (i != trans.end()) {
+			if (i->second.otherwise) {
+				map <State *, States *>::iterator z = partition_map.find(i->second.otherwise);
+				States *partition = partition_map.find(i->second.otherwise)->second;
+				i->second.otherwise = *partition->begin();
+			}
+			for (Cases::iterator c = i->second.begin();
+			     c != i->second.end(); c++) {
+				States *partition = partition_map.find(c->second)->second;
+				c->second = *partition->begin();
+			}
+		}
+	}
+
+	/* make sure nonmatching and start state are up to date with the
+	 * mappings */
+	{
+		States *partition = partition_map.find(nonmatching)->second;
+		if (*partition->begin() != nonmatching) {
+			nonmatching = *partition->begin();
+		}
+
+		partition = partition_map.find(start)->second;
+		if (*partition->begin() != start) {
+			start = *partition->begin();
+		}
+
+	}
+	/* Now that the states have been remapped, remove all states
+	 * that are not the representive states for their partition
+	 */
+	for (list <States *>::iterator p = partitions.begin();
+	     p != partitions.end(); p++) {
+		for (States::iterator i = ++(*p)->begin(); i != (*p)->end(); i++) {
+			Trans::iterator j = trans.find(*i);
+			if (j != trans.end())
+				trans.erase(j);
+			states.erase(*i);
+		}
+	}
+
+out:
+	/* Cleanup */
+	while (!partitions.empty()) {
+		States *p = partitions.front();
+		partitions.pop_front();
+		delete(p);
+	}
 }
 
 /**
@@ -2085,7 +2388,8 @@ uint32_t accept_perms(State *state, uint32_t *audit_ctl, int *error)
     uint32_t perms = 0, exact_match_perms = 0, audit = 0, exact_audit = 0,
 	    quiet = 0, deny = 0;
 
-    *error = 0;
+    if (error)
+	    *error = 0;
     for (State::iterator i = state->begin(); i != state->end(); i++) {
 	    MatchFlag *match;
 	    if (!(match= dynamic_cast<MatchFlag *>(*i)))
@@ -2093,7 +2397,7 @@ uint32_t accept_perms(State *state, uint32_t *audit_ctl, int *error)
 	    if (dynamic_cast<ExactMatchFlag *>(match)) {
 		    /* exact match only ever happens with x */
 		    if (!is_merged_x_consistent(exact_match_perms,
-						match->flag))
+						match->flag) && error)
 			    *error = 1;;
 		    exact_match_perms |= match->flag;
 		    exact_audit |= match->audit;
@@ -2101,7 +2405,7 @@ uint32_t accept_perms(State *state, uint32_t *audit_ctl, int *error)
 		    deny |= match->flag;
 		    quiet |= match->audit;
 	    } else {
-		    if (!is_merged_x_consistent(perms, match->flag))
+		    if (!is_merged_x_consistent(perms, match->flag) && error)
 			    *error = 1;
 		    perms |= match->flag;
 		    audit |= match->audit;
