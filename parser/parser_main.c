@@ -210,6 +210,8 @@ static void display_optimize(char *command)
 	       "no-minimize		don't do state minimization\n"
 	       "no-hash-part		don't hash partitions at start of minimization\n"
 	       "no-remove-unreachable	don't do unreachable state removal\n"
+	       "trans-comp-high		try to do extra transition table compression\n"
+	       "trans-comp-fast		do faster transition table compression\n"
 	       ,command);
 }
 
@@ -387,6 +389,10 @@ static int process_args(int argc, char *argv[])
 				dfaflags &= ~DFA_CONTROL_NO_HASH_PART;
 			} else if (strcmp(optarg, "no-hash-part") == 0) {
 				dfaflags |= DFA_CONTROL_NO_HASH_PART;
+			} else if (strcmp(optarg, "trans-comp-fast") == 0) {
+				dfaflags &= ~DFA_CONTROL_TRANS_HIGH;
+			} else if (strcmp(optarg, "trans-comp-high") == 0) {
+				dfaflags |= DFA_CONTROL_TRANS_HIGH;
 			} else if (strcmp(optarg, "remove-unreachable") == 0) {
 				dfaflags &= ~DFA_CONTROL_NO_UNREACHABLE;
 			} else if (strcmp(optarg, "no-remove-unreachable") == 0) {

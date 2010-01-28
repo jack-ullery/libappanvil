@@ -19,6 +19,7 @@ typedef enum dfaflags {
   DFA_CONTROL_NO_MINIMIZE =	1 << 4,
   DFA_CONTROL_NO_HASH_PART =    1 << 5,
   DFA_CONTROL_NO_UNREACHABLE =	1 << 6,
+  DFA_CONTROL_TRANS_HIGH =	1 << 7,
 
   DFA_DUMP_TREE_STATS =		1 << 8,
   DFA_DUMP_TREE =		1 << 9,
