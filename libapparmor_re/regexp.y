@@ -1940,8 +1940,11 @@ public:
     TransitionTable(DFA& dfa, map<uchar, uchar>& eq, dfaflags_t flags);
     void dump(ostream& os);
     void flex_table(ostream& os, const char *name);
-    bool fits_in(size_t base, Cases& cases);
-    void insert_state(State *state, DFA& dfa);
+    void init_free_list(vector <pair<size_t, size_t> > &free_list, size_t prev, size_t start);
+    bool fits_in(vector <pair<size_t, size_t> > &free_list,
+		 size_t base, Cases& cases);
+    void insert_state(vector <pair<size_t, size_t> > &free_list,
+		      State *state, DFA& dfa);
 
 private:
     vector<uint32_t> accept;
@@ -1951,132 +1954,225 @@ private:
     map<const State *, size_t> num;
     map<uchar, uchar>& eq;
     uchar max_eq;
-    uint32_t min_base;
+    size_t first_free;
 };
 
+
+void TransitionTable::init_free_list(vector <pair<size_t, size_t> > &free_list,
+				     size_t prev, size_t start) {
+	for (size_t i = start; i < free_list.size(); i++) {
+		if (prev)
+			free_list[prev].second = i;
+		free_list[i].first = prev;
+		prev = i;
+	}
+	free_list[free_list.size() -1].second = 0;
+}
+
 /**
- * Construct the transition table.
+ * new Construct the transition table.
  */
 TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq,
 				 dfaflags_t flags)
-    : eq(eq), min_base(0)
+    : eq(eq)
 {
 
-    if (flags & DFA_DUMP_TRANS_PROGRESS)
-	    fprintf(stderr, "Creating trans table:\r");
+	if (flags & DFA_DUMP_TRANS_PROGRESS)
+		fprintf(stderr, "Creating trans table:\r");
 
-    /* Insert the dummy nonmatching transition by hand */
-    next_check.push_back(make_pair(dfa.nonmatching, dfa.nonmatching));
 
-    if (eq.empty())
-	max_eq = 255;
-    else {
-	max_eq = 0;
-	for(map<uchar, uchar>::iterator i = eq.begin(); i != eq.end(); i++) {
-	    if (i->second > max_eq)
-		max_eq = i->second;
+	if (eq.empty())
+		max_eq = 255;
+	else {
+		max_eq = 0;
+		for(map<uchar, uchar>::iterator i = eq.begin(); i != eq.end(); i++) {
+			if (i->second > max_eq)
+				max_eq = i->second;
+		}
 	}
-    }
 
-    /**
-     * Insert all the DFA states into the transition table. The nonmatching
-     * and start states come first, followed by all other states.
-     */
-    int count = 2;
-    insert_state(dfa.nonmatching, dfa);
-    insert_state(dfa.start, dfa);
-    for (States::iterator i = dfa.states.begin(); i != dfa.states.end(); i++) {
-	if (*i != dfa.nonmatching && *i != dfa.start)
-	    insert_state(*i, dfa);
-	if (flags & (DFA_DUMP_TRANS_PROGRESS)) {
-		count++;
-		if (count % 100 == 0)
-			fprintf(stderr, "\033[2KCreating trans table: insert state: %d/%ld\r", count, dfa.states.size());
+	/* Do initial setup adding up all the transitions and sorting by
+	 * transition count.
+	 */
+	size_t optimal = 2;
+	multimap <size_t, State *> order;
+	vector <pair<size_t, size_t> > free_list;
+
+	for (Trans::iterator i = dfa.trans.begin(); i != dfa.trans.end(); i++) {
+		if (i->first == dfa.start || i->first == dfa.nonmatching)
+			continue;
+		optimal += i->second.cases.size();
+		if (flags & DFA_CONTROL_TRANS_HIGH) {
+			size_t range = 0;
+			if (i->second.cases.size())
+				range = i->second.cases.rbegin()->first - i->second.begin()->first;
+			size_t ord = ((256 - i->second.cases.size()) << 8) |
+				(256 - range);
+			/* reverse sort by entry count, most entries first */
+			order.insert(make_pair(ord, i->first));
+		}
 	}
-    }
 
-    count = 2;
-    num.insert(make_pair(dfa.nonmatching, num.size()));
-    num.insert(make_pair(dfa.start, num.size()));
-    for (States::iterator i = dfa.states.begin(); i != dfa.states.end(); i++) {
-	if (*i != dfa.nonmatching && *i != dfa.start)
-	    num.insert(make_pair(*i, num.size()));
-	if (flags & (DFA_DUMP_TRANS_PROGRESS)) {
-		count++;
-		if (count % 100 == 0)
-			fprintf(stderr, "\033[2KCreating trans table: insert num: %d/%ld\r", count, dfa.states.size());
+	/* Insert the dummy nonmatching transition by hand */
+	next_check.push_back(make_pair(dfa.nonmatching, dfa.nonmatching));
+	default_base.push_back(make_pair(dfa.nonmatching, 0));
+	num.insert(make_pair(dfa.nonmatching, num.size()));
+
+	accept.resize(dfa.states.size());
+	accept2.resize(dfa.states.size());
+	next_check.resize(optimal);
+	free_list.resize(optimal);
+
+	accept[0] = 0;
+	accept2[0] = 0;
+	first_free = 1;
+	init_free_list(free_list, 0, 1);
+
+	insert_state(free_list, dfa.start, dfa);
+	accept[1] = 0;
+	accept2[1] = 0;
+	num.insert(make_pair(dfa.start, num.size()));
+
+	int count = 2;
+
+	if (!(flags & DFA_CONTROL_TRANS_HIGH)) {
+		for (States::iterator i = dfa.states.begin(); i != dfa.states.end();
+		     i++) {
+			if (*i != dfa.nonmatching && *i != dfa.start) {
+				insert_state(free_list, *i, dfa);
+				int error = 0;
+				uint32_t audit_ctl;
+				accept[num.size()] = accept_perms(*i, &audit_ctl, &error);
+				accept2[num.size()] = audit_ctl;
+				num.insert(make_pair(*i, num.size()));
+			}
+			if (flags & (DFA_DUMP_TRANS_PROGRESS)) {
+				count++;
+				if (count % 100 == 0)
+					fprintf(stderr, "\033[2KCreating trans table: insert state: %d/%ld\r", count, dfa.states.size());
+			}
+		}
+	} else {
+		for (multimap <size_t, State *>::iterator i = order.begin();
+		     i != order.end(); i++) {
+			if (i->second != dfa.nonmatching && i->second != dfa.start) {
+				insert_state(free_list, i->second, dfa);
+				int error = 0;
+				uint32_t audit_ctl;
+				accept[num.size()] = accept_perms(i->second, &audit_ctl, &error);
+				accept2[num.size()] = audit_ctl;
+				num.insert(make_pair(i->second, num.size()));
+			}
+			if (flags & (DFA_DUMP_TRANS_PROGRESS)) {
+				count++;
+				if (count % 100 == 0)
+					fprintf(stderr, "\033[2KCreating trans table: insert state: %d/%ld\r", count, dfa.states.size());
+			}
+		}
 	}
-    }
 
-    accept.resize(dfa.states.size());
-    accept2.resize(dfa.states.size());
-    for (States::iterator i = dfa.states.begin(); i != dfa.states.end(); i++) {
-	int error = 0;
-	uint32_t audit_ctl;
-	accept[num[*i]] = accept_perms(*i, &audit_ctl, &error);
-	accept2[num[*i]] = audit_ctl;
-//if (accept[num[*i]] & AA_CHANGE_HAT)
-//    fprintf(stderr, "change_hat state %d - 0x%x\n", num[*i], accept[num[*i]]);
-    }
-
-    if (flags & (DFA_DUMP_TRANS_STATS | DFA_DUMP_TRANS_PROGRESS)) {
-	    ssize_t size = 4 * next_check.size() + 6 * dfa.states.size();
-
-	    fprintf(stderr, "\033[2KCreated trans table: states %ld, next/check %ld, avg/state %.2f, compression %ld/%ld = %.2f %%\n", dfa.states.size(), next_check.size(), (float)next_check.size()/(float)dfa.states.size(), size, 512 * dfa.states.size(), 100.0 - ((float) size * 100.0 / (float)(512 * dfa.states.size())));
-    }
+	if (flags & (DFA_DUMP_TRANS_STATS | DFA_DUMP_TRANS_PROGRESS)) {
+		ssize_t size = 4 * next_check.size() + 6 * dfa.states.size();
+		fprintf(stderr, "\033[2KCreated trans table: states %ld, next/check %ld, optimal next/check %ld avg/state %.2f, compression %ld/%ld = %.2f %%\n", dfa.states.size(), next_check.size(), optimal, (float)next_check.size()/(float)dfa.states.size(), size, 512 * dfa.states.size(), 100.0 - ((float) size * 100.0 / (float)(512 * dfa.states.size())));
+	}
 }
+
 
 /**
  * Does <cases> fit into position <base> of the transition table?
  */
-bool TransitionTable::fits_in(size_t base, Cases& cases)
+bool TransitionTable::fits_in(vector <pair<size_t, size_t> > &free_list,
+			      size_t pos, Cases& cases)
 {
-    for (Cases::iterator i = cases.begin(); i != cases.end(); i++) {
-	size_t c = base + i->first;
-	if (c >= next_check.size())
-	    continue;
-	if (next_check[c].second)
-	    return false;
-    }
-    return true;
+	size_t c, base = pos - cases.begin()->first;
+	for (Cases::iterator i = cases.begin(); i != cases.end(); i++) {
+		c = base + i->first;
+		/* if it overflows the next_check array it fits in as we will
+		 * resize */
+		if (c >= next_check.size())
+			goto resize;
+		if (next_check[c].second)
+			return false;
+	}
+	return true;
+
+resize:
+	next_check.resize(base + cases.cases.rbegin()->first + 1);
+	size_t prev = pos;
+	size_t x = pos;
+	/* find last free list entry */
+	while (x) {
+		prev = x;
+		x = free_list[x].second;
+	}
+	x = free_list. size();
+	free_list.resize(base + cases.cases.rbegin()->first + 1);
+	init_free_list(free_list, prev, x);
+	return true;
 }
 
 /**
  * Insert <state> of <dfa> into the transition table.
  */
-void TransitionTable::insert_state(State *from, DFA& dfa)
+void TransitionTable::insert_state(vector <pair<size_t, size_t> > &free_list,
+				   State *from, DFA& dfa)
 {
-    State *default_state = dfa.nonmatching;
-    size_t base = 0;
+	State *default_state = dfa.nonmatching;
+	size_t base = 0;
 
-    Trans::iterator i = dfa.trans.find(from);
-    if (i != dfa.trans.end()) {
-	Cases& cases = i->second;
-	if (cases.otherwise)
-	    default_state = cases.otherwise;
-	if (cases.cases.empty())
-	    goto insert_state;
-
-	size_t c = cases.begin()->first;
-	if (c < min_base)
-	    base = min_base - c;
-	/* Try inserting until we succeed. */
-	while (!fits_in(base, cases))
-	    base++;
-
-	if (next_check.size() <= base + max_eq)
-	    next_check.resize(base + max_eq + 1);
-	for (Cases::iterator j = cases.begin(); j != cases.end(); j++)
-	    next_check[base + j->first] = make_pair(j->second, from);
-
-	while (min_base < next_check.size()) {
-	    if (!next_check[min_base].second)
-		break;
-	    min_base++;
+	Trans::iterator i = dfa.trans.find(from);
+	if (i == dfa.trans.end()) {
+		return;
 	}
-    }
-insert_state:
-    default_base.push_back(make_pair(default_state, base));
+	Cases& cases = i->second;
+	size_t c = cases.begin()->first;
+	size_t prev = 0;
+	size_t x = first_free;
+
+	if (cases.otherwise)
+		default_state = cases.otherwise;
+	if (cases.cases.empty())
+		goto do_insert;
+
+repeat:
+	/* get the first free entry that won't underflow */
+	while (x && (x < c)) {
+		prev = x;
+		x = free_list[x].second;
+	}
+
+	/* try inserting until we succeed. */
+	while (x && !fits_in(free_list, x, cases)) {
+		prev = x;
+		x = free_list[x].second;
+	}
+	if (!x) {
+		/* expand next_check and free_list */
+		x = free_list.size();
+		size_t range = cases.cases.rbegin()->first - cases.begin()->first + 1;
+		next_check.resize(next_check.size() + range);
+		free_list.resize(free_list.size() + range);
+		init_free_list(free_list, prev, x);
+		if (!first_free)
+			first_free = x;
+		goto repeat;
+	}
+
+	base = x - c;
+	for (Cases::iterator j = cases.begin(); j != cases.end(); j++) {
+	    next_check[base + j->first] = make_pair(j->second, from);
+	    size_t prev = free_list[base + j->first].first;
+	    size_t next = free_list[base + j->first].second;
+	    if (prev)
+		    free_list[prev].second = next;
+	    if (next)
+		    free_list[next].first = prev;
+	    if (base + j->first == first_free)
+		    first_free = next;
+	}
+
+do_insert:
+	default_base.push_back(make_pair(default_state, base));
 }
 
 /**
