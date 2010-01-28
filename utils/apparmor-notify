@@ -1,0 +1,420 @@
+#!/usr/bin/perl
+# Author: Jamie Strandboge <jamie@ubuntu.com>
+# Copyright (C) 2009-2010 Canonical Ltd.
+#
+# This script is distributed under the terms and conditions of the GNU General
+# Public License, Version 3 or later. See http://www.gnu.org/copyleft/gpl.html
+# for details.
+#
+# Script to get AppArmor notifications.
+#
+# /etc/apparmor/notify.conf:
+# # set to 'yes' to enable AppArmor DENIED notifications
+# show_notifications="yes"
+#
+# # only people in use_group can run this script
+# use_group="admin"
+#
+# $HOME/.apparmor_notify.conf can have:
+# # set to 'yes' to enable AppArmor DENIED notifications
+# show_notifications="yes"
+#
+
+use strict;
+use warnings;
+no warnings qw( once );
+
+require LibAppArmor;
+require POSIX;
+require Time::Local;
+
+use vars qw($opt_p $opt_s $opt_l $opt_h $opt_v $opt_d);
+use Getopt::Std;
+
+my %prefs;
+my $conf = "/etc/apparmor/notify.conf";
+my $user_conf = "$ENV{HOME}/.apparmor_notify.conf";
+my $notify_exe = "/usr/bin/notify-send";
+my $last_exe = "/usr/bin/last";
+my $ps_exe = "/bin/ps";
+my $url = "https://wiki.ubuntu.com/DebuggingApparmor";
+my $nobody_user = "nobody";
+my $nobody_group = "nogroup";
+
+sub readconf;
+sub parse_message;
+sub format_message;
+sub format_stats;
+sub kill_running_daemons;
+sub do_notify;
+sub show_since;
+sub do_last;
+sub do_show_messages;
+sub _error;
+sub _warn;
+sub _debug;
+sub exitscript;
+sub usage;
+
+#
+# Main script
+#
+
+# Clean environment
+$ENV{PATH} = "/bin:/usr/bin";
+$ENV{SHELL} = "/bin/sh";
+defined($ENV{IFS}) and $ENV{IFS} = ' \t\n';
+
+my $logfile = "/var/log/kern.log";
+-e "/var/run/auditd.pid" and $logfile = "/var/log/audit/audit.log";
+
+$> == $< or die "Cannot be suid\n";
+$) == $( or die "Cannot be sgid\n";
+
+my $login;
+
+open (LOGFILE, "<$logfile") or die "Could not open '$logfile'\n";
+# Drop priviliges, if running as root
+if ($< == 0) {
+    $login = "root";
+    if (defined($ENV{SUDO_UID}) and defined($ENV{SUDO_GID})) {
+        POSIX::setgid($ENV{SUDO_GID}) or _error("Could not change gid");
+        POSIX::setuid($ENV{SUDO_UID}) or _error("Could not change uid");
+        defined($ENV{SUDO_USER}) and $login = $ENV{SUDO_USER};
+    } else {
+        # nobody/nogroup
+        POSIX::setgid(scalar(getpwnam($nobody_group))) or _error("Could not change gid to '$$nobody_group'");
+        POSIX::setuid(scalar(getpwnam($nobody_user))) or _error("Could not change uid to '$nobody_user'");
+    }
+} else {
+    $login = getlogin();
+    defined $login or $login = $ENV{'USER'};
+}
+
+if (-s $conf) {
+    readconf($conf);
+    if (defined($prefs{use_group})) {
+        my ($name, $passwd, $gid, $members) = getgrnam($prefs{use_group});
+        if (not defined($members) or not defined($login) or not grep { $_ eq $login } split(/ /, $members)) {
+            _error("'$login' must be in '$prefs{use_group}' group. Aborting");
+        }
+    }
+}
+
+getopts('dhlpvs:');
+if ($opt_h) {
+    usage;
+    exitscript(0);
+} elsif ($opt_p) {
+    -x "$notify_exe" or _error("Could not find '$notify_exe'. Please install libnotify-bin. Aborting");
+} elsif ($opt_l) {
+    -x "$last_exe" or _error("Could not find '$last_exe'. Aborting");
+} elsif ($opt_s) {
+    $opt_s =~ /^[0-9]+$/ or _error("-s requires a number");
+}
+
+if ($opt_p or $opt_l) {
+    if (-s $user_conf) {
+        readconf($user_conf);
+    }
+
+    if (defined($prefs{show_notifications}) and $prefs{show_notifications} ne "yes") {
+        _debug("'show_notifications' is disabled. Exiting");
+        exitscript(0);
+    }
+}
+
+
+my $now = time();
+if ($opt_p) {
+    do_notify();
+} elsif ($opt_l) {
+    do_last();
+} elsif ($opt_s) {
+    do_show_messages($opt_s);
+} else {
+    usage;
+    exitscript(1);
+}
+
+exitscript(0);
+
+#
+# Subroutines
+#
+sub readconf {
+    my $cfg = $_[0];
+    -r $cfg or die "'$cfg' does not exist\n";
+
+    open (CFG, "<$cfg") or die "Could not open '$cfg'\n";
+    while (<CFG>) {
+        chomp;
+        s/#.*//;                # no comments
+        s/^\s+//;               # no leading white
+        s/\s+$//;               # no trailing white
+        next unless length;     # anything left?
+        my ($var, $value) = split(/\s*=\s*/, $_, 2);
+        if ($var eq "show_notifications" or $var eq "use_group") {
+            $value =~ s/^"(.*)"$/$1/g;
+            $prefs{$var} = $value;
+        }
+    }
+    close(CFG);
+}
+
+sub parse_message {
+    my @params = @_;
+    my $msg = $params[0];
+
+    chomp($msg);
+    #_debug("processing: $msg");
+
+    my ($test) = LibAppArmorc::parse_record($msg);
+
+    # Don't show logs before certain date
+    my $date = LibAppArmor::aa_log_record::swig_epoch_get($test);
+    my $since = 0;
+    if (defined($date) and $#params > 0 and $params[1] =~ /^[0-9]+$/) {
+        $since = int($params[1]);
+        int($date) >= $since or return ();
+    }
+
+    # ignore all but status and denied messages
+    my $type = LibAppArmor::aa_log_record::swig_event_get($test);
+
+    $type == $LibAppArmor::AA_RECORD_DENIED or return ();
+
+    my $profile = LibAppArmor::aa_log_record::swig_profile_get($test);
+    my $operation = LibAppArmor::aa_log_record::swig_operation_get($test);
+    my $name = LibAppArmor::aa_log_record::swig_name_get($test);
+    my $denied = LibAppArmor::aa_log_record::swig_denied_mask_get($test);
+    my $family = LibAppArmor::aa_log_record::swig_net_family_get($test);
+    my $sock_type = LibAppArmor::aa_log_record::swig_net_sock_type_get($test);
+    LibAppArmorc::free_record($test);
+
+    return ($profile, $operation, $name, $denied, $family, $sock_type, $date);
+}
+
+sub format_message {
+    my ($profile, $operation, $name, $denied, $family, $sock_type, $date) = @_;
+
+    my $formatted = "";
+    defined($profile) and $formatted .= "Profile: $profile\n";
+    defined($operation) and $formatted .= "Operation: $operation\n";
+    defined($name) and $formatted .= "Name: $name\n";
+    defined($denied) and $formatted .= "Denied: $denied\n";
+    defined($family) and defined ($sock_type) and $formatted .= "Family: $family\nSocket type: $sock_type\n";
+    #defined($date) and $since > 0 and $formatted .= "Date: ". scalar(localtime($date)) ."\n";
+    $formatted .= "Logfile: $logfile\n";
+
+    return $formatted
+}
+
+sub format_stats {
+    my $num = $_[0];
+    my $time = $_[1];
+    if ($num > 0) {
+        print "AppArmor denial";
+        $num > 1 and print "s";
+        print ": $num (since " . scalar(localtime($time)) . ")\n";
+        $opt_v and print "For more information, please see: $url\n";
+    }
+}
+
+sub kill_running_daemons {
+    # Look for other daemon instances of this script and kill them. This
+    # can happen on logout and back in (in which case $notify_exe fails
+    # anyway). 'ps xw' should output something like:
+    #  9987 ?        Ss     0:01 /usr/bin/perl ./bin/apparmor-notify -p
+    # 10170 ?        Ss     0:00 /usr/bin/perl ./bin/apparmor-notify -p
+    open(PS,"$ps_exe xw|") or die "Unable to run '$ps_exe':$!\n";
+    while(<PS>) {
+        chomp;
+        /apparmor-notify -p$/ or next;
+        s/^\s+//;
+        my @line = split(/\s+/, $_);
+        if ($line[5] =~ /apparmor-notify$/ and $line[6] eq "-p") {
+            if ($line[0] != $$) {
+                _warn("killing old daemon '$line[0]'");
+                kill 15, ($line[0]);
+            }
+        }
+    }
+    close(PS);
+}
+
+sub do_notify {
+    my $first_run = 1;
+    my %seen;
+    my $seconds = 5;
+    our $time_to_die = 0;
+
+    print "Starting apparmor-notify\n";
+    kill_running_daemons();
+
+    # Daemonize, but not if in debug mode
+    if (not $opt_d) {
+        chdir('/') or die "Can't chdir to /: $!";
+        umask 0;
+        open STDIN, '/dev/null' or die "Can't read /dev/null: $!";
+        open STDOUT, '>/dev/null' or die "Can't write to /dev/null: $!";
+        open STDERR, '>/dev/null' or die "Can't write to /dev/null: $!";
+        my $pid = fork();
+        exit if $pid;
+        die "Couldn't fork: $!" unless defined($pid);
+        POSIX::setsid() or die "Can't start a new session: $!";
+    }
+
+    sub signal_handler {
+        $time_to_die = 1;
+    }
+    $SIG{INT} = $SIG{TERM} = $SIG{HUP} = \&signal_handler;
+    $SIG{'PIPE'} = 'IGNORE';
+
+    for (my $i=0; $time_to_die == 0; $i++) {
+        while(my $msg = <LOGFILE>) {
+            $first_run and next;
+
+            my @attrib = parse_message($msg);
+            $#attrib > 0 or next;
+            my ($profile, $operation, $name, $denied, $family, $sock_type, $date) = @attrib;
+
+            # Rate limit messages by creating a hash whose keys are:
+            # - for files: profile|name|denied|
+            # - for everything else: $profile|$operation|$name|$denied|$family|$sock_type| (as available)
+            # The value for the key is a timestamp (epoch) and we won't show
+            # messages whose key has a timestamp from less than 5 seconds afo
+            my $k = "";
+            defined($profile) and $k .= "$profile|";
+            if (defined($name) and defined($denied)) {
+                $k .= "$name|$denied|";		# for file access, don't worry about operation
+            } else {
+                defined($operation) and $k .= "$operation|";
+                defined($name) and $k .= "$name|";
+                defined($denied) and $k .= "$denied|";
+                defined($family) and defined ($sock_type) and $k .= "$family|$sock_type|";
+            }
+
+            # don't display same message if seen in last 5 seconds
+            if (not defined($seen{$k})) {
+                $seen{$k} = time();
+            } else {
+                my $now = time();
+                $now - $seen{$k} < $seconds and next;
+                $seen{$k} = $now;
+            }
+
+            my $m = format_message(@attrib);
+            $m ne "" or next;
+
+            $m .= "For more information, please see:\n$url";
+
+	    # 'system' uses execvp() so no shell metacharacters here.
+            # $notify_exe is an absolute path so execvp won't search PATH.
+            system "$notify_exe", "-i", "gtk-dialog-warning", "-u", "critical", "--", "AppArmor Message", "$m";
+            my $exit_code = $? >> 8;
+            if ($exit_code != 0) {
+                _warn("'$notify_exe' exited with '$exit_code'");
+                $time_to_die = 1;
+                last;
+            }
+        }
+        # from seek() in Programming Perl
+        seek(LOGFILE, 0, 1);
+        sleep(1);
+        $first_run = 0;
+
+        # clean out the %seen database every 30 seconds
+        if ($i > 30) {
+            foreach my $k (keys %seen) {
+                my $now = time();
+                $now - $seen{$k} > $seconds and delete $seen{$k} and _debug("deleted $k");
+            }
+            $i = 0;
+            _debug("done purging");
+            foreach my $k (keys %seen) {
+                _debug("remaining key: $k: $seen{$k}");
+            }
+        }
+    }
+    print STDERR "Stopping apparmor-notify\n";
+}
+
+sub show_since {
+    my $count = 0;
+    while(my $msg = <LOGFILE>) {
+        my @attrib = parse_message($msg, $_[0]);
+        $#attrib > 0 or next;
+
+        my $m = format_message(@attrib);
+        $m ne "" or next;
+
+        $opt_v and print "$m\n";
+        $count++;
+    }
+    return $count;
+}
+
+sub do_last {
+    open(LAST,"$last_exe -F -a $login|") or die "Unable to run $last_exe:$!\n";
+    my $time = 0;
+    while(my $line = <LAST>) {
+        _debug("Checking '$line'");
+        $line =~ /^$login/ or next;
+        $line !~ /^$login\s+pts.*\s+:[0-9]+\.[0-9]+$/ or next; # ignore xterm and friends
+        my @entry = split(/\s+/, $line);
+        my ($hour, $min, $sec) = (split(/:/, $entry[5]))[0,1,2];
+        $time = Time::Local::timelocal($sec, $min, $hour, $entry[4], $entry[3], $entry[6]);
+        last;
+    }
+    close(LAST);
+    $time > 0 or _error("Couldn't find last login");
+
+    format_stats(show_since($time), $time);
+}
+
+sub do_show_messages {
+    my $since = $now - (int($_[0]) * 60 * 60 * 24);
+    format_stats(show_since($since), $since);
+}
+
+sub _warn {
+    my $msg = $_[0];
+    print STDERR "apparmor-notify: WARN: $msg\n";
+}
+sub _error {
+    my $msg = $_[0];
+    print STDERR "apparmor-notify: ERROR: $msg\n";
+    exitscript(1);
+}
+
+sub _debug {
+    $opt_d or return;
+    my $msg = $_[0];
+    print STDERR "apparmor-notify: DEBUG: $msg\n";
+}
+
+sub exitscript {
+    my $rc = $_[0];
+    close(LOGFILE);
+    exit $rc;
+}
+
+sub usage {
+    my $s = <<'EOF';
+USAGE: apparmor-notify [OPTIONS]
+Display AppArmor notifications or messages for DENIED entries.
+
+OPTIONS:
+  -p		poll AppArmor logs and display notifications
+  -l		display stats since last login
+  -s NUM	show stats for last NUM days
+  -v		show messages with stats
+  -h		display this help
+EOF
+    print $s;
+}
+
+#
+# end Subroutines
+#
