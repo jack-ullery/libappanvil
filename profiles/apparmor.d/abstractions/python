@@ -22,11 +22,11 @@
   # Site-wide configuration
   /etc/python2.[456]/** r,
 
-  # python-central paths
-  /usr/share/{pyshared,pycentral,python-support}/** r,
-  /{var,usr}/lib/python-support/**  r,
-  /usr/lib/python-support/**.so     mr,
-  /var/lib/python-support/**.pyc    mr,
+  # shared python paths
+  /usr/share/{pyshared,pycentral,python-support}/**      r,
+  /{var,usr}/lib/{pyshared,pycentral,python-support}/**  r,
+  /usr/lib/{pyshared,pycentral,python-support}/**.so     mr,
+  /var/lib/{pyshared,pycentral,python-support}/**.pyc    mr,
 
   # wx paths
   /usr/lib/wx/python/*.pth r,
