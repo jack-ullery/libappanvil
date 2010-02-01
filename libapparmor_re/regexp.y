@@ -1628,29 +1628,29 @@ void DFA::minimize(dfaflags_t flags)
 			State *rep = *((*p)->begin());
 			Partition::iterator next;
 			for (Partition::iterator s = ++(*p)->begin();
-			     s != (*p)->end(); s++) {
-				if (same_mappings(partition_map, rep, *s))
+			     s != (*p)->end(); ) {
+				if (same_mappings(partition_map, rep, *s)) {
+					++s;
 					continue;
+				}
 				if (!new_part) {
 					new_part = new Partition;
+					list <Partition *>::iterator tmp = p;
+					partitions.insert(++tmp, new_part);
+					new_part_count++;
 				}
 				new_part->push_back(*s);
+				s = (*p)->erase(s);
 			}
+			/* remapping partition_map for new_part entries
+			 * Do not do this above as it messes up same_mappings
+			 */
 			if (new_part) {
 				for (Partition::iterator m = new_part->begin();
 				     m != new_part->end(); m++) {
-				  Partition::iterator i;
-				  for (i = (*p)->begin(); i != (*p)->end(); i++) {
-				    if (*i == *m) break;
-				  }
-				  (*p)->erase(i);
-				  //(*p)->erase(*m);
-					partition_map.erase(*m);
-					partition_map.insert(make_pair(*m, new_part));
+				  partition_map.erase(*m);
+				  partition_map.insert(make_pair(*m, new_part));
 				}
-				list <Partition *>::iterator tmp = p;
-				partitions.insert(++tmp, new_part);
-				new_part_count++;
 			}
 		if ((flags & DFA_DUMP_PROGRESS) &&
 		    (partitions.size() % 100 == 0))
