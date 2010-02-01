@@ -1272,6 +1272,7 @@ public:
  * have seen already from new ones when constructing the DFA.
  */
 typedef set<State *, deref_less_than<State *> > States;
+typedef set<State *> Partition;
 /* Transitions in the DFA. */
 typedef map<State *, Cases> Trans;
 
@@ -1280,7 +1281,7 @@ public:
     DFA(Node *root, dfaflags_t flags);
     virtual ~DFA();
     void remove_unreachable(dfaflags_t flags);
-    bool same_mappings(map <State *, States *> &partition_map, State *s1,
+    bool same_mappings(map <State *, Partition *> &partition_map, State *s1,
 		       State *s2);
     size_t hash_trans(State *s);
     void minimize(dfaflags_t flags);
@@ -1493,7 +1494,7 @@ void DFA::remove_unreachable(dfaflags_t flags)
 }
 
 /* test if two states have the same transitions under partition_map */
-bool DFA::same_mappings(map <State *, States *> &partition_map, State *s1,
+bool DFA::same_mappings(map <State *, Partition *> &partition_map, State *s1,
 			State *s2)
 {
 	Trans::iterator i1 = trans.find(s1);
@@ -1511,8 +1512,8 @@ bool DFA::same_mappings(map <State *, States *> &partition_map, State *s1,
 	if (i1->second.otherwise) {
 		if (!i2->second.otherwise)
 			return false;
-		States *p1 = partition_map.find(i1->second.otherwise)->second;
-		States *p2 = partition_map.find(i2->second.otherwise)->second;
+		Partition *p1 = partition_map.find(i1->second.otherwise)->second;
+		Partition *p2 = partition_map.find(i2->second.otherwise)->second;
 		if (p1 != p2)
 			return false;
 	} else if (i2->second.otherwise) {
@@ -1526,8 +1527,8 @@ bool DFA::same_mappings(map <State *, States *> &partition_map, State *s1,
 		Cases::iterator j2 = i2->second.cases.find(j1->first);
 		if (j2 == i2->second.end())
 			return false;
-		States *p1 = partition_map.find(j1->second)->second;
-		States *p2 = partition_map.find(j2->second)->second;
+		Partition *p1 = partition_map.find(j1->second)->second;
+		Partition *p2 = partition_map.find(j2->second)->second;
 		if (p1 != p2)
 			return false;
 	}
@@ -1569,9 +1570,9 @@ size_t DFA::hash_trans(State *s)
 /* minimize the number of dfa states */
 void DFA::minimize(dfaflags_t flags)
 {
-	map <pair <uint64_t, size_t>, States *> perm_map;
-	list <States *> partitions;
-	map <State *, States *> partition_map;
+	map <pair <uint64_t, size_t>, Partition *> perm_map;
+	list <Partition *> partitions;
+	map <State *, Partition *> partition_map;
 	
 	/* Set up the initial partitions - 1 non accepting, and a
 	 * partion for each unique combination of permissions
@@ -1590,9 +1591,9 @@ void DFA::minimize(dfaflags_t flags)
 		if (!(flags & DFA_CONTROL_NO_HASH_PART))
 			size = hash_trans(*i);
 		pair <uint64_t, size_t> group = make_pair(combined, size);
-		map <pair <uint64_t, size_t>, States *>::iterator p = perm_map.find(group);
+		map <pair <uint64_t, size_t>, Partition *>::iterator p = perm_map.find(group);
 		if (p == perm_map.end()) {
-			States *part = new States();
+			Partition *part = new Partition();
 			part->insert(*i);
 			perm_map.insert(make_pair(group, part));
 			partitions.push_back(part);
@@ -1617,32 +1618,32 @@ void DFA::minimize(dfaflags_t flags)
 	 * splitting stables.  With a worse case of 1 state per partition
 	 * ie. already minimized.
 	 */
-	States *new_part;
+	Partition *new_part;
 	int new_part_count;
 	do {
 		new_part_count = 0;
-		for (list <States *>::iterator p = partitions.begin();
+		for (list <Partition *>::iterator p = partitions.begin();
 		     p != partitions.end(); p++) {
 			new_part = NULL;
 			State *rep = *((*p)->begin());
-			States::iterator next;
-			for (States::iterator s = ++(*p)->begin();
+			Partition::iterator next;
+			for (Partition::iterator s = ++(*p)->begin();
 			     s != (*p)->end(); s++) {
 				if (same_mappings(partition_map, rep, *s))
 					continue;
 				if (!new_part) {
-					new_part = new States;
+					new_part = new Partition;
 				}
 				new_part->insert(*s);
 			}
 			if (new_part) {
-				for (States::iterator m = new_part->begin();
+				for (Partition::iterator m = new_part->begin();
 				     m != new_part->end(); m++) {
 					(*p)->erase(*m);
 					partition_map.erase(*m);
 					partition_map.insert(make_pair(*m, new_part));
 				}
-				list <States *>::iterator tmp = p;
+				list <Partition *>::iterator tmp = p;
 				partitions.insert(++tmp, new_part);
 				new_part_count++;
 			}
@@ -1665,7 +1666,7 @@ void DFA::minimize(dfaflags_t flags)
 	 * At this point all states with in a partion have transitions
 	 * to same states within the same partitions
 	 */
-       	for (list <States *>::iterator p = partitions.begin();
+       	for (list <Partition *>::iterator p = partitions.begin();
 	     p != partitions.end(); p++) {
 		/* representative state for this partition */
 		State *rep = *((*p)->begin());
@@ -1674,13 +1675,13 @@ void DFA::minimize(dfaflags_t flags)
 		Trans::iterator i = trans.find(rep);
 		if (i != trans.end()) {
 			if (i->second.otherwise) {
-				map <State *, States *>::iterator z = partition_map.find(i->second.otherwise);
-				States *partition = partition_map.find(i->second.otherwise)->second;
+				map <State *, Partition *>::iterator z = partition_map.find(i->second.otherwise);
+				Partition *partition = partition_map.find(i->second.otherwise)->second;
 				i->second.otherwise = *partition->begin();
 			}
 			for (Cases::iterator c = i->second.begin();
 			     c != i->second.end(); c++) {
-				States *partition = partition_map.find(c->second)->second;
+				Partition *partition = partition_map.find(c->second)->second;
 				c->second = *partition->begin();
 			}
 		}
@@ -1689,7 +1690,7 @@ void DFA::minimize(dfaflags_t flags)
 	/* make sure nonmatching and start state are up to date with the
 	 * mappings */
 	{
-		States *partition = partition_map.find(nonmatching)->second;
+		Partition *partition = partition_map.find(nonmatching)->second;
 		if (*partition->begin() != nonmatching) {
 			nonmatching = *partition->begin();
 		}
@@ -1703,9 +1704,9 @@ void DFA::minimize(dfaflags_t flags)
 	/* Now that the states have been remapped, remove all states
 	 * that are not the representive states for their partition
 	 */
-	for (list <States *>::iterator p = partitions.begin();
+	for (list <Partition *>::iterator p = partitions.begin();
 	     p != partitions.end(); p++) {
-		for (States::iterator i = ++(*p)->begin(); i != (*p)->end(); i++) {
+		for (Partition::iterator i = ++(*p)->begin(); i != (*p)->end(); i++) {
 			Trans::iterator j = trans.find(*i);
 			if (j != trans.end())
 				trans.erase(j);
@@ -1716,7 +1717,7 @@ void DFA::minimize(dfaflags_t flags)
 out:
 	/* Cleanup */
 	while (!partitions.empty()) {
-		States *p = partitions.front();
+		Partition *p = partitions.front();
 		partitions.pop_front();
 		delete(p);
 	}
