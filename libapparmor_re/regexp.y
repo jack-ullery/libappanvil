@@ -1642,13 +1642,14 @@ void DFA::minimize(dfaflags_t flags)
 					partition_map.erase(*m);
 					partition_map.insert(make_pair(*m, new_part));
 				}
-				partitions.push_back(new_part);
+				list <States *>::iterator tmp = p;
+				partitions.insert(++tmp, new_part);
 				new_part_count++;
 			}
-		}
 		if ((flags & DFA_DUMP_PROGRESS) &&
-		    (partitions.size() % 1000 == 0))
+		    (partitions.size() % 100 == 0))
 			cerr << "\033[2KMinimize dfa: partitions " << partitions.size() << "\tinit " << init_count << "\t(accept " << accept_count << ")\r";
+		}
 	} while(new_part_count);
 
 	if (flags & DFA_DUMP_STATS)
