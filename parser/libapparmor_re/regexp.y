@@ -1272,7 +1272,7 @@ public:
  * have seen already from new ones when constructing the DFA.
  */
 typedef set<State *, deref_less_than<State *> > States;
-typedef set<State *> Partition;
+typedef list<State *> Partition;
 /* Transitions in the DFA. */
 typedef map<State *, Cases> Trans;
 
@@ -1594,7 +1594,7 @@ void DFA::minimize(dfaflags_t flags)
 		map <pair <uint64_t, size_t>, Partition *>::iterator p = perm_map.find(group);
 		if (p == perm_map.end()) {
 			Partition *part = new Partition();
-			part->insert(*i);
+			part->push_back(*i);
 			perm_map.insert(make_pair(group, part));
 			partitions.push_back(part);
 			partition_map.insert(make_pair(*i, part));
@@ -1602,7 +1602,7 @@ void DFA::minimize(dfaflags_t flags)
 				accept_count++;
 		} else {
 			partition_map.insert(make_pair(*i, p->second));
-			p->second->insert(*i);
+			p->second->push_back(*i);
 		}
 		if ((flags & DFA_DUMP_PROGRESS) &&
 		    (partitions.size() % 1000 == 0))
@@ -1634,12 +1634,17 @@ void DFA::minimize(dfaflags_t flags)
 				if (!new_part) {
 					new_part = new Partition;
 				}
-				new_part->insert(*s);
+				new_part->push_back(*s);
 			}
 			if (new_part) {
 				for (Partition::iterator m = new_part->begin();
 				     m != new_part->end(); m++) {
-					(*p)->erase(*m);
+				  Partition::iterator i;
+				  for (i = (*p)->begin(); i != (*p)->end(); i++) {
+				    if (*i == *m) break;
+				  }
+				  (*p)->erase(i);
+				  //(*p)->erase(*m);
 					partition_map.erase(*m);
 					partition_map.insert(make_pair(*m, new_part));
 				}
