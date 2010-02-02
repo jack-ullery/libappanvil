@@ -16,7 +16,7 @@
 # # only people in use_group can run this script
 # use_group="admin"
 #
-# $HOME/.apparmor_notify.conf can have:
+# $HOME/.apparmor/notify.conf can have:
 # # set to 'yes' to enable AppArmor DENIED notifications
 # show_notifications="yes"
 #
@@ -34,7 +34,7 @@ use Getopt::Std;
 
 my %prefs;
 my $conf = "/etc/apparmor/notify.conf";
-my $user_conf = "$ENV{HOME}/.apparmor_notify.conf";
+my $user_conf = "$ENV{HOME}/.apparmor/notify.conf";
 my $notify_exe = "/usr/bin/notify-send";
 my $last_exe = "/usr/bin/last";
 my $ps_exe = "/bin/ps";
@@ -226,15 +226,15 @@ sub kill_running_daemons {
     # Look for other daemon instances of this script and kill them. This
     # can happen on logout and back in (in which case $notify_exe fails
     # anyway). 'ps xw' should output something like:
-    #  9987 ?        Ss     0:01 /usr/bin/perl ./bin/apparmor-notify -p
-    # 10170 ?        Ss     0:00 /usr/bin/perl ./bin/apparmor-notify -p
+    #  9987 ?        Ss     0:01 /usr/bin/perl ./bin/apparmor_notify -p
+    # 10170 ?        Ss     0:00 /usr/bin/perl ./bin/apparmor_notify -p
     open(PS,"$ps_exe xw|") or die "Unable to run '$ps_exe':$!\n";
     while(<PS>) {
         chomp;
-        /apparmor-notify -p$/ or next;
+        /apparmor_notify -p$/ or next;
         s/^\s+//;
         my @line = split(/\s+/, $_);
-        if ($line[5] =~ /apparmor-notify$/ and $line[6] eq "-p") {
+        if ($line[5] =~ /apparmor_notify$/ and $line[6] eq "-p") {
             if ($line[0] != $$) {
                 _warn("killing old daemon '$line[0]'");
                 kill 15, ($line[0]);
@@ -250,7 +250,7 @@ sub do_notify {
     my $seconds = 5;
     our $time_to_die = 0;
 
-    print "Starting apparmor-notify\n";
+    print "Starting apparmor_notify\n";
     kill_running_daemons();
 
     # Daemonize, but not if in debug mode
@@ -338,7 +338,7 @@ sub do_notify {
             }
         }
     }
-    print STDERR "Stopping apparmor-notify\n";
+    print STDERR "Stopping apparmor_notify\n";
 }
 
 sub show_since {
@@ -381,18 +381,18 @@ sub do_show_messages {
 
 sub _warn {
     my $msg = $_[0];
-    print STDERR "apparmor-notify: WARN: $msg\n";
+    print STDERR "apparmor_notify: WARN: $msg\n";
 }
 sub _error {
     my $msg = $_[0];
-    print STDERR "apparmor-notify: ERROR: $msg\n";
+    print STDERR "apparmor_notify: ERROR: $msg\n";
     exitscript(1);
 }
 
 sub _debug {
     $opt_d or return;
     my $msg = $_[0];
-    print STDERR "apparmor-notify: DEBUG: $msg\n";
+    print STDERR "apparmor_notify: DEBUG: $msg\n";
 }
 
 sub exitscript {
@@ -403,7 +403,7 @@ sub exitscript {
 
 sub usage {
     my $s = <<'EOF';
-USAGE: apparmor-notify [OPTIONS]
+USAGE: apparmor_notify [OPTIONS]
 Display AppArmor notifications or messages for DENIED entries.
 
 OPTIONS:
