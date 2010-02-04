@@ -28,6 +28,7 @@ no warnings qw( once );
 require LibAppArmor;
 require POSIX;
 require Time::Local;
+require File::Basename;
 
 use vars qw($opt_p $opt_s $opt_l $opt_h $opt_v $opt_d);
 use Getopt::Std;
@@ -65,6 +66,14 @@ sub usage;
 $ENV{PATH} = "/bin:/usr/bin";
 $ENV{SHELL} = "/bin/sh";
 defined($ENV{IFS}) and $ENV{IFS} = ' \t\n';
+
+print $0 . "\n";
+my $prog = File::Basename::basename($0);
+
+if ($prog !~ /^[a-zA-Z0-9_\-]+$/) {
+    print STDERR "ERROR: bad programe name '$prog'\n";
+    exitscript(1);
+}
 
 my $logfile = "/var/log/kern.log";
 -e "/var/run/auditd.pid" and $logfile = "/var/log/audit/audit.log";
@@ -124,7 +133,6 @@ if ($opt_p or $opt_l) {
         exitscript(0);
     }
 }
-
 
 my $now = time();
 if ($opt_p) {
@@ -231,10 +239,10 @@ sub kill_running_daemons {
     open(PS,"$ps_exe xw|") or die "Unable to run '$ps_exe':$!\n";
     while(<PS>) {
         chomp;
-        /apparmor_notify -p$/ or next;
+        /$prog -p$/ or next;
         s/^\s+//;
         my @line = split(/\s+/, $_);
-        if ($line[5] =~ /apparmor_notify$/ and $line[6] eq "-p") {
+        if ($line[5] =~ /$prog$/ and $line[6] eq "-p") {
             if ($line[0] != $$) {
                 _warn("killing old daemon '$line[0]'");
                 kill 15, ($line[0]);
