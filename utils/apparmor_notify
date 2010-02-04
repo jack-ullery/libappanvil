@@ -28,6 +28,7 @@ no warnings qw( once );
 require LibAppArmor;
 require POSIX;
 require Time::Local;
+require File::Basename;
 
 use vars qw($opt_p $opt_s $opt_l $opt_h $opt_v $opt_d);
 use Getopt::Std;
@@ -65,6 +66,14 @@ sub usage;
 $ENV{PATH} = "/bin:/usr/bin";
 $ENV{SHELL} = "/bin/sh";
 defined($ENV{IFS}) and $ENV{IFS} = ' \t\n';
+
+print $0 . "\n";
+my $prog = File::Basename::basename($0);
+
+if ($prog !~ /^[a-zA-Z0-9_\-]+$/) {
+    print STDERR "ERROR: bad programe name '$prog'\n";
+    exitscript(1);
+}
 
 my $logfile = "/var/log/kern.log";
 -e "/var/run/auditd.pid" and $logfile = "/var/log/audit/audit.log";
@@ -124,7 +133,6 @@ if ($opt_p or $opt_l) {
         exitscript(0);
     }
 }
-
 
 my $now = time();
 if ($opt_p) {
@@ -208,7 +216,7 @@ sub format_message {
     #defined($date) and $since > 0 and $formatted .= "Date: ". scalar(localtime($date)) ."\n";
     $formatted .= "Logfile: $logfile\n";
 
-    return $formatted
+    return $formatted;
 }
 
 sub format_stats {
@@ -231,10 +239,10 @@ sub kill_running_daemons {
     open(PS,"$ps_exe xw|") or die "Unable to run '$ps_exe':$!\n";
     while(<PS>) {
         chomp;
-        /apparmor_notify -p$/ or next;
+        /$prog -p$/ or next;
         s/^\s+//;
         my @line = split(/\s+/, $_);
-        if ($line[5] =~ /apparmor_notify$/ and $line[6] eq "-p") {
+        if ($line[5] =~ /$prog$/ and $line[6] eq "-p") {
             if ($line[0] != $$) {
                 _warn("killing old daemon '$line[0]'");
                 kill 15, ($line[0]);
@@ -245,7 +253,6 @@ sub kill_running_daemons {
 }
 
 sub do_notify {
-    my $first_run = 1;
     my %seen;
     my $seconds = 5;
     our $time_to_die = 0;
@@ -272,16 +279,22 @@ sub do_notify {
     $SIG{INT} = $SIG{TERM} = $SIG{HUP} = \&signal_handler;
     $SIG{'PIPE'} = 'IGNORE';
 
+    my $count = 0;
+    my $footer = "For more information, please see:\n$url";
+    my $first_run = 1;
     for (my $i=0; $time_to_die == 0; $i++) {
         while(my $msg = <LOGFILE>) {
-            $first_run and next;
-
             my @attrib = parse_message($msg);
             $#attrib > 0 or next;
+            if ($first_run == 1) {
+               $count++;
+               next;
+            }
+
             my ($profile, $operation, $name, $denied, $family, $sock_type, $date) = @attrib;
 
             # Rate limit messages by creating a hash whose keys are:
-            # - for files: profile|name|denied|
+            # - for files: $profile|$name|$denied|
             # - for everything else: $profile|$operation|$name|$denied|$family|$sock_type| (as available)
             # The value for the key is a timestamp (epoch) and we won't show
             # messages whose key has a timestamp from less than 5 seconds afo
@@ -308,7 +321,7 @@ sub do_notify {
             my $m = format_message(@attrib);
             $m ne "" or next;
 
-            $m .= "For more information, please see:\n$url";
+            $m .= $footer;
 
 	    # 'system' uses execvp() so no shell metacharacters here.
             # $notify_exe is an absolute path so execvp won't search PATH.
@@ -323,7 +336,17 @@ sub do_notify {
         # from seek() in Programming Perl
         seek(LOGFILE, 0, 1);
         sleep(1);
-        $first_run = 0;
+
+        if ($first_run) {
+            if ($count > 0) {
+                my $m = "$logfile contains $count existing denied message";
+                $count > 1 and $m .= "s";
+                $m .= ". ";
+                $m .= $footer;
+                system "$notify_exe", "-i", "gtk-dialog-warning", "-u", "critical", "--", "AppArmor Message", "$m";
+            }
+            $first_run = 0;
+        }
 
         # clean out the %seen database every 30 seconds
         if ($i > 30) {
