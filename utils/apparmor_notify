@@ -119,7 +119,8 @@ if ($opt_h) {
     -x "$notify_exe" or _error("Could not find '$notify_exe'. Please install libnotify-bin. Aborting");
 } elsif ($opt_l) {
     -x "$last_exe" or _error("Could not find '$last_exe'. Aborting");
-} elsif ($opt_s) {
+}
+if ($opt_s and not $opt_l) {
     $opt_s =~ /^[0-9]+$/ or _error("-s requires a number");
 }
 
@@ -139,7 +140,7 @@ if ($opt_p) {
     do_notify();
 } elsif ($opt_l) {
     do_last();
-} elsif ($opt_s) {
+} elsif ($opt_s and not $opt_p) {
     do_show_messages($opt_s);
 } else {
     usage;
@@ -239,10 +240,10 @@ sub kill_running_daemons {
     open(PS,"$ps_exe xw|") or die "Unable to run '$ps_exe':$!\n";
     while(<PS>) {
         chomp;
-        /$prog -p$/ or next;
+        /$prog -[ps]/ or next;
         s/^\s+//;
         my @line = split(/\s+/, $_);
-        if ($line[5] =~ /$prog$/ and $line[6] eq "-p") {
+        if ($line[5] =~ /$prog$/ and ($line[6] eq "-p" or $line[6] eq "-s")) {
             if ($line[0] != $$) {
                 _warn("killing old daemon '$line[0]'");
                 kill 15, ($line[0]);
@@ -282,9 +283,15 @@ sub do_notify {
     my $count = 0;
     my $footer = "For more information, please see:\n$url";
     my $first_run = 1;
+    my $since = $now - (int($opt_s) * 60 * 60 * 24);
     for (my $i=0; $time_to_die == 0; $i++) {
         while(my $msg = <LOGFILE>) {
-            my @attrib = parse_message($msg);
+            my @attrib;
+            if ($first_run == 1 and $opt_s) {
+                @attrib = parse_message($msg, $since);
+            } else {
+                @attrib = parse_message($msg);
+            }
             $#attrib > 0 or next;
             if ($first_run == 1) {
                $count++;
@@ -341,6 +348,14 @@ sub do_notify {
             if ($count > 0) {
                 my $m = "$logfile contains $count existing denied message";
                 $count > 1 and $m .= "s";
+                if ($opt_s) {
+                    $m .= " in the last ";
+                    if ($opt_s > 1) {
+                        $m .= "$opt_s days";
+                    } else {
+                        $m .= "day";
+                    }
+                }
                 $m .= ". ";
                 $m .= $footer;
                 system "$notify_exe", "-i", "gtk-dialog-warning", "-u", "critical", "--", "AppArmor Message", "$m";
@@ -432,7 +447,7 @@ Display AppArmor notifications or messages for DENIED entries.
 OPTIONS:
   -p		poll AppArmor logs and display notifications
   -l		display stats since last login
-  -s NUM	show stats for last NUM days
+  -s NUM	show stats for last NUM days (can be used alone or with -p)
   -v		show messages with stats
   -h		display this help
 EOF
