@@ -43,8 +43,8 @@ runchecktest "NO CHANGEHAT (access sub file)" fail nochange $subfile
 
 # CHANGEHAT NO HATS TEST
 runchecktest "CHAGEHAT (no hats, nochange)" pass nochange $file
-runchecktest_errno ENOENT "CHANGEHAT (no hats, $file)" fail $subtest $file
-runchecktest_errno ENOENT "CHANGEHAT (no hats, $subfile)" fail $subtest $subfile
+runchecktest_errno ECHILD "CHANGEHAT (no hats, $file)" fail $subtest $file
+runchecktest_errno ECHILD "CHANGEHAT (no hats, $subfile)" fail $subtest $subfile
 
 # CHANGEHAT TEST
 
