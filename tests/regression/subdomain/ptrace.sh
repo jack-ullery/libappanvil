@@ -155,11 +155,16 @@ genprofile image=$helper $helper:rix /bin/true:rpx
 runchecktest "test 13 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13 -hc prog" fail -h -c -n 100 $helper /bin/true
 
-#ptraced confined app can't ux - fails to unset profile
+
+#ptraced confined app can ux - if the tracer is unconfined
 #
 genprofile image=$helper $helper:rix /bin/true:rux
-runchecktest "test 14 -h prog" fail -h -n 100 $helper /bin/true
-runchecktest "test 14 -hc prog" fail -h -c -n 100 $helper /bin/true
+runchecktest "test 14a -h prog" pass -h -n 100 $helper /bin/true
+runchecktest "test 14a -hc prog" pass -h -c -n 100 $helper /bin/true
+#ptraced confined app can't ux - if the tracer can't trace unconfined
+genprofile $helper:rpx -- image=$helper $helper:rix /bin/true:rux
+runchecktest "test 14b -h prog" fail -h -n 100 $helper /bin/true
+runchecktest "test 14b -hc prog" fail -h -c -n 100 $helper /bin/true
 
 #confined app can't ptrace an unconfined app
 genprofile $helper:rux
