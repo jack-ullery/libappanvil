@@ -57,22 +57,22 @@ for var in $file $link $dir ; do
     if [ $var != $link ] ; then xattrtest $var $badperm write user fail ; fi
 
     genprofile $var:$badperm capability:sys_admin
-    xattrtest $var "$badperm+cap SYS_ADMIN" write security fail
+    xattrtest $var "$badperm+cap SYS_ADMIN" write security xfail
     #xattrtest $var "$badperm+cap SYS_ADMIN" write system fail
-    xattrtest $var "$badperm+cap SYS_ADMIN" write trusted fail
+    xattrtest $var "$badperm+cap SYS_ADMIN" write trusted xfail
     if [ $var != $link ] ; then xattrtest $var "$badperm+cap SYS_ADMIN" write user fail ; fi
 
     genprofile $var:$okperm
-    xattrtest $var $okperm write security pass
+    xattrtest $var $okperm write security xpass
     #xattrtest $var $okperm write system fail
     xattrtest $var $okperm write trusted fail
-    if [ $var != $link ] ; then xattrtest $var $okperm write user pass ; fi
+    if [ $var != $link ] ; then xattrtest $var $okperm write user xpass ; fi
 
     genprofile $var:$okperm capability:sys_admin
     xattrtest $var "$okperm+cap SYS_ADMIN" write security pass
     #xattrtest $var "$okperm+cap SYS_ADMIN" write system pass
     xattrtest $var "$okperm+cap SYS_ADMIN" write trusted pass
-    if [ $var != $link ] ; then xattrtest $var "$okperm+cap SYS_ADMIN" write user pass ; fi
+    if [ $var != $link ] ; then xattrtest $var "$okperm+cap SYS_ADMIN" write user xpass ; fi
 
 
 #read xattr
@@ -80,13 +80,13 @@ for var in $file $link $dir ; do
     xattrtest $var $badperm read security pass
     #xattrtest $var $badperm read system fail
     xattrtest $var $badperm read trusted fail
-    if [ $var != $link ] ; then xattrtest $var $badperm read user pass ; fi
+    if [ $var != $link ] ; then xattrtest $var $badperm read user xpass ; fi
 
     genprofile $var:$badperm capability:sys_admin
     xattrtest $var "$badperm+cap SYS_ADMIN" read security pass
     #xattrtest $var "$badperm+cap SYS_ADMIN" read system pass
     xattrtest $var "$badperm+cap SYS_ADMIN" read trusted pass
-    if [ $var != $link ] ; then xattrtest $var "$badperm+cap SYS_ADMIN" read user pass ; fi
+    if [ $var != $link ] ; then xattrtest $var "$badperm+cap SYS_ADMIN" read user xpass ; fi
 
 
 #remove xattr
@@ -97,16 +97,16 @@ for var in $file $link $dir ; do
     if [ $var != $link ] ; then xattrtest $var $badperm remove user fail ; fi
 
     genprofile $var:$badperm capability:sys_admin
-    xattrtest $var "$badperm+cap SYS_ADMIN" remove security fail
+    xattrtest $var "$badperm+cap SYS_ADMIN" remove security xfail
     #xattrtest $var "$badperm+cap SYS_ADMIN" remove system fail
-    xattrtest $var "$badperm+cap SYS_ADMIN" remove trusted fail
+    xattrtest $var "$badperm+cap SYS_ADMIN" remove trusted xfail
     if [ $var != $link ] ; then xattrtest $var "$badperm+cap SYS_ADMIN" remove user fail ; fi
 
     genprofile $var:$okperm
-    xattrtest $var $okperm remove security pass
+    xattrtest $var $okperm remove security xpass
     #xattrtest $var $okperm remove system fail
     xattrtest $var $okperm remove trusted fail
-    if [ $var != $link ] ; then xattrtest $var $okperm remove user pass ; fi
+    if [ $var != $link ] ; then xattrtest $var $okperm remove user xpass ; fi
 
     #set the xattr for thos that passed above again so we can test removing it
     setfattr -h -n security.sdtest -v hello $var

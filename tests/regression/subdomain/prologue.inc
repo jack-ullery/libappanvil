@@ -184,8 +184,8 @@ runtestbg()
 	# global _testdesc _pfmode _known _pid outfile
 	
 	_testdesc=$1
-	if [ ${2:0:6} == "known_" ] ; then
-		_pfmode=${2#known_}
+	if [ ${2:0:1} == "x" ] ; then
+		_pfmode=${2#x}
 		_known=" (known problem)"
         else
 		_pfmode=$2
@@ -219,8 +219,8 @@ runtestfg()
 {
 	# global _testdesc _pfmode _known outfile
 	_testdesc=$1
-	if [ ${2:0:6} == "known_" ] ; then
-		_pfmode=${2#known_}
+	if [ ${2:0:1} == "x" ] ; then
+		_pfmode=${2#x}
 		_known=" (known problem)"
         else
 		_pfmode=$2
@@ -247,16 +247,22 @@ checktestfg()
 	teststatus=pass
 	
 	case "$ret" in
-		PASS)	if [ "$_pfmode" != "pass" ]
+		PASS)	if [ "$_pfmode" != "pass" -a -z "${_known}" ]
 			then
-				echo "Error: ${testname} passed. Test '${_testdesc}' was expected to '${_pfmode}'${_known}"
+				echo "Error: ${testname} passed. Test '${_testdesc}' was expected to '${_pfmode}'"
 				testfailed
+			elif [ "$_pfmode" == "pass" -a -n "${_known}" ]
+			then
+				echo "Alert: ${testname} passed. Test '${_testdesc}' was marked as expected pass but known problem (xpass)"
 			fi
 			;;
-		FAIL*)  if [ "$_pfmode" != "fail" ]
+		FAIL*)  if [ "$_pfmode" != "fail" -a -z "${_known}" ]
 			then
-				echo "Error: ${testname} failed. Test '${_testdesc}' was expected to '${_pfmode}'${_known}. Reason for failure '${ret}'"
+				echo "Error: ${testname} failed. Test '${_testdesc}' was expected to '${_pfmode}'. Reason for failure '${ret}'"
 				testfailed
+			elif [ "$_pfmode" == "fail" -a -n "${_known}" ]
+			then
+				echo "Alert: ${testname} failed. Test '${_testdesc}' was marked as expected fail but known problem (xfail)."
 			fi
 			;;
 		SIGNAL*) killedsig=`echo $ret | sed 's/SIGNAL//'`
