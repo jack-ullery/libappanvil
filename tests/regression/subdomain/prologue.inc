@@ -334,9 +334,11 @@ emit_profile()
 	if [ "$subprofile" -eq 1 -o "$nodefaults" -eq 1 ]
 	then
 		# skip dynamic libs for subprofiles
-		$bin/mkprofile.pl ${mkflags} $name ${outfile}:w "$@" >> $profile
+		$bin/mkprofile.pl ${mkflags} "$name" ${outfile}:w "$@" >> $profile
+
 	else
-		$bin/mkprofile.pl ${mkflags} $name ${name}:${perm} $dynlibs ${outfile}:w "$@" >> $profile
+
+		$bin/mkprofile.pl ${mkflags} "$name" ${name}:${perm} $dynlibs ${outfile}:w "$@" >> $profile
 	fi
 
 	echo $name >> $profilenames
@@ -391,6 +393,16 @@ fi
 		# it is most often used after --, in fact it is basically
 		# mandatory after --
 		case "$1" in
+			profile=*) imagename=`echo $1 | sed 's/^profile=[rix]*//'`
+				 perm=`echo $1 | sed -n 's/^profile=\([rix]*\).*$/\1/p'`
+				 if [ -n "$perm" ]
+				 then
+					imageperm=$perm
+				 fi
+				 num_emitted=0
+				 shift
+				 ;;
+
 			image=*) imagename=`echo $1 | sed 's/^image=[rix]*//'`
 				 if [ ! -x "$imagename" ]
 				 then
