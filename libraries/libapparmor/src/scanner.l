@@ -20,13 +20,52 @@
 %option prefix="aalogparse_"
 %option bison-bridge
 %option header-file="scanner.h"
-%option outfile="scanner.c" 
+%option outfile="scanner.c"
 %option stack
 %{
 
 #include "grammar.h"
 #include "aalogparse.h"
 #include "parser.h"
+
+#include <assert.h>
+
+unsigned int string_buf_alloc = 0;
+unsigned int string_buf_len = 0;
+char *string_buf = NULL;
+
+void string_buf_reset()
+{
+	/* rewind buffer to zero, possibly doing initial allocation too */
+	string_buf_len = 0;
+ 	if (string_buf == NULL) {
+		string_buf_alloc = 128;
+		string_buf = malloc(string_buf_alloc);
+		assert(string_buf != NULL);
+	}
+	/* always start with a valid but empty string */
+	string_buf[0] = '\0';
+}
+
+void string_buf_append(unsigned int length, char *text)
+{
+	unsigned int current_length = string_buf_len;
+
+	/* handle calling ..._append before ..._reset */
+	if (string_buf == NULL) string_buf_reset();
+
+	string_buf_len += length;
+	/* expand allocation if this append would exceed the allocation */
+	while (string_buf_len >= string_buf_alloc) {
+		string_buf_alloc *= 2;
+		string_buf = realloc(string_buf, string_buf_alloc);
+		assert(string_buf != NULL);
+	}
+	/* copy and unconditionally terminate */
+	memcpy(string_buf+current_length, text, length);
+	string_buf[string_buf_len] = '\0';
+}
+
 %}
 
 ws		[ \t\r\n]
@@ -131,11 +170,9 @@ dmesg_timestamp		\[[[:digit:] ]{5,}\.[[:digit:]]{6,}\]
 
 %%
 %{
-char string_buf[512];
-char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
-
- yy_flex_debug = 0;
+yy_flex_debug = 0;
 %}
+
 
 {ws}+			{ /* Skip whitespace */ }
 
@@ -150,9 +187,9 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 <sub_id>{
 	{open_paren}		{ return(TOK_OPEN_PAREN); }
 	{close_paren}		{ BEGIN(INITIAL); return(TOK_CLOSE_PAREN); }
-	"'"			{ string_buf_ptr = string_buf; BEGIN(single_quoted_string); }
+	"'"			{ string_buf_reset(); BEGIN(single_quoted_string); }
 	{ws}		{ }
-	\"			{ string_buf_ptr = string_buf; BEGIN(quoted_string); }
+	\"			{ string_buf_reset(); BEGIN(quoted_string); }
 	{ID}+	{
 			yylval->t_str = strdup(yytext);
 			BEGIN(INITIAL);
@@ -162,48 +199,33 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 	}
 
 
-"'"			{ string_buf_ptr = string_buf; BEGIN(single_quoted_string); }
+"'"			{ string_buf_reset(); BEGIN(single_quoted_string); }
 <single_quoted_string>"'" { /* End of the quoted string */
 				BEGIN(INITIAL);
-				*string_buf_ptr = '\0';
 				yylval->t_str = strdup(string_buf);
 				return(TOK_SINGLE_QUOTED_STRING);
 			}
 
 
-<single_quoted_string>\\(.|\n) { *string_buf_ptr++ = yytext[1]; }
+<single_quoted_string>\\(.|\n) { string_buf_append(1, &yytext[1]); }
 
-<single_quoted_string>[^\\\n\'\"]+ {
-				char *yptr = yytext;
-				while (*yptr)
-				{
-					*string_buf_ptr++ = *yptr++;
-				}
+<single_quoted_string>[^\\\n\'\"]+ { string_buf_append(yyleng, yytext); }
 
-			}
-
-\"			{ string_buf_ptr = string_buf; BEGIN(quoted_string); }
+\"			{ string_buf_reset(); BEGIN(quoted_string); }
 <quoted_string>\"	{ /* End of the quoted string */
 				BEGIN(INITIAL);
-				*string_buf_ptr = '\0';
 				yylval->t_str = strdup(string_buf);
 				return(TOK_QUOTED_STRING);
 			}
 
 
-<quoted_string>\\(.|\n) { *string_buf_ptr++ = yytext[1]; }
+<quoted_string>\\(.|\n) { string_buf_append(1, &yytext[1]); }
 
-<quoted_string>[^\\\n\"]+ {
-			char *yptr = yytext;
-				while (*yptr)
-				{
-					*string_buf_ptr++ = *yptr++;
-				}
-			}
+<quoted_string>[^\\\n\"]+ { string_buf_append(yyleng, yytext); }
 
 <safe_string>{
-	"'"		{ string_buf_ptr = string_buf; BEGIN(single_quoted_string); }
-	\"		{ string_buf_ptr = string_buf; BEGIN(quoted_string); }
+	"'"		{ string_buf_reset(); BEGIN(single_quoted_string); }
+	\"		{ string_buf_reset(); BEGIN(quoted_string); }
 	{hexstring}	{ yylval->t_str = hex_to_string(yytext); BEGIN(INITIAL); return(TOK_HEXSTRING);}
 	{equals}	{ return(TOK_EQUALS); }
 	.		{ /* eek, error! try another state */ BEGIN(INITIAL); yyless(0); }
@@ -334,5 +356,6 @@ char *string_buf_ptr = string_buf; /* assignment to quiet gcc warning */
 	.*		{ yylval->t_str = strdup(yytext); return(TOK_MSG_REST); }
 	\n		{ /* not sure why needed here and not elsewhere */ }
 	}
+
 
 %%
