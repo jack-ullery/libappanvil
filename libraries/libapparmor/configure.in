@@ -1,6 +1,6 @@
 AC_INIT(configure.in)
 
-AM_INIT_AUTOMAKE(libapparmor1, 2.4)
+AM_INIT_AUTOMAKE(libapparmor1, 2.5~pre)
 
 AM_PROG_LEX
 AC_PROG_YACC

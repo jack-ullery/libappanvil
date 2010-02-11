@@ -25,7 +25,7 @@
 #     directories
 
 DISTRIBUTION=AppArmor
-VERSION=2.4
+VERSION=2.5~pre
 
 # OVERRIDABLE variables
 # Set these variables before including Make.rules to change its behavior
