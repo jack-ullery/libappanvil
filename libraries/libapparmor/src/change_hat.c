@@ -24,7 +24,7 @@
 #define default_symbol_version(real, name, version) \
 		__asm__ (".symver " #real "," #name "@@" #version)
 
-static int setprocattr(const char *buf, int len)
+static int setprocattr(const char *path, const char *buf, int len)
 {
 	int rc = -1;
 	int fd, ret, ctlerr = 0;
@@ -36,7 +36,7 @@ static int setprocattr(const char *buf, int len)
 		goto out;
 	}
 
-	ctlerr = asprintf(&ctl, "/proc/%d/attr/current", tid);
+	ctlerr = asprintf(&ctl, path, tid);
 	if (ctlerr < 0) {
 		goto out;
 	}
@@ -91,7 +91,7 @@ int aa_change_hat(const char *subprofile, unsigned long token)
 		goto out;
 	}
 
-	rc = setprocattr(buf, len);
+	rc = setprocattr("/proc/%d/attr/current", buf, len);
 out:
 	if (buf) {
 		/* clear local copy of magic token before freeing */
@@ -122,7 +122,28 @@ int aa_change_profile(const char *profile)
 	if (len < 0)
 		return -1;
 
-	rc = setprocattr(buf, len);
+	rc = setprocattr("/proc/%d/attr/current", buf, len);
+
+	free(buf);
+	return rc;
+}
+
+int aa_change_onexec(const char *profile)
+{
+	char *buf = NULL;
+	int len;
+	int rc;
+
+	if (!profile) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	len = asprintf(&buf, "exec %s", profile);
+	if (len < 0)
+		return -1;
+
+	rc = setprocattr("/proc/%d/attr/exec", buf, len);
 
 	free(buf);
 	return rc;
