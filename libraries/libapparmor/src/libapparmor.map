@@ -17,6 +17,8 @@ APPARMOR_1.0 {
 APPARMOR_1.1 {
   global:
         aa_change_hat;
+        aa_change_hatv;
+        aa_change_hat_vargs;
         aa_change_profile;
         aa_change_onexec;
         parse_record;

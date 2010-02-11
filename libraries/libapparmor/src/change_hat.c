@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <limits.h>
+#include <stdarg.h>
 
 #define symbol_version(real, name, version) \
 		__asm__ (".symver " #real "," #name "@" #version)
@@ -153,3 +154,93 @@ int aa_change_onexec(const char *profile)
 extern typeof((__change_hat)) __old_change_hat __attribute__((alias ("__change_hat")));
 symbol_version(__old_change_hat, change_hat, IMMUNIX_1.0);
 default_symbol_version(__change_hat, change_hat, APPARMOR_1.0);
+
+
+int aa_change_hatv(const char *subprofiles[], unsigned long token)
+{
+	int size, totallen = 0, hatcount = 0;
+	int rc = -1;
+	const char **hats;
+	char *pos, *buf = NULL;
+	const char *cmd = "changehat";
+
+	/* both may not be null */
+	if (!token && !(subprofiles && *subprofiles)) {
+		errno = EINVAL;
+                goto out;
+        }
+
+	/* validate hat lengths and while we are at it count how many and
+	 * mem required */
+	if (subprofiles) {
+		for (hats = subprofiles; *hats; hats++) {
+			int len = strnlen(*hats, PATH_MAX + 1);
+			if (len > PATH_MAX) {
+				errno = EPROTO;
+				goto out;
+			}
+			totallen += len + 1;
+			hatcount++;
+                }
+	}
+
+	/* allocate size of cmd + space + token + ^ + vector of hats */
+	size = strlen(cmd) + 18 + totallen + 1;
+	buf = malloc(size);
+	if (!buf) {
+                goto out;
+        }
+
+	/* setup command string which is of the form
+	 * changehat <token>^hat1\0hat2\0hat3\0..\0
+	 */
+	sprintf(buf, "%s %016x^", cmd, token);
+	pos = buf + strlen(buf);
+	if (subprofiles) {
+		for (hats = subprofiles; *hats; hats++) {
+			strcpy(pos, *hats);
+			pos += strlen(*hats) + 1;
+		}
+	} else
+		/* step pos past trailing \0 */
+		pos++;
+
+	rc = setprocattr("/proc/%d/attr/current", buf, pos - buf);
+
+out:
+	if (buf) {
+		/* clear local copy of magic token before freeing */
+		memset(buf, '\0', size);
+		free(buf);
+	}
+
+	return rc;
+}
+
+/**
+ * change_hat_vargs - change_hatv but passing the hats as fn arguments
+ * @token: the magic token
+ * @nhat: the number of hats being passed in the arguments
+ * ...: a argument list of const char * being passed
+ *
+ * change_hat_vargs can be called directly but it is meant to be called
+ * through its macro wrapper of the same name.  Which automatically
+ * fills in the nhats arguments based on the number of parameters
+ * passed.
+ * to call change_hat_vargs direction do
+ * (change_hat_vargs)(token, nhats, hat1, hat2...)
+ */
+int (aa_change_hat_vargs)(unsigned long token, int nhats, ...)
+{
+	va_list ap;
+	const char *argv[nhats+1];
+	int i;
+
+	va_start(ap, nhats);
+	for (i = 0; i < nhats ; i++) {
+		argv[i] = va_arg(ap, char *);
+	}
+	argv[nhats] = NULL;
+	va_end(ap);
+	return aa_change_hatv(argv, token);
+}
