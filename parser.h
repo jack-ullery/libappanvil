@@ -53,6 +53,8 @@ struct cod_entry {
 	int audit;			/* audit flags for mode */
 	int deny;			/* TRUE or FALSE */
 
+	int alias_ignore;		/* ignore for alias processing */
+
 	int subset;
 
 	pattern_t pattern_type;

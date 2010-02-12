@@ -97,15 +97,16 @@ static char *do_alias(struct alias_rule *alias, const char *target)
 		return NULL;
 	}
 	sprintf(new, "%s%s", alias->to, target + strlen(alias->from));
-//fprintf(stderr, "replaced alias: from: %s, to: %s, name: %s\n  %s\n", alias->from, alias->to, target, new);
+/*fprintf(stderr, "replaced alias: from: %s, to: %s, name: %s\n  %s\n", alias->from, alias->to, target, new);*/
 	return new;
 }
 
+static struct codomain *target_cod;
 static struct cod_entry *target_list;
 static void process_entries(const void *nodep, VISIT value, int __unused level)
 {
 	struct alias_rule **t = (struct alias_rule **) nodep;
-	struct cod_entry *entry;
+	struct cod_entry *entry, *dup = NULL;
 	int len;
 
 	if (value == preorder || value == endorder)
@@ -114,22 +115,35 @@ static void process_entries(const void *nodep, VISIT value, int __unused level)
 	len = strlen((*t)->from);
 
 	list_for_each(target_list, entry) {
-		if (entry->mode & (AA_SHARED_PERMS & AA_PTRACE_PERMS))
+		if (entry->mode & (AA_SHARED_PERMS & AA_PTRACE_PERMS) ||
+		    entry->alias_ignore)
 			continue;
 		if (entry->name && strncmp((*t)->from, entry->name, len) == 0) {
 			char *new = do_alias(*t, entry->name);
 			if (!new)
 				return;
-			free(entry->name);
-			entry->name = new;
+			dup = copy_cod_entry(entry);
+			free(dup->name);
+			dup->name = new;
 		}
 		if (entry->link_name &&
 		    strncmp((*t)->from, entry->link_name, len) == 0) {
 			char *new = do_alias(*t, entry->link_name);
 			if (!new)
 				return;
-			free(entry->link_name);
-			entry->link_name = new;
+			if (!dup)
+				dup = copy_cod_entry(entry);
+			free(dup->link_name);
+			dup->link_name = new;
+		}
+		if (dup) {
+			dup->alias_ignore = 1;
+			/* adds to the front of the list, list iteratition
+			 * will skip it
+			 */
+			entry->next = dup;
+
+			dup = NULL;
 		}
 	}
 }
@@ -162,6 +176,7 @@ void replace_aliases(struct codomain *cod)
 
 	if (cod->entries) {
 		target_list = cod->entries;
+		target_cod = cod;
 		twalk(alias_table, process_entries);
 	}
 }
