@@ -686,6 +686,7 @@ struct cod_entry *copy_cod_entry(struct cod_entry *orig)
 	entry->name = strdup(orig->name);
 	entry->link_name = orig->link_name ? strdup(orig->link_name) : NULL;
 	entry->mode = orig->mode;
+	entry->audit = orig->audit;
 	entry->deny = orig->deny;
 
 	/* XXX - need to create copies of the patterns, too */
