@@ -509,7 +509,7 @@ static int process_profile_name_xmatch(struct codomain *cod)
 	if (ptype == ePatternInvalid) {
 		PERROR(_("%s: Invalid profile name '%s' - bad regular expression\n"), progname, name);
 		return FALSE;
-	} else if (ptype == ePatternBasic) {
+	} else if (ptype == ePatternBasic && !cod->altnames) {
 		/* no regex so do not set xmatch */
 		cod->xmatch = NULL;
 		cod->xmatch_len = 0;
@@ -522,6 +522,18 @@ static int process_profile_name_xmatch(struct codomain *cod)
 		if (!aare_add_rule(rule, tbuf, 0, AA_MAY_EXEC, 0)) {
 			aare_delete_ruleset(rule);
 			return FALSE;
+		}
+		if (cod->altnames) {
+			struct alt_name *alt;
+			list_for_each(cod->altnames, alt) {
+				int len;
+				convert_aaregex_to_pcre(alt->name, 0, tbuf,
+							PATH_MAX + 3, &len);
+				if (!aare_add_rule(rule, tbuf, 0, AA_MAY_EXEC, 0)) {
+					aare_delete_ruleset(rule);
+					return FALSE;
+				}
+			}
 		}
 		cod->xmatch = aare_create_dfa(rule, &cod->xmatch_size,
 					      dfaflags);

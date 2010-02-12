@@ -161,11 +161,17 @@ static void process_name(const void *nodep, VISIT value, int __unused level)
 	len = strlen((*t)->from);
 
 	if (cod->name && strncmp((*t)->from, cod->name, len) == 0) {
+		struct alt_name *alt;
 		char *new = do_alias(*t, cod->name);
 		if (!new)
 			return;
-		free(cod->name);
-		cod->name = new;
+		/* aliases create alternate names */
+		alt = calloc(1, sizeof(struct alt_name));
+		if (!alt)
+			return;
+		alt->name = new;
+		alt->next = cod->altnames;
+		cod->altnames = alt;
 	}
 }
 

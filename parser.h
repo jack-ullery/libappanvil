@@ -77,9 +77,15 @@ struct aa_rlimits {
 	rlim_t limits[RLIMIT_NLIMITS];
 };
 
+struct alt_name {
+	char *name;
+	struct alt_name *next;
+};
+
 struct codomain {
 	char *namespace;
 	char *name;				/* codomain name */
+	struct alt_name *altnames;
 	void *xmatch;
 	size_t xmatch_size;
 	int xmatch_len;
