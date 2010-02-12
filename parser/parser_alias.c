@@ -39,19 +39,24 @@ static int compare_alias(const void *a, const void *b)
 {
 	char *a_name = ((struct alias_rule *) a)->from;
 	char *b_name = ((struct alias_rule *) b)->from;
-	return strcmp(a_name, b_name);
+	int res = strcmp(a_name, b_name);
+	if (res == 0) {
+		a_name = ((struct alias_rule *) a)->to;
+		b_name = ((struct alias_rule *) b)->to;
+		res = strcmp(a_name, b_name);
+	}
+	return res;
 }
 
 int new_alias(const char *from, const char *to)
 {
 	struct alias_rule *alias, **result;
 
-	alias = malloc(sizeof(struct alias_rule));
+	alias = calloc(1, sizeof(struct alias_rule));
 	if (!alias) {
 		PERROR("Failed to allocate memory: %s\n", strerror(errno));
 		goto fail;
 	}
-	memset(alias, 0, sizeof(*alias));
 	alias->from = strdup(from);
 	if (!alias->from) {
 		PERROR("Failed to allocate memory: %s\n", strerror(errno));
@@ -85,7 +90,8 @@ fail:
 			free(alias->to);
 		free(alias);
 	}
-	return 0;
+	/* just drop duplicate aliases don't actually fail */
+	return 1;
 }
 
 static char *do_alias(struct alias_rule *alias, const char *target)
