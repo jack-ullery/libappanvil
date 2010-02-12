@@ -1,6 +1,7 @@
 # 	$Id$
 # ----------------------------------------------------------------------
-#    Copyright (c) 1999, 2004, 2005, 2006 NOVELL (All rights reserved)
+#    Copyright (c) 1999, 2004-2009 NOVELL (All rights reserved)
+#    Copyright (c) 2010 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -27,10 +28,11 @@ common/Make.rules: $(COMMONDIR)/Make.rules
 endif
 
 TOOLS = genprof logprof autodep audit complain enforce \
-	unconfined aa-eventd apparmor_status aa-decode
+	unconfined aa-eventd apparmor_status aa-decode \
+	apparmor_notify
 
 AA_MANPAGES = autodep.8 complain.8 enforce.8 logprof.8 genprof.8 unconfined.8 audit.8
-MANPAGES    = ${AA_MANPAGES} logprof.conf.5 apparmor_status.8 aa-decode.8
+MANPAGES    = ${AA_MANPAGES} logprof.conf.5 apparmor_status.8 aa-decode.8 apparmor_notify.8
 
 all: ${MANPAGES} ${HTMLMANPAGES}
 	make -C po all
@@ -47,7 +49,7 @@ po/${NAME}.pot: ${TOOLS}
 .PHONY: install
 install: ${MANPAGES} ${HTMLMANPAGES}
 	install -d ${CONFDIR}
-	install -m 644 logprof.conf severity.db ${CONFDIR}
+	install -m 644 logprof.conf severity.db notify.conf ${CONFDIR}
 	install -d ${BINDIR}
 	ln -sf apparmor_status ${BINDIR}/aa-status
 	ln -sf audit ${BINDIR}/aa-audit
@@ -57,6 +59,7 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 	ln -sf genprof ${BINDIR}/aa-genprof
 	ln -sf logprof ${BINDIR}/aa-logprof
 	ln -sf unconfined ${BINDIR}/aa-unconfined
+	ln -sf apparmor_notify ${BINDIR}/aa-notify
 	install -m 755 ${TOOLS} ${BINDIR}
 	install -d ${PERLDIR}
 	install -m 755 SubDomain.pm Repository.pm Config.pm Reports.pm Severity.pm ${PERLDIR}
@@ -65,7 +68,8 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 	make install_manpages DESTDIR=${DESTDIR}
 	# special case for apparmor_status
 	ln -sf apparmor_status.8 ${DESTDIR}/${MANDIR}/man8/aa-status.8
-	
+	ln -sf apparmor_notify.8 ${DESTDIR}/${MANDIR}/man8/aa-notify.8
+
 .PHONY: clean
 .SILENT: clean
 clean: _clean
