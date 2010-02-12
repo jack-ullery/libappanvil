@@ -61,6 +61,8 @@ show messages with summaries.
 
 displays a short usage statement.
 
+=back
+
 =head1 CONFIGURATION
 
 System-wide configuration for B<apparmor_notify> is done via
@@ -76,8 +78,6 @@ Per-user configuration is done via ~/.apparmor/notify.conf:
 
   # set to 'yes' to enable AppArmor DENIED notifications
   show_notifications="yes"
-
-=back
 
 =head1 BUGS
 
