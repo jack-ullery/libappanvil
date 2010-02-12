@@ -903,7 +903,7 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		}
 
 		size = work_area->pos - work_area->buffer;
-		if (kernel_load) {
+		if (kernel_load || option == OPTION_STDOUT) {
 			wsize = write(fd, work_area->buffer, size);
 			if (wsize < 0) {
 				error = -errno;
