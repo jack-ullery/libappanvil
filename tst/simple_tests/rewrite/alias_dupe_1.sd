@@ -1,5 +1,5 @@
 #=DESCRIPTION Test of duplicate alias detection
-#=EXRESULT FAIL
+#=EXRESULT PASS
 
 @{MEEP} = meep moop
 alias /etc -> /Etcetera,
