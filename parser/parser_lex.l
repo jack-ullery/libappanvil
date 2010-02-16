@@ -63,6 +63,7 @@ struct ignored_suffix_t ignored_suffixes[] = {
 	{ ".dpkg-new", 9, 1 },
 	{ ".dpkg-old", 9, 1 },
 	{ ".dpkg-dist", 10, 1 },
+	{ ".dpkg-bak", 9, 1 },
 	/* RPM packaging files have traditionally not been silently
            ignored */
 	{ ".rpmnew", 7, 0 },
