@@ -653,6 +653,21 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 		return 0;
 	if (!sd_write_structend(p))
 		return 0;
+	if (profile->flags.path) {
+		int flags = 0;
+		if (profile->flags.path & PATH_CHROOT_REL)
+			flags |= 0x8;
+		if (profile->flags.path & PATH_MEDIATE_DELETED)
+			flags |= 0x10000;
+		if (profile->flags.path & PATH_ATTACH)
+			flags |= 0x4;
+		if (profile->flags.path & PATH_CHROOT_NSATTACH)
+			flags |= 0x10;
+
+		if (!sd_write_name(p, "path_flags") ||
+		    !sd_write32(p, flags))
+			return 0;
+	}
 
 #define low_caps(X) ((u32) ((X) & 0xffffffff))
 #define high_caps(X) ((u32) (((X) >> 32) & 0xffffffff))

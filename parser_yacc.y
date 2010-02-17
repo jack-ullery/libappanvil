@@ -371,7 +371,7 @@ valuelist:	valuelist TOK_VALUE
 	}
 
 flags:	{ /* nothing */
-		struct flagval fv = { 0, 0, 0 };
+	struct flagval fv = { 0, 0, 0, 0 };
 
 		$$ = fv;
 	};
@@ -390,6 +390,20 @@ flagvals:	flagvals TOK_FLAG_SEP flagval
 	{
 		$1.complain = $1.complain || $3.complain;
 		$1.audit = $1.audit || $3.audit;
+		$1.path = $1.path | $3.path;
+		if (($1.path & (PATH_CHROOT_REL | PATH_NS_REL)) ==
+		    (PATH_CHROOT_REL | PATH_NS_REL))
+			yyerror(_("Profile flag chroot_relative conflicts with namespace_relative"));
+
+		if (($1.path & (PATH_MEDIATE_DELETED | PATH_DELEGATE_DELETED)) ==
+		    (PATH_MEDIATE_DELETED | PATH_DELEGATE_DELETED))
+			yyerror(_("Profile flag mediate_deleted conflicts with delegate_deleted"));
+		if (($1.path & (PATH_ATTACH | PATH_NO_ATTACH)) ==
+		    (PATH_ATTACH | PATH_NO_ATTACH))
+			yyerror(_("Profile flag attach_disconnected conflicts with no_attach_disconnected"));
+		if (($1.path & (PATH_CHROOT_NSATTACH | PATH_CHROOT_NO_ATTACH)) ==
+		    (PATH_CHROOT_NSATTACH | PATH_CHROOT_NO_ATTACH))
+			yyerror(_("Profile flag chroot_attach conflicts with chroot_no_attach"));
 
 		$$ = $1;
 	};
@@ -408,6 +422,22 @@ flagval:	TOK_FLAG_ID
 			fv.complain = 1;
 		} else if (strcmp($1, "audit") == 0) {
 			fv.audit = 1;
+		} else if (strcmp($1, "chroot_relative") == 0) {
+			fv.path |= PATH_CHROOT_REL;
+		} else if (strcmp($1, "namespace_relative") == 0) {
+			fv.path |= PATH_NS_REL;
+		} else if (strcmp($1, "mediate_deleted") == 0) {
+			fv.path |= PATH_MEDIATE_DELETED;
+		} else if (strcmp($1, "delegate_deleted") == 0) {
+			fv.path |= PATH_DELEGATE_DELETED;
+		} else if (strcmp($1, "attach_disconnected") == 0) {
+			fv.path |= PATH_ATTACH;
+		} else if (strcmp($1, "no_attach_disconnected") == 0) {
+			fv.path |= PATH_NO_ATTACH;
+		} else if (strcmp($1, "chroot_attach") == 0) {
+			fv.path |= PATH_CHROOT_NSATTACH;
+		} else if (strcmp($1, "chroot_no_attach") == 0) {
+			fv.path |= PATH_CHROOT_NO_ATTACH;
 		} else {
 			yyerror(_("Invalid profile flag: %s."), $1);
 		}
