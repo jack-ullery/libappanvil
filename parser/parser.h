@@ -29,6 +29,7 @@ struct flagval {
   	int hat;
   	int complain;
   	int audit;
+	int path;
 };
 
 struct named_transition {
@@ -177,6 +178,18 @@ struct var_string {
 extern int flag_changehat_version;
 extern int read_implies_exec;
 extern dfaflags_t dfaflags;
+
+
+#define PATH_CHROOT_REL 0x1
+#define PATH_NS_REL 0x2
+#define PATH_CHROOT_NSATTACH 0x4
+#define PATH_CHROOT_NO_ATTACH 0x8
+#define PATH_MEDIATE_DELETED 0x10
+#define PATH_DELEGATE_DELETED 0x20
+#define PATH_ATTACH 0x40
+#define PATH_NO_ATTACH 0x80
+
+
 
 #ifdef DEBUG
 #define PDEBUG(fmt, args...) printf("parser: " fmt, ## args)
