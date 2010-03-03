@@ -30,7 +30,7 @@ require POSIX;
 require Time::Local;
 require File::Basename;
 
-use vars qw($opt_p $opt_s $opt_l $opt_h $opt_v $opt_d);
+use vars qw($opt_p $opt_s $opt_l $opt_h $opt_v $opt_d $opt_w);
 use Getopt::Std;
 
 my %prefs;
@@ -111,7 +111,7 @@ if (-s $conf) {
     }
 }
 
-getopts('dhlpvs:');
+getopts('dhlpvs:w:');
 if ($opt_h) {
     usage;
     exitscript(0);
@@ -122,6 +122,10 @@ if ($opt_h) {
 }
 if ($opt_s and not $opt_l) {
     $opt_s =~ /^[0-9]+$/ or _error("-s requires a number");
+}
+
+if ($opt_w) {
+    $opt_w =~ /^[0-9]+$/ or _error("-w requires a number");
 }
 
 if ($opt_p or $opt_l) {
@@ -279,6 +283,10 @@ sub do_notify {
     }
     $SIG{INT} = $SIG{TERM} = $SIG{HUP} = \&signal_handler;
     $SIG{'PIPE'} = 'IGNORE';
+
+    if ($opt_w) {
+        sleep($opt_w);
+    }
 
     my $count = 0;
     my $footer = "For more information, please see:\n$url";
@@ -450,6 +458,7 @@ OPTIONS:
   -s NUM	show stats for last NUM days (can be used alone or with -p)
   -v		show messages with stats
   -h		display this help
+  -w NUM	wait NUM seconds before displaying notifications (with -p)
 EOF
     print $s;
 }
