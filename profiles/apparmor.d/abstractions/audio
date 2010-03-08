@@ -59,3 +59,6 @@ owner @{HOME}/.pulse/* rwk,
 owner /tmp/pulse-*/ rw,
 owner /tmp/pulse-*/* rw,
 
+# libgnome2
+/etc/sound/ r,
+/etc/sound/** r,
