@@ -923,6 +923,35 @@ int test_str_to_boolean(void)
 
 	return rc;
 }
+
+int test_processunquoted(void)
+{
+	int rc = 0;
+	const char *teststring, *processedstring;
+
+	teststring = "";
+	MY_TEST(strcmp(teststring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on empty string");
+
+	teststring = "123\\421123";
+	MY_TEST(strcmp(teststring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on invalid octal");
+
+/* Oh wow, our octal processing is busticated - FIXME
+	teststring = "123\\109123";
+	processedstring = "123\109123";
+	MY_TEST(strcmp(processedstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on octal 10");
+
+	teststring = "123\\189123";
+	processedstring = "123\189123";
+	MY_TEST(strcmp(processedstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on octal 10");
+*/
+
+	return rc;
+}
+
 int main(void)
 {
 	int rc = 0;
@@ -932,6 +961,9 @@ int main(void)
 	if (retval != 0)
 		rc = retval;
 
+	retval = test_processunquoted();
+	if (retval != 0)
+		rc = retval;
 	return rc;
 }
 #endif /* UNIT_TEST */
