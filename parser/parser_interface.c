@@ -943,7 +943,7 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 
 	if (kernel_load) close(fd);
 
-	if (cod->hat_table && regex_type == AARE_DFA) {
+	if (cod->hat_table && regex_type == AARE_DFA && option != OPTION_REMOVE) {
 		if (load_flattened_hats(cod) != 0)
 			return 0;
 	}
