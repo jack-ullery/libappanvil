@@ -240,8 +240,8 @@ LT_EQUAL	<=
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
 			   * separate state. */
-			yylval = (YYSTYPE) processunquoted(yytext, yyleng);
-			PDEBUG("Found sub name: \"%s\"\n", yylval);
+			yylval.id =  processunquoted(yytext, yyleng);
+			PDEBUG("Found sub name: \"%s\"\n",  yylval.id);
 			BEGIN(INITIAL);
 			return TOK_ID;
 		}
@@ -253,8 +253,8 @@ LT_EQUAL	<=
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
 			   * separate state. */
-			yylval = (YYSTYPE) processquoted(yytext, yyleng);
-			PDEBUG("Found sub name: \"%s\"\n", yylval);
+			yylval.id = processquoted(yytext, yyleng);
+			PDEBUG("Found sub name: \"%s\"\n", yylval.id);
 			BEGIN(INITIAL);
 			return TOK_ID;
 		}
@@ -274,8 +274,8 @@ LT_EQUAL	<=
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
 			   * separate state. */
-			yylval = (YYSTYPE) processunquoted(yytext, yyleng);
-			PDEBUG("Found sub name: \"%s\"\n", yylval);
+			yylval.id = processunquoted(yytext, yyleng);
+			PDEBUG("Found sub name: \"%s\"\n", yylval.id);
 			BEGIN(INITIAL);
 			return TOK_ID;
 		}
@@ -287,8 +287,8 @@ LT_EQUAL	<=
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
 			   * separate state. */
-			yylval = (YYSTYPE) processquoted(yytext, yyleng);
-			PDEBUG("Found sub name: \"%s\"\n", yylval);
+			yylval.id  = processquoted(yytext, yyleng);
+			PDEBUG("Found sub name: \"%s\"\n", yylval.id);
 			BEGIN(INITIAL);
 			return TOK_ID;
 		}
@@ -323,7 +323,8 @@ LT_EQUAL	<=
 			return TOK_EQUALS;
 			}
 	{KEYWORD}	{
-			yylval = (YYSTYPE) strdup(yytext);
+			yylval.flag_id = strdup(yytext);
+			PDEBUG("Found flag: \"%s\"\n", yylval.flag_id);
 			return TOK_FLAG_ID;
 			}
 
@@ -337,14 +338,14 @@ LT_EQUAL	<=
 	{WS}+		{ /* Eat whitespace */ }
 
 	{ID}+		{
-			yylval = (YYSTYPE) processunquoted(yytext, yyleng);
-			PDEBUG("Found assignment value: \"%s\"\n", yylval);
+			yylval.var_val = processunquoted(yytext, yyleng);
+			PDEBUG("Found assignment value: \"%s\"\n", yylval.var_val);
 			return TOK_VALUE;
 			}
 
 	{QUOTED_ID}	{
-			yylval = (YYSTYPE) processquoted(yytext, yyleng);
-			PDEBUG("Found assignment value: \"%s\"\n", yylval);
+			yylval.var_val = processquoted(yytext, yyleng);
+			PDEBUG("Found assignment value: \"%s\"\n", yylval.var_val);
 			return TOK_VALUE;
 			}
 
@@ -360,7 +361,7 @@ LT_EQUAL	<=
 	{WS}+		{ /* Eat whitespace */ }
 
 	{ID}+		{
-			yylval = (YYSTYPE) strdup(yytext);
+			yylval.id = strdup(yytext);
 			return TOK_ID;
 			}
 	{END_OF_RULE}	{
@@ -369,8 +370,8 @@ LT_EQUAL	<=
 		}
 	[^\n]		{
 			  /* Something we didn't expect */
-			yylval = (YYSTYPE) strdup(yytext);
-			yyerror(_("(network_mode) Found unexpected character: '%s'"), yylval);
+			yylval.id = strdup(yytext);
+			yyerror(_("(network_mode) Found unexpected character: '%s'"), yylval.id);
 			}
 
 	\r?\n		{
@@ -380,8 +381,7 @@ LT_EQUAL	<=
 
 <CHANGE_PROFILE_MODE>{
 	{ARROW}	        {
-			PDEBUG("Matched a arrow\n");
-			yylval = (YYSTYPE) yytext;
+			PDEBUG("Matched a change profile arrow\n");
 			return TOK_ARROW;
 			}
 
@@ -393,8 +393,8 @@ LT_EQUAL	<=
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
 			   * separate state. */
-			yylval = (YYSTYPE) processunquoted(yytext, yyleng);
-			PDEBUG("Found sub name: \"%s\"\n", yylval);
+			yylval.id = processunquoted(yytext, yyleng);
+			PDEBUG("Found change profile name: \"%s\"\n", yylval.id);
 			BEGIN(INITIAL);
 			return TOK_ID;
 		}
@@ -406,8 +406,8 @@ LT_EQUAL	<=
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
 			   * separate state. */
-			yylval = (YYSTYPE) processquoted(yytext, yyleng);
-			PDEBUG("Found sub name: \"%s\"\n", yylval);
+			yylval.id = processquoted(yytext, yyleng);
+			PDEBUG("Found change profile quoted name: \"%s\"\n", yylval.id);
 			BEGIN(INITIAL);
 			return TOK_ID;
 		}
@@ -435,13 +435,11 @@ LT_EQUAL	<=
 
 {SEPARATOR}		{
 			PDEBUG("Matched a separator\n");
-			yylval = (YYSTYPE) yytext;
 			BEGIN(SUB_NAME);
 			return TOK_SEP;
 			}
 {ARROW}			{
 			PDEBUG("Matched a arrow\n");
-			yylval = (YYSTYPE) yytext;
 			return TOK_ARROW;
 			}
 {EQUALS}		{
@@ -459,12 +457,12 @@ LT_EQUAL	<=
 
 
 	-?{NUMBER}[kKMG]?  {
-		        yylval = (YYSTYPE) strdup(yytext);
+		        yylval.var_val = strdup(yytext);
 		        return TOK_VALUE;
 			}
 
 	{KEYWORD}	{
-		        yylval = (YYSTYPE) strdup(yytext);
+		        yylval.id = strdup(yytext);
 			if (strcmp(yytext, "infinity") == 0)
 				return TOK_VALUE;
 			return TOK_ID;
@@ -489,14 +487,14 @@ LT_EQUAL	<=
 }
 
 {SET_VARIABLE}		{
-			yylval = (YYSTYPE) strdup(yytext);
-			PDEBUG("Found set variable %s\n", yylval);
+			yylval.set_var = strdup(yytext);
+			PDEBUG("Found set variable %s\n", yylval.set_var);
 			return TOK_SET_VAR;
 			}
 
 {BOOL_VARIABLE}		{
-			yylval = (YYSTYPE) strdup(yytext);
-			PDEBUG("Found boolean variable %s\n", yylval);
+			yylval.bool_var = strdup(yytext);
+			PDEBUG("Found boolean variable %s\n", yylval.bool_var);
 			return TOK_BOOL_VAR;
 			}
 
@@ -509,21 +507,21 @@ LT_EQUAL	<=
 			return TOK_CLOSE;
 			}
 
-{PATHNAME}		{  
-			yylval = (YYSTYPE) processunquoted(yytext, yyleng);
-			PDEBUG("Found id: \"%s\"\n", yylval);
+{PATHNAME}		{
+			yylval.id = processunquoted(yytext, yyleng);
+			PDEBUG("Found id: \"%s\"\n", yylval.id);
 			return TOK_ID;
 			}
 
-{QPATHNAME}		{  
-			yylval = (YYSTYPE) processquoted(yytext, yyleng);
-			PDEBUG("Found id: \"%s\"\n", yylval);
+{QPATHNAME}		{
+			yylval.id = processquoted(yytext, yyleng);
+			PDEBUG("Found id: \"%s\"\n", yylval.id);
 			return TOK_ID;
 			}
 
 {MODES}			{
-			yylval = (YYSTYPE) strdup(yytext);
-			PDEBUG("Found modes: %s\n", yylval);
+			yylval.mode = strdup(yytext);
+			PDEBUG("Found modes: %s\n", yylval.mode);
 			return TOK_MODE;
 			}
 
@@ -550,8 +548,8 @@ LT_EQUAL	<=
 			switch (token) {
 			case -1:
 				/* no token found */
-				yylval = (YYSTYPE) processunquoted(yytext, yyleng);
-				PDEBUG("Found id: \"%s\"\n", yylval);
+				yylval.id = processunquoted(yytext, yyleng);
+				PDEBUG("Found (var) id: \"%s\"\n", yylval.id);
 				return TOK_ID;
 				break;
 			case TOK_PROFILE:
