@@ -83,6 +83,12 @@ $) == $( or die "Cannot be sgid\n";
 
 my $login;
 
+getopts('dhlpvs:w:');
+if ($opt_h) {
+    usage;
+    exitscript(0);
+}
+
 open (LOGFILE, "<$logfile") or die "Could not open '$logfile'\n";
 # Drop priviliges, if running as root
 if ($< == 0) {
@@ -93,7 +99,7 @@ if ($< == 0) {
         defined($ENV{SUDO_USER}) and $login = $ENV{SUDO_USER};
     } else {
         # nobody/nogroup
-        POSIX::setgid(scalar(getpwnam($nobody_group))) or _error("Could not change gid to '$$nobody_group'");
+        POSIX::setgid(scalar(getpwnam($nobody_group))) or _error("Could not change gid to '$nobody_group'");
         POSIX::setuid(scalar(getpwnam($nobody_user))) or _error("Could not change uid to '$nobody_user'");
     }
 } else {
@@ -111,11 +117,7 @@ if (-s $conf) {
     }
 }
 
-getopts('dhlpvs:w:');
-if ($opt_h) {
-    usage;
-    exitscript(0);
-} elsif ($opt_p) {
+if ($opt_p) {
     -x "$notify_exe" or _error("Could not find '$notify_exe'. Please install libnotify-bin. Aborting");
 } elsif ($opt_l) {
     -x "$last_exe" or _error("Could not find '$last_exe'. Aborting");
