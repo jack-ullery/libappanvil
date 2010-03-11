@@ -16,8 +16,8 @@ int main(int argc, char *argv[])
 	if (argc > 1)
 		o_file = argv[1];
 
-//	for (i=0, success=0, fail=0; i<MAX_LOOP; i++) {
-	for (i=0, success=0, fail=0; !i; i++) {
+	for (i=0, success=0, fail=0; i<MAX_LOOP; i++) {
+//	for (i=0, success=0, fail=0; !i; i++) {
 		fd = open(o_file, O_RDONLY);
 		if (fd != -1) {
 			success++;

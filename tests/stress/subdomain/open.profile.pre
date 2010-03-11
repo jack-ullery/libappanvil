@@ -1,9 +1,9 @@
 BASE/open {
-/lib/libc-*.so				r,
-/lib/libc-*.so.*			r,
+/lib/libc-*.so				rm,
+/lib/libc-*.so.*			rm,
 /lib/ld-*.so				rix,
 /lib/ld-*.so.*				rix,
-/lib/libAA*				r,
+/{usr/,}lib/libAA*			rm,
 /etc/ld.so.*				r,
 BASE/open				r,
 /bin/ls					r,
