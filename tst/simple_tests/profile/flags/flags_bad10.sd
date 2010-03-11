@@ -1,6 +1,6 @@
 #
 # $Id$
-#=DESCRIPTION Ensure debug flag is no longer accepted
+#=DESCRIPTION Ensure conflicting namespace flags fail
 #=EXRESULT FAIL
 # vim:syntax=subdomain
 # Last Modified: Sun Apr 17 19:44:44 2005
