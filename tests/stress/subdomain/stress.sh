@@ -2,7 +2,9 @@
 
 . ./uservars.inc
 
-cat change_hat.profile child.profile open.profile | ${subdomain_parser}
+${subdomain_parser} change_hat.profile child.profile open.profile 
+
+rm -f /tmp/foobar && touch /tmp/foobar
 
 ./open & ./open /tmp/foobar &
 
@@ -12,8 +14,8 @@ cat change_hat.profile child.profile open.profile | ${subdomain_parser}
 
 while :
 do
-	cat change_hat.profile | ${subdomain_parser} -r > /dev/null 2>&1 &
-	cat child.profile | ${subdomain_parser} -r > /dev/null 2>&1 &
-	cat open.profile | ${subdomain_parser} -r > /dev/null 2>&1 &
+	${subdomain_parser} -r change_hat.profile > /dev/null 2>&1 &
+	${subdomain_parser} -r child.profile > /dev/null 2>&1 &
+	${subdomain_parser} -r open.profile > /dev/null 2>&1 &
 done &
 

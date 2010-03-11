@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <linux/unistd.h>
 
-#include "sys/immunix.h"
+#include "sys/apparmor.h"
 
 #define SD_ID_MAGIC 0xdeadbeef
 
