@@ -2,7 +2,7 @@
 
 . ./uservars.inc
 
-cat change_hat.profile child.profile open.profile | ${subdomain_parser}
+${subdomain_parser} change_hat.profile child.profile open.profile 
 
 ./open & ./open /tmp/foobar &
 

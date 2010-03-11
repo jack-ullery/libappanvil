@@ -8,13 +8,13 @@ then
 	exit 1
 fi
 
-cat change_hat.profile | $subdomain_parser -R 2>&1 > /dev/null
-cat change_hat.profile | $subdomain_parser
+$subdomain_parser -R change_hat.profile 2>&1 > /dev/null
+$subdomain_parser change_hat.profile 
 
 ./change_hat > /dev/null 2>&1 &
 
 while :
 do
-	cat change_hat.profile | $subdomain_parser -r > /dev/null 2>&1 &
+	$subdomain_parser -r change_hat.profile > /dev/null 2>&1 &
 done &
 

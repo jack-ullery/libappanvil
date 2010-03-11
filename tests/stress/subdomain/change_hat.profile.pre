@@ -1,5 +1,6 @@
 BASE/change_hat {
 /lib/lib*.so				r,
+/usr/lib/lib*.so			r,
 /lib/lib*.so.*				r,
 /lib/i[356]86/lib*.so			r,
 /lib/tls/lib*.*.so			r,

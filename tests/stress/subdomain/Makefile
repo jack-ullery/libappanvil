@@ -1,6 +1,6 @@
 TARGETS=change_hat child open
 PROFILES=change_hat.profile  child.profile  open.profile  sh.profile
-LIB:=$(shell if [ `ls /lib/apparmor* 2>/dev/null` ] ; then echo "apparmor" ; else echo "immunix" ; fi)
+LIB:=apparmor
 LIBS=-l$(LIB)
 
 all: targets profiles
