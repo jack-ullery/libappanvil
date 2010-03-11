@@ -77,12 +77,12 @@ remove_profiles () {
 	echo "Unloading profiles..."
 	(for profile in $(grep "^/does/not/exist" /sys/kernel/security/apparmor/profiles | cut -d " " -f 1); do
 		echo "${profile} {} "
-	done) | apparmor_parser -R > /dev/null
+	done) | apparmor_parser -K -R > /dev/null
 }
 
 # load files into buffer cache
 timedir "cat" "Loading directory of profiles into buffer cache"
-timedir "apparmor_parser -p" "Running preprocess only parser on directory of profiles"
+timedir "apparmor_parser -dd" "Running preprocess only parser on directory of profiles"
 timedir "apparmor_parser -S" "Running full parser on directory of profiles"
 if [ "${LOAD_PROFILES}" == 1 ] ; then
 	if [ "$(whoami)" == 'root' ] ; then
@@ -94,7 +94,7 @@ if [ "${LOAD_PROFILES}" == 1 ] ; then
 fi
 
 timesingle "cat" "Loading equivalent profile into buffer cache"
-timesingle "apparmor_parser -p" "Running preprocess only parser on single equiv profile"
+timesingle "apparmor_parser -dd" "Running preprocess only parser on single equiv profile"
 timesingle "apparmor_parser -S" "Running full parser on single equivalent profile"
 if [ "${LOAD_PROFILES}" == 1 ] ; then
 	if [ "$(whoami)" == 'root' ] ; then
