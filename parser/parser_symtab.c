@@ -33,11 +33,6 @@ enum var_type {
 	sd_set,
 };
 
-struct set_value {
-	char *val;
-	struct set_value *next;
-};
-
 struct symtab {
 	char *var_name;
 	enum var_type type;
@@ -288,7 +283,7 @@ out:
 
 /* returns a pointer to the value list, which should be used as the
  * argument to the get_next_set_value() function. */
-void *get_set_var(const char *var)
+struct set_value *get_set_var(const char *var)
 {
 	struct symtab *result;
 	struct set_value *valuelist = NULL;
@@ -321,16 +316,17 @@ out:
 }
 
 /* iterator to walk the list of set values */
-char *get_next_set_value(void **list)
+char *get_next_set_value(struct set_value **list)
 {
-	struct set_value **valuelist = (struct set_value **) list;
+	struct set_value *next;
 	char *ret;
 
-	if (!valuelist || !(*valuelist))
+	if (!list || !(*list))
 		return NULL;
 
-	ret = (*valuelist)->val;
-	(*valuelist) = (*valuelist)->next;
+	ret = (*list)->val;
+	next = (*list)->next;
+	(*list) = next;
 
 	return ret;
 }
@@ -569,7 +565,7 @@ int main(void)
 {
 	int rc = 0;
 	int retval;
-	void *retptr;
+	struct set_value *retptr;
 	struct symtab *a, *b;
 
 	a = new_symtab_entry("blah");

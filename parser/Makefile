@@ -214,7 +214,7 @@ check: tests
 
 .SILENT: tests
 tests: ${TESTS}
-	for test in ${TESTS} ; do echo "*** running $${test}" && ./$${test} $(BUILD_OUTPUT) ; done
+	sh -e -c 'for test in ${TESTS} ; do echo "*** running $${test}" && ./$${test} $(BUILD_OUTPUT) ; done'
 	$(Q)make -s -C tst tests
 
 .SILENT: check
