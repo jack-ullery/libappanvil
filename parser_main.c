@@ -4,6 +4,9 @@
  *   Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
  *   NOVELL (All rights reserved)
  *
+ *   Copyright (c) 2010
+ *   Canonical, Ltd. (All rights reserved)
+ *
  *   This program is free software; you can redistribute it and/or
  *   modify it under the terms of version 2 of the GNU General Public
  *   License published by the Free Software Foundation.
@@ -14,7 +17,8 @@
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with this program; if not, contact Novell, Inc.
+ *   along with this program; if not, contact Novell, Inc. or Canonical,
+ *   Ltd.
  */
 
 #include <stdio.h>
@@ -812,7 +816,7 @@ int process_profile(int option, char *profilename)
 		goto out;
 	}
 
-	retval = post_process_policy();
+	retval = post_process_policy(debug);
   	if (retval != 0) {
   		PERROR(_("%s: Errors found in file. Aborting.\n"), progname);
 		goto out;
