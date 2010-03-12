@@ -227,6 +227,7 @@ LT_EQUAL	<=
 }
 
 <<EOF>> {
+	fclose(yyin);
 	yypop_buffer_state();
 	if ( !YY_CURRENT_BUFFER ) yyterminate();
 }
