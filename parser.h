@@ -280,12 +280,16 @@ extern struct cod_entry *copy_cod_entry(struct cod_entry *cod);
 extern void free_cod_entries(struct cod_entry *list);
 
 /* parser_symtab.c */
+struct set_value {;
+	char *val;
+	struct set_value *next;
+};
 extern int add_boolean_var(const char *var, int boolean);
 extern int get_boolean_var(const char *var);
 extern int new_set_var(const char *var, const char *value);
 extern int add_set_value(const char *var, const char *value);
-extern void *get_set_var(const char *var);
-extern char *get_next_set_value(void **context);
+extern struct set_value *get_set_var(const char *var);
+extern char *get_next_set_value(struct set_value **context);
 extern void dump_symtab(void);
 extern void dump_expanded_symtab(void);
 void free_symtabs(void);
