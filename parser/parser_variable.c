@@ -124,7 +124,7 @@ void free_var_string(struct var_string *var)
 
 static int expand_entry_variables(struct cod_entry *entry)
 {
-	void *valuelist;
+	struct set_value *valuelist;
 	int ret = TRUE;
 	char *value;
 	struct var_string *split_var;
