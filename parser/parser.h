@@ -4,6 +4,9 @@
  *   Copyright (c) 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007
  *   NOVELL (All rights reserved)
  *
+ *   Copyright (c) 2010
+ *   Canonical, Ltd. (All rights reserved)
+ *
  *   This program is free software; you can redistribute it and/or
  *   modify it under the terms of version 2 of the GNU General Public
  *   License published by the Free Software Foundation.
@@ -14,7 +17,8 @@
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with this program; if not, contact Novell, Inc.
+ *   along with this program; if not, contact Novell, Inc. or Canonical
+ *   Ltd.
  */
 
 #include <netinet/in.h>
@@ -316,7 +320,7 @@ extern void add_to_list(struct codomain *codomain);
 extern void add_hat_to_policy(struct codomain *policy, struct codomain *hat);
 extern void add_entry_to_policy(struct codomain *policy, struct cod_entry *entry);
 extern void post_process_nt_entries(struct codomain *cod);
-extern int post_process_policy(void);
+extern int post_process_policy(int debug_only);
 extern int process_hat_regex(struct codomain *cod);
 extern int process_hat_variables(struct codomain *cod);
 extern int post_merge_rules(void);

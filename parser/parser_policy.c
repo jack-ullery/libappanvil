@@ -4,6 +4,9 @@
  *   Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
  *   NOVELL (All rights reserved)
  *
+ *   Copyright (c) 2010
+ *   Canonical, Ltd. (All rights reserved)
+ *
  *   This program is free software; you can redistribute it and/or
  *   modify it under the terms of version 2 of the GNU General Public
  *   License published by the Free Software Foundation.
@@ -14,7 +17,8 @@
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with this program; if not, contact Novell, Inc.
+ *   along with this program; if not, contact Novell, Inc. or Canonical,
+ *   Ltd.
  */
 
 #include <stdio.h>
@@ -664,7 +668,7 @@ out:
 	return ret;
 }
 
-int post_process_policy(void)
+int post_process_policy(int debug_only)
 {
 	int retval = 0;
 
@@ -696,11 +700,13 @@ int post_process_policy(void)
 		return retval;
 	}
 
-	retval = post_process_regex();
-	if (retval != 0) {
-		PERROR(_("%s: Errors found during regex postprocess.  Aborting.\n"),
-		       progname);
-		return retval;
+	if (!debug_only) {
+		retval = post_process_regex();
+		if (retval != 0) {
+			PERROR(_("%s: Errors found during regex postprocess.  Aborting.\n"),
+			       progname);
+			return retval;
+		}
 	}
 
 	return retval;
