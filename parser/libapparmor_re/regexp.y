@@ -1715,7 +1715,9 @@ void DFA::minimize(dfaflags_t flags)
 			Trans::iterator j = trans.find(*i);
 			if (j != trans.end())
 				trans.erase(j);
+			State *s = *i;
 			states.erase(*i);
+			delete(s);
 		}
 	}
 
