@@ -125,9 +125,20 @@ techdoc/index.html: techdoc.pdf
 techdoc.txt: techdoc/index.html
 	w3m -dump $< > $@
 
-all: 	$(TOOLS) $(MANPAGES) ${HTMLMANPAGES} techdoc.pdf
+# targets arranged this way so that people who don't want full docs can
+# pick specific targets they want.
+main: 	$(TOOLS)
 	$(Q)make -C po all
-	$(Q)make -s tests
+
+manpages:	$(MANPAGES)
+
+htmlmanpages:	$(HTMLMANPAGES)
+
+pdf:	techdoc.pdf
+
+docs:	manpages htmlmanpages pdf
+
+all:	main docs tests
 
 apparmor_parser: $(OBJECTS) $(PCREOBJECTS) $(AAREOBJECTS)
 	rm -f ./libstdc++.a
@@ -191,7 +202,7 @@ __FILTER=$(shell echo $(strip $(FILTER_FAMILIES)) | sed -e 's/ /\\\|/g')
 af_names.h: /usr/include/bits/socket.h
 	LC_ALL=C sed -n -e '/$(__FILTER)/d' -e "s/^\#define[ \\t]\\+PF_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9]\\+\\)\\(.*\\)\$$/#ifndef AF_\\1\\n#  define AF_\\1 \\2\\n#endif\\nAA_GEN_NET_ENT(\"\\L\\1\", \\UAF_\\1)\\n/p" $< > $@
 	LC_ALL=C sed -n -e "s/^\#define[ \\t]\\+PF_MAX[ \\t]\\+\\([0-9]\\+\\)[ \\t]\\+.*/#define AA_AF_MAX \\1\n/p" $< >> $@
-	cat $@
+	# cat $@
 
 cap_names.h: /usr/include/linux/capability.h
 	LC_ALL=C sed -n -e "/CAP_EMPTY_SET/d" -e "s/^\#define[ \\t]\\+CAP_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9xa-f]\\+\\)\\(.*\\)\$$/\{\"\\L\\1\", \\UCAP_\\1\},/p" $< > $@
