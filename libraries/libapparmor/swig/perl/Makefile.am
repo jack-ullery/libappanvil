@@ -1,7 +1,8 @@
 EXTRA_DIST =Makefile.PL libapparmor_wrap.c LibAppArmor.pm examples/*.pl
-noinst_DATA =LibAppArmor.so
 
 if HAVE_PERL
+noinst_DATA =LibAppArmor.so
+
 libapparmor_wrap.c: $(srcdir)/../SWIG/libapparmor.i
 	$(SWIG) -perl -I$(srcdir)/../../src -module LibAppArmor -o $@ $(srcdir)/../SWIG/libapparmor.i
 
