@@ -6612,10 +6612,14 @@ sub parse_event($) {
     LibAppArmor::free_record($event);
 
     #map new c and d to w as logprof doesn't support them yet
-    $rmask =~ s/c/w/g;
-    $rmask =~ s/d/w/g;
-    $dmask =~ s/c/w/g;
-    $dmask =~ s/d/w/g;
+    if ($rmask) {
+        $rmask =~ s/c/w/g;
+        $rmask =~ s/d/w/g;
+    }
+    if ($dmask) {
+        $dmask =~ s/c/w/g;
+        $dmask =~ s/d/w/g;
+    }
 
     if ($rmask && !validate_log_mode(hide_log_mode($rmask))) {
         fatal_error(sprintf(gettext('Log contains unknown mode %s.'),
