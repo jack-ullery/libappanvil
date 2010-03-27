@@ -96,6 +96,8 @@ if ($opt_f) {
     -e "/var/run/auditd.pid" and $logfile = "/var/log/audit/audit.log";
 }
 
+our $logfile_inode = get_logfile_inode($logfile);
+our $logfile_size = get_logfile_size($logfile);
 open (LOGFILE, "<$logfile") or die "Could not open '$logfile'\n";
 # Drop priviliges, if running as root
 if ($< == 0) {
@@ -301,14 +303,14 @@ sub do_notify {
     my $footer = "For more information, please see:\n$url";
     my $first_run = 1;
     my $since = $now - (int($opt_s) * 60 * 60 * 24);
-    my $logfile_size = get_logfile_size($logfile);
     for (my $i=0; $time_to_die == 0; $i++) {
-        my $cur_logfile_size = get_logfile_size($logfile);
-        if ($cur_logfile_size < $logfile_size) {
+        if ($logfile_inode != get_logfile_inode($logfile)) {
+            _warn("$logfile changed inodes, reopening");
+            reopen_logfile();
+        } elsif (get_logfile_size($logfile) < $logfile_size) {
             _warn("$logfile is smaller, reopening");
             reopen_logfile();
         }
-        $logfile_size = $cur_logfile_size;
         while(my $msg = <LOGFILE>) {
             my @attrib;
             if ($first_run == 1 and $opt_s) {
@@ -482,14 +484,23 @@ EOF
 
 sub reopen_logfile {
     close(LOGFILE);
+    $logfile_inode = get_logfile_inode($logfile);
+    $logfile_size = get_logfile_size($logfile);
     open (LOGFILE, "<$logfile") or die "Could not open '$logfile'\n";
 }
 
 sub get_logfile_size {
     my $fn = $_[0];
     my $size;
-    defined(($size = -s $fn)) or (sleep(10) and defined(($size = -s $fn)) or die "'$fn' disappeared. Aborting\n");
+    defined(($size = (stat($fn))[7])) or (sleep(10) and defined(($size = (stat($fn))[7])) or die "'$fn' disappeared. Aborting\n");
     return $size;
+}
+
+sub get_logfile_inode {
+    my $fn = $_[0];
+    my $inode;
+    defined(($inode = (stat($fn))[1])) or (sleep(10) and defined(($inode = (stat($fn))[1])) or die "'$fn' disappeared. Aborting\n");
+    return $inode;
 }
 
 #
