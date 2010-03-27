@@ -30,7 +30,7 @@ require POSIX;
 require Time::Local;
 require File::Basename;
 
-use vars qw($opt_p $opt_s $opt_l $opt_h $opt_v $opt_d $opt_w);
+use vars qw($opt_p $opt_s $opt_l $opt_h $opt_v $opt_d $opt_w $opt_f);
 use Getopt::Std;
 
 my %prefs;
@@ -75,18 +75,25 @@ if ($prog !~ /^[a-zA-Z0-9_\-]+$/) {
     exitscript(1);
 }
 
-my $logfile = "/var/log/kern.log";
--e "/var/run/auditd.pid" and $logfile = "/var/log/audit/audit.log";
-
 $> == $< or die "Cannot be suid\n";
 $) == $( or die "Cannot be sgid\n";
 
 my $login;
 
-getopts('dhlpvs:w:');
+getopts('dhlpvf:s:w:');
 if ($opt_h) {
     usage;
     exitscript(0);
+}
+
+# monitor file specified with -f, else use audit.log if auditd is running,
+# otherwise kern.log
+our $logfile = "/var/log/kern.log";
+if ($opt_f) {
+    -f $opt_f or die "'$opt_f' does not exist. Aborting\n";
+    $logfile = $opt_f;
+} else {
+    -e "/var/run/auditd.pid" and $logfile = "/var/log/audit/audit.log";
 }
 
 open (LOGFILE, "<$logfile") or die "Could not open '$logfile'\n";
@@ -273,7 +280,7 @@ sub do_notify {
         umask 0;
         open STDIN, '/dev/null' or die "Can't read /dev/null: $!";
         open STDOUT, '>/dev/null' or die "Can't write to /dev/null: $!";
-        open STDERR, '>/dev/null' or die "Can't write to /dev/null: $!";
+        #open STDERR, '>/dev/null' or die "Can't write to /dev/null: $!";
         my $pid = fork();
         exit if $pid;
         die "Couldn't fork: $!" unless defined($pid);
@@ -294,7 +301,14 @@ sub do_notify {
     my $footer = "For more information, please see:\n$url";
     my $first_run = 1;
     my $since = $now - (int($opt_s) * 60 * 60 * 24);
+    my $logfile_size = get_logfile_size($logfile);
     for (my $i=0; $time_to_die == 0; $i++) {
+        my $cur_logfile_size = get_logfile_size($logfile);
+        if ($cur_logfile_size < $logfile_size) {
+            _warn("$logfile is smaller, reopening");
+            reopen_logfile();
+        }
+        $logfile_size = $cur_logfile_size;
         while(my $msg = <LOGFILE>) {
             my @attrib;
             if ($first_run == 1 and $opt_s) {
@@ -456,6 +470,7 @@ Display AppArmor notifications or messages for DENIED entries.
 
 OPTIONS:
   -p		poll AppArmor logs and display notifications
+  -f FILE	search FILE for AppArmor messages
   -l		display stats since last login
   -s NUM	show stats for last NUM days (can be used alone or with -p)
   -v		show messages with stats
@@ -463,6 +478,18 @@ OPTIONS:
   -w NUM	wait NUM seconds before displaying notifications (with -p)
 EOF
     print $s;
+}
+
+sub reopen_logfile {
+    close(LOGFILE);
+    open (LOGFILE, "<$logfile") or die "Could not open '$logfile'\n";
+}
+
+sub get_logfile_size {
+    my $fn = $_[0];
+    my $size;
+    defined(($size = -s $fn)) or (sleep(10) and defined(($size = -s $fn)) or die "'$fn' disappeared. Aborting\n");
+    return $size;
 }
 
 #
