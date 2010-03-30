@@ -57,6 +57,15 @@ show summary since last login.
 
 show summary for last NUM of days.
 
+=item -u USER
+
+user to drop privileges to when running privileged. This has no effect when
+running under sudo.
+
+=item -w NUM
+
+wait NUM seconds before displaying notifications (for use with -p)
+
 =item -v
 
 show messages with summaries.
