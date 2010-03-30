@@ -30,7 +30,7 @@ require POSIX;
 require Time::Local;
 require File::Basename;
 
-use vars qw($opt_p $opt_s $opt_l $opt_h $opt_v $opt_d $opt_w $opt_f);
+use vars qw($opt_p $opt_s $opt_l $opt_h $opt_v $opt_d $opt_w $opt_f $opt_u);
 use Getopt::Std;
 
 my %prefs;
@@ -79,8 +79,9 @@ $> == $< or die "Cannot be suid\n";
 $) == $( or die "Cannot be sgid\n";
 
 my $login;
+our $orig_euid = $>;
 
-getopts('dhlpvf:s:w:');
+getopts('dhlpvf:s:u:w:');
 if ($opt_h) {
     usage;
     exitscript(0);
@@ -96,6 +97,7 @@ if ($opt_f) {
     -e "/var/run/auditd.pid" and $logfile = "/var/log/audit/audit.log";
 }
 
+-r $logfile or die "Cannot read '$logfile'\n";
 our $logfile_inode = get_logfile_inode($logfile);
 our $logfile_size = get_logfile_size($logfile);
 open (LOGFILE, "<$logfile") or die "Could not open '$logfile'\n";
@@ -104,12 +106,16 @@ if ($< == 0) {
     $login = "root";
     if (defined($ENV{SUDO_UID}) and defined($ENV{SUDO_GID})) {
         POSIX::setgid($ENV{SUDO_GID}) or _error("Could not change gid");
-        POSIX::setuid($ENV{SUDO_UID}) or _error("Could not change uid");
+        $> = $ENV{SUDO_UID} or _error("Could not change euid");
         defined($ENV{SUDO_USER}) and $login = $ENV{SUDO_USER};
     } else {
+        my $drop_to = $nobody_user;
+        if ($opt_u) {
+            $drop_to = $opt_u;
+        }
         # nobody/nogroup
-        POSIX::setgid(scalar(getpwnam($nobody_group))) or _error("Could not change gid to '$nobody_group'");
-        POSIX::setuid(scalar(getpwnam($nobody_user))) or _error("Could not change uid to '$nobody_user'");
+        POSIX::setgid(scalar(getgrnam($nobody_group))) or _error("Could not change gid to '$nobody_group'");
+        $> = scalar(getpwnam($drop_to)) or _error("Could not change euid to '$drop_to'");
     }
 } else {
     $login = getlogin();
@@ -120,7 +126,7 @@ if (-s $conf) {
     readconf($conf);
     if (defined($prefs{use_group})) {
         my ($name, $passwd, $gid, $members) = getgrnam($prefs{use_group});
-        if (not defined($members) or not defined($login) or not grep { $_ eq $login } split(/ /, $members)) {
+        if (not defined($members) or not defined($login) or (not grep { $_ eq $login } split(/ /, $members) and $login ne "root")) {
             _error("'$login' must be in '$prefs{use_group}' group. Aborting");
         }
     }
@@ -268,6 +274,26 @@ sub kill_running_daemons {
     close(PS);
 }
 
+sub send_message {
+    my $msg = $_[0];
+
+    my $pid = fork();
+    if ($pid == 0) { 	# child
+        # notify-send needs $< to be the unprivileged user
+        $< = $>;
+
+        # 'system' uses execvp() so no shell metacharacters here.
+        # $notify_exe is an absolute path so execvp won't search PATH.
+        system "$notify_exe", "-i", "gtk-dialog-warning", "-u", "critical", "--", "AppArmor Message", "$msg";
+        my $exit_code = $? >> 8;
+        exit($exit_code);
+    }
+
+    # parent
+    waitpid($pid, 0);
+    return $?;
+}
+
 sub do_notify {
     my %seen;
     my $seconds = 5;
@@ -356,12 +382,9 @@ sub do_notify {
 
             $m .= $footer;
 
-	    # 'system' uses execvp() so no shell metacharacters here.
-            # $notify_exe is an absolute path so execvp won't search PATH.
-            system "$notify_exe", "-i", "gtk-dialog-warning", "-u", "critical", "--", "AppArmor Message", "$m";
-            my $exit_code = $? >> 8;
-            if ($exit_code != 0) {
-                _warn("'$notify_exe' exited with '$exit_code'");
+            my $rc = send_message($m);
+            if ($rc != 0) {
+                _warn("'$notify_exe' exited with error '$rc'");
                 $time_to_die = 1;
                 last;
             }
@@ -384,7 +407,7 @@ sub do_notify {
                 }
                 $m .= ". ";
                 $m .= $footer;
-                system "$notify_exe", "-i", "gtk-dialog-warning", "-u", "critical", "--", "AppArmor Message", "$m";
+                send_message($m);
             }
             $first_run = 0;
         }
@@ -477,16 +500,35 @@ OPTIONS:
   -s NUM	show stats for last NUM days (can be used alone or with -p)
   -v		show messages with stats
   -h		display this help
+  -u USER	user to drop privileges to when not using sudo
   -w NUM	wait NUM seconds before displaying notifications (with -p)
 EOF
     print $s;
 }
 
 sub reopen_logfile {
+    # reopen the logfile, temporarily switching back to starting euid for
+    # file permissions.
     close(LOGFILE);
+
+    my $old_euid = $>;
+    my $change_euid = 0;
+    if ($> != $<) {
+        _debug("raising privileges to '$orig_euid' in reopen_logfile()");
+        $change_euid = 1;
+        $> = $orig_euid;
+        $> == $orig_euid or die "Could not raise privileges\n";
+    }
+
     $logfile_inode = get_logfile_inode($logfile);
     $logfile_size = get_logfile_size($logfile);
     open (LOGFILE, "<$logfile") or die "Could not open '$logfile'\n";
+
+    if ($change_euid) {
+        _debug("dropping privileges to '$old_euid' in reopen_logfile()");
+        $> = $old_euid;
+        $> == $old_euid or die "Could not drop privileges\n";
+    }
 }
 
 sub get_logfile_size {
