@@ -67,7 +67,6 @@ $ENV{PATH} = "/bin:/usr/bin";
 $ENV{SHELL} = "/bin/sh";
 defined($ENV{IFS}) and $ENV{IFS} = ' \t\n';
 
-print $0 . "\n";
 my $prog = File::Basename::basename($0);
 
 if ($prog !~ /^[a-zA-Z0-9_\-]+$/) {
