@@ -262,7 +262,7 @@ static int process_args(int argc, char *argv[])
 			break;
 		case 'd':
 			debug++;
-			skip_cache = 1;
+			skip_read_cache = 1;
 			break;
 		case 'h':
 			if (!optarg) {
@@ -320,7 +320,7 @@ static int process_args(int argc, char *argv[])
 			subdomainbase = strndup(optarg, PATH_MAX);
 			break;
 		case 'D':
-			skip_cache = 1;
+			skip_read_cache = 1;
 			if (!optarg) {
 				dump_vars = 1;
 			} else if (strcmp(optarg, "variables") == 0) {
@@ -363,7 +363,7 @@ static int process_args(int argc, char *argv[])
 			}
 			break;
 		case 'O':
-			skip_cache = 1;
+			skip_read_cache = 1;
 			if (strcmp(optarg, "0") == 0) {
 				dfaflags |= DFA_CONTROL_NO_TREE_NORMAL |
 					DFA_CONTROL_NO_TREE_SIMPLE |
