@@ -154,6 +154,33 @@ Print the version number and exit.
 Given once, only checks the profiles to ensure syntactic correctness.
 Given twice, dumps its interpretation of the profile for checking.
 
+=item -D n, --dump=n
+
+Debug flag for dumping various structures and passes of policy compilation.
+A single dump flag can be specified per --dump option, but the dump flag
+can be passed multiple times.  Note progress flags tend to also imply
+the matching stats flag.
+
+  apparmor_parser --dump=dfa-stats --dump=trans-stats <file>
+
+Use --help=dump to see a full list of which dump flags are supported
+
+=item -O n, --optimize=n
+
+Set the optimization flags used by policy compilation.  A sinlge optimization
+flag can be toggled per -O option, but the optimize flag can be passed
+multiple times.  Turning off some phases of the optimization can make
+it so that policy can't complete compilation due to size constraints
+(it is entirely possible to create a dfa with millions of states that will
+take days or longer to compile).
+
+Note: The parser is set to use a balanced default set of flags, that
+will result in resonable compression but not take excessive amounts
+of time to complete.
+
+Use --help=optimize to see a full list of which optimization flags are
+supported.
+
 =item -h, --help
 
 Give a quick reference guide.
