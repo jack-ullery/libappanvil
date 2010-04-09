@@ -452,7 +452,7 @@ sub show_since {
         foreach my $m (@msg_list) {
             print "$m";
             if ($msg_hash{$m} gt 1) {
-                print "($msg_hash{$m} total)\n";
+                print "($msg_hash{$m} found)\n";
             }
             print "\n";
         }
