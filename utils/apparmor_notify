@@ -428,6 +428,8 @@ sub do_notify {
 }
 
 sub show_since {
+    my %msg_hash;
+    my @msg_list;
     my $count = 0;
     while(my $msg = <LOGFILE>) {
         my @attrib = parse_message($msg, $_[0]);
@@ -436,8 +438,24 @@ sub show_since {
         my $m = format_message(@attrib);
         $m ne "" or next;
 
-        $opt_v and print "$m\n";
+        if ($opt_v) {
+            if (exists($msg_hash{$m})) {
+                $msg_hash{$m}++;
+            } else {
+                $msg_hash{$m} = 1;
+                push(@msg_list, $m);
+            }
+        }
         $count++;
+    }
+    if ($opt_v) {
+        foreach my $m (@msg_list) {
+            print "$m";
+            if ($msg_hash{$m} gt 1) {
+                print "($msg_hash{$m} total)\n";
+            }
+            print "\n";
+        }
     }
     return $count;
 }
