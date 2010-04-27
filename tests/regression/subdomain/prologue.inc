@@ -93,8 +93,10 @@ resolve_symlink()
 
 	while [ -h ${link} ]
 	do
-		if [ -x /usr/bin/readlink ] ; then 
-			target=$(/usr/bin/readlink ${link})
+		if [ -x /usr/bin/readlink ] ; then
+			target=$(/usr/bin/readlink -f ${link})
+		elif [ -x /bin/readlink ] ; then
+			target=$(/bin/readlink -f ${link})
 		else 
 			# I'm sure there's a more perlish way to do this
 			target=$( perl -e "printf (\"%s\n\", readlink(\"${link}\"));") 
