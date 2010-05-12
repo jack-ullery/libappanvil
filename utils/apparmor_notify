@@ -30,8 +30,7 @@ require POSIX;
 require Time::Local;
 require File::Basename;
 
-use vars qw($opt_p $opt_s $opt_l $opt_h $opt_v $opt_d $opt_w $opt_f $opt_u);
-use Getopt::Std;
+use Getopt::Long;
 
 my %prefs;
 my $conf = "/etc/apparmor/notify.conf";
@@ -80,7 +79,26 @@ $) == $( or die "Cannot be sgid\n";
 my $login;
 our $orig_euid = $>;
 
-getopts('dhlpvf:s:u:w:');
+my $opt_d = '';
+my $opt_h = '';
+my $opt_l = '';
+my $opt_p = '';
+my $opt_v = '';
+my $opt_f = '';
+my $opt_s = 0;
+my $opt_u = '';
+my $opt_w = 0;
+GetOptions(
+    'debug|d'        => \$opt_d,
+    'help|h'         => \$opt_h,
+    'since-last|l'   => \$opt_l,
+    'poll|p'         => \$opt_p,
+    'verbose|v'      => \$opt_v,
+    'file|f=s'       => \$opt_f,
+    'since-days|s=n' => \$opt_s,
+    'user|u=s'       => \$opt_u,
+    'wait|w=n'       => \$opt_w,
+);
 if ($opt_h) {
     usage;
     exitscript(0);
@@ -394,7 +412,7 @@ sub do_notify {
 
         if ($first_run) {
             if ($count > 0) {
-                my $m = "$logfile contains $count existing denied message";
+                my $m = "$logfile contains $count denied message";
                 $count > 1 and $m .= "s";
                 if ($opt_s) {
                     $m .= " in the last ";
@@ -508,17 +526,20 @@ sub exitscript {
 sub usage {
     my $s = <<'EOF';
 USAGE: apparmor_notify [OPTIONS]
+
 Display AppArmor notifications or messages for DENIED entries.
 
 OPTIONS:
-  -p		poll AppArmor logs and display notifications
-  -f FILE	search FILE for AppArmor messages
-  -l		display stats since last login
-  -s NUM	show stats for last NUM days (can be used alone or with -p)
-  -v		show messages with stats
-  -h		display this help
-  -u USER	user to drop privileges to when not using sudo
-  -w NUM	wait NUM seconds before displaying notifications (with -p)
+  -p, --poll			poll AppArmor logs and display notifications
+  -f FILE, --file=FILE		search FILE for AppArmor messages
+  -l, --since-last		display stats since last login
+  -s NUM, --since-days=NUM	show stats for last NUM days (can be used alone
+				or with -p)
+  -v, --verbose			show messages with stats
+  -h, --help			display this help
+  -u USER, --user=USER		user to drop privileges to when not using sudo
+  -w NUM, --wait=NUM		wait NUM seconds before displaying
+				notifications (with -p)
 EOF
     print $s;
 }

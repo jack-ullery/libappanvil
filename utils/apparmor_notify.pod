@@ -40,37 +40,37 @@ B<apparmor_notify> accepts the following arguments:
 
 =over 4
 
-=item -p
+=item -p, --poll
 
 poll AppArmor logs and display desktop notifications. Can be used with '-s'
 option to display a summary on startup.
 
-=item -f FILE
+=item -f FILE, --file=FILE
 
 search FILE for AppArmor messages
 
-=item -l
+=item -l, --since-last
 
 show summary since last login.
 
-=item -s NUM
+=item -s NUM, --since-days=NUM
 
 show summary for last NUM of days.
 
-=item -u USER
+=item -u USER, --user=USER
 
 user to drop privileges to when running privileged. This has no effect when
 running under sudo.
 
-=item -w NUM
+=item -w NUM, --wait=NUM
 
 wait NUM seconds before displaying notifications (for use with -p)
 
-=item -v
+=item -v, --verbose
 
 show messages with summaries.
 
-=item -h
+=item -h, --help
 
 displays a short usage statement.
 
