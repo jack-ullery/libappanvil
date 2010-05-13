@@ -234,7 +234,6 @@ sub format_message {
     defined($name) and $formatted .= "Name: $name\n";
     defined($denied) and $formatted .= "Denied: $denied\n";
     defined($family) and defined ($sock_type) and $formatted .= "Family: $family\nSocket type: $sock_type\n";
-    #defined($date) and $since > 0 and $formatted .= "Date: ". scalar(localtime($date)) ."\n";
     $formatted .= "Logfile: $logfile\n";
 
     return $formatted;
@@ -429,6 +428,7 @@ sub do_notify {
 
 sub show_since {
     my %msg_hash;
+    my %last_date;
     my @msg_list;
     my $count = 0;
     while(my $msg = <LOGFILE>) {
@@ -437,10 +437,11 @@ sub show_since {
 
         my $m = format_message(@attrib);
         $m ne "" or next;
-
+        my $date = $attrib[6];
         if ($opt_v) {
             if (exists($msg_hash{$m})) {
                 $msg_hash{$m}++;
+                defined($date) and $last_date{$m} = scalar(localtime($date));
             } else {
                 $msg_hash{$m} = 1;
                 push(@msg_list, $m);
@@ -452,7 +453,11 @@ sub show_since {
         foreach my $m (@msg_list) {
             print "$m";
             if ($msg_hash{$m} gt 1) {
-                print "($msg_hash{$m} found)\n";
+                print "($msg_hash{$m} found";
+                if (exists($last_date{$m})) {
+                    print ", most recent from '$last_date{$m}'";
+                }
+                print ")\n";
             }
             print "\n";
         }
