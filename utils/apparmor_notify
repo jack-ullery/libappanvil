@@ -344,7 +344,10 @@ sub do_notify {
     my $count = 0;
     my $footer = "For more information, please see:\n$url";
     my $first_run = 1;
-    my $since = $now - (int($opt_s) * 60 * 60 * 24);
+    my $since = $now;
+    if ($opt_s and int($opt_s) > 0) {
+       $since = $since - (int($opt_s) * 60 * 60 * 24);
+    }
     for (my $i=0; $time_to_die == 0; $i++) {
         if ($logfile_inode != get_logfile_inode($logfile)) {
             _warn("$logfile changed inodes, reopening");
@@ -355,8 +358,10 @@ sub do_notify {
         }
         while(my $msg = <LOGFILE>) {
             my @attrib;
-            if ($first_run == 1 and $opt_s) {
-                @attrib = parse_message($msg, $since);
+            if ($first_run == 1) {
+                if ($since != $now) {
+                    @attrib = parse_message($msg, $since);
+                }
             } else {
                 @attrib = parse_message($msg);
             }
