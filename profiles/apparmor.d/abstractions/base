@@ -85,6 +85,9 @@
   # some applications will display license information
   /usr/share/common-licenses/**  r,
 
+  # glibc statvfs
+  @{PROC}/filesystems            r,
+
   # Workaround https://launchpad.net/bugs/359338 until upstream handles stacked
   # filesystems generally. This does not appreciably decrease security with
   # Ubuntu profiles because the user is expected to have access to files owned
