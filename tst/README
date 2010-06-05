@@ -64,5 +64,3 @@ The simple script looks for a few special comments in the profile,
     loop.
 
 Otherwise, the profile is passed on as-is to the subdomain parser.
-
-$Id$ 

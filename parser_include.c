@@ -270,3 +270,63 @@ static char *stripblanks(char *s)
 	*s = 0;
 	return c;
 }
+
+struct include_stack_t {
+	char *filename;
+	int lineno;
+	struct include_stack_t *next;
+};
+
+struct include_stack_t *include_stack_head = NULL;
+
+static void start_include_position(char *filename)
+{
+	if (current_filename)
+		free(current_filename);
+	current_filename = strdup(filename ? filename : "stdin");
+	current_lineno   = 0;
+}
+
+void push_include_stack(char *filename)
+{
+	struct include_stack_t *include = NULL;
+
+	include = malloc(sizeof(*include));
+	if (!include) {
+		perror("malloc of included file stack tracker");
+		/* failures in this area are non-fatal */
+		return;
+	}
+
+	include->filename  = strdup(current_filename);
+	include->lineno    = current_lineno;
+	include->next      = include_stack_head;
+	include_stack_head = include;
+
+	start_include_position(filename);
+}
+
+void pop_include_stack(void)
+{
+	struct include_stack_t *include = NULL;
+
+	if (!include_stack_head)
+		return;
+
+	include = include_stack_head;
+	include_stack_head = include->next;
+
+	if (current_filename)
+		free(current_filename);
+	current_filename = include->filename;
+	current_lineno   = include->lineno;
+	free(include);
+}
+
+void reset_include_stack(char *filename)
+{
+	while (include_stack_head)
+		pop_include_stack();
+
+	start_include_position(filename);
+}
