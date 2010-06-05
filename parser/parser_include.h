@@ -1,5 +1,3 @@
-/* $Id$ */
-
 /*
  *   Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
  *   NOVELL (All rights reserved)
@@ -21,6 +19,8 @@
 #define PARSER_INCLUDE_H
 
 extern int preprocess_only;
+extern int current_lineno;
+extern char *current_filename;
 
 extern int add_search_dir(char *dir);
 extern void init_base_dir(void);
@@ -28,5 +28,9 @@ extern void set_base_dir(char *dir);
 extern void parse_default_paths(void);
 extern int do_include_preprocessing(char *profilename);
 FILE *search_path(char *filename, char **fullpath);
+
+extern void push_include_stack(char *filename);
+extern void pop_include_stack(void);
+extern void reset_include_stack(char *filename);
 
 #endif

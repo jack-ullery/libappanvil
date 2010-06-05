@@ -49,7 +49,8 @@
 #endif
 #define NPDEBUG(fmt, args...)	/* Do nothing */
 
-int current_lineno = 1;
+int current_lineno     = 0;
+char *current_filename = NULL;
 
 struct ignored_suffix_t {
 	char * text;
@@ -87,7 +88,8 @@ void include_filename(char *filename, int search)
 	}
 
 	if (!include_file)
-		yyerror(_("Could not open '%s'"), fullpath);
+		yyerror(_("Could not open '%s'"),
+                        fullpath ? fullpath: filename);
 
         if (fstat(fileno(include_file), &my_stat))
 		yyerror(_("fstat failed for '%s'"), fullpath);
@@ -95,6 +97,7 @@ void include_filename(char *filename, int search)
         if (S_ISREG(my_stat.st_mode)) {
 		yyin = include_file;
 		PDEBUG("Opened include \"%s\"\n", fullpath);
+		push_include_stack(fullpath);
 		yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
         }
 
@@ -139,8 +142,9 @@ void include_filename(char *filename, int search)
 				yyerror(_("stat failed for '%s'"), dirent_path);
 			if (S_ISREG(my_stat.st_mode)) {
 				if (!(yyin = fopen(dirent_path,"r")))
-					yyerror(_("Could not open '%s'"), filename);
-				PDEBUG("Opened include \"%s\"\n", filename);
+					yyerror(_("Could not open '%s' in '%s'"), dirent_path, filename);
+				PDEBUG("Opened include \"%s\" in \"%s\"\n", dirent_path, filename);
+				push_include_stack(dirent_path);
 				yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
 			}
 		}
@@ -228,6 +232,7 @@ LT_EQUAL	<=
 
 <<EOF>> {
 	fclose(yyin);
+	pop_include_stack();
 	yypop_buffer_state();
 	if ( !YY_CURRENT_BUFFER ) yyterminate();
 }

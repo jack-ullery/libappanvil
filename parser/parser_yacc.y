@@ -32,6 +32,7 @@
 /* #define DEBUG */
 
 #include "parser.h"
+#include "parser_include.h"
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -62,10 +63,6 @@
 #endif
 
 #define CAP_TO_MASK(x) (1ull << (x))
-
-/* from lex_config, for nice error messages */
-/* extern char *current_file; */
-extern int current_lineno;
 
 struct value_list {
 	char *value;
@@ -1109,10 +1106,15 @@ void yyerror(char *msg, ...)
 	va_end(arg);
 
 	if (profilename) {
-		PERROR(_("AppArmor parser error in %s at line %d: %s\n"),
-		       profilename, current_lineno, buf);
+		PERROR(_("AppArmor parser error for %s%s%s at line %d: %s\n"),
+		       profilename,
+		       current_filename ? " in " : "",
+		       current_filename ? current_filename : "",
+		       current_lineno, buf);
 	} else {
-		PERROR(_("AppArmor parser error, line %d: %s\n"),
+		PERROR(_("AppArmor parser error,%s%s line %d: %s\n"),
+		       current_filename ? " in " : "",
+		       current_filename ? current_filename : "",
 		       current_lineno, buf);
 	}
 

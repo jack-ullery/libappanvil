@@ -1,8 +1,9 @@
 #
-# $Id$
-#
 PROVE=/usr/bin/prove
 TESTS=simple.pl
+PARSER_DIR=..
+PARSER_BIN=apparmor_parser
+PARSER=$(PARSER_DIR)/$(PARSER_BIN)
 
 ifeq ($(VERBOSE),1)
   PROVE_ARG=-v
@@ -10,9 +11,19 @@ endif
 
 all: tests
 
-.PHONY: tests
-tests: ../apparmor_parser
+.PHONY: tests error_output parser_sanity
+tests: error_output parser_sanity
+
+error_output: $(PARSER)
+	$(PARSER) -S -I errors >/dev/null errors/okay.sd
+	LANG=C $(PARSER) -S -I errors 2>&1 >/dev/null errors/single.sd | \
+		grep -q "AppArmor parser error for errors/single.sd in errors/single.sd at line 3: Could not open 'failure'"
+	LANG=C $(PARSER) -S -I errors 2>&1 >/dev/null errors/double.sd | \
+		grep -q "AppArmor parser error for errors/double.sd in errors/includes/busted at line 67: Could not open 'does-not-exist'"
+	@echo "Error Output: PASS"
+
+parser_sanity: $(PARSER)
 	$(Q)${PROVE} ${PROVE_ARG} ${TESTS}
 
-../apparmor_parser:
-	make -C .. apparmor_parser
+$(PARSER):
+	make -C $(PARSER_DIR) $(PARSER_BIN)
