@@ -77,3 +77,5 @@
   network inet  dgram,
   network inet6 dgram,
 
+  # interface details
+  @{PROC}/*/net/route r,
