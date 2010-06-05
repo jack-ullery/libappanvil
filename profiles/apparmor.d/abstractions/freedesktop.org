@@ -27,3 +27,7 @@
   @{HOME}/.icons/                 r,
   @{HOME}/.recently-used.xbel*    rw,
   @{HOME}/.config/user-dirs.dirs  r,
+  @{HOME}/.local/share/icons/     r,
+  @{HOME}/.local/share/icons/**   r,
+  @{HOME}/.local/share/mime/      r,
+  @{HOME}/.local/share/mime/**    r,
