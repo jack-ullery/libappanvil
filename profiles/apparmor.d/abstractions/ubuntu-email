@@ -15,5 +15,5 @@
   /usr/bin/tkrat Ux,
 
   /usr/lib/thunderbird/thunderbird Ux,
-
+  /usr/lib/thunderbird-3*/thunderbird Ux,
 
