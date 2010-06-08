@@ -24,6 +24,7 @@
 
   # mplayer
   /etc/mplayerplug-in.conf r,
+  /usr/bin/gmplayer Uxr,
   /usr/bin/gnome-mplayer Uxr,
   /usr/bin/kmplayer Uxr,
   /usr/bin/mplayer Uxr,
