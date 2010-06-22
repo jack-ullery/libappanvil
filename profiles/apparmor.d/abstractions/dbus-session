@@ -11,4 +11,4 @@
 # ------------------------------------------------------------------
 
   #include <abstractions/dbus>
-  /usr/bin/dbus-launch Uxr,
+  /usr/bin/dbus-launch Pix,
