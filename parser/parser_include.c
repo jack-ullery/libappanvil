@@ -284,7 +284,7 @@ static void start_include_position(char *filename)
 	if (current_filename)
 		free(current_filename);
 	current_filename = strdup(filename ? filename : "stdin");
-	current_lineno   = 0;
+	current_lineno   = 1;
 }
 
 void push_include_stack(char *filename)
