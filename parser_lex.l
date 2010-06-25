@@ -49,7 +49,7 @@
 #endif
 #define NPDEBUG(fmt, args...)	/* Do nothing */
 
-int current_lineno     = 0;
+int current_lineno     = 1;
 char *current_filename = NULL;
 
 struct ignored_suffix_t {
@@ -427,7 +427,6 @@ LT_EQUAL	<=
 
 #include/.*\r?\n	 { /* include */
 			PDEBUG("Matched #include\n");
-			current_lineno++;
 			BEGIN(INCLUDE);
 			}
 
