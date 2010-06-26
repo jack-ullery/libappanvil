@@ -49,6 +49,8 @@
 #endif
 #define NPDEBUG(fmt, args...)	/* Do nothing */
 
+#define DUMP_PREPROCESS do { if (preprocess_only) ECHO; } while (0)
+
 int current_lineno     = 1;
 char *current_filename = NULL;
 
@@ -81,8 +83,12 @@ void include_filename(char *filename, int search)
 	char *fullpath = NULL;
 
 	if (search) {
+		if (preprocess_only)
+			fprintf(yyout, "\n\n##included <%s>\n", filename);
 		include_file = search_path(filename, &fullpath);
 	} else {
+		if (preprocess_only)
+			fprintf(yyout, "\n\n##included \"%s\"\n", filename);
 		fullpath = strdup(filename);
 		include_file = fopen(fullpath, "r");
 	}
@@ -246,6 +252,7 @@ LT_EQUAL	<=
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
 			   * separate state. */
+			DUMP_PREPROCESS;
 			yylval.id =  processunquoted(yytext, yyleng);
 			PDEBUG("Found sub name: \"%s\"\n",  yylval.id);
 			BEGIN(INITIAL);
@@ -259,6 +266,7 @@ LT_EQUAL	<=
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
 			   * separate state. */
+			DUMP_PREPROCESS;
 			yylval.id = processquoted(yytext, yyleng);
 			PDEBUG("Found sub name: \"%s\"\n", yylval.id);
 			BEGIN(INITIAL);
@@ -266,6 +274,7 @@ LT_EQUAL	<=
 		}
 
 	[^\n]	{
+			DUMP_PREPROCESS;
 			/* Something we didn't expect */
 			yyerror(_("Found unexpected character: '%s'"), yytext);
 		}
@@ -280,6 +289,7 @@ LT_EQUAL	<=
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
 			   * separate state. */
+			DUMP_PREPROCESS;
 			yylval.id = processunquoted(yytext, yyleng);
 			PDEBUG("Found sub name: \"%s\"\n", yylval.id);
 			BEGIN(INITIAL);
@@ -293,14 +303,16 @@ LT_EQUAL	<=
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
 			   * separate state. */
+			DUMP_PREPROCESS;
 			yylval.id  = processquoted(yytext, yyleng);
 			PDEBUG("Found sub name: \"%s\"\n", yylval.id);
 			BEGIN(INITIAL);
 			return TOK_ID;
 		}
 
-	{WS}+			{  /* Ignoring whitespace */ }
+	{WS}+	{ DUMP_PREPROCESS; /* Ignoring whitespace */ }
 	[^\n]	{
+			DUMP_PREPROCESS;
 			/* Something we didn't expect */
 			yyerror(_("Found unexpected character: '%s'"), yytext);
 		}
@@ -308,85 +320,99 @@ LT_EQUAL	<=
 
 <FLAGS_MODE>{
 	{FLAGOPEN_PAREN}	{
+			DUMP_PREPROCESS;
 			PDEBUG("FLag (\n");
 			return TOK_FLAG_OPENPAREN;
 			}
 	{FLAGCLOSE_PAREN}	{
+			DUMP_PREPROCESS;
 			PDEBUG("Flag )\n");
 			BEGIN(INITIAL);
 			return TOK_FLAG_CLOSEPAREN;
 			}
 
-	{WS}+		{ /* Eat whitespace */ }
+	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
 
 	{FLAGSEP}	{
+			DUMP_PREPROCESS;
 			PDEBUG("Flag , \n");
 			return TOK_FLAG_SEP;
 			}
 
 	{EQUALS}	{
+			DUMP_PREPROCESS;
 			PDEBUG("Flag = \n");
 			return TOK_EQUALS;
 			}
 	{KEYWORD}	{
+			DUMP_PREPROCESS;
 			yylval.flag_id = strdup(yytext);
 			PDEBUG("Found flag: \"%s\"\n", yylval.flag_id);
 			return TOK_FLAG_ID;
 			}
 
 	[^\n]		{
+			DUMP_PREPROCESS;
 			/* Something we didn't expect */
 			yyerror(_("Found unexpected character: '%s'"), yytext);
 			}
 }
 
 <ASSIGN_MODE>{
-	{WS}+		{ /* Eat whitespace */ }
+	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
 
 	{ID}+		{
+			DUMP_PREPROCESS;
 			yylval.var_val = processunquoted(yytext, yyleng);
 			PDEBUG("Found assignment value: \"%s\"\n", yylval.var_val);
 			return TOK_VALUE;
 			}
 
 	{QUOTED_ID}	{
+			DUMP_PREPROCESS;
 			yylval.var_val = processquoted(yytext, yyleng);
 			PDEBUG("Found assignment value: \"%s\"\n", yylval.var_val);
 			return TOK_VALUE;
 			}
 
-	\\\n		{ current_lineno++ ; }
+	\\\n		{ DUMP_PREPROCESS; current_lineno++ ; }
 
 	\r?\n		{
+			DUMP_PREPROCESS;
 			current_lineno++;
 			BEGIN(INITIAL);
 			}
 }
 
 <NETWORK_MODE>{
-	{WS}+		{ /* Eat whitespace */ }
+	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
 
 	{ID}+		{
+			DUMP_PREPROCESS;
 			yylval.id = strdup(yytext);
 			return TOK_ID;
 			}
 	{END_OF_RULE}	{
+			DUMP_PREPROCESS;
 			BEGIN(INITIAL);
 			return TOK_END_OF_RULE;
 		}
 	[^\n]		{
+			DUMP_PREPROCESS;
 			  /* Something we didn't expect */
 			yylval.id = strdup(yytext);
 			yyerror(_("(network_mode) Found unexpected character: '%s'"), yylval.id);
 			}
 
 	\r?\n		{
+			DUMP_PREPROCESS;
 			current_lineno++;
 			}
 }
 
 <CHANGE_PROFILE_MODE>{
 	{ARROW}	        {
+			DUMP_PREPROCESS;
 			PDEBUG("Matched a change profile arrow\n");
 			return TOK_ARROW;
 			}
@@ -399,6 +425,7 @@ LT_EQUAL	<=
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
 			   * separate state. */
+			DUMP_PREPROCESS;
 			yylval.id = processunquoted(yytext, yyleng);
 			PDEBUG("Found change profile name: \"%s\"\n", yylval.id);
 			BEGIN(INITIAL);
@@ -412,14 +439,16 @@ LT_EQUAL	<=
 			   * a longer match). So now, when I want to
 			   * match any random string, I go into a
 			   * separate state. */
+			DUMP_PREPROCESS;
 			yylval.id = processquoted(yytext, yyleng);
 			PDEBUG("Found change profile quoted name: \"%s\"\n", yylval.id);
 			BEGIN(INITIAL);
 			return TOK_ID;
 		}
 
-	{WS}+			{  /* Ignoring whitespace */ }
+	{WS}+			{  DUMP_PREPROCESS; /* Ignoring whitespace */ }
 	[^\n]	{
+			DUMP_PREPROCESS;
 			/* Something we didn't expect */
 			yyerror(_("Found unexpected character: '%s'"), yytext);
 		}
@@ -431,122 +460,143 @@ LT_EQUAL	<=
 			}
 
 #.*\r?\n		{ /* normal comment */
+			DUMP_PREPROCESS;
 			PDEBUG("comment(%d): %s\n", current_lineno, yytext);
 			current_lineno++;
 			BEGIN(INITIAL);
 }
 
-{END_OF_RULE}		{ return TOK_END_OF_RULE; }
+{END_OF_RULE}		{ DUMP_PREPROCESS; return TOK_END_OF_RULE; }
 
 {SEPARATOR}		{
+			DUMP_PREPROCESS;
 			PDEBUG("Matched a separator\n");
 			BEGIN(SUB_NAME);
 			return TOK_SEP;
 			}
 {ARROW}			{
+			DUMP_PREPROCESS;
 			PDEBUG("Matched a arrow\n");
 			return TOK_ARROW;
 			}
 {EQUALS}		{
+			DUMP_PREPROCESS;
 			PDEBUG("Matched equals for assignment\n");
 			BEGIN(ASSIGN_MODE);
 			return TOK_EQUALS;
 			}
 {ADD_ASSIGN}		{
+			DUMP_PREPROCESS;
 			PDEBUG("Matched additive value assignment\n");
 			BEGIN(ASSIGN_MODE);
 			return TOK_ADD_ASSIGN;
 			}
 <RLIMIT_MODE>{
-	{WS}+		{ /* Eat whitespace */ }
+	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
 
 
 	-?{NUMBER}[kKMG]?  {
+			DUMP_PREPROCESS;
 		        yylval.var_val = strdup(yytext);
 		        return TOK_VALUE;
 			}
 
 	{KEYWORD}	{
+			DUMP_PREPROCESS;
 		        yylval.id = strdup(yytext);
 			if (strcmp(yytext, "infinity") == 0)
 				return TOK_VALUE;
 			return TOK_ID;
 			}
 
-	{LT_EQUAL}	{ return TOK_LE; }
+	{LT_EQUAL}	{ DUMP_PREPROCESS; return TOK_LE; }
 
 	{END_OF_RULE}	{
+			DUMP_PREPROCESS;
 			BEGIN(INITIAL);
 			return TOK_END_OF_RULE;
 			}
 
 	\\\n		{
+			DUMP_PREPROCESS;
 			current_lineno++;
 			BEGIN(INITIAL);
 			}
 
 	\r?\n		{
+			DUMP_PREPROCESS;
 			current_lineno++;
 			BEGIN(INITIAL);
 			}
 }
 
 {SET_VARIABLE}		{
+			DUMP_PREPROCESS;
 			yylval.set_var = strdup(yytext);
 			PDEBUG("Found set variable %s\n", yylval.set_var);
 			return TOK_SET_VAR;
 			}
 
 {BOOL_VARIABLE}		{
+			DUMP_PREPROCESS;
 			yylval.bool_var = strdup(yytext);
 			PDEBUG("Found boolean variable %s\n", yylval.bool_var);
 			return TOK_BOOL_VAR;
 			}
 
 {OPEN_BRACE}		{
+			DUMP_PREPROCESS;
 			PDEBUG("Open Brace\n");
 			return TOK_OPEN;
 			}
 {CLOSE_BRACE}		{
+			DUMP_PREPROCESS;
 			PDEBUG("Close Brace\n");
 			return TOK_CLOSE;
 			}
 
 {PATHNAME}		{
+			DUMP_PREPROCESS;
 			yylval.id = processunquoted(yytext, yyleng);
 			PDEBUG("Found id: \"%s\"\n", yylval.id);
 			return TOK_ID;
 			}
 
 {QPATHNAME}		{
+			DUMP_PREPROCESS;
 			yylval.id = processquoted(yytext, yyleng);
 			PDEBUG("Found id: \"%s\"\n", yylval.id);
 			return TOK_ID;
 			}
 
 {MODES}			{
+			DUMP_PREPROCESS;
 			yylval.mode = strdup(yytext);
 			PDEBUG("Found modes: %s\n", yylval.mode);
 			return TOK_MODE;
 			}
 
 {HAT}			{
+			DUMP_PREPROCESS;
 			BEGIN(SUB_NAME2);
 			return TOK_HAT;
 			}
 
 {COLON}			{
+			DUMP_PREPROCESS;
 			PDEBUG("Found a colon\n");
 			return TOK_COLON;
 			}
 
 {FLAGOPEN_PAREN}	{
+			DUMP_PREPROCESS;
 			PDEBUG("FLag (\n");
 			BEGIN(FLAGS_MODE);
 			return TOK_FLAG_OPENPAREN;
 			}
 
 {VARIABLE_NAME}		{
+			DUMP_PREPROCESS;
 			int token = get_keyword_token(yytext);
 
 			/* special cases */
@@ -578,11 +628,13 @@ LT_EQUAL	<=
 			return token;
 			}
 
-{WS}+			{  /* Ignoring whitespace */ }
+{WS}+			{  DUMP_PREPROCESS; /* Ignoring whitespace */ }
 
-\r?\n			{ current_lineno++ ; }
+\r?\n			{ DUMP_PREPROCESS; current_lineno++ ; }
 
 [^\n]			{
+			DUMP_PREPROCESS;
+
 			  /* Something we didn't expect */
 			yyerror(_("Found unexpected character: '%s'"), yytext);
 			}

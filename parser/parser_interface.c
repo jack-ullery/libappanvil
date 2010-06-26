@@ -133,6 +133,9 @@ int load_codomain(int option, struct codomain *cod)
 			PERROR(_("%s: Unable to write to stdout\n"),
 			       progname);
 			break;
+		case OPTION_OFILE:
+			PERROR(_("%s: Unable to write to output file\n"),
+			       progname);
 		default:
 			PERROR(_("%s: ASSERT: Invalid option: %d\n"),
 			       progname, option);
@@ -155,6 +158,7 @@ int load_codomain(int option, struct codomain *cod)
 			       cod->name);
 			break;
 		case OPTION_STDOUT:
+		case OPTION_OFILE:
 			break;
 		default:
 			PERROR(_("%s: ASSERT: Invalid option: %d\n"),
@@ -837,22 +841,29 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		filename = "stdout";
 		fd = dup(1);
 		break;
+	case OPTION_OFILE:
+		fd = dup(fileno(ofile));
+		break;
 	default:
 		error = -EINVAL;
 		goto exit;
 		break;
 	}
 
-	if (kernel_load && fd < 0) {
-		PERROR(_("Unable to open %s - %s\n"), filename,
-		       strerror(errno));
+	if (fd < 0) {
+		if (kernel_load)
+			PERROR(_("Unable to open %s - %s\n"), filename,
+			       strerror(errno));
+		else
+			PERROR(_("Unable to open output file - %s\n"),
+			       strerror(errno));
 		error = -errno;
 		goto exit;
 	}
 
 	error = 0;
 
-	if (option != OPTION_STDOUT)
+	if (option != OPTION_STDOUT && option != OPTION_OFILE)
 		free(filename);
 
 	if (option == OPTION_REMOVE) {
@@ -918,7 +929,7 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		}
 
 		size = work_area->pos - work_area->buffer;
-		if (kernel_load || option == OPTION_STDOUT) {
+		if (kernel_load || option == OPTION_STDOUT || option == OPTION_OFILE) {
 			wsize = write(fd, work_area->buffer, size);
 			if (wsize < 0) {
 				error = -errno;
@@ -941,7 +952,7 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		free_sd_serial(work_area);
 	}
 
-	if (kernel_load) close(fd);
+	close(fd);
 
 	if (cod->hat_table && regex_type == AARE_DFA && option != OPTION_REMOVE) {
 		if (load_flattened_hats(cod) != 0)

@@ -80,6 +80,7 @@ int read_implies_exec = 1;
 #else
 int read_implies_exec = 0;
 #endif
+int preprocess_only = 0;
 
 char *subdomainbase = NULL;
 char *match_string = NULL;
@@ -88,6 +89,7 @@ int regex_type = AARE_DFA;
 int perms_create = 0;		/* perms contain create flag */
 char *profile_namespace = NULL;
 int flag_changehat_version = FLAG_CHANGEHAT_1_5;
+FILE *ofile = NULL;
 
 /* per-profile settings */
 int force_complain = 0;
@@ -108,6 +110,7 @@ struct option long_options[] = {
 	{"remove",		0, 0, 'R'},
 	{"names",		0, 0, 'N'},
 	{"stdout",		0, 0, 'S'},
+	{"ofile",		1, 0, 'o'},
 	{"match-string",	1, 0, 'm'},
 	{"quiet",		0, 0, 'q'},
 	{"skip-kernel-load",	0, 0, 'Q'},
@@ -123,6 +126,7 @@ struct option long_options[] = {
 	{"Dump",		1, 0, 'D'},
 	{"optimize",		1, 0, 'O'},
 	{"Optimize",		1, 0, 'O'},
+	{"preprocess",		0, 0, 'p'},
 	{NULL, 0, 0, 0},
 };
 
@@ -147,6 +151,7 @@ static void display_usage(char *command)
 	       "-B, --binary		Input is precompiled profile\n"
 	       "-N, --names		Dump names of profiles in input.\n"
 	       "-S, --stdout		Dump compiled profile to stdout\n"
+	       "-o n, --ofile n		Write output to file n\n"
 	       "-b n, --base n		Set base dir and cwd\n"
 	       "-I n, --Include n	Add n to the search path\n"
 	       "-f n, --subdomainfs n	Set location of apparmor filesystem\n"
@@ -162,9 +167,10 @@ static void display_usage(char *command)
 	       "-Q, --skip-kernel-load	Do everything except loading into kernel\n"
 	       "-V, --version		Display version info and exit\n"
 	       "-d, --debug 		Debug apparmor definitions\n"
+	       "-p, --preprocess	Dump preprocessed profile\n"
 	       "-D [n], --dump		Dump internal info for debugging\n"
 	       "-O [n], --Optimize	Control dfa optimizations\n"
-	       "-h [command], --help	Display this text or info about command\n"
+	       "-h [cmd], --help[=cmd]  Display this text or info about cmd\n"
 	       ,command);
 }
 
@@ -248,7 +254,7 @@ static int process_args(int argc, char *argv[])
 	int count = 0;
 	option = OPTION_ADD;
 
-	while ((c = getopt_long(argc, argv, "adf:h::rRVvI:b:BCD:NSm:qQn:XKTWkO:", long_options, &o)) != -1)
+	while ((c = getopt_long(argc, argv, "adf:h::rRVvI:b:BCD:NSm:qQn:XKTWkO:po:", long_options, &o)) != -1)
 	{
 		switch (c) {
 		case 0:
@@ -289,6 +295,7 @@ static int process_args(int argc, char *argv[])
 		case 'R':
 			count++;
 			option = OPTION_REMOVE;
+			skip_cache = 1;
 			break;
 		case 'V':
 			display_version();
@@ -301,10 +308,12 @@ static int process_args(int argc, char *argv[])
 			set_base_dir(optarg);
 			break;
 		case 'B':
-			binary_input =1;
+			binary_input = 1;
+			skip_cache = 1;
 			break;
 		case 'C':
 			opt_force_complain = 1;
+			skip_cache = 1;
 			break;
 		case 'N':
 			names_only = 1;
@@ -315,6 +324,18 @@ static int process_args(int argc, char *argv[])
 			option = OPTION_STDOUT;
 			skip_read_cache = 1;
 			kernel_load = 0;
+			break;
+		case 'o':
+			count++;
+			option = OPTION_OFILE;
+			skip_read_cache = 1;
+			kernel_load = 0;
+			ofile = fopen(optarg, "w");
+			if (!ofile) {
+				PERROR("%s: Could not open file %s\n",
+				       progname, optarg);
+				exit(1);
+			}
 			break;
 		case 'f':
 			subdomainbase = strndup(optarg, PATH_MAX);
@@ -438,6 +459,12 @@ static int process_args(int argc, char *argv[])
 			break;
 		case 'Q':
 			kernel_load = 0;
+			break;
+		case 'p':
+			count++;
+			kernel_load = 0;
+			skip_cache = 1;
+			preprocess_only = 1;
 			break;
 		default:
 			display_usage(progname);
@@ -807,6 +834,9 @@ int process_profile(int option, char *profilename)
 	if (retval != 0)
 		goto out;
 
+	if (preprocess_only)
+		goto out;
+
 	if (names_only) {
 		dump_policy_names();
 		goto out;
@@ -973,6 +1003,9 @@ int main(int argc, char *argv[])
 		if (profilename) free(profilename);
 		profilename = NULL;
 	}
+
+	if (ofile)
+		fclose(ofile);
 
 	return retval;
 }

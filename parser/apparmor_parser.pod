@@ -80,6 +80,10 @@ Produce a list of policies from a given set of profiles (implies -K).
 
 Writes a binary (cached) profile to stdout (implies -K and -T).
 
+=item -o file, --ofile file
+
+Writes a binary (cached) profile to the specified file (implies -K and -T)
+
 =item -b n, --base n
 
 Set the base directory for resolving #include directives
@@ -148,6 +152,11 @@ Report on the profiles as they are loaded, and show warnings.
 =item -V, --version
 
 Print the version number and exit.
+
+=item -p, --preprocess
+
+Dump the input profile to stdout out applying preprocessing flattening
+includes into the output profile.
 
 =item -d, --debug
 
