@@ -172,6 +172,7 @@ struct var_string {
 #define OPTION_REMOVE   2
 #define OPTION_REPLACE  3
 #define OPTION_STDOUT	4
+#define OPTION_OFILE	5
 
 #define AARE_NONE 0
 #define AARE_PCRE 1
@@ -182,7 +183,8 @@ struct var_string {
 extern int flag_changehat_version;
 extern int read_implies_exec;
 extern dfaflags_t dfaflags;
-
+extern int preprocess_only;
+extern FILE *ofile;
 
 #define PATH_CHROOT_REL 0x1
 #define PATH_NS_REL 0x2
