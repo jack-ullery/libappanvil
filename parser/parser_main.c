@@ -735,6 +735,24 @@ void reset_parser(char *filename)
 	reset_include_stack(filename);
 }
 
+int test_for_dir_mode(const char *basename, const char *linkdir)
+{
+	char *target = NULL;
+	int rc = 0;
+
+	if (asprintf(&target, "%s/%s/%s", basedir, linkdir, basename) < 0) {
+		perror("asprintf");
+		exit(1);
+	}
+
+	if (access(target, R_OK) == 0) {
+		rc = 1;
+	}
+	free(target);
+
+	return rc;
+}
+
 int process_profile(int option, char *profilename)
 {
 	struct stat stat_text;
@@ -759,37 +777,22 @@ int process_profile(int option, char *profilename)
 
 	if (profilename && option != OPTION_REMOVE) {
 		/* make decisions about disabled or complain-mode profiles */
-		char *target = NULL;
 		char *basename = strrchr(profilename, '/');
 		if (basename)
 			basename++;
 		else
 			basename = profilename;
 
-		if (asprintf(&target, "%s/%s/%s", basedir, "disable", basename) < 0) {
-			perror("asprintf");
-			exit(1);
-		}
-
-		if (access(target, R_OK) == 0) {
-			if (!conf_quiet)
-				PERROR("Skipping profile in %s/disable: %s\n", basedir, basename);
-			free(target);
+		if (test_for_dir_mode(basename, "disable")) {
+ 			if (!conf_quiet)
+ 				PERROR("Skipping profile in %s/disable: %s\n", basedir, basename);
 			goto out;
 		}
-		free(target);
 
-		if (asprintf(&target, "%s/%s/%s", basedir, "force-complain", basename)<0) {
-			perror("asprintf");
-			exit(1);
-		}
-
-		if (access(target, R_OK) == 0) {
-			if (!conf_quiet)
-				PERROR("Warning: found %s in %s/force-complain, forcing complain mode\n", basename, basedir);
-			force_complain = 1;
-		}
-		free(target);
+		if (test_for_dir_mode(basename, "force-complain")) {
+			PERROR("Warning: found %s in %s/force-complain, forcing complain mode\n", basename, basedir);
+ 			force_complain = 1;
+ 		}
 
 		if (!force_complain && !skip_cache) {
 			fstat(fileno(yyin), &stat_text);
