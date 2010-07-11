@@ -1370,6 +1370,13 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 		here.cases.insert(*j);
 	}
     }
+
+    for (depth_first_traversal i(root); i; i++) {
+	    (*i)->firstpos.clear();
+	    (*i)->lastpos.clear();
+	    (*i)->followpos.clear();
+    }
+
     if (flags & (DFA_DUMP_STATS))
 	    fprintf(stderr, "\033[2KCreated dfa: states %ld\tmatching %d\tnonmatching %d\n", states.size(), match_count, nomatch_count);
 
