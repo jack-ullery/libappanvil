@@ -2205,6 +2205,7 @@ void TransitionTable::dump(ostream& os)
 
     os << "(accept, default, base):" << endl;
     for (size_t i = 0; i < default_base.size(); i++) {
+        os << i << ": ";
 	os << "(" << accept[i] << ", "
 	   << num[default_base[i].first] << ", "
 	   << default_base[i].second << ")";
