@@ -102,6 +102,7 @@
 	/* child 0 is left, child 1 is right */
 	Node *child[2];
 
+	unsigned int label;	/* unique number for debug etc */
 	/**
 	 * We need reference counting for AcceptNodes: sharing AcceptNodes
 	 * avoids introducing duplicate States with identical accept values.
@@ -1208,12 +1209,11 @@ regexp_error(Node **, const char *text, const char *error)
  * Assign a consecutive number to each node. This is only needed for
  * pretty-printing the debug output.
  */
-map<Node *, int> node_label;
 void label_nodes(Node *root)
 {
     int nodes = 0;
     for (depth_first_traversal i(root); i; i++)
-	node_label.insert(make_pair(*i, nodes++));
+       i->label = nodes++;
 }
 
 /**
@@ -1225,7 +1225,7 @@ ostream& operator<<(ostream& os, const State& state)
     if (!state.empty()) {
 	State::iterator i = state.begin();
 	for(;;) {
-	    os << node_label[*i];
+	   os << (*i)->label;
 	    if (++i == state.end())
 		break;
 	    os << ',';
@@ -1240,15 +1240,15 @@ ostream& operator<<(ostream& os, const State& state)
  */
 void dump_syntax_tree(ostream& os, Node *node) {
     for (depth_first_traversal i(node); i; i++) {
-	os << node_label[*i] << '\t';
+	os << i->label << '\t';
 	if ((*i)->child[0] == 0)
 	    os << **i << '\t' << (*i)->followpos << endl;
 	else {
 	    if ((*i)->child[1] == 0)
-		os << node_label[(*i)->child[0]] << **i;
+		os << (*i)->child[0]->label << **i;
 	    else
-		os << node_label[(*i)->child[0]] << **i
-		   << node_label[(*i)->child[1]];
+		os << (*i)->child[0]->label << **i
+		   << (*i)->child[1]->label;
 	    os << '\t' << (*i)->firstpos
 		       << (*i)->lastpos << endl;
 	}
