@@ -81,6 +81,7 @@ int read_implies_exec = 1;
 int read_implies_exec = 0;
 #endif
 int preprocess_only = 0;
+int skip_mode_force = 0;
 
 char *subdomainbase = NULL;
 char *match_string = NULL;
@@ -465,6 +466,7 @@ static int process_args(int argc, char *argv[])
 			kernel_load = 0;
 			skip_cache = 1;
 			preprocess_only = 1;
+			skip_mode_force = 1;
 			break;
 		default:
 			display_usage(progname);
@@ -737,18 +739,20 @@ void reset_parser(char *filename)
 
 int test_for_dir_mode(const char *basename, const char *linkdir)
 {
-	char *target = NULL;
 	int rc = 0;
 
-	if (asprintf(&target, "%s/%s/%s", basedir, linkdir, basename) < 0) {
-		perror("asprintf");
-		exit(1);
-	}
+	if (!skip_mode_force) {
+		char *target = NULL;
+		if (asprintf(&target, "%s/%s/%s", basedir, linkdir, basename) < 0) {
+			perror("asprintf");
+			exit(1);
+		}
 
-	if (access(target, R_OK) == 0) {
-		rc = 1;
+		if (access(target, R_OK) == 0)
+			rc = 1;
+
+		free(target);
 	}
-	free(target);
 
 	return rc;
 }

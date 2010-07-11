@@ -538,7 +538,7 @@ static int process_profile_name_xmatch(struct codomain *cod)
 		cod->xmatch = aare_create_dfa(rule, &cod->xmatch_size,
 					      dfaflags);
 		aare_delete_ruleset(rule);
- 		if (!cod->xmatch)
+		if (!cod->xmatch)
 			return FALSE;
 	}
 
