@@ -1256,22 +1256,17 @@ void dump_syntax_tree(ostream& os, Node *node) {
     os << endl;
 }
 
-/* Comparison operator for sets of <State *>. */
-template<class T>
-class deref_less_than {
-public:
-    deref_less_than() { }
-    bool operator()(T a, T b)
-    {
-	return *a < *b;
-    }
+/* Comparison operator for sets of <State *>.
+ * Do compare pointer comparisom on set of <Node *>, the pointer comparison
+ * allows us to determine which Sets of <Node *> we have seen already from
+ * new ones when constructing the DFA.
+ */
+struct deref_less_than {
+  bool operator()(State * const & lhs, State * const & rhs) const
+  { return *lhs < *rhs; }
 };
 
-/**
- * States in the DFA. The pointer comparison allows us to tell sets we
- * have seen already from new ones when constructing the DFA.
- */
-typedef set<State *, deref_less_than<State *> > States;
+typedef set<State *, deref_less_than > States;
 typedef list<State *> Partition;
 /* Transitions in the DFA. */
 typedef map<State *, Cases> Trans;
