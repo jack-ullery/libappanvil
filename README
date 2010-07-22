@@ -1,0 +1,152 @@
+------------
+Introduction
+------------
+AppArmor protects systems from insecure or untrusted processes by
+running them in restricted confinement, while still allowing processes
+to share files, exercise privilege and communicate with other processes.
+AppArmor is a Mandatory Access Control (MAC) mechanism which uses the
+Linux Security Module (LSM) framework. The confinement's restrictions
+are mandatory and are not bound to identity, group membership, or object
+ownership. The protections provided are in addition to the kernel's
+regular access control mechanisms (including DAC) and can be used to
+restrict the superuser.
+
+The AppArmor kernel module and accompanying user-space tools are
+available under the GPL license (the exception is the libapparmor
+library, available under the LGPL license, which allows change_hat(2)
+and change_profile(2) to be used by non-GPL binaries).
+
+For more information, you can read the techdoc.pdf (available after
+building the parser) and http://apparmor.wiki.kernel.org.
+
+
+-------------
+Source Layout
+-------------
+
+AppArmor consists of several different parts:
+
+changehat/	source for using changehat with Apache, PAM and Tomcat
+common/		TODO
+desktop/	empty
+kernel-patches/	patches for various kernel versions
+libraries/	libapparmor source and language bindings
+parser/		source for parser/loader and corresponding documentation
+profiles/	configuration files, reference profiles and abstractions
+tests/		regression and stress testsuites
+utils/		high-level utilities for working with AppArmor
+
+
+------------------------------------------
+Building and Installing AppArmor Userspace
+------------------------------------------
+
+To build and install AppArmor userspace on your system, build and install in
+the following order.
+
+
+libapparmor:
+$ cd ./libraries/libapparmor
+$ sh ./autogen.sh
+$ sh ./configure --prefix=/usr --with-perl
+$ make
+$ make check
+
+
+Utilities:
+$ cd utils
+$ make
+$ make install
+
+
+parser:
+$ cd parser
+$ make
+# make tests	# needs to be run as root
+$ make install
+
+
+Apache mod_apparmor:
+$ cd changehat/mod_apparmor
+$ LIBS="-lapparmor" make
+$ make install
+
+
+PAM AppArmor:
+$ cd changehat/pam_apparmor
+$ LIBS="-lapparmor -lpam" make
+$ make install
+
+
+Profiles:
+$ cd profiles
+$ make
+$ make install
+
+
+
+-------------------
+AppArmor Testsuites
+-------------------
+
+A number of testsuites are in the AppArmor sources. Most have documentation on
+usage and how to update and add tests. Below is a quick overview of their
+location and how to run them.
+
+
+Regression tests
+----------------
+For details on structure and adding tests, see
+tests/regression/subdomain/README.
+
+To run:
+$ cd tests/regression/subdomain (requires root)
+$ make
+$ sudo make tests
+$ sudo bash open.sh -r
+
+
+Parser tests
+------------
+For details on structure and adding tests, see parser/tst/README.
+
+To run:
+$ cd parser/tst
+$ make
+$ make tests
+
+
+Libapparmor
+-----------
+For detail son structure and adding tests, see libraries/libapparmor/README.
+$ cd libraries/libapparmor
+$ make check
+
+
+Stress Tests
+------------
+To run subdomain stress tests:
+$ make all
+
+Use these:
+$ ./change_hat
+$ ./child
+$ ./kill.sh
+$ ./open
+$ ./s.sh
+
+Or run all at once:
+$ ./stress.sh
+
+Please note that the above will stress the system so much it may end up
+invoking the OOM killer.
+
+To run parser stress tests (requires /usr/bin/ruby):
+$ ./stress.sh
+
+-----------------------------------------------
+Building and Installing AppArmor Kernel Patches
+-----------------------------------------------
+
+TODO
+
