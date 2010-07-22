@@ -27,7 +27,7 @@ Source Layout
 AppArmor consists of several different parts:
 
 changehat/	source for using changehat with Apache, PAM and Tomcat
-common/		TODO
+common/		common makefile rules
 desktop/	empty
 kernel-patches/	patches for various kernel versions
 libraries/	libapparmor source and language bindings
@@ -62,7 +62,8 @@ $ make install
 parser:
 $ cd parser
 $ make
-# make tests	# needs to be run as root
+$ make tests	# not strictly necessary as they are run during the
+		# build by default
 $ make install
 
 
@@ -103,7 +104,7 @@ To run:
 $ cd tests/regression/subdomain (requires root)
 $ make
 $ sudo make tests
-$ sudo bash open.sh -r
+$ sudo bash open.sh -r	 # runs and saves the last testcase from open.sh
 
 
 Parser tests
@@ -143,6 +144,8 @@ invoking the OOM killer.
 
 To run parser stress tests (requires /usr/bin/ruby):
 $ ./stress.sh
+
+(see stress.sh -h for options)
 
 -----------------------------------------------
 Building and Installing AppArmor Kernel Patches
