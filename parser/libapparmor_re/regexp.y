@@ -2198,7 +2198,7 @@ void TransitionTable::dump(ostream& os)
 	st.insert(make_pair(i->second, i->first));
     }
 
-    os << "(accept, default, base):" << endl;
+    os << "size=" << default_base.size() << " (accept, default, base):  {state} -> {default state}" << endl;
     for (size_t i = 0; i < default_base.size(); i++) {
         os << i << ": ";
 	os << "(" << accept[i] << ", "
@@ -2211,7 +2211,7 @@ void TransitionTable::dump(ostream& os)
 	os << endl;
     }
 
-    os << "(next, check):" << endl;
+    os << "size=" << next_check.size() << " (next, check): {check state} -> {next state} : offset from base" << endl;
     for (size_t i = 0; i < next_check.size(); i++) {
 	if (!next_check[i].second)
 	    continue;
