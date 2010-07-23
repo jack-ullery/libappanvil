@@ -2147,11 +2147,11 @@ repeat:
 		x = free_list[x].second;
 	}
 	if (!x) {
-		resize = cases.cases.rbegin()->first - cases.begin()->first + 1;
+		resize = 256 - cases.begin()->first;
 		x = free_list.size();
 		/* set prev to last free */
-	} else if (x + cases.cases.rbegin()->first + 1 - cases.begin()->first > next_check.size()) {
-		resize = cases.cases.rbegin()->first + 1;
+	} else if (x + 255 - cases.begin()->first >= next_check.size()) {
+		resize = (255 - cases.begin()->first - (next_check.size() - 1 - x));
 		for (size_t y = x; y; y = free_list[y].second)
 			prev = y;
 	}
