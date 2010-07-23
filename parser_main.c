@@ -184,6 +184,7 @@ static void display_dump(char *command)
 	       "no option specified	Dump variables\n"
 	       "variables		Dump variables\n"
 	       "expanded-variables	Dump expanded variables\n"
+	       "rule-exprs		Dump rule to expr tree conversions\n"
 	       "expr-stats		Dump stats on expr tree\n"
 	       "expr-tree		Dump expression tree\n"
 	       "expr-simple		Dump simplified expression tree\n"
@@ -349,6 +350,8 @@ static int process_args(int argc, char *argv[])
 				dump_vars = 1;
 			} else if (strcmp(optarg, "expanded-variables") == 0) {
 				dump_expanded_vars = 1;
+			} else if (strcmp(optarg, "rule-exprs") == 0) {
+				dfaflags |= DFA_DUMP_RULE_EXPR;
 			} else if (strcmp(optarg, "expr-tree") == 0) {
 				dfaflags |= DFA_DUMP_TREE;
 			} else if (strcmp(optarg, "expr-simple") == 0) {

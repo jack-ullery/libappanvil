@@ -154,6 +154,9 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 	sptr = aare;
 	dptr = pcre;
 
+	if (dfaflags & DFA_DUMP_RULE_EXPR)
+		fprintf(stderr, "aare: %s   ->   ", aare);
+
 	if (anchor)
 		/* anchor beginning of regular expression */
 		*dptr++ = '^';
@@ -406,6 +409,10 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 out:
 	if (ret == FALSE)
 		ptype = ePatternInvalid;
+
+	if (dfaflags & DFA_DUMP_RULE_EXPR)
+		fprintf(stderr, "%s\n", pcre);
+
 	return ptype;
 }
 
@@ -519,7 +526,7 @@ static int process_profile_name_xmatch(struct codomain *cod)
 		aare_ruleset_t *rule = aare_new_ruleset(0);
 		if (!rule)
 			return FALSE;
-		if (!aare_add_rule(rule, tbuf, 0, AA_MAY_EXEC, 0)) {
+		if (!aare_add_rule(rule, tbuf, 0, AA_MAY_EXEC, 0, dfaflags)) {
 			aare_delete_ruleset(rule);
 			return FALSE;
 		}
@@ -529,7 +536,7 @@ static int process_profile_name_xmatch(struct codomain *cod)
 				int len;
 				convert_aaregex_to_pcre(alt->name, 0, tbuf,
 							PATH_MAX + 3, &len);
-				if (!aare_add_rule(rule, tbuf, 0, AA_MAY_EXEC, 0)) {
+				if (!aare_add_rule(rule, tbuf, 0, AA_MAY_EXEC, 0, dfaflags)) {
 					aare_delete_ruleset(rule);
 					return FALSE;
 				}
@@ -581,11 +588,11 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 	if (entry->deny && (entry->mode & AA_LINK_BITS)) {
 		if (!aare_add_rule(dfarules, tbuf, entry->deny,
 				   entry->mode & ~AA_LINK_BITS,
-				   entry->audit & ~AA_LINK_BITS))
+				   entry->audit & ~AA_LINK_BITS, dfaflags))
 			return FALSE;
 	} else if (entry->mode & ~AA_CHANGE_PROFILE) {
 		if (!aare_add_rule(dfarules, tbuf, entry->deny, entry->mode,
-				   entry->audit))
+				   entry->audit, dfaflags))
 			return FALSE;
 	}
 
@@ -607,7 +614,7 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 			perms |= LINK_TO_LINK_SUBSET(perms);
 			vec[1] = "/[^/].*";
 		}
-		if (!aare_add_rule_vec(dfarules, entry->deny, perms, entry->audit & AA_LINK_BITS, 2, vec))
+		if (!aare_add_rule_vec(dfarules, entry->deny, perms, entry->audit & AA_LINK_BITS, 2, vec, dfaflags))
 			return FALSE;
 	}
 	if (entry->mode & AA_CHANGE_PROFILE) {
@@ -618,10 +625,10 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 			ptype = convert_aaregex_to_pcre(entry->namespace, 0, lbuf, PATH_MAX + 8, &pos);
 			vec[0] = lbuf;
 			vec[1] = tbuf;
-			if (!aare_add_rule_vec(dfarules, 0, AA_CHANGE_PROFILE, 0, 2, vec))
+			if (!aare_add_rule_vec(dfarules, 0, AA_CHANGE_PROFILE, 0, 2, vec, dfaflags))
 			    return FALSE;
 		} else {
-			if (!aare_add_rule(dfarules, tbuf, 0, AA_CHANGE_PROFILE, 0))
+		  if (!aare_add_rule(dfarules, tbuf, 0, AA_CHANGE_PROFILE, 0, dfaflags))
 				return FALSE;
 		}
 	}
@@ -631,10 +638,10 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 			char *vec[2];
 			vec[0] = entry->namespace;
 			vec[1] = entry->name;
-			if (!aare_add_rule_vec(dfarules, 0, mode, 0, 2, vec))
+			if (!aare_add_rule_vec(dfarules, 0, mode, 0, 2, vec, dfaflags))
 			    return FALSE;
 		} else {
-			if (!aare_add_rule(dfarules, entry->name, 0, mode, 0))
+		  if (!aare_add_rule(dfarules, entry->name, 0, mode, 0, dfaflags))
 				return FALSE;
 		}
 	}

@@ -35,6 +35,7 @@ typedef enum dfaflags {
   DFA_DUMP_EQUIV_STATS =	1 << 19,
   DFA_DUMP_MINIMIZE =		1 << 20,
   DFA_DUMP_UNREACHABLE =	1 << 22,
+  DFA_DUMP_RULE_EXPR =		1 << 23,
 } dfaflags_t;
 
 #ifdef __cplusplus
@@ -48,9 +49,9 @@ typedef struct aare_ruleset aare_ruleset_t;
 aare_ruleset_t *aare_new_ruleset(int reverse);
 void aare_delete_ruleset(aare_ruleset_t *rules);
 int aare_add_rule(aare_ruleset_t *rules, char *rule, int deny,
-		  uint32_t perms, uint32_t audit);
+		  uint32_t perms, uint32_t audit, dfaflags_t flags);
 int aare_add_rule_vec(aare_ruleset_t *rules, int deny, uint32_t perms,
-		      uint32_t audit, int count, char **rulev);
+		      uint32_t audit, int count, char **rulev, dfaflags_t flags);
 void *aare_create_dfa(aare_ruleset_t *rules, size_t *size, dfaflags_t flags);
 void aare_reset_matchflags(void);
 

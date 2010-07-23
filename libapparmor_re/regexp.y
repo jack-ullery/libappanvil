@@ -2568,9 +2568,9 @@ uint32_t accept_perms(State *state, uint32_t *audit_ctl, int *error)
 }
 
 extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, int deny,
-			     uint32_t perms, uint32_t audit)
+			     uint32_t perms, uint32_t audit,  dfaflags_t flags)
 {
-	return aare_add_rule_vec(rules, deny, perms, audit, 1, &rule);
+	return aare_add_rule_vec(rules, deny, perms, audit, 1, &rule, flags);
 }
 
 #define FLAGS_WIDTH 2
@@ -2601,7 +2601,8 @@ extern "C" void aare_reset_matchflags(void)
 
 extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 				 uint32_t perms, uint32_t audit,
-				 int count, char **rulev)
+				 int count, char **rulev,
+				 dfaflags_t flags)
 {
     Node *tree = NULL, *accept;
     int exact_match;
@@ -2716,6 +2717,18 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 	    else
 		    accept = flag;
 	}
+    }
+
+    if (flags & DFA_DUMP_RULE_EXPR) {
+	    cerr << "rule: ";
+	    cerr << rulev[0];
+	    for (int i = 1; i < count; i++) {
+		    cerr << "\\x00";
+		    cerr << rulev[i];
+	    }
+	    cerr << "  ->  ";
+	    tree->dump(cerr);
+	    cerr << "\n\n";
     }
 
     if (rules->root)
