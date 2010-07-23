@@ -2101,24 +2101,11 @@ bool TransitionTable::fits_in(vector <pair<size_t, size_t> > &free_list,
 		/* if it overflows the next_check array it fits in as we will
 		 * resize */
 		if (c >= next_check.size())
-			goto resize;
+			return true;
 		if (next_check[c].second)
 			return false;
 	}
-	return true;
 
-resize:
-	next_check.resize(base + cases.cases.rbegin()->first + 1);
-	size_t prev = pos;
-	size_t x = pos;
-	/* find last free list entry */
-	while (x) {
-		prev = x;
-		x = free_list[x].second;
-	}
-	x = free_list. size();
-	free_list.resize(base + cases.cases.rbegin()->first + 1);
-	init_free_list(free_list, prev, x);
 	return true;
 }
 
@@ -2130,6 +2117,7 @@ void TransitionTable::insert_state(vector <pair<size_t, size_t> > &free_list,
 {
 	State *default_state = dfa.nonmatching;
 	size_t base = 0;
+	int resize;
 
 	Trans::iterator i = dfa.trans.find(from);
 	if (i == dfa.trans.end()) {
@@ -2146,6 +2134,7 @@ void TransitionTable::insert_state(vector <pair<size_t, size_t> > &free_list,
 		goto do_insert;
 
 repeat:
+	resize = 0;
 	/* get the first free entry that won't underflow */
 	while (x && (x < c)) {
 		prev = x;
@@ -2158,15 +2147,24 @@ repeat:
 		x = free_list[x].second;
 	}
 	if (!x) {
-		/* expand next_check and free_list */
+		resize = cases.cases.rbegin()->first - cases.begin()->first + 1;
 		x = free_list.size();
-		size_t range = cases.cases.rbegin()->first - cases.begin()->first + 1;
-		next_check.resize(next_check.size() + range);
-		free_list.resize(free_list.size() + range);
-		init_free_list(free_list, prev, x);
+		/* set prev to last free */
+	} else if (x + cases.cases.rbegin()->first + 1 - cases.begin()->first > next_check.size()) {
+		resize = cases.cases.rbegin()->first + 1;
+		for (size_t y = x; y; y = free_list[y].second)
+			prev = y;
+	}
+	if (resize) {
+		/* expand next_check and free_list */
+	        size_t old_size = free_list.size();
+		next_check.resize(next_check.size() + resize);
+		free_list.resize(free_list.size() + resize);
+		init_free_list(free_list, prev, old_size);
 		if (!first_free)
-			first_free = x;
-		goto repeat;
+			first_free = old_size;;
+		if (x == old_size)
+			goto repeat;
 	}
 
 	base = x - c;
