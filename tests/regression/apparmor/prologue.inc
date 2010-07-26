@@ -1,8 +1,13 @@
 # vim:syntax=sh
 #
-# prologue.inc
-#
 # Test infrastructure support.
+#
+# Copyright 2010 Canonical, Ltd.
+#
+#	This program is free software; you can redistribute it and/or
+#	modify it under the terms of the GNU General Public License as
+#	published by the Free Software Foundation, version 2 of the
+#	License.
 #
 # This file should be included by each test case
 # It does a lot of hidden 'magic',  Downside is that
@@ -253,6 +258,7 @@ checktestfg()
 			then
 				echo "Error: ${testname} passed. Test '${_testdesc}' was expected to '${_pfmode}'"
 				testfailed
+				return
 			elif [ "$_pfmode" == "pass" -a -n "${_known}" ]
 			then
 				echo "Alert: ${testname} passed. Test '${_testdesc}' was marked as expected pass but known problem (xpass)"
@@ -262,6 +268,7 @@ checktestfg()
 			then
 				echo "Error: ${testname} failed. Test '${_testdesc}' was expected to '${_pfmode}'. Reason for failure '${ret}'"
 				testfailed
+				return
 			elif [ "$_pfmode" == "fail" -a -n "${_known}" ]
 			then
 				echo "Alert: ${testname} failed. Test '${_testdesc}' was marked as expected fail but known problem (xfail)."
@@ -274,16 +281,23 @@ checktestfg()
 				then
 					echo "Error: ${testname} failed. Test '${_testdesc}' was expected to terminate with signal ${expectedsig}${_known}. Instead it terminated with signal ${killedsig}"
 					testfailed
+					return
 				fi
 				;;
 			*) 	echo "Error: ${testname} failed. Test '${_testdesc}' was expected to '${_pfmode}'${_known}. Reason for failure 'killed by signal ${killedsig}'"
 				testfailed
+				return
 				;;	
 			esac
 			;;
 		*)	testerror
+			return
 			;;
 	esac
+
+	if [ -n "$VERBOSE" ]; then
+		echo "ok: ${_testdesc}"
+	fi
 }
 
 runchecktest()

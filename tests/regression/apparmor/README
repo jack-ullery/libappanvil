@@ -12,10 +12,13 @@ triggered, would cause the kernel to crash.)
 Test output
 ===========
 
-No output is displayed for a passing test.  The makefile will output
+By default, no output is displayed for a passing test.  The makefile will
+output:
 	running <testname> for each test.
 
-Output other than this indicates a problem.
+To have verbose output with each subtest reporting successes, set the
+environment variable VERBOSE=1:
+	sudo VERBOSE=1 make tests
 
 There are three typical failure scenarios:
 	- Test failed when it was expected to pass
