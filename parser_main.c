@@ -38,6 +38,8 @@
 
 #include <unistd.h>
 #include <sys/sysctl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "parser.h"
 #include "parser_version.h"

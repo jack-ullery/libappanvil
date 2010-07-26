@@ -816,7 +816,7 @@ int sd_serialize_top_profile(sd_serialize *p, struct codomain *profile)
 int cache_fd = -1;
 int sd_serialize_codomain(int option, struct codomain *cod)
 {
-	int fd;
+	int fd = -1;
 	int error = -ENOMEM, size, wsize;
 	sd_serialize *work_area;
 	char *filename = NULL;
@@ -984,7 +984,7 @@ static char *next_profile_buffer(char *buffer, int size)
 
 int sd_load_buffer(int option, char *buffer, int size)
 {
-	int fd;
+	int fd = -1;
 	int error = -ENOMEM, wsize, bsize;
 	char *filename = NULL;
 	char *b;

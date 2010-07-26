@@ -412,7 +412,7 @@ flagvals:	flagval
 
 flagval:	TOK_FLAG_ID
 	{
-		struct flagval fv = {0, 0, 0};
+		struct flagval fv = { 0, 0, 0, 0 };
 		if (strcmp($1, "debug") == 0) {
 			yyerror(_("Profile flag 'debug' is no longer valid."));
 		} else if (strcmp($1, "complain") == 0) {
