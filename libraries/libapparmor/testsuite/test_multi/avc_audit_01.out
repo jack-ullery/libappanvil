@@ -1,0 +1,15 @@
+START
+File: test_multi/avc_audit_01.in
+Event type: AA_RECORD_DENIED
+Audit ID: 1279948288.415:39
+Operation: open
+Mask: r
+Denied Mask: r
+fsuid: 0
+ouid: 1000
+Profile: /usr/sbin/cupsd
+Name: /home/user/.ssh/
+Parent: 12332
+PID: 12333
+Epoch: 1279948288
+Audit subid: 39

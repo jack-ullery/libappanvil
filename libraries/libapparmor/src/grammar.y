@@ -1,6 +1,7 @@
 /*
  *   Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
  *   NOVELL (All rights reserved)
+ *   Copyright (c) 2010, Canonical, Ltd.
  *
  *   This program is free software; you can redistribute it and/or
  *   modify it under the terms of version 2 of the GNU General Public
@@ -96,6 +97,13 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_TYPE_HINT
 %token TOK_TYPE_STATUS
 %token TOK_TYPE_ERROR
+%token TOK_TYPE_AA_REJECT
+%token TOK_TYPE_AA_AUDIT
+%token TOK_TYPE_AA_COMPLAIN
+%token TOK_TYPE_AA_HINT
+%token TOK_TYPE_AA_STATUS
+%token TOK_TYPE_AA_ERROR
+%token TOK_TYPE_LSM_AVC
 %token TOK_OLD_TYPE_APPARMOR
 %token TOK_OLD_APPARMOR_REJECT
 %token TOK_OLD_APPARMOR_PERMIT
@@ -123,6 +131,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_OLD_FORK
 %token TOK_OLD_CHILD
 
+%token TOK_KEY_APPARMOR
 %token TOK_KEY_TYPE
 %token TOK_KEY_MSG
 %token TOK_KEY_OPERATION
@@ -146,6 +155,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_ERROR
 %token TOK_KEY_FSUID
 %token TOK_KEY_OUID
+%token TOK_KEY_COMM
 
 %token TOK_SYSLOG_KERNEL
 
@@ -168,13 +178,14 @@ old_syntax: TOK_OLD_TYPE_APPARMOR audit_msg old_msg
 	;
 
 new_syntax:
-	  TOK_TYPE_REJECT audit_msg key_list { ret_record->event = AA_RECORD_DENIED; }
-	| TOK_TYPE_AUDIT audit_msg key_list { ret_record->event = AA_RECORD_AUDIT; }
-	| TOK_TYPE_COMPLAIN audit_msg key_list { ret_record->event = AA_RECORD_ALLOWED; }
-	| TOK_TYPE_HINT audit_msg key_list { ret_record->event = AA_RECORD_HINT; }
-	| TOK_TYPE_STATUS audit_msg key_list { ret_record->event = AA_RECORD_STATUS; }
-	| TOK_TYPE_ERROR audit_msg key_list { ret_record->event = AA_RECORD_ERROR; }
+	  TOK_TYPE_AA_REJECT audit_msg key_list { ret_record->event = AA_RECORD_DENIED; }
+	| TOK_TYPE_AA_AUDIT audit_msg key_list { ret_record->event = AA_RECORD_AUDIT; }
+	| TOK_TYPE_AA_COMPLAIN audit_msg key_list { ret_record->event = AA_RECORD_ALLOWED; }
+	| TOK_TYPE_AA_HINT audit_msg key_list { ret_record->event = AA_RECORD_HINT; }
+	| TOK_TYPE_AA_STATUS audit_msg key_list { ret_record->event = AA_RECORD_STATUS; }
+	| TOK_TYPE_AA_ERROR audit_msg key_list { ret_record->event = AA_RECORD_ERROR; }
 	| TOK_TYPE_UNKNOWN audit_msg key_list { ret_record->event = lookup_aa_event($1); }
+	| TOK_TYPE_LSM_AVC audit_msg key_list
 	;
 
 other_audit: TOK_TYPE_OTHER audit_msg TOK_MSG_REST
@@ -420,6 +431,17 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->fsuid = $3;}
 	| TOK_KEY_OUID TOK_EQUALS TOK_DIGITS
 	{ ret_record->ouid = $3;}
+	| TOK_KEY_COMM TOK_EQUALS TOK_QUOTED_STRING
+	| TOK_KEY_APPARMOR TOK_EQUALS apparmor_event
+	;
+
+apparmor_event:
+	  TOK_TYPE_REJECT	{ ret_record->event = AA_RECORD_DENIED; }
+	| TOK_TYPE_AUDIT	{ ret_record->event = AA_RECORD_AUDIT; }
+	| TOK_TYPE_COMPLAIN	{ ret_record->event = AA_RECORD_ALLOWED; }
+	| TOK_TYPE_HINT		{ ret_record->event = AA_RECORD_HINT; }
+	| TOK_TYPE_STATUS	{ ret_record->event = AA_RECORD_STATUS; }
+	| TOK_TYPE_ERROR	{ ret_record->event = AA_RECORD_ERROR; }
 	;
 
 key_pid: TOK_KEY_PID TOK_EQUALS TOK_DIGITS { ret_record->pid = $3; }

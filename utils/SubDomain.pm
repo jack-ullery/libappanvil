@@ -2,6 +2,7 @@
 #
 # ----------------------------------------------------------------------
 #    Copyright (c) 2006 Novell, Inc. All Rights Reserved.
+#    Copyright (c) 2010 Canonical, Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -2413,10 +2414,13 @@ our $logmark;
 our $seenmark;
 my $RE_LOG_v2_0_syslog = qr/SubDomain/;
 my $RE_LOG_v2_1_syslog = qr/kernel:\s+(\[[\d\.\s]+\]\s+)?(audit\([\d\.\:]+\):\s+)?type=150[1-6]/;
+my $RE_LOG_v2_6_syslog = qr/kernel:\s+(\[[\d\.\s]+\]\s+)?type=\d+\s+audit\([\d\.\:]+\):\s+apparmor=/;
 my $RE_LOG_v2_0_audit  =
     qr/type=(APPARMOR|UNKNOWN\[1500\]) msg=audit\([\d\.\:]+\):/;
 my $RE_LOG_v2_1_audit  =
     qr/type=(UNKNOWN\[150[1-6]\]|APPARMOR_(AUDIT|ALLOWED|DENIED|HINT|STATUS|ERROR))/;
+my $RE_LOG_v2_6_audit =
+    qr/type=AVC\s+audit\([\d\.\:]+\):\s+apparmor=/;
 
 sub prefetch_next_log_entry {
     # if we already have an existing cache entry, something's broken
@@ -2434,6 +2438,8 @@ sub prefetch_next_log_entry {
         $RE_LOG_v2_0_audit  |
         $RE_LOG_v2_1_audit  |
         $RE_LOG_v2_1_syslog |
+        $RE_LOG_v2_6_syslog |
+        $RE_LOG_v2_6_audit  |
         $logmark
     }x);
 }

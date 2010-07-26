@@ -1,6 +1,7 @@
 /*
  *   Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
  *   NOVELL (All rights reserved)
+ *   Copyright (c) 2010, Canonical, Ltd.
  *
  *   This program is free software; you can redistribute it and/or
  *   modify it under the terms of version 2 of the GNU General Public
@@ -84,12 +85,19 @@ mode_chars      ([RrWwaLlMmkXx])|([Pp][Xx])|([Uu][Xx])|([Ii][Xx])|([Pp][Ii][Xx])
 modes		({mode_chars}+)|({mode_chars}+::{mode_chars}*)|(::{mode_chars}*)
 /* New message types */
 
-reject_type		"APPARMOR_DENIED"
-audit_type		"APPARMOR_AUDIT"
-complain_type		"APPARMOR_ALLOWED"
-hint_type		"APPARMOR_HINT"
-status_type		"APPARMOR_STATUS"
-error_type		"APPARMOR_ERROR"
+aa_reject_type		"APPARMOR_DENIED"
+aa_audit_type		"APPARMOR_AUDIT"
+aa_complain_type	"APPARMOR_ALLOWED"
+aa_hint_type		"APPARMOR_HINT"
+aa_status_type		"APPARMOR_STATUS"
+aa_error_type		"APPARMOR_ERROR"
+reject_type		"\"DENIED\""
+audit_type		"\"AUDIT\""
+complain_type		"\"ALLOWED\""
+hint_type		"\"HINT\""
+status_type		"\"STATUS\""
+error_type		"\"ERROR\""
+lsm_avc_type		"AVC"
 unknown_type		UNKNOWN\[{digits}+\]
 other_audit_type	[[:alnum:]\[\]_-]+
 
@@ -125,6 +133,7 @@ null_complain		"null-complain-profile"
 
 /* Key tokens */
 
+key_apparmor		"apparmor"
 key_type		"type"
 key_msg			"msg"
 key_operation		"operation"
@@ -147,6 +156,7 @@ key_protocol		"protocol"
 key_error		"error"
 key_fsuid		"fsuid"
 key_ouid		"ouid"
+key_comm		"comm"
 audit			"audit"
 
 /* syslog tokens */
@@ -240,6 +250,13 @@ yy_flex_debug = 0;
 	{hint_type}	{ BEGIN(INITIAL); return(TOK_TYPE_HINT); }
 	{status_type}	{ BEGIN(INITIAL); return(TOK_TYPE_STATUS); }
 	{error_type}	{ BEGIN(INITIAL); return(TOK_TYPE_ERROR); }
+	{aa_reject_type}	{ BEGIN(INITIAL); return(TOK_TYPE_AA_REJECT); }
+	{aa_audit_type}	{ BEGIN(INITIAL); return(TOK_TYPE_AA_AUDIT); }
+	{aa_complain_type}	{ BEGIN(INITIAL); return(TOK_TYPE_AA_COMPLAIN); }
+	{aa_hint_type}	{ BEGIN(INITIAL); return(TOK_TYPE_AA_HINT); }
+	{aa_status_type}	{ BEGIN(INITIAL); return(TOK_TYPE_AA_STATUS); }
+	{aa_error_type}	{ BEGIN(INITIAL); return(TOK_TYPE_AA_ERROR); }
+	{lsm_avc_type}	{ BEGIN(INITIAL); return(TOK_TYPE_LSM_AVC); }
 	{unknown_type}	{ char *yptr = yytext;
 			  while (*yptr && *yptr != '[')
 			  	yptr++;
@@ -300,6 +317,7 @@ yy_flex_debug = 0;
 	{key_attribute}	{ BEGIN(sub_id); return(TOK_KEY_ATTRIBUTE); }
 }
 
+{key_apparmor}		{ BEGIN(audit_types); return(TOK_KEY_APPARMOR); }
 {key_type}		{ BEGIN(audit_types); return(TOK_KEY_TYPE); }
 {key_msg}		{ return(TOK_KEY_MSG); }
 {key_operation}		{ return(TOK_KEY_OPERATION); }
@@ -321,6 +339,7 @@ yy_flex_debug = 0;
 {key_error}		{ return(TOK_KEY_ERROR); }
 {key_fsuid}		{ return(TOK_KEY_FSUID); }
 {key_ouid}		{ return(TOK_KEY_OUID); }
+{key_comm}		{ return(TOK_KEY_COMM); }
 
 {syslog_kernel}		{ BEGIN(dmesg_timestamp); return(TOK_SYSLOG_KERNEL); }
 {syslog_month}		{ yylval->t_str = strdup(yytext); return(TOK_DATE_MONTH); }
