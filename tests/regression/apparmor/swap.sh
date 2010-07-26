@@ -32,7 +32,7 @@ bin=$pwd
 swap_file=$tmpdir/swapfile
 
 dd if=/dev/zero of=${swap_file} bs=1024 count=512 2> /dev/null
-/sbin/mkswap ${swap_file} > /dev/null
+/sbin/mkswap -f ${swap_file} > /dev/null
 
 # TEST 1.  Make sure can enable and disable swap unconfined
 

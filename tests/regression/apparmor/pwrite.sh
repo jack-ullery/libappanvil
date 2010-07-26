@@ -27,7 +27,7 @@ badreadperm=w
 
 genprofile $file:$okperm
 
-runtestbg "PWRITE with w" pass $file
+runtestbg "PREAD/PWRITE with rw" pass $file
 
 sleep 2
 

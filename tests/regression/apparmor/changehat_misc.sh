@@ -64,7 +64,7 @@ echo
 echo "*** A 'Killed' message from bash is expected for the following test"
 runchecktest "CHANGEHAT (subprofile->subprofile w/ bad magic)" signal9 $subtest $subtest2 badmagic $file
 
-# 1. ATTEMPT TO CHANGEGAT TO AN INVALUD PROFILE, SHOULD PUT US INTO A NULL
+# 1. ATTEMPT TO CHANGEHAT TO AN INVALID PROFILE, SHOULD PUT US INTO A NULL
 #    PROFILE
 # 2. ATTEMPT TO CHANGEHAT OUT WITH BAD TOKEN
 settest changehat_fail

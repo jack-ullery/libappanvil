@@ -5,7 +5,7 @@
 #
 # Gawd, I hate writing perl. It shows, too.
 #
-my $__VERSION__='$Id$';
+my $__VERSION__=$0;
 
 use strict;
 use Getopt::Long;

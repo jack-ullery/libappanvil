@@ -2,6 +2,7 @@
 
 /*
  *	Copyright (C) 2002-2005 Novell/SUSE
+ *	Copyright (C) 2010 Canonical, Ltd.
  *
  *	This program is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License as
@@ -134,6 +135,7 @@ int main (int argc, char * argv[]) {
 	}
 
 	/* Check for info re: reading the file */
+	memset(inbound_buffer, 0, sizeof(inbound_buffer));
 	if (recv(in_sock, inbound_buffer, 16,0) == -1 ) {
 		fprintf(stderr, "FAIL - recv %s\n",
 			strerror(errno));

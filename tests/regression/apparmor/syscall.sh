@@ -1,7 +1,7 @@
 #! /bin/bash
-# $Id$
-
+#
 #	Copyright (C) 2002-2005 Novell/SUSE
+#	Copyright (C) 2010 Canonical, Ltd.
 #
 #	This program is free software; you can redistribute it and/or
 #	modify it under the terms of the GNU General Public License as
@@ -114,9 +114,9 @@ rm -f $mknod_file
 runchecktest "MKNOD sock (permissions)" fail s $mknod_file
 
 ##
-## D. SETHOSTNAME
+## C. SYSCTL
 ##
-sh syscall_sysctl.sh
+bash syscall_sysctl.sh
 
 ##
 ## D. SETHOSTNAME 
