@@ -158,27 +158,39 @@ changehat_pthread: changehat_pthread.c changehat.h
 tests: all
 	@if [ `whoami` = "root" ] ;\
 	then \
+		rc=0; \
 		for i in $(TESTS) ;\
 		do \
 			echo ;\
 			echo "running $$i" ;\
 			bash $$i.sh ;\
+			if [ $$? -ne 0 ] ; then \
+				rc=1;\
+			fi;\
 		done ;\
+		exit $$rc;\
 	else \
 		echo "must be root to run tests" ;\
+		exit 1;\
 	fi
 
 alltests: all
 	@if [ `whoami` = "root" ] ;\
 	then \
+		rc=0; \
 		for i in $(TESTS) $(RISKY_TESTS) ;\
 		do \
 			echo ;\
 			echo "running $$i" ;\
 			bash $$i.sh ;\
+			if [ $$? -ne 0 ] ; then \
+				rc=1;\
+			fi;\
 		done ;\
+		exit $$rc;\
 	else \
 		echo "must be root to run tests" ;\
+		exit 1;\
 	fi
 
 clean:
