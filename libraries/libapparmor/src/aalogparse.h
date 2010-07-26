@@ -129,6 +129,7 @@ typedef struct
 	unsigned long fsuid;		/* fsuid of task - if logged */
 	unsigned long ouid;		/* ouid of task - if logged */
 	char *profile;			/* The name of the profile */
+	char *comm;			/* Command that triggered msg */
 	char *name;
 	char *name2;
 	char *namespace;

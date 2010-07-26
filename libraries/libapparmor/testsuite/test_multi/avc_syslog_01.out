@@ -9,6 +9,7 @@ fsuid: 0
 ouid: 0
 Profile: /usr/sbin/cupsd
 Name: /boot/
+Command: ls
 Parent: 19650
 PID: 19651
 Epoch: 1279967133

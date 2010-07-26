@@ -129,6 +129,10 @@ int print_results(aa_log_record *record)
 		{
 			printf("Name: %s\n", record->name);
 		}
+		if (record->comm != NULL)
+		{
+			printf("Command: %s\n", record->comm);
+		}
 		if (record->name2 != NULL)
 		{
 			printf("Name2: %s\n", record->name2);

@@ -56,6 +56,8 @@ void free_record(aa_log_record *record)
 			free(record->denied_mask);
 		if (record->profile != NULL)
 			free(record->profile);
+		if (record->comm != NULL)
+			free(record->comm);
 		if (record->name != NULL)
 			free(record->name);
 		if (record->name2 != NULL)
