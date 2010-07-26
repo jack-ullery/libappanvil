@@ -48,7 +48,7 @@ BUILDDIR=$(shell if [ -d "${TESTBUILDDIR}" ] ; then \
 		    echo "/tmp/${NAME}"  ; \
 		  fi ;)
 endif
-RPMHOSTVENDOR=$(shell rpm --eval "%{_host_vendor}")
+RPMHOSTVENDOR=$(shell which rpm && rpm --eval "%{_host_vendor}")
 ifndef DISTRO
 DISTRO=$(shell if [ -f /etc/slackware-version ] ; then \
 		  echo slackware ; \
@@ -92,29 +92,15 @@ endif
 ifndef SPECFILE
 SPECFILE        = $(NAME).spec
 endif
-RELEASE = $(shell rpm -q --specfile --define "_sourcedir ." ${RPMARG} --qf "%{RELEASE}" ${SPECFILE})
+RELEASE		= $(shell lsb_release -is) $(shell lsb_release -rs)
 RELEASE_DIR	= $(NAME)-$(VERSION)
 TARBALL		= $(NAME)-$(VERSION)-${REPO_VERSION}.tar.gz
-TAR		= /bin/tar czvp -h --exclude .svn --exclude CVS --exclude .cvsignore --exclude ${TARBALL} --exclude ${RELEASE_DIR}/${RELEASE_DIR}  $(shell test -f ${NAME}.exclude && echo "-X ${NAME}.exclude")
+TAR		= /bin/tar czvp -h --exclude .svn --exclude .bzr --exclude .bzrignore --exclude ${TARBALL} --exclude ${RELEASE_DIR}/${RELEASE_DIR}  $(shell test -f ${NAME}.exclude && echo "-X ${NAME}.exclude")
 LDCONFIG	= /sbin/ldconfig
-
-CVSPKG_VERSION=$(shell rpm -q --specfile --define "_sourcedir ." ${RPMARG} ${SPECFILE} | head -1 | tr "." "_")
 
 RPMSUBDIRS=SOURCES SPECS BUILD BUILDROOT SRPMS RPMS/i386 RPMS/i586 \
         RPMS/i686 RPMS/athlon RPMS/noarch RPMS/x86_64
 BUILDRPMSUBDIRS=$(foreach subdir, $(RPMSUBDIRS), $(BUILDDIR:/=)/$(subdir))
-
-.PHONY: cvs_tag
-cvs_tag:
-	cvs tag IMMUNIX-${CVSPKG_VERSION}
-
-.PHONY: checkin
-checkin:
-	if cvs -q up -d | grep -q "^\?" ; then echo "Hey! You have" \
-		"files in the directory you have not added into cvs."; exit 1; \
-	fi
-	cvs ci
-	make cvs_tag
 
 ifdef EXTERNAL_PACKAGE
 .PHONY: rpm

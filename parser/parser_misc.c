@@ -35,8 +35,10 @@
 
 /* #define DEBUG */
 #ifdef DEBUG
+#undef PDEBUG
 #define PDEBUG(fmt, args...) printf("Lexer: " fmt, ## args)
 #else
+#undef PDEBUG
 #define PDEBUG(fmt, args...)	/* Do nothing */
 #endif
 #define NPDEBUG(fmt, args...)	/* Do nothing */
@@ -102,7 +104,7 @@ static struct keyword_table rlimit_table[] = {
 };
 
 /* for alpha matches, check for keywords */
-static int get_table_token(const char *name, struct keyword_table *table,
+static int get_table_token(const char *name __unused, struct keyword_table *table,
 			   const char *keyword)
 {
 	int i;
@@ -141,42 +143,6 @@ int get_rlimit(const char *name)
 {
 	return get_table_token("rlimit", rlimit_table, name);
 }
-
-static struct keyword_table address_family[] = {
-/*	{"unix",	AF_UNIX},
-	{"local",	AF_LOCAL},	*/
-	{"inet",	AF_INET},
-/*	{"ax25",	AF_AX25},
-	{"ipx",		AF_IPX},
-	{"appletalk",	AF_APPLETALK},
-	{"netrom",	AF_NETROM},
-	{"bridge",	AF_BRIDGE},
-	{"atmpvc",	AF_ATMPVC},
-	{"x25",		AF_X25}, */
-	{"inet6",	AF_INET6},
-/*	{"rose",	AF_ROSE},
-	{"decnet",	AF_DECnet},
-	{"netbeui",	AF_NETBEUI},
-	{"security",	AF_SECURITY},
-	{"key",		AF_KEY},
-	{"netlink",	AF_NETLINK},
-	{"route",	AF_ROUTE},
-	{"packet",	AF_PACKET},
-	{"ash",		AF_ASH},
-	{"econet",	AF_ECONET},
-	{"atmsvc",	AF_ATMSVC},
-	{"sna",		AF_SNA},
-	{"irda",	AF_IRDA},
-	{"pppox",	AF_PPPOX},
-	{"wanpipe",	AF_WANPIPE},
-	{"llc",		AF_LLC},
-	{"tipc",	AF_TIPC},
-	{"bluetooth",	AF_BLUETOOTH},
-	{"iucv",	AF_IUCV},
-	{"rxrpc",	AF_RXRPC}, */
-	/* terminate */
-	{NULL, 0}
-};
 
 struct network_tuple {
 	char *family_name;
@@ -462,7 +428,7 @@ static void warn_uppercase(void)
 	}
 }
 
-static int parse_sub_mode(const char *str_mode, const char *mode_desc)
+static int parse_sub_mode(const char *str_mode, const char *mode_desc __unused)
 {
 
 #define IS_DIFF_QUAL(mode, q) (((mode) & AA_MAY_EXEC) && (((mode) & AA_EXEC_TYPE) != ((q) & AA_EXEC_TYPE)))

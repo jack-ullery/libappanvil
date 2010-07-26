@@ -425,10 +425,13 @@ static int __expand_variable(struct symtab *symbol)
 
 			for (ref_item = ref->expanded; ref_item; ref_item = ref_item->next) {
 				char *expanded_string;
-				asprintf(&expanded_string, "%s%s%s",
+				if (!asprintf(&expanded_string, "%s%s%s",
 					 split->prefix ?  split->prefix : "",
 					 ref_item->val,
-					 split->suffix ?  split->suffix : "");
+					 split->suffix ?  split->suffix : "")) {
+					PERROR("Out of memory\n");
+					exit(1);
+				}
 				add_to_set(&work_list, expanded_string);
 				free(expanded_string);
 			}

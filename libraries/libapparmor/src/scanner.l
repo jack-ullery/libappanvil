@@ -31,6 +31,8 @@
 
 #include <assert.h>
 
+#define YY_NO_INPUT
+
 unsigned int string_buf_alloc = 0;
 unsigned int string_buf_len = 0;
 char *string_buf = NULL;

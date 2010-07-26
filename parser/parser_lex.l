@@ -51,6 +51,8 @@
 
 #define DUMP_PREPROCESS do { if (preprocess_only) ECHO; } while (0)
 
+#define YY_NO_INPUT
+
 int current_lineno     = 1;
 char *current_filename = NULL;
 
