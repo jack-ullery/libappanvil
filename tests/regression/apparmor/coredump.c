@@ -1,7 +1,9 @@
+#include <stdio.h>
 int *ptr;
 
 /*
  *	Copyright (C) 2002-2005 Novell/SUSE
+ *	Copyright (C) 2010 Canonical, Ltd
  *
  *	This program is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License as
@@ -9,7 +11,7 @@ int *ptr;
  *	License.
  */
 
-main()
+int main(int argc, char *argv[])
 {
 	printf("This will cause a sigsegv\n");
 

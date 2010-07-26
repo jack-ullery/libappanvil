@@ -22,6 +22,7 @@ SRC=access.c \
     chmod.c \
     chown.c \
     clone.c \
+    coredump.c \
     deleted.c \
     environ.c \
     env_check.c \
@@ -113,6 +114,7 @@ TESTS=access \
       changehat_misc \
       chdir \
       clone \
+      coredump \
       deleted \
       environ \
       exec \

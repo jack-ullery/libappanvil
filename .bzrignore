@@ -237,3 +237,4 @@ tests/regression/apparmor/unix_fd_client
 tests/regression/apparmor/unix_fd_server
 tests/regression/apparmor/unlink
 tests/regression/apparmor/xattrs
+tests/regression/apparmor/coredump

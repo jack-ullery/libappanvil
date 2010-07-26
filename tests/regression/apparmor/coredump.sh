@@ -1,7 +1,6 @@
 #! /bin/bash
-# $Id$
-
 #	Copyright (C) 2002-2005 Novell/SUSE
+#	Copyright (C) 2010 Canonical, Ltd
 #
 #	This program is free software; you can redistribute it and/or
 #	modify it under the terms of the GNU General Public License as
@@ -11,26 +10,52 @@
 #=NAME coredump
 #=DESCRIPTION coredump test
 
+cleancorefile()
+{
+	rm -f core core.*
+}
+
 checkcorefile()
 {
-_corefilelist=`echo core.*`
-if [ "$_corefilelist" = "core.*" ]
-then
-	_corefile=no
-else
-	_corefile=yes
-fi
+	# global _testdesc _pfmode _known outfile
+	if [ ${1:0:1} == "x" ] ; then
+		requirement=${1#x}
+		_known=" (known problem)"
+        else
+		requirement=$1
+		_known=""
+        fi
 
-if [ "$1" = "yes" -a "$_corefile" = "no" ]
-then
-	echo "Error: corefile expected but not present - $2"
-elif [ "$1" = "no" -a "$_corefile"  = "yes" ]
-then
-	echo "Error: corefile present when not expected -- $2"
-fi
+	_corefilelist=`echo core.*`
+	if [ ! -f core ] && [ "$_corefilelist" = "core.*" ]
+	then
+		_corefile=no
+	else
+		_corefile=yes
+	fi
 
-unset _corefile _corefilelist
-rm -f core.*
+	if [ "$requirement" = "yes" -a "$_corefile" = "no" ] ; then
+		if [ -n $_known ] ; then
+			echo -n "XFAIL: "
+		fi
+		echo "Error: corefile expected but not present - $2"
+		if [ -z $_known ] ; then
+			cat $profile
+			testfailed
+		fi
+	elif [ "$requirement" = "no" -a "$_corefile"  = "yes" ] ; then
+		if [ -n "$_known" ] ; then
+			echo -n "XFAIL: "
+		fi
+		echo "Error: corefile present when not expected -- $2"
+		if [ -z "$_known" ] ; then
+			cat $profile
+			testfailed
+		fi
+	fi
+
+	unset _corefile _corefilelist
+	cleancorefile
 }
 
 pwd=`dirname $0`
@@ -45,15 +70,18 @@ nocoreperm=ix
 
 # enable coredumps
 ulimit -c 1000000
+cleancorefile
+checkcorefile no "COREDUMP (starting with clean slate)"
 
 # PASS TEST, no confinement
+cleancorefile
 echo "*** A 'Segmentation Fault' message from bash is expected for the following test"
 runchecktest "COREDUMP (no confinement)" signal11
 checkcorefile yes "COREDUMP (no confinement)"
 
 # PASS TEST, with r confinement
-genprofile $test:$coreperm
-cat $profile
+cleancorefile
+genprofile image=$test:$coreperm
 
 echo
 echo "*** A 'Segmentation Fault' message from bash is expected for the following test"
@@ -61,10 +89,10 @@ runchecktest "COREDUMP ($coreperm confinement)" signal11
 checkcorefile yes "COREDUMP ($coreperm confinement)"
 
 # FAIL TEST, with x confinement
-genprofile $test:$nocoreperm
-cat $profile
+cleancorefile
+genprofile image=$test:$nocoreperm
 
 echo
 echo "*** A 'Segmentation Fault' message from bash is expected for the following test"
 runchecktest "COREDUMP ($nocoreperm confinement)" signal11
-checkcorefile no "COREDUMP ($nocoreperm confinement)"
+checkcorefile xno "COREDUMP ($nocoreperm confinement)"

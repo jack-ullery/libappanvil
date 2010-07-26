@@ -415,22 +415,12 @@ fi
 		# it is most often used after --, in fact it is basically
 		# mandatory after --
 		case "$1" in
-			profile=*) imagename=`echo $1 | sed 's/^profile=[rix]*//'`
-				 perm=`echo $1 | sed -n 's/^profile=\([rix]*\).*$/\1/p'`
-				 if [ -n "$perm" ]
-				 then
-					imageperm=$perm
-				 fi
-				 num_emitted=0
-				 shift
-				 ;;
-
-			image=*) imagename=`echo $1 | sed 's/^image=[rix]*//'`
+			image=*) imagename=`echo $1 | sed 's/^image=\([^:]*\).*$/\1/'`
 				 if [ ! -x "$imagename" ]
 				 then
 					fatalerror "invalid imagename specified in input '$1'"
 				 fi
-				 perm=`echo $1 | sed -n 's/^image=\([rix]*\).*$/\1/p'`
+				 perm=`echo $1 | sed -n 's/^image=[^:]*:\(.*\)$/\1/p'`
 				 if [ -n "$perm" ]
 				 then
 					imageperm=$perm
