@@ -153,7 +153,8 @@ char *ipproto_to_string(unsigned int proto)
 	if (current->protocol_name) {
 		ret = strdup(current->protocol_name);
 	} else {
-		asprintf(&ret, "unknown(%u)", proto);
+		if (!asprintf(&ret, "unknown(%u)", proto))
+			ret = NULL;
 	}
 
 	return ret;

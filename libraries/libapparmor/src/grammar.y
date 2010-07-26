@@ -377,7 +377,8 @@ audit_msg: TOK_KEY_MSG TOK_EQUALS audit_id
 
 audit_id: TOK_AUDIT TOK_OPEN_PAREN TOK_AUDIT_DIGITS TOK_PERIOD TOK_AUDIT_DIGITS TOK_COLON TOK_AUDIT_DIGITS TOK_CLOSE_PAREN TOK_COLON
 	{
-		asprintf(&ret_record->audit_id, "%s.%s:%s", $3, $5, $7);
+		if (!asprintf(&ret_record->audit_id, "%s.%s:%s", $3, $5, $7))
+			yyerror(scanner, YY_("Out of memory"));
 		ret_record->epoch = atol($3);
 		ret_record->audit_sub_id = atoi($7);
 		free($3);

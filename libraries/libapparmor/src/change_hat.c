@@ -194,7 +194,7 @@ int aa_change_hatv(const char *subprofiles[], unsigned long token)
 	/* setup command string which is of the form
 	 * changehat <token>^hat1\0hat2\0hat3\0..\0
 	 */
-	sprintf(buf, "%s %016x^", cmd, token);
+	sprintf(buf, "%s %016lx^", cmd, token);
 	pos = buf + strlen(buf);
 	if (subprofiles) {
 		for (hats = subprofiles; *hats; hats++) {
