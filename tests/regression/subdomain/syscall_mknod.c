@@ -19,7 +19,7 @@
 
 int main(int argc, char *argv[])
 {
-int fd, mode;
+	int mode;
 
 	if (argc != 3){
 		fprintf(stderr, "usage: %s b|c|f|s|r file\n",
@@ -48,8 +48,6 @@ int fd, mode;
 			strerror(errno));
 		return 1;
 	}
-
-	close(fd);
 
 	printf("PASS\n");
 
