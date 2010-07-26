@@ -1,10 +1,10 @@
 Running tests
 =============
 
-Type "make tests" at the shell prompt, this will make the subprograms
-and run the tests.
+Type "sudo make tests" at the shell prompt, this will make the
+subprograms and run the tests.
 
-You must be root to execute make tests (a requirement of subdomain).
+You must be root to execute "make tests" (a requirement of AppArmor).
 
 (There is also a 'make alltests', which adds a test for bug that, when
 triggered, would cause the kernel to crash.)
@@ -29,7 +29,7 @@ Changing environment variables
 
 Common user changeable environment variables are stored in the file
 'uservars.inc'.  Currently the path to the tmp directory, the path
-to the subdomain_parser executable, and any additional arguments to give
+to the apparmor_parser executable, and any additional arguments to give
 to the parser are specified in this configuration file.
 
 (Note: the tmp directory specified in uservars.inc will have an added
@@ -66,7 +66,7 @@ test harness will abort processing further tests and the contents of the
 directory will contain the files for the failed subtest.
 
 It may be necessary to create certain temp files in this directory in order to 
-have the test function correctly, see the subdomain profile 'profile' in the 
+have the test function correctly, see the AppArmor profile 'profile' in the 
 directory in order to determine which files may need to be created to support
 the executable.
 
@@ -155,7 +155,7 @@ requiring signal passing)
 	<requirement placed on the shell script author by prologue.inc>
 	bin=$pwd
 	
-	<prologie.inc must be included before running any tests>
+	<prologue.inc must be included before running any tests>
 	. $bin/prologue.inc
 	
 	<variable definitions used by this script?
@@ -174,7 +174,7 @@ requiring signal passing)
 	
 	# NOLINK PERMTEST
 	<generate a new profile allowing only r access to /bin/true>
-	<subdomain_parser will automatically be invoked in -r mode>
+	<apparmor_parser will automatically be invoked in -r mode>
 	genprofile $file:$badperm
 
 	<run this test (exec) passing /bin/true as argv[1]>
@@ -183,16 +183,11 @@ requiring signal passing)
 
 	<Thats it. Exit status $rc is automatically returned by epilogue.inc>
 
-Additional documentation
-========================
-
-See the file 'subdomain_test.txt'
-
 Supporting files
 ================
 
 strace.sh	Not a test harness, used to support strace testing.
-mkprofile.sh	Not a test harness, used to generate subdomain profiles.
+mkprofile.sh	Not a test harness, used to generate AppArmor profiles.
 prologue.inc	Must be dotted (included) into the test harness. Provides
 		support routines.
 epilogue.inc	Cleanup support, automatically called upon successful or
@@ -222,17 +217,3 @@ Current failures
    This is not an error, rather a sign that bash noticed the kernel had killed 
    a process which was attempting to use a bogus MAGIC number.  Alas, there is 
    no way to get bash to not print this diagnostic
-
-3) Ptrace
-	Error: open passed. Test 'STRACE OPEN (x confinement)' 
-	was expected to 'fail'
- 
-   Regression from 2.4.18 to 2.4.20. (We aren't sure on the first
-   endpoint, and the problem still happens in 2.4.20-20_imnx_10smp.)
-
-4) Open
-	Error: open passed. Test 'OPEN W (create)' was expected to 'fail'
-
-   LSM issue.  Flags passed to inode_permission are 0 if O_CREAT is used to
-   open file.  Need to submit a patch to inode_create hook to receive the
-   O_RDWR flags. See https://bugs.wirex.com/show_bug.cgi?id=2885

@@ -98,10 +98,10 @@ location and how to run them.
 Regression tests
 ----------------
 For details on structure and adding tests, see
-tests/regression/subdomain/README.
+tests/regression/apparmor/README.
 
 To run:
-$ cd tests/regression/subdomain (requires root)
+$ cd tests/regression/apparmor (requires root)
 $ make
 $ sudo make tests
 $ sudo bash open.sh -r	 # runs and saves the last testcase from open.sh
@@ -119,14 +119,14 @@ $ make tests
 
 Libapparmor
 -----------
-For detail son structure and adding tests, see libraries/libapparmor/README.
+For details on structure and adding tests, see libraries/libapparmor/README.
 $ cd libraries/libapparmor
 $ make check
 
 
 Stress Tests
 ------------
-To run subdomain stress tests:
+To run AppArmor stress tests:
 $ make all
 
 Use these:
