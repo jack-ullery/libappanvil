@@ -82,9 +82,6 @@ OBJECTS = parser_lex.o parser_yacc.o parser_main.o parser_interface.o \
 AAREDIR= libapparmor_re
 AAREOBJECTS = ${AAREDIR}/libapparmor_re.a
 
-PCREDIR= pcre
-PCREOBJECTS = ${PCREDIR}/pcre.o
-
 LEX_C_FILES	= parser_lex.c
 YACC_C_FILES	= parser_yacc.c parser_yacc.h
 
@@ -94,7 +91,7 @@ DISABLED_TESTS =
 
 TEST_OBJECTS = $(filter-out parser_lex.o, \
 	       $(filter-out parser_yacc.o, \
-	       $(filter-out parser_main.o, ${OBJECTS} ${PCREOBJECTS})))
+	       $(filter-out parser_main.o, ${OBJECTS})))
 
 ifdef V
   VERBOSE = 1
@@ -140,10 +137,10 @@ docs:	manpages htmlmanpages pdf
 
 all:	main docs tests
 
-apparmor_parser: $(OBJECTS) $(PCREOBJECTS) $(AAREOBJECTS)
+apparmor_parser: $(OBJECTS) $(AAREOBJECTS)
 	rm -f ./libstdc++.a
 	ln -s `g++ -print-file-name=libstdc++.a`
-	g++ $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(PCREOBJECTS) $(LIBS) \
+	g++ $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(LIBS) \
 	      ${LEXLIB}  $(AAREOBJECTS) -static-libgcc -L.
 
 parser_yacc.c parser_yacc.h: parser_yacc.y parser.h
@@ -216,8 +213,8 @@ tst_variable: parser_variable.c parser.h $(filter-out parser_variable.o, ${TEST_
 tst_misc: parser_misc.c parser.h parser_yacc.h af_names.h cap_names.h
 	$(Q)$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< $(BUILD_OUTPUT)
 
-tst_regex: parser_regex.c parser.h parser_yacc.h $(PCREOBJECTS)
-	$(Q)$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< $(PCREOBJECTS) $(BUILD_OUTPUT)
+tst_regex: parser_regex.c parser.h parser_yacc.h
+	$(Q)$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< $(BUILD_OUTPUT)
 
 .SILENT: check
 .PHONY: check
@@ -236,11 +233,6 @@ check: tests
 .PHONY: $(AAREOBJECTS)
 $(AAREOBJECTS):
 	make -C $(AAREDIR)
-
-.SILENT: $(PCREOBJECTS)
-.PHONY: $(PCREOBJECTS)
-$(PCREOBJECTS):
-	make -C $(PCREDIR) "CFLAGS=$(EXTRA_CFLAGS)"
 
 .PHONY: install-rhel4
 install-rhel4: install-redhat
@@ -304,7 +296,6 @@ clean: _clean
 	rm -f af_names.h
 	rm -f cap_names.h
 	-rm -rf techdoc.{aux,log,pdf,toc,txt} techdoc/
-	make -s -C $(PCREDIR) clean
 	make -s -C $(AAREDIR) clean
 	make -s -C po clean
 

@@ -11,11 +11,6 @@ issues should be directed to security@suse.de or secure@novell.com,
 where we will attempt to conform to the RFP vulnerability disclosure
 protocol: http://www.wiretrip.net/rfp/policy.html
 
-The parser uses the PCRE (Perl Compatible Regular Expression) engine,
-which was written by Philip Hazel and is copyright by the University
-of Cambridge, England. For more information on the PCRE engine, see
-<ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/>
-
 Thanks.
 
 -- The AppArmor development team
