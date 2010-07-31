@@ -23,7 +23,6 @@
 
 #include <netinet/in.h>
 #include <sys/resource.h>
-#include "pcre/internal.h"
 #include "immunix.h"
 #include "libapparmor_re/apparmor_re.h"
 
@@ -44,7 +43,6 @@ struct named_transition {
 
 struct cod_pattern {
 	char *regex;		// posix regex
-	pcre *compiled;		// compiled regex, size is compiled->size
 };
 
 struct cod_entry {
@@ -175,8 +173,9 @@ struct var_string {
 #define OPTION_OFILE	5
 
 #define AARE_NONE 0
-#define AARE_PCRE 1
 #define AARE_DFA 2
+
+#define BOOL int
 
 #define FLAG_CHANGEHAT_1_4  2
 #define FLAG_CHANGEHAT_1_5  3

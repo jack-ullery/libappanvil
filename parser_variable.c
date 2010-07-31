@@ -17,10 +17,14 @@
  *   along with this program; if not, contact Novell, Inc.
  */
 
+#include <ctype.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <libintl.h>
+#include <linux/limits.h>
+
 #define _(s) gettext(s)
 
 /* #define DEBUG */

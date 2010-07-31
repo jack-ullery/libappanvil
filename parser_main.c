@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <mntent.h>
 #include <libintl.h>
+#include <linux/limits.h>
 #include <locale.h>
 #define _(s) gettext(s)
 
@@ -53,7 +54,6 @@
 #define MATCH_STRING "/sys/kernel/security/" MODULE_NAME "/matching"
 #define FLAGS_FILE "/sys/kernel/security/" MODULE_NAME "/features"
 #define MOUNTED_FS "/proc/mounts"
-#define PCRE "pattern=pcre"
 #define AADFA "pattern=aadfa"
 
 #define PRIVILEGED_OPS (write_cache || kernel_load)
@@ -607,9 +607,6 @@ static void get_match_string(void) {
 
 out:
 	if (match_string) {
-		if (strstr(match_string, PCRE))
-			regex_type = AARE_PCRE;
-
 		if (strstr(match_string, AADFA))
 			regex_type = AARE_DFA;
 
@@ -656,20 +653,6 @@ fail:
 	if (f)
 		fclose(f);
 	return;
-}
-
-/* return 1 --> PCRE should work fine
-   return 0 --> no PCRE support */
-static int regex_support(void) {
-	/* no match string, predates (or postdates?) the split matching
-	module design */
-	if (!match_string)
-		return 1;
-
-	if (regex_type != AARE_NONE)
-		return 1;
-
-	return 0;
 }
 
 int process_binary(int option, char *profilename)
@@ -874,10 +857,6 @@ int process_profile(int option, char *profilename)
 		printf("----- Debugging built structures -----\n");
 		dump_policy();
 		goto out;
-	}
-
-	if (!regex_support()) {
-		die_if_any_regex();
 	}
 
 	retval = load_policy(option);

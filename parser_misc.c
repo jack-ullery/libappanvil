@@ -19,6 +19,7 @@
 
 /* assistance routines */
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -27,6 +28,7 @@
 #define _(s) gettext(s)
 #include <netinet/in.h>
 #include <linux/socket.h>
+#include <linux/limits.h>
 #include <arpa/inet.h>
 #include <linux/capability.h>
 
@@ -632,7 +634,6 @@ struct cod_entry *new_entry(char *namespace, char *id, int mode, char *link_id)
 
 	entry->pattern_type = ePatternInvalid;
 	entry->pat.regex = NULL;
-	entry->pat.compiled = NULL;
 
 	entry->next = NULL;
 
@@ -658,7 +659,6 @@ struct cod_entry *copy_cod_entry(struct cod_entry *orig)
 	/* XXX - need to create copies of the patterns, too */
 	entry->pattern_type = orig->pattern_type;
 	entry->pat.regex = NULL;
-	entry->pat.compiled = NULL;
 
 	entry->next = orig->next;
 
@@ -679,8 +679,6 @@ void free_cod_entries(struct cod_entry *list)
 		free(list->link_name);
 	if (list->pat.regex)
 		free(list->pat.regex);
-	if (list->pat.compiled)
-		free(list->pat.compiled);
 	free(list);
 }
 

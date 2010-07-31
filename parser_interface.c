@@ -455,57 +455,6 @@ inline int sd_write_listend(sd_serialize *p)
 	return 1;
 }
 
-int sd_serialize_pattern(sd_serialize *p, pcre *pat)
-{
-	if (!sd_write_struct(p, "pcre"))
-		return 0;
-	if (!sd_write32(p, pat->size - sizeof(pcre)))
-		return 0;
-	if (!sd_write32(p, pat->magic_number))
-		return 0;
-	if (!sd_write32(p, pat->options))
-		return 0;
-	if (!sd_write16(p, pat->top_bracket))
-		return 0;
-	if (!sd_write16(p, pat->top_backref))
-		return 0;
-	if (!sd_write8(p, pat->first_char))
-		return 0;
-	if (!sd_write8(p, pat->req_char))
-		return 0;
-	if (!sd_write8(p, pat->code[0]))
-		return 0;
-	if (!sd_write_blob(p, &pat->code[1], pat->size - sizeof(pcre), NULL))
-		return 0;
-	if (!sd_write_structend(p))
-		return 0;
-
-	return 1;
-}
-
-int sd_serialize_file_entry(sd_serialize *p, struct cod_entry *file_entry)
-{
-	PDEBUG("Writing file entry. name '%s'\n", file_entry->name);
-	if (!sd_write_struct(p, "fe"))
-		return 0;
-	if (!sd_write_string(p, file_entry->name, NULL))
-		return 0;
-	if (!sd_write32(p, file_entry->mode))
-		return 0;
-	if (!sd_write32(p, file_entry->pattern_type))
-		return 0;
-	if (file_entry->pattern_type == ePatternRegex) {
-		if (!sd_write_string(p, file_entry->pat.regex, NULL))
-			return 0;
-		if (!sd_serialize_pattern(p, file_entry->pat.compiled))
-			return 0;
-	}
-	if (!sd_write_structend(p))
-		return 0;
-
-	return 1;
-}
-
 int sd_serialize_dfa(sd_serialize *p, void *dfa, size_t size)
 {
 	if (dfa && !sd_write_aligned_blob(p, dfa, size, "aadfa"))
@@ -592,18 +541,6 @@ int count_tailglob_ents(struct cod_entry *list)
 	int count = 0;
 	list_for_each(list, entry) {
 		if (entry->pattern_type == ePatternTailGlob) {
-			count++;
-		}
-	}
-	return count;
-}
-
-int count_pcre_ents(struct cod_entry *list)
-{
-	struct cod_entry *entry;
-	int count = 0;
-	list_for_each(list, entry) {
-		if (entry->pattern_type == ePatternRegex) {
 			count++;
 		}
 	}
@@ -728,47 +665,8 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 		if (!sd_serialize_xtable(p, profile->exec_table))
 			return 0;
 	} else {
-		/* pcre globbing entries */
-		if (count_pcre_ents(profile->entries)) {
-			if (!sd_write_list(p, "pgent"))
-				return 0;
-			list_for_each(profile->entries, entry) {
-				if (entry->pattern_type == ePatternRegex) {
-					if (!sd_serialize_file_entry(p, entry))
-						return 0;
-				}
-			}
-			if (!sd_write_listend(p))
-				return 0;
-		}
-
-		/* simple globbing entries */
-		if (count_tailglob_ents(profile->entries)) {
-			if (!sd_write_list(p, "sgent"))
-				return 0;
-			list_for_each(profile->entries, entry) {
-				if (entry->pattern_type == ePatternTailGlob) {
-					if (!sd_serialize_file_entry(p, entry))
-						return 0;
-				}
-			}
-			if (!sd_write_listend(p))
-				return 0;
-		}
-
-		/* basic file entries */
-		if (count_file_ents(profile->entries)) {
-			if (!sd_write_list(p, "fent"))
-				return 0;
-			list_for_each(profile->entries, entry) {
-				if (entry->pattern_type == ePatternBasic) {
-					if (!sd_serialize_file_entry(p, entry))
-						return 0;
-				}
-			}
-			if (!sd_write_listend(p))
-				return 0;
-		}
+		PERROR(_("Unknown pattern type\n"));
+		return 1;
 	}
 
 	if (profile->hat_table && regex_type != AARE_DFA) {

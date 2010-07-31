@@ -1,6 +1,5 @@
 This license applies to all source files within the SubDomain parser
-package, with the exception of md5.c and the files in the pcre/
-subdirectory, as they are covered under their own respective licenses.
+package.
 
 		    GNU GENERAL PUBLIC LICENSE
 		       Version 2, June 1991

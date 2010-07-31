@@ -21,6 +21,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <libintl.h>
+#include <linux/limits.h>
 #define _(s) gettext(s)
 
 /* #define DEBUG */
@@ -74,7 +75,6 @@ static void filter_slashes(char *path)
 {
 	char *sptr, *dptr;
 	BOOL seen_slash = 0;
-	int len;
 
 	if (!path || (strlen(path) < 2))
 		return;
@@ -106,19 +106,6 @@ static void filter_slashes(char *path)
 		}
 	}
 	*dptr = 0;
-
-	if (regex_type != AARE_DFA) {
-		/* eliminate trailing slashes for versions of apparmor that
-		 * do not use the dfa engine.
-		 * Versions of apparmor which use the dfa engine use the
-		 * trailing / to differentiate between file and directory
-		 * matches
-		 */
-		len = strlen(path);
-		if (len > 2 && path[len -1] == '/') {
-			path[len - 1] = 0;
-		}
-	}
 }
 
 static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
@@ -416,82 +403,6 @@ out:
 	return ptype;
 }
 
-static int process_pcre_entry(struct cod_entry *entry)
-{
-	char tbuf[PATH_MAX + 3];	/* +3 for ^, $ and \0 */
-	int ret = TRUE;
-	pattern_t ptype;
-	int pos;
-	if (!entry) 		/* shouldn't happen */
-		return TRUE;
-
-	ptype = convert_aaregex_to_pcre(entry->name, 1, tbuf, PATH_MAX+3, &pos);
-	if (ptype == ePatternInvalid)
-		return FALSE;
-
-	entry->pattern_type = ptype;
-
-	/*
-	 * Only use buffer (tbuf) that we built above, if we
-	 * identified a pattern requiring full regex support.
-	 */
-	if (ptype == ePatternRegex) {
-		int pattlen = strlen(tbuf);
-
-		if ((entry->pat.regex = malloc(pattlen + 1))) {
-			const char *errorreason;
-			int errpos;
-
-			strcpy(entry->pat.regex, tbuf);
-
-			if ((entry->pat.compiled =
-			     pcre_compile(entry->pat.regex, 0,
-					  &errorreason, &errpos,
-					  NULL))) {
-				/* NULL out tables, kernel will use a
-				 * private version
-				 */
-				entry->pat.compiled->tables = NULL;
-			} else {
-				int i;
-
-				PERROR(_("%s: Failed to compile regex '%s' [original: '%s']\n"),
-				       progname, entry->pat.regex,
-				       entry->name);
-
-				PERROR(_("%s: error near               "),
-				       progname);
-
-				for (i = 0; i < errpos; i++) {
-					fputc('.', stderr);
-				}
-
-				fputc('^', stderr);
-				fputc('\n', stderr);
-
-				PERROR(_("%s: error reason: '%s'\n"),
-				       progname, errorreason);
-
-				free(entry->pat.regex);
-				entry->pat.regex = NULL;
-
-				ret = FALSE;
-			}
-		} else {
-			PERROR(_("%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"),
-			       progname, entry->pat.regex, entry->name);
-
-			ret = FALSE;
-		}
-	} else {
-		/* not a regex, scan input for any escape characters
-		 * and remove, and reduce double \\ to a single */
-		filter_escapes(entry->name);
-	}		/* ptype == ePatternRegex */
-
-	return ret;
-}
-
 static const char *local_name(const char *name)
 {
 	const char *t;
@@ -650,18 +561,13 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 
 int post_process_entries(struct codomain *cod)
 {
-	int ret = TRUE, rc;
+	int ret = TRUE;
 	struct cod_entry *entry;
 	int count = 0;
 
 	list_for_each(cod->entries, entry) {
-		if (regex_type == AARE_DFA) {
-			rc = process_dfa_entry(cod->dfarules, entry);
-		} else {
-			filter_slashes(entry->name);
-			rc = process_pcre_entry(entry);
-		}
-		if (!rc)
+		if (regex_type == AARE_DFA &&
+		    !process_dfa_entry(cod->dfarules, entry))
 			ret = FALSE;
 		count++;
 	}
@@ -777,7 +683,7 @@ static int test_filter_slashes(void)
 
 	test_string = strdup("///foo//////f//oo////////////////");
 	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/foo/f/oo") == 0, "simple tests");
+	MY_TEST(strcmp(test_string, "/foo/f/oo/") == 0, "simple tests");
 
 	test_string = strdup("/foo/f/oo");
 	filter_slashes(test_string);
@@ -809,12 +715,10 @@ static int test_filter_slashes(void)
 
 	test_string = strdup("/a/");
 	filter_slashes(test_string);
-	MY_TEST(strcmp(test_string, "/a") == 0, "simple test for /a/");
+	MY_TEST(strcmp(test_string, "/a/") == 0, "simple test for /a/");
 
 	return rc;
 }
-
-int regex_type = AARE_PCRE;
 
 int main(void)
 {
