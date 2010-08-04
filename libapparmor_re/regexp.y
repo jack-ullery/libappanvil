@@ -126,6 +126,7 @@
 	EpsNode()
 	{
 	    nullable = true;
+	    label = 0;
 	}
 	void compute_firstpos()
 	{
@@ -474,9 +475,11 @@
 	    child[1]->dump(os);
 	    os << ')';
 	    return os;
-//	    return os << '|';
 	}
     };
+
+/* Use a single static EpsNode as it carries no node specific information */
+static EpsNode epsnode;
 
 /*
  * Normalize the regex parse tree for factoring and cancelations
@@ -640,7 +643,7 @@ static Node *basic_alt_factor(Node *t, int dir)
 		Node *c = t->child[!dir];
 		t->child[dir]->release();
 		t->child[dir] = c->child[!dir];
-		t->child[!dir] = new EpsNode();
+		t->child[!dir] = epsnode.dup();
 		c->child[!dir] = t;
 		return c;
 	}
@@ -651,7 +654,7 @@ static Node *basic_alt_factor(Node *t, int dir)
 		Node *c = t->child[dir];
 		t->child[!dir]->release();
 		t->child[dir] = c->child[!dir];
-		t->child[!dir] = new EpsNode();
+		t->child[!dir] = epsnode.dup();
 		c->child[!dir] = t;
 		return c;
 	}
@@ -947,16 +950,16 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
           which precise grammer Perl regexps use, and rediscovering that
 	  is proving to be painful. */
 
-regexp	    : /* empty */	{ *root = $$ = new EpsNode; }
+regexp	    : /* empty */	{ *root = $$ = epsnode.dup(); }
 	    | expr		{ *root = $$ = $1; }
 	    ;
 
 expr	    : terms
 	    | expr '|' terms0	{ $$ = new AltNode($1, $3); }
-	    | '|' terms0	{ $$ = new AltNode(new EpsNode, $2); }
+	    | '|' terms0	{ $$ = new AltNode(epsnode.dup(), $2); }
 	    ;
 
-terms0	    : /* empty */	{ $$ = new EpsNode; }
+terms0	    : /* empty */	{ $$ = epsnode.dup(); }
 	    | terms
 	    ;
 
@@ -1208,10 +1211,12 @@ regexp_error(Node **, const char *text, const char *error)
 /**
  * Assign a consecutive number to each node. This is only needed for
  * pretty-printing the debug output.
+ *
+ * The epsnode is labeled 0.  Start labeling at 1
  */
 void label_nodes(Node *root)
 {
-    int nodes = 0;
+    int nodes = 1;
     for (depth_first_traversal i(root); i; i++)
        i->label = nodes++;
 }
