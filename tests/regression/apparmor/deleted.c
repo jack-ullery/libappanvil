@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
         }
 
 	/* test that we can create the file.  Not necessarily a (deleted)
-	 * case but lets use flush out other combinations
+	 * case but lets us flush out other combinations.
 	 */
 	fd2=creat(argv[2], S_IRUSR | S_IWUSR);
 	if (fd2 == -1){

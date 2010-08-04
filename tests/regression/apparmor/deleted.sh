@@ -1,7 +1,7 @@
 #! /bin/bash
-# $Id$
-
+#
 #	Copyright (C) 2002-2005 Novell/SUSE
+#	Copyright (C) 2010 Canonical, Ltd
 #
 #	This program is free software; you can redistribute it and/or
 #	modify it under the terms of the GNU General Public License as
@@ -10,7 +10,7 @@
 
 #=NAME deleted
 #=DESCRIPTION 
-# Test subdomain is properly working around a kernel in which the kernel 
+# Test AppArmor is properly working around a kernel in which the kernel 
 # appends (deleted) to deleted files verifies that the d_path appending 
 # (deleted) fix is working
 #=END
@@ -24,6 +24,7 @@ bin=$pwd
 
 file=$tmpdir/file
 file2="$tmpdir/file (deleted)"
+file3="$tmpdir/unavailable"
 okperm=rwl
 
 subtest=sub
@@ -40,8 +41,8 @@ runchecktest "NO PROFILE (access file (deleted))" pass nochange "$file2"
 # NO CHANGEHAT TEST - doesn't force revalidation
 
 genprofile $file:$okperm
-
 runchecktest "NO CHANGEHAT (access file)" pass nochange $file
+runchecktest "NO CHANGEHAT (cannot access unavailable)" fail nochange $file3
 
 genprofile "$file2":$okperm
 runchecktest "NO CHANGEHAT (access file (delete))" pass nochange "$file2"
@@ -49,6 +50,7 @@ runchecktest "NO CHANGEHAT (access file (delete))" pass nochange "$file2"
 # CHANGEHAT TEST - force revalidation using changehat
 genprofile $file:$okperm hat:$subtest $file:$okperm
 runchecktest "CHANGEHAT (access file)" pass $subtest $file
+runchecktest "CHANGEHAT (cannot access unavailable)" fail $subtest $file3
 
 genprofile "$file2":$okperm hat:$subtest "$file2":$okperm
 runchecktest "CHANGEHAT (access file (deleted))" pass $subtest "$file2"
@@ -115,7 +117,7 @@ rm -f ${socket}
 # FAIL - confined client, w access to the file
 
 genprofile $file:$okperm $socket:rw $fd_client:px -- image=$fd_client $file:$badperm $socket:rw
-runchecktest "fd passing; confined client w/ w only" pass $file $socket $fd_client "delete_file"
+runchecktest "fd passing; confined client w/ w only" fail $file $socket $fd_client "delete_file"
 
 sleep 1
 rm -f ${socket}
