@@ -24,7 +24,7 @@ checkfile()
 	_newuser=$4
 	_newgroup=$5
 
-	set -- `ls -l $_file`
+	set -- `ls -ld $_file`
 
 	if [ $1 != "$_newfileperm" -o $3 != $_newuser -o $4 != $_newgroup ]
 	then
@@ -39,6 +39,9 @@ resettest()
 	rm -f $file
 	touch $file
 	chmod $origfileperm $file
+	rm -rf $dir
+	mkdir $dir
+	chmod $origfileperm $dir
 }
 
 pwd=`dirname $0`
@@ -49,6 +52,7 @@ bin=$pwd
 . $bin/prologue.inc
 
 file=$tmpdir/file
+dir="$tmpdir/dir/"
 
 okperm=rw
 badperm=r
@@ -59,6 +63,10 @@ origfileperm=644
 origfilepermstr="-rw-r--r--"
 newfileperm=400
 newfilepermstr="-r--------"
+origdirperm=644
+origdirpermstr="drw-r--r--"
+newdirperm=400
+newdirpermstr="dr--------"
 origuser=`id -un`
 newuser=nobody
 newuid=$(awk -F: "/^${newuser}:/ {print \$3}" /etc/passwd)
@@ -91,11 +99,25 @@ runchecktest "CHMOD (unconfined)" pass $file $newfileperm
 
 settest chgrp
 runchecktest "CHGRP (unconfined)" pass $file $newgid
+runchecktest "CHGRP dir (unconfined)" pass $dir $newgid
 
 settest chown
 runchecktest "CHOWN (unconfined)" pass $file $newuid
 
 checkfile $file "unconfined" $newfilepermstr $newuser $newgroup
+
+
+settest chmod
+runchecktest "CHMOD dir (unconfined)" pass $dir $newfileperm
+
+settest chgrp
+runchecktest "CHGRP dir (unconfined)" pass $dir $newgid
+
+settest chown
+runchecktest "CHOWN dir (unconfined)" pass $dir $newuid
+
+checkfile $dir "dir unconfined" $newdirpermstr $newuser $newgroup
+
 
 # PASS TEST (UNCONFINED w/FOPS)
 resettest
@@ -110,6 +132,18 @@ settest fchown
 runchecktest "FCHOWN (unconfined)" pass $file $newuid
 
 checkfile $file "unconfined" $newfilepermstr $newuser $newgroup
+
+
+settest fchmod
+runchecktest "FCHMOD dir (unconfined)" pass $dir $newfileperm
+
+settest fchgrp
+runchecktest "FCHGRP dir (unconfined)" pass $dir $newgid
+
+settest fchown
+runchecktest "FCHOWN dir (unconfined)" pass $dir $newuid
+
+checkfile $dir "dir unconfined" $newdirpermstr $newuser $newgroup
 
 # PASS TEST (CONFINED)
 resettest
@@ -128,6 +162,21 @@ runchecktest "CHOWN (confined $okperm)" pass $file $newuid
 
 checkfile $file "confined $okperm" $newfilepermstr $newuser $newgroup
 
+
+settest chmod
+genprofile $dir:$okperm 
+runchecktest "CHMOD dir (confined $okperm)" pass $dir $newfileperm
+
+settest chgrp
+genprofile $dir:$okperm $pwfiles cap:chown
+runchecktest "CHGRP dir (confined $okperm)" pass $dir $newgid
+
+settest chown
+genprofile $dir:$okperm $pwfiles cap:chown
+runchecktest "CHOWN dir (confined $okperm)" pass $dir $newuid
+
+checkfile $dir "confined dir $okperm" $newdirpermstr $newuser $newgroup
+
 # PASS TEST (CONFINED w/FOPS)
 resettest
 
@@ -144,6 +193,21 @@ genprofile $file:$okperm $pwfiles cap:chown
 runchecktest "FCHOWN (confined $okperm)" pass $file $newuid
 
 checkfile $file "confined $okperm" $newfilepermstr $newuser $newgroup
+
+
+settest fchmod
+genprofile $dir:$okperm 
+runchecktest "FCHMOD dir (confined $okperm)" pass $dir $newfileperm
+
+settest fchgrp
+genprofile $dir:$okperm $pwfiles cap:chown
+runchecktest "FCHGRP dir (confined $okperm)" pass $dir $newgid
+
+settest fchown
+genprofile $dir:$okperm $pwfiles cap:chown
+runchecktest "FCHOWN dir (confined $okperm)" pass $dir $newuid
+
+checkfile $dir "confined dir $okperm" $newdirpermstr $newuser $newgroup
 
 # FAIL TEST (CONFINED)
 resettest
@@ -162,6 +226,21 @@ runchecktest "CHOWN (confined $badperm)" fail $file $newuid
 
 checkfile $file "confined $badperm" $origfilepermstr $origuser $origgroup
 
+
+settest chmod
+genprofile $dir:$badperm $pwfiles
+runchecktest "CHMOD dir (confined $badperm)" fail $dir $newfileperm
+
+settest chgrp
+genprofile $dir:$badperm $pwfiles cap:chown
+runchecktest "CHGRP dir (confined $badperm)" fail $dir $newgid
+
+settest chown
+genprofile $dir:$badperm $pwfiles cap:chown
+runchecktest "CHOWN dir (confined $badperm)" fail $dir $newuid
+
+checkfile $dir "confined dir $badperm" $origdirpermstr $origuser $origgroup
+
 # FAIL TEST (CONFINED/LACKING CAPS)
 resettest
 
@@ -174,6 +253,17 @@ genprofile $file:$okperm $pwfiles
 runchecktest "CHOWN (confined $okperm/no capabilities)" fail $file $newuid
 
 checkfile $file "confined $badperm" $origfilepermstr $origuser $origgroup
+
+
+settest chgrp
+genprofile $dir:$okperm $pwfiles
+runchecktest "CHGRP dir (confined $okperm/no capabilities)" fail $dir $newgid
+
+settest chown
+genprofile $dir:$okperm $pwfiles
+runchecktest "CHOWN dir (confined $okperm/no capabilities)" fail $dir $newuid
+
+checkfile $dir "confined dir $badperm" $origdirpermstr $origuser $origgroup
 
 # FAIL TEST (CONFINED w/FOPS)
 resettest
@@ -192,6 +282,21 @@ runchecktest "FCHOWN (confined $badperm)" fail $file $newuid
 
 checkfile $file "confined $badperm" $origfilepermstr $origuser $origgroup
 
+
+settest fchmod
+genprofile $dir:$badperm $pwfiles
+runchecktest "FCHMOD dir (confined $badperm)" fail $dir $newfileperm
+
+settest fchgrp
+genprofile $dir:$badperm $pwfiles cap:chown
+runchecktest "FCHGRP dir (confined $badperm)" fail $dir $newgid
+
+settest fchown
+genprofile $dir:$badperm $pwfiles cap:chown
+runchecktest "FCHOWN dir (confined $badperm)" fail $dir $newuid
+
+checkfile $dir "confined dir $badperm" $origdirpermstr $origuser $origgroup
+
 # FAIL TEST (CONFINED w/FOPS/LACKING CAPS)
 resettest
 
@@ -204,3 +309,14 @@ genprofile $file:$okperm $pwfiles
 runchecktest "FCHOWN (confined $okperm/no capabilities)" fail $file $newuid
 
 checkfile $file "confined $badperm" $origfilepermstr $origuser $origgroup
+
+
+settest fchgrp
+genprofile $dir:$okperm $pwfiles
+runchecktest "FCHGRP dir (confined $okperm/no capabilities)" fail $dir $newgid
+
+settest fchown
+genprofile $dir:$okperm $pwfiles
+runchecktest "FCHOWN dir (confined $okperm/no capabilities)" fail $dir $newuid
+
+checkfile $dir "confined dir $badperm" $origdirpermstr $origuser $origgroup
