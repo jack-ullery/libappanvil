@@ -482,7 +482,12 @@
 static EpsNode epsnode;
 
 /*
- * Normalize the regex parse tree for factoring and cancelations
+ * Normalize the regex parse tree for factoring and cancelations. Normalization
+ * reorganizes internal (alt and cat) nodes into a fixed "normalized" form that
+ * simplifies factoring code, in that it produces a canonicalized form for
+ * the direction being normalized so that the factoring code does not have
+ * to consider as many cases.
+ *
  * left normalization (dir == 0) uses these rules
  * (E | a) -> (a | E)
  * (a | b) | c -> a | (b | c)
@@ -492,6 +497,29 @@ static EpsNode epsnode;
  * (a | E) -> (E | a)
  * a | (b | c) -> (a | b) | c
  * a(bc) -> (ab)c
+ *
+ * Note: This is written iteratively for a given node (the top node stays
+ *       fixed and the children are rotated) instead of recursively.
+ *       For a given node under examination rotate over nodes from
+ *       dir to !dir.   Until no dir direction node meets the criterial.
+ *       Then recurse to the children (which will have a different node type)
+ *       to make sure they are normalized.
+ *       Normalization of a child node is guarenteed to not affect the
+ *       normalization of the parent.
+ *
+ *       For cat nodes the depth first traverse order is guarenteed to be
+ *       maintained.  This is not necessary for altnodes.
+ *
+ * Eg. For left normalization
+ *
+ *              |1               |1
+ *             / \              / \
+ *            |2  T     ->     a   |2
+ *           / \                  / \
+ *          |3  c                b   |3
+ *         / \                      / \
+ *        a   b                    c   T
+ *
  */
 void normalize_tree(Node *t, int dir)
 {
@@ -509,6 +537,8 @@ void normalize_tree(Node *t, int dir)
 			Node *c = t->child[dir];
 			t->child[dir] = t->child[!dir];
 			t->child[!dir] = c;
+			// Don't break here as 'a' may be a tree that
+			// can be pulled up.
 		} else if ((dynamic_cast<AltNode *>(t) &&
 			    dynamic_cast<AltNode *>(t->child[dir])) ||
 			   (dynamic_cast<CatNode *>(t) &&
@@ -523,6 +553,7 @@ void normalize_tree(Node *t, int dir)
 		} else if (dynamic_cast<AltNode *>(t) &&
 			   dynamic_cast<CharSetNode *>(t->child[dir]) &&
 			   dynamic_cast<CharNode *>(t->child[!dir])) {
+			// [a] | b  ->  b | [a]
 			Node *c = t->child[dir];
 			t->child[dir] = t->child[!dir];
 			t->child[!dir] = c;
