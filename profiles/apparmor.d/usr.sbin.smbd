@@ -1,5 +1,3 @@
-# vim:syntax=apparmor
-# Last Modified: Wed Jun 20 13:34:25 2007
 #include <tunables/global>
 
 /usr/sbin/smbd {
@@ -35,4 +33,7 @@
   /var/spool/samba/** rw,
 
   @{HOMEDIRS}/** lrw,
+
+  # Site-specific additions and overrides. See local/README for details.
+  #include <local/usr.sbin.smbd>
 }

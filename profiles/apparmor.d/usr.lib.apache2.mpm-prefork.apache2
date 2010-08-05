@@ -1,10 +1,9 @@
-# Last Modified: Wed Sep 16 11:58:00 2009
 # Author: Marc Deslauriers <marc.deslauriers@ubuntu.com>
-#include <tunables/global>
 
+#include <tunables/global>
 /usr/lib/apache2/mpm-prefork/apache2 {
 
-  # This is profile is completely permissive.
+  # This profile is completely permissive.
   # It is designed to target specific applications using mod_apparmor,
   # hats, and the apache2.d directory.
   #
@@ -75,4 +74,6 @@
 
   #include <apache2.d>
 
+  # Site-specific additions and overrides. See local/README for details.
+  #include <local/usr.lib.apache2.mpm-prefork.apache2>
 }

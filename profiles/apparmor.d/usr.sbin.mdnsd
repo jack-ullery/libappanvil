@@ -1,8 +1,7 @@
-# $Id$
-# vim:syntax=apparmor
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2002-2005 Novell/SUSE
+#    Copyright (C) 2002-2009 Novell/SUSE
+#    Copyright (C) 2010 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -29,4 +28,7 @@
   @{PROC}/net/unix r,
   /var/run/mdnsd lw,
   /var/run/mdnsd.pid w,
+
+  # Site-specific additions and overrides. See local/README for details.
+  #include <local/usr.sbin.mdnsd>
 }

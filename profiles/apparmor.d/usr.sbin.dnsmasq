@@ -1,4 +1,5 @@
 # Author: John Dong <jdong@ubuntu.com>
+
 #include <tunables/global>
 /usr/sbin/dnsmasq {
   #include <abstractions/base>
@@ -20,4 +21,7 @@
   /var/run/dnsmasq/* rw,
 
   /var/lib/misc/dnsmasq.leases rw, # Required only for DHCP server usage
+
+  # Site-specific additions and overrides. See local/README for details.
+  #include <local/usr.sbin.dnsmasq>
 }
