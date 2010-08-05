@@ -1,8 +1,7 @@
 # ------------------------------------------------------------------
 #
-#    $Id$
-#
-#    Copyright (C) 2002-2006 Novell/SUSE
+#    Copyright (C) 2002-2009 Novell/SUSE
+#    Copyright (C) 2010 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -18,7 +17,7 @@
 #
 # ------------------------------------------------------------------
 
-# Makefile for LSM-based AppArmor SuSE profiles
+# Makefile for LSM-based AppArmor profiles
 
 NAME=apparmor-profiles
 ALL:
@@ -37,18 +36,25 @@ PROFILES_DEST=${DESTDIR}/etc/apparmor.d
 EXTRAS_DEST=${DESTDIR}/etc/apparmor/profiles/extras/
 PROFILES_SOURCE=./apparmor.d
 EXTRAS_SOURCE=./apparmor/profiles/extras/
-SUBDIRS_MUST_BE_SKIPPED=${PROFILES_SOURCE}/abstractions ${PROFILES_SOURCE}/apache2.d ${PROFILES_SOURCE}/program-chunks ${PROFILES_SOURCE}/tunables
+SUBDIRS_MUST_BE_SKIPPED=${PROFILES_SOURCE}/abstractions ${PROFILES_SOURCE}/apache2.d ${PROFILES_SOURCE}/program-chunks ${PROFILES_SOURCE}/tunables ${PROFILES_SOURCE}/local
 PROFILES_TO_COPY=$(filter-out ${SUBDIRS_MUST_BE_SKIPPED}, $(wildcard ${PROFILES_SOURCE}/*))
 TUNABLES_TO_COPY=$(filter-out ${PROFILES_SOURCE}/tunables/home.d, $(wildcard ${PROFILES_SOURCE}/tunables/*))
 
+local:
+	for profile in ${PROFILES_TO_COPY}; do \
+		fn=$$(basename $$profile); \
+		echo "# Site-specific additions and overrides for '$$fn'" > ${PROFILES_SOURCE}/local/$$fn; \
+	done; \
+
 .PHONY: install
-install: 
+install: local
 	install -m 755 -d ${PROFILES_DEST}
 	install -m 755 -d ${PROFILES_DEST}/abstractions \
                           ${PROFILES_DEST}/apache2.d \
                           ${PROFILES_DEST}/program-chunks \
                           ${PROFILES_DEST}/tunables \
-                          ${PROFILES_DEST}/tunables/home.d
+                          ${PROFILES_DEST}/tunables/home.d \
+                          ${PROFILES_DEST}/local
 	install -m 644 ${PROFILES_TO_COPY} ${PROFILES_DEST}
 	install -m 644 ${PROFILES_SOURCE}/abstractions/* ${PROFILES_DEST}/abstractions
 	install -m 644 ${PROFILES_SOURCE}/apache2.d/* ${PROFILES_DEST}/apache2.d
@@ -57,10 +63,11 @@ install:
 	install -m 644 ${PROFILES_SOURCE}/tunables/home.d/* ${PROFILES_DEST}/tunables/home.d
 	install -m 755 -d ${EXTRAS_DEST}
 	install -m 644 ${EXTRAS_SOURCE}/* ${EXTRAS_DEST}
+	install -m 644 ${PROFILES_SOURCE}/local/* ${PROFILES_DEST}/local
 
 .PHONY: clean
 clean:
-	-rm -f $(NAME)-$(VERSION)*.tar.gz Make.rules
+	-rm -f $(NAME)-$(VERSION)*.tar.gz Make.rules ${PROFILES_SOURCE}/local/[a-z]*
 
 ifndef VERBOSE
   Q=@

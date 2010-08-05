@@ -1,5 +1,5 @@
-# Last Modified: Wed Oct  8 00:20:57 2008
 # Author: Kees Cook <kees@ubuntu.com>
+
 #include <tunables/global>
 /usr/lib/dovecot/pop3-login {
   #include <abstractions/base>
@@ -14,4 +14,7 @@
   /usr/lib/dovecot/pop3-login mr,
   /var/run/dovecot/login/ r,
   /var/run/dovecot/login/* rw,
+
+  # Site-specific additions and overrides. See local/README for details.
+  #include <local/usr.lib.dovecot.pop3-login>
 }

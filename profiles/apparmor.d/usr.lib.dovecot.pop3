@@ -1,5 +1,5 @@
-# Last Modified: Wed Oct  8 00:21:56 2008
 # Author: Kees Cook <kees@ubuntu.com>
+
 #include <tunables/global>
 /usr/lib/dovecot/pop3 {
   #include <abstractions/base>
@@ -15,4 +15,7 @@
   @{HOME}/Maildir/ rw,
   @{HOME}/Maildir/** klrw,
   /usr/lib/dovecot/pop3 mr,
+
+  # Site-specific additions and overrides. See local/README for details.
+  #include <local/usr.lib.dovecot.pop3>
 }

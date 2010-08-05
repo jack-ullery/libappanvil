@@ -1,5 +1,5 @@
-# Last Modified: Wed Jun 10 00:20:56 2009
 # Author: Dulmandakh Sukhbaatar <dulmandakh@gmail.com>
+
 #include <tunables/global>
 /usr/lib/dovecot/deliver {
   #include <abstractions/base>
@@ -17,4 +17,7 @@
   @{HOME}/mail/.imap/** klrw,
   /usr/lib/dovecot/deliver mr,
   /var/mail/* klrw,
+
+  # Site-specific additions and overrides. See local/README for details.
+  #include <local/usr.lib.dovecot.deliver>
 }
