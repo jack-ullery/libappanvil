@@ -67,7 +67,11 @@ install: local
 
 .PHONY: clean
 clean:
-	-rm -f $(NAME)-$(VERSION)*.tar.gz Make.rules ${PROFILES_SOURCE}/local/[a-z]*
+	-rm -f $(NAME)-$(VERSION)*.tar.gz Make.rules
+	for profile in ${PROFILES_TO_COPY}; do \
+		fn=$$(basename $$profile); \
+		rm -f ${PROFILES_SOURCE}/local/$$fn; \
+	done; \
 
 ifndef VERBOSE
   Q=@
