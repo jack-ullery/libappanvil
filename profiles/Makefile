@@ -65,13 +65,10 @@ install: local
 	install -m 644 ${EXTRAS_SOURCE}/* ${EXTRAS_DEST}
 	install -m 644 ${PROFILES_SOURCE}/local/* ${PROFILES_DEST}/local
 
+LOCAL_ADDITIONS=$(filter-out ${PROFILES_SOURCE}/local/README, $(wildcard ${PROFILES_SOURCE}/local/*))
 .PHONY: clean
 clean:
-	-rm -f $(NAME)-$(VERSION)*.tar.gz Make.rules
-	for profile in ${PROFILES_TO_COPY}; do \
-		fn=$$(basename $$profile); \
-		rm -f ${PROFILES_SOURCE}/local/$$fn; \
-	done; \
+	-rm -f $(NAME)-$(VERSION)*.tar.gz Make.rules ${LOCAL_ADDITIONS}
 
 ifndef VERBOSE
   Q=@
