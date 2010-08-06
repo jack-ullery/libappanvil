@@ -1,0 +1,2 @@
+  #include <abstractions/kde>
+  /usr/bin/kde4-config Ux,	# TODO: use PUx when apparmor is adjusted

@@ -1,0 +1,33 @@
+  # Pulseaudio
+  /usr/bin/pulseaudio ixr,
+
+  # Image viewers
+  /usr/bin/eog PUxr,
+  /usr/bin/gimp* PUxr,
+
+  #include <abstractions/ubuntu-media-players>
+  owner @{HOME}/.macromedia/** rw,
+  /opt/real/RealPlayer/mozilla/nphelix.so rm,
+
+  # npviewer
+  /usr/lib/nspluginwrapper/i386/linux/npviewer{,.bin} ixr,
+  /var/lib/ r,
+  /var/lib/**/*.so mr,
+  /usr/bin/setarch ixr,
+
+  # Bittorrent clients
+  #include <abstractions/ubuntu-bittorrent-clients>
+
+  # Mozplugger
+  /etc/mozpluggerrc r,
+  /usr/bin/mozplugger-helper PUxr,
+
+  # Archivers
+  /usr/bin/ark PUxr,
+  /usr/bin/file-roller PUxr,
+  /usr/bin/xarchiver PUxr,
+  /usr/local/lib{,32,64}/*.so* mr,
+
+  # TODO: check this
+  #include <abstractions/X>
+  /usr/bin/liferea-add-feed PUxr,
