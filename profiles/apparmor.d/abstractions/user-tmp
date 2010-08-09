@@ -16,6 +16,6 @@
 
   # global tmp directories
   owner /var/tmp/**     rwkl,
-  owner /var/tmp/       rw,
+  /var/tmp/             rw,
   owner /tmp/**         rwkl,
-  owner /tmp/           rw,
+  /tmp/                 rw,
