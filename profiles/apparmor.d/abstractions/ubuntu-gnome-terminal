@@ -4,6 +4,6 @@
 
   #include <abstractions/gnome>
 
-  # do not use ux or Ux here. Use at a minimum ix
+  # do not use ux or PUx here. Use at a minimum ix
   /usr/bin/gnome-terminal ix,
 

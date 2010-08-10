@@ -6,9 +6,9 @@
 # #include <abstractions/ubuntu-gnome-terminal>
 #
 
-  /usr/bin/elinks Ux,
-  /usr/bin/links Ux,
-  /usr/bin/lynx.cur Ux,
-  /usr/bin/netrik Ux,
-  /usr/bin/w3m Ux,
+  /usr/bin/elinks PUx,
+  /usr/bin/links PUx,
+  /usr/bin/lynx.cur PUx,
+  /usr/bin/netrik PUx,
+  /usr/bin/w3m PUx,
 

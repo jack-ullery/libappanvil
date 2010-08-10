@@ -1,12 +1,12 @@
 #
 # abstraction for allowing graphical bittorrent clients in Ubuntu
 #
-  /usr/bin/azureus Uxr,
-  /usr/bin/bitstormlite Uxr,
-  /usr/bin/btmaketorrentgui Uxr,
-  /usr/bin/deluge Uxr,
-  /usr/bin/gnome-btdownload Uxr,
-  /usr/bin/kget Uxr,
-  /usr/bin/ktorrent Uxr,
-  /usr/bin/qbittorrent Uxr,
-  /usr/bin/transmission Uxr,
+  /usr/bin/azureus PUxr,
+  /usr/bin/bitstormlite PUxr,
+  /usr/bin/btmaketorrentgui PUxr,
+  /usr/bin/deluge PUxr,
+  /usr/bin/gnome-btdownload PUxr,
+  /usr/bin/kget PUxr,
+  /usr/bin/ktorrent PUxr,
+  /usr/bin/qbittorrent PUxr,
+  /usr/bin/transmission PUxr,

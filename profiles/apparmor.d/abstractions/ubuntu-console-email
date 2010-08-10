@@ -6,9 +6,9 @@
 # #include <abstractions/ubuntu-gnome-terminal>
 #
 
-  /usr/bin/alpine Ux,
-  /usr/bin/citadel Ux,
-  /usr/bin/cone Ux,
-  /usr/bin/elmo Ux,
-  /usr/bin/mutt Ux,
+  /usr/bin/alpine PUx,
+  /usr/bin/citadel PUx,
+  /usr/bin/cone PUx,
+  /usr/bin/elmo PUx,
+  /usr/bin/mutt PUx,
 
