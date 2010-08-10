@@ -1,5 +1,5 @@
   # Java plugin
-  @{HOME}/.java/deployment/deployment.properties k,
+  owner @{HOME}/.java/deployment/deployment.properties k,
   /etc/java-*/ r,
   /etc/java-*/** r,
   /usr/lib/jvm/java-6-openjdk/jre/bin/java cx -> firefox_openjdk,

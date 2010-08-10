@@ -9,7 +9,7 @@
   # PDFs
   /usr/bin/evince PUxr,
   /usr/bin/okular PUxr,
-  owner @{HOME}/.adobe/** rw,
 
+  owner @{HOME}/.adobe/** rw,
   /opt/Adobe/Reader9/bin/acroread PUxr,
   /opt/Adobe/Reader9/** r,
