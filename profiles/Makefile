@@ -39,6 +39,7 @@ EXTRAS_SOURCE=./apparmor/profiles/extras/
 SUBDIRS_MUST_BE_SKIPPED=${PROFILES_SOURCE}/abstractions ${PROFILES_SOURCE}/apache2.d ${PROFILES_SOURCE}/program-chunks ${PROFILES_SOURCE}/tunables ${PROFILES_SOURCE}/local
 PROFILES_TO_COPY=$(filter-out ${SUBDIRS_MUST_BE_SKIPPED}, $(wildcard ${PROFILES_SOURCE}/*))
 TUNABLES_TO_COPY=$(filter-out ${PROFILES_SOURCE}/tunables/home.d, $(wildcard ${PROFILES_SOURCE}/tunables/*))
+ABSTRACTIONS_TO_COPY=$(filter-out ${PROFILES_SOURCE}/abstractions/ubuntu-browsers.d, $(wildcard ${PROFILES_SOURCE}/abstractions/*))
 
 local:
 	for profile in ${PROFILES_TO_COPY}; do \
@@ -56,7 +57,9 @@ install: local
                           ${PROFILES_DEST}/tunables/home.d \
                           ${PROFILES_DEST}/local
 	install -m 644 ${PROFILES_TO_COPY} ${PROFILES_DEST}
-	install -m 644 ${PROFILES_SOURCE}/abstractions/* ${PROFILES_DEST}/abstractions
+	install -m 644 ${ABSTRACTIONS_TO_COPY} ${PROFILES_DEST}/abstractions
+	install -m 755 -d ${PROFILES_DEST}/abstractions/ubuntu-browsers.d
+	install -m 644 ${PROFILES_SOURCE}/abstractions/ubuntu-browsers.d/* ${PROFILES_DEST}/abstractions/ubuntu-browsers.d
 	install -m 644 ${PROFILES_SOURCE}/apache2.d/* ${PROFILES_DEST}/apache2.d
 	install -m 644 ${PROFILES_SOURCE}/program-chunks/* ${PROFILES_DEST}/program-chunks
 	install -m 644 ${TUNABLES_TO_COPY} ${PROFILES_DEST}/tunables
