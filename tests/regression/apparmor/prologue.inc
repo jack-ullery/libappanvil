@@ -494,6 +494,16 @@ fi
 		loadprofile
 	fi
 
+	#check to see if the profiles are actually loaded
+	for f in `cat $profilenames` ; do
+		grep -Eq "^$f"' \([^)]+\)$' ${sys_profiles}
+		rc=$?
+		if [ $rc -ne 0 ] ; then
+			echo "Genprofile failed to load profile \"$f\""
+			exit 1
+		fi
+	done
+
 	rm -f ${profile}.old ${profilenames}.old
 }
 
