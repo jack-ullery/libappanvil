@@ -17,7 +17,8 @@
   @{HOME}/.ICEauthority r,
 
   # .Xauthority files required for X connections, per user
-  @{HOME}/.Xauthority        r,
+  @{HOME}/.Xauthority           r,
+  owner /var/run/gdm/*/database r,
 
   # the unix socket to use to connect to the display
   /tmp/.X11-unix/*           w,
