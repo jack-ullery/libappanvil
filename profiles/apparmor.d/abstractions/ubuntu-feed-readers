@@ -1,0 +1,5 @@
+#
+# abstraction for allowing graphical news feed readers in Ubuntu
+#
+  /usr/bin/akregator PUxr,
+  /usr/bin/liferea-add-feed PUxr,

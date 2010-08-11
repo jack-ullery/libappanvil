@@ -1,3 +1,5 @@
+  #include <abstractions/X>
+
   # Pulseaudio
   /usr/bin/pulseaudio ixr,
 
@@ -28,6 +30,5 @@
   /usr/bin/xarchiver PUxr,
   /usr/local/lib{,32,64}/*.so* mr,
 
-  # TODO: check this
-  #include <abstractions/X>
-  /usr/bin/liferea-add-feed PUxr,
+  # News feed readers
+  #include <abstractions/ubuntu-feed-readers>
