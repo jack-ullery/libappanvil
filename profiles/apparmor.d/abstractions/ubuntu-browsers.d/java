@@ -3,15 +3,15 @@
   /etc/java-*/ r,
   /etc/java-*/** r,
   /usr/lib/jvm/java-6-openjdk/jre/lib/*/IcedTeaPlugin.so mr,
-  /usr/lib/jvm/java-6-openjdk/jre/bin/java cx -> firefox_openjdk,
-  /usr/lib/jvm/java-*-sun-1.*/jre/bin/java{,_vm} cx -> firefox_java,
-  /usr/lib/jvm/java-*-sun-1.*/jre/lib/*/libnp*.so cx -> firefox_java,
-  /usr/lib/j2*-ibm/jre/bin/java cx -> firefox_java,
+  /usr/lib/jvm/java-6-openjdk/jre/bin/java cx -> browser_openjdk,
+  /usr/lib/jvm/java-*-sun-1.*/jre/bin/java{,_vm} cx -> browser_java,
+  /usr/lib/jvm/java-*-sun-1.*/jre/lib/*/libnp*.so cx -> browser_java,
+  /usr/lib/j2*-ibm/jre/bin/java cx -> browser_java,
 
   # Profile for the supported OpenJDK in Ubuntu. This doesn't require the
   # unfortunate workarounds of the proprietary Javas, so have a separate
   # profile.
-  profile firefox_openjdk {
+  profile browser_openjdk {
     #include <abstractions/base>
     #include <abstractions/fonts>
     #include <abstractions/gnome>
@@ -53,7 +53,7 @@
 
   # Profile for commercial Javas. These need workarounds to work right (eg
   # Sun's forcing of an executable stack (LP: #535247)).
-  profile firefox_java {
+  profile browser_java {
     #include <abstractions/base>
     #include <abstractions/fonts>
     #include <abstractions/gnome>
