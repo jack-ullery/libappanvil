@@ -1833,7 +1833,7 @@ void DFA::dump_dot_graph(ostream& os)
 	    else {
 		os << "\t\"" << *i->first << "\" -> \"";
 		os << *j->second << "\" [" << endl;
-		os << "\t\tlabel=\"" << (char)j->first << "\"" << endl;
+		os << "\t\tlabel=\"" << j->first << "\"" << endl;
 		os << "\t]" << endl;
 	    }
 	}
