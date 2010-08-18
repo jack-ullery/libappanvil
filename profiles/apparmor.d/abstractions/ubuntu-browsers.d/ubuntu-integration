@@ -13,3 +13,9 @@
   # File managers
   /usr/bin/nautilus PUxr,
   /usr/bin/thunar PUxr,
+
+  # Themes
+  /usr/bin/gnome-appearance-properties PUxr,
+
+  # Kubuntu
+  /usr/lib/mozilla/kmozillahelper PUxr,

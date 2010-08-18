@@ -18,6 +18,8 @@
   /media/** r,
   /mnt/** r,
   /srv/** r,
+  /net/** r,
   owner /media/** w,
   owner /mnt/** w,
   owner /srv/** w,
+  owner /net/** w,
