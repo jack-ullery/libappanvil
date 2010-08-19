@@ -1,10 +1,14 @@
 /* pam_apparmor module */
 
 /*
- * $Id$
+ * Copyright (c) 2006
+ * NOVELL (All rights reserved)
+ *
+ * Copyright (c) 2010
+ * Canonical, Ltd. (All rights reserved)
  *
  * Written by Jesse Michael <jmichael@suse.de> 2006/08/24
- *	  and Steve Beattie <sbeattie@suse.de> 2006/10/25
+ *	  and Steve Beattie <sbeattie@ubuntu.com> 2006/10/25
  *
  * Based off of pam_motd by:
  *   Ben Collins <bcollins@debian.org> 2005/10/04
@@ -165,8 +169,8 @@ int pam_sm_open_session(pam_handle_t *pamh, int flags,
 			 * stop attempting to use change_hat */
 			goto nodefault;
 			break;
-		case EPERM: /* Disable when ECHILD patch gets accepted */
 		case EACCES:
+		case ENOENT:
 			/* failed to change into attempted hat, so we'll
 			 * jump back out and try the next one */
 			break;
