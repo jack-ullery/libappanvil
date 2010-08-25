@@ -2798,7 +2798,11 @@ sub add_event_to_tree ($) {
                      $e->{name},
 		     "",
                    );
-    } elsif ($e->{operation} eq "open") {
+    } elsif ($e->{operation} eq "open" ||
+             $e->{operation} eq "truncate" ||
+             $e->{operation} eq "mkdir" ||
+             $e->{operation} eq "rename_src" ||
+             $e->{operation} eq "rename_dest") {
         add_to_tree( $e->{pid},
 		     $e->{parent},
                      "path",
