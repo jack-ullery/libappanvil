@@ -593,7 +593,7 @@ static void get_match_string(void) {
 
 	ms = fopen(MATCH_STRING, "r");
 	if (!ms)
-		return;
+		goto out;
 
 	match_string = malloc(1000);
 	if (!match_string) {
@@ -612,6 +612,12 @@ out:
 
 		if (strstr(match_string, " perms=c"))
 			perms_create = 1;
+	} else {
+		/* no match string default to 2.6.36 version which doesn't
+		 * have a match string
+		 */
+		regex_type = AARE_DFA;
+		perms_create = 1;
 	}
 
 	if (ms)
