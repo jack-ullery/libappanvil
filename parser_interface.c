@@ -639,7 +639,7 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 	if (!sd_serialize_rlimits(p, &profile->rlimits))
 		return 0;
 
-	if (profile->network_allowed) {
+	if (profile->network_allowed && kernel_supports_network) {
 		size_t i;
 		if (!sd_write_array(p, "net_allowed_af", get_af_max()))
 			return 0;
@@ -655,7 +655,8 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 		}
 		if (!sd_write_arrayend(p))
 			return 0;
-	}
+	} else if (profile->network_allowed)
+		pwarn(_("profile %s network rules not enforced\n"), profile->name);
 
 	/* either have a single dfa or lists of different entry types */
 	if (regex_type == AARE_DFA) {
