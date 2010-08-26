@@ -90,6 +90,7 @@ char *match_string = NULL;
 char *flags_string = NULL;
 int regex_type = AARE_DFA;
 int perms_create = 0;		/* perms contain create flag */
+int kernel_supports_network = 1;	/* kernel supports network rules */
 char *profile_namespace = NULL;
 int flag_changehat_version = FLAG_CHANGEHAT_1_5;
 FILE *ofile = NULL;
@@ -618,6 +619,7 @@ out:
 		 */
 		regex_type = AARE_DFA;
 		perms_create = 1;
+		kernel_supports_network = 0;
 	}
 
 	if (ms)
