@@ -32,3 +32,9 @@
 
   # News feed readers
   #include <abstractions/ubuntu-feed-readers>
+
+  # Googletalk
+  /opt/google/talkplugin/*.so mr,
+  /opt/google/talkplugin/lib/*.so mr,
+  /opt/google/talkplugin/GoogleTalkPlugin ixr,
+  owner @{HOME}/.config/google-googletalkplugin/** rw,
