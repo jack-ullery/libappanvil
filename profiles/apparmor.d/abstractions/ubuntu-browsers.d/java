@@ -67,7 +67,9 @@
     network inet6 stream,
     @{PROC}/[0-9]*/net/if_inet6 r,
     @{PROC}/[0-9]*/net/ipv6_route r,
+    @{PROC}/loadavg r,
 
+    /etc/debian_version r,
     /etc/java-*/ r,
     /etc/java-*/** r,
     /etc/lsb-release r,
