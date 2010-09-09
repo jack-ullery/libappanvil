@@ -348,7 +348,18 @@ yy_flex_debug = 0;
 {key_fsuid}		{ return(TOK_KEY_FSUID); }
 {key_ouid}		{ return(TOK_KEY_OUID); }
 {key_comm}		{ return(TOK_KEY_COMM); }
-{key_capability}	{ return(TOK_KEY_CAPABILITY); }
+ /* This key_capability entry is here to document, what should be.
+  * currently the capability token is handled by the old set of rules above
+  * it should be handled here, but there is no good way to combine them
+  * that doesn't require more work than it is worth atm because of the
+  * switch to sub_id in the old scanner rules.
+  * The switch to sub_id causes the new rule set in the grammar to need to
+  * accept a TOK_ID instead of TOK_DIGITS, which it should be.
+  * once the old rules and old scanning is ripped out this scanner rule
+  * should be activated and the corresponding rule in the grammar should
+  * be updated to use TOK_DIGITS
+  * {key_capability}	{ return(TOK_KEY_CAPABILITY); }
+  */
 {key_capname}		{ return(TOK_KEY_CAPNAME); }
 {key_offset}		{ return(TOK_KEY_OFFSET); }
 {key_target}		{ return(TOK_KEY_TARGET); }
