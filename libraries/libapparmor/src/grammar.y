@@ -87,6 +87,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 
 %token TOK_EQUALS
 %token TOK_COLON
+%token TOK_MINUS
 %token TOK_OPEN_PAREN
 %token TOK_CLOSE_PAREN
 %token TOK_PERIOD
@@ -429,6 +430,8 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->event = lookup_aa_event($3);}
 	| TOK_KEY_ERROR TOK_EQUALS TOK_DIGITS
 	{ ret_record->error_code = $3;}
+	| TOK_KEY_ERROR TOK_EQUALS TOK_MINUS TOK_DIGITS
+	{ ret_record->error_code = $4;}
 	| TOK_KEY_FSUID TOK_EQUALS TOK_DIGITS
 	{ ret_record->fsuid = $3;}
 	| TOK_KEY_OUID TOK_EQUALS TOK_DIGITS

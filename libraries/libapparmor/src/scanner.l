@@ -77,6 +77,7 @@ equals		"="
 digits		[0-9]+
 hex		[A-F0-9]
 colon		":"
+minus		"-"
 open_paren	"("
 close_paren	")"
 ID		[^ \t\n\(\)="'!]
@@ -280,6 +281,7 @@ yy_flex_debug = 0;
 {equals}		{ return(TOK_EQUALS); }
 {digits}		{ yylval->t_long = atol(yytext); return(TOK_DIGITS); }
 {colon}			{ return(TOK_COLON); }
+{minus}			{ return(TOK_MINUS); }
 {open_paren}		{
 			BEGIN(sub_id);
 			return(TOK_OPEN_PAREN);
