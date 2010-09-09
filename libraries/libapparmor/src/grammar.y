@@ -125,7 +125,6 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_OLD_RMDIR
 %token TOK_OLD_XATTR
 %token TOK_OLD_CHANGE
-%token TOK_OLD_CAPABILITY
 %token TOK_OLD_SYSCALL
 %token TOK_OLD_LINK
 %token TOK_OLD_FORK
@@ -156,6 +155,8 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_FSUID
 %token TOK_KEY_OUID
 %token TOK_KEY_COMM
+%token TOK_KEY_CAPABILITY
+%token TOK_KEY_CAPNAME
 
 %token TOK_SYSLOG_KERNEL
 
@@ -253,7 +254,7 @@ old_permit_reject_syntax:
 		ret_record->attribute = $3;
 		ret_record->name = $7;
 	}
-	| TOK_OLD_ACCESS TOK_OLD_TO TOK_OLD_CAPABILITY TOK_SINGLE_QUOTED_STRING
+	| TOK_OLD_ACCESS TOK_OLD_TO TOK_KEY_CAPABILITY TOK_SINGLE_QUOTED_STRING
 		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
 	{
 		ret_record->operation = strdup("capability");
@@ -435,6 +436,16 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	| TOK_KEY_COMM TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->comm = $3;}
 	| TOK_KEY_APPARMOR TOK_EQUALS apparmor_event
+	| TOK_KEY_CAPABILITY TOK_EQUALS TOK_ID
+	{ /* need to reverse map number to string, need to figure out
+	   * how to get auto generation of reverse mapping table into
+	   * autotools Makefile.  For now just drop assumming capname is
+	   * present which it should be with current kernels */
+	}
+	| TOK_KEY_CAPNAME TOK_EQUALS TOK_QUOTED_STRING
+	{ /* capname used to be reported in name */
+	  ret_record->name = $3;
+	}
 	;
 
 apparmor_event:

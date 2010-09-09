@@ -125,7 +125,6 @@ old_mkdir		"mkdir"
 old_on			"on"
 old_xattr		"xattr"
 old_change		"change"
-old_capability		"capability"
 old_syscall		"syscall"
 old_link		"link"
 old_fork		"fork"
@@ -159,6 +158,8 @@ key_error		"error"
 key_fsuid		"fsuid"
 key_ouid		"ouid"
 key_comm		"comm"
+key_capability		"capability"
+key_capname		"capname"
 audit			"audit"
 
 /* syslog tokens */
@@ -303,7 +304,7 @@ yy_flex_debug = 0;
 {old_extended}		{ return(TOK_OLD_EXTENDED); }
 {old_on}		{ return(TOK_OLD_ON); }
 {old_change}		{ return(TOK_OLD_CHANGE); }
-{old_capability}	{ BEGIN(sub_id); return(TOK_OLD_CAPABILITY); }
+{key_capability}	{ BEGIN(sub_id); return(TOK_KEY_CAPABILITY); }
 {old_syscall}		{ return(TOK_OLD_SYSCALL); }
 {old_fork}		{ return(TOK_OLD_FORK); }
 {old_child}		{ return(TOK_OLD_CHILD); }
@@ -343,6 +344,8 @@ yy_flex_debug = 0;
 {key_fsuid}		{ return(TOK_KEY_FSUID); }
 {key_ouid}		{ return(TOK_KEY_OUID); }
 {key_comm}		{ return(TOK_KEY_COMM); }
+{key_capability}	{ return(TOK_KEY_CAPABILITY); }
+{key_capname}		{ return(TOK_KEY_CAPNAME); }
 
 {syslog_kernel}		{ BEGIN(dmesg_timestamp); return(TOK_SYSLOG_KERNEL); }
 {syslog_month}		{ yylval->t_str = strdup(yytext); return(TOK_DATE_MONTH); }
