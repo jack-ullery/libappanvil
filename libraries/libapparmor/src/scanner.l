@@ -194,6 +194,7 @@ yy_flex_debug = 0;
 	{period}		{ return(TOK_PERIOD); }
 	{open_paren}		{ return(TOK_OPEN_PAREN); }
 	{close_paren}		{ yy_pop_state(yyscanner); return(TOK_CLOSE_PAREN); }
+	.			{ BEGIN(unknown_message); yyless(0); /* dump the rest */ }
 }
 
 <sub_id>{
