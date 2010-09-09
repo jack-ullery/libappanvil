@@ -162,6 +162,7 @@ key_comm		"comm"
 key_capability		"capability"
 key_capname		"capname"
 key_offset		"offset"
+key_target		"target"
 audit			"audit"
 
 /* syslog tokens */
@@ -350,6 +351,7 @@ yy_flex_debug = 0;
 {key_capability}	{ return(TOK_KEY_CAPABILITY); }
 {key_capname}		{ return(TOK_KEY_CAPNAME); }
 {key_offset}		{ return(TOK_KEY_OFFSET); }
+{key_target}		{ return(TOK_KEY_TARGET); }
 
 {syslog_kernel}		{ BEGIN(dmesg_timestamp); return(TOK_SYSLOG_KERNEL); }
 {syslog_month}		{ yylval->t_str = strdup(yytext); return(TOK_DATE_MONTH); }
