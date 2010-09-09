@@ -158,6 +158,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_COMM
 %token TOK_KEY_CAPABILITY
 %token TOK_KEY_CAPNAME
+%token TOK_KEY_OFFSET
 
 %token TOK_SYSLOG_KERNEL
 
@@ -448,6 +449,11 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	| TOK_KEY_CAPNAME TOK_EQUALS TOK_QUOTED_STRING
 	{ /* capname used to be reported in name */
 	  ret_record->name = $3;
+	}
+	| TOK_KEY_OFFSET TOK_EQUALS TOK_DIGITS
+	{ /* offset is used for reporting where an error occured unpacking
+	   * loaded policy.  We can just drop this currently
+	   */
 	}
 	;
 
