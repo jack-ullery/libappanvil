@@ -224,13 +224,13 @@ sub parse_message {
     my $since = 0;
     if (defined($date) and $#params > 0 and $params[1] =~ /^[0-9]+$/) {
         $since = int($params[1]);
-        int($date) >= $since or return ();
+        int($date) >= $since or goto err;
     }
 
     # ignore all but status and denied messages
     my $type = LibAppArmor::aa_log_record::swig_event_get($test);
 
-    $type == $LibAppArmor::AA_RECORD_DENIED or return ();
+    $type == $LibAppArmor::AA_RECORD_DENIED or goto err;
 
     my $profile = LibAppArmor::aa_log_record::swig_profile_get($test);
     my $operation = LibAppArmor::aa_log_record::swig_operation_get($test);
@@ -241,6 +241,10 @@ sub parse_message {
     LibAppArmorc::free_record($test);
 
     return ($profile, $operation, $name, $denied, $family, $sock_type, $date);
+
+err:
+    LibAppArmorc::free_record($test);
+    return ();
 }
 
 sub format_message {
