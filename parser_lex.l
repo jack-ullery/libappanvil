@@ -104,6 +104,7 @@ void include_filename(char *filename, int search)
 
         if (S_ISREG(my_stat.st_mode)) {
 		yyin = include_file;
+		update_mru_tstamp(include_file);
 		PDEBUG("Opened include \"%s\"\n", fullpath);
 		push_include_stack(fullpath);
 		yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
@@ -152,6 +153,7 @@ void include_filename(char *filename, int search)
 				if (!(yyin = fopen(dirent_path,"r")))
 					yyerror(_("Could not open '%s' in '%s'"), dirent_path, filename);
 				PDEBUG("Opened include \"%s\" in \"%s\"\n", dirent_path, filename);
+				update_mru_tstamp(yyin);
 				push_include_stack(dirent_path);
 				yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
 			}

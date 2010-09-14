@@ -240,6 +240,8 @@ extern int conf_verbose;
 extern int kernel_load;
 extern int regex_type;
 extern int perms_create;
+extern struct timespec mru_tstamp;
+extern void update_mru_tstamp(FILE *file);
 extern void pwarn(char *fmt, ...) __attribute__((__format__(__printf__, 1, 2)));
 
 extern FILE *yyin;
