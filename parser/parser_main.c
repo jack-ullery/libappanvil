@@ -830,7 +830,7 @@ int process_profile(int option, char *profilename)
 
 	/* Do secondary test to see if cached binary profile is good,
 	 * instead of checking against a presupplied list of files
-	 * use the tstampts from the files that were parsed.
+	 * use the timestamps from the files that were parsed.
 	 * Parsing the profile is slower that doing primary cache check
 	 * its still faster than doing full compilation
 	 */
