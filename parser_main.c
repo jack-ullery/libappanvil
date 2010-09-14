@@ -895,8 +895,7 @@ int process_profile(int option, char *profilename)
 		goto out;
 	}
 
-	if (kernel_load || option == OPTION_STDOUT || option == OPTION_OFILE)
-		retval = load_policy(option);
+	retval = load_policy(option);
 
 out:
 	if (cachetemp) {

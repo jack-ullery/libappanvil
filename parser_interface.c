@@ -550,7 +550,6 @@ int count_tailglob_ents(struct cod_entry *list)
 int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 			 int flattened)
 {
-	struct cod_entry *entry;
 	uint64_t allowed_caps;
 
 	if (!sd_write_struct(p, "profile"))
@@ -749,13 +748,9 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		break;
 	}
 
-	if (fd < 0) {
-		if (kernel_load)
-			PERROR(_("Unable to open %s - %s\n"), filename,
-			       strerror(errno));
-		else
-			PERROR(_("Unable to open output file - %s\n"),
-			       strerror(errno));
+	if (fd < 0 && (kernel_load || option == OPTION_OFILE || option == OPTION_STDOUT)) {
+		PERROR(_("Unable to open %s - %s\n"), filename,
+		       strerror(errno));
 		error = -errno;
 		goto exit;
 	}
