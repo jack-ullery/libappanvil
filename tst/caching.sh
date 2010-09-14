@@ -1,7 +1,7 @@
 #!/bin/bash
+# These tests will stop running as soon as a failure is seen since they tend to build
+# on the actions and results of the prior tests.
 set -e
-
-[ -w /etc/passwd ] || { echo "Must be root to run this test" >&2; exit 1; }
 
 # fake base directory
 basedir=$(mktemp -d -t aa-cache-XXXXXX)
@@ -16,6 +16,9 @@ cp caching.profile $basedir/$profile
 echo -n "Profiles are not cached by default: "
 ../apparmor_parser $ARGS -q -r $basedir/$profile
 [ -f $basedir/cache/$profile ] && echo "FAIL ($basedir/cache/$profile exists)" && exit 1
+echo "ok"
+
+echo -n "Profiles are not cached when using --skip-cache: "
 ../apparmor_parser $ARGS -q --write-cache --skip-cache -r $basedir/$profile
 [ -f $basedir/cache/$profile ] && echo "FAIL ($basedir/cache/$profile exists)" && exit 1
 echo "ok"
@@ -59,14 +62,26 @@ rm -f $basedir/cache/$profile || true
 [ ! -f $basedir/cache/$profile ] && echo "FAIL ($basedir/cache/$profile does not exist)" && exit 1
 echo "ok"
 
+# Detect and slow down cache test when filesystem can't represent nanosecond delays.
+timeout=0.1
+touch $basedir/test1
+sleep $timeout
+touch $basedir/test2
+TIMES=$(stat $basedir/test1 $basedir/test2 -c %z | cut -d" " -f2 | cut -d. -f2 | sort -u | wc -l)
+if [ $TIMES -ne 2 ]; then
+    echo "WARNING: $basedir lacks nanosecond timestamp resolution, falling back to slower test"
+    timeout=1
+fi
+rm -f $basedir/test1 $basedir/test2
+
 echo -n "Cache reading is skipped when profile is newer: "
-sleep 0.1
+sleep $timeout
 touch $basedir/$profile
-../apparmor_parser $ARGS -v -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL (does your /tmp support nanosecond file stamp resolution?)"; exit 1; }
+../apparmor_parser $ARGS -v -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
 echo "ok"
 
 echo -n "Cache is used when cache is newer: "
-sleep 0.1
+sleep $timeout
 touch $basedir/cache/$profile
-../apparmor_parser $ARGS -v -r $basedir/$profile | grep -q 'Cached reload succeeded' || { echo "FAIL (does your /tmp support nanosecond file stamp resolution?)"; exit 1; }
+../apparmor_parser $ARGS -v -r $basedir/$profile | grep -q 'Cached reload succeeded' || { echo "FAIL"; exit 1; }
 echo "ok"
