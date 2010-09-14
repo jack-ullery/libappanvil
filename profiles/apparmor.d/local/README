@@ -17,7 +17,7 @@
 # then an administrator can adjust /etc/apparmor.d/local/usr.sbin.smbd to
 # contain any additional paths to be allowed, such as:
 #
-#   /var/exports/** lrw,
+#   /var/exports/** lrwk,
 #
 # Keep in mind that 'deny' rules are evaluated after allow rules, so you won't
 # be able to allow access to files that are explicitly denied by the shipped

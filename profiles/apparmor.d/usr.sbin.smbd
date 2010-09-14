@@ -32,7 +32,7 @@
   /var/log/samba/cores/smbd/** rw,
   /var/spool/samba/** rw,
 
-  @{HOMEDIRS}/** lrw,
+  @{HOMEDIRS}/** lrwk,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.smbd>
