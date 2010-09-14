@@ -11,8 +11,8 @@ endif
 
 all: tests
 
-.PHONY: tests error_output parser_sanity
-tests: error_output parser_sanity
+.PHONY: tests error_output parser_sanity caching
+tests: error_output parser_sanity caching
 
 error_output: $(PARSER)
 	$(PARSER) -S -I errors >/dev/null errors/okay.sd
@@ -28,6 +28,9 @@ error_output: $(PARSER)
 
 parser_sanity: $(PARSER)
 	$(Q)${PROVE} ${PROVE_ARG} ${TESTS}
+
+caching: $(PARSER)
+	LANG=C ./caching.sh
 
 $(PARSER):
 	make -C $(PARSER_DIR) $(PARSER_BIN)
