@@ -13,6 +13,18 @@ ARGS="--base $basedir --skip-kernel-load"
 profile=sbin.pingy
 cp caching.profile $basedir/$profile
 
+# Detect and slow down cache test when filesystem can't represent nanosecond delays.
+timeout=0.1
+touch $basedir/test1
+sleep $timeout
+touch $basedir/test2
+TIMES=$(stat $basedir/test1 $basedir/test2 -c %z | cut -d" " -f2 | cut -d. -f2 | sort -u | wc -l)
+if [ $TIMES -ne 2 ]; then
+    echo "WARNING: $basedir lacks nanosecond timestamp resolution, falling back to slower test"
+    timeout=1
+fi
+rm -f $basedir/test1 $basedir/test2
+
 echo -n "Profiles are not cached by default: "
 ../apparmor_parser $ARGS -q -r $basedir/$profile
 [ -f $basedir/cache/$profile ] && echo "FAIL ($basedir/cache/$profile exists)" && exit 1
@@ -22,6 +34,8 @@ echo -n "Profiles are not cached when using --skip-cache: "
 ../apparmor_parser $ARGS -q --write-cache --skip-cache -r $basedir/$profile
 [ -f $basedir/cache/$profile ] && echo "FAIL ($basedir/cache/$profile exists)" && exit 1
 echo "ok"
+
+sleep $timeout
 
 echo -n "Profiles are cached when requested: "
 ../apparmor_parser $ARGS -q --write-cache -r $basedir/$profile
@@ -61,18 +75,6 @@ rm -f $basedir/cache/$profile || true
 ../apparmor_parser $ARGS -q --write-cache -r $basedir/$profile
 [ ! -f $basedir/cache/$profile ] && echo "FAIL ($basedir/cache/$profile does not exist)" && exit 1
 echo "ok"
-
-# Detect and slow down cache test when filesystem can't represent nanosecond delays.
-timeout=0.1
-touch $basedir/test1
-sleep $timeout
-touch $basedir/test2
-TIMES=$(stat $basedir/test1 $basedir/test2 -c %z | cut -d" " -f2 | cut -d. -f2 | sort -u | wc -l)
-if [ $TIMES -ne 2 ]; then
-    echo "WARNING: $basedir lacks nanosecond timestamp resolution, falling back to slower test"
-    timeout=1
-fi
-rm -f $basedir/test1 $basedir/test2
 
 echo -n "Cache reading is skipped when profile is newer: "
 sleep $timeout
