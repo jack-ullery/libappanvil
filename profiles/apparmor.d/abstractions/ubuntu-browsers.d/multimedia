@@ -10,6 +10,8 @@
   #include <abstractions/ubuntu-media-players>
   owner @{HOME}/.macromedia/** rw,
   /opt/real/RealPlayer/mozilla/nphelix.so rm,
+  /usr/bin/lpstat PUxr,
+  /usr/bin/lpr PUxr,
 
   # npviewer
   /usr/lib/nspluginwrapper/i386/linux/npviewer{,.bin} ixr,
