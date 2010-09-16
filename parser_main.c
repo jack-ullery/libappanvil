@@ -934,6 +934,15 @@ static void setup_flags(void)
 	get_match_string();
 	/* Get kernel features string */
 	get_flags_string(&flags_string, FLAGS_FILE);
+	/* Gracefully handle AppArmor kernel without compatibility patch */
+	if (!flags_string) {
+		PERROR("Cache read/write disabled: %s interface file missing. "
+			"(Kernel needs AppArmor 2.4 compatibility patch.)\n",
+			FLAGS_FILE);
+		write_cache = 0;
+		skip_read_cache = 1;
+		return;
+	}
 
 	/*
          * Deal with cache directory versioning:
