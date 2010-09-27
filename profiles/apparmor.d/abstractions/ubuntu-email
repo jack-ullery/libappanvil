@@ -15,5 +15,5 @@
   /usr/bin/tkrat PUx,
 
   /usr/lib/thunderbird/thunderbird PUx,
-  /usr/lib/thunderbird-3*/thunderbird PUx,
+  /usr/lib/thunderbird-3*/thunderbird{,.sh} PUx,
 
