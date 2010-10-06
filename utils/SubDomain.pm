@@ -946,6 +946,8 @@ sub autodep_base($$) {
     readinactiveprofiles(); # need to read the profiles to see if an
                             # inactive local profile is present
     $profile_data = eval { get_profile($pname) };
+    # propagate any errors we hit inside the get_profile call
+    if ($@) { die $@; }
 
     unless ($profile_data) {
         $profile_data = create_new_profile($pname);
