@@ -75,8 +75,8 @@ RPMARG=--define "_topdir $(BUILDDIR:/=)" \
 #				/usr/bin/svn info . 2> /dev/null | grep "^Last Changed Rev:" | sed "s/^Last Changed Rev: //" ; \
 #			fi ; \
 #		      fi)
-REPO_VERSION=$(shell if [ -x /usr/bin/svn ] ; then \
-				/usr/bin/svn info . 2> /dev/null | grep "^Last Changed Rev:" | sed "s/^Last Changed Rev: //" ; \
+REPO_VERSION=$(shell if [ -x /usr/bin/bzr ] ; then \
+				(/usr/bin/bzr version-info . 2> /dev/null || echo revno: 1) | awk '/^revno:/ { print $$2 }' ; \
 		      fi)
 REPO_URL=$(shell if [ -x /usr/bin/svn ] ; then \
 			/usr/bin/svn info . 2> /dev/null | grep "^URL:" | sed "s/^URL: //" ; \
@@ -146,6 +146,11 @@ endif
 .SILENT: version
 version:
 	 rpm -q --define "_sourcedir ." ${RPMARG} --specfile ${SPECFILE}
+
+.PHONY: repo_version
+.SILENT: repo_version
+repo_version:
+	 echo $(REPO_VERSION)
 
 .PHONY: build_dir 
 build_dir: $(BUILDRPMSUBDIRS)

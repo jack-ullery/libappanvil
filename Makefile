@@ -17,22 +17,39 @@ DIRS=parser \
      common \
      tests
 
-RELEASE_DIR=apparmor-${VERSION}-${REPO_VERSION}
+REPO_URL=lp:apparmor
+# alternate possibilities to export from
+#REPO_URL=.
+#REPO_URL="bzr+ssh://bazaar.launchpad.net/~sbeattie/+junk/apparmor-dev/"
+
+RELEASE_DIR=apparmor-${VERSION}
+SNAPSHOT_DIR=apparmor-${VERSION}-${REPO_VERSION}
 
 .PHONY: tarball
-tarball: _dist
+tarball: clean
+	make export_dir __EXPORT_DIR=${RELEASE_DIR}
+	make setup __SETUP_DIR=${RELEASE_DIR}
 	tar cvzf ${RELEASE_DIR}.tar.gz ${RELEASE_DIR}
 
-${RELEASE_DIR}:
-	mkdir ${RELEASE_DIR}
+.PHONY: snapshot
+snapshot: clean
+	make export_dir __EXPORT_DIR=${SNAPSHOT_DIR}
+	make setup __SETUP_DIR=${SNAPSHOT_DIR}
+	tar cvzf ${SNAPSHOT_DIR}.tar.gz ${SNAPSHOT_DIR}
 
-.PHONY: _dist
-.PHONY: ${DIRS}
+${SNAPSHOT_DIR}:
+	mkdir ${SNAPSHOT_DIR}
 
-_dist: clean ${DIRS}
-	
-${DIRS}: ${RELEASE_DIR}
-	svn export -r $(REPO_VERSION) $(REPO_URL)/$@ $(RELEASE_DIR)/$@ ; \
+.PHONY: export_dir
+export_dir:
+	mkdir $(__EXPORT_DIR)
+	/usr/bin/bzr export -r $(REPO_VERSION) $(__EXPORT_DIR) $(REPO_URL)
+	echo "$(REPO_URL) $(REPO_VERSION)" > $(__EXPORT_DIR)/common/.stamp_rev
 
+.PHONY: clean
 clean:
-	-rm -rf ${RELEASE_DIR}
+	-rm -rf ${RELEASE_DIR} apparmor-${VERSION}-*
+
+.PHONY: setup
+setup:
+	cd $(__SETUP_DIR)/libraries/libapparmor && ./autogen.sh
