@@ -48,16 +48,21 @@ BUILDDIR=$(shell if [ -d "${TESTBUILDDIR}" ] ; then \
 		    echo "/tmp/${NAME}"  ; \
 		  fi ;)
 endif
-RPMHOSTVENDOR=$(shell which rpm && rpm --eval "%{_host_vendor}")
 ifndef DISTRO
 DISTRO=$(shell if [ -f /etc/slackware-version ] ; then \
 		  echo slackware ; \
 	       elif [ -f /etc/debian_version ] ; then \
 	       	  echo debian ;\
-	       elif [ ${RPMHOSTVENDOR} = "suse" ] ; then \
-	          echo suse ;\
-	       elif [ ${RPMHOSTVENDOR} = "redhat" ] ; then \
-	          echo rhel4 ;\
+	       elif which rpm > /dev/null ; then \
+	         if [ "$(rpm --eval '0%{?suse_version}')" != "0" ] ; then \
+	             echo suse ;\
+	         elif [ "$(rpm --eval '%{_host_vendor}')" = redhat ] ; then \
+	            echo rhel4 ;\
+	         elif [ "$(rpm --eval '0%{?fedora}')" != "0" ] ; then \
+	            echo rhel4 ;\
+	         else \
+	            echo unknown ;\
+	         fi ;\
 	       else \
 	          echo unknown ;\
 	       fi)
