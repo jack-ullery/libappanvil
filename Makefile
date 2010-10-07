@@ -53,3 +53,7 @@ clean:
 .PHONY: setup
 setup:
 	cd $(__SETUP_DIR)/libraries/libapparmor && ./autogen.sh
+
+.PHONY: tag
+tag:
+	bzr tag apparmor_${VERSION}
