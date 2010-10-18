@@ -76,7 +76,7 @@ RPMARG=--define "_topdir $(BUILDDIR:/=)" \
 	$(shell [ -d ${BUILDDIR}/BUILDROOT ] && echo --define \"buildroot $(BUILDDIR:/=)/BUILDROOT\") \
 	$(shell [ -n "${DISTRO}" ] && echo --define \"distro ${DISTRO}\")
 
-REPO_VERSION=$(shell ([ -x /usr/bin/bzr ] && /usr/bin/bzr version-info . 2> /dev/null || awk '{ print "revno: "$$2 }' common/.stamp_rev) | awk '/^revno:/ { print $$2 }' )
+REPO_VERSION_CMD=([ -x /usr/bin/bzr ] && /usr/bin/bzr version-info . 2> /dev/null || awk '{ print "revno: "$2 }' common/.stamp_rev) | awk '/^revno:/ { print $2 }'
 
 ifdef EXTERNAL_PACKAGE
 RPMARG+=--define "_sourcedir $(shell pwd)"
@@ -86,8 +86,7 @@ ifndef SPECFILE
 SPECFILE        = $(NAME).spec
 endif
 RELEASE_DIR	= $(NAME)-$(VERSION)
-TARBALL		= $(NAME)-$(VERSION)-${REPO_VERSION}.tar.gz
-TAR		= /bin/tar czvp -h --exclude .svn --exclude .bzr --exclude .bzrignore --exclude ${TARBALL} --exclude ${RELEASE_DIR}/${RELEASE_DIR}  $(shell test -f ${NAME}.exclude && echo "-X ${NAME}.exclude")
+TAR		= /bin/tar czvp -h --exclude .svn --exclude .bzr --exclude .bzrignore --exclude ${RELEASE_DIR}/${RELEASE_DIR} $(shell test -f ${NAME}.exclude && echo "-X ${NAME}.exclude")
 LDCONFIG	= /sbin/ldconfig
 
 RPMSUBDIRS=SOURCES SPECS BUILD BUILDROOT SRPMS RPMS/i386 RPMS/i586 \
@@ -101,36 +100,31 @@ rpm: clean $(BUILDRPMSUBDIRS)
 
 else
 .PHONY: rpm
-rpm: clean $(TARBALL) $(BUILDRPMSUBDIRS)
-	cp $(TARBALL) $(BUILDDIR)/SOURCES/
+rpm: clean $(BUILDRPMSUBDIRS)
+	__REPO_VERSION=`$(value REPO_VERSION_CMD)` ; \
+	__TARBALL=$(NAME)-$(VERSION)-$${__REPO_VERSION}.tar.gz ; \
+	make $${__TARBALL} ; \
+	cp $${__TARBALL} $(BUILDDIR)/SOURCES/
 	cp ${SPECFILE} $(BUILDDIR)/SPECS/
 	rpmbuild -ba ${RPMARG} ${SPECFILE}
 
 .PHONY: ${SPECFILE}
 ${SPECFILE}: ${SPECFILE}.in
+	__REPO_VERSION=`$(value REPO_VERSION_CMD)` ; \
 	sed -e "s/@@immunix_version@@/${VERSION}/g" \
-	    -e "s/@@repo_version@@/${REPO_VERSION}/g" $< > $@
+	    -e "s/@@repo_version@@/$${__REPO_VERSION}/g" $< > $@
 
-${TARBALL}: clean ${SPECFILE}
+%.tar.gz: clean ${SPECFILE}
 	-rm -rf $(RELEASE_DIR)
 	mkdir $(RELEASE_DIR)
-	$(TAR) . | tar xz -C $(RELEASE_DIR)
-	$(TAR) -f $@ $(RELEASE_DIR)
+	$(TAR) --exclude $@ . | tar xz -C $(RELEASE_DIR)
+	$(TAR) --exclude $@ -f $@ $(RELEASE_DIR)
 	rm -rf $(RELEASE_DIR)
 
 ifndef OVERRIDE_TARBALL
 .PHONY: tarball
 tarball: clean $(TARBALL)
 endif
-
-.PHONY: dist
-dist: clean $(SPECFILE)
-	-rm -rf $(RELEASE_DIR)
-	svn export -r $(REPO_VERSION) $(REPO_URL) $(RELEASE_DIR)
-	svn export $(COMMON_REPO_URL) $(RELEASE_DIR)/common
-	make -C $(RELEASE_DIR) $(SPECFILE) REPO_VERSION=${REPO_VERSION} COMMONDIR_EXISTS=false
-	$(TAR) -f $(TARBALL) $(RELEASE_DIR)
-	rm -rf $(RELEASE_DIR)
 
 endif
 
@@ -142,7 +136,8 @@ version:
 .PHONY: repo_version
 .SILENT: repo_version
 repo_version:
-	 echo $(REPO_VERSION)
+	 $(value REPO_VERSION_CMD)
+
 
 .PHONY: build_dir 
 build_dir: $(BUILDRPMSUBDIRS)
