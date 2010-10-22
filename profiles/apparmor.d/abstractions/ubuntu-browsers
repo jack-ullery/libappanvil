@@ -18,7 +18,7 @@
   /usr/bin/prism PUx,
   /usr/bin/rekonq PUx,
   /usr/bin/seamonkey PUx,
-  /usr/bin/sensible-browser PUxr,
+  /usr/bin/sensible-browser Pixr,
 
   /usr/bin/chromium-browser PUx,
   /usr/lib/chromium-browser/chromium-browser PUx,
