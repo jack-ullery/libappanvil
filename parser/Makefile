@@ -298,7 +298,7 @@ clean: _clean
 	rm -f libstdc++.a
 	rm -f af_names.h
 	rm -f cap_names.h
-	-rm -rf techdoc.{aux,log,pdf,toc,txt} techdoc/
+	rm -rf techdoc.aux techdoc.log techdoc.pdf techdoc.toc techdor.txt techdoc/
 	make -s -C $(AAREDIR) clean
 	make -s -C po clean
 

@@ -15,6 +15,6 @@ test_multi_multi_LDFLAGS	= $(LDFLAGS)
 test_multi_multi_LDADD		= ../src/.libs/libapparmor.a
 
 clean-local:
-	rm -f tmp.err.* tmp.out.* site.exp site.bak
+	rm -rf tmp.err.* tmp.out.* site.exp site.bak test_multi/out
 
 EXTRA_DIST = test_multi/*.in test_multi/*.out test_multi/*.err
