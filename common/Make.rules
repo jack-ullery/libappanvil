@@ -171,29 +171,31 @@ install_manpages: $(MANPAGES)
 	     install -m 644 $(filter %.${dir}, ${MANPAGES}) ${DESTDIR}/${MANDIR}/man${dir}; \
 	)
 
+MAN_RELEASE="AppArmor"
+
 %.1: %.pod
-	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=1 > $@
+	$(POD2MAN) $< --release=$(MAN_RELEASE) --center=AppArmor --section=1 > $@
 
 %.2: %.pod
-	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=2 > $@
+	$(POD2MAN) $< --release=$(MAN_RELEASE) --center=AppArmor --section=2 > $@
 
 %.3: %.pod
-	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=3 > $@
+	$(POD2MAN) $< --release=$(MAN_RELEASE) --center=AppArmor --section=3 > $@
 
 %.4: %.pod
-	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=4 > $@
+	$(POD2MAN) $< --release=$(MAN_RELEASE) --center=AppArmor --section=4 > $@
 
 %.5: %.pod
-	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=5 > $@
+	$(POD2MAN) $< --release=$(MAN_RELEASE) --center=AppArmor --section=5 > $@
 
 %.6: %.pod
-	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=6 > $@
+	$(POD2MAN) $< --release=$(MAN_RELEASE) --center=AppArmor --section=6 > $@
 
 %.7: %.pod
-	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=7 > $@
+	$(POD2MAN) $< --release=$(MAN_RELEASE) --center=AppArmor --section=7 > $@
 
 %.8: %.pod
-	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=8 > $@
+	$(POD2MAN) $< --release=$(MAN_RELEASE) --center=AppArmor --section=8 > $@
 
 %.1.html: %.pod
 	$(POD2HTML) --header --css apparmor.css --infile=$< --outfile=$@
