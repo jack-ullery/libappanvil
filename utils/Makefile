@@ -49,6 +49,7 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 	install -d ${CONFDIR}
 	install -m 644 logprof.conf severity.db notify.conf ${CONFDIR}
 	install -d ${BINDIR}
+	ln -sf aa-status ${BINDIR}/apparmor_status
 	install -m 755 ${TOOLS} ${BINDIR}
 	install -d ${PERLDIR}
 	install -m 755 SubDomain.pm Repository.pm Config.pm Reports.pm Severity.pm ${PERLDIR}
