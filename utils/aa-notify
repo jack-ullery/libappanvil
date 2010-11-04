@@ -276,8 +276,8 @@ sub kill_running_daemons {
     # Look for other daemon instances of this script and kill them. This
     # can happen on logout and back in (in which case $notify_exe fails
     # anyway). 'ps xw' should output something like:
-    #  9987 ?        Ss     0:01 /usr/bin/perl ./bin/apparmor_notify -p
-    # 10170 ?        Ss     0:00 /usr/bin/perl ./bin/apparmor_notify -p
+    #  9987 ?        Ss     0:01 /usr/bin/perl ./bin/aa-notify -p
+    # 10170 ?        Ss     0:00 /usr/bin/perl ./bin/aa-notify -p
     open(PS,"$ps_exe xw|") or die "Unable to run '$ps_exe':$!\n";
     while(<PS>) {
         chomp;
@@ -319,7 +319,7 @@ sub do_notify {
     my $seconds = 5;
     our $time_to_die = 0;
 
-    print "Starting apparmor_notify\n";
+    print "Starting aa-notify\n";
     kill_running_daemons();
 
     # Daemonize, but not if in debug mode
@@ -450,7 +450,7 @@ sub do_notify {
             }
         }
     }
-    print STDERR "Stopping apparmor_notify\n";
+    print STDERR "Stopping aa-notify\n";
 }
 
 sub show_since {
@@ -517,18 +517,18 @@ sub do_show_messages {
 
 sub _warn {
     my $msg = $_[0];
-    print STDERR "apparmor_notify: WARN: $msg\n";
+    print STDERR "aa-notify: WARN: $msg\n";
 }
 sub _error {
     my $msg = $_[0];
-    print STDERR "apparmor_notify: ERROR: $msg\n";
+    print STDERR "aa-notify: ERROR: $msg\n";
     exitscript(1);
 }
 
 sub _debug {
     $opt_d or return;
     my $msg = $_[0];
-    print STDERR "apparmor_notify: DEBUG: $msg\n";
+    print STDERR "aa-notify: DEBUG: $msg\n";
 }
 
 sub exitscript {
@@ -539,7 +539,7 @@ sub exitscript {
 
 sub usage {
     my $s = <<'EOF';
-USAGE: apparmor_notify [OPTIONS]
+USAGE: aa-notify [OPTIONS]
 
 Display AppArmor notifications or messages for DENIED entries.
 

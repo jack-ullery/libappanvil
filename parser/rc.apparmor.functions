@@ -77,7 +77,7 @@ fi
 ABSTRACTIONS="-I${PROFILE_DIR}"
 AA_EV_BIN=/usr/sbin/aa-eventd
 AA_EV_PIDFILE=/var/run/aa-eventd.pid
-AA_STATUS=/usr/sbin/apparmor_status
+AA_STATUS=/usr/sbin/aa-status
 SD_EV_BIN=/usr/sbin/sd-event-dispatch.pl
 SD_EV_PIDFILE=/var/run/sd-event-dispatch.init.pid
 SD_STATUS=/usr/sbin/subdomain_status

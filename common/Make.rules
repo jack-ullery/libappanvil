@@ -169,8 +169,7 @@ install_manpages: $(MANPAGES)
 	$(foreach dir, ${MANDIRS}, \
 	     install -d ${DESTDIR}/${MANDIR}/man${dir} ; \
 	     install -m 644 $(filter %.${dir}, ${MANPAGES}) ${DESTDIR}/${MANDIR}/man${dir}; \
-	     $(foreach aa_page, $(filter %.${dir}, ${AA_MANPAGES}), \
-	     	ln -sf $(aa_page) ${DESTDIR}/${MANDIR}/man${dir}/${aa_page:%=aa-%};))
+	)
 
 %.1: %.pod
 	$(POD2MAN) $< --release=NOVELL/SUSE --center=AppArmor --section=1 > $@

@@ -27,12 +27,10 @@ common/Make.rules: $(COMMONDIR)/Make.rules
 	ln -sf $(COMMONDIR) .
 endif
 
-TOOLS = genprof logprof autodep audit complain enforce \
-	unconfined aa-eventd apparmor_status aa-decode \
-	apparmor_notify
+TOOLS = aa-genprof aa-logprof aa-autodep aa-audit aa-complain aa-enforce \
+	aa-unconfined aa-status aa-decode aa-notify
 
-AA_MANPAGES = autodep.8 complain.8 enforce.8 logprof.8 genprof.8 unconfined.8 audit.8
-MANPAGES    = ${AA_MANPAGES} logprof.conf.5 apparmor_status.8 aa-decode.8 apparmor_notify.8
+MANPAGES = ${TOOLS:=.8} logprof.conf.5
 
 all: ${MANPAGES} ${HTMLMANPAGES}
 	make -C po all
@@ -51,24 +49,12 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 	install -d ${CONFDIR}
 	install -m 644 logprof.conf severity.db notify.conf ${CONFDIR}
 	install -d ${BINDIR}
-	ln -sf apparmor_status ${BINDIR}/aa-status
-	ln -sf audit ${BINDIR}/aa-audit
-	ln -sf autodep ${BINDIR}/aa-autodep
-	ln -sf complain ${BINDIR}/aa-complain
-	ln -sf enforce ${BINDIR}/aa-enforce
-	ln -sf genprof ${BINDIR}/aa-genprof
-	ln -sf logprof ${BINDIR}/aa-logprof
-	ln -sf unconfined ${BINDIR}/aa-unconfined
-	ln -sf apparmor_notify ${BINDIR}/aa-notify
 	install -m 755 ${TOOLS} ${BINDIR}
 	install -d ${PERLDIR}
 	install -m 755 SubDomain.pm Repository.pm Config.pm Reports.pm Severity.pm ${PERLDIR}
 	make -C po install DESTDIR=${DESTDIR} NAME=${NAME}
 	mkdir -m 0700 -p $(DESTDIR)/var/log/apparmor
 	make install_manpages DESTDIR=${DESTDIR}
-	# special case for apparmor_status
-	ln -sf apparmor_status.8 ${DESTDIR}/${MANDIR}/man8/aa-status.8
-	ln -sf apparmor_notify.8 ${DESTDIR}/${MANDIR}/man8/aa-notify.8
 
 .PHONY: clean
 .SILENT: clean

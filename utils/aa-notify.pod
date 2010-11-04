@@ -23,20 +23,20 @@
 
 =head1 NAME
 
-apparmor_notify - display information about logged AppArmor messages.
+aa-notify - display information about logged AppArmor messages.
 
 =head1 SYNOPSIS
 
-B<apparmor_notify> [option]
+B<aa-notify> [option]
 
 =head1 DESCRIPTION
 
-B<apparmor_notify> will display a summary or provide desktop notifications
+B<aa-notify> will display a summary or provide desktop notifications
 for AppArmor DENIED messages.
 
 =head1 OPTIONS
 
-B<apparmor_notify> accepts the following arguments:
+B<aa-notify> accepts the following arguments:
 
 =over 4
 
@@ -78,13 +78,13 @@ displays a short usage statement.
 
 =head1 CONFIGURATION
 
-System-wide configuration for B<apparmor_notify> is done via
+System-wide configuration for B<aa-notify> is done via
 /etc/apparmor/notify.conf:
 
   # set to 'yes' to enable AppArmor DENIED notifications
   show_notifications="yes"
 
-  # only people in use_group can use apparmor_notify
+  # only people in use_group can use aa-notify
   use_group="admin"
 
 Per-user configuration is done via ~/.apparmor/notify.conf:
@@ -94,7 +94,7 @@ Per-user configuration is done via ~/.apparmor/notify.conf:
 
 =head1 BUGS
 
-B<apparmor_notify> needs to be able to read the logfiles containing the
+B<aa-notify> needs to be able to read the logfiles containing the
 AppArmor DENIED messages.
 
 If you find any additional bugs, please report them to Launchpad at
