@@ -171,7 +171,7 @@ install_manpages: $(MANPAGES)
 	     install -m 644 $(filter %.${dir}, ${MANPAGES}) ${DESTDIR}/${MANDIR}/man${dir}; \
 	)
 
-MAN_RELEASE="AppArmor"
+MAN_RELEASE="AppArmor ${VERSION}"
 
 %.1: %.pod
 	$(POD2MAN) $< --release=$(MAN_RELEASE) --center=AppArmor --section=1 > $@
