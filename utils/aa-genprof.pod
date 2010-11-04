@@ -66,7 +66,7 @@ using logprof(1).
 After the user finishes selecting profile entries based on violations 
 that were detected during the program execution, aa-genprof will reload
 the updated profiles in complain mode and again prompt the user for (S)can and 
-(D)one. This cycle can then be repeated as neccesary until all application 
+(D)one. This cycle can then be repeated as necessary until all application 
 functionality has been exercised without generating access violations.
 
 When the user eventually hits (F)inish, aa-genprof will set the main profile,

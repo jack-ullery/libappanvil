@@ -92,6 +92,8 @@ which processes are confined and so is susceptible to race conditions.
 Upon exiting, B<aa-status> will set its return value to the
 following values:
 
+=over 4
+
 =item 0
 
 if apparmor is enabled and policy is loaded.
@@ -112,6 +114,8 @@ if the apparmor control files aren't available under /sys/kernel/security/.
 
 if the user running the script doesn't have enough privileges to read
 the apparmor control files.
+
+=back
 
 If you find any additional bugs, please report them to bugzilla at
 L<http://bugzilla.novell.com>.
