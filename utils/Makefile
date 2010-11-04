@@ -56,6 +56,7 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 	make -C po install DESTDIR=${DESTDIR} NAME=${NAME}
 	mkdir -m 0700 -p $(DESTDIR)/var/log/apparmor
 	make install_manpages DESTDIR=${DESTDIR}
+	ln -sf aa-status.8 ${DESTDIR}/${MANDIR}/man8/apparmor_status.8
 
 .PHONY: clean
 .SILENT: clean
