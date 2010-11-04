@@ -168,7 +168,7 @@ static void display_usage(char *command)
 	       "-T, --skip-read-cache	Do not attempt to load cached profiles\n"
 	       "-W, --write-cache	Save cached profile (force with -T)\n"
 	       "-q, --quiet		Don't emit warnings\n"
-	       "-v, --verbose		Show profile nams as they load\n"
+	       "-v, --verbose		Show profile names as they load\n"
 	       "-Q, --skip-kernel-load	Do everything except loading into kernel\n"
 	       "-V, --version		Display version info and exit\n"
 	       "-d, --debug 		Debug apparmor definitions\n"
