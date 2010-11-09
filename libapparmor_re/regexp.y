@@ -1826,10 +1826,13 @@ void DFA::minimize(dfaflags_t flags)
 
 //if ((*p)->size() > 1)
 //cerr << rep->label << ": ";
-		/* clear the state label for all non representative states */
+		/* clear the state label for all non representative states,
+		 * and accumulate permissions */
 		for (Partition::iterator i = ++(*p)->begin(); i != (*p)->end(); i++) {
 //cerr << " " << (*i)->label;
 			(*i)->label = -1;
+			rep->accept |= (*i)->accept;
+			rep->audit |= (*i)->audit;
 		}
 //if ((*p)->size() > 1)
 //cerr << "\n";
