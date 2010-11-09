@@ -73,11 +73,11 @@
     class Node {
     public:
 	Node() :
-	    nullable(false), refcount(1) { child[0] = child[1] = 0; }
+	    nullable(false) { child[0] = child[1] = 0; }
 	Node(Node *left) :
-	    nullable(false), refcount(1) { child[0] = left; child[1] = 0; }
+	    nullable(false) { child[0] = left; child[1] = 0; }
 	Node(Node *left, Node *right) :
-	    nullable(false), refcount(1) { child[0] = left; child[1] = right; }
+	    nullable(false) { child[0] = left; child[1] = right; }
 	virtual ~Node()
 	{
 	    if (child[0])
@@ -104,26 +104,13 @@
 
 	unsigned int label;	/* unique number for debug etc */
 	/**
-	 * We use reference counting for AcceptNodes: sharing AcceptNodes
-	 * reduces introducing duplicate States with identical accept values.
-	 * This is important as it reduces the size of dfa created,
-	 * this could be cleaned up in state minimization but its far
-	 * faster and less resource intensive to never create the extra
-	 * states in the first place.
-	 *
-	 * Note: this does not guarentee the creation of a minimum dfa,
-	 * it only reduces the number of extra states created.
+	 * We indirectly release Nodes through a virtual function because
+	 * accept and Eps Nodes are shared, and must be treated specially.
+	 * We could use full reference counting here but the indirect release
+	 * is sufficient and has less overhead
 	 */
-	unsigned int refcount;
-	Node *dup(void)
-	{
-	    refcount++;
-	    return this;
-	}
-	void release(void) {
-		if (--refcount == 0) {
-			delete this;
-		}
+	virtual void release(void) {
+	    delete this;
 	}
     };
 
@@ -135,6 +122,13 @@
 	    nullable = true;
 	    label = 0;
 	}
+	void release(void)
+	{
+	  /* don't delete Eps nodes because there is a single static instance
+	   * shared by all trees.  Look for epsnode in the code
+	   */
+	}
+
 	void compute_firstpos()
 	{
 	}
@@ -317,6 +311,13 @@
     class AcceptNode : public ImportantNode {
     public:
 	AcceptNode() {}
+	void release(void)
+	{
+	  /* don't delete AcceptNode via release as they are shared,
+	   * and will be deleted when the table the are stored in is deleted
+	   */
+	}
+
 	void follow(NodeCases& cases)
 	{
 	    /* Nothing to follow. */
@@ -591,14 +592,14 @@ static Node *merge_charset(Node *a, Node *b)
 		   dynamic_cast<CharSetNode *>(b)) {
 		Chars *chars = &dynamic_cast<CharSetNode *>(b)->chars;
 		chars->insert(dynamic_cast<CharNode *>(a)->c);
-		return b->dup();
+		return b;
 	} else if (dynamic_cast<CharSetNode *>(a) &&
 		   dynamic_cast<CharSetNode *>(b)) {
 		Chars *from = &dynamic_cast<CharSetNode *>(a)->chars;
 		Chars *to = &dynamic_cast<CharSetNode *>(b)->chars;
 		for (Chars::iterator i = from->begin(); i != from->end(); i++)
 			to->insert(*i);
-		return b->dup();
+		return b;
 	}
 
 	//return ???;
@@ -620,9 +621,10 @@ static Node *alt_to_charsets(Node *t, int dir)
 			} else {
 				first->child[dir] = merge_charset(first->child[dir],
 						      i->child[dir]);
-				p->child[!dir] = i->child[!dir]->dup();
+				p->child[!dir] = i->child[!dir];
 				Node *tmp = i;
-				i = i->child[!dir];
+				i = tmp->child[!dir];
+				tmp->child[!dir] = NULL;
 				tmp->release();
 			}
 		} else {
@@ -656,7 +658,8 @@ static Node *basic_alt_factor(Node *t, int dir)
 
 	if (t->child[dir]->eq(t->child[!dir])) {
 		// (a | a) -> a
-		Node *tmp = t->child[dir]->dup();
+		Node *tmp = t->child[dir];
+		t->child[dir] = NULL;
 		t->release();
 		return tmp;
 	}
@@ -669,9 +672,10 @@ static Node *basic_alt_factor(Node *t, int dir)
 		Node *left = t->child[dir];
 		Node *right = t->child[!dir];
 		t->child[dir] = left->child[!dir];
-		t->child[!dir] = right->child[!dir]->dup();
-		left->child[!dir] = t;
+		t->child[!dir] = right->child[!dir];
+		right->child[!dir] = NULL;
 		right->release();
+		left->child[!dir] = t;
 		return left;
 	}
 
@@ -681,7 +685,7 @@ static Node *basic_alt_factor(Node *t, int dir)
 		Node *c = t->child[!dir];
 		t->child[dir]->release();
 		t->child[dir] = c->child[!dir];
-		t->child[!dir] = epsnode.dup();
+		t->child[!dir] = &epsnode;
 		c->child[!dir] = t;
 		return c;
 	}
@@ -692,7 +696,7 @@ static Node *basic_alt_factor(Node *t, int dir)
 		Node *c = t->child[dir];
 		t->child[!dir]->release();
 		t->child[dir] = c->child[!dir];
-		t->child[!dir] = epsnode.dup();
+		t->child[!dir] = &epsnode;
 		c->child[!dir] = t;
 		return c;
 	}
@@ -705,7 +709,8 @@ static Node *basic_simplify(Node *t, int dir)
 	if (dynamic_cast<CatNode *>(t) &&
 	    dynamic_cast<EpsNode *>(t->child[!dir])) {
 		// aE -> a
-		Node *tmp = t->child[dir]->dup();
+		Node *tmp = t->child[dir];
+		t->child[dir] = NULL;
 		t->release();
 		return tmp;
 	}
@@ -761,17 +766,19 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 		Node *i = t->child[!dir];
 		for (;dynamic_cast<AltNode *>(i); p = i, i = i->child[!dir]) {
 			if (t->child[dir]->eq(i->child[dir])) {
-				t->child[!dir]->dup();
+				Node *tmp = t->child[!dir];
+				t->child[!dir] = NULL;
 				t->release();
-				t = t->child[!dir];
+				t = tmp;
 				continue;
 			}
 		}
 		// last altnode of chain check other dir as well
 		if (t->child[dir]->eq(p->child[!dir])) {
-			t->child[!dir]->dup();
+			Node *tmp = t->child[!dir];
+			t->child[!dir] = NULL;
 			t->release();
-			t = t->child[!dir];
+			t = tmp;
 			continue;
 		}
 
@@ -783,9 +790,8 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 		int count = 0;
 		Node *subject = t->child[dir];
 		Node *a = subject;
-		if (dynamic_cast<CatNode *>(a))
-		    a = a->child[dir];
-		a->dup();
+		if (dynamic_cast<CatNode *>(subject))
+		    a = subject->child[dir];
 
 		for (pp = p = t, i = t->child[!dir];
 		     dynamic_cast<AltNode *>(i); ) {
@@ -796,6 +802,10 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 				p->child[!dir] = i->child[!dir];
 				i->child[!dir] = subject;
 				subject = basic_simplify(i, dir);
+				if (dynamic_cast<CatNode *>(subject))
+					a = subject->child[dir];
+				else
+					a = subject;
 
 				i = p->child[!dir];
 				count++;
@@ -821,7 +831,6 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 			t->child[dir] = i;
 			p->child[!dir] = subject;
 		}
-		a->release();
 
 		if (count == 0)
 			break;
@@ -832,10 +841,6 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 int debug_tree(Node *t)
 {
 	int nodes = 1;
-
-	if (t->refcount > 1 && !dynamic_cast<AcceptNode *>(t)) {
-		fprintf(stderr, "Node %p has a refcount of %d\n", t, t->refcount);
-	}
 
 	if (!dynamic_cast<ImportantNode *>(t)) {
 		if (t->child[0])
@@ -988,16 +993,16 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
           which precise grammer Perl regexps use, and rediscovering that
 	  is proving to be painful. */
 
-regexp	    : /* empty */	{ *root = $$ = epsnode.dup(); }
+regexp	    : /* empty */	{ *root = $$ = &epsnode; }
 	    | expr		{ *root = $$ = $1; }
 	    ;
 
 expr	    : terms
 	    | expr '|' terms0	{ $$ = new AltNode($1, $3); }
-	    | '|' terms0	{ $$ = new AltNode(epsnode.dup(), $2); }
+	    | '|' terms0	{ $$ = new AltNode(&epsnode, $2); }
 	    ;
 
-terms0	    : /* empty */	{ $$ = epsnode.dup(); }
+terms0	    : /* empty */	{ $$ = &epsnode; }
 	    | terms
 	    ;
 
@@ -2729,7 +2734,7 @@ extern "C" void aare_reset_matchflags(void)
 #define RESET_FLAGS(group, size) { \
 	for (i = 0; i < FLAGS_WIDTH; i++) { \
 		for (j = 0; j < size; j++) { \
-			if ((group)[i][j]) (group)[i][j]->release(); \
+		    if ((group)[i][j]) delete (group)[i][j];	\
 			(group)[i][j] = NULL; \
 		} \
 	} \
@@ -2814,11 +2819,11 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 		    continue;
 	    if (deny) {
 		    if (deny_flags[ai][n]) {
-			    flag = deny_flags[ai][n]->dup();
+			    flag = deny_flags[ai][n];
 		    } else {
 //fprintf(stderr, "Adding deny ai %d mask 0x%x audit 0x%x\n", ai, mask, audit & mask);
 			    deny_flags[ai][n] = new DenyMatchFlag(mask, audit&mask);
-			    flag = deny_flags[ai][n]->dup();
+			    flag = deny_flags[ai][n];
 		    }
 	    } else if (mask & AA_EXEC_BITS) {
 		    uint32_t eperm = 0;
@@ -2833,25 +2838,25 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 //fprintf(stderr, "index %d eperm 0x%x\n", index, eperm);
 		    if (exact_match) {
 			    if (exact_match_flags[ai][index]) {
-				    flag = exact_match_flags[ai][index]->dup();
+				    flag = exact_match_flags[ai][index];
 			    } else {
 				    exact_match_flags[ai][index] = new ExactMatchFlag(eperm, audit&mask);
-				    flag = exact_match_flags[ai][index]->dup();
+				    flag = exact_match_flags[ai][index];
 			    }
 		    } else {
 			    if (exec_match_flags[ai][index]) {
-				    flag = exec_match_flags[ai][index]->dup();
+				    flag = exec_match_flags[ai][index];
 			    } else {
 				    exec_match_flags[ai][index] = new MatchFlag(eperm, audit&mask);
-				    flag = exec_match_flags[ai][index]->dup();
+				    flag = exec_match_flags[ai][index];
 			    }
 		    }
 	    } else {
 		    if (match_flags[ai][n]) {
-		        flag = match_flags[ai][n]->dup();
+		        flag = match_flags[ai][n];
 		    } else {
 			    match_flags[ai][n] = new MatchFlag(mask, audit&mask);
-			    flag = match_flags[ai][n]->dup();
+			    flag = match_flags[ai][n];
 		    }
 	    }
 	    if (accept)
