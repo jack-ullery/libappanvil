@@ -19,6 +19,7 @@
 
     #include <list>
     #include <vector>
+    #include <stack>
     #include <set>
     #include <map>
     #include <ostream>
@@ -1088,43 +1089,46 @@ cset_char   : CHAR
 
 /* Traverse the syntax tree depth-first in an iterator-like manner. */
 class depth_first_traversal {
-    vector<Node *> stack;
-    vector<bool> visited;
+    stack<Node *> pos;
+    void push_left(Node *node)
+    {
+	pos.push(node);
+
+        while (dynamic_cast<InnerNode *>(node)) {
+            pos.push(node->child[0]);
+            node = node->child[0];
+        }
+    }
+
 public:
     depth_first_traversal(Node *node) {
-	stack.push_back(node);
-	while (node->child[0]) {
-	    visited.push_back(false);
-	    stack.push_back(node->child[0]);
-	    node = node->child[0];
-	}
+	push_left(node);
     }
     Node *operator*()
     {
-	return stack.back();
+        return pos.top();
     }
     Node* operator->()
     {
-	return stack.back();
+	return pos.top();
     }
     operator bool()
     {
-	return !stack.empty();
+        return !pos.empty();
     }
     void operator++(int)
     {
-	stack.pop_back();
-	if (!stack.empty()) {
-	    if (!visited.back() && stack.back()->child[1]) {
-		visited.pop_back();
-		visited.push_back(true);
-		stack.push_back(stack.back()->child[1]);
-		while (stack.back()->child[0]) {
-		    visited.push_back(false);
-		    stack.push_back(stack.back()->child[0]);
-		}
-	    } else
-		visited.pop_back();
+        Node *last = pos.top();
+        pos.pop();
+
+        if (!pos.empty()) {
+            /* no need to dynamic cast, as we just popped a node so the top node
+             * must be an inner node */
+            InnerNode *node = (InnerNode *)(pos.top());
+
+            if (node->child[1] && node->child[1] != last) {
+                push_left(node->child[1]);
+	    }
 	}
     }
 };
