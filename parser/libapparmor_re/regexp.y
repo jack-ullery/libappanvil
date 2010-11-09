@@ -122,6 +122,16 @@
         InnerNode(Node *left, Node *right) : Node(left, right) { };
     };
 
+    class OneChildNode : public InnerNode {
+    public:
+        OneChildNode(Node *left) : InnerNode(left) { };
+    };
+
+    class TwoChildNode : public InnerNode {
+    public:
+        TwoChildNode(Node *left, Node *right) :  InnerNode(left, right) { };
+    };
+
     /* Match nothing (//). */
     class EpsNode : public Node {
     public:
@@ -339,10 +349,10 @@
     };
 
     /* Match a pair of consecutive nodes. */
-    class CatNode : public InnerNode {
+    class CatNode : public TwoChildNode {
     public:
 	CatNode(Node *left, Node *right) :
-	    InnerNode(left, right) { }
+	    TwoChildNode(left, right) { }
 	void compute_nullable()
 	{
 	    nullable = child[0]->nullable && child[1]->nullable;
@@ -386,10 +396,10 @@
     };
 
     /* Match a node zero or more times. (This is a unary operator.) */
-    class StarNode : public InnerNode {
+    class StarNode : public OneChildNode {
     public:
 	StarNode(Node *left) :
-	    InnerNode(left)
+	    OneChildNode(left)
 	{
 	    nullable = true;
 	}
@@ -422,10 +432,10 @@
     };
 
     /* Match a node one or more times. (This is a unary operator.) */
-    class PlusNode : public InnerNode {
+    class PlusNode : public OneChildNode {
     public:
 	PlusNode(Node *left) :
-	    InnerNode(left) { }
+	    OneChildNode(left) { }
 	void compute_nullable()
 	{
 	    nullable = child[0]->nullable;
@@ -459,10 +469,10 @@
     };
 
     /* Match one of two alternative nodes. */
-    class AltNode : public InnerNode {
+    class AltNode : public TwoChildNode {
     public:
 	AltNode(Node *left, Node *right) :
-	    InnerNode(left, right) { }
+	    TwoChildNode(left, right) { }
 	void compute_nullable()
 	{
 	    nullable = child[0]->nullable || child[1]->nullable;
