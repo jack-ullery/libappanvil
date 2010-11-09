@@ -1300,19 +1300,31 @@ void dump_syntax_tree(ostream& os, Node *node) {
 }
 
 /* Comparison operator for sets of <NodeSet *>.
- * Compare set sizes, and if the sets are the same size
+ * Compare set hashes, and if the sets have the same hash
  * do compare pointer comparison on set of <Node *>, the pointer comparison
  * allows us to determine which Sets of <Node *> we have seen already from
  * new ones when constructing the DFA.
  */
 struct deref_less_than {
-  bool operator()(NodeSet * const & lhs, NodeSet * const & rhs) const
-  { if (lhs->size() == rhs->size())
-      return *lhs < *rhs;
-    else
-      return lhs->size() < rhs->size();
+  bool operator()(pair <unsigned long, NodeSet *> const & lhs, pair <unsigned long, NodeSet *> const & rhs) const
+  {
+	  if (lhs.first == rhs.first)
+		  return *(lhs.second) < *(rhs.second);
+	  else
+		  return lhs.first < rhs.first;
   }
 };
+
+unsigned long hash_NodeSet(const NodeSet *ns)
+{
+        unsigned long hash = 5381;
+
+	for (NodeSet::iterator i = ns->begin(); i != ns->end(); i++) {
+	  hash = ((hash << 5) + hash) + (unsigned long) *i;
+	}
+
+        return hash;
+}
 
 class State;
 /**
@@ -1357,7 +1369,7 @@ ostream& operator<<(ostream& os, const State& state)
 }
 
 typedef list<State *> Partition;
-typedef map<NodeSet *, State *, deref_less_than > NodeMap;
+typedef map<pair<unsigned long, NodeSet *>, State *, deref_less_than > NodeMap;
 /* Transitions in the DFA. */
 
 class DFA {
@@ -1384,9 +1396,10 @@ uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error);
 /* macro to help out with DFA creation, not done as inlined fn as nearly
  * every line uses a different map or variable that would have to be passed
  */
-#define update_for_nodes(NODES, TARGET) \
+#define update_for_nodes(NODES, TARGET)	\
 do { \
-	map<NodeSet *, State *, deref_less_than>::iterator x = nodemap.find(NODES);	\
+	pair <unsigned long, NodeSet *> index = make_pair(hash_NodeSet(NODES), NODES); \
+	map<pair <unsigned long, NodeSet *>, State *, deref_less_than>::iterator x = nodemap.find(index); \
 	if (x == nodemap.end()) { \
 		/* set of nodes isn't known so create new state, and nodes to \
 		 * state mapping \
@@ -1395,12 +1408,12 @@ do { \
 		TARGET = new State(); \
 		(TARGET)->label = nomatch_count; \
 		states.push_back(TARGET); \
-		nodemap.insert(make_pair(NODES, TARGET)); \
-		work_queue.push_back(NODES); \
+		nodemap.insert(make_pair(index, TARGET)); \
+		work_queue.push_back(NODES);	  \
 	} else { \
 		/* set of nodes already has a mapping so free this one */ \
 		match_count++; \
-		delete NODES; \
+		delete (NODES);	    \
 		TARGET = x->second; \
 	} \
 } while (0)
@@ -1432,7 +1445,7 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 	nonmatching = new State;
 	states.push_back(nonmatching);
 	NodeSet *emptynode = new NodeSet;
-	nodemap.insert(make_pair(emptynode, nonmatching));
+	nodemap.insert(make_pair(make_pair(hash_NodeSet(emptynode), emptynode), nonmatching));
 	/* there is no nodemapping for the nonmatching state */
 
 	start = new State;
@@ -1440,7 +1453,7 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 	nomatch_count++;
 	states.push_back(start);
 	NodeSet *first = new NodeSet(root->firstpos);
-	nodemap.insert(make_pair(first, start));
+	nodemap.insert(make_pair(make_pair(hash_NodeSet(first), first), start));
 
 	/* the work_queue contains the proto-states (set of nodes that is
 	 * the precurser of a state) that need to be computed
@@ -1461,7 +1474,7 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 		int error;
 		NodeSet *nodes = work_queue.front();
 		work_queue.pop_front();
-		State *from = nodemap[nodes];
+		State *from = nodemap[make_pair(hash_NodeSet(nodes), nodes)];
 
 		/* Compute permissions associated with the State. */
 		from->accept = accept_perms(nodes, &from->audit, &error);
@@ -1518,7 +1531,7 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 		(*i)->followpos.clear();
 	}
 	for (NodeMap::iterator i = nodemap.begin(); i != nodemap.end(); i++)
-		delete i->first;
+		delete i->first.second;
 	nodemap.clear();
 
 	if (flags & (DFA_DUMP_STATS))
