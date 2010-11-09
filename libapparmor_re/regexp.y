@@ -562,16 +562,25 @@ static EpsNode epsnode;
  *        a   b                    c   T
  *
  */
+static void rotate_node(Node *t, int dir) {
+	// (a | b) | c -> a | (b | c)
+	// (ab)c -> a(bc)
+	Node *left = t->child[dir];
+	t->child[dir] = left->child[dir];
+	left->child[dir] = left->child[!dir];
+	left->child[!dir] = t->child[!dir];
+	t->child[!dir] = left;
+}
+
 void normalize_tree(Node *t, int dir)
 {
-	if (dynamic_cast<ImportantNode *>(t))
+	if (dynamic_cast<LeafNode *>(t))
 		return;
 
 	for (;;) {
 		if ((&epsnode == t->child[dir]) &&
 		    (&epsnode != t->child[!dir]) &&
-		    (dynamic_cast<AltNode *>(t) ||
-		     dynamic_cast<CatNode *>(t))) {
+		     dynamic_cast<TwoChildNode *>(t)) {
 			// (E | a) -> (a | E)
 			// Ea -> aE
 			Node *c = t->child[dir];
@@ -585,11 +594,7 @@ void normalize_tree(Node *t, int dir)
 			    dynamic_cast<CatNode *>(t->child[dir]))) {
 			// (a | b) | c -> a | (b | c)
 			// (ab)c -> a(bc)
-			Node *c = t->child[dir];
-			t->child[dir] = c->child[dir];
-			c->child[dir] = c->child[!dir];
-			c->child[!dir] = t->child[!dir];
-			t->child[!dir] = c;
+			rotate_node(t, dir);
 		} else if (dynamic_cast<AltNode *>(t) &&
 			   dynamic_cast<CharSetNode *>(t->child[dir]) &&
 			   dynamic_cast<CharNode *>(t->child[!dir])) {
