@@ -1455,6 +1455,9 @@ do { \
 		states.push_back(TARGET); \
 		nodemap.insert(make_pair(index, TARGET)); \
 		work_queue.push_back(NODES);	  \
+		proto_sum += (NODES)->size();	  \
+		if ((NODES)->size() > proto_max) \
+			proto_max = (NODES)->size(); \
 	} else { \
 		/* set of nodes already has a mapping so free this one */ \
 		match_count++; \
@@ -1492,6 +1495,9 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 	NodeSet *emptynode = new NodeSet;
 	nodemap.insert(make_pair(make_pair(hash_NodeSet(emptynode), emptynode), nonmatching));
 	/* there is no nodemapping for the nonmatching state */
+
+	unsigned int proto_max = 0;
+	unsigned int proto_sum = 0;
 
 	start = new State;
 	start->label = 1;
@@ -1580,7 +1586,7 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 	nodemap.clear();
 
 	if (flags & (DFA_DUMP_STATS))
-		fprintf(stderr, "\033[2KCreated dfa: states %ld\tmatching %d\tnonmatching %d\n", states.size(), match_count, nomatch_count);
+	  fprintf(stderr, "\033[2KCreated dfa: states %ld,\teliminated duplicates %d,\tprotostate sets: longest %u, avg %u\n", states.size(), match_count, proto_max, (unsigned int) (proto_sum/states.size()));
 
 
 	/* TODO Dump dfa with NODE mapping - or node to dfa mapping */
