@@ -1449,9 +1449,8 @@ do { \
 		/* set of nodes isn't known so create new state, and nodes to \
 		 * state mapping \
 		 */ \
-		nomatch_count++; \
 		TARGET = new State(); \
-		(TARGET)->label = nomatch_count; \
+		(TARGET)->label = nodemap.size();	\
 		states.push_back(TARGET); \
 		nodemap.insert(make_pair(index, TARGET)); \
 		work_queue.push_back(NODES);	  \
@@ -1471,8 +1470,8 @@ do { \
  */
 DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 {
-	int i, match_count, nomatch_count;
-	i = match_count = nomatch_count = 0;
+	int i, match_count;
+	i = match_count = 0;
 
 	if (flags & DFA_DUMP_PROGRESS)
 		fprintf(stderr, "Creating dfa:\r");
@@ -1501,7 +1500,6 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 
 	start = new State;
 	start->label = 1;
-	nomatch_count++;
 	states.push_back(start);
 	NodeSet *first = new NodeSet(root->firstpos);
 	nodemap.insert(make_pair(make_pair(hash_NodeSet(first), first), start));
@@ -1519,7 +1517,7 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 
 	while (!work_queue.empty()) {
 		if (i % 1000 == 0 && (flags & DFA_DUMP_PROGRESS))
-			fprintf(stderr, "\033[2KCreating dfa: queue %ld\tstates %ld\tmatching %d\tnonmatching %d\r", work_queue.size(), states.size(), match_count, nomatch_count);
+			fprintf(stderr, "\033[2KCreating dfa: queue %ld\tstates %ld\teliminated duplicates %d\r", work_queue.size(), states.size(), match_count);
 		i++;
 
 		int error;
