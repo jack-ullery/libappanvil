@@ -211,6 +211,8 @@ optflag_table_t dumpflag_table[] = {
 	{ 1, "dfa-minimize", "Dump dfa minimization", DFA_DUMP_MINIMIZE },
 	{ 1, "dfa-unreachable", "Dump dfa unreachable states",
 	  DFA_DUMP_UNREACHABLE },
+	{ 1, "dfa-node-map", "Dump expr node set to state mapping",
+	  DFA_DUMP_NODE_TO_DFA },
 	{ 1, "compress-progress", "Dump progress of compression",
 	  DFA_DUMP_TRANS_PROGRESS | DFA_DUMP_TRANS_STATS },
 	{ 1, "compress-stats", "Dump stats on compression",

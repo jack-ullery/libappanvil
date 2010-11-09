@@ -37,6 +37,7 @@ typedef enum dfaflags {
   DFA_DUMP_MINIMIZE =		1 << 28,
   DFA_DUMP_UNREACHABLE =	1 << 29,
   DFA_DUMP_RULE_EXPR =		1 << 30,
+  DFA_DUMP_NODE_TO_DFA =	1 << 31,
 } dfaflags_t;
 
 #ifdef __cplusplus
