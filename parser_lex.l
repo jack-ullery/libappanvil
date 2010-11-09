@@ -22,6 +22,7 @@
 
 /* eliminates need to link with libfl */
 %option noyywrap
+%option nounput
 
 %{
 #include <stdio.h>

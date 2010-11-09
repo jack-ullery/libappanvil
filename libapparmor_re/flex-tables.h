@@ -11,8 +11,8 @@ struct table_set_header {
 	uint32_t	th_hsize;
 	uint32_t	th_ssize;
 	uint16_t	th_flags;
-	char		th_version[];
-/*	char		th_name[];
+/*	char		th_version[];
+	char		th_name[];
 	char		th_pad64[];*/
 } __attribute__ ((packed));
 
@@ -34,8 +34,8 @@ struct table_header {
 	uint16_t	td_flags;
 	uint32_t	td_hilen;
 	uint32_t	td_lolen;
-	char		td_data[];
-/*	char		td_pad64[];*/
+/*	char		td_data[];
+	char		td_pad64[];*/
 } __attribute__ ((packed));
 
 #endif
