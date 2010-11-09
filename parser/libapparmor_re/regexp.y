@@ -114,6 +114,13 @@
 	}
     };
 
+    class InnerNode : public Node {
+    public:
+        InnerNode() : Node() { };
+        InnerNode(Node *left) : Node(left) {};
+        InnerNode(Node *left, Node *right) : Node(left, right) { };
+    };
+
     /* Match nothing (//). */
     class EpsNode : public Node {
     public:
@@ -331,10 +338,10 @@
     };
 
     /* Match a pair of consecutive nodes. */
-    class CatNode : public Node {
+    class CatNode : public InnerNode {
     public:
 	CatNode(Node *left, Node *right) :
-	    Node(left, right) { }
+	    InnerNode(left, right) { }
 	void compute_nullable()
 	{
 	    nullable = child[0]->nullable && child[1]->nullable;
@@ -378,10 +385,10 @@
     };
 
     /* Match a node zero or more times. (This is a unary operator.) */
-    class StarNode : public Node {
+    class StarNode : public InnerNode {
     public:
 	StarNode(Node *left) :
-	    Node(left)
+	    InnerNode(left)
 	{
 	    nullable = true;
 	}
@@ -414,10 +421,10 @@
     };
 
     /* Match a node one or more times. (This is a unary operator.) */
-    class PlusNode : public Node {
+    class PlusNode : public InnerNode {
     public:
 	PlusNode(Node *left) :
-	    Node(left) { }
+	    InnerNode(left) { }
 	void compute_nullable()
 	{
 	    nullable = child[0]->nullable;
@@ -451,10 +458,10 @@
     };
 
     /* Match one of two alternative nodes. */
-    class AltNode : public Node {
+    class AltNode : public InnerNode {
     public:
 	AltNode(Node *left, Node *right) :
-	    Node(left, right) { }
+	    InnerNode(left, right) { }
 	void compute_nullable()
 	{
 	    nullable = child[0]->nullable || child[1]->nullable;
