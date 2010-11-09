@@ -17,6 +17,8 @@
  */
 
 %option noyywrap
+%option nounput
+%option noyy_top_state
 %option reentrant
 %option prefix="aalogparse_"
 %option bison-bridge

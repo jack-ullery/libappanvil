@@ -35,38 +35,6 @@ enum error_type {
 	e_buffer_overflow
 };
 
-/* filter_escapes: scan input for any escape characters
- * and remove, and reduce double \\ to a single
- * NOTE: modifies in place the contents of the name argument */
-static void filter_escapes(char *name)
-{
-	char *sptr, *dptr;
-	BOOL bEscape = 0;
-
-	if (!name)	/* shouldn't happen */
-		return;
-
-	sptr = dptr = name;
-	while (*sptr) {
-		if (*sptr == '\\') {
-			if (bEscape) {
-				*dptr++ = *sptr++;
-			} else {
-				++sptr;
-				bEscape = TRUE;
-				continue;
-			}
-		} else if (dptr < sptr) {
-			*dptr++ = *sptr++;
-		} else {
-			dptr++;
-			sptr++;
-		}
-		bEscape = 0;
-	}
-	*dptr = 0;
-}
-
 /* Filters out multiple slashes (except if the first two are slashes,
  * that's a distinct namespace in linux) and trailing slashes.
  * NOTE: modifies in place the contents of the path argument */
@@ -661,21 +629,6 @@ void yyerror(char *msg, ...)
 /* Guh, fake symbol */
 char *progname;
 
-static int test_filter_escapes(void)
-{
-	int rc = 0;
-	char *test_string;
-
-	test_string = strdup("foo\\\\foo");
-	filter_escapes(test_string);
-	MY_TEST(strcmp(test_string, "foo\\foo") == 0, "simple filter for \\\\");
-
-	test_string = strdup("foo\\foo");
-	filter_escapes(test_string);
-	MY_TEST(strcmp(test_string, "foofoo") == 0, "simple filter for \\f");
-	return rc;
-}
-
 static int test_filter_slashes(void)
 {
 	int rc = 0;
@@ -724,10 +677,6 @@ int main(void)
 {
 	int rc = 0;
 	int retval;
-
-	retval = test_filter_escapes();
-	if (retval != 0)
-		rc = retval;
 
 	retval = test_filter_slashes();
 	if (retval != 0)

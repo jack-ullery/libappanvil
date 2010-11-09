@@ -38,13 +38,14 @@ YACC	:= /usr/bin/bison
 YFLAGS	:= -d
 LEX	:= /usr/bin/flex
 LEXFLAGS = -B -v
-WARNINGS = -Wall -Wstrict-prototypes
-EXTRA_WARNINGS = -Wsign-compare -Wmissing-field-initializers -Wnested-externs -Wformat-security -Wunused-parameter
-WARNINGS += $(shell for warning in ${EXTRA_WARNINGS} ; do \
+WARNINGS = -Wall
+EXTRA_WARNINGS = -Wsign-compare -Wmissing-field-initializers -Wformat-security -Wunused-parameter
+CXX_WARNINGS = ${WARNINGS} $(shell for warning in ${EXTRA_WARNINGS} ; do \
 			if ${CC} $${warning} -S -o /dev/null -xc /dev/null >/dev/null 2>&1; then \
 				echo "$${warning}"; \
 			fi ; \
 		done)
+CPP_WARNINGS = -Wstrict-prototypes -Wnested-externs
 ifndef CFLAGS
 CFLAGS	= -g -O2 -pipe
 
@@ -53,7 +54,8 @@ CFLAGS += -pg
 endif
 endif #CFLAGS
 
-EXTRA_CFLAGS = ${CFLAGS} ${WARNINGS} -D_GNU_SOURCE
+EXTRA_CXXFLAGS = ${CFLAGS} ${CXX_WARNINGS} -D_GNU_SOURCE
+EXTRA_CFLAGS = ${EXTRA_CXXFLAGS} ${CPP_WARNINGS}
 
 #LEXLIB	:= -lfl
 
@@ -235,7 +237,7 @@ check: tests
 .SILENT: $(AAREOBJECTS)
 .PHONY: $(AAREOBJECTS)
 $(AAREOBJECTS):
-	make -C $(AAREDIR) CFLAGS="$(EXTRA_CFLAGS)"
+	make -C $(AAREDIR) CFLAGS="$(EXTRA_CXXFLAGS)"
 
 .PHONY: install-rhel4
 install-rhel4: install-redhat

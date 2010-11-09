@@ -351,7 +351,7 @@
 	   */
 	}
 
-	void follow(NodeCases& cases)
+	void follow(NodeCases& cases __attribute__((unused)))
 	{
 	    /* Nothing to follow. */
 	}
@@ -936,7 +936,7 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
 	bool update;
 
 	if (flags & DFA_DUMP_TREE_STATS) {
-		struct node_counts counts = { };
+		struct node_counts counts = { 0, 0, 0, 0, 0, 0, 0, 0 };
 		count_tree_nodes(t, &counts);
 		fprintf(stderr, "expr tree: c %d, [] %d, [^] %d, | %d, + %d, * %d, . %d, cat %d\n", counts.charnode, counts.charset, counts.notcharset, counts.alt, counts.plus, counts.star, counts.any, counts.cat);
 	}
@@ -968,7 +968,7 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
 		}
 	} while(update);
 	if (flags & DFA_DUMP_TREE_STATS) {
-		struct node_counts counts = { };
+		struct node_counts counts = { 0, 0, 0, 0, 0, 0, 0, 0 };
 		count_tree_nodes(t, &counts);
 		fprintf(stderr, "simplified expr tree: c %d, [] %d, [^] %d, | %d, + %d, * %d, . %d, cat %d\n", counts.charnode, counts.charset, counts.notcharset, counts.alt, counts.plus, counts.star, counts.any, counts.cat);
 	}
@@ -1286,7 +1286,9 @@ regexp_lex(YYSTYPE *val, const char **pos)
 }
 
 void
-regexp_error(Node **, const char *text, const char *error)
+regexp_error(Node ** __attribute__((unused)),
+	     const char *text __attribute__((unused)),
+	     const char *error __attribute__((unused)))
 {
     /* We don't want the library to print error messages. */
 }
@@ -2304,7 +2306,7 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq,
 /**
  * Does <cases> fit into position <base> of the transition table?
  */
-bool TransitionTable::fits_in(vector <pair<size_t, size_t> > &free_list,
+bool TransitionTable::fits_in(vector <pair<size_t, size_t> > &free_list __attribute__((unused)),
 			      size_t pos, Cases& cases)
 {
 	size_t c, base = pos - cases.begin()->first;
@@ -2508,7 +2510,7 @@ size_t flex_table_size(Iter pos, Iter end)
 template<class Iter>
 void write_flex_table(ostream& os, int id, Iter pos, Iter end)
 {
-    struct table_header td = { };
+    struct table_header td = { 0, 0, 0, 0 };
     size_t size = end - pos;
 
     td.td_id = htons(id);
@@ -2534,7 +2536,7 @@ void write_flex_table(ostream& os, int id, Iter pos, Iter end)
 void TransitionTable::flex_table(ostream& os, const char *name)
 {
     const char th_version[] = "notflex";
-    struct table_set_header th = { };
+    struct table_set_header th = { 0, 0, 0, 0 };
 
     /**
      * Change the following two data types to adjust the maximum flex
