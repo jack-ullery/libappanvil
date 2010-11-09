@@ -1428,6 +1428,7 @@ public:
     void minimize(dfaflags_t flags);
     void dump(ostream& os);
     void dump_dot_graph(ostream& os);
+    void dump_uniq_perms(const char *s);
     map<uchar, uchar> equivalence_classes(dfaflags_t flags);
     void apply_equivalence_classes(map<uchar, uchar>& eq);
     Node *root;
@@ -1630,6 +1631,21 @@ class DenyMatchFlag : public MatchFlag {
 public:
     DenyMatchFlag(uint32_t flag, uint32_t quiet) : MatchFlag(flag, quiet) {}
 };
+
+
+void DFA::dump_uniq_perms(const char *s)
+{
+	set < pair<uint32_t, uint32_t> > uniq;
+	for (Partition::iterator i = states.begin(); i != states.end(); i++)
+		uniq.insert(make_pair((*i)->accept, (*i)->audit));
+
+	cerr << "Unique Permission sets: " << s << " (" << uniq.size() << ")\n";
+	cerr << "----------------------\n";
+	for (set< pair<uint32_t, uint32_t> >::iterator i = uniq.begin();
+	     i != uniq.end(); i++) {
+		cerr << "  " << hex << i->first << " " << i->second << dec <<"\n";
+	}
+}
 
 
 /* Remove dead or unreachable states */
@@ -2962,10 +2978,15 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, size_t *size, dfaflags_t
     }
 
     DFA dfa(rules->root, flags);
+    if (flags & DFA_DUMP_UNIQ_PERMS)
+	    dfa.dump_uniq_perms("dfa");
 
-    if (flags & DFA_CONTROL_MINIMIZE)
+    if (flags & DFA_CONTROL_MINIMIZE) {
         dfa.minimize(flags);
 
+	if (flags & DFA_DUMP_MIN_UNIQ_PERMS)
+		dfa.dump_uniq_perms("minimized dfa");
+    }
     //if (flags & DFA_CONTROL_REMOVE_UNREACHABLE)
     //    remove_unreachable(flags);
 
