@@ -1465,6 +1465,16 @@ do { \
 	} \
 } while (0)
 
+static void dump_node_to_dfa(NodeMap &nodemap)
+{
+	cerr << "Mapping of States to expr nodes\n"
+		"  State  <=   Nodes\n"
+		"-------------------\n";
+	for (NodeMap::iterator i = nodemap.begin(); i != nodemap.end(); i++)
+		cerr << "  " << i->second->label << " <= " << *i->first.second << "\n";
+
+}
+
 /**
  * Construct a DFA from a syntax tree.
  */
@@ -1579,6 +1589,10 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 		(*i)->lastpos.clear();
 		(*i)->followpos.clear();
 	}
+
+	if (flags & DFA_DUMP_NODE_TO_DFA)
+		dump_node_to_dfa(nodemap);
+
 	for (NodeMap::iterator i = nodemap.begin(); i != nodemap.end(); i++)
 		delete i->first.second;
 	nodemap.clear();
@@ -1586,9 +1600,6 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 	if (flags & (DFA_DUMP_STATS))
 	  fprintf(stderr, "\033[2KCreated dfa: states %ld,\teliminated duplicates %d,\tprotostate sets: longest %u, avg %u\n", states.size(), match_count, proto_max, (unsigned int) (proto_sum/states.size()));
 
-
-	/* TODO Dump dfa with NODE mapping - or node to dfa mapping */
-	// ??????
 }
 
 
