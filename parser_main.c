@@ -213,18 +213,15 @@ static void display_optimize(char *command)
 	       "Options:\n"
 	       "--------\n"
 	       "0			no optimizations\n"
-	       "equiv			use equivalent classes\n"
-	       "no-equiv		don't use equivalent classes\n"
-	       "expr-normalize		do expr normalization\n"
-	       "expr-simplify		do expr tree simplification\n"
-	       "no-expr-normalize      	don't do expr normalization\n"
-	       "no-expr-simplify	don't do expr tree simplification\n"
+	       "[no-]equiv		use equivalent classes\n"
+	       "[no-]expr-normalize	do expr normalization\n"
+	       "[no-]expr-simplify	do expr tree simplification\n"
 	       "expr-left-simplify	do left simplification first\n"
 	       "expr-right-simplify	do right simplification first\n"
-	       "no-minimize		don't do state minimization\n"
-	       "no-hash-perms		don't use permission hashing to setup partitions at start of minimization\n"
-	       "no-hash-trans		don't use transition hashing to setup partitions at start of minimization\n"
-	       "no-remove-unreachable	don't do unreachable state removal\n"
+	       "[no-]minimize		do state minimization\n"
+	       "[no-]hash-perms		use permission hashing to setup partitions at start of minimization\n"
+	       "[no-]hash-trans		use transition hashing to setup partitions at start of minimization\n"
+	       "[no-]remove-unreachable	do unreachable state removal\n"
 	       "trans-comp-high		try to do extra transition table compression\n"
 	       "trans-comp-fast		do faster transition table compression\n"
 	       ,command);
@@ -423,7 +420,7 @@ static int process_args(int argc, char *argv[])
 				dfaflags |= DFA_CONTROL_MINIMIZE_HASH_TRANS;
 			} else if (strcmp(optarg, "no-hash-trans") == 0) {
 				dfaflags &= ~DFA_CONTROL_MINIMIZE_HASH_TRANS;
-			} else if (strcmp(optarg, "hash-perm") == 0) {
+			} else if (strcmp(optarg, "hash-perms") == 0) {
 				dfaflags |= DFA_CONTROL_MINIMIZE_HASH_PERMS;
 			} else if (strcmp(optarg, "no-hash-perms") == 0) {
 				dfaflags &= ~DFA_CONTROL_MINIMIZE_HASH_PERMS;
