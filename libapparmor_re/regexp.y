@@ -1545,12 +1545,6 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 
 	/* TODO Dump dfa with NODE mapping - or node to dfa mapping */
 	// ??????
-
-	if (flags & DFA_CONTROL_MINIMIZE)
-		minimize(flags);
-
-	if (flags & DFA_CONTROL_REMOVE_UNREACHABLE)
-		remove_unreachable(flags);
 }
 
 
@@ -2913,6 +2907,12 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, size_t *size, dfaflags_t
     }
 
     DFA dfa(rules->root, flags);
+
+    if (flags & DFA_CONTROL_MINIMIZE)
+        dfa.minimize(flags);
+
+    //if (flags & DFA_CONTROL_REMOVE_UNREACHABLE)
+    //    remove_unreachable(flags);
 
     if (flags & DFA_DUMP_STATES)
 	dfa.dump(cerr);
