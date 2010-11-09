@@ -3,7 +3,7 @@
 
 TARGET=libapparmor_re.a
 
-CFLAGS = -g -Wall -O2 ${EXTRA_CFLAGS}
+CFLAGS ?= -g -Wall -O2 ${EXTRA_CFLAGS}
 CXXFLAGS := ${CFLAGS}
 
 ARFLAGS=-rcs
