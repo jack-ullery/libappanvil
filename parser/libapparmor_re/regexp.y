@@ -188,8 +188,17 @@
 	virtual void follow(NodeCases& cases) = 0;
     };
 
+    /* common base class for all the different classes that contain
+     * character information.
+     */
+    class CNode : public ImportantNode {
+    public:
+        CNode() : ImportantNode() { }
+
+    };
+
     /* Match one specific character (/c/). */
-    class CharNode : public ImportantNode {
+    class CharNode : public CNode {
     public:
 	CharNode(uchar c) : c(c) { }
 	void follow(NodeCases& cases)
@@ -219,7 +228,7 @@
     };
 
     /* Match a set of characters (/[abc]/). */
-    class CharSetNode : public ImportantNode {
+    class CharSetNode : public CNode {
     public:
 	CharSetNode(Chars& chars) : chars(chars) { }
 	void follow(NodeCases& cases)
@@ -260,7 +269,7 @@
     };
 
     /* Match all except one character (/[^abc]/). */
-    class NotCharSetNode : public ImportantNode {
+    class NotCharSetNode : public CNode {
     public:
 	NotCharSetNode(Chars& chars) : chars(chars) { }
 	void follow(NodeCases& cases)
@@ -307,7 +316,7 @@
     };
 
     /* Match any character (/./). */
-    class AnyCharNode : public ImportantNode {
+    class AnyCharNode : public CNode {
     public:
 	AnyCharNode() { }
 	void follow(NodeCases& cases)
