@@ -1711,6 +1711,7 @@ void DFA::minimize(dfaflags_t flags)
 	 * minimization.
 	 */
 	int accept_count = 0;
+	int final_accept = 0;
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
 		uint64_t perm_hash = 0;
 		if (flags & DFA_CONTROL_MINIMIZE_HASH_PERMS) {
@@ -1742,7 +1743,7 @@ void DFA::minimize(dfaflags_t flags)
 
 		if ((flags & DFA_DUMP_PROGRESS) &&
 		    (partitions.size() % 1000 == 0))
-			cerr << "\033[2KMinimize dfa: partitions " << partitions.size() << "\tinit " << partitions.size() << "\t(accept " << accept_count << ")\r";
+			cerr << "\033[2KMinimize dfa: partitions " << partitions.size() << "\tinit " << partitions.size() << " (accept " << accept_count << ")\r";
 	}
 
 	/* perm_map is no longer needed so free the memory it is using.
@@ -1752,7 +1753,7 @@ void DFA::minimize(dfaflags_t flags)
 
 	int init_count = partitions.size();
 	if (flags & DFA_DUMP_PROGRESS)
-		cerr << "\033[2KMinimize dfa: partitions " << partitions.size() << "\tinit " << init_count << "\t(accept " << accept_count << ")\r";
+		cerr << "\033[2KMinimize dfa: partitions " << partitions.size() << "\tinit " << init_count << " (accept " << accept_count << ")\r";
 
 	/* Now do repartitioning until each partition contains the set of
 	 * states that are the same.  This will happen when the partition
@@ -1795,15 +1796,15 @@ void DFA::minimize(dfaflags_t flags)
 			}
 		if ((flags & DFA_DUMP_PROGRESS) &&
 		    (partitions.size() % 100 == 0))
-			cerr << "\033[2KMinimize dfa: partitions " << partitions.size() << "\tinit " << init_count << "\t(accept " << accept_count << ")\r";
+			cerr << "\033[2KMinimize dfa: partitions " << partitions.size() << "\tinit " << init_count << " (accept " << accept_count << ")\r";
 		}
 	} while(new_part_count);
 
-	if (flags & DFA_DUMP_STATS)
-		cerr << "\033[2KMinimized dfa: partitions " << partitions.size() << "\tinit " << init_count << "\t(accept " << accept_count << ")\n";
-
-
 	if (partitions.size() == states.size()) {
+		if (flags & DFA_DUMP_STATS)
+			cerr << "\033[2KDfa minimization no states removed: partitions " << partitions.size() << "\tinit " << init_count << " (accept " << accept_count << ")\n";
+
+
 		goto out;
 	}
 
@@ -1839,9 +1840,15 @@ void DFA::minimize(dfaflags_t flags)
 			rep->accept |= (*i)->accept;
 			rep->audit |= (*i)->audit;
 		}
+		if (rep->accept || rep->audit)
+			final_accept++;
 //if ((*p)->size() > 1)
 //cerr << "\n";
 	}
+	if (flags & DFA_DUMP_STATS)
+		cerr << "\033[2KMinimized dfa: final partitions " << partitions.size() << " (accept " << final_accept << ")" << "\tinit " << init_count << " (accept " << accept_count << ")\n";
+
+
 
 	/* make sure nonmatching and start state are up to date with the
 	 * mappings */
