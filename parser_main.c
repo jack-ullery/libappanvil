@@ -179,31 +179,126 @@ static void display_usage(char *command)
 	       ,command);
 }
 
+/*
+ * flag: 1 - allow no- inversion
+ * flag: 2 - flags specified should be masked off
+ */
+typedef struct {
+	int control;
+	const char *option;
+	const char *desc;
+	dfaflags_t flags;
+} optflag_table_t;
+
+optflag_table_t dumpflag_table[] = {
+	{ 0, "rule-exprs", "Dump rule to expr tree conversions",
+	  DFA_DUMP_RULE_EXPR },
+	{ 0, "expr-stats", "Dump stats on expr tree", DFA_DUMP_TREE_STATS },
+	{ 0, "expr-tree", "Dump expression tree", DFA_DUMP_TREE },
+	{ 0, "expr-simplified", "Dump simplified expression tree",
+	  DFA_DUMP_SIMPLE_TREE },
+	{ 0, "dfa-progress", "Dump dfa creation as in progress",
+	  DFA_DUMP_PROGRESS | DFA_DUMP_STATS },
+	{ 0, "dfa-stats", "Dump dfa creation stats", DFA_DUMP_STATS },
+	{ 0, "dfa-states", "Dump dfa state diagram", DFA_DUMP_STATES },
+	{ 0, "dfa-graph", "Dump dfa dot (graphviz) graph", DFA_DUMP_GRAPH },
+	{ 0, "dfa-minimize", "Dump dfa minimization", DFA_DUMP_MINIMIZE },
+	{ 0, "dfa-unreachable", "Dump dfa unreachable states",
+	  DFA_DUMP_UNREACHABLE },
+	{ 0, "compress-progress", "Dump progress of compression",
+	  DFA_DUMP_TRANS_PROGRESS | DFA_DUMP_TRANS_STATS },
+	{ 0, "compress-stats", "Dump stats on compression",
+	  DFA_DUMP_TRANS_STATS },
+	{ 0, "compressed-dfa", "Dump compressed dfa", DFA_DUMP_TRANS_TABLE },
+	{ 0, "equiv-stats", "Dump equivance class stats",
+	  DFA_DUMP_EQUIV_STATS },
+	{ 0, "equiv", "Dump equivance class", DFA_DUMP_EQUIV },
+	{ 0, NULL, NULL, 0 },
+};
+
+optflag_table_t optflag_table[] = {
+	{ 2, "0", "no optimizations",
+	  DFA_CONTROL_TREE_NORMAL | DFA_CONTROL_TREE_SIMPLE |
+	  DFA_CONTROL_MINIMIZE | DFA_CONTROL_REMOVE_UNREACHABLE
+	},
+	{ 1, "equiv", "use equivalent classes", DFA_CONTROL_EQUIV },
+	{ 1, "expr-normalize", "expression tree normalization",
+	  DFA_CONTROL_TREE_NORMAL },
+	{ 1, "expr-simplify", "expression tree simplification",
+	  DFA_CONTROL_TREE_SIMPLE },
+	{ 0, "expr-left-simplify", "left simplification first",
+	  DFA_CONTROL_TREE_LEFT },
+	{ 2, "expr-right-simplify", "right simplification first",
+	  DFA_CONTROL_TREE_LEFT },
+	{ 1, "minimize", "dfa state minimization", DFA_CONTROL_MINIMIZE },
+	{ 1, "hash-perms", "minimization - hash permissions during setup",
+	  DFA_CONTROL_MINIMIZE_HASH_PERMS },
+	{ 1, "hash-trans", "minimization - hash transitions during setup",
+	  DFA_CONTROL_MINIMIZE_HASH_TRANS },
+	{ 1, "remove-unreachable", "dfa unreachable state removal",
+	  DFA_CONTROL_REMOVE_UNREACHABLE },
+	{ 0, "compress-small",
+	  "do slower dfa transition table compression",
+	  DFA_CONTROL_TRANS_HIGH },
+	{ 2, "compress-fast", "do faster dfa transition table compression",
+	  DFA_CONTROL_TRANS_HIGH },
+	{ 0, NULL, NULL, 0 },
+};
+
+static void print_flag_table(optflag_table_t *table)
+{
+	int i;
+	unsigned int longest = 0;
+	for (i = 0; table[i].option; i++) {
+		if (strlen(table[i].option) > longest)
+			longest = strlen(table[i].option);
+	}
+
+	for (i = 0; table[i].option; i++) {
+		printf("%5s%-*s \t%s\n", (table[i].control & 1) ? "[no-]" : "",
+		       longest, table[i].option, table[i].desc);
+	}
+}
+
+static int handle_flag_table(optflag_table_t *table, const char *optarg,
+			     dfaflags_t *flags)
+{
+	const char *arg = optarg;
+	int i, invert = 0;
+
+	if (strncmp(optarg, "no-", 3) == 0) {
+		arg = optarg + 3;
+		invert = 1;
+	}
+
+	for (i = 0; table[i].option; i++) {
+		if (strcmp(table[i].option, arg) == 0) {
+			/* check if leading no- was specified but is not
+			 * supported by the option */
+			if (invert && !(table[i].control & 1))
+				return 0;
+			if (table[i].control & 2)
+				invert |= 1;
+			if (invert)
+				*flags &= ~table[i].flags;
+			else
+				*flags |= table[i].flags;
+			return 1;
+		}
+	}
+	return 0;
+}
+
 static void display_dump(char *command)
 {
 	display_version();
 	printf("\n%s: --dump [Option]\n\n"
 	       "Options:\n"
 	       "--------\n"
-	       "no option specified	Dump variables\n"
-	       "variables		Dump variables\n"
-	       "expanded-variables	Dump expanded variables\n"
-	       "rule-exprs		Dump rule to expr tree conversions\n"
-	       "expr-stats		Dump stats on expr tree\n"
-	       "expr-tree		Dump expression tree\n"
-	       "expr-simple		Dump simplified expression tree\n"
-	       "dfa-progress		Dump dfa creation as in progress\n"
-	       "dfa-stats		Dump dfa creation stats\n"
-	       "dfa-states		Dump dfa state diagram\n"
-	       "dfa-graph		Dump dfa dot (graphviz) graph\n"
-	       "dfa-minimize		Dump dfa minimization\n"
-	       "dfa-unreachable		Dump dfa unreachable states\n"
-	       "compress-progress	Dump progress of compression\n"
-	       "compress-stats		Dump stats on compression\n"
-	       "compressed-dfa		Dump compressed dfa\n"
-	       "equiv-stats		Dump equivance class stats\n"
-	       "equiv			Dump equivance class\n"
+	       "     none specified \tDump variables\n"
+	       "     variables      \tDump variables\n"
 	       ,command);
+	print_flag_table(dumpflag_table);
 }
 
 static void display_optimize(char *command)
@@ -212,19 +307,8 @@ static void display_optimize(char *command)
 	printf("\n%s: -O [Option]\n\n"
 	       "Options:\n"
 	       "--------\n"
-	       "0			no optimizations\n"
-	       "[no-]equiv		use equivalent classes\n"
-	       "[no-]expr-normalize	do expr normalization\n"
-	       "[no-]expr-simplify	do expr tree simplification\n"
-	       "expr-left-simplify	do left simplification first\n"
-	       "expr-right-simplify	do right simplification first\n"
-	       "[no-]minimize		do state minimization\n"
-	       "[no-]hash-perms		use permission hashing to setup partitions at start of minimization\n"
-	       "[no-]hash-trans		use transition hashing to setup partitions at start of minimization\n"
-	       "[no-]remove-unreachable	do unreachable state removal\n"
-	       "compress-high		try to do extra transition table compression\n"
-	       "compress-fast		do faster transition table compression\n"
 	       ,command);
+	print_flag_table(optflag_table);
 }
 
 void pwarn(char *fmt, ...)
@@ -257,8 +341,6 @@ static int process_args(int argc, char *argv[])
 	int c, o;
 	int count = 0;
 	option = OPTION_ADD;
-	const char *arg;
-	dfaflags_t flags;
 
 	while ((c = getopt_long(argc, argv, "adf:h::rRVvI:b:BCD:NSm:qQn:XKTWkO:po:", long_options, &o)) != -1)
 	{
@@ -354,38 +436,8 @@ static int process_args(int argc, char *argv[])
 				dump_vars = 1;
 			} else if (strcmp(optarg, "expanded-variables") == 0) {
 				dump_expanded_vars = 1;
-			} else if (strcmp(optarg, "rule-exprs") == 0) {
-				dfaflags |= DFA_DUMP_RULE_EXPR;
-			} else if (strcmp(optarg, "expr-tree") == 0) {
-				dfaflags |= DFA_DUMP_TREE;
-			} else if (strcmp(optarg, "expr-simple") == 0) {
-				dfaflags |= DFA_DUMP_SIMPLE_TREE;
-			} else if (strcmp(optarg, "expr-stats") == 0) {
-				dfaflags |= DFA_DUMP_TREE_STATS;
-			} else if (strcmp(optarg, "dfa-progress") == 0) {
-				dfaflags |= DFA_DUMP_PROGRESS | DFA_DUMP_STATS;
-			} else if (strcmp(optarg, "dfa-stats") == 0) {
-				dfaflags |= DFA_DUMP_STATS;
-			} else if (strcmp(optarg, "dfa-states") == 0) {
-				dfaflags |= DFA_DUMP_STATES;
-			} else if (strcmp(optarg, "dfa-graph") == 0) {
-				dfaflags |= DFA_DUMP_GRAPH;
-			} else if (strcmp(optarg, "dfa- minimize") == 0) {
-				dfaflags |= DFA_DUMP_MINIMIZE;
-			} else if (strcmp(optarg, "dfa-unreachable") == 0) {
-				dfaflags |= DFA_DUMP_UNREACHABLE;
-			} else if (strcmp(optarg, "compress-progress") == 0) {
-				dfaflags |= DFA_DUMP_TRANS_PROGRESS |
-				  DFA_DUMP_TRANS_STATS;
-			} else if (strcmp(optarg, "compress-stats") == 0) {
-				dfaflags |= DFA_DUMP_TRANS_STATS;
-			} else if (strcmp(optarg, "compressed-dfa") == 0) {
-				dfaflags |= DFA_DUMP_TRANS_TABLE;
-			} else if (strcmp(optarg, "equiv") == 0) {
-				dfaflags |= DFA_DUMP_EQUIV;
-			} else if (strcmp(optarg, "equiv-stats") == 0) {
-				dfaflags |= DFA_DUMP_EQUIV_STATS;
-			} else {
+			} else if (!handle_flag_table(dumpflag_table, optarg,
+						      &dfaflags)) {
 				PERROR("%s: Invalid --Dump option %s\n",
 				       progname, optarg);
 				exit(1);
@@ -393,57 +445,13 @@ static int process_args(int argc, char *argv[])
 			break;
 		case 'O':
 			skip_read_cache = 1;
-			arg = optarg;
-			flags = 0;
 
-			if (strcmp(optarg, "0") == 0) {
-				dfaflags &= ~(DFA_CONTROL_TREE_NORMAL |
-					      DFA_CONTROL_TREE_SIMPLE |
-					      DFA_CONTROL_MINIMIZE |
-					      DFA_CONTROL_REMOVE_UNREACHABLE);
-				break;
-			} else if (strcmp(optarg, "expr-left-simplify") == 0) {
-				dfaflags |= DFA_CONTROL_TREE_LEFT;
-				break;
-			} else if (strcmp(optarg, "expr-right-simplify") == 0) {
-				dfaflags &= ~DFA_CONTROL_TREE_LEFT;
-				break;
-			} else if (strcmp(optarg, "compress-fast") == 0) {
-				dfaflags &= ~DFA_CONTROL_TRANS_HIGH;
-				break;
-			} else if (strcmp(optarg, "compress-high") == 0) {
-				dfaflags |= DFA_CONTROL_TRANS_HIGH;
-				break;
-			}
-
-			if (strncmp(optarg, "no-", 3))
-				arg = optarg + 3;
-
-			if (strcmp(arg, "equiv") == 0) {
-				flags |= DFA_CONTROL_EQUIV;
-			} else if (strcmp(arg, "expr-normalize") == 0) {
-				flags |= DFA_CONTROL_TREE_NORMAL;
-			} else if (strcmp(arg, "expr-simplify") == 0) {
-				flags |= DFA_CONTROL_TREE_SIMPLE;
-			} else if (strcmp(arg, "minimize") == 0) {
-				flags |= DFA_CONTROL_MINIMIZE;
-			} else if (strcmp(arg, "hash-trans") == 0) {
-				flags |= DFA_CONTROL_MINIMIZE_HASH_TRANS;
-			} else if (strcmp(arg, "hash-perms") == 0) {
-				flags |= DFA_CONTROL_MINIMIZE_HASH_PERMS;
-			} else if (strcmp(arg, "remove-unreachable") == 0) {
-				flags |= DFA_CONTROL_REMOVE_UNREACHABLE;
-			} else {
+			if (!handle_flag_table(optflag_table, optarg,
+					       &dfaflags)) {
 				PERROR("%s: Invalid --Optimize option %s\n",
 				       progname, optarg);
 				exit(1);
 			}
-
-			if (strncmp(optarg, "no-", 3))
-				dfaflags &= ~flags;
-			else
-				dfaflags |= flags;
-
 			break;
 		case 'm':
 			match_string = strdup(optarg);
