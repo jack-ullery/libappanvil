@@ -49,7 +49,7 @@ ifndef CFLAGS
 CFLAGS	= -g -O2 -pipe
 
 ifdef DEBUG
-CFLAGS = -g
+CFLAGS += -pg
 endif
 endif #CFLAGS
 
@@ -235,7 +235,7 @@ check: tests
 .SILENT: $(AAREOBJECTS)
 .PHONY: $(AAREOBJECTS)
 $(AAREOBJECTS):
-	make -C $(AAREDIR) CFLAGS="$(CFLAGS)"
+	make -C $(AAREDIR) CFLAGS="$(EXTRA_CFLAGS)"
 
 .PHONY: install-rhel4
 install-rhel4: install-redhat
