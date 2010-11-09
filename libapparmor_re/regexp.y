@@ -42,31 +42,31 @@
     }
 
     /**
-     * A DFA state is a set of important nodes in the syntax tree. This
-     * includes AcceptNodes, which indicate that when a match ends in a
-     * particular state, the regular expressions that the AcceptNode
-     * belongs to match.
+     * When creating DFAs from regex trees, a DFA state is constructed from
+     * a set of important nodes in the syntax tree. This includes AcceptNodes,
+     * which indicate that when a match ends in a particular state, the
+     * regular expressions that the AcceptNode belongs to match.
      */
     class ImportantNode;
-    typedef set <ImportantNode *> State;
+    typedef set <ImportantNode *> NodeSet;
 
     /**
-     * Out-edges from a state to another: we store the follow-state
+     * Out-edges from a state to another: we store the follow-set of Nodes
      * for each input character that is not a default match in
      * cases (i.e., following a CharNode or CharSetNode), and default
      * matches in otherwise as well as in all matching explicit cases
      * (i.e., following an AnyCharNode or NotCharSetNode). This avoids
      * enumerating all the explicit tranitions for default matches.
      */
-    typedef struct Cases {
-	typedef map<uchar, State *>::iterator iterator;
+    typedef struct NodeCases {
+	typedef map<uchar, NodeSet *>::iterator iterator;
 	iterator begin() { return cases.begin(); }
 	iterator end() { return cases.end(); }
 
-	Cases() : otherwise(0) { }
-	map<uchar, State *> cases;
-	State *otherwise;
-    } Cases;
+	NodeCases() : otherwise(0) { }
+	map<uchar, NodeSet *> cases;
+	NodeSet *otherwise;
+    } NodeCases;
 
 
     /* An abstract node in the syntax tree. */
@@ -98,14 +98,21 @@
 	virtual ostream& dump(ostream& os) = 0;
 
 	bool nullable;
-	State firstpos, lastpos, followpos;
+	NodeSet firstpos, lastpos, followpos;
 	/* child 0 is left, child 1 is right */
 	Node *child[2];
 
 	unsigned int label;	/* unique number for debug etc */
 	/**
-	 * We need reference counting for AcceptNodes: sharing AcceptNodes
-	 * avoids introducing duplicate States with identical accept values.
+	 * We use reference counting for AcceptNodes: sharing AcceptNodes
+	 * reduces introducing duplicate States with identical accept values.
+	 * This is important as it reduces the size of dfa created,
+	 * this could be cleaned up in state minimization but its far
+	 * faster and less resource intensive to never create the extra
+	 * states in the first place.
+	 *
+	 * Note: this does not guarentee the creation of a minimum dfa,
+	 * it only reduces the number of extra states created.
 	 */
 	unsigned int refcount;
 	Node *dup(void)
@@ -160,21 +167,21 @@
 	void compute_lastpos() {
 	    lastpos.insert(this);
 	}
-	virtual void follow(Cases& cases) = 0;
+	virtual void follow(NodeCases& cases) = 0;
     };
 
     /* Match one specific character (/c/). */
     class CharNode : public ImportantNode {
     public:
 	CharNode(uchar c) : c(c) { }
-	void follow(Cases& cases)
+	void follow(NodeCases& cases)
 	{
-	    State **x = &cases.cases[c];
+	    NodeSet **x = &cases.cases[c];
 	    if (!*x) {
 		if (cases.otherwise)
-		    *x = new State(*cases.otherwise);
+		    *x = new NodeSet(*cases.otherwise);
 		else
-		    *x = new State;
+		    *x = new NodeSet;
 	    }
 	    (*x)->insert(followpos.begin(), followpos.end());
 	}
@@ -197,15 +204,15 @@
     class CharSetNode : public ImportantNode {
     public:
 	CharSetNode(Chars& chars) : chars(chars) { }
-	void follow(Cases& cases)
+	void follow(NodeCases& cases)
 	{
 	    for (Chars::iterator i = chars.begin(); i != chars.end(); i++) {
-		State **x = &cases.cases[*i];
+		NodeSet **x = &cases.cases[*i];
 		if (!*x) {
 		    if (cases.otherwise)
-			*x = new State(*cases.otherwise);
+			*x = new NodeSet(*cases.otherwise);
 		    else
-			*x = new State;
+			*x = new NodeSet;
 		}
 		(*x)->insert(followpos.begin(), followpos.end());
 	    }
@@ -238,21 +245,21 @@
     class NotCharSetNode : public ImportantNode {
     public:
 	NotCharSetNode(Chars& chars) : chars(chars) { }
-	void follow(Cases& cases)
+	void follow(NodeCases& cases)
 	{
 	    if (!cases.otherwise)
-		cases.otherwise = new State;
+		cases.otherwise = new NodeSet;
 	    for (Chars::iterator j = chars.begin(); j != chars.end(); j++) {
-		State **x = &cases.cases[*j];
+		NodeSet **x = &cases.cases[*j];
 		if (!*x)
-		    *x = new State(*cases.otherwise);
+		    *x = new NodeSet(*cases.otherwise);
 	    }
 	    /**
 	     * Note: Add to the nonmatching characters after copying away the
 	     * old otherwise state for the matching characters.
 	     */
 	    cases.otherwise->insert(followpos.begin(), followpos.end());
-	    for (Cases::iterator i = cases.begin(); i != cases.end(); i++) {
+	    for (NodeCases::iterator i = cases.begin(); i != cases.end(); i++) {
 		if (chars.find(i->first) == chars.end())
 		    i->second->insert(followpos.begin(), followpos.end());
 	    }
@@ -285,12 +292,12 @@
     class AnyCharNode : public ImportantNode {
     public:
 	AnyCharNode() { }
-	void follow(Cases& cases)
+	void follow(NodeCases& cases)
 	{
 	    if (!cases.otherwise)
-		cases.otherwise = new State;
+		cases.otherwise = new NodeSet;
 	    cases.otherwise->insert(followpos.begin(), followpos.end());
-	    for (Cases::iterator i = cases.begin(); i != cases.end(); i++)
+	    for (NodeCases::iterator i = cases.begin(); i != cases.end(); i++)
 		i->second->insert(followpos.begin(), followpos.end());
 	}
 	int eq(Node *other) {
@@ -310,7 +317,7 @@
     class AcceptNode : public ImportantNode {
     public:
 	AcceptNode() {}
-	void follow(Cases& cases)
+	void follow(NodeCases& cases)
 	{
 	    /* Nothing to follow. */
 	}
@@ -347,8 +354,8 @@
 	}
 	void compute_followpos()
 	{
-	    State from = child[0]->lastpos, to = child[1]->firstpos;
-	    for(State::iterator i = from.begin(); i != from.end(); i++) {
+	    NodeSet from = child[0]->lastpos, to = child[1]->firstpos;
+	    for(NodeSet::iterator i = from.begin(); i != from.end(); i++) {
 		(*i)->followpos.insert(to.begin(), to.end());
 	    }
 	}
@@ -387,8 +394,8 @@
 	}
 	void compute_followpos()
 	{
-	    State from = child[0]->lastpos, to = child[0]->firstpos;
-	    for(State::iterator i = from.begin(); i != from.end(); i++) {
+	    NodeSet from = child[0]->lastpos, to = child[0]->firstpos;
+	    for(NodeSet::iterator i = from.begin(); i != from.end(); i++) {
 		(*i)->followpos.insert(to.begin(), to.end());
 	    }
 	}
@@ -424,8 +431,8 @@
 	}
 	void compute_followpos()
 	{
-	    State from = child[0]->lastpos, to = child[0]->firstpos;
-	    for(State::iterator i = from.begin(); i != from.end(); i++) {
+	    NodeSet from = child[0]->lastpos, to = child[0]->firstpos;
+	    for(NodeSet::iterator i = from.begin(); i != from.end(); i++) {
 		(*i)->followpos.insert(to.begin(), to.end());
 	    }
 	}
@@ -1255,11 +1262,11 @@ void label_nodes(Node *root)
 /**
  * Text-dump a state (for debugging).
  */
-ostream& operator<<(ostream& os, const State& state)
+ostream& operator<<(ostream& os, const NodeSet& state)
 {
     os << '{';
     if (!state.empty()) {
-	State::iterator i = state.begin();
+	NodeSet::iterator i = state.begin();
 	for(;;) {
 	   os << (*i)->label;
 	    if (++i == state.end())
@@ -1292,20 +1299,61 @@ void dump_syntax_tree(ostream& os, Node *node) {
     os << endl;
 }
 
-/* Comparison operator for sets of <State *>.
- * Do compare pointer comparisom on set of <Node *>, the pointer comparison
+/* Comparison operator for sets of <NodeSet *>.
+ * Do compare pointer comparison on set of <Node *>, the pointer comparison
  * allows us to determine which Sets of <Node *> we have seen already from
  * new ones when constructing the DFA.
  */
 struct deref_less_than {
-  bool operator()(State * const & lhs, State * const & rhs) const
+  bool operator()(NodeSet * const & lhs, NodeSet * const & rhs) const
   { return *lhs < *rhs; }
 };
 
-typedef set<State *, deref_less_than > States;
+class State;
+/**
+ * State cases are identical to NodesCases except they map to State *
+ * instead of NodeSet.
+ * Out-edges from a state to another: we store the follow State
+ * for each input character that is not a default match in  cases and
+ * default matches in otherwise as well as in all matching explicit cases
+ * This avoids enumerating all the explicit tranitions for default matches.
+ */
+typedef struct Cases {
+	typedef map<uchar, State *>::iterator iterator;
+	iterator begin() { return cases.begin(); }
+	iterator end() { return cases.end(); }
+
+	Cases() : otherwise(0) { }
+	map<uchar, State *> cases;
+	State *otherwise;
+} Cases;
+
+/*
+ * State - DFA individual state information
+ * audit: the audit permission mask for the state
+ * accept: the accept permissions for the state
+ * cases: set of transitions from this state
+ */
+class State {
+public:
+State() : label (0), audit(0), accept(0), cases() { }
+	int label;
+	uint32_t audit, accept;
+	Cases cases;
+};
+
+ostream& operator<<(ostream& os, const State& state)
+{
+	/* currently just dump the state ptr */
+	os << '{';
+	os << state.label;
+	os << '}';
+	return os;
+}
+
 typedef list<State *> Partition;
+typedef map<NodeSet *, State *, deref_less_than > NodeMap;
 /* Transitions in the DFA. */
-typedef map<State *, Cases> Trans;
 
 class DFA {
 public:
@@ -1320,108 +1368,172 @@ public:
     void dump_dot_graph(ostream& os);
     map<uchar, uchar> equivalence_classes(dfaflags_t flags);
     void apply_equivalence_classes(map<uchar, uchar>& eq);
-    State *verify_perms(void);
     Node *root;
     State *nonmatching, *start;
-    States states;
-    Trans trans;
+    Partition states;
 };
+
+uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error);
+
+
+/* macro to help out with DFA creation, not done as inlined fn as nearly
+ * every line uses a different map or variable that would have to be passed
+ */
+#define update_for_nodes(NODES, TARGET) \
+do { \
+	map<NodeSet *, State *, deref_less_than>::iterator x = nodemap.find(NODES);	\
+	if (x == nodemap.end()) { \
+		/* set of nodes isn't known so create new state, and nodes to \
+		 * state mapping \
+		 */ \
+		nomatch_count++; \
+		TARGET = new State(); \
+		(TARGET)->label = nomatch_count; \
+		states.push_back(TARGET); \
+		nodemap.insert(make_pair(NODES, TARGET)); \
+		work_queue.push_back(NODES); \
+	} else { \
+		/* set of nodes already has a mapping so free this one */ \
+		match_count++; \
+		delete NODES; \
+		TARGET = x->second; \
+	} \
+} while (0)
 
 /**
  * Construct a DFA from a syntax tree.
  */
 DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 {
-    int i, match_count, nomatch_count;
-    i = match_count = nomatch_count = 0;
+	int i, match_count, nomatch_count;
+	i = match_count = nomatch_count = 0;
 
-    if (flags & DFA_DUMP_PROGRESS)
-	    fprintf(stderr, "Creating dfa:\r");
+	if (flags & DFA_DUMP_PROGRESS)
+		fprintf(stderr, "Creating dfa:\r");
 
-    for (depth_first_traversal i(root); i; i++) {
-	(*i)->compute_nullable();
-	(*i)->compute_firstpos();
-	(*i)->compute_lastpos();
-    }
-
-    if (flags & DFA_DUMP_PROGRESS)
-	    fprintf(stderr, "Creating dfa: followpos\r");
-    for (depth_first_traversal i(root); i; i++) {
-	(*i)->compute_followpos();
-    }
-
-    nonmatching = new State;
-    states.insert(nonmatching);
-
-    start = new State(root->firstpos);
-    states.insert(start);
-
-    list<State *> work_queue;
-    work_queue.push_back(start);
-    while (!work_queue.empty()) {
-	if (i % 1000 == 0 && (flags & DFA_DUMP_PROGRESS))
-		fprintf(stderr, "\033[2KCreating dfa: queue %ld\tstates %ld\tmatching %d\tnonmatching %d\r", work_queue.size(), states.size(), match_count, nomatch_count);
-        i++;
-
-	State *from = work_queue.front();
-	work_queue.pop_front();
-	Cases cases;
-	for (State::iterator i = from->begin(); i != from->end(); i++)
-	    (*i)->follow(cases);
-	if (cases.otherwise) {
-	    pair <States::iterator, bool> x = states.insert(cases.otherwise);
-	    if (x.second) {
-		nomatch_count++;
-		work_queue.push_back(cases.otherwise);
-	    } else {
-		match_count++;
-		delete cases.otherwise;
-		cases.otherwise = *x.first;
-	    }
+	for (depth_first_traversal i(root); i; i++) {
+		(*i)->compute_nullable();
+		(*i)->compute_firstpos();
+		(*i)->compute_lastpos();
 	}
-	for (Cases::iterator j = cases.begin(); j != cases.end(); j++) {
-	    pair <States::iterator, bool> x = states.insert(j->second);
-	    if (x.second) {
-		nomatch_count++;
-		work_queue.push_back(*x.first);
-	    } else {
-		match_count++;
-		delete j->second;
-		j->second = *x.first;
-	    }
+
+	if (flags & DFA_DUMP_PROGRESS)
+		fprintf(stderr, "Creating dfa: followpos\r");
+	for (depth_first_traversal i(root); i; i++) {
+		(*i)->compute_followpos();
 	}
-	Cases& here = trans.insert(make_pair(from, Cases())).first->second;
-	here.otherwise = cases.otherwise;
-	for (Cases::iterator j = cases.begin(); j != cases.end(); j++) {
-	    /**
-	     * Do not insert transitions that the default transition already
-	     * covers.
-	     */
-	    if (j->second != cases.otherwise)
-		here.cases.insert(*j);
+
+	NodeMap nodemap;
+	nonmatching = new State;
+	states.push_back(nonmatching);
+	NodeSet *emptynode = new NodeSet;
+	nodemap.insert(make_pair(emptynode, nonmatching));
+	/* there is no nodemapping for the nonmatching state */
+
+	start = new State;
+	start->label = 1;
+	nomatch_count++;
+	states.push_back(start);
+	NodeSet *first = new NodeSet(root->firstpos);
+	nodemap.insert(make_pair(first, start));
+
+	/* the work_queue contains the proto-states (set of nodes that is
+	 * the precurser of a state) that need to be computed
+	 *
+	 * TODO: currently the work_queue is treated in a breadth first
+	 *       search manner.  Test using the work_queue in a depth first
+	 *       manner, this may help reduce the number of entries on the
+	 *       work_queue at any given time, thus reducing peak memory use.
+	 */
+	list<NodeSet *> work_queue;
+	work_queue.push_back(first);
+
+	while (!work_queue.empty()) {
+		if (i % 1000 == 0 && (flags & DFA_DUMP_PROGRESS))
+			fprintf(stderr, "\033[2KCreating dfa: queue %ld\tstates %ld\tmatching %d\tnonmatching %d\r", work_queue.size(), states.size(), match_count, nomatch_count);
+		i++;
+
+		int error;
+		NodeSet *nodes = work_queue.front();
+		work_queue.pop_front();
+		State *from = nodemap[nodes];
+
+		/* Compute permissions associated with the State. */
+		from->accept = accept_perms(nodes, &from->audit, &error);
+		if (error) {
+			/* TODO!!!!!!!!!!!!!
+			 * permission error checking here
+			 */
+		}
+
+		/* Compute possible transitions for `nodes`.  This is done by
+		 * iterating over all the nodes in nodes and combining the
+		 * transitions.
+		 *
+		 * The resultant transition set is a mapping of characters to
+		 * sets of nodes.
+		 */
+		NodeCases cases;
+		for (NodeSet::iterator i = nodes->begin(); i != nodes->end(); i++)
+			(*i)->follow(cases);
+
+		/* Now for each set of nodes in the computed transitions, make
+		 * sure that there is a state that maps to it, and add the
+		 * matching case to the state.
+		 */
+
+		/* check the default transition first */
+		if (cases.otherwise) {
+			State *target;
+			update_for_nodes(cases.otherwise, target);
+			from->cases.otherwise = target;
+		}
+
+		/* For each transition from *from, check if the set of nodes it
+		 * transitions to already has been mapped to a state
+		 */
+		for (NodeCases::iterator j = cases.begin(); j != cases.end();
+		     j++) {
+			State *target;
+			update_for_nodes(j->second, target);
+			/* Don't insert transition that the default transition
+			 * already covers
+			 */
+			if (target != from->cases.otherwise)
+				from->cases.cases[j->first] = target;
+		}
+	} /* for (NodeSet *nodes ... */
+
+	/* cleanup Sets of nodes used computing the DFA as they are no longer
+	 * needed.
+	 */
+	for (depth_first_traversal i(root); i; i++) {
+		(*i)->firstpos.clear();
+		(*i)->lastpos.clear();
+		(*i)->followpos.clear();
 	}
-    }
+	for (NodeMap::iterator i = nodemap.begin(); i != nodemap.end(); i++)
+		delete i->first;
+	nodemap.clear();
 
-    for (depth_first_traversal i(root); i; i++) {
-	    (*i)->firstpos.clear();
-	    (*i)->lastpos.clear();
-	    (*i)->followpos.clear();
-    }
+	if (flags & (DFA_DUMP_STATS))
+		fprintf(stderr, "\033[2KCreated dfa: states %ld\tmatching %d\tnonmatching %d\n", states.size(), match_count, nomatch_count);
 
-    if (flags & (DFA_DUMP_STATS))
-	    fprintf(stderr, "\033[2KCreated dfa: states %ld\tmatching %d\tnonmatching %d\n", states.size(), match_count, nomatch_count);
 
-    if (!(flags & DFA_CONTROL_NO_MINIMIZE))
-	    minimize(flags);
+	/* TODO Dump dfa with NODE mapping - or node to dfa mapping */
+	// ??????
 
-    if (!(flags & DFA_CONTROL_NO_UNREACHABLE))
-	    remove_unreachable(flags);
+	if (!(flags & DFA_CONTROL_NO_MINIMIZE))
+		minimize(flags);
 
+	if (!(flags & DFA_CONTROL_NO_UNREACHABLE))
+		remove_unreachable(flags);
 }
+
 
 DFA::~DFA()
 {
-    for (States::iterator i = states.begin(); i != states.end(); i++)
+    for (Partition::iterator i = states.begin(); i != states.end(); i++)
 	delete *i;
 }
 
@@ -1447,25 +1559,6 @@ public:
     DenyMatchFlag(uint32_t flag, uint32_t quiet) : MatchFlag(flag, quiet) {}
 };
 
-uint32_t accept_perms(State *state, uint32_t *audit_ctl, int *error);
-
-/**
- * verify that there are no conflicting X permissions on the dfa
- * return NULL - perms verified okay
- *     State of 1st encountered with bad X perms
- */
-State *DFA::verify_perms(void)
-{
-    int error = 0;
-    for (States::iterator i = states.begin(); i != states.end(); i++) {
-	    uint32_t accept = accept_perms(*i, NULL, &error);
-	if (*i == start || accept) {
-	    if (error)
-		    return *i;
-	}
-    }
-    return NULL;
-}
 
 /* Remove dead or unreachable states */
 void DFA::remove_unreachable(dfaflags_t flags)
@@ -1481,16 +1574,12 @@ void DFA::remove_unreachable(dfaflags_t flags)
 		work_queue.pop_front();
 		reachable.insert(from);
 
-		Trans::iterator i = trans.find(from);
-		if (i == trans.end() && from != nonmatching)
-			continue;
+		if (from->cases.otherwise &&
+		    (reachable.find(from->cases.otherwise) == reachable.end()))
+			work_queue.push_back(from->cases.otherwise);
 
-		if (i->second.otherwise &&
-		    (reachable.find(i->second.otherwise) == reachable.end()))
-			work_queue.push_back(i->second.otherwise);
-
-		for (Cases::iterator j = i->second.begin();
-		     j != i->second.end(); j++) {
+		for (Cases::iterator j = from->cases.begin();
+		     j != from->cases.end(); j++) {
 			if (reachable.find(j->second) == reachable.end())
 				work_queue.push_back(j->second);
 		}
@@ -1499,30 +1588,27 @@ void DFA::remove_unreachable(dfaflags_t flags)
 	/* walk the set of states and remove any that aren't reachable */
 	if (reachable.size() < states.size()) {
 		int count = 0;
-		States::iterator i;
-		States::iterator next;
+		Partition::iterator i;
+		Partition::iterator next;
 		for (i = states.begin(); i != states.end(); i = next) {
 			next = i;
 			next++;
 			if (reachable.find(*i) == reachable.end()) {
-				states.erase(*i);
-				Trans::iterator t = trans.find(*i);
-				if (t != trans.end())
-					trans.erase(t);
 				if (flags & DFA_DUMP_UNREACHABLE) {
-					uint32_t audit, accept = accept_perms(*i, &audit, NULL);
 					cerr << "unreachable: "<< **i;
 					if (*i == start)
 						cerr << " <==";
-					if (accept) {
-						cerr << " (0x" << hex << accept
-						 << " " << audit << dec << ')';
+					if ((*i)->accept) {
+						cerr << " (0x" << hex << (*i)->accept
+						     << " " << (*i)->audit << dec << ')';
 					}
 					cerr << endl;
 				}
+				State *current = *i;
+				states.erase(i);
+				delete(current);
+				count++;
 			}
-			delete(*i);
-			count++;
 		}
 
 		if (count && (flags & DFA_DUMP_STATS))
@@ -1535,35 +1621,23 @@ void DFA::remove_unreachable(dfaflags_t flags)
 bool DFA::same_mappings(map <State *, Partition *> &partition_map, State *s1,
 			State *s2)
 {
-	Trans::iterator i1 = trans.find(s1);
-	Trans::iterator i2 = trans.find(s2);
-
-	if (i1 == trans.end()) {
-		if (i2 == trans.end()) {
-			return true;
-		}
-		return false;
-	} else if (i2 == trans.end()) {
-		return false;
-	}
-
-	if (i1->second.otherwise) {
-		if (!i2->second.otherwise)
+	if (s1->cases.otherwise) {
+		if (!s2->cases.otherwise)
 			return false;
-		Partition *p1 = partition_map.find(i1->second.otherwise)->second;
-		Partition *p2 = partition_map.find(i2->second.otherwise)->second;
+		Partition *p1 = partition_map.find(s1->cases.otherwise)->second;
+		Partition *p2 = partition_map.find(s2->cases.otherwise)->second;
 		if (p1 != p2)
 			return false;
-	} else if (i2->second.otherwise) {
+	} else if (s2->cases.otherwise) {
 		return false;
 	}
 
-	if (i1->second.cases.size() != i2->second.cases.size())
+	if (s1->cases.cases.size() != s2->cases.cases.size())
 		return false;
-	for (Cases::iterator j1 = i1->second.begin(); j1 != i1->second.end();
+	for (Cases::iterator j1 = s1->cases.begin(); j1 != s1->cases.end();
 	     j1++){
-		Cases::iterator j2 = i2->second.cases.find(j1->first);
-		if (j2 == i2->second.end())
+		Cases::iterator j2 = s2->cases.cases.find(j1->first);
+		if (j2 == s2->cases.end())
 			return false;
 		Partition *p1 = partition_map.find(j1->second)->second;
 		Partition *p2 = partition_map.find(j2->second)->second;
@@ -1585,23 +1659,19 @@ size_t DFA::hash_trans(State *s)
 {
         unsigned long hash = 5381;
 
-	Trans::iterator i = trans.find(s);
-	if (i == trans.end())
-		return 0;
-
-	for (Cases::iterator j = i->second.begin(); j != i->second.end(); j++){
+	for (Cases::iterator j = s->cases.begin(); j != s->cases.end(); j++){
 		hash = ((hash << 5) + hash) + j->first;
-		Trans::iterator k = trans.find(j->second);
-		hash = ((hash << 5) + hash) + k->second.cases.size();
+		State *k = j->second;
+		hash = ((hash << 5) + hash) + k->cases.cases.size();
 	}
 
-	if (i->second.otherwise && i->second.otherwise != nonmatching) {
+	if (s->cases.otherwise && s->cases.otherwise != nonmatching) {
 		hash = ((hash << 5) + hash) + 5381;
-		Trans::iterator k = trans.find(i->second.otherwise);
-		hash = ((hash << 5) + hash) + k->second.cases.size();
+		State *k = s->cases.otherwise;
+		hash = ((hash << 5) + hash) + k->cases.cases.size();
 	}
 
-	hash = (hash << 8) | i->second.cases.size();
+	hash = (hash << 8) | s->cases.cases.size();
         return hash;
 }
 
@@ -1614,16 +1684,12 @@ void DFA::minimize(dfaflags_t flags)
 	
 	/* Set up the initial partitions - 1 non accepting, and a
 	 * partion for each unique combination of permissions
-	 *
-	 * Save off accept value for State so we don't have to recompute
-	 * this should be fixed by updating State to store them but this
-	 * will work for now
 	 */
-
 	int accept_count = 0;
-	for (States::iterator i = states.begin(); i != states.end(); i++) {
+	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
 		uint32_t accept1, accept2;
-		accept1 = accept_perms(*i, &accept2, NULL);
+		accept1 = (*i)->accept;
+		accept2 = (*i)->accept;
 		uint64_t combined = ((uint64_t)accept2)<<32 | (uint64_t)accept1;
 		size_t size = 0;
 		if (!(flags & DFA_CONTROL_NO_HASH_PART))
@@ -1642,6 +1708,7 @@ void DFA::minimize(dfaflags_t flags)
 			partition_map.insert(make_pair(*i, p->second));
 			p->second->push_back(*i);
 		}
+
 		if ((flags & DFA_DUMP_PROGRESS) &&
 		    (partitions.size() % 1000 == 0))
 			cerr << "\033[2KMinimize dfa: partitions " << partitions.size() << "\tinit " << partitions.size() << "\t(accept " << accept_count << ")\r";
@@ -1697,7 +1764,7 @@ void DFA::minimize(dfaflags_t flags)
 	} while(new_part_count);
 
 	if (flags & DFA_DUMP_STATS)
-		cerr << "\033[2KMinimize dfa: partitions " << partitions.size() << "\tinit " << init_count << "\t(accept " << accept_count << ")\n";
+		cerr << "\033[2KMinimized dfa: partitions " << partitions.size() << "\tinit " << init_count << "\t(accept " << accept_count << ")\n";
 
 
 	if (partitions.size() == states.size()) {
@@ -1707,7 +1774,7 @@ void DFA::minimize(dfaflags_t flags)
 	/* Remap the dfa so it uses the representative states
 	 * Use the first state of a partition as the representative state
 	 * At this point all states with in a partion have transitions
-	 * to same states within the same partitions
+	 * to states within the same partitions
 	 */
        	for (list <Partition *>::iterator p = partitions.begin();
 	     p != partitions.end(); p++) {
@@ -1715,19 +1782,26 @@ void DFA::minimize(dfaflags_t flags)
 		State *rep = *((*p)->begin());
 
 		/* update representative state's transitions */
-		Trans::iterator i = trans.find(rep);
-		if (i != trans.end()) {
-			if (i->second.otherwise) {
-				map <State *, Partition *>::iterator z = partition_map.find(i->second.otherwise);
-				Partition *partition = partition_map.find(i->second.otherwise)->second;
-				i->second.otherwise = *partition->begin();
-			}
-			for (Cases::iterator c = i->second.begin();
-			     c != i->second.end(); c++) {
-				Partition *partition = partition_map.find(c->second)->second;
-				c->second = *partition->begin();
-			}
+		if (rep->cases.otherwise) {
+			map <State *, Partition *>::iterator z = partition_map.find(rep->cases.otherwise);
+			Partition *partition = partition_map.find(rep->cases.otherwise)->second;
+			rep->cases.otherwise = *partition->begin();
 		}
+		for (Cases::iterator c = rep->cases.begin();
+		     c != rep->cases.end(); c++) {
+			Partition *partition = partition_map.find(c->second)->second;
+			c->second = *partition->begin();
+		}
+
+//if ((*p)->size() > 1)
+//cerr << rep->label << ": ";
+		/* clear the state label for all non representative states */
+		for (Partition::iterator i = ++(*p)->begin(); i != (*p)->end(); i++) {
+//cerr << " " << (*i)->label;
+			(*i)->label = -1;
+		}
+//if ((*p)->size() > 1)
+//cerr << "\n";
 	}
 
 	/* make sure nonmatching and start state are up to date with the
@@ -1742,21 +1816,19 @@ void DFA::minimize(dfaflags_t flags)
 		if (*partition->begin() != start) {
 			start = *partition->begin();
 		}
-
 	}
+
 	/* Now that the states have been remapped, remove all states
-	 * that are not the representive states for their partition
+	 * that are not the representive states for their partition, they
+	 * will have a label == -1
 	 */
-	for (list <Partition *>::iterator p = partitions.begin();
-	     p != partitions.end(); p++) {
-		for (Partition::iterator i = ++(*p)->begin(); i != (*p)->end(); i++) {
-			Trans::iterator j = trans.find(*i);
-			if (j != trans.end())
-				trans.erase(j);
+	for (Partition::iterator i = states.begin(); i != states.end(); ) {
+		if ((*i)->label == -1) {
 			State *s = *i;
-			states.erase(*i);
+			i = states.erase(i);
 			delete(s);
-		}
+		} else
+			i++;
 	}
 
 out:
@@ -1773,28 +1845,24 @@ out:
  */
 void DFA::dump(ostream& os)
 {
-    int error = 0;
-    for (States::iterator i = states.begin(); i != states.end(); i++) {
-	    uint32_t accept, audit;
-	    accept = accept_perms(*i, &audit, &error);
-	if (*i == start || accept) {
+    for (Partition::iterator i = states.begin(); i != states.end(); i++) {
+	    if (*i == start || (*i)->accept) {
 	    os << **i;
 	    if (*i == start)
 		os << " <==";
-	    if (accept) {
-		os << " (0x" << hex << accept << " " << audit << dec << ')';
+	    if ((*i)->accept) {
+		    os << " (0x" << hex << (*i)->accept << " " << (*i)->audit << dec << ')';
 	    }
 	    os << endl;
 	}
     }
     os << endl;
 
-    for (Trans::iterator i = trans.begin(); i != trans.end(); i++) {
-	if (i->second.otherwise)
-	    os << *(i->first) << " -> " << *i->second.otherwise << endl;
-	for (Cases::iterator j = i->second.begin(); j != i->second.end(); j++) {
-	    os << *(i->first) << " -> " << *(j->second) << ":  "
-	       << j->first << endl;
+    for (Partition::iterator i = states.begin(); i != states.end(); i++) {
+	    if ((*i)->cases.otherwise)
+	      os << **i << " -> " << (*i)->cases.otherwise << endl;
+	    for (Cases::iterator j = (*i)->cases.begin(); j != (*i)->cases.end(); j++) {
+	    os << **i << " -> " << j->second << ":  " << j->first << endl;
 	}
     }
     os << endl;
@@ -1807,7 +1875,7 @@ void DFA::dump_dot_graph(ostream& os)
 {
     os << "digraph \"dfa\" {" << endl;
 
-    for (States::iterator i = states.begin(); i != states.end(); i++) {
+    for (Partition::iterator i = states.begin(); i != states.end(); i++) {
 	if (*i == nonmatching)
 	    continue;
 
@@ -1815,30 +1883,29 @@ void DFA::dump_dot_graph(ostream& os)
 	if (*i == start) {
 	    os << "\t\tstyle=bold" << endl;
 	}
-	int error = 0;
-	uint32_t perms = accept_perms(*i, NULL, &error);
+	uint32_t perms = (*i)->accept;
 	if (perms) {
 	    os << "\t\tlabel=\"" << **i << "\\n("
 	       << perms << ")\"" << endl;
 	}
 	os << "\t]" << endl;
     }
-    for (Trans::iterator i = trans.begin(); i != trans.end(); i++) {
-	Cases& cases = i->second;
+    for (Partition::iterator i = states.begin(); i != states.end(); i++) {
+	    Cases& cases = (*i)->cases;
 	Chars excluded;
 
 	for (Cases::iterator j = cases.begin(); j != cases.end(); j++) {
 	    if (j->second == nonmatching)
 		excluded.insert(j->first);
 	    else {
-		os << "\t\"" << *i->first << "\" -> \"";
-		os << *j->second << "\" [" << endl;
-		os << "\t\tlabel=\"" << j->first << "\"" << endl;
-		os << "\t]" << endl;
+		    os << "\t\"" << **i << "\" -> \"";
+		    os << j->second << "\" [" << endl;
+		    os << "\t\tlabel=\"" << j->first << "\"" << endl;
+		    os << "\t]" << endl;
 	    }
 	}
-	if (i->second.otherwise && i->second.otherwise != nonmatching) {
-	    os << "\t\"" << *i->first << "\" -> \"" << *i->second.otherwise
+	if (cases.otherwise && cases.otherwise != nonmatching) {
+		os << "\t\"" << **i << "\" -> \"" << cases.otherwise
 	       << "\" [" << endl;
 	    if (!excluded.empty()) {
 		os << "\t\tlabel=\"[^";
@@ -1864,8 +1931,8 @@ map<uchar, uchar> DFA::equivalence_classes(dfaflags_t flags)
     map<uchar, uchar> classes;
     uchar next_class = 1;
 
-    for (Trans::iterator i = trans.begin(); i != trans.end(); i++) {
-	Cases& cases = i->second;
+    for (Partition::iterator i = states.begin(); i != states.end(); i++) {
+	    Cases& cases = (*i)->cases;
 
 	/* Group edges to the same next state together */
 	map<const State *, Chars> node_sets;
@@ -1959,11 +2026,11 @@ void DFA::apply_equivalence_classes(map<uchar, uchar>& eq)
      * Note: We only transform the transition table; the nodes continue to
      * contain the original characters.
      */
-    for (Trans::iterator i = trans.begin(); i != trans.end(); i++) {
+    for (Partition::iterator i = states.begin(); i != states.end(); i++) {
 	map<uchar, State *> tmp;
-	tmp.swap(i->second.cases);
+	tmp.swap((*i)->cases.cases);
 	for (Cases::iterator j = tmp.begin(); j != tmp.end(); j++)
-	    i->second.cases.insert(make_pair(eq[j->first], j->second));
+		(*i)->cases.cases.insert(make_pair(eq[j->first], j->second));
     }
 }
 
@@ -2045,18 +2112,18 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq,
 	multimap <size_t, State *> order;
 	vector <pair<size_t, size_t> > free_list;
 
-	for (Trans::iterator i = dfa.trans.begin(); i != dfa.trans.end(); i++) {
-		if (i->first == dfa.start || i->first == dfa.nonmatching)
+	for (Partition::iterator i = dfa.states.begin(); i != dfa.states.end(); i++) {
+		if (*i == dfa.start || *i == dfa.nonmatching)
 			continue;
-		optimal += i->second.cases.size();
+		optimal += (*i)->cases.cases.size();
 		if (flags & DFA_CONTROL_TRANS_HIGH) {
 			size_t range = 0;
-			if (i->second.cases.size())
-				range = i->second.cases.rbegin()->first - i->second.begin()->first;
-			size_t ord = ((256 - i->second.cases.size()) << 8) |
+			if ((*i)->cases.cases.size())
+				range = (*i)->cases.cases.rbegin()->first - (*i)->cases.begin()->first;
+			size_t ord = ((256 - (*i)->cases.cases.size()) << 8) |
 				(256 - range);
 			/* reverse sort by entry count, most entries first */
-			order.insert(make_pair(ord, i->first));
+			order.insert(make_pair(ord, *i));
 		}
 	}
 
@@ -2083,14 +2150,12 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq,
 	int count = 2;
 
 	if (!(flags & DFA_CONTROL_TRANS_HIGH)) {
-		for (States::iterator i = dfa.states.begin(); i != dfa.states.end();
+		for (Partition::iterator i = dfa.states.begin(); i != dfa.states.end();
 		     i++) {
 			if (*i != dfa.nonmatching && *i != dfa.start) {
 				insert_state(free_list, *i, dfa);
-				int error = 0;
-				uint32_t audit_ctl;
-				accept[num.size()] = accept_perms(*i, &audit_ctl, &error);
-				accept2[num.size()] = audit_ctl;
+				accept[num.size()] = (*i)->accept;
+				accept2[num.size()] = (*i)->audit;
 				num.insert(make_pair(*i, num.size()));
 			}
 			if (flags & (DFA_DUMP_TRANS_PROGRESS)) {
@@ -2104,10 +2169,8 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq,
 		     i != order.end(); i++) {
 			if (i->second != dfa.nonmatching && i->second != dfa.start) {
 				insert_state(free_list, i->second, dfa);
-				int error = 0;
-				uint32_t audit_ctl;
-				accept[num.size()] = accept_perms(i->second, &audit_ctl, &error);
-				accept2[num.size()] = audit_ctl;
+				accept[num.size()] = i->second->accept;
+				accept2[num.size()] = i->second->audit;
 				num.insert(make_pair(i->second, num.size()));
 			}
 			if (flags & (DFA_DUMP_TRANS_PROGRESS)) {
@@ -2155,11 +2218,7 @@ void TransitionTable::insert_state(vector <pair<size_t, size_t> > &free_list,
 	size_t base = 0;
 	int resize;
 
-	Trans::iterator i = dfa.trans.find(from);
-	if (i == dfa.trans.end()) {
-		return;
-	}
-	Cases& cases = i->second;
+	Cases& cases = from->cases;
 	size_t c = cases.begin()->first;
 	size_t prev = 0;
 	size_t x = first_free;
@@ -2527,14 +2586,14 @@ static inline int diff_qualifiers(uint32_t perm1, uint32_t perm2)
  * have any exact matches, then they override the execute and safe
  * execute flags.
  */
-uint32_t accept_perms(State *state, uint32_t *audit_ctl, int *error)
+uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error)
 {
     uint32_t perms = 0, exact_match_perms = 0, audit = 0, exact_audit = 0,
 	    quiet = 0, deny = 0;
 
     if (error)
 	    *error = 0;
-    for (State::iterator i = state->begin(); i != state->end(); i++) {
+    for (NodeSet::iterator i = state->begin(); i != state->end(); i++) {
 	    MatchFlag *match;
 	    if (!(match= dynamic_cast<MatchFlag *>(*i)))
 		continue;
@@ -2821,10 +2880,11 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, size_t *size, dfaflags_t
     } else if (flags & DFA_DUMP_EQUIV)
 	    cerr << "\nDFA did not generate an equivalence class\n";
 
-    if (dfa.verify_perms()) {
-	*size = 0;
-	return NULL;
-    }
+// TODO: perm verification needs to be moved into dfa creation
+//    if (dfa.verify_perms()) {
+//	*size = 0;
+//	return NULL;
+//    }
 
     stringstream stream;
     TransitionTable transition_table(dfa, eq, flags);
