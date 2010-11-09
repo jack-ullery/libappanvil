@@ -69,7 +69,7 @@ int binary_input = 0;
 int names_only = 0;
 int dump_vars = 0;
 int dump_expanded_vars = 0;
-dfaflags_t dfaflags = 0;
+dfaflags_t dfaflags = DFA_CONTROL_MINIMIZE_HASH_TRANS | DFA_CONTROL_MINIMIZE_HASH_PERMS;
 int conf_verbose = 0;
 int conf_quiet = 0;
 int kernel_load = 1;
@@ -222,7 +222,8 @@ static void display_optimize(char *command)
 	       "expr-left-simplify	do left simplification first\n"
 	       "expr-right-simplify	do right simplification first\n"
 	       "no-minimize		don't do state minimization\n"
-	       "no-hash-part		don't hash partitions at start of minimization\n"
+	       "no-hash-perms		don't use permission hashing to setup partitions at start of minimization\n"
+	       "no-hash-trans		don't use transition hashing to setup partitions at start of minimization\n"
 	       "no-remove-unreachable	don't do unreachable state removal\n"
 	       "trans-comp-high		try to do extra transition table compression\n"
 	       "trans-comp-fast		do faster transition table compression\n"
@@ -418,10 +419,14 @@ static int process_args(int argc, char *argv[])
 				dfaflags &= ~DFA_CONTROL_NO_MINIMIZE;
 			} else if (strcmp(optarg, "no-minimize") == 0) {
 				dfaflags |= DFA_CONTROL_NO_MINIMIZE;
-			} else if (strcmp(optarg, "hash-part") == 0) {
-				dfaflags &= ~DFA_CONTROL_NO_HASH_PART;
-			} else if (strcmp(optarg, "no-hash-part") == 0) {
-				dfaflags |= DFA_CONTROL_NO_HASH_PART;
+			} else if (strcmp(optarg, "hash-trans") == 0) {
+				dfaflags |= DFA_CONTROL_MINIMIZE_HASH_TRANS;
+			} else if (strcmp(optarg, "no-hash-trans") == 0) {
+				dfaflags &= ~DFA_CONTROL_MINIMIZE_HASH_TRANS;
+			} else if (strcmp(optarg, "hash-perm") == 0) {
+				dfaflags |= DFA_CONTROL_MINIMIZE_HASH_PERMS;
+			} else if (strcmp(optarg, "no-hash-perms") == 0) {
+				dfaflags &= ~DFA_CONTROL_MINIMIZE_HASH_PERMS;
 			} else if (strcmp(optarg, "trans-comp-fast") == 0) {
 				dfaflags &= ~DFA_CONTROL_TRANS_HIGH;
 			} else if (strcmp(optarg, "trans-comp-high") == 0) {

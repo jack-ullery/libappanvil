@@ -1700,19 +1700,32 @@ void DFA::minimize(dfaflags_t flags)
 	list <Partition *> partitions;
 	map <State *, Partition *> partition_map;
 	
-	/* Set up the initial partitions - 1 non accepting, and a
-	 * partion for each unique combination of permissions
+	/* Set up the initial partitions
+	 * minimium of - 1 non accepting, and 1 accepting
+	 * if trans hashing is used the accepting and non-accepting partitions
+	 * can be further split based on the number and type of transitions
+	 * a state makes.
+	 * If permission hashing is enabled the accepting partitions can
+	 * be further divided by permissions.  This can result in not
+	 * obtaining a truely minimized dfa but comes close, and can speedup
+	 * minimization.
 	 */
 	int accept_count = 0;
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
-		uint32_t accept1, accept2;
-		accept1 = (*i)->accept;
-		accept2 = (*i)->accept;
-		uint64_t combined = ((uint64_t)accept2)<<32 | (uint64_t)accept1;
-		size_t size = 0;
-		if (!(flags & DFA_CONTROL_NO_HASH_PART))
-			size = hash_trans(*i);
-		pair <uint64_t, size_t> group = make_pair(combined, size);
+		uint64_t perm_hash = 0;
+		if (flags & DFA_CONTROL_MINIMIZE_HASH_PERMS) {
+			/* make every unique perm create a new partition */
+			perm_hash = ((uint64_t)(*i)->audit)<<32 |
+				(uint64_t)(*i)->accept;
+		} else if ((*i)->audit || (*i)->accept) {
+			/* combine all perms together into a single parition */
+			perm_hash = 1;
+		} /* else not an accept state so 0 for perm_hash */
+
+		size_t trans_hash = 0;
+		if (flags & DFA_CONTROL_MINIMIZE_HASH_TRANS)
+			trans_hash = hash_trans(*i);
+		pair <uint64_t, size_t> group = make_pair(perm_hash, trans_hash);
 		map <pair <uint64_t, size_t>, Partition *>::iterator p = perm_map.find(group);
 		if (p == perm_map.end()) {
 			Partition *part = new Partition();
@@ -1720,7 +1733,7 @@ void DFA::minimize(dfaflags_t flags)
 			perm_map.insert(make_pair(group, part));
 			partitions.push_back(part);
 			partition_map.insert(make_pair(*i, part));
-			if (combined)
+			if (perm_hash)
 				accept_count++;
 		} else {
 			partition_map.insert(make_pair(*i, p->second));
