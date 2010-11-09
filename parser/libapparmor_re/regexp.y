@@ -1300,13 +1300,18 @@ void dump_syntax_tree(ostream& os, Node *node) {
 }
 
 /* Comparison operator for sets of <NodeSet *>.
- * Do compare pointer comparison on set of <Node *>, the pointer comparison
+ * Compare set sizes, and if the sets are the same size
+ * do compare pointer comparison on set of <Node *>, the pointer comparison
  * allows us to determine which Sets of <Node *> we have seen already from
  * new ones when constructing the DFA.
  */
 struct deref_less_than {
   bool operator()(NodeSet * const & lhs, NodeSet * const & rhs) const
-  { return *lhs < *rhs; }
+  { if (lhs->size() == rhs->size())
+      return *lhs < *rhs;
+    else
+      return lhs->size() < rhs->size();
+  }
 };
 
 class State;
