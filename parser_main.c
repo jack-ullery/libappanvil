@@ -198,9 +198,9 @@ static void display_dump(char *command)
 	       "dfa-graph		Dump dfa dot (graphviz) graph\n"
 	       "dfa-minimize		Dump dfa minimization\n"
 	       "dfa-unreachable		Dump dfa unreachable states\n"
-	       "trans-progress		Dump progress of transition table\n"
-	       "trans-stats		Dump stats on transition table\n"
-	       "trans-table		Dump transition table\n"
+	       "compress-progress	Dump progress of compression\n"
+	       "compress-stats		Dump stats on compression\n"
+	       "compressed-dfa		Dump compressed dfa\n"
 	       "equiv-stats		Dump equivance class stats\n"
 	       "equiv			Dump equivance class\n"
 	       ,command);
@@ -222,8 +222,8 @@ static void display_optimize(char *command)
 	       "[no-]hash-perms		use permission hashing to setup partitions at start of minimization\n"
 	       "[no-]hash-trans		use transition hashing to setup partitions at start of minimization\n"
 	       "[no-]remove-unreachable	do unreachable state removal\n"
-	       "trans-comp-high		try to do extra transition table compression\n"
-	       "trans-comp-fast		do faster transition table compression\n"
+	       "compress-high		try to do extra transition table compression\n"
+	       "compress-fast		do faster transition table compression\n"
 	       ,command);
 }
 
@@ -372,12 +372,12 @@ static int process_args(int argc, char *argv[])
 				dfaflags |= DFA_DUMP_MINIMIZE;
 			} else if (strcmp(optarg, "dfa-unreachable") == 0) {
 				dfaflags |= DFA_DUMP_UNREACHABLE;
-			} else if (strcmp(optarg, "trans-progress") == 0) {
+			} else if (strcmp(optarg, "compress-progress") == 0) {
 				dfaflags |= DFA_DUMP_TRANS_PROGRESS |
 				  DFA_DUMP_TRANS_STATS;
-			} else if (strcmp(optarg, "trans-stats") == 0) {
+			} else if (strcmp(optarg, "compress-stats") == 0) {
 				dfaflags |= DFA_DUMP_TRANS_STATS;
-			} else if (strcmp(optarg, "trans-table") == 0) {
+			} else if (strcmp(optarg, "compressed-dfa") == 0) {
 				dfaflags |= DFA_DUMP_TRANS_TABLE;
 			} else if (strcmp(optarg, "equiv") == 0) {
 				dfaflags |= DFA_DUMP_EQUIV;
@@ -424,9 +424,9 @@ static int process_args(int argc, char *argv[])
 				dfaflags |= DFA_CONTROL_MINIMIZE_HASH_PERMS;
 			} else if (strcmp(optarg, "no-hash-perms") == 0) {
 				dfaflags &= ~DFA_CONTROL_MINIMIZE_HASH_PERMS;
-			} else if (strcmp(optarg, "trans-comp-fast") == 0) {
+			} else if (strcmp(optarg, "compress-fast") == 0) {
 				dfaflags &= ~DFA_CONTROL_TRANS_HIGH;
-			} else if (strcmp(optarg, "trans-comp-high") == 0) {
+			} else if (strcmp(optarg, "compress-high") == 0) {
 				dfaflags |= DFA_CONTROL_TRANS_HIGH;
 			} else if (strcmp(optarg, "remove-unreachable") == 0) {
 				dfaflags |= DFA_CONTROL_REMOVE_UNREACHABLE;
