@@ -132,10 +132,16 @@
         TwoChildNode(Node *left, Node *right) :  InnerNode(left, right) { };
     };
 
-    /* Match nothing (//). */
-    class EpsNode : public Node {
+    class LeafNode : public Node {
     public:
-	EpsNode()
+        LeafNode() : Node() { };
+
+    };
+
+    /* Match nothing (//). */
+    class EpsNode : public LeafNode {
+    public:
+    EpsNode() : LeafNode()
 	{
 	    nullable = true;
 	    label = 0;
@@ -169,9 +175,9 @@
      * characters that the regular expression matches. We also consider
      * AcceptNodes import: they indicate when a regular expression matches.
      */
-    class ImportantNode : public Node {
+    class ImportantNode : public LeafNode {
     public:
-	ImportantNode() { }
+        ImportantNode() : LeafNode() { }
 	void compute_firstpos()
 	{
 	    firstpos.insert(this);
