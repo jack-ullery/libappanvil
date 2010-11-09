@@ -913,7 +913,7 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
 			bool modified;
 			do {
 			    modified = false;
-			    if (!(flags & DFA_CONTROL_NO_TREE_NORMAL))
+			    if (flags & DFA_CONTROL_TREE_NORMAL)
 				normalize_tree(t, dir);
 			    t = simplify_tree_base(t, dir, modified);
 			    if (modified)
@@ -1541,10 +1541,10 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 	/* TODO Dump dfa with NODE mapping - or node to dfa mapping */
 	// ??????
 
-	if (!(flags & DFA_CONTROL_NO_MINIMIZE))
+	if (flags & DFA_CONTROL_MINIMIZE)
 		minimize(flags);
 
-	if (!(flags & DFA_CONTROL_NO_UNREACHABLE))
+	if (flags & DFA_CONTROL_REMOVE_UNREACHABLE)
 		remove_unreachable(flags);
 }
 
@@ -2881,7 +2881,7 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, size_t *size, dfaflags_t
 	    cerr << "\n\n";
     }
 
-    if (!(flags & DFA_CONTROL_NO_TREE_SIMPLE)) {
+    if (flags & DFA_CONTROL_TREE_SIMPLE) {
 	    rules->root = simplify_tree(rules->root, flags);
 
 	    if (flags & DFA_DUMP_SIMPLE_TREE) {
