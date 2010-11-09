@@ -1639,14 +1639,14 @@ void DFA::remove_unreachable(dfaflags_t flags)
 bool DFA::same_mappings(map <State *, Partition *> &partition_map, State *s1,
 			State *s2)
 {
-	if (s1->cases.otherwise) {
-		if (!s2->cases.otherwise)
+	if (s1->cases.otherwise && s1->cases.otherwise != nonmatching) {
+		if (!s2->cases.otherwise || s2->cases.otherwise == nonmatching)
 			return false;
 		Partition *p1 = partition_map.find(s1->cases.otherwise)->second;
 		Partition *p2 = partition_map.find(s2->cases.otherwise)->second;
 		if (p1 != p2)
 			return false;
-	} else if (s2->cases.otherwise) {
+	} else if (s2->cases.otherwise && s2->cases.otherwise != nonmatching) {
 		return false;
 	}
 
