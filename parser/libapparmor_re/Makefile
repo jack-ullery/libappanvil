@@ -15,8 +15,8 @@ all : ${TARGET}
 libapparmor_re.a: regexp.o
 	ar ${ARFLAGS} $@ $^
 
-regexp.o : regexp.cc
-	$(LINK.cc) $^ -c -o $@
+regexp.o : regexp.cc apparmor_re.h
+	$(LINK.cc) $< -c -o $@
 
 regexp.cc : regexp.y flex-tables.h
 	${BISON} -o $@ $<

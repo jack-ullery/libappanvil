@@ -69,7 +69,7 @@ int binary_input = 0;
 int names_only = 0;
 int dump_vars = 0;
 int dump_expanded_vars = 0;
-dfaflags_t dfaflags = DFA_CONTROL_MINIMIZE_HASH_TRANS | DFA_CONTROL_MINIMIZE_HASH_PERMS;
+dfaflags_t dfaflags = DFA_CONTROL_TREE_NORMAL | DFA_CONTROL_TREE_SIMPLE | DFA_CONTROL_MINIMIZE | DFA_CONTROL_MINIMIZE_HASH_TRANS | DFA_CONTROL_MINIMIZE_HASH_PERMS;
 int conf_verbose = 0;
 int conf_quiet = 0;
 int kernel_load = 1;
@@ -395,30 +395,30 @@ static int process_args(int argc, char *argv[])
 		case 'O':
 			skip_read_cache = 1;
 			if (strcmp(optarg, "0") == 0) {
-				dfaflags |= DFA_CONTROL_NO_TREE_NORMAL |
-					DFA_CONTROL_NO_TREE_SIMPLE |
-					DFA_CONTROL_NO_MINIMIZE |
-					DFA_CONTROL_NO_UNREACHABLE;
+				dfaflags &= ~(DFA_CONTROL_TREE_NORMAL |
+					      DFA_CONTROL_TREE_SIMPLE |
+					      DFA_CONTROL_MINIMIZE |
+					      DFA_CONTROL_REMOVE_UNREACHABLE);
 			} else if (strcmp(optarg, "equiv") == 0) {
 				dfaflags |= DFA_CONTROL_EQUIV;
 			} else if (strcmp(optarg, "no-equiv") == 0) {
 				dfaflags &= ~DFA_CONTROL_EQUIV;
 			} else if (strcmp(optarg, "expr-normalize") == 0) {
-				dfaflags &= ~DFA_CONTROL_NO_TREE_NORMAL;
+				dfaflags |= DFA_CONTROL_TREE_NORMAL;
 			} else if (strcmp(optarg, "no-expr-normalize") == 0) {
-				dfaflags |= DFA_CONTROL_NO_TREE_NORMAL;
+				dfaflags &= ~DFA_CONTROL_TREE_NORMAL;
 			} else if (strcmp(optarg, "expr-simplify") == 0) {
-				dfaflags &= ~DFA_CONTROL_NO_TREE_SIMPLE;
+				dfaflags |= DFA_CONTROL_TREE_SIMPLE;
 			} else if (strcmp(optarg, "no-expr-simplify") == 0) {
-				dfaflags |= DFA_CONTROL_NO_TREE_SIMPLE;
+				dfaflags &= ~DFA_CONTROL_TREE_SIMPLE;
 			} else if (strcmp(optarg, "expr-left-simplify") == 0) {
 				dfaflags |= DFA_CONTROL_TREE_LEFT;
 			} else if (strcmp(optarg, "expr-right-simplify") == 0) {
 				dfaflags &= ~DFA_CONTROL_TREE_LEFT;
 			} else if (strcmp(optarg, "minimize") == 0) {
-				dfaflags &= ~DFA_CONTROL_NO_MINIMIZE;
+				dfaflags |= DFA_CONTROL_MINIMIZE;
 			} else if (strcmp(optarg, "no-minimize") == 0) {
-				dfaflags |= DFA_CONTROL_NO_MINIMIZE;
+				dfaflags &= ~DFA_CONTROL_MINIMIZE;
 			} else if (strcmp(optarg, "hash-trans") == 0) {
 				dfaflags |= DFA_CONTROL_MINIMIZE_HASH_TRANS;
 			} else if (strcmp(optarg, "no-hash-trans") == 0) {
@@ -432,9 +432,9 @@ static int process_args(int argc, char *argv[])
 			} else if (strcmp(optarg, "trans-comp-high") == 0) {
 				dfaflags |= DFA_CONTROL_TRANS_HIGH;
 			} else if (strcmp(optarg, "remove-unreachable") == 0) {
-				dfaflags &= ~DFA_CONTROL_NO_UNREACHABLE;
+				dfaflags |= DFA_CONTROL_REMOVE_UNREACHABLE;
 			} else if (strcmp(optarg, "no-remove-unreachable") == 0) {
-				dfaflags |= DFA_CONTROL_NO_UNREACHABLE;
+				dfaflags &= ~DFA_CONTROL_REMOVE_UNREACHABLE;
 			} else {
 				PERROR("%s: Invalid --Optimize option %s\n",
 				       progname, optarg);
