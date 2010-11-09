@@ -1811,7 +1811,8 @@ void DFA::minimize(dfaflags_t flags)
 	/* Remap the dfa so it uses the representative states
 	 * Use the first state of a partition as the representative state
 	 * At this point all states with in a partion have transitions
-	 * to states within the same partitions
+	 * to states within the same partitions, however this can slow
+	 * down compressed dfa compression as there are more states,
 	 */
        	for (list <Partition *>::iterator p = partitions.begin();
 	     p != partitions.end(); p++) {
