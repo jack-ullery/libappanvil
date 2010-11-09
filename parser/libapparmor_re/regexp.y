@@ -1390,6 +1390,7 @@ typedef struct Cases {
 	State *otherwise;
 } Cases;
 
+typedef list<State *> Partition;
 /*
  * State - DFA individual state information
  * audit: the audit permission mask for the state
@@ -1400,6 +1401,7 @@ class State {
 public:
 State() : label (0), audit(0), accept(0), cases() { }
 	int label;
+	Partition *partition;
 	uint32_t audit, accept;
 	Cases cases;
 };
@@ -1413,7 +1415,6 @@ ostream& operator<<(ostream& os, const State& state)
 	return os;
 }
 
-typedef list<State *> Partition;
 typedef map<pair<unsigned long, NodeSet *>, State *, deref_less_than > NodeMap;
 /* Transitions in the DFA. */
 
@@ -1422,8 +1423,7 @@ public:
     DFA(Node *root, dfaflags_t flags);
     virtual ~DFA();
     void remove_unreachable(dfaflags_t flags);
-    bool same_mappings(map <State *, Partition *> &partition_map, State *s1,
-		       State *s2);
+    bool same_mappings(State *s1, State *s2);
     size_t hash_trans(State *s);
     void minimize(dfaflags_t flags);
     void dump(ostream& os);
@@ -1706,14 +1706,13 @@ void DFA::remove_unreachable(dfaflags_t flags)
 }
 
 /* test if two states have the same transitions under partition_map */
-bool DFA::same_mappings(map <State *, Partition *> &partition_map, State *s1,
-			State *s2)
+bool DFA::same_mappings(State *s1, State *s2)
 {
 	if (s1->cases.otherwise && s1->cases.otherwise != nonmatching) {
 		if (!s2->cases.otherwise || s2->cases.otherwise == nonmatching)
 			return false;
-		Partition *p1 = partition_map.find(s1->cases.otherwise)->second;
-		Partition *p2 = partition_map.find(s2->cases.otherwise)->second;
+		Partition *p1 = s1->cases.otherwise->partition;
+		Partition *p2 = s2->cases.otherwise->partition;
 		if (p1 != p2)
 			return false;
 	} else if (s2->cases.otherwise && s2->cases.otherwise != nonmatching) {
@@ -1727,8 +1726,8 @@ bool DFA::same_mappings(map <State *, Partition *> &partition_map, State *s1,
 		Cases::iterator j2 = s2->cases.cases.find(j1->first);
 		if (j2 == s2->cases.end())
 			return false;
-		Partition *p1 = partition_map.find(j1->second)->second;
-		Partition *p2 = partition_map.find(j2->second)->second;
+		Partition *p1 = j1->second->partition;
+		Partition *p2 = j2->second->partition;
 		if (p1 != p2)
 			return false;
 	}
@@ -1768,7 +1767,6 @@ void DFA::minimize(dfaflags_t flags)
 {
 	map <pair <uint64_t, size_t>, Partition *> perm_map;
 	list <Partition *> partitions;
-	map <State *, Partition *> partition_map;
 	
 	/* Set up the initial partitions
 	 * minimium of - 1 non accepting, and 1 accepting
@@ -1803,11 +1801,11 @@ void DFA::minimize(dfaflags_t flags)
 			part->push_back(*i);
 			perm_map.insert(make_pair(group, part));
 			partitions.push_back(part);
-			partition_map.insert(make_pair(*i, part));
+			(*i)->partition = part;
 			if (perm_hash)
 				accept_count++;
 		} else {
-			partition_map.insert(make_pair(*i, p->second));
+			(*i)->partition = p->second;
 			p->second->push_back(*i);
 		}
 
@@ -1841,7 +1839,7 @@ void DFA::minimize(dfaflags_t flags)
 			Partition::iterator next;
 			for (Partition::iterator s = ++(*p)->begin();
 			     s != (*p)->end(); ) {
-				if (same_mappings(partition_map, rep, *s)) {
+				if (same_mappings(rep, *s)) {
 					++s;
 					continue;
 				}
@@ -1860,8 +1858,7 @@ void DFA::minimize(dfaflags_t flags)
 			if (new_part) {
 				for (Partition::iterator m = new_part->begin();
 				     m != new_part->end(); m++) {
-				  partition_map.erase(*m);
-				  partition_map.insert(make_pair(*m, new_part));
+					(*m)->partition = new_part;
 				}
 			}
 		if ((flags & DFA_DUMP_PROGRESS) &&
@@ -1891,13 +1888,12 @@ void DFA::minimize(dfaflags_t flags)
 
 		/* update representative state's transitions */
 		if (rep->cases.otherwise) {
-			map <State *, Partition *>::iterator z = partition_map.find(rep->cases.otherwise);
-			Partition *partition = partition_map.find(rep->cases.otherwise)->second;
+			Partition *partition = rep->cases.otherwise->partition;
 			rep->cases.otherwise = *partition->begin();
 		}
 		for (Cases::iterator c = rep->cases.begin();
 		     c != rep->cases.end(); c++) {
-			Partition *partition = partition_map.find(c->second)->second;
+			Partition *partition = c->second->partition;
 			c->second = *partition->begin();
 		}
 
@@ -1924,12 +1920,12 @@ void DFA::minimize(dfaflags_t flags)
 	/* make sure nonmatching and start state are up to date with the
 	 * mappings */
 	{
-		Partition *partition = partition_map.find(nonmatching)->second;
+		Partition *partition = nonmatching->partition;
 		if (*partition->begin() != nonmatching) {
 			nonmatching = *partition->begin();
 		}
 
-		partition = partition_map.find(start)->second;
+		partition = start->partition;
 		if (*partition->begin() != start) {
 			start = *partition->begin();
 		}
