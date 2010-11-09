@@ -1745,6 +1745,11 @@ void DFA::minimize(dfaflags_t flags)
 			cerr << "\033[2KMinimize dfa: partitions " << partitions.size() << "\tinit " << partitions.size() << "\t(accept " << accept_count << ")\r";
 	}
 
+	/* perm_map is no longer needed so free the memory it is using.
+	 * Don't remove - doing it manually here helps reduce peak memory usage.
+	 */
+	perm_map.clear();
+
 	int init_count = partitions.size();
 	if (flags & DFA_DUMP_PROGRESS)
 		cerr << "\033[2KMinimize dfa: partitions " << partitions.size() << "\tinit " << init_count << "\t(accept " << accept_count << ")\r";
