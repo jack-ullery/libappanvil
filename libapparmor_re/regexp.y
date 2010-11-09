@@ -348,53 +348,6 @@
 	}
     };
 
-    /* Match a pair of consecutive nodes. */
-    class CatNode : public TwoChildNode {
-    public:
-	CatNode(Node *left, Node *right) :
-	    TwoChildNode(left, right) { }
-	void compute_nullable()
-	{
-	    nullable = child[0]->nullable && child[1]->nullable;
-	}
-	void compute_firstpos()
-	{
-	    if (child[0]->nullable)
-		firstpos = child[0]->firstpos + child[1]->firstpos;
-	    else
-		firstpos = child[0]->firstpos;
-	}
-	void compute_lastpos()
-	{
-	    if (child[1]->nullable)
-		lastpos = child[0]->lastpos + child[1]->lastpos;
-	    else
-		lastpos = child[1]->lastpos;
-	}
-	void compute_followpos()
-	{
-	    NodeSet from = child[0]->lastpos, to = child[1]->firstpos;
-	    for(NodeSet::iterator i = from.begin(); i != from.end(); i++) {
-		(*i)->followpos.insert(to.begin(), to.end());
-	    }
-	}
-	int eq(Node *other) {
-		if (dynamic_cast<CatNode *>(other)) {
-			if (!child[0]->eq(other->child[0]))
-				return 0;
-			return child[1]->eq(other->child[1]);
-		}
-		return 0;
-	}
-	ostream& dump(ostream& os)
-	{
-	    child[0]->dump(os);
-	    child[1]->dump(os);
-	    return os;
-	    //return os << ' ';
-	}
-    };
-
     /* Match a node zero or more times. (This is a unary operator.) */
     class StarNode : public OneChildNode {
     public:
@@ -465,6 +418,53 @@
 	    os << '(';
 	    child[0]->dump(os);
 	    return os << ")+";
+	}
+    };
+
+    /* Match a pair of consecutive nodes. */
+    class CatNode : public TwoChildNode {
+    public:
+	CatNode(Node *left, Node *right) :
+	    TwoChildNode(left, right) { }
+	void compute_nullable()
+	{
+	    nullable = child[0]->nullable && child[1]->nullable;
+	}
+	void compute_firstpos()
+	{
+	    if (child[0]->nullable)
+		firstpos = child[0]->firstpos + child[1]->firstpos;
+	    else
+		firstpos = child[0]->firstpos;
+	}
+	void compute_lastpos()
+	{
+	    if (child[1]->nullable)
+		lastpos = child[0]->lastpos + child[1]->lastpos;
+	    else
+		lastpos = child[1]->lastpos;
+	}
+	void compute_followpos()
+	{
+	    NodeSet from = child[0]->lastpos, to = child[1]->firstpos;
+	    for(NodeSet::iterator i = from.begin(); i != from.end(); i++) {
+		(*i)->followpos.insert(to.begin(), to.end());
+	    }
+	}
+	int eq(Node *other) {
+		if (dynamic_cast<CatNode *>(other)) {
+			if (!child[0]->eq(other->child[0]))
+				return 0;
+			return child[1]->eq(other->child[1]);
+		}
+		return 0;
+	}
+	ostream& dump(ostream& os)
+	{
+	    child[0]->dump(os);
+	    child[1]->dump(os);
+	    return os;
+	    //return os << ' ';
 	}
     };
 
