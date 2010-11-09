@@ -2987,8 +2987,8 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, size_t *size, dfaflags_t
 	if (flags & DFA_DUMP_MIN_UNIQ_PERMS)
 		dfa.dump_uniq_perms("minimized dfa");
     }
-    //if (flags & DFA_CONTROL_REMOVE_UNREACHABLE)
-    //    remove_unreachable(flags);
+    if (flags & DFA_CONTROL_REMOVE_UNREACHABLE)
+        dfa.remove_unreachable(flags);
 
     if (flags & DFA_DUMP_STATES)
 	dfa.dump(cerr);
