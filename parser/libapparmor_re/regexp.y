@@ -1410,7 +1410,7 @@ State() : label (0), audit(0), accept(0), cases() { }
 
 ostream& operator<<(ostream& os, const State& state)
 {
-	/* currently just dump the state ptr */
+	/* dump the state label */
 	os << '{';
 	os << state.label;
 	os << '}';
