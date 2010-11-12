@@ -1393,6 +1393,9 @@ typedef struct Cases {
 } Cases;
 
 typedef list<State *> Partition;
+
+uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error);
+
 /*
  * State - DFA individual state information
  * label: a unique label to identify the state used for pretty printing
@@ -1409,7 +1412,22 @@ typedef list<State *> Partition;
  */
 class State {
 public:
-State() : label (0), audit(0), accept(0), cases(), nodes(NULL) { }
+	State() : label (0), audit(0), accept(0), cases(), nodes(NULL) { };
+	State(int l): label (l), audit(0), accept(0), cases(), nodes(NULL) { };
+	State(int l, NodeSet *n):
+		label(l), audit(0), accept(0), cases(), nodes(n)
+	{
+		int error;
+
+		/* Compute permissions associated with the State. */
+		accept = accept_perms(nodes, &audit, &error);
+		if (error) {
+			/* TODO!!!!!!!!!!!!!
+			 * permission error checking here
+			 */
+		}
+	};
+
 	int label;
 	uint32_t audit, accept;
 	Cases cases;
@@ -1450,8 +1468,6 @@ public:
     Partition states;
 };
 
-uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error);
-
 /* dfa_stats - structure to group various stats about dfa creation
  * duplicates - how many duplicate NodeSets where encountered and discarded
  * proto_max - maximum length of a NodeSet encountered during dfa construction
@@ -1473,9 +1489,7 @@ do { \
 		/* set of nodes isn't known so create new state, and nodes to \
 		 * state mapping \
 		 */ \
-		TARGET = new State(); \
-		(TARGET)->label = nodemap.size();	\
-		(TARGET)->nodes = (NODES); \
+		TARGET = new State(nodemap.size(), (NODES));	\
 		states.push_back(TARGET); \
 		nodemap.insert(make_pair(index, TARGET)); \
 		work_queue.push_back(NODES);	  \
@@ -1526,18 +1540,15 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 	}
 
 	NodeMap nodemap;
-	nonmatching = new State;
-	states.push_back(nonmatching);
 	NodeSet *emptynode = new NodeSet;
-	nonmatching->nodes = emptynode;
+	nonmatching = new State(0, emptynode);
+	states.push_back(nonmatching);
 	nodemap.insert(make_pair(make_pair(hash_NodeSet(emptynode), emptynode), nonmatching));
 	/* there is no nodemapping for the nonmatching state */
 
-	start = new State;
-	start->label = 1;
-	states.push_back(start);
 	NodeSet *first = new NodeSet(root->firstpos);
-	start->nodes = first;
+	start = new State(1, first);
+	states.push_back(start);
 	nodemap.insert(make_pair(make_pair(hash_NodeSet(first), first), start));
 
 	/* the work_queue contains the proto-states (set of nodes that is
@@ -1556,18 +1567,9 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 			fprintf(stderr, "\033[2KCreating dfa: queue %ld\tstates %ld\teliminated duplicates %d\r", work_queue.size(), states.size(), stats.duplicates);
 		i++;
 
-		int error;
 		NodeSet *nodes = work_queue.front();
 		work_queue.pop_front();
 		State *from = nodemap[make_pair(hash_NodeSet(nodes), nodes)];
-
-		/* Compute permissions associated with the State. */
-		from->accept = accept_perms(nodes, &from->audit, &error);
-		if (error) {
-			/* TODO!!!!!!!!!!!!!
-			 * permission error checking here
-			 */
-		}
 
 		/* Compute possible transitions for `nodes`.  This is done by
 		 * iterating over all the nodes in nodes and combining the
