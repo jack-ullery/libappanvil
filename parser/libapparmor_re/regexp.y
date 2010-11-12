@@ -1462,7 +1462,7 @@ typedef struct dfa_stats {
 class DFA {
     void dump_node_to_dfa(void);
     State* add_new_state(NodeMap &nodemap, pair <unsigned long, NodeSet *> index, NodeSet *nodes, dfa_stats_t &stats);
-    void update_state_transitions(NodeMap &nodemap, list <NodeSet *> &work_queue, State *state, dfa_stats_t &stats);
+    void update_state_transitions(NodeMap &nodemap, list <State *> &work_queue, State *state, dfa_stats_t &stats);
 public:
     DFA(Node *root, dfaflags_t flags);
     virtual ~DFA();
@@ -1503,7 +1503,7 @@ do { \
 		 * state mapping \
 		 */ \
 		(TARGET) = add_new_state(nodemap, index, (NODES), stats); \
-		work_queue.push_back(NODES);	  \
+		work_queue.push_back(TARGET);	  \
 	} else { \
 		/* set of nodes already has a mapping so free this one */ \
 		stats.duplicates++; \
@@ -1513,7 +1513,7 @@ do { \
 } while (0)
 
 void DFA::update_state_transitions(NodeMap &nodemap,
-				   list <NodeSet *> &work_queue, State *state,
+				   list <State *> &work_queue, State *state,
 				   dfa_stats_t &stats)
 {
 	/* Compute possible transitions for state->nodes.  This is done by
@@ -1599,25 +1599,26 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 	start = add_new_state(nodemap, make_pair(hash_NodeSet(first), first),
 			      first, stats);
 
-	/* the work_queue contains the proto-states (set of nodes that is
-	 * the precurser of a state) that need to be computed
+	/* the work_queue contains the states that need to have their
+	 * transitions computed.  This could be done with a recursive
+	 * algorithm instead of a work_queue, but it would be slightly slower
+	 * and consume more memory.
 	 *
 	 * TODO: currently the work_queue is treated in a breadth first
 	 *       search manner.  Test using the work_queue in a depth first
 	 *       manner, this may help reduce the number of entries on the
 	 *       work_queue at any given time, thus reducing peak memory use.
 	 */
-	list<NodeSet *> work_queue;
-	work_queue.push_back(first);
+	list<State *> work_queue;
+	work_queue.push_back(start);
 
 	while (!work_queue.empty()) {
 		if (i % 1000 == 0 && (flags & DFA_DUMP_PROGRESS))
 			fprintf(stderr, "\033[2KCreating dfa: queue %ld\tstates %ld\teliminated duplicates %d\r", work_queue.size(), states.size(), stats.duplicates);
 		i++;
 
-		NodeSet *nodes = work_queue.front();
+		State *from = work_queue.front();
 		work_queue.pop_front();
-		State *from = nodemap[make_pair(hash_NodeSet(nodes), nodes)];
 
 		/* Update 'from's transitions, and if it transitions to any
 		 * unknown State create it and add it to the work_queue
