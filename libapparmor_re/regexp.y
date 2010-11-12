@@ -1395,17 +1395,28 @@ typedef struct Cases {
 typedef list<State *> Partition;
 /*
  * State - DFA individual state information
+ * label: a unique label to identify the state used for pretty printing
+ *        the non-matching state is setup to have label == 0 and
+ *        the start state is setup to have label == 1
  * audit: the audit permission mask for the state
  * accept: the accept permissions for the state
  * cases: set of transitions from this state
+ * parition: Is a temporary work variable used during dfa minimization.
+ *           it can be replaced with a map, but that is slower and uses more
+ *           memory.
+ * nodes: Is a temporary work variable used during dfa creation.  It can
+ *        be replaced by using the nodemap, but that is slower
  */
 class State {
 public:
-State() : label (0), audit(0), accept(0), cases() { }
+State() : label (0), audit(0), accept(0), cases(), nodes(NULL) { }
 	int label;
-	Partition *partition;
 	uint32_t audit, accept;
 	Cases cases;
+	union {
+		Partition *partition;
+		NodeSet *nodes;
+	};
 };
 
 ostream& operator<<(ostream& os, const State& state)
@@ -1421,6 +1432,7 @@ typedef map<pair<unsigned long, NodeSet *>, State *, deref_less_than > NodeMap;
 /* Transitions in the DFA. */
 
 class DFA {
+    void dump_node_to_dfa(void);
 public:
     DFA(Node *root, dfaflags_t flags);
     virtual ~DFA();
@@ -1454,6 +1466,7 @@ do { \
 		 */ \
 		TARGET = new State(); \
 		(TARGET)->label = nodemap.size();	\
+		(TARGET)->nodes = (NODES); \
 		states.push_back(TARGET); \
 		nodemap.insert(make_pair(index, TARGET)); \
 		work_queue.push_back(NODES);	  \
@@ -1468,14 +1481,16 @@ do { \
 	} \
 } while (0)
 
-static void dump_node_to_dfa(NodeMap &nodemap)
+/* WARNING: This routine can only be called from within DFA creation as
+ * the nodes value is only valid during dfa construction.
+ */
+void DFA::dump_node_to_dfa(void)
 {
 	cerr << "Mapping of States to expr nodes\n"
 		"  State  <=   Nodes\n"
 		"-------------------\n";
-	for (NodeMap::iterator i = nodemap.begin(); i != nodemap.end(); i++)
-		cerr << "  " << i->second->label << " <= " << *i->first.second << "\n";
-
+	for (Partition::iterator i = states.begin(); i != states.end(); i++)
+		cerr << "  " << (*i)->label << " <= " << *(*i)->nodes << "\n";
 }
 
 /**
@@ -1505,6 +1520,7 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 	nonmatching = new State;
 	states.push_back(nonmatching);
 	NodeSet *emptynode = new NodeSet;
+	nonmatching->nodes = emptynode;
 	nodemap.insert(make_pair(make_pair(hash_NodeSet(emptynode), emptynode), nonmatching));
 	/* there is no nodemapping for the nonmatching state */
 
@@ -1515,6 +1531,7 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 	start->label = 1;
 	states.push_back(start);
 	NodeSet *first = new NodeSet(root->firstpos);
+	start->nodes = first;
 	nodemap.insert(make_pair(make_pair(hash_NodeSet(first), first), start));
 
 	/* the work_queue contains the proto-states (set of nodes that is
@@ -1594,7 +1611,7 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 	}
 
 	if (flags & DFA_DUMP_NODE_TO_DFA)
-		dump_node_to_dfa(nodemap);
+		dump_node_to_dfa();
 
 	for (NodeMap::iterator i = nodemap.begin(); i != nodemap.end(); i++)
 		delete i->first.second;
