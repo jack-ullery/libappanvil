@@ -1449,8 +1449,19 @@ ostream& operator<<(ostream& os, const State& state)
 typedef map<pair<unsigned long, NodeSet *>, State *, deref_less_than > NodeMap;
 /* Transitions in the DFA. */
 
+/* dfa_stats - structure to group various stats about dfa creation
+ * duplicates - how many duplicate NodeSets where encountered and discarded
+ * proto_max - maximum length of a NodeSet encountered during dfa construction
+ * proto_sum - sum of NodeSet length during dfa construction.  Used to find
+ *             average length.
+ */
+typedef struct dfa_stats {
+	unsigned int duplicates, proto_max, proto_sum;
+} dfa_stats_t;
+
 class DFA {
     void dump_node_to_dfa(void);
+    State* add_new_state(NodeMap &nodemap, pair <unsigned long, NodeSet *> index, NodeSet *nodes, dfa_stats_t &stats);
 public:
     DFA(Node *root, dfaflags_t flags);
     virtual ~DFA();
@@ -1468,15 +1479,16 @@ public:
     Partition states;
 };
 
-/* dfa_stats - structure to group various stats about dfa creation
- * duplicates - how many duplicate NodeSets where encountered and discarded
- * proto_max - maximum length of a NodeSet encountered during dfa construction
- * proto_sum - sum of NodeSet length during dfa construction.  Used to find
- *             average length.
- */
-typedef struct dfa_stats {
-	unsigned int duplicates, proto_max, proto_sum;
-} dfa_stats_t;
+State* DFA::add_new_state(NodeMap &nodemap, pair <unsigned long, NodeSet *> index, NodeSet *nodes, dfa_stats_t &stats)
+{
+	State *state = new State(nodemap.size(), nodes);
+	states.push_back(state);
+	nodemap.insert(make_pair(index, state));
+	stats.proto_sum += nodes->size();
+	if (nodes->size() > stats.proto_max)
+		stats.proto_max = nodes->size();
+	return state;
+}
 
 /* macro to help out with DFA creation, not done as inlined fn as nearly
  * every line uses a different map or variable that would have to be passed
@@ -1489,13 +1501,8 @@ do { \
 		/* set of nodes isn't known so create new state, and nodes to \
 		 * state mapping \
 		 */ \
-		TARGET = new State(nodemap.size(), (NODES));	\
-		states.push_back(TARGET); \
-		nodemap.insert(make_pair(index, TARGET)); \
+		(TARGET) = add_new_state(nodemap, index, (NODES), stats); \
 		work_queue.push_back(NODES);	  \
-		stats.proto_sum += (NODES)->size();	  \
-		if ((NODES)->size() > stats.proto_max) \
-			stats.proto_max = (NODES)->size(); \
 	} else { \
 		/* set of nodes already has a mapping so free this one */ \
 		stats.duplicates++; \
@@ -1541,15 +1548,13 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 
 	NodeMap nodemap;
 	NodeSet *emptynode = new NodeSet;
-	nonmatching = new State(0, emptynode);
-	states.push_back(nonmatching);
-	nodemap.insert(make_pair(make_pair(hash_NodeSet(emptynode), emptynode), nonmatching));
-	/* there is no nodemapping for the nonmatching state */
+	nonmatching = add_new_state(nodemap,
+				  make_pair(hash_NodeSet(emptynode), emptynode),
+				    emptynode, stats);
 
 	NodeSet *first = new NodeSet(root->firstpos);
-	start = new State(1, first);
-	states.push_back(start);
-	nodemap.insert(make_pair(make_pair(hash_NodeSet(first), first), start));
+	start = add_new_state(nodemap, make_pair(hash_NodeSet(first), first),
+			      first, stats);
 
 	/* the work_queue contains the proto-states (set of nodes that is
 	 * the precurser of a state) that need to be computed
