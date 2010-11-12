@@ -1452,6 +1452,15 @@ public:
 
 uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error);
 
+/* dfa_stats - structure to group various stats about dfa creation
+ * duplicates - how many duplicate NodeSets where encountered and discarded
+ * proto_max - maximum length of a NodeSet encountered during dfa construction
+ * proto_sum - sum of NodeSet length during dfa construction.  Used to find
+ *             average length.
+ */
+typedef struct dfa_stats {
+	unsigned int duplicates, proto_max, proto_sum;
+} dfa_stats_t;
 
 /* macro to help out with DFA creation, not done as inlined fn as nearly
  * every line uses a different map or variable that would have to be passed
@@ -1470,12 +1479,12 @@ do { \
 		states.push_back(TARGET); \
 		nodemap.insert(make_pair(index, TARGET)); \
 		work_queue.push_back(NODES);	  \
-		proto_sum += (NODES)->size();	  \
-		if ((NODES)->size() > proto_max) \
-			proto_max = (NODES)->size(); \
+		stats.proto_sum += (NODES)->size();	  \
+		if ((NODES)->size() > stats.proto_max) \
+			stats.proto_max = (NODES)->size(); \
 	} else { \
 		/* set of nodes already has a mapping so free this one */ \
-		duplicates++; \
+		stats.duplicates++; \
 		delete (NODES);	    \
 		TARGET = x->second; \
 	} \
@@ -1498,8 +1507,8 @@ void DFA::dump_node_to_dfa(void)
  */
 DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 {
-	int i, duplicates;
-	i = duplicates = 0;
+	dfa_stats_t stats = { 0, 0, 0 };
+	int i = 0;
 
 	if (flags & DFA_DUMP_PROGRESS)
 		fprintf(stderr, "Creating dfa:\r");
@@ -1524,9 +1533,6 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 	nodemap.insert(make_pair(make_pair(hash_NodeSet(emptynode), emptynode), nonmatching));
 	/* there is no nodemapping for the nonmatching state */
 
-	unsigned int proto_max = 0;
-	unsigned int proto_sum = 0;
-
 	start = new State;
 	start->label = 1;
 	states.push_back(start);
@@ -1547,7 +1553,7 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 
 	while (!work_queue.empty()) {
 		if (i % 1000 == 0 && (flags & DFA_DUMP_PROGRESS))
-			fprintf(stderr, "\033[2KCreating dfa: queue %ld\tstates %ld\teliminated duplicates %d\r", work_queue.size(), states.size(), duplicates);
+			fprintf(stderr, "\033[2KCreating dfa: queue %ld\tstates %ld\teliminated duplicates %d\r", work_queue.size(), states.size(), stats.duplicates);
 		i++;
 
 		int error;
@@ -1618,7 +1624,7 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 	nodemap.clear();
 
 	if (flags & (DFA_DUMP_STATS))
-	  fprintf(stderr, "\033[2KCreated dfa: states %ld,\teliminated duplicates %d,\tprotostate sets: longest %u, avg %u\n", states.size(), duplicates, proto_max, (unsigned int) (proto_sum/states.size()));
+	  fprintf(stderr, "\033[2KCreated dfa: states %ld,\teliminated duplicates %d,\tprotostate sets: longest %u, avg %u\n", states.size(), stats.duplicates, stats.proto_max, (unsigned int) (stats.proto_sum/states.size()));
 
 }
 
