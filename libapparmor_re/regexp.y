@@ -1463,6 +1463,8 @@ class DFA {
     void dump_node_to_dfa(void);
     State* add_new_state(NodeMap &nodemap, pair <unsigned long, NodeSet *> index, NodeSet *nodes, dfa_stats_t &stats);
     void update_state_transitions(NodeMap &nodemap, list <State *> &work_queue, State *state, dfa_stats_t &stats);
+    State *find_target_state(NodeMap &nodemap, list <State *> &work_queue,
+			     NodeSet *nodes, dfa_stats_t &stats);
 public:
     DFA(Node *root, dfaflags_t flags);
     virtual ~DFA();
@@ -1491,26 +1493,30 @@ State* DFA::add_new_state(NodeMap &nodemap, pair <unsigned long, NodeSet *> inde
 	return state;
 }
 
-/* macro to help out with DFA creation, not done as inlined fn as nearly
- * every line uses a different map or variable that would have to be passed
- */
-#define update_for_nodes(NODES, TARGET)	\
-do { \
-	pair <unsigned long, NodeSet *> index = make_pair(hash_NodeSet(NODES), NODES); \
-	map<pair <unsigned long, NodeSet *>, State *, deref_less_than>::iterator x = nodemap.find(index); \
-	if (x == nodemap.end()) { \
-		/* set of nodes isn't known so create new state, and nodes to \
-		 * state mapping \
-		 */ \
-		(TARGET) = add_new_state(nodemap, index, (NODES), stats); \
-		work_queue.push_back(TARGET);	  \
-	} else { \
-		/* set of nodes already has a mapping so free this one */ \
-		stats.duplicates++; \
-		delete (NODES);	    \
-		TARGET = x->second; \
-	} \
-} while (0)
+State *DFA::find_target_state(NodeMap &nodemap, list <State *> &work_queue,
+			      NodeSet *nodes, dfa_stats_t &stats)
+{
+	State *target;
+
+	pair <unsigned long, NodeSet *> index = make_pair(hash_NodeSet(nodes), nodes);
+
+	map<pair <unsigned long, NodeSet *>, State *, deref_less_than>::iterator x = nodemap.find(index);
+
+	if (x == nodemap.end()) {
+		/* set of nodes isn't known so create new state, and nodes to
+		 * state mapping
+		 */
+		target = add_new_state(nodemap, index, nodes, stats);
+		work_queue.push_back(target);
+	} else {
+		/* set of nodes already has a mapping so free this one */
+		stats.duplicates++;
+		delete (nodes);
+		target = x->second;
+	}
+
+	return target;
+}
 
 void DFA::update_state_transitions(NodeMap &nodemap,
 				   list <State *> &work_queue, State *state,
@@ -1533,18 +1539,19 @@ void DFA::update_state_transitions(NodeMap &nodemap,
 	 */
 
 	/* check the default transition first */
-	if (cases.otherwise) {
-		State *target;
-		update_for_nodes(cases.otherwise, target);
-		state->cases.otherwise = target;
-	}
+	if (cases.otherwise)
+		state->cases.otherwise = find_target_state(nodemap, work_queue,
+							   cases.otherwise,
+							   stats);;
 
 	/* For each transition from *from, check if the set of nodes it
 	 * transitions to already has been mapped to a state
 	 */
 	for (NodeCases::iterator j = cases.begin(); j != cases.end(); j++) {
 		State *target;
-		update_for_nodes(j->second, target);
+		target = find_target_state(nodemap, work_queue, j->second,
+					   stats);
+
 		/* Don't insert transition that the default transition
 		 * already covers
 		 */
