@@ -1462,6 +1462,7 @@ typedef struct dfa_stats {
 class DFA {
     void dump_node_to_dfa(void);
     State* add_new_state(NodeMap &nodemap, pair <unsigned long, NodeSet *> index, NodeSet *nodes, dfa_stats_t &stats);
+    void update_state_transitions(NodeMap &nodemap, list <NodeSet *> &work_queue, State *state, dfa_stats_t &stats);
 public:
     DFA(Node *root, dfaflags_t flags);
     virtual ~DFA();
@@ -1510,6 +1511,48 @@ do { \
 		TARGET = x->second; \
 	} \
 } while (0)
+
+void DFA::update_state_transitions(NodeMap &nodemap,
+				   list <NodeSet *> &work_queue, State *state,
+				   dfa_stats_t &stats)
+{
+	/* Compute possible transitions for state->nodes.  This is done by
+	 * iterating over all the nodes in state->nodes and combining the
+	 * transitions.
+	 *
+	 * The resultant transition set is a mapping of characters to
+	 * sets of nodes.
+	 */
+	NodeCases cases;
+	for (NodeSet::iterator i = state->nodes->begin(); i != state->nodes->end(); i++)
+		(*i)->follow(cases);
+
+	/* Now for each set of nodes in the computed transitions, make
+	 * sure that there is a state that maps to it, and add the
+	 * matching case to the state.
+	 */
+
+	/* check the default transition first */
+	if (cases.otherwise) {
+		State *target;
+		update_for_nodes(cases.otherwise, target);
+		state->cases.otherwise = target;
+	}
+
+	/* For each transition from *from, check if the set of nodes it
+	 * transitions to already has been mapped to a state
+	 */
+	for (NodeCases::iterator j = cases.begin(); j != cases.end(); j++) {
+		State *target;
+		update_for_nodes(j->second, target);
+		/* Don't insert transition that the default transition
+		 * already covers
+		 */
+		if (target != state->cases.otherwise)
+			state->cases.cases[j->first] = target;
+	}
+}
+
 
 /* WARNING: This routine can only be called from within DFA creation as
  * the nodes value is only valid during dfa construction.
@@ -1576,42 +1619,11 @@ DFA::DFA(Node *root, dfaflags_t flags) : root(root)
 		work_queue.pop_front();
 		State *from = nodemap[make_pair(hash_NodeSet(nodes), nodes)];
 
-		/* Compute possible transitions for `nodes`.  This is done by
-		 * iterating over all the nodes in nodes and combining the
-		 * transitions.
-		 *
-		 * The resultant transition set is a mapping of characters to
-		 * sets of nodes.
+		/* Update 'from's transitions, and if it transitions to any
+		 * unknown State create it and add it to the work_queue
 		 */
-		NodeCases cases;
-		for (NodeSet::iterator i = nodes->begin(); i != nodes->end(); i++)
-			(*i)->follow(cases);
+		update_state_transitions(nodemap, work_queue, from, stats);
 
-		/* Now for each set of nodes in the computed transitions, make
-		 * sure that there is a state that maps to it, and add the
-		 * matching case to the state.
-		 */
-
-		/* check the default transition first */
-		if (cases.otherwise) {
-			State *target;
-			update_for_nodes(cases.otherwise, target);
-			from->cases.otherwise = target;
-		}
-
-		/* For each transition from *from, check if the set of nodes it
-		 * transitions to already has been mapped to a state
-		 */
-		for (NodeCases::iterator j = cases.begin(); j != cases.end();
-		     j++) {
-			State *target;
-			update_for_nodes(j->second, target);
-			/* Don't insert transition that the default transition
-			 * already covers
-			 */
-			if (target != from->cases.otherwise)
-				from->cases.cases[j->first] = target;
-		}
 	} /* for (NodeSet *nodes ... */
 
 	/* cleanup Sets of nodes used computing the DFA as they are no longer
