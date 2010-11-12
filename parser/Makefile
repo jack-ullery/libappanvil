@@ -163,10 +163,10 @@ parser_misc.o: parser_misc.c parser.h parser_yacc.h af_names.h cap_names.h
 parser_yacc.o: parser_yacc.c parser_yacc.h
 	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_main.o: parser_main.c parser.h parser_version.h
+parser_main.o: parser_main.c parser.h parser_version.h libapparmor_re/apparmor_re.h
 	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_interface.o: parser_interface.c parser.h
+parser_interface.o: parser_interface.c parser.h libapparmor_re/apparmor_re.h
 	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_include.o: parser_include.c parser.h parser_include.h
@@ -175,7 +175,7 @@ parser_include.o: parser_include.c parser.h parser_include.h
 parser_merge.o: parser_merge.c parser.h
 	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_regex.o: parser_regex.c parser.h
+parser_regex.o: parser_regex.c parser.h libapparmor_re/apparmor_re.h
 	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_symtab.o: parser_symtab.c parser.h
