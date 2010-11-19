@@ -393,6 +393,11 @@ LT_EQUAL	<=
 			current_lineno++;
 			BEGIN(INITIAL);
 			}
+	[^\n]		{
+			DUMP_PREPROCESS;
+			/* Something we didn't expect */
+			yyerror(_("Found unexpected character: '%s'"), yytext);
+			}
 }
 
 <NETWORK_MODE>{
