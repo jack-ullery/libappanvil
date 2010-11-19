@@ -380,6 +380,12 @@ LT_EQUAL	<=
 			return TOK_VALUE;
 			}
 
+	{END_OF_RULE}	{
+			DUMP_PREPROCESS;
+			yylval.id = strdup(yytext);
+			yyerror(_("Variable declarations do not accept trailing commas"));
+			}
+
 	\\\n		{ DUMP_PREPROCESS; current_lineno++ ; }
 
 	\r?\n		{
