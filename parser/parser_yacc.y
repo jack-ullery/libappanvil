@@ -190,6 +190,7 @@ struct codomain *do_local_profile(struct codomain *cod, char *name, int mode, in
 %type <boolean> opt_audit_flag
 %type <boolean> opt_owner_flag
 %type <boolean> opt_profile_flag
+%type <id>	opt_namespace
 %type <transition> opt_named_transition
 
 %%
@@ -210,19 +211,27 @@ opt_profile_flag: { /* nothing */ $$ = 0; }
 	| TOK_PROFILE { $$ = 1; }
 	| hat_start { $$ = 2; }
 
-profile:	opt_profile_flag TOK_ID flags TOK_OPEN rules TOK_CLOSE
+opt_namespace: { /* nothing */ $$ = NULL; }
+	| TOK_COLON TOK_ID TOK_COLON { $$ = $2; }
+
+profile:	opt_profile_flag opt_namespace TOK_ID flags TOK_OPEN rules TOK_CLOSE
 	{
-		struct codomain *cod = $5;
-		PDEBUG("Matched: id (%s) open rules close\n", $2);
+		struct codomain *cod = $6;
+		if ($2)
+			PDEBUG("Matched: id (%s://%s) open rules close\n", $2, $3);
+		else
+			PDEBUG("Matched: id (%s) open rules close\n", $3);
+
 		if (!cod) {
 			yyerror(_("Memory allocation error."));
 		}
 
-		if (!$1 && $2[0] != '/')
-			yyerror(_("Profile names must begin with a '/', or keyword 'profile' or 'hat'."));
+		if ($3[0] != '/' && !($1 || $2))
+			yyerror(_("Profile names must begin with a '/', namespace or keyword 'profile' or 'hat'."));
 
-		cod->name = $2;
-		cod->flags = $3;
+		cod->namespace = $2;
+		cod->name = $3;
+		cod->flags = $4;
 		if (force_complain)
 			cod->flags.complain = 1;
 		if ($1 == 2)
@@ -231,31 +240,6 @@ profile:	opt_profile_flag TOK_ID flags TOK_OPEN rules TOK_CLOSE
 		post_process_nt_entries(cod);
 		PDEBUG("%s: flags='%s%s'\n",
 		       $2,
-		       cod->flags.complain ? "complain, " : "",
-		       cod->flags.audit ? "audit" : "");
-
-		$$ = cod;
-	};
-
-profile:	opt_profile_flag TOK_COLON TOK_ID TOK_COLON TOK_ID flags TOK_OPEN rules TOK_CLOSE
-	{
-		struct codomain *cod = $8;
-		PDEBUG("Matched: id (%s:%s) open rules close\n", $3, $5);
-		if (!cod) {
-			yyerror(_("Memory allocation error."));
-		}
-
-		cod->namespace = $3;
-		cod->name = $5;
-		cod->flags = $6;
-		if (force_complain)
-			cod->flags.complain = 1;
-		if ($1 == 2)
-			cod->flags.hat = 1;
-
-		post_process_nt_entries(cod);
-		PDEBUG("%s: flags='%s%s'\n",
-		       $3,
 		       cod->flags.complain ? "complain, " : "",
 		       cod->flags.audit ? "audit" : "");
 
