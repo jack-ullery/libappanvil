@@ -75,8 +75,6 @@ struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 
 void add_local_entry(struct codomain *cod);
 
-struct codomain *do_local_profile(struct codomain *cod, char *name, int mode, int audit);
-
 %}
 
 %token TOK_ID
@@ -165,6 +163,7 @@ struct codomain *do_local_profile(struct codomain *cod, char *name, int mode, in
 %type <id> 	TOK_ID
 %type <mode> 	TOK_MODE
 %type <fmode>   file_mode
+%type <cod>	profile_base
 %type <cod> 	profile
 %type <cod>	rules
 %type <cod>	hat
@@ -214,28 +213,18 @@ opt_profile_flag: { /* nothing */ $$ = 0; }
 opt_namespace: { /* nothing */ $$ = NULL; }
 	| TOK_COLON TOK_ID TOK_COLON { $$ = $2; }
 
-profile:	opt_profile_flag opt_namespace TOK_ID flags TOK_OPEN rules TOK_CLOSE
+profile_base: TOK_ID flags TOK_OPEN rules TOK_CLOSE
 	{
-		struct codomain *cod = $6;
-		if ($2)
-			PDEBUG("Matched: id (%s://%s) open rules close\n", $2, $3);
-		else
-			PDEBUG("Matched: id (%s) open rules close\n", $3);
+		struct codomain *cod = $4;
 
 		if (!cod) {
 			yyerror(_("Memory allocation error."));
 		}
 
-		if ($3[0] != '/' && !($1 || $2))
-			yyerror(_("Profile names must begin with a '/', namespace or keyword 'profile' or 'hat'."));
-
-		cod->namespace = $2;
-		cod->name = $3;
-		cod->flags = $4;
+		cod->name = $1;
+		cod->flags = $2;
 		if (force_complain)
 			cod->flags.complain = 1;
-		if ($1 == 2)
-			cod->flags.hat = 1;
 
 		post_process_nt_entries(cod);
 		PDEBUG("%s: flags='%s%s'\n",
@@ -243,6 +232,45 @@ profile:	opt_profile_flag opt_namespace TOK_ID flags TOK_OPEN rules TOK_CLOSE
 		       cod->flags.complain ? "complain, " : "",
 		       cod->flags.audit ? "audit" : "");
 
+		$$ = cod;
+
+	};
+
+profile:  opt_profile_flag opt_namespace profile_base
+	{
+		struct codomain *cod = $3;
+		if ($2)
+			PDEBUG("Matched: %s://%s { ... }\n", $2, $3->name);
+		else
+			PDEBUG("Matched: %s { ... }\n", $3->name);
+
+		if ($3->name[0] != '/' && !($1 || $2))
+			yyerror(_("Profile names must begin with a '/', namespace or keyword 'profile' or 'hat'."));
+
+		cod->namespace = $2;
+		if ($1 == 2)
+			cod->flags.hat = 1;
+		$$ = cod;
+	};
+
+local_profile:   TOK_PROFILE profile_base
+	{
+
+		struct codomain *cod = $2;
+
+		if ($2)
+			PDEBUG("Matched: local profile %s { ... }\n", cod->name);
+		cod->local = 1;
+		$$ = cod;
+	};
+
+hat: hat_start profile_base
+	{
+		struct codomain *cod = $2;
+		if ($2)
+			PDEBUG("Matched: hat %s { ... }\n", code->name);
+
+		cod->flags.hat = 1;
 		$$ = cod;
 	};
 
@@ -906,76 +934,6 @@ rule: TOK_PTRACE TOK_COLON TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
 		$$ = entry;
 	};
 
-hat: hat_start TOK_ID flags TOK_OPEN rules TOK_CLOSE
-	{
-		struct codomain *cod = $5;
-		PDEBUG("Matched: sep id (%s) open rules close\n", $2);
-		if (!cod) {
-			yyerror(_("Memory allocation error."));
-		}
-		cod->name = $2;
-		cod->flags = $3;
-		cod->flags.hat = 1;
-		if (force_complain)
-			cod->flags.complain = 1;
-		post_process_nt_entries(cod);
-		PDEBUG("^%s: flags='%s%s'\n",
-		       $2,
-		       cod->flags.complain ? "complain, " : "",
-		       cod->flags.audit ? "audit" : "");
-		$$ = cod;
-	};
-
-/*
-local_profile:   opt_audit_flag opt_owner_flag TOK_ID file_mode TOK_ARROW TOK_OPEN rules TOK_CLOSE
-	{
-		int audit = 0, mode = $4;
-		if ($2 == 1)
-			mode &= (AA_USER_PERMS | AA_SHARED_PERMS | AA_USER_PTRACE);
-		else if ($2 == 2)
-			mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS | AA_OTHER_PTRACE);
-		if ($1)
-			audit = mode & ~ALL_AA_EXEC_TYPE;
-
-		$$ = do_local_profile($7, $3, mode, audit);
-	};
-
-local_profile:   opt_audit_flag opt_owner_flag file_mode TOK_ID TOK_ARROW TOK_OPEN rules TOK_CLOSE
-	{
-		int audit = 0, mode = $3;
-		mode &= ~ALL_AA_EXEC_UNSAFE;
-		if ($2 == 1)
-			mode &= (AA_USER_PERMS | AA_SHARED_PERMS | AA_USER_PTRACE);
-		else if ($2 == 2)
-			mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS | AA_OTHER_PTRACE);
-		if ($1)
-			audit = mode & ~ALL_AA_EXEC_TYPE;
-
-		$$ = do_local_profile($7, $4, mode, audit);
-	};
-
-local_profile:   opt_audit_flag opt_owner_flag TOK_UNSAFE file_mode TOK_ID TOK_ARROW TOK_OPEN rules TOK_CLOSE
-	{
-		int unsafe = (($4 & AA_EXEC_BITS) << 8) & ALL_AA_EXEC_UNSAFE;
-		int audit = 0, mode = ($4 & ~ALL_AA_EXEC_UNSAFE) | unsafe;
-		if ($2 == 1)
-			mode &= (AA_USER_PERMS | AA_SHARED_PERMS | AA_USER_PTRACE);
-		else if ($2 == 2)
-			mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS | AA_OTHER_PTRACE);
-		if ($1)
-			audit = mode & ~ALL_AA_EXEC_TYPE;
-
-		$$ = do_local_profile($8, $5, mode, audit);
-	};
-*/
-
-local_profile:   TOK_PROFILE TOK_ID flags TOK_OPEN rules TOK_CLOSE
-	{
-		struct codomain *cod = do_local_profile($5, $2, 0, 0);
-		cod->flags = $3;
-		$$ = cod;
-	};
-
 network_rule: TOK_NETWORK TOK_END_OF_RULE
 	{
 		size_t family;
@@ -1154,27 +1112,4 @@ void add_local_entry(struct codomain *cod)
 
 		add_entry_to_policy(cod, entry);
 	}
-}
-
-struct codomain *do_local_profile(struct codomain *cod, char *name, int mode,
-	int audit)
-{
-	PDEBUG("Matched: local profile trans (%s) open rules close\n", $1);
-	if (!cod) {
-		yyerror(_("Memory allocation error."));
-	}
-	cod->name = name;
-	if (force_complain)
-		cod->flags.complain = 1;
-	post_process_nt_entries(cod);
-	PDEBUG("profile %s: flags='%s%s'\n",
-	       name,
-	       cod->flags.complain ? "complain, " : "",
-	       cod->flags.audit ? "audit" : "");
-
-	cod->local = 1;
-	cod->local_mode = mode;
-	cod->local_audit = audit;
-
-	return cod;
 }
