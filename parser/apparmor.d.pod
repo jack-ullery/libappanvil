@@ -316,7 +316,11 @@ site-specific customization of B<@{HOMEDIRS}>.
 
 AppArmor also provides alias rules for remapping paths for site-specific
 layouts. They are an alternative form of path rewriting to using variables,
-and are done after variable resolution.
+and are done after variable resolution. Alias rules must occur within the
+preamble of the profile. System-wide aliases are found in
+F</etc/apparmor.d/tunables/alias>, which is included by
+F</etc/apparmor.d/tunables/global>. F</etc/apparmor.d/tunables/global> is
+typically included at the beginning of an AppArmor profile.
 
 =head2 Globbing
 
