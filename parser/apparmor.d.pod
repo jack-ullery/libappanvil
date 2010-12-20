@@ -74,7 +74,9 @@ B<PROGRAM> = (non-whitespace characters except for '^', must start with '/'. Emb
 
 B<PROGRAMHAT> = '^'  (non-whitespace characters; see change_hat(2) for a description of how this "hat" is used.)
 
-B<FILE RULE> = ( '"' I<FILEGLOB> '"' | I<FILEGLOB> ) I<ACCESS> ','
+B<FILE RULE> = I<RULE QUALIFIER> ( '"' I<FILEGLOB> '"' | I<FILEGLOB> ) I<ACCESS> ','
+
+B<RULE QUALIFIER> = [ 'audit' ] [ 'deny' ] [ 'owner' ]
 
 B<FILEGLOB> = (must start with '/' (after variable expansion), B<?*[]{}^> have special meanings; see below. May include I<VARIABLE>. Rules with embedded spaces or tabs must be quoted. Rules must end with '/' to apply to directories.)
 
@@ -377,6 +379,30 @@ Files and directories anywhere underneath F</tmp>.
 =item B</tmp/**/>
 
 Directories anywhere underneath F</tmp>.
+
+=back
+
+=head2 Rule Qualifiers
+
+There are several rule qualifiers that can be applied to permission rules.
+Rule qualifiers can modify the rule and/or permissions within the rule.
+
+=over 4
+
+=item B<audit>
+
+Specifies that permissions requests that match the rule should be recorded
+to the audit log.
+
+=item B<deny>
+
+Specifies that permissions requests that match the rule should be denied
+without logging. Can be combined with 'audit' to enable logging.
+
+=item B<owner>
+
+Specifies that the task must have the same euid/fsuid as the object being
+referenced by the permission check.
 
 =back
 
