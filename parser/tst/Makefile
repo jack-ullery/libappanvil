@@ -22,7 +22,7 @@ error_output: $(PARSER)
 	LANG=C $(PARSER) -S -I errors 2>&1 >/dev/null errors/single.sd | \
 		grep -q "AppArmor parser error for errors/single.sd in errors/single.sd at line 3: Could not open 'failure'"
 	LANG=C $(PARSER) -S -I errors 2>&1 >/dev/null errors/double.sd | \
-		grep -q "AppArmor parser error for errors/double.sd in errors/includes/busted at line 67: Could not open 'does-not-exist'"
+		grep -q "AppArmor parser error for errors/double.sd in errors/includes/busted at line 66: Could not open 'does-not-exist'"
 	LANG=C $(PARSER) -S -I errors 2>&1 >/dev/null errors/modefail.sd | \
 		grep -q "AppArmor parser error for errors/modefail.sd in errors/modefail.sd at line 6: syntax error"
 	LANG=C $(PARSER) -S -I errors 2>&1 >/dev/null errors/multi_include.sd | \
