@@ -40,3 +40,4 @@ $(PARSER):
 
 clean:
 	rm -f simple_tests/generated_x/*
+	rm -f simple_tests/generated_perms_leading/*
