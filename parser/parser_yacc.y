@@ -879,11 +879,12 @@ opt_unsafe: { /* nothing */ $$ = 0; }
 
 rule:   opt_unsafe file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE
 	{
-		int mode = $2 & ~ALL_AA_EXEC_UNSAFE;
+		int mode = $2;
 		if ($1) {
 			if (!($2 & AA_EXEC_BITS))
 				yyerror(_("unsafe rule missing exec permissions"));
-			mode |= (($2 & AA_EXEC_BITS) << 8) & ALL_AA_EXEC_UNSAFE;
+			mode = ($2 & ~ALL_AA_EXEC_UNSAFE) |
+				((($2 & AA_EXEC_BITS) << 8) & ALL_AA_EXEC_UNSAFE);
 		}
 
 		if ($3 && ($2 & ~AA_LINK_BITS))

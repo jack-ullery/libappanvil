@@ -9,7 +9,7 @@
   /bin/a   PIx,
 
   unsafe pix /bin/cat,
-  pix /bin/foo,
+  Pix /bin/foo,
   unsafe pix /bin/bar,
-  pix /bin/a,
+  Pix /bin/a,
 }
