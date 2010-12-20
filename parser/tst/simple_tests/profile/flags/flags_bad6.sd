@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION Don't accept other keyword as a flag
 #=EXRESULT FAIL
 # vim:syntax=subdomain

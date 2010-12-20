@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION Bad flags parsing should fail
 #=EXRESULT FAIL
 # vim:syntax=subdomain

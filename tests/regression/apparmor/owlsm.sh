@@ -1,6 +1,4 @@
 #!/bin/bash
-# $Id$
-
 #	Copyright (C) 2002-2005 Novell/SUSE
 #
 #	This program is free software; you can redistribute it and/or

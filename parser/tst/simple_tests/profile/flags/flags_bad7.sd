@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION Ensure really bad parsing fails
 #=EXRESULT FAIL
 # vim:syntax=subdomain

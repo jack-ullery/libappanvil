@@ -1,7 +1,4 @@
 #!/bin/bash
-#
-# $Id$
-#
 
 PROFILE_COUNT=1000
 KEEP_FILES=0

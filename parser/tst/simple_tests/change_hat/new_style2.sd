@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION Tests to verify multiple profiles can have the same hatname
 #=EXRESULT PASS
 # vim:syntax=subdomain

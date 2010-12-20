@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION netdomain tcp (accept,connect), udp (send,receive) conglomerate test
 #=EXRESULT FAIL
 #

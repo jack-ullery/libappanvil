@@ -1,4 +1,3 @@
-# 	$Id$
 # ----------------------------------------------------------------------
 #    Copyright (c) 1999, 2004-2009 NOVELL (All rights reserved)
 #    Copyright (c) 2010 Canonical Ltd.

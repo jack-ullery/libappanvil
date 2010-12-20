@@ -1,5 +1,3 @@
-# $Id$
-#
 # ----------------------------------------------------------------------
 #    Copyright (c) 2006 Novell, Inc. All Rights Reserved.
 #    Copyright (c) 2010 Canonical, Ltd.

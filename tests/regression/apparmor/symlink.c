@@ -6,7 +6,6 @@
  *	published by the Free Software Foundation, version 2 of the
  *	License.
  *
- * $Id$
  */
 
 #include <stdio.h>

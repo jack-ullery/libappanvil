@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * Written by Steve Beattie <sbeattie@suse.de> 2006/10/25
  *
  * Modeled after the option parsing code in pam_unix2 by:

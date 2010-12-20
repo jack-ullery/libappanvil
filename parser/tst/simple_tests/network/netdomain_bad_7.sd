@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION netdomain tcp connect to,from,via
 #=EXRESULT FAIL
 /tmp/tcp/tcp_client {

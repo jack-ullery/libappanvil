@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION Ensure conflicting namespace flags fail
 #=EXRESULT FAIL
 # vim:syntax=subdomain

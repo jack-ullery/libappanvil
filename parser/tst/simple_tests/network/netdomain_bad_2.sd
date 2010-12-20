@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION netdomain tcp accept from ip/cidr netmask/port range via
 #=EXRESULT FAIL
 /tmp/tcp/tcp_server {

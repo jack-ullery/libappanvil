@@ -1,5 +1,3 @@
-/* $Id$ */
-
 
 /* #define CHANGEHAT_NOT_IN_GLIB */
 

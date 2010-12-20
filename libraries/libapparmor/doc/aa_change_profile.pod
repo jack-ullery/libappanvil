@@ -1,4 +1,3 @@
-# $Id$
 # This publication is intellectual property of Canonical Ltd. Its contents
 # can be duplicated, either in part or in whole, provided that a copyright
 # label is visibly located on each copy.

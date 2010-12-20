@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION netdomain tcp connect w/portnumber 65536
 #=EXRESULT FAIL
 #

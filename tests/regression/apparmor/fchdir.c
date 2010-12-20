@@ -1,5 +1,3 @@
-/* $Id$ */
-
 /*
  *	Copyright (C) 2002-2007 Novell/SUSE
  *

@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION Basic test that re profile names are allowed that aren't trailing
 #=EXRESULT PASS
 # vim:syntax=subdomain

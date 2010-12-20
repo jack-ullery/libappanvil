@@ -1,5 +1,4 @@
 #
-# $Id$
 #
 OVERRIDE_TARBALL=yes
 

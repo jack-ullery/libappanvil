@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION netdomain tcp connect w/bad portnumber
 #=EXRESULT FAIL
 #

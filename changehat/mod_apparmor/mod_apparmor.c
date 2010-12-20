@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  *   Copyright (c) 2004, 2005, 2006 NOVELL (All rights reserved)
  *
  *    The mod_apparmor module is licensed under the terms of the GNU

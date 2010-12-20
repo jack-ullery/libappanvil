@@ -1,7 +1,4 @@
 #!/usr/bin/perl
-#
-# $Id$
-#
 # ----------------------------------------------------------------------
 #    Copyright (c) 2008 Dominic Reynolds. All Rights Reserved.
 #

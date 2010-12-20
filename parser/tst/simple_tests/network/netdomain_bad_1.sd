@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION netdomain tcp accept simple parse test (from,via)
 #=EXRESULT FAIL
 #

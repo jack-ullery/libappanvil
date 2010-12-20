@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION verify whitespace is allowed in profile flags.
 #=EXRESULT PASS
 # vim:syntax=subdomain

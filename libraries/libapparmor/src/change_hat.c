@@ -1,5 +1,4 @@
-/*   $Id$
-
+/*
      Copyright (c) 2003-2007 Novell, Inc. (All rights reserved)
 
      The libapparmor library is licensed under the terms of the GNU
