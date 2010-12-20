@@ -1414,7 +1414,7 @@ class State {
 public:
 	State() : label (0), audit(0), accept(0), cases(), nodes(NULL) { };
 	State(int l): label (l), audit(0), accept(0), cases(), nodes(NULL) { };
-	State(int l, NodeSet *n):
+	State(int l, NodeSet *n) throw (int):
 		label(l), audit(0), accept(0), cases(), nodes(n)
 	{
 		int error;
@@ -1422,9 +1422,8 @@ public:
 		/* Compute permissions associated with the State. */
 		accept = accept_perms(nodes, &audit, &error);
 		if (error) {
-			/* TODO!!!!!!!!!!!!!
-			 * permission error checking here
-			 */
+cerr << "Failing on accept perms " << error << "\n";
+			throw error;
 		}
 	};
 
@@ -3025,48 +3024,47 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, size_t *size, dfaflags_t
 	    }
     }
 
-    DFA dfa(rules->root, flags);
-    if (flags & DFA_DUMP_UNIQ_PERMS)
-	    dfa.dump_uniq_perms("dfa");
-
-    if (flags & DFA_CONTROL_MINIMIZE) {
-        dfa.minimize(flags);
-
-	if (flags & DFA_DUMP_MIN_UNIQ_PERMS)
-		dfa.dump_uniq_perms("minimized dfa");
-    }
-    if (flags & DFA_CONTROL_REMOVE_UNREACHABLE)
-        dfa.remove_unreachable(flags);
-
-    if (flags & DFA_DUMP_STATES)
-	dfa.dump(cerr);
-
-    if (flags & DFA_DUMP_GRAPH)
-	dfa.dump_dot_graph(cerr);
-
-    map<uchar, uchar> eq;
-    if (flags & DFA_CONTROL_EQUIV) {
-	eq = dfa.equivalence_classes(flags);
-	dfa.apply_equivalence_classes(eq);
-
-	if (flags & DFA_DUMP_EQUIV) {
-		cerr << "\nDFA equivalence class\n";
-		dump_equivalence_classes(cerr, eq);
-	}
-    } else if (flags & DFA_DUMP_EQUIV)
-	    cerr << "\nDFA did not generate an equivalence class\n";
-
-// TODO: perm verification needs to be moved into dfa creation
-//    if (dfa.verify_perms()) {
-//	*size = 0;
-//	return NULL;
-//    }
-
     stringstream stream;
-    TransitionTable transition_table(dfa, eq, flags);
-    if (flags & DFA_DUMP_TRANS_TABLE)
-	    transition_table.dump(cerr);
-    transition_table.flex_table(stream, "");
+    try {
+	    DFA dfa(rules->root, flags);
+	    if (flags & DFA_DUMP_UNIQ_PERMS)
+		    dfa.dump_uniq_perms("dfa");
+
+	    if (flags & DFA_CONTROL_MINIMIZE) {
+		    dfa.minimize(flags);
+
+		    if (flags & DFA_DUMP_MIN_UNIQ_PERMS)
+			    dfa.dump_uniq_perms("minimized dfa");
+	    }
+	    if (flags & DFA_CONTROL_REMOVE_UNREACHABLE)
+		    dfa.remove_unreachable(flags);
+
+	    if (flags & DFA_DUMP_STATES)
+		    dfa.dump(cerr);
+
+	    if (flags & DFA_DUMP_GRAPH)
+		    dfa.dump_dot_graph(cerr);
+
+	    map<uchar, uchar> eq;
+	    if (flags & DFA_CONTROL_EQUIV) {
+		    eq = dfa.equivalence_classes(flags);
+		    dfa.apply_equivalence_classes(eq);
+
+		    if (flags & DFA_DUMP_EQUIV) {
+			    cerr << "\nDFA equivalence class\n";
+			    dump_equivalence_classes(cerr, eq);
+		    }
+	    } else if (flags & DFA_DUMP_EQUIV)
+		    cerr << "\nDFA did not generate an equivalence class\n";
+
+	    TransitionTable transition_table(dfa, eq, flags);
+	    if (flags & DFA_DUMP_TRANS_TABLE)
+		    transition_table.dump(cerr);
+	    transition_table.flex_table(stream, "");
+    } catch (int error) {
+	    *size = 0;
+	    return NULL;
+    }
 
     stringbuf *buf = stream.rdbuf();
 
