@@ -3,7 +3,7 @@
 #=EXRESULT FAIL
 #
 /usr/bin/foo {
-  #include <includes/files>
+
   /bin/ls rUIx,
 }
 
