@@ -98,6 +98,7 @@ void add_local_entry(struct codomain *cod);
 %token TOK_NETWORK
 %token TOK_HAT
 %token TOK_UNSAFE
+%token TOK_SAFE
 %token TOK_COLON
 %token TOK_LINK
 %token TOK_OWNER
@@ -171,6 +172,7 @@ void add_local_entry(struct codomain *cod);
 %type <cod>	cond_rule
 %type <network_entry> network_rule
 %type <user_entry> rule
+%type <user_entry> frule
 %type <flags>	flags
 %type <flags>	flagvals
 %type <flags>	flagval
@@ -869,40 +871,48 @@ opt_named_transition:
 		$$.name = $5;
 	};
 
-rule:	id_or_var file_mode opt_named_transition TOK_END_OF_RULE
+opt_unsafe: { /* nothing */ $$ = 0; }
+	| TOK_UNSAFE { $$ = 1; };
+	| TOK_SAFE { $$ = 2; };
+
+rule:	opt_unsafe frule
+	{
+		if ($1) {
+			if (!($2->mode & AA_EXEC_BITS))
+				yyerror(_("unsafe rule missing exec permissions"));
+			if ($1 == 1) {
+				$2->mode |= (($2->mode & AA_EXEC_BITS) << 8) &
+					 ALL_AA_EXEC_UNSAFE;
+			}
+			else if ($1 == 2)
+				$2->mode &= ~ALL_AA_EXEC_UNSAFE;
+		}
+		$$ = $2;
+	};
+
+frule:	id_or_var file_mode opt_named_transition TOK_END_OF_RULE
 	{
 		$$ = do_file_rule($3.namespace, $1, $2, NULL, $3.name);
 	};
 
-opt_unsafe: { /* nothing */ $$ = 0; }
-	| TOK_UNSAFE { $$ = 1; };
-
-rule:   opt_unsafe file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE
+frule:	file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE
 	{
-		int mode = $2;
-		if ($1) {
-			if (!($2 & AA_EXEC_BITS))
-				yyerror(_("unsafe rule missing exec permissions"));
-			mode = ($2 & ~ALL_AA_EXEC_UNSAFE) |
-				((($2 & AA_EXEC_BITS) << 8) & ALL_AA_EXEC_UNSAFE);
-		}
-
-		if ($3 && ($2 & ~AA_LINK_BITS))
+		if ($2 && ($1 & ~AA_LINK_BITS))
 			yyerror(_("subset can only be used with link rules."));
-		if ($5.present && ($2 & AA_LINK_BITS) && ($2 & AA_EXEC_BITS))
+		if ($4.present && ($1 & AA_LINK_BITS) && ($1 & AA_EXEC_BITS))
 			yyerror(_("link and exec perms conflict on a file rule using ->"));
-		if ($5.present && $5.namespace && ($2 & AA_LINK_BITS))
+		if ($4.present && $4.namespace && ($1 & AA_LINK_BITS))
 			yyerror(_("link perms are not allowed on a named profile transition.\n"));
-		if (($2 & AA_LINK_BITS)) {
-			$$ = do_file_rule(NULL, $4, mode, $5.name, NULL);
-			$$->subset = $3;
+		if (($1 & AA_LINK_BITS)) {
+			$$ = do_file_rule(NULL, $3, $1, $4.name, NULL);
+			$$->subset = $2;
 
 		} else {
-			$$ = do_file_rule($5.namespace, $4, mode, NULL, $5.name);
+			$$ = do_file_rule($4.namespace, $3, $1, NULL, $4.name);
 		}
  	};
 
-rule:  id_or_var file_mode id_or_var
+rule:  opt_unsafe id_or_var file_mode id_or_var
 	{
 		/* Oopsie, we appear to be missing an EOL marker. If we
 		 * were *smart*, we could work around it. Since we're

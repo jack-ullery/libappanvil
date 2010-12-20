@@ -63,6 +63,7 @@ static struct keyword_table keyword_table[] = {
 	{"defined",		TOK_DEFINED},
 	{"change_profile",	TOK_CHANGE_PROFILE},
 	{"unsafe",		TOK_UNSAFE},
+	{"safe",		TOK_SAFE},
 	{"link",		TOK_LINK},
 	{"owner",		TOK_OWNER},
 	{"user",		TOK_OWNER},
