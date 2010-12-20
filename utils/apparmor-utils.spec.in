@@ -47,6 +47,15 @@ Obsoletes: subdomain-utils
 Provides: subdomain-utils
 
 
+%if 0%{?suse_version} > 1120
+# openSUSE 11.3 no longer has /usr/lib/perl5/vendor_perl in @INC
+BuildRequires:  perl-macros
+Requires:       perl = %{perl_version}  
+    %define aa_perl_vendorlib %{perl_vendorlib}
+%else
+    %define aa_perl_vendorlib %{_prefix}/lib/perl5/vendor_perl
+%endif
+
 %description
 This provides some useful programs to help create and manage AppArmor
 profiles.  This package is part of a suite of tools that used to be
@@ -62,7 +71,7 @@ named SubDomain.
 [ "${RPM_BUILD_ROOT}" != "/" ] && rm -rf ${RPM_BUILD_ROOT}
 make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro} \
 	     BINDIR=${RPM_BUILD_ROOT}%{_prefix}/sbin/ \
-	     PERLDIR=${RPM_BUILD_ROOT}%{_prefix}/lib/perl5/vendor_perl/Immunix \
+	     PERLDIR=${RPM_BUILD_ROOT}%{aa_perl_vendorlib}/Immunix \
 	     MANDIR=%{_mandir}
 
 %clean 
@@ -72,7 +81,7 @@ make install DESTDIR=${RPM_BUILD_ROOT} DISTRO=%{distro} \
 %defattr(-,root,root)
 %config /etc/apparmor/*
 %{_prefix}/sbin/*
-%{_prefix}/lib/perl5/vendor_perl/*
+%{aa_perl_vendorlib}/*
 %{_prefix}/share/locale/*/*/apparmor-utils.mo
 %dir /var/log/apparmor
 %dir /etc/apparmor
@@ -95,6 +104,9 @@ fi
 
 
 %changelog
+* Wed Jul  7 22:18:14 UTC 2010 - opensuse@cboltz.de
+- change perl module path to perl_vendorlib macro (hardcoded path broke,
+  bnc#619893)
 * Tue Nov  6 2007 - dominic_r@mercenarylinux.com
 - (Merged from trunk -r1015)
   Added handling to correctly check the result of the profile development
