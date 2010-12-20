@@ -192,7 +192,7 @@ void add_local_entry(struct codomain *cod);
 %type <id>	opt_namespace
 %type <id>	opt_id
 %type <transition> opt_named_transition
-
+%type <boolean> opt_unsafe
 %%
 
 
@@ -874,38 +874,32 @@ rule:	id_or_var file_mode opt_named_transition TOK_END_OF_RULE
 		$$ = do_file_rule($3.namespace, $1, $2, NULL, $3.name);
 	};
 
-rule:   file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE
+opt_unsafe: { /* nothing */ $$ = 0; }
+	| TOK_UNSAFE { $$ = 1; };
+
+rule:   opt_unsafe file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE
 	{
-		if ($2 && ($1 & ~AA_LINK_BITS))
+		int mode = $2 & ~ALL_AA_EXEC_UNSAFE;
+		if ($1) {
+			if (!($2 & AA_EXEC_BITS))
+				yyerror(_("unsafe rule missing exec permissions"));
+			mode |= (($2 & AA_EXEC_BITS) << 8) & ALL_AA_EXEC_UNSAFE;
+		}
+
+		if ($3 && ($2 & ~AA_LINK_BITS))
 			yyerror(_("subset can only be used with link rules."));
-		if ($4.present && ($1 & AA_LINK_BITS) && ($1 & AA_EXEC_BITS))
+		if ($5.present && ($2 & AA_LINK_BITS) && ($2 & AA_EXEC_BITS))
 			yyerror(_("link and exec perms conflict on a file rule using ->"));
-		if ($4.present && $4.namespace && ($1 & AA_LINK_BITS))
+		if ($5.present && $5.namespace && ($2 & AA_LINK_BITS))
 			yyerror(_("link perms are not allowed on a named profile transition.\n"));
-		if (($1 & AA_LINK_BITS)) {
-			$$ = do_file_rule(NULL, $3, $1 & ~ALL_AA_EXEC_UNSAFE,
-					  $4.name, NULL);
-			$$->subset = $2;
+		if (($2 & AA_LINK_BITS)) {
+			$$ = do_file_rule(NULL, $4, mode, $5.name, NULL);
+			$$->subset = $3;
 
 		} else {
-			$$ = do_file_rule($4.namespace, $3, $1 & ~ALL_AA_EXEC_UNSAFE, NULL, $4.name);
+			$$ = do_file_rule($5.namespace, $4, mode, NULL, $5.name);
 		}
  	};
-
-rule:	TOK_UNSAFE file_mode id_or_var opt_named_transition TOK_END_OF_RULE
-	{
-		int mode = (($2 & AA_EXEC_BITS) << 8) & ALL_AA_EXEC_UNSAFE;
-
-		if (!($2 & AA_EXEC_BITS))
-			yyerror(_("unsafe rule missing exec permissions"));
-
-		if ($4.present && ($2 & AA_LINK_BITS))
-			yyerror(_("link perms are not allowed on a named profile transition.\n"));
-
-		$$ = do_file_rule($4.namespace, $3,
-				  ($2 & ~ALL_AA_EXEC_UNSAFE) | mode,
-				  NULL, $4.name);
-	};
 
 rule:  id_or_var file_mode id_or_var
 	{
