@@ -88,6 +88,7 @@ struct alt_name {
 struct codomain {
 	char *namespace;
 	char *name;				/* codomain name */
+	char *attachment;
 	struct alt_name *altnames;
 	void *xmatch;
 	size_t xmatch_size;

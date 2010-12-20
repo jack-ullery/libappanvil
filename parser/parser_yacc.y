@@ -190,6 +190,7 @@ void add_local_entry(struct codomain *cod);
 %type <boolean> opt_owner_flag
 %type <boolean> opt_profile_flag
 %type <id>	opt_namespace
+%type <id>	opt_id
 %type <transition> opt_named_transition
 
 %%
@@ -213,22 +214,31 @@ opt_profile_flag: { /* nothing */ $$ = 0; }
 opt_namespace: { /* nothing */ $$ = NULL; }
 	| TOK_COLON TOK_ID TOK_COLON { $$ = $2; }
 
-profile_base: TOK_ID flags TOK_OPEN rules TOK_CLOSE
+opt_id: { /* nothing */ $$ = NULL; }
+	| TOK_ID { $$ = $1; }
+
+profile_base: TOK_ID opt_id flags TOK_OPEN rules TOK_CLOSE
 	{
-		struct codomain *cod = $4;
+		struct codomain *cod = $5;
 
 		if (!cod) {
 			yyerror(_("Memory allocation error."));
 		}
 
 		cod->name = $1;
-		cod->flags = $2;
+		cod->attachment = $2;
+		if ($2 && $2[0] != '/')
+			/* we don't support variables as part of the profile
+			 * name or attachment atm
+			 */
+			yyerror(_("Profile attachment must begin with a '/'."));
+		cod->flags = $3;
 		if (force_complain)
 			cod->flags.complain = 1;
 
 		post_process_nt_entries(cod);
 		PDEBUG("%s: flags='%s%s'\n",
-		       $2,
+		       $3,
 		       cod->flags.complain ? "complain, " : "",
 		       cod->flags.audit ? "audit" : "");
 
