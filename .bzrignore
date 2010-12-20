@@ -42,7 +42,7 @@ libraries/libapparmor/missing
 libraries/libapparmor/ylwrap
 libraries/libapparmor/doc/Makefile
 libraries/libapparmor/doc/Makefile.in
-libraries/libapparmor/doc/aa_change_hat.2
+libraries/libapparmor/doc/*.2
 libraries/libapparmor/src/.deps
 libraries/libapparmor/src/.libs
 libraries/libapparmor/src/Makefile
