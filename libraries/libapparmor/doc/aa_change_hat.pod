@@ -227,7 +227,7 @@ should be used.
 
 =head1 SEE ALSO
 
-apparmor(7), apparmor.d(5), apparmor_parser(8), and
+apparmor(7), apparmor.d(5), apparmor_parser(8), aa_change_profile(2) and
 L<http://wiki.apparmor.net>.
 
 =cut
