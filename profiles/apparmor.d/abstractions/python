@@ -11,16 +11,16 @@
 #
 # ------------------------------------------------------------------
 
-  /usr/lib{,32,64}/python2.[456]/**.{pyc,so}           mr,
-  /usr/lib{,32,64}/python2.[456]/**.{egg,py,pth}       r,
-  /usr/lib{,32,64}/python2.[456]/{site,dist}-packages/ r,
+  /usr/lib{,32,64}/python2.[4567]/**.{pyc,so}           mr,
+  /usr/lib{,32,64}/python2.[4567]/**.{egg,py,pth}       r,
+  /usr/lib{,32,64}/python2.[4567]/{site,dist}-packages/ r,
 
-  /usr/local/lib{,32,64}/python2.[456]/**.{pyc,so}           mr,
-  /usr/local/lib{,32,64}/python2.[456]/**.{egg,py,pth}       r,
-  /usr/local/lib{,32,64}/python2.[456]/{site,dist}-packages/ r,
+  /usr/local/lib{,32,64}/python2.[4567]/**.{pyc,so}           mr,
+  /usr/local/lib{,32,64}/python2.[4567]/**.{egg,py,pth}       r,
+  /usr/local/lib{,32,64}/python2.[4567]/{site,dist}-packages/ r,
 
   # Site-wide configuration
-  /etc/python2.[456]/** r,
+  /etc/python2.[4567]/** r,
 
   # shared python paths
   /usr/share/{pyshared,pycentral,python-support}/**      r,
