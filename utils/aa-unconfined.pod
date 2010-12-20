@@ -1,23 +1,22 @@
 # $Id$
-# This publication is intellectual property of Novell Inc. Its contents
-# can be duplicated, either in part or in whole, provided that a copyright
-# label is visibly located on each copy.
-# 
+# This publication is intellectual property of Novell Inc. and Canonical
+# Ltd. Its contents can be duplicated, either in part or in whole, provided
+# that a copyright label is visibly located on each copy.
+#
 # All information found in this book has been compiled with utmost
 # attention to detail. However, this does not guarantee complete accuracy.
-# Neither SUSE LINUX GmbH, the authors, nor the translators shall be held
-# liable for possible errors or the consequences thereof.
-# 
+# Neither SUSE LINUX GmbH, Canonical Ltd, the authors, nor the translators
+# shall be held liable for possible errors or the consequences thereof.
+#
 # Many of the software and hardware descriptions cited in this book
 # are registered trademarks. All trade names are subject to copyright
 # restrictions and may be registered trade marks. SUSE LINUX GmbH
-# essentially adheres to the manufacturer's spelling.
-# 
+# and Canonical Ltd. essentially adhere to the manufacturer's spelling.
+#
 # Names of products and trademarks appearing in this book (with or without
 # specific notation) are likewise subject to trademark and trade protection
 # laws and may thus fall under copyright restrictions.
-# 
-# Please direct suggestions and comments to apparmor-general@forge.novell.com.
+#
 
 
 =pod
@@ -48,12 +47,12 @@ program only lists processes using TCP and UDP. In short, this
 program is unsuitable for forensics use and is provided only as an aid
 to profiling all network-accessible processes in the lab.
 
-If you find any bugs, please report them to bugzilla at
-L<http://bugzilla.novell.com>.
+If you find any bugs, please report them at
+L<http://https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 
-netstat(8), apparmor(7), apparmor.d(5), change_hat(2), and
-L<http://forge.novell.com/modules/xfmod/project/?apparmor>.
+netstat(8), apparmor(7), apparmor.d(5), aa_change_hat(2), and
+L<http://wiki.apparmor.net>.
 
 =cut

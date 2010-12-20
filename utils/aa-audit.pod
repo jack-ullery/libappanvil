@@ -15,12 +15,12 @@ In this mode security policy is enforced and all access (successes and failures)
 
 =head1 BUGS
 
-None. Please report any you find to bugzilla at
-L<http://bugzilla.novell.com>.
+If you find any bugs, please report them at
+L<http://https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 
-apparmor(7), apparmor.d(5), aa-enforce(1), aa-complain(1), change_hat(2), and
-L<http://forge.novell.com/modules/xfmod/project/?apparmor>.
+apparmor(7), apparmor.d(5), aa-enforce(1), aa-complain(1), aa_change_hat(2),
+and L<http://wiki.apparmor.net>.
 
 =cut

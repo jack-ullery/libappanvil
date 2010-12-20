@@ -29,9 +29,9 @@ mod_apparmor - fine-grained AppArmor confinement for Apache
 
 An AppArmor profile applies to an executable program; if a portion of
 the program needs different access permissions than other portions,
-the program can "change hats" via change_hat(2) to a different role,
+the program can "change hats" via aa_change_hat(2) to a different role,
 also known as a subprofile.  The mod_apparmor Apache module uses the
-change_hat(2) mechanism to offer more fine-grained confinement of dynamic
+aa_change_hat(2) mechanism to offer more fine-grained confinement of dynamic
 elements within Apache such as individual php and perl scripts, while
 still allowing the performance benefits of using mod_php and mod_perl.
 
@@ -86,7 +86,7 @@ above).
 When profiling with mod_apparmor, it is helpful to keep the following order
 of operations in mind:
 
-On each URI request, mod_apparmor will first change_hat(2) into
+On each URI request, mod_apparmor will first aa_change_hat(2) into
 ^HANDLING_UNTRUSTED_INPUT, if it exists.
 
 Then, after performing the initial parsing of the request, mod_apparmor
@@ -94,15 +94,15 @@ will:
 
 =over 2
 
-1. try to change_hat(2) into a matching AAHatName hat if it exists and
+1. try to aa_change_hat(2) into a matching AAHatName hat if it exists and
 applies, otherwise it will
 
-2. try to change_hat(2) into the URI itself, otherwise it will
+2. try to aa_change_hat(2) into the URI itself, otherwise it will
 
-3. try to change_hat(2) into an AADefaultHatName hat if it has been defined
+3. try to aa_change_hat(2) into an AADefaultHatName hat if it has been defined
 for the server/vhost, otherwise it will
 
-4. try to change_hat(2) into the DEFAULT_URI hat, if it exists, otherwise it
+4. try to aa_change_hat(2) into the DEFAULT_URI hat, if it exists, otherwise it
 will
 
 5. fall back to the global Apache policy
@@ -120,7 +120,7 @@ them at L<http://https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 
-apparmor(7), subdomain.conf(5), apparmor_parser(8), and
+apparmor(7), subdomain.conf(5), apparmor_parser(8), aa_change_hat(2) and
 L<http://wiki.apparmor.net>.
 
 =cut

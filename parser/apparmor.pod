@@ -1,7 +1,11 @@
 # $Id$
 # ----------------------------------------------------------------------
-#    Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+#    Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+#                  2008, 2009
 #    NOVELL (All rights reserved)
+#
+#    Copyright (c) 2010
+#    Canonical Ltd. (All rights reserved)
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -111,7 +115,7 @@ REJECTING. The "name" and process id of the running program are reported,
 as well as the profile name and any "hat" that may be active. ("Name"
 is in quotes, because the process name is limited to 15 bytes; it is the
 same as reported through the Berkeley process accounting.) If no hat is
-active (see change_hat(2)) then the profile name is printed for "active".
+active (see aa_change_hat(2)) then the profile name is printed for "active".
 
 For confined processes running under a profile that has been loaded in 
 complain mode, enforcement will not take place and the log messages 
@@ -149,10 +153,10 @@ depending upon local configuration.
 
 =head1 SEE ALSO
 
-apparmor_parser(8), change_hat(2), apparmor.d(5),
-subdomain.conf(5), autodep(1), clean(1),
+apparmor_parser(8), aa_change_hat(2), apparmor.d(5),
+subdomain.conf(5), aa-autodep(1), clean(1),
 auditd(8),
-unconfined(8), enforce(1), complain(1), and
-L<http://forge.novell.com/modules/xfmod/project/?apparmor>.
+aa-unconfined(8), aa-enforce(1), aa-complain(1), and
+L<http://wiki.apparmor.net>.
 
 =cut

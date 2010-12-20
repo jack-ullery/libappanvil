@@ -1,23 +1,22 @@
 # $Id$
-# This publication is intellectual property of Novell Inc. Its contents
-# can be duplicated, either in part or in whole, provided that a copyright
-# label is visibly located on each copy.
-# 
+# This publication is intellectual property of Novell Inc. and Canonical
+# Ltd. Its contents can be duplicated, either in part or in whole, provided
+# that a copyright label is visibly located on each copy.
+#
 # All information found in this book has been compiled with utmost
 # attention to detail. However, this does not guarantee complete accuracy.
-# Neither SUSE LINUX GmbH, the authors, nor the translators shall be held
-# liable for possible errors or the consequences thereof.
-# 
+# Neither SUSE LINUX GmbH, Canonical Ltd, the authors, nor the translators
+# shall be held liable for possible errors or the consequences thereof.
+#
 # Many of the software and hardware descriptions cited in this book
 # are registered trademarks. All trade names are subject to copyright
 # restrictions and may be registered trade marks. SUSE LINUX GmbH
-# essentially adheres to the manufacturer's spelling.
-# 
+# and Canonical Ltd. essentially adhere to the manufacturer's spelling.
+#
 # Names of products and trademarks appearing in this book (with or without
 # specific notation) are likewise subject to trademark and trade protection
 # laws and may thus fall under copyright restrictions.
-# 
-# Please direct suggestions and comments to apparmor-general@forge.novell.com.
+#
 
 
 =pod
@@ -61,7 +60,7 @@ to add to profile and (F)inish.
 
 If the user selects (S)can or hits return, aa-genprof will parse
 the complain mode logs and iterate through generated violations
-using logprof(1). 
+using aa-logprof(1). 
 
 After the user finishes selecting profile entries based on violations 
 that were detected during the program execution, aa-genprof will reload
@@ -74,13 +73,12 @@ and any other profiles that were generated, into enforce mode and exit.
 
 =head1 BUGS
 
-None. Please report any you find to bugzilla at
-L<http://bugzilla.novell.com>.
+If you find any bugs, please report them at
+L<http://https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 
-apparmor(7), apparmor.d(5), aa-enforce(1), aa-complain(1), change_hat(2),
-aa-logprof(1), logprof.conf(5), and
-L<http://forge.novell.com/modules/xfmod/project/?apparmor>.
+apparmor(7), apparmor.d(5), aa-enforce(1), aa-complain(1), aa_change_hat(2),
+aa-logprof(1), logprof.conf(5), and L<http://wiki.apparmor.net>.
 
 =cut
