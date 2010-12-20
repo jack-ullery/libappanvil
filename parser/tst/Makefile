@@ -11,8 +11,11 @@ endif
 
 all: tests
 
-.PHONY: tests error_output parser_sanity caching
-tests: error_output parser_sanity caching
+.PHONY: tests error_output gen_xtrans parser_sanity caching
+tests: error_output gen_xtrans parser_sanity caching
+
+gen_xtrans:
+	./gen-xtrans.pl
 
 error_output: $(PARSER)
 	$(PARSER) -S -I errors >/dev/null errors/okay.sd
@@ -34,3 +37,6 @@ caching: $(PARSER)
 
 $(PARSER):
 	make -C $(PARSER_DIR) $(PARSER_BIN)
+
+clean:
+	rm -f simple_tests/generated_x/*
