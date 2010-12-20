@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION Basic test that re local profile names are allowed
 #=EXRESULT PASS
 # vim:syntax=subdomain

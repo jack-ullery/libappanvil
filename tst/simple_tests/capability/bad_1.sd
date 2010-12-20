@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION fail CAP_XXX syntax.
 #=EXRESULT FAIL
 # vim:syntax=subdomain

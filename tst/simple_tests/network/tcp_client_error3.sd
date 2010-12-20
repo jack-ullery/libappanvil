@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION netdomain tcp_connect w/bad ip address
 #=EXRESULT FAIL
 #

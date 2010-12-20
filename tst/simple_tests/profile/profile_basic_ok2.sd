@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION Basic parsing test, unattached profile
 #=EXRESULT PASS
 # vim:syntax=subdomain

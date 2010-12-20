@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION netdomain tcp connect to ip/cidr netmask/port range via
 #=EXRESULT FAIL
 /tmp/tcp/tcp_client {

@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION netdomain tcp accept from,to,via
 #=EXRESULT FAIL
 /tmp/tcp/tcp_server {

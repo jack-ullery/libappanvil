@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION Ensure debug flag is no longer accepted
 #=EXRESULT FAIL
 # vim:syntax=subdomain

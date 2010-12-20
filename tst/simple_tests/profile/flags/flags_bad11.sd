@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION Ensure conflicting deletion flags cause an error
 #=EXRESULT FAIL
 # vim:syntax=subdomain

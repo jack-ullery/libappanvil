@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION Basic namespace test, duplicate mode bits
 #=EXRESULT PASS
 # vim:syntax=subdomain

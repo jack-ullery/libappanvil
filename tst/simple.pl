@@ -7,7 +7,6 @@ use strict;
 use Getopt::Long;
 use Test::More;
 
-my $__VERSION__='$Id$';
 my %config;
 $config{'parser'} = "/sbin/subdomain_parser";
 $config{'profiledir'} = "./simple_tests/";
@@ -22,7 +21,6 @@ GetOptions(
 );
 
 sub usage {
-  print STDERR "$__VERSION__\n";
   print STDERR "Usage $0 profile_directory\n";
   print STDERR "\tTests the subdomain parser on the given profile directory\n";
   print STDOUT "Bail out! Got the usage statement\n";

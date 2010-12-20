@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION same unattached profile different namespaces test, duplicate mode bits
 #=EXRESULT PASS
 # vim:syntax=subdomain

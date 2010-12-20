@@ -1,5 +1,4 @@
 #
-# $Id$
 #=DESCRIPTION Basic test that re profile names are allowed in quotes
 #=EXRESULT PASS
 # vim:syntax=subdomain
