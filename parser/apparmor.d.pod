@@ -351,6 +351,10 @@ will substitute for the single character a, b, or c
 
 will substitute for the single character a, b, or c
 
+=item B<[^a-c]>
+
+will substitute for any single character not matching a, b or c
+
 =item B<{ab,cd}>
 
 will expand to one rule to match ab, one rule to match cd
