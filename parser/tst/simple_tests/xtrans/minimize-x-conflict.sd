@@ -1,0 +1,10 @@
+#
+#=DESCRIPTION test for conflict resolution in minimization phase of dfa gen
+#=EXRESULT FAIL
+#
+/usr/bin/foo {
+
+  # need to build minimal test for this yet
+
+}
+
