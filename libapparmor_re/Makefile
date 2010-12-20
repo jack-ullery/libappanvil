@@ -18,7 +18,7 @@ libapparmor_re.a: regexp.o
 regexp.o : regexp.cc apparmor_re.h
 	$(LINK.cc) $< -c -o $@
 
-regexp.cc : regexp.y flex-tables.h
+regexp.cc : regexp.y flex-tables.h ../immunix.h
 	${BISON} -o $@ $<
 
 clean:
