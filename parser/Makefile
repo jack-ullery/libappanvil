@@ -302,6 +302,7 @@ clean: _clean
 	rm -rf techdoc.aux techdoc.log techdoc.pdf techdoc.toc techdor.txt techdoc/
 	make -s -C $(AAREDIR) clean
 	make -s -C po clean
+	make -s -C tst clean
 
 .SILENT: dist_clean
 dist_clean:
