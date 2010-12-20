@@ -388,14 +388,17 @@ static int process_profile_name_xmatch(struct codomain *cod)
 	const char *name;
 
 	/* don't filter_slashes for profile names */
-	name = local_name(cod->name);
+	if (cod->attachment)
+		name = cod->attachment;
+	else
+		name = local_name(cod->name);
 	ptype = convert_aaregex_to_pcre(name, 0, tbuf, PATH_MAX + 3,
 					&cod->xmatch_len);
 
 	if (ptype == ePatternInvalid) {
 		PERROR(_("%s: Invalid profile name '%s' - bad regular expression\n"), progname, name);
 		return FALSE;
-	} else if (ptype == ePatternBasic && !cod->altnames) {
+	} else if (ptype == ePatternBasic && !(cod->altnames || cod->attachment)) {
 		/* no regex so do not set xmatch */
 		cod->xmatch = NULL;
 		cod->xmatch_len = 0;

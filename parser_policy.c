@@ -736,6 +736,8 @@ void free_policy(struct codomain *cod)
 		free(cod->dfa);
 	if (cod->name)
 		free(cod->name);
+	if (cod->attachment)
+		free(cod->attachment);
 	if (cod->namespace)
 		free(cod->namespace);
 	if (cod->network_allowed)

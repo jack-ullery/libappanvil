@@ -159,6 +159,7 @@ static void process_name(const void *nodep, VISIT value, int __unused level)
 {
 	struct alias_rule **t = (struct alias_rule **) nodep;
 	struct codomain *cod = target_cod;
+	char *name;
 	int len;
 
 	if (value == preorder || value == endorder)
@@ -166,9 +167,14 @@ static void process_name(const void *nodep, VISIT value, int __unused level)
 
 	len = strlen((*t)->from);
 
-	if (cod->name && strncmp((*t)->from, cod->name, len) == 0) {
+	if (cod->attachment)
+		name = cod->attachment;
+	else
+		name = cod->name;
+
+	if (name && strncmp((*t)->from, name, len) == 0) {
 		struct alt_name *alt;
-		char *new = do_alias(*t, cod->name);
+		char *new = do_alias(*t, name);
 		if (!new)
 			return;
 		/* aliases create alternate names */
