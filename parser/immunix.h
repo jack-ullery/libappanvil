@@ -148,12 +148,12 @@ enum pattern_t {
 #include <stdio.h>
 static inline int is_merged_x_consistent(int a, int b)
 {
-	if ((a & AA_USER_EXEC_TYPE) && (b & AA_USER_EXEC_TYPE) &&
+	if ((a & AA_USER_EXEC) && (b & AA_USER_EXEC) &&
 	    ((a & AA_USER_EXEC_TYPE) != (b & AA_USER_EXEC_TYPE)))
 { fprintf(stderr, "failed user merge 0x%x 0x%x\n", a, b);
 		return 0;
 }
-	if ((a & AA_OTHER_EXEC_TYPE) && (b & AA_OTHER_EXEC_TYPE) &&
+	if ((a & AA_OTHER_EXEC) && (b & AA_OTHER_EXEC) &&
 	    ((a & AA_OTHER_EXEC_TYPE) != (b & AA_OTHER_EXEC_TYPE)))
 { fprintf(stderr, "failed other merge 0x%x 0x%x\n", a, b);
 		return 0;

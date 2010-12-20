@@ -2836,9 +2836,9 @@ extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, int deny,
 #define MATCH_FLAGS_SIZE (sizeof(uint32_t) * 8 - 1)
 MatchFlag *match_flags[FLAGS_WIDTH][MATCH_FLAGS_SIZE];
 DenyMatchFlag *deny_flags[FLAGS_WIDTH][MATCH_FLAGS_SIZE];
-#define EXEC_MATCH_FLAGS_SIZE ((AA_EXEC_COUNT << 2) * 2)
-MatchFlag *exec_match_flags[FLAGS_WIDTH][EXEC_MATCH_FLAGS_SIZE];	/* mods + unsafe + ix *u::o*/
-ExactMatchFlag *exact_match_flags[FLAGS_WIDTH][EXEC_MATCH_FLAGS_SIZE];/* mods + unsafe +ix *u::o*/
+#define EXEC_MATCH_FLAGS_SIZE (AA_EXEC_COUNT *2 * 2 * 2)	/* double for each of ix pux, unsafe x bits * u::o */
+MatchFlag *exec_match_flags[FLAGS_WIDTH][EXEC_MATCH_FLAGS_SIZE];	/* mods + unsafe + ix + pux * u::o*/
+ExactMatchFlag *exact_match_flags[FLAGS_WIDTH][EXEC_MATCH_FLAGS_SIZE];/* mods + unsafe + ix + pux *u::o*/
 
 extern "C" void aare_reset_matchflags(void)
 {
@@ -2900,8 +2900,8 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 	flip_tree(tree);
 
 
-/* 0x3f == 4 bits x mods + 1 bit unsafe mask + 1 bit ix, after shift */
-#define EXTRACT_X_INDEX(perm, shift) (((perm) >> (shift + 8)) & 0x3f)
+/* 0x7f == 4 bits x mods + 1 bit unsafe mask + 1 bit ix, + 1 pux after shift */
+#define EXTRACT_X_INDEX(perm, shift) (((perm) >> (shift + 7)) & 0x7f)
 
 //if (perms & ALL_AA_EXEC_TYPE && (!perms & AA_EXEC_BITS))
 //	fprintf(stderr, "adding X rule without MAY_EXEC: 0x%x %s\n", perms, rulev[0]);
