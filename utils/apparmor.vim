@@ -1,5 +1,8 @@
 " ----------------------------------------------------------------------
-"    Copyright (c) 2005 Novell, Inc. All Rights Reserved.
+"    Copyright (c) 2005-2009 Novell, Inc. All Rights Reserved.
+"
+"    Copyright (c) 2010
+"    Canonical Ltd. (All rights reserved)
 "
 "    This program is free software; you can redistribute it and/or
 "    modify it under the terms of version 2 of the GNU General Public
@@ -17,12 +20,12 @@
 "    you may find current contact information at www.novell.com.
 " ----------------------------------------------------------------------
 "
-" stick this file into ~/.vim/syntax/ and add these commands into your .vimrc
+" Copy this file into ~/.vim/syntax/ and add these commands into your .vimrc
 " to have vim automagically use this syntax file for these directories:
 "
-" autocmd BufNewFile,BufRead /etc/subdomain.d/* set syntax=subdomain
-" autocmd BufNewFile,BufRead */sdprofiles/*     set syntax=subdomain
-" autocmd BufNewFile,BufRead */codomain-*/*/*   set syntax=subdomain
+" if filereadable("<your home dir>/.vim/syntax/apparmor.vim")
+"   autocmd BufNewFile,BufRead /etc/apparmor.d/* set syntax=apparmor
+" endif
 
 " color setup...
 hi sdComment    ctermfg=lightblue
