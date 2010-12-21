@@ -65,6 +65,13 @@ sub read_config {
         close(CONF);
     }
 
+    # LP: #692406
+    # Explicitly disable the repository until there is an alternative, since
+    # the OpenSUSE site went away
+    if ($filename eq "repository.conf") {
+        $config->{repository}{enabled} = "no";
+    }
+
     return $config;
 }
 
