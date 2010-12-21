@@ -1,3 +1,5 @@
+# vim:syntax=apparmor
+
   # Allow read to all files user has DAC access to and write access to all
   # files owned by the user in $HOME.
   @{HOME}/ r,

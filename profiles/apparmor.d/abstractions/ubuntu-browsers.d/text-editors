@@ -1,3 +1,5 @@
+# vim:syntax=apparmor
+
   # Text editors (It's All Text [https://addons.mozilla.org/en-US/firefox/addon/4125])
   /usr/bin/emacsclient.emacs-snapshot PUxr,
   /usr/bin/emacsclient.emacs22 PUxr,

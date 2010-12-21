@@ -1,3 +1,5 @@
+# vim:syntax=apparmor
+
   # Java plugin
   owner @{HOME}/.java/deployment/deployment.properties k,
   /etc/java-*/ r,

@@ -1,3 +1,4 @@
+# vim:syntax=apparmor
 #
 # for allowing access to gnome-terminal
 #

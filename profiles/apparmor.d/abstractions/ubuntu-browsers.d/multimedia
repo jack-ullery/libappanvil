@@ -1,3 +1,5 @@
+# vim:syntax=apparmor
+
   #include <abstractions/X>
 
   # Pulseaudio
