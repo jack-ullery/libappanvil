@@ -1,3 +1,5 @@
+# vim:syntax=apparmor
+
   # Openoffice.org
   /usr/bin/ooffice PUxr,
   /usr/bin/oocalc PUxr,

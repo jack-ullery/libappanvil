@@ -1,3 +1,4 @@
+# vim:syntax=apparmor
 #
 # abstraction for allowing console email clients in Ubuntu. These will
 # typically also need a terminal, so when using this abstraction, should also

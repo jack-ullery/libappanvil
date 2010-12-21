@@ -1,3 +1,5 @@
+# vim:syntax=apparmor
+
   # for mailto:
   #include <abstractions/ubuntu-email>
   #include <abstractions/ubuntu-console-email>

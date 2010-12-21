@@ -1,3 +1,5 @@
+# vim:syntax=apparmor
+
   # Apport
   /usr/bin/apport-bug PUx,
 

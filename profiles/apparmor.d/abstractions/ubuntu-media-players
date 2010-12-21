@@ -1,3 +1,4 @@
+# vim:syntax=apparmor
 #
 # abstraction for allowing access to media players in Ubuntu
 #

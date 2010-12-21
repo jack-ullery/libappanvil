@@ -1,3 +1,4 @@
+# vim:syntax=apparmor
 #
 # abstraction for allowing access to text-only browsers in Ubuntu. These will
 # typically also need a terminal, so when using this abstraction, should also

@@ -1,3 +1,4 @@
+# vim:syntax=apparmor
 #
 # abstraction for allowing access to graphical browsers in Ubuntu
 #
