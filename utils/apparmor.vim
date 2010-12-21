@@ -1,23 +1,23 @@
 " ----------------------------------------------------------------------
 "    Copyright (c) 2005 Novell, Inc. All Rights Reserved.
-"      
+"
 "    This program is free software; you can redistribute it and/or
 "    modify it under the terms of version 2 of the GNU General Public
 "    License as published by the Free Software Foundation.
-"      
+"
 "    This program is distributed in the hope that it will be useful,
 "    but WITHOUT ANY WARRANTY; without even the implied warranty of
 "    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 "    GNU General Public License for more details.
-"      
+"
 "    You should have received a copy of the GNU General Public License
 "    along with this program; if not, contact Novell, Inc.
-"      
-"    To contact Novell about this file by physical or electronic mail, 
+"
+"    To contact Novell about this file by physical or electronic mail,
 "    you may find current contact information at www.novell.com.
 " ----------------------------------------------------------------------
 "
-" stick this file into ~/.vim/syntax/ and add these commands into your .vimrc 
+" stick this file into ~/.vim/syntax/ and add these commands into your .vimrc
 " to have vim automagically use this syntax file for these directories:
 "
 " autocmd BufNewFile,BufRead /etc/subdomain.d/* set syntax=subdomain
@@ -81,7 +81,7 @@ syn match  sdLim /\v^\s*set\s+rlimit\s+\S+\s*\<\=\s*(|-)[0-9]+(|K|M|G)+\s*,(\s*$
 syn match  sdEntryR /\v^\s*\/\S*\s+[rl]+\s*,(\s*$|(\s*#.*$)\@=)/ contained contains=sdGlob nextgroup=@sdEntry,sdComment,sdError
 
 syn match sdProfileName /\v^\/\S+\s+(flags\=\(\S+\)\s+)=\{/ contained contains=sdProfileStart,sdHat,sdFlags
-syn match sdProfileStart /{/ contained 
+syn match sdProfileStart /{/ contained
 syn match sdProfileEnd /}/ contained
 syn match sdHat /\^.\+\>/ contained
 syn match sdFlags /\vflags\=\(\S+\)/ contained contains=sdFlagKey
