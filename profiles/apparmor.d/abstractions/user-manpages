@@ -10,11 +10,11 @@
 
   # perhaps your configuration has users elsewhere, or you don't wish
   # them to read their own manpages
-  @{HOME}/man/**                        r,
-  @{HOME}/tmp/groff*                    rwl,
+  owner @{HOME}/man/**                        r,
+  owner @{HOME}/tmp/groff*                    rwl,
 
   # kindof required
-  /tmp/groff*                           rwl,
+  owner /tmp/groff*                           rwl,
 
   # standard system manpages
   /usr/local/share/man/man?/            r,
