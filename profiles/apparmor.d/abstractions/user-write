@@ -9,10 +9,12 @@
 # ------------------------------------------------------------------
 
   # per-user write  directories
-  @{HOME}/             r,
-  @{HOME}/Desktop/     r,
-  @{HOME}/Documents/   r,
-  @{HOME}/[a-zA-Z0-9]*/ rw,
-  @{HOME}/[a-zA-Z0-9]* rwl,
-  @{HOME}/Desktop/**   rwl,
-  @{HOME}/Documents/** rwl,
+  owner @{HOME}/              r,
+  owner @{HOME}/Desktop/      r,
+  owner @{HOME}/Documents/    r,
+  owner @{HOME}/Public/       r,
+  owner @{HOME}/[a-zA-Z0-9]*/ rw,
+  owner @{HOME}/[a-zA-Z0-9]*  rwl,
+  owner @{HOME}/Desktop/**    rwl,
+  owner @{HOME}/Documents/**  rwl,
+  owner @{HOME}/Public/**     rwl,
