@@ -11,11 +11,11 @@
 # Description: Where common programs should allow users to download
 # files
 
-  @{HOME}/tmp/**       		rwl,
-  @{HOME}/download/**  		rwl,
-  @{HOME}/downloads/** 		rwl,
-  @{HOME}/[a-zA-Z0-9]* 		rwl,
-  @{HOME}/Desktop      		r,
-  @{HOME}/Desktop/*    		rwl,
-  "@{HOME}/My Downloads/" 	r,
-  "@{HOME}/My Downloads/**" 	rwl,
+  owner @{HOME}/tmp/**       		rwl,
+  owner @{HOME}/[dD]ownload{,s}/	r,
+  owner @{HOME}/[dD]ownload{,s}/**	rwl,
+  owner @{HOME}/[a-zA-Z0-9]* 		rwl,
+  owner @{HOME}/Desktop/     		r,
+  owner @{HOME}/Desktop/*    		rwl,
+  owner "@{HOME}/My Downloads/" 	r,
+  owner "@{HOME}/My Downloads/**" 	rwl,
