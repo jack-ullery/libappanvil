@@ -32,7 +32,7 @@
   /usr/X11R6/**.so*               mr,
 
   # DRI
-  /usr/lib/dri/**                 mr,
+  /usr/lib{,32,64}/dri/**         mr,
   /dev/dri/**                     rw,
 
   # mouse themes
