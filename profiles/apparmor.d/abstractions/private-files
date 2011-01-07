@@ -14,6 +14,8 @@
 
   # special attention to (potentially) executable files
   audit deny @{HOME}/bin/** wl,
+  audit deny @{HOME}/.config/autostart/** wl,
+  audit deny @{HOME}/.kde/Autostart/** wl,
 
   deny @{HOME}/.bash* mrk,
   audit deny @{HOME}/.bash* wl,
