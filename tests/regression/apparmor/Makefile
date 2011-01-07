@@ -100,7 +100,8 @@ LIBIMMUNIX:=$(shell	if [ -f /usr/lib/libapparmor.so -o -f /usr/lib64/libapparmor
 				echo -limmunix ; \
 			fi )
 
-CFLAGS+=$(CHANGEHAT_FLAGS) $(LIBIMMUNIX) -Wall -Wstrict-prototypes
+CFLAGS+=$(CHANGEHAT_FLAGS) -Wall -Wstrict-prototypes
+LDLIBS+=$(LIBIMMUNIX)
 
 EXEC=$(SRC:%.c=%)
 
@@ -153,7 +154,7 @@ RISKY_TESTS=
 all: $(EXEC) changehat.h
 
 changehat_pthread: changehat_pthread.c changehat.h
-	${CC} ${CFLAGS} -lpthread -o $@ $<
+	${CC} ${CFLAGS} ${LDFLAGS} $< -o $@ ${LDLIBS} -pthread
 
 tests: all
 	@if [ `whoami` = "root" ] ;\
