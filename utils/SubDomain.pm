@@ -2422,7 +2422,7 @@ my $RE_LOG_v2_0_audit  =
 my $RE_LOG_v2_1_audit  =
     qr/type=(UNKNOWN\[150[1-6]\]|APPARMOR_(AUDIT|ALLOWED|DENIED|HINT|STATUS|ERROR))/;
 my $RE_LOG_v2_6_audit =
-    qr/type=AVC\s+audit\([\d\.\:]+\):\s+apparmor=/;
+    qr/type=AVC\s+(msg=)?audit\([\d\.\:]+\):\s+apparmor=/;
 
 sub prefetch_next_log_entry() {
     # if we already have an existing cache entry, something's broken
