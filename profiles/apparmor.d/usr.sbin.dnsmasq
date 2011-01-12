@@ -1,4 +1,13 @@
-# Author: John Dong <jdong@ubuntu.com>
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2009 John Dong <jdong@ubuntu.com>
+#    Copyright (C) 2010 Canonical Ltd.
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
 
 #include <tunables/global>
 /usr/sbin/dnsmasq {
@@ -9,6 +18,9 @@
   capability setgid,
   capability setuid,
   capability dac_override,
+  capability net_admin,         # for DHCP server
+  capability net_raw,           # for DHCP server ping checks
+  network inet raw,
 
   /etc/dnsmasq.conf r,
   /etc/dnsmasq.d/ r,
@@ -21,6 +33,10 @@
   /var/run/dnsmasq/* rw,
 
   /var/lib/misc/dnsmasq.leases rw, # Required only for DHCP server usage
+
+  # libvirt pid files for dnsmasq
+  /var/run/libvirt/network/      r,
+  /var/run/libvirt/network/*.pid rw,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.dnsmasq>
