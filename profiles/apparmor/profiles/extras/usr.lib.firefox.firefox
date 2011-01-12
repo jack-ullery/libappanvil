@@ -1,61 +1,126 @@
-# Last Modified: Wed Nov  5 03:45:39 2008
+# vim:syntax=apparmor
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2009-2011 Canonical Ltd.
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
 #include <tunables/global>
 
-/usr/lib/firefox/firefox {
-  #include <abstractions/base>
-  #include <abstractions/bash>
-  #include <abstractions/consoles>
-  #include <abstractions/dbus>
-  #include <abstractions/fonts>
+# We want to confine the binaries that match:
+#  /usr/lib/firefox-4.0b8/firefox
+#  /usr/lib/firefox-4.0b8/firefox
+# but not:
+#  /usr/lib/firefox-4.0b8/firefox.sh
+/usr/lib/firefox{,-[0-9]*}/firefox{,*[^s][^h]} {
+  #include <abstractions/audio>
+  #include <abstractions/cups-client>
+  #include <abstractions/dbus-session>
   #include <abstractions/gnome>
+  #include <abstractions/ibus>
   #include <abstractions/kde>
   #include <abstractions/nameservice>
-  #include <abstractions/user-download>
-  #include <abstractions/user-write>   
 
+  # for networking
+  network inet stream,
+  network inet6 stream,
+  @{PROC}/[0-9]*/net/if_inet6 r,
+  @{PROC}/[0-9]*/net/ipv6_route r,
 
-  deny /usr/lib/firefox/firefox.sh x,
+  # should maybe be in abstractions
+  /usr/share/xubuntu/applications/defaults.list r,
+  owner /tmp/** m,
+  owner /var/tmp/** m,
+  /tmp/.X[0-9]*-lock r,
 
-  /bin/bash rix,
-  /usr/lib/firefox/firefox rix,
+  /etc/timezone r,
+  /etc/wildmidi/wildmidi.cfg r,
 
-  /etc/gai.conf r,
-  /etc/gnome-vfs-2.0/modules/ r,
-  /etc/gre.d/ r,
+  # firefox specific
+  /etc/firefox*/** r,
+  /etc/xul-ext/** r,
+  /etc/xulrunner{,-[0-9]*}/** r,
   /etc/gre.d/* r,
   /etc/mailcap r,
   /etc/mime.types r,
+
+  # noisy
+  deny /usr/lib/firefox{,-[0-9]*}/** w,
+  deny /usr/lib/{firefox,xulrunner}-addons/** w,
+  deny /usr/lib/xulrunner-*/components/*.tmp w,
+  deny /.suspended r,
+  deny /boot/initrd.img* r,
+  deny /boot/vmlinuz* r,
+  deny /var/cache/fontconfig/ w,
+
+  deny /usr/bin/gconftool-2 x,
+
+  # These are needed when a new user starts firefox and firefox.sh is used
+  /usr/lib/firefox{,-[0-9]*}/** ixr,
+  deny /usr/lib/firefox/firefox.sh x,
+  /usr/bin/basename ixr,
+  /usr/bin/dirname ixr,
+  /usr/bin/pwd ixr,
+  /sbin/killall5 ixr,
+  /bin/which ixr,
+  /usr/bin/tr ixr,
+  @{PROC}/[0-9]*/cmdline r,
+  @{PROC}/[0-9]*/mountinfo r,
+  @{PROC}/[0-9]*/stat r,
+  @{PROC}/[0-9]*/status r,
+
   /etc/mtab r,
-  /etc/opt/kde3/share/applications/ r,
-  /etc/opt/kde3/share/applications/mimeinfo.cache r,
+  /etc/fstab r,
 
-  /opt/kde3/share/applications/ r,
-  /opt/kde3/share/applications/mimeinfo.cache r,
+  # Needed for the crash reporter
+  owner @{PROC}/[0-9]*/environ r,
+  owner @{PROC}/[0-9]*/auxv r,
+  /etc/lsb-release r,
+  /usr/bin/expr ix,
 
-  owner @{proc}/*/mounts r,
-  @{proc}/meminfo r,
-  @{proc}/sys/kernel/ngroups_max r,
+  # Needed for container to work in xul builds
+  /usr/lib/xulrunner-*/plugin-container ixr,
 
-  /usr/lib/**.so mr,
+  # Make browsing directories work
+  / r,
+  /**/ r,
 
-  /usr/share/applications/ r,
-  /usr/share/applications/* r,
-  /usr/share/gvfs/remote-volume-monitors/ r,
-  /usr/share/gvfs/remote-volume-monitors/* r,
-  /usr/share/locale-bundle/**.mo r,
-  /usr/share/mime/**.xml r,
-  /usr/share/mozilla/extensions/** r,
+  # allow access to documentation and other files the user may want to look
+  # at in /usr
+  /usr/{include,share,src}/** r,
 
-  /var/cache/gio-2.0/defaults.list r,
-  /var/cache/libx11/compose/* r,
+  # Default profile allows downloads to ~/Downloads and uploads from ~/Public
+  owner @{HOME}/ r,
+  owner @{HOME}/Public/ r,
+  owner @{HOME}/Public/** r,
+  owner @{HOME}/Downloads/ r,
+  owner @{HOME}/Downloads/** rw,
+  owner @{HOME}/.thumbnails/*/*.png r,
 
-  owner /var/run/gdm/*/database r,
-  owner @{HOME}/.ICEauthority r,
-  owner @{HOME}/.beagle/ToIndex/* rw,
-  owner @{HOME}/.fontconfig/* r,
-  owner @{HOME}/.mozilla/extensions/** rw,
-  owner @{HOME}/.mozilla/firefox/** rw,
-  owner @{HOME}/.mozilla/firefox/*/*.sqlite k,
-  owner @{HOME}/.mozilla/firefox/*/.parentlock k,
+  # per-user firefox configuration
+  owner @{HOME}/.{firefox,mozilla}/ rw,
+  owner @{HOME}/.{firefox,mozilla}/** rw,
+  owner @{HOME}/.{firefox,mozilla}/**/*.{db,parentlock,sqlite}* k,
+  owner @{HOME}/.{firefox,mozilla}/plugins/** rm,
+  owner @{HOME}/.{firefox,mozilla}/**/plugins/** rm,
+  owner @{HOME}/.gnome2/firefox*-bin-* rw,
 
+  #
+  # Extensions
+  # /usr/share/.../extensions/... is already covered by '/usr/.../** r', above.
+  # Allow 'x' for downloaded extensions, but inherit policy for safety
+  owner @{HOME}/.mozilla/**/extensions/** mixr,
+
+  deny /usr/lib/firefox{,-[0-9]*}/update.test w,
+  deny /usr/lib/mozilla/extensions/**/ w,
+  deny /usr/lib/xulrunner-addons/extensions/**/ w,
+  deny /usr/share/mozilla/extensions/**/ w,
+  deny /usr/share/mozilla/ w,
+
+  # Site-specific additions and overrides. See local/README for details.
+  #include <local/usr.bin.firefox>
 }
