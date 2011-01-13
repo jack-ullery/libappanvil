@@ -266,7 +266,7 @@ BEGIN {
     # set things up to log extra info if they want...
     if ($ENV{LOGPROF_DEBUG}) {
         $DEBUGGING = 1;
-        open(DEBUG, ">/var/log/apparmor/logprof_debug_$$.log");
+        open(DEBUG, ">>$ENV{LOGPROF_DEBUG}");
         my $oldfd = select(DEBUG);
         $| = 1;
         select($oldfd);
