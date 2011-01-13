@@ -1,9 +1,9 @@
-This is the README for the SubDomain parser regression testsuite.
+This is the README for the AppArmor parser regression testsuite.
 
 Running the testsuite
 ---------------------
 Running the tests is pretty easy, a simple 'make tests' should make it
-go, assuming the subdomain parser and perl are installed. 
+go, assuming the subdomain parser and perl are installed.
 
 There is a user configuration file 'uservars.conf'. If you wish to test
 against a different parser, or use a different set of profiles for the
@@ -19,7 +19,7 @@ Test::Tutorial', 'perldoc Test::Simple', 'perldoc Test::Harness', and
 
 It should be relatively easy to extend the suite with other testscripts,
 as long as they're written using Test::Simple or can emulate the
-Test::Harness protocol. To add a script, add it to the TESTS variable 
+Test::Harness protocol. To add a script, add it to the TESTS variable
 in the Makefile, and it will included in the tests to be run.
 
 However, in many cases, it is not necessary to add an entire new
@@ -55,7 +55,7 @@ The simple script looks for a few special comments in the profile,
     profile. Values can either be PASS or FAIL; if no comment is found
     that matches this pattern, then the profile is assumed to have an
     expected parse result of PASS.
-    
+
   - #=TODO -- marks the test as being for a future item to implement and
     thus are expected testsuite failures and hsould be ignored.
 
