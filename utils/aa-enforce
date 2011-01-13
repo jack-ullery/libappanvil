@@ -22,7 +22,7 @@ use strict;
 use FindBin;
 use Getopt::Long;
 
-use Immunix::SubDomain;
+use Immunix::AppArmor;
 
 use Data::Dumper;
 
@@ -50,7 +50,7 @@ GetOptions(
 $profiledir = get_full_path($profiledir);
 
 unless (-d $profiledir) {
-    UI_Important("Can't find subdomain profiles in $profiledir.");
+    UI_Important("Can't find AppArmor profiles in $profiledir.");
     exit 1;
 }
 

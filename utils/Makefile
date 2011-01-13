@@ -26,8 +26,12 @@ common/Make.rules: $(COMMONDIR)/Make.rules
 	ln -sf $(COMMONDIR) .
 endif
 
-TOOLS = aa-genprof aa-logprof aa-autodep aa-audit aa-complain aa-enforce \
-	aa-unconfined aa-status aa-decode aa-notify
+MODDIR = Immunix
+PERLTOOLS = aa-genprof aa-logprof aa-autodep aa-audit aa-complain aa-enforce \
+	aa-unconfined aa-status aa-notify
+TOOLS = ${PERLTOOLS} aa-decode
+MODULES = ${MODDIR}/AppArmor.pm ${MODDIR}/Repository.pm \
+	${MODDIR}/Config.pm ${MODDIR}/Severity.pm
 
 MANPAGES = ${TOOLS:=.8} logprof.conf.5
 
@@ -38,10 +42,10 @@ all: ${MANPAGES} ${HTMLMANPAGES}
 DESTDIR=/
 BINDIR=${DESTDIR}/usr/sbin
 CONFDIR=${DESTDIR}/etc/apparmor
-PERLDIR=${DESTDIR}/usr/lib/perl5/vendor_perl/Immunix
+PERLDIR=${DESTDIR}/usr/lib/perl5/vendor_perl/${MODDIR}
 
 po/${NAME}.pot: ${TOOLS}
-	make -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} SubDomain.pm Repository.pm Config.pm"
+	make -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} ${MODULES}"
 
 .PHONY: install
 install: ${MANPAGES} ${HTMLMANPAGES}
@@ -51,7 +55,7 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 	ln -sf aa-status ${BINDIR}/apparmor_status
 	install -m 755 ${TOOLS} ${BINDIR}
 	install -d ${PERLDIR}
-	install -m 755 SubDomain.pm Repository.pm Config.pm Severity.pm ${PERLDIR}
+	install -m 755 ${MODULES} ${PERLDIR}
 	make -C po install DESTDIR=${DESTDIR} NAME=${NAME}
 	make install_manpages DESTDIR=${DESTDIR}
 	ln -sf aa-status.8 ${DESTDIR}/${MANDIR}/man8/apparmor_status.8
@@ -63,3 +67,7 @@ clean: _clean
 	rm -f Make.rules
 	make -C po clean
 
+check:
+	for i in ${MODULES} ${PERLTOOLS} ; do \
+		perl -c $$i || exit 1; \
+	done

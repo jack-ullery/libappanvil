@@ -110,11 +110,11 @@ msgstr ""
 #, c-format
 msgid ""
 "%s: Warning! You've set this program setuid root.\n"
-"Anybody who can run this program can update your SubDomain profiles.\n"
+"Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 msgstr ""
 "%s: Warning! You've set this program setuid root.\n"
-"Anybody who can run this program can update your SubDomain profiles.\n"
+"Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 
 #: ../parser_main.c:376
@@ -424,8 +424,8 @@ msgstr "%s: Subdomain '%s' defined, but no parent '%s'.\n"
 
 #: parser_yacc.y:1461
 #, c-format
-msgid "%s: Two SubDomains defined for '%s'.\n"
-msgstr "%s: Two SubDomains defined for '%s'.\n"
+msgid "%s: Two profiles defined for '%s'.\n"
+msgstr "%s: Two profiles defined for '%s'.\n"
 
 #: ../parser.h:37
 #, c-format

@@ -61,7 +61,7 @@ msgstr "(T)erminar"
 msgid "Reading log entries from %s."
 msgstr "A ler os registos de diário a partir de %s."
 
-msgid "Updating subdomain profiles in %s."
+msgid "Updating AppArmor profiles in %s."
 msgstr "A actualizar os perfile de sub-domínio em %s."
 
 msgid "Complain-mode changes:"

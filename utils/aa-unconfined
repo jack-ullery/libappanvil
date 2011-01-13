@@ -25,7 +25,7 @@
 use strict;
 use Getopt::Long;
 
-use Immunix::SubDomain;
+use Immunix::AppArmor;
 use Locale::gettext;
 use POSIX;
 
@@ -51,7 +51,7 @@ sub usage {
 
 my $subdomainfs = check_for_subdomain();
 
-die gettext("SubDomain does not appear to be started. Please enable SubDomain and try again.") . "\n"
+die gettext("AppArmor does not appear to be started. Please enable AppArmor and try again.") . "\n"
   unless $subdomainfs;
 
 my @pids;

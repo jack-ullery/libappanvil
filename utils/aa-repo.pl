@@ -103,7 +103,7 @@ my $usage_bottom =
 use strict;
 use Getopt::Long;
 
-use Immunix::SubDomain;
+use Immunix::AppArmor;
 use Immunix::Repository;
 use Data::Dumper;
 

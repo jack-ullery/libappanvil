@@ -116,7 +116,7 @@ is_apparmor_present() {
 }
 
 # This set of patterns to skip needs to be kept in sync with
-# SubDomain.pm::isSkippableFile()
+# AppArmor.pm::isSkippableFile()
 # returns 0 if profile should NOT be skipped
 # returns 1 on verbose skip
 # returns 2 on silent skip

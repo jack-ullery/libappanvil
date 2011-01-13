@@ -226,7 +226,7 @@ msgid ""
 "\n"
 msgstr ""
 "%s: Waarskuwing! U het hierdie program setuid-stam gestel.\n"
-"Enigiemand wat hierdie program kan laat loop, kan u SubDomain-profiele bywerk.\n"
+"Enigiemand wat hierdie program kan laat loop, kan u AppArmor-profiele bywerk.\n"
 " \n"
 
 #: ../parser_main.c:415 ../parser_main.c:509

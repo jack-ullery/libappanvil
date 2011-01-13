@@ -21,7 +21,7 @@
 use strict;
 use Getopt::Long;
 
-use Immunix::SubDomain;
+use Immunix::AppArmor;
 
 use Data::Dumper;
 
@@ -49,14 +49,14 @@ GetOptions(
 
 my $sd_mountpoint = check_for_subdomain();
 unless ($sd_mountpoint) {
-    fatal_error(gettext("SubDomain does not appear to be started.  Please enable SubDomain and try again."));
+    fatal_error(gettext("AppArmor does not appear to be started. Please enable AppArmor and try again."));
 }
 
 # let's convert it to full path...
 $profiledir = get_full_path($profiledir);
 
 unless (-d $profiledir) {
-    fatal_error "Can't find subdomain profiles in $profiledir.";
+    fatal_error "Can't find AppArmor profiles in $profiledir.";
 }
 
 # what are we profiling?
@@ -163,7 +163,7 @@ for my $p (sort keys %helpers) {
     }
 }
 
-UI_Info(gettext("Reloaded SubDomain profiles in enforce mode."));
+UI_Info(gettext("Reloaded AppArmor profiles in enforce mode."));
 UI_Info(sprintf(gettext('Finished generating profile for %s.'), $fqdbin));
 exit 0;
 

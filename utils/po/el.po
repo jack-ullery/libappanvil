@@ -20,10 +20,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
 
-#: ../genprof:55
-msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "Το SubDomain δεν φαίνεται να ξεκινά. Παρακαλώ ενεργοποιήστε το SubDomain και ξαναπροσπαθήστε."
-
 #: ../genprof:69
 msgid "Please enter the program to profile: "
 msgstr "Παρακαλώ εισάγετε το πρόγραμμα προς προφίλ: "
@@ -63,8 +59,8 @@ msgid "Profiling"
 msgstr "Δημιουργώντας Προφίλ"
 
 #: ../genprof:169
-msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "Επαναφόρτωση των προφίλ SubDomain σε εξαναγκασμένη λειτουργία."
+msgid "Reloaded AppArmor profiles in enforce mode."
+msgstr "Επαναφόρτωση των προφίλ AppArmor σε εξαναγκασμένη λειτουργία."
 
 #: ../genprof:170
 #, perl-format
@@ -83,14 +79,14 @@ msgstr "χρήση: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"�
 
 #: ../autodep:63
 #, perl-format
-msgid "Can't find subdomain profiles in %s."
+msgid "Can't find AppArmor profiles in %s."
 msgstr "Αδυναμία εύρεσης προφίλ υποτομέων στο %s."
 
 #: ../autodep:71
 msgid "Please enter the program to create a profile for: "
 msgstr "Παρακαλώ εισάγετε το πρόγραμμα για το οποίο θέλετε να δημιουργήσετε προφίλ: "
 
-#: ../autodep:95 ../SubDomain.pm:6156
+#: ../autodep:95 ../AppArmor.pm:6156
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
 msgstr "Το %s είναι αυτή τη στιγμή σημειωμένο ως πρόγραμμα το οποίο δεν θα έπρεπε να έχει το δικό του προφίλ.  Συνήθως, εαν για τα προγράμματα που είναι σημειωμένα κατ' αυτόν τον τρόπο δημιουργηθεί προφίλ θα κρεμάσει το υπόλοιπο σύστημα.  Εαν ξέρετε τι θέλετε να κάνετε και είστε σίγουροι οτι θέλετε να δημιουργήσετε προφίλ για αυτό το πρόγραμμα, επεξεργαστείτε την αντίστοιχη καταχώρηση στον τομέα [qualifiers] στο /etc/apparmor/logprof.conf."
@@ -119,7 +115,7 @@ msgstr "χρήση: %s [ -d /path/to/profiles ] [ πρόγραμμα για να
 msgid "Please enter the program to switch to complain mode: "
 msgstr "Παρακαλώ εισάγετε το πρόγραμμα το οποίο θέλετε να περάσει σε λειτουργία διαμαρτυρίας: "
 
-#: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:900
+#: ../complain:106 ../AppArmor.pm:579 ../AppArmor.pm:900
 #, perl-format
 msgid "Setting %s to complain mode."
 msgstr "Ορισμός %s σε λειτουργία διαμαρτυρίας."
@@ -133,7 +129,7 @@ msgstr "χρήση: %s [ -d /path/to/profiles ] [ πρόγραμμα προς π
 msgid "Please enter the program to switch to enforce mode: "
 msgstr "Παρακαλώ εισάγετε το πρόγραμμα το οποίο θέλετε να περάσει σε εξαναγκασμένη λειτουργία: "
 
-#: ../enforce:105 ../SubDomain.pm:592
+#: ../enforce:105 ../AppArmor.pm:592
 #, perl-format
 msgid "Setting %s to enforce mode."
 msgstr "Ορισμός %s για εξαναγκασμένη λειτουργία."
@@ -149,8 +145,8 @@ msgid "Usage: %s [ --paranoid ]\n"
 msgstr "Χρήση: %s [ --paranoid ]\n"
 
 #: ../unconfined:56
-msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "Το SubDomain δεν φαίνεται να ξεκινά. Παρακαλώ ενεργοποιήστε το SubDomain και ξαναπροσπαθήστε."
+msgid "AppArmor does not appear to be started. Please enable AppArmor and try again."
+msgstr "Το AppArmor δεν φαίνεται να ξεκινά. Παρακαλώ ενεργοποιήστε το AppArmor και ξαναπροσπαθήστε."
 
 #: ../unconfined:61
 msgid "Can't read /proc\n"
@@ -164,116 +160,116 @@ msgstr "μη ορισμένο\n"
 msgid "confined by"
 msgstr "ορισμένο από"
 
-#: ../SubDomain.pm:577 ../SubDomain.pm:590
+#: ../AppArmor.pm:577 ../AppArmor.pm:590
 #, perl-format
 msgid "Can't find %s."
 msgstr "Αδυναμία εύρεσης %s."
 
-#: ../SubDomain.pm:778 ../SubDomain.pm:3173
+#: ../AppArmor.pm:778 ../AppArmor.pm:3173
 #, fuzzy
 msgid "Connecting to repository....."
 msgstr "Η σύνδεση με τον διακομιστή τερματίστηκε."
 
-#: ../SubDomain.pm:787
+#: ../AppArmor.pm:787
 #, fuzzy, perl-format
 msgid ""
 "WARNING: Error fetching profiles from the repository:\n"
 "%s\n"
 msgstr "Σφάλμα κατα την ανάγνωση της πηγής εγκατάστασης '%s':"
 
-#: ../SubDomain.pm:796
+#: ../AppArmor.pm:796
 #, fuzzy
 msgid "Inactive local profile for "
 msgstr "Αποθήκευση όλων των προφίλ"
 
-#: ../SubDomain.pm:833 ../SubDomain.pm:1852 ../SubDomain.pm:2140
-#: ../SubDomain.pm:3300 ../SubDomain.pm:3333 ../SubDomain.pm:3533
-#: ../SubDomain.pm:3799 ../SubDomain.pm:3851
+#: ../AppArmor.pm:833 ../AppArmor.pm:1852 ../AppArmor.pm:2140
+#: ../AppArmor.pm:3300 ../AppArmor.pm:3333 ../AppArmor.pm:3533
+#: ../AppArmor.pm:3799 ../AppArmor.pm:3851
 msgid "Profile"
 msgstr "Προφίλ"
 
-#: ../SubDomain.pm:867
+#: ../AppArmor.pm:867
 #, fuzzy
 msgid "Profile submitted by"
 msgstr "Ρυθμίσεις Προφίλ"
 
-#: ../SubDomain.pm:908
+#: ../AppArmor.pm:908
 #, fuzzy, perl-format
 msgid "Error activating profiles: %s\n"
 msgstr "Σφάλμα κατα την ενεργοποίηση %s (%m)\n"
 
-#: ../SubDomain.pm:1055 ../SubDomain.pm:1108
+#: ../AppArmor.pm:1055 ../AppArmor.pm:1108
 #, fuzzy, perl-format
 msgid ""
 "WARNING: Error syncronizing profiles with the repository:\n"
 "%s\n"
 msgstr "Σφάλμα κατα την ανάγνωση της πηγής εγκατάστασης '%s':"
 
-#: ../SubDomain.pm:1135
+#: ../AppArmor.pm:1135
 #, fuzzy
 msgid "New profiles"
 msgstr "Ενεργό Προφίλ"
 
-#: ../SubDomain.pm:1137
+#: ../AppArmor.pm:1137
 msgid ""
 "Please choose the newly created profiles that you would like\n"
 "to store in the repository"
 msgstr ""
 
-#: ../SubDomain.pm:1144
+#: ../AppArmor.pm:1144
 msgid "Submit newly created profiles to the repository"
 msgstr ""
 
 # power-off message
-#: ../SubDomain.pm:1146
+#: ../AppArmor.pm:1146
 #, fuzzy
 msgid "Would you like to upload the newly created profiles?"
 msgstr "Θέλετε να τερματίσετε την τρέχουσα συνεδρία;"
 
-#: ../SubDomain.pm:1159
+#: ../AppArmor.pm:1159
 #, fuzzy
 msgid ""
 "Select which of the changed profiles you would like to upload\n"
 "to the repository"
 msgstr "Επιλογή"
 
-#: ../SubDomain.pm:1161
+#: ../AppArmor.pm:1161
 #, fuzzy
 msgid "Changed profiles"
 msgstr "Εναλλαγή profile"
 
-#: ../SubDomain.pm:1167
+#: ../AppArmor.pm:1167
 msgid "Submit changed profiles to the repository"
 msgstr ""
 
-#: ../SubDomain.pm:1169
+#: ../AppArmor.pm:1169
 msgid ""
 "The following profiles from the repository were changed.\n"
 "Would you like to upload your changes?"
 msgstr ""
 
-#: ../SubDomain.pm:1236 ../SubDomain.pm:1316
+#: ../AppArmor.pm:1236 ../AppArmor.pm:1316
 #, fuzzy, perl-format
 msgid ""
 "WARNING: An error occured while uploading the profile %s\n"
 "%s\n"
 msgstr "Ένα σφάλμα προκλήθηκε κατα την ανάγνωση από την πηγή εγκατάστασης."
 
-#: ../SubDomain.pm:1241
+#: ../AppArmor.pm:1241
 msgid "Uploaded changes to repository."
 msgstr ""
 
-#: ../SubDomain.pm:1290
+#: ../AppArmor.pm:1290
 #, fuzzy
 msgid "Changelog Entry: "
 msgstr "Ιστορικό αλλαγών"
 
-#: ../SubDomain.pm:1311
+#: ../AppArmor.pm:1311
 #, fuzzy, perl-format
 msgid "Uploaded %s to repository."
 msgstr "Το αρχείο %1 δεν βρέθηκε στην πηγής εγκατάστασης."
 
-#: ../SubDomain.pm:1322
+#: ../AppArmor.pm:1322
 #, fuzzy
 msgid ""
 "Repository Error\n"
@@ -282,59 +278,59 @@ msgid ""
 "repository. These changes have not been sent.\n"
 msgstr "Αποθήκη Σφάλμα Χρήστης"
 
-#: ../SubDomain.pm:1379 ../SubDomain.pm:1419
+#: ../AppArmor.pm:1379 ../AppArmor.pm:1419
 msgid "(Y)es"
 msgstr "(Ν)αι"
 
-#: ../SubDomain.pm:1380 ../SubDomain.pm:1420
+#: ../AppArmor.pm:1380 ../AppArmor.pm:1420
 msgid "(N)o"
 msgstr "(Ο)χι"
 
-#: ../SubDomain.pm:1383 ../SubDomain.pm:1424
+#: ../AppArmor.pm:1383 ../AppArmor.pm:1424
 #, fuzzy
 msgid "Invalid hotkey for"
 msgstr "Λανθασμένα δεδομένα κλειδιού."
 
 # cancel button label
-#: ../SubDomain.pm:1421
+#: ../AppArmor.pm:1421
 msgid "(C)ancel"
 msgstr "(Α)κυρο"
 
-#: ../SubDomain.pm:1746
+#: ../AppArmor.pm:1746
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
 msgstr "Είστε σίγουροι οτι θέλετε να εγκαταλείψετε αυτό το πακέτο αλλαγών προφίλ και να αποχωρήσετε;"
 
-#: ../SubDomain.pm:1748
+#: ../AppArmor.pm:1748
 msgid "Abandoning all changes."
 msgstr "Ακυρώνοντας όλες τις αλλαγές."
 
-#: ../SubDomain.pm:1854
+#: ../AppArmor.pm:1854
 msgid "Default Hat"
 msgstr "Προκαθορισμένο Καπέλο"
 
-#: ../SubDomain.pm:1856
+#: ../AppArmor.pm:1856
 msgid "Requested Hat"
 msgstr "Αιτούμενο Καπέλο"
 
-#: ../SubDomain.pm:2142
+#: ../AppArmor.pm:2142
 msgid "Program"
 msgstr "Πρόγραμμα"
 
-#: ../SubDomain.pm:2147
+#: ../AppArmor.pm:2147
 msgid "Execute"
 msgstr "Εκτέλεση"
 
-#: ../SubDomain.pm:2148 ../SubDomain.pm:3302 ../SubDomain.pm:3335
-#: ../SubDomain.pm:3588
+#: ../AppArmor.pm:2148 ../AppArmor.pm:3302 ../AppArmor.pm:3335
+#: ../AppArmor.pm:3588
 msgid "Severity"
 msgstr "Σοβαρότητα"
 
-#: ../SubDomain.pm:2193
+#: ../AppArmor.pm:2193
 #, fuzzy
 msgid "Enter profile name to transition to: "
 msgstr "Επιστροφή "
 
-#: ../SubDomain.pm:2201
+#: ../AppArmor.pm:2201
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -350,7 +346,7 @@ msgstr ""
 "αλλά κάποιες εφαρμογές εξαρτώνται από την παρουσία\n"
 "του LD_PRELOAD or LD_LIBRARY_PATH."
 
-#: ../SubDomain.pm:2203
+#: ../AppArmor.pm:2203
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -368,7 +364,7 @@ msgstr ""
 "ή το LD_LIBRARY_PATH και καθαρισμός αυτών μπορεί\n"
 "να δημιουργήσει προβλήματα λειτουργικότητας."
 
-#: ../SubDomain.pm:2212
+#: ../AppArmor.pm:2212
 #, perl-format
 msgid ""
 "Launching processes in an unconfined state is a very\n"
@@ -383,7 +379,7 @@ msgstr ""
 "Είστε απολύτως σίγουροι πως θέλετε να αφαιρέσετε όλη\n"
 "την ασφάλεια AppArmor κατα την εκτέλεση του %s;"
 
-#: ../SubDomain.pm:2214
+#: ../AppArmor.pm:2214
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "running this program unconfined?\n"
@@ -399,74 +395,74 @@ msgstr ""
 "πρόγραμμα είναι αρύθμιστο μπορεί να ανοίξει σημαντικές\n"
 "τρύπες ασφαλείας και θα πρέπει να αποφευχθεί."
 
-#: ../SubDomain.pm:2303
+#: ../AppArmor.pm:2303
 #, fuzzy, perl-format
 msgid "A profile for %s does not exist create one?"
 msgstr "το προφίλ VAR1 δεν υπάρχει"
 
-#: ../SubDomain.pm:2330
+#: ../AppArmor.pm:2330
 #, fuzzy, perl-format
 msgid "A local profile for %s does not exist create one?"
 msgstr "το προφίλ VAR1 δεν υπάρχει"
 
-#: ../SubDomain.pm:2502 ../SubDomain.pm:6532 ../SubDomain.pm:6537
+#: ../AppArmor.pm:2502 ../AppArmor.pm:6532 ../AppArmor.pm:6537
 #, fuzzy, perl-format
 msgid "Log contains unknown mode %s."
 msgstr "Φόρτωση Άγνωστων Μονάδων"
 
-#: ../SubDomain.pm:2915
+#: ../AppArmor.pm:2915
 msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
 msgstr ""
 
-#: ../SubDomain.pm:2945
+#: ../AppArmor.pm:2945
 #, fuzzy, perl-format
 msgid "Updated profile %s to revision %s."
 msgstr "Εγγραφή ενημερωμένου προφίλ για %s."
 
-#: ../SubDomain.pm:2952
+#: ../AppArmor.pm:2952
 #, fuzzy
 msgid "Error parsing repository profile."
 msgstr "Σφάλμα κατα την ανάγνωση της πηγής εγκατάστασης '%s':"
 
-#: ../SubDomain.pm:2988
+#: ../AppArmor.pm:2988
 #, fuzzy
 msgid "Create New User?"
 msgstr "Δημιουργία ενός νέου προφίλ"
 
 #  Proposal for uml user name
-#: ../SubDomain.pm:2989
+#: ../AppArmor.pm:2989
 msgid "Username: "
 msgstr "Όνομα Χρήστη: "
 
-#: ../SubDomain.pm:2990
+#: ../AppArmor.pm:2990
 msgid "Password: "
 msgstr "Συνθηματικό: "
 
-#: ../SubDomain.pm:2991
+#: ../AppArmor.pm:2991
 #, fuzzy
 msgid "Email Addr: "
 msgstr "Email "
 
-#: ../SubDomain.pm:2993
+#: ../AppArmor.pm:2993
 #, fuzzy
 msgid "Save Configuration? "
 msgstr "Προβολή Ρυθμίσεων"
 
-#: ../SubDomain.pm:3002
+#: ../AppArmor.pm:3002
 #, fuzzy
 msgid "The Profile Repository server returned the following error:"
 msgstr "Προφίλ Αποθήκη σφάλμα:"
 
-#: ../SubDomain.pm:3004
+#: ../AppArmor.pm:3004
 msgid "Please re-enter registration information or contact the administrator."
 msgstr ""
 
-#: ../SubDomain.pm:3005
+#: ../AppArmor.pm:3005
 #, fuzzy
 msgid "Login Error\n"
 msgstr "Σύνδεση"
 
-#: ../SubDomain.pm:3012
+#: ../AppArmor.pm:3012
 #, fuzzy
 msgid ""
 "Login failure\n"
@@ -476,20 +472,20 @@ msgstr ""
 "."
 
 # power-off message
-#: ../SubDomain.pm:3034
+#: ../AppArmor.pm:3034
 #, fuzzy
 msgid ""
 "Would you like to enable access to the\n"
 "profile repository?"
 msgstr "Θέλετε να τερματίσετε την τρέχουσα συνεδρία;"
 
-#: ../SubDomain.pm:3065
+#: ../AppArmor.pm:3065
 msgid ""
 "Would you like to upload newly created and changed profiles to\n"
 "      the profile repository?"
 msgstr ""
 
-#: ../SubDomain.pm:3184
+#: ../AppArmor.pm:3184
 #, fuzzy, perl-format
 msgid ""
 "WARNING: Profile update check failed\n"
@@ -497,143 +493,143 @@ msgid ""
 "%s"
 msgstr "ΠΡΟΣΟΧΗ Προφίλ απέτυχε Λεπτομέρειες"
 
-#: ../SubDomain.pm:3198
+#: ../AppArmor.pm:3198
 #, fuzzy
 msgid "Change mode modifiers"
 msgstr "Εναλλαγή profile"
 
-#: ../SubDomain.pm:3242
+#: ../AppArmor.pm:3242
 msgid "Complain-mode changes:"
 msgstr "Αλλαγές λειτουργίας διαμαρτυρίας:"
 
-#: ../SubDomain.pm:3244
+#: ../AppArmor.pm:3244
 msgid "Enforce-mode changes:"
 msgstr "Αλλαγές λειτουργίας εξαναγκασμού:"
 
-#: ../SubDomain.pm:3250
+#: ../AppArmor.pm:3250
 #, perl-format
 msgid "Invalid mode found: %s"
 msgstr "Βρέθηκε λανθασμένη λειτουργία: %s"
 
-#: ../SubDomain.pm:3301 ../SubDomain.pm:3334
+#: ../AppArmor.pm:3301 ../AppArmor.pm:3334
 msgid "Capability"
 msgstr "Δυνατότητα"
 
-#: ../SubDomain.pm:3354 ../SubDomain.pm:3628 ../SubDomain.pm:3875
+#: ../AppArmor.pm:3354 ../AppArmor.pm:3628 ../AppArmor.pm:3875
 #, perl-format
 msgid "Adding #include <%s> to profile."
 msgstr "Προσθήκη #include <%s> στο προφίλ."
 
-#: ../SubDomain.pm:3357 ../SubDomain.pm:3629 ../SubDomain.pm:3669
-#: ../SubDomain.pm:3879
+#: ../AppArmor.pm:3357 ../AppArmor.pm:3629 ../AppArmor.pm:3669
+#: ../AppArmor.pm:3879
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
 msgstr "Διαγραφή %s προηγούμενων ταιριαστών καταχωρήσεων προφίλ."
 
-#: ../SubDomain.pm:3368
+#: ../AppArmor.pm:3368
 #, perl-format
 msgid "Adding capability %s to profile."
 msgstr "Προσθήκη δυνατότητας %s στο προφίλ."
 
-#: ../SubDomain.pm:3373
+#: ../AppArmor.pm:3373
 #, perl-format
 msgid "Denying capability %s to profile."
 msgstr "Απαγόρευση δυνατότητας %s στο προφίλ."
 
-#: ../SubDomain.pm:3534
+#: ../AppArmor.pm:3534
 msgid "Path"
 msgstr "Διαδρομή"
 
-#: ../SubDomain.pm:3545 ../SubDomain.pm:3577
+#: ../AppArmor.pm:3545 ../AppArmor.pm:3577
 msgid "(owner permissions off)"
 msgstr ""
 
-#: ../SubDomain.pm:3551
+#: ../AppArmor.pm:3551
 msgid "(force new perms to owner)"
 msgstr ""
 
-#: ../SubDomain.pm:3554
+#: ../AppArmor.pm:3554
 #, fuzzy
 msgid "(force all rule perms to owner)"
 msgstr "όλα"
 
-#: ../SubDomain.pm:3566
+#: ../AppArmor.pm:3566
 msgid "Old Mode"
 msgstr "Παλαιά Λειτουργία"
 
-#: ../SubDomain.pm:3567
+#: ../AppArmor.pm:3567
 msgid "New Mode"
 msgstr "Νέα Λειτουργία"
 
-#: ../SubDomain.pm:3583
+#: ../AppArmor.pm:3583
 msgid "(force perms to owner)"
 msgstr ""
 
-#: ../SubDomain.pm:3586
+#: ../AppArmor.pm:3586
 msgid "Mode"
 msgstr "Λειτουργία"
 
-#: ../SubDomain.pm:3668
+#: ../AppArmor.pm:3668
 #, perl-format
 msgid "Adding %s %s to profile."
 msgstr "Προσθήκη %s %s στο προφίλ."
 
-#: ../SubDomain.pm:3684
+#: ../AppArmor.pm:3684
 msgid "Enter new path: "
 msgstr "Εισαγωγή νέας διαδρομής: "
 
-#: ../SubDomain.pm:3687
+#: ../AppArmor.pm:3687
 msgid "The specified path does not match this log entry:"
 msgstr "Η καθορισμένη διαδρομή δεν ταιριάζει με την καταχώρηση αρχείου:"
 
-#: ../SubDomain.pm:3688
+#: ../AppArmor.pm:3688
 msgid "Log Entry"
 msgstr "Καταχώρηση Καταγραφής"
 
-#: ../SubDomain.pm:3689
+#: ../AppArmor.pm:3689
 msgid "Entered Path"
 msgstr "Εισαχθούσα Διαδρομή"
 
-#: ../SubDomain.pm:3690
+#: ../AppArmor.pm:3690
 msgid "Do you really want to use this path?"
 msgstr "Θέλετε πράγματι να χρησιμοποιήσετε αυτή τη διαδρομή;"
 
-#: ../SubDomain.pm:3802 ../SubDomain.pm:3854
+#: ../AppArmor.pm:3802 ../AppArmor.pm:3854
 #, fuzzy
 msgid "Network Family"
 msgstr "Δικτυακοί Φάκελοι"
 
-#: ../SubDomain.pm:3805 ../SubDomain.pm:3857
+#: ../AppArmor.pm:3805 ../AppArmor.pm:3857
 #, fuzzy
 msgid "Socket Type"
 msgstr "Τύπος Συσκευής"
 
-#: ../SubDomain.pm:3905
+#: ../AppArmor.pm:3905
 #, fuzzy, perl-format
 msgid "Adding network access %s %s to profile."
 msgstr "Προσθήκη %s %s στο προφίλ."
 
-#: ../SubDomain.pm:3924
+#: ../AppArmor.pm:3924
 #, fuzzy, perl-format
 msgid "Denying network access %s %s to profile."
 msgstr "Απαγόρευση δυνατότητας %s στο προφίλ."
 
-#: ../SubDomain.pm:4132
+#: ../AppArmor.pm:4132
 #, perl-format
 msgid "Reading log entries from %s."
 msgstr "Ανάγνωση αρχείων καταγραφής από %s."
 
-#: ../SubDomain.pm:4133
+#: ../AppArmor.pm:4133
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
 msgstr "Ενημέρωση προφίλ AppArmor στο %s."
 
-#: ../SubDomain.pm:4137
+#: ../AppArmor.pm:4137
 #, fuzzy
 msgid "unknown\n"
 msgstr "άγνωστη"
 
-#: ../SubDomain.pm:4170
+#: ../AppArmor.pm:4170
 msgid ""
 "The profile analyzer has completed processing the log files.\n"
 "\n"
@@ -642,79 +638,79 @@ msgstr ""
 "Ο αναλυτής προφίλ έχει τελειώσει την επεξεργασία των αρχείων καταγραφής.\n"
 "Όλα τα ενημερωμένα προφίλ θα επαναφορτωθούν"
 
-#: ../SubDomain.pm:4176
+#: ../AppArmor.pm:4176
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "Δεν βρέθηκαν μη χειριζόμενα γεγονότα AppArmor στα αρχεία καταγραφής συστήματος."
 
-#: ../SubDomain.pm:4237
+#: ../AppArmor.pm:4237
 #, fuzzy
 msgid ""
 "Select which profile changes you would like to save to the\n"
 "local profile set"
 msgstr "Επιλογή αποθήκευση"
 
-#: ../SubDomain.pm:4238
+#: ../AppArmor.pm:4238
 #, fuzzy
 msgid "Local profile changes"
 msgstr "Συσκευασία όλων των προφίλ"
 
-#: ../SubDomain.pm:4265
+#: ../AppArmor.pm:4265
 #, fuzzy
 msgid "The following local profiles were changed.  Would you like to save them?"
 msgstr "αποθήκευση?"
 
-#: ../SubDomain.pm:4362
+#: ../AppArmor.pm:4362
 #, fuzzy
 msgid "Profile Changes"
 msgstr "Ρυθμίσεις Προφίλ"
 
-#: ../SubDomain.pm:4974 ../SubDomain.pm:4990 ../SubDomain.pm:5001
-#: ../SubDomain.pm:5009 ../SubDomain.pm:5030 ../SubDomain.pm:5050
-#: ../SubDomain.pm:5059 ../SubDomain.pm:5091 ../SubDomain.pm:5153
-#: ../SubDomain.pm:5204
+#: ../AppArmor.pm:4974 ../AppArmor.pm:4990 ../AppArmor.pm:5001
+#: ../AppArmor.pm:5009 ../AppArmor.pm:5030 ../AppArmor.pm:5050
+#: ../AppArmor.pm:5059 ../AppArmor.pm:5091 ../AppArmor.pm:5153
+#: ../AppArmor.pm:5204
 #, perl-format
 msgid "%s contains syntax errors."
 msgstr "Το %s περιέχει συντακτικά σφάλματα."
 
-#: ../SubDomain.pm:5110
+#: ../AppArmor.pm:5110
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
 msgstr "Το προφίλ %s περιέχει λάθος regexp %s."
 
-#: ../SubDomain.pm:5115
+#: ../AppArmor.pm:5115
 #, fuzzy, perl-format
 msgid "Profile %s contains invalid mode %s."
 msgstr "Το προφίλ %s περιέχει λάθος regexp %s."
 
-#: ../SubDomain.pm:5250
+#: ../AppArmor.pm:5250
 #, fuzzy, perl-format
 msgid "%s contains syntax errors. Line [%s]"
 msgstr "Το %s περιέχει συντακτικά σφάλματα."
 
-#: ../SubDomain.pm:5839
+#: ../AppArmor.pm:5839
 #, perl-format
 msgid "Writing updated profile for %s."
 msgstr "Εγγραφή ενημερωμένου προφίλ για %s."
 
-#: ../SubDomain.pm:6344
+#: ../AppArmor.pm:6344
 msgid "Unknown command"
 msgstr "Άγνωστη εντολή"
 
-#: ../SubDomain.pm:6352
+#: ../AppArmor.pm:6352
 #, fuzzy
 msgid "Invalid hotkey in"
 msgstr "Λανθασμένα δεδομένα κλειδιού."
 
-#: ../SubDomain.pm:6362
+#: ../AppArmor.pm:6362
 msgid "Duplicate hotkey for"
 msgstr ""
 
-#: ../SubDomain.pm:6383
+#: ../AppArmor.pm:6383
 #, fuzzy
 msgid "Invalid hotkey in default item"
 msgstr "Μη έγκυρος default route:"
 
-#: ../SubDomain.pm:6392
+#: ../AppArmor.pm:6392
 #, fuzzy
 msgid "Invalid default"
 msgstr "Μη έγκυρος default route:"

@@ -22,7 +22,7 @@ use strict;
 use FindBin;
 use Getopt::Long;
 
-use Immunix::SubDomain;
+use Immunix::AppArmor;
 
 use Data::Dumper;
 
@@ -57,7 +57,7 @@ my $sd_mountpoint = check_for_subdomain();
 $profiledir = get_full_path($profiledir);
 
 unless (-d $profiledir) {
-    UI_Important(sprintf(gettext('Can\'t find subdomain profiles in %s.'), $profiledir));
+    UI_Important(sprintf(gettext('Can\'t find AppArmor profiles in %s.'), $profiledir));
     exit 1;
 }
 

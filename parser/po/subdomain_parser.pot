@@ -411,7 +411,7 @@ msgstr ""
 
 #: parser_yacc.y:1461
 #, c-format
-msgid "%s: Two SubDomains defined for '%s'.\n"
+msgid "%s: Two profiles defined for '%s'.\n"
 msgstr ""
 
 #: ../parser.h:37

@@ -13,10 +13,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../genprof:55
-msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "서브도메인이 시작되지 않았습니다. 서브도메인을 사용하도록 설정한 다음 다시 시도하십시오."
-
 #: ../genprof:69
 msgid "Please enter the program to profile: "
 msgstr "프로파일링할 프로그램을 입력하십시오."
@@ -40,7 +36,7 @@ msgid "Profiling"
 msgstr "프로파일링"
 
 #: ../genprof:169
-msgid "Reloaded SubDomain profiles in enforce mode."
+msgid "Reloaded AppArmor profiles in enforce mode."
 msgstr "enforce 모드에서 서브도메인 프로파일이 다시 로드되었습니다."
 
 #: ../genprof:170
@@ -60,14 +56,14 @@ msgstr "사용법: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"�
 
 #: ../autodep:63
 #, perl-format
-msgid "Can't find subdomain profiles in %s."
+msgid "Can't find AppArmor profiles in %s."
 msgstr "%s에서 서브도메인 프로파일을 찾을 수 없습니다. "
 
 #: ../autodep:71
 msgid "Please enter the program to create a profile for: "
 msgstr "다음에 대해 프로파일을 생성하려면 프로그램을 입력하십시오:"
 
-#: ../autodep:95 ../SubDomain.pm:6156
+#: ../autodep:95 ../AppArmor.pm:6156
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
 msgstr "%s은(는) 현재 자신의 프로파일을 가질 수 없는 프로그램으로 표시되어 있습니다. 일반적으로 프로그램에 대한 프로파일을 만들 경우 이런 식으로 프로그램이 표시되어 있습니다. 이 경우 시스템의 나머지 파일을 손상시킬 수도 있습니다. 수행할 작업을 알고 있으며, 이 프로그램에 대한 프로파일을 만들려면 /etc/apparmor/logprof.conf에서 [한정자] 섹션의 해당 항목을 편집하십시오."
@@ -96,7 +92,7 @@ msgstr "사용법: %s [ -d /path/to/profiles ] [ 프로그램을 감사 모드�
 msgid "Please enter the program to switch to complain mode: "
 msgstr "complain 모드로 전환할 프로그램을 입력하십시오."
 
-#: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:900
+#: ../complain:106 ../AppArmor.pm:579 ../AppArmor.pm:900
 #, perl-format
 msgid "Setting %s to complain mode."
 msgstr "%s을(를) complain 모드로 설정합니다."
@@ -110,7 +106,7 @@ msgstr "사용법: %s [ -d /path/to/profiles ] [ 프로그램을 complain 모드
 msgid "Please enter the program to switch to enforce mode: "
 msgstr "enforce 모드로 전환할 프로그램을 입력하십시오."
 
-#: ../enforce:105 ../SubDomain.pm:592
+#: ../enforce:105 ../AppArmor.pm:592
 #, perl-format
 msgid "Setting %s to enforce mode."
 msgstr "%s을(를) enforce 모드로 설정합니다."
@@ -126,7 +122,7 @@ msgid "Usage: %s [ --paranoid ]\n"
 msgstr "사용법: %s [ --paranoid ]\n"
 
 #: ../unconfined:56
-msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
+msgid "AppArmor does not appear to be started. Please enable AppArmor and try again."
 msgstr "서브도메인이 시작되지 않았습니다. 서브도메인을 활성화한 후 시도해 보십시오."
 
 #: ../unconfined:61
@@ -141,441 +137,441 @@ msgstr "제한이 없습니다.\n"
 msgid "confined by"
 msgstr "다음에 의해 제한됨"
 
-#: ../SubDomain.pm:577 ../SubDomain.pm:590
+#: ../AppArmor.pm:577 ../AppArmor.pm:590
 #, perl-format
 msgid "Can't find %s."
 msgstr "%s을(를) 찾을 수 없습니다."
 
-#: ../SubDomain.pm:778 ../SubDomain.pm:3173
+#: ../AppArmor.pm:778 ../AppArmor.pm:3173
 msgid "Connecting to repository....."
 msgstr "리포지토리에 연결 중...."
 
-#: ../SubDomain.pm:787
+#: ../AppArmor.pm:787
 #, perl-format
 msgid "WARNING: Error fetching profiles from the repository:\n%s\n"
 msgstr "경고: 리포지토리에서 프로파일을 가져오는 중 오류가 발생했습니다.\n%s\n"
 
-#: ../SubDomain.pm:796
+#: ../AppArmor.pm:796
 msgid "Inactive local profile for "
 msgstr "비활성 로컬 프로파일"
 
-#: ../SubDomain.pm:833 ../SubDomain.pm:1852 ../SubDomain.pm:2140
-#: ../SubDomain.pm:3300 ../SubDomain.pm:3333 ../SubDomain.pm:3533
-#: ../SubDomain.pm:3799 ../SubDomain.pm:3851
+#: ../AppArmor.pm:833 ../AppArmor.pm:1852 ../AppArmor.pm:2140
+#: ../AppArmor.pm:3300 ../AppArmor.pm:3333 ../AppArmor.pm:3533
+#: ../AppArmor.pm:3799 ../AppArmor.pm:3851
 msgid "Profile"
 msgstr "프로파일"
 
-#: ../SubDomain.pm:867
+#: ../AppArmor.pm:867
 msgid "Profile submitted by"
 msgstr "프로파일 제출자"
 
-#: ../SubDomain.pm:908
+#: ../AppArmor.pm:908
 #, perl-format
 msgid "Error activating profiles: %s\n"
 msgstr "프로파일 활성화 오류: %s\n"
 
-#: ../SubDomain.pm:1055 ../SubDomain.pm:1108
+#: ../AppArmor.pm:1055 ../AppArmor.pm:1108
 #, perl-format
 msgid "WARNING: Error syncronizing profiles with the repository:\n%s\n"
 msgstr "경고: 프로파일을 리포지토리와 동기화하는 중 오류가 발생했습니다.\n%s\n"
 
-#: ../SubDomain.pm:1135
+#: ../AppArmor.pm:1135
 msgid "New profiles"
 msgstr "새 프로파일"
 
-#: ../SubDomain.pm:1137
+#: ../AppArmor.pm:1137
 msgid "Please choose the newly created profiles that you would like\nto store in the repository"
 msgstr "리포지토리에 저장할 새로 만든 프로파일을 선택하십시오."
 
-#: ../SubDomain.pm:1144
+#: ../AppArmor.pm:1144
 msgid "Submit newly created profiles to the repository"
 msgstr "리포지토리에 새로 만든 프로파일을 제출합니다."
 
-#: ../SubDomain.pm:1146
+#: ../AppArmor.pm:1146
 msgid "Would you like to upload the newly created profiles?"
 msgstr "새로 만든 프로파일을 업로드하시겠습니까?"
 
-#: ../SubDomain.pm:1159
+#: ../AppArmor.pm:1159
 msgid "Select which of the changed profiles you would like to upload\nto the repository"
 msgstr "변경된 프로파일 중에서 리포지토리에 업로드할\n프로파일을 선택합니다."
 
-#: ../SubDomain.pm:1161
+#: ../AppArmor.pm:1161
 msgid "Changed profiles"
 msgstr "변경된 프로파일"
 
-#: ../SubDomain.pm:1167
+#: ../AppArmor.pm:1167
 msgid "Submit changed profiles to the repository"
 msgstr "변경된 프로파일을 리포지토리에 제출합니다."
 
-#: ../SubDomain.pm:1169
+#: ../AppArmor.pm:1169
 msgid "The following profiles from the repository were changed.\nWould you like to upload your changes?"
 msgstr "리포지토리의 다음 프로파일이 변경되었습니다.\n변경사항을 업로드하시겠습니가?"
 
-#: ../SubDomain.pm:1236 ../SubDomain.pm:1316
+#: ../AppArmor.pm:1236 ../AppArmor.pm:1316
 #, perl-format
 msgid "WARNING: An error occured while uploading the profile %s\n%s\n"
 msgstr "경고: %s 프로파일을 업로드하는 중 오류가 발생했습니다.\n%s\n"
 
-#: ../SubDomain.pm:1241
+#: ../AppArmor.pm:1241
 msgid "Uploaded changes to repository."
 msgstr "리포지토리에 변경사항이 업로드되었습니다."
 
-#: ../SubDomain.pm:1290
+#: ../AppArmor.pm:1290
 msgid "Changelog Entry: "
 msgstr "Changelog 항목:"
 
-#: ../SubDomain.pm:1311
+#: ../AppArmor.pm:1311
 #, perl-format
 msgid "Uploaded %s to repository."
 msgstr "리포지토리에 %s이(가) 업로드되었습니다."
 
-#: ../SubDomain.pm:1322
+#: ../AppArmor.pm:1322
 msgid "Repository Error\nRegistration or Signin was unsuccessful. User login\ninformation is required to upload profiles to the\nrepository. These changes have not been sent.\n"
 msgstr "리포지토리 오류\n등록 또는 서명에 성공하지 못했습니다. 리포지토리에\n프로파일을 업로드하려면 사용자 로그인 정보가\n필요합니다. 이러한 변경사항이 전송되지 않았습니다.\n"
 
-#: ../SubDomain.pm:1379 ../SubDomain.pm:1419
+#: ../AppArmor.pm:1379 ../AppArmor.pm:1419
 msgid "(Y)es"
 msgstr "예(Y)"
 
-#: ../SubDomain.pm:1380 ../SubDomain.pm:1420
+#: ../AppArmor.pm:1380 ../AppArmor.pm:1420
 msgid "(N)o"
 msgstr "아니오(N)"
 
-#: ../SubDomain.pm:1383 ../SubDomain.pm:1424
+#: ../AppArmor.pm:1383 ../AppArmor.pm:1424
 msgid "Invalid hotkey for"
 msgstr "잘못된 핫키:"
 
-#: ../SubDomain.pm:1421
+#: ../AppArmor.pm:1421
 msgid "(C)ancel"
 msgstr "취소(C)"
 
-#: ../SubDomain.pm:1746
+#: ../AppArmor.pm:1746
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
 msgstr "이 프로파일 설정 변경사항을 저장하지 않고 끝내시겠습니까?"
 
-#: ../SubDomain.pm:1748
+#: ../AppArmor.pm:1748
 msgid "Abandoning all changes."
 msgstr "모든 변경사항을 취소합니다."
 
-#: ../SubDomain.pm:1854
+#: ../AppArmor.pm:1854
 msgid "Default Hat"
 msgstr "기본 Hat"
 
-#: ../SubDomain.pm:1856
+#: ../AppArmor.pm:1856
 msgid "Requested Hat"
 msgstr "요청된 Hat"
 
-#: ../SubDomain.pm:2142
+#: ../AppArmor.pm:2142
 msgid "Program"
 msgstr "프로그램"
 
-#: ../SubDomain.pm:2147
+#: ../AppArmor.pm:2147
 msgid "Execute"
 msgstr "실행"
 
-#: ../SubDomain.pm:2148 ../SubDomain.pm:3302 ../SubDomain.pm:3335
-#: ../SubDomain.pm:3588
+#: ../AppArmor.pm:2148 ../AppArmor.pm:3302 ../AppArmor.pm:3335
+#: ../AppArmor.pm:3588
 msgid "Severity"
 msgstr "심각도"
 
-#: ../SubDomain.pm:2193
+#: ../AppArmor.pm:2193
 msgid "Enter profile name to transition to: "
 msgstr "변환할 프로파일 이름 입력:"
 
-#: ../SubDomain.pm:2201
+#: ../AppArmor.pm:2201
 msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH."
 msgstr "프로파일을 전환할 때 AppArmor가 해당 환경을\n삭제해야 합니까?\n환경을 삭제하는 것이 더 안전하지만, 일부\n응용 프로그램은 LD_PRELOAD 또는 LD_LIBRARY_PATH 상태에 따라 다릅니다."
 
-#: ../SubDomain.pm:2203
+#: ../AppArmor.pm:2203
 msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut this application appears to use LD_PRELOAD\nor LD_LIBRARY_PATH and clearing these could\ncause functionality problems."
 msgstr "프로파일을 전환할 때 AppArmor가 해당 환경을\n삭제해야 합니까?\n환경을 삭제하는 것이 더 안전하지만,\n이 응용 프로그램에서는 LD_PRELOAD 또는 LD_LIBRARY_PATH를 사용합니다. 따라서 이 환경을 삭제하면\n기능상의 문제가 발생할 수 있습니다."
 
-#: ../SubDomain.pm:2212
+#: ../AppArmor.pm:2212
 #, perl-format
 msgid "Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s?"
 msgstr "제한되지 않은 상태로 프로세스를 실행하는 것은 심각한\n보안 상의 문제를 유발할 수 있는 매우 위험한 작업입니다.\n\n%s을(를) 실행할 때\n모든 AppArmor 보호를 제거하시겠습니까?"
 
-#: ../SubDomain.pm:2214
+#: ../AppArmor.pm:2214
 msgid "Should AppArmor sanitize the environment when\nrunning this program unconfined?\n\nNot sanitizing the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."
 msgstr "제한되지 않은 상태로 이 프로그램을 실행할 때\nAppArmor가 해당 환경을 삭제해야 합니까?\n\n프로그램을 제한 없이 실행할 때 환경을 삭제하지 않으면\n심각한 보안 문제가 발생할 수 있으므로\n가능한 모든 경우에 이 문제를 방지해야 합니다. "
 
-#: ../SubDomain.pm:2303
+#: ../AppArmor.pm:2303
 #, perl-format
 msgid "A profile for %s does not exist create one?"
 msgstr "%s에 대한 프로파일이 없습니다. 만드시겠습니까?"
 
-#: ../SubDomain.pm:2330
+#: ../AppArmor.pm:2330
 #, perl-format
 msgid "A local profile for %s does not exist create one?"
 msgstr "%s에 대한 로컬 프로파일이 없습니다. 만드시겠습니까?"
 
-#: ../SubDomain.pm:2502 ../SubDomain.pm:6532 ../SubDomain.pm:6537
+#: ../AppArmor.pm:2502 ../AppArmor.pm:6532 ../AppArmor.pm:6537
 #, perl-format
 msgid "Log contains unknown mode %s."
 msgstr "로그에 알 수 없는 모드 %s이(가) 포함됩니다."
 
-#: ../SubDomain.pm:2915
+#: ../AppArmor.pm:2915
 msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
 msgstr "이 프로파일의 업데이트 버전이 프로파일 리포지토리에 있습니다. 업데이트된 버전을 사용하시겠습니까?"
 
-#: ../SubDomain.pm:2945
+#: ../AppArmor.pm:2945
 #, perl-format
 msgid "Updated profile %s to revision %s."
 msgstr "%s 프로파일이 %s 개정으로 업데이트되었습니다."
 
-#: ../SubDomain.pm:2952
+#: ../AppArmor.pm:2952
 msgid "Error parsing repository profile."
 msgstr "리포지토리 프로파일을 구문 분석하는 중에 오류가 발생했습니다."
 
-#: ../SubDomain.pm:2988
+#: ../AppArmor.pm:2988
 msgid "Create New User?"
 msgstr "새 사용자를 생성하시겠습니까?"
 
-#: ../SubDomain.pm:2989
+#: ../AppArmor.pm:2989
 msgid "Username: "
 msgstr "사용자 이름:"
 
-#: ../SubDomain.pm:2990
+#: ../AppArmor.pm:2990
 msgid "Password: "
 msgstr "비밀번호:"
 
-#: ../SubDomain.pm:2991
+#: ../AppArmor.pm:2991
 msgid "Email Addr: "
 msgstr "전자 메일 주소:"
 
-#: ../SubDomain.pm:2993
+#: ../AppArmor.pm:2993
 msgid "Save Configuration? "
 msgstr "구성을 저장하시겠습니까?"
 
-#: ../SubDomain.pm:3002
+#: ../AppArmor.pm:3002
 msgid "The Profile Repository server returned the following error:"
 msgstr "프로파일 리포지토리 서버에서 다음 오류를 반환했습니다:"
 
-#: ../SubDomain.pm:3004
+#: ../AppArmor.pm:3004
 msgid "Please re-enter registration information or contact the administrator."
 msgstr "등록 정보를 다시 입력하거나 관리자에게 문의하십시오."
 
-#: ../SubDomain.pm:3005
+#: ../AppArmor.pm:3005
 msgid "Login Error\n"
 msgstr "로그인 오류\n"
 
-#: ../SubDomain.pm:3012
+#: ../AppArmor.pm:3012
 msgid "Login failure\n Please check username and password and try again."
 msgstr "로그인 실패\n사용자 이름 및 비밀번호를 확인하고 다시 시도하십시오."
 
-#: ../SubDomain.pm:3034
+#: ../AppArmor.pm:3034
 msgid "Would you like to enable access to the\nprofile repository?"
 msgstr "프로파일 리포지토리에 대한 액세스를\n허용하시겠습니까?"
 
-#: ../SubDomain.pm:3065
+#: ../AppArmor.pm:3065
 msgid "Would you like to upload newly created and changed profiles to\n      the profile repository?"
 msgstr "새로 만든 프로파일과 변경된 프로파일을 프로파일 리포지토리에\n업로드하시겠습니까?"
 
-#: ../SubDomain.pm:3184
+#: ../AppArmor.pm:3184
 #, perl-format
 msgid "WARNING: Profile update check failed\nError Detail:\n%s"
 msgstr "경고: 프로파일 업데이트 확인에 실패했습니다.\n오류 세부사항:\n%s"
 
-#: ../SubDomain.pm:3198
+#: ../AppArmor.pm:3198
 msgid "Change mode modifiers"
 msgstr "변경 모드 수정자"
 
-#: ../SubDomain.pm:3242
+#: ../AppArmor.pm:3242
 msgid "Complain-mode changes:"
 msgstr "Complain 모드 변경사항:"
 
-#: ../SubDomain.pm:3244
+#: ../AppArmor.pm:3244
 msgid "Enforce-mode changes:"
 msgstr "Enforce 모드 변경사항:"
 
-#: ../SubDomain.pm:3250
+#: ../AppArmor.pm:3250
 #, perl-format
 msgid "Invalid mode found: %s"
 msgstr "잘못된 모드가 있음: %s"
 
-#: ../SubDomain.pm:3301 ../SubDomain.pm:3334
+#: ../AppArmor.pm:3301 ../AppArmor.pm:3334
 msgid "Capability"
 msgstr "기능"
 
-#: ../SubDomain.pm:3354 ../SubDomain.pm:3628 ../SubDomain.pm:3875
+#: ../AppArmor.pm:3354 ../AppArmor.pm:3628 ../AppArmor.pm:3875
 #, perl-format
 msgid "Adding #include <%s> to profile."
 msgstr "프로파일에 #include <%s>을(를) 추가합니다."
 
-#: ../SubDomain.pm:3357 ../SubDomain.pm:3629 ../SubDomain.pm:3669
-#: ../SubDomain.pm:3879
+#: ../AppArmor.pm:3357 ../AppArmor.pm:3629 ../AppArmor.pm:3669
+#: ../AppArmor.pm:3879
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
 msgstr "프로파일 이전 일치 항목 %s이(가) 삭제되었습니다."
 
-#: ../SubDomain.pm:3368
+#: ../AppArmor.pm:3368
 #, perl-format
 msgid "Adding capability %s to profile."
 msgstr "%s 기능을 프로파일에 추가합니다."
 
-#: ../SubDomain.pm:3373
+#: ../AppArmor.pm:3373
 #, perl-format
 msgid "Denying capability %s to profile."
 msgstr "%s 기능을 프로파일에서 거부합니다."
 
-#: ../SubDomain.pm:3534
+#: ../AppArmor.pm:3534
 msgid "Path"
 msgstr "경로"
 
-#: ../SubDomain.pm:3545 ../SubDomain.pm:3577
+#: ../AppArmor.pm:3545 ../AppArmor.pm:3577
 msgid "(owner permissions off)"
 msgstr "(소유자 권한 해제)"
 
-#: ../SubDomain.pm:3551
+#: ../AppArmor.pm:3551
 msgid "(force new perms to owner)"
 msgstr "(소유자에게 새 권한 강제 적용)"
 
-#: ../SubDomain.pm:3554
+#: ../AppArmor.pm:3554
 msgid "(force all rule perms to owner)"
 msgstr "(소유자에게 모든 규칙 권한 강제 적용)"
 
-#: ../SubDomain.pm:3566
+#: ../AppArmor.pm:3566
 msgid "Old Mode"
 msgstr "이전 모드"
 
-#: ../SubDomain.pm:3567
+#: ../AppArmor.pm:3567
 msgid "New Mode"
 msgstr "새 모드"
 
-#: ../SubDomain.pm:3583
+#: ../AppArmor.pm:3583
 msgid "(force perms to owner)"
 msgstr "(소유자에게 권한 강제 적용)"
 
-#: ../SubDomain.pm:3586
+#: ../AppArmor.pm:3586
 msgid "Mode"
 msgstr "모드"
 
-#: ../SubDomain.pm:3668
+#: ../AppArmor.pm:3668
 #, perl-format
 msgid "Adding %s %s to profile."
 msgstr "프로파일에 %s %s을(를) 추가하고 있습니다."
 
-#: ../SubDomain.pm:3684
+#: ../AppArmor.pm:3684
 msgid "Enter new path: "
 msgstr "새 경로 입력:"
 
-#: ../SubDomain.pm:3687
+#: ../AppArmor.pm:3687
 msgid "The specified path does not match this log entry:"
 msgstr "지정된 경로가 이 로그 항목과 일치하지 않습니다:"
 
-#: ../SubDomain.pm:3688
+#: ../AppArmor.pm:3688
 msgid "Log Entry"
 msgstr "로그 항목"
 
-#: ../SubDomain.pm:3689
+#: ../AppArmor.pm:3689
 msgid "Entered Path"
 msgstr "입력한 경로"
 
-#: ../SubDomain.pm:3690
+#: ../AppArmor.pm:3690
 msgid "Do you really want to use this path?"
 msgstr "이 경로를 사용하시겠습니까?"
 
-#: ../SubDomain.pm:3802 ../SubDomain.pm:3854
+#: ../AppArmor.pm:3802 ../AppArmor.pm:3854
 msgid "Network Family"
 msgstr "네트워크 제품군"
 
-#: ../SubDomain.pm:3805 ../SubDomain.pm:3857
+#: ../AppArmor.pm:3805 ../AppArmor.pm:3857
 msgid "Socket Type"
 msgstr "소켓 형식"
 
-#: ../SubDomain.pm:3905
+#: ../AppArmor.pm:3905
 #, perl-format
 msgid "Adding network access %s %s to profile."
 msgstr "프로파일에 네트워크 액세스 %s %s을(를) 추가하고 있습니다."
 
-#: ../SubDomain.pm:3924
+#: ../AppArmor.pm:3924
 #, perl-format
 msgid "Denying network access %s %s to profile."
 msgstr "프로파일에서 네트워크 액세스 %s %s을(를) 거부하고 있습니다."
 
-#: ../SubDomain.pm:4132
+#: ../AppArmor.pm:4132
 #, perl-format
 msgid "Reading log entries from %s."
 msgstr "%s에서 로그 항목을 읽고 있습니다."
 
-#: ../SubDomain.pm:4133
+#: ../AppArmor.pm:4133
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
 msgstr "%s의 AppArmor 프로파일을 업데이트하고 있습니다."
 
-#: ../SubDomain.pm:4137
+#: ../AppArmor.pm:4137
 msgid "unknown\n"
 msgstr "알 수 없음\n"
 
-#: ../SubDomain.pm:4170
+#: ../AppArmor.pm:4170
 msgid "The profile analyzer has completed processing the log files.\n\nAll updated profiles will be reloaded"
 msgstr "프로파일 분석기에서 로그 파일 처리를 완료했습니다.\n\n업데이트된 모든 프로파일이 다시 로드됩니다."
 
-#: ../SubDomain.pm:4176
+#: ../AppArmor.pm:4176
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "시스템 로그에서 처리되지 않은 AppArmor 이벤트를 찾지 못했습니다. "
 
-#: ../SubDomain.pm:4237
+#: ../AppArmor.pm:4237
 msgid "Select which profile changes you would like to save to the\nlocal profile set"
 msgstr "로컬 프로파일 세트에 저장할 프로파일 변경사항을\n선택하십시오."
 
-#: ../SubDomain.pm:4238
+#: ../AppArmor.pm:4238
 msgid "Local profile changes"
 msgstr "로컬 프로파일 변경사항"
 
-#: ../SubDomain.pm:4265
+#: ../AppArmor.pm:4265
 msgid "The following local profiles were changed.  Would you like to save them?"
 msgstr "다음 로컬 프로파일이 변경되었습니다. 변경사항을 저장하시겠습니까?"
 
-#: ../SubDomain.pm:4362
+#: ../AppArmor.pm:4362
 msgid "Profile Changes"
 msgstr "프로파일 변경사항"
 
-#: ../SubDomain.pm:4974 ../SubDomain.pm:4990 ../SubDomain.pm:5001
-#: ../SubDomain.pm:5009 ../SubDomain.pm:5030 ../SubDomain.pm:5050
-#: ../SubDomain.pm:5059 ../SubDomain.pm:5091 ../SubDomain.pm:5153
-#: ../SubDomain.pm:5204
+#: ../AppArmor.pm:4974 ../AppArmor.pm:4990 ../AppArmor.pm:5001
+#: ../AppArmor.pm:5009 ../AppArmor.pm:5030 ../AppArmor.pm:5050
+#: ../AppArmor.pm:5059 ../AppArmor.pm:5091 ../AppArmor.pm:5153
+#: ../AppArmor.pm:5204
 #, perl-format
 msgid "%s contains syntax errors."
 msgstr "%s에 구문 오류가 있습니다."
 
-#: ../SubDomain.pm:5110
+#: ../AppArmor.pm:5110
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
 msgstr "%s 프로파일에 잘못된 정규식 %s이(가) 있습니다."
 
-#: ../SubDomain.pm:5115
+#: ../AppArmor.pm:5115
 #, perl-format
 msgid "Profile %s contains invalid mode %s."
 msgstr "%s 프로파일에 잘못된 모드 %s이(가) 있습니다."
 
-#: ../SubDomain.pm:5250
+#: ../AppArmor.pm:5250
 #, perl-format
 msgid "%s contains syntax errors. Line [%s]"
 msgstr "%s에 구문 오류가 있습니다. [%s]행."
 
-#: ../SubDomain.pm:5839
+#: ../AppArmor.pm:5839
 #, perl-format
 msgid "Writing updated profile for %s."
 msgstr "%s에 대한 업데이트된 프로파일을 쓰고 있습니다."
 
-#: ../SubDomain.pm:6344
+#: ../AppArmor.pm:6344
 msgid "Unknown command"
 msgstr "알 수 없는 명령"
 
-#: ../SubDomain.pm:6352
+#: ../AppArmor.pm:6352
 msgid "Invalid hotkey in"
 msgstr "잘못된 핫키:"
 
-#: ../SubDomain.pm:6362
+#: ../AppArmor.pm:6362
 msgid "Duplicate hotkey for"
 msgstr "중복 핫키:"
 
-#: ../SubDomain.pm:6383
+#: ../AppArmor.pm:6383
 msgid "Invalid hotkey in default item"
 msgstr "기본 항목에 대한 잘못된 핫키"
 
-#: ../SubDomain.pm:6392
+#: ../AppArmor.pm:6392
 msgid "Invalid default"
 msgstr "잘못된 기본값"
 

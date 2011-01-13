@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: subdomain-utils 1.2\n"
+"Project-Id-Version: AppArmor-utils 1.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2007-02-14 00:21-0800\n"
 "PO-Revision-Date: 2005-11-08 12:26+8\n"
@@ -11,14 +11,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit \n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ag_genprof:46 genprof:55
-msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "SubDomain does not appear to be started.  Enable SubDomain and try again."
-
 #: ag_genprof:53
 #, fuzzy
-msgid "Can't find subdomain profiles in"
-msgstr "Updating subdomain profiles in %s."
+msgid "Can't find AppArmor profiles in"
+msgstr "Updating AppArmor profiles in %s."
 
 #: ag_genprof:65
 msgid ""
@@ -133,8 +129,8 @@ msgid "Are you sure you want to exit?"
 msgstr "Do you really want to use this path?"
 
 #: ag_genprof:228 genprof:167
-msgid "Reloaded SubDomain profiles in enforce mode."
-msgstr "Reloaded SubDomain profiles in enforce mode."
+msgid "Reloaded AppArmor profiles in enforce mode."
+msgstr "Reloaded AppArmor profiles in enforce mode."
 
 #: ag_genprof:229 genprof:168
 #, perl-format
@@ -199,8 +195,8 @@ msgstr "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
 
 #: autodep:64
 #, fuzzy, perl-format
-msgid "Can't find subdomain profiles in %s."
-msgstr "Updating subdomain profiles in %s."
+msgid "Can't find AppArmor profiles in %s."
+msgstr "Updating AppArmor profiles in %s."
 
 #: autodep:75
 #, fuzzy
@@ -284,9 +280,8 @@ msgid "Usage: %s [ --paranoid ]\n"
 msgstr ""
 
 #: unconfined:57
-#, fuzzy
-msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
-msgstr "SubDomain does not appear to be started.  Enable SubDomain and try again."
+msgid "AppArmor does not appear to be started. Please enable AppArmor and try again."
+msgstr ""
 
 #: unconfined:61
 msgid "Can't read /proc\n"
@@ -302,82 +297,82 @@ msgstr "(U)nconfined"
 msgid "confined by"
 msgstr "(U)nconfined"
 
-#: SubDomain.pm:422 SubDomain.pm:436
+#: AppArmor.pm:422 AppArmor.pm:436
 #, perl-format
 msgid "Can't find %s."
 msgstr "Can't find %s."
 
-#: SubDomain.pm:427 complain:102
+#: AppArmor.pm:427 complain:102
 #, perl-format
 msgid "Setting %s to complain mode."
 msgstr "Setting %s to complain mode."
 
-#: SubDomain.pm:441 enforce:101
+#: AppArmor.pm:441 enforce:101
 #, perl-format
 msgid "Setting %s to enforce mode."
 msgstr "Setting %s to enforce mode."
 
-#: SubDomain.pm:704 SubDomain.pm:744
+#: AppArmor.pm:704 AppArmor.pm:744
 msgid "(Y)es"
 msgstr "(Y)es"
 
-#: SubDomain.pm:705 SubDomain.pm:745
+#: AppArmor.pm:705 AppArmor.pm:745
 msgid "(N)o"
 msgstr "(N)o"
 
-#: SubDomain.pm:708 SubDomain.pm:748
+#: AppArmor.pm:708 AppArmor.pm:748
 #, fuzzy
 msgid "Invalid hotkey for"
 msgstr "Invalid mode found: %s"
 
-#: SubDomain.pm:746
+#: AppArmor.pm:746
 #, fuzzy
 msgid "(C)ancel"
 msgstr "C&ancel"
 
-#: SubDomain.pm:1014 SubDomain.pm:1205 SubDomain.pm:1634 SubDomain.pm:1840
+#: AppArmor.pm:1014 AppArmor.pm:1205 AppArmor.pm:1634 AppArmor.pm:1840
 msgid "Profile"
 msgstr "Profile"
 
-#: SubDomain.pm:1016
+#: AppArmor.pm:1016
 msgid "Default Hat"
 msgstr "Default Hat"
 
-#: SubDomain.pm:1018
+#: AppArmor.pm:1018
 msgid "Requested Hat"
 msgstr "Requested Hat"
 
-#: SubDomain.pm:1048 SubDomain.pm:1234 SubDomain.pm:1668 SubDomain.pm:1975
+#: AppArmor.pm:1048 AppArmor.pm:1234 AppArmor.pm:1668 AppArmor.pm:1975
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
 msgstr "Abandon this set of profile changes and exit?"
 
-#: SubDomain.pm:1050 SubDomain.pm:1237 SubDomain.pm:1664 SubDomain.pm:1670
-#: SubDomain.pm:1977
+#: AppArmor.pm:1050 AppArmor.pm:1237 AppArmor.pm:1664 AppArmor.pm:1670
+#: AppArmor.pm:1977
 msgid "Abandoning all changes."
 msgstr "Abandoning all changes."
 
-#: SubDomain.pm:1055 SubDomain.pm:1242 SubDomain.pm:1684 SubDomain.pm:1982
+#: AppArmor.pm:1055 AppArmor.pm:1242 AppArmor.pm:1684 AppArmor.pm:1982
 msgid "Are you sure you want to save the current set of profile changes and exit?"
 msgstr "Save the current set of profile changes and exit?"
 
-#: SubDomain.pm:1057 SubDomain.pm:1244 SubDomain.pm:1679 SubDomain.pm:1686
-#: SubDomain.pm:1984
+#: AppArmor.pm:1057 AppArmor.pm:1244 AppArmor.pm:1679 AppArmor.pm:1686
+#: AppArmor.pm:1984
 msgid "Saving all changes."
 msgstr "Saving all changes."
 
-#: SubDomain.pm:1207
+#: AppArmor.pm:1207
 msgid "Program"
 msgstr ""
 
-#: SubDomain.pm:1209
+#: AppArmor.pm:1209
 msgid "Execute"
 msgstr "Execute"
 
-#: SubDomain.pm:1210 SubDomain.pm:1636 SubDomain.pm:1852
+#: AppArmor.pm:1210 AppArmor.pm:1636 AppArmor.pm:1852
 msgid "Severity"
 msgstr "Severity"
 
-#: SubDomain.pm:1251
+#: AppArmor.pm:1251
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -387,7 +382,7 @@ msgid ""
 "of LD_PRELOAD or LD_LIBRARY_PATH."
 msgstr ""
 
-#: SubDomain.pm:1253
+#: AppArmor.pm:1253
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -398,7 +393,7 @@ msgid ""
 "cause functionality problems."
 msgstr ""
 
-#: SubDomain.pm:1260
+#: AppArmor.pm:1260
 #, fuzzy, perl-format
 msgid ""
 "Launching processes in an unconfined state is a very\n"
@@ -413,7 +408,7 @@ msgstr ""
 "Really remove all AppArmor protection when \n"
 "executing %s?"
 
-#: SubDomain.pm:1262
+#: AppArmor.pm:1262
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "running this program unconfined?\n"
@@ -423,100 +418,100 @@ msgid ""
 "and should be avoided if at all possible."
 msgstr ""
 
-#: SubDomain.pm:1365
+#: AppArmor.pm:1365
 #, perl-format
 msgid "Reading log entries from %s."
 msgstr "Reading log entries from %s."
 
-#: SubDomain.pm:1366
+#: AppArmor.pm:1366
 #, fuzzy, perl-format
 msgid "Updating AppArmor profiles in %s."
-msgstr "Updating subdomain profiles in %s."
+msgstr "Updating AppArmor profiles in %s."
 
-#: SubDomain.pm:1372
+#: AppArmor.pm:1372
 msgid "unknown"
 msgstr "unknown"
 
-#: SubDomain.pm:1601
+#: AppArmor.pm:1601
 msgid "Complain-mode changes:"
 msgstr "Complain-mode changes:"
 
-#: SubDomain.pm:1603
+#: AppArmor.pm:1603
 msgid "Enforce-mode changes:"
 msgstr "Enforce-mode changes:"
 
-#: SubDomain.pm:1608
+#: AppArmor.pm:1608
 #, perl-format
 msgid "Invalid mode found: %s"
 msgstr "Invalid mode found: %s"
 
-#: SubDomain.pm:1635
+#: AppArmor.pm:1635
 msgid "Capability"
 msgstr "Capability"
 
-#: SubDomain.pm:1658
+#: AppArmor.pm:1658
 #, perl-format
 msgid "Adding capability %s to profile."
 msgstr "Adding capability %s to profile."
 
-#: SubDomain.pm:1660
+#: AppArmor.pm:1660
 #, perl-format
 msgid "Denying capability %s to profile."
 msgstr "Denying capability %s to profile."
 
-#: SubDomain.pm:1841
+#: AppArmor.pm:1841
 msgid "Path"
 msgstr "Path"
 
-#: SubDomain.pm:1846
+#: AppArmor.pm:1846
 msgid "Old Mode"
 msgstr "Old Mode"
 
-#: SubDomain.pm:1848
+#: AppArmor.pm:1848
 msgid "New Mode"
 msgstr "New Mode"
 
-#: SubDomain.pm:1850
+#: AppArmor.pm:1850
 #, fuzzy
 msgid "Mode"
 msgstr "Old Mode"
 
-#: SubDomain.pm:1888
+#: AppArmor.pm:1888
 #, perl-format
 msgid "Adding #include <%s> to profile."
 msgstr "Adding #include <%s> to profile."
 
-#: SubDomain.pm:1889 SubDomain.pm:1914
+#: AppArmor.pm:1889 AppArmor.pm:1914
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
 msgstr "Deleted %s previous matching profile entries."
 
-#: SubDomain.pm:1913
+#: AppArmor.pm:1913
 #, perl-format
 msgid "Adding %s %s to profile."
 msgstr "Adding %s %s to profile."
 
-#: SubDomain.pm:1921
+#: AppArmor.pm:1921
 msgid "Enter new path: "
 msgstr "Enter new path: "
 
-#: SubDomain.pm:1924
+#: AppArmor.pm:1924
 msgid "The specified path does not match this log entry:"
 msgstr "The specified path does not match this log entry:"
 
-#: SubDomain.pm:1925
+#: AppArmor.pm:1925
 msgid "Log Entry"
 msgstr "Log Entry"
 
-#: SubDomain.pm:1926
+#: AppArmor.pm:1926
 msgid "Entered Path"
 msgstr "Entered Path"
 
-#: SubDomain.pm:1927
+#: AppArmor.pm:1927
 msgid "Do you really want to use this path?"
 msgstr "Do you really want to use this path?"
 
-#: SubDomain.pm:2001
+#: AppArmor.pm:2001
 msgid ""
 "The profile analyzer has completed processing the log files.\n"
 "\n"
@@ -526,55 +521,55 @@ msgstr ""
 "\n"
 "All updated profiles will be reloaded"
 
-#: SubDomain.pm:2009
+#: AppArmor.pm:2009
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "No unhandled AppArmor events were found in the system log."
 
-#: SubDomain.pm:2270 SubDomain.pm:2300 SubDomain.pm:2314 SubDomain.pm:2349
-#: SubDomain.pm:2369 SubDomain.pm:2406
+#: AppArmor.pm:2270 AppArmor.pm:2300 AppArmor.pm:2314 AppArmor.pm:2349
+#: AppArmor.pm:2369 AppArmor.pm:2406
 #, perl-format
 msgid "%s contains syntax errors."
 msgstr "%s contains syntax errors."
 
-#: SubDomain.pm:2328
+#: AppArmor.pm:2328
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
 msgstr "Profile %s contains invalid regexp %s."
 
-#: SubDomain.pm:2537
+#: AppArmor.pm:2537
 #, perl-format
 msgid "Writing updated profile for %s."
 msgstr "Writing updated profile for %s."
 
-#: SubDomain.pm:2670
+#: AppArmor.pm:2670
 #, fuzzy, perl-format
 msgid "Include file %s contains invalid regexp %s."
 msgstr "Include %s contains invalid regexp %s."
 
-#: SubDomain.pm:2693
+#: AppArmor.pm:2693
 #, fuzzy, perl-format
 msgid "Include file %s contains syntax errors or is not a valid #include file."
 msgstr "Include %s contains invalid regexp %s."
 
-#: SubDomain.pm:2996
+#: AppArmor.pm:2996
 #, fuzzy
 msgid "Unknown command"
 msgstr "Unknown error\n"
 
-#: SubDomain.pm:3003
+#: AppArmor.pm:3003
 #, fuzzy
 msgid "Invalid hotkey in"
 msgstr "Invalid relation"
 
-#: SubDomain.pm:3010
+#: AppArmor.pm:3010
 msgid "Duplicate hotkey for"
 msgstr ""
 
-#: SubDomain.pm:3029
+#: AppArmor.pm:3029
 msgid "Invalid hotkey in default item"
 msgstr ""
 
-#: SubDomain.pm:3035
+#: AppArmor.pm:3035
 #, fuzzy
 msgid "Invalid default"
 msgstr "Invalid relation"
@@ -591,9 +586,6 @@ msgstr "Invalid relation"
 #~ "\n"
 #~ "Really remove all AppArmor protection when \n"
 #~ "executing %s?"
-
-#~ msgid "Updating subdomain profiles in %s."
-#~ msgstr "Updating subdomain profiles in %s."
 
 #~ msgid "Include %s contains invalid regexp %s."
 #~ msgstr "Include %s contains invalid regexp %s."
@@ -685,8 +677,8 @@ msgstr "Invalid relation"
 #~ msgid "&Back"
 #~ msgstr "&Back"
 
-#~ msgid "(S)can system log for SubDomain events"
-#~ msgstr "Scan system log for SubDomain events"
+#~ msgid "(S)can system log for AppArmor events"
+#~ msgstr "(S)can system log for AppArmor events"
 
 # ###############################################################################
 # Old yast2-agents.po

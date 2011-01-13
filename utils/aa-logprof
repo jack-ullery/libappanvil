@@ -24,7 +24,7 @@ use Getopt::Long;
 use Locale::gettext;
 use POSIX;
 
-use Immunix::SubDomain;
+use Immunix::AppArmor;
 
 # force $PATH to be sane
 $ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
@@ -53,7 +53,7 @@ GetOptions(
 $profiledir = get_full_path($profiledir);
 
 unless (-d $profiledir) {
-    fatal_error "Can't find subdomain profiles in $profiledir.";
+    fatal_error "Can't find AppArmor profiles in $profiledir.";
 }
 
 # load all the include files

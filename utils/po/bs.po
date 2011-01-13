@@ -16,10 +16,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
-#: ../genprof:55
-msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr ""
-
 #: ../genprof:69
 msgid "Please enter the program to profile: "
 msgstr ""
@@ -52,7 +48,7 @@ msgid "Profiling"
 msgstr ""
 
 #: ../genprof:169
-msgid "Reloaded SubDomain profiles in enforce mode."
+msgid "Reloaded AppArmor profiles in enforce mode."
 msgstr ""
 
 #: ../genprof:170
@@ -72,14 +68,14 @@ msgstr ""
 
 #: ../autodep:63
 #, perl-format
-msgid "Can't find subdomain profiles in %s."
+msgid "Can't find AppArmor profiles in %s."
 msgstr ""
 
 #: ../autodep:71
 msgid "Please enter the program to create a profile for: "
 msgstr ""
 
-#: ../autodep:95 ../SubDomain.pm:6156
+#: ../autodep:95 ../AppArmor.pm:6156
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
 msgstr ""
@@ -108,7 +104,7 @@ msgstr ""
 msgid "Please enter the program to switch to complain mode: "
 msgstr ""
 
-#: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:900
+#: ../complain:106 ../AppArmor.pm:579 ../AppArmor.pm:900
 #, perl-format
 msgid "Setting %s to complain mode."
 msgstr ""
@@ -122,7 +118,7 @@ msgstr ""
 msgid "Please enter the program to switch to enforce mode: "
 msgstr ""
 
-#: ../enforce:105 ../SubDomain.pm:592
+#: ../enforce:105 ../AppArmor.pm:592
 #, perl-format
 msgid "Setting %s to enforce mode."
 msgstr ""
@@ -138,7 +134,7 @@ msgid "Usage: %s [ --paranoid ]\n"
 msgstr ""
 
 #: ../unconfined:56
-msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
+msgid "AppArmor does not appear to be started. Please enable AppArmor and try again."
 msgstr ""
 
 #: ../unconfined:61
@@ -153,108 +149,108 @@ msgstr ""
 msgid "confined by"
 msgstr ""
 
-#: ../SubDomain.pm:577 ../SubDomain.pm:590
+#: ../AppArmor.pm:577 ../AppArmor.pm:590
 #, perl-format
 msgid "Can't find %s."
 msgstr ""
 
-#: ../SubDomain.pm:778 ../SubDomain.pm:3173
+#: ../AppArmor.pm:778 ../AppArmor.pm:3173
 msgid "Connecting to repository....."
 msgstr ""
 
-#: ../SubDomain.pm:787
+#: ../AppArmor.pm:787
 #, perl-format
 msgid ""
 "WARNING: Error fetching profiles from the repository:\n"
 "%s\n"
 msgstr ""
 
-#: ../SubDomain.pm:796
+#: ../AppArmor.pm:796
 msgid "Inactive local profile for "
 msgstr ""
 
-#: ../SubDomain.pm:833 ../SubDomain.pm:1852 ../SubDomain.pm:2140
-#: ../SubDomain.pm:3300 ../SubDomain.pm:3333 ../SubDomain.pm:3533
-#: ../SubDomain.pm:3799 ../SubDomain.pm:3851
+#: ../AppArmor.pm:833 ../AppArmor.pm:1852 ../AppArmor.pm:2140
+#: ../AppArmor.pm:3300 ../AppArmor.pm:3333 ../AppArmor.pm:3533
+#: ../AppArmor.pm:3799 ../AppArmor.pm:3851
 msgid "Profile"
 msgstr ""
 
-#: ../SubDomain.pm:867
+#: ../AppArmor.pm:867
 msgid "Profile submitted by"
 msgstr ""
 
-#: ../SubDomain.pm:908
+#: ../AppArmor.pm:908
 #, fuzzy, perl-format
 msgid "Error activating profiles: %s\n"
 msgstr "Greška prilikom aktiviranja swap prostora."
 
-#: ../SubDomain.pm:1055 ../SubDomain.pm:1108
+#: ../AppArmor.pm:1055 ../AppArmor.pm:1108
 #, perl-format
 msgid ""
 "WARNING: Error syncronizing profiles with the repository:\n"
 "%s\n"
 msgstr ""
 
-#: ../SubDomain.pm:1135
+#: ../AppArmor.pm:1135
 msgid "New profiles"
 msgstr ""
 
-#: ../SubDomain.pm:1137
+#: ../AppArmor.pm:1137
 msgid ""
 "Please choose the newly created profiles that you would like\n"
 "to store in the repository"
 msgstr ""
 
-#: ../SubDomain.pm:1144
+#: ../AppArmor.pm:1144
 msgid "Submit newly created profiles to the repository"
 msgstr ""
 
-#: ../SubDomain.pm:1146
+#: ../AppArmor.pm:1146
 msgid "Would you like to upload the newly created profiles?"
 msgstr ""
 
-#: ../SubDomain.pm:1159
+#: ../AppArmor.pm:1159
 msgid ""
 "Select which of the changed profiles you would like to upload\n"
 "to the repository"
 msgstr ""
 
-#: ../SubDomain.pm:1161
+#: ../AppArmor.pm:1161
 #, fuzzy
 msgid "Changed profiles"
 msgstr "&Create Profile"
 
-#: ../SubDomain.pm:1167
+#: ../AppArmor.pm:1167
 msgid "Submit changed profiles to the repository"
 msgstr ""
 
-#: ../SubDomain.pm:1169
+#: ../AppArmor.pm:1169
 msgid ""
 "The following profiles from the repository were changed.\n"
 "Would you like to upload your changes?"
 msgstr ""
 
-#: ../SubDomain.pm:1236 ../SubDomain.pm:1316
+#: ../AppArmor.pm:1236 ../AppArmor.pm:1316
 #, perl-format
 msgid ""
 "WARNING: An error occured while uploading the profile %s\n"
 "%s\n"
 msgstr ""
 
-#: ../SubDomain.pm:1241
+#: ../AppArmor.pm:1241
 msgid "Uploaded changes to repository."
 msgstr ""
 
-#: ../SubDomain.pm:1290
+#: ../AppArmor.pm:1290
 msgid "Changelog Entry: "
 msgstr ""
 
-#: ../SubDomain.pm:1311
+#: ../AppArmor.pm:1311
 #, perl-format
 msgid "Uploaded %s to repository."
 msgstr ""
 
-#: ../SubDomain.pm:1322
+#: ../AppArmor.pm:1322
 msgid ""
 "Repository Error\n"
 "Registration or Signin was unsuccessful. User login\n"
@@ -262,56 +258,56 @@ msgid ""
 "repository. These changes have not been sent.\n"
 msgstr ""
 
-#: ../SubDomain.pm:1379 ../SubDomain.pm:1419
+#: ../AppArmor.pm:1379 ../AppArmor.pm:1419
 msgid "(Y)es"
 msgstr ""
 
-#: ../SubDomain.pm:1380 ../SubDomain.pm:1420
+#: ../AppArmor.pm:1380 ../AppArmor.pm:1420
 msgid "(N)o"
 msgstr ""
 
-#: ../SubDomain.pm:1383 ../SubDomain.pm:1424
+#: ../AppArmor.pm:1383 ../AppArmor.pm:1424
 msgid "Invalid hotkey for"
 msgstr ""
 
-#: ../SubDomain.pm:1421
+#: ../AppArmor.pm:1421
 msgid "(C)ancel"
 msgstr ""
 
-#: ../SubDomain.pm:1746
+#: ../AppArmor.pm:1746
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
 msgstr ""
 
-#: ../SubDomain.pm:1748
+#: ../AppArmor.pm:1748
 msgid "Abandoning all changes."
 msgstr ""
 
-#: ../SubDomain.pm:1854
+#: ../AppArmor.pm:1854
 msgid "Default Hat"
 msgstr ""
 
-#: ../SubDomain.pm:1856
+#: ../AppArmor.pm:1856
 msgid "Requested Hat"
 msgstr ""
 
-#: ../SubDomain.pm:2142
+#: ../AppArmor.pm:2142
 msgid "Program"
 msgstr ""
 
-#: ../SubDomain.pm:2147
+#: ../AppArmor.pm:2147
 msgid "Execute"
 msgstr ""
 
-#: ../SubDomain.pm:2148 ../SubDomain.pm:3302 ../SubDomain.pm:3335
-#: ../SubDomain.pm:3588
+#: ../AppArmor.pm:2148 ../AppArmor.pm:3302 ../AppArmor.pm:3335
+#: ../AppArmor.pm:3588
 msgid "Severity"
 msgstr ""
 
-#: ../SubDomain.pm:2193
+#: ../AppArmor.pm:2193
 msgid "Enter profile name to transition to: "
 msgstr ""
 
-#: ../SubDomain.pm:2201
+#: ../AppArmor.pm:2201
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -321,7 +317,7 @@ msgid ""
 "of LD_PRELOAD or LD_LIBRARY_PATH."
 msgstr ""
 
-#: ../SubDomain.pm:2203
+#: ../AppArmor.pm:2203
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "switching profiles?\n"
@@ -332,7 +328,7 @@ msgid ""
 "cause functionality problems."
 msgstr ""
 
-#: ../SubDomain.pm:2212
+#: ../AppArmor.pm:2212
 #, perl-format
 msgid ""
 "Launching processes in an unconfined state is a very\n"
@@ -342,7 +338,7 @@ msgid ""
 "AppArmor protection when executing %s?"
 msgstr ""
 
-#: ../SubDomain.pm:2214
+#: ../AppArmor.pm:2214
 msgid ""
 "Should AppArmor sanitize the environment when\n"
 "running this program unconfined?\n"
@@ -352,88 +348,88 @@ msgid ""
 "and should be avoided if at all possible."
 msgstr ""
 
-#: ../SubDomain.pm:2303
+#: ../AppArmor.pm:2303
 #, perl-format
 msgid "A profile for %s does not exist create one?"
 msgstr ""
 
-#: ../SubDomain.pm:2330
+#: ../AppArmor.pm:2330
 #, perl-format
 msgid "A local profile for %s does not exist create one?"
 msgstr ""
 
-#: ../SubDomain.pm:2502 ../SubDomain.pm:6532 ../SubDomain.pm:6537
+#: ../AppArmor.pm:2502 ../AppArmor.pm:6532 ../AppArmor.pm:6537
 #, perl-format
 msgid "Log contains unknown mode %s."
 msgstr ""
 
-#: ../SubDomain.pm:2915
+#: ../AppArmor.pm:2915
 msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
 msgstr ""
 
-#: ../SubDomain.pm:2945
+#: ../AppArmor.pm:2945
 #, perl-format
 msgid "Updated profile %s to revision %s."
 msgstr ""
 
-#: ../SubDomain.pm:2952
+#: ../AppArmor.pm:2952
 msgid "Error parsing repository profile."
 msgstr ""
 
-#: ../SubDomain.pm:2988
+#: ../AppArmor.pm:2988
 msgid "Create New User?"
 msgstr ""
 
-#: ../SubDomain.pm:2989
+#: ../AppArmor.pm:2989
 msgid "Username: "
 msgstr ""
 
-#: ../SubDomain.pm:2990
+#: ../AppArmor.pm:2990
 msgid "Password: "
 msgstr ""
 
-#: ../SubDomain.pm:2991
+#: ../AppArmor.pm:2991
 msgid "Email Addr: "
 msgstr ""
 
 # %s is either BOOTP or DHCP
-#: ../SubDomain.pm:2993
+#: ../AppArmor.pm:2993
 #, fuzzy
 msgid "Save Configuration? "
 msgstr "%s podešavanje nije uspjelo."
 
-#: ../SubDomain.pm:3002
+#: ../AppArmor.pm:3002
 msgid "The Profile Repository server returned the following error:"
 msgstr ""
 
-#: ../SubDomain.pm:3004
+#: ../AppArmor.pm:3004
 msgid "Please re-enter registration information or contact the administrator."
 msgstr ""
 
-#: ../SubDomain.pm:3005
+#: ../AppArmor.pm:3005
 #, fuzzy
 msgid "Login Error\n"
 msgstr "Greška"
 
-#: ../SubDomain.pm:3012
+#: ../AppArmor.pm:3012
 msgid ""
 "Login failure\n"
 " Please check username and password and try again."
 msgstr ""
 
-#: ../SubDomain.pm:3034
+#: ../AppArmor.pm:3034
 msgid ""
 "Would you like to enable access to the\n"
 "profile repository?"
 msgstr ""
 
-#: ../SubDomain.pm:3065
+#: ../AppArmor.pm:3065
 msgid ""
 "Would you like to upload newly created and changed profiles to\n"
 "      the profile repository?"
 msgstr ""
 
-#: ../SubDomain.pm:3184
+#: ../AppArmor.pm:3184
 #, perl-format
 msgid ""
 "WARNING: Profile update check failed\n"
@@ -441,215 +437,215 @@ msgid ""
 "%s"
 msgstr ""
 
-#: ../SubDomain.pm:3198
+#: ../AppArmor.pm:3198
 #, fuzzy
 msgid "Change mode modifiers"
 msgstr "&Create Profile"
 
-#: ../SubDomain.pm:3242
+#: ../AppArmor.pm:3242
 msgid "Complain-mode changes:"
 msgstr ""
 
-#: ../SubDomain.pm:3244
+#: ../AppArmor.pm:3244
 msgid "Enforce-mode changes:"
 msgstr ""
 
-#: ../SubDomain.pm:3250
+#: ../AppArmor.pm:3250
 #, perl-format
 msgid "Invalid mode found: %s"
 msgstr ""
 
-#: ../SubDomain.pm:3301 ../SubDomain.pm:3334
+#: ../AppArmor.pm:3301 ../AppArmor.pm:3334
 msgid "Capability"
 msgstr ""
 
-#: ../SubDomain.pm:3354 ../SubDomain.pm:3628 ../SubDomain.pm:3875
+#: ../AppArmor.pm:3354 ../AppArmor.pm:3628 ../AppArmor.pm:3875
 #, perl-format
 msgid "Adding #include <%s> to profile."
 msgstr ""
 
-#: ../SubDomain.pm:3357 ../SubDomain.pm:3629 ../SubDomain.pm:3669
-#: ../SubDomain.pm:3879
+#: ../AppArmor.pm:3357 ../AppArmor.pm:3629 ../AppArmor.pm:3669
+#: ../AppArmor.pm:3879
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
 msgstr ""
 
-#: ../SubDomain.pm:3368
+#: ../AppArmor.pm:3368
 #, perl-format
 msgid "Adding capability %s to profile."
 msgstr ""
 
-#: ../SubDomain.pm:3373
+#: ../AppArmor.pm:3373
 #, perl-format
 msgid "Denying capability %s to profile."
 msgstr ""
 
-#: ../SubDomain.pm:3534
+#: ../AppArmor.pm:3534
 msgid "Path"
 msgstr ""
 
-#: ../SubDomain.pm:3545 ../SubDomain.pm:3577
+#: ../AppArmor.pm:3545 ../AppArmor.pm:3577
 msgid "(owner permissions off)"
 msgstr ""
 
-#: ../SubDomain.pm:3551
+#: ../AppArmor.pm:3551
 msgid "(force new perms to owner)"
 msgstr ""
 
-#: ../SubDomain.pm:3554
+#: ../AppArmor.pm:3554
 msgid "(force all rule perms to owner)"
 msgstr ""
 
-#: ../SubDomain.pm:3566
+#: ../AppArmor.pm:3566
 msgid "Old Mode"
 msgstr ""
 
-#: ../SubDomain.pm:3567
+#: ../AppArmor.pm:3567
 msgid "New Mode"
 msgstr ""
 
-#: ../SubDomain.pm:3583
+#: ../AppArmor.pm:3583
 msgid "(force perms to owner)"
 msgstr ""
 
-#: ../SubDomain.pm:3586
+#: ../AppArmor.pm:3586
 msgid "Mode"
 msgstr ""
 
-#: ../SubDomain.pm:3668
+#: ../AppArmor.pm:3668
 #, perl-format
 msgid "Adding %s %s to profile."
 msgstr ""
 
-#: ../SubDomain.pm:3684
+#: ../AppArmor.pm:3684
 msgid "Enter new path: "
 msgstr ""
 
-#: ../SubDomain.pm:3687
+#: ../AppArmor.pm:3687
 msgid "The specified path does not match this log entry:"
 msgstr ""
 
-#: ../SubDomain.pm:3688
+#: ../AppArmor.pm:3688
 msgid "Log Entry"
 msgstr ""
 
-#: ../SubDomain.pm:3689
+#: ../AppArmor.pm:3689
 msgid "Entered Path"
 msgstr ""
 
-#: ../SubDomain.pm:3690
+#: ../AppArmor.pm:3690
 msgid "Do you really want to use this path?"
 msgstr ""
 
-#: ../SubDomain.pm:3802 ../SubDomain.pm:3854
+#: ../AppArmor.pm:3802 ../AppArmor.pm:3854
 #, fuzzy
 msgid "Network Family"
 msgstr "Mreža"
 
-#: ../SubDomain.pm:3805 ../SubDomain.pm:3857
+#: ../AppArmor.pm:3805 ../AppArmor.pm:3857
 msgid "Socket Type"
 msgstr ""
 
-#: ../SubDomain.pm:3905
+#: ../AppArmor.pm:3905
 #, perl-format
 msgid "Adding network access %s %s to profile."
 msgstr ""
 
-#: ../SubDomain.pm:3924
+#: ../AppArmor.pm:3924
 #, perl-format
 msgid "Denying network access %s %s to profile."
 msgstr ""
 
-#: ../SubDomain.pm:4132
+#: ../AppArmor.pm:4132
 #, perl-format
 msgid "Reading log entries from %s."
 msgstr ""
 
-#: ../SubDomain.pm:4133
+#: ../AppArmor.pm:4133
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
 msgstr ""
 
-#: ../SubDomain.pm:4137
+#: ../AppArmor.pm:4137
 #, fuzzy
 msgid "unknown\n"
 msgstr "nepoznat"
 
-#: ../SubDomain.pm:4170
+#: ../AppArmor.pm:4170
 msgid ""
 "The profile analyzer has completed processing the log files.\n"
 "\n"
 "All updated profiles will be reloaded"
 msgstr ""
 
-#: ../SubDomain.pm:4176
+#: ../AppArmor.pm:4176
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr ""
 
-#: ../SubDomain.pm:4237
+#: ../AppArmor.pm:4237
 msgid ""
 "Select which profile changes you would like to save to the\n"
 "local profile set"
 msgstr ""
 
-#: ../SubDomain.pm:4238
+#: ../AppArmor.pm:4238
 msgid "Local profile changes"
 msgstr ""
 
-#: ../SubDomain.pm:4265
+#: ../AppArmor.pm:4265
 msgid "The following local profiles were changed.  Would you like to save them?"
 msgstr ""
 
-#: ../SubDomain.pm:4362
+#: ../AppArmor.pm:4362
 msgid "Profile Changes"
 msgstr ""
 
-#: ../SubDomain.pm:4974 ../SubDomain.pm:4990 ../SubDomain.pm:5001
-#: ../SubDomain.pm:5009 ../SubDomain.pm:5030 ../SubDomain.pm:5050
-#: ../SubDomain.pm:5059 ../SubDomain.pm:5091 ../SubDomain.pm:5153
-#: ../SubDomain.pm:5204
+#: ../AppArmor.pm:4974 ../AppArmor.pm:4990 ../AppArmor.pm:5001
+#: ../AppArmor.pm:5009 ../AppArmor.pm:5030 ../AppArmor.pm:5050
+#: ../AppArmor.pm:5059 ../AppArmor.pm:5091 ../AppArmor.pm:5153
+#: ../AppArmor.pm:5204
 #, perl-format
 msgid "%s contains syntax errors."
 msgstr ""
 
-#: ../SubDomain.pm:5110
+#: ../AppArmor.pm:5110
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
 msgstr ""
 
-#: ../SubDomain.pm:5115
+#: ../AppArmor.pm:5115
 #, perl-format
 msgid "Profile %s contains invalid mode %s."
 msgstr ""
 
-#: ../SubDomain.pm:5250
+#: ../AppArmor.pm:5250
 #, perl-format
 msgid "%s contains syntax errors. Line [%s]"
 msgstr ""
 
-#: ../SubDomain.pm:5839
+#: ../AppArmor.pm:5839
 #, perl-format
 msgid "Writing updated profile for %s."
 msgstr ""
 
-#: ../SubDomain.pm:6344
+#: ../AppArmor.pm:6344
 #, fuzzy
 msgid "Unknown command"
 msgstr "Naredba za _spajanje:"
 
-#: ../SubDomain.pm:6352
+#: ../AppArmor.pm:6352
 msgid "Invalid hotkey in"
 msgstr ""
 
-#: ../SubDomain.pm:6362
+#: ../AppArmor.pm:6362
 msgid "Duplicate hotkey for"
 msgstr ""
 
-#: ../SubDomain.pm:6383
+#: ../AppArmor.pm:6383
 msgid "Invalid hotkey in default item"
 msgstr ""
 
-#: ../SubDomain.pm:6392
+#: ../AppArmor.pm:6392
 msgid "Invalid default"
 msgstr ""
 
@@ -775,8 +771,8 @@ msgstr "Fatal Error.  getArchReport() couldn't open %s"
 #~ msgid "&Back"
 #~ msgstr "Nazad"
 
-#~ msgid "(S)can system log for SubDomain events"
-#~ msgstr "Scan system log for SubDomain events"
+#~ msgid "(S)can system log for AppArmor events"
+#~ msgstr "(S)can system log for AppArmor events"
 
 # ###############################################################################
 # Old yast2-agents.po

@@ -18,7 +18,7 @@
 #    you may find current contact information at www.novell.com.
 # ----------------------------------------------------------------------
 
-package Immunix::SubDomain;
+package Immunix::AppArmor;
 
 use strict;
 use warnings;
@@ -1590,7 +1590,7 @@ my %CMDS = (
     CMD_GLOBEXT          => "Glob w/(E)xt",
     CMD_ADDHAT           => "(A)dd Requested Hat",
     CMD_USEDEFAULT       => "(U)se Default Hat",
-    CMD_SCAN             => "(S)can system log for SubDomain events",
+    CMD_SCAN             => "(S)can system log for AppArmor events",
     CMD_HELP             => "(H)elp",
     CMD_VIEW_PROFILE     => "(V)iew Profile",
     CMD_USE_PROFILE      => "(U)se Profile",

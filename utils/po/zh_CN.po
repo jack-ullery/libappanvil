@@ -13,10 +13,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../genprof:55
-msgid "SubDomain does not appear to be started.  Please enable SubDomain and try again."
-msgstr "子域可能未启动。请启用子域并重试。"
-
 #: ../genprof:69
 msgid "Please enter the program to profile: "
 msgstr "请输入您的支持关键字"
@@ -40,7 +36,7 @@ msgid "Profiling"
 msgstr "检测"
 
 #: ../genprof:169
-msgid "Reloaded SubDomain profiles in enforce mode."
+msgid "Reloaded AppArmor profiles in enforce mode."
 msgstr "以强制方式重新装载子域配置文件。"
 
 #: ../genprof:170
@@ -60,14 +56,14 @@ msgstr "用法：%s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"日�
 
 #: ../autodep:63
 #, perl-format
-msgid "Can't find subdomain profiles in %s."
+msgid "Can't find AppArmor profiles in %s."
 msgstr "无法在 %s 中找到子域配置文件。"
 
 #: ../autodep:71
 msgid "Please enter the program to create a profile for: "
 msgstr "请进入程序以为以下内容创建一个配置文件："
 
-#: ../autodep:95 ../SubDomain.pm:6156
+#: ../autodep:95 ../AppArmor.pm:6156
 #, perl-format
 msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
 msgstr "%s 当前标记为不应具有自身配置文件的程序。通常，当为程序创建配置文件可能会破坏系统的其余部分时，如此标记。如果您知道您在做什么，并确信您要创建该程序的配置文件，请编辑 /etc/apparmor/logprof.conf 中 [qualifiers] 部分中的相应条目。"
@@ -96,7 +92,7 @@ msgstr "用法：%s [ -d /path/to/profiles ] [ 切换到审计方式的程序 ]"
 msgid "Please enter the program to switch to complain mode: "
 msgstr "请进入程序以切换为申诉模式："
 
-#: ../complain:106 ../SubDomain.pm:579 ../SubDomain.pm:900
+#: ../complain:106 ../AppArmor.pm:579 ../AppArmor.pm:900
 #, perl-format
 msgid "Setting %s to complain mode."
 msgstr "正在将 %s 设置为抱怨方式。"
@@ -110,7 +106,7 @@ msgstr "用法：%s [ -d /path/to/profiles ] [ 切换到抱怨方式的程序 ]"
 msgid "Please enter the program to switch to enforce mode: "
 msgstr "请进入程序以切换为强制模式："
 
-#: ../enforce:105 ../SubDomain.pm:592
+#: ../enforce:105 ../AppArmor.pm:592
 #, perl-format
 msgid "Setting %s to enforce mode."
 msgstr "正在将 %s 设置为强制方式。"
@@ -126,7 +122,7 @@ msgid "Usage: %s [ --paranoid ]\n"
 msgstr "用法：%s [ --paranoid ]\n"
 
 #: ../unconfined:56
-msgid "SubDomain does not appear to be started. Please enable SubDomain and try again."
+msgid "AppArmor does not appear to be started. Please enable AppArmor and try again."
 msgstr "子域可能未启动。请启用子域并重试。"
 
 #: ../unconfined:61
@@ -141,441 +137,441 @@ msgstr "未限制\n"
 msgid "confined by"
 msgstr "限制者"
 
-#: ../SubDomain.pm:577 ../SubDomain.pm:590
+#: ../AppArmor.pm:577 ../AppArmor.pm:590
 #, perl-format
 msgid "Can't find %s."
 msgstr "找不到 %s。"
 
-#: ../SubDomain.pm:778 ../SubDomain.pm:3173
+#: ../AppArmor.pm:778 ../AppArmor.pm:3173
 msgid "Connecting to repository....."
 msgstr "正在连接到储存库....."
 
-#: ../SubDomain.pm:787
+#: ../AppArmor.pm:787
 #, perl-format
 msgid "WARNING: Error fetching profiles from the repository:\n%s\n"
 msgstr "警告：从安装源中获取配置文件时出错：\n%s\n"
 
-#: ../SubDomain.pm:796
+#: ../AppArmor.pm:796
 msgid "Inactive local profile for "
 msgstr "处于非活动状态的本地配置文件"
 
-#: ../SubDomain.pm:833 ../SubDomain.pm:1852 ../SubDomain.pm:2140
-#: ../SubDomain.pm:3300 ../SubDomain.pm:3333 ../SubDomain.pm:3533
-#: ../SubDomain.pm:3799 ../SubDomain.pm:3851
+#: ../AppArmor.pm:833 ../AppArmor.pm:1852 ../AppArmor.pm:2140
+#: ../AppArmor.pm:3300 ../AppArmor.pm:3333 ../AppArmor.pm:3533
+#: ../AppArmor.pm:3799 ../AppArmor.pm:3851
 msgid "Profile"
 msgstr "配置文件"
 
-#: ../SubDomain.pm:867
+#: ../AppArmor.pm:867
 msgid "Profile submitted by"
 msgstr "配置文件提交者"
 
-#: ../SubDomain.pm:908
+#: ../AppArmor.pm:908
 #, perl-format
 msgid "Error activating profiles: %s\n"
 msgstr "激活配置文件时出错：%s\n"
 
-#: ../SubDomain.pm:1055 ../SubDomain.pm:1108
+#: ../AppArmor.pm:1055 ../AppArmor.pm:1108
 #, perl-format
 msgid "WARNING: Error syncronizing profiles with the repository:\n%s\n"
 msgstr "警告：与安装源同步配置文件时出错：\n%s\n"
 
-#: ../SubDomain.pm:1135
+#: ../AppArmor.pm:1135
 msgid "New profiles"
 msgstr "新建配置文件"
 
-#: ../SubDomain.pm:1137
+#: ../AppArmor.pm:1137
 msgid "Please choose the newly created profiles that you would like\nto store in the repository"
 msgstr "请选择要存储在储存库中的新建\n配置文件"
 
-#: ../SubDomain.pm:1144
+#: ../AppArmor.pm:1144
 msgid "Submit newly created profiles to the repository"
 msgstr "将新创建的配置文件提交到储存库"
 
-#: ../SubDomain.pm:1146
+#: ../AppArmor.pm:1146
 msgid "Would you like to upload the newly created profiles?"
 msgstr "是否要上载新创建的配置文件？"
 
-#: ../SubDomain.pm:1159
+#: ../AppArmor.pm:1159
 msgid "Select which of the changed profiles you would like to upload\nto the repository"
 msgstr "选择要上载到储存库的已更改\n配置文件"
 
-#: ../SubDomain.pm:1161
+#: ../AppArmor.pm:1161
 msgid "Changed profiles"
 msgstr "已更改配置文件"
 
-#: ../SubDomain.pm:1167
+#: ../AppArmor.pm:1167
 msgid "Submit changed profiles to the repository"
 msgstr "将已更改配置文件提交到储存库"
 
-#: ../SubDomain.pm:1169
+#: ../AppArmor.pm:1169
 msgid "The following profiles from the repository were changed.\nWould you like to upload your changes?"
 msgstr "以下来自储存库的配置文件已更改。\n是否要上载您的更改？"
 
-#: ../SubDomain.pm:1236 ../SubDomain.pm:1316
+#: ../AppArmor.pm:1236 ../AppArmor.pm:1316
 #, perl-format
 msgid "WARNING: An error occured while uploading the profile %s\n%s\n"
 msgstr "警告：上载配置文件 %s 时出错\n%s\n"
 
-#: ../SubDomain.pm:1241
+#: ../AppArmor.pm:1241
 msgid "Uploaded changes to repository."
 msgstr "已将更改上载到储存库。"
 
-#: ../SubDomain.pm:1290
+#: ../AppArmor.pm:1290
 msgid "Changelog Entry: "
 msgstr "更改日志项："
 
-#: ../SubDomain.pm:1311
+#: ../AppArmor.pm:1311
 #, perl-format
 msgid "Uploaded %s to repository."
 msgstr "已将 %s 上载到储存库。"
 
-#: ../SubDomain.pm:1322
+#: ../AppArmor.pm:1322
 msgid "Repository Error\nRegistration or Signin was unsuccessful. User login\ninformation is required to upload profiles to the\nrepository. These changes have not been sent.\n"
 msgstr "安装源错误\n注册或登录失败。\n将配置文件上载到安装源需要用户登录信息。\n这些更改尚未发送出去。\n"
 
-#: ../SubDomain.pm:1379 ../SubDomain.pm:1419
+#: ../AppArmor.pm:1379 ../AppArmor.pm:1419
 msgid "(Y)es"
 msgstr "是(Y)"
 
-#: ../SubDomain.pm:1380 ../SubDomain.pm:1420
+#: ../AppArmor.pm:1380 ../AppArmor.pm:1420
 msgid "(N)o"
 msgstr "否(N)"
 
-#: ../SubDomain.pm:1383 ../SubDomain.pm:1424
+#: ../AppArmor.pm:1383 ../AppArmor.pm:1424
 msgid "Invalid hotkey for"
 msgstr "以下项目的热键无效："
 
-#: ../SubDomain.pm:1421
+#: ../AppArmor.pm:1421
 msgid "(C)ancel"
 msgstr "取消(C)"
 
-#: ../SubDomain.pm:1746
+#: ../AppArmor.pm:1746
 msgid "Are you sure you want to abandon this set of profile changes and exit?"
 msgstr "是否确实要放弃这组配置文件更改并退出？"
 
-#: ../SubDomain.pm:1748
+#: ../AppArmor.pm:1748
 msgid "Abandoning all changes."
 msgstr "正在放弃所有更改。"
 
-#: ../SubDomain.pm:1854
+#: ../AppArmor.pm:1854
 msgid "Default Hat"
 msgstr "默认 Hat"
 
-#: ../SubDomain.pm:1856
+#: ../AppArmor.pm:1856
 msgid "Requested Hat"
 msgstr "必需的 Hat"
 
-#: ../SubDomain.pm:2142
+#: ../AppArmor.pm:2142
 msgid "Program"
 msgstr "程序"
 
-#: ../SubDomain.pm:2147
+#: ../AppArmor.pm:2147
 msgid "Execute"
 msgstr "执行"
 
-#: ../SubDomain.pm:2148 ../SubDomain.pm:3302 ../SubDomain.pm:3335
-#: ../SubDomain.pm:3588
+#: ../AppArmor.pm:2148 ../AppArmor.pm:3302 ../AppArmor.pm:3335
+#: ../AppArmor.pm:3588
 msgid "Severity"
 msgstr "严重性"
 
-#: ../SubDomain.pm:2193
+#: ../AppArmor.pm:2193
 msgid "Enter profile name to transition to: "
 msgstr "输入转换为的配置文件名称："
 
-#: ../SubDomain.pm:2201
+#: ../AppArmor.pm:2201
 msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH."
 msgstr "切换配置文件时 AppArmor 是否应\n清理环境？\n\n清理环境比较安全，\n但是有些应用程序需要存在\n LD_PRELOAD 或 LD_LIBRARY_PATH。"
 
-#: ../SubDomain.pm:2203
+#: ../AppArmor.pm:2203
 msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut this application appears to use LD_PRELOAD\nor LD_LIBRARY_PATH and clearing these could\ncause functionality problems."
 msgstr "切换配置文件时 AppArmor 是否应\n清理环境？\n\n清理环境比较安全，\n但是此应用程序可能使用 LD_PRELOAD\n 或 LD_LIBRARY_PATH，清除它们可能会\n导致发生功能问题。"
 
-#: ../SubDomain.pm:2212
+#: ../AppArmor.pm:2212
 #, perl-format
 msgid "Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s?"
 msgstr "在未限制的状态下启动进程是非常\n危险的操作，并且可能会导致产生严重的安全漏洞。\n\n确实希望在执行 %s? 时删除所有 \nAppArmor 保护吗？"
 
-#: ../SubDomain.pm:2214
+#: ../AppArmor.pm:2214
 msgid "Should AppArmor sanitize the environment when\nrunning this program unconfined?\n\nNot sanitizing the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."
 msgstr "在未限制的状态下运行此程序时 AppArmor 是否应\n清理环境？\n\n在取消程序限制时不清理\n环境会产生严重的安全漏洞，请\n尽量清理环境。"
 
-#: ../SubDomain.pm:2303
+#: ../AppArmor.pm:2303
 #, perl-format
 msgid "A profile for %s does not exist create one?"
 msgstr "关于 %s 的配置文件不存在，是否创建？"
 
-#: ../SubDomain.pm:2330
+#: ../AppArmor.pm:2330
 #, perl-format
 msgid "A local profile for %s does not exist create one?"
 msgstr "关于 %s 的本地配置文件不存在，是否创建？"
 
-#: ../SubDomain.pm:2502 ../SubDomain.pm:6532 ../SubDomain.pm:6537
+#: ../AppArmor.pm:2502 ../AppArmor.pm:6532 ../AppArmor.pm:6537
 #, perl-format
 msgid "Log contains unknown mode %s."
 msgstr "日志包含未知方式 %s。"
 
-#: ../SubDomain.pm:2915
+#: ../AppArmor.pm:2915
 msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
 msgstr "已在配置文件储存库中找到此配置文件的更新版本。是否要使用它？"
 
-#: ../SubDomain.pm:2945
+#: ../AppArmor.pm:2945
 #, perl-format
 msgid "Updated profile %s to revision %s."
 msgstr "已将配置文件 %s 更新到版本 %s。"
 
-#: ../SubDomain.pm:2952
+#: ../AppArmor.pm:2952
 msgid "Error parsing repository profile."
 msgstr "分析储存库配置文件时出错。"
 
-#: ../SubDomain.pm:2988
+#: ../AppArmor.pm:2988
 msgid "Create New User?"
 msgstr "是否创建新用户？"
 
-#: ../SubDomain.pm:2989
+#: ../AppArmor.pm:2989
 msgid "Username: "
 msgstr "用户名："
 
-#: ../SubDomain.pm:2990
+#: ../AppArmor.pm:2990
 msgid "Password: "
 msgstr "密码："
 
-#: ../SubDomain.pm:2991
+#: ../AppArmor.pm:2991
 msgid "Email Addr: "
 msgstr "电子邮件地址："
 
-#: ../SubDomain.pm:2993
+#: ../AppArmor.pm:2993
 msgid "Save Configuration? "
 msgstr "是否保存配置？"
 
-#: ../SubDomain.pm:3002
+#: ../AppArmor.pm:3002
 msgid "The Profile Repository server returned the following error:"
 msgstr "配置文件储存库服务器返回以下错误："
 
-#: ../SubDomain.pm:3004
+#: ../AppArmor.pm:3004
 msgid "Please re-enter registration information or contact the administrator."
 msgstr "请重新输入注册信息或者联系管理员。"
 
-#: ../SubDomain.pm:3005
+#: ../AppArmor.pm:3005
 msgid "Login Error\n"
 msgstr "登录错误\n"
 
-#: ../SubDomain.pm:3012
+#: ../AppArmor.pm:3012
 msgid "Login failure\n Please check username and password and try again."
 msgstr "登录失败\n请检查用户名和密码并重试。"
 
-#: ../SubDomain.pm:3034
+#: ../AppArmor.pm:3034
 msgid "Would you like to enable access to the\nprofile repository?"
 msgstr "是否要启用到配置文件储存库的\n访问？"
 
-#: ../SubDomain.pm:3065
+#: ../AppArmor.pm:3065
 msgid "Would you like to upload newly created and changed profiles to\n      the profile repository?"
 msgstr "是否要将新创建和更改的配置文件上载到\n      配置文件储存库？"
 
-#: ../SubDomain.pm:3184
+#: ../AppArmor.pm:3184
 #, perl-format
 msgid "WARNING: Profile update check failed\nError Detail:\n%s"
 msgstr "警告：配置文件更新检查失败\n错误细节：\n%s"
 
-#: ../SubDomain.pm:3198
+#: ../AppArmor.pm:3198
 msgid "Change mode modifiers"
 msgstr "更改模式修饰符"
 
-#: ../SubDomain.pm:3242
+#: ../AppArmor.pm:3242
 msgid "Complain-mode changes:"
 msgstr "抱怨方式更改："
 
-#: ../SubDomain.pm:3244
+#: ../AppArmor.pm:3244
 msgid "Enforce-mode changes:"
 msgstr "强制方式更改："
 
-#: ../SubDomain.pm:3250
+#: ../AppArmor.pm:3250
 #, perl-format
 msgid "Invalid mode found: %s"
 msgstr "发现无效方式：%s"
 
-#: ../SubDomain.pm:3301 ../SubDomain.pm:3334
+#: ../AppArmor.pm:3301 ../AppArmor.pm:3334
 msgid "Capability"
 msgstr "功能"
 
-#: ../SubDomain.pm:3354 ../SubDomain.pm:3628 ../SubDomain.pm:3875
+#: ../AppArmor.pm:3354 ../AppArmor.pm:3628 ../AppArmor.pm:3875
 #, perl-format
 msgid "Adding #include <%s> to profile."
 msgstr "正在将 #include <%s> 添加到配置文件中。"
 
-#: ../SubDomain.pm:3357 ../SubDomain.pm:3629 ../SubDomain.pm:3669
-#: ../SubDomain.pm:3879
+#: ../AppArmor.pm:3357 ../AppArmor.pm:3629 ../AppArmor.pm:3669
+#: ../AppArmor.pm:3879
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
 msgstr "已删除 %s 个以前匹配的配置文件项。"
 
-#: ../SubDomain.pm:3368
+#: ../AppArmor.pm:3368
 #, perl-format
 msgid "Adding capability %s to profile."
 msgstr "正在添加功能 %s 到配置文件。"
 
-#: ../SubDomain.pm:3373
+#: ../AppArmor.pm:3373
 #, perl-format
 msgid "Denying capability %s to profile."
 msgstr "正在对配置文件拒绝功能 %s。"
 
-#: ../SubDomain.pm:3534
+#: ../AppArmor.pm:3534
 msgid "Path"
 msgstr "路径"
 
-#: ../SubDomain.pm:3545 ../SubDomain.pm:3577
+#: ../AppArmor.pm:3545 ../AppArmor.pm:3577
 msgid "(owner permissions off)"
 msgstr "（拥有者权限关闭）"
 
-#: ../SubDomain.pm:3551
+#: ../AppArmor.pm:3551
 msgid "(force new perms to owner)"
 msgstr "（将新的权限强加给拥有者）"
 
-#: ../SubDomain.pm:3554
+#: ../AppArmor.pm:3554
 msgid "(force all rule perms to owner)"
 msgstr "（将所有规则权限强加给拥有者）"
 
-#: ../SubDomain.pm:3566
+#: ../AppArmor.pm:3566
 msgid "Old Mode"
 msgstr "旧方式"
 
-#: ../SubDomain.pm:3567
+#: ../AppArmor.pm:3567
 msgid "New Mode"
 msgstr "新方式"
 
-#: ../SubDomain.pm:3583
+#: ../AppArmor.pm:3583
 msgid "(force perms to owner)"
 msgstr "（将权限强加给拥有者）"
 
-#: ../SubDomain.pm:3586
+#: ../AppArmor.pm:3586
 msgid "Mode"
 msgstr "方式"
 
-#: ../SubDomain.pm:3668
+#: ../AppArmor.pm:3668
 #, perl-format
 msgid "Adding %s %s to profile."
 msgstr "正在将 %s %s 添加到配置文件。"
 
-#: ../SubDomain.pm:3684
+#: ../AppArmor.pm:3684
 msgid "Enter new path: "
 msgstr "输入新路径："
 
-#: ../SubDomain.pm:3687
+#: ../AppArmor.pm:3687
 msgid "The specified path does not match this log entry:"
 msgstr "指定的路径与此日志条目不匹配："
 
-#: ../SubDomain.pm:3688
+#: ../AppArmor.pm:3688
 msgid "Log Entry"
 msgstr "日志项"
 
-#: ../SubDomain.pm:3689
+#: ../AppArmor.pm:3689
 msgid "Entered Path"
 msgstr "已输入的路径"
 
-#: ../SubDomain.pm:3690
+#: ../AppArmor.pm:3690
 msgid "Do you really want to use this path?"
 msgstr "确实要使用此路径吗？"
 
-#: ../SubDomain.pm:3802 ../SubDomain.pm:3854
+#: ../AppArmor.pm:3802 ../AppArmor.pm:3854
 msgid "Network Family"
 msgstr "网络系列"
 
-#: ../SubDomain.pm:3805 ../SubDomain.pm:3857
+#: ../AppArmor.pm:3805 ../AppArmor.pm:3857
 msgid "Socket Type"
 msgstr "套接字类型"
 
-#: ../SubDomain.pm:3905
+#: ../AppArmor.pm:3905
 #, perl-format
 msgid "Adding network access %s %s to profile."
 msgstr "正在将网络访问 %s %s 添加到配置文件中。"
 
-#: ../SubDomain.pm:3924
+#: ../AppArmor.pm:3924
 #, perl-format
 msgid "Denying network access %s %s to profile."
 msgstr "正在拒绝对配置文件的网络访问 %s %s。"
 
-#: ../SubDomain.pm:4132
+#: ../AppArmor.pm:4132
 #, perl-format
 msgid "Reading log entries from %s."
 msgstr "正在从 %s 读取日志条目。"
 
-#: ../SubDomain.pm:4133
+#: ../AppArmor.pm:4133
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
 msgstr "正在更新 %s 中的 AppArmor 配置文件。"
 
-#: ../SubDomain.pm:4137
+#: ../AppArmor.pm:4137
 msgid "unknown\n"
 msgstr "未知\n"
 
-#: ../SubDomain.pm:4170
+#: ../AppArmor.pm:4170
 msgid "The profile analyzer has completed processing the log files.\n\nAll updated profiles will be reloaded"
 msgstr "配置文件分析程序已完成对日志文件的处理。\n\n将重新装载所有已更新的配置文件。"
 
-#: ../SubDomain.pm:4176
+#: ../AppArmor.pm:4176
 msgid "No unhandled AppArmor events were found in the system log."
 msgstr "在系统日志中没有发现未处理的 AppArmor 事件。"
 
-#: ../SubDomain.pm:4237
+#: ../AppArmor.pm:4237
 msgid "Select which profile changes you would like to save to the\nlocal profile set"
 msgstr "选择要保存到本地配置文件集中的配置文件\n更改"
 
-#: ../SubDomain.pm:4238
+#: ../AppArmor.pm:4238
 msgid "Local profile changes"
 msgstr "本地配置文件更改"
 
-#: ../SubDomain.pm:4265
+#: ../AppArmor.pm:4265
 msgid "The following local profiles were changed.  Would you like to save them?"
 msgstr "以下本地配置文件已更改。是否要保存它们？"
 
-#: ../SubDomain.pm:4362
+#: ../AppArmor.pm:4362
 msgid "Profile Changes"
 msgstr "配置文件更改"
 
-#: ../SubDomain.pm:4974 ../SubDomain.pm:4990 ../SubDomain.pm:5001
-#: ../SubDomain.pm:5009 ../SubDomain.pm:5030 ../SubDomain.pm:5050
-#: ../SubDomain.pm:5059 ../SubDomain.pm:5091 ../SubDomain.pm:5153
-#: ../SubDomain.pm:5204
+#: ../AppArmor.pm:4974 ../AppArmor.pm:4990 ../AppArmor.pm:5001
+#: ../AppArmor.pm:5009 ../AppArmor.pm:5030 ../AppArmor.pm:5050
+#: ../AppArmor.pm:5059 ../AppArmor.pm:5091 ../AppArmor.pm:5153
+#: ../AppArmor.pm:5204
 #, perl-format
 msgid "%s contains syntax errors."
 msgstr "%s 包含语法错误。"
 
-#: ../SubDomain.pm:5110
+#: ../AppArmor.pm:5110
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
 msgstr "配置文件 %s 包含无效的 regexp %s。"
 
-#: ../SubDomain.pm:5115
+#: ../AppArmor.pm:5115
 #, perl-format
 msgid "Profile %s contains invalid mode %s."
 msgstr "配置文件 %s 包含无效方式 %s。"
 
-#: ../SubDomain.pm:5250
+#: ../AppArmor.pm:5250
 #, perl-format
 msgid "%s contains syntax errors. Line [%s]"
 msgstr "%s 包含语法错误。第 [%s] 行"
 
-#: ../SubDomain.pm:5839
+#: ../AppArmor.pm:5839
 #, perl-format
 msgid "Writing updated profile for %s."
 msgstr "正在写入 %s 已更新的配置文件。"
 
-#: ../SubDomain.pm:6344
+#: ../AppArmor.pm:6344
 msgid "Unknown command"
 msgstr "未知命令"
 
-#: ../SubDomain.pm:6352
+#: ../AppArmor.pm:6352
 msgid "Invalid hotkey in"
 msgstr "以下项目中的热键无效："
 
-#: ../SubDomain.pm:6362
+#: ../AppArmor.pm:6362
 msgid "Duplicate hotkey for"
 msgstr "以下项目热键重复："
 
-#: ../SubDomain.pm:6383
+#: ../AppArmor.pm:6383
 msgid "Invalid hotkey in default item"
 msgstr "默认项目中热键无效"
 
-#: ../SubDomain.pm:6392
+#: ../AppArmor.pm:6392
 msgid "Invalid default"
 msgstr "无效默认"
 
