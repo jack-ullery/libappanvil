@@ -75,7 +75,7 @@ static void print_error(int error)
 		PERROR(_("Out of memory\n"));
 		break;
 	case -EFAULT:
-		PERROR(_("Couldn't copy profile Bad memory address\n"));
+		PERROR(_("Couldn't copy profile: Bad memory address\n"));
 		break;
 	case -EPROTO:
 		PERROR(_("Profile doesn't conform to protocol\n"));
