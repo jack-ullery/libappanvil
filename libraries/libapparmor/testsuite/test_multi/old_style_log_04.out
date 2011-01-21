@@ -1,13 +1,8 @@
 START
 File: test_multi/old_style_log_04.in
-Event type: AA_RECORD_DENIED
+Event type: AA_RECORD_INVALID
 Audit ID: 1177962395.525:1837
-Mask: l
-Profile: /home/steve/svn/apparmor-forge/tests/regression/subdomain/link
-Name: /tmp/sdtest.3676-13458-it3683/target
-Name2: /tmp/sdtest.3676-13458-it3683/src
-Info: link
-PID: 3823
-Active hat: /home/steve/svn/apparmor-forge/tests/regression/subdomain/link
+Operation: APPARMOR
+Info: REJECTING link access from /tmp/sdtest.3676-13458-it3683/target to /tmp/sdtest.3676-13458-it3683/src (link(3823) profile /home/steve/svn/apparmor-forge/tests/regression/subdomain/link active /home/steve/svn/apparmor-forge/tests/regression/subdomain/link)
 Epoch: 1177962395
 Audit subid: 1837

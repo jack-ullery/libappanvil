@@ -1,13 +1,8 @@
 START
 File: test_multi/old_style_log_05.in
-Event type: AA_RECORD_DENIED
+Event type: AA_RECORD_INVALID
 Audit ID: 1167188680.127:54
-Operation: access
-Mask: r
-Profile: /bin/freak-aa-out
-Name: /bin/freak-aa-out
-Info: bash
-PID: 23415
-Active hat: /bin/freak-aa-out
+Operation: APPARMOR
+Info: REJECTING r access to /bin/freak-aa-out (bash(23415) profile /bin/freak-aa-out active /bin/freak-aa-out)
 Epoch: 1167188680
 Audit subid: 54

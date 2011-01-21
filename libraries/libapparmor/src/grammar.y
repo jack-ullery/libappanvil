@@ -79,10 +79,10 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 	long	t_long;
 }
 
-%type <t_str> old_profile safe_string protocol
+%type <t_str> safe_string protocol
 %token <t_long> TOK_DIGITS TOK_TYPE_UNKNOWN
-%token <t_str> TOK_QUOTED_STRING TOK_PATH TOK_ID TOK_NULL_COMPLAIN TOK_MODE TOK_DMESG_STAMP
-%token <t_str> TOK_SINGLE_QUOTED_STRING TOK_AUDIT_DIGITS TOK_DATE_MONTH TOK_DATE_TIME
+%token <t_str> TOK_QUOTED_STRING TOK_ID TOK_MODE TOK_DMESG_STAMP
+%token <t_str> TOK_AUDIT_DIGITS TOK_DATE_MONTH TOK_DATE_TIME
 %token <t_str> TOK_HEXSTRING TOK_TYPE_OTHER TOK_MSG_REST
 
 %token TOK_EQUALS
@@ -105,31 +105,6 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_TYPE_AA_STATUS
 %token TOK_TYPE_AA_ERROR
 %token TOK_TYPE_LSM_AVC
-%token TOK_OLD_TYPE_APPARMOR
-%token TOK_OLD_APPARMOR_REJECT
-%token TOK_OLD_APPARMOR_PERMIT
-%token TOK_OLD_APPARMOR_AUDIT
-%token TOK_OLD_APPARMOR_LOGPROF_HINT
-%token TOK_OLD_UNKNOWN_HAT
-%token TOK_OLD_ACTIVE
-%token TOK_OLD_UNKNOWN_PROFILE
-%token TOK_OLD_MISSING_PROFILE
-%token TOK_OLD_CHANGING_PROFILE
-%token TOK_OLD_ACCESS
-%token TOK_OLD_TO
-%token TOK_OLD_FROM
-%token TOK_OLD_PIPE
-%token TOK_OLD_EXTENDED
-%token TOK_OLD_ATTRIBUTE
-%token TOK_OLD_ON
-%token TOK_OLD_MKDIR
-%token TOK_OLD_RMDIR
-%token TOK_OLD_XATTR
-%token TOK_OLD_CHANGE
-%token TOK_OLD_SYSCALL
-%token TOK_OLD_LINK
-%token TOK_OLD_FORK
-%token TOK_OLD_CHILD
 
 %token TOK_KEY_APPARMOR
 %token TOK_KEY_TYPE
@@ -147,7 +122,6 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_PID
 %token TOK_KEY_PROFILE
 %token TOK_AUDIT
-%token TOK_KEY_IMAGE
 %token TOK_KEY_FAMILY
 %token TOK_KEY_SOCK_TYPE
 %token TOK_KEY_PROTOCOL
@@ -172,13 +146,8 @@ log_message: audit_type
 
 audit_type: TOK_KEY_TYPE TOK_EQUALS type_syntax ;
 
-type_syntax: old_syntax { ret_record->version = AA_RECORD_SYNTAX_V1; }
-	| new_syntax { ret_record->version = AA_RECORD_SYNTAX_V2; }
+type_syntax: new_syntax { ret_record->version = AA_RECORD_SYNTAX_V2; }
 	| other_audit
-	;
-
-old_syntax: TOK_OLD_TYPE_APPARMOR audit_msg old_msg
-	| TOK_TYPE_UNKNOWN audit_msg old_msg
 	;
 
 new_syntax:
@@ -201,9 +170,7 @@ other_audit: TOK_TYPE_OTHER audit_msg TOK_MSG_REST
 	;
 
 syslog_type:
-	  syslog_date TOK_ID TOK_SYSLOG_KERNEL audit_id old_msg
-	  { ret_record->version = AA_RECORD_SYNTAX_V1; }
-	| syslog_date TOK_ID TOK_SYSLOG_KERNEL audit_id key_list
+	  syslog_date TOK_ID TOK_SYSLOG_KERNEL audit_id key_list
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
 	| syslog_date TOK_ID TOK_SYSLOG_KERNEL key_type audit_id key_list
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
@@ -215,165 +182,7 @@ syslog_type:
 
 /* when audit dispatches a message it doesn't prepend the audit type string */
 audit_dispatch:
-	audit_msg old_msg  { ret_record->version = AA_RECORD_SYNTAX_V1; }
 	audit_msg key_list { ret_record->version = AA_RECORD_SYNTAX_V2; }
-	;
-
-old_msg:
-	  old_permit_reject_type old_permit_reject_syntax
-	| TOK_OLD_APPARMOR_LOGPROF_HINT old_logprof_syntax { ret_record->event = AA_RECORD_HINT; }
-	;
-
-old_permit_reject_type:
-	  TOK_OLD_APPARMOR_REJECT { ret_record->event = AA_RECORD_DENIED; }
-	| TOK_OLD_APPARMOR_PERMIT { ret_record->event = AA_RECORD_ALLOWED; }
-	| TOK_OLD_APPARMOR_AUDIT  { ret_record->event = AA_RECORD_AUDIT; }
-	;
-
-old_permit_reject_syntax:
-	  TOK_MODE TOK_OLD_ACCESS old_permit_reject_path_pipe_extended
-		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
-	{
-		ret_record->requested_mask = $1;
-		ret_record->operation = strdup("access");
-	}
-	| dir_action TOK_OLD_ON TOK_PATH
-		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
-	{
-		ret_record->name = $3;
-	}
-	| TOK_OLD_XATTR TOK_ID TOK_OLD_ON TOK_PATH
-		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
-	{
-		ret_record->operation = strdup("xattr");
-		ret_record->attribute = $2;
-		ret_record->name = $4;
-	}
-	| TOK_KEY_ATTRIBUTE TOK_OPEN_PAREN TOK_ID TOK_CLOSE_PAREN
-		TOK_OLD_CHANGE TOK_OLD_TO TOK_PATH
-		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
-	{
-		ret_record->operation = strdup("setattr");
-		ret_record->attribute = $3;
-		ret_record->name = $7;
-	}
-	| TOK_OLD_ACCESS TOK_OLD_TO TOK_KEY_CAPABILITY TOK_SINGLE_QUOTED_STRING
-		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
-	{
-		ret_record->operation = strdup("capability");
-		ret_record->name = $4;
-	}
-	| TOK_OLD_ACCESS TOK_OLD_TO TOK_OLD_SYSCALL TOK_SINGLE_QUOTED_STRING
-		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
-	{
-		ret_record->operation = strdup("syscall");
-		ret_record->name = $4;
-	}
-	| TOK_OLD_LINK TOK_OLD_ACCESS TOK_OLD_FROM TOK_PATH TOK_OLD_TO TOK_PATH
-		TOK_OPEN_PAREN old_process_state TOK_CLOSE_PAREN
-	{
-		ret_record->requested_mask = strdup("l");
-		ret_record->name = $4;
-		ret_record->name2 = $6;
-	}
-	;
-
-dir_action:
-	  TOK_OLD_MKDIR { ret_record->operation = strdup("mkdir"); }
-	| TOK_OLD_RMDIR { ret_record->operation = strdup("rmdir"); }
-	;
-
-old_process_state:
-	  TOK_ID TOK_OPEN_PAREN TOK_ID TOK_CLOSE_PAREN old_profile_names
-	{
-		ret_record->info = $1;
-		ret_record->pid = atol($3);
-		free($3);
-	}
-	;
-
-old_profile_names:
-	  TOK_KEY_PROFILE old_profile TOK_OLD_ACTIVE old_profile
-	{	ret_record->profile = $2;
-		ret_record->active_hat = $4;
-	}
-	;
-
-old_permit_reject_path_pipe_extended:
-	  TOK_OLD_TO TOK_PATH
-		{
-			ret_record->name = $2;
-		}
-	| TOK_OLD_TO TOK_OLD_PIPE /* Frankly, I don't think this is used */
-		{
-			ret_record->info = strdup("pipe");
-		}
-	| TOK_OLD_EXTENDED TOK_KEY_ATTRIBUTE /* Nor this */
-		{
-			ret_record->info = strdup("extended attribute");
-		}
-	;
-old_logprof_syntax:
-	  old_logprof_syntax2 key_pid
-		TOK_KEY_PROFILE TOK_EQUALS old_profile TOK_OLD_ACTIVE TOK_EQUALS old_profile
-		{
-			ret_record->profile = strdup($5);
-			free($5);
-			ret_record->active_hat = strdup($8);
-			free($8);
-		}
-	| old_logprof_fork_syntax
-	| TOK_OLD_CHANGING_PROFILE key_pid
-	  { ret_record->profile = strdup("null-complain-profile"); }
-	;
-
-old_logprof_syntax2:
-	  TOK_OLD_UNKNOWN_PROFILE TOK_KEY_IMAGE TOK_EQUALS TOK_ID
-		{
-			ret_record->operation = strdup("profile_set");
-			ret_record->info = strdup("unknown profile");
-			ret_record->name = strdup($4);
-			free($4);
-		}
-	| TOK_OLD_MISSING_PROFILE TOK_KEY_IMAGE TOK_EQUALS TOK_ID
-		{
-			ret_record->operation = strdup("exec");
-			ret_record->info = strdup("mandatory profile missing");
-			ret_record->name = strdup($4);
-			free($4);
-		}
-	| TOK_OLD_UNKNOWN_HAT TOK_ID
-		{
-			ret_record->operation = strdup("change_hat");
-			ret_record->name = strdup($2);
-			free($2);
-			ret_record->info = strdup("unknown_hat");
-		}
-	;
-
-/* TODO: Clean this up */
-old_logprof_fork_syntax:
-	  TOK_OLD_FORK key_pid
-		TOK_OLD_CHILD TOK_EQUALS TOK_DIGITS old_logprof_fork_addition
-	{
-		ret_record->operation = strdup("clone");
-		ret_record->task = $5;
-	}
-	;
-
-old_logprof_fork_addition:
-	/* Nothin */
-	| TOK_KEY_PROFILE TOK_EQUALS old_profile TOK_OLD_ACTIVE TOK_EQUALS old_profile
-	{
-		ret_record->profile = $3;
-		ret_record->active_hat = $6;
-	}
-	;
-
-old_profile:
-	  TOK_PATH { $$ = $1; }
-	| TOK_ID   { $$ = $1; }
-	| TOK_NULL_COMPLAIN { $$ = strdup("null-complain-profile"); }
 	;
 
 audit_msg: TOK_KEY_MSG TOK_EQUALS audit_id
@@ -441,7 +250,7 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	| TOK_KEY_COMM TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->comm = $3;}
 	| TOK_KEY_APPARMOR TOK_EQUALS apparmor_event
-	| TOK_KEY_CAPABILITY TOK_EQUALS TOK_ID
+	| TOK_KEY_CAPABILITY TOK_EQUALS TOK_DIGITS
 	{ /* need to reverse map number to string, need to figure out
 	   * how to get auto generation of reverse mapping table into
 	   * autotools Makefile.  For now just drop assumming capname is
@@ -459,6 +268,11 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	| TOK_KEY_TARGET TOK_EQUALS safe_string
 	{ /* target was always name2 in the past */
 	  ret_record->name2 = $3;
+	}
+	| TOK_MSG_REST
+	{
+		ret_record->event = AA_RECORD_INVALID;
+		ret_record->info = $1;
 	}
 	;
 

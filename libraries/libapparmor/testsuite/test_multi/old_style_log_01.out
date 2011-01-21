@@ -1,13 +1,8 @@
 START
 File: test_multi/old_style_log_01.in
-Event type: AA_RECORD_DENIED
+Event type: AA_RECORD_INVALID
 Audit ID: 1157215966.604:46
-Operation: access
-Mask: r
-Profile: /usr/sbin/httpd2-prefork
-Name: /bin/df
-Info: sh
-PID: 7902
-Active hat: SYSINFO
+Operation: APPARMOR
+Info: REJECTING r access to /bin/df (sh(7902) profile /usr/sbin/httpd2-prefork active SYSINFO)
 Epoch: 1157215966
 Audit subid: 46

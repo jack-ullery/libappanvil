@@ -1,8 +1,8 @@
 START
 File: test_multi/old_style_log_17.in
-Event type: AA_RECORD_HINT
+Event type: AA_RECORD_INVALID
 Audit ID: 1164007073.953:518
-Profile: null-complain-profile
-PID: 29420
+Operation: APPARMOR
+Info: LOGPROF-HINT changing_profile pid=29420
 Epoch: 1164007073
 Audit subid: 518

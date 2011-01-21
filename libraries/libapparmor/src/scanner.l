@@ -83,7 +83,6 @@ minus		"-"
 open_paren	"("
 close_paren	")"
 ID		[^ \t\n\(\)="'!]
-path		"/"{ID}*
 hexstring	({hex}{hex})+
 period		"\."
 mode_chars      ([RrWwaLlMmkXx])|([Pp][Xx])|([Uu][Xx])|([Ii][Xx])|([Pp][Ii][Xx])
@@ -106,35 +105,6 @@ lsm_avc_type		"AVC"
 unknown_type		UNKNOWN\[{digits}+\]
 other_audit_type	[[:alnum:]\[\]_-]+
 
-/* Old message tokens */
-
-old_apparmor_type	"APPARMOR"
-old_apparmor_reject	"REJECTING"
-old_apparmor_permit	"PERMITTING"
-old_apparmor_audit	"AUDITING"
-old_apparmor_logprof	"LOGPROF-HINT"
-old_unknown_hat		"unknown_hat"
-old_unknown_profile	"unknown_profile"
-old_missing_profile	"missing_mandatory_profile"
-old_changing_profile	"changing_profile"
-old_active		"active"
-old_access		"access"
-old_from		"from"
-old_to			"to"
-old_pipe		"pipe"
-old_extended		"extended"
-old_rmdir		"rmdir"
-old_mkdir		"mkdir"
-old_on			"on"
-old_xattr		"xattr"
-old_change		"change"
-old_syscall		"syscall"
-old_link		"link"
-old_fork		"fork"
-old_child		"child"
-
-null_complain		"null-complain-profile"
-
 /* Key tokens */
 
 key_apparmor		"apparmor"
@@ -153,7 +123,6 @@ key_magic_token		"magic_token"
 key_info		"info"
 key_pid			"pid"
 key_profile		"profile"
-key_image		"image"
 key_family		"family"
 key_sock_type		"sock_type"
 key_protocol		"protocol"
@@ -177,12 +146,10 @@ dmesg_timestamp		\[[[:digit:] ]{5,}\.[[:digit:]]{6,}\]
 %x quoted_string
 %x sub_id
 %x audit_id
-%x single_quoted_string
 %x hostname
 %x dmesg_timestamp
 %x safe_string
 %x audit_types
-%x old_action
 %x other_audit
 %x unknown_message
 
@@ -206,7 +173,6 @@ yy_flex_debug = 0;
 <sub_id>{
 	{open_paren}		{ return(TOK_OPEN_PAREN); }
 	{close_paren}		{ BEGIN(INITIAL); return(TOK_CLOSE_PAREN); }
-	"'"			{ string_buf_reset(); BEGIN(single_quoted_string); }
 	{ws}		{ }
 	\"			{ string_buf_reset(); BEGIN(quoted_string); }
 	{ID}+	{
@@ -216,19 +182,6 @@ yy_flex_debug = 0;
 		}
 	{equals}		{ return(TOK_EQUALS); }
 	}
-
-
-"'"			{ string_buf_reset(); BEGIN(single_quoted_string); }
-<single_quoted_string>"'" { /* End of the quoted string */
-				BEGIN(INITIAL);
-				yylval->t_str = strdup(string_buf);
-				return(TOK_SINGLE_QUOTED_STRING);
-			}
-
-
-<single_quoted_string>\\(.|\n) { string_buf_append(1, &yytext[1]); }
-
-<single_quoted_string>[^\\\n\'\"]+ { string_buf_append(yyleng, yytext); }
 
 \"			{ string_buf_reset(); BEGIN(quoted_string); }
 <quoted_string>\"	{ /* End of the quoted string */
@@ -243,7 +196,6 @@ yy_flex_debug = 0;
 <quoted_string>[^\\\n\"]+ { string_buf_append(yyleng, yytext); }
 
 <safe_string>{
-	"'"		{ string_buf_reset(); BEGIN(single_quoted_string); }
 	\"		{ string_buf_reset(); BEGIN(quoted_string); }
 	{hexstring}	{ yylval->t_str = hex_to_string(yytext); BEGIN(INITIAL); return(TOK_HEXSTRING);}
 	{equals}	{ return(TOK_EQUALS); }
@@ -274,7 +226,6 @@ yy_flex_debug = 0;
 			  BEGIN(INITIAL);
 			  return(TOK_TYPE_UNKNOWN);
 			}
-	{old_apparmor_type} { BEGIN(INITIAL); return(TOK_OLD_TYPE_APPARMOR); }
 	{other_audit_type}  { yylval->t_str = strdup(yytext);
 			      BEGIN(other_audit);
 			      return(TOK_TYPE_OTHER);
@@ -291,41 +242,7 @@ yy_flex_debug = 0;
 			return(TOK_OPEN_PAREN);
 			}
 {close_paren}		{ return(TOK_CLOSE_PAREN); }
-{path}			{ yylval->t_str = strdup(yytext); return(TOK_PATH); }
 {period}		{ return(TOK_PERIOD); }
-
-{old_apparmor_reject}	{ BEGIN(old_action); return(TOK_OLD_APPARMOR_REJECT); }
-{old_apparmor_permit}	{ BEGIN(old_action); return(TOK_OLD_APPARMOR_PERMIT); }
-{old_apparmor_audit}	{ BEGIN(old_action); return(TOK_OLD_APPARMOR_AUDIT); }
-{old_apparmor_logprof}	{ return(TOK_OLD_APPARMOR_LOGPROF_HINT); }
-{old_unknown_hat}	{ BEGIN(sub_id); return(TOK_OLD_UNKNOWN_HAT); }
-{old_unknown_profile}	{ return(TOK_OLD_UNKNOWN_PROFILE); }
-{old_missing_profile}	{ return(TOK_OLD_MISSING_PROFILE); }
-{old_changing_profile}	{ return(TOK_OLD_CHANGING_PROFILE); }
-{old_active}		{ BEGIN(sub_id); return(TOK_OLD_ACTIVE); }
-{old_access}		{ return(TOK_OLD_ACCESS); }
-{old_to}		{ return(TOK_OLD_TO); }
-{old_from}		{ return(TOK_OLD_FROM); }
-{old_pipe}		{ return(TOK_OLD_PIPE); }
-{old_extended}		{ return(TOK_OLD_EXTENDED); }
-{old_on}		{ return(TOK_OLD_ON); }
-{old_change}		{ return(TOK_OLD_CHANGE); }
-{key_capability}	{ BEGIN(sub_id); return(TOK_KEY_CAPABILITY); }
-{old_syscall}		{ return(TOK_OLD_SYSCALL); }
-{old_fork}		{ return(TOK_OLD_FORK); }
-{old_child}		{ return(TOK_OLD_CHILD); }
-
-<old_action>{
-	{ws}+		{ /* eat whitespace */ }
-	{modes}		{ /* modes must stay out of INITIAL because of false pos matches e.g. Mar */
-			  yylval->t_str = strdup(yytext); BEGIN(INITIAL); return(TOK_MODE); }
-	{old_link}	{ BEGIN(INITIAL); return(TOK_OLD_LINK); }
-	{old_access}	{ BEGIN(INITIAL); return(TOK_OLD_ACCESS); }
-	{old_mkdir}	{ BEGIN(INITIAL); return(TOK_OLD_MKDIR); }
-	{old_rmdir}	{ BEGIN(INITIAL); return(TOK_OLD_RMDIR); }
-	{old_xattr}	{ BEGIN(sub_id); return(TOK_OLD_XATTR); }
-	{key_attribute}	{ BEGIN(sub_id); return(TOK_KEY_ATTRIBUTE); }
-}
 
 {key_apparmor}		{ BEGIN(audit_types); return(TOK_KEY_APPARMOR); }
 {key_type}		{ BEGIN(audit_types); return(TOK_KEY_TYPE); }
@@ -350,18 +267,7 @@ yy_flex_debug = 0;
 {key_fsuid}		{ return(TOK_KEY_FSUID); }
 {key_ouid}		{ return(TOK_KEY_OUID); }
 {key_comm}		{ return(TOK_KEY_COMM); }
- /* This key_capability entry is here to document, what should be.
-  * currently the capability token is handled by the old set of rules above
-  * it should be handled here, but there is no good way to combine them
-  * that doesn't require more work than it is worth atm because of the
-  * switch to sub_id in the old scanner rules.
-  * The switch to sub_id causes the new rule set in the grammar to need to
-  * accept a TOK_ID instead of TOK_DIGITS, which it should be.
-  * once the old rules and old scanning is ripped out this scanner rule
-  * should be activated and the corresponding rule in the grammar should
-  * be updated to use TOK_DIGITS
-  * {key_capability}	{ return(TOK_KEY_CAPABILITY); }
-  */
+{key_capability}	{ return(TOK_KEY_CAPABILITY); }
 {key_capname}		{ return(TOK_KEY_CAPNAME); }
 {key_offset}		{ return(TOK_KEY_OFFSET); }
 {key_target}		{ return(TOK_KEY_TARGET); }
@@ -371,8 +277,6 @@ yy_flex_debug = 0;
 {syslog_time}		{ yylval->t_str = strdup(yytext); BEGIN(hostname); return(TOK_DATE_TIME); }
 
 {audit}			{ yy_push_state(audit_id, yyscanner); return(TOK_AUDIT); }
-{null_complain}		{ return(TOK_NULL_COMPLAIN); }
-{key_image}		{ BEGIN(sub_id); return(TOK_KEY_IMAGE); }
 
 .			{ /* ignore any non-matched input */ BEGIN(unknown_message); yyless(0); }
 

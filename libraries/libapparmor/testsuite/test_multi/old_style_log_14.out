@@ -1,13 +1,8 @@
 START
 File: test_multi/old_style_log_14.in
-Event type: AA_RECORD_AUDIT
+Event type: AA_RECORD_INVALID
 Audit ID: 1177962426.395:2107
-Operation: access
-Mask: mr
-Profile: /home/steve/svn/apparmor-forge/tests/regression/subdomain/changehat_wrapper
-Name: /lib/ld-2.4.so
-Info: open
-PID: 7139
-Active hat: open
+Operation: APPARMOR
+Info: AUDITING mr access to /lib/ld-2.4.so (open(7139) profile /home/steve/svn/apparmor-forge/tests/regression/subdomain/changehat_wrapper active open)
 Epoch: 1177962426
 Audit subid: 2107
