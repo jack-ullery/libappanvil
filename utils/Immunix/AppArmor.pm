@@ -231,6 +231,50 @@ my %MODE_HASH = (
     N => $AA_EXEC_NT,
     );
 
+
+# Currently only used by netdomain but there's no reason it couldn't
+# be extended to support other types.
+my %operation_types = (
+
+	# Old socket names
+	"socket_create",	=> "net",
+	"socket_post_create"	=> "net",
+	"socket_bind"		=> "net",
+	"socket_connect"	=> "net",
+	"socket_listen"		=> "net",
+	"socket_accept"		=> "net",
+	"socket_sendmsg"	=> "net",
+	"socket_recvmsg"	=> "net",
+	"socket_getsockname"	=> "net",
+	"socket_getpeername"	=> "net",
+	"socket_getsockopt"	=> "net",
+	"socket_setsockopt"	=> "net",
+	"socket_shutdown"	=> "net",
+
+	# New socket names
+	"create"		=> "net",
+	"post_create"		=> "net",
+	"bind"			=> "net",
+	"connect"		=> "net",
+	"listen"		=> "net",
+	"accept"		=> "net",
+	"sendmsg"		=> "net",
+	"recvmsg"		=> "net",
+	"getsockname"		=> "net",
+	"getpeername"		=> "net",
+	"getsockopt"		=> "net",
+	"setsockopt"		=> "net",
+	"sock_shutdown"		=> "net",
+);
+
+sub optype($) {
+	my $op = shift;
+	my $type = $operation_types{$op};
+
+	return "unknown" if !defined($type);
+	return $type;
+}
+
 sub debug ($) {
     my $message = shift;
     chomp($message);
@@ -2908,7 +2952,7 @@ sub add_event_to_tree ($) {
         }
         $pid{$child} = $arrayref;
         push @{$arrayref}, [ "fork", $child, $profile, $hat ];
-    } elsif ($e->{operation} =~ m/socket_/) {
+    } elsif (optype($e->{operation}) eq "net") {
         add_to_tree( $e->{pid},
 		     $e->{parent},
                      "netdomain",
@@ -6612,7 +6656,7 @@ sub parse_event($) {
        LibAppArmor::aa_log_record::swig_magic_token_get($event);
 
     # NetDomain
-    if ( $ev{'operation'} && $ev{'operation'} =~ /socket/ ) {
+    if ( $ev{'operation'} && optype($ev{'operation'}) eq "net" ) {
         $ev{'family'}    =
             LibAppArmor::aa_log_record::swig_net_family_get($event);
         $ev{'protocol'}  =
