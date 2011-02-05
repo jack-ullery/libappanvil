@@ -5618,7 +5618,7 @@ sub var_transform($) {
 sub writelistvars ($$) {
     my ($prof_data, $depth) = @_;
 
-    return write_pair($prof_data, $depth, '', 'lvar', "", " = ", ",", \&var_transform);
+    return write_pair($prof_data, $depth, '', 'lvar', "", " = ", "", \&var_transform);
 }
 
 sub writecap_rules ($$$) {
