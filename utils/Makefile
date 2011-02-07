@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (c) 1999, 2004-2009 NOVELL (All rights reserved)
-#    Copyright (c) 2010 Canonical Ltd.
+#    Copyright (c) 2010-2011 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -28,7 +28,7 @@ endif
 
 MODDIR = Immunix
 PERLTOOLS = aa-genprof aa-logprof aa-autodep aa-audit aa-complain aa-enforce \
-	aa-unconfined aa-status aa-notify
+	aa-unconfined aa-status aa-notify aa-disable
 TOOLS = ${PERLTOOLS} aa-decode
 MODULES = ${MODDIR}/AppArmor.pm ${MODDIR}/Repository.pm \
 	${MODDIR}/Config.pm ${MODDIR}/Severity.pm
