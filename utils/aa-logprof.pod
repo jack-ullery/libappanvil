@@ -160,7 +160,7 @@ L<http://https://bugs.launchpad.net/apparmor/+filebug>.
 =head1 SEE ALSO
 
 klogd(8), auditd(8), apparmor(7), apparmor.d(5), aa_change_hat(2),
-logprof.conf(5), aa-genprof(1), aa-complain(1), aa-enforce(1), and
-L<http://wiki.apparmor.net>.
+logprof.conf(5), aa-genprof(1), aa-enforce(1), aa-complain(1),
+aa-disable(1), and L<http://wiki.apparmor.net>.
 
 =cut

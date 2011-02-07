@@ -30,9 +30,9 @@ B<aa-complain I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...]>
 
 =head1 DESCRIPTION
 
-B<aa-complain> is used to set the enforcement mode for one or more profiles to complain.
-In this mode security policy is not enforced but rather access violations are logged
-to the system log.  
+B<aa-complain> is used to set the enforcement mode for one or more profiles to
+complain. In this mode security policy is not enforced but rather access
+violations are logged to the system log.
 
 =head1 BUGS
 
@@ -41,7 +41,7 @@ L<http://https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 
-apparmor(7), apparmor.d(5), aa-enforce(1), aa_change_hat(2), and
-L<http://wiki.apparmor.net>.
+apparmor(7), apparmor.d(5), aa-enforce(1), aa-disable(1),
+aa_change_hat(2), and L<http://wiki.apparmor.net>.
 
 =cut
