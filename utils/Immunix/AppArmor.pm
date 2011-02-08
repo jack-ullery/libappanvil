@@ -1794,6 +1794,9 @@ sub confirm_and_abort() {
     if ($ans eq "y") {
         UI_Info(gettext("Abandoning all changes."));
         shutdown_yast();
+        foreach my $prof (@created) {
+            delete_profile($prof);
+        }
         exit 0;
     }
 }
