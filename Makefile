@@ -22,6 +22,7 @@ REPO_URL=lp:apparmor
 #REPO_URL="bzr+ssh://bazaar.launchpad.net/~sbeattie/+junk/apparmor-dev/"
 
 RELEASE_DIR=apparmor-${VERSION}
+__SETUP_DIR?=.
 
 .PHONY: tarball
 tarball: clean
