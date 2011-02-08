@@ -4,8 +4,8 @@
     <property name="jni_src" location="src/jni_src"/>
     <property name="build" location="build"/>
     <property name="install_root" location="/"/>
-    <property name="catalina_home" location="/usr/share/tomcat5"/>
-    <property name="lib" location="lib"/>
+    <property name="catalina_home" location="/usr/share/tomcat6"/>
+    <property name="lib" location="/usr/share/tomcat6/bin"/>
     <property name="install_lib" value="/lib"/>
     <property name="dist" location="dist"/>
     <property name="jarfile" location="${dist}/${ant.project.name}.jar"/>
@@ -18,10 +18,11 @@
         <include name="**/*.jar"/>
     </fileset>
 
-    <fileset id="tomcat.jars" dir="${catalina_home}/server/lib">
+    <fileset id="tomcat.jars" dir="${catalina_home}/lib">
 	   <include name="**/*.jar"/>
 	</fileset>
-    <fileset id="servlet.jars" dir="${catalina_home}/common/lib">
+
+    <fileset id="servlet.jars" dir="${catalina_home}/lib">
 	   <include name="**/*.jar"/>
 	</fileset>
 	
@@ -80,9 +81,9 @@
     </target>
 
     <target name="install_jar" depends="jni_so" description="Install jar file">
-        <mkdir dir="${install_root}/${catalina_home}/server/lib/"/>
-        <copy file="${jarfile}" tofile="${install_root}/${catalina_home}/server/lib/${ant.project.name}.jar"/>
-        <chmod perm="644" file="${install_root}/${catalina_home}/server/lib/${ant.project.name}.jar"/>
+        <mkdir dir="${install_root}/${catalina_home}/lib/"/>
+        <copy file="${jarfile}" tofile="${install_root}/${catalina_home}/lib/${ant.project.name}.jar"/>
+        <chmod perm="644" file="${install_root}/${catalina_home}/lib/${ant.project.name}.jar"/>
     </target>
 
     <target name="clean" description="Remove build and dist directories">
