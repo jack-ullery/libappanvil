@@ -2350,7 +2350,7 @@ sub handlechildren($$$) {
                         unless (-e getprofilefilename($exec_target)) {
 			    my $ynans = "y";
 			    if ($exec_mode & str_to_mode("i")) {
-				$ynans = UI_YesNo(sprintf(gettext("A profile for %s does not exist create one?"), $exec_target), "n");
+				$ynans = UI_YesNo(sprintf(gettext("A profile for %s does not exist. Create one?"), $exec_target), "n");
 			    }
 			    if ($ynans eq "y") {
 				$helpers{$exec_target} = "enforce";
@@ -2377,7 +2377,7 @@ sub handlechildren($$$) {
 			unless ($sd{$profile}{$exec_target}) {
 			    my $ynans = "y";
 			    if ($exec_mode & str_to_mode("i")) {
-				$ynans = UI_YesNo(sprintf(gettext("A local profile for %s does not exist create one?"), $exec_target), "n");
+				$ynans = UI_YesNo(sprintf(gettext("A local profile for %s does not exist. Create one?"), $exec_target), "n");
 			    }
 			    if ($ynans eq "y") {
 				$hat = $exec_target;
