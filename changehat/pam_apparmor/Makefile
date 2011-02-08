@@ -26,8 +26,8 @@ common/Make.rules: $(COMMONDIR)/Make.rules
 	ln -sf $(COMMONDIR) .
 endif
 
-EXTRA_CFLAGS=$(CFLAGS) -fPIC -shared -Wall
-LINK_FLAGS=-Xlinker -x
+EXTRA_CFLAGS=$(CFLAGS) -fPIC -shared -Wall -I../../libraries/libapparmor/src/
+LINK_FLAGS=-Xlinker -x -L../../libraries/libapparmor/src/.libs
 LIBS=-lpam -lapparmor
 OBJECTS=${NAME}.o get_options.o
 
@@ -41,7 +41,7 @@ $(NAME).so: ${OBJECTS}
 
 # need some better way of determining this
 DESTDIR=/
-SECDIR=${DESTDIR}/lib/security
+SECDIR ?= ${DESTDIR}/lib/security
 
 .PHONY: install
 install: $(NAME).so
