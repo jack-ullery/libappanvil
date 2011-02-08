@@ -1,6 +1,0 @@
-# List of source files containing translatable strings.
-
-src/apparmor-applet.c
-src/preferences_dialog.c
-src/reject_list.c
-
