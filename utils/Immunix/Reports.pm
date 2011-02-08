@@ -13,7 +13,7 @@ package Immunix::Reports;
 ################################################################################
 # /usr/lib/perl5/site_perl/Reports.pm
 #
-#   - Parses /var/log/messages for SubDomain messages
+#   - Parses /var/log/messages for AppArmor messages
 #   - Writes results to .html or comma-delimited (.csv) files (Optional)
 #
 #  Requires:
