@@ -23,7 +23,7 @@
 =head1 NAME
 
 aa-enforce - set an AppArmor security profile to I<enforce> mode from
-I<complain> mode.
+being disabled or I<complain> mode.
 
 =head1 SYNOPSIS
 
@@ -32,8 +32,9 @@ B<aa-enforce I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...]>
 =head1 DESCRIPTION
 
 B<aa-enforce> is used to set the enforcement mode for one or more profiles
-to I<enforce>.  This command is only relevant is conjuction with the
-utility I<complain> which sets a profile to complain mode. The default
+to I<enforce>.  This command is only relevant in conjuction with the
+I<aa-complain> utility which sets a profile to complain mode and the
+I<aa-disable> utility which unloads and disables a profile. The default
 mode for a security policy is enforce and the I<aa-complain> utility must
 be run to change this behavior.
 
@@ -44,7 +45,7 @@ L<http://https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 
-apparmor(7), apparmor.d(5), aa-complain(1), aa_change_hat(2), and
-L<http://wiki.apparmor.net>.
+apparmor(7), apparmor.d(5), aa-complain(1), aa-disable(1),
+aa_change_hat(2), and L<http://wiki.apparmor.net>.
 
 =cut

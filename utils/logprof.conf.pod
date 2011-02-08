@@ -107,8 +107,8 @@ L<http://https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 
-apparmor(7), apparmor.d(5), aa-enforce(1), aa_change_hat(2),
-aa-complain(1), aa-logprof(1), aa-genprof(1), and
+apparmor(7), apparmor.d(5), aa-enforce(1), aa-complain(1),
+aa-disable(1), aa_change_hat(2), aa-logprof(1), aa-genprof(1), and
 L<http://wiki.apparmor.net>.
 
 =cut
