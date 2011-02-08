@@ -23,11 +23,7 @@
 #include "apr_strings.h"
 #include "apr_lib.h"
 
-#ifndef USE_COMPAT_IMMUNIX_H
-#include <sys/apparmor.h>
-#else
-#include <sys/immunix.h>
-#endif
+#include <apparmor.h>
 #include <unistd.h>
 
 /* #define DEBUG */

@@ -41,11 +41,7 @@ APXS:=$(shell if [ -x "/usr/sbin/apxs2" ] ; then \
 	      fi ) 
 APXS_INSTALL_DIR=$(shell ${APXS} -q LIBEXECDIR)
 DESTDIR=
-LIBAPPARMOR_FLAGS=$(shell if [ -f /usr/lib/libapparmor.so -o -f /usr/lib64/libapparmor.so ] ; then \
-				echo -lapparmor ; \
-			  else \
-			  	echo -DUSE_COMPAT_IMMUNIX_H -limmunix ;\
-			  fi)
+LIBAPPARMOR_FLAGS="-I../../libraries/libapparmor/src -L../../libraries/libapparmor/src/.libs -lapparmor"
 
 all: $(TARGET) ${MANPAGES} ${HTMLMANPAGES}
 
