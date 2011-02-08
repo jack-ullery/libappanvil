@@ -10,6 +10,7 @@ MOSTLYCLEANFILES=libapparmor_wrap.c LibAppArmor.pm
 
 Makefile.perl: Makefile.PL
 	$(PERL) $< PREFIX=$(prefix) MAKEFILE=$@
+	sed -ie 's/^LD_RUN_PATH.*//g' Makefile.perl
 
 LibAppArmor.so: libapparmor_wrap.c Makefile.perl
 	if test ! -f libapparmor_wrap.c; then cp $(srcdir)/libapparmor_wrap.c . ; fi
