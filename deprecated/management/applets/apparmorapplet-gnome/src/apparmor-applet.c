@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <glib/gi18n.h>
+#include <libgnome/gnome-program.h>
 #include "preferences_dialog.h"
 #include "reject_list.h"
 #include "apparmor-applet.h"
