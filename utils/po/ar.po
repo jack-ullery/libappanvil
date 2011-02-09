@@ -633,11 +633,6 @@ msgstr "خطأ فادح.  لم يتم العثور على أي دليل %s.  ي�
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
 msgstr "خطأ فادح.  تعذر فتح %s.  يتم الآن الإنهاء"
 
-#: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
-#, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "فشل تنفيذ DBI: %s"
-
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"

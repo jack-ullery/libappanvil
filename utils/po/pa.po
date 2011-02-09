@@ -725,12 +725,6 @@ msgstr "ਘਾਤਕ ਗਲਤੀ: ਕੋਈ ਡਾਇਰੈਕਟਰੀ %s ਨ�
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
 msgstr "ਘਾਤਕ ਗਲਤੀ:  %s ਖੋਲ੍ਹਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ.  ਬੰਦ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 
-# %s is either BOOTP or DHCP
-#: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
-#, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "DBI ਚਲਾਉਣਾ ਫੇਲ੍ਹ: %s"
-
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"

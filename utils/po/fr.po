@@ -633,11 +633,6 @@ msgstr "Erreur irrécupérable. Aucun répertoire, %s, n'a été trouvé. Sortie
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
 msgstr "Erreur irrécupérable. Impossible d'ouvrir %s. Sortie"
 
-#: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
-#, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "L'exécution de DBI a échoué : %s"
-
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"

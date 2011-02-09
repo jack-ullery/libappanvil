@@ -633,11 +633,6 @@ msgstr "Schwerwiegender Fehler.  Kein Verzeichnis, '%s', gefunden.  Der Vorgang 
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
 msgstr "Schwerwiegender Fehler.  '%s' konnte nicht geöffnet werden.  Der Vorgang wird beendet."
 
-#: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
-#, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "Fehler bei DBI-Ausführung : '%s'"
-
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"

@@ -759,11 +759,6 @@ msgstr "Błąd krytyczny. nie znaleziono katalogu %s. Zakończono."
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
 msgstr "Błąd krytyczny. Nie można otworzyć %s. Zakończono."
 
-#: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
-#, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "Wykonanie DBI zakończone niepowodzeniem: %s"
-
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"

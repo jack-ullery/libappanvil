@@ -633,11 +633,6 @@ msgstr "致命错误。未发现目录 %s。正在退出。"
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
 msgstr "致命错误。无法打开 %s。正在退出"
 
-#: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
-#, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "DBI 执行失败：%s"
-
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"

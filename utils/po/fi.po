@@ -771,11 +771,6 @@ msgstr "Vakava virhe.  Hakemistoa %s ei löydetty.  Poistutaan."
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
 msgstr "Vakava virhe.  Ei voitu avata %s.  Poistutaan"
 
-#: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
-#, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "DBI-suoritus epäonnistui. %s"
-
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"

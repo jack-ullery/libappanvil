@@ -766,11 +766,6 @@ msgstr "Eroare fatală.  Nu am găsit nici un director, %s.  Părăsesc aplicaț
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
 msgstr "Eroare fatală. Nu am putut deschide %s.  Părăsesc aplicația"
 
-#: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
-#, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "Execuția DBI a eșuat: %s"
-
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"

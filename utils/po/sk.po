@@ -736,12 +736,6 @@ msgstr "Fatal Error.  No directory, %s, found.  Exiting."
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
 msgstr "Nie je možné otvoriť súbor pre zápis."
 
-# %s is either BOOTP or DHCP
-#: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
-#, fuzzy, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "Konfigurácia pomocou %s zlyhala."
-
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"

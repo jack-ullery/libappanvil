@@ -778,12 +778,6 @@ msgstr "Κρίσιμο Σφάλμα.  Δεν βρηκε ο κατάλογος %s
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
 msgstr "Κρίσιμο Σφάλμα.  Αδυναμία ανοίγματος %s.  Έξοδος"
 
-# %s is either BOOTP or DHCP
-#: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
-#, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "Η εκτέλεση DBI απέτυχε: %s"
-
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"

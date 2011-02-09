@@ -633,11 +633,6 @@ msgstr "Allvarligt fel. Det gick inte att hitta katalogen %s. Avslutar."
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
 msgstr "Allvarligt fel. Det gick inte att öppna %s. Avslutar."
 
-#: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
-#, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "DBI-körningen misslyckades: %s"
-
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"

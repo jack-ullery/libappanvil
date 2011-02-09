@@ -764,11 +764,6 @@ msgstr "Fatal feil.  Katalogen %s ikke funnet.  Avslutter."
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
 msgstr "Fatal feil.  Kunne ikke åpne %s.  Avslutter"
 
-#: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
-#, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "DBI-kjøring mislyktes: %s"
-
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"

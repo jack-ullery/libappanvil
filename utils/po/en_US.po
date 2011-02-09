@@ -629,9 +629,6 @@ msgstr "Invalid relation"
 #~ msgid "Fatal Error.  Couldn't open %s.  Exiting"
 #~ msgstr "Fatal Error.  Couldn't open %s.  Exiting"
 
-#~ msgid "DBI Execution failed: %s"
-#~ msgstr "DBI Execution failed: %s"
-
 #~ msgid "Fatal Error.  getArchReport() couldn't open %s"
 #~ msgstr "Fatal Error.  getArchReport() couldn't open %s"
 

@@ -633,11 +633,6 @@ msgstr "오류가 발생했습니다. %s 디렉토리가 없습니다. 종료합
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
 msgstr "오류가 발생했습니다. %s을(를) 열 수 없습니다. 종료합니다."
 
-#: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
-#, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "DBI 실행 실패: %s"
-
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"

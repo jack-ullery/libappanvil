@@ -703,11 +703,6 @@ msgstr "Fatal Error.  No directory, %s, found.  Exiting."
 msgid "Fatal Error.  Couldn't open %s.  Exiting"
 msgstr "Fatal Error.  Couldn't open %s.  Exiting"
 
-#: ../Reports.pm:970 ../Reports.pm:983 ../Reports.pm:991
-#, perl-format
-msgid "DBI Execution failed: %s"
-msgstr "DBI Execution failed: %s"
-
 #: ../Reports.pm:1592
 #, perl-format
 msgid "Fatal Error.  getArchReport() couldn't open %s"
