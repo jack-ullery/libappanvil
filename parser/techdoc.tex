@@ -213,7 +213,7 @@ files by controlling file descriptor passing between processes.
 
 \subsection{Mount}
 
-Mounting can change a process's namespace in in almost arbitrary ways.
+Mounting can change a process's namespace in almost arbitrary ways.
 This is a problem because AppArmor's file access control is pathname
 based, and granting a process the right to arbitrarily change its
 namespace would subvert this protection mechanism.  AppArmor therefore
