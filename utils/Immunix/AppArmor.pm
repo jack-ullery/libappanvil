@@ -2788,6 +2788,13 @@ sub add_event_to_tree ($) {
     return if ($e->{operation} =~ /profile_set/);
 
     my ($profile, $hat);
+
+    # The version of AppArmor that was accepted into the mainline kernel
+    # issues audit events for things like change_hat while unconfined.
+    # Previous versions just returned -EPERM without the audit so the
+    # events wouldn't have been picked up here.
+    return if (!$e->{profile});
+
     # just convert new null profile style names to old before we begin processing
     # profile and name can contain multiple layers of null- but all we care about
     # currently is single level.
