@@ -1958,7 +1958,7 @@ sub handlechildren($$$) {
                     $hat     = $h;
                 }
 
-                next unless $profile && $hat;
+                next unless $profile && $hat && $detail;
                 my $domainchange = ($type eq "exec") ? "change" : "nochange";
 
                 # escape special characters that show up in literal paths
