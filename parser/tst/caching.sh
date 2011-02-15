@@ -3,6 +3,13 @@
 # on the actions and results of the prior tests.
 set -e
 
+# This test requires introspection
+if [ ! -d /sys/kernel/security/apparmor ]; then
+    echo "WARNING: /sys/kernel/security/apparmor does not exist. Skipping tests"
+    echo "requiring introspection."
+    exit 0
+fi
+
 # fake base directory
 basedir=$(mktemp -d -t aa-cache-XXXXXX)
 trap "rm -rf $basedir" EXIT
