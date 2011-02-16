@@ -2390,6 +2390,12 @@ sub handlechildren($$$) {
 				# we have seen more than a declaration so clear it
 				$sd{$profile}{$hat}{'declared'} = 0;
 				$sd{$profile}{$hat}{profile} = 1;
+
+				# Otherwise sub-profiles end up getting
+				# put in enforce mode with genprof
+				$sd{$profile}{$hat}{flags} = $sd{$profile}{$profile}{flags} if $profile ne $hat;
+
+				$sd{$profile}{$hat}{flags} = 'complain';
 				$sd{$profile}{$hat}{allow}{path} = { };
 				$sd{$profile}{$hat}{allow}{netdomain} = { };
 				my $file = $sd{$profile}{$profile}{filename};
