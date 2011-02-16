@@ -16,7 +16,7 @@ DIRS=parser \
      common \
      tests
 
-REPO_URL=lp:apparmor
+REPO_URL?=lp:apparmor
 # alternate possibilities to export from
 #REPO_URL=.
 #REPO_URL="bzr+ssh://bazaar.launchpad.net/~sbeattie/+junk/apparmor-dev/"
@@ -34,7 +34,7 @@ tarball: clean
 .PHONY: snapshot
 snapshot: clean
 	REPO_VERSION=`$(value REPO_VERSION_CMD)` ; \
-	SNAPSHOT_DIR=apparmor-${VERSION}-$${REPO_VERSION} ;\
+	SNAPSHOT_DIR=apparmor-${VERSION}~$${REPO_VERSION} ;\
 	make export_dir __EXPORT_DIR=$${SNAPSHOT_DIR} __REPO_VERSION=$${REPO_VERSION} ; \
 	make setup __SETUP_DIR=$${SNAPSHOT_DIR} ; \
 	tar cvzf $${SNAPSHOT_DIR}.tar.gz $${SNAPSHOT_DIR} ;
@@ -48,7 +48,7 @@ export_dir:
 
 .PHONY: clean
 clean:
-	-rm -rf ${RELEASE_DIR} apparmor-${VERSION}-*
+	-rm -rf ${RELEASE_DIR} ./apparmor-${VERSION}~*
 
 .PHONY: setup
 setup:
