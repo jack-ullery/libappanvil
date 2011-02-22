@@ -1,11 +1,14 @@
 /*
-     Copyright (c) 2003-2007 Novell, Inc. (All rights reserved)
-
-     The libapparmor library is licensed under the terms of the GNU
-     Lesser General Public License, version 2.1. Please see the file
-     COPYING.LGPL.
-
-*/
+ * Copyright (c) 2003-2008 Novell, Inc. (All rights reserved)
+ * Copyright 2009-2010 Canonical Ltd.
+ *
+ * The libapparmor library is licensed under the terms of the GNU
+ * Lesser General Public License, version 2.1. Please see the file
+ * COPYING.LGPL.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <stdlib.h>
 #include <stdio.h>
