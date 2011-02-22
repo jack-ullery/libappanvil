@@ -149,9 +149,11 @@ msgstr ""
 msgid "Couldn't merge entries. Out of Memory\n"
 msgstr ""
 
+#. Changed multiple -> conflicting to better reflect that the error is
+#. caused when two or more x modifiers are of a conflicting type
 #: ../parser_merge.c:77
 #, c-format
-msgid "profile %s: has merged rule %s with multiple x modifiers\n"
+msgid "profile %s: has merged rule %s with conflicting x modifiers\n"
 msgstr ""
 
 #: ../parser_merge.c:140
