@@ -1,4 +1,4 @@
-" $Id: apparmor.vim.in,v 1.9 2011/01/09 17:27:41 cb Exp $
+" $Id: apparmor.vim,v 1.11 2011/01/31 22:48:07 cb Exp $
 "
 " ----------------------------------------------------------------------
 "    Copyright (c) 2005 Novell, Inc. All Rights Reserved.
@@ -158,9 +158,10 @@ syn match   sdEntryChangeProfile    /\v^\s*change_profile\s+-\>\s+\S+\s*,(\s*$|(
 " TODO: audit and deny support will be added (JJ, 2011-01-11)
 "
 "syn match sdRLimit /\v^\s*rlimit\s+()\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment
-syn match sdRLimit /\v^\s*rlimit\s+(nofile|locks|sigpending|nproc|rtprio)\s+[0-9]+\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment
-syn match sdRLimit /\v^\s*rlimit\s+(fsize|data|stack|core|rss|as|memlock|msgqueue)\s+\<\=\s+[0-9]+([KMG])?\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment
-syn match sdRLimit /\v^\s*rlimit\s+nice\s+(-1?[0-9]|-20|1?[0-9])\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment
+syn match sdRLimit /\v^\s*set\s+rlimit\s+(nofile|nproc|rtprio)\s+[0-9]+\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment
+syn match sdRLimit /\v^\s*set\s+rlimit\s+(locks|sigpending)\s+\<\=\s+[0-9]+\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment
+syn match sdRLimit /\v^\s*set\s+rlimit\s+(fsize|data|stack|core|rss|as|memlock|msgqueue)\s+\<\=\s+[0-9]+([KMG])?\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment
+syn match sdRLimit /\v^\s*set\s+rlimit\s+nice\s+\<\=\s+(-1?[0-9]|-20|1?[0-9])\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment
 
 " link rules
 syn match sdEntryW /\v^\s+(audit\s+)?(deny\s+)?(owner\s+)?link\s+(subset\s+)?(\/|\@\{\S*\})\S*\s+-\>\s+(\/|\@\{\S*\})\S*\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdGlob
