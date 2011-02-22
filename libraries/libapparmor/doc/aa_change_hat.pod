@@ -29,6 +29,8 @@ aa_change_hat  - change to or from a "hat" within a AppArmor profile
 B<#include E<lt>sys/apparmor.hE<gt>>
 
 B<int aa_change_hat (char *subprofile, unsigned long magic_token);>
+B<int aa_change_hatv (char *subprofiles[], unsigned long magic_token);>
+B<int aa_change_hat_vargs (unsigned long magic_token, ...);>
 
 Link with B<-lapparmor> when compiling.
 
@@ -37,10 +39,29 @@ Link with B<-lapparmor> when compiling.
 An AppArmor profile applies to an executable program; if a portion of
 the program needs different access permissions than other portions,
 the program can "change hats" to a different role, also known as a
-subprofile. To change into a new hat, it calls the aa_change_hat()
-function to do so. It passes in a pointer to the I<subprofile> which it
+subprofile.
+
+To change into a new hat, it calls one of the family of change_hat
+functions to do so. It passes in a pointer to the I<subprofile> which it
 wants to change into, and a 64bit I<magic_token>.  The I<magic_token>
 is used to return out of the subprofile at a later time.
+
+The aa_change_hat() function allows specifying the name of a single
+I<subprofile> that the application wants to change into.  A pointer to the
+name of the I<subprofile> is passed along with the I<magic_token>.  If the
+profile is not present the call will fail with the appropriate error.
+
+The aa_change_hatv() function allows passing a I<NULL> terminated vector
+of pointers to I<subprofile> names which will be tried in order.  The
+first I<subprofile> in the vector that exists will be transitioned to
+and if none of the I<subprofiles> exist the call will fail with the
+appropriate error.
+
+The aa_change_hat_vargs() function is a convenience wrapper for the
+aa_change_hatv() function.  After the I<magic_token> it takes an arbitrary
+number of pointers to I<subprofile> names.  Similar to execl(3),
+aa_change_hat_vargs() assembles the list of I<subprofile> names into a
+vector and calls aa_change_hatv().
 
 If a program wants to return out of the current subprofile to the
 original profile, it calls aa_change_hat() with a pointer to NULL as
@@ -51,9 +72,6 @@ original profile will not happen, and the current task will be killed.
 If the I<magic_token> matches the original token, then the process will
 change back to the original profile.
 
-If the program wants to change to a subprofile that it can never
-change back out of, the application should call aa_change_hat() with a
-I<magic_token> of I<0>.
 
 As both read(2) and write(2) are mediated, a file must be listed in a
 subprofile definition if the file is to be accessed while the process

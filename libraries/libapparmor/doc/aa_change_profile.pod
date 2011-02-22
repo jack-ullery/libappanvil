@@ -23,7 +23,7 @@
 =head1 NAME
 
 aa_change_profile  - change to another profile within an AppArmor profile
-
+aa_change_onexec - change to another profile at the next exec
 =head1 SYNOPSIS
 
 B<#include E<lt>sys/apparmor.hE<gt>>
@@ -52,6 +52,14 @@ so the calling program must close(2) open file descriptors to ensure they
 are not available after calling aa_change_profile(). As aa_change_profile()
 is typically used just before execve(2), you may want to use open(2) or
 fcntl(2) with close-on-exec.
+
+The aa_change_onexec() function is like the aa_change_profile() function
+except it specifies that the profile transition should take place on the
+next exec instead of immediately.  The delayed profile change takes
+precedence over any exec transition rules within the confining profile.
+Delaying the profile boundary has a couple of advantages, it removes the
+need for stub transition profiles and the exec boundary is a natural security
+layer where potentially sensitive memory is unmapped.
 
 =head1 RETURN VALUE
 
