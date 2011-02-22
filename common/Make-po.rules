@@ -21,7 +21,7 @@
 # exist
 LOCALEDIR=/usr/share/locale
 
-XGETTEXT_ARGS=--copyright-holder="NOVELL, Inc." --msgid-bugs-address=pparmor@lists.ubuntu.com -d ${NAME}
+XGETTEXT_ARGS=--copyright-holder="NOVELL, Inc." --msgid-bugs-address=apparmor@lists.ubuntu.com -d ${NAME}
 
 # When making the .pot file, it's expected that the parent Makefile will
 # pass in the list of sources in the SOURCES variable
