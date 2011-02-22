@@ -57,8 +57,8 @@
 #define PRIVILEGED_OPS (kernel_load)
 #define UNPRIVILEGED_OPS (!(PRIVILEGED_OPS))
 
-const char *parser_title	= "Novell/SUSE AppArmor parser";
-const char *parser_copyright	= "Copyright (C) 1999, 2000, 2003, 2004, 2005, 2006 Novell Inc.";
+const char *parser_title	= "AppArmor parser";
+const char *parser_copyright	= "Copyright (C) 1999-2008 Novell Inc.\nCopyright 2009-2010 Canonical Ltd.";
 
 char *progname;
 int option = OPTION_ADD;
