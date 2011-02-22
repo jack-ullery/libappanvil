@@ -26,8 +26,8 @@ extern int aa_change_hat(const char *subprofile, unsigned long magic_token);
 extern int aa_change_profile(const char *profile);
 extern int aa_change_onexec(const char *profile);
 
-extern int aa_change_hatv(const char *subprofiles[], unsigned int token);
-extern int (aa_change_hat_vargs)(unsigned int token, int count, ...);
+extern int aa_change_hatv(const char *subprofiles[], unsigned long token);
+extern int (aa_change_hat_vargs)(unsigned long token, int count, ...);
 
 #define __macroarg_counter(Y...) __macroarg_count1 ( , ##Y)
 #define __macroarg_count1(Y...) __macroarg_count2 (Y, 16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)

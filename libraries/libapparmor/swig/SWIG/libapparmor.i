@@ -16,6 +16,6 @@
 extern int aa_change_hat(const char *subprofile, unsigned long magic_token);
 extern int aa_change_profile(const char *profile);
 extern int aa_change_onexec(const char *profile);
-extern int aa_change_hatv(const char *subprofiles[], unsigned int token);
-extern int aa_change_hat_vargs(unsigned int token, int count, ...);
+extern int aa_change_hatv(const char *subprofiles[], unsigned long token);
+extern int aa_change_hat_vargs(unsigned long token, int count, ...);
 
