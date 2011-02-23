@@ -2824,7 +2824,7 @@ uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error)
 //     fprintf(stderr, "change_hat 0x%x\n", perms);
 
     if (*error)
-	    PERROR(_("profile has merged rule with conflicting x modifiers\n"));
+	    fprintf(stderr, "profile has merged rule with conflicting x modifiers\n");
 
     return perms;
 }

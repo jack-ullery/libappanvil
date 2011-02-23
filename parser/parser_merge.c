@@ -109,7 +109,7 @@ static int process_file_entries(struct codomain *cod)
 			/* check for merged x consistency */
 			if (!is_merged_x_consistent(cur->mode, next->mode)) {
 				PERROR(_("profile %s: has merged rule %s with "
-					 "conflicting x modifiers\n",
+					 "conflicting x modifiers\n"),
 					 cod->name, cur->name);
 				return 0;
 			}
