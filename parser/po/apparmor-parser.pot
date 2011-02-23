@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: pparmor@lists.ubuntu.com\n"
+"Report-Msgid-Bugs-To: apparmor@lists.ubuntu.com\n"
 "POT-Creation-Date: 2011-02-22 03:25-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
