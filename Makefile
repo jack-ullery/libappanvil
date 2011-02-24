@@ -43,7 +43,7 @@ snapshot: clean
 .PHONY: export_dir
 export_dir:
 	mkdir $(__EXPORT_DIR)
-	/usr/bin/bzr export -r $(__REPO_VERSION) $(__EXPORT_DIR) $(REPO_URL)
+	/usr/bin/bzr export --per-file-timestamps -r $(__REPO_VERSION) $(__EXPORT_DIR) $(REPO_URL)
 	echo "$(REPO_URL) $(__REPO_VERSION)" > $(__EXPORT_DIR)/common/.stamp_rev
 
 .PHONY: clean
