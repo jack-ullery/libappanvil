@@ -143,6 +143,7 @@ TESTS=access \
       setattr \
       symlink \
       syscall \
+      tcp \
       unix_fd_server \
       unlink\
       xattrs\

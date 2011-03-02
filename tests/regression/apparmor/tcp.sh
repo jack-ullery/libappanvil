@@ -21,18 +21,37 @@ ip="127.0.0.1"
 #badperm1=r
 #badperm2=w
 
-# PASS TEST - no netdomain rules
-genprofile 
-runchecktest "TCP" pass $port
+# PASS TEST - no apparmor rules
+runchecktest "TCP (no apparmor)" pass $port
 
-# PASS TEST - simple 
-genprofile tcp_accept: tcp_connect:
-runchecktest "TCP (accept, connect)" pass $port
+# FAIL TEST - no network rules
+genprofile 
+runchecktest "TCP (accept, connect) no network rules" fail $port
+
+# PASS TEST - allow tcp
+genprofile network:tcp
+runchecktest "TCP (accept, connect) allow tcp" pass $port
+
+# PASS TEST - allow inet
+genprofile network:inet
+runchecktest "TCP (accept, connect) allow inet" pass $port
+
+# PASS TEST - allow inet stream
+genprofile "network:inet stream"
+runchecktest "TCP (accept, connect) allow inet stream" pass $port
 
 # PASS TEST - simple / low-numbered port
 # you damn well better not be running telnet
-genprofile tcp_accept: tcp_connect: cap:net_bind_service
-runchecktest "TCP (accept, connect)" pass 23
+genprofile network:inet cap:net_bind_service
+runchecktest "TCP (accept, connect) low numbered port/bind cap" pass 23
+
+# FAIL TEST - simple / low-numbered port
+# will always fail unless process has net_bind_service capability.
+# you damn well better not be running telnetd.
+genprofile network:inet 
+runchecktest "TCP (accept, connect) low numbered port/no bind cap" fail 23
+
+exit 0
 
 # PASS TEST - accept via interface
 genprofile tcp_accept:via:lo tcp_connect:
@@ -61,12 +80,6 @@ runchecktest "TCP (accept, connect)" pass $port
 # PASS TEST - accept to ip addr/mask:port
 genprofile tcp_accept:to:127.0.0.0/255.255.192.0::${port} tcp_connect:
 runchecktest "TCP (accept, connect)" pass $port
-
-# FAIL TEST - simple / low-numbered port
-# will always fail unless process has net_bind_service capability.
-# you damn well better not be running telnetd.
-genprofile tcp_accept: tcp_connect:
-runchecktest "TCP (accept, connect, port 23)" fail 23
 
 # PASS TEST - simple / low-numbered port
 # will always fail unless process has net_bind_service capability.
