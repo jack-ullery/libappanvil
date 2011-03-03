@@ -29,6 +29,10 @@
 #include <linux/limits.h>
 #include <arpa/inet.h>
 #include <linux/capability.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include "parser.h"
 #include "parser_yacc.h"
@@ -203,6 +207,68 @@ static struct network_tuple network_mappings[] = {
 	{NULL, 0, NULL, 0, NULL, 0}
 };
 
+/* The apparmor kernel patches up until 2.6.38 didn't handle networking
+ * tables with sizes > AF_MAX correctly.  This could happen when the
+ * parser was built against newer kernel headers and then used to load
+ * policy on an older kernel.  This could happen during upgrades or
+ * in multi-kernel boot systems.
+ *
+ * Try to detect the running kernel version and use that to determine
+ * AF_MAX
+ */
+#define PROC_VERSION "/proc/sys/kernel/osrelease"
+static size_t kernel_af_max(void) {
+	char buffer[32];
+	int major;
+	int fd, res;
+
+	if (!net_af_max_override) {
+		return 0;
+	}
+	/* the override parameter is specifying the max value */
+	if (net_af_max_override > 0)
+		return net_af_max_override;
+
+	fd = open(PROC_VERSION, O_RDONLY);
+	if (!fd)
+		/* fall back to default provided during build */
+		return 0;
+	res = read(fd, &buffer, sizeof(buffer));
+	close(fd);
+	if (!res)
+		return 0;
+	res = sscanf(buffer, "2.6.%d", &major);
+	if (res != 1)
+		return 0;
+
+	switch(major) {
+	case 24:
+	case 25:
+	case 26:
+		return 34;
+	case 27:
+		return 35;
+	case 28:
+	case 29:
+	case 30:
+		return 36;
+	case 31:
+	case 32:
+	case 33:
+	case 34:
+	case 35:
+		return 37;
+	case 36:
+	case 37:
+		return 38;
+	/* kernels .38 and later should handle this correctly so no
+	 * static mapping needed
+	 */
+	default:
+		return 0;
+	}
+}
+
 /* Yuck. We grab AF_* values to define above from linux/socket.h because
  * they are more accurate than sys/socket.h for what the kernel actually
  * supports. However, we can't just include linux/socket.h directly,
@@ -213,13 +279,29 @@ static struct network_tuple network_mappings[] = {
  * hence the wrapping function.
  */
 size_t get_af_max() {
+	size_t af_max;
 	/* HACK: declare that version without "create" had a static AF_MAX */
-	if (!perms_create) return 36;
+	if (!perms_create && !net_af_max_override)
+		net_af_max_override = -1;
+
 #if AA_AF_MAX > AF_MAX
-	return AA_AF_MAX;
+	af_max = AA_AF_MAX;
 #else
-	return AF_MAX;
+	af_max = AF_MAX;
 #endif
+
+	/* HACK: some kernels didn't handle network tables from parsers
+	 * compiled against newer kernel headers as they are larger than
+	 * the running kernel expected.  If net_override is defined check
+	 * to see if there is a static max specified for that kernel
+	 */
+	if (net_af_max_override) {
+		size_t max = kernel_af_max();
+		if (max && max < af_max)
+			return max;
+	}
+
+	return af_max;
 }
 struct aa_network_entry *new_network_ent(unsigned int family,
 					 unsigned int type,

@@ -179,6 +179,7 @@ struct var_string {
 #define FLAG_CHANGEHAT_1_4  2
 #define FLAG_CHANGEHAT_1_5  3
 extern int kernel_supports_network;
+extern int net_af_max_override;
 extern int flag_changehat_version;
 extern int read_implies_exec;
 extern dfaflags_t dfaflags;
