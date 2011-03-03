@@ -90,6 +90,7 @@ char *flags_string = NULL;
 int regex_type = AARE_DFA;
 int perms_create = 0;		/* perms contain create flag */
 int kernel_supports_network = 1;	/* kernel supports network rules */
+int net_af_max_override = -1;		/* use kernel to determine af_max */
 char *profile_namespace = NULL;
 int flag_changehat_version = FLAG_CHANGEHAT_1_5;
 FILE *ofile = NULL;
