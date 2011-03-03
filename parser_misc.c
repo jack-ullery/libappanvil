@@ -237,6 +237,7 @@ static size_t kernel_af_max(void) {
 	close(fd);
 	if (!res)
 		return 0;
+	buffer[sizeof(buffer)-1] = '\0';
 	res = sscanf(buffer, "2.6.%d", &major);
 	if (res != 1)
 		return 0;
