@@ -94,3 +94,13 @@ sleep $timeout
 touch $basedir/cache/$profile
 ../apparmor_parser $ARGS -v -r $basedir/$profile | grep -q 'Cached reload succeeded' || { echo "FAIL"; exit 1; }
 echo "ok"
+
+echo -n "Cache reading is skipped when parser is newer: "
+mkdir $basedir/parser
+cp ../apparmor_parser $basedir/parser/
+$basedir/parser/apparmor_parser $ARGS -v -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
+echo "ok"
+
+echo -n "Cache reading is skipped when parser in \$PATH is newer: "
+(PATH=$basedir/parser/ /bin/sh -c "apparmor_parser $ARGS -v -r $basedir/$profile") | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
+echo "ok"
