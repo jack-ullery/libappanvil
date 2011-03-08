@@ -392,6 +392,8 @@ static int process_profile_name_xmatch(struct codomain *cod)
 		name = local_name(cod->name);
 	ptype = convert_aaregex_to_pcre(name, 0, tbuf, PATH_MAX + 3,
 					&cod->xmatch_len);
+	if (ptype == ePatternBasic)
+		cod->xmatch_len = strlen(name);
 
 	if (ptype == ePatternInvalid) {
 		PERROR(_("%s: Invalid profile name '%s' - bad regular expression\n"), progname, name);
@@ -414,8 +416,14 @@ static int process_profile_name_xmatch(struct codomain *cod)
 			struct alt_name *alt;
 			list_for_each(cod->altnames, alt) {
 				int len;
-				convert_aaregex_to_pcre(alt->name, 0, tbuf,
-							PATH_MAX + 3, &len);
+				ptype = convert_aaregex_to_pcre(alt->name, 0,
+								tbuf,
+								PATH_MAX + 3,
+								&len);
+				if (ptype == ePatternBasic)
+					len = strlen(alt->name);
+				if (len < cod->xmatch_len)
+					cod->xmatch_len = len;
 				if (!aare_add_rule(rule, tbuf, 0, AA_MAY_EXEC, 0, dfaflags)) {
 					aare_delete_ruleset(rule);
 					return FALSE;
