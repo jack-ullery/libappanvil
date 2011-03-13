@@ -29,28 +29,28 @@
 using namespace std;
 
 class TransitionTable {
-    typedef vector<pair<const State *, size_t> > DefaultBase;
-    typedef vector<pair<const State *, const State *> > NextCheck;
-public:
-    TransitionTable(DFA& dfa, map<uchar, uchar>& eq, dfaflags_t flags);
-    void dump(ostream& os);
-    void flex_table(ostream& os, const char *name);
-    void init_free_list(vector <pair<size_t, size_t> > &free_list, size_t prev, size_t start);
-    bool fits_in(vector <pair<size_t, size_t> > &free_list,
-		 size_t base, Cases& cases);
-    void insert_state(vector <pair<size_t, size_t> > &free_list,
-		      State *state, DFA& dfa);
+	typedef vector<pair<const State *, size_t> > DefaultBase;
+	typedef vector<pair<const State *, const State *> >NextCheck;
+      public:
+	TransitionTable(DFA &dfa, map<uchar, uchar> &eq, dfaflags_t flags);
+	void dump(ostream & os);
+	void flex_table(ostream &os, const char *name);
+	void init_free_list(vector<pair<size_t, size_t> > &free_list,
+			    size_t prev, size_t start);
+	bool fits_in(vector<pair<size_t, size_t> > &free_list, size_t base,
+		     Cases &cases);
+	void insert_state(vector<pair<size_t, size_t> > &free_list,
+			  State *state, DFA &dfa);
 
-private:
-    vector<uint32_t> accept;
-    vector<uint32_t> accept2;
-    DefaultBase default_base;
-    NextCheck next_check;
-    map<const State *, size_t> num;
-    map<uchar, uchar>& eq;
-    uchar max_eq;
-    size_t first_free;
+      private:
+	vector<uint32_t> accept;
+	vector<uint32_t> accept2;
+	DefaultBase default_base;
+	NextCheck next_check;
+	map<const State *, size_t> num;
+	map<uchar, uchar> &eq;
+	uchar max_eq;
+	size_t first_free;
 };
-
 
 #endif /* __LIBAA_RE_COMPRESSED_HFA_H */
