@@ -23,6 +23,7 @@
 #include <sys/resource.h>
 #include "immunix.h"
 #include "libapparmor_re/apparmor_re.h"
+#include "libapparmor_re/aare_rules.h"
 
 typedef enum pattern_t pattern_t;
 

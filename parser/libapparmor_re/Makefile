@@ -12,13 +12,16 @@ BISON := bison
 
 all : ${TARGET}
 
-libapparmor_re.a: parse.o expr-tree.o hfa.o
+libapparmor_re.a: parse.o expr-tree.o hfa.o aare_rules.o
 	ar ${ARFLAGS} $@ $^
 
 expr-tree.o: expr-tree.cc expr-tree.h
 	$(LINK.cc) $< -c -o $@
 
 hfa.o: hfa.cc apparmor_re.h
+	$(LINK.cc) $< -c -o $@
+
+aare_rules.o: aare_rules.cc aare_rules.h
 	$(LINK.cc) $< -c -o $@
 
 parse.o : parse.cc apparmor_re.h expr-tree.h

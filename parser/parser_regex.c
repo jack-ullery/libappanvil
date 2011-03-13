@@ -26,6 +26,7 @@
 
 #include "parser.h"
 #include "libapparmor_re/apparmor_re.h"
+#include "libapparmor_re/aare_rules.h"
 
 enum error_type {
 	e_no_error,
