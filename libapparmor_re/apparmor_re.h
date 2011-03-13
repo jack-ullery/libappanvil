@@ -1,11 +1,20 @@
 /*
- *   Copyright (c) 2003, 2004, 2005, 2006, 2007 Novell, Inc.
- *   (All rights reserved)
+ * (C) 2006, 2007 Andreas Gruenbacher <agruen@suse.de>
+ * Copyright (c) 2003-2008 Novell, Inc. (All rights reserved)
+ * Copyright 2009-2010 Canonical Ltd.
  *
- *   The libapparmor library is licensed under the terms of the GNU
- *   Lesser General Public License, version 2.1. Please see the file
- *   COPYING.LGPL.
- */
+ * The libapparmor library is licensed under the terms of the GNU
+ * Lesser General Public License, version 2.1. Please see the file
+ * COPYING.LGPL.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
 
 #ifndef APPARMOR_RE_H
 #define APPARMOR_RE_H
