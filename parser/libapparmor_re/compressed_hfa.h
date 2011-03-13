@@ -30,7 +30,7 @@ using namespace std;
 
 class TransitionTable {
 	typedef vector<pair<const State *, size_t> > DefaultBase;
-	typedef vector<pair<const State *, const State *> >NextCheck;
+	typedef vector<pair<const State *, const State *> > NextCheck;
       public:
 	TransitionTable(DFA &dfa, map<uchar, uchar> &eq, dfaflags_t flags);
 	void dump(ostream & os);

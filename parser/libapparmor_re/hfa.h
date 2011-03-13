@@ -46,13 +46,13 @@ typedef struct Cases {
 	iterator begin() { return cases.begin(); }
 	iterator end() { return cases.end(); }
 
-	Cases() : otherwise(0) { }
+	Cases(): otherwise(0) { }
+
 	map<uchar, State *> cases;
 	State *otherwise;
 } Cases;
 
 typedef list<State *> Partition;
-
 
 uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error);
 
@@ -72,9 +72,9 @@ uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error);
  */
 class State {
 public:
-	State() : label (0), audit(0), accept(0), cases(), nodes(NULL) { };
-	State(int l): label (l), audit(0), accept(0), cases(), nodes(NULL) { };
-	State(int l, NodeSet *n) throw (int):
+	State(): label(0), audit(0), accept(0), cases(), nodes(NULL) { };
+	State(int l): label(l), audit(0), accept(0), cases(), nodes(NULL) { };
+	State(int l, NodeSet * n) throw(int):
 		label(l), audit(0), accept(0), cases(), nodes(n)
 	{
 		int error;
@@ -82,7 +82,7 @@ public:
 		/* Compute permissions associated with the State. */
 		accept = accept_perms(nodes, &audit, &error);
 		if (error) {
-		  //cerr << "Failing on accept perms " << error << "\n";
+			//cerr << "Failing on accept perms " << error << "\n";
 			throw error;
 		}
 	};
@@ -96,9 +96,9 @@ public:
 	};
 };
 
-ostream& operator<<(ostream& os, const State& state);
+ostream &operator<<(ostream &os, const State &state);
 
-typedef map<pair<unsigned long, NodeSet *>, State *, deref_less_than > NodeMap;
+typedef map<pair<unsigned long, NodeSet *>, State *, deref_less_than> NodeMap;
 /* Transitions in the DFA. */
 
 /* dfa_stats - structure to group various stats about dfa creation
@@ -112,28 +112,32 @@ typedef struct dfa_stats {
 } dfa_stats_t;
 
 class DFA {
-    void dump_node_to_dfa(void);
-    State* add_new_state(NodeMap &nodemap, pair <unsigned long, NodeSet *> index, NodeSet *nodes, dfa_stats_t &stats);
-    void update_state_transitions(NodeMap &nodemap, list <State *> &work_queue, State *state, dfa_stats_t &stats);
-    State *find_target_state(NodeMap &nodemap, list <State *> &work_queue,
+	void dump_node_to_dfa(void);
+	State *add_new_state(NodeMap &nodemap,
+			     pair<unsigned long, NodeSet *> index,
 			     NodeSet *nodes, dfa_stats_t &stats);
+	void update_state_transitions(NodeMap &nodemap,
+				      list<State *> &work_queue,
+				      State *state, dfa_stats_t &stats);
+	State *find_target_state(NodeMap &nodemap, list<State *> &work_queue,
+				 NodeSet *nodes, dfa_stats_t &stats);
 public:
-    DFA(Node *root, dfaflags_t flags);
-    virtual ~DFA();
-    void remove_unreachable(dfaflags_t flags);
-    bool same_mappings(State *s1, State *s2);
-    size_t hash_trans(State *s);
-    void minimize(dfaflags_t flags);
-    void dump(ostream& os);
-    void dump_dot_graph(ostream& os);
-    void dump_uniq_perms(const char *s);
-    map<uchar, uchar> equivalence_classes(dfaflags_t flags);
-    void apply_equivalence_classes(map<uchar, uchar>& eq);
-    Node *root;
-    State *nonmatching, *start;
-    Partition states;
+	DFA(Node *root, dfaflags_t flags);
+	virtual ~DFA();
+	void remove_unreachable(dfaflags_t flags);
+	bool same_mappings(State *s1, State *s2);
+	size_t hash_trans(State *s);
+	void minimize(dfaflags_t flags);
+	void dump(ostream &os);
+	void dump_dot_graph(ostream &os);
+	void dump_uniq_perms(const char *s);
+	map<uchar, uchar> equivalence_classes(dfaflags_t flags);
+	void apply_equivalence_classes(map<uchar, uchar> &eq);
+	Node *root;
+	State *nonmatching, *start;
+	Partition states;
 };
 
-void dump_equivalence_classes(ostream& os, map<uchar, uchar>& eq);
+void dump_equivalence_classes(ostream &os, map<uchar, uchar> &eq);
 
 #endif /* __LIBAA_RE_HFA_H */
