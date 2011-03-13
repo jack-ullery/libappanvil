@@ -32,35 +32,33 @@
 #include "hfa.h"
 #include "compressed_hfa.h"
 
-
-void TransitionTable::init_free_list(vector <pair<size_t, size_t> > &free_list,
-				     size_t prev, size_t start) {
+void TransitionTable::init_free_list(vector<pair<size_t, size_t> > &free_list,
+				     size_t prev, size_t start)
+{
 	for (size_t i = start; i < free_list.size(); i++) {
 		if (prev)
 			free_list[prev].second = i;
 		free_list[i].first = prev;
 		prev = i;
 	}
-	free_list[free_list.size() -1].second = 0;
+	free_list[free_list.size() - 1].second = 0;
 }
 
 /**
  * new Construct the transition table.
  */
-TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq,
-				 dfaflags_t flags)
-    : eq(eq)
+TransitionTable::TransitionTable(DFA &dfa, map<uchar, uchar> &eq,
+				 dfaflags_t flags): eq(eq)
 {
-
 	if (flags & DFA_DUMP_TRANS_PROGRESS)
 		fprintf(stderr, "Compressing trans table:\r");
-
 
 	if (eq.empty())
 		max_eq = 255;
 	else {
 		max_eq = 0;
-		for(map<uchar, uchar>::iterator i = eq.begin(); i != eq.end(); i++) {
+		for (map<uchar, uchar>::iterator i = eq.begin();
+		     i != eq.end(); i++) {
 			if (i->second > max_eq)
 				max_eq = i->second;
 		}
@@ -70,8 +68,8 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq,
 	 * transition count.
 	 */
 	size_t optimal = 2;
-	multimap <size_t, State *> order;
-	vector <pair<size_t, size_t> > free_list;
+	multimap<size_t, State *> order;
+	vector<pair<size_t, size_t> > free_list;
 
 	for (Partition::iterator i = dfa.states.begin(); i != dfa.states.end(); i++) {
 		if (*i == dfa.start || *i == dfa.nonmatching)
@@ -80,9 +78,10 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq,
 		if (flags & DFA_CONTROL_TRANS_HIGH) {
 			size_t range = 0;
 			if ((*i)->cases.cases.size())
-				range = (*i)->cases.cases.rbegin()->first - (*i)->cases.begin()->first;
-			size_t ord = ((256 - (*i)->cases.cases.size()) << 8) |
-				(256 - range);
+				range =
+				    (*i)->cases.cases.rbegin()->first -
+				    (*i)->cases.begin()->first;
+			size_t ord = ((256 - (*i)->cases.cases.size()) << 8) | (256 - range);
 			/* reverse sort by entry count, most entries first */
 			order.insert(make_pair(ord, *i));
 		}
@@ -111,8 +110,7 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq,
 	int count = 2;
 
 	if (!(flags & DFA_CONTROL_TRANS_HIGH)) {
-		for (Partition::iterator i = dfa.states.begin(); i != dfa.states.end();
-		     i++) {
+		for (Partition::iterator i = dfa.states.begin(); i != dfa.states.end(); i++) {
 			if (*i != dfa.nonmatching && *i != dfa.start) {
 				insert_state(free_list, *i, dfa);
 				accept[num.size()] = (*i)->accept;
@@ -122,13 +120,15 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq,
 			if (flags & (DFA_DUMP_TRANS_PROGRESS)) {
 				count++;
 				if (count % 100 == 0)
-					fprintf(stderr, "\033[2KCompressing trans table: insert state: %d/%ld\r", count, dfa.states.size());
+					fprintf(stderr, "\033[2KCompressing trans table: insert state: %d/%ld\r",
+						count, dfa.states.size());
 			}
 		}
 	} else {
-		for (multimap <size_t, State *>::iterator i = order.begin();
+		for (multimap<size_t, State *>::iterator i = order.begin();
 		     i != order.end(); i++) {
-			if (i->second != dfa.nonmatching && i->second != dfa.start) {
+			if (i->second != dfa.nonmatching &&
+			    i->second != dfa.start) {
 				insert_state(free_list, i->second, dfa);
 				accept[num.size()] = i->second->accept;
 				accept2[num.size()] = i->second->audit;
@@ -137,23 +137,28 @@ TransitionTable::TransitionTable(DFA& dfa, map<uchar, uchar>& eq,
 			if (flags & (DFA_DUMP_TRANS_PROGRESS)) {
 				count++;
 				if (count % 100 == 0)
-					fprintf(stderr, "\033[2KCompressing trans table: insert state: %d/%ld\r", count, dfa.states.size());
+					fprintf(stderr, "\033[2KCompressing trans table: insert state: %d/%ld\r",
+						count, dfa.states.size());
 			}
 		}
 	}
 
 	if (flags & (DFA_DUMP_TRANS_STATS | DFA_DUMP_TRANS_PROGRESS)) {
 		ssize_t size = 4 * next_check.size() + 6 * dfa.states.size();
-		fprintf(stderr, "\033[2KCompressed trans table: states %ld, next/check %ld, optimal next/check %ld avg/state %.2f, compression %ld/%ld = %.2f %%\n", dfa.states.size(), next_check.size(), optimal, (float)next_check.size()/(float)dfa.states.size(), size, 512 * dfa.states.size(), 100.0 - ((float) size * 100.0 / (float)(512 * dfa.states.size())));
+		fprintf(stderr, "\033[2KCompressed trans table: states %ld, next/check %ld, optimal next/check %ld avg/state %.2f, compression %ld/%ld = %.2f %%\n",
+			dfa.states.size(), next_check.size(), optimal,
+			(float)next_check.size() / (float)dfa.states.size(),
+			size, 512 * dfa.states.size(),
+			100.0 - ((float)size * 100.0 /(float)(512 * dfa.states.size())));
 	}
 }
-
 
 /**
  * Does <cases> fit into position <base> of the transition table?
  */
-bool TransitionTable::fits_in(vector <pair<size_t, size_t> > &free_list __attribute__((unused)),
-			      size_t pos, Cases& cases)
+bool TransitionTable::fits_in(vector<pair<size_t, size_t> > &free_list
+			      __attribute__ ((unused)), size_t pos,
+			      Cases &cases)
 {
 	size_t c, base = pos - cases.begin()->first;
 	for (Cases::iterator i = cases.begin(); i != cases.end(); i++) {
@@ -172,14 +177,14 @@ bool TransitionTable::fits_in(vector <pair<size_t, size_t> > &free_list __attrib
 /**
  * Insert <state> of <dfa> into the transition table.
  */
-void TransitionTable::insert_state(vector <pair<size_t, size_t> > &free_list,
-				   State *from, DFA& dfa)
+void TransitionTable::insert_state(vector<pair<size_t, size_t> > &free_list,
+				   State *from, DFA &dfa)
 {
 	State *default_state = dfa.nonmatching;
 	size_t base = 0;
 	int resize;
 
-	Cases& cases = from->cases;
+	Cases &cases = from->cases;
 	size_t c = cases.begin()->first;
 	size_t prev = 0;
 	size_t x = first_free;
@@ -213,7 +218,7 @@ repeat:
 	}
 	if (resize) {
 		/* expand next_check and free_list */
-	        size_t old_size = free_list.size();
+		size_t old_size = free_list.size();
 		next_check.resize(next_check.size() + resize);
 		free_list.resize(free_list.size() + resize);
 		init_free_list(free_list, prev, old_size);
@@ -225,15 +230,15 @@ repeat:
 
 	base = x - c;
 	for (Cases::iterator j = cases.begin(); j != cases.end(); j++) {
-	    next_check[base + j->first] = make_pair(j->second, from);
-	    size_t prev = free_list[base + j->first].first;
-	    size_t next = free_list[base + j->first].second;
-	    if (prev)
-		    free_list[prev].second = next;
-	    if (next)
-		    free_list[next].first = prev;
-	    if (base + j->first == first_free)
-		    first_free = next;
+		next_check[base + j->first] = make_pair(j->second, from);
+		size_t prev = free_list[base + j->first].first;
+		size_t next = free_list[base + j->first].second;
+		if (prev)
+			free_list[prev].second = next;
+		if (next)
+			free_list[next].first = prev;
+		if (base + j->first == first_free)
+			first_free = next;
 	}
 
 do_insert:
@@ -243,48 +248,45 @@ do_insert:
 /**
  * Text-dump the transition table (for debugging).
  */
-void TransitionTable::dump(ostream& os)
+void TransitionTable::dump(ostream &os)
 {
-    map<size_t, const State *> st;
-    for (map<const State *, size_t>::iterator i = num.begin();
-	 i != num.end();
-	 i++) {
-	st.insert(make_pair(i->second, i->first));
-    }
-
-    os << "size=" << default_base.size() << " (accept, default, base):  {state} -> {default state}" << endl;
-    for (size_t i = 0; i < default_base.size(); i++) {
-        os << i << ": ";
-	os << "(" << accept[i] << ", "
-	   << num[default_base[i].first] << ", "
-	   << default_base[i].second << ")";
-	if (st[i])
-	    os << " " << *st[i];
-	if (default_base[i].first)
-	    os << " -> " << *default_base[i].first;
-	os << endl;
-    }
-
-    os << "size=" << next_check.size() << " (next, check): {check state} -> {next state} : offset from base" << endl;
-    for (size_t i = 0; i < next_check.size(); i++) {
-	if (!next_check[i].second)
-	    continue;
-
-	os << i << ": ";
-	if (next_check[i].second) {
-	    os << "(" << num[next_check[i].first] << ", "
-	       << num[next_check[i].second] << ")" << " "
-	       << *next_check[i].second << " -> "
-	       << *next_check[i].first << ": ";
-
-	    size_t offs = i - default_base[num[next_check[i].second]].second;
-	    if (eq.size())
-		os << offs;
-	    else
-		os << (uchar)offs;
+	map<size_t, const State *> st;
+	for (map<const State *, size_t>::iterator i = num.begin(); i != num.end(); i++) {
+		st.insert(make_pair(i->second, i->first));
 	}
-	os << endl;
-    }
+
+	os << "size=" << default_base.size() << " (accept, default, base):  {state} -> {default state}" << "\n";
+	for (size_t i = 0; i < default_base.size(); i++) {
+		os << i << ": ";
+		os << "(" << accept[i] << ", " << num[default_base[i].first]
+		   << ", " << default_base[i].second << ")";
+		if (st[i])
+			os << " " << *st[i];
+		if (default_base[i].first)
+			os << " -> " << *default_base[i].first;
+		os << "\n";
+	}
+
+	os << "size=" << next_check.size() << " (next, check): {check state} -> {next state} : offset from base\n";
+	for (size_t i = 0; i < next_check.size(); i++) {
+		if (!next_check[i].second)
+			continue;
+
+		os << i << ": ";
+		if (next_check[i].second) {
+			os << "(" << num[next_check[i].first] << ", "
+			   << num[next_check[i].second] << ")" << " "
+			   << *next_check[i].second << " -> "
+			   << *next_check[i].first << ": ";
+
+			size_t offs = i - default_base[num[next_check[i].second]].second;
+			if (eq.size())
+				os << offs;
+			else
+				os << (uchar) offs;
+		}
+		os << "\n";
+	}
 }
 
 /**
@@ -299,126 +301,120 @@ void TransitionTable::dump(ostream& os)
 
 static inline size_t pad64(size_t i)
 {
-    return (i + (size_t)7) & ~(size_t)7;
+	return (i + (size_t) 7) & ~(size_t) 7;
 }
 
 string fill64(size_t i)
 {
-    const char zeroes[8] = { };
-    string fill(zeroes, (i & 7) ? 8 - (i & 7) : 0);
-    return fill;
+	const char zeroes[8] = { };
+	string fill(zeroes, (i & 7) ? 8 - (i & 7) : 0);
+	return fill;
+}
+
+template<class Iter> size_t flex_table_size(Iter pos, Iter end)
+{
+	return pad64(sizeof(struct table_header) + sizeof(*pos) * (end - pos));
 }
 
 template<class Iter>
-size_t flex_table_size(Iter pos, Iter end)
+    void write_flex_table(ostream &os, int id, Iter pos, Iter end)
 {
-    return pad64(sizeof(struct table_header) + sizeof(*pos) * (end - pos));
+	struct table_header td = { 0, 0, 0, 0 };
+	size_t size = end - pos;
+
+	td.td_id = htons(id);
+	td.td_flags = htons(sizeof(*pos));
+	td.td_lolen = htonl(size);
+	os.write((char *)&td, sizeof(td));
+
+	for (; pos != end; ++pos) {
+		switch (sizeof(*pos)) {
+		case 4:
+			os.put((char)(*pos >> 24));
+			os.put((char)(*pos >> 16));
+		case 2:
+			os.put((char)(*pos >> 8));
+		case 1:
+			os.put((char)*pos);
+		}
+	}
+
+	os << fill64(sizeof(td) + sizeof(*pos) * size);
 }
 
-template<class Iter>
-void write_flex_table(ostream& os, int id, Iter pos, Iter end)
+void TransitionTable::flex_table(ostream &os, const char *name)
 {
-    struct table_header td = { 0, 0, 0, 0 };
-    size_t size = end - pos;
+	const char th_version[] = "notflex";
+	struct table_set_header th = { 0, 0, 0, 0 };
 
-    td.td_id = htons(id);
-    td.td_flags = htons(sizeof(*pos));
-    td.td_lolen = htonl(size);
-    os.write((char *)&td, sizeof(td));
+	/**
+	 * Change the following two data types to adjust the maximum flex
+	 * table size.
+	 */
+	typedef uint16_t state_t;
+	typedef uint32_t trans_t;
 
-    for (; pos != end; ++pos) {
-	switch(sizeof(*pos)) {
-	    case 4:
-		os.put((char)(*pos >> 24));
-		os.put((char)(*pos >> 16));
-	    case 2:
-		os.put((char)(*pos >> 8));
-	    case 1:
-		os.put((char)*pos);
+	if (default_base.size() >= (state_t) - 1) {
+		cerr << "Too many states (" << default_base.size() << ") for "
+		    "type state_t\n";
+		exit(1);
 	}
-    }
-
-    os << fill64(sizeof(td) + sizeof(*pos) * size);
-}
-
-void TransitionTable::flex_table(ostream& os, const char *name)
-{
-    const char th_version[] = "notflex";
-    struct table_set_header th = { 0, 0, 0, 0 };
-
-    /**
-     * Change the following two data types to adjust the maximum flex
-     * table size.
-     */
-    typedef uint16_t state_t;
-    typedef uint32_t trans_t;
-
-    if (default_base.size() >= (state_t)-1) {
-	cerr << "Too many states (" << default_base.size() << ") for "
-		"type state_t" << endl;
-	exit(1);
-    }
-    if (next_check.size() >= (trans_t)-1) {
-	cerr << "Too many transitions (" << next_check.size() << ") for "
-	        "type trans_t" << endl;
-	exit(1);
-    }
-
-    /**
-     * Create copies of the data structures so that we can dump the tables
-     * using the generic write_flex_table() routine.
-     */
-    vector<uint8_t> equiv_vec;
-    if (eq.size()) {
-	equiv_vec.resize(256);
-	for (map<uchar, uchar>::iterator i = eq.begin(); i != eq.end(); i++) {
-	    equiv_vec[i->first] = i->second;
+	if (next_check.size() >= (trans_t) - 1) {
+		cerr << "Too many transitions (" << next_check.size()
+		     << ") for " "type trans_t\n";
+		exit(1);
 	}
-    }
 
-    vector<state_t> default_vec;
-    vector<trans_t> base_vec;
-    for (DefaultBase::iterator i = default_base.begin();
-	 i != default_base.end();
-	 i++) {
-	default_vec.push_back(num[i->first]);
-	base_vec.push_back(i->second);
-    }
+	/**
+	 * Create copies of the data structures so that we can dump the tables
+	 * using the generic write_flex_table() routine.
+	 */
+	vector<uint8_t> equiv_vec;
+	if (eq.size()) {
+		equiv_vec.resize(256);
+		for (map<uchar, uchar>::iterator i = eq.begin(); i != eq.end(); i++) {
+			equiv_vec[i->first] = i->second;
+		}
+	}
 
-    vector<state_t> next_vec;
-    vector<state_t> check_vec;
-    for (NextCheck::iterator i = next_check.begin();
-	 i != next_check.end();
-	 i++) {
-	next_vec.push_back(num[i->first]);
-	check_vec.push_back(num[i->second]);
-    }
+	vector<state_t> default_vec;
+	vector<trans_t> base_vec;
+	for (DefaultBase::iterator i = default_base.begin(); i != default_base.end(); i++) {
+		default_vec.push_back(num[i->first]);
+		base_vec.push_back(i->second);
+	}
 
-    /* Write the actual flex parser table. */
+	vector<state_t> next_vec;
+	vector<state_t> check_vec;
+	for (NextCheck::iterator i = next_check.begin(); i != next_check.end(); i++) {
+		next_vec.push_back(num[i->first]);
+		check_vec.push_back(num[i->second]);
+	}
 
-    size_t hsize = pad64(sizeof(th) + sizeof(th_version) + strlen(name) + 1);
-    th.th_magic = htonl(YYTH_REGEX_MAGIC);
-    th.th_hsize = htonl(hsize);
-    th.th_ssize = htonl(hsize +
-	    flex_table_size(accept.begin(), accept.end()) +
-	    flex_table_size(accept2.begin(), accept2.end()) +
-	    (eq.size() ?
-		flex_table_size(equiv_vec.begin(), equiv_vec.end()) : 0) +
-	    flex_table_size(base_vec.begin(), base_vec.end()) +
-	    flex_table_size(default_vec.begin(), default_vec.end()) +
-	    flex_table_size(next_vec.begin(), next_vec.end()) +
-	    flex_table_size(check_vec.begin(), check_vec.end()));
-    os.write((char *)&th, sizeof(th));
-    os << th_version << (char)0 << name << (char)0;
-    os << fill64(sizeof(th) + sizeof(th_version) + strlen(name) + 1);
+	/* Write the actual flex parser table. */
 
+	size_t hsize = pad64(sizeof(th) + sizeof(th_version) + strlen(name) + 1);
+	th.th_magic = htonl(YYTH_REGEX_MAGIC);
+	th.th_hsize = htonl(hsize);
+	th.th_ssize = htonl(hsize +
+			    flex_table_size(accept.begin(), accept.end()) +
+			    flex_table_size(accept2.begin(), accept2.end()) +
+			    (eq.size() ? flex_table_size(equiv_vec.begin(), equiv_vec.end()) : 0) +
+			    flex_table_size(base_vec.begin(), base_vec.end()) +
+			    flex_table_size(default_vec.begin(), default_vec.end()) +
+			    flex_table_size(next_vec.begin(), next_vec.end()) +
+			    flex_table_size(check_vec.begin(), check_vec.end()));
+	os.write((char *)&th, sizeof(th));
+	os << th_version << (char)0 << name << (char)0;
+	os << fill64(sizeof(th) + sizeof(th_version) + strlen(name) + 1);
 
-    write_flex_table(os, YYTD_ID_ACCEPT, accept.begin(), accept.end());
-    write_flex_table(os, YYTD_ID_ACCEPT2, accept2.begin(), accept2.end());
-    if (eq.size())
-	write_flex_table(os, YYTD_ID_EC, equiv_vec.begin(), equiv_vec.end());
-    write_flex_table(os, YYTD_ID_BASE, base_vec.begin(), base_vec.end());
-    write_flex_table(os, YYTD_ID_DEF, default_vec.begin(), default_vec.end());
-    write_flex_table(os, YYTD_ID_NXT, next_vec.begin(), next_vec.end());
-    write_flex_table(os, YYTD_ID_CHK, check_vec.begin(), check_vec.end());
+	write_flex_table(os, YYTD_ID_ACCEPT, accept.begin(), accept.end());
+	write_flex_table(os, YYTD_ID_ACCEPT2, accept2.begin(), accept2.end());
+	if (eq.size())
+		write_flex_table(os, YYTD_ID_EC, equiv_vec.begin(),
+				 equiv_vec.end());
+	write_flex_table(os, YYTD_ID_BASE, base_vec.begin(), base_vec.end());
+	write_flex_table(os, YYTD_ID_DEF, default_vec.begin(), default_vec.end());
+	write_flex_table(os, YYTD_ID_NXT, next_vec.begin(), next_vec.end());
+	write_flex_table(os, YYTD_ID_CHK, check_vec.begin(), check_vec.end());
 }
