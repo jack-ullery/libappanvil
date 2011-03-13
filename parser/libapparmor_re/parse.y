@@ -22,37 +22,37 @@
 
 %{
 /* #define DEBUG_TREE */
- #include "expr-tree.h"
+#include "expr-tree.h"
 
 %}
 
 %union {
-    char c;
-    Node *node;
-    Chars *cset;
+	char c;
+	Node *node;
+	Chars *cset;
 }
 
 %{
-    void regex_error(Node **, const char *, const char *);
-#   define YYLEX_PARAM &text
-    int regex_lex(YYSTYPE *, const char **);
 
-    static inline Chars*
-    insert_char(Chars* cset, uchar a)
-    {
+void regex_error(Node **, const char *, const char *);
+#define YYLEX_PARAM &text
+int regex_lex(YYSTYPE *, const char **);
+
+static inline Chars *insert_char(Chars* cset, uchar a)
+{
 	cset->insert(a);
 	return cset;
-    }
+}
 
-    static inline Chars*
-    insert_char_range(Chars* cset, uchar a, uchar b)
-    {
+static inline Chars* insert_char_range(Chars* cset, uchar a, uchar b)
+{
 	if (a > b)
-	    swap(a, b);
+		swap(a, b);
 	for (uchar i = a; i <= b; i++)
-	    cset->insert(i);
+		cset->insert(i);
 	return cset;
-    }
+}
+
 %}
 
 %pure-parser
@@ -155,112 +155,108 @@ cset_char   : CHAR
 %%
 
 
-int
-octdigit(char c)
+int octdigit(char c)
 {
-    if (c >= '0' && c <= '7')
-	return c - '0';
-    return -1;
-}
-
-int
-hexdigit(char c)
-{
-    if (c >= '0' && c <= '9')
-	return c - '0';
-    else if (c >= 'A' && c <= 'F')
-	return 10 + c - 'A';
-    else if (c >= 'a' && c <= 'f')
-	return 10 + c - 'A';
-    else
+	if (c >= '0' && c <= '7')
+		return c - '0';
 	return -1;
 }
 
-int
-regex_lex(YYSTYPE *val, const char **pos)
+int hexdigit(char c)
 {
-    int c;
+	if (c >= '0' && c <= '9')
+		return c - '0';
+	else if (c >= 'A' && c <= 'F')
+		return 10 + c - 'A';
+	else if (c >= 'a' && c <= 'f')
+		return 10 + c - 'A';
+	else
+		return -1;
+}
 
-    val->c = **pos;
-    switch(*(*pos)++) {
+int regex_lex(YYSTYPE *val, const char **pos)
+{
+	int c;
+
+	val->c = **pos;
+	switch(*(*pos)++) {
 	case '\0':
-	    (*pos)--;
-	    return 0;
+		(*pos)--;
+		return 0;
 
 	case '*': case '+': case '.': case '|': case '^': case '-':
 	case '[': case ']': case '(' : case ')':
-	    return *(*pos - 1);
+		return *(*pos - 1);
 
 	case '\\':
-	    val->c = **pos;
-	    switch(*(*pos)++) {
+		val->c = **pos;
+		switch(*(*pos)++) {
 		case '\0':
-		    (*pos)--;
-		    /* fall through */
+			(*pos)--;
+			/* fall through */
 		case '\\':
-		    val->c = '\\';
-		    break;
+			val->c = '\\';
+			break;
 
 		case '0':
-		    val->c = 0;
-		    if ((c = octdigit(**pos)) >= 0) {
-			val->c = c;
-			(*pos)++;
-		    }
-		    if ((c = octdigit(**pos)) >= 0) {
-			val->c = (val->c << 3) + c;
-			(*pos)++;
-		    }
-		    if ((c = octdigit(**pos)) >= 0) {
-			val->c = (val->c << 3) + c;
-			(*pos)++;
-		    }
-		    break;
+			val->c = 0;
+			if ((c = octdigit(**pos)) >= 0) {
+				val->c = c;
+				(*pos)++;
+			}
+			if ((c = octdigit(**pos)) >= 0) {
+				val->c = (val->c << 3) + c;
+				(*pos)++;
+			}
+			if ((c = octdigit(**pos)) >= 0) {
+				val->c = (val->c << 3) + c;
+				(*pos)++;
+			}
+			break;
 
 		case 'x':
-		    val->c = 0;
-		    if ((c = hexdigit(**pos)) >= 0) {
-			val->c = c;
-			(*pos)++;
-		    }
-		    if ((c = hexdigit(**pos)) >= 0) {
-			val->c = (val->c << 4) + c;
-			(*pos)++;
-		    }
-		    break;
+			val->c = 0;
+			if ((c = hexdigit(**pos)) >= 0) {
+				val->c = c;
+				(*pos)++;
+			}
+			if ((c = hexdigit(**pos)) >= 0) {
+				val->c = (val->c << 4) + c;
+				(*pos)++;
+			}
+			break;
 
 		case 'a':
-		    val->c = '\a';
-		    break;
+			val->c = '\a';
+			break;
 
 		case 'e':
-		    val->c = 033  /* ESC */;
-		    break;
+			val->c = 033  /* ESC */;
+			break;
 
 		case 'f':
-		    val->c = '\f';
-		    break;
+			val->c = '\f';
+			break;
 
 		case 'n':
-		    val->c = '\n';
-		    break;
+			val->c = '\n';
+			break;
 
 		case 'r':
-		    val->c = '\r';
-		    break;
+			val->c = '\r';
+			break;
 
 		case 't':
-		    val->c = '\t';
-		    break;
-	    }
-    }
-    return CHAR;
+			val->c = '\t';
+			break;
+		}
+	}
+	return CHAR;
 }
 
-void
-regex_error(Node ** __attribute__((unused)),
-	    const char *text __attribute__((unused)),
-	    const char *error __attribute__((unused)))
+void regex_error(Node ** __attribute__((unused)),
+		 const char *text __attribute__((unused)),
+		 const char *error __attribute__((unused)))
 {
-    /* We don't want the library to print error messages. */
+	/* We don't want the library to print error messages. */
 }
