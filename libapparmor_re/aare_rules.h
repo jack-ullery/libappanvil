@@ -21,6 +21,10 @@
 #ifndef __LIBAA_RE_RULES_H
 #define __LIBAA_RE_RULES_H
 
+#include <stdint.h>
+
+#include "apparmor_re.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
