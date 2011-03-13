@@ -586,17 +586,17 @@ void flip_tree(Node *node)
 	}
 }
 
-void dump_regexp_rec(ostream &os, Node *tree)
+void dump_regex_rec(ostream &os, Node *tree)
 {
 	if (tree->child[0])
-		dump_regexp_rec(os, tree->child[0]);
+		dump_regex_rec(os, tree->child[0]);
 	os << *tree;
 	if (tree->child[1])
-		dump_regexp_rec(os, tree->child[1]);
+		dump_regex_rec(os, tree->child[1]);
 }
 
-void dump_regexp(ostream &os, Node *tree)
+void dump_regex(ostream &os, Node *tree)
 {
-	dump_regexp_rec(os, tree);
+	dump_regex_rec(os, tree);
 	os << endl;
 }
