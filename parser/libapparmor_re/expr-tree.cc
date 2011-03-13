@@ -574,3 +574,31 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
 	return t;
 }
 
+/**
+ * Flip the children of all cat nodes. This causes strings to be matched
+ * back-forth.
+ */
+void flip_tree(Node *node)
+{
+    for (depth_first_traversal i(node); i; i++) {
+	if (CatNode *cat = dynamic_cast<CatNode *>(*i)) {
+	    swap(cat->child[0], cat->child[1]);
+	}
+    }
+}
+
+void dump_regexp_rec(ostream& os, Node *tree)
+{
+    if (tree->child[0])
+	dump_regexp_rec(os, tree->child[0]);
+    os << *tree;
+    if (tree->child[1])
+	dump_regexp_rec(os, tree->child[1]);
+}
+
+void dump_regexp(ostream& os, Node *tree)
+{
+    dump_regexp_rec(os, tree);
+    os << endl;
+}
+

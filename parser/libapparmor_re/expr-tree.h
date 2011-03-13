@@ -39,6 +39,8 @@
 #include <stack>
 #include <ostream>
 
+#include <stdint.h>
+
 #include "apparmor_re.h"
 
 using namespace std;
@@ -605,7 +607,7 @@ int debug_tree(Node *t);
 Node *simplify_tree(Node *t, dfaflags_t flags);
 void label_nodes(Node *root);
 unsigned long hash_NodeSet(NodeSet *ns);
-
+void flip_tree(Node *node);
 
 /* Comparison operator for sets of <NodeSet *>.
  * Compare set hashes, and if the sets have the same hash
@@ -622,6 +624,28 @@ struct deref_less_than {
 			else
 				return lhs.first < rhs.first;
 		}
+};
+
+class MatchFlag : public AcceptNode {
+public:
+MatchFlag(uint32_t flag, uint32_t audit) : flag(flag), audit(audit) {}
+    ostream& dump(ostream& os)
+    {
+	return os << '<' << flag << '>';
+    }
+
+    uint32_t flag;
+    uint32_t audit;
+ };
+
+class ExactMatchFlag : public MatchFlag {
+public:
+    ExactMatchFlag(uint32_t flag, uint32_t audit) : MatchFlag(flag, audit) {}
+};
+
+class DenyMatchFlag : public MatchFlag {
+public:
+    DenyMatchFlag(uint32_t flag, uint32_t quiet) : MatchFlag(flag, quiet) {}
 };
 
 #endif /* __LIBAA_RE_EXPR */

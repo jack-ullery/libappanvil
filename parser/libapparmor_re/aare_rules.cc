@@ -19,13 +19,20 @@
  * Wrapper around the dfa to convert aa rules into a dfa
  */
 
+#include <ostream>
+#include <iostream>
+#include <fstream>
 #include <sstream>
 #include <ext/stdio_filebuf.h>
+#include <assert.h>
+#include <stdlib.h>
 
 #include "aare_rules.h"
 #include "expr-tree.h"
 #include "parse.h"
 #include "hfa.h"
+#include "compressed_hfa.h"
+#include "../immunix.h"
 
 struct aare_ruleset {
     int reverse;
