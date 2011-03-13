@@ -10,6 +10,8 @@
 #ifndef APPARMOR_RE_H
 #define APPARMOR_RE_H
 
+#include <stdint.h>
+
 typedef enum dfaflags {
   DFA_CONTROL_EQUIV =		1 << 0,
   DFA_CONTROL_TREE_NORMAL =	1 << 1,

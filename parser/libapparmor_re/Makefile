@@ -12,14 +12,20 @@ BISON := bison
 
 all : ${TARGET}
 
-libapparmor_re.a: regexp.o
+libapparmor_re.a: parse.o expr-tree.o hfa.o
 	ar ${ARFLAGS} $@ $^
 
-regexp.o : regexp.cc apparmor_re.h
+expr-tree.o: expr-tree.cc expr-tree.h
 	$(LINK.cc) $< -c -o $@
 
-regexp.cc : regexp.y flex-tables.h ../immunix.h
+hfa.o: hfa.cc apparmor_re.h
+	$(LINK.cc) $< -c -o $@
+
+parse.o : parse.cc apparmor_re.h expr-tree.h
+	$(LINK.cc) $< -c -o $@
+
+parse.cc : parse.y flex-tables.h ../immunix.h
 	${BISON} -o $@ $<
 
 clean:
-	rm -f regexp.o regexp.cc regexp.so regexp.a regexp ${TARGET}
+	rm -f *.o parse.cc ${TARGET}
