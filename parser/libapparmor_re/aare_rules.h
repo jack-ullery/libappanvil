@@ -35,15 +35,15 @@ typedef struct aare_ruleset aare_ruleset_t;
 
 aare_ruleset_t *aare_new_ruleset(int reverse);
 void aare_delete_ruleset(aare_ruleset_t *rules);
-int aare_add_rule(aare_ruleset_t *rules, char *rule, int deny,
-		  uint32_t perms, uint32_t audit, dfaflags_t flags);
+int aare_add_rule(aare_ruleset_t *rules, char *rule, int deny, uint32_t perms,
+		  uint32_t audit, dfaflags_t flags);
 int aare_add_rule_vec(aare_ruleset_t *rules, int deny, uint32_t perms,
-		      uint32_t audit, int count, char **rulev, dfaflags_t flags);
+		      uint32_t audit, int count, char **rulev,
+		      dfaflags_t flags);
 void *aare_create_dfa(aare_ruleset_t *rules, size_t *size, dfaflags_t flags);
 void aare_reset_matchflags(void);
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __LIBAA_RE_RULES_H */
+#endif				/* __LIBAA_RE_RULES_H */
