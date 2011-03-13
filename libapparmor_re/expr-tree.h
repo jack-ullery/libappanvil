@@ -48,11 +48,10 @@ using namespace std;
 typedef unsigned char uchar;
 typedef set<uchar> Chars;
 
-ostream& operator<<(ostream& os, uchar c);
+ostream &operator<<(ostream &os, uchar c);
 
 /* Compute the union of two sets. */
-template<class T>
-set<T> operator+(const set<T>& a, const set<T>& b)
+template<class T> set<T> operator+(const set<T> &a, const set<T> &b)
 {
 	set<T> c(a);
 	c.insert(b.begin(), b.end());
@@ -67,12 +66,12 @@ set<T> operator+(const set<T>& a, const set<T>& b)
  */
 class Node;
 class ImportantNode;
-typedef set <ImportantNode *> NodeSet;
+typedef set<ImportantNode *> NodeSet;
 
 /**
  * Text-dump a state (for debugging).
  */
-ostream& operator<<(ostream& os, const NodeSet& state);
+ostream &operator<<(ostream &os, const NodeSet &state);
 
 /**
  * Out-edges from a state to another: we store the follow-set of Nodes
@@ -87,23 +86,29 @@ typedef struct NodeCases {
 	iterator begin() { return cases.begin(); }
 	iterator end() { return cases.end(); }
 
-	NodeCases() : otherwise(0) { }
+	NodeCases(): otherwise(0) { }
 	map<uchar, NodeSet *> cases;
 	NodeSet *otherwise;
-} NodeCases;
+}
 
+NodeCases;
 
-ostream& operator<<(ostream& os, Node& node);
+ostream &operator<<(ostream &os, Node &node);
 
 /* An abstract node in the syntax tree. */
 class Node {
 public:
-	Node() :
-	    nullable(false) { child[0] = child[1] = 0; }
-	Node(Node *left) :
-	    nullable(false) { child[0] = left; child[1] = 0; }
-	Node(Node *left, Node *right) :
-	    nullable(false) { child[0] = left; child[1] = right; }
+	Node(): nullable(false) { child[0] = child[1] = 0; }
+	Node(Node *left): nullable(false)
+	{
+		child[0] = left;
+		child[1] = 0;
+	}
+	Node(Node *left, Node *right): nullable(false)
+	{
+		child[0] = left;
+		child[1] = right;
+	}
 	virtual ~Node()
 	{
 		if (child[0])
@@ -121,8 +126,8 @@ public:
 	virtual void compute_lastpos() = 0;
 	virtual void compute_followpos() { }
 	virtual int eq(Node *other) = 0;
-	virtual ostream& dump(ostream& os) = 0;
-	void dump_syntax_tree(ostream& os);
+	virtual ostream &dump(ostream &os) = 0;
+	void dump_syntax_tree(ostream &os);
 
 	bool nullable;
 	NodeSet firstpos, lastpos, followpos;
@@ -139,33 +144,32 @@ public:
 	virtual void release(void) { delete this; }
 };
 
-
-class InnerNode : public Node {
+class InnerNode: public Node {
 public:
-	InnerNode() : Node() { };
-	InnerNode(Node *left) : Node(left) {};
-	InnerNode(Node *left, Node *right) : Node(left, right) { };
+	InnerNode(): Node() { };
+	InnerNode(Node *left): Node(left) { };
+	InnerNode(Node *left, Node *right): Node(left, right) { };
 };
 
-class OneChildNode : public InnerNode {
+class OneChildNode: public InnerNode {
 public:
-	OneChildNode(Node *left) : InnerNode(left) { };
+	OneChildNode(Node *left): InnerNode(left) { };
 };
 
-class TwoChildNode : public InnerNode {
+class TwoChildNode: public InnerNode {
 public:
-	TwoChildNode(Node *left, Node *right) :  InnerNode(left, right) { };
+	TwoChildNode(Node *left, Node *right): InnerNode(left, right) { };
 };
 
-class LeafNode : public Node {
+class LeafNode: public Node {
 public:
-	LeafNode() : Node() { };
+	LeafNode(): Node() { };
 };
 
 /* Match nothing (//). */
-class EpsNode : public LeafNode {
+class EpsNode: public LeafNode {
 public:
-	EpsNode() : LeafNode()
+	EpsNode(): LeafNode()
 	{
 		nullable = true;
 		label = 0;
@@ -185,7 +189,7 @@ public:
 			return 1;
 		return 0;
 	}
-	ostream& dump(ostream& os)
+	ostream &dump(ostream &os)
 	{
 		return os << "[]";
 	}
@@ -196,32 +200,27 @@ public:
  * characters that the regular expression matches. We also consider
  * AcceptNodes import: they indicate when a regular expression matches.
  */
-class ImportantNode : public LeafNode {
+class ImportantNode: public LeafNode {
 public:
-	ImportantNode() : LeafNode() { }
-	void compute_firstpos()
-	{
-		firstpos.insert(this);
-	}
-	void compute_lastpos() {
-		lastpos.insert(this);
-	}
-	virtual void follow(NodeCases& cases) = 0;
+	ImportantNode(): LeafNode() { }
+	void compute_firstpos() { firstpos.insert(this); }
+	void compute_lastpos() { lastpos.insert(this); }
+	virtual void follow(NodeCases &cases) = 0;
 };
 
 /* common base class for all the different classes that contain
  * character information.
  */
-class CNode : public ImportantNode {
+class CNode: public ImportantNode {
 public:
-	CNode() : ImportantNode() { }
+	CNode(): ImportantNode() { }
 };
 
 /* Match one specific character (/c/). */
-class CharNode : public CNode {
+class CharNode: public CNode {
 public:
-	CharNode(uchar c) : c(c) { }
-	void follow(NodeCases& cases)
+	CharNode(uchar c): c(c) { }
+	void follow(NodeCases &cases)
 	{
 		NodeSet **x = &cases.cases[c];
 		if (!*x) {
@@ -240,7 +239,7 @@ public:
 		}
 		return 0;
 	}
-	ostream& dump(ostream& os)
+	ostream &dump(ostream &os)
 	{
 		return os << c;
 	}
@@ -249,10 +248,10 @@ public:
 };
 
 /* Match a set of characters (/[abc]/). */
-class CharSetNode : public CNode {
+class CharSetNode: public CNode {
 public:
-	CharSetNode(Chars& chars) : chars(chars) { }
-	void follow(NodeCases& cases)
+	CharSetNode(Chars &chars): chars(chars) { }
+	void follow(NodeCases &cases)
 	{
 		for (Chars::iterator i = chars.begin(); i != chars.end(); i++) {
 			NodeSet **x = &cases.cases[*i];
@@ -272,14 +271,13 @@ public:
 			return 0;
 
 		for (Chars::iterator i = chars.begin(), j = o->chars.begin();
-		     i != chars.end() && j != o->chars.end();
-		     i++, j++) {
+		     i != chars.end() && j != o->chars.end(); i++, j++) {
 			if (*i != *j)
 				return 0;
 		}
 		return 1;
 	}
-	ostream& dump(ostream& os)
+	ostream &dump(ostream &os)
 	{
 		os << '[';
 		for (Chars::iterator i = chars.begin(); i != chars.end(); i++)
@@ -291,10 +289,10 @@ public:
 };
 
 /* Match all except one character (/[^abc]/). */
-class NotCharSetNode : public CNode {
+class NotCharSetNode: public CNode {
 public:
-	NotCharSetNode(Chars& chars) : chars(chars) { }
-	void follow(NodeCases& cases)
+	NotCharSetNode(Chars &chars): chars(chars) { }
+	void follow(NodeCases & cases)
 	{
 		if (!cases.otherwise)
 			cases.otherwise = new NodeSet;
@@ -321,14 +319,13 @@ public:
 			return 0;
 
 		for (Chars::iterator i = chars.begin(), j = o->chars.begin();
-		     i != chars.end() && j != o->chars.end();
-		     i++, j++) {
+		     i != chars.end() && j != o->chars.end(); i++, j++) {
 			if (*i != *j)
 				return 0;
 		}
 		return 1;
 	}
-	ostream& dump(ostream& os)
+	ostream &dump(ostream &os)
 	{
 		os << "[^";
 		for (Chars::iterator i = chars.begin(); i != chars.end(); i++)
@@ -340,10 +337,10 @@ public:
 };
 
 /* Match any character (/./). */
-class AnyCharNode : public CNode {
+class AnyCharNode: public CNode {
 public:
 	AnyCharNode() { }
-	void follow(NodeCases& cases)
+	void follow(NodeCases &cases)
 	{
 		if (!cases.otherwise)
 			cases.otherwise = new NodeSet;
@@ -358,18 +355,16 @@ public:
 			return 1;
 		return 0;
 	}
-	ostream& dump(ostream& os) {
-		return os << ".";
-	}
+	ostream &dump(ostream &os) { return os << "."; }
 };
 
 /**
  * Indicate that a regular expression matches. An AcceptNode itself
  * doesn't match anything, so it will never generate any transitions.
  */
-class AcceptNode : public ImportantNode {
+class AcceptNode: public ImportantNode {
 public:
-	AcceptNode() {}
+	AcceptNode() { }
 	void release(void)
 	{
 		/* don't delete AcceptNode via release as they are shared, and
@@ -377,7 +372,7 @@ public:
 		 */
 	}
 
-	void follow(NodeCases& cases __attribute__((unused)))
+	void follow(NodeCases &cases __attribute__ ((unused)))
 	{
 		/* Nothing to follow. */
 	}
@@ -392,33 +387,25 @@ public:
 };
 
 /* Match a node zero or more times. (This is a unary operator.) */
-class StarNode : public OneChildNode {
+class StarNode: public OneChildNode {
 public:
-	StarNode(Node *left) : OneChildNode(left)
-	{
-		nullable = true;
-	}
-	void compute_firstpos()
-	{
-		firstpos = child[0]->firstpos;
-	}
-	void compute_lastpos()
-	{
-		lastpos = child[0]->lastpos;
-	}
+	StarNode(Node *left): OneChildNode(left) { nullable = true; }
+	void compute_firstpos() { firstpos = child[0]->firstpos; }
+	void compute_lastpos() { lastpos = child[0]->lastpos; }
 	void compute_followpos()
 	{
 		NodeSet from = child[0]->lastpos, to = child[0]->firstpos;
-		for(NodeSet::iterator i = from.begin(); i != from.end(); i++) {
+		for (NodeSet::iterator i = from.begin(); i != from.end(); i++) {
 			(*i)->followpos.insert(to.begin(), to.end());
 		}
 	}
-	int eq(Node *other) {
+	int eq(Node *other)
+	{
 		if (dynamic_cast<StarNode *>(other))
 			return child[0]->eq(other->child[0]);
 		return 0;
 	}
-	ostream& dump(ostream& os)
+	ostream &dump(ostream &os)
 	{
 		os << '(';
 		child[0]->dump(os);
@@ -427,36 +414,26 @@ public:
 };
 
 /* Match a node one or more times. (This is a unary operator.) */
-class PlusNode : public OneChildNode {
+class PlusNode: public OneChildNode {
 public:
-	PlusNode(Node *left) : OneChildNode(left) { }
-	void compute_nullable()
-	{
-		nullable = child[0]->nullable;
+	PlusNode(Node *left): OneChildNode(left) {
 	}
-	void compute_firstpos()
-	{
-		firstpos = child[0]->firstpos;
-	}
-	void compute_lastpos()
-	{
-		lastpos = child[0]->lastpos;
-	}
+	void compute_nullable() { nullable = child[0]->nullable; }
+	void compute_firstpos() { firstpos = child[0]->firstpos; }
+	void compute_lastpos() { lastpos = child[0]->lastpos; }
 	void compute_followpos()
 	{
 		NodeSet from = child[0]->lastpos, to = child[0]->firstpos;
-		for(NodeSet::iterator i = from.begin(); i != from.end(); i++) {
+		for (NodeSet::iterator i = from.begin(); i != from.end(); i++) {
 			(*i)->followpos.insert(to.begin(), to.end());
 		}
 	}
-	int eq(Node *other)
-	{
+	int eq(Node *other) {
 		if (dynamic_cast<PlusNode *>(other))
 			return child[0]->eq(other->child[0]);
 		return 0;
 	}
-	ostream& dump(ostream& os)
-	{
+	ostream &dump(ostream &os) {
 		os << '(';
 		child[0]->dump(os);
 		return os << ")+";
@@ -464,9 +441,9 @@ public:
 };
 
 /* Match a pair of consecutive nodes. */
-class CatNode : public TwoChildNode {
+class CatNode: public TwoChildNode {
 public:
-	CatNode(Node *left, Node *right) : TwoChildNode(left, right) { }
+	CatNode(Node *left, Node *right): TwoChildNode(left, right) { }
 	void compute_nullable()
 	{
 		nullable = child[0]->nullable && child[1]->nullable;
@@ -488,11 +465,12 @@ public:
 	void compute_followpos()
 	{
 		NodeSet from = child[0]->lastpos, to = child[1]->firstpos;
-		for(NodeSet::iterator i = from.begin(); i != from.end(); i++) {
+		for (NodeSet::iterator i = from.begin(); i != from.end(); i++) {
 			(*i)->followpos.insert(to.begin(), to.end());
 		}
 	}
-	int eq(Node *other) {
+	int eq(Node *other)
+	{
 		if (dynamic_cast<CatNode *>(other)) {
 			if (!child[0]->eq(other->child[0]))
 				return 0;
@@ -500,7 +478,7 @@ public:
 		}
 		return 0;
 	}
-	ostream& dump(ostream& os)
+	ostream &dump(ostream &os)
 	{
 		child[0]->dump(os);
 		child[1]->dump(os);
@@ -509,9 +487,9 @@ public:
 };
 
 /* Match one of two alternative nodes. */
-class AltNode : public TwoChildNode {
+class AltNode: public TwoChildNode {
 public:
-	AltNode(Node *left, Node *right) : TwoChildNode(left, right) { }
+	AltNode(Node *left, Node *right): TwoChildNode(left, right) { }
 	void compute_nullable()
 	{
 		nullable = child[0]->nullable || child[1]->nullable;
@@ -524,7 +502,8 @@ public:
 	{
 		firstpos = child[0]->firstpos + child[1]->firstpos;
 	}
-	int eq(Node *other) {
+	int eq(Node *other)
+	{
 		if (dynamic_cast<AltNode *>(other)) {
 			if (!child[0]->eq(other->child[0]))
 				return 0;
@@ -532,7 +511,7 @@ public:
 		}
 		return 0;
 	}
-	ostream& dump(ostream& os)
+	ostream &dump(ostream &os)
 	{
 		os << '(';
 		child[0]->dump(os);
@@ -543,12 +522,10 @@ public:
 	}
 };
 
-
 /* Traverse the syntax tree depth-first in an iterator-like manner. */
 class depth_first_traversal {
-	stack<Node *> pos;
-	void push_left(Node *node)
-	{
+	stack<Node *>pos;
+	void push_left(Node *node) {
 		pos.push(node);
 
 		while (dynamic_cast<InnerNode *>(node)) {
@@ -556,24 +533,11 @@ class depth_first_traversal {
 			node = node->child[0];
 		}
 	}
-
 public:
-	depth_first_traversal(Node *node)
-	{
-		push_left(node);
-	}
-	Node *operator*()
-	{
-		return pos.top();
-	}
-	Node* operator->()
-	{
-		return pos.top();
-	}
-	operator bool()
-	{
-		return !pos.empty();
-	}
+	depth_first_traversal(Node *node) { push_left(node); }
+	Node *operator*() { return pos.top(); }
+	Node *operator->() { return pos.top(); }
+	operator  bool() { return !pos.empty(); }
 	void operator++(int)
 	{
 		Node *last = pos.top();
@@ -582,7 +546,7 @@ public:
 		if (!pos.empty()) {
 			/* no need to dynamic cast, as we just popped a node so
 			 * the top node must be an inner node */
-			InnerNode *node = (InnerNode *)(pos.top());
+			InnerNode *node = (InnerNode *) (pos.top());
 			if (node->child[1] && node->child[1] != last) {
 				push_left(node->child[1]);
 			}
@@ -616,36 +580,33 @@ void flip_tree(Node *node);
  * new ones when constructing the DFA.
  */
 struct deref_less_than {
-	bool operator()(pair <unsigned long, NodeSet *> const & lhs,
-			pair <unsigned long, NodeSet *> const & rhs) const
-		{
-			if (lhs.first == rhs.first)
-				return *(lhs.second) < *(rhs.second);
-			else
-				return lhs.first < rhs.first;
-		}
+	bool operator()(pair<unsigned long, NodeSet *>const &lhs,
+			pair<unsigned long, NodeSet *>const &rhs)const
+	{
+		if (lhs.first == rhs.first)
+			return *(lhs.second) < *(rhs.second);
+		else
+			return lhs.first < rhs.first;
+	}
 };
 
-class MatchFlag : public AcceptNode {
+class MatchFlag: public AcceptNode {
 public:
-MatchFlag(uint32_t flag, uint32_t audit) : flag(flag), audit(audit) {}
-    ostream& dump(ostream& os)
-    {
-	return os << '<' << flag << '>';
-    }
+	MatchFlag(uint32_t flag, uint32_t audit): flag(flag), audit(audit) { }
+	ostream &dump(ostream &os) { return os << '<' << flag << '>'; }
 
-    uint32_t flag;
-    uint32_t audit;
- };
-
-class ExactMatchFlag : public MatchFlag {
-public:
-    ExactMatchFlag(uint32_t flag, uint32_t audit) : MatchFlag(flag, audit) {}
+	uint32_t flag;
+	uint32_t audit;
 };
 
-class DenyMatchFlag : public MatchFlag {
+class ExactMatchFlag: public MatchFlag {
 public:
-    DenyMatchFlag(uint32_t flag, uint32_t quiet) : MatchFlag(flag, quiet) {}
+	ExactMatchFlag(uint32_t flag, uint32_t audit): MatchFlag(flag, audit) {}
+};
+
+class DenyMatchFlag: public MatchFlag {
+public:
+	DenyMatchFlag(uint32_t flag, uint32_t quiet): MatchFlag(flag, quiet) {}
 };
 
 #endif /* __LIBAA_RE_EXPR */
