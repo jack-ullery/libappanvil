@@ -38,35 +38,34 @@
 #include "expr-tree.h"
 #include "apparmor_re.h"
 
-
 /* Use a single static EpsNode as it carries no node specific information */
 EpsNode epsnode;
 
-
-ostream& operator<<(ostream& os, uchar c)
+ostream &operator<<(ostream &os, uchar c)
 {
 	const char *search = "\a\033\f\n\r\t|*+[](). ",
-		*replace = "aefnrt|*+[](). ", *s;
+	    *replace = "aefnrt|*+[](). ", *s;
 
-	if ((s = strchr(search, c)) && *s != '\0')
+	if ((s = strchr(search, c)) && *s != '\0') {
 		os << '\\' << replace[s - search];
-	else if (c < 32 || c >= 127)
-		os << '\\' << '0' << char('0' + (c >> 6))
-		   << char('0' + ((c >> 3) & 7)) << char('0' + (c & 7));
-	else
+	} else if (c < 32 || c >= 127) {
+		os << '\\' << '0' << char ('0' + (c >> 6))
+		   << char ('0' + ((c >> 3) & 7)) << char ('0' + (c & 7));
+	} else {
 		os << (char)c;
+	}
 	return os;
 }
 
 /**
  * Text-dump a state (for debugging).
  */
-ostream& operator<<(ostream& os, const NodeSet& state)
+ostream &operator<<(ostream &os, const NodeSet &state)
 {
 	os << '{';
 	if (!state.empty()) {
 		NodeSet::iterator i = state.begin();
-		for(;;) {
+		for (;;) {
 			os << (*i)->label;
 			if (++i == state.end())
 				break;
@@ -77,7 +76,7 @@ ostream& operator<<(ostream& os, const NodeSet& state)
 	return os;
 }
 
-ostream& operator<<(ostream& os, Node& node)
+ostream &operator<<(ostream &os, Node &node)
 {
 	node.dump(os);
 	return os;
@@ -88,15 +87,14 @@ ostream& operator<<(ostream& os, Node& node)
  */
 unsigned long hash_NodeSet(NodeSet *ns)
 {
-        unsigned long hash = 5381;
+	unsigned long hash = 5381;
 
 	for (NodeSet::iterator i = ns->begin(); i != ns->end(); i++) {
-		hash = ((hash << 5) + hash) + (unsigned long) *i;
+		hash = ((hash << 5) + hash) + (unsigned long)*i;
 	}
 
-        return hash;
+	return hash;
 }
-
 
 /**
  * label_nodes - label the node positions for pretty-printing debug output
@@ -114,7 +112,7 @@ void label_nodes(Node *root)
 /**
  * Text-dump the syntax tree (for debugging).
  */
-void Node::dump_syntax_tree(ostream& os)
+void Node::dump_syntax_tree(ostream &os)
 {
 	for (depth_first_traversal i(this); i; i++) {
 		os << i->label << '\t';
@@ -126,8 +124,7 @@ void Node::dump_syntax_tree(ostream& os)
 			else
 				os << (*i)->child[0]->label << **i
 				   << (*i)->child[1]->label;
-			os << '\t' << (*i)->firstpos
-			   << (*i)->lastpos << endl;
+			os << '\t' << (*i)->firstpos << (*i)->lastpos << endl;
 		}
 	}
 	os << endl;
@@ -173,7 +170,8 @@ void Node::dump_syntax_tree(ostream& os)
  *        a   b                    c   T
  *
  */
-static void rotate_node(Node *t, int dir) {
+static void rotate_node(Node *t, int dir)
+{
 	// (a | b) | c -> a | (b | c)
 	// (ab)c -> a(bc)
 	Node *left = t->child[dir];
@@ -191,7 +189,7 @@ void normalize_tree(Node *t, int dir)
 	for (;;) {
 		if ((&epsnode == t->child[dir]) &&
 		    (&epsnode != t->child[!dir]) &&
-		     dynamic_cast<TwoChildNode *>(t)) {
+		    dynamic_cast<TwoChildNode *>(t)) {
 			// (E | a) -> (a | E)
 			// Ea -> aE
 			Node *c = t->child[dir];
@@ -229,8 +227,7 @@ void normalize_tree(Node *t, int dir)
 #if 0
 static Node *merge_charset(Node *a, Node *b)
 {
-	if (dynamic_cast<CharNode *>(a) &&
-	    dynamic_cast<CharNode *>(b)) {
+	if (dynamic_cast<CharNode *>(a) && dynamic_cast<CharNode *>(b)) {
 		Chars chars;
 		chars.insert(dynamic_cast<CharNode *>(a)->c);
 		chars.insert(dynamic_cast<CharNode *>(b)->c);
@@ -249,7 +246,6 @@ static Node *merge_charset(Node *a, Node *b)
 			to->insert(*i);
 		return b;
 	}
-
 	//return ???;
 }
 
@@ -311,7 +307,6 @@ static Node *basic_alt_factor(Node *t, int dir)
 		t->release();
 		return tmp;
 	}
-
 	// (ab) | (ac) -> a(b|c)
 	if (dynamic_cast<CatNode *>(t->child[dir]) &&
 	    dynamic_cast<CatNode *>(t->child[!dir]) &&
@@ -326,7 +321,6 @@ static Node *basic_alt_factor(Node *t, int dir)
 		left->child[!dir] = t;
 		return left;
 	}
-
 	// a | (ab) -> a (E | b) -> a (b | E)
 	if (dynamic_cast<CatNode *>(t->child[!dir]) &&
 	    t->child[dir]->eq(t->child[!dir]->child[dir])) {
@@ -337,7 +331,6 @@ static Node *basic_alt_factor(Node *t, int dir)
 		c->child[!dir] = t;
 		return c;
 	}
-
 	// ab | (a) -> a (b | E)
 	if (dynamic_cast<CatNode *>(t->child[dir]) &&
 	    t->child[dir]->child[dir]->eq(t->child[!dir])) {
@@ -354,8 +347,7 @@ static Node *basic_alt_factor(Node *t, int dir)
 
 static Node *basic_simplify(Node *t, int dir)
 {
-	if (dynamic_cast<CatNode *>(t) &&
-	    &epsnode == t->child[!dir]) {
+	if (dynamic_cast<CatNode *>(t) && &epsnode == t->child[!dir]) {
 		// aE -> a
 		Node *tmp = t->child[dir];
 		t->child[dir] = NULL;
@@ -383,7 +375,7 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 	if (dynamic_cast<ImportantNode *>(t))
 		return t;
 
-	for (int i=0; i < 2; i++) {
+	for (int i = 0; i < 2; i++) {
 		if (t->child[i]) {
 			Node *c = simplify_tree_base(t->child[i], dir, mod);
 			if (c != t->child[i]) {
@@ -402,7 +394,6 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 			continue;
 		}
 
-
 		/* all tests after this must meet 2 alt node condition */
 		if (!dynamic_cast<AltNode *>(t) ||
 		    !dynamic_cast<AltNode *>(t->child[!dir]))
@@ -412,7 +403,7 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 		// a | (b | (c | a)) -> (b | (c | a))
 		Node *p = t;
 		Node *i = t->child[!dir];
-		for (;dynamic_cast<AltNode *>(i); p = i, i = i->child[!dir]) {
+		for (; dynamic_cast<AltNode *>(i); p = i, i = i->child[!dir]) {
 			if (t->child[dir]->eq(i->child[dir])) {
 				Node *tmp = t->child[!dir];
 				t->child[!dir] = NULL;
@@ -429,7 +420,6 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 			t = tmp;
 			continue;
 		}
-
 		//exact match didn't work, try factoring front
 		//a | (ac | (ad | () -> (a (E | c)) | (...)
 		//ab | (ac | (...)) -> (a (b | c)) | (...)
@@ -439,10 +429,10 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 		Node *subject = t->child[dir];
 		Node *a = subject;
 		if (dynamic_cast<CatNode *>(subject))
-		    a = subject->child[dir];
+			a = subject->child[dir];
 
 		for (pp = p = t, i = t->child[!dir];
-		     dynamic_cast<AltNode *>(i); ) {
+		     dynamic_cast<AltNode *>(i);) {
 			if ((dynamic_cast<CatNode *>(i->child[dir]) &&
 			     a->eq(i->child[dir]->child[dir])) ||
 			    (a->eq(i->child[dir]))) {
@@ -458,14 +448,15 @@ Node *simplify_tree_base(Node *t, int dir, bool &mod)
 				i = p->child[!dir];
 				count++;
 			} else {
-				pp = p; p = i; i = i->child[!dir];
+				pp = p;
+				p = i;
+				i = i->child[!dir];
 			}
 		}
 
 		// last altnode in chain check other dir as well
 		if ((dynamic_cast<CatNode *>(i) &&
-		     a->eq(i->child[dir])) ||
-		    (a->eq(i))) {
+		     a->eq(i->child[dir])) || (a->eq(i))) {
 			count++;
 			if (t == p) {
 				t->child[dir] = subject;
@@ -537,7 +528,11 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
 	if (flags & DFA_DUMP_TREE_STATS) {
 		struct node_counts counts = { 0, 0, 0, 0, 0, 0, 0, 0 };
 		count_tree_nodes(t, &counts);
-		fprintf(stderr, "expr tree: c %d, [] %d, [^] %d, | %d, + %d, * %d, . %d, cat %d\n", counts.charnode, counts.charset, counts.notcharset, counts.alt, counts.plus, counts.star, counts.any, counts.cat);
+		fprintf(stderr,
+			"expr tree: c %d, [] %d, [^] %d, | %d, + %d, * %d, . %d, cat %d\n",
+			counts.charnode, counts.charset, counts.notcharset,
+			counts.alt, counts.plus, counts.star, counts.any,
+			counts.cat);
 	}
 	do {
 		update = false;
@@ -553,23 +548,27 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
 		for (int count = 0; count < 2; count++) {
 			bool modified;
 			do {
-			    modified = false;
-			    if (flags & DFA_CONTROL_TREE_NORMAL)
-				normalize_tree(t, dir);
-			    t = simplify_tree_base(t, dir, modified);
-			    if (modified)
-				update = true;
+				modified = false;
+				if (flags & DFA_CONTROL_TREE_NORMAL)
+					normalize_tree(t, dir);
+				t = simplify_tree_base(t, dir, modified);
+				if (modified)
+					update = true;
 			} while (modified);
 			if (flags & DFA_CONTROL_TREE_LEFT)
 				dir++;
 			else
 				dir--;
 		}
-	} while(update);
+	} while (update);
 	if (flags & DFA_DUMP_TREE_STATS) {
 		struct node_counts counts = { 0, 0, 0, 0, 0, 0, 0, 0 };
 		count_tree_nodes(t, &counts);
-		fprintf(stderr, "simplified expr tree: c %d, [] %d, [^] %d, | %d, + %d, * %d, . %d, cat %d\n", counts.charnode, counts.charset, counts.notcharset, counts.alt, counts.plus, counts.star, counts.any, counts.cat);
+		fprintf(stderr,
+			"simplified expr tree: c %d, [] %d, [^] %d, | %d, + %d, * %d, . %d, cat %d\n",
+			counts.charnode, counts.charset, counts.notcharset,
+			counts.alt, counts.plus, counts.star, counts.any,
+			counts.cat);
 	}
 	return t;
 }
@@ -580,25 +579,24 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
  */
 void flip_tree(Node *node)
 {
-    for (depth_first_traversal i(node); i; i++) {
-	if (CatNode *cat = dynamic_cast<CatNode *>(*i)) {
-	    swap(cat->child[0], cat->child[1]);
+	for (depth_first_traversal i(node); i; i++) {
+		if (CatNode *cat = dynamic_cast<CatNode *>(*i)) {
+			swap(cat->child[0], cat->child[1]);
+		}
 	}
-    }
 }
 
-void dump_regexp_rec(ostream& os, Node *tree)
+void dump_regexp_rec(ostream &os, Node *tree)
 {
-    if (tree->child[0])
-	dump_regexp_rec(os, tree->child[0]);
-    os << *tree;
-    if (tree->child[1])
-	dump_regexp_rec(os, tree->child[1]);
+	if (tree->child[0])
+		dump_regexp_rec(os, tree->child[0]);
+	os << *tree;
+	if (tree->child[1])
+		dump_regexp_rec(os, tree->child[1]);
 }
 
-void dump_regexp(ostream& os, Node *tree)
+void dump_regexp(ostream &os, Node *tree)
 {
-    dump_regexp_rec(os, tree);
-    os << endl;
+	dump_regexp_rec(os, tree);
+	os << endl;
 }
-
