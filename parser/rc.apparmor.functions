@@ -170,7 +170,7 @@ parse_profiles() {
 			exit 1
 			;;
 	esac
-	aa_log_action_begin "$PARSER_MSG"
+	aa_log_action_start "$PARSER_MSG"
 	# run the parser on all of the apparmor profiles
 	if [ ! -f "$PARSER" ]; then
 		aa_log_failure_msg "AppArmor parser not found"
@@ -409,9 +409,9 @@ remove_profiles() {
 
 	retval=0
 	#the list of profiles isn't stable once we start adding or removing
-	#them so stor to tmp first
+	#them so store to tmp first (in reverse order so hat profiles are removed first)
 	MODULE_PLIST=$(mktemp ${APPARMOR_TMPDIR}/tmp.XXXXXXXX)
-	sed -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" | sort >"$MODULE_PLIST"
+	sed -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" | sort -r > "$MODULE_PLIST"
 	cat "$MODULE_PLIST" | while read profile ; do
 		echo -n "$profile" > "$SFS_MOUNTPOINT/.remove"
 		rc=$?
@@ -427,7 +427,7 @@ apparmor_stop() {
 	aa_log_daemon_msg "Unloading AppArmor profiles "
 	remove_profiles
 	rc=$?
-	log_end_msg $rc
+	aa_log_end_msg $rc
 	return $rc
 }
 
