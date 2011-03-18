@@ -41,12 +41,15 @@ APXS:=$(shell if [ -x "/usr/sbin/apxs2" ] ; then \
 	      fi ) 
 APXS_INSTALL_DIR=$(shell ${APXS} -q LIBEXECDIR)
 DESTDIR=
-LIBAPPARMOR_FLAGS="-I../../libraries/libapparmor/src -L../../libraries/libapparmor/src/.libs -lapparmor"
+# Need to pass -Wl twice here to get past both apxs2 and libtool, as
+# libtool will add the path to the RPATH of the library if passed -L/some/path
+LIBAPPARMOR_FLAGS=-I../../libraries/libapparmor/src -Wl,-Wl,-L../../libraries/libapparmor/src/.libs
+LDLIBS=-lapparmor
 
 all: $(TARGET) ${MANPAGES} ${HTMLMANPAGES}
 
 %.so: %.c
-	${APXS} ${LIBAPPARMOR_FLAGS} -c $<
+	${APXS} ${LIBAPPARMOR_FLAGS} -c $< ${LDLIBS}
 	mv .libs/$@ .
 
 .PHONY: install
