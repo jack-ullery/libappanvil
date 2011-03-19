@@ -20,7 +20,7 @@
 # Makefile for LSM-based AppArmor profiles
 
 NAME=apparmor-profiles
-ALL:
+ALL: local
 COMMONDIR=../common/
 
 include common/Make.rules
@@ -81,23 +81,22 @@ endif
 
 ifndef PARSER
 # use system parser
-PARSER=/sbin/apparmor_parser
+PARSER=../parser/apparmor_parser
 endif
 
 ifndef LOGPROF
-# use system logprof
-LOGPROF=/usr/sbin/aa-logprof
+# use ../utils logprof
+LOGPROF=perl -I../utils/ ../utils/aa-logprof
 endif
 
-EXTRAS_PATH=${EXTRAS_SOURCE}/profiles/extras
-IGNORE_FILES=${EXTRAS_PATH}/README
-CHECK_PROFILES=$(filter-out ${IGNORE_FILES}, $(wildcard ${PROFILES_SOURCE}/*) $(wildcard ${EXTRAS_PATH}/*))
+IGNORE_FILES=${EXTRAS_SOURCE}/README
+CHECK_PROFILES=$(filter-out ${IGNORE_FILES} ${SUBDIRS_MUST_BE_SKIPPED}, $(wildcard ${PROFILES_SOURCE}/*) $(wildcard ${EXTRAS_SOURCE}/*))
 
 .PHONY: check
 check:
-	@echo "*** Checking profiles from ${PROFILES_SOURCE} and ${EXTRAS_PATH} against apparmor_parser"
+	@echo "*** Checking profiles from ${PROFILES_SOURCE} and ${EXTRAS_SOURCE} against apparmor_parser"
 	$(Q)for profile in ${CHECK_PROFILES} ; do \
-		${PARSER} -S -I ${PWD}/apparmor.d $${profile} > /dev/null ; \
+		${PARSER} -S -b ${PWD}/apparmor.d $${profile} > /dev/null || exit 1; \
 	done
 	@echo "*** Checking profiles from ${PROFILES_SOURCE} against logprof"
-	$(Q)${LOGPROF} -d ${PROFILES_SOURCE} -f /dev/null
+	$(Q)${LOGPROF} -d ${PROFILES_SOURCE} -f /dev/null || exit 1
