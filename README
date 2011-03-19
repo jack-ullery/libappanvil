@@ -30,13 +30,26 @@ AppArmor consists of several different parts:
 changehat/	source for using changehat with Apache, PAM and Tomcat
 common/		common makefile rules
 desktop/	empty
-kernel-patches/	patches for various kernel versions
+kernel-patches/	compatibility patches for various kernel versions
 libraries/	libapparmor source and language bindings
 parser/		source for parser/loader and corresponding documentation
 profiles/	configuration files, reference profiles and abstractions
 tests/		regression and stress testsuites
 utils/		high-level utilities for working with AppArmor
 
+--------------------------------------
+Important note on AppArmor kernel code
+--------------------------------------
+
+While most of the kernel AppArmor code has been accepted in the
+upstream Linux kernel, a few important pieces were not included. These
+missing pieces unfortunately are important bits for AppArmor userspace
+and kernel interaction; therefore we have included compatibility
+patches in the kernel-patches/ subdirectory, versioned by upstream
+kernel (2.6.37 patches should apply cleanly to 2.6.38 source).
+
+Without these patches applied to the kernel, the AppArmor userspace
+will not function correctly.
 
 ------------------------------------------
 Building and Installing AppArmor Userspace
@@ -49,9 +62,13 @@ the following order.
 libapparmor:
 $ cd ./libraries/libapparmor
 $ sh ./autogen.sh
-$ sh ./configure --prefix=/usr --with-perl
+$ sh ./configure --prefix=/usr --with-perl	# see below
 $ make
 $ make check
+
+[optional arguments to libapparmor's configure include --with-python
+ and --with-ruby, to generate python and ruby bindings to libapparmor,
+ respectively.]
 
 
 Utilities:
@@ -70,21 +87,21 @@ $ make install
 
 Apache mod_apparmor:
 $ cd changehat/mod_apparmor
-$ LIBS="-lapparmor" make
+$ make		# depends on libapparmor having been built first
 $ make install
 
 
 PAM AppArmor:
 $ cd changehat/pam_apparmor
-$ LIBS="-lapparmor -lpam" make
+$ make		# depends on libapparmor having been built first
 $ make install
 
 
 Profiles:
 $ cd profiles
 $ make
+$ make check	# depends on the parser having been built first
 $ make install
-
 
 
 -------------------
@@ -124,6 +141,14 @@ For details on structure and adding tests, see libraries/libapparmor/README.
 $ cd libraries/libapparmor
 $ make check
 
+Profile checks
+--------------
+A basic consistency check to ensure that the parser and aa-logprof parse
+successfully the current set of shipped profiles. The system or other
+parser and logprof can be passed in by overriding the PARSER and LOGPROF
+variables.
+$ cd profiles
+$ make && make check
 
 Stress Tests
 ------------
