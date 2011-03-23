@@ -8,7 +8,7 @@
 #
 # ------------------------------------------------------------------
 
-# @{multiarch} is the set of patterns matching multi-archi library
+# @{multiarch} is the set of patterns matching multi-arch library
 # install prefixes.
 @{multiarch}=*-linux-gnu*
 
