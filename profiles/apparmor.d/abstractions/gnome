@@ -2,7 +2,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2009 Novell/SUSE
-#    Copyright (C) 2009-2010 Canonical Ltd.
+#    Copyright (C) 2009-2011 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -19,6 +19,7 @@
   /etc/gnome/gtkrc*               r,
   /etc/gtk/*                      r,
   /usr/lib{,32,64}/gtk/**         mr,
+  /usr/lib/@{multiarch}/gtk/**    mr,
   /usr/share/themes/**            r,
 
   # for gnome 1 applications
@@ -31,6 +32,9 @@
   /usr/lib{,32,64}/pango/**       mr,
   /usr/lib{,32,64}/gtk-*/**       mr,
   /usr/lib{,32,64}/gdk-pixbuf-*/** mr,
+  /usr/lib/@{multiarch}/pango/**        mr,
+  /usr/lib/@{multiarch}/gtk-*/**        mr,
+  /usr/lib/@{multiarch}/gdk-pixbuf-*/** mr,
 
   # per-user gtk configuration
   @{HOME}/.gnome/Gnome            r,
@@ -60,6 +64,7 @@
   /etc/gnome-vfs-2.0/modules/ r,
   /etc/gnome-vfs-2.0/modules/* r,
   /usr/lib/gnome-vfs-2.0/modules/*.so mr,
+  /usr/lib/@{multiarch}/gnome-vfs-2.0/modules/*.so mr,
 
   # gvfs
   /usr/share/gvfs/remote-volume-monitors/  r,

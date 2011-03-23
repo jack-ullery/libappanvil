@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2006 Novell/SUSE
-#    Copyright (C) 2009-2010 Canonical Ltd.
+#    Copyright (C) 2009-2011 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -38,10 +38,17 @@
 /usr/lib*/kde3/plugins/styles/ r,
 /usr/lib*/kde3/plugins/styles/* mr,
 /usr/lib*/kde3/lib*so* mr,
+/usr/lib/@{multiarch}/kde3/plugins/styles/ r,
+/usr/lib/@{multiarch}/kde3/plugins/styles/* mr,
+/usr/lib/@{multiarch}/kde3/lib*so* mr,
 /usr/lib*/qt3/lib*/lib*so* mr,
 /usr/lib*/qt3/plugins/**  mr,
+/usr/lib/@{multiarch}/qt3/lib*/lib*so* mr,
+/usr/lib/@{multiarch}/qt3/plugins/**  mr,
 /usr/lib*/libqt-mt*so* mr,
 /usr/lib*/libqui*so* mr,
+/usr/lib/@{multiarch}/libqt-mt*so* mr,
+/usr/lib/@{multiarch}/libqui*so* mr,
 /usr/share/qt3/lib*/libqt-mt*so* mr,
 /usr/share/qt3/lib*/libqui*so* mr,
 
@@ -49,6 +56,11 @@
 /usr/lib*/kde4/plugins/*/*.so mr,
 /usr/lib*/kde4/plugins/*/ r,
 /usr/lib*/kde4/lib*so* mr,
+/usr/lib/@{multiarch}/kde4/plugins/*/*.so mr,
+/usr/lib/@{multiarch}/kde4/plugins/*/ r,
+/usr/lib/@{multiarch}/kde4/lib*so* mr,
 /usr/lib*/qt4/lib*/lib*so* mr,
 /usr/lib*/qt4/plugins/**  mr,
+/usr/lib/@{multiarch}/qt4/lib*/lib*so* mr,
+/usr/lib/@{multiarch}/qt4/plugins/**  mr,
 /usr/share/qt4/** r,
