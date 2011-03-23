@@ -38,7 +38,7 @@ PROFILES_SOURCE=./apparmor.d
 EXTRAS_SOURCE=./apparmor/profiles/extras/
 SUBDIRS_MUST_BE_SKIPPED=${PROFILES_SOURCE}/abstractions ${PROFILES_SOURCE}/apache2.d ${PROFILES_SOURCE}/program-chunks ${PROFILES_SOURCE}/tunables ${PROFILES_SOURCE}/local
 PROFILES_TO_COPY=$(filter-out ${SUBDIRS_MUST_BE_SKIPPED}, $(wildcard ${PROFILES_SOURCE}/*))
-TUNABLES_TO_COPY=$(filter-out ${PROFILES_SOURCE}/tunables/home.d, $(wildcard ${PROFILES_SOURCE}/tunables/*))
+TUNABLES_TO_COPY=$(filter-out ${PROFILES_SOURCE}/tunables/home.d ${PROFILES_SOURCE}/tunables/multiarch.d, $(wildcard ${PROFILES_SOURCE}/tunables/*))
 ABSTRACTIONS_TO_COPY=$(filter-out ${PROFILES_SOURCE}/abstractions/ubuntu-browsers.d, $(wildcard ${PROFILES_SOURCE}/abstractions/*))
 
 local:
@@ -64,6 +64,7 @@ install: local
 	install -m 644 ${PROFILES_SOURCE}/program-chunks/* ${PROFILES_DEST}/program-chunks
 	install -m 644 ${TUNABLES_TO_COPY} ${PROFILES_DEST}/tunables
 	install -m 644 ${PROFILES_SOURCE}/tunables/home.d/* ${PROFILES_DEST}/tunables/home.d
+	install -m 644 ${PROFILES_SOURCE}/tunables/multiarch.d/* ${PROFILES_DEST}/tunables/multiarch.d
 	install -m 755 -d ${EXTRAS_DEST}
 	install -m 644 ${EXTRAS_SOURCE}/* ${EXTRAS_DEST}
 	install -m 644 ${PROFILES_SOURCE}/local/* ${PROFILES_DEST}/local
