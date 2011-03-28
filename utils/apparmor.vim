@@ -113,7 +113,7 @@ syn match sdError /^.*$/ contains=sdComment "highlight all non-valid lines as er
 " This allows incorrect lines also and should be checked better.
 " This also (accidently ;-) includes variable definitions (@{FOO}=/bar)
 " TODO: make a separate pattern for variable definitions, then mark sdGlob as contained
-syn match sdGlob /\v\?|\*|\{.*,.*\}|[[^\]]\+\]|\@\{[a-zA-Z_]*\}/
+syn match sdGlob /\v\?|\*|\{.*,.*\}|[[^\]]\+\]|\@\{[a-zA-Z][a-zA-Z0-9_]*\}/
 
 syn match sdAlias /\v^alias\s+(\/|\@\{\S*\})\S*\s+-\>\s+(\/|\@\{\S*\})\S*\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdGlob
 

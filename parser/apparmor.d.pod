@@ -83,7 +83,7 @@ B<FILEGLOB> = (must start with '/' (after variable expansion), B<?*[]{}^> have s
 
 B<ACCESS> = ( 'r' | 'w' | 'l' | 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'cx -> ' I<PROGRAMCHILD> | 'Cx -> ' I<PROGRAMCHILD> | 'm' ) [ I<ACCESS> ... ]  (not all combinations are allowed; see below.)
 
-B<VARIABLE> = '@{' I<ALPHA> [ I<ALPHANUMERIC> ... ] '}'
+B<VARIABLE> = '@{' I<ALPHA> [ ( I<ALPHANUMERIC> | '_' ) ... ] '}'
 
 B<VARIABLE ASSIGNMENT> = I<VARIABLE> ('=' | '+=') (space separated values)
 

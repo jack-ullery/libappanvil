@@ -36,8 +36,14 @@ static inline char *get_var_end(char *var)
 	while (*eptr) {
 		if (*eptr == '}')
 			return eptr;
-		if (!(*eptr == '_' || isalpha(*eptr)))
-			return NULL; /* invalid char */
+		/* first character must be alpha */
+		if (eptr == var) {
+		 	if (!isalpha(*eptr))
+				return NULL; /* invalid char */
+		} else {
+			if (!(*eptr == '_' || isalnum(*eptr)))
+				return NULL; /* invalid char */
+		}
 		eptr++;
 	}
 	return NULL; /* no terminating '}' */
@@ -317,6 +323,8 @@ int test_split_out_var(void)
 	struct var_string *ret_struct;
 	char *prefix = "abcdefg";
 	char *var = "boogie";
+	char *var2 = "V4rW1thNum5";
+	char *var3 = "boogie_board";
 	char *suffix = "suffixication";
 
 	/* simple case */
@@ -392,6 +400,34 @@ int test_split_out_var(void)
 	MY_TEST(strcmp(ret_struct->prefix, strndup(tst_string, strlen(prefix) + 2)) == 0, "split out var 7 prefix");
 	MY_TEST(strcmp(ret_struct->var, var) == 0, "split out var 7 var");
 	MY_TEST(strcmp(ret_struct->suffix, suffix) == 0, "split out var 7 suffix");
+	free_var_string(ret_struct);
+
+	/* numeric char in var, should succeed */
+	asprintf(&tst_string, "%s@{%s}%s", prefix, var2, suffix);
+	ret_struct = split_out_var(tst_string);
+	MY_TEST(ret_struct && strcmp(ret_struct->prefix, prefix) == 0, "split out numeric var prefix");
+	MY_TEST(ret_struct && strcmp(ret_struct->var, var2) == 0, "split numeric var var");
+	MY_TEST(ret_struct && strcmp(ret_struct->suffix, suffix) == 0, "split out numeric var suffix");
+	free_var_string(ret_struct);
+
+	/* numeric first char in var, should fail */
+	asprintf(&tst_string, "%s@{6%s}%s", prefix, var2, suffix);
+	ret_struct = split_out_var(tst_string);
+	MY_TEST(ret_struct == NULL, "split out var - numeric first char in var");
+	free_var_string(ret_struct);
+
+	/* underscore char in var, should succeed */
+	asprintf(&tst_string, "%s@{%s}%s", prefix, var3, suffix);
+	ret_struct = split_out_var(tst_string);
+	MY_TEST(ret_struct && strcmp(ret_struct->prefix, prefix) == 0, "split out underscore var prefix");
+	MY_TEST(ret_struct && strcmp(ret_struct->var, var3) == 0, "split out underscore var");
+	MY_TEST(ret_struct && strcmp(ret_struct->suffix, suffix) == 0, "split out underscore var suffix");
+	free_var_string(ret_struct);
+
+	/* underscore first char in var, should fail */
+	asprintf(&tst_string, "%s@{_%s%s}%s", prefix, var2, var3, suffix);
+	ret_struct = split_out_var(tst_string);
+	MY_TEST(ret_struct == NULL, "split out var - underscore first char in var");
 	free_var_string(ret_struct);
 
 	return rc;
