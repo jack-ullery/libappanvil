@@ -3,10 +3,11 @@
 
 require 'getoptlong'
 require 'tmpdir'
+require 'set'
 
 $random_length = 32
 $prefix = "stress"
-$max_rules = 200
+$max_rules = 50
 $min_rules = 5
 
 def get_random_name(len=$random_length)
@@ -27,7 +28,8 @@ def get_random_regex()
 end
 
 def get_random_path()
-  out = ""
+  # Always prefix with a non-regex element
+  out = "/#{get_random_name(rand(10) + 4)}"
   0.upto(rand(20) + 2) do
     if rand(4) == 0
       out = "#{out}/#{get_random_regex}"
@@ -63,7 +65,7 @@ class FileRule < Rule
   end
 
   def to_s
-    return "  #{@path} #{@mode},"
+    return "#{@path} #{@mode},"
   end
 end
 
@@ -110,7 +112,7 @@ class CapRule < Rule
   end
 
   def to_s
-    return "  capability #{@cap},"
+    return "capability #{@cap},"
   end
 end
 
@@ -150,7 +152,7 @@ class RlimitRule < Rule
   end
 
   def to_s
-    return "  set rlimit #{@rlimit} <= #{@limit},"
+    return "set rlimit #{@rlimit} <= #{@limit},"
   end
 end
 
@@ -176,7 +178,7 @@ class Flags
   ]
 
   def initialize()
-    @flags = []
+    @flags = Set.new()
     if rand(2) == 1
       return
     end
@@ -196,7 +198,7 @@ class Flags
     if @flags.empty?
       return ""
     end
-    out = @flags.join(",")
+    out = @flags.to_a.join(",")
     return "flags=(#{out})"
   end
 end
@@ -265,7 +267,7 @@ def gen_profiles_dir(profiles)
   end
 
   profiles.each do |p|
-    open("#{dirname}/#{p.rvalue}", File::CREAT|File::EXCL|File::WRONLY, 0644) do |file|
+    open("#{dirname}/#{p.rvalue}.sd", File::CREAT|File::EXCL|File::WRONLY, 0644) do |file|
       file.puts(prefix_to_s(p.name))
       file.puts(p.to_s)
     end
@@ -277,7 +279,7 @@ end
 def gen_profiles_file(profiles)
   # Mu, no secure tempfile creation in base ruby
   begin
-    filename = "#{Dir.tmpdir}/#{$prefix}-#{get_random_name(32)}"
+    filename = "#{Dir.tmpdir}/#{$prefix}-#{get_random_name(32)}.sd"
     File.open(filename, File::CREAT|File::EXCL|File::WRONLY, 0644) do |file|
       file.puts(prefix_to_s(filename))
       profiles.each { |p| file.puts(p.to_s) }

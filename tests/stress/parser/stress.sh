@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROFILE_COUNT=1000
+PROFILE_COUNT=50
 KEEP_FILES=0
 LOAD_PROFILES=0
 STRESS_ARGS=
@@ -74,16 +74,16 @@ remove_profiles () {
 	echo "Unloading profiles..."
 	(for profile in $(grep "^/does/not/exist" /sys/kernel/security/apparmor/profiles | cut -d " " -f 1); do
 		echo "${profile} {} "
-	done) | apparmor_parser -K -R > /dev/null
+	done) | ${APPARMOR_PARSER} -K -R > /dev/null
 }
 
 # load files into buffer cache
 timedir "cat" "Loading directory of profiles into buffer cache"
-timedir "apparmor_parser -dd" "Running preprocess only parser on directory of profiles"
-timedir "apparmor_parser -S" "Running full parser on directory of profiles"
+timedir "${APPARMOR_PARSER} -dd -Q" "Running preprocess only parser on directory of profiles"
+timedir "${APPARMOR_PARSER} -S" "Running full parser on directory of profiles"
 if [ "${LOAD_PROFILES}" == 1 ] ; then
 	if [ "$(whoami)" == 'root' ] ; then
-		timedir "apparmor_parser" "Parsing/loading directory of profiles"
+		timedir "${APPARMOR_PARSER}" "Parsing/loading directory of profiles"
 		remove_profiles
 	else
 		echo "Not root, skipping load test..."
@@ -91,11 +91,11 @@ if [ "${LOAD_PROFILES}" == 1 ] ; then
 fi
 
 timesingle "cat" "Loading equivalent profile into buffer cache"
-timesingle "apparmor_parser -dd" "Running preprocess only parser on single equiv profile"
-timesingle "apparmor_parser -S" "Running full parser on single equivalent profile"
+timesingle "${APPARMOR_PARSER} -dd -Q" "Running preprocess only parser on single equiv profile"
+timesingle "${APPARMOR_PARSER} -S" "Running full parser on single equivalent profile"
 if [ "${LOAD_PROFILES}" == 1 ] ; then
 	if [ "$(whoami)" == 'root' ] ; then
-		timesingle "apparmor_parser" "Parsing/loading single file of profiles"
+		timesingle "${APPARMOR_PARSER}" "Parsing/loading single file of profiles"
 		remove_profiles
 	else
 		echo "Not root, skipping load test..."
