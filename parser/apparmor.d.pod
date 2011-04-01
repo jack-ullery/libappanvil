@@ -91,7 +91,7 @@ B<ALIAS RULE> = I<ABS PATH> '->' I<REWRITTEN ABS PATH> ','
 
 B<ALPHA> = ('a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
-B<ALPHANUMERIC> = ('1', '2', '3', ... '9', 'a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
+B<ALPHANUMERIC> = ('0', '1', '2', ... '9', 'a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
 =back
 
@@ -323,10 +323,10 @@ as further information is specified.
 
 eg.
 
-network,		#allow access to all networking
-network tcp,		#allow access to tcp
-network inet tcp,	#allow access to tcp only for inet4 addresses
-network inet6 tcp,	#allow access to tcp only for inet6 addresses
+ network,		#allow access to all networking
+ network tcp,		#allow access to tcp
+ network inet tcp,	#allow access to tcp only for inet4 addresses
+ network inet6 tcp,	#allow access to tcp only for inet6 addresses
 
 =head2 Variables
 
