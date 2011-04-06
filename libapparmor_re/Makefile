@@ -16,19 +16,14 @@ libapparmor_re.a: parse.o expr-tree.o hfa.o compressed_hfa.o aare_rules.o
 	ar ${ARFLAGS} $@ $^
 
 expr-tree.o: expr-tree.cc expr-tree.h
-	$(CXX) $< -c -o $@
 
 hfa.o: hfa.cc apparmor_re.h hfa.h ../immunix.h
-	$(CXX) $< -c -o $@
 
 aare_rules.o: aare_rules.cc aare_rules.h apparmor_re.h expr-tree.h hfa.h compressed_hfa.h parse.h ../immunix.h
-	$(CXX) $< -c -o $@
 
 compressed_hfa.o: compressed_hfa.cc compressed_hfa.h ../immunix.h
-	$(CXX) $< -c -o $@
 
 parse.o : parse.cc apparmor_re.h expr-tree.h
-	$(CXX) $< -c -o $@
 
 parse.cc : parse.y parse.h flex-tables.h ../immunix.h
 	${BISON} -o $@ $<
