@@ -430,7 +430,7 @@ char *processquoted(char *string, int len)
 				*s = '\\';
 				l++;
 				break;
-			case '0' - '3':
+			case '0': case '1': case '2': case '3':
 				if ((l < len - 4) &&
 				    strchr("0123456789", string[l + 2]) &&
 				    strchr("0123456789", string[l + 3])) {
@@ -998,6 +998,106 @@ int test_processunquoted(void)
 	return rc;
 }
 
+int test_processquoted(void)
+{
+	int rc = 0;
+	const char *teststring, *processedstring;
+	char *out;
+
+	teststring = "";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(teststring, out) == 0,
+			"processquoted on empty string");
+	free(out);
+
+	teststring = "\"abcdefg\"";
+	processedstring = "abcdefg";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(processedstring, out) == 0,
+			"processquoted on simple string");
+	free(out);
+
+	teststring = "\"abcd\\tefg\"";
+	processedstring = "abcd\tefg";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(processedstring, out) == 0,
+			"processquoted on string with tab");
+	free(out);
+
+	teststring = "\"abcdefg\\\"";
+	processedstring = "abcdefg\\";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(processedstring, out) == 0,
+			"processquoted on trailing slash");
+	free(out);
+
+	teststring = "\"a\\\\bcdefg\"";
+	processedstring = "a\\bcdefg";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(processedstring, out) == 0,
+			"processquoted on quoted slash");
+	free(out);
+
+	teststring = "\"a\\\"bcde\\\"fg\"";
+	processedstring = "a\"bcde\"fg";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(processedstring, out) == 0,
+			"processquoted on quoted quotes");
+	free(out);
+
+	teststring = "\"\\rabcdefg\"";
+	processedstring = "\rabcdefg";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(processedstring, out) == 0,
+			"processquoted on quoted \\r");
+	free(out);
+
+	teststring = "\"abcdefg\\n\"";
+	processedstring = "abcdefg\n";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(processedstring, out) == 0,
+			"processquoted on quoted \\n");
+	free(out);
+
+	teststring = "\"\\Uabc\\Ndefg\\x\"";
+	processedstring = "\\Uabc\\Ndefg\\x";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(processedstring, out) == 0,
+			"processquoted passthrough on invalid quoted chars");
+	free(out);
+
+	teststring = "\"abc\\042defg\"";
+	processedstring = "abc\"defg";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(processedstring, out) == 0,
+			"processquoted on quoted octal \\042");
+	free(out);
+
+	teststring = "\"abcdefg\\176\"";
+	processedstring = "abcdefg~";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(processedstring, out) == 0,
+			"processquoted on quoted octal \\176");
+	free(out);
+
+	/* yes, our octal processing is lame; patches accepted */
+	teststring = "\"abc\\42defg\"";
+	processedstring = "abc\\42defg";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(processedstring, out) == 0,
+			"processquoted passthrough quoted invalid octal \\42");
+	free(out);
+
+	teststring = "\"abcdefg\\04\"";
+	processedstring = "abcdefg\\04";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(processedstring, out) == 0,
+			"processquoted passthrough quoted invalid trailing octal \\04");
+	free(out);
+
+	return rc;
+}
+
 int main(void)
 {
 	int rc = 0;
@@ -1010,6 +1110,11 @@ int main(void)
 	retval = test_processunquoted();
 	if (retval != 0)
 		rc = retval;
+
+	retval = test_processquoted();
+	if (retval != 0)
+		rc = retval;
+
 	return rc;
 }
 #endif /* UNIT_TEST */
