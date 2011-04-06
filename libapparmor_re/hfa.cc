@@ -182,7 +182,7 @@ DFA::DFA(Node *root, dfaflags_t flags): root(root)
 
 	while (!work_queue.empty()) {
 		if (i % 1000 == 0 && (flags & DFA_DUMP_PROGRESS))
-			fprintf(stderr, "\033[2KCreating dfa: queue %ld\tstates %ld\teliminated duplicates %d\r",
+			fprintf(stderr, "\033[2KCreating dfa: queue %zd\tstates %zd\teliminated duplicates %d\r",
 				work_queue.size(), states.size(),
 				stats.duplicates);
 		i++;
@@ -214,7 +214,7 @@ DFA::DFA(Node *root, dfaflags_t flags): root(root)
 	nodemap.clear();
 
 	if (flags & (DFA_DUMP_STATS))
-		fprintf(stderr, "\033[2KCreated dfa: states %ld,\teliminated duplicates %d,\tprotostate sets: longest %u, avg %u\n",
+		fprintf(stderr, "\033[2KCreated dfa: states %zd,\teliminated duplicates %d,\tprotostate sets: longest %u, avg %u\n",
 			states.size(), stats.duplicates, stats.proto_max,
 			(unsigned int)(stats.proto_sum / states.size()));
 

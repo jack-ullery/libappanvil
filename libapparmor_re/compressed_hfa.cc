@@ -120,7 +120,7 @@ TransitionTable::TransitionTable(DFA &dfa, map<uchar, uchar> &eq,
 			if (flags & (DFA_DUMP_TRANS_PROGRESS)) {
 				count++;
 				if (count % 100 == 0)
-					fprintf(stderr, "\033[2KCompressing trans table: insert state: %d/%ld\r",
+					fprintf(stderr, "\033[2KCompressing trans table: insert state: %d/%zd\r",
 						count, dfa.states.size());
 			}
 		}
@@ -137,7 +137,7 @@ TransitionTable::TransitionTable(DFA &dfa, map<uchar, uchar> &eq,
 			if (flags & (DFA_DUMP_TRANS_PROGRESS)) {
 				count++;
 				if (count % 100 == 0)
-					fprintf(stderr, "\033[2KCompressing trans table: insert state: %d/%ld\r",
+					fprintf(stderr, "\033[2KCompressing trans table: insert state: %d/%zd\r",
 						count, dfa.states.size());
 			}
 		}
@@ -145,7 +145,7 @@ TransitionTable::TransitionTable(DFA &dfa, map<uchar, uchar> &eq,
 
 	if (flags & (DFA_DUMP_TRANS_STATS | DFA_DUMP_TRANS_PROGRESS)) {
 		ssize_t size = 4 * next_check.size() + 6 * dfa.states.size();
-		fprintf(stderr, "\033[2KCompressed trans table: states %ld, next/check %ld, optimal next/check %ld avg/state %.2f, compression %ld/%ld = %.2f %%\n",
+		fprintf(stderr, "\033[2KCompressed trans table: states %zd, next/check %zd, optimal next/check %zd avg/state %.2f, compression %zd/%zd = %.2f %%\n",
 			dfa.states.size(), next_check.size(), optimal,
 			(float)next_check.size() / (float)dfa.states.size(),
 			size, 512 * dfa.states.size(),
