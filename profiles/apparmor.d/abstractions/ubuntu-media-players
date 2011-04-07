@@ -13,7 +13,6 @@
   /usr/bin/exaile PUxr,
   /usr/bin/freevo PUxr,
   /usr/bin/gmerlin PUxr,
-  /usr/bin/gtk-gnash ixr,
   /usr/bin/gxmms PUxr,
   /usr/bin/gxmms2 PUxr,
   /usr/bin/hornsey PUxr,
@@ -47,3 +46,10 @@
   /usr/bin/vlc PUxr,
   /usr/bin/xfmedia PUxr,
   /usr/bin/xmms PUxr,
+
+  # gnash
+  /usr/bin/gtk-gnash ixr,
+  /etc/gnashrc r,
+  /etc/gnashpluginrc r,
+  owner @{HOME}/.gnash/ rw,
+  owner @{HOME}/.gnash/** rw,
