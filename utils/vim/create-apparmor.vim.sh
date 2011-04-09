@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # not-too-dangerous capabilities
-sdKapKey="chown dac_override dac_read_search fowner fsetid kill setgid setuid setpcap linux_immutable net_bind_service net_broadcast net_admin net_raw ipc_lock ipc_owner sys_module sys_rawio sys_chroot sys_ptrace sys_pacct sys_boot sys_nice sys_resource sys_time sys_tty_config mknod lease"
+sdKapKey="chown dac_override dac_read_search fowner fsetid kill setgid setuid setpcap linux_immutable net_bind_service net_broadcast net_admin net_raw ipc_lock ipc_owner sys_chroot sys_ptrace sys_pacct sys_boot sys_nice sys_resource sys_time sys_tty_config mknod lease"
 
 # dangerous capabilities
-sdKapKeyDanger="sys_admin audit_control audit_write set_fcap mac_override mac_admin"
+sdKapKeyDanger="audit_control audit_write mac_override mac_admin set_fcap sys_admin sys_module sys_rawio"
 
 sdNetworkProto="inet|ax25|ipx|appletalk|netrom|bridge|atmpvc|x25|inet6|rose|netbeui|security|key|packet|ash|econet|atmsvc|sna|irda|pppox|wanpipe|bluetooth"
 
