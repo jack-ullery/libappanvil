@@ -19,7 +19,7 @@
   /etc/fstab                        r,
   /etc/mtab                         r,
   /etc/postfix/*                    r,
-  /etc/postfix/*.db                 rwl,
+  /etc/postfix/*.db                 rwlk,
   @{PROC}/net/if_inet6              r,
   /usr/sbin/postmap                 rmix,
 }

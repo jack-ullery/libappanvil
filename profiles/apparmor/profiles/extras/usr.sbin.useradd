@@ -26,7 +26,7 @@
   capability sys_resource,
 
   /bin/bash mixr,
-  /etc/.pwd.lock rw,
+  /etc/.pwd.lock rwk,
   /etc/default/useradd r,
   /etc/group* rwl,
   /etc/gshadow* rwl,

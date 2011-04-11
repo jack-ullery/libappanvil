@@ -21,6 +21,7 @@
 
   capability dac_override,
   capability dac_read_search,
+  deny capability sys_ptrace,
 
   /bin/netstat rmix,
   /etc/networks r,
@@ -29,4 +30,12 @@
   @{PROC}/[0-9]*/fd r,
   @{PROC}/net r,
   @{PROC}/net/* r,
+  @{PROC}/*/fd/ r,
+  owner @{PROC}/*/net/raw r,
+  owner @{PROC}/*/net/raw6 r,
+  owner @{PROC}/*/net/tcp r,
+  owner @{PROC}/*/net/tcp6 r,
+  owner @{PROC}/*/net/udp r,
+  owner @{PROC}/*/net/udp6 r,
+  owner @{PROC}/*/net/unix r,
 }

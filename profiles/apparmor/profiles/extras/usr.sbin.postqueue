@@ -22,6 +22,7 @@
 
   /etc/postfix                         r,
   /usr/sbin/postqueue                  rmix,
+  /usr/lib/postfix/showq               Px,
   /var/spool/postfix                   r,
   /var/spool/postfix/maildrop          r,
   /var/spool/postfix/maildrop/*        rwl,
