@@ -17,12 +17,21 @@
   audit deny @{HOME}/.config/autostart/** wl,
   audit deny @{HOME}/.kde/Autostart/** wl,
 
-  deny @{HOME}/.bash* mrk,
-  audit deny @{HOME}/.bash* wl,
-
-  deny @{HOME}/.profile* mrk,
-  audit deny @{HOME}/.profile* wl,
-
+  # don't allow reading/updating of run control files
   deny @{HOME}/.*rc mrk,
   audit deny @{HOME}/.*rc wl,
 
+  # bash
+  deny @{HOME}/.bash* mrk,
+  audit deny @{HOME}/.bash* wl,
+  deny @{HOME}/.inputrc mrk,
+  audit deny @{HOME}/.inputrc wl,
+
+  # sh/dash/csh/tcsh/pdksh/zsh
+  deny @{HOME}/.{,z}profile* mrk,
+  audit deny @{HOME}/.{,z}profile* wl,
+  deny @{HOME}/.{,z}log{in,out} mrk,
+  audit deny @{HOME}/.{,z}log{in,out} wl,
+
+  deny @{HOME}/.zshenv mrk,
+  audit deny @{HOME}/.zshenv wl,
