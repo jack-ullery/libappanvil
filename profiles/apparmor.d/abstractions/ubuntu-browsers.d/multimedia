@@ -8,6 +8,9 @@
   # Image viewers
   /usr/bin/eog PUxr,
   /usr/bin/gimp* PUxr,
+  /usr/bin/shotwell PUxr,
+  /usr/bin/digikam PUxr,
+  /usr/bin/f-spot PUxr,
 
   #include <abstractions/ubuntu-media-players>
   owner @{HOME}/.macromedia/** rw,
