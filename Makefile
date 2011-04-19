@@ -29,7 +29,7 @@ tarball: clean
 	REPO_VERSION=`$(value REPO_VERSION_CMD)` ; \
 	make export_dir __EXPORT_DIR=${RELEASE_DIR} __REPO_VERSION=$${REPO_VERSION} ; \
 	make setup __SETUP_DIR=${RELEASE_DIR} ; \
-	tar cvzf ${RELEASE_DIR}.tar.gz ${RELEASE_DIR}
+	tar --exclude deprecated -cvzf ${RELEASE_DIR}.tar.gz ${RELEASE_DIR}
 
 .PHONY: snapshot
 snapshot: clean
@@ -37,7 +37,7 @@ snapshot: clean
 	SNAPSHOT_DIR=apparmor-${VERSION}~$${REPO_VERSION} ;\
 	make export_dir __EXPORT_DIR=$${SNAPSHOT_DIR} __REPO_VERSION=$${REPO_VERSION} ; \
 	make setup __SETUP_DIR=$${SNAPSHOT_DIR} ; \
-	tar cvzf $${SNAPSHOT_DIR}.tar.gz $${SNAPSHOT_DIR} ;
+	tar --exclude deprecated -cvzf $${SNAPSHOT_DIR}.tar.gz $${SNAPSHOT_DIR} ;
 
 
 .PHONY: export_dir
