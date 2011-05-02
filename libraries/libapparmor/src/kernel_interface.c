@@ -37,7 +37,11 @@ static int setprocattr(const char *path, const char *buf, int len)
 	int rc = -1;
 	int fd, ret, ctlerr = 0;
 	char *ctl = NULL;
+#ifdef SYS_gettid
 	pid_t tid = syscall(SYS_gettid);
+#else
+	pid_t tid = getpid();
+#endif
 
 	if (!buf) {
 		errno = EINVAL;
