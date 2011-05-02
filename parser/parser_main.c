@@ -28,7 +28,6 @@
 #include <fcntl.h>
 #include <mntent.h>
 #include <libintl.h>
-#include <linux/limits.h>
 #include <locale.h>
 #define _(s) gettext(s)
 
@@ -36,6 +35,7 @@
 /* #define DEBUG */
 
 #include <unistd.h>
+#include <limits.h>
 #include <sys/sysctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
