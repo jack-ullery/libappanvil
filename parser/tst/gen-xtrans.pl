@@ -118,7 +118,7 @@ sub gen_file($$$$$$$$$$$$) {
     print $file "/usr/bin/foo {\n";
     print_rule($file, $leading1, $qual1, $rule1, $perm1, $target1);
     print_rule($file, $leading2, $qual2, $rule2, $perm2, $target2);
-    print $file "}";
+    print $file "}\n";
     close($file);
 
     $count++;

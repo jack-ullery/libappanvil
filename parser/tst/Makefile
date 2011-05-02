@@ -39,6 +39,7 @@ $(PARSER):
 	make -C $(PARSER_DIR) $(PARSER_BIN)
 
 clean:
-	rm -f simple_tests/generated_x/*
-	rm -f simple_tests/generated_perms_leading/*
-	rm -f simple_tests/generated_perms_safe/*
+	find simple_tests/generated_x/ \
+	     simple_tests/generated_perms_leading/ \
+	     simple_tests/generated_perms_safe/ \
+		-type f | xargs rm -f
