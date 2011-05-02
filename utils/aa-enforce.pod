@@ -32,7 +32,7 @@ B<aa-enforce I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...]>
 =head1 DESCRIPTION
 
 B<aa-enforce> is used to set the enforcement mode for one or more profiles
-to I<enforce>.  This command is only relevant in conjuction with the
+to I<enforce>.  This command is only relevant in conjunction with the
 I<aa-complain> utility which sets a profile to complain mode and the
 I<aa-disable> utility which unloads and disables a profile. The default
 mode for a security policy is enforce and the I<aa-complain> utility must
