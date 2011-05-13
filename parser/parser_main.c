@@ -2,7 +2,7 @@
  *   Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
  *   NOVELL (All rights reserved)
  *
- *   Copyright (c) 2010
+ *   Copyright (c) 2010, 2011
  *   Canonical, Ltd. (All rights reserved)
  *
  *   This program is free software; you can redistribute it and/or
@@ -58,46 +58,26 @@
 #define UNPRIVILEGED_OPS (!(PRIVILEGED_OPS))
 
 const char *parser_title	= "AppArmor parser";
-const char *parser_copyright	= "Copyright (C) 1999-2008 Novell Inc.\nCopyright 2009-2010 Canonical Ltd.";
+const char *parser_copyright	= "Copyright (C) 1999-2008 Novell Inc.\nCopyright 2009-2011 Canonical Ltd.";
 
 char *progname;
-int option = OPTION_ADD;
 int opt_force_complain = 0;
 int binary_input = 0;
-int names_only = 0;
 int dump_vars = 0;
 int dump_expanded_vars = 0;
-dfaflags_t dfaflags = DFA_CONTROL_TREE_NORMAL | DFA_CONTROL_TREE_SIMPLE | DFA_CONTROL_MINIMIZE | DFA_CONTROL_MINIMIZE_HASH_TRANS | DFA_CONTROL_MINIMIZE_HASH_PERMS;
-int conf_verbose = 0;
-int conf_quiet = 0;
-int kernel_load = 1;
 int show_cache = 0;
 int skip_cache = 0;
 int skip_read_cache = 0;
 int write_cache = 0;
-#ifdef FORCE_READ_IMPLIES_EXEC
-int read_implies_exec = 1;
-#else
-int read_implies_exec = 0;
-#endif
 int preprocess_only = 0;
 int skip_mode_force = 0;
 struct timespec mru_tstamp;
 
-char *subdomainbase = NULL;
 char *match_string = NULL;
 char *flags_string = NULL;
-int regex_type = AARE_DFA;
-int perms_create = 0;		/* perms contain create flag */
-int kernel_supports_network = 1;	/* kernel supports network rules */
-int net_af_max_override = -1;		/* use kernel to determine af_max */
-char *profile_namespace = NULL;
-int flag_changehat_version = FLAG_CHANGEHAT_1_5;
-FILE *ofile = NULL;
 
 /* per-profile settings */
 int force_complain = 0;
-char *profilename = NULL;
 
 struct option long_options[] = {
 	{"add", 		0, 0, 'a'},
@@ -320,31 +300,6 @@ static void display_optimize(char *command)
 	       "--------\n"
 	       ,command);
 	print_flag_table(optflag_table);
-}
-
-void pwarn(char *fmt, ...)
-{
-	va_list arg;
-	char *newfmt;
-	int rc;
-
-	if (conf_quiet || names_only || option == OPTION_REMOVE)
-		return;
-
-	rc = asprintf(&newfmt, _("Warning from %s (%s%sline %d): %s"),
-		      profilename ? profilename : "stdin",
-		      current_filename ? current_filename : "",
-		      current_filename ? " " : "",
-		      current_lineno,
-		      fmt);
-	if (!newfmt)
-		return;
-
-	va_start(arg, fmt);
-	vfprintf(stderr, newfmt, arg);
-	va_end(arg);
-
-	free(newfmt);
 }
 
 static int process_args(int argc, char *argv[])

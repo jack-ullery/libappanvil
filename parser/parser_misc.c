@@ -929,27 +929,6 @@ void debug_cod_list(struct codomain *cod)
 }
 
 #ifdef UNIT_TEST
-#define MY_TEST(statement, error)		\
-	if (!(statement)) {			\
-		PERROR("FAIL: %s\n", error);	\
-		rc = 1;				\
-	}
-
-/* Guh, fake routine */
-void yyerror(char *msg, ...)
-{
-	va_list arg;
-	char buf[PATH_MAX];
-
-	va_start(arg, msg);
-	vsnprintf(buf, sizeof(buf), msg, arg);
-	va_end(arg);
-
-	PERROR(_("AppArmor parser error: %s\n"), buf);
-
-	exit(1);
-}
-
 int test_str_to_boolean(void)
 {
 	int rc = 0;
@@ -973,7 +952,7 @@ int test_str_to_boolean(void)
 int test_processunquoted(void)
 {
 	int rc = 0;
-	const char *teststring, *processedstring;
+	char *teststring, *processedstring;
 
 	teststring = "";
 	MY_TEST(strcmp(teststring, processunquoted(teststring, strlen(teststring))) == 0,
@@ -1001,7 +980,7 @@ int test_processunquoted(void)
 int test_processquoted(void)
 {
 	int rc = 0;
-	const char *teststring, *processedstring;
+	char *teststring, *processedstring;
 	char *out;
 
 	teststring = "";
