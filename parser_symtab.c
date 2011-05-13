@@ -539,30 +539,6 @@ void free_symtabs(void)
 }
 
 #ifdef UNIT_TEST
-#define MY_TEST(statement, error)		\
-	if (!(statement)) {			\
-		PERROR("FAIL: %s\n", error);	\
-		rc = 1;				\
-	}
-
-/* Guh, fake symbol */
-char *progname;
-
-/* Guh, fake routine */
-void yyerror(char *msg, ...)
-{
-	va_list arg;
-	char buf[PATH_MAX];
-
-	va_start(arg, msg);
-	vsnprintf(buf, sizeof(buf), msg, arg);
-	va_end(arg);
-
-	PERROR(_("AppArmor parser error: %s\n"), buf);
-
-	exit(1);
-}
-
 int main(void)
 {
 	int rc = 0;
@@ -589,7 +565,7 @@ int main(void)
 	retval = new_set_var("test", "different value");
 	MY_TEST(retval != 0, "new set variable 2");
 
-	retval = new_set_var("testes", "testes");
+	retval = new_set_var("testing", "testing");
 	MY_TEST(retval == 0, "new set variable 3");
 
 	retval = new_set_var("monopuff", "Mockingbird");

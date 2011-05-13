@@ -216,29 +216,6 @@ int process_variables(struct codomain *cod)
 }
 
 #ifdef UNIT_TEST
-#define MY_TEST(statement, error)		\
-	if (!(statement)) {			\
-		PERROR("FAIL: %s\n", error);	\
-		rc = 1;				\
-	}
-
-/* Guh, fake routine */
-void yyerror(char *msg, ...)
-{
-	va_list arg;
-	char buf[PATH_MAX];
-
-	va_start(arg, msg);
-	vsnprintf(buf, sizeof(buf), msg, arg);
-	va_end(arg);
-
-	PERROR(_("AppArmor parser error: %s\n"), buf);
-
-	exit(1);
-}
-/* Guh, fake symbol */
-char *progname;
-
 int test_get_var_end(void)
 {
 	int rc = 0;
@@ -277,7 +254,7 @@ int test_split_string(void)
 	char *var = "boogie";
 	char *suffix = "suffixication";
 
-	(void) asprintf(&tst_string, "%s@{%s}%s", prefix, var, suffix);
+	asprintf(&tst_string, "%s@{%s}%s", prefix, var, suffix);
 	var_start = tst_string + strlen(prefix);
 	var_end = var_start + strlen(var) + strlen("@\{");
 	ret_struct = split_string(tst_string, var_start, var_end);

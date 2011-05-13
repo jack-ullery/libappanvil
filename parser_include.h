@@ -21,8 +21,6 @@
 #define PARSER_INCLUDE_H
 
 extern int preprocess_only;
-extern int current_lineno;
-extern char *current_filename;
 
 extern int add_search_dir(char *dir);
 extern void init_base_dir(void);
