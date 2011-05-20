@@ -477,10 +477,14 @@ void DFA::minimize(dfaflags_t flags)
 	 * to states within the same partitions, however this can slow
 	 * down compressed dfa compression as there are more states,
 	 */
+	if (flags & DFA_DUMP_MIN_PARTS)
+		cerr << "Partitions after minimization\n";
 	for (list<Partition *>::iterator p = partitions.begin();
 	     p != partitions.end(); p++) {
 		/* representative state for this partition */
 		State *rep = *((*p)->begin());
+		if (flags & DFA_DUMP_MIN_PARTS)
+			cerr << *rep << " : ";
 
 		/* update representative state's transitions */
 		if (rep->cases.otherwise) {
@@ -498,6 +502,8 @@ void DFA::minimize(dfaflags_t flags)
 		 * and accumulate permissions */
 		for (Partition::iterator i = ++(*p)->begin(); i != (*p)->end(); i++) {
 //cerr << " " << (*i)->label;
+			if (flags & DFA_DUMP_MIN_PARTS)
+				cerr << **i << ", ";
 			(*i)->label = -1;
 			rep->accept |= (*i)->accept;
 			rep->audit |= (*i)->audit;
@@ -506,6 +512,8 @@ void DFA::minimize(dfaflags_t flags)
 			final_accept++;
 //if ((*p)->size() > 1)
 //cerr << "\n";
+		if (flags & DFA_DUMP_MIN_PARTS)
+			cerr << "\n";
 	}
 	if (flags & DFA_DUMP_STATS)
 		cerr << "\033[2KMinimized dfa: final partitions "
