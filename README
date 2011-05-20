@@ -104,6 +104,10 @@ $ make check	# depends on the parser having been built first
 $ make install
 
 
+[Note that for the parser and the utils, if you only with to build/use
+ some of the locale languages, you can override the default by passing
+ the LANGS arguments to make; e.g. make all install "LANGS=en_US fr".]
+
 -------------------
 AppArmor Testsuites
 -------------------
