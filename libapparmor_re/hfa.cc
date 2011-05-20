@@ -610,14 +610,14 @@ void DFA::dump_dot_graph(ostream & os)
 			if (j->second == nonmatching)
 				excluded.insert(j->first);
 			else {
-				os << "\t\"" << **i << "\" -> \"" << j->second
+				os << "\t\"" << **i << "\" -> \"" << *j->second
 				   << "\" [" << "\n";
-				os << "\t\tlabel=\"" << j-> first << "\"\n";
+				os << "\t\tlabel=\"" << j->first << "\"\n";
 				os << "\t]" << "\n";
 			}
 		}
 		if (cases.otherwise && cases.otherwise != nonmatching) {
-			os << "\t\"" << **i << "\" -> \"" << cases.otherwise
+			os << "\t\"" << **i << "\" -> \"" << *cases.otherwise
 			   << "\" [" << "\n";
 			if (!excluded.empty()) {
 				os << "\t\tlabel=\"[^";
