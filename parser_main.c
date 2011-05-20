@@ -216,6 +216,8 @@ optflag_table_t dumpflag_table[] = {
 	  DFA_DUMP_UNIQ_PERMS },
 	{ 1, "dfa-minimize-uniq-perms", "Dump unique perms post minimization",
 	  DFA_DUMP_MIN_UNIQ_PERMS },
+	{ 1, "dfa-minimize-partitions", "Dump dfa minimization partitions",
+	  DFA_DUMP_MIN_PARTS },
 	{ 1, "compress-progress", "Dump progress of compression",
 	  DFA_DUMP_TRANS_PROGRESS | DFA_DUMP_TRANS_STATS },
 	{ 1, "compress-stats", "Dump stats on compression",
