@@ -194,6 +194,9 @@ parser_policy.o: parser_policy.c parser.h parser_yacc.h
 parser_alias.o: parser_alias.c parser.h
 	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
 
+parser_common.o: parser_common.c parser.h
+	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+
 parser_version.h: Makefile
 	@echo \#define PARSER_VERSION \"$(VERSION)\" > .ver
 	@mv -f .ver $@
