@@ -54,9 +54,6 @@
 
 #define YY_NO_INPUT
 
-int current_lineno     = 1;
-char *current_filename = NULL;
-
 struct ignored_suffix_t {
 	char * text;
 	int len;

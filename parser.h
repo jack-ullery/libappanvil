@@ -179,13 +179,8 @@ struct var_string {
 
 #define FLAG_CHANGEHAT_1_4  2
 #define FLAG_CHANGEHAT_1_5  3
-extern int kernel_supports_network;
-extern int net_af_max_override;
-extern int flag_changehat_version;
-extern int read_implies_exec;
-extern dfaflags_t dfaflags;
+
 extern int preprocess_only;
-extern FILE *ofile;
 
 #define PATH_CHROOT_REL 0x1
 #define PATH_NS_REL 0x2
@@ -228,23 +223,34 @@ extern FILE *ofile;
 #define list_last_entry(LIST, ENTRY) \
 	for ((ENTRY) = (LIST); (ENTRY) && (ENTRY)->next; (ENTRY) = (ENTRY)->next)
 
-/* Some external definitions to make b0rken programs happy */
+/* from parser_common.c */
+extern int regex_type;
+extern int perms_create;
+extern int net_af_max_override;
+extern int kernel_load;
+extern int kernel_supports_network;
+extern int flag_changehat_version;
+extern int conf_verbose;
+extern int conf_quiet;
+extern int names_only;
+extern int option;
+extern int current_lineno;
+extern dfaflags_t dfaflags;
 extern char *progname;
 extern char *subdomainbase;
 extern char *profilename;
 extern char *profile_namespace;
-
-/* from parser_main */
-extern int force_complain;
-extern int conf_quiet;
-extern int conf_verbose;
-extern int kernel_load;
-extern int regex_type;
-extern int perms_create;
-extern struct timespec mru_tstamp;
-extern void update_mru_tstamp(FILE *file);
+extern char *current_filename;
+extern FILE *ofile;
+extern int read_implies_exec;
 extern void pwarn(char *fmt, ...) __attribute__((__format__(__printf__, 1, 2)));
 
+/* from parser_main (cannot be used in tst builds) */
+extern int force_complain;
+extern struct timespec mru_tstamp;
+extern void update_mru_tstamp(FILE *file);
+
+/* provided by parser_lex.l (cannot be used in tst builds) */
 extern FILE *yyin;
 extern void yyrestart(FILE *fp);
 extern int yyparse(void);
@@ -340,3 +346,32 @@ extern void dump_policy_hats(struct codomain *cod);
 extern void dump_policy_names(void);
 extern int die_if_any_regex(void);
 void free_policies(void);
+
+#ifdef UNIT_TEST
+/* For the unit-test builds, we must include function stubs for stuff that
+ * only exists in the excluded object files; everything else should live
+ * in parser_common.c.
+ */
+
+/* parser_yacc.y */
+void yyerror(char *msg, ...)
+{
+        va_list arg;
+        char buf[PATH_MAX];
+
+        va_start(arg, msg);
+        vsnprintf(buf, sizeof(buf), msg, arg);
+        va_end(arg);
+
+        PERROR(_("AppArmor parser error: %s\n"), buf);
+
+        exit(1);
+}
+
+#define MY_TEST(statement, error)               \
+        if (!(statement)) {                     \
+                PERROR("FAIL: %s\n", error);    \
+                rc = 1;                         \
+        }
+
+#endif
