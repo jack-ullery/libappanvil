@@ -49,6 +49,9 @@ export_dir:
 .PHONY: clean
 clean:
 	-rm -rf ${RELEASE_DIR} ./apparmor-${VERSION}~*
+	for dir in $(DIRS); do \
+		make -C $$dir clean; \
+	done
 
 .PHONY: setup
 setup:

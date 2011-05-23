@@ -73,29 +73,31 @@ EXTRA_CFLAGS+=-DPACKAGE=\"${NAME}\" -DLOCALEDIR=\"${LOCALEDIR}\"
 # Compile-time configuration of the location of the config file
 EXTRA_CFLAGS+=-DSUBDOMAIN_CONFDIR=\"${CONFDIR}\"
 
-SRCS = parser_include.c parser_interface.c parser_lex.c parser_main.c \
-       parser_misc.c parser_merge.c parser_symtab.c parser_yacc.c \
-       parser_regex.c parser_variable.c parser_policy.c parser_alias.c
+SRCS = parser_common.c parser_include.c parser_interface.c parser_lex.c \
+       parser_main.c parser_misc.c parser_merge.c parser_symtab.c \
+       parser_yacc.c parser_regex.c parser_variable.c parser_policy.c \
+       parser_alias.c
 HDRS = parser.h parser_include.h immunix.h
 TOOLS = apparmor_parser
 
-OBJECTS = parser_lex.o parser_yacc.o parser_main.o parser_interface.o \
-	  parser_include.o parser_merge.o parser_symtab.o parser_misc.o \
-	  parser_regex.o parser_variable.o parser_policy.o parser_alias.o
+OBJECTS = $(SRCS:.c=.o)
 
 AAREDIR= libapparmor_re
-AAREOBJECTS = ${AAREDIR}/libapparmor_re.a
+AAREOBJECT = ${AAREDIR}/libapparmor_re.a
+AAREOBJECTS = $(AAREOBJECT) libstdc++.a
+AARE_LDFLAGS=-static-libgcc -L.
 
 LEX_C_FILES	= parser_lex.c
 YACC_C_FILES	= parser_yacc.c parser_yacc.h
 
 TESTS = tst_regex tst_misc tst_symtab tst_variable
-TEST_FLAGS = -Wl,--warn-unresolved-symbols
-DISABLED_TESTS =
-
-TEST_OBJECTS = $(filter-out parser_lex.o, \
-	       $(filter-out parser_yacc.o, \
-	       $(filter-out parser_main.o, ${OBJECTS})))
+TEST_CFLAGS = $(EXTRA_CFLAGS) -DUNIT_TEST -Wno-unused-result
+TEST_OBJECTS = $(filter-out \
+			parser_lex.o \
+			parser_yacc.o \
+			parser_main.o, ${OBJECTS}) \
+               $(AAREOBJECTS)
+TEST_LDFLAGS = $(AARE_LDFLAGS)
 
 ifdef V
   VERBOSE = 1
@@ -141,11 +143,14 @@ docs:	manpages htmlmanpages pdf
 
 all:	main docs tests
 
-apparmor_parser: $(OBJECTS) $(AAREOBJECTS)
+.PHONY: libstdc++.a
+libstdc++.a:
 	rm -f ./libstdc++.a
 	ln -s `g++ -print-file-name=libstdc++.a`
+
+apparmor_parser: $(OBJECTS) $(AAREOBJECTS)
 	g++ $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(LIBS) \
-	      ${LEXLIB}  $(AAREOBJECTS) -static-libgcc -L.
+	      ${LEXLIB}  $(AAREOBJECTS) $(AARE_LDFLAGS)
 
 parser_yacc.c parser_yacc.h: parser_yacc.y parser.h
 	$(YACC) $(YFLAGS) -o parser_yacc.c parser_yacc.y
@@ -189,6 +194,9 @@ parser_policy.o: parser_policy.c parser.h parser_yacc.h
 parser_alias.o: parser_alias.c parser.h
 	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
 
+parser_common.o: parser_common.c parser.h
+	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+
 parser_version.h: Makefile
 	@echo \#define PARSER_VERSION \"$(VERSION)\" > .ver
 	@mv -f .ver $@
@@ -209,17 +217,8 @@ af_names.h: /usr/include/bits/socket.h
 cap_names.h: /usr/include/linux/capability.h
 	LC_ALL=C sed -n -e "/CAP_EMPTY_SET/d" -e "s/^\#define[ \\t]\\+CAP_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9xa-f]\\+\\)\\(.*\\)\$$/\{\"\\L\\1\", \\UCAP_\\1\},/p" $< > $@
 
-tst_symtab: parser_symtab.c parser.h parser_variable.o
-	$(Q)$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< parser_variable.o $(BUILD_OUTPUT)
-
-tst_variable: parser_variable.c parser.h $(filter-out parser_variable.o, ${TEST_OBJECTS})
-	$(Q)$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< $(filter-out parser_variable.o, ${TEST_OBJECTS}) $(BUILD_OUTPUT)
-
-tst_misc: parser_misc.c parser.h parser_yacc.h af_names.h cap_names.h
-	$(Q)$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< $(BUILD_OUTPUT)
-
-tst_regex: parser_regex.c parser.h parser_yacc.h
-	$(Q)$(CC) -DUNIT_TEST $(EXTRA_CFLAGS) $(TEST_FLAGS) -o $@ $< $(BUILD_OUTPUT)
+tst_%: parser_%.c parser.h $(filter-out parser_%.o, ${TEST_OBJECTS})
+	$(CC) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS)
 
 .SILENT: check
 .PHONY: check
@@ -227,16 +226,16 @@ check: tests
 
 .SILENT: tests
 tests: ${TESTS}
-	sh -e -c 'for test in ${TESTS} ; do echo "*** running $${test}" && ./$${test} $(BUILD_OUTPUT) ; done'
+	sh -e -c 'for test in ${TESTS} ; do echo "*** running $${test}" && ./$${test}; done'
 	$(Q)make -s -C tst tests
 
 .SILENT: check
 check: tests
 
 # always need to rebuild.
-.SILENT: $(AAREOBJECTS)
-.PHONY: $(AAREOBJECTS)
-$(AAREOBJECTS):
+.SILENT: $(AAREOBJECT)
+.PHONY: $(AAREOBJECT)
+$(AAREOBJECT):
 	make -C $(AAREDIR) CFLAGS="$(EXTRA_CXXFLAGS)"
 
 .PHONY: install-rhel4
@@ -297,7 +296,6 @@ clean: _clean
 	rm -f $(YACC_C_FILES)
 	rm -f parser_version.h
 	rm -f $(NAME)*.tar.gz $(NAME)*.tgz
-	rm -f libstdc++.a
 	rm -f af_names.h
 	rm -f cap_names.h
 	rm -rf techdoc.aux techdoc.log techdoc.pdf techdoc.toc techdor.txt techdoc/

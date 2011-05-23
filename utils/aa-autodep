@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 # ----------------------------------------------------------------------
 #    Copyright (c) 2005 Novell, Inc. All Rights Reserved.
+#    Copyright (c) 2011 Canonical, Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -106,7 +107,7 @@ for my $profiling (@profiling) {
             UI_Info(sprintf(gettext('Can\'t find %s in the system path list.  If the name of the application is correct, please run \'which %s\' as a user with the correct PATH environment set up in order to find the fully-qualified path.'), $profiling, $profiling));
             exit 1;
         } else {
-            UI_Info(sprintf(gettext('%s does not exist, please double-check the path.') . $profiling));
+            UI_Info(sprintf(gettext('%s does not exist, please double-check the path.'), $profiling));
             exit 1;
         }
     }
