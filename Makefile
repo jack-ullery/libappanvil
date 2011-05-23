@@ -10,10 +10,6 @@ DIRS=parser \
      changehat/libapparmor \
      changehat/mod_apparmor \
      changehat/pam_apparmor \
-     management/apparmor-dbus \
-     management/applets/apparmorapplet-gnome \
-     management/yastui \
-     common \
      tests
 
 REPO_URL?=lp:apparmor
