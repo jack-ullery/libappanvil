@@ -27,6 +27,11 @@
 #include <limits.h>
 #include <stdarg.h>
 
+/* some non-Linux systems do not define a static value */
+#ifndef PATH_MAX
+# define PATH_MAX 4096
+#endif
+
 #define symbol_version(real, name, version) \
 		__asm__ (".symver " #real "," #name "@" #version)
 #define default_symbol_version(real, name, version) \
