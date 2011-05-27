@@ -130,8 +130,7 @@ techdoc.txt: techdoc/index.html
 
 # targets arranged this way so that people who don't want full docs can
 # pick specific targets they want.
-main: 	$(TOOLS)
-	$(Q)make -C po all
+arch: 	$(TOOLS)
 
 manpages:	$(MANPAGES)
 
@@ -141,7 +140,11 @@ pdf:	techdoc.pdf
 
 docs:	manpages htmlmanpages pdf
 
-all:	main docs tests
+indep: docs
+	$(Q)make -C po all
+
+all:	arch indep
+
 
 .PHONY: libstdc++.a
 libstdc++.a:
@@ -229,9 +232,6 @@ tests: ${TESTS}
 	sh -e -c 'for test in ${TESTS} ; do echo "*** running $${test}" && ./$${test}; done'
 	$(Q)make -s -C tst tests
 
-.SILENT: check
-check: tests
-
 # always need to rebuild.
 .SILENT: $(AAREOBJECT)
 .PHONY: $(AAREOBJECT)
@@ -270,15 +270,21 @@ install-debian:
 .PHONY: install-unknown
 install-unknown:
 
-INSTALLDEPS=$(TOOLS)
+INSTALLDEPS=arch
 ifdef DISTRO
 INSTALLDEPS+=install-$(DISTRO)
 endif
 
 .PHONY: install
-install: $(INSTALLDEPS)
+install: install-indep install-arch
+
+.PHONY: install-arch
+install-arch: $(INSTALLDEPS)
 	install -m 755 -d $(DESTDIR)/sbin
 	install -m 755 ${TOOLS} $(DESTDIR)/sbin
+
+.PHONY: install-indep
+install-indep:
 	install -m 755 -d $(INSTALL_CONFDIR)
 	install -m 644 subdomain.conf $(INSTALL_CONFDIR)
 	install -m 755 -d ${DESTDIR}/var/lib/apparmor

@@ -74,14 +74,14 @@ $ make check
 Utilities:
 $ cd utils
 $ make
+$ make check
 $ make install
 
 
 parser:
 $ cd parser
 $ make
-$ make tests	# not strictly necessary as they are run during the
-		# build by default
+$ make check
 $ make install
 
 
