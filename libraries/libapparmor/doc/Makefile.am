@@ -14,8 +14,6 @@ BUILT_SOURCES = $(man_MANS)
 %.2: %.pod
 	$(POD2MAN) \
 		--section=2 \
-		--release="NOVELL/SUSE" \
+		--release="AppArmor $(VERSION)" \
 		--center="AppArmor" \
-		--date="2007-07-27" \
 		$< > $@
-$

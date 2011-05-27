@@ -37,4 +37,4 @@ clean:
 	rm -f tomcat_apparmor.spec ${NAME}-*.tar.gz Make.rules
 
 install: $(SPECFILE)
-	 ant  -Dversion=$(VERSION) -Drelease=$(RELEASE) -Dcatalina_home=${CATALINA_HOME} -Dinstall_lib=${LIB} install_jar install_jni
+	 ant  -Dversion=$(VERSION) -Drelease=$(MAN_RELEASE) -Dcatalina_home=${CATALINA_HOME} -Dinstall_lib=${LIB} install_jar install_jni
