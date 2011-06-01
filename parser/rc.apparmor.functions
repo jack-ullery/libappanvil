@@ -235,7 +235,7 @@ profiles_names_list() {
 
 	for profile in $PROFILE_DIR/*; do
 	        if skip_profile "${profile}" && [ -f "${profile}" ] ; then
-			LIST_ADD=$($PARSER $ABSTRACTIONS -N "$profile" | grep -v '\^')
+			LIST_ADD=$($PARSER $ABSTRACTIONS -N "$profile" | grep -v '//')
 			if [ $? -eq 0 ]; then
 				echo "$LIST_ADD" >>$TMPFILE
 			fi
