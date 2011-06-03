@@ -20,6 +20,11 @@ REPO_URL?=lp:apparmor
 RELEASE_DIR=apparmor-${VERSION}
 __SETUP_DIR?=.
 
+# We create a separate version for tags because git can't handle tags
+# with embedded ~s in them. No spaces around '-' or they'll get
+# embedded in ${VERSION}
+TAG_VERSION=$(subst ~,-, ${VERSION})
+
 .PHONY: tarball
 tarball: clean
 	REPO_VERSION=`$(value REPO_VERSION_CMD)` ; \
@@ -55,4 +60,5 @@ setup:
 
 .PHONY: tag
 tag:
-	bzr tag apparmor_${VERSION}
+	bzr tag apparmor_${TAG_VERSION}
+
