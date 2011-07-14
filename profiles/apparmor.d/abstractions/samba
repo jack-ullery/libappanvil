@@ -15,5 +15,5 @@
   /var/log/samba/cores/ rw,
   /var/log/samba/cores/* w,
   /var/log/samba/log.* w,
-  /var/run/samba/*.tdb rw,
+  /{,var/}run/samba/*.tdb rw,
 

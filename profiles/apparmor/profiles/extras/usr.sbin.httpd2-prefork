@@ -88,8 +88,8 @@
   /var/log/apache2/* rwl,
   /var/log/httpd/ssl_scache.dir r,
   /var/log/httpd/ssl_scache.pag r,
-  /var/run/httpd2.mm.* wl,
-  /var/run/httpd2.pid wl,
+  /{,var/}run/httpd2.mm.* wl,
+  /{,var/}run/httpd2.pid wl,
 
   # Note that mod_perl, mod_php, mod_python, etc, allows in-apache
   # execution of content regardless of 'x' permissions, as no exec(2)

@@ -25,9 +25,9 @@
 
   /etc/resolv.conf        r,
   # on systems using resolvconf, /etc/resolv.conf is a symlink to
-  # /var/run/resolvconf/resolv.conf and a file sometimes referenced in
+  # /{,var/}run/resolvconf/resolv.conf and a file sometimes referenced in
   # /etc/resolvconf/run/resolv.conf
-  /var/run/resolvconf/resolv.conf r,
+  /{,var/}run/resolvconf/resolv.conf r,
   /etc/resolvconf/run/resolv.conf r,
 
   /etc/samba/lmhosts      r,
@@ -39,12 +39,12 @@
   /var/lib/misc/*.db      r,
   # The Name Service Cache Daemon can cache lookups, sometimes leading
   # to vast speed increases when working with network-based lookups.
-  /var/run/.nscd_socket   rw,
-  /var/run/nscd/socket    rw,
+  /{,var/}run/.nscd_socket   rw,
+  /{,var/}run/nscd/socket    rw,
   /var/{db,cache,run}/nscd/{passwd,group,services,host}    r,
   # nscd renames and unlinks files in it's operation that clients will
   # have open
-  /var/run/nscd/db*  rmix,
+  /{,var/}run/nscd/db*  rmix,
 
   # The nss libraries are sometimes used in addition to PAM; make sure
   # they are available
@@ -55,7 +55,7 @@
   /etc/default/nss               r,
 
   # avahi-daemon is used for mdns4 resolution
-  /var/run/avahi-daemon/socket w,
+  /{,var/}run/avahi-daemon/socket w,
 
   # nis
   #include <abstractions/nis>

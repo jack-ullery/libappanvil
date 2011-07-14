@@ -19,5 +19,5 @@
 
   /usr/lib/postfix/scache rmix,
 
-  /var/run/nscd/group r,
+  /{,var/}run/nscd/group r,
 }

@@ -19,5 +19,5 @@
 
   /usr/bin/finger        mix,
   /var/log/lastlog       r,
-  /var/run/utmp          r,
+  /{,var/}run/utmp          r,
 }

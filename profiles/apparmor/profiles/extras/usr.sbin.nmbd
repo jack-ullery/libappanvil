@@ -28,5 +28,5 @@
   /var/lib/samba/messages.tdb rw,
   /var/lib/samba/unexpected.tdb rw,
   /var/log/samba/log.nmbd w,
-  /var/run/samba/nmbd.pid w,
+  /{,var/}run/samba/nmbd.pid w,
 }

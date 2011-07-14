@@ -41,5 +41,5 @@
   /usr/sbin/smbd r,
   /var/lib/samba/** rw,
   /var/log/samba/log.smbd w,
-  /var/run/samba/smbd.pid w,
+  /{,var/}run/samba/smbd.pid w,
 }

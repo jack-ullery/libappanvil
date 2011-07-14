@@ -33,6 +33,6 @@
   /usr/share/ssl/private/ftpd-rsa-key.pem   r,
   /usr/share/ssl/.rnd               w,
   /var/log/xferlog                  w,
-  /var/run                          wr,
-  /var/run/ftp.{pids,rips}-all      wr,
+  /{,var/}run                          wr,
+  /{,var/}run/ftp.{pids,rips}-all      wr,
 }

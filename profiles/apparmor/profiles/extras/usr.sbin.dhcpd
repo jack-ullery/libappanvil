@@ -28,5 +28,5 @@
   /usr/sbin/dhcpd	rmix,
   /var/lib/dhcp/dhcpd.leases*	rwl,
   /var/lib/dhcp/etc/dhcpd.conf  r,
-  /var/run/dhcpd.pid	wl,
+  /{,var/}run/dhcpd.pid	wl,
 }

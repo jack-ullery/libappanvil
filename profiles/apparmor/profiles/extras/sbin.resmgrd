@@ -24,9 +24,9 @@
   /etc/resmgr.conf.d/ r,
   /etc/resmgr.conf.d/*.conf r,
   /sbin/resmgrd r,
-  /var/run/.resmgr_socket lrw,
-  /var/run/resmgr.pid lrw,
-  /var/run/fence* lrw,
-  /var/run/resmgr/classes/** wl,
+  /{,var/}run/.resmgr_socket lrw,
+  /{,var/}run/resmgr.pid lrw,
+  /{,var/}run/fence* lrw,
+  /{,var/}run/resmgr/classes/** wl,
   /var/lock/LCK* lrw,
 }

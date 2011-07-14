@@ -35,7 +35,7 @@
   /var/log/squid/access.log w,
   /var/log/squid/cache.log rw,
   /var/log/squid/store.log w,
-  /var/run/squid.pid lrw,
+  /{,var/}run/squid.pid lrw,
 
   /usr/sbin/digest_pw_auth   rmix,
   /usr/sbin/diskd   rmix,
