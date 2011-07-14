@@ -48,8 +48,8 @@
   /var/log/lastlog            r,
   /var/log/messages           r,
   /var/log/wtmp               r,
-  /var/run/dhclient.pid       rw,
-  /var/run/dhclient-*.pid     rw,
+  /{,var/}run/dhclient.pid       rw,
+  /{,var/}run/dhclient-*.pid     rw,
   /var/spool                  r,
   /var/spool/mail             r,
 }

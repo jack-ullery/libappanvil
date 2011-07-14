@@ -20,5 +20,5 @@
   /etc/mtab				r,
   /tmp/.font-unix/fs710[0-9]		wl,
   /usr/bin/xfs                    	rmix,
-  /var/run/xfs.pid			rw,
+  /{,var/}run/xfs.pid			rw,
 }

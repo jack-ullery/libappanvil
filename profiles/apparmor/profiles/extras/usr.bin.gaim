@@ -63,5 +63,5 @@
   /usr/share/alsa/alsa.conf r,
   /usr/share/icons r,
   /usr/share/tcl/tcl*/encoding/* r,
-  /var/run/.resmgr_socket w,
+  /{,var/}run/.resmgr_socket w,
 }

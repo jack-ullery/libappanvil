@@ -16,5 +16,5 @@
   #include <abstractions/consoles>
 
   /usr/sbin/in.ntalkd   r,
-  /var/run/utmp		r,
+  /{,var/}run/utmp		r,
 }

@@ -25,7 +25,7 @@
   /etc/xinetd.d/*                  r,
   /usr/sbin/xinetd                 rmix,
   /var/log/xinetd.log              w,
-  /var/run/xinetd.pid              rwl,
+  /{,var/}run/xinetd.pid              rwl,
 
   /bin/netstat                     Px,
   /bin/ps                          mix,

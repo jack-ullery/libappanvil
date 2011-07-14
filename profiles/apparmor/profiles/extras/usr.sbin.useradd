@@ -45,7 +45,7 @@
   /usr/sbin/useradd.local rmix,
   /var/log/faillog rw,
   /var/log/lastlog rw,
-  /var/run/nscd.pid rw,
-  /var/run/utmp rw,
+  /{,var/}run/nscd.pid rw,
+  /{,var/}run/utmp rw,
   /var/spool/mail/* rw,
 }

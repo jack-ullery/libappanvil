@@ -46,7 +46,7 @@
   /usr/sbin/userdel rmix,
   /var/log/lastlog rw,
   # XXX
-  /var/run/nscd.pid r,
-  /var/run/utmp rw,
+  /{,var/}run/nscd.pid r,
+  /{,var/}run/utmp rw,
   /var/spool/mail/* wl,
 }

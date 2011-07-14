@@ -52,7 +52,7 @@
   /{var/spool/postfix/,}private/tlsmgr           w,
   /{var/spool/postfix/,}public/cleanup           w,
 
-  /var/run/sasl2/mux                             w,
+  /{,var/}run/sasl2/mux                             w,
 
   @{PROC}/net/if_inet6                          r,
 }

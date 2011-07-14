@@ -25,5 +25,5 @@
   /var/lib/nfs/statd/state         rw,
   /var/lib/nfs/statd/sm.bak        r,
   /var/lib/nfs/statd/sm.bak/*      rwl,
-  /var/run/rpc.statd.pid           w,
+  /{,var/}run/rpc.statd.pid           w,
 }

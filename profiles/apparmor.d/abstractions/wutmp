@@ -13,4 +13,4 @@
   # connection information
   /var/log/lastlog  rw,
   /var/log/wtmp     wk,
-  /var/run/utmp     rwk,
+  /{,var/}run/utmp     rwk,

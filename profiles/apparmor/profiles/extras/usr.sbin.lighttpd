@@ -45,7 +45,7 @@
   /var/cache/lighttpd/ r,
   /var/cache/lighttpd/** rwl,
   # pid
-  /var/run/lighttpd.pid rwl,
+  /{,var/}run/lighttpd.pid rwl,
   # log files
   /var/log/lighttpd/*.log rw,
   # include_shell

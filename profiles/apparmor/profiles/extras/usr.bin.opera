@@ -64,7 +64,7 @@
   /usr/lib/opera/** mixr,
   /usr/local r,
   /usr/share/opera/** r,
-  /var/run/.resmgr_socket w,
+  /{,var/}run/.resmgr_socket w,
   /var/spool/cups/tmp/* lrw,
 
   /usr/bin/opera mr,

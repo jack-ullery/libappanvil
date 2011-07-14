@@ -28,8 +28,8 @@
   /usr/sbin/dovecot mr,
   /var/lib/dovecot/ w,
   /var/lib/dovecot/* krw,
-  /var/run/dovecot/ rw,
-  /var/run/dovecot/** rw,
+  /{,var/}run/dovecot/ rw,
+  /{,var/}run/dovecot/** rw,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.dovecot>

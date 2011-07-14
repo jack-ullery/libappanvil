@@ -19,10 +19,10 @@
   /proc/*/fd/ r,
   /usr/sbin/avahi-daemon mr,
   /usr/share/avahi/introspection/*.introspect r,
-  /var/run/avahi-daemon/ w,
-  /var/run/avahi-daemon/pid krw,
-  /var/run/avahi-daemon/socket w,
-  /var/run/dbus/system_bus_socket w,
+  /{,var/}run/avahi-daemon/ w,
+  /{,var/}run/avahi-daemon/pid krw,
+  /{,var/}run/avahi-daemon/socket w,
+  /{,var/}run/dbus/system_bus_socket w,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.avahi-daemon>

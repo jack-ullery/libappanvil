@@ -41,5 +41,5 @@
   /var/lib/dhcpcd/dhcpcd-*.cache rw,
   /var/lib/dhcpcd/dhcpcd-*.info rw,
   /var/lib/dhcpcd/dhcpcd-*.info.old rw,
-  /var/run/dhcpcd-*.pid rwl,
+  /{,var/}run/dhcpcd-*.pid rwl,
 }

@@ -30,8 +30,8 @@
   /etc/syslog.conf              r,
   /sbin/syslogd                 rmix,
   /var/log/**                   rw,
-  /var/run/syslogd.pid          krwl,
-  /var/run/utmp                 rw,
+  /{,var/}run/syslogd.pid          krwl,
+  /{,var/}run/utmp                 rw,
   /var/spool/compaq/nic/messages_fifo rw,
 
   # Site-specific additions and overrides. See local/README for details.

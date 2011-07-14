@@ -38,8 +38,8 @@
   /etc/modules.conf r,
   /etc/ssh/* r,
   /usr/sbin/sshd mrix,
-  /var/run w,
-  /var/run/sshd{,.init}.pid wl,
+  /{,var/}run w,
+  /{,var/}run/sshd{,.init}.pid wl,
 
   @{PROC}/[0-9]*/fd/ r,
   @{PROC}/[0-9]*/loginuid w,
