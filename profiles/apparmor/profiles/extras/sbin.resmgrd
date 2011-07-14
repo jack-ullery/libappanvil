@@ -28,5 +28,5 @@
   /{,var/}run/resmgr.pid lrw,
   /{,var/}run/fence* lrw,
   /{,var/}run/resmgr/classes/** wl,
-  /var/lock/LCK* lrw,
+  /{run,var}/lock/LCK* lrw,
 }

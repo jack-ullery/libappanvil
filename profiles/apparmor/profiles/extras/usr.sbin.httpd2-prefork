@@ -84,7 +84,7 @@
   /usr/share/snmp/mibs/*.{txt,mib} r,
   /usr/share/snmp/mibs/.index wr,
   /usr/share/ssl/openssl.cnf r,
-  /var/lock/httpd2.lock.* wl,
+  /{run,var}/lock/httpd2.lock.* wl,
   /var/log/apache2/* rwl,
   /var/log/httpd/ssl_scache.dir r,
   /var/log/httpd/ssl_scache.pag r,
