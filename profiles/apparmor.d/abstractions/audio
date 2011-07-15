@@ -50,8 +50,8 @@
 # pulse
 /etc/pulse/ r,
 /etc/pulse/* r,
-/{run,dev}/shm r,
-owner /{run,dev}/shmpulse-shm* rwk,
+/{run,dev}/shm/ r,
+owner /{run,dev}/shm/pulse-shm* rwk,
 owner @{HOME}/.pulse-cookie rwk,
 owner @{HOME}/.pulse/ rw,
 owner @{HOME}/.pulse/* rwk,
