@@ -109,6 +109,8 @@ if ($helpers{$fqdbin} eq "enforce") {
     reload($fqdbin);
 }
 
+UI_Info(gettext("\nBefore you begin, you may wish to check if a\nprofile already exists for the application you\nwish to confine. See the following wiki page for\nmore information:\nhttp://wiki.apparmor.net/index.php/Profiles"));
+
 UI_Important(gettext("Please start the application to be profiled in \nanother window and exercise its functionality now.\n\nOnce completed, select the \"Scan\" button below in \norder to scan the system logs for AppArmor events.  \n\nFor each AppArmor event, you will be given the  \nopportunity to choose whether the access should be  \nallowed or denied."));
 
 my $syslog         = 1;
@@ -164,6 +166,7 @@ for my $p (sort keys %helpers) {
 }
 
 UI_Info(gettext("Reloaded AppArmor profiles in enforce mode."));
+UI_Info(gettext("\nPlease consider contributing your new profile! See\nthe following wiki page for more information:\nhttp://wiki.apparmor.net/index.php/Profiles\n"));
 UI_Info(sprintf(gettext('Finished generating profile for %s.'), $fqdbin));
 exit 0;
 
