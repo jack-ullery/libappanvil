@@ -54,12 +54,11 @@ static char *procattr_path(pid_t pid, const char *attr)
 	return NULL;
 }
 
-static int setprocattr(const char *attr, const char *buf, int len)
+static int setprocattr(pid_t tid, const char *attr, const char *buf, int len)
 {
 	int rc = -1;
 	int fd, ret;
 	char *ctl = NULL;
-	pid_t tid = aa_gettid();
 
 	if (!buf) {
 		errno = EINVAL;
@@ -120,7 +119,7 @@ int aa_change_hat(const char *subprofile, unsigned long token)
 		goto out;
 	}
 
-	rc = setprocattr("current", buf, len);
+	rc = setprocattr(aa_gettid(), "current", buf, len);
 out:
 	if (buf) {
 		/* clear local copy of magic token before freeing */
@@ -151,7 +150,7 @@ int aa_change_profile(const char *profile)
 	if (len < 0)
 		return -1;
 
-	rc = setprocattr("current", buf, len);
+	rc = setprocattr(aa_gettid(), "current", buf, len);
 
 	free(buf);
 	return rc;
@@ -172,7 +171,7 @@ int aa_change_onexec(const char *profile)
 	if (len < 0)
 		return -1;
 
-	rc = setprocattr("/proc/%d/attr/exec", buf, len);
+	rc = setprocattr(aa_gettid(), "exec", buf, len);
 
 	free(buf);
 	return rc;
@@ -233,7 +232,7 @@ int aa_change_hatv(const char *subprofiles[], unsigned long token)
 		/* step pos past trailing \0 */
 		pos++;
 
-	rc = setprocattr("/proc/%d/attr/current", buf, pos - buf);
+	rc = setprocattr(aa_gettid(), "current", buf, pos - buf);
 
 out:
 	if (buf) {
