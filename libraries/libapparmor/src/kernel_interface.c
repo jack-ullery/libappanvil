@@ -46,10 +46,18 @@ static inline pid_t aa_gettid(void)
 #endif
 }
 
-static int setprocattr(const char *path, const char *buf, int len)
+static char *procattr_path(pid_t pid, const char *attr)
+{
+	char *path = NULL;
+	if (asprintf(&path, "/proc/%d/attr/%s", pid, attr) > 0)
+		return path;
+	return NULL;
+}
+
+static int setprocattr(const char *attr, const char *buf, int len)
 {
 	int rc = -1;
-	int fd, ret, ctlerr = 0;
+	int fd, ret;
 	char *ctl = NULL;
 	pid_t tid = aa_gettid();
 
@@ -58,10 +66,9 @@ static int setprocattr(const char *path, const char *buf, int len)
 		goto out;
 	}
 
-	ctlerr = asprintf(&ctl, path, tid);
-	if (ctlerr < 0) {
+	ctl = procattr_path(tid, attr);
+	if (!ctl)
 		goto out;
-	}
 
 	fd = open(ctl, O_WRONLY);
 	if (fd == -1) {
@@ -113,7 +120,7 @@ int aa_change_hat(const char *subprofile, unsigned long token)
 		goto out;
 	}
 
-	rc = setprocattr("/proc/%d/attr/current", buf, len);
+	rc = setprocattr("current", buf, len);
 out:
 	if (buf) {
 		/* clear local copy of magic token before freeing */
@@ -144,7 +151,7 @@ int aa_change_profile(const char *profile)
 	if (len < 0)
 		return -1;
 
-	rc = setprocattr("/proc/%d/attr/current", buf, len);
+	rc = setprocattr("current", buf, len);
 
 	free(buf);
 	return rc;
