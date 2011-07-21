@@ -37,16 +37,21 @@
 #define default_symbol_version(real, name, version) \
 		__asm__ (".symver " #real "," #name "@@" #version)
 
+static inline pid_t aa_gettid(void)
+{
+#ifdef SYS_gettid
+	return syscall(SYS_gettid);
+#else
+	return getpid();
+#endif
+}
+
 static int setprocattr(const char *path, const char *buf, int len)
 {
 	int rc = -1;
 	int fd, ret, ctlerr = 0;
 	char *ctl = NULL;
-#ifdef SYS_gettid
-	pid_t tid = syscall(SYS_gettid);
-#else
-	pid_t tid = getpid();
-#endif
+	pid_t tid = aa_gettid();
 
 	if (!buf) {
 		errno = EINVAL;
