@@ -29,7 +29,9 @@ aa_change_hat  - change to or from a "hat" within a AppArmor profile
 B<#include E<lt>sys/apparmor.hE<gt>>
 
 B<int aa_change_hat (char *subprofile, unsigned long magic_token);>
+
 B<int aa_change_hatv (char *subprofiles[], unsigned long magic_token);>
+
 B<int aa_change_hat_vargs (unsigned long magic_token, ...);>
 
 Link with B<-lapparmor> when compiling.

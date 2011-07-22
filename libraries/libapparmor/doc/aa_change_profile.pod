@@ -22,13 +22,15 @@
 
 =head1 NAME
 
-aa_change_profile  - change to another profile within an AppArmor profile
-aa_change_onexec - change to another profile at the next exec
+aa_change_profile, aa_change_onexec - change a tasks profile
+
 =head1 SYNOPSIS
 
 B<#include E<lt>sys/apparmor.hE<gt>>
 
 B<int aa_change_profile(const char *profile);>
+
+B<int aa_change_onexec(const char *profile);>
 
 Link with B<-lapparmor> when compiling.
 
