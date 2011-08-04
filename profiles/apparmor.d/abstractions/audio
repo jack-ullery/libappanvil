@@ -61,3 +61,7 @@ owner /tmp/pulse-*/* rw,
 # libgnome2
 /etc/sound/ r,
 /etc/sound/** r,
+
+# openal
+/etc/openal/alsoft.conf r,
+owner @{HOME}/.alsoftrc r,
