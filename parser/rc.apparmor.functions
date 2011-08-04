@@ -198,6 +198,7 @@ parse_profiles() {
 			aa_log_skipped_msg "$profile"
 			logger -t "AppArmor(init)" -p daemon.warn "Skipping profile $profile"
 			STATUS=2
+			continue
 		elif [ "$skip" -ne 0 ]; then
 			continue
 		fi
