@@ -24,7 +24,7 @@
   /bin/more rmix,
   /bin/rm rmix,
 
-  /etc/groff/man.local r
+  /etc/groff/man.local r,
   /etc/lesskey.bin r,
   /etc/manpath.config r,
   /etc/man.config r,
