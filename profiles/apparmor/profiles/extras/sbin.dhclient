@@ -11,12 +11,12 @@
 # raw sockets, and thus cannot be confined with NetDomain
 #
 # Should these programs have their own domains?
-# /bin/ps                     mixr,
-# /sbin/arp                   rmix,
-# /usr/bin/dig                rmix,
-# /usr/bin/uptime             rmix,
-# /usr/bin/vmstat             rmix,
-# /usr/bin/w                  rmix,
+# /bin/ps                     mrix,
+# /sbin/arp                   mrix,
+# /usr/bin/dig                mrix,
+# /usr/bin/uptime             mrix,
+# /usr/bin/vmstat             mrix,
+# /usr/bin/w                  mrix,
 
 #include <tunables/global>
 
@@ -24,25 +24,30 @@
   #include <abstractions/base>
   #include <abstractions/bash>
   #include <abstractions/nameservice>
-  /sbin/dhclient              rmix,
-  /sbin/dhclient-script       rmix,
-  /bin/bash                   rmix,
-  /bin/df                     rmix,
+
+  network packet packet,
+  network packet raw,
+
+  /sbin/dhclient              mrix,
+
+  /sbin/dhclient-script       mrix,
+  /bin/bash                   mrix,
+  /bin/df                     mrix,
   /bin/netstat                Px,
-  /bin/ps                     mixr,
+  /bin/ps                     mrix,
   /dev/random                 r,
   /etc/dhclient.conf          r,
-  @{PROC}/                      r,
-  @{PROC}/interrupts            r,
-  @{PROC}/net/dev               r,
-  @{PROC}/rtc                   r,
+  @{PROC}/                    r,
+  @{PROC}/interrupts          r,
+  @{PROC}/*/net/dev           r,
+  @{PROC}/rtc                 r,
   # following rule shouldn't work, self is a symlink
-  @{PROC}/self/status           r,
-  /sbin/arp                   rmix,
-  /usr/bin/dig                rmix,
-  /usr/bin/uptime             rmix,
-  /usr/bin/vmstat             rmix,
-  /usr/bin/w                  rmix,
+  @{PROC}/self/status         r,
+  /sbin/arp                   mrix,
+  /usr/bin/dig                mrix,
+  /usr/bin/uptime             mrix,
+  /usr/bin/vmstat             mrix,
+  /usr/bin/w                  mrix,
   /var/lib/dhcp/dhclient.leases     rw,
   /var/lib/dhcp/dhclient-*.leases   rw,
   /var/log/lastlog            r,
@@ -52,4 +57,18 @@
   /{,var/}run/dhclient-*.pid     rw,
   /var/spool                  r,
   /var/spool/mail             r,
+
+  # This one will need to be fleshed out depending on what the user is doing
+  /sbin/dhclient-script mrpx,
+
+  /bin/grep mrix,
+  /bin/sleep mrix,
+  /etc/sysconfig/network/dhcp r,
+  /etc/sysconfig/network/scripts/functions.common r,
+  /etc/sysconfig/network/scripts/functions r,
+  /sbin/ip mrix,
+  /usr/lib/NetworkManager/nm-dhcp-client.action mrix,
+  /var/lib/dhcp/* rw,
+  /var/run/nm-dhclient-*.conf r,
+
 }
