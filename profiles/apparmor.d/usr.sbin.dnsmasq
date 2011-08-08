@@ -25,10 +25,12 @@
   /etc/dnsmasq.conf r,
   /etc/dnsmasq.d/ r,
   /etc/dnsmasq.d/* r,
+  /etc/ethers r,
 
   /usr/sbin/dnsmasq mr,
 
   /{,var/}run/*dnsmasq*.pid w,
+  /{,var/}run/dnsmasq-forwarders r,
   /{,var/}run/dnsmasq/ r,
   /{,var/}run/dnsmasq/* rw,
 
@@ -40,6 +42,8 @@
   # libvirt pid files for dnsmasq
   /{,var/}run/libvirt/network/      r,
   /{,var/}run/libvirt/network/*.pid rw,
+  /var/lib/libvirt/dnsmasq/            r,
+  /var/lib/libvirt/dnsmasq/*.hostsfile r,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.dnsmasq>
