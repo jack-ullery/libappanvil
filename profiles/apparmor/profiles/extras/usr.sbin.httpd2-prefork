@@ -17,6 +17,7 @@
   #include <abstractions/kerberosclient>
   #include <abstractions/nameservice>
   #include <abstractions/perl>
+  #include <abstractions/openssl>
 
   capability kill,
   capability net_bind_service,
@@ -83,7 +84,6 @@
   /usr/share/snmp/mibs r,
   /usr/share/snmp/mibs/*.{txt,mib} r,
   /usr/share/snmp/mibs/.index wr,
-  /usr/share/ssl/openssl.cnf r,
   /{run,var}/lock/httpd2.lock.* wl,
   /var/log/apache2/* rwl,
   /var/log/httpd/ssl_scache.dir r,

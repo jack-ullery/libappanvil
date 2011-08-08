@@ -15,6 +15,7 @@
   #include <abstractions/nameservice>
   #include <abstractions/kerberosclient>
   #include <program-chunks/postfix-common>
+  #include <abstractions/openssl>
 
   capability dac_override,
   capability dac_read_search,
@@ -43,7 +44,6 @@
   /usr/lib/sasl2/*                            mr,
 
   /usr/share/ssl/certs/ca-bundle.crt          r,
-  /usr/share/ssl/openssl.cnf                  r,
 
   /{var/spool/postfix/,}pid/inet.*               rw,
   /{var/spool/postfix/,}private/anvil            w,

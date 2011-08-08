@@ -14,5 +14,6 @@
   /etc/ssl/certs/* r,
   /usr/share/ca-certificates/ r,
   /usr/share/ca-certificates/** r,
+  /usr/share/ssl/certs/ca-bundle.crt          r,
   /usr/local/share/ca-certificates/ r,
   /usr/local/share/ca-certificates/** r,

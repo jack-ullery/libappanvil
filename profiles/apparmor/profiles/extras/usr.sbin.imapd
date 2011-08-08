@@ -15,10 +15,10 @@
   #include <abstractions/nameservice>
   #include <abstractions/authentication>
   #include <abstractions/user-mail>
+  #include <abstractions/openssl>
 
   /dev/urandom                              r,
   /tmp/*                                    rwl,
   /usr/sbin/imapd                           r,
   /usr/share/ssl/certs/imapd.pem            r,
-  /usr/share/ssl/openssl.cnf                r,
 }
