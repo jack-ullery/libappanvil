@@ -58,7 +58,8 @@
   /var/spool/cups/** rw,
   /var/spool/cups/tmp w,
   /var/spool/cups/tmp/ r,
-  /{var/,}run/cups/** rw,
+  /{,var/}run/cups/ rw,
+  /{,var/}run/cups/** rw,
   /var/cache/cups/ rw,
   /var/cache/cups/** rw,
 }
