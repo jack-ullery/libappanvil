@@ -24,6 +24,7 @@
   capability sys_chroot,
   capability sys_resource,
   capability sys_time,
+  capability sys_nice,
 
   network inet dgram,
   network inet stream,
