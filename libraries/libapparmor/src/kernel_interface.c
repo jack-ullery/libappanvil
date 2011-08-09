@@ -54,6 +54,142 @@ static char *procattr_path(pid_t pid, const char *attr)
 	return NULL;
 }
 
+/**
+ * aa_getprocattr_raw - get the contents of @attr for @tid into @buf
+ * @tid: tid of task to query
+ * @attr: which /proc/<tid>/attr/<attr> to query
+ * @buf: buffer to store the result in
+ * @len: size of the buffer
+ * @mode: if set will point to mode string within buffer if it is present
+ *
+ * Returns: size of data read or -1 on error, and sets errno
+ */
+int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len,
+		       char **mode)
+{
+	int rc = -1;
+	int fd, ret;
+	char *tmp = NULL;
+	int size = 0;
+
+	if (!buf || len <= 0) {
+		errno = EINVAL;
+		goto out;
+	}
+
+	tmp = procattr_path(tid, attr);
+	if (!tmp)
+		goto out;
+
+	fd = open(tmp, O_RDONLY);
+	free(tmp);
+	if (fd == -1) {
+		goto out;
+	}
+
+	tmp = buf;
+	do {
+		ret = read(fd, tmp, len);
+		if (ret <= 0)
+			break;
+		tmp += ret;
+		size += ret;
+		len -= ret;
+		if (len < 0) {
+			errno = ERANGE;
+			goto out2;
+		}
+	} while (ret > 0);
+
+	if (ret < 0) {
+		int saved;
+		if (ret != -1) {
+			errno = EPROTO;
+		}
+		saved = errno;
+		(void)close(fd);
+		errno = saved;
+		goto out;
+	} else if (size > 0 && buf[size - 1] != 0) {
+		/* check for null termination */
+		if (buf[size - 1] == '\n') {
+			buf[size - 1] = 0;
+		} else if (len == 0) {
+			errno = ERANGE;
+			goto out2;
+		} else {
+			buf[size] = 0;
+			size++;
+		}
+
+		/*
+		 * now separate the mode.  If we don't find it just
+		 * return NULL
+		 */
+		if (mode)
+			*mode = NULL;
+		if (strcmp(buf, "unconfined") != 0 &&
+		    size > 4 && buf[size - 2] == ')') {
+			int pos = size - 3;
+			while (pos > 0 &&
+			       !(buf[pos] == ' ' && buf[pos + 1] == '('))
+				pos--;
+			if (pos > 0) {
+				buf[pos] = 0; /* overwrite ' ' */
+				buf[size - 2] = 0; /* overwrite trailing ) */
+				if (mode)
+					*mode = &buf[pos + 2]; /* skip '(' */
+			}
+		}
+	}
+	rc = size;
+
+out2:
+	(void)close(fd);
+out:
+	return rc;
+}
+
+#define INITIAL_GUESS_SIZE 128
+
+/**
+ * aa_getprocattr - get the contents of @attr for @tid into @buf
+ * @tid: tid of task to query
+ * @attr: which /proc/<tid>/attr/<attr> to query
+ * @buf: allocated buffer the result is stored in
+ * @mode: if set will point to mode string within buffer if it is present
+ *
+ * Returns: size of data read or -1 on error, and sets errno
+ */
+int aa_getprocattr(pid_t tid, const char *attr, char **buf, char **mode)
+{
+	int rc, size = INITIAL_GUESS_SIZE/2;
+	char *buffer = NULL;
+
+	if (!buf) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	do {
+		size <<= 1;
+		buffer = realloc(buffer, size);
+		if (!buffer)
+			return -1;
+		memset(buffer, 0, size);
+
+		rc = aa_getprocattr_raw(tid, attr, buffer, size, mode);
+	} while (rc == -1 && errno == ERANGE);
+
+	if (rc == -1) {
+		free(buffer);
+		size = -1;
+	} else
+		*buf = buffer;
+
+	return size;
+}
+
 static int setprocattr(pid_t tid, const char *attr, const char *buf, int len)
 {
 	int rc = -1;

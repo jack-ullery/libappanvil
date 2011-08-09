@@ -23,6 +23,9 @@ APPARMOR_1.1 {
         aa_change_onexec;
         parse_record;
         free_record;
+        aa_getprocattr_raw;
+        aa_getprocattr;
+
   local:
 	*;
 } APPARMOR_1.0;
