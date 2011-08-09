@@ -20,6 +20,9 @@
 
 __BEGIN_DECLS
 
+/* Prototypes for apparmor state queries */
+extern int aa_find_mountpoint(char **mnt);
+
 /* Prototypes for self directed domain transitions
  * see <http://apparmor.net>
  * Please see the change_hat(2) manpage for information.

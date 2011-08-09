@@ -27,6 +27,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
+#include <mntent.h>
 
 /* some non-Linux systems do not define a static value */
 #ifndef PATH_MAX
@@ -37,6 +38,53 @@
 		__asm__ (".symver " #real "," #name "@" #version)
 #define default_symbol_version(real, name, version) \
 		__asm__ (".symver " #real "," #name "@@" #version)
+
+/**
+ * aa_find_mountpoint - find where the apparmor interface filesystem is mounted
+ * @mnt: returns buffer with the mountpoint string
+ *
+ * Returns: 0 on success else -1 on error
+ *
+ * NOTE: this function only supports versions of apparmor using securityfs
+ */
+int aa_find_mountpoint(char **mnt)
+{
+	struct stat statbuf;
+	struct mntent *mntpt;
+	FILE *mntfile;
+	int rc = -1;
+
+	if (!mnt) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	mntfile = setmntent("/proc/mounts", "r");
+	if (!mntfile)
+		return -1;
+
+	while ((mntpt = getmntent(mntfile))) {
+		char *proposed = NULL;
+		if (strcmp(mntpt->mnt_type, "securityfs") != 0)
+			continue;
+
+		if (asprintf(&proposed, "%s/apparmor", mntpt->mnt_dir) < 0)
+			/* ENOMEM */
+			break;
+
+		if (stat(proposed, &statbuf) == 0) {
+			*mnt = proposed;
+			rc = 0;
+			break;
+		}
+		free(proposed);
+	}
+	endmntent(mntfile);
+	if (rc == -1)
+		errno = ENOENT;
+	return rc;
+}
+
 
 static inline pid_t aa_gettid(void)
 {
