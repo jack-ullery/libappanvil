@@ -34,10 +34,16 @@ extern int aa_change_onexec(const char *profile);
 extern int aa_change_hatv(const char *subprofiles[], unsigned long token);
 extern int (aa_change_hat_vargs)(unsigned long token, int count, ...);
 
-/* Protypes for introspecting task confinement */
+/* Protypes for introspecting task confinement
+ * Please see the aa_getcon(2) manpage for information
+ */
 extern int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len,
 			      char **mode);
 extern int aa_getprocattr(pid_t tid, const char *attr, char **buf, char **mode);
+extern int aa_gettaskcon(pid_t target, char **con, char **mode);
+extern int aa_getcon(char **con, char **mode);
+extern int aa_getpeercon_raw(int fd, char *buffer, int *size);
+extern int aa_getpeercon(int fd, char **con);
 
 #define __macroarg_counter(Y...) __macroarg_count1 ( , ##Y)
 #define __macroarg_count1(Y...) __macroarg_count2 (Y, 16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)

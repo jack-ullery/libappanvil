@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
+#include <sys/socket.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <limits.h>
@@ -406,4 +407,125 @@ int (aa_change_hat_vargs)(unsigned long token, int nhats, ...)
 	argv[nhats] = NULL;
 	va_end(ap);
 	return aa_change_hatv(argv, token);
+}
+
+/**
+ * aa_gettaskcon - get the confinement for task @target in an allocated buffer
+ * @target: task to query
+ * @con: pointer to returned buffer with the confinement string
+ * @mode: if provided will point to the mode string in @con if present
+ *
+ * Returns: length of confinement data or -1 on error and sets errno
+ *
+ * Guarentees that @con and @mode are null terminated.  The length returned
+ * is for all data including both @con and @mode, and maybe > than strlen(@con)
+ * even if @mode is NULL
+ *
+ * Caller is responsible for freeing the buffer returned in @con.  @mode is
+ * always contained within @con's buffer and so NEVER do free(@mode)
+ */
+int aa_gettaskcon(pid_t target, char **con, char **mode)
+{
+	return aa_getprocattr(target, "current", con, mode);
+}
+
+/**
+ * aa_getcon - get the confinement for current task in an allocated buffer
+ * @con: pointer to return buffer with the confinement if successful
+ * @mode: if provided will point to the mode string in @con if present
+ *
+ * Returns: length of confinement data or -1 on error and sets errno
+ *
+ * Guarentees that @con and @mode are null terminated.  The length returned
+ * is for all data including both @con and @mode, and may > than strlen(@con)
+ * even if @mode is NULL
+ *
+ * Caller is responsible for freeing the buffer returned in @con.  @mode is
+ * always contained within @con's buffer and so NEVER do free(@mode)
+ */
+int aa_getcon(char **con, char **mode)
+{
+	return aa_gettaskcon(aa_gettid(), con, mode);
+}
+
+
+#ifndef SO_PEERSEC
+#define SO_PEERSEC 31
+#endif
+
+/**
+ * aa_getpeercon_raw - get the confinement of the socket's peer (other end)
+ * @fd: socket to get peer confinement for
+ * @con: pointer to buffer to store confinement string
+ * @size: initially contains size of the buffer, returns size of data read
+ *
+ * Returns: length of confinement data including null termination or -1 on error
+ *          if errno == ERANGE then @size will hold the size needed
+ */
+int aa_getpeercon_raw(int fd, char *buffer, int *size)
+{
+	socklen_t optlen = *size;
+	int rc;
+
+	if (optlen <= 0 || buffer == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	rc = getsockopt(fd, SOL_SOCKET, SO_PEERSEC, buffer, &optlen);
+	if (rc == -1 || optlen <= 0)
+		goto out;
+
+	/* check for null termination */
+	if (buffer[optlen - 1] != 0) {
+		if (optlen < *size) {
+			buffer[optlen] = 0;
+			optlen++;
+		} else {
+			/* buffer needs to be bigger by 1 */
+			rc = -1;
+			errno = ERANGE;
+			optlen++;
+		}
+	}
+out:
+	*size = optlen;
+	return rc;
+}
+
+/**
+ * aa_getpeercon - get the confinement of the socket's peer (other end)
+ * @fd: socket to get peer confinement for
+ * @con: pointer to allocated buffer with the confinement string
+ *
+ * Returns: length of confinement data including null termination or -1 on error
+ *
+ * Caller is responsible for freeing the buffer returned.
+ */
+int aa_getpeercon(int fd, char **con)
+{
+	int rc, size = INITIAL_GUESS_SIZE;
+	char *buffer = NULL;
+
+	if (!con) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	do {
+		buffer = realloc(buffer, size);
+		if (!buffer)
+			return -1;
+		memset(buffer, 0, size);
+
+		rc = aa_getpeercon_raw(fd, buffer, &size);
+	} while (rc == -1 && errno == ERANGE);
+
+	if (rc == -1) {
+		free(buffer);
+		size = -1;
+	} else
+		*con = buffer;
+
+	return size;
 }

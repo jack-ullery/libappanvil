@@ -6,6 +6,7 @@
 #	License.
 
 SRC=access.c \
+    introspect.c \
     changeprofile.c \
     changehat.c \
     changehat_fork.c \
@@ -106,6 +107,7 @@ LDLIBS+=$(LIBIMMUNIX)
 EXEC=$(SRC:%.c=%)
 
 TESTS=access \
+      introspect \
       capabilities \
       changeprofile \
       changehat \

@@ -21,6 +21,10 @@ APPARMOR_1.1 {
         aa_change_hat_vargs;
         aa_change_profile;
         aa_change_onexec;
+        aa_gettaskcon;
+        aa_getcon;
+        aa_getpeercon_raw;
+        aa_getpeercon;
         parse_record;
         free_record;
         aa_getprocattr_raw;
