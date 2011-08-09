@@ -19,6 +19,7 @@
  *   Ltd.
  */
 
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -304,6 +305,242 @@ static void display_optimize(char *command)
 	print_flag_table(optflag_table);
 }
 
+
+/* Treat conf file like options passed on command line
+ */
+static int getopt_long_file(FILE *f, const struct option *longopts,
+			    char **optarg, int *longindex)
+{
+	static char line[256];
+	char *pos, *opt, *save;
+	int i;
+
+	for (;;) {
+		if (!fgets(line, 256, f))
+			return -1;
+		pos = line;
+		while (isblank(*pos))
+			pos++;
+		if (*pos == '#')
+			continue;
+		opt = strtok_r(pos, " \t\r\n=", &save);
+		/* blank line */
+		if (!opt)
+			continue;
+
+		for (i = 0; longopts[i].name &&
+			     strcmp(longopts[i].name, opt) != 0; i++) ;
+		if (!longopts[i].name) {
+			PERROR("%s: unknown option (%s) in config file.\n",
+			       progname, opt);
+			/* skip it */
+			continue;
+		}
+		break;
+	}
+
+	if (longindex)
+		*longindex = i;
+
+	if (*save) {
+		int len;
+		while(isblank(*save))
+			save++;
+		len = strlen(save) - 1;
+		if (save[len] == '\n')
+			save[len] = 0;
+	}
+
+	switch (longopts[i].has_arg) {
+	case 0:
+		*optarg = NULL;
+		break;
+	case 1:
+		if (!strlen(save)) {
+			*optarg = NULL;
+			return '?';
+		}
+		*optarg = save;
+		break;
+	case 2:
+		*optarg = save;
+		break;
+	default:
+		PERROR("%s: internal error bad longopt value\n", progname);
+		exit(1);
+	}
+
+	if (longopts[i].flag == NULL)
+		return longopts[i].val;
+	else
+		*longopts[i].flag = longopts[i].val;
+	return 0;
+}
+
+/* process a single argment from getopt_long
+ * Returns: 1 if an action arg, else 0
+ */
+static int process_arg(int c, char *optarg)
+{
+	int count = 0;
+
+	switch (c) {
+	case 0:
+		PERROR("Assert, in getopt_long handling\n");
+		display_usage(progname);
+		exit(0);
+		break;
+	case 'a':
+		count++;
+		option = OPTION_ADD;
+		break;
+	case 'd':
+		debug++;
+		skip_read_cache = 1;
+		break;
+	case 'h':
+		if (!optarg) {
+			display_usage(progname);
+		} else if (strcmp(optarg, "Dump") == 0 ||
+			   strcmp(optarg, "dump") == 0 ||
+			   strcmp(optarg, "D") == 0) {
+			display_dump(progname);
+		} else if (strcmp(optarg, "Optimize") == 0 ||
+			   strcmp(optarg, "optimize") == 0 ||
+			   strcmp(optarg, "O") == 0) {
+			display_optimize(progname);
+		} else {
+			PERROR("%s: Invalid --help option %s\n",
+			       progname, optarg);
+			exit(1);
+		}
+		exit(0);
+		break;
+	case 'r':
+		count++;
+		option = OPTION_REPLACE;
+		break;
+	case 'R':
+		count++;
+		option = OPTION_REMOVE;
+		skip_cache = 1;
+		break;
+	case 'V':
+		display_version();
+		exit(0);
+		break;
+	case 'I':
+		add_search_dir(optarg);
+		break;
+	case 'b':
+		set_base_dir(optarg);
+		break;
+	case 'B':
+		binary_input = 1;
+		skip_cache = 1;
+		break;
+	case 'C':
+		opt_force_complain = 1;
+		skip_cache = 1;
+		break;
+	case 'N':
+		names_only = 1;
+		skip_cache = 1;
+		break;
+	case 'S':
+		count++;
+		option = OPTION_STDOUT;
+		skip_read_cache = 1;
+		kernel_load = 0;
+		break;
+	case 'o':
+		count++;
+		option = OPTION_OFILE;
+		skip_read_cache = 1;
+		kernel_load = 0;
+		ofile = fopen(optarg, "w");
+		if (!ofile) {
+			PERROR("%s: Could not open file %s\n",
+			       progname, optarg);
+			exit(1);
+		}
+		break;
+	case 'f':
+		subdomainbase = strndup(optarg, PATH_MAX);
+		break;
+	case 'D':
+		skip_read_cache = 1;
+		if (!optarg) {
+			dump_vars = 1;
+		} else if (strcmp(optarg, "variables") == 0) {
+			dump_vars = 1;
+		} else if (strcmp(optarg, "expanded-variables") == 0) {
+			dump_expanded_vars = 1;
+		} else if (!handle_flag_table(dumpflag_table, optarg,
+					      &dfaflags)) {
+			PERROR("%s: Invalid --Dump option %s\n",
+			       progname, optarg);
+			exit(1);
+		}
+		break;
+	case 'O':
+		skip_read_cache = 1;
+
+		if (!handle_flag_table(optflag_table, optarg,
+				       &dfaflags)) {
+			PERROR("%s: Invalid --Optimize option %s\n",
+			       progname, optarg);
+			exit(1);
+		}
+		break;
+	case 'm':
+		match_string = strdup(optarg);
+		break;
+	case 'q':
+		conf_verbose = 0;
+		conf_quiet = 1;
+		break;
+	case 'v':
+		conf_verbose = 1;
+		conf_quiet = 0;
+		break;
+	case 'n':
+		profile_namespace = strdup(optarg);
+		break;
+	case 'X':
+		read_implies_exec = 1;
+		break;
+	case 'K':
+		skip_cache = 1;
+		break;
+	case 'k':
+		show_cache = 1;
+		break;
+	case 'W':
+		write_cache = 1;
+		break;
+	case 'T':
+		skip_read_cache = 1;
+		break;
+	case 'Q':
+		kernel_load = 0;
+		break;
+	case 'p':
+		count++;
+		kernel_load = 0;
+		skip_cache = 1;
+		preprocess_only = 1;
+		skip_mode_force = 1;
+		break;
+	default:
+		display_usage(progname);
+		exit(0);
+		break;
+	}
+
+	return count;
+}
+
 static int process_args(int argc, char *argv[])
 {
 	int c, o;
@@ -312,159 +549,7 @@ static int process_args(int argc, char *argv[])
 
 	while ((c = getopt_long(argc, argv, "adf:h::rRVvI:b:BCD:NSm:qQn:XKTWkO:po:", long_options, &o)) != -1)
 	{
-		switch (c) {
-		case 0:
-			PERROR("Assert, in getopt_long handling\n");
-			display_usage(progname);
-			exit(0);
-			break;
-		case 'a':
-			count++;
-			option = OPTION_ADD;
-			break;
-		case 'd':
-			debug++;
-			skip_read_cache = 1;
-			break;
-		case 'h':
-			if (!optarg) {
-				display_usage(progname);
-			} else if (strcmp(optarg, "Dump") == 0 ||
-				   strcmp(optarg, "dump") == 0 ||
-				   strcmp(optarg, "D") == 0) {
-				display_dump(progname);
-			} else if (strcmp(optarg, "Optimize") == 0 ||
-				   strcmp(optarg, "optimize") == 0 ||
-				   strcmp(optarg, "O") == 0) {
-				display_optimize(progname);
-			} else {
-				PERROR("%s: Invalid --help option %s\n",
-				       progname, optarg);
-				exit(1);
-			}	
-			exit(0);
-			break;
-		case 'r':
-			count++;
-			option = OPTION_REPLACE;
-			break;
-		case 'R':
-			count++;
-			option = OPTION_REMOVE;
-			skip_cache = 1;
-			break;
-		case 'V':
-			display_version();
-			exit(0);
-			break;
-		case 'I':
-			add_search_dir(optarg);
-			break;
-		case 'b':
-			set_base_dir(optarg);
-			break;
-		case 'B':
-			binary_input = 1;
-			skip_cache = 1;
-			break;
-		case 'C':
-			opt_force_complain = 1;
-			skip_cache = 1;
-			break;
-		case 'N':
-			names_only = 1;
-			skip_cache = 1;
-			break;
-		case 'S':
-			count++;
-			option = OPTION_STDOUT;
-			skip_read_cache = 1;
-			kernel_load = 0;
-			break;
-		case 'o':
-			count++;
-			option = OPTION_OFILE;
-			skip_read_cache = 1;
-			kernel_load = 0;
-			ofile = fopen(optarg, "w");
-			if (!ofile) {
-				PERROR("%s: Could not open file %s\n",
-				       progname, optarg);
-				exit(1);
-			}
-			break;
-		case 'f':
-			subdomainbase = strndup(optarg, PATH_MAX);
-			break;
-		case 'D':
-			skip_read_cache = 1;
-			if (!optarg) {
-				dump_vars = 1;
-			} else if (strcmp(optarg, "variables") == 0) {
-				dump_vars = 1;
-			} else if (strcmp(optarg, "expanded-variables") == 0) {
-				dump_expanded_vars = 1;
-			} else if (!handle_flag_table(dumpflag_table, optarg,
-						      &dfaflags)) {
-				PERROR("%s: Invalid --Dump option %s\n",
-				       progname, optarg);
-				exit(1);
-			}
-			break;
-		case 'O':
-			skip_read_cache = 1;
-
-			if (!handle_flag_table(optflag_table, optarg,
-					       &dfaflags)) {
-				PERROR("%s: Invalid --Optimize option %s\n",
-				       progname, optarg);
-				exit(1);
-			}
-			break;
-		case 'm':
-			match_string = strdup(optarg);
-			break;
-		case 'q':
-			conf_verbose = 0;
-			conf_quiet = 1;
-			break;
-		case 'v':
-			conf_verbose = 1;
-			conf_quiet = 0;
-			break;
-		case 'n':
-			profile_namespace = strdup(optarg);
-			break;
-		case 'X':
-			read_implies_exec = 1;
-			break;
-		case 'K':
-			skip_cache = 1;
-			break;
-		case 'k':
-			show_cache = 1;
-			break;
-		case 'W':
-			write_cache = 1;
-			break;
-		case 'T':
-			skip_read_cache = 1;
-			break;
-		case 'Q':
-			kernel_load = 0;
-			break;
-		case 'p':
-			count++;
-			kernel_load = 0;
-			skip_cache = 1;
-			preprocess_only = 1;
-			skip_mode_force = 1;
-			break;
-		default:
-			display_usage(progname);
-			exit(0);
-			break;
-		}
+		count += process_arg(c, optarg);
 	}
 
 	if (count > 1) {
@@ -476,6 +561,21 @@ static int process_args(int argc, char *argv[])
 
 	PDEBUG("optind = %d argc = %d\n", optind, argc);
 	return optind;
+}
+
+static int process_config_file(const char *name)
+{
+	char *optarg;
+	FILE *f;
+	int c, o;
+
+	f = fopen(name, "r");
+	if (!f)
+		return 0;
+
+	while ((c = getopt_long_file(f, long_options, &optarg, &o)) != -1)
+		process_arg(c, optarg);
+	return 1;
 }
 
 static inline char *try_subdomainfs_mountpoint(const char *mntpnt,
@@ -990,6 +1090,7 @@ int main(int argc, char *argv[])
 
 	init_base_dir();
 
+	process_config_file("/etc/apparmor/parser.conf");
 	optind = process_args(argc, argv);
 
 	setlocale(LC_MESSAGES, "");

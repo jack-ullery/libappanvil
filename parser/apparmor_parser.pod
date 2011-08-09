@@ -199,6 +199,38 @@ Give a quick reference guide.
 
 =back
 
+=head1 CONFIG FILE
+
+An optional config file /etc/apparmor/parser.conf can be used to specify the
+default options for the parser, which then can be overridden using the command
+line options.
+
+The config file ignores leading whitespace and treats lines that begin with #
+as comments.  Config options are specified one per line using the same format
+as the longform command line options (without the preceding --).
+
+Eg.
+    #comment
+
+    optimize=no-expr-tree
+    optimize=compress-fast
+
+As with the command line some options accumulate and others override, ie. when
+there are conflicting versions of switch the last option is the one chosen.
+
+Eg.
+    Optimize=no-minimize
+    Optimize=minimize
+
+would result in Optimize=minimize being set.
+
+The Include, Dump, and Optimize options accululate except for the inversion
+option (no-X vs. X), and a couple options that work by setting/clearing
+multiple options (compress-small).  In that case the option will override
+the flags it sets but will may accumulate with others.
+
+All other options override previously set values.
+
 =head1 BUGS
 
 If you find any bugs, please report them at
