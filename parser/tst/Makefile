@@ -4,9 +4,10 @@ TESTS=simple.pl
 PARSER_DIR=..
 PARSER_BIN=apparmor_parser
 PARSER=$(PARSER_DIR)/$(PARSER_BIN)
+PROVE_ARG=-f
 
 ifeq ($(VERBOSE),1)
-  PROVE_ARG=-v
+  PROVE_ARG+=-v
 endif
 
 all: tests
@@ -14,8 +15,13 @@ all: tests
 .PHONY: tests error_output gen_xtrans parser_sanity caching
 tests: error_output gen_xtrans parser_sanity caching
 
-gen_xtrans:
+GEN_TRANS_DIRS=simple_tests/generated_x/ simple_tests/generated_perms_leading/ simple_tests/generated_perms_safe/
+
+gen_xtrans: $(GEN_TRANS_DIRS)
 	./gen-xtrans.pl
+
+$(GEN_TRANS_DIRS):
+	mkdir $@
 
 error_output: $(PARSER)
 	$(PARSER) -S -I errors >/dev/null errors/okay.sd
@@ -39,7 +45,4 @@ $(PARSER):
 	make -C $(PARSER_DIR) $(PARSER_BIN)
 
 clean:
-	find simple_tests/generated_x/ \
-	     simple_tests/generated_perms_leading/ \
-	     simple_tests/generated_perms_safe/ \
-		-type f | xargs rm -f
+	find $(GEN_TRANS_DIRS) -type f | xargs rm -f
