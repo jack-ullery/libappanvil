@@ -6,6 +6,7 @@ parser/tst_misc
 parser/tst_regex
 parser/tst_symtab
 parser/tst_variable
+parser/tst/simple_tests/generated_*/*
 parser/parser_lex.c
 parser/parser_version.h
 parser/parser_yacc.c
