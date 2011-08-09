@@ -16,6 +16,7 @@ APPARMOR_1.0 {
 
 APPARMOR_1.1 {
   global:
+        aa_is_enabled;
         aa_find_mountpoint;
         aa_change_hat;
         aa_change_hatv;

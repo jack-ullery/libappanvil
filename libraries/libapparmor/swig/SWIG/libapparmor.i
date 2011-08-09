@@ -13,6 +13,7 @@
  * are manually inserted here
  */
 
+extern int aa_is_enabled(void);
 extern int aa_find_mountpoint(char **mnt);
 extern int aa_change_hat(const char *subprofile, unsigned long magic_token);
 extern int aa_change_profile(const char *profile);

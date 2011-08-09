@@ -29,6 +29,8 @@
 #include <stdarg.h>
 #include <mntent.h>
 
+#include "apparmor.h"
+
 /* some non-Linux systems do not define a static value */
 #ifndef PATH_MAX
 # define PATH_MAX 4096
@@ -85,6 +87,50 @@ int aa_find_mountpoint(char **mnt)
 	return rc;
 }
 
+/**
+ * aa_is_enabled - determine if apparmor is enabled
+ *
+ * Returns: 1 if enabled else reason it is not, or 0 on error
+ *
+ * ENOSYS - no indication apparmor is present in the system
+ * ENOENT - enabled but interface could not be found
+ * ECANCELED - disabled at boot
+ * ENOMEM - out of memory
+ */
+int aa_is_enabled(void)
+{
+	int serrno, fd, rc, size;
+	char buffer[2];
+	char *mnt;
+
+	/* if the interface mountpoint is available apparmor is enabled */
+	rc = aa_find_mountpoint(&mnt);
+	if (rc == 0) {
+		free(mnt);
+		return 1;
+	}
+
+	/* determine why the interface mountpoint isn't available */
+	fd = open("/sys/module/apparmor/parameters/enabled", O_RDONLY);
+	if (fd == -1) {
+		if (errno == ENOENT)
+			errno = ENOSYS;
+		return 0;
+	}
+
+	size = read(fd, &buffer, 2);
+	serrno = errno;
+	close(fd);
+	errno = serrno;
+
+	if (size > 0) {
+		if (buffer[0] == 'Y')
+			errno = ENOENT;
+		else
+			errno = ECANCELED;
+	}
+	return 0;
+}
 
 static inline pid_t aa_gettid(void)
 {
