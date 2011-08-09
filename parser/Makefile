@@ -228,7 +228,7 @@ tst_%: parser_%.c parser.h $(filter-out parser_%.o, ${TEST_OBJECTS})
 check: tests
 
 .SILENT: tests
-tests: ${TESTS}
+tests: apparmor_parser ${TESTS}
 	sh -e -c 'for test in ${TESTS} ; do echo "*** running $${test}" && ./$${test}; done'
 	$(Q)make -s -C tst tests
 
