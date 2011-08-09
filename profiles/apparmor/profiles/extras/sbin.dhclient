@@ -69,6 +69,6 @@
   /sbin/ip mrix,
   /usr/lib/NetworkManager/nm-dhcp-client.action mrix,
   /var/lib/dhcp/* rw,
-  /var/run/nm-dhclient-*.conf r,
+  /{,var/}run/nm-dhclient-*.conf r,
 
 }
