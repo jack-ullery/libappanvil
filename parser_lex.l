@@ -508,7 +508,7 @@ LT_EQUAL	<=
 	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
 
 
-	-?{NUMBER}[kKMG]?  {
+	-?{NUMBER}[[:alpha:]]*  {
 			DUMP_PREPROCESS;
 		        yylval.var_val = strdup(yytext);
 		        return TOK_VALUE;
