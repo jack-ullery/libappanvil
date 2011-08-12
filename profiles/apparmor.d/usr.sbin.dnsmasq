@@ -36,14 +36,14 @@
 
   /var/lib/misc/dnsmasq.leases rw, # Required only for DHCP server usage
 
-  # libvirt lease files for dnsmasq
+  # libvirt lease and hosts files for dnsmasq
+  /var/lib/libvirt/dnsmasq/            r,
   /var/lib/libvirt/dnsmasq/*.leases rw,
+  /var/lib/libvirt/dnsmasq/*.hostsfile r,
 
   # libvirt pid files for dnsmasq
   /{,var/}run/libvirt/network/      r,
   /{,var/}run/libvirt/network/*.pid rw,
-  /var/lib/libvirt/dnsmasq/            r,
-  /var/lib/libvirt/dnsmasq/*.hostsfile r,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.dnsmasq>
