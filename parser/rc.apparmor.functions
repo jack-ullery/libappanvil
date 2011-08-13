@@ -296,7 +296,7 @@ is_apparmor_loaded() {
 }
 
 is_securityfs_mounted() {
-	grep -q securityfs /proc/filesystems && grep -q securityfs /proc/mounts
+	test -d ${SECURITYFS} -a -d /sys/fs/cgroup/systemd || grep -q securityfs /proc/filesystems && grep -q securityfs /proc/mounts
 	return $?
 }
 
