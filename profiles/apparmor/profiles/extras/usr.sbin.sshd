@@ -29,6 +29,7 @@
   capability kill,
   capability setgid,
   capability setuid,
+  capability audit_control,
 
   /dev/ptmx rw,
   /dev/urandom r,
@@ -37,7 +38,11 @@
   /etc/hosts.deny r,
   /etc/modules.conf r,
   /etc/ssh/* r,
+  /proc/*/oom_adj rw,
+  /proc/*/oom_score_adj rw,
   /usr/sbin/sshd mrix,
+  /var/log/btmp r,
+  /var/log/lastlog k,
   /{,var/}run w,
   /{,var/}run/sshd{,.init}.pid wl,
 
@@ -46,16 +51,16 @@
 
 # should only be here for use in non-change-hat openssh
 # duplicated from EXEC hat
-  /bin/ash Ux,
-  /bin/bash Ux,
-  /bin/bash2 Ux,
-  /bin/bsh Ux,
-  /bin/csh Ux,
-  /bin/ksh Ux,
-  /bin/sh Ux,
-  /bin/tcsh Ux,
-  /bin/zsh Ux,
-  /sbin/nologin Ux,
+  /bin/ash rUx,
+  /bin/bash rUx,
+  /bin/bash2 rUx,
+  /bin/bsh rUx,
+  /bin/csh rUx,
+  /bin/ksh rUx,
+  /bin/sh rUx,
+  /bin/tcsh rUx,
+  /bin/zsh rUx,
+  /sbin/nologin rUx,
 
 # Call passwd for password change when expired
 #  /usr/bin/passwd Px,
