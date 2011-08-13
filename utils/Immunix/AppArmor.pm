@@ -1040,13 +1040,13 @@ sub setprofileflags ($$) {
     if (open(PROFILE, "$filename")) {
         if (open(NEWPROFILE, ">$filename.new")) {
             while (<PROFILE>) {
-                if (m/^\s*(("??\/.+?"??)|(profile\s+("??.+?"??)))\s+(flags=\(.+\)\s+)*\{\s*$/) {
-                    my ($binary, $flags) = ($1, $5);
+                if (m/^(\s*)(("??\/.+?"??)|(profile\s+("??.+?"??)))\s+(flags=\(.+\)\s+)*\{\s*$/) {
+                    my ($space, $binary, $flags) = ($1, $2, $6);
 
                     if ($newflags) {
-                        $_ = "$binary flags=($newflags) {\n";
+                        $_ = "$space$binary flags=($newflags) {\n";
                     } else {
-                        $_ = "$binary {\n";
+                        $_ = "$space$binary {\n";
                     }
                 } elsif (m/^(\s*\^\S+)\s+(flags=\(.+\)\s+)*\{\s*$/) {
                     my ($hat, $flags) = ($1, $2);
