@@ -78,9 +78,9 @@ usage() {
 
 start_aa_event() {
 	if [ -x "$AA_EV_BIN" -a "${APPARMOR_ENABLE_AAEVENTD}" = "yes" ] ; then
-		sd_action "Starting AppArmor Event daemon" startproc -f -p $AA_EV_PIDFILE $AA_EV_BIN -p $AA_EV_PIDFILE
+		sd_action "Starting AppArmor Event daemon" startproc -p $AA_EV_PIDFILE $AA_EV_BIN -p $AA_EV_PIDFILE
 	elif [ -x "$SD_EV_BIN" -a "${APPARMOR_ENABLE_AAEVENTD}" = "yes" ] ; then
-		sd_action "Starting AppArmor Event daemon" startproc -f -p $SD_EV_PIDFILE $SD_EV_BIN -p $SD_EV_PIDFILE
+		sd_action "Starting AppArmor Event daemon" startproc -p $SD_EV_PIDFILE $SD_EV_BIN -p $SD_EV_PIDFILE
 	fi
 }
 
