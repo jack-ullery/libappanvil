@@ -31,6 +31,7 @@
 # Required-Start: boot.cleanup
 # Required-Stop: $null
 # Should-Start: $local_fs
+# Should-Stop: $null
 # Default-Start: B
 # Default-Stop:
 # Short-Description: AppArmor initialization
@@ -73,12 +74,32 @@ aa_log_warning_msg() {
 }
 
 aa_log_failure_msg() {
-	log_failure_msg $*
+	log_failure_msg '\n'$*
+}
+
+aa_log_action_begin() {
+	echo -n
+}
+
+aa_log_action_end() {
+	echo -n
+}
+
+aa_log_daemon_msg() {
+	echo -en "$@ "
 }
 
 aa_log_skipped_msg() {
 	echo -en "$@"
 	echo -e	"$rc_skipped"
+}
+
+aa_log_end_msg() {
+	v="-v"
+	if [ "$1" != '0' ]; then
+		rc="-v$1"
+	fi
+	rc_status $v
 }
 
 usage() {
