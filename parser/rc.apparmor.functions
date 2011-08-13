@@ -108,9 +108,7 @@ is_apparmor_present() {
 	# check for subdomainfs version of module
 	grep -qE "^($modules)[[:space:]]" /proc/modules
 
-	if [ $? -ne 0 ] ; then
-		ls /sys/module/apparmor 2>/dev/null | grep -qE "^($modules)"
-	fi
+	[ $? -ne 0 -a -d /sys/module/apparmor ]
 
 	return $?
 }
@@ -378,10 +376,11 @@ apparmor_start() {
 	configure_owlsm
 
 	# if there is anything in the profiles file don't load
-	cat "$SFS_MOUNTPOINT/profiles" | if ! read line ; then
+	if ! read line < "$SFS_MOUNTPOINT/profiles"; then
 		parse_profiles load
 	else
-		aa_log_skipped_msg "AppArmor already loaded with profiles."
+		aa_log_skipped_msg ": already loaded with profiles."
+		return 0
 	fi
 	aa_log_end_msg 0
 	return 0
