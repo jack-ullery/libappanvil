@@ -463,6 +463,10 @@ sub check_for_subdomain () {
     return $sd_mountpoint;
 }
 
+sub check_for_apparmor () {
+	return check_for_subdomain();
+}
+
 sub which ($) {
     my $file = shift;
 
