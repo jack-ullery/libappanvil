@@ -42,7 +42,6 @@
   /proc/*/oom_score_adj rw,
   /usr/sbin/sshd mrix,
   /var/log/btmp r,
-  /var/log/lastlog k,
   /{,var/}run w,
   /{,var/}run/sshd{,.init}.pid wl,
 
