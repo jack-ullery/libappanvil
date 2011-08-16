@@ -30,7 +30,6 @@
 
   /sbin/dhclient              mrix,
 
-  /sbin/dhclient-script       mrix,
   /bin/bash                   mrix,
   /bin/df                     mrix,
   /bin/netstat                Px,
@@ -59,7 +58,7 @@
   /var/spool/mail             r,
 
   # This one will need to be fleshed out depending on what the user is doing
-  /sbin/dhclient-script mrpx,
+  /sbin/dhclient-script mrpix,
 
   /bin/grep mrix,
   /bin/sleep mrix,
