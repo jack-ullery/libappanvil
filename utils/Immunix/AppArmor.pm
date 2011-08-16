@@ -557,14 +557,7 @@ sub get_full_path ($) {
         }
     }
 
-    if (-f $path) {
-        my ($dir, $file) = $path =~ m/^(.*)\/(.+)$/;
-        $path = realpath($dir) . "/$file";
-    } else {
-        $path = realpath($path);
-    }
-
-    return $path;
+    return realpath($path);
 }
 
 sub findexecutable ($) {
