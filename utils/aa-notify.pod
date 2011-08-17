@@ -58,8 +58,9 @@ show summary for last NUM of days.
 
 =item -u USER, --user=USER
 
-user to drop privileges to when running privileged. This has no effect when
-running under sudo.
+user to drop privileges to when running privileged. When used with the -p
+option, this should be set to the user that will receive desktop notifications.
+This has no effect when running under sudo.
 
 =item -w NUM, --wait=NUM
 
