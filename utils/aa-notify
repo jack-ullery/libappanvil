@@ -122,7 +122,8 @@ open (LOGFILE, "<$logfile") or die "Could not open '$logfile'\n";
 if ($< == 0) {
     $login = "root";
     if (defined($ENV{SUDO_UID}) and defined($ENV{SUDO_GID})) {
-        POSIX::setgid($ENV{SUDO_GID}) or _error("Could not change gid");
+        $) = "$ENV{SUDO_GID} $ENV{SUDO_GID}" or _error("Could not change egid");
+        $( = $ENV{SUDO_GID} or _error("Could not change gid");
         $> = $ENV{SUDO_UID} or _error("Could not change euid");
         defined($ENV{SUDO_USER}) and $login = $ENV{SUDO_USER};
     } else {
@@ -131,7 +132,9 @@ if ($< == 0) {
             $drop_to = $opt_u;
         }
         # nobody/nogroup
-        POSIX::setgid(scalar(getgrnam($nobody_group))) or _error("Could not change gid to '$nobody_group'");
+        my $nam = scalar(getgrnam($nobody_group));
+        $) = "$nam $nam" or _error("Could not change egid");
+        $( = $nam or _error("Could not change gid");
         $> = scalar(getpwnam($drop_to)) or _error("Could not change euid to '$drop_to'");
     }
 } else {
