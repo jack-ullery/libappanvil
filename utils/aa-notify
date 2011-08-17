@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2009-2010 Canonical Ltd.
+#    Copyright (C) 2009-2011 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -561,42 +561,79 @@ EOF
     print $s;
 }
 
+sub raise_privileges {
+    my $old_euid = -1;
+
+    if ($> != $<) {
+        _debug("raising privileges to '$orig_euid'");
+        $old_euid = $>;
+        $> = $orig_euid;
+        $> == $orig_euid or die "Could not raise privileges\n";
+    }
+
+    return $old_euid;
+}
+
+sub drop_privileges {
+    my $old_euid = $_[0];
+
+    # Just exit if we didn't raise privileges
+    $old_euid == -1 and return;
+
+    _debug("dropping privileges to '$old_euid'");
+    $> = $old_euid;
+    $> == $old_euid or die "Could not drop privileges\n";
+}
+
 sub reopen_logfile {
     # reopen the logfile, temporarily switching back to starting euid for
     # file permissions.
     close(LOGFILE);
 
-    my $old_euid = $>;
-    my $change_euid = 0;
-    if ($> != $<) {
-        _debug("raising privileges to '$orig_euid' in reopen_logfile()");
-        $change_euid = 1;
-        $> = $orig_euid;
-        $> == $orig_euid or die "Could not raise privileges\n";
-    }
+    my $old_euid = raise_privileges();
 
     $logfile_inode = get_logfile_inode($logfile);
     $logfile_size = get_logfile_size($logfile);
     open (LOGFILE, "<$logfile") or die "Could not open '$logfile'\n";
 
-    if ($change_euid) {
-        _debug("dropping privileges to '$old_euid' in reopen_logfile()");
-        $> = $old_euid;
-        $> == $old_euid or die "Could not drop privileges\n";
-    }
+    drop_privileges($old_euid);
 }
 
 sub get_logfile_size {
     my $fn = $_[0];
     my $size;
+    my $dir = File::Basename::dirname($fn);
+
+    # If we can't access the file, then raise privs. This can happen when
+    # using auditd and /var/log/audit/ is 700.
+    my $old_euid = -1;
+    if (! -x $dir) {
+        $old_euid = raise_privileges();
+    }
+
     defined(($size = (stat($fn))[7])) or (sleep(10) and defined(($size = (stat($fn))[7])) or die "'$fn' disappeared. Aborting\n");
+
+    drop_privileges($old_euid);
+
     return $size;
 }
 
 sub get_logfile_inode {
     my $fn = $_[0];
     my $inode;
+    my $dir = File::Basename::dirname($fn);
+
+    # If we can't access the file, then raise privs. This can happen when
+    # using auditd and /var/log/audit/ is 700.
+    my $old_euid = -1;
+    if (! -x $dir) {
+        $old_euid = raise_privileges();
+    }
+
     defined(($inode = (stat($fn))[1])) or (sleep(10) and defined(($inode = (stat($fn))[1])) or die "'$fn' disappeared. Aborting\n");
+
+    drop_privileges($old_euid);
+
     return $inode;
 }
 
