@@ -2254,7 +2254,7 @@ sub handlechildren($$$) {
                                 my $ynans = UI_YesNo($px_mesg, $px_default);
 				$ans = "CMD_$match";
                                 if ($ynans eq "y") {
-                                    $exec_mode &= ~$AA_EXEC_UNSAFE;
+                                    $exec_mode &= ~($AA_EXEC_UNSAFE | ($AA_EXEC_UNSAFE << $AA_OTHER_SHIFT));
                                 }
                             } elsif ($ans eq "CMD_ux") {
 				$exec_mode = str_to_mode("ux");
