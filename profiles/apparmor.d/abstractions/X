@@ -34,6 +34,7 @@
 
   # DRI
   /usr/lib{,32,64}/dri/**         mr,
+  /usr/lib/@{multiarch}/dri/**    mr,
   /dev/dri/**                     rw,
 
   # mouse themes
