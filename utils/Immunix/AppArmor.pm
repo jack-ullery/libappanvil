@@ -6755,7 +6755,7 @@ $extraprofiledir = find_first_dir($cfg->{settings}{inactive_profiledir}) ||
 $parser = find_first_file($cfg->{settings}{parser}) || "/sbin/apparmor_parser";
 unless (-x $parser) { fatal_error "Can't find apparmor_parser."; }
 
-$filename = find_first_file($cfg->{settings}{logfiles}) || "/var/log/messages";
+$filename = find_first_file($cfg->{settings}{logfiles}) || "/var/log/syslog";
 unless (-f $filename) { fatal_error "Can't find system log."; }
 
 $ldd = find_first_file($cfg->{settings}{ldd}) || "/usr/bin/ldd";
