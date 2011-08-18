@@ -28,6 +28,26 @@ use Data::Dumper;
 use Locale::gettext;
 use POSIX;
 
+sub sysctl_read($) {
+    my $path = shift;
+    my $value = undef;
+    if (open(SYSCTL, "<$path")) {
+        $value = int(<SYSCTL>);
+    }
+    close(SYSCTL);
+    return $value;
+}
+
+sub sysctl_write($$) {
+    my $path = shift;
+    my $value = shift;
+    return if (!defined($value));
+    if (open(SYSCTL, ">$path")) {
+        print SYSCTL $value;
+        close(SYSCTl);
+    }
+}
+
 # force $PATH to be sane
 $ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
 
@@ -108,6 +128,15 @@ if ($helpers{$fqdbin} eq "enforce") {
     complain($fqdbin);
     reload($fqdbin);
 }
+
+# When reading from syslog, it is possible to hit the default kernel
+# printk ratelimit. This will result in audit entries getting skipped,
+# making profile generation inaccurate. When using genprof, disable
+# the printk ratelimit, and restore it on exit.
+my $ratelimit_sysctl = "/proc/sys/kernel/printk_ratelimit";
+my $ratelimit_saved = sysctl_read($ratelimit_sysctl);
+END { sysctl_write($ratelimit_sysctl, $ratelimit_saved); }
+sysctl_write($ratelimit_sysctl, 0);
 
 UI_Info(gettext("\nBefore you begin, you may wish to check if a\nprofile already exists for the application you\nwish to confine. See the following wiki page for\nmore information:\nhttp://wiki.apparmor.net/index.php/Profiles"));
 
