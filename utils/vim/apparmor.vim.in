@@ -176,9 +176,10 @@ syn match sdEntryW /\v^\s+@@auditdenyowner@@link\s+(subset\s+)?@@FILENAME@@\s+-\
 syn match  sdEntryWriteExec /@@FILE@@(l|r|w|a|m|k|[iuUpPcC]x)+@@TRANSITION@@@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
 
 " ux(mr) - unconstrained entry, flag the line red
-syn match  sdEntryUX /@@FILE@@(r|m|k|ux)+@@TRANSITION@@@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-" Ux(mr) - like ux + clean environment
-syn match  sdEntryUXe /@@FILE@@(r|m|k|Ux)+@@TRANSITION@@@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
+" also includes pux which is unconstrained if no profile exists
+syn match  sdEntryUX /@@FILE@@(r|m|k|ux|pux)+@@TRANSITION@@@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
+" Ux(mr) and PUx(mr) - like ux + clean environment
+syn match  sdEntryUXe /@@FILE@@(r|m|k|Ux|PUx)+@@TRANSITION@@@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
 " px/cx/pix/cix(mrk) - standard exec entry, flag the line blue
 syn match  sdEntryPX /@@FILE@@(r|m|k|px|cx|pix|cix)+@@TRANSITION@@@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
 " Px/Cx/Pix/Cix(mrk) - like px/cx + clean environment
