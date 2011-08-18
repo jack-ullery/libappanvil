@@ -212,9 +212,10 @@ FILTER_FAMILIES=PF_MAX PF_UNSPEC PF_UNIX PF_LOCAL PF_NETLINK
 
 __FILTER=$(shell echo $(strip $(FILTER_FAMILIES)) | sed -e 's/ /\\\|/g')
 
-af_names.h: /usr/include/bits/socket.h
-	LC_ALL=C sed -n -e '/$(__FILTER)/d' -e "s/^\#define[ \\t]\\+PF_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9]\\+\\)\\(.*\\)\$$/#ifndef AF_\\1\\n#  define AF_\\1 \\2\\n#endif\\nAA_GEN_NET_ENT(\"\\L\\1\", \\UAF_\\1)\\n/p" $< > $@
-	LC_ALL=C sed -n -e "s/^\#define[ \\t]\\+PF_MAX[ \\t]\\+\\([0-9]\\+\\)[ \\t]\\+.*/#define AA_AF_MAX \\1\n/p" $< >> $@
+.PHONY: af_names.h
+af_names.h:
+	echo "#include <sys/socket.h>" | cpp -dM | LC_ALL=C sed -n -e '/$(__FILTER)/d' -e "s/^\#define[ \\t]\\+PF_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9]\\+\\)\\(.*\\)\$$/#ifndef AF_\\1\\n#  define AF_\\1 \\2\\n#endif\\nAA_GEN_NET_ENT(\"\\L\\1\", \\UAF_\\1)\\n/p" > $@
+	echo "#include <sys/socket.h>" | cpp -dM | LC_ALL=C sed -n -e "s/^\#define[ \\t]\\+PF_MAX[ \\t]\\+\\([0-9]\\+\\)\\+.*/#define AA_AF_MAX \\1\n/p" >> $@
 	# cat $@
 
 cap_names.h: /usr/include/linux/capability.h
