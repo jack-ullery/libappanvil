@@ -15,6 +15,7 @@
   #include <abstractions/base>
 
   capability sys_admin,
+  capability syslog,
 
   network inet stream,
 
