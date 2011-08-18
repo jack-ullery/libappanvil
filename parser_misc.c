@@ -129,6 +129,9 @@ static int get_table_token(const char *name __unused, struct keyword_table *tabl
 static struct keyword_table capability_table[] = {
 	/* capabilities */
 	#include "cap_names.h"
+#ifndef CAP_SYSLOG
+	{"syslog", 34},
+#endif
 	/* terminate */
 	{NULL, 0}
 };
@@ -866,6 +869,7 @@ static const char *capnames[] = {
 	"audit_control",
 	"setfcap",
 	"mac_override"
+	"syslog",
 };
 
 const char *capability_to_name(unsigned int cap)
