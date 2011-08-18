@@ -2861,7 +2861,8 @@ sub add_event_to_tree ($) {
              $e->{operation} eq "truncate" ||
              $e->{operation} eq "mkdir" ||
              $e->{operation} eq "rename_src" ||
-             $e->{operation} eq "rename_dest") {
+             $e->{operation} eq "rename_dest" ||
+             $e->{operation} =~ m/^(unlink|rmdir|symlink_create|link)$/) {
         add_to_tree( $e->{pid},
 		     $e->{parent},
                      "path",
