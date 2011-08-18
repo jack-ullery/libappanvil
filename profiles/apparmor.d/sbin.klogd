@@ -14,7 +14,7 @@
 /sbin/klogd {
   #include <abstractions/base>
 
-  capability sys_admin,
+  capability sys_admin, # for backward compatibility with kernel <= 2.6.37
   capability syslog,
 
   network inet stream,

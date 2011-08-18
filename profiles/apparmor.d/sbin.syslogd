@@ -21,6 +21,7 @@
   capability dac_read_search,
   capability setuid,
   capability setgid,
+  capability syslog,
 
   /dev/log                      wl,
   /var/lib/*/dev/log            wl,

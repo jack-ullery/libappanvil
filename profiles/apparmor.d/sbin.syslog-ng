@@ -27,6 +27,7 @@
   capability fowner,
   capability sys_tty_config,
   capability sys_resource,
+  capability syslog,
 
   /dev/log w,
   /dev/syslog w,
