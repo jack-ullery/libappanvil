@@ -188,6 +188,8 @@ syn match  sdEntryPXe /@@FILE@@(r|m|k|Px|Cx|Pix|Cix)+@@TRANSITION@@@@EOL@@/ cont
 syn match  sdEntryIX /@@FILE@@(r|m|k|ix)+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
 " mr - mmap with PROT_EXEC
 syn match  sdEntryM /@@FILE@@(r|m|k)+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
+" special case: deny x is allowed (doesn't need to be ix, px, ux or cx)
+syn match  sdEntryM /@@DENYFILE@@(r|m|k|x)+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
 
 " if we've got u or i without x, it's an error
 " rule is superfluous because of the '/.*/ is an error' rule ;-)

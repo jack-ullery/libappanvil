@@ -21,6 +21,7 @@ sdFlagsRegex="($sdFlags)"
 #	'@@FILE@@'            '\v^\s*((owner\s+)|(audit\s+)|(deny\s+))*(\/|\@\{\S*\})\S*\s+'   \
 replace                                                                                    \
 	'@@FILE@@'            '\v^\s*(audit\s+)?(deny\s+)?(owner\s+)?(\/|\@\{\S*\})\S*\s+'     \
+	'@@DENYFILE@@'        '\v^\s*(audit\s+)?deny\s+(owner\s+)?(\/|\@\{\S*\})\S*\s+'        \
     '@@auditdenyowner@@'  '(audit\s+)?(deny\s+)?(owner\s+)?'                               \
     '@@auditdeny@@'       '(audit\s+)?(deny\s+)?'                                          \
 	'@@FILENAME@@'        '(\/|\@\{\S*\})\S*'                                              \
