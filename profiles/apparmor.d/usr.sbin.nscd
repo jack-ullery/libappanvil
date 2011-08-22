@@ -28,7 +28,7 @@
   /var/lib/samba/winbindd_privileged/pipe rw,
   /{,var/}run/.nscd_socket wl,
   /{,var/}run/avahi-daemon/socket w,
-  /{,var/}run/nscd/ r,
+  /{,var/}run/nscd/ rw,
   /{,var/}run/nscd/db* wl,
   /{,var/}run/nscd/socket wl,
   /var/{cache,run}/nscd/{passwd,group,services,hosts} rw,
