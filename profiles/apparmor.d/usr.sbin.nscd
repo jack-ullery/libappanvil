@@ -17,6 +17,8 @@
   #include <abstractions/ssl_certs>
 
   capability net_bind_service,
+  capability setgid,
+  capability setuid,
 
   network inet dgram,
   network inet stream,
