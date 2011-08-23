@@ -17,6 +17,8 @@
 
   capability net_raw,
 
+  network inet raw,
+
   /usr/sbin/traceroute rmix,
   @{PROC}/net/route r,
 
