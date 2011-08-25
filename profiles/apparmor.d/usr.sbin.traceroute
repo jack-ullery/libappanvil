@@ -10,7 +10,7 @@
 # ------------------------------------------------------------------
 
 #include <tunables/global>
-/usr/sbin/traceroute {
+/usr/{sbin/traceroute,bin/traceroute.db} {
   #include <abstractions/base>
   #include <abstractions/consoles>
   #include <abstractions/nameservice>
