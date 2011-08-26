@@ -10,6 +10,10 @@
   #include <abstractions/user-tmp>
   #include <abstractions/wutmp>
 
+  capability dac_override,
+  capability dac_read_search,
+  capability fowner,
+  capability lease,
   capability net_bind_service,
   capability setgid,
   capability setuid,
