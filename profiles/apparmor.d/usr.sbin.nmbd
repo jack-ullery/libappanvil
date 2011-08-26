@@ -8,12 +8,9 @@
   capability net_bind_service,
 
   /usr/sbin/nmbd mr,
-  /var/cache/samba/browse.dat* rw,
-  /var/lib/samba/wins.dat* rw,
-  /{,var/}run/samba/** rk,
-  /{,var/}run/samba/nmbd.pid rw,
-  /var/log/samba/cores/nmbd/ rw,
-  /var/log/samba/cores/nmbd/** rw,
+  /var/{cache,lib}/samba/browse.dat* rw,
+  /var/{cache,lib}/samba/wins.dat* rw,
+  /{,var/}run/samba/** rwk,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.nmbd>

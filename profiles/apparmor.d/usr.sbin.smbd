@@ -24,6 +24,7 @@
   /etc/printcap r,
   /proc/*/mounts r,
   /usr/sbin/smbd mr,
+  /etc/samba/* rwk,
   /var/cache/samba/** rwk,
   /var/cache/samba/printing/printers.tdb mrw,
   /var/lib/samba/** rwk,

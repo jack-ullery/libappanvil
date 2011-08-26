@@ -9,11 +9,11 @@
 #
 # ------------------------------------------------------------------
 
-  /etc/samba/smb.conf r,
+  /etc/samba/* r,
   /usr/share/samba/*.dat r,
   /var/lib/samba/**.tdb rwk,
   /var/log/samba/cores/ rw,
-  /var/log/samba/cores/* w,
+  /var/log/samba/cores/** rw,
   /var/log/samba/log.* w,
   /{,var/}run/samba/*.tdb rw,
 
