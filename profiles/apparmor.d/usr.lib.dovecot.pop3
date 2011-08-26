@@ -9,6 +9,7 @@
   capability setuid,
 
   /var/mail/* klrw,
+  /var/spool/mail/* klrw,
   @{HOME} r,
   @{HOME}/mail/* klrw,
   @{HOME}/mail/.imap/** klrw,
