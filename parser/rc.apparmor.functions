@@ -83,15 +83,6 @@ SECURITYFS=/sys/kernel/security
 SUBDOMAINFS_MOUNTPOINT=$(grep subdomainfs /etc/fstab  | \
 	sed -e 's|^[[:space:]]*[^[:space:]]\+[[:space:]]\+\(/[^[:space:]]*\)[[:space:]]\+subdomainfs.*$|\1|' 2> /dev/null)
 
-if [ -d "/var/lib/${MODULE}" ] ; then
-	APPARMOR_TMPDIR="/var/lib/${MODULE}"
-elif [ -d "/var/lib/${OLD_MODULE}" ] ; then
-	APPARMOR_TMPDIR="/var/lib/${OLD_MODULE}"
-else
-	APPARMOR_TMPDIR="/tmp"
-fi
-
-
 # keep exit status from parser during profile load.  0 is good, 1 is bad
 STATUS=0
 
@@ -221,7 +212,6 @@ parse_profiles() {
 
 profiles_names_list() {
 	# run the parser on all of the apparmor profiles
-	TMPFILE=$1
 	if [ ! -f "$PARSER" ]; then
 		aa_log_failure_msg "- AppArmor parser not found"
 		exit 1
@@ -234,9 +224,9 @@ profiles_names_list() {
 
 	for profile in $PROFILE_DIR/*; do
 	        if skip_profile "${profile}" && [ -f "${profile}" ] ; then
-			LIST_ADD=$($PARSER $ABSTRACTIONS -N "$profile" | grep -v '//')
+			LIST_ADD=$($PARSER $ABSTRACTIONS -N "$profile" )
 			if [ $? -eq 0 ]; then
-				echo "$LIST_ADD" >>$TMPFILE
+				echo "$LIST_ADD"
 			fi
 		fi
 	done
@@ -408,18 +398,16 @@ remove_profiles() {
 	fi
 
 	retval=0
-	#the list of profiles isn't stable once we start adding or removing
-	#them so store to tmp first (in reverse order so hat profiles are removed first)
-	MODULE_PLIST=$(mktemp ${APPARMOR_TMPDIR}/tmp.XXXXXXXX)
-	sed -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" | sort -r > "$MODULE_PLIST"
-	cat "$MODULE_PLIST" | while read profile ; do
+	# We filter child profiles as removing the parent will remove
+	# the children
+	sed -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" \
+	LC_COLLATE=C sort | grep -v // | while read profile ; do
 		echo -n "$profile" > "$SFS_MOUNTPOINT/.remove"
 		rc=$?
 		if [ ${rc} -ne 0 ] ; then 
 			retval=${rc}
 		fi
 	done
-	rm "$MODULE_PLIST"
 	return ${retval}
 }
 
@@ -461,17 +449,33 @@ __apparmor_restart() {
 
 	configure_owlsm
 	parse_profiles reload
-	PNAMES_LIST=$(mktemp ${APPARMOR_TMPDIR}/tmp.XXXXXXXX)
-	profiles_names_list ${PNAMES_LIST}
-	MODULE_PLIST=$(mktemp ${APPARMOR_TMPDIR}/tmp.XXXXXXXX)
 	# Clean out running profiles not associated with the current profile
 	# set, excluding the libvirt dynamically generated profiles.
-	sed  -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" | egrep -v '^libvirt-[0-9a-f\-]+$' | sort >"$MODULE_PLIST"
-	sort "$PNAMES_LIST" | comm -2 -3 "$MODULE_PLIST" - | while IFS= read profile ; do
+	# Note that we reverse sort the list of profiles to remove to
+	# ensure that child profiles (e.g. hats) are removed before the
+	# parent. We *do* need to remove the child profile and not rely
+	# on removing the parent profile when the profile has had its
+	# child profile names changed.
+	profiles_names_list | awk '
+BEGIN {
+  while (getline < "'${SFS_MOUNTPOINT}'/profiles" ) {
+    str = sub(/ \((enforce|complain)\)$/, "", $0);
+    if (match($0, /^libvirt-[0-9a-f\-]+$/) == 0)
+      arr[$str] = $str
+  }
+}
+
+{ if (length(arr[$0]) > 0) { delete arr[$0] } }
+
+END {
+  for (key in arr)
+    if (length(arr[key]) > 0) {
+      printf("%s\n", arr[key])
+    }
+}
+' | LC_COLLATE=C sort -r | while IFS= read profile ; do
 		echo -n "$profile" > "$SFS_MOUNTPOINT/.remove"
 	done
-	rm "$MODULE_PLIST"
-	rm "$PNAMES_LIST"
 	return 0
 }
 
