@@ -18,6 +18,7 @@
   #include <abstractions/consoles>
   #include <abstractions/perl>
   #include <abstractions/nameservice>
+  #include <abstractions/wutmp>
 
   capability chown,
   capability dac_override,
@@ -44,9 +45,7 @@
   /usr/sbin/userdel-post.local rmix,
   /usr/sbin/userdel-pre.local rmix,
   /usr/sbin/userdel rmix,
-  /var/log/lastlog rw,
   # XXX
   /{,var/}run/nscd.pid r,
-  /{,var/}run/utmp rw,
   /var/spool/mail/* wl,
 }
