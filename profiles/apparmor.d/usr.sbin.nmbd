@@ -7,9 +7,18 @@
 
   capability net_bind_service,
 
+  /proc/sys/kernel/core_pattern r,
+
   /usr/sbin/nmbd mr,
+
   /var/{cache,lib}/samba/browse.dat* rw,
   /var/{cache,lib}/samba/wins.dat* rw,
+  /var/{cache,lib}/samba/smb_krb5/ rw,
+  /var/{cache,lib}/samba/smb_krb5/krb5.conf* rw,
+  /var/{cache,lib}/samba/smb_tmp_krb5.* rw,
+  /var/{cache,lib}/samba/sync.* rw,
+  /var/{cache,lib}/samba/unexpected rw,
+
   /{,var/}run/samba/** rwk,
 
   # Site-specific additions and overrides. See local/README for details.
