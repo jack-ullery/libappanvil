@@ -13,7 +13,6 @@
 
   /proc/*/mounts r,
   /usr/lib/dovecot/dovecot-auth mr,
-  /{,var/}run/utmp k,
   /{,var/}run/dovecot/** rw,
   # required for postfix+dovecot integration
   /var/spool/postfix/private/dovecot-auth w,
