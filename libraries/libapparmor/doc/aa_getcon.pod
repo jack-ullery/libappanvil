@@ -33,7 +33,7 @@ aa_getpeercon - get the confinement of a socket's other end (peer)
 B<#include E<lt>sys/apparmor.hE<gt>>
 
 B<int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len,
-            char **mode);>
+			 char **mode);>
 
 B<int aa_getprocattr(pid_t tid, const char *attr, char **buf, char **mode);>
 
@@ -92,6 +92,10 @@ Access to the specified I<file/task> was denied.
 =item B<ENOENT>
 
 The specified I<file/task> does not exist or is not visible.
+
+=item B<ERANGE>
+
+The confinement data is to large to fit in the supplied buffer.
 
 =back
 

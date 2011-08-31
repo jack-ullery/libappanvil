@@ -22,11 +22,15 @@
 
 =head1 NAME
 
+aa_is_enabled - determine if apparmor is available
+
 aa_find_mountpoint - find where the apparmor interface filesystem is mounted
 
 =head1 SYNOPSIS
 
 B<#include E<lt>sys/apparmor.hE<gt>>
+
+B<int aa_is_enabled(void);>
 
 B<int aa_find_mountpoint(char **mnt);>
 
@@ -34,18 +38,56 @@ Link with B<-lapparmor> when compiling.
 
 =head1 DESCRIPTION
 
+The aa_is_enabled function returns true (1) if apparmor is enabled.  If it
+isn't it sets the errno to reflect the reason it is not enabled and returns 0.
+
 The aa_find_mountpoint function finds where the apparmor filesystem is mounted
 on the system, and returns a string containing the mount path.  It is the
 caller's responsibility to free(3) the returned path.
 
 =head1 RETURN VALUE
 
+B<aa_is_enabled>
+On success 1 is returned. On error, 0 is returned, and errno(3) is set
+appropriately.
+
+B<aa_find_mountpoint>
 On success zero is returned. On error, -1 is returned, and errno(3) is set
 appropriately.
 
 =head1 ERRORS
 
 =over 4
+
+B<aa_is_enabled>
+
+=item B<ENOSYS>
+
+AppArmor extensions to the system are not available.
+
+=item B<ECANCELED>
+
+AppArmor is available on the system but has been disabled at boot.
+
+=item B<ENOENT>
+
+AppArmor is available (and maybe even enforcing policy) but the interface is
+not available.
+
+=item B<ENOMEM>
+
+Insufficient memory was available.
+
+=item B<EPERM>
+
+Did not have sufficient permissions to determine if AppArmor is enabled.
+
+=item B<EACCES>
+
++Did not have sufficient permissions to determine if AppArmor is enabled.
+
+
+B<aa_find_mountpoint>
 
 =item B<ENOMEM>
 
