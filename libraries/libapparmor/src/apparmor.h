@@ -18,6 +18,8 @@
 #ifndef _SYS_APPARMOR_H_
 #define _SYS_APPARMOR_H	1
 
+#include <sys/types.h>
+
 __BEGIN_DECLS
 
 /* Prototypes for apparmor state queries */
