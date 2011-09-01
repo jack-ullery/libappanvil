@@ -49,7 +49,7 @@ ifndef CFLAGS
 CFLAGS	= -g -O2 -pipe
 
 ifdef DEBUG
-CFLAGS += -pg
+CFLAGS += -pg -D DEBUG
 endif
 endif #CFLAGS
 

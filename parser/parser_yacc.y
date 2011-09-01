@@ -240,7 +240,7 @@ profile_base: TOK_ID opt_id flags TOK_OPEN rules TOK_CLOSE
 
 		post_process_nt_entries(cod);
 		PDEBUG("%s: flags='%s%s'\n",
-		       $3,
+		       $2,
 		       cod->flags.complain ? "complain, " : "",
 		       cod->flags.audit ? "audit" : "");
 
@@ -280,7 +280,7 @@ hat: hat_start profile_base
 	{
 		struct codomain *cod = $2;
 		if ($2)
-			PDEBUG("Matched: hat %s { ... }\n", code->name);
+			PDEBUG("Matched: hat %s { ... }\n", cod->name);
 
 		cod->flags.hat = 1;
 		$$ = cod;
@@ -384,7 +384,7 @@ valuelist:	valuelist TOK_VALUE
 		struct value_list *new = calloc(1, sizeof(struct value_list));
 		if (!new)
 			yyerror(_("Memory allocation error."));
-		PDEBUG("Matched: value (%s)\n", $1);
+		PDEBUG("Matched: value list\n");
 
 		new->value = $2;
 		new->next = $1;
