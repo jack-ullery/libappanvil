@@ -11,6 +11,7 @@
   /usr/bin/shotwell PUxr,
   /usr/bin/digikam PUxr,
   /usr/bin/f-spot PUxr,
+  /usr/bin/gwenview PUxr,
 
   #include <abstractions/ubuntu-media-players>
   owner @{HOME}/.macromedia/** rw,
