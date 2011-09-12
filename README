@@ -65,6 +65,7 @@ $ sh ./autogen.sh
 $ sh ./configure --prefix=/usr --with-perl	# see below
 $ make
 $ make check
+$ make install
 
 [optional arguments to libapparmor's configure include --with-python
  and --with-ruby, to generate python and ruby bindings to libapparmor,
