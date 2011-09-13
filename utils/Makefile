@@ -56,7 +56,7 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 	ln -sf aa-status ${BINDIR}/apparmor_status
 	install -m 755 ${TOOLS} ${BINDIR}
 	install -d ${PERLDIR}
-	install -m 755 ${MODULES} ${PERLDIR}
+	install -m 644 ${MODULES} ${PERLDIR}
 	make -C po install DESTDIR=${DESTDIR} NAME=${NAME}
 	make install_manpages DESTDIR=${DESTDIR}
 	ln -sf aa-status.8 ${DESTDIR}/${MANDIR}/man8/apparmor_status.8
