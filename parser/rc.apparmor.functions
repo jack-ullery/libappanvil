@@ -447,6 +447,8 @@ __apparmor_restart() {
 		return 4
 	fi
 
+	aa_log_daemon_msg "Restarting AppArmor"
+
 	configure_owlsm
 	parse_profiles reload
 	# Clean out running profiles not associated with the current profile
@@ -476,7 +478,10 @@ END {
 ' | LC_COLLATE=C sort -r | while IFS= read profile ; do
 		echo -n "$profile" > "$SFS_MOUNTPOINT/.remove"
 	done
-	return 0
+	# will not catch all errors, but still better than nothing
+	rc=$?
+	aa_log_end_msg $rc
+	return $rc
 }
 
 apparmor_restart() {
