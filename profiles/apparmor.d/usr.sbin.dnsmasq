@@ -30,7 +30,7 @@
   /usr/sbin/dnsmasq mr,
 
   /{,var/}run/*dnsmasq*.pid w,
-  /{,var/}run/dnsmasq-forwarders r,
+  /{,var/}run/dnsmasq-forwarders.conf r,
   /{,var/}run/dnsmasq/ r,
   /{,var/}run/dnsmasq/* rw,
 
