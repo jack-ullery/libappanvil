@@ -23,7 +23,7 @@ __SETUP_DIR?=.
 # We create a separate version for tags because git can't handle tags
 # with embedded ~s in them. No spaces around '-' or they'll get
 # embedded in ${VERSION}
-TAG_VERSION=$(subst ~,-, ${VERSION})
+TAG_VERSION=$(subst ~,-,${VERSION})
 
 .PHONY: tarball
 tarball: clean
