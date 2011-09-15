@@ -77,7 +77,7 @@ aa_log_failure_msg() {
 	log_failure_msg '\n'$*
 }
 
-aa_log_action_begin() {
+aa_log_action_start() {
 	echo -n
 }
 
