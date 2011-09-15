@@ -42,7 +42,7 @@ all: ${MANPAGES} ${HTMLMANPAGES}
 DESTDIR=/
 BINDIR=${DESTDIR}/usr/sbin
 CONFDIR=${DESTDIR}/etc/apparmor
-VENDOR_PERL?=/usr/lib/perl5/vendor_perl
+VENDOR_PERL=$(shell perl -e 'use Config; print $$Config{"vendorlib"};')
 PERLDIR=${DESTDIR}${VENDOR_PERL}/${MODDIR}
 
 po/${NAME}.pot: ${TOOLS}
