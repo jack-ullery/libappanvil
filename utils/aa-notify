@@ -305,6 +305,10 @@ sub send_message {
         # notify-send needs $< to be the unprivileged user
         $< = $>;
 
+        # we need correct values for $HOME and $DISPLAY environment variables, otherwise
+        # $notify_exe won't be able to connect to DBUS to display the message
+        $ENV{'HOME'} = (getpwuid $>)[7]; # homedir of the user
+# TODO: set $ENV{'DISPLAY'}
         # 'system' uses execvp() so no shell metacharacters here.
         # $notify_exe is an absolute path so execvp won't search PATH.
         system "$notify_exe", "-i", "gtk-dialog-warning", "-u", "critical", "--", "AppArmor Message", "$msg";
