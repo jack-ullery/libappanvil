@@ -246,17 +246,14 @@ install-rhel4: install-redhat
 install-redhat:
 	install -m 755 -d $(DESTDIR)/etc/init.d
 	install -m 755 rc.apparmor.$(subst install-,,$@) $(DESTDIR)/etc/init.d/apparmor
-	install -m 755 rc.aaeventd.redhat $(DESTDIR)/etc/init.d/aaeventd
 
 .PHONY: install-suse
 install-suse:
 	install -m 755 -d $(DESTDIR)/etc/init.d
 	install -m 755 rc.apparmor.$(subst install-,,$(@)) $(DESTDIR)/etc/init.d/boot.apparmor
-	install -m 755 rc.aaeventd.$(subst install-,,$(@)) $(DESTDIR)/etc/init.d/aaeventd
 	install -m 755 -d $(DESTDIR)/sbin
 	ln -sf /etc/init.d/boot.apparmor $(DESTDIR)/sbin/rcapparmor
 	ln -sf rcapparmor $(DESTDIR)/sbin/rcsubdomain
-	ln -sf /etc/init.d/aaeventd $(DESTDIR)/sbin/rcaaeventd
 
 .PHONY: install-slackware
 install-slackware:
