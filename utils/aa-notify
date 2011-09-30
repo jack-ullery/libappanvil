@@ -36,6 +36,8 @@ my %prefs;
 my $conf = "/etc/apparmor/notify.conf";
 my $user_conf = "$ENV{HOME}/.apparmor/notify.conf";
 my $notify_exe = "/usr/bin/notify-send";
+my $notify_home = "";
+my $notify_display = "";
 my $last_exe = "/usr/bin/last";
 my $ps_exe = "/bin/ps";
 my $url = "https://wiki.ubuntu.com/DebuggingApparmor";
@@ -154,6 +156,12 @@ if (-s $conf) {
 
 if ($opt_p) {
     -x "$notify_exe" or _error("Could not find '$notify_exe'. Please install libnotify-bin. Aborting");
+
+    # we need correct values for $HOME and $DISPLAY environment variables,
+    # otherwise $notify_exe won't be able to connect to DBUS to display the
+    # message. Do this here to avoid excessive lookups.
+    $notify_home = (getpwuid $>)[7]; # homedir of the user
+# TODO: set $notify_display;
 } elsif ($opt_l) {
     -x "$last_exe" or _error("Could not find '$last_exe'. Aborting");
 }
@@ -305,10 +313,9 @@ sub send_message {
         # notify-send needs $< to be the unprivileged user
         $< = $>;
 
-        # we need correct values for $HOME and $DISPLAY environment variables, otherwise
-        # $notify_exe won't be able to connect to DBUS to display the message
-        $ENV{'HOME'} = (getpwuid $>)[7]; # homedir of the user
-# TODO: set $ENV{'DISPLAY'}
+        $notify_home ne "" and $ENV{'HOME'} = $notify_home;
+        $notify_display ne "" and $ENV{'DISPLAY'} = $notify_display;
+
         # 'system' uses execvp() so no shell metacharacters here.
         # $notify_exe is an absolute path so execvp won't search PATH.
         system "$notify_exe", "-i", "gtk-dialog-warning", "-u", "critical", "--", "AppArmor Message", "$msg";
