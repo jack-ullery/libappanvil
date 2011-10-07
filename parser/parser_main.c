@@ -1007,8 +1007,7 @@ out:
 		}
 		else {
 			unlink(cachetemp);
-			if (show_cache)
-				PERROR("Removed cache attempt: %s\n", cachetemp);
+			PERROR("Warning failed to create cache: %s\n", basename);
 		}
 		free(cachetemp);
 	}
