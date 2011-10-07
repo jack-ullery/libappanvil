@@ -103,6 +103,7 @@ make install DESTDIR=${RPM_BUILD_ROOT} \
   /etc/init.d/aaeventd
 %endif
 %config(noreplace) /etc/apparmor/subdomain.conf
+%config(noreplace) /etc/apparmor/parser.conf
 /var/lib/apparmor
 %dir %attr(-, root, root) %{apparmor_bin_prefix}
 %{apparmor_bin_prefix}/rc.apparmor.functions

@@ -285,6 +285,7 @@ install-arch: $(INSTALLDEPS)
 install-indep:
 	install -m 755 -d $(INSTALL_CONFDIR)
 	install -m 644 subdomain.conf $(INSTALL_CONFDIR)
+	install -m 644 parser.conf $(INSTALL_CONFDIR)
 	install -m 755 -d ${DESTDIR}/var/lib/apparmor
 	install -m 755 -d $(APPARMOR_BIN_PREFIX)
 	install -m 755 rc.apparmor.functions $(APPARMOR_BIN_PREFIX)
