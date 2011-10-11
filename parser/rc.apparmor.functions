@@ -400,7 +400,7 @@ remove_profiles() {
 	retval=0
 	# We filter child profiles as removing the parent will remove
 	# the children
-	sed -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" \
+	sed -e "s/ (\(enforce\|complain\))$//" "$SFS_MOUNTPOINT/profiles" | \
 	LC_COLLATE=C sort | grep -v // | while read profile ; do
 		echo -n "$profile" > "$SFS_MOUNTPOINT/.remove"
 		rc=$?
