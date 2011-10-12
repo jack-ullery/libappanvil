@@ -82,6 +82,7 @@ my $login;
 our $orig_euid = $>;
 
 my $opt_d = '';
+my $opt_display = '';
 my $opt_h = '';
 my $opt_l = '';
 my $opt_p = '';
@@ -92,6 +93,7 @@ my $opt_u = '';
 my $opt_w = 0;
 GetOptions(
     'debug|d'        => \$opt_d,
+    'display=s'      => \$opt_display,
     'help|h'         => \$opt_h,
     'since-last|l'   => \$opt_l,
     'poll|p'         => \$opt_p,
@@ -161,7 +163,26 @@ if ($opt_p) {
     # otherwise $notify_exe won't be able to connect to DBUS to display the
     # message. Do this here to avoid excessive lookups.
     $notify_home = (getpwuid $>)[7]; # homedir of the user
-# TODO: set $notify_display;
+
+    if ($opt_display ne '') {
+        $notify_display = $opt_display;
+    } elsif (defined($ENV{'DISPLAY'})) {
+        $notify_display = $ENV{'DISPLAY'};
+    }
+
+    if ($notify_display eq '') {
+        my $sudo_warn_msg = '';
+        if (defined($ENV{'SUDO_USER'})) {
+            $sudo_warn_msg = ' (or reset by sudo)';
+        }
+        _warn("Environment variable \$DISPLAY not set$sudo_warn_msg.");
+        _warn ('Desktop notifications will not work.');
+        if ($sudo_warn_msg ne '') { 
+            _warn ('Use   sudo aa-notify -p --display "$DISPLAY"   to set the environment variable.');
+        } else {
+            _warn ('Use something like   aa-notify -p --display :0   to set the environment variable.')
+        }
+    }
 } elsif ($opt_l) {
     -x "$last_exe" or _error("Could not find '$last_exe'. Aborting");
 }
@@ -559,6 +580,8 @@ Display AppArmor notifications or messages for DENIED entries.
 
 OPTIONS:
   -p, --poll			poll AppArmor logs and display notifications
+  --display $DISPLAY		set the DISPLAY environment variable to $DISPLAY
+				(might be needed if sudo resets $DISPLAY)
   -f FILE, --file=FILE		search FILE for AppArmor messages
   -l, --since-last		display stats since last login
   -s NUM, --since-days=NUM	show stats for last NUM days (can be used alone
