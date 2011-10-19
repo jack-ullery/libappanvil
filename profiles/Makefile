@@ -52,6 +52,7 @@ install: local
 	install -m 755 -d ${PROFILES_DEST}
 	install -m 755 -d ${PROFILES_DEST}/abstractions \
                           ${PROFILES_DEST}/apache2.d \
+                          ${PROFILES_DEST}/disable \
                           ${PROFILES_DEST}/program-chunks \
                           ${PROFILES_DEST}/tunables \
                           ${PROFILES_DEST}/tunables/home.d \
