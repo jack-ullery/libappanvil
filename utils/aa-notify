@@ -151,7 +151,7 @@ if (-s $conf) {
     if (defined($prefs{use_group})) {
         my ($name, $passwd, $gid, $members) = getgrnam($prefs{use_group});
         if (not defined($members) or not defined($login) or (not grep { $_ eq $login } split(/ /, $members) and $login ne "root")) {
-            _error("'$login' must be in '$prefs{use_group}' group. Aborting");
+            _error("'$login' must be in '$prefs{use_group}' group. Aborting.\nAsk your admin to add you to this group or to change the group in\n$conf if you want to use aa-notify.");
         }
     }
 }
