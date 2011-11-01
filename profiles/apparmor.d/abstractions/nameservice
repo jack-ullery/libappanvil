@@ -16,8 +16,6 @@
   /etc/group              r,
   /etc/host.conf          r,
   /etc/hosts              r,
-  /etc/ldap.conf          r,
-  /etc/ldap.secret        r,
   /etc/nsswitch.conf      r,
   /etc/gai.conf           r,
   /etc/passwd             r,
@@ -32,9 +30,6 @@
 
   /etc/samba/lmhosts      r,
   /etc/services           r,
-  # all openldap config
-  /etc/openldap/*         r,
-  /etc/ldap/**            r,
   # db backend
   /var/lib/misc/*.db      r,
   # The Name Service Cache Daemon can cache lookups, sometimes leading
@@ -59,6 +54,9 @@
 
   # nis
   #include <abstractions/nis>
+
+  # ldap
+  #include <abstractions/ldapclient>
 
   # winbind
   #include <abstractions/winbind>
