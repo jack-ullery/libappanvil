@@ -2860,6 +2860,7 @@ sub add_event_to_tree ($) {
     } elsif ($e->{operation} eq "open" ||
              $e->{operation} eq "truncate" ||
              $e->{operation} eq "mkdir" ||
+             $e->{operation} eq "mknod" ||
              $e->{operation} eq "rename_src" ||
              $e->{operation} eq "rename_dest" ||
              $e->{operation} =~ m/^(unlink|rmdir|symlink_create|link)$/) {
