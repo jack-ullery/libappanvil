@@ -115,7 +115,7 @@ endif
 export Q VERBOSE BUILD_OUTPUT
 
 po/${NAME}.pot: ${SRCS} ${HDRS}
-	make -C po ${NAME}.pot NAME=${NAME} SOURCES="${SRCS} ${HDRS}"
+	$(MAKE) -C po ${NAME}.pot NAME=${NAME} SOURCES="${SRCS} ${HDRS}"
 
 techdoc.pdf: techdoc.tex
 	while pdflatex $< ${BUILD_OUTPUT} || exit 1 ; \
@@ -141,7 +141,7 @@ pdf:	techdoc.pdf
 docs:	manpages htmlmanpages pdf
 
 indep: docs
-	$(Q)make -C po all
+	$(Q)$(MAKE) -C po all
 
 all:	arch indep
 
@@ -149,10 +149,10 @@ all:	arch indep
 .PHONY: libstdc++.a
 libstdc++.a:
 	rm -f ./libstdc++.a
-	ln -s `g++ -print-file-name=libstdc++.a`
+	ln -s `$(CXX) -print-file-name=libstdc++.a`
 
 apparmor_parser: $(OBJECTS) $(AAREOBJECTS)
-	g++ $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(LIBS) \
+	$(CXX) $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(LIBS) \
 	      ${LEXLIB}  $(AAREOBJECTS) $(AARE_LDFLAGS)
 
 parser_yacc.c parser_yacc.h: parser_yacc.y parser.h
@@ -231,13 +231,13 @@ check: tests
 .SILENT: tests
 tests: apparmor_parser ${TESTS}
 	sh -e -c 'for test in ${TESTS} ; do echo "*** running $${test}" && ./$${test}; done'
-	$(Q)make -s -C tst tests
+	$(Q)$(MAKE) -s -C tst tests
 
 # always need to rebuild.
 .SILENT: $(AAREOBJECT)
 .PHONY: $(AAREOBJECT)
 $(AAREOBJECT):
-	make -C $(AAREDIR) CFLAGS="$(EXTRA_CXXFLAGS)"
+	$(MAKE) -C $(AAREDIR) CFLAGS="$(EXTRA_CXXFLAGS)"
 
 .PHONY: install-rhel4
 install-rhel4: install-redhat
@@ -289,8 +289,8 @@ install-indep:
 	install -m 755 -d ${DESTDIR}/var/lib/apparmor
 	install -m 755 -d $(APPARMOR_BIN_PREFIX)
 	install -m 755 rc.apparmor.functions $(APPARMOR_BIN_PREFIX)
-	make -C po install NAME=${NAME} DESTDIR=${DESTDIR}
-	make install_manpages DESTDIR=${DESTDIR}
+	$(MAKE) -C po install NAME=${NAME} DESTDIR=${DESTDIR}
+	$(MAKE) install_manpages DESTDIR=${DESTDIR}
 
 .SILENT: clean
 .PHONY: clean
@@ -304,11 +304,11 @@ clean: _clean
 	rm -f af_names.h
 	rm -f cap_names.h
 	rm -rf techdoc.aux techdoc.log techdoc.pdf techdoc.toc techdor.txt techdoc/
-	make -s -C $(AAREDIR) clean
-	make -s -C po clean
-	make -s -C tst clean
+	$(MAKE) -s -C $(AAREDIR) clean
+	$(MAKE) -s -C po clean
+	$(MAKE) -s -C tst clean
 
 .SILENT: dist_clean
 dist_clean:
-	@make clean
+	@$(MAKE) clean
 	@rm -f $(LEX_C_FILES) $(YACC_C_FILES)
