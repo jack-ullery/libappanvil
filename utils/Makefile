@@ -36,7 +36,7 @@ MODULES = ${MODDIR}/AppArmor.pm ${MODDIR}/Repository.pm \
 MANPAGES = ${TOOLS:=.8} logprof.conf.5
 
 all: ${MANPAGES} ${HTMLMANPAGES}
-	make -C po all
+	$(MAKE) -C po all
 
 # need some better way of determining this
 DESTDIR=/
@@ -46,7 +46,7 @@ VENDOR_PERL=$(shell perl -e 'use Config; print $$Config{"vendorlib"};')
 PERLDIR=${DESTDIR}${VENDOR_PERL}/${MODDIR}
 
 po/${NAME}.pot: ${TOOLS}
-	make -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} ${MODULES}"
+	$(MAKE) -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} ${MODULES}"
 
 .PHONY: install
 install: ${MANPAGES} ${HTMLMANPAGES}
@@ -57,8 +57,8 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 	install -m 755 ${TOOLS} ${BINDIR}
 	install -d ${PERLDIR}
 	install -m 644 ${MODULES} ${PERLDIR}
-	make -C po install DESTDIR=${DESTDIR} NAME=${NAME}
-	make install_manpages DESTDIR=${DESTDIR}
+	$(MAKE) -C po install DESTDIR=${DESTDIR} NAME=${NAME}
+	$(MAKE) install_manpages DESTDIR=${DESTDIR}
 	ln -sf aa-status.8 ${DESTDIR}/${MANDIR}/man8/apparmor_status.8
 
 .PHONY: clean
@@ -66,7 +66,7 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 clean: _clean
 	rm -f core core.* *.o *.s *.a *~
 	rm -f Make.rules
-	make -C po clean
+	$(MAKE) -C po clean
 
 check:
 	for i in ${MODULES} ${PERLTOOLS} ; do \
