@@ -525,11 +525,11 @@ apparmor_status () {
 		${SD_STATUS} --verbose
 		return $?
 	fi
-	if ! is_apparmor_present apparmor subdomain ; then
+	if ! is_apparmor_loaded ; then
 		echo "AppArmor is not loaded."
 		rc=1
 	else
-		echo "AppArmor is enabled,"
+		echo "AppArmor is enabled."
 		rc=0
 	fi
 	echo "Install the apparmor-utils package to receive more detailed"
