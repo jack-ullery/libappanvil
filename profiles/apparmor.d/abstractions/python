@@ -29,3 +29,6 @@
 
   # wx paths
   /usr/lib/wx/python/*.pth r,
+
+  # python build configuration and headers
+  /usr/include/python{2,3}.[0-7]*/pyconfig.h
