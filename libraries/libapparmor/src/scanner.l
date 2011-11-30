@@ -265,7 +265,7 @@ yy_flex_debug = 0;
 {key_error}		{ return(TOK_KEY_ERROR); }
 {key_fsuid}		{ return(TOK_KEY_FSUID); }
 {key_ouid}		{ return(TOK_KEY_OUID); }
-{key_comm}		{ return(TOK_KEY_COMM); }
+{key_comm}		{ BEGIN(safe_string); return(TOK_KEY_COMM); }
 {key_capability}	{ return(TOK_KEY_CAPABILITY); }
 {key_capname}		{ return(TOK_KEY_CAPNAME); }
 {key_offset}		{ return(TOK_KEY_OFFSET); }
