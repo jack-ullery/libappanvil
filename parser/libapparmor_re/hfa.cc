@@ -35,6 +35,15 @@
 #include "hfa.h"
 #include "../immunix.h"
 
+ostream &operator<<(ostream &os, const ProtoState &proto)
+{
+	/* dump the state label */
+	os << '{';
+	os << proto.nodes;
+	os << '}';
+	return os;
+}
+
 ostream &operator<<(ostream &os, const State &state)
 {
 	/* dump the state label */
@@ -44,15 +53,15 @@ ostream &operator<<(ostream &os, const State &state)
 	return os;
 }
 
-State *DFA::add_new_state(NodeMap &nodemap,
-			  NodeSet *nodes, State *other, dfa_stats_t &stats)
+State *DFA::add_new_state(NodeMap &nodemap, ProtoState &proto,
+			  State *other, dfa_stats_t &stats)
 {
-	State *state = new State(nodemap.size(), nodes, other);
+	State *state = new State(nodemap.size(), proto, other);
 	states.push_back(state);
-	nodemap.insert(make_pair(ProtoState(nodes), state));
-	stats.proto_sum += nodes->size();
-	if (nodes->size() > stats.proto_max)
-		stats.proto_max = nodes->size();
+	nodemap.insert(make_pair(proto, state));
+	stats.proto_sum += proto.size();
+	if (proto.size() > stats.proto_max)
+		stats.proto_max = proto.size();
 	return state;
 }
 
@@ -75,7 +84,7 @@ State *DFA::find_target_state(NodeMap &nodemap, list<State *> &work_queue,
 		/* set of nodes isn't known so create new state, and nodes to
 		 * state mapping
 		 */
-		target = add_new_state(nodemap, nodes, nonmatching, stats);
+		target = add_new_state(nodemap, index, nonmatching, stats);
 		work_queue.push_back(target);
 	} else {
 		/* set of nodes already has a mapping so free this one */
@@ -97,7 +106,7 @@ void DFA::update_state_transitions(NodeMap &nodemap, list<State *> &work_queue,
 	 * sets of nodes.
 	 */
 	Cases cases;
-	for (NodeSet::iterator i = state->nodes->begin(); i != state->nodes->end(); i++)
+	for (ProtoState::iterator i = state->proto.begin(); i != state->proto.end(); i++)
 		(*i)->follow(cases);
 
 	/* Now for each set of nodes in the computed transitions, make
@@ -136,7 +145,7 @@ void DFA::dump_node_to_dfa(void)
 		"  State  <=   Nodes\n"
 		"-------------------\n";
 	for (Partition::iterator i = states.begin(); i != states.end(); i++)
-		cerr << "  " << (*i)->label << " <= " << *(*i)->nodes << "\n";
+		cerr << "  " << (*i)->label << " <= " << (*i)->proto << "\n";
 }
 
 /**
@@ -163,10 +172,10 @@ DFA::DFA(Node *root, dfaflags_t flags): root(root)
 	}
 
 	NodeMap nodemap;
-	NodeSet *emptynode = new NodeSet;
+	ProtoState emptynode = ProtoState(new NodeSet);
 	nonmatching = add_new_state(nodemap, emptynode, NULL, stats);
 
-	NodeSet *first = new NodeSet(root->firstpos);
+	ProtoState first = ProtoState(new NodeSet(root->firstpos));
 	start = add_new_state(nodemap, first, nonmatching, stats);
 
 	/* the work_queue contains the states that need to have their
