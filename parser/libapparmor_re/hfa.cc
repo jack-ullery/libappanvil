@@ -95,12 +95,12 @@ State *DFA::add_new_state(NodeSet *nodes, State *other)
 	 * follow(), ie. put in separate lists from the start
 	 */
 	NodeSet *anodes, *nnodes;
+	hashedNodeVec *nnodev;
 	split_node_types(nodes, &anodes, &nnodes);
-
-	nnodes = nnodes_cache.insert(nnodes);
+	nnodev = nnodes_cache.insert(nnodes);
 	anodes = anodes_cache.insert(anodes);
 
-	ProtoState proto(nnodes, anodes);
+	ProtoState proto(nnodev, anodes);
 	State *state = new State(node_map.size(), proto, other);
 	pair<NodeMap::iterator,bool> x = node_map.insert(proto, state);
 	if (x.second == false) {
@@ -126,7 +126,7 @@ void DFA::update_state_transitions(State *state)
 	 * need to compute follow for the accept nodes in a protostate
 	 */
 	Cases cases;
-	for (NodeSet::iterator i = state->proto.nnodes->begin(); i != state->proto.nnodes->end(); i++)
+	for (hashedNodeVec::iterator i = state->proto.nnodes->begin(); i != state->proto.nnodes->end(); i++)
 		(*i)->follow(cases);
 
 	/* Now for each set of nodes in the computed transitions, make
