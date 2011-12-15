@@ -40,6 +40,40 @@ typedef list<State *> Partition;
 uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error);
 
 /*
+ * ProtoState - NodeSet and ancillery information used to create a state
+ */
+class ProtoState {
+public:
+	unsigned long hash;
+	NodeSet *nodes;
+
+	ProtoState(NodeSet *n): nodes(n)
+	{
+		hash = hash_NodeSet(n);
+	}
+};
+
+/* Comparison operator for a ProtoState
+ * Compare set hashes, and if the sets have the same hash
+ * do compare pointer comparison on set of <Node *>, the pointer comparison
+ * allows us to determine which Sets of <Node *> we have seen already from
+ * new ones when constructing the DFA.
+ */
+struct deref_less_than {
+	bool operator()(ProtoState const &lhs, ProtoState const &rhs)const
+	{
+		if (lhs.hash == rhs.hash) {
+			if (lhs.nodes->size() == rhs.nodes->size())
+				return *(lhs.nodes) < *(rhs.nodes);
+			else
+				return lhs.nodes->size() < rhs.nodes->size();
+		} else {
+			return lhs.hash < rhs.hash;
+		}
+	}
+};
+
+/*
  * State - DFA individual state information
  * label: a unique label to identify the state used for pretty printing
  *        the non-matching state is setup to have label == 0 and
@@ -86,7 +120,8 @@ public:
 
 ostream &operator<<(ostream &os, const State &state);
 
-typedef map<pair<unsigned long, NodeSet *>, State *, deref_less_than> NodeMap;
+
+typedef map<ProtoState, State *, deref_less_than> NodeMap;
 /* Transitions in the DFA. */
 
 /* dfa_stats - structure to group various stats about dfa creation
@@ -102,7 +137,6 @@ typedef struct dfa_stats {
 class DFA {
 	void dump_node_to_dfa(void);
 	State *add_new_state(NodeMap &nodemap,
-			     pair<unsigned long, NodeSet *> index,
 			     NodeSet *nodes, State *other, dfa_stats_t &stats);
 	void update_state_transitions(NodeMap &nodemap,
 				      list<State *> &work_queue,

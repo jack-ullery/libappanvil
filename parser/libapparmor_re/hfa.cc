@@ -45,12 +45,11 @@ ostream &operator<<(ostream &os, const State &state)
 }
 
 State *DFA::add_new_state(NodeMap &nodemap,
-			  pair<unsigned long, NodeSet *> index,
 			  NodeSet *nodes, State *other, dfa_stats_t &stats)
 {
 	State *state = new State(nodemap.size(), nodes, other);
 	states.push_back(state);
-	nodemap.insert(make_pair(index, state));
+	nodemap.insert(make_pair(ProtoState(nodes), state));
 	stats.proto_sum += nodes->size();
 	if (nodes->size() > stats.proto_max)
 		stats.proto_max = nodes->size();
@@ -62,16 +61,15 @@ State *DFA::find_target_state(NodeMap &nodemap, list<State *> &work_queue,
 {
 	State *target;
 
-	pair<unsigned long, NodeSet *> index = make_pair(hash_NodeSet(nodes), nodes);
+	ProtoState index(nodes);
 
-	map<pair<unsigned long, NodeSet *>, State *, deref_less_than>::iterator x = nodemap.find(index);
+	map<ProtoState, State *, deref_less_than>::iterator x = nodemap.find(index);
 
 	if (x == nodemap.end()) {
 		/* set of nodes isn't known so create new state, and nodes to
 		 * state mapping
 		 */
-		target = add_new_state(nodemap, index, nodes, nonmatching,
-				       stats);
+		target = add_new_state(nodemap, nodes, nonmatching, stats);
 		work_queue.push_back(target);
 	} else {
 		/* set of nodes already has a mapping so free this one */
@@ -161,13 +159,10 @@ DFA::DFA(Node *root, dfaflags_t flags): root(root)
 
 	NodeMap nodemap;
 	NodeSet *emptynode = new NodeSet;
-	nonmatching = add_new_state(nodemap,
-				    make_pair(hash_NodeSet(emptynode), emptynode),
-				    emptynode, NULL, stats);
+	nonmatching = add_new_state(nodemap, emptynode, NULL, stats);
 
 	NodeSet *first = new NodeSet(root->firstpos);
-	start = add_new_state(nodemap, make_pair(hash_NodeSet(first), first),
-			      first, nonmatching, stats);
+	start = add_new_state(nodemap, first, nonmatching, stats);
 
 	/* the work_queue contains the states that need to have their
 	 * transitions computed.  This could be done with a recursive
@@ -212,7 +207,7 @@ DFA::DFA(Node *root, dfaflags_t flags): root(root)
 		dump_node_to_dfa();
 
 	for (NodeMap::iterator i = nodemap.begin(); i != nodemap.end(); i++)
-		delete i->first.second;
+		delete i->first.nodes;
 	nodemap.clear();
 
 	if (flags & (DFA_DUMP_STATS))
