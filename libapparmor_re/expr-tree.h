@@ -571,22 +571,6 @@ void label_nodes(Node *root);
 unsigned long hash_NodeSet(NodeSet *ns);
 void flip_tree(Node *node);
 
-/* Comparison operator for sets of <NodeSet *>.
- * Compare set hashes, and if the sets have the same hash
- * do compare pointer comparison on set of <Node *>, the pointer comparison
- * allows us to determine which Sets of <Node *> we have seen already from
- * new ones when constructing the DFA.
- */
-struct deref_less_than {
-	bool operator()(pair<unsigned long, NodeSet *>const &lhs,
-			pair<unsigned long, NodeSet *>const &rhs)const
-	{
-		if (lhs.first == rhs.first)
-			return *(lhs.second) < *(rhs.second);
-		else
-			return lhs.first < rhs.first;
-	}
-};
 
 class MatchFlag: public AcceptNode {
 public:
