@@ -1,7 +1,7 @@
 /*
  * (C) 2006, 2007 Andreas Gruenbacher <agruen@suse.de>
  * Copyright (c) 2003-2008 Novell, Inc. (All rights reserved)
- * Copyright 2009-2010 Canonical Ltd.
+ * Copyright 2009-2011 Canonical Ltd.
  *
  * The libapparmor library is licensed under the terms of the GNU
  * Lesser General Public License, version 2.1. Please see the file
@@ -30,9 +30,9 @@
 #include <string.h>
 
 #include "hfa.h"
-#include "compressed_hfa.h"
+#include "chfa.h"
 
-void TransitionTable::init_free_list(vector<pair<size_t, size_t> > &free_list,
+void CHFA::init_free_list(vector<pair<size_t, size_t> > &free_list,
 				     size_t prev, size_t start)
 {
 	for (size_t i = start; i < free_list.size(); i++) {
@@ -47,11 +47,10 @@ void TransitionTable::init_free_list(vector<pair<size_t, size_t> > &free_list,
 /**
  * new Construct the transition table.
  */
-TransitionTable::TransitionTable(DFA &dfa, map<uchar, uchar> &eq,
-				 dfaflags_t flags): eq(eq)
+CHFA::CHFA(DFA &dfa, map<uchar, uchar> &eq, dfaflags_t flags): eq(eq)
 {
 	if (flags & DFA_DUMP_TRANS_PROGRESS)
-		fprintf(stderr, "Compressing trans table:\r");
+		fprintf(stderr, "Compressing HFA:\r");
 
 	if (eq.empty())
 		max_eq = 255;
@@ -156,7 +155,7 @@ TransitionTable::TransitionTable(DFA &dfa, map<uchar, uchar> &eq,
 /**
  * Does <trans> fit into position <base> of the transition table?
  */
-bool TransitionTable::fits_in(vector<pair<size_t, size_t> > &free_list
+bool CHFA::fits_in(vector<pair<size_t, size_t> > &free_list
 			      __attribute__ ((unused)), size_t pos,
 			      StateTrans &trans)
 {
@@ -177,7 +176,7 @@ bool TransitionTable::fits_in(vector<pair<size_t, size_t> > &free_list
 /**
  * Insert <state> of <dfa> into the transition table.
  */
-void TransitionTable::insert_state(vector<pair<size_t, size_t> > &free_list,
+void CHFA::insert_state(vector<pair<size_t, size_t> > &free_list,
 				   State *from, DFA &dfa)
 {
 	State *default_state = dfa.nonmatching;
@@ -248,7 +247,7 @@ do_insert:
 /**
  * Text-dump the transition table (for debugging).
  */
-void TransitionTable::dump(ostream &os)
+void CHFA::dump(ostream &os)
 {
 	map<size_t, const State *> st;
 	for (map<const State *, size_t>::iterator i = num.begin(); i != num.end(); i++) {
@@ -342,7 +341,7 @@ template<class Iter>
 	os << fill64(sizeof(td) + sizeof(*pos) * size);
 }
 
-void TransitionTable::flex_table(ostream &os, const char *name)
+void CHFA::flex_table(ostream &os, const char *name)
 {
 	const char th_version[] = "notflex";
 	struct table_set_header th = { 0, 0, 0, 0 };
