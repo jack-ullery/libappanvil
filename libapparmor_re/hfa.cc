@@ -63,7 +63,7 @@ State *DFA::find_target_state(NodeMap &nodemap, list<State *> &work_queue,
 
 	ProtoState index(nodes);
 
-	map<ProtoState, State *, deref_less_than>::iterator x = nodemap.find(index);
+	map<ProtoState, State *>::iterator x = nodemap.find(index);
 
 	if (x == nodemap.end()) {
 		/* set of nodes isn't known so create new state, and nodes to

@@ -51,24 +51,16 @@ public:
 	{
 		hash = hash_NodeSet(n);
 	}
-};
 
-/* Comparison operator for a ProtoState
- * Compare set hashes, and if the sets have the same hash
- * do compare pointer comparison on set of <Node *>, the pointer comparison
- * allows us to determine which Sets of <Node *> we have seen already from
- * new ones when constructing the DFA.
- */
-struct deref_less_than {
-	bool operator()(ProtoState const &lhs, ProtoState const &rhs)const
+	bool operator<(ProtoState const &rhs)const
 	{
-		if (lhs.hash == rhs.hash) {
-			if (lhs.nodes->size() == rhs.nodes->size())
-				return *(lhs.nodes) < *(rhs.nodes);
+		if (hash == rhs.hash) {
+			if (nodes->size() == rhs.nodes->size())
+				return *nodes < *(rhs.nodes);
 			else
-				return lhs.nodes->size() < rhs.nodes->size();
+				return nodes->size() < rhs.nodes->size();
 		} else {
-			return lhs.hash < rhs.hash;
+			return hash < rhs.hash;
 		}
 	}
 };
@@ -121,7 +113,7 @@ public:
 ostream &operator<<(ostream &os, const State &state);
 
 
-typedef map<ProtoState, State *, deref_less_than> NodeMap;
+typedef map<ProtoState, State *> NodeMap;
 /* Transitions in the DFA. */
 
 /* dfa_stats - structure to group various stats about dfa creation
