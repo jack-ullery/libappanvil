@@ -4,7 +4,7 @@
 TARGET=libapparmor_re.a
 
 CFLAGS ?= -g -Wall -O2 ${EXTRA_CFLAGS}
-CXXFLAGS := ${CFLAGS}
+CXXFLAGS := ${CFLAGS} -std=c++0x
 
 ARFLAGS=-rcs
 

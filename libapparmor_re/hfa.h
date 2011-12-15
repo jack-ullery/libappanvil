@@ -70,6 +70,10 @@ public:
  */
 class ProtoState {
 public:
+	typedef NodeSet::iterator iterator;
+	iterator begin() { return nodes->begin(); }
+	iterator end() { return nodes->end(); }
+
 	NodeSet *nodes;
 
 	ProtoState(NodeSet *n): nodes(n) { };
@@ -78,6 +82,7 @@ public:
 		return nodes < rhs.nodes;
 	}
 
+	unsigned long size(void) { return nodes->size(); }
 };
 
 /*
@@ -97,8 +102,8 @@ public:
  */
 class State {
 public:
-	State(int l, NodeSet * n, State *other) throw(int):
-		label(l), audit(0), accept(0), trans(), nodes(n)
+	State(int l, ProtoState &n, State *other) throw(int):
+		label(l), audit(0), accept(0), trans()
 	{
 		int error;
 
@@ -107,8 +112,10 @@ public:
 		else
 			otherwise = this;
 
+		proto = n;
+
 		/* Compute permissions associated with the State. */
-		accept = accept_perms(nodes, &audit, &error);
+		accept = accept_perms(n.nodes, &audit, &error);
 		if (error) {
 			//cerr << "Failing on accept perms " << error << "\n";
 			throw error;
@@ -119,9 +126,11 @@ public:
 	uint32_t audit, accept;
 	StateTrans trans;
 	State *otherwise;
+
+	/* temp storage for State construction */
 	union {
 		Partition *partition;
-		NodeSet *nodes;
+		ProtoState proto;
 	};
 };
 
@@ -144,7 +153,7 @@ typedef struct dfa_stats {
 class DFA {
 	void dump_node_to_dfa(void);
 	State *add_new_state(NodeMap &nodemap,
-			     NodeSet *nodes, State *other, dfa_stats_t &stats);
+			     ProtoState &proto, State *other, dfa_stats_t &stats);
 	void update_state_transitions(NodeMap &nodemap,
 				      list<State *> &work_queue,
 				      State *state, dfa_stats_t &stats);
