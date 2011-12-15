@@ -35,11 +35,30 @@
 #include "hfa.h"
 #include "../immunix.h"
 
+
+ostream &operator<<(ostream &os, const CacheStats &cache)
+{
+	/* dump the state label */
+	os << "cache: size=";
+	os << cache.size();
+	os << " dups=";
+	os << cache.dup;
+	os << " longest=";
+	os << cache.max;
+	if (cache.size()) {
+		os << " avg=";
+		os << cache.sum / cache.size();
+	}
+	return os;
+}
+
 ostream &operator<<(ostream &os, const ProtoState &proto)
 {
 	/* dump the state label */
 	os << '{';
-	os << proto.nodes;
+	os << proto.nnodes;
+	os << ',';
+	os << proto.anodes;
 	os << '}';
 	return os;
 }
@@ -53,50 +72,48 @@ ostream &operator<<(ostream &os, const State &state)
 	return os;
 }
 
-State *DFA::add_new_state(NodeMap &nodemap, ProtoState &proto,
-			  State *other, dfa_stats_t &stats)
+static void split_node_types(NodeSet *nodes, NodeSet **anodes, NodeSet **nnodes
+)
 {
-	State *state = new State(nodemap.size(), proto, other);
-	states.push_back(state);
-	nodemap.insert(make_pair(proto, state));
-	stats.proto_sum += proto.size();
-	if (proto.size() > stats.proto_max)
-		stats.proto_max = proto.size();
-	return state;
+	*anodes = *nnodes = NULL;
+	for (NodeSet::iterator i = nodes->begin(); i != nodes->end(); ) {
+		if ((*i)->is_accept()) {
+			if (!*anodes)
+				*anodes = new NodeSet;
+			(*anodes)->insert(*i);
+			NodeSet::iterator k = i++;
+			nodes->erase(k);
+		} else
+			i++;
+	}
+	*nnodes = nodes;
 }
 
-State *DFA::find_target_state(NodeMap &nodemap, list<State *> &work_queue,
-			      NodeSet *nodes, dfa_stats_t &stats)
+State *DFA::add_new_state(NodeSet *nodes, State *other)
 {
-	State *target;
+	/* The splitting of nodes should probably get pushed down into
+	 * follow(), ie. put in separate lists from the start
+	 */
+	NodeSet *anodes, *nnodes;
+	split_node_types(nodes, &anodes, &nnodes);
 
-	pair<set<hashedNodeSet>::iterator,bool> uniq = uniq_nodes.insert(hashedNodeSet(nodes));
-	if (uniq.second == false) {
-		delete(nodes);
-		nodes = uniq.first->nodes;
-	}
+	nnodes = nnodes_cache.insert(nnodes);
+	anodes = anodes_cache.insert(anodes);
 
-	ProtoState index(nodes);
-
-	map<ProtoState, State *>::iterator x = nodemap.find(index);
-
-	if (x == nodemap.end()) {
-		/* set of nodes isn't known so create new state, and nodes to
-		 * state mapping
-		 */
-		target = add_new_state(nodemap, index, nonmatching, stats);
-		work_queue.push_back(target);
+	ProtoState proto(nnodes, anodes);
+	State *state = new State(node_map.size(), proto, other);
+	pair<NodeMap::iterator,bool> x = node_map.insert(proto, state);
+	if (x.second == false) {
+		delete state;
 	} else {
-		/* set of nodes already has a mapping so free this one */
-		stats.duplicates++;
-		target = x->second;
+		states.push_back(state);
+		work_queue.push_back(state);
 	}
 
-	return target;
+	return x.first->second;
 }
 
-void DFA::update_state_transitions(NodeMap &nodemap, list<State *> &work_queue,
-				   State *state, dfa_stats_t &stats)
+void DFA::update_state_transitions(State *state)
 {
 	/* Compute possible transitions for state->nodes.  This is done by
 	 * iterating over all the nodes in state->nodes and combining the
@@ -104,9 +121,12 @@ void DFA::update_state_transitions(NodeMap &nodemap, list<State *> &work_queue,
 	 *
 	 * The resultant transition set is a mapping of characters to
 	 * sets of nodes.
+	 *
+	 * Note: the follow set for accept nodes is always empty so we don't
+	 * need to compute follow for the accept nodes in a protostate
 	 */
 	Cases cases;
-	for (ProtoState::iterator i = state->proto.begin(); i != state->proto.end(); i++)
+	for (NodeSet::iterator i = state->proto.nnodes->begin(); i != state->proto.nnodes->end(); i++)
 		(*i)->follow(cases);
 
 	/* Now for each set of nodes in the computed transitions, make
@@ -116,8 +136,7 @@ void DFA::update_state_transitions(NodeMap &nodemap, list<State *> &work_queue,
 
 	/* check the default transition first */
 	if (cases.otherwise)
-		state->otherwise = find_target_state(nodemap, work_queue,
-						     cases.otherwise, stats);
+		state->otherwise = add_new_state(cases.otherwise, nonmatching);
 	else
 		state->otherwise = nonmatching;
 
@@ -126,7 +145,7 @@ void DFA::update_state_transitions(NodeMap &nodemap, list<State *> &work_queue,
 	 */
 	for (Cases::iterator j = cases.begin(); j != cases.end(); j++) {
 		State *target;
-		target = find_target_state(nodemap, work_queue, j->second, stats);
+		target = add_new_state(j->second, nonmatching);
 
 		/* Don't insert transition that the otherwise transition
 		 * already covers
@@ -153,7 +172,6 @@ void DFA::dump_node_to_dfa(void)
  */
 DFA::DFA(Node *root, dfaflags_t flags): root(root)
 {
-	dfa_stats_t stats = { 0, 0, 0 };
 	int i = 0;
 
 	if (flags & DFA_DUMP_PROGRESS)
@@ -171,12 +189,8 @@ DFA::DFA(Node *root, dfaflags_t flags): root(root)
 		(*i)->compute_followpos();
 	}
 
-	NodeMap nodemap;
-	ProtoState emptynode = ProtoState(new NodeSet);
-	nonmatching = add_new_state(nodemap, emptynode, NULL, stats);
-
-	ProtoState first = ProtoState(new NodeSet(root->firstpos));
-	start = add_new_state(nodemap, first, nonmatching, stats);
+	nonmatching = add_new_state(new NodeSet, NULL);
+	start = add_new_state(new NodeSet(root->firstpos), nonmatching);
 
 	/* the work_queue contains the states that need to have their
 	 * transitions computed.  This could be done with a recursive
@@ -188,14 +202,18 @@ DFA::DFA(Node *root, dfaflags_t flags): root(root)
 	 *       manner, this may help reduce the number of entries on the
 	 *       work_queue at any given time, thus reducing peak memory use.
 	 */
-	list<State *> work_queue;
 	work_queue.push_back(start);
 
 	while (!work_queue.empty()) {
-		if (i % 1000 == 0 && (flags & DFA_DUMP_PROGRESS))
-			fprintf(stderr, "\033[2KCreating dfa: queue %zd\tstates %zd\teliminated duplicates %d\r",
-				work_queue.size(), states.size(),
-				stats.duplicates);
+		if (i % 1000 == 0 && (flags & DFA_DUMP_PROGRESS)) {
+			cerr << "\033[2KCreating dfa: queue "
+			     << work_queue.size()
+			     << "\tstates "
+			     << states.size()
+			     << "\teliminated duplicates "
+			     << node_map.dup
+			     << "\r";
+		}
 		i++;
 
 		State *from = work_queue.front();
@@ -204,7 +222,7 @@ DFA::DFA(Node *root, dfaflags_t flags): root(root)
 		/* Update 'from's transitions, and if it transitions to any
 		 * unknown State create it and add it to the work_queue
 		 */
-		update_state_transitions(nodemap, work_queue, from, stats);
+		update_state_transitions(from);
 
 	}  /* while (!work_queue.empty()) */
 
@@ -220,20 +238,31 @@ DFA::DFA(Node *root, dfaflags_t flags): root(root)
 	if (flags & DFA_DUMP_NODE_TO_DFA)
 		dump_node_to_dfa();
 
-	for (set<hashedNodeSet>::iterator i = uniq_nodes.begin(); i != uniq_nodes.end(); i++)
-		delete i->nodes;
-	uniq_nodes.clear();
-	nodemap.clear();
+	if (flags & (DFA_DUMP_STATS)) {
+		cerr << "\033[2KCreated dfa: states "
+		     << states.size()
+		     << " proto { "
+		     << node_map
+		     << " }, nnodes { "
+		     << nnodes_cache
+		     << " }, anodes { "
+		     << anodes_cache
+		     << " }\n";
+	}
 
-	if (flags & (DFA_DUMP_STATS))
-		fprintf(stderr, "\033[2KCreated dfa: states %zd,\teliminated duplicates %d,\tprotostate sets: longest %u, avg %u\n",
-			states.size(), stats.duplicates, stats.proto_max,
-			(unsigned int)(stats.proto_sum / states.size()));
-
+	/* Clear out uniq_nnodes as they are no longer needed.
+	 * Do not clear out uniq_anodes, as we need them for minimizations
+	 * diffs, unions, ...
+	 */
+	nnodes_cache.clear();
+	node_map.clear();
 }
 
 DFA::~DFA()
 {
+	anodes_cache.clear();
+	nnodes_cache.clear();
+
 	for (Partition::iterator i = states.begin(); i != states.end(); i++)
 		delete *i;
 }
@@ -256,7 +285,6 @@ void DFA::dump_uniq_perms(const char *s)
 void DFA::remove_unreachable(dfaflags_t flags)
 {
 	set<State *> reachable;
-	list<State *> work_queue;
 
 	/* find the set of reachable states */
 	reachable.insert(nonmatching);
@@ -804,6 +832,11 @@ uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error)
 
 	if (error)
 		*error = 0;
+	if (!state) {
+		*audit_ctl = 0;
+		return perms;
+	}
+
 	for (NodeSet::iterator i = state->begin(); i != state->end(); i++) {
 		MatchFlag *match;
 		if (!(match = dynamic_cast<MatchFlag *>(*i)))

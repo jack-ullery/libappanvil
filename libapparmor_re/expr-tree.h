@@ -204,6 +204,7 @@ public:
 	void compute_firstpos() { firstpos.insert(this); }
 	void compute_lastpos() { lastpos.insert(this); }
 	virtual void follow(Cases &cases) = 0;
+	virtual int is_accept(void) = 0;
 };
 
 /* common base class for all the different classes that contain
@@ -212,6 +213,7 @@ public:
 class CNode: public ImportantNode {
 public:
 	CNode(): ImportantNode() { }
+	int is_accept(void) { return false; }
 };
 
 /* Match one specific character (/c/). */
@@ -363,6 +365,7 @@ public:
 class AcceptNode: public ImportantNode {
 public:
 	AcceptNode() { }
+	int is_accept(void) { return true; }
 	void release(void)
 	{
 		/* don't delete AcceptNode via release as they are shared, and
