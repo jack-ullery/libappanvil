@@ -92,7 +92,7 @@ void DFA::update_state_transitions(NodeMap &nodemap, list<State *> &work_queue,
 	 * The resultant transition set is a mapping of characters to
 	 * sets of nodes.
 	 */
-	NodeCases cases;
+	Cases cases;
 	for (NodeSet::iterator i = state->nodes->begin(); i != state->nodes->end(); i++)
 		(*i)->follow(cases);
 
@@ -110,7 +110,7 @@ void DFA::update_state_transitions(NodeMap &nodemap, list<State *> &work_queue,
 	/* For each transition from *from, check if the set of nodes it
 	 * transitions to already has been mapped to a state
 	 */
-	for (NodeCases::iterator j = cases.begin(); j != cases.end(); j++) {
+	for (Cases::iterator j = cases.begin(); j != cases.end(); j++) {
 		State *target;
 		target = find_target_state(nodemap, work_queue, j->second, stats);
 
