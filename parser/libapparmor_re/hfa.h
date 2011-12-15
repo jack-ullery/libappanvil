@@ -65,24 +65,75 @@ public:
 	}
 };
 
+class CacheStats {
+public:
+	unsigned long dup, sum, max;
+
+	CacheStats(void): dup(0), sum(0), max(0) { };
+
+	void clear(void) { dup = sum = max = 0; }
+	virtual unsigned long size(void) const = 0;
+};
+
+class NodeCache: public CacheStats {
+public:
+	set<hashedNodeSet> cache;
+
+	NodeCache(void): cache() { };
+	~NodeCache() { clear(); };
+
+	virtual unsigned long size(void) const { return cache.size(); }
+
+	void clear()
+	{
+		for (set<hashedNodeSet>::iterator i = cache.begin();
+		     i != cache.end(); i++) {
+			delete i->nodes;
+		}
+		cache.clear();
+		CacheStats::clear();
+	}
+
+	NodeSet *insert(NodeSet *nodes)
+	{
+		if (!nodes)
+			return NULL;
+		pair<set<hashedNodeSet>::iterator,bool> uniq;
+		uniq = cache.insert(hashedNodeSet(nodes));
+		if (uniq.second == false) {
+			delete(nodes);
+			dup++;
+		} else {
+			sum += nodes->size();
+			if (nodes->size() > max)
+				max = nodes->size();
+		}
+		return uniq.first->nodes;
+	}
+};
+
 /*
  * ProtoState - NodeSet and ancillery information used to create a state
  */
 class ProtoState {
 public:
-	typedef NodeSet::iterator iterator;
-	iterator begin() { return nodes->begin(); }
-	iterator end() { return nodes->end(); }
+	NodeSet *nnodes;
+	NodeSet *anodes;
 
-	NodeSet *nodes;
-
-	ProtoState(NodeSet *n): nodes(n) { };
+	ProtoState(NodeSet *n, NodeSet *a = NULL): nnodes(n), anodes(a) { };
 	bool operator<(ProtoState const &rhs)const
 	{
-		return nodes < rhs.nodes;
+		if (nnodes == rhs.nnodes)
+			return anodes < rhs.anodes;
+		return nnodes < rhs.nnodes;
 	}
 
-	unsigned long size(void) { return nodes->size(); }
+	unsigned long size(void)
+	{
+		if (anodes)
+			return nnodes->size() + anodes->size();
+		return nnodes->size();
+	}
 };
 
 /*
@@ -115,7 +166,7 @@ public:
 		proto = n;
 
 		/* Compute permissions associated with the State. */
-		accept = accept_perms(n.nodes, &audit, &error);
+		accept = accept_perms(n.anodes, &audit, &error);
 		if (error) {
 			//cerr << "Failing on accept perms " << error << "\n";
 			throw error;
@@ -136,36 +187,58 @@ public:
 
 ostream &operator<<(ostream &os, const State &state);
 
+class NodeMap: public CacheStats
+{
+public:
+	typedef map<ProtoState, State *>::iterator iterator;
+	iterator begin() { return cache.begin(); }
+	iterator end() { return cache.end(); }
 
-typedef map<ProtoState, State *> NodeMap;
+	map<ProtoState, State *> cache;
+
+	NodeMap(void): cache() { };
+	~NodeMap() { clear(); };
+
+	virtual unsigned long size(void) const { return cache.size(); }
+
+	void clear()
+	{
+		cache.clear();
+		CacheStats::clear();
+	}
+
+	pair<iterator,bool> insert(ProtoState &proto, State *state)
+	{
+		pair<iterator,bool> uniq;
+		uniq = cache.insert(make_pair(proto, state));
+		if (uniq.second == false) {
+			dup++;
+		} else {
+			sum += proto.size();
+			if (proto.size() > max)
+				max = proto.size();
+		}
+		return uniq;
+	}
+};
+
 /* Transitions in the DFA. */
-
-/* dfa_stats - structure to group various stats about dfa creation
- * duplicates - how many duplicate NodeSets where encountered and discarded
- * proto_max - maximum length of a NodeSet encountered during dfa construction
- * proto_sum - sum of NodeSet length during dfa construction.  Used to find
- *             average length.
- */
-typedef struct dfa_stats {
-	unsigned int duplicates, proto_max, proto_sum;
-} dfa_stats_t;
 
 class DFA {
 	void dump_node_to_dfa(void);
-	State *add_new_state(NodeMap &nodemap,
-			     ProtoState &proto, State *other, dfa_stats_t &stats);
-	void update_state_transitions(NodeMap &nodemap,
-				      list<State *> &work_queue,
-				      State *state, dfa_stats_t &stats);
-	State *find_target_state(NodeMap &nodemap, list<State *> &work_queue,
-				 NodeSet *nodes, dfa_stats_t &stats);
+	State *add_new_state(NodeSet *nodes, State *other);
+	void update_state_transitions(State *state);
 
 	/* temporary values used during computations */
-	set<hashedNodeSet> uniq_nodes;
+	NodeCache anodes_cache;
+	NodeCache nnodes_cache;
+	NodeMap node_map;
+	list<State *> work_queue;
 
 public:
 	DFA(Node *root, dfaflags_t flags);
 	virtual ~DFA();
+
 	void remove_unreachable(dfaflags_t flags);
 	bool same_mappings(State *s1, State *s2);
 	size_t hash_trans(State *s);
