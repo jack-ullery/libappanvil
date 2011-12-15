@@ -65,6 +65,62 @@ public:
 	}
 };
 
+
+class hashedNodeVec {
+public:
+	typedef ImportantNode ** iterator;
+	iterator begin() { return nodes; }
+	iterator end() { iterator t = nodes ? &nodes[len] : NULL; return t; }
+
+	unsigned long hash;
+	unsigned long len;
+	ImportantNode **nodes;
+
+	hashedNodeVec(NodeSet *n)
+	{
+		hash = hash_NodeSet(n);
+		len = n->size();
+		nodes = new ImportantNode *[n->size()];
+
+		unsigned int j = 0;
+		for (NodeSet::iterator i = n->begin(); i != n->end(); i++, j++) {
+			nodes[j] = *i;
+		}
+	}
+
+	hashedNodeVec(NodeSet *n, unsigned long h): hash(h)
+	{
+		len = n->size();
+		nodes = new ImportantNode *[n->size()];
+		ImportantNode **j = nodes;
+		for (NodeSet::iterator i = n->begin(); i != n->end(); i++) {
+			*(j++) = *i;
+		}
+	}
+
+	~hashedNodeVec()
+	{
+		delete nodes;
+	}
+
+	unsigned long size()const { return len; }
+
+	bool operator<(hashedNodeVec const &rhs)const
+	{
+		if (hash == rhs.hash) {
+			if (len == rhs.size()) {
+				for (unsigned int i = 0; i < len; i++) {
+					if (nodes[i] != rhs.nodes[i])
+						return nodes[i] < rhs.nodes[i];
+				}
+				return false;
+			}
+			return len < rhs.size();
+		}
+		return hash < rhs.hash;
+	}
+};
+
 class CacheStats {
 public:
 	unsigned long dup, sum, max;
@@ -112,15 +168,61 @@ public:
 	}
 };
 
+struct deref_less_than {
+       bool operator()(hashedNodeVec * const &lhs, hashedNodeVec * const &rhs)const
+		{
+			return *lhs < *rhs;
+		}
+};
+
+class NodeVecCache: public CacheStats {
+public:
+	set<hashedNodeVec *, deref_less_than> cache;
+
+	NodeVecCache(void): cache() { };
+	~NodeVecCache() { clear(); };
+
+	virtual unsigned long size(void) const { return cache.size(); }
+
+	void clear()
+	{
+		for (set<hashedNodeVec *>::iterator i = cache.begin();
+		     i != cache.end(); i++) {
+			delete *i;
+		}
+		cache.clear();
+		CacheStats::clear();
+	}
+
+	hashedNodeVec *insert(NodeSet *nodes)
+	{
+		if (!nodes)
+			return NULL;
+		pair<set<hashedNodeVec *>::iterator,bool> uniq;
+		hashedNodeVec *nv = new hashedNodeVec(nodes);
+		uniq = cache.insert(nv);
+		if (uniq.second == false) {
+			delete nv;
+			dup++;
+		} else {
+			sum += nodes->size();
+			if (nodes->size() > max)
+				max = nodes->size();
+		}
+		delete(nodes);
+		return (*uniq.first);
+	}
+};
+
 /*
  * ProtoState - NodeSet and ancillery information used to create a state
  */
 class ProtoState {
 public:
-	NodeSet *nnodes;
+	hashedNodeVec *nnodes;
 	NodeSet *anodes;
 
-	ProtoState(NodeSet *n, NodeSet *a = NULL): nnodes(n), anodes(a) { };
+	ProtoState(hashedNodeVec *n, NodeSet *a = NULL): nnodes(n), anodes(a) { };
 	bool operator<(ProtoState const &rhs)const
 	{
 		if (nnodes == rhs.nnodes)
@@ -231,7 +333,7 @@ class DFA {
 
 	/* temporary values used during computations */
 	NodeCache anodes_cache;
-	NodeCache nnodes_cache;
+	NodeVecCache nnodes_cache;
 	NodeMap node_map;
 	list<State *> work_queue;
 
