@@ -31,7 +31,7 @@
 #include "expr-tree.h"
 #include "parse.h"
 #include "hfa.h"
-#include "compressed_hfa.h"
+#include "chfa.h"
 #include "../immunix.h"
 
 struct aare_ruleset {
@@ -291,10 +291,10 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, size_t *size,
 		} else if (flags & DFA_DUMP_EQUIV)
 			cerr << "\nDFA did not generate an equivalence class\n";
 
-		TransitionTable transition_table(dfa, eq, flags);
+		CHFA chfa(dfa, eq, flags);
 		if (flags & DFA_DUMP_TRANS_TABLE)
-			transition_table.dump(cerr);
-		transition_table.flex_table(stream, "");
+			chfa.dump(cerr);
+		chfa.flex_table(stream, "");
 	}
 	catch(int error) {
 		*size = 0;
