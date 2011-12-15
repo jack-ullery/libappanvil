@@ -38,7 +38,7 @@ class TransitionTable {
 	void init_free_list(vector<pair<size_t, size_t> > &free_list,
 			    size_t prev, size_t start);
 	bool fits_in(vector<pair<size_t, size_t> > &free_list, size_t base,
-		     Cases &cases);
+		     StateTrans &cases);
 	void insert_state(vector<pair<size_t, size_t> > &free_list,
 			  State *state, DFA &dfa);
 

@@ -74,14 +74,14 @@ TransitionTable::TransitionTable(DFA &dfa, map<uchar, uchar> &eq,
 	for (Partition::iterator i = dfa.states.begin(); i != dfa.states.end(); i++) {
 		if (*i == dfa.start || *i == dfa.nonmatching)
 			continue;
-		optimal += (*i)->cases.cases.size();
+		optimal += (*i)->trans.size();
 		if (flags & DFA_CONTROL_TRANS_HIGH) {
 			size_t range = 0;
-			if ((*i)->cases.cases.size())
+			if ((*i)->trans.size())
 				range =
-				    (*i)->cases.cases.rbegin()->first -
-				    (*i)->cases.begin()->first;
-			size_t ord = ((256 - (*i)->cases.cases.size()) << 8) | (256 - range);
+				    (*i)->trans.rbegin()->first -
+				    (*i)->trans.begin()->first;
+			size_t ord = ((256 - (*i)->trans.size()) << 8) | (256 - range);
 			/* reverse sort by entry count, most entries first */
 			order.insert(make_pair(ord, *i));
 		}
@@ -154,14 +154,14 @@ TransitionTable::TransitionTable(DFA &dfa, map<uchar, uchar> &eq,
 }
 
 /**
- * Does <cases> fit into position <base> of the transition table?
+ * Does <trans> fit into position <base> of the transition table?
  */
 bool TransitionTable::fits_in(vector<pair<size_t, size_t> > &free_list
 			      __attribute__ ((unused)), size_t pos,
-			      Cases &cases)
+			      StateTrans &trans)
 {
-	size_t c, base = pos - cases.begin()->first;
-	for (Cases::iterator i = cases.begin(); i != cases.end(); i++) {
+	size_t c, base = pos - trans.begin()->first;
+	for (StateTrans::iterator i = trans.begin(); i != trans.end(); i++) {
 		c = base + i->first;
 		/* if it overflows the next_check array it fits in as we will
 		 * resize */
@@ -184,14 +184,14 @@ void TransitionTable::insert_state(vector<pair<size_t, size_t> > &free_list,
 	size_t base = 0;
 	int resize;
 
-	Cases &cases = from->cases;
-	size_t c = cases.begin()->first;
+	StateTrans &trans = from->trans;
+	size_t c = trans.begin()->first;
 	size_t prev = 0;
 	size_t x = first_free;
 
-	if (cases.otherwise)
-		default_state = cases.otherwise;
-	if (cases.cases.empty())
+	if (from->otherwise)
+		default_state = from->otherwise;
+	if (trans.empty())
 		goto do_insert;
 
 repeat:
@@ -203,16 +203,16 @@ repeat:
 	}
 
 	/* try inserting until we succeed. */
-	while (x && !fits_in(free_list, x, cases)) {
+	while (x && !fits_in(free_list, x, trans)) {
 		prev = x;
 		x = free_list[x].second;
 	}
 	if (!x) {
-		resize = 256 - cases.begin()->first;
+		resize = 256 - trans.begin()->first;
 		x = free_list.size();
 		/* set prev to last free */
-	} else if (x + 255 - cases.begin()->first >= next_check.size()) {
-		resize = (255 - cases.begin()->first - (next_check.size() - 1 - x));
+	} else if (x + 255 - trans.begin()->first >= next_check.size()) {
+		resize = (255 - trans.begin()->first - (next_check.size() - 1 - x));
 		for (size_t y = x; y; y = free_list[y].second)
 			prev = y;
 	}
@@ -229,7 +229,7 @@ repeat:
 	}
 
 	base = x - c;
-	for (Cases::iterator j = cases.begin(); j != cases.end(); j++) {
+	for (StateTrans::iterator j = trans.begin(); j != trans.end(); j++) {
 		next_check[base + j->first] = make_pair(j->second, from);
 		size_t prev = free_list[base + j->first].first;
 		size_t next = free_list[base + j->first].second;
