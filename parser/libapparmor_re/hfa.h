@@ -33,25 +33,8 @@
 #include "expr-tree.h"
 
 class State;
-/**
- * State cases are identical to NodesCases except they map to State *
- * instead of NodeSet.
- * Out-edges from a state to another: we store the follow State
- * for each input character that is not a default match in  cases and
- * default matches in otherwise as well as in all matching explicit cases
- * This avoids enumerating all the explicit tranitions for default matches.
- */
-typedef struct Cases {
-	typedef map<uchar, State *>::iterator iterator;
-	iterator begin() { return cases.begin(); }
-	iterator end() { return cases.end(); }
 
-	Cases(): otherwise(0) { }
-
-	map<uchar, State *> cases;
-	State *otherwise;
-} Cases;
-
+typedef map<uchar, State *> StateTrans;
 typedef list<State *> Partition;
 
 uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error);
@@ -63,7 +46,8 @@ uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error);
  *        the start state is setup to have label == 1
  * audit: the audit permission mask for the state
  * accept: the accept permissions for the state
- * cases: set of transitions from this state
+ * trans: set of transitions from this state
+ * otherwise: the default state for transitions not in @trans
  * parition: Is a temporary work variable used during dfa minimization.
  *           it can be replaced with a map, but that is slower and uses more
  *           memory.
@@ -72,10 +56,10 @@ uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error);
  */
 class State {
 public:
-	State(): label(0), audit(0), accept(0), cases(), nodes(NULL) { };
-	State(int l): label(l), audit(0), accept(0), cases(), nodes(NULL) { };
+	State(): label(0), audit(0), accept(0), trans(), otherwise(NULL), nodes(NULL) { };
+	State(int l): label(l), audit(0), accept(0), trans(), otherwise(NULL), nodes(NULL) { };
 	State(int l, NodeSet * n) throw(int):
-		label(l), audit(0), accept(0), cases(), nodes(n)
+		label(l), audit(0), accept(0), trans(), otherwise(NULL), nodes(n)
 	{
 		int error;
 
@@ -89,7 +73,8 @@ public:
 
 	int label;
 	uint32_t audit, accept;
-	Cases cases;
+	StateTrans trans;
+	State *otherwise;
 	union {
 		Partition *partition;
 		NodeSet *nodes;

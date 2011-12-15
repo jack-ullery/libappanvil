@@ -103,7 +103,7 @@ void DFA::update_state_transitions(NodeMap &nodemap, list<State *> &work_queue,
 
 	/* check the default transition first */
 	if (cases.otherwise)
-		state->cases.otherwise = find_target_state(nodemap, work_queue,
+		state->otherwise = find_target_state(nodemap, work_queue,
 							   cases.otherwise,
 							   stats);;
 
@@ -114,11 +114,11 @@ void DFA::update_state_transitions(NodeMap &nodemap, list<State *> &work_queue,
 		State *target;
 		target = find_target_state(nodemap, work_queue, j->second, stats);
 
-		/* Don't insert transition that the default transition
+		/* Don't insert transition that the otherwise transition
 		 * already covers
 		 */
-		if (target != state->cases.otherwise)
-			state->cases.cases[j->first] = target;
+		if (target != state->otherwise)
+			state->trans[j->first] = target;
 	}
 }
 
@@ -254,11 +254,11 @@ void DFA::remove_unreachable(dfaflags_t flags)
 		work_queue.pop_front();
 		reachable.insert(from);
 
-		if (from->cases.otherwise &&
-		    (reachable.find(from->cases.otherwise) == reachable.end()))
-			work_queue.push_back(from->cases.otherwise);
+		if (from->otherwise &&
+		    (reachable.find(from->otherwise) == reachable.end()))
+			work_queue.push_back(from->otherwise);
 
-		for (Cases::iterator j = from->cases.begin(); j != from->cases.end(); j++) {
+		for (StateTrans::iterator j = from->trans.begin(); j != from->trans.end(); j++) {
 			if (reachable.find(j->second) == reachable.end())
 				work_queue.push_back(j->second);
 		}
@@ -301,22 +301,22 @@ void DFA::remove_unreachable(dfaflags_t flags)
 /* test if two states have the same transitions under partition_map */
 bool DFA::same_mappings(State *s1, State *s2)
 {
-	if (s1->cases.otherwise && s1->cases.otherwise != nonmatching) {
-		if (!s2->cases.otherwise || s2->cases.otherwise == nonmatching)
+	if (s1->otherwise && s1->otherwise != nonmatching) {
+		if (!s2->otherwise || s2->otherwise == nonmatching)
 			return false;
-		Partition *p1 = s1->cases.otherwise->partition;
-		Partition *p2 = s2->cases.otherwise->partition;
+		Partition *p1 = s1->otherwise->partition;
+		Partition *p2 = s2->otherwise->partition;
 		if (p1 != p2)
 			return false;
-	} else if (s2->cases.otherwise && s2->cases.otherwise != nonmatching) {
+	} else if (s2->otherwise && s2->otherwise != nonmatching) {
 		return false;
 	}
 
-	if (s1->cases.cases.size() != s2->cases.cases.size())
+	if (s1->trans.size() != s2->trans.size())
 		return false;
-	for (Cases::iterator j1 = s1->cases.begin(); j1 != s1->cases.end(); j1++) {
-		Cases::iterator j2 = s2->cases.cases.find(j1->first);
-		if (j2 == s2->cases.end())
+	for (StateTrans::iterator j1 = s1->trans.begin(); j1 != s1->trans.end(); j1++) {
+		StateTrans::iterator j2 = s2->trans.find(j1->first);
+		if (j2 == s2->trans.end())
 			return false;
 		Partition *p1 = j1->second->partition;
 		Partition *p2 = j2->second->partition;
@@ -330,7 +330,7 @@ bool DFA::same_mappings(State *s1, State *s2)
 /* Do simple djb2 hashing against a States transition cases
  * this provides a rough initial guess at state equivalence as if a state
  * has a different number of transitions or has transitions on different
- * cases they will never be equivalent.
+ * trans they will never be equivalent.
  * Note: this only hashes based off of the alphabet (not destination)
  * as different destinations could end up being equiv
  */
@@ -338,19 +338,19 @@ size_t DFA::hash_trans(State *s)
 {
 	unsigned long hash = 5381;
 
-	for (Cases::iterator j = s->cases.begin(); j != s->cases.end(); j++) {
+	for (StateTrans::iterator j = s->trans.begin(); j != s->trans.end(); j++) {
 		hash = ((hash << 5) + hash) + j->first;
 		State *k = j->second;
-		hash = ((hash << 5) + hash) + k->cases.cases.size();
+		hash = ((hash << 5) + hash) + k->trans.size();
 	}
 
-	if (s->cases.otherwise && s->cases.otherwise != nonmatching) {
+	if (s->otherwise && s->otherwise != nonmatching) {
 		hash = ((hash << 5) + hash) + 5381;
-		State *k = s->cases.otherwise;
-		hash = ((hash << 5) + hash) + k->cases.cases.size();
+		State *k = s->otherwise;
+		hash = ((hash << 5) + hash) + k->trans.size();
 	}
 
-	hash = (hash << 8) | s->cases.cases.size();
+	hash = (hash << 8) | s->trans.size();
 	return hash;
 }
 
@@ -487,11 +487,11 @@ void DFA::minimize(dfaflags_t flags)
 			cerr << *rep << " : ";
 
 		/* update representative state's transitions */
-		if (rep->cases.otherwise) {
-			Partition *partition = rep->cases.otherwise->partition;
-			rep->cases.otherwise = *partition->begin();
+		if (rep->otherwise) {
+			Partition *partition = rep->otherwise->partition;
+			rep->otherwise = *partition->begin();
 		}
-		for (Cases::iterator c = rep->cases.begin(); c != rep->cases.end(); c++) {
+		for (StateTrans::iterator c = rep->trans.begin(); c != rep->trans.end(); c++) {
 			Partition *partition = c->second->partition;
 			c->second = *partition->begin();
 		}
@@ -577,10 +577,10 @@ void DFA::dump(ostream & os)
 	os << "\n";
 
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
-		if ((*i)->cases.otherwise)
-			os << **i << " -> " << (*i)->cases.otherwise << "\n";
-		for (Cases::iterator j = (*i)->cases.begin();
-		     j != (*i)->cases.end(); j++) {
+		if ((*i)->otherwise)
+			os << **i << " -> " << (*i)->otherwise << "\n";
+		for (StateTrans::iterator j = (*i)->trans.begin();
+		     j != (*i)->trans.end(); j++) {
 			os << **i << " -> " << j->second << ":  "
 			   << j->first << "\n";
 		}
@@ -611,10 +611,9 @@ void DFA::dump_dot_graph(ostream & os)
 		os << "\t]" << "\n";
 	}
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
-		Cases &cases = (*i)->cases;
 		Chars excluded;
 
-		for (Cases::iterator j = cases.begin(); j != cases.end(); j++) {
+		for (StateTrans::iterator j = (*i)->trans.begin(); j != (*i)->trans.end(); j++) {
 			if (j->second == nonmatching)
 				excluded.insert(j->first);
 			else {
@@ -624,8 +623,8 @@ void DFA::dump_dot_graph(ostream & os)
 				os << "\t]" << "\n";
 			}
 		}
-		if (cases.otherwise && cases.otherwise != nonmatching) {
-			os << "\t\"" << **i << "\" -> \"" << *cases.otherwise
+		if ((*i)->otherwise && (*i)->otherwise != nonmatching) {
+		  os << "\t\"" << **i << "\" -> \"" << *(*i)->otherwise
 			   << "\" [" << "\n";
 			if (!excluded.empty()) {
 				os << "\t\tlabel=\"[^";
@@ -651,11 +650,9 @@ map<uchar, uchar> DFA::equivalence_classes(dfaflags_t flags)
 	uchar next_class = 1;
 
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
-		Cases & cases = (*i)->cases;
-
 		/* Group edges to the same next state together */
 		map<const State *, Chars> node_sets;
-		for (Cases::iterator j = cases.begin(); j != cases.end(); j++)
+		for (StateTrans::iterator j = (*i)->trans.begin(); j != (*i)->trans.end(); j++)
 			node_sets[j->second].insert(j->first);
 
 		for (map<const State *, Chars>::iterator j = node_sets.begin();
@@ -742,10 +739,9 @@ void DFA::apply_equivalence_classes(map<uchar, uchar> &eq)
      */
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
 		map<uchar, State *> tmp;
-		tmp.swap((*i)->cases.cases);
-		for (Cases::iterator j = tmp.begin(); j != tmp.end(); j++)
-			(*i)->cases.cases.
-			    insert(make_pair(eq[j->first], j->second));
+		tmp.swap((*i)->trans);
+		for (StateTrans::iterator j = tmp.begin(); j != tmp.end(); j++)
+			(*i)->trans.insert(make_pair(eq[j->first], j->second));
 	}
 }
 
