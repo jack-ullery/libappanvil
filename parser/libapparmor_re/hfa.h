@@ -56,12 +56,15 @@ uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error);
  */
 class State {
 public:
-	State(): label(0), audit(0), accept(0), trans(), otherwise(NULL), nodes(NULL) { };
-	State(int l): label(l), audit(0), accept(0), trans(), otherwise(NULL), nodes(NULL) { };
-	State(int l, NodeSet * n) throw(int):
-		label(l), audit(0), accept(0), trans(), otherwise(NULL), nodes(n)
+	State(int l, NodeSet * n, State *other) throw(int):
+		label(l), audit(0), accept(0), trans(), nodes(n)
 	{
 		int error;
+
+		if (other)
+			otherwise = other;
+		else
+			otherwise = this;
 
 		/* Compute permissions associated with the State. */
 		accept = accept_perms(nodes, &audit, &error);
@@ -100,7 +103,7 @@ class DFA {
 	void dump_node_to_dfa(void);
 	State *add_new_state(NodeMap &nodemap,
 			     pair<unsigned long, NodeSet *> index,
-			     NodeSet *nodes, dfa_stats_t &stats);
+			     NodeSet *nodes, State *other, dfa_stats_t &stats);
 	void update_state_transitions(NodeMap &nodemap,
 				      list<State *> &work_queue,
 				      State *state, dfa_stats_t &stats);
