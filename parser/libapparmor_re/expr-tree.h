@@ -81,17 +81,15 @@ ostream &operator<<(ostream &os, const NodeSet &state);
  * (i.e., following an AnyCharNode or NotCharSetNode). This avoids
  * enumerating all the explicit tranitions for default matches.
  */
-typedef struct NodeCases {
+typedef struct Cases {
 	typedef map<uchar, NodeSet *>::iterator iterator;
 	iterator begin() { return cases.begin(); }
 	iterator end() { return cases.end(); }
 
-	NodeCases(): otherwise(0) { }
+	Cases(): otherwise(0) { }
 	map<uchar, NodeSet *> cases;
 	NodeSet *otherwise;
-}
-
-NodeCases;
+} Cases;
 
 ostream &operator<<(ostream &os, Node &node);
 
@@ -205,7 +203,7 @@ public:
 	ImportantNode(): LeafNode() { }
 	void compute_firstpos() { firstpos.insert(this); }
 	void compute_lastpos() { lastpos.insert(this); }
-	virtual void follow(NodeCases &cases) = 0;
+	virtual void follow(Cases &cases) = 0;
 };
 
 /* common base class for all the different classes that contain
@@ -220,7 +218,7 @@ public:
 class CharNode: public CNode {
 public:
 	CharNode(uchar c): c(c) { }
-	void follow(NodeCases &cases)
+	void follow(Cases &cases)
 	{
 		NodeSet **x = &cases.cases[c];
 		if (!*x) {
@@ -251,7 +249,7 @@ public:
 class CharSetNode: public CNode {
 public:
 	CharSetNode(Chars &chars): chars(chars) { }
-	void follow(NodeCases &cases)
+	void follow(Cases &cases)
 	{
 		for (Chars::iterator i = chars.begin(); i != chars.end(); i++) {
 			NodeSet **x = &cases.cases[*i];
@@ -292,7 +290,7 @@ public:
 class NotCharSetNode: public CNode {
 public:
 	NotCharSetNode(Chars &chars): chars(chars) { }
-	void follow(NodeCases & cases)
+	void follow(Cases &cases)
 	{
 		if (!cases.otherwise)
 			cases.otherwise = new NodeSet;
@@ -305,7 +303,7 @@ public:
 		 * the old otherwise state for the matching characters.
 		 */
 		cases.otherwise->insert(followpos.begin(), followpos.end());
-		for (NodeCases::iterator i = cases.begin(); i != cases.end();
+		for (Cases::iterator i = cases.begin(); i != cases.end();
 		     i++) {
 			if (chars.find(i->first) == chars.end())
 				i->second->insert(followpos.begin(),
@@ -340,12 +338,12 @@ public:
 class AnyCharNode: public CNode {
 public:
 	AnyCharNode() { }
-	void follow(NodeCases &cases)
+	void follow(Cases &cases)
 	{
 		if (!cases.otherwise)
 			cases.otherwise = new NodeSet;
 		cases.otherwise->insert(followpos.begin(), followpos.end());
-		for (NodeCases::iterator i = cases.begin(); i != cases.end();
+		for (Cases::iterator i = cases.begin(); i != cases.end();
 		     i++)
 			i->second->insert(followpos.begin(), followpos.end());
 	}
@@ -372,7 +370,7 @@ public:
 		 */
 	}
 
-	void follow(NodeCases &cases __attribute__ ((unused)))
+	void follow(Cases &cases __attribute__ ((unused)))
 	{
 		/* Nothing to follow. */
 	}
