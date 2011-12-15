@@ -46,9 +46,9 @@ ostream &operator<<(ostream &os, const State &state)
 
 State *DFA::add_new_state(NodeMap &nodemap,
 			  pair<unsigned long, NodeSet *> index,
-			  NodeSet *nodes, dfa_stats_t &stats)
+			  NodeSet *nodes, State *other, dfa_stats_t &stats)
 {
-	State *state = new State(nodemap.size(), nodes);
+	State *state = new State(nodemap.size(), nodes, other);
 	states.push_back(state);
 	nodemap.insert(make_pair(index, state));
 	stats.proto_sum += nodes->size();
@@ -70,7 +70,8 @@ State *DFA::find_target_state(NodeMap &nodemap, list<State *> &work_queue,
 		/* set of nodes isn't known so create new state, and nodes to
 		 * state mapping
 		 */
-		target = add_new_state(nodemap, index, nodes, stats);
+		target = add_new_state(nodemap, index, nodes, nonmatching,
+				       stats);
 		work_queue.push_back(target);
 	} else {
 		/* set of nodes already has a mapping so free this one */
@@ -104,8 +105,9 @@ void DFA::update_state_transitions(NodeMap &nodemap, list<State *> &work_queue,
 	/* check the default transition first */
 	if (cases.otherwise)
 		state->otherwise = find_target_state(nodemap, work_queue,
-							   cases.otherwise,
-							   stats);;
+						     cases.otherwise, stats);
+	else
+		state->otherwise = nonmatching;
 
 	/* For each transition from *from, check if the set of nodes it
 	 * transitions to already has been mapped to a state
@@ -161,11 +163,11 @@ DFA::DFA(Node *root, dfaflags_t flags): root(root)
 	NodeSet *emptynode = new NodeSet;
 	nonmatching = add_new_state(nodemap,
 				    make_pair(hash_NodeSet(emptynode), emptynode),
-				    emptynode, stats);
+				    emptynode, NULL, stats);
 
 	NodeSet *first = new NodeSet(root->firstpos);
 	start = add_new_state(nodemap, make_pair(hash_NodeSet(first), first),
-			      first, stats);
+			      first, nonmatching, stats);
 
 	/* the work_queue contains the states that need to have their
 	 * transitions computed.  This could be done with a recursive
@@ -254,8 +256,8 @@ void DFA::remove_unreachable(dfaflags_t flags)
 		work_queue.pop_front();
 		reachable.insert(from);
 
-		if (from->otherwise &&
-		    (reachable.find(from->otherwise) == reachable.end()))
+		if (from->otherwise != nonmatching &&
+		    reachable.find(from->otherwise) == reachable.end())
 			work_queue.push_back(from->otherwise);
 
 		for (StateTrans::iterator j = from->trans.begin(); j != from->trans.end(); j++) {
@@ -301,14 +303,14 @@ void DFA::remove_unreachable(dfaflags_t flags)
 /* test if two states have the same transitions under partition_map */
 bool DFA::same_mappings(State *s1, State *s2)
 {
-	if (s1->otherwise && s1->otherwise != nonmatching) {
-		if (!s2->otherwise || s2->otherwise == nonmatching)
+	if (s1->otherwise != nonmatching) {
+		if (s2->otherwise == nonmatching)
 			return false;
 		Partition *p1 = s1->otherwise->partition;
 		Partition *p2 = s2->otherwise->partition;
 		if (p1 != p2)
 			return false;
-	} else if (s2->otherwise && s2->otherwise != nonmatching) {
+	} else if (s2->otherwise != nonmatching) {
 		return false;
 	}
 
@@ -344,7 +346,7 @@ size_t DFA::hash_trans(State *s)
 		hash = ((hash << 5) + hash) + k->trans.size();
 	}
 
-	if (s->otherwise && s->otherwise != nonmatching) {
+	if (s->otherwise != nonmatching) {
 		hash = ((hash << 5) + hash) + 5381;
 		State *k = s->otherwise;
 		hash = ((hash << 5) + hash) + k->trans.size();
@@ -487,7 +489,7 @@ void DFA::minimize(dfaflags_t flags)
 			cerr << *rep << " : ";
 
 		/* update representative state's transitions */
-		if (rep->otherwise) {
+		if (rep->otherwise != nonmatching) {
 			Partition *partition = rep->otherwise->partition;
 			rep->otherwise = *partition->begin();
 		}
@@ -577,7 +579,7 @@ void DFA::dump(ostream & os)
 	os << "\n";
 
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
-		if ((*i)->otherwise)
+		if ((*i)->otherwise != nonmatching)
 			os << **i << " -> " << (*i)->otherwise << "\n";
 		for (StateTrans::iterator j = (*i)->trans.begin();
 		     j != (*i)->trans.end(); j++) {
@@ -623,7 +625,7 @@ void DFA::dump_dot_graph(ostream & os)
 				os << "\t]" << "\n";
 			}
 		}
-		if ((*i)->otherwise && (*i)->otherwise != nonmatching) {
+		if ((*i)->otherwise != nonmatching) {
 		  os << "\t\"" << **i << "\" -> \"" << *(*i)->otherwise
 			   << "\" [" << "\n";
 			if (!excluded.empty()) {
