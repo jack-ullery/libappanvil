@@ -40,19 +40,19 @@ typedef list<State *> Partition;
 uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error);
 
 /*
- * ProtoState - NodeSet and ancillery information used to create a state
+ * hashedNodes - for efficient set comparison
  */
-class ProtoState {
+class hashedNodeSet {
 public:
 	unsigned long hash;
 	NodeSet *nodes;
 
-	ProtoState(NodeSet *n): nodes(n)
+	hashedNodeSet(NodeSet *n): nodes(n)
 	{
 		hash = hash_NodeSet(n);
 	}
 
-	bool operator<(ProtoState const &rhs)const
+	bool operator<(hashedNodeSet const &rhs)const
 	{
 		if (hash == rhs.hash) {
 			if (nodes->size() == rhs.nodes->size())
@@ -63,6 +63,21 @@ public:
 			return hash < rhs.hash;
 		}
 	}
+};
+
+/*
+ * ProtoState - NodeSet and ancillery information used to create a state
+ */
+class ProtoState {
+public:
+	NodeSet *nodes;
+
+	ProtoState(NodeSet *n): nodes(n) { };
+	bool operator<(ProtoState const &rhs)const
+	{
+		return nodes < rhs.nodes;
+	}
+
 };
 
 /*
@@ -135,6 +150,10 @@ class DFA {
 				      State *state, dfa_stats_t &stats);
 	State *find_target_state(NodeMap &nodemap, list<State *> &work_queue,
 				 NodeSet *nodes, dfa_stats_t &stats);
+
+	/* temporary values used during computations */
+	set<hashedNodeSet> uniq_nodes;
+
 public:
 	DFA(Node *root, dfaflags_t flags);
 	virtual ~DFA();

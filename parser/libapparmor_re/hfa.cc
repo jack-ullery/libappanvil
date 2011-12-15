@@ -61,6 +61,12 @@ State *DFA::find_target_state(NodeMap &nodemap, list<State *> &work_queue,
 {
 	State *target;
 
+	pair<set<hashedNodeSet>::iterator,bool> uniq = uniq_nodes.insert(hashedNodeSet(nodes));
+	if (uniq.second == false) {
+		delete(nodes);
+		nodes = uniq.first->nodes;
+	}
+
 	ProtoState index(nodes);
 
 	map<ProtoState, State *>::iterator x = nodemap.find(index);
@@ -74,7 +80,6 @@ State *DFA::find_target_state(NodeMap &nodemap, list<State *> &work_queue,
 	} else {
 		/* set of nodes already has a mapping so free this one */
 		stats.duplicates++;
-		delete(nodes);
 		target = x->second;
 	}
 
@@ -206,8 +211,9 @@ DFA::DFA(Node *root, dfaflags_t flags): root(root)
 	if (flags & DFA_DUMP_NODE_TO_DFA)
 		dump_node_to_dfa();
 
-	for (NodeMap::iterator i = nodemap.begin(); i != nodemap.end(); i++)
-		delete i->first.nodes;
+	for (set<hashedNodeSet>::iterator i = uniq_nodes.begin(); i != uniq_nodes.end(); i++)
+		delete i->nodes;
+	uniq_nodes.clear();
 	nodemap.clear();
 
 	if (flags & (DFA_DUMP_STATS))
