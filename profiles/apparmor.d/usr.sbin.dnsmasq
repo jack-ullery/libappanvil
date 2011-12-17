@@ -38,9 +38,9 @@
 
   /var/lib/misc/dnsmasq.leases rw, # Required only for DHCP server usage
 
-  # for TFTP server
+  # for the read-only TFTP server
   @{TFTP_DIR}/ r,
-  @{TFTP_DIR}/** rw,
+  @{TFTP_DIR}/** r,
 
   # libvirt lease and hosts files for dnsmasq
   /var/lib/libvirt/dnsmasq/            r,
