@@ -21,6 +21,7 @@
   capability sys_tty_config,
 
   /etc/mtab r,
+  /etc/netgroup r,
   /etc/printcap r,
   /proc/*/mounts r,
   /proc/sys/kernel/core_pattern r,
