@@ -763,10 +763,10 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		int len = 0;
 
 		if (profile_namespace) {
-			len += strlen(profile_namespace) + 1;
+			len += strlen(profile_namespace) + 2;
 			ns = profile_namespace;
 		} else if (cod->namespace) {
-			len += strlen(cod->namespace) + 1;
+			len += strlen(cod->namespace) + 2;
 			ns = cod->namespace;
 		}
 		if (cod->parent) {
@@ -778,7 +778,7 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 				goto exit;
 			}
 			if (ns)
-				sprintf(name, "%s:%s//%s", ns,
+				sprintf(name, ":%s:%s//%s", ns,
 					cod->parent->name, cod->name);
 			else
 				sprintf(name, "%s//%s", cod->parent->name,
@@ -790,7 +790,7 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 				error = -errno;
 				goto exit;
 			}
-			sprintf(name, "%s:%s", ns, cod->name);
+			sprintf(name, ":%s:%s", ns, cod->name);
 		} else {
 			name = cod->name;
 		}
