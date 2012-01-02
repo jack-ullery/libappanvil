@@ -85,14 +85,9 @@ Insufficient kernel memory was available.
 
 The calling application is not confined by apparmor.
 
-=item B<ECHILD>
-
-The application's profile has no hats defined for it.
-
 =item B<EACCES>
 
-The specified I<profile> does not exist in this profile or the
-process tried to change another process's domain.
+The task does not have sufficient permissions to change its domain.
 
 =back
 
