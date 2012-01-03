@@ -10,4 +10,4 @@
   /usr/bin/kget PUxr,
   /usr/bin/ktorrent PUxr,
   /usr/bin/qbittorrent PUxr,
-  /usr/bin/transmission PUxr,
+  /usr/bin/transmission{,-gtk,-qt,-cli} PUxr,
