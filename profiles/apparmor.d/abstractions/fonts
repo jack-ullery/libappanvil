@@ -39,6 +39,8 @@
   @{HOME}/.fonts.cache-2               mr,
   @{HOME}/.fontconfig/                  r,
   @{HOME}/.fontconfig/**              mrl,
+  @{HOME}/.fonts.conf.d/                r,
+  @{HOME}/.fonts.conf.d/**              r,
 
   /usr/local/share/fonts/               r,
   /usr/local/share/fonts/**             r,
