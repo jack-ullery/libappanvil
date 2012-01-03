@@ -56,6 +56,7 @@ install: local
                           ${PROFILES_DEST}/program-chunks \
                           ${PROFILES_DEST}/tunables \
                           ${PROFILES_DEST}/tunables/home.d \
+                          ${PROFILES_DEST}/tunables/multiarch.d \
                           ${PROFILES_DEST}/local
 	install -m 644 ${PROFILES_TO_COPY} ${PROFILES_DEST}
 	install -m 644 ${ABSTRACTIONS_TO_COPY} ${PROFILES_DEST}/abstractions
