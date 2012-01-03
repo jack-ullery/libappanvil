@@ -186,7 +186,8 @@ IP		{NUMBER}\.{NUMBER}\.{NUMBER}\.{NUMBER}
 ALLOWED_QUOTED_ID 	[^\0"]|\\\"
 QUOTED_ID	\"{ALLOWED_QUOTED_ID}*\"
 
-HAT		hat[ \t]+
+HAT		hat{WS}*
+PROFILE		profile{WS}*
 KEYWORD         [[:alpha:]_]+
 VARIABLE_NAME	[[:alpha:]][[:alnum:]_]*
 SET_VAR_PREFIX  @
@@ -205,7 +206,6 @@ ARROW		->
 LT_EQUAL	<=
 
 %x SUB_NAME
-%x SUB_NAME2
 %x NETWORK_MODE
 %x FLAGS_MODE
 %x ASSIGN_MODE
@@ -262,30 +262,6 @@ LT_EQUAL	<=
 			return TOK_ID;
 		}
 
-	[^\n]	{
-			DUMP_PREPROCESS;
-			/* Something we didn't expect */
-			yyerror(_("Found unexpected character: '%s'"), yytext);
-		}
-}
-
-<SUB_NAME2>{
-	({ID}+|{QUOTED_ID})	{
-			  /* Ugh, this is a gross hack. I used to use
-			   * {ID}+ to match all TOK_IDs, but that would
-			   * also match TOK_MODE + TOK_END_OF_RULE
-			   * without any spaces in between (because it's
-			   * a longer match). So now, when I want to
-			   * match any random string, I go into a
-			   * separate state. */
-			DUMP_PREPROCESS;
-			yylval.id = processid(yytext, yyleng);
-			PDEBUG("Found sub name: \"%s\"\n", yylval.id);
-			yy_pop_state();
-			return TOK_ID;
-		}
-
-	{WS}+	{ DUMP_PREPROCESS; /* Ignoring whitespace */ }
 	[^\n]	{
 			DUMP_PREPROCESS;
 			/* Something we didn't expect */
@@ -535,8 +511,14 @@ LT_EQUAL	<=
 
 {HAT}			{
 			DUMP_PREPROCESS;
-			yy_push_state(SUB_NAME2);
+			yy_push_state(SUB_NAME);
 			return TOK_HAT;
+			}
+
+{PROFILE}		{
+			DUMP_PREPROCESS;
+			yy_push_state(SUB_NAME);
+			return TOK_PROFILE;
 			}
 
 {COLON}			{
@@ -563,9 +545,6 @@ LT_EQUAL	<=
 				yylval.id = processunquoted(yytext, yyleng);
 				PDEBUG("Found (var) id: \"%s\"\n", yylval.id);
 				return TOK_ID;
-				break;
-			case TOK_PROFILE:
-				yy_push_state(SUB_NAME2);
 				break;
 			case TOK_FLAGS:
 				yy_push_state(FLAGS_MODE);
