@@ -21,3 +21,6 @@
 
   # Kubuntu
   /usr/lib/mozilla/kmozillahelper PUxr,
+
+  # Exo-aware applications
+  /usr/bin/exo-open ixr,
