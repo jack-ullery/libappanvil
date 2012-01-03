@@ -515,7 +515,6 @@ LT_EQUAL	<=
 			DUMP_PREPROCESS;
 			PDEBUG("comment(%d): %s\n", current_lineno, yytext);
 			current_lineno++;
-			BEGIN(INITIAL);
 			}
 
 {END_OF_RULE}		{ DUMP_PREPROCESS; return TOK_END_OF_RULE; }
