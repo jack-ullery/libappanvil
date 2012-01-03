@@ -36,8 +36,8 @@
   /usr/lib{,32,64}/locale/**             mr,
   /usr/lib{,32,64}/gconv/*.so            mr,
   /usr/lib{,32,64}/gconv/gconv-modules*  mr,
-  /usr/lib/@{multiarch}/gconv/*.so          mr,
-  /usr/lib/@{multiarch}/gconv/gconv-modules mr,
+  /usr/lib/@{multiarch}/gconv/*.so           mr,
+  /usr/lib/@{multiarch}/gconv/gconv-modules* mr,
 
   # used by glibc when binding to ephemeral ports
   /etc/bindresvport.blacklist    r,
