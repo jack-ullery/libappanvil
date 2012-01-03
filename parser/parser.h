@@ -271,6 +271,7 @@ extern struct var_string *split_out_var(char *string);
 extern void free_var_string(struct var_string *var);
 
 /* parser_misc.c */
+extern char *processid(char *string, int len);
 extern char *processquoted(char *string, int len);
 extern char *processunquoted(char *string, int len);
 extern int get_keyword_token(const char *keyword);

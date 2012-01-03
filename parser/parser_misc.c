@@ -17,6 +17,7 @@
 
 /* assistance routines */
 
+#include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -395,6 +396,16 @@ char *processunquoted(char *string, int len)
 	*s = 0;
 
 	return tmp;
+}
+
+char *processid(char *string, int len)
+{
+	/* lexer should never call this fn if len <= 0 */
+	assert(len > 0);
+
+	if (*string == '"')
+		return processquoted(string, len);
+	return processunquoted(string, len);
 }
 
 /* rewrite a quoted string substituting escaped characters for the
