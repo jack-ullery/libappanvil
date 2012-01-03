@@ -46,3 +46,8 @@
   /opt/google/talkplugin/lib/*.so mr,
   /opt/google/talkplugin/GoogleTalkPlugin ixr,
   owner @{HOME}/.config/google-googletalkplugin/** rw,
+
+  # If we allow the above, nvidia based systems will also need these
+  /dev/nvidactl rw,
+  /dev/nvidia0 rw,
+  @{PROC}/interrupts r,
