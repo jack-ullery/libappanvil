@@ -23,6 +23,7 @@
 /* eliminates need to link with libfl */
 %option noyywrap
 %option nounput
+%option stack
 
 %{
 #include <stdio.h>
@@ -221,7 +222,7 @@ LT_EQUAL	<=
 		filename[strlen(filename) - 1] = '\0';
 		include_filename(filename + 1, 1);
 		free(filename);
-		BEGIN(INITIAL);
+		yy_pop_state();
 		}
 
 	\"([^\" \t\n]+)\"	{	/* "filename" */
@@ -229,12 +230,12 @@ LT_EQUAL	<=
 		filename[strlen(filename) - 1] = '\0';
 		include_filename(filename + 1, 0);
 		free(filename);
-		BEGIN(INITIAL);
+		yy_pop_state();
 		}
 
 	[^\<\>\"{WS}]+ {	/* filename */
 		include_filename(yytext, 0);
-		BEGIN(INITIAL);
+		yy_pop_state();
 		}
 }
 
@@ -257,7 +258,7 @@ LT_EQUAL	<=
 			DUMP_PREPROCESS;
 			yylval.id =  processunquoted(yytext, yyleng);
 			PDEBUG("Found sub name: \"%s\"\n",  yylval.id);
-			BEGIN(INITIAL);
+			yy_pop_state();
 			return TOK_ID;
 		}
 	{QUOTED_ID}	{
@@ -271,7 +272,7 @@ LT_EQUAL	<=
 			DUMP_PREPROCESS;
 			yylval.id = processquoted(yytext, yyleng);
 			PDEBUG("Found sub name: \"%s\"\n", yylval.id);
-			BEGIN(INITIAL);
+			yy_pop_state();
 			return TOK_ID;
 		}
 
@@ -294,7 +295,7 @@ LT_EQUAL	<=
 			DUMP_PREPROCESS;
 			yylval.id = processunquoted(yytext, yyleng);
 			PDEBUG("Found sub name: \"%s\"\n", yylval.id);
-			BEGIN(INITIAL);
+			yy_pop_state();
 			return TOK_ID;
 		}
 	{QUOTED_ID}	{
@@ -308,7 +309,7 @@ LT_EQUAL	<=
 			DUMP_PREPROCESS;
 			yylval.id  = processquoted(yytext, yyleng);
 			PDEBUG("Found sub name: \"%s\"\n", yylval.id);
-			BEGIN(INITIAL);
+			yy_pop_state();
 			return TOK_ID;
 		}
 
@@ -329,7 +330,7 @@ LT_EQUAL	<=
 	{FLAGCLOSE_PAREN}	{
 			DUMP_PREPROCESS;
 			PDEBUG("Flag )\n");
-			BEGIN(INITIAL);
+			yy_pop_state();
 			return TOK_FLAG_CLOSEPAREN;
 			}
 
@@ -388,7 +389,7 @@ LT_EQUAL	<=
 	\r?\n		{
 			DUMP_PREPROCESS;
 			current_lineno++;
-			BEGIN(INITIAL);
+			yy_pop_state();
 			}
 	[^\n]		{
 			DUMP_PREPROCESS;
@@ -407,7 +408,7 @@ LT_EQUAL	<=
 			}
 	{END_OF_RULE}	{
 			DUMP_PREPROCESS;
-			BEGIN(INITIAL);
+			yy_pop_state();
 			return TOK_END_OF_RULE;
 		}
 	[^\n]		{
@@ -441,7 +442,7 @@ LT_EQUAL	<=
 			DUMP_PREPROCESS;
 			yylval.id = processunquoted(yytext, yyleng);
 			PDEBUG("Found change profile name: \"%s\"\n", yylval.id);
-			BEGIN(INITIAL);
+			yy_pop_state();
 			return TOK_ID;
 		}
 	{QUOTED_ID}	{
@@ -455,7 +456,7 @@ LT_EQUAL	<=
 			DUMP_PREPROCESS;
 			yylval.id = processquoted(yytext, yyleng);
 			PDEBUG("Found change profile quoted name: \"%s\"\n", yylval.id);
-			BEGIN(INITIAL);
+			yy_pop_state();
 			return TOK_ID;
 		}
 
@@ -489,26 +490,26 @@ LT_EQUAL	<=
 
 	{END_OF_RULE}	{
 			DUMP_PREPROCESS;
-			BEGIN(INITIAL);
+			yy_pop_state();
 			return TOK_END_OF_RULE;
 			}
 
 	\\\n		{
 			DUMP_PREPROCESS;
 			current_lineno++;
-			BEGIN(INITIAL);
+			yy_pop_state();
 			}
 
 	\r?\n		{
 			DUMP_PREPROCESS;
 			current_lineno++;
-			BEGIN(INITIAL);
+			yy_pop_state();
 			}
 }
 
 #include/.*\r?\n	 { /* include */
 			PDEBUG("Matched #include\n");
-			BEGIN(INCLUDE);
+			yy_push_state(INCLUDE);
 			}
 
 #.*\r?\n		{ /* normal comment */
@@ -522,7 +523,7 @@ LT_EQUAL	<=
 {SEPARATOR}		{
 			DUMP_PREPROCESS;
 			PDEBUG("Matched a separator\n");
-			BEGIN(SUB_NAME);
+			yy_push_state(SUB_NAME);
 			return TOK_SEP;
 			}
 {ARROW}			{
@@ -533,13 +534,13 @@ LT_EQUAL	<=
 {EQUALS}		{
 			DUMP_PREPROCESS;
 			PDEBUG("Matched equals for assignment\n");
-			BEGIN(ASSIGN_MODE);
+			yy_push_state(ASSIGN_MODE);
 			return TOK_EQUALS;
 			}
 {ADD_ASSIGN}		{
 			DUMP_PREPROCESS;
 			PDEBUG("Matched additive value assignment\n");
-			BEGIN(ASSIGN_MODE);
+			yy_push_state(ASSIGN_MODE);
 			return TOK_ADD_ASSIGN;
 			}
 {SET_VARIABLE}		{
@@ -590,7 +591,7 @@ LT_EQUAL	<=
 
 {HAT}			{
 			DUMP_PREPROCESS;
-			BEGIN(SUB_NAME2);
+			yy_push_state(SUB_NAME2);
 			return TOK_HAT;
 			}
 
@@ -603,7 +604,7 @@ LT_EQUAL	<=
 {FLAGOPEN_PAREN}	{
 			DUMP_PREPROCESS;
 			PDEBUG("FLag (\n");
-			BEGIN(FLAGS_MODE);
+			yy_push_state(FLAGS_MODE);
 			return TOK_FLAG_OPENPAREN;
 			}
 
@@ -620,19 +621,19 @@ LT_EQUAL	<=
 				return TOK_ID;
 				break;
 			case TOK_PROFILE:
-				BEGIN(SUB_NAME2);
+				yy_push_state(SUB_NAME2);
 				break;
 			case TOK_FLAGS:
-				BEGIN(FLAGS_MODE);
+				yy_push_state(FLAGS_MODE);
 				break;
 			case TOK_RLIMIT:
-				BEGIN(RLIMIT_MODE);
+				yy_push_state(RLIMIT_MODE);
 				break;
 			case TOK_NETWORK:
-				BEGIN(NETWORK_MODE);
+				yy_push_state(NETWORK_MODE);
 				break;
 			case TOK_CHANGE_PROFILE:
-				BEGIN(CHANGE_PROFILE_MODE);
+				yy_push_state(CHANGE_PROFILE_MODE);
 				break;
 			default: /* nothing */
 				break;
