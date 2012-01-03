@@ -78,7 +78,7 @@ void add_local_entry(struct codomain *cod);
 %}
 
 %token TOK_ID
-%token TOK_SEP
+%token TOK_CARET
 %token TOK_OPEN
 %token TOK_CLOSE
 %token TOK_MODE
@@ -1009,7 +1009,7 @@ network_rule: TOK_NETWORK TOK_ID TOK_ID TOK_END_OF_RULE
 		$$ = entry;
 	}
 
-hat_start: TOK_SEP {}
+hat_start: TOK_CARET {}
 	| TOK_HAT {}
 
 file_mode: TOK_MODE

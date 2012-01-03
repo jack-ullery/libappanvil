@@ -168,13 +168,12 @@ void include_filename(char *filename, int search)
 
 %}
 
-UP		"^"
+CARET		"^"
 OPEN_BRACE 	\{
 CLOSE_BRACE 	\}
 SLASH		\/
 COLON		:
 END_OF_RULE	[,]
-SEPARATOR 	{UP}
 RANGE		-
 MODE_CHARS 	([RrWwaLlMmkXx])|(([Pp]|[Cc])[Xx])|(([Pp]|[Cc])?([IiUu])[Xx])
 MODES		{MODE_CHARS}+
@@ -447,11 +446,11 @@ LT_EQUAL	<=
 
 {END_OF_RULE}		{ DUMP_PREPROCESS; return TOK_END_OF_RULE; }
 
-{SEPARATOR}		{
+{CARET}			{
 			DUMP_PREPROCESS;
-			PDEBUG("Matched a separator\n");
+			PDEBUG("Matched hat ^\n");
 			yy_push_state(SUB_NAME);
-			return TOK_SEP;
+			return TOK_CARET;
 			}
 {ARROW}			{
 			DUMP_PREPROCESS;
