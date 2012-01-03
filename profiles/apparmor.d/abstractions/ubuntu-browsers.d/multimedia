@@ -51,3 +51,6 @@
   /dev/nvidactl rw,
   /dev/nvidia0 rw,
   @{PROC}/interrupts r,
+
+  # Virus scanners
+  /usr/bin/clamscan PUx,
