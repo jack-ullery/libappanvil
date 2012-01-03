@@ -14,7 +14,7 @@
 
   # File managers
   /usr/bin/nautilus PUxr,
-  /usr/bin/thunar PUxr,
+  /usr/bin/{t,T}hunar PUxr,
 
   # Themes
   /usr/bin/gnome-appearance-properties PUxr,
