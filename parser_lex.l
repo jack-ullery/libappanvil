@@ -247,7 +247,7 @@ LT_EQUAL	<=
 }
 
 <SUB_NAME>{
-	{ID}+	{
+	({ID}+|{QUOTED_ID})	{
 			  /* Ugh, this is a gross hack. I used to use
 			   * {ID}+ to match all TOK_IDs, but that would
 			   * also match TOK_MODE + TOK_END_OF_RULE
@@ -256,22 +256,8 @@ LT_EQUAL	<=
 			   * match any random string, I go into a
 			   * separate state. */
 			DUMP_PREPROCESS;
-			yylval.id =  processunquoted(yytext, yyleng);
+			yylval.id =  processid(yytext, yyleng);
 			PDEBUG("Found sub name: \"%s\"\n",  yylval.id);
-			yy_pop_state();
-			return TOK_ID;
-		}
-	{QUOTED_ID}	{
-			  /* Ugh, this is a gross hack. I used to use
-			   * {ID}+ to match all TOK_IDs, but that would
-			   * also match TOK_MODE + TOK_END_OF_RULE
-			   * without any spaces in between (because it's
-			   * a longer match). So now, when I want to
-			   * match any random string, I go into a
-			   * separate state. */
-			DUMP_PREPROCESS;
-			yylval.id = processquoted(yytext, yyleng);
-			PDEBUG("Found sub name: \"%s\"\n", yylval.id);
 			yy_pop_state();
 			return TOK_ID;
 		}
@@ -284,7 +270,7 @@ LT_EQUAL	<=
 }
 
 <SUB_NAME2>{
-	{ID}+	{
+	({ID}+|{QUOTED_ID})	{
 			  /* Ugh, this is a gross hack. I used to use
 			   * {ID}+ to match all TOK_IDs, but that would
 			   * also match TOK_MODE + TOK_END_OF_RULE
@@ -293,21 +279,7 @@ LT_EQUAL	<=
 			   * match any random string, I go into a
 			   * separate state. */
 			DUMP_PREPROCESS;
-			yylval.id = processunquoted(yytext, yyleng);
-			PDEBUG("Found sub name: \"%s\"\n", yylval.id);
-			yy_pop_state();
-			return TOK_ID;
-		}
-	{QUOTED_ID}	{
-			  /* Ugh, this is a gross hack. I used to use
-			   * {ID}+ to match all TOK_IDs, but that would
-			   * also match TOK_MODE + TOK_END_OF_RULE
-			   * without any spaces in between (because it's
-			   * a longer match). So now, when I want to
-			   * match any random string, I go into a
-			   * separate state. */
-			DUMP_PREPROCESS;
-			yylval.id  = processquoted(yytext, yyleng);
+			yylval.id = processid(yytext, yyleng);
 			PDEBUG("Found sub name: \"%s\"\n", yylval.id);
 			yy_pop_state();
 			return TOK_ID;
@@ -364,16 +336,9 @@ LT_EQUAL	<=
 <ASSIGN_MODE>{
 	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
 
-	{ID}+		{
+	({ID}+|{QUOTED_ID})		{
 			DUMP_PREPROCESS;
-			yylval.var_val = processunquoted(yytext, yyleng);
-			PDEBUG("Found assignment value: \"%s\"\n", yylval.var_val);
-			return TOK_VALUE;
-			}
-
-	{QUOTED_ID}	{
-			DUMP_PREPROCESS;
-			yylval.var_val = processquoted(yytext, yyleng);
+			yylval.var_val = processid(yytext, yyleng);
 			PDEBUG("Found assignment value: \"%s\"\n", yylval.var_val);
 			return TOK_VALUE;
 			}
@@ -431,7 +396,7 @@ LT_EQUAL	<=
 			return TOK_ARROW;
 			}
 
-	{ID}+	{
+	({ID}+|{QUOTED_ID})	{
 			  /* Ugh, this is a gross hack. I used to use
 			   * {ID}+ to match all TOK_IDs, but that would
 			   * also match TOK_MODE + TOK_END_OF_RULE
@@ -440,22 +405,8 @@ LT_EQUAL	<=
 			   * match any random string, I go into a
 			   * separate state. */
 			DUMP_PREPROCESS;
-			yylval.id = processunquoted(yytext, yyleng);
+			yylval.id = processid(yytext, yyleng);
 			PDEBUG("Found change profile name: \"%s\"\n", yylval.id);
-			yy_pop_state();
-			return TOK_ID;
-		}
-	{QUOTED_ID}	{
-			  /* Ugh, this is a gross hack. I used to use
-			   * {ID}+ to match all TOK_IDs, but that would
-			   * also match TOK_MODE + TOK_END_OF_RULE
-			   * without any spaces in between (because it's
-			   * a longer match). So now, when I want to
-			   * match any random string, I go into a
-			   * separate state. */
-			DUMP_PREPROCESS;
-			yylval.id = processquoted(yytext, yyleng);
-			PDEBUG("Found change profile quoted name: \"%s\"\n", yylval.id);
 			yy_pop_state();
 			return TOK_ID;
 		}
@@ -568,16 +519,9 @@ LT_EQUAL	<=
 			return TOK_CLOSE;
 			}
 
-{PATHNAME}		{
+({PATHNAME}|{QPATHNAME})		{
 			DUMP_PREPROCESS;
-			yylval.id = processunquoted(yytext, yyleng);
-			PDEBUG("Found id: \"%s\"\n", yylval.id);
-			return TOK_ID;
-			}
-
-{QPATHNAME}		{
-			DUMP_PREPROCESS;
-			yylval.id = processquoted(yytext, yyleng);
+			yylval.id = processid(yytext, yyleng);
 			PDEBUG("Found id: \"%s\"\n", yylval.id);
 			return TOK_ID;
 			}
