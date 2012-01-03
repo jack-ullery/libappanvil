@@ -467,43 +467,6 @@ LT_EQUAL	<=
 		}
 }
 
-#include/.*\r?\n	 { /* include */
-			PDEBUG("Matched #include\n");
-			BEGIN(INCLUDE);
-			}
-
-#.*\r?\n		{ /* normal comment */
-			DUMP_PREPROCESS;
-			PDEBUG("comment(%d): %s\n", current_lineno, yytext);
-			current_lineno++;
-			BEGIN(INITIAL);
-}
-
-{END_OF_RULE}		{ DUMP_PREPROCESS; return TOK_END_OF_RULE; }
-
-{SEPARATOR}		{
-			DUMP_PREPROCESS;
-			PDEBUG("Matched a separator\n");
-			BEGIN(SUB_NAME);
-			return TOK_SEP;
-			}
-{ARROW}			{
-			DUMP_PREPROCESS;
-			PDEBUG("Matched a arrow\n");
-			return TOK_ARROW;
-			}
-{EQUALS}		{
-			DUMP_PREPROCESS;
-			PDEBUG("Matched equals for assignment\n");
-			BEGIN(ASSIGN_MODE);
-			return TOK_EQUALS;
-			}
-{ADD_ASSIGN}		{
-			DUMP_PREPROCESS;
-			PDEBUG("Matched additive value assignment\n");
-			BEGIN(ASSIGN_MODE);
-			return TOK_ADD_ASSIGN;
-			}
 <RLIMIT_MODE>{
 	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
 
@@ -543,6 +506,43 @@ LT_EQUAL	<=
 			}
 }
 
+#include/.*\r?\n	 { /* include */
+			PDEBUG("Matched #include\n");
+			BEGIN(INCLUDE);
+			}
+
+#.*\r?\n		{ /* normal comment */
+			DUMP_PREPROCESS;
+			PDEBUG("comment(%d): %s\n", current_lineno, yytext);
+			current_lineno++;
+			BEGIN(INITIAL);
+			}
+
+{END_OF_RULE}		{ DUMP_PREPROCESS; return TOK_END_OF_RULE; }
+
+{SEPARATOR}		{
+			DUMP_PREPROCESS;
+			PDEBUG("Matched a separator\n");
+			BEGIN(SUB_NAME);
+			return TOK_SEP;
+			}
+{ARROW}			{
+			DUMP_PREPROCESS;
+			PDEBUG("Matched a arrow\n");
+			return TOK_ARROW;
+			}
+{EQUALS}		{
+			DUMP_PREPROCESS;
+			PDEBUG("Matched equals for assignment\n");
+			BEGIN(ASSIGN_MODE);
+			return TOK_EQUALS;
+			}
+{ADD_ASSIGN}		{
+			DUMP_PREPROCESS;
+			PDEBUG("Matched additive value assignment\n");
+			BEGIN(ASSIGN_MODE);
+			return TOK_ADD_ASSIGN;
+			}
 {SET_VARIABLE}		{
 			DUMP_PREPROCESS;
 			yylval.set_var = strdup(yytext);
