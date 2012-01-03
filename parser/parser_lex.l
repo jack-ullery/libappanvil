@@ -196,8 +196,8 @@ BOOL_VARIABLE	$(\{{VARIABLE_NAME}\}|{VARIABLE_NAME})
 PATHNAME	(\/|{SET_VARIABLE}{POST_VAR_ID}){ID}*
 QPATHNAME	\"(\/|{SET_VAR_PREFIX})([^\0"]|\\\")*\"
 
-FLAGOPEN_PAREN 	\(
-FLAGCLOSE_PAREN	\)
+OPEN_PAREN 	\(
+CLOSE_PAREN	\)
 FLAGSEP		\,
 EQUALS		=
 ADD_ASSIGN	\+=
@@ -322,16 +322,16 @@ LT_EQUAL	<=
 }
 
 <FLAGS_MODE>{
-	{FLAGOPEN_PAREN}	{
+	{OPEN_PAREN}	{
 			DUMP_PREPROCESS;
 			PDEBUG("FLag (\n");
-			return TOK_FLAG_OPENPAREN;
+			return TOK_OPENPAREN;
 			}
-	{FLAGCLOSE_PAREN}	{
+	{CLOSE_PAREN}	{
 			DUMP_PREPROCESS;
 			PDEBUG("Flag )\n");
 			yy_pop_state();
-			return TOK_FLAG_CLOSEPAREN;
+			return TOK_CLOSEPAREN;
 			}
 
 	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
@@ -601,11 +601,11 @@ LT_EQUAL	<=
 			return TOK_COLON;
 			}
 
-{FLAGOPEN_PAREN}	{
+{OPEN_PAREN}	{
 			DUMP_PREPROCESS;
 			PDEBUG("FLag (\n");
 			yy_push_state(FLAGS_MODE);
-			return TOK_FLAG_OPENPAREN;
+			return TOK_OPENPAREN;
 			}
 
 {VARIABLE_NAME}		{

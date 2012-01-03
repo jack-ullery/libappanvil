@@ -110,6 +110,8 @@ void add_local_entry(struct codomain *cod);
 %token TOK_SET
 %token TOK_ALIAS
 %token TOK_PTRACE
+%token TOK_OPENPAREN
+%token TOK_CLOSEPAREN
 
  /* rlimits */
 %token TOK_RLIMIT
@@ -136,8 +138,6 @@ void add_local_entry(struct codomain *cod);
 
 /* debug flag values */
 %token TOK_FLAGS
-%token TOK_FLAG_OPENPAREN
-%token TOK_FLAG_CLOSEPAREN
 %token TOK_FLAG_SEP
 %token TOK_FLAG_ID
 
@@ -397,12 +397,12 @@ flags:	{ /* nothing */
 		$$ = fv;
 	};
 
-flags:	TOK_FLAGS TOK_EQUALS TOK_FLAG_OPENPAREN flagvals TOK_FLAG_CLOSEPAREN
+flags:	TOK_FLAGS TOK_EQUALS TOK_OPENPAREN flagvals TOK_CLOSEPAREN
 	{
 		$$ = $4;
 	};
 
-flags: TOK_FLAG_OPENPAREN flagvals TOK_FLAG_CLOSEPAREN
+flags: TOK_OPENPAREN flagvals TOK_CLOSEPAREN
 	{
 		$$ = $2;
 	}
