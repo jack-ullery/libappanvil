@@ -7,6 +7,7 @@
   /usr/bin/apturl PUxr,
   /usr/bin/gnome-codec-install PUxr,
   /usr/lib/gstreamer0.10/gstreamer-0.10/gst-plugin-scanner ix,
+  /usr/share/software-center/software-center PUxr,
 
   # Input Methods
   /usr/bin/scim PUx,
