@@ -12,6 +12,7 @@
 #include <tunables/global>
 
 /usr/sbin/httpd2-prefork {
+  #include <abstractions/apache2-common>
   #include <abstractions/base>
   #include <abstractions/consoles>
   #include <abstractions/kerberosclient>
@@ -78,8 +79,6 @@
   /usr/local/tomcat/conf/mod_jk.conf r,
   /usr/local/tomcat/conf/workers-ajp12.properties r,
   /usr/sbin/httpd2-prefork r,
-  /usr/share/apache2/error/* r,
-  /usr/share/apache2/error/include/* r,
   /usr/share/misc/magic.mime r,
   /usr/share/snmp/mibs r,
   /usr/share/snmp/mibs/*.{txt,mib} r,
@@ -125,21 +124,18 @@
   /srv/www/icons/*.{gif,jpg,png}     r,
   /srv/www/vhosts                    r,
   /srv/www/vhosts/**                 r,
-  # SuSE location of the apache manual + error pages
-  /usr/share/apache2/**              r,
 
   # php session state
   /var/lib/php/sess_*                rwl,
 
 
   ^HANDLING_UNTRUSTED_INPUT {
-    #include <abstractions/nameservice>
+    #include <abstractions/apache2-common>
     /var/log/apache2/*     w,
-    /**.htaccess           r,
   }
 
   ^DEFAULT_URI {
-    #include <abstractions/nameservice>
+    #include <abstractions/apache2-common>
     #include <abstractions/base>
 
     # Note that mod_perl, mod_php, mod_python, etc, allows in-apache
@@ -176,8 +172,6 @@
     /srv/www/icons/*.{gif,jpg,png}     r,
     /srv/www/vhosts                    r,
     /srv/www/vhosts/**                 r,
-    # SuSE location of the apache manual + error pages
-    /usr/share/apache2/**              r,
 
     # php session state
     /var/lib/php/sess_*                rwl,
