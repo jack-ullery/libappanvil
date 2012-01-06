@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2009 Novell/SUSE
-#    Copyright (C) 2009-2011 Canonical Ltd
+#    Copyright (C) 2009-2012 Canonical Ltd
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -47,3 +47,5 @@
   # smbpass
   #include <abstractions/smbpass>
 
+  # p11-kit (PKCS#11 modules configuration)
+  #include <abstractions/p11-kit>
