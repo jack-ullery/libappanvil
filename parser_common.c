@@ -58,13 +58,12 @@ void pwarn(char *fmt, ...)
         if (conf_quiet || names_only || option == OPTION_REMOVE)
                 return;
 
-        asprintf(&newfmt, _("Warning from %s (%s%sline %d): %s"),
-		 profilename ? profilename : "stdin",
-		 current_filename ? current_filename : "",
-		 current_filename ? " " : "",
-		 current_lineno,
-		 fmt);
-        if (!newfmt)
+        if (asprintf(&newfmt, _("Warning from %s (%s%sline %d): %s"),
+		     profilename ? profilename : "stdin",
+		     current_filename ? current_filename : "",
+		     current_filename ? " " : "",
+		     current_lineno,
+		     fmt) == -1)
                 return;
 
         va_start(arg, fmt);
