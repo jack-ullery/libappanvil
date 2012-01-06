@@ -276,9 +276,17 @@ State *DFA::match_len(State *state, const char *str, size_t len)
 	return state;
 }
 
+State *DFA::match_until(State *state, const char *str, const char term)
+{
+	while (*str != term)
+		state = state->next(*str++);
+
+	return state;
+}
+
 State *DFA::match(const char *str)
 {
-	return match_len(start, str, strlen(str));
+	return match_until(start, str, 0);
 }
 
 void DFA::dump_uniq_perms(const char *s)
