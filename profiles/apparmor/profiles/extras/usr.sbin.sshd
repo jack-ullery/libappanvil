@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
+#    Copyright (C) 2012 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -33,6 +34,7 @@
 
   /dev/ptmx rw,
   /dev/urandom r,
+  /etc/default/locale r,
   /etc/environment r,
   /etc/hosts.allow r,
   /etc/hosts.deny r,
@@ -55,10 +57,12 @@
   /bin/bash2 rUx,
   /bin/bsh rUx,
   /bin/csh rUx,
+  /bin/dash rUx,
   /bin/ksh rUx,
   /bin/sh rUx,
   /bin/tcsh rUx,
   /bin/zsh rUx,
+  /bin/zsh4 rUx,
   /sbin/nologin rUx,
 
 # Call passwd for password change when expired
@@ -74,6 +78,7 @@
 
 # duplicated from AUTHENTICATED
   /etc/motd r,
+  /{,var/}run/motd r,
   /tmp/ssh-*/agent.[0-9]* rwl,
 
   /tmp/ssh-*[0-9]*/ w,
@@ -89,10 +94,12 @@
     /bin/bash2 Ux,
     /bin/bsh Ux,
     /bin/csh Ux,
+    /bin/dash Ux,
     /bin/ksh Ux,
     /bin/sh Ux,
     /bin/tcsh Ux,
     /bin/zsh Ux,
+    /bin/zsh4 Ux,
     /sbin/nologin Ux,
 
 # for debugging
@@ -161,6 +168,7 @@
     /etc/localtime r,
     /etc/login.defs r,
     /etc/motd r,
+    /{,var/}run/motd r,
     /tmp/ssh-*/agent.[0-9]* rwl,
     /tmp/ssh-*[0-9]*/ w,
 
