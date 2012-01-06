@@ -30,6 +30,7 @@
 #include <ostream>
 #include <iostream>
 #include <fstream>
+#include <string.h>
 
 #include "expr-tree.h"
 #include "hfa.h"
@@ -265,6 +266,19 @@ DFA::~DFA()
 
 	for (Partition::iterator i = states.begin(); i != states.end(); i++)
 		delete *i;
+}
+
+State *DFA::match_len(State *state, const char *str, size_t len)
+{
+	for (; len > 0; ++str, --len)
+		state = state->next(*str);
+
+	return state;
+}
+
+State *DFA::match(const char *str)
+{
+	return match_len(start, str, strlen(str));
 }
 
 void DFA::dump_uniq_perms(const char *s)
