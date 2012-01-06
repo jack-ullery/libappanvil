@@ -349,6 +349,7 @@ public:
 	virtual ~DFA();
 
 	State *match_len(State *state, const char *str, size_t len);
+	State *match_until(State *state, const char *str, const char term);
 	State *match(const char *str);
 
 	void remove_unreachable(dfaflags_t flags);
