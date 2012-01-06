@@ -32,3 +32,6 @@
 
   # python build configuration and headers
   /usr/include/python{2,3}.[0-7]*/pyconfig.h r,
+
+  # python setup script used by apport
+  /etc/python{2,3}.[0-7]*/sitecustomize.py r,
