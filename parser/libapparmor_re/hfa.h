@@ -275,6 +275,13 @@ public:
 		}
 	};
 
+	State *next(uchar c) {
+		StateTrans::iterator i = trans.find(c);
+		if (i != trans.end())
+			return i->second;
+		return otherwise;
+	};
+
 	int label;
 	uint32_t audit, accept;
 	StateTrans trans;
@@ -340,6 +347,9 @@ class DFA {
 public:
 	DFA(Node *root, dfaflags_t flags);
 	virtual ~DFA();
+
+	State *match_len(State *state, const char *str, size_t len);
+	State *match(const char *str);
 
 	void remove_unreachable(dfaflags_t flags);
 	bool same_mappings(State *s1, State *s2);
