@@ -776,6 +776,10 @@ sub create_new_profile($) {
                 $profile->{$fqdbin}{include}->{"abstractions/perl"} = 1;
             } elsif ($interpreter =~ m/\/bin\/(bash|sh)/) {
                 $profile->{$fqdbin}{include}->{"abstractions/bash"} = 1;
+            } elsif ($interpreter =~ m/python/) {
+                $profile->{$fqdbin}{include}->{"abstractions/python"} = 1;
+            } elsif ($interpreter =~ m/ruby/) {
+                $profile->{$fqdbin}{include}->{"abstractions/ruby"} = 1;
             }
             handle_binfmt($profile->{$fqdbin}, $interpreter);
         } else {
