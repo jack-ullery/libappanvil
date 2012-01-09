@@ -770,6 +770,8 @@ sub create_new_profile($) {
         my $hashbang = head($fqdbin);
         if ($hashbang && $hashbang =~ /^#!\s*(\S+)/) {
             my $interpreter = get_full_path($1);
+            $profile->{$fqdbin}{allow}{path}->{$fqdbin}{mode} |= str_to_mode("r");
+            $profile->{$fqdbin}{allow}{path}->{$fqdbin}{mode} |= 0;
             $profile->{$fqdbin}{allow}{path}->{$interpreter}{mode} |= str_to_mode("ix");
             $profile->{$fqdbin}{allow}{path}->{$interpreter}{audit} |= 0;
             if ($interpreter =~ /perl/) {
