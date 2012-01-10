@@ -1,0 +1,51 @@
+# Lenient profile that is intended to be used when 'Ux' is desired but
+# does not provide enough environment sanitizing. This effectively is an
+# open profile that blacklists certain known dangerous files and also
+# does not allow any capabilities. For example, it will not allow 'm' on files
+# owned be the user invoking the program. While this provides some additional
+# protection, please use with care as applications running under this profile
+# are effectively running without any AppArmor protection. Use this profile
+# only if the process absolutely must be run (effectively) unconfined.
+#
+# Limitations:
+# 1. This does not work for root owned processes, because of the way we use
+#    owner matching in the sanitized helper. We could do a better job with
+#    this to support root, but it would make the policy harder to understand
+#    and going unconfined as root is not desirable any way.
+#
+# 2. For this sanitized_helper to work, the program running in the sanitized
+#    environment must open symlinks directly in order for AppArmor to mediate
+#    it. This is confirmed to work with:
+#     - compiled code which can load shared libraries
+#     - python imports
+#    It is known not to work with:
+#     - perl includes
+# 3. Sanitizing ruby and java
+#
+# Use at your own risk. This profile was developed as an interim workaround for
+# LP: #851986 until AppArmor utilizes proper environment filtering.
+
+profile sanitized_helper {
+  #include <abstractions/base>
+
+  # Allow all networking
+  network inet,
+
+  # Allow exec of anything, but under this profile. Allow transition
+  # to other profiles if they exist.
+  /bin/* Pix,
+  /sbin/* Pix,
+  /usr/bin/* Pix,
+  /usr/sbin/* Pix,
+
+  # Allow exec of libexec applications in /usr/lib*
+  /usr/lib*/{,**/}* Pix,
+
+  # Full access
+  / r,
+  /** rwkl,
+  /{,usr/}lib/{,**/}*.so{,.*} m,
+
+  # Dangerous files
+  audit deny owner /**/* m,              # compiled libraries
+  audit deny owner /**/*.py* r,          # python imports
