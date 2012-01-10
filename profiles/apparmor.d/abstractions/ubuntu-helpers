@@ -44,7 +44,7 @@ profile sanitized_helper {
   # Full access
   / r,
   /** rwkl,
-  /{,usr/}lib/{,**/}*.so{,.*} m,
+  /{,usr/}lib{,32,64}/{,**/}*.so{,.*} m,
 
   # Dangerous files
   audit deny owner /**/* m,              # compiled libraries
