@@ -3,32 +3,31 @@
 # abstraction for allowing access to graphical browsers in Ubuntu
 #
 
-  /usr/bin/arora PUx,
-  /usr/bin/conkeror PUx,
-  /usr/bin/dillo PUx,
-  /usr/bin/Dooble PUx,
-  /usr/bin/epiphany PUx,
-  /usr/bin/epiphany-browser PUx,
-  /usr/bin/epiphany-webkit PUx,
-  /usr/lib/fennec-*/fennec PUx,
-  /usr/bin/galeon PUx,
-  /usr/bin/kazehakase PUx,
-  /usr/bin/konqueror PUx,
-  /usr/bin/midori PUx,
-  /usr/bin/netsurf PUx,
-  /usr/bin/prism PUx,
-  /usr/bin/rekonq PUx,
-  /usr/bin/seamonkey PUx,
+  #include <abstractions/ubuntu-helpers>
+  /usr/bin/arora Cx -> sanitized_helper,
+  /usr/bin/conkeror Cx -> sanitized_helper,
+  /usr/bin/dillo Cx -> sanitized_helper,
+  /usr/bin/Dooble Cx -> sanitized_helper,
+  /usr/bin/epiphany Cx -> sanitized_helper,
+  /usr/bin/epiphany-browser Cx -> sanitized_helper,
+  /usr/bin/epiphany-webkit Cx -> sanitized_helper,
+  /usr/lib/fennec-*/fennec Cx -> sanitized_helper,
+  /usr/bin/galeon Cx -> sanitized_helper,
+  /usr/bin/kazehakase Cx -> sanitized_helper,
+  /usr/bin/konqueror Cx -> sanitized_helper,
+  /usr/bin/midori Cx -> sanitized_helper,
+  /usr/bin/netsurf Cx -> sanitized_helper,
+  /usr/bin/prism Cx -> sanitized_helper,
+  /usr/bin/rekonq Cx -> sanitized_helper,
+  /usr/bin/seamonkey Cx -> sanitized_helper,
   /usr/bin/sensible-browser Pixr,
 
-  /usr/bin/chromium-browser PUx,
-  /usr/lib/chromium-browser/chromium-browser PUx,
+  /usr/bin/chromium-browser Cx -> sanitized_helper,
+  /usr/lib/chromium-browser/chromium-browser Cx -> sanitized_helper,
 
-  # this should cover all firefox browsers and versions (including shiretoko
-  # and abrowser)
-  /usr/lib/firefox-*/firefox.sh PUx,
+  /usr/bin/firefox{,-trunk} Cxr -> sanitized_helper,
 
   # some unpackaged, but popular browsers
-  /usr/lib/icecat-*/icecat PUx,
-  /usr/bin/opera PUx,
-  /opt/google/chrome/google-chrome PUx,
+  /usr/lib/icecat-*/icecat Cx -> sanitized_helper,
+  /usr/bin/opera Cx -> sanitized_helper,
+  /opt/google/chrome/google-chrome Cx -> sanitized_helper,

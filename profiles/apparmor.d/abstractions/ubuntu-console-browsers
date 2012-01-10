@@ -7,9 +7,10 @@
 # #include <abstractions/ubuntu-gnome-terminal>
 #
 
-  /usr/bin/elinks PUx,
-  /usr/bin/links PUx,
-  /usr/bin/lynx.cur PUx,
-  /usr/bin/netrik PUx,
-  /usr/bin/w3m PUx,
+  #include <abstractions/ubuntu-helpers>
+  /usr/bin/elinks Cx -> sanitized_helper,
+  /usr/bin/links Cx -> sanitized_helper,
+  /usr/bin/lynx.cur Cx -> sanitized_helper,
+  /usr/bin/netrik Cx -> sanitized_helper,
+  /usr/bin/w3m Cx -> sanitized_helper,
 

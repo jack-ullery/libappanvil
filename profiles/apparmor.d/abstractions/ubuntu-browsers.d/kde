@@ -1,4 +1,5 @@
 # vim:syntax=apparmor
 
   #include <abstractions/kde>
-  /usr/bin/kde4-config PUx,
+  #include <abstractions/ubuntu-helpers>
+  /usr/bin/kde4-config Cx -> sanitized_helper,

@@ -7,9 +7,10 @@
 # #include <abstractions/ubuntu-gnome-terminal>
 #
 
-  /usr/bin/alpine PUx,
-  /usr/bin/citadel PUx,
-  /usr/bin/cone PUx,
-  /usr/bin/elmo PUx,
-  /usr/bin/mutt PUx,
+  #include <abstractions/ubuntu-helpers>
+  /usr/bin/alpine Cx -> sanitized_helper,
+  /usr/bin/citadel Cx -> sanitized_helper,
+  /usr/bin/cone Cx -> sanitized_helper,
+  /usr/bin/elmo Cx -> sanitized_helper,
+  /usr/bin/mutt Cx -> sanitized_helper,
 

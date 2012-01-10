@@ -3,18 +3,19 @@
 # abstraction for allowing graphical email clients in Ubuntu
 #
 
-  /usr/bin/anjal PUx,
-  /usr/bin/balsa PUx,
-  /usr/bin/claws-mail PUx,
-  /usr/bin/evolution PUx,
-  /usr/lib/GNUstep/Applications/GNUMail.app/GNUMail PUx,
-  /usr/bin/kmail PUx,
-  /usr/bin/mailody PUx,
-  /usr/bin/modest PUx,
-  /usr/bin/seamonkey PUx,
-  /usr/bin/sylpheed PUx,
-  /usr/bin/tkrat PUx,
+  #include <abstractions/ubuntu-helpers>
+  /usr/bin/anjal Cx -> sanitized_helper,
+  /usr/bin/balsa Cx -> sanitized_helper,
+  /usr/bin/claws-mail Cx -> sanitized_helper,
+  /usr/bin/evolution Cx -> sanitized_helper,
+  /usr/lib/GNUstep/Applications/GNUMail.app/GNUMail Cx -> sanitized_helper,
+  /usr/bin/kmail Cx -> sanitized_helper,
+  /usr/bin/mailody Cx -> sanitized_helper,
+  /usr/bin/modest Cx -> sanitized_helper,
+  /usr/bin/seamonkey Cx -> sanitized_helper,
+  /usr/bin/sylpheed Cx -> sanitized_helper,
+  /usr/bin/tkrat Cx -> sanitized_helper,
 
-  /usr/lib/thunderbird/thunderbird PUx,
-  /usr/lib/thunderbird-[1-9]*/thunderbird{,.sh} PUx,
+  /usr/lib/thunderbird/thunderbird Cx -> sanitized_helper,
+  /usr/lib/thunderbird-[1-9]*/thunderbird{,.sh} Cx -> sanitized_helper,
 

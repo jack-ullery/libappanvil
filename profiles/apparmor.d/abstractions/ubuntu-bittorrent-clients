@@ -2,12 +2,13 @@
 #
 # abstraction for allowing graphical bittorrent clients in Ubuntu
 #
-  /usr/bin/azureus PUxr,
-  /usr/bin/bitstormlite PUxr,
-  /usr/bin/btmaketorrentgui PUxr,
-  /usr/bin/deluge PUxr,
-  /usr/bin/gnome-btdownload PUxr,
-  /usr/bin/kget PUxr,
-  /usr/bin/ktorrent PUxr,
-  /usr/bin/qbittorrent PUxr,
-  /usr/bin/transmission{,-gtk,-qt,-cli} PUxr,
+  #include <abstractions/ubuntu-helpers>
+  /usr/bin/azureus Cxr -> sanitized_helper,
+  /usr/bin/bitstormlite Cxr -> sanitized_helper,
+  /usr/bin/btmaketorrentgui Cxr -> sanitized_helper,
+  /usr/bin/deluge Cxr -> sanitized_helper,
+  /usr/bin/gnome-btdownload Cxr -> sanitized_helper,
+  /usr/bin/kget Cxr -> sanitized_helper,
+  /usr/bin/ktorrent Cxr -> sanitized_helper,
+  /usr/bin/qbittorrent Cxr -> sanitized_helper,
+  /usr/bin/transmission{,-gtk,-qt,-cli} Cxr -> sanitized_helper,

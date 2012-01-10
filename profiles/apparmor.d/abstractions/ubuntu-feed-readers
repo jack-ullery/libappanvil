@@ -2,5 +2,6 @@
 #
 # abstraction for allowing graphical news feed readers in Ubuntu
 #
-  /usr/bin/akregator PUxr,
-  /usr/bin/liferea-add-feed PUxr,
+  #include <abstractions/ubuntu-helpers>
+  /usr/bin/akregator Cxr -> sanitized_helper,
+  /usr/bin/liferea-add-feed Cxr -> sanitized_helper,
