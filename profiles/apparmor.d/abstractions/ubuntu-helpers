@@ -49,3 +49,4 @@ profile sanitized_helper {
   # Dangerous files
   audit deny owner /**/* m,              # compiled libraries
   audit deny owner /**/*.py* r,          # python imports
+}
