@@ -6,10 +6,13 @@
 #
 # #include <abstractions/ubuntu-gnome-terminal>
 #
+# Users of this abstraction need to #include the ubuntu-helpers abstraction
+# in the toplevel profile. Eg:
+# #include <abstractions/ubuntu-helpers>
 
-  /usr/bin/elinks PUx,
-  /usr/bin/links PUx,
-  /usr/bin/lynx.cur PUx,
-  /usr/bin/netrik PUx,
-  /usr/bin/w3m PUx,
+  /usr/bin/elinks Cx -> sanitized_helper,
+  /usr/bin/links Cx -> sanitized_helper,
+  /usr/bin/lynx.cur Cx -> sanitized_helper,
+  /usr/bin/netrik Cx -> sanitized_helper,
+  /usr/bin/w3m Cx -> sanitized_helper,
 

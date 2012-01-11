@@ -1,4 +1,7 @@
 # vim:syntax=apparmor
+# Users of this abstraction need to #include the ubuntu-helpers abstraction
+# in the toplevel profile. Eg:
+# #include <abstractions/ubuntu-helpers>
 
   #include <abstractions/X>
 
@@ -6,18 +9,18 @@
   /usr/bin/pulseaudio ixr,
 
   # Image viewers
-  /usr/bin/eog PUxr,
-  /usr/bin/gimp* PUxr,
-  /usr/bin/shotwell PUxr,
-  /usr/bin/digikam PUxr,
-  /usr/bin/f-spot PUxr,
-  /usr/bin/gwenview PUxr,
+  /usr/bin/eog Cxr -> sanitized_helper,
+  /usr/bin/gimp* Cxr -> sanitized_helper,
+  /usr/bin/shotwell Cxr -> sanitized_helper,
+  /usr/bin/digikam Cxr -> sanitized_helper,
+  /usr/bin/f-spot Cxr -> sanitized_helper,
+  /usr/bin/gwenview Cxr -> sanitized_helper,
 
   #include <abstractions/ubuntu-media-players>
   owner @{HOME}/.macromedia/** rw,
   /opt/real/RealPlayer/mozilla/nphelix.so rm,
-  /usr/bin/lpstat PUxr,
-  /usr/bin/lpr PUxr,
+  /usr/bin/lpstat Cxr -> sanitized_helper,
+  /usr/bin/lpr Cxr -> sanitized_helper,
 
   # npviewer
   /usr/lib/nspluginwrapper/i386/linux/npviewer{,.bin} ixr,
@@ -30,12 +33,12 @@
 
   # Mozplugger
   /etc/mozpluggerrc r,
-  /usr/bin/mozplugger-helper PUxr,
+  /usr/bin/mozplugger-helper Cxr -> sanitized_helper,
 
   # Archivers
-  /usr/bin/ark PUxr,
-  /usr/bin/file-roller PUxr,
-  /usr/bin/xarchiver PUxr,
+  /usr/bin/ark Cxr -> sanitized_helper,
+  /usr/bin/file-roller Cxr -> sanitized_helper,
+  /usr/bin/xarchiver Cxr -> sanitized_helper,
   /usr/local/lib{,32,64}/*.so* mr,
 
   # News feed readers
@@ -53,4 +56,4 @@
   @{PROC}/interrupts r,
 
   # Virus scanners
-  /usr/bin/clamscan PUx,
+  /usr/bin/clamscan Cx -> sanitized_helper,
