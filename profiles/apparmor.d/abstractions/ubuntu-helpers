@@ -7,6 +7,12 @@
 # are effectively running without any AppArmor protection. Use this profile
 # only if the process absolutely must be run (effectively) unconfined.
 #
+# Usage:
+# Because this abstraction defines the sanitized_helper profile, it must only
+# be #included once. Therefore this abstraction should typically not be
+# included in other abstractions so as to avoid parser errors regarding
+# multiple definitions.
+#
 # Limitations:
 # 1. This does not work for root owned processes, because of the way we use
 #    owner matching in the sanitized helper. We could do a better job with
