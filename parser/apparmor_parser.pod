@@ -127,16 +127,21 @@ Perform no caching at all: disables -W, implies -T.
 
 =item -T, --skip-read-cache
 
-By default, if a profile's cache is found in /etc/apparmor.d/cache/ and
-the timestamp is newer than the profile, it will be loaded from the cache.
-This option disables this cache loading behavior.
+By default, if a profile's cache is found in the location specified by
+--cache-loc and the timestamp is newer than the profile, it will be loaded
+from the cache. This option disables this cache loading behavior.
 
 =item -W, --write-cache
 
-Write out cached profiles to /etc/apparmor.d/cache/.  Off by default.
-In cases where abstractions have been changed, and the parser is running
-with "--replace", it may make sense to also use "--skip-read-cache" with
-the "--write-cache" option.
+Write out cached profiles to the location specified in --cache-loc.  Off
+by default. In cases where abstractions have been changed, and the parser
+is running with "--replace", it may make sense to also use
+"--skip-read-cache" with the "--write-cache" option.
+
+=item -L, --cache-loc
+
+Set the location of the cache directory.  If not specified the cache location
+defaults to /etc/apparmor.d/cache
 
 =item -Q, --skip-kernel-load
 
