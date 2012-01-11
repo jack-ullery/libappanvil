@@ -770,12 +770,18 @@ sub create_new_profile($) {
         my $hashbang = head($fqdbin);
         if ($hashbang && $hashbang =~ /^#!\s*(\S+)/) {
             my $interpreter = get_full_path($1);
+            $profile->{$fqdbin}{allow}{path}->{$fqdbin}{mode} |= str_to_mode("r");
+            $profile->{$fqdbin}{allow}{path}->{$fqdbin}{mode} |= 0;
             $profile->{$fqdbin}{allow}{path}->{$interpreter}{mode} |= str_to_mode("ix");
             $profile->{$fqdbin}{allow}{path}->{$interpreter}{audit} |= 0;
             if ($interpreter =~ /perl/) {
                 $profile->{$fqdbin}{include}->{"abstractions/perl"} = 1;
             } elsif ($interpreter =~ m/\/bin\/(bash|sh)/) {
                 $profile->{$fqdbin}{include}->{"abstractions/bash"} = 1;
+            } elsif ($interpreter =~ m/python/) {
+                $profile->{$fqdbin}{include}->{"abstractions/python"} = 1;
+            } elsif ($interpreter =~ m/ruby/) {
+                $profile->{$fqdbin}{include}->{"abstractions/ruby"} = 1;
             }
             handle_binfmt($profile->{$fqdbin}, $interpreter);
         } else {

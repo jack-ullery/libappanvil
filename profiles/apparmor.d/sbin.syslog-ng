@@ -23,6 +23,7 @@
 
   capability chown,
   capability dac_override,
+  capability dac_read_search,
   capability fsetid,
   capability fowner,
   capability sys_tty_config,

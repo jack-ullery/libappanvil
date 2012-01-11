@@ -52,5 +52,5 @@
   /usr/share/java/zemberek-tr-[0-9]*.jar           r,
 
   # per-user dictionaries
-  owner @{HOME}/.config/enchant/                   r,
+  owner @{HOME}/.config/enchant/                   rw,
   owner @{HOME}/.config/enchant/*                  rwk,
