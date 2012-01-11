@@ -43,24 +43,26 @@ checktestbg
 
 rm -f $file
 
-# FAILURE TEST (pt 1)
-
-genprofile $file:$okperm
-
-runtestbg "READ/WRITE fail" fail $file
-
-sleep 2
-
-# FAILURE TEST (pt 2)
-
-genprofile $file:$badperm
-
-# problem the shell and the test program are racing, after profile replacement
-# if the shell runs immediately after profile replacement instead of the
-# test program it will will.  We insert a small sleep to make this unlikely
-
-sleep 1
-
-kill -USR1 $_pid
-
-checktestbg
+# Disabled revalidation/revocation test as this can not be reliably tested
+# at this time 
+## FAILURE TEST (pt 1)
+#
+#genprofile $file:$okperm
+#
+#runtestbg "READ/WRITE fail" fail $file
+#
+#sleep 2
+#
+## FAILURE TEST (pt 2)
+#
+#genprofile $file:$badperm
+#
+## problem the shell and the test program are racing, after profile replacement
+## if the shell runs immediately after profile replacement instead of the
+## test program it will will.  We insert a small sleep to make this unlikely
+#
+#sleep 1
+#
+#kill -USR1 $_pid
+#
+#checktestbg

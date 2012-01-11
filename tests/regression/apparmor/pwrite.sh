@@ -37,41 +37,45 @@ checktestbg
 
 rm -f ${file}
 
-# FAIL TEST - PWRITE (pass 1)
+# Disabled revalidation/revocation test as this can not be reliably tested
+# at this time 
+## FAIL TEST - PWRITE (pass 1)
+#
+#genprofile $file:$okperm
+#
+#runtestbg "PWRITE without w" fail $file
+#
+#sleep 2
+#
+## FAIL TEST - PWRITE (pass 2)
+#
+#genprofile $file:$badwriteperm
+#
+#sleep 2
+#
+#kill -USR1 $_pid
+#
+#checktestbg
+#
+#rm -f ${file}
 
-genprofile $file:$okperm
-
-runtestbg "PWRITE without w" fail $file
-
-sleep 2
-
-# FAIL TEST - PWRITE (pass 2)
-
-genprofile $file:$badwriteperm
-
-sleep 2
-
-kill -USR1 $_pid
-
-checktestbg
-
-rm -f ${file}
-
+# Disabled revalidation/revocation test as this can not be reliably tested
+# at this time 
 # FAIL TEST - PREAD (pass 1)
-
-genprofile $file:$okperm
-
-runtestbg "PREAD without r" fail $file
-
-sleep 2
-
-#FAIL TEST - PREAD (pass 2)
-genprofile $file:$badreadperm
-
-sleep 2
-
-kill -USR1 $_pid
-
-checktestbg
-
-rm -f ${file}
+#
+#genprofile $file:$okperm
+#
+#runtestbg "PREAD without r" fail $file
+#
+#sleep 2
+#
+##FAIL TEST - PREAD (pass 2)
+#genprofile $file:$badreadperm
+#
+#sleep 2
+#
+#kill -USR1 $_pid
+#
+#checktestbg
+#
+#rm -f ${file}
