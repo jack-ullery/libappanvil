@@ -76,6 +76,7 @@ struct timespec mru_tstamp;
 
 char *match_string = NULL;
 char *flags_string = NULL;
+char *cacheloc = NULL;
 
 /* per-profile settings */
 int force_complain = 0;
@@ -106,6 +107,7 @@ struct option long_options[] = {
 	{"skip-read-cache",	0, 0, 'T'},
 	{"write-cache",		0, 0, 'W'},
 	{"show-cache",		0, 0, 'k'},
+	{"cache-loc",		1, 0, 'L'},
 	{"debug",		0, 0, 'd'},
 	{"dump",		1, 0, 'D'},
 	{"Dump",		1, 0, 'D'},
@@ -147,6 +149,7 @@ static void display_usage(char *command)
 	       "-K, --skip-cache	Do not attempt to load or save cached profiles\n"
 	       "-T, --skip-read-cache	Do not attempt to load cached profiles\n"
 	       "-W, --write-cache	Save cached profile (force with -T)\n"
+	       "-L, --cache-loc n	Set the location of the profile cache\n"
 	       "-q, --quiet		Don't emit warnings\n"
 	       "-v, --verbose		Show profile names as they load\n"
 	       "-Q, --skip-kernel-load	Do everything except loading into kernel\n"
@@ -521,6 +524,9 @@ static int process_arg(int c, char *optarg)
 		break;
 	case 'T':
 		skip_read_cache = 1;
+		break;
+	case 'L':
+		cacheloc = strdup(optarg);
 		break;
 	case 'Q':
 		kernel_load = 0;
@@ -928,8 +934,14 @@ int process_profile(int option, char *profilename)
 	 */
 	if ((profilename && option != OPTION_REMOVE) && !force_complain &&
 	    !skip_cache) {
-		if (asprintf(&cachename, "%s/%s/%s", basedir, "cache", basename)<0) {
-			perror("asprintf");
+		if (cacheloc) {
+			cachename = strdup(cacheloc);
+			if (!cachename) {
+				PERROR(_("Memory allocation error."));
+				exit(1);
+			}
+		} else if (asprintf(&cachename, "%s/%s/%s", basedir, "cache", basename)<0) {
+			PERROR(_("Memory allocation error."));
 			exit(1);
 		}
 		/* Load a binary cache if it exists and is newest */
