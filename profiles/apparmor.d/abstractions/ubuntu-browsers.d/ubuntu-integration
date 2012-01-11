@@ -1,6 +1,7 @@
 # vim:syntax=apparmor
-
-  #include <abstractions/ubuntu-helpers>
+# Users of this abstraction need to #include the ubuntu-helpers abstraction
+# in the toplevel profile. Eg:
+# #include <abstractions/ubuntu-helpers>
 
   # Apport
   /usr/bin/apport-bug Cx -> sanitized_helper,

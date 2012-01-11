@@ -1,7 +1,9 @@
 # vim:syntax=apparmor
+# Users of this abstraction need to #include the ubuntu-helpers abstraction
+# in the toplevel profile. Eg:
+# #include <abstractions/ubuntu-helpers>
 
   #include <abstractions/X>
-  #include <abstractions/ubuntu-helpers>
 
   # Pulseaudio
   /usr/bin/pulseaudio ixr,
