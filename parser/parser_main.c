@@ -926,6 +926,15 @@ int process_profile(int option, char *profilename)
 	if (retval != 0)
 		goto out;
 
+	/* Test to see if profile is for another namespace, if so disable
+	 * caching for now
+	 * TODO: Add support for caching profiles in an alternate namespace
+	 * TODO: Add support for embedded namespace defines if they aren't
+	 *       removed from the language.
+	 */
+	if (profile_namespace)
+		skip_cache = 1;
+
 	/* Do secondary test to see if cached binary profile is good,
 	 * instead of checking against a presupplied list of files
 	 * use the timestamps from the files that were parsed.
