@@ -1,7 +1,7 @@
 # vim:syntax=apparmor
 # launchpad-integration
 
-  # Launchpad integration should run in a sanitized profile
+  # Launchpad integration should run in a sanitizing profile
   /usr/bin/launchpad-integration Cxr -> launchpad_integration,
   profile launchpad_integration {
     #include <abstractions/base>
@@ -13,8 +13,7 @@
 
     # Run confined with security execution. sudo scrubs the environment, so we
     # don't have to
-    /usr/bin/sudo Ux, # Run confined with security execution. sudo scrubs the
-                      # environment, so we don't have to
+    /usr/bin/sudo Ux,
 
     # Give it wide permissions since it and apport need to do a lot
     /** rwlk,
