@@ -433,9 +433,7 @@ fi
 				 ;;
 		esac
 
-		#give every profile/hat access to change_hat
-		args[0]="/proc/*/attr/current:w"
-		num_args=1
+		num_args=0
 		while [ $# -gt 0 ]
 		do
 			arg="$1"
@@ -447,15 +445,8 @@ fi
 				eval emit_profile \"$imagename\" \"$imageperm\" \
 					$(for i in $(seq 0 $((${num_args} - 1))) ; do echo \"\${args[${i}]}\" ; done)
 				num_emitted=$((num_emitted + 1))
-				#give every profile/hat access to change_hat
-				args[0]="/proc/*/attr/current:w"
-				num_args=1
+				num_args=0
 				continue 2
-			elif [ ${arg:0:4} == "hat:" ] ; then
-				args[${num_args}]=${arg}
-				num_args=$(($num_args + 1))
-				args[${num_args}]="/proc/*/attr/current:w"
-				num_args=$(($num_args + 1))
 			else
 				args[${num_args}]=${arg}
 				num_args=$(($num_args + 1))

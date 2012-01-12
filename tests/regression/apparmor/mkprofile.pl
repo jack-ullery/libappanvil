@@ -32,7 +32,7 @@ sub usage {
   print STDERR "  help:        print this message\n";
 }
 
-&usage && exit 0 if ($help || @ARGV < 1); 
+&usage && exit 0 if ($help || @ARGV < 1);
 
 sub emit_netdomain {
   my $rule = shift;
@@ -95,12 +95,16 @@ sub emit_hat {
     (!$nowarn) && print STDERR "Warning: invalid hat description '$rule', ignored\n";
   } else {
     $hat = $rules[1];
-    $output_rules{$hat} = ( );
+    # give every profile/hat access to change_hat
+    @{$output_rules{$hat}} = ( "  /proc/*/attr/current w,\n",);
   }
 }
 
 my $bin = shift @ARGV;
 !(-e $bin || $nowarn) && print STDERR "Warning: execname '$bin': no such file or directory\n";
+
+# give every profile/hat access to change_hat
+emit_file("/proc/*/attr/current:w");
 
 for my $rule (@ARGV) {
   #($fn, @rules) = split (/:/, $rule);
