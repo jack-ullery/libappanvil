@@ -241,22 +241,7 @@ emit_profile()
 		trap "error_handler" ERR
 	fi
 
-	local wflag
-	#global name outfile profile dynlibs profilenames
-
-	wflag=""
-
-	mkflags="${wflag} ${escapeflag}"
-
-	if [ "$nodefaults" -eq 1 ]
-	then
-		mkflags="${mkflags} -N"
-	fi
-
-	if [ "$noimage" -eq 1 ]
-	then
-		mkflags="${mkflags} -I"
-	fi
+	#global name outfile profile profilenames
 
 	name=$1; shift 1
 
@@ -274,22 +259,19 @@ fi
 	
 	local num_emitted imagename hat args arg names1 names2
 	#global complainflag escapeflag nodefaults profile profilenames
-	local hat_string="hat:"
 
 	complainflag=""
-	escapeflag=""
-	nodefaults=0
-	noimage=0
-	while /bin/true 
+	mkflags=""
+	while /bin/true
 	do
-		case "$1" in 
+		case "$1" in
 			"-C") complainflag="-C"
 			      ;;
-			"-E") escapeflag="-E"
+			"-E") mkflags="${mkflags} -E"
 			      ;;
-			"-N") nodefaults=1
+			"-N") mkflags="${mkflags} -N"
 			      ;;
-			"-I") noimage=1
+			"-I") mkflags="${mkflags} -I"
 			      ;;
 			*) break
 			   ;;
@@ -298,7 +280,7 @@ fi
 	done
 
 	# save previous profile
-	if [ -f $profile ] 
+	if [ -f $profile ]
 	then
 		mv $profile ${profile}.old
 		mv $profilenames ${profilenames}.old
@@ -335,7 +317,7 @@ fi
 			arg="$1"
 			shift
 
-			# -- is the seperator between profiles
+			# -- is the separator between profiles
 			if [ "$arg" == "--" ]
 			then
 				eval emit_profile \"$imagename\" \
