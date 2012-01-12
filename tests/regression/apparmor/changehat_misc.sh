@@ -75,13 +75,9 @@ echo
 echo "*** A 'Killed' message from bash is expected for the following test"
 runchecktest "CHANGEHAT (bad token)" signal9 ${subtest}
 
-# Attempt to changehat out of a profile when the magic token is 0
-# ugh, need dynlibs from open test
-settest open
-open_dynlibs=${dynlibs}
 settest changehat_wrapper
 
-genprofile hat:open ${dynlibs} ${bin}/open:rix ${file}:${okperm}
+genprofile hat:open addimage:${bin}/open ${file}:${okperm}
 
 runchecktest "CHANGEHAT (noexit subprofile (token=0))" pass --token=0 open ${file}
 runchecktest "CHANGEHAT (exit noexit subprofile (token=0))" fail --token=0 --exit_hat open ${file}

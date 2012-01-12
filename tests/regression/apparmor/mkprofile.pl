@@ -121,7 +121,7 @@ sub gen_elf_binary($) {
 sub gen_binary($) {
   my $bin = shift;
 
-  gen_file("$bin:r");
+  gen_file("$bin:rix");
 
   my $hashbang = head($bin);
   if ($hashbang && $hashbang =~ /^#!\s*(\S+)/) {
@@ -199,6 +199,16 @@ sub gen_hat($) {
   }
 }
 
+sub gen_addimage($) {
+  my $rule = shift;
+  my @rules = split (/:/, $rule);
+  if (@rules != 2) {
+    (!$nowarn) && print STDERR "Warning: invalid addimage description '$rule', ignored\n";
+  } else {
+    gen_binary($rules[1]);
+  }
+}
+
 my $bin = shift @ARGV;
 !(-e $bin || $nowarn) && print STDERR "Warning: execname '$bin': no such file or directory\n";
 
@@ -220,6 +230,8 @@ for my $rule (@ARGV) {
     gen_flag($rule);
   } elsif ($rule =~ /^hat:/) {
     gen_hat($rule);
+  } elsif ($rule =~ /^addimage:/) {
+    gen_addimage($rule);
   } else {
     gen_file($rule);
   }

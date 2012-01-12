@@ -69,7 +69,7 @@ genprofile ${helper_sh}:Px -- image=${helper_sh}
 runchecktest "ENVIRON (shell script): Px & regular env" pass ${helper_sh} FOO=BAR
 runchecktest "ENVIRON (shell script): Px & sensitive env" fail ${helper_sh} LD_LIBRARY_PATH=.
 
-genprofile ${helper_sh}:rix /bin/bash:rix "/lib*/lib*:mr"
+genprofile addimage:${helper_sh}
 runchecktest "ENVIRON (shell script): ix & regular env" pass ${helper_sh} FOO=BAR
 runchecktest "ENVIRON (shell script): ix & sensitive env" pass ${helper_sh} LD_LIBRARY_PATH=.
 

@@ -108,11 +108,8 @@ for TEST in ${TESTS} ; do
 
 	# okay, now check to see if the capability functions from within
 	# a subprofile.
-	# Eww, this is ugly. subprofile tests depend on the internal
-	# variable dynlibs defined by prologue.inc::settest
-	test_dynlibs=${dynlibs}
 	settest ${testwrapper}
-	genprofile hat:${TEST} ${test_dynlibs} ${bin}/${TEST}:rix ${my_entries}
+	genprofile hat:${TEST} addimage:${bin}/${TEST} ${my_entries}
 	runchecktest "${TEST} changehat -- no caps" fail ${TEST} ${my_arg}
 	for cap in ${CAPABILITIES} ; do
 		if [ "X$(eval echo \${${TEST}_${cap}})" == "XTRUE" ] ; then
@@ -120,7 +117,7 @@ for TEST in ${TESTS} ; do
 		else
 			expected_result=fail
 		fi
-		genprofile hat:${TEST} ${test_dynlibs} ${bin}/${TEST}:rix cap:${cap} ${my_entries}
+		genprofile hat:${TEST} addimage:${bin}/${TEST} cap:${cap} ${my_entries}
 		runchecktest "${TEST} changehat -- capability ${cap}" ${expected_result} ${TEST} ${my_arg}
 	done
 
