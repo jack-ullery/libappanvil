@@ -35,11 +35,11 @@ checkcorefile()
 	fi
 
 	if [ "$requirement" = "yes" -a "$_corefile" = "no" ] ; then
-		if [ -n $_known ] ; then
+		if [ -n "$_known" ] ; then
 			echo -n "XFAIL: "
 		fi
 		echo "Error: corefile expected but not present - $2"
-		if [ -z $_known ] ; then
+		if [ -z "$_known" ] ; then
 			cat $profile
 			testfailed
 		fi
