@@ -258,7 +258,7 @@ emit_profile()
 		mkflags="${mkflags} -I"
 	fi
 
-	name=$1; perm=$2; shift 2
+	name=$1; shift 1
 
 	$bin/mkprofile.pl ${mkflags} "$name" ${outfile}:w "$@" >> $profile
 
@@ -309,7 +309,6 @@ fi
 	while /bin/true
 	do
 		imagename=$test
-		imageperm=rix
 
 		# image/subhat allows overriding of the default
 		# imagename which is based on the testname
@@ -321,11 +320,6 @@ fi
 				 if [ ! -x "$imagename" ]
 				 then
 					fatalerror "invalid imagename specified in input '$1'"
-				 fi
-				 perm=`echo $1 | sed -n 's/^image=[^:]*:\(.*\)$/\1/p'`
-				 if [ -n "$perm" ]
-				 then
-					imageperm=$perm
 				 fi
 				 num_emitted=0
 				 shift
@@ -344,7 +338,7 @@ fi
 			# -- is the seperator between profiles
 			if [ "$arg" == "--" ]
 			then
-				eval emit_profile \"$imagename\" \"$imageperm\" \
+				eval emit_profile \"$imagename\" \
 					$(for i in $(seq 0 $((${num_args} - 1))) ; do echo \"\${args[${i}]}\" ; done)
 				num_emitted=$((num_emitted + 1))
 				num_args=0
@@ -357,7 +351,7 @@ fi
 
 		# output what is in args, or force empty profile
 		if [ -n "$args" -o $num_emitted -eq 0 ] ; then
-			eval emit_profile \"$imagename\" \"$imageperm\" \
+			eval emit_profile \"$imagename\" \
 				$(for i in $(seq 0 $((${num_args} - 1))) ; do echo \"\${args[${i}]}\" ; done)
 		fi
 
