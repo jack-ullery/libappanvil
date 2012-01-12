@@ -85,102 +85,6 @@ genrunscript()
 	fi
 }
 
-resolve_symlink()
-{
-	if [ -z "${__NO_TRAP_ERR}" ]
-	then
-		trap "error_handler" ERR
-	fi
-
-	local link linkdir targetdir targetname
-
-	link=$1
-
-	while [ -h ${link} ]
-	do
-		if [ -x /usr/bin/readlink ] ; then
-			target=$(/usr/bin/readlink -f ${link})
-		elif [ -x /bin/readlink ] ; then
-			target=$(/bin/readlink -f ${link})
-		else 
-			# I'm sure there's a more perlish way to do this
-			target=$( perl -e "printf (\"%s\n\", readlink(\"${link}\"));") 
-			#target=$( perl -e "if (\$foo = readlink(\"${link}\")){ \
-			#			printf (\"%s\n\", \$foo) \
-			#		    } else { \
-			#		    	print \"${link}\n\"; \
-			#		    };")
-		fi
-		case "${target}" in
-			/*)  link=${target}
- 			     ;;
-			*) linkdir=$(dirname ${link})
-			   targetdir=$(dirname ${target})
-			   targetname=$(basename ${target})
-			   linkdir=$(cd ${linkdir}/${targetdir} ; pwd)
-			   link=${linkdir}/${targetname}
-			   ;;
-		esac
-				
-	done
-
-	if [ -e ${link} ]
-	then
-		echo ${link}
-		return 0
-	else
-		echo "Could not resolve '$link'" >&2
-		return 1
-	fi
-}
-
-resolve_libs()
-{
-	if [ -z "${__NO_TRAP_ERR}" ]
-	then
-		trap "error_handler" ERR
-	fi
-
-	local exec mode libpath libs
-	# global dynlibs
-
-	exec=$1
-
-	if [ ! -x $1 ]
-	then
-		fatalerror "invalid test executable $test"
-	fi
-
-	# Suck. SuSE's ldd has a line "linux-gate.so.1 =>  (0xffffe000)"
-	#       Red Hat's ldd has "/lib/ld-linux.so.2 (0x007b1000)"
-	# good ${DIETY}, what gross kludgage.
-	libs=$(ldd $exec | egrep -v "linux-(vdso(32|64)?|gate).so.1" | sed 's~^.*=> \(/.*\) (.*$~\1~' | awk '{print $1}')
-
-	dynlibs="/etc/ld.so.cache:r"
-
-	# bleah, this is cheeseball. on systems with a stackguard
-	# compiler, we also need access to /dev/urandom
-	for i in $libs /dev/urandom
-	do
-		mode=rm
-		# resolve possible symlinks before checking for ld pattern
-		# this is necessary because some architectures (zSeries)
-		# use nonconforming ld symlink names, like ld64.so
-		libpath=`resolve_symlink $i`		
-		case $libpath in
-		/lib/ld[.-]*) mode=${mode}px
-			   ;;
-		/lib32/ld[.-]*) mode=${mode}px
-			   ;;
-		/lib64/ld[.-]*) mode=${mode}px
-			   ;;
-		*) mode=${mode}ix
-			   ;;
-		esac
-		dynlibs="$dynlibs ${libpath}:${mode}"
-	done
-}
-
 runtestbg()
 {
 	if [ -z "${__NO_TRAP_ERR}" ]
@@ -337,31 +241,21 @@ emit_profile()
 		trap "error_handler" ERR
 	fi
 
-	local subprofile wflag
+	local wflag
 	#global name outfile profile dynlibs profilenames
 
-	subprofile=0
 	wflag=""
-
-	case "$1" in 
-		*^*) wflag="--nowarn"
-		     subprofile=1
-		     ;;
-	esac
 
 	mkflags="${wflag} ${escapeflag}"
 
+	if [ "$nodefaults" -eq 1 ]
+	then
+		mkflags="${mkflags} -N"
+	fi
+
 	name=$1; perm=$2; shift 2
 
-	if [ "$subprofile" -eq 1 -o "$nodefaults" -eq 1 ]
-	then
-		# skip dynamic libs for subprofiles
-		$bin/mkprofile.pl ${mkflags} "$name" ${outfile}:w "$@" >> $profile
-
-	else
-
-		$bin/mkprofile.pl ${mkflags} "$name" ${name}:${perm} $dynlibs ${outfile}:w "$@" >> $profile
-	fi
+	$bin/mkprofile.pl ${mkflags} "$name" ${outfile}:w "$@" >> $profile
 
 	echo $name >> $profilenames
 }
@@ -578,12 +472,6 @@ settest()
 	fi
 
 	outfile=$tmpdir/output.$1
-
-	if [ -x $test ]
-	then
-		# build list of dynamic libraries required by this executable
-		resolve_libs $test
-	fi
 
 	# Remove any current profile if loaded
 	if [ $profileloaded -eq 1 ]

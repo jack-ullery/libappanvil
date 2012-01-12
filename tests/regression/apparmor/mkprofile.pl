@@ -9,9 +9,11 @@ my $__VERSION__=$0;
 
 use strict;
 use Getopt::Long;
+use Cwd 'realpath';
 
 my $help = '';
 my $nowarn = '';
+my $nodefault;
 my $escape = '';
 my %output_rules;
 my $hat = "__no_hat";
@@ -21,6 +23,7 @@ GetOptions(
   'escape|E' => \$escape,
   'nowarn' => \$nowarn,
   'help|h' => \$help,
+  'nodefault|N' => \$nodefault,
 );
 
 sub usage {
@@ -28,11 +31,107 @@ sub usage {
   print STDERR "Usage $0 [--nowarn|--escape] execname [rules]\n";
   print STDERR "      $0 --help\n";
   print STDERR "  nowarn:      don't warn if execname does not exist\n";
+  print STDERR "  nodefault:   don't include default rules/ldd output\n";
   print STDERR "  escape:      escape stuff that would be treated as regexs\n";
   print STDERR "  help:        print this message\n";
 }
 
 &usage && exit 0 if ($help || @ARGV < 1);
+
+sub head ($) {
+  my $file = shift;
+
+  my $first = "";
+  if (open(FILE, $file)) {
+    $first = <FILE>;
+    close(FILE);
+  }
+
+  return $first;
+}
+
+sub get_output ($@) {
+  my ($program, @args) = @_;
+
+  my $ret = -1;
+
+  my $pid;
+  my @output;
+
+  if (-x $program) {
+    $pid = open(KID_TO_READ, "-|");
+    unless (defined $pid) {
+      die "can't fork: $!";
+    }
+
+    if ($pid) {
+      while (<KID_TO_READ>) {
+        chomp;
+        push @output, $_;
+      }
+      close(KID_TO_READ);
+      $ret = $?;
+    } else {
+      ($>, $)) = ($<, $();
+      open(STDERR, ">&STDOUT")
+        || die "can't dup stdout to stderr";
+      exec($program, @args) || die "can't exec program: $!";
+
+      # NOTREACHED
+    }
+  }
+
+  return ($ret, @output);
+}
+
+sub gen_default_rules() {
+  gen_file("/etc/ld.so.cache:r");
+
+  # give every profile access to change_hat
+  gen_file("/proc/*/attr/current:w");
+
+  # give every profile access to /dev/urandom (propolice, etc.)
+  gen_file("/dev/urandom:r");
+}
+
+sub gen_elf_binary($) {
+  my $bin = shift;
+
+  my ($ret, @ldd) = get_output("/usr/bin/ldd", $bin);
+  if ($ret == 0) {
+    for my $line (@ldd) {
+      last if $line =~ /not a dynamic executable/;
+      last if $line =~ /cannot read header/;
+      last if $line =~ /statically linked/;
+
+      # avoid new kernel 2.6 poo
+      next if $line =~ /linux-(gate|vdso(32|64)).so/;
+
+      if ($line =~ /^\s*\S+ => (\/\S+)/) {
+        # shared libraries
+        gen_file(realpath($1) . ":mr")
+      } elsif ($line =~ /^\s*(\/\S+)/) {
+        # match loader lines like "/lib64/ld-linux-x86-64.so.2 (0x00007fbb46999000)"
+        gen_file(realpath($1) . ":rix")
+      }
+    }
+  }
+}
+
+sub gen_binary($) {
+  my $bin = shift;
+
+  gen_file("$bin:r");
+
+  my $hashbang = head($bin);
+  if ($hashbang && $hashbang =~ /^#!\s*(\S+)/) {
+    my $interpreter = $1;
+    gen_file("$interpreter:rix");
+    gen_elf_binary($interpreter);
+  } else {
+    gen_elf_binary($bin)
+  }
+}
 
 sub gen_netdomain($) {
   my $rule = shift;
@@ -103,8 +202,10 @@ sub gen_hat($) {
 my $bin = shift @ARGV;
 !(-e $bin || $nowarn) && print STDERR "Warning: execname '$bin': no such file or directory\n";
 
-# give every profile/hat access to change_hat
-gen_file("/proc/*/attr/current:w");
+unless ($nodefault) {
+  gen_default_rules();
+  gen_binary($bin);
+}
 
 for my $rule (@ARGV) {
   #($fn, @rules) = split (/:/, $rule);
