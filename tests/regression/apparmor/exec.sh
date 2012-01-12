@@ -61,10 +61,10 @@ runchecktest "EXEC mmap x" fail $file
 
 # UNCONFINED -> CONFINED
 
-genprofile image=$file 
+genprofile image=$file
 runchecktest "EXEC unconfined -> confined" pass $file
 
 # UNCONFINED -> CONFINED no access to self binary
 
-genprofile -N image=$file  "/lib{64,}/ld*.so*:rix" "/lib{64,}/lib*.so*:rm"
+genprofile -I image=$file
 runchecktest "EXEC unconfined -> confined/no access to self" pass $file

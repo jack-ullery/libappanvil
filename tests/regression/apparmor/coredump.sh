@@ -81,7 +81,7 @@ checkcorefile yes "COREDUMP (no confinement)"
 
 # PASS TEST, with r confinement
 cleancorefile
-genprofile image=$test:$coreperm
+genprofile -I $test:$coreperm
 
 echo
 echo "*** A 'Segmentation Fault' message from bash is expected for the following test"
@@ -90,7 +90,7 @@ checkcorefile yes "COREDUMP ($coreperm confinement)"
 
 # FAIL TEST, with x confinement
 cleancorefile
-genprofile image=$test:$nocoreperm
+genprofile -I $test:$nocoreperm
 
 echo
 echo "*** A 'Segmentation Fault' message from bash is expected for the following test"

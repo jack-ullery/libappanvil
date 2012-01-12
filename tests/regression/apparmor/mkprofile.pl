@@ -14,6 +14,7 @@ use Cwd 'realpath';
 my $help = '';
 my $nowarn = '';
 my $nodefault;
+my $noimage;
 my $escape = '';
 my %output_rules;
 my $hat = "__no_hat";
@@ -24,6 +25,7 @@ GetOptions(
   'nowarn' => \$nowarn,
   'help|h' => \$help,
   'nodefault|N' => \$nodefault,
+  'noimage|I' => \$noimage,
 );
 
 sub usage {
@@ -121,7 +123,7 @@ sub gen_elf_binary($) {
 sub gen_binary($) {
   my $bin = shift;
 
-  gen_file("$bin:rix");
+  gen_file("$bin:rix") unless $noimage;
 
   my $hashbang = head($bin);
   if ($hashbang && $hashbang =~ /^#!\s*(\S+)/) {

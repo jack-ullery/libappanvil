@@ -253,6 +253,11 @@ emit_profile()
 		mkflags="${mkflags} -N"
 	fi
 
+	if [ "$noimage" -eq 1 ]
+	then
+		mkflags="${mkflags} -I"
+	fi
+
 	name=$1; perm=$2; shift 2
 
 	$bin/mkprofile.pl ${mkflags} "$name" ${outfile}:w "$@" >> $profile
@@ -274,6 +279,7 @@ fi
 	complainflag=""
 	escapeflag=""
 	nodefaults=0
+	noimage=0
 	while /bin/true 
 	do
 		case "$1" in 
@@ -282,6 +288,8 @@ fi
 			"-E") escapeflag="-E"
 			      ;;
 			"-N") nodefaults=1
+			      ;;
+			"-I") noimage=1
 			      ;;
 			*) break
 			   ;;
