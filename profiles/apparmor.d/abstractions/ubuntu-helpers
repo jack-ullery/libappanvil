@@ -36,6 +36,7 @@ profile sanitized_helper {
 
   # Allow all networking
   network inet,
+  network inet6,
 
   # Allow exec of anything, but under this profile. Allow transition
   # to other profiles if they exist.
