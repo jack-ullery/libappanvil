@@ -10,6 +10,7 @@
   /usr/bin/apturl Cxr -> sanitized_helper,
   /usr/bin/gnome-codec-install Cxr -> sanitized_helper,
   /usr/lib/gstreamer0.10/gstreamer-0.10/gst-plugin-scanner ix,
+  /usr/lib/@{multiarch}/gstreamer0.10/gstreamer-0.10/gst-plugin-scanner ix,
   /usr/share/software-center/software-center Cxr -> sanitized_helper,
 
   # Input Methods
