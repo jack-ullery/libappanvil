@@ -5,7 +5,7 @@
 
   # Text editors (It's All Text [https://addons.mozilla.org/en-US/firefox/addon/4125])
   /usr/bin/emacsclient.emacs-snapshot Cxr -> sanitized_helper,
-  /usr/bin/emacsclient.emacs22 Cxr -> sanitized_helper,
+  /usr/bin/emacsclient.emacs2[2-9] Cxr -> sanitized_helper,
   /usr/bin/emacs-snapshot-gtk Cxr -> sanitized_helper,
   /usr/bin/gedit Cxr -> sanitized_helper,
   /usr/bin/vim.gnome Cxr -> sanitized_helper,
