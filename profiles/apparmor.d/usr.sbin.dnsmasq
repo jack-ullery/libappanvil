@@ -51,6 +51,9 @@
   /{,var/}run/libvirt/network/      r,
   /{,var/}run/libvirt/network/*.pid rw,
 
+  # NetworkManager integration
+  /{,var/}run/nm-dns-dnsmasq.conf r,
+
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.dnsmasq>
 }
