@@ -2,7 +2,7 @@
 # aspell permissions
 
   # per-user settings and dictionaries
-  @{HOME}/.aspell.*.{pws,prepl} rk,
+  owner @{HOME}/.aspell.*.{pws,prepl} rwk,
 
   # system libraries and dictionaries
   /usr/lib/aspell/ r,
