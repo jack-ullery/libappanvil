@@ -13,6 +13,6 @@
   audit deny @{HOME}/.{,mozilla-}thunderbird/** mrwkl,
   audit deny @{HOME}/.evolution/** mrwkl,
   audit deny @{HOME}/.config/evolution/** mrwkl,
-  audit deny @{HOME}/.kde/share/apps/kmail/** mrwkl,
-  audit deny @{HOME}/.kde/share/apps/kwallet/** mrwkl,
+  audit deny @{HOME}/.kde{,4}/share/apps/kmail{,2}/** mrwkl,
+  audit deny @{HOME}/.kde{,4}/share/apps/kwallet/** mrwkl,
 

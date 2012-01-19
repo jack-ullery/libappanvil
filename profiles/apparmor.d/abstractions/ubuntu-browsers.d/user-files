@@ -11,7 +11,7 @@
   #include <abstractions/private-files>
   audit deny @{HOME}/.ssh/** mrwkl,
   audit deny @{HOME}/.gnome2_private/** mrwkl,
-  audit deny @{HOME}/.kde/share/apps/kwallet/** mrwkl,
+  audit deny @{HOME}/.kde{,4}/share/apps/kwallet/** mrwkl,
 
   # Comment this out if using gpg plugin/addons
   audit deny @{HOME}/.gnupg/** mrwkl,
