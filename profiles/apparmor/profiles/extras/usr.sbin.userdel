@@ -28,7 +28,7 @@
   /bin/cat rmix,
   /bin/bash rmix,
   /dev/log w,
-  /etc/.pwd.lock rw,
+  /etc/.pwd.lock rwk,
   /etc/cron.deny r,
   /etc/default/useradd r,
   /etc/group* rwl,
