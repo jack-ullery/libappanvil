@@ -135,9 +135,8 @@ syn keyword sdCapDanger	       @@sdKapKeyDanger@@
 
 " full line. Keywords are from sdCapKey + sdCapDanger
 syn match  sdCap /\v^\s*@@auditdeny@@capability\s+(@@sdKapKeyRegex@@)@@EOL@@/ contains=sdCapKey,sdCapDanger,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-" set capability was removed - TODO: remove everywhere in apparmor.vim
-" syn match  sdSetCap /\v^\s*set\s+capability\s+(@@sdKapKeyRegex@@)@@EOL@@/ contains=sdCapKey,sdCapDanger,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-
+" all capabilities ('capability' without any keyword)
+syn match  sdCapDanger /\v^\s*@@auditdeny@@capability@@EOL@@/ contains=sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
 
 " Network line
 " Syntax: network domain (inet, ...) type (stream, ...) protocol (tcp, ...)
