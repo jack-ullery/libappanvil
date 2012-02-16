@@ -192,7 +192,6 @@ QUOTED_ID	\"{ALLOWED_QUOTED_ID}*\"
 
 IP		{NUMBER}\.{NUMBER}\.{NUMBER}\.{NUMBER}
 
-FLAGS          flags{WS}*=?{WS}*
 HAT		hat{WS}*
 PROFILE		profile{WS}*
 KEYWORD         [[:alpha:]_]+
@@ -253,6 +252,19 @@ LT_EQUAL	<=
 	yypop_buffer_state();
 	if ( !YY_CURRENT_BUFFER ) yyterminate();
 }
+
+{VARIABLE_NAME}/{WS}*={WS}*	{
+				/* we match to the = in the lexer so that
+				 * can switch scanner state.  By the time
+				 * the parser see the = it may be to late
+				 * as bison may have requested the next
+				 * token from the scanner
+				 */
+				PDEBUG("conditional %s=\n", yytext);
+				yylval.id = processid(yytext, yyleng);
+				yy_push_state(EXTCOND_MODE);
+				return TOK_CONDID;
+			}
 
 <SUB_NAME>{
 	({IDS}|{QUOTED_ID})	{
@@ -535,11 +547,6 @@ LT_EQUAL	<=
 			return TOK_MODE;
 			}
 
-{FLAGS}			{
-			DUMP_PREPROCESS;
-			return TOK_FLAGS;
-			}
-
 {HAT}			{
 			DUMP_PREPROCESS;
 			yy_push_state(SUB_NAME);
@@ -563,18 +570,6 @@ LT_EQUAL	<=
 			PDEBUG("listval (\n");
 			yy_push_state(LIST_VAL_MODE);
 			return TOK_OPENPAREN;
-			}
-
-{VARIABLE_NAME}/{WS}*={WS}*	{
-				/* we match to the = in the lexer so that
-				 * can switch scanner state.  By the time
-				 * the parser see the = it may be to late
-				 * as bison may have requested the next
-				 * token from the scanner
-				 */
-				yylval.id = processid(yytext, yyleng);
-				yy_push_state(EXTCOND_MODE);
-				return TOK_CONDID;
 			}
 
 {VARIABLE_NAME}		{

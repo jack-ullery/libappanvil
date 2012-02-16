@@ -162,6 +162,7 @@ void add_local_entry(struct codomain *cod);
 }
 
 %type <id> 	TOK_ID
+%type <id>	TOK_CONDID
 %type <mode> 	TOK_MODE
 %type <fmode>   file_mode
 %type <cod>	profile_base
@@ -398,7 +399,12 @@ flags:	{ /* nothing */
 	};
 
 opt_flags: { /* nothing */ $$ = 0; }
-	| TOK_FLAGS { $$ = 1; }
+	| TOK_CONDID TOK_EQUALS
+	{
+		if (strcmp($1, "flags") != 0)
+			yyerror("expected flags= got %s=", $1);
+		$$ = 1;
+	}
 
 flags:	opt_flags TOK_OPENPAREN flagvals TOK_CLOSEPAREN
 	{
