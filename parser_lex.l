@@ -222,6 +222,15 @@ LT_EQUAL	<=
 
 %%
 
+%{
+/* Copied directly into yylex function */
+	if (parser_token) {
+		int t = parser_token;
+		parser_token = 0;
+		return t;
+	}
+%}
+
 <INCLUDE>{
 	{WS}+	{ /* Eat whitespace */ }
 	\<([^\> \t\n]+)\>	{	/* <filename> */

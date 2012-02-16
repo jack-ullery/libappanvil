@@ -69,6 +69,8 @@ struct value_list {
 	struct value_list *next;
 };
 
+int parser_token = 0;
+
 void free_value_list(struct value_list *list);
 struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 			       char *link_id, char *nt);

@@ -25,6 +25,11 @@
 #include "libapparmor_re/apparmor_re.h"
 #include "libapparmor_re/aare_rules.h"
 
+/* Global variable to pass token to lexer.  Will be replaced by parameter
+ * when lexer and parser are made reentrant
+ */
+extern int parser_token;
+
 typedef enum pattern_t pattern_t;
 
 struct flagval {
