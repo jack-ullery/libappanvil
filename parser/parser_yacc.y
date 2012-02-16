@@ -1056,10 +1056,15 @@ set_caps:	TOK_SET TOK_CAPABILITY caps TOK_END_OF_RULE
 
 capability:	TOK_CAPABILITY caps TOK_END_OF_RULE
 	{
-		$$ = $2;
+		if ($2 == 0) {
+			/* bare capability keyword - set all caps */
+			$$ = 0xffffffffffffffff;
+		} else
+			$$ = $2;
 	};
 
-caps: caps TOK_ID
+caps: { /* nothing */ $$ = 0; }
+	| caps TOK_ID
 	{
 		int cap = name_to_capability($2);
 		if (cap == -1)
@@ -1067,15 +1072,6 @@ caps: caps TOK_ID
 		free($2);
 		$$ = $1 | CAP_TO_MASK(cap);
 	}
-
-caps: TOK_ID
-	{
-		int cap = name_to_capability($1);
-		if (cap == -1)
-			yyerror(_("Invalid capability %s."), $1);
-		free($1);
-		$$ = CAP_TO_MASK(cap);
-	};
 
 %%
 #define MAXBUFSIZE 4096
