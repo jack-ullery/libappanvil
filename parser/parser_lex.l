@@ -540,7 +540,7 @@ LT_EQUAL	<=
 			return TOK_ID;
 			}
 
-{MODES}			{
+({MODES})/([[:space:],])	{
 			DUMP_PREPROCESS;
 			yylval.mode = strdup(yytext);
 			PDEBUG("Found modes: %s\n", yylval.mode);
