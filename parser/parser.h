@@ -272,7 +272,7 @@ extern void update_mru_tstamp(FILE *file);
 extern FILE *yyin;
 extern void yyrestart(FILE *fp);
 extern int yyparse(void);
-extern void yyerror(char *msg, ...);
+extern void yyerror(const char *msg, ...);
 extern int yylex(void);
 
 /* parser_include.c */
@@ -379,7 +379,7 @@ void free_policies(void);
  */
 
 /* parser_yacc.y */
-void yyerror(char *msg, ...)
+void yyerror(const char *msg, ...)
 {
         va_list arg;
         char buf[PATH_MAX];
