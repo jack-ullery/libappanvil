@@ -419,10 +419,19 @@ size_t DFA::hash_trans(State *s)
 	return hash;
 }
 
+int DFA::apply_and_clear_deny(void)
+{
+	int c = 0;
+	for (Partition::iterator i = states.begin(); i != states.end(); i++)
+		c += (*i)->apply_and_clear_deny();
+
+	return c;
+}
+
 /* minimize the number of dfa states */
 void DFA::minimize(dfaflags_t flags)
 {
-	map<pair<uint64_t, size_t>, Partition *> perm_map;
+	map<size_t, Partition *> perm_map;
 	list<Partition *> partitions;
 
 	/* Set up the initial partitions
@@ -438,27 +447,21 @@ void DFA::minimize(dfaflags_t flags)
 	int accept_count = 0;
 	int final_accept = 0;
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
-		uint64_t perm_hash = 0;
-		if (flags & DFA_CONTROL_MINIMIZE_HASH_PERMS) {
-			/* make every unique perm create a new partition */
-			perm_hash = ((uint64_t) PACK_AUDIT_CTL((*i)->perms.audit, (*i)->perms.quiet & (*i)->perms.deny)) << 32 |
-				    (uint64_t) (*i)->perms.allow;
-		} else if (!(*i)->perms.is_null()) {
-			/* combine all perms together into a single parition */
-			perm_hash = 1;
-		} /* else not an accept state so 0 for perm_hash */
-		size_t trans_hash = 0;
+		size_t hash = 0;
+		if (!(*i)->perms.is_null())
+			/* combine all states carrying accept info together
+			   into an single initial parition */
+			hash = 1;
 		if (flags & DFA_CONTROL_MINIMIZE_HASH_TRANS)
-			trans_hash = hash_trans(*i);
-		pair<uint64_t, size_t> group = make_pair(perm_hash, trans_hash);
-		map<pair<uint64_t, size_t>, Partition *>::iterator p = perm_map.find(group);
+			hash |= hash_trans(*i) << 1;
+		map<size_t, Partition *>::iterator p = perm_map.find(hash);
 		if (p == perm_map.end()) {
 			Partition *part = new Partition();
 			part->push_back(*i);
-			perm_map.insert(make_pair(group, part));
+			perm_map.insert(make_pair(hash, part));
 			partitions.push_back(part);
 			(*i)->partition = part;
-			if (perm_hash)
+			if (hash & 1)
 				accept_count++;
 		} else {
 			(*i)->partition = p->second;
@@ -470,6 +473,7 @@ void DFA::minimize(dfaflags_t flags)
 			     << partitions.size() << "\tinit " << partitions.size()
 			     << " (accept " << accept_count << ")\r";
 	}
+
 	/* perm_map is no longer needed so free the memory it is using.
 	 * Don't remove - doing it manually here helps reduce peak memory usage.
 	 */
@@ -569,12 +573,9 @@ void DFA::minimize(dfaflags_t flags)
 			if (flags & DFA_DUMP_MIN_PARTS)
 				cerr << **i << ", ";
 			(*i)->label = -1;
-			rep->perms.allow |= (*i)->perms.allow;
-			rep->perms.deny |= (*i)->perms.deny;
-			rep->perms.audit |= (*i)->perms.audit;
-			rep->perms.quiet |= (*i)->perms.quiet;
+			rep->perms.add((*i)->perms);
 		}
-		if (rep->perms.allow || rep->perms.audit || rep->perms.quiet)
+		if (!rep->perms.is_null())
 			final_accept++;
 //if ((*p)->size() > 1)
 //cerr << "\n";
@@ -856,8 +857,8 @@ static inline int diff_qualifiers(uint32_t perm1, uint32_t perm2)
 int accept_perms(NodeSet *state, perms_t &perms)
 {
 	int error = 0;
-	uint32_t allow = 0, exact_match_allow = 0;
-	uint32_t audit = 0, exact_audit = 0, quiet = 0, deny = 0;
+	uint32_t exact_match_allow = 0;
+	uint32_t exact_audit = 0;
 
 	perms.clear();
 
@@ -876,60 +877,40 @@ int accept_perms(NodeSet *state, perms_t &perms)
 			exact_match_allow |= match->flag;
 			exact_audit |= match->audit;
 		} else if (dynamic_cast<DenyMatchFlag *>(match)) {
-			deny |= match->flag;
-			quiet |= match->audit;
+			perms.deny |= match->flag;
+			perms.quiet |= match->audit;
 		} else {
-			if (!is_merged_x_consistent(allow, match->flag))
+			if (!is_merged_x_consistent(perms.allow, match->flag))
 				error = 1;
-			allow |= match->flag;
-			audit |= match->audit;
+			perms.allow |= match->flag;
+			perms.audit |= match->audit;
 		}
 	}
 
-//if (audit || quiet)
-//fprintf(stderr, "allow: 0x%x, audit: 0x%x exact: 0x%x eaud: 0x%x deny: 0x%x quiet: 0x%x\n", allow, audit, exact_match_allow, exact_audit, deny, quiet);
-
-	allow |= exact_match_allow & ~(AA_USER_EXEC_TYPE | AA_OTHER_EXEC_TYPE);
+	perms.allow |= exact_match_allow & ~(ALL_AA_EXEC_TYPE);
 
 	if (exact_match_allow & AA_USER_EXEC_TYPE) {
-		allow = (exact_match_allow & AA_USER_EXEC_TYPE) |
-			(allow & ~AA_USER_EXEC_TYPE);
-		audit = (exact_audit & AA_USER_EXEC_TYPE) |
-			(audit & ~AA_USER_EXEC_TYPE);
+		perms.allow = (exact_match_allow & AA_USER_EXEC_TYPE) |
+			(perms.allow & ~AA_USER_EXEC_TYPE);
+		perms.audit = (exact_audit & AA_USER_EXEC_TYPE) |
+			(perms.audit & ~AA_USER_EXEC_TYPE);
+		perms.exact = AA_USER_EXEC_TYPE;
 	}
 	if (exact_match_allow & AA_OTHER_EXEC_TYPE) {
-		allow = (exact_match_allow & AA_OTHER_EXEC_TYPE) |
-			(allow & ~AA_OTHER_EXEC_TYPE);
-		audit = (exact_audit & AA_OTHER_EXEC_TYPE) |
-			(audit & ~AA_OTHER_EXEC_TYPE);
+		perms.allow = (exact_match_allow & AA_OTHER_EXEC_TYPE) |
+			(perms.allow & ~AA_OTHER_EXEC_TYPE);
+		perms.audit = (exact_audit & AA_OTHER_EXEC_TYPE) |
+			(perms.audit & ~AA_OTHER_EXEC_TYPE);
+		perms.exact |= AA_OTHER_EXEC_TYPE;
 	}
-	if (allow & AA_USER_EXEC & deny)
-		allow &= ~AA_USER_EXEC_TYPE;
+	if (AA_USER_EXEC & perms.deny)
+		perms.deny |= AA_USER_EXEC_TYPE;
 
-	if (allow & AA_OTHER_EXEC & deny)
-		allow &= ~AA_OTHER_EXEC_TYPE;
+	if (AA_OTHER_EXEC & perms.deny)
+		perms.deny |= AA_OTHER_EXEC_TYPE;
 
-	allow &= ~deny;
-
-	perms.allow = allow & ~deny;
-	perms.deny = deny;
-	perms.audit = audit;
-	perms.quiet = quiet & deny;
-
-// if (allow & AA_ERROR_BIT) {
-//     fprintf(stderr, "error bit 0x%x\n", allow);
-//     exit(255);
-//}
-
-	//if (allow & AA_EXEC_BITS)
-	//fprintf(stderr, "accept perm: 0x%x\n", allow);
-	/*
-	   if (allow & ~AA_VALID_PERMS)
-	   yyerror(_("Internal error accumulated invalid perm 0x%llx\n"), allow);
-	 */
-
-//if (allow & AA_CHANGE_HAT)
-//     fprintf(stderr, "change_hat 0x%x\n", allow);
+	perms.allow &= ~perms.deny;
+	perms.quiet &= perms.deny;
 
 	if (error)
 		fprintf(stderr, "profile has merged rule with conflicting x modifiers\n");

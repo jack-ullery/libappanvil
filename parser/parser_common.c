@@ -34,7 +34,7 @@ int names_only = 0;
 int current_lineno = 1;
 int option = OPTION_ADD;
 
-dfaflags_t dfaflags = DFA_CONTROL_TREE_NORMAL | DFA_CONTROL_TREE_SIMPLE | DFA_CONTROL_MINIMIZE | DFA_CONTROL_MINIMIZE_HASH_TRANS | DFA_CONTROL_MINIMIZE_HASH_PERMS;
+dfaflags_t dfaflags = DFA_CONTROL_TREE_NORMAL | DFA_CONTROL_TREE_SIMPLE | DFA_CONTROL_MINIMIZE | DFA_CONTROL_MINIMIZE_HASH_TRANS;
 
 char *subdomainbase = NULL;
 char *progname = __FILE__;

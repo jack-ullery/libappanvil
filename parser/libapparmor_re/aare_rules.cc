@@ -270,6 +270,21 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, size_t *size,
 			if (flags & DFA_DUMP_MIN_UNIQ_PERMS)
 				dfa.dump_uniq_perms("minimized dfa");
 		}
+
+		if (dfa.apply_and_clear_deny() && flags & DFA_CONTROL_MINIMIZE) {
+			/* Do a second minimization pass as removal of deny
+			 * information has moved some states from accepting
+			 * to none accepting partitions
+			 *
+			 * TODO: add this as a tail pass to minimization
+			 *       so we don't need to do a full second pass
+			 */
+			dfa.minimize(flags);
+
+			if (flags & DFA_DUMP_MIN_UNIQ_PERMS)
+				dfa.dump_uniq_perms("minimized dfa");
+		}
+
 		if (flags & DFA_CONTROL_REMOVE_UNREACHABLE)
 			dfa.remove_unreachable(flags);
 

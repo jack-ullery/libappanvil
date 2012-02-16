@@ -37,9 +37,11 @@ class State;
 typedef map<uchar, State *> StateTrans;
 typedef list<State *> Partition;
 
+#include "../immunix.h"
+
 class perms_t {
 public:
-	perms_t(void): allow(0), deny(0), audit(0), quiet(0) { };
+	perms_t(void) throw(int): allow(0), deny(0), audit(0), quiet(0), exact(0) { };
 
 	bool is_null(void) { return !(allow | deny | audit | quiet); }
 
@@ -47,9 +49,59 @@ public:
 	void add(perms_t &rhs)
 	{
 		deny |= rhs.deny;
-		allow = (allow | rhs.audit) & ~deny;
+
+		if (!is_merged_x_consistent(allow & AA_USER_EXEC_TYPE,
+					    rhs.allow & AA_USER_EXEC_TYPE)) {
+			if ((exact & AA_USER_EXEC_TYPE) &&
+			    !(rhs.exact & AA_USER_EXEC_TYPE)) {
+				/* do nothing */
+			} else if ((rhs.exact & AA_USER_EXEC_TYPE) &&
+				   !(exact & AA_USER_EXEC_TYPE)) {
+				allow = (allow & ~AA_USER_EXEC_TYPE) |
+					(rhs.allow & AA_USER_EXEC_TYPE);
+			} else
+				throw 1;
+		} else
+			allow |= rhs.allow & AA_USER_EXEC_TYPE;
+
+		if (!is_merged_x_consistent(allow & AA_OTHER_EXEC_TYPE,
+					    rhs.allow & AA_OTHER_EXEC_TYPE)) {
+			if ((exact & AA_OTHER_EXEC_TYPE) &&
+			    !(rhs.exact & AA_OTHER_EXEC_TYPE)) {
+				/* do nothing */
+			} else if ((rhs.exact & AA_OTHER_EXEC_TYPE) &&
+				   !(exact & AA_OTHER_EXEC_TYPE)) {
+				allow = (allow & ~AA_OTHER_EXEC_TYPE) |
+					(rhs.allow & AA_OTHER_EXEC_TYPE);
+			} else
+				throw 1;
+		} else
+			allow |= rhs.allow & AA_OTHER_EXEC_TYPE;
+
+
+		allow = (allow | (rhs.allow & ~ALL_AA_EXEC_TYPE)) & ~deny;
 		audit |= rhs.audit;
 		quiet = (quiet | rhs.quiet) & deny;
+		
+		/*
+		if (exec & AA_USER_EXEC_TYPE &&
+		    (exec & AA_USER_EXEC_TYPE) != (allow & AA_USER_EXEC_TYPE))
+			throw 1;
+		if (exec & AA_OTHER_EXEC_TYPE &&
+		    (exec & AA_OTHER_EXEC_TYPE) != (allow & AA_OTHER_EXEC_TYPE))
+			throw 1;
+		*/
+	}
+
+	int apply_and_clear_deny(void)
+	{
+		if (deny) {
+			allow &= ~deny;
+			quiet &= deny;
+			deny = 0;
+			return is_null();
+		}
+		return 0;
 	}
 
 	bool operator<(perms_t const &rhs)const
@@ -63,7 +115,7 @@ public:
 		return quiet < rhs.quiet;
 	}
 
-	uint32_t allow, deny, audit, quiet;
+	uint32_t allow, deny, audit, quiet, exact;
 };
 
 int accept_perms(NodeSet *state, perms_t &perms);
@@ -311,6 +363,8 @@ public:
 		return otherwise;
 	};
 
+	int apply_and_clear_deny(void) { return perms.apply_and_clear_deny(); }
+
 	int label;
 	perms_t perms;
 	StateTrans trans;
@@ -385,6 +439,7 @@ public:
 	bool same_mappings(State *s1, State *s2);
 	size_t hash_trans(State *s);
 	void minimize(dfaflags_t flags);
+	int apply_and_clear_deny(void);
 	void dump(ostream &os);
 	void dump_dot_graph(ostream &os);
 	void dump_uniq_perms(const char *s);
