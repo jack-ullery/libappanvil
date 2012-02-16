@@ -294,6 +294,33 @@ int process_hat_regex(struct codomain *cod)
 	return 0;
 }
 
+static void __process_policydb(const void *nodep, const VISIT value,
+			       const int __unused depth)
+{
+	struct codomain **t = (struct codomain **) nodep;
+
+	if (value == preorder || value == endorder)
+		return;
+
+	if (process_policydb(*t) != 0) {
+		PERROR(_("ERROR processing policydb rules for profile %s, failed to load\n"),
+		       (*t)->name);
+		exit(1);
+	}
+}
+
+int post_process_policydb(void)
+{
+	twalk(policy_list, __process_policydb);
+	return 0;
+}
+
+int process_hat_policydb(struct codomain *cod)
+{
+	twalk(cod->hat_table, __process_policydb);
+	return 0;
+}
+
 static void __process_variables(const void *nodep, const VISIT value,
 				const int __unused depth)
 {
@@ -706,6 +733,15 @@ int post_process_policy(int debug_only)
 		}
 	}
 
+	if (!debug_only) {
+		retval = post_process_policydb();
+		if (retval != 0) {
+			PERROR(_("%s: Errors found during policydb postprocess.  Aborting.\n"),
+			       progname);
+			return retval;
+		}
+	}
+
 	return retval;
 }
 
@@ -731,6 +767,10 @@ void free_policy(struct codomain *cod)
 		aare_delete_ruleset(cod->dfarules);
 	if (cod->dfa)
 		free(cod->dfa);
+	if (cod->policy_rules)
+		aare_delete_ruleset(cod->policy_rules);
+	if (cod->policy_dfa)
+		free(cod->policy_dfa);
 	if (cod->name)
 		free(cod->name);
 	if (cod->attachment)

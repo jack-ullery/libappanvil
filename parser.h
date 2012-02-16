@@ -136,6 +136,11 @@ struct codomain {
 	int dfarule_count;
 	void *dfa;
 	size_t dfa_size;
+
+	aare_ruleset_t *policy_rules;
+	int policy_rule_count;
+	void *policy_dfa;
+	size_t policy_dfa_size;
 };
 
 struct sd_hat {
@@ -275,6 +280,8 @@ extern int process_regex(struct codomain *cod);
 extern int post_process_entry(struct cod_entry *entry);
 extern void reset_regex(void);
 
+extern int process_policydb(struct codomain *cod);
+
 /* parser_variable.c */
 extern int process_variables(struct codomain *cod);
 extern struct var_string *split_out_var(char *string);
@@ -348,6 +355,7 @@ extern void post_process_nt_entries(struct codomain *cod);
 extern int post_process_policy(int debug_only);
 extern int process_hat_regex(struct codomain *cod);
 extern int process_hat_variables(struct codomain *cod);
+extern int process_hat_policydb(struct codomain *cod);
 extern int post_merge_rules(void);
 extern int merge_hat_rules(struct codomain *cod);
 extern struct codomain *merge_policy(struct codomain *a, struct codomain *b);
