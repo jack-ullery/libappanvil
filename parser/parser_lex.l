@@ -179,11 +179,17 @@ MODE_CHARS 	([RrWwaLlMmkXx])|(([Pp]|[Cc])[Xx])|(([Pp]|[Cc])?([IiUu])[Xx])
 MODES		{MODE_CHARS}+
 WS		[[:blank:]]
 NUMBER		[[:digit:]]+
-ID 		[^ \t\n"!,]|(,[^ \t\n"!])
-POST_VAR_ID 	[^ =\+\t\n"!,]|(,[^ =\+\t\n"!])
-IP		{NUMBER}\.{NUMBER}\.{NUMBER}\.{NUMBER}
+
+ID_CHARS	[^ \t\n"!,]
+ID 		{ID_CHARS}|(,{ID_CHARS})
+IDS		{ID}+
+POST_VAR_ID_CHARS	[^ \t\n"!,]{-}[=\+]
+POST_VAR_ID 	{POST_VAR_ID_CHARS}|(,{POST_VAR_ID_CHARS})
+
 ALLOWED_QUOTED_ID 	[^\0"]|\\\"
 QUOTED_ID	\"{ALLOWED_QUOTED_ID}*\"
+
+IP		{NUMBER}\.{NUMBER}\.{NUMBER}\.{NUMBER}
 
 HAT		hat{WS}*
 PROFILE		profile{WS}*
@@ -246,9 +252,9 @@ LT_EQUAL	<=
 }
 
 <SUB_NAME>{
-	({ID}+|{QUOTED_ID})	{
+	({IDS}|{QUOTED_ID})	{
 			  /* Ugh, this is a gross hack. I used to use
-			   * {ID}+ to match all TOK_IDs, but that would
+			   * {IDS} to match all TOK_IDs, but that would
 			   * also match TOK_MODE + TOK_END_OF_RULE
 			   * without any spaces in between (because it's
 			   * a longer match). So now, when I want to
@@ -311,7 +317,7 @@ LT_EQUAL	<=
 <ASSIGN_MODE>{
 	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
 
-	({ID}+|{QUOTED_ID})		{
+	({IDS}|{QUOTED_ID})		{
 			DUMP_PREPROCESS;
 			yylval.var_val = processid(yytext, yyleng);
 			PDEBUG("Found assignment value: \"%s\"\n", yylval.var_val);
@@ -341,7 +347,7 @@ LT_EQUAL	<=
 <NETWORK_MODE>{
 	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
 
-	{ID}+		{
+	{IDS}		{
 			DUMP_PREPROCESS;
 			yylval.id = strdup(yytext);
 			return TOK_ID;
@@ -371,9 +377,9 @@ LT_EQUAL	<=
 			return TOK_ARROW;
 			}
 
-	({ID}+|{QUOTED_ID})	{
+	({IDS}|{QUOTED_ID})	{
 			  /* Ugh, this is a gross hack. I used to use
-			   * {ID}+ to match all TOK_IDs, but that would
+			   * {IDS} to match all TOK_IDs, but that would
 			   * also match TOK_MODE + TOK_END_OF_RULE
 			   * without any spaces in between (because it's
 			   * a longer match). So now, when I want to
