@@ -19,6 +19,9 @@
  *   Ltd.
  */
 
+#ifndef __AA_PARSER_H
+#define __AA_PARSER_H
+
 #include <netinet/in.h>
 #include <sys/resource.h>
 #include "immunix.h"
@@ -397,3 +400,5 @@ void yyerror(char *msg, ...)
         }
 
 #endif
+
+#endif /** __AA_PARSER_H */
