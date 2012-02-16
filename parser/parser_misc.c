@@ -77,6 +77,7 @@ static struct keyword_table keyword_table[] = {
 	{"alias",		TOK_ALIAS},
 	{"rewrite",		TOK_ALIAS},
 	{"ptrace",		TOK_PTRACE},
+	{"file",		TOK_FILE},
 	/* terminate */
 	{NULL, 0}
 };

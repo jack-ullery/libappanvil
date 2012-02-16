@@ -116,6 +116,7 @@ void add_local_entry(struct codomain *cod);
 %token TOK_OPENPAREN
 %token TOK_CLOSEPAREN
 %token TOK_COMMA
+%token TOK_FILE
 
  /* rlimits */
 %token TOK_RLIMIT
@@ -175,6 +176,10 @@ void add_local_entry(struct codomain *cod);
 %type <cod>	cond_rule
 %type <network_entry> network_rule
 %type <user_entry> rule
+%type <user_entry> file_rule
+%type <user_entry> file_rule_tail
+%type <user_entry> link_rule
+%type <user_entry> ptrace_rule
 %type <user_entry> frule
 %type <flags>	flags
 %type <flags>	flagvals
@@ -197,6 +202,7 @@ void add_local_entry(struct codomain *cod);
 %type <id>	opt_id
 %type <transition> opt_named_transition
 %type <boolean> opt_unsafe
+%type <boolean> opt_file
 %%
 
 
@@ -891,24 +897,16 @@ opt_named_transition:
 		$$.name = $5;
 	};
 
+rule: file_rule { $$ = $1; }
+	| link_rule { $$ = $1; }
+	| ptrace_rule {$$ = $1; }
+
 opt_unsafe: { /* nothing */ $$ = 0; }
 	| TOK_UNSAFE { $$ = 1; };
 	| TOK_SAFE { $$ = 2; };
 
-rule:	opt_unsafe frule
-	{
-		if ($1) {
-			if (!($2->mode & AA_EXEC_BITS))
-				yyerror(_("unsafe rule missing exec permissions"));
-			if ($1 == 1) {
-				$2->mode |= (($2->mode & AA_EXEC_BITS) << 8) &
-					 ALL_AA_EXEC_UNSAFE;
-			}
-			else if ($1 == 2)
-				$2->mode &= ~ALL_AA_EXEC_UNSAFE;
-		}
-		$$ = $2;
-	};
+opt_file: { /* nothing */ $$ = 0; }
+	| TOK_FILE { $$ = 1; }
 
 frule:	id_or_var file_mode opt_named_transition TOK_END_OF_RULE
 	{
@@ -932,16 +930,43 @@ frule:	file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE
 		}
  	};
 
-rule:  opt_unsafe id_or_var file_mode id_or_var
+file_rule: TOK_FILE TOK_END_OF_RULE
+	{
+		char *path = strdup("/**");
+		if (!path)
+			yyerror(_("Memory allocation error."));
+		$$ = do_file_rule(NULL, path, ((AA_BASE_PERMS & ~AA_EXEC_TYPE) |
+					       (AA_EXEC_INHERIT | AA_MAY_EXEC)),
+				  NULL, NULL);
+	}
+	| opt_file file_rule_tail { $$ = $2; }
+
+
+file_rule_tail: opt_unsafe frule
+	{
+		if ($1) {
+			if (!($2->mode & AA_EXEC_BITS))
+				yyerror(_("unsafe rule missing exec permissions"));
+			if ($1 == 1) {
+				$2->mode |= (($2->mode & AA_EXEC_BITS) << 8) &
+					 ALL_AA_EXEC_UNSAFE;
+			}
+			else if ($1 == 2)
+				$2->mode &= ~ALL_AA_EXEC_UNSAFE;
+		}
+		$$ = $2;
+	};
+
+file_rule_tail: opt_unsafe id_or_var file_mode id_or_var
 	{
 		/* Oopsie, we appear to be missing an EOL marker. If we
 		 * were *smart*, we could work around it. Since we're
 		 * obviously not smart, we'll just punt with a more
 		 * sensible error. */
-		yyerror(_("missing an end of line character? (entry: %s)"), $1);
+		yyerror(_("missing an end of line character? (entry: %s)"), $2);
 	};
 
-rule: TOK_LINK opt_subset_flag TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
+link_rule: TOK_LINK opt_subset_flag TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 		PDEBUG("Matched: link tok_id (%s) -> (%s)\n", $3, $5);
@@ -951,7 +976,7 @@ rule: TOK_LINK opt_subset_flag TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
 		$$ = entry;
 	};
 
-rule: TOK_PTRACE TOK_ID TOK_END_OF_RULE
+ptrace_rule: TOK_PTRACE TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 		entry = new_entry(NULL, $2, AA_USER_PTRACE | AA_OTHER_PTRACE, NULL);
@@ -960,7 +985,7 @@ rule: TOK_PTRACE TOK_ID TOK_END_OF_RULE
 		$$ = entry;
 	};
 
-rule: TOK_PTRACE TOK_COLON TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
+ptrace_rule: TOK_PTRACE TOK_COLON TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
 	{
 		struct cod_entry *entry;
 		entry = new_entry($3, $5, AA_USER_PTRACE | AA_OTHER_PTRACE, NULL);
