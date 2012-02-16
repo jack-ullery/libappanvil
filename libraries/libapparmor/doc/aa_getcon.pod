@@ -50,7 +50,7 @@ Link with B<-lapparmor> when compiling.
 The aa_getcon function gets the current AppArmor confinement context for the
 current task.  The confinement context is usually just the name of the AppArmor
 profile restricting the task, but it may include the profile namespace or in
-some cases a set of profile names (known as a stack of profiles).  The returned string *con should be freed using <free()>.
+some cases a set of profile names (known as a stack of profiles).  The returned string *con should be freed using free().
 
 The aa_gettaskcon function is like the aa_getcon function except it will work
 for any arbitrary task in the system.

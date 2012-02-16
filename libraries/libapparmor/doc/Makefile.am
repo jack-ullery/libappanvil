@@ -16,4 +16,5 @@ BUILT_SOURCES = $(man_MANS)
 		--section=2 \
 		--release="AppArmor $(VERSION)" \
 		--center="AppArmor" \
+		--stderr \
 		$< > $@

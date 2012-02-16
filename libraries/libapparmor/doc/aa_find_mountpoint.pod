@@ -38,8 +38,9 @@ Link with B<-lapparmor> when compiling.
 
 =head1 DESCRIPTION
 
-The aa_is_enabled function returns true (1) if apparmor is enabled.  If it
-isn't it sets the errno to reflect the reason it is not enabled and returns 0.
+The aa_is_enabled function returns true (1) if apparmor is enabled.
+If it isn't it sets the errno(3) to reflect the reason it is not
+enabled and returns 0.
 
 The aa_find_mountpoint function finds where the apparmor filesystem is mounted
 on the system, and returns a string containing the mount path.  It is the
@@ -57,9 +58,9 @@ appropriately.
 
 =head1 ERRORS
 
-=over 4
-
 B<aa_is_enabled>
+
+=over 4
 
 =item B<ENOSYS>
 
@@ -84,10 +85,13 @@ Did not have sufficient permissions to determine if AppArmor is enabled.
 
 =item B<EACCES>
 
-+Did not have sufficient permissions to determine if AppArmor is enabled.
+Did not have sufficient permissions to determine if AppArmor is enabled.
 
+=back
 
 B<aa_find_mountpoint>
+
+=over 4
 
 =item B<ENOMEM>
 
@@ -95,7 +99,7 @@ Insufficient memory was available.
 
 =item B<EACCES>
 
-Access to the the required paths was denied.
+Access to the required paths was denied.
 
 =item B<ENOENT>
 

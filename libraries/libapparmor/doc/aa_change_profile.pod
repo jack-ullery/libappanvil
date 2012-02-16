@@ -170,6 +170,7 @@ The output when run:
 
 If /tmp/change_p is to be confined as well, then the following profile can be
 used (in addition to the one for 'i_cant_be_trusted_anymore', above):
+
  # Confine change_p to be able to read /etc/passwd and aa_change_profile()
  # to the 'i_cant_be_trusted_anymore' profile.
  /tmp/change_p {
