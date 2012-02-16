@@ -181,7 +181,6 @@ void add_local_entry(struct codomain *cod);
 %type <flags>	flagval
 %type <cap>	caps
 %type <cap>	capability
-%type <cap>	set_caps
 %type <user_entry> change_profile
 %type <set_var> TOK_SET_VAR
 %type <bool_var> TOK_BOOL_VAR
@@ -673,12 +672,6 @@ rules:	rules opt_audit_flag capability
 		$$ = $1;
 	};
 
-rules: rules set_caps
-	{
-		$1->set_caps |= $2;
-		$$ = $1;
-	};
-
 rules:	rules hat
 	{
 		PDEBUG("Matched: hat rule\n");
@@ -1048,11 +1041,6 @@ change_profile:	TOK_CHANGE_PROFILE TOK_ARROW TOK_COLON TOK_ID TOK_COLON TOK_ID T
 		$$ = entry;
 	};
 
-
-set_caps:	TOK_SET TOK_CAPABILITY caps TOK_END_OF_RULE
-	{
-		$$ = $3;
-	};
 
 capability:	TOK_CAPABILITY caps TOK_END_OF_RULE
 	{
