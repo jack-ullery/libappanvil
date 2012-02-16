@@ -1080,7 +1080,7 @@ caps: { /* nothing */ $$ = 0; }
 %%
 #define MAXBUFSIZE 4096
 
-void yyerror(char *msg, ...)
+void yyerror(const char *msg, ...)
 {
 	va_list arg;
 	char buf[MAXBUFSIZE];
