@@ -271,7 +271,9 @@ extern "C" void *aare_create_dfa(aare_ruleset_t *rules, size_t *size,
 				dfa.dump_uniq_perms("minimized dfa");
 		}
 
-		if (dfa.apply_and_clear_deny() && flags & DFA_CONTROL_MINIMIZE) {
+		if (flags & DFA_CONTROL_FILTER_DENY &&
+		    flags & DFA_CONTROL_MINIMIZE &&
+		    dfa.apply_and_clear_deny()) {
 			/* Do a second minimization pass as removal of deny
 			 * information has moved some states from accepting
 			 * to none accepting partitions
