@@ -213,6 +213,7 @@ ARROW		->
 LT_EQUAL	<=
 
 %x SUB_NAME
+%x EXTCOND_MODE
 %x NETWORK_MODE
 %x LIST_VAL_MODE
 %x ASSIGN_MODE
@@ -304,6 +305,34 @@ LT_EQUAL	<=
 			/* Something we didn't expect */
 			yyerror(_("Found unexpected character: '%s'"), yytext);
 			}
+}
+
+<EXTCOND_MODE>{
+	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
+
+	{EQUALS}	{
+			DUMP_PREPROCESS;
+			return TOK_EQUALS;
+		}
+
+	{OPEN_PAREN}	{
+			DUMP_PREPROCESS;
+			PDEBUG("extcond listv\n");
+			/* Don't push state here as this is a transition
+			 * start condition and we want to return to the start
+			 * condition that invoked <EXTCOND_MODE> when
+			 * SUB_NAME is done
+			 */
+			BEGIN(LIST_VAL_MODE);
+			return TOK_OPENPAREN;
+		}
+
+	[^\n]	{
+			DUMP_PREPROCESS;
+			/* Something we didn't expect */
+			yyerror(_("Found unexpected character: '%s'"), yytext);
+		}
+
 }
 
 <ASSIGN_MODE>{
@@ -534,6 +563,18 @@ LT_EQUAL	<=
 			PDEBUG("listval (\n");
 			yy_push_state(LIST_VAL_MODE);
 			return TOK_OPENPAREN;
+			}
+
+{VARIABLE_NAME}/{WS}*={WS}*	{
+				/* we match to the = in the lexer so that
+				 * can switch scanner state.  By the time
+				 * the parser see the = it may be to late
+				 * as bison may have requested the next
+				 * token from the scanner
+				 */
+				yylval.id = processid(yytext, yyleng);
+				yy_push_state(EXTCOND_MODE);
+				return TOK_CONDID;
 			}
 
 {VARIABLE_NAME}		{
