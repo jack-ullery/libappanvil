@@ -54,8 +54,6 @@ struct keyword_table {
 };
 
 static struct keyword_table keyword_table[] = {
-	/* flags */
-	{"flags",		TOK_FLAGS},
 	/* network */
 	{"network",		TOK_NETWORK},
 	/* misc keywords */

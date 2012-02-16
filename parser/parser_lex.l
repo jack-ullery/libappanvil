@@ -185,12 +185,14 @@ ID 		{ID_CHARS}|(,{ID_CHARS})
 IDS		{ID}+
 POST_VAR_ID_CHARS	[^ \t\n"!,]{-}[=\+]
 POST_VAR_ID 	{POST_VAR_ID_CHARS}|(,{POST_VAR_ID_CHARS})
-
+LIST_VALUE_ID_CHARS	[^ \t\n"!,]{-}[()]
+LIST_VALUE_ID	{LIST_VALUE_ID_CHARS}+
 ALLOWED_QUOTED_ID 	[^\0"]|\\\"
 QUOTED_ID	\"{ALLOWED_QUOTED_ID}*\"
 
 IP		{NUMBER}\.{NUMBER}\.{NUMBER}\.{NUMBER}
 
+FLAGS          flags{WS}*=?{WS}*
 HAT		hat{WS}*
 PROFILE		profile{WS}*
 KEYWORD         [[:alpha:]_]+
@@ -204,7 +206,7 @@ QPATHNAME	\"(\/|{SET_VAR_PREFIX})([^\0"]|\\\")*\"
 
 OPEN_PAREN 	\(
 CLOSE_PAREN	\)
-FLAGSEP		\,
+COMMA		\,
 EQUALS		=
 ADD_ASSIGN	\+=
 ARROW		->
@@ -212,7 +214,7 @@ LT_EQUAL	<=
 
 %x SUB_NAME
 %x NETWORK_MODE
-%x FLAGS_MODE
+%x LIST_VAL_MODE
 %x ASSIGN_MODE
 %x RLIMIT_MODE
 %x CHANGE_PROFILE_MODE
@@ -274,37 +276,27 @@ LT_EQUAL	<=
 		}
 }
 
-<FLAGS_MODE>{
-	{OPEN_PAREN}	{
-			DUMP_PREPROCESS;
-			PDEBUG("FLag (\n");
-			return TOK_OPENPAREN;
-			}
+<LIST_VAL_MODE>{
 	{CLOSE_PAREN}	{
 			DUMP_PREPROCESS;
-			PDEBUG("Flag )\n");
+			PDEBUG("listval: )\n");
 			yy_pop_state();
 			return TOK_CLOSEPAREN;
 			}
 
 	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
 
-	{FLAGSEP}	{
+	{COMMA}	{
 			DUMP_PREPROCESS;
-			PDEBUG("Flag , \n");
-			return TOK_FLAG_SEP;
+			PDEBUG("listval: , \n");
+			/* East comma, its an optional separator */
 			}
 
-	{EQUALS}	{
+	({LIST_VALUE_ID}|{QUOTED_ID})	{
 			DUMP_PREPROCESS;
-			PDEBUG("Flag = \n");
-			return TOK_EQUALS;
-			}
-	{KEYWORD}	{
-			DUMP_PREPROCESS;
-			yylval.flag_id = strdup(yytext);
-			PDEBUG("Found flag: \"%s\"\n", yylval.flag_id);
-			return TOK_FLAG_ID;
+			yylval.id = processid(yytext, yyleng);
+			PDEBUG("listval: \"%s\"\n", yylval.id);
+			return TOK_VALUE;
 			}
 
 	[^\n]		{
@@ -514,6 +506,11 @@ LT_EQUAL	<=
 			return TOK_MODE;
 			}
 
+{FLAGS}			{
+			DUMP_PREPROCESS;
+			return TOK_FLAGS;
+			}
+
 {HAT}			{
 			DUMP_PREPROCESS;
 			yy_push_state(SUB_NAME);
@@ -534,8 +531,8 @@ LT_EQUAL	<=
 
 {OPEN_PAREN}	{
 			DUMP_PREPROCESS;
-			PDEBUG("FLag (\n");
-			yy_push_state(FLAGS_MODE);
+			PDEBUG("listval (\n");
+			yy_push_state(LIST_VAL_MODE);
 			return TOK_OPENPAREN;
 			}
 
@@ -550,9 +547,6 @@ LT_EQUAL	<=
 				yylval.id = processunquoted(yytext, yyleng);
 				PDEBUG("Found (var) id: \"%s\"\n", yylval.id);
 				return TOK_ID;
-				break;
-			case TOK_FLAGS:
-				yy_push_state(FLAGS_MODE);
 				break;
 			case TOK_RLIMIT:
 				yy_push_state(RLIMIT_MODE);
