@@ -37,7 +37,36 @@ class State;
 typedef map<uchar, State *> StateTrans;
 typedef list<State *> Partition;
 
-uint32_t accept_perms(NodeSet *state, uint32_t *audit_ctl, int *error);
+class perms_t {
+public:
+	perms_t(void): allow(0), deny(0), audit(0), quiet(0) { };
+
+	bool is_null(void) { return !(allow | deny | audit | quiet); }
+
+	void clear(void) { allow = deny = audit = quiet = 0; }
+	void add(perms_t &rhs)
+	{
+		deny |= rhs.deny;
+		allow = (allow | rhs.audit) & ~deny;
+		audit |= rhs.audit;
+		quiet = (quiet | rhs.quiet) & deny;
+	}
+
+	bool operator<(perms_t const &rhs)const
+	{
+		if (allow < rhs.allow)
+			return allow < rhs.allow;
+		if (deny < rhs.deny)
+			return deny < rhs.deny;
+		if (audit < rhs.audit)
+			return audit < rhs.audit;
+		return quiet < rhs.quiet;
+	}
+
+	uint32_t allow, deny, audit, quiet;
+};
+
+int accept_perms(NodeSet *state, perms_t &perms);
 
 /*
  * hashedNodes - for efficient set comparison
@@ -256,7 +285,7 @@ public:
 class State {
 public:
 	State(int l, ProtoState &n, State *other) throw(int):
-		label(l), audit(0), accept(0), trans()
+	label(l), perms(), trans()
 	{
 		int error;
 
@@ -268,7 +297,7 @@ public:
 		proto = n;
 
 		/* Compute permissions associated with the State. */
-		accept = accept_perms(n.anodes, &audit, &error);
+		error = accept_perms(n.anodes, perms);
 		if (error) {
 			//cerr << "Failing on accept perms " << error << "\n";
 			throw error;
@@ -283,7 +312,7 @@ public:
 	};
 
 	int label;
-	uint32_t audit, accept;
+	perms_t perms;
 	StateTrans trans;
 	State *otherwise;
 
