@@ -611,6 +611,48 @@ out:
 	return error;
 }
 
+int post_process_policydb_ents(struct codomain *cod)
+{
+	int ret = TRUE;
+	int count = 0;
+
+	/* Add fns for rules that should be added to policydb here */
+
+	cod->policy_rule_count = count;
+	return ret;
+}
+
+int process_policydb(struct codomain *cod)
+{
+	int error = -1;
+
+	if (regex_type == AARE_DFA) {
+		cod->policy_rules = aare_new_ruleset(0);
+		if (!cod->policy_rules)
+			goto out;
+	}
+	if (!post_process_policydb_ents(cod))
+		goto out;
+
+	if (regex_type == AARE_DFA && cod->policy_rule_count > 0) {
+		cod->policy_dfa = aare_create_dfa(cod->policy_rules,
+						  &cod->policy_dfa_size,
+						  dfaflags);
+		aare_delete_ruleset(cod->policy_rules);
+		cod->policy_rules = NULL;
+		if (!cod->policy_dfa)
+			goto out;
+	}
+
+	if (process_hat_policydb(cod) != 0)
+		goto out;
+
+	error = 0;
+
+out:
+	return error;
+}
+
 void reset_regex(void)
 {
 	aare_reset_matchflags();

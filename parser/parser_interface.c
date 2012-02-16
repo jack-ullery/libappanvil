@@ -59,6 +59,7 @@
 
 #define SUBDOMAIN_INTERFACE_VERSION 2
 #define SUBDOMAIN_INTERFACE_DFA_VERSION 5
+#define SUBDOMAIN_INTERFACE_POLICY_DB 16
 
 int sd_serialize_codomain(int option, struct codomain *cod);
 
@@ -654,6 +655,15 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 	} else if (profile->network_allowed)
 		pwarn(_("profile %s network rules not enforced\n"), profile->name);
 
+	if (profile->policy_dfa && regex_type == AARE_DFA) {
+		if (!sd_write_struct(p, "policydb"))
+			return 0;
+		if (!sd_serialize_dfa(p, profile->policy_dfa, profile->policy_dfa_size))
+			return 0;
+		if (!sd_write_structend(p))
+			return 0;
+	}
+
 	/* either have a single dfa or lists of different entry types */
 	if (regex_type == AARE_DFA) {
 		if (!sd_serialize_dfa(p, profile->dfa, profile->dfa_size))
@@ -685,9 +695,13 @@ int sd_serialize_top_profile(sd_serialize *p, struct codomain *profile)
 {
 	int version;
 
-	if (regex_type == AARE_DFA)
-		version = SUBDOMAIN_INTERFACE_DFA_VERSION;
-	else
+	if (regex_type == AARE_DFA) {
+		/* Not yet
+		if (profile->policy_dfa)
+			version = SUBDOMAIN_INTERFACE_POLICYDB;
+		else */
+			version = SUBDOMAIN_INTERFACE_DFA_VERSION;
+	} else
 		version = SUBDOMAIN_INTERFACE_VERSION;
 
 
