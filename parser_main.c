@@ -228,8 +228,6 @@ optflag_table_t optflag_table[] = {
 	{ 2, "expr-right-simplify", "right simplification first",
 	  DFA_CONTROL_TREE_LEFT },
 	{ 1, "minimize", "dfa state minimization", DFA_CONTROL_MINIMIZE },
-	{ 1, "hash-perms", "minimization - hash permissions during setup",
-	  DFA_CONTROL_MINIMIZE_HASH_PERMS },
 	{ 1, "hash-trans", "minimization - hash transitions during setup",
 	  DFA_CONTROL_MINIMIZE_HASH_TRANS },
 	{ 1, "remove-unreachable", "dfa unreachable state removal",
