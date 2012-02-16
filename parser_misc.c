@@ -939,6 +939,41 @@ void debug_cod_list(struct codomain *cod)
 	dump_policy_hats(cod);
 }
 
+struct value_list *new_value_list(char *value)
+{
+	struct value_list *val = calloc(1, sizeof(struct value_list));
+	if (val)
+		val->value = value;
+	return val;
+}
+
+void free_value_list(struct value_list *list)
+{
+	struct value_list *next;
+
+	while (list) {
+		next = list->next;
+		if (list->value)
+			free(list->value);
+		free(list);
+		list = next;
+	}
+}
+
+void print_value_list(struct value_list *list)
+{
+	struct value_list *entry;
+
+	if (!list)
+		return;
+
+	fprintf(stderr, "%s", list->value);
+	list = list->next;
+	list_for_each(list, entry) {
+		fprintf(stderr, ", %s", entry->value);
+	}
+}
+
 #ifdef UNIT_TEST
 int test_str_to_boolean(void)
 {

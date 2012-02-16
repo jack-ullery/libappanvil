@@ -64,14 +64,8 @@
 
 #define CAP_TO_MASK(x) (1ull << (x))
 
-struct value_list {
-	char *value;
-	struct value_list *next;
-};
-
 int parser_token = 0;
 
-void free_value_list(struct value_list *list);
 struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 			       char *link_id, char *nt);
 
@@ -377,26 +371,23 @@ varassign:	TOK_BOOL_VAR TOK_EQUALS TOK_VALUE
 
 valuelist:	TOK_VALUE
 	{
-		struct value_list *new = calloc(1, sizeof(struct value_list));
-		if (!new)
+		struct value_list *val = new_value_list($1);
+		if (!val)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("Matched: value (%s)\n", $1);
 
-		new->value = $1;
-		new->next = NULL;
-		$$ = new;
+		$$ = val;
 	}
 
 valuelist:	valuelist TOK_VALUE
 	{
-		struct value_list *new = calloc(1, sizeof(struct value_list));
-		if (!new)
+		struct value_list *val = new_value_list($2);
+		if (!val)
 			yyerror(_("Memory allocation error."));
 		PDEBUG("Matched: value list\n");
 
-		new->value = $2;
-		new->next = $1;
-		$$ = new;
+		val->next = $1;
+		$$ = val;
 	}
 
 flags:	{ /* nothing */
@@ -1112,19 +1103,6 @@ void yyerror(char *msg, ...)
 	}
 
 	exit(1);
-}
-
-void free_value_list(struct value_list *list)
-{
-	struct value_list *next;
-
-	while (list) {
-		next = list->next;
-		if (list->value)
-			free(list->value);
-		free(list);
-		list = next;
-	}
 }
 
 struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
