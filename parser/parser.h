@@ -49,6 +49,12 @@ struct cod_pattern {
 	char *regex;		// posix regex
 };
 
+struct value_list {
+	char *value;
+
+	struct value_list *next;
+};
+
 struct cod_entry {
 	char *namespace;
 	char *name;
@@ -275,6 +281,9 @@ extern struct var_string *split_out_var(char *string);
 extern void free_var_string(struct var_string *var);
 
 /* parser_misc.c */
+extern struct value_list *new_value_list(char *value);
+extern void free_value_list(struct value_list *list);
+extern void print_value_list(struct value_list *list);
 extern char *processid(char *string, int len);
 extern char *processquoted(char *string, int len);
 extern char *processunquoted(char *string, int len);
