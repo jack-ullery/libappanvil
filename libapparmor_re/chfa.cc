@@ -31,6 +31,7 @@
 
 #include "hfa.h"
 #include "chfa.h"
+#include "../immunix.h"
 
 void CHFA::init_free_list(vector<pair<size_t, size_t> > &free_list,
 				     size_t prev, size_t start)
@@ -112,8 +113,8 @@ CHFA::CHFA(DFA &dfa, map<uchar, uchar> &eq, dfaflags_t flags): eq(eq)
 		for (Partition::iterator i = dfa.states.begin(); i != dfa.states.end(); i++) {
 			if (*i != dfa.nonmatching && *i != dfa.start) {
 				insert_state(free_list, *i, dfa);
-				accept[num.size()] = (*i)->accept;
-				accept2[num.size()] = (*i)->audit;
+				accept[num.size()] = (*i)->perms.allow;
+				accept2[num.size()] = PACK_AUDIT_CTL((*i)->perms.audit, (*i)->perms.quiet & (*i)->perms.deny);
 				num.insert(make_pair(*i, num.size()));
 			}
 			if (flags & (DFA_DUMP_TRANS_PROGRESS)) {
@@ -129,8 +130,8 @@ CHFA::CHFA(DFA &dfa, map<uchar, uchar> &eq, dfaflags_t flags): eq(eq)
 			if (i->second != dfa.nonmatching &&
 			    i->second != dfa.start) {
 				insert_state(free_list, i->second, dfa);
-				accept[num.size()] = i->second->accept;
-				accept2[num.size()] = i->second->audit;
+				accept[num.size()] = i->second->perms.allow;
+				accept2[num.size()] = PACK_AUDIT_CTL(i->second->perms.audit, i->second->perms.quiet & i->second->perms.deny);
 				num.insert(make_pair(i->second, num.size()));
 			}
 			if (flags & (DFA_DUMP_TRANS_PROGRESS)) {
