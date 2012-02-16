@@ -78,6 +78,7 @@ void add_local_entry(struct codomain *cod);
 %}
 
 %token TOK_ID
+%token TOK_CONDID
 %token TOK_CARET
 %token TOK_OPEN
 %token TOK_CLOSE
