@@ -609,15 +609,14 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 
 #define low_caps(X) ((u32) ((X) & 0xffffffff))
 #define high_caps(X) ((u32) (((X) >> 32) & 0xffffffff))
-	allowed_caps = (profile->capabilities | profile->set_caps) &
-		~profile->deny_caps;
+	allowed_caps = (profile->capabilities) & ~profile->deny_caps;
 	if (!sd_write32(p, low_caps(allowed_caps)))
 		return 0;
 	if (!sd_write32(p, low_caps(allowed_caps & profile->audit_caps)))
 		return 0;
 	if (!sd_write32(p, low_caps(profile->deny_caps & profile->quiet_caps)))
 		return 0;
-	if (!sd_write32(p, low_caps(profile->set_caps & ~profile->deny_caps)))
+	if (!sd_write32(p, 0))
 		return 0;
 
 	if (!sd_write_struct(p, "caps64"))
@@ -628,7 +627,7 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 		return 0;
 	if (!sd_write32(p, high_caps(profile->deny_caps & profile->quiet_caps)))
 		return 0;
-	if (!sd_write32(p, high_caps(profile->set_caps & ~profile->deny_caps)))
+	if (!sd_write32(p, 0))
 		return 0;
 	if (!sd_write_structend(p))
 		return 0;

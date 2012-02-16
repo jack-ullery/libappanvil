@@ -912,8 +912,6 @@ void debug_capabilities(struct codomain *cod)
 		__debug_capabilities(cod->deny_caps, "Deny Caps");
 	if (cod->quiet_caps != 0ull)
 		__debug_capabilities(cod->quiet_caps, "Quiet Caps");
-	if (cod->set_caps != 0ull)
-		__debug_capabilities(cod->set_caps, "Set Capabilities");
 }
 
 void debug_cod_list(struct codomain *cod)
