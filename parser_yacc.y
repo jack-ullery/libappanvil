@@ -112,6 +112,7 @@ void add_local_entry(struct codomain *cod);
 %token TOK_PTRACE
 %token TOK_OPENPAREN
 %token TOK_CLOSEPAREN
+%token TOK_COMMA
 
  /* rlimits */
 %token TOK_RLIMIT
@@ -138,8 +139,6 @@ void add_local_entry(struct codomain *cod);
 
 /* debug flag values */
 %token TOK_FLAGS
-%token TOK_FLAG_SEP
-%token TOK_FLAG_ID
 
 %union {
 	char *id;
@@ -176,7 +175,6 @@ void add_local_entry(struct codomain *cod);
 %type <flags>	flags
 %type <flags>	flagvals
 %type <flags>	flagval
-%type <flag_id>	TOK_FLAG_ID
 %type <cap>	caps
 %type <cap>	capability
 %type <cap>	set_caps
@@ -191,6 +189,7 @@ void add_local_entry(struct codomain *cod);
 %type <boolean> opt_audit_flag
 %type <boolean> opt_owner_flag
 %type <boolean> opt_profile_flag
+%type <boolean> opt_flags
 %type <id>	opt_namespace
 %type <id>	opt_id
 %type <transition> opt_named_transition
@@ -397,21 +396,19 @@ flags:	{ /* nothing */
 		$$ = fv;
 	};
 
-flags:	TOK_FLAGS TOK_EQUALS TOK_OPENPAREN flagvals TOK_CLOSEPAREN
+opt_flags: { /* nothing */ $$ = 0; }
+	| TOK_FLAGS { $$ = 1; }
+
+flags:	opt_flags TOK_OPENPAREN flagvals TOK_CLOSEPAREN
 	{
-		$$ = $4;
+		$$ = $3;
 	};
 
-flags: TOK_OPENPAREN flagvals TOK_CLOSEPAREN
+flagvals:	flagvals flagval
 	{
-		$$ = $2;
-	}
-
-flagvals:	flagvals TOK_FLAG_SEP flagval
-	{
-		$1.complain = $1.complain || $3.complain;
-		$1.audit = $1.audit || $3.audit;
-		$1.path = $1.path | $3.path;
+		$1.complain = $1.complain || $2.complain;
+		$1.audit = $1.audit || $2.audit;
+		$1.path = $1.path | $2.path;
 		if (($1.path & (PATH_CHROOT_REL | PATH_NS_REL)) ==
 		    (PATH_CHROOT_REL | PATH_NS_REL))
 			yyerror(_("Profile flag chroot_relative conflicts with namespace_relative"));
@@ -434,7 +431,7 @@ flagvals:	flagval
 		$$ = $1;
 	};
 
-flagval:	TOK_FLAG_ID
+flagval:	TOK_VALUE
 	{
 		struct flagval fv = { 0, 0, 0, 0 };
 		if (strcmp($1, "debug") == 0) {
