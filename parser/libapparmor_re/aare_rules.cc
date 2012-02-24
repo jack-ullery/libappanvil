@@ -98,6 +98,7 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 {
 	Node *tree = NULL, *accept;
 	int exact_match;
+	uint32_t allow = perms;
 
 	assert(perms != 0);
 
@@ -220,7 +221,11 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 		}
 		cerr << "  ->  ";
 		tree->dump(cerr);
-		cerr << "\n\n";
+		if (deny)
+			cerr << " deny";
+		cerr << " (" << hex << allow <<"/" << audit << dec << ")";
+		accept->dump(cerr);
+ 		cerr << "\n\n";
 	}
 
 	if (rules->root)
