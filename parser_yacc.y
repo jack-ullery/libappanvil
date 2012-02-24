@@ -418,6 +418,10 @@ flagvals:	flagvals flagval
 		    (PATH_CHROOT_REL | PATH_NS_REL))
 			yyerror(_("Profile flag chroot_relative conflicts with namespace_relative"));
 
+		if (!($1.path & PATH_NS_REL))
+			/* default to chroot relative profiles */
+			$1.path |= PATH_CHROOT_REL;
+
 		if (($1.path & (PATH_MEDIATE_DELETED | PATH_DELEGATE_DELETED)) ==
 		    (PATH_MEDIATE_DELETED | PATH_DELEGATE_DELETED))
 			yyerror(_("Profile flag mediate_deleted conflicts with delegate_deleted"));
