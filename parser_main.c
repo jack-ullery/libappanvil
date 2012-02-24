@@ -30,6 +30,7 @@
 #include <mntent.h>
 #include <libintl.h>
 #include <locale.h>
+#include <dirent.h>
 #define _(s) gettext(s)
 
 /* enable the following line to get voluminous debug info */
@@ -74,6 +75,7 @@ int preprocess_only = 0;
 int skip_mode_force = 0;
 struct timespec mru_tstamp;
 
+#define FLAGS_STRING_SIZE 1024
 char *match_string = NULL;
 char *flags_string = NULL;
 char *cacheloc = NULL;
@@ -673,16 +675,136 @@ int have_enough_privilege(void)
 	return 0;
 }
 
+char *snprintf_buffer(char *buf, char *pos, ssize_t size, const char *fmt, ...)
+{
+	va_list args;
+	int i, remaining = size - (pos - buf);
+
+	va_start(args, fmt);
+	i = vsnprintf(pos, remaining, fmt, args);
+	va_end(args);
+
+	if (i >= size) {
+		PERROR(_("Feature buffer full."));
+		exit(1);
+	}
+
+	return pos + i;
+}
+
+static char *handle_features_dir(const char *filename, char **buffer, int size,
+				 char *pos)
+{
+	DIR *dir = NULL;
+	char *dirent_path = NULL;
+	struct dirent *dirent;
+	struct stat my_stat;
+	int len;
+
+	PDEBUG("Opened features directory \"%s\"\n", filename);
+	if (!(dir = opendir(filename))) {
+		PDEBUG("opendir failed '%s'", filename);
+		exit(1);
+	}
+
+	while ((dirent = readdir(dir)) != NULL) {
+		int name_len;
+		/* skip dotfiles silently. */
+		if (dirent->d_name[0] == '.')
+			continue;
+
+		if (dirent_path)
+			free(dirent_path);
+		if (asprintf(&dirent_path, "%s/%s", filename, dirent->d_name) < 0)
+		{
+			PERROR(_("Memory allocation error."));
+			exit(1);
+		}
+
+		name_len = strlen(dirent->d_name);
+		if (!name_len)
+			continue;
+
+		if (stat(dirent_path, &my_stat)) {
+			PERROR(_("stat failed for '%s'"), dirent_path);
+			exit(1);
+		}
+
+		pos = snprintf_buffer(*buffer, pos, size, "%s {", dirent->d_name);
+		if (S_ISREG(my_stat.st_mode)) {
+			int file;
+			int remaining = size - (pos - *buffer);
+			if (!(file = open(dirent_path, O_RDONLY))) {
+				PDEBUG("Could not open '%s' in '%s'", dirent_path, filename);
+				exit(1);
+				break;
+			}
+			PDEBUG("Opened features \"%s\" in \"%s\"\n", dirent_path, filename);
+			if (my_stat.st_size > remaining) {
+				PERROR(_("Feature buffer full."));
+				exit(1);
+			}
+
+			do {
+				len = read(file, pos, remaining);
+				if (len > 0) {
+					remaining -= len;
+					pos += len;
+					*pos = 0;
+				}
+			} while (len > 0);
+			if (len < 0) {
+				PDEBUG("Error reading feature file '%s'\n",
+				       dirent_path);
+				exit(1);
+			}
+			close(file);
+
+		} else if (S_ISDIR(my_stat.st_mode)) {
+			pos = handle_features_dir(dirent_path, buffer, size,
+						  pos);
+			if (!pos)
+				break;
+
+		}
+
+		pos = snprintf_buffer(*buffer, pos, size, " }\n");
+	}
+	if (dirent_path)
+		free(dirent_path);
+	closedir(dir);
+
+	return pos;
+}
+
 /* match_string == NULL --> no match_string available
    match_string != NULL --> either a matching string specified on the
    command line, or the kernel supplied a match string */
 static void get_match_string(void) {
 
 	FILE *ms = NULL;
+	struct stat stat_file;
 
 	/* has process_args() already assigned a match string? */
 	if (match_string)
 		goto out;
+
+	if (stat(FLAGS_FILE, &stat_file) == -1)
+		goto out;
+
+	if (S_ISDIR(stat_file.st_mode)) {
+		/* if we have a features directory default to */
+		regex_type = AARE_DFA;
+		perms_create = 1;
+
+		flags_string = malloc(FLAGS_STRING_SIZE);
+		handle_features_dir(FLAGS_FILE, &flags_string, FLAGS_STRING_SIZE, flags_string);
+		if (strstr(flags_string, "network"))
+			kernel_supports_network = 1;
+		if (strstr(flags_string, "mount"))
+			kernel_supports_mount = 1;
+		return;
+	}
 
 	ms = fopen(MATCH_STRING, "r");
 	if (!ms)
@@ -724,17 +846,18 @@ static void get_flags_string(char **flags, char *flags_file) {
 	FILE *f = NULL;
 
 	/* abort if missing or already set */
-	if (!flags || *flags) return;
+	if (!flags || *flags)
+		return;
 
 	f = fopen(flags_file, "r");
 	if (!f)
 		return;
 
-	*flags = malloc(1024);
+	*flags = malloc(FLAGS_STRING_SIZE);
 	if (!*flags)
 		goto fail;
 
-	if (!fgets(*flags, 1024, f))
+	if (!fgets(*flags, FLAGS_STRING_SIZE, f))
 		goto fail;
 
 	fclose(f);
