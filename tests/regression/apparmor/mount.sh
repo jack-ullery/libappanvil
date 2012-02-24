@@ -66,10 +66,9 @@ runchecktest "UMOUNT (unconfined)" pass umount ${loop_device} ${mount_point}
 genprofile
 runchecktest "MOUNT (confined)" fail mount ${loop_device} ${mount_point}
 
-# TEST A3.  confine MOUNT - cap sys_admin allows mount
-
+# TEST A3.  confine MOUNT - cap sys_admin is not sufficient to mount
 genprofile capability:sys_admin
-runchecktest "MOUNT (confined)" pass mount ${loop_device} ${mount_point}
+runchecktest "MOUNT (confined)" fail mount ${loop_device} ${mount_point}
 
 /bin/umount -text2 ${mount_point}
 
