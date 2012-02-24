@@ -32,6 +32,7 @@
 /* #define DEBUG */
 
 #include "parser.h"
+#include "mount.h"
 #include "parser_include.h"
 #include <unistd.h>
 #include <netinet/in.h>
@@ -68,6 +69,11 @@ int parser_token = 0;
 
 struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
 			       char *link_id, char *nt);
+struct mnt_entry *do_mnt_rule(struct cond_entry *src_conds, char *src,
+			      struct cond_entry *dst_conds, char *dst,
+			      int mode);
+struct mnt_entry *do_pivot_rule(struct cond_entry *old, char *root,
+				char *transition);
 
 void add_local_entry(struct codomain *cod);
 
@@ -111,6 +117,10 @@ void add_local_entry(struct codomain *cod);
 %token TOK_CLOSEPAREN
 %token TOK_COMMA
 %token TOK_FILE
+%token TOK_MOUNT
+%token TOK_REMOUNT
+%token TOK_UMOUNT
+%token TOK_PIVOTROOT
 
  /* rlimits */
 %token TOK_RLIMIT
@@ -146,6 +156,8 @@ void add_local_entry(struct codomain *cod);
 	struct codomain *cod;
 	struct cod_net_entry *net_entry;
 	struct cod_entry *user_entry;
+	struct mnt_entry *mnt_entry;
+
 	struct flagval flags;
 	int fmode;
 	uint64_t cap;
@@ -154,6 +166,7 @@ void add_local_entry(struct codomain *cod);
 	char *bool_var;
 	char *var_val;
 	struct value_list *val_list;
+	struct cond_entry *cond_entry;
 	int boolean;
 	struct named_transition transition;
 }
@@ -175,6 +188,9 @@ void add_local_entry(struct codomain *cod);
 %type <user_entry> link_rule
 %type <user_entry> ptrace_rule
 %type <user_entry> frule
+%type <mnt_entry> mnt_rule
+%type <cond_entry> opt_conds
+%type <cond_entry> cond
 %type <flags>	flags
 %type <flags>	flagvals
 %type <flags>	flagval
@@ -241,6 +257,7 @@ profile_base: TOK_ID opt_id flags TOK_OPEN rules TOK_CLOSE
 			cod->flags.complain = 1;
 
 		post_process_nt_entries(cod);
+		post_process_mnt_entries(cod);
 		PDEBUG("%s: flags='%s%s'\n",
 		       $2,
 		       cod->flags.complain ? "complain, " : "",
@@ -386,8 +403,8 @@ valuelist:	valuelist TOK_VALUE
 			yyerror(_("Memory allocation error."));
 		PDEBUG("Matched: value list\n");
 
-		val->next = $1;
-		$$ = val;
+		list_append($1, val);
+		$$ = $1;
 	}
 
 flags:	{ /* nothing */
@@ -644,6 +661,25 @@ rules: rules opt_audit_flag network_rule
 			free(entry);
 		}
 
+		$$ = $1;
+	}
+
+rules:  rules opt_audit_flag TOK_DENY mnt_rule
+	{
+		$4->deny = $4->allow;
+		if ($2)
+			$4->audit = $4->allow;
+		$4->next = $1->mnt_ents;
+		$1->mnt_ents = $4;
+		$$ = $1;
+	}
+
+rules: rules opt_audit_flag mnt_rule
+	{
+		if ($2)
+			$3->audit = $3->allow;
+		$3->next = $1->mnt_ents;
+		$1->mnt_ents = $3;
 		$$ = $1;
 	}
 
@@ -1028,6 +1064,66 @@ network_rule: TOK_NETWORK TOK_ID TOK_ID TOK_END_OF_RULE
 		$$ = entry;
 	}
 
+cond: TOK_CONDID TOK_EQUALS TOK_VALUE
+	{
+		struct cond_entry *ent;
+		struct value_list *value = new_value_list($3);
+		if (!value)
+			yyerror(_("Memory allocation error."));
+		ent = new_cond_entry($1, value);
+		if (!ent) {
+			free_value_list(value);
+			yyerror(_("Memory allocation error."));
+		}
+		$$ = ent;
+	}
+
+cond: TOK_CONDID TOK_EQUALS TOK_OPENPAREN valuelist TOK_CLOSEPAREN
+	{
+		struct cond_entry *ent = new_cond_entry($1, $4);
+
+		if (!ent)
+			yyerror(_("Memory allocation error."));
+		$$ = ent;
+	}
+
+opt_conds: { /* nothing */ $$ = NULL; }
+	| opt_conds cond
+	{
+		$2->next = $1;
+		$$ = $2;
+	}
+
+mnt_rule: TOK_MOUNT opt_conds opt_id TOK_END_OF_RULE
+	{
+		$$ = do_mnt_rule($2, $3, NULL, NULL, AA_MAY_MOUNT);
+	}
+
+mnt_rule: TOK_MOUNT opt_conds opt_id TOK_ARROW opt_conds TOK_ID TOK_END_OF_RULE
+	{
+		$$ = do_mnt_rule($2, $3, $5, $6, AA_MAY_MOUNT);
+	}
+
+mnt_rule: TOK_REMOUNT opt_conds opt_id TOK_END_OF_RULE
+	{
+		$$ = do_mnt_rule($2, NULL, NULL, $3, AA_DUMMY_REMOUNT);
+	}
+
+mnt_rule: TOK_UMOUNT opt_conds opt_id TOK_END_OF_RULE
+	{
+		$$ = do_mnt_rule($2, NULL, NULL, $3, AA_MAY_UMOUNT);
+	}
+
+mnt_rule: TOK_PIVOTROOT opt_conds opt_id TOK_END_OF_RULE
+	{
+		$$ = do_pivot_rule($2, $3, NULL);
+	}
+
+mnt_rule: TOK_PIVOTROOT opt_conds opt_id TOK_ARROW TOK_ID TOK_END_OF_RULE
+	{
+		$$ = do_pivot_rule($2, $3, $5);
+	}
+
 hat_start: TOK_CARET {}
 	| TOK_HAT {}
 
@@ -1084,14 +1180,11 @@ caps: { /* nothing */ $$ = 0; }
 %%
 #define MAXBUFSIZE 4096
 
-void yyerror(const char *msg, ...)
+void vprintyyerror(const char *msg, va_list argptr)
 {
-	va_list arg;
 	char buf[MAXBUFSIZE];
 
-	va_start(arg, msg);
-	vsnprintf(buf, sizeof(buf), msg, arg);
-	va_end(arg);
+	vsnprintf(buf, sizeof(buf), msg, argptr);
 
 	if (profilename) {
 		PERROR(_("AppArmor parser error for %s%s%s at line %d: %s\n"),
@@ -1105,6 +1198,24 @@ void yyerror(const char *msg, ...)
 		       current_filename ? current_filename : "",
 		       current_lineno, buf);
 	}
+}
+
+void printyyerror(const char *msg, ...)
+{
+	va_list arg;
+
+	va_start(arg, msg);
+	vprintyyerror(msg, arg);
+	va_end(arg);
+}
+
+void yyerror(const char *msg, ...)
+{
+	va_list arg;
+
+	va_start(arg, msg);
+	vprintyyerror(msg, arg);
+	va_end(arg);
 
 	exit(1);
 }
@@ -1145,4 +1256,75 @@ void add_local_entry(struct codomain *cod)
 
 		add_entry_to_policy(cod, entry);
 	}
+}
+
+static char *mnt_cond_msg[] = {"",
+			 " not allowed as source conditional",
+			 " not allowed as target conditional",
+			 "",
+			 NULL};
+
+int verify_mnt_conds(struct cond_entry *conds, int src)
+{
+	struct cond_entry *entry;
+	int error = 0;
+
+	if (!conds)
+		return 0;
+
+	list_for_each(conds, entry) {
+		int res = is_valid_mnt_cond(entry->name, src);
+		if (res <= 0) {
+				printyyerror(_("invalid mount conditional %s%s"),
+					     entry->name,
+					     res == -1 ? "" : mnt_cond_msg[src]);
+				error++;
+		}
+	}
+
+	return error;
+}
+
+struct mnt_entry *do_mnt_rule(struct cond_entry *src_conds, char *src,
+			      struct cond_entry *dst_conds, char *dst,
+			      int mode)
+{
+	struct mnt_entry *ent;
+
+	if (verify_mnt_conds(src_conds, MNT_SRC_OPT) != 0)
+		yyerror(_("bad mount rule"));
+
+	/* FIXME: atm conditions are not supported on dst
+	if (verify_conds(dst_conds, DST_OPT) != 0)
+		yyerror(_("bad mount rule"));
+	*/
+	if (dst_conds)
+		yyerror(_("mount point conditions not currently supported"));
+
+	ent = new_mnt_entry(src_conds, src, dst_conds, dst, mode);
+	if (!ent) {
+		yyerror(_("Memory allocation error."));
+	}
+
+	return ent;
+}
+
+struct mnt_entry *do_pivot_rule(struct cond_entry *old, char *root,
+				char *transition)
+{
+	struct mnt_entry *ent = NULL;
+
+	if (old) {
+		if (strcmp(old->name, "oldroot") != 0)
+			yyerror(_("invalid pivotroot conditional '%s'"), old->name);
+	}
+
+	ent = new_mnt_entry(NULL, old->vals->value, NULL, root,
+			    AA_MAY_PIVOTROOT);
+	ent->trans = transition;
+
+	old->vals->value = NULL;
+	free_cond_entry(old);
+
+	return ent;
 }

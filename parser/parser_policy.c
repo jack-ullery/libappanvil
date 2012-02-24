@@ -29,6 +29,7 @@
 #define _(s) gettext(s)
 
 #include "parser.h"
+#include "mount.h"
 #include "parser_yacc.h"
 
 /* #define DEBUG */
@@ -95,10 +96,26 @@ void add_hat_to_policy(struct codomain *cod, struct codomain *hat)
 	}
 }
 
+static int add_entry_to_x_table(struct codomain *cod, char *name)
+{
+	int i;
+	for (i = (AA_EXEC_LOCAL >> 10) + 1; i < AA_EXEC_COUNT; i++) {
+		if (!cod->exec_table[i]) {
+			cod->exec_table[i] = name;
+			return i;
+		} else if (strcmp(cod->exec_table[i], name) == 0) {
+			/* name already in table */
+			free(name);
+			return i;
+		}
+	}
+	free(name);
+	return 0;
+}
+
 static int add_named_transition(struct codomain *cod, struct cod_entry *entry)
 {
 	char *name = NULL;
-	int i;
 
 	/* check to see if it is a local transition */
 	if (!entry->namespace) {
@@ -146,18 +163,7 @@ static int add_named_transition(struct codomain *cod, struct cod_entry *entry)
 		name = entry->nt_name;
 	}
 
-	for (i = (AA_EXEC_LOCAL >> 10) + 1; i < AA_EXEC_COUNT; i++) {
-		if (!cod->exec_table[i]) {
-			cod->exec_table[i] = name;
-			return i;
-		} else if (strcmp(cod->exec_table[i], name) == 0) {
-			/* name already in table */
-			free(name);
-			return i;
-		}
-	}
-	free(name);
-	return 0;
+	return add_entry_to_x_table(cod, name);
 }
 
 void add_entry_to_policy(struct codomain *cod, struct cod_entry *entry)
@@ -175,7 +181,7 @@ void post_process_nt_entries(struct codomain *cod)
 			int mode = 0;
 			int n = add_named_transition(cod, entry);
 			if (!n) {
-				PERROR("Profile %s has to many specified profile transitions.\n", cod->name);
+				PERROR("Profile %s has too many specified profile transitions.\n", cod->name);
 				exit(1);
 			}
 			if (entry->mode & AA_USER_EXEC)
@@ -189,6 +195,32 @@ void post_process_nt_entries(struct codomain *cod)
 		}
 	}
 }
+
+void post_process_mnt_entries(struct codomain *cod)
+{
+	struct mnt_entry *entry;
+
+	list_for_each(cod->mnt_ents, entry) {
+		if (entry->trans) {
+			unsigned int mode = 0;
+			int n = add_entry_to_x_table(cod, entry->trans);
+			if (!n) {
+				PERROR("Profile %s has too many specified profile transitions.\n", cod->name);
+				exit(1);
+			}
+
+			if (entry->allow & AA_USER_EXEC)
+				mode |= SHIFT_MODE(n << 10, AA_USER_SHIFT);
+			if (entry->allow & AA_OTHER_EXEC)
+				mode |= SHIFT_MODE(n << 10, AA_OTHER_SHIFT);
+			entry->allow = ((entry->allow & ~AA_ALL_EXEC_MODIFIERS) |
+				       (mode & AA_ALL_EXEC_MODIFIERS));
+
+			entry->trans = NULL;
+		}
+	}
+}
+
 
 static void __merge_rules(const void *nodep, const VISIT value,
 			  const int __unused depth)
@@ -763,6 +795,7 @@ void free_policy(struct codomain *cod)
 		return;
 	free_hat_table(cod->hat_table);
 	free_cod_entries(cod->entries);
+	free_mnt_entries(cod->mnt_ents);
 	if (cod->dfarules)
 		aare_delete_ruleset(cod->dfarules);
 	if (cod->dfa)

@@ -28,6 +28,8 @@
 #include "libapparmor_re/apparmor_re.h"
 #include "libapparmor_re/aare_rules.h"
 
+struct mnt_ent;
+
 /* Global variable to pass token to lexer.  Will be replaced by parameter
  * when lexer and parser are made reentrant
  */
@@ -56,6 +58,13 @@ struct value_list {
 	char *value;
 
 	struct value_list *next;
+};
+
+struct cond_entry {
+	char *name;
+	struct value_list *vals;
+
+	struct cond_entry *next;
 };
 
 struct cod_entry {
@@ -132,6 +141,8 @@ struct codomain {
 
 	char *exec_table[AA_EXEC_COUNT];
 	struct cod_entry *entries;
+	struct mnt_entry *mnt_ents;
+
 	void *hat_table;
 	//struct codomain *next;
 
@@ -234,12 +245,19 @@ extern int preprocess_only;
 #define __unused __attribute__ ((unused))
 #endif
 
+
 #define list_for_each(LIST, ENTRY) \
 	for ((ENTRY) = (LIST); (ENTRY); (ENTRY) = (ENTRY)->next)
 #define list_for_each_safe(LIST, ENTRY, TMP) \
 	for ((ENTRY) = (LIST), (TMP) = (LIST) ? (LIST)->next : NULL; (ENTRY); (ENTRY) = (TMP), (TMP) = (TMP) ? (TMP)->next : NULL)
 #define list_last_entry(LIST, ENTRY) \
 	for ((ENTRY) = (LIST); (ENTRY) && (ENTRY)->next; (ENTRY) = (ENTRY)->next)
+#define list_append(LISTA, LISTB)		\
+	do {					\
+		typeof(LISTA) ___tmp;		\
+		list_last_entry((LISTA), ___tmp);\
+		___tmp->next = (LISTB);		\
+	} while (0)
 
 /* from parser_common.c */
 extern int regex_type;
@@ -286,6 +304,8 @@ extern void reset_regex(void);
 
 extern int process_policydb(struct codomain *cod);
 
+extern int process_policy_ents(struct codomain *cod);
+
 /* parser_variable.c */
 extern int process_variables(struct codomain *cod);
 extern struct var_string *split_out_var(char *string);
@@ -293,8 +313,12 @@ extern void free_var_string(struct var_string *var);
 
 /* parser_misc.c */
 extern struct value_list *new_value_list(char *value);
+extern struct value_list *dup_value_list(struct value_list *list);
 extern void free_value_list(struct value_list *list);
 extern void print_value_list(struct value_list *list);
+extern struct cond_entry *new_cond_entry(char *name, struct value_list *list);
+extern void free_cond_entry(struct cond_entry *ent);
+extern void print_cond_entry(struct cond_entry *ent);
 extern char *processid(char *string, int len);
 extern char *processquoted(char *string, int len);
 extern char *processunquoted(char *string, int len);
@@ -318,6 +342,7 @@ extern void debug_cod_list(struct codomain *list);
 extern int str_to_boolean(const char* str);
 extern struct cod_entry *copy_cod_entry(struct cod_entry *cod);
 extern void free_cod_entries(struct cod_entry *list);
+extern void free_mnt_entries(struct mnt_entry *list);
 
 /* parser_symtab.c */
 struct set_value {;
@@ -356,6 +381,7 @@ extern void add_to_list(struct codomain *codomain);
 extern void add_hat_to_policy(struct codomain *policy, struct codomain *hat);
 extern void add_entry_to_policy(struct codomain *policy, struct cod_entry *entry);
 extern void post_process_nt_entries(struct codomain *cod);
+extern void post_process_mnt_entries(struct codomain *cod);
 extern int post_process_policy(int debug_only);
 extern int process_hat_regex(struct codomain *cod);
 extern int process_hat_variables(struct codomain *cod);

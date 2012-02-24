@@ -45,7 +45,7 @@
 #endif
 /* #define DEBUG */
 #ifdef DEBUG
-#define PDEBUG(fmt, args...) printf("Lexer: " fmt, ## args)
+#define PDEBUG(fmt, args...) printf("Lexer (state %d): " fmt, YY_START, ## args)
 #else
 #define PDEBUG(fmt, args...)	/* Do nothing */
 #endif
@@ -187,6 +187,9 @@ POST_VAR_ID_CHARS	[^ \t\n"!,]{-}[=\+]
 POST_VAR_ID 	{POST_VAR_ID_CHARS}|(,{POST_VAR_ID_CHARS})
 LIST_VALUE_ID_CHARS	[^ \t\n"!,]{-}[()]
 LIST_VALUE_ID	{LIST_VALUE_ID_CHARS}+
+ID_CHARS_NOEQ	[^ \t\n"!,]{-}[=]
+ID_NOEQ		{ID_CHARS_NOEQ}|(,{ID_CHARS_NOEQ})
+IDS_NOEQ	{ID_NOEQ}+
 ALLOWED_QUOTED_ID 	[^\0"]|\\\"
 QUOTED_ID	\"{ALLOWED_QUOTED_ID}*\"
 
@@ -211,12 +214,14 @@ ADD_ASSIGN	\+=
 ARROW		->
 LT_EQUAL	<=
 
-%x SUB_NAME
+%x SUB_ID
+%x SUB_VALUE
 %x EXTCOND_MODE
 %x NETWORK_MODE
 %x LIST_VAL_MODE
 %x ASSIGN_MODE
 %x RLIMIT_MODE
+%x MOUNT_MODE
 %x CHANGE_PROFILE_MODE
 %x INCLUDE
 
@@ -262,7 +267,8 @@ LT_EQUAL	<=
 	if ( !YY_CURRENT_BUFFER ) yyterminate();
 }
 
-{VARIABLE_NAME}/{WS}*={WS}*	{
+<INITIAL,MOUNT_MODE>{
+	{VARIABLE_NAME}/{WS}*=	{
 				/* we match to the = in the lexer so that
 				 * can switch scanner state.  By the time
 				 * the parser see the = it may be to late
@@ -274,8 +280,9 @@ LT_EQUAL	<=
 				yy_push_state(EXTCOND_MODE);
 				return TOK_CONDID;
 			}
+}
 
-<SUB_NAME>{
+<SUB_ID>{
 	({IDS}|{QUOTED_ID})	{
 			  /* Ugh, this is a gross hack. I used to use
 			   * {IDS} to match all TOK_IDs, but that would
@@ -289,6 +296,29 @@ LT_EQUAL	<=
 			PDEBUG("Found sub name: \"%s\"\n",  yylval.id);
 			yy_pop_state();
 			return TOK_ID;
+		}
+
+	[^\n]	{
+			DUMP_PREPROCESS;
+			/* Something we didn't expect */
+			yyerror(_("Found unexpected character: '%s'"), yytext);
+		}
+}
+
+<SUB_VALUE>{
+	({IDS}|{QUOTED_ID})	{
+			  /* Ugh, this is a gross hack. I used to use
+			   * {IDS} to match all TOK_IDs, but that would
+			   * also match TOK_MODE + TOK_END_OF_RULE
+			   * without any spaces in between (because it's
+			   * a longer match). So now, when I want to
+			   * match any random string, I go into a
+			   * separate state. */
+			DUMP_PREPROCESS;
+			yylval.id =  processid(yytext, yyleng);
+			PDEBUG("Found sub value: \"%s\"\n",  yylval.id);
+			yy_pop_state();
+			return TOK_VALUE;
 		}
 
 	[^\n]	{
@@ -331,6 +361,12 @@ LT_EQUAL	<=
 <EXTCOND_MODE>{
 	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
 
+	{EQUALS}{WS}*/[^(\n]{-}{WS}	{
+			DUMP_PREPROCESS;
+			BEGIN(SUB_VALUE);
+			return TOK_EQUALS;
+		}
+
 	{EQUALS}	{
 			DUMP_PREPROCESS;
 			return TOK_EQUALS;
@@ -342,7 +378,7 @@ LT_EQUAL	<=
 			/* Don't push state here as this is a transition
 			 * start condition and we want to return to the start
 			 * condition that invoked <EXTCOND_MODE> when
-			 * SUB_NAME is done
+			 * LIST_VAL_ID is done
 			 */
 			BEGIN(LIST_VAL_MODE);
 			return TOK_OPENPAREN;
@@ -351,7 +387,7 @@ LT_EQUAL	<=
 	[^\n]	{
 			DUMP_PREPROCESS;
 			/* Something we didn't expect */
-			yyerror(_("Found unexpected character: '%s'"), yytext);
+			yyerror(_("Found unexpected character: '%s' %d"), yytext, *yytext);
 		}
 
 }
@@ -481,6 +517,41 @@ LT_EQUAL	<=
 			}
 }
 
+<MOUNT_MODE>{
+	{WS}+		{  DUMP_PREPROCESS; /* Ignoring whitespace */ }
+
+	{ARROW}		{
+			DUMP_PREPROCESS;
+			PDEBUG("Matched arrow\n");
+			return TOK_ARROW;
+			}
+
+	({IDS_NOEQ}|{PATHNAME}|{QUOTED_ID})	{
+			DUMP_PREPROCESS;
+			yylval.id = processid(yytext, yyleng);
+			PDEBUG("Found ID: \"%s\"\n", yylval.id);
+			return TOK_ID;
+			}
+
+	{END_OF_RULE}	{
+			DUMP_PREPROCESS;
+			yy_pop_state();
+			return TOK_END_OF_RULE;
+			}
+
+	[^\n]		{
+			DUMP_PREPROCESS;
+			/* Something we didn't expect */
+			yyerror(_("Found unexpected character: '%s'"), yytext);
+			}
+
+	\r?\n		{
+			DUMP_PREPROCESS;
+			current_lineno++;
+			yy_pop_state();
+			}
+}
+
 #include/.*\r?\n	 { /* include */
 			PDEBUG("Matched #include\n");
 			yy_push_state(INCLUDE);
@@ -497,7 +568,7 @@ LT_EQUAL	<=
 {CARET}			{
 			DUMP_PREPROCESS;
 			PDEBUG("Matched hat ^\n");
-			yy_push_state(SUB_NAME);
+			yy_push_state(SUB_ID);
 			return TOK_CARET;
 			}
 {ARROW}			{
@@ -558,13 +629,13 @@ LT_EQUAL	<=
 
 {HAT}			{
 			DUMP_PREPROCESS;
-			yy_push_state(SUB_NAME);
+			yy_push_state(SUB_ID);
 			return TOK_HAT;
 			}
 
 {PROFILE}		{
 			DUMP_PREPROCESS;
-			yy_push_state(SUB_NAME);
+			yy_push_state(SUB_ID);
 			return TOK_PROFILE;
 			}
 
@@ -601,6 +672,13 @@ LT_EQUAL	<=
 				break;
 			case TOK_CHANGE_PROFILE:
 				yy_push_state(CHANGE_PROFILE_MODE);
+				break;
+			case TOK_MOUNT:
+			case TOK_REMOUNT:
+			case TOK_UMOUNT:
+				DUMP_PREPROCESS;
+				PDEBUG("Entering mount\n");
+				yy_push_state(MOUNT_MODE);
 				break;
 			default: /* nothing */
 				break;
