@@ -28,6 +28,7 @@
 /* #define DEBUG */
 
 #include "parser.h"
+#include "mount.h"
 
 static inline char *get_var_end(char *var)
 {
@@ -130,17 +131,19 @@ void free_var_string(struct var_string *var)
 	free(var);
 }
 
-static int expand_entry_variables(struct cod_entry *entry)
+/* doesn't handle variables in options atm */
+static int expand_entry_variables(char **name, void *entry, 
+				  int (dup_and_chain)(void *))
 {
 	struct set_value *valuelist;
 	int ret = TRUE;
 	char *value;
 	struct var_string *split_var;
 
-	if (!entry) 		/* shouldn't happen */
+	if (!entry) 		/* can happen when entry is optional */
 		return ret;
 
-	while ((split_var = split_out_var(entry->name))) {
+	while ((split_var = split_out_var(*name))) {
 		valuelist = get_set_var(split_var->var);
 		if (!valuelist) {
 			int boolean = get_boolean_var(split_var->var);
@@ -159,24 +162,22 @@ static int expand_entry_variables(struct cod_entry *entry)
 			       split_var->var);
 			exit(1);
 		}
-		free(entry->name);
-		if (asprintf(&(entry->name), "%s%s%s",
+		free(*name);
+		if (asprintf(name, "%s%s%s",
 			     split_var->prefix ? split_var->prefix : "",
 			     value,
 			     split_var->suffix ? split_var->suffix : "") == -1)
 			return FALSE;
 
 		while ((value = get_next_set_value(&valuelist))) {
-			struct cod_entry *dupe = copy_cod_entry(entry);
-			if (!dupe) {
-				PERROR("Memory allocaton error while handling set variable %s\n",
+			if (!dup_and_chain(entry)) {
+				PERROR("Memory allocation error while handling set variable %s\n",
 				       split_var->var);
 				exit(1);
 			}
-			entry->next = dupe;
 
-			free(entry->name);
-			if (asprintf(&(entry->name), "%s%s%s",
+			free(*name);
+			if (asprintf(name, "%s%s%s",
 			      split_var->prefix ? split_var->prefix : "", value,
 			      split_var->suffix ? split_var->suffix : "") == -1)
 				return FALSE;
@@ -187,15 +188,66 @@ static int expand_entry_variables(struct cod_entry *entry)
 	return ret;
 }
 
+int clone_and_chain_cod(void *v)
+{
+	struct cod_entry *entry = v;
+	struct cod_entry *dup = copy_cod_entry(entry);
+	if (!dup)
+		return 0;
+
+	entry->next = dup;
+
+	return 1;
+}
+
+int clone_and_chain_mnt(void *v)
+{
+	struct mnt_entry *entry = v;
+
+	struct mnt_entry *dup = dup_mnt_entry(entry);
+	if (!dup)
+		return 0;
+
+	entry->next = dup;
+
+	return 1;
+}
+
 static int process_variables_in_entries(struct cod_entry *entry_list)
 {
 	int ret = TRUE, rc;
 	struct cod_entry *entry;
 
 	list_for_each(entry_list, entry) {
-		rc = expand_entry_variables(entry);
+		rc = expand_entry_variables(&entry->name, entry,
+					    clone_and_chain_cod);
 		if (!rc)
-			ret = FALSE;
+			return FALSE;
+	}
+
+	return ret;
+}
+
+/* does not currently support expansion of vars in options */
+static int process_variables_in_mnt_entries(struct mnt_entry *entry_list)
+{
+	int ret = TRUE, rc;
+	struct mnt_entry *entry;
+
+	list_for_each(entry_list, entry) {
+		rc = expand_entry_variables(&entry->mnt_point, entry,
+					    clone_and_chain_mnt);
+		if (!rc)
+			return FALSE;
+		rc = expand_entry_variables(&entry->device, entry,
+					    clone_and_chain_mnt);
+		if (!rc)
+			return FALSE;
+		rc = expand_entry_variables(&entry->trans, entry,
+					    clone_and_chain_mnt);
+		if (!rc)
+			return FALSE;
+
 	}
 
 	return ret;
@@ -206,6 +258,10 @@ int process_variables(struct codomain *cod)
 	int error = 0;
 
 	if (!process_variables_in_entries(cod->entries)) {
+		error = -1;
+	}
+
+	if (!process_variables_in_mnt_entries(cod->mnt_ents)) {
 		error = -1;
 	}
 

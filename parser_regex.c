@@ -28,6 +28,8 @@
 #include "parser.h"
 #include "libapparmor_re/apparmor_re.h"
 #include "libapparmor_re/aare_rules.h"
+#include "mount.h"
+#include "policydb.h"
 
 enum error_type {
 	e_no_error,
@@ -611,12 +613,373 @@ out:
 	return error;
 }
 
+static int build_list_val_expr(char *buffer, int size, struct value_list *list)
+{
+	struct value_list *ent;
+	char tmp[PATH_MAX + 3];
+	char *p;
+	int len;
+	pattern_t ptype;
+	int pos;
+
+	if (!list) {
+		strncpy(buffer, "[^\\000]*", size);
+		return TRUE;
+	}
+
+	p = buffer;
+	strncpy(p, "(", size - (p - buffer));
+	p++;
+	if (p > buffer + size)
+		goto fail;
+
+	ptype = convert_aaregex_to_pcre(list->value, 0, tmp, PATH_MAX+3, &pos);
+	if (ptype == ePatternInvalid)
+		goto fail;
+
+	len = strlen(tmp);
+	if (len > size - (p - buffer))
+		goto fail;
+	strcpy(p, tmp);
+	p += len;
+
+	list_for_each(list->next, ent) {
+		ptype = convert_aaregex_to_pcre(ent->value, 0, tmp,
+						PATH_MAX+3, &pos);
+		if (ptype == ePatternInvalid)
+			goto fail;
+
+		strncpy(p, "|", size - (p - buffer));
+		p++;
+		len = strlen(tmp);
+		if (len > size - (p - buffer))
+			goto fail;
+		strcpy(p, tmp);
+		p += len;
+	}
+	strncpy(p, ")", size - (p - buffer));
+	p++;
+	if (p > buffer + size)
+		goto fail;
+
+	return TRUE;
+fail:
+	return FALSE;
+}
+
+static int convert_entry(char *buffer, int size, char *entry)
+{
+	pattern_t ptype;
+	int pos;
+
+	if (entry) {
+		ptype = convert_aaregex_to_pcre(entry, 0, buffer, size, &pos);
+		if (ptype == ePatternInvalid)
+			return FALSE;
+	} else {
+		/* match any char except \000 0 or more times */
+		if (size < 8)
+			return FALSE;
+
+		strcpy(buffer, "[^\\000]*");
+	}
+	return TRUE;
+}
+
+static int build_mnt_flags(char *buffer, int size, unsigned int flags,
+			   unsigned int inv_flags)
+{
+	char *p = buffer;
+	int i, len = 0;
+
+	if (flags == 0xffffffff) {
+		/* all flags are optional */
+		len = snprintf(p, size, "[^\\000]*");
+		if (len < 0 || len >= size)
+			return FALSE;
+		return TRUE;
+	}
+	for (i = 0; i <= 31; ++i) {
+		if ((flags & inv_flags) & (1 << i))
+			len = snprintf(p, size, "(\\x%02x|)", i + 1);
+		else if (flags & (1 << i))
+			len = snprintf(p, size, "\\x%02x", i + 1);
+		/* else     no entry = not set */
+
+		if (len < 0 || len >= size)
+			return FALSE;
+		p += len;
+		size -= len;
+	}
+
+	if (buffer == p) {
+		/* match nothing - use impossible 254 as regex parser doesn't
+		 * like the empty string
+		 */
+		if (size < 9)
+			return FALSE;
+
+		strcpy(p, "(\\0xfe|)");
+	}
+
+	return TRUE;
+}
+
+static int build_mnt_opts(char *buffer, int size, struct value_list *opts)
+{
+	struct value_list *ent;
+	char tmp[PATH_MAX + 3];
+	char *p;
+	int len;
+	pattern_t ptype;
+	int pos;
+
+	if (!opts) {
+		if (size < 8)
+			return FALSE;
+		strncpy(buffer, "[^\\000]*", size);
+		return TRUE;
+	}
+
+	p = buffer;
+	list_for_each(opts, ent) {
+		ptype = convert_aaregex_to_pcre(ent->value, 0, tmp,
+						PATH_MAX+3, &pos);
+		if (ptype == ePatternInvalid)
+			goto fail;
+
+		len = strlen(tmp);
+		if (len > size - (p - buffer))
+			goto fail;
+		strcpy(p, tmp);
+		p += len;
+		if (ent->next && size - (p - buffer) > 1) {
+			*p++ = ',';
+			*p = 0;
+		}
+	}
+
+	return TRUE;
+
+fail:
+	return FALSE;
+}
+
+static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
+{
+	char mntbuf[PATH_MAX + 3];
+	char devbuf[PATH_MAX + 3];
+	char typebuf[PATH_MAX + 3];
+	char flagsbuf[PATH_MAX + 3];
+	char optsbuf[PATH_MAX + 3];
+	char *p, *vec[5];
+	int count = 0;
+
+	/* a single mount rule may result in multiple matching rules being
+	 * created in the backend to cover all the possible choices
+	 */
+
+	if ((entry->allow & AA_MAY_MOUNT) && (entry->flags & MS_REMOUNT)
+	    && !entry->device && !entry->dev_type) {
+		/* remount can't be conditional on device and type */
+		p = mntbuf;
+		/* rule class single byte header */
+		p += sprintf(p, "\\x%02x", AA_CLASS_MOUNT);
+		if (entry->mnt_point) {
+			/* both device && mnt_point or just mnt_point */
+			if (!convert_entry(p, PATH_MAX +3, entry->mnt_point))
+				goto fail;
+			vec[0] = mntbuf;
+		} else {
+			if (!convert_entry(p, PATH_MAX +3, entry->device))
+				goto fail;
+			vec[0] = mntbuf;
+		}
+		/* skip device */
+		if (!convert_entry(devbuf, PATH_MAX +3, NULL))
+			goto fail;
+		vec[1] = devbuf;
+		/* skip type */
+		vec[2] = devbuf;
+		if (!build_mnt_flags(flagsbuf, PATH_MAX,
+				     entry->flags & MS_REMOUNT_FLAGS,
+				     entry->inv_flags & MS_REMOUNT_FLAGS))
+			goto fail;
+		vec[3] = flagsbuf;
+		if (!build_mnt_opts(optsbuf, PATH_MAX, entry->opts))
+			goto fail;
+		vec[4] = optsbuf;
+		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
+				       entry->audit, 5, vec, dfaflags))
+			goto fail;
+		count++;
+	}
+	if ((entry->allow & AA_MAY_MOUNT) && (entry->flags & MS_BIND)
+	    && !entry->dev_type && !entry->opts) {
+		/* bind mount rules can't be conditional on dev_type or data */
+		p = mntbuf;
+		/* rule class single byte header */
+		p += sprintf(p, "\\x%02x", AA_CLASS_MOUNT);
+		if (!convert_entry(p, PATH_MAX +3, entry->mnt_point))
+			goto fail;
+		vec[0] = mntbuf;
+		if (!convert_entry(devbuf, PATH_MAX +3, entry->device))
+			goto fail;
+		vec[1] = devbuf;
+		if (!convert_entry(typebuf, PATH_MAX +3, NULL))
+			goto fail;
+		vec[2] = typebuf;
+		if (!build_mnt_flags(flagsbuf, PATH_MAX,
+				     entry->flags & MS_BIND_FLAGS,
+				     entry->inv_flags & MS_BIND_FLAGS))
+			goto fail;
+		vec[3] = flagsbuf;
+		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
+				       entry->audit, 4, vec, dfaflags))
+			goto fail;
+		count++;
+	}
+	if ((entry->allow & AA_MAY_MOUNT) &&
+	    (entry->flags & (MS_UNBINDABLE | MS_PRIVATE | MS_SLAVE | MS_SHARED))
+	    && !entry->device && !entry->dev_type && !entry->opts) {
+		/* change type base rules can not be conditional on device,
+		 * device type or data
+		 */
+		p = mntbuf;
+		/* rule class single byte header */
+		p += sprintf(p, "\\x%02x", AA_CLASS_MOUNT);
+		if (!convert_entry(p, PATH_MAX +3, entry->mnt_point))
+			goto fail;
+		vec[0] = mntbuf;
+		/* skip device and type */
+		if (!convert_entry(devbuf, PATH_MAX +3, NULL))
+			goto fail;
+		vec[1] = devbuf;
+		vec[2] = devbuf;
+		if (!build_mnt_flags(flagsbuf, PATH_MAX,
+				     entry->flags & MS_MAKE_FLAGS,
+				     entry->inv_flags & MS_MAKE_FLAGS))
+			goto fail;
+		vec[3] = flagsbuf;
+		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
+				       entry->audit, 4, vec, dfaflags))
+			goto fail;
+		count++;
+	}
+	if ((entry->allow & AA_MAY_MOUNT) && (entry->flags & MS_MOVE)
+	    && !entry->dev_type && !entry->opts) {
+		/* mount move rules can not be conditional on dev_type,
+		 * or data
+		 */
+		p = mntbuf;
+		/* rule class single byte header */
+		p += sprintf(p, "\\x%02x", AA_CLASS_MOUNT);
+		if (!convert_entry(p, PATH_MAX +3, entry->mnt_point))
+			goto fail;
+		vec[0] = mntbuf;
+		if (!convert_entry(devbuf, PATH_MAX +3, entry->device))
+			goto fail;
+		vec[1] = devbuf;
+		/* skip type */
+		if (!convert_entry(typebuf, PATH_MAX +3, NULL))
+			goto fail;
+		vec[2] = typebuf;
+		if (!build_mnt_flags(flagsbuf, PATH_MAX,
+				     entry->flags & MS_MOVE_FLAGS,
+				     entry->inv_flags & MS_MOVE_FLAGS))
+			goto fail;
+		vec[3] = flagsbuf;
+		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
+				       entry->audit, 4, vec, dfaflags))
+			goto fail;
+		count++;
+	}
+	if ((entry->allow & AA_MAY_MOUNT) &&
+	    (entry->flags | entry->inv_flags) & ~MS_CMDS) {
+		/* generic mount if flags are set that are not covered by
+		 * above commands
+		 */
+		p = mntbuf;
+		/* rule class single byte header */
+		p += sprintf(p, "\\x%02x", AA_CLASS_MOUNT);
+		if (!convert_entry(p, PATH_MAX +3, entry->mnt_point))
+			goto fail;
+		vec[0] = mntbuf;
+		if (!convert_entry(devbuf, PATH_MAX +3, entry->device))
+			goto fail;
+		vec[1] = devbuf;
+		if (!build_list_val_expr(typebuf, PATH_MAX+2, entry->dev_type))
+			goto fail;
+		vec[2] = typebuf;
+		if (!build_mnt_flags(flagsbuf, PATH_MAX,
+				     entry->flags & ~MS_CMDS,
+				     entry->inv_flags & ~MS_CMDS))
+			goto fail;
+		vec[3] = flagsbuf;
+		if (!build_mnt_opts(optsbuf, PATH_MAX, entry->opts))
+			goto fail;
+		vec[4] = optsbuf;
+		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
+				       entry->audit, 5, vec, dfaflags))
+			goto fail;
+		count++;
+	}
+	if (entry->allow & AA_MAY_UMOUNT) {
+		p = mntbuf;
+		/* rule class single byte header */
+		p += sprintf(p, "\\x%02x", AA_CLASS_MOUNT);
+		if (!convert_entry(p, PATH_MAX +3, entry->mnt_point))
+			goto fail;
+		vec[0] = mntbuf;
+		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
+				       entry->audit, 1, vec, dfaflags))
+			goto fail;
+		count++;
+	}
+	if (entry->allow & AA_MAY_PIVOTROOT) {
+		p = mntbuf;
+		/* rule class single byte header */
+		p += sprintf(p, "\\x%02x", AA_CLASS_MOUNT);
+		if (!convert_entry(p, PATH_MAX +3, entry->mnt_point))
+			goto fail;
+		vec[0] = mntbuf;
+		if (!convert_entry(devbuf, PATH_MAX +3, entry->device))
+			goto fail;
+		vec[1] = devbuf;
+		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
+				       entry->audit, 2, vec, dfaflags))
+			goto fail;
+		count++;
+	}
+
+	if (!count)
+		/* didn't actually encode anything */
+		goto fail;
+
+	return TRUE;
+
+fail:
+	PERROR("Enocoding of mount rule failed\n");
+	return FALSE;
+}
+
+
 int post_process_policydb_ents(struct codomain *cod)
 {
 	int ret = TRUE;
 	int count = 0;
 
 	/* Add fns for rules that should be added to policydb here */
+	if (cod->mnt_ents && kernel_supports_mount) {
+		struct mnt_entry *entry;
+		list_for_each(cod->mnt_ents, entry) {
+			if (regex_type == AARE_DFA &&
+			    !process_mnt_entry(cod->policy_rules, entry))
+				ret = FALSE;
+			count++;
+		}
+	} else if (cod->mnt_ents && !kernel_supports_mount)
+		pwarn("profile %s mount rules not enforced\n", cod->name);
 
 	cod->policy_rule_count = count;
 	return ret;
@@ -631,6 +994,7 @@ int process_policydb(struct codomain *cod)
 		if (!cod->policy_rules)
 			goto out;
 	}
+
 	if (!post_process_policydb_ents(cod))
 		goto out;
 
@@ -644,6 +1008,7 @@ int process_policydb(struct codomain *cod)
 			goto out;
 	}
 
+	aare_reset_matchflags();
 	if (process_hat_policydb(cod) != 0)
 		goto out;
 

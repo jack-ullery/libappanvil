@@ -37,6 +37,7 @@
 
 #include "parser.h"
 #include "parser_yacc.h"
+#include "mount.h"
 
 /* #define DEBUG */
 #ifdef DEBUG
@@ -78,6 +79,11 @@ static struct keyword_table keyword_table[] = {
 	{"rewrite",		TOK_ALIAS},
 	{"ptrace",		TOK_PTRACE},
 	{"file",		TOK_FILE},
+	{"mount",		TOK_MOUNT},
+	{"remount",		TOK_REMOUNT},
+	{"umount",		TOK_UMOUNT},
+	{"unmount",		TOK_UMOUNT},
+	{"pivotroot",		TOK_PIVOTROOT},
 	/* terminate */
 	{NULL, 0}
 };
@@ -776,6 +782,20 @@ void free_cod_entries(struct cod_entry *list)
 	free(list);
 }
 
+void free_mnt_entries(struct mnt_entry *list)
+{
+	if (!list)
+		return;
+	if (list->next)
+		free_mnt_entries(list->next);
+	free(list->mnt_point);
+	free(list->device);
+	free_value_list(list->dev_type);
+	free_value_list(list->opts);
+
+	free(list);
+}
+
 static void debug_base_perm_mask(int mask)
 {
 	if (HAS_MAY_READ(mask))
@@ -960,6 +980,37 @@ void free_value_list(struct value_list *list)
 	}
 }
 
+struct value_list *dup_value_list(struct value_list *list)
+{
+	struct value_list *entry, *dup, *head = NULL;
+	char *value;
+
+	list_for_each(list, entry) {
+		value = NULL;
+		if (list->value) {
+			value = strdup(list->value);
+			if (!value)
+				goto fail2;
+		}
+		dup = new_value_list(value);
+		if (!dup)
+			goto fail;
+		if (head)
+			list_append(head, dup);
+		else
+			head = dup;
+	}
+
+	return head;
+
+fail:
+	free(value);
+fail2:
+	free_value_list(head);
+
+	return NULL;
+}
+
 void print_value_list(struct value_list *list)
 {
 	struct value_list *entry;
@@ -971,6 +1022,35 @@ void print_value_list(struct value_list *list)
 	list = list->next;
 	list_for_each(list, entry) {
 		fprintf(stderr, ", %s", entry->value);
+	}
+}
+
+struct cond_entry *new_cond_entry(char *name, struct value_list *list)
+{
+	struct cond_entry *ent = calloc(1, sizeof(struct cond_entry));
+	if (ent) {
+		ent->name = name;
+		ent->vals = list;
+	}
+
+	return ent;
+}
+
+void free_cond_entry(struct cond_entry *ent)
+{
+	if (ent) {
+		free(ent->name);
+		free_value_list(ent->vals);
+		free(ent);
+	}
+}
+
+void print_cond_entry(struct cond_entry *ent)
+{
+	if (ent) {
+		fprintf(stderr, "%s=(", ent->name);
+		print_value_list(ent->vals);
+		fprintf(stderr, ")\n");
 	}
 }
 
