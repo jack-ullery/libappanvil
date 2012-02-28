@@ -36,6 +36,7 @@
   /usr/lib{,32,64}/dri/**         mr,
   /usr/lib/@{multiarch}/dri/**    mr,
   /dev/dri/**                     rw,
+  /etc/drirc                      r,
 
   # mouse themes
   /etc/X11/cursors/               r,
