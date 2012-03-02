@@ -30,7 +30,7 @@
   /usr/share/a2ps/fonts/**              r,
   /usr/share/xfce/fonts/**              r,
   /usr/share/ghostscript/fonts/**       r,
-  /usr/share/texmf/*/fonts/**           r,
+  /usr/share/texmf/{,*/}fonts/**        r,
   /var/lib/ghostscript/**               r,
 
   @{HOME}/.fonts.conf                   r,
