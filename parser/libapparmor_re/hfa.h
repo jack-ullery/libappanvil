@@ -50,8 +50,8 @@ public:
 	{
 		deny |= rhs.deny;
 
-		if (!is_merged_x_consistent(allow & AA_USER_EXEC_TYPE,
-					    rhs.allow & AA_USER_EXEC_TYPE)) {
+		if (!is_merged_x_consistent(allow & ALL_USER_EXEC,
+					    rhs.allow & ALL_USER_EXEC)) {
 			if ((exact & AA_USER_EXEC_TYPE) &&
 			    !(rhs.exact & AA_USER_EXEC_TYPE)) {
 				/* do nothing */
@@ -64,8 +64,8 @@ public:
 		} else
 			allow |= rhs.allow & AA_USER_EXEC_TYPE;
 
-		if (!is_merged_x_consistent(allow & AA_OTHER_EXEC_TYPE,
-					    rhs.allow & AA_OTHER_EXEC_TYPE)) {
+		if (!is_merged_x_consistent(allow & ALL_OTHER_EXEC,
+					    rhs.allow & ALL_OTHER_EXEC)) {
 			if ((exact & AA_OTHER_EXEC_TYPE) &&
 			    !(rhs.exact & AA_OTHER_EXEC_TYPE)) {
 				/* do nothing */
