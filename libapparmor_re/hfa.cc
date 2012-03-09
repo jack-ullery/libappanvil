@@ -633,12 +633,12 @@ void DFA::dump(ostream & os)
 		if (*i == start || !(*i)->perms.is_null()) {
 			os << **i;
 			if (*i == start)
-				os << " <==";
-			if ((*i)->perms.allow) {
-				os << " (0x" << hex << (*i)->perms.allow << " "
-				   << (*i)->perms.deny << " "
-				   << (*i)->perms.audit << " "
-				   << (*i)->perms.audit << dec << ')';
+				os << " <== (allow/deny/audit/quiet)";
+			if (!(*i)->perms.is_null()) {
+				os << " (0x " << hex << (*i)->perms.allow << "/"
+				   << (*i)->perms.deny << "/"
+				   << (*i)->perms.audit << "/"
+				   << (*i)->perms.quiet << ')';
 			}
 			os << "\n";
 		}
@@ -672,10 +672,12 @@ void DFA::dump_dot_graph(ostream & os)
 		if (*i == start) {
 			os << "\t\tstyle=bold" << "\n";
 		}
-		uint32_t perms = (*i)->perms.allow;
-		if (perms) {
-			os << "\t\tlabel=\"" << **i << "\\n("
-			   << perms << ")\"" << "\n";
+		if (!(*i)->perms.is_null()) {
+			os << "\t\tlabel=\"" << **i << "\\n(0x " << hex
+			   << (*i)->perms.allow << "/"
+			   << (*i)->perms.deny << "/"
+			   << (*i)->perms.audit << "/"
+			   << (*i)->perms.quiet << ")\"\n";
 		}
 		os << "\t]" << "\n";
 	}

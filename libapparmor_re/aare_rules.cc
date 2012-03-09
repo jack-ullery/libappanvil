@@ -223,7 +223,7 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 		tree->dump(cerr);
 		if (deny)
 			cerr << " deny";
-		cerr << " (" << hex << allow <<"/" << audit << dec << ")";
+		cerr << " (0x" << hex << allow <<"/" << audit << dec << ")";
 		accept->dump(cerr);
  		cerr << "\n\n";
 	}
