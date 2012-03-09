@@ -844,6 +844,7 @@ out:
 static void get_flags_string(char **flags, char *flags_file) {
 	char *pos;
 	FILE *f = NULL;
+	size_t size;
 
 	/* abort if missing or already set */
 	if (!flags || *flags)
@@ -857,8 +858,10 @@ static void get_flags_string(char **flags, char *flags_file) {
 	if (!*flags)
 		goto fail;
 
-	if (!fgets(*flags, FLAGS_STRING_SIZE, f))
+	size = fread(*flags, 1, FLAGS_STRING_SIZE - 1, f);
+	if (!size || ferror(f))
 		goto fail;
+	(*flags)[size] = 0;
 
 	fclose(f);
 	pos = strstr(*flags, "change_hat=");
