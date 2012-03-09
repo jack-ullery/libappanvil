@@ -431,7 +431,7 @@ int DFA::apply_and_clear_deny(void)
 /* minimize the number of dfa states */
 void DFA::minimize(dfaflags_t flags)
 {
-	map<size_t, Partition *> perm_map;
+	map<pair<uint64_t, size_t>, Partition *> perm_map;
 	list<Partition *> partitions;
 
 	/* Set up the initial partitions
@@ -448,20 +448,18 @@ void DFA::minimize(dfaflags_t flags)
 	int final_accept = 0;
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
 		size_t hash = 0;
-		if (!(*i)->perms.is_null())
-			/* combine all states carrying accept info together
-			   into an single initial parition */
-			hash = 1;
+		uint64_t permtype = ((uint64_t) (PACK_AUDIT_CTL((*i)->perms.audit, (*i)->perms.quiet & (*i)->perms.deny)) << 32) | (uint64_t) (*i)->perms.allow;
 		if (flags & DFA_CONTROL_MINIMIZE_HASH_TRANS)
-			hash |= hash_trans(*i) << 1;
-		map<size_t, Partition *>::iterator p = perm_map.find(hash);
+			hash |= hash_trans(*i);
+		pair<uint64_t, size_t> group = make_pair(permtype, hash);
+		map<pair<uint64_t, size_t>, Partition *>::iterator p = perm_map.find(group);
 		if (p == perm_map.end()) {
 			Partition *part = new Partition();
 			part->push_back(*i);
-			perm_map.insert(make_pair(hash, part));
+			perm_map.insert(make_pair(group, part));
 			partitions.push_back(part);
 			(*i)->partition = part;
-			if (hash & 1)
+			if (permtype)
 				accept_count++;
 		} else {
 			(*i)->partition = p->second;

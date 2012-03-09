@@ -1,11 +1,13 @@
 #
 #=DESCRIPTION test for conflict resolution in minimization phase of dfa gen
-#=EXRESULT FAIL
+#=EXRESULT PASS
 #=TODO
 #
 /usr/bin/foo {
 
-  # need to build minimal test for this yet
+  /b px,
+  /* Pixr,
+  /a Cx -> foo,
 
 }
 

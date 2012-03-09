@@ -12,8 +12,8 @@ endif
 
 all: tests
 
-.PHONY: tests error_output gen_xtrans parser_sanity caching
-tests: error_output gen_xtrans parser_sanity caching
+.PHONY: tests error_output gen_xtrans parser_sanity caching minimize
+tests: error_output gen_xtrans parser_sanity caching minimize
 
 GEN_TRANS_DIRS=simple_tests/generated_x/ simple_tests/generated_perms_leading/ simple_tests/generated_perms_safe/
 
@@ -40,6 +40,9 @@ parser_sanity: $(PARSER)
 
 caching: $(PARSER)
 	LANG=C ./caching.sh
+
+minimize: $(PARSER)
+	LANG=C ./minimize.sh
 
 $(PARSER):
 	make -C $(PARSER_DIR) $(PARSER_BIN)
