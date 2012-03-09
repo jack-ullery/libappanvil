@@ -646,12 +646,34 @@ void DFA::dump(ostream & os)
 	os << "\n";
 
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
-		if ((*i)->otherwise != nonmatching)
-			os << **i << " -> " << *(*i)->otherwise << "\n";
+		Chars excluded;
+
 		for (StateTrans::iterator j = (*i)->trans.begin();
 		     j != (*i)->trans.end(); j++) {
-			os << **i << " -> " << *(j)->second << ":  "
-			   << j->first << "\n";
+			if (j->second == nonmatching) {
+				excluded.insert(j->first);
+			} else {
+				os << **i << " -> " << *(j)->second << ": 0x"
+				   << hex << (int) j->first;
+				if (isprint(j->first))
+					os << " " << j->first;
+				os << "\n";
+			}
+		}
+
+		if ((*i)->otherwise != nonmatching) {
+			os << **i << " -> " << *(*i)->otherwise << ": [";
+			if (!excluded.empty()) {
+				os << "^";
+				for (Chars::iterator k = excluded.begin();
+				     k != excluded.end(); k++) {
+					if (isprint(*k))
+						os << *k;
+					else
+						os << "\\0x" << hex << (int) *k;
+				}
+			}
+			os << "]\n";
 		}
 	}
 	os << "\n";
@@ -690,18 +712,26 @@ void DFA::dump_dot_graph(ostream & os)
 			else {
 				os << "\t\"" << **i << "\" -> \"" << *j->second
 				   << "\" [" << "\n";
-				os << "\t\tlabel=\"" << j->first << "\"\n";
-				os << "\t]" << "\n";
+				os << "\t\tlabel=\"";
+				if (isprint(j->first))
+					os << j->first;
+				else
+					os << "\\0xhex" << (int) j->first;
+
+				os << "\"\n\t]" << "\n";
 			}
 		}
 		if ((*i)->otherwise != nonmatching) {
-		  os << "\t\"" << **i << "\" -> \"" << *(*i)->otherwise
+			os << "\t\"" << **i << "\" -> \"" << *(*i)->otherwise
 			   << "\" [" << "\n";
 			if (!excluded.empty()) {
 				os << "\t\tlabel=\"[^";
 				for (Chars::iterator i = excluded.begin();
 				     i != excluded.end(); i++) {
-					os << *i;
+					if (isprint(*i))
+						os << *i;
+					else
+						os << "\\0x" << hex << (int) *i;
 				}
 				os << "]\"" << "\n";
 			}
