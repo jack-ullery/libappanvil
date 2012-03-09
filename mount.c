@@ -190,8 +190,6 @@
  * mount options=ro /dev/foo,  #allow mounting /dev/foo as read only
  * mount options=(ro,foo) /dev/foo,
  * mount options=ro options=foo /dev/foo,
- * mount -> /mnt/**,	# allow any mount on dirs under /mnt/
- * mount options=ro -> /mnt/**, # allow any read only mount under /mnt/
  * mount fstype=overlayfs options=(rw,upperdir=/tmp/upper/,lowerdir=/) overlay -> /mnt/
  *
  *----------------------------------------------------------------------
@@ -277,7 +275,7 @@ static struct mnt_keyword_table mnt_opts_table[] = {
 	{"user",		0, MS_NOUSER},
 	{"nouser",		MS_NOUSER, 0},
 
-	{ }
+	{NULL, 0, 0}
 };
 
 static struct mnt_keyword_table mnt_conds_table[] = {
@@ -286,7 +284,7 @@ static struct mnt_keyword_table mnt_conds_table[] = {
 	{"fstype", MNT_SRC_OPT | MNT_DST_OPT, MNT_COND_FSTYPE},
 	{"vfstype", MNT_SRC_OPT | MNT_DST_OPT, MNT_COND_FSTYPE},
 
-	{ }
+	{NULL, 0, 0}
 };
 
 static int find_mnt_keyword(struct mnt_keyword_table *table, const char *name)
@@ -391,7 +389,7 @@ static struct value_list *extract_options(struct cond_entry **conds)
 }
 
 struct mnt_entry *new_mnt_entry(struct cond_entry *src_conds, char *device,
-				struct cond_entry *dst_conds, char *mnt_point,
+				struct cond_entry *dst_conds __unused, char *mnt_point,
 				int allow)
 {
 	/* FIXME: dst_conds are ignored atm */
@@ -399,8 +397,6 @@ struct mnt_entry *new_mnt_entry(struct cond_entry *src_conds, char *device,
 	struct mnt_entry *ent;
 	ent = (struct mnt_entry *) calloc(1, sizeof(struct mnt_entry));
 	if (ent) {
-		unsigned int rclear, aclear;
-
 		ent->mnt_point = mnt_point;
 		ent->device = device;
 		ent->dev_type = extract_fstype(&src_conds);
