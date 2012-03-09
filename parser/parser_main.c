@@ -768,7 +768,7 @@ static char *handle_features_dir(const char *filename, char **buffer, int size,
 
 		}
 
-		pos = snprintf_buffer(*buffer, pos, size, " }\n");
+		pos = snprintf_buffer(*buffer, pos, size, "}\n");
 	}
 	if (dirent_path)
 		free(dirent_path);

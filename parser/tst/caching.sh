@@ -49,11 +49,34 @@ echo -n "Profiles are cached when requested: "
 [ ! -f $basedir/cache/$profile ] && echo "FAIL ($basedir/cache/$profile does not exist)" && exit 1
 echo "ok"
 
+read_features_dir()
+{
+    directory="$1"
+    if [ ! -d "$directory" ] ; then
+	return
+    fi
+    for f in `ls -AU "$directory"` ; do
+	if [ -f "$directory/$f" ] ; then
+	    read -r -d "" KF < "$directory/$f" || true
+	    echo -e "$f {$KF\n}"
+	elif [ -d "$directory/$f" ] ; then
+	    echo -n "$f {"
+	    KF=`read_features_dir "$directory/$f" "$KF"` || true
+	    echo "$KF"
+	    echo -e "}"
+	fi
+    done
+}
+
 echo -n "Kernel features are written to cache: "
 [ ! -f $basedir/cache/.features ] && echo "FAIL ($basedir/cache/.features missing)" && exit 1
-read CF < $basedir/cache/.features || true
-read KF < /sys/kernel/security/apparmor/features || true
-[ "$CF" != "$KF" ] && echo "FAIL (feature text mismatch: cache '$CF' vs kernel '$KF')" && exit 1
+read -r -d "" CF < $basedir/cache/.features || true
+if [ -d /sys/kernel/security/apparmor/features ] ; then
+    KF=`read_features_dir /sys/kernel/security/apparmor/features`
+else
+    read -r -d "" KF < /sys/kernel/security/apparmor/features || true
+fi
+[ "$CF" != "$KF" ] && echo -e "FAIL (feature text mismatch:\n  cache '$CF'\nvs\n  kernel '$KF')" && exit 1
 echo "ok"
 
 echo -n "Cache is loaded when it exists and features match: "
