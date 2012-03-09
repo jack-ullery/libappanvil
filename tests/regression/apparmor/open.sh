@@ -54,3 +54,15 @@ runchecktest "OPEN R+dac_override" fail $file
 rm -f ${file}
 genprofile $file:$badperm2
 runchecktest "OPEN W (create)" fail $file
+
+# This is a test where using just a raw 'file,' rule allowing all file
+# access
+genprofile file
+runchecktest "OPEN 'file' RW" pass $file
+
+# this test is to make sure the raw 'file' rule allows access to things
+# that are not covered by the owner rule
+chown nobody $file
+chmod 666 $file
+genprofile file
+runchecktest "OPEN 'file' RW" pass $file

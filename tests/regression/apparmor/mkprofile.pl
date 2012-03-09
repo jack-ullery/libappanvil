@@ -164,9 +164,10 @@ sub gen_file($) {
   my $rule = shift;
   my @rules = split (/:/, $rule);
   # default: file rules
-  if (@rules != 2) {
-    (!$nowarn) && print STDERR "Warning: invalid file access '$rule', ignored\n";
-  } else {
+  if (@rules == 1) {
+      # support raw rules
+      push (@{$output_rules{$hat}}, "  $rules[0],\n");
+  } elsif (@rules == 2) {
     if ($escape) {
       $rules[0]=~ s/(["[\]{}\\\:\#])/\\$1/g;
       $rules[0]=~ s/(\#)/\\043/g;
@@ -176,6 +177,8 @@ sub gen_file($) {
     } else {
       push (@{$output_rules{$hat}}, "  $rules[0] $rules[1],\n");
     }
+  } else {
+    (!$nowarn) && print STDERR "Warning: invalid file access '$rule', ignored\n";
   }
 }
 
