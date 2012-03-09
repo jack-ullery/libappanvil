@@ -187,14 +187,22 @@ void normalize_tree(Node *t, int dir)
 		return;
 
 	for (;;) {
-		if ((&epsnode == t->child[dir]) &&
-		    (&epsnode != t->child[!dir]) &&
-		    dynamic_cast<TwoChildNode *>(t)) {
+		if (dynamic_cast<TwoChildNode *>(t) &&
+		    (&epsnode == t->child[dir]) &&
+		    (&epsnode != t->child[!dir])) {
 			// (E | a) -> (a | E)
 			// Ea -> aE
-			Node *c = t->child[dir];
-			t->child[dir] = t->child[!dir];
-			t->child[!dir] = c;
+			// Test for E | (E | E) and E . (E . E) which will
+			// result in an infinite loop
+			Node *c = t->child[!dir];
+			if (dynamic_cast<TwoChildNode *>(c) &&
+			    &epsnode == c->child[dir] &&
+			    &epsnode == c->child[!dir]) {
+				c->release();
+				c = &epsnode;
+			}
+			t->child[dir] = c;
+			t->child[!dir] = &epsnode;
 			// Don't break here as 'a' may be a tree that
 			// can be pulled up.
 		} else if ((dynamic_cast<AltNode *>(t) &&
