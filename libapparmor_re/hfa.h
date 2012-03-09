@@ -79,10 +79,10 @@ public:
 			allow |= rhs.allow & AA_OTHER_EXEC_TYPE;
 
 
-		allow = (allow | (rhs.allow & ~ALL_AA_EXEC_TYPE)) & ~deny;
+		allow = (allow | (rhs.allow & ~ALL_AA_EXEC_TYPE));
 		audit |= rhs.audit;
-		quiet = (quiet | rhs.quiet) & deny;
-		
+		quiet = (quiet | rhs.quiet);
+
 		/*
 		if (exec & AA_USER_EXEC_TYPE &&
 		    (exec & AA_USER_EXEC_TYPE) != (allow & AA_USER_EXEC_TYPE))
