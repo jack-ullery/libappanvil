@@ -647,10 +647,10 @@ void DFA::dump(ostream & os)
 
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
 		if ((*i)->otherwise != nonmatching)
-			os << **i << " -> " << (*i)->otherwise << "\n";
+			os << **i << " -> " << *(*i)->otherwise << "\n";
 		for (StateTrans::iterator j = (*i)->trans.begin();
 		     j != (*i)->trans.end(); j++) {
-			os << **i << " -> " << j->second << ":  "
+			os << **i << " -> " << *(j)->second << ":  "
 			   << j->first << "\n";
 		}
 	}
