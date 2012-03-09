@@ -200,6 +200,9 @@ parser_alias.o: parser_alias.c parser.h
 parser_common.o: parser_common.c parser.h
 	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
 
+mount.o: mount.c mount.h parser.h immunix.h
+	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+
 parser_version.h: Makefile
 	@echo \#define PARSER_VERSION \"$(VERSION)\" > .ver
 	@mv -f .ver $@
