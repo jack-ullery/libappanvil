@@ -1112,14 +1112,23 @@ mnt_rule: TOK_UMOUNT opt_conds opt_id TOK_END_OF_RULE
 		$$ = do_mnt_rule($2, NULL, NULL, $3, AA_MAY_UMOUNT);
 	}
 
-mnt_rule: TOK_PIVOTROOT opt_conds opt_id TOK_END_OF_RULE
+mnt_rule: TOK_PIVOTROOT opt_conds opt_id opt_named_transition TOK_END_OF_RULE
 	{
-		$$ = do_pivot_rule($2, $3, NULL);
-	}
+		char *name = NULL;
+		if ($4.present && $4.namespace) {
+			name = malloc(strlen($4.namespace) +
+				      strlen($4.name) + 3);
+			if (!name) {
+				PERROR("Memory allocation error\n");
+				exit(1);
+			}
+			sprintf(name, ":%s:%s", $4.namespace, $4.name);
+			free($4.namespace);
+			free($4.name);
+		} else if ($4.present)
+			name = $4.name;
 
-mnt_rule: TOK_PIVOTROOT opt_conds opt_id TOK_ARROW TOK_ID TOK_END_OF_RULE
-	{
-		$$ = do_pivot_rule($2, $3, $5);
+		$$ = do_pivot_rule($2, $3, name);
 	}
 
 hat_start: TOK_CARET {}
@@ -1311,18 +1320,20 @@ struct mnt_entry *do_pivot_rule(struct cond_entry *old, char *root,
 				char *transition)
 {
 	struct mnt_entry *ent = NULL;
-
+	char *device = NULL;
 	if (old) {
 		if (strcmp(old->name, "oldroot") != 0)
 			yyerror(_("invalid pivotroot conditional '%s'"), old->name);
+		if (old->vals) {
+			device = old->vals->value;
+			old->vals->value = NULL;
+		}
+		free_cond_entry(old);
 	}
 
-	ent = new_mnt_entry(NULL, old->vals->value, NULL, root,
+	ent = new_mnt_entry(NULL, device, NULL, root,
 			    AA_MAY_PIVOTROOT);
 	ent->trans = transition;
-
-	old->vals->value = NULL;
-	free_cond_entry(old);
 
 	return ent;
 }
