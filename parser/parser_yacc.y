@@ -959,7 +959,7 @@ frule:	file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE
 
 file_rule: TOK_FILE TOK_END_OF_RULE
 	{
-		char *path = strdup("/**");
+		char *path = strdup("/{**,}");
 		int perms = ((AA_BASE_PERMS & ~AA_EXEC_TYPE) |
 			     (AA_EXEC_INHERIT | AA_MAY_EXEC));
 		/* duplicate to other permission set */
