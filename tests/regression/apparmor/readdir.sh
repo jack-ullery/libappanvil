@@ -26,14 +26,20 @@ badperm=ix
 
 mkdir $dir
 
-# CHDIR TEST
-
+# READDIR TEST
 genprofile $dir/:$okperm
-
 runchecktest "READDIR" pass $dir
 
-# CHDIR TEST (no perm)
-
+# READDIR TEST (no perm)
 genprofile $dir/:$badperm
-
 runchecktest "READDIR (no perm)" fail $dir
+
+# this test is to make sure the raw 'file' rule allows access
+# to directories
+genprofile file
+runchecktest "READDIR 'file' dir" pass $dir
+
+# this test is to make sure the raw 'file' rule allows access
+# to '/'
+genprofile file
+runchecktest "READDIR 'file' '/'" pass '/'
