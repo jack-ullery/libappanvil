@@ -103,8 +103,10 @@
 #define AA_MAY_PIVOTROOT 1
 #define AA_MAY_MOUNT 2
 #define AA_MAY_UMOUNT 4
-#define AA_DUMMY_REMOUNT 32	/* dummy perm for remount rule - is remapped
-				 * to a mount option*/
+#define AA_MATCH_CONT 0x40
+#define AA_AUDIT_MNT_DATA AA_MATCH_CONT
+#define AA_DUMMY_REMOUNT 0x40000000	/* dummy perm for remount rule - is
+					 * remapped to a mount option*/
 
 
 struct mnt_entry {

@@ -784,6 +784,7 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 
 	if ((entry->allow & AA_MAY_MOUNT) && (entry->flags & MS_REMOUNT)
 	    && !entry->device && !entry->dev_type) {
+		int allow;
 		/* remount can't be conditional on device and type */
 		p = mntbuf;
 		/* rule class single byte header */
@@ -816,11 +817,31 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		vec[3] = flagsbuf;
 		if (!build_mnt_opts(optsbuf, PATH_MAX, entry->opts))
 			goto fail;
-		vec[4] = optsbuf;
-		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
-				       entry->audit, 5, vec, dfaflags))
+
+		if (entry->opts)
+			allow = AA_MATCH_CONT;
+		else
+			allow = entry->allow;
+
+		/* rule for match without required data || data MATCH_CONT */
+		if (!aare_add_rule_vec(dfarules, entry->deny, allow,
+				       entry->audit | AA_AUDIT_MNT_DATA, 4,
+				       vec, dfaflags))
 			goto fail;
 		count++;
+
+		if (entry->opts) {
+			/* rule with data match required */
+			if (!build_mnt_opts(optsbuf, PATH_MAX, entry->opts))
+				goto fail;
+			vec[4] = optsbuf;
+			if (!aare_add_rule_vec(dfarules, entry->deny,
+					       entry->allow,
+					       entry->audit | AA_AUDIT_MNT_DATA,
+					       5, vec, dfaflags))
+				goto fail;
+			count++;
+		}
 	}
 	if ((entry->allow & AA_MAY_MOUNT) && (entry->flags & MS_BIND)
 	    && !entry->dev_type && !entry->opts) {
@@ -919,6 +940,7 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 	}
 	if ((entry->allow & AA_MAY_MOUNT) &&
 	    (entry->flags | entry->inv_flags) & ~MS_CMDS) {
+		int allow;
 		/* generic mount if flags are set that are not covered by
 		 * above commands
 		 */
@@ -944,13 +966,31 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		if (!build_mnt_flags(flagsbuf, PATH_MAX, flags, inv_flags))
 			goto fail;
 		vec[3] = flagsbuf;
-		if (!build_mnt_opts(optsbuf, PATH_MAX, entry->opts))
-			goto fail;
-		vec[4] = optsbuf;
-		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
-				       entry->audit, 5, vec, dfaflags))
+
+		if (entry->opts)
+			allow = AA_MATCH_CONT;
+		else
+			allow = entry->allow;
+
+		/* rule for match without required data || data MATCH_CONT */
+		if (!aare_add_rule_vec(dfarules, entry->deny, allow,
+				       entry->audit | AA_AUDIT_MNT_DATA, 4,
+				       vec, dfaflags))
 			goto fail;
 		count++;
+
+		if (entry->opts) {
+			/* rule with data match required */
+			if (!build_mnt_opts(optsbuf, PATH_MAX, entry->opts))
+				goto fail;
+			vec[4] = optsbuf;
+			if (!aare_add_rule_vec(dfarules, entry->deny,
+					       entry->allow,
+					       entry->audit | AA_AUDIT_MNT_DATA,
+					       5, vec, dfaflags))
+				goto fail;
+			count++;
+		}
 	}
 	if (entry->allow & AA_MAY_UMOUNT) {
 		p = mntbuf;
