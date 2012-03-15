@@ -712,6 +712,8 @@ static int build_mnt_flags(char *buffer, int size, unsigned int flags,
 		p += len;
 		size -= len;
 	}
+
+	/* this needs to go once the backend is updated. */
 	if (buffer == p) {
 		/* match nothing - use impossible 254 as regex parser doesn't
 		 * like the empty string
@@ -719,7 +721,7 @@ static int build_mnt_flags(char *buffer, int size, unsigned int flags,
 		if (size < 9)
 			return FALSE;
 
-		strcpy(p, "(\\0xfe|)");
+		strcpy(p, "(\\xfe|)");
 	}
 
 	return TRUE;
