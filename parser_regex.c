@@ -692,7 +692,7 @@ static int build_mnt_flags(char *buffer, int size, unsigned int flags,
 	char *p = buffer;
 	int i, len = 0;
 
-	if (flags == 0xffffffff) {
+	if (flags == MS_ALL_FLAGS) {
 		/* all flags are optional */
 		len = snprintf(p, size, "[^\\000]*");
 		if (len < 0 || len >= size)
@@ -704,14 +704,14 @@ static int build_mnt_flags(char *buffer, int size, unsigned int flags,
 			len = snprintf(p, size, "(\\x%02x|)", i + 1);
 		else if (flags & (1 << i))
 			len = snprintf(p, size, "\\x%02x", i + 1);
-		/* else     no entry = not set */
+		else	/* no entry = not set */
+			continue;
 
 		if (len < 0 || len >= size)
 			return FALSE;
 		p += len;
 		size -= len;
 	}
-
 	if (buffer == p) {
 		/* match nothing - use impossible 254 as regex parser doesn't
 		 * like the empty string
@@ -774,6 +774,7 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 	char optsbuf[PATH_MAX + 3];
 	char *p, *vec[5];
 	int count = 0;
+	unsigned int flags, inv_flags;
 
 	/* a single mount rule may result in multiple matching rules being
 	 * created in the backend to cover all the possible choices
@@ -801,9 +802,14 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		vec[1] = devbuf;
 		/* skip type */
 		vec[2] = devbuf;
-		if (!build_mnt_flags(flagsbuf, PATH_MAX,
-				     entry->flags & MS_REMOUNT_FLAGS,
-				     entry->inv_flags & MS_REMOUNT_FLAGS))
+
+		flags = entry->flags;
+		inv_flags = entry->inv_flags;
+		if (flags != MS_ALL_FLAGS)
+			flags &= MS_REMOUNT_FLAGS;
+		if (inv_flags != MS_ALL_FLAGS)
+			flags &= MS_REMOUNT_FLAGS;
+		if (!build_mnt_flags(flagsbuf, PATH_MAX, flags, inv_flags))
 			goto fail;
 		vec[3] = flagsbuf;
 		if (!build_mnt_opts(optsbuf, PATH_MAX, entry->opts))
@@ -829,9 +835,14 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		if (!convert_entry(typebuf, PATH_MAX +3, NULL))
 			goto fail;
 		vec[2] = typebuf;
-		if (!build_mnt_flags(flagsbuf, PATH_MAX,
-				     entry->flags & MS_BIND_FLAGS,
-				     entry->inv_flags & MS_BIND_FLAGS))
+
+		flags = entry->flags;
+		inv_flags = entry->inv_flags;
+		if (flags != MS_ALL_FLAGS)
+			flags &= MS_BIND_FLAGS;
+		if (inv_flags != MS_ALL_FLAGS)
+			flags &= MS_BIND_FLAGS;
+		if (!build_mnt_flags(flagsbuf, PATH_MAX, flags, inv_flags))
 			goto fail;
 		vec[3] = flagsbuf;
 		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
@@ -856,9 +867,14 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 			goto fail;
 		vec[1] = devbuf;
 		vec[2] = devbuf;
-		if (!build_mnt_flags(flagsbuf, PATH_MAX,
-				     entry->flags & MS_MAKE_FLAGS,
-				     entry->inv_flags & MS_MAKE_FLAGS))
+
+		flags = entry->flags;
+		inv_flags = entry->inv_flags;
+		if (flags != MS_ALL_FLAGS)
+			flags &= MS_MAKE_FLAGS;
+		if (inv_flags != MS_ALL_FLAGS)
+			flags &= MS_MAKE_FLAGS;
+		if (!build_mnt_flags(flagsbuf, PATH_MAX, flags, inv_flags))
 			goto fail;
 		vec[3] = flagsbuf;
 		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
@@ -884,9 +900,14 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		if (!convert_entry(typebuf, PATH_MAX +3, NULL))
 			goto fail;
 		vec[2] = typebuf;
-		if (!build_mnt_flags(flagsbuf, PATH_MAX,
-				     entry->flags & MS_MOVE_FLAGS,
-				     entry->inv_flags & MS_MOVE_FLAGS))
+
+		flags = entry->flags;
+		inv_flags = entry->inv_flags;
+		if (flags != MS_ALL_FLAGS)
+			flags &= MS_MOVE_FLAGS;
+		if (inv_flags != MS_ALL_FLAGS)
+			flags &= MS_MOVE_FLAGS;
+		if (!build_mnt_flags(flagsbuf, PATH_MAX, flags, inv_flags))
 			goto fail;
 		vec[3] = flagsbuf;
 		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
@@ -911,9 +932,14 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		if (!build_list_val_expr(typebuf, PATH_MAX+2, entry->dev_type))
 			goto fail;
 		vec[2] = typebuf;
-		if (!build_mnt_flags(flagsbuf, PATH_MAX,
-				     entry->flags & ~MS_CMDS,
-				     entry->inv_flags & ~MS_CMDS))
+
+		flags = entry->flags;
+		inv_flags = entry->inv_flags;
+		if (flags != MS_ALL_FLAGS)
+			flags &= ~MS_CMDS;
+		if (inv_flags != MS_ALL_FLAGS)
+			flags &= ~MS_CMDS;
+		if (!build_mnt_flags(flagsbuf, PATH_MAX, flags, inv_flags))
 			goto fail;
 		vec[3] = flagsbuf;
 		if (!build_mnt_opts(optsbuf, PATH_MAX, entry->opts))

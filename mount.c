@@ -416,8 +416,8 @@ struct mnt_entry *new_mnt_entry(struct cond_entry *src_conds, char *device,
 			ent->inv_flags = 0;
 		} else if (!(ent->flags | ent->inv_flags)) {
 			/* no flag options, and not remount, allow everything */
-			ent->flags = 0xffffffff;
-			ent->inv_flags = 0xffffffff;
+			ent->flags = MS_ALL_FLAGS;
+			ent->inv_flags = MS_ALL_FLAGS;
 		}
 
 		ent->allow = allow;
