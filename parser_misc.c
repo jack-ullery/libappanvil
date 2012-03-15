@@ -83,7 +83,7 @@ static struct keyword_table keyword_table[] = {
 	{"remount",		TOK_REMOUNT},
 	{"umount",		TOK_UMOUNT},
 	{"unmount",		TOK_UMOUNT},
-	{"pivotroot",		TOK_PIVOTROOT},
+	{"pivot_root",		TOK_PIVOTROOT},
 	/* terminate */
 	{NULL, 0}
 };
