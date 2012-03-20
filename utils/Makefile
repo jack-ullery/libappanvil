@@ -28,7 +28,7 @@ endif
 
 MODDIR = Immunix
 PERLTOOLS = aa-genprof aa-logprof aa-autodep aa-audit aa-complain aa-enforce \
-	aa-unconfined aa-notify aa-disable
+	aa-unconfined aa-notify aa-disable aa-exec
 TOOLS = ${PERLTOOLS} aa-decode aa-status
 MODULES = ${MODDIR}/AppArmor.pm ${MODDIR}/Repository.pm \
 	${MODDIR}/Config.pm ${MODDIR}/Severity.pm
