@@ -340,14 +340,8 @@ void DFA::remove_unreachable(dfaflags_t flags)
 					cerr << "unreachable: " << **i;
 					if (*i == start)
 						cerr << " <==";
-					if (!(*i)->perms.is_null()) {
-						cerr << " (0x" << hex 
-						     << (*i)->perms.allow << " " 
-						     << (*i)->perms.deny << " "
-						     << (*i)->perms.audit << " "
-						     << (*i)->perms.quiet << dec
-						     << ')';
-					}
+					if (!(*i)->perms.is_null())
+						(*i)->perms.dump(cerr);
 					cerr << "\n";
 				}
 				State *current = *i;
@@ -632,12 +626,8 @@ void DFA::dump(ostream & os)
 			os << **i;
 			if (*i == start)
 				os << " <== (allow/deny/audit/quiet)";
-			if (!(*i)->perms.is_null()) {
-				os << " (0x " << hex << (*i)->perms.allow << "/"
-				   << (*i)->perms.deny << "/"
-				   << (*i)->perms.audit << "/"
-				   << (*i)->perms.quiet << ')';
-			}
+			if (!(*i)->perms.is_null())
+				(*i)->perms.dump(os);
 			os << "\n";
 		}
 	}
@@ -651,16 +641,22 @@ void DFA::dump(ostream & os)
 			if (j->second == nonmatching) {
 				excluded.insert(j->first);
 			} else {
-				os << **i << " -> " << *(j)->second << ": 0x"
+				os << **i;
+				if (!(*i)->perms.is_null())
+					os << " ", (*i)->perms.dump(os);
+				os << " -> " << *(j)->second << ": 0x"
 				   << hex << (int) j->first;
 				if (isprint(j->first))
 					os << " " << j->first;
-				os << "\n";
+				os << dec << "\n";
 			}
 		}
 
 		if ((*i)->otherwise != nonmatching) {
-			os << **i << " -> " << *(*i)->otherwise << ": [";
+			os << **i;
+			if (!(*i)->perms.is_null())
+				os << " ", (*i)->perms.dump(os);
+			os << " -> " << *(*i)->otherwise << ": [";
 			if (!excluded.empty()) {
 				os << "^";
 				for (Chars::iterator k = excluded.begin();
@@ -668,7 +664,7 @@ void DFA::dump(ostream & os)
 					if (isprint(*k))
 						os << *k;
 					else
-						os << "\\0x" << hex << (int) *k;
+						os << "\\0x" << hex << (int) *k << dec;
 				}
 			}
 			os << "]\n";
@@ -693,11 +689,9 @@ void DFA::dump_dot_graph(ostream & os)
 			os << "\t\tstyle=bold" << "\n";
 		}
 		if (!(*i)->perms.is_null()) {
-			os << "\t\tlabel=\"" << **i << "\\n(0x " << hex
-			   << (*i)->perms.allow << "/"
-			   << (*i)->perms.deny << "/"
-			   << (*i)->perms.audit << "/"
-			   << (*i)->perms.quiet << ")\"\n";
+			os << "\t\tlabel=\"" << **i << "\\n";
+			(*i)->perms.dump(os);
+			os << "\"\n";
 		}
 		os << "\t]" << "\n";
 	}
@@ -714,7 +708,7 @@ void DFA::dump_dot_graph(ostream & os)
 				if (isprint(j->first))
 					os << j->first;
 				else
-					os << "\\0xhex" << (int) j->first;
+					os << "\\0x" << hex << (int) j->first << dec;
 
 				os << "\"\n\t]" << "\n";
 			}
@@ -729,7 +723,7 @@ void DFA::dump_dot_graph(ostream & os)
 					if (isprint(*i))
 						os << *i;
 					else
-						os << "\\0x" << hex << (int) *i;
+						os << "\\0x" << hex << (int) *i << dec;
 				}
 				os << "]\"" << "\n";
 			}

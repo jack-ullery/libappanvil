@@ -45,6 +45,13 @@ public:
 
 	bool is_null(void) { return !(allow | deny | audit | quiet); }
 
+	void dump(ostream &os)
+	{
+		os << " (0x " << hex
+		   << allow << "/" << deny << "/" << audit << "/" << quiet
+		   << ')' << dec;
+	}
+
 	void clear(void) { allow = deny = audit = quiet = 0; }
 	void add(perms_t &rhs)
 	{
