@@ -278,6 +278,8 @@ int aa_getprocattr(pid_t tid, const char *attr, char **buf, char **mode)
 
 	if (rc == -1) {
 		free(buffer);
+		*buf = NULL;
+		*mode = NULL;
 		size = -1;
 	} else
 		*buf = buffer;
@@ -617,6 +619,7 @@ int aa_getpeercon(int fd, char **con)
 
 	if (rc == -1) {
 		free(buffer);
+		*con = NULL;
 		size = -1;
 	} else
 		*con = buffer;
