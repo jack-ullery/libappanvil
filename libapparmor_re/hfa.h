@@ -43,7 +43,7 @@ class perms_t {
 public:
 	perms_t(void) throw(int): allow(0), deny(0), audit(0), quiet(0), exact(0) { };
 
-	bool is_null(void) { return !(allow | deny | audit | quiet); }
+	bool is_null(void) { return !(allow | audit | quiet); }
 
 	void dump(ostream &os)
 	{
