@@ -14,9 +14,12 @@
        CAP_SYS_MODULE 10
        CAP_SYS_PTRACE 10
        CAP_SYS_RAWIO 10
+       CAP_MAC_ADMIN 10
+       CAP_MAC_OVERRIDE 10
 # Allow other processes to 0wn the machine:
        CAP_SETPCAP 9
-       CAP_CHOWN 9 
+       CAP_SETFCAP 9
+       CAP_CHOWN 9
        CAP_FSETID 9
        CAP_MKNOD 9
        CAP_LINUX_IMMUTABLE 9
@@ -38,9 +41,11 @@
        CAP_LEASE 8
        CAP_IPC_LOCK 8
        CAP_SYS_TTY_CONFIG 8
-       CAP_DAC_READ_SEARCH 7
        CAP_AUDIT_CONTROL 8
        CAP_AUDIT_WRITE 8
+       CAP_SYSLOG 8
+       CAP_WAKE_ALARM 8
+       CAP_DAC_READ_SEARCH 7
 # unused
        CAP_NET_BROADCAST 0
 
