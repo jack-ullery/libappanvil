@@ -340,7 +340,7 @@ void DFA::remove_unreachable(dfaflags_t flags)
 					cerr << "unreachable: " << **i;
 					if (*i == start)
 						cerr << " <==";
-					if (!(*i)->perms.is_null())
+					if ((*i)->perms.is_accept())
 						(*i)->perms.dump(cerr);
 					cerr << "\n";
 				}
@@ -556,7 +556,7 @@ void DFA::minimize(dfaflags_t flags)
 			(*i)->label = -1;
 			rep->perms.add((*i)->perms);
 		}
-		if (!rep->perms.is_null())
+		if (rep->perms.is_accept())
 			final_accept++;
 //if ((*p)->size() > 1)
 //cerr << "\n";
@@ -611,11 +611,11 @@ out:
 void DFA::dump(ostream & os)
 {
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
-		if (*i == start || !(*i)->perms.is_null()) {
+		if (*i == start || (*i)->perms.is_accept()) {
 			os << **i;
 			if (*i == start)
 				os << " <== (allow/deny/audit/quiet)";
-			if (!(*i)->perms.is_null())
+			if ((*i)->perms.is_accept())
 				(*i)->perms.dump(os);
 			os << "\n";
 		}
@@ -631,7 +631,7 @@ void DFA::dump(ostream & os)
 				excluded.insert(j->first);
 			} else {
 				os << **i;
-				if (!(*i)->perms.is_null())
+				if ((*i)->perms.is_accept())
 					os << " ", (*i)->perms.dump(os);
 				os << " -> " << *(j)->second << ": 0x"
 				   << hex << (int) j->first;
@@ -643,7 +643,7 @@ void DFA::dump(ostream & os)
 
 		if ((*i)->otherwise != nonmatching) {
 			os << **i;
-			if (!(*i)->perms.is_null())
+			if ((*i)->perms.is_accept())
 				os << " ", (*i)->perms.dump(os);
 			os << " -> " << *(*i)->otherwise << ": [";
 			if (!excluded.empty()) {
@@ -677,7 +677,7 @@ void DFA::dump_dot_graph(ostream & os)
 		if (*i == start) {
 			os << "\t\tstyle=bold" << "\n";
 		}
-		if (!(*i)->perms.is_null()) {
+		if ((*i)->perms.is_accept()) {
 			os << "\t\tlabel=\"" << **i << "\\n";
 			(*i)->perms.dump(os);
 			os << "\"\n";
