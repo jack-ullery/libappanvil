@@ -60,6 +60,7 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 	install -m 644 ${MODULES} ${PERLDIR}
 	$(MAKE) -C po install DESTDIR=${DESTDIR} NAME=${NAME}
 	$(MAKE) install_manpages DESTDIR=${DESTDIR}
+	$(MAKE) -C vim install DESTDIR=${DESTDIR}
 	ln -sf aa-status.8 ${DESTDIR}/${MANDIR}/man8/apparmor_status.8
 
 .PHONY: clean
