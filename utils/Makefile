@@ -68,7 +68,22 @@ clean: _clean
 	rm -f Make.rules
 	$(MAKE) -C po clean
 
-check:
+# ${CAPABILITIES} is defined in common/Make.rules
+.PHONY: check_severity_db
+.SILENT: check_severity_db
+check_severity_db: /usr/include/sys/capability.h severity.db
+	# The sed statement is based on the one in the parser's makefile
+	RC=0 ; for cap in ${CAPABILITIES} ; do \
+	    if !  grep -q -w $${cap} severity.db ; then \
+		echo "Warning! capability $${cap} not found in severity.db" ; \
+		RC=1 ; \
+	    fi ;\
+	done ; \
+	test "$$RC" -eq 0
+
+.PHONY: check
+.SILENT: check
+check: check_severity_db
 	for i in ${MODULES} ${PERLTOOLS} ; do \
 		perl -c $$i || exit 1; \
 	done
