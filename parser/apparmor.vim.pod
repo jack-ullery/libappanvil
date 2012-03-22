@@ -16,7 +16,7 @@
 #    GNU General Public License for more details.
 #
 #    You should have received a copy of the GNU General Public License
-#    along with this program; if not, contact Novell, Inc.
+#    along with this program; if not, contact Canonical, Ltd.
 # ----------------------------------------------------------------------
 
 
@@ -28,13 +28,11 @@ apparmor.vim - vim syntax highlighting file for AppArmor profiles
 
 =head1 SYNOPSIS
 
-The SUSE vim package is configured to automatically use syntax
-highlighting for AppArmor policies stored in /etc/apparmor.d/ and the
-extra policies stored in /etc/apparmor/profiles/extras/. If you wish to
-use the syntax highlighting in a specific vim session, you may run:
+Your system may be configured to automatically use syntax highlighting
+for installed AppArmor policies. If not, you can enable syntax highlighting in
+a specific vim session by performing:
 
- :syntax on
- :setf apparmor
+ :set syntax=apparmor
 
 =head1 DESCRIPTION
 
