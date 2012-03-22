@@ -7,7 +7,7 @@ include common/Make.rules
 DIRS=parser \
      profiles \
      utils \
-     changehat/libapparmor \
+     libraries/libapparmor \
      changehat/mod_apparmor \
      changehat/pam_apparmor \
      tests
