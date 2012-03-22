@@ -37,6 +37,7 @@ MANPAGES = ${TOOLS:=.8} logprof.conf.5
 
 all: ${MANPAGES} ${HTMLMANPAGES}
 	$(MAKE) -C po all
+	$(MAKE) -C vim all
 
 # need some better way of determining this
 DESTDIR=/
@@ -67,6 +68,7 @@ clean: _clean
 	rm -f core core.* *.o *.s *.a *~
 	rm -f Make.rules
 	$(MAKE) -C po clean
+	$(MAKE) -C vim clean
 
 # ${CAPABILITIES} is defined in common/Make.rules
 .PHONY: check_severity_db
