@@ -360,26 +360,17 @@ void DFA::remove_unreachable(dfaflags_t flags)
 /* test if two states have the same transitions under partition_map */
 bool DFA::same_mappings(State *s1, State *s2)
 {
-	if (s1->otherwise != nonmatching) {
-		if (s2->otherwise == nonmatching)
-			return false;
-		Partition *p1 = s1->otherwise->partition;
-		Partition *p2 = s2->otherwise->partition;
-		if (p1 != p2)
-			return false;
-	} else if (s2->otherwise != nonmatching) {
+	if (s1->otherwise->partition != s2->otherwise->partition)
 		return false;
-	}
 
 	if (s1->trans.size() != s2->trans.size())
 		return false;
+
 	for (StateTrans::iterator j1 = s1->trans.begin(); j1 != s1->trans.end(); j1++) {
 		StateTrans::iterator j2 = s2->trans.find(j1->first);
 		if (j2 == s2->trans.end())
 			return false;
-		Partition *p1 = j1->second->partition;
-		Partition *p2 = j2->second->partition;
-		if (p1 != p2)
+		if (j1->second->partition != j2->second->partition)
 			return false;
 	}
 
@@ -547,10 +538,8 @@ void DFA::minimize(dfaflags_t flags)
 			cerr << *rep << " : ";
 
 		/* update representative state's transitions */
-		if (rep->otherwise != nonmatching) {
-			Partition *partition = rep->otherwise->partition;
-			rep->otherwise = *partition->begin();
-		}
+		rep->otherwise = *rep->otherwise->partition->begin();
+
 		for (StateTrans::iterator c = rep->trans.begin(); c != rep->trans.end(); c++) {
 			Partition *partition = c->second->partition;
 			c->second = *partition->begin();
