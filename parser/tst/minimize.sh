@@ -127,7 +127,7 @@ echo "ok"
 # {c} (0x 40030/0/0/0)
 
 echo -n "Minimize profiles audit deny perms "
-if [ `echo "/t { /a r, /b w, /c a, /d l, /e k, /f m, audit deny /** w, }" | ../apparmor_parser -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 6 ] ; then
+if [ `echo "/t { /a r, /b w, /c a, /d l, /e k, /f m, audit deny /** w, }" | ../apparmor_parser -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 5 ] ; then
     echo "failed"
     exit 1;
 fi
@@ -192,7 +192,7 @@ echo "ok"
 # {3} (0x 0/fe17f85/0/0)
 
 echo -n "Minimize profiles audit deny xtrans "
-if [ `echo "/t { /b px, audit deny /* xr, /a Cx -> foo, }" | ../apparmor_parser -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 1 ] ; then
+if [ `echo "/t { /b px, audit deny /* xr, /a Cx -> foo, }" | ../apparmor_parser -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 0 ] ; then
     echo "failed"
     exit 1;
 fi
