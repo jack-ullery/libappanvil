@@ -31,7 +31,8 @@ int main(int argc, char *argv[])
         }
 
         if (strcmp(argv[1], "self") == 0){
-		if (aa_getcon(&profile, &mode) == -1) {
+		rc = aa_getcon(&profile, &mode);
+		if (rc == -1) {
 			int serrno = errno;
                         fprintf(stderr,
 				"FAIL: introspect_confinement %s failed - %s\n",
@@ -47,18 +48,36 @@ int main(int argc, char *argv[])
 				"FAIL: query_confinement - invalid pid: %s\n",
 				argv[1]);
 			exit(serrno);
-		} else if (aa_gettaskcon(pid, &profile, &mode) == -1) {
-			int serrno = errno;
-                        fprintf(stderr,
-				"FAIL: query_confinement %s failed - %s\n",
-                                argv[1], strerror(errno));
-                        exit(serrno);
+		} else {
+			rc = aa_gettaskcon(pid, &profile, &mode);
+			if (rc == -1) {
+				int serrno = errno;
+				fprintf(stderr,
+					"FAIL: query_confinement %s failed - %s\n",
+					argv[1], strerror(errno));
+				exit(serrno);
+			}
 		}
 	}
 	if (strcmp(profile, argv[2]) != 0) {
 		fprintf(stderr,
 			"FAIL: expected confinement \"%s\" != \"%s\"\n", argv[2],
 			profile);
+		exit(1);
+	}
+	if (mode) {
+		if (rc != strlen(profile) + strlen(mode) + 4) {
+			/* rc includes mode. + 2 null term + 1 ( + 1 space */
+			fprintf(stderr,
+				"FAIL: expected return len %d != actual %d\n",
+				strlen(profile) + strlen(mode) + 4, rc);
+			exit(1);
+		}
+	} else if (rc != strlen(profile) + 1) {
+		/* rc includes null termination */
+		fprintf(stderr,
+			"FAIL: expected return len %d != actual %d\n",
+			strlen(profile) + 1, rc);
 		exit(1);
 	}
 	if (argv[3] && (!mode || strcmp(mode, argv[3]) != 0)) {

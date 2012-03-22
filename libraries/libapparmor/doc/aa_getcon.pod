@@ -69,7 +69,8 @@ does not handle buffer allocation.
 
 =head1 RETURN VALUE
 
-On success zero is returned. On error, -1 is returned, and
+On success size of data placed in the buffer is returned, this includes the
+mode if present and any terminating characters. On error, -1 is returned, and
 errno(3) is set appropriately.
 
 =head1 ERRORS

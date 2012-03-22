@@ -280,11 +280,10 @@ int aa_getprocattr(pid_t tid, const char *attr, char **buf, char **mode)
 		free(buffer);
 		*buf = NULL;
 		*mode = NULL;
-		size = -1;
 	} else
 		*buf = buffer;
 
-	return size;
+	return rc;
 }
 
 static int setprocattr(pid_t tid, const char *attr, const char *buf, int len)
