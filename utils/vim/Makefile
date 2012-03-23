@@ -22,4 +22,4 @@ install: apparmor.vim
 
 
 clean:
-	rm -f apparmor.vim
+	rm -f apparmor.vim common
