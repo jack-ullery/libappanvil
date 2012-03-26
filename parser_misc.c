@@ -84,6 +84,7 @@ static struct keyword_table keyword_table[] = {
 	{"umount",		TOK_UMOUNT},
 	{"unmount",		TOK_UMOUNT},
 	{"pivot_root",		TOK_PIVOTROOT},
+	{"in",			TOK_IN},
 	/* terminate */
 	{NULL, 0}
 };
@@ -1025,12 +1026,13 @@ void print_value_list(struct value_list *list)
 	}
 }
 
-struct cond_entry *new_cond_entry(char *name, struct value_list *list)
+struct cond_entry *new_cond_entry(char *name, int eq, struct value_list *list)
 {
 	struct cond_entry *ent = calloc(1, sizeof(struct cond_entry));
 	if (ent) {
 		ent->name = name;
 		ent->vals = list;
+		ent->eq = eq;
 	}
 
 	return ent;
