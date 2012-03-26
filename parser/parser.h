@@ -62,6 +62,7 @@ struct value_list {
 
 struct cond_entry {
 	char *name;
+	int eq;			/* where equals was used in specifying list */
 	struct value_list *vals;
 
 	struct cond_entry *next;
@@ -316,7 +317,7 @@ extern struct value_list *new_value_list(char *value);
 extern struct value_list *dup_value_list(struct value_list *list);
 extern void free_value_list(struct value_list *list);
 extern void print_value_list(struct value_list *list);
-extern struct cond_entry *new_cond_entry(char *name, struct value_list *list);
+extern struct cond_entry *new_cond_entry(char *name, int eq, struct value_list *list);
 extern void free_cond_entry(struct cond_entry *ent);
 extern void print_cond_entry(struct cond_entry *ent);
 extern char *processid(char *string, int len);

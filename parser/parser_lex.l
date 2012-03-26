@@ -280,6 +280,18 @@ LT_EQUAL	<=
 				yy_push_state(EXTCOND_MODE);
 				return TOK_CONDID;
 			}
+	{VARIABLE_NAME}/{WS}+in{WS}*\(	{
+				/* we match to 'in' in the lexer so that
+				 * we can switch scanner state.  By the time
+				 * the parser see the 'in' it may be to late
+				 * as bison may have requested the next
+				 * token from the scanner
+				 */
+				PDEBUG("conditional %s=\n", yytext);
+				yylval.id = processid(yytext, yyleng);
+				yy_push_state(EXTCOND_MODE);
+				return TOK_CONDID;
+			}
 }
 
 <SUB_ID>{
@@ -382,6 +394,11 @@ LT_EQUAL	<=
 			 */
 			BEGIN(LIST_VAL_MODE);
 			return TOK_OPENPAREN;
+		}
+
+	in	{
+			DUMP_PREPROCESS;
+			return TOK_IN;
 		}
 
 	[^\n]	{

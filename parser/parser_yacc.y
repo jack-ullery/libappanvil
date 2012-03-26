@@ -121,6 +121,7 @@ void add_local_entry(struct codomain *cod);
 %token TOK_REMOUNT
 %token TOK_UMOUNT
 %token TOK_PIVOTROOT
+%token TOK_IN
 
  /* rlimits */
 %token TOK_RLIMIT
@@ -1068,7 +1069,7 @@ cond: TOK_CONDID TOK_EQUALS TOK_VALUE
 		struct value_list *value = new_value_list($3);
 		if (!value)
 			yyerror(_("Memory allocation error."));
-		ent = new_cond_entry($1, value);
+		ent = new_cond_entry($1, 1, value);
 		if (!ent) {
 			free_value_list(value);
 			yyerror(_("Memory allocation error."));
@@ -1078,7 +1079,17 @@ cond: TOK_CONDID TOK_EQUALS TOK_VALUE
 
 cond: TOK_CONDID TOK_EQUALS TOK_OPENPAREN valuelist TOK_CLOSEPAREN
 	{
-		struct cond_entry *ent = new_cond_entry($1, $4);
+		struct cond_entry *ent = new_cond_entry($1, 1, $4);
+
+		if (!ent)
+			yyerror(_("Memory allocation error."));
+		$$ = ent;
+	}
+
+
+cond: TOK_CONDID TOK_IN TOK_OPENPAREN valuelist TOK_CLOSEPAREN
+	{
+		struct cond_entry *ent = new_cond_entry($1, 0, $4);
 
 		if (!ent)
 			yyerror(_("Memory allocation error."));
