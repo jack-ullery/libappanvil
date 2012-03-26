@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
 			perror ("FAIL: child malloc");
 			return -1;
 		}
-		sprintf (pname, "./%s", argv[optind]);
+		sprintf (pname, "%s", argv[optind]);
 		
 		rc = !manual ? change_hat(argv[optind], magic_token) 
 			     : manual_change_hat(argv[optind], manual_string); 
@@ -173,7 +173,7 @@ int main(int argc, char *argv[]) {
 			perror("FAIL: pipe failed");
 			exit(1);
 		}
-		
+
 		exit(execv(pname, &argv[optind]));
 	}
 
@@ -190,7 +190,7 @@ int main(int argc, char *argv[]) {
 
 	if ((WEXITSTATUS(waitstatus) == 0) && strcmp("PASS\n", buf) == 0) {
 		printf("PASS\n");
-	} 
+	}
 
 	return WEXITSTATUS(waitstatus);
 }

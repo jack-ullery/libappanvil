@@ -109,16 +109,16 @@ for TEST in ${TESTS} ; do
 	# okay, now check to see if the capability functions from within
 	# a subprofile.
 	settest ${testwrapper}
-	genprofile hat:${TEST} addimage:${bin}/${TEST} ${my_entries}
-	runchecktest "${TEST} changehat -- no caps" fail ${TEST} ${my_arg}
+	genprofile hat:$bin/${TEST} addimage:${bin}/${TEST} ${my_entries}
+	runchecktest "${TEST} changehat -- no caps" fail $bin/${TEST} ${my_arg}
 	for cap in ${CAPABILITIES} ; do
 		if [ "X$(eval echo \${${TEST}_${cap}})" == "XTRUE" ] ; then
 			expected_result=pass
 		else
 			expected_result=fail
 		fi
-		genprofile hat:${TEST} addimage:${bin}/${TEST} cap:${cap} ${my_entries}
-		runchecktest "${TEST} changehat -- capability ${cap}" ${expected_result} ${TEST} ${my_arg}
+		genprofile hat:$bin/${TEST} addimage:${bin}/${TEST} cap:${cap} ${my_entries}
+		runchecktest "${TEST} changehat -- capability ${cap}" ${expected_result} $bin/${TEST} ${my_arg}
 	done
 
 done
