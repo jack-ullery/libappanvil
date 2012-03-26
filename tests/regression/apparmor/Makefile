@@ -8,6 +8,7 @@
 SRC=access.c \
     introspect.c \
     changeprofile.c \
+    onexec.c \
     changehat.c \
     changehat_fork.c \
     changehat_misc.c \
@@ -110,6 +111,7 @@ TESTS=access \
       introspect \
       capabilities \
       changeprofile \
+      onexec \
       changehat \
       changehat_fork \
       changehat_misc \
