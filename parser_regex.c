@@ -510,19 +510,28 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 			return FALSE;
 	}
 	if (entry->mode & AA_CHANGE_PROFILE) {
+		char *vec[3];
+		char lbuf[PATH_MAX + 8];
+		int index = 1;
+
+		/* allow change_profile for all execs */
+		vec[0] = "/[^\\x00]*";
+
 		if (entry->namespace) {
-			char *vec[2];
-			char lbuf[PATH_MAX + 8];
 			int pos;
 			ptype = convert_aaregex_to_pcre(entry->namespace, 0, lbuf, PATH_MAX + 8, &pos);
-			vec[0] = lbuf;
-			vec[1] = tbuf;
-			if (!aare_add_rule_vec(dfarules, 0, AA_CHANGE_PROFILE, 0, 2, vec, dfaflags))
-			    return FALSE;
-		} else {
-		  if (!aare_add_rule(dfarules, tbuf, 0, AA_CHANGE_PROFILE, 0, dfaflags))
-				return FALSE;
+			vec[index++] = lbuf;
 		}
+		vec[index++] = tbuf;
+
+		/* regular change_profile rule */
+		if (!aare_add_rule_vec(dfarules, 0, AA_CHANGE_PROFILE, 0, index - 1, &vec[1], dfaflags))
+			return FALSE;
+		/* onexec rules - both rules are needed for onexec */
+		if (!aare_add_rule_vec(dfarules, 0, AA_ONEXEC, 0, 1, vec, dfaflags))
+			return FALSE;
+		if (!aare_add_rule_vec(dfarules, 0, AA_ONEXEC, 0, index, vec, dfaflags))
+			return FALSE;
 	}
 	if (entry->mode & (AA_USER_PTRACE | AA_OTHER_PTRACE)) {
 		int mode = entry->mode & (AA_USER_PTRACE | AA_OTHER_PTRACE);
