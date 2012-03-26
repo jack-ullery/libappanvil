@@ -362,15 +362,16 @@ static struct value_list *extract_fstype(struct cond_entry **conds)
 	return list;
 }
 
-static struct value_list *extract_options(struct cond_entry **conds)
+static struct value_list *extract_options(struct cond_entry **conds, int eq)
 {
 	struct value_list *list = NULL;
 
 	struct cond_entry *entry, *tmp, *prev = NULL;
 
 	list_for_each_safe(*conds, entry, tmp) {
-		if (strcmp(entry->name, "options") == 0 ||
-		    strcmp(entry->name, "option") == 0) {
+		if ((strcmp(entry->name, "options") == 0 ||
+		     strcmp(entry->name, "option") == 0) &&
+		    entry->eq == eq) {
 			if (prev)
 				prev->next = tmp;
 			if (entry == *conds)
@@ -402,12 +403,31 @@ struct mnt_entry *new_mnt_entry(struct cond_entry *src_conds, char *device,
 		ent->dev_type = extract_fstype(&src_conds);
 
 		ent->flags = 0;
+		ent->inv_flags = 0;
 
 		if (src_conds) {
-			ent->opts = extract_options(&src_conds);
+			unsigned int flags = 0, inv_flags = 0;
+			struct value_list *list = extract_options(&src_conds, 0);
+
+			ent->opts = extract_options(&src_conds, 1);
 			if (ent->opts)
 				ent->flags = extract_flags(&ent->opts,
 							   &ent->inv_flags);
+
+			if (list) {
+				flags = extract_flags(&list, &inv_flags);
+				/* these flags are optional so set both */
+				flags |= inv_flags;
+				inv_flags |= flags;
+
+				ent->flags |= flags;
+				ent->inv_flags |= inv_flags;
+
+				if (ent->opts)
+					list_append(ent->opts, list);
+				else if (list)
+					ent->opts = list;
+			}
 		}
 
 		if (allow & AA_DUMMY_REMOUNT) {
