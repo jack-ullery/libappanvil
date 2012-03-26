@@ -42,6 +42,12 @@ testfailed()
 	# global num_testfailures teststatus
 	num_testfailures=$(($num_testfailures + 1))
 	teststatus="fail"
+
+	# if we are retaining the tmpdir we are debugging failures so
+	# stop so it can be looked at
+	if [ $retaintmpdir == "true" ] ; then
+	   exit 127
+	fi
 }
 
 error_handler()
