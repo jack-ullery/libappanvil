@@ -2391,8 +2391,18 @@ sub handlechildren($$$) {
 				# put in enforce mode with genprof
 				$sd{$profile}{$hat}{flags} = $sd{$profile}{$profile}{flags} if $profile ne $hat;
 
+				# autodep our new child
+				my $stub_profile = create_new_profile($hat);
+
 				$sd{$profile}{$hat}{flags} = 'complain';
 				$sd{$profile}{$hat}{allow}{path} = { };
+				if (defined $stub_profile->{$hat}{$hat}{allow}{path}) {
+				  $sd{$profile}{$hat}{allow}{path} = $stub_profile->{$hat}{$hat}{allow}{path};
+				}
+				$sd{$profile}{$hat}{include} = { };
+				if (defined $stub_profile->{$hat}{$hat}{include}) {
+				  $sd{$profile}{$hat}{include} = $stub_profile->{$hat}{$hat}{include};
+				}
 				$sd{$profile}{$hat}{allow}{netdomain} = { };
 				my $file = $sd{$profile}{$profile}{filename};
 				$filelist{$file}{profiles}{$profile}{$hat} = 1;
