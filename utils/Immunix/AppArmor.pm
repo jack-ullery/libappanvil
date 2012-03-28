@@ -748,22 +748,12 @@ sub create_new_profile($) {
     my $fqdbin = shift;
 
     my $profile;
-    if ($fqdbin =~ /^\// ) {
-	$profile = {
-	    $fqdbin => {
-		flags   => "complain",
-		include => { "abstractions/base" => 1    },
-		path    => { $fqdbin => { mode => str_to_mode("mr") } },
-	    }
-	};
-    } else {
-	$profile = {
-	    $fqdbin => {
-		flags   => "complain",
-		include => { "abstractions/base" => 1    },
-	    }
-	};
-    }
+    $profile = {
+	$fqdbin => {
+	    flags   => "complain",
+	    include => { "abstractions/base" => 1    },
+	}
+    };
 
     # if the executable exists on this system, pull in extra dependencies
     if (-f $fqdbin) {
@@ -771,7 +761,7 @@ sub create_new_profile($) {
         if ($hashbang && $hashbang =~ /^#!\s*(\S+)/) {
             my $interpreter = get_full_path($1);
             $profile->{$fqdbin}{allow}{path}->{$fqdbin}{mode} |= str_to_mode("r");
-            $profile->{$fqdbin}{allow}{path}->{$fqdbin}{mode} |= 0;
+            $profile->{$fqdbin}{allow}{path}->{$fqdbin}{audit} |= 0;
             $profile->{$fqdbin}{allow}{path}->{$interpreter}{mode} |= str_to_mode("ix");
             $profile->{$fqdbin}{allow}{path}->{$interpreter}{audit} |= 0;
             if ($interpreter =~ /perl/) {
@@ -785,6 +775,8 @@ sub create_new_profile($) {
             }
             handle_binfmt($profile->{$fqdbin}, $interpreter);
         } else {
+          $profile->{$fqdbin}{allow}{path}->{$fqdbin}{mode} |= str_to_mode("mr");
+          $profile->{$fqdbin}{allow}{path}->{$fqdbin}{audit} |= 0;
           handle_binfmt($profile->{$fqdbin}, $fqdbin);
         }
     }
@@ -798,6 +790,7 @@ sub create_new_profile($) {
         }
     }
     push @created, $fqdbin;
+    $DEBUGGING && debug( Data::Dumper->Dump([$profile], [qw(*profile)]));
     return { $fqdbin => $profile };
 }
 
