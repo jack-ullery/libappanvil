@@ -776,7 +776,7 @@ sub create_new_profile($) {
             $profile->{$fqdbin}{allow}{path}->{$interpreter}{audit} |= 0;
             if ($interpreter =~ /perl/) {
                 $profile->{$fqdbin}{include}->{"abstractions/perl"} = 1;
-            } elsif ($interpreter =~ m/\/bin\/(bash|sh)/) {
+            } elsif ($interpreter =~ m/\/bin\/(bash|dash|sh)/) {
                 $profile->{$fqdbin}{include}->{"abstractions/bash"} = 1;
             } elsif ($interpreter =~ m/python/) {
                 $profile->{$fqdbin}{include}->{"abstractions/python"} = 1;
