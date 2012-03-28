@@ -2850,7 +2850,21 @@ sub add_event_to_tree ($) {
                           $e->{name},
 			  ""
                         );
-        }
+        } elsif (defined $e->{name}) {
+            add_to_tree( $e->{pid},
+			 $e->{parent},
+                          "exec",
+                          $profile,
+                          $hat,
+                          $prog,
+                          $sdmode,
+                          $e->{denied_mask},
+                          $e->{name},
+			  ""
+                        );
+        } else {
+            $DEBUGGING && debug "add_event_to_tree: dropped exec event in $e->{profile}";
+	}
     } elsif ($e->{operation} =~ m/file_/) {
         add_to_tree( $e->{pid},
 		     $e->{parent},

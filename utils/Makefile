@@ -64,7 +64,9 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 	ln -sf aa-status.8 ${DESTDIR}/${MANDIR}/man8/apparmor_status.8
 
 .PHONY: clean
+ifndef VERBOSE
 .SILENT: clean
+endif
 clean: _clean
 	rm -f core core.* *.o *.s *.a *~
 	rm -f Make.rules
