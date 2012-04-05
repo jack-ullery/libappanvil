@@ -24,10 +24,6 @@ danger_caps=["audit_control",
              "sys_module",
              "sys_rawio"]
 
-aa_network_types=r'\s+tcp|\s+udp|\s+icmp'
-
-aa_flags=r'(complain|audit|attach_disconnect|no_attach_disconnected|chroot_attach|chroot_no_attach|chroot_relative|namespace_relative)'
-
 def cmd(command, input = None, stderr = subprocess.STDOUT, stdout = subprocess.PIPE, stdin = None, timeout = None):
     '''Try to execute given command (array) and return its stdout, or
     return a textual error if it failed.'''
@@ -77,20 +73,34 @@ for af_pair in af_pairs:
 # but not in aa_flags...
 # -> currently (2011-01-11) not, but might come back
 
+aa_network_types=r'\s+tcp|\s+udp|\s+icmp'
+
+aa_flags=['complain',
+          'audit',
+          'attach_disconnect',
+          'no_attach_disconnected',
+          'chroot_attach',
+          'chroot_no_attach',
+          'chroot_relative',
+          'namespace_relative']
+
+filename=r'(\/|\@\{\S*\})\S*'
+
 aa_regex_map = {
-    'FILE':             r'\v^\s*(audit\s+)?(deny\s+)?(owner\s+)?(\/|\@\{\S*\})\S*\s+',
-    'DENYFILE':         r'\v^\s*(audit\s+)?deny\s+(owner\s+)?(\/|\@\{\S*\})\S*\s+',
+    'FILENAME':         filename,
+    'FILE':             r'\v^\s*(audit\s+)?(deny\s+)?(owner\s+)?' + filename + r'\s+', # Start of a file rule
+                        # (whitespace_+_, owner etc. flag_?_, filename pattern, whitespace_+_)
+    'DENYFILE':         r'\v^\s*(audit\s+)?deny\s+(owner\s+)?' + filename + r'\s+', # deny, otherwise like FILE
     'auditdenyowner':   r'(audit\s+)?(deny\s+)?(owner\s+)?',
     'auditdeny':        r'(audit\s+)?(deny\s+)?',
-    'FILENAME':         r'(\/|\@\{\S*\})\S*',
-    'EOL':              r'\s*,(\s*$|(\s*#.*$)\@=)',
+    'EOL':              r'\s*,(\s*$|(\s*#.*$)\@=)', # End of a line (whitespace_?_, comma, whitespace_?_ comment.*)
     'TRANSITION':       r'(\s+-\>\s+\S+)?',
     'sdKapKey':         " ".join(benign_caps),
     'sdKapKeyDanger':   " ".join(danger_caps),
     'sdKapKeyRegex':    "|".join(capabilities),
     'sdNetworkType':    aa_network_types,
     'sdNetworkProto':   "|".join(af_names),
-    'flags':            r'((flags\s*\=\s*)?\(\s*' + aa_flags + r'(\s*,\s*' + aa_flags + r')*\s*\)\s+)',
+    'flags':            r'((flags\s*\=\s*)?\(\s*(' + '|'.join(aa_flags) + r')(\s*,\s*(' + '|'.join(aa_flags) + r'))*\s*\)\s+)',
 }
 
 def my_repl(matchobj):
