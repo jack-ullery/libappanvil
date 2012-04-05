@@ -11,6 +11,7 @@
   capability sys_chroot,
 
   network inet stream,
+  network inet6 stream,
 
   /usr/lib/dovecot/imap-login mr,
   /{,var/}run/dovecot/login/ r,
