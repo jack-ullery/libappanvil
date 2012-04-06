@@ -51,6 +51,18 @@ int main(int argc, char **argv)
 	return ret;
 }
 
+#define print_string(description, var) \
+	if ((var) != NULL) { \
+		printf("%s: %s\n", (description), (var)); \
+	}
+
+/* unset is the value that the library sets to the var to indicate
+   that it is unset */
+#define print_long(description, var, unset) \
+	if ((var) != (unsigned long) (unset)) { \
+		printf("%s: %ld\n", (description), (var)); \
+	}
+
 int print_results(aa_log_record *record)
 {
 		printf("Event type: ");
@@ -185,6 +197,11 @@ int print_results(aa_log_record *record)
 		{
 			printf("Protocol: %s\n", record->net_protocol);
 		}
+		print_string("Local addr", record->net_local_addr);
+		print_string("Foreign addr", record->net_foreign_addr);
+		print_long("Local port", record->net_local_port, 0);
+		print_long("Foreign port", record->net_foreign_port, 0);
+
 		printf("Epoch: %lu\n", record->epoch);
 		printf("Audit subid: %u\n", record->audit_sub_id);
 	return(0);

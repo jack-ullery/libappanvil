@@ -133,7 +133,14 @@ key_capability		"capability"
 key_capname		"capname"
 key_offset		"offset"
 key_target		"target"
+key_laddr		"laddr"
+key_faddr		"faddr"
+key_lport		"lport"
+key_fport		"fport"
 audit			"audit"
+
+/* network addrs */
+ip_addr			[a-f[:digit:].:]{3,}
 
 /* syslog tokens */
 syslog_kernel		kernel{colon}
@@ -149,6 +156,7 @@ dmesg_timestamp		\[[[:digit:] ]{5,}\.[[:digit:]]{6,}\]
 %x dmesg_timestamp
 %x safe_string
 %x audit_types
+%x ip_addr
 %x other_audit
 %x unknown_message
 
@@ -197,6 +205,12 @@ yy_flex_debug = 0;
 <safe_string>{
 	\"		{ string_buf_reset(); BEGIN(quoted_string); }
 	{hexstring}	{ yylval->t_str = hex_to_string(yytext); BEGIN(INITIAL); return(TOK_HEXSTRING);}
+	{equals}	{ return(TOK_EQUALS); }
+	.		{ /* eek, error! try another state */ BEGIN(INITIAL); yyless(0); }
+	}
+
+<ip_addr>{
+	{ip_addr}	{ yylval->t_str = strdup(yytext); yy_pop_state(yyscanner); return(TOK_IP_ADDR); }
 	{equals}	{ return(TOK_EQUALS); }
 	.		{ /* eek, error! try another state */ BEGIN(INITIAL); yyless(0); }
 	}
@@ -270,6 +284,10 @@ yy_flex_debug = 0;
 {key_capname}		{ return(TOK_KEY_CAPNAME); }
 {key_offset}		{ return(TOK_KEY_OFFSET); }
 {key_target}		{ return(TOK_KEY_TARGET); }
+{key_laddr}		{ yy_push_state(ip_addr, yyscanner); return(TOK_KEY_LADDR); }
+{key_faddr}		{ yy_push_state(ip_addr, yyscanner); return(TOK_KEY_FADDR); }
+{key_lport}		{ return(TOK_KEY_LPORT); }
+{key_fport}		{ return(TOK_KEY_FPORT); }
 
 {syslog_kernel}		{ BEGIN(dmesg_timestamp); return(TOK_SYSLOG_KERNEL); }
 {syslog_month}		{ yylval->t_str = strdup(yytext); return(TOK_DATE_MONTH); }

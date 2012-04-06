@@ -83,6 +83,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token <t_str> TOK_QUOTED_STRING TOK_ID TOK_MODE TOK_DMESG_STAMP
 %token <t_str> TOK_AUDIT_DIGITS TOK_DATE_MONTH TOK_DATE_TIME
 %token <t_str> TOK_HEXSTRING TOK_TYPE_OTHER TOK_MSG_REST
+%token <t_str> TOK_IP_ADDR
 
 %token TOK_EQUALS
 %token TOK_COLON
@@ -133,6 +134,10 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_CAPNAME
 %token TOK_KEY_OFFSET
 %token TOK_KEY_TARGET
+%token TOK_KEY_LADDR
+%token TOK_KEY_FADDR
+%token TOK_KEY_LPORT
+%token TOK_KEY_FPORT
 
 %token TOK_SYSLOG_KERNEL
 
@@ -268,6 +273,14 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ /* target was always name2 in the past */
 	  ret_record->name2 = $3;
 	}
+	| TOK_KEY_LADDR TOK_EQUALS TOK_IP_ADDR
+	{ ret_record->net_local_addr = $3;}
+	| TOK_KEY_FADDR TOK_EQUALS TOK_IP_ADDR
+	{ ret_record->net_foreign_addr = $3;}
+	| TOK_KEY_LPORT TOK_EQUALS TOK_DIGITS
+	{ ret_record->net_local_port = $3;}
+	| TOK_KEY_FPORT TOK_EQUALS TOK_DIGITS
+	{ ret_record->net_foreign_port = $3;}
 	| TOK_MSG_REST
 	{
 		ret_record->event = AA_RECORD_INVALID;

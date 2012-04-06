@@ -141,6 +141,10 @@ typedef struct
 	char *net_family;
 	char *net_protocol;
 	char *net_sock_type;
+	char *net_local_addr;
+	unsigned long net_local_port;
+	char *net_foreign_addr;
+	unsigned long net_foreign_port;
 } aa_log_record;
 
 /**
