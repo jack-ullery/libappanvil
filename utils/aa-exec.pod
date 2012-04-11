@@ -82,6 +82,8 @@ arguments after the -- are treated as arguments of the command.  This is
 useful when passing arguments to the I<E<lt>commandE<gt>> being invoked by
 aa-exec.
 
+=back
+
 =head1 BUGS
 
 If you find any bugs, please report them at
