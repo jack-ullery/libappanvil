@@ -525,7 +525,7 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 		vec[index++] = tbuf;
 
 		/* regular change_profile rule */
-		if (!aare_add_rule_vec(dfarules, 0, AA_CHANGE_PROFILE, 0, index - 1, &vec[1], dfaflags))
+		if (!aare_add_rule_vec(dfarules, 0, AA_CHANGE_PROFILE | AA_ONEXEC, 0, index - 1, &vec[1], dfaflags))
 			return FALSE;
 		/* onexec rules - both rules are needed for onexec */
 		if (!aare_add_rule_vec(dfarules, 0, AA_ONEXEC, 0, 1, vec, dfaflags))
