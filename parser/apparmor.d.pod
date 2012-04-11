@@ -359,7 +359,7 @@ pivot_root keywords, but all mount conditions are optional. Unspecified
 optional conditionals are assumed to match all entries (eg, not specifying
 fstype means all fstypes are matched). Due to the complexity of the mount
 command and how options may be specified, AppArmor allows specifying
-conditionals two different ways:
+conditionals three different ways:
 
 =over 4
 
@@ -396,14 +396,8 @@ $ mount -o rw /dev/foo /mnt
 =item 2.
 
 If a conditional is specified using 'in', then the rule grants permission for
-mounts matching any combination of the specified options. This gets
-particularly interesting because the mount command sometimes has an inverse
-option and sometimes doesn't (eg, the inverse of 'ro' is 'rw' and the inverse
-of 'atime' is 'noatime', but 'slave' does not have an inverse). When creating
-or auditing policy and specifying 'in' for mount conditional, it is useful to
-remember that each option may be either 'on' or 'off' (regardless of the actual
-name of the mount option) and that both the positive and negative option will
-match. For example, if an AppArmor policy has the following rule:
+mounts matching any combination of the specified options. For example, if an
+AppArmor policy has the following rule:
 
 =over 4
 
@@ -411,15 +405,7 @@ mount options in (ro,atime) /dev/foo -> /mnt/,
 
 =back
 
-it matches the same set of mount options as the equivalent rule:
-
-=over 4
-
-mount options in (rw,noatime) /dev/foo -> /mnt/,
-
-=back
-
-and thus, all of these mount commands will match:
+all of these mount commands will match:
 
 =over 4
 
@@ -427,19 +413,7 @@ $ mount -o ro /dev/foo /mnt
 
 $ mount -o ro,atime /dev/foo /mnt
 
-$ mount -o ro,noatime /dev/foo /mnt
-
-$ mount -o rw /dev/foo /mnt
-
-$ mount -o rw,atime /dev/foo /mnt
-
-$ mount -o rw,noatime /dev/foo /mnt
-
 $ mount -o atime /dev/foo /mnt
-
-$ mount -o noatime /dev/foo /mnt
-
-$ mount /dev/foo /mnt
 
 =back
 
@@ -451,18 +425,69 @@ $ mount -o ro,sync /dev/foo /mnt
 
 $ mount -o ro,atime,sync /dev/foo /mnt
 
-$ mount -o rw,sync /dev/foo /mnt
+$ mount -o rw /dev/foo /mnt
 
-$ mount -o sync /dev/foo /mnt
+$ mount -o rw,noatime /dev/foo /mnt
+
+$ mount /dev/foo /mnt
+
+=back
+
+=item 3.
+
+If multiple conditionals are specified in a single mount rule, then the rule
+grants permission for each set of options. This provides a shorthand when
+writing mount rules which might help to logically break up a conditional. For
+example, if an AppArmor policy has the following rule:
+
+=over 4
+
+mount options=ro options=atime
+
+=back
+
+both of these mount commands will match:
+
+=over 4
+
+$ mount -o ro /dev/foo /mnt
+
+$ mount -o atime /dev/foo /mnt
+
+=back
+
+but this one will not:
+
+=over 4
+
+$ mount -o ro,atime /dev/foo /mnt
 
 =back
 
 =back
 
-In addition to the above, options may be specified multiple times in the same
-rule, which might help to logically break up a conditional. To help clarify the
-flexibility and complexity of mount rules, here are some example rules with
-accompanying matching commands:
+Note that separate mount rules are distinct and the options do not accumulate.
+For example, these AppArmor mount rules:
+
+=over 4
+
+mount options=ro,
+mount options=atime,
+
+=back
+
+are not equivalent to either of these mount rules:
+
+=over 4
+
+mount options=(ro,atime),
+
+mount options in (ro,atime),
+
+=back
+
+To help clarify the flexibility and complexity of mount rules, here are some
+example rules with accompanying matching commands:
 
 =over 4
 
@@ -521,22 +546,19 @@ allow mount of /dev/foo anywhere using some combination of 'ro' and 'atime'
 
 =over 4
 
-$ mount -o ro,atime /dev/foo /mnt
+$ mount -o ro /dev/foo /mnt
 
-$ mount -o ro,noatime /dev/foo /some/where/else
+$ mount -o atime /dev/foo /some/where/else
 
-$ mount -o rw /dev/foo /some/other/place
-
-$ mount /dev/foo /mnt
+$ mount -o ro,atime /dev/foo /some/other/place
 
 =back
 
-=item B<mount options=ro mount options=atime /dev/foo,>
+=item B<mount options=ro /dev/foo, mount options=atime /dev/foo,>
 
 allow mount of /dev/foo anywhere as read only, and allow mount of /dev/foo
 anywhere using inode access times. Note this is expressed as two different
-rules and is not the equivalent of 'options=(ro,atime)' or 'options in
-(ro,atime)'. Matches:
+rules. Matches:
 
 =over 4
 
@@ -585,18 +607,19 @@ $ mount -o rw,atime /dev/sdb1 /mnt/stick
 
 =item B<< mount options=(ro, atime) options in (nodev, user) /dev/foo -> /mnt/, >>
 
-allow mount /dev/foo read only and using inode access times, with some
-combination of 'nodev' and 'user'. Some matching mount commands:
+allow mounting /dev/foo on /mmt/ read only and using inode access times or
+allow mounting /dev/foo on /mnt/ with some combination of 'nodev' and 'user'.
+Matches only:
 
 =over 4
 
-$ mount -o ro,atime,nodev,user /dev/foo /mnt
-
 $ mount -o ro,atime /dev/foo /mnt
 
-$ mount -o ro,atime,dev,user /dev/foo /mnt
+$ mount -o nodev /dev/foo /mnt
 
-$ mount -o ro,atime,nouser /dev/foo /mnt
+$ mount -o user /dev/foo /mnt
+
+$ mount -o nodev,user /dev/foo /mnt
 
 =back
 
@@ -891,10 +914,14 @@ The fstype may not be matched against when certain mount command flags are
 used. Specifically fstype matching currently only works when creating a new
 mount and not remount, bind, etc.
 
-Due to limitations in the Linux kernel, when specifying mount options with the
-'in' conditional, both the positive and negative values match when specifying
-one or the other. Specifically, 'options in (ro,nodev)' is equivalent to
-'options in (rw,dev)'.
+Mount rules with multiple 'options' conditionals are not applied as documented
+but instead merged such that 'options in (ro,nodev) options in (atime)' is
+equivalent to 'options in (ro,nodev,atime)'.
+
+When specifying mount options with the 'in' conditional, both the positive and
+negative values match when specifying one or the other. Eg, 'rw' matches when
+'ro' is specified and 'dev' matches when 'nodev' is specified such that
+'options in (ro,nodev)' is equivalent to 'options in (rw,dev)'.
 
 =back
 
