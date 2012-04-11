@@ -54,7 +54,7 @@ B<COMMENT> = '#' I<TEXT>
 
 B<TEXT> = any characters
 
-B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> | I<NETWORK RULE> | 'change_profile -> ' I<PROGRAMCHILD> ) ... ] '}'
+B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> | I<NETWORK RULE> | I<MOUNT RULE> | I<FILE RULE> | 'change_profile -> ' I<PROGRAMCHILD> ) ... ] '}'
 
 B<SUBPROFILE> = [ I<COMMENT> ... ] ( I<PROGRAMHAT> | 'profile ' I<PROGRAMCHILD> ) '{' [ ( I<FILE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}'
 
@@ -75,11 +75,37 @@ B<PROGRAMHAT> = '^'  (non-whitespace characters; see aa_change_hat(2) for a desc
 
 B<PROGRAMCHILD> = I<SUBPROFILE> name
 
+B<MOUNT RULE> = ( I<MOUNT> | I<REMOUNT> | I<UMOUNT> | I<PIVOT ROOT> )
+
+B<MOUNT> = [ 'audit' ] [ 'deny' ] 'mount' [ I<MOUNT CONDITIONS> ] [ I<SOURCE FILEGLOB> ] [ -> [ I<MOUNTPOINT FILEGLOB> ]
+
+B<REMOUNT> = [ 'audit' ] [ 'deny' ] 'remount' [ I<MOUNT CONDITIONS> ] I<MOUNTPOINT FILEGLOB>
+
+B<UMOUNT> = [ 'audit' ] [ 'deny' ] 'umount' [ I<MOUNT CONDITIONS> ] I<MOUNTPOINT FILEGLOB>
+
+B<PIVOT ROOT> = [ 'audit' ] [ 'deny' ] pivot_root [ I<OLD ABS PATH> ] [ I<MOUNTPOINT ABS PATH> ] [ -> I<PROGRAMCHILD> ]
+
+B<MOUNT CONDITIONS> = [ ( 'fstype' | 'vfstype' ) ( '=' | 'in' ) I<MOUNT FSTYPE EXPRESSION> ] [ 'options' ( '=' | 'in' ) I<MOUNT FLAGS EXPRESSION> ]
+
+B<MOUNT FSTYPE EXPRESSION> = ( I<MOUNT FSTYPE LIST> | I<MOUNT EXPRESSION> )
+
+B<MOUNT FSTYPE LIST> = Comma separated list of valid filesystem and virtual filesystem types (eg ext4, debugfs, devfs, etc)
+
+B<MOUNT FLAGS EXPRESSION> = ( I<MOUNT FLAGS LIST> | I<MOUNT EXPRESSION> )
+
+B<MOUNT FLAGS LIST> = Comma separated list of I<MOUNT FLAGS>.
+
+B<MOUNT FLAGS> = ( 'ro' | 'rw' | 'nosuid' | 'suid' | 'nodev' | 'dev' | 'noexec' | 'exec' | 'sync' | 'async' | 'remount' | 'mand' | 'nomand' | 'dirsync' | 'nodirsync' | 'noatime' | 'atime' | 'nodiratime' | 'diratime' | 'bind' | 'move' | 'rec' | 'verbose' | 'silent' | 'load' | 'acl' | 'noacl' | 'unbindable' | 'private' | 'slave' | 'shared' | 'relative' | 'norelative' | 'iversion' | 'noiversion' | 'strictatime' | 'nouser' | 'user' )
+
+B<MOUNT EXPRESSION> = ( I<ALPHANUMERIC> | I<AARE> ) ...
+
+B<AARE> = B<?*[]{}^> (see below for meanings)
+
 B<FILE RULE> = I<RULE QUALIFIER> ( '"' I<FILEGLOB> '"' | I<FILEGLOB> ) I<ACCESS> ','
 
 B<RULE QUALIFIER> = [ 'audit' ] [ 'deny' ] [ 'owner' ]
 
-B<FILEGLOB> = (must start with '/' (after variable expansion), B<?*[]{}^> have special meanings; see below. May include I<VARIABLE>. Rules with embedded spaces or tabs must be quoted. Rules must end with '/' to apply to directories.)
+B<FILEGLOB> = (must start with '/' (after variable expansion), B<AARE> have special meanings; see below. May include I<VARIABLE>. Rules with embedded spaces or tabs must be quoted. Rules must end with '/' to apply to directories.)
 
 B<ACCESS> = ( 'r' | 'w' | 'l' | 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'cx -> ' I<PROGRAMCHILD> | 'Cx -> ' I<PROGRAMCHILD> | 'm' ) [ I<ACCESS> ... ]  (not all combinations are allowed; see below.)
 
@@ -303,10 +329,6 @@ access is not granted, some capabilities allow loading kernel modules,
 arbitrary access to IPC, ability to bypass discretionary access controls,
 and other operations that are typically reserved for the root user.
 
-The only operations that cannot be controlled in this manner are mount(2),
-umount(2), and loading new AppArmor policy into the kernel, which are
-always denied to confined processes.
-
 =head2 Network Rules
 
 AppArmor supports simple coarse grained network mediation.  The network
@@ -327,6 +349,258 @@ eg.
  network tcp,		#allow access to tcp
  network inet tcp,	#allow access to tcp only for inet4 addresses
  network inet6 tcp,	#allow access to tcp only for inet6 addresses
+
+=head2 Mount Rules
+
+AppArmor supports mount mediation and allows specifying filesystem types and
+mount flags. The syntax of mount rules in AppArmor is based on the mount(8)
+command syntax. Mount rules must contain one of the mount, remount, umount or
+pivot_root keywords, but all mount conditions are optional. Unspecified
+optional conditionals are assumed to match all entries (eg, not specifying
+fstype means all fstypes are matched). Due to the complexity of the mount
+command and how options may be specified, AppArmor allows specifying
+conditionals two different ways:
+
+=over 4
+
+=item 1.
+
+If a conditional is specified using '=', then the rule only grants permission
+for mounts matching the exactly specified options. For example, an AppArmor
+policy with the following rule:
+
+=over 4
+
+mount options=ro /dev/foo -> /mnt/,
+
+=back
+
+Would match:
+
+=over 4
+
+$ mount -o ro /dev/foo /mnt
+
+=back
+
+but not either of these:
+
+=over 4
+
+$ mount -o ro,atime /dev/foo /mnt
+
+$ mount -o rw /dev/foo /mnt
+
+=back
+
+=item 2.
+
+If a conditional is specified using 'in', then the rule grants permission for
+mounts matching any combination of the specified options. This gets
+particularly interesting because the mount command sometimes has an inverse
+option and sometimes doesn't (eg, the inverse of 'ro' is 'rw' and the inverse
+of 'atime' is 'noatime', but 'slave' does not have an inverse). When creating
+or auditing policy and specifying 'in' for mount conditional, it is useful to
+remember that each option may be either 'on' or 'off' (regardless of the actual
+name of the mount option) and that both the positive and negative option will
+match. For example, if an AppArmor policy has the following rule:
+
+=over 4
+
+mount options in (ro,atime) /dev/foo -> /mnt/,
+
+=back
+
+it matches the same set of mount options as the equivalent rule:
+
+=over 4
+
+mount options in (rw,noatime) /dev/foo -> /mnt/,
+
+=back
+
+and thus, all of these mount commands will match:
+
+=over 4
+
+$ mount -o ro /dev/foo /mnt
+
+$ mount -o ro,atime /dev/foo /mnt
+
+$ mount -o ro,noatime /dev/foo /mnt
+
+$ mount -o rw /dev/foo /mnt
+
+$ mount -o rw,atime /dev/foo /mnt
+
+$ mount -o rw,noatime /dev/foo /mnt
+
+$ mount -o atime /dev/foo /mnt
+
+$ mount -o noatime /dev/foo /mnt
+
+$ mount /dev/foo /mnt
+
+=back
+
+but none of these will:
+
+=over 4
+
+$ mount -o ro,sync /dev/foo /mnt
+
+$ mount -o ro,atime,sync /dev/foo /mnt
+
+$ mount -o rw,sync /dev/foo /mnt
+
+$ mount -o sync /dev/foo /mnt
+
+=back
+
+=back
+
+In addition to the above, options may be specified multiple times in the same
+rule, which might help to logically break up a conditional. To help clarify the
+flexibility and complexity of mount rules, here are some example rules with
+accompanying matching commands:
+
+=over 4
+
+=item B<mount,>
+
+the 'mount' rule without any conditionals is the most generic and allows any
+mount. Equivalent to 'mount fstype=** options=** ** -> /**'.
+
+=item B<mount /dev/foo,>
+
+allow mounting of /dev/foo anywhere with any options. Some matching mount
+commands:
+
+=over 4
+
+$ mount /dev/foo /mnt
+
+$ mount -t ext3 /dev/foo /mnt
+
+$ mount -t vfat /dev/foo /mnt
+
+$ mount -o ro,atime,noexec,nodiratime /dev/foo /srv/some/mountpoint
+
+=back
+
+=item B<mount options=ro /dev/foo,>
+
+allow mounting of /dev/foo anywhere, as read only. Some matching mount
+commands:
+
+=over 4
+
+$ mount -o ro /dev/foo /mnt
+
+$ mount -o ro /dev/foo /some/where/else
+
+=back
+
+=item B<mount options=(ro,atime) /dev/foo,>
+
+allow mount of /dev/foo anywhere, as read only and using inode access times.
+Some matching mount commands:
+
+=over 4
+
+$ mount -o ro,atime /dev/foo /mnt
+
+$ mount -o ro,atime /dev/foo /some/where/else
+
+=back
+
+=item B<mount options in (ro,atime) /dev/foo,>
+
+allow mount of /dev/foo anywhere using some combination of 'ro' and 'atime'
+(see above). Some matching mount commands:
+
+=over 4
+
+$ mount -o ro,atime /dev/foo /mnt
+
+$ mount -o ro,noatime /dev/foo /some/where/else
+
+$ mount -o rw /dev/foo /some/other/place
+
+$ mount /dev/foo /mnt
+
+=back
+
+=item B<mount options=ro, mount options=atime /dev/foo,>
+
+allow mount of /dev/foo anywhere as read only, and allow mount of /dev/foo
+anywhere using inode access times. Note this is expressed as two different
+rules and is not the equivalent of 'options=(ro,atime)' or 'options in
+(ro,atime)'. Matches:
+
+=over 4
+
+$ mount -o ro /dev/foo /mnt/1
+
+$ mount -o atime /dev/foo /mnt/2
+
+=back
+
+=item B<< mount -> /mnt/**, >>
+
+allow mounting anything under a directory in /mnt/**. Some matching mount
+commands:
+
+=over 4
+
+$ mount /dev/foo1 /mnt/1
+
+$ mount -o ro,atime,noexec,nodiratime /dev/foo2 /mnt/deep/path/foo2
+
+=back
+
+=item B<< mount options=ro -> /mnt/**, >>
+
+allow mounting anything under /mnt/**, as read only. Some matching mount
+commands:
+
+=over 4
+
+$ mount -o ro /dev/foo1 /mnt/1
+
+$ mount -o ro /dev/foo2 /mnt/deep/path/foo2
+
+=back
+
+=item B<< mount fstype=ext3 options=(rw,atime) /dev/sdb1 -> /mnt/stick/, >>
+
+allow mounting an ext3 filesystem in /dev/sdb1 on /mnt/stick as read/write and
+using inode access times. Matches only:
+
+=over 4
+
+$ mount -o rw,atime /dev/sdb1 /mnt/stick
+
+=back
+
+=item B<< mount options=(ro, atime) options in (nodev, user) /dev/foo -> /mnt/, >>
+
+allow mount /dev/foo read only and using inode access times, with some
+combination of 'nodev' and 'user'. Some matching mount commands:
+
+=over 4
+
+$ mount -o ro,atime,nodev,user /dev/foo /mnt
+
+$ mount -o ro,atime /dev/foo /mnt
+
+$ mount -o ro,atime,dev,user /dev/foo /mnt
+
+$ mount -o ro,atime,nouser /dev/foo /mnt
+
+=back
+
+=back
 
 =head2 Variables
 
@@ -602,6 +876,25 @@ An example AppArmor profile:
 =item F</etc/init.d/boot.apparmor>
 
 =item F</etc/apparmor.d/>
+
+=back
+
+=head1 KNOWN BUGS
+
+=over 4
+
+Mount options support the use of pattern matching but mount flags are not
+correctly intersected against specified patterns. Eg, 'mount options=**,'
+should be equivalent to 'mount,', but it is not. (LP: #965690)
+
+The fstype may not be matched against when certain mount command flags are
+used. Specifically fstype matching currently only works when creating a new
+mount and not remount, bind, etc.
+
+Due to limitations in the Linux kernel, when specifying mount options with the
+'in' conditional, both the positive and negative values match when specifying
+one or the other. Specifically, 'options in (ro,nodev)' is equivalent to
+'options in (rw,dev)'.
 
 =back
 
