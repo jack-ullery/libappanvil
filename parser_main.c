@@ -801,6 +801,8 @@ static void get_match_string(void) {
 		handle_features_dir(FLAGS_FILE, &flags_string, FLAGS_STRING_SIZE, flags_string);
 		if (strstr(flags_string, "network"))
 			kernel_supports_network = 1;
+		else
+			kernel_supports_network = 0;
 		if (strstr(flags_string, "mount"))
 			kernel_supports_mount = 1;
 		return;
