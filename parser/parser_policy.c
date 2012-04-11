@@ -172,9 +172,10 @@ void add_entry_to_policy(struct codomain *cod, struct cod_entry *entry)
 	cod->entries = entry;
 }
 
-void post_process_nt_entries(struct codomain *cod)
+void post_process_file_entries(struct codomain *cod)
 {
 	struct cod_entry *entry;
+	int cp_mode = 0;
 
 	list_for_each(cod->entries, entry) {
 		if (entry->nt_name) {
@@ -193,6 +194,27 @@ void post_process_nt_entries(struct codomain *cod)
 			entry->namespace = NULL;
 			entry->nt_name = NULL;
 		}
+		/* FIXME: currently change_profile also implies onexec */
+		cp_mode |= entry->mode & (AA_CHANGE_PROFILE);
+	}
+
+	/* if there are change_profile rules, this implies that we need
+	 * access to /proc/self/attr/current
+	 */
+	if (cp_mode & AA_CHANGE_PROFILE) {
+		/* FIXME: should use @{PROC}/@{PID}/attr/{current,exec} */
+		struct cod_entry *new_ent;
+		char *buffer = strdup("/proc/*/attr/{current,exec}");
+		if (!buffer) {
+			PERROR("Memory allocation error\n");
+			exit(1);
+		}
+		new_ent = new_entry(NULL, buffer, AA_MAY_WRITE, NULL);
+		if (!new_ent) {
+			PERROR("Memory allocation error\n");
+			exit(1);
+		}
+		add_entry_to_policy(cod, new_ent);
 	}
 }
 

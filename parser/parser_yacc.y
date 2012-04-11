@@ -257,7 +257,7 @@ profile_base: TOK_ID opt_id flags TOK_OPEN rules TOK_CLOSE
 		if (force_complain)
 			cod->flags.complain = 1;
 
-		post_process_nt_entries(cod);
+		post_process_file_entries(cod);
 		post_process_mnt_entries(cod);
 		PDEBUG("%s: flags='%s%s'\n",
 		       $2,

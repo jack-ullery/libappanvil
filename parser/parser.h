@@ -381,7 +381,7 @@ extern int cache_fd;
 extern void add_to_list(struct codomain *codomain);
 extern void add_hat_to_policy(struct codomain *policy, struct codomain *hat);
 extern void add_entry_to_policy(struct codomain *policy, struct cod_entry *entry);
-extern void post_process_nt_entries(struct codomain *cod);
+extern void post_process_file_entries(struct codomain *cod);
 extern void post_process_mnt_entries(struct codomain *cod);
 extern int post_process_policy(int debug_only);
 extern int process_hat_regex(struct codomain *cod);
