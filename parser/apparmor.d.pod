@@ -531,7 +531,7 @@ $ mount /dev/foo /mnt
 
 =back
 
-=item B<mount options=ro, mount options=atime /dev/foo,>
+=item B<mount options=ro mount options=atime /dev/foo,>
 
 allow mount of /dev/foo anywhere as read only, and allow mount of /dev/foo
 anywhere using inode access times. Note this is expressed as two different
