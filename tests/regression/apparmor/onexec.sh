@@ -151,9 +151,9 @@ do_test "noexist px" $bin/onexec noexist fail $bin/open $file
 genprofile 'change_profile->':$bin/rw $onexec:w -- image=$bin/rw $bin/open:rix $file:rw
 do_test "change profile - override rix" $bin/onexec $bin/rw pass $bin/open $file
 
-# ONEXEC from CONFINED - change to rw profile, no exec profile to override
+# ONEXEC from CONFINED - change to rw profile, no exec profile to override, no explicit access to /proc/*/attr/exec
 genprofile 'change_profile->':$bin/rw -- image=$bin/rw $bin/open:rix $file:rw
-do_test "change profile - no onexec:w" $bin/onexec $bin/rw fail $bin/open $file
+do_test "change profile - no onexec:w" $bin/onexec $bin/rw pass $bin/open $file
 
 # ONEXEC from CONFINED - don't change profile, make sure exec profile is applied
 genprofile 'change_profile->':$bin/rw $onexec:w $bin/open:rpx -- image=$bin/rw $bin/open:rix $file:rw  -- image=$bin/open $file:rw
