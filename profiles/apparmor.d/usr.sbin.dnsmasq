@@ -9,7 +9,7 @@
 #
 # ------------------------------------------------------------------
 
-@{TFTP_DIR}=/var/tftp
+@{TFTP_DIR}=/var/tftp /srv/tftpboot
 
 #include <tunables/global>
 /usr/sbin/dnsmasq {
