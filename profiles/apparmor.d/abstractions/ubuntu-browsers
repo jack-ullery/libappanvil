@@ -32,6 +32,10 @@
   /usr/bin/firefox Cxr -> sanitized_helper,
   /usr/lib/firefox*/firefox*.sh Cx -> sanitized_helper,
 
+  # Iceweasel
+  /usr/bin/iceweasel Cxr -> sanitized_helper,
+  /usr/lib/iceweasel/iceweasel Cx -> sanitized_helper,
+
   # some unpackaged, but popular browsers
   /usr/lib/icecat-*/icecat Cx -> sanitized_helper,
   /usr/bin/opera Cx -> sanitized_helper,
