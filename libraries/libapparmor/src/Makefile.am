@@ -3,7 +3,8 @@ INCLUDES = $(all_includes)
 BUILT_SOURCES = grammar.h scanner.h af_protos.h
 AM_LFLAGS = -v
 AM_YFLAGS = -d -p aalogparse_
-AM_CFLAGS = @CFLAGS@ -D_GNU_SOURCE -Wall
+AM_CFLAGS = -Wall
+AM_CPPFLAGS = -D_GNU_SOURCE
 scanner.h: scanner.l
 	$(LEX) -v $<
 

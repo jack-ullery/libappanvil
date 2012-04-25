@@ -10,7 +10,7 @@ WriteMakefile(
 	'FIRST_MAKEFILE' => 'Makefile.perl',
 	'ABSTRACT' => q[Perl interface to AppArmor] ,
 	'VERSION' => q[@VERSION@],
-	'INC' => q[-I@top_srcdir@/src @CFLAGS@],
+	'INC' => q[@CPPFLAGS@ -I@top_srcdir@/src @CFLAGS@],
 	'LIBS' => q[-L@top_builddir@/src/.libs/ -lapparmor @LIBS@],
 	'OBJECT' => 'libapparmor_wrap.o', # $(OBJ_EXT)
 ) ;

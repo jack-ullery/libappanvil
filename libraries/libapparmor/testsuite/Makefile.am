@@ -10,8 +10,7 @@ AM_CFLAGS = -Wall
 noinst_PROGRAMS = test_multi.multi
 
 test_multi_multi_SOURCES	= test_multi.c
-test_multi_multi_CFLAGS		= $(CFLAGS) -Wall
-test_multi_multi_LDFLAGS	= $(LDFLAGS)
+test_multi_multi_CFLAGS		= -Wall
 test_multi_multi_LDADD		= -L../src/.libs -lapparmor
 
 clean-local:
