@@ -52,6 +52,16 @@ profile sanitized_helper {
   # permissions for /usr/share, but for now just do this. (LP: #972367)
   /usr/share/software-center/* Pixr,
 
+  # While the chromium and chrome sandboxes are setuid root, they only link
+  # in limited libraries so glibc's secure execution should be enough to not
+  # require the santized_helper (ie, LD_PRELOAD will only use standard system
+  # paths (man ld.so)).
+  /usr/lib/chromium-browser/chromium-browser-sandbox PUxr,
+  /opt/google/chrome/chrome-sandbox PUxr,
+  /opt/google/chrome/google-chrome Pixr,
+  /opt/google/chrome/chrome Pixr,
+  /opt/google/chrome/lib*.so{,.*} m,
+
   # Full access
   / r,
   /** rwkl,
