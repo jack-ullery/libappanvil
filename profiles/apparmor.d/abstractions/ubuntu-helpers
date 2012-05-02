@@ -48,6 +48,10 @@ profile sanitized_helper {
   # Allow exec of libexec applications in /usr/lib*
   /usr/lib*/{,**/}* Pixr,
 
+  # Allow exec of software-center scripts. We may need to allow wider
+  # permissions for /usr/share, but for now just do this. (LP: #972367)
+  /usr/share/software-center/* Pixr,
+
   # Full access
   / r,
   /** rwkl,
