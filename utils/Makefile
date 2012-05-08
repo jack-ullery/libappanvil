@@ -32,8 +32,10 @@ PERLTOOLS = aa-genprof aa-logprof aa-autodep aa-audit aa-complain aa-enforce \
 TOOLS = ${PERLTOOLS} aa-decode aa-status
 MODULES = ${MODDIR}/AppArmor.pm ${MODDIR}/Repository.pm \
 	${MODDIR}/Config.pm ${MODDIR}/Severity.pm
+PYTOOLS = aa-easyprof
+PYSETUP = python-tools-setup.py
 
-MANPAGES = ${TOOLS:=.8} logprof.conf.5
+MANPAGES = ${TOOLS:=.8} logprof.conf.5 ${PYTOOLS:=.8}
 
 all: ${MANPAGES} ${HTMLMANPAGES}
 	$(MAKE) -C po all
@@ -45,9 +47,10 @@ BINDIR=${DESTDIR}/usr/sbin
 CONFDIR=${DESTDIR}/etc/apparmor
 VENDOR_PERL=$(shell perl -e 'use Config; print $$Config{"vendorlib"};')
 PERLDIR=${DESTDIR}${VENDOR_PERL}/${MODDIR}
+PYPREFIX=/usr
 
-po/${NAME}.pot: ${TOOLS}
-	$(MAKE) -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} ${MODULES}"
+po/${NAME}.pot: ${TOOLS} ${PYTOOLS}
+	$(MAKE) -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} ${MODULES} ${PYTOOLS}"
 
 .PHONY: install
 install: ${MANPAGES} ${HTMLMANPAGES}
@@ -62,6 +65,7 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 	$(MAKE) install_manpages DESTDIR=${DESTDIR}
 	$(MAKE) -C vim install DESTDIR=${DESTDIR}
 	ln -sf aa-status.8 ${DESTDIR}/${MANDIR}/man8/apparmor_status.8
+	python ${PYSETUP} install --prefix=${PYPREFIX} --root=${DESTDIR} --version=${VERSION}
 
 .PHONY: clean
 ifndef VERBOSE
@@ -72,6 +76,8 @@ clean: _clean
 	rm -f Make.rules
 	$(MAKE) -C po clean
 	$(MAKE) -C vim clean
+	rm -rf staging/ build/
+	rm -f apparmor/*.pyc
 
 # ${CAPABILITIES} is defined in common/Make.rules
 .PHONY: check_severity_db
@@ -91,4 +97,14 @@ check_severity_db: /usr/include/linux/capability.h severity.db
 check: check_severity_db
 	for i in ${MODULES} ${PERLTOOLS} ; do \
 		perl -c $$i || exit 1; \
+	done
+	tmpfile=$$(mktemp --tmpdir aa-pyflakes-XXXXXX); \
+	for i in ${PYTOOLS} apparmor aa-status test/*.py; do \
+		echo Checking $$i; \
+		pyflakes $$i 2>&1 | grep -v "undefined name '_'" > $$tmpfile; \
+		test -s $$tmpfile && cat $$tmpfile && rm -f $$tmpfile && exit 1; \
+	done || true; \
+	rm -f $$tmpfile
+	for i in test/* ; do \
+		python $$i || exit 1; \
 	done

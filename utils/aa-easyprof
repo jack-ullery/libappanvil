@@ -1,0 +1,65 @@
+#! /usr/bin/env python
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2011-2012 Canonical Ltd.
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+import apparmor.easyprof
+from apparmor.easyprof import AppArmorException, error
+import os
+import sys
+
+if __name__ == "__main__":
+    def usage():
+        '''Return usage information'''
+        return 'USAGE: %s [options] <path to binary>' % \
+               os.path.basename(sys.argv[0])
+
+    (opt, args) = apparmor.easyprof.parse_args()
+    binary = None
+
+    m = usage()
+    if opt.show_policy_group and not opt.policy_groups:
+        error("Must specify -p with --show-policy-group")
+    elif not opt.template and not opt.policy_groups and len(args) < 1:
+        error("Must specify full path to binary\n%s" % m)
+
+    binary = None
+    if len(args) >= 1:
+        binary = args[0]
+
+    try:
+        easyp = apparmor.easyprof.AppArmorEasyProfile(binary, opt)
+    except AppArmorException, e:
+        error(e.value)
+    except Exception:
+        raise
+
+    if opt.list_templates:
+        apparmor.easyprof.print_basefilenames(easyp.get_templates())
+        sys.exit(0)
+    elif opt.template and opt.show_template:
+        files = [os.path.join(easyp.dirs['templates'], opt.template)]
+        apparmor.easyprof.print_files(files)
+        sys.exit(0)
+    elif opt.list_policy_groups:
+        apparmor.easyprof.print_basefilenames(easyp.get_policy_groups())
+        sys.exit(0)
+    elif opt.policy_groups and opt.show_policy_group:
+        for g in opt.policy_groups.split(','):
+            files = [os.path.join(easyp.dirs['policygroups'], g)]
+            apparmor.easyprof.print_files(files)
+        sys.exit(0)
+    elif binary == None:
+        error("Must specify full path to binary\n%s" % m)
+
+    # if we made it here, generate a profile
+    params = apparmor.easyprof.gen_policy_params(binary, opt)
+    p = easyp.gen_policy(**params)
+    print p,
+
