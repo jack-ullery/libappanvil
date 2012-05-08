@@ -118,7 +118,8 @@ po/${NAME}.pot: ${SRCS} ${HDRS}
 	$(MAKE) -C po ${NAME}.pot NAME=${NAME} SOURCES="${SRCS} ${HDRS}"
 
 techdoc.pdf: techdoc.tex
-	while pdflatex $< ${BUILD_OUTPUT} || exit 1 ; \
+	timestamp=$(shell date "+%Y%m%d%H%M%S+02'00'" -r $< );\
+	while pdflatex "\def\fixedpdfdate{$$timestamp}\input $<" ${BUILD_OUTPUT} || exit 1 ; \
 		grep -q "Label(s) may have changed" techdoc.log; \
 	do :; done
 
@@ -302,7 +303,7 @@ clean: _clean
 	rm -f $(NAME)*.tar.gz $(NAME)*.tgz
 	rm -f af_names.h
 	rm -f cap_names.h
-	rm -rf techdoc.aux techdoc.log techdoc.pdf techdoc.toc techdor.txt techdoc/
+	rm -rf techdoc.aux techdoc.out techdoc.log techdoc.pdf techdoc.toc techdoc.txt techdoc/
 	$(MAKE) -s -C $(AAREDIR) clean
 	$(MAKE) -s -C po clean
 	$(MAKE) -s -C tst clean
