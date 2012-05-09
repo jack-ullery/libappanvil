@@ -1,0 +1,31 @@
+#! /usr/bin/env python
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2012 Canonical Ltd.
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+import apparmor.sandbox
+from apparmor.common import AppArmorException, error
+import os
+import sys
+
+if __name__ == "__main__":
+    argv = sys.argv
+    (opt, args) = apparmor.sandbox.parse_args(sys.argv)
+
+    if len(args) < 1:
+        error("Must specify binary")
+
+    if not apparmor.sandbox.check_requirements(args[0]):
+        sys.exit(1)
+
+    if opt.withx:
+        apparmor.sandbox.run_xsandbox(opt.resolution, args)
+    else:
+        # TODO
+        sys.exit(1)
