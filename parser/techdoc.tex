@@ -5,6 +5,17 @@
 \usepackage{url}
 %\usepackage{times}
 
+\usepackage[pdftex,
+  pdfauthor={Andreas Gruenbacher and Seth Arnold},
+  pdftitle={AppArmor Technical Documentation},%
+\ifx\fixedpdfdate\@empty\else
+  pdfcreationdate={\fixedpdfdate},
+  pdfmoddate={\fixedpdfdate},
+\fi
+  pdfsubject={AppArmor},
+  pdfkeywords={AppArmor}
+]{hyperref}
+
 \hyphenation{App-Armor}
 \hyphenation{name-space}
 
@@ -14,7 +25,8 @@
 \author{Andreas Gruenbacher and Seth Arnold \\
 \url{{agruen,seth.arnold}@suse.de} \\
 SUSE Labs / Novell}
-%\date{}
+% don't include the (build!) date
+\date{}
 
 \begin{document}
 
