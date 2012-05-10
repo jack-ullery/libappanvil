@@ -11,6 +11,7 @@
 
 import apparmor.easyprof
 from apparmor.easyprof import AppArmorException, error
+import optparse
 import os
 import sys
 
@@ -20,7 +21,8 @@ if __name__ == "__main__":
         return 'USAGE: %s [options] <path to binary>' % \
                os.path.basename(sys.argv[0])
 
-    (opt, args) = apparmor.easyprof.parse_args()
+    parser = optparse.OptionParser()
+    (opt, args) = apparmor.easyprof.parse_args(parser)
     binary = None
 
     m = usage()

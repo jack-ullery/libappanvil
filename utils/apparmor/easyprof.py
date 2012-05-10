@@ -451,11 +451,10 @@ def print_files(files):
     for i in files:
         print open(i).read()
 
-def parse_args(args=None):
+def parse_args(parser, args=None):
     '''Parse arguments'''
     global DEBUGGING
 
-    parser = optparse.OptionParser()
     parser.add_option("-c", "--config-file",
                       dest="conffile",
                       help="Use alternate configuration file",
