@@ -12,6 +12,7 @@ from apparmor.common import AppArmorException, debug, error, cmd
 import apparmor.easyprof
 import optparse
 import os
+import pwd
 import sys
 import tempfile
 import time
@@ -59,7 +60,8 @@ def parse_args(args=None, parser=None):
 def gen_policy_name(binary):
     '''Generate a temporary policy based on the binary name'''
     # TODO: this may not be good enough
-    return "sandbox-%s" % (os.path.basename(binary))
+    return "sandbox-%s-%s" % (pwd.getpwuid(os.getuid())[0],
+                              os.path.basename(binary))
 
 def aa_exec(command, opt):
     '''Execute binary under specified policy'''
@@ -80,6 +82,7 @@ def aa_exec(command, opt):
     tmp = tempfile.NamedTemporaryFile(prefix = '%s-' % policy_name)
     tmp.write(policy)
     tmp.flush()
+    debug("using '%s' template" % opt.template)
     rc, report = cmd(['sudo', 'apparmor_parser', '-r', tmp.name])
     if rc != 0:
         raise AppArmorException("Could not load policy")
@@ -96,7 +99,7 @@ def find_free_x_display():
 def run_sandbox(command, opt):
     '''Run application'''
     # aa-exec
-    opt.ensure_value("template", "sandbox")
+    #opt.template = "sandbox-x"
     rc, report = aa_exec(command, opt)
     return rc, report
 
@@ -161,7 +164,7 @@ def run_xsandbox(command, opt):
     time.sleep(0.2) # FIXME: detect if running
 
     # aa-exec
-    opt.ensure_value("template", "sandbox-x")
+    #opt.template = "sandbox-x"
     rc, report = aa_exec(command, opt)
 
     # reset environment
