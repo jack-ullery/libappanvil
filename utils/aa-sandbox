@@ -11,21 +11,27 @@
 
 import apparmor.sandbox
 from apparmor.common import AppArmorException, error
+import optparse
 import os
 import sys
 
 if __name__ == "__main__":
     argv = sys.argv
-    (opt, args) = apparmor.sandbox.parse_args(sys.argv)
+    parser = optparse.OptionParser()
+    apparmor.easyprof.add_parser_policy_args(parser)
+    (opt, args) = apparmor.sandbox.parse_args(sys.argv, parser)
 
     if len(args) < 1:
         error("Must specify binary")
 
-    if not apparmor.sandbox.check_requirements(args[0]):
+    binary = args[0]
+    if not apparmor.sandbox.check_requirements(binary):
         sys.exit(1)
 
     if opt.withx:
-        apparmor.sandbox.run_xsandbox(opt.resolution, args)
+        rc, report = apparmor.sandbox.run_xsandbox(args, opt)
     else:
-        # TODO
-        sys.exit(1)
+        rc, report = apparmor.sandbox.run_sandbox(args, opt)
+
+    print report
+    sys.exit(rc)

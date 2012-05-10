@@ -9,12 +9,14 @@
 # ------------------------------------------------------------------
 
 from apparmor.common import AppArmorException, debug, error, cmd
+import apparmor.easyprof
 import optparse
 import os
 import sys
+import tempfile
 import time
 
-global DEBUGGING
+DEBUGGING = False
 
 def check_requirements(binary):
     '''Verify necessary software is installed'''
@@ -27,11 +29,13 @@ def check_requirements(binary):
             return False
     return True
 
-def parse_args(args=None):
+def parse_args(args=None, parser=None):
     '''Parse arguments'''
     global DEBUGGING
 
-    parser = optparse.OptionParser()
+    if parser == None:
+        parser = optparse.OptionParser()
+
     parser.add_option('-X', '--with-x',
                       dest='withx',
                       default=False,
@@ -52,12 +56,51 @@ def parse_args(args=None):
         DEBUGGING = True
     return (my_opt, my_args)
 
+def gen_policy_name(binary):
+    '''Generate a temporary policy based on the binary name'''
+    # TODO: this may not be good enough
+    return "sandbox-%s" % (os.path.basename(binary))
+
+def aa_exec(command, opt):
+    '''Execute binary under specified policy'''
+    opt.ensure_value("template_var", None)
+    opt.ensure_value("name", None)
+    opt.ensure_value("comment", None)
+    opt.ensure_value("author", None)
+    opt.ensure_value("copyright", None)
+
+    binary = command[0]
+    policy_name = apparmor.sandbox.gen_policy_name(binary)
+    easyp = apparmor.easyprof.AppArmorEasyProfile(binary, opt)
+    params = apparmor.easyprof.gen_policy_params(policy_name, opt)
+    policy = easyp.gen_policy(**params)
+    debug("\n%s" % policy)
+
+    # TODO: get rid of sudo
+    tmp = tempfile.NamedTemporaryFile(prefix = '%s-' % policy_name)
+    tmp.write(policy)
+    tmp.flush()
+    rc, report = cmd(['sudo', 'apparmor_parser', '-r', tmp.name])
+    if rc != 0:
+        raise AppArmorException("Could not load policy")
+
+    args = ['aa-exec', '-p', policy_name] + command
+    rc, report = cmd(args)
+    return rc, report
+
 def find_free_x_display():
     # TODO: detect/track and get an available display
     x_display = ":1"
     return x_display
 
-def run_xsandbox(resolution, command):
+def run_sandbox(command, opt):
+    '''Run application'''
+    # aa-exec
+    opt.ensure_value("template", "sandbox")
+    rc, report = aa_exec(command, opt)
+    return rc, report
+
+def run_xsandbox(command, opt):
     '''Run X application in a sandbox'''
     # Find a display to run on
     x_display = find_free_x_display()
@@ -81,7 +124,7 @@ def run_xsandbox(resolution, command):
                        ]
 
         x_args = ['-nolisten', 'tcp',
-                  '-screen', resolution,
+                  '-screen', opt.resolution,
                   '-br',        # black background
                   '-reset',     # reset after last client exists
                   '-terminate', # terminate at server reset
@@ -116,7 +159,10 @@ def run_xsandbox(resolution, command):
         sys.exit(0)
 
     time.sleep(0.2) # FIXME: detect if running
-    cmd(command)
+
+    # aa-exec
+    opt.ensure_value("template", "sandbox-x")
+    rc, report = aa_exec(command, opt)
 
     # reset environment
     os.environ["DISPLAY"] = old_display
@@ -132,4 +178,4 @@ def run_xsandbox(resolution, command):
     os.kill(listener_x, 15)
     os.waitpid(listener_x, 0)
 
-
+    return rc, report
