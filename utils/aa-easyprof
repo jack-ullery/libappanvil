@@ -21,8 +21,7 @@ if __name__ == "__main__":
         return 'USAGE: %s [options] <path to binary>' % \
                os.path.basename(sys.argv[0])
 
-    parser = optparse.OptionParser()
-    (opt, args) = apparmor.easyprof.parse_args(parser)
+    (opt, args) = apparmor.easyprof.parse_args()
     binary = None
 
     m = usage()

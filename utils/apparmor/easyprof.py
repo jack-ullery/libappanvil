@@ -451,9 +451,29 @@ def print_files(files):
     for i in files:
         print open(i).read()
 
-def parse_args(parser, args=None):
+def add_parser_policy_args(parser):
+    '''Add parser arguments'''
+    parser.add_option("-a", "--abstractions",
+                      dest="abstractions",
+                      help="Comma-separated list of abstractions",
+                      metavar="ABSTRACTIONS")
+    parser.add_option("--read-path",
+                      dest="read_path",
+                      help="Path allowing owner reads",
+                      metavar="PATH",
+                      action="append")
+    parser.add_option("--write-path",
+                      dest="write_path",
+                      help="Path allowing owner writes",
+                      metavar="PATH",
+                      action="append")
+
+def parse_args(args=None, parser=None):
     '''Parse arguments'''
     global DEBUGGING
+
+    if parser == None:
+        parser = optparse.OptionParser()
 
     parser.add_option("-c", "--config-file",
                       dest="conffile",
@@ -495,20 +515,6 @@ def parse_args(parser, args=None):
                       help="Show specified policy groups",
                       action='store_true',
                       default=False)
-    parser.add_option("-a", "--abstractions",
-                      dest="abstractions",
-                      help="Comma-separated list of abstractions",
-                      metavar="ABSTRACTIONS")
-    parser.add_option("--read-path",
-                      dest="read_path",
-                      help="Path allowing owner reads",
-                      metavar="PATH",
-                      action="append")
-    parser.add_option("--write-path",
-                      dest="write_path",
-                      help="Path allowing owner writes",
-                      metavar="PATH",
-                      action="append")
     parser.add_option("-n", "--name",
                       dest="name",
                       help="Name of policy",
@@ -530,6 +536,9 @@ def parse_args(parser, args=None):
                       help="Declare AppArmor variable",
                       metavar="@{VARIABLE}=VALUE",
                       action="append")
+
+    # add policy args now
+    add_parser_policy_args(parser)
 
     (my_opt, my_args) = parser.parse_args(args)
     if my_opt.debug:
