@@ -310,7 +310,15 @@ public:
 	hashedNodeVec *nnodes;
 	NodeSet *anodes;
 
-	ProtoState(hashedNodeVec *n, NodeSet *a = NULL): nnodes(n), anodes(a) { };
+	/* init is used instead of a constructor because ProtoState is used
+	 * in a union
+	 */
+	void init(hashedNodeVec *n, NodeSet *a = NULL)
+	{
+		nnodes = n;
+		anodes = a;
+	}
+
 	bool operator<(ProtoState const &rhs)const
 	{
 		if (nnodes == rhs.nnodes)
@@ -338,7 +346,7 @@ public:
  * parition: Is a temporary work variable used during dfa minimization.
  *           it can be replaced with a map, but that is slower and uses more
  *           memory.
- * nodes: Is a temporary work variable used during dfa creation.  It can
+ * proto: Is a temporary work variable used during dfa creation.  It can
  *        be replaced by using the nodemap, but that is slower
  */
 class State {
@@ -379,8 +387,8 @@ public:
 
 	/* temp storage for State construction */
 	union {
-		Partition *partition;
-		ProtoState proto;
+		Partition *partition;	/* used during minimization */
+		ProtoState proto;	/* used during creation */
 	};
 };
 
