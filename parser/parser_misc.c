@@ -184,7 +184,13 @@ struct network_tuple {
 
 /* used by af_name.h to auto generate table entries for "name", AF_NAME
  * pair */
-#define AA_GEN_NET_ENT(name, AF) {name, AF, "stream", SOCK_STREAM, "", 0xffffff}, {name, AF, "dgram", SOCK_DGRAM, "", 0xffffff}, {name, AF, "seqpacket", SOCK_SEQPACKET, "", 0xffffff}, {name, AF, "rdm", SOCK_RDM, "", 0xffffff}, {name, AF, "raw", SOCK_RAW, "", 0xffffff}, {name, AF, "packet", SOCK_PACKET, "", 0xffffff},
+#define AA_GEN_NET_ENT(name, AF) \
+	{name, AF, "stream",    SOCK_STREAM,    "", 0xffffff}, \
+	{name, AF, "dgram",     SOCK_DGRAM,     "", 0xffffff}, \
+	{name, AF, "seqpacket", SOCK_SEQPACKET, "", 0xffffff}, \
+	{name, AF, "rdm",       SOCK_RDM,       "", 0xffffff}, \
+	{name, AF, "raw",       SOCK_RAW,       "", 0xffffff}, \
+	{name, AF, "packet",    SOCK_PACKET,    "", 0xffffff},
 /*FIXME: missing {name, AF, "dccp", SOCK_DCCP, "", 0xfffffff}, */
 
 static struct network_tuple network_mappings[] = {
@@ -936,6 +942,99 @@ void debug_capabilities(struct codomain *cod)
 		__debug_capabilities(cod->quiet_caps, "Quiet Caps");
 }
 
+const char *sock_types[] = {
+	[0] = "none",
+	[SOCK_STREAM] = "stream",
+	[SOCK_DGRAM] = "dgram",
+	[SOCK_RAW] = "raw",
+	[SOCK_RDM] = "rdm",
+	[SOCK_SEQPACKET] = "seqpacket",
+	[SOCK_PACKET] = "packet",
+	/*
+	 * See comment above
+	[SOCK_DCCP] = "dccp",
+	*/
+};
+#define ALL_TYPES 0x43e
+
+#undef AA_GEN_NET_ENT
+#define AA_GEN_NET_ENT(name, AF) [AF] = name,
+
+static const char *network_families[] = {
+#include "af_names.h"
+};
+
+void __debug_network(unsigned int *array, const char *name)
+{
+	unsigned int count = sizeof(sock_types)/sizeof(sock_types[0]);
+	unsigned int mask = ~((1 << count) -1);
+	unsigned int i, j;
+	int none = 1;
+	size_t af_max = get_af_max();
+
+	for (i = AF_UNSPEC; i < af_max; i++)
+		if (array[i]) {
+			none = 0;
+			break;
+		}
+
+	if (none)
+		return;
+
+	printf("%s: ", name);
+
+	/* This can only be set by an unqualified network rule */
+	if (array[AF_UNSPEC]) {
+		printf("<all>\n");
+		return;
+	}
+
+	for (i = 0; i < af_max; i++) {
+		if (array[i]) {
+			const char *fam = network_families[i];
+			if (fam)
+				printf("%s ", fam);
+			else
+				printf("#%u ", i);
+
+			/* All types/protocols */
+			if (array[i] == 0xffffffff || array[i] == ALL_TYPES)
+				continue;
+
+			printf("{ ");
+
+			for (j = 0; j < count; j++) {
+				const char *type;
+				if (array[i] & (1 << j)) {
+					type = sock_types[j];
+					if (type)
+						printf("%s ", type);
+					else
+						printf("#%u ", j);
+				}
+			}
+			if (array[i] & mask)
+				printf("#%x ", array[i] & mask);
+
+			printf("} ");
+		}
+	}
+	printf("\n");
+}
+
+void debug_network(struct codomain *cod)
+{
+	if (cod->network_allowed)
+		__debug_network(cod->network_allowed, "Network");
+	if (cod->audit_network)
+		__debug_network(cod->audit_network, "Audit Net");
+	if (cod->deny_network)
+		__debug_network(cod->deny_network, "Deny Net");
+	if (cod->quiet_network)
+		__debug_network(cod->quiet_network, "Quiet Net");
+
+}
+
 void debug_cod_list(struct codomain *cod)
 {
 	if (cod->namespace)
@@ -952,6 +1051,8 @@ void debug_cod_list(struct codomain *cod)
 	debug_flags(cod);
 	
 	debug_capabilities(cod);
+
+	debug_network(cod);
 
 	if (cod->entries)
 		debug_cod_entries(cod->entries);
