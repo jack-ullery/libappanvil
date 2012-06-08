@@ -9,6 +9,7 @@
 #    Written by Steve Beattie <steve@nxnw.org>, based on work by
 #    Christian Boltz <apparmor@cboltz.de>
 
+from __future__ import with_statement
 import os
 import re
 import subprocess
