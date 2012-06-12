@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     try:
         easyp = apparmor.easyprof.AppArmorEasyProfile(binary, opt)
-    except AppArmorException, e:
+    except AppArmorException as e:
         error(e.value)
     except Exception:
         raise

@@ -10,7 +10,6 @@
 #    Christian Boltz <apparmor@cboltz.de>
 
 from __future__ import with_statement
-import os
 import re
 import subprocess
 import sys
@@ -31,9 +30,8 @@ def cmd(command, input = None, stderr = subprocess.STDOUT, stdout = subprocess.P
 
     try:
         sp = subprocess.Popen(command, stdin=stdin, stdout=stdout, stderr=stderr, close_fds=True, universal_newlines=True)
-    except OSError:
-        e = sys.exc_info()[1]
-        return [127, str(e)]
+    except OSError as ex:
+        return [127, str(ex)]
 
     out, outerr = sp.communicate(input)
 
