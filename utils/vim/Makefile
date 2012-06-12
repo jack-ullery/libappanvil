@@ -14,7 +14,7 @@ VIM_INSTALL_PATH=${DESTDIR}/usr/share/apparmor
 all: apparmor.vim
 
 apparmor.vim: apparmor.vim.in Makefile create-apparmor.vim.py
-	${PYTHON} create-apparmor.vim.py > /dev/null
+	${PYTHON} create-apparmor.vim.py > apparmor.vim
 
 install: apparmor.vim
 	install -d $(VIM_INSTALL_PATH)
