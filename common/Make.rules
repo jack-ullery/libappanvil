@@ -27,6 +27,10 @@
 DISTRIBUTION=AppArmor
 VERSION=$(shell cat common/Version)
 
+# Convenience functions
+pathsearch = $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(PATH)))))
+map = $(foreach a,$(2),$(call $(1),$(a)))
+
 # OVERRIDABLE variables
 # Set these variables before including Make.rules to change its behavior
 #   SPECFILE - for packages that have a non-standard specfile name
@@ -126,6 +130,17 @@ tarball: clean $(TARBALL)
 endif
 
 endif
+
+ifndef PYTHON_VERSIONS
+PYTHON_VERSIONS = $(call map, pathsearch, python2 python3)
+endif
+
+ifndef PYTHON
+PYTHON = $(firstword ${PYTHON_VERSIONS})
+endif
+
+#Helper function to be used with $(call pyalldo, run_test_with_all.py)
+pyalldo=set -e; $(foreach py, $(PYTHON_VERSIONS), $(py) $(1);)
 
 .PHONY: version
 .SILENT: version

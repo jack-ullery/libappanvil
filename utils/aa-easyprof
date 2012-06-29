@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     try:
         easyp = apparmor.easyprof.AppArmorEasyProfile(binary, opt)
-    except AppArmorException, e:
+    except AppArmorException as e:
         error(e.value)
     except Exception:
         raise
@@ -61,5 +61,5 @@ if __name__ == "__main__":
     # if we made it here, generate a profile
     params = apparmor.easyprof.gen_policy_params(binary, opt)
     p = easyp.gen_policy(**params)
-    print p,
+    sys.stdout.write('%s\n' % p)
 

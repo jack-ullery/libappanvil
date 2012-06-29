@@ -65,7 +65,7 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 	$(MAKE) install_manpages DESTDIR=${DESTDIR}
 	$(MAKE) -C vim install DESTDIR=${DESTDIR}
 	ln -sf aa-status.8 ${DESTDIR}/${MANDIR}/man8/apparmor_status.8
-	python ${PYSETUP} install --prefix=${PYPREFIX} --root=${DESTDIR} --version=${VERSION}
+	${PYTHON} ${PYSETUP} install --prefix=${PYPREFIX} --root=${DESTDIR} --version=${VERSION}
 
 .PHONY: clean
 ifndef VERBOSE
@@ -105,6 +105,4 @@ check: check_severity_db
 		test -s $$tmpfile && cat $$tmpfile && rm -f $$tmpfile && exit 1; \
 	done || true; \
 	rm -f $$tmpfile
-	for i in test/* ; do \
-		python $$i || exit 1; \
-	done
+	$(foreach test, $(wildcard test/test-*.py), $(call pyalldo, $(test)))

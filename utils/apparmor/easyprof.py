@@ -8,6 +8,8 @@
 #
 # ------------------------------------------------------------------
 
+from __future__ import with_statement
+
 import codecs
 import glob
 import optparse
@@ -40,7 +42,7 @@ DEBUGGING = False
 def error(out, exit_code=1, do_exit=True):
     '''Print error message and exit'''
     try:
-        print >> sys.stderr, "ERROR: %s" % (out)
+        sys.stderr.write("ERROR: %s\n" % (out))
     except IOError:
         pass
 
@@ -51,7 +53,7 @@ def error(out, exit_code=1, do_exit=True):
 def warn(out):
     '''Print warning message'''
     try:
-        print >> sys.stderr, "WARN: %s" % (out)
+        sys.stderr.write("WARN: %s\n" % (out))
     except IOError:
         pass
 
@@ -59,7 +61,7 @@ def warn(out):
 def msg(out, output=sys.stdout):
     '''Print message'''
     try:
-        print >> output, "%s" % (out)
+        sys.stdout.write("%s\n" % (out))
     except IOError:
         pass
 
@@ -70,7 +72,7 @@ def cmd(command):
     try:
         sp = subprocess.Popen(command, stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT)
-    except OSError, ex:
+    except OSError as ex:
         return [127, str(ex)]
 
     out = sp.communicate()[0]
@@ -82,7 +84,7 @@ def cmd_pipe(command1, command2):
     try:
         sp1 = subprocess.Popen(command1, stdout=subprocess.PIPE)
         sp2 = subprocess.Popen(command2, stdin=sp1.stdout)
-    except OSError, ex:
+    except OSError as ex:
         return [127, str(ex)]
 
     out = sp2.communicate()[0]
@@ -93,7 +95,7 @@ def debug(out):
     '''Print debug message'''
     if DEBUGGING:
         try:
-            print >> sys.stderr, "DEBUG: %s" % (out)
+            sys.stderr.write("DEBUG: %s\n" % (out))
         except IOError:
             pass
 
@@ -181,6 +183,8 @@ def verify_policy(policy):
         fn = policy
     else:
         f, fn = tempfile.mkstemp(prefix='aa-easyprof')
+        if not isinstance(policy, bytes):
+            policy = policy.encode('utf-8')
         os.write(f, policy)
         os.close(f)
 
@@ -219,9 +223,9 @@ class AppArmorEasyProfile:
         if opt.policy_groups_dir and os.path.isdir(opt.policy_groups_dir):
             self.dirs['policygroups'] = os.path.abspath(opt.policy_groups_dir)
 
-        if not self.dirs.has_key('templates'):
+        if not 'templates' in self.dirs:
             raise AppArmorException("Could not find templates directory")
-        if not self.dirs.has_key('policygroups'):
+        if not 'policygroups' in self.dirs:
             raise AppArmorException("Could not find policygroups directory")
 
         self.aa_topdir = "/etc/apparmor.d"
@@ -445,11 +449,12 @@ class AppArmorEasyProfile:
 
 def print_basefilenames(files):
     for i in files:
-        print "%s" % (os.path.basename(i))
+        sys.stdout.write("%s\n" % (os.path.basename(i)))
 
 def print_files(files):
     for i in files:
-        print open(i).read()
+        with open(i) as f:
+            sys.stdout.write(f.read()+"\n")
 
 def parse_args(args=None):
     '''Parse arguments'''
