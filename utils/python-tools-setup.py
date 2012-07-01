@@ -40,7 +40,15 @@ class Install(_install, object):
         scripts = ['/usr/bin/aa-easyprof']
         self.mkpath(prefix + os.path.dirname(scripts[0]))
         for s in scripts:
-            self.copy_file(os.path.basename(s), prefix + s)
+            f = prefix + s
+            # If we have a defined python version, use it instead of the system
+            # default
+            if 'PYTHON' in os.environ:
+                lines = open(os.path.basename(s)).readlines()
+                lines[0] = '#! /usr/bin/env %s\n' % os.environ['PYTHON']
+                open(f, 'w').write("".join(lines))
+            else:
+                self.copy_file(os.path.basename(s), f)
 
         configs = ['easyprof/easyprof.conf']
         self.mkpath(prefix + "/etc/apparmor")
