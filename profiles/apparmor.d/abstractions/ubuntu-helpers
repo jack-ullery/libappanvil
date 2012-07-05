@@ -43,10 +43,11 @@ profile sanitized_helper {
   /bin/* Pixr,
   /sbin/* Pixr,
   /usr/bin/* Pixr,
+  /usr/local/bin/* Pixr,
   /usr/sbin/* Pixr,
 
-  # Allow exec of libexec applications in /usr/lib*
-  /usr/lib*/{,**/}* Pixr,
+  # Allow exec of libexec applications in /usr/lib* and /usr/local/lib*
+  /usr/{,local/}lib*/{,**/}* Pixr,
 
   # Allow exec of software-center scripts. We may need to allow wider
   # permissions for /usr/share, but for now just do this. (LP: #972367)
@@ -65,7 +66,7 @@ profile sanitized_helper {
   # Full access
   / r,
   /** rwkl,
-  /{,usr/}lib{,32,64}/{,**/}*.so{,.*} m,
+  /{,usr/,usr/local/}lib{,32,64}/{,**/}*.so{,.*} m,
 
   # Dangerous files
   audit deny owner /**/* m,              # compiled libraries
