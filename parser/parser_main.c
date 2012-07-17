@@ -873,11 +873,6 @@ static void get_flags_string(char **flags, char *flags_file) {
 //fprintf(stderr, "flags string: %s\n", flags_string);
 //fprintf(stderr, "changehat %d\n", flag_changehat_version);
 	}
-	if (strstr(flags_string, "network"))
-		kernel_supports_network = 1;
-	else
-		kernel_supports_network = 0;
-
 	return;
 
 fail:
@@ -1187,7 +1182,12 @@ static void setup_flags(void)
 		write_cache = 0;
 		skip_read_cache = 1;
 		return;
-	}
+	} else if (strstr(flags_string, "network"))
+		kernel_supports_network = 1;
+	else
+		kernel_supports_network = 0;
+
+
 
 	/*
          * Deal with cache directory versioning:
