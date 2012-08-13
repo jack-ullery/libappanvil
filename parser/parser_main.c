@@ -456,8 +456,10 @@ static int process_arg(int c, char *optarg)
 		skip_cache = 1;
 		break;
 	case 'N':
+		count++;
 		names_only = 1;
 		skip_cache = 1;
+		kernel_load = 0;
 		break;
 	case 'S':
 		count++;
