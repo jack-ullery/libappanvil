@@ -28,22 +28,99 @@ apparmor_parser - loads AppArmor profiles into the kernel
 
 =head1 SYNOPSIS
 
-B<apparmor_parser [-adrR] [--add] [--debug]  [--replace] [--remove]
-                  [--preprocess] [--Include n] [--base n] [ --Complain ]>
+B<apparmor_parser [options] E<lt>commandE<gt> [profile]...>
+
+B<apparmor_parser [options] E<lt>commandE<gt>>
 
 B<apparmor_parser [-hv] [--help] [--version]>
 
 =head1 DESCRIPTION
 
-B<apparmor_parser> is used to import new apparmor.d(5) profiles
-into the Linux kernel. The profiles restrict the operations available
-to processes by executable name.
+B<apparmor_parser> is used as a general tool to compile, and manage AppArmor
+policy, including loading new apparmor.d(5) profiles into the Linux kernel.
+
+AppArmor profiles restrict the operations available to processes.
 
 The profiles are loaded into the Linux kernel by the B<apparmor_parser>
-program, which takes its input from standard input. The input supplied to
-B<apparmor_parser> should be in the format described in apparmor.d(5).
+program, which by default takes its input from standard input. The input
+supplied to B<apparmor_parser> should be in the format described in
+apparmor.d(5).
 
-=head1 OPTIONS
+=head1 COMMANDS
+
+The command set is broken into four subcategories.
+
+=over 4
+
+=item unprivileged commands
+
+Commands that don't require any privilege and don't operate on profiles.
+
+=item unprivileged profile commands
+
+Commands that operate on a profile either specified on the command line or
+read from stdin if no profile was specified.
+
+=item privileged commands
+
+Commands that require the MAC_ADMIN capability within the affected AppArmor
+namespace to load policy into the kernel or filesystem write permissions to
+update the affected privileged files (cache etc).
+
+=item privileged profile commands
+
+Commands that require privilege and operate on profiles.
+
+=back
+
+=head1 Unprivileged commands
+
+=over 4
+
+=item -V, --version
+
+Print the version number and exit.
+
+=item -h, --help
+
+Give a quick reference guide.
+
+=back
+
+=head1 Unprivileged profile commands
+
+=over 4
+
+=item -N, --names
+
+Produce a list of policies from a given set of profiles (implies -K).
+
+=item -p, --preprocess
+
+Apply preprocessing to the input profile(s) by flattening includes into
+the output profile and dump to stdout.
+
+=item -S, --stdout
+
+Writes a binary (cached) profile to stdout (implies -K and -T).
+
+=item -o file, --ofile file
+
+Writes a binary (cached) profile to the specified file (implies -K and -T)
+
+=back
+
+=head1 Privileged commands
+
+=over 4
+
+=item --purge-cache
+
+Unconditionally clear out cached profiles.
+
+=back
+
+=head1 Privileged profile commands
 
 =over 4
 
@@ -67,25 +144,22 @@ Note that it still requires a complete AppArmor definition as described
 in apparmor.d(5) even though the contents of the definition aren't
 used.
 
-=item -C, --Complain
+=back
 
-For the profile to load in complain mode.
+=head1 OPTIONS
+
+=over 4
 
 =item -B, --binary
 
-Load a binary (cached) profile, as produced with the -S option.
+Treat the profile files specified on the command line (or stdin if none
+specified) as binary cache files, produced with the -S or -o options,
+and load to the kernel as specified by -a, -r, and -R (implies -K
+and -T).
 
-=item -N, --names
+=item -C, --Complain
 
-Produce a list of policies from a given set of profiles (implies -K).
-
-=item -S, --stdout
-
-Writes a binary (cached) profile to stdout (implies -K and -T).
-
-=item -o file, --ofile file
-
-Writes a binary (cached) profile to the specified file (implies -K and -T)
+Force the profile to load in complain mode.
 
 =item -b n, --base n
 
@@ -138,6 +212,11 @@ by default. In cases where abstractions have been changed, and the parser
 is running with "--replace", it may make sense to also use
 "--skip-read-cache" with the "--write-cache" option.
 
+=item --skip-bad-cache
+
+Skip updating the cache if it contains cached profiles in a bad or
+inconsistent state
+
 =item -L, --cache-loc
 
 Set the location of the cache directory.  If not specified the cache location
@@ -149,6 +228,9 @@ Perform all actions except the actual loading of a profile into the kernel.
 This is useful for testing profile generation, caching, etc, without making
 changes to the running kernel profiles.
 
+This also removes the need for privilege to execute the commands that
+manage policy in the kernel
+
 =item -q, --quiet
 
 Do not report on the profiles as they are loaded, and not show warnings.
@@ -156,15 +238,6 @@ Do not report on the profiles as they are loaded, and not show warnings.
 =item -v, --verbose
 
 Report on the profiles as they are loaded, and show warnings.
-
-=item -V, --version
-
-Print the version number and exit.
-
-=item -p, --preprocess
-
-Dump the input profile to stdout out applying preprocessing flattening
-includes into the output profile.
 
 =item -d, --debug
 
@@ -197,10 +270,6 @@ of time to complete.
 
 Use --help=optimize to see a full list of which optimization flags are
 supported.
-
-=item -h, --help
-
-Give a quick reference guide.
 
 =back
 
