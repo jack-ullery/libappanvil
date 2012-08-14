@@ -37,8 +37,8 @@
   @{HOME}/.fonts/                       r,
   @{HOME}/.fonts/**                     r,
   @{HOME}/.fonts.cache-2               mr,
-  @{HOME}/.fontconfig/                  r,
-  @{HOME}/.fontconfig/**              mrl,
+  @{HOME}/.{,cache/}fontconfig/         r,
+  @{HOME}/.{,cache/}fontconfig/**     mrl,
   @{HOME}/.fonts.conf.d/                r,
   @{HOME}/.fonts.conf.d/**              r,
 
