@@ -122,7 +122,7 @@ echo -n "monkey" > $basedir/cache/.features
 echo -n "monkey" > $basedir/cache/$profile
 echo -n "monkey" > $basedir/cache/monkey
 echo -n "Cache purge remove profiles unconditionally: "
-../apparmor_parser $ARGS -v --purge-cache -r $basedir/$profile || { echo "Cache clear setup FAIL"; exit 1; }
+../apparmor_parser $ARGS -v --purge-cache -r $basedir/$profile || { echo "Cache purge setup FAIL"; exit 1; }
 [ -f $basedir/cache/.features ] && { echo "FAIL"; exit 1; }
 [ -f $basedir/cache/$profile ] && { echo "FAIL"; exit 1; }
 [ -f $basedir/cache/monkey ] && { echo "FAIL"; exit 1; }
