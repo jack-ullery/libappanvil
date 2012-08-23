@@ -22,6 +22,7 @@ def check_requirements(binary):
     '''Verify necessary software is installed'''
     exes = ['Xephyr',
             'matchbox-window-manager',
+            'xset',        # for detecting free X display
             'aa-easyprof', # for templates
             'sudo',        # eventually get rid of this
             binary]
@@ -103,8 +104,22 @@ def aa_exec(command, opt):
     return rc, report
 
 def find_free_x_display():
-    # TODO: detect/track and get an available display
-    x_display = ":1"
+    '''Find a free X display'''
+    x_display = ""
+    current = os.environ["DISPLAY"]
+    for i in range(1,257): # TODO: this puts an artificial limit of 256
+                           #       sandboxed applications
+        tmp = ":%d" % i
+        os.environ["DISPLAY"] = tmp
+        rc, report = cmd(['xset', '-q'])
+        if rc != 0:
+            x_display = tmp
+            break
+        
+    os.environ["DISPLAY"] = current
+    if x_display == "":
+        raise AppArmorException("Could not find available X display")
+
     return x_display
 
 def run_sandbox(command, opt):
@@ -119,7 +134,7 @@ def run_xsandbox(command, opt):
     # Find a display to run on
     x_display = find_free_x_display()
 
-    debug (os.environ["DISPLAY"])
+    debug ("DISPLAY=%s" % os.environ["DISPLAY"])
 
     # first, start X
     listener_x = os.fork()
