@@ -13,6 +13,7 @@ import apparmor.easyprof
 import optparse
 import os
 import pwd
+import re
 import sys
 import tempfile
 import time
@@ -55,14 +56,19 @@ def parse_args(args=None, parser=None):
     (my_opt, my_args) = parser.parse_args()
     if my_opt.debug == True:
         apparmor.common.DEBUGGING = True
+    if my_opt.template == "default":
+        if my_opt.withx:
+            my_opt.template = "sandbox-x"
+        else:
+            my_opt.template = "sandbox"
+        
 
     return (my_opt, my_args)
 
 def gen_policy_name(binary):
     '''Generate a temporary policy based on the binary name'''
-    # TODO: this may not be good enough
     return "sandbox-%s-%s" % (pwd.getpwuid(os.getuid())[0],
-                              os.path.basename(binary))
+                              re.sub(r'/', '_', binary))
 
 def aa_exec(command, opt):
     '''Execute binary under specified policy'''
@@ -81,7 +87,11 @@ def aa_exec(command, opt):
 
     # TODO: get rid of sudo
     tmp = tempfile.NamedTemporaryFile(prefix = '%s-' % policy_name)
-    tmp.write(policy)
+    if sys.version_info[0] >= 3:
+        tmp.write(bytes(policy, 'utf-8'))
+    else:
+        tmp.write(policy)
+
     tmp.flush()
     debug("using '%s' template" % opt.template)
     rc, report = cmd(['sudo', 'apparmor_parser', '-r', tmp.name])
@@ -165,7 +175,6 @@ def run_xsandbox(command, opt):
     time.sleep(0.2) # FIXME: detect if running
 
     # aa-exec
-    #opt.template = "sandbox-x"
     rc, report = aa_exec(command, opt)
 
     # reset environment

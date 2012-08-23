@@ -33,5 +33,5 @@ if __name__ == "__main__":
     else:
         rc, report = apparmor.sandbox.run_sandbox(args, opt)
 
-    print report
+    apparmor.common.msg(report)
     sys.exit(rc)
