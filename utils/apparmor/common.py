@@ -12,7 +12,6 @@ import subprocess
 import sys
 
 DEBUGGING = False
-DEBUGGING = True
 
 #
 # Utility classes

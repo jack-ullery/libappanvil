@@ -17,11 +17,13 @@ import sys
 import tempfile
 import time
 
-DEBUGGING = False
-
 def check_requirements(binary):
     '''Verify necessary software is installed'''
-    exes = ['Xephyr', 'matchbox-window-manager', binary]
+    exes = ['Xephyr',
+            'matchbox-window-manager',
+            'aa-easyprof', # for templates
+            'sudo',        # eventually get rid of this
+            binary]
     for e in exes:
         debug("Searching for '%s'" % e)
         rc, report = cmd(['which', e])
@@ -32,8 +34,6 @@ def check_requirements(binary):
 
 def parse_args(args=None, parser=None):
     '''Parse arguments'''
-    global DEBUGGING
-
     if parser == None:
         parser = optparse.OptionParser()
 
@@ -53,8 +53,9 @@ def parse_args(args=None, parser=None):
                       help='Resolution for X application')
 
     (my_opt, my_args) = parser.parse_args()
-    if my_opt.debug:
-        DEBUGGING = True
+    if my_opt.debug == True:
+        apparmor.common.DEBUGGING = True
+
     return (my_opt, my_args)
 
 def gen_policy_name(binary):
