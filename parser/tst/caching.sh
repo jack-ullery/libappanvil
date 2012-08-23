@@ -93,10 +93,39 @@ echo -n "monkey" > $basedir/cache/.features
 ../apparmor_parser $ARGS -v -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
 echo "ok"
 
-echo -n "Cache writing is skipped when features do not match cache: "
+echo -n "Cache writing is skipped when features do not match and not cleared: "
 rm $basedir/cache/$profile
-../apparmor_parser $ARGS -v --write-cache -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
+../apparmor_parser $ARGS -v --write-cache --skip-bad-cache -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
 [ -f $basedir/cache/$profile ] && echo "FAIL ($basedir/cache/$profile exists)" && exit 1
+echo "ok"
+
+rm -f $basedir/cache/.features || true
+rm -f $basedir/cache/$profile || true
+echo -n "monkey" > $basedir/cache/.features
+echo -n "monkey" > $basedir/cache/$profile
+echo -n "monkey" > $basedir/cache/monkey
+../apparmor_parser $ARGS -v --write-cache -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "Cache clear setup FAIL"; exit 1; }
+echo -n "Cache clear updates features: "
+echo -n "monkey" | diff -q $basedir/cache/.features - | grep -q 'differ' || { echo "FAIL"; exit 1; }
+echo "ok"
+echo -n "Cache clear writes updated profile: "
+echo -n "monkey" | diff -q $basedir/cache/$profile - | grep -q 'differ' || { echo "FAIL"; exit 1; }
+echo "ok"
+echo -n "Cache clear cleans out all files: "
+[ -f $basedir/cache/monkey ] && { echo "FAIL"; exit 1; }
+echo "ok"
+
+rm -f $basedir/cache/monkey
+rm -f $basedir/cache/.features || true
+rm -f $basedir/cache/$profile || true
+echo -n "monkey" > $basedir/cache/.features
+echo -n "monkey" > $basedir/cache/$profile
+echo -n "monkey" > $basedir/cache/monkey
+echo -n "Cache purge remove profiles unconditionally: "
+../apparmor_parser $ARGS -v --purge-cache -r $basedir/$profile || { echo "Cache clear setup FAIL"; exit 1; }
+[ -f $basedir/cache/.features ] && { echo "FAIL"; exit 1; }
+[ -f $basedir/cache/$profile ] && { echo "FAIL"; exit 1; }
+[ -f $basedir/cache/monkey ] && { echo "FAIL"; exit 1; }
 echo "ok"
 
 echo -n "Profiles are cached when requested (again): "

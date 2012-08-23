@@ -9,7 +9,7 @@
 #    Written by Steve Beattie <steve@nxnw.org>, based on work by
 #    Christian Boltz <apparmor@cboltz.de>
 
-import os
+from __future__ import with_statement
 import re
 import subprocess
 import sys
@@ -29,9 +29,9 @@ def cmd(command, input = None, stderr = subprocess.STDOUT, stdout = subprocess.P
     return a textual error if it failed.'''
 
     try:
-        sp = subprocess.Popen(command, stdin=stdin, stdout=stdout, stderr=stderr, close_fds=True)
-    except OSError, e:
-        return [127, str(e)]
+        sp = subprocess.Popen(command, stdin=stdin, stdout=stdout, stderr=stderr, close_fds=True, universal_newlines=True)
+    except OSError as ex:
+        return [127, str(ex)]
 
     out, outerr = sp.communicate(input)
 
@@ -46,7 +46,7 @@ def cmd(command, input = None, stderr = subprocess.STDOUT, stdout = subprocess.P
 # get capabilities list
 (rc, output) = cmd(['make', '-s', '--no-print-directory', 'list_capabilities'])
 if rc != 0:
-    print >>sys.stderr, ("make list_capabilities failed: " + output)
+    sys.stderr.write("make list_capabilities failed: " + output)
     exit(rc)
 
 capabilities = re.sub('CAP_', '', output.strip()).lower().split(" ")
@@ -58,7 +58,7 @@ for cap in capabilities:
 # get network protos list
 (rc, output) = cmd(['make', '-s', '--no-print-directory', 'list_af_names'])
 if rc != 0:
-    print >>sys.stderr, ("make list_af_names failed: " + output)
+    sys.stderr.write("make list_af_names failed: " + output)
     exit(rc)
 
 af_names = []
@@ -92,6 +92,7 @@ aa_regex_map = {
                         # (whitespace_+_, owner etc. flag_?_, filename pattern, whitespace_+_)
     'DENYFILE':         r'\v^\s*(audit\s+)?deny\s+(owner\s+)?' + filename + r'\s+', # deny, otherwise like FILE
     'auditdenyowner':   r'(audit\s+)?(deny\s+)?(owner\s+)?',
+    'audit_DENY_owner': r'(audit\s+)?deny\s+(owner\s+)?', # must include "deny", otherwise like auditdenyowner
     'auditdeny':        r'(audit\s+)?(deny\s+)?',
     'EOL':              r'\s*,(\s*$|(\s*#.*$)\@=)', # End of a line (whitespace_?_, comma, whitespace_?_ comment.*)
     'TRANSITION':       r'(\s+-\>\s+\S+)?',
@@ -104,15 +105,74 @@ aa_regex_map = {
 }
 
 def my_repl(matchobj):
-    #print matchobj.group(1)
+    matchobj.group(1)
     if matchobj.group(1) in aa_regex_map:
         return aa_regex_map[matchobj.group(1)]
 
     return matchobj.group(0)
 
+
+def create_file_rule (highlighting, permissions, comment, denyrule = 0):
+
+	if denyrule == 0:
+		keywords = '@@auditdenyowner@@'
+	else:
+		keywords = '@@audit_DENY_owner@@' # TODO: not defined yet, will be '(audit\s+)?deny\s+(owner\s+)?'
+
+	sniplet = ''
+	sniplet = sniplet + "\n" + '" ' + comment + "\n"
+
+	prefix = r'syn match  ' + highlighting + r' /\v^\s*' + keywords
+	suffix = r'@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude' + "\n"
+	# filename without quotes
+	sniplet = sniplet + prefix + r'@@FILENAME@@\s+' + permissions + suffix
+	# filename with quotes
+	sniplet = sniplet + prefix + r'"@@FILENAME@@"\s+' + permissions + suffix
+	# filename without quotes, reverse syntax
+	sniplet = sniplet + prefix + permissions + r'\s+@@FILENAME@@' + suffix
+	# filename with quotes, reverse syntax
+	sniplet = sniplet + prefix + permissions + r'\s+"@@FILENAME@@"+' + suffix
+
+	return sniplet
+
+
+filerule = ''
+filerule = filerule + create_file_rule ( 'sdEntryWriteExec ', r'(l|r|w|a|m|k|[iuUpPcC]x)+@@TRANSITION@@', 'write + exec/mmap - danger! (known bug: accepts aw to keep things simple)' )
+filerule = filerule + create_file_rule ( 'sdEntryUX',  r'(r|m|k|ux|pux)+@@TRANSITION@@',  'ux(mr) - unconstrained entry, flag the line red. also includes pux which is unconstrained if no profile exists' )
+filerule = filerule + create_file_rule ( 'sdEntryUXe', r'(r|m|k|Ux|PUx)+@@TRANSITION@@',  'Ux(mr) and PUx(mr) - like ux + clean environment' )
+filerule = filerule + create_file_rule ( 'sdEntryPX',  r'(r|m|k|px|cx|pix|cix)+@@TRANSITION@@',  'px/cx/pix/cix(mrk) - standard exec entry, flag the line blue' )
+filerule = filerule + create_file_rule ( 'sdEntryPXe', r'(r|m|k|Px|Cx|Pix|Cix)+@@TRANSITION@@', 'Px/Cx/Pix/Cix(mrk) - like px/cx + clean environment' )
+filerule = filerule + create_file_rule ( 'sdEntryIX',  r'(r|m|k|ix)+',  'ix(mr) - standard exec entry, flag the line green' )
+filerule = filerule + create_file_rule ( 'sdEntryM',   r'(r|m|k)+',  'mr - mmap with PROT_EXEC' )
+
+filerule = filerule + create_file_rule ( 'sdEntryM',   r'(r|m|k|x)+',  'special case: deny x is allowed (does not need to be ix, px, ux or cx)', 1)
+#syn match  sdEntryM /@@DENYFILE@@(r|m|k|x)+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
+
+
+filerule = filerule + create_file_rule ( 'sdError',    r'\S*(w\S*a|a\S*w)\S*',  'write + append is an error' )
+filerule = filerule + create_file_rule ( 'sdEntryW',   r'(l|r|w|k)+',  'write entry, flag the line yellow' )
+filerule = filerule + create_file_rule ( 'sdEntryW',   r'(l|r|a|k)+',  'append entry, flag the line yellow' )
+filerule = filerule + create_file_rule ( 'sdEntryK',   r'[rlk]+',  'read entry + locking, currently no highlighting' )
+filerule = filerule + create_file_rule ( 'sdEntryR',   r'[rl]+',  'read entry, no highlighting' )
+
+# " special case: deny x is allowed (doesn't need to be ix, px, ux or cx)
+# syn match  sdEntryM /@@DENYFILE@@(r|m|k|x)+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
+
+# " TODO: Support filenames enclosed in quotes ("/home/foo/My Documents/") - ideally by only allowing quotes pair-wise
+
+
 regex = "@@(" + "|".join(aa_regex_map) + ")@@"
 
-with file("apparmor.vim.in") as template:
+sys.stdout.write('" generated from apparmor.vim.in by create-apparmor.vim.py\n')
+sys.stdout.write('" do not edit this file - edit apparmor.vim.in or create-apparmor.vim.py instead' + "\n\n")
+
+with open("apparmor.vim.in") as template:
     for line in template:
         line = re.sub(regex, my_repl, line.rstrip())
-        print line
+        sys.stdout.write('%s\n' % line)
+
+sys.stdout.write("\n\n\n\n")
+
+sys.stdout.write('" file rules added with create_file_rule()\n')
+sys.stdout.write(re.sub(regex, my_repl, filerule)+'\n')
+

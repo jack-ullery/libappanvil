@@ -101,7 +101,8 @@ State *DFA::add_new_state(NodeSet *nodes, State *other)
 	nnodev = nnodes_cache.insert(nnodes);
 	anodes = anodes_cache.insert(anodes);
 
-	ProtoState proto(nnodev, anodes);
+	ProtoState proto;
+	proto.init(nnodev, anodes);
 	State *state = new State(node_map.size(), proto, other);
 	pair<NodeMap::iterator,bool> x = node_map.insert(proto, state);
 	if (x.second == false) {

@@ -1,8 +1,6 @@
-" $Id: apparmor.vim.in,v 1.11 2011/03/28 11:23:13 cb Exp $
-"
 " ----------------------------------------------------------------------
 "    Copyright (c) 2005 Novell, Inc. All Rights Reserved.
-"    Copyright (c) 2006-2011 Christian Boltz. All Rights Reserved.
+"    Copyright (c) 2006-2012 Christian Boltz. All Rights Reserved.
 "      
 "    This program is free software; you can redistribute it and/or
 "    modify it under the terms of version 2 of the GNU General Public
@@ -166,48 +164,6 @@ syn match sdRLimit /\v^\s*set\s+rlimit\s+nice\s+\<\=\s+(-1?[0-9]|-20|1?[0-9])@@E
 syn match sdEntryW /\v^\s+@@auditdenyowner@@link\s+(subset\s+)?@@FILENAME@@\s+-\>\s+@@FILENAME@@@@EOL@@/ contains=sdGlob
 
 
-" file permissions
-"
-" TODO: Support filenames enclosed in quotes ("/home/foo/My Documents/") - ideally by only allowing quotes pair-wise
-"
-" write + exec/mmap - danger!
-" known bug: accepts 'aw' to keep things simple
-syn match  sdEntryWriteExec /@@FILE@@(l|r|w|a|m|k|[iuUpPcC]x)+@@TRANSITION@@@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-
-" ux(mr) - unconstrained entry, flag the line red
-" also includes pux which is unconstrained if no profile exists
-syn match  sdEntryUX /@@FILE@@(r|m|k|ux|pux)+@@TRANSITION@@@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-" Ux(mr) and PUx(mr) - like ux + clean environment
-syn match  sdEntryUXe /@@FILE@@(r|m|k|Ux|PUx)+@@TRANSITION@@@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-" px/cx/pix/cix(mrk) - standard exec entry, flag the line blue
-syn match  sdEntryPX /@@FILE@@(r|m|k|px|cx|pix|cix)+@@TRANSITION@@@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-" Px/Cx/Pix/Cix(mrk) - like px/cx + clean environment
-syn match  sdEntryPXe /@@FILE@@(r|m|k|Px|Cx|Pix|Cix)+@@TRANSITION@@@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-" ix(mr) - standard exec entry, flag the line green
-syn match  sdEntryIX /@@FILE@@(r|m|k|ix)+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-" mr - mmap with PROT_EXEC
-syn match  sdEntryM /@@FILE@@(r|m|k)+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-" special case: deny x is allowed (doesn't need to be ix, px, ux or cx)
-syn match  sdEntryM /@@DENYFILE@@(r|m|k|x)+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-
-" if we've got u or i without x, it's an error
-" rule is superfluous because of the '/.*/ is an error' rule ;-)
-"syn match  sdError /@@FILE@@(l|r|w|k|u|p|i)+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-
-" write + append is an error also
-"syn match  sdError /@@FILE@@(\S*r\S*a\S*|\S*a\S*w\S*)@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-syn match  sdError /@@FILE@@\S*(w\S*a|a\S*w)\S*@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-
-" write entry, flag the line yellow
-syn match  sdEntryW /@@FILE@@(l|r|w|k)+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-" append entry, flag the line yellow
-syn match  sdEntryW /@@FILE@@(l|r|a|k)+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-
-" read entry + locking, currently no highlighting
-syn match  sdEntryK /@@FILE@@[rlk]+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-" read entry, no highlighting
-syn match  sdEntryR /@@FILE@@[rl]+@@EOL@@/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-
 syn match sdExtHat  /\v^\s+(\^|profile\s+)\S+@@EOL@@/ contains=sdComment " hat without {...}
 
 
@@ -233,4 +189,5 @@ syn match sdInclude /\s*include\s<\S*>/  " TODO: doesn't check until $
 syn region Normal start=/\v^(profile\s+)?\S+\s+@@flags@@=\{/ matchgroup=sdProfileEnd end=/^}\s*$/ contains=sdProfileName,Hat,@sdEntry,sdComment,sdError,sdInclude
 syn region Hat start=/\v^\s+(\^|profile\s+)\S+\s+@@flags@@=\{/ matchgroup=sdHatEnd end=/^\s\s*}\s*$/ contains=sdHatName,@sdEntry,sdComment,sdError,sdInclude
 
+" file permissions
 

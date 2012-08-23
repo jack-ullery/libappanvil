@@ -29,3 +29,6 @@
 
   # Exo-aware applications
   /usr/bin/exo-open ixr,
+  /usr/lib/@{multiarch}/xfce4/exo-1/exo-helper-1 ixr,
+  /etc/xdg/xdg-xubuntu/xfce4/helpers.rc r,
+  /etc/xdg/xfce4/helpers.rc r,

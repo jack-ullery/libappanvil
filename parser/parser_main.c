@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <getopt.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -71,6 +72,8 @@ int show_cache = 0;
 int skip_cache = 0;
 int skip_read_cache = 0;
 int write_cache = 0;
+int cond_clear_cache = 1;		/* only applies if write is set */
+int force_clear_cache = 0;		/* force clearing regargless of state */
 int preprocess_only = 0;
 int skip_mode_force = 0;
 struct timespec mru_tstamp;
@@ -109,6 +112,8 @@ struct option long_options[] = {
 	{"skip-read-cache",	0, 0, 'T'},
 	{"write-cache",		0, 0, 'W'},
 	{"show-cache",		0, 0, 'k'},
+	{"skip-bad-cache",	0, 0, 129},	/* no short option */
+	{"purge-cache",		0, 0, 130},	/* no short option */
 	{"cache-loc",		1, 0, 'L'},
 	{"debug",		0, 0, 'd'},
 	{"dump",		1, 0, 'D'},
@@ -151,6 +156,8 @@ static void display_usage(char *command)
 	       "-K, --skip-cache	Do not attempt to load or save cached profiles\n"
 	       "-T, --skip-read-cache	Do not attempt to load cached profiles\n"
 	       "-W, --write-cache	Save cached profile (force with -T)\n"
+	       "    --skip-bad-cache	Don't clear cache if out of sync\n"
+	       "    --purge-cache	Clear cache regardless of its state\n"
 	       "-L, --cache-loc n	Set the location of the profile cache\n"
 	       "-q, --quiet		Don't emit warnings\n"
 	       "-v, --verbose		Show profile names as they load\n"
@@ -449,8 +456,10 @@ static int process_arg(int c, char *optarg)
 		skip_cache = 1;
 		break;
 	case 'N':
+		count++;
 		names_only = 1;
 		skip_cache = 1;
+		kernel_load = 0;
 		break;
 	case 'S':
 		count++;
@@ -526,6 +535,12 @@ static int process_arg(int c, char *optarg)
 		break;
 	case 'T':
 		skip_read_cache = 1;
+		break;
+	case 129:
+		cond_clear_cache = 0;
+		break;
+	case 130:
+		force_clear_cache = 1;
 		break;
 	case 'L':
 		cacheloc = strdup(optarg);
@@ -1165,6 +1180,120 @@ out:
 	return retval;
 }
 
+static int dir_for_each(const char *dname,
+			int (* callback)(const char *, struct dirent *,
+					 struct stat *)) {
+	struct dirent *dirent, *ent;
+	char *path = NULL;
+	DIR *dir = NULL;
+	int error;
+
+	dirent = malloc(offsetof(struct dirent, d_name) +
+			pathconf(dname, _PC_NAME_MAX) + 1);
+	if (!dirent) {
+		PDEBUG(_("could not alloc dirent"));
+		return -1;
+	}
+
+	PDEBUG("Opened cache directory \"%s\"\n", dname);
+	if (!(dir = opendir(dname))) {
+		free(dirent);
+		PDEBUG(_("opendir failed '%s'"), dname);
+		return -1;
+	}
+
+	for (error = readdir_r(dir, dirent, &ent);
+	     error == 0 && ent != NULL;
+	     error = readdir_r(dir, dirent, &ent)) {
+		struct stat my_stat;
+
+		if (strcmp(dirent->d_name, ".") == 0 ||
+		    strcmp(dirent->d_name, "..") == 0)
+			continue;
+
+		if (asprintf(&path, "%s/%s", dname, dirent->d_name) < 0)
+		{
+			PDEBUG(_("Memory allocation error."));
+			goto fail;
+		}
+	
+		if (stat(path, &my_stat)) {
+			PDEBUG(_("stat failed for '%s'"), path);
+			goto fail;
+		}
+
+		if (callback(path, dirent, &my_stat)) {
+			PDEBUG(_("dir_for_each callback failed\n"));
+			goto fail;
+		}
+
+		free(path);
+		path = NULL;
+	}
+
+	free(dirent);
+	closedir(dir);
+	return error;
+
+fail:
+	error = errno;
+	free(dirent);
+	free(path);
+	closedir(dir);
+	errno = error;
+
+	return -1;
+}
+
+static int clear_cache_cb(const char *path, __unused struct dirent *dirent,
+			  struct stat *ent_stat)
+{
+	/* remove regular files */
+	if (S_ISREG(ent_stat->st_mode))
+		return unlink(path);
+
+	/* do nothing with other file types */
+	return 0;
+}
+
+static int clear_cache_files(const char *path)
+{
+	char *cache;
+	int error;
+
+	if (asprintf(&cache, "%s/cache", path) == -1) {
+		perror("asprintf");
+		exit(1);
+	}
+
+	error = dir_for_each(cache, clear_cache_cb);
+
+	free(cache);
+
+	return error;
+}
+
+static int create_cache(const char *path, const char *features)
+{
+	FILE * f = NULL;
+
+	f = fopen(path, "w");
+	if (f) {
+		if (fwrite(features, strlen(features), 1, f) != 1 )
+			goto fail;
+
+		fclose(f);
+	}
+
+	return 0;
+fail:
+	if (show_cache)
+		PERROR("Cache write disabled: cannot create %s\n", path);
+	write_cache = 0;
+
+	return -1;
+}
+
 static void setup_flags(void)
 {
 	char *cache_features_path = NULL;
@@ -1182,7 +1311,12 @@ static void setup_flags(void)
 		write_cache = 0;
 		skip_read_cache = 1;
 		return;
-	}
+	} else if (strstr(flags_string, "network"))
+		kernel_supports_network = 1;
+	else
+		kernel_supports_network = 0;
+
+
 
 	/*
          * Deal with cache directory versioning:
@@ -1198,30 +1332,23 @@ static void setup_flags(void)
 	get_flags_string(&cache_flags, cache_features_path);
 	if (cache_flags) {
 		if (strcmp(flags_string, cache_flags) != 0) {
-			if (show_cache) PERROR("Cache read/write disabled: %s does not match %s\n", FLAGS_FILE, cache_features_path);
-			write_cache = 0;
-			skip_read_cache = 1;
+			if (write_cache && cond_clear_cache) {
+				if (clear_cache_files(basedir) ||
+				    create_cache(cache_features_path,
+						 flags_string)) {
+					skip_read_cache = 1;
+				}
+			} else {
+				if (show_cache)
+					PERROR("Cache read/write disabled: %s does not match %s\n", FLAGS_FILE, cache_features_path);
+				write_cache = 0;
+				skip_read_cache = 1;
+			}
 		}
 		free(cache_flags);
 		cache_flags = NULL;
-	}
-	else if (write_cache) {
-		FILE * f = NULL;
-		int failure = 0;
-
-		f = fopen(cache_features_path, "w");
-		if (!f) failure = 1;
-		else {
-			if (fwrite(flags_string, strlen(flags_string), 1, f) != 1 ) {
-				failure = 1;
-			}
-			if (fclose(f) != 0) failure = 1;
-		}
-
-		if (failure) {
-			if (show_cache) PERROR("Cache write disabled: cannot write to %s\n", cache_features_path);
-			write_cache = 0;
-		}
+	} else if (write_cache) {
+		create_cache(cache_features_path, flags_string);
 	}
 
 	free(cache_features_path);
@@ -1250,6 +1377,9 @@ int main(int argc, char *argv[])
 	if (!(UNPRIVILEGED_OPS) && ((retval = have_enough_privilege()))) {
 		return retval;
 	}
+
+	if (force_clear_cache) 
+		exit(clear_cache_files(basedir));
 
 	/* Check to make sure there is an interface to load policy */
 	if (!(UNPRIVILEGED_OPS) && (subdomainbase == NULL) &&

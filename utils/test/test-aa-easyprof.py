@@ -101,6 +101,7 @@ TEMPLATES_DIR="%s/templates"
     def tearDown(self):
         '''Teardown for tests'''
         if os.path.exists(self.tmpdir):
+            sys.stdout.write("%s\n" % self.tmpdir)
             recursive_rm(self.tmpdir)
 
 #
@@ -328,7 +329,7 @@ POLICYGROUPS_DIR="%s/templates"
     def test_binary_symlink(self):
         '''Test binary (symlink)'''
         exe = os.path.join(self.tmpdir, 'exe')
-        open(exe, 'wa').close()
+        open(exe, 'a').close()
         symlink = exe + ".lnk"
         os.symlink(exe, symlink)
 
@@ -441,7 +442,7 @@ POLICYGROUPS_DIR="%s/templates"
         self.assertFalse(inv_s in p, "Found '%s' in :\n%s" % (inv_s, p))
 
         if debugging:
-            print p
+            sys.stdout.write("%s\n" % p)
 
         return p
 
@@ -859,7 +860,7 @@ if __name__ == '__main__':
     # Create the necessary files to import aa-easyprof
     init = os.path.join(os.path.dirname(absfn), '__init__.py')
     if not os.path.exists(init):
-        open(init, 'wa').close()
+        open(init, 'a').close()
         created.append(init)
 
     symlink = os.path.join(os.path.dirname(absfn), 'easyprof.py')
