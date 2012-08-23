@@ -67,7 +67,7 @@ def parse_args(args=None, parser=None):
 
 def gen_policy_name(binary):
     '''Generate a temporary policy based on the binary name'''
-    return "sandbox-%s-%s" % (pwd.getpwuid(os.getuid())[0],
+    return "sandbox-%s%s" % (pwd.getpwuid(os.getuid())[0],
                               re.sub(r'/', '_', binary))
 
 def aa_exec(command, opt):
