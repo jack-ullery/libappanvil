@@ -24,6 +24,7 @@ def check_requirements(binary):
             'aa-easyprof', # for templates
             'aa-exec',     # for changing profile
             'sudo',        # eventually get rid of this
+            'pkexec',      # eventually get rid of this
             binary]
 
     for e in exes:
@@ -110,8 +111,11 @@ def aa_exec(command, opt):
         tmp.flush()
 
         debug("using '%s' template" % opt.template)
-        # TODO: get rid of sudo
-        rc, report = cmd(['sudo', 'apparmor_parser', '-r', tmp.name])
+        # TODO: get rid of this
+        if opt.withx == True:
+            rc, report = cmd(['pkexec', 'apparmor_parser', '-r', '%s' % tmp.name])
+        else:
+            rc, report = cmd(['sudo', 'apparmor_parser', '-r', tmp.name])
         if rc != 0:
             raise AppArmorException("Could not load policy")
 
