@@ -31,7 +31,7 @@ B<aa-sandbox> [option] <path to binary>
 
 B<aa-sandbox> provides a mechanism for sandboxing an application using an
 existing profile or via dynamic profile generation. Please note that while this
-tool can help with quickly defining an application, its utility is dependent on
+tool can help with quickly confining an application, its utility is dependent on
 the quality of the templates, policy groups and abstractions used. Also, this
 tool may create policy which is less restricted than creating policy by hand or
 with B<aa-genprof> and B<aa-logprof>.
@@ -45,9 +45,10 @@ B<aa-sandbox> accepts the following arguments:
 =item -t TEMPLATE, --template=TEMPLATE
 
 Specify the template used to generate a profile. May specify either a system
-template or a filename for the template to use. See aa-easyprof(8) for more
-information. If not specified, uses B<sandbox> or when using B<-X>,
-B<sandbox-x>.
+template or a filename for the template to use. If not specified, uses
+B<sandbox> or B<sandbox-x> when B<-X> is specified. See aa-easyprof(8) for
+details. Privileged access is required to load the dynamically generated
+profile (B<aa-sandbox> will prompt for a password).
 
 =item -p POLICYGROUPS, --policy-groups=POLICYGROUPS
 
@@ -62,19 +63,19 @@ apparmor.d(5) for details.
 
 =item -r PATH, --read-path=PATH
 
-Specify a PATH to allow owner reads. May be specified multiple times. If the
-PATH ends in a '/', then PATH is treated as a directory and reads are allowed
-to all files under this directory. Can optionally use '/*' at the end of the
-PATH to only allow reads to files directly in PATH.
+Specify a PATH to allow reads. May be specified multiple times. If the PATH
+ends in a '/', then PATH is treated as a directory and reads are allowed to all
+files under this directory. Can optionally use '/*' at the end of the PATH to
+only allow reads to files directly in PATH.
 
 =item -w PATH, --write-dir=PATH
 
-Like --read-path but also allow owner writes in additions to reads.
+Like --read-path but also allow writes in addition to reads.
 
 =item --profile=PROFILE
 
 Instead of generating a dynamic profile, specify an existing, loaded profile.
-This does not require root privileges.
+This does not require privileged access.
 
 =item -X, --with-x
 
@@ -82,9 +83,9 @@ Run the sandboxed application in an isolated X server.
 
 =item --with-xserver=XSERVER
 
-Choose the nested XSERVER to use. Supported servers are: B<xephyr>, B<xpra> and
-B<xpra3d>. xpra uses the Xvfb(1) virtual framebuffer X server while xpra3d uses
-the Xorg(1) server with the Xdummy (dummy_drv.so) driver.
+Choose the nested XSERVER to use. Supported servers are: B<xpra> (the default),
+B<xpra3d> and B<xephyr>. xpra uses the Xvfb(1) virtual framebuffer X server
+while xpra3d uses the Xorg(1) server with the Xdummy (dummy_drv.so) driver.
 
 =item -g GEOMETRY, --with-geometry=GEOMETRY
 
@@ -124,6 +125,8 @@ Sandbox uptime:
 =over
 
 $ aa-sandbox --read-path="/proc/*" /usr/bin/uptime
+
+=back
 
 =head1 BUGS
 
