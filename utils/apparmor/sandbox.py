@@ -313,6 +313,14 @@ EndSection
             if rc != 0:
                 raise AppArmorException("Could not find '%s'" % e)
 
+        if self.driver == "xdummy":
+            # FIXME: is there a better way we can detect this?
+            drv = "/usr/lib/xorg/modules/drivers/dummy_drv.so"
+            debug("Searching for '%s'" % drv)
+            rc, report = cmd(['which', drv])
+            if rc != 0:
+                raise AppArmorException("Could not find '%s'" % drv)
+
         xvfb_args = self._get_xvfb_args()
         listener_x = os.fork()
         if listener_x == 0:
