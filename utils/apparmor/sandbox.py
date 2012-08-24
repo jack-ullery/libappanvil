@@ -148,7 +148,6 @@ class SandboxXserver():
         '''Cleanup our forked pids, etc'''
         # kill server now. It should've terminated, but be sure
         for pid in self.pids:
-            cmd(['kill', '-15', "%d" % pid])
             os.kill(pid, 15)
             os.waitpid(pid, 0)
 
@@ -194,7 +193,7 @@ class SandboxXephyr(SandboxXserver):
             sys.exit(0)
         self.pids.append(listener_x)
 
-        time.sleep(0.2) # FIXME: detect if running
+        time.sleep(1) # FIXME: detect if running
 
         # Next, start the window manager
         sys.stdout.flush()
@@ -212,7 +211,7 @@ class SandboxXephyr(SandboxXserver):
             sys.exit(0)
 
         self.pids.append(listener_wm)
-        time.sleep(0.2) # FIXME: detect if running
+        time.sleep(1) # FIXME: detect if running
 
 class SandboxXpra(SandboxXserver):
     def cleanup(self):
@@ -234,8 +233,9 @@ class SandboxXpra(SandboxXserver):
                       '--no-pulseaudio']
             args = ['/usr/bin/xpra', 'start', self.display] + x_args
             debug(" ".join(args))
-            sys.stderr.flush()
-            os.execv(args[0], args)
+            cmd(args)
+            #sys.stderr.flush()
+            #os.execv(args[0], args)
             sys.exit(0)
         self.pids.append(listener_x)
         time.sleep(2) # FIXME: detect if running
@@ -248,8 +248,9 @@ class SandboxXpra(SandboxXserver):
             args = ['/usr/bin/xpra', 'attach', self.display,
                                      '--title=%s' % self.title]
             debug(" ".join(args))
-            sys.stderr.flush()
-            os.execv(args[0], args)
+            cmd(args)
+            #sys.stderr.flush()
+            #os.execv(args[0], args)
             sys.exit(0)
 
         self.pids.append(listener_attach)
@@ -278,13 +279,11 @@ def run_xsandbox(command, opt):
     except:
         x.cleanup()
         raise
+    x.cleanup()
 
     # reset environment
+    os.chdir(old_cwd)
     os.environ["DISPLAY"] = old_display
     debug("DISPLAY is now '%s'" % os.environ["DISPLAY"])
-
-    os.chdir(old_cwd)
-
-    x.cleanup()
 
     return rc, report
