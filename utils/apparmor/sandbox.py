@@ -8,7 +8,7 @@
 #
 # ------------------------------------------------------------------
 
-from apparmor.common import AppArmorException, debug, error, warn, cmd
+from apparmor.common import AppArmorException, debug, error, warn, msg, cmd
 import apparmor.easyprof
 import optparse
 import os
@@ -48,7 +48,7 @@ def parse_args(args=None, parser=None):
     parser.add_option('--with-xserver',
                       dest='xserver',
                       default='xpra',
-                      help='Nested X server to use (default is xpra)')
+                      help='Nested X server to use: xpra (default), xpra3d, xephyr')
     parser.add_option('-d', '--debug',
                       dest='debug',
                       default=False,
@@ -125,11 +125,13 @@ def run_sandbox(command, opt):
     return rc, report
 
 class SandboxXserver():
-    def __init__(self, resolution, title):
+    def __init__(self, resolution, title, driver=None):
         self.resolution = resolution
         self.title = title
         self.pids = []
         self.find_free_x_display()
+        self.driver = driver
+        self.tempfiles = []
 
 	# TODO: for now, drop Unity's globalmenu proxy since it doesn't work
 	# right in the application. (Doesn't work with firefox)
@@ -160,6 +162,10 @@ class SandboxXserver():
         for pid in self.pids:
             os.kill(pid, 15)
             os.waitpid(pid, 0)
+
+        for t in self.tempfiles:
+            if os.path.exists(t):
+                os.unlink(t)
 
     def start(self):
         '''start() should be overridden'''
@@ -228,6 +234,77 @@ class SandboxXpra(SandboxXserver):
         cmd(['xpra', 'stop', self.display])
         SandboxXserver.cleanup(self)
 
+    def _get_xvfb_args(self):
+        xvfb_args = []
+
+        if self.driver == None:
+            # The default from the man page, but be explicit in what we enable
+            xvfb_args.append('--xvfb=Xvfb')
+            xvfb_args.append('-screen 0 3840x2560x24+32')
+            xvfb_args.append('-nolisten tcp')
+            xvfb_args.append('-noreset')
+            xvfb_args.append('-auth %s' % os.environ['XAUTHORITY'])
+            xvfb_args.append('+extension Composite')
+            xvfb_args.append('-extension GLX')
+        elif self.driver == 'xdummy':
+            # The dummy driver allows us to use GLX, etc. See:
+            # http://xpra.org/Xdummy.html
+            conf = '''# Based on /usr/share/doc/xpra/examples/dummy.xorg.conf.gz
+##Xdummy:##
+Section "ServerFlags"
+  Option "DontVTSwitch" "true"
+  Option "AllowMouseOpenFail" "true"
+  Option "PciForceNone" "true"
+  Option "AutoEnableDevices" "false"
+  Option "AutoAddDevices" "false"
+EndSection
+
+##Xdummy:##
+Section "InputDevice"
+  Identifier "NoMouse"
+  Option "CorePointer" "true"
+  Driver "void"
+EndSection
+
+Section "InputDevice"
+  Identifier "NoKeyboard"
+  Option "CoreKeyboard" "true"
+  Driver "void"
+EndSection
+
+##Xdummy:##
+Section "Device"
+  Identifier "Videocard0"
+  Driver "dummy"
+  #VideoRam 4096000
+  #VideoRam 256000
+EndSection
+
+'''
+
+            tmp, xorg_conf = tempfile.mkstemp(prefix='aa-sandbox-xorg.conf-')
+            self.tempfiles.append(xorg_conf)
+            if sys.version_info[0] >= 3:
+                os.write(tmp, bytes(conf, 'utf-8'))
+            else:
+                os.write(tmp, conf)
+            os.close(tmp)
+
+            xvfb_args.append('--xvfb=Xorg')
+            xvfb_args.append('-dpi 96') # https://www.xpra.org/trac/ticket/163
+            xvfb_args.append('-nolisten tcp')
+            xvfb_args.append('-noreset')
+            xvfb_args.append('-logfile %s' % os.path.expanduser('~/.xpra/%s.log' % self.display))
+            xvfb_args.append('-auth %s' % os.environ['XAUTHORITY'])
+            xvfb_args.append('-config %s' % xorg_conf)
+            extensions = ['Composite', 'GLX', 'RANDR', 'RENDER']
+            for i in extensions:
+                xvfb_args.append('+extension %s' % i)
+        else:
+            raise AppArmorException("Unsupported X driver '%s'" % self.driver)
+
+        return xvfb_args
+
     def start(self):
         for e in ['xpra']:
             debug("Searching for '%s'" % e)
@@ -235,15 +312,29 @@ class SandboxXpra(SandboxXserver):
             if rc != 0:
                 raise AppArmorException("Could not find '%s'" % e)
 
+        xvfb_args = self._get_xvfb_args()
         listener_x = os.fork()
         if listener_x == 0:
+            # Debugging tip (can also use glxinfo):
+            # $ xdpyinfo > /tmp/native
+            # $ aa-sandbox -X -t sandbox-x /usr/bin/xdpyinfo > /tmp/nested
+            # $ diff -Naur /tmp/native /tmp/nested
+
             x_args = ['--no-daemon',
                       #'--no-mmap', # for security?
                       '--no-clipboard',
                       '--no-pulseaudio']
+
+            if xvfb_args != '':
+                x_args.append(" ".join(xvfb_args))
+
             args = ['/usr/bin/xpra', 'start', self.display] + x_args
             debug(" ".join(args))
-            cmd(args)
+            if apparmor.common.DEBUGGING == True:
+                sys.stderr.flush()
+                os.execv(args[0], args)
+            else:
+                cmd(args)
             sys.exit(0)
         self.pids.append(listener_x)
         time.sleep(2) # FIXME: detect if running
@@ -259,13 +350,19 @@ class SandboxXpra(SandboxXserver):
                                      '--no-clipboard',
                                      '--no-pulseaudio']
             debug(" ".join(args))
-            cmd(args)
+            #cmd(args)
+            if apparmor.common.DEBUGGING == True:
+                sys.stderr.flush()
+                os.execv(args[0], args)
+            else:
+                cmd(args)
             sys.exit(0)
 
         self.pids.append(listener_attach)
 
         os.environ["DISPLAY"] = self.display
-        warn("Resolution not honored in xpra")
+        msg("TODO: --with-resolution not honored in xpra")
+        msg("TODO: filter '~/.xpra/run-xpra'")
 
 def run_xsandbox(command, opt):
     '''Run X application in a sandbox'''
@@ -277,15 +374,17 @@ def run_xsandbox(command, opt):
     # first, start X
     if opt.xserver.lower() == "xephyr":
         x = SandboxXephyr(opt.resolution, command[0])
+    elif opt.xserver.lower() == "xpra3d":
+        x = SandboxXpra(opt.resolution, command[0], driver="xdummy")
     else:
         x = SandboxXpra(opt.resolution, command[0])
     x.start()
-    debug("DISPLAY is now '%s'" % os.environ["DISPLAY"])
+    apparmor.common.msg("Using 'DISPLAY=%s'" % os.environ["DISPLAY"])
 
     # aa-exec
     try:
         rc, report = aa_exec(command, opt)
-    except:
+    except Exception as e:
         x.cleanup()
         raise
     x.cleanup()
@@ -293,6 +392,6 @@ def run_xsandbox(command, opt):
     # reset environment
     os.chdir(old_cwd)
     os.environ["DISPLAY"] = old_display
-    debug("DISPLAY is now '%s'" % os.environ["DISPLAY"])
+    debug("DISPLAY restored to: %s" % os.environ["DISPLAY"])
 
     return rc, report
