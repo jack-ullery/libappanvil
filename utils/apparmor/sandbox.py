@@ -391,8 +391,13 @@ def run_xsandbox(command, opt):
         x = SandboxXpra(opt.resolution, command[0], driver="xdummy")
     else:
         x = SandboxXpra(opt.resolution, command[0])
-    x.start()
-    apparmor.common.msg("Using 'DISPLAY=%s'" % os.environ["DISPLAY"])
+
+    try:
+        x.start()
+    except Exception as e:
+        error(e)
+
+    msg("Using 'DISPLAY=%s'" % os.environ["DISPLAY"])
 
     # aa-exec
     try:
