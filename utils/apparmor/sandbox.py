@@ -66,12 +66,13 @@ def parse_args(args=None, parser=None):
     (my_opt, my_args) = parser.parse_args()
     if my_opt.debug == True:
         apparmor.common.DEBUGGING = True
+    if my_opt.withx and my_opt.xserver.lower() != 'xpra' and \
+                        my_opt.xserver.lower() != 'xpra3d' and \
+                        my_opt.xserver.lower() != 'xephyr':
+            error("Invalid server '%s'. Use 'xpra', ''xpra3d', or 'xephyr'" % \
+                  my_opt.xserver)
     if my_opt.template == "default":
         if my_opt.withx:
-            if my_opt.xserver.lower() != 'xpra' and \
-               my_opt.xserver.lower() != 'xephyr':
-                error("Invalid server '%s'. Use 'xpra' or 'xephyr'" % \
-                      my_opt.xserver)
             my_opt.template = "sandbox-x"
         else:
             my_opt.template = "sandbox"
