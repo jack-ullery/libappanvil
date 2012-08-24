@@ -55,8 +55,8 @@ def parse_args(args=None, parser=None):
                       default=False,
                       help='Show debug messages',
                       action='store_true')
-    parser.add_option('-r', '--with-resolution',
-                      dest='resolution',
+    parser.add_option('-r', '--with-geometry',
+                      dest='geometry',
                       default='640x480',
                       help='Resolution for X application')
     parser.add_option('--profile',
@@ -130,8 +130,8 @@ def run_sandbox(command, opt):
     return rc, report
 
 class SandboxXserver():
-    def __init__(self, resolution, title, driver=None):
-        self.resolution = resolution
+    def __init__(self, geometry, title, driver=None):
+        self.geometry = geometry
         self.title = title
         self.pids = []
         self.find_free_x_display()
@@ -200,7 +200,7 @@ class SandboxXephyr(SandboxXserver):
                            ]
 
             x_args = ['-nolisten', 'tcp',
-                      '-screen', self.resolution,
+                      '-screen', self.geometry,
                       '-br',        # black background
                       '-reset',     # reset after last client exists
                       '-terminate', # terminate at server reset
@@ -390,7 +390,7 @@ EndSection
         self.pids.append(listener_attach)
 
         os.environ["DISPLAY"] = self.display
-        msg("TODO: --with-resolution not honored in xpra")
+        msg("TODO: --with-geometry not honored in xpra")
         msg("TODO: filter '~/.xpra/run-xpra'")
 
 def run_xsandbox(command, opt):
@@ -402,11 +402,11 @@ def run_xsandbox(command, opt):
 
     # first, start X
     if opt.xserver.lower() == "xephyr":
-        x = SandboxXephyr(opt.resolution, command[0])
+        x = SandboxXephyr(opt.geometry, command[0])
     elif opt.xserver.lower() == "xpra3d":
-        x = SandboxXpra(opt.resolution, command[0], driver="xdummy")
+        x = SandboxXpra(opt.geometry, command[0], driver="xdummy")
     else:
-        x = SandboxXpra(opt.resolution, command[0])
+        x = SandboxXpra(opt.geometry, command[0])
 
     try:
         x.start()
