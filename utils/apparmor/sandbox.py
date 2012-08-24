@@ -101,8 +101,8 @@ def aa_exec(command, opt):
         tmp.write(bytes(policy, 'utf-8'))
     else:
         tmp.write(policy)
-
     tmp.flush()
+
     debug("using '%s' template" % opt.template)
     rc, report = cmd(['sudo', 'apparmor_parser', '-r', tmp.name])
     if rc != 0:
@@ -229,16 +229,15 @@ class SandboxXpra(SandboxXserver):
         listener_x = os.fork()
         if listener_x == 0:
             x_args = ['--no-daemon',
+                      #'--no-mmap', # for security?
                       '--no-clipboard',
                       '--no-pulseaudio']
-            # TODO: --password-file
             args = ['/usr/bin/xpra', 'start', self.display] + x_args
             debug(" ".join(args))
             sys.stderr.flush()
             os.execv(args[0], args)
             sys.exit(0)
         self.pids.append(listener_x)
-
         time.sleep(2) # FIXME: detect if running
 
         # Next, attach to xpra
@@ -246,9 +245,8 @@ class SandboxXpra(SandboxXserver):
         os.chdir(os.environ["HOME"])
         listener_attach = os.fork()
         if listener_attach == 0:
-            # TODO: --pasword-file
             args = ['/usr/bin/xpra', 'attach', self.display,
-                                 '--title=%s' % self.title]
+                                     '--title=%s' % self.title]
             debug(" ".join(args))
             sys.stderr.flush()
             os.execv(args[0], args)
