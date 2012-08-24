@@ -236,6 +236,12 @@ class SandboxXpra(SandboxXserver):
         SandboxXserver.cleanup(self)
 
     def _get_xvfb_args(self):
+        '''Setup xvfb arguments'''
+        # Debugging tip (can also use glxinfo):
+        # $ xdpyinfo > /tmp/native
+        # $ aa-sandbox -X -t sandbox-x /usr/bin/xdpyinfo > /tmp/nested
+        # $ diff -Naur /tmp/native /tmp/nested
+
         xvfb_args = []
 
         if self.driver == None:
@@ -317,17 +323,14 @@ EndSection
             # FIXME: is there a better way we can detect this?
             drv = "/usr/lib/xorg/modules/drivers/dummy_drv.so"
             debug("Searching for '%s'" % drv)
-            rc, report = cmd(['which', drv])
-            if rc != 0:
+            if not os.path.exists(drv):
                 raise AppArmorException("Could not find '%s'" % drv)
 
         xvfb_args = self._get_xvfb_args()
         listener_x = os.fork()
         if listener_x == 0:
-            # Debugging tip (can also use glxinfo):
-            # $ xdpyinfo > /tmp/native
-            # $ aa-sandbox -X -t sandbox-x /usr/bin/xdpyinfo > /tmp/nested
-            # $ diff -Naur /tmp/native /tmp/nested
+            # This will clean out any dead sessions
+            cmd(['xpra', 'list'])
 
             x_args = ['--no-daemon',
                       #'--no-mmap', # for security?
@@ -369,10 +372,10 @@ EndSection
             args = ['/usr/bin/xpra', 'attach', self.display,
                                      '--title=%s' % self.title,
                                      #'--no-mmap', # for security?
+                                     '--no-tray',
                                      '--no-clipboard',
                                      '--no-pulseaudio']
             debug(" ".join(args))
-            #cmd(args)
             if apparmor.common.DEBUGGING == True:
                 sys.stderr.flush()
                 os.execv(args[0], args)
