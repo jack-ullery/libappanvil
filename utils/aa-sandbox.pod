@@ -1,0 +1,137 @@
+# This publication is intellectual property of Canonical Ltd. Its contents
+# can be duplicated, either in part or in whole, provided that a copyright
+# label is visibly located on each copy.
+#
+# All information found in this book has been compiled with utmost
+# attention to detail. However, this does not guarantee complete accuracy.
+# Neither Canonical Ltd, the authors, nor the translators shall be held
+# liable for possible errors or the consequences thereof.
+#
+# Many of the software and hardware descriptions cited in this book
+# are registered trademarks. All trade names are subject to copyright
+# restrictions and may be registered trade marks. Canonical Ltd
+# essentially adheres to the manufacturer's spelling.
+#
+# Names of products and trademarks appearing in this book (with or without
+# specific notation) are likewise subject to trademark and trade protection
+# laws and may thus fall under copyright restrictions.
+#
+
+=pod
+
+=head1 NAME
+
+aa-sandbox - AppArmor sandboxing
+
+=head1 SYNOPSIS
+
+B<aa-sandbox> [option] <path to binary>
+
+=head1 DESCRIPTION
+
+B<aa-sandbox> provides a mechanism for sandboxing an application using an
+existing profile or via dynamic profile generation. Please note that while this
+tool can help with quickly defining an application, its utility is dependent on
+the quality of the templates, policy groups and abstractions used. Also, this
+tool may create policy which is less restricted than creating policy by hand or
+with B<aa-genprof> and B<aa-logprof>.
+
+=head1 OPTIONS
+
+B<aa-sandbox> accepts the following arguments:
+
+=over 4
+
+=item -t TEMPLATE, --template=TEMPLATE
+
+Specify the template used to generate a profile. May specify either a system
+template or a filename for the template to use. See aa-easyprof(8) for more
+information. If not specified, uses B<sandbox> or when using B<-X>,
+B<sandbox-x>.
+
+=item -p POLICYGROUPS, --policy-groups=POLICYGROUPS
+
+Specify POLICYGROUPS as a comma-separated list of policy groups. See
+aa-easyprof(8) for more information on POLICYGROUPS.
+
+=item -a ABSTRACTIONS, --abstractions=ABSTRACTIONS
+
+Specify ABSTRACTIONS as a comma-separated list of AppArmor abstractions.
+AppArmor abstractions are located in /etc/apparmor.d/abstractions. See
+apparmor.d(5) for details.
+
+=item -r PATH, --read-path=PATH
+
+Specify a PATH to allow owner reads. May be specified multiple times. If the
+PATH ends in a '/', then PATH is treated as a directory and reads are allowed
+to all files under this directory. Can optionally use '/*' at the end of the
+PATH to only allow reads to files directly in PATH.
+
+=item -w PATH, --write-dir=PATH
+
+Like --read-path but also allow owner writes in additions to reads.
+
+=item --profile=PROFILE
+
+Instead of generating a dynamic profile, specify an existing, loaded profile.
+This does not require root privileges.
+
+=item -X, --with-x
+
+Run the sandboxed application in an isolated X server.
+
+=item --with-xserver=XSERVER
+
+Choose the nested XSERVER to use. Supported servers are: B<xephyr>, B<xpra> and
+B<xpra3d>. xpra uses the Xvfb(1) virtual framebuffer X server while xpra3d uses
+the Xorg(1) server with the Xdummy (dummy_drv.so) driver.
+
+=item -g GEOMETRY, --with-geometry=GEOMETRY
+
+The starting geometry to use. Currently only supported with the B<xephyr>
+server.
+
+=back
+
+=head1 EXAMPLES
+
+Use the existing system profile 'firefox' to sandbox /usr/bin/firefox:
+
+=over
+
+$ aa-sandbox -X --profile=firefox /usr/bin/firefox
+
+=back
+
+Sandbox xeyes:
+
+=over
+
+$ aa-sandbox -X /usr/bin/xeyes
+
+=back
+
+Sandbox glxgears:
+
+=over
+
+$ aa-sandbox -X --with-xserver=xpra3d /usr/bin/glxgears
+
+=back
+
+Sandbox uptime:
+
+=over
+
+$ aa-sandbox --read-path="/proc/*" /usr/bin/uptime
+
+=head1 BUGS
+
+If you find any bugs, please report them to Launchpad at
+L<https://bugs.launchpad.net/apparmor/+filebug>.
+
+=head1 SEE ALSO
+
+apparmor(7) apparmor.d(5) xpra(1) Xvfb(1) Xorg(1) Xephyr(1) aa-easyprof(8)
+
+=cut
