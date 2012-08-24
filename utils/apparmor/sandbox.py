@@ -8,7 +8,7 @@
 #
 # ------------------------------------------------------------------
 
-from apparmor.common import AppArmorException, debug, error, cmd
+from apparmor.common import AppArmorException, debug, error, warn, cmd
 import apparmor.easyprof
 import optparse
 import os
@@ -25,7 +25,7 @@ def check_requirements(binary):
             'aa-exec',     # for changing profile
             'sudo',        # eventually get rid of this
             binary]
-    
+
     for e in exes:
         debug("Searching for '%s'" % e)
         rc, report = cmd(['which', e])
@@ -45,7 +45,7 @@ def parse_args(args=None, parser=None):
                       default=False,
                       help='Run in isolated X server',
                       action='store_true')
-    parser.add_option('--xserver',
+    parser.add_option('--with-xserver',
                       dest='xserver',
                       default='xpra',
                       help='Nested X server to use (default is xpra)')
@@ -71,7 +71,6 @@ def parse_args(args=None, parser=None):
             my_opt.template = "sandbox-x"
         else:
             my_opt.template = "sandbox"
-        
 
     return (my_opt, my_args)
 
@@ -141,7 +140,7 @@ class SandboxXserver():
             if rc != 0:
                 display = tmp
                 break
-        
+
         os.environ["DISPLAY"] = current
         if display == "":
             raise AppArmorException("Could not find available X display")
@@ -217,12 +216,13 @@ class SandboxXephyr(SandboxXserver):
         self.pids.append(listener_wm)
         time.sleep(1) # FIXME: detect if running
 
+        os.environ["DISPLAY"] = self.display
 
 class SandboxXpra(SandboxXserver):
     def cleanup(self):
         cmd(['xpra', 'stop', self.display])
         SandboxXserver.cleanup(self)
-        
+
     def start(self):
         for e in ['xpra']:
             debug("Searching for '%s'" % e)
@@ -251,7 +251,10 @@ class SandboxXpra(SandboxXserver):
         listener_attach = os.fork()
         if listener_attach == 0:
             args = ['/usr/bin/xpra', 'attach', self.display,
-                                     '--title=%s' % self.title]
+                                     '--title=%s' % self.title,
+                                     #'--no-mmap', # for security?
+                                     '--no-clipboard',
+                                     '--no-pulseaudio']
             debug(" ".join(args))
             cmd(args)
             #sys.stderr.flush()
@@ -259,6 +262,8 @@ class SandboxXpra(SandboxXserver):
             sys.exit(0)
 
         self.pids.append(listener_attach)
+
+        os.environ["DISPLAY"] = self.display
 
 
 def run_xsandbox(command, opt):
@@ -274,9 +279,6 @@ def run_xsandbox(command, opt):
     else:
         x = SandboxXpra(opt.resolution, command[0])
     x.start()
-
-    # update environment
-    os.environ["DISPLAY"] = x.display
     debug("DISPLAY is now '%s'" % os.environ["DISPLAY"])
 
     # aa-exec
