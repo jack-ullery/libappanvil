@@ -125,6 +125,10 @@ class SandboxXserver():
         self.pids = []
         self.find_free_x_display()
 
+	# TODO: for now, drop Unity's globalmenu proxy since it doesn't work
+	# right in the application.
+        os.environ["UBUNTU_MENUPROXY"] = ""
+
     def find_free_x_display(self):
         '''Find a free X display'''
         display = ""
@@ -213,6 +217,7 @@ class SandboxXephyr(SandboxXserver):
         self.pids.append(listener_wm)
         time.sleep(1) # FIXME: detect if running
 
+
 class SandboxXpra(SandboxXserver):
     def cleanup(self):
         cmd(['xpra', 'stop', self.display])
@@ -254,6 +259,7 @@ class SandboxXpra(SandboxXserver):
             sys.exit(0)
 
         self.pids.append(listener_attach)
+
 
 def run_xsandbox(command, opt):
     '''Run X application in a sandbox'''
