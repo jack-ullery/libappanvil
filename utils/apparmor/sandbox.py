@@ -20,18 +20,19 @@ import time
 
 def check_requirements(binary):
     '''Verify necessary software is installed'''
-    exes = ['Xephyr',
-            'matchbox-window-manager',
-            'xset',        # for detecting free X display
+    exes = ['xset',        # for detecting free X display
             'aa-easyprof', # for templates
+            'aa-exec',     # for changing profile
             'sudo',        # eventually get rid of this
             binary]
+    
     for e in exes:
         debug("Searching for '%s'" % e)
         rc, report = cmd(['which', e])
         if rc != 0:
             error("Could not find '%s'" % e, do_exit=False)
             return False
+
     return True
 
 def parse_args(args=None, parser=None):
@@ -65,7 +66,8 @@ def parse_args(args=None, parser=None):
         if my_opt.withx:
             if my_opt.xserver.lower() != 'xpra' and \
                my_opt.xserver.lower() != 'xephyr':
-                error("Invalid server '%s'. Use 'xpra' or 'xephyr'")
+                error("Invalid server '%s'. Use 'xpra' or 'xephyr'" % \
+                      my_opt.xserver)
             my_opt.template = "sandbox-x"
         else:
             my_opt.template = "sandbox"
@@ -113,7 +115,6 @@ def aa_exec(command, opt):
 def run_sandbox(command, opt):
     '''Run application'''
     # aa-exec
-    #opt.template = "sandbox-x"
     rc, report = aa_exec(command, opt)
     return rc, report
 
@@ -156,6 +157,12 @@ class SandboxXserver():
 
 class SandboxXephyr(SandboxXserver):
     def start(self):
+        for e in ['Xephyr', 'matchbox-window-manager']:
+            debug("Searching for '%s'" % e)
+            rc, report = cmd(['which', e])
+            if rc != 0:
+                raise AppArmorException("Could not find '%s'" % e)
+
         '''Start a Xephyr server'''
         listener_x = os.fork()
         if listener_x == 0:
@@ -213,6 +220,12 @@ class SandboxXpra(SandboxXserver):
         SandboxXserver.cleanup(self)
         
     def start(self):
+        for e in ['xpra']:
+            debug("Searching for '%s'" % e)
+            rc, report = cmd(['which', e])
+            if rc != 0:
+                raise AppArmorException("Could not find '%s'" % e)
+
         listener_x = os.fork()
         if listener_x == 0:
             x_args = ['--no-daemon',
