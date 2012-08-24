@@ -340,12 +340,13 @@ EndSection
         self.pids.append(listener_x)
 
         started = False
-        for i in range(10): # 5 seconds to start
-            time.sleep(0.5)
+        time.sleep(0.5)
+        for i in range(5): # 5 seconds to start
             rc, out = cmd(['xpra', 'list'])
             if 'LIVE session at %s' % self.display in out:
                 started = True
                 break
+            time.sleep(1)
 
         if not started:
             sys.stdout.flush()
