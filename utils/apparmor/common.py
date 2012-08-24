@@ -8,11 +8,11 @@
 #
 # ------------------------------------------------------------------
 
+from __future__ import print_function
 import subprocess
 import sys
 
 DEBUGGING = False
-DEBUGGING = True
 
 #
 # Utility classes
@@ -31,7 +31,7 @@ class AppArmorException(Exception):
 def error(out, exit_code=1, do_exit=True):
     '''Print error message and exit'''
     try:
-        print >> sys.stderr, "ERROR: %s" % (out)
+        print("ERROR: %s" % (out), file=sys.stderr)
     except IOError:
         pass
 
@@ -41,14 +41,14 @@ def error(out, exit_code=1, do_exit=True):
 def warn(out):
     '''Print warning message'''
     try:
-        print >> sys.stderr, "WARN: %s" % (out)
+        print("WARN: %s" % (out), file=sys.stderr)
     except IOError:
         pass
 
 def msg(out, output=sys.stdout):
     '''Print message'''
     try:
-        print >> output, "%s" % (out)
+        print("%s" % (out), file=sys.stdout)
     except IOError:
         pass
 
@@ -57,7 +57,7 @@ def debug(out):
     global DEBUGGING
     if DEBUGGING:
         try:
-            print >> sys.stderr, "DEBUG: %s" % (out)
+            print("DEBUG: %s" % (out), file=sys.stderr)
         except IOError:
             pass
 
@@ -67,20 +67,29 @@ def cmd(command):
     try:
         sp = subprocess.Popen(command, stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT)
-    except OSError, ex:
+    except OSError as ex:
         return [127, str(ex)]
 
-    out = sp.communicate()[0]
+    if sys.version_info[0] >= 3:
+        out = sp.communicate()[0].decode('ascii', 'ignore')
+    else:
+        out = sp.communicate()[0]
+
     return [sp.returncode, out]
+
 
 def cmd_pipe(command1, command2):
     '''Try to pipe command1 into command2.'''
     try:
         sp1 = subprocess.Popen(command1, stdout=subprocess.PIPE)
         sp2 = subprocess.Popen(command2, stdin=sp1.stdout)
-    except OSError, ex:
+    except OSError as ex:
         return [127, str(ex)]
 
-    out = sp2.communicate()[0]
+    if sys.version_info[0] >= 3:
+        out = sp2.communicate()[0].decode('ascii', 'ignore')
+    else:
+        out = sp2.communicate()[0]
+
     return [sp2.returncode, out]
 
