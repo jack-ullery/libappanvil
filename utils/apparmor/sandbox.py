@@ -58,6 +58,10 @@ def parse_args(args=None, parser=None):
                       dest='resolution',
                       default='640x480',
                       help='Resolution for X application')
+    parser.add_option('--profile',
+                      dest='profile',
+                      default=None,
+                      help='Specify an existing profile (see aa-status)')
 
     (my_opt, my_args) = parser.parse_args()
     if my_opt.debug == True:
@@ -81,31 +85,34 @@ def gen_policy_name(binary):
 
 def aa_exec(command, opt):
     '''Execute binary under specified policy'''
-    opt.ensure_value("template_var", None)
-    opt.ensure_value("name", None)
-    opt.ensure_value("comment", None)
-    opt.ensure_value("author", None)
-    opt.ensure_value("copyright", None)
-
-    binary = command[0]
-    policy_name = apparmor.sandbox.gen_policy_name(binary)
-    easyp = apparmor.easyprof.AppArmorEasyProfile(binary, opt)
-    params = apparmor.easyprof.gen_policy_params(policy_name, opt)
-    policy = easyp.gen_policy(**params)
-    debug("\n%s" % policy)
-
-    # TODO: get rid of sudo
-    tmp = tempfile.NamedTemporaryFile(prefix = '%s-' % policy_name)
-    if sys.version_info[0] >= 3:
-        tmp.write(bytes(policy, 'utf-8'))
+    if opt.profile != None:
+        policy_name = opt.profile
     else:
-        tmp.write(policy)
-    tmp.flush()
+        opt.ensure_value("template_var", None)
+        opt.ensure_value("name", None)
+        opt.ensure_value("comment", None)
+        opt.ensure_value("author", None)
+        opt.ensure_value("copyright", None)
 
-    debug("using '%s' template" % opt.template)
-    rc, report = cmd(['sudo', 'apparmor_parser', '-r', tmp.name])
-    if rc != 0:
-        raise AppArmorException("Could not load policy")
+        binary = command[0]
+        policy_name = apparmor.sandbox.gen_policy_name(binary)
+        easyp = apparmor.easyprof.AppArmorEasyProfile(binary, opt)
+        params = apparmor.easyprof.gen_policy_params(policy_name, opt)
+        policy = easyp.gen_policy(**params)
+        debug("\n%s" % policy)
+
+        tmp = tempfile.NamedTemporaryFile(prefix = '%s-' % policy_name)
+        if sys.version_info[0] >= 3:
+            tmp.write(bytes(policy, 'utf-8'))
+        else:
+            tmp.write(policy)
+        tmp.flush()
+
+        debug("using '%s' template" % opt.template)
+        # TODO: get rid of sudo
+        rc, report = cmd(['sudo', 'apparmor_parser', '-r', tmp.name])
+        if rc != 0:
+            raise AppArmorException("Could not load policy")
 
     args = ['aa-exec', '-p', policy_name] + command
     rc, report = cmd(args)
@@ -125,7 +132,7 @@ class SandboxXserver():
         self.find_free_x_display()
 
 	# TODO: for now, drop Unity's globalmenu proxy since it doesn't work
-	# right in the application.
+	# right in the application. (Doesn't work with firefox)
         os.environ["UBUNTU_MENUPROXY"] = ""
 
     def find_free_x_display(self):
@@ -191,8 +198,7 @@ class SandboxXephyr(SandboxXserver):
 
             args = ['/usr/bin/Xephyr'] + x_args + [self.display]
             debug(" ".join(args))
-            sys.stderr.flush()
-            os.execv(args[0], args)
+            cmd(args)
             sys.exit(0)
         self.pids.append(listener_x)
 
@@ -209,8 +215,7 @@ class SandboxXephyr(SandboxXserver):
 
             args = ['/usr/bin/matchbox-window-manager', '-use_titlebar', 'no']
             debug(" ".join(args))
-            sys.stderr.flush()
-            os.execv(args[0], args)
+            cmd(args)
             sys.exit(0)
 
         self.pids.append(listener_wm)
@@ -239,8 +244,6 @@ class SandboxXpra(SandboxXserver):
             args = ['/usr/bin/xpra', 'start', self.display] + x_args
             debug(" ".join(args))
             cmd(args)
-            #sys.stderr.flush()
-            #os.execv(args[0], args)
             sys.exit(0)
         self.pids.append(listener_x)
         time.sleep(2) # FIXME: detect if running
@@ -257,14 +260,12 @@ class SandboxXpra(SandboxXserver):
                                      '--no-pulseaudio']
             debug(" ".join(args))
             cmd(args)
-            #sys.stderr.flush()
-            #os.execv(args[0], args)
             sys.exit(0)
 
         self.pids.append(listener_attach)
 
         os.environ["DISPLAY"] = self.display
-
+        warn("Resolution not honored in xpra")
 
 def run_xsandbox(command, opt):
     '''Run X application in a sandbox'''
