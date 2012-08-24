@@ -338,7 +338,19 @@ EndSection
                 cmd(args)
             sys.exit(0)
         self.pids.append(listener_x)
-        time.sleep(2) # FIXME: detect if running
+
+        started = False
+        for i in range(10): # 5 seconds to start
+            time.sleep(0.5)
+            rc, out = cmd(['xpra', 'list'])
+            if 'LIVE session at %s' % self.display in out:
+                started = True
+                break
+
+        if not started:
+            sys.stdout.flush()
+            self.cleanup()
+            raise AppArmorException("Could not start xpra (try again with -d)")
 
         # Next, attach to xpra
         sys.stdout.flush()
