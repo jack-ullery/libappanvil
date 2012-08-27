@@ -48,7 +48,7 @@ def warn(out):
 def msg(out, output=sys.stdout):
     '''Print message'''
     try:
-        print("%s" % (out), file=sys.stdout)
+        print("%s" % (out), file=output)
     except IOError:
         pass
 

@@ -33,7 +33,7 @@ B<aa-sandbox> provides a mechanism for sandboxing an application using an
 existing profile or via dynamic profile generation. Please note that while this
 tool can help with quickly confining an application, its utility is dependent on
 the quality of the templates, policy groups and abstractions used. Also, this
-tool may create policy which is less restricted than creating policy by hand or
+tool may create policy which is less restrictive than creating policy by hand or
 with B<aa-genprof> and B<aa-logprof>.
 
 =head1 OPTIONS
@@ -128,6 +128,30 @@ $ aa-sandbox --read-path="/proc/*" /usr/bin/uptime
 
 =back
 
+=head1 NOTES
+
+B<aa-sandbox> currently relies on Xsecurity rules based on Xauthority. As such,
+xhost access controls need to be enabled and server interpreted values for
+localuser must be removed. One way of achieving this is adding a late running
+Xsession(5) script of the form:
+
+=over
+
+# Create an Xauthority file if it doesn't exist
+
+[ ! -f "$HOME/.Xauthority" ] && [ -x /usr/bin/xauth ] &&
+    xauth generate :0 . trusted > /dev/null
+
+# Default to the Xauthority file
+
+[ -f "$HOME/.Xauthority" ] && [ -x /usr/bin/xhost ] && [ -x /usr/bin/id ] &&
+    xhost -si:localuser:`id -un` > /dev/null
+
+=back
+
+After adding the above, it is recommended you remove the existing ~/.Xauthority
+file, then restart your session.
+
 =head1 BUGS
 
 If you find any bugs, please report them to Launchpad at
@@ -136,5 +160,6 @@ L<https://bugs.launchpad.net/apparmor/+filebug>.
 =head1 SEE ALSO
 
 apparmor(7) apparmor.d(5) xpra(1) Xvfb(1) Xorg(1) Xephyr(1) aa-easyprof(8)
+Xecurity(7)
 
 =cut

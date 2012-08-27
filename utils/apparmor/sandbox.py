@@ -70,13 +70,13 @@ def parse_args(args=None, parser=None):
                       help='Specify an existing profile (see aa-status)')
 
     (my_opt, my_args) = parser.parse_args()
-    if my_opt.debug == True:
+    if my_opt.debug:
         apparmor.common.DEBUGGING = True
-    if my_opt.withx and my_opt.xserver.lower() != 'xpra' and \
-                        my_opt.xserver.lower() != 'xpra3d' and \
-                        my_opt.xserver.lower() != 'xephyr':
-            error("Invalid server '%s'. Use 'xpra', ''xpra3d', or 'xephyr'" % \
-                  my_opt.xserver)
+
+    valid_xservers = ['xpra', 'xpra3d', 'xephyr']
+    if my_opt.withx and my_opt.xserver.lower() not in valid_xservers:
+            error("Invalid server '%s'. Use one of: %s" % (my_opt.xserver, \
+                                                           ", ".join(valid_xservers)))
     if my_opt.template == "default":
         if my_opt.withx:
             my_opt.template = "sandbox-x"
@@ -109,7 +109,7 @@ def aa_exec(command, opt, environ={}):
         opt.ensure_value("copyright", None)
 
         binary = command[0]
-        policy_name = apparmor.sandbox.gen_policy_name(binary)
+        policy_name = gen_policy_name(binary)
         easyp = apparmor.easyprof.AppArmorEasyProfile(binary, opt)
         params = apparmor.easyprof.gen_policy_params(policy_name, opt)
         policy = easyp.gen_policy(**params)
@@ -124,7 +124,7 @@ def aa_exec(command, opt, environ={}):
 
         debug("using '%s' template" % opt.template)
         # TODO: get rid of this
-        if opt.withx == True:
+        if opt.withx:
             rc, report = cmd(['pkexec', 'apparmor_parser', '-r', '%s' % tmp.name])
         else:
             rc, report = cmd(['sudo', 'apparmor_parser', '-r', tmp.name])
@@ -196,6 +196,11 @@ class SandboxXserver():
 
     def find_free_x_display(self):
         '''Find a free X display'''
+        old_lang = None
+        if 'LANG' in os.environ:
+            old_lang = os.environ['LANG']
+        os.environ['LANG'] = 'C'
+
         display = ""
         current = self.old_environ["DISPLAY"]
         for i in range(1,257): # TODO: this puts an artificial limit of 256
@@ -203,9 +208,12 @@ class SandboxXserver():
             tmp = ":%d" % i
             os.environ["DISPLAY"] = tmp
             rc, report = cmd(['xset', '-q'])
-            if rc != 0:
+            if rc != 0 and 'Invalid MIT-MAGIC-COOKIE-1' not in report:
                 display = tmp
                 break
+
+        if old_lang:
+            os.environ['LANG'] = old_lang
 
         os.environ["DISPLAY"] = current
         if display == "":
@@ -513,11 +521,10 @@ EndSection
         return xvfb_args
 
     def start(self):
-        for e in ['xpra']:
-            debug("Searching for '%s'" % e)
-            rc, report = cmd(['which', e])
-            if rc != 0:
-                raise AppArmorException("Could not find '%s'" % e)
+        debug("Searching for '%s'" % 'xpra')
+        rc, report = cmd(['which', 'xpra'])
+        if rc != 0:
+            raise AppArmorException("Could not find '%s'" % 'xpra')
 
         if self.driver == "xdummy":
             # FIXME: is there a better way we can detect this?
@@ -593,7 +600,7 @@ def run_xsandbox(command, opt):
 
     # first, start X
     if opt.xserver.lower() == "xephyr":
-        x = SandboxXephyr(command[0], opt.geometry, xauth=opt.xauthority)
+        x = SandboxXephyr(command[0], geometry=opt.xephyr_geometry, xauth=opt.xauthority)
     elif opt.xserver.lower() == "xpra3d":
         x = SandboxXpra(command[0], geometry=None, driver="xdummy", xauth=opt.xauthority)
     else:
