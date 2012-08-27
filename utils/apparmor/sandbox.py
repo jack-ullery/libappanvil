@@ -411,7 +411,9 @@ Section "Device"
   Driver "dummy"
   # In kByte
   #VideoRam 4096000
-  VideoRam 256000
+  #VideoRam 256000
+  # This should be good for 3840*2560*32bpp: http://winswitch.org/trac/ticket/140
+  VideoRam 64000
 EndSection
 
 ##Xdummy:##
@@ -500,7 +502,9 @@ Section "Screen"
     Modes "32000x32000" "16384x8192" "8192x4096" "5120x3200" "3840x2880" "3840x2560" "3840x2048" "2048x2048" "2560x1600" "1920x1440" "1920x1200" "1920x1080" "1600x1200" "1680x1050" "1600x900" "1400x1050" "1440x900" "1280x1024" "1366x768" "1280x800" "1024x768" "1024x600" "800x600" "320x200"
     #Virtual 32000 32000
     #Virtual 16384 8192
-    Virtual 8192 4096
+    #Virtual 8192 4096
+    # http://winswitch.org/trac/ticket/140
+    Virtual 3840 2560
   EndSubSection
 EndSection
 
