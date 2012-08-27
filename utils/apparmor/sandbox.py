@@ -619,6 +619,10 @@ def run_xsandbox(command, opt):
     except Exception as e:
         error(e)
 
+    if not opt.read_path:
+        opt.read_path = []
+    opt.read_path.append(x.xauth)
+
     # aa-exec
     try:
         rc, report = aa_exec(command, opt, x.new_environ)
