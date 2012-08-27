@@ -15,9 +15,11 @@
 
 ###BINARY### {
   #include <abstractions/base>
-  #include <abstractions/X>
   #include <abstractions/gnome>
   #include <abstractions/kde>
+
+  #include <abstractions/X>
+  audit deny @{HOME}/.Xauthority mrwlk,
 
   /etc/passwd r,
 

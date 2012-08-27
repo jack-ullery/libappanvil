@@ -81,16 +81,29 @@ This does not require privileged access.
 
 Run the sandboxed application in an isolated X server.
 
+=item --with-xauthority=XAUTHORITY
+
+Specify an Xauthority file to use rather than a dynamically generated one. This
+is particularly useful in combination with --profile. This option must be used
+with care to not allow too much access to the sandboxed application. In
+particular, the profile specified with --profile must add a rule to deny access
+to ~/.Xauthority for X sandboxing to be effective. Eg:
+
+=over
+
+audit deny @{HOME}/.Xauthority mrwlk,
+
+=back
+
 =item --with-xserver=XSERVER
 
 Choose the nested XSERVER to use. Supported servers are: B<xpra> (the default),
 B<xpra3d> and B<xephyr>. xpra uses the Xvfb(1) virtual framebuffer X server
 while xpra3d uses the Xorg(1) server with the Xdummy (dummy_drv.so) driver.
 
-=item -g GEOMETRY, --with-geometry=GEOMETRY
+=item --with-xephyr-geometry=GEOMETRY
 
-The starting geometry to use. Currently only supported with the B<xephyr>
-server.
+The starting geometry for the Xephyr(1) server to use.
 
 =back
 

@@ -97,7 +97,7 @@ def set_environ(env):
         msg("Using: %s=%s" % (k, env[k]))
         os.environ[k] = env[k]
 
-def aa_exec(command, opt, environ={}):
+def aa_exec(command, opt, environ={}, verify_rules=[]):
     '''Execute binary under specified policy'''
     if opt.profile != None:
         policy_name = opt.profile
@@ -130,6 +130,21 @@ def aa_exec(command, opt, environ={}):
             rc, report = cmd(['sudo', 'apparmor_parser', '-r', tmp.name])
         if rc != 0:
             raise AppArmorException("Could not load policy")
+
+        rc, report = cmd(['sudo', 'apparmor_parser', '-p', tmp.name])
+        if rc != 0:
+            raise AppArmorException("Could not dump policy")
+
+        # Make sure the dynamic profile has the appropriate line for X
+        for r in verify_rules:
+            found = False
+            for line in report.splitlines():
+                line = line.strip()
+                if r == line:
+                    found = True
+                    break
+            if not found:
+                raise AppArmorException("Could not find required rule: %s" % r)
 
     set_environ(environ)
     args = ['aa-exec', '-p', policy_name, '--'] + command
@@ -623,9 +638,12 @@ def run_xsandbox(command, opt):
         opt.read_path = []
     opt.read_path.append(x.xauth)
 
+    # Only used with dynamic profiles
+    required_rules = ['audit deny @{HOME}/.Xauthority mrwlk,']
+
     # aa-exec
     try:
-        rc, report = aa_exec(command, opt, x.new_environ)
+        rc, report = aa_exec(command, opt, x.new_environ, required_rules)
     except Exception as e:
         x.cleanup()
         raise
