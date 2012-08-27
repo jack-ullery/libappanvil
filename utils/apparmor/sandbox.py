@@ -82,10 +82,17 @@ def parse_args(args=None, parser=None):
 
 def gen_policy_name(binary):
     '''Generate a temporary policy based on the binary name'''
-    return "sandbox-%s%s" % (pwd.getpwuid(os.getuid())[0],
+    return "sandbox-%s%s" % (pwd.getpwuid(os.geteuid())[0],
                               re.sub(r'/', '_', binary))
 
-def aa_exec(command, opt):
+def set_environ(env):
+    keys = env.keys()
+    keys.sort()
+    for k in keys:
+        msg("Using: %s=%s" % (k, env[k]))
+        os.environ[k] = env[k]
+
+def aa_exec(command, opt, environ={}):
     '''Execute binary under specified policy'''
     if opt.profile != None:
         policy_name = opt.profile
@@ -119,6 +126,7 @@ def aa_exec(command, opt):
         if rc != 0:
             raise AppArmorException("Could not load policy")
 
+    set_environ(environ)
     args = ['aa-exec', '-p', policy_name] + command
     rc, report = cmd(args)
     return rc, report
@@ -134,18 +142,45 @@ class SandboxXserver():
         self.geometry = geometry
         self.title = title
         self.pids = []
-        self.find_free_x_display()
         self.driver = driver
         self.tempfiles = []
+        self.timeout = 5 # used by xauth and for server starts
 
-	# TODO: for now, drop Unity's globalmenu proxy since it doesn't work
-	# right in the application. (Doesn't work with firefox)
-        os.environ["UBUNTU_MENUPROXY"] = ""
+        # preserve our environment
+        self.old_environ = dict()
+        self.old_environ['DISPLAY'] = os.environ['DISPLAY']
+        self.old_environ['XAUTHORITY'] = os.environ['XAUTHORITY']
+        self.old_environ['UBUNTU_MENUPROXY'] = os.environ['UBUNTU_MENUPROXY']
+
+        # prepare the new environment
+        self.display, self.xauth = self.find_free_x_display()
+        self.new_environ = dict()
+        self.new_environ['DISPLAY'] = self.display
+        self.new_environ['XAUTHORITY'] = self.xauth
+        # Disable the global menu for now
+        self.new_environ["UBUNTU_MENUPROXY"] = ""
+
+    def cleanup(self):
+        '''Cleanup our forked pids, reset the environment, etc'''
+        for pid in self.pids:
+            # kill server now. It should've terminated, but be sure
+            debug("Killing '%d'" % pid)
+            cmd(['kill', "%d" % pid])
+
+        for t in self.tempfiles:
+            if os.path.exists(t):
+                os.unlink(t)
+
+        if os.path.exists(self.xauth):
+            os.unlink(self.xauth)
+
+        # Reset our environment
+        set_environ(self.old_environ)
 
     def find_free_x_display(self):
         '''Find a free X display'''
         display = ""
-        current = os.environ["DISPLAY"]
+        current = self.old_environ["DISPLAY"]
         for i in range(1,257): # TODO: this puts an artificial limit of 256
                                #       sandboxed applications
             tmp = ":%d" % i
@@ -159,21 +194,49 @@ class SandboxXserver():
         if display == "":
             raise AppArmorException("Could not find available X display")
 
-        self.display = display
+        # Use dedicated .Xauthority file
+        xauth = os.path.join(os.path.expanduser('~'), \
+                             '.Xauthority-sandbox%s' % display.split(':')[1])
 
-    def cleanup(self):
-        '''Cleanup our forked pids, etc'''
-        # kill server now. It should've terminated, but be sure
-        for pid in self.pids:
-            os.kill(pid, 15)
-            os.waitpid(pid, 0)
+        return display, xauth
 
-        for t in self.tempfiles:
-            if os.path.exists(t):
-                os.unlink(t)
+    def verify_host_setup(self):
+        '''Make sure we have everything we need'''
+        old_lang = None
+        if 'LANG' in os.environ:
+            old_lang = os.environ['LANG']
+
+        os.environ['LANG'] = 'C'
+        rc, report = cmd(['xhost'])
+
+        if old_lang:
+            os.environ['LANG'] = old_lang
+
+        if rc != 0:
+            raise AppArmorException("'xhost' exited with error")
+        if 'access control enabled' not in report:
+            raise AppArmorException("Access control currently disabled. Please enable with 'xhost -'")
+        username = pwd.getpwuid(os.geteuid())[0]
+        if ':localuser:%s' % username in report:
+            raise AppArmorException("Access control allows '%s' full access. Please see 'man aa-sandbox' for details")
 
     def start(self):
-        '''start() should be overridden'''
+        '''Start a nested X server (need to override)'''
+        # clean up the old one
+        if os.path.exists(self.xauth):
+            os.unlink(self.xauth)
+        rc, cookie = cmd(['mcookie'])
+        if rc != 0:
+            raise AppArmorException("Could not generate magic cookie")
+
+        rc, out = cmd(['xauth', '-f', self.xauth, \
+                       'add', \
+                       self.display, \
+                       'MIT-MAGIC-COOKIE-1', \
+                       cookie.strip()])
+        if rc != 0:
+            raise AppArmorException("Could not generate '%s'" % self.display)
+
 
 class SandboxXephyr(SandboxXserver):
     def start(self):
@@ -182,6 +245,9 @@ class SandboxXephyr(SandboxXserver):
             rc, report = cmd(['which', e])
             if rc != 0:
                 raise AppArmorException("Could not find '%s'" % e)
+
+        '''Run any setup code'''
+        SandboxXserver.start(self)
 
         '''Start a Xephyr server'''
         listener_x = os.fork()
@@ -221,8 +287,9 @@ class SandboxXephyr(SandboxXserver):
         listener_wm = os.fork()
         if listener_wm == 0:
             # update environment
-            os.environ["DISPLAY"] = self.display
-            debug("DISPLAY is now '%s'" % os.environ["DISPLAY"])
+            set_environ(self.new_environ)
+            #os.environ["DISPLAY"] = self.display
+            #debug("DISPLAY is now '%s'" % os.environ["DISPLAY"])
 
             args = ['/usr/bin/matchbox-window-manager', '-use_titlebar', 'no']
             debug(" ".join(args))
@@ -232,11 +299,16 @@ class SandboxXephyr(SandboxXserver):
         self.pids.append(listener_wm)
         time.sleep(1) # FIXME: detect if running
 
-        os.environ["DISPLAY"] = self.display
 
 class SandboxXpra(SandboxXserver):
     def cleanup(self):
-        cmd(['xpra', 'stop', self.display])
+        # This can block
+        listener = os.fork()
+        if listener == 0:
+            cmd(['xpra', 'stop', self.display])
+            sys.exit(0)
+        self.pids.append(listener_x)
+        time.sleep(2)
         SandboxXserver.cleanup(self)
 
     def _get_xvfb_args(self):
@@ -254,8 +326,9 @@ class SandboxXpra(SandboxXserver):
             xvfb_args.append('-screen 0 3840x2560x24+32')
             xvfb_args.append('-nolisten tcp')
             xvfb_args.append('-noreset')
-            xvfb_args.append('-auth %s' % os.environ['XAUTHORITY'])
+            xvfb_args.append('-auth %s' % self.new_environ['XAUTHORITY'])
             xvfb_args.append('+extension Composite')
+            xvfb_args.append('+extension SECURITY')
             xvfb_args.append('-extension GLX')
         elif self.driver == 'xdummy':
             # The dummy driver allows us to use GLX, etc. See:
@@ -306,9 +379,9 @@ EndSection
             xvfb_args.append('-nolisten tcp')
             xvfb_args.append('-noreset')
             xvfb_args.append('-logfile %s' % os.path.expanduser('~/.xpra/%s.log' % self.display))
-            xvfb_args.append('-auth %s' % os.environ['XAUTHORITY'])
+            xvfb_args.append('-auth %s' % self.new_environ['XAUTHORITY'])
             xvfb_args.append('-config %s' % xorg_conf)
-            extensions = ['Composite', 'GLX', 'RANDR', 'RENDER']
+            extensions = ['Composite', 'GLX', 'RANDR', 'RENDER', 'SECURITY']
             for i in extensions:
                 xvfb_args.append('+extension %s' % i)
         else:
@@ -330,9 +403,14 @@ EndSection
             if not os.path.exists(drv):
                 raise AppArmorException("Could not find '%s'" % drv)
 
+        '''Run any setup code'''
+        SandboxXserver.start(self)
+
         xvfb_args = self._get_xvfb_args()
         listener_x = os.fork()
         if listener_x == 0:
+            os.environ['XAUTHORITY'] = self.xauth
+
             # This will clean out any dead sessions
             cmd(['xpra', 'list'])
 
@@ -356,7 +434,7 @@ EndSection
 
         started = False
         time.sleep(0.5)
-        for i in range(5): # 5 seconds to start
+        for i in range(self.timeout): # 5 seconds to start
             rc, out = cmd(['xpra', 'list'])
             if 'LIVE session at %s' % self.display in out:
                 started = True
@@ -389,15 +467,15 @@ EndSection
 
         self.pids.append(listener_attach)
 
-        os.environ["DISPLAY"] = self.display
         msg("TODO: --with-geometry not honored in xpra")
         msg("TODO: filter '~/.xpra/run-xpra'")
 
+    def cleanup(self):
+        cmd(['xpra', 'stop', self.display])
+        SandboxXserver.cleanup(self)
+
 def run_xsandbox(command, opt):
     '''Run X application in a sandbox'''
-    # save environment
-    old_display = os.environ["DISPLAY"]
-    debug ("DISPLAY=%s" % old_display)
     old_cwd = os.getcwd()
 
     # first, start X
@@ -408,24 +486,27 @@ def run_xsandbox(command, opt):
     else:
         x = SandboxXpra(opt.geometry, command[0])
 
+    x.verify_host_setup()
+
+    # Debug: show old environment
+    keys = x.old_environ.keys()
+    keys.sort()
+    for k in keys:
+        debug ("Old: %s=%s" % (k, x.old_environ[k]))
+
     try:
         x.start()
     except Exception as e:
         error(e)
 
-    msg("Using 'DISPLAY=%s'" % os.environ["DISPLAY"])
-
     # aa-exec
     try:
-        rc, report = aa_exec(command, opt)
+        rc, report = aa_exec(command, opt, x.new_environ)
+        #x.start2()
     except Exception as e:
         x.cleanup()
         raise
     x.cleanup()
-
-    # reset environment
     os.chdir(old_cwd)
-    os.environ["DISPLAY"] = old_display
-    debug("DISPLAY restored to: %s" % os.environ["DISPLAY"])
 
     return rc, report
