@@ -51,6 +51,11 @@ def parse_args(args=None, parser=None):
                       dest='xserver',
                       default='xpra',
                       help='Nested X server to use: xpra (default), xpra3d, xephyr')
+    parser.add_option('--with-clipboard',
+                      dest='with_clipboard',
+                      default=False,
+                      help='Allow clipboard access',
+                      action='store_true')
     parser.add_option('--with-xauthority',
                       dest='xauthority',
                       default=None,
@@ -62,7 +67,7 @@ def parse_args(args=None, parser=None):
                       action='store_true')
     parser.add_option('--with-xephyr-geometry',
                       dest='xephyr_geometry',
-                      default='640x480',
+                      default=None,
                       help='Geometry for Xephyr window')
     parser.add_option('--profile',
                       dest='profile',
@@ -77,6 +82,13 @@ def parse_args(args=None, parser=None):
     if my_opt.withx and my_opt.xserver.lower() not in valid_xservers:
             error("Invalid server '%s'. Use one of: %s" % (my_opt.xserver, \
                                                            ", ".join(valid_xservers)))
+
+    if my_opt.withx:
+        if my_opt.xephyr_geometry and my_opt.xserver.lower() != "xephyr":
+            error("Invalid option --with-xephyr-geometry with '%s'" % my_opt.xserver)
+        elif my_opt.with_clipboard and my_opt.xserver.lower() == "xephyr":
+            error("Clipboard not supported with '%s'" % my_opt.xserver)
+
     if my_opt.template == "default":
         if my_opt.withx:
             my_opt.template = "sandbox-x"
@@ -158,11 +170,15 @@ def run_sandbox(command, opt):
     return rc, report
 
 class SandboxXserver():
-    def __init__(self, title, geometry=None, driver=None, xauth=None):
+    def __init__(self, title, geometry=None,
+                              driver=None,
+                              xauth=None,
+                              clipboard=False):
         self.geometry = geometry
         self.title = title
         self.pids = []
         self.driver = driver
+        self.clipboard = clipboard
         self.tempfiles = []
         self.timeout = 5 # used by xauth and for server starts
 
@@ -305,6 +321,8 @@ class SandboxXephyr(SandboxXserver):
                             '-nodri',       # more secure?
                            ]
 
+            if not self.geometry:
+                self.geometry = "640x480"
             x_args = ['-nolisten', 'tcp',
                       '-screen', self.geometry,
                       '-br',        # black background
@@ -565,8 +583,9 @@ EndSection
 
             x_args = ['--no-daemon',
                       #'--no-mmap', # for security?
-                      '--no-clipboard',
                       '--no-pulseaudio']
+            if not self.clipboard:
+                x_args.append('--no-clipboard')
 
             if xvfb_args != '':
                 x_args.append(" ".join(xvfb_args))
@@ -598,11 +617,14 @@ EndSection
         listener_attach = os.fork()
         if listener_attach == 0:
             args = ['/usr/bin/xpra', 'attach', self.display,
-                                     '--title=(%s) %s' % (self.display, self.title),
+                                     '--title=(%s) %s' % (self.display,
+                                                          self.title),
                                      #'--no-mmap', # for security?
                                      '--no-tray',
-                                     '--no-clipboard',
                                      '--no-pulseaudio']
+            if not self.clipboard:
+                args.append('--no-clipboard')
+
             debug(" ".join(args))
             sys.stderr.flush()
             os.execv(args[0], args)
@@ -619,11 +641,17 @@ def run_xsandbox(command, opt):
 
     # first, start X
     if opt.xserver.lower() == "xephyr":
-        x = SandboxXephyr(command[0], geometry=opt.xephyr_geometry, xauth=opt.xauthority)
+        x = SandboxXephyr(command[0], geometry=opt.xephyr_geometry,
+                                      xauth=opt.xauthority)
     elif opt.xserver.lower() == "xpra3d":
-        x = SandboxXpra(command[0], geometry=None, driver="xdummy", xauth=opt.xauthority)
+        x = SandboxXpra(command[0], geometry=None,
+                                    driver="xdummy",
+                                    xauth=opt.xauthority,
+                                    clipboard=opt.with_clipboard)
     else:
-        x = SandboxXpra(command[0], geometry=None, xauth=opt.xauthority)
+        x = SandboxXpra(command[0], geometry=None,
+                                    xauth=opt.xauthority,
+                                    clipboard=opt.with_clipboard)
 
     x.verify_host_setup()
 
