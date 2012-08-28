@@ -274,7 +274,7 @@ class SandboxXserver():
             raise AppArmorException("Access control currently disabled. Please enable with 'xhost -'")
         username = pwd.getpwuid(os.geteuid())[0]
         if ':localuser:%s' % username in report:
-            raise AppArmorException("Access control allows '%s' full access. Please see 'man aa-sandbox' for details")
+            raise AppArmorException("Access control allows '%s' full access. Please see 'man aa-sandbox' for details" % username)
 
     def start(self):
         '''Start a nested X server (need to override)'''
