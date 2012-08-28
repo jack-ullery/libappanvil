@@ -169,6 +169,30 @@ Xsession(5) script of the form:
 After adding the above, it is recommended you remove the existing ~/.Xauthority
 file, then restart your session.
 
+=head1 LIMITATIONS
+
+While B<aa-sandbox> may be useful in certain situations, there are a number
+of limitations:
+
+=over
+
+As mentioned, the quality of the template or the specified profile directly
+affects the application's confinement.
+
+DBus system access is all or nothing and DBus session access is unconditionally
+allowed.
+
+No environment filtering is performed.
+
+X server usage has not been fully audited (though simple attacks are believed
+to be protected against when the system is properly setup).
+
+Using a nested X server for each application is expensive.
+
+Surely more...
+
+=back
+
 =head1 BUGS
 
 If you find any bugs, please report them to Launchpad at
@@ -176,7 +200,7 @@ L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 
-apparmor(7) apparmor.d(5) xpra(1) Xvfb(1) Xorg(1) Xephyr(1) aa-easyprof(8)
-Xecurity(7)
+apparmor(7) apparmor.d(5) aa-easyprof(8) Xorg(1) Xecurity(7) xpra(1) Xvfb(1)
+Xephyr(1)
 
 =cut
