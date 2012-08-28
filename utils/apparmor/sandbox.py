@@ -256,6 +256,9 @@ class SandboxXserver():
 
         return display, xauth
 
+    def generate_title(self):
+        return "(Sandbox%s) %s" % (self.display, self.title)
+
     def verify_host_setup(self):
         '''Make sure we have everything we need'''
         old_lang = None
@@ -328,7 +331,7 @@ class SandboxXephyr(SandboxXserver):
                       '-br',        # black background
                       '-reset',     # reset after last client exists
                       '-terminate', # terminate at server reset
-                      '-title', "(%s) %s" % (self.display, self.title),
+                      '-title', self.generate_title(),
                       ] + x_exts + x_extra_args
 
             args = ['/usr/bin/Xephyr'] + x_args + [self.display]
@@ -617,8 +620,7 @@ EndSection
         listener_attach = os.fork()
         if listener_attach == 0:
             args = ['/usr/bin/xpra', 'attach', self.display,
-                                     '--title=(%s) %s' % (self.display,
-                                                          self.title),
+                                     '--title=%s' % self.generate_title(),
                                      #'--no-mmap', # for security?
                                      '--no-tray',
                                      '--no-pulseaudio']
