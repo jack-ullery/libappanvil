@@ -310,7 +310,7 @@ class SandboxXephyr(SandboxXserver):
                       '-br',        # black background
                       '-reset',     # reset after last client exists
                       '-terminate', # terminate at server reset
-                      '-title', self.title,
+                      '-title', "(%s) %s" % (self.display, self.title),
                       ] + x_exts + x_extra_args
 
             args = ['/usr/bin/Xephyr'] + x_args + [self.display]
@@ -598,7 +598,7 @@ EndSection
         listener_attach = os.fork()
         if listener_attach == 0:
             args = ['/usr/bin/xpra', 'attach', self.display,
-                                     '--title=%s' % self.title,
+                                     '--title=(%s) %s' % (self.display, self.title),
                                      #'--no-mmap', # for security?
                                      '--no-tray',
                                      '--no-clipboard',
