@@ -169,10 +169,10 @@ Xsession(5) script of the form:
 After adding the above, it is recommended you remove the existing ~/.Xauthority
 file, then restart your session.
 
-=head1 LIMITATIONS
+=head1 KNOWN LIMITATIONS
 
 While B<aa-sandbox> may be useful in certain situations, there are a number
-of limitations:
+of limitations regarding both confinement and usability:
 
 =over
 
@@ -185,11 +185,12 @@ allowed.
 No environment filtering is performed.
 
 X server usage has not been fully audited (though simple attacks are believed
-to be protected against when the system is properly setup).
+to be protected against when the system is properly setup. See B<NOTES>,
+above).
 
 Using a nested X server for each application is expensive.
 
-Surely more...
+Only the old X cursor is available with B<xpra> and B<xpra3d>.
 
 =back
 
