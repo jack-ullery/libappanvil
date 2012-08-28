@@ -101,6 +101,10 @@ Choose the nested XSERVER to use. Supported servers are: B<xpra> (the default),
 B<xpra3d> and B<xephyr>. xpra uses the Xvfb(1) virtual framebuffer X server
 while xpra3d uses the Xorg(1) server with the Xdummy (dummy_drv.so) driver.
 
+=item --with-clipboard
+
+Allow access to the clipboard when using B<xpra> or B<xpra3d>.
+
 =item --with-xephyr-geometry=GEOMETRY
 
 The starting geometry for the Xephyr(1) server to use.
