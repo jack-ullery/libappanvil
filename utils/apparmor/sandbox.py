@@ -187,6 +187,7 @@ class SandboxXserver():
         self.old_environ['DISPLAY'] = os.environ['DISPLAY']
         self.old_environ['XAUTHORITY'] = os.environ['XAUTHORITY']
         self.old_environ['UBUNTU_MENUPROXY'] = os.environ['UBUNTU_MENUPROXY']
+        self.old_environ['QT_X11_NO_NATIVE_MENUBAR'] = os.environ['QT_X11_NO_NATIVE_MENUBAR']
 
         # prepare the new environment
         self.display, self.xauth = self.find_free_x_display()
@@ -200,6 +201,7 @@ class SandboxXserver():
         self.new_environ['XAUTHORITY'] = self.xauth
         # Disable the global menu for now
         self.new_environ["UBUNTU_MENUPROXY"] = ""
+        self.new_environ["QT_X11_NO_NATIVE_MENUBAR"] = "1"
 
     def cleanup(self):
         '''Cleanup our forked pids, reset the environment, etc'''

@@ -192,6 +192,10 @@ Using a nested X server for each application is expensive.
 
 Only the old X cursor is available with B<xpra> and B<xpra3d>.
 
+The Ubuntu global menu is not currently supported. Gtk and Qt applications
+should display the non-global menu by default, but applications like Firefox
+and Thunderbird should be adjusted to disable the global menu.
+
 =back
 
 =head1 BUGS
