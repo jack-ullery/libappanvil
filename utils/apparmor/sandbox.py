@@ -184,10 +184,10 @@ class SandboxXserver():
 
         # preserve our environment
         self.old_environ = dict()
-        self.old_environ['DISPLAY'] = os.environ['DISPLAY']
-        self.old_environ['XAUTHORITY'] = os.environ['XAUTHORITY']
-        self.old_environ['UBUNTU_MENUPROXY'] = os.environ['UBUNTU_MENUPROXY']
-        self.old_environ['QT_X11_NO_NATIVE_MENUBAR'] = os.environ['QT_X11_NO_NATIVE_MENUBAR']
+        for env in ['DISPLAY', 'XAUTHORITY', 'UBUNTU_MENUPROXY',
+                    'QT_X11_NO_NATIVE_MENUBAR']:
+            if env in os.environ:
+                self.old_environ[env] = os.environ[env]
 
         # prepare the new environment
         self.display, self.xauth = self.find_free_x_display()
