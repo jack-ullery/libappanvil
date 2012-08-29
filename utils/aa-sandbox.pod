@@ -196,6 +196,9 @@ The Ubuntu global menu is not currently supported. Gtk and Qt applications
 should display the non-global menu by default, but applications like Firefox
 and Thunderbird should be adjusted to disable the global menu.
 
+Xpra does not handle screen resizing when hotplugging monitors gracefully.
+Restarting the sandbox will resolve the issue.
+
 =back
 
 =head1 BUGS
