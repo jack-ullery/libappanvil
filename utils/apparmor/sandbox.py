@@ -185,7 +185,7 @@ class SandboxXserver():
         # preserve our environment
         self.old_environ = dict()
         for env in ['DISPLAY', 'XAUTHORITY', 'UBUNTU_MENUPROXY',
-                    'QT_X11_NO_NATIVE_MENUBAR']:
+                    'QT_X11_NO_NATIVE_MENUBAR', 'LIBOVERLAY_SCROLLBAR']:
             if env in os.environ:
                 self.old_environ[env] = os.environ[env]
 
@@ -202,6 +202,8 @@ class SandboxXserver():
         # Disable the global menu for now
         self.new_environ["UBUNTU_MENUPROXY"] = ""
         self.new_environ["QT_X11_NO_NATIVE_MENUBAR"] = "1"
+        # Disable the overlay scrollbar for now-- they don't track correctly
+        self.new_environ["LIBOVERLAY_SCROLLBAR"] = "0"
 
     def cleanup(self):
         '''Cleanup our forked pids, reset the environment, etc'''
