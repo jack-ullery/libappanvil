@@ -50,7 +50,7 @@ if [ -n "$1" ]; then
     e=`echo "$1" | tr -s '[:lower:]' '[:upper:]'`
     if ! echo "$e" | egrep -q "^[0-9A-F]+$" ; then
         echo "String should only contain hex characters (0-9, a-f, A-F)"
-        return
+        exit 1
     fi
 
     d=`decode $e`
