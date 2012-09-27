@@ -12,9 +12,9 @@ configuration.
 To use, for example, the postfix profiles, we recommend running commands
 such as:
 
-  # cd /etc/apparmor/profiles/extras
-  # mv *postfix* usr.sbin.post* /etc/apparmor.d/
-  # mv usr.bin.procmail usr.sbin.sendmail /etc/apparmor.d/
+  # cd /usr/share/apparmor/extra-profiles/
+  # cp *postfix* usr.sbin.post* /etc/apparmor.d/
+  # cp usr.bin.procmail usr.sbin.sendmail /etc/apparmor.d/
   # aa-complain /etc/apparmor.d/*postfix*
   # aa-complain /etc/apparmor.d/usr.sbin.post*
   # aa-complain /etc/apparmor.d/usr.bin.procmail
@@ -39,7 +39,7 @@ working as you expect.
 Feedback on these unsupported profiles is welcomed; any
 contributions for this directory should be clearly licensed
 -- we recommend using the GPL. Please mail suggestions or
-modifications to the apparmor-general@forge.novell.com mail list:
-http://forge.novell.com/mailman/listinfo/apparmor-general
+modifications to the apparmor@lists.ubuntu.com mail list:
+https://lists.ubuntu.com/mailman/listinfo/apparmor
 
 Thanks

@@ -33,7 +33,7 @@ endif
 
 DESTDIR=/
 PROFILES_DEST=${DESTDIR}/etc/apparmor.d
-EXTRAS_DEST=${DESTDIR}/etc/apparmor/profiles/extras/
+EXTRAS_DEST=${DESTDIR}/usr/share/apparmor/extra-profiles/
 PROFILES_SOURCE=./apparmor.d
 EXTRAS_SOURCE=./apparmor/profiles/extras/
 SUBDIRS_MUST_BE_SKIPPED=${PROFILES_SOURCE}/abstractions ${PROFILES_SOURCE}/apache2.d ${PROFILES_SOURCE}/program-chunks ${PROFILES_SOURCE}/tunables ${PROFILES_SOURCE}/local

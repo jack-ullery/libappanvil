@@ -27,8 +27,8 @@
 " stick this file into ~/.vim/syntax/ and add these commands into your .vimrc 
 " to have vim automagically use this syntax file for these directories:
 "
-" autocmd BufNewFile,BufRead /etc/apparmor.d/*        set syntax=apparmor
-" autocmd BufNewFile,BufRead /etc/apparmor/profiles/* set syntax=apparmor
+" autocmd BufNewFile,BufRead /etc/apparmor.d/*                      set syntax=apparmor
+" autocmd BufNewFile,BufRead /usr/share/apparmor/extra-profiles/*   set syntax=apparmor
 
 " profiles are case sensitive
 syntax case match

@@ -6782,7 +6782,7 @@ $profiledir = find_first_dir($cfg->{settings}{profiledir}) || "/etc/apparmor.d";
 unless (-d $profiledir) { fatal_error "Can't find AppArmor profiles."; }
 
 $extraprofiledir = find_first_dir($cfg->{settings}{inactive_profiledir}) ||
-"/etc/apparmor/profiles/extras/";
+"/usr/share/apparmor/extra-profiles/";
 
 $parser = find_first_file($cfg->{settings}{parser}) || "/sbin/apparmor_parser";
 unless (-x $parser) { fatal_error "Can't find apparmor_parser."; }
