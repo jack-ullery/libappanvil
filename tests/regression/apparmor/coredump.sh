@@ -12,7 +12,7 @@
 
 cleancorefile()
 {
-	rm -f core core.*
+	rm -f "$tmpdir/core.$_pid"
 }
 
 checkcorefile()
@@ -26,12 +26,12 @@ checkcorefile()
 		_known=""
         fi
 
-	_corefilelist=`echo core.*`
-	if [ ! -f core ] && [ "$_corefilelist" = "core.*" ]
+	#check pid of last test run by the test suite
+	if [ -f "$tmpdir/core.$_pid" ]
 	then
-		_corefile=no
-	else
 		_corefile=yes
+	else
+		_corefile=no
 	fi
 
 	if [ "$requirement" = "yes" -a "$_corefile" = "no" ] ; then
@@ -54,7 +54,7 @@ checkcorefile()
 		fi
 	fi
 
-	unset _corefile _corefilelist
+	unset _corefile
 	cleancorefile
 }
 
@@ -70,6 +70,13 @@ nocoreperm=ix
 
 # enable coredumps
 ulimit -c 1000000
+
+# set the core_pattern so we can reliably check for the expected cores
+#echo -n "core dump pattern: " ; cat /proc/sys/kernel/core_pattern
+dumppattern=`cat /proc/sys/kernel/core_pattern`
+echo "$tmpdir/core.%p" > /proc/sys/kernel/core_pattern
+#echo -n "set core patter to: " ; cat /proc/sys/kernel/core_pattern
+
 cleancorefile
 checkcorefile no "COREDUMP (starting with clean slate)"
 
@@ -79,20 +86,45 @@ echo "*** A 'Segmentation Fault' message from bash is expected for the following
 runchecktest "COREDUMP (no confinement)" signal11
 checkcorefile yes "COREDUMP (no confinement)"
 
-# PASS TEST, with r confinement
+# FAIL TEST, with r confinement, no permission to write core file
 cleancorefile
 genprofile -I $test:$coreperm
 
 echo
 echo "*** A 'Segmentation Fault' message from bash is expected for the following test"
 runchecktest "COREDUMP ($coreperm confinement)" signal11
+checkcorefile no "COREDUMP ($coreperm confinement)"
+
+# PASS TEST, with r confinement, permission to write core file
+cleancorefile
+genprofile -I $test:$coreperm $tmpdir/core.*:w
+
+echo
+echo "*** A 'Segmentation Fault' message from bash is expected for the following test"
+runchecktest "COREDUMP ($coreperm confinement)" signal11
 checkcorefile yes "COREDUMP ($coreperm confinement)"
 
-# FAIL TEST, with x confinement
+# FAIL TEST, with x confinement, no permission to write core file
 cleancorefile
-genprofile -I $test:$nocoreperm
+genprofile -I $test:$nocoreperm 
+
+echo
+echo "*** A 'Segmentation Fault' message from bash is expected for the following test"
+runchecktest "COREDUMP ($nocoreperm confinement)" signal11
+checkcorefile no "COREDUMP ($nocoreperm confinement)"
+
+# FAIL TEST, with x confinement, permission to write core file
+# should fail because of no read permission on executable (see man 5 core)
+cleancorefile
+genprofile -I $test:$nocoreperm $tmpdir/core.*:w
 
 echo
 echo "*** A 'Segmentation Fault' message from bash is expected for the following test"
 runchecktest "COREDUMP ($nocoreperm confinement)" signal11
 checkcorefile xno "COREDUMP ($nocoreperm confinement)"
+
+
+
+
+#restore core dump pattern
+echo "$dumppattern" > /proc/sys/kernel/core_pattern
