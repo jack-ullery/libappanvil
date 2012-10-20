@@ -23,6 +23,8 @@
 #include <sched.h>
 #include <linux/unistd.h>
 
+#define STACK_SIZE 0x8000
+
 struct option long_options[] =
 {
 	{"newns", 0, 0, 'n'},  /* create a new namespace */
@@ -59,7 +61,7 @@ int main(int argc, char *argv[])
 	int waitstatus;
 	int c;
 	char buf[BUFSIZ];
-	int stack_size = PAGE_SIZE << 4;
+	int stack_size = STACK_SIZE;
 	void *child_stack = malloc(stack_size);
 	int clone_flags = SIGCHLD;
 
