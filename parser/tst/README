@@ -9,6 +9,10 @@ There is a user configuration file 'uservars.conf'. If you wish to test
 against a different parser, or use a different set of profiles for the
 simple.pl test, you can change those settings in 'uservars.conf'.
 
+You can also override which parser is used through make by specifying
+the PARSER veriable. For example, to run the tests on the system parser,
+run 'make PARSER=/sbin/apparmor_parser'.
+
 Adding to the testsuite
 -----------------------
 

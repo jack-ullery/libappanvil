@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#
+APPARMOR_PARSER="${APPARMOR_PARSER:-../apparmor_parser}"
+
 # Format of -D dfa-states
 # dfa-states output is split into 2 parts:
 #   the accept state infomation
@@ -75,7 +78,7 @@
 # {a} (0x 40030/0/0/0)
 
 echo -n "Minimize profiles basic perms "
-if [ `echo "/t { /a r, /b w, /c a, /d l, /e k, /f m, /** w, }" | ../apparmor_parser -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 6 ] ; then
+if [ `echo "/t { /a r, /b w, /c a, /d l, /e k, /f m, /** w, }" | ${APPARMOR_PARSER} -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 6 ] ; then
     echo "failed"
     exit 1;
 fi
@@ -90,7 +93,7 @@ echo "ok"
 # {9} (0x 12804a/0/2800a/0)
 # {c} (0x 40030/0/0/0)
 echo -n "Minimize profiles audit perms "
-if [ `echo "/t { /a r, /b w, /c a, /d l, /e k, /f m, audit /** w, }" | ../apparmor_parser -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 6 ] ; then
+if [ `echo "/t { /a r, /b w, /c a, /d l, /e k, /f m, audit /** w, }" | ${APPARMOR_PARSER} -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 6 ] ; then
     echo "failed"
     exit 1;
 fi
@@ -109,7 +112,7 @@ echo "ok"
 # {c} (0x 40030/0/0/0)
 
 echo -n "Minimize profiles deny perms "
-if [ `echo "/t { /a r, /b w, /c a, /d l, /e k, /f m, deny /** w, }" | ../apparmor_parser -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 6 ] ; then
+if [ `echo "/t { /a r, /b w, /c a, /d l, /e k, /f m, deny /** w, }" | ${APPARMOR_PARSER} -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 6 ] ; then
     echo "failed"
     exit 1;
 fi
@@ -127,7 +130,7 @@ echo "ok"
 # {c} (0x 40030/0/0/0)
 
 echo -n "Minimize profiles audit deny perms "
-if [ `echo "/t { /a r, /b w, /c a, /d l, /e k, /f m, audit deny /** w, }" | ../apparmor_parser -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 5 ] ; then
+if [ `echo "/t { /a r, /b w, /c a, /d l, /e k, /f m, audit deny /** w, }" | ${APPARMOR_PARSER} -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 5 ] ; then
     echo "failed"
     exit 1;
 fi
@@ -159,7 +162,7 @@ echo "ok"
 #
 
 echo -n "Minimize profiles xtrans "
-if [ `echo "/t { /b px, /* Pixr, /a Cx -> foo, }" | ../apparmor_parser -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 3 ] ; then
+if [ `echo "/t { /b px, /* Pixr, /a Cx -> foo, }" | ${APPARMOR_PARSER} -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 3 ] ; then
     echo "failed"
     exit 1;
 fi
@@ -167,7 +170,7 @@ echo "ok"
 
 # same test as above + audit
 echo -n "Minimize profiles audit xtrans "
-if [ `echo "/t { /b px, audit /* Pixr, /a Cx -> foo, }" | ../apparmor_parser -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 3 ] ; then
+if [ `echo "/t { /b px, audit /* Pixr, /a Cx -> foo, }" | ${APPARMOR_PARSER} -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 3 ] ; then
     echo "failed"
     exit 1;
 fi
@@ -180,7 +183,7 @@ echo "ok"
 # {3} (0x 0/fe17f85/0/14005)
 
 echo -n "Minimize profiles deny xtrans "
-if [ `echo "/t { /b px, deny /* xr, /a Cx -> foo, }" | ../apparmor_parser -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 1 ] ; then
+if [ `echo "/t { /b px, deny /* xr, /a Cx -> foo, }" | ${APPARMOR_PARSER} -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 1 ] ; then
     echo "failed"
     exit 1;
 fi
@@ -192,7 +195,7 @@ echo "ok"
 # {3} (0x 0/fe17f85/0/0)
 
 echo -n "Minimize profiles audit deny xtrans "
-if [ `echo "/t { /b px, audit deny /* xr, /a Cx -> foo, }" | ../apparmor_parser -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 0 ] ; then
+if [ `echo "/t { /b px, audit deny /* xr, /a Cx -> foo, }" | ${APPARMOR_PARSER} -QT -O minimize -D dfa-states 2>&1 | grep -v '<==' | grep '^{.*} (.*)$' | wc -l` -ne 0 ] ; then
     echo "failed"
     exit 1;
 fi
