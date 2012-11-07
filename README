@@ -146,6 +146,20 @@ For details on structure and adding tests, see libraries/libapparmor/README.
 $ cd libraries/libapparmor
 $ make check
 
+Utils
+-----
+There are some simple tests available, including basic perl syntax
+checks for the perl modules and executables. There are also minimal
+checks on the python utilities and python-based tests in the test/
+subdirectory.
+$ cd utils
+$ make check
+
+The aa-decode utility to be tested can be overridden by
+setting up environment variable APPARMOR_DECODE; e.g.:
+
+$ APPARMOR_DECODE=/usr/bin/aa-decode make check
+
 Profile checks
 --------------
 A basic consistency check to ensure that the parser and aa-logprof parse

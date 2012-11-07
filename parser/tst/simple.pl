@@ -8,7 +8,7 @@ use Getopt::Long;
 use Test::More;
 
 my %config;
-$config{'parser'} = "/sbin/subdomain_parser";
+$config{'parser'} = "/sbin/apparmor_parser";
 $config{'profiledir'} = "./simple_tests/";
 $config{'timeout'} = 120; # in seconds
 
@@ -29,6 +29,12 @@ sub usage {
 
 &usage if ($help);
 read_config();
+
+# let environment variable override config file, for use in automated
+# test suites
+if ($ENV{APPARMOR_PARSER}) {
+  $config{'parser'} = $ENV{APPARMOR_PARSER};
+}
 
 # Override config file profile location when passed on command line
 if (@ARGV >= 1) {
@@ -68,6 +74,16 @@ sub test_profile {
   my $result = 0;
   my $child;
 
+  $child = open(PARSER, "|-");
+  if ($child == 0) {
+    # child
+    open(STDOUT, ">/dev/null") or die "Failed to redirect STDOUT";
+    open(STDERR, ">/dev/null") or die "Failed to redirect STDERR";
+    exec("$config{'parser'}", "-S", "-I", "$config{'includedir'}") or die "Bail out! couldn't open parser";
+    # noreturn
+  }
+
+  # parent
   eval {
     local $SIG{ALRM} = sub {
       $result = 1;
@@ -77,19 +93,9 @@ sub test_profile {
 
     alarm $config{'timeout'};
 
-    $child = open(PARSER, "|-");
-    if ($child == 0) {
-      # child
-      open(STDOUT, ">/dev/null") or die "Failed to redirect STDOUT";
-      open(STDERR, ">/dev/null") or die "Failed to redirect STDERR";
-      exec("$config{'parser'}", "-S", "-I", "$config{'includedir'}") or die "Bail out! couldn't open parser";
-      # noreturn
-    }
-
-    # parent
     open(PROFILE, $profile) or die "Bail out! couldn't open profile $profile";
     while (<PROFILE>) {
-      if (/^#=DESCRIPTION\s*(.*)/) {
+      if (/^#=DESCRIPTION\s*(.*)/i) {
         $description = $1;
       } elsif (/^#=EXRESULT\s*(\w+)/) {
         if ($1 eq "PASS") {
