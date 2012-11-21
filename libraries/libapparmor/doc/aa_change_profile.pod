@@ -74,8 +74,9 @@ errno(3) is set appropriately.
 
 =item B<EINVAL>
 
-The apparmor kernel module is not loaded or the communication via the
-F</proc/*/attr/current> file did not conform to protocol.
+The apparmor kernel module is not loaded, neither a profile nor a namespace
+was specified, or the communication via the F</proc/*/attr/current> file did
+not conform to protocol.
 
 =item B<ENOMEM>
 
@@ -83,11 +84,17 @@ Insufficient kernel memory was available.
 
 =item B<EPERM>
 
-The calling application is not confined by apparmor.
+The calling application is not confined by apparmor, or the no_new_privs
+bit is set.
 
 =item B<EACCES>
 
 The task does not have sufficient permissions to change its domain.
+
+=item B<ENOENT>
+
+The specified profile does not exist, or is not visible from the current
+Namespace.
 
 =back
 

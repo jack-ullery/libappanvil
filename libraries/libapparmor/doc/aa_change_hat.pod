@@ -99,16 +99,25 @@ Insufficient kernel memory was available.
 
 =item B<EPERM>
 
-The calling application is not confined by apparmor.
+The calling application is not confined by apparmor, the specified
+I<subprofile> is not a I<hat profile>, the task is being ptraced and the
+tracing task does not have permission to trace the specified I<subprofile> or the no_new_privs execution bit is
+enabled.
 
 =item B<ECHILD>
 
 The application's profile has no hats defined for it.
 
+=item B<ENOENT>
+
+The specified I<subprofile> does not exist in this profile but other hats
+are defined.
+
 =item B<EACCES>
 
-The specified I<subprofile> does not exist in this profile or the
-process tried to change another process's domain.
+The specified magic token did not match, and permissions to change to
+the specified I<subprofile> has been denied. This will in most situations
+also result in the task being killed, to prevent brute force attacks.
 
 =back 
 
