@@ -35,7 +35,7 @@ Obsoletes: subdomain-profiles
 Provides: subdomain-profiles
 
 # hrm, still need to enumerate each directory in these paths in files :(
-%define extras_dir %{_sysconfdir}/apparmor/profiles/extras/
+%define extras_dir /usr/share/apparmor/extra-profiles/
 %define profiles_dir %{_sysconfdir}/apparmor.d/
 
 %description

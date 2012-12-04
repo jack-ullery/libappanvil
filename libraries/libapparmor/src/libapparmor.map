@@ -1,3 +1,5 @@
+#If you update this file please update the library version in Makefile.am
+
 IMMUNIX_1.0 {
   global:
         change_hat;

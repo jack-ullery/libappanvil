@@ -43,6 +43,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "lib.h"
 #include "parser.h"
 #include "parser_version.h"
 #include "parser_include.h"
@@ -707,89 +708,70 @@ char *snprintf_buffer(char *buf, char *pos, ssize_t size, const char *fmt, ...)
 	return pos + i;
 }
 
+struct features_struct {
+	char **buffer;
+	int size;
+	char *pos;
+};
+
+static int features_dir_cb(DIR *dir, const char *name, struct stat *st,
+			   void *data)
+{
+	struct features_struct *fst = (struct features_struct *) data;
+
+	/* skip dot files and files with no name */
+	if (*name == '.' || !strlen(name))
+		return 0;
+
+	fst->pos = snprintf_buffer(*fst->buffer, fst->pos, fst->size, "%s {", name);
+
+	if (S_ISREG(st->st_mode)) {
+		int len, file;
+		int remaining = fst->size - (fst->pos - *fst->buffer);
+		if (!(file = openat(dirfd(dir), name, O_RDONLY))) {
+			PDEBUG("Could not open '%s'", name);
+			return -1;
+		}
+		PDEBUG("Opened features \"%s\"\n", name);
+		if (st->st_size > remaining) {
+			PDEBUG("Feature buffer full.");
+			return -1;
+		}
+
+		do {
+			len = read(file, fst->pos, remaining);
+			if (len > 0) {
+				remaining -= len;
+				fst->pos += len;
+				*fst->pos = 0;
+			}
+		} while (len > 0);
+		if (len < 0) {
+			PDEBUG("Error reading feature file '%s'\n", name);
+			return -1;
+		}
+		close(file);
+	} else if (S_ISDIR(st->st_mode)) {
+		if (dirat_for_each(dir, name, fst, features_dir_cb))
+			return -1;
+	}
+
+	fst->pos = snprintf_buffer(*fst->buffer, fst->pos, fst->size, "}\n");
+
+	return 0;
+}
+
 static char *handle_features_dir(const char *filename, char **buffer, int size,
 				 char *pos)
 {
-	DIR *dir = NULL;
-	char *dirent_path = NULL;
-	struct dirent *dirent;
-	struct stat my_stat;
-	int len;
+	struct features_struct fst = { buffer, size, pos };
 
-	PDEBUG("Opened features directory \"%s\"\n", filename);
-	if (!(dir = opendir(filename))) {
-		PDEBUG("opendir failed '%s'", filename);
+	if (dirat_for_each(NULL, filename, &fst, features_dir_cb)) {
+		PDEBUG("Failed evaluating .features\n");
 		exit(1);
 	}
 
-	while ((dirent = readdir(dir)) != NULL) {
-		int name_len;
-		/* skip dotfiles silently. */
-		if (dirent->d_name[0] == '.')
-			continue;
-
-		if (dirent_path)
-			free(dirent_path);
-		if (asprintf(&dirent_path, "%s/%s", filename, dirent->d_name) < 0)
-		{
-			PERROR(_("Memory allocation error."));
-			exit(1);
-		}
-
-		name_len = strlen(dirent->d_name);
-		if (!name_len)
-			continue;
-
-		if (stat(dirent_path, &my_stat)) {
-			PERROR(_("stat failed for '%s'"), dirent_path);
-			exit(1);
-		}
-
-		pos = snprintf_buffer(*buffer, pos, size, "%s {", dirent->d_name);
-		if (S_ISREG(my_stat.st_mode)) {
-			int file;
-			int remaining = size - (pos - *buffer);
-			if (!(file = open(dirent_path, O_RDONLY))) {
-				PDEBUG("Could not open '%s' in '%s'", dirent_path, filename);
-				exit(1);
-				break;
-			}
-			PDEBUG("Opened features \"%s\" in \"%s\"\n", dirent_path, filename);
-			if (my_stat.st_size > remaining) {
-				PERROR(_("Feature buffer full."));
-				exit(1);
-			}
-
-			do {
-				len = read(file, pos, remaining);
-				if (len > 0) {
-					remaining -= len;
-					pos += len;
-					*pos = 0;
-				}
-			} while (len > 0);
-			if (len < 0) {
-				PDEBUG("Error reading feature file '%s'\n",
-				       dirent_path);
-				exit(1);
-			}
-			close(file);
-
-		} else if (S_ISDIR(my_stat.st_mode)) {
-			pos = handle_features_dir(dirent_path, buffer, size,
-						  pos);
-			if (!pos)
-				break;
-
-		}
-
-		pos = snprintf_buffer(*buffer, pos, size, "}\n");
-	}
-	if (dirent_path)
-		free(dirent_path);
-	closedir(dir);
-
-	return pos;
+	return fst.pos;
 }
 
 /* match_string == NULL --> no match_string available
@@ -1180,77 +1162,12 @@ out:
 	return retval;
 }
 
-static int dir_for_each(const char *dname,
-			int (* callback)(const char *, struct dirent *,
-					 struct stat *)) {
-	struct dirent *dirent, *ent;
-	char *path = NULL;
-	DIR *dir = NULL;
-	int error;
-
-	dirent = malloc(offsetof(struct dirent, d_name) +
-			pathconf(dname, _PC_NAME_MAX) + 1);
-	if (!dirent) {
-		PDEBUG(_("could not alloc dirent"));
-		return -1;
-	}
-
-	PDEBUG("Opened cache directory \"%s\"\n", dname);
-	if (!(dir = opendir(dname))) {
-		free(dirent);
-		PDEBUG(_("opendir failed '%s'"), dname);
-		return -1;
-	}
-
-	for (error = readdir_r(dir, dirent, &ent);
-	     error == 0 && ent != NULL;
-	     error = readdir_r(dir, dirent, &ent)) {
-		struct stat my_stat;
-
-		if (strcmp(dirent->d_name, ".") == 0 ||
-		    strcmp(dirent->d_name, "..") == 0)
-			continue;
-
-		if (asprintf(&path, "%s/%s", dname, dirent->d_name) < 0)
-		{
-			PDEBUG(_("Memory allocation error."));
-			goto fail;
-		}
-	
-		if (stat(path, &my_stat)) {
-			PDEBUG(_("stat failed for '%s'"), path);
-			goto fail;
-		}
-
-		if (callback(path, dirent, &my_stat)) {
-			PDEBUG(_("dir_for_each callback failed\n"));
-			goto fail;
-		}
-
-		free(path);
-		path = NULL;
-	}
-
-	free(dirent);
-	closedir(dir);
-	return error;
-
-fail:
-	error = errno;
-	free(dirent);
-	free(path);
-	closedir(dir);
-	errno = error;
-
-	return -1;
-}
-
-static int clear_cache_cb(const char *path, __unused struct dirent *dirent,
-			  struct stat *ent_stat)
+static int clear_cache_cb(DIR *dir, const char *path, struct stat *st,
+			  __unused void *data)
 {
 	/* remove regular files */
-	if (S_ISREG(ent_stat->st_mode))
-		return unlink(path);
+	if (S_ISREG(st->st_mode))
+		return unlinkat(dirfd(dir), path, 0);
 
 	/* do nothing with other file types */
 	return 0;
@@ -1266,7 +1183,7 @@ static int clear_cache_files(const char *path)
 		exit(1);
 	}
 
-	error = dir_for_each(cache, clear_cache_cb);
+	error = dirat_for_each(NULL, cache, NULL, clear_cache_cb);
 
 	free(cache);
 

@@ -147,7 +147,9 @@ runtestfg()
 	
 	genrunscript "$@"
 	
-	$testexec "$@" > $outfile 2>&1
+	$testexec "$@" > $outfile 2>&1 &
+	_pid=$!
+	wait $_pid
 	test_rc=$?
 	if [ $test_rc -gt 128 ]
 	then

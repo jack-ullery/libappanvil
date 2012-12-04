@@ -1,6 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 #
-#    Copyright (C) 2009-2010 Canonical Ltd.
+#    Copyright (C) 2009-2010, 2012 Canonical Ltd.
+#    Copyright (C) 2012 Christian Boltz
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -36,7 +37,7 @@ EOM
 }
 
 decode() {
-    decoded=`perl -le "\\$s = '$1' ; print pack 'H*', \\$s"`
+    decoded=`perl -le "\\$s = uc('$1') ; if (\\$s =~ /^[0-9A-F]*$/) { print pack 'H*', \\$s; }"`
     echo "$decoded"
 }
 
@@ -47,10 +48,10 @@ fi
 
 # if have an argument, then use it, otherwise process stdin
 if [ -n "$1" ]; then
-    e=`echo "$1" | tr -s '[:lower:]' '[:upper:]'`
-    if ! echo "$e" | egrep -q "^[0-9A-F]+$" ; then
+    e="$1"
+    if ! echo "$e" | egrep -q "^[0-9A-Fa-f]+$" ; then
         echo "String should only contain hex characters (0-9, a-f, A-F)"
-        return
+        exit 1
     fi
 
     d=`decode $e`
@@ -63,13 +64,28 @@ if [ -n "$1" ]; then
     exit 0
 fi
 
-# For now just look at 'name=...' which is usually the last in the log entry,
+# For now just look at 'name=...' and 'profile=...',
 # so validate input against this and output based on it.
 # TODO: better handle other cases too
-egrep ' name=2[fF][0-9a-fA-F]*$' | while read line ; do
-    e=`echo "$line" | sed 's/.* name=\(.*\)/\\1/g' | tr -s '[:lower:]' '[:upper:]'`
-    d=`decode $e`
-    echo -n "$line" | sed "s/\(.*\) name=.*/\1 name=/g"
-    echo "'$d'"
+while read line ; do
+
+    # check if line contains encoded name= or profile=
+    if echo "$line" | egrep ' (name|profile)=[0-9a-fA-F]' >/dev/null ; then
+
+        # cut the encoded filename/profile name out of the line and decode it
+        ne=`echo "$line" | sed 's/.* name=\([^ ]*\).*$/\\1/g'`
+        nd="$(decode ${ne/\'/\\\'})"
+
+        pe=`echo "$line" | sed 's/.* profile=\([^ ]*\).*$/\\1/g'`
+        pd="$(decode ${pe/\'/\\\'})"
+
+        # replace encoded name and profile with its decoded counterparts (only if it was encoded)
+        test -n "$nd" && line="${line/name=$ne/name=\"$nd\"}"
+        test -n "$pd" && line="${line/profile=$pe/profile=\"$pd\"}"
+
+    fi
+
+    echo "$line"
+
 done
 

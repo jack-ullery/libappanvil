@@ -10,6 +10,8 @@ if [ ! -d /sys/kernel/security/apparmor ]; then
     exit 0
 fi
 
+APPARMOR_PARSER="${APPARMOR_PARSER:-../apparmor_parser}"
+
 # fake base directory
 basedir=$(mktemp -d -t aa-cache-XXXXXX)
 trap "rm -rf $basedir" EXIT
@@ -33,19 +35,19 @@ fi
 rm -f $basedir/test1 $basedir/test2
 
 echo -n "Profiles are not cached by default: "
-../apparmor_parser $ARGS -q -r $basedir/$profile
+${APPARMOR_PARSER} $ARGS -q -r $basedir/$profile
 [ -f $basedir/cache/$profile ] && echo "FAIL ($basedir/cache/$profile exists)" && exit 1
 echo "ok"
 
 echo -n "Profiles are not cached when using --skip-cache: "
-../apparmor_parser $ARGS -q --write-cache --skip-cache -r $basedir/$profile
+${APPARMOR_PARSER} $ARGS -q --write-cache --skip-cache -r $basedir/$profile
 [ -f $basedir/cache/$profile ] && echo "FAIL ($basedir/cache/$profile exists)" && exit 1
 echo "ok"
 
 sleep $timeout
 
 echo -n "Profiles are cached when requested: "
-../apparmor_parser $ARGS -q --write-cache -r $basedir/$profile
+${APPARMOR_PARSER} $ARGS -q --write-cache -r $basedir/$profile
 [ ! -f $basedir/cache/$profile ] && echo "FAIL ($basedir/cache/$profile does not exist)" && exit 1
 echo "ok"
 
@@ -80,22 +82,22 @@ fi
 echo "ok"
 
 echo -n "Cache is loaded when it exists and features match: "
-../apparmor_parser $ARGS -v -r $basedir/$profile | grep -q 'Cached reload succeeded' || { echo "FAIL"; exit 1; }
+${APPARMOR_PARSER} $ARGS -v -r $basedir/$profile | grep -q 'Cached reload succeeded' || { echo "FAIL"; exit 1; }
 echo "ok"
 
 echo -n "Cache is not loaded when skipping is requested: "
-../apparmor_parser $ARGS -v --skip-read-cache -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
-../apparmor_parser $ARGS -v --skip-cache -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
+${APPARMOR_PARSER} $ARGS -v --skip-read-cache -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
+${APPARMOR_PARSER} $ARGS -v --skip-cache -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
 echo "ok"
 
 echo -n "Cache reading is skipped when features do not match cache: "
 echo -n "monkey" > $basedir/cache/.features
-../apparmor_parser $ARGS -v -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
+${APPARMOR_PARSER} $ARGS -v -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
 echo "ok"
 
 echo -n "Cache writing is skipped when features do not match and not cleared: "
 rm $basedir/cache/$profile
-../apparmor_parser $ARGS -v --write-cache --skip-bad-cache -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
+${APPARMOR_PARSER} $ARGS -v --write-cache --skip-bad-cache -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
 [ -f $basedir/cache/$profile ] && echo "FAIL ($basedir/cache/$profile exists)" && exit 1
 echo "ok"
 
@@ -104,7 +106,7 @@ rm -f $basedir/cache/$profile || true
 echo -n "monkey" > $basedir/cache/.features
 echo -n "monkey" > $basedir/cache/$profile
 echo -n "monkey" > $basedir/cache/monkey
-../apparmor_parser $ARGS -v --write-cache -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "Cache clear setup FAIL"; exit 1; }
+${APPARMOR_PARSER} $ARGS -v --write-cache -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "Cache clear setup FAIL"; exit 1; }
 echo -n "Cache clear updates features: "
 echo -n "monkey" | diff -q $basedir/cache/.features - | grep -q 'differ' || { echo "FAIL"; exit 1; }
 echo "ok"
@@ -122,7 +124,7 @@ echo -n "monkey" > $basedir/cache/.features
 echo -n "monkey" > $basedir/cache/$profile
 echo -n "monkey" > $basedir/cache/monkey
 echo -n "Cache purge remove profiles unconditionally: "
-../apparmor_parser $ARGS -v --purge-cache -r $basedir/$profile || { echo "Cache clear setup FAIL"; exit 1; }
+${APPARMOR_PARSER} $ARGS -v --purge-cache -r $basedir/$profile || { echo "Cache purge setup FAIL"; exit 1; }
 [ -f $basedir/cache/.features ] && { echo "FAIL"; exit 1; }
 [ -f $basedir/cache/$profile ] && { echo "FAIL"; exit 1; }
 [ -f $basedir/cache/monkey ] && { echo "FAIL"; exit 1; }
@@ -131,25 +133,25 @@ echo "ok"
 echo -n "Profiles are cached when requested (again): "
 rm -f $basedir/cache/.features || true
 rm -f $basedir/cache/$profile || true
-../apparmor_parser $ARGS -q --write-cache -r $basedir/$profile
+${APPARMOR_PARSER} $ARGS -q --write-cache -r $basedir/$profile
 [ ! -f $basedir/cache/$profile ] && echo "FAIL ($basedir/cache/$profile does not exist)" && exit 1
 echo "ok"
 
 echo -n "Cache reading is skipped when profile is newer: "
 sleep $timeout
 touch $basedir/$profile
-../apparmor_parser $ARGS -v -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
+${APPARMOR_PARSER} $ARGS -v -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
 echo "ok"
 
 echo -n "Cache is used when cache is newer: "
 sleep $timeout
 touch $basedir/cache/$profile
-../apparmor_parser $ARGS -v -r $basedir/$profile | grep -q 'Cached reload succeeded' || { echo "FAIL"; exit 1; }
+${APPARMOR_PARSER} $ARGS -v -r $basedir/$profile | grep -q 'Cached reload succeeded' || { echo "FAIL"; exit 1; }
 echo "ok"
 
 echo -n "Cache reading is skipped when parser is newer: "
 mkdir $basedir/parser
-cp ../apparmor_parser $basedir/parser/
+cp ${APPARMOR_PARSER} $basedir/parser/
 $basedir/parser/apparmor_parser $ARGS -v -r $basedir/$profile | grep -q 'Replacement succeeded for' || { echo "FAIL"; exit 1; }
 echo "ok"
 

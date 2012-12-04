@@ -1,5 +1,28 @@
 INCLUDES = $(all_includes)
 
+# variables to set the library versions used by libtool
+# Use these rules to update the library version.
+# 1. Update the version information only immediately before a public release
+#    of your software. More frequent updates are unnecessary, and only
+#    guarantee that the current interface number gets larger faster.
+# 2. If the library source code has changed at all since the last update,
+#    then
+#    - increment AA_LIB_REVISION
+# 3. If any interfaces have been added, removed, or changed since the last
+#    update,
+#    - increment AA_LIB_CURRENT
+#    - set AA_LIB_REVISION to 0.
+# 4. If any interfaces have been added since the last public release, then
+#    - increment AA_LIB_AGE.
+# 5. If any interfaces have been removed or changed since the last public
+#    release, then
+#    - set AA_LIB_AGE to 0.
+#
+AA_LIB_CURRENT = 1
+AA_LIB_REVISION = 2
+AA_LIB_AGE = 0
+
+
 BUILT_SOURCES = grammar.h scanner.h af_protos.h
 AM_LFLAGS = -v
 AM_YFLAGS = -d -p aalogparse_
@@ -23,11 +46,11 @@ lib_LTLIBRARIES = libapparmor.la libimmunix.la
 noinst_HEADERS = grammar.h parser.h scanner.h af_protos.h
 
 libapparmor_la_SOURCES = grammar.y libaalogparse.c kernel_interface.c scanner.c
-libapparmor_la_LDFLAGS = -version-info 1:2:0 -XCClinker -dynamic \
+libapparmor_la_LDFLAGS = -version-info $(AA_LIB_CURRENT):$(AA_LIB_REVISION):$(AA_LIB_AGE) -XCClinker -dynamic \
 	-Wl,--version-script=$(top_srcdir)/src/libapparmor.map -Wl,-soname=libapparmor.so.1
 
 libimmunix_la_SOURCES = kernel_interface.c libimmunix_warning.c
-libimmunix_la_LDFLAGS = -version-info 1:2:0 -Wl,--version-script=$(top_srcdir)/src/libapparmor.map -Wl,-soname=libimmunix.so.1
+libimmunix_la_LDFLAGS = -version-info $(AA_LIB_CURRENT):$(AA_LIB_REVISION):$(AA_LIB_AGE) -Wl,--version-script=$(top_srcdir)/src/libapparmor.map -Wl,-soname=libimmunix.so.1
 
 tst_aalogmisc_SOURCES = tst_aalogmisc.c
 tst_aalogmisc_LDADD = .libs/libapparmor.a

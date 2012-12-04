@@ -36,13 +36,13 @@ error_output: $(PARSER)
 	@echo "Error Output: PASS"
 
 parser_sanity: $(PARSER)
-	$(Q)${PROVE} ${PROVE_ARG} ${TESTS}
+	$(Q)LANG=C APPARMOR_PARSER="$(PARSER)" ${PROVE} ${PROVE_ARG} ${TESTS}
 
 caching: $(PARSER)
-	LANG=C ./caching.sh
+	LANG=C APPARMOR_PARSER="$(PARSER)" ./caching.sh
 
 minimize: $(PARSER)
-	LANG=C ./minimize.sh
+	LANG=C APPARMOR_PARSER="$(PARSER)" ./minimize.sh
 
 $(PARSER):
 	make -C $(PARSER_DIR) $(PARSER_BIN)

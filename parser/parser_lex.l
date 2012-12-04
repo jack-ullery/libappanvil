@@ -39,6 +39,7 @@
 #include "parser.h"
 #include "parser_include.h"
 #include "parser_yacc.h"
+#include "lib.h"
 
 #ifdef PDEBUG
 #undef PDEBUG
@@ -77,6 +78,61 @@ struct ignored_suffix_t ignored_suffixes[] = {
 	{ NULL, 0, 0 }
 };
 
+static int is_blacklisted(const char *name, const char *path)
+{
+	int name_len;
+	struct ignored_suffix_t *suffix;
+	name_len = strlen(name);
+	/* skip blacklisted suffixes */
+	for (suffix = ignored_suffixes; suffix->text; suffix++) {
+		char *found;
+		if ( (found = strstr(name, suffix->text)) &&
+		     found - name + suffix->len == name_len ) {
+			if (!suffix->silent)
+				PERROR("Ignoring: '%s'\n", path);
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+struct cb_struct {
+	const char *fullpath;
+	const char *filename;
+};
+
+static int include_dir_cb(__unused DIR *dir, const char *name, struct stat *st,
+			  void *data)
+{
+	struct cb_struct *d = (struct cb_struct *) data;
+
+	char *path;
+
+	/* skip dotfiles silently. */
+	if (*name == '.')
+		return 0;
+
+	if (asprintf(&path, "%s/%s", d->fullpath, name) < 0)
+		yyerror("Out of memory");
+
+	if (is_blacklisted(name, path))
+		return 0;
+
+	if (S_ISREG(st->st_mode)) {
+		if (!(yyin = fopen(path,"r")))
+			yyerror(_("Could not open '%s' in '%s'"), path, d->filename);
+		PDEBUG("Opened include \"%s\" in \"%s\"\n", path, d->filename);
+		update_mru_tstamp(yyin);
+		push_include_stack(path);
+		yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
+	}
+
+	free(path);
+
+	return 0;
+}
+
 void include_filename(char *filename, int search)
 {
 	FILE *include_file = NULL;
@@ -107,59 +163,14 @@ void include_filename(char *filename, int search)
 		PDEBUG("Opened include \"%s\"\n", fullpath);
 		push_include_stack(fullpath);
 		yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
-        }
-
-        if (S_ISDIR(my_stat.st_mode)) {
-                DIR *dir = NULL;
-		char *dirent_path = NULL;
-                struct dirent *dirent;
-
-		PDEBUG("Opened include directory \"%s\"\n", fullpath);
-                if (!(dir = opendir(fullpath)))
-			yyerror(_("opendir failed '%s'"), fullpath);
+        } else if (S_ISDIR(my_stat.st_mode)) {
+		struct cb_struct data = { fullpath, filename };
 		fclose(include_file);
 		include_file = NULL;
-
-                while ((dirent = readdir(dir)) != NULL) {
-			int name_len;
-			struct ignored_suffix_t *suffix;
-                        /* skip dotfiles silently. */
-                        if (dirent->d_name[0] == '.')
-                                continue;
-
-			if (dirent_path)
-				free(dirent_path);
-                        if (asprintf(&dirent_path, "%s/%s", fullpath, dirent->d_name) < 0)
-				yyerror("Out of memory");
-
-			name_len = strlen(dirent->d_name);
-			/* skip blacklisted suffixes */
-			for (suffix = ignored_suffixes; suffix->text; suffix++) {
-				char *found;
-				if ( (found = strstr(dirent->d_name, suffix->text)) &&
-                                     found - dirent->d_name + suffix->len == name_len ) {
-					name_len = 0;
-					if (!suffix->silent)
-						PERROR("Ignoring: '%s'\n", dirent_path);
-					break;
-				}
-			}
-			if (!name_len) continue;
-
-                        if (stat(dirent_path, &my_stat))
-				yyerror(_("stat failed for '%s'"), dirent_path);
-			if (S_ISREG(my_stat.st_mode)) {
-				if (!(yyin = fopen(dirent_path,"r")))
-					yyerror(_("Could not open '%s' in '%s'"), dirent_path, filename);
-				PDEBUG("Opened include \"%s\" in \"%s\"\n", dirent_path, filename);
-				update_mru_tstamp(yyin);
-				push_include_stack(dirent_path);
-				yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
-			}
+		if (dirat_for_each(NULL, fullpath, &data, include_dir_cb)) {
+			yyerror(_("Could not process include directory"
+				  " '%s' in '%s'"), fullpath, filename);;
 		}
-		if (dirent_path)
-			free(dirent_path);
-		closedir(dir);
 	}
 
 	if (fullpath)
