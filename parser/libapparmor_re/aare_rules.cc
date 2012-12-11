@@ -58,6 +58,8 @@ extern "C" void aare_delete_ruleset(aare_ruleset_t *rules)
 			rules->root->release();
 		free(rules);
 	}
+
+	aare_reset_matchflags();
 }
 
 extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, int deny,
