@@ -70,7 +70,7 @@ fi
 while read line ; do
 
     # check if line contains encoded name= or profile=
-    if echo "$line" | egrep ' (name|profile)=[0-9a-fA-F]' >/dev/null ; then
+    if [[ "$line" =~ \ (name|profile)=[0-9a-fA-F] ]]; then
 
         # cut the encoded filename/profile name out of the line and decode it
         ne=`echo "$line" | sed 's/.* name=\([^ ]*\).*$/\\1/g'`
