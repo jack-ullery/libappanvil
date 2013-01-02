@@ -126,7 +126,7 @@
   /usr/share/** r,
   /opt/kde3/share/** r,
   /opt/mozilla/bin/mozilla.sh Pxr,
-  @{PROC}/*/cmdline r,
+  @{PROC}/@{pid}/cmdline r,
   @{PROC}/net r,
   @{PROC}/net/* r,
   /tmp r,

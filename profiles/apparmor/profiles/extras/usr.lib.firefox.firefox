@@ -28,8 +28,8 @@
   # for networking
   network inet stream,
   network inet6 stream,
-  @{PROC}/[0-9]*/net/if_inet6 r,
-  @{PROC}/[0-9]*/net/ipv6_route r,
+  @{PROC}/@{pid}/net/if_inet6 r,
+  @{PROC}/@{pid}/net/ipv6_route r,
 
   # should maybe be in abstractions
   /usr/share/xubuntu/applications/defaults.list r,
@@ -68,17 +68,17 @@
   /sbin/killall5 ixr,
   /bin/which ixr,
   /usr/bin/tr ixr,
-  @{PROC}/[0-9]*/cmdline r,
-  @{PROC}/[0-9]*/mountinfo r,
-  @{PROC}/[0-9]*/stat r,
-  @{PROC}/[0-9]*/status r,
+  @{PROC}/@{pid}/cmdline r,
+  @{PROC}/@{pid}/mountinfo r,
+  @{PROC}/@{pid}/stat r,
+  @{PROC}/@{pid}/status r,
 
   /etc/mtab r,
   /etc/fstab r,
 
   # Needed for the crash reporter
-  owner @{PROC}/[0-9]*/environ r,
-  owner @{PROC}/[0-9]*/auxv r,
+  owner @{PROC}/@{pid}/environ r,
+  owner @{PROC}/@{pid}/auxv r,
   /etc/lsb-release r,
   /usr/bin/expr ix,
 

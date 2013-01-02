@@ -38,7 +38,7 @@
   /etc/shadow* rwl,
   /etc/pwdutils/logging r,
   @{HOMEDIRS}**  rwl,
-  @{PROC}/[0-9]*/mounts r,
+  @{PROC}/@{pid}/mounts r,
   /usr/bin/crontab rmix,
   /usr/lib*/pwdutils/*.so.* mr,
   /usr/sbin/userdel rmix,

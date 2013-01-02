@@ -32,7 +32,7 @@
   /etc/cups/lpoptions r,
   /etc/opera6rc        rw,
   /etc/opera6rc.fixed rw,
-  @{PROC}/[0-9]*/stat r,
+  @{PROC}/@{pid}/stat r,
   @{PROC}/net/if_inet6 r,
   @{PROC}/sys/vm/heap-stack-gap r,
 

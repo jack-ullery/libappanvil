@@ -16,3 +16,4 @@
 #include <tunables/multiarch>
 #include <tunables/proc>
 #include <tunables/alias>
+#include <tunables/kernelvars>

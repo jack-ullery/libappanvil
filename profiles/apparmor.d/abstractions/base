@@ -89,7 +89,7 @@
   /sys/devices/system/cpu/online r,
 
   # glibc's *printf protections read the maps file
-  @{PROC}/*/maps                 r,
+  @{PROC}/@{pid}/maps            r,
 
   # libgcrypt reads some flags from /proc
   @{PROC}/sys/crypto/*           r,

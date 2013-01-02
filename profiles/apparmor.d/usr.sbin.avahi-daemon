@@ -17,7 +17,7 @@
   /etc/avahi/hosts r,
   /etc/avahi/services/ r,
   /etc/avahi/services/*.service r,
-  @{PROC}/[0-9]*/fd/ r,
+  @{PROC}/@{pid}/fd/ r,
   /usr/sbin/avahi-daemon mr,
   /usr/share/avahi/introspection/*.introspect r,
   /usr/share/dbus-1/interfaces/org.freedesktop.Avahi.*.xml r,

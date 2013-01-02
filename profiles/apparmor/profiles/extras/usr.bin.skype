@@ -19,12 +19,12 @@
   #include <abstractions/X>
 
   @{PROC}/sys/kernel/{ostype,osrelease} r,
-  @{PROC}/[0-9]*/net/arp r,
-  owner @{PROC}/[0-9]*/auxv r,
-  owner @{PROC}/[0-9]*/cmdline r,
-  owner @{PROC}/[0-9]*/fd/ r,
-  owner @{PROC}/[0-9]*/task/ r,
-  owner @{PROC}/[0-9]*/task/[0-9]*/stat r,
+  @{PROC}/@{pid}/net/arp r,
+  owner @{PROC}/@{pid}/auxv r,
+  owner @{PROC}/@{pid}/cmdline r,
+  owner @{PROC}/@{pid}/fd/ r,
+  owner @{PROC}/@{pid}/task/ r,
+  owner @{PROC}/@{pid}/task/[0-9]*/stat r,
 
   /sys/devices/**/power_supply/**/online r,
   /sys/devices/system/cpu/ r,
