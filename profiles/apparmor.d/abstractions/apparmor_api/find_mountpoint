@@ -8,6 +8,7 @@
 
 #permissions needed for aa_find_mountpoint
 
-#include <tunables/proc>
+# Make sure to include at least tunables/proc and tunables/kernelvars
+# when using this abstraction, if not tunables/global.
 
-@{proc}/*/mounts r,
+@{PROC}/@{pids}/mounts r,

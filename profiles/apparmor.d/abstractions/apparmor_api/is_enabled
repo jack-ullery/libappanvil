@@ -8,8 +8,8 @@
 
 # permissions needed for aa_is_enabled
 
-#include <tunables/sys>
-#include <tunables/apparmorfs>
+# Make sure to include at least tunables/sys and tunables/apparmorfs
+# when using this abstraction, if not tunables/global.
 
 #include <abstractions/apparmor_api/find_mountpoint>
 @{sys}/module/apparmor/parameters/enabled r,
