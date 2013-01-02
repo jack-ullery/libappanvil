@@ -84,11 +84,17 @@ IGNORE_FILES=${EXTRAS_SOURCE}/README
 CHECK_PROFILES=$(filter-out ${IGNORE_FILES} ${SUBDIRS}, $(wildcard ${PROFILES_SOURCE}/*) $(wildcard ${EXTRAS_SOURCE}/*))
 
 .PHONY: check
-check:
+check: check-parser check-logprof
+
+.PHONY: check-parser
+check-parser:
 	@echo "*** Checking profiles from ${PROFILES_SOURCE} and ${EXTRAS_SOURCE} against apparmor_parser"
 	$(Q)for profile in ${CHECK_PROFILES} ; do \
 	        [ -n "${VERBOSE}" ] && echo "Testing $${profile}" ; \
 		${PARSER} -S -b ${PWD}/apparmor.d $${profile} > /dev/null || exit 1; \
 	done
+
+.PHONY: check-logprof
+check-logprof:
 	@echo "*** Checking profiles from ${PROFILES_SOURCE} against logprof"
 	$(Q)${LOGPROF} -d ${PROFILES_SOURCE} -f /dev/null || exit 1
