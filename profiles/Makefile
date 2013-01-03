@@ -84,7 +84,7 @@ IGNORE_FILES=${EXTRAS_SOURCE}/README
 CHECK_PROFILES=$(filter-out ${IGNORE_FILES} ${SUBDIRS}, $(wildcard ${PROFILES_SOURCE}/*) $(wildcard ${EXTRAS_SOURCE}/*))
 
 .PHONY: check
-check: check-parser check-logprof
+check: check-parser
 
 .PHONY: check-parser
 check-parser:
