@@ -23,6 +23,7 @@
   #include <abstractions/wutmp>
 
   capability sys_chroot,
+  capability sys_resource,
   capability sys_tty_config,
   capability net_bind_service,
   capability chown,
@@ -31,6 +32,8 @@
   capability setgid,
   capability setuid,
   capability audit_control,
+  capability dac_override,
+  capability dac_read_search,
 
   /dev/ptmx rw,
   /dev/urandom r,
@@ -39,7 +42,9 @@
   /etc/hosts.allow r,
   /etc/hosts.deny r,
   /etc/modules.conf r,
+  /etc/security/** r,
   /etc/ssh/* r,
+  /etc/ssl/openssl.cnf r,
   @{PROC}/@{pid}/oom_adj rw,
   @{PROC}/@{pid}/oom_score_adj rw,
   /usr/sbin/sshd mrix,
@@ -49,6 +54,7 @@
 
   @{PROC}/@{pid}/fd/ r,
   @{PROC}/@{pid}/loginuid w,
+  @{PROC}/@{pid}/limits r,
 
 # should only be here for use in non-change-hat openssh
 # duplicated from EXEC hat
@@ -78,7 +84,7 @@
 
 # duplicated from AUTHENTICATED
   /etc/motd r,
-  /{,var/}run/motd r,
+  /{,var/}run/motd{,.new} rw,
   /tmp/ssh-*/agent.[0-9]* rwl,
 
   /tmp/ssh-*[0-9]*/ w,
@@ -168,7 +174,7 @@
     /etc/localtime r,
     /etc/login.defs r,
     /etc/motd r,
-    /{,var/}run/motd r,
+    /{,var/}run/motd{,.new} rw,
     /tmp/ssh-*/agent.[0-9]* rwl,
     /tmp/ssh-*[0-9]*/ w,
 
