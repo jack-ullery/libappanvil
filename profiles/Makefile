@@ -83,6 +83,9 @@ endif
 IGNORE_FILES=${EXTRAS_SOURCE}/README
 CHECK_PROFILES=$(filter-out ${IGNORE_FILES} ${SUBDIRS}, $(wildcard ${PROFILES_SOURCE}/*) $(wildcard ${EXTRAS_SOURCE}/*))
 
+# check-logprof is disabled here because it has not kept up with
+# advances in the apparmor policy language. Re-enable when it is
+# updated.
 .PHONY: check
 check: check-parser
 
