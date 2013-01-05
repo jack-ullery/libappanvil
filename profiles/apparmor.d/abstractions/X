@@ -13,10 +13,10 @@
 
 
   # .ICEauthority files required for X authentication, per user
-  @{HOME}/.ICEauthority r,
+  owner @{HOME}/.ICEauthority r,
 
   # .Xauthority files required for X connections, per user
-  @{HOME}/.Xauthority           r,
+  owner @{HOME}/.Xauthority r,
   owner /{,var/}run/gdm{,3}/*/database r,
   owner /{,var/}run/lightdm/authority/[0-9]* r,
 
