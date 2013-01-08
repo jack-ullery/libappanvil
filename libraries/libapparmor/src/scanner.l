@@ -75,10 +75,12 @@ void string_buf_append(unsigned int length, char *text)
 ws		[ \t\r\n]
 
 equals		"="
-digits		[0-9]+
+digit		[[:digit:]]
+digits		{digit}+
 hex		[A-F0-9]
 colon		":"
 minus		"-"
+plus		"+"
 open_paren	"("
 close_paren	")"
 ID		[^ \t\n\(\)="'!]
@@ -144,8 +146,12 @@ ip_addr			[a-f[:digit:].:]{3,}
 
 /* syslog tokens */
 syslog_kernel		kernel{colon}
+syslog_yyyymmdd		{digit}{4}{minus}{digit}{2}{minus}{digit}{2}
+syslog_date		{syslog_yyyymmdd}
 syslog_month 		Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?
-syslog_time 		{digits}{digits}{colon}{digits}{digits}{colon}{digits}{digits}
+hhmmss			{digit}{2}{colon}{digit}{2}{colon}{digit}{2}
+timezone		({plus}|{minus}){digit}{2}{colon}{digit}{2}
+syslog_time 		{hhmmss}({period}{digits})?{timezone}?
 syslog_hostname		[[:alnum:]_-]+
 dmesg_timestamp		\[[[:digit:] ]{5,}\.[[:digit:]]{6,}\]
 
@@ -291,7 +297,9 @@ yy_flex_debug = 0;
 
 {syslog_kernel}		{ BEGIN(dmesg_timestamp); return(TOK_SYSLOG_KERNEL); }
 {syslog_month}		{ yylval->t_str = strdup(yytext); return(TOK_DATE_MONTH); }
-{syslog_time}		{ yylval->t_str = strdup(yytext); BEGIN(hostname); return(TOK_DATE_TIME); }
+{syslog_date}		{ yylval->t_str = strdup(yytext); return(TOK_DATE); }
+{syslog_date}T/{syslog_time}	{ yylval->t_str = strndup(yytext, strlen(yytext)-1); return(TOK_DATE); }
+{syslog_time}		{ yylval->t_str = strdup(yytext); BEGIN(hostname); return(TOK_TIME); }
 
 {audit}			{ yy_push_state(audit_id, yyscanner); return(TOK_AUDIT); }
 

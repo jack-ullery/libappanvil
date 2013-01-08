@@ -81,7 +81,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %type <t_str> safe_string protocol
 %token <t_long> TOK_DIGITS TOK_TYPE_UNKNOWN
 %token <t_str> TOK_QUOTED_STRING TOK_ID TOK_MODE TOK_DMESG_STAMP
-%token <t_str> TOK_AUDIT_DIGITS TOK_DATE_MONTH TOK_DATE_TIME
+%token <t_str> TOK_AUDIT_DIGITS TOK_DATE_MONTH TOK_DATE TOK_TIME
 %token <t_str> TOK_HEXSTRING TOK_TYPE_OTHER TOK_MSG_REST
 %token <t_str> TOK_IP_ADDR
 
@@ -203,7 +203,8 @@ audit_id: TOK_AUDIT TOK_OPEN_PAREN TOK_AUDIT_DIGITS TOK_PERIOD TOK_AUDIT_DIGITS 
 		free($7);
 	} ;
 
-syslog_date: TOK_DATE_MONTH TOK_DIGITS TOK_DATE_TIME { /* do nothing? */ }
+syslog_date: TOK_DATE_MONTH TOK_DIGITS TOK_TIME { /* do nothing? */ }
+	| TOK_DATE TOK_TIME { /* do nothing */ }
 	;
 
 key_list: key
