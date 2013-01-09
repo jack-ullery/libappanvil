@@ -6,7 +6,7 @@
   #include <abstractions/X>
 
   # Pulseaudio
-  /usr/bin/pulseaudio ixr,
+  /usr/bin/pulseaudio Pixr,
 
   # Image viewers
   /usr/bin/eog Cxr -> sanitized_helper,
