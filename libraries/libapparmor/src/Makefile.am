@@ -43,15 +43,12 @@ changehat_HEADERS = apparmor.h
 aalogparsedir = $(includedir)/aalogparse
 aalogparse_HEADERS = aalogparse.h
 
-lib_LTLIBRARIES = libapparmor.la libimmunix.la
+lib_LTLIBRARIES = libapparmor.la
 noinst_HEADERS = grammar.h parser.h scanner.h af_protos.h
 
 libapparmor_la_SOURCES = grammar.y libaalogparse.c kernel_interface.c scanner.c
 libapparmor_la_LDFLAGS = -version-info $(AA_LIB_CURRENT):$(AA_LIB_REVISION):$(AA_LIB_AGE) -XCClinker -dynamic \
 	-Wl,--version-script=$(top_srcdir)/src/libapparmor.map -Wl,-soname=libapparmor.so.1
-
-libimmunix_la_SOURCES = kernel_interface.c libimmunix_warning.c
-libimmunix_la_LDFLAGS = -version-info $(AA_LIB_CURRENT):$(AA_LIB_REVISION):$(AA_LIB_AGE) -Wl,--version-script=$(top_srcdir)/src/libapparmor.map -Wl,-soname=libimmunix.so.1
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libapparmor.pc
