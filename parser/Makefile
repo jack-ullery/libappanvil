@@ -153,7 +153,7 @@ libstdc++.a:
 	ln -s `$(CXX) -print-file-name=libstdc++.a`
 
 apparmor_parser: $(OBJECTS) $(AAREOBJECTS)
-	$(CXX) $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(LIBS) \
+	$(CXX) $(LDFLAGS) $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(LIBS) \
 	      ${LEXLIB}  $(AAREOBJECTS) $(AARE_LDFLAGS)
 
 parser_yacc.c parser_yacc.h: parser_yacc.y parser.h
