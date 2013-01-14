@@ -202,9 +202,8 @@ def verify_policy(policy):
 class AppArmorEasyProfile:
     '''Easy profile class'''
     def __init__(self, binary, opt):
-        self.conffile = "/etc/apparmor/easyprof.conf"
-        if opt.conffile:
-            self.conffile = os.path.abspath(opt.conffile)
+        opt.ensure_value("conffile", "/etc/apparmor/easyprof.conf")
+        self.conffile = os.path.abspath(opt.conffile)
 
         self.dirs = dict()
         if os.path.isfile(self.conffile):
@@ -378,7 +377,10 @@ class AppArmorEasyProfile:
 
         # Fill-in profile name and binary
         policy = re.sub(r'###NAME###', name, policy)
-        policy = re.sub(r'###BINARY###', binary, policy)
+        if binary.startswith('/'):
+            policy = re.sub(r'###BINARY###', binary, policy)
+        else:
+            policy = re.sub(r'###BINARY###', "profile %s" % binary, policy)
 
         # Fill-in various comment fields
         if comment != None:
@@ -456,51 +458,8 @@ def print_files(files):
         with open(i) as f:
             sys.stdout.write(f.read()+"\n")
 
-def parse_args(args=None):
-    '''Parse arguments'''
-    global DEBUGGING
-
-    parser = optparse.OptionParser()
-    parser.add_option("-c", "--config-file",
-                      dest="conffile",
-                      help="Use alternate configuration file",
-                      metavar="FILE")
-    parser.add_option("-d", "--debug",
-                      help="Show debugging output",
-                      action='store_true',
-                      default=False)
-    parser.add_option("-t", "--template",
-                      dest="template",
-                      help="Use non-default policy template",
-                      metavar="TEMPLATE",
-                      default='default')
-    parser.add_option("--list-templates",
-                      help="List available templates",
-                      action='store_true',
-                      default=False)
-    parser.add_option("--templates-dir",
-                      dest="templates_dir",
-                      help="Use non-default templates directory",
-                      metavar="DIR")
-    parser.add_option("--show-template",
-                      help="Show specified template",
-                      action='store_true',
-                      default=False)
-    parser.add_option("-p", "--policy-groups",
-                      help="Comma-separated list of policy groups",
-                      metavar="POLICYGROUPS")
-    parser.add_option("--list-policy-groups",
-                      help="List available policy groups",
-                      action='store_true',
-                      default=False)
-    parser.add_option("--policy-groups-dir",
-                      dest="policy_groups_dir",
-                      help="Use non-default policy-groups directory",
-                      metavar="DIR")
-    parser.add_option("--show-policy-group",
-                      help="Show specified policy groups",
-                      action='store_true',
-                      default=False)
+def add_parser_policy_args(parser):
+    '''Add parser arguments'''
     parser.add_option("-a", "--abstractions",
                       dest="abstractions",
                       help="Comma-separated list of abstractions",
@@ -515,6 +474,54 @@ def parse_args(args=None):
                       help="Path allowing owner writes",
                       metavar="PATH",
                       action="append")
+    parser.add_option("-t", "--template",
+                      dest="template",
+                      help="Use non-default policy template",
+                      metavar="TEMPLATE",
+                      default='default')
+    parser.add_option("--templates-dir",
+                      dest="templates_dir",
+                      help="Use non-default templates directory",
+                      metavar="DIR")
+    parser.add_option("-p", "--policy-groups",
+                      help="Comma-separated list of policy groups",
+                      metavar="POLICYGROUPS")
+    parser.add_option("--policy-groups-dir",
+                      dest="policy_groups_dir",
+                      help="Use non-default policy-groups directory",
+                      metavar="DIR")
+
+def parse_args(args=None, parser=None):
+    '''Parse arguments'''
+    global DEBUGGING
+
+    if parser == None:
+        parser = optparse.OptionParser()
+
+    parser.add_option("-c", "--config-file",
+                      dest="conffile",
+                      help="Use alternate configuration file",
+                      metavar="FILE")
+    parser.add_option("-d", "--debug",
+                      help="Show debugging output",
+                      action='store_true',
+                      default=False)
+    parser.add_option("--list-templates",
+                      help="List available templates",
+                      action='store_true',
+                      default=False)
+    parser.add_option("--show-template",
+                      help="Show specified template",
+                      action='store_true',
+                      default=False)
+    parser.add_option("--list-policy-groups",
+                      help="List available policy groups",
+                      action='store_true',
+                      default=False)
+    parser.add_option("--show-policy-group",
+                      help="Show specified policy groups",
+                      action='store_true',
+                      default=False)
     parser.add_option("-n", "--name",
                       dest="name",
                       help="Name of policy",
@@ -536,6 +543,9 @@ def parse_args(args=None):
                       help="Declare AppArmor variable",
                       metavar="@{VARIABLE}=VALUE",
                       action="append")
+
+    # add policy args now
+    add_parser_policy_args(parser)
 
     (my_opt, my_args) = parser.parse_args(args)
     if my_opt.debug:

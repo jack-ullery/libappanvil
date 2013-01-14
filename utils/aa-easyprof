@@ -11,6 +11,7 @@
 
 import apparmor.easyprof
 from apparmor.easyprof import AppArmorException, error
+import optparse
 import os
 import sys
 
