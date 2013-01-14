@@ -22,6 +22,7 @@ AA_LIB_CURRENT = 1
 AA_LIB_REVISION = 2
 AA_LIB_AGE = 0
 
+SUFFIXES = .pc.in .pc
 
 BUILT_SOURCES = grammar.h scanner.h af_protos.h
 AM_LFLAGS = -v
@@ -52,9 +53,18 @@ libapparmor_la_LDFLAGS = -version-info $(AA_LIB_CURRENT):$(AA_LIB_REVISION):$(AA
 libimmunix_la_SOURCES = kernel_interface.c libimmunix_warning.c
 libimmunix_la_LDFLAGS = -version-info $(AA_LIB_CURRENT):$(AA_LIB_REVISION):$(AA_LIB_AGE) -Wl,--version-script=$(top_srcdir)/src/libapparmor.map -Wl,-soname=libimmunix.so.1
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libapparmor.pc
+
+CLEANFILES = libapparmor.pc
+
+%.pc: %.pc.in $(top_builddir)/config.status
+	$(AM_V_GEN)cd "$(top_builddir)" && \
+	$(SHELL) ./config.status --file="src/$@"
+
 tst_aalogmisc_SOURCES = tst_aalogmisc.c
 tst_aalogmisc_LDADD = .libs/libapparmor.a
 check_PROGRAMS = tst_aalogmisc
 TESTS = $(check_PROGRAMS)
 
-EXTRA_DIST = grammar.y scanner.l libapparmor.map
+EXTRA_DIST = grammar.y scanner.l libapparmor.map libapparmor.pc

@@ -7,7 +7,7 @@
 
   capability net_bind_service,
 
-  /proc/sys/kernel/core_pattern r,
+  @{PROC}/sys/kernel/core_pattern r,
 
   /usr/sbin/nmbd mr,
 

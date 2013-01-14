@@ -50,7 +50,7 @@
   /usr/share/sounds/gaim/* r,
   /usr/share/themes/** r,
   /opt/kde3/bin/kde-config mixr,
-  @{PROC}/*/cmdline r,
+  @{PROC}/@{pid}/cmdline r,
   /usr/X11R6/lib/Acrobat*/Resource/Font/* r,
   /usr/X11R6/lib/Acrobat*/Resource/Font/PFM/* r,
   /usr/lib/ao/plugins-* r,

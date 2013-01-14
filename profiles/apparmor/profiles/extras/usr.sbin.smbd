@@ -31,7 +31,7 @@
   @{HOME}/**  rwl,
   @{HOMEDIRS} rwl,
 
-  @{PROC}/[0-9]*/mounts r,
+  @{PROC}/@{pid}/mounts r,
   /tmp rw,
   /var/tmp rw,
   /var/tmp/** lrw,

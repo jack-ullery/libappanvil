@@ -89,7 +89,10 @@ do_test()
     runtestbg "ONEXEC $desc ($prof -> $target_prof)" $res $target_prof "$@"
     # check that transition does not happen before exec, and that transition
     # is set
-    
+
+    # give the onexec process a chance to run
+    sleep 0.05
+
     if ! check_current $_pid $prof ; then
 	checktestfg
 	return

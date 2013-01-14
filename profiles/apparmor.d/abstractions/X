@@ -39,6 +39,9 @@
   /etc/drirc                      r,
   owner @{HOME}/.drirc            r,
 
+  # Xcompose
+  owner @{HOME}/.XCompose         r,
+
   # mouse themes
   /etc/X11/cursors/               r,
   /etc/X11/cursors/**             r,

@@ -70,7 +70,7 @@
   # gvfs
   /usr/share/gvfs/remote-volume-monitors/  r,
   /usr/share/gvfs/remote-volume-monitors/* r,
-  @{PROC}/*/mounts                 r,
+  @{PROC}/@{pid}/mounts                    r,
 
   # printing
   /etc/papersize                   r,

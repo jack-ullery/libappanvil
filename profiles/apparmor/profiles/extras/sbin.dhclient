@@ -38,7 +38,7 @@
   /etc/dhclient.conf          r,
   @{PROC}/                    r,
   @{PROC}/interrupts          r,
-  @{PROC}/*/net/dev           r,
+  @{PROC}/@{pid}/net/dev      r,
   @{PROC}/rtc                 r,
   # following rule shouldn't work, self is a symlink
   @{PROC}/self/status         r,

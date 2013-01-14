@@ -29,7 +29,7 @@
   /dev/tty rw,
   /etc/mtab r,
   /etc/squid/* r,
-  @{PROC}/[0-9]*/mounts r,
+  @{PROC}/@{pid}/mounts r,
   @{PROC}/mounts r,
   /usr/share/squid/** r,
   /var/log/squid/access.log w,

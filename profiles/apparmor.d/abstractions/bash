@@ -32,7 +32,7 @@
 
   # bash inspects filesystems at startup
   /etc/mtab                        r,
-  @{PROC}/[0-9]*/mounts            r,
+  @{PROC}/@{pid}/mounts            r,
   @{PROC}/filesystems              r,
 
   # probably readline wants to know terminal capabilities

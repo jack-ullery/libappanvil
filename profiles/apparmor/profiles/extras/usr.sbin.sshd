@@ -40,15 +40,15 @@
   /etc/hosts.deny r,
   /etc/modules.conf r,
   /etc/ssh/* r,
-  /proc/*/oom_adj rw,
-  /proc/*/oom_score_adj rw,
+  @{PROC}/@{pid}/oom_adj rw,
+  @{PROC}/@{pid}/oom_score_adj rw,
   /usr/sbin/sshd mrix,
   /var/log/btmp r,
   /{,var/}run w,
   /{,var/}run/sshd{,.init}.pid wl,
 
-  @{PROC}/[0-9]*/fd/ r,
-  @{PROC}/[0-9]*/loginuid w,
+  @{PROC}/@{pid}/fd/ r,
+  @{PROC}/@{pid}/loginuid w,
 
 # should only be here for use in non-change-hat openssh
 # duplicated from EXEC hat
@@ -74,7 +74,7 @@
 
   /dev/pts/[0-9]* rw,
   /etc/ssh/moduli r,
-  @{PROC}/[0-9]*/mounts r,
+  @{PROC}/@{pid}/mounts r,
 
 # duplicated from AUTHENTICATED
   /etc/motd r,
@@ -143,7 +143,7 @@
     /etc/hosts.allow r,
     /etc/hosts.deny r,
     /etc/ssh/moduli r,
-    @{PROC}/[0-9]*/mounts r,
+    @{PROC}/@{pid}/mounts r,
 
 # for debugging
 #  /dev/pts/[0-9]*                                              rw,
