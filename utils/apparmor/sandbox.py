@@ -605,7 +605,7 @@ EndSection
         self.pids.append(listener_x)
 
         started = False
-        time.sleep(2) # FIXME: detect if running
+        time.sleep(0.5) # FIXME: detect if running
         for i in range(self.timeout): # 5 seconds to start
             rc, out = cmd(['xpra', 'list'])
             if 'LIVE session at %s' % self.display in out:
