@@ -16,6 +16,7 @@
   #include <abstractions/nameservice>
   #include <abstractions/ssl_certs>
 
+  deny capability block_suspend,
   capability net_bind_service,
   capability setgid,
   capability setuid,
@@ -31,9 +32,9 @@
   /{,var/}run/.nscd_socket wl,
   /{,var/}run/avahi-daemon/socket w,
   /{,var/}run/nscd/ rw,
-  /{,var/}run/nscd/db* wl,
+  /{,var/}run/nscd/db* rwl,
   /{,var/}run/nscd/socket wl,
-  /var/{cache,run}/nscd/{passwd,group,services,hosts} rw,
+  /var/{cache,run}/nscd/{passwd,group,services,hosts,netgroup} rw,
   /{,var/}run/{nscd/,}nscd.pid rwl,
   /var/log/nscd.log rw,
   @{PROC}/@{pid}/fd/ r,
@@ -41,6 +42,7 @@
   @{PROC}/@{pid}/maps r,
   @{PROC}/@{pid}/mounts r,
   @{PROC}/filesystems r,
+  @{PROC}/sys/vm/overcommit_memory r,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.nscd>
