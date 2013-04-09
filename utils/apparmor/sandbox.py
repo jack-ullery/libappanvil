@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2011-2012 Canonical Ltd.
+#    Copyright (C) 2011-2013 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -15,6 +15,7 @@ import os
 import pwd
 import re
 import signal
+import socket
 import sys
 import tempfile
 import time
@@ -605,13 +606,36 @@ EndSection
         self.pids.append(listener_x)
 
         started = False
-        time.sleep(0.5) # FIXME: detect if running
-        for i in range(self.timeout): # 5 seconds to start
+
+        # We need to wait for the xpra socket to exist before attaching
+        fn = os.path.join(os.environ['HOME'], '.xpra', '%s-%s' % \
+                          (socket.gethostname(), self.display.split(':')[1]))
+        for i in range(self.timeout * 2): # up to self.timeout seconds to start
+            if os.path.exists(fn):
+                debug("Found '%s'! Proceeding to attach" % fn)
+                break
+            debug("'%s' doesn't exist yet, waiting" % fn)
+            time.sleep(0.5)
+
+        if not os.path.exists(fn):
+            sys.stdout.flush()
+            self.cleanup()
+            raise AppArmorException("Could not start xpra (try again with -d)")
+
+        for i in range(self.timeout): # Up to self.timeout seconds to start
             rc, out = cmd(['xpra', 'list'])
-            if 'LIVE session at %s' % self.display in out:
+
+            if 'DEAD session at %s' % self.display in out:
+                error("xpra session at '%s' died" % self.display, do_exit=False)
+                break
+
+            search = 'LIVE session at %s' % self.display
+            if search in out:
                 started = True
                 break
-            time.sleep(1)
+            time.sleep(0.5)
+            debug("Could not find '%s' in:\n" % search)
+            debug(out)
 
         if not started:
             sys.stdout.flush()
@@ -637,6 +661,17 @@ EndSection
             sys.exit(0)
 
         self.pids.append(listener_attach)
+
+        # Make sure that a client has attached
+        for i in range(self.timeout): # up to self.timeout seconds to attach
+            time.sleep(1)
+            rc, out = cmd (['xpra', 'info', self.display])
+            search = 'clients=1'
+            if search in out:
+                debug("Client successfully attached!")
+                break
+            debug("Could not find '%s' in:\n" % search)
+            debug(out)
 
         msg("TODO: filter '~/.xpra/run-xpra'")
 
