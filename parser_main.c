@@ -79,7 +79,7 @@ int preprocess_only = 0;
 int skip_mode_force = 0;
 struct timespec mru_tstamp;
 
-#define FLAGS_STRING_SIZE 1024
+#define FLAGS_STRING_SIZE 8192
 char *match_string = NULL;
 char *flags_string = NULL;
 char *cacheloc = NULL;
