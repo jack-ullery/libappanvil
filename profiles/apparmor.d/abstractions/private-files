@@ -15,6 +15,8 @@
   # special attention to (potentially) executable files
   audit deny @{HOME}/bin/** wl,
   audit deny @{HOME}/.config/autostart/** wl,
+  audit deny @{HOME}/.config/upstart/** wl,
+  audit deny @{HOME}/.init/** wl,
   audit deny @{HOME}/.kde{,4}/Autostart/** wl,
   audit deny @{HOME}/.kde{,4}/env/** wl,
   audit deny @{HOME}/.pki/nssdb/*.so{,.[0-9]*} wl,
