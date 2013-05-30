@@ -44,3 +44,6 @@
 
   /usr/local/share/fonts/               r,
   /usr/local/share/fonts/**             r,
+
+  # poppler CMap tables
+  /usr/share/poppler/cMap/**            r,

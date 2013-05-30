@@ -83,6 +83,3 @@
   # mime-types
   /etc/gnome/defaults.list r,
   /usr/share/gnome/applications/mimeinfo.cache r,
-
-  # poppler CMap tables
-  /usr/share/poppler/cMap/** r,
