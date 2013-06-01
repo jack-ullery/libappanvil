@@ -51,10 +51,10 @@ def write_config(filename, config):
     except IOError:
         raise IOError("Unable to write to %s"%filename)
     else:
-        for section in sorted(config.iterkeys()):
+        for section in sorted(config.keys()):
             # Write the section and all attributes and values under the section
             conf_file.write("[%s]\n"%section)
-            for attribute in sorted(config[section].iterkeys()):
+            for attribute in sorted(config[section].keys()):
                 conf_file.write("  %s = %s\n"%(attribute, config[section][attribute]))
         permission_600 = stat.S_IRUSR | stat.S_IWUSR    # Owner read and write
         # Set file permissions as 0600
