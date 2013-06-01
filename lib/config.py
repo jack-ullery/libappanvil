@@ -53,9 +53,12 @@ def write_config(filename, config):
     else:
         for section in sorted(config.keys()):
             # Write the section and all attributes and values under the section
-            conf_file.write("[%s]\n"%section)
+            if section != '':     # If default section then no section label
+                conf_file.write("[%s]\n"%section)
             for attribute in sorted(config[section].keys()):
-                conf_file.write("  %s = %s\n"%(attribute, config[section][attribute]))
+                if section != '':
+                    conf_file.write("  ")   # Indentation for a section
+                conf_file.write("%s = %s\n"%(attribute, config[section][attribute]))
         permission_600 = stat.S_IRUSR | stat.S_IWUSR    # Owner read and write
         # Set file permissions as 0600
         os.chmod(filepath, permission_600)
