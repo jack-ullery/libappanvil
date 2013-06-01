@@ -14,7 +14,7 @@ def read_config(filename):
     filepath = confdir + '/' + filename
     try:
         conf_file = open(filepath, 'r', 1)
-    except OSError:
+    except IOError:
         pass
     else:
         section = ''  # The default section
@@ -48,7 +48,7 @@ def write_config(filename, config):
     filepath = confdir + '/' + filename
     try:
         conf_file = open(filepath, 'w') 
-    except OSError:
+    except IOError:
         raise IOError("Unable to write to %s"%filename)
     else:
         for section in sorted(config.iterkeys()):
