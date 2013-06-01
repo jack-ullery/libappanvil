@@ -40,7 +40,7 @@ def read_config(filename):
     # LP: Bug #692406
     # Explicitly disabled repository
     if filename == "repository.conf":
-        config['repository'] = {'enabled':'no'}
+        config['repository'] = {'enabled': 'no'}
     return config
         
 def write_config(filename, config):
