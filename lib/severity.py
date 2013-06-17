@@ -48,7 +48,7 @@ class Severity:
         database.close()
         
     def convert_regexp(self, path):
-        pattern_or = re.compile('{.*|,.*}')    # The regex pattern for {a,b}
+        pattern_or = re.compile('{.*\,.*}')    # The regex pattern for {a,b}
         regex = path
         for character in ['.', '+', '[', ']']:    # Escape the regex symbols
             regex = regex.replace(character, "\%s"%character)
