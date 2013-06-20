@@ -1,6 +1,9 @@
-import os
-import stat
 import configparser
+import os
+import shutil
+import stat
+import tempfile
+
 
 confdir = '/etc/apparmor'
 cfg = None
@@ -20,15 +23,20 @@ def read_config(filename):
 def write_config(filename, config):
     """Writes the given configparser to the specified file"""
     filepath = confdir + '/' + filename
+    permission_600 = stat.S_IRUSR | stat.S_IWUSR    # Owner read and write
     try:
-        with open(filepath, 'w') as config_file:
-            config.write(config_file) 
+        # Open a temporary file to write the config file
+        config_file = tempfile.NamedTemporaryFile('w', prefix='aa_temp', delete=False)
+        # Set file permissions as 0600
+        os.chmod(config_file.name, permission_600)
+        config.write(config_file)
+        config_file.close()
     except IOError:
         raise IOError("Unable to write to %s"%filename)
     else:
-        permission_600 = stat.S_IRUSR | stat.S_IWUSR    # Owner read and write
-        # Set file permissions as 0600
-        os.chmod(filepath, permission_600)
+        # Move the temporary file to the target config file
+        shutil.move(config_file.name, filepath)
+        
 
 def find_first_file(file_list):
     """Returns name of first matching file None otherwise"""
