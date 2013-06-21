@@ -10,11 +10,11 @@ class Severity:
         self.severity['REGEXPS'] = {}
         self.severity['DEFAULT_RANK'] = default_rank
         if not dbname:
-            return self.severity
+            return None
         try:
             database = open(dbname, 'r')
         except IOError:
-            raise("Could not open severity database %s"%dbname)
+            raise IOError("Could not open severity database %s"%dbname)
         for line in database:
             line = line.strip() # or only rstrip and lstrip?
             if line == '' or line.startswith('#') :
@@ -22,6 +22,7 @@ class Severity:
             if line.startswith('/'):
                 try:
                     path, read, write, execute = line.split()
+                    read, write, execute = int(read), int(write), int(execute)
                 except ValueError:
                     raise("Insufficient values for permissions in line: %s"%line)
                 else:
@@ -45,11 +46,12 @@ class Severity:
             elif line.startswith('CAP_'):
                 try:
                     resource, severity = line.split()
+                    severity = int(severity)
                 except ValueError:
-                    raise("No severity value present in line: %s"%line)
+                    raise ValueError("No severity value present in line: %s"%line)
                 else:
                     if severity not in range(0,11):
-                        raise("Inappropriate severity value present in line: %s"%line)
+                        raise ValueError("Inappropriate severity value present in line: %s"%line)
                     self.severity['CAPABILITIES'][resource] = severity
             else:
                 print("unexpected database line: %s \nin file: %s"%(line,dbname))   
@@ -76,13 +78,17 @@ class Severity:
     
     def handle_capability(self, resource):
         """Returns the severity of a resource or raises an"""
-        if self.severity['CAPABILITIES'].get(resource, False):
-            raise("unexpected capability rank input: %s\n"%resource)
-        return self.severity['CAPABILITIES'][resource]
+        if resource in self.severity['CAPABILITIES'].keys():
+            return self.severity['CAPABILITIES'][resource]
+        raise ValueError("unexpected capability rank input: %s"%resource)
+        
     
     def check_subtree(self, tree, mode, sev, segments):
         """Returns the max severity from the regex tree"""
-        first = segments[0]
+        if len(segments) == 0:
+            first = ''
+        else:
+            first = segments[0]
         rest = segments[1:]
         path = '/'.join([first]+rest)
         # Check if we have a matching directory tree to descend into
@@ -96,7 +102,7 @@ class Severity:
                     # Match rest of the path
                     if re.search("^"+chunk, path):
                         # Find max rank 
-                        if tree[chunk].get("AA_RANK", False):
+                        if "AA_RANK" in tree[chunk].keys():
                             for m in mode:
                                 if sev == None or tree[chunk]["AA_RANK"].get(m, -1) > sev:
                                     sev = tree[chunk]["AA_RANK"][m]
@@ -108,14 +114,14 @@ class Severity:
         pieces = resource.split('/')    # break path into directory level chunks
         sev = None
         # Check for an exact match in the db
-        if self.severity['FILES'].get(resource, False):
+        if resource in self.severity['FILES'].keys():
             # Find max value among the given modes
             for m in mode:
                 if sev == None or self.severity['FILES'][resource].get(m, -1) > sev:
                     sev = self.severity['FILES'][resource].get(m, None)
         else:
             # Search regex tree for matching glob
-            sev = self.check_subtree(self.severity['REGEXPS', mode, sev, pieces])
+            sev = self.check_subtree(self.severity['REGEXPS'], mode, sev, pieces)
         if sev == None:
             # Return default rank if severity cannot be found
             return self.severity['DEFAULT_RANK']
@@ -129,5 +135,4 @@ class Severity:
         elif resource[0:4] == 'CAP_':    # capability resource
             return self.handle_capability(resource)
         else:
-            raise("unexpected rank input: %s\n"%resource)
-            # return "unexpected rank input: %s\n"%resource
+            raise ValueError("unexpected rank input: %s"%resource)
