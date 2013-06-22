@@ -11,22 +11,49 @@ import severity
 
 class Test(unittest.TestCase):
 
-
-    def testName(self):
+    def testInvalid(self):
+        s = severity.Severity('severity.db')
+        rank = s.rank('/dev/doublehit', 'i')  
+        self.assertEqual(rank, 10, 'Wrong') 
+        try:
+            broken = severity.Severity('severity_broken.db')
+            rank =  s.rank('CAP_UNKOWN')
+            rank =  s.rank('CAP_K*')       
+        except ValueError:
+            pass
+        
+    def testRank_Test(self):
         z = severity.Severity()
         s = severity.Severity('severity.db')
-        cases_file = [('/usr/bin/whatis', 'x'), ('/etc', 'x'), ('/dev/doublehit', 'x')]
-        cases_cap = ['CAP_SETPCAP', 'CAP_KILL']
-        for case in cases_file:
-            rank = s.rank(case[0], case[1])
-            self.assertIn(rank, range(0,11), "Invalid rank")
-            print(rank)
-        for case in cases_cap:
-            rank = s.rank(case)
-            self.assertIn(rank, range(0,11), "Invalid rank")
-            print(rank)
+        rank = s.rank('/usr/bin/whatis', 'x')
+        self.assertEqual(rank, 5, 'Wrong rank')
+        rank = s.rank('/etc', 'x')
+        self.assertEqual(rank, 10, 'Wrong rank')
+        rank = s.rank('/dev/doublehit', 'x')
+        self.assertEqual(rank, 0, 'Wrong rank')
+        rank = s.rank('/dev/doublehit', 'rx')
+        self.assertEqual(rank, 4, 'Wrong rank')
+        rank = s.rank('/dev/doublehit', 'rwx')
+        self.assertEqual(rank, 8, 'Wrong rank')
+        rank = s.rank('/dev/tty10', 'rwx')
+        self.assertEqual(rank, 9, 'Wrong rank')
+        rank = s.rank('/var/adm/foo/**', 'rx')
+        self.assertEqual(rank, 3, 'Wrong rank')
+        rank = s.rank('CAP_KILL')
+        self.assertEqual(rank, 8, 'Wrong rank')
+        rank = s.rank('CAP_SETPCAP')
+        self.assertEqual(rank, 9, 'Wrong rank')
+        self.assertEqual(s.rank('/etc/apparmor/**', 'r') , 6,  'Invalid Rank')
+        self.assertEqual(s.rank('/etc/**', 'r') , 10,  'Invalid Rank')
+        self.assertEqual(s.rank('@{PROC}/sys/vm/overcommit_memory', 'r'), 6, 'Invalid Rank')
+        self.assertEqual(s.rank('@{HOME}/sys/@{PROC}/overcommit_memory', 'r'), 10, 'Invalid Rank')
+        self.assertEqual(s.rank('@{PROC}/sys/@{TFTP_DIR}/overcommit_memory', 'r'), 6, 'Invalid Rank')
+        
+        #self.assertEqual(s.rank('/proc/@{PID}/maps', 'rw'), 9, 'Invalid Rank')
         
 
+        
+        
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

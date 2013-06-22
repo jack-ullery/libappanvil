@@ -1,3 +1,4 @@
+import os
 import re
 
 class Severity:
@@ -9,6 +10,18 @@ class Severity:
         self.severity['FILES'] = {}
         self.severity['REGEXPS'] = {}
         self.severity['DEFAULT_RANK'] = default_rank
+        # For variable expansions from /etc/apparmor.d
+        self.severity['VARIABLES'] = dict()
+        # Recursively visits all the profiles to identify all the variable expansions and stores them
+        for root, dirs, files in os.walk('/etc/apparmor.d'):
+            for file in files:
+                for line in open(os.path.join(root, file), 'r'):
+                    line.strip()
+                    # Expected format is @{Variable} = value1 value2 ..
+                    if line.startswith('@') and '=' in line:
+                        line = line.strip()
+                        line = line.split('=')
+                        self.severity['VARIABLES'][line[0]] = [i.strip('"') for i in line[1].split()] 
         if not dbname:
             return None
         try:
@@ -24,10 +37,10 @@ class Severity:
                     path, read, write, execute = line.split()
                     read, write, execute = int(read), int(write), int(execute)
                 except ValueError:
-                    raise("Insufficient values for permissions in line: %s"%line)
+                    raise ValueError("Insufficient values for permissions in line: %s\nin File: %s"%(line, dbname))
                 else:
                     if read not in range(0,11) or write not in range(0,11) or execute not in range(0,11):
-                        raise("Inappropriate values for permissions in line: %s"%line)
+                        raise ValueError("Inappropriate values for permissions in line: %s\nin File: %s"%(line, dbname))
                     path = path.lstrip('/')
                     if '*' not in path:
                         self.severity['FILES'][path] = {'r': read, 'w': write, 'x': execute}
@@ -48,13 +61,13 @@ class Severity:
                     resource, severity = line.split()
                     severity = int(severity)
                 except ValueError:
-                    raise ValueError("No severity value present in line: %s"%line)
+                    raise ValueError("No severity value present in line: %s\nin File: %s"%(line, dbname))
                 else:
                     if severity not in range(0,11):
-                        raise ValueError("Inappropriate severity value present in line: %s"%line)
+                        raise ValueError("Inappropriate severity value present in line: %s\nin File: %s"%(line, dbname))
                     self.severity['CAPABILITIES'][resource] = severity
             else:
-                print("unexpected database line: %s \nin file: %s"%(line,dbname))   
+                raise ValueError("Unexpected database line: %s \nin File: %s"%(line,dbname))   
         database.close()
         
     def convert_regexp(self, path):
@@ -77,10 +90,11 @@ class Severity:
         return regex
     
     def handle_capability(self, resource):
-        """Returns the severity of a resource or raises an"""
+        """Returns the severity of for the capability resource, default value if no match"""
         if resource in self.severity['CAPABILITIES'].keys():
             return self.severity['CAPABILITIES'][resource]
-        raise ValueError("unexpected capability rank input: %s"%resource)
+        # raise ValueError("unexpected capability rank input: %s"%resource)
+        return self.severity['DEFAULT_RANK']
         
     
     def check_subtree(self, tree, mode, sev, segments):
@@ -105,7 +119,7 @@ class Severity:
                         if "AA_RANK" in tree[chunk].keys():
                             for m in mode:
                                 if sev == None or tree[chunk]["AA_RANK"].get(m, -1) > sev:
-                                    sev = tree[chunk]["AA_RANK"][m]
+                                    sev = tree[chunk]["AA_RANK"].get(m, None)
         return sev
             
     def handle_file(self, resource, mode):
@@ -130,9 +144,46 @@ class Severity:
         
     def rank(self, resource, mode=None):
         """Returns the rank for the resource file/capability"""
-        if resource[0] == '/':    # file resource
+        if '@' in resource:    # path contains variable
+            return self.handle_variable_rank(resource, mode)
+        elif resource[0] == '/':    # file resource
             return self.handle_file(resource, mode)
         elif resource[0:4] == 'CAP_':    # capability resource
             return self.handle_capability(resource)
         else:
-            raise ValueError("unexpected rank input: %s"%resource)
+            raise ValueError("Unexpected rank input: %s"%resource)
+        
+    def handle_variable_rank(self, resource, mode):
+        """Returns the max possible rank for file resources containing variables"""
+        regex_variable = re.compile('@{([^{.]*)}')
+        rank = None
+        if '@' in resource:
+            variable = regex_variable.search(resource).groups()[0]
+            variable = '@{'+variable+'}'
+            #variables = regex_variable.findall(resource)
+            for replacement in self.severity['VARIABLES'][variable]:
+                resource_replaced = self.variable_replace(variable, replacement, resource)
+                rank_new = self.handle_variable_rank(resource_replaced, mode)
+                #rank_new = self.handle_variable_rank(resource.replace('@{'+variable+'}', replacement), mode)     
+                if rank == None or rank_new > rank:
+                    rank = rank_new
+            return rank
+        else:
+            #print(resource)
+            #print(self.handle_file(resource, mode))
+            return self.handle_file(resource, mode)
+            
+    def variable_replace(self, variable, replacement, resource):
+        """Returns the expanded path for the passed variable"""
+        leading = False
+        trailing = False
+        # Check for leading or trailing / that may need to be collapsed
+        if resource.find("/"+variable) != -1 and resource.find("//"+variable) == -1:
+            leading = True
+        if resource.find(variable+"/") != -1 and resource.find(variable+"//") == -1:
+            trailing = True
+        if replacement[0] == '/' and replacement[0:2] != '//' and leading:
+            replacement = replacement[1:]
+        if replacement[-1] == '/' and replacement[-1:-2:-1] !='//' and trailing:
+            replacement = replacement[:-1]
+        return resource.replace(variable, replacement)
