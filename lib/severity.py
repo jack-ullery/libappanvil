@@ -12,16 +12,23 @@ class Severity:
         self.severity['DEFAULT_RANK'] = default_rank
         # For variable expansions from /etc/apparmor.d
         self.severity['VARIABLES'] = dict()
-        # Recursively visits all the profiles to identify all the variable expansions and stores them
+        # Recursively visits all the profiles to identify all the variable expansions and stores them need to use sourcehooks
         for root, dirs, files in os.walk('/etc/apparmor.d'):
             for file in files:
-                for line in open(os.path.join(root, file), 'r'):
-                    line.strip()
-                    # Expected format is @{Variable} = value1 value2 ..
-                    if line.startswith('@') and '=' in line:
-                        line = line.strip()
-                        line = line.split('=')
-                        self.severity['VARIABLES'][line[0]] = [i.strip('"') for i in line[1].split()] 
+                try:
+                    with open(os.path.join(root, file), 'r') as f:
+                        for line in f:
+                            line.strip()
+                            # Expected format is @{Variable} = value1 value2 ..
+                            if line.startswith('@') and '=' in line:
+                                line = line.strip()
+                                if '+=' in line:
+                                    line = line.split('+=')
+                                else:
+                                    line = line.split('=')
+                                self.severity['VARIABLES'][line[0]] = self.severity['VARIABLES'].get(line[0], []) + [i.strip('"') for i in line[1].split()]
+                except IOError:
+                    raise IOError("unable to open file: %s"%file)
         if not dbname:
             return None
         try:
@@ -169,7 +176,7 @@ class Severity:
                     rank = rank_new
             return rank
         else:
-            #print(resource)
+            print(resource)
             #print(self.handle_file(resource, mode))
             return self.handle_file(resource, mode)
             
@@ -178,12 +185,12 @@ class Severity:
         leading = False
         trailing = False
         # Check for leading or trailing / that may need to be collapsed
-        if resource.find("/"+variable) != -1 and resource.find("//"+variable) == -1:
+        if resource.find("/"+variable) != -1 and resource.find("//"+variable) == -1:    # find that a single / exists before variable or not
             leading = True
         if resource.find(variable+"/") != -1 and resource.find(variable+"//") == -1:
             trailing = True
-        if replacement[0] == '/' and replacement[0:2] != '//' and leading:
+        if replacement[0] == '/' and replacement[:2] != '//' and leading:    # finds if the replacement has leading / or not
             replacement = replacement[1:]
-        if replacement[-1] == '/' and replacement[-1:-2:-1] !='//' and trailing:
+        if replacement[-1] == '/' and replacement[-2:] !='//' and trailing:
             replacement = replacement[:-1]
         return resource.replace(variable, replacement)

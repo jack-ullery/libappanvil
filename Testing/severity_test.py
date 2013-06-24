@@ -5,6 +5,7 @@ Created on Jun 21, 2013
 '''
 import sys
 import unittest
+
 sys.path.append('../lib')
 
 import severity
@@ -48,6 +49,7 @@ class Test(unittest.TestCase):
         self.assertEqual(s.rank('@{PROC}/sys/vm/overcommit_memory', 'r'), 6, 'Invalid Rank')
         self.assertEqual(s.rank('@{HOME}/sys/@{PROC}/overcommit_memory', 'r'), 10, 'Invalid Rank')
         self.assertEqual(s.rank('@{PROC}/sys/@{TFTP_DIR}/overcommit_memory', 'r'), 6, 'Invalid Rank')
+        self.assertEqual(s.rank('/overco@{multiarch}mmit_memory', 'r'), 10, 'Invalid Rank')
         
         #self.assertEqual(s.rank('/proc/@{PID}/maps', 'rw'), 9, 'Invalid Rank')
         
