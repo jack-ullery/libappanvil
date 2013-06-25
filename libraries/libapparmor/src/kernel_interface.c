@@ -583,6 +583,8 @@ int aa_getpeercon_raw(int fd, char *buffer, int *size)
 			optlen++;
 		}
 	}
+
+	rc = optlen;
 out:
 	*size = optlen;
 	return rc;
