@@ -561,35 +561,35 @@ int aa_getcon(char **con, char **mode)
 /**
  * aa_getpeercon_raw - get the confinement of the socket's peer (other end)
  * @fd: socket to get peer confinement for
- * @con: pointer to buffer to store confinement string
- * @size: initially contains size of the buffer, returns size of data read
+ * @buf: buffer to store the result in
+ * @len: initially contains size of the buffer, returns size of data read
  * @mode: if set will point to mode string within buffer if it is present
  *
  * Returns: length of confinement data including null termination or -1 on error
- *          if errno == ERANGE then @size will hold the size needed
+ *          if errno == ERANGE then @len will hold the size needed
  */
-int aa_getpeercon_raw(int fd, char *buffer, int *size, char **mode)
+int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode)
 {
-	socklen_t optlen = *size;
+	socklen_t optlen = *len;
 	char *mode_str;
 	int rc;
 
-	if (optlen <= 0 || buffer == NULL) {
+	if (optlen <= 0 || buf == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
-	rc = getsockopt(fd, SOL_SOCKET, SO_PEERSEC, buffer, &optlen);
+	rc = getsockopt(fd, SOL_SOCKET, SO_PEERSEC, buf, &optlen);
 	if (rc == -1 || optlen <= 0)
 		goto out;
 
 	/* check for null termination */
-	if (buffer[optlen - 1] != 0) {
-		if (optlen < *size) {
-			buffer[optlen] = 0;
+	if (buf[optlen - 1] != 0) {
+		if (optlen < *len) {
+			buf[optlen] = 0;
 			optlen++;
 		} else {
-			/* buffer needs to be bigger by 1 */
+			/* buf needs to be bigger by 1 */
 			rc = -1;
 			errno = ERANGE;
 			optlen++;
@@ -597,13 +597,13 @@ int aa_getpeercon_raw(int fd, char *buffer, int *size, char **mode)
 		}
 	}
 
-	mode_str = parse_confinement_mode(buffer, optlen);
+	mode_str = parse_confinement_mode(buf, optlen);
 	if (mode)
 		*mode = mode_str;
 
 	rc = optlen;
 out:
-	*size = optlen;
+	*len = optlen;
 	return rc;
 }
 
