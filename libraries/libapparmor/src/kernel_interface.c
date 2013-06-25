@@ -599,7 +599,7 @@ out:
  */
 int aa_getpeercon(int fd, char **con)
 {
-	int rc, size = INITIAL_GUESS_SIZE;
+	int rc, last_size, size = INITIAL_GUESS_SIZE;
 	char *buffer = NULL;
 
 	if (!con) {
@@ -608,13 +608,15 @@ int aa_getpeercon(int fd, char **con)
 	}
 
 	do {
+		last_size = size;
 		buffer = realloc(buffer, size);
 		if (!buffer)
 			return -1;
 		memset(buffer, 0, size);
 
 		rc = aa_getpeercon_raw(fd, buffer, &size);
-	} while (rc == -1 && errno == ERANGE);
+		/* size should contain actual size needed if errno == ERANGE */
+	} while (rc == -1 && errno == ERANGE && size > last_size);
 
 	if (rc == -1) {
 		free(buffer);
