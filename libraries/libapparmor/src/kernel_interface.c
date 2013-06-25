@@ -563,13 +563,15 @@ int aa_getcon(char **con, char **mode)
  * @fd: socket to get peer confinement for
  * @con: pointer to buffer to store confinement string
  * @size: initially contains size of the buffer, returns size of data read
+ * @mode: if set will point to mode string within buffer if it is present
  *
  * Returns: length of confinement data including null termination or -1 on error
  *          if errno == ERANGE then @size will hold the size needed
  */
-int aa_getpeercon_raw(int fd, char *buffer, int *size)
+int aa_getpeercon_raw(int fd, char *buffer, int *size, char **mode)
 {
 	socklen_t optlen = *size;
+	char *mode_str;
 	int rc;
 
 	if (optlen <= 0 || buffer == NULL) {
@@ -591,8 +593,13 @@ int aa_getpeercon_raw(int fd, char *buffer, int *size)
 			rc = -1;
 			errno = ERANGE;
 			optlen++;
+			goto out;
 		}
 	}
+
+	mode_str = parse_confinement_mode(buffer, optlen);
+	if (mode)
+		*mode = mode_str;
 
 	rc = optlen;
 out:
@@ -604,12 +611,13 @@ out:
  * aa_getpeercon - get the confinement of the socket's peer (other end)
  * @fd: socket to get peer confinement for
  * @con: pointer to allocated buffer with the confinement string
+ * @mode: if provided will point to the mode string in @con if present
  *
  * Returns: length of confinement data including null termination or -1 on error
  *
  * Caller is responsible for freeing the buffer returned.
  */
-int aa_getpeercon(int fd, char **con)
+int aa_getpeercon(int fd, char **con, char **mode)
 {
 	int rc, last_size, size = INITIAL_GUESS_SIZE;
 	char *buffer = NULL;
@@ -626,13 +634,15 @@ int aa_getpeercon(int fd, char **con)
 			return -1;
 		memset(buffer, 0, size);
 
-		rc = aa_getpeercon_raw(fd, buffer, &size);
+		rc = aa_getpeercon_raw(fd, buffer, &size, mode);
 		/* size should contain actual size needed if errno == ERANGE */
 	} while (rc == -1 && errno == ERANGE && size > last_size);
 
 	if (rc == -1) {
 		free(buffer);
 		*con = NULL;
+		if (mode)
+			*mode = NULL;
 		size = -1;
 	} else
 		*con = buffer;
