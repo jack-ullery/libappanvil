@@ -150,6 +150,33 @@ static char *procattr_path(pid_t pid, const char *attr)
 }
 
 /**
+ * parse_confinement_mode - get the mode from the confinement string
+ * @con: the confinement string
+ * @size: size of the confinement string
+ *
+ * Modifies con to NUL-terminate the label string and the mode string.
+ *
+ * Returns: a pointer to the NUL-terminated mode inside the confinement string
+ * or NULL if the mode was not found
+ */
+static char *parse_confinement_mode(char *con, int size)
+{
+	if (strcmp(con, "unconfined") != 0 &&
+	    size > 4 && con[size - 2] == ')') {
+		int pos = size - 3;
+
+		while (pos > 0 && !(con[pos] == ' ' && con[pos + 1] == '('))
+			pos--;
+		if (pos > 0) {
+			con[pos] = 0; /* overwrite ' ' */
+			con[size - 2] = 0; /* overwrite trailing ) */
+			return &con[pos + 2]; /* skip '(' */
+		}
+	}
+	return NULL;
+}
+
+/**
  * aa_getprocattr_raw - get the contents of @attr for @tid into @buf
  * @tid: tid of task to query
  * @attr: which /proc/<tid>/attr/<attr> to query
@@ -217,25 +244,8 @@ int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len,
 			size++;
 		}
 
-		/*
-		 * now separate the mode.  If we don't find it just
-		 * return NULL
-		 */
 		if (mode)
-			*mode = NULL;
-		if (strcmp(buf, "unconfined") != 0 &&
-		    size > 4 && buf[size - 2] == ')') {
-			int pos = size - 3;
-			while (pos > 0 &&
-			       !(buf[pos] == ' ' && buf[pos + 1] == '('))
-				pos--;
-			if (pos > 0) {
-				buf[pos] = 0; /* overwrite ' ' */
-				buf[size - 2] = 0; /* overwrite trailing ) */
-				if (mode)
-					*mode = &buf[pos + 2]; /* skip '(' */
-			}
-		}
+			*mode = parse_confinement_mode(buf, size);
 	}
 	rc = size;
 
