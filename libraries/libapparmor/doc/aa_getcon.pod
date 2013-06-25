@@ -41,7 +41,9 @@ B<int aa_gettaskcon(pid_t target, char **con, char **mode);>
 
 B<int aa_getcon(char **con, char **mode);>
 
-B<int aa_getpeercon(int fd, char **con);>
+B<int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode);>
+
+B<int aa_getpeercon(int fd, char **con, char **mode);>
 
 Link with B<-lapparmor> when compiling.
 
@@ -58,6 +60,9 @@ for any arbitrary task in the system.
 The aa_getpeercon function is similar to that of aa_gettaskcon except that
 it returns the confinement information for task on the other end of a socket
 connection.
+
+The aa_getpeercon_raw function is the backend for the aa_getpeercon function
+and does not handle buffer allocation.
 
 The aa_getprocattr function is the backend for the aa_getcon and aa_gettaskcon
 functions and handles the reading and parsing of the confinement data from
@@ -96,9 +101,15 @@ The specified I<file/task> does not exist or is not visible.
 
 =item B<ERANGE>
 
-The confinement data is to large to fit in the supplied buffer.
+The confinement data is too large to fit in the supplied buffer.
 
 =back
+
+=head1 NOTES
+
+If aa_getpeercon_raw returns -1 and errno is ERANGE, the value of *len can be
+used to reallocate buf so that it is sufficiently large enough to store the
+confinement data.
 
 =head1 BUGS
 
