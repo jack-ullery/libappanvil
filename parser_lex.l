@@ -286,6 +286,7 @@ LT_EQUAL	<=
 				 * as bison may have requested the next
 				 * token from the scanner
 				 */
+				DUMP_PREPROCESS;
 				PDEBUG("conditional %s=\n", yytext);
 				yylval.id = processid(yytext, yyleng);
 				yy_push_state(EXTCOND_MODE);
@@ -298,6 +299,7 @@ LT_EQUAL	<=
 				 * as bison may have requested the next
 				 * token from the scanner
 				 */
+				DUMP_PREPROCESS;
 				PDEBUG("conditional %s=\n", yytext);
 				yylval.id = processid(yytext, yyleng);
 				yy_push_state(EXTCOND_MODE);
@@ -704,7 +706,6 @@ LT_EQUAL	<=
 			case TOK_MOUNT:
 			case TOK_REMOUNT:
 			case TOK_UMOUNT:
-				DUMP_PREPROCESS;
 				PDEBUG("Entering mount\n");
 				yy_push_state(MOUNT_MODE);
 				break;
