@@ -91,7 +91,7 @@ struct option long_options[] = {
 	{"add", 		0, 0, 'a'},
 	{"binary",		0, 0, 'B'},
 	{"base",		1, 0, 'b'},
-	{"subdomainfs",		0, 0, 'f'},
+	{"subdomainfs",		1, 0, 'f'},
 	{"help",		2, 0, 'h'},
 	{"replace",		0, 0, 'r'},
 	{"reload",		0, 0, 'r'},	/* undocumented reload option == replace */
