@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2011-2012 Canonical Ltd.
+#    Copyright (C) 2011-2013 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -15,8 +15,6 @@ use Errno;
 
 require LibAppArmor;
 require POSIX;
-require Time::Local;
-require File::Basename;
 
 my $opt_d = '';
 my $opt_h = '';
