@@ -9,16 +9,20 @@ common/Make.rules: $(COMMONDIR)/Make.rules
 	ln -sf $(COMMONDIR) .
 endif
 
+MANPAGES=apparmor.vim.5
 VIM_INSTALL_PATH=${DESTDIR}/usr/share/apparmor
 
-all: apparmor.vim
+all: apparmor.vim manpages
 
 apparmor.vim: apparmor.vim.in Makefile create-apparmor.vim.py
 	${PYTHON} create-apparmor.vim.py > apparmor.vim
 
-install: apparmor.vim
+manpages: $(MANPAGES)
+
+install: apparmor.vim manpages
 	install -d $(VIM_INSTALL_PATH)
 	install -m 644 $< $(VIM_INSTALL_PATH)
+	$(MAKE) install_manpages DESTDIR=${DESTDIR}
 
 test: apparmor.vim.in Makefile create-apparmor.vim.py
 	#Testing with all pythons
