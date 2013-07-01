@@ -333,11 +333,11 @@ msgstr ""
 
 #: ../AppArmor.pm:1379 ../AppArmor.pm:1419
 msgid "(Y)es"
-msgstr "Igen"
+msgstr "(I)gen"
 
 #: ../AppArmor.pm:1380 ../AppArmor.pm:1420
 msgid "(N)o"
-msgstr "Nem"
+msgstr "(N)em"
 
 #: ../AppArmor.pm:1383 ../AppArmor.pm:1424
 msgid "Invalid hotkey for"
