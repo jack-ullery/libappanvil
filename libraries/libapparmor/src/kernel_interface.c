@@ -289,7 +289,8 @@ int aa_getprocattr(pid_t tid, const char *attr, char **buf, char **mode)
 	if (rc == -1) {
 		free(buffer);
 		*buf = NULL;
-		*mode = NULL;
+		if (mode)
+			*mode = NULL;
 	} else
 		*buf = buffer;
 
