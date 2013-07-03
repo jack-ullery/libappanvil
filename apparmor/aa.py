@@ -1,4 +1,3 @@
-#mv $0 bed/ now 
 #Line 470
 import os
 import re
@@ -8,7 +7,7 @@ import apparmor.config
 import apparmor.severity
 import LibAppArmor
 
-from AppArmor.common import AppArmorException, error, debug, msg, open_file_read, valid_path
+from apparmor.common import AppArmorException, error, debug, msg, open_file_read, readkey, valid_path
 
 DEBUGGING = False
 
@@ -130,11 +129,15 @@ def opt_type(operation):
     return operation_type
 
 def getkey():
-    """Returns the pressed key"""
-    # Used incase of Y or N without pressing enter
-    ## Needs to be done using curses? read a single key
-    pass
-
+    key = readkey()
+    if key == '\x1B':
+        key = readkey()
+        if key == '[':
+            key = readkey()
+            if(ARROWS.get(key, False)):
+                key = ARROWS[key]
+    return key
+    
 def check_for_apparmor():
     """Finds and returns the mointpoint for apparmor None otherwise"""
     filesystem = '/proc/filesystems'

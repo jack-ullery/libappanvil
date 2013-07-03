@@ -1,7 +1,7 @@
 from __future__ import with_statement
 import os
 import re
-from AppArmor.common import AppArmorException, error, debug, open_file_read, warn, msg
+from apparmor.common import AppArmorException, error, debug, open_file_read, warn, msg
 
 class Severity:
     def __init__(self, dbname=None, default_rank=10):

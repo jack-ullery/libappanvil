@@ -11,7 +11,7 @@ else:
     import configparser
     
 
-from AppArmor.common import AppArmorException, warn, msg, open_file_read
+from apparmor.common import AppArmorException, warn, msg, open_file_read
 
 CONF_DIR = '/etc/apparmor'
 CFG = None

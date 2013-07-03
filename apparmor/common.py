@@ -4,6 +4,8 @@ import glob
 import os
 import subprocess
 import sys
+import termios
+import tty
 
 DEBUGGING = False
 
@@ -124,3 +126,15 @@ def open_file_read(path):
         raise
 
     return orig
+
+def readkey():
+    """Returns the pressed key"""
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(sys.stdin.fileno())
+        ch = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    
+    return ch
