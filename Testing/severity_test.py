@@ -6,10 +6,11 @@ Created on Jun 21, 2013
 import sys
 import unittest
 
-sys.path.append('../lib')
+sys.path.append('../')
+sys.path.append('../apparmor')
 
-import severity
-
+import AppArmor.severity as severity
+from AppArmor.common import AppArmorException
 class Test(unittest.TestCase):
 
     def testInvalid(self):
@@ -17,11 +18,11 @@ class Test(unittest.TestCase):
         rank = s.rank('/dev/doublehit', 'i')  
         self.assertEqual(rank, 10, 'Wrong') 
         try:
-            broken = severity.Severity('severity_broken.db')
-            rank =  s.rank('CAP_UNKOWN')
-            rank =  s.rank('CAP_K*')       
-        except ValueError:
+            broken = severity.Severity('severity_broken.db')   
+        except AppArmorException:
             pass
+        rank =  s.rank('CAP_UNKOWN')
+        rank =  s.rank('CAP_K*')    
         
     def testRank_Test(self):
         z = severity.Severity()

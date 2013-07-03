@@ -1,5 +1,7 @@
+from __future__ import with_statement
 import os
 import re
+from AppArmor.common import AppArmorException, error, debug, open_file_read, warn, msg
 
 class Severity:
     def __init__(self, dbname=None, default_rank=10):
@@ -16,7 +18,7 @@ class Severity:
         for root, dirs, files in os.walk('/etc/apparmor.d'):
             for file in files:
                 try:
-                    with open(os.path.join(root, file), 'r') as f:
+                    with open_file_read(os.path.join(root, file)) as f:
                         for line in f:
                             line.strip()
                             # Expected format is @{Variable} = value1 value2 ..
@@ -24,17 +26,23 @@ class Severity:
                                 line = line.strip()
                                 if '+=' in line:
                                     line = line.split('+=')
+                                    try:
+                                        self.severity['VARIABLES'][line[0]] += [i.strip('"') for i in line[1].split()]
+                                    except KeyError:
+                                        raise AppArmorException("Variable %s was not previously declared, but is being assigned additional values" % line[0])
                                 else:
                                     line = line.split('=')
-                                self.severity['VARIABLES'][line[0]] = self.severity['VARIABLES'].get(line[0], []) + [i.strip('"') for i in line[1].split()]
+                                    if line[0] in self.severity['VARIABLES'].keys():
+                                        raise AppArmorException("Variable %s was previously declared" % line[0])
+                                    self.severity['VARIABLES'][line[0]] = [i.strip('"') for i in line[1].split()]
                 except IOError:
-                    raise IOError("unable to open file: %s"%file)
+                    raise AppArmorException("unable to open file: %s" % file)
         if not dbname:
             return None
         try:
-            database = open(dbname, 'r')
+            database = open_file_read(dbname)#open(dbname, 'r')
         except IOError:
-            raise IOError("Could not open severity database %s"%dbname)
+            raise AppArmorException("Could not open severity database %s" % dbname)
         for line in database:
             line = line.strip() # or only rstrip and lstrip?
             if line == '' or line.startswith('#') :
@@ -44,10 +52,12 @@ class Severity:
                     path, read, write, execute = line.split()
                     read, write, execute = int(read), int(write), int(execute)
                 except ValueError:
-                    raise ValueError("Insufficient values for permissions in line: %s\nin File: %s"%(line, dbname))
+                    msg("\nFile: %s" % dbname)
+                    raise AppArmorException("Insufficient values for permissions in line: %s" % (line))
                 else:
                     if read not in range(0,11) or write not in range(0,11) or execute not in range(0,11):
-                        raise ValueError("Inappropriate values for permissions in line: %s\nin File: %s"%(line, dbname))
+                        msg("\nFile:"%(dbname))
+                        raise AppArmorException("Inappropriate values for permissions in line: %s" % line)
                     path = path.lstrip('/')
                     if '*' not in path:
                         self.severity['FILES'][path] = {'r': read, 'w': write, 'x': execute}
@@ -68,13 +78,16 @@ class Severity:
                     resource, severity = line.split()
                     severity = int(severity)
                 except ValueError:
-                    raise ValueError("No severity value present in line: %s\nin File: %s"%(line, dbname))
+                    msg("\nFile: %s" % dbname)
+                    raise AppArmorException("No severity value present in line: %s" % (line))
                 else:
                     if severity not in range(0,11):
-                        raise ValueError("Inappropriate severity value present in line: %s\nin File: %s"%(line, dbname))
+                        msg("\nFile: %s" % dbname)
+                        raise AppArmorException("Inappropriate severity value present in line: %s" % (line))
                     self.severity['CAPABILITIES'][resource] = severity
             else:
-                raise ValueError("Unexpected database line: %s \nin File: %s"%(line,dbname))   
+                msg("\nFile: %s" % dbname)
+                raise AppArmorException("Unexpected database line: %s" % (line))   
         database.close()
         
     def convert_regexp(self, path):
@@ -83,7 +96,7 @@ class Severity:
         internal_glob = '__KJHDKVZH_AAPROF_INTERNAL_GLOB_SVCUZDGZID__'
         regex = path
         for character in ['.', '+', '[', ']']:    # Escape the regex symbols
-            regex = regex.replace(character, "\%s"%character)
+            regex = regex.replace(character, "\%s" % character)
         # Convert the ** to regex
         regex = regex.replace('**', '.'+internal_glob)
         # Convert the * to regex
@@ -101,6 +114,7 @@ class Severity:
         if resource in self.severity['CAPABILITIES'].keys():
             return self.severity['CAPABILITIES'][resource]
         # raise ValueError("unexpected capability rank input: %s"%resource)
+        warn("unknown capability: %s" % resource)
         return self.severity['DEFAULT_RANK']
         
     
@@ -158,7 +172,7 @@ class Severity:
         elif resource[0:4] == 'CAP_':    # capability resource
             return self.handle_capability(resource)
         else:
-            raise ValueError("Unexpected rank input: %s"%resource)
+            raise AppArmorException("Unexpected rank input: %s" % resource)
         
     def handle_variable_rank(self, resource, mode):
         """Returns the max possible rank for file resources containing variables"""
@@ -176,7 +190,7 @@ class Severity:
                     rank = rank_new
             return rank
         else:
-            print(resource)
+            #print(resource)
             #print(self.handle_file(resource, mode))
             return self.handle_file(resource, mode)
             
