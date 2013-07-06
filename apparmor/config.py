@@ -20,13 +20,16 @@ SHELL_FILES = ['easyprof.conf', 'notify.conf', 'parser.conf', 'subdomain.conf']
 class Config:
     def __init__(self, conf_type):
         # The type of config file that'll be read and/or written
-        self.conf_type = conf_type
-        self.input_file = None
+        if conf_type != 'shell' or conf_type != 'ini':
+            raise AppArmorException("Unknown configuration file type")
+        else:
+            self.conf_type = conf_type
+            self.input_file = None
         
     def new_config(self):
         if self.conf_type == 'shell':
             config = {'': dict()}
-        else:
+        elif self.conf_type == 'ini':
             config = configparser.ConfigParser()
         return config
         
@@ -41,10 +44,10 @@ class Config:
             config['repository'] = {'enabled': 'no'}
         elif self.conf_type == 'shell':
             config = self.read_shell(filepath)
-        else:
+        elif self.conf_type == 'ini':
             config = configparser.ConfigParser()
             # Set the option form to string -prevents forced conversion to lowercase
-            #config.optionxform = str
+            config.optionxform = str
             if sys.version_info > (3,0):
                 config.read(filepath) 
             else:
@@ -66,12 +69,11 @@ class Config:
                 os.chmod(config_file.name, permission_600)
             if self.conf_type == 'shell':
                 self.write_shell(filepath, config_file, config)
-            else:
+            elif self.conf_type == 'ini':
                 self.write_configparser(filepath, config_file, config)
-            #config.write(config_file)
             config_file.close()
         except IOError:
-            raise AppArmorException("Unable to write to %s"%filename)
+            raise AppArmorException("Unable to write to %s" % filename)
         else:
             # Replace the target config file with the temporary file
             os.rename(config_file.name, filepath)

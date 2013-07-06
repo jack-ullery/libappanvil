@@ -9,14 +9,15 @@ import unittest
 sys.path.append('../')
 sys.path.append('../apparmor')
 
-import AppArmor.severity as severity
-from AppArmor.common import AppArmorException
+import apparmor.severity as severity
+from apparmor.common import AppArmorException
 class Test(unittest.TestCase):
 
     def testInvalid(self):
         s = severity.Severity('severity.db')
         rank = s.rank('/dev/doublehit', 'i')  
         self.assertEqual(rank, 10, 'Wrong') 
+        broken = severity.Severity('severity_broken.db') 
         try:
             broken = severity.Severity('severity_broken.db')   
         except AppArmorException:

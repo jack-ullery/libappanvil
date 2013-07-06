@@ -42,8 +42,8 @@ class Severity:
         try:
             database = open_file_read(dbname)#open(dbname, 'r')
         except IOError:
-            raise AppArmorException("Could not open severity database %s" % dbname)
-        for line in database:
+            raise AppArmorException("Could not open severity database: %s" % dbname)
+        for lineno, line in enumerate(database, start=1):
             line = line.strip() # or only rstrip and lstrip?
             if line == '' or line.startswith('#') :
                 continue
@@ -52,12 +52,10 @@ class Severity:
                     path, read, write, execute = line.split()
                     read, write, execute = int(read), int(write), int(execute)
                 except ValueError:
-                    msg("\nFile: %s" % dbname)
-                    raise AppArmorException("Insufficient values for permissions in line: %s" % (line))
+                    raise AppArmorException("Insufficient values for permissions in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
                 else:
                     if read not in range(0,11) or write not in range(0,11) or execute not in range(0,11):
-                        msg("\nFile:"%(dbname))
-                        raise AppArmorException("Inappropriate values for permissions in line: %s" % line)
+                        raise AppArmorException("Inappropriate values for permissions in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
                     path = path.lstrip('/')
                     if '*' not in path:
                         self.severity['FILES'][path] = {'r': read, 'w': write, 'x': execute}
@@ -78,16 +76,13 @@ class Severity:
                     resource, severity = line.split()
                     severity = int(severity)
                 except ValueError:
-                    msg("\nFile: %s" % dbname)
-                    raise AppArmorException("No severity value present in line: %s" % (line))
+                    raise AppArmorException("No severity value present in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
                 else:
                     if severity not in range(0,11):
-                        msg("\nFile: %s" % dbname)
-                        raise AppArmorException("Inappropriate severity value present in line: %s" % (line))
+                        raise AppArmorException("Inappropriate severity value present in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
                     self.severity['CAPABILITIES'][resource] = severity
             else:
-                msg("\nFile: %s" % dbname)
-                raise AppArmorException("Unexpected database line: %s" % (line))   
+                raise AppArmorException("Unexpected line in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))   
         database.close()
         
     def convert_regexp(self, path):
@@ -190,8 +185,6 @@ class Severity:
                     rank = rank_new
             return rank
         else:
-            #print(resource)
-            #print(self.handle_file(resource, mode))
             return self.handle_file(resource, mode)
             
     def variable_replace(self, variable, replacement, resource):
