@@ -28,7 +28,7 @@ class Severity:
                                     line = line.split('+=')
                                     try:
                                         self.severity['VARIABLES'][line[0]] += [i.strip('"') for i in line[1].split()]
-                                    except KeyError:
+                                    except KeyError as e:
                                         raise AppArmorException("Variable %s was not previously declared, but is being assigned additional values" % line[0])
                                 else:
                                     line = line.split('=')
@@ -75,8 +75,10 @@ class Severity:
                 try:
                     resource, severity = line.split()
                     severity = int(severity)
-                except ValueError:
-                    raise AppArmorException("No severity value present in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
+                except ValueError as e:
+                    error_message = 'No severity value present in file: %s\n\t[Line %s]: %s' % (dbname, lineno, line)
+                    error(error_message)
+                    raise AppArmorException(error_message) from None
                 else:
                     if severity not in range(0,11):
                         raise AppArmorException("Inappropriate severity value present in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))

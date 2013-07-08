@@ -6,7 +6,6 @@ Created on Jun 21, 2013
 import sys
 import unittest
 
-sys.path.append('../')
 sys.path.append('../apparmor')
 
 import apparmor.severity as severity
@@ -17,7 +16,6 @@ class Test(unittest.TestCase):
         s = severity.Severity('severity.db')
         rank = s.rank('/dev/doublehit', 'i')  
         self.assertEqual(rank, 10, 'Wrong') 
-        broken = severity.Severity('severity_broken.db') 
         try:
             broken = severity.Severity('severity_broken.db')   
         except AppArmorException:

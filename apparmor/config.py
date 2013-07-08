@@ -20,12 +20,12 @@ SHELL_FILES = ['easyprof.conf', 'notify.conf', 'parser.conf', 'subdomain.conf']
 class Config:
     def __init__(self, conf_type):
         # The type of config file that'll be read and/or written
-        if conf_type != 'shell' or conf_type != 'ini':
-            raise AppArmorException("Unknown configuration file type")
-        else:
+        if conf_type == 'shell' or conf_type == 'ini':
             self.conf_type = conf_type
             self.input_file = None
-        
+        else:
+            raise AppArmorException("Unknown configuration file type")
+            
     def new_config(self):
         if self.conf_type == 'shell':
             config = {'': dict()}
@@ -82,11 +82,10 @@ class Config:
     def find_first_file(self, file_list):
         """Returns name of first matching file None otherwise"""
         filename = None
-        if filename:
-            for file in file_list.split():
-                if os.path.isfile(file):
-                    filename = file
-                    break
+        for file in file_list.split():
+            if os.path.isfile(file):
+                filename = file
+                break
         return filename
     
     def find_first_dir(self, dir_list):

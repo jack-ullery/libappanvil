@@ -1,5 +1,6 @@
 from __future__ import print_function
 import codecs
+import collections
 import glob
 import os
 import subprocess
@@ -18,6 +19,7 @@ class AppArmorException(Exception):
         self.value = value
 
     def __str__(self):
+        return self.value
         return repr(self.value)
 
 #
@@ -121,10 +123,18 @@ def get_directory_contents(path):
 def open_file_read(path):
     '''Open specified file read-only'''
     try:
-        orig = codecs.open(path, 'r', "UTF-8")
+        orig = codecs.open(path, 'r', 'UTF-8')
     except Exception:
         raise
 
+    return orig
+
+def open_file_write(path):
+    """Open specified file in write/overwrite mode"""
+    try:
+        orig = codecs.open(path, 'w', 'UTF-8')
+    except Exception:
+        raise
     return orig
 
 def readkey():
@@ -138,3 +148,8 @@ def readkey():
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
     
     return ch
+
+def hasher():
+    """A neat alternative to perl's hash reference"""
+    # Creates a dictionary for any depth and returns empty dictionary otherwise
+    return collections.defaultdict(hasher)
