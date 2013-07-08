@@ -198,3 +198,21 @@ Building and Installing AppArmor Kernel Patches
 
 TODO
 
+
+-----------------
+Required versions
+-----------------
+
+The AppArmor userspace utilities are written with some assumptions about
+installed and available versions of other tools. This is a (possibly
+incomplete) list of known version dependencies:
+
+AppArmor.pm (used by aa-audit, aa-autodep, aa-complain, aa-disable,
+aa-enforce, aa-genprof, aa-logprof, aa-unconfined) requires minimum
+Perl 5.10.1.
+
+Python scripts require minimum Python 2.7. Some utilities may require
+Python 3.3. Python 3.0, 3.1, 3.2 are largely untested.
+
+Most shell scripts are written for POSIX-compatible sh. aa-decode expects
+bash, probably version 3.2 and higher.
