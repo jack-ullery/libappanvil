@@ -33,6 +33,7 @@
   /usr/share/ghostscript/fonts/**       r,
   /usr/share/javascript/*/fonts/**      r,
   /usr/share/texmf/{,*/}fonts/**        r,
+  /usr/share/texlive/texmf-dist/fonts/** r,
   /var/lib/ghostscript/**               r,
 
   owner @{HOME}/.fonts.conf             r,
