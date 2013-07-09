@@ -3879,8 +3879,8 @@ sub ask_the_questions() {
                                             $newpath =~ s/\/[^\/]+$/\/\*/;
                                         }
                                     }
-                                    if (not $newpath ~~ $options) {
-					push @options, $newpath;	
+                                    if (not $newpath ~~ @options) {
+                                        push @options, $newpath;	
                                         $defaultoption = $#options + 1;
                                     }
                                 }
@@ -3897,8 +3897,8 @@ sub ask_the_questions() {
                                         $newpath =~ s/\/[^\/]+(\.[^\/]+)$/\/\*$1/;
                                     }
                                     if (not $newpath ~~ @options) {
-					push @options, $newpath;
-					$defaultoption = $#options + 1;
+                                        push @options, $newpath;
+                                        $defaultoption = $#options + 1;
                                     }
                                 }
                             } elsif ($ans =~ /\d/) {
