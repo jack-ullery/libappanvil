@@ -6,7 +6,7 @@ Created on Jun 21, 2013
 import sys
 import unittest
 
-sys.path.append('../apparmor')
+sys.path.append('../')
 
 import apparmor.severity as severity
 from apparmor.common import AppArmorException
