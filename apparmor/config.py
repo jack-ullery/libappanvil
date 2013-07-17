@@ -51,8 +51,11 @@ class Config:
             if sys.version_info > (3,0):
                 config.read(filepath) 
             else:
-                tmp_filepath = py2_parser(filepath)
-                config.read(tmp_filepath.name)  
+                try:
+                    config.read(filepath)
+                except configparser.ParsingError:
+                    tmp_filepath = py2_parser(filepath)
+                    config.read(tmp_filepath.name)  
         return config
             
     def write_config(self, filename, config):
@@ -249,6 +252,7 @@ class Config:
                 f_out.write(line) 
 
 def py2_parser(filename):
+    "Returns the de-dented ini file from the new format ini"
     tmp = tempfile.NamedTemporaryFile('rw')
     f_out = open(tmp.name, 'w')
     if os.path.exists(filename):
@@ -259,5 +263,3 @@ def py2_parser(filename):
                 f_out.write(line)
     f_out.flush()
     return tmp
-                    
-    
