@@ -30,7 +30,7 @@ debug_logger = None
 # Setup logging incase of debugging is enabled
 if os.getenv('LOGPROF_DEBUG', False):
     DEBUGGING = True
-    logprof_debug = os.environ['LOGPROF_DEBUG']
+    logprof_debug = '/var/log/apparmor/logprof.log'
     logging.basicConfig(filename=logprof_debug, level=logging.DEBUG)
     debug_logger = logging.getLogger('logprof')
 
@@ -38,8 +38,7 @@ if os.getenv('LOGPROF_DEBUG', False):
 CONFDIR = '/etc/apparmor'
 running_under_genprof = False
 unimplemented_warning = False
-# The operating mode: yast or text, text by default
-UI_mode = 'text'
+
 # The database for severity
 sev_db = None
 # The file to read log messages from
@@ -173,7 +172,7 @@ def getkey():
 
 def check_for_LD_XXX(file):
     """Returns True if specified program contains references to LD_PRELOAD or 
-    LD_LIBRARY_PATH to give the PX/UX code better suggestions"""
+    LD_LIBRARY_PATH to give the Px/Ux code better suggestions"""
     found = False
     if not os.path.isfile(file):
         return False
@@ -198,20 +197,13 @@ def fatal_error(message):
     caller = inspect.stack()[1][3]
     
     # If caller is SendDataToYast or GetDatFromYast simply exit
-    sys.exit(1)
+    if caller == 'SendDataToYast' or caller== 'GetDatFromYast':
+        sys.exit(1)
     
     # Else tell user what happened
     UI_Important(message)
     shutdown_yast()
     sys.exit(1)
-
-def setup_yast():
-    # To-Do
-    pass   
-
-def shutdown_yast():
-    # To-Do
-    pass
      
 def check_for_apparmor():
     """Finds and returns the mointpoint for apparmor None otherwise"""

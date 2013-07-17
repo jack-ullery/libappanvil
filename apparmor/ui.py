@@ -2,12 +2,22 @@
 import sys
 import gettext
 import locale
+import logging
+import os
 from yasti import yastLog, SendDataToYast, GetDataFromYast
 
 from apparmor.common import readkey
 
 DEBUGGING = False
 debug_logger = None
+# Set up UI logger for separate messages from UI module
+if os.getenv('LOGPROF_DEBUG', False):
+    DEBUGGING = True
+    logprof_debug = '/var/log/apparmor/logprof.log'
+    logging.basicConfig(filename=logprof_debug, level=logging.DEBUG)
+    debug_logger = logging.getLogger('UI')
+
+# The operating mode: yast or text, text by default
 UI_mode = 'text'
 
 def init_localisation():

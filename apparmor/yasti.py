@@ -1,5 +1,26 @@
 import re
 import ycp
+import os
+import sys
+import logging
+
+from apparmor.common import error
+DEBUGGING = False
+debug_logger = None
+# Set up UI logger for separate messages from YaST module
+if os.getenv('LOGPROF_DEBUG', False):
+    DEBUGGING = True
+    logprof_debug = '/var/log/apparmor/logprof.log'
+    logging.basicConfig(filename=logprof_debug, level=logging.DEBUG)
+    debug_logger = logging.getLogger('YaST')
+
+def setup_yast():
+    # To-Do
+    pass   
+
+def shutdown_yast():
+    # To-Do
+    pass
 
 def yastLog(text):
     ycp.y2milestone(text)
@@ -17,7 +38,7 @@ def SendDataToYast(data):
         else:
             if DEBUGGING:
                 debug_logger.info('SendDataToYast: Expected \'Read\' but got-- %s' % line)
-    fatal_error('SendDataToYast: didn\'t receive YCP command before connection died')   
+    error('SendDataToYast: didn\'t receive YCP command before connection died')   
 
 def GetDataFromYast():
     if DEBUGGING:
@@ -34,7 +55,7 @@ def GetDataFromYast():
         else:
             if DEBUGGING:
                 debug_logger.info('GetDataFromYast: Expected Write but got-- %s' % line)
-    fatal_error('GetDataFromYast: didn\'t receive YCP command before connection died')
+    error('GetDataFromYast: didn\'t receive YCP command before connection died')
 
 def ParseCommand(commands):
     term = ParseTerm(commands)
