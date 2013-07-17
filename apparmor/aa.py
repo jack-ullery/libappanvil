@@ -506,7 +506,7 @@ def get_profile(prof_name):
     if repo_is_enabled():
         UI_BusyStart('Coonecting to repository.....')
         status_ok, ret = fetch_profiles_by_name(repo_url, distro, prof_name)
-        UI_BustStop()
+        UI_BusyStop()
         if status_ok:
             profile_hash = ret
         else:

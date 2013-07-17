@@ -51,7 +51,8 @@ class Config:
             if sys.version_info > (3,0):
                 config.read(filepath) 
             else:
-                config.readfp(open_file_read(filepath))  
+                tmp_filepath = py2_parser(filepath)
+                config.read(tmp_filepath.name)  
         return config
             
     def write_config(self, filename, config):
@@ -246,3 +247,17 @@ class Config:
             for option in options:
                 line = '  ' + option + ' = ' + config[section][option] + '\n'
                 f_out.write(line) 
+
+def py2_parser(filename):
+    tmp = tempfile.NamedTemporaryFile('rw')
+    f_out = open(tmp.name, 'w')
+    if os.path.exists(filename):
+        with open_file_read(filename) as f_in:
+            for line in f_in:
+                if line[:2] == '  ':
+                    line = line[2:]
+                f_out.write(line)
+    f_out.flush()
+    return tmp
+                    
+    
