@@ -7,18 +7,28 @@ import sys
 import tempfile
 if sys.version_info < (3,0):
     import ConfigParser as configparser
+    # Class to provide the object[section][option] behavior in Python2
+    class configparser_py2(configparser.ConfigParser):
+        def __getitem__(self, section):
+            section_val = self.items(section)
+            section_options = dict()
+            for option, value in section_val:
+                section_options[option] = value
+            return section_options
+            
 else:
     import configparser
     
 
 from apparmor.common import AppArmorException, warn, msg, open_file_read
 
-CONF_DIR = '/etc/apparmor'
-CFG = None
-REPO_CFG = None
-SHELL_FILES = ['easyprof.conf', 'notify.conf', 'parser.conf', 'subdomain.conf']
+
+# CFG = None
+# REPO_CFG = None
+# SHELL_FILES = ['easyprof.conf', 'notify.conf', 'parser.conf', 'subdomain.conf']
 class Config:
     def __init__(self, conf_type):
+        self.CONF_DIR = '/etc/apparmor'
         # The type of config file that'll be read and/or written
         if conf_type == 'shell' or conf_type == 'ini':
             self.conf_type = conf_type
@@ -37,7 +47,7 @@ class Config:
         """Reads the file and returns a config[section][attribute]=property object"""   
         # LP: Bug #692406
         # Explicitly disabled repository
-        filepath = CONF_DIR + '/' + filename
+        filepath = self.CONF_DIR + '/' + filename
         self.input_file = filepath
         if filename == "repository.conf":
             config = dict()
@@ -45,7 +55,10 @@ class Config:
         elif self.conf_type == 'shell':
             config = self.read_shell(filepath)
         elif self.conf_type == 'ini':
-            config = configparser.ConfigParser()
+            if sys.version_info > (3,0):
+                config = configparser.ConfigParser()
+            else:
+                config = configparser_py2()
             # Set the option form to string -prevents forced conversion to lowercase
             config.optionxform = str
             if sys.version_info > (3,0):
@@ -55,16 +68,17 @@ class Config:
                     config.read(filepath)
                 except configparser.ParsingError:
                     tmp_filepath = py2_parser(filepath)
-                    config.read(tmp_filepath.name)  
+                    config.read(tmp_filepath.name)
+                    ##config.__get__()
         return config
             
     def write_config(self, filename, config):
         """Writes the given config to the specified file"""
-        filepath = CONF_DIR + '/' + filename
+        filepath = self.CONF_DIR + '/' + filename
         permission_600 = stat.S_IRUSR | stat.S_IWUSR    # Owner read and write
         try:
             # Open a temporary file in the CONF_DIR to write the config file
-            config_file = tempfile.NamedTemporaryFile('w', prefix='aa_temp', delete=False, dir=CONF_DIR)
+            config_file = tempfile.NamedTemporaryFile('w', prefix='aa_temp', delete=False, dir=self.CONF_DIR)
             if os.path.exists(self.input_file):
                 # Copy permissions from an existing file to temporary file
                 shutil.copymode(self.input_file, config_file.name)

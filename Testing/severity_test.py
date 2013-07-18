@@ -1,8 +1,3 @@
-'''
-Created on Jun 21, 2013
-
-@author: kshitij
-'''
 import sys
 import unittest
 
@@ -10,6 +5,7 @@ sys.path.append('../')
 
 import apparmor.severity as severity
 from apparmor.common import AppArmorException
+
 class Test(unittest.TestCase):  
         
     def testRank_Test(self):
