@@ -6,6 +6,7 @@ from apparmor.common import AppArmorException, error, debug, open_file_read, war
 class Severity:
     def __init__(self, dbname=None, default_rank=10):
         """Initialises the class object"""
+        self.prof_dir = '/etc/apparmor.d/'  # The profile directory
         self.severity = dict()
         self.severity['DATABASENAME'] = dbname
         self.severity['CAPABILITIES'] = {}
@@ -14,29 +15,6 @@ class Severity:
         self.severity['DEFAULT_RANK'] = default_rank
         # For variable expansions from /etc/apparmor.d
         self.severity['VARIABLES'] = dict()
-        # Recursively visits all the profiles to identify all the variable expansions and stores them need to use sourcehooks
-        for root, dirs, files in os.walk('/etc/apparmor.d'):
-            for file in files:
-                try:
-                    with open_file_read(os.path.join(root, file)) as f:
-                        for line in f:
-                            line.strip()
-                            # Expected format is @{Variable} = value1 value2 ..
-                            if line.startswith('@') and '=' in line:
-                                line = line.strip()
-                                if '+=' in line:
-                                    line = line.split('+=')
-                                    try:
-                                        self.severity['VARIABLES'][line[0]] += [i.strip('"') for i in line[1].split()]
-                                    except KeyError as e:
-                                        raise AppArmorException("Variable %s was not previously declared, but is being assigned additional values" % line[0])
-                                else:
-                                    line = line.split('=')
-                                    if line[0] in self.severity['VARIABLES'].keys():
-                                        raise AppArmorException("Variable %s was previously declared" % line[0])
-                                    self.severity['VARIABLES'][line[0]] = [i.strip('"') for i in line[1].split()]
-                except IOError:
-                    raise AppArmorException("unable to open file: %s" % file)
         if not dbname:
             return None
         try:
@@ -203,3 +181,33 @@ class Severity:
         if replacement[-1] == '/' and replacement[-2:] !='//' and trailing:
             replacement = replacement[:-1]
         return resource.replace(variable, replacement)
+    
+    def load_variables(self, prof_path):
+        """Loads the variables for the given profile"""
+        if os.path.isfile(prof_path):
+            with open_file_read(prof_path) as f_in:
+                for line in f_in:
+                    line = line.strip()
+                    # If any includes, load variables from them fitst
+                    if '#include' in line:
+                        new_path = line.split('<')[1].rstrip('>').strip()
+                        new_path = self.prof_dir + new_path
+                        self.load_variables(new_path)            
+                    else:
+                        # Expected format is @{Variable} = value1 value2 ..
+                        if line.startswith('@') and '=' in line:
+                            if '+=' in line:
+                                line = line.split('+=')
+                                try:
+                                    self.severity['VARIABLES'][line[0]] += [i.strip('"') for i in line[1].split()]
+                                except KeyError:
+                                    raise AppArmorException("Variable %s was not previously declared, but is being assigned additional values" % line[0])
+                            else:
+                                line = line.split('=')
+                                if line[0] in self.severity['VARIABLES'].keys():
+                                    raise AppArmorException("Variable %s was previously declared" % line[0])
+                                self.severity['VARIABLES'][line[0]] = [i.strip('"') for i in line[1].split()]
+    
+    def unload_variables(self):
+        """Clears all loaded variables"""
+        self.severity['VARIABLES'] = dict()

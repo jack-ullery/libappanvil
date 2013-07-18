@@ -252,7 +252,7 @@ class Config:
                 f_out.write(line) 
 
 def py2_parser(filename):
-    "Returns the de-dented ini file from the new format ini"
+    """Returns the de-dented ini file from the new format ini"""
     tmp = tempfile.NamedTemporaryFile('rw')
     f_out = open(tmp.name, 'w')
     if os.path.exists(filename):
