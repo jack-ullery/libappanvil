@@ -55,7 +55,7 @@ class Severity:
                     severity = int(severity)
                 except ValueError as e:
                     error_message = 'No severity value present in file: %s\n\t[Line %s]: %s' % (dbname, lineno, line)
-                    error(error_message)
+                    #error(error_message)
                     raise AppArmorException(error_message) # from None
                 else:
                     if severity not in range(0,11):
@@ -184,16 +184,20 @@ class Severity:
     
     def load_variables(self, prof_path):
         """Loads the variables for the given profile"""
+        regex_include = re.compile('include <(\S*)>')
         if os.path.isfile(prof_path):
             with open_file_read(prof_path) as f_in:
                 for line in f_in:
                     line = line.strip()
-                    # If any includes, load variables from them fitst
-                    if '#include' in line:
-                        new_path = line.split('<')[1].rstrip('>').strip()
+                    # If any includes, load variables from them first
+                    match = regex_include.search(line)
+                    if match:
+                        new_path = match.groups()[0]
                         new_path = self.PROF_DIR + '/' + new_path
                         self.load_variables(new_path)            
                     else:
+                        if '#' in line:
+                            line = line.split('#')[0].rstrip()
                         # Expected format is @{Variable} = value1 value2 ..
                         if line.startswith('@') and '=' in line:
                             if '+=' in line:

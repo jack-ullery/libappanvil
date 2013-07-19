@@ -10,6 +10,7 @@ class Test(unittest.TestCase):
         
     def testRank_Test(self):
         z = severity.Severity()
+        
         s = severity.Severity('severity.db')
         rank = s.rank('/usr/bin/whatis', 'x')
         self.assertEqual(rank, 5, 'Wrong rank')
@@ -33,12 +34,19 @@ class Test(unittest.TestCase):
         self.assertEqual(s.rank('/etc/**', 'r') , 10,  'Invalid Rank')
         
         # Load all variables for /sbin/klogd and test them
-        s.load_variables('/etc/apparmor.d/sbin.klogd')
+        s.load_variables('sbin.klogd')
         self.assertEqual(s.rank('@{PROC}/sys/vm/overcommit_memory', 'r'), 6, 'Invalid Rank')
         self.assertEqual(s.rank('@{HOME}/sys/@{PROC}/overcommit_memory', 'r'), 10, 'Invalid Rank')
         self.assertEqual(s.rank('/overco@{multiarch}mmit_memory', 'r'), 10, 'Invalid Rank')
         
-        #self.assertEqual(s.rank('@{PROC}/sys/@{TFTP_DIR}/overcommit_memory', 'r'), 6, 'Invalid Rank')
+        s.unload_variables()
+        
+        s.load_variables('usr.sbin.dnsmasq')
+        self.assertEqual(s.rank('@{PROC}/sys/@{TFTP_DIR}/overcommit_memory', 'r'), 6, 'Invalid Rank')
+        self.assertEqual(s.rank('@{PROC}/sys/vm/overcommit_memory', 'r'), 6, 'Invalid Rank')
+        self.assertEqual(s.rank('@{HOME}/sys/@{PROC}/overcommit_memory', 'r'), 10, 'Invalid Rank')
+        self.assertEqual(s.rank('/overco@{multiarch}mmit_memory', 'r'), 10, 'Invalid Rank')
+        
         #self.assertEqual(s.rank('/proc/@{PID}/maps', 'rw'), 9, 'Invalid Rank')
         
     def testInvalid(self):

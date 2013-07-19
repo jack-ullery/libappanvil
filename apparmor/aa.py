@@ -1,4 +1,4 @@
-#1321
+
 #382-430
 #480-525
 #global variable names corruption
@@ -434,40 +434,30 @@ def create_new_profile(localfile):
         hashbang = head(localfile)
         if hashbang.startswith('#!'):
             interpreter = get_full_path(hashbang.lstrip('#!').strip())
-            try:
-                local_profile[localfile]['allow']['path'][localfile]['mode'] |= str_to_mode('r')
-            except TypeError:
-                local_profile[localfile]['allow']['path'][localfile]['mode'] = str_to_mode('r')
-            try:
-                local_profile[localfile]['allow']['path'][localfile]['audit'] |= 0
-            except TypeError:
-                local_profile[localfile]['allow']['path'][localfile]['audit'] = 0
-            try:
-                local_profile[localfile]['allow']['path'][interpreter]['mode'] |= str_to_mode('ix')
-            except TypeError:
-                local_profile[localfile]['allow']['path'][interpreter]['mode'] = str_to_mode('ix')
-            try:
-                local_profile[localfile]['allow']['path'][interpreter]['audit'] |= 0
-            except TypeError:
-                local_profile[localfile]['allow']['path'][interpreter]['audit'] = 0
+            
+            local_profile[localfile]['allow']['path'][localfile]['mode'] = local_profile[localfile]['allow']['path'][localfile].get('mode', str_to_mode('r')) | str_to_mode('r')
+            
+            local_profile[localfile]['allow']['path'][localfile]['audit'] = local_profile[localfile]['allow']['path'][localfile].get('audit', 0)
+            
+            local_profile[localfile]['allow']['path'][interpreter]['mode'] = local_profile[localfile]['allow']['path'][interpreter].get('mode', str_to_mode('ix')) | str_to_mode('ix')                                                               
+            
+            local_profile[localfile]['allow']['path'][interpreter]['audit'] = local_profile[localfile]['allow']['path'][interpreter].get('audit', 0)
+
             if 'perl' in interpreter:
-                local_profile[localfile]['include']['abstractions/perl'] = 1
+                local_profile[localfile]['include']['abstractions/perl'] = True
             elif 'python' in interpreter:
-                local_profile[localfile]['include']['abstractions/python'] = 1
+                local_profile[localfile]['include']['abstractions/python'] = True
             elif 'ruby' in interpreter:
-                local_profile[localfile]['include']['abstractions/ruby'] = 1
-            elif '/bin/bash' in interpreter or '/bin/dash' in interpreter or '/bin/sh' in interpreter:
-                local_profile[localfile]['include']['abstractions/ruby'] = 1
+                local_profile[localfile]['include']['abstractions/ruby'] = True
+            elif interpreter in ['/bin/bash', '/bin/dash', '/bin/sh']:
+                local_profile[localfile]['include']['abstractions/bash'] = True
             handle_binfmt(local_profile[localfile], interpreter)
         else:
-            try:
-                local_profile[localfile]['allow']['path'][localfile]['mode'] |= str_to_mode('mr')
-            except TypeError:
-                local_profile[localfile]['allow']['path'][localfile]['mode'] = str_to_mode('mr')
-            try:
-                local_profile[localfile]['allow']['path'][localfile]['audit'] |= 0
-            except TypeError:
-                local_profile[localfile]['allow']['path'][localfile] = 0
+            
+            local_profile[localfile]['allow']['path'][localfile]['mode'] = local_profile[localfile]['allow']['path'][localfile].get('mode', str_to_mode('mr')) | str_to_mode('mr')
+            
+            local_profile[localfile]['allow']['path'][localfile]['audit'] = local_profile[localfile]['allow']['path'][localfile].get('audit', 0)
+
             handle_binfmt(local_profile[localfile], localfile)
     # Add required hats to the profile if they match the localfile      
     for hatglob in cfg['required_hats'].keys():
@@ -487,6 +477,7 @@ def delete_profile(local_prof):
         os.remove(profile_file)
     if aa.get(local_prof, False):
         aa.pop(local_prof)
+        
     prof_unload(local_prof)
         
 def get_profile(prof_name):
@@ -894,5 +885,183 @@ def build_x_functions(default, options, exec_toggle):
 
 def handle_children(profile, hat, root):
     entries = root[:]
+    regex_nullcomplain = re.compile('null(-complain)*-profile')
     for entry in entries:
-        
+        if type(entry[0]) != str:
+            handle_children(profile, hat, entry)
+        else:
+            typ = entry.pop(0)
+            if typ == 'fork':
+                pid, p, h = entry[:3]
+                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
+                    profile = p
+                    hat = h
+                if hat:
+                    profile_changes[pid] = profile + '//' + hat
+                else:
+                    profile_changes[pid] = profile
+            elif type == 'unknown_hat':
+                pid, p, h, aamode, uhat = entry[:5]
+                if not regex_nullcomplain.search(p):
+                    profile = p
+                if aa[profile].get(uhat, False):
+                    hat = uhat
+                    continue
+                new_p = update_repo_profile(aa[profile][profile])
+                if new_p and UI_SelectUpdatedRepoProfile(profile, new_p) and aa[profile].get(uhat, False):
+                    hat = uhat
+                    continue
+                
+                default_hat = None
+                for hatglob in cfg.options('defaulthat'):
+                    if re.search(hatglob, profile):
+                        default_hat = cfg['defaulthat'][hatglob]
+                
+                context = profile
+                context = context + ' -> ^%s' % uhat
+                ans = transitions.get(context, 'XXXINVALIDXXX')
+                
+                while ans not in ['CMD_ADDHAT', 'CMD_USEDEFAULT', 'CMD_DENY']:
+                    q = hasher()
+                    q['headers'] = []
+                    q['headers'] += [gettext('Profile'), profile]
+                    
+                    if default_hat:
+                        q['headers'] += [gettext('Default Hat'), default_hat]
+                    
+                    q['headers'] += [gettext('Requested Hat'), uhat]
+                    
+                    q['functions'] = []
+                    q['functions'].append('CMD_ADDHAT')
+                    if default_hat:
+                        q['functions'].append('CMD_USEDEFAULT')
+                    q['functions'] += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
+                    
+                    q['default'] = 'CMD_DENY'
+                    if aamode == 'PERMITTING':
+                        q['default'] = 'CMD_ADDHAT'
+                    
+                    seen_events += 1
+                    
+                    ans = UI_PromptUser(q)
+                
+                transitions[context] = ans
+                
+                if ans == 'CMD_ADDHAT':
+                    hat = uhat
+                    aa[profile][hat]['flags'] = aa[profile][profile]['flags']
+                elif ans == 'CMD_USEDEFAULT':
+                    hat = default_hat
+                elif ans == 'CMD_DENY':
+                    return None
+            
+            elif type == 'capability':
+                pid, p, h, prog, aamode, capability = entry[:6]
+                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
+                    profile = p
+                    hat = h
+                if not profile or not hat:
+                    continue
+                prelog[aamode][profile][hat]['capability'][capability] = True
+            
+            elif type == 'path' or type == 'exec':
+                pid, p, h, prog, aamode, mode, detail, to_name = entry[:8]
+                
+                if not mode:
+                    mode = 0
+                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
+                    profile = p
+                    hat = h
+                if not profile or not hat or not detail:
+                    continue
+                
+                domainchange = 'nochange'
+                if type == 'exec':
+                    domainchange = 'change'
+
+                # Escape special characters
+                detail = detail.replace('[', '\[')
+                detail = detail.replace(']', '\]')
+                detail = detail.replace('+', '\+')
+                detail = detail.replace('*', '\*')
+                detail = detail.replace('{', '\{')
+                detail = detail.replace('}', '\}')
+                
+                # Give Execute dialog if x access requested for something that's not a directory 
+                # For directories force an 'ix' Path dialog
+                do_execute = False
+                exec_target = detail
+                
+                if mode & str_to_mode('x'):
+                    if os.path.isdir(exec_target):
+                        mode = mode & (~ALL_AA_EXEC_TYPE)
+                        mode = mode | str_to_mode('ix')
+                    else:
+                        do_execute = True
+                
+                if mode & AA_MAY_LINK:
+                    regex_link = re.compile('^from (.+) to (.+)$')
+                    match = regex_link.search(detail)
+                    if match:
+                        path = match.groups()[0]
+                        target = match.groups()[1]
+                        
+                        frommode = str_to_mode('lr')
+                        if prelog[aamode][profile][hat]['path'].get(path, False):
+                            frommode |= prelog[aamode][profile][hat]['path'][path]
+                        prelog[aamode][profile][hat]['path'][path] = frommode
+                        
+                        tomode = str_to_mode('lr')
+                        if prelog[aamode][profile][hat]['path'].get(target, False):
+                            tomode |= prelog[aamode][profile][hat]['path'][target]
+                        prelog[aamode][profile][hat]['path'][target] = tomode    
+                    else:
+                        continue
+                elif mode:
+                    path = detail
+                    
+                    if prelog[aamode][profile][hat]['path'].get(path, False):
+                        mode |= prelog[aamode][profile][hat]['path'][path]
+                    prelog[aamode][profile][hat]['path'][path] = mode
+                
+                if do_execute:
+                    if profile_known_exec(aa[profile][hat], 'exec', exec_target):
+                        continue
+                    
+                    p = update_repo_profile(aa[profile][profile])
+                    if to_name:
+                        if UI_SelectUpdatedRepoProfile(profile, p) and profile_known_exec(aa[profile][hat], 'exec', to_name):
+                            continue
+                    else:
+                        if UI_SelectUpdatedRepoProfile(profile, p) and profile_known_exec(aa[profile][hat], 'exec', exec_target):
+                            continue
+                    
+                    context_new = profile
+                    if profile != hat:
+                        context_new = context_new + '^%s' % hat
+                    context_new = context + ' ->%s' % exec_target
+                    
+                    ans_new = transitions.get(context_new, '')
+                    combinedmode = False
+                    combinedaudit = False
+                    # Check Return Value Consistency
+                    # Check if path matches any existing regexps in profile
+                    cm, am , m = rematchfrag(aa[profile][hat], 'allow', exec_target)
+                    if cm:
+                        combinedmode |= cm
+                    if am:
+                        combinedaudit |= am
+                    
+                    if combinedmode & str_to_mode('x'):
+                        nt_name = None
+                        for entr in m:
+                            if aa[profile][hat]['allow']['path'].get(entr, False):
+                                nt_name = aa[profile][hat]
+                                break
+                        if toname and to_name != nt_name:
+                            pass
+                        elif nt_name:
+                            to_name = nt_name
+                    
+                    
+                    
