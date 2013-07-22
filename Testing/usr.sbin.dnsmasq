@@ -11,9 +11,9 @@
 
 @{TFTP_DIR}=/var/tftp /srv/tftpboot #comment
 
-#include <tunables/global> # comment
+#include   <tunables/global> # comment
 /usr/sbin/dnsmasq {
-  #include <abstractions/base>
+  #include <abstractions/base> 
   #include <abstractions/nameservice>
 
   capability net_bind_service,

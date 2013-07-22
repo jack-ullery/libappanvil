@@ -1,6 +1,7 @@
-
+#2778
 #382-430
 #480-525
+# No old version logs, only 2.6 + supported
 #global variable names corruption
 from __future__ import with_statement
 import inspect
@@ -177,8 +178,8 @@ def check_for_LD_XXX(file):
     if not os.path.isfile(file):
         return False
     size = os.stat(file).st_size
-    # Limit to checking files under 10k for the sake of speed
-    if size >10000:
+    # Limit to checking files under 100k for the sake of speed
+    if size >100000:
         return False
     with open_file_read(file) as f_in:
         for line in f_in:
@@ -449,7 +450,7 @@ def create_new_profile(localfile):
                 local_profile[localfile]['include']['abstractions/python'] = True
             elif 'ruby' in interpreter:
                 local_profile[localfile]['include']['abstractions/ruby'] = True
-            elif interpreter in ['/bin/bash', '/bin/dash', '/bin/sh']:
+            elif re.search('/bin/(bash|dash|sh)', interpreter):
                 local_profile[localfile]['include']['abstractions/bash'] = True
             handle_binfmt(local_profile[localfile], interpreter)
         else:
@@ -612,7 +613,7 @@ def set_profile_flags(prof_filename, newflags):
     regex_hat_flag = re.compile('^(\s*\^\S+)\s+(flags=\(.+\)\s+)*\{\s*(#*\S*)$')
     if os.path.isfile(prof_filename):
         with open_file_read(prof_filename) as f_in:
-            tempfile = tempfile.NamedTemporaryFile('w', prefix=prof_filename , delete=False, dir='/etc/apparmor.d/')
+            tempfile = tempfile.NamedTemporaryFile('w', prefix=prof_filename , suffix='~', delete=False, dir='/etc/apparmor.d/')
             shutil.copymode('/etc/apparmor.d/' + prof_filename, tempfile.name)
             with open_file_write(tempfile.name) as f_out:
                 for line in f_in:
@@ -885,7 +886,21 @@ def build_x_functions(default, options, exec_toggle):
 
 def handle_children(profile, hat, root):
     entries = root[:]
-    regex_nullcomplain = re.compile('null(-complain)*-profile')
+    pid = None
+    p = None
+    h = None
+    prog = None
+    aamode = None
+    mode = None
+    detail = None
+    to_name = None
+    uhat = None
+    capability = None
+    family = None
+    sock_type = None
+    protocol = None
+    regex_nullcomplain = re.compile('^null(-complain)*-profile$')
+    
     for entry in entries:
         if type(entry[0]) != str:
             handle_children(profile, hat, entry)
@@ -1044,7 +1059,7 @@ def handle_children(profile, hat, root):
                     ans_new = transitions.get(context_new, '')
                     combinedmode = False
                     combinedaudit = False
-                    # Check Return Value Consistency
+                    ## Check return Value Consistency
                     # Check if path matches any existing regexps in profile
                     cm, am , m = rematchfrag(aa[profile][hat], 'allow', exec_target)
                     if cm:
@@ -1058,10 +1073,399 @@ def handle_children(profile, hat, root):
                             if aa[profile][hat]['allow']['path'].get(entr, False):
                                 nt_name = aa[profile][hat]
                                 break
-                        if toname and to_name != nt_name:
+                        if to_name and to_name != nt_name:
+                            pass
+                        elif nt_name:
+                            to_name = nt_name
+                    ## Check return value consistency
+                    # Check if the includes from profile match
+                    cm, am, m = match_prof_incs_to_path(aa[profile][hat], 'allow', exec_target)
+                    if cm:
+                        combinedmode |= cm
+                    if am:
+                        combinedaudit |= am
+                    if combinedmode & str_to_mode('x'):
+                        nt_name = None
+                        for entr in m:
+                            if aa[profile][hat]['allow']['path'][entry]['to']:
+                                int_name = aa[profile][hat]['allow']['path'][entry]['to']
+                                break
+                        if to_name and to_name != nt_name:
                             pass
                         elif nt_name:
                             to_name = nt_name
                     
+                    # nx is not used in profiles but in log files.
+                    # Log parsing methods will convert it to its profile form
+                    # nx is internally cx/px/cix/pix + to_name
+                    exec_mode = False
+                    if contains(combinedmode, 'pix'):
+                        if to_name:
+                            ans = 'CMD_nix'
+                        else:
+                            ans = 'CMD_pix'
+                        exec_mode = str_to_mode('pixr')
+                    elif contains(combinedmode, 'cix'):
+                        if to_name:
+                            ans = 'CMD_nix'
+                        else:
+                            ans = 'CMD_cix'
+                        exec_mode = str_to_mode('cixr')
+                    elif contains(combinedmode, 'Pix'):
+                        if to_name:
+                            ans = 'CMD_nix_safe'
+                        else:
+                            ans = 'CMD_pix_safe'
+                        exec_mode = str_to_mode('Pixr')
+                    elif contains(combinedmode, 'Cix'):
+                        if to_name:
+                            ans = 'CMD_nix_safe'
+                        else:
+                            ans = 'CMD_cix_safe'
+                        exec_mode = str_to_mode('Cixr')
+                    elif contains(combinedmode, 'ix'):
+                        ans = 'CMD_ix'
+                        exec_mode = str_to_mode('ixr')
+                    elif contains(combinedmode, 'px'):
+                        if to_name:
+                            ans = 'CMD_nx'
+                        else:
+                            ans = 'CMD_px'
+                        exec_mode = str_to_mode('px')
+                    elif contains(combinedmode, 'cx'):
+                        if to_name:
+                            ans = 'CMD_nx'
+                        else:
+                            ans = 'CMD_cx'
+                        exec_mode = str_to_mode('cx')
+                    elif contains(combinedmode, 'ux'):
+                        ans = 'CMD_ux'
+                        exec_mode = str_to_mode('ux')
+                    elif contains(combinedmode, 'Px'):
+                        if to_name:
+                            ans = 'CMD_nx_safe'
+                        else:
+                            ans = 'CMD_px_safe'
+                        exec_mode = str_to_mode('Px')
+                    elif contains(combinedmode, 'Cx'):
+                        if to_name:
+                            ans = 'CMD_nx_safe'
+                        else:
+                            ans = 'CMD_cx_safe'
+                        exec_mode = str_to_mode('Cx')
+                    elif contains(combinedmode, 'Ux'):
+                        ans = 'CMD_ux_safe'
+                        exec_mode = str_to_mode('Ux')
+                    else:
+                        options = cfg['qualifiers'].get(exec_target, 'ipcnu')
+                        if to_name:
+                            fatal_error('%s has transition name but not transition mode' % entry)
+                        
+                        # If profiled program executes itself only 'ix' option
+                        if exec_target == profile:
+                            options = 'i'
+                        
+                        # Don't allow hats to cx?
+                        options.replace('c', '')
+                        # Add deny to options
+                        options += 'd'
+                        # Define the default option
+                        default = None
+                        if 'p' in options and os.path.exists(get_profile_filename(exec_target)):
+                            default = 'CMD_px'
+                        elif 'i' in options:
+                            default = 'CMD_ix'
+                        elif 'c' in options:
+                            default = 'CMD_cx'
+                        elif 'n' in options:
+                            default = 'CMD_nx'
+                        else:
+                            default = 'DENY'
+                        
+                        # 
+                        parent_uses_ld_xxx = check_for_LD_XXX(profile)
+                        
+                        sev_db.unload_variables()
+                        sev_db.load_variables(profile)
+                        severity = sev_db.rank(exec_target, 'x')
+                        
+                        # Prompt portion starts
+                        q = hasher()
+                        q['headers'] = []
+                        q['headers'] += [gettext('Profile'), combine_name(profile, hat)]
+                        if prog and prog != 'HINT':
+                            q['headers'] += [gettext('Program'), prog]
+                        
+                        # to_name should not exist here since, transitioning is already handeled
+                        q['headers'] += [gettext('Execute'), exec_target]
+                        q['headers'] += [gettext('Severity'), severity]
+                        
+                        q['functions'] = []
+                        prompt = '\n%s\n' % context
+                        exec_toggle = False
+                        q['functions'].append(build_x_functions(default, options, exec_toggle)) 
+                        
+                        options = '|'.join(options)
+                        seen_events += 1
+                        regex_options = re.compile('^CMD_(ix|px|cx|nx|pix|cix|nix|px_safe|cx_safe|nx_safe|pix_safe|cix_safe|nix_safe|ux|ux_safe|EXEC_TOGGLE|DENY)$')
+                        
+                        while regex_options.search(ans):
+                            ans = UI_PromptUser(q).strip()
+                            if ans.startswith('CMD_EXEC_IX_'):
+                                exec_toggle = not exec_toggle
+                                q['functions'] = []
+                                q['functions'].append(build_x_functions(default, options, exec_toggle))
+                                ans = ''
+                                continue
+                            if ans == 'CMD_nx' or ans == 'CMD_nix':
+                                arg = exec_target
+                                ynans = 'n'
+                                if profile == hat:
+                                    ynans = UI_YesNo(gettext('Are you specifying a transition to a local profile?'), 'n')
+                                if ynans == 'y':
+                                    if ans == 'CMD_nx':
+                                        ans = 'CMD_cx'
+                                    else:
+                                        ans = 'CMD_cix'
+                                else:
+                                    if ans == 'CMD_nx':
+                                        ans = 'CMD_px'
+                                    else:
+                                        ans = 'CMD_pix'
+                                
+                                to_name = UI_GetString(gettext('Enter profile name to transition to: '), arg)
+                            
+                            regex_optmode = re.compile('CMD_(px|cx|nx|pix|cix|nix)')
+                            if ans == 'CMD_ix':
+                                exec_mode = str_to_mode('ix')
+                            elif regex_optmode.search(ans):
+                                match = regex_optmode.search(ans).groups()[0]
+                                exec_mode = str_to_match(match)
+                                px_default = 'n'
+                                px_msg = gettext('Should AppArmor sanitise the environment when\n' +
+                                                 'switching profiles?\n\n' + 
+                                                 'Sanitising environment is more secure,\n' +
+                                                 'but some applications depend on the presence\n' +
+                                                 'of LD_PRELOAD or LD_LIBRARY_PATH.')
+                                if parent_uses_ld_xxx:
+                                    px_msg = gettext('Should AppArmor sanitise the environment when\n' +
+                                                 'switching profiles?\n\n' + 
+                                                 'Sanitising environment is more secure,\n' +
+                                                 'but this application appears to be using LD_PRELOAD\n' +
+                                                 'or LD_LIBRARY_PATH and sanitising the environment\n' +
+                                                 'could cause functionality problems.')
+                                
+                                ynans = UI_YesNo(px_msg, px_default)
+                                if ynans == 'y':
+                                    # Disable the unsafe mode
+                                    exec_mode &= ~(AA_EXEC_UNSAFE | (AA_EXEC_UNSAFE << AA_OTHER_SHIFT))
+                            elif ans == 'CMD_ux':
+                                exec_mode = str_to_mode('ux')
+                                ynans = UI_YesNo(gettext('Launching processes in an unconfined state is a very\n' +
+                                                        'dangerous operation and can cause serious security holes.\n\n' +
+                                                        'Are you absolutely certain you wish to remove all\n' +
+                                                        'AppArmor protection when executing :') + '%s ?' % exec_target, 'n')
+                                if ynans == 'y':
+                                    ynans = UI_YesNo(gettext('Should AppArmor sanitise the environment when\n' +
+                                                             'running this program unconfined?\n\n' +
+                                                             'Not sanitising the environment when unconfining\n' +
+                                                             'a program opens up significant security holes\n' +
+                                                             'and should be avoided if at all possible.'), 'y')
+                                    if yans == 'y':
+                                        # Disable the unsafe mode
+                                        exec_mode &= ~(AA_EXEC_UNSAFE | (AA_EXEC_UNSAFE << AA_OTHER_SHIFT))
+                                else:
+                                    ans = 'INVALID'
+                        transitions[context] = ans
+                        
+                        regex_options = re.compile('CMD_(ix|px|cx|nx|pix|cix|nix)')
+                        if regex_options.search(ans):
+                            # For inherit we need r
+                            if exec_mode & str_to_mode('i'):
+                                exec_mode |= str_to_mode('r')
+                        else:
+                            if ans == 'CMD_DENY':
+                                aa[profile][hat]['deny']['path'][exec_target]['mode'] = aa[profile][hat]['deny']['path'][exec_target].get('mode', str_to_mode('x')) | str_to_mode('x')
+                                aa[profile][hat]['deny']['path'][exec_target]['audit'] = aa[profile][hat]['deny']['path'][exec_target].get('audit', 0)
+                                changed[profile] = True
+                                # Skip remaining events if they ask to deny exec
+                                if domainchange == 'change':
+                                    return None
+                        
+                        if ans != 'CMD_DENY':
+                            prelog['PERMITTING'][profile][hat]['path'][exec_target] = prelog['PERMITTING'][profile][hat]['path'].get(exec_target, exec_mode) | exec_mode
+                            
+                            log['PERMITTING'][profile] = hasher()
+                            
+                            aa[profile][hat]['allow']['path'][exec_target]['mode'] = aa[profile][hat]['allow']['path'][exec_target].get('mode', exec_mode)
+                            
+                            aa[profile][hat]['allow']['path'][exec_target]['audit'] = aa[profile][hat]['allow']['path'][exec_target].get('audit', 0)
+                            
+                            if to_name:
+                                aa[profile][hat]['allow']['path'][exec_target]['to'] = to_name
+                            
+                            changed[profile] = True
+                            
+                            if exec_mode & str_to_mode('i'):
+                                if 'perl' in exec_target:
+                                    aa[profile][hat]['include']['abstractions/perl'] = True
+                                elif '/bin/bash' in exec_path or '/bin/sh' in exec_path:
+                                    aa[profile][hat]['include']['abstractions/bash'] = True
+                                hashbang = head(exec_target)
+                                if hashbang.startswith('#!'):
+                                    interpreter = hashbang[2:].strip()
+                                    interpreter = get_full_path(interpreter)
+                                    
+                                    aa[profile][hat]['path'][interpreter]['mode'] = aa[profile][hat]['path'][interpreter].get('mode', str_to_mode('ix')) | str_to_mode('ix')
+                                    
+                                    aa[profile][hat]['path'][interpreter]['audit'] = aa[profile][hat]['path'][interpreter].get('audit', 0)
+                                    
+                                    if 'perl' in interpreter:
+                                        aa[profile][hat]['include']['abstractions/perl'] = True
+                                    elif '/bin/bash' in interpreter or '/bin/sh' in interpreter:
+                                        aa[profile][hat]['include']['abstractions/bash'] = True
                     
+                    # Update tracking info based on kind of change
                     
+                    if ans == 'CMD_ix':
+                        if hat:
+                            profile_changes[pid] = '%s//%s' %(profile, hat)
+                        else:
+                            profile_changes[pid] = '%s//' % profile
+                    elif re.search('^CMD_(px|nx|pix|nix)', ans):
+                        if to_name:
+                            exec_target = to_name
+                        if aamode == 'PERMITTING':
+                            if domainchange == 'change':
+                                profile = exec_target
+                                hat = exec_target
+                                profile_changes[pid] = '%s' % profile
+                        
+                        # Check profile exists for px
+                        if not os.path.exists(get_profile_filename(exec_target)):
+                            ynans = 'y'
+                            if exec_mode & str_to_mode('i'):
+                                ynans = UI_YesNo(gettext('A profile for ') + str(exec_target) + gettext(' doesnot exist.\nDo you want to create one?'), 'n')
+                            if ynans == 'y':
+                                helpers[exec_target] = 'enforce'
+                                if to_name:
+                                    autodep_base('', exec_target)
+                                else:
+                                    autodep_base(exec_target, '')
+                                reload_base(exec_target)
+                    elif ans.startswith('CMD_cx') or ans.startswith('CMD_cix'):
+                        if to_name:
+                            exec_target = to_name
+                        if aamode == 'PERMITTING':
+                            if domainchange == 'change':
+                                profile_changes[pid] = '%s//%s' % (profile, exec_target)
+                        
+                        if not aa[profile].get(exec_target, False):
+                            ynans = 'y'
+                            if exec_mode & str_to_mode('i'):
+                                ynans = UI_YesNo(gettext('A local profile for %s does not exit. Create one') % exec_target, 'n')
+                            if ynans == 'y':
+                                hat = exec_target
+                                aa[profile][hat]['declared'] = False
+                                aa[profile][hat]['profile'] = True
+                                
+                                if profile != hat:
+                                    aa[profile][hat]['flags'] = aa[profile][profile]['flags']
+                                
+                                stub_profile = create_new_profile(hat)
+                                
+                                aa[profile][hat]['flags'] = 'complain'
+                                
+                                aa[profile][hat]['allow']['path'] = hasher()
+                                if stub_profile[hat][hat]['allow'].get('path', False):
+                                    aa[profile][hat]['allow']['path'] = stub_profile[hat][hat]['allow']['path']
+                                
+                                aa[profile][hat]['include'] = hasher()
+                                if stub_profile[hat][hat].get('include', False):
+                                    aa[profile][hat]['include'] = stub_profile[hat][hat]['include']
+                                
+                                aa[profile][hat]['allow']['netdomain'] = hasher()
+                                
+                                file_name = aa[profile][profile]['filename']
+                                filelist[file_name]['profiles'][profile][hat] = True
+                    
+                    elif ans.startswith('CMD_ux'):
+                        profile_changes[pid] = 'unconfined'
+                        if domainchange == 'change':
+                            return None
+            
+            elif type == 'netdomain':
+                pid, p, h, prog, aamode, family, sock_type, protocol = entry[:8]
+                
+                if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
+                    profile = p
+                    hat = h
+                if not hat or not profile:
+                    continue
+                if family and sock_type:
+                    prelog[aamode][profile][hat]['netdomain'][family][sock_type] = True
+                    
+    return None
+
+def add_to_tree(pid, parent, type, event):
+    if DEBUGGING:
+        debug_logger.info('add_to_tree: pid [%s] type [%s] event [%s]' % (pid, type, event))
+    
+    if not pid.get(pid, False):
+        profile, hat = event[:1]
+        if parent and pid.get(parent, False):
+            if not hat:
+                hat = 'null-complain-profile'
+            array_ref = ['fork', pid, profile, hat]
+            pid[parent].append(array_ref)
+            pid[pid] = array_ref
+        #else:
+        #    array_ref = []
+        #    log.append(array_ref)
+        #    pid[pid] = array_ref
+    pid[pid] += [type, pid, event]
+
+# Variables used by logparsing routines
+LOG = None
+next_log_entry = None
+logmark = None
+seenmark = None
+#RE_LOG_v2_0_syslog = re.compile('SubDomain')
+#RE_LOG_v2_1_syslog = re.compile('kernel:\s+(\[[\d\.\s]+\]\s+)?(audit\([\d\.\:]+\):\s+)?type=150[1-6]')
+RE_LOG_v2_6_syslog = re.compile('kernel:\s+(\[[\d\.\s]+\]\s+)?type=\d+\s+audit\([\d\.\:]+\):\s+apparmor=')
+#RE_LOG_v2_0_audit  = re.compile('type=(APPARMOR|UNKNOWN\[1500\]) msg=audit\([\d\.\:]+\):')
+#RE_LOG_v2_1_audit  = re.compile('type=(UNKNOWN\[150[1-6]\]|APPARMOR_(AUDIT|ALLOWED|DENIED|HINT|STATUS|ERROR))')
+RE_LOG_v2_6_audit = re.compile('type=AVC\s+(msg=)?audit\([\d\.\:]+\):\s+apparmor=')
+
+def prefetch_next_log_entry():
+    if next_log_entry:
+        sys.stderr.out('A log entry already present: %s' % next_log_entry)
+    next_log_entry = LOG.readline()
+    while RE_LOG_v2_6_syslog.search(next_log_entry) or RE_LOG_v2_6_audit.search(next_log_entry) or re.search(logmark, next_log_entry):
+        next_log_entry = LOG.readline()
+        if not next_log_entry:
+            break
+
+def get_next_log_entry():
+    # If no next log entry fetch it
+    if not next_log_entry:
+        prefetch_next_log_entry()
+    log_entry = next_log_entry
+    next_log_entry = None
+    return log_entry
+
+def peek_at_next_log_entry():
+    # Take a peek at the next log entry
+    if not next_log_entry:
+        prefetch_next_log_entry()
+    return next_log_entry
+
+def throw_away_next_log_entry():
+    next_log_entry = None
+
+def parse_log_record(record):
+    if DEBUGGING:
+        debug_logger.debug('parse_log_record: %s' % record)
+    
+    record_event = parse_event(record)
+    return record_event

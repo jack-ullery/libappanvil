@@ -272,6 +272,8 @@ def py2_parser(filename):
     if os.path.exists(filename):
         with open_file_read(filename) as f_in:
             for line in f_in:
+                # The ini format allows for multi-line entries, with the subsequent
+                # entries being indented deeper hence simple lstrip() is not appropriate
                 if line[:2] == '  ':
                     line = line[2:]
                 f_out.write(line)

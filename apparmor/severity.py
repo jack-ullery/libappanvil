@@ -13,7 +13,7 @@ class Severity:
         self.severity['FILES'] = {}
         self.severity['REGEXPS'] = {}
         self.severity['DEFAULT_RANK'] = default_rank
-        # For variable expansions from /etc/apparmor.d
+        # For variable expansions for the profile
         self.severity['VARIABLES'] = dict()
         if not dbname:
             return None
@@ -184,7 +184,7 @@ class Severity:
     
     def load_variables(self, prof_path):
         """Loads the variables for the given profile"""
-        regex_include = re.compile('include <(\S*)>')
+        regex_include = re.compile('^#?include\s*<(\S*)>')
         if os.path.isfile(prof_path):
             with open_file_read(prof_path) as f_in:
                 for line in f_in:
@@ -196,6 +196,7 @@ class Severity:
                         new_path = self.PROF_DIR + '/' + new_path
                         self.load_variables(new_path)            
                     else:
+                        # Remove any comments
                         if '#' in line:
                             line = line.split('#')[0].rstrip()
                         # Expected format is @{Variable} = value1 value2 ..
