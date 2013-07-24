@@ -1,4 +1,4 @@
-#2778
+#3389
 #382-430
 #480-525
 # No old version logs, only 2.6 + supported
@@ -11,6 +11,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 import traceback
 import atexit
 import tempfile
@@ -156,7 +157,7 @@ def on_exit():
 # Register the on_exit method with atexit
 atexit.register(on_exit)
 
-def opt_type(operation):
+def op_type(operation):
     """Returns the operation type if known, unkown otherwise"""
     operation_type = OPERATION_TYPES.get(operation, 'unknown')
     return operation_type
@@ -1271,7 +1272,7 @@ def handle_children(profile, hat, root):
                                                              'Not sanitising the environment when unconfining\n' +
                                                              'a program opens up significant security holes\n' +
                                                              'and should be avoided if at all possible.'), 'y')
-                                    if yans == 'y':
+                                    if ynans == 'y':
                                         # Disable the unsafe mode
                                         exec_mode &= ~(AA_EXEC_UNSAFE | (AA_EXEC_UNSAFE << AA_OTHER_SHIFT))
                                 else:
@@ -1407,23 +1408,23 @@ def handle_children(profile, hat, root):
                     
     return None
 
-def add_to_tree(pid, parent, type, event):
+def add_to_tree(loc_pid, parent, type, event):
     if DEBUGGING:
         debug_logger.info('add_to_tree: pid [%s] type [%s] event [%s]' % (pid, type, event))
     
-    if not pid.get(pid, False):
+    if not pid.get(loc_pid, False):
         profile, hat = event[:1]
         if parent and pid.get(parent, False):
             if not hat:
                 hat = 'null-complain-profile'
-            array_ref = ['fork', pid, profile, hat]
+            array_ref = ['fork', loc_pid, profile, hat]
             pid[parent].append(array_ref)
-            pid[pid] = array_ref
+            pid[loc_pid] = array_ref
         #else:
         #    array_ref = []
         #    log.append(array_ref)
         #    pid[pid] = array_ref
-    pid[pid] += [type, pid, event]
+    pid[loc_pid] += [type, loc_pid, event]
 
 # Variables used by logparsing routines
 LOG = None
@@ -1469,3 +1470,268 @@ def parse_log_record(record):
     
     record_event = parse_event(record)
     return record_event
+
+def add_event_to_tree(e):
+    aamode = e.get('aamode', 'UNKNOWN')
+    if e.get('type', False):
+        if re.search('(UNKNOWN\[1501\]|APPARMOR_AUDIT|1501)', e['type']):
+            aamode = 'AUDIT'
+        elif re.search('(UNKNOWN\[1502\]|APPARMOR_ALLOWED|1502)', e['type']):
+            aamode = 'PERMITTING'
+        elif re.search('(UNKNOWN\[1503\]|APPARMOR_DENIED|1503)', e['type']):
+            aamode = 'REJECTING'
+        elif re.search('(UNKNOWN\[1504\]|APPARMOR_HINT|1504)', e['type']):
+            aamode = 'HINT'
+        elif re.search('(UNKNOWN\[1505\]|APPARMOR_STATUS|1505)', e['type']):
+            aamode = 'STATUS'
+        elif re.search('(UNKNOWN\[1506\]|APPARMOR_ERROR|1506)', e['type']):
+            aamode = 'ERROR'
+        else:
+            aamode = 'UNKNOWN'
+    
+    if aamode in ['UNKNOWN', 'AUDIT', 'STATUS', 'ERROR']:
+        return None
+    
+    if 'profile_set' in e['operation']:
+        return None
+    
+    # Skip if AUDIT event was issued due to a change_hat in unconfined mode
+    if not e.get('profile', False):
+        return None 
+    
+    # Convert new null profiles to old single level null profile
+    if '\\null-' in e['profile']:
+        e['profile'] = 'null-complain-profile'
+    
+    profile = e['profile']
+    hat = None
+    
+    if '\\' in e['profile']:
+        profile, hat = e['profile'].split('\\')
+    
+    # Filter out change_hat events that aren't from learning
+    if e['operation'] == 'change_hat':
+        if aamode != 'HINT' and aamode != 'PERMITTING':
+            return None
+        profile = e['name']
+        if '\\' in e['name']:
+            profile, hat = e['name'].split('\\')
+   
+    # prog is no longer passed around consistently
+    prog = 'HINT'
+     
+    if profile != 'null-complain-profile' and not profile_exists(profile):
+        return None
+
+    if e['operation'] == 'exec':
+        if e.get('info', False) and e['info'] == 'mandatory profile missing':
+            add_to_tree(e['pid'], e['parent'], 'exec', 
+                        [profile, hat, aamode, 'PERMITTING', e['denied_mask'], e['name'], e['name2']])
+        elif e.get('name2', False) and '\\null-/' in e['name2']:
+            add_to_tree(e['pid'], e['parent'], 'exec',
+                        [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
+        elif e.get('name', False):
+            add_to_tree(e['pid'], e['parent'], 'exec',
+                        [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
+        else:
+            debug_logger.debug('add_event_to_tree: dropped exec event in %s' % e['profile'])
+    
+    elif 'file_' in e['operation']:
+        add_to_tree(e['pid'], e['parent'], 'path',
+                    [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
+    elif e['operation'] in ['open', 'truncate', 'mkdir', 'mknod', 'rename_src', 
+                            'rename_dest', 'unlink', 'rmdir', 'symlink_create', 'link']:
+        add_to_tree(e['pid'], e['parent'], 'path',
+                    [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
+    elif e['operation'] == 'capable':
+        add_to_tree(e['pid'], e['parent'], 'capability',
+                    [profile, hat, prog, aamode, e['name'], ''])
+    elif e['operation'] == 'setattr' or 'xattr' in e['operation']:
+        add_to_tree(e['pid'], e['parent'], 'path',
+                    [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
+    elif 'inode_' in e['operation']:
+        is_domain_change = False
+        if e['operation'] == 'inode_permission' and (e['denied_mask'] & AA_MAY_EXEC) and aamode == 'PERMITTING':
+            following = peek_at_next_log_entry()
+            if following:
+                entry = parse_log_record(following)
+                if entry and entry.get('info', False) == 'set profile':
+                    is_domain_change = True
+                    throw_away_next_log_entry()
+        
+        if is_domain_change:
+            add_to_tree(e['pid'], e['parent'], 'exec',
+                        [profile, hat, prog, aamode, e['denied_mask'], e['name'], e['name2']])
+        else:
+            add_to_tree(e['pid'], e['parent'], 'path',
+                        [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
+        
+    elif e['operation'] == 'sysctl':
+        add_to_tree(e['pid'], e['parent'], 'path',
+                    [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
+    
+    elif e['operation'] == 'clone':
+        parent , child = e['pid'], e['task']
+        if not parent:
+            parent = 'null-complain-profile'
+        if not hat:
+            hat = 'null-complain-profile'
+        arrayref = ['fork', child, profile, hat]
+        if pid.get(parent, False):
+            pid[parent] += [arrayref]
+        else:
+            log += [arrayref]
+        pid[child] = arrayref
+    
+    elif op_type(e['operation']) == 'net':
+        add_to_tree(e['pid'], e['parent'], 'netdomain',
+                    [profile, hat, prog, aamode, e['family'], e['sock_type'], e['protocol']])
+    elif e['operation'] == 'change_hat':
+        add_to_tree(e['pid'], e['parent'], 'unknown_hat',
+                    [profile, hat, aamode, hat])
+    else:
+        debug_logger.debug('UNHANDLED: %s' % e)
+
+def read_log(logmark):
+    seenmark = True
+    if logmark:
+        seenmark = False
+    #last = None
+    #event_type = None
+    try:
+        log_open = open_file_read(filename)
+    except IOError:
+        raise AppArmorException('Can not read AppArmor logfile: ' + filename)
+    
+    with log_open as f_in:
+        for line in f_in:
+            line = line.strip()
+            debug_logger.debug('read_log: %s' % line)
+            if logmark in line:
+                seenmark = True
+            if not seenmark:
+                debug_logger.debug('read_log: seenmark = %s' % seenmark)
+            
+            event = parse_log_record(line)
+            if event:
+                add_event_to_tree(event)
+    logmark = ''
+
+def parse_event(msg):
+    """Parse the event from log into key value pairs"""
+    msg = msg.strip()
+    debug_logger.log('parse_event: %s' % msg)
+    event = LibAppArmor.parse_record(msg)
+    rmask = None
+    dmask = None
+    ev = dict()
+    ev['resource'] = event.info
+    ev['active_hat'] = event.active_hat
+    ev['aamode'] = event.event
+    ev['time'] = event.epoch
+    ev['operation'] = event.operation
+    ev['profile'] = event.profile
+    ev['name'] = event.name
+    ev['name2'] = event.name2
+    ev['attr'] = event.attribute
+    ev['parent'] = event.parent
+    ev['pid'] = event.pid
+    ev['task'] = event.task
+    ev['info'] = event.info
+    dmask = event.denied_mask
+    rmask = event.requested_mask
+    ev['magic_token'] = event.magic_token
+    if ev['operation'] and op_type(ev['operation']) == 'net':
+        ev['family'] = event.net_family
+        ev['protocol'] = event.net_protocol
+        ev['sock_type'] = event.net_sock_type
+    LibAppArmor.free_record(event)
+    # Map c and d to w, logprof doesn't support c and d
+    if rmask:
+        rmask = rmask.replace('c', 'w')
+        rmask = rmask.replace('d', 'w')
+        if not validate_log_mode(hide_log_mode(rmask)):
+            fatal_error(gettext('Log contains unknown mode %s') % rmask)
+    if dmask:
+        dmask = dmask.replace('c', 'w')
+        dmask = dmask.replace('d', 'w')
+        if not validate_log_mode(hide_log_mode(dmask)):
+            fatal_error(gettext('Log contains unknown mode %s') % dmask)
+    
+    mask, name = log_str_to_mode(ev['profile'], dmask, ev['name2'])
+    ev['denied_mask'] = mask
+    ev['name2'] = name
+    
+    mask, name = log_str_to_mode(ev['profile'], rmask, ev['name2'])
+    ev['request_mask'] = mask
+    ev['name2'] = name
+    
+    if not ev['time']:
+        ev['time'] = int(time.time)
+    # Remove None keys
+    #for key in ev.keys():
+    #    if not ev[key] or not re.search('[\w]+', ev[key]):
+    #        ev.pop(key)
+    if ev['aamode']:
+        # Convert aamode values to their counter-parts
+        mode_convertor = {
+                          0: 'UNKNOWN',
+                          1: 'ERROR',
+                          2: 'AUDITING',
+                          3: 'PERMITTING',
+                          4: 'REJECTING',
+                          5: 'HINT',
+                          6: 'STATUS'
+                          }
+        try:
+            ev['aamode'] = mode_convertor(ev['aamode'])
+        except KeyError:
+            ev['aamode'] = None
+    
+    if ev['aamode']:
+        debug_logger.debug(ev)
+        return ev
+    else:
+        return None
+# Repo related functions
+
+def UI_SelectUpdatedRepoProfile(profile, p):
+    # To-Do
+    return False
+
+def UI_repo_signup():
+    # To-Do
+    return None, None
+
+def UI_ask_to_enable_repo():
+    # To-Do
+    pass
+
+def UI_ask_to_upload_profiles():
+    # To-Do
+    pass
+
+def UI_ask_mode_toggles(audit_toggle, owner_toggle, oldmode):
+    # To-Do
+    pass
+
+def parse_repo_profile(fqdbin, repo_url, profile):
+    # To-Do
+    pass
+
+def set_repo_info(profile_data, repo_url, username, iden):
+    # To-Do
+    pass
+
+def is_repo_profile(profile_data):
+    # To-Do
+    pass
+
+def get_repo_user_pass():
+    # To-Do
+    pass
+
+def update_repo_profile(profile):
+    # To-Do
+    pass
+
