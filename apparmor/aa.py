@@ -437,7 +437,7 @@ def create_new_profile(localfile):
         if hashbang.startswith('#!'):
             interpreter_path = get_full_path(hashbang.lstrip('#!').strip())
             
-            interpreter = re.sub('^(/usr)?/bin/[^/]', '', interpreter_path)
+            interpreter = re.sub('^(/usr)?/bin/', '', interpreter_path)
             
             local_profile[localfile]['allow']['path'][localfile]['mode'] = local_profile[localfile]['allow']['path'][localfile].get('mode', str_to_mode('r')) | str_to_mode('r')
             
@@ -1318,7 +1318,7 @@ def handle_children(profile, hat, root):
                                 if hashbang.startswith('#!'):
                                     interpreter = hashbang[2:].strip()
                                     interpreter_path = get_full_path(interpreter)
-                                    interpreter = re.sub('^(/usr)?/bin/[^/]', '', interpreter_path)
+                                    interpreter = re.sub('^(/usr)?/bin/', '', interpreter_path)
                                     
                                     aa[profile][hat]['path'][interpreter_path]['mode'] = aa[profile][hat]['path'][interpreter_path].get('mode', str_to_mode('ix')) | str_to_mode('ix')
                                     
