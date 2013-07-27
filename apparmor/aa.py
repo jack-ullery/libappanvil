@@ -1,4 +1,4 @@
-#3389
+#4093
 #382-430
 #480-525
 # No old version logs, only 2.6 + supported
@@ -79,7 +79,7 @@ pid = None
 seen = dir()
 profile_changes = dict()
 prelog = dict()
-log_dict = dict()
+log_dict = hasher()#dict()
 changed = dict()
 created = []
 helpers = dict() # Preserve this between passes # was our
@@ -435,25 +435,27 @@ def create_new_profile(localfile):
     if os.path.isfile(localfile):
         hashbang = head(localfile)
         if hashbang.startswith('#!'):
-            interpreter = get_full_path(hashbang.lstrip('#!').strip())
+            interpreter_path = get_full_path(hashbang.lstrip('#!').strip())
+            
+            interpreter = re.sub('^(/usr)?/bin/[^/]', '', interpreter_path)
             
             local_profile[localfile]['allow']['path'][localfile]['mode'] = local_profile[localfile]['allow']['path'][localfile].get('mode', str_to_mode('r')) | str_to_mode('r')
             
             local_profile[localfile]['allow']['path'][localfile]['audit'] = local_profile[localfile]['allow']['path'][localfile].get('audit', 0)
             
-            local_profile[localfile]['allow']['path'][interpreter]['mode'] = local_profile[localfile]['allow']['path'][interpreter].get('mode', str_to_mode('ix')) | str_to_mode('ix')                                                               
+            local_profile[localfile]['allow']['path'][interpreter_path]['mode'] = local_profile[localfile]['allow']['path'][interpreter_path].get('mode', str_to_mode('ix')) | str_to_mode('ix')                                                               
             
-            local_profile[localfile]['allow']['path'][interpreter]['audit'] = local_profile[localfile]['allow']['path'][interpreter].get('audit', 0)
+            local_profile[localfile]['allow']['path'][interpreter_path]['audit'] = local_profile[localfile]['allow']['path'][interpreter_path].get('audit', 0)
 
-            if 'perl' in interpreter:
+            if interpreter == 'perl':
                 local_profile[localfile]['include']['abstractions/perl'] = True
-            elif 'python' in interpreter:
+            elif interpreter == 'python':
                 local_profile[localfile]['include']['abstractions/python'] = True
-            elif 'ruby' in interpreter:
+            elif interpreter == 'ruby':
                 local_profile[localfile]['include']['abstractions/ruby'] = True
-            elif re.search('/bin/(bash|dash|sh)', interpreter):
+            elif interpreter in ['bash', 'dash', 'sh']:
                 local_profile[localfile]['include']['abstractions/bash'] = True
-            handle_binfmt(local_profile[localfile], interpreter)
+            handle_binfmt(local_profile[localfile], interpreter_path)
         else:
             
             local_profile[localfile]['allow']['path'][localfile]['mode'] = local_profile[localfile]['allow']['path'][localfile].get('mode', str_to_mode('mr')) | str_to_mode('mr')
@@ -669,12 +671,12 @@ def sync_profile():
         UI_Important('WARNING: Error synchronizing profiles with the repository:\n%s\n' % ret)
     else:
         users_repo_profiles = ret
-        serialuze_opts['NO_FLAGS'] = True
+        serialize_opts['NO_FLAGS'] = True
         for prof in sorted(aa.keys()):
             if is_repo_profile([aa[prof][prof]]):
                 repo_profiles.append(prof)
             if prof in created:
-                p_local = seralize_profile(aa[prof], prof, serialize_opts)
+                p_local = serialize_profile(aa[prof], prof, serialize_opts)
                 if not users_repo_profiles.get(prof, False):
                     new_profiles.append(prof)
                     new_profiles.append(p_local)
@@ -1162,9 +1164,9 @@ def handle_children(profile, hat, root):
                         if to_name:
                             fatal_error('%s has transition name but not transition mode' % entry)
                         
-                        # If profiled program executes itself only 'ix' option
-                        if exec_target == profile:
-                            options = 'i'
+                        ### If profiled program executes itself only 'ix' option
+                        ##if exec_target == profile:
+                            ##options = 'i'
                         
                         # Don't allow hats to cx?
                         options.replace('c', '')
@@ -1296,7 +1298,7 @@ def handle_children(profile, hat, root):
                         if ans != 'CMD_DENY':
                             prelog['PERMITTING'][profile][hat]['path'][exec_target] = prelog['PERMITTING'][profile][hat]['path'].get(exec_target, exec_mode) | exec_mode
                             
-                            log['PERMITTING'][profile] = hasher()
+                            log_dict['PERMITTING'][profile] = hasher()
                             
                             aa[profile][hat]['allow']['path'][exec_target]['mode'] = aa[profile][hat]['allow']['path'][exec_target].get('mode', exec_mode)
                             
@@ -1315,15 +1317,16 @@ def handle_children(profile, hat, root):
                                 hashbang = head(exec_target)
                                 if hashbang.startswith('#!'):
                                     interpreter = hashbang[2:].strip()
-                                    interpreter = get_full_path(interpreter)
+                                    interpreter_path = get_full_path(interpreter)
+                                    interpreter = re.sub('^(/usr)?/bin/[^/]', '', interpreter_path)
                                     
-                                    aa[profile][hat]['path'][interpreter]['mode'] = aa[profile][hat]['path'][interpreter].get('mode', str_to_mode('ix')) | str_to_mode('ix')
+                                    aa[profile][hat]['path'][interpreter_path]['mode'] = aa[profile][hat]['path'][interpreter_path].get('mode', str_to_mode('ix')) | str_to_mode('ix')
                                     
-                                    aa[profile][hat]['path'][interpreter]['audit'] = aa[profile][hat]['path'][interpreter].get('audit', 0)
+                                    aa[profile][hat]['path'][interpreter_path]['audit'] = aa[profile][hat]['path'][interpreter_path].get('audit', 0)
                                     
-                                    if 'perl' in interpreter:
+                                    if interpreter == 'perl':
                                         aa[profile][hat]['include']['abstractions/perl'] = True
-                                    elif '/bin/bash' in interpreter or '/bin/sh' in interpreter:
+                                    elif interpreter in ['bash', 'dash', 'sh']:
                                         aa[profile][hat]['include']['abstractions/bash'] = True
                     
                     # Update tracking info based on kind of change
@@ -1437,6 +1440,8 @@ RE_LOG_v2_6_syslog = re.compile('kernel:\s+(\[[\d\.\s]+\]\s+)?type=\d+\s+audit\(
 #RE_LOG_v2_0_audit  = re.compile('type=(APPARMOR|UNKNOWN\[1500\]) msg=audit\([\d\.\:]+\):')
 #RE_LOG_v2_1_audit  = re.compile('type=(UNKNOWN\[150[1-6]\]|APPARMOR_(AUDIT|ALLOWED|DENIED|HINT|STATUS|ERROR))')
 RE_LOG_v2_6_audit = re.compile('type=AVC\s+(msg=)?audit\([\d\.\:]+\):\s+apparmor=')
+
+LOG_MODE_RE = re.compile('r|w|l|m|k|a|x|ix|ux|px|cx|nx|pix|cix|Ix|Ux|Px|PUx|Cx|Nx|Pix|Cix')
 
 def prefetch_next_log_entry():
     if next_log_entry:
@@ -1646,14 +1651,14 @@ def parse_event(msg):
         ev['protocol'] = event.net_protocol
         ev['sock_type'] = event.net_sock_type
     LibAppArmor.free_record(event)
-    # Map c and d to w, logprof doesn't support c and d
+    # Map c (create) to a and d (delete) to w, logprof doesn't support c and d
     if rmask:
-        rmask = rmask.replace('c', 'w')
+        rmask = rmask.replace('c', 'a')
         rmask = rmask.replace('d', 'w')
         if not validate_log_mode(hide_log_mode(rmask)):
             fatal_error(gettext('Log contains unknown mode %s') % rmask)
     if dmask:
-        dmask = dmask.replace('c', 'w')
+        dmask = dmask.replace('c', 'a')
         dmask = dmask.replace('d', 'w')
         if not validate_log_mode(hide_log_mode(dmask)):
             fatal_error(gettext('Log contains unknown mode %s') % dmask)
@@ -1693,7 +1698,18 @@ def parse_event(msg):
         return ev
     else:
         return None
-# Repo related functions
+
+def hide_log_mode(mode):
+    mode = mode.replace('::', '')
+    return mode
+
+def validate_log_mode(mode):
+    if LOG_MODE_RE.search(mode):
+        return True
+    else:
+        return False
+          
+##### Repo related functions
 
 def UI_SelectUpdatedRepoProfile(profile, p):
     # To-Do
@@ -1733,5 +1749,518 @@ def get_repo_user_pass():
 
 def update_repo_profile(profile):
     # To-Do
-    pass
+    return None
+
+def order_globs(globs, path):
+    """Returns the globs in sorted order, more specific behind"""
+    # To-Do
+    # ATM its lexicographic, should be done to allow better matches later
+    return sorted(globs)
+
+def ask_the_question():
+    found = None
+    for aamode in sorted(log_dict.keys()):
+        # Describe the type of changes
+        if aamode == 'PERMITTING':
+            UI_Info(gettext('Complain-mode changes:'))
+        elif aamode == 'REJECTING':
+            UI_Info(gettext('Enforce-mode changes:'))
+        else:
+            # oops something screwed up
+            fatal_error(gettext('Invalid mode found: %s') % aamode)
+        
+        for profile in sorted(log_dict[aamode].keys()):
+            # Update the repo profiles
+            p = update_repo_profile(aa[profile][profile])
+            if p:
+                UI_SelectUpdatedRepoProfile(profile, p)
+            
+            found += 1
+            # Sorted list of hats with the profile name coming first
+            hats = filter(lambda key: key != profile, sorted(log_dict[aamode][profile].keys()))
+            if log_dict[aamode][profile].get(profile, False):
+                hats = [profile] + hats
+            
+            for hat in hats:
+                for capability in sorted(log_dict[aamode][profile][hat]['capability'].keys()):
+                    # skip if capability already in profile
+                    if profile_known_capability(aa[profile][hat], capability):
+                        continue
+                    # Load variables? Don't think so.
+                    severity = sev_db.rank('CAP_%s' % capability)
+                    default_option = 1
+                    options = []
+                    newincludes = match_cap_includes(aa[profile][hat], capability)
+                    q = hasher()
+                    
+                    if newincludes:
+                        options += map(lambda inc: '#include <%s>' %inc, sorted(set(newincludes)))
+                    
+                    if options:
+                        options.append('capability %s' % capability)
+                        q['options'] = [options]
+                        q['selected'] = default_option - 1
+                    
+                    q['headers'] = [gettext('Profile'), combine_name(profile, hat)]
+                    q['headers'] += [gettext('Capability'), capability]
+                    q['headers'] += [gettext('Severity'), severity]
+                    
+                    audit_toggle = 0
+                    
+                    q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
+                                      'CMD_ABORT', 'CMD_FINISHED']
+                    
+                    # In complain mode: events default to allow
+                    # In enforce mode: events default to deny
+                    q['default'] = 'CMD_DENY'
+                    if aamode == 'PERMITTING':
+                        q['default'] = 'CMD_ALLOW'
+                    
+                    seen_events += 1
+                    
+                    done = False
+                    while not done:
+                        ans, selected = UI_PromptUser(q)
+                        if ans == 'CMD_AUDIT':
+                            audit_toggle = not audit_toggle
+                            audit = ''
+                            if audit_toggle:
+                                q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_OFF',
+                                                  'CMD_ABORT', 'CMD_FINISHED']
+                                audit = 'audit'
+                            else:
+                                q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
+                                                  'CMD_ABORT', 'CMD_FINISHED']
+                            
+                            q['headers'] = [gettext('Profile'), combine_name(profile, hat),
+                                            gettext('Capability'), audit + capability,
+                                            gettext('Severity'), severity]
+                        
+                        if ans == 'CMD_ALLOW':
+                            selection = options[selected]
+                            match = re.search('^#include\s+<(.+)>$', selection)
+                            if match:
+                                deleted = False
+                                inc = match.groups()[0]
+                                deleted = delete_duplicates(aa[profile][hat], inc)
+                                aa[profile][hat]['include'][inc] = True
+                                
+                                UI_Info(gettext('Adding %s to profile.') % selection)
+                                if deleted:
+                                    UI_Info(gettext('Deleted %s previous matching profile entries.') % deleted)
+                                
+                            aa[profile][hat]['allow']['capability'][capability]['set'] = True
+                            aa[profile][hat]['allow']['capability'][capability]['audit'] = audit_toggle
+                            
+                            changed[profile] = True
+                            
+                            UI_Info(gettext('Adding capability %s to profile.'), capability)
+                            done = True
+                        
+                        elif ans == 'CMD_DENY':
+                            aa[profile][hat]['deny']['capability'][capability]['set'] = True
+                            changed[profile] = True
+                            
+                            UI_Info(gettext('Denying capability %s to profile.') % capability)
+                            done = True
+                        else:
+                            done = False
+                
+                # Process all the path entries.
+                for path in sorted(log_dict[aamode][profile][hat]['path'].keys()):
+                    mode = log_dict[aamode][profile][hat]['path'][path]
+                    # Lookup modes from profile
+                    allow_mode = 0
+                    allow_audit = 0
+                    deny_mode = 0
+                    deny_audit = 0
+                    
+                    fmode, famode, fm = rematch_frag(aa[profile][hat], 'allow', path)
+                    if fmode:
+                        allow_mode |= fmode
+                    if famode:
+                        allow_audit |= famode
+                    
+                    cm, cam, m = rematch_frag(aa[profile][hat], 'deny', path)
+                    if cm:
+                        deny_mode |= cm
+                    if cam:
+                        deny_audit |= cam
+                    
+                    imode, iamode, im = match_prof_incs_to_path(aa[profile][hat], 'allow', path)
+                    if imode:
+                        allow_mode |= imode
+                    if iamode:
+                        allow_audit |= iamode
+                    
+                    cm, cam, m = match_prof_incs_to_path(aa[profile][hat], 'deny', path)
+                    if cm:
+                        deny_mode |= cm
+                    if cam:
+                        deny_audit |= cam
+                    
+                    if deny_mode & AA_MAY_EXEC:
+                        deny_mode |= ALL_AA_EXEC_TYPE
+                    
+                    # Mask off the denied modes
+                    mode = mode & ~deny_mode
+                    
+                    # If we get an exec request from some kindof event that generates 'PERMITTING X'
+                    # check if its already in allow_mode
+                    # if not add ix permission
+                    if mode & AA_MAY_EXEC:
+                        # Remove all type access permission
+                        mode = mode & ~ALL_AA_EXEC_TYPE
+                        if not allow_mode & AA_MAY_EXEC:
+                            mode |= str_to_mode('ix')
+                    
+                    # If we get an mmap request, check if we already have it in allow_mode
+                    if mode & AA_EXEC_MMAP:
+                        # ix implies m, so we don't need to add m if ix is present
+                        if contains(allow_mode, 'ix'):
+                            mode = mode & ~AA_EXEC_MMAP
+                        
+                    if not mode:
+                        continue
+                    
+                    matches = []
+                    
+                    if fmode:
+                        matches.append(fm)
+                        
+                    if imode:
+                        matches.append(im)
+                    
+                    if not mode_contains(allow_mode, mode):
+                        default_option = 1
+                        options = []
+                        newincludes = []
+                        include_valid = False
+                        
+                        for incname in include.keys():
+                            include_valid = False
+                            # If already present skip
+                            if aa[profile][hat][incname]:
+                                continue
+                            
+                            if cfg['settings']['custom_includes']:
+                                for incn in cfg['settings']['custom_includes'].split():
+                                    if incn in incname:
+                                        include_valid = True
+                            
+                            if 'abstraction' in incname:
+                                include_valid = True
+                            
+                            if not include_valid:
+                                continue
+                            
+                            cm, am, m = match_include_to_path(incname, 'allow', path)
+                            
+                            if cm and mode_contains(cm, mode):
+                                dm = match_include_to_path(incname, 'deny', path)
+                                # If the mode is denied
+                                if not mode & dm:
+                                    if not filter(lambda s: '/**' not in s, m):
+                                        newincludes.append(incname)
+                        # Add new includes to the options
+                        if newincludes:
+                            options += map(lambda s: '#include <%s>' % s, sorted(set(newincludes)))
+                        # We should have literal the path in options list too
+                        options.append(path)
+                        # Add any the globs matching path from logprof
+                        globs = globcommon(path)
+                        if globs:
+                            matches += globs
+                        # Add any user entered matching globs
+                        for user_glob in user_globs:
+                            if matchliteral(user_glob, path):
+                                matches.append(user_glob)
+                        
+                        matches = list(set(matches))
+                        if path in matches:
+                            matches.remove(path)
+                        
+                        options += order_globs(matches, path)
+                        default_option = len(options)
+                        
+                        sev_db.unload_variables()
+                        sev_db.load_variables(profile)
+                        severity = sev_db.rank(path, mode_to_str(mode))
+                        sev_db.unload_variables()
+                        
+                        audit_toggle = 0
+                        owner_toggle = cfg['settings']['default_owner_prompt']
+                        done = False
+                        while not done:
+                            q =  hasher()
+                            q['headers'] = [gettext('Profile'), combine_name(profile, hat),
+                                            gettext('Path'), path]
+                            
+                            if allow_mode:
+                                mode |= allow_mode
+                                tail = ''
+                                s = ''
+                                prompt_mode = None
+                                if owner_toggle == 0:
+                                    prompt_mode = flatten_mode(mode)
+                                    tail = '     ' + gettext('(owner permissions off)')
+                                elif owner_toggle == 1:
+                                    prompt_mode = mode
+                                elif owner_toggle == 2:
+                                    prompt_mode = allow_mode | owner_flatten_mode(mode & ~allow_mode)
+                                    tail = '     ' + gettext('(force new perms to owner)')
+                                else:
+                                    prompt_mode = owner_flatten_mode(mode)
+                                    tail = '     ' + gettext('(force all rule perms to owner)')
+                                
+                                if audit_toggle == 1:
+                                    s = mode_to_str_user(allow_mode)
+                                    if allow_mode:
+                                        s += ', '
+                                    s += 'audit ' + mode_to_str_user(prompt_mode & ~allow_mode) + tail
+                                elif audit_toggle == 2:
+                                    s = 'audit ' + mode_to_str_user(prompt_mode) + tail
+                                else:
+                                    s = mode_to_str_user(prompt_mode) + tail
+                                
+                                q['headers'] += [gettext('Old Mode'), mode_to_str_user(allow_mode), 
+                                                 gettext('New Mode'), s]
+                            
+                            else:
+                                s = ''
+                                tail = ''
+                                prompt_mode = None
+                                if audit_toggle:
+                                    s = 'audit'
+                                if owner_toggle == 0:
+                                    prompt_mode = flatten_mode(mode)
+                                    tail = '     ' + gettext('(owner permissions off)')
+                                elif owner_toggle == 1:
+                                    prompt_mode = mode
+                                else:
+                                    prompt_mode = owner_flatten_mode(mode)
+                                    tail = '     ' + gettext('(force perms to owner)')
+                                
+                                s = mode_to_str_user(prompt_mode)
+                                q['headers'] += [gettext('Mode'), s]
+                            
+                            q['headers'] += [gettext('Severity'), severity]
+                            q['options'] = options
+                            q['selected'] = default_option - 1
+                            q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_GLOB',
+                                              'CMD_GLOBTEXT', 'CMD_NEW', 'CMD_ABORT',
+                                              'CMD_FINISHED', 'CMD_OTHER']
+                            q['default'] = 'CMD_DENY'
+                            if aamode == 'PERMITTING':
+                                q['default'] = 'CMD_ALLOW'
+                            
+                            seen_events += 1
+                            
+                            ans, selected = UI_PromptUser(q)
+                            
+                            if ans == 'CMD_OTHER':
+                                audit_toggle, owner_toggle = UI_ask_mode_toggles(audit_toggle, owner_toggle, allow_mode)
+                            elif ans == 'CMD_USER_TOGGLE':
+                                owner_toggle += 1
+                                if not allow_mode and owner_toggle == 2:
+                                    owner_toggle += 1
+                                if owner_toggle > 3:
+                                    owner_toggle = 0
+                            elif ans == 'CMD_ALLOW':
+                                path = options[selected]
+                                done = True
+                                match = re.search('^#include\s+<(.+)>$', path)
+                                if match:
+                                    inc = match.gropus()[0]
+                                    deleted = 0
+                                    deleted = delete_duplicates(aa[profile][hat], inc)
+                                    aa[profile][hat]['include'][inc] =  True
+                                    changed[profile] =  True
+                                    UI_Info(gettext('Adding %s to profile.') % path)
+                                    if deleted:
+                                        UI_Info(gettext('Deleted %s previous matching profile entries.') % deleted)
+                                
+                                else:
+                                    if aa[profile][hat]['allow']['path'][path].get('mode', False):
+                                        mode |= aa[profile][hat]['allow']['path'][path]['mode']
+                                    deleted = 0
+                                    for entry in aa[profile][hat]['allow']['path'].keys():
+                                        if path == entry:
+                                            continue
+                                        
+                                        if matchregexp(path, entry):
+                                            if mode_contains(mode, aa[profile][hat]['allow']['path'][entry]['mode']):
+                                                aa[profile][hat]['allow']['path'].pop(entry)
+                                                deleted += 1
+                                    
+                                    if owner_toggle == 0:
+                                        mode = flatten_mode(mode)
+                                    #elif owner_toggle == 1:
+                                    #    mode = mode
+                                    elif owner_toggle == 2:
+                                        mode = allow_mode | owner_flatten_mode(mode & ~allow_mode)
+                                    elif owner_toggle == 3:
+                                        mode = owner_flatten_mode(mode)
+                                    
+                                    aa[profile][hat]['allow']['path'][path]['mode'] = aa[profile][hat]['allow']['path'][path].get('mode', 0) | mode
+                                    
+                                    tmpmode = 0
+                                    if audit_toggle == 1:
+                                        tmpmode = mode & ~allow_mode
+                                    elif audit_toggle == 2:
+                                        tmpmode = mode 
+                                    
+                                    aa[profile][hat]['allow']['path'][path]['audit'] = aa[profile][hat]['allow']['path'][path].get('audit', 0) | tmpmode
+                                    
+                                    changed[profile] = True
+                                    
+                                    UI_Info(gettext('Adding %s %s to profile') % (path, mode_to_str_user(mode)))
+                                    if deleted:
+                                        UI_Info(gettext('Deleted %s previous matching profile entries.') % deleted)
+                                    
+                            elif ans == 'CMD_DENY':
+                                # Add new entry?
+                                aa[profile][hat]['deny']['path'][path]['mode'] = aa[profile][hat]['deny']['path'][path].get('mode', 0) | (mode & ~allow_mode)
+                                
+                                aa[profile][hat]['deny']['path'][path]['audit'] = aa[profile][hat]['deny']['path'][path].get('audit', 0)
+                                
+                                changed[profile] = True
+                                
+                                done = True
+                            
+                            elif ans == 'CMD_NEW':
+                                arg = options[selected]
+                                if not arg.startswith('#include'):
+                                    ans = UI_GetString(gettext('Enter new path:'), arg)
+                                    if ans:
+                                        if not matchliteral(ans, path):
+                                            ynprompt = gettext('The specified path does not match this log entry:')
+                                            ynprompt += '\n\n  ' + gettext('Log Entry') + ':  %s' % path
+                                            ynprompt += '\n  ' + gettext('Entered Path') + ':  %s' % ans
+                                            ynprompt += gettext('Do you really want to use this path?') + '\n'
+                                            key = UI_YesNo(ynprompt, 'n')
+                                            if key == 'n':
+                                                continue
+                                        
+                                        user_globs.append(ans)
+                                        options.append(ans)
+                                        default_option = len(options)
+                            
+                            elif ans == 'CMD_GLOB':
+                                newpath = options[selected].strip()
+                                if not newpath.startswith('#include'):
+                                    if newpath[-1] == '/':
+                                        if newpath[-4:] == '/**/' or newpath[-3:] == '/*/':
+                                            # collapse one level to /**/
+                                            newpath = re.sub('/[^/]+/\*{1,2}$/', '/\*\*/', newpath)
+                                        else:
+                                            newpath = re.sub('/[^/]+/$', '/\*/', newpath)
+                                    else:
+                                        if newpath[-3:] == '/**' or newpath[-2:] == '/*':
+                                            newpath = re.sub('/[^/]+/\*{1,2}$', '/\*\*', newpath)
+                                        elif re.search('/\*\*[^/]+$', newpath):
+                                            newpath = re.sub('/\*\*[^/]+$', '/\*\*', newpath)
+                                        else:
+                                            newpath = re.sub('/[^/]+$', '/\*', newpath)
+                                    
+                                    if newpath not in options:
+                                        options.append(newpath)
+                                        default_option = len(options)
+                            
+                            elif ans == 'CMD_GLOBEXT':
+                                newpath = options[selected].strip()
+                                if not newpath.startswith('#include'):
+                                    match = re.search('/\*{1,2}(\.[^/]+)$', newpath)
+                                    if match:
+                                        newpath = re.sub('/[^/]+/\*{1,2}\.[^/]+$', '/\*\*'+match.group()[0], newpath)
+                                    else:
+                                        match = re.search('(\.[^/]+)$')
+                                        newpath = re.sub('/[^/]+(\.[^/]+)$', '/\*'+match.groups()[0], newpath)
+                                    if newpath not in options:
+                                        options.append(newpath)
+                                        default_option = len(options)
+                            
+                            elif re.search('\d', ans):
+                                default_option = ans
+                
+                #
+                for family in sorted(log_dict[aamode][profile][hat]['netdomain'].keys()):
+                    # severity handling for net toggles goes here
+                    for sock_type in sorted(log_dict[aaprofile][profile][hat]['netdomain'][family].keys()):
+                        if profile_known_network(aa[profile][hat], family, sock_type):
+                            continue
+                        default_option = 1
+                        options = []
+                        newincludes = matchnetincludes(aa[profile][hat], family, sock_type)
+                        q = hasher()
+                        if newincludes:
+                            options += map(lambda s: '#include <%s>'%s, sorted(set(newincludes)))
+                        if options:
+                            options.append('network %s %s' % (family, sock_type))
+                            q['options'] = options
+                            q['selected'] = default_option - 1
+                        
+                        q['headers'] = [gettext('Profile'), combine_name(profile, hat)]
+                        q['headers'] += [gettext('Network Family'), family]
+                        q['headers'] += [gettext('Socket Type'), sock_type]
+                        
+                        audit_toggle = 0
+                        q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
+                                          'CMD_ABORT', 'CMD_FINISHED']
+                        q['default'] = 'CMD_DENY'
+                        
+                        if aamode == 'PERMITTING':
+                            q['default'] = 'CMD_ALLOW'
+                        
+                        seen_events += 1
+                                
+                        done = False
+                        while not done:
+                            ans, selected = UI_PromptUser(q)
+                            if ans.startswith('CMD_AUDIT'):
+                                audit_toggle = not audit_toggle
+                                audit = ''
+                                if audit_toggle:
+                                    audit = 'audit'
+                                    q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_OFF',
+                                                      'CMD_ABORT', 'CMD_FINISHED']
+                                else:
+                                    q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
+                                                      'CMD_ABORT', 'CMD_FINISHED']
+                                q['headers'] = [gettext('Profile'), combine_name(profile, hat)]
+                                q['headers'] += [gettext('Network Family'), audit + family]
+                                q['headers'] += [gettext('Socket Type'), sock_type]
+                            
+                            elif ans == 'CMD_ALLOW':
+                                selection = options[selected]
+                                done = True
+                                if re.search('#include\s+<.+>$', selection):
+                                    inc =  re.search('#include\s+<(.+)>$', selection).groups()[0]
+                                    deleted =  0
+                                    deleted = delete_duplicates(aa[profile][hat], inc)
+                                    
+                                    aa[profile][hat]['include'][inc] = True
+                                    
+                                    changed[profile] = True
+                                    
+                                    UI_Info(gettext('Adding %s to profile') % selection)
+                                    if deleted:
+                                        UI_Info(gettext('Deleted %s previous matching profile entries.') % deleted)
+                                
+                                else:
+                                    aa[profile][hat]['allow']['netdomain']['audit'][family][sock_type] = audit_toggle
+                                    aa[profile][hat]['allow']['netdomain']['rule'][family][sock_type] = True
+                                    
+                                    changed[profile] = True
+                                    
+                                    UI_Info(gettext('Adding network access %s %s to profile.' % (family, sock_type)))
+                            
+                            elif ans == 'CMD_DENY':
+                                done = True
+                                aa[profile][hat]['deny']['netdomain']['rule'][family][sock_type] = True
+                                changed[profile] = True
+                                UI_Info(gettext('Denying network access %s %s to profile') % (family, sock_type))
+                            
+                            else:
+                                done = False
 
