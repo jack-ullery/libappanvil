@@ -1,4 +1,4 @@
-#4093
+#4925
 #382-430
 #480-525
 # No old version logs, only 2.6 + supported
@@ -25,6 +25,7 @@ from apparmor.common import (AppArmorException, error, debug, msg,
                              hasher, open_file_write)
 
 from apparmor.ui import *
+from copy import deepcopy
 
 DEBUGGING = False
 debug_logger = None
@@ -67,25 +68,26 @@ user_globs = []
 
 ## Variables used under logprof
 ### Were our
-t = dict()   
+t = hasher()#dict()   
 transitions = dict() 
-aa = dict()  # Profiles originally in sd, replace by aa
-original_aa =  dict()
-extras = dict()  # Inactive profiles from extras
+aa = hasher()  # Profiles originally in sd, replace by aa
+original_aa =  hasher()
+extras = hasher()  # Inactive profiles from extras
 ### end our
 log = []
 pid = None
 
-seen = dir()
+seen = hasher()#dir()
 profile_changes = dict()
-prelog = dict()
+prelog = hasher()
 log_dict = hasher()#dict()
 changed = dict()
 created = []
+skip = hasher()
 helpers = dict() # Preserve this between passes # was our
 ### logprof ends
 
-filelist = dict()    # File level variables and stuff in config files
+filelist = hasher()    # File level variables and stuff in config files
 
 AA_MAY_EXEC = 1
 AA_MAY_WRITE = 2
@@ -449,7 +451,7 @@ def create_new_profile(localfile):
 
             if interpreter == 'perl':
                 local_profile[localfile]['include']['abstractions/perl'] = True
-            elif interpreter == 'python':
+            elif re.search('python()', interpreter):
                 local_profile[localfile]['include']['abstractions/python'] = True
             elif interpreter == 'ruby':
                 local_profile[localfile]['include']['abstractions/ruby'] = True
@@ -547,12 +549,12 @@ def get_profile(prof_name):
                                 'profile_type': p['profile_type']
                                 })
                 ypath, yarg = GetDataFromYast()
-            else:
-                pager = get_pager()
-                proc = subprocess.Popen(pager, stdin=subprocess.PIPE)
-                proc.communicate('Profile submitted by %s:\n\n%s\n\n' % 
-                                 (options[arg], p['profile']))
-                proc.kill()
+            #else:
+            #    pager = get_pager()
+            #    proc = subprocess.Popen(pager, stdin=subprocess.PIPE)
+            #    proc.communicate('Profile submitted by %s:\n\n%s\n\n' % 
+            #                     (options[arg], p['profile']))
+            #    proc.kill()
         elif ans == 'CMD_USE_PROFILE':
             if p['profile_type'] == 'INACTIVE_LOCAL':
                 profile_data = p['profile_data']
@@ -601,7 +603,7 @@ def autodep(bin_name, pname=''):
         profile_data = create_new_profile(pname)
     file = get_profile_filename(pname)
     attach_profile_data(aa, profile_data)
-    attach_profile_data(aa_original, profile_data)
+    attach_profile_data(original_aa, profile_data)
     if os.path.isfile(profile_dir + '/tunables/global'):
         if not filelist.get(file, False):
             filelist.file = hasher()
@@ -612,8 +614,8 @@ def set_profile_flags(prof_filename, newflags):
     """Reads the old profile file and updates the flags accordingly"""
     regex_bin_flag = re.compile('^(\s*)(("??\/.+?"??)|(profile\s+("??.+?"??)))\s+(flags=\(.+\)\s+)*\{\s*$/')
     regex_hat_flag = re.compile('^([a-z]*)\s+([A-Z]*)((\s+#\S*)*)\s*$')
-    a=re.compile('^([a-z]*)\s+([A-Z]*)((\s+#\S*)*)\s*$')
-    regex_hat_flag = re.compile('^(\s*\^\S+)\s+(flags=\(.+\)\s+)*\{\s*(#*\S*)$')
+    #a=re.compile('^([a-z]*)\s+([A-Z]*)((\s+#\S*)*)\s*$')
+    #regex_hat_flag = re.compile('^(\s*\^\S+)\s+(flags=\(.+\)\s+)*\{\s*(#*\S*)$')
     if os.path.isfile(prof_filename):
         with open_file_read(prof_filename) as f_in:
             tempfile = tempfile.NamedTemporaryFile('w', prefix=prof_filename , suffix='~', delete=False, dir='/etc/apparmor.d/')
@@ -1064,7 +1066,7 @@ def handle_children(profile, hat, root):
                     combinedaudit = False
                     ## Check return Value Consistency
                     # Check if path matches any existing regexps in profile
-                    cm, am , m = rematchfrag(aa[profile][hat], 'allow', exec_target)
+                    cm, am , m = rematch_frag(aa[profile][hat], 'allow', exec_target)
                     if cm:
                         combinedmode |= cm
                     if am:
@@ -1441,7 +1443,11 @@ RE_LOG_v2_6_syslog = re.compile('kernel:\s+(\[[\d\.\s]+\]\s+)?type=\d+\s+audit\(
 #RE_LOG_v2_1_audit  = re.compile('type=(UNKNOWN\[150[1-6]\]|APPARMOR_(AUDIT|ALLOWED|DENIED|HINT|STATUS|ERROR))')
 RE_LOG_v2_6_audit = re.compile('type=AVC\s+(msg=)?audit\([\d\.\:]+\):\s+apparmor=')
 
+MODE_MAP_RE = re.compile('r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N')
 LOG_MODE_RE = re.compile('r|w|l|m|k|a|x|ix|ux|px|cx|nx|pix|cix|Ix|Ux|Px|PUx|Cx|Nx|Pix|Cix')
+PROFILE_MODE_RE = re.compile('r|w|l|m|k|a|ix|ux|px|cx|pix|cix|Ux|Px|PUx|Cx|Pix|Cix')
+PROFILE_MODE_NT_RE = re.compile('r|w|l|m|k|a|x|ix|ux|px|cx|pix|cix|Ux|Px|PUx|Cx|Pix|Cix')
+PROFILE_MODE_DENY_RE = re.compile('r|w|l|m|k|a|x')
 
 def prefetch_next_log_entry():
     if next_log_entry:
@@ -1704,7 +1710,9 @@ def hide_log_mode(mode):
     return mode
 
 def validate_log_mode(mode):
-    if LOG_MODE_RE.search(mode):
+    pattern = '^(%s)+$' % LOG_MODE_RE.pattern
+    if re.search(pattern, mode):
+    #if LOG_MODE_RE.search(mode):
         return True
     else:
         return False
@@ -1757,7 +1765,7 @@ def order_globs(globs, path):
     # ATM its lexicographic, should be done to allow better matches later
     return sorted(globs)
 
-def ask_the_question():
+def ask_the_questions():
     found = None
     for aamode in sorted(log_dict.keys()):
         # Describe the type of changes
@@ -1808,7 +1816,7 @@ def ask_the_question():
                     audit_toggle = 0
                     
                     q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
-                                      'CMD_ABORT', 'CMD_FINISHED']
+                                      'CMD_ABORT', 'CMD_FINISHED', 'CMD_IGNORE_ENTRY']
                     
                     # In complain mode: events default to allow
                     # In enforce mode: events default to deny
@@ -1821,16 +1829,21 @@ def ask_the_question():
                     done = False
                     while not done:
                         ans, selected = UI_PromptUser(q)
+                        # Ignore the log entry
+                        if ans == 'CMD_IGNORE_ENTRY':
+                            done = True
+                            break
+                            
                         if ans == 'CMD_AUDIT':
                             audit_toggle = not audit_toggle
                             audit = ''
                             if audit_toggle:
                                 q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_OFF',
-                                                  'CMD_ABORT', 'CMD_FINISHED']
+                                                  'CMD_ABORT', 'CMD_FINISHED', 'CMD_IGNORE_ENTRY']
                                 audit = 'audit'
                             else:
                                 q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
-                                                  'CMD_ABORT', 'CMD_FINISHED']
+                                                  'CMD_ABORT', 'CMD_FINISHED', 'CMD_IGNORE_ENTRY']
                             
                             q['headers'] = [gettext('Profile'), combine_name(profile, hat),
                                             gettext('Capability'), audit + capability,
@@ -1838,10 +1851,10 @@ def ask_the_question():
                         
                         if ans == 'CMD_ALLOW':
                             selection = options[selected]
-                            match = re.search('^#include\s+<(.+)>$', selection)
+                            match = re_match_include(selection) #re.search('^#include\s+<(.+)>$', selection)
                             if match:
                                 deleted = False
-                                inc = match.groups()[0]
+                                inc = match #.groups()[0]
                                 deleted = delete_duplicates(aa[profile][hat], inc)
                                 aa[profile][hat]['include'][inc] = True
                                 
@@ -1914,11 +1927,13 @@ def ask_the_question():
                         if not allow_mode & AA_MAY_EXEC:
                             mode |= str_to_mode('ix')
                     
-                    # If we get an mmap request, check if we already have it in allow_mode
-                    if mode & AA_EXEC_MMAP:
-                        # ix implies m, so we don't need to add m if ix is present
-                        if contains(allow_mode, 'ix'):
-                            mode = mode & ~AA_EXEC_MMAP
+                    # m is not implied by ix
+                    
+                    ### If we get an mmap request, check if we already have it in allow_mode
+                    ##if mode & AA_EXEC_MMAP:
+                    ##    # ix implies m, so we don't need to add m if ix is present
+                    ##    if contains(allow_mode, 'ix'):
+                    ##        mode = mode & ~AA_EXEC_MMAP
                         
                     if not mode:
                         continue
@@ -1945,10 +1960,10 @@ def ask_the_question():
                             
                             if cfg['settings']['custom_includes']:
                                 for incn in cfg['settings']['custom_includes'].split():
-                                    if incn in incname:
+                                    if incn == incname:
                                         include_valid = True
                             
-                            if 'abstraction' in incname:
+                            if incname.startswith('abstractions/'):
                                 include_valid = True
                             
                             if not include_valid:
@@ -1968,7 +1983,7 @@ def ask_the_question():
                         # We should have literal the path in options list too
                         options.append(path)
                         # Add any the globs matching path from logprof
-                        globs = globcommon(path)
+                        globs = glob_common(path)
                         if globs:
                             matches += globs
                         # Add any user entered matching globs
@@ -2049,7 +2064,7 @@ def ask_the_question():
                             q['selected'] = default_option - 1
                             q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_GLOB',
                                               'CMD_GLOBTEXT', 'CMD_NEW', 'CMD_ABORT',
-                                              'CMD_FINISHED', 'CMD_OTHER']
+                                              'CMD_FINISHED', 'CMD_OTHER', 'CMD_IGNORE_ENTRY']
                             q['default'] = 'CMD_DENY'
                             if aamode == 'PERMITTING':
                                 q['default'] = 'CMD_ALLOW'
@@ -2057,6 +2072,10 @@ def ask_the_question():
                             seen_events += 1
                             
                             ans, selected = UI_PromptUser(q)
+                            
+                            if ans == 'CMD_IGNORE_ENTRY':
+                                done = True
+                                break
                             
                             if ans == 'CMD_OTHER':
                                 audit_toggle, owner_toggle = UI_ask_mode_toggles(audit_toggle, owner_toggle, allow_mode)
@@ -2069,9 +2088,9 @@ def ask_the_question():
                             elif ans == 'CMD_ALLOW':
                                 path = options[selected]
                                 done = True
-                                match = re.search('^#include\s+<(.+)>$', path)
+                                match = re_match_include(path) #.search('^#include\s+<(.+)>$', path)
                                 if match:
-                                    inc = match.gropus()[0]
+                                    inc = match #.gropus()[0]
                                     deleted = 0
                                     deleted = delete_duplicates(aa[profile][hat], inc)
                                     aa[profile][hat]['include'][inc] =  True
@@ -2130,7 +2149,7 @@ def ask_the_question():
                             
                             elif ans == 'CMD_NEW':
                                 arg = options[selected]
-                                if not arg.startswith('#include'):
+                                if not re_match_include(arg):
                                     ans = UI_GetString(gettext('Enter new path:'), arg)
                                     if ans:
                                         if not matchliteral(ans, path):
@@ -2148,20 +2167,28 @@ def ask_the_question():
                             
                             elif ans == 'CMD_GLOB':
                                 newpath = options[selected].strip()
-                                if not newpath.startswith('#include'):
+                                if not re_match_include(newpath):
                                     if newpath[-1] == '/':
                                         if newpath[-4:] == '/**/' or newpath[-3:] == '/*/':
-                                            # collapse one level to /**/
-                                            newpath = re.sub('/[^/]+/\*{1,2}$/', '/\*\*/', newpath)
+                                            # /foo/**/ and /foo/*/ => /**/
+                                            newpath = re.sub('/[^/]+/\*{1,2}/$', '/**/', newpath) #re.sub('/[^/]+/\*{1,2}$/', '/\*\*/', newpath)
+                                            # /foo**/ => /**/ 
+                                        elif re.search('/[^/]+\*\*/$', newpath):
+                                            newpath =  re.sub('/[^/]+\*\*/$', '/**/', newpath)
                                         else:
-                                            newpath = re.sub('/[^/]+/$', '/\*/', newpath)
+                                            newpath = re.sub('/[^/]+/$', '/*/', newpath)
                                     else:
+                                            # /foo/** and /foo/* => /**
                                         if newpath[-3:] == '/**' or newpath[-2:] == '/*':
-                                            newpath = re.sub('/[^/]+/\*{1,2}$', '/\*\*', newpath)
+                                            newpath = re.sub('/[^/]+/\*{1,2}$', '/**', newpath)
+                                            # /**foo => /**
                                         elif re.search('/\*\*[^/]+$', newpath):
-                                            newpath = re.sub('/\*\*[^/]+$', '/\*\*', newpath)
+                                            newpath = re.sub('/\*\*[^/]+$', '/**', newpath)
+                                            # /foo** => /**
+                                        elif re.search('/[^/]+\*\*$', newpath):
+                                            newpath =  re.sub('/[^/]+\*\*$', '/**', newpath)
                                         else:
-                                            newpath = re.sub('/[^/]+$', '/\*', newpath)
+                                            newpath = re.sub('/[^/]+$', '/*', newpath)
                                     
                                     if newpath not in options:
                                         options.append(newpath)
@@ -2169,13 +2196,20 @@ def ask_the_question():
                             
                             elif ans == 'CMD_GLOBEXT':
                                 newpath = options[selected].strip()
-                                if not newpath.startswith('#include'):
-                                    match = re.search('/\*{1,2}(\.[^/]+)$', newpath)
+                                if not re_match_include(newpath):
+                                    # match /**.ext and /*.ext
+                                    match = re.search('/\*{1,2}(\.[^/]+)$', newpath)                                        
                                     if match:
-                                        newpath = re.sub('/[^/]+/\*{1,2}\.[^/]+$', '/\*\*'+match.group()[0], newpath)
+                                        # /foo/**.ext and /foo/*.ext => /**.ext
+                                        newpath = re.sub('/[^/]+/\*{1,2}\.[^/]+$', '/**'+match.group()[0], newpath)
+                                        # /foo**.ext => /**.ext
+                                    elif re.search('/[^/]+\*\*\.[^/]+$'):
+                                        match = re.search('/[^/]+\*\*(\.[^/]+)$')
+                                        newpath = re.sub('/[^/]+\*\*\.[^/]+$', '/**'+match.groups()[0], newpath)
                                     else:
+                                        # /foo.ext  => /*.ext
                                         match = re.search('(\.[^/]+)$')
-                                        newpath = re.sub('/[^/]+(\.[^/]+)$', '/\*'+match.groups()[0], newpath)
+                                        newpath = re.sub('/[^/]+(\.[^/]+)$', '/*'+match.groups()[0], newpath)
                                     if newpath not in options:
                                         options.append(newpath)
                                         default_option = len(options)
@@ -2186,12 +2220,12 @@ def ask_the_question():
                 #
                 for family in sorted(log_dict[aamode][profile][hat]['netdomain'].keys()):
                     # severity handling for net toggles goes here
-                    for sock_type in sorted(log_dict[aaprofile][profile][hat]['netdomain'][family].keys()):
+                    for sock_type in sorted(log_dict[profile][profile][hat]['netdomain'][family].keys()):
                         if profile_known_network(aa[profile][hat], family, sock_type):
                             continue
                         default_option = 1
                         options = []
-                        newincludes = matchnetincludes(aa[profile][hat], family, sock_type)
+                        newincludes = match_net_includes(aa[profile][hat], family, sock_type)
                         q = hasher()
                         if newincludes:
                             options += map(lambda s: '#include <%s>'%s, sorted(set(newincludes)))
@@ -2206,7 +2240,7 @@ def ask_the_question():
                         
                         audit_toggle = 0
                         q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
-                                          'CMD_ABORT', 'CMD_FINISHED']
+                                          'CMD_ABORT', 'CMD_FINISHED', 'CMD_IGNORE_ENTRY']
                         q['default'] = 'CMD_DENY'
                         
                         if aamode == 'PERMITTING':
@@ -2217,6 +2251,10 @@ def ask_the_question():
                         done = False
                         while not done:
                             ans, selected = UI_PromptUser(q)
+                            if ans == 'CMD_IGNORE_ENTRY':
+                                done = True
+                                break
+                            
                             if ans.startswith('CMD_AUDIT'):
                                 audit_toggle = not audit_toggle
                                 audit = ''
@@ -2234,8 +2272,8 @@ def ask_the_question():
                             elif ans == 'CMD_ALLOW':
                                 selection = options[selected]
                                 done = True
-                                if re.search('#include\s+<.+>$', selection):
-                                    inc =  re.search('#include\s+<(.+)>$', selection).groups()[0]
+                                if re_match_include(selection): #re.search('#include\s+<.+>$', selection):
+                                    inc =  re_match_include(selection) #re.search('#include\s+<(.+)>$', selection).groups()[0]
                                     deleted =  0
                                     deleted = delete_duplicates(aa[profile][hat], inc)
                                     
@@ -2264,3 +2302,678 @@ def ask_the_question():
                             else:
                                 done = False
 
+def delete_net_duplicates(netrules, incnetrules):
+    deleted = 0
+    if incnetrules and netrules:
+        incnetglob = False
+        # Delete matching rules from abstractions
+        if incnetrules.get('all', False):
+            incnetglob = True
+        for fam in netrules.keys():
+            if incnetglob or (type(incnetrules['rule'][fam]) != dict and incnetrules['rule'][fam] == 1):
+                if type(netrules['rule'][hash]) == dict:
+                    deleted += len(netrules['rule'][fam].keys())
+                else:
+                    deleted += 1
+                netrules['rule'].pop(fam)
+            elif netrules['rule'][fam] != 'HASH' and netrules['rule'][fam] == 1:
+                continue
+            else:
+                for socket_type in netrules['rule'][fam].keys():
+                    if incnetrules['rule'].get(fam, False):
+                        netrules[fam].pop(socket_type)
+                        deleted += 1
+    return deleted
+
+def delete_cap_duplicates(profilecaps, inccaps):
+    deleted = 0
+    if profilecaps and inccaps:
+        for capname in profilecaps.keys():
+            if inccaps[capname].get('set', False) == 1:
+                profilecaps.pop(capname)
+                deleted += 1
+    return deleted
+
+def delete_path_duplicates(profile, incname, allow):
+    deleted = 0
+    
+    for entry in profile[allow]['path'].keys():
+        if entry == '#include <%s>'%incname:
+            continue
+        cm, am, m = match_include_to_path(incname, allow, entry)
+        if cm and mode_contains(cm, profile[allow]['path'][entry]['mode']) and mode_contains(am, profile[allow]['path'][entry]['audit']):
+            profile[allow]['path'].pop(entry)
+            deleted += 1
+    
+    return deleted
+
+def delete_duplicates(profile, incname):
+    deleted = 0
+    # Allow rules covered by denied rules shouldn't be deleted
+    # only a subset allow rules may actually be denied
+    deleted += delete_net_duplicates(profile['allow']['netdomain'], include[incname][incname]['allow']['netdomain'])
+    
+    deleted += delete_net_duplicates(profile['deny']['netdomain'], include[incname][incname]['deny']['netdomain'])
+    
+    deleted += delete_cap_duplicates(profile['allow']['capability'], include[incname][incname]['allow'])
+    
+    deleted += delete_cap_duplicates(profile['deny']['capability'], include[incname][incname]['deny']['capability'])
+    
+    deleted += delete_path_duplicates(profile, incname, 'allow')
+    deleted += delete_path_duplicates(profile, incname, 'deny')
+    
+    return deleted
+
+def match_net_include(incname, family, type):
+    includelist = incname[:]
+    checked = []
+    name = None
+    if includelist:
+        name = includelist.pop(0)
+    while name:
+        checked.append(name)
+        if netrules_access_check(include[name][name]['allow']['netdomain'], family, type):
+            return True
+        
+        if include[name][name]['include'].keys() and name not in checked:
+            includelist += include[name][name]['include'].keys()
+        
+        if len(includelist):
+            name = includelist.pop(0)
+        else:
+            name = False
+
+def match_cap_includes(profile, cap):
+    newincludes = []
+    includevalid = False
+    for incname in include.keys():
+        includevalid = False
+        if profile['include'].get(incname, False):
+            continue
+        
+        if cfg['settings']['custom_includes']:
+            for incm in cfg['settings']['custom_includes'].split():
+                if incm in incname:
+                    includevalid = True
+        
+        if 'abstractions' in incname:
+            includevalid = True
+            
+        if not includevalid:
+            continue
+        if include[incname][incname]['allow']['capability'][cap].get('set', False) == 1:
+            newincludes.append(incname) 
+        
+    return newincludes
+
+def re_match_include(path):
+    """Matches the path for include and returns the include path"""
+    regex_include = re.compile('^\s*#?include\s*<(\.*)>')
+    match = regex_include.search(path)
+    if match:
+        return match.groups()[0]
+    else:
+        return None
+
+def match_net_includes(profile, family, nettype):
+    newincludes = []
+    includevalid = False
+    for incname in include.keys():
+        includevalid = False
+        
+        if profile['include'].get(incname, False):
+            continue
+        
+        if cfg['settings']['custom_includes']:
+            for incm in cfg['settings']['custom_includes'].split():
+                if incm == incname:
+                    includevalid = True
+        
+        if incname.startswith('abstractions/'):
+            includevalid = True
+        
+        if includevalid and match_net_include(incname, family, type):
+            newincludes.append(incname)
+    
+    return newincludes
+
+def do_logprof_pass(logmark=''):
+    # set up variables for this pass
+    t = hasher()
+    transitions = hasher()
+    seen = hasher()
+    aa = hasher()
+    profile_changes = hasher()
+    prelog = hasher()
+    log = []
+    log_dict = hasher()
+    changed = dict()
+    skip = hasher()
+    filelist = hasher()
+    
+    UI_Info(gettext('Reading log entries from %s.') %filename)
+    UI_Info(gettext('Updating AppArmor profiles in %s.') %profile_dir)
+    
+    read_profiles()
+    
+    if not sev_db:
+        sev_db = apparmor.severity(CONFDIR + '/severity', gettext('unknown'))
+    
+    ##if not repo_cf and cfg['repostory']['url']:
+    ##    repo_cfg = read_config('repository.conf')
+    ##    if not repo_cfg['repository'].get('enabled', False) or repo_cfg['repository]['enabled'] not in ['yes', 'no']:
+    ##    UI_ask_to_enable_repo()
+    
+    read_log(logmark)
+    
+    for root in log:
+        handle_children('', '', root)
+        
+    for pid in sorted(profile_changes.keys()):
+        set_process(pid, profile_changes[pid])
+    
+    collapse_log()
+    
+    ask_the_questions()
+    
+    if UI_mode == 'yast':
+        # To-Do
+        pass
+    
+    finishing = False
+    # Check for finished
+    save_profiles()
+    
+    ##if not repo_cfg['repository'].get('upload', False) or repo['repository']['upload'] == 'later':
+    ##    UI_ask_to_upload_profiles()
+    ##if repo_enabled():
+    ##    if repo_cgf['repository']['upload'] == 'yes':
+    ##        sync_profiles()
+    ##    created = []
+    
+    # If user selects 'Finish' then we want to exit logprof
+    if finishing:
+        return 'FINISHED'
+    else:
+        return 'NORMAL'
+    
+
+def save_profiles():
+    # Ensure the changed profiles are actual active profiles
+    for prof_name in changed.keys():
+        if not is_active_profile(prof_name):
+            changed.pop(prof_name)
+    
+    changed_list = sorted(changed.keys())
+    
+    if changed_list:
+        
+        if UI_mode == 'yast':
+            # To-Do
+            selected_profiles = []
+            profile_changes = dict()
+            for prof in changed_list:
+                oldprofile = serialize_profile(original_aa[prof], prof)
+                newprofile = serialize_profile(aa[prof], prof)
+                profile_changes[prof] = get_profile_diff(oldprofile, newprofile)
+            explanation = gettext('Select which profile changes you would like to save to the\nlocal profile set.')
+            title = gettext('Local profile changes')
+            SendDataToYast({
+                            'type': 'dialog-select-profiles',
+                            'title': title,
+                            'explanation': explanation,
+                            'dialog_select': 'true',
+                            'get_changelog': 'false',
+                            'profiles': profile_changes
+                            })
+            ypath, yarg = GetDataFromYast()
+            if yarg['STATUS'] == 'cancel':
+                return None
+            else:
+                selected_profiles_ref = yarg['PROFILES']
+                for profile_name in selected_profiles_ref:
+                    writeprofile_ui_feedback(profile_name)
+                    reload_base(profile_name)
+                    
+        else:
+            q = hasher()
+            q['title'] = 'Changed Local Profiles'
+            q['headers'] = []
+            q['explanation'] = gettext('The following local profiles were changed. Would you like to save them?')
+            q['functions'] = ['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ABORT']
+            q['default'] = 'CMD_VIEW_CHANGES'
+            q['options'] = changed
+            q['selected'] = 0
+            p =None
+            ans = ''
+            arg = None
+            while ans != 'CMD_SAVE_CHANGES':
+                ans, arg = UI_PromptUser(q)
+                if ans == 'CMD_VIEW_CHANGES':
+                    which = changed[arg]
+                    oldprofile = serialize_profile(original_aa[which], which)
+                    newprofile = serialize_profile(aa[which], which)
+                    
+                    display_changes(oldprofile, newprofile)
+            
+            for profile_name in changed_list:
+                writeprofile_ui_feedback(profile_name)
+                reload_base(profile_name)
+
+def get_pager():
+    pass
+
+def generate_diff(oldprofile, newprofile):
+    oldtemp = tempfile.NamedTemporaryFile('wr', delete=False)
+    
+    oldtemp.write(oldprofile)
+    oldtemp.flush()
+    
+    newtemp = tempfile.NamedTemporaryFile('wr', delete=False)
+    newtemp.write(newprofile)
+    newtemp.flush()
+    
+    difftemp = tempfile.NamedTemporaryFile('wr', deleted=False)
+    
+    subprocess.call('diff -u %s %s > %s' %(oldtemp.name, newtemp.name, difftemp.name), shell=True)
+    
+    oldtemp.delete = True
+    oldtemp.close()
+    newtemp.delete = True
+    newtemp.close()
+    return difftemp
+
+def get_profile_diff(oldprofile, newprofile):
+    difftemp = generate_diff(oldprofile, newprofile)  
+    diff = []  
+    with open_file_read(difftemp.name) as f_in:
+        for line in f_in:
+            if not (line.startswith('---') and line .startswith('+++') and re.search('^\@\@.*\@\@$', line)):
+                    diff.append(line)
+        
+    difftemp.delete = True
+    difftemp.close()
+    return ''.join(diff)
+
+def display_changes(oldprofile, newprofile):
+    if UI_mode == 'yast':
+        UI_LongMessage(gettext('Profile Changes'), get_profile_diff(oldprofile, newprofile))
+    else:
+        difftemp = generate_diff(oldprofile, newprofile)
+        subprocess.call('less %s' %difftemp.name, shell=True)
+        difftemp.delete = True
+        difftemp.close()
+
+def set_process(pid, profile):
+    # If process running don't do anything
+    if os.path.exists('/proc/%s/attr/current' % pid):
+        return None
+    process = None
+    try:
+        process = open_file_read('/proc/%s/attr/current')
+    except IOError:
+        return None
+    current = process.readline().strip()
+    process.close()
+    
+    if not re.search('null(-complain)*-profile', current):
+        return None
+    
+    stats = None
+    try:
+        stats = open_file_read('/proc/%s/stat' % pid)
+    except IOError:
+        return None
+    stat = stats.readline().strip()
+    stats.close()
+    
+    match = re.search('^\d+ \((\S+)\) ', stat)
+    if not match:
+        return None
+    
+    try:
+        process = open_file_write('/proc/%s/attr/current' % pid)
+    except IOError:
+        return None
+    process.write('setprofile %s' % profile)
+    process.close()
+
+def collapse_log():
+    for aamode in prelog.keys():
+        for profile in prelog[aamode].keys():
+            for hat in prelog[aamode][profile].keys():
+                
+                for path in prelog[aamode][profile][hat]['path'].keys():
+                    mode = prelog[aamode][profile][hat]['path'][path]
+                    
+                    combinedmode = 0
+                    # Is path in original profile?
+                    if aa[profile][hat]['allow']['path'].get(path, False):
+                        combinedmode |= aa[profile][hat]['allow']['path'][path]
+                    
+                    # Match path to regexps in profile
+                    combinedmode |= rematch_frag(aa[profile][hat], 'allow', path)
+                    
+                    # Match path from includes
+                    combinedmode |= match_prof_incs_to_path(aa[profile][hat], 'allow', path)
+                    
+                    if not combinedmode or not mode_contains(combinedmode, mode):
+                        if log[aamode][profile][hat]['path'].get(path, False):
+                            mode |= log[aamode][profile][hat]['path'][path]
+                        
+                        log[aamode][profile][hat]['path'][path] = mode
+                
+                for capability in prelog[aamode][profile][hat]['capability'].keys():
+                    # If capability not already in profile
+                    if not aa[profile][hat]['allow']['capability'][capability].get('set', False):
+                        log[aamode][profile][hat]['capability'][capability] = True
+                
+                nd = prelog[aamode][profile][hat]['netdomain']
+                for family in nd.keys():
+                    for sock_type in nd[family].keys():
+                        if not profile_known_network(aa[profile][hat], family, sock_type):
+                            log[aamode][profile][hat]['netdomain'][family][sock_type] = True
+
+def profilemode(mode):
+    pass
+
+def commonprefix(old, new):
+    # T0-Do
+    # Weird regex
+    pass
+
+def commonsuffix(old, new):
+    # To-Do
+    # Weird regex
+    pass
+
+def spilt_log_mode(mode):
+    user = ''
+    other = ''
+    match = re.search('(.*?)::(.*)', mode)
+    if match:
+        user, other = match.groups()
+    else:
+        user = mode
+        other = mode
+    
+    return user, other
+
+def map_log_mode(mode):
+    return mode
+
+def validate_profile_mode(mode, allow, nt_name=None):
+    if allow == 'deny':
+        pattern = '^(%s)+$' % PROFILE_MODE_DENY_RE.pattern
+        if re.search(pattern, mode):
+            return True
+        else:
+            return False
+    
+    elif nt_name:
+        pattern = '^(%s)+$' % PROFILE_MODE_NT_RE.pattern
+        if re.search(pattern, mode):
+            return True
+        else:
+            return False
+    
+    else:
+        pattern = '^(%s)+$' % PROFILE_MODE_RE.pattern
+        if re.search(pattern, mode):
+            return True
+        else:
+            return False
+        
+def sub_str_to_mode(string):
+    mode = 0
+    if not string:
+        return mode
+    while str:
+        pattern = '(%s)' % MODE_MAP_RE.pattern
+        tmp = re.search(pattern, string).groups()[0]
+        re.sub(pattern, '', string)
+        
+        if tmp and MODE_HASH.get(tmp, False):
+            mode |= MODE_HASH[tmp]
+        else:
+            pass
+    
+    return mode
+
+def print_mode(mode):
+    user, other = split_mode(mode)
+    string = sub_mode_to_str(user) + '::' + sub_mode_to_str(other)
+    
+    return string
+
+def str_to_mode(string):
+    if not string:
+        return 0
+    user, other = split_log_mode(string)
+    
+    if not user:
+        user = other
+    
+    mode = sub_str_to_mode(user)
+    mode |= (sub_str_to_mode(other) << AA_OTHER_SHIFT)
+    
+    return mode
+
+def log_str_to_mode(profile, string, nt_name):
+    mode = str_to_mode(string)
+    # If contains nx and nix
+    if contains(mode, 'Nx'):
+        # Transform to px, cx
+        match = re.search('(.+?)//(.+?)', nt_name)
+        if match:
+            lprofile, lhat = match.groups()
+            tmode = 0
+            
+            if lprofile == profile:
+                if mode & AA_MAY_EXEC:
+                    tmode = str_to_mode('Cx::')
+                if mode & (AA_MAY_EXEC << AA_OTHER_SHIFT):
+                    tmode |= str_to_mode('Cx')
+                nt_name = lhat
+            else:
+                if mode & AA_MAY_EXEC:
+                    tmode = str_to_mode('Px::')
+                if mode & (AA_MAY_EXEC << AA_OTHER_SHIFT):
+                    tmode |= str_to_mode('Px')
+                nt_name = lhat
+            
+            mode = mode & ~str_to_mode('Nx')
+            mode |= tmode
+    
+    return mode, nt_name
+        
+def split_mode(mode):
+    user = mode & AA_USER_MASK
+    other = (mode >> AA_OTHER_SHIFT) & AA_USER_MASK
+    
+    return user, other
+
+def is_user_mode(mode):
+    user, other = split_mode(mode)
+    
+    if user and not other:
+        return True
+    else:
+        return False
+    
+def sub_mode_to_str(mode):
+    string = ''
+    # w(write) implies a(append)
+    if mode & AA_MAY_WRITE:
+        mode &= (~AA_MAY_APPEND)
+
+    if mode & AA_EXEC_MMAP:
+        string += 'm'
+    if mode & AA_MAY_READ:
+        string += 'r'
+    if mode & AA_MAY_WRITE:
+        string += 'w'
+    if mode & AA_MAY_APPEND:
+        string += 'a'
+    if mode & AA_MAY_LINK:
+        string += 'l'
+    if mode & AA_MAY_LOCK:
+        string += 'k'
+    
+    # modes P and C must appear before I and U else invalid syntax
+    if mode & (AA_EXEC_PROFILE | AA_EXEC_NT):
+        if mode & AA_EXEC_UNSAFE:
+            string += 'p'
+        else:
+            string += 'P'
+    
+    if mode & AA_EXEC_CHILD:
+        if mode & AA_EXEC_UNSAFE:
+            string += 'c'
+        else:
+            string += 'C'
+    
+    if mode & AA_EXEC_UNCONFINED:
+        if mode & AA_EXEC_UNSAFE:
+            string += 'u'
+        else:
+            string += 'U'
+    
+    if mode & AA_EXEC_INHERIT:
+        string += 'i'
+    
+    if mode & AA_MAY_EXEC:
+        string += 'x'
+    
+    return string
+
+def flatten_mode(mode):
+    if not mode:
+        return 0
+    
+    mode = (mode & AA_USER_MASK) | ((mode >> AA_OTHER_SHIFT) & AA_USER_MASK)
+    mode |= (mode << AA_OTHER_SHIFT)
+    
+    return mode
+
+def mode_to_str(mode):
+    mode = flatten_mode(mode)
+    return sub_mode_to_str(mode)
+
+def owner_flatten_mode(mode):
+    mode = flatten_mode(mode) &AA_USER_MASK
+    return mode
+
+def mode_to_str_user(mode):
+    user, other = split_mode(mode)
+    string = ''
+    
+    if not user:
+        user = 0
+    if not other:
+        other = 0
+    
+    if user & ~other:
+        if other:
+            string = sub_mode_to_str(other) + '+'
+        string += 'owner ' + sub_mode_to_str(user & ~other)
+    
+    elif is_user_mode(mode):
+        string = 'owner ' + sub_mode_to_str(user)
+    else:
+        string = sub_mode_to_str(flatten_mode(mode))
+    
+    return string
+
+def mode_contains(mode, subset):
+    # w implies a
+    if mode & AA_MAY_WRITE:
+        mode |= AA_MAY_APPEND   
+    if mode & (AA_MAY_WRITE << AA_OTHER_SHIFT):
+        mode |= (AA_MAY_APPEND << AA_OTHER_SHIFT)
+    
+    # ix does not imply m
+    
+    ### ix implies m
+    ##if mode & AA_EXEC_INHERIT:
+    ##    mode |= AA_EXEC_MMAP
+    ##if mode & (AA_EXEC_INHERIT << AA_OTHER_SHIFT):
+    ##    mode |= (AA_EXEC_MMAP << AA_OTHER_SHIFT)
+    
+    return (mode & subset) == subset
+
+def contains(mode, string):
+    return mode_contains(mode, str_to_mode(string))
+
+# rpm backup files, dotfiles, emacs backup files should not be processed
+# The skippable files type needs be synced with apparmor initscript
+def is_skippable_file(path):
+    """Returns True if filename matches something to be skipped"""
+    if (re.search('(^|/)\.[^/]*$', path) or re.search('\.rpm(save|new)$', path)
+        or re.search('\.dpkg-(old|new)$', path) or re.search('\.swp$', path)
+        or path[-1] == '~' or path == 'README'):
+        return True
+
+def is_skippable_dir(path):
+    if path in ['disable', 'cache', 'force-complain', 'lxc']:
+        return True
+    return False
+
+def check_include_syntax(errors):
+    # To-Do
+    pass
+
+def check_profile_syntax(errors):
+    # To-Do
+    pass
+
+def read_profiles():
+    try:
+        os.listdir(profile_dir)
+    except :
+        fatal_error('Can\'t read AppArmor profiles in %s' % profile_dir)
+    
+    for file in os.listdir(profile_dir):
+        if os.path.isfile(profile_dir + '/' + file):
+            if is_skippable_file(file):
+                continue
+            else:
+                read_profile(profile_dir + '/' + file, True)
+
+def read_inactive_profiles():
+    if not os.path.exists(extra_profile_dir):
+        return None
+    try:
+        os.listdir(profile_dir)
+    except :
+        fatal_error('Can\'t read AppArmor profiles in %s' % extra_profile_dir)
+    
+    for file in os.listdir(profile_dir):
+        if os.path.isfile(extra_profile_dir + '/' + file):
+            if is_skippable_file(file):
+                continue
+            else:
+                read_profile(extra_profile_dir + '/' + file, False)
+
+def read_profile(file, active_profile):
+    data = None
+    try:
+        with open_file_read(file) as f_in:
+            data = f_in.readlines()
+    except IOError:
+        debug_logger.debug('read_profile: can\'t read %s - skipping' %file)
+        return None
+    
+    profile_data = parse_profile_data(data, file, 0)
+    if profile_data and active_profile:
+        attach_profile_data(aa, profile_data)
+        attach_profile_data(original_aa, profile_data)
+    elif profile_data:
+        attach_profile_data(extras, profile_data)
+    
+
+def attach_profile_data(profiles, profile_data):
+    # Make deep copy of data to avoid changes to 
+    # arising due to mutables
+    for p in profile_data.keys():
+        profiles[p] = deepcopy(profile_data[p])

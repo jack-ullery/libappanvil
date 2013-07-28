@@ -225,7 +225,8 @@ CMDS = {
         'CMD_NET_FAMILY': 'Allow Network Fa(m)ily',
         'CMD_OVERWRITE': '(O)verwrite Profile',
         'CMD_KEEP': '(K)eep Profile',
-        'CMD_CONTINUE': '(C)ontinue'
+        'CMD_CONTINUE': '(C)ontinue',
+        'CMD_IGNORE_ENTRY': '(I)gnore Entry'
         }
 
 def UI_PromptUser(q):

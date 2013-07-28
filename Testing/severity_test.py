@@ -9,7 +9,7 @@ from apparmor.common import AppArmorException
 class Test(unittest.TestCase):  
         
     def testRank_Test(self):
-        z = severity.Severity()
+        #z = severity.Severity()
         
         s = severity.Severity('severity.db')
         rank = s.rank('/usr/bin/whatis', 'x')

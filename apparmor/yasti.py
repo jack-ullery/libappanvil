@@ -81,9 +81,9 @@ def ParseCommand(commands):
         ycp.y2warning('Superfluous command arguments ignored')
     return (command, path, argument)
 
-def ParseTerm(input):
+def ParseTerm(inp):
     regex_term = re.compile('^\s*`?(\w*)\s*')
-    term = regex_term.search(input)
+    term = regex_term.search(inp)
     ret = []
     symbol = None
     if term:
@@ -91,10 +91,10 @@ def ParseTerm(input):
     else:
         ycp.y2error('No term symbol')
     ret.append(symbol)
-    input = regex_term.sub('', input)
-    if not input.startswith('('):
+    inp = regex_term.sub('', inp)
+    if not inp.startswith('('):
         ycp.y2error('No term parantheses')
-    argref, err, rest = ParseYcpTermBody(input)
+    argref, err, rest = ParseYcpTermBody(inp)
     if err:
         ycp.y2error('%s (%s)' % (err, rest))
     else:
