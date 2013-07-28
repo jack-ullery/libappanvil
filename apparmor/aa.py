@@ -451,7 +451,7 @@ def create_new_profile(localfile):
 
             if interpreter == 'perl':
                 local_profile[localfile]['include']['abstractions/perl'] = True
-            elif re.search('python()', interpreter):
+            elif re.search('python([23]|[23]\.[0-9])?$', interpreter):
                 local_profile[localfile]['include']['abstractions/python'] = True
             elif interpreter == 'ruby':
                 local_profile[localfile]['include']['abstractions/ruby'] = True
@@ -2090,7 +2090,7 @@ def ask_the_questions():
                                 done = True
                                 match = re_match_include(path) #.search('^#include\s+<(.+)>$', path)
                                 if match:
-                                    inc = match #.gropus()[0]
+                                    inc = match #.groups()[0]
                                     deleted = 0
                                     deleted = delete_duplicates(aa[profile][hat], inc)
                                     aa[profile][hat]['include'][inc] =  True
