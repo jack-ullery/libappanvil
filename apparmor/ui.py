@@ -4,7 +4,7 @@ import gettext
 import locale
 import logging
 import os
-from yasti import yastLog, SendDataToYast, GetDataFromYast
+from apparmor.yasti import yastLog, SendDataToYast, GetDataFromYast
 
 from apparmor.common import readkey
 
@@ -226,7 +226,7 @@ CMDS = {
         'CMD_OVERWRITE': '(O)verwrite Profile',
         'CMD_KEEP': '(K)eep Profile',
         'CMD_CONTINUE': '(C)ontinue',
-        'CMD_IGNORE_ENTRY': '(I)gnore Entry'
+        'CMD_IGNORE_ENTRY': '(I)gnore'
         }
 
 def UI_PromptUser(q):
