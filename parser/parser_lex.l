@@ -53,6 +53,12 @@
 #define NPDEBUG(fmt, args...)	/* Do nothing */
 
 #define DUMP_PREPROCESS do { if (preprocess_only) ECHO; } while (0)
+#define RETURN_TOKEN(X) \
+do { \
+	DUMP_PREPROCESS; \
+	PDEBUG("Matched: %s\n", yytext); \
+	return (X); \
+} while (0)
 
 #define YY_NO_INPUT
 
@@ -198,9 +204,11 @@ POST_VAR_ID_CHARS	[^ \t\n"!,]{-}[=\+]
 POST_VAR_ID 	{POST_VAR_ID_CHARS}|(,{POST_VAR_ID_CHARS})
 LIST_VALUE_ID_CHARS	[^ \t\n"!,]{-}[()]
 LIST_VALUE_ID	{LIST_VALUE_ID_CHARS}+
+QUOTED_LIST_VALUE_ID	{LIST_VALUE_ID}|\"{LIST_VALUE_ID}\"
 ID_CHARS_NOEQ	[^ \t\n"!,]{-}[=]
+LEADING_ID_CHARS_NOEQ	[^ \t\n"!,]{-}[=()]
 ID_NOEQ		{ID_CHARS_NOEQ}|(,{ID_CHARS_NOEQ})
-IDS_NOEQ	{ID_NOEQ}+
+IDS_NOEQ	{LEADING_ID_CHARS_NOEQ}{ID_NOEQ}*
 ALLOWED_QUOTED_ID 	[^\0"]|\\\"
 QUOTED_ID	\"{ALLOWED_QUOTED_ID}*\"
 
@@ -228,11 +236,16 @@ LT_EQUAL	<=
 %x SUB_ID
 %x SUB_VALUE
 %x EXTCOND_MODE
+%x EXTCONDLIST_MODE
 %x NETWORK_MODE
 %x LIST_VAL_MODE
+%x LIST_COND_MODE
+%x LIST_COND_VAL
+%x LIST_COND_PAREN_VAL
 %x ASSIGN_MODE
 %x RLIMIT_MODE
 %x MOUNT_MODE
+%x DBUS_MODE
 %x CHANGE_PROFILE_MODE
 %x INCLUDE
 
@@ -278,7 +291,7 @@ LT_EQUAL	<=
 	if ( !YY_CURRENT_BUFFER ) yyterminate();
 }
 
-<INITIAL,MOUNT_MODE>{
+<INITIAL,MOUNT_MODE,DBUS_MODE>{
 	{VARIABLE_NAME}/{WS}*=	{
 				/* we match to the = in the lexer so that
 				 * can switch scanner state.  By the time
@@ -286,11 +299,19 @@ LT_EQUAL	<=
 				 * as bison may have requested the next
 				 * token from the scanner
 				 */
+				int token = get_keyword_token(yytext);
+
 				DUMP_PREPROCESS;
-				PDEBUG("conditional %s=\n", yytext);
-				yylval.id = processid(yytext, yyleng);
-				yy_push_state(EXTCOND_MODE);
-				return TOK_CONDID;
+				if (token == TOK_PEER) {
+					PDEBUG("conditional list %s=\n", yytext);
+					yy_push_state(EXTCONDLIST_MODE);
+					return TOK_CONDLISTID;
+				} else {
+					PDEBUG("conditional %s=\n", yytext);
+					yylval.id = processid(yytext, yyleng);
+					yy_push_state(EXTCOND_MODE);
+					return TOK_CONDID;
+				}
 			}
 	{VARIABLE_NAME}/{WS}+in{WS}*\(	{
 				/* we match to 'in' in the lexer so that
@@ -412,6 +433,116 @@ LT_EQUAL	<=
 	in	{
 			DUMP_PREPROCESS;
 			return TOK_IN;
+		}
+
+	[^\n]	{
+			DUMP_PREPROCESS;
+			/* Something we didn't expect */
+			yyerror(_("Found unexpected character: '%s' %d"), yytext, *yytext);
+		}
+
+}
+
+<LIST_COND_VAL>{
+	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
+
+	({LIST_VALUE_ID}|{QUOTED_LIST_VALUE_ID}) {
+			DUMP_PREPROCESS;
+			yylval.id = processid(yytext, yyleng);
+			PDEBUG("listcond value: \"%s\"\n",  yylval.id);
+			yy_pop_state();
+			return TOK_VALUE;
+		}
+
+	[^\n]	{
+			DUMP_PREPROCESS;
+			/* Something we didn't expect */
+			yyerror(_("Found unexpected character: '%s'"), yytext);
+		}
+}
+
+<LIST_COND_PAREN_VAL>{
+	{CLOSE_PAREN}	{
+			DUMP_PREPROCESS;
+			yy_pop_state();
+			}
+
+	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
+
+	({LIST_VALUE_ID}|{QUOTED_LIST_VALUE_ID}) {
+			DUMP_PREPROCESS;
+			yylval.id = processid(yytext, yyleng);
+			PDEBUG("listcond paren value: \"%s\"\n",  yylval.id);
+			return TOK_VALUE;
+		}
+
+	[^\n]	{
+			DUMP_PREPROCESS;
+			/* Something we didn't expect */
+			yyerror(_("Found unexpected character: '%s'"), yytext);
+		}
+}
+
+<LIST_COND_MODE>{
+	{CLOSE_PAREN}	{
+			DUMP_PREPROCESS;
+			PDEBUG("listcond: )\n");
+			yy_pop_state();
+			return TOK_CLOSEPAREN;
+			}
+
+	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
+
+	{COMMA}		{
+			DUMP_PREPROCESS;
+			PDEBUG("listcond: , \n");
+			/* Eat comma, its an optional separator */
+			}
+
+	{ID_CHARS_NOEQ}+	{
+			DUMP_PREPROCESS;
+			PDEBUG("listcond conditional %s=\n", yytext);
+			yylval.id = processid(yytext, yyleng);
+			return TOK_CONDID;
+			}
+
+	{EQUALS}{WS}*{OPEN_PAREN}	{
+			DUMP_PREPROCESS;
+			yy_push_state(LIST_COND_PAREN_VAL);
+			return TOK_EQUALS;
+			}
+
+	{EQUALS}	{
+			DUMP_PREPROCESS;
+			yy_push_state(LIST_COND_VAL);
+			return TOK_EQUALS;
+			}
+
+	[^\n]		{
+			DUMP_PREPROCESS;
+			/* Something we didn't expect */
+			yyerror(_("Found unexpected character: '%s'"), yytext);
+			}
+}
+
+<EXTCONDLIST_MODE>{
+	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
+
+	{EQUALS}	{
+			DUMP_PREPROCESS;
+			return TOK_EQUALS;
+		}
+
+	{OPEN_PAREN}	{
+			DUMP_PREPROCESS;
+			PDEBUG("extcondlist (\n");
+			/* Don't push state here as this is a transition
+			 * start condition and we want to return to the start
+			 * condition that invoked <EXTCONDLIST_MODE> when
+			 * LIST_VAL_ID is done
+			 */
+			BEGIN(LIST_COND_MODE);
+			return TOK_OPENPAREN;
 		}
 
 	[^\n]	{
@@ -547,7 +678,23 @@ LT_EQUAL	<=
 			}
 }
 
-<MOUNT_MODE>{
+<DBUS_MODE>{
+	send		{ RETURN_TOKEN(TOK_SEND); }
+	receive		{ RETURN_TOKEN(TOK_RECEIVE); }
+	bind		{ RETURN_TOKEN(TOK_BIND); }
+	read		{ RETURN_TOKEN(TOK_READ); }
+	write		{ RETURN_TOKEN(TOK_WRITE); }
+	{OPEN_PAREN}	{
+			yy_push_state(LIST_VAL_MODE);
+			RETURN_TOKEN(TOK_OPENPAREN);
+			}
+	(r|w|rw|wr)/([[:space:],])	{
+			yylval.mode = strdup(yytext);
+			RETURN_TOKEN(TOK_MODE);
+			}
+}
+
+<MOUNT_MODE,DBUS_MODE>{
 	{WS}+		{  DUMP_PREPROCESS; /* Ignoring whitespace */ }
 
 	{ARROW}		{
@@ -708,6 +855,10 @@ LT_EQUAL	<=
 			case TOK_UMOUNT:
 				PDEBUG("Entering mount\n");
 				yy_push_state(MOUNT_MODE);
+				break;
+			case TOK_DBUS:
+				PDEBUG("Entering dbus\n");
+				yy_push_state(DBUS_MODE);
 				break;
 			default: /* nothing */
 				break;
