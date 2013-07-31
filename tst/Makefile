@@ -13,15 +13,18 @@ endif
 all: tests
 
 .PHONY: tests error_output gen_xtrans parser_sanity caching minimize
-tests: error_output gen_xtrans parser_sanity caching minimize
+tests: error_output gen_xtrans gen_dbus parser_sanity caching minimize
 
-GEN_TRANS_DIRS=simple_tests/generated_x/ simple_tests/generated_perms_leading/ simple_tests/generated_perms_safe/
+GEN_TRANS_DIRS=simple_tests/generated_x/ simple_tests/generated_perms_leading/ simple_tests/generated_perms_safe/ simple_tests/generated_dbus
 
 gen_xtrans: $(GEN_TRANS_DIRS)
 	./gen-xtrans.pl
 
 $(GEN_TRANS_DIRS):
 	mkdir $@
+
+gen_dbus: $(GEN_TRANS_DIRS)
+	./gen-dbus.pl
 
 error_output: $(PARSER)
 	$(PARSER) -S -I errors >/dev/null errors/okay.sd
