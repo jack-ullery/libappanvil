@@ -4,9 +4,10 @@ import gettext
 import locale
 import logging
 import os
+import re
 from apparmor.yasti import yastLog, SendDataToYast, GetDataFromYast
 
-from apparmor.common import readkey
+from apparmor.common import readkey, AppArmorException
 
 DEBUGGING = False
 debug_logger = None
@@ -29,6 +30,18 @@ def init_localisation():
     except IOError:
         trans = gettext.NullTranslations()
     trans.install()
+
+ARROWS = {'A': 'UP', 'B': 'DOWN', 'C': 'RIGHT', 'D': 'LEFT'}
+
+def getkey():
+    key = readkey()
+    if key == '\x1B':
+        key = readkey()
+        if key == '[':
+            key = readkey()
+            if(ARROWS.get(key, False)):
+                key = ARROWS[key]
+    return key
 
 def UI_Info(text):
     if DEBUGGING:
@@ -71,7 +84,7 @@ def UI_YesNo(text, default):
         else:
             ans = default
     else:
-        SendDataTooYast({
+        SendDataToYast({
                          'type': 'dialog-yesno',
                          'question': text
                          })
@@ -130,7 +143,7 @@ def UI_GetString(text, default):
                         'label': text,
                         'default': default
                         })
-        ypath, yarg = GetDatFromYast()
+        ypath, yarg = GetDataFromYast()
         string = yarg['string']
     return string
 
@@ -257,10 +270,149 @@ def UI_ShortMessage(title, message):
                     })
     ypath, yarg = GetDataFromYast()
 
-def UI_longMessage(title, message):
+def UI_LongMessage(title, message):
     SendDataToYast({
                     'type': 'long-dialog-message',
                     'headline': title,
                     'message': message
                     })
     ypath, yarg = GetDataFromYast()
+
+def confirm_and_finish():
+    sys.stdout.stdout('FINISHING\n')
+    sys.exit(0)
+
+def Text_PromptUser(question):
+    title = question['title']
+    explanation = question['explanation']
+    headers = question['headers']
+    functions = question['functions']
+    
+    default = question['default']
+    options = question['options']
+    selected = question.get('selected', False) or 0
+    helptext = question['helptext']
+    if helptext:
+        functions.append('CMD_HELP')
+    
+    menu_items = []
+    keys = dict()
+    
+    for cmd in functions:
+        if not CMDS.get(cmd, False):
+            raise AppArmorException('PromptUser: %s %s' %(gettext('Unknown command'), cmd))
+        
+        menutext = gettext(CMDS[cmd])
+        
+        menuhotkey = re.search('\((\S)\)', menutext)
+        if not menuhotkey:
+            raise AppArmorException('PromptUser: %s \'%s\'' %(gettext('Invalid hotkey in'), menutext))
+        
+        key = menuhotkey.groups()[0].lower()
+        # Duplicate hotkey
+        if keys.get(key, False): 
+            raise AppArmorException('PromptUser: %s %s: %s' %(gettext('Duplicate hotkey for'), cmd, menutext)) 
+        
+        keys[key] = cmd
+        
+        if default and default == cmd:
+            menutext = '[%s]' %menutext
+        
+        menu_items.append(menutext)
+    
+    default_key = 0
+    if default and CMDS[default]:
+        defaulttext = gettext(CMDS[default])
+        
+        defaulthotkey = re.search('\((\S)\)', defaulttext)
+        if not menuhotkey:
+            raise AppArmorException('PromptUser: %s \'%s\'' %(gettext('Invalid hotkey in default item'), defaulttext))
+
+        default_key = defaulthotkey.groups()[0].lower()
+        
+        if keys.get(default_key, False): 
+            raise AppArmorException('PromptUser: %s %s' %(gettext('Invalid default'), default))
+        
+    widest = 0
+    header_copy = headers[:]
+    while header_copy:
+        header = header_copy.pop(0)
+        header_copy.pop(0)
+        if len(header) > widest:
+            widest = len(header)
+    widest += 1
+    
+    formatstr = '%-' + widest + 's %s\n'
+    
+    function_regexp = '^('
+    function_regexp += '|'.join(keys.keys())
+    if options:
+        function_regexp += '|\d'
+    function_regexp += ')$'
+    
+    ans = 'XXXINVALIDXXX'
+    while not re.search(function_regexp, ans, flags=re.IGNORECASE):
+        
+        prompt = '\n'
+        if title:
+            prompt += '= %s =\n\n' %title
+        
+        if headers:
+            header_copy = headers[:]
+            while header_copy:
+                header = header_copy.pop(0)
+                value = header_copy.pop(0)
+                prompt += formatstr %(header+':', value)
+            prompt += '\n'
+        
+        if explanation:
+            prompt += explanation + '\n\n'
+        
+        if options:
+            for index, option in enumerate(options):
+                if selected == index:
+                    format_option = ' [%s - %s]'
+                else:
+                    format_option = '  %s - %s '
+                prompt += format_option %(index+1, option)
+            prompt += '\n'
+        
+        prompt += ' / '.join(menu_items)
+        
+        sys.stdout.write(prompt+'\n')
+        
+        ans = readkey().lower()
+        
+        if ans:
+            if ans == 'up':
+                if options and selected > 0:
+                    selected -= 1
+                ans = 'XXXINVALIDXXX'
+            
+            elif ans == 'down':
+                if options and selected < len(options)-2:
+                    selected += 1
+                ans = 'XXXINVALIDXXX'
+            
+            elif keys.get(ans, False) == 'CMD_HELP':
+                sys.stdout.write('\n%s\n' %helptext)
+                ans = 'XXXINVALIDXXX'
+            
+            elif int(ans) == 10:
+                # If they hit return choose default option
+                ans = default_key
+            
+            elif options and re.search('^\d$', ans):
+                ans = int(ans)
+                if ans > 0 and ans < len(options):
+                    selected = ans - 1
+                ans = 'XXXINVALIDXXX'
+        
+        if keys.get(ans, False) == 'CMD_HELP':
+            sys.stdout.write('\n%s\n' %helptext)
+            ans = 'again'
+    
+    if keys.get(ans, False):
+        ans = keys[ans]
+    
+    return ans, selected
