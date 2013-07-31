@@ -28,6 +28,8 @@
 #include <limits.h>
 #include <stdarg.h>
 #include <mntent.h>
+#include <inttypes.h>
+#include <pthread.h>
 
 #include "apparmor.h"
 
@@ -649,4 +651,99 @@ int aa_getpeercon(int fd, char **con, char **mode)
 		*con = buffer;
 
 	return size;
+}
+
+static pthread_once_t aafs_access_control = PTHREAD_ONCE_INIT;
+static char *aafs_access = NULL;
+
+static void aafs_access_init_once(void)
+{
+	char *aafs;
+	int ret;
+
+	ret = aa_find_mountpoint(&aafs);
+	if (ret < 0)
+		return;
+
+	ret = asprintf(&aafs_access, "%s/.access", aafs);
+	if (ret < 0)
+		aafs_access = NULL;
+
+	free(aafs);
+}
+
+/* "allow 0x00000000\ndeny 0x00000000\naudit 0x00000000\nquiet 0x00000000\n" */
+#define QUERY_LABEL_REPLY_LEN	67
+
+/**
+ * aa_query_label - query the access(es) of a label
+ * @mask: permission bits to query
+ * @query: binary query string, must be offset by AA_QUERY_CMD_LABEL_SIZE
+ * @size: size of the query string must include AA_QUERY_CMD_LABEL_SIZE
+ * @allowed: upon successful return, will be 1 if query is allowed and 0 if not
+ * @audited: upon successful return, will be 1 if query should be audited and 0
+ *           if not
+ *
+ * Returns: 0 on success else -1 and sets errno
+ */
+int aa_query_label(uint32_t mask, char *query, size_t size, int *allowed,
+		   int *audited)
+{
+	char buf[QUERY_LABEL_REPLY_LEN];
+	uint32_t allow, deny, audit, quiet;
+	int fd, ret, saved;
+
+	if (!mask || size <= AA_QUERY_CMD_LABEL_SIZE) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	ret = pthread_once(&aafs_access_control, aafs_access_init_once);
+	if (ret) {
+		errno = EINVAL;
+		return -1;
+	} else if (!aafs_access) {
+		errno = ENOMEM;
+		return -1;
+	}
+
+	fd = open(aafs_access, O_RDWR);
+	if (fd == -1)
+		return -1;
+
+	memcpy(query, AA_QUERY_CMD_LABEL, AA_QUERY_CMD_LABEL_SIZE);
+	errno = 0;
+	ret = write(fd, query, size);
+	if (ret != size) {
+		if (ret >= 0)
+			errno = EPROTO;
+		return -1;
+	}
+
+	ret = read(fd, buf, QUERY_LABEL_REPLY_LEN);
+	saved = errno;
+	(void)close(fd);
+	errno = saved;
+	if (ret != QUERY_LABEL_REPLY_LEN) {
+		if (ret >= 0)
+			errno = EPROTO;
+		return -1;
+	}
+
+	ret = sscanf(buf, "allow 0x%8" SCNx32 "\n"
+			  "deny 0x%8"  SCNx32 "\n"
+			  "audit 0x%8" SCNx32 "\n"
+			  "quiet 0x%8" SCNx32 "\n",
+		     &allow, &deny, &audit, &quiet);
+	if (ret != 4) {
+		errno = EPROTONOSUPPORT;
+		return -1;
+	}
+
+	*allowed = mask & ~(allow & ~deny) ? 0 : 1;
+	if (!(*allowed))
+		audit = 0xFFFFFFFF;
+	*audited = mask & ~(audit & ~quiet) ? 0 : 1;
+
+	return 0;
 }

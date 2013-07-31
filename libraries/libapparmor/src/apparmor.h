@@ -18,9 +18,40 @@
 #ifndef _SYS_APPARMOR_H_
 #define _SYS_APPARMOR_H	1
 
+#include <stdint.h>
 #include <sys/types.h>
 
 __BEGIN_DECLS
+
+/*
+ * Class of mediation types in the AppArmor policy db
+ */
+#define AA_CLASS_COND		0
+#define AA_CLASS_UNKNOWN	1
+#define AA_CLASS_FILE		2
+#define AA_CLASS_CAP		3
+#define AA_CLASS_NET		4
+#define AA_CLASS_RLIMITS	5
+#define AA_CLASS_DOMAIN		6
+#define AA_CLASS_MOUNT		7
+#define AA_CLASS_NS_DOMAIN	8
+#define AA_CLASS_PTRACE		9
+
+#define AA_CLASS_ENV		16
+
+#define AA_CLASS_DBUS		32
+#define AA_CLASS_X		33
+
+
+/* Permission Flags for Mediation classes */
+#define AA_MAY_WRITE		(1 << 1)
+#define AA_MAY_READ		(1 << 2)
+#define AA_MAY_BIND		(1 << 6)
+
+#define AA_DBUS_SEND		AA_MAY_WRITE
+#define AA_DBUS_RECEIVE		AA_MAY_READ
+#define AA_DBUS_BIND		AA_MAY_BIND
+
 
 /* Prototypes for apparmor state queries */
 extern int aa_is_enabled(void);
@@ -50,6 +81,16 @@ extern int aa_gettaskcon(pid_t target, char **con, char **mode);
 extern int aa_getcon(char **con, char **mode);
 extern int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode);
 extern int aa_getpeercon(int fd, char **con, char **mode);
+
+/* A NUL character is used to separate the query command prefix string from the
+ * rest of the query string. The query command sizes intentionally include the
+ * NUL-terminator in their values.
+ */
+#define AA_QUERY_CMD_LABEL		"label"
+#define AA_QUERY_CMD_LABEL_SIZE		sizeof(AA_QUERY_CMD_LABEL)
+
+extern int aa_query_label(uint32_t mask, char *query, size_t size, int *allow,
+			  int *audit);
 
 #define __macroarg_counter(Y...) __macroarg_count1 ( , ##Y)
 #define __macroarg_count1(Y...) __macroarg_count2 (Y, 16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)

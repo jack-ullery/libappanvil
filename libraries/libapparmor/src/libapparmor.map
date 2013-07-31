@@ -37,3 +37,10 @@ APPARMOR_1.1 {
   local:
 	*;
 } APPARMOR_1.0;
+
+APPARMOR_3.0 {
+  global:
+	aa_query_label;
+  local:
+	*;
+} APPARMOR_1.1;

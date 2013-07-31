@@ -47,7 +47,7 @@ lib_LTLIBRARIES = libapparmor.la
 noinst_HEADERS = grammar.h parser.h scanner.h af_protos.h
 
 libapparmor_la_SOURCES = grammar.y libaalogparse.c kernel_interface.c scanner.c
-libapparmor_la_LDFLAGS = -version-info $(AA_LIB_CURRENT):$(AA_LIB_REVISION):$(AA_LIB_AGE) -XCClinker -dynamic \
+libapparmor_la_LDFLAGS = -version-info $(AA_LIB_CURRENT):$(AA_LIB_REVISION):$(AA_LIB_AGE) -XCClinker -dynamic -pthread \
 	-Wl,--version-script=$(top_srcdir)/src/libapparmor.map -Wl,-soname=libapparmor.so.1
 
 pkgconfigdir = $(libdir)/pkgconfig
