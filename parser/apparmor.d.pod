@@ -3,7 +3,7 @@
 #                  2008, 2009
 #    NOVELL (All rights reserved)
 #
-#    Copyright (c) 2010 - 2012
+#    Copyright (c) 2010 - 2013
 #    Canonical Ltd. (All rights reserved)
 #
 #    This program is free software; you can redistribute it and/or
@@ -54,7 +54,7 @@ B<COMMENT> = '#' I<TEXT>
 
 B<TEXT> = any characters
 
-B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> | I<NETWORK RULE> | I<MOUNT RULE> | I<FILE RULE> | 'change_profile -> ' I<PROGRAMCHILD> ) ... ] '}'
+B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> | I<NETWORK RULE> | I<MOUNT RULE> | I<DBUS RULE> | I<FILE RULE> | 'change_profile -> ' I<PROGRAMCHILD> ) ... ] '}'
 
 B<SUBPROFILE> = [ I<COMMENT> ... ] ( I<PROGRAMHAT> | 'profile ' I<PROGRAMCHILD> ) '{' [ ( I<FILE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}'
 
@@ -98,6 +98,34 @@ B<MOUNT FLAGS LIST> = Comma separated list of I<MOUNT FLAGS>.
 B<MOUNT FLAGS> = ( 'ro' | 'rw' | 'nosuid' | 'suid' | 'nodev' | 'dev' | 'noexec' | 'exec' | 'sync' | 'async' | 'remount' | 'mand' | 'nomand' | 'dirsync' | 'nodirsync' | 'noatime' | 'atime' | 'nodiratime' | 'diratime' | 'bind' | 'move' | 'rec' | 'verbose' | 'silent' | 'load' | 'acl' | 'noacl' | 'unbindable' | 'private' | 'slave' | 'shared' | 'relative' | 'norelative' | 'iversion' | 'noiversion' | 'strictatime' | 'nouser' | 'user' )
 
 B<MOUNT EXPRESSION> = ( I<ALPHANUMERIC> | I<AARE> ) ...
+
+B<DBUS RULE> = ( I<DBUS MESSAGE RULE> | I<DBUS SERVICE RULE> | I<DBUS COMBINED RULE> )
+
+B<DBUS MESSAGE RULE> = [ 'audit' ] [ 'deny' ] 'dbus' [ I<DBUS ACCESS EXPRESSION> ] [ I<DBUS BUS> ] [ I<DBUS PATH> ] [ I<DBUS INTERFACE> ] [ I<DBUS MEMBER> ] [ I<DBUS PEER> ]
+
+B<DBUS SERVICE RULE> = [ 'audit' ] [ 'deny' ] 'dbus' [ I<DBUS ACCESS EXPRESSION> ] [ I<DBUS BUS> ] [ I<DBUS NAME> ]
+
+B<DBUS COMBINED RULE> = [ 'audit' ] [ 'deny' ] 'dbus' [ I<DBUS ACCESS EXPRESSION> ] [ I<DBUS BUS> ]
+
+B<DBUS ACCESS EXPRESSION> = ( I<DBUS ACCESS> | '(' I<DBUS ACCESS LIST> ')' )
+
+B<DBUS BUS> = 'bus' '=' '(' 'system' | 'session' | '"' I<AARE> '"' | I<AARE> ')'
+
+B<DBUS PATH> = 'path' '=' '(' '"' I<AARE> '"' | I<AARE> ')'
+
+B<DBUS INTERFACE> = 'interface' '=' '(' '"' I<AARE> '"' | I<AARE> ')'
+
+B<DBUS MEMBER> = 'member' '=' '(' '"' I<AARE> '"' | I<AARE> ')'
+
+B<DBUS PEER> = 'peer' '=' '(' [ I<DBUS NAME> ] [ I<DBUS LABEL> ] ')'
+
+B<DBUS NAME> = 'name' '=' '(' '"' I<AARE> '"' | I<AARE> ')'
+
+B<DBUS LABEL> = 'label' '=' '(' '"' I<AARE> '"' | I<AARE> ')'
+
+B<DBUS ACCESS LIST> = Comma separated list of I<DBUS ACCESS>
+
+B<DBUS ACCESS> = ( 'send' | 'receive' | 'bind' )  (some accesses are incompatible with some rules; see below.)
 
 B<AARE> = B<?*[]{}^> (see below for meanings)
 
@@ -624,6 +652,58 @@ $ mount -o nodev,user /dev/foo /mnt
 =back
 
 =back
+
+=head2 DBus rules
+
+AppArmor supports DBus mediation. The mediation is performed in conjunction
+with the DBus daemon. The DBus daemon verifies that communications over the
+bus are permitted by AppArmor policy.
+
+AppArmor DBus rules are accumulated so that the granted DBus permissions are
+the union of all the listed DBus rule permissions.
+
+AppArmor DBus rules are broad and general and become more restrictive as
+further information is specified. Policy may be specified down to the interface
+member level (method or signal name), however the contents of messages are not
+examined.
+
+Some AppArmor DBus permissions are not compatible with all AppArmor DBus rules.
+The 'bind' permission cannot be used in message rules. The 'send' and 'receive'
+permissions cannot be used in service rules.
+
+AppArmor DBus permissions are implied when a rule does not explicitly state an
+access list. By default, all DBus permissions are implied. Only message
+permissions are implied for message rules and only service permissions are
+implied for service rules.
+
+Example AppArmor DBus rules:
+
+    # Allow all DBus access
+    dbus,
+
+    # Explicitly allow all DBus access,
+    dbus (send, receive, bind),
+
+    # Deny send/receive/bind access to the session bus
+    deny dbus bus=session,
+
+    # Allow bind access for a particular name on any bus
+    dbus bind name=com.example.ExampleName,
+
+    # Allow receive access for a particular path and interface
+    dbus receive path=/com/example/path interface=com.example.Interface,
+
+    # Deny send/receive access to the system bus for a particular interface
+    deny dbus bus=system interface=com.example.ExampleInterface,
+
+    # Allow send access for a particular path, interface, member, and pair of
+    # peer names:
+    dbus send
+         bus=session
+         path=/com/example/path
+         interface=com.example.Interface
+         member=ExampleMethod
+         peer=(name=(com.example.ExampleName1|com.example.ExampleName2)),
 
 =head2 Variables
 
