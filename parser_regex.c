@@ -29,6 +29,7 @@
 #include "libapparmor_re/apparmor_re.h"
 #include "libapparmor_re/aare_rules.h"
 #include "mount.h"
+#include "dbus.h"
 #include "policydb.h"
 
 enum error_type {
@@ -1041,7 +1042,107 @@ fail:
 }
 
 
-int post_process_policydb_ents(struct codomain *cod)
+static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry)
+{
+	char busbuf[PATH_MAX + 3];
+	char namebuf[PATH_MAX + 3];
+	char peer_labelbuf[PATH_MAX + 3];
+	char pathbuf[PATH_MAX + 3];
+	char ifacebuf[PATH_MAX + 3];
+	char memberbuf[PATH_MAX + 3];
+	char *p, *vec[6];
+
+	pattern_t ptype;
+	int pos;
+
+	if (!entry) 		/* shouldn't happen */
+		return TRUE;
+
+	p = busbuf;
+	p += sprintf(p, "\\x%02x", AA_CLASS_DBUS);
+
+	if (entry->bus) {
+		ptype = convert_aaregex_to_pcre(entry->bus, 0, p,
+						PATH_MAX+3 - (p - busbuf), &pos);
+		if (ptype == ePatternInvalid)
+			goto fail;
+	} else {
+		/* match any char except \000 0 or more times */
+		strcpy(p, "[^\\000]*");
+	}
+	vec[0] = busbuf;
+
+	if (entry->name) {
+		ptype = convert_aaregex_to_pcre(entry->name, 0, namebuf,
+						PATH_MAX+3, &pos);
+		if (ptype == ePatternInvalid)
+			goto fail;
+		vec[1] = namebuf;
+	} else {
+		/* match any char except \000 0 or more times */
+		vec[1] = "[^\\000]*";
+	}
+
+	if (entry->peer_label) {
+		ptype = convert_aaregex_to_pcre(entry->peer_label, 0,
+						peer_labelbuf, PATH_MAX+3,
+						&pos);
+		if (ptype == ePatternInvalid)
+			goto fail;
+		vec[2] = peer_labelbuf;
+	} else {
+		/* match any char except \000 0 or more times */
+		vec[2] = "[^\\000]*";
+	}
+
+	if (entry->path) {
+		ptype = convert_aaregex_to_pcre(entry->path, 0, pathbuf,
+						PATH_MAX+3, &pos);
+		if (ptype == ePatternInvalid)
+			goto fail;
+		vec[3] = pathbuf;
+	} else {
+		/* match any char except \000 0 or more times */
+		vec[3] = "[^\\000]*";
+	}
+
+	if (entry->interface) {
+		ptype = convert_aaregex_to_pcre(entry->interface, 0, ifacebuf,
+						PATH_MAX+3, &pos);
+		if (ptype == ePatternInvalid)
+			goto fail;
+		vec[4] = ifacebuf;
+	} else {
+		/* match any char except \000 0 or more times */
+		vec[4] = "[^\\000]*";
+	}
+
+	if (entry->member) {
+		ptype = convert_aaregex_to_pcre(entry->member, 0, memberbuf,
+						PATH_MAX+3, &pos);
+		if (ptype == ePatternInvalid)
+			goto fail;
+		vec[5] = memberbuf;
+	} else {
+		/* match any char except \000 0 or more times */
+		vec[5] = "[^\\000]*";
+	}
+
+	if (entry->mode & AA_DBUS_BIND) {
+		if (!aare_add_rule_vec(dfarules, entry->deny, entry->mode & AA_DBUS_BIND, entry->audit & AA_DBUS_BIND, 2, vec, dfaflags))
+			goto fail;
+	}
+	if (entry->mode & ~AA_DBUS_BIND) {
+		if (!aare_add_rule_vec(dfarules, entry->deny, entry->mode, entry->audit, 6, vec, dfaflags))
+			goto fail;
+	}
+	return TRUE;
+
+fail:
+	return FALSE;
+}
+
+static int post_process_mnt_ents(struct codomain *cod)
 {
 	int ret = TRUE;
 	int count = 0;
@@ -1058,8 +1159,35 @@ int post_process_policydb_ents(struct codomain *cod)
 	} else if (cod->mnt_ents && !kernel_supports_mount)
 		pwarn("profile %s mount rules not enforced\n", cod->name);
 
-	cod->policy_rule_count = count;
+	cod->policy_rule_count += count;
 	return ret;
+}
+
+static int post_process_dbus_ents(struct codomain *cod)
+{
+	int ret = TRUE;
+	struct dbus_entry *entry;
+	int count = 0;
+
+	list_for_each(cod->dbus_ents, entry) {
+		if (regex_type == AARE_DFA &&
+		    !process_dbus_entry(cod->policy_rules, entry))
+			ret = FALSE;
+		count++;
+	}
+
+	cod->policy_rule_count += count;
+	return ret;
+}
+
+int post_process_policydb_ents(struct codomain *cod)
+{
+	if (!post_process_mnt_ents(cod))
+		return FALSE;
+	if (!post_process_dbus_ents(cod))
+		return FALSE;
+
+	return TRUE;
 }
 
 int process_policydb(struct codomain *cod)

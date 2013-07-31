@@ -142,6 +142,7 @@ struct codomain {
 
 	char *exec_table[AA_EXEC_COUNT];
 	struct cod_entry *entries;
+	struct dbus_entry *dbus_ents;
 	struct mnt_entry *mnt_ents;
 
 	void *hat_table;
@@ -301,6 +302,8 @@ extern char *basedir;
 /* parser_regex.c */
 extern int process_regex(struct codomain *cod);
 extern int post_process_entry(struct cod_entry *entry);
+extern int process_dbus(struct codomain *cod);
+
 extern void reset_regex(void);
 
 extern int process_policydb(struct codomain *cod);
@@ -319,6 +322,7 @@ extern void free_value_list(struct value_list *list);
 extern void print_value_list(struct value_list *list);
 extern struct cond_entry *new_cond_entry(char *name, int eq, struct value_list *list);
 extern void free_cond_entry(struct cond_entry *ent);
+extern void free_cond_list(struct cond_entry *ents);
 extern void print_cond_entry(struct cond_entry *ent);
 extern char *processid(char *string, int len);
 extern char *processquoted(char *string, int len);
@@ -328,6 +332,7 @@ extern int name_to_capability(const char *keyword);
 extern int get_rlimit(const char *name);
 extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);
+extern int parse_dbus_mode(const char *str_mode, int *mode, int fail);
 extern struct cod_entry *new_entry(char *namespace, char *id, int mode,
 				   char *link_id);
 extern struct aa_network_entry *new_network_ent(unsigned int family,
@@ -344,6 +349,7 @@ extern int str_to_boolean(const char* str);
 extern struct cod_entry *copy_cod_entry(struct cod_entry *cod);
 extern void free_cod_entries(struct cod_entry *list);
 extern void free_mnt_entries(struct mnt_entry *list);
+extern void free_dbus_entries(struct dbus_entry *list);
 
 /* parser_symtab.c */
 struct set_value {;
@@ -385,6 +391,7 @@ extern void post_process_file_entries(struct codomain *cod);
 extern void post_process_mnt_entries(struct codomain *cod);
 extern int post_process_policy(int debug_only);
 extern int process_hat_regex(struct codomain *cod);
+extern int process_hat_dbus(struct codomain *cod);
 extern int process_hat_variables(struct codomain *cod);
 extern int process_hat_policydb(struct codomain *cod);
 extern int post_merge_rules(void);

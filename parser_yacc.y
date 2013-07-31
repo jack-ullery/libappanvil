@@ -33,6 +33,7 @@
 
 #include "parser.h"
 #include "mount.h"
+#include "dbus.h"
 #include "parser_include.h"
 #include <unistd.h>
 #include <netinet/in.h>
@@ -81,6 +82,7 @@ void add_local_entry(struct codomain *cod);
 
 %token TOK_ID
 %token TOK_CONDID
+%token TOK_CONDLISTID
 %token TOK_CARET
 %token TOK_OPEN
 %token TOK_CLOSE
@@ -122,6 +124,13 @@ void add_local_entry(struct codomain *cod);
 %token TOK_UMOUNT
 %token TOK_PIVOTROOT
 %token TOK_IN
+%token TOK_DBUS
+%token TOK_SEND
+%token TOK_RECEIVE
+%token TOK_BIND
+%token TOK_READ
+%token TOK_WRITE
+%token TOK_PEER
 
  /* rlimits */
 %token TOK_RLIMIT
@@ -158,6 +167,7 @@ void add_local_entry(struct codomain *cod);
 	struct cod_net_entry *net_entry;
 	struct cod_entry *user_entry;
 	struct mnt_entry *mnt_entry;
+	struct dbus_entry *dbus_entry;
 
 	struct flagval flags;
 	int fmode;
@@ -174,6 +184,7 @@ void add_local_entry(struct codomain *cod);
 
 %type <id> 	TOK_ID
 %type <id>	TOK_CONDID
+%type <id>	TOK_CONDLISTID
 %type <mode> 	TOK_MODE
 %type <fmode>   file_mode
 %type <cod>	profile_base
@@ -192,6 +203,8 @@ void add_local_entry(struct codomain *cod);
 %type <mnt_entry> mnt_rule
 %type <cond_entry> opt_conds
 %type <cond_entry> cond
+%type <cond_entry> cond_list
+%type <cond_entry> opt_cond_list
 %type <flags>	flags
 %type <flags>	flagvals
 %type <flags>	flagval
@@ -211,6 +224,10 @@ void add_local_entry(struct codomain *cod);
 %type <boolean> opt_flags
 %type <id>	opt_namespace
 %type <id>	opt_id
+%type <fmode>	dbus_perm
+%type <fmode>	dbus_perms
+%type <fmode>	opt_dbus_perm
+%type <dbus_entry>	dbus_rule
 %type <transition> opt_named_transition
 %type <boolean> opt_unsafe
 %type <boolean> opt_file
@@ -680,6 +697,25 @@ rules: rules opt_audit_flag mnt_rule
 		$$ = $1;
 	}
 
+rules:  rules opt_audit_flag TOK_DENY dbus_rule
+	{
+		$4->deny = $4->mode;
+		if ($2)
+			$4->audit = $4->mode;
+		$4->next = $1->dbus_ents;
+		$1->dbus_ents = $4;
+		$$ = $1;
+	}
+
+rules: rules opt_audit_flag dbus_rule
+	{
+		if ($2)
+			$3->audit = $3->mode;
+		$3->next = $1->dbus_ents;
+		$1->dbus_ents = $3;
+		$$ = $1;
+	}
+
 rules:	rules change_profile
 	{
 		PDEBUG("matched: rules change_profile\n");
@@ -1103,6 +1139,14 @@ opt_conds: { /* nothing */ $$ = NULL; }
 		$$ = $2;
 	}
 
+cond_list: TOK_CONDLISTID TOK_EQUALS TOK_OPENPAREN opt_conds TOK_CLOSEPAREN
+	{
+		$$ = $4;
+	}
+
+opt_cond_list: { /* nothing */ $$ = NULL; }
+	| cond_list { $$ = $1; }
+
 mnt_rule: TOK_MOUNT opt_conds opt_id TOK_END_OF_RULE
 	{
 		$$ = do_mnt_rule($2, $3, NULL, NULL, AA_MAY_MOUNT);
@@ -1140,6 +1184,51 @@ mnt_rule: TOK_PIVOTROOT opt_conds opt_id opt_named_transition TOK_END_OF_RULE
 			name = $4.name;
 
 		$$ = do_pivot_rule($2, $3, name);
+	}
+
+dbus_perm: TOK_VALUE
+	{
+		if (strcmp($1, "bind") == 0)
+			$$ = AA_DBUS_BIND;
+		else if (strcmp($1, "send") == 0 || strcmp($1, "write") == 0)
+			$$ = AA_DBUS_SEND;
+		else if (strcmp($1, "receive") == 0 || strcmp($1, "read") == 0)
+			$$ = AA_DBUS_RECEIVE;
+		else if ($1) {
+			parse_dbus_mode($1, &$$, 1);
+		} else
+			$$ = 0;
+
+		if ($1)
+			free($1);
+	}
+	| TOK_BIND { $$ = AA_DBUS_BIND; }
+	| TOK_SEND { $$ = AA_DBUS_SEND; }
+	| TOK_RECEIVE { $$ = AA_DBUS_RECEIVE; }
+	| TOK_READ { $$ = AA_DBUS_RECEIVE; }
+	| TOK_WRITE { $$ = AA_DBUS_SEND; }
+	| TOK_MODE
+	{
+		parse_dbus_mode($1, &$$, 1);
+	}
+
+dbus_perms: { /* nothing */ $$ = 0; }
+	| dbus_perms dbus_perm { $$ = $1 | $2; }
+	| dbus_perms TOK_COMMA dbus_perm { $$ = $1 | $3; }
+
+opt_dbus_perm: { /* nothing */ $$ = 0; }
+	| dbus_perm  { $$ = $1; }
+	| TOK_OPENPAREN dbus_perms TOK_CLOSEPAREN { $$ = $2; }
+
+dbus_rule: TOK_DBUS opt_dbus_perm opt_conds opt_cond_list TOK_END_OF_RULE
+	{
+		struct dbus_entry *ent;
+
+		ent = new_dbus_entry($2, $3, $4);
+		if (!ent) {
+			yyerror(_("Memory allocation error."));
+		}
+		$$ = ent;
 	}
 
 hat_start: TOK_CARET {}

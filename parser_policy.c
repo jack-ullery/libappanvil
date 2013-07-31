@@ -30,6 +30,7 @@
 
 #include "parser.h"
 #include "mount.h"
+#include "dbus.h"
 #include "parser_yacc.h"
 
 /* #define DEBUG */
@@ -818,6 +819,7 @@ void free_policy(struct codomain *cod)
 	free_hat_table(cod->hat_table);
 	free_cod_entries(cod->entries);
 	free_mnt_entries(cod->mnt_ents);
+	free_dbus_entries(cod->dbus_ents);
 	if (cod->dfarules)
 		aare_delete_ruleset(cod->dfarules);
 	if (cod->dfa)
