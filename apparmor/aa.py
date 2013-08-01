@@ -236,20 +236,29 @@ def which(file):
     return None
 
 def convert_regexp(regexp):
-    ## To Do
-    #regex_escape = re.compile('(?<!\\)(\.|\+|\$)')
-    #regexp = regex_escape.sub('\\')
     new_reg = re.sub(r'(?<!\\)(\.|\+|\$)',r'\\\1',regexp)
+    # below will fail if { or } or , are part of a path too?   
+    #if re.search('({.*,.*)}', new_reg):
+    #    new_reg = new_reg.replace('{', '(')
+    #    new_reg = new_reg.replace('}', '}')
+    #    new_reg = new_reg.replace(',', '|')
     
-    new_reg = new_reg.replace('?', '[^/\000]')
-    dup='_SGDHBGFHFGFJFGBVHGFFGHF_MFMFH_'
-    new_reg = new_reg.replace('**', dup)
-    #de_dup=r'((?<=/)[^\000]*|(?<!/)[^\000]+)'
-    de_dup=r'((?<=/).*|(?<!/).+)'
-    #new_reg = new_reg.replace('*', r'((?<=/)[^/\000]*|(?<!/)[^/\000]+)')
-    new_reg = new_reg.replace('*', r'((?<=/)[^/]*|(?<!/)[^/]+)')
-    new_reg = new_reg.replace(dup, de_dup)
+    while re.search('{.*,.*}', new_reg):
+        match = re.search('(.*){(.*),(.*)}(.*)', new_reg).groups()
+        prev = match[0]
+        after = match[3]
+        p1 = match[1].replace(',','|')
+        p2 = match[2].replace(',','|')
+        new_reg = prev+'('+p1+'|'+p2+')'+after
+        
+    new_reg = regexp.replace('?', '[^/\000]')
+    #new_reg = regexp.replace('**', '((?<=/)[^\000]*|(?<!/)[^\000]+)')
+    #new_reg = regexp.replace('*', '((?<=/)[^/\000]*|(?<!/)[^/\000]+)')
+    new_reg = regexp.replace('**', '((?<=/)[^\000]+|(?<!/)[^\000]*)')
+    new_reg = regexp.replace('*', '((?<=/)[^/\000]+|(?<!/)[^/\000]*)')
+    
     return new_reg
+    
     
     
 def get_full_path(original_path):
@@ -805,6 +814,10 @@ def yast_select_and_upload_profiles(title, message, profiles_up):
             if p[0] not in selected_profiles:
                 unselected_profiles.append(p[0])
         set_profiles_local_only(unselected_profiles)
+
+def upload_profile(url, user, passw, distro, p, profile_string, changelog):
+    # To-Do
+    return None, None
 
 def console_select_and_upload_profiles(title, message, profiles_up):
     url = cfg['repository']['url']
@@ -3709,11 +3722,11 @@ def serialize_profile(profile_data, name, options):
         comment.replace('\\n', '\n')
         string += comment + '\n'
     
-    filename = get_profile_filename(name)
-    if filelist.get(filename, False):
-        data += write_alias(filelist[filename], 0)
-        data += write_list_vars(filelist[filename], 0)
-        data += write_includes(filelist[filename], 0)
+    prof_filename = get_profile_filename(name)
+    if filelist.get(prof_filename, False):
+        data += write_alias(filelist[prof_filename], 0)
+        data += write_list_vars(filelist[prof_filename], 0)
+        data += write_includes(filelist[prof_filename], 0)
     
     data += write_piece(profile_data, 0, name, name, include_flags)
     
@@ -3726,15 +3739,15 @@ def write_profile_ui_feedback(profile):
     write_profile(profile)
     
 def write_profile(profile):
-    filename = None
+    prof_filename = None
     if aa[profile][profile].get('filename', False):
-        filename = aa[profile][profile]['filename']
+        prof_filename = aa[profile][profile]['filename']
     else:
-        filename = get_profile_filename(profile)
+        prof_filename = get_profile_filename(profile)
     
     newprof = tempfile.NamedTemporaryFile('rw', suffix='~' ,delete=False)
-    if os.path.exists(filename):
-        shutil.copymode(filename, newprof.name)
+    if os.path.exists(prof_filename):
+        shutil.copymode(prof_filename, newprof.name)
     else:
         #permission_600 = stat.S_IRUSR | stat.S_IWUSR    # Owner read and write
         #os.chmod(newprof.name, permission_600)
@@ -3747,7 +3760,7 @@ def write_profile(profile):
     newprof.write(profile_string)
     newprof.close()
     
-    os.rename(newprof.name, filename)
+    os.rename(newprof.name, prof_filename)
     
     changed.pop(profile)
     original_aa[profile] = deepcopy(aa[profile])
@@ -3838,9 +3851,9 @@ def reload_base(bin_path):
     if not check_for_apparmor():
         return None
     
-    filename = get_profile_filename(bin_path)
+    prof_filename = get_profile_filename(bin_path)
     
-    subprocess.call("cat '%s' | %s -I%s -r >/dev/null 2>&1" %(filename, parser ,profile_dir), shell=True)
+    subprocess.call("cat '%s' | %s -I%s -r >/dev/null 2>&1" %(prof_filename, parser ,profile_dir), shell=True)
     
 def reload(bin_path):
     bin_path = find_executable(bin_path)
