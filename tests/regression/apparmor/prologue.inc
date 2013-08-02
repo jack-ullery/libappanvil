@@ -21,6 +21,21 @@
 #
 # For this file, functions are first, entry point code is at end, see "MAIN"
 
+required_features()
+{
+	if [ ! -e "/sys/kernel/security/apparmor/features/" ] ; then
+		echo "Kernel feature masks not supported. Skipping tests ..."
+		exit 0
+	fi
+
+	for f in $@ ; do
+		if [ ! -e "/sys/kernel/security/apparmor/features/$f" ] ; then
+			echo "Required feature $f not available. Skipping tests ..."
+			exit 0
+		fi
+	done
+}
+
 fatalerror()
 {
 	# global _fatal
