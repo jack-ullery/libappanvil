@@ -129,7 +129,7 @@ checktestbg()
 	then
 		echo "SIGNAL$(($rc - 128))" > $outfile
 	fi
-	checktestfg
+	checktestfg "$@"
 }
 
 runtestfg()
@@ -206,6 +206,15 @@ checktestfg()
 			return
 			;;
 	esac
+
+	if [ $# -gt 0 ]
+	then
+		$1
+		if [ "$teststatus" != "pass" ]
+		then
+			return
+		fi
+	fi
 
 	if [ -n "$VERBOSE" ]; then
 		echo "ok: ${_testdesc}"
