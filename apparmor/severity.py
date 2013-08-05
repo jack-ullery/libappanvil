@@ -1,7 +1,7 @@
 from __future__ import with_statement
 import os
 import re
-from apparmor.common import AppArmorException, error, debug, open_file_read, warn, msg
+from apparmor.common import AppArmorException, error, debug, open_file_read, warn, msg, convert_regexp
 
 class Severity:
     def __init__(self, dbname=None, default_rank=10):
@@ -43,7 +43,7 @@ class Severity:
                         for index, piece in enumerate(pieces):
                             if '*' in piece:
                                 path = '/'.join(pieces[index:])
-                                regexp = self.convert_regexp(path)
+                                regexp = convert_regexp(path)
                                 ptr[regexp] = {'AA_RANK': {'r': read, 'w': write, 'x': execute}}
                                 break
                             else:
@@ -65,24 +65,24 @@ class Severity:
                 raise AppArmorException("Unexpected line in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))   
         database.close()
         
-    def convert_regexp(self, path):
-        """Returns the regex form of the path"""
-        pattern_or = re.compile('{.*\,.*}')    # The regex pattern for {a,b}
-        internal_glob = '__KJHDKVZH_AAPROF_INTERNAL_GLOB_SVCUZDGZID__'
-        regex = path
-        for character in ['.', '+', '[', ']']:    # Escape the regex symbols
-            regex = regex.replace(character, "\%s" % character)
-        # Convert the ** to regex
-        regex = regex.replace('**', '.'+internal_glob)
-        # Convert the * to regex
-        regex = regex.replace('*', '[^/]'+internal_glob)
-        # Convert {a,b} to (a|b) form
-        if pattern_or.match(regex):
-            for character, replacement in zip('{},', '()|'):
-                regex = regex.replace(character, replacement)
-        # Restore the * in the final regex
-        regex = regex.replace(internal_glob, '*')
-        return regex
+#     def convert_regexp(self, path):
+#         """Returns the regex form of the path"""
+#         pattern_or = re.compile('{.*\,.*}')    # The regex pattern for {a,b}
+#         internal_glob = '__KJHDKVZH_AAPROF_INTERNAL_GLOB_SVCUZDGZID__'
+#         regex = path
+#         for character in ['.', '+', '[', ']']:    # Escape the regex symbols
+#             regex = regex.replace(character, "\%s" % character)
+#         # Convert the ** to regex
+#         regex = regex.replace('**', '.'+internal_glob)
+#         # Convert the * to regex
+#         regex = regex.replace('*', '[^/]'+internal_glob)
+#         # Convert {a,b} to (a|b) form
+#         if pattern_or.match(regex):
+#             for character, replacement in zip('{},', '()|'):
+#                 regex = regex.replace(character, replacement)
+#         # Restore the * in the final regex
+#         regex = regex.replace(internal_glob, '*')
+#         return regex
     
     def handle_capability(self, resource):
         """Returns the severity of for the capability resource, default value if no match"""

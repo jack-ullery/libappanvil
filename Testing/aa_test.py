@@ -8,6 +8,7 @@ import sys
 
 sys.path.append('../')
 import apparmor.aa
+
 #from apparmor.aa import parse_event
 
 class Test(unittest.TestCase):
@@ -82,6 +83,7 @@ class Test(unittest.TestCase):
         #    self.assertEqual(apparmor.aa.str_to_mode(string), mode)
             
         #self.assertEqual(apparmor.aa.str_to_mode('C'), 2048)
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

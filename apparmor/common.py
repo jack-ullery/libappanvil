@@ -3,6 +3,7 @@ import codecs
 import collections
 import glob
 import os
+import re
 import subprocess
 import sys
 import termios
@@ -152,3 +153,38 @@ def hasher():
     """A neat alternative to perl's hash reference"""
     # Creates a dictionary for any depth and returns empty dictionary otherwise
     return collections.defaultdict(hasher)
+
+
+def convert_regexp(regexp):
+    regexp = regexp.strip()
+    new_reg = re.sub(r'(?<!\\)(\.|\+|\$)',r'\\\1',regexp)
+    # below will fail if { or } or , are part of a path too?   
+    #if re.search('({.*,.*)}', new_reg):
+    #    new_reg = new_reg.replace('{', '(')
+    #    new_reg = new_reg.replace('}', '}')
+    #    new_reg = new_reg.replace(',', '|')
+    
+    while re.search('{.*,.*}', new_reg):
+        match = re.search('(.*){(.*),(.*)}(.*)', new_reg).groups()
+        prev = match[0]
+        after = match[3]
+        p1 = match[1].replace(',','|')
+        p2 = match[2].replace(',','|')
+        new_reg = prev+'('+p1+'|'+p2+')'+after
+        
+    new_reg = new_reg.replace('?', '[^/\000]')
+    
+    multi_glob = '__KJHDKVZH_AAPROF_INTERNAL_GLOB_SVCUZDGZID__'
+    new_reg = new_reg.replace('**', multi_glob)
+    #print(new_reg)
+    
+    # Match atleast one character if * or ** after /
+    # ?< is the negative lookback operator
+    new_reg = new_reg.replace('*', '(((?<=/)[^/\000]+)|((?<!/)[^/\000]*))')
+    new_reg = new_reg.replace(multi_glob, '(((?<=/)[^\000]+)|((?<!/)[^\000]*))')
+    if regexp[0] != '^':
+        new_reg = '^' + new_reg
+    if regexp[-1] != '$':
+        new_reg =  new_reg + '$'
+    return new_reg
+

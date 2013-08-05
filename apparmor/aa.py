@@ -1,6 +1,5 @@
 #6585
 #382-430
-#480-525
 #6414-6472
 # No old version logs, only 2.6 + supported
 #global variable names corruption
@@ -24,7 +23,7 @@ import LibAppArmor
 
 from apparmor.common import (AppArmorException, error, debug, msg, 
                              open_file_read, readkey, valid_path,
-                             hasher, open_file_write)
+                             hasher, open_file_write, convert_regexp)
 
 from apparmor.ui import *
 from copy import deepcopy
@@ -234,32 +233,6 @@ def which(file):
         if os.access(env_path, os.X_OK):
             return env_path
     return None
-
-def convert_regexp(regexp):
-    new_reg = re.sub(r'(?<!\\)(\.|\+|\$)',r'\\\1',regexp)
-    # below will fail if { or } or , are part of a path too?   
-    #if re.search('({.*,.*)}', new_reg):
-    #    new_reg = new_reg.replace('{', '(')
-    #    new_reg = new_reg.replace('}', '}')
-    #    new_reg = new_reg.replace(',', '|')
-    
-    while re.search('{.*,.*}', new_reg):
-        match = re.search('(.*){(.*),(.*)}(.*)', new_reg).groups()
-        prev = match[0]
-        after = match[3]
-        p1 = match[1].replace(',','|')
-        p2 = match[2].replace(',','|')
-        new_reg = prev+'('+p1+'|'+p2+')'+after
-        
-    new_reg = regexp.replace('?', '[^/\000]')
-    #new_reg = regexp.replace('**', '((?<=/)[^\000]*|(?<!/)[^\000]+)')
-    #new_reg = regexp.replace('*', '((?<=/)[^/\000]*|(?<!/)[^/\000]+)')
-    new_reg = regexp.replace('**', '((?<=/)[^\000]+|(?<!/)[^\000]*)')
-    new_reg = regexp.replace('*', '((?<=/)[^/\000]+|(?<!/)[^/\000]*)')
-    
-    return new_reg
-    
-    
     
 def get_full_path(original_path):
     """Return the full path after resolving any symlinks"""
@@ -2017,7 +1990,9 @@ def ask_the_questions():
                         sev_db.unload_variables()
                         
                         audit_toggle = 0
-                        owner_toggle = cfg['settings']['default_owner_prompt']
+                        owner_toggle = 0
+                        if cfg['settings']['default_owner_prompt']:
+                            owner_toggle = cfg['settings']['default_owner_prompt']
                         done = False
                         while not done:
                             q =  hasher()
@@ -2682,16 +2657,6 @@ def collapse_log():
                             log[aamode][profile][hat]['netdomain'][family][sock_type] = True
 
 def profilemode(mode):
-    pass
-
-def commonprefix(old, new):
-    # T0-Do
-    # Weird regex
-    pass
-
-def commonsuffix(old, new):
-    # To-Do
-    # Weird regex
     pass
 
 def split_log_mode(mode):
@@ -4023,23 +3988,51 @@ def split_name(name):
         return name, name
     else:
         return names[0], names[1]
+def commonprefix(new, old):
+    match=re.search(r'^([^\0]*)[^\0]*(\0\1[^\0]*)*$', '\0'.join([new, old]))
+    if match:
+        return match.groups()[0]
+    return match
+
+def commonsuffix(new, old):
+    match = commonprefix(new[-1::-1], old[-1::-1])
+    if match:
+        return match[-1::-1]
 
 def matchregexp(new, old):
     if re.search('\{.*(\,.*)*\}', old):
         return None
     
-    if re.search('\[.+\]', old) or re.search('\*', old) or re.search('\?', old):
-        
-        if re.search('\{.*\,.*\}', new):
-            pass
-        
+#     if re.search('\[.+\]', old) or re.search('\*', old) or re.search('\?', old):
+#         
+#         new_reg = convert_regexp(new)
+#         old_reg = convert_regexp(old)
+#         
+#         pref = commonprefix(new, old)
+#         if pref:
+#             if convert_regexp('(*,**)$') in pref:
+#                 pref = pref.replace(convert_regexp('(*,**)$'), '')
+#             new = new.replace(pref, '', 1)
+#             old = old.replace(pref, '', 1)
+#         
+#         suff = commonsuffix(new, old)
+#         if suffix:
+#             pass
+    new_reg = convert_regexp(new)
+    if re.search(new_reg, old):
+        return True
+    
+    return None
+    
 ######Initialisations######
 
 conf = apparmor.config.Config('ini')
 cfg = conf.read_config('logprof.conf')
 
+#print(cfg['settings'])
+#if 'default_owner_prompt' in cfg['settings']:
 if cfg['settings'].get('default_owner_prompt', False):
-    cfg['settings']['default_owner_prompt'] = False
+    cfg['settings']['default_owner_prompt'] = ''
 
 profile_dir = conf.find_first_dir(cfg['settings']['profiledir']) or '/etc/apparmor.d'
 if not os.path.isdir(profile_dir):
