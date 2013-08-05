@@ -1,8 +1,3 @@
-'''
-Created on Jul 29, 2013
-
-@author: kshitij
-'''
 import unittest
 import sys
 
@@ -13,7 +8,10 @@ import apparmor.aa
 
 class Test(unittest.TestCase):
 
-
+    def test_loadinclude(self):
+        apparmor.aa.loadincludes()
+    
+        
     def test_parse_event(self):
         event = 'type=AVC msg=audit(1345027352.096:499): apparmor="ALLOWED" operation="rename_dest" parent=6974 profile="/usr/sbin/httpd2-prefork//vhost_balmar" name=2F686F6D652F7777772F62616C6D61722E646174616E6F766F322E64652F68747470646F63732F6A6F6F6D6C612F696D616765732F6B75656368656E2F666F746F20322E6A7067 pid=20143 comm="httpd2-prefork" requested_mask="wc" denied_mask="wc" fsuid=30 ouid=30'
         parsed_event = apparmor.aa.parse_event(event)

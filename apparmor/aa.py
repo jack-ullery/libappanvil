@@ -2963,23 +2963,23 @@ def parse_profile_data(data, file, do_include):
     repo_data = None
     parsed_profiles = []
     initial_comment = ''
-    RE_PROFILE_START = re.compile('^\s*(("??\/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$')
-    RE_PROFILE_END = re.compile('^\s*\}\s*(#.*)?$')
-    RE_PROFILE_CAP = re.compile('^\s*(audit\s+)?(deny\s+)?capability\s+(\S+)\s*,\s*(#.*)?$')
-    RE_PROFILE_SET_CAP = re.compile('^\s*set capability\s+(\S+)\s*,\s*(#.*)?$')
-    RE_PROFILE_LINK = re.compile('^\s*(audit\s+)?(deny\s+)?link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)\s*,\s*(#.*)?$')
-    RE_PROFILE_CHANGE_PROFILE = re.compile('^\s*change_profile\s+->\s*("??.+?"??),(#.*)?$')
-    RE_PROFILE_ALIAS = re.compile('^\s*alias\s+("??.+?"??)\s+->\s*("??.+?"??)\s*,(#.*)?$')
-    RE_PROFILE_RLIMIT = re.compile('^\s*set\s+rlimit\s+(.+)\s+<=\s*(.+)\s*,(#.*)?$')
-    RE_PROFILE_BOOLEAN = re.compile('^\s*(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*,?\s*(#.*)?$')
-    RE_PROFILE_VARIABLE = re.compile('^\s*(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\+?=\s*(.+?)\s*,?\s*(#.*)?$')
-    RE_PROFILE_CONDITIONAL = re.compile('^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*(#.*)?$')
-    RE_PROFILE_CONDITIONAL_VARIABLE = re.compile('^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$')
-    RE_PROFILE_CONDITIONAL_BOOLEAN = re.compile('^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$')
-    RE_PROFILE_PATH_ENTRY = re.compile('^\s*(audit\s+)?(deny\s+)?(owner\s+)?([\"\@\/].*?)\s+(\S+)(\s+->\s*(.*?))?\s*,\s*(#.*)?$')
-    RE_PROFILE_NETWORK = re.compile('^\s*(audit\s+)?(deny\s+)?network(.*)\s*(#.*)?$')
-    RE_PROFILE_CHANGE_HAT = re.compile('^\s*\^(\"??.+?\"??)\s*,\s*(#.*)?$')
-    RE_PROFILE_HAT_DEF = re.compile('^\s*\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$')
+    RE_PROFILE_START = re.compile('^(("??\/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$')
+    RE_PROFILE_END = re.compile('^\}\s*(#.*)?$')
+    RE_PROFILE_CAP = re.compile('^(audit\s+)?(deny\s+)?capability\s+(\S+)\s*,\s*(#.*)?$')
+    RE_PROFILE_SET_CAP = re.compile('^set capability\s+(\S+)\s*,\s*(#.*)?$')
+    RE_PROFILE_LINK = re.compile('^(audit\s+)?(deny\s+)?link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)\s*,\s*(#.*)?$')
+    RE_PROFILE_CHANGE_PROFILE = re.compile('^change_profile\s+->\s*("??.+?"??),(#.*)?$')
+    RE_PROFILE_ALIAS = re.compile('^alias\s+("??.+?"??)\s+->\s*("??.+?"??)\s*,(#.*)?$')
+    RE_PROFILE_RLIMIT = re.compile('^set\s+rlimit\s+(.+)\s+<=\s*(.+)\s*,(#.*)?$')
+    RE_PROFILE_BOOLEAN = re.compile('^(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*=\s*(true|false)\s*,?\s*(#.*)?$', flags=re.IGNORECASE)
+    RE_PROFILE_VARIABLE = re.compile('^(@\{?\w+\}?)\s*(\+?=)\s*(@*.+?)\s*,?\s*(#.*)?$')
+    RE_PROFILE_CONDITIONAL = re.compile('^if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*(#.*)?$')
+    RE_PROFILE_CONDITIONAL_VARIABLE = re.compile('^if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$')
+    RE_PROFILE_CONDITIONAL_BOOLEAN = re.compile('^if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$')
+    RE_PROFILE_PATH_ENTRY = re.compile('^(audit\s+)?(deny\s+)?(owner\s+)?([\"\@\/].*?)\s+(\S+)(\s+->\s*(.*?))?\s*,\s*(#.*)?$')
+    RE_PROFILE_NETWORK = re.compile('^(audit\s+)?(deny\s+)?network(.*)\s*(#.*)?$')
+    RE_PROFILE_CHANGE_HAT = re.compile('^\^(\"??.+?\"??)\s*,\s*(#.*)?$')
+    RE_PROFILE_HAT_DEF = re.compile('^\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$')
     if do_include:
         profile = file
         hat = file
@@ -2993,7 +2993,8 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_START.search(line).groups()
             
             if profile:
-                if profile != hat or matches[3]:
+                #print(profile, hat)
+                if profile != hat or not matches[3]:
                     raise AppArmorException('%s profile in %s contains syntax errors in line: %s.\n' % (profile, file, lineno+1))
             # Keep track of the start of a profile
             if profile and profile == hat and matches[3]:
@@ -3079,7 +3080,7 @@ def parse_profile_data(data, file, do_include):
             capability = matches[0]
             profile_data[profile][hat]['set_capability'][capability] = True
         
-        elif RE_PROFILE_LINK.ssearch(line):
+        elif RE_PROFILE_LINK.search(line):
             matches = RE_PROFILE_LINK.search(line).groups()
             
             if not profile:
@@ -3140,8 +3141,8 @@ def parse_profile_data(data, file, do_include):
             
             profile_data[profile][hat]['rlimit'][from_name] = to_name
             
-        elif RE_PROFILE_BOOLEAN.search(line, flags=re.IGNORECASE):
-            matches = RE_PROFILE_BOOLEAN.search(line, flags=re.IGNORECASE)
+        elif RE_PROFILE_BOOLEAN.search(line):
+            matches = RE_PROFILE_BOOLEAN.search(line)
             
             if not profile:
                 raise AppArmorException('Syntax Error: Unexpected boolean definition found in file: %s line: %s' % (file, lineno+1))
@@ -3153,19 +3154,20 @@ def parse_profile_data(data, file, do_include):
         
         elif RE_PROFILE_VARIABLE.search(line):
             # variable additions += and = 
-            matches = RE_PROFILE_VARIABLE.search(line)
+            matches = RE_PROFILE_VARIABLE.search(line).groups()
             
             list_var = strip_quotes(matches[0])
-            value = strip_quotes(matches[1])
+            var_operation = matches[1]
+            value = strip_quotes(matches[2])
             
             if profile:
                 if not profile_data[profile][hat].get('lvar', False):
                     profile_data[profile][hat]['lvar'][list_var] = []
-                store_list_var(profile_data[profile]['lvar'], list_var, value)
+                store_list_var(profile_data[profile]['lvar'], list_var, value, var_operation)
             else:
                 if not filelist[file].get('lvar', False):
                     filelist[file]['lvar'][list_var] = []
-                store_list_var(filelist[file]['lvar'], list_var, value)
+                store_list_var(filelist[file]['lvar'], list_var, value, var_operation)
         
         elif RE_PROFILE_CONDITIONAL.search(line):
             # Conditional Boolean
@@ -3224,7 +3226,7 @@ def parse_profile_data(data, file, do_include):
                 profile_data[profile][hat][allow]['path'][path]['to'] = nt_name
             
             if audit:
-                profile_data[profile][hat][allow]['path'][path]['audit'] = profile_data[profile][hat][allow]['path'][path].get('audit') | tmpmode
+                profile_data[profile][hat][allow]['path'][path]['audit'] = profile_data[profile][hat][allow]['path'][path].get('audit', 0) | tmpmode
             else:
                 profile_data[profile][hat][allow]['path'][path]['audit'] = 0
         
@@ -3265,7 +3267,7 @@ def parse_profile_data(data, file, do_include):
             network = matches[2]
             
             if re.search('\s+(\S+)\s+(\S+)\s*,\s*(#.*)?$', network):
-                nmatch = re.search(network, '\s+(\S+)\s+(\S+)\s*,\s*(#.*)?$').groups()
+                nmatch = re.search('\s+(\S+)\s+(\S+)\s*,\s*(#.*)?$', network).groups()
                 fam, typ = nmatch[:2]
                 profile_data[profile][hat][allow]['netdomain']['rule'][fam][typ] =  True
                 profile_data[profile][hat][allow]['netdomain']['audit'][fam][typ] = audit
@@ -3347,12 +3349,14 @@ def parse_profile_data(data, file, do_include):
 
 def separate_vars(vs):
     data = []
+
+    #data = [i.strip('"') for i in vs.split()]
     RE_VARS = re.compile('\s*((\".+?\")|([^\"]\S+))\s*(.*)$')
     while RE_VARS.search(vs):
         matches = RE_VARS.search(vs).groups()
         data.append(strip_quotes(matches[0]))
         vs = matches[3]
-    
+
     return data
 
 def is_active_profile(pname):
@@ -3361,17 +3365,25 @@ def is_active_profile(pname):
     else:
         return False
 
-def store_list_var(var, list_var, value):
+def store_list_var(var, list_var, value, var_operation):
     vlist = separate_vars(value)
-    if var.get(list_var):
-        vlist += var[list_var] #vlist = (vlist, var[list_var])
-    
-    vlist = list(set(vlist))
-    var[list_var] = vlist
+    if var_operation == '=': 
+        if not var.get(list_var, False):
+            var[list_var] = set(vlist)
+        else:
+            raise AppArmorException('An existing variable redefined')
+    else:
+        if var.get(list_var, False):
+            var[list_var] = set(var[list_var] + vlist)
+        else:
+            raise AppArmorException('An existing variable redefined')
+
 
 def strip_quotes(data):
     if data[0]+data[-1] == '""':
-        return data[1:-1] 
+        return data[1:-1]
+    else:
+        return data
     
 def quote_if_needed(data):
     # quote data if it contains whitespace
@@ -3829,8 +3841,8 @@ def reload(bin_path):
 
 def get_include_data(filename):
     data = []
-    if os.path.exists(profile_dir + '/' + filename):
-        with open_file_read(profile_dir + '/' + filename) as f_in:
+    if os.path.exists(filename):
+        with open_file_read(filename) as f_in:
             data = f_in.readlines()
     else:
         raise AppArmorException('File Not Found: %s' %filename)
@@ -3844,6 +3856,7 @@ def load_include(incname):
         incfile = load_includeslist.pop(0)
         data = get_include_data(incfile)
         incdata = parse_profile_data(data, incfile, True)
+        print(incdata)
         if incdata:
             attach_profile_data(include, incdata)
         
