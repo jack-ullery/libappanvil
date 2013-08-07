@@ -21,16 +21,6 @@ if os.getenv('LOGPROF_DEBUG', False):
 # The operating mode: yast or text, text by default
 UI_mode = 'text'
 
-def init_localisation():
-    locale.setlocale(locale.LC_ALL, '')
-    #cur_locale = locale.getlocale()
-    filename = 'res/messages_%s.mo' % locale.getlocale()[0][0:2]
-    try:
-        trans = gettext.GNUTranslations(open( filename, 'rb'))
-    except IOError:
-        trans = gettext.NullTranslations()
-    trans.install()
-
 ARROWS = {'A': 'UP', 'B': 'DOWN', 'C': 'RIGHT', 'D': 'LEFT'}
 
 def getkey():
@@ -300,18 +290,18 @@ def Text_PromptUser(question):
     
     for cmd in functions:
         if not CMDS.get(cmd, False):
-            raise AppArmorException('PromptUser: %s %s' %(gettext('Unknown command'), cmd))
+            raise AppArmorException('PromptUser: %s %s' %(_('Unknown command'), cmd))
         
-        menutext = gettext(CMDS[cmd])
+        menutext = _(CMDS[cmd])
         
         menuhotkey = re.search('\((\S)\)', menutext)
         if not menuhotkey:
-            raise AppArmorException('PromptUser: %s \'%s\'' %(gettext('Invalid hotkey in'), menutext))
+            raise AppArmorException('PromptUser: %s \'%s\'' %(_('Invalid hotkey in'), menutext))
         
         key = menuhotkey.groups()[0].lower()
         # Duplicate hotkey
         if keys.get(key, False): 
-            raise AppArmorException('PromptUser: %s %s: %s' %(gettext('Duplicate hotkey for'), cmd, menutext)) 
+            raise AppArmorException('PromptUser: %s %s: %s' %(_('Duplicate hotkey for'), cmd, menutext)) 
         
         keys[key] = cmd
         
@@ -322,16 +312,16 @@ def Text_PromptUser(question):
     
     default_key = 0
     if default and CMDS[default]:
-        defaulttext = gettext(CMDS[default])
+        defaulttext = _(CMDS[default])
         
         defaulthotkey = re.search('\((\S)\)', defaulttext)
         if not menuhotkey:
-            raise AppArmorException('PromptUser: %s \'%s\'' %(gettext('Invalid hotkey in default item'), defaulttext))
+            raise AppArmorException('PromptUser: %s \'%s\'' %(_('Invalid hotkey in default item'), defaulttext))
 
         default_key = defaulthotkey.groups()[0].lower()
         
         if keys.get(default_key, False): 
-            raise AppArmorException('PromptUser: %s %s' %(gettext('Invalid default'), default))
+            raise AppArmorException('PromptUser: %s %s' %(_('Invalid default'), default))
         
     widest = 0
     header_copy = headers[:]

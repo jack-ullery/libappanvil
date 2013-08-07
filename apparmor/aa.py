@@ -43,7 +43,7 @@ CONFDIR = '/etc/apparmor'
 running_under_genprof = False
 unimplemented_warning = False
 
-# The database for severity
+# The database for severity 
 sev_db = None
 # The file to read log messages from
 ### Was our
@@ -459,9 +459,9 @@ def delete_profile(local_prof):
     #prof_unload(local_prof)
 
 def confirm_and_abort():
-    ans = UI_YesNo(gettext('Are you sure you want to abandon this set of profile changes and exit?'), 'n')
+    ans = UI_YesNo(_('Are you sure you want to abandon this set of profile changes and exit?'), 'n')
     if ans == 'y':
-        UI_Info(gettext('Abandoning all changes.'))
+        UI_Info(_('Abandoning all changes.'))
         shutdown_yast()
         for prof in created:
             delete_profile(prof)
@@ -930,12 +930,12 @@ def handle_children(profile, hat, root):
                 while ans not in ['CMD_ADDHAT', 'CMD_USEDEFAULT', 'CMD_DENY']:
                     q = hasher()
                     q['headers'] = []
-                    q['headers'] += [gettext('Profile'), profile]
+                    q['headers'] += [_('Profile'), profile]
                     
                     if default_hat:
-                        q['headers'] += [gettext('Default Hat'), default_hat]
+                        q['headers'] += [_('Default Hat'), default_hat]
                     
-                    q['headers'] += [gettext('Requested Hat'), uhat]
+                    q['headers'] += [_('Requested Hat'), uhat]
                     
                     q['functions'] = []
                     q['functions'].append('CMD_ADDHAT')
@@ -1183,13 +1183,13 @@ def handle_children(profile, hat, root):
                         # Prompt portion starts
                         q = hasher()
                         q['headers'] = []
-                        q['headers'] += [gettext('Profile'), combine_name(profile, hat)]
+                        q['headers'] += [_('Profile'), combine_name(profile, hat)]
                         if prog and prog != 'HINT':
-                            q['headers'] += [gettext('Program'), prog]
+                            q['headers'] += [_('Program'), prog]
                         
                         # to_name should not exist here since, transitioning is already handeled
-                        q['headers'] += [gettext('Execute'), exec_target]
-                        q['headers'] += [gettext('Severity'), severity]
+                        q['headers'] += [_('Execute'), exec_target]
+                        q['headers'] += [_('Severity'), severity]
                         
                         q['functions'] = []
                         prompt = '\n%s\n' % context
@@ -1212,7 +1212,7 @@ def handle_children(profile, hat, root):
                                 arg = exec_target
                                 ynans = 'n'
                                 if profile == hat:
-                                    ynans = UI_YesNo(gettext('Are you specifying a transition to a local profile?'), 'n')
+                                    ynans = UI_YesNo(_('Are you specifying a transition to a local profile?'), 'n')
                                 if ynans == 'y':
                                     if ans == 'CMD_nx':
                                         ans = 'CMD_cx'
@@ -1224,7 +1224,7 @@ def handle_children(profile, hat, root):
                                     else:
                                         ans = 'CMD_pix'
                                 
-                                to_name = UI_GetString(gettext('Enter profile name to transition to: '), arg)
+                                to_name = UI_GetString(_('Enter profile name to transition to: '), arg)
                             
                             regex_optmode = re.compile('CMD_(px|cx|nx|pix|cix|nix)')
                             if ans == 'CMD_ix':
@@ -1233,13 +1233,13 @@ def handle_children(profile, hat, root):
                                 match = regex_optmode.search(ans).groups()[0]
                                 exec_mode = str_to_mode(match)
                                 px_default = 'n'
-                                px_msg = gettext('Should AppArmor sanitise the environment when\n' +
+                                px_msg = _('Should AppArmor sanitise the environment when\n' +
                                                  'switching profiles?\n\n' + 
                                                  'Sanitising environment is more secure,\n' +
                                                  'but some applications depend on the presence\n' +
                                                  'of LD_PRELOAD or LD_LIBRARY_PATH.')
                                 if parent_uses_ld_xxx:
-                                    px_msg = gettext('Should AppArmor sanitise the environment when\n' +
+                                    px_msg = _('Should AppArmor sanitise the environment when\n' +
                                                  'switching profiles?\n\n' + 
                                                  'Sanitising environment is more secure,\n' +
                                                  'but this application appears to be using LD_PRELOAD\n' +
@@ -1252,12 +1252,12 @@ def handle_children(profile, hat, root):
                                     exec_mode &= ~(AA_EXEC_UNSAFE | (AA_EXEC_UNSAFE << AA_OTHER_SHIFT))
                             elif ans == 'CMD_ux':
                                 exec_mode = str_to_mode('ux')
-                                ynans = UI_YesNo(gettext('Launching processes in an unconfined state is a very\n' +
+                                ynans = UI_YesNo(_('Launching processes in an unconfined state is a very\n' +
                                                         'dangerous operation and can cause serious security holes.\n\n' +
                                                         'Are you absolutely certain you wish to remove all\n' +
                                                         'AppArmor protection when executing :') + '%s ?' % exec_target, 'n')
                                 if ynans == 'y':
-                                    ynans = UI_YesNo(gettext('Should AppArmor sanitise the environment when\n' +
+                                    ynans = UI_YesNo(_('Should AppArmor sanitise the environment when\n' +
                                                              'running this program unconfined?\n\n' +
                                                              'Not sanitising the environment when unconfining\n' +
                                                              'a program opens up significant security holes\n' +
@@ -1337,7 +1337,7 @@ def handle_children(profile, hat, root):
                         if not os.path.exists(get_profile_filename(exec_target)):
                             ynans = 'y'
                             if exec_mode & str_to_mode('i'):
-                                ynans = UI_YesNo(gettext('A profile for ') + str(exec_target) + gettext(' doesnot exist.\nDo you want to create one?'), 'n')
+                                ynans = UI_YesNo(_('A profile for ') + str(exec_target) + _(' doesnot exist.\nDo you want to create one?'), 'n')
                             if ynans == 'y':
                                 helpers[exec_target] = 'enforce'
                                 if to_name:
@@ -1355,7 +1355,7 @@ def handle_children(profile, hat, root):
                         if not aa[profile].get(exec_target, False):
                             ynans = 'y'
                             if exec_mode & str_to_mode('i'):
-                                ynans = UI_YesNo(gettext('A local profile for %s does not exit. Create one') % exec_target, 'n')
+                                ynans = UI_YesNo(_('A local profile for %s does not exit. Create one') % exec_target, 'n')
                             if ynans == 'y':
                                 hat = exec_target
                                 aa[profile][hat]['declared'] = False
@@ -1596,6 +1596,7 @@ def read_log(logmark):
     #last = None
     #event_type = None
     try:
+        print(filename)
         log_open = open_file_read(filename)
     except IOError:
         raise AppArmorException('Can not read AppArmor logfile: ' + filename)
@@ -1646,12 +1647,12 @@ def parse_event(msg):
         rmask = rmask.replace('c', 'a')
         rmask = rmask.replace('d', 'w')
         if not validate_log_mode(hide_log_mode(rmask)):
-            fatal_error(gettext('Log contains unknown mode %s') % rmask)
+            fatal_error(_('Log contains unknown mode %s') % rmask)
     if dmask:
         dmask = dmask.replace('c', 'a')
         dmask = dmask.replace('d', 'w')
         if not validate_log_mode(hide_log_mode(dmask)):
-            fatal_error(gettext('Log contains unknown mode %s') % dmask)
+            fatal_error(_('Log contains unknown mode %s') % dmask)
     #print('parse_event:', ev['profile'], dmask, ev['name2'])
     mask, name = log_str_to_mode(ev['profile'], dmask, ev['name2'])
 
@@ -1762,12 +1763,12 @@ def ask_the_questions():
     for aamode in sorted(log_dict.keys()):
         # Describe the type of changes
         if aamode == 'PERMITTING':
-            UI_Info(gettext('Complain-mode changes:'))
+            UI_Info(_('Complain-mode changes:'))
         elif aamode == 'REJECTING':
-            UI_Info(gettext('Enforce-mode changes:'))
+            UI_Info(_('Enforce-mode changes:'))
         else:
             # oops something screwed up
-            fatal_error(gettext('Invalid mode found: %s') % aamode)
+            fatal_error(_('Invalid mode found: %s') % aamode)
         
         for profile in sorted(log_dict[aamode].keys()):
             # Update the repo profiles
@@ -1801,9 +1802,9 @@ def ask_the_questions():
                         q['options'] = [options]
                         q['selected'] = default_option - 1
                     
-                    q['headers'] = [gettext('Profile'), combine_name(profile, hat)]
-                    q['headers'] += [gettext('Capability'), capability]
-                    q['headers'] += [gettext('Severity'), severity]
+                    q['headers'] = [_('Profile'), combine_name(profile, hat)]
+                    q['headers'] += [_('Capability'), capability]
+                    q['headers'] += [_('Severity'), severity]
                     
                     audit_toggle = 0
                     
@@ -1837,9 +1838,9 @@ def ask_the_questions():
                                 q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
                                                   'CMD_ABORT', 'CMD_FINISHED', 'CMD_IGNORE_ENTRY']
                             
-                            q['headers'] = [gettext('Profile'), combine_name(profile, hat),
-                                            gettext('Capability'), audit + capability,
-                                            gettext('Severity'), severity]
+                            q['headers'] = [_('Profile'), combine_name(profile, hat),
+                                            _('Capability'), audit + capability,
+                                            _('Severity'), severity]
                         
                         if ans == 'CMD_ALLOW':
                             selection = options[selected]
@@ -1850,23 +1851,23 @@ def ask_the_questions():
                                 deleted = delete_duplicates(aa[profile][hat], inc)
                                 aa[profile][hat]['include'][inc] = True
                                 
-                                UI_Info(gettext('Adding %s to profile.') % selection)
+                                UI_Info(_('Adding %s to profile.') % selection)
                                 if deleted:
-                                    UI_Info(gettext('Deleted %s previous matching profile entries.') % deleted)
+                                    UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
                                 
                             aa[profile][hat]['allow']['capability'][capability]['set'] = True
                             aa[profile][hat]['allow']['capability'][capability]['audit'] = audit_toggle
                             
                             changed[profile] = True
                             
-                            UI_Info(gettext('Adding capability %s to profile.'), capability)
+                            UI_Info(_('Adding capability %s to profile.'), capability)
                             done = True
                         
                         elif ans == 'CMD_DENY':
                             aa[profile][hat]['deny']['capability'][capability]['set'] = True
                             changed[profile] = True
                             
-                            UI_Info(gettext('Denying capability %s to profile.') % capability)
+                            UI_Info(_('Denying capability %s to profile.') % capability)
                             done = True
                         else:
                             done = False
@@ -1996,8 +1997,8 @@ def ask_the_questions():
                         done = False
                         while not done:
                             q =  hasher()
-                            q['headers'] = [gettext('Profile'), combine_name(profile, hat),
-                                            gettext('Path'), path]
+                            q['headers'] = [_('Profile'), combine_name(profile, hat),
+                                            _('Path'), path]
                             
                             if allow_mode:
                                 mode |= allow_mode
@@ -2006,15 +2007,15 @@ def ask_the_questions():
                                 prompt_mode = None
                                 if owner_toggle == 0:
                                     prompt_mode = flatten_mode(mode)
-                                    tail = '     ' + gettext('(owner permissions off)')
+                                    tail = '     ' + _('(owner permissions off)')
                                 elif owner_toggle == 1:
                                     prompt_mode = mode
                                 elif owner_toggle == 2:
                                     prompt_mode = allow_mode | owner_flatten_mode(mode & ~allow_mode)
-                                    tail = '     ' + gettext('(force new perms to owner)')
+                                    tail = '     ' + _('(force new perms to owner)')
                                 else:
                                     prompt_mode = owner_flatten_mode(mode)
-                                    tail = '     ' + gettext('(force all rule perms to owner)')
+                                    tail = '     ' + _('(force all rule perms to owner)')
                                 
                                 if audit_toggle == 1:
                                     s = mode_to_str_user(allow_mode)
@@ -2026,8 +2027,8 @@ def ask_the_questions():
                                 else:
                                     s = mode_to_str_user(prompt_mode) + tail
                                 
-                                q['headers'] += [gettext('Old Mode'), mode_to_str_user(allow_mode), 
-                                                 gettext('New Mode'), s]
+                                q['headers'] += [_('Old Mode'), mode_to_str_user(allow_mode), 
+                                                 _('New Mode'), s]
                             
                             else:
                                 s = ''
@@ -2037,17 +2038,17 @@ def ask_the_questions():
                                     s = 'audit'
                                 if owner_toggle == 0:
                                     prompt_mode = flatten_mode(mode)
-                                    tail = '     ' + gettext('(owner permissions off)')
+                                    tail = '     ' + _('(owner permissions off)')
                                 elif owner_toggle == 1:
                                     prompt_mode = mode
                                 else:
                                     prompt_mode = owner_flatten_mode(mode)
-                                    tail = '     ' + gettext('(force perms to owner)')
+                                    tail = '     ' + _('(force perms to owner)')
                                 
                                 s = mode_to_str_user(prompt_mode)
-                                q['headers'] += [gettext('Mode'), s]
+                                q['headers'] += [_('Mode'), s]
                             
-                            q['headers'] += [gettext('Severity'), severity]
+                            q['headers'] += [_('Severity'), severity]
                             q['options'] = options
                             q['selected'] = default_option - 1
                             q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_GLOB',
@@ -2083,9 +2084,9 @@ def ask_the_questions():
                                     deleted = delete_duplicates(aa[profile][hat], inc)
                                     aa[profile][hat]['include'][inc] =  True
                                     changed[profile] =  True
-                                    UI_Info(gettext('Adding %s to profile.') % path)
+                                    UI_Info(_('Adding %s to profile.') % path)
                                     if deleted:
-                                        UI_Info(gettext('Deleted %s previous matching profile entries.') % deleted)
+                                        UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
                                 
                                 else:
                                     if aa[profile][hat]['allow']['path'][path].get('mode', False):
@@ -2121,9 +2122,9 @@ def ask_the_questions():
                                     
                                     changed[profile] = True
                                     
-                                    UI_Info(gettext('Adding %s %s to profile') % (path, mode_to_str_user(mode)))
+                                    UI_Info(_('Adding %s %s to profile') % (path, mode_to_str_user(mode)))
                                     if deleted:
-                                        UI_Info(gettext('Deleted %s previous matching profile entries.') % deleted)
+                                        UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
                                     
                             elif ans == 'CMD_DENY':
                                 # Add new entry?
@@ -2138,13 +2139,13 @@ def ask_the_questions():
                             elif ans == 'CMD_NEW':
                                 arg = options[selected]
                                 if not re_match_include(arg):
-                                    ans = UI_GetString(gettext('Enter new path:'), arg)
+                                    ans = UI_GetString(_('Enter new path:'), arg)
                                     if ans:
                                         if not matchliteral(ans, path):
-                                            ynprompt = gettext('The specified path does not match this log entry:')
-                                            ynprompt += '\n\n  ' + gettext('Log Entry') + ':  %s' % path
-                                            ynprompt += '\n  ' + gettext('Entered Path') + ':  %s' % ans
-                                            ynprompt += gettext('Do you really want to use this path?') + '\n'
+                                            ynprompt = _('The specified path does not match this log entry:')
+                                            ynprompt += '\n\n  ' + _('Log Entry') + ':  %s' % path
+                                            ynprompt += '\n  ' + _('Entered Path') + ':  %s' % ans
+                                            ynprompt += _('Do you really want to use this path?') + '\n'
                                             key = UI_YesNo(ynprompt, 'n')
                                             if key == 'n':
                                                 continue
@@ -2229,9 +2230,9 @@ def ask_the_questions():
                             q['options'] = options
                             q['selected'] = default_option - 1
                         
-                        q['headers'] = [gettext('Profile'), combine_name(profile, hat)]
-                        q['headers'] += [gettext('Network Family'), family]
-                        q['headers'] += [gettext('Socket Type'), sock_type]
+                        q['headers'] = [_('Profile'), combine_name(profile, hat)]
+                        q['headers'] += [_('Network Family'), family]
+                        q['headers'] += [_('Socket Type'), sock_type]
                         
                         audit_toggle = 0
                         q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
@@ -2260,9 +2261,9 @@ def ask_the_questions():
                                 else:
                                     q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
                                                       'CMD_ABORT', 'CMD_FINISHED']
-                                q['headers'] = [gettext('Profile'), combine_name(profile, hat)]
-                                q['headers'] += [gettext('Network Family'), audit + family]
-                                q['headers'] += [gettext('Socket Type'), sock_type]
+                                q['headers'] = [_('Profile'), combine_name(profile, hat)]
+                                q['headers'] += [_('Network Family'), audit + family]
+                                q['headers'] += [_('Socket Type'), sock_type]
                             
                             elif ans == 'CMD_ALLOW':
                                 selection = options[selected]
@@ -2276,9 +2277,9 @@ def ask_the_questions():
                                     
                                     changed[profile] = True
                                     
-                                    UI_Info(gettext('Adding %s to profile') % selection)
+                                    UI_Info(_('Adding %s to profile') % selection)
                                     if deleted:
-                                        UI_Info(gettext('Deleted %s previous matching profile entries.') % deleted)
+                                        UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
                                 
                                 else:
                                     aa[profile][hat]['allow']['netdomain']['audit'][family][sock_type] = audit_toggle
@@ -2286,13 +2287,13 @@ def ask_the_questions():
                                     
                                     changed[profile] = True
                                     
-                                    UI_Info(gettext('Adding network access %s %s to profile.' % (family, sock_type)))
+                                    UI_Info(_('Adding network access %s %s to profile.' % (family, sock_type)))
                             
                             elif ans == 'CMD_DENY':
                                 done = True
                                 aa[profile][hat]['deny']['netdomain']['rule'][family][sock_type] = True
                                 changed[profile] = True
-                                UI_Info(gettext('Denying network access %s %s to profile') % (family, sock_type))
+                                UI_Info(_('Denying network access %s %s to profile') % (family, sock_type))
                             
                             else:
                                 done = False
@@ -2420,7 +2421,7 @@ def match_net_includes(profile, family, nettype):
     
     return newincludes
 
-def do_logprof_pass(logmark=''):
+def do_logprof_pass(logmark='', sev_db=sev_db):
     # set up variables for this pass
     t = hasher()
     transitions = hasher()
@@ -2434,13 +2435,13 @@ def do_logprof_pass(logmark=''):
     skip = hasher()
     filelist = hasher()
     
-    UI_Info(gettext('Reading log entries from %s.') %filename)
-    UI_Info(gettext('Updating AppArmor profiles in %s.') %profile_dir)
+    UI_Info(_('Reading log entries from %s.') %filename)
+    UI_Info(_('Updating AppArmor profiles in %s.') %profile_dir)
     
     read_profiles()
     
     if not sev_db:
-        sev_db = apparmor.severity(CONFDIR + '/severity', gettext('unknown'))
+        sev_db = apparmor.severity.Severity(CONFDIR + '/severity.db', _('unknown'))
     
     ##if not repo_cf and cfg['repostory']['url']:
     ##    repo_cfg = read_config('repository.conf')
@@ -2499,8 +2500,8 @@ def save_profiles():
                 oldprofile = serialize_profile(original_aa[prof], prof)
                 newprofile = serialize_profile(aa[prof], prof)
                 profile_changes[prof] = get_profile_diff(oldprofile, newprofile)
-            explanation = gettext('Select which profile changes you would like to save to the\nlocal profile set.')
-            title = gettext('Local profile changes')
+            explanation = _('Select which profile changes you would like to save to the\nlocal profile set.')
+            title = _('Local profile changes')
             SendDataToYast({
                             'type': 'dialog-select-profiles',
                             'title': title,
@@ -2522,7 +2523,7 @@ def save_profiles():
             q = hasher()
             q['title'] = 'Changed Local Profiles'
             q['headers'] = []
-            q['explanation'] = gettext('The following local profiles were changed. Would you like to save them?')
+            q['explanation'] = _('The following local profiles were changed. Would you like to save them?')
             q['functions'] = ['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ABORT']
             q['default'] = 'CMD_VIEW_CHANGES'
             q['options'] = changed
@@ -2578,7 +2579,7 @@ def get_profile_diff(oldprofile, newprofile):
 
 def display_changes(oldprofile, newprofile):
     if UI_mode == 'yast':
-        UI_LongMessage(gettext('Profile Changes'), get_profile_diff(oldprofile, newprofile))
+        UI_LongMessage(_('Profile Changes'), get_profile_diff(oldprofile, newprofile))
     else:
         difftemp = generate_diff(oldprofile, newprofile)
         subprocess.call('less %s' %difftemp.name, shell=True)
@@ -3007,7 +3008,11 @@ def parse_profile_data(data, file, do_include):
                     profile = matches[1]
                 else:
                     profile = matches[3]
-                profile, hat = profile.split('//')[:2]
+                #print(profile)
+                if len(profile.split('//')) >= 2:
+                    profile, hat = profile.split('//')[:2]
+                else:
+                    hat = None
                 in_contained_hat = False
                 if hat:
                     profile_data[profile][hat]['external'] = True
@@ -3319,7 +3324,7 @@ def parse_profile_data(data, file, do_include):
                 if line.startswith('# vim:syntax') or line.startswith('# Last Modified:'):
                     continue
                 line = line.split()
-                if line[1] == 'REPOSITORY:':
+                if len(line) > 1 and line[1] == 'REPOSITORY:':
                     if len(line) == 3:
                         repo_data = {'neversubmit': True}
                     elif len(line) == 5:
@@ -3327,7 +3332,7 @@ def parse_profile_data(data, file, do_include):
                                      'user': line[3],
                                      'id': line[4]}
                 else:
-                    initial_comment = line + '\n'
+                    initial_comment = ' '.join(line) + '\n'
         
         else:
             raise AppArmorException('Syntax Error: Unknown line found in file: %s line: %s' % (file, lineno+1))
@@ -3371,7 +3376,9 @@ def store_list_var(var, list_var, value, var_operation):
         if not var.get(list_var, False):
             var[list_var] = set(vlist)
         else:
-            raise AppArmorException('An existing variable redefined')
+            print('Ignoring: New definition for variable for:',list_var,'=', value, 'operation was:',var_operation,'old value=', var[list_var])
+            pass
+            #raise AppArmorException('An existing variable redefined')
     else:
         if var.get(list_var, False):
             var[list_var] = set(var[list_var] + vlist)
@@ -3712,7 +3719,7 @@ def serialize_profile(profile_data, name, options):
     return string+'\n'
 
 def write_profile_ui_feedback(profile):
-    UI_Info(gettext('Writing updated profile for %s.') %profile)
+    UI_Info(_('Writing updated profile for %s.') %profile)
     write_profile(profile)
     
 def write_profile(profile):
@@ -3856,7 +3863,7 @@ def load_include(incname):
         incfile = load_includeslist.pop(0)
         data = get_include_data(incfile)
         incdata = parse_profile_data(data, incfile, True)
-        print(incdata)
+        #print(incdata)
         if incdata:
             attach_profile_data(include, incdata)
         
@@ -3942,7 +3949,7 @@ def suggest_incs_for_path(incname, path, allow):
 def check_qualifiers(program):
     if cfg['qualifiers'].get(program, False):
         if cfg['qualifiers'][program] != 'p':
-            fatal_error(gettext('%s is currently marked as a program that should not have its own\n' +
+            fatal_error(_('%s is currently marked as a program that should not have its own\n' +
                                 'profile.  Usually, programs are marked this way if creating a profile for \n' +
                                 'them is likely to break the rest of the system.  If you know what you\'re\n' +
                                 'doing and are certain you want to create a profile for this program, edit\n' +
