@@ -2967,7 +2967,7 @@ def parse_profile_data(data, file, do_include):
     RE_PROFILE_START = re.compile('^(("??\/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$')
     RE_PROFILE_END = re.compile('^\}\s*(#.*)?$')
     RE_PROFILE_CAP = re.compile('^(audit\s+)?(deny\s+)?capability\s+(\S+)\s*,\s*(#.*)?$')
-    RE_PROFILE_SET_CAP = re.compile('^set capability\s+(\S+)\s*,\s*(#.*)?$')
+    #RE_PROFILE_SET_CAP = re.compile('^set capability\s+(\S+)\s*,\s*(#.*)?$')
     RE_PROFILE_LINK = re.compile('^(audit\s+)?(deny\s+)?link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)\s*,\s*(#.*)?$')
     RE_PROFILE_CHANGE_PROFILE = re.compile('^change_profile\s+->\s*("??.+?"??),(#.*)?$')
     RE_PROFILE_ALIAS = re.compile('^alias\s+("??.+?"??)\s+->\s*("??.+?"??)\s*,(#.*)?$')
@@ -3076,15 +3076,15 @@ def parse_profile_data(data, file, do_include):
             profile_data[profile][hat][allow]['capability'][capability]['set'] = True
             profile_data[profile][hat][allow]['capability'][capability]['audit'] = audit
         
-        elif RE_PROFILE_SET_CAP.search(line):
-            matches = RE_PROFILE_SET_CAP.search(line).groups()
-            
-            if not profile:
-                raise AppArmorException('Syntax Error: Unexpected capability entry found in file: %s line: %s' % (file, lineno+1))
-            
-            capability = matches[0]
-            profile_data[profile][hat]['set_capability'][capability] = True
-        
+#         elif RE_PROFILE_SET_CAP.search(line):
+#             matches = RE_PROFILE_SET_CAP.search(line).groups()
+#             
+#             if not profile:
+#                 raise AppArmorException('Syntax Error: Unexpected capability entry found in file: %s line: %s' % (file, lineno+1))
+#             
+#             capability = matches[0]
+#             profile_data[profile][hat]['set_capability'][capability] = True
+#         
         elif RE_PROFILE_LINK.search(line):
             matches = RE_PROFILE_LINK.search(line).groups()
             
@@ -3438,13 +3438,13 @@ def set_allow_str(allow):
     if allow == 'deny':
         return 'deny '
     else:
-        return ''
+        return 'allow'
 
 def set_ref_allow(prof_data, allow):
     if allow:
         return prof_data[allow], set_allow_str(allow)
     else:
-        return prof_data, ''
+        return prof_data, 'allow'
 
 
 def write_pair(prof_data, depth, allow, name, prefix, sep, tail, fn):
@@ -3499,8 +3499,8 @@ def write_cap_rules(prof_data, depth, allow):
     return data
 
 def write_capabilities(prof_data, depth):
-    data = write_single(prof_data, depth, '', 'set_capability', 'set capability ', ',')
-    data += write_cap_rules(prof_data, depth, 'deny')
+    #data = write_single(prof_data, depth, '', 'set_capability', 'set capability ', ',')
+    data = write_cap_rules(prof_data, depth, 'deny')
     data += write_cap_rules(prof_data, depth, 'allow')
     return data
 
