@@ -191,7 +191,8 @@ def convert_regexp(regexp):
 
 class DebugLogger:
     def __init__(self, module_name=__name__):
-        logging.basicConfig(filename='/var/log/apparmor/logprof.log')
+        #logging.basicConfig(filename='/var/log/apparmor/logprof.log')
+        logging.basicConfig(filename='/home/kshitij/logprof.log')
         self.logger = logging.getLogger(module_name)
         self.debugging = True
         if os.getenv('LOGPROF_DEBUG', False):
