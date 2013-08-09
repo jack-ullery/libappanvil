@@ -33,6 +33,8 @@ SRC=access.c \
     fchgrp.c \
     fchmod.c \
     fchown.c \
+    fd_inheritance.c \
+    fd_inheritor.c \
     fork.c \
     link.c \
     link_subset.c \
@@ -123,6 +125,7 @@ TESTS=access \
       exec \
       exec_qual \
       fchdir \
+      fd_inheritance \
       fork \
       i18n \
       link \
