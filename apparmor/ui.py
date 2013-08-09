@@ -1,22 +1,13 @@
 # 1728
 import sys
-import gettext
-import locale
-import logging
 import os
 import re
 from apparmor.yasti import yastLog, SendDataToYast, GetDataFromYast
 
-from apparmor.common import readkey, AppArmorException
+from apparmor.common import readkey, AppArmorException, DebugLogger
 
-DEBUGGING = False
-debug_logger = None
 # Set up UI logger for separate messages from UI module
-if os.getenv('LOGPROF_DEBUG', False):
-    DEBUGGING = True
-    logprof_debug = '/var/log/apparmor/logprof.log'
-    logging.basicConfig(filename=logprof_debug, level=logging.DEBUG)
-    debug_logger = logging.getLogger('UI')
+debug_logger = DebugLogger('UI')
 
 # The operating mode: yast or text, text by default
 UI_mode = 'text'
@@ -34,16 +25,14 @@ def getkey():
     return key
 
 def UI_Info(text):
-    if DEBUGGING:
-        debug_logger.info(text)
+    debug_logger.info(text)
     if UI_mode == 'text':
         sys.stdout.write(text + '\n')
     else:
         yastLog(text)
 
 def UI_Important(text):
-    if DEBUGGING:
-        debug_logger.debug(text)
+    debug_logger.debug(text)
     if UI_mode == 'text':
         sys.stdout.write('\n' + text + '\n')
     else:
@@ -54,8 +43,7 @@ def UI_Important(text):
         path, yarg = GetDataFromYast()
 
 def UI_YesNo(text, default):
-    if DEBUGGING:
-        debug_logger.debug('UI_YesNo: %s: %s %s' %(UI_mode, text, default))
+    debug_logger.debug('UI_YesNo: %s: %s %s' %(UI_mode, text, default))
     ans = default
     if UI_mode == 'text':
         yes = '(Y)es'
@@ -85,8 +73,7 @@ def UI_YesNo(text, default):
     return ans
 
 def UI_YesNoCancel(text, default):
-    if DEBUGGING:
-        debug_logger.debug('UI_YesNoCancel: %s: %s %s' % (UI_mode, text, default))
+    debug_logger.debug('UI_YesNoCancel: %s: %s %s' % (UI_mode, text, default))
 
     if UI_mode == 'text':
         yes = '(Y)es'
@@ -121,8 +108,7 @@ def UI_YesNoCancel(text, default):
     return ans
 
 def UI_GetString(text, default):
-    if DEBUGGING:
-        debug_logger.debug('UI_GetString: %s: %s %s' % (UI_mode, text, default))
+    debug_logger.debug('UI_GetString: %s: %s %s' % (UI_mode, text, default))
     string = default
     if UI_mode == 'text':
         sys.stdout.write('\n' + text + '\n')
@@ -138,8 +124,7 @@ def UI_GetString(text, default):
     return string
 
 def UI_GetFile(file):
-    if DEBUGGING:
-        debug_logger.debug('UI_GetFile: %s' % UI_mode)
+    debug_logger.debug('UI_GetFile: %s' % UI_mode)
     filename = None
     if UI_mode == 'text':
         sys.stdout.write(file['description'] + '\n')
@@ -153,8 +138,7 @@ def UI_GetFile(file):
     return filename
 
 def UI_BusyStart(message):
-    if DEBUGGING:
-        debug_logger.debug('UI_BusyStart: %s' % UI_mode)
+    debug_logger.debug('UI_BusyStart: %s' % UI_mode)
     if UI_mode == 'text':
         UI_Info(message)
     else:
@@ -165,8 +149,7 @@ def UI_BusyStart(message):
         ypath, yarg = GetDataFromYast()
 
 def UI_BusyStop():
-    if DEBUGGING:
-        debug_logger.debug('UI_BusyStop: %s' % UI_mode)
+    debug_logger.debug('UI_BusyStop: %s' % UI_mode)
     if UI_mode != 'text':
         SendDataToYast({'type': 'dialog-busy-stop'})
         ypath, yarg = GetDataFromYast()

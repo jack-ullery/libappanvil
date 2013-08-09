@@ -5,7 +5,6 @@
 #global variable names corruption
 from __future__ import with_statement
 import inspect
-import logging
 import os
 import re
 import shutil
@@ -23,21 +22,13 @@ import LibAppArmor
 
 from apparmor.common import (AppArmorException, error, debug, msg, 
                              open_file_read, readkey, valid_path,
-                             hasher, open_file_write, convert_regexp)
+                             hasher, open_file_write, convert_regexp, DebugLogger)
 
 from apparmor.ui import *
 from copy import deepcopy
 
-DEBUGGING = False
-debug_logger = None
-
 # Setup logging incase of debugging is enabled
-if os.getenv('LOGPROF_DEBUG', False):
-    DEBUGGING = True
-    logprof_debug = '/var/log/apparmor/logprof.log'
-    logging.basicConfig(filename=logprof_debug, level=logging.DEBUG)
-    debug_logger = logging.getLogger('logprof')
-
+debug_logger = DebugLogger('aa')
 
 CONFDIR = '/etc/apparmor'
 running_under_genprof = False
@@ -151,9 +142,8 @@ OPERATION_TYPES = {
 
 def on_exit():
     """Shutdowns the logger and records exit if debugging enabled"""
-    if DEBUGGING:
-        debug_logger.debug('Exiting..')
-        logging.shutdown()
+    debug_logger.debug('Exiting..')
+    debug_logger.shutdown()
         
 # Register the on_exit method with atexit
 atexit.register(on_exit)
@@ -180,13 +170,12 @@ def check_for_LD_XXX(file):
     return found
 
 def fatal_error(message):
-    if DEBUGGING:
-        # Get the traceback to the message
-        tb_stack = traceback.format_list(traceback.extract_stack())
-        tb_stack = ''.join(tb_stack)
-        # Append the traceback to message
-        message = message + '\n' + tb_stack
-        debug_logger.error(message)
+    # Get the traceback to the message
+    tb_stack = traceback.format_list(traceback.extract_stack())
+    tb_stack = ''.join(tb_stack)
+    # Append the traceback to message
+    message = message + '\n' + tb_stack
+    debug_logger.error(message)
     caller = inspect.stack()[1][3]
     
     # If caller is SendDataToYast or GetDatFromYast simply exit
@@ -444,8 +433,8 @@ def create_new_profile(localfile):
                 local_profile[hat]['flags'] = 'complain'
     
     created.append(localfile)
-    if DEBUGGING:
-        debug_logger.debug("Profile for %s:\n\t%s" % (localfile, local_profile.__str__()))
+
+    debug_logger.debug("Profile for %s:\n\t%s" % (localfile, local_profile.__str__()))
     return {localfile: local_profile}
     
 def delete_profile(local_prof):
@@ -1400,8 +1389,7 @@ def handle_children(profile, hat, root):
     return None
 
 def add_to_tree(loc_pid, parent, type, event):
-    if DEBUGGING:
-        debug_logger.info('add_to_tree: pid [%s] type [%s] event [%s]' % (pid, type, event))
+    debug_logger.info('add_to_tree: pid [%s] type [%s] event [%s]' % (pid, type, event))
     
     if not pid.get(loc_pid, False):
         profile, hat = event[:1]
@@ -1462,8 +1450,7 @@ def throw_away_next_log_entry():
     next_log_entry = None
 
 def parse_log_record(record):
-    if DEBUGGING:
-        debug_logger.debug('parse_log_record: %s' % record)
+    debug_logger.debug('parse_log_record: %s' % record)
     
     record_event = parse_event(record)
     return record_event
@@ -1618,7 +1605,11 @@ def read_log(logmark):
 def parse_event(msg):
     """Parse the event from log into key value pairs"""
     msg = msg.strip()
-    #debug_logger.log('parse_event: %s' % msg)
+    debug_logger.info('parse_event: %s' % msg)
+    #print(repr(msg))
+    if sys.version_info < (3,0):
+        # parse_record fails with u'foo' style strings hence typecasting to string
+        msg = str(msg)
     event = LibAppArmor.parse_record(msg)
     ev = dict()
     ev['resource'] = event.info

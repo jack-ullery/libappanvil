@@ -2,6 +2,7 @@ from __future__ import print_function
 import codecs
 import collections
 import glob
+import logging
 import os
 import re
 import subprocess
@@ -188,3 +189,22 @@ def convert_regexp(regexp):
         new_reg =  new_reg + '$'
     return new_reg
 
+class DebugLogger:
+    def __init__(self, module_name=__name__):
+        logging.basicConfig(filename='/var/log/apparmor/logprof.log')
+        self.logger = logging.getLogger(module_name)
+        self.debugging = True
+        if os.getenv('LOGPROF_DEBUG', False):
+            self.debugging = True
+    def error(self, msg):
+        if self.debugging:
+            self.logger.error(msg)
+    def info(self, msg):
+        if self.debugging:
+            self.logger.info(msg)
+    def debug(self, msg):
+        if self.debugging:
+            self.logger.debug(msg)
+    def shutdown(self):
+        logging.shutdown()
+        #logging.shutdown([self.logger])
