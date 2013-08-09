@@ -55,6 +55,8 @@ void free_record(aa_log_record *record)
 			free(record->denied_mask);
 		if (record->profile != NULL)
 			free(record->profile);
+		if (record->peer_profile != NULL)
+			free(record->peer_profile);
 		if (record->comm != NULL)
 			free(record->comm);
 		if (record->name != NULL)
@@ -67,6 +69,8 @@ void free_record(aa_log_record *record)
 			free(record->attribute);
 		if (record->info != NULL)
 			free(record->info);
+		if (record->peer_info != NULL)
+			free(record->peer_info);
 		if (record->active_hat != NULL)
 			free(record->active_hat);
 		if (record->audit_id != NULL)
@@ -77,6 +81,14 @@ void free_record(aa_log_record *record)
 			free(record->net_protocol);
 		if (record->net_sock_type != NULL)
 			free(record->net_sock_type);
+		if (record->dbus_bus != NULL)
+			free(record->dbus_bus);
+		if (record->dbus_path != NULL)
+			free(record->dbus_path);
+		if (record->dbus_interface != NULL)
+			free(record->dbus_interface);
+		if (record->dbus_member != NULL)
+			free(record->dbus_member);
 
 		free(record);
 	}

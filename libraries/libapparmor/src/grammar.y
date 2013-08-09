@@ -91,6 +91,8 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_OPEN_PAREN
 %token TOK_CLOSE_PAREN
 %token TOK_PERIOD
+%token TOK_QUESTION_MARK
+%token TOK_SINGLE_QUOTE
 
 %token TOK_TYPE_REJECT
 %token TOK_TYPE_AUDIT
@@ -105,6 +107,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_TYPE_AA_STATUS
 %token TOK_TYPE_AA_ERROR
 %token TOK_TYPE_LSM_AVC
+%token TOK_TYPE_USER_AVC
 
 %token TOK_KEY_APPARMOR
 %token TOK_KEY_TYPE
@@ -112,6 +115,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_OPERATION
 %token TOK_KEY_NAME
 %token TOK_KEY_NAME2
+%token TOK_KEY_MASK
 %token TOK_KEY_DENIED_MASK
 %token TOK_KEY_REQUESTED_MASK
 %token TOK_KEY_ATTRIBUTE
@@ -119,8 +123,11 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_PARENT
 %token TOK_KEY_MAGIC_TOKEN
 %token TOK_KEY_INFO
+%token TOK_KEY_PEER_INFO
 %token TOK_KEY_PID
+%token TOK_KEY_PEER_PID
 %token TOK_KEY_PROFILE
+%token TOK_KEY_PEER_PROFILE
 %token TOK_AUDIT
 %token TOK_KEY_FAMILY
 %token TOK_KEY_SOCK_TYPE
@@ -129,6 +136,14 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_ERROR
 %token TOK_KEY_FSUID
 %token TOK_KEY_OUID
+%token TOK_KEY_UID
+%token TOK_KEY_AUID
+%token TOK_KEY_SAUID
+%token TOK_KEY_SES
+%token TOK_KEY_HOSTNAME
+%token TOK_KEY_ADDR
+%token TOK_KEY_TERMINAL
+%token TOK_KEY_EXE
 %token TOK_KEY_COMM
 %token TOK_KEY_CAPABILITY
 %token TOK_KEY_CAPNAME
@@ -138,8 +153,13 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_FADDR
 %token TOK_KEY_LPORT
 %token TOK_KEY_FPORT
+%token TOK_KEY_BUS
+%token TOK_KEY_PATH
+%token TOK_KEY_INTERFACE
+%token TOK_KEY_MEMBER
 
 %token TOK_SYSLOG_KERNEL
+%token TOK_SYSLOG_USER
 
 %%
 
@@ -163,6 +183,7 @@ new_syntax:
 	| TOK_TYPE_AA_ERROR audit_msg key_list { ret_record->event = AA_RECORD_ERROR; }
 	| TOK_TYPE_UNKNOWN audit_msg key_list { ret_record->event = lookup_aa_event($1); }
 	| TOK_TYPE_LSM_AVC audit_msg key_list
+	| TOK_TYPE_USER_AVC audit_user_msg TOK_SINGLE_QUOTE key_list TOK_SINGLE_QUOTE
 	;
 
 other_audit: TOK_TYPE_OTHER audit_msg TOK_MSG_REST
@@ -182,6 +203,8 @@ syslog_type:
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
 	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP key_type audit_id key_list
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
+	| syslog_date TOK_ID TOK_SYSLOG_USER key_list
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
 	;
 
 /* when audit dispatches a message it doesn't prepend the audit type string */
@@ -190,6 +213,9 @@ audit_dispatch:
 	;
 
 audit_msg: TOK_KEY_MSG TOK_EQUALS audit_id
+	;
+
+audit_user_msg: TOK_KEY_MSG TOK_EQUALS audit_id ignored_pid ignored_uid ignored_auid ignored_ses TOK_KEY_MSG TOK_EQUALS
 	;
 
 audit_id: TOK_AUDIT TOK_OPEN_PAREN TOK_AUDIT_DIGITS TOK_PERIOD TOK_AUDIT_DIGITS TOK_COLON TOK_AUDIT_DIGITS TOK_CLOSE_PAREN TOK_COLON
@@ -219,6 +245,8 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->namespace = $3;}
 	| TOK_KEY_NAME2 TOK_EQUALS safe_string
 	{ ret_record->name2 = $3;}
+	| TOK_KEY_MASK TOK_EQUALS TOK_QUOTED_STRING
+	{ ret_record->denied_mask = $3;}
 	| TOK_KEY_DENIED_MASK TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->denied_mask = $3;}
 	| TOK_KEY_REQUESTED_MASK TOK_EQUALS TOK_QUOTED_STRING
@@ -233,9 +261,14 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->magic_token = $3;}
 	| TOK_KEY_INFO TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->info = $3;}
+	| TOK_KEY_PEER_INFO TOK_EQUALS TOK_QUOTED_STRING
+	{ ret_record->peer_info = $3;}
 	| key_pid
+	| key_peer_pid
 	| TOK_KEY_PROFILE TOK_EQUALS safe_string
 	{ ret_record->profile = $3;}
+	| TOK_KEY_PEER_PROFILE TOK_EQUALS safe_string
+	{ ret_record->peer_profile = $3;}
 	| TOK_KEY_FAMILY TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->net_family = $3;}
 	| TOK_KEY_SOCK_TYPE TOK_EQUALS TOK_QUOTED_STRING
@@ -252,8 +285,29 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->fsuid = $3;}
 	| TOK_KEY_OUID TOK_EQUALS TOK_DIGITS
 	{ ret_record->ouid = $3;}
+	| TOK_KEY_SAUID TOK_EQUALS TOK_DIGITS
+	{ /* Ignore - Source audit ID from user AVC messages */ }
+	| TOK_KEY_HOSTNAME TOK_EQUALS safe_string
+	{ free($3); /* Ignore - hostname from user AVC messages */ }
+	| TOK_KEY_HOSTNAME TOK_EQUALS TOK_QUESTION_MARK
+	| TOK_KEY_ADDR TOK_EQUALS TOK_QUESTION_MARK
+	| TOK_KEY_TERMINAL TOK_EQUALS TOK_QUESTION_MARK
+	| TOK_KEY_ADDR TOK_EQUALS safe_string
+	{ free($3); /* Ignore - IP address from user AVC messages */ }
+	| TOK_KEY_TERMINAL TOK_EQUALS safe_string
+	{ free($3); /* Ignore - TTY from user AVC messages */ }
+	| TOK_KEY_EXE TOK_EQUALS safe_string
+	{ /* Free existing arrays because exe= and comm= maps to the same
+	     aa_log_record member */
+	  free(ret_record->comm);
+	  ret_record->comm = $3;
+	}
 	| TOK_KEY_COMM TOK_EQUALS safe_string
-	{ ret_record->comm = $3;}
+	{ /* Free existing arrays because exe= and comm= maps to the same
+	     aa_log_record member */
+	  free(ret_record->comm);
+	  ret_record->comm = $3;
+	}
 	| TOK_KEY_APPARMOR TOK_EQUALS apparmor_event
 	| TOK_KEY_CAPABILITY TOK_EQUALS TOK_DIGITS
 	{ /* need to reverse map number to string, need to figure out
@@ -282,6 +336,14 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->net_local_port = $3;}
 	| TOK_KEY_FPORT TOK_EQUALS TOK_DIGITS
 	{ ret_record->net_foreign_port = $3;}
+	| TOK_KEY_BUS TOK_EQUALS TOK_QUOTED_STRING
+	{ ret_record->dbus_bus = $3; }
+	| TOK_KEY_PATH TOK_EQUALS TOK_QUOTED_STRING
+	{ ret_record->dbus_path = $3; }
+	| TOK_KEY_INTERFACE TOK_EQUALS TOK_QUOTED_STRING
+	{ ret_record->dbus_interface = $3; }
+	| TOK_KEY_MEMBER TOK_EQUALS TOK_QUOTED_STRING
+	{ ret_record->dbus_member = $3; }
 	| TOK_MSG_REST
 	{
 		ret_record->event = AA_RECORD_INVALID;
@@ -300,6 +362,14 @@ apparmor_event:
 
 key_pid: TOK_KEY_PID TOK_EQUALS TOK_DIGITS { ret_record->pid = $3; }
 	;
+
+key_peer_pid: TOK_KEY_PEER_PID TOK_EQUALS TOK_DIGITS { ret_record->peer_pid = $3; }
+	;
+
+ignored_pid:  TOK_KEY_PID  TOK_EQUALS TOK_DIGITS { /* DROP */ }
+ignored_uid:  TOK_KEY_UID  TOK_EQUALS TOK_DIGITS { /* DROP */ }
+ignored_auid: TOK_KEY_AUID TOK_EQUALS TOK_DIGITS { /* DROP */ }
+ignored_ses:  TOK_KEY_SES  TOK_EQUALS TOK_DIGITS { /* DROP */ }
 
 key_type: TOK_KEY_TYPE TOK_EQUALS TOK_DIGITS { ret_record->event = lookup_aa_event($3); }
 	;

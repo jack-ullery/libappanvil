@@ -116,6 +116,7 @@ typedef struct
 	aa_record_syntax_version version;
 	aa_record_event_type event;	/* Event type */
 	unsigned long pid;		/* PID of the program logging the message */
+	unsigned long peer_pid;
 	unsigned long task;
 	unsigned long magic_token;
 	long epoch;			/* example: 12345679 */
@@ -129,6 +130,7 @@ typedef struct
 	unsigned long fsuid;		/* fsuid of task - if logged */
 	unsigned long ouid;		/* ouid of task - if logged */
 	char *profile;			/* The name of the profile */
+	char *peer_profile;
 	char *comm;			/* Command that triggered msg */
 	char *name;
 	char *name2;
@@ -136,6 +138,7 @@ typedef struct
 	char *attribute;
 	unsigned long parent;	
 	char *info;
+	char *peer_info;
 	int error_code;			/* error_code returned if logged */
 	char *active_hat;
 	char *net_family;
@@ -145,6 +148,10 @@ typedef struct
 	unsigned long net_local_port;
 	char *net_foreign_addr;
 	unsigned long net_foreign_port;
+	char *dbus_bus;
+	char *dbus_path;
+	char *dbus_interface;
+	char *dbus_member;
 } aa_log_record;
 
 /**

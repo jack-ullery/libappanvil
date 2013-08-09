@@ -86,6 +86,8 @@ close_paren	")"
 ID		[^ \t\n\(\)="'!]
 hexstring	({hex}{hex})+
 period		"\."
+question_mark	"?"
+single_quote	"'"
 mode_chars      ([RrWwaLlMmkXx])|([Pp][Xx])|([Uu][Xx])|([Ii][Xx])|([Pp][Ii][Xx])
 modes		({mode_chars}+)|({mode_chars}+::{mode_chars}*)|(::{mode_chars}*)
 /* New message types */
@@ -103,6 +105,7 @@ hint_type		"\"HINT\""
 status_type		"\"STATUS\""
 error_type		"\"ERROR\""
 lsm_avc_type		"AVC"
+user_avc_type		"USER_AVC"
 unknown_type		UNKNOWN\[{digits}+\]
 other_audit_type	[[:alnum:]\[\]_-]+
 
@@ -115,6 +118,7 @@ key_operation		"operation"
 key_name		"name"
 key_name2		"name2"
 key_namespace		"namespace"
+key_mask		"mask"
 key_denied_mask		"denied_mask"
 key_requested_mask	"requested_mask"
 key_attribute		"attribute"
@@ -122,14 +126,25 @@ key_task		"task"
 key_parent		"parent"
 key_magic_token		"magic_token"
 key_info		"info"
+key_peer_info		"peer_info"
 key_pid			"pid"
+key_peer_pid		"peer_pid"
 key_profile		"profile"
+key_peer_profile	"peer_profile"
 key_family		"family"
 key_sock_type		"sock_type"
 key_protocol		"protocol"
 key_error		"error"
 key_fsuid		"fsuid"
 key_ouid		"ouid"
+key_uid			"uid"
+key_auid		"auid"
+key_sauid		"sauid"
+key_ses			"ses"
+key_hostname		"hostname"
+key_addr		"addr"
+key_terminal		"terminal"
+key_exe			"exe"
 key_comm		"comm"
 key_capability		"capability"
 key_capname		"capname"
@@ -139,6 +154,11 @@ key_laddr		"laddr"
 key_faddr		"faddr"
 key_lport		"lport"
 key_fport		"fport"
+key_bus			"bus"
+key_dest		"dest"
+key_path		"path"
+key_interface		"interface"
+key_member		"member"
 audit			"audit"
 
 /* network addrs */
@@ -146,6 +166,7 @@ ip_addr			[a-f[:digit:].:]{3,}
 
 /* syslog tokens */
 syslog_kernel		kernel{colon}
+syslog_user		[[:alnum:]_-]+\[[[:digit:]]+\]{colon}
 syslog_yyyymmdd		{digit}{4}{minus}{digit}{2}{minus}{digit}{2}
 syslog_date		{syslog_yyyymmdd}
 syslog_month 		Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?
@@ -155,6 +176,7 @@ syslog_time 		{hhmmss}({period}{digits})?{timezone}?
 syslog_hostname		[[:alnum:]_-]+
 dmesg_timestamp		\[[[:digit:] ]{5,}\.[[:digit:]]{6,}\]
 
+%x single_quoted_string
 %x quoted_string
 %x sub_id
 %x audit_id
@@ -237,6 +259,7 @@ yy_flex_debug = 0;
 	{aa_status_type}	{ BEGIN(INITIAL); return(TOK_TYPE_AA_STATUS); }
 	{aa_error_type}	{ BEGIN(INITIAL); return(TOK_TYPE_AA_ERROR); }
 	{lsm_avc_type}	{ BEGIN(INITIAL); return(TOK_TYPE_LSM_AVC); }
+	{user_avc_type}	{ BEGIN(INITIAL); return(TOK_TYPE_USER_AVC); }
 	{unknown_type}	{ char *yptr = yytext;
 			  while (*yptr && *yptr != '[')
 			  	yptr++;
@@ -262,6 +285,8 @@ yy_flex_debug = 0;
 			}
 {close_paren}		{ return(TOK_CLOSE_PAREN); }
 {period}		{ return(TOK_PERIOD); }
+{question_mark}		{ return(TOK_QUESTION_MARK); }
+{single_quote}		{ return(TOK_SINGLE_QUOTE); }
 
 {key_apparmor}		{ BEGIN(audit_types); return(TOK_KEY_APPARMOR); }
 {key_type}		{ BEGIN(audit_types); return(TOK_KEY_TYPE); }
@@ -270,6 +295,7 @@ yy_flex_debug = 0;
 {key_name}		{ BEGIN(safe_string); return(TOK_KEY_NAME); }
 {key_name2}		{ BEGIN(safe_string); return(TOK_KEY_NAME2); }
 {key_namespace}		{ BEGIN(safe_string); return(TOK_KEY_NAMESPACE); }
+{key_mask}		{ return(TOK_KEY_MASK); }
 {key_denied_mask}	{ return(TOK_KEY_DENIED_MASK); }
 {key_requested_mask}	{ return(TOK_KEY_REQUESTED_MASK); }
 {key_attribute}		{ BEGIN(sub_id); return(TOK_KEY_ATTRIBUTE); }
@@ -277,14 +303,25 @@ yy_flex_debug = 0;
 {key_parent}		{ return(TOK_KEY_PARENT); }
 {key_magic_token}	{ return(TOK_KEY_MAGIC_TOKEN); }
 {key_info}		{ return(TOK_KEY_INFO); }
+{key_peer_info}		{ return(TOK_KEY_PEER_INFO); }
 {key_pid}		{ return(TOK_KEY_PID); }
+{key_peer_pid}		{ return(TOK_KEY_PEER_PID); }
 {key_profile}		{ BEGIN(safe_string); return(TOK_KEY_PROFILE); }
+{key_peer_profile}	{ BEGIN(safe_string); return(TOK_KEY_PEER_PROFILE); }
 {key_family}		{ return(TOK_KEY_FAMILY); }
 {key_sock_type}		{ return(TOK_KEY_SOCK_TYPE); }
 {key_protocol}		{ return(TOK_KEY_PROTOCOL); }
 {key_error}		{ return(TOK_KEY_ERROR); }
 {key_fsuid}		{ return(TOK_KEY_FSUID); }
 {key_ouid}		{ return(TOK_KEY_OUID); }
+{key_uid}		{ return(TOK_KEY_UID); }
+{key_auid}		{ return(TOK_KEY_AUID); }
+{key_sauid}		{ return(TOK_KEY_SAUID); }
+{key_ses}		{ return(TOK_KEY_SES); }
+{key_hostname}		{ return(TOK_KEY_HOSTNAME); }
+{key_addr}		{ return(TOK_KEY_ADDR); }
+{key_terminal}		{ return(TOK_KEY_TERMINAL); }
+{key_exe}		{ BEGIN(safe_string); return(TOK_KEY_EXE); }
 {key_comm}		{ BEGIN(safe_string); return(TOK_KEY_COMM); }
 {key_capability}	{ return(TOK_KEY_CAPABILITY); }
 {key_capname}		{ return(TOK_KEY_CAPNAME); }
@@ -294,8 +331,13 @@ yy_flex_debug = 0;
 {key_faddr}		{ yy_push_state(ip_addr, yyscanner); return(TOK_KEY_FADDR); }
 {key_lport}		{ return(TOK_KEY_LPORT); }
 {key_fport}		{ return(TOK_KEY_FPORT); }
+{key_bus}		{ return(TOK_KEY_BUS); }
+{key_path}		{ return(TOK_KEY_PATH); }
+{key_interface}		{ return(TOK_KEY_INTERFACE); }
+{key_member}		{ return(TOK_KEY_MEMBER); }
 
 {syslog_kernel}		{ BEGIN(dmesg_timestamp); return(TOK_SYSLOG_KERNEL); }
+{syslog_user}		{ return(TOK_SYSLOG_USER); }
 {syslog_month}		{ yylval->t_str = strdup(yytext); return(TOK_DATE_MONTH); }
 {syslog_date}		{ yylval->t_str = strdup(yytext); return(TOK_DATE); }
 {syslog_date}T/{syslog_time}	{ yylval->t_str = strndup(yytext, strlen(yytext)-1); return(TOK_DATE); }
