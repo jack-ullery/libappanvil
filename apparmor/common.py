@@ -191,16 +191,17 @@ def convert_regexp(regexp):
 
 class DebugLogger:
     def __init__(self, module_name=__name__):
-        #logging.basicConfig(filename='/var/log/apparmor/logprof.log')
-        logging.basicConfig(filename='/home/kshitij/logprof.log')
+        logging.basicConfig(filename='/var/log/apparmor/logprof.log', level=logging.DEBUG, format='%(asctime)s - %(name)s - %(message)s\n')   
         self.logger = logging.getLogger(module_name)
-        self.debugging = True
+        self.debugging = False
         if os.getenv('LOGPROF_DEBUG', False):
             self.debugging = True
     def error(self, msg):
         if self.debugging:
+            logging.error(msg)
             self.logger.error(msg)
     def info(self, msg):
+        logging.info(msg)
         if self.debugging:
             self.logger.info(msg)
     def debug(self, msg):

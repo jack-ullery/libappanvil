@@ -367,9 +367,9 @@ def Text_PromptUser(question):
                     selected += 1
                 ans = 'XXXINVALIDXXX'
             
-            elif keys.get(ans, False) == 'CMD_HELP':
-                sys.stdout.write('\n%s\n' %helptext)
-                ans = 'XXXINVALIDXXX'
+#             elif keys.get(ans, False) == 'CMD_HELP':
+#                 sys.stdout.write('\n%s\n' %helptext)
+#                 ans = 'XXXINVALIDXXX'
             
             elif int(ans) == 10:
                 # If they hit return choose default option
