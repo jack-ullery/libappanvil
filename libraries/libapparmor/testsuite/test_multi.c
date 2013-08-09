@@ -137,6 +137,10 @@ int print_results(aa_log_record *record)
 		{
 			printf("Profile: %s\n", record->profile);
 		}
+		if (record->peer_profile != NULL)
+		{
+			printf("Peer profile: %s\n", record->peer_profile);
+		}
 		if (record->name != NULL)
 		{
 			printf("Name: %s\n", record->name);
@@ -173,6 +177,10 @@ int print_results(aa_log_record *record)
 		{
 			printf("Info: %s\n", record->info);
 		}
+		if (record->peer_info != NULL)
+		{
+			printf("Peer info: %s\n", record->peer_info);
+		}
 		if (record->error_code)
 		{
 			printf("ErrorCode: %d\n", record->error_code);
@@ -180,6 +188,10 @@ int print_results(aa_log_record *record)
 		if (record->pid != 0)
 		{
 			printf("PID: %ld\n", record->pid);
+		}
+		if (record->peer_pid != 0)
+		{
+			printf("Peer PID: %ld\n", record->peer_pid);
 		}
 		if (record->active_hat != NULL)
 		{
@@ -201,6 +213,10 @@ int print_results(aa_log_record *record)
 		print_string("Foreign addr", record->net_foreign_addr);
 		print_long("Local port", record->net_local_port, 0);
 		print_long("Foreign port", record->net_foreign_port, 0);
+		print_string("DBus bus", record->dbus_bus);
+		print_string("DBus path", record->dbus_path);
+		print_string("DBus interface", record->dbus_interface);
+		print_string("DBus member", record->dbus_member);
 
 		printf("Epoch: %lu\n", record->epoch);
 		printf("Audit subid: %u\n", record->audit_sub_id);
