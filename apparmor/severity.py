@@ -64,25 +64,6 @@ class Severity:
             else:
                 raise AppArmorException("Unexpected line in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))   
         database.close()
-        
-#     def convert_regexp(self, path):
-#         """Returns the regex form of the path"""
-#         pattern_or = re.compile('{.*\,.*}')    # The regex pattern for {a,b}
-#         internal_glob = '__KJHDKVZH_AAPROF_INTERNAL_GLOB_SVCUZDGZID__'
-#         regex = path
-#         for character in ['.', '+', '[', ']']:    # Escape the regex symbols
-#             regex = regex.replace(character, "\%s" % character)
-#         # Convert the ** to regex
-#         regex = regex.replace('**', '.'+internal_glob)
-#         # Convert the * to regex
-#         regex = regex.replace('*', '[^/]'+internal_glob)
-#         # Convert {a,b} to (a|b) form
-#         if pattern_or.match(regex):
-#             for character, replacement in zip('{},', '()|'):
-#                 regex = regex.replace(character, replacement)
-#         # Restore the * in the final regex
-#         regex = regex.replace(internal_glob, '*')
-#         return regex
     
     def handle_capability(self, resource):
         """Returns the severity of for the capability resource, default value if no match"""

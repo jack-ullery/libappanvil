@@ -165,13 +165,12 @@ def convert_regexp(regexp):
     #    new_reg = new_reg.replace('}', '}')
     #    new_reg = new_reg.replace(',', '|')
     
-    while re.search('{.*,.*}', new_reg):
-        match = re.search('(.*){(.*),(.*)}(.*)', new_reg).groups()
+    while re.search('{[^}]*,[^}]*}', new_reg):
+        match = re.search('(.*){([^}]*)}(.*)', new_reg).groups()
         prev = match[0]
-        after = match[3]
+        after = match[2]
         p1 = match[1].replace(',','|')
-        p2 = match[2].replace(',','|')
-        new_reg = prev+'('+p1+'|'+p2+')'+after
+        new_reg = prev+'('+p1+')'+after
         
     new_reg = new_reg.replace('?', '[^/\000]')
     
@@ -190,18 +189,25 @@ def convert_regexp(regexp):
     return new_reg
 
 class DebugLogger:
-    def __init__(self, module_name=__name__):
-        logging.basicConfig(filename='/var/log/apparmor/logprof.log', level=logging.DEBUG, format='%(asctime)s - %(name)s - %(message)s\n')   
-        self.logger = logging.getLogger(module_name)
+    def __init__(self, module_name=__name__):       
         self.debugging = False
+        self.debug_level = logging.DEBUG   
         if os.getenv('LOGPROF_DEBUG', False):
-            self.debugging = True
+            self.debugging = os.getenv('LOGPROF_DEBUG')
+            if self.debugging == 1:
+                debug_level = logging.ERROR
+            elif self.debug_level == 2:
+                debug_level = logging.INFO
+        
+        #logging.basicConfig(filename='/var/log/apparmor/logprof.log', level=self.debug_level, format='%(asctime)s - %(name)s - %(message)s\n')
+        logging.basicConfig(filename='/home/kshitij/logprof.log', level=self.debug_level, format='%(asctime)s - %(name)s - %(message)s\n')   
+        self.logger = logging.getLogger(module_name)
+        
+        
     def error(self, msg):
         if self.debugging:
-            logging.error(msg)
             self.logger.error(msg)
     def info(self, msg):
-        logging.info(msg)
         if self.debugging:
             self.logger.info(msg)
     def debug(self, msg):

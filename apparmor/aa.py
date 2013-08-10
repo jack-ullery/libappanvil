@@ -67,7 +67,7 @@ original_aa =  hasher()
 extras = hasher()  # Inactive profiles from extras
 ### end our
 log = []
-pid = None
+pid = dict()
 
 seen = hasher()#dir()
 profile_changes = dict()
@@ -215,7 +215,7 @@ def check_for_apparmor():
 
 def which(file):
     """Returns the executable fullpath for the file, None otherwise"""
-    env_dirs = os.getenv('PATH').split(':')
+    env_dirs = os.getenv('AAPATH').split(':')
     for env_dir in env_dirs:
         env_path = env_dir + '/' + file
         # Test if the path is executable or not
@@ -264,7 +264,7 @@ def get_profile_filename(profile):
         profile = profile[1:]
     else:
         profile = "profile_" + profile
-    profile.replace('/', '.')
+    profile = profile.replace('/', '.')
     full_profilename = profile_dir + '/' + profile
     return full_profilename
 
@@ -583,25 +583,26 @@ def autodep(bin_name, pname=''):
     
 def set_profile_flags(prof_filename, newflags):
     """Reads the old profile file and updates the flags accordingly"""
-    regex_bin_flag = re.compile('^(\s*)(("??\/.+?"??)|(profile\s+("??.+?"??)))\s+(flags=\(.+\)\s+)*\{\s*$/')
-    regex_hat_flag = re.compile('^([a-z]*)\s+([A-Z]*)((\s+#\S*)*)\s*$')
-    #a=re.compile('^([a-z]*)\s+([A-Z]*)((\s+#\S*)*)\s*$')
-    #regex_hat_flag = re.compile('^(\s*\^\S+)\s+(flags=\(.+\)\s+)*\{\s*(#*\S*)$')
+    regex_bin_flag = re.compile('^(\s*)(("??/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.*)\)\s+)?\{\s*(#.*)?$')
+    regex_hat_flag = re.compile('^([a-z]*)\s+([A-Z]*)\s*(#.*)?$')
     if os.path.isfile(prof_filename):
         with open_file_read(prof_filename) as f_in:
             tempfile = tempfile.NamedTemporaryFile('w', prefix=prof_filename , suffix='~', delete=False, dir='/etc/apparmor.d/')
             shutil.copymode('/etc/apparmor.d/' + prof_filename, tempfile.name)
             with open_file_write(tempfile.name) as f_out:
                 for line in f_in:
+                    comment = ''
                     if '#' in line:
                         comment = '#' + line.split('#', 1)[1].rstrip()
-                    else:
-                        comment = ''
                     match = regex_bin_flag.search(line)
                     if match:
-                        space, binary, flags = match.groups()
+                        matches = match.groups()
+                        space = matches[0]
+                        binary = matches[1]
+                        flag = matches[6]
+                        flags = matches[7]
                         if newflags:
-                            line = '%s%s flags=(%s) {%s\n' % (space, binary, newflags, comment)
+                            line = '%s%s %s(%s) {%s\n' % (space, binary, flag, newflags, comment)
                         else:
                             line = '%s%s {%s\n' % (space, binary, comment)
                     else:
@@ -622,6 +623,7 @@ def profile_exists(program):
         return True
     # Check the disk for profile
     prof_path = get_profile_filename(program)
+    #print(prof_path)
     if os.path.isfile(prof_path):
         # Add to cache of profile
         existing_profiles[program] = True
@@ -1326,7 +1328,7 @@ def handle_children(profile, hat, root):
                         if not os.path.exists(get_profile_filename(exec_target)):
                             ynans = 'y'
                             if exec_mode & str_to_mode('i'):
-                                ynans = UI_YesNo(_('A profile for ') + str(exec_target) + _(' doesnot exist.\nDo you want to create one?'), 'n')
+                                ynans = UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') %exec_target, 'n')
                             if ynans == 'y':
                                 helpers[exec_target] = 'enforce'
                                 if to_name:
@@ -1389,10 +1391,9 @@ def handle_children(profile, hat, root):
     return None
 
 def add_to_tree(loc_pid, parent, type, event):
-    debug_logger.info('add_to_tree: pid [%s] type [%s] event [%s]' % (pid, type, event))
-    
+    debug_logger.info('add_to_tree: pid [%s] type [%s] event [%s]' % (loc_pid, type, event))
     if not pid.get(loc_pid, False):
-        profile, hat = event[:1]
+        profile, hat = event[:2]
         if parent and pid.get(parent, False):
             if not hat:
                 hat = 'null-complain-profile'
@@ -1403,18 +1404,14 @@ def add_to_tree(loc_pid, parent, type, event):
         #    array_ref = []
         #    log.append(array_ref)
         #    pid[pid] = array_ref
-    pid[loc_pid] += [type, loc_pid, event]
+    pid[loc_pid] = pid.get(loc_pid, []) + [type, loc_pid, event]
 
 # Variables used by logparsing routines
 LOG = None
 next_log_entry = None
 logmark = None
 seenmark = None
-#RE_LOG_v2_0_syslog = re.compile('SubDomain')
-#RE_LOG_v2_1_syslog = re.compile('kernel:\s+(\[[\d\.\s]+\]\s+)?(audit\([\d\.\:]+\):\s+)?type=150[1-6]')
 RE_LOG_v2_6_syslog = re.compile('kernel:\s+(\[[\d\.\s]+\]\s+)?type=\d+\s+audit\([\d\.\:]+\):\s+apparmor=')
-#RE_LOG_v2_0_audit  = re.compile('type=(APPARMOR|UNKNOWN\[1500\]) msg=audit\([\d\.\:]+\):')
-#RE_LOG_v2_1_audit  = re.compile('type=(UNKNOWN\[150[1-6]\]|APPARMOR_(AUDIT|ALLOWED|DENIED|HINT|STATUS|ERROR))')
 RE_LOG_v2_6_audit = re.compile('type=AVC\s+(msg=)?audit\([\d\.\:]+\):\s+apparmor=')
 
 MODE_MAP_RE = re.compile('r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N')
@@ -1484,7 +1481,7 @@ def add_event_to_tree(e):
         return None 
     
     # Convert new null profiles to old single level null profile
-    if '\\null-' in e['profile']:
+    if '//null-' in e['profile']:
         e['profile'] = 'null-complain-profile'
     
     profile = e['profile']
@@ -1503,7 +1500,7 @@ def add_event_to_tree(e):
    
     # prog is no longer passed around consistently
     prog = 'HINT'
-     
+    
     if profile != 'null-complain-profile' and not profile_exists(profile):
         return None
 
@@ -1583,7 +1580,7 @@ def read_log(logmark):
     #last = None
     #event_type = None
     try:
-        print(filename)
+        #print(filename)
         log_open = open_file_read(filename)
     except IOError:
         raise AppArmorException('Can not read AppArmor logfile: ' + filename)
@@ -1751,6 +1748,7 @@ def order_globs(globs, path):
 
 def ask_the_questions():
     found = None
+    print(log_dict)
     for aamode in sorted(log_dict.keys()):
         # Describe the type of changes
         if aamode == 'PERMITTING':
@@ -2955,10 +2953,9 @@ def parse_profile_data(data, file, do_include):
     repo_data = None
     parsed_profiles = []
     initial_comment = ''
-    RE_PROFILE_START = re.compile('^(("??\/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$')
+    RE_PROFILE_START = re.compile('^(("??\/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.+)\)\s+)?\{\s*(#.*)?$')
     RE_PROFILE_END = re.compile('^\}\s*(#.*)?$')
     RE_PROFILE_CAP = re.compile('^(audit\s+)?(allow\s+|deny\s+)?capability\s+(\S+)\s*,\s*(#.*)?$')
-    #RE_PROFILE_SET_CAP = re.compile('^set capability\s+(\S+)\s*,\s*(#.*)?$')
     RE_PROFILE_LINK = re.compile('^(audit\s+)?(allow\s+|deny\s+)?link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)\s*,\s*(#.*)?$')
     RE_PROFILE_CHANGE_PROFILE = re.compile('^change_profile\s+->\s*("??.+?"??),(#.*)?$')
     RE_PROFILE_ALIAS = re.compile('^alias\s+("??.+?"??)\s+->\s*("??.+?"??)\s*,(#.*)?$')
@@ -3066,16 +3063,7 @@ def parse_profile_data(data, file, do_include):
             
             profile_data[profile][hat][allow]['capability'][capability]['set'] = True
             profile_data[profile][hat][allow]['capability'][capability]['audit'] = audit
-        
-#         elif RE_PROFILE_SET_CAP.search(line):
-#             matches = RE_PROFILE_SET_CAP.search(line).groups()
-#             
-#             if not profile:
-#                 raise AppArmorException('Syntax Error: Unexpected capability entry found in file: %s line: %s' % (file, lineno+1))
-#             
-#             capability = matches[0]
-#             profile_data[profile][hat]['set_capability'][capability] = True
-#         
+             
         elif RE_PROFILE_LINK.search(line):
             matches = RE_PROFILE_LINK.search(line).groups()
             
@@ -3373,12 +3361,12 @@ def store_list_var(var, list_var, value, var_operation):
         else:
             print('Ignored: New definition for variable for:',list_var,'=', value, 'operation was:',var_operation,'old value=', var[list_var])
             pass
-            #raise AppArmorException('An existing variable redefined')
+            #raise AppArmorException('An existing variable redefined: %s' %list_var)
     else:
         if var.get(list_var, False):
             var[list_var] = set(var[list_var] + vlist)
         else:
-            raise AppArmorException('An existing variable redefined')
+            raise AppArmorException('An existing variable redefined: %s' %list_var)
 
 
 def strip_quotes(data):

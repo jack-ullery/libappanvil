@@ -4,7 +4,7 @@ import os
 import re
 from apparmor.yasti import yastLog, SendDataToYast, GetDataFromYast
 
-from apparmor.common import readkey, AppArmorException, DebugLogger
+from apparmor.common import readkey, AppArmorException, DebugLogger, msg
 
 # Set up UI logger for separate messages from UI module
 debug_logger = DebugLogger('UI')
