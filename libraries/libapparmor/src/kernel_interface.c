@@ -684,7 +684,9 @@ static void aafs_access_init_once(void)
  * @audited: upon successful return, will be 1 if query should be audited and 0
  *           if not
  *
- * Returns: 0 on success else -1 and sets errno
+ * Returns: 0 on success else -1 and sets errno. If -1 is returned and errno is
+ *          ENOENT, the subject label in the query string is unknown to the
+ *          kernel.
  */
 int aa_query_label(uint32_t mask, char *query, size_t size, int *allowed,
 		   int *audited)
@@ -708,8 +710,11 @@ int aa_query_label(uint32_t mask, char *query, size_t size, int *allowed,
 	}
 
 	fd = open(aafs_access, O_RDWR);
-	if (fd == -1)
+	if (fd == -1) {
+		if (errno == ENOENT)
+			errno = EPROTONOSUPPORT;
 		return -1;
+	}
 
 	memcpy(query, AA_QUERY_CMD_LABEL, AA_QUERY_CMD_LABEL_SIZE);
 	errno = 0;
@@ -717,6 +722,10 @@ int aa_query_label(uint32_t mask, char *query, size_t size, int *allowed,
 	if (ret != size) {
 		if (ret >= 0)
 			errno = EPROTO;
+		/* IMPORTANT: This is the only valid error path that can have
+		 * errno set to ENOENT. It indicates that the subject label
+		 * could not be found by the kernel.
+		 */
 		return -1;
 	}
 
@@ -725,8 +734,7 @@ int aa_query_label(uint32_t mask, char *query, size_t size, int *allowed,
 	(void)close(fd);
 	errno = saved;
 	if (ret != QUERY_LABEL_REPLY_LEN) {
-		if (ret >= 0)
-			errno = EPROTO;
+		errno = EPROTO;
 		return -1;
 	}
 
