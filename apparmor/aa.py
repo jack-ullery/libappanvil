@@ -27,6 +27,7 @@ from apparmor.common import (AppArmorException, error, debug, msg,
 
 from apparmor.ui import *
 from copy import deepcopy
+from apparmor.aamode import *
 
 # Setup logging incase of debugging is enabled
 debug_logger = DebugLogger('aa')
@@ -420,7 +421,7 @@ def create_new_profile(localfile):
             
             local_profile[localfile]['allow']['path'][localfile]['mode'] = local_profile[localfile]['allow']['path'][localfile].get('mode', str_to_mode('mr')) | str_to_mode('mr')
             
-            local_profile[localfile]['allow']['path'][localfile]['audit'] = local_profile[localfile]['allow']['path'][localfile].get('audit', 0)
+            local_profile[localfile]['allow']['path'][localfile]['audit'] = local_profile[localfile]['allow']['path'][localfile].get('audit', set())
 
             handle_binfmt(local_profile[localfile], localfile)
     # Add required hats to the profile if they match the localfile      
@@ -962,7 +963,7 @@ def handle_children(profile, hat, root):
             elif typ == 'path' or typ == 'exec':
                 pid, p, h, prog, aamode, mode, detail, to_name = entry[:8]
                 if not mode:
-                    mode = 0
+                    mode = set()
                 if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
                     profile = p
                     hat = h
@@ -988,7 +989,7 @@ def handle_children(profile, hat, root):
                 
                 if mode & str_to_mode('x'):
                     if os.path.isdir(exec_target):
-                        mode = mode & (~ALL_AA_EXEC_TYPE)
+                        mode = mode - ALL_AA_EXEC_TYPE
                         mode = mode | str_to_mode('ix')
                     else:
                         do_execute = True
@@ -1036,8 +1037,8 @@ def handle_children(profile, hat, root):
                     context_new = context + ' ->%s' % exec_target
                     
                     ans_new = transitions.get(context_new, '')
-                    combinedmode = False
-                    combinedaudit = False
+                    combinedmode = set()
+                    combinedaudit = set()
                     ## Check return Value Consistency
                     # Check if path matches any existing regexps in profile
                     cm, am , m = rematchfrag(aa[profile][hat], 'allow', exec_target)
@@ -1237,7 +1238,7 @@ def handle_children(profile, hat, root):
                                 ynans = UI_YesNo(px_msg, px_default)
                                 if ynans == 'y':
                                     # Disable the unsafe mode
-                                    exec_mode &= ~(AA_EXEC_UNSAFE | (AA_EXEC_UNSAFE << AA_OTHER_SHIFT))
+                                    exec_mode = exec_mode - (AA_EXEC_UNSAFE | AA_OTHER(AA_EXEC_UNSAFE))
                             elif ans == 'CMD_ux':
                                 exec_mode = str_to_mode('ux')
                                 ynans = UI_YesNo(_('Launching processes in an unconfined state is a very\n' +
@@ -1252,7 +1253,7 @@ def handle_children(profile, hat, root):
                                                              'and should be avoided if at all possible.'), 'y')
                                     if ynans == 'y':
                                         # Disable the unsafe mode
-                                        exec_mode &= ~(AA_EXEC_UNSAFE | (AA_EXEC_UNSAFE << AA_OTHER_SHIFT))
+                                        exec_mode = exec_mode - (AA_EXEC_UNSAFE | AA_OTHER(AA_EXEC_UNSAFE))
                                 else:
                                     ans = 'INVALID'
                         transitions[context] = ans
@@ -1265,7 +1266,7 @@ def handle_children(profile, hat, root):
                         else:
                             if ans == 'CMD_DENY':
                                 aa[profile][hat]['deny']['path'][exec_target]['mode'] = aa[profile][hat]['deny']['path'][exec_target].get('mode', str_to_mode('x')) | str_to_mode('x')
-                                aa[profile][hat]['deny']['path'][exec_target]['audit'] = aa[profile][hat]['deny']['path'][exec_target].get('audit', 0)
+                                aa[profile][hat]['deny']['path'][exec_target]['audit'] = aa[profile][hat]['deny']['path'][exec_target].get('audit', set())
                                 changed[profile] = True
                                 # Skip remaining events if they ask to deny exec
                                 if domainchange == 'change':
@@ -1278,7 +1279,7 @@ def handle_children(profile, hat, root):
                             
                             aa[profile][hat]['allow']['path'][exec_target]['mode'] = aa[profile][hat]['allow']['path'][exec_target].get('mode', exec_mode)
                             
-                            aa[profile][hat]['allow']['path'][exec_target]['audit'] = aa[profile][hat]['allow']['path'][exec_target].get('audit', 0)
+                            aa[profile][hat]['allow']['path'][exec_target]['audit'] = aa[profile][hat]['allow']['path'][exec_target].get('audit', set())
                             
                             if to_name:
                                 aa[profile][hat]['allow']['path'][exec_target]['to'] = to_name
@@ -1298,7 +1299,7 @@ def handle_children(profile, hat, root):
                                     
                                     aa[profile][hat]['path'][interpreter_path]['mode'] = aa[profile][hat]['path'][interpreter_path].get('mode', str_to_mode('ix')) | str_to_mode('ix')
                                     
-                                    aa[profile][hat]['path'][interpreter_path]['audit'] = aa[profile][hat]['path'][interpreter_path].get('audit', 0)
+                                    aa[profile][hat]['path'][interpreter_path]['audit'] = aa[profile][hat]['path'][interpreter_path].get('audit', set())
                                     
                                     if interpreter == 'perl':
                                         aa[profile][hat]['include']['abstractions/perl'] = True
@@ -1578,10 +1579,10 @@ def ask_the_questions():
                 for path in sorted(log_dict[aamode][profile][hat]['path'].keys()):
                     mode = log_dict[aamode][profile][hat]['path'][path]
                     # Lookup modes from profile
-                    allow_mode = 0
-                    allow_audit = 0
-                    deny_mode = 0
-                    deny_audit = 0
+                    allow_mode = set()
+                    allow_audit = set()
+                    deny_mode = set()
+                    deny_audit = set()
                     
                     fmode, famode, fm = rematchfrag(aa[profile][hat], 'allow', path)
                     if fmode:
@@ -1611,14 +1612,14 @@ def ask_the_questions():
                         deny_mode |= ALL_AA_EXEC_TYPE
                     
                     # Mask off the denied modes
-                    mode = mode & ~deny_mode
+                    mode = mode - deny_mode
                     
                     # If we get an exec request from some kindof event that generates 'PERMITTING X'
                     # check if its already in allow_mode
                     # if not add ix permission
                     if mode & AA_MAY_EXEC:
                         # Remove all type access permission
-                        mode = mode & ~ALL_AA_EXEC_TYPE
+                        mode = mode - ALL_AA_EXEC_TYPE
                         if not allow_mode & AA_MAY_EXEC:
                             mode |= str_to_mode('ix')
                     
@@ -1628,7 +1629,7 @@ def ask_the_questions():
                     ##if mode & AA_EXEC_MMAP:
                     ##    # ix implies m, so we don't need to add m if ix is present
                     ##    if contains(allow_mode, 'ix'):
-                    ##        mode = mode & ~AA_EXEC_MMAP
+                    ##        mode = mode - AA_EXEC_MMAP
                         
                     if not mode:
                         continue
@@ -1714,7 +1715,7 @@ def ask_the_questions():
                                 elif owner_toggle == 1:
                                     prompt_mode = mode
                                 elif owner_toggle == 2:
-                                    prompt_mode = allow_mode | owner_flatten_mode(mode & ~allow_mode)
+                                    prompt_mode = allow_mode | owner_flatten_mode(mode - allow_mode)
                                     tail = '     ' + _('(force new perms to owner)')
                                 else:
                                     prompt_mode = owner_flatten_mode(mode)
@@ -1724,7 +1725,7 @@ def ask_the_questions():
                                     s = mode_to_str_user(allow_mode)
                                     if allow_mode:
                                         s += ', '
-                                    s += 'audit ' + mode_to_str_user(prompt_mode & ~allow_mode) + tail
+                                    s += 'audit ' + mode_to_str_user(prompt_mode - allow_mode) + tail
                                 elif audit_toggle == 2:
                                     s = 'audit ' + mode_to_str_user(prompt_mode) + tail
                                 else:
@@ -1809,19 +1810,19 @@ def ask_the_questions():
                                     #elif owner_toggle == 1:
                                     #    mode = mode
                                     elif owner_toggle == 2:
-                                        mode = allow_mode | owner_flatten_mode(mode & ~allow_mode)
+                                        mode = allow_mode | owner_flatten_mode(mode - allow_mode)
                                     elif owner_toggle == 3:
                                         mode = owner_flatten_mode(mode)
                                     
-                                    aa[profile][hat]['allow']['path'][path]['mode'] = aa[profile][hat]['allow']['path'][path].get('mode', 0) | mode
+                                    aa[profile][hat]['allow']['path'][path]['mode'] = aa[profile][hat]['allow']['path'][path].get('mode', set()) | mode
                                     
                                     tmpmode = 0
                                     if audit_toggle == 1:
-                                        tmpmode = mode & ~allow_mode
+                                        tmpmode = mode- allow_mode
                                     elif audit_toggle == 2:
                                         tmpmode = mode 
                                     
-                                    aa[profile][hat]['allow']['path'][path]['audit'] = aa[profile][hat]['allow']['path'][path].get('audit', 0) | tmpmode
+                                    aa[profile][hat]['allow']['path'][path]['audit'] = aa[profile][hat]['allow']['path'][path].get('audit', set()) | tmpmode
                                     
                                     changed[profile] = True
                                     
@@ -1831,9 +1832,9 @@ def ask_the_questions():
                                     
                             elif ans == 'CMD_DENY':
                                 # Add new entry?
-                                aa[profile][hat]['deny']['path'][path]['mode'] = aa[profile][hat]['deny']['path'][path].get('mode', 0) | (mode & ~allow_mode)
+                                aa[profile][hat]['deny']['path'][path]['mode'] = aa[profile][hat]['deny']['path'][path].get('mode', set()) | (mode - allow_mode)
                                 
-                                aa[profile][hat]['deny']['path'][path]['audit'] = aa[profile][hat]['deny']['path'][path].get('audit', 0)
+                                aa[profile][hat]['deny']['path'][path]['audit'] = aa[profile][hat]['deny']['path'][path].get('audit', set())
                                 
                                 changed[profile] = True
                                 
@@ -1896,7 +1897,7 @@ def ask_the_questions():
                                     match = re.search('/\*{1,2}(\.[^/]+)$', newpath)
                                     if match:
                                         # /foo/**.ext and /foo/*.ext => /**.ext
-                                        newpath = re.sub('/[^/]+/\*{1,2}\.[^/]+$', '/**'+match.group()[0], newpath)
+                                        newpath = re.sub('/[^/]+/\*{1,2}\.[^/]+$', '/**'+match.groups()[0], newpath)
                                     elif re.search('/[^/]+\*\*[^/]*\.[^/]+$', newpath):
                                         # /foo**.ext and /foo**bar.ext => /**.ext
                                         match = re.search('/[^/]+\*\*[^/]*(\.[^/]+)$', newpath)
@@ -2470,7 +2471,7 @@ def log_str_to_mode(profile, string, nt_name):
                     tmode |= str_to_mode('Px')
                 nt_name = lhat
             
-            mode = mode & ~str_to_mode('Nx')
+            mode = mode - str_to_mode('Nx')
             mode |= tmode
     
     return mode, nt_name
@@ -2493,7 +2494,7 @@ def sub_mode_to_str(mode):
     string = ''
     # w(write) implies a(append)
     if mode & AA_MAY_WRITE:
-        mode &= (~AA_MAY_APPEND)
+        mode = mode - AA_MAY_APPEND
 
     if mode & AA_EXEC_MMAP:
         string += 'm'
@@ -2561,10 +2562,10 @@ def mode_to_str_user(mode):
     if not other:
         other = 0
     
-    if user & ~other:
+    if user - other:
         if other:
             string = sub_mode_to_str(other) + '+'
-        string += 'owner ' + sub_mode_to_str(user & ~other)
+        string += 'owner ' + sub_mode_to_str(user - other)
     
     elif is_user_mode(mode):
         string = 'owner ' + sub_mode_to_str(user)
@@ -3291,30 +3292,30 @@ def write_path_rules(prof_data, depth, allow):
                 ownerstr = ''
                 tmpmode = 0
                 tmpaudit = False
-                if user & ~other:
+                if user - other:
                     # if no other mode set 
                     ownerstr = 'owner'
-                    tmpmode = user & ~other
+                    tmpmode = user - other
                     tmpaudit = user_audit
-                    user = user & ~tmpmode
+                    user = user - tmpmode
                 else:
-                    if user_audit & ~other_audit & user:
+                    if user_audit - other_audit & user:
                         ownerstr = 'owner '
-                        tmpaudit = user_audit & ~other_audit & user
+                        tmpaudit = user_audit - other_audit & user
                         tmpmode = user & tmpaudit
-                        user = user & ~tmpmode
+                        user = user - tmpmode
                     else:
                         ownerstr = ''
                         tmpmode = user | other
                         tmpaudit = user_audit | other_audit
-                        user = user & ~tmpmode
-                        other = other & ~tmpmode
+                        user = user - tmpmode
+                        other = other - tmpmode
             
                 if tmpmode & tmpaudit:
                     modestr = mode_to_str(tmpmode & tmpaudit)
                     path = quote_if_needed(path)
                     data.append('%saudit %s%s%s %s%s,' %(pre, allowstr, ownerstr, path, modestr, tail))
-                    tmpmode = tmpmode & ~tmpaudit
+                    tmpmode = tmpmode - tmpaudit
             
                 if tmpmode:
                     modestr = mode_to_str(tmpmode)

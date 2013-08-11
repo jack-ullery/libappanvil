@@ -1,5 +1,18 @@
 import re
 
+def AA_OTHER(mode):
+    other = set()
+    for i in mode:
+        other.add('::%s'%i)
+    return other
+
+def AA_OTHER_REMOVE(mode):
+    other = set()
+    for i in mode:
+        if '::' in i:
+            other.add(i[2:])
+    return other
+
 AA_MAY_EXEC = set('x')
 AA_MAY_WRITE = set('w')
 AA_MAY_READ = set('r')
@@ -7,15 +20,15 @@ AA_MAY_APPEND = set('a')
 AA_MAY_LINK = set('l')
 AA_MAY_LOCK = set('k')
 AA_EXEC_MMAP = set('m')
-AA_EXEC_UNSAFE = set('unsafe')
+AA_EXEC_UNSAFE = set('z')
 AA_EXEC_INHERIT = set('i')
 AA_EXEC_UNCONFINED = set('U')
 AA_EXEC_PROFILE = set('P')
 AA_EXEC_CHILD = set('C')
 AA_EXEC_NT = set('N')
 AA_LINK_SUBSET = set('ls')
-AA_OTHER_SHIFT = 14
-AA_USER_MASK = 16384 - 1
+#AA_OTHER_SHIFT = 14
+#AA_USER_MASK = 16384 - 1
 
 AA_EXEC_TYPE = (AA_MAY_EXEC | AA_EXEC_UNSAFE | AA_EXEC_INHERIT |
                 AA_EXEC_UNCONFINED | AA_EXEC_PROFILE | AA_EXEC_CHILD | AA_EXEC_NT)
@@ -28,31 +41,30 @@ MODE_HASH = {'x': AA_MAY_EXEC, 'X': AA_MAY_EXEC,
              'k': AA_MAY_LOCK, 'K': AA_MAY_LOCK,
              'm': AA_EXEC_MMAP, 'M': AA_EXEC_MMAP,
              'i': AA_EXEC_INHERIT, 'I': AA_EXEC_INHERIT,
-             'u': AA_EXEC_UNCONFINED + AA_EXEC_UNSAFE,  # Unconfined + Unsafe
+             'u': AA_EXEC_UNCONFINED | AA_EXEC_UNSAFE,  # Unconfined + Unsafe
               'U': AA_EXEC_UNCONFINED,
-              'p': AA_EXEC_PROFILE + AA_EXEC_UNSAFE,    # Profile + unsafe
+              'p': AA_EXEC_PROFILE | AA_EXEC_UNSAFE,    # Profile + unsafe
               'P': AA_EXEC_PROFILE,
-              'c': AA_EXEC_CHILD + AA_EXEC_UNSAFE,  # Child + Unsafe
+              'c': AA_EXEC_CHILD | AA_EXEC_UNSAFE,  # Child + Unsafe
               'C': AA_EXEC_CHILD,
-              'n': AA_EXEC_NT + AA_EXEC_UNSAFE,
+              'n': AA_EXEC_NT | AA_EXEC_UNSAFE,
               'N': AA_EXEC_NT
               }
 
 LOG_MODE_RE = re.compile('r|w|l|m|k|a|x|ix|ux|px|cx|nx|pix|cix|Ix|Ux|Px|PUx|Cx|Nx|Pix|Cix')
-MODE_MAP_RE = re.compile('r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N')
+MODE_MAP_RE = re.compile('(r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N)')
 
 def str_to_mode(string):
     if not string:
         return set()
     user, other = split_log_mode(string)
-    
     if not user:
         user = other
 
     mode = sub_str_to_mode(user)
     #print(string, mode)
     #print(string, 'other', sub_str_to_mode(other))
-    mode |= (sub_str_to_mode(other) << AA_OTHER_SHIFT)
+    mode |= (AA_OTHER(sub_str_to_mode(other)))
     #print (string, mode)
     #print('str_to_mode:', mode)
     return mode
@@ -62,11 +74,10 @@ def sub_str_to_mode(string):
     if not string:
         return mode
     while string:
-        pattern = '(%s)' % MODE_MAP_RE.pattern
-        tmp = re.search(pattern, string)
+        tmp = MODE_MAP_RE.search(string)
         if tmp:
             tmp = tmp.groups()[0]
-        string = re.sub(pattern, '', string)
+        string = MODE_MAP_RE.sub('', string, 1)
         if tmp and MODE_HASH.get(tmp, False):
             mode |= MODE_HASH[tmp]
         else:
@@ -90,8 +101,8 @@ def mode_contains(mode, subset):
     # w implies a
     if mode & AA_MAY_WRITE:
         mode |= AA_MAY_APPEND   
-    if mode & (AA_MAY_WRITE << AA_OTHER_SHIFT):
-        mode |= (AA_MAY_APPEND << AA_OTHER_SHIFT)
+    if mode & (AA_OTHER(AA_MAY_WRITE)):
+        mode |= (AA_OTHER(AA_MAY_APPEND))
     
     return (mode & subset) == subset
 
@@ -109,47 +120,121 @@ def validate_log_mode(mode):
 def hide_log_mode(mode):
     mode = mode.replace('::', '')
     return mode
+
+def map_log_mode(mode):
+    return mode
+
+def print_mode(mode):
+    user, other = split_mode(mode)
+    string = sub_mode_to_str(user) + '::' + sub_mode_to_str(other)
     
-AA_MAY_EXEC = 1
-AA_MAY_WRITE = 2
-AA_MAY_READ = 4
-AA_MAY_APPEND = 8
-AA_MAY_LINK = 16
-AA_MAY_LOCK = 32
-AA_EXEC_MMAP = 64
-AA_EXEC_UNSAFE = 128
-AA_EXEC_INHERIT = 256
-AA_EXEC_UNCONFINED = 512
-AA_EXEC_PROFILE = 1024
-AA_EXEC_CHILD = 2048
-AA_EXEC_NT = 4096
-AA_LINK_SUBSET = 8192
-AA_OTHER_SHIFT = 14
-AA_USER_MASK = 16384 - 1
+    return string
 
-AA_EXEC_TYPE = (AA_MAY_EXEC | AA_EXEC_UNSAFE | AA_EXEC_INHERIT |
-                AA_EXEC_UNCONFINED | AA_EXEC_PROFILE | AA_EXEC_CHILD | AA_EXEC_NT)
+def sub_mode_to_str(mode):
+    string = ''
+    # w(write) implies a(append)
+    if mode & AA_MAY_WRITE:
+        mode = mode - AA_MAY_APPEND
+    #string = ''.join(mode)
+    
+    if mode & AA_EXEC_MMAP:
+        string += 'm'
+    if mode & AA_MAY_READ:
+        string += 'r'
+    if mode & AA_MAY_WRITE:
+        string += 'w'
+    if mode & AA_MAY_APPEND:
+        string += 'a'
+    if mode & AA_MAY_LINK:
+        string += 'l'
+    if mode & AA_MAY_LOCK:
+        string += 'k'
+    
+    # modes P and C must appear before I and U else invalid syntax
+    if mode & (AA_EXEC_PROFILE | AA_EXEC_NT):
+        if mode & AA_EXEC_UNSAFE:
+            string += 'p'
+        else:
+            string += 'P'
+    
+    if mode & AA_EXEC_CHILD:
+        if mode & AA_EXEC_UNSAFE:
+            string += 'c'
+        else:
+            string += 'C'
+    
+    if mode & AA_EXEC_UNCONFINED:
+        if mode & AA_EXEC_UNSAFE:
+            string += 'u'
+        else:
+            string += 'U'
+    
+    if mode & AA_EXEC_INHERIT:
+        string += 'i'
+    
+    if mode & AA_MAY_EXEC:
+        string += 'x'
+    
+    return string
 
-ALL_AA_EXEC_TYPE = AA_EXEC_TYPE # The same value
+def is_user_mode(mode):
+    user, other = split_mode(mode)
+    
+    if user and not other:
+        return True
+    else:
+        return False
 
-# Modes and their values
-MODE_HASH = {'x': AA_MAY_EXEC, 'X': AA_MAY_EXEC, 
-             'w': AA_MAY_WRITE, 'W': AA_MAY_WRITE,
-             'r': AA_MAY_READ, 'R': AA_MAY_READ,
-             'a': AA_MAY_APPEND, 'A': AA_MAY_APPEND,
-             'l': AA_MAY_LINK, 'L': AA_MAY_LINK,
-             'k': AA_MAY_LOCK, 'K': AA_MAY_LOCK,
-             'm': AA_EXEC_MMAP, 'M': AA_EXEC_MMAP,
-             'i': AA_EXEC_INHERIT, 'I': AA_EXEC_INHERIT,
-             'u': AA_EXEC_UNCONFINED + AA_EXEC_UNSAFE,  # Unconfined + Unsafe
-              'U': AA_EXEC_UNCONFINED,
-              'p': AA_EXEC_PROFILE + AA_EXEC_UNSAFE,    # Profile + unsafe
-              'P': AA_EXEC_PROFILE,
-              'c': AA_EXEC_CHILD + AA_EXEC_UNSAFE,  # Child + Unsafe
-              'C': AA_EXEC_CHILD,
-              'n': AA_EXEC_NT + AA_EXEC_UNSAFE,
-              'N': AA_EXEC_NT
-              }
+def profilemode(mode):
+    pass
+
+def split_mode(mode):
+    user = set()
+    for i in mode:
+        if not '::' in i:
+            user.add(i)
+    other = mode - user
+    other = AA_OTHER_REMOVE(other)    
+    return user, other
+
+def mode_to_str(mode):
+    mode = flatten_mode(mode)
+    return sub_mode_to_str(mode)
+
+def flatten_mode(mode):
+    if not mode:
+        return set()
+    
+    user, other = split_mode(mode)
+    mode = user | other
+    mode |= (AA_OTHER(mode))
+    
+    return mode
+
+def owner_flatten_mode(mode):
+    mode = flatten_mode(mode)
+    return mode
+
+def mode_to_str_user(mode):
+    user, other = split_mode(mode)
+    string = ''
+    
+    if not user:
+        user = set()
+    if not other:
+        other = set()
+    
+    if user - other:
+        if other:
+            string = sub_mode_to_str(other) + '+'
+        string += 'owner ' + sub_mode_to_str(user - other)
+    
+    elif is_user_mode(mode):
+        string = 'owner ' + sub_mode_to_str(user)
+    else:
+        string = sub_mode_to_str(flatten_mode(mode))
+    
+    return string
 
 def log_str_to_mode(profile, string, nt_name):
     mode = str_to_mode(string)
@@ -165,94 +250,17 @@ def log_str_to_mode(profile, string, nt_name):
             if lprofile == profile:
                 if mode & AA_MAY_EXEC:
                     tmode = str_to_mode('Cx::')
-                if mode & (AA_MAY_EXEC << AA_OTHER_SHIFT):
+                if mode & AA_OTHER(AA_MAY_EXEC):
                     tmode |= str_to_mode('Cx')
                 nt_name = lhat
             else:
                 if mode & AA_MAY_EXEC:
                     tmode = str_to_mode('Px::')
-                if mode & (AA_MAY_EXEC << AA_OTHER_SHIFT):
+                if mode & AA_OTHER(AA_MAY_EXEC):
                     tmode |= str_to_mode('Px')
                 nt_name = lhat
             
-            mode = mode & ~str_to_mode('Nx')
+            mode = mode - str_to_mode('Nx')
             mode |= tmode
     
     return mode, nt_name
-
-def hide_log_mode(mode):
-    mode = mode.replace('::', '')
-    return mode
-
-def validate_log_mode(mode):
-    pattern = '^(%s)+$' % LOG_MODE_RE.pattern
-    if re.search(pattern, mode):
-    #if LOG_MODE_RE.search(mode):
-        return True
-    else:
-        return False
-    
-def str_to_mode(string):
-    if not string:
-        return 0
-    user, other = split_log_mode(string)
-    
-    if not user:
-        user = other
-
-    mode = sub_str_to_mode(user)
-    #print(string, mode)
-    #print(string, 'other', sub_str_to_mode(other))
-    mode |= (sub_str_to_mode(other) << AA_OTHER_SHIFT)
-    #print (string, mode)
-    #print('str_to_mode:', mode)
-    return mode
-
-def mode_contains(mode, subset):
-    # w implies a
-    if mode & AA_MAY_WRITE:
-        mode |= AA_MAY_APPEND   
-    if mode & (AA_MAY_WRITE << AA_OTHER_SHIFT):
-        mode |= (AA_MAY_APPEND << AA_OTHER_SHIFT)
-    
-    # ix does not imply m
-    
-    ### ix implies m
-    ##if mode & AA_EXEC_INHERIT:
-    ##    mode |= AA_EXEC_MMAP
-    ##if mode & (AA_EXEC_INHERIT << AA_OTHER_SHIFT):
-    ##    mode |= (AA_EXEC_MMAP << AA_OTHER_SHIFT)
-    
-    return (mode & subset) == subset
-
-def contains(mode, string):
-    return mode_contains(mode, str_to_mode(string))
-
-def sub_str_to_mode(string):
-    mode = 0
-    if not string:
-        return mode
-    while string:
-        pattern = '(%s)' % MODE_MAP_RE.pattern
-        tmp = re.search(pattern, string)
-        if tmp:
-            tmp = tmp.groups()[0]
-        string = re.sub(pattern, '', string)
-        if tmp and MODE_HASH.get(tmp, False):
-            mode |= MODE_HASH[tmp]
-        else:
-            pass
-    
-    return mode
-
-def split_log_mode(mode):
-    user = ''
-    other = ''
-    match = re.search('(.*?)::(.*)', mode)
-    if match:
-        user, other = match.groups()
-    else:
-        user = mode
-        other = mode
-    #print ('split_logmode:', user, mode)
-    return user, other
