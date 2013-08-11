@@ -1,6 +1,3 @@
-#6585
-#382-430
-#6414-6472
 # No old version logs, only 2.6 + supported
 #global variable names corruption
 from __future__ import with_statement
@@ -82,65 +79,6 @@ helpers = dict() # Preserve this between passes # was our
 ### logprof ends
 
 filelist = hasher()    # File level variables and stuff in config files
-
-AA_MAY_EXEC = 1
-AA_MAY_WRITE = 2
-AA_MAY_READ = 4
-AA_MAY_APPEND = 8
-AA_MAY_LINK = 16
-AA_MAY_LOCK = 32
-AA_EXEC_MMAP = 64
-AA_EXEC_UNSAFE = 128
-AA_EXEC_INHERIT = 256
-AA_EXEC_UNCONFINED = 512
-AA_EXEC_PROFILE = 1024
-AA_EXEC_CHILD = 2048
-AA_EXEC_NT = 4096
-AA_LINK_SUBSET = 8192
-AA_OTHER_SHIFT = 14
-AA_USER_MASK = 16384 - 1
-
-AA_EXEC_TYPE = (AA_MAY_EXEC | AA_EXEC_UNSAFE | AA_EXEC_INHERIT |
-                AA_EXEC_UNCONFINED | AA_EXEC_PROFILE | AA_EXEC_CHILD | AA_EXEC_NT)
-
-ALL_AA_EXEC_TYPE = AA_EXEC_TYPE # The same value
-
-# Modes and their values
-MODE_HASH = {'x': AA_MAY_EXEC, 'X': AA_MAY_EXEC, 
-             'w': AA_MAY_WRITE, 'W': AA_MAY_WRITE,
-             'r': AA_MAY_READ, 'R': AA_MAY_READ,
-             'a': AA_MAY_APPEND, 'A': AA_MAY_APPEND,
-             'l': AA_MAY_LINK, 'L': AA_MAY_LINK,
-             'k': AA_MAY_LOCK, 'K': AA_MAY_LOCK,
-             'm': AA_EXEC_MMAP, 'M': AA_EXEC_MMAP,
-             'i': AA_EXEC_INHERIT, 'I': AA_EXEC_INHERIT,
-             'u': AA_EXEC_UNCONFINED + AA_EXEC_UNSAFE,  # Unconfined + Unsafe
-              'U': AA_EXEC_UNCONFINED,
-              'p': AA_EXEC_PROFILE + AA_EXEC_UNSAFE,    # Profile + unsafe
-              'P': AA_EXEC_PROFILE,
-              'c': AA_EXEC_CHILD + AA_EXEC_UNSAFE,  # Child + Unsafe
-              'C': AA_EXEC_CHILD,
-              'n': AA_EXEC_NT + AA_EXEC_UNSAFE,
-              'N': AA_EXEC_NT
-              }
-
-# Used by netdomain to identify the operation types
-OPERATION_TYPES = {
-                   # New socket names
-                   'create': 'net',
-                   'post_create': 'net',
-                   'bind': 'net',
-                   'connect': 'net',
-                   'listen': 'net',
-                   'accept': 'net',
-                   'sendmsg': 'net',
-                   'recvmsg': 'net',
-                   'getsockname': 'net',
-                   'getpeername': 'net',
-                   'getsockopt': 'net',
-                   'setsockopt': 'net',
-                   'sock_shutdown': 'net'
-                   }
 
 def on_exit():
     """Shutdowns the logger and records exit if debugging enabled"""
@@ -989,7 +927,7 @@ def handle_children(profile, hat, root):
                 
                 if mode & str_to_mode('x'):
                     if os.path.isdir(exec_target):
-                        mode = mode - ALL_AA_EXEC_TYPE
+                        mode = mode - apparmor.aamode.ALL_AA_EXEC_TYPE
                         mode = mode | str_to_mode('ix')
                     else:
                         do_execute = True
@@ -1388,23 +1326,9 @@ def handle_children(profile, hat, root):
                     
     return None
 
-MODE_MAP_RE = re.compile('r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N')
-LOG_MODE_RE = re.compile('r|w|l|m|k|a|x|ix|ux|px|cx|nx|pix|cix|Ix|Ux|Px|PUx|Cx|Nx|Pix|Cix')
 PROFILE_MODE_RE = re.compile('r|w|l|m|k|a|ix|ux|px|cx|pix|cix|Ux|Px|PUx|Cx|Pix|Cix')
 PROFILE_MODE_NT_RE = re.compile('r|w|l|m|k|a|x|ix|ux|px|cx|pix|cix|Ux|Px|PUx|Cx|Pix|Cix')
 PROFILE_MODE_DENY_RE = re.compile('r|w|l|m|k|a|x')
-
-def hide_log_mode(mode):
-    mode = mode.replace('::', '')
-    return mode
-
-def validate_log_mode(mode):
-    pattern = '^(%s)+$' % LOG_MODE_RE.pattern
-    if re.search(pattern, mode):
-    #if LOG_MODE_RE.search(mode):
-        return True
-    else:
-        return False
           
 ##### Repo related functions
 
@@ -1609,7 +1533,7 @@ def ask_the_questions():
                         deny_audit |= cam
                     
                     if deny_mode & AA_MAY_EXEC:
-                        deny_mode |= ALL_AA_EXEC_TYPE
+                        deny_mode |= apparmor.aamode.ALL_AA_EXEC_TYPE
                     
                     # Mask off the denied modes
                     mode = mode - deny_mode
@@ -1619,7 +1543,7 @@ def ask_the_questions():
                     # if not add ix permission
                     if mode & AA_MAY_EXEC:
                         # Remove all type access permission
-                        mode = mode - ALL_AA_EXEC_TYPE
+                        mode = mode - apparmor.aamode.ALL_AA_EXEC_TYPE
                         if not allow_mode & AA_MAY_EXEC:
                             mode |= str_to_mode('ix')
                     
@@ -1660,13 +1584,15 @@ def ask_the_questions():
                             
                             if not include_valid:
                                 continue
+                            
                             cm, am, m = match_include_to_path(incname, 'allow', path)
-                            if 'base' in incname: print(cm,am,m,mode,mode_contains(cm, mode))
+
                             if cm and mode_contains(cm, mode):
-                                dm = match_include_to_path(incname, 'deny', path)
+                                
+                                dm = match_include_to_path(incname, 'deny', path)[0]
                                 # If the mode is denied
                                 if not mode & dm:
-                                    if not filter(lambda s: '/**' not in s, m):
+                                    if not filter(lambda s: '/**' == s, m):
                                         newincludes.append(incname)
                         # Add new includes to the options
                         if newincludes:
@@ -1816,7 +1742,7 @@ def ask_the_questions():
                                     
                                     aa[profile][hat]['allow']['path'][path]['mode'] = aa[profile][hat]['allow']['path'][path].get('mode', set()) | mode
                                     
-                                    tmpmode = 0
+                                    tmpmode = set()
                                     if audit_toggle == 1:
                                         tmpmode = mode- allow_mode
                                     elif audit_toggle == 2:
@@ -2095,7 +2021,7 @@ def match_cap_includes(profile, cap):
 
 def re_match_include(path):
     """Matches the path for include and returns the include path"""
-    regex_include = re.compile('^\s*#?include\s*<(\.*)\s*(#.*)?$>')
+    regex_include = re.compile('^\s*#?include\s*<(.*)>\s*(#.*)?$')
     match = regex_include.search(path)
     if match:
         return match.groups()[0]
@@ -2245,9 +2171,9 @@ def save_profiles():
             while ans != 'CMD_SAVE_CHANGES':
                 ans, arg = UI_PromptUser(q)
                 if ans == 'CMD_VIEW_CHANGES':
-                    which = changed[arg]
-                    oldprofile = serialize_profile(original_aa[which], which)
-                    newprofile = serialize_profile(aa[which], which)
+                    which = changed.keys()[arg]
+                    oldprofile = serialize_profile(original_aa[which], which, '')
+                    newprofile = serialize_profile(aa[which], which, '')
                     
                     display_changes(oldprofile, newprofile)
             
@@ -2340,7 +2266,7 @@ def collapse_log():
                 for path in prelog[aamode][profile][hat]['path'].keys():
                     mode = prelog[aamode][profile][hat]['path'][path]
                     
-                    combinedmode = 0
+                    combinedmode = set()
                     # Is path in original profile?
                     if aa[profile][hat]['allow']['path'].get(path, False):
                         combinedmode |= aa[profile][hat]['allow']['path'][path]
@@ -2349,6 +2275,7 @@ def collapse_log():
                     combinedmode |= rematchfrag(aa[profile][hat], 'allow', path)[0]
                     
                     # Match path from includes
+
                     combinedmode |= match_prof_incs_to_path(aa[profile][hat], 'allow', path)[0]
                     
                     if not combinedmode or not mode_contains(combinedmode, mode):
@@ -2368,23 +2295,6 @@ def collapse_log():
                         if not profile_known_network(aa[profile][hat], family, sock_type):
                             log_dict[aamode][profile][hat]['netdomain'][family][sock_type] = True
 
-def profilemode(mode):
-    pass
-
-def split_log_mode(mode):
-    user = ''
-    other = ''
-    match = re.search('(.*?)::(.*)', mode)
-    if match:
-        user, other = match.groups()
-    else:
-        user = mode
-        other = mode
-    #print ('split_logmode:', user, mode)
-    return user, other
-
-def map_log_mode(mode):
-    return mode
 
 def validate_profile_mode(mode, allow, nt_name=None):
     if allow == 'deny':
@@ -2407,192 +2317,6 @@ def validate_profile_mode(mode, allow, nt_name=None):
             return True
         else:
             return False
-        
-def sub_str_to_mode(string):
-    mode = 0
-    if not string:
-        return mode
-    while string:
-        pattern = '(%s)' % MODE_MAP_RE.pattern
-        tmp = re.search(pattern, string)
-        if tmp:
-            tmp = tmp.groups()[0]
-        string = re.sub(pattern, '', string)
-        if tmp and MODE_HASH.get(tmp, False):
-            mode |= MODE_HASH[tmp]
-        else:
-            pass
-    
-    return mode
-
-def print_mode(mode):
-    user, other = split_mode(mode)
-    string = sub_mode_to_str(user) + '::' + sub_mode_to_str(other)
-    
-    return string
-
-def str_to_mode(string):
-    if not string:
-        return 0
-    user, other = split_log_mode(string)
-    
-    if not user:
-        user = other
-
-    mode = sub_str_to_mode(user)
-    #print(string, mode)
-    #print(string, 'other', sub_str_to_mode(other))
-    mode |= (sub_str_to_mode(other) << AA_OTHER_SHIFT)
-    #print (string, mode)
-    #print('str_to_mode:', mode)
-    return mode
-
-def log_str_to_mode(profile, string, nt_name):
-    mode = str_to_mode(string)
-    # If contains nx and nix
-    #print (profile, string, nt_name)
-    if contains(mode, 'Nx'):
-        # Transform to px, cx
-        match = re.search('(.+?)//(.+?)', nt_name)
-        if match:
-            lprofile, lhat = match.groups()
-            tmode = 0
-            
-            if lprofile == profile:
-                if mode & AA_MAY_EXEC:
-                    tmode = str_to_mode('Cx::')
-                if mode & (AA_MAY_EXEC << AA_OTHER_SHIFT):
-                    tmode |= str_to_mode('Cx')
-                nt_name = lhat
-            else:
-                if mode & AA_MAY_EXEC:
-                    tmode = str_to_mode('Px::')
-                if mode & (AA_MAY_EXEC << AA_OTHER_SHIFT):
-                    tmode |= str_to_mode('Px')
-                nt_name = lhat
-            
-            mode = mode - str_to_mode('Nx')
-            mode |= tmode
-    
-    return mode, nt_name
-        
-def split_mode(mode):
-    user = mode & AA_USER_MASK
-    other = (mode >> AA_OTHER_SHIFT) & AA_USER_MASK
-    
-    return user, other
-
-def is_user_mode(mode):
-    user, other = split_mode(mode)
-    
-    if user and not other:
-        return True
-    else:
-        return False
-    
-def sub_mode_to_str(mode):
-    string = ''
-    # w(write) implies a(append)
-    if mode & AA_MAY_WRITE:
-        mode = mode - AA_MAY_APPEND
-
-    if mode & AA_EXEC_MMAP:
-        string += 'm'
-    if mode & AA_MAY_READ:
-        string += 'r'
-    if mode & AA_MAY_WRITE:
-        string += 'w'
-    if mode & AA_MAY_APPEND:
-        string += 'a'
-    if mode & AA_MAY_LINK:
-        string += 'l'
-    if mode & AA_MAY_LOCK:
-        string += 'k'
-    
-    # modes P and C must appear before I and U else invalid syntax
-    if mode & (AA_EXEC_PROFILE | AA_EXEC_NT):
-        if mode & AA_EXEC_UNSAFE:
-            string += 'p'
-        else:
-            string += 'P'
-    
-    if mode & AA_EXEC_CHILD:
-        if mode & AA_EXEC_UNSAFE:
-            string += 'c'
-        else:
-            string += 'C'
-    
-    if mode & AA_EXEC_UNCONFINED:
-        if mode & AA_EXEC_UNSAFE:
-            string += 'u'
-        else:
-            string += 'U'
-    
-    if mode & AA_EXEC_INHERIT:
-        string += 'i'
-    
-    if mode & AA_MAY_EXEC:
-        string += 'x'
-    
-    return string
-
-def flatten_mode(mode):
-    if not mode:
-        return 0
-    
-    mode = (mode & AA_USER_MASK) | ((mode >> AA_OTHER_SHIFT) & AA_USER_MASK)
-    mode |= (mode << AA_OTHER_SHIFT)
-    
-    return mode
-
-def mode_to_str(mode):
-    mode = flatten_mode(mode)
-    return sub_mode_to_str(mode)
-
-def owner_flatten_mode(mode):
-    mode = flatten_mode(mode) &AA_USER_MASK
-    return mode
-
-def mode_to_str_user(mode):
-    user, other = split_mode(mode)
-    string = ''
-    
-    if not user:
-        user = 0
-    if not other:
-        other = 0
-    
-    if user - other:
-        if other:
-            string = sub_mode_to_str(other) + '+'
-        string += 'owner ' + sub_mode_to_str(user - other)
-    
-    elif is_user_mode(mode):
-        string = 'owner ' + sub_mode_to_str(user)
-    else:
-        string = sub_mode_to_str(flatten_mode(mode))
-    
-    return string
-
-def mode_contains(mode, subset):
-    # w implies a
-    if mode & AA_MAY_WRITE:
-        mode |= AA_MAY_APPEND   
-    if mode & (AA_MAY_WRITE << AA_OTHER_SHIFT):
-        mode |= (AA_MAY_APPEND << AA_OTHER_SHIFT)
-    
-    # ix does not imply m
-    
-    ### ix implies m
-    ##if mode & AA_EXEC_INHERIT:
-    ##    mode |= AA_EXEC_MMAP
-    ##if mode & (AA_EXEC_INHERIT << AA_OTHER_SHIFT):
-    ##    mode |= (AA_EXEC_MMAP << AA_OTHER_SHIFT)
-    
-    return (mode & subset) == subset
-
-def contains(mode, string):
-    return mode_contains(mode, str_to_mode(string))
 
 # rpm backup files, dotfiles, emacs backup files should not be processed
 # The skippable files type needs be synced with apparmor initscript
@@ -2696,11 +2420,11 @@ def parse_profile_data(data, file, do_include):
     if do_include:
         profile = file
         hat = file
-    
     for lineno, line in enumerate(data):
         line = line.strip()
         if not line:
             continue
+        
         # Starting line of a profile
         if RE_PROFILE_START.search(line):
             matches = RE_PROFILE_START.search(line).groups()
@@ -2808,15 +2532,15 @@ def parse_profile_data(data, file, do_include):
             link = strip_quotes(matches[6])
             value = strip_quotes(matches[7])
             profile_data[profile][hat][allow]['link'][link]['to'] = value
-            profile_data[profile][hat][allow]['link'][link]['mode'] = profile_data[profile][hat][allow]['link'][link].get('mode', 0) | AA_MAY_LINK
+            profile_data[profile][hat][allow]['link'][link]['mode'] = profile_data[profile][hat][allow]['link'][link].get('mode', set()) | AA_MAY_LINK
             
             if subset:
                 profile_data[profile][hat][allow]['link'][link]['mode'] |= AA_LINK_SUBSET
             
             if audit:
-                profile_data[profile][hat][allow]['link'][link]['audit'] = profile_data[profile][hat][allow]['link'][link].get('audit', 0) | AA_LINK_SUBSET
+                profile_data[profile][hat][allow]['link'][link]['audit'] = profile_data[profile][hat][allow]['link'][link].get('audit', set()) | AA_LINK_SUBSET
             else:
-                profile_data[profile][hat][allow]['link'][link]['audit'] = 0
+                profile_data[profile][hat][allow]['link'][link]['audit'] = set()
             
         elif RE_PROFILE_CHANGE_PROFILE.search(line):
             matches = RE_PROFILE_CHANGE_PROFILE.search(line).groups()
@@ -2924,26 +2648,26 @@ def parse_profile_data(data, file, do_include):
             if not validate_profile_mode(mode, allow, nt_name):
                 raise AppArmorException('Invalid mode %s in file: %s line: %s' % (mode, file, lineno+1))
             
-            tmpmode = None
+            tmpmode = set()
             if user:
                 tmpmode = str_to_mode('%s::' % mode)
             else:
                 tmpmode = str_to_mode(mode)
             
-            profile_data[profile][hat][allow]['path'][path]['mode'] = profile_data[profile][hat][allow]['path'][path].get('mode', 0) | tmpmode
+            profile_data[profile][hat][allow]['path'][path]['mode'] = profile_data[profile][hat][allow]['path'][path].get('mode', set()) | tmpmode
             
             if nt_name:
                 profile_data[profile][hat][allow]['path'][path]['to'] = nt_name
             
             if audit:
-                profile_data[profile][hat][allow]['path'][path]['audit'] = profile_data[profile][hat][allow]['path'][path].get('audit', 0) | tmpmode
+                profile_data[profile][hat][allow]['path'][path]['audit'] = profile_data[profile][hat][allow]['path'][path].get('audit', set()) | tmpmode
             else:
-                profile_data[profile][hat][allow]['path'][path]['audit'] = 0
+                profile_data[profile][hat][allow]['path'][path]['audit'] = set()
         
         elif re_match_include(line):
             # Include files
             include = re_match_include(line)
-            
+
             if profile:
                 profile_data[profile][hat]['include'][include] = True
             else:
@@ -2958,6 +2682,7 @@ def parse_profile_data(data, file, do_include):
                         continue
                     if os.path.isfile(profile_dir + '/' + include + '/' + path):
                         file_name = include + '/' + path
+                        file_name = file_name.replace(profile_dir+'/', '')
                         load_include(file_name)
             else:
                 load_include(include)
@@ -3022,7 +2747,7 @@ def parse_profile_data(data, file, do_include):
                 profile_data[profile][hat]['initial_comment'] = initial_comment
             initial_comment = ''
             if filelist[file]['profiles'][profile].get(hat, False):
-                raise AppArmorException('Error: Multiple definitions for hat %s in profile %s.' %(hat, profile))
+                pass#raise AppArmorException('Error: Multiple definitions for hat %s in profile %s.' %(hat, profile))
             filelist[file]['profiles'][profile][hat] = True
         
         elif line[0] == '#':
@@ -3125,7 +2850,7 @@ def write_header(prof_data, depth, name, embedded_hat, write_flags):
         name = 'profile %s' % name
     
     if write_flags and prof_data['flags']:
-        data.append('%s%s flags(%s) {' % (pre, name, prof_data['flags']))
+        data.append('%s%s flags=(%s) {' % (pre, name, prof_data['flags']))
     else:
         data.append('%s%s {' % (pre, name))
     
@@ -3137,7 +2862,7 @@ def write_single(prof_data, depth, allow, name, prefix, tail):
     ref, allow = set_ref_allow(prof_data, allow)
     
     if ref.get(name, False):
-        for key in sorted(re[name].keys()):
+        for key in sorted(ref[name].keys()):
             qkey = quote_if_needed(key)
             data.append('%s%s%s%s%s' %(pre, allow, prefix, qkey, tail))
         if ref[name].keys():
@@ -3155,7 +2880,7 @@ def set_ref_allow(prof_data, allow):
     if allow:
         return prof_data[allow], set_allow_str(allow)
     else:
-        return prof_data, 'allow'
+        return prof_data, ''
 
 
 def write_pair(prof_data, depth, allow, name, prefix, sep, tail, fn):
@@ -3559,6 +3284,7 @@ def reload(bin_path):
 
 def get_include_data(filename):
     data = []
+    filename = profile_dir + '/' + filename
     if os.path.exists(filename):
         with open_file_read(filename) as f_in:
             data = f_in.readlines()
@@ -3581,29 +3307,33 @@ def load_include(incname):
     return 0
 
 def rematchfrag(frag, allow, path):
-    combinedmode = 0
-    combinedaudit = 0
+    combinedmode = set()
+    combinedaudit = set()
     matches = []
-    
+    if not frag:
+        return combinedmode, combinedaudit, matches
     for entry in frag[allow]['path'].keys():
         match = matchliteral(entry, path)
         if match:
-            combinedmode |= frag[allow]['path'][entry]['mode']
-            combinedaudit |= frag[allow]['path'][entry]['audit']
+            #print(frag[allow]['path'][entry]['mode'])
+            combinedmode |= frag[allow]['path'][entry].get('mode', set())
+            combinedaudit |= frag[allow]['path'][entry].get('audit', set())
             matches.append(entry)
     
     return combinedmode, combinedaudit, matches
 
 def match_include_to_path(incname, allow, path):
-    combinedmode = 0
-    combinedaudit = 0
+    combinedmode = set()
+    combinedaudit = set()
     matches = []
-    incname = profile_dir + '/' + incname
     includelist = [incname]
     while includelist:
-        incfile = includelist.pop(0)
+        incfile = str(includelist.pop(0))
         ret = load_include(incfile)
-        cm, am , m = rematchfrag(include[incfile][incfile], allow, path)
+        if not include.get(incfile,{}):
+            continue
+        cm, am , m = rematchfrag(include[incfile].get(incfile, {}), allow, path)
+        #print(incfile, cm, am, m)
         if cm:
             combinedmode |= cm
             combinedaudit |= am
@@ -3614,13 +3344,13 @@ def match_include_to_path(incname, allow, path):
             combinedaudit |= include[incfile][incfile][allow]['path'][path]['audit']
         
         if include[incfile][incfile]['include'].keys():
-            includelist + include[incfile][incfile]['include'].keys()
-        
+            includelist += include[incfile][incfile]['include'].keys()
+            
     return combinedmode, combinedaudit, matches
 
 def match_prof_incs_to_path(frag, allow, path):
-    combinedmode = 0
-    combinedaudit = 0
+    combinedmode = set()
+    combinedaudit = set()
     matches = []
     
     includelist = list(frag['include'].keys())
@@ -3635,8 +3365,8 @@ def match_prof_incs_to_path(frag, allow, path):
     return combinedmode, combinedaudit, matches
 
 def suggest_incs_for_path(incname, path, allow):
-    combinedmode = 0
-    combinedaudit = 0
+    combinedmode = set()
+    combinedaudit = set()
     matches = []
     
     includelist = [incname]
@@ -3675,7 +3405,6 @@ def get_subdirectories(current_dir):
     
 def loadincludes():
     incdirs = get_subdirectories(profile_dir)
-    
     for idir in incdirs:
         if is_skippable_dir(idir):
             continue
@@ -3686,7 +3415,9 @@ def loadincludes():
                 if is_skippable_file(fi):
                     continue
                 else:
-                    load_include(dirpath + '/' + fi)
+                    fi = dirpath + '/' + fi
+                    fi = fi.replace(profile_dir+'/', '', 1)
+                    load_include(fi)
                     
 def glob_common(path):
     globs = []
@@ -3701,7 +3432,7 @@ def glob_common(path):
     for glob in cfg['globs']:
         if re.search(glob, path):
             globbedpath = path
-            globbedpath = re.sub(glob, cfg['globs'][glob])
+            globbedpath = re.sub(glob, cfg['globs'][glob], path)
             if globbedpath != path:
                 globs.append(globbedpath)
     

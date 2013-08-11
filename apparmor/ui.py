@@ -272,7 +272,7 @@ def Text_PromptUser(question):
     
     default = question['default']
     options = question['options']
-    selected = question.get('selected', False) or 0
+    selected = question.get('selected', 0)
     helptext = question['helptext']
     if helptext:
         functions.append('CMD_HELP')
@@ -363,7 +363,7 @@ def Text_PromptUser(question):
         
         sys.stdout.write(prompt+'\n')
         
-        ans = readkey().lower()
+        ans = getkey().lower()
         
         if ans:
             if ans == 'up':
@@ -372,7 +372,7 @@ def Text_PromptUser(question):
                 ans = 'XXXINVALIDXXX'
             
             elif ans == 'down':
-                if options and selected < len(options)-2:
+                if options and selected < len(options)-1:
                     selected += 1
                 ans = 'XXXINVALIDXXX'
             
