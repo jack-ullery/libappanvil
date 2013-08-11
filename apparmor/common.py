@@ -157,6 +157,7 @@ def hasher():
 
 
 def convert_regexp(regexp):
+    regex_paren = re.compile('^(.*){([^}]*)}(.*)$')
     regexp = regexp.strip()
     new_reg = re.sub(r'(?<!\\)(\.|\+|\$)',r'\\\1',regexp)
     # below will fail if { or } or , are part of a path too?   
@@ -165,8 +166,8 @@ def convert_regexp(regexp):
     #    new_reg = new_reg.replace('}', '}')
     #    new_reg = new_reg.replace(',', '|')
     
-    while re.search('{[^}]*,[^}]*}', new_reg):
-        match = re.search('(.*){([^}]*)}(.*)', new_reg).groups()
+    while regex_paren.search(new_reg):
+        match = regex_paren.search(new_reg).groups()
         prev = match[0]
         after = match[2]
         p1 = match[1].replace(',','|')
@@ -194,10 +195,18 @@ class DebugLogger:
         self.debug_level = logging.DEBUG   
         if os.getenv('LOGPROF_DEBUG', False):
             self.debugging = os.getenv('LOGPROF_DEBUG')
+            try:
+                self.debugging = int(self.debugging)
+            except:
+                self.debugging = False
+            if self.debugging not in range(1,4):
+                sys.stderr.out('Environment Variable: LOGPROF_DEBUG contains invalid value: %s' %os.getenv('LOGPROF_DEBUG'))
             if self.debugging == 1:
                 debug_level = logging.ERROR
             elif self.debug_level == 2:
                 debug_level = logging.INFO
+            elif debug_level == 3:
+                debug_level = logging.DEBUG
         
         #logging.basicConfig(filename='/var/log/apparmor/logprof.log', level=self.debug_level, format='%(asctime)s - %(name)s - %(message)s\n')
         logging.basicConfig(filename='/home/kshitij/logprof.log', level=self.debug_level, format='%(asctime)s - %(name)s - %(message)s\n')   

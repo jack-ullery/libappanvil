@@ -3,6 +3,7 @@ import sys
 
 sys.path.append('../')
 import apparmor.aa
+import apparmor.logparser
 
 #from apparmor.aa import parse_event
 
@@ -13,8 +14,9 @@ class Test(unittest.TestCase):
     
         
     def test_parse_event(self):
+        
         event = 'type=AVC msg=audit(1345027352.096:499): apparmor="ALLOWED" operation="rename_dest" parent=6974 profile="/usr/sbin/httpd2-prefork//vhost_foo" name=2F686F6D652F7777772F666F6F2E6261722E696E2F68747470646F63732F61707061726D6F722F696D616765732F746573742F696D61676520312E6A7067 pid=20143 comm="httpd2-prefork" requested_mask="wc" denied_mask="wc" fsuid=30 ouid=30'
-        parsed_event = apparmor.aa.parse_event(event)
+        parsed_event = apparmor.logparser.ReadLog.parse_event(apparmor.logparser.ReadLog, event)
         self.assertEqual(parsed_event['name'], '/home/www/foo.bar.in/httpdocs/apparmor/images/test/image 1.jpg', 'Incorrectly parsed/decoded name')
         self.assertEqual(parsed_event['profile'], '/usr/sbin/httpd2-prefork//vhost_foo', 'Incorrectly parsed/decode profile name')
         self.assertEqual(parsed_event['aamode'], 'PERMITTING')
@@ -26,7 +28,7 @@ class Test(unittest.TestCase):
         #print(parsed_event)
         
         event = 'type=AVC msg=audit(1322614918.292:4376): apparmor="ALLOWED" operation="file_perm" parent=16001 profile=666F6F20626172 name="/home/foo/.bash_history" pid=17011 comm="bash" requested_mask="w" denied_mask="w" fsuid=0 ouid=1000'
-        parsed_event = apparmor.aa.parse_event(event)
+        parsed_event = apparmor.logparser.ReadLog.parse_event(apparmor.logparser.ReadLog, event)
         self.assertEqual(parsed_event['name'], '/home/foo/.bash_history', 'Incorrectly parsed/decoded name')
         self.assertEqual(parsed_event['profile'], 'foo bar', 'Incorrectly parsed/decode profile name')
         self.assertEqual(parsed_event['aamode'], 'PERMITTING')

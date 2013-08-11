@@ -235,6 +235,15 @@ def UI_PromptUser(q):
         cmd == 'XXXINVALIDXXX'
     return (cmd, arg)
 
+def confirm_and_abort():
+    ans = UI_YesNo(_('Are you sure you want to abandon this set of profile changes and exit?'), 'n')
+    if ans == 'y':
+        UI_Info(_('Abandoning all changes.'))
+        #shutdown_yast()
+        #for prof in created:
+        #    delete_profile(prof)
+        sys.exit(0)
+
 def UI_ShortMessage(title, message):
     SendDataToYast({
                     'type': 'short-dialog-message',
@@ -303,7 +312,7 @@ def Text_PromptUser(question):
 
         default_key = defaulthotkey.groups()[0].lower()
         
-        if keys.get(default_key, False): 
+        if not keys.get(default_key, False): 
             raise AppArmorException('PromptUser: %s %s' %(_('Invalid default'), default))
         
     widest = 0
@@ -315,7 +324,7 @@ def Text_PromptUser(question):
             widest = len(header)
     widest += 1
     
-    formatstr = '%-' + widest + 's %s\n'
+    formatstr = '%-' + str(widest) + 's %s\n'
     
     function_regexp = '^('
     function_regexp += '|'.join(keys.keys())
@@ -348,7 +357,7 @@ def Text_PromptUser(question):
                 else:
                     format_option = '  %s - %s '
                 prompt += format_option %(index+1, option)
-            prompt += '\n'
+                prompt += '\n'
         
         prompt += ' / '.join(menu_items)
         
@@ -371,7 +380,7 @@ def Text_PromptUser(question):
 #                 sys.stdout.write('\n%s\n' %helptext)
 #                 ans = 'XXXINVALIDXXX'
             
-            elif int(ans) == 10:
+            elif is_number(ans) == 10:
                 # If they hit return choose default option
                 ans = default_key
             
@@ -389,3 +398,10 @@ def Text_PromptUser(question):
         ans = keys[ans]
     
     return ans, selected
+
+def is_number(number):
+    try:
+        return int(number)
+    except:
+        return False
+    

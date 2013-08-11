@@ -16,7 +16,7 @@ class Test(unittest.TestCase):
         for regex in regex_tests.sections():
             parsed_regex = re.compile(apparmor.common.convert_regexp(regex))
             for regex_testcase in regex_tests.options(regex):
-                self.assertEqual(bool(parsed_regex.search(regex_testcase)), eval(regex_tests[regex][regex_testcase]), 'Incorrectly Parsed regex')
+                self.assertEqual(bool(parsed_regex.search(regex_testcase)), eval(regex_tests[regex][regex_testcase]), 'Incorrectly Parsed regex: %s' %regex)
            
     #def test_readkey(self):
     #    print("Please press the Y button on the keyboard.")

@@ -17,6 +17,7 @@ import atexit
 import tempfile
 
 import apparmor.config
+import apparmor.logparser
 import apparmor.severity
 import LibAppArmor
 
@@ -61,7 +62,7 @@ user_globs = []
 ## Variables used under logprof
 ### Were our
 t = hasher()#dict()   
-transitions = dict() 
+transitions = hasher()
 aa = hasher()  # Profiles originally in sd, replace by aa
 original_aa =  hasher()
 extras = hasher()  # Inactive profiles from extras
@@ -70,7 +71,7 @@ log = []
 pid = dict()
 
 seen = hasher()#dir()
-profile_changes = dict()
+profile_changes = hasher()
 prelog = hasher()
 log_dict = hasher()#dict()
 changed = dict()
@@ -215,7 +216,7 @@ def check_for_apparmor():
 
 def which(file):
     """Returns the executable fullpath for the file, None otherwise"""
-    env_dirs = os.getenv('AAPATH').split(':')
+    env_dirs = os.getenv('PATH').split(':')
     for env_dir in env_dirs:
         env_path = env_dir + '/' + file
         # Test if the path is executable or not
@@ -244,7 +245,7 @@ def get_full_path(original_path):
     return os.path.realpath(path)
 
 def find_executable(bin_path):
-    """Returns the full executable path for the binary given, None otherwise"""
+    """Returns the full executable path for the given, None otherwise"""
     full_bin = None
     if os.path.exists(bin_path):
         full_bin = get_full_path(bin_path)
@@ -259,7 +260,9 @@ def find_executable(bin_path):
 
 def get_profile_filename(profile):
     """Returns the full profile name"""
-    if profile.startswith('/'):
+    if existing_profiles.get(profile, False):
+        return existing_profiles[profile]
+    elif profile.startswith('/'):
         # Remove leading /
         profile = profile[1:]
     else:
@@ -370,14 +373,8 @@ def handle_binfmt(profile, path):
         library = glob_common(library)
         if not library:
             continue
-        try:
-            profile['allow']['path'][library]['mode'] |= str_to_mode('mr')
-        except TypeError:
-            profile['allow']['path'][library]['mode'] = str_to_mode('mr')
-        try:
-            profile['allow']['path'][library]['audit'] |= 0 
-        except TypeError:
-            profile['allow']['path'][library]['audit'] = 0
+        profile['allow']['path'][library]['mode'] = profile['allow']['path'][library].get('mode', set()) | str_to_mode('mr')
+        profile['allow']['path'][library]['audit'] |= profile['allow']['path'][library].get('audit', set())
         
 def get_inactive_profile(local_profile):
     if extras.get(local_profile, False):
@@ -404,11 +401,11 @@ def create_new_profile(localfile):
             
             local_profile[localfile]['allow']['path'][localfile]['mode'] = local_profile[localfile]['allow']['path'][localfile].get('mode', str_to_mode('r')) | str_to_mode('r')
             
-            local_profile[localfile]['allow']['path'][localfile]['audit'] = local_profile[localfile]['allow']['path'][localfile].get('audit', 0)
+            local_profile[localfile]['allow']['path'][localfile]['audit'] = local_profile[localfile]['allow']['path'][localfile].get('audit', set())
             
             local_profile[localfile]['allow']['path'][interpreter_path]['mode'] = local_profile[localfile]['allow']['path'][interpreter_path].get('mode', str_to_mode('ix')) | str_to_mode('ix')                                                               
             
-            local_profile[localfile]['allow']['path'][interpreter_path]['audit'] = local_profile[localfile]['allow']['path'][interpreter_path].get('audit', 0)
+            local_profile[localfile]['allow']['path'][interpreter_path]['audit'] = local_profile[localfile]['allow']['path'][interpreter_path].get('audit', set())
 
             if interpreter == 'perl':
                 local_profile[localfile]['include']['abstractions/perl'] = True
@@ -619,6 +616,7 @@ def set_profile_flags(prof_filename, newflags):
 def profile_exists(program):
     """Returns True if profile exists, False otherwise"""
     # Check cache of profiles
+    
     if existing_profiles.get(program, False):
         return True
     # Check the disk for profile
@@ -626,7 +624,7 @@ def profile_exists(program):
     #print(prof_path)
     if os.path.isfile(prof_path):
         # Add to cache of profile
-        existing_profiles[program] = True
+        existing_profiles[program] = prof_path
         return True
     return False
 
@@ -897,7 +895,7 @@ def handle_children(profile, hat, root):
                     profile_changes[pid] = profile + '//' + hat
                 else:
                     profile_changes[pid] = profile
-            elif type == 'unknown_hat':
+            elif typ == 'unknown_hat':
                 pid, p, h, aamode, uhat = entry[:5]
                 if not regex_nullcomplain.search(p):
                     profile = p
@@ -952,7 +950,7 @@ def handle_children(profile, hat, root):
                 elif ans == 'CMD_DENY':
                     return None
             
-            elif type == 'capability':
+            elif typ == 'capability':
                 pid, p, h, prog, aamode, capability = entry[:6]
                 if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
                     profile = p
@@ -961,9 +959,8 @@ def handle_children(profile, hat, root):
                     continue
                 prelog[aamode][profile][hat]['capability'][capability] = True
             
-            elif type == 'path' or type == 'exec':
+            elif typ == 'path' or typ == 'exec':
                 pid, p, h, prog, aamode, mode, detail, to_name = entry[:8]
-                
                 if not mode:
                     mode = 0
                 if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
@@ -973,7 +970,7 @@ def handle_children(profile, hat, root):
                     continue
                 
                 domainchange = 'nochange'
-                if type == 'exec':
+                if typ == 'exec':
                     domainchange = 'change'
 
                 # Escape special characters
@@ -1346,7 +1343,7 @@ def handle_children(profile, hat, root):
                         if not aa[profile].get(exec_target, False):
                             ynans = 'y'
                             if exec_mode & str_to_mode('i'):
-                                ynans = UI_YesNo(_('A local profile for %s does not exit. Create one') % exec_target, 'n')
+                                ynans = UI_YesNo(_('A local profile for %s does not exit. Create one?') % exec_target, 'n')
                             if ynans == 'y':
                                 hat = exec_target
                                 aa[profile][hat]['declared'] = False
@@ -1377,7 +1374,7 @@ def handle_children(profile, hat, root):
                         if domainchange == 'change':
                             return None
             
-            elif type == 'netdomain':
+            elif typ == 'netdomain':
                 pid, p, h, prog, aamode, family, sock_type, protocol = entry[:8]
                 
                 if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
@@ -1390,295 +1387,11 @@ def handle_children(profile, hat, root):
                     
     return None
 
-def add_to_tree(loc_pid, parent, type, event):
-    debug_logger.info('add_to_tree: pid [%s] type [%s] event [%s]' % (loc_pid, type, event))
-    if not pid.get(loc_pid, False):
-        profile, hat = event[:2]
-        if parent and pid.get(parent, False):
-            if not hat:
-                hat = 'null-complain-profile'
-            array_ref = ['fork', loc_pid, profile, hat]
-            pid[parent].append(array_ref)
-            pid[loc_pid] = array_ref
-        #else:
-        #    array_ref = []
-        #    log.append(array_ref)
-        #    pid[pid] = array_ref
-    pid[loc_pid] = pid.get(loc_pid, []) + [type, loc_pid, event]
-
-# Variables used by logparsing routines
-LOG = None
-next_log_entry = None
-logmark = None
-seenmark = None
-RE_LOG_v2_6_syslog = re.compile('kernel:\s+(\[[\d\.\s]+\]\s+)?type=\d+\s+audit\([\d\.\:]+\):\s+apparmor=')
-RE_LOG_v2_6_audit = re.compile('type=AVC\s+(msg=)?audit\([\d\.\:]+\):\s+apparmor=')
-
 MODE_MAP_RE = re.compile('r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N')
 LOG_MODE_RE = re.compile('r|w|l|m|k|a|x|ix|ux|px|cx|nx|pix|cix|Ix|Ux|Px|PUx|Cx|Nx|Pix|Cix')
 PROFILE_MODE_RE = re.compile('r|w|l|m|k|a|ix|ux|px|cx|pix|cix|Ux|Px|PUx|Cx|Pix|Cix')
 PROFILE_MODE_NT_RE = re.compile('r|w|l|m|k|a|x|ix|ux|px|cx|pix|cix|Ux|Px|PUx|Cx|Pix|Cix')
 PROFILE_MODE_DENY_RE = re.compile('r|w|l|m|k|a|x')
-
-def prefetch_next_log_entry():
-    if next_log_entry:
-        sys.stderr.out('A log entry already present: %s' % next_log_entry)
-    next_log_entry = LOG.readline()
-    while RE_LOG_v2_6_syslog.search(next_log_entry) or RE_LOG_v2_6_audit.search(next_log_entry) or re.search(logmark, next_log_entry):
-        next_log_entry = LOG.readline()
-        if not next_log_entry:
-            break
-
-def get_next_log_entry():
-    # If no next log entry fetch it
-    if not next_log_entry:
-        prefetch_next_log_entry()
-    log_entry = next_log_entry
-    next_log_entry = None
-    return log_entry
-
-def peek_at_next_log_entry():
-    # Take a peek at the next log entry
-    if not next_log_entry:
-        prefetch_next_log_entry()
-    return next_log_entry
-
-def throw_away_next_log_entry():
-    next_log_entry = None
-
-def parse_log_record(record):
-    debug_logger.debug('parse_log_record: %s' % record)
-    
-    record_event = parse_event(record)
-    return record_event
-
-def add_event_to_tree(e):
-    aamode = e.get('aamode', 'UNKNOWN')
-    if e.get('type', False):
-        if re.search('(UNKNOWN\[1501\]|APPARMOR_AUDIT|1501)', e['type']):
-            aamode = 'AUDIT'
-        elif re.search('(UNKNOWN\[1502\]|APPARMOR_ALLOWED|1502)', e['type']):
-            aamode = 'PERMITTING'
-        elif re.search('(UNKNOWN\[1503\]|APPARMOR_DENIED|1503)', e['type']):
-            aamode = 'REJECTING'
-        elif re.search('(UNKNOWN\[1504\]|APPARMOR_HINT|1504)', e['type']):
-            aamode = 'HINT'
-        elif re.search('(UNKNOWN\[1505\]|APPARMOR_STATUS|1505)', e['type']):
-            aamode = 'STATUS'
-        elif re.search('(UNKNOWN\[1506\]|APPARMOR_ERROR|1506)', e['type']):
-            aamode = 'ERROR'
-        else:
-            aamode = 'UNKNOWN'
-    
-    if aamode in ['UNKNOWN', 'AUDIT', 'STATUS', 'ERROR']:
-        return None
-    
-    if 'profile_set' in e['operation']:
-        return None
-    
-    # Skip if AUDIT event was issued due to a change_hat in unconfined mode
-    if not e.get('profile', False):
-        return None 
-    
-    # Convert new null profiles to old single level null profile
-    if '//null-' in e['profile']:
-        e['profile'] = 'null-complain-profile'
-    
-    profile = e['profile']
-    hat = None
-    
-    if '\\' in e['profile']:
-        profile, hat = e['profile'].split('\\')
-    
-    # Filter out change_hat events that aren't from learning
-    if e['operation'] == 'change_hat':
-        if aamode != 'HINT' and aamode != 'PERMITTING':
-            return None
-        profile = e['name']
-        if '\\' in e['name']:
-            profile, hat = e['name'].split('\\')
-   
-    # prog is no longer passed around consistently
-    prog = 'HINT'
-    
-    if profile != 'null-complain-profile' and not profile_exists(profile):
-        return None
-
-    if e['operation'] == 'exec':
-        if e.get('info', False) and e['info'] == 'mandatory profile missing':
-            add_to_tree(e['pid'], e['parent'], 'exec', 
-                        [profile, hat, aamode, 'PERMITTING', e['denied_mask'], e['name'], e['name2']])
-        elif e.get('name2', False) and '\\null-/' in e['name2']:
-            add_to_tree(e['pid'], e['parent'], 'exec',
-                        [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-        elif e.get('name', False):
-            add_to_tree(e['pid'], e['parent'], 'exec',
-                        [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-        else:
-            debug_logger.debug('add_event_to_tree: dropped exec event in %s' % e['profile'])
-    
-    elif 'file_' in e['operation']:
-        add_to_tree(e['pid'], e['parent'], 'path',
-                    [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-    elif e['operation'] in ['open', 'truncate', 'mkdir', 'mknod', 'rename_src', 
-                            'rename_dest', 'unlink', 'rmdir', 'symlink_create', 'link']:
-        add_to_tree(e['pid'], e['parent'], 'path',
-                    [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-    elif e['operation'] == 'capable':
-        add_to_tree(e['pid'], e['parent'], 'capability',
-                    [profile, hat, prog, aamode, e['name'], ''])
-    elif e['operation'] == 'setattr' or 'xattr' in e['operation']:
-        add_to_tree(e['pid'], e['parent'], 'path',
-                    [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-    elif 'inode_' in e['operation']:
-        is_domain_change = False
-        if e['operation'] == 'inode_permission' and (e['denied_mask'] & AA_MAY_EXEC) and aamode == 'PERMITTING':
-            following = peek_at_next_log_entry()
-            if following:
-                entry = parse_log_record(following)
-                if entry and entry.get('info', False) == 'set profile':
-                    is_domain_change = True
-                    throw_away_next_log_entry()
-        
-        if is_domain_change:
-            add_to_tree(e['pid'], e['parent'], 'exec',
-                        [profile, hat, prog, aamode, e['denied_mask'], e['name'], e['name2']])
-        else:
-            add_to_tree(e['pid'], e['parent'], 'path',
-                        [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-        
-    elif e['operation'] == 'sysctl':
-        add_to_tree(e['pid'], e['parent'], 'path',
-                    [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-    
-    elif e['operation'] == 'clone':
-        parent , child = e['pid'], e['task']
-        if not parent:
-            parent = 'null-complain-profile'
-        if not hat:
-            hat = 'null-complain-profile'
-        arrayref = ['fork', child, profile, hat]
-        if pid.get(parent, False):
-            pid[parent] += [arrayref]
-        else:
-            log += [arrayref]
-        pid[child] = arrayref
-    
-    elif op_type(e['operation']) == 'net':
-        add_to_tree(e['pid'], e['parent'], 'netdomain',
-                    [profile, hat, prog, aamode, e['family'], e['sock_type'], e['protocol']])
-    elif e['operation'] == 'change_hat':
-        add_to_tree(e['pid'], e['parent'], 'unknown_hat',
-                    [profile, hat, aamode, hat])
-    else:
-        debug_logger.debug('UNHANDLED: %s' % e)
-
-def read_log(logmark):
-    seenmark = True
-    if logmark:
-        seenmark = False
-    #last = None
-    #event_type = None
-    try:
-        #print(filename)
-        log_open = open_file_read(filename)
-    except IOError:
-        raise AppArmorException('Can not read AppArmor logfile: ' + filename)
-    
-    with log_open as f_in:
-        for line in f_in:
-            line = line.strip()
-            debug_logger.debug('read_log: %s' % line)
-            if logmark in line:
-                seenmark = True
-            if not seenmark:
-                debug_logger.debug('read_log: seenmark = %s' % seenmark)
-            
-            event = parse_log_record(line)
-            if event:
-                add_event_to_tree(event)
-    logmark = ''
-
-def parse_event(msg):
-    """Parse the event from log into key value pairs"""
-    msg = msg.strip()
-    debug_logger.info('parse_event: %s' % msg)
-    #print(repr(msg))
-    if sys.version_info < (3,0):
-        # parse_record fails with u'foo' style strings hence typecasting to string
-        msg = str(msg)
-    event = LibAppArmor.parse_record(msg)
-    ev = dict()
-    ev['resource'] = event.info
-    ev['active_hat'] = event.active_hat
-    ev['aamode'] = event.event
-    ev['time'] = event.epoch
-    ev['operation'] = event.operation
-    ev['profile'] = event.profile
-    ev['name'] = event.name
-    ev['name2'] = event.name2
-    ev['attr'] = event.attribute
-    ev['parent'] = event.parent
-    ev['pid'] = event.pid
-    ev['task'] = event.task
-    ev['info'] = event.info
-    dmask = event.denied_mask
-    rmask = event.requested_mask
-    ev['magic_token'] = event.magic_token
-    if ev['operation'] and op_type(ev['operation']) == 'net':
-        ev['family'] = event.net_family
-        ev['protocol'] = event.net_protocol
-        ev['sock_type'] = event.net_sock_type
-    LibAppArmor.free_record(event)
-    # Map c (create) to a and d (delete) to w, logprof doesn't support c and d
-    if rmask:
-        rmask = rmask.replace('c', 'a')
-        rmask = rmask.replace('d', 'w')
-        if not validate_log_mode(hide_log_mode(rmask)):
-            fatal_error(_('Log contains unknown mode %s') % rmask)
-    if dmask:
-        dmask = dmask.replace('c', 'a')
-        dmask = dmask.replace('d', 'w')
-        if not validate_log_mode(hide_log_mode(dmask)):
-            fatal_error(_('Log contains unknown mode %s') % dmask)
-    #print('parse_event:', ev['profile'], dmask, ev['name2'])
-    mask, name = log_str_to_mode(ev['profile'], dmask, ev['name2'])
-
-    ev['denied_mask'] = mask
-    ev['name2'] = name
-    
-    mask, name = log_str_to_mode(ev['profile'], rmask, ev['name2'])
-    ev['request_mask'] = mask
-    ev['name2'] = name
-    
-    if not ev['time']:
-        ev['time'] = int(time.time())
-    # Remove None keys
-    #for key in ev.keys():
-    #    if not ev[key] or not re.search('[\w]+', ev[key]):
-    #        ev.pop(key)
-    
-    if ev['aamode']:
-        # Convert aamode values to their counter-parts
-        mode_convertor = {
-                          0: 'UNKNOWN',
-                          1: 'ERROR',
-                          2: 'AUDITING',
-                          3: 'PERMITTING',
-                          4: 'REJECTING',
-                          5: 'HINT',
-                          6: 'STATUS'
-                          }
-        try:
-            ev['aamode'] = mode_convertor[ev['aamode']]
-        except KeyError:
-            ev['aamode'] = None
-    
-    if ev['aamode']:
-        #debug_logger.debug(ev)
-        return ev
-    else:
-        return None
 
 def hide_log_mode(mode):
     mode = mode.replace('::', '')
@@ -1747,8 +1460,8 @@ def order_globs(globs, path):
     return sorted(globs)
 
 def ask_the_questions():
-    found = None
-    print(log_dict)
+    found = 0
+    global seen_events
     for aamode in sorted(log_dict.keys()):
         # Describe the type of changes
         if aamode == 'PERMITTING':
@@ -1939,14 +1652,15 @@ def ask_the_questions():
                             # If already present skip
                             if aa[profile][hat][incname]:
                                 continue
+                            if incname.startswith(profile_dir):
+                                incname = incname.replace(profile_dir+'/', '', 1)
                             
-                            include_valid = valid_include(profile, incname)
+                            include_valid = valid_include('', incname)
                             
                             if not include_valid:
                                 continue
-                            
                             cm, am, m = match_include_to_path(incname, 'allow', path)
-                            
+                            if 'base' in incname: print(cm,am,m,mode,mode_contains(cm, mode))
                             if cm and mode_contains(cm, mode):
                                 dm = match_include_to_path(incname, 'deny', path)
                                 # If the mode is denied
@@ -2041,7 +1755,7 @@ def ask_the_questions():
                             q['options'] = options
                             q['selected'] = default_option - 1
                             q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_GLOB',
-                                              'CMD_GLOBTEXT', 'CMD_NEW', 'CMD_ABORT',
+                                              'CMD_GLOBEXT', 'CMD_NEW', 'CMD_ABORT',
                                               'CMD_FINISHED', 'CMD_OTHER', 'CMD_IGNORE_ENTRY']
                             q['default'] = 'CMD_DENY'
                             if aamode == 'PERMITTING':
@@ -2183,16 +1897,16 @@ def ask_the_questions():
                                     if match:
                                         # /foo/**.ext and /foo/*.ext => /**.ext
                                         newpath = re.sub('/[^/]+/\*{1,2}\.[^/]+$', '/**'+match.group()[0], newpath)
-                                    elif re.search('/[^/]+\*\*[^/]*\.[^/]+$'):
+                                    elif re.search('/[^/]+\*\*[^/]*\.[^/]+$', newpath):
                                         # /foo**.ext and /foo**bar.ext => /**.ext
-                                        match = re.search('/[^/]+\*\*[^/]*(\.[^/]+)$')
+                                        match = re.search('/[^/]+\*\*[^/]*(\.[^/]+)$', newpath)
                                         newpath = re.sub('/[^/]+\*\*[^/]*\.[^/]+$', '/**'+match.groups()[0], newpath)
-                                    elif re.search('/\*\*[^/]+\.[^/]+$'):
+                                    elif re.search('/\*\*[^/]+\.[^/]+$', newpath):
                                         # /**foo.ext => /**.ext
-                                        match = re.search('/\*\*[^/]+(\.[^/]+)$')
+                                        match = re.search('/\*\*[^/]+(\.[^/]+)$', newpath)
                                         newpath = re.sub('/\*\*[^/]+\.[^/]+$', '/**'+match.groups()[0], newpath)
                                     else:
-                                        match = re.search('(\.[^/]+)$')
+                                        match = re.search('(\.[^/]+)$', newpath)
                                         newpath = re.sub('/[^/]+(\.[^/]+)$', '/*'+match.groups()[0], newpath)
                                     
                                     if newpath not in options:
@@ -2388,7 +2102,7 @@ def re_match_include(path):
         return None
 
 def valid_include(profile, incname):
-    if profile['include'].get(incname, False):
+    if profile and profile['include'].get(incname, False):
         return False
 
     if cfg['settings']['custom_includes']:
@@ -2410,19 +2124,22 @@ def match_net_includes(profile, family, nettype):
     
     return newincludes
 
-def do_logprof_pass(logmark='', sev_db=sev_db):
+def do_logprof_pass(logmark='', pid=pid, existing_profiles=existing_profiles):
     # set up variables for this pass
     t = hasher()
-    transitions = hasher()
+#    transitions = hasher()
     seen = hasher()
-    aa = hasher()
-    profile_changes = hasher()
-    prelog = hasher()
+    global log
     log = []
-    log_dict = hasher()
-    changed = dict()
+    global sev_db
+#    aa = hasher()
+#    profile_changes = hasher()
+#     prelog = hasher()
+#     log = []
+#     log_dict = hasher()
+#     changed = dict()
     skip = hasher()
-    filelist = hasher()
+#    filelist = hasher()
     
     UI_Info(_('Reading log entries from %s.') %filename)
     UI_Info(_('Updating AppArmor profiles in %s.') %profile_dir)
@@ -2431,17 +2148,21 @@ def do_logprof_pass(logmark='', sev_db=sev_db):
     
     if not sev_db:
         sev_db = apparmor.severity.Severity(CONFDIR + '/severity.db', _('unknown'))
-    
+    #print(pid)
+    #print(existing_profiles)
     ##if not repo_cf and cfg['repostory']['url']:
     ##    repo_cfg = read_config('repository.conf')
     ##    if not repo_cfg['repository'].get('enabled', False) or repo_cfg['repository]['enabled'] not in ['yes', 'no']:
     ##    UI_ask_to_enable_repo()
-    
-    read_log(logmark)
+    log_reader = apparmor.logparser.ReadLog(pid, filename, existing_profiles, profile_dir, log)
+    log = log_reader.read_log(logmark)
+    #read_log(logmark)
     
     for root in log:
         handle_children('', '', root)
-        
+    #for root in range(len(log)):
+        #log[root] = handle_children('', '', log[root])
+    #print(log) 
     for pid in sorted(profile_changes.keys()):
         set_process(pid, profile_changes[pid])
     
@@ -2624,27 +2345,27 @@ def collapse_log():
                         combinedmode |= aa[profile][hat]['allow']['path'][path]
                     
                     # Match path to regexps in profile
-                    combinedmode |= rematchfrag(aa[profile][hat], 'allow', path)
+                    combinedmode |= rematchfrag(aa[profile][hat], 'allow', path)[0]
                     
                     # Match path from includes
-                    combinedmode |= match_prof_incs_to_path(aa[profile][hat], 'allow', path)
+                    combinedmode |= match_prof_incs_to_path(aa[profile][hat], 'allow', path)[0]
                     
                     if not combinedmode or not mode_contains(combinedmode, mode):
-                        if log[aamode][profile][hat]['path'].get(path, False):
-                            mode |= log[aamode][profile][hat]['path'][path]
+                        if log_dict[aamode][profile][hat]['path'].get(path, False):
+                            mode |= log_dict[aamode][profile][hat]['path'][path]
                         
-                        log[aamode][profile][hat]['path'][path] = mode
+                        log_dict[aamode][profile][hat]['path'][path] = mode
                 
                 for capability in prelog[aamode][profile][hat]['capability'].keys():
                     # If capability not already in profile
                     if not aa[profile][hat]['allow']['capability'][capability].get('set', False):
-                        log[aamode][profile][hat]['capability'][capability] = True
+                        log_dict[aamode][profile][hat]['capability'][capability] = True
                 
                 nd = prelog[aamode][profile][hat]['netdomain']
                 for family in nd.keys():
                     for sock_type in nd[family].keys():
                         if not profile_known_network(aa[profile][hat], family, sock_type):
-                            log[aamode][profile][hat]['netdomain'][family][sock_type] = True
+                            log_dict[aamode][profile][hat]['netdomain'][family][sock_type] = True
 
 def profilemode(mode):
     pass
@@ -2905,6 +2626,7 @@ def read_profiles():
             if is_skippable_file(file):
                 continue
             else:
+                #print('read %s' %file)
                 read_profile(profile_dir + '/' + file, True)
 
 def read_inactive_profiles():
@@ -2932,6 +2654,7 @@ def read_profile(file, active_profile):
         return None
     
     profile_data = parse_profile_data(data, file, 0)
+    
     if profile_data and active_profile:
         attach_profile_data(aa, profile_data)
         attach_profile_data(original_aa, profile_data)
@@ -2953,7 +2676,7 @@ def parse_profile_data(data, file, do_include):
     repo_data = None
     parsed_profiles = []
     initial_comment = ''
-    RE_PROFILE_START = re.compile('^(("??\/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.+)\)\s+)?\{\s*(#.*)?$')
+    RE_PROFILE_START = re.compile('^(("??/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.+)\)\s+)?\{\s*(#.*)?$')
     RE_PROFILE_END = re.compile('^\}\s*(#.*)?$')
     RE_PROFILE_CAP = re.compile('^(audit\s+)?(allow\s+|deny\s+)?capability\s+(\S+)\s*,\s*(#.*)?$')
     RE_PROFILE_LINK = re.compile('^(audit\s+)?(allow\s+|deny\s+)?link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)\s*,\s*(#.*)?$')
@@ -3006,6 +2729,8 @@ def parse_profile_data(data, file, do_include):
                     profile_data[profile][hat]['external'] = True
                 else:
                     hat = profile
+                # Profile stored
+                existing_profiles[profile] = file
             
             flags = matches[6]
             
@@ -3362,11 +3087,13 @@ def store_list_var(var, list_var, value, var_operation):
             print('Ignored: New definition for variable for:',list_var,'=', value, 'operation was:',var_operation,'old value=', var[list_var])
             pass
             #raise AppArmorException('An existing variable redefined: %s' %list_var)
-    else:
+    elif var_operation == '+=':
         if var.get(list_var, False):
             var[list_var] = set(var[list_var] + vlist)
         else:
-            raise AppArmorException('An existing variable redefined: %s' %list_var)
+            raise AppArmorException('Values added to a non-existing variable: %s' %list_var)
+    else:
+        raise AppArmorException('Unknown variable operation: %s' %var_operation)
 
 
 def strip_quotes(data):
@@ -3870,7 +3597,7 @@ def match_include_to_path(incname, allow, path):
     combinedmode = 0
     combinedaudit = 0
     matches = []
-    
+    incname = profile_dir + '/' + incname
     includelist = [incname]
     while includelist:
         incfile = includelist.pop(0)
