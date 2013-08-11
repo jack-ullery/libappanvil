@@ -208,8 +208,8 @@ class DebugLogger:
             elif debug_level == 3:
                 debug_level = logging.DEBUG
         
-        #logging.basicConfig(filename='/var/log/apparmor/logprof.log', level=self.debug_level, format='%(asctime)s - %(name)s - %(message)s\n')
-        logging.basicConfig(filename='/home/kshitij/logprof.log', level=self.debug_level, format='%(asctime)s - %(name)s - %(message)s\n')   
+        logging.basicConfig(filename='/var/log/apparmor/logprof.log', level=self.debug_level, format='%(asctime)s - %(name)s - %(message)s\n')
+ 
         self.logger = logging.getLogger(module_name)
         
         
