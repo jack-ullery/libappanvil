@@ -56,7 +56,7 @@ def UI_YesNo(text, default):
             sys.stdout.write('\n[%s] / %s\n' % (yes, no))
         else:
             sys.stdout.write('\n%s / [%s]\n' % (yes, no))
-        ans = readkey()
+        ans = getkey()#readkey()
         if ans:
             ans = ans.lower()
         else:
@@ -91,7 +91,7 @@ def UI_YesNoCancel(text, default):
                 sys.stdout.write('\n%s / [%s] / %s\n' % (yes, no, cancel))
             else:
                 sys.stdout.write('\n%s / %s / [%s]\n' % (yes, no, cancel))
-            ans = readkey()
+            ans = getkey()#readkey()
             if ans:
                 ans = ans.lower()
             else:

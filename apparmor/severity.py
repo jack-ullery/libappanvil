@@ -167,7 +167,7 @@ class Severity:
         """Loads the variables for the given profile"""
         regex_include = re.compile('^#?include\s*<(\S*)>')
         if os.path.isfile(prof_path):
-            with open(prof_path, 'r') as f_in:
+            with open_file_read(prof_path) as f_in:
                 for line in f_in:
                     line = line.strip()
                     # If any includes, load variables from them first

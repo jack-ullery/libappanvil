@@ -114,12 +114,12 @@ class ReadLog:
             rmask = rmask.replace('c', 'a')
             rmask = rmask.replace('d', 'w')
             if not validate_log_mode(hide_log_mode(rmask)):
-                pass#fatal_error(_('Log contains unknown mode %s') % rmask)
+                raise AppArmorException(_('Log contains unknown mode %s') % rmask)
         if dmask:
             dmask = dmask.replace('c', 'a')
             dmask = dmask.replace('d', 'w')
             if not validate_log_mode(hide_log_mode(dmask)):
-                pass #fatal_error(_('Log contains unknown mode %s') % dmask)
+                raise AppArmorException(_('Log contains unknown mode %s') % dmask)
         #print('parse_event:', ev['profile'], dmask, ev['name2'])
         mask, name = log_str_to_mode(ev['profile'], dmask, ev['name2'])
     
@@ -223,12 +223,12 @@ class ReadLog:
         
         # Filter out change_hat events that aren't from learning
         if e['operation'] == 'change_hat':
-            if aamode != 'HINT' or aamode != 'PERMITTING':
+            if aamode != 'HINT' and aamode != 'PERMITTING':
                 return None
             profile = e['name']
             #hat = None
             if '//' in e['name']:
-                profile, hat = e['name'].split('//')
+                profile, hat = e['name'].split('//')[:2]
         
         if not hat:
             hat = profile
@@ -362,7 +362,7 @@ class ReadLog:
         #print(prof_path)
         if os.path.isfile(prof_path):
             # Add to cache of profile
-            self.existing_profiles[program] = True
+            self.existing_profiles[program] = prof_path
             return True
         return False
     

@@ -184,7 +184,7 @@ def get_full_path(original_path):
     return os.path.realpath(path)
 
 def find_executable(bin_path):
-    """Returns the full executable path for the given, None otherwise"""
+    """Returns the full executable path for the given executable, None otherwise"""
     full_bin = None
     if os.path.exists(bin_path):
         full_bin = get_full_path(bin_path)
@@ -1405,7 +1405,7 @@ def ask_the_questions():
             
             found += 1
             # Sorted list of hats with the profile name coming first
-            hats = filter(lambda key: key != profile, sorted(log_dict[aamode][profile].keys()))
+            hats = list(filter(lambda key: key != profile, sorted(log_dict[aamode][profile].keys())))
             if log_dict[aamode][profile].get(profile, False):
                 hats = [profile] + hats
             
@@ -1588,11 +1588,10 @@ def ask_the_questions():
                             cm, am, m = match_include_to_path(incname, 'allow', path)
 
                             if cm and mode_contains(cm, mode):
-                                
                                 dm = match_include_to_path(incname, 'deny', path)[0]
                                 # If the mode is denied
                                 if not mode & dm:
-                                    if not filter(lambda s: '/**' == s, m):
+                                    if not list(filter(lambda s: '/**' == s, m)):
                                         newincludes.append(incname)
                         # Add new includes to the options
                         if newincludes:
@@ -1616,7 +1615,7 @@ def ask_the_questions():
                         default_option = len(options)
                         
                         sev_db.unload_variables()
-                        sev_db.load_variables(profile)
+                        sev_db.load_variables(get_profile_filename(profile))
                         severity = sev_db.rank(path, mode_to_str(mode))
                         sev_db.unload_variables()
                         
@@ -2051,18 +2050,19 @@ def match_net_includes(profile, family, nettype):
     
     return newincludes
 
-def do_logprof_pass(logmark='', pid=pid, existing_profiles=existing_profiles):
+def do_logprof_pass(logmark='', pid=pid):
     # set up variables for this pass
     t = hasher()
 #    transitions = hasher()
     seen = hasher()
     global log
+    global existing_profiles
     log = []
     global sev_db
 #    aa = hasher()
 #    profile_changes = hasher()
 #     prelog = hasher()
-#     log = []
+    log = []
 #     log_dict = hasher()
 #     changed = dict()
     skip = hasher()
@@ -2071,7 +2071,7 @@ def do_logprof_pass(logmark='', pid=pid, existing_profiles=existing_profiles):
     UI_Info(_('Reading log entries from %s.') %filename)
     UI_Info(_('Updating AppArmor profiles in %s.') %profile_dir)
     
-    read_profiles()
+    read_profiles('nosub')
     
     if not sev_db:
         sev_db = apparmor.severity.Severity(CONFDIR + '/severity.db', _('unknown'))
@@ -2340,19 +2340,24 @@ def check_profile_syntax(errors):
     # To-Do
     pass
 
-def read_profiles():
+def read_profiles(param=''):
     try:
         os.listdir(profile_dir)
     except :
         fatal_error('Can\'t read AppArmor profiles in %s' % profile_dir)
-    
+
     for file in os.listdir(profile_dir):
         if os.path.isfile(profile_dir + '/' + file):
             if is_skippable_file(file):
                 continue
             else:
                 #print('read %s' %file)
-                read_profile(profile_dir + '/' + file, True)
+                if param == 'nosub':
+                    #Already read all subdirectories in loadincludes
+                    pass
+                else:
+                    # Read profiles in sub directories
+                    read_profile(profile_dir + '/' + file, True)
 
 def read_inactive_profiles():
     if not os.path.exists(extra_profile_dir):
@@ -2424,7 +2429,6 @@ def parse_profile_data(data, file, do_include):
         line = line.strip()
         if not line:
             continue
-        
         # Starting line of a profile
         if RE_PROFILE_START.search(line):
             matches = RE_PROFILE_START.search(line).groups()
@@ -2466,7 +2470,7 @@ def parse_profile_data(data, file, do_include):
             profile_data[profile][hat]['name'] = profile
             profile_data[profile][hat]['filename'] = file
             filelist[file]['profiles'][profile][hat] = True
-            
+
             profile_data[profile][hat]['flags'] = flags
             
             profile_data[profile][hat]['allow']['netdomain'] = hasher()
@@ -2747,7 +2751,7 @@ def parse_profile_data(data, file, do_include):
                 profile_data[profile][hat]['initial_comment'] = initial_comment
             initial_comment = ''
             if filelist[file]['profiles'][profile].get(hat, False):
-                pass#raise AppArmorException('Error: Multiple definitions for hat %s in profile %s.' %(hat, profile))
+                raise AppArmorException('Error: Multiple definitions for hat %s in profile %s.' %(hat, profile))
             filelist[file]['profiles'][profile][hat] = True
         
         elif line[0] == '#':
@@ -2810,9 +2814,8 @@ def store_list_var(var, list_var, value, var_operation):
         if not var.get(list_var, False):
             var[list_var] = set(vlist)
         else:
-            print('Ignored: New definition for variable for:',list_var,'=', value, 'operation was:',var_operation,'old value=', var[list_var])
-            pass
-            #raise AppArmorException('An existing variable redefined: %s' %list_var)
+            #print('Ignored: New definition for variable for:',list_var,'=', value, 'operation was:',var_operation,'old value=', var[list_var])
+            raise AppArmorException('An existing variable redefined: %s' %list_var)
     elif var_operation == '+=':
         if var.get(list_var, False):
             var[list_var] = set(var[list_var] + vlist)
@@ -3086,13 +3089,13 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
     
     pre2 = '  ' * (depth+1)
     # External hat declarations
-    for hat in filter(lambda x: x != name, sorted(profile_data.keys())):
+    for hat in list(filter(lambda x: x != name, sorted(profile_data.keys()))):
         if profile_data[hat].get('declared', False):
             data.append('%s^%s,' %(pre2, hat))
     
     if not inhat:
         # Embedded hats
-        for hat in filter(lambda x: x != name, sorted(profile_data.keys())):
+        for hat in list(filter(lambda x: x != name, sorted(profile_data.keys()))):
             if not profile_data[hat]['external'] and not profile_data[hat]['declared']:
                 data.append('')
                 if profile_data[hat]['profile']:
@@ -3107,7 +3110,7 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
         data.append('%s}' %pre)
         
         # External hats
-        for hat in filter(lambda x: x != name, sorted(profile_data.keys())):
+        for hat in list(filter(lambda x: x != name, sorted(profile_data.keys()))):
             if name == nhat and profile_data[hat].get('external', False):
                 data.append('')
                 data += map(lambda x: '  %s' %x, write_piece(profile_data, depth-1, name, nhat, write_flags))

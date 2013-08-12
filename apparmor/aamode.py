@@ -20,13 +20,13 @@ AA_MAY_APPEND = set('a')
 AA_MAY_LINK = set('l')
 AA_MAY_LOCK = set('k')
 AA_EXEC_MMAP = set('m')
-AA_EXEC_UNSAFE = set('z')
+AA_EXEC_UNSAFE = set(['execunsafe'])
 AA_EXEC_INHERIT = set('i')
 AA_EXEC_UNCONFINED = set('U')
 AA_EXEC_PROFILE = set('P')
 AA_EXEC_CHILD = set('C')
 AA_EXEC_NT = set('N')
-AA_LINK_SUBSET = set('ls')
+AA_LINK_SUBSET = set(['linksubset'])
 #AA_OTHER_SHIFT = 14
 #AA_USER_MASK = 16384 - 1
 
@@ -53,7 +53,7 @@ MODE_HASH = {'x': AA_MAY_EXEC, 'X': AA_MAY_EXEC,
               'N': AA_EXEC_NT
               }
 
-LOG_MODE_RE = re.compile('r|w|l|m|k|a|x|ix|ux|px|cx|nx|pix|cix|Ix|Ux|Px|PUx|Cx|Nx|Pix|Cix')
+LOG_MODE_RE = re.compile('(r|w|l|m|k|a|x|ix|ux|px|cx|nx|pix|cix|Ix|Ux|Px|PUx|Cx|Nx|Pix|Cix)')
 MODE_MAP_RE = re.compile('(r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N)')
 
 def str_to_mode(string):
@@ -112,8 +112,7 @@ def contains(mode, string):
     return mode_contains(mode, str_to_mode(string))
 
 def validate_log_mode(mode):
-    pattern = '^(%s)+$' % LOG_MODE_RE.pattern
-    if re.search(pattern, mode):
+    if LOG_MODE_RE.search(mode):
     #if LOG_MODE_RE.search(mode):
         return True
     else:

@@ -160,11 +160,6 @@ def convert_regexp(regexp):
     regex_paren = re.compile('^(.*){([^}]*)}(.*)$')
     regexp = regexp.strip()
     new_reg = re.sub(r'(?<!\\)(\.|\+|\$)',r'\\\1',regexp)
-    # below will fail if { or } or , are part of a path too?   
-    #if re.search('({.*,.*)}', new_reg):
-    #    new_reg = new_reg.replace('{', '(')
-    #    new_reg = new_reg.replace('}', '}')
-    #    new_reg = new_reg.replace(',', '|')
     
     while regex_paren.search(new_reg):
         match = regex_paren.search(new_reg).groups()
