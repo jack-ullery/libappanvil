@@ -194,14 +194,16 @@ class DebugLogger:
                 self.debugging = int(self.debugging)
             except:
                 self.debugging = False
-            if self.debugging not in range(1,4):
+            if self.debugging not in range(0,4):
                 sys.stderr.out('Environment Variable: LOGPROF_DEBUG contains invalid value: %s' %os.getenv('LOGPROF_DEBUG'))
+            # self.debugging == 0 implies debugging = False
             if self.debugging == 1:
-                debug_level = logging.ERROR
-            elif self.debug_level == 2:
-                debug_level = logging.INFO
-            elif debug_level == 3:
-                debug_level = logging.DEBUG
+                self.debug_level = logging.ERROR
+            elif self.debugging == 2:
+                self.debug_level = logging.INFO
+            elif self.debugging == 3:
+                self.debug_level = logging.DEBUG
+            
         
         logging.basicConfig(filename='/var/log/apparmor/logprof.log', level=self.debug_level, format='%(asctime)s - %(name)s - %(message)s\n')
  
