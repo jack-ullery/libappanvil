@@ -78,6 +78,7 @@ clean: _clean
 	$(MAKE) -C vim clean
 	rm -rf staging/ build/
 	rm -f apparmor/*.pyc
+	rm -rf test/__pycache__/
 
 # ${CAPABILITIES} is defined in common/Make.rules
 .PHONY: check_severity_db
