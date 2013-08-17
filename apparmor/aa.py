@@ -1422,7 +1422,7 @@ def ask_the_questions():
                     q = hasher()
                     
                     if newincludes:
-                        options += map(lambda inc: '#include <%s>' %inc, sorted(set(newincludes)))
+                        options += list(map(lambda inc: '#include <%s>' %inc, sorted(set(newincludes))))
                     
                     if options:
                         options.append('capability %s' % capability)
@@ -1470,8 +1470,10 @@ def ask_the_questions():
                                             _('Severity'), severity]
                         
                         if ans == 'CMD_ALLOW':
-                            selection = options[selected]
-                            match = re_match_include(selection) #re.search('^#include\s+<(.+)>$', selection)
+                            selection = ''
+                            if options:
+                                selection = options[selected]
+                            match = re_match_include(selection) 
                             if match:
                                 deleted = False
                                 inc = match #.groups()[0]
@@ -1595,7 +1597,7 @@ def ask_the_questions():
                                         newincludes.append(incname)
                         # Add new includes to the options
                         if newincludes:
-                            options += map(lambda s: '#include <%s>' % s, sorted(set(newincludes)))
+                            options += list(map(lambda s: '#include <%s>' % s, sorted(set(newincludes))))
                         # We should have literal the path in options list too
                         options.append(path)
                         # Add any the globs matching path from logprof
@@ -1853,7 +1855,7 @@ def ask_the_questions():
                         newincludes = match_net_includes(aa[profile][hat], family, sock_type)
                         q = hasher()
                         if newincludes:
-                            options += map(lambda s: '#include <%s>'%s, sorted(set(newincludes)))
+                            options += list(map(lambda s: '#include <%s>'%s, sorted(set(newincludes))))
                         if options:
                             options.append('network %s %s' % (family, sock_type))
                             q['options'] = options
@@ -2171,7 +2173,7 @@ def save_profiles():
             while ans != 'CMD_SAVE_CHANGES':
                 ans, arg = UI_PromptUser(q)
                 if ans == 'CMD_VIEW_CHANGES':
-                    which = changed.keys()[arg]
+                    which = list(changed.keys())[arg]
                     oldprofile = serialize_profile(original_aa[which], which, '')
                     newprofile = serialize_profile(aa[which], which, '')
                     
@@ -3099,11 +3101,11 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
             if not profile_data[hat]['external'] and not profile_data[hat]['declared']:
                 data.append('')
                 if profile_data[hat]['profile']:
-                    data += map(str, write_header(profile_data[hat], depth+1, hat, True, write_flags))
+                    data += list(map(str, write_header(profile_data[hat], depth+1, hat, True, write_flags)))
                 else:
-                    data += map(str, write_header(profile_data[hat], depth+1, '^'+hat, True, write_flags))
+                    data += list(map(str, write_header(profile_data[hat], depth+1, '^'+hat, True, write_flags)))
                 
-                data += map(str, write_rules(profile_data[hat], depth+2))
+                data += list(map(str, write_rules(profile_data[hat], depth+2)))
                 
                 data.append('%s}' %pre2)
         
@@ -3113,7 +3115,7 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
         for hat in list(filter(lambda x: x != name, sorted(profile_data.keys()))):
             if name == nhat and profile_data[hat].get('external', False):
                 data.append('')
-                data += map(lambda x: '  %s' %x, write_piece(profile_data, depth-1, name, nhat, write_flags))
+                data += list(map(lambda x: '  %s' %x, write_piece(profile_data, depth-1, name, nhat, write_flags)))
                 data.append('  }')
         
     return data

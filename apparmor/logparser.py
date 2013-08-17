@@ -50,7 +50,7 @@ class ReadLog:
         if self.next_log_entry:
             sys.stderr.out('A log entry already present: %s' % self.next_log_entry)
         self.next_log_entry = self.LOG.readline()
-        while not (self.RE_LOG_v2_6_syslog.search(self.next_log_entry) or self.RE_LOG_v2_6_audit.search(self.next_log_entry)): #or re.search(self.logmark, self.next_log_entry)):
+        while not (self.RE_LOG_v2_6_syslog.search(self.next_log_entry) or self.RE_LOG_v2_6_audit.search(self.next_log_entry)) or (self.logmark and re.search(self.logmark, self.next_log_entry)):
             self.next_log_entry = self.LOG.readline()
             if not self.next_log_entry:
                 break
@@ -316,8 +316,9 @@ class ReadLog:
             self.debug_logger.debug('UNHANDLED: %s' % e)
     
     def read_log(self, logmark):
+        self.logmark = logmark
         seenmark = True
-        if logmark:
+        if self.logmark:
             seenmark = False
         #last = None
         #event_type = None
@@ -331,7 +332,7 @@ class ReadLog:
         while line:
             line = line.strip()
             self.debug_logger.debug('read_log: %s' % line)
-            if logmark in line:
+            if self.logmark in line:
                 seenmark = True
             
             self.debug_logger.debug('read_log: seenmark = %s' %seenmark)
@@ -344,7 +345,7 @@ class ReadLog:
                 self.add_event_to_tree(event)
             line = self.get_next_log_entry()
         self.LOG.close()
-        logmark = ''
+        self.logmark = ''
         return self.log
     
     def op_type(self, operation):

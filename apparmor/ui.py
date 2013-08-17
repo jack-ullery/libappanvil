@@ -261,7 +261,7 @@ def UI_LongMessage(title, message):
     ypath, yarg = GetDataFromYast()
 
 def confirm_and_finish():
-    sys.stdout.stdout('FINISHING\n')
+    sys.stdout.write('FINISHING..\n')
     sys.exit(0)
 
 def Text_PromptUser(question):

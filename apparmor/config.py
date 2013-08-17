@@ -277,6 +277,8 @@ def py2_parser(filename):
                 # entries being indented deeper hence simple lstrip() is not appropriate
                 if line[:2] == '  ':
                     line = line[2:]
+                elif line[0] == '\t':
+                    line = line[1:]
                 f_out.write(line)
     f_out.flush()
     return tmp
