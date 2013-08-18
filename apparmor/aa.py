@@ -88,11 +88,6 @@ def on_exit():
 # Register the on_exit method with atexit
 atexit.register(on_exit)
 
-def op_type(operation):
-    """Returns the operation type if known, unkown otherwise"""
-    operation_type = OPERATION_TYPES.get(operation, 'unknown')
-    return operation_type
-
 def check_for_LD_XXX(file):
     """Returns True if specified program contains references to LD_PRELOAD or 
     LD_LIBRARY_PATH to give the Px/Ux code better suggestions"""
@@ -2073,7 +2068,7 @@ def do_logprof_pass(logmark='', pid=pid):
     UI_Info(_('Reading log entries from %s.') %filename)
     UI_Info(_('Updating AppArmor profiles in %s.') %profile_dir)
     
-    read_profiles('nosub')
+    read_profiles()
     
     if not sev_db:
         sev_db = apparmor.severity.Severity(CONFDIR + '/severity.db', _('unknown'))
@@ -2163,7 +2158,7 @@ def save_profiles():
             q['title'] = 'Changed Local Profiles'
             q['headers'] = []
             q['explanation'] = _('The following local profiles were changed. Would you like to save them?')
-            q['functions'] = ['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ABORT']
+            q['functions'] = ['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_VIEW_CHANGES_CLEAN', 'CMD_ABORT']
             q['default'] = 'CMD_VIEW_CHANGES'
             q['options'] = changed
             q['selected'] = 0
@@ -2173,6 +2168,17 @@ def save_profiles():
             while ans != 'CMD_SAVE_CHANGES':
                 ans, arg = UI_PromptUser(q)
                 if ans == 'CMD_VIEW_CHANGES':
+                    which = list(changed.keys())[arg]
+                    oldprofile = None
+                    if aa[which][which].get('filename', False):
+                        oldprofile = aa[which][which]['filename']
+                    else:
+                        oldprofile = get_profile_filename(which)
+                    newprofile = serialize_profile_from_old_profile(aa[which], which, '')
+                    
+                    display_changes_with_comments(oldprofile, newprofile)
+                    
+                elif ans == 'CMD_VIEW_CHANGES_CLEAN':
                     which = list(changed.keys())[arg]
                     oldprofile = serialize_profile(original_aa[which], which, '')
                     newprofile = serialize_profile(aa[which], which, '')
@@ -2187,16 +2193,16 @@ def get_pager():
     pass
 
 def generate_diff(oldprofile, newprofile):
-    oldtemp = tempfile.NamedTemporaryFile('wr')
+    oldtemp = tempfile.NamedTemporaryFile('w')
     
     oldtemp.write(oldprofile)
     oldtemp.flush()
     
-    newtemp = tempfile.NamedTemporaryFile('wr')
+    newtemp = tempfile.NamedTemporaryFile('w')
     newtemp.write(newprofile)
     newtemp.flush()
     
-    difftemp = tempfile.NamedTemporaryFile('wr', delete=False)
+    difftemp = tempfile.NamedTemporaryFile('w', delete=False)
     
     subprocess.call('diff -u -p %s %s > %s' %(oldtemp.name, newtemp.name, difftemp.name), shell=True)
     
@@ -2223,6 +2229,26 @@ def display_changes(oldprofile, newprofile):
         difftemp = generate_diff(oldprofile, newprofile)
         subprocess.call('less %s' %difftemp.name, shell=True)
         difftemp.delete = True
+        difftemp.close()
+
+def display_changes_with_comments(oldprofile, newprofile):
+    """Compare the new profile with the existing profile inclusive of all the comments"""
+    if not os.path.exists(oldprofile):
+        raise AppArmorException("Can't find existing profile %s to compare changes." %oldprofile)
+    if UI_mode == 'yast':
+        #To-Do
+        pass
+    else:
+        newtemp = tempfile.NamedTemporaryFile('w')
+        newtemp.write(newprofile)
+        newtemp.flush()
+        
+        difftemp = tempfile.NamedTemporaryFile('w')
+        
+        subprocess.call('diff -u -p %s %s > %s' %(oldprofile, newtemp.name, difftemp.name), shell=True)
+        
+        newtemp.close()
+        subprocess.call('less %s' %difftemp.name, shell=True)
         difftemp.close()
 
 def set_process(pid, profile):
@@ -2342,7 +2368,7 @@ def check_profile_syntax(errors):
     # To-Do
     pass
 
-def read_profiles(param=''):
+def read_profiles():
     try:
         os.listdir(profile_dir)
     except :
@@ -2353,13 +2379,7 @@ def read_profiles(param=''):
             if is_skippable_file(file):
                 continue
             else:
-                #print('read %s' %file)
-                if param == 'nosub':
-                    #Already read all subdirectories in loadincludes
-                    pass
-                else:
-                    # Read profiles in sub directories
-                    read_profile(profile_dir + '/' + file, True)
+                read_profile(profile_dir + '/' + file, True)
 
 def read_inactive_profiles():
     if not os.path.exists(extra_profile_dir):
@@ -2400,6 +2420,26 @@ def attach_profile_data(profiles, profile_data):
     for p in profile_data.keys():
         profiles[p] = deepcopy(profile_data[p])
 
+## Profile parsing regex
+RE_PROFILE_START = re.compile('^\s*(("??/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.+)\)\s+)?\{\s*(#.*)?$')
+RE_PROFILE_END = re.compile('^\s*\}\s*(#.*)?$')
+RE_PROFILE_CAP = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?capability\s+(\S+)\s*,\s*(#.*)?$')
+RE_PROFILE_LINK = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)\s*,\s*(#.*)?$')
+RE_PROFILE_CHANGE_PROFILE = re.compile('^\s*change_profile\s+->\s*("??.+?"??),(#.*)?$')
+RE_PROFILE_ALIAS = re.compile('^\s*alias\s+("??.+?"??)\s+->\s*("??.+?"??)\s*,(#.*)?$')
+RE_PROFILE_RLIMIT = re.compile('^\s*set\s+rlimit\s+(.+)\s+(<=)?\s*(.+)\s*,(#.*)?$')
+RE_PROFILE_BOOLEAN = re.compile('^\s*(\$\{?\w*\}?)\s*=\s*(true|false)\s*,?\s*(#.*)?$', flags=re.IGNORECASE)
+RE_PROFILE_VARIABLE = re.compile('^\s*(@\{?\w+\}?)\s*(\+?=)\s*(@*.+?)\s*,?\s*(#.*)?$')
+RE_PROFILE_CONDITIONAL = re.compile('^\s*if\s+(not\s+)?(\$\{?\w*\}?)\s*\{\s*(#.*)?$')
+RE_PROFILE_CONDITIONAL_VARIABLE = re.compile('^\s*if\s+(not\s+)?defined\s+(@\{?\w+\}?)\s*\{\s*(#.*)?$')
+RE_PROFILE_CONDITIONAL_BOOLEAN = re.compile('^\s*if\s+(not\s+)?defined\s+(\$\{?\w+\}?)\s*\{\s*(#.*)?$')
+RE_PROFILE_PATH_ENTRY = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(owner\s+)?([\"@/].*?)\s+(\S+)(\s+->\s*(.*?))?\s*,\s*(#.*)?$')
+RE_PROFILE_NETWORK = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?network(.*)\s*(#.*)?$')
+RE_PROFILE_CHANGE_HAT = re.compile('^\s*\^(\"??.+?\"??)\s*,\s*(#.*)?$')
+RE_PROFILE_HAT_DEF = re.compile('^\s*\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$')
+RE_NETWORK_FAMILY_TYPE = re.compile('\s+(\S+)\s+(\S+)\s*,$')
+RE_NETWORK_FAMILY = re.compile('\s+(\S+)\s*,$')
+
 def parse_profile_data(data, file, do_include):
     profile_data = hasher()
     profile = None
@@ -2408,22 +2448,7 @@ def parse_profile_data(data, file, do_include):
     repo_data = None
     parsed_profiles = []
     initial_comment = ''
-    RE_PROFILE_START = re.compile('^(("??/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.+)\)\s+)?\{\s*(#.*)?$')
-    RE_PROFILE_END = re.compile('^\}\s*(#.*)?$')
-    RE_PROFILE_CAP = re.compile('^(audit\s+)?(allow\s+|deny\s+)?capability\s+(\S+)\s*,\s*(#.*)?$')
-    RE_PROFILE_LINK = re.compile('^(audit\s+)?(allow\s+|deny\s+)?link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)\s*,\s*(#.*)?$')
-    RE_PROFILE_CHANGE_PROFILE = re.compile('^change_profile\s+->\s*("??.+?"??),(#.*)?$')
-    RE_PROFILE_ALIAS = re.compile('^alias\s+("??.+?"??)\s+->\s*("??.+?"??)\s*,(#.*)?$')
-    RE_PROFILE_RLIMIT = re.compile('^set\s+rlimit\s+(.+)\s+(<=)?\s*(.+)\s*,(#.*)?$')
-    RE_PROFILE_BOOLEAN = re.compile('^(\$\{?\w*\}?)\s*=\s*(true|false)\s*,?\s*(#.*)?$', flags=re.IGNORECASE)
-    RE_PROFILE_VARIABLE = re.compile('^(@\{?\w+\}?)\s*(\+?=)\s*(@*.+?)\s*,?\s*(#.*)?$')
-    RE_PROFILE_CONDITIONAL = re.compile('^if\s+(not\s+)?(\$\{?\w*\}?)\s*\{\s*(#.*)?$')
-    RE_PROFILE_CONDITIONAL_VARIABLE = re.compile('^if\s+(not\s+)?defined\s+(@\{?\w+\}?)\s*\{\s*(#.*)?$')
-    RE_PROFILE_CONDITIONAL_BOOLEAN = re.compile('^if\s+(not\s+)?defined\s+(\$\{?\w+\}?)\s*\{\s*(#.*)?$')
-    RE_PROFILE_PATH_ENTRY = re.compile('^(audit\s+)?(allow\s+|deny\s+)?(owner\s+)?([\"@/].*?)\s+(\S+)(\s+->\s*(.*?))?\s*,\s*(#.*)?$')
-    RE_PROFILE_NETWORK = re.compile('^(audit\s+)?(allow\s+|deny\s+)?network(.*)\s*(#.*)?$')
-    RE_PROFILE_CHANGE_HAT = re.compile('^\^(\"??.+?\"??)\s*,\s*(#.*)?$')
-    RE_PROFILE_HAT_DEF = re.compile('^\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$')
+
     if do_include:
         profile = file
         hat = file
@@ -2462,6 +2487,7 @@ def parse_profile_data(data, file, do_include):
                     hat = profile
                 # Profile stored
                 existing_profiles[profile] = file
+            
             
             flags = matches[6]
             
@@ -2672,26 +2698,28 @@ def parse_profile_data(data, file, do_include):
         
         elif re_match_include(line):
             # Include files
-            include = re_match_include(line)
+            include_name = re_match_include(line)
 
             if profile:
-                profile_data[profile][hat]['include'][include] = True
+                profile_data[profile][hat]['include'][include_name] = True
             else:
                 if not filelist.get(file):
                     filelist[file] = hasher()
-                filelist[file]['include'][include] = True
+                filelist[file]['include'][include_name] = True
             # If include is a directory
-            if os.path.isdir(profile_dir + '/' + include):
-                for path in os.listdir(profile_dir + '/' + include):
+            if os.path.isdir(profile_dir + '/' + include_name):
+                for path in os.listdir(profile_dir + '/' + include_name):
                     path = path.strip()
                     if is_skippable_file(path):
                         continue
-                    if os.path.isfile(profile_dir + '/' + include + '/' + path):
-                        file_name = include + '/' + path
+                    if os.path.isfile(profile_dir + '/' + include_name + '/' + path):
+                        file_name = include_name + '/' + path
                         file_name = file_name.replace(profile_dir+'/', '')
-                        load_include(file_name)
+                        if not include.get(file_name, False):
+                            load_include(file_name)
             else:
-                load_include(include)
+                if not include.get(include_name, False):
+                    load_include(include_name)
         
         elif RE_PROFILE_NETWORK.search(line):
             matches = RE_PROFILE_NETWORK.search(line).groups()
@@ -2706,8 +2734,7 @@ def parse_profile_data(data, file, do_include):
             if matches[1] and matches[1].strip() == 'deny':
                 allow = 'deny'
             network = matches[2]
-            RE_NETWORK_FAMILY_TYPE = re.compile('\s+(\S+)\s+(\S+)\s*,$')
-            RE_NETWORK_FAMILY = re.compile('\s+(\S+)\s*,$')
+
             if RE_NETWORK_FAMILY_TYPE.search(network):
                 nmatch = RE_NETWORK_FAMILY_TYPE.search(network).groups()
                 fam, typ = nmatch[:2]
@@ -2879,7 +2906,7 @@ def set_allow_str(allow):
     if allow == 'deny':
         return 'deny '
     else:
-        return 'allow'
+        return 'allow '
 
 def set_ref_allow(prof_data, allow):
     if allow:
@@ -2934,7 +2961,7 @@ def write_cap_rules(prof_data, depth, allow):
             if prof_data[allow]['capability'][cap].get('audit', False):
                 audit = 'audit'
             if prof_data[allow]['capability'][cap].get('set', False):
-                data.append('%s%s%scapability %s,' %(pre, audit, allowstr))
+                data.append('%s%s%scapability %s,' %(pre, audit, allowstr, cap))
         data.append('')
     
     return data
@@ -2949,7 +2976,7 @@ def write_net_rules(prof_data, depth, allow):
     pre = '  ' * depth
     data = []
     allowstr = set_allow_str(allow)
-    
+    audit = ''
     if prof_data[allow].get('netdomain', False):
         if prof_data[allow]['netdomain'].get('rule', False) == 'all':
             if prof_data[allow]['netdomain']['audit'].get('all', False):
@@ -3126,7 +3153,7 @@ def serialize_profile(profile_data, name, options):
     include_flags = True
     data= []
     
-    if options and type(options) == dict:
+    if options:# and type(options) == dict:
         if options.get('METADATA', False):
             include_metadata = True
         if options.get('NO_FLAGS', False):
@@ -3159,6 +3186,365 @@ def serialize_profile(profile_data, name, options):
     
     return string+'\n'
 
+def serialize_profile_from_old_profile(profile_data, name, options):
+    data = []
+    string = ''
+    include_metadata = False
+    include_flags = True
+    prof_filename = get_profile_filename(name)
+    
+    write_filelist = deepcopy(filelist[prof_filename])
+    write_prof_data = deepcopy(profile_data)
+    
+    if options:# and type(options) == dict:
+        if options.get('METADATA', False):
+            include_metadata = True
+        if options.get('NO_FLAGS', False):
+            include_flags = False
+    
+    if include_metadata:
+        string = '# Last Modified: %s\n' %time.time()
+        
+        if (profile_data[name].get('repo', False) and profile_data[name]['repo']['url']
+            and profile_data[name]['repo']['user'] and profile_data[name]['repo']['id']):
+            repo = profile_data[name]['repo']
+            string += '# REPOSITORY: %s %s %s\n' %(repo['url'], repo['user'], repo['id'])
+        elif profile_data[name]['repo']['neversubmit']:
+            string += '# REPOSITORY: NEVERSUBMIT\n'
+
+    
+    if not os.path.isfile(prof_filename):
+        raise AppArmorException("Can't find existing profile to modify")
+    with open_file_read(prof_filename) as f_in:
+        profile = None
+        hat = None
+        prof_correct = True
+        data.append('reading prof')
+        for line in f_in:
+            correct = True
+            line = line.rstrip('\n')
+            data.append(' ')#data.append('read: '+line)
+            if RE_PROFILE_START.search(line):
+                matches = RE_PROFILE_START.search(line).groups()
+                if profile and profile == hat and matches[3]:
+                    hat = matches[3]
+                    in_contained_hat = True
+                    if write_prof_data[profile][hat]['profile']:
+                        pass
+                else:
+                    if matches[1]:
+                        profile = matches[1]
+                    else:
+                        profile = matches[3]
+                    if len(profile.split('//')) >= 2:
+                        profile, hat = profile.split('//')[:2]
+                    else:
+                        hat = None
+                    in_contained_hat = False
+                    if hat and not write_prof_data[profile][hat]['external']:
+                        correct = False
+                    else:
+                        hat = profile
+                    data.append(str(correct))
+                    
+                flags = matches[6]
+                profile = strip_quotes(profile)
+                if hat:
+                    hat = strip_quotes(hat)
+                
+                if not write_prof_data[hat]['name'] == profile:
+                    correct = False
+
+                if not write_filelist['profiles'][profile][hat] == True:
+                    correct = False
+  
+                if not write_prof_data[hat]['flags'] == flags:
+                    correct = False
+
+                #Write the profile start
+                if correct:
+                    data.append(line)
+                else:
+                    # manipulate profile start
+                    pass
+                
+            elif RE_PROFILE_END.search(line):
+                # DUMP REMAINDER OF PROFILE
+                if profile:
+                    data.append(line)
+                    
+                if in_contained_hat:
+                    #Hat processed, remove it
+                    hat = profile
+                    in_contained_hat = False
+                else:
+                    profile = None
+
+                
+            elif RE_PROFILE_CAP.search(line):
+                matches = RE_PROFILE_CAP.search(line).groups()
+                audit = False
+                if matches[0]:
+                    audit = matches[0]
+                
+                allow = 'allow'
+                if matches[1] and matches[1].strip() == 'deny':
+                    allow = 'deny'
+                
+                capability = matches[2]
+                
+                if not write_prof_data[hat][allow]['capability'][capability].get('set', False):
+                    correct = False
+                if not write_prof_data[hat][allow]['capability'][capability].get(audit, False) == audit:
+                    correct = False
+                
+                if correct:
+                    
+                    write_prof_data[hat][allow]['capability'].pop(capability)
+                    data.append(line)
+                    #write_prof_data[hat][allow]['capability'][capability].pop(audit)
+                    
+                    #Remove this line
+                else:
+                    # To-Do
+                    pass
+            elif RE_PROFILE_LINK.search(line):
+                matches = RE_PROFILE_LINK.search(line).groups()
+                audit = False
+                if matches[0]:
+                    audit = True
+                allow = 'allow'
+                if matches[1] and matches[1].strip() == 'deny':
+                    allow = 'deny'
+                
+                subset = matches[3]
+                link = strip_quotes(matches[6])
+                value = strip_quotes(matches[7])
+                if not write_prof_data[hat][allow]['link'][link]['to'] == value:
+                    correct = False
+                if not write_prof_data[hat][allow]['link'][link]['mode'] & AA_MAY_LINK:
+                    correct = False
+                if subset and not write_prof_data[hat][allow]['link'][link]['mode'] & AA_LINK_SUBSET:
+                    correct = False
+                if audit and not write_prof_data[hat][allow]['link'][link]['audit'] & AA_LINK_SUBSET:
+                    correct = False
+                
+                if correct:
+                    write_prof_data[hat][allow]['link'].pop(link)
+                    data.append(line)
+                else:
+                    # To-Do
+                    pass
+            
+            elif RE_PROFILE_CHANGE_PROFILE.search(line):
+                matches = RE_PROFILE_CHANGE_PROFILE.search(line).groups()
+                cp = strip_quotes(matches[0])
+                
+                if not write_prof_data[hat]['changes_profile'][cp] == True:
+                    correct = False
+                
+                if correct:
+                    write_prof_data[hat]['changes_profile'].pop(cp)
+                    data.append(line)
+                else:
+                    #To-Do
+                    pass
+            
+            elif RE_PROFILE_ALIAS.search(line):
+                matches = RE_PROFILE_ALIAS.search(line).groups()
+                
+                from_name = strip_quotes(matches[0])
+                to_name = strip_quotes(matches[1])
+                
+                if profile:
+                    if not write_prof_data[hat]['alias'][from_name] == to_name:
+                        correct = False
+                else:
+                    if not write_filelist['alias'][from_name] == to_name:
+                        correct = False
+                
+                if correct:
+                    data.append(line)
+                else:
+                    #To-Do
+                    pass
+            
+            elif RE_PROFILE_RLIMIT.search(line):
+                matches = RE_PROFILE_RLIMIT.search(line).groups()
+                
+                from_name = matches[0]
+                to_name = matches[2]
+                
+                if not write_prof_data[hat]['rlimit'][from_name] == to_name:
+                    correct = False
+                
+                if correct:
+                    data.append(line)
+                else:
+                    #To-Do
+                    pass
+            
+            elif RE_PROFILE_BOOLEAN.search(line):
+                matches = RE_PROFILE_BOOLEAN.search(line).groups()
+                bool_var = matches[0]
+                value = matches[1]
+                
+                if not write_prof_data[hat]['lvar'][bool_var] == value:
+                    correct = False
+                
+                if correct:
+                    data.append(line)
+                else:
+                    #To-Do
+                    pass
+            elif RE_PROFILE_VARIABLE.search(line):
+                matches = RE_PROFILE_VARIABLE.search(line).groups()
+                list_var = strip_quotes(matches[0])
+                var_operation = matches[1]
+                value = strip_quotes(matches[2])
+                var_set = hasher()
+                if profile:
+                    store_list_var(var_set, list_var, value, var_operation)
+                    if not var_set[list_var] == write_prof_data['lvar'].get(list_var, False):
+                        correct = False
+                else:
+                    store_list_var(var_set, list_var, value, var_operation)
+                    if not var_set[list_var] == write_filelist['lvar'].get(list_var, False):
+                        correct = False
+                
+                if correct:
+                    data.append(line)
+                else:
+                    #To-Do
+                    pass
+            
+            elif RE_PROFILE_PATH_ENTRY.search(line):
+                matches = RE_PROFILE_PATH_ENTRY.search(line).groups()
+                audit = False
+                if matches[0]:
+                    audit = True
+                allow = 'allow'
+                if matches[1] and matches[1].split() == 'deny':
+                    allow = 'deny'
+                
+                user = False
+                if matches[2]:
+                    user = True
+                
+                path = matches[3].strip()
+                mode = matches[4]
+                nt_name = matches[6]
+                if nt_name:
+                    nt_name = nt_name.strip()
+                
+                tmpmode = set()
+                if user:
+                    tmpmode = str_to_mode('%s::' %mode)
+                else:
+                    tmpmode = str_to_mode(mode)
+                
+                if not write_prof_data[hat][allow]['path'][path].get('mode', False) & tmpmode:
+                    correct = False
+                
+                if nt_name and not write_prof_data[hat][allow]['path'][path].get('to', False) == nt_name:
+                    correct = False
+                
+                if audit and not write_prof_data[hat][allow]['path'][path].get('audit', False) & tmpmode:
+                    correct = False
+                
+                if correct:
+                    write_prof_data[hat][allow]['path'].pop(path)
+                    data.append(line)
+                else:
+                    #To-Do
+                    pass
+            
+            elif re_match_include(line):
+                include_name = re_match_include(line)
+                if profile:
+                    if write_prof_data[hat]['include'].get(include_name, False):
+                        write_prof_data[hat]['include'].pop(include_name)
+                        data.append(line)
+                else:
+                    if write_filelist['include'].get(include_name, False):
+                        write_filelist['include'].pop(include_name)
+                        data.append(line)
+
+            elif RE_PROFILE_NETWORK.search(line):
+                matches = RE_PROFILE_NETWORK.search(line).groups()
+                audit = False
+                if matches[0]:
+                    audit = True
+                allow = 'allow'
+                if matches[1] and matches[1].strip() == 'deny':
+                    allow = 'deny'
+                network = matches[2]
+                if RE_NETWORK_FAMILY_TYPE.search(network):
+                    nmatch = RE_NETWORK_FAMILY_TYPE.search(network).groups()
+                    fam, typ = nmatch[:2]
+                    if write_prof_data[hat][allow]['netdomain']['rule'][fam][typ] and write_prof_data[hat][allow]['netdomain']['audit'][fam][typ] == audit:
+                        write_prof_data[hat][allow]['netdomain']['rule'][fam].pop(typ)
+                        write_prof_data[hat][allow]['netdomain']['audit'][fam].pop(typ)
+                        data.append(line)
+                        
+                elif RE_NETWORK_FAMILY.search(network):
+                    fam = RE_NETWORK_FAMILY.search(network).groups()[0]
+                    if write_prof_data[hat][allow]['netdomain']['rule'][fam] and write_prof_data[hat][allow]['netdomain']['audit'][fam] == audit:
+                        write_prof_data[hat][allow]['netdomain']['rule'].pop(fam)
+                        write_prof_data[hat][allow]['netdomain']['audit'].pop(fam)
+                        data.append(line)
+                else:
+                    if write_prof_data[hat][allow]['netdomain']['rule']['all'] and write_prof_data[hat][allow]['netdomain']['audit']['all'] == audit:
+                        write_prof_data[hat][allow]['netdomain']['rule'].pop('all')
+                        write_prof_data[hat][allow]['netdomain']['audit'].pop('all')
+                        data.append(line)
+
+            elif RE_PROFILE_CHANGE_HAT.search(line):
+                matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
+                hat = matches[0]
+                hat =  strip_quotes(hat)
+                if not write_prof_data[hat]['declared']:
+                    correct = False
+                if correct:
+                    data.append(line)
+                else:
+                    #To-Do
+                    pass
+            elif RE_PROFILE_HAT_DEF.search(line):
+                matches = RE_PROFILE_HAT_DEF.search(line).groups()   
+                in_contained_hat = True
+                hat = matches[0]
+                hat = strip_quotes(hat)
+                flags = matches[3]
+                if not write_prof_data[hat]['flags'] == flags:
+                    correct = False
+                if not write_prof_data[hat]['declared'] == False:
+                    correct = False
+                if not write_filelist['profile'][profile][hat]:
+                    correct = False
+                if correct:
+                    data.append(line)
+                else:
+                    #To-Do
+                    pass
+            else:
+                if correct:
+                    data.append(line)
+                else:
+                    #To-Do
+                    pass
+    data.append('prof done')
+    if write_filelist:
+        data += write_alias(write_filelist, 0)
+        data += write_list_vars(write_filelist, 0)
+        data += write_includes(write_filelist, 0)
+    data.append('from filelist over')
+    data += write_piece(write_prof_data, 0, name, name, include_flags)
+    
+    string += '\n'.join(data)
+    
+    return string+'\n'
+
 def write_profile_ui_feedback(profile):
     UI_Info(_('Writing updated profile for %s.') %profile)
     write_profile(profile)
@@ -3170,7 +3556,7 @@ def write_profile(profile):
     else:
         prof_filename = get_profile_filename(profile)
     
-    newprof = tempfile.NamedTemporaryFile('rw', suffix='~' ,delete=False)
+    newprof = tempfile.NamedTemporaryFile('w', suffix='~' ,delete=False)
     if os.path.exists(prof_filename):
         shutil.copymode(prof_filename, newprof.name)
     else:
