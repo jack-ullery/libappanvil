@@ -23,6 +23,8 @@ SRC=access.c \
     chown.c \
     clone.c \
     coredump.c \
+    dbus_message.c \
+    dbus_service.c \
     deleted.c \
     environ.c \
     env_check.c \
@@ -120,6 +122,8 @@ TESTS=access \
       chdir \
       clone \
       coredump \
+      dbus_message \
+      dbus_service \
       deleted \
       environ \
       exec \
@@ -164,6 +168,15 @@ all: $(EXEC) changehat.h
 changehat_pthread: changehat_pthread.c changehat.h
 	${CC} ${CFLAGS} ${LDFLAGS} $< -o $@ ${LDLIBS} -pthread
 
+dbus_common.o: dbus_common.c dbus_common.h
+	${CC} ${CFLAGS} ${LDFLAGS} $^ -c ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
+
+dbus_message: dbus_message.c dbus_common.o
+	${CC} ${CFLAGS} ${LDFLAGS} $^ -o dbus_message ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
+
+dbus_service: dbus_message dbus_service.c dbus_common.o
+	${CC} ${CFLAGS} ${LDFLAGS} $(filter-out dbus_message, $^) -o dbus_service ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
+
 tests: all
 	@if [ `whoami` = "root" ] ;\
 	then \
@@ -203,6 +216,6 @@ alltests: all
 	fi
 
 clean:
-	rm -f $(EXEC)
+	rm -f $(EXEC) dbus_common.o
 
 regex.sh: open exec
