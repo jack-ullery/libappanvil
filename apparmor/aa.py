@@ -18,7 +18,7 @@ import apparmor.logparser
 import apparmor.severity
 import LibAppArmor
 
-from apparmor.common import (AppArmorException, error, debug, msg, 
+from apparmor.common import (AppArmorException, error, debug, msg, cmd,
                              open_file_read, valid_path,
                              hasher, open_file_write, convert_regexp, DebugLogger)
 
@@ -228,7 +228,7 @@ def complain(path):
     set_profile_flags(prof_filename, 'complain')
     
 def enforce(path):
-    """Sets the profile to complain mode if it exists"""
+    """Sets the profile to enforce mode if it exists"""
     prof_filename, name = name_to_prof_filename(path)
     if not prof_filename :
         fatal_error("Can't find %s" % path)
@@ -241,7 +241,9 @@ def head(file):
     if os.path.isfile(file):
         with open_file_read(file) as f_in:
             first = f_in.readline().rstrip()
-    return first
+            return first
+    else:
+        raise AppArmorException('Unable to read first line from: %s : File Not Found' %file)
 
 def get_output(params):
     """Returns the return code output by running the program with the args given in the list"""
@@ -484,7 +486,7 @@ def autodep(bin_name, pname=''):
     if not bin_name and pname.startswith('/'):
         bin_name = pname
     if not repo_cfg and not cfg['repository'].get('url', False):
-        repo_conf = apparmor.config.Config('shell')
+        repo_conf = apparmor.config.Config('shell', CONFDIR)
         repo_cfg = repo_conf.read_config('repository.conf')
         if not repo_cfg.get('repository', False) or repo_cfg['repository']['enabled'] == 'later':
             UI_ask_to_enable_repo()
@@ -511,6 +513,16 @@ def autodep(bin_name, pname=''):
             filelist.file = hasher()
         filelist[file][include]['tunables/global'] = True
     write_profile_ui_feedback(pname)
+
+def get_profile_flags(filename):
+    flags = 'enforce'
+    with open_file_read(filename) as f_in:
+        for line in f_in:
+            if RE_PROFILE_START.search(line):
+                flags = RE_PROFILE_START.search(line).groups()[6]
+                return flags
+    return flags
+            
     
 def set_profile_flags(prof_filename, newflags):
     """Reads the old profile file and updates the flags accordingly"""
@@ -821,6 +833,7 @@ def handle_children(profile, hat, root):
         else:
             typ = entry.pop(0)
             if typ == 'fork':
+                # If type is fork then we (should) have pid, profile and hat
                 pid, p, h = entry[:3]
                 if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
                     profile = p
@@ -830,6 +843,7 @@ def handle_children(profile, hat, root):
                 else:
                     profile_changes[pid] = profile
             elif typ == 'unknown_hat':
+                # If hat is not known then we (should) have pid, profile, hat, mode and unknown hat in entry
                 pid, p, h, aamode, uhat = entry[:5]
                 if not regex_nullcomplain.search(p):
                     profile = p
@@ -882,9 +896,11 @@ def handle_children(profile, hat, root):
                 elif ans == 'CMD_USEDEFAULT':
                     hat = default_hat
                 elif ans == 'CMD_DENY':
+                    # As unknown hat is denied no entry for it should be made
                     return None
             
             elif typ == 'capability':
+                # If capability then we (should) have pid, profile, hat, program, mode, capability
                 pid, p, h, prog, aamode, capability = entry[:6]
                 if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
                     profile = p
@@ -894,6 +910,7 @@ def handle_children(profile, hat, root):
                 prelog[aamode][profile][hat]['capability'][capability] = True
             
             elif typ == 'path' or typ == 'exec':
+                # If path or exec then we (should) have pid, profile, hat, program, mode, details and to_name
                 pid, p, h, prog, aamode, mode, detail, to_name = entry[:8]
                 if not mode:
                     mode = set()
@@ -1086,6 +1103,7 @@ def handle_children(profile, hat, root):
                         default = None
                         if 'p' in options and os.path.exists(get_profile_filename(exec_target)):
                             default = 'CMD_px'
+                            sys.stdout.write('Target profile exists: %s\n' %get_profile_filename(exec_target))
                         elif 'i' in options:
                             default = 'CMD_ix'
                         elif 'c' in options:
@@ -1309,6 +1327,7 @@ def handle_children(profile, hat, root):
                             return None
             
             elif typ == 'netdomain':
+                # If netdomain we (should) have pid, profile, hat, program, mode, network family, socket type and protocol
                 pid, p, h, prog, aamode, family, sock_type, protocol = entry[:8]
                 
                 if not regex_nullcomplain.search(p) and not regex_nullcomplain.search(h):
@@ -1717,15 +1736,17 @@ def ask_the_questions():
                                 else:
                                     if aa[profile][hat]['allow']['path'][path].get('mode', False):
                                         mode |= aa[profile][hat]['allow']['path'][path]['mode']
-                                    deleted = 0
+                                    deleted = []
                                     for entry in aa[profile][hat]['allow']['path'].keys():
                                         if path == entry:
                                             continue
                                         
                                         if matchregexp(path, entry):
                                             if mode_contains(mode, aa[profile][hat]['allow']['path'][entry]['mode']):
-                                                aa[profile][hat]['allow']['path'].pop(entry)
-                                                deleted += 1
+                                                deleted.append(entry)
+                                    for entry in deleted:
+                                        aa[profile][hat]['allow']['path'].pop(entry)
+                                    deleted = len(deleted)
                                     
                                     if owner_toggle == 0:
                                         mode = flatten_mode(mode)
@@ -1948,13 +1969,15 @@ def delete_net_duplicates(netrules, incnetrules):
     return deleted
 
 def delete_cap_duplicates(profilecaps, inccaps):
-    deleted = 0
+    deleted = []
     if profilecaps and inccaps:
         for capname in profilecaps.keys():
             if inccaps[capname].get('set', False) == 1:
-                profilecaps.pop(capname)
-                deleted += 1
-    return deleted
+                deleted.append(capname)
+        for capname in deleted:
+            profilecaps.pop(capname)
+    
+    return len(deleted)
 
 def delete_path_duplicates(profile, incname, allow):
     deleted = []
@@ -2047,7 +2070,7 @@ def match_net_includes(profile, family, nettype):
     
     return newincludes
 
-def do_logprof_pass(logmark='', pid=pid):
+def do_logprof_pass(logmark='', passno=0, pid=pid):
     # set up variables for this pass
     t = hasher()
 #    transitions = hasher()
@@ -2066,9 +2089,10 @@ def do_logprof_pass(logmark='', pid=pid):
 #    filelist = hasher()
     
     UI_Info(_('Reading log entries from %s.') %filename)
-    UI_Info(_('Updating AppArmor profiles in %s.') %profile_dir)
     
-    read_profiles()
+    if not passno:
+        UI_Info(_('Updating AppArmor profiles in %s.') %profile_dir)
+        read_profiles()
     
     if not sev_db:
         sev_db = apparmor.severity.Severity(CONFDIR + '/severity.db', _('unknown'))
@@ -2158,7 +2182,7 @@ def save_profiles():
             q['title'] = 'Changed Local Profiles'
             q['headers'] = []
             q['explanation'] = _('The following local profiles were changed. Would you like to save them?')
-            q['functions'] = ['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_VIEW_CHANGES_CLEAN', 'CMD_ABORT']
+            q['functions'] = ['CMD_SAVE_CHANGES', 'CMD_SAVE_SELECTED', 'CMD_VIEW_CHANGES', 'CMD_VIEW_CHANGES_CLEAN', 'CMD_ABORT']
             q['default'] = 'CMD_VIEW_CHANGES'
             q['options'] = changed
             q['selected'] = 0
@@ -2167,7 +2191,14 @@ def save_profiles():
             arg = None
             while ans != 'CMD_SAVE_CHANGES':
                 ans, arg = UI_PromptUser(q)
-                if ans == 'CMD_VIEW_CHANGES':
+                if ans == 'CMD_SAVE_SELECTED':
+                    profile_name = list(changed.keys())[arg]
+                    write_profile_ui_feedback(profile_name)
+                    reload_base(profile_name)
+                    changed.pop(profile_name)
+                    #q['options'] = changed
+                    
+                elif ans == 'CMD_VIEW_CHANGES':
                     which = list(changed.keys())[arg]
                     oldprofile = None
                     if aa[which][which].get('filename', False):
@@ -2485,9 +2516,8 @@ def parse_profile_data(data, file, do_include):
                     profile_data[profile][hat]['external'] = True
                 else:
                     hat = profile
-                # Profile stored
-                existing_profiles[profile] = file
-            
+            # Profile stored
+            existing_profiles[profile] = file
             
             flags = matches[6]
             
@@ -2959,7 +2989,7 @@ def write_cap_rules(prof_data, depth, allow):
         for cap in sorted(prof_data[allow]['capability'].keys()):
             audit = ''
             if prof_data[allow]['capability'][cap].get('audit', False):
-                audit = 'audit'
+                audit = 'audit '
             if prof_data[allow]['capability'][cap].get('set', False):
                 data.append('%s%s%scapability %s,' %(pre, audit, allowstr, cap))
         data.append('')
@@ -3837,7 +3867,7 @@ def reload_base(bin_path):
     
 def reload(bin_path):
     bin_path = find_executable(bin_path)
-    if not bin:
+    if not bin_path:
         return None
     
     return reload_base(bin_path)
@@ -3955,6 +3985,7 @@ def check_qualifiers(program):
                                 'them is likely to break the rest of the system.  If you know what you\'re\n' +
                                 'doing and are certain you want to create a profile for this program, edit\n' +
                                 'the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf.') %program)
+    return False
 
 def get_subdirectories(current_dir):
     """Returns a list of all directories directly inside given directory"""
@@ -4048,7 +4079,7 @@ def matchregexp(new, old):
     
 ######Initialisations######
 
-conf = apparmor.config.Config('ini')
+conf = apparmor.config.Config('ini', CONFDIR)
 cfg = conf.read_config('logprof.conf')
 
 #print(cfg['settings'])

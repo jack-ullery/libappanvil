@@ -17,53 +17,50 @@ class Severity:
         self.severity['VARIABLES'] = dict()
         if not dbname:
             return None
-        try:
-            database = open_file_read(dbname)#open(dbname, 'r')
-        except IOError:
-            raise AppArmorException("Could not open severity database: %s" % dbname)
-        for lineno, line in enumerate(database, start=1):
-            line = line.strip() # or only rstrip and lstrip?
-            if line == '' or line.startswith('#') :
-                continue
-            if line.startswith('/'):
-                try:
-                    path, read, write, execute = line.split()
-                    read, write, execute = int(read), int(write), int(execute)
-                except ValueError:
-                    raise AppArmorException("Insufficient values for permissions in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
-                else:
-                    if read not in range(0,11) or write not in range(0,11) or execute not in range(0,11):
-                        raise AppArmorException("Inappropriate values for permissions in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
-                    path = path.lstrip('/')
-                    if '*' not in path:
-                        self.severity['FILES'][path] = {'r': read, 'w': write, 'x': execute}
+        
+        with open_file_read(dbname) as database:#open(dbname, 'r')
+            for lineno, line in enumerate(database, start=1):
+                line = line.strip() # or only rstrip and lstrip?
+                if line == '' or line.startswith('#') :
+                    continue
+                if line.startswith('/'):
+                    try:
+                        path, read, write, execute = line.split()
+                        read, write, execute = int(read), int(write), int(execute)
+                    except ValueError:
+                        raise AppArmorException("Insufficient values for permissions in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
                     else:
-                        ptr = self.severity['REGEXPS']
-                        pieces = path.split('/')
-                        for index, piece in enumerate(pieces):
-                            if '*' in piece:
-                                path = '/'.join(pieces[index:])
-                                regexp = convert_regexp(path)
-                                ptr[regexp] = {'AA_RANK': {'r': read, 'w': write, 'x': execute}}
-                                break
-                            else:
-                                ptr[piece] = ptr.get(piece, {})
-                                ptr = ptr[piece]
-            elif line.startswith('CAP_'):
-                try:
-                    resource, severity = line.split()
-                    severity = int(severity)
-                except ValueError as e:
-                    error_message = 'No severity value present in file: %s\n\t[Line %s]: %s' % (dbname, lineno, line)
-                    #error(error_message)
-                    raise AppArmorException(error_message) # from None
+                        if read not in range(0,11) or write not in range(0,11) or execute not in range(0,11):
+                            raise AppArmorException("Inappropriate values for permissions in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
+                        path = path.lstrip('/')
+                        if '*' not in path:
+                            self.severity['FILES'][path] = {'r': read, 'w': write, 'x': execute}
+                        else:
+                            ptr = self.severity['REGEXPS']
+                            pieces = path.split('/')
+                            for index, piece in enumerate(pieces):
+                                if '*' in piece:
+                                    path = '/'.join(pieces[index:])
+                                    regexp = convert_regexp(path)
+                                    ptr[regexp] = {'AA_RANK': {'r': read, 'w': write, 'x': execute}}
+                                    break
+                                else:
+                                    ptr[piece] = ptr.get(piece, {})
+                                    ptr = ptr[piece]
+                elif line.startswith('CAP_'):
+                    try:
+                        resource, severity = line.split()
+                        severity = int(severity)
+                    except ValueError as e:
+                        error_message = 'No severity value present in file: %s\n\t[Line %s]: %s' % (dbname, lineno, line)
+                        #error(error_message)
+                        raise AppArmorException(error_message) # from None
+                    else:
+                        if severity not in range(0,11):
+                            raise AppArmorException("Inappropriate severity value present in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
+                        self.severity['CAPABILITIES'][resource] = severity
                 else:
-                    if severity not in range(0,11):
-                        raise AppArmorException("Inappropriate severity value present in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
-                    self.severity['CAPABILITIES'][resource] = severity
-            else:
-                raise AppArmorException("Unexpected line in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))   
-        database.close()
+                    raise AppArmorException("Unexpected line in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
     
     def handle_capability(self, resource):
         """Returns the severity of for the capability resource, default value if no match"""
@@ -187,11 +184,11 @@ class Severity:
                                 try:
                                     self.severity['VARIABLES'][line[0]] += [i.strip('"') for i in line[1].split()]
                                 except KeyError:
-                                    raise AppArmorException("Variable %s was not previously declared, but is being assigned additional values" % line[0])
+                                    raise AppArmorException("Variable %s was not previously declared, but is being assigned additional values in file: %s" % (line[0], prof_path))
                             else:
                                 line = line.split('=')
                                 if line[0] in self.severity['VARIABLES'].keys():
-                                    raise AppArmorException("Variable %s was previously declared" % line[0])
+                                    raise AppArmorException("Variable %s was previously declared in file: %s" % (line[0], prof_path))
                                 self.severity['VARIABLES'][line[0]] = [i.strip('"') for i in line[1].split()]
     
     def unload_variables(self):

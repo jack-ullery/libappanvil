@@ -28,8 +28,8 @@ from apparmor.common import AppArmorException, warn, msg, open_file_read
 # REPO_CFG = None
 # SHELL_FILES = ['easyprof.conf', 'notify.conf', 'parser.conf', 'subdomain.conf']
 class Config:
-    def __init__(self, conf_type):
-        self.CONF_DIR = '/etc/apparmor'
+    def __init__(self, conf_type, conf_dir='/etc/apparmor'):
+        self.CONF_DIR = conf_dir
         # The type of config file that'll be read and/or written
         if conf_type == 'shell' or conf_type == 'ini':
             self.conf_type = conf_type

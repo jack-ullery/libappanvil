@@ -50,7 +50,7 @@ class ReadLog:
         if self.next_log_entry:
             sys.stderr.out('A log entry already present: %s' % self.next_log_entry)
         self.next_log_entry = self.LOG.readline()
-        while not (self.RE_LOG_v2_6_syslog.search(self.next_log_entry) or self.RE_LOG_v2_6_audit.search(self.next_log_entry)) or (self.logmark and re.search(self.logmark, self.next_log_entry)):
+        while not self.RE_LOG_v2_6_syslog.search(self.next_log_entry) and not self.RE_LOG_v2_6_audit.search(self.next_log_entry) and not (self.logmark and self.logmark in self.next_log_entry):
             self.next_log_entry = self.LOG.readline()
             if not self.next_log_entry:
                 break
@@ -328,8 +328,11 @@ class ReadLog:
         except IOError:
             raise AppArmorException('Can not read AppArmor logfile: ' + self.filename)
         #LOG = open_file_read(log_open)
-        line = self.get_next_log_entry()
+        line = True
         while line:
+            line = self.get_next_log_entry()
+            if not line:
+                break
             line = line.strip()
             self.debug_logger.debug('read_log: %s' % line)
             if self.logmark in line:
@@ -337,13 +340,12 @@ class ReadLog:
             
             self.debug_logger.debug('read_log: seenmark = %s' %seenmark)
             if not seenmark:
-                line = self.get_next_log_entry()
-                continue    
+                continue
+             
             event = self.parse_log_record(line)
             #print(event)
             if event:
                 self.add_event_to_tree(event)
-            line = self.get_next_log_entry()
         self.LOG.close()
         self.logmark = ''
         return self.log

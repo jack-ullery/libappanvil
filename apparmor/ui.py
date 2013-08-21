@@ -42,25 +42,43 @@ def UI_Important(text):
                         })
         path, yarg = GetDataFromYast()
 
+def get_translated_hotkey(translated, cmsg=''):
+    msg = 'PromptUser: '+_('Invalid hotkey for')
+    if re.search('\((\S)\)', translated):
+        return re.search('\((\S)\)', translated).groups()[0]
+    else:
+        if cmsg:
+            raise AppArmorException(cmsg)
+        else:
+            raise AppArmorException('%s %s' %(msg, translated))            
+
 def UI_YesNo(text, default):
     debug_logger.debug('UI_YesNo: %s: %s %s' %(UI_mode, text, default))
-    ans = default
+    default = default.lower()
+    ans = None
     if UI_mode == 'text':
-        yes = '(Y)es'
-        no = '(N)o'
-        usrmsg = 'PromptUser: Invalid hotkey for'
-        yeskey = 'y'
-        nokey = 'n'
-        sys.stdout.write('\n' + text + '\n')
-        if default == 'y':
-            sys.stdout.write('\n[%s] / %s\n' % (yes, no))
-        else:
-            sys.stdout.write('\n%s / [%s]\n' % (yes, no))
-        ans = getkey()#readkey()
-        if ans:
-            ans = ans.lower()
-        else:
-            ans = default
+        yes = _('(Y)es')
+        no = _('(N)o')
+        yeskey = get_translated_hotkey(yes).lower()
+        nokey = get_translated_hotkey(no).lower()
+        ans = 'XXXINVALIDXXX'
+        while ans not in ['y', 'n']:
+            sys.stdout.write('\n' + text + '\n')
+            if default == 'y':
+                sys.stdout.write('\n[%s] / %s\n' % (yes, no))
+            else:
+                sys.stdout.write('\n%s / [%s]\n' % (yes, no))
+            ans = getkey()
+            if ans:
+                # Get back to english from localised answer
+                ans = ans.lower()
+                if ans == yeskey:
+                    ans = 'y'
+                else:
+                    ans = 'n'
+            else:
+                ans = default
+            
     else:
         SendDataToYast({
                          'type': 'dialog-yesno',
@@ -74,16 +92,19 @@ def UI_YesNo(text, default):
 
 def UI_YesNoCancel(text, default):
     debug_logger.debug('UI_YesNoCancel: %s: %s %s' % (UI_mode, text, default))
-
+    default = default.lower()
+    ans = None
     if UI_mode == 'text':
-        yes = '(Y)es'
-        no = '(N)o'
-        cancel = '(C)ancel'
-        yeskey = 'y'
-        nokey = 'n'
-        cancelkey = 'c'
+        yes = _('(Y)es')
+        no = _('(N)o')
+        cancel = _('(C)ancel')
+        
+        yeskey = get_translated_hotkey(yes).lower()
+        nokey = get_translated_hotkey(no).lower()
+        cancelkey = get_translated_hotkey(cancel).lower()
+        
         ans = 'XXXINVALIDXXX'
-        while ans != 'c' and ans != 'n' and ans != 'y':
+        while ans not in ['c', 'n', 'y']:
             sys.stdout.write('\n' + text + '\n')
             if default == 'y':
                 sys.stdout.write('\n[%s] / %s / %s\n' % (yes, no, cancel))
@@ -91,9 +112,16 @@ def UI_YesNoCancel(text, default):
                 sys.stdout.write('\n%s / [%s] / %s\n' % (yes, no, cancel))
             else:
                 sys.stdout.write('\n%s / %s / [%s]\n' % (yes, no, cancel))
-            ans = getkey()#readkey()
+            ans = getkey()
             if ans:
+                # Get back to english from localised answer
                 ans = ans.lower()
+                if ans == yeskey:
+                    ans = 'y'
+                elif ans == nokey:
+                    ans = 'n'
+                elif ans== cancelkey:
+                    ans= 'c'
             else:
                 ans = default
     else:
@@ -111,7 +139,7 @@ def UI_GetString(text, default):
     debug_logger.debug('UI_GetString: %s: %s %s' % (UI_mode, text, default))
     string = default
     if UI_mode == 'text':
-        sys.stdout.write('\n' + text + '\n')
+        sys.stdout.write('\n' + text)
         string = sys.stdin.readline()
     else:
         SendDataToYast({
@@ -198,6 +226,7 @@ CMDS = {
         'CMD_UPDATE_PROFILE': '(U)pdate Profile',
         'CMD_IGNORE_UPDATE': '(I)gnore Update',
         'CMD_SAVE_CHANGES': '(S)ave Changes',
+        'CMD_SAVE_SELECTED': 'Save Selec(t)ed Profile',
         'CMD_UPLOAD_CHANGES': '(U)pload Changes',
         'CMD_VIEW_CHANGES': '(V)iew Changes',
         'CMD_VIEW_CHANGES_CLEAN': 'View Changes b/w (C)lean profiles',
@@ -216,7 +245,7 @@ CMDS = {
         'CMD_IGNORE_ENTRY': '(I)gnore'
         }
 
-def UI_PromptUser(q):
+def UI_PromptUser(q, params=''):
     cmd = None
     arg = None
     if UI_mode == 'text':
@@ -230,10 +259,11 @@ def UI_PromptUser(q):
         arg = yarg['selected']
     if cmd == 'CMD_ABORT':
         confirm_and_abort()
-        cmd == 'XXXINVALIDXXX'
+        cmd = 'XXXINVALIDXXX'
     elif cmd == 'CMD_FINISHED':
-        confirm_and_finish()
-        cmd == 'XXXINVALIDXXX'
+        if not params:
+            confirm_and_finish()
+        cmd = 'XXXINVALIDXXX'
     return (cmd, arg)
 
 def confirm_and_abort():
@@ -287,11 +317,7 @@ def Text_PromptUser(question):
         
         menutext = _(CMDS[cmd])
         
-        menuhotkey = re.search('\((\S)\)', menutext)
-        if not menuhotkey:
-            raise AppArmorException('PromptUser: %s \'%s\'' %(_('Invalid hotkey in'), menutext))
-        
-        key = menuhotkey.groups()[0].lower()
+        key = get_translated_hotkey(menutext).lower()
         # Duplicate hotkey
         if keys.get(key, False): 
             raise AppArmorException('PromptUser: %s %s: %s' %(_('Duplicate hotkey for'), cmd, menutext)) 
@@ -306,12 +332,9 @@ def Text_PromptUser(question):
     default_key = 0
     if default and CMDS[default]:
         defaulttext = _(CMDS[default])
+        defmsg = 'PromptUser: ' + _('Invalid hotkey in default item')
         
-        defaulthotkey = re.search('\((\S)\)', defaulttext)
-        if not menuhotkey:
-            raise AppArmorException('PromptUser: %s \'%s\'' %(_('Invalid hotkey in default item'), defaulttext))
-
-        default_key = defaulthotkey.groups()[0].lower()
+        default_key = get_translated_hotkey(defaulttext, defmsg).lower()
         
         if not keys.get(default_key, False): 
             raise AppArmorException('PromptUser: %s %s' %(_('Invalid default'), default))
