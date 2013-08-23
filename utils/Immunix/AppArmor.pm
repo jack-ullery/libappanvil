@@ -3879,7 +3879,7 @@ sub ask_the_questions() {
                                             $newpath =~ s/\/[^\/]+$/\/\*/;
                                         }
                                     }
-                                    if (not $newpath ~~ @options) {
+                                    if (not grep { $newpath eq $_ } @options) {
                                         push @options, $newpath;	
                                         $defaultoption = $#options + 1;
                                     }
@@ -3896,7 +3896,7 @@ sub ask_the_questions() {
                                     } else {
                                         $newpath =~ s/\/[^\/]+(\.[^\/]+)$/\/\*$1/;
                                     }
-                                    if (not $newpath ~~ @options) {
+                                    if (not grep { $newpath eq $_ } @options) {
                                         push @options, $newpath;
                                         $defaultoption = $#options + 1;
                                     }
