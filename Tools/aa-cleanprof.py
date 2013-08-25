@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import sys
 import os
 import argparse
 
@@ -17,9 +16,9 @@ profiledir = args.d
 if profiledir:
     apparmor.profile_dir = apparmor.get_full_path(profiledir)
     if not os.path.isdir(apparmor.profile_dir):
-        raise apparmor.AppArmorException("Can't find AppArmor profiles in %s." %profiledir)
+        raise apparmor.AppArmorException("%s is not a directory."%profiledir)
 
-for p in profiling:
+for p in sorted(profiling):
     if not p:
         continue
     
@@ -34,20 +33,9 @@ for p in profiling:
     if os.path.exists(program):
         apparmor.read_profiles()
         filename = apparmor.get_profile_filename(program)
-        
-        if not os.path.isfile(filename) or apparmor.is_skippable_file(filename):
-            continue
-        
-        apparmor.UI_Info(_('Setting %s to complain mode.\n')%program)
-        
-        apparmor.set_profile_flags(filename, 'complain')
-        
-        cmd_info = apparmor.cmd(['cat', filename, '|', parser, '-I%s'%apparmor.profile_dir, '-R 2>&1', '1>/dev/null'])
-        if cmd_info[0] != 0:
-            raise apparmor.AppArmorException(cmd_info[1])
-    else:
-        if '/' not in p:
-            apparmor.UI_Info(_("Can't find %s in the system path list. If the name of the application is correct, please run 'which %s' as a user with correct PATH environment set up in order to find the fully-qualified path.")%(p, p))
+        if filename:
+            apparmor.write_profile_ui_feedback(program)
+            apparmor.reload_base(program)
         else:
-            apparmor.UI_Info(_("%s does not exist, please double-check the path.")%p)
-            sys.exit(1)
+            raise apparmor.AppArmorException(_('The profile for %s does not exists. Nothing to clean.')%p)
+        
