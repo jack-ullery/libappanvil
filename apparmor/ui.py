@@ -149,7 +149,7 @@ def UI_GetString(text, default):
                         })
         ypath, yarg = GetDataFromYast()
         string = yarg['string']
-    return string
+    return string.strip()
 
 def UI_GetFile(file):
     debug_logger.debug('UI_GetFile: %s' % UI_mode)
@@ -292,7 +292,7 @@ def UI_LongMessage(title, message):
     ypath, yarg = GetDataFromYast()
 
 def confirm_and_finish():
-    sys.stdout.write('FINISHING..\n')
+    sys.stdout.write('FINISHING...\n')
     sys.exit(0)
 
 def Text_PromptUser(question):

@@ -23,7 +23,9 @@ from apparmor.common import (AppArmorException, error, debug, msg, cmd,
                              hasher, open_file_write, convert_regexp, DebugLogger)
 
 from apparmor.ui import *
+
 from copy import deepcopy
+
 from apparmor.aamode import *
 
 # Setup logging incase of debugging is enabled
@@ -204,7 +206,7 @@ def get_profile_filename(profile):
     profile = profile.replace('/', '.')
     full_profilename = profile_dir + '/' + profile
     return full_profilename
-
+ 
 def name_to_prof_filename(prof_filename):
     """Returns the profile"""
     if prof_filename.startswith(profile_dir):
@@ -225,15 +227,15 @@ def complain(path):
     if not prof_filename :
         fatal_error("Can't find %s" % path)
     UI_Info('Setting %s to complain mode.' % name)
-    set_profile_flags(prof_filename, 'complain')
+    change_profile_flags(prof_filename, 'complain')
     
 def enforce(path):
     """Sets the profile to enforce mode if it exists"""
     prof_filename, name = name_to_prof_filename(path)
     if not prof_filename :
         fatal_error("Can't find %s" % path)
-    UI_Info('Setting %s to enforce moode' % name)
-    set_profile_flags(prof_filename, '')
+    UI_Info('Setting %s to enforce mode' % name)
+    change_profile_flags(prof_filename, 'complain')
     
 def head(file):
     """Returns the first/head line of the file"""
@@ -515,14 +517,45 @@ def autodep(bin_name, pname=''):
     write_profile_ui_feedback(pname)
 
 def get_profile_flags(filename):
-    flags = 'enforce'
+    # To-Do
+    # XXX If more than one profile in a file then second one is being ignored XXX
+    # Do we return flags for both or 
+    flags = ''
     with open_file_read(filename) as f_in:
         for line in f_in:
             if RE_PROFILE_START.search(line):
                 flags = RE_PROFILE_START.search(line).groups()[6]
                 return flags
-    return flags
+
+    raise AppArmorException(_('%s contains no profile')%filename)
             
+def change_profile_flags(filename, flag, remove=False):
+    old_flags = get_profile_flags(filename)
+    newflags = []
+    if old_flags != '':
+        # Flags maybe white-space and/or , separated
+        old_flags = old_flags.split(',')
+
+        if type(old_flags) == type([]):
+            for i in old_flags:
+                newflags += i.split()
+        else:
+            newflags = old_flags.split()
+        #newflags = [lambda x:x.strip(), oldflags]
+    if flag in newflags:
+        if remove:
+            newflags.remove(flag)
+    else:
+        if not remove:
+            if flag == '':
+                if 'complain' in newflags:
+                    newflags.remove('complain')
+            else:
+                newflags.append(flag)
+
+    newflags = ','.join(newflags)
+    
+    set_profile_flags(filename, newflags)         
     
 def set_profile_flags(prof_filename, newflags):
     """Reads the old profile file and updates the flags accordingly"""
@@ -1774,6 +1807,7 @@ def ask_the_questions():
                                         UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
                                     
                             elif ans == 'CMD_DENY':
+                                path = options[selected].strip()
                                 # Add new entry?
                                 aa[profile][hat]['deny']['path'][path]['mode'] = aa[profile][hat]['deny']['path'][path].get('mode', set()) | (mode - allow_mode)
                                 
@@ -1832,7 +1866,9 @@ def ask_the_questions():
                                     if newpath not in options:
                                         options.append(newpath)
                                         default_option = len(options)
-                            
+                                    else:
+                                        default_option = options.index(newpath) + 1
+                                    
                             elif ans == 'CMD_GLOBEXT':
                                 newpath = options[selected].strip()
                                 if not re_match_include(newpath):
@@ -1851,11 +1887,14 @@ def ask_the_questions():
                                         newpath = re.sub('/\*\*[^/]+\.[^/]+$', '/**'+match.groups()[0], newpath)
                                     else:
                                         match = re.search('(\.[^/]+)$', newpath)
-                                        newpath = re.sub('/[^/]+(\.[^/]+)$', '/*'+match.groups()[0], newpath)
+                                        if match:
+                                            newpath = re.sub('/[^/]+(\.[^/]+)$', '/*'+match.groups()[0], newpath)
                                     
                                     if newpath not in options:
                                         options.append(newpath)
                                         default_option = len(options)
+                                    else:
+                                        default_option = options.index(newpath) + 1
                             
                             elif re.search('\d', ans):
                                 default_option = ans

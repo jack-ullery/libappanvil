@@ -1,20 +1,20 @@
 #!/usr/bin/python
-import sys
+
+import argparse
 import os
 import re
-import argparse
 
 import apparmor.aa as apparmor
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--paranoid', type=str)
+parser.add_argument('--paranoid', action='store_true')
 args = parser.parse_args()
 
 paranoid = args.paranoid
 
 aa_mountpoint = apparmor.check_for_apparmor()
 if not aa_mountpoint:
-    raise apparmor.AppArmorException(_('AppArmor seems to have not been started. Please enable AppArmor and try again.'))
+    raise apparmor.AppArmorException(_('It seems AppArmor was not started. Please enable AppArmor and try again.'))
 
 pids = []
 if paranoid:
@@ -48,22 +48,22 @@ for pid in sorted(pids):
     else:
         pname = ''
     if not attr:
-        if re.search('^(/usr)?/bin/(python|perl|bash)', prog):
-            cmdline = re.sub('\0', ' ', cmdline)
+        if re.search('^(/usr)?/bin/(python|perl|bash|sh)', prog):
+            cmdline = re.sub('\x00', ' ', cmdline)
             cmdline = re.sub('\s+$', '', cmdline).strip()
-            sys.stdout.write(_('%s %s (%s) not confined\n')%(pid, prog, cmdline))
+            if 'perl' in cmdline:
+                print(cmdline)
+            apparmor.UI_Info(_('%s %s (%s) not confined\n')%(pid, prog, cmdline))
         else:
             if pname and pname[-1] == ')':
                 pname += ' '
-            sys.stdout.write(_('%s %s %snot confined\n')%(pid, prog, pname))
+            apparmor.UI_Info(_('%s %s %snot confined\n')%(pid, prog, pname))
     else:
-        if re.search('^(/usr)?/bin/(python|perl|bash)', prog):
+        if re.search('^(/usr)?/bin/(python|perl|bash|sh)', prog):
             cmdline = re.sub('\0', ' ', cmdline)
             cmdline = re.sub('\s+$', '', cmdline).strip()
-            sys.stdout.write(_("%s %s (%s) confined by '%s'\n")%(pid, prog, cmdline, attr))
+            apparmor.UI_Info(_("%s %s (%s) confined by '%s'\n")%(pid, prog, cmdline, attr))
         else:
             if pname and pname[-1] == ')':
                 pname += ' '
-            sys.stdout.write(_("%s %s %sconfined by '%s'\n")%(pid, prog, pname, attr))
-
-sys.exit(0)
+            apparmor.UI_Info(_("%s %s %sconfined by '%s'\n")%(pid, prog, pname, attr))

@@ -1,10 +1,11 @@
 #!/usr/bin/python
-import sys
-import subprocess
+
+import argparse
+import atexit
 import os
 import re
-import atexit
-import argparse
+import subprocess
+import sys
 
 import apparmor.aa as apparmor
 
@@ -44,20 +45,12 @@ filename = args.f
 
 aa_mountpoint = apparmor.check_for_apparmor()
 if not aa_mountpoint:
-    raise apparmor.AppArmorException(_('AppArmor seems to have not been started. Please enable AppArmor and try again.'))
+    raise apparmor.AppArmorException(_('It seems AppArmor was not started. Please enable AppArmor and try again.'))
 
 if profiledir:
     apparmor.profile_dir = apparmor.get_full_path(profiledir)
     if not os.path.isdir(apparmor.profile_dir):
-        raise apparmor.AppArmorException("Can't find AppArmor profiles in %s." %profiledir)
-
-
-# if not profiling:
-#     profiling = apparmor.UI_GetString(_('Please enter the program to profile: '), '')
-#     if profiling:
-#         profiling = profiling.strip()
-#     else:
-#         sys.exit(0)
+        raise apparmor.AppArmorException("%s is not a directory." %profiledir)
 
 program = None
 #if os.path.exists(apparmor.which(profiling.strip())):
@@ -71,7 +64,7 @@ else:
 
 if not program or not os.path.exists(program):
     if '/' not in profiling:
-        raise apparmor.AppArmorException(_("Can't find %s in the system path list. If the name of the application is correct, please run 'which %s' in another window in order to find the fully-qualified path.") %(profiling, profiling))
+        raise apparmor.AppArmorException(_("Can't find %s in the system path list. If the name of the application is correct, please run 'which %s' in another window in order to find the fully-qualified path and use the full path as parameter.") %(profiling, profiling))
     else:
         raise apparmor.AppArmorException(_('%s does not exists, please double-check the path.') %profiling)
 
