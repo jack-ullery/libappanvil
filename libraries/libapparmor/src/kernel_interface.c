@@ -726,6 +726,7 @@ int aa_query_label(uint32_t mask, char *query, size_t size, int *allowed,
 		 * errno set to ENOENT. It indicates that the subject label
 		 * could not be found by the kernel.
 		 */
+		(void)close(fd);
 		return -1;
 	}
 
