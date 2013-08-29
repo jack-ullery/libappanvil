@@ -226,16 +226,46 @@ def complain(path):
     prof_filename, name = name_to_prof_filename(path)
     if not prof_filename :
         fatal_error("Can't find %s" % path)
-    UI_Info('Setting %s to complain mode.' % name)
-    change_profile_flags(prof_filename, 'complain')
-    
+    set_complain(prof_filename, name)
+
 def enforce(path):
     """Sets the profile to enforce mode if it exists"""
     prof_filename, name = name_to_prof_filename(path)
     if not prof_filename :
         fatal_error("Can't find %s" % path)
-    UI_Info('Setting %s to enforce mode' % name)
-    change_profile_flags(prof_filename, 'complain')
+    set_enforce(prof_filename, name)
+    
+def set_complain(filename, program, ):
+    """Sets the profile to complain mode"""
+    UI_Info('Setting %s to complain mode.' % program)
+    create_symlink('force-complain', filename)
+    change_profile_flags(filename, 'complain', True)
+
+def set_enforce(filename, program):
+    """Sets the profile to enforce mode"""
+    UI_Info('Setting %s to enforce mode' % program)
+    delete_symlink('force-complain', filename)
+    delete_symlink('disable', filename)
+    change_profile_flags(filename, 'complain', False)
+
+def delete_symlink(subdir, filename):
+    path = filename
+    link = re.sub('^%s'%profile_dir, '%s/%s'%(profile_dir, subdir), path)
+    if link != path and os.path.islink(link):
+        os.remove(link)
+
+def create_symlink(subdir, filename):
+    path = filename
+    bname = os.path.basename(filename)
+    if not bname:
+        raise AppArmorException(_('Unable to find basename for %s.')%filename)
+    link = re.sub('^%s'%profile_dir, '%s/%s'%(profile_dir, subdir), path)
+    link = link + '/%s'%bname
+    if not os.path.exists(link):
+        try:
+            os.symlink(filename, link)
+        except:
+            raise AppArmorException('Could not create %s symlink to %s.'%(link, filename))
     
 def head(file):
     """Returns the first/head line of the file"""
@@ -323,13 +353,7 @@ def create_new_profile(localfile):
     local_profile = hasher()
     local_profile[localfile]['flags'] = 'complain'
     local_profile[localfile]['include']['abstractions/base'] = 1 
-    #local_profile = {
-    #                 localfile: {
-    #                           'flags': 'complain',
-    #                           'include': {'abstraction/base': 1},
-    #                           'allow': {'path': {}}
-    #                           }
-    #                 }
+    
     if os.path.isfile(localfile):
         hashbang = head(localfile)
         if hashbang.startswith('#!'):
@@ -529,7 +553,7 @@ def get_profile_flags(filename):
 
     raise AppArmorException(_('%s contains no profile')%filename)
             
-def change_profile_flags(filename, flag, remove=False):
+def change_profile_flags(filename, flag, set_flag):
     old_flags = get_profile_flags(filename)
     newflags = []
     if old_flags != '':
@@ -542,16 +566,13 @@ def change_profile_flags(filename, flag, remove=False):
         else:
             newflags = old_flags.split()
         #newflags = [lambda x:x.strip(), oldflags]
-    if flag in newflags:
-        if remove:
-            newflags.remove(flag)
+    
+    if set_flag:
+        if flag not in newflags:
+            newflags.append(flag)
     else:
-        if not remove:
-            if flag == '':
-                if 'complain' in newflags:
-                    newflags.remove('complain')
-            else:
-                newflags.append(flag)
+        if flag in newflags:
+            newflags.remove(flag)
 
     newflags = ','.join(newflags)
     
@@ -1838,30 +1859,7 @@ def ask_the_questions():
                             elif ans == 'CMD_GLOB':
                                 newpath = options[selected].strip()
                                 if not re_match_include(newpath):
-                                    if newpath[-1] == '/':
-                                        if newpath[-4:] == '/**/' or newpath[-3:] == '/*/':
-                                            # /foo/**/ and /foo/*/ => /**/
-                                            newpath = re.sub('/[^/]+/\*{1,2}/$', '/**/', newpath) #re.sub('/[^/]+/\*{1,2}$/', '/\*\*/', newpath)
-                                        elif re.search('/[^/]+\*\*[^/]*/$', newpath):
-                                            # /foo**/ and /foo**bar/ => /**/
-                                            newpath =  re.sub('/[^/]+\*\*[^/]*/$', '/**/', newpath)
-                                        elif re.search('/\*\*[^/]+/$', newpath):
-                                            # /**bar/ => /**/
-                                            newpath =  re.sub('/\*\*[^/]+/$', '/**/', newpath)
-                                        else:
-                                            newpath = re.sub('/[^/]+/$', '/*/', newpath)
-                                    else:                                            
-                                        if newpath[-3:] == '/**' or newpath[-2:] == '/*':
-                                            # /foo/** and /foo/* => /**
-                                            newpath = re.sub('/[^/]+/\*{1,2}$', '/**', newpath)                                            
-                                        elif re.search('/[^/]*\*\*[^/]+$', newpath):
-                                            # /**foo and /foor**bar => /**
-                                            newpath = re.sub('/[^/]*\*\*[^/]+$', '/**', newpath)                                            
-                                        elif re.search('/[^/]+\*\*$', newpath):
-                                            # /foo** => /**
-                                            newpath =  re.sub('/[^/]+\*\*$', '/**', newpath)
-                                        else:
-                                            newpath = re.sub('/[^/]+$', '/*', newpath)
+                                    newpath = glob_path(newpath)
                                     
                                     if newpath not in options:
                                         options.append(newpath)
@@ -1872,23 +1870,7 @@ def ask_the_questions():
                             elif ans == 'CMD_GLOBEXT':
                                 newpath = options[selected].strip()
                                 if not re_match_include(newpath):
-                                    # match /**.ext and /*.ext
-                                    match = re.search('/\*{1,2}(\.[^/]+)$', newpath)
-                                    if match:
-                                        # /foo/**.ext and /foo/*.ext => /**.ext
-                                        newpath = re.sub('/[^/]+/\*{1,2}\.[^/]+$', '/**'+match.groups()[0], newpath)
-                                    elif re.search('/[^/]+\*\*[^/]*\.[^/]+$', newpath):
-                                        # /foo**.ext and /foo**bar.ext => /**.ext
-                                        match = re.search('/[^/]+\*\*[^/]*(\.[^/]+)$', newpath)
-                                        newpath = re.sub('/[^/]+\*\*[^/]*\.[^/]+$', '/**'+match.groups()[0], newpath)
-                                    elif re.search('/\*\*[^/]+\.[^/]+$', newpath):
-                                        # /**foo.ext => /**.ext
-                                        match = re.search('/\*\*[^/]+(\.[^/]+)$', newpath)
-                                        newpath = re.sub('/\*\*[^/]+\.[^/]+$', '/**'+match.groups()[0], newpath)
-                                    else:
-                                        match = re.search('(\.[^/]+)$', newpath)
-                                        if match:
-                                            newpath = re.sub('/[^/]+(\.[^/]+)$', '/*'+match.groups()[0], newpath)
+                                    newpath = glob_path_withext(newpath)
                                     
                                     if newpath not in options:
                                         options.append(newpath)
@@ -1983,6 +1965,55 @@ def ask_the_questions():
                             
                             else:
                                 done = False
+
+def glob_path(newpath):
+    """Glob the given file path"""
+    if newpath[-1] == '/':
+        if newpath[-4:] == '/**/' or newpath[-3:] == '/*/':
+            # /foo/**/ and /foo/*/ => /**/
+            newpath = re.sub('/[^/]+/\*{1,2}/$', '/**/', newpath) #re.sub('/[^/]+/\*{1,2}$/', '/\*\*/', newpath)
+        elif re.search('/[^/]+\*\*[^/]*/$', newpath):
+            # /foo**/ and /foo**bar/ => /**/
+            newpath =  re.sub('/[^/]+\*\*[^/]*/$', '/**/', newpath)
+        elif re.search('/\*\*[^/]+/$', newpath):
+            # /**bar/ => /**/
+            newpath =  re.sub('/\*\*[^/]+/$', '/**/', newpath)
+        else:
+            newpath = re.sub('/[^/]+/$', '/*/', newpath)
+    else:                                            
+            if newpath[-3:] == '/**' or newpath[-2:] == '/*':
+                # /foo/** and /foo/* => /**
+                newpath = re.sub('/[^/]+/\*{1,2}$', '/**', newpath)                                            
+            elif re.search('/[^/]*\*\*[^/]+$', newpath):
+                # /**foo and /foor**bar => /**
+                newpath = re.sub('/[^/]*\*\*[^/]+$', '/**', newpath)                                            
+            elif re.search('/[^/]+\*\*$', newpath):
+                # /foo** => /**
+                newpath =  re.sub('/[^/]+\*\*$', '/**', newpath)
+            else:
+                newpath = re.sub('/[^/]+$', '/*', newpath)
+    return newpath
+
+def glob_path_withext(newpath):
+    """Glob given file path with extension"""
+    # match /**.ext and /*.ext
+    match = re.search('/\*{1,2}(\.[^/]+)$', newpath)
+    if match:
+        # /foo/**.ext and /foo/*.ext => /**.ext
+        newpath = re.sub('/[^/]+/\*{1,2}\.[^/]+$', '/**'+match.groups()[0], newpath)
+    elif re.search('/[^/]+\*\*[^/]*\.[^/]+$', newpath):
+        # /foo**.ext and /foo**bar.ext => /**.ext
+        match = re.search('/[^/]+\*\*[^/]*(\.[^/]+)$', newpath)
+        newpath = re.sub('/[^/]+\*\*[^/]*\.[^/]+$', '/**'+match.groups()[0], newpath)
+    elif re.search('/\*\*[^/]+\.[^/]+$', newpath):
+        # /**foo.ext => /**.ext
+        match = re.search('/\*\*[^/]+(\.[^/]+)$', newpath)
+        newpath = re.sub('/\*\*[^/]+\.[^/]+$', '/**'+match.groups()[0], newpath)
+    else:
+        match = re.search('(\.[^/]+)$', newpath)
+        if match:
+            newpath = re.sub('/[^/]+(\.[^/]+)$', '/*'+match.groups()[0], newpath)
+    return newpath                         
 
 def delete_net_duplicates(netrules, incnetrules):
     deleted = 0
@@ -2426,7 +2457,7 @@ def is_skippable_file(path):
         return True
 
 def is_skippable_dir(path):
-    if path in ['disable', 'cache', 'force-complain', 'lxc']:
+    if re.search('(disable|cache|force-complain|lxc)', path):
         return True
     return False
 
@@ -2768,6 +2799,9 @@ def parse_profile_data(data, file, do_include):
         elif re_match_include(line):
             # Include files
             include_name = re_match_include(line)
+            if include_name.startswith('local/'):
+                profile_data[profile][hat]['localinclude'][include_name] = True
+                
 
             if profile:
                 profile_data[profile][hat]['include'][include_name] = True

@@ -5,13 +5,68 @@ sys.path.append('../')
 import apparmor.aa
 import apparmor.logparser
 
-#from apparmor.aa import parse_event
-
 class Test(unittest.TestCase):
+    
+    def setUp(self):
+        self.MODE_TEST = {'x': apparmor.aamode.AA_MAY_EXEC, 
+                 'w': apparmor.aamode.AA_MAY_WRITE,
+                 'r': apparmor.aamode.AA_MAY_READ,
+                 'a': apparmor.aamode.AA_MAY_APPEND,
+                 'l': apparmor.aamode.AA_MAY_LINK,
+                 'k': apparmor.aamode.AA_MAY_LOCK,
+                 'm': apparmor.aamode.AA_EXEC_MMAP,
+                 'i': apparmor.aamode.AA_EXEC_INHERIT,
+                 'u': apparmor.aamode.AA_EXEC_UNCONFINED | apparmor.aamode.AA_EXEC_UNSAFE,
+                  'U': apparmor.aamode.AA_EXEC_UNCONFINED,
+                  'p': apparmor.aamode.AA_EXEC_PROFILE | apparmor.aamode.AA_EXEC_UNSAFE,
+                  'P': apparmor.aamode.AA_EXEC_PROFILE,
+                  'c': apparmor.aamode.AA_EXEC_CHILD | apparmor.aamode.AA_EXEC_UNSAFE,
+                  'C': apparmor.aamode.AA_EXEC_CHILD,
+                  }
 
     def test_loadinclude(self):
         apparmor.aa.loadincludes()
     
+    def test_path_globs(self):
+        globs = {
+                 '/foo/': '/*/',
+                 '/foo': '/*',
+                 '/b*': '/*',
+                 '/*b': '/*',
+                 '/*': '/*',
+                 '/*/': '/*/',
+                 '/*.foo/': '/*/',
+                 '/**.foo/': '/**/',
+                 '/foo/*/': '/**/',
+                 '/usr/foo/*': '/usr/**',
+                 '/usr/foo/**': '/usr/**',
+                 '/usr/foo/bar**': '/usr/foo/**',
+                 '/usr/foo/**barr': '/usr/foo/**',
+                 '/usr/foo/**/bar': '/usr/foo/**/*',
+                 '/usr/foo/**/*': '/usr/foo/**',
+                 '/usr/foo/*/bar': '/usr/foo/*/*',
+                 '/usr/foo/*/*': '/usr/foo/**',
+                 '/usr/foo/*/**': '/usr/foo/**'                 
+                 }
+        for path in globs.keys():
+            self.assertEqual(apparmor.aa.glob_path(path), globs[path], 'Unexpected glob generated for path: %s'%path)
+    
+    def test_path_withext_globs(self):
+        globs = {
+                 '/foo/bar': '/foo/bar',
+                 '/foo/**/bar': '/foo/**/bar',
+                 '/foo.bar': '/*.bar',
+                 '/*.foo': '/*.foo' ,
+                 '/usr/*.bar': '/**.bar',
+                 '/usr/**.bar': '/**.bar',
+                 '/usr/foo**.bar': '/usr/**.bar',
+                 '/usr/foo*.bar': '/usr/*.bar',
+                 '/usr/**foo.bar': '/usr/**.bar',
+                 '/usr/*foo.bar': '/usr/*.bar',
+                 '/usr/foo.b*': '/usr/*.b*'               
+                 }
+        for path in globs.keys():
+            self.assertEqual(apparmor.aa.glob_path_withext(path), globs[path], 'Unexpected glob generated for path: %s'%path)
         
     def test_parse_event(self):
         parser = apparmor.logparser.ReadLog('', '', '', '', '')
@@ -38,27 +93,9 @@ class Test(unittest.TestCase):
         
     def test_modes_to_string(self):
         
-        MODE_TEST = {'x': apparmor.aamode.AA_MAY_EXEC, 
-             'w': apparmor.aamode.AA_MAY_WRITE,
-             'r': apparmor.aamode.AA_MAY_READ,
-             'a': apparmor.aamode.AA_MAY_APPEND,
-             'l': apparmor.aamode.AA_MAY_LINK,
-             'k': apparmor.aamode.AA_MAY_LOCK,
-             'm': apparmor.aamode.AA_EXEC_MMAP,
-             'i': apparmor.aamode.AA_EXEC_INHERIT,
-             'u': apparmor.aamode.AA_EXEC_UNCONFINED | apparmor.aamode.AA_EXEC_UNSAFE,  # Unconfined + Unsafe
-              'U': apparmor.aamode.AA_EXEC_UNCONFINED,
-              'p': apparmor.aamode.AA_EXEC_PROFILE | apparmor.aamode.AA_EXEC_UNSAFE,    # Profile + unsafe
-              'P': apparmor.aamode.AA_EXEC_PROFILE,
-              'c': apparmor.aamode.AA_EXEC_CHILD | apparmor.aamode.AA_EXEC_UNSAFE,  # Child + Unsafe
-              'C': apparmor.aamode.AA_EXEC_CHILD,
-              #'n': apparmor.aamode.AA_EXEC_NT | apparmor.aamode.AA_EXEC_UNSAFE,
-              #'N': apparmor.aamode.AA_EXEC_NT
-              }
-        #for i in MODE_TEST.keys():
-        #   print(i, MODE_TEST[i])
-        while MODE_TEST:
-            string,mode = MODE_TEST.popitem()
+        
+        for string in self.MODE_TEST.keys():
+            mode = self.MODE_TEST[string]
             self.assertEqual(apparmor.aamode.mode_to_str(mode), string, 'mode is %s and string is %s'%(mode, string))
         
     def test_string_to_modes(self):
@@ -78,8 +115,6 @@ class Test(unittest.TestCase):
               'P': apparmor.aamode.AA_EXEC_PROFILE,
               'c': apparmor.aamode.AA_EXEC_CHILD | apparmor.aamode.AA_EXEC_UNSAFE,  # Child + Unsafe
               'C': apparmor.aamode.AA_EXEC_CHILD,
-              #'n': apparmor.aamode.AA_EXEC_NT | apparmor.aamode.AA_EXEC_UNSAFE,
-              #'N': apparmor.aamode.AA_EXEC_NT
               }
         
         #while MODE_TEST:

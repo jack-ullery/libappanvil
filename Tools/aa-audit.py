@@ -12,6 +12,4 @@ args = parser.parse_args()
 
 audit = aa_tools('audit', args)
 
-audit.check_profile_dir()
-
 audit.act()

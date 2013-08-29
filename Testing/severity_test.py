@@ -1,3 +1,4 @@
+import shutil
 import sys
 import unittest
 
@@ -7,6 +8,10 @@ import apparmor.severity as severity
 from apparmor.common import AppArmorException
 
 class Test(unittest.TestCase):  
+    
+    def setUp(self):
+        #copy the local profiles to the test directory
+        shutil.copytree('/etc/apparmor.d/', './profiles/')
         
     def testRank_Test(self):
         #z = severity.Severity()
@@ -34,14 +39,14 @@ class Test(unittest.TestCase):
         self.assertEqual(s.rank('/etc/**', 'r') , 10,  'Invalid Rank')
         
         # Load all variables for /sbin/klogd and test them
-        s.load_variables('sbin.klogd')
+        s.load_variables('profiles/sbin.klogd')
         self.assertEqual(s.rank('@{PROC}/sys/vm/overcommit_memory', 'r'), 6, 'Invalid Rank')
         self.assertEqual(s.rank('@{HOME}/sys/@{PROC}/overcommit_memory', 'r'), 10, 'Invalid Rank')
         self.assertEqual(s.rank('/overco@{multiarch}mmit_memory', 'r'), 10, 'Invalid Rank')
         
         s.unload_variables()
         
-        s.load_variables('usr.sbin.dnsmasq')
+        s.load_variables('profiles/usr.sbin.dnsmasq')
         self.assertEqual(s.rank('@{PROC}/sys/@{TFTP_DIR}/overcommit_memory', 'r'), 6, 'Invalid Rank')
         self.assertEqual(s.rank('@{PROC}/sys/vm/overcommit_memory', 'r'), 6, 'Invalid Rank')
         self.assertEqual(s.rank('@{HOME}/sys/@{PROC}/overcommit_memory', 'r'), 10, 'Invalid Rank')

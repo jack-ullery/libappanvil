@@ -47,19 +47,19 @@ for pid in sorted(pids):
         pname = '(%s)'%pname
     else:
         pname = ''
+    regex_interpreter = re.compile('^(/usr)?/bin/(python|perl|bash|dash|sh)$')
     if not attr:
-        if re.search('^(/usr)?/bin/(python|perl|bash|sh)', prog):
+        if regex_interpreter.search(prog):
             cmdline = re.sub('\x00', ' ', cmdline)
             cmdline = re.sub('\s+$', '', cmdline).strip()
-            if 'perl' in cmdline:
-                print(cmdline)
+
             apparmor.UI_Info(_('%s %s (%s) not confined\n')%(pid, prog, cmdline))
         else:
             if pname and pname[-1] == ')':
                 pname += ' '
             apparmor.UI_Info(_('%s %s %snot confined\n')%(pid, prog, pname))
     else:
-        if re.search('^(/usr)?/bin/(python|perl|bash|sh)', prog):
+        if regex_interpreter.search(prog):
             cmdline = re.sub('\0', ' ', cmdline)
             cmdline = re.sub('\s+$', '', cmdline).strip()
             apparmor.UI_Info(_("%s %s (%s) confined by '%s'\n")%(pid, prog, cmdline, attr))

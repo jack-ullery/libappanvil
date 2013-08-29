@@ -12,6 +12,4 @@ args = parser.parse_args()
 
 autodep = aa_tools('autodep', args)
 
-autodep.check_profile_dir()
-
 autodep.act()

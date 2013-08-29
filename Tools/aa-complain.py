@@ -12,6 +12,4 @@ args = parser.parse_args()
 
 complain = aa_tools('complain', args)
 
-complain.check_profile_dir()
-
 complain.act()
