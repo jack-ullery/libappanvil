@@ -29,6 +29,7 @@
 
 #include "parser.h"
 #include "mount.h"
+#include "dbus.h"
 
 static inline char *get_var_end(char *var)
 {
@@ -213,6 +214,19 @@ int clone_and_chain_mnt(void *v)
 	return 1;
 }
 
+int clone_and_chain_dbus(void *v)
+{
+	struct dbus_entry *entry = v;
+
+	struct dbus_entry *dup = dup_dbus_entry(entry);
+	if (!dup)
+		return 0;
+
+	entry->next = dup;
+
+	return 1;
+}
+
 static int process_variables_in_entries(struct cod_entry *entry_list)
 {
 	int ret = TRUE, rc;
@@ -253,6 +267,42 @@ static int process_variables_in_mnt_entries(struct mnt_entry *entry_list)
 	return ret;
 }
 
+static int process_dbus_variables(struct dbus_entry *entry_list)
+{
+	int ret = TRUE, rc;
+	struct dbus_entry *entry;
+
+	list_for_each(entry_list, entry) {
+		rc = expand_entry_variables(&entry->bus, entry,
+					    clone_and_chain_dbus);
+		if (!rc)
+			return FALSE;
+		rc = expand_entry_variables(&entry->name, entry,
+					    clone_and_chain_dbus);
+		if (!rc)
+			return FALSE;
+		rc = expand_entry_variables(&entry->peer_label, entry,
+					    clone_and_chain_dbus);
+		if (!rc)
+			return FALSE;
+		rc = expand_entry_variables(&entry->path, entry,
+					    clone_and_chain_dbus);
+		if (!rc)
+			return FALSE;
+		rc = expand_entry_variables(&entry->interface, entry,
+					    clone_and_chain_dbus);
+		if (!rc)
+			return FALSE;
+		rc = expand_entry_variables(&entry->member, entry,
+					    clone_and_chain_dbus);
+		if (!rc)
+			return FALSE;
+
+	}
+
+	return ret;
+}
+
 int process_variables(struct codomain *cod)
 {
 	int error = 0;
@@ -263,6 +313,10 @@ int process_variables(struct codomain *cod)
 
 	if (!process_variables_in_mnt_entries(cod->mnt_ents)) {
 		error = -1;
+	}
+
+	if (!process_dbus_variables(cod->dbus_ents)) {
+			error = -1;
 	}
 
 	if (process_hat_variables(cod) != 0) {

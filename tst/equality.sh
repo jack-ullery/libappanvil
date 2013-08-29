@@ -148,6 +148,35 @@ verify_binary_equality "dbus access parsing" \
 	"/t { dbus (send,receive,,,,,,,,,,,,,,,,bind), }" \
 	"/t { dbus (send,send,send,send send receive,bind), }" \
 
+verify_binary_equality "dbus variable expansion" \
+	"/t { dbus (send, receive) path=/com/foo member=spork interface=org.foo peer=(name=com.foo label=/com/foo), }" \
+	"@{FOO}=foo
+	    /t { dbus (send, receive) path=/com/@{FOO} member=spork interface=org.@{FOO} peer=(name=com.@{FOO} label=/com/@{FOO}), }" \
+	"@{FOO}=foo
+	 @{SPORK}=spork
+	    /t { dbus (send, receive) path=/com/@{FOO} member=@{SPORK} interface=org.@{FOO} peer=(name=com.@{FOO} label=/com/@{FOO}), }" \
+	"@{FOO}=/com/foo
+            /t { dbus (send, receive) path=@{FOO} member=spork interface=org.foo peer=(name=com.foo label=@{FOO}), }" \
+	"@{FOO}=com
+            /t { dbus (send, receive) path=/@{FOO}/foo member=spork interface=org.foo peer=(name=@{FOO}.foo label=/@{FOO}/foo), }"
+
+verify_binary_equality "dbus variable expansion, multiple values/rules" \
+	"/t { dbus (send, receive) path=/com/foo, dbus (send, receive) path=/com/bar, }" \
+	"@{FOO}=foo
+	    /t { dbus (send, receive) path=/com/@{FOO}, dbus (send, receive) path=/com/bar, }" \
+	"@{FOO}=foo bar
+	    /t { dbus (send, receive) path=/com/@{FOO}, }" \
+	"@{FOO}=bar foo
+	    /t { dbus (send, receive) path=/com/@{FOO}, }"
+
+verify_binary_equality "dbus variable expansion, ensure rule de-duping occurs" \
+	"/t { dbus (send, receive) path=/com/foo, dbus (send, receive) path=/com/bar, }" \
+	"/t { dbus (send, receive) path=/com/foo, dbus (send, receive) path=/com/bar, dbus (send, receive) path=/com/bar, }" \
+	"@{FOO}=bar foo bar foo
+	    /t { dbus (send, receive) path=/com/@{FOO}, }" \
+	"@{FOO}=bar foo bar foo
+	    /t { dbus (send, receive) path=/com/@{FOO}, dbus (send, receive) path=/com/@{FOO}, }"
+
 if [ $fails -ne 0 -o $errors -ne 0 ]
 then
 	printf "ERRORS: %d\nFAILS: %d\n" $errors $fails 2>&1
