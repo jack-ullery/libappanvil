@@ -43,6 +43,7 @@ struct dbus_entry {
 void free_dbus_entry(struct dbus_entry *ent);
 struct dbus_entry *new_dbus_entry(int mode, struct cond_entry *conds,
 				  struct cond_entry *peer_conds);
+struct dbus_entry *dup_dbus_entry(struct dbus_entry *ent);
 void print_dbus_entry(struct dbus_entry *ent);
 
 #endif /* __AA_DBUS_H */

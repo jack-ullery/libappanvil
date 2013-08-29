@@ -10,11 +10,22 @@
 gendbusprofile()
 {
 	genprofile --stdin <<EOF
+${__dbus_var_decl}
 $test {
   @{gen $test}
   $@
 }
 EOF
+	unset __dbus_var_decl
+}
+
+# the arguments passed are emitted in the profile's prologue, for
+# setting profile variables, e.g.
+#	set_dbus_var "@{MY_DBUS_VAR}=stuff"
+# the saved variable declaration gets unset after each test run
+set_dbus_var()
+{
+  __dbus_var_decl=$@
 }
 
 start_bus()

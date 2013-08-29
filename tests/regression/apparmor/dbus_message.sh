@@ -102,6 +102,34 @@ message_gendbusprofile "dbus send bus=session path=/org/freedesktop/DBus interfa
 runtestfg "message (send allowed w/ bus, dest, path, interface, method)" pass $confined_args
 checktestfg "compare_logs $unconfined_log eq $confined_log"
 
+# Make sure send is allowed when confined with appropriate permissions along
+# with conditionals and variables (same tests as above, with vars)
+
+set_dbus_var "@{BUSES}=session system"
+message_gendbusprofile "dbus send bus=@{BUSES},"
+runtestfg "message (send allowed w/ bus)" pass $confined_args
+checktestfg "compare_logs $unconfined_log eq $confined_log"
+
+set_dbus_var "@{PEERNAMES}=com.ubuntu.what net.apparmor.wiki org.freedesktop.DBus"
+message_gendbusprofile "dbus send bus=session peer=(name=@{PEERNAMES}),"
+runtestfg "message (send allowed w/ bus, dest)" pass $confined_args
+checktestfg "compare_logs $unconfined_log eq $confined_log"
+
+set_dbus_var "@{PATHNAMES}=DBus spork spoon spork"
+message_gendbusprofile "dbus send bus=session path=/org/freedesktop/@{PATHNAMES} peer=(name=org.freedesktop.DBus),"
+runchecktest "message (send allowed w/ bus, dest, path)" pass $confined_args
+checktestfg "compare_logs $unconfined_log eq $confined_log"
+
+set_dbus_var "@{INTERFACE_NAMES}=DBus spork spoon spork"
+message_gendbusprofile "dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.@{INTERFACE_NAMES} peer=(name=org.freedesktop.DBus),"
+runtestfg "message (send allowed w/ bus, dest, path, interface)" pass $confined_args
+checktestfg "compare_logs $unconfined_log eq $confined_log"
+
+set_dbus_var "@{MEMBERS}=Hello ListNames Spork Spoon"
+message_gendbusprofile "dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member=@{MEMBERS} peer=(name=org.freedesktop.DBus),"
+runtestfg "message (send allowed w/ bus, dest, path, interface, method)" pass $confined_args
+checktestfg "compare_logs $unconfined_log eq $confined_log"
+
 # Make sure send is denied when confined with appropriate permissions along
 # with incorrect conditionals
 
