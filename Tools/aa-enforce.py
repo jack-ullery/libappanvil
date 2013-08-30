@@ -2,7 +2,7 @@
 
 import argparse
 
-from apparmor.tools import *
+import apparmor.tools
 
 parser = argparse.ArgumentParser(description='Switch the given program to enforce mode')
 parser.add_argument('-d', type=str, help='path to profiles')
@@ -12,6 +12,6 @@ args = parser.parse_args()
 # Flipping the remove flag since complain = !enforce
 args.remove = not args.remove
 
-enforce = aa_tools('complain', args)
+enforce = apparmor.tools.aa_tools('complain', args)
 
 enforce.act()

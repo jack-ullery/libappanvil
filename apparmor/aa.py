@@ -18,13 +18,13 @@ import apparmor.logparser
 import apparmor.severity
 import LibAppArmor
 
+from copy import deepcopy
+
 from apparmor.common import (AppArmorException, error, debug, msg, cmd,
                              open_file_read, valid_path,
                              hasher, open_file_write, convert_regexp, DebugLogger)
 
 from apparmor.ui import *
-
-from copy import deepcopy
 
 from apparmor.aamode import *
 
