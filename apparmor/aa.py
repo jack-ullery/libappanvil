@@ -152,13 +152,14 @@ def check_for_apparmor():
 
 def which(file):
     """Returns the executable fullpath for the file, None otherwise"""
-    env_dirs = os.getenv('PATH').split(':')
-    for env_dir in env_dirs:
-        env_path = env_dir + '/' + file
-        # Test if the path is executable or not
-        if os.access(env_path, os.X_OK):
-            return env_path
-    return None
+    return shutil.which(file)
+#     env_dirs = os.getenv('PATH').split(':')
+#     for env_dir in env_dirs:
+#         env_path = env_dir + '/' + file
+#         # Test if the path is executable or not
+#         if os.access(env_path, os.X_OK):
+#             return env_path
+#     return None
     
 def get_full_path(original_path):
     """Return the full path after resolving any symlinks"""
@@ -237,13 +238,13 @@ def enforce(path):
     
 def set_complain(filename, program, ):
     """Sets the profile to complain mode"""
-    UI_Info('Setting %s to complain mode.' % program)
+    UI_Info('Setting %s to complain mode.\n' % program)
     create_symlink('force-complain', filename)
     change_profile_flags(filename, 'complain', True)
 
 def set_enforce(filename, program):
     """Sets the profile to enforce mode"""
-    UI_Info('Setting %s to enforce mode' % program)
+    UI_Info('Setting %s to enforce mode.\n' % program)
     delete_symlink('force-complain', filename)
     delete_symlink('disable', filename)
     change_profile_flags(filename, 'complain', False)
@@ -259,8 +260,16 @@ def create_symlink(subdir, filename):
     bname = os.path.basename(filename)
     if not bname:
         raise AppArmorException(_('Unable to find basename for %s.')%filename)
+    #print(filename)
     link = re.sub('^%s'%profile_dir, '%s/%s'%(profile_dir, subdir), path)
-    link = link + '/%s'%bname
+    #print(link)
+    #link = link + '/%s'%bname
+    #print(link)
+    symlink_dir=os.path.dirname(link)
+    if not os.path.exists(symlink_dir):
+        # If the symlink directory does not exist create it
+        os.makedirs(symlink_dir)
+        
     if not os.path.exists(link):
         try:
             os.symlink(filename, link)
@@ -502,7 +511,7 @@ def activate_repo_profiles(url, profiles, complain):
             write_profile(pname)
             if complain:
                 fname = get_profile_filename(pname)
-                set_profile_flags(fname, 'complain')
+                set_profile_flags(profile_dir + fname, 'complain')
                 UI_Info('Setting %s to complain mode.' % pname)
     except Exception as e:
             sys.stderr.write("Error activating profiles: %s" % e)
@@ -556,7 +565,7 @@ def get_profile_flags(filename):
 def change_profile_flags(filename, flag, set_flag):
     old_flags = get_profile_flags(filename)
     newflags = []
-    if old_flags != '':
+    if old_flags:
         # Flags maybe white-space and/or , separated
         old_flags = old_flags.split(',')
 
@@ -575,7 +584,7 @@ def change_profile_flags(filename, flag, set_flag):
             newflags.remove(flag)
 
     newflags = ','.join(newflags)
-    
+
     set_profile_flags(filename, newflags)         
     
 def set_profile_flags(prof_filename, newflags):
@@ -584,19 +593,21 @@ def set_profile_flags(prof_filename, newflags):
     regex_hat_flag = re.compile('^([a-z]*)\s+([A-Z]*)\s*(#.*)?$')
     if os.path.isfile(prof_filename):
         with open_file_read(prof_filename) as f_in:
-            tempfile = tempfile.NamedTemporaryFile('w', prefix=prof_filename , suffix='~', delete=False, dir='/etc/apparmor.d/')
-            shutil.copymode('/etc/apparmor.d/' + prof_filename, tempfile.name)
-            with open_file_write(tempfile.name) as f_out:
+            temp_file = tempfile.NamedTemporaryFile('w', prefix=prof_filename , suffix='~', delete=False, dir=profile_dir)
+            shutil.copymode(prof_filename, temp_file.name)
+            with open_file_write(temp_file.name) as f_out:
                 for line in f_in:
                     comment = ''
                     if '#' in line:
                         comment = '#' + line.split('#', 1)[1].rstrip()
                     match = regex_bin_flag.search(line)
-                    if match:
+                    if not line.strip() or line.strip().startswith('#'):
+                        pass
+                    elif match:
                         matches = match.groups()
                         space = matches[0]
                         binary = matches[1]
-                        flag = matches[6]
+                        flag = matches[6] or 'flags='
                         flags = matches[7]
                         if newflags:
                             line = '%s%s %s(%s) {%s\n' % (space, binary, flag, newflags, comment)
@@ -605,13 +616,13 @@ def set_profile_flags(prof_filename, newflags):
                     else:
                         match = regex_hat_flag.search(line)
                         if match:
-                            hat, flags = match.groups()
+                            hat, flags = match.groups()[:2]
                             if newflags:
                                 line = '%s flags=(%s) {%s\n' % (hat, newflags, comment)
                             else:
                                 line = '%s {%s\n' % (hat, comment)
                     f_out.write(line)
-        os.rename(tempfile.name, prof_filename)
+        os.rename(temp_file.name, prof_filename)
 
 def profile_exists(program):
     """Returns True if profile exists, False otherwise"""

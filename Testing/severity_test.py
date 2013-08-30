@@ -1,3 +1,4 @@
+import os
 import shutil
 import sys
 import unittest
@@ -11,11 +12,15 @@ class Test(unittest.TestCase):
     
     def setUp(self):
         #copy the local profiles to the test directory
-        shutil.copytree('/etc/apparmor.d/', './profiles/')
+        if os.path.exists('./profiles'):
+            shutil.rmtree('./profiles')
+        shutil.copytree('/etc/apparmor.d/', './profiles/', symlinks=True)
+    
+    def tearDown(self):
+        #Wipe the local profiles from the test directory
+        shutil.rmtree('./profiles')
         
     def testRank_Test(self):
-        #z = severity.Severity()
-        
         s = severity.Severity('severity.db')
         rank = s.rank('/usr/bin/whatis', 'x')
         self.assertEqual(rank, 5, 'Wrong rank')

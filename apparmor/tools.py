@@ -45,12 +45,12 @@ class aa_tools:
                 if which:
                     program = apparmor.get_full_path(which)
             
-            if not os.path.exists(program):
-                apparmor.UI_Info(_('The given program cannot be found, please try with the fully qualified path name of the program: '))
-                program = apparmor.UI_GetString('', '')
+            if not program or not os.path.exists(program):
+                program = apparmor.UI_GetString(_('The given program cannot be found, please try with the fully qualified path name of the program: '), '')
+                
             
             apparmor.read_profiles()
-            
+
             if program and apparmor.profile_exists(program):#os.path.exists(program):
                 if self.name == 'autodep':
                     self.use_autodep(program)
@@ -77,12 +77,11 @@ class aa_tools:
                             apparmor.UI_Info(_('Setting %s to audit mode.\n')%program)
                         else:
                             apparmor.UI_Info(_('Removing audit mode from %s.\n')%program)
-                        apparmor.change_profile_flags(filename, 'audit', self.remove)
+                        apparmor.change_profile_flags(filename, 'audit', not self.remove)
                     
                     elif self.name == 'complain':
                         if not self.remove:
                             apparmor.set_complain(filename, program)
-                            pass
                         else:
                             apparmor.set_enforce(filename, program)
                         #apparmor.set_profile_flags(filename, self.name)
