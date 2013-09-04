@@ -194,6 +194,7 @@ int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len,
 	int rc = -1;
 	int fd, ret;
 	char *tmp = NULL;
+	char *mode_str;
 	int size = 0;
 
 	if (!buf || len <= 0) {
@@ -246,8 +247,9 @@ int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len,
 			size++;
 		}
 
+		mode_str = parse_confinement_mode(buf, size);
 		if (mode)
-			*mode = parse_confinement_mode(buf, size);
+			*mode = mode_str;
 	}
 	rc = size;
 
