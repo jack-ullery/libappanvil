@@ -184,7 +184,7 @@ static char *parse_confinement_mode(char *con, int size)
  * @attr: which /proc/<tid>/attr/<attr> to query
  * @buf: buffer to store the result in
  * @len: size of the buffer
- * @mode: if set will point to mode string within buffer if it is present
+ * @mode: if non-NULL and a mode is present, will point to mode string in @buf
  *
  * Returns: size of data read or -1 on error, and sets errno
  */
@@ -265,17 +265,24 @@ out:
  * aa_getprocattr - get the contents of @attr for @tid into @buf
  * @tid: tid of task to query
  * @attr: which /proc/<tid>/attr/<attr> to query
- * @buf: allocated buffer the result is stored in
- * @mode: if set will point to mode string within buffer if it is present
+ * @con: allocated buffer the result is stored in
+ * @mode: if non-NULL and a mode is present, will point to mode string in @con
  *
  * Returns: size of data read or -1 on error, and sets errno
+ *
+ * Guarantees that @con and @mode are null terminated.  The length returned
+ * is for all data including both @con and @mode, and maybe > than strlen(@con)
+ * even if @mode is NULL
+ *
+ * Caller is responsible for freeing the buffer returned in @con.  @mode is
+ * always contained within @con's buffer and so NEVER do free(@mode)
  */
-int aa_getprocattr(pid_t tid, const char *attr, char **buf, char **mode)
+int aa_getprocattr(pid_t tid, const char *attr, char **con, char **mode)
 {
 	int rc, size = INITIAL_GUESS_SIZE/2;
 	char *buffer = NULL;
 
-	if (!buf) {
+	if (!con) {
 		errno = EINVAL;
 		return -1;
 	}
@@ -292,11 +299,11 @@ int aa_getprocattr(pid_t tid, const char *attr, char **buf, char **mode)
 
 	if (rc == -1) {
 		free(buffer);
-		*buf = NULL;
+		*con = NULL;
 		if (mode)
 			*mode = NULL;
 	} else
-		*buf = buffer;
+		*con = buffer;
 
 	return rc;
 }
@@ -523,11 +530,11 @@ int (aa_change_hat_vargs)(unsigned long token, int nhats, ...)
  * aa_gettaskcon - get the confinement for task @target in an allocated buffer
  * @target: task to query
  * @con: pointer to returned buffer with the confinement string
- * @mode: if provided will point to the mode string in @con if present
+ * @mode: if non-NULL and a mode is present, will point to mode string in @con
  *
  * Returns: length of confinement data or -1 on error and sets errno
  *
- * Guarentees that @con and @mode are null terminated.  The length returned
+ * Guarantees that @con and @mode are null terminated.  The length returned
  * is for all data including both @con and @mode, and maybe > than strlen(@con)
  * even if @mode is NULL
  *
@@ -542,11 +549,11 @@ int aa_gettaskcon(pid_t target, char **con, char **mode)
 /**
  * aa_getcon - get the confinement for current task in an allocated buffer
  * @con: pointer to return buffer with the confinement if successful
- * @mode: if provided will point to the mode string in @con if present
+ * @mode: if non-NULL and a mode is present, will point to mode string in @con
  *
  * Returns: length of confinement data or -1 on error and sets errno
  *
- * Guarentees that @con and @mode are null terminated.  The length returned
+ * Guarantees that @con and @mode are null terminated.  The length returned
  * is for all data including both @con and @mode, and may > than strlen(@con)
  * even if @mode is NULL
  *
@@ -568,7 +575,7 @@ int aa_getcon(char **con, char **mode)
  * @fd: socket to get peer confinement for
  * @buf: buffer to store the result in
  * @len: initially contains size of the buffer, returns size of data read
- * @mode: if set will point to mode string within buffer if it is present
+ * @mode: if non-NULL and a mode is present, will point to mode string in @buf
  *
  * Returns: length of confinement data including null termination or -1 on error
  *          if errno == ERANGE then @len will hold the size needed
@@ -616,11 +623,16 @@ out:
  * aa_getpeercon - get the confinement of the socket's peer (other end)
  * @fd: socket to get peer confinement for
  * @con: pointer to allocated buffer with the confinement string
- * @mode: if provided will point to the mode string in @con if present
+ * @mode: if non-NULL and a mode is present, will point to mode string in @con
  *
  * Returns: length of confinement data including null termination or -1 on error
  *
- * Caller is responsible for freeing the buffer returned.
+ * Guarantees that @con and @mode are null terminated.  The length returned
+ * is for all data including both @con and @mode, and maybe > than strlen(@con)
+ * even if @mode is NULL
+ *
+ * Caller is responsible for freeing the buffer returned in @con.  @mode is
+ * always contained within @con's buffer and so NEVER do free(@mode)
  */
 int aa_getpeercon(int fd, char **con, char **mode)
 {

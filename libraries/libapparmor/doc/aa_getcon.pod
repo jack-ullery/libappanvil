@@ -32,10 +32,9 @@ aa_getpeercon - get the confinement of a socket's other end (peer)
 
 B<#include E<lt>sys/apparmor.hE<gt>>
 
-B<int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len,
-			 char **mode);>
+B<int aa_getprocattr_raw(pid_t tid, const char *attr, char *buf, int len, char **mode);>
 
-B<int aa_getprocattr(pid_t tid, const char *attr, char **buf, char **mode);>
+B<int aa_getprocattr(pid_t tid, const char *attr, char **con, char **mode);>
 
 B<int aa_gettaskcon(pid_t target, char **con, char **mode);>
 
@@ -52,7 +51,10 @@ Link with B<-lapparmor> when compiling.
 The aa_getcon function gets the current AppArmor confinement context for the
 current task.  The confinement context is usually just the name of the AppArmor
 profile restricting the task, but it may include the profile namespace or in
-some cases a set of profile names (known as a stack of profiles).  The returned string *con should be freed using free().
+some cases a set of profile names (known as a stack of profiles).  The returned
+string *con should be freed using free(), but the returned string *mode should
+not be freed. The *con and *mode strings come from a single buffer allocation
+and are separated by a NUL character.
 
 The aa_gettaskcon function is like the aa_getcon function except it will work
 for any arbitrary task in the system.
