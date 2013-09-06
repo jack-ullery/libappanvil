@@ -22,6 +22,7 @@ AC_ARG_WITH(python,
 [  --with-python           enable the python wrapper  [[default=no]]],
 [AC_MSG_RESULT($withval)], [AC_MSG_RESULT(no)])
 if test "$with_python" = "yes"; then
+   test -z "$SWIG" && AC_MSG_ERROR([swig is required when enabling python bindings])
    AC_PATH_PROG(PYTHON, python, no)
    if test x$PYTHON = xno; then
       enable_python = no
@@ -37,6 +38,7 @@ AC_ARG_WITH(perl,
 [ --with-perl           enable the perl wrapper [[default=no]]],
 [AC_MSG_RESULT($withval)], [AC_MSG_RESULT(no)])
 if test "$with_perl" = "yes"; then
+   test -z "$SWIG" && AC_MSG_ERROR([swig is required when enabling perl bindings])
    AC_PATH_PROG(PERL, perl, no)    
    if test x$PERL = xno; then
       enable_perl=no
@@ -52,6 +54,7 @@ AC_ARG_WITH(ruby,
 [ --with-ruby           enable the ruby wrapper [[default=no]]],
 [AC_MSG_RESULT($withval)], [AC_MSG_RESULT(no)])
 if test "$with_ruby" = "yes"; then
+   test -z "$SWIG" && AC_MSG_ERROR([swig is required when enabling ruby bindings])
    AC_PATH_PROG([RUBY], [ruby])
 fi
 
