@@ -261,6 +261,13 @@ extern int preprocess_only;
 		___tmp->next = (LISTB);		\
 	} while (0)
 
+#define DUP_STRING(orig, new, field, fail_target) \
+	do {									\
+		(new)->field = ((orig)->field) ? strdup((orig)->field) : NULL;	\
+		if (((orig)->field) && !((new)->field))				\
+				goto fail_target;				\
+	} while (0)
+
 /* from parser_common.c */
 extern int regex_type;
 extern int perms_create;

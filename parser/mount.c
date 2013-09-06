@@ -466,7 +466,6 @@ void free_mnt_entry(struct mnt_entry *ent)
 	free(ent);
 }
 
-
 struct mnt_entry *dup_mnt_entry(struct mnt_entry *orig)
 {
 	struct mnt_entry *entry = NULL;
@@ -475,12 +474,17 @@ struct mnt_entry *dup_mnt_entry(struct mnt_entry *orig)
 	if (!entry)
 		return NULL;
 
-	entry->mnt_point = orig->mnt_point ? strdup(orig->mnt_point) : NULL;
-	entry->device = orig->device ? strdup(orig->device) : NULL;
-	entry->trans = orig->trans ? strdup(orig->trans) : NULL;
+	DUP_STRING(orig, entry, mnt_point, err);
+	DUP_STRING(orig, entry, device, err);
+	DUP_STRING(orig, entry, trans, err);
 
 	entry->dev_type = dup_value_list(orig->dev_type);
+	if (orig->dev_type && !(entry->dev_type))
+		goto err;
+
 	entry->opts = dup_value_list(orig->opts);
+	if (orig->opts && !(entry->opts))
+		goto err;
 
 	entry->flags = orig->flags;
 	entry->inv_flags = orig->inv_flags;
@@ -492,6 +496,10 @@ struct mnt_entry *dup_mnt_entry(struct mnt_entry *orig)
 	entry->next = orig->next;
 
 	return entry;
+
+err:
+	free_mnt_entry(entry);
+	return NULL;
 }
 
 void print_mnt_entry(struct mnt_entry *entry)

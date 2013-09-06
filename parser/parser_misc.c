@@ -840,9 +840,9 @@ struct cod_entry *copy_cod_entry(struct cod_entry *orig)
 	if (!entry)
 		return NULL;
 
-	entry->namespace = orig->namespace ? strdup(orig->namespace) : NULL;
-	entry->name = strdup(orig->name);
-	entry->link_name = orig->link_name ? strdup(orig->link_name) : NULL;
+	DUP_STRING(orig, entry, namespace, err);
+	DUP_STRING(orig, entry, name, err);
+	DUP_STRING(orig, entry, link_name, err);
 	entry->mode = orig->mode;
 	entry->audit = orig->audit;
 	entry->deny = orig->deny;
@@ -854,6 +854,10 @@ struct cod_entry *copy_cod_entry(struct cod_entry *orig)
 	entry->next = orig->next;
 
 	return entry;
+
+err:
+	free_cod_entries(entry);
+	return NULL;
 }
 
 void free_cod_entries(struct cod_entry *list)

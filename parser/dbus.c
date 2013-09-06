@@ -141,9 +141,6 @@ out:
 	return ent;
 }
 
-#define DUP_STRING(orig, new, field) \
-	(new)->field = (orig)->field ? strdup((orig)->field) : NULL
-
 struct dbus_entry *dup_dbus_entry(struct dbus_entry *orig)
 {
 	struct dbus_entry *ent = NULL;
@@ -151,12 +148,12 @@ struct dbus_entry *dup_dbus_entry(struct dbus_entry *orig)
 	if (!ent)
 		return NULL;
 
-	DUP_STRING(orig, ent, bus);
-	DUP_STRING(orig, ent, name);
-	DUP_STRING(orig, ent, peer_label);
-	DUP_STRING(orig, ent, path);
-	DUP_STRING(orig, ent, interface);
-	DUP_STRING(orig, ent, member);
+	DUP_STRING(orig, ent, bus, err);
+	DUP_STRING(orig, ent, name, err);
+	DUP_STRING(orig, ent, peer_label, err);
+	DUP_STRING(orig, ent, path, err);
+	DUP_STRING(orig, ent, interface, err);
+	DUP_STRING(orig, ent, member, err);
 	ent->mode = orig->mode;
 	ent->audit = orig->audit;
 	ent->deny = orig->deny;
@@ -164,6 +161,10 @@ struct dbus_entry *dup_dbus_entry(struct dbus_entry *orig)
 	ent->next = orig->next;
 
 	return ent;
+
+err:
+	free_dbus_entry(ent);
+	return NULL;
 }
 
 void print_dbus_entry(struct dbus_entry *ent)
