@@ -109,110 +109,39 @@ int print_results(aa_log_record *record)
 				break;
 			}
 		}
-		if (record->audit_id != NULL)
-		{
-			printf("Audit ID: %s\n", record->audit_id);
-		}
-		if (record->operation != NULL)
-		{
-			printf("Operation: %s\n", record->operation);
-		}
-		if (record->requested_mask != NULL)
-		{
-			printf("Mask: %s\n", record->requested_mask);
-		}
-		if (record->denied_mask != NULL)
-		{
-			printf("Denied Mask: %s\n", record->denied_mask);
-		}
-		if (record->fsuid != (unsigned long) -1)
-		{
-			printf("fsuid: %ld\n", record->fsuid);
-		}
-		if (record->ouid != (unsigned long) -1)
-		{
-			printf("ouid: %ld\n", record->ouid);
-		}
-		if (record->profile != NULL)
-		{
-			printf("Profile: %s\n", record->profile);
-		}
-		if (record->peer_profile != NULL)
-		{
-			printf("Peer profile: %s\n", record->peer_profile);
-		}
-		if (record->name != NULL)
-		{
-			printf("Name: %s\n", record->name);
-		}
-		if (record->comm != NULL)
-		{
-			printf("Command: %s\n", record->comm);
-		}
-		if (record->name2 != NULL)
-		{
-			printf("Name2: %s\n", record->name2);
-		}
-		if (record->namespace != NULL)
-		{
-			printf("Namespace: %s\n", record->namespace);
-		}
-		if (record->attribute != NULL)
-		{
-			printf("Attribute: %s\n", record->attribute);
-		}
-		if (record->task != 0)
-		{
-			printf("Task: %ld\n", record->task);
-		}
-		if (record->parent != 0)
-		{
-			printf("Parent: %ld\n", record->parent);
-		}
-		if (record->magic_token != 0)
-		{
-			printf("Token: %lu\n", record->magic_token);
-		}
-		if (record->info != NULL)
-		{
-			printf("Info: %s\n", record->info);
-		}
-		if (record->peer_info != NULL)
-		{
-			printf("Peer info: %s\n", record->peer_info);
-		}
-		if (record->error_code)
-		{
-			printf("ErrorCode: %d\n", record->error_code);
-		}
-		if (record->pid != 0)
-		{
-			printf("PID: %ld\n", record->pid);
-		}
-		if (record->peer_pid != 0)
-		{
-			printf("Peer PID: %ld\n", record->peer_pid);
-		}
-		if (record->active_hat != NULL)
-		{
-			printf("Active hat: %s\n", record->active_hat);
-		}
-		if (record->net_family != NULL)
-		{
-			printf("Network family: %s\n", record->net_family);
-		}
-		if (record->net_sock_type != NULL)
-		{
-			printf("Socket type: %s\n", record->net_sock_type);
-		}
-		if (record->net_protocol != NULL)
-		{
-			printf("Protocol: %s\n", record->net_protocol);
-		}
+		print_string("Audit ID", record->audit_id);
+		print_string("Operation", record->operation);
+		print_string("Mask", record->requested_mask);
+		print_string("Denied Mask", record->denied_mask);
+
+		print_long("fsuid", record->fsuid, (unsigned long) -1);
+		print_long("ouid", record->ouid, (unsigned long) -1)
+
+		print_string("Profile", record->profile);
+		print_string("Peer profile", record->peer_profile);
+		print_string("Name", record->name);
+		print_string("Command", record->comm);
+		print_string("Name2", record->name2);
+		print_string("Namespace", record->namespace);
+		print_string("Attribute", record->attribute);
+		print_long("Task", record->task, 0);
+		print_long("Parent", record->parent, 0);
+		print_long("Token", record->magic_token, 0);
+		print_string("Info", record->info);
+		print_string("Peer info", record->peer_info);
+		print_long("ErrorCode", (long) record->error_code, 0);
+		print_long("PID", record->pid, 0);
+		print_long("Peer PID", record->peer_pid, 0);
+		print_string("Active hat", record->active_hat);
+
+		print_string("Network family", record->net_family);
+		print_string("Socket type", record->net_sock_type);
+		print_string("Protocol", record->net_protocol);
 		print_string("Local addr", record->net_local_addr);
 		print_string("Foreign addr", record->net_foreign_addr);
 		print_long("Local port", record->net_local_port, 0);
 		print_long("Foreign port", record->net_foreign_port, 0);
+
 		print_string("DBus bus", record->dbus_bus);
 		print_string("DBus path", record->dbus_path);
 		print_string("DBus interface", record->dbus_interface);
