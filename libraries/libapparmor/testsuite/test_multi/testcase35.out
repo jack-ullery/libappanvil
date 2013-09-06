@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase35.in
+File: testcase35.in
 Event type: AA_RECORD_AUDIT
 Audit ID: 1205249275.686:289
 Operation: file_lock

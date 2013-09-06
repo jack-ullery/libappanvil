@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase_syslog_status_offset.in
+File: testcase_syslog_status_offset.in
 Event type: AA_RECORD_STATUS
 Audit ID: 1283989336.064:272335
 Name: /home/jj/master/tests/regression/apparmor/net_raw

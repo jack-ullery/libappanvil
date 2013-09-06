@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase26.in
+File: testcase26.in
 Event type: AA_RECORD_HINT
 Audit ID: 1188599886.852:8780
 Operation: ptrace

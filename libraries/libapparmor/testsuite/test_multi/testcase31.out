@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase31.in
+File: testcase31.in
 Event type: AA_RECORD_DENIED
 Audit ID: 1190503664.863:27763
 Operation: inode_link

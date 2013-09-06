@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase_ouid.in
+File: testcase_ouid.in
 Event type: AA_RECORD_DENIED
 Audit ID: 1253311255.027:200
 Operation: open

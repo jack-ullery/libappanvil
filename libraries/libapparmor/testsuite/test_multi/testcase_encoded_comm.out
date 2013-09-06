@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase_encoded_comm.in
+File: testcase_encoded_comm.in
 Event type: AA_RECORD_ALLOWED
 Audit ID: 1322676143.201:455
 Operation: open

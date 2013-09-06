@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase_dbus_01.in
+File: testcase_dbus_01.in
 Event type: AA_RECORD_DENIED
 Operation: dbus_method_call
 Denied Mask: send

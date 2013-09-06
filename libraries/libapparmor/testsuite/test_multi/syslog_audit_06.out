@@ -1,5 +1,5 @@
 START
-File: test_multi/syslog_audit_06.in
+File: syslog_audit_06.in
 Event type: AA_RECORD_ALLOWED
 Audit ID: 1225263601.980:37699
 Operation: inode_permission

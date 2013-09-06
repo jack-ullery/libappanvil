@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase33.in
+File: testcase33.in
 Event type: AA_RECORD_DENIED
 Audit ID: 1190503205.837:27088
 Operation: socket_create

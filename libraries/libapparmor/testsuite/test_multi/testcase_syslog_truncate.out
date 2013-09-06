@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase_syslog_truncate.in
+File: testcase_syslog_truncate.in
 Event type: AA_RECORD_DENIED
 Audit ID: 1282626827.320:411
 Operation: truncate

@@ -1,5 +1,5 @@
 START
-File: test_multi/old_style_log_03.in
+File: old_style_log_03.in
 Event type: AA_RECORD_INVALID
 Audit ID: 1173790298.651:1662
 Operation: APPARMOR

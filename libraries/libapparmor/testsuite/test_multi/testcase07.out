@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase07.in
+File: testcase07.in
 Event type: AA_RECORD_DENIED
 Audit ID: 1236891550.807:870
 Operation: capable

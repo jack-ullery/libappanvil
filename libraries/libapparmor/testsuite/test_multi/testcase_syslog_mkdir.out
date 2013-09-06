@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase_syslog_mkdir.in
+File: testcase_syslog_mkdir.in
 Event type: AA_RECORD_DENIED
 Audit ID: 1282671283.411:2199
 Operation: mkdir

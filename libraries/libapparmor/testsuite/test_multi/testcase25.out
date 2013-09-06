@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase25.in
+File: testcase25.in
 Event type: AA_RECORD_HINT
 Audit ID: 1190503291.842:27382
 Operation: clone

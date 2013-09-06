@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase32.in
+File: testcase32.in
 Event type: AA_RECORD_INVALID
 Audit ID: 1190410201.037:20926
 Operation: CRED_ACQ

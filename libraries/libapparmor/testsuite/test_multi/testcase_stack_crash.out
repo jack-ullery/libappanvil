@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase_stack_crash.in
+File: testcase_stack_crash.in
 Event type: AA_RECORD_AUDIT
 Audit ID: 1205249275.686:289
 Operation: file_lock

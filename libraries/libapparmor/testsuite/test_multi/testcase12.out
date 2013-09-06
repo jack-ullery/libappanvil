@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase12.in
+File: testcase12.in
 Event type: AA_RECORD_DENIED
 Audit ID: 1181057184.959:7
 Operation: exec

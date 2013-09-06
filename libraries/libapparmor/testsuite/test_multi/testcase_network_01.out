@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase_network_01.in
+File: testcase_network_01.in
 Event type: AA_RECORD_DENIED
 Audit ID: 1308766940.698:3704
 Operation: sendmsg

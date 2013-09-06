@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase19.in
+File: testcase19.in
 Event type: AA_RECORD_ALLOWED
 Audit ID: 1236774787.169:371
 Operation: file_mmap

@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase_syslog_capability.in
+File: testcase_syslog_capability.in
 Event type: AA_RECORD_DENIED
 Audit ID: 1284061910.975:672
 Operation: capable

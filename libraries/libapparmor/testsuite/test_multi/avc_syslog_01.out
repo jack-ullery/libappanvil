@@ -1,5 +1,5 @@
 START
-File: test_multi/avc_syslog_01.in
+File: avc_syslog_01.in
 Event type: AA_RECORD_DENIED
 Audit ID: 1279967133.365:54
 Operation: open

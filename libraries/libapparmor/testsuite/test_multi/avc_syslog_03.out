@@ -1,5 +1,5 @@
 START
-File: test_multi/avc_syslog_03.in
+File: avc_syslog_03.in
 Event type: AA_RECORD_ALLOWED
 Audit ID: 1279968846.035:77
 Operation: open

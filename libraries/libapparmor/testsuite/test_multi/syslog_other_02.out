@@ -1,3 +1,3 @@
 START
-File: test_multi/syslog_other_02.in
+File: syslog_other_02.in
 Event type: AA_RECORD_INVALID

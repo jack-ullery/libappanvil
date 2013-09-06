@@ -1,5 +1,5 @@
 START
-File: test_multi/syslog_datetime_08.in
+File: syslog_datetime_08.in
 Event type: AA_RECORD_ALLOWED
 Audit ID: 1357024144.556:6368
 Operation: open

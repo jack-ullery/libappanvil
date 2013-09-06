@@ -1,3 +1,5 @@
+#define _GNU_SOURCE /* for glibc's basename version */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,7 +23,7 @@ int main(int argc, char **argv)
 	}
 
 	printf("START\n");
-	printf("File: %s\n", argv[1]);
+	printf("File: %s\n", basename(argv[1]));
 
 	testcase = fopen(argv[1], "r");
 	if (testcase == NULL)

@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase_network_05.in
+File: testcase_network_05.in
 Event type: AA_RECORD_DENIED
 Audit ID: 1333698107.128:273917
 Operation: recvmsg

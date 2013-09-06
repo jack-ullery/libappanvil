@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase15.in
+File: testcase15.in
 Event type: AA_RECORD_DENIED
 Audit ID: 1189201672.746:537
 Operation: file_lock

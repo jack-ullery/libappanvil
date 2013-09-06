@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase22.in
+File: testcase22.in
 Event type: AA_RECORD_DENIED
 Audit ID: 1190305421.066:14665
 Operation: inode_permission

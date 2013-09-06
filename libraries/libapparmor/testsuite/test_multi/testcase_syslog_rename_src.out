@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase_syslog_rename_src.in
+File: testcase_syslog_rename_src.in
 Event type: AA_RECORD_ALLOWED
 Audit ID: 1282626827.320:412
 Operation: rename_src

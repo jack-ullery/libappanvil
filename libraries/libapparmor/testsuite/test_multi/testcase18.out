@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase18.in
+File: testcase18.in
 Event type: AA_RECORD_ALLOWED
 Audit ID: 1236774787.169:369
 Operation: inode_permission

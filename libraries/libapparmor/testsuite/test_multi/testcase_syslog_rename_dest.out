@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase_syslog_rename_dest.in
+File: testcase_syslog_rename_dest.in
 Event type: AA_RECORD_ALLOWED
 Audit ID: 1282626827.320:413
 Operation: rename_dest

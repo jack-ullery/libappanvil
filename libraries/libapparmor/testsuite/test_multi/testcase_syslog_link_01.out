@@ -1,5 +1,5 @@
 START
-File: test_multi/testcase_syslog_link_01.in
+File: testcase_syslog_link_01.in
 Event type: AA_RECORD_DENIED
 Audit ID: 1284062308.965:276251
 Operation: link

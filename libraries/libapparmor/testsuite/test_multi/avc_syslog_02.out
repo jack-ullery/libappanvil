@@ -1,5 +1,5 @@
 START
-File: test_multi/avc_syslog_02.in
+File: avc_syslog_02.in
 Event type: AA_RECORD_STATUS
 Audit ID: 1279967081.455:42
 Operation: profile_replace
