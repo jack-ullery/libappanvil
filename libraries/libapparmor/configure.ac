@@ -76,6 +76,7 @@ swig/perl/Makefile
 swig/perl/Makefile.PL
 swig/python/Makefile
 swig/python/setup.py
+swig/python/test/Makefile
 swig/ruby/Makefile
 testsuite/Makefile
 testsuite/config/Makefile
