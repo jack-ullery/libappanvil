@@ -138,6 +138,7 @@ struct dbus_entry *new_dbus_entry(int mode, struct cond_entry *conds,
 
 out:
 	free_cond_list(conds);
+	free_cond_list(peer_conds);
 	return ent;
 }
 
