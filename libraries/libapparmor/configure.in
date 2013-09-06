@@ -17,7 +17,7 @@ AC_PATH_PROG([SWIG], [swig])
 sinclude(m4/ac_pod2man.m4)
 PROG_POD2MAN
 
-AC_MSG_CHECKING(Checking for Python)
+AC_MSG_CHECKING([whether python bindings are enabled])
 AC_ARG_WITH(python,
 [  --with-python           enable the python wrapper  [[default=no]]],
 [AC_MSG_RESULT($withval)], [AC_MSG_RESULT(no)])
@@ -30,7 +30,7 @@ if test "$with_python" = "yes"; then
    AM_PATH_PYTHON
 fi
 
-AC_MSG_CHECKING(Checking for perl)
+AC_MSG_CHECKING([whether perl bindings are enabled])
 AC_ARG_WITH(perl,
 [ --with-perl           enable the perl wrapper [[default=no]]],
 [AC_MSG_RESULT($withval)], [AC_MSG_RESULT(no)])
@@ -43,7 +43,7 @@ if test "$with_perl" = "yes"; then
 fi
 
 
-AC_MSG_CHECKING(Checking for ruby)
+AC_MSG_CHECKING([whether ruby bindings are enabled])
 AC_ARG_WITH(ruby,
 [ --with-ruby           enable the ruby wrapper [[default=no]]],
 [AC_MSG_RESULT($withval)], [AC_MSG_RESULT(no)])
