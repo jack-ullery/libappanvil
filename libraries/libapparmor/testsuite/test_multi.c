@@ -63,52 +63,29 @@ int main(int argc, char **argv)
 		printf("%s: %ld\n", (description), (var)); \
 	}
 
+#define event_case(event) \
+	case event: { \
+		print_string("Event type", #event ); \
+		break; \
+	}
+
 int print_results(aa_log_record *record)
 {
-		printf("Event type: ");
 		switch(record->event)
 		{
-			case AA_RECORD_ERROR:
-			{
-				printf("AA_RECORD_ERROR\n");
-				break;
-			}
-			case AA_RECORD_INVALID:
-			{
-				printf("AA_RECORD_INVALID\n");
-				break;
-			}
-			case AA_RECORD_AUDIT:
-			{
-				printf("AA_RECORD_AUDIT\n");
-				break;
-			}
-			case AA_RECORD_ALLOWED:
-			{
-				printf("AA_RECORD_ALLOWED\n");
-				break;
-			}
-			case AA_RECORD_DENIED:
-			{
-				printf("AA_RECORD_DENIED\n");
-				break;
-			}
-			case AA_RECORD_HINT:
-			{
-				printf("AA_RECORD_HINT\n");
-				break;
-			}
-			case AA_RECORD_STATUS:
-			{
-				printf("AA_RECORD_STATUS\n");
-				break;
-			}
-			default:
-			{
-				printf("UNKNOWN EVENT TYPE\n");
+			event_case(AA_RECORD_ERROR);
+			event_case(AA_RECORD_INVALID);
+			event_case(AA_RECORD_AUDIT);
+			event_case(AA_RECORD_ALLOWED);
+			event_case(AA_RECORD_DENIED);
+			event_case(AA_RECORD_HINT);
+			event_case(AA_RECORD_STATUS);
+			default: {
+				print_string("Event type", "UNKNOWN EVENT TYPE");
 				break;
 			}
 		}
+
 		print_string("Audit ID", record->audit_id);
 		print_string("Operation", record->operation);
 		print_string("Mask", record->requested_mask);
