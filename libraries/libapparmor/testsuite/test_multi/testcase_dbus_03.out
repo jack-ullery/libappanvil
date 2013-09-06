@@ -12,5 +12,3 @@ DBus bus: session
 DBus path: /com/apparmor/Test
 DBus interface: com.apparmor.Test
 DBus member: Signal
-Epoch: 0
-Audit subid: 0

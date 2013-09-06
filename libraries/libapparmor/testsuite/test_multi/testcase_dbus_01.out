@@ -11,5 +11,3 @@ DBus bus: session
 DBus path: /org/freedesktop/DBus
 DBus interface: org.freedesktop.DBus
 DBus member: Hello
-Epoch: 0
-Audit subid: 0

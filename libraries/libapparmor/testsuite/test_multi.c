@@ -218,7 +218,7 @@ int print_results(aa_log_record *record)
 		print_string("DBus interface", record->dbus_interface);
 		print_string("DBus member", record->dbus_member);
 
-		printf("Epoch: %lu\n", record->epoch);
-		printf("Audit subid: %u\n", record->audit_sub_id);
+		print_long("Epoch", record->epoch, 0);
+		print_long("Audit subid", (long) record->audit_sub_id, 0);
 	return(0);
 }

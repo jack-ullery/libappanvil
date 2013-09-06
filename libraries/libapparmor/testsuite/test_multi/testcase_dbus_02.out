@@ -7,5 +7,3 @@ Profile: /tmp/apparmor-2.8.0/tests/regression/apparmor/dbus_service
 Name: com.apparmor.Test
 PID: 2940
 DBus bus: session
-Epoch: 0
-Audit subid: 0
