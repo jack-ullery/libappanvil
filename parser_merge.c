@@ -118,10 +118,8 @@ static int process_file_entries(struct codomain *cod)
 //fprintf(stderr, "warning: merging rule 0x%x %s\n", next->audit, next->name);
 			cur->mode |= next->mode;
 			cur->audit |= next->audit;
-			free(next->name);
-			if (next->link_name)
-				free(next->link_name);
-			free(next);
+			next->next = NULL;
+			free_cod_entries(next);
 			table[n] = NULL;
 		} else {
 			cur = next;
