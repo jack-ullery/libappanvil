@@ -399,6 +399,7 @@ static int __expand_variable(struct symtab *symbol)
 				PERROR("Variable @{%s} is referenced recursively (by @{%s})\n",
 		       		       split->var, symbol->var_name);
 				retval = 1;
+				free_values(this_value);
 				goto out;
 			}
 
@@ -407,12 +408,14 @@ static int __expand_variable(struct symtab *symbol)
 				PERROR("Variable @{%s} references undefined variable @{%s}\n",
 				       symbol->var_name, split->var);
 				retval = 3;
+				free_values(this_value);
 				goto out;
 			}
 
 			rc = __expand_variable(ref);
 			if (rc != 0) {
 				retval = rc;
+				free_values(this_value);
 				goto out;
 			}
 

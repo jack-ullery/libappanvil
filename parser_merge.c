@@ -111,6 +111,7 @@ static int process_file_entries(struct codomain *cod)
 				PERROR(_("profile %s: has merged rule %s with "
 					 "conflicting x modifiers\n"),
 					 cod->name, cur->name);
+				free(table);
 				return 0;
 			}
 //if (next->audit)

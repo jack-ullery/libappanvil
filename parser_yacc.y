@@ -436,6 +436,7 @@ opt_flags: { /* nothing */ $$ = 0; }
 	{
 		if (strcmp($1, "flags") != 0)
 			yyerror("expected flags= got %s=", $1);
+		free($1);
 		$$ = 1;
 	}
 
@@ -1210,6 +1211,7 @@ dbus_perm: TOK_VALUE
 	| TOK_MODE
 	{
 		parse_dbus_mode($1, &$$, 1);
+		free($1);
 	}
 
 dbus_perms: { /* nothing */ $$ = 0; }
