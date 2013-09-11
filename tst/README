@@ -65,6 +65,6 @@ The simple script looks for a few special comments in the profile,
 
   - #=DISABLED -- skips the test, and marks it as a failed TODO task.
     Useful if the particular testcase causes the parser to infinite
-    loop.
+    loop or dump core.
 
 Otherwise, the profile is passed on as-is to the subdomain parser.
