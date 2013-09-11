@@ -76,14 +76,13 @@ static int file_comp(const void *c1, const void *c2)
 
 static int process_file_entries(struct codomain *cod)
 {
-	int n, count;
-	struct cod_entry *flist, *cur, *next;
+	struct cod_entry *cur, *next;
 	struct cod_entry **table;
+	int n, count = 0;
 
-	for (flist = cod->entries, n = 0; flist; flist = flist->next)
-		n++;
+	for (cur = cod->entries; cur; cur = cur->next)
+		count++;
 
-	count = n;
 	if (count < 2)
 		return 1;
 
@@ -93,12 +92,8 @@ static int process_file_entries(struct codomain *cod)
 		return 0;
 	}
 
-	n = 0;
-	for (flist = cod->entries; flist; flist = flist->next) {
-		table[n] = flist;
-		n++;
-	}
-
+	for (cur = cod->entries, n = 0; cur; cur = cur->next, n++)
+		table[n] = cur;
 	qsort(table, count, sizeof(struct cod_entry *), file_comp);
 	table[count] = NULL;
 	for (n = 0; n < count; n++)
@@ -107,26 +102,24 @@ static int process_file_entries(struct codomain *cod)
 	free(table);
 
 	/* walk the sorted table merging similar entries */
-	for (cur = cod->entries, next = cur->next; next != NULL; next = cur->next) {
-		if (file_comp(&cur, &next) == 0) {
-			/* check for merged x consistency */
-			if (!is_merged_x_consistent(cur->mode, next->mode)) {
-				PERROR(_("profile %s: has merged rule %s with "
-					 "conflicting x modifiers\n"),
-					 cod->name, cur->name);
-				return 0;
-			}
-//if (next->audit)
-//fprintf(stderr, "warning: merging rule 0x%x %s\n", next->audit, next->name);
-			cur->mode |= next->mode;
-			cur->audit |= next->audit;
-			cur->next = next->next;
-
-			next->next = NULL;
-			free_cod_entries(next);
-		} else {
+	for (cur = cod->entries, next = cur->next; next; next = cur->next) {
+		if (file_comp(&cur, &next) != 0) {
 			cur = next;
+			continue;
 		}
+
+		/* check for merged x consistency */
+		if (!is_merged_x_consistent(cur->mode, next->mode)) {
+			PERROR(_("profile %s: has merged rule %s with conflicting x modifiers\n"),
+				cod->name, cur->name);
+			return 0;
+		}
+		cur->mode |= next->mode;
+		cur->audit |= next->audit;
+		cur->next = next->next;
+
+		next->next = NULL;
+		free_cod_entries(next);
 	}
 
 	return 1;
