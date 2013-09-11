@@ -101,43 +101,33 @@ static int process_file_entries(struct codomain *cod)
 
 	qsort(table, count, sizeof(struct cod_entry *), file_comp);
 	table[count] = NULL;
-
+	for (n = 0; n < count; n++)
+		table[n]->next = table[n + 1];
+	cod->entries = table[0];
+	free(table);
 
 	/* walk the sorted table merging similar entries */
-	for (cur = table[0], next = table[1], n = 1; next != NULL; n++, next = table[n]) {
+	for (cur = cod->entries, next = cur->next; next != NULL; next = cur->next) {
 		if (file_comp(&cur, &next) == 0) {
 			/* check for merged x consistency */
 			if (!is_merged_x_consistent(cur->mode, next->mode)) {
 				PERROR(_("profile %s: has merged rule %s with "
 					 "conflicting x modifiers\n"),
 					 cod->name, cur->name);
-				free(table);
 				return 0;
 			}
 //if (next->audit)
 //fprintf(stderr, "warning: merging rule 0x%x %s\n", next->audit, next->name);
 			cur->mode |= next->mode;
 			cur->audit |= next->audit;
+			cur->next = next->next;
+
 			next->next = NULL;
 			free_cod_entries(next);
-			table[n] = NULL;
 		} else {
 			cur = next;
 		}
 	}
-
-	/* rebuild the file_entry chain */
-	cur = table[0];
-	for (n = 1; n < count; n++) {
-		if (table[n] != NULL) {
-			cur->next = table[n];
-			cur = table[n];
-		}
-	}
-	cur->next = NULL;
-	cod->entries = table[0];
-
-	free(table);
 
 	return 1;
 }
