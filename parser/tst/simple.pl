@@ -71,7 +71,9 @@ sub test_profile {
   my $expass = 1;
   my $istodo = 0;
   my $isdisabled = 0;
-  my $result = 0;
+  my $result = 1;
+  my $signal = 0;
+  my $coredump = 0;
   my $child;
 
   $child = open(PARSER, "|-");
@@ -86,7 +88,6 @@ sub test_profile {
   # parent
   eval {
     local $SIG{ALRM} = sub {
-      $result = 1;
       kill PIPE => $child;
       $description = "$description - TESTCASE TIMED OUT";
     };
@@ -114,7 +115,10 @@ sub test_profile {
       }
     }
 
-    $result = close(PARSER);
+    close(PARSER) or ($! and die "Bail out! couldn't close parser pipe");
+    $result = $? >> 8;
+    $signal = $? & 127;
+    $coredump = $signal ? $? & 128 : 0;
     alarm 0;
   };
 
@@ -124,13 +128,15 @@ sub test_profile {
       local $TODO = "Disabled testcase.";
       ok(0, "TODO: $profile: $description");
     }
+  } elsif ($coredump) {
+    ok(0, "$profile: Produced core dump (signal $signal): $description");
   } elsif ($istodo) {
     TODO: {
       local $TODO = "Unfixed testcase.";
-      ok($expass ? $result : !$result, "TODO: $profile: $description");
+      ok($expass ? !$result : $result, "TODO: $profile: $description");
     }
   } else {
-    ok($expass ? $result : !$result, "$profile: $description");
+    ok($expass ? !$result : $result, "$profile: $description");
   }
 }
 
