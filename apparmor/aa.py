@@ -152,14 +152,15 @@ def check_for_apparmor():
 
 def which(file):
     """Returns the executable fullpath for the file, None otherwise"""
-    return shutil.which(file)
-#     env_dirs = os.getenv('PATH').split(':')
-#     for env_dir in env_dirs:
-#         env_path = env_dir + '/' + file
-#         # Test if the path is executable or not
-#         if os.access(env_path, os.X_OK):
-#             return env_path
-#     return None
+    if sys.version_info >= (3,3):
+        return shutil.which(file)
+    env_dirs = os.getenv('PATH').split(':')
+    for env_dir in env_dirs:
+        env_path = env_dir + '/' + file
+        # Test if the path is executable or not
+        if os.access(env_path, os.X_OK):
+            return env_path
+    return None
     
 def get_full_path(original_path):
     """Return the full path after resolving any symlinks"""
@@ -3975,8 +3976,12 @@ def load_include(incname):
         data = get_include_data(incfile)
         incdata = parse_profile_data(data, incfile, True)
         #print(incdata)
-        if incdata:
-            attach_profile_data(include, incdata)
+        if not incdata:
+            # If include is empty, simply push in a placeholder for it 
+            # because other profiles may mention them
+            incdata = hasher()
+            incdata[incname] = hasher()
+        attach_profile_data(include, incdata)
         
     return 0
 
@@ -4006,7 +4011,7 @@ def match_include_to_path(incname, allow, path):
         ret = load_include(incfile)
         if not include.get(incfile,{}):
             continue
-        cm, am , m = rematchfrag(include[incfile].get(incfile, {}), allow, path)
+        cm, am, m = rematchfrag(include[incfile].get(incfile, {}), allow, path)
         #print(incfile, cm, am, m)
         if cm:
             combinedmode |= cm

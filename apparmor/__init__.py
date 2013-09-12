@@ -5,10 +5,11 @@ Created on Jun 27, 2013
 '''
 import gettext
 import locale
+
 def init_localisation():
     locale.setlocale(locale.LC_ALL, '')
     #cur_locale = locale.getlocale()
-    filename = 'res/messages_%s.mo' % locale.getlocale()[0][0:2]
+    filename = '/usr/share/locale/%s/LC_MESSAGES/apparmor-utils.mo' % locale.getlocale()[0][0:2]
     try:
         trans = gettext.GNUTranslations(open( filename, 'rb'))
     except IOError:

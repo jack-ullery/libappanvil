@@ -41,12 +41,17 @@ class Test(unittest.TestCase):
                  '/usr/foo/*': '/usr/**',
                  '/usr/foo/**': '/usr/**',
                  '/usr/foo/bar**': '/usr/foo/**',
-                 '/usr/foo/**barr': '/usr/foo/**',
+                 '/usr/foo/**bar': '/usr/foo/**',
+                 '/usr/bin/foo**bar': '/usr/bin/**',
                  '/usr/foo/**/bar': '/usr/foo/**/*',
                  '/usr/foo/**/*': '/usr/foo/**',
                  '/usr/foo/*/bar': '/usr/foo/*/*',
+                 '/usr/bin/foo*bar': '/usr/bin/*',
+                 '/usr/bin/*foo*': '/usr/bin/*', 
                  '/usr/foo/*/*': '/usr/foo/**',
-                 '/usr/foo/*/**': '/usr/foo/**'                 
+                 '/usr/foo/*/**': '/usr/foo/**',
+                 '/**': '/**',
+                 '/**/': '/**/'               
                  }
         for path in globs.keys():
             self.assertEqual(apparmor.aa.glob_path(path), globs[path], 'Unexpected glob generated for path: %s'%path)
@@ -61,9 +66,11 @@ class Test(unittest.TestCase):
                  '/usr/**.bar': '/**.bar',
                  '/usr/foo**.bar': '/usr/**.bar',
                  '/usr/foo*.bar': '/usr/*.bar',
+                 '/usr/fo*oo.bar': '/usr/*.bar',
+                 '/usr/*foo*.bar': '/usr/*.bar',
                  '/usr/**foo.bar': '/usr/**.bar',
                  '/usr/*foo.bar': '/usr/*.bar',
-                 '/usr/foo.b*': '/usr/*.b*'               
+                 '/usr/foo.b*': '/usr/*.b*'        
                  }
         for path in globs.keys():
             self.assertEqual(apparmor.aa.glob_path_withext(path), globs[path], 'Unexpected glob generated for path: %s'%path)
