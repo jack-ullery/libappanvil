@@ -46,21 +46,65 @@
 #endif
 /* #define DEBUG */
 #ifdef DEBUG
-#define PDEBUG(fmt, args...) printf("Lexer (state %d): " fmt, YY_START, ## args)
+static int yy_top_state(void);
+#define PDEBUG(fmt, args...) printf("Lexer (Line %d) (state %s): " fmt, current_lineno, state_names[YY_START], ## args)
 #else
 #define PDEBUG(fmt, args...)	/* Do nothing */
 #endif
 #define NPDEBUG(fmt, args...)	/* Do nothing */
 
 #define DUMP_PREPROCESS do { if (preprocess_only) ECHO; } while (0)
-#define RETURN_TOKEN(X) \
+
+#define DUMP_AND_DEBUG(X...) \
 do { \
 	DUMP_PREPROCESS; \
-	PDEBUG("Matched: %s\n", yytext); \
+	PDEBUG(X); \
+} while (0)
+
+#define EAT_TOKEN(X...) DUMP_AND_DEBUG(X)
+
+#define RETURN_TOKEN(X) \
+do { \
+	DUMP_AND_DEBUG("Matched: %s\n", yytext); \
 	return (X); \
 } while (0)
 
+#define POP() \
+do { \
+	DUMP_AND_DEBUG(" (pop_to(%s)): Matched: %s\n", state_names[yy_top_state()], yytext); \
+	yy_pop_state(); \
+} while (0)
+
+#define PUSH(X) \
+do { \
+	DUMP_AND_DEBUG(" (push(%s)): Matched: %s\n", state_names[(X)], yytext); \
+	yy_push_state(X); \
+} while (0)
+
+#define POP_AND_RETURN(X) \
+do { \
+	POP(); \
+	return (X); \
+} while (0)
+
+#define PUSH_AND_RETURN(X, Y) \
+do { \
+	PUSH(X); \
+	return (Y); \
+} while (0)
+
+#define BEGIN_AND_RETURN(X, Y) \
+do { \
+	DUMP_AND_DEBUG(" (begin(%s)): Matched: %s\n", state_names[(X)], yytext); \
+	BEGIN(X); \
+	return (Y); \
+} while (0)
+
+
 #define YY_NO_INPUT
+
+#define STATE_TABLE_ENT(X) [(X)] = #X
+static const char *const state_names[];
 
 struct ignored_suffix_t {
 	char * text;
@@ -206,7 +250,7 @@ LIST_VALUE_ID_CHARS	[^ \t\n"!,]{-}[()]
 LIST_VALUE_ID	{LIST_VALUE_ID_CHARS}+
 QUOTED_LIST_VALUE_ID	{LIST_VALUE_ID}|\"{LIST_VALUE_ID}\"
 ID_CHARS_NOEQ	[^ \t\n"!,]{-}[=]
-LEADING_ID_CHARS_NOEQ	[^ \t\n"!,]{-}[=()]
+LEADING_ID_CHARS_NOEQ [^ \t\n"!,]{-}[=()+&]
 ID_NOEQ		{ID_CHARS_NOEQ}|(,{ID_CHARS_NOEQ})
 IDS_NOEQ	{LEADING_ID_CHARS_NOEQ}{ID_NOEQ}*
 ALLOWED_QUOTED_ID 	[^\0"]|\\\"
@@ -233,6 +277,7 @@ ADD_ASSIGN	\+=
 ARROW		->
 LT_EQUAL	<=
 
+/* IF adding new state please update state_names table at eof */
 %x SUB_ID
 %x SUB_VALUE
 %x EXTCOND_MODE
@@ -260,422 +305,199 @@ LT_EQUAL	<=
 	}
 %}
 
+<INITIAL,INCLUDE,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,RLIMIT_MODE,MOUNT_MODE,DBUS_MODE>{
+	{WS}+	{  DUMP_PREPROCESS; /* Ignoring whitespace */ }
+}
+
 <INCLUDE>{
-	{WS}+	{ /* Eat whitespace */ }
-	\<([^\> \t\n]+)\>	{	/* <filename> */
+	(\<([^\> \t\n]+)\>|\"([^\" \t\n]+)\")	{	/* <filename> */
 		char *filename = strdup(yytext);
 		filename[strlen(filename) - 1] = '\0';
-		include_filename(filename + 1, 1);
+		include_filename(filename + 1, *filename == '<');
 		free(filename);
 		yy_pop_state();
-		}
+	}
 
-	\"([^\" \t\n]+)\"	{	/* "filename" */
-		char *filename = strdup(yytext);
-		filename[strlen(filename) - 1] = '\0';
-		include_filename(filename + 1, 0);
-		free(filename);
-		yy_pop_state();
-		}
-
-	[^\<\>\"{WS}]+ {	/* filename */
+	[^\<\>\" \t\n]+ {	/* filename */
 		include_filename(yytext, 0);
 		yy_pop_state();
-		}
+	}
 }
 
 <<EOF>> {
 	fclose(yyin);
 	pop_include_stack();
 	yypop_buffer_state();
-	if ( !YY_CURRENT_BUFFER ) yyterminate();
+	if ( !YY_CURRENT_BUFFER )
+		yyterminate();
 }
 
 <INITIAL,MOUNT_MODE,DBUS_MODE>{
 	{VARIABLE_NAME}/{WS}*=	{
-				/* we match to the = in the lexer so that
-				 * can switch scanner state.  By the time
-				 * the parser see the = it may be to late
-				 * as bison may have requested the next
-				 * token from the scanner
-				 */
-				int token = get_keyword_token(yytext);
+		/* we match to the = in the lexer so that we can switch scanner
+		 * state.  By the time the parser see the = it may be too late
+		 * as bison may have requested the next token from the scanner
+		 */
+		int token = get_keyword_token(yytext);
 
-				DUMP_PREPROCESS;
-				if (token == TOK_PEER) {
-					PDEBUG("conditional list %s=\n", yytext);
-					yy_push_state(EXTCONDLIST_MODE);
-					return TOK_CONDLISTID;
-				} else {
-					PDEBUG("conditional %s=\n", yytext);
-					yylval.id = processid(yytext, yyleng);
-					yy_push_state(EXTCOND_MODE);
-					return TOK_CONDID;
-				}
-			}
+		if (token == TOK_PEER) {
+			PUSH_AND_RETURN(EXTCONDLIST_MODE, TOK_CONDLISTID);
+		} else {
+			yylval.id = processid(yytext, yyleng);
+			PUSH_AND_RETURN(EXTCOND_MODE, TOK_CONDID);
+		}
+	}
 	{VARIABLE_NAME}/{WS}+in{WS}*\(	{
-				/* we match to 'in' in the lexer so that
-				 * we can switch scanner state.  By the time
-				 * the parser see the 'in' it may be to late
-				 * as bison may have requested the next
-				 * token from the scanner
-				 */
-				DUMP_PREPROCESS;
-				PDEBUG("conditional %s=\n", yytext);
-				yylval.id = processid(yytext, yyleng);
-				yy_push_state(EXTCOND_MODE);
-				return TOK_CONDID;
-			}
+		/* we match to 'in' in the lexer so that we can switch scanner
+		 * state.  By the time the parser see the 'in' it may be to
+		 * late as bison may have requested the next token from the
+		 * scanner
+		 */
+		yylval.id = processid(yytext, yyleng);
+		PUSH_AND_RETURN(EXTCOND_MODE, TOK_CONDID);
+	}
 }
 
 <SUB_ID>{
-	({IDS}|{QUOTED_ID})	{
-			  /* Ugh, this is a gross hack. I used to use
-			   * {IDS} to match all TOK_IDs, but that would
-			   * also match TOK_MODE + TOK_END_OF_RULE
-			   * without any spaces in between (because it's
-			   * a longer match). So now, when I want to
-			   * match any random string, I go into a
-			   * separate state. */
-			DUMP_PREPROCESS;
-			yylval.id =  processid(yytext, yyleng);
-			PDEBUG("Found sub name: \"%s\"\n",  yylval.id);
-			yy_pop_state();
-			return TOK_ID;
-		}
-
-	[^\n]	{
-			DUMP_PREPROCESS;
-			/* Something we didn't expect */
-			yyerror(_("Found unexpected character: '%s'"), yytext);
-		}
+	({IDS}|{QUOTED_ID}) {
+		/* Go into separate state to match generic ID strings */
+		yylval.id =  processid(yytext, yyleng);
+		POP_AND_RETURN(TOK_ID);
+	}
 }
 
 <SUB_VALUE>{
-	({IDS}|{QUOTED_ID})	{
-			  /* Ugh, this is a gross hack. I used to use
-			   * {IDS} to match all TOK_IDs, but that would
-			   * also match TOK_MODE + TOK_END_OF_RULE
-			   * without any spaces in between (because it's
-			   * a longer match). So now, when I want to
-			   * match any random string, I go into a
-			   * separate state. */
-			DUMP_PREPROCESS;
-			yylval.id =  processid(yytext, yyleng);
-			PDEBUG("Found sub value: \"%s\"\n",  yylval.id);
-			yy_pop_state();
-			return TOK_VALUE;
-		}
-
-	[^\n]	{
-			DUMP_PREPROCESS;
-			/* Something we didn't expect */
-			yyerror(_("Found unexpected character: '%s'"), yytext);
-		}
+	({IDS}|{QUOTED_ID}) {
+		/* Go into separate state to match generic VALUE strings */
+		yylval.id =  processid(yytext, yyleng);
+		POP_AND_RETURN(TOK_VALUE);
+	}
 }
 
 <LIST_VAL_MODE>{
-	{CLOSE_PAREN}	{
-			DUMP_PREPROCESS;
-			PDEBUG("listval: )\n");
-			yy_pop_state();
-			return TOK_CLOSEPAREN;
-			}
+	{CLOSE_PAREN} { POP_AND_RETURN(TOK_CLOSEPAREN); }
 
-	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
+	{COMMA}	{ EAT_TOKEN("listval: ,\n"); }
 
-	{COMMA}	{
-			DUMP_PREPROCESS;
-			PDEBUG("listval: , \n");
-			/* East comma, its an optional separator */
-			}
-
-	({LIST_VALUE_ID}|{QUOTED_ID})	{
-			DUMP_PREPROCESS;
-			yylval.id = processid(yytext, yyleng);
-			PDEBUG("listval: \"%s\"\n", yylval.id);
-			return TOK_VALUE;
-			}
-
-	[^\n]		{
-			DUMP_PREPROCESS;
-			/* Something we didn't expect */
-			yyerror(_("Found unexpected character: '%s'"), yytext);
-			}
+	({LIST_VALUE_ID}|{QUOTED_ID}) {
+		yylval.id = processid(yytext, yyleng);
+		RETURN_TOKEN(TOK_VALUE);
+	}
 }
 
 <EXTCOND_MODE>{
-	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
+	{EQUALS}{WS}*/[^(\n]{-}{WS} { BEGIN_AND_RETURN(SUB_VALUE, TOK_EQUALS);}
 
-	{EQUALS}{WS}*/[^(\n]{-}{WS}	{
-			DUMP_PREPROCESS;
-			BEGIN(SUB_VALUE);
-			return TOK_EQUALS;
-		}
+	{EQUALS} { RETURN_TOKEN(TOK_EQUALS); }
 
-	{EQUALS}	{
-			DUMP_PREPROCESS;
-			return TOK_EQUALS;
-		}
+	/* Don't push state here as this is a transition start condition and
+	 * we want to return to the start condition that invoked <EXTCOND_MODE>
+	 * when LIST_VAL_ID is done
+	 */
+	{OPEN_PAREN} { BEGIN_AND_RETURN(LIST_VAL_MODE, TOK_OPENPAREN); }
 
-	{OPEN_PAREN}	{
-			DUMP_PREPROCESS;
-			PDEBUG("extcond listv\n");
-			/* Don't push state here as this is a transition
-			 * start condition and we want to return to the start
-			 * condition that invoked <EXTCOND_MODE> when
-			 * LIST_VAL_ID is done
-			 */
-			BEGIN(LIST_VAL_MODE);
-			return TOK_OPENPAREN;
-		}
-
-	in	{
-			DUMP_PREPROCESS;
-			return TOK_IN;
-		}
-
-	[^\n]	{
-			DUMP_PREPROCESS;
-			/* Something we didn't expect */
-			yyerror(_("Found unexpected character: '%s' %d"), yytext, *yytext);
-		}
-
+	in { RETURN_TOKEN(TOK_IN); }
 }
 
 <LIST_COND_VAL>{
-	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
-
 	({LIST_VALUE_ID}|{QUOTED_LIST_VALUE_ID}) {
-			DUMP_PREPROCESS;
-			yylval.id = processid(yytext, yyleng);
-			PDEBUG("listcond value: \"%s\"\n",  yylval.id);
-			yy_pop_state();
-			return TOK_VALUE;
-		}
-
-	[^\n]	{
-			DUMP_PREPROCESS;
-			/* Something we didn't expect */
-			yyerror(_("Found unexpected character: '%s'"), yytext);
-		}
+		yylval.id = processid(yytext, yyleng);
+		POP_AND_RETURN(TOK_VALUE);
+	}
 }
 
 <LIST_COND_PAREN_VAL>{
-	{CLOSE_PAREN}	{
-			DUMP_PREPROCESS;
-			yy_pop_state();
-			}
-
-	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
+	{CLOSE_PAREN}	{ POP(); }
 
 	({LIST_VALUE_ID}|{QUOTED_LIST_VALUE_ID}) {
-			DUMP_PREPROCESS;
-			yylval.id = processid(yytext, yyleng);
-			PDEBUG("listcond paren value: \"%s\"\n",  yylval.id);
-			return TOK_VALUE;
-		}
-
-	[^\n]	{
-			DUMP_PREPROCESS;
-			/* Something we didn't expect */
-			yyerror(_("Found unexpected character: '%s'"), yytext);
-		}
+		yylval.id = processid(yytext, yyleng);
+		RETURN_TOKEN(TOK_VALUE);
+	}
 }
 
 <LIST_COND_MODE>{
-	{CLOSE_PAREN}	{
-			DUMP_PREPROCESS;
-			PDEBUG("listcond: )\n");
-			yy_pop_state();
-			return TOK_CLOSEPAREN;
-			}
+	{CLOSE_PAREN}	{ POP_AND_RETURN(TOK_CLOSEPAREN); }
 
-	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
-
-	{COMMA}		{
-			DUMP_PREPROCESS;
-			PDEBUG("listcond: , \n");
-			/* Eat comma, its an optional separator */
-			}
+	{COMMA}		{ EAT_TOKEN("listcond: , \n"); }
 
 	{ID_CHARS_NOEQ}+	{
-			DUMP_PREPROCESS;
-			PDEBUG("listcond conditional %s=\n", yytext);
-			yylval.id = processid(yytext, yyleng);
-			return TOK_CONDID;
-			}
+		yylval.id = processid(yytext, yyleng);
+		RETURN_TOKEN(TOK_CONDID);
+	}
 
 	{EQUALS}{WS}*{OPEN_PAREN}	{
-			DUMP_PREPROCESS;
-			yy_push_state(LIST_COND_PAREN_VAL);
-			return TOK_EQUALS;
-			}
+		PUSH_AND_RETURN(LIST_COND_PAREN_VAL, TOK_EQUALS);
+	}
 
 	{EQUALS}	{
-			DUMP_PREPROCESS;
-			yy_push_state(LIST_COND_VAL);
-			return TOK_EQUALS;
-			}
-
-	[^\n]		{
-			DUMP_PREPROCESS;
-			/* Something we didn't expect */
-			yyerror(_("Found unexpected character: '%s'"), yytext);
-			}
+		PUSH_AND_RETURN(LIST_COND_VAL, TOK_EQUALS);
+	}
 }
 
 <EXTCONDLIST_MODE>{
-	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
-
-	{EQUALS}	{
-			DUMP_PREPROCESS;
-			return TOK_EQUALS;
-		}
+	{EQUALS}	{ RETURN_TOKEN(TOK_EQUALS); }
 
 	{OPEN_PAREN}	{
-			DUMP_PREPROCESS;
-			PDEBUG("extcondlist (\n");
-			/* Don't push state here as this is a transition
-			 * start condition and we want to return to the start
-			 * condition that invoked <EXTCONDLIST_MODE> when
-			 * LIST_VAL_ID is done
-			 */
-			BEGIN(LIST_COND_MODE);
-			return TOK_OPENPAREN;
-		}
-
-	[^\n]	{
-			DUMP_PREPROCESS;
-			/* Something we didn't expect */
-			yyerror(_("Found unexpected character: '%s' %d"), yytext, *yytext);
-		}
-
+		/* Don't push state here as this is a transition
+		 * start condition and we want to return to the start
+		 * condition that invoked <EXTCONDLIST_MODE> when
+		 * LIST_VAL_ID is done
+		 */
+		BEGIN_AND_RETURN(LIST_COND_MODE, TOK_OPENPAREN);
+	}
 }
 
 <ASSIGN_MODE>{
-	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
+	({IDS}|{QUOTED_ID}) {
+		yylval.var_val = processid(yytext, yyleng);
+		RETURN_TOKEN(TOK_VALUE);
+	}
 
-	({IDS}|{QUOTED_ID})		{
-			DUMP_PREPROCESS;
-			yylval.var_val = processid(yytext, yyleng);
-			PDEBUG("Found assignment value: \"%s\"\n", yylval.var_val);
-			return TOK_VALUE;
-			}
+	{END_OF_RULE} {
+		yylval.id = strdup(yytext);
+		DUMP_PREPROCESS;
+		yyerror(_("Variable declarations do not accept trailing commas"));
+	}
 
-	{END_OF_RULE}	{
-			DUMP_PREPROCESS;
-			yylval.id = strdup(yytext);
-			yyerror(_("Variable declarations do not accept trailing commas"));
-			}
+	\\\n	{ DUMP_PREPROCESS; current_lineno++ ; }
 
-	\\\n		{ DUMP_PREPROCESS; current_lineno++ ; }
-
-	\r?\n		{
-			DUMP_PREPROCESS;
-			current_lineno++;
-			yy_pop_state();
-			}
-	[^\n]		{
-			DUMP_PREPROCESS;
-			/* Something we didn't expect */
-			yyerror(_("Found unexpected character: '%s'"), yytext);
-			}
+	\r?\n	{
+		DUMP_PREPROCESS;
+		current_lineno++;
+		yy_pop_state();
+	}
 }
 
 <NETWORK_MODE>{
-	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
-
-	{IDS}		{
-			DUMP_PREPROCESS;
-			yylval.id = strdup(yytext);
-			return TOK_ID;
-			}
-	{END_OF_RULE}	{
-			DUMP_PREPROCESS;
-			yy_pop_state();
-			return TOK_END_OF_RULE;
-		}
-	[^\n]		{
-			DUMP_PREPROCESS;
-			  /* Something we didn't expect */
-			yylval.id = strdup(yytext);
-			yyerror(_("(network_mode) Found unexpected character: '%s'"), yylval.id);
-			}
-
-	\r?\n		{
-			DUMP_PREPROCESS;
-			current_lineno++;
-			}
+	{IDS} {
+		yylval.id = strdup(yytext);
+		RETURN_TOKEN(TOK_ID);
+	}
 }
 
 <CHANGE_PROFILE_MODE>{
-	{ARROW}	        {
-			DUMP_PREPROCESS;
-			PDEBUG("Matched a change profile arrow\n");
-			return TOK_ARROW;
-			}
+	{ARROW}		{ RETURN_TOKEN(TOK_ARROW); }
 
-	({IDS}|{QUOTED_ID})	{
-			  /* Ugh, this is a gross hack. I used to use
-			   * {IDS} to match all TOK_IDs, but that would
-			   * also match TOK_MODE + TOK_END_OF_RULE
-			   * without any spaces in between (because it's
-			   * a longer match). So now, when I want to
-			   * match any random string, I go into a
-			   * separate state. */
-			DUMP_PREPROCESS;
-			yylval.id = processid(yytext, yyleng);
-			PDEBUG("Found change profile name: \"%s\"\n", yylval.id);
-			yy_pop_state();
-			return TOK_ID;
-		}
-
-	{WS}+			{  DUMP_PREPROCESS; /* Ignoring whitespace */ }
-	[^\n]	{
-			DUMP_PREPROCESS;
-			/* Something we didn't expect */
-			yyerror(_("Found unexpected character: '%s'"), yytext);
-		}
+	({IDS}|{QUOTED_ID}) {
+		yylval.id = processid(yytext, yyleng);
+		POP_AND_RETURN(TOK_ID);
+	}
 }
 
 <RLIMIT_MODE>{
-	{WS}+		{ DUMP_PREPROCESS; /* Eat whitespace */ }
-
-
 	-?{NUMBER}[[:alpha:]]*  {
-			DUMP_PREPROCESS;
-		        yylval.var_val = strdup(yytext);
-		        return TOK_VALUE;
-			}
+	        yylval.var_val = strdup(yytext);
+		RETURN_TOKEN(TOK_VALUE);
+	}
 
 	{KEYWORD}	{
-			DUMP_PREPROCESS;
-		        yylval.id = strdup(yytext);
-			if (strcmp(yytext, "infinity") == 0)
-				return TOK_VALUE;
-			return TOK_ID;
-			}
+	        yylval.id = strdup(yytext);
+		if (strcmp(yytext, "infinity") == 0)
+			RETURN_TOKEN(TOK_VALUE);
+		RETURN_TOKEN(TOK_ID);
+	}
 
-	{LT_EQUAL}	{ DUMP_PREPROCESS; return TOK_LE; }
-
-	{END_OF_RULE}	{
-			DUMP_PREPROCESS;
-			yy_pop_state();
-			return TOK_END_OF_RULE;
-			}
-
-	\\\n		{
-			DUMP_PREPROCESS;
-			current_lineno++;
-			yy_pop_state();
-			}
-
-	\r?\n		{
-			DUMP_PREPROCESS;
-			current_lineno++;
-			yy_pop_state();
-			}
+	{LT_EQUAL}	{ RETURN_TOKEN(TOK_LE); }
 }
 
 <DBUS_MODE>{
@@ -695,186 +517,135 @@ LT_EQUAL	<=
 }
 
 <MOUNT_MODE,DBUS_MODE>{
-	{WS}+		{  DUMP_PREPROCESS; /* Ignoring whitespace */ }
+	{ARROW}		{ RETURN_TOKEN(TOK_ARROW); }
 
-	{ARROW}		{
-			DUMP_PREPROCESS;
-			PDEBUG("Matched arrow\n");
-			return TOK_ARROW;
-			}
-
-	({IDS_NOEQ}|{PATHNAME}|{QUOTED_ID})	{
-			DUMP_PREPROCESS;
-			yylval.id = processid(yytext, yyleng);
-			PDEBUG("Found ID: \"%s\"\n", yylval.id);
-			return TOK_ID;
-			}
-
-	{END_OF_RULE}	{
-			DUMP_PREPROCESS;
-			yy_pop_state();
-			return TOK_END_OF_RULE;
-			}
-
-	[^\n]		{
-			DUMP_PREPROCESS;
-			/* Something we didn't expect */
-			yyerror(_("Found unexpected character: '%s'"), yytext);
-			}
-
-	\r?\n		{
-			DUMP_PREPROCESS;
-			current_lineno++;
-			yy_pop_state();
-			}
+	({IDS_NOEQ}|{PATHNAME}|{QUOTED_ID}) {
+		yylval.id = processid(yytext, yyleng);
+		RETURN_TOKEN(TOK_ID);
+	}
 }
 
-#include/.*\r?\n	 { /* include */
-			PDEBUG("Matched #include\n");
-			yy_push_state(INCLUDE);
-			}
+#include/.*\r?\n	{ PUSH(INCLUDE); }
 
-#.*\r?\n		{ /* normal comment */
-			DUMP_PREPROCESS;
-			PDEBUG("comment(%d): %s\n", current_lineno, yytext);
-			current_lineno++;
-			}
+#.*\r?\n	{ /* normal comment */
+	DUMP_AND_DEBUG("comment(%d): %s\n", current_lineno, yytext);
+	current_lineno++;
+}
 
-{END_OF_RULE}		{ DUMP_PREPROCESS; return TOK_END_OF_RULE; }
+{CARET}		{ PUSH_AND_RETURN(SUB_ID, TOK_CARET); }
 
-{CARET}			{
-			DUMP_PREPROCESS;
-			PDEBUG("Matched hat ^\n");
-			yy_push_state(SUB_ID);
-			return TOK_CARET;
-			}
-{ARROW}			{
-			DUMP_PREPROCESS;
-			PDEBUG("Matched a arrow\n");
-			return TOK_ARROW;
-			}
-{EQUALS}		{
-			DUMP_PREPROCESS;
-			PDEBUG("Matched equals for assignment\n");
-			yy_push_state(ASSIGN_MODE);
-			return TOK_EQUALS;
-			}
-{ADD_ASSIGN}		{
-			DUMP_PREPROCESS;
-			PDEBUG("Matched additive value assignment\n");
-			yy_push_state(ASSIGN_MODE);
-			return TOK_ADD_ASSIGN;
-			}
-{SET_VARIABLE}		{
-			DUMP_PREPROCESS;
-			yylval.set_var = strdup(yytext);
-			PDEBUG("Found set variable %s\n", yylval.set_var);
-			return TOK_SET_VAR;
-			}
+{ARROW}		{ RETURN_TOKEN(TOK_ARROW); }
 
-{BOOL_VARIABLE}		{
-			DUMP_PREPROCESS;
-			yylval.bool_var = strdup(yytext);
-			PDEBUG("Found boolean variable %s\n", yylval.bool_var);
-			return TOK_BOOL_VAR;
-			}
+{EQUALS}	{ PUSH_AND_RETURN(ASSIGN_MODE, TOK_EQUALS); }
 
-{OPEN_BRACE}		{
-			DUMP_PREPROCESS;
-			PDEBUG("Open Brace\n");
-			return TOK_OPEN;
-			}
-{CLOSE_BRACE}		{
-			DUMP_PREPROCESS;
-			PDEBUG("Close Brace\n");
-			return TOK_CLOSE;
-			}
+{ADD_ASSIGN}	{ PUSH_AND_RETURN(ASSIGN_MODE, TOK_ADD_ASSIGN); }
 
-({PATHNAME}|{QPATHNAME})		{
-			DUMP_PREPROCESS;
-			yylval.id = processid(yytext, yyleng);
-			PDEBUG("Found id: \"%s\"\n", yylval.id);
-			return TOK_ID;
-			}
+{SET_VARIABLE}	{
+	yylval.set_var = strdup(yytext);
+	RETURN_TOKEN(TOK_SET_VAR);
+}
 
-({MODES})/([[:space:],])	{
-			DUMP_PREPROCESS;
-			yylval.mode = strdup(yytext);
-			PDEBUG("Found modes: %s\n", yylval.mode);
-			return TOK_MODE;
-			}
+{BOOL_VARIABLE}	{
+	yylval.bool_var = strdup(yytext);
+	RETURN_TOKEN(TOK_BOOL_VAR);
+}
 
-{HAT}			{
-			DUMP_PREPROCESS;
-			yy_push_state(SUB_ID);
-			return TOK_HAT;
-			}
+{OPEN_BRACE}	{ RETURN_TOKEN(TOK_OPEN); }
 
-{PROFILE}		{
-			DUMP_PREPROCESS;
-			yy_push_state(SUB_ID);
-			return TOK_PROFILE;
-			}
+{CLOSE_BRACE}	{ RETURN_TOKEN(TOK_CLOSE); }
 
-{COLON}			{
-			DUMP_PREPROCESS;
-			PDEBUG("Found a colon\n");
-			return TOK_COLON;
-			}
+({PATHNAME}|{QPATHNAME}) {
+	yylval.id = processid(yytext, yyleng);
+	RETURN_TOKEN(TOK_ID);
+}
 
-{OPEN_PAREN}	{
-			DUMP_PREPROCESS;
-			PDEBUG("listval (\n");
-			yy_push_state(LIST_VAL_MODE);
-			return TOK_OPENPAREN;
-			}
+({MODES})/([[:space:],]) {
+	yylval.mode = strdup(yytext);
+	RETURN_TOKEN(TOK_MODE);
+}
 
-{VARIABLE_NAME}		{
-			DUMP_PREPROCESS;
-			int token = get_keyword_token(yytext);
+{HAT}		{ PUSH_AND_RETURN(SUB_ID, TOK_HAT); }
 
-			/* special cases */
-			switch (token) {
-			case -1:
-				/* no token found */
-				yylval.id = processunquoted(yytext, yyleng);
-				PDEBUG("Found (var) id: \"%s\"\n", yylval.id);
-				return TOK_ID;
-				break;
-			case TOK_RLIMIT:
-				yy_push_state(RLIMIT_MODE);
-				break;
-			case TOK_NETWORK:
-				yy_push_state(NETWORK_MODE);
-				break;
-			case TOK_CHANGE_PROFILE:
-				yy_push_state(CHANGE_PROFILE_MODE);
-				break;
-			case TOK_MOUNT:
-			case TOK_REMOUNT:
-			case TOK_UMOUNT:
-				PDEBUG("Entering mount\n");
-				yy_push_state(MOUNT_MODE);
-				break;
-			case TOK_DBUS:
-				PDEBUG("Entering dbus\n");
-				yy_push_state(DBUS_MODE);
-				break;
-			default: /* nothing */
-				break;
-			}
-			return token;
-			}
+{PROFILE}	{ PUSH_AND_RETURN(SUB_ID, TOK_PROFILE); }
 
-{WS}+			{  DUMP_PREPROCESS; /* Ignoring whitespace */ }
+{COLON}		{ RETURN_TOKEN(TOK_COLON); }
 
-\r?\n			{ DUMP_PREPROCESS; current_lineno++ ; }
+{OPEN_PAREN}	{ PUSH_AND_RETURN(LIST_VAL_MODE, TOK_OPENPAREN); }
 
-[^\n]			{
-			DUMP_PREPROCESS;
+{VARIABLE_NAME}	{
+	DUMP_PREPROCESS;
+	int token = get_keyword_token(yytext);
+	int state = INITIAL;
 
-			  /* Something we didn't expect */
-			yyerror(_("Found unexpected character: '%s'"), yytext);
-			}
+	/* special cases */
+	switch (token) {
+	case -1:
+		/* no token found */
+		yylval.id = processunquoted(yytext, yyleng);
+		RETURN_TOKEN(TOK_ID);
+		break;
+	case TOK_RLIMIT:
+		state = RLIMIT_MODE;
+		break;
+	case TOK_NETWORK:
+		state = NETWORK_MODE;
+		break;
+	case TOK_CHANGE_PROFILE:
+		state = CHANGE_PROFILE_MODE;
+		break;
+	case TOK_MOUNT:
+	case TOK_REMOUNT:
+	case TOK_UMOUNT:
+		state = MOUNT_MODE;
+		break;
+	case TOK_DBUS:
+		state = DBUS_MODE;
+		break;
+	default: /* nothing */
+		break;
+	}
+	PUSH_AND_RETURN(state, token);
+}
 
+<INITIAL,NETWORK_MODE,RLIMIT_MODE,MOUNT_MODE,DBUS_MODE>{
+	{END_OF_RULE}	{
+		if (YY_START != INITIAL)
+			yy_pop_state();
+		RETURN_TOKEN(TOK_END_OF_RULE);
+	}
+
+	\r?\n		{
+		DUMP_PREPROCESS;
+		current_lineno++;
+	}
+}
+
+<INITIAL,SUB_ID,SUB_VALUE,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,MOUNT_MODE,DBUS_MODE>{
+	[^\n]	{
+		DUMP_PREPROCESS;
+		/* Something we didn't expect */
+		yyerror(_("Found unexpected character: '%s'"), yytext);
+	}
+}
 %%
+
+/* Create a table mapping lexer state number to the name used in the
+ * in the code.  This allows for better debug output
+ */
+static const char *const state_names[] = {
+	STATE_TABLE_ENT(INITIAL),
+	STATE_TABLE_ENT(SUB_ID),
+	STATE_TABLE_ENT(SUB_VALUE),
+	STATE_TABLE_ENT(EXTCOND_MODE),
+	STATE_TABLE_ENT(LIST_COND_VAL),
+	STATE_TABLE_ENT(LIST_COND_PAREN_VAL),
+	STATE_TABLE_ENT(LIST_COND_MODE),
+	STATE_TABLE_ENT(EXTCONDLIST_MODE),
+	STATE_TABLE_ENT(NETWORK_MODE),
+	STATE_TABLE_ENT(LIST_VAL_MODE),
+	STATE_TABLE_ENT(ASSIGN_MODE),
+	STATE_TABLE_ENT(RLIMIT_MODE),
+	STATE_TABLE_ENT(MOUNT_MODE),
+	STATE_TABLE_ENT(CHANGE_PROFILE_MODE),
+	STATE_TABLE_ENT(INCLUDE),
+};
