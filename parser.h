@@ -37,6 +37,12 @@ extern int parser_token;
 
 typedef enum pattern_t pattern_t;
 
+struct prefixes {
+	int audit;
+	int deny;
+	int owner;
+};
+
 struct flagval {
   	int hat;
   	int complain;
