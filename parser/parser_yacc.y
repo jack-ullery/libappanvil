@@ -180,6 +180,7 @@ void add_local_entry(struct codomain *cod);
 	struct cond_entry *cond_entry;
 	int boolean;
 	struct named_transition transition;
+	struct prefixes prefix;
 }
 
 %type <id> 	TOK_ID
@@ -222,8 +223,10 @@ void add_local_entry(struct codomain *cod);
 %type <boolean> opt_owner_flag
 %type <boolean> opt_profile_flag
 %type <boolean> opt_flags
+%type <boolean> opt_deny
 %type <id>	opt_namespace
 %type <id>	opt_id
+%type <prefix>  opt_prefix
 %type <fmode>	dbus_perm
 %type <fmode>	dbus_perms
 %type <fmode>	opt_dbus_perm
@@ -515,6 +518,16 @@ opt_owner_flag: { /* nothing */ $$ = 0; }
 	| TOK_OWNER { $$ = 1; };
 	| TOK_OTHER { $$ = 2; };
 
+opt_deny: { /* nothing */ $$ = 0; }
+	| TOK_DENY { $$ = 1; }
+
+opt_prefix: opt_audit_flag opt_deny opt_owner_flag
+	{
+		$$.audit = $1;
+		$$.deny = $2;
+		$$.owner = $3;
+	}
+
 rules:	{ /* nothing */ 
 		struct codomain *cod = NULL;
 		cod = (struct codomain *) calloc(1, sizeof(struct codomain));
@@ -525,58 +538,43 @@ rules:	{ /* nothing */
 		$$ = cod;
 	};
 
-/*  can't fold TOK_DENY in as opt_deny_flag as it messes up the generated
- * parser, even though it shouldn't
- */
-rules:  rules opt_audit_flag TOK_DENY opt_owner_flag rule
+rules:  rules opt_prefix rule
 	{
 		PDEBUG("matched: rules rule\n");
-		PDEBUG("rules rule: (%s)\n", $5->name);
-		if (!$5)
+		PDEBUG("rules rule: (%s)\n", $3->name);
+		if (!$3)
 			yyerror(_("Assert: `rule' returned NULL."));
-		$5->deny = 1;
-		if (($5->mode & AA_EXEC_BITS) && ($5->mode & ALL_AA_EXEC_TYPE))
+		$3->deny = $2.deny;
+		if (($2.deny && ($3->mode & AA_EXEC_BITS) &&
+		     ($3->mode & ALL_AA_EXEC_TYPE)))
 			yyerror(_("Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', 'p', or 'u'"));
-
-		if ($4 == 1)
-			$5->mode &= (AA_USER_PERMS | AA_SHARED_PERMS | AA_USER_PTRACE);
-		else if ($4 == 2)
-			$5->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS | AA_OTHER_PTRACE);
-		/* only set audit ctl quieting if the rule is not audited */
-		if (!$2)
-			$5->audit = $5->mode & ~ALL_AA_EXEC_TYPE;
-
-		add_entry_to_policy($1, $5);
-		$$ = $1;
-	};
-
-rules:  rules opt_audit_flag opt_owner_flag rule
-	{
-		PDEBUG("matched: rules rule\n");
-		PDEBUG("rules rule: (%s)\n", $4->name);
-		if (!$4)
-			yyerror(_("Assert: `rule' returned NULL."));
-		if (($4->mode & AA_EXEC_BITS) &&
-		    !($4->mode & ALL_AA_EXEC_TYPE) &&
-		    !($4->nt_name))
+		else if (!$2.deny && ($3->mode & AA_EXEC_BITS) &&
+			 !($3->mode & ALL_AA_EXEC_TYPE) &&
+			 !($3->nt_name))
 			yyerror(_("Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"));
 
-		if ($3 == 1)
-			$4->mode &= (AA_USER_PERMS | AA_SHARED_PERMS | AA_USER_PTRACE);
-		else if ($3 == 2)
-			$4->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS | AA_OTHER_PTRACE);
-		if ($2)
-			$4->audit = $4->mode & ~ALL_AA_EXEC_TYPE;
+		if ($2.owner == 1)
+			$3->mode &= (AA_USER_PERMS | AA_SHARED_PERMS | AA_USER_PTRACE);
+		else if ($2.owner == 2)
+			$3->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS | AA_OTHER_PTRACE);
+		/* only set audit ctl quieting if the rule is not audited */
+		if (($2.deny && !$2.audit) || (!$2.deny && $2.audit))
+			$3->audit = $3->mode & ~ALL_AA_EXEC_TYPE;
 
-		add_entry_to_policy($1, $4);
+		add_entry_to_policy($1, $3);
 		$$ = $1;
 	};
 
-rules: rules opt_audit_flag opt_owner_flag TOK_OPEN rules TOK_CLOSE
+
+rules: rules opt_prefix TOK_OPEN rules TOK_CLOSE
 	{
 		struct cod_entry *entry, *tmp;
-		PDEBUG("matched: audit block\n");
-		list_for_each_safe($5->entries, entry, tmp) {
+		if ($2.deny)
+			yyerror(_("deny prefix not allowed"));
+
+		PDEBUG("matched: %s%s%sblock\n", $2.audit ? "audit " : "",
+		       $2.deny ? "deny " : "", $2.owner ? "owner " : "");
+		list_for_each_safe($4->entries, entry, tmp) {
 			entry->next = NULL;
 			if (entry->mode & AA_EXEC_BITS) {
 				if (entry->deny &&
@@ -586,66 +584,30 @@ rules: rules opt_audit_flag opt_owner_flag TOK_OPEN rules TOK_CLOSE
 					 !(entry->mode & ALL_AA_EXEC_TYPE))
 					yyerror(_("Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"));
 			}
-			if ($3 == 1)
+			if ($2.owner == 1)
  				entry->mode &= (AA_USER_PERMS | AA_SHARED_PERMS | AA_USER_PTRACE);
-			else if ($3 == 2)
+			else if ($2.owner == 2)
 				entry->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS | AA_OTHER_PTRACE);
 
-			if ($2 && !entry->deny)
+			if ($2.audit && !entry->deny)
 				entry->audit = entry->mode & ~ALL_AA_EXEC_TYPE;
-			else if (!$2 && entry->deny)
+			else if (!$2.audit && entry->deny)
 				 entry->audit = entry->mode & ~ALL_AA_EXEC_TYPE;
 			add_entry_to_policy($1, entry);
 		}
-		$5->entries = NULL;
+		$4->entries = NULL;
 		// fix me transfer rules and free sub codomain
-		free_policy($5);
+		free_policy($4);
 		$$ = $1;
 	};
 
-rules: rules opt_audit_flag TOK_DENY network_rule
+rules: rules opt_prefix network_rule
 	{
 		struct aa_network_entry *entry, *tmp;
 
 		PDEBUG("Matched: network rule\n");
-		if (!$4)
-			yyerror(_("Assert: `network_rule' return invalid protocol."));
-		if (!$1->network_allowed) {
-			$1->network_allowed = calloc(get_af_max(),
-						     sizeof(unsigned int));
-			$1->audit_network = calloc(get_af_max(),
-						   sizeof(unsigned int));
-			$1->deny_network = calloc(get_af_max(),
-						     sizeof(unsigned int));
-			$1->quiet_network = calloc(get_af_max(),
-						     sizeof(unsigned int));
-			if (!$1->network_allowed || !$1->audit_network ||
-			    !$1->deny_network || !$1->quiet_network)
-				yyerror(_("Memory allocation error."));
-		}
-		list_for_each_safe($4, entry, tmp) {
-			if (entry->type > SOCK_PACKET) {
-				/* setting mask instead of a bit */
-				$1->deny_network[entry->family] |= entry->type;
-				if (!$2)
-					$1->quiet_network[entry->family] |= entry->type;
-
-			} else {
-				$1->deny_network[entry->family] |= 1 << entry->type;
-				if (!$2)
-					$1->quiet_network[entry->family] |= 1 << entry->type;
-			}
-			free(entry);
-		}
-
-		$$ = $1;
-	}
-
-rules: rules opt_audit_flag network_rule
-	{
-		struct aa_network_entry *entry, *tmp;
-
-		PDEBUG("Matched: network rule\n");
+		if ($2.owner)
+			yyerror(_("owner prefix not allowed"));
 		if (!$3)
 			yyerror(_("Assert: `network_rule' return invalid protocol."));
 		if (!$1->network_allowed) {
@@ -664,14 +626,25 @@ rules: rules opt_audit_flag network_rule
 		list_for_each_safe($3, entry, tmp) {
 			if (entry->type > SOCK_PACKET) {
 				/* setting mask instead of a bit */
-				$1->network_allowed[entry->family] |= entry->type;
-				if ($2)
-					$1->audit_network[entry->family] |= entry->type;
-
+				if ($2.deny) {
+					$1->deny_network[entry->family] |= entry->type;
+					if (!$2.audit)
+						$1->quiet_network[entry->family] |= entry->type;
+				} else {
+					$1->network_allowed[entry->family] |= entry->type;
+					if ($2.audit)
+						$1->audit_network[entry->family] |= entry->type;
+				}
 			} else {
-				$1->network_allowed[entry->family] |= 1 << entry->type;
-				if ($2)
-					$1->audit_network[entry->family] |= 1 << entry->type;
+				if ($2.deny) {
+					$1->deny_network[entry->family] |= 1 << entry->type;
+					if (!$2.audit)
+						$1->quiet_network[entry->family] |= 1 << entry->type;
+				} else {
+					$1->network_allowed[entry->family] |= 1 << entry->type;
+					if ($2.audit)
+						$1->audit_network[entry->family] |= 1 << entry->type;
+				}
 			}
 			free(entry);
 		}
@@ -679,19 +652,13 @@ rules: rules opt_audit_flag network_rule
 		$$ = $1;
 	}
 
-rules:  rules opt_audit_flag TOK_DENY mnt_rule
+rules:  rules opt_prefix mnt_rule
 	{
-		$4->deny = $4->allow;
-		if ($2)
-			$4->audit = $4->allow;
-		$4->next = $1->mnt_ents;
-		$1->mnt_ents = $4;
-		$$ = $1;
-	}
-
-rules: rules opt_audit_flag mnt_rule
-	{
-		if ($2)
+		if ($2.owner)
+			yyerror(_("owner prefix not allow on mount rules"));
+		if ($2.deny)
+			$3->deny = $3->allow;
+		if ($2.audit)
 			$3->audit = $3->allow;
 		$3->next = $1->mnt_ents;
 		$1->mnt_ents = $3;
@@ -727,19 +694,18 @@ rules:	rules change_profile
 		$$ = $1;
 	};
 
-rules:	rules opt_audit_flag TOK_DENY capability
+rules:  rules opt_prefix capability
 	{
-		$1->deny_caps |= $4;
-		if (!$2)
-			$1->quiet_caps |= $4;
-		$$ = $1;
-	};
+		if ($2.owner)
+			yyerror(_("owner prefix not allow on capability rules"));
 
-rules:	rules opt_audit_flag capability
-	{
-		$1->capabilities |= $3;
-		if ($2)
-			$1->audit_caps |= $3;
+		if ($2.deny)
+			$1->deny_caps |= $3;
+		else
+			$1->capabilities |= $3;
+
+		if (!$2.audit)
+			$1->quiet_caps |= $3;
 		$$ = $1;
 	};
 
