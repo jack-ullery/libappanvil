@@ -16,6 +16,9 @@
   /usr/lib{,32,64}/pkcs11/*.so mr,
   /usr/lib/@{multiarch}/pkcs11/*.so mr,
 
+  /usr/share/p11-kit/modules/  r,
+  /usr/share/p11-kit/modules/* r,
+
   # p11-kit also supports reading user configuration from ~/.pkcs11 depending
   # on how /etc/pkcs11/pkcs11.conf is configured. This should generally not be
   # included in this abstraction.
