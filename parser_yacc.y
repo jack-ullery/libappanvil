@@ -665,19 +665,13 @@ rules:  rules opt_prefix mnt_rule
 		$$ = $1;
 	}
 
-rules:  rules opt_audit_flag TOK_DENY dbus_rule
+rules:  rules opt_prefix dbus_rule
 	{
-		$4->deny = $4->mode;
-		if ($2)
-			$4->audit = $4->mode;
-		$4->next = $1->dbus_ents;
-		$1->dbus_ents = $4;
-		$$ = $1;
-	}
-
-rules: rules opt_audit_flag dbus_rule
-	{
-		if ($2)
+		if ($2.owner)
+			yyerror(_("owner prefix not allow on dbus rules"));
+		if ($2.deny)
+			$3->deny = $3->mode;
+		if ($2.audit)
 			$3->audit = $3->mode;
 		$3->next = $1->dbus_ents;
 		$1->dbus_ents = $3;
