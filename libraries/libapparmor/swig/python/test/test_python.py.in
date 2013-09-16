@@ -50,8 +50,8 @@ EVENT_MAP = {
 
 # default is None if not in this table
 NO_VALUE_MAP = {
-    'fsuid': int(ctypes.c_ulonglong(-1).value),
-    'ouid':  int(ctypes.c_ulonglong(-1).value),
+    'fsuid': int(ctypes.c_ulong(-1).value),
+    'ouid':  int(ctypes.c_ulong(-1).value),
 }
 
 
