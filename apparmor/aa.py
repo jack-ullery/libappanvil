@@ -2036,12 +2036,12 @@ def delete_net_duplicates(netrules, incnetrules):
             incnetglob = True
         for fam in netrules.keys():
             if incnetglob or (type(incnetrules['rule'][fam]) != dict and incnetrules['rule'][fam] == 1):
-                if type(netrules['rule'][hash]) == dict:
+                if type(netrules['rule'][fam]) == dict:
                     deleted += len(netrules['rule'][fam].keys())
                 else:
                     deleted += 1
                 netrules['rule'].pop(fam)
-            elif netrules['rule'][fam] != 'HASH' and netrules['rule'][fam] == 1:
+            elif type(netrules['rule'][fam]) != dict and netrules['rule'][fam] == 1:
                 continue
             else:
                 for socket_type in netrules['rule'][fam].keys():

@@ -2,9 +2,10 @@
 
 import argparse
 import sys
+import cleanprof
 
 import apparmor.aa as apparmor
-
+import apparmor.cleanprofile as cleanprofile
 parser = argparse.ArgumentParser(description='Perform a 3way merge on the given profiles')
 ##parser.add_argument('profiles', type=str, nargs=3, help='MINE BASE OTHER')
 parser.add_argument('mine', type=str, help='Your profile')
@@ -30,20 +31,23 @@ class Merge(object):
         
         #Read and parse base profile and save profile data, include data from it and reset them
         apparmor.read_profile(base, True)
-        self.base_aa = apparmor.aa
-        self.base_filelist = apparmor.filelist
-        self.base_include = apparmor.include
+        base = cleanprof.Prof()
+        #self.base_aa = apparmor.aa
+        #self.base_filelist = apparmor.filelist
+        #self.base_include = apparmor.include
         reset()
         
         #Read and parse other profile and save profile data, include data from it and reset them
         apparmor.read_profile(other, True)
-        self.other_aa = apparmor.aa
-        self.other_filelist = apparmor.filelist
-        self.other_include = apparmor.include
+        other = cleanprof.prof()
+        #self.other_aa = apparmor.aa
+        #self.other_filelist = apparmor.filelist
+        #self.other_include = apparmor.include
         reset()
         
         #Read and parse user profile
         apparmor.read_profile(profiles[0], True)
+        user = cleanprof.prof()
         #user_aa = apparmor.aa
         #user_filelist = apparmor.filelist
         #user_include = apparmor.include
