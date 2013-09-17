@@ -108,44 +108,82 @@ class aa_tools:
     
     def clean_profile(self, program, p):
         filename = apparmor.get_profile_filename(program)
-        self.delete_superluous_rules(program)
+        self.delete_superfluous_rules(program, filename)
         if filename:
             apparmor.write_profile_ui_feedback(program)
             apparmor.reload_base(program)
         else:
             raise apparmor.AppArmorException(_('The profile for %s does not exists. Nothing to clean.')%p)
     
-    def delete_superluous_rules(self, program):
+    def delete_superfluous_rules(self, program, filename):
         #print(filename, apparmor.aa.get(program, False))
         #print(apparmor.aa[program][program]['include'])
-        includes = apparmor.aa[program][program]['include'].keys()
-        allow_path_rules = list(apparmor.aa[program][program]['allow']['path'].keys())
-        allow_net_rules =  list(apparmor.aa[program][program]['allow']['netdomain']['rule'].keys())
-        #b=set(allow_rules)
-        #print(allow_rules)
-        dele = 0
-        #print(includes)
+#         includes = apparmor.aa[program][program]['include'].keys()
+#         allow_path_rules = list(apparmor.aa[program][program]['allow']['path'].keys())
+#         allow_net_rules =  list(apparmor.aa[program][program]['allow']['netdomain']['rule'].keys())
+#         #b=set(allow_rules)
+#         #print(allow_rules)
+#         dele = 0
+#         #print(includes)
+#         
+#         #Clean up superfluous rules from includes
+#         #print(apparmor.include.keys())
+#         
+#         for inc in includes:
+#             #old=dele
+#             if not apparmor.include.get(inc, False):
+#                 apparmor.load_include(inc)
+#             dele+= apparmor.delete_duplicates(apparmor.aa[program][program], inc)
+#             #dele+= apparmor.delete_path_duplicates(apparmor.aa[program][program], str(inc), 'allow')
+#             #if dele>old:
+#             #    print(inc)
+#         
+#         for rule in allow_path_rules:
+#             pass
+#         print(dele)
+#         #allow_rules = [] + list(apparmor.aa[program][program]['allow']['path'].keys())
+#         #allow_rules +=  list(apparmor.aa[program][program]['allow']['netdomain']['rule'].keys()) + list(apparmor.aa[program][program]['allow']['capability'].keys()) 
+#         #c=set(allow_rules)
+#         #print(b.difference(c))
+#         sys.exit(0)
         
-        #Clean up superfluous rules from includes
-        #print(apparmor.include.keys())
         
-        for inc in includes:
-            #old=dele
-            if not apparmor.include.get(inc, False):
-                apparmor.load_include(inc)
-            dele+= apparmor.delete_duplicates(apparmor.aa[program][program], inc)
-            #dele+= apparmor.delete_path_duplicates(apparmor.aa[program][program], str(inc), 'allow')
-            #if dele>old:
-            #    print(inc)
-        
-        for rule in allow_path_rules:
-            pass
-        print(dele)
-        #allow_rules = [] + list(apparmor.aa[program][program]['allow']['path'].keys())
-        #allow_rules +=  list(apparmor.aa[program][program]['allow']['netdomain']['rule'].keys()) + list(apparmor.aa[program][program]['allow']['capability'].keys()) 
-        #c=set(allow_rules)
-        #print(b.difference(c))
-        sys.exit(0)
+        #print(filename, apparmor.aa.get(program, False))
+        #print(apparmor.aa[program][program]['include'])
+        #Process the profile of the program for
+        #Process every hat in the profile individually
+        file_includes = list(apparmor.filelist[filename]['include'].keys())
+        print(file_includes)
+        for hat in apparmor.aa[program].keys():
+            includes = list(apparmor.aa[program][hat]['include'].keys()) + file_includes
+            allow_path_rules = list(apparmor.aa[program][hat]['allow']['path'].keys())
+            allow_net_rules =  list(apparmor.aa[program][hat]['allow']['netdomain']['rule'].keys())
+            allow_rules = [] + list(apparmor.aa[program][hat]['allow']['path'].keys())
+            allow_rules +=  list(apparmor.aa[program][hat]['allow']['netdomain']['rule'].keys()) + list(apparmor.aa[program][hat]['allow']['capability'].keys()) 
+            b=set(allow_rules)
+            #print(allow_rules)
+            dele = 0
+            #print(includes)
+     
+            #Clean up superfluous rules from includes
+            #print(apparmor.include.keys())
+             
+            for inc in includes:
+                old=dele
+                if not apparmor.include.get(inc, {}).get(inc,False):
+                    apparmor.load_include(inc)
+                dele+= apparmor.delete_duplicates(apparmor.aa[program][hat], inc)
+                #dele+= apparmor.delete_path_duplicates(apparmor.aa[program][program], str(inc), 'allow')
+                if dele>old:
+                    print(inc)
+             
+            for rule in allow_path_rules:
+                pass
+            allow_rules = [] + list(apparmor.aa[program][hat]['allow']['path'].keys())
+            allow_rules +=  list(apparmor.aa[program][hat]['allow']['netdomain']['rule'].keys()) + list(apparmor.aa[program][hat]['allow']['capability'].keys()) 
+            c=set(allow_rules)
+            print(b.difference(c))
+            sys.exit(0)
 
     def delete_path_duplicates(profile, incname, allow):
         deleted = []

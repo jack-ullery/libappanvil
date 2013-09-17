@@ -2078,16 +2078,42 @@ def delete_duplicates(profile, incname):
     deleted = 0
     # Allow rules covered by denied rules shouldn't be deleted
     # only a subset allow rules may actually be denied
-    deleted += delete_net_duplicates(profile['allow']['netdomain'], include[incname][incname]['allow']['netdomain'])
+#     deleted += delete_net_duplicates(profile['allow']['netdomain'], include[incname][incname]['allow']['netdomain'])
+#     
+#     deleted += delete_net_duplicates(profile['deny']['netdomain'], include[incname][incname]['deny']['netdomain'])
+#     
+#     deleted += delete_cap_duplicates(profile['allow']['capability'], include[incname][incname]['allow'])
+#     
+#     deleted += delete_cap_duplicates(profile['deny']['capability'], include[incname][incname]['deny']['capability'])
+#     
+#     deleted += delete_path_duplicates(profile, incname, 'allow')
+#     deleted += delete_path_duplicates(profile, incname, 'deny')
+
+    if include.get(incname, False):
+        deleted += delete_net_duplicates(profile['allow']['netdomain'], include[incname][incname]['allow']['netdomain'])
+         
+        deleted += delete_net_duplicates(profile['deny']['netdomain'], include[incname][incname]['deny']['netdomain'])
+         
+        deleted += delete_cap_duplicates(profile['allow']['capability'], include[incname][incname]['allow'])
+         
+        deleted += delete_cap_duplicates(profile['deny']['capability'], include[incname][incname]['deny']['capability'])
+         
+        deleted += delete_path_duplicates(profile, incname, 'allow')
+        deleted += delete_path_duplicates(profile, incname, 'deny')
+    elif filelist.get(incname, False):
+        deleted += delete_net_duplicates(profile['allow']['netdomain'], filelist[incname][incname]['allow']['netdomain'])
+         
+        deleted += delete_net_duplicates(profile['deny']['netdomain'], filelist[incname][incname]['deny']['netdomain'])
+         
+        deleted += delete_cap_duplicates(profile['allow']['capability'], filelist[incname][incname]['allow'])
+         
+        deleted += delete_cap_duplicates(profile['deny']['capability'], filelist[incname][incname]['deny']['capability'])
+         
+        deleted += delete_path_duplicates(profile, incname, 'allow')
+        deleted += delete_path_duplicates(profile, incname, 'deny')
     
-    deleted += delete_net_duplicates(profile['deny']['netdomain'], include[incname][incname]['deny']['netdomain'])
-    
-    deleted += delete_cap_duplicates(profile['allow']['capability'], include[incname][incname]['allow'])
-    
-    deleted += delete_cap_duplicates(profile['deny']['capability'], include[incname][incname]['deny']['capability'])
-    
-    deleted += delete_path_duplicates(profile, incname, 'allow')
-    deleted += delete_path_duplicates(profile, incname, 'deny')
+    return deleted
+
     
     return deleted
 
@@ -3973,15 +3999,19 @@ def load_include(incname):
         return 0
     while load_includeslist:
         incfile = load_includeslist.pop(0)
-        data = get_include_data(incfile)
-        incdata = parse_profile_data(data, incfile, True)
-        #print(incdata)
-        if not incdata:
-            # If include is empty, simply push in a placeholder for it 
-            # because other profiles may mention them
-            incdata = hasher()
-            incdata[incname] = hasher()
-        attach_profile_data(include, incdata)
+        if os.path.isfile(profile_dir+'/'+incfile):
+            data = get_include_data(incfile)
+            incdata = parse_profile_data(data, incfile, True)
+            #print(incdata)
+            if not incdata:
+                # If include is empty, simply push in a placeholder for it 
+                # because other profiles may mention them
+                incdata = hasher()
+                incdata[incname] = hasher()
+            attach_profile_data(include, incdata)
+        #If the include is a directory means include all subfiles
+        elif os.path.isdir(profile_dir+'/'+incfile):
+            load_includeslist += list(map(lambda x: incfile+'/'+x, os.listdir(profile_dir+'/'+incfile)))
         
     return 0
 
