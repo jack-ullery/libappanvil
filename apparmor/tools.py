@@ -109,118 +109,18 @@ class aa_tools:
     
     def clean_profile(self, program, p):
         filename = apparmor.get_profile_filename(program)
-        
+
         import apparmor.cleanprofile as cleanprofile
         prof = cleanprofile.Prof(filename)
         cleanprof = cleanprofile.CleanProf(True, prof, prof)
         cleanprof.remove_duplicate_rules(program)
-        
-        #self.delete_superfluous_rules(program, filename)
+
         if filename:
             apparmor.write_profile_ui_feedback(program)
             apparmor.reload_base(program)
         else:
             raise apparmor.AppArmorException(_('The profile for %s does not exists. Nothing to clean.')%p)
-    
-#     def delete_superfluous_rules(self, program, filename):
-#         #Process the profile of the program
-#         #Process every hat in the profile individually
-#         file_includes = list(apparmor.filelist[filename]['include'].keys())
-#         print(file_includes)
-#         for hat in apparmor.aa[program].keys():
-#             #The combined list of includes from profile and the file
-#             includes = list(apparmor.aa[program][hat]['include'].keys()) + file_includes
-# 
-#             allow_net_rules =  list(apparmor.aa[program][hat]['allow']['netdomain']['rule'].keys())
-#             #allow_rules = [] + list(apparmor.aa[program][hat]['allow']['path'].keys())
-#             #allow_rules +=  list(apparmor.aa[program][hat]['allow']['netdomain']['rule'].keys()) + list(apparmor.aa[program][hat]['allow']['capability'].keys()) 
-#             #b=set(allow_rules)
-#             #print(allow_rules)
-#             deleted = 0
-#             #print(includes)
-#      
-#             #Clean up superfluous rules from includes           
-#             for inc in includes:
-#                 #old=dele
-#                 if not apparmor.include.get(inc, {}).get(inc,False):
-#                     apparmor.load_include(inc)
-#                 deleted += apparmor.delete_duplicates(apparmor.aa[program][hat], inc)
-#                 #dele+= apparmor.delete_path_duplicates(apparmor.aa[program][program], str(inc), 'allow')
-#                 #if dele>old:
-#                 #    print(inc)     
-#             #allow_rules = [] + list(apparmor.aa[program][hat]['allow']['path'].keys())
-#             #allow_rules +=  list(apparmor.aa[program][hat]['allow']['netdomain']['rule'].keys()) + list(apparmor.aa[program][hat]['allow']['capability'].keys()) 
-#             #c=set(allow_rules)
-#             #print(b.difference(c))
-# 
-#             deleted += self.delete_path_duplicates(apparmor.aa[program][hat], apparmor.aa[program][hat], 'allow', True)
-#             deleted += self.delete_path_duplicates(apparmor.aa[program][hat], apparmor.aa[program][hat], 'deny', True)
-#             
-#             deleted += self.delete_cap_duplicates(apparmor.aa[program][hat]['allow']['capability'], apparmor.aa[program][hat]['allow']['capability'], True)         
-#             deleted += self.delete_cap_duplicates(apparmor.aa[program][hat]['deny']['capability'], apparmor.aa[program][hat]['deny']['capability'], True)
-# 
-#             print(deleted)
-#             sys.exit(0)
-# 
-#     def delete_path_duplicates(self, profile, profile_other, allow, same_profile=True):
-#         deleted = []
-#         #Check if any individual rule makes any rule superfluous
-#         for rule in profile[allow]['path'].keys():
-#             for entry in profile_other[allow]['path'].keys():
-#                 if rule == entry:
-#                     if not same_profile:
-#                         deleted.append(entry)
-#                     continue
-#                 if re.search('#?\s*include', rule) or re.search('#?\s*include', entry):
-#                     continue
-#                 #Check if the rule implies entry
-#                 if apparmor.matchliteral(rule, entry):
-#                     #Check the modes
-#                     cm = profile[allow]['path'][rule]['mode']
-#                     am = profile[allow]['path'][rule]['audit']
-#                     #If modes of rule are a superset of rules implied by entry we can safely remove it
-#                     if apparmor.mode_contains(cm, profile_other[allow]['path'][entry]['mode']) and apparmor.mode_contains(am, profile_other[allow]['path'][entry]['audit']):           
-#                         deleted.append(entry)
-#         #print(deleted)
-#         for entry in deleted:
-#             profile_other[allow]['path'].pop(entry)
-#         return len(deleted)
-#     
-#     def delete_cap_duplicates(self, profilecaps, profilecaps_other, same_profile=True):
-#         deleted = []
-#         if profilecaps and profilecaps_other and not same_profile:
-#             for capname in profilecaps.keys():
-#                 if profilecaps_other[capname].get('set', False):
-#                     deleted.append(capname)
-#             for capname in deleted:
-#                 profilecaps_other.pop(capname)
-#         
-#         return len(deleted)
-#     
-#     def delete_net_duplicates(self, netrules, netrules_other, same_profile=True):
-#         deleted = 0
-#         if netrules_other and netrules:
-#             netglob = False
-#             # Delete matching rules from abstractions
-#             if netrules.get('all', False):
-#                 netglob = True
-#             for fam in netrules_other.keys():
-#                 if netglob or (type(netrules_other['rule'][fam]) != dict and netrules_other['rule'][fam] == True):
-#                     if type(netrules['rule'][fam]) == dict:
-#                         deleted += len(netrules['rule'][fam].keys())
-#                     else:
-#                         deleted += 1
-#                     netrules['rule'].pop(fam)
-#                 elif type(netrules['rule'][fam]) != dict and netrules['rule'][fam] == True:
-#                     continue
-#                 else:
-#                     for socket_type in netrules['rule'][fam].keys():
-#                         if netrules_other['rule'].get(fam, False):
-#                             netrules[fam].pop(socket_type)
-#                             deleted += 1
-#         return deleted
-
-    
+        
     def use_autodep(self, program):
         apparmor.check_qualifiers(program)           
         
