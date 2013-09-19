@@ -110,7 +110,7 @@ The apparmor filesystem mount could not be found
 =head1 BUGS
 
 None known. If you find any, please report them at
-L<http://https://bugs.launchpad.net/apparmor/+filebug>.
+L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 

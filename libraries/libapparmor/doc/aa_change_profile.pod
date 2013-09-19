@@ -197,7 +197,7 @@ used (in addition to the one for 'i_cant_be_trusted_anymore', above):
 =head1 BUGS
 
 None known. If you find any, please report them at
-L<http://https://bugs.launchpad.net/apparmor/+filebug>. Note that using
+L<https://bugs.launchpad.net/apparmor/+filebug>. Note that using
 aa_change_profile(2) without execve(2) provides no memory barriers between
 different areas of a program; if address space separation is required, then
 separate processes should be used.

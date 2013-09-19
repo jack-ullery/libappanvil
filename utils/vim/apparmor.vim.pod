@@ -48,7 +48,7 @@ but it may help you understand your profiles better.
 
 B<apparmor.vim> does not properly detect dark versus light backgrounds.
 Patches accepted. If you find any bugs, please report them at
-L<http://https://bugs.launchpad.net/apparmor/+filebug>.
+L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 

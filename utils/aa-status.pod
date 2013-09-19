@@ -116,7 +116,7 @@ the apparmor control files.
 =back
 
 If you find any additional bugs, please report them at
-L<http://https://bugs.launchpad.net/apparmor/+filebug>.
+L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 

@@ -115,7 +115,7 @@ with the prefork MPM configuration -- threaded configurations of Apache
 may not work correctly.
 
 There are likely other bugs lurking about; if you find any, please report
-them at L<http://https://bugs.launchpad.net/apparmor/+filebug>.
+them at L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 

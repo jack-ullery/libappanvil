@@ -96,7 +96,7 @@ module source is no longer installed by default. However, the module has
 been included with the SUSE kernel, so no rebuilding should be necessary.
 
 If you find any additional bugs, please report them at
-L<http://https://bugs.launchpad.net/apparmor/+filebug>.
+L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 

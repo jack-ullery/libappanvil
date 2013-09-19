@@ -47,7 +47,7 @@ program is unsuitable for forensics use and is provided only as an aid
 to profiling all network-accessible processes in the lab.
 
 If you find any bugs, please report them at
-L<http://https://bugs.launchpad.net/apparmor/+filebug>.
+L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 

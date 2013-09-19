@@ -103,7 +103,7 @@ Lines starting with # are comments and are ignored.
 =head1 BUGS
 
 If you find any bugs, please report them at
-L<http://https://bugs.launchpad.net/apparmor/+filebug>.
+L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 
