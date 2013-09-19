@@ -1239,18 +1239,9 @@ def handle_children(profile, hat, root):
                                 match = regex_optmode.search(ans).groups()[0]
                                 exec_mode = str_to_mode(match)
                                 px_default = 'n'
-                                px_msg = _('Should AppArmor sanitise the environment when\n' +
-                                                 'switching profiles?\n\n' + 
-                                                 'Sanitising environment is more secure,\n' +
-                                                 'but some applications depend on the presence\n' +
-                                                 'of LD_PRELOAD or LD_LIBRARY_PATH.')
+                                px_msg = _("""Should AppArmor sanitise the environment when\nswitching profiles?\n\nSanitising environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH.""")
                                 if parent_uses_ld_xxx:
-                                    px_msg = _('Should AppArmor sanitise the environment when\n' +
-                                                 'switching profiles?\n\n' + 
-                                                 'Sanitising environment is more secure,\n' +
-                                                 'but this application appears to be using LD_PRELOAD\n' +
-                                                 'or LD_LIBRARY_PATH and sanitising the environment\n' +
-                                                 'could cause functionality problems.')
+                                    px_msg = _("""Should AppArmor sanitise the environment when\nswitching profiles?\n\nSanitising environment is more secure,\nbut this application appears to be using LD_PRELOAD\nor LD_LIBRARY_PATH and sanitising the environment\ncould cause functionality problems.""")
                                 
                                 ynans = UI_YesNo(px_msg, px_default)
                                 if ynans == 'y':
@@ -1258,16 +1249,9 @@ def handle_children(profile, hat, root):
                                     exec_mode = exec_mode - (AA_EXEC_UNSAFE | AA_OTHER(AA_EXEC_UNSAFE))
                             elif ans == 'CMD_ux':
                                 exec_mode = str_to_mode('ux')
-                                ynans = UI_YesNo(_('Launching processes in an unconfined state is a very\n' +
-                                                        'dangerous operation and can cause serious security holes.\n\n' +
-                                                        'Are you absolutely certain you wish to remove all\n' +
-                                                        'AppArmor protection when executing :') + '%s ?' % exec_target, 'n')
+                                ynans = UI_YesNo(_("""Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing : %s ?""") % exec_target, 'n')
                                 if ynans == 'y':
-                                    ynans = UI_YesNo(_('Should AppArmor sanitise the environment when\n' +
-                                                             'running this program unconfined?\n\n' +
-                                                             'Not sanitising the environment when unconfining\n' +
-                                                             'a program opens up significant security holes\n' +
-                                                             'and should be avoided if at all possible.'), 'y')
+                                    ynans = UI_YesNo(_("""Should AppArmor sanitise the environment when\nrunning this program unconfined?\n\nNot sanitising the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."""), 'y')
                                     if ynans == 'y':
                                         # Disable the unsafe mode
                                         exec_mode = exec_mode - (AA_EXEC_UNSAFE | AA_OTHER(AA_EXEC_UNSAFE))
@@ -1967,7 +1951,7 @@ def ask_the_questions():
                                     
                                     changed[profile] = True
                                     
-                                    UI_Info(_('Adding network access %s %s to profile.' % (family, sock_type)))
+                                    UI_Info(_('Adding network access %s %s to profile.') % (family, sock_type))
                             
                             elif ans == 'CMD_DENY':
                                 done = True
@@ -4087,11 +4071,7 @@ def suggest_incs_for_path(incname, path, allow):
 def check_qualifiers(program):
     if cfg['qualifiers'].get(program, False):
         if cfg['qualifiers'][program] != 'p':
-            fatal_error(_('%s is currently marked as a program that should not have its own\n' +
-                                'profile.  Usually, programs are marked this way if creating a profile for \n' +
-                                'them is likely to break the rest of the system.  If you know what you\'re\n' +
-                                'doing and are certain you want to create a profile for this program, edit\n' +
-                                'the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf.') %program)
+            fatal_error(_("""%s is currently marked as a program that should not have its own\nprofile.  Usually, programs are marked this way if creating a profile for \nthem is likely to break the rest of the system.  If you know what you\'re\ndoing and are certain you want to create a profile for this program, edit\nthe corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf.""") %program)
     return False
 
 def get_subdirectories(current_dir):

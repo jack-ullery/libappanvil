@@ -7,7 +7,7 @@ import apparmor.aa as apparmor
 class aa_tools:
     def __init__(self, tool_name, args):
         self.name = tool_name
-        self.profiledir = args.d
+        self.profiledir = args.dir
         self.profiling = args.program
         self.check_profile_dir()
         
