@@ -1515,8 +1515,8 @@ def ask_the_questions():
                     
                     audit_toggle = 0
                     
-                    q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
-                                      'CMD_ABORT', 'CMD_FINISHED', 'CMD_IGNORE_ENTRY']
+                    q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
+                                      'CMD_ABORT', 'CMD_FINISHED']
                     
                     # In complain mode: events default to allow
                     # In enforce mode: events default to deny
@@ -1538,12 +1538,12 @@ def ask_the_questions():
                             audit_toggle = not audit_toggle
                             audit = ''
                             if audit_toggle:
-                                q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_OFF',
-                                                  'CMD_ABORT', 'CMD_FINISHED', 'CMD_IGNORE_ENTRY']
+                                q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_OFF',
+                                                  'CMD_ABORT', 'CMD_FINISHED']
                                 audit = 'audit'
                             else:
-                                q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
-                                                  'CMD_ABORT', 'CMD_FINISHED', 'CMD_IGNORE_ENTRY']
+                                q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
+                                                  'CMD_ABORT', 'CMD_FINISHED', ]
                             
                             q['headers'] = [_('Profile'), combine_name(profile, hat),
                                             _('Capability'), audit + capability,
@@ -1762,9 +1762,9 @@ def ask_the_questions():
                             q['headers'] += [_('Severity'), severity]
                             q['options'] = options
                             q['selected'] = default_option - 1
-                            q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_GLOB',
+                            q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_GLOB',
                                               'CMD_GLOBEXT', 'CMD_NEW', 'CMD_ABORT',
-                                              'CMD_FINISHED', 'CMD_OTHER', 'CMD_IGNORE_ENTRY']
+                                              'CMD_FINISHED', 'CMD_OTHER']
                             q['default'] = 'CMD_DENY'
                             if aamode == 'PERMITTING':
                                 q['default'] = 'CMD_ALLOW'
@@ -1915,8 +1915,8 @@ def ask_the_questions():
                         q['headers'] += [_('Socket Type'), sock_type]
                         
                         audit_toggle = 0
-                        q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
-                                          'CMD_ABORT', 'CMD_FINISHED', 'CMD_IGNORE_ENTRY']
+                        q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
+                                          'CMD_ABORT', 'CMD_FINISHED']
                         q['default'] = 'CMD_DENY'
                         
                         if aamode == 'PERMITTING':
@@ -2078,42 +2078,30 @@ def delete_duplicates(profile, incname):
     deleted = 0
     # Allow rules covered by denied rules shouldn't be deleted
     # only a subset allow rules may actually be denied
-#     deleted += delete_net_duplicates(profile['allow']['netdomain'], include[incname][incname]['allow']['netdomain'])
-#     
-#     deleted += delete_net_duplicates(profile['deny']['netdomain'], include[incname][incname]['deny']['netdomain'])
-#     
-#     deleted += delete_cap_duplicates(profile['allow']['capability'], include[incname][incname]['allow'])
-#     
-#     deleted += delete_cap_duplicates(profile['deny']['capability'], include[incname][incname]['deny']['capability'])
-#     
-#     deleted += delete_path_duplicates(profile, incname, 'allow')
-#     deleted += delete_path_duplicates(profile, incname, 'deny')
 
     if include.get(incname, False):
         deleted += delete_net_duplicates(profile['allow']['netdomain'], include[incname][incname]['allow']['netdomain'])
          
         deleted += delete_net_duplicates(profile['deny']['netdomain'], include[incname][incname]['deny']['netdomain'])
          
-        deleted += delete_cap_duplicates(profile['allow']['capability'], include[incname][incname]['allow'])
+        deleted += delete_cap_duplicates(profile['allow']['capability'], include[incname][incname]['allow']['capability'])
          
         deleted += delete_cap_duplicates(profile['deny']['capability'], include[incname][incname]['deny']['capability'])
          
         deleted += delete_path_duplicates(profile, incname, 'allow')
         deleted += delete_path_duplicates(profile, incname, 'deny')
+        
     elif filelist.get(incname, False):
         deleted += delete_net_duplicates(profile['allow']['netdomain'], filelist[incname][incname]['allow']['netdomain'])
          
         deleted += delete_net_duplicates(profile['deny']['netdomain'], filelist[incname][incname]['deny']['netdomain'])
          
-        deleted += delete_cap_duplicates(profile['allow']['capability'], filelist[incname][incname]['allow'])
+        deleted += delete_cap_duplicates(profile['allow']['capability'], filelist[incname][incname]['allow']['capability'])
          
         deleted += delete_cap_duplicates(profile['deny']['capability'], filelist[incname][incname]['deny']['capability'])
          
         deleted += delete_path_duplicates(profile, incname, 'allow')
         deleted += delete_path_duplicates(profile, incname, 'deny')
-    
-    return deleted
-
     
     return deleted
 

@@ -6,8 +6,8 @@ import re
 
 import apparmor.aa as apparmor
 
-parser = argparse.ArgumentParser(description='')
-parser.add_argument('--paranoid', action='store_true')
+parser = argparse.ArgumentParser(description='Lists unconfined processes having tcp or udp ports')
+parser.add_argument('--paranoid', action='store_true', help='scan all processes from /proc')
 args = parser.parse_args()
 
 paranoid = args.paranoid

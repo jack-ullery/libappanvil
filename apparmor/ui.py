@@ -410,7 +410,7 @@ def Text_PromptUser(question):
             
             elif options and re.search('^\d$', ans):
                 ans = int(ans)
-                if ans > 0 and ans < len(options):
+                if ans > 0 and ans <= len(options):
                     selected = ans - 1
                 ans = 'XXXINVALIDXXX'
         

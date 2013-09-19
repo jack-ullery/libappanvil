@@ -6,8 +6,8 @@ import os
 import apparmor.aa as apparmor
 
 parser = argparse.ArgumentParser(description='Process log entries to generate profiles')
-parser.add_argument('-d', type=str, help='path to profiles')
-parser.add_argument('-f', type=str, help='path to logfile')
+parser.add_argument('-d', '--dir', type=str, help='path to profiles')
+parser.add_argument('-f', '--file', type=str, help='path to logfile')
 parser.add_argument('-m', type=str, help='mark in the log to start processing after')
 args = parser.parse_args()
 

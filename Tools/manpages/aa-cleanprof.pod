@@ -1,0 +1,34 @@
+=pod
+
+=head1 NAME
+
+aa-cleanprof - clean an existing AppArmor security profile.
+
+=head1 SYNOPSIS
+
+B<aa-cleanprof I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...] [I<-d /path/to/profiles>]>
+
+=head1 OPTIONS
+
+B<-d --dir  /path/to/profiles>
+
+   Specifies where to look for the AppArmor security profile set.
+   Defaults to /etc/apparmor.d.
+
+=head1 DESCRIPTION
+
+B<aa-cleanprof> is used to perform a cleanup on one or more profiles.
+The tool removes any existing superfluous rules, reorders the rules to group 
+similar rules together and removes all comments.
+
+=head1 BUGS
+
+If you find any bugs, please report them at
+L<https://bugs.launchpad.net/apparmor-profile-tools/+filebug>.
+
+=head1 SEE ALSO
+
+apparmor(7), apparmor.d(5), aa-enforce(1), aa-complain(1), aa-disable(1),
+aa_change_hat(2), and L<http://wiki.apparmor.net>.
+
+=cut

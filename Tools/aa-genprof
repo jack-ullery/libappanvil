@@ -34,8 +34,8 @@ def restore_ratelimit():
     sysctl_write(ratelimit_sysctl, ratelimit_saved)
 
 parser = argparse.ArgumentParser(description='Generate profile for the given program')
-parser.add_argument('-d', type=str, help='path to profiles')
-parser.add_argument('-f', type=str, help='path to logfile')
+parser.add_argument('-d', '--dir', type=str, help='path to profiles')
+parser.add_argument('-f', '--file', type=str, help='path to logfile')
 parser.add_argument('program', type=str, help='name of program to profile')
 args = parser.parse_args()
 
