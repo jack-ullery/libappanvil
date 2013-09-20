@@ -22,7 +22,7 @@ if paranoid:
 else:
     regex_tcp_udp = re.compile('^(tcp|udp)\s+\d+\s+\d+\s+\S+\:(\d+)\s+\S+\:(\*|\d+)\s+(LISTEN|\s+)\s+(\d+)\/(\S+)')
     import subprocess
-    output = subprocess.check_output('LANG=en netstat -nlp', shell=True).split('\n')
+    output = subprocess.check_output('LANG=C netstat -nlp', shell=True).split('\n')
     
     for line in output:
         match = regex_tcp_udp.search(line)
