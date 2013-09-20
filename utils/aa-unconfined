@@ -60,7 +60,7 @@ if ($paranoid) {
     @pids = grep { /^\d+$/ } readdir(PROC);
     closedir(PROC);
 } else {
-    if (open(NETSTAT, "/bin/netstat -nlp |")) {
+    if (open(NETSTAT, "LANG=C /bin/netstat -nlp |")) {
         while (<NETSTAT>) {
             chomp;
             push @pids, $5
