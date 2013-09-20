@@ -171,7 +171,7 @@ def get_full_path(original_path):
     while os.path.islink(path):
         link_count += 1
         if link_count > 64:
-            fatal_error("Followed too many links while resolving %s" % (original_path))
+            fatal_error(_("Followed too many links while resolving %s") % (original_path))
         direc, file = os.path.split(path)
         link = os.readlink(path)
         # If the link an absolute path
@@ -227,14 +227,14 @@ def complain(path):
     """Sets the profile to complain mode if it exists"""
     prof_filename, name = name_to_prof_filename(path)
     if not prof_filename :
-        fatal_error("Can't find %s" % path)
+        fatal_error(_("Can't find %s") % path)
     set_complain(prof_filename, name)
 
 def enforce(path):
     """Sets the profile to enforce mode if it exists"""
     prof_filename, name = name_to_prof_filename(path)
     if not prof_filename :
-        fatal_error("Can't find %s" % path)
+        fatal_error(_("Can't find %s") % path)
     set_enforce(prof_filename, name)
     
 def set_complain(filename, program, ):
@@ -282,10 +282,13 @@ def head(file):
     first = ''
     if os.path.isfile(file):
         with open_file_read(file) as f_in:
-            first = f_in.readline().rstrip()
+            try:
+                first = f_in.readline().rstrip()
+            except UnicodeDecodeError:
+                pass
             return first
     else:
-        raise AppArmorException(_('Unable to read first line from: %s : File Not Found') %file)
+        raise AppArmorException(_('Unable to read first line from %s: File Not Found') %file)
 
 def get_output(params):
     """Returns the return code output by running the program with the args given in the list"""
@@ -340,10 +343,12 @@ def handle_binfmt(profile, path):
     """Modifies the profile to add the requirements"""
     reqs_processed = dict()
     reqs = get_reqs(path)
+    print(reqs)
     while reqs:
         library = reqs.pop()
         if not reqs_processed.get(library, False):
-            reqs.append(get_reqs(library))
+            if get_reqs(library):
+                reqs += get_reqs(library)
             reqs_processed[library] = True
         combined_mode = match_prof_incs_to_path(profile, 'allow', library)
         if combined_mode:
@@ -432,7 +437,7 @@ def get_profile(prof_name):
     local_profiles = []
     profile_hash = hasher()
     if repo_is_enabled():
-        UI_BusyStart('Connecting to repository.....')
+        UI_BusyStart(_('Connecting to repository...'))
         status_ok, ret = fetch_profiles_by_name(repo_url, distro, prof_name)
         UI_BusyStop()
         if status_ok:
@@ -519,6 +524,7 @@ def activate_repo_profiles(url, profiles, complain):
 
 def autodep(bin_name, pname=''):
     bin_full = None
+    global repo_cfg
     if not bin_name and pname.startswith('/'):
         bin_name = pname
     if not repo_cfg and not cfg['repository'].get('url', False):
@@ -546,8 +552,8 @@ def autodep(bin_name, pname=''):
     attach_profile_data(original_aa, profile_data)
     if os.path.isfile(profile_dir + '/tunables/global'):
         if not filelist.get(file, False):
-            filelist.file = hasher()
-        filelist[file][include]['tunables/global'] = True
+            filelist[file] = hasher()
+        filelist[file]['include']['tunables/global'] = True
     write_profile_ui_feedback(pname)
 
 def get_profile_flags(filename):
@@ -691,7 +697,7 @@ def sync_profile():
                         else:
                             if not ret:
                                 ret = 'UNKNOWN ERROR'
-                            UI_Important(_('WARNING: Error synchronizing profiles with the repository\n%s\n') % ret)
+                            UI_Important(_('WARNING: Error synchronizing profiles with the repository\n%s') % ret)
                             continue
                     if p_repo != p_local:
                         changed_profiles.append(prof)
@@ -780,8 +786,8 @@ def yast_select_and_upload_profiles(title, message, profiles_up):
         else:
             if not ret:
                 ret = 'UNKNOWN ERROR'
-            UI_Important('WARNING: An error occured while uploading the profile %s\n%s\n' % (p, ret))
-    UI_Info('Uploaded changes to repository.')
+            UI_Important(_('WARNING: An error occurred while uploading the profile %s\n%s') % (p, ret))
+    UI_Info(_('Uploaded changes to repository.'))
     if yarg.get('NEVER_ASK_AGAIN'):
         unselected_profiles = []
         for p in profs:
@@ -831,9 +837,9 @@ def console_select_and_upload_profiles(title, message, profiles_up):
                 else:
                     if not ret:
                         ret = 'UNKNOWN ERROR'
-                    UI_Important('WARNING: An error occurred while uploading the profile %s\n%s\n' % (prof, ret))
+                    UI_Important(_('WARNING: An error occurred while uploading the profile %s\n%s') % (prof, ret))
         else:
-            UI_Important(_('Repository Error\nRegistration or Sigin was unsuccessful. User login\ninformation is required to upload profiles to the repository.\nThese changes could not be sent.\n'))
+            UI_Important(_('Repository Error\nRegistration or Signin was unsuccessful. User login\ninformation is required to upload profiles to the repository.\nThese changes could not be sent.'))
 
 def set_profiles_local_only(profs):
     for p in profs:
@@ -1153,7 +1159,7 @@ def handle_children(profile, hat, root):
                     else:
                         options = cfg['qualifiers'].get(exec_target, 'ipcnu')
                         if to_name:
-                            fatal_error('%s has transition name but not transition mode' % entry)
+                            fatal_error(_('%s has transition name but not transition mode') % entry)
                         
                         ### If profiled program executes itself only 'ix' option
                         ##if exec_target == profile:
@@ -1237,9 +1243,9 @@ def handle_children(profile, hat, root):
                                 match = regex_optmode.search(ans).groups()[0]
                                 exec_mode = str_to_mode(match)
                                 px_default = 'n'
-                                px_msg = _("""Should AppArmor sanitise the environment when\nswitching profiles?\n\nSanitising environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH.""")
+                                px_msg = _("Should AppArmor sanitise the environment when\nswitching profiles?\n\nSanitising environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH.")
                                 if parent_uses_ld_xxx:
-                                    px_msg = _("""Should AppArmor sanitise the environment when\nswitching profiles?\n\nSanitising environment is more secure,\nbut this application appears to be using LD_PRELOAD\nor LD_LIBRARY_PATH and sanitising the environment\ncould cause functionality problems.""")
+                                    px_msg = _("Should AppArmor sanitise the environment when\nswitching profiles?\n\nSanitising environment is more secure,\nbut this application appears to be using LD_PRELOAD\nor LD_LIBRARY_PATH and sanitising the environment\ncould cause functionality problems.")
                                 
                                 ynans = UI_YesNo(px_msg, px_default)
                                 if ynans == 'y':
@@ -1247,9 +1253,9 @@ def handle_children(profile, hat, root):
                                     exec_mode = exec_mode - (AA_EXEC_UNSAFE | AA_OTHER(AA_EXEC_UNSAFE))
                             elif ans == 'CMD_ux':
                                 exec_mode = str_to_mode('ux')
-                                ynans = UI_YesNo(_("""Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s ?""") % exec_target, 'n')
+                                ynans = UI_YesNo(_("Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s ?") % exec_target, 'n')
                                 if ynans == 'y':
-                                    ynans = UI_YesNo(_("""Should AppArmor sanitise the environment when\nrunning this program unconfined?\n\nNot sanitising the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."""), 'y')
+                                    ynans = UI_YesNo(_("Should AppArmor sanitise the environment when\nrunning this program unconfined?\n\nNot sanitising the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."), 'y')
                                     if ynans == 'y':
                                         # Disable the unsafe mode
                                         exec_mode = exec_mode - (AA_EXEC_UNSAFE | AA_OTHER(AA_EXEC_UNSAFE))
@@ -1343,7 +1349,7 @@ def handle_children(profile, hat, root):
                         if not aa[profile].get(exec_target, False):
                             ynans = 'y'
                             if exec_mode & str_to_mode('i'):
-                                ynans = UI_YesNo(_('A local profile for %s does not exit. Create one?') % exec_target, 'n')
+                                ynans = UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
                             if ynans == 'y':
                                 hat = exec_target
                                 aa[profile][hat]['declared'] = False
@@ -1835,13 +1841,10 @@ def ask_the_questions():
                             elif ans == 'CMD_NEW':
                                 arg = options[selected]
                                 if not re_match_include(arg):
-                                    ans = UI_GetString(_('Enter new path:'), arg)
+                                    ans = UI_GetString(_('Enter new path: '), arg)
                                     if ans:
                                         if not matchliteral(ans, path):
-                                            ynprompt = _('The specified path does not match this log entry:')
-                                            ynprompt += '\n\n  ' + _('Log Entry') + ':  %s' % path
-                                            ynprompt += '\n  ' + _('Entered Path') + ':  %s' % ans
-                                            ynprompt += _('Do you really want to use this path?') + '\n'
+                                            ynprompt = _('The specified path does not match this log entry:\n\n  Log Entry: %s\n  Entered Path:  %s\nDo you really want to use this path?') % (path,ans)
                                             key = UI_YesNo(ynprompt, 'n')
                                             if key == 'n':
                                                 continue
@@ -2343,7 +2346,7 @@ def display_changes(oldprofile, newprofile):
 def display_changes_with_comments(oldprofile, newprofile):
     """Compare the new profile with the existing profile inclusive of all the comments"""
     if not os.path.exists(oldprofile):
-        raise AppArmorException("Can't find existing profile %s to compare changes." %oldprofile)
+        raise AppArmorException(_("Can't find existing profile %s to compare changes.") %oldprofile)
     if UI_mode == 'yast':
         #To-Do
         pass
@@ -2481,7 +2484,7 @@ def read_profiles():
     try:
         os.listdir(profile_dir)
     except :
-        fatal_error('Can\'t read AppArmor profiles in %s' % profile_dir)
+        fatal_error(_("Can't read AppArmor profiles in %s") % profile_dir)
 
     for file in os.listdir(profile_dir):
         if os.path.isfile(profile_dir + '/' + file):
@@ -2496,7 +2499,7 @@ def read_inactive_profiles():
     try:
         os.listdir(profile_dir)
     except :
-        fatal_error('Can\'t read AppArmor profiles in %s' % extra_profile_dir)
+        fatal_error(_("Can't read AppArmor profiles in %s") % extra_profile_dir)
     
     for file in os.listdir(profile_dir):
         if os.path.isfile(extra_profile_dir + '/' + file):
@@ -2511,7 +2514,7 @@ def read_profile(file, active_profile):
         with open_file_read(file) as f_in:
             data = f_in.readlines()
     except IOError:
-        debug_logger.debug('read_profile: can\'t read %s - skipping' %file)
+        debug_logger.debug("read_profile: can't read %s - skipping" %file)
         return None
     
     profile_data = parse_profile_data(data, file, 0)
@@ -2572,7 +2575,7 @@ def parse_profile_data(data, file, do_include):
             if profile:
                 #print(profile, hat)
                 if profile != hat or not matches[3]:
-                    raise AppArmorException('%s profile in %s contains syntax errors in line: %s.\n' % (profile, file, lineno+1))
+                    raise AppArmorException(_('%s profile in %s contains syntax errors in line: %s.') % (profile, file, lineno+1))
             # Keep track of the start of a profile
             if profile and profile == hat and matches[3]:
                 # local profile
@@ -2624,7 +2627,7 @@ def parse_profile_data(data, file, do_include):
         elif RE_PROFILE_END.search(line):
             # If profile ends and we're not in one
             if not profile:
-                raise AppArmorException('Syntax Error: Unexpected End of Profile reached in file: %s line: %s' % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected End of Profile reached in file: %s line: %s') % (file, lineno+1))
             
             if in_contained_hat:
                 hat = profile
@@ -2639,7 +2642,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_CAP.search(line).groups()
             
             if not profile:
-                raise AppArmorException('Syntax Error: Unexpected capability entry found in file: %s line: %s' % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected capability entry found in file: %s line: %s') % (file, lineno+1))
             
             audit = False
             if matches[0]:
@@ -2658,7 +2661,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_LINK.search(line).groups()
             
             if not profile:
-                raise AppArmorException('Syntax Error: Unexpected link entry found in file: %s line: %s' % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected link entry found in file: %s line: %s') % (file, lineno+1))
             
             audit = False
             if matches[0]:
@@ -2686,7 +2689,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_CHANGE_PROFILE.search(line).groups()
             
             if not profile:
-                raise AppArmorException('Syntax Error: Unexpected change profile entry found in file: %s line: %s' % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected change profile entry found in file: %s line: %s') % (file, lineno+1))
             
             cp = strip_quotes(matches[0])
             profile_data[profile][hat]['changes_profile'][cp] = True
@@ -2708,7 +2711,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_RLIMIT.search(line).groups()
             
             if not profile:
-                raise AppArmorException('Syntax Error: Unexpected rlimit entry found in file: %s line: %s' % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected rlimit entry found in file: %s line: %s') % (file, lineno+1))
             
             from_name = matches[0]
             to_name = matches[2]
@@ -2719,7 +2722,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_BOOLEAN.search(line)
             
             if not profile:
-                raise AppArmorException('Syntax Error: Unexpected boolean definition found in file: %s line: %s' % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected boolean definition found in file: %s line: %s') % (file, lineno+1))
             
             bool_var = matches[0]
             value = matches[1]
@@ -2759,7 +2762,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_PATH_ENTRY.search(line).groups()
             
             if not profile:
-                raise AppArmorException('Syntax Error: Unexpected path entry found in file: %s line: %s' % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected path entry found in file: %s line: %s') % (file, lineno+1))
             
             audit = False
             if matches[0]:
@@ -2783,10 +2786,10 @@ def parse_profile_data(data, file, do_include):
             try:
                 re.compile(p_re)
             except:
-                raise AppArmorException('Syntax Error: Invalid Regex %s in file: %s line: %s' % (path, file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Invalid Regex %s in file: %s line: %s') % (path, file, lineno+1))
             
             if not validate_profile_mode(mode, allow, nt_name):
-                raise AppArmorException('Invalid mode %s in file: %s line: %s' % (mode, file, lineno+1))
+                raise AppArmorException(_('Invalid mode %s in file: %s line: %s') % (mode, file, lineno+1))
             
             tmpmode = set()
             if user:
@@ -2836,7 +2839,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_NETWORK.search(line).groups()
             
             if not profile:
-                raise AppArmorException('Syntax Error: Unexpected network entry found in file: %s line: %s' % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected network entry found in file: %s line: %s') % (file, lineno+1))
             
             audit = False
             if matches[0]:
@@ -2863,7 +2866,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
             
             if not profile:
-                raise AppArmorException('Syntax Error: Unexpected change hat declaration found in file: %s line: %s' % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected change hat declaration found in file: %s line: %s') % (file, lineno+1))
             
             hat = matches[0]
             hat = strip_quotes(hat)
@@ -2875,7 +2878,7 @@ def parse_profile_data(data, file, do_include):
             # An embedded hat syntax definition starts
             matches = RE_PROFILE_HAT_DEF.search(line).groups()
             if not profile:
-                raise AppArmorException('Syntax Error: Unexpected hat definition found in file: %s line: %s' % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected hat definition found in file: %s line: %s') % (file, lineno+1))
             
             in_contained_hat = True
             hat = matches[0]
@@ -2891,7 +2894,7 @@ def parse_profile_data(data, file, do_include):
                 profile_data[profile][hat]['initial_comment'] = initial_comment
             initial_comment = ''
             if filelist[file]['profiles'][profile].get(hat, False):
-                raise AppArmorException('Error: Multiple definitions for hat %s in profile %s.' %(hat, profile))
+                raise AppArmorException(_('Error: Multiple definitions for hat %s in profile %s.') %(hat, profile))
             filelist[file]['profiles'][profile][hat] = True
         
         elif line[0] == '#':
@@ -2911,7 +2914,7 @@ def parse_profile_data(data, file, do_include):
                     initial_comment = ' '.join(line) + '\n'
         
         else:
-            raise AppArmorException('Syntax Error: Unknown line found in file: %s line: %s' % (file, lineno+1))
+            raise AppArmorException(_('Syntax Error: Unknown line found in file: %s line: %s') % (file, lineno+1))
     
     # Below is not required I'd say
     if not do_include:
@@ -2924,7 +2927,7 @@ def parse_profile_data(data, file, do_include):
     
     # End of file reached but we're stuck in a profile        
     if profile and not do_include:
-        raise AppArmorException("Syntax Error: Missing '}' . Reached end of file %s  while inside profile %s" % (file, profile))
+        raise AppArmorException(_("Syntax Error: Missing '}' . Reached end of file %s  while inside profile %s") % (file, profile))
     
     return profile_data
 
@@ -2955,14 +2958,14 @@ def store_list_var(var, list_var, value, var_operation):
             var[list_var] = set(vlist)
         else:
             #print('Ignored: New definition for variable for:',list_var,'=', value, 'operation was:',var_operation,'old value=', var[list_var])
-            raise AppArmorException('An existing variable redefined: %s' %list_var)
+            raise AppArmorException(_('An existing variable redefined: %s') %list_var)
     elif var_operation == '+=':
         if var.get(list_var, False):
             var[list_var] = set(var[list_var] + vlist)
         else:
-            raise AppArmorException('Values added to a non-existing variable: %s' %list_var)
+            raise AppArmorException(_('Values added to a non-existing variable: %s') %list_var)
     else:
-        raise AppArmorException('Unknown variable operation: %s' %var_operation)
+        raise AppArmorException(_('Unknown variable operation: %s') %var_operation)
 
 
 def strip_quotes(data):
@@ -3324,7 +3327,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
     
     if not os.path.isfile(prof_filename):
-        raise AppArmorException("Can't find existing profile to modify")
+        raise AppArmorException(_("Can't find existing profile to modify"))
     with open_file_read(prof_filename) as f_in:
         profile = None
         hat = None
@@ -3960,7 +3963,7 @@ def get_include_data(filename):
         with open_file_read(filename) as f_in:
             data = f_in.readlines()
     else:
-        raise AppArmorException('File Not Found: %s' %filename)
+        raise AppArmorException(_('File Not Found: %s') %filename)
     return data
 
 def load_include(incname):
@@ -4069,7 +4072,7 @@ def suggest_incs_for_path(incname, path, allow):
 def check_qualifiers(program):
     if cfg['qualifiers'].get(program, False):
         if cfg['qualifiers'][program] != 'p':
-            fatal_error(_("""%s is currently marked as a program that should not have its own\nprofile.  Usually, programs are marked this way if creating a profile for \nthem is likely to break the rest of the system.  If you know what you\'re\ndoing and are certain you want to create a profile for this program, edit\nthe corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf.""") %program)
+            fatal_error(_("%s is currently marked as a program that should not have its own\nprofile.  Usually, programs are marked this way if creating a profile for \nthem is likely to break the rest of the system.  If you know what you\'re\ndoing and are certain you want to create a profile for this program, edit\nthe corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf.") %program)
     return False
 
 def get_subdirectories(current_dir):

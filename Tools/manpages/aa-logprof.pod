@@ -80,8 +80,11 @@ new mode, the suggestion list, and given these options:
 If the AppArmor profile was in complain mode when the event was generated,
 the default for this option is (A)llow, otherwise, it's (D)eny.
 
-The (I)gnore allows user to ignore the event, without making any changes to
-the AppArmor profile.
+The (D)eny option adds a "deny" rule to the AppArmor profile, which
+silences logging.
+
+The (I)gnore option allows user to ignore the event, without making any 
+changes to the AppArmor profile.
 
 The suggestion list is presented as a numbered list with includes
 at the top, the literal path in the middle, and the suggested globs
