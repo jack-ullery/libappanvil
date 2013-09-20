@@ -22,7 +22,7 @@
 
 =head1 NAME
 
-aa-complain - set a AppArmor security profile to I<complain> mode.
+aa-complain - set an AppArmor security profile to I<complain> mode.
 
 =head1 SYNOPSIS
 
@@ -41,9 +41,9 @@ B<-r --remove>
 
 =head1 DESCRIPTION
 
-B<aa-complain> is used to set the enforcement mode for one or more profiles to
-complain. In this mode security policy is not enforced but rather access
-violations are logged to the system log.
+B<aa-complain> is used to set one or more profiles to I<complain> mode.
+In this mode security policy is not enforced but rather access violations
+are logged to the system log.
 
 The I<--remove> option can be used to remove the complain mode for the profile,
 setting it to enforce mode by default.
@@ -51,7 +51,7 @@ setting it to enforce mode by default.
 =head1 BUGS
 
 If you find any bugs, please report them at
-L<https://bugs.launchpad.net/apparmor-profile-tools/+filebug>.
+L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 

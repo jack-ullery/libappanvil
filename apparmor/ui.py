@@ -292,7 +292,7 @@ def UI_LongMessage(title, message):
     ypath, yarg = GetDataFromYast()
 
 def confirm_and_finish():
-    sys.stdout.write('FINISHING...\n')
+    sys.stdout.write(_('FINISHING...\n'))
     sys.exit(0)
 
 def Text_PromptUser(question):
@@ -313,14 +313,14 @@ def Text_PromptUser(question):
     
     for cmd in functions:
         if not CMDS.get(cmd, False):
-            raise AppArmorException('PromptUser: %s %s' %(_('Unknown command'), cmd))
+            raise AppArmorException(_('PromptUser: Unknown command %s') % cmd)
         
         menutext = CMDS[cmd]
         
         key = get_translated_hotkey(menutext).lower()
         # Duplicate hotkey
         if keys.get(key, False): 
-            raise AppArmorException('PromptUser: %s %s: %s' %(_('Duplicate hotkey for'), cmd, menutext)) 
+            raise AppArmorException(_('PromptUser: Duplicate hotkey for %s: %s ') % (cmd, menutext)) 
         
         keys[key] = cmd
         
@@ -332,12 +332,12 @@ def Text_PromptUser(question):
     default_key = 0
     if default and CMDS[default]:
         defaulttext = CMDS[default]
-        defmsg = 'PromptUser: ' + _('Invalid hotkey in default item')
+        defmsg = _('PromptUser: Invalid hotkey in default item')
         
         default_key = get_translated_hotkey(defaulttext, defmsg).lower()
         
         if not keys.get(default_key, False): 
-            raise AppArmorException('PromptUser: %s %s' %(_('Invalid default'), default))
+            raise AppArmorException(_('PromptUser: Invalid default %s') % default)
         
     widest = 0
     header_copy = headers[:]

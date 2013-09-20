@@ -21,7 +21,9 @@ if paranoid:
     pids = list(filter(lambda x: re.search('^\d+$', x), apparmor.get_subdirectories('/proc')))
 else:
     regex_tcp_udp = re.compile('^(tcp|udp)\s+\d+\s+\d+\s+\S+\:(\d+)\s+\S+\:(\*|\d+)\s+(LISTEN|\s+)\s+(\d+)\/(\S+)')
-    output = apparmor.cmd(['netstat','-nlp'])[1].split('\n')
+    import subprocess
+    output = subprocess.check_output('LANG=en netstat -nlp', shell=True).split('\n')
+    
     for line in output:
         match = regex_tcp_udp.search(line)
         if match:

@@ -102,7 +102,7 @@ class aa_tools:
             
             else:
                 if '/' not in p:
-                    apparmor.UI_Info(_("Can't find %s in the system path list. If the name of the application is correct, please run 'which %s' as a user with correct PATH environment set up in order to find the fully-qualified path.\nPlease use the full path as parameter")%(p, p))
+                    apparmor.UI_Info(_("Can't find %s in the system path list. If the name of the application\nis correct, please run 'which %s' as a user with correct PATH\nenvironment set up in order to find the fully-qualified path and\nuse the full path as parameter.")%(p, p))
                 else:
                     apparmor.UI_Info(_("%s does not exist, please double-check the path.")%p)
                     sys.exit(1)

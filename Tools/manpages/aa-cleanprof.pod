@@ -18,13 +18,14 @@ B<-d --dir  /path/to/profiles>
 =head1 DESCRIPTION
 
 B<aa-cleanprof> is used to perform a cleanup on one or more profiles.
-The tool removes any existing superfluous rules, reorders the rules to group 
-similar rules together and removes all comments.
+The tool removes any existing superfluous rules (Rules that are covered 
+under an include or another rule),reorders the rules to group similar rules
+together and removes all comments.
 
 =head1 BUGS
 
 If you find any bugs, please report them at
-L<https://bugs.launchpad.net/apparmor-profile-tools/+filebug>.
+L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 

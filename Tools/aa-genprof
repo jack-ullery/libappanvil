@@ -40,8 +40,8 @@ parser.add_argument('program', type=str, help='name of program to profile')
 args = parser.parse_args()
 
 profiling = args.program
-profiledir = args.d
-filename = args.f
+profiledir = args.dir
+filename = args.file
 
 aa_mountpoint = apparmor.check_for_apparmor()
 if not aa_mountpoint:
@@ -50,7 +50,7 @@ if not aa_mountpoint:
 if profiledir:
     apparmor.profile_dir = apparmor.get_full_path(profiledir)
     if not os.path.isdir(apparmor.profile_dir):
-        raise apparmor.AppArmorException("%s is not a directory." %profiledir)
+        raise apparmor.AppArmorException(_("%s is not a directory.") %profiledir)
 
 program = None
 #if os.path.exists(apparmor.which(profiling.strip())):
@@ -64,7 +64,7 @@ else:
 
 if not program or not os.path.exists(program):
     if '/' not in profiling:
-        raise apparmor.AppArmorException(_("Can't find %s in the system path list. If the name of the application is correct, please run 'which %s' in another window in order to find the fully-qualified path and use the full path as parameter.") %(profiling, profiling))
+        raise apparmor.AppArmorException(_("Can't find %s in the system path list. If the name of the application\nis correct, please run 'which %s' as a user with correct PATH\nenvironment set up in order to find the fully-qualified path and\nuse the full path as parameter.") %(profiling, profiling))
     else:
         raise apparmor.AppArmorException(_('%s does not exists, please double-check the path.') %profiling)
 
@@ -94,7 +94,7 @@ sysctl_write(ratelimit_sysctl, 0)
 
 atexit.register(restore_ratelimit)
 
-apparmor.UI_Info(_('\nBefore you begin, you may wish to check if a\nprofile already exists for the application you\nwish to confine. See the following wiki page for\nmore information:\nhttp://wiki.apparmor.net/index.php/Profiles'))
+apparmor.UI_Info(_('\nBefore you begin, you may wish to check if a\nprofile already exists for the application you\nwish to confine. See the following wiki page for\nmore information:')+'\nhttp://wiki.apparmor.net/index.php/Profiles')
 
 apparmor.UI_Important(_('Please start the application to be profiled in\nanother window and exercise its functionality now.\n\nOnce completed, select the "Scan" option below in \norder to scan the system logs for AppArmor events. \n\nFor each AppArmor event, you will be given the \nopportunity to choose whether the access should be \nallowed or denied.'))
 
@@ -136,6 +136,6 @@ for p in sorted(apparmor.helpers.keys()):
         reload(p)
 
 apparmor.UI_Info(_('\nReloaded AppArmor profiles in enforce mode.'))
-apparmor.UI_Info(_('\nPlease consider contributing your new profile!\nSee the following wiki page for more information:\nhttp://wiki.apparmor.net/index.php/Profiles\n'))
+apparmor.UI_Info(_('\nPlease consider contributing your new profile!\nSee the following wiki page for more information:')+'\nhttp://wiki.apparmor.net/index.php/Profiles\n')
 apparmor.UI_Info(_('Finished generating profile for %s.')%program)
 sys.exit(0)

@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-aa-audit - set a AppArmor security profile to I<audit> mode.
+aa-audit - set an AppArmor security profile to I<audit> mode.
 
 =head1 SYNOPSIS
 
@@ -21,7 +21,7 @@ B<-r --remove>
 
 =head1 DESCRIPTION
 
-B<aa-audit> is used to set the audit mode for one or more profiles to audit.
+B<aa-audit> is used to set one or more profiles to audit mode.
 In this mode security policy is enforced and all access (successes and failures) are logged to the system log.
 
 The I<--remove> option can be used to remove the audit mode for the profile.
@@ -29,7 +29,7 @@ The I<--remove> option can be used to remove the audit mode for the profile.
 =head1 BUGS
 
 If you find any bugs, please report them at
-L<https://bugs.launchpad.net/apparmor-profile-tools/+filebug>.
+L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 

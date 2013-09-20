@@ -41,11 +41,11 @@ B<-r --revert>
 
 =head1 DESCRIPTION
 
-B<aa-disable> is used to disable the enforcement mode for one or more
-profiles. This command will unload the profile from the kernel and
-prevent the profile from being loaded on AppArmor startup. The
-I<aa-enforce> and I<aa-complain> utilities may be used to to change this
-behavior.
+B<aa-disable> is used to I<disable> one or more profiles. 
+This command will unload the profile from the kernel and prevent the
+profile from being loaded on AppArmor startup. 
+The I<aa-enforce> and I<aa-complain> utilities may be used to to change
+this behavior.
 
 The I<--revert> option can be used to enable the profile.
 

@@ -1,0 +1,10 @@
+GENERATING TRANSLATION MESSAGES
+
+To generate the messages.pot file:
+
+Navigate to apparmor/ and run the following command.
+python pygettext.py aa.py  aamode.py cleanprofile.py common.py config.py logparser.py severity.py tools.py ui.py writeprofile.py yasti.py ./../Tools/aa*
+
+It will generate the messages.pot file in apparmor/
+
+You might need to provide the full path to pygettext.py from your python installation. It will typically be in the /path/to/python/libs/Tools/i18n/pygettext.py

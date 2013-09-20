@@ -1,11 +1,11 @@
-# Translations for AppArmor Profile Tools.
+# Messages from AppArmor Profile utils.
 # Copyright (C) 2013
-# Kshitij Gupta <kshitijgupta@acm.org>, 2013.
+# Kshitij Gupta <kgupta8592@gmail.com>, 2013.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2013-09-19 21:16+IST\n"
+"POT-Creation-Date: 2013-09-20 16:48+IST\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,8 +20,16 @@ msgstr ""
 msgid "It seems AppArmor was not started. Please enable AppArmor and try again."
 msgstr ""
 
-#: ./../Tools/aa-genprof:67
-msgid "Can't find %s in the system path list. If the name of the application is correct, please run 'which %s' in another window in order to find the fully-qualified path and use the full path as parameter."
+#: ./../Tools/aa-genprof:53
+msgid "%s is not a directory."
+msgstr ""
+
+#: ./../Tools/aa-genprof:67 tools.py:105
+msgid ""
+"Can't find %s in the system path list. If the name of the application\n"
+"is correct, please run 'which %s' as a user with correct PATH\n"
+"environment set up in order to find the fully-qualified path and\n"
+"use the full path as parameter."
 msgstr ""
 
 #: ./../Tools/aa-genprof:69
@@ -34,8 +42,7 @@ msgid ""
 "Before you begin, you may wish to check if a\n"
 "profile already exists for the application you\n"
 "wish to confine. See the following wiki page for\n"
-"more information:\n"
-"http://wiki.apparmor.net/index.php/Profiles"
+"more information:"
 msgstr ""
 
 #: ./../Tools/aa-genprof:99
@@ -65,36 +72,57 @@ msgstr ""
 msgid ""
 "\n"
 "Please consider contributing your new profile!\n"
-"See the following wiki page for more information:\n"
-"http://wiki.apparmor.net/index.php/Profiles\n"
+"See the following wiki page for more information:"
 msgstr ""
 
 #: ./../Tools/aa-genprof:140
 msgid "Finished generating profile for %s."
 msgstr ""
 
-#: ./../Tools/aa-unconfined:56
+#: ./../Tools/aa-unconfined:58
 msgid ""
 "%s %s (%s) not confined\n"
 msgstr ""
 
-#: ./../Tools/aa-unconfined:60
+#: ./../Tools/aa-unconfined:62
 msgid ""
 "%s %s %snot confined\n"
 msgstr ""
 
-#: ./../Tools/aa-unconfined:65
+#: ./../Tools/aa-unconfined:67
 msgid ""
 "%s %s (%s) confined by '%s'\n"
 msgstr ""
 
-#: ./../Tools/aa-unconfined:69
+#: ./../Tools/aa-unconfined:71
 msgid ""
 "%s %s %sconfined by '%s'\n"
 msgstr ""
 
+#: aa.py:242 aa.py:516
+msgid "Setting %s to complain mode."
+msgstr ""
+
+#: aa.py:248
+msgid "Setting %s to enforce mode."
+msgstr ""
+
 #: aa.py:263
 msgid "Unable to find basename for %s."
+msgstr ""
+
+#: aa.py:278
+msgid "Could not create %s symlink to %s."
+msgstr ""
+
+#: aa.py:288
+msgid "Unable to read first line from: %s : File Not Found"
+msgstr ""
+
+#: aa.py:302
+msgid ""
+"Unable to fork: %s\n"
+"\t%s"
 msgstr ""
 
 #: aa.py:420 ui.py:270
@@ -105,43 +133,80 @@ msgstr ""
 msgid "Abandoning all changes."
 msgstr ""
 
+#: aa.py:441
+msgid "WARNING: Error fetching profiles from the repository"
+msgstr ""
+
+#: aa.py:518
+msgid "Error activating profiles: %s"
+msgstr ""
+
 #: aa.py:564
 msgid "%s contains no profile"
 msgstr ""
 
-#: aa.py:936 aa.py:1192 aa.py:1496 aa.py:1532 aa.py:1695 aa.py:1897 aa.py:1928
+#: aa.py:656
+msgid ""
+"WARNING: Error synchronizing profiles with the repository:\n"
+"%s\n"
+msgstr ""
+
+#: aa.py:694
+msgid ""
+"WARNING: Error synchronizing profiles with the repository\n"
+"%s\n"
+msgstr ""
+
+#: aa.py:816
+msgid "Changelog Entry: "
+msgstr ""
+
+#: aa.py:836
+msgid ""
+"Repository Error\n"
+"Registration or Sigin was unsuccessful. User login\n"
+"information is required to upload profiles to the repository.\n"
+"These changes could not be sent.\n"
+msgstr ""
+
+#: aa.py:934 aa.py:1190 aa.py:1494 aa.py:1530 aa.py:1693 aa.py:1895 aa.py:1926
 msgid "Profile"
 msgstr ""
 
-#: aa.py:939
+#: aa.py:937
 msgid "Default Hat"
 msgstr ""
 
-#: aa.py:941
+#: aa.py:939
 msgid "Requested Hat"
 msgstr ""
 
-#: aa.py:1194
+#: aa.py:1170
+msgid ""
+"Target profile exists: %s\n"
+msgstr ""
+
+#: aa.py:1192
 msgid "Program"
 msgstr ""
 
-#: aa.py:1197
+#: aa.py:1195
 msgid "Execute"
 msgstr ""
 
-#: aa.py:1198 aa.py:1498 aa.py:1534 aa.py:1746
+#: aa.py:1196 aa.py:1496 aa.py:1532 aa.py:1744
 msgid "Severity"
 msgstr ""
 
-#: aa.py:1221
+#: aa.py:1219
 msgid "Are you specifying a transition to a local profile?"
 msgstr ""
 
-#: aa.py:1233
+#: aa.py:1231
 msgid "Enter profile name to transition to: "
 msgstr ""
 
-#: aa.py:1242
+#: aa.py:1240
 msgid ""
 "Should AppArmor sanitise the environment when\n"
 "switching profiles?\n"
@@ -151,7 +216,7 @@ msgid ""
 "of LD_PRELOAD or LD_LIBRARY_PATH."
 msgstr ""
 
-#: aa.py:1244
+#: aa.py:1242
 msgid ""
 "Should AppArmor sanitise the environment when\n"
 "switching profiles?\n"
@@ -162,16 +227,16 @@ msgid ""
 "could cause functionality problems."
 msgstr ""
 
-#: aa.py:1252
+#: aa.py:1250
 msgid ""
 "Launching processes in an unconfined state is a very\n"
 "dangerous operation and can cause serious security holes.\n"
 "\n"
 "Are you absolutely certain you wish to remove all\n"
-"AppArmor protection when executing : %s ?"
+"AppArmor protection when executing %s ?"
 msgstr ""
 
-#: aa.py:1254
+#: aa.py:1252
 msgid ""
 "Should AppArmor sanitise the environment when\n"
 "running this program unconfined?\n"
@@ -181,159 +246,159 @@ msgid ""
 "and should be avoided if at all possible."
 msgstr ""
 
-#: aa.py:1330
+#: aa.py:1328
 msgid ""
 "A profile for %s does not exist.\n"
 "Do you want to create one?"
 msgstr ""
 
-#: aa.py:1348
+#: aa.py:1346
 msgid "A local profile for %s does not exit. Create one?"
 msgstr ""
 
-#: aa.py:1457
+#: aa.py:1455
 msgid "Complain-mode changes:"
 msgstr ""
 
-#: aa.py:1459
+#: aa.py:1457
 msgid "Enforce-mode changes:"
 msgstr ""
 
-#: aa.py:1462
+#: aa.py:1460
 msgid "Invalid mode found: %s"
 msgstr ""
 
-#: aa.py:1497 aa.py:1533
+#: aa.py:1495 aa.py:1531
 msgid "Capability"
 msgstr ""
 
-#: aa.py:1547 aa.py:1782
+#: aa.py:1545 aa.py:1780
 msgid "Adding %s to profile."
 msgstr ""
 
-#: aa.py:1549 aa.py:1784 aa.py:1824 aa.py:1946
+#: aa.py:1547 aa.py:1782 aa.py:1822 aa.py:1944
 msgid "Deleted %s previous matching profile entries."
 msgstr ""
 
-#: aa.py:1556
+#: aa.py:1554
 msgid "Adding capability %s to profile."
 msgstr ""
 
-#: aa.py:1563
+#: aa.py:1561
 msgid "Denying capability %s to profile."
 msgstr ""
 
-#: aa.py:1696
+#: aa.py:1694
 msgid "Path"
 msgstr ""
 
-#: aa.py:1705 aa.py:1736
+#: aa.py:1703 aa.py:1734
 msgid "(owner permissions off)"
 msgstr ""
 
-#: aa.py:1710
+#: aa.py:1708
 msgid "(force new perms to owner)"
 msgstr ""
 
-#: aa.py:1713
+#: aa.py:1711
 msgid "(force all rule perms to owner)"
 msgstr ""
 
-#: aa.py:1725
+#: aa.py:1723
 msgid "Old Mode"
 msgstr ""
 
-#: aa.py:1726
+#: aa.py:1724
 msgid "New Mode"
 msgstr ""
 
-#: aa.py:1741
+#: aa.py:1739
 msgid "(force perms to owner)"
 msgstr ""
 
-#: aa.py:1744
+#: aa.py:1742
 msgid "Mode"
 msgstr ""
 
-#: aa.py:1822
+#: aa.py:1820
 msgid "Adding %s %s to profile"
 msgstr ""
 
-#: aa.py:1840
+#: aa.py:1838
 msgid "Enter new path:"
 msgstr ""
 
-#: aa.py:1843
+#: aa.py:1841
 msgid "The specified path does not match this log entry:"
 msgstr ""
 
-#: aa.py:1844
+#: aa.py:1842
 msgid "Log Entry"
 msgstr ""
 
-#: aa.py:1845
+#: aa.py:1843
 msgid "Entered Path"
 msgstr ""
 
-#: aa.py:1846
+#: aa.py:1844
 msgid "Do you really want to use this path?"
 msgstr ""
 
-#: aa.py:1898 aa.py:1929
+#: aa.py:1896 aa.py:1927
 msgid "Network Family"
 msgstr ""
 
-#: aa.py:1899 aa.py:1930
+#: aa.py:1897 aa.py:1928
 msgid "Socket Type"
 msgstr ""
 
-#: aa.py:1944
+#: aa.py:1942
 msgid "Adding %s to profile"
 msgstr ""
 
-#: aa.py:1954
+#: aa.py:1952
 msgid "Adding network access %s %s to profile."
 msgstr ""
 
-#: aa.py:1960
+#: aa.py:1958
 msgid "Denying network access %s %s to profile"
 msgstr ""
 
-#: aa.py:2171
+#: aa.py:2169
 msgid "Reading log entries from %s."
 msgstr ""
 
-#: aa.py:2174
+#: aa.py:2172
 msgid "Updating AppArmor profiles in %s."
 msgstr ""
 
-#: aa.py:2178
+#: aa.py:2176
 msgid "unknown"
 msgstr ""
 
-#: aa.py:2241
+#: aa.py:2239
 msgid ""
 "Select which profile changes you would like to save to the\n"
 "local profile set."
 msgstr ""
 
-#: aa.py:2242
+#: aa.py:2240
 msgid "Local profile changes"
 msgstr ""
 
-#: aa.py:2264
+#: aa.py:2262
 msgid "The following local profiles were changed. Would you like to save them?"
 msgstr ""
 
-#: aa.py:2338
+#: aa.py:2336
 msgid "Profile Changes"
 msgstr ""
 
-#: aa.py:3831
+#: aa.py:3829
 msgid "Writing updated profile for %s."
 msgstr ""
 
-#: aa.py:4074
+#: aa.py:4072
 msgid ""
 "%s is currently marked as a program that should not have its own\n"
 "profile.  Usually, programs are marked this way if creating a profile for \n"
@@ -376,12 +441,6 @@ msgstr ""
 #: tools.py:84
 msgid ""
 "Removing audit mode from %s.\n"
-msgstr ""
-
-#: tools.py:105
-msgid ""
-"Can't find %s in the system path list. If the name of the application is correct, please run 'which %s' as a user with correct PATH environment set up in order to find the fully-qualified path.\n"
-"Please use the full path as parameter"
 msgstr ""
 
 #: tools.py:122
@@ -628,19 +687,24 @@ msgstr ""
 msgid "(I)gnore"
 msgstr ""
 
+#: ui.py:295
+msgid ""
+"FINISHING...\n"
+msgstr ""
+
 #: ui.py:316
-msgid "Unknown command"
+msgid "PromptUser: Unknown command %s"
 msgstr ""
 
 #: ui.py:323
-msgid "Duplicate hotkey for"
+msgid "PromptUser: Duplicate hotkey for %s: %s "
 msgstr ""
 
 #: ui.py:335
-msgid "Invalid hotkey in default item"
+msgid "PromptUser: Invalid hotkey in default item"
 msgstr ""
 
 #: ui.py:340
-msgid "Invalid default"
+msgid "PromptUser: Invalid default %s"
 msgstr ""
 

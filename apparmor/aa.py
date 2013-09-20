@@ -239,13 +239,13 @@ def enforce(path):
     
 def set_complain(filename, program, ):
     """Sets the profile to complain mode"""
-    UI_Info('Setting %s to complain mode.\n' % program)
+    UI_Info(_('Setting %s to complain mode.') % program)
     create_symlink('force-complain', filename)
     change_profile_flags(filename, 'complain', True)
 
 def set_enforce(filename, program):
     """Sets the profile to enforce mode"""
-    UI_Info('Setting %s to enforce mode.\n' % program)
+    UI_Info(_('Setting %s to enforce mode.') % program)
     delete_symlink('force-complain', filename)
     delete_symlink('disable', filename)
     change_profile_flags(filename, 'complain', False)
@@ -275,7 +275,7 @@ def create_symlink(subdir, filename):
         try:
             os.symlink(filename, link)
         except:
-            raise AppArmorException('Could not create %s symlink to %s.'%(link, filename))
+            raise AppArmorException(_('Could not create %s symlink to %s.')%(link, filename))
     
 def head(file):
     """Returns the first/head line of the file"""
@@ -285,7 +285,7 @@ def head(file):
             first = f_in.readline().rstrip()
             return first
     else:
-        raise AppArmorException('Unable to read first line from: %s : File Not Found' %file)
+        raise AppArmorException(_('Unable to read first line from: %s : File Not Found') %file)
 
 def get_output(params):
     """Returns the return code output by running the program with the args given in the list"""
@@ -299,7 +299,7 @@ def get_output(params):
             # Get the output of the program
             output = subprocess.check_output(params)
         except OSError as e:
-            raise  AppArmorException("Unable to fork: %s\n\t%s" %(program, str(e)))
+            raise  AppArmorException(_("Unable to fork: %s\n\t%s") %(program, str(e)))
             # If exit-codes besides 0
         except subprocess.CalledProcessError as e:
             output = e.output
@@ -432,13 +432,13 @@ def get_profile(prof_name):
     local_profiles = []
     profile_hash = hasher()
     if repo_is_enabled():
-        UI_BusyStart('Coonecting to repository.....')
+        UI_BusyStart('Connecting to repository.....')
         status_ok, ret = fetch_profiles_by_name(repo_url, distro, prof_name)
         UI_BusyStop()
         if status_ok:
             profile_hash = ret
         else:
-            UI_Important('WARNING: Error fetching profiles from the repository')
+            UI_Important(_('WARNING: Error fetching profiles from the repository'))
     inactive_profile = get_inactive_profile(prof_name)
     if inactive_profile:
         uname = 'Inactive local profile for %s' % prof_name
@@ -513,9 +513,9 @@ def activate_repo_profiles(url, profiles, complain):
             if complain:
                 fname = get_profile_filename(pname)
                 set_profile_flags(profile_dir + fname, 'complain')
-                UI_Info('Setting %s to complain mode.' % pname)
+                UI_Info(_('Setting %s to complain mode.') % pname)
     except Exception as e:
-            sys.stderr.write("Error activating profiles: %s" % e)
+            sys.stderr.write(_("Error activating profiles: %s") % e)
 
 def autodep(bin_name, pname=''):
     bin_full = None
@@ -653,7 +653,7 @@ def sync_profile():
     if not status_ok:
         if not ret:
             ret = 'UNKNOWN ERROR'
-        UI_Important('WARNING: Error synchronizing profiles with the repository:\n%s\n' % ret)
+        UI_Important(_('WARNING: Error synchronizing profiles with the repository:\n%s\n') % ret)
     else:
         users_repo_profiles = ret
         serialize_opts['NO_FLAGS'] = True
@@ -691,7 +691,7 @@ def sync_profile():
                         else:
                             if not ret:
                                 ret = 'UNKNOWN ERROR'
-                            UI_Important('WARNING: Error synchronizing profiles witht he repository\n%s\n' % ret)
+                            UI_Important(_('WARNING: Error synchronizing profiles with the repository\n%s\n') % ret)
                             continue
                     if p_repo != p_local:
                         changed_profiles.append(prof)
@@ -813,7 +813,7 @@ def console_select_and_upload_profiles(title, message, profiles_up):
     if ans == 'CMD_NEVER_ASK':
         set_profiles_local_only([i[0] for i in profs])
     elif ans == 'CMD_UPLOAD_CHANGES':
-        changelog = UI_GetString('Changelog Entry: ', '')
+        changelog = UI_GetString(_('Changelog Entry: '), '')
         user, passw = get_repo_user_pass()
         if user and passw:
             for p_data in profs:
@@ -831,11 +831,9 @@ def console_select_and_upload_profiles(title, message, profiles_up):
                 else:
                     if not ret:
                         ret = 'UNKNOWN ERROR'
-                    UI_Important('WARNING: An error occured while uploading the profile %s\n%s\n' % (prof, ret))
+                    UI_Important('WARNING: An error occurred while uploading the profile %s\n%s\n' % (prof, ret))
         else:
-            UI_Important('Repository Error\nRegistration or Sigin was unsuccessful. User login\n' + 
-                         'information is required to upload profiles to the repository.\n' +
-                         'These changes could not be sent.\n')
+            UI_Important(_('Repository Error\nRegistration or Sigin was unsuccessful. User login\ninformation is required to upload profiles to the repository.\nThese changes could not be sent.\n'))
 
 def set_profiles_local_only(profs):
     for p in profs:
@@ -1169,7 +1167,7 @@ def handle_children(profile, hat, root):
                         default = None
                         if 'p' in options and os.path.exists(get_profile_filename(exec_target)):
                             default = 'CMD_px'
-                            sys.stdout.write('Target profile exists: %s\n' %get_profile_filename(exec_target))
+                            sys.stdout.write(_('Target profile exists: %s\n') %get_profile_filename(exec_target))
                         elif 'i' in options:
                             default = 'CMD_ix'
                         elif 'c' in options:
@@ -1249,7 +1247,7 @@ def handle_children(profile, hat, root):
                                     exec_mode = exec_mode - (AA_EXEC_UNSAFE | AA_OTHER(AA_EXEC_UNSAFE))
                             elif ans == 'CMD_ux':
                                 exec_mode = str_to_mode('ux')
-                                ynans = UI_YesNo(_("""Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing : %s ?""") % exec_target, 'n')
+                                ynans = UI_YesNo(_("""Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s ?""") % exec_target, 'n')
                                 if ynans == 'y':
                                     ynans = UI_YesNo(_("""Should AppArmor sanitise the environment when\nrunning this program unconfined?\n\nNot sanitising the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."""), 'y')
                                     if ynans == 'y':
