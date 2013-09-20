@@ -74,6 +74,7 @@ static struct keyword_table keyword_table[] = {
 	{"subset",		TOK_SUBSET},
 	{"audit",		TOK_AUDIT},
 	{"deny",		TOK_DENY},
+	{"allow",		TOK_ALLOW},
 	{"set",			TOK_SET},
 	{"rlimit",		TOK_RLIMIT},
 	{"alias",		TOK_ALIAS},

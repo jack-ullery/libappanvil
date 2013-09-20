@@ -111,6 +111,7 @@ void add_local_entry(struct codomain *cod);
 %token TOK_SUBSET
 %token TOK_AUDIT
 %token TOK_DENY
+%token TOK_ALLOW
 %token TOK_PROFILE
 %token TOK_SET
 %token TOK_ALIAS
@@ -223,7 +224,7 @@ void add_local_entry(struct codomain *cod);
 %type <boolean> opt_owner_flag
 %type <boolean> opt_profile_flag
 %type <boolean> opt_flags
-%type <boolean> opt_deny
+%type <boolean> opt_perm_mode
 %type <id>	opt_namespace
 %type <id>	opt_id
 %type <prefix>  opt_prefix
@@ -518,10 +519,11 @@ opt_owner_flag: { /* nothing */ $$ = 0; }
 	| TOK_OWNER { $$ = 1; };
 	| TOK_OTHER { $$ = 2; };
 
-opt_deny: { /* nothing */ $$ = 0; }
+opt_perm_mode: { /* nothing */ $$ = 0; }
+	| TOK_ALLOW { $$ = 0; }
 	| TOK_DENY { $$ = 1; }
 
-opt_prefix: opt_audit_flag opt_deny opt_owner_flag
+opt_prefix: opt_audit_flag opt_perm_mode opt_owner_flag
 	{
 		$$.audit = $1;
 		$$.deny = $2;
