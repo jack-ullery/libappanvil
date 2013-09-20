@@ -157,10 +157,20 @@ sub gen_network($) {
 sub gen_cap($) {
   my $rule = shift;
   my @rules = split (/:/, $rule);
-  if (@rules != 2) {
-    (!$nowarn) && print STDERR "Warning: invalid capability description '$rule', ignored\n";
+  if (@rules == 2) {
+    if ($rules[1] =~ /^ALL$/) {
+      push (@{$output_rules{$hat}}, "  capability,\n");
+    } else {
+      push (@{$output_rules{$hat}}, "  capability $rules[1],\n");
+    }
+  } elsif (@rules == 3) {
+    if ($rules[1] =~ /^ALL$/) {
+      push (@{$output_rules{$hat}}, "  $rules[2] capability,\n");
+    } else {
+      push (@{$output_rules{$hat}}, "  $rules[2] capability $rules[1],\n");
+    }
   } else {
-    push (@{$output_rules{$hat}}, "  capability $rules[1],\n");
+    (!$nowarn) && print STDERR "Warning: invalid capability description '$rule', ignored\n";
   }
 }
 

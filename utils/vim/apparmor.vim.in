@@ -132,7 +132,7 @@ syn keyword  sdCapKey          @@sdKapKey@@
 syn keyword sdCapDanger	       @@sdKapKeyDanger@@
 
 " full line. Keywords are from sdCapKey + sdCapDanger
-syn match  sdCap /\v^\s*@@auditdeny@@capability\s+(@@sdKapKeyRegex@@)@@EOL@@/ contains=sdCapKey,sdCapDanger,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
+syn match  sdCap /\v^\s*@@auditdeny@@capability\s+((@@sdKapKeyRegex@@)\s+)*(@@sdKapKeyRegex@@)@@EOL@@/ contains=sdCapKey,sdCapDanger,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
 " all capabilities ('capability' without any keyword)
 syn match  sdCapDanger /\v^\s*@@auditdeny@@capability@@EOL@@/ contains=sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
 
