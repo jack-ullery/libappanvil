@@ -46,16 +46,18 @@ class aa_tools:
                 if which:
                     program = apparmor.get_full_path(which)
             
-            if (not program or not os.path.exists(program)):
+            apparmor.read_profiles()
+            #If program does not exists on the system but its profile does
+            if not program and apparmor.profile_exists(p):
+                program = p
+                
+            if not program or not(os.path.exists(program) or apparmor.profile_exists(program)):
                 if program and not program.startswith('/'):
                     program = apparmor.UI_GetString(_('The given program cannot be found, please try with the fully qualified path name of the program: '), '')
                 else:
                     apparmor.UI_Info(_("%s does not exist, please double-check the path.")%program)
                     sys.exit(1)
                 
-            #apparmor.loadincludes()
-            apparmor.read_profiles()
-
             if program and apparmor.profile_exists(program):#os.path.exists(program):
                 if self.name == 'autodep':
                     self.use_autodep(program)
@@ -71,18 +73,18 @@ class aa_tools:
                         
                     elif self.name == 'disable':
                         if not self.revert:
-                            apparmor.UI_Info(_('Disabling %s.\n')%program)
+                            apparmor.UI_Info(_('Disabling %s.')%program)
                             self.disable_profile(filename)
                         else:
-                            apparmor.UI_Info(_('Enabling %s.\n')%program)
+                            apparmor.UI_Info(_('Enabling %s.')%program)
                             self.enable_profile(filename)
                             
                     elif self.name == 'audit':
                         if not self.remove:
-                            apparmor.UI_Info(_('Setting %s to audit mode.\n')%program)
+                            apparmor.UI_Info(_('Setting %s to audit mode.')%program)
                         else:
-                            apparmor.UI_Info(_('Removing audit mode from %s.\n')%program)
-                        apparmor.change_profile_flags(filename, 'audit', not self.remove)
+                            apparmor.UI_Info(_('Removing audit mode from %s.')%program)
+                        apparmor.change_profile_flags(filename, program, 'audit', not self.remove)
                     
                     elif self.name == 'complain':
                         if not self.remove:

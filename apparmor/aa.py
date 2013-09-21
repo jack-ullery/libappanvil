@@ -237,18 +237,18 @@ def enforce(path):
         fatal_error(_("Can't find %s") % path)
     set_enforce(prof_filename, name)
     
-def set_complain(filename, program, ):
+def set_complain(filename, program):
     """Sets the profile to complain mode"""
     UI_Info(_('Setting %s to complain mode.') % program)
     create_symlink('force-complain', filename)
-    change_profile_flags(filename, 'complain', True)
+    change_profile_flags(filename, program, 'complain', True)
 
 def set_enforce(filename, program):
     """Sets the profile to enforce mode"""
     UI_Info(_('Setting %s to enforce mode.') % program)
     delete_symlink('force-complain', filename)
     delete_symlink('disable', filename)
-    change_profile_flags(filename, 'complain', False)
+    change_profile_flags(filename, program, 'complain', False)
 
 def delete_symlink(subdir, filename):
     path = filename
@@ -556,7 +556,7 @@ def autodep(bin_name, pname=''):
         filelist[file]['include']['tunables/global'] = True
     write_profile_ui_feedback(pname)
 
-def get_profile_flags(filename):
+def get_profile_flags(filename, program):
     # To-Do
     # XXX If more than one profile in a file then second one is being ignored XXX
     # Do we return flags for both or 
@@ -564,13 +564,17 @@ def get_profile_flags(filename):
     with open_file_read(filename) as f_in:
         for line in f_in:
             if RE_PROFILE_START.search(line):
-                flags = RE_PROFILE_START.search(line).groups()[6]
-                return flags
+                matches = RE_PROFILE_START.search(line).groups()
+                profile = matches[1] or matches[3]
+                flags = matches[6]
+                if profile == program:
+                    return flags
 
     raise AppArmorException(_('%s contains no profile')%filename)
             
-def change_profile_flags(filename, flag, set_flag):
-    old_flags = get_profile_flags(filename)
+def change_profile_flags(filename, program, flag, set_flag):
+    old_flags = get_profile_flags(filename, program)
+    print(old_flags)
     newflags = []
     if old_flags:
         # Flags maybe white-space and/or , separated
@@ -592,9 +596,9 @@ def change_profile_flags(filename, flag, set_flag):
 
     newflags = ','.join(newflags)
 
-    set_profile_flags(filename, newflags)         
+    set_profile_flags(filename, program, newflags)         
     
-def set_profile_flags(prof_filename, newflags):
+def set_profile_flags(prof_filename, program, newflags):
     """Reads the old profile file and updates the flags accordingly"""
     regex_bin_flag = re.compile('^(\s*)(("??/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.*)\)\s+)?\{\s*(#.*)?$')
     regex_hat_flag = re.compile('^([a-z]*)\s+([A-Z]*)\s*(#.*)?$')
@@ -616,10 +620,11 @@ def set_profile_flags(prof_filename, newflags):
                         binary = matches[1]
                         flag = matches[6] or 'flags='
                         flags = matches[7]
-                        if newflags:
-                            line = '%s%s %s(%s) {%s\n' % (space, binary, flag, newflags, comment)
-                        else:
-                            line = '%s%s {%s\n' % (space, binary, comment)
+                        if binary == program:
+                            if newflags:
+                                line = '%s%s %s(%s) {%s\n' % (space, binary, flag, newflags, comment)
+                            else:
+                                line = '%s%s {%s\n' % (space, binary, comment)
                     else:
                         match = regex_hat_flag.search(line)
                         if match:
