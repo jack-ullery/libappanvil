@@ -343,7 +343,6 @@ def handle_binfmt(profile, path):
     """Modifies the profile to add the requirements"""
     reqs_processed = dict()
     reqs = get_reqs(path)
-    print(reqs)
     while reqs:
         library = reqs.pop()
         if not reqs_processed.get(library, False):
@@ -1423,7 +1422,7 @@ def UI_ask_to_upload_profiles():
 
 def UI_ask_mode_toggles(audit_toggle, owner_toggle, oldmode):
     # To-Do
-    pass
+    return (audit_toggle, owner_toggle)
 
 def parse_repo_profile(fqdbin, repo_url, profile):
     # To-Do
@@ -3699,13 +3698,13 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 else:
                     tmpmode = str_to_mode(mode)
                 
-                if not write_prof_data[hat][allow]['path'][path].get('mode', False) & tmpmode:
+                if not write_prof_data[hat][allow]['path'][path].get('mode', set()) & tmpmode:
                     correct = False
                 
                 if nt_name and not write_prof_data[hat][allow]['path'][path].get('to', False) == nt_name:
                     correct = False
                 
-                if audit and not write_prof_data[hat][allow]['path'][path].get('audit', False) & tmpmode:
+                if audit and not write_prof_data[hat][allow]['path'][path].get('audit', set()) & tmpmode:
                     correct = False
                 
                 if correct:
@@ -3844,7 +3843,7 @@ def write_profile(profile):
     else:
         prof_filename = get_profile_filename(profile)
     
-    newprof = tempfile.NamedTemporaryFile('w', suffix='~' ,delete=False)
+    newprof = tempfile.NamedTemporaryFile('w', suffix='~' ,delete=False, dir=profile_dir)
     if os.path.exists(prof_filename):
         shutil.copymode(prof_filename, newprof.name)
     else:
