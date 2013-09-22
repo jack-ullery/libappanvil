@@ -3044,7 +3044,7 @@ def write_pair(prof_data, depth, allow, name, prefix, sep, tail, fn):
     ref, allow = set_ref_allow(prof_data, allow)
     
     if ref.get(name, False):
-        for key in sorted(re[name].keys()):
+        for key in sorted(ref[name].keys()):
             value = fn(ref[name][key])#eval('%s(%s)' % (fn, ref[name][key]))
             data.append('%s%s%s%s%s%s' %(pre, allow, prefix, key, sep, value))
         if ref[name].keys():

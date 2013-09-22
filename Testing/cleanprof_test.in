@@ -3,6 +3,9 @@
 
 /usr/bin/a/simple/cleanprof/test/profile {
 	# Just for the heck of it, this comment wont see the day of light
+	#include <abstractions/base>
+	#Below rule comes from abstractions/base
+	allow /usr/share/X11/locale/**  r,
 	allow /home/*/** r,
 	allow /home/foo/bar r,
 	allow /home/foo/** w,

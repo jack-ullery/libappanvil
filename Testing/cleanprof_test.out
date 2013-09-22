@@ -4,6 +4,8 @@
 
 
 /usr/bin/a/simple/cleanprof/test/profile {
+  #include <abstractions/base>
+
   allow /home/*/** r,
   allow /home/foo/** w,
 
