@@ -15,17 +15,21 @@ class CleanProf:
         #If same_file we're basically comparing the file against itself to check superfluous rules
         self.same_file = same_file
         self.profile = profile
-        self.other = profile
+        self.other = other
 
     def compare_profiles(self):
+        deleted = 0
+        other_file_includes = list(self.other.filelist[self.profile.filename]['include'].keys())
+
         #Remove the duplicate file-level includes from other
-        other_file_includes = list(self.other.profile.filename['include'].keys())
-        for rule in self.profile.filelist[self.profile.filename]:
+        for rule in self.profile.filelist[self.profile.filename]['include'].keys():
             if rule in other_file_includes:
-                self.other.other.filename['include'].pop(rule)
+                self.other.filelist['include'].pop(rule)
 
         for profile in self.profile.aa.keys():
-            self.remove_duplicate_rules(profile)
+            deleted += self.remove_duplicate_rules(profile)
+        
+        return deleted
 
     def remove_duplicate_rules(self, program):
         #Process the profile of the program
@@ -36,6 +40,12 @@ class CleanProf:
             #The combined list of includes from profile and the file
             includes = list(self.profile.aa[program][hat]['include'].keys()) + file_includes
 
+            #If different files remove duplicate includes in the other profile
+            if not self.same_file:
+                for inc in includes:
+                    if self.other.aa[program][hat]['include'].get(inc, False):
+                        self.other.aa[program][hat]['include'].pop(inc)
+                        deleted += 1
             #Clean up superfluous rules from includes in the other profile
             for inc in includes:
                 if not self.profile.include.get(inc, {}).get(inc,False):
@@ -62,8 +72,13 @@ class CleanProf:
         for rule in profile[allow]['path'].keys():
             for entry in profile_other[allow]['path'].keys():
                 if rule == entry:
-                    if not same_profile:
-                        deleted.append(entry)
+                    #Check the modes
+                    cm = profile[allow]['path'][rule]['mode']
+                    am = profile[allow]['path'][rule]['audit']
+                    #If modes of rule are a superset of rules implied by entry we can safely remove it
+                    if apparmor.aa.mode_contains(cm, profile_other[allow]['path'][entry]['mode']) and apparmor.aa.mode_contains(am, profile_other[allow]['path'][entry]['audit']):
+                        if not same_profile:
+                            deleted.append(entry)
                     continue
                 if re.search('#?\s*include', rule) or re.search('#?\s*include', entry):
                     continue
@@ -101,11 +116,11 @@ class CleanProf:
             if netrules.get('all', False):
                 netglob = True
             #Iterate over a copy of the rules in the other profile
-            for fam in copy_netrules_other.keys():
+            for fam in copy_netrules_other['rule'].keys():
                 if netglob or (type(netrules['rule'][fam]) != dict and netrules['rule'][fam]):
                     if not same_profile:
-                        if type(netrules_other['rule'][fam] == dict):
-                            deleted += len(netrules['rule'][fam].keys())
+                        if type(netrules_other['rule'][fam]) == dict:
+                            deleted += len(netrules_other['rule'][fam].keys())
                         else:
                             deleted += 1
                         netrules_other['rule'].pop(fam)

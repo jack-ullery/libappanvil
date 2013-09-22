@@ -2018,12 +2018,13 @@ def glob_path_withext(newpath):
 
 def delete_net_duplicates(netrules, incnetrules):
     deleted = 0
+    copy_netrules = deepcopy(netrules)
     if incnetrules and netrules:
         incnetglob = False
         # Delete matching rules from abstractions
         if incnetrules.get('all', False):
             incnetglob = True
-        for fam in netrules.keys():
+        for fam in copy_netrules['rule'].keys():
             if incnetglob or (type(incnetrules['rule'][fam]) != dict and incnetrules['rule'][fam]):
                 if type(netrules['rule'][fam]) == dict:
                     deleted += len(netrules['rule'][fam].keys())
@@ -2035,7 +2036,7 @@ def delete_net_duplicates(netrules, incnetrules):
             else:
                 for socket_type in netrules['rule'][fam].keys():
                     if incnetrules['rule'].get(fam, False):
-                        netrules[fam].pop(socket_type)
+                        netrules['rule'][fam].pop(socket_type)
                         deleted += 1
     return deleted
 

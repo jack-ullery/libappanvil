@@ -7,7 +7,6 @@ import apparmor.aa as apparmor
 import apparmor.cleanprofile as cleanprofile
 
 parser = argparse.ArgumentParser(description=_('Perform a 3way merge on the given profiles'))
-##parser.add_argument('profiles', type=str, nargs=3, help='MINE BASE OTHER')
 parser.add_argument('mine', type=str, help=_('your profile'))
 parser.add_argument('base', type=str, help=_('base profile'))
 parser.add_argument('other', type=str, help=_('other profile'))
@@ -17,13 +16,12 @@ args = parser.parse_args()
 
 profiles = [args.mine, args.base, args.other]
 
-if __name__ == '__main__':
-    main()
-
 print(profiles)
 
 def main():
     mergeprofiles = Merge(profiles)
+    #Get rid of common/superfluous stuff
+    mergeprofiles.clear_common()
 
 class Merge(object):
     def __init__(self, profiles):
@@ -31,45 +29,47 @@ class Merge(object):
 
         #Read and parse base profile and save profile data, include data from it and reset them
         apparmor.read_profile(base, True)
-        base = cleanprof.Prof()
-        #self.base_aa = apparmor.aa
-        #self.base_filelist = apparmor.filelist
-        #self.base_include = apparmor.include
-        reset()
+        base = cleanprofile.Prof(base)
+
+        self.reset()
 
         #Read and parse other profile and save profile data, include data from it and reset them
         apparmor.read_profile(other, True)
-        other = cleanprof.prof()
-        #self.other_aa = apparmor.aa
-        #self.other_filelist = apparmor.filelist
-        #self.other_include = apparmor.include
-        reset()
+        other = cleanprofile.Prof(other)
+
+        self.reset()
 
         #Read and parse user profile
         apparmor.read_profile(profiles[0], True)
-        user = cleanprof.prof()
-        #user_aa = apparmor.aa
-        #user_filelist = apparmor.filelist
-        #user_include = apparmor.include
+        user = cleanprofile.Prof(user)
 
-    def reset():
+    def reset(self):
         apparmor.aa = apparmor.hasher()
-        apparmor.filelist = hasher()
+        apparmor.filelist = apparmor.hasher()
         apparmor.include = dict()
-        apparmor.existing_profiles = hasher()
-        apparmor.original_aa = hasher()
+        apparmor.existing_profiles = apparmor.hasher()
+        apparmor.original_aa = apparmor.hasher()
 
     def clear_common(self):
-        common_base_other()
-        remove_common('base')
-        remove_common('other')
+        deleted = 0
+        #Remove off the parts in other profile which are common/superfluous from user profile
+        user_other = cleanprofile.CleanProf(False, user, other)
+        deleted += user_other.compare_profiles()
+        
+        #Remove off the parts in base profile which are common/superfluous from user profile
+        user_base = cleanprofile.CleanProf(False, user, base)
+        deleted += user_base.compare_profiles()
+        
+        #Remove off the parts in other profile which are common/superfluous from base profile
+        base_other = cleanprofile.CleanProf(False, base, other)
+        deleted += user_base.compare_profiles()
 
-    def common_base_other(self):
+    def ask_the_questions(self):
         pass
 
-    def remove_common(self, profile):
-        if prof1 == 'base':
 
+if __name__ == '__main__':
+    main()
 
 # def intersect(ra, rb):
 #     """Given two ranges return the range where they intersect or None.
