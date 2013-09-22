@@ -6,13 +6,13 @@ import sys
 import apparmor.aa as apparmor
 import apparmor.cleanprofile as cleanprofile
 
-parser = argparse.ArgumentParser(description='Perform a 3way merge on the given profiles')
+parser = argparse.ArgumentParser(description=_('Perform a 3way merge on the given profiles'))
 ##parser.add_argument('profiles', type=str, nargs=3, help='MINE BASE OTHER')
-parser.add_argument('mine', type=str, help='Your profile')
-parser.add_argument('base', type=str, help='The base profile')
-parser.add_argument('other', type=str, help='Other profile')
-parser.add_argument('-d', '--dir', type=str, help='path to profiles')
-parser.add_argument('-auto', action='store_true', help='Automatically merge profiles, exits incase of *x conflicts')
+parser.add_argument('mine', type=str, help=_('your profile'))
+parser.add_argument('base', type=str, help=_('base profile'))
+parser.add_argument('other', type=str, help=_('other profile'))
+parser.add_argument('-d', '--dir', type=str, help=_('path to profiles'))
+parser.add_argument('-auto', action='store_true', help=_('Automatically merge profiles, exits incase of *x conflicts'))
 args = parser.parse_args()
 
 profiles = [args.mine, args.base, args.other]

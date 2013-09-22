@@ -4,10 +4,10 @@ import argparse
 
 import apparmor.tools
 
-parser = argparse.ArgumentParser(description='')
-parser.add_argument('--force', type=str, help='override existing profile')
-parser.add_argument('-d', '--dir', type=str, help='path to profiles')
-parser.add_argument('program', type=str, nargs='+', help='name of program')
+parser = argparse.ArgumentParser(description=_('Generate a basic AppArmor profile by guessing requirements'))
+parser.add_argument('--force', type=str, help=_('overwrite existing profile'))
+parser.add_argument('-d', '--dir', type=str, help=_('path to profiles'))
+parser.add_argument('program', type=str, nargs='+', help=_('name of program'))
 args = parser.parse_args()
 
 autodep = apparmor.tools.aa_tools('autodep', args)
