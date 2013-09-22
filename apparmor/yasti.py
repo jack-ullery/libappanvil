@@ -11,7 +11,7 @@ debug_logger = DebugLogger('YaST')
 
 def setup_yast():
     # To-Do
-    pass   
+    pass
 
 def shutdown_yast():
     # To-Do
@@ -30,7 +30,7 @@ def SendDataToYast(data):
             return True
         else:
             debug_logger.info('SendDataToYast: Expected \'Read\' but got-- %s' % line)
-    error('SendDataToYast: didn\'t receive YCP command before connection died')   
+    error('SendDataToYast: didn\'t receive YCP command before connection died')
 
 def GetDataFromYast():
     debug_logger.inf('GetDataFromYast: Waiting for YCP command')

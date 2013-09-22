@@ -16,10 +16,10 @@ if sys.version_info < (3,0):
                 section_options[option] = value
             return section_options
 
-            
+
 else:
     import configparser
-    
+
 
 from apparmor.common import AppArmorException, warn, msg, open_file_read
 
@@ -36,16 +36,16 @@ class Config:
             self.input_file = None
         else:
             raise AppArmorException("Unknown configuration file type")
-            
+
     def new_config(self):
         if self.conf_type == 'shell':
             config = {'': dict()}
         elif self.conf_type == 'ini':
             config = configparser.ConfigParser()
         return config
-        
+
     def read_config(self, filename):
-        """Reads the file and returns a config[section][attribute]=property object"""   
+        """Reads the file and returns a config[section][attribute]=property object"""
         # LP: Bug #692406
         # Explicitly disabled repository
         filepath = self.CONF_DIR + '/' + filename
@@ -63,7 +63,7 @@ class Config:
             # Set the option form to string -prevents forced conversion to lowercase
             config.optionxform = str
             if sys.version_info > (3,0):
-                config.read(filepath) 
+                config.read(filepath)
             else:
                 try:
                     config.read(filepath)
@@ -72,7 +72,7 @@ class Config:
                     config.read(tmp_filepath.name)
                     ##config.__get__()
         return config
-            
+
     def write_config(self, filename, config):
         """Writes the given config to the specified file"""
         filepath = self.CONF_DIR + '/' + filename
@@ -96,8 +96,8 @@ class Config:
         else:
             # Replace the target config file with the temporary file
             os.rename(config_file.name, filepath)
-            
-    
+
+
     def find_first_file(self, file_list):
         """Returns name of first matching file None otherwise"""
         filename = None
@@ -106,7 +106,7 @@ class Config:
                 filename = file
                 break
         return filename
-    
+
     def find_first_dir(self, dir_list):
         """Returns name of first matching directory None otherwise"""
         dirname = None
@@ -116,7 +116,7 @@ class Config:
                     dirname = direc
                     break
         return dirname
-    
+
     def read_shell(self, filepath):
         """Reads the shell type conf files and returns config[''][option]=value"""
         config = {'': dict()}
@@ -134,7 +134,7 @@ class Config:
                         value = None
                     config[''][option] = value
         return config
-    
+
     def write_shell(self, filepath, f_out, config):
         """Writes the config object in shell file format"""
         # All the options in the file
@@ -153,8 +153,8 @@ class Config:
                                 comment = value.split('#', 1)[1]
                                 comment = '#'+comment
                             else:
-                                comment = '' 
-                            # If option exists in the new config file       
+                                comment = ''
+                            # If option exists in the new config file
                             if option in options:
                                 # If value is different
                                 if value != config[''][option]:
@@ -174,7 +174,7 @@ class Config:
                             # If option type
                             option = result[0]
                             value = None
-                            # If option exists in the new config file  
+                            # If option exists in the new config file
                             if option in options:
                                 # If its no longer option type
                                 if config[''][option] != None:
@@ -182,7 +182,7 @@ class Config:
                                     line = option + '=' + value + '\n'
                                 f_out.write(line)
                                 # Remove from remaining options list
-                                options.remove(option)             
+                                options.remove(option)
                     else:
                         # If its empty or comment copy as it is
                         f_out.write(line)
@@ -197,7 +197,7 @@ class Config:
                 else:
                     line = option + '=' + value + '\n'
                 f_out.write(line)
-    
+
     def write_configparser(self, filepath, f_out, config):
         """Writes/updates the given file with given config object"""
         # All the sections in the file
@@ -229,21 +229,21 @@ class Config:
                             f_out.write(line)
                         else:
                             # disable writing until next valid section
-                            write = False 
-                    # If write enabled   
+                            write = False
+                    # If write enabled
                     elif write:
                         value = shlex.split(line, True)
                         # If the line is empty or a comment
                         if not value:
                             f_out.write(line)
                         else:
-                            option, value = line.split('=', 1)   
+                            option, value = line.split('=', 1)
                             try:
                                 # split any inline comments
                                 value, comment = value.split('#', 1)
                                 comment = '#' + comment
                             except ValueError:
-                                comment = ''                
+                                comment = ''
                             if option.strip() in options:
                                 if config[section][option.strip()] != value.strip():
                                     value = value.replace(value, config[section][option.strip()])
@@ -264,7 +264,7 @@ class Config:
             options = config.options(section)
             for option in options:
                 line = '  ' + option + ' = ' + config[section][option] + '\n'
-                f_out.write(line) 
+                f_out.write(line)
 
 def py2_parser(filename):
     """Returns the de-dented ini file from the new format ini"""

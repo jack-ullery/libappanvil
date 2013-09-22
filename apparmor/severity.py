@@ -17,7 +17,7 @@ class Severity:
         self.severity['VARIABLES'] = dict()
         if not dbname:
             return None
-        
+
         with open_file_read(dbname) as database:#open(dbname, 'r')
             for lineno, line in enumerate(database, start=1):
                 line = line.strip() # or only rstrip and lstrip?
@@ -61,7 +61,7 @@ class Severity:
                         self.severity['CAPABILITIES'][resource] = severity
                 else:
                     raise AppArmorException("Unexpected line in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
-    
+
     def handle_capability(self, resource):
         """Returns the severity of for the capability resource, default value if no match"""
         if resource in self.severity['CAPABILITIES'].keys():
@@ -69,8 +69,8 @@ class Severity:
         # raise ValueError("unexpected capability rank input: %s"%resource)
         warn("unknown capability: %s" % resource)
         return self.severity['DEFAULT_RANK']
-        
-    
+
+
     def check_subtree(self, tree, mode, sev, segments):
         """Returns the max severity from the regex tree"""
         if len(segments) == 0:
@@ -89,13 +89,13 @@ class Severity:
                 if '*' in chunk:
                     # Match rest of the path
                     if re.search("^"+chunk, path):
-                        # Find max rank 
+                        # Find max rank
                         if "AA_RANK" in tree[chunk].keys():
                             for m in mode:
                                 if sev == None or tree[chunk]["AA_RANK"].get(m, -1) > sev:
                                     sev = tree[chunk]["AA_RANK"].get(m, None)
         return sev
-            
+
     def handle_file(self, resource, mode):
         """Returns the severity for the file, default value if no match found"""
         resource = resource[1:]    # remove initial / from path
@@ -115,7 +115,7 @@ class Severity:
             return self.severity['DEFAULT_RANK']
         else:
             return sev
-        
+
     def rank(self, resource, mode=None):
         """Returns the rank for the resource file/capability"""
         if '@' in resource:    # path contains variable
@@ -126,7 +126,7 @@ class Severity:
             return self.handle_capability(resource)
         else:
             raise AppArmorException("Unexpected rank input: %s" % resource)
-        
+
     def handle_variable_rank(self, resource, mode):
         """Returns the max possible rank for file resources containing variables"""
         regex_variable = re.compile('@{([^{.]*)}')
@@ -138,13 +138,13 @@ class Severity:
             for replacement in self.severity['VARIABLES'][variable]:
                 resource_replaced = self.variable_replace(variable, replacement, resource)
                 rank_new = self.handle_variable_rank(resource_replaced, mode)
-                #rank_new = self.handle_variable_rank(resource.replace('@{'+variable+'}', replacement), mode)     
+                #rank_new = self.handle_variable_rank(resource.replace('@{'+variable+'}', replacement), mode)
                 if rank == None or rank_new > rank:
                     rank = rank_new
             return rank
         else:
             return self.handle_file(resource, mode)
-            
+
     def variable_replace(self, variable, replacement, resource):
         """Returns the expanded path for the passed variable"""
         leading = False
@@ -159,7 +159,7 @@ class Severity:
         if replacement[-1] == '/' and replacement[-2:] !='//' and trailing:
             replacement = replacement[:-1]
         return resource.replace(variable, replacement)
-    
+
     def load_variables(self, prof_path):
         """Loads the variables for the given profile"""
         regex_include = re.compile('^#?include\s*<(\S*)>')
@@ -172,7 +172,7 @@ class Severity:
                     if match:
                         new_path = match.groups()[0]
                         new_path = self.PROF_DIR + '/' + new_path
-                        self.load_variables(new_path)            
+                        self.load_variables(new_path)
                     else:
                         # Remove any comments
                         if '#' in line:
@@ -190,7 +190,7 @@ class Severity:
                                 if line[0] in self.severity['VARIABLES'].keys():
                                     raise AppArmorException("Variable %s was previously declared in file: %s" % (line[0], prof_path))
                                 self.severity['VARIABLES'][line[0]] = [i.strip('"') for i in line[1].split()]
-    
+
     def unload_variables(self):
         """Clears all loaded variables"""
         self.severity['VARIABLES'] = dict()

@@ -17,11 +17,11 @@ class Test(unittest.TestCase):
             parsed_regex = re.compile(apparmor.common.convert_regexp(regex))
             for regex_testcase in regex_tests.options(regex):
                 self.assertEqual(bool(parsed_regex.search(regex_testcase)), eval(regex_tests[regex][regex_testcase]), 'Incorrectly Parsed regex: %s' %regex)
-           
+
     #def test_readkey(self):
     #    print("Please press the Y button on the keyboard.")
     #    self.assertEqual(apparmor.common.readkey().lower(), 'y', 'Error reading key from shell!')
-        
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.test_RegexParser']

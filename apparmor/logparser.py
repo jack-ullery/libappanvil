@@ -3,7 +3,7 @@ import re
 import sys
 import time
 import LibAppArmor
-from apparmor.common import (AppArmorException, error, debug, msg, 
+from apparmor.common import (AppArmorException, error, debug, msg,
                              open_file_read, valid_path,
                              hasher, open_file_write, convert_regexp, DebugLogger)
 
@@ -45,7 +45,7 @@ class ReadLog:
         self.logmark = ''
         self.seenmark = None
         self.next_log_entry = None
-    
+
     def prefetch_next_log_entry(self):
         if self.next_log_entry:
             sys.stderr.out('A log entry already present: %s' % self.next_log_entry)
@@ -54,7 +54,7 @@ class ReadLog:
             self.next_log_entry = self.LOG.readline()
             if not self.next_log_entry:
                 break
-            
+
     def get_next_log_entry(self):
         # If no next log entry fetch it
         if not self.next_log_entry:
@@ -62,22 +62,22 @@ class ReadLog:
         log_entry = self.next_log_entry
         self.next_log_entry = None
         return log_entry
-    
+
     def peek_at_next_log_entry(self):
         # Take a peek at the next log entry
         if not self.next_log_entry:
             self.prefetch_next_log_entry()
         return self.next_log_entry
-    
+
     def throw_away_next_log_entry(self):
         self.next_log_entry = None
-    
+
     def parse_log_record(self, record):
         self.debug_logger.debug('parse_log_record: %s' % record)
-        
+
         record_event = self.parse_event(record)
         return record_event
-    
+
     def parse_event(self, msg):
         """Parse the event from log into key value pairs"""
         msg = msg.strip()
@@ -122,21 +122,21 @@ class ReadLog:
                 raise AppArmorException(_('Log contains unknown mode %s') % dmask)
         #print('parse_event:', ev['profile'], dmask, ev['name2'])
         mask, name = log_str_to_mode(ev['profile'], dmask, ev['name2'])
-    
+
         ev['denied_mask'] = mask
         ev['name2'] = name
-        
+
         mask, name = log_str_to_mode(ev['profile'], rmask, ev['name2'])
         ev['request_mask'] = mask
         ev['name2'] = name
-        
+
         if not ev['time']:
             ev['time'] = int(time.time())
         # Remove None keys
         #for key in ev.keys():
         #    if not ev[key] or not re.search('[\w]+', ev[key]):
         #        ev.pop(key)
-        
+
         if ev['aamode']:
             # Convert aamode values to their counter-parts
             mode_convertor = {
@@ -152,13 +152,13 @@ class ReadLog:
                 ev['aamode'] = mode_convertor[ev['aamode']]
             except KeyError:
                 ev['aamode'] = None
-        
+
         if ev['aamode']:
             #debug_logger.debug(ev)
             return ev
         else:
             return None
-    
+
     def add_to_tree(self, loc_pid, parent, type, event):
         self.debug_logger.info('add_to_tree: pid [%s] type [%s] event [%s]' % (loc_pid, type, event))
         if not self.pid.get(loc_pid, False):
@@ -200,27 +200,27 @@ class ReadLog:
                 aamode = 'ERROR'
             else:
                 aamode = 'UNKNOWN'
-        
+
         if aamode in ['UNKNOWN', 'AUDIT', 'STATUS', 'ERROR']:
             return None
-        
+
         if 'profile_set' in e['operation']:
             return None
 
         # Skip if AUDIT event was issued due to a change_hat in unconfined mode
         if not e.get('profile', False):
-            return None 
-        
+            return None
+
         # Convert new null profiles to old single level null profile
         if '//null-' in e['profile']:
             e['profile'] = 'null-complain-profile'
-        
+
         profile = e['profile']
         hat = None
-        
+
         if '//' in e['profile']:
             profile, hat = e['profile'].split('//')[:2]
-        
+
         # Filter out change_hat events that aren't from learning
         if e['operation'] == 'change_hat':
             if aamode != 'HINT' and aamode != 'PERMITTING':
@@ -229,18 +229,18 @@ class ReadLog:
             #hat = None
             if '//' in e['name']:
                 profile, hat = e['name'].split('//')[:2]
-        
+
         if not hat:
             hat = profile
 
         # prog is no longer passed around consistently
         prog = 'HINT'
-        
+
         if profile != 'null-complain-profile' and not self.profile_exists(profile):
             return None
         if e['operation'] == 'exec':
             if e.get('info', False) and e['info'] == 'mandatory profile missing':
-                self.add_to_tree(e['pid'], e['parent'], 'exec', 
+                self.add_to_tree(e['pid'], e['parent'], 'exec',
                             [profile, hat, aamode, 'PERMITTING', e['denied_mask'], e['name'], e['name2']])
             elif e.get('name2', False) and '\\null-/' in e['name2']:
                 self.add_to_tree(e['pid'], e['parent'], 'exec',
@@ -250,11 +250,11 @@ class ReadLog:
                             [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
             else:
                 self.debug_logger.debug('add_event_to_tree: dropped exec event in %s' % e['profile'])
-        
+
         elif 'file_' in e['operation']:
             self.add_to_tree(e['pid'], e['parent'], 'path',
                         [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-        elif e['operation'] in ['open', 'truncate', 'mkdir', 'mknod', 'rename_src', 
+        elif e['operation'] in ['open', 'truncate', 'mkdir', 'mknod', 'rename_src',
                                 'rename_dest', 'unlink', 'rmdir', 'symlink_create', 'link']:
             #print(e['operation'], e['name'])
             self.add_to_tree(e['pid'], e['parent'], 'path',
@@ -274,18 +274,18 @@ class ReadLog:
                     if entry and entry.get('info', False) == 'set profile':
                         is_domain_change = True
                         self.throw_away_next_log_entry()
-            
+
             if is_domain_change:
                 self.add_to_tree(e['pid'], e['parent'], 'exec',
                             [profile, hat, prog, aamode, e['denied_mask'], e['name'], e['name2']])
             else:
                 self.add_to_tree(e['pid'], e['parent'], 'path',
                             [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-            
+
         elif e['operation'] == 'sysctl':
             self.add_to_tree(e['pid'], e['parent'], 'path',
                         [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-        
+
         elif e['operation'] == 'clone':
             parent , child = e['pid'], e['task']
             if not parent:
@@ -305,7 +305,7 @@ class ReadLog:
 #             else:
 #                 self.log += [arrayref]
 #             self.pid[child] = arrayref
-        
+
         elif self.op_type(e['operation']) == 'net':
             self.add_to_tree(e['pid'], e['parent'], 'netdomain',
                         [profile, hat, prog, aamode, e['family'], e['sock_type'], e['protocol']])
@@ -314,7 +314,7 @@ class ReadLog:
                         [profile, hat, aamode, hat])
         else:
             self.debug_logger.debug('UNHANDLED: %s' % e)
-    
+
     def read_log(self, logmark):
         self.logmark = logmark
         seenmark = True
@@ -337,11 +337,11 @@ class ReadLog:
             self.debug_logger.debug('read_log: %s' % line)
             if self.logmark in line:
                 seenmark = True
-            
+
             self.debug_logger.debug('read_log: seenmark = %s' %seenmark)
             if not seenmark:
                 continue
-             
+
             event = self.parse_log_record(line)
             #print(event)
             if event:
@@ -349,12 +349,12 @@ class ReadLog:
         self.LOG.close()
         self.logmark = ''
         return self.log
-    
+
     def op_type(self, operation):
         """Returns the operation type if known, unkown otherwise"""
         operation_type = self.OPERATION_TYPES.get(operation, 'unknown')
         return operation_type
-    
+
     def profile_exists(self, program):
         """Returns True if profile exists, False otherwise"""
         # Check cache of profiles
@@ -368,8 +368,8 @@ class ReadLog:
             self.existing_profiles[program] = prof_path
             return True
         return False
-    
-    
+
+
     def get_profile_filename(self, profile):
         """Returns the full profile name"""
         if profile.startswith('/'):

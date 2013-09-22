@@ -147,7 +147,7 @@ def readkey():
         ch = sys.stdin.read(1)
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    
+
     return ch
 
 def hasher():
@@ -160,20 +160,20 @@ def convert_regexp(regexp):
     regex_paren = re.compile('^(.*){([^}]*)}(.*)$')
     regexp = regexp.strip()
     new_reg = re.sub(r'(?<!\\)(\.|\+|\$)',r'\\\1',regexp)
-    
+
     while regex_paren.search(new_reg):
         match = regex_paren.search(new_reg).groups()
         prev = match[0]
         after = match[2]
         p1 = match[1].replace(',','|')
         new_reg = prev+'('+p1+')'+after
-        
+
     new_reg = new_reg.replace('?', '[^/\000]')
-    
+
     multi_glob = '__KJHDKVZH_AAPROF_INTERNAL_GLOB_SVCUZDGZID__'
     new_reg = new_reg.replace('**', multi_glob)
     #print(new_reg)
-    
+
     # Match atleast one character if * or ** after /
     # ?< is the negative lookback operator
     new_reg = new_reg.replace('*', '(((?<=/)[^/\000]+)|((?<!/)[^/\000]*))')
@@ -185,9 +185,9 @@ def convert_regexp(regexp):
     return new_reg
 
 class DebugLogger:
-    def __init__(self, module_name=__name__):       
+    def __init__(self, module_name=__name__):
         self.debugging = False
-        self.debug_level = logging.DEBUG   
+        self.debug_level = logging.DEBUG
         if os.getenv('LOGPROF_DEBUG', False):
             self.debugging = os.getenv('LOGPROF_DEBUG')
             try:
@@ -203,13 +203,13 @@ class DebugLogger:
                 self.debug_level = logging.INFO
             elif self.debugging == 3:
                 self.debug_level = logging.DEBUG
-            
-        
+
+
         logging.basicConfig(filename='/var/log/apparmor/logprof.log', level=self.debug_level, format='%(asctime)s - %(name)s - %(message)s\n')
- 
+
         self.logger = logging.getLogger(module_name)
-        
-        
+
+
     def error(self, msg):
         if self.debugging:
             self.logger.error(msg)

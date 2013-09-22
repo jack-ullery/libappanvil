@@ -2,7 +2,7 @@ import os
 import sys
 
 import apparmor.aa as apparmor
-    
+
 class aa_tools:
     def __init__(self, tool_name, args):
         self.name = tool_name
@@ -21,22 +21,22 @@ class aa_tools:
             self.aa_mountpoint = apparmor.check_for_apparmor()
         elif tool_name == 'cleanprof':
             self.silent = args.silent
-    
+
     def check_profile_dir(self):
         if self.profiledir:
             apparmor.profile_dir = apparmor.get_full_path(self.profiledir)
             if not os.path.isdir(apparmor.profile_dir):
                 raise apparmor.AppArmorException("%s is not a directory." %self.profiledir)
-    
+
     def check_disable_dir(self):
         if not os.path.isdir(self.disabledir):
             raise apparmor.AppArmorException("Can't find AppArmor disable directory %s." %self.disabledir)
-    
+
     def act(self):
         for p in self.profiling:
             if not p:
                 continue
-            
+
             program = None
             if os.path.exists(p):
                 program = apparmor.get_full_path(p).strip()
@@ -44,32 +44,32 @@ class aa_tools:
                 which = apparmor.which(p)
                 if which:
                     program = apparmor.get_full_path(which)
-            
+
             apparmor.read_profiles()
             #If program does not exists on the system but its profile does
             if not program and apparmor.profile_exists(p):
                 program = p
-                
+
             if not program or not(os.path.exists(program) or apparmor.profile_exists(program)):
                 if program and not program.startswith('/'):
                     program = apparmor.UI_GetString(_('The given program cannot be found, please try with the fully qualified path name of the program: '), '')
                 else:
                     apparmor.UI_Info(_("%s does not exist, please double-check the path.")%program)
                     sys.exit(1)
-                
+
             if program and apparmor.profile_exists(program):#os.path.exists(program):
                 if self.name == 'autodep':
                     self.use_autodep(program)
-                
+
                 elif self.name == 'cleanprof':
                     self.clean_profile(program, p)
-                    
+
                 else:
                     filename = apparmor.get_profile_filename(program)
-                    
+
                     if not os.path.isfile(filename) or apparmor.is_skippable_file(filename):
                         apparmor.UI_Info(_('Profile for %s not found, skipping')%p)
-                        
+
                     elif self.name == 'disable':
                         if not self.revert:
                             apparmor.UI_Info(_('Disabling %s.')%program)
@@ -77,14 +77,14 @@ class aa_tools:
                         else:
                             apparmor.UI_Info(_('Enabling %s.')%program)
                             self.enable_profile(filename)
-                            
+
                     elif self.name == 'audit':
                         if not self.remove:
                             apparmor.UI_Info(_('Setting %s to audit mode.')%program)
                         else:
                             apparmor.UI_Info(_('Removing audit mode from %s.')%program)
                         apparmor.change_profile_flags(filename, program, 'audit', not self.remove)
-                    
+
                     elif self.name == 'complain':
                         if not self.remove:
                             apparmor.set_complain(filename, program)
@@ -94,20 +94,20 @@ class aa_tools:
                     else:
                         # One simply does not walk in here!
                         raise apparmor.AppArmorException('Unknown tool: %s'%self.name)
-                    
+
                     cmd_info = apparmor.cmd([apparmor.parser, filename, '-I%s'%apparmor.profile_dir, '-R 2>&1', '1>/dev/null'])
                     #cmd_info = apparmor.cmd(['cat', filename, '|', apparmor.parser, '-I%s'%apparmor.profile_dir, '-R 2>&1', '1>/dev/null'])
-                    
+
                     if cmd_info[0] != 0:
                         raise apparmor.AppArmorException(cmd_info[1])
-            
+
             else:
                 if '/' not in p:
                     apparmor.UI_Info(_("Can't find %s in the system path list. If the name of the application\nis correct, please run 'which %s' as a user with correct PATH\nenvironment set up in order to find the fully-qualified path and\nuse the full path as parameter.")%(p, p))
                 else:
                     apparmor.UI_Info(_("%s does not exist, please double-check the path.")%p)
                     sys.exit(1)
-    
+
     def clean_profile(self, program, p):
         filename = apparmor.get_profile_filename(program)
 
@@ -117,7 +117,7 @@ class aa_tools:
         deleted = cleanprof.remove_duplicate_rules(program)
         apparmor.UI_Info(_("\nDeleted %s rules.") % deleted)
         apparmor.changed[program] = True
-        
+
         if filename:
             if not self.silent:
                 q = apparmor.hasher()
@@ -145,19 +145,19 @@ class aa_tools:
                 apparmor.reload_base(program)
         else:
             raise apparmor.AppArmorException(_('The profile for %s does not exists. Nothing to clean.')%p)
-        
+
     def use_autodep(self, program):
-        apparmor.check_qualifiers(program)           
-        
+        apparmor.check_qualifiers(program)
+
         if os.path.exists(apparmor.get_profile_filename(program) and not self.force):
             apparmor.UI_Info('Profile for %s already exists - skipping.'%program)
         else:
             apparmor.autodep(program)
             if self.aa_mountpoint:
                 apparmor.reload(program)
-    
-    def enable_profile(self, filename): 
+
+    def enable_profile(self, filename):
         apparmor.delete_symlink('disable', filename)
-        
+
     def disable_profile(self, filename):
         apparmor.create_symlink('disable', filename)

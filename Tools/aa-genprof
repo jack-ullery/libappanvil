@@ -115,13 +115,13 @@ while not done_profiling:
 
     else:
         logmark = last_audit_entry_time()
-    
+
     q=apparmor.hasher()
     q['headers'] = [_('Profiling'), program]
     q['functions'] = ['CMD_SCAN', 'CMD_FINISHED']
     q['default'] = 'CMD_SCAN'
     ans, arg = apparmor.UI_PromptUser(q, 'noexit')
-    
+
     if ans == 'CMD_SCAN':
         lp_ret = apparmor.do_logprof_pass(logmark, passno)
         passno += 1

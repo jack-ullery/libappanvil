@@ -19,16 +19,16 @@ profiles = [args.mine, args.base, args.other]
 
 if __name__ == '__main__':
     main()
-    
+
 print(profiles)
 
 def main():
     mergeprofiles = Merge(profiles)
-    
+
 class Merge(object):
     def __init__(self, profiles):
         user, base, other = profiles
-        
+
         #Read and parse base profile and save profile data, include data from it and reset them
         apparmor.read_profile(base, True)
         base = cleanprof.Prof()
@@ -36,7 +36,7 @@ class Merge(object):
         #self.base_filelist = apparmor.filelist
         #self.base_include = apparmor.include
         reset()
-        
+
         #Read and parse other profile and save profile data, include data from it and reset them
         apparmor.read_profile(other, True)
         other = cleanprof.prof()
@@ -44,36 +44,36 @@ class Merge(object):
         #self.other_filelist = apparmor.filelist
         #self.other_include = apparmor.include
         reset()
-        
+
         #Read and parse user profile
         apparmor.read_profile(profiles[0], True)
         user = cleanprof.prof()
         #user_aa = apparmor.aa
         #user_filelist = apparmor.filelist
         #user_include = apparmor.include
-    
+
     def reset():
         apparmor.aa = apparmor.hasher()
         apparmor.filelist = hasher()
         apparmor.include = dict()
         apparmor.existing_profiles = hasher()
         apparmor.original_aa = hasher()
-    
+
     def clear_common(self):
         common_base_other()
         remove_common('base')
         remove_common('other')
-    
+
     def common_base_other(self):
         pass
-    
+
     def remove_common(self, profile):
         if prof1 == 'base':
 
 
 # def intersect(ra, rb):
 #     """Given two ranges return the range where they intersect or None.
-# 
+#
 #     >>> intersect((0, 10), (0, 6))
 #     (0, 6)
 #     >>> intersect((0, 10), (5, 15))
@@ -84,15 +84,15 @@ class Merge(object):
 #     (7, 9)
 #     """
 #     # preconditions: (ra[0] <= ra[1]) and (rb[0] <= rb[1])
-# 
+#
 #     sa = max(ra[0], rb[0])
 #     sb = min(ra[1], rb[1])
 #     if sa < sb:
 #         return sa, sb
 #     else:
 #         return None
-# 
-# 
+#
+#
 # def compare_range(a, astart, aend, b, bstart, bend):
 #     """Compare a[astart:aend] == b[bstart:bend], without slicing.
 #     """
@@ -103,20 +103,20 @@ class Merge(object):
 #             return False
 #     else:
 #         return True
-# 
-# 
-# 
-# 
+#
+#
+#
+#
 # class Merge3(object):
 #     """3-way merge of texts.
-# 
+#
 #     Given BASE, OTHER, THIS, tries to produce a combined text
 #     incorporating the changes from both BASE->OTHER and BASE->THIS.
 #     All three will typically be sequences of lines."""
-# 
+#
 #     def __init__(self, base, a, b, is_cherrypick=False, allow_objects=False):
 #         """Constructor.
-# 
+#
 #         :param base: lines in BASE
 #         :param a: lines in A
 #         :param b: lines in B
@@ -136,7 +136,7 @@ class Merge(object):
 #         self.a = a
 #         self.b = b
 #         self.is_cherrypick = is_cherrypick
-# 
+#
 #     def merge_lines(self,
 #                     name_a=None,
 #                     name_b=None,
@@ -190,10 +190,10 @@ class Merge(object):
 #                 yield end_marker + newline
 #             else:
 #                 raise ValueError(what)
-# 
+#
 #     def merge_annotated(self):
 #         """Return merge with conflicts, showing origin of lines.
-# 
+#
 #         Most useful for debugging merge.
 #         """
 #         for t in self.merge_regions():
@@ -217,22 +217,22 @@ class Merge(object):
 #                 yield '>>>>\n'
 #             else:
 #                 raise ValueError(what)
-# 
+#
 #     def merge_groups(self):
 #         """Yield sequence of line groups.  Each one is a tuple:
-# 
+#
 #         'unchanged', lines
 #              Lines unchanged from base
-# 
+#
 #         'a', lines
 #              Lines taken from a
-# 
+#
 #         'same', lines
 #              Lines taken from a (and equal to b)
-# 
+#
 #         'b', lines
 #              Lines taken from b
-# 
+#
 #         'conflict', base_lines, a_lines, b_lines
 #              Lines from base were changed to either a or b and conflict.
 #         """
@@ -251,37 +251,37 @@ class Merge(object):
 #                        self.b[t[5]:t[6]])
 #             else:
 #                 raise ValueError(what)
-# 
+#
 #     def merge_regions(self):
 #         """Return sequences of matching and conflicting regions.
-# 
+#
 #         This returns tuples, where the first value says what kind we
 #         have:
-# 
+#
 #         'unchanged', start, end
 #              Take a region of base[start:end]
-# 
+#
 #         'same', astart, aend
 #              b and a are different from base but give the same result
-# 
+#
 #         'a', start, end
 #              Non-clashing insertion from a[start:end]
-# 
+#
 #         Method is as follows:
-# 
+#
 #         The two sequences align only on regions which match the base
 #         and both descendents.  These are found by doing a two-way diff
 #         of each one against the base, and then finding the
 #         intersections between those regions.  These "sync regions"
 #         are by definition unchanged in both and easily dealt with.
-# 
+#
 #         The regions in between can be in any of three cases:
 #         conflicted, or changed on only one side.
 #         """
-# 
+#
 #         # section a[0:ia] has been disposed of, etc
 #         iz = ia = ib = 0
-# 
+#
 #         for zmatch, zend, amatch, aend, bmatch, bend in self.find_sync_regions():
 #             matchlen = zend - zmatch
 #             # invariants:
@@ -295,14 +295,14 @@ class Merge(object):
 #             # assert len_a >= 0
 #             # assert len_b >= 0
 #             # assert len_base >= 0
-# 
+#
 #             #print 'unmatched a=%d, b=%d' % (len_a, len_b)
-# 
+#
 #             if len_a or len_b:
 #                 # try to avoid actually slicing the lists
 #                 same = compare_range(self.a, ia, amatch,
 #                                      self.b, ib, bmatch)
-# 
+#
 #                 if same:
 #                     yield 'same', ia, amatch
 #                 else:
@@ -324,25 +324,25 @@ class Merge(object):
 #                             yield 'conflict', iz, zmatch, ia, amatch, ib, bmatch
 #                     else:
 #                         raise AssertionError("can't handle a=b=base but unmatched")
-# 
+#
 #                 ia = amatch
 #                 ib = bmatch
 #             iz = zmatch
-# 
+#
 #             # if the same part of the base was deleted on both sides
 #             # that's OK, we can just skip it.
-# 
+#
 #             if matchlen > 0:
 #                 # invariants:
 #                 # assert ia == amatch
 #                 # assert ib == bmatch
 #                 # assert iz == zmatch
-# 
+#
 #                 yield 'unchanged', zmatch, zend
 #                 iz = zend
 #                 ia = aend
 #                 ib = bend
-# 
+#
 #     def _refine_cherrypick_conflict(self, zstart, zend, astart, aend, bstart, bend):
 #         """When cherrypicking b => a, ignore matches with b and base."""
 #         # Do not emit regions which match, only regions which do not match
@@ -382,10 +382,10 @@ class Merge(object):
 #                        astart, aend, bstart + last_b_idx, bstart + b_idx)
 #         if not yielded_a:
 #             yield ('conflict', zstart, zend, astart, aend, bstart, bend)
-# 
+#
 #     def reprocess_merge_regions(self, merge_regions):
 #         """Where there are conflict regions, remove the agreed lines.
-# 
+#
 #         Lines where both A and B have made the same changes are
 #         eliminated.
 #         """
@@ -413,19 +413,19 @@ class Merge(object):
 #             reg = self.mismatch_region(next_a, amatch, next_b, bmatch)
 #             if reg is not None:
 #                 yield reg
-# 
+#
 #     @staticmethod
 #     def mismatch_region(next_a, region_ia,  next_b, region_ib):
 #         if next_a < region_ia or next_b < region_ib:
 #             return 'conflict', None, None, next_a, region_ia, next_b, region_ib
-# 
+#
 #     def find_sync_regions(self):
 #         """Return a list of sync regions, where both descendents match the base.
-# 
+#
 #         Generates a list of (base1, base2, a1, a2, b1, b2).  There is
 #         always a zero-length sync region at the end of all the files.
 #         """
-# 
+#
 #         ia = ib = 0
 #         amatches = patiencediff.PatienceSequenceMatcher(
 #                 None, self.base, self.a).get_matching_blocks()
@@ -433,13 +433,13 @@ class Merge(object):
 #                 None, self.base, self.b).get_matching_blocks()
 #         len_a = len(amatches)
 #         len_b = len(bmatches)
-# 
+#
 #         sl = []
-# 
+#
 #         while ia < len_a and ib < len_b:
 #             abase, amatch, alen = amatches[ia]
 #             bbase, bmatch, blen = bmatches[ib]
-# 
+#
 #             # there is an unconflicted block at i; how long does it
 #             # extend?  until whichever one ends earlier.
 #             i = intersect((abase, abase+alen), (bbase, bbase+blen))
@@ -447,23 +447,23 @@ class Merge(object):
 #                 intbase = i[0]
 #                 intend = i[1]
 #                 intlen = intend - intbase
-# 
+#
 #                 # found a match of base[i[0], i[1]]; this may be less than
 #                 # the region that matches in either one
 #                 # assert intlen <= alen
 #                 # assert intlen <= blen
 #                 # assert abase <= intbase
 #                 # assert bbase <= intbase
-# 
+#
 #                 asub = amatch + (intbase - abase)
 #                 bsub = bmatch + (intbase - bbase)
 #                 aend = asub + intlen
 #                 bend = bsub + intlen
-# 
+#
 #                 # assert self.base[intbase:intend] == self.a[asub:aend], \
 #                 #       (self.base[intbase:intend], self.a[asub:aend])
 #                 # assert self.base[intbase:intend] == self.b[bsub:bend]
-# 
+#
 #                 sl.append((intbase, intend,
 #                            asub, aend,
 #                            bsub, bend))
@@ -472,23 +472,23 @@ class Merge(object):
 #                 ia += 1
 #             else:
 #                 ib += 1
-# 
+#
 #         intbase = len(self.base)
 #         abase = len(self.a)
 #         bbase = len(self.b)
 #         sl.append((intbase, intbase, abase, abase, bbase, bbase))
-# 
+#
 #         return sl
-# 
+#
 #     def find_unconflicted(self):
 #         """Return a list of ranges in base that are not conflicted."""
 #         am = patiencediff.PatienceSequenceMatcher(
 #                 None, self.base, self.a).get_matching_blocks()
 #         bm = patiencediff.PatienceSequenceMatcher(
 #                 None, self.base, self.b).get_matching_blocks()
-# 
+#
 #         unc = []
-# 
+#
 #         while am and bm:
 #             # there is an unconflicted block at i; how long does it
 #             # extend?  until whichever one ends earlier.
@@ -499,18 +499,18 @@ class Merge(object):
 #             i = intersect((a1, a2), (b1, b2))
 #             if i:
 #                 unc.append(i)
-# 
+#
 #             if a2 < b2:
 #                 del am[0]
 #             else:
 #                 del bm[0]
-# 
+#
 #         return unc
-#     
+#
 # a = file(profiles[0], 'rt').readlines()
 # base = file(profiles[1], 'rt').readlines()
 # b = file(profiles[2], 'rt').readlines()
-# 
+#
 # m3 = Merge3(base, a, b)
-# 
+#
 # sys.stdout.write(m3.merge_annotated())

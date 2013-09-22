@@ -50,7 +50,7 @@ def get_translated_hotkey(translated, cmsg=''):
         if cmsg:
             raise AppArmorException(cmsg)
         else:
-            raise AppArmorException('%s %s' %(msg, translated))            
+            raise AppArmorException('%s %s' %(msg, translated))
 
 def UI_YesNo(text, default):
     debug_logger.debug('UI_YesNo: %s: %s %s' %(UI_mode, text, default))
@@ -78,7 +78,7 @@ def UI_YesNo(text, default):
                     ans = 'n'
             else:
                 ans = default
-            
+
     else:
         SendDataToYast({
                          'type': 'dialog-yesno',
@@ -98,11 +98,11 @@ def UI_YesNoCancel(text, default):
         yes = _('(Y)es')
         no = _('(N)o')
         cancel = _('(C)ancel')
-        
+
         yeskey = get_translated_hotkey(yes).lower()
         nokey = get_translated_hotkey(no).lower()
         cancelkey = get_translated_hotkey(cancel).lower()
-        
+
         ans = 'XXXINVALIDXXX'
         while ans not in ['c', 'n', 'y']:
             sys.stdout.write('\n' + text + '\n')
@@ -300,45 +300,45 @@ def Text_PromptUser(question):
     explanation = question['explanation']
     headers = question['headers']
     functions = question['functions']
-    
+
     default = question['default']
     options = question['options']
     selected = question.get('selected', 0)
     helptext = question['helptext']
     if helptext:
         functions.append('CMD_HELP')
-    
+
     menu_items = []
     keys = dict()
-    
+
     for cmd in functions:
         if not CMDS.get(cmd, False):
             raise AppArmorException(_('PromptUser: Unknown command %s') % cmd)
-        
+
         menutext = CMDS[cmd]
-        
+
         key = get_translated_hotkey(menutext).lower()
         # Duplicate hotkey
-        if keys.get(key, False): 
-            raise AppArmorException(_('PromptUser: Duplicate hotkey for %s: %s ') % (cmd, menutext)) 
-        
+        if keys.get(key, False):
+            raise AppArmorException(_('PromptUser: Duplicate hotkey for %s: %s ') % (cmd, menutext))
+
         keys[key] = cmd
-        
+
         if default and default == cmd:
             menutext = '[%s]' %menutext
-        
+
         menu_items.append(menutext)
-    
+
     default_key = 0
     if default and CMDS[default]:
         defaulttext = CMDS[default]
         defmsg = _('PromptUser: Invalid hotkey in default item')
-        
+
         default_key = get_translated_hotkey(defaulttext, defmsg).lower()
-        
-        if not keys.get(default_key, False): 
+
+        if not keys.get(default_key, False):
             raise AppArmorException(_('PromptUser: Invalid default %s') % default)
-        
+
     widest = 0
     header_copy = headers[:]
     while header_copy:
@@ -347,22 +347,22 @@ def Text_PromptUser(question):
         if len(header) > widest:
             widest = len(header)
     widest += 1
-    
+
     formatstr = '%-' + str(widest) + 's %s\n'
-    
+
     function_regexp = '^('
     function_regexp += '|'.join(keys.keys())
     if options:
         function_regexp += '|\d'
     function_regexp += ')$'
-    
+
     ans = 'XXXINVALIDXXX'
     while not re.search(function_regexp, ans, flags=re.IGNORECASE):
-        
+
         prompt = '\n'
         if title:
             prompt += '= %s =\n\n' %title
-        
+
         if headers:
             header_copy = headers[:]
             while header_copy:
@@ -370,10 +370,10 @@ def Text_PromptUser(question):
                 value = header_copy.pop(0)
                 prompt += formatstr %(header+':', value)
             prompt += '\n'
-        
+
         if explanation:
             prompt += explanation + '\n\n'
-        
+
         if options:
             for index, option in enumerate(options):
                 if selected == index:
@@ -382,45 +382,45 @@ def Text_PromptUser(question):
                     format_option = '  %s - %s '
                 prompt += format_option %(index+1, option)
                 prompt += '\n'
-        
+
         prompt += ' / '.join(menu_items)
-        
+
         sys.stdout.write(prompt+'\n')
-        
+
         ans = getkey().lower()
-        
+
         if ans:
             if ans == 'up':
                 if options and selected > 0:
                     selected -= 1
                 ans = 'XXXINVALIDXXX'
-            
+
             elif ans == 'down':
                 if options and selected < len(options)-1:
                     selected += 1
                 ans = 'XXXINVALIDXXX'
-            
+
 #             elif keys.get(ans, False) == 'CMD_HELP':
 #                 sys.stdout.write('\n%s\n' %helptext)
 #                 ans = 'XXXINVALIDXXX'
-            
+
             elif is_number(ans) == 10:
                 # If they hit return choose default option
                 ans = default_key
-            
+
             elif options and re.search('^\d$', ans):
                 ans = int(ans)
                 if ans > 0 and ans <= len(options):
                     selected = ans - 1
                 ans = 'XXXINVALIDXXX'
-        
+
         if keys.get(ans, False) == 'CMD_HELP':
             sys.stdout.write('\n%s\n' %helptext)
             ans = 'again'
-    
+
     if keys.get(ans, False):
         ans = keys[ans]
-    
+
     return ans, selected
 
 def is_number(number):
@@ -428,4 +428,3 @@ def is_number(number):
         return int(number)
     except:
         return False
-    

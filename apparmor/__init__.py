@@ -10,5 +10,5 @@ def init_localisation():
     except IOError:
         trans = gettext.NullTranslations()
     trans.install()
-    
+
 init_localisation()

@@ -23,7 +23,7 @@ else:
     regex_tcp_udp = re.compile('^(tcp|udp)\s+\d+\s+\d+\s+\S+\:(\d+)\s+\S+\:(\*|\d+)\s+(LISTEN|\s+)\s+(\d+)\/(\S+)')
     import subprocess
     output = subprocess.check_output('LANG=C netstat -nlp', shell=True).split('\n')
-    
+
     for line in output:
         match = regex_tcp_udp.search(line)
         if match:
@@ -42,7 +42,7 @@ for pid in sorted(pids):
             for line in current:
                 if line.startswith('/') or line.startswith('null'):
                     attr = line.strip()
-    
+
     cmdline = apparmor.cmd(['cat', '/proc/%s/cmdline'%pid])[1]
     pname = cmdline.split('\0')[0]
     if '/' in pname and pname != prog:
