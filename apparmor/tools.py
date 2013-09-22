@@ -9,7 +9,7 @@ class aa_tools:
         self.profiledir = args.dir
         self.profiling = args.program
         self.check_profile_dir()
-        
+        self.silent = None
         if tool_name in ['audit', 'complain']:
             self.remove = args.remove
         elif tool_name == 'disable':
@@ -20,7 +20,7 @@ class aa_tools:
             self.force = args.force
             self.aa_mountpoint = apparmor.check_for_apparmor()
         elif tool_name == 'cleanprof':
-            pass
+            self.silent = args.silent
     
     def check_profile_dir(self):
         if self.profiledir:
@@ -114,11 +114,35 @@ class aa_tools:
         import apparmor.cleanprofile as cleanprofile
         prof = cleanprofile.Prof(filename)
         cleanprof = cleanprofile.CleanProf(True, prof, prof)
-        cleanprof.remove_duplicate_rules(program)
-
+        deleted = cleanprof.remove_duplicate_rules(program)
+        apparmor.UI_Info(_("\nDeleted %s rules.") % deleted)
+        apparmor.changed[program] = True
+        
         if filename:
-            apparmor.write_profile_ui_feedback(program)
-            apparmor.reload_base(program)
+            if not self.silent:
+                q = apparmor.hasher()
+                q['title'] = 'Changed Local Profiles'
+                q['headers'] = []
+                q['explanation'] = _('The following local profiles were changed. Would you like to save them?')
+                q['functions'] = ['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ABORT']
+                q['default'] = 'CMD_VIEW_CHANGES'
+                q['options'] = []
+                q['selected'] = 0
+                p =None
+                ans = ''
+                arg = None
+                while ans != 'CMD_SAVE_CHANGES':
+                    ans, arg = apparmor.UI_PromptUser(q)
+                    if ans == 'CMD_SAVE_CHANGES':
+                        apparmor.write_profile_ui_feedback(program)
+                        apparmor.reload_base(program)
+                    elif ans == 'CMD_VIEW_CHANGES':
+                        #oldprofile = apparmor.serialize_profile(apparmor.original_aa[program], program, '')
+                        newprofile = apparmor.serialize_profile(apparmor.aa[program], program, '')
+                        apparmor.display_changes_with_comments(filename, newprofile)
+            else:
+                apparmor.write_profile_ui_feedback(program)
+                apparmor.reload_base(program)
         else:
             raise apparmor.AppArmorException(_('The profile for %s does not exists. Nothing to clean.')%p)
         

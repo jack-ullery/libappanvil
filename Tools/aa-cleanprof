@@ -7,6 +7,7 @@ import apparmor.tools
 parser = argparse.ArgumentParser(description='Cleanup the profiles for the given programs')
 parser.add_argument('-d', '--dir', type=str, help='path to profiles')
 parser.add_argument('program', type=str, nargs='+', help='name of program')
+parser.add_argument('-s', '--silent', action='store_true', help='Silently over-write with cleanprofile')
 args = parser.parse_args()
 
 clean = apparmor.tools.aa_tools('cleanprof', args)

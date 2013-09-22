@@ -6,7 +6,7 @@ aa-cleanprof - clean an existing AppArmor security profile.
 
 =head1 SYNOPSIS
 
-B<aa-cleanprof I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...] [I<-d /path/to/profiles>]>
+B<aa-cleanprof I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...] [I<-d /path/to/profiles>] [I<-s>]>
 
 =head1 OPTIONS
 
@@ -14,13 +14,17 @@ B<-d --dir  /path/to/profiles>
 
    Specifies where to look for the AppArmor security profile set.
    Defaults to /etc/apparmor.d.
+   
+B<-s --silent>
+
+   Silently over-writes the profile without user prompt.
 
 =head1 DESCRIPTION
 
 B<aa-cleanprof> is used to perform a cleanup on one or more profiles.
 The tool removes any existing superfluous rules (rules that are covered 
 under an include or another rule), reorders the rules to group similar rules
-together and removes all comments.
+together and removes all comments from the file.
 
 =head1 BUGS
 

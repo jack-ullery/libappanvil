@@ -1,0 +1,15 @@
+#include <tunables/global>
+
+# A simple test comment which will persist
+
+
+/usr/bin/a/simple/cleanprof/test/profile {
+  allow /home/*/** r,
+  allow /home/foo/** w,
+
+}
+/usr/bin/other/cleanprof/test/profile {
+  allow /home/*/** rw,
+  allow /home/foo/bar r,
+
+}

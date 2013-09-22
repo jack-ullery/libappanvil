@@ -52,7 +52,7 @@ The I<--revert> option can be used to enable the profile.
 =head1 BUGS
 
 If you find any bugs, please report them at
-L<https://bugs.launchpad.net/apparmor-profile-tools/+filebug>.
+L<https://bugs.launchpad.net/apparmor/+filebug>.
 
 =head1 SEE ALSO
 

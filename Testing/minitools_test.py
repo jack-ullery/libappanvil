@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import sys
 import unittest
+import filecmp
 
 import apparmor.aa as apparmor
 
@@ -92,6 +93,22 @@ class Test(unittest.TestCase):
     def test_autodep(self):
         pass
     
+    def test_cleanprof(self):
+        input_file = 'cleanprof_test.in'
+        output_file = 'cleanprof_test.out'
+        #We position the local testfile
+        shutil.copy('./%s'%input_file, './profiles')
+        #Our silly test program whose profile we wish to clean
+        cleanprof_test = '/usr/bin/a/simple/cleanprof/test/profile'
+        
+        subprocess.check_output('%s ./../Tools/aa-cleanprof  -d ./profiles -s %s' % (python_interpreter, cleanprof_test), shell=True)
+        
+        #Strip off the first line (#modified line)
+        subprocess.check_output('sed -i 1d ./profiles/%s'%(input_file), shell=True)
+        
+        self.assertEqual(filecmp.cmp('./profiles/%s'%input_file, './%s'%output_file, False), True, 'Failed to cleanup profile properly')
+        
+    
 def clean_profile_dir():
     #Wipe the local profiles from the test directory
     shutil.rmtree('./profiles')
@@ -103,6 +120,7 @@ if __name__ == "__main__":
         shutil.rmtree('./profiles')
 
     #copy the local profiles to the test directory
+    #Should be the set of cleanprofile
     shutil.copytree('/etc/apparmor.d', './profiles', symlinks=True)
     
     apparmor.profile_dir='./profiles'

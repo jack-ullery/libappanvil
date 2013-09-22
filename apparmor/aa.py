@@ -2024,13 +2024,13 @@ def delete_net_duplicates(netrules, incnetrules):
         if incnetrules.get('all', False):
             incnetglob = True
         for fam in netrules.keys():
-            if incnetglob or (type(incnetrules['rule'][fam]) != dict and incnetrules['rule'][fam] == 1):
+            if incnetglob or (type(incnetrules['rule'][fam]) != dict and incnetrules['rule'][fam]):
                 if type(netrules['rule'][fam]) == dict:
                     deleted += len(netrules['rule'][fam].keys())
                 else:
                     deleted += 1
                 netrules['rule'].pop(fam)
-            elif type(netrules['rule'][fam]) != dict and netrules['rule'][fam] == 1:
+            elif type(netrules['rule'][fam]) != dict and netrules['rule'][fam]:
                 continue
             else:
                 for socket_type in netrules['rule'][fam].keys():
@@ -2275,12 +2275,14 @@ def save_profiles():
             ans = ''
             arg = None
             while ans != 'CMD_SAVE_CHANGES':
+                if not changed:
+                    return
                 ans, arg = UI_PromptUser(q)
                 if ans == 'CMD_SAVE_SELECTED':
                     profile_name = list(changed.keys())[arg]
                     write_profile_ui_feedback(profile_name)
                     reload_base(profile_name)
-                    changed.pop(profile_name)
+                    #changed.pop(profile_name)
                     #q['options'] = changed
                     
                 elif ans == 'CMD_VIEW_CHANGES':
@@ -2413,7 +2415,7 @@ def collapse_log():
                     combinedmode = set()
                     # Is path in original profile?
                     if aa[profile][hat]['allow']['path'].get(path, False):
-                        combinedmode |= aa[profile][hat]['allow']['path'][path]
+                        combinedmode |= aa[profile][hat]['allow']['path'][path]['mode']
                     
                     # Match path to regexps in profile
                     combinedmode |= rematchfrag(aa[profile][hat], 'allow', path)[0]
@@ -2856,8 +2858,11 @@ def parse_profile_data(data, file, do_include):
             if RE_NETWORK_FAMILY_TYPE.search(network):
                 nmatch = RE_NETWORK_FAMILY_TYPE.search(network).groups()
                 fam, typ = nmatch[:2]
-                profile_data[profile][hat][allow]['netdomain']['rule'][fam][typ] =  True
-                profile_data[profile][hat][allow]['netdomain']['audit'][fam][typ] = audit
+                #Simply ignore any type subrules if family has True (seperately for allow and deny)
+                #This will lead to those type specific rules being lost when written
+                if not profile_data[profile][hat][allow]['netdomain']['rule'].get(fam, False):
+                    profile_data[profile][hat][allow]['netdomain']['rule'][fam][typ] =  True
+                    profile_data[profile][hat][allow]['netdomain']['audit'][fam][typ] = audit
             elif RE_NETWORK_FAMILY.search(network):
                 fam = RE_NETWORK_FAMILY.search(network).groups()[0]
                 profile_data[profile][hat][allow]['netdomain']['rule'][fam] = True
@@ -3169,7 +3174,7 @@ def write_path_rules(prof_data, depth, allow):
                 tmpaudit = False
                 if user - other:
                     # if no other mode set 
-                    ownerstr = 'owner'
+                    ownerstr = 'owner '
                     tmpmode = user - other
                     tmpaudit = user_audit
                     user = user - tmpmode
@@ -3286,18 +3291,31 @@ def serialize_profile(profile_data, name, options):
         elif profile_data[name]['repo']['neversubmit']:
             string += '# REPOSITORY: NEVERSUBMIT\n'
     
-    if profile_data[name].get('initial_comment', False):
-        comment = profile_data[name]['initial_comment']
-        comment.replace('\\n', '\n')
-        string += comment + '\n'
+#     if profile_data[name].get('initial_comment', False):
+#         comment = profile_data[name]['initial_comment']
+#         comment.replace('\\n', '\n')
+#         string += comment + '\n'
     
     prof_filename = get_profile_filename(name)
     if filelist.get(prof_filename, False):
         data += write_alias(filelist[prof_filename], 0)
         data += write_list_vars(filelist[prof_filename], 0)
         data += write_includes(filelist[prof_filename], 0)
-    
-    data += write_piece(profile_data, 0, name, name, include_flags)
+
+    #Here should be all the profiles from the files added write after global/common stuff
+    for prof in sorted(filelist[prof_filename]['profiles'].keys()):
+        if prof != name:
+            if original_aa[prof][prof].get('initial_comment', False):
+                comment = profile_data[name]['initial_comment']
+                comment.replace('\\n', '\n')
+                data += [comment + '\n']
+            data += write_piece(original_aa[prof], 0, prof, prof, include_flags)
+        else:
+            if profile_data[name].get('initial_comment', False):
+                comment = profile_data[name]['initial_comment']
+                comment.replace('\\n', '\n')
+                data += [comment + '\n']
+            data += write_piece(profile_data, 0, name, name, include_flags)
     
     string += '\n'.join(data)
     
