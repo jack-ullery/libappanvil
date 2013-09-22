@@ -29,19 +29,19 @@ class Merge(object):
 
         #Read and parse base profile and save profile data, include data from it and reset them
         apparmor.read_profile(base, True)
-        base = cleanprofile.Prof(base)
+        self.base = cleanprofile.Prof(base)
 
         self.reset()
 
         #Read and parse other profile and save profile data, include data from it and reset them
         apparmor.read_profile(other, True)
-        other = cleanprofile.Prof(other)
+        self.other = cleanprofile.Prof(other)
 
         self.reset()
 
         #Read and parse user profile
         apparmor.read_profile(profiles[0], True)
-        user = cleanprofile.Prof(user)
+        self.user = cleanprofile.Prof(user)
 
     def reset(self):
         apparmor.aa = apparmor.hasher()
@@ -53,15 +53,15 @@ class Merge(object):
     def clear_common(self):
         deleted = 0
         #Remove off the parts in other profile which are common/superfluous from user profile
-        user_other = cleanprofile.CleanProf(False, user, other)
+        user_other = cleanprofile.CleanProf(False, self.user, self.other)
         deleted += user_other.compare_profiles()
         
         #Remove off the parts in base profile which are common/superfluous from user profile
-        user_base = cleanprofile.CleanProf(False, user, base)
+        user_base = cleanprofile.CleanProf(False, self.user, self.base)
         deleted += user_base.compare_profiles()
         
         #Remove off the parts in other profile which are common/superfluous from base profile
-        base_other = cleanprofile.CleanProf(False, base, other)
+        base_other = cleanprofile.CleanProf(False, self.base, self.other)
         deleted += user_base.compare_profiles()
 
     def ask_the_questions(self):

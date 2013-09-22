@@ -2018,6 +2018,7 @@ def glob_path_withext(newpath):
 
 def delete_net_duplicates(netrules, incnetrules):
     deleted = 0
+    hasher_obj = hasher()
     copy_netrules = deepcopy(netrules)
     if incnetrules and netrules:
         incnetglob = False
@@ -2025,13 +2026,13 @@ def delete_net_duplicates(netrules, incnetrules):
         if incnetrules.get('all', False):
             incnetglob = True
         for fam in copy_netrules['rule'].keys():
-            if incnetglob or (type(incnetrules['rule'][fam]) != dict and incnetrules['rule'][fam]):
-                if type(netrules['rule'][fam]) == dict:
+            if incnetglob or (type(incnetrules['rule'][fam]) != type(hasher_obj) and incnetrules['rule'][fam]):
+                if type(netrules['rule'][fam]) == type(hasher_obj):
                     deleted += len(netrules['rule'][fam].keys())
                 else:
                     deleted += 1
                 netrules['rule'].pop(fam)
-            elif type(netrules['rule'][fam]) != dict and netrules['rule'][fam]:
+            elif type(netrules['rule'][fam]) != type(hasher_obj) and netrules['rule'][fam]:
                 continue
             else:
                 for socket_type in netrules['rule'][fam].keys():
@@ -2859,11 +2860,11 @@ def parse_profile_data(data, file, do_include):
             if RE_NETWORK_FAMILY_TYPE.search(network):
                 nmatch = RE_NETWORK_FAMILY_TYPE.search(network).groups()
                 fam, typ = nmatch[:2]
-                #Simply ignore any type subrules if family has True (seperately for allow and deny)
-                #This will lead to those type specific rules being lost when written
-                if not profile_data[profile][hat][allow]['netdomain']['rule'].get(fam, False):
-                    profile_data[profile][hat][allow]['netdomain']['rule'][fam][typ] =  True
-                    profile_data[profile][hat][allow]['netdomain']['audit'][fam][typ] = audit
+                ##Simply ignore any type subrules if family has True (seperately for allow and deny)
+                ##This will lead to those type specific rules being lost when written
+                #if type(profile_data[profile][hat][allow]['netdomain']['rule'].get(fam, False)) == dict:
+                profile_data[profile][hat][allow]['netdomain']['rule'][fam][typ] =  1
+                profile_data[profile][hat][allow]['netdomain']['audit'][fam][typ] = audit
             elif RE_NETWORK_FAMILY.search(network):
                 fam = RE_NETWORK_FAMILY.search(network).groups()[0]
                 profile_data[profile][hat][allow]['netdomain']['rule'][fam] = True

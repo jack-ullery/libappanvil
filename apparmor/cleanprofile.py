@@ -109,6 +109,7 @@ class CleanProf:
 
     def delete_net_duplicates(self, netrules, netrules_other, same_profile=True):
         deleted = 0
+        hasher_obj = apparmor.aa.hasher()
         copy_netrules_other = copy.deepcopy(netrules_other)
         if netrules_other and netrules:
             netglob = False
@@ -117,15 +118,15 @@ class CleanProf:
                 netglob = True
             #Iterate over a copy of the rules in the other profile
             for fam in copy_netrules_other['rule'].keys():
-                if netglob or (type(netrules['rule'][fam]) != dict and netrules['rule'][fam]):
+                if netglob or (type(netrules['rule'][fam]) != type(hasher_obj) and netrules['rule'][fam]):
                     if not same_profile:
-                        if type(netrules_other['rule'][fam]) == dict:
+                        if type(netrules_other['rule'][fam]) == type(hasher_obj):
                             deleted += len(netrules_other['rule'][fam].keys())
                         else:
                             deleted += 1
                         netrules_other['rule'].pop(fam)
-                elif type(netrules_other['rule'][fam]) != dict and netrules_other['rule'][fam]:
-                    if type(netrules['rule'][fam]) != dict and netrules['rule'][fam]:
+                elif type(netrules_other['rule'][fam]) != type(hasher_obj) and netrules_other['rule'][fam]:
+                    if type(netrules['rule'][fam]) != type(hasher_obj) and netrules['rule'][fam]:
                         if not same_profile:
                             netrules_other['rule'].pop(fam)
                             deleted += 1
