@@ -17,7 +17,7 @@ B<-d --dir  /path/to/profiles>
    
 B<-s --silent>
 
-   Silently over-writes the profile without user prompt.
+   Silently overwrites the profile without user prompt.
 
 =head1 DESCRIPTION
 
