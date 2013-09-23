@@ -1635,10 +1635,10 @@ def ask_the_questions():
                     matches = []
 
                     if fmode:
-                        matches.append(fm)
+                        matches.append += fm
 
                     if imode:
-                        matches.append(im)
+                        matches.append += im
 
                     if not mode_contains(allow_mode, mode):
                         default_option = 1

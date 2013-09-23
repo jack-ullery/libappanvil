@@ -27,7 +27,7 @@ def main():
         mergeprofiles.ask_the_questions('other')
         
         mergeprofiles.clear_common()
-        print("base")
+
         mergeprofiles.ask_the_questions('base')
         
         q = apparmor.aa.hasher()
@@ -98,8 +98,12 @@ class Merge(object):
         deleted += user_base.compare_profiles()
 
     def conflict_mode(self, profile, hat, allow, path, mode, new_mode, old_mode):
+        m = new_mode
+        o = old_mode
+        new_mode = apparmor.aa.flatten_mode(new_mode)
+        old_mode = apparmor.aa.flatten_mode(old_mode)
         conflict_modes = set('uUpPcCiIxX')
-        conflict_x= (old_mode | mode) & conflict_modes
+        conflict_x= (old_mode | new_mode) & conflict_modes
         if conflict_x:
         #We may have conflicting x modes
             if conflict_x & set('x'):
@@ -111,18 +115,20 @@ class Merge(object):
                 q['headers'] = [_('Path'), path]
                 q['headers'] += [_('Select the appropriate mode'), '']
                 options = []
-                options.append('%s: %s' %(mode, path, apparmor.aa.mode_to_str_user(apparmor.aa.flatten_mode((old_mode | new_mode) - (old_mode & conflict_x)))))
-                options.append('%s: %s' %(mode, path, apparmor.aa.mode_to_str_user(apparmor.aa.flatten_mode((old_mode | new_mode) - (new_mode & conflict_x)))))
+                options.append('%s: %s' %(mode, apparmor.aa.mode_to_str_user(new_mode)))# - (old_mode & conflict_x))))
+                options.append('%s: %s' %(mode, apparmor.aa.mode_to_str_user(old_mode)))#(old_mode | new_mode) - (new_mode & conflict_x))))
                 q['options'] = options
                 q['functions'] = ['CMD_ALLOW', 'CMD_ABORT']
                 done = False
                 while not done:
                     ans, selected = apparmor.aa.UI_PromptUser(q)
                     if ans == 'CMD_ALLOW':
-                        if selection == 0:
-                            self.user.aa[profile][hat][allow][path][mode] = (old_mode | new_mode) - (old_mode & conflict_x)
-                        elif selection == 1:
-                            self.user.aa[profile][hat][allow][path][mode] = (old_mode | new_mode) - (new_mode & conflict_x)
+                        if selected == 0:
+                            self.user.aa[profile][hat][allow]['path'][path][mode] = m#apparmor.aa.owner_flatten_mode(new_mode)#(old_mode | new_mode) - (old_mode & conflict_x)
+                            return m
+                        elif selected == 1:
+                            return o
+                            pass#self.user.aa[profile][hat][allow][path][mode] = (old_mode | new_mode) - (new_mode & conflict_x)
                         else:
                             raise apparmor.aa.AppArmorException(_('Unknown selection'))
                         done = True
@@ -259,39 +265,11 @@ class Merge(object):
                         #print(path, other.aa[profile][hat][allow]['path'][path])
                         mode = other.aa[profile][hat][allow]['path'][path]['mode']
 
-                        self.conflict_mode(profile, hat, allow, path, 'mode', other.aa[profile][hat][allow]['path'][path]['mode'], self.user.aa[profile][hat][allow][path]['mode'])
-                        self.conflict_mode(profile, hat, allow, path, 'audit', other.aa[profile][hat][allow]['path'][path]['audit'], self.user.aa[profile][hat][allow][path]['audit'])
-#                         conflict_modes = set('uUpPcCiIxX')
-#                         conflict_x= (old_mode | mode) & conflict_modes
-#                         if conflict_x:
-#                             #We may have conflicting x modes
-#                             if conflict_x & set('x'):
-#                                 conflict_x.remove('x')
-#                             if conflict_x & set('X'):
-#                                 conflict_x.remove('X')
-#                             if len(a) > 1:
-#                                 q = apparmor.aa.hasher()
-#                                 q['headers'] = [_('Path'), path]
-#                                 q['headers'] += [_('Select the appropriate mode'), '']
-#                                 options = []
-#                                 options.append('mode: %s' %(path, apparmor.aa.mode_to_str_user(apparmor.aa.flatten_mode(mode))))
-#                                 options.append('mode: %s' %(path, apparmor.aa.mode_to_str_user(apparmor.aa.flatten_mode(old_mode))))
-#                                 q['options'] = options
-#                                 q['functions'] = ['CMD_ALLOW', 'CMD_ABORT']
-#                                 done = False
-#                                 while not done:
-#                                     ans, selected = apparmor.aa.UI_PromptUser(q)
-#                                     if ans == 'CMD_ALLOW':
-#                                         if selection == 0:
-#                                             self.user.aa[profile][hat][allow][path]['mode'] = mode
-#                                         elif selection == 1:
-#                                             self.user.aa[profile][hat][allow][path]['mode'] = old_mode
-#                                             mode = old_mode
-#                                         else:
-#                                             raise apparmor.aa.AppArmorException(_('Unknown selection'))
-#                                         done = True
-                            
-                            
+                        if self.user.aa[profile][hat][allow]['path'].get(path, False):
+                            mode = self.conflict_mode(profile, hat, allow, path, 'mode', other.aa[profile][hat][allow]['path'][path]['mode'], self.user.aa[profile][hat][allow]['path'][path]['mode'])
+                            self.conflict_mode(profile, hat, allow, path, 'audit', other.aa[profile][hat][allow]['path'][path]['audit'], self.user.aa[profile][hat][allow]['path'][path]['audit'])
+                            apparmor.aa.changed[profile] = True
+                            continue
                         # Lookup modes from profile
                         allow_mode = set()
                         allow_audit = set()
@@ -351,10 +329,10 @@ class Merge(object):
                         matches = []
     
                         if fmode:
-                            apparmor.aa.matches.append(fm)
+                            matches += fm
     
                         if imode:
-                            apparmor.aa.matches.append(im)
+                            matches += im
     
                         if not apparmor.aa.mode_contains(allow_mode, mode):
                             default_option = 1
@@ -601,7 +579,7 @@ class Merge(object):
                 for allow in ['allow', 'deny']:
                     for family in sorted(other.aa[profile][hat][allow]['netdomain']['rule'].keys()):
                         # severity handling for net toggles goes here
-                        print(family)
+
                         for sock_type in sorted(other.aa[profile][hat][allow]['netdomain']['rule'][family].keys()):
                             if apparmor.aa.profile_known_network(self.user.aa[profile][hat], family, sock_type):
                                 continue
