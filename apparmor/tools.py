@@ -123,7 +123,7 @@ class aa_tools:
                 q = apparmor.hasher()
                 q['title'] = 'Changed Local Profiles'
                 q['headers'] = []
-                q['explanation'] = _('The following local profiles were changed. Would you like to save them?')
+                q['explanation'] = _('The local profile for %s in file %s was changed. Would you like to save it?') %(program, filename)
                 q['functions'] = ['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ABORT']
                 q['default'] = 'CMD_VIEW_CHANGES'
                 q['options'] = []

@@ -19,12 +19,12 @@ class CleanProf:
 
     def compare_profiles(self):
         deleted = 0
-        other_file_includes = list(self.other.filelist[self.profile.filename]['include'].keys())
+        other_file_includes = list(self.other.filelist[self.other.filename]['include'].keys())
 
         #Remove the duplicate file-level includes from other
         for rule in self.profile.filelist[self.profile.filename]['include'].keys():
             if rule in other_file_includes:
-                self.other.filelist['include'].pop(rule)
+                self.other.filelist[self.other.filename]['include'].pop(rule)
 
         for profile in self.profile.aa.keys():
             deleted += self.remove_duplicate_rules(profile)

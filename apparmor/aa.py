@@ -2097,7 +2097,7 @@ def delete_duplicates(profile, incname):
     return deleted
 
 def match_net_include(incname, family, type):
-    includelist = incname[:]
+    includelist = [incname]
     checked = []
     name = None
     if includelist:
