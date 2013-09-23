@@ -1,5 +1,4 @@
 # No old version logs, only 2.6 + supported
-#global variable names corruption
 from __future__ import with_statement
 import inspect
 import os
