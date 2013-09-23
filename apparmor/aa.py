@@ -3030,7 +3030,7 @@ def set_allow_str(allow):
     if allow == 'deny':
         return 'deny '
     elif allow == 'allow':
-        return 'allow '
+        return ''
     elif allow == '':
         return ''
     else:
