@@ -2036,7 +2036,7 @@ def delete_net_duplicates(netrules, incnetrules):
                 continue
             else:
                 for socket_type in copy_netrules['rule'][fam].keys():
-                    if incnetrules['rule'].get(fam, False):
+                    if incnetrules['rule'][fam].get(socket_type, False):
                         netrules['rule'][fam].pop(socket_type)
                         deleted += 1
     return deleted
@@ -3288,7 +3288,7 @@ def serialize_profile(profile_data, name, options):
             include_flags = False
 
     if include_metadata:
-        string = '# Last Modified: %s\n' %time.time()
+        string = '# Last Modified: %s\n' %time.asctime()
 
         if (profile_data[name].get('repo', False) and profile_data[name]['repo']['url']
             and profile_data[name]['repo']['user'] and profile_data[name]['repo']['id']):
@@ -3344,7 +3344,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
             include_flags = False
 
     if include_metadata:
-        string = '# Last Modified: %s\n' %time.time()
+        string = '# Last Modified: %s\n' %time.asctime()
 
         if (profile_data[name].get('repo', False) and profile_data[name]['repo']['url']
             and profile_data[name]['repo']['user'] and profile_data[name]['repo']['id']):
@@ -3356,6 +3356,9 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
     if not os.path.isfile(prof_filename):
         raise AppArmorException(_("Can't find existing profile to modify"))
+    
+    profiles_list = filelist[prof_filename].keys()
+    
     with open_file_read(prof_filename) as f_in:
         profile = None
         hat = None

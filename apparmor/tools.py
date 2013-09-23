@@ -110,7 +110,6 @@ class aa_tools:
 
     def clean_profile(self, program, p):
         filename = apparmor.get_profile_filename(program)
-
         import apparmor.cleanprofile as cleanprofile
         prof = cleanprofile.Prof(filename)
         cleanprof = cleanprofile.CleanProf(True, prof, prof)
