@@ -1466,7 +1466,7 @@ def ask_the_questions():
         elif aamode == 'REJECTING':
             UI_Info(_('Enforce-mode changes:'))
         else:
-            # oops something screwed up
+            # This is so wrong!
             fatal_error(_('Invalid mode found: %s') % aamode)
 
         for profile in sorted(log_dict[aamode].keys()):
@@ -2035,7 +2035,7 @@ def delete_net_duplicates(netrules, incnetrules):
             elif type(netrules['rule'][fam]) != type(hasher_obj) and netrules['rule'][fam]:
                 continue
             else:
-                for socket_type in netrules['rule'][fam].keys():
+                for socket_type in copy_netrules['rule'][fam].keys():
                     if incnetrules['rule'].get(fam, False):
                         netrules['rule'][fam].pop(socket_type)
                         deleted += 1
@@ -3030,8 +3030,12 @@ def write_single(prof_data, depth, allow, name, prefix, tail):
 def set_allow_str(allow):
     if allow == 'deny':
         return 'deny '
-    else:
+    elif allow == 'allow':
         return 'allow '
+    elif allow == '':
+        return ''
+    else:
+        raise AppArmorException(_("Invalid allow string: %(allow)s"))
 
 def set_ref_allow(prof_data, allow):
     if allow:
