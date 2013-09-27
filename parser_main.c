@@ -854,13 +854,6 @@ static void get_flags_string(char **flags, char *flags_file) {
 	(*flags)[size] = 0;
 
 	fclose(f);
-	pos = strstr(*flags, "change_hat=");
-	if (pos) {
-		if (strncmp(pos, "change_hat=1.4", 14) == 0)
-			flag_changehat_version = FLAG_CHANGEHAT_1_4;
-//fprintf(stderr, "flags string: %s\n", flags_string);
-//fprintf(stderr, "changehat %d\n", flag_changehat_version);
-	}
 	return;
 
 fail:

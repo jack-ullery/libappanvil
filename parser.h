@@ -217,9 +217,6 @@ struct var_string {
 
 #define BOOL int
 
-#define FLAG_CHANGEHAT_1_4  2
-#define FLAG_CHANGEHAT_1_5  3
-
 extern int preprocess_only;
 
 #define PATH_CHROOT_REL 0x1
@@ -283,7 +280,6 @@ extern int net_af_max_override;
 extern int kernel_load;
 extern int kernel_supports_network;
 extern int kernel_supports_mount;
-extern int flag_changehat_version;
 extern int conf_verbose;
 extern int conf_quiet;
 extern int names_only;
