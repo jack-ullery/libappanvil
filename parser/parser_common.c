@@ -22,7 +22,6 @@
 #define _(s) gettext(s)
 #include "parser.h"
 
-int regex_type = AARE_DFA;
 int perms_create = 0;                   /* perms contain create flag */
 int net_af_max_override = -1;           /* use kernel to determine af_max */
 int kernel_load = 1;

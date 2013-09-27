@@ -791,7 +791,6 @@ static void get_match_string(void) {
 
 	if (S_ISDIR(stat_file.st_mode)) {
 		/* if we have a features directory default to */
-		regex_type = AARE_DFA;
 		perms_create = 1;
 
 		flags_string = malloc(FLAGS_STRING_SIZE);
@@ -821,16 +820,9 @@ static void get_match_string(void) {
 
 out:
 	if (match_string) {
-		if (strstr(match_string, AADFA))
-			regex_type = AARE_DFA;
-
 		if (strstr(match_string, " perms=c"))
 			perms_create = 1;
 	} else {
-		/* no match string default to 2.6.36 version which doesn't
-		 * have a match string
-		 */
-		regex_type = AARE_DFA;
 		perms_create = 1;
 		kernel_supports_network = 0;
 	}

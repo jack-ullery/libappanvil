@@ -57,9 +57,7 @@
 #define SD_CODE_SIZE (sizeof(u8))
 #define SD_STR_LEN (sizeof(u16))
 
-#define SUBDOMAIN_INTERFACE_VERSION 2
 #define SUBDOMAIN_INTERFACE_DFA_VERSION 5
-#define SUBDOMAIN_INTERFACE_POLICY_DB 16
 
 int sd_serialize_codomain(int option, struct codomain *cod);
 
@@ -573,7 +571,7 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 
 	/* only emit this if current kernel at least supports "create" */
 	if (perms_create) {
-		if (regex_type == AARE_DFA && profile->xmatch) {
+		if (profile->xmatch) {
 			if (!sd_serialize_dfa(p, profile->xmatch, profile->xmatch_size))
 				return 0;
 			if (!sd_write32(p, profile->xmatch_len))
@@ -655,7 +653,7 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 	} else if (profile->network_allowed)
 		pwarn(_("profile %s network rules not enforced\n"), profile->name);
 
-	if (profile->policy_dfa && regex_type == AARE_DFA) {
+	if (profile->policy_dfa) {
 		if (!sd_write_struct(p, "policydb"))
 			return 0;
 		if (!sd_serialize_dfa(p, profile->policy_dfa, profile->policy_dfa_size))
@@ -665,26 +663,12 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 	}
 
 	/* either have a single dfa or lists of different entry types */
-	if (regex_type == AARE_DFA) {
-		if (!sd_serialize_dfa(p, profile->dfa, profile->dfa_size))
-			return 0;
+	if (!sd_serialize_dfa(p, profile->dfa, profile->dfa_size))
+		return 0;
 
-		if (!sd_serialize_xtable(p, profile->exec_table))
-			return 0;
-	} else {
-		PERROR(_("Unknown pattern type\n"));
-		return 1;
-	}
+	if (!sd_serialize_xtable(p, profile->exec_table))
+		return 0;
 
-	if (profile->hat_table && regex_type != AARE_DFA) {
-		if (!sd_write_list(p, "hats"))
-			return 0;
-		if (load_hats(p, profile) != 0)
-			return 0;
-		if (!sd_write_listend(p))
-			return 0;
-
-	}
 	if (!sd_write_structend(p))
 		return 0;
 
@@ -695,15 +679,7 @@ int sd_serialize_top_profile(sd_serialize *p, struct codomain *profile)
 {
 	int version;
 
-	if (regex_type == AARE_DFA) {
-		/* Not yet
-		if (profile->policy_dfa)
-			version = SUBDOMAIN_INTERFACE_POLICYDB;
-		else */
-			version = SUBDOMAIN_INTERFACE_DFA_VERSION;
-	} else
-		version = SUBDOMAIN_INTERFACE_VERSION;
-
+	version = SUBDOMAIN_INTERFACE_DFA_VERSION;
 
 	if (!sd_write_name(p, "version"))
 		return 0;
@@ -859,7 +835,7 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 
 	close(fd);
 
-	if (cod->hat_table && regex_type == AARE_DFA && option != OPTION_REMOVE) {
+	if (cod->hat_table && option != OPTION_REMOVE) {
 		if (load_flattened_hats(cod) != 0)
 			return 0;
 	}
