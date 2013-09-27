@@ -542,6 +542,9 @@ void free_symtabs(void)
 }
 
 #ifdef UNIT_TEST
+
+#include "unit_test.h"
+
 int main(void)
 {
 	int rc = 0;

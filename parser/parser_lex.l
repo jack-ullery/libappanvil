@@ -37,6 +37,7 @@
 #define _(s) gettext(s)
 
 #include "parser.h"
+#include "profile.h"
 #include "parser_include.h"
 #include "parser_yacc.h"
 #include "lib.h"

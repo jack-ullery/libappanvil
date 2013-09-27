@@ -25,6 +25,7 @@
 
 #include "immunix.h"
 #include "parser.h"
+#include "profile.h"
 
 struct alias_rule {
 	char *from;
@@ -105,7 +106,7 @@ static char *do_alias(struct alias_rule *alias, const char *target)
 	return n;
 }
 
-static struct codomain *target_cod;
+static Profile *target_prof;
 static struct cod_entry *target_list;
 static void process_entries(const void *nodep, VISIT value, int __unused level)
 {
@@ -155,7 +156,7 @@ static void process_entries(const void *nodep, VISIT value, int __unused level)
 static void process_name(const void *nodep, VISIT value, int __unused level)
 {
 	struct alias_rule **t = (struct alias_rule **) nodep;
-	struct codomain *cod = target_cod;
+	Profile *prof = target_prof;
 	char *name;
 	int len;
 
@@ -164,10 +165,10 @@ static void process_name(const void *nodep, VISIT value, int __unused level)
 
 	len = strlen((*t)->from);
 
-	if (cod->attachment)
-		name = cod->attachment;
+	if (prof->attachment)
+		name = prof->attachment;
 	else
-		name = cod->name;
+		name = prof->name;
 
 	if (name && strncmp((*t)->from, name, len) == 0) {
 		struct alt_name *alt;
@@ -179,21 +180,23 @@ static void process_name(const void *nodep, VISIT value, int __unused level)
 		if (!alt)
 			return;
 		alt->name = n;
-		alt->next = cod->altnames;
-		cod->altnames = alt;
+		alt->next = prof->altnames;
+		prof->altnames = alt;
 	}
 }
 
-void replace_aliases(struct codomain *cod)
+int replace_profile_aliases(Profile *prof)
 {
-	target_cod = cod;
+	target_prof = prof;
 	twalk(alias_table, process_name);
 
-	if (cod->entries) {
-		target_list = cod->entries;
-		target_cod = cod;
+	if (prof->entries) {
+		target_list = prof->entries;
+		target_prof = prof;
 		twalk(alias_table, process_entries);
 	}
+
+	return 0;
 }
 
 static void free_alias(void *nodep)

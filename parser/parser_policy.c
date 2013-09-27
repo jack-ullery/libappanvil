@@ -31,6 +31,7 @@
 #define _(s) gettext(s)
 
 #include "parser.h"
+#include "profile.h"
 #include "mount.h"
 #include "dbus.h"
 #include "parser_yacc.h"
@@ -43,70 +44,40 @@
 #endif
 #define NPDEBUG(fmt, args...)	/* Do nothing */
 
-void *policy_list = NULL;
 
-static int codomain_compare(const void *a, const void *b)
+ProfileList policy_list;
+
+
+void add_to_list(Profile *prof)
 {
-	struct codomain *A = (struct codomain *) a;
-	struct codomain *B = (struct codomain *) b;
-
-	int res = 0;
-	if (A->ns) {
-		if (B->ns)
-			res = strcmp(A->ns, B->ns);
-		else
-			res = -1;
-	} else if (B->ns)
-		res = 1;
-	if (res)
-		return res;
-	return strcmp(A->name, B->name);
-}
-
-void add_to_list(struct codomain *codomain)
-{
-	struct codomain **result;
-
-	result = (struct codomain **) tsearch(codomain, &policy_list, codomain_compare);
-	if (!result) {
-		PERROR("Memory allocation error\n");
-		exit(1);
-	}
-
-	if (*result != codomain) {
+	pair<ProfileList::iterator, bool> res = policy_list.insert(prof);
+	if (!res.second) {
 		PERROR("Multiple definitions for profile %s exist,"
-		       "bailing out.\n", codomain->name);
+		       "bailing out.\n", prof->name);
 		exit(1);
 	}
 }
 
-void add_hat_to_policy(struct codomain *cod, struct codomain *hat)
+void add_hat_to_policy(Profile *prof, Profile *hat)
 {
-	struct codomain **result;
+	hat->parent = prof;
 
-	hat->parent = cod;
-
-	result = (struct codomain **) tsearch(hat, &(cod->hat_table), codomain_compare);
-	if (!result) {
-		PERROR("Memory allocation error\n");
-		exit(1);
-	}
-
-	if (*result != hat) {
+	pair<ProfileList::iterator, bool> res = prof->hat_table.insert(hat);
+	if (!res.second) {
 		PERROR("Multiple definitions for hat %s in profile %s exist,"
-		       "bailing out.\n", hat->name, cod->name);
+		       "bailing out.\n", hat->name, prof->name);
 		exit(1);
 	}
 }
 
-static int add_entry_to_x_table(struct codomain *cod, char *name)
+static int add_entry_to_x_table(Profile *prof, char *name)
 {
 	int i;
 	for (i = (AA_EXEC_LOCAL >> 10) + 1; i < AA_EXEC_COUNT; i++) {
-		if (!cod->exec_table[i]) {
-			cod->exec_table[i] = name;
+		if (!prof->exec_table[i]) {
+			prof->exec_table[i] = name;
 			return i;
-		} else if (strcmp(cod->exec_table[i], name) == 0) {
+		} else if (strcmp(prof->exec_table[i], name) == 0) {
 			/* name already in table */
 			free(name);
 			return i;
@@ -116,7 +87,7 @@ static int add_entry_to_x_table(struct codomain *cod, char *name)
 	return 0;
 }
 
-static int add_named_transition(struct codomain *cod, struct cod_entry *entry)
+static int add_named_transition(Profile *prof, struct cod_entry *entry)
 {
 	char *name = NULL;
 
@@ -125,7 +96,7 @@ static int add_named_transition(struct codomain *cod, struct cod_entry *entry)
 		char *sub = strstr(entry->nt_name, "//");
 		/* does the subprofile name match the rule */
 
-		if (sub && strncmp(cod->name, sub, sub - entry->nt_name) &&
+		if (sub && strncmp(prof->name, sub, sub - entry->nt_name) &&
 		    strcmp(sub + 2, entry->name) == 0) {
 			free(entry->nt_name);
 			entry->nt_name = NULL;
@@ -140,13 +111,13 @@ static int add_named_transition(struct codomain *cod, struct cod_entry *entry)
 				return AA_EXEC_LOCAL >> 10;
 			}
 			/* specified as cix so profile name is implicit */
-			name = (char *) malloc(strlen(cod->name) + strlen(entry->nt_name)
+			name = (char *) malloc(strlen(prof->name) + strlen(entry->nt_name)
 				      + 3);
 			if (!name) {
 				PERROR("Memory allocation error\n");
 				exit(1);
 			}
-			sprintf(name, "%s//%s", cod->name, entry->nt_name);
+			sprintf(name, "%s//%s", prof->name, entry->nt_name);
 			free(entry->nt_name);
 			entry->nt_name = name;
 		}
@@ -166,26 +137,26 @@ static int add_named_transition(struct codomain *cod, struct cod_entry *entry)
 		name = entry->nt_name;
 	}
 
-	return add_entry_to_x_table(cod, name);
+	return add_entry_to_x_table(prof, name);
 }
 
-void add_entry_to_policy(struct codomain *cod, struct cod_entry *entry)
+void add_entry_to_policy(Profile *prof, struct cod_entry *entry)
 {
-	entry->next = cod->entries;
-	cod->entries = entry;
+	entry->next = prof->entries;
+	prof->entries = entry;
 }
 
-void post_process_file_entries(struct codomain *cod)
+void post_process_file_entries(Profile *prof)
 {
 	struct cod_entry *entry;
 	int cp_mode = 0;
 
-	list_for_each(cod->entries, entry) {
+	list_for_each(prof->entries, entry) {
 		if (entry->nt_name) {
 			int mode = 0;
-			int n = add_named_transition(cod, entry);
+			int n = add_named_transition(prof, entry);
 			if (!n) {
-				PERROR("Profile %s has too many specified profile transitions.\n", cod->name);
+				PERROR("Profile %s has too many specified profile transitions.\n", prof->name);
 				exit(1);
 			}
 			if (entry->mode & AA_USER_EXEC)
@@ -217,20 +188,20 @@ void post_process_file_entries(struct codomain *cod)
 			PERROR("Memory allocation error\n");
 			exit(1);
 		}
-		add_entry_to_policy(cod, new_ent);
+		add_entry_to_policy(prof, new_ent);
 	}
 }
 
-void post_process_mnt_entries(struct codomain *cod)
+void post_process_mnt_entries(Profile *prof)
 {
 	struct mnt_entry *entry;
 
-	list_for_each(cod->mnt_ents, entry) {
+	list_for_each(prof->mnt_ents, entry) {
 		if (entry->trans) {
 			unsigned int mode = 0;
-			int n = add_entry_to_x_table(cod, entry->trans);
+			int n = add_entry_to_x_table(prof, entry->trans);
 			if (!n) {
-				PERROR("Profile %s has too many specified profile transitions.\n", cod->name);
+				PERROR("Profile %s has too many specified profile transitions.\n", prof->name);
 				exit(1);
 			}
 
@@ -247,335 +218,90 @@ void post_process_mnt_entries(struct codomain *cod)
 }
 
 
-static void __merge_rules(const void *nodep, const VISIT value,
-			  const int __unused depth)
-{
-	struct codomain **t = (struct codomain **) nodep;
-
-	if (value == preorder || value == endorder)
-		return;
-
-	if (!codomain_merge_rules(*t)) {
-		PERROR(_("ERROR merging rules for profile %s, failed to load\n"),
-		       (*t)->name);
-		exit(1);
-	}
-}
-
-int post_merge_rules(void)
-{
-	twalk(policy_list, __merge_rules);
-	return 0;
-}
-
-int merge_hat_rules(struct codomain *cod)
-{
-	twalk(cod->hat_table, __merge_rules);
-	return 0;
-}
-
-static void __process_regex(const void *nodep, const VISIT value,
-			    const int __unused depth)
-{
-	struct codomain **t = (struct codomain **) nodep;
-
-	if (value == preorder || value == endorder)
-		return;
-
-	if (process_regex(*t) != 0) {
-		PERROR(_("ERROR processing regexs for profile %s, failed to load\n"),
-		       (*t)->name);
-		exit(1);
-	}
-}
-
-int post_process_regex(void)
-{
-	twalk(policy_list, __process_regex);
-	return 0;
-}
-
-int process_hat_regex(struct codomain *cod)
-{
-	twalk(cod->hat_table, __process_regex);
-	return 0;
-}
-
-static void __process_policydb(const void *nodep, const VISIT value,
-			       const int __unused depth)
-{
-	struct codomain **t = (struct codomain **) nodep;
-
-	if (value == preorder || value == endorder)
-		return;
-
-	if (process_policydb(*t) != 0) {
-		PERROR(_("ERROR processing policydb rules for profile %s, failed to load\n"),
-		       (*t)->name);
-		exit(1);
-	}
-}
-
-int post_process_policydb(void)
-{
-	twalk(policy_list, __process_policydb);
-	return 0;
-}
-
-int process_hat_policydb(struct codomain *cod)
-{
-	twalk(cod->hat_table, __process_policydb);
-	return 0;
-}
-
-static void __process_variables(const void *nodep, const VISIT value,
-				const int __unused depth)
-{
-	struct codomain **t = (struct codomain **) nodep;
-
-	if (value == preorder || value == endorder)
-		return;
-
-	if (process_variables(*t) != 0) {
-		PERROR(_("ERROR expanding variables for profile %s, failed to load\n"),
-		       (*t)->name);
-		exit(1);
-	}
-}
-
-int post_process_variables(void)
-{
-	twalk(policy_list, __process_variables);
-	return 0;
-}
-
-int process_hat_variables(struct codomain *cod)
-{
-	twalk(cod->hat_table, __process_variables);
-	return 0;
-}
-
-
-static void __process_alias(const void *nodep, const VISIT value,
-			    const int __unused depth)
-{
-	struct codomain **t = (struct codomain **) nodep;
-
-	if (value == preorder || value == endorder)
-		return;
-
-	replace_aliases((*t));
-
-	if ((*t)->hat_table)
-		twalk((*t)->hat_table, __process_alias);
-}
-
-int post_process_alias(void)
-{
-	twalk(policy_list, __process_alias);
-	return 0;
-}
-
 #define CHANGEHAT_PATH "/proc/[0-9]*/attr/current"
 
 /* add file rules to access /proc files to call change_hat()
  */
-static void __add_hat_rules_parent(const void *nodep, const VISIT value,
-				   const int __unused depth)
+static int profile_add_hat_rules(Profile *prof)
 {
-	struct codomain **t = (struct codomain **) nodep;
 	struct cod_entry *entry;
 
-	if (value == preorder || value == endorder)
-		return;
+	/* TODO: ??? fix logic for when to add to hat/base vs. local */
+	/* don't add hat rules for local_profiles or base profiles */
+	if (prof->local || prof->hat_table.empty())
+		return 0;
 
-	/* don't add hat rules if a parent profile with no hats */
-	if (!(*t)->hat_table && !(*t)->parent)
-		return;
-
-	/* don't add hat rules for local_profiles */
-	if ((*t)->local)
-		return;
-
+	/* add entry to hat */
 	entry = new_entry(NULL, strdup(CHANGEHAT_PATH), AA_MAY_WRITE, NULL);
-	if (!entry) {
-		PERROR(_("ERROR adding hat access rule for profile %s\n"),
-		       (*t)->name);
-		exit(1);
-	}
-	add_entry_to_policy(*t, entry);
+	if (!entry)
+		return ENOMEM;
 
-	twalk((*t)->hat_table, __add_hat_rules_parent);
-}
-
-static int add_hat_rules(void)
-{
-	twalk(policy_list, __add_hat_rules_parent);
+	add_entry_to_policy(prof, entry);
 
 	return 0;
 }
 
-/* Yuck, is their no other way to pass arguments to a twalk action */
-static int __load_option;
-static int __load_error;
-
-static void __load_policy(const void *nodep, const VISIT value,
-			  const int __unused depth)
+int load_policy_list(ProfileList &list, int option)
 {
-	struct codomain **t = (struct codomain **) nodep;
+	int res = 0;
 
-	if (value == preorder || value == endorder || __load_error)
-		return;
-
-	if (load_codomain(__load_option, *t) != 0) {
-		__load_error = -EINVAL;
+	for (ProfileList::iterator i = list.begin(); i != list.end(); i++) {
+		res = load_profile(option, *i);
+		if (res != 0)
+			break;
 	}
+
+	return res;
+}
+
+int load_flattened_hats(Profile *prof, int option)
+{
+	return load_policy_list(prof->hat_table, option);
 }
 
 int load_policy(int option)
 {
-	__load_option = option;
-        __load_error = 0;
-	twalk(policy_list, __load_policy);
-	return __load_error;
+	return load_policy_list(policy_list, option);
 }
 
-/* Yuck, is their no other way to pass arguments to a twalk action */
-static sd_serialize *__p;
-
-static int __load_hat_error;
-static void __load_hat(const void *nodep, const VISIT value,
-		       const int __unused depth)
+int load_hats(sd_serialize *p, Profile *prof)
 {
-	struct codomain **t = (struct codomain **) nodep;
-
-	if (value == preorder || value == endorder || __load_hat_error)
-		return;
-
-	if (!sd_serialize_profile(__p, *t, 0)) {
-		PERROR(_("ERROR in profile %s, failed to load\n"),
-		       (*t)->name);
-		__load_hat_error = -EINVAL;
+	for (ProfileList::iterator i = prof->hat_table.begin(); i != prof->hat_table.end(); i++) {
+		if (!sd_serialize_profile(p, *i, 0)) {
+			PERROR(_("ERROR in profile %s, failed to load\n"),
+			       (*i)->name);
+			return -EINVAL;
+		}
 	}
+
+	return 0;
 }
 
-static int __load_flattened_hat_error;
-static void __load_flattened_hat(const void *nodep, const VISIT value,
-				 const int __unused depth)
-{
-	struct codomain **t = (struct codomain **) nodep;
-
-	if (value == preorder || value == endorder || __load_flattened_hat_error)
-		return;
-
-	if (load_codomain(__load_option, *t) != 0) {
-		__load_flattened_hat_error = -EINVAL;
-	}
-}
-
-int load_flattened_hats(struct codomain *cod)
-{
-	__load_flattened_hat_error = 0;
-	twalk(cod->hat_table, __load_flattened_hat);
-	return __load_flattened_hat_error;
-}
-
-int load_hats(sd_serialize *p, struct codomain *cod)
-{
-	__p = p;
-	__load_hat_error = 0;
-	twalk(cod->hat_table, __load_hat);
-	return __load_hat_error;
-}
-
-static void __dump_policy(const void *nodep, const VISIT value,
-			  const int __unused depth)
-{
-	struct codomain **t = (struct codomain **) nodep;
-
-	if (value == preorder || value == endorder)
-		return;
-
-	debug_cod_list(*t);
-}
 
 void dump_policy(void)
 {
-	twalk(policy_list, __dump_policy);
-}
-
-void dump_policy_hats(struct codomain *cod)
-{
-	twalk(cod->hat_table, __dump_policy);
-}
-
-/* Gar */
-static struct codomain *__dump_policy_name;
-
-static void __dump_policy_hatnames(const void *nodep, const VISIT value,
-				const int __unused depth)
-{
-	struct codomain **t = (struct codomain **) nodep;
-
-	if (value == preorder || value == endorder)
-		return;
-
-	printf("%s//%s\n", __dump_policy_name->name, (*t)->name);
-}
-
-void dump_policy_hatnames(struct codomain *cod)
-{
-	__dump_policy_name = cod;
-	twalk(cod->hat_table, __dump_policy_hatnames);
-}
-
-static void __dump_policy_names(const void *nodep, const VISIT value,
-				const int __unused depth)
-{
-	struct codomain **t = (struct codomain **) nodep;
-
-	if (value == preorder || value == endorder)
-		return;
-
-	printf("%s\n", (*t)->name);
-	dump_policy_hatnames(*t);
+	policy_list.dump();
 }
 
 void dump_policy_names(void)
 {
-	twalk(policy_list, __dump_policy_names);
+	policy_list.dump_profile_names(true);
 }
 
-/* gar, more global arguments */
-struct codomain *__hat_merge_policy;
-
-static void __merge_hat(const void *nodep, const VISIT value,
-			const int __unused depth)
+/* merge_hats: merges hat_table into hat_table owned by prof */
+static void merge_hats(Profile *prof, ProfileList &hats)
 {
-	struct codomain **t = (struct codomain **) nodep;
+	for (ProfileList::iterator i = hats.begin(); i != hats.end(); ) {
+		ProfileList::iterator cur = i++;
+		add_hat_to_policy(prof, *cur);
+		hats.erase(cur);
+	}
 
-        if (value == preorder || value == endorder)
-		return;
-	add_hat_to_policy(__hat_merge_policy, (*t));
 }
 
-/* merge_hats: merges hat_table into hat_table owned by cod */
-static void merge_hats(struct codomain *cod, void *hats)
+Profile *merge_policy(Profile *a, Profile *b)
 {
-	__hat_merge_policy = cod;
-	twalk(hats, __merge_hat);
-}
-
-/* don't want to free the hat entries in the table, as they were pushed
- * onto the other table. */
-static void empty_destroy(void __unused *nodep)
-{
-	return;
-}
-
-struct codomain *merge_policy(struct codomain *a, struct codomain *b)
-{
-	struct codomain *ret = a;
+	Profile *ret = a;
 	struct cod_entry *last;
 
 	if (!a) {
@@ -603,131 +329,109 @@ struct codomain *merge_policy(struct codomain *a, struct codomain *b)
 	a->flags.complain = a->flags.complain || b->flags.complain;
 	a->flags.audit = a->flags.audit || b->flags.audit;
 
-	a->capabilities |= b->capabilities;
-	a->audit_caps |= b->audit_caps;
-	a->deny_caps |= b->deny_caps;
-	a->quiet_caps |= b->quiet_caps;
+	a->caps.allow |= b->caps.allow;
+	a->caps.audit |= b->caps.audit;
+	a->caps.deny |= b->caps.deny;
+	a->caps.quiet |= b->caps.quiet;
 
-	if (a->network_allowed) {
+	if (a->net.allow) {
 		size_t i;
 		for (i = 0; i < get_af_max(); i++) {
-			a->network_allowed[i] |= b->network_allowed[i];
-			a->audit_network[i] |= b->audit_network[i];
-			a->deny_network[i] |= b->deny_network[i];
-			a->quiet_network[i] |= b->quiet_network[i];
+			a->net.allow[i] |= b->net.allow[i];
+			a->net.audit[i] |= b->net.audit[i];
+			a->net.deny[i] |= b->net.deny[i];
+			a->net.quiet[i] |= b->net.quiet[i];
 		}
 	}
 
 	merge_hats(a, b->hat_table);
-	tdestroy(b->hat_table, &empty_destroy);
-	b->hat_table = NULL;
-
-	free_policy(b);
+	delete b;
 out:
 	return ret;
 }
 
+int process_profile_rules(Profile *profile)
+{
+	int error;
+
+	error = process_profile_regex(profile);
+	if (error) {
+		PERROR(_("ERROR processing regexs for profile %s, failed to load\n"), profile->name);
+		exit(1);
+		return error;
+	}
+
+	error = process_profile_policydb(profile);
+	if (error) {
+		PERROR(_("ERROR processing policydb rules for profile %s, failed to load\n"),
+		       (profile)->name);
+		exit(1);
+		return error;
+	}
+
+	return 0;
+}
+
+int post_process_policy_list(ProfileList &list, int debug_only);
+int post_process_profile(Profile *profile, int debug_only)
+{
+	int error = 0;
+
+	error = profile_add_hat_rules(profile);
+	if (error) {
+		PERROR(_("ERROR adding hat access rule for profile %s\n"),
+		       profile->name);
+		return error;
+	}
+
+	error = process_profile_variables(profile);
+	if (error) {
+		PERROR(_("ERROR expanding variables for profile %s, failed to load\n"), profile->name);
+		exit(1);
+		return error;
+	}
+
+	error = replace_profile_aliases(profile);
+	if (error) {
+		PERROR(_("ERROR replacing aliases for profile %s, failed to load\n"), profile->name);
+		return error;
+	}
+
+	error = profile_merge_rules(profile);
+	if (error) {
+		PERROR(_("ERROR merging rules for profile %s, failed to load\n"), profile->name);
+		exit(1);
+		return error;
+	}
+
+	if (!debug_only) {
+		error = process_profile_rules(profile);
+		if (error)
+			return error;
+	}
+
+	error = post_process_policy_list(profile->hat_table, debug_only);
+	return error;
+}
+
+int post_process_policy_list(ProfileList &list, int debug_only)
+{
+	int error = 0;
+	for (ProfileList::iterator i = list.begin(); i != list.end(); i++) {
+		error = post_process_profile(*i, debug_only);
+		if (error)
+			break;
+	}
+
+	return error;
+}
+
 int post_process_policy(int debug_only)
 {
-	int retval = 0;
-
-	retval = add_hat_rules();
-	if (retval != 0) {
-		PERROR(_("%s: Errors found during postprocessing.  Aborting.\n"),
-		       progname);
-		return retval;
-	}
-
-	retval = post_process_variables();
-	if (retval != 0) {
-		PERROR(_("%s: Errors found during regex postprocess.  Aborting.\n"),
-		       progname);
-		return retval;
-	}
-
-	retval = post_process_alias();
-	if (retval != 0) {
-		PERROR(_("%s: Errors found during postprocess.  Aborting.\n"),
-		       progname);
-		return retval;
-	}
-
-	retval = post_merge_rules();
-	if (retval != 0) {
-		PERROR(_("%s: Errors found in combining rules postprocessing. Aborting.\n"),
-		       progname);
-		return retval;
-	}
-
-	if (!debug_only) {
-		retval = post_process_regex();
-		if (retval != 0) {
-			PERROR(_("%s: Errors found during regex postprocess.  Aborting.\n"),
-			       progname);
-			return retval;
-		}
-	}
-
-	if (!debug_only) {
-		retval = post_process_policydb();
-		if (retval != 0) {
-			PERROR(_("%s: Errors found during policydb postprocess.  Aborting.\n"),
-			       progname);
-			return retval;
-		}
-	}
-
-	return retval;
-}
-
-void free_hat_entry(void *nodep)
-{
-	struct codomain *t = (struct codomain *)nodep;
-	free_policy(t);
-}
-
-void free_hat_table(void *hat_table)
-{
-	if (hat_table)
-		tdestroy(hat_table, &free_hat_entry);
-}
-
-void free_policy(struct codomain *cod)
-{
-	if (!cod)
-		return;
-	free_hat_table(cod->hat_table);
-	free_cod_entries(cod->entries);
-	free_mnt_entries(cod->mnt_ents);
-	free_dbus_entries(cod->dbus_ents);
-	if (cod->dfarules)
-		aare_delete_ruleset(cod->dfarules);
-	if (cod->dfa)
-		free(cod->dfa);
-	if (cod->policy_rules)
-		aare_delete_ruleset(cod->policy_rules);
-	if (cod->policy_dfa)
-		free(cod->policy_dfa);
-	if (cod->name)
-		free(cod->name);
-	if (cod->attachment)
-		free(cod->attachment);
-	if (cod->ns)
-		free(cod->ns);
-	if (cod->network_allowed)
-		free(cod->network_allowed);
-	if (cod->audit_network)
-		free(cod->audit_network);
-	if (cod->deny_network)
-		free(cod->deny_network);
-	if (cod->quiet_network)
-		free(cod->quiet_network);
-	free(cod);
+	return post_process_policy_list(policy_list, debug_only);
 }
 
 void free_policies(void)
 {
-	if (policy_list)
-		tdestroy(policy_list, (__free_fn_t)&free_policy);
-	policy_list = NULL;
+	policy_list.clear();
 }

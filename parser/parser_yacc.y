@@ -32,6 +32,7 @@
 /* #define DEBUG */
 
 #include "parser.h"
+#include "profile.h"
 #include "mount.h"
 #include "dbus.h"
 #include "parser_include.h"
@@ -76,7 +77,7 @@ struct mnt_entry *do_mnt_rule(struct cond_entry *src_conds, char *src,
 struct mnt_entry *do_pivot_rule(struct cond_entry *old, char *root,
 				char *transition);
 
-void add_local_entry(struct codomain *cod);
+void add_local_entry(Profile *prof);
 
 %}
 
@@ -164,13 +165,13 @@ void add_local_entry(struct codomain *cod);
 	char *flag_id;
 	char *mode;
 	struct aa_network_entry *network_entry;
-	struct codomain *cod;
+	Profile *prof;
 	struct cod_net_entry *net_entry;
 	struct cod_entry *user_entry;
 	struct mnt_entry *mnt_entry;
 	struct dbus_entry *dbus_entry;
 
-	struct flagval flags;
+	flagvals flags;
 	int fmode;
 	uint64_t cap;
 	unsigned int allowed_protocol;
@@ -189,12 +190,12 @@ void add_local_entry(struct codomain *cod);
 %type <id>	TOK_CONDLISTID
 %type <mode> 	TOK_MODE
 %type <fmode>   file_mode
-%type <cod>	profile_base
-%type <cod> 	profile
-%type <cod>	rules
-%type <cod>	hat
-%type <cod>	local_profile
-%type <cod>	cond_rule
+%type <prof>	profile_base
+%type <prof> 	profile
+%type <prof>	rules
+%type <prof>	hat
+%type <prof>	local_profile
+%type <prof>	cond_rule
 %type <network_entry> network_rule
 %type <user_entry> rule
 %type <user_entry> file_rule
@@ -261,37 +262,37 @@ opt_id: { /* nothing */ $$ = NULL; }
 
 profile_base: TOK_ID opt_id flags TOK_OPEN rules TOK_CLOSE
 	{
-		struct codomain *cod = $5;
+		Profile *prof = $5;
 
-		if (!cod) {
+		if (!prof) {
 			yyerror(_("Memory allocation error."));
 		}
 
-		cod->name = $1;
-		cod->attachment = $2;
+		prof->name = $1;
+		prof->attachment = $2;
 		if ($2 && $2[0] != '/')
 			/* we don't support variables as part of the profile
 			 * name or attachment atm
 			 */
 			yyerror(_("Profile attachment must begin with a '/'."));
-		cod->flags = $3;
+		prof->flags = $3;
 		if (force_complain)
-			cod->flags.complain = 1;
+			prof->flags.complain = 1;
 
-		post_process_file_entries(cod);
-		post_process_mnt_entries(cod);
+		post_process_file_entries(prof);
+		post_process_mnt_entries(prof);
 		PDEBUG("%s: flags='%s%s'\n",
 		       $2,
-		       cod->flags.complain ? "complain, " : "",
-		       cod->flags.audit ? "audit" : "");
+		       prof->flags.complain ? "complain, " : "",
+		       prof->flags.audit ? "audit" : "");
 
-		$$ = cod;
+		$$ = prof;
 
 	};
 
 profile:  opt_profile_flag opt_ns profile_base
 	{
-		struct codomain *cod = $3;
+		Profile *prof = $3;
 		if ($2)
 			PDEBUG("Matched: %s://%s { ... }\n", $2, $3->name);
 		else
@@ -300,31 +301,31 @@ profile:  opt_profile_flag opt_ns profile_base
 		if ($3->name[0] != '/' && !($1 || $2))
 			yyerror(_("Profile names must begin with a '/', namespace or keyword 'profile' or 'hat'."));
 
-		cod->ns = $2;
+		prof->ns = $2;
 		if ($1 == 2)
-			cod->flags.hat = 1;
-		$$ = cod;
+			prof->flags.hat = 1;
+		$$ = prof;
 	};
 
 local_profile:   TOK_PROFILE profile_base
 	{
 
-		struct codomain *cod = $2;
+		Profile *prof = $2;
 
 		if ($2)
-			PDEBUG("Matched: local profile %s { ... }\n", cod->name);
-		cod->local = 1;
-		$$ = cod;
+			PDEBUG("Matched: local profile %s { ... }\n", prof->name);
+		prof->local = 1;
+		$$ = prof;
 	};
 
 hat: hat_start profile_base
 	{
-		struct codomain *cod = $2;
+		Profile *prof = $2;
 		if ($2)
-			PDEBUG("Matched: hat %s { ... }\n", cod->name);
+			PDEBUG("Matched: hat %s { ... }\n", prof->name);
 
-		cod->flags.hat = 1;
-		$$ = cod;
+		prof->flags.hat = 1;
+		$$ = prof;
 	};
 
 preamble: { /* nothing */ }
@@ -430,7 +431,7 @@ valuelist:	valuelist TOK_VALUE
 	}
 
 flags:	{ /* nothing */
-	struct flagval fv = { 0, 0, 0, 0 };
+	flagvals fv = { 0, 0, 0, 0 };
 
 		$$ = fv;
 	};
@@ -478,7 +479,7 @@ flagvals:	flagval
 
 flagval:	TOK_VALUE
 	{
-		struct flagval fv = { 0, 0, 0, 0 };
+		flagvals fv = { 0, 0, 0, 0 };
 		if (strcmp($1, "debug") == 0) {
 			yyerror(_("Profile flag 'debug' is no longer valid."));
 		} else if (strcmp($1, "complain") == 0) {
@@ -531,13 +532,12 @@ opt_prefix: opt_audit_flag opt_perm_mode opt_owner_flag
 	}
 
 rules:	{ /* nothing */ 
-		struct codomain *cod = NULL;
-		cod = (struct codomain *) calloc(1, sizeof(struct codomain));
-		if (!cod) {
+	Profile *prof = new Profile();
+		if (!prof) {
 			yyerror(_("Memory allocation error."));
 		}
 
-		$$ = cod;
+		$$ = prof;
 	};
 
 rules:  rules opt_prefix rule
@@ -598,8 +598,8 @@ rules: rules opt_prefix TOK_OPEN rules TOK_CLOSE
 			add_entry_to_policy($1, entry);
 		}
 		$4->entries = NULL;
-		// fix me transfer rules and free sub codomain
-		free_policy($4);
+		// fix me transfer rules and free sub profile
+		delete $4;
 		$$ = $1;
 	};
 
@@ -612,40 +612,40 @@ rules: rules opt_prefix network_rule
 			yyerror(_("owner prefix not allowed"));
 		if (!$3)
 			yyerror(_("Assert: `network_rule' return invalid protocol."));
-		if (!$1->network_allowed) {
-			$1->network_allowed = (unsigned int *) calloc(get_af_max(),
-						      sizeof(unsigned int));
-			$1->audit_network = (unsigned int *)calloc(get_af_max(),
+		if (!$1->net.allow) {
+			$1->net.allow = (unsigned int *) calloc(get_af_max(),
+						     sizeof(unsigned int));
+			$1->net.audit = (unsigned int *)calloc(get_af_max(),
 						   sizeof(unsigned int));
-			$1->deny_network = (unsigned int *)calloc(get_af_max(),
+			$1->net.deny = (unsigned int *)calloc(get_af_max(),
 						     sizeof(unsigned int));
-			$1->quiet_network = (unsigned int *)calloc(get_af_max(),
+			$1->net.quiet = (unsigned int *)calloc(get_af_max(),
 						     sizeof(unsigned int));
-			if (!$1->network_allowed || !$1->audit_network ||
-			    !$1->deny_network || !$1->quiet_network)
+			if (!$1->net.allow || !$1->net.audit ||
+			    !$1->net.deny || !$1->net.quiet)
 				yyerror(_("Memory allocation error."));
 		}
 		list_for_each_safe($3, entry, tmp) {
 			if (entry->type > SOCK_PACKET) {
 				/* setting mask instead of a bit */
 				if ($2.deny) {
-					$1->deny_network[entry->family] |= entry->type;
+					$1->net.deny[entry->family] |= entry->type;
 					if (!$2.audit)
-						$1->quiet_network[entry->family] |= entry->type;
+						$1->net.quiet[entry->family] |= entry->type;
 				} else {
-					$1->network_allowed[entry->family] |= entry->type;
+					$1->net.allow[entry->family] |= entry->type;
 					if ($2.audit)
-						$1->audit_network[entry->family] |= entry->type;
+						$1->net.audit[entry->family] |= entry->type;
 				}
 			} else {
 				if ($2.deny) {
-					$1->deny_network[entry->family] |= 1 << entry->type;
+					$1->net.deny[entry->family] |= 1 << entry->type;
 					if (!$2.audit)
-						$1->quiet_network[entry->family] |= 1 << entry->type;
+						$1->net.quiet[entry->family] |= 1 << entry->type;
 				} else {
-					$1->network_allowed[entry->family] |= 1 << entry->type;
+					$1->net.allow[entry->family] |= 1 << entry->type;
 					if ($2.audit)
-						$1->audit_network[entry->family] |= 1 << entry->type;
+						$1->net.audit[entry->family] |= 1 << entry->type;
 				}
 			}
 			free(entry);
@@ -696,12 +696,12 @@ rules:  rules opt_prefix capability
 			yyerror(_("owner prefix not allow on capability rules"));
 
 		if ($2.deny)
-			$1->deny_caps |= $3;
+			$1->caps.deny |= $3;
 		else
-			$1->capabilities |= $3;
+			$1->caps.allow |= $3;
 
 		if (!$2.audit)
-			$1->quiet_caps |= $3;
+			$1->caps.quiet |= $3;
 		$$ = $1;
 	};
 
@@ -824,40 +824,40 @@ rules: rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE TOK_END_OF_RULE
 
 cond_rule: TOK_IF expr TOK_OPEN rules TOK_CLOSE
 	{
-		struct codomain *ret = NULL;
+		Profile *ret = NULL;
 		PDEBUG("Matched: found conditional rules\n");
 		if ($2) {
 			ret = $4;
 		} else {
-			free_policy($4);
+			delete $4;
 		}
 		$$ = ret;
 	}
 
 cond_rule: TOK_IF expr TOK_OPEN rules TOK_CLOSE TOK_ELSE TOK_OPEN rules TOK_CLOSE
 	{
-		struct codomain *ret = NULL;
+		Profile *ret = NULL;
 		PDEBUG("Matched: found conditional else rules\n");
 		if ($2) {
 			ret = $4;
-			free_policy($8);
+			delete $8;
 		} else {
 			ret = $8;
-			free_policy($4);
+			delete $4;
 		}
 		$$ = ret;
 	}
 
 cond_rule: TOK_IF expr TOK_OPEN rules TOK_CLOSE TOK_ELSE cond_rule
 	{
-		struct codomain *ret = NULL;
+		Profile *ret = NULL;
 		PDEBUG("Matched: found conditional else-if rules\n");
 		if ($2) {
 			ret = $4;
-			free_policy($7);
+			delete $7;
 		} else {
 			ret = $7;
-			free_policy($4);
+			delete $4;
 		}
 		$$ = ret;
 	}
@@ -1307,25 +1307,25 @@ struct cod_entry *do_file_rule(char *ns, char *id, int mode,
 /* Note: NOT currently in use, used for 
  * /foo x -> { /bah, }   style transitions
  */
-void add_local_entry(struct codomain *cod)
+void add_local_entry(Profile *prof)
 {
 	/* ugh this has to be called after the hat is attached to its parent */
-	if (cod->local_mode) {
+	if (prof->local_mode) {
 		struct cod_entry *entry;
-		char *trans = (char *) malloc(strlen(cod->parent->name) +
-				    strlen(cod->name) + 3);
-		char *name = strdup(cod->name);
+		char *trans = (char *) malloc(strlen(prof->parent->name) +
+				    strlen(prof->name) + 3);
+		char *name = strdup(prof->name);
 		if (!trans)
 			yyerror(_("Memory allocation error."));
-		sprintf(name, "%s//%s", cod->parent->name, cod->name);
+		sprintf(name, "%s//%s", prof->parent->name, prof->name);
 
-		entry = new_entry(NULL, name, cod->local_mode, NULL);
-		entry->audit = cod->local_audit;
+		entry = new_entry(NULL, name, prof->local_mode, NULL);
+		entry->audit = prof->local_audit;
 		entry->nt_name = trans;
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 
-		add_entry_to_policy(cod, entry);
+		add_entry_to_policy(prof, entry);
 	}
 }
 

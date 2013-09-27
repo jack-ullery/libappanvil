@@ -36,6 +36,7 @@
 #include <unistd.h>
 
 #include "parser.h"
+#include "profile.h"
 #include "parser_yacc.h"
 #include "mount.h"
 #include "dbus.h"
@@ -952,23 +953,6 @@ void debug_cod_entries(struct cod_entry *list)
 	}
 }
 
-void debug_flags(struct codomain *cod)
-{
-	printf("Profile Mode:\t");
-
-	if (cod->flags.complain)
-		printf("Complain");
-	else
-		printf("Enforce");
-
-	if (cod->flags.audit)
-		printf(", Audit");
-
-	if (cod->flags.hat)
-		printf(", Hat");
-
-	printf("\n");
-}
 
 static const char *capnames[] = {
 	"chown",
@@ -1028,17 +1012,6 @@ void __debug_capabilities(uint64_t capset, const char *name)
 		}
 	}
 	printf("\n");
-}
-void debug_capabilities(struct codomain *cod)
-{
-	if (cod->capabilities != 0ull)
-		__debug_capabilities(cod->capabilities, "Capabilities");
-	if (cod->audit_caps != 0ull)
-		__debug_capabilities(cod->audit_caps, "Audit Caps");
-	if (cod->deny_caps != 0ull)
-		__debug_capabilities(cod->deny_caps, "Deny Caps");
-	if (cod->quiet_caps != 0ull)
-		__debug_capabilities(cod->quiet_caps, "Quiet Caps");
 }
 
 /* Bleah C++ doesn't have non-trivial designated initializers so we just
@@ -1129,44 +1102,6 @@ void __debug_network(unsigned int *array, const char *name)
 	printf("\n");
 }
 
-void debug_network(struct codomain *cod)
-{
-	if (cod->network_allowed)
-		__debug_network(cod->network_allowed, "Network");
-	if (cod->audit_network)
-		__debug_network(cod->audit_network, "Audit Net");
-	if (cod->deny_network)
-		__debug_network(cod->deny_network, "Deny Net");
-	if (cod->quiet_network)
-		__debug_network(cod->quiet_network, "Quiet Net");
-
-}
-
-void debug_cod_list(struct codomain *cod)
-{
-	if (cod->ns)
-		printf("Ns:\t\t%s\n", cod->ns);
-
-	if (cod->name)
-		printf("Name:\t\t%s\n", cod->name);
-	else
-		printf("Name:\t\tNULL\n");
-
-	if (cod->local)
-		printf("Local To:\t%s\n", cod->parent->name);
-
-	debug_flags(cod);
-	
-	debug_capabilities(cod);
-
-	debug_network(cod);
-
-	if (cod->entries)
-		debug_cod_entries(cod->entries);
-
-	printf("\n");
-	dump_policy_hats(cod);
-}
 
 struct value_list *new_value_list(char *value)
 {
@@ -1274,6 +1209,9 @@ void print_cond_entry(struct cond_entry *ent)
 }
 
 #ifdef UNIT_TEST
+
+#include "unit_test.h"
+
 int test_str_to_boolean(void)
 {
 	int rc = 0;
