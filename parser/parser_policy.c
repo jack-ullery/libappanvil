@@ -397,28 +397,6 @@ static void __add_hat_rules_parent(const void *nodep, const VISIT value,
 	if ((*t)->local)
 		return;
 
-	/* add rule to grant permission to change_hat
-	 * An opensuse 11.0, AA 2.3 requirement,
-	 * rules are added to the parent of the hat
-	 */
-	if ((flag_changehat_version == FLAG_CHANGEHAT_1_4) &&
-	    (*t)->parent) {
-		char *buffer = (char *) malloc(strlen((*t)->name) + 1);
-		if (!buffer) {
-			PERROR("Memory allocation error\n");
-			exit(1);
-		}
-
-		strcpy(buffer, (*t)->name);
-
-		entry = new_entry(NULL, buffer, AA_CHANGE_HAT, NULL);
-		if (!entry) {
-			PERROR("Memory allocation error\n");
-			exit(1);
-		}
-		add_entry_to_policy((*t)->parent, entry);
-	}
-
 	entry = new_entry(NULL, strdup(CHANGEHAT_PATH), AA_MAY_WRITE, NULL);
 	if (!entry) {
 		PERROR(_("ERROR adding hat access rule for profile %s\n"),
@@ -430,56 +408,10 @@ static void __add_hat_rules_parent(const void *nodep, const VISIT value,
 	twalk((*t)->hat_table, __add_hat_rules_parent);
 }
 
-/* Deprecated: used to support changehat rules of AppArmor 2.3
- * add the same hat rules to the hats as the parent so that hats can
- * change to sibling hats
- */
-static void __add_hat_rules_hats(const void *nodep, const VISIT value,
-				 const int __unused depth)
-{
-	struct codomain **t = (struct codomain **) nodep;
-
-	if (value == preorder || value == endorder)
-		return;
-
-	/* don't add hat rules if a parent profile with no hats */
-	if (!(*t)->hat_table && !(*t)->parent)
-		return;
-
-	/* don't add hat rules for local_profiles */
-	if ((*t)->local)
-		return;
-
-	/* hat */
-	if ((*t)->parent) {
-		struct cod_entry *entry, *new_ent;
-		list_for_each((*t)->parent->entries, entry) {
-			if (entry->mode & AA_CHANGE_HAT) {
-				char *buffer = strdup(entry->name);
-				if (!buffer) {
-					PERROR("Memory allocation error\n");
-					exit(1);
-				}
-				new_ent = new_entry(NULL, buffer,
-						    AA_CHANGE_HAT, NULL);
-				if (!entry) {
-					PERROR("Memory allocation error\n");
-					exit(1);
-				}
-				add_entry_to_policy((*t), new_ent);
-			}
-		}
-         }
-         twalk((*t)->hat_table, __add_hat_rules_hats);
-}
-
 static int add_hat_rules(void)
 {
 	twalk(policy_list, __add_hat_rules_parent);
 
-	/* support hat rules of AppArmor 2.3 in opensuse 11.0 */
-	if (flag_changehat_version == FLAG_CHANGEHAT_1_4)
-		twalk(policy_list, __add_hat_rules_hats);
 	return 0;
 }
 
