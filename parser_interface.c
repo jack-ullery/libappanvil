@@ -25,6 +25,7 @@
 #define _(s) gettext(s)
 
 #include "parser.h"
+#include "profile.h"
 #include "libapparmor_re/apparmor_re.h"
 
 #include <unistd.h>
@@ -59,7 +60,7 @@
 
 #define SUBDOMAIN_INTERFACE_DFA_VERSION 5
 
-int sd_serialize_codomain(int option, struct codomain *cod);
+int __sd_serialize_profile(int option, Profile *prof);
 
 static void print_error(int error)
 {
@@ -100,30 +101,30 @@ static void print_error(int error)
 	}
 }
 
-int load_codomain(int option, struct codomain *cod)
+int load_profile(int option, Profile *prof)
 {
 	int retval = 0;
 	int error = 0;
 
-	PDEBUG("Serializing policy for %s.\n", cod->name);
-	retval = sd_serialize_codomain(option, cod);
+	PDEBUG("Serializing policy for %s.\n", prof->name);
+	retval = __sd_serialize_profile(option, prof);
 
 	if (retval < 0) {
 		error = retval;	/* yeah, we'll just report the last error */
 		switch (option) {
 		case OPTION_ADD:
 			PERROR(_("%s: Unable to add \"%s\".  "),
-			       progname, cod->name);
+			       progname, prof->name);
 			print_error(error);
 			break;
 		case OPTION_REPLACE:
 			PERROR(_("%s: Unable to replace \"%s\".  "),
-			       progname, cod->name);
+			       progname, prof->name);
 			print_error(error);
 			break;
 		case OPTION_REMOVE:
 			PERROR(_("%s: Unable to remove \"%s\".  "),
-			       progname, cod->name);
+			       progname, prof->name);
 			print_error(error);
 			break;
 		case OPTION_STDOUT:
@@ -144,15 +145,15 @@ int load_codomain(int option, struct codomain *cod)
 		switch (option) {
 		case OPTION_ADD:
 			printf(_("Addition succeeded for \"%s\".\n"),
-			       cod->name);
+			       prof->name);
 			break;
 		case OPTION_REPLACE:
 			printf(_("Replacement succeeded for \"%s\".\n"),
-			       cod->name);
+			       prof->name);
 			break;
 		case OPTION_REMOVE:
 			printf(_("Removal succeeded for \"%s\".\n"),
-			       cod->name);
+			       prof->name);
 			break;
 		case OPTION_STDOUT:
 		case OPTION_OFILE:
@@ -544,7 +545,7 @@ int count_tailglob_ents(struct cod_entry *list)
 	return count;
 }
 
-int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
+int sd_serialize_profile(sd_serialize *p, Profile *profile,
 			 int flattened)
 {
 	uint64_t allowed_caps;
@@ -608,12 +609,12 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 
 #define low_caps(X) ((u32) ((X) & 0xffffffff))
 #define high_caps(X) ((u32) (((X) >> 32) & 0xffffffff))
-	allowed_caps = (profile->capabilities) & ~profile->deny_caps;
+	allowed_caps = (profile->caps.allow) & ~profile->caps.deny;
 	if (!sd_write32(p, low_caps(allowed_caps)))
 		return 0;
-	if (!sd_write32(p, low_caps(allowed_caps & profile->audit_caps)))
+	if (!sd_write32(p, low_caps(allowed_caps & profile->caps.audit)))
 		return 0;
-	if (!sd_write32(p, low_caps(profile->deny_caps & profile->quiet_caps)))
+	if (!sd_write32(p, low_caps(profile->caps.deny & profile->caps.quiet)))
 		return 0;
 	if (!sd_write32(p, 0))
 		return 0;
@@ -622,9 +623,9 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 		return 0;
 	if (!sd_write32(p, high_caps(allowed_caps)))
 		return 0;
-	if (!sd_write32(p, high_caps(allowed_caps & profile->audit_caps)))
+	if (!sd_write32(p, high_caps(allowed_caps & profile->caps.audit)))
 		return 0;
-	if (!sd_write32(p, high_caps(profile->deny_caps & profile->quiet_caps)))
+	if (!sd_write32(p, high_caps(profile->caps.deny & profile->caps.quiet)))
 		return 0;
 	if (!sd_write32(p, 0))
 		return 0;
@@ -634,36 +635,36 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 	if (!sd_serialize_rlimits(p, &profile->rlimits))
 		return 0;
 
-	if (profile->network_allowed && kernel_supports_network) {
+	if (profile->net.allow && kernel_supports_network) {
 		size_t i;
 		if (!sd_write_array(p, "net_allowed_af", get_af_max()))
 			return 0;
 		for (i = 0; i < get_af_max(); i++) {
-		    u16 allowed = profile->network_allowed[i] &
-			~profile->deny_network[i];
+		    u16 allowed = profile->net.allow[i] &
+			~profile->net.deny[i];
 			if (!sd_write16(p, allowed))
 				return 0;
-			if (!sd_write16(p, allowed & profile->audit_network[i]))
+			if (!sd_write16(p, allowed & profile->net.audit[i]))
 				return 0;
-			if (!sd_write16(p, profile->deny_network[i] & profile->quiet_network[i]))
+			if (!sd_write16(p, profile->net.deny[i] & profile->net.quiet[i]))
 				return 0;
 		}
 		if (!sd_write_arrayend(p))
 			return 0;
-	} else if (profile->network_allowed)
+	} else if (profile->net.allow)
 		pwarn(_("profile %s network rules not enforced\n"), profile->name);
 
-	if (profile->policy_dfa) {
+	if (profile->policy.dfa) {
 		if (!sd_write_struct(p, "policydb"))
 			return 0;
-		if (!sd_serialize_dfa(p, profile->policy_dfa, profile->policy_dfa_size))
+		if (!sd_serialize_dfa(p, profile->policy.dfa, profile->policy.size))
 			return 0;
 		if (!sd_write_structend(p))
 			return 0;
 	}
 
 	/* either have a single dfa or lists of different entry types */
-	if (!sd_serialize_dfa(p, profile->dfa, profile->dfa_size))
+	if (!sd_serialize_dfa(p, profile->dfa.dfa, profile->dfa.size))
 		return 0;
 
 	if (!sd_serialize_xtable(p, profile->exec_table))
@@ -675,7 +676,7 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 	return 1;
 }
 
-int sd_serialize_top_profile(sd_serialize *p, struct codomain *profile)
+int sd_serialize_top_profile(sd_serialize *p, Profile *profile)
 {
 	int version;
 
@@ -699,7 +700,7 @@ int sd_serialize_top_profile(sd_serialize *p, struct codomain *profile)
 }
 
 int cache_fd = -1;
-int sd_serialize_codomain(int option, struct codomain *cod)
+int __sd_serialize_profile(int option, Profile *prof)
 {
 	int fd = -1;
 	int error = -ENOMEM, size, wsize;
@@ -754,34 +755,34 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		if (profile_ns) {
 			len += strlen(profile_ns) + 2;
 			ns = profile_ns;
-		} else if (cod->ns) {
-			len += strlen(cod->ns) + 2;
-			ns = cod->ns;
+		} else if (prof->ns) {
+			len += strlen(prof->ns) + 2;
+			ns = prof->ns;
 		}
-		if (cod->parent) {
-			name = (char *) malloc(strlen(cod->name) + 3 +
-				      strlen(cod->parent->name) + len);
+		if (prof->parent) {
+			name = (char *) malloc(strlen(prof->name) + 3 +
+				      strlen(prof->parent->name) + len);
 			if (!name) {
-				PERROR(_("Memory Allocation Error: Unable to remove ^%s\n"), cod->name);
+				PERROR(_("Memory Allocation Error: Unable to remove ^%s\n"), prof->name);
 				error = -errno;
 				goto exit;
 			}
 			if (ns)
 				sprintf(name, ":%s:%s//%s", ns,
-					cod->parent->name, cod->name);
+					prof->parent->name, prof->name);
 			else
-				sprintf(name, "%s//%s", cod->parent->name,
-					cod->name);
+				sprintf(name, "%s//%s", prof->parent->name,
+					prof->name);
 		} else if (ns) {
-			name = (char *) malloc(len + strlen(cod->name) + 1);
+			name = (char *) malloc(len + strlen(prof->name) + 1);
 			if (!name) {
-				PERROR(_("Memory Allocation Error: Unable to remove %s:%s."), ns, cod->name);
+				PERROR(_("Memory Allocation Error: Unable to remove %s:%s."), ns, prof->name);
 				error = -errno;
 				goto exit;
 			}
-			sprintf(name, ":%s:%s", ns, cod->name);
+			sprintf(name, ":%s:%s", ns, prof->name);
 		} else {
-			name = cod->name;
+			name = prof->name;
 		}
 		size = strlen(name) + 1;
 		if (kernel_load) {
@@ -789,7 +790,7 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 			if (wsize < 0)
 				error = -errno;
 		}
-		if (cod->parent || ns)
+		if (prof->parent || ns)
 			free(name);
 	} else {
 
@@ -801,11 +802,11 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 			goto exit;
 		}
 
-		if (!sd_serialize_top_profile(work_area, cod)) {
+		if (!sd_serialize_top_profile(work_area, prof)) {
 			close(fd);
 			free_sd_serial(work_area);
 			PERROR(_("unable to serialize profile %s\n"),
-			       cod->name);
+			       prof->name);
 			goto exit;
 		}
 
@@ -835,8 +836,8 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 
 	close(fd);
 
-	if (cod->hat_table && option != OPTION_REMOVE) {
-		if (load_flattened_hats(cod) != 0)
+	if (!prof->hat_table.empty() && option != OPTION_REMOVE) {
+		if (load_flattened_hats(prof, option) == 0)
 			return 0;
 	}
 

@@ -28,6 +28,7 @@
 /* #define DEBUG */
 
 #include "parser.h"
+#include "profile.h"
 #include "mount.h"
 #include "dbus.h"
 
@@ -137,12 +138,11 @@ static int expand_entry_variables(char **name, void *entry,
 				  int (dup_and_chain)(void *))
 {
 	struct set_value *valuelist;
-	int ret = TRUE;
 	char *value;
 	struct var_string *split_var;
 
 	if (!entry) 		/* can happen when entry is optional */
-		return ret;
+		return 0;
 
 	while ((split_var = split_out_var(*name))) {
 		valuelist = get_set_var(split_var->var);
@@ -168,7 +168,7 @@ static int expand_entry_variables(char **name, void *entry,
 			     split_var->prefix ? split_var->prefix : "",
 			     value,
 			     split_var->suffix ? split_var->suffix : "") == -1)
-			return FALSE;
+			return -1;
 
 		while ((value = get_next_set_value(&valuelist))) {
 			if (!dup_and_chain(entry)) {
@@ -181,12 +181,12 @@ static int expand_entry_variables(char **name, void *entry,
 			if (asprintf(name, "%s%s%s",
 			      split_var->prefix ? split_var->prefix : "", value,
 			      split_var->suffix ? split_var->suffix : "") == -1)
-				return FALSE;
+				return -1;
 		}
 
 		free_var_string(split_var);
 	}
-	return ret;
+	return 0;
 }
 
 int clone_and_chain_cod(void *v)
@@ -229,103 +229,99 @@ int clone_and_chain_dbus(void *v)
 
 static int process_variables_in_entries(struct cod_entry *entry_list)
 {
-	int ret = TRUE, rc;
+	int error = 0;
 	struct cod_entry *entry;
 
 	list_for_each(entry_list, entry) {
-		rc = expand_entry_variables(&entry->name, entry,
-					    clone_and_chain_cod);
-		if (!rc)
-			return FALSE;
+		error = expand_entry_variables(&entry->name, entry,
+					       clone_and_chain_cod);
+		if (error)
+			return error;
 	}
 
-	return ret;
+	return 0;
 }
 
 /* does not currently support expansion of vars in options */
 static int process_variables_in_mnt_entries(struct mnt_entry *entry_list)
 {
-	int ret = TRUE, rc;
+	int error = 0;
 	struct mnt_entry *entry;
 
 	list_for_each(entry_list, entry) {
-		rc = expand_entry_variables(&entry->mnt_point, entry,
-					    clone_and_chain_mnt);
-		if (!rc)
-			return FALSE;
-		rc = expand_entry_variables(&entry->device, entry,
-					    clone_and_chain_mnt);
-		if (!rc)
-			return FALSE;
-		rc = expand_entry_variables(&entry->trans, entry,
-					    clone_and_chain_mnt);
-		if (!rc)
-			return FALSE;
+		error = expand_entry_variables(&entry->mnt_point, entry,
+					       clone_and_chain_mnt);
+		if (error)
+			return error;
+		error = expand_entry_variables(&entry->device, entry,
+					       clone_and_chain_mnt);
+		if (error)
+			return error;
+		error = expand_entry_variables(&entry->trans, entry,
+					       clone_and_chain_mnt);
+		if (error)
+			return error;
 
 	}
 
-	return ret;
+	return 0;
 }
 
 static int process_dbus_variables(struct dbus_entry *entry_list)
 {
-	int ret = TRUE, rc;
+	int error = 0;
 	struct dbus_entry *entry;
 
 	list_for_each(entry_list, entry) {
-		rc = expand_entry_variables(&entry->bus, entry,
-					    clone_and_chain_dbus);
-		if (!rc)
-			return FALSE;
-		rc = expand_entry_variables(&entry->name, entry,
-					    clone_and_chain_dbus);
-		if (!rc)
-			return FALSE;
-		rc = expand_entry_variables(&entry->peer_label, entry,
-					    clone_and_chain_dbus);
-		if (!rc)
-			return FALSE;
-		rc = expand_entry_variables(&entry->path, entry,
-					    clone_and_chain_dbus);
-		if (!rc)
-			return FALSE;
-		rc = expand_entry_variables(&entry->interface, entry,
-					    clone_and_chain_dbus);
-		if (!rc)
-			return FALSE;
-		rc = expand_entry_variables(&entry->member, entry,
-					    clone_and_chain_dbus);
-		if (!rc)
-			return FALSE;
+		error = expand_entry_variables(&entry->bus, entry,
+					       clone_and_chain_dbus);
+		if (error)
+			return error;
+		error = expand_entry_variables(&entry->name, entry,
+					       clone_and_chain_dbus);
+		if (error)
+			return error;
+		error = expand_entry_variables(&entry->peer_label, entry,
+					       clone_and_chain_dbus);
+		if (error)
+			return error;
+		error = expand_entry_variables(&entry->path, entry,
+					       clone_and_chain_dbus);
+		if (error)
+			return error;
+		error = expand_entry_variables(&entry->interface, entry,
+					       clone_and_chain_dbus);
+		if (error)
+			return error;
+		error = expand_entry_variables(&entry->member, entry,
+					       clone_and_chain_dbus);
+		if (error)
+			return error;
 
 	}
 
-	return ret;
+	return 0;
 }
 
-int process_variables(struct codomain *cod)
+int process_profile_variables(Profile *prof)
 {
 	int error = 0;
 
-	if (!process_variables_in_entries(cod->entries)) {
-		error = -1;
-	}
+	error = process_variables_in_entries(prof->entries);
 
-	if (!process_variables_in_mnt_entries(cod->mnt_ents)) {
-		error = -1;
-	}
+	if (!error)
+		error = process_variables_in_mnt_entries(prof->mnt_ents);
 
-	if (!process_dbus_variables(cod->dbus_ents)) {
-			error = -1;
-	}
+	if (!error)
+		error = process_dbus_variables(prof->dbus_ents);
 
-	if (process_hat_variables(cod) != 0) {
-			error = -1;
-	}
 	return error;
 }
 
 #ifdef UNIT_TEST
+
+#include "unit_test.h"
+
 int test_get_var_end(void)
 {
 	int rc = 0;

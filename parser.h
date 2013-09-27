@@ -33,6 +33,7 @@
 using namespace std;
 
 #include <set>
+class Profile;
 
 struct mnt_ent;
 
@@ -49,12 +50,6 @@ struct prefixes {
 	int owner;
 };
 
-struct flagval {
-  	int hat;
-  	int complain;
-  	int audit;
-	int path;
-};
 
 struct named_transition {
 	int present;
@@ -85,7 +80,7 @@ struct cod_entry {
 	char *name;
 	char *link_name;
 	char *nt_name;
-	struct codomain *codomain; 	/* Special codomain defined
+	Profile *prof;		 	/* Special profile defined
 					 * just for this executable */
 	int mode;			/* mode is 'or' of AA_* bits */
 	int audit;			/* audit flags for mode */
@@ -118,57 +113,6 @@ struct aa_rlimits {
 struct alt_name {
 	char *name;
 	struct alt_name *next;
-};
-
-struct codomain {
-	char *ns;
-	char *name;				/* codomain name */
-	char *attachment;
-	struct alt_name *altnames;
-	void *xmatch;
-	size_t xmatch_size;
-	int xmatch_len;
-
-	/* char *sub_name; */			/* subdomain name or NULL */
-	/* int default_deny; */			/* TRUE or FALSE */
-	int local;
-	int local_mode;				/* true if local, not hat */
-	int local_audit;
-
-	struct codomain *parent;
-
-	struct flagval flags;
-
-	uint64_t capabilities;
-	uint64_t audit_caps;
-	uint64_t deny_caps;
-	uint64_t quiet_caps;
-
-	unsigned int *network_allowed;		/* array of type masks
-						 * indexed by AF_FAMILY */
-	unsigned int *audit_network;
-	unsigned int *deny_network;
-	unsigned int *quiet_network;
-
-	struct aa_rlimits rlimits;
-
-	char *exec_table[AA_EXEC_COUNT];
-	struct cod_entry *entries;
-	struct dbus_entry *dbus_ents;
-	struct mnt_entry *mnt_ents;
-
-	void *hat_table;
-	//struct codomain *next;
-
-	aare_ruleset_t *dfarules;
-	int dfarule_count;
-	void *dfa;
-	size_t dfa_size;
-
-	aare_ruleset_t *policy_rules;
-	int policy_rule_count;
-	void *policy_dfa;
-	size_t policy_dfa_size;
 };
 
 struct sd_hat {
@@ -311,18 +255,18 @@ extern int yylex(void);
 extern char *basedir;
 
 /* parser_regex.c */
-extern int process_regex(struct codomain *cod);
+extern int process_regex(Profile *prof);
 extern int post_process_entry(struct cod_entry *entry);
-extern int process_dbus(struct codomain *cod);
+extern int process_dbus(Profile *prof);
 
 extern void reset_regex(void);
 
-extern int process_policydb(struct codomain *cod);
+extern int process_policydb(Profile *prof);
 
-extern int process_policy_ents(struct codomain *cod);
+extern int process_policy_ents(Profile *prof);
 
 /* parser_variable.c */
-extern int process_variables(struct codomain *cod);
+extern int process_variables(Profile *prof);
 extern struct var_string *split_out_var(char *string);
 extern void free_var_string(struct var_string *var);
 
@@ -353,13 +297,16 @@ extern struct aa_network_entry *network_entry(const char *family,
 					      const char *protocol);
 extern size_t get_af_max(void);
 
-extern void debug_cod_list(struct codomain *list);
 /* returns -1 if value != true or false, otherwise 0 == false, 1 == true */
 extern int str_to_boolean(const char* str);
 extern struct cod_entry *copy_cod_entry(struct cod_entry *cod);
 extern void free_cod_entries(struct cod_entry *list);
 extern void free_mnt_entries(struct mnt_entry *list);
 extern void free_dbus_entries(struct dbus_entry *list);
+extern void __debug_capabilities(uint64_t capset, const char *name);
+void __debug_network(unsigned int *array, const char *name);
+void debug_cod_entries(struct cod_entry *list);
+
 
 /* parser_symtab.c */
 struct set_value {;
@@ -378,72 +325,41 @@ void free_symtabs(void);
 
 /* parser_alias.c */
 extern int new_alias(const char *from, const char *to);
-extern void replace_aliases(struct codomain *cod);
+extern int replace_profile_aliases(Profile *prof);
 extern void free_aliases(void);
 
 /* parser_merge.c */
-extern int codomain_merge_rules(struct codomain *cod);
+extern int profile_merge_rules(Profile *prof);
 
 /* parser_interface.c */
 typedef struct __sdserialize sd_serialize;
-extern int load_codomain(int option, struct codomain *cod);
-extern int sd_serialize_profile(sd_serialize *p, struct codomain *cod,
+extern int load_profile(int option, Profile *prof);
+extern int sd_serialize_profile(sd_serialize *p, Profile *prof,
 				int flatten);
 extern int sd_load_buffer(int option, char *buffer, int size);
 extern int cache_fd;
 
 
 /* parser_policy.c */
-extern void add_to_list(struct codomain *codomain);
-extern void add_hat_to_policy(struct codomain *policy, struct codomain *hat);
-extern void add_entry_to_policy(struct codomain *policy, struct cod_entry *entry);
-extern void post_process_file_entries(struct codomain *cod);
-extern void post_process_mnt_entries(struct codomain *cod);
+extern void add_to_list(Profile *profile);
+extern void add_hat_to_policy(Profile *policy, Profile *hat);
+extern void add_entry_to_policy(Profile *policy, struct cod_entry *entry);
+extern void post_process_file_entries(Profile *prof);
+extern void post_process_mnt_entries(Profile *prof);
 extern int post_process_policy(int debug_only);
-extern int process_hat_regex(struct codomain *cod);
-extern int process_hat_dbus(struct codomain *cod);
-extern int process_hat_variables(struct codomain *cod);
-extern int process_hat_policydb(struct codomain *cod);
+extern int process_profile_regex(Profile *prof);
+extern int process_profile_variables(Profile *prof);
+extern int process_profile_policydb(Profile *prof);
 extern int post_merge_rules(void);
-extern int merge_hat_rules(struct codomain *cod);
-extern struct codomain *merge_policy(struct codomain *a, struct codomain *b);
+extern int merge_hat_rules(Profile *prof);
+extern Profile *merge_policy(Profile *a, Profile *b);
 extern int load_policy(int option);
-extern int load_hats(sd_serialize *p, struct codomain *cod);
-extern int load_flattened_hats(struct codomain *cod);
-extern void free_policy(struct codomain *cod);
-extern void dump_policy(void);
-extern void dump_policy_hats(struct codomain *cod);
+extern int load_hats(sd_serialize *p, Profile *prof);
+extern int load_flattened_hats(Profile *prof, int option);
+extern void dump_policy_hats(Profile *prof);
 extern void dump_policy_names(void);
+void dump_policy(void);
 
 void free_policies(void);
-
-#ifdef UNIT_TEST
-/* For the unit-test builds, we must include function stubs for stuff that
- * only exists in the excluded object files; everything else should live
- * in parser_common.c.
- */
-
-/* parser_yacc.y */
-void yyerror(const char *msg, ...)
-{
-        va_list arg;
-        char buf[PATH_MAX];
-
-        va_start(arg, msg);
-        vsnprintf(buf, sizeof(buf), msg, arg);
-        va_end(arg);
-
-        PERROR(_("AppArmor parser error: %s\n"), buf);
-
-        exit(1);
-}
-
-#define MY_TEST(statement, error)               \
-        if (!(statement)) {                     \
-                PERROR("FAIL: %s\n", error);    \
-                rc = 1;                         \
-        }
-
-#endif
 
 #endif /** __AA_PARSER_H */

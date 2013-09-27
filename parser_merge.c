@@ -25,7 +25,7 @@
 #define _(s) gettext(s)
 
 #include "parser.h"
-
+#include "profile.h"
 
 static int file_comp(const void *c1, const void *c2)
 {
@@ -74,35 +74,35 @@ static int file_comp(const void *c1, const void *c2)
 	return strcmp((*e1)->name, (*e2)->name);
 }
 
-static int process_file_entries(struct codomain *cod)
+static int process_file_entries(Profile *prof)
 {
 	struct cod_entry *cur, *next;
 	struct cod_entry **table;
 	int n, count = 0;
 
-	for (cur = cod->entries; cur; cur = cur->next)
+	for (cur = prof->entries; cur; cur = cur->next)
 		count++;
 
 	if (count < 2)
-		return 1;
+		return 0;
 
 	table = (struct cod_entry **) malloc(sizeof(struct cod_entry *) * (count + 1));
 	if (!table) {
 		PERROR(_("Couldn't merge entries. Out of Memory\n"));
-		return 0;
+		return ENOMEM;
 	}
 
-	for (cur = cod->entries, n = 0; cur; cur = cur->next, n++)
+	for (cur = prof->entries, n = 0; cur; cur = cur->next, n++)
 		table[n] = cur;
 	qsort(table, count, sizeof(struct cod_entry *), file_comp);
 	table[count] = NULL;
 	for (n = 0; n < count; n++)
 		table[n]->next = table[n + 1];
-	cod->entries = table[0];
+	prof->entries = table[0];
 	free(table);
 
 	/* walk the sorted table merging similar entries */
-	for (cur = cod->entries, next = cur->next; next; next = cur->next) {
+	for (cur = prof->entries, next = cur->next; next; next = cur->next) {
 		if (file_comp(&cur, &next) != 0) {
 			cur = next;
 			continue;
@@ -111,8 +111,8 @@ static int process_file_entries(struct codomain *cod)
 		/* check for merged x consistency */
 		if (!is_merged_x_consistent(cur->mode, next->mode)) {
 			PERROR(_("profile %s: has merged rule %s with conflicting x modifiers\n"),
-				cod->name, cur->name);
-			return 0;
+				prof->name, cur->name);
+			return -1;
 		}
 		cur->mode |= next->mode;
 		cur->audit |= next->audit;
@@ -122,18 +122,10 @@ static int process_file_entries(struct codomain *cod)
 		free_cod_entries(next);
 	}
 
-	return 1;
+	return 0;
 }
 
-int codomain_merge_rules(struct codomain *cod)
+int profile_merge_rules(Profile *prof)
 {
-	if (!process_file_entries(cod))
-		goto fail;
-
-	/* XXX  return error from this */
-	merge_hat_rules(cod);
-
-	return 1;
-fail:
-	return 0;
+  return process_file_entries(prof);
 }

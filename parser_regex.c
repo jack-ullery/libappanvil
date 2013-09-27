@@ -26,6 +26,7 @@
 /* #define DEBUG */
 
 #include "parser.h"
+#include "profile.h"
 #include "libapparmor_re/apparmor_re.h"
 #include "libapparmor_re/aare_rules.h"
 #include "mount.h"
@@ -384,30 +385,30 @@ static const char *local_name(const char *name)
 	return name;
 }
 
-static int process_profile_name_xmatch(struct codomain *cod)
+static int process_profile_name_xmatch(Profile *prof)
 {
 	char tbuf[PATH_MAX + 3];	/* +3 for ^, $ and \0 */
 	pattern_t ptype;
 	const char *name;
 
 	/* don't filter_slashes for profile names */
-	if (cod->attachment)
-		name = cod->attachment;
+	if (prof->attachment)
+		name = prof->attachment;
 	else
-		name = local_name(cod->name);
+		name = local_name(prof->name);
 	ptype = convert_aaregex_to_pcre(name, 0, tbuf, PATH_MAX + 3,
-					&cod->xmatch_len);
+					&prof->xmatch_len);
 	if (ptype == ePatternBasic)
-		cod->xmatch_len = strlen(name);
+		prof->xmatch_len = strlen(name);
 
 	if (ptype == ePatternInvalid) {
 		PERROR(_("%s: Invalid profile name '%s' - bad regular expression\n"), progname, name);
 		return FALSE;
-	} else if (ptype == ePatternBasic && !(cod->altnames || cod->attachment)) {
+	} else if (ptype == ePatternBasic && !(prof->altnames || prof->attachment)) {
 		/* no regex so do not set xmatch */
-		cod->xmatch = NULL;
-		cod->xmatch_len = 0;
-		cod->xmatch_size = 0;
+		prof->xmatch = NULL;
+		prof->xmatch_len = 0;
+		prof->xmatch_size = 0;
 	} else {
 		/* build a dfa */
 		aare_ruleset_t *rule = aare_new_ruleset(0);
@@ -417,9 +418,9 @@ static int process_profile_name_xmatch(struct codomain *cod)
 			aare_delete_ruleset(rule);
 			return FALSE;
 		}
-		if (cod->altnames) {
+		if (prof->altnames) {
 			struct alt_name *alt;
-			list_for_each(cod->altnames, alt) {
+			list_for_each(prof->altnames, alt) {
 				int len;
 				ptype = convert_aaregex_to_pcre(alt->name, 0,
 								tbuf,
@@ -427,18 +428,18 @@ static int process_profile_name_xmatch(struct codomain *cod)
 								&len);
 				if (ptype == ePatternBasic)
 					len = strlen(alt->name);
-				if (len < cod->xmatch_len)
-					cod->xmatch_len = len;
+				if (len < prof->xmatch_len)
+					prof->xmatch_len = len;
 				if (!aare_add_rule(rule, tbuf, 0, AA_MAY_EXEC, 0, dfaflags)) {
 					aare_delete_ruleset(rule);
 					return FALSE;
 				}
 			}
 		}
-		cod->xmatch = aare_create_dfa(rule, &cod->xmatch_size,
+		prof->xmatch = aare_create_dfa(rule, &prof->xmatch_size,
 					      dfaflags);
 		aare_delete_ruleset(rule);
-		if (!cod->xmatch)
+		if (!prof->xmatch)
 			return FALSE;
 	}
 
@@ -550,70 +551,54 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 	return TRUE;
 }
 
-int post_process_entries(struct codomain *cod)
+int post_process_entries(Profile *prof)
 {
 	int ret = TRUE;
 	struct cod_entry *entry;
 	int count = 0;
 
-	list_for_each(cod->entries, entry) {
-		if (!process_dfa_entry(cod->dfarules, entry))
+	list_for_each(prof->entries, entry) {
+		if (!process_dfa_entry(prof->dfa.rules, entry))
 			ret = FALSE;
 		count++;
 	}
 
-	cod->dfarule_count = count;
+	prof->dfa.count = count;
 	return ret;
 }
 
-int process_regex(struct codomain *cod)
+int process_profile_regex(Profile *prof)
 {
 	int error = -1;
 
-	if (!process_profile_name_xmatch(cod))
+	if (!process_profile_name_xmatch(prof))
 		goto out;
 
-	cod->dfarules = aare_new_ruleset(0);
-	if (!cod->dfarules)
+	prof->dfa.rules = aare_new_ruleset(0);
+	if (!prof->dfa.rules)
 		goto out;
 
-	if (!post_process_entries(cod))
+	if (!post_process_entries(prof))
 		goto out;
 
-	if (cod->dfarule_count > 0) {
-		cod->dfa = aare_create_dfa(cod->dfarules, &cod->dfa_size,
-					   dfaflags);
-		aare_delete_ruleset(cod->dfarules);
-		cod->dfarules = NULL;
- 		if (!cod->dfa)
+	if (prof->dfa.count > 0) {
+		prof->dfa.dfa = aare_create_dfa(prof->dfa.rules, &prof->dfa.size,
+						dfaflags);
+		aare_delete_ruleset(prof->dfa.rules);
+		prof->dfa.rules = NULL;
+		if (!prof->dfa.dfa)
 			goto out;
 /*
-		if (cod->dfa_size == 0) {
+		if (prof->dfa_size == 0) {
 			PERROR(_("profile %s: has merged rules (%s) with "
 				 "multiple x modifiers\n"),
-			       cod->name, (char *) cod->dfa);
-			free(cod->dfa);
-			cod->dfa = NULL;
+			       prof->name, (char *) prof->dfa);
+			free(prof->dfa);
+			prof->dfa = NULL;
 			goto out;
 		}
 */
 	}
-	/*
-	 * Post process subdomain(s):
-	 *
-	 * They are chained from the toplevel subdomain pointer
-	 * thru each <codomain> next pointer.
-
-	 * i.e first subdomain is list->subdomain
-	 *    second subdomain is list->subdomain->next
-	 *
-	 * N.B sub-subdomains are not valid so:
-	 * if (list->subdomain) {
-	 *    assert(list->subdomain->subdomain == NULL)
-	 * }
-	 */
-	if (process_hat_regex(cod) != 0)
-		goto out;
 
 	error = 0;
 
@@ -1140,76 +1125,75 @@ fail:
 	return FALSE;
 }
 
-static int post_process_mnt_ents(struct codomain *cod)
+static int post_process_mnt_ents(Profile *prof)
 {
 	int ret = TRUE;
 	int count = 0;
 
 	/* Add fns for rules that should be added to policydb here */
-	if (cod->mnt_ents && kernel_supports_mount) {
+	if (prof->mnt_ents && kernel_supports_mount) {
 		struct mnt_entry *entry;
-		list_for_each(cod->mnt_ents, entry) {
-			if (!process_mnt_entry(cod->policy_rules, entry))
+		list_for_each(prof->mnt_ents, entry) {
+			if (!process_mnt_entry(prof->policy.rules, entry))
 				ret = FALSE;
 			count++;
 		}
-	} else if (cod->mnt_ents && !kernel_supports_mount)
-		pwarn("profile %s mount rules not enforced\n", cod->name);
+	} else if (prof->mnt_ents && !kernel_supports_mount)
+		pwarn("profile %s mount rules not enforced\n", prof->name);
 
-	cod->policy_rule_count += count;
+	prof->policy.count += count;
+
 	return ret;
 }
 
-static int post_process_dbus_ents(struct codomain *cod)
+static int post_process_dbus_ents(Profile *prof)
 {
 	int ret = TRUE;
 	struct dbus_entry *entry;
 	int count = 0;
 
-	list_for_each(cod->dbus_ents, entry) {
-		if (!process_dbus_entry(cod->policy_rules, entry))
+	list_for_each(prof->dbus_ents, entry) {
+		if (!process_dbus_entry(prof->policy.rules, entry))
 			ret = FALSE;
 		count++;
 	}
 
-	cod->policy_rule_count += count;
+	prof->policy.count += count;
 	return ret;
 }
 
-int post_process_policydb_ents(struct codomain *cod)
+int post_process_policydb_ents(Profile *prof)
 {
-	if (!post_process_mnt_ents(cod))
+	if (!post_process_mnt_ents(prof))
 		return FALSE;
-	if (!post_process_dbus_ents(cod))
+	if (!post_process_dbus_ents(prof))
 		return FALSE;
 
 	return TRUE;
 }
 
-int process_policydb(struct codomain *cod)
+int process_profile_policydb(Profile *prof)
 {
 	int error = -1;
 
-	cod->policy_rules = aare_new_ruleset(0);
-	if (!cod->policy_rules)
+	prof->policy.rules = aare_new_ruleset(0);
+	if (!prof->policy.rules)
 		goto out;
 
-	if (!post_process_policydb_ents(cod))
+	if (!post_process_policydb_ents(prof))
 		goto out;
 
-	if (cod->policy_rule_count > 0) {
-		cod->policy_dfa = aare_create_dfa(cod->policy_rules,
-						  &cod->policy_dfa_size,
+	if (prof->policy.count > 0) {
+		prof->policy.dfa = aare_create_dfa(prof->policy.rules,
+						  &prof->policy.size,
 						  dfaflags);
-		aare_delete_ruleset(cod->policy_rules);
-		cod->policy_rules = NULL;
-		if (!cod->policy_dfa)
+		aare_delete_ruleset(prof->policy.rules);
+		prof->policy.rules = NULL;
+		if (!prof->policy.dfa)
 			goto out;
 	}
 
 	aare_reset_matchflags();
-	if (process_hat_policydb(cod) != 0)
-		goto out;
 
 	error = 0;
 
@@ -1223,6 +1207,9 @@ void reset_regex(void)
 }
 
 #ifdef UNIT_TEST
+
+#include "unit_test.h"
+
 static int test_filter_slashes(void)
 {
 	int rc = 0;

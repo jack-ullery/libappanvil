@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include "parser.h"
+#include "profile.h"
 #include "parser_yacc.h"
 #include "dbus.h"
 
