@@ -64,7 +64,6 @@
 const char *parser_title	= "AppArmor parser";
 const char *parser_copyright	= "Copyright (C) 1999-2008 Novell Inc.\nCopyright 2009-2012 Canonical Ltd.";
 
-char *progname;
 int opt_force_complain = 0;
 int binary_input = 0;
 int dump_vars = 0;
@@ -520,7 +519,7 @@ static int process_arg(int c, char *optarg)
 		conf_quiet = 0;
 		break;
 	case 'n':
-		profile_namespace = strdup(optarg);
+		profile_ns = strdup(optarg);
 		break;
 	case 'X':
 		read_implies_exec = 1;
@@ -793,7 +792,7 @@ static void get_match_string(void) {
 		/* if we have a features directory default to */
 		perms_create = 1;
 
-		flags_string = malloc(FLAGS_STRING_SIZE);
+		flags_string = (char *) malloc(FLAGS_STRING_SIZE);
 		handle_features_dir(FLAGS_FILE, &flags_string, FLAGS_STRING_SIZE, flags_string);
 		if (strstr(flags_string, "network"))
 			kernel_supports_network = 1;
@@ -808,7 +807,7 @@ static void get_match_string(void) {
 	if (!ms)
 		goto out;
 
-	match_string = malloc(1000);
+	match_string = (char *) malloc(1000);
 	if (!match_string) {
 		goto out;
 	}
@@ -845,7 +844,7 @@ static void get_flags_string(char **flags, char *flags_file) {
 	if (!f)
 		return;
 
-	*flags = malloc(FLAGS_STRING_SIZE);
+	*flags = (char *) malloc(FLAGS_STRING_SIZE);
 	if (!*flags)
 		goto fail;
 
@@ -892,7 +891,7 @@ int process_binary(int option, char *profilename)
 
 	do {
 		if (asize - size == 0) {
-			buffer = realloc(buffer, chunksize);
+		  buffer = (char *) realloc(buffer, chunksize);
 			asize = chunksize;
 			chunksize <<= 1;
 			if (!buffer) {
@@ -1049,7 +1048,7 @@ int process_profile(int option, char *profilename)
 	 * TODO: Add support for embedded namespace defines if they aren't
 	 *       removed from the language.
 	 */
-	if (profile_namespace)
+	if (profile_ns)
 		skip_cache = 1;
 
 	/* Do secondary test to see if cached binary profile is good,

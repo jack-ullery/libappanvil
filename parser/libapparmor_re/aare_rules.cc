@@ -39,7 +39,7 @@ struct aare_ruleset {
 	Node *root;
 };
 
-extern "C" aare_ruleset_t *aare_new_ruleset(int reverse)
+aare_ruleset_t *aare_new_ruleset(int reverse)
 {
 	aare_ruleset_t *container = (aare_ruleset_t *) malloc(sizeof(aare_ruleset_t));
 	if (!container)
@@ -51,7 +51,7 @@ extern "C" aare_ruleset_t *aare_new_ruleset(int reverse)
 	return container;
 }
 
-extern "C" void aare_delete_ruleset(aare_ruleset_t *rules)
+void aare_delete_ruleset(aare_ruleset_t *rules)
 {
 	if (rules) {
 		if (rules->root)
@@ -62,7 +62,7 @@ extern "C" void aare_delete_ruleset(aare_ruleset_t *rules)
 	aare_reset_matchflags();
 }
 
-extern "C" int aare_add_rule(aare_ruleset_t *rules, char *rule, int deny,
+int aare_add_rule(aare_ruleset_t *rules, char *rule, int deny,
 			     uint32_t perms, uint32_t audit, dfaflags_t flags)
 {
 	return aare_add_rule_vec(rules, deny, perms, audit, 1, &rule, flags);
@@ -76,7 +76,7 @@ DenyMatchFlag *deny_flags[FLAGS_WIDTH][MATCH_FLAGS_SIZE];
 MatchFlag *exec_match_flags[FLAGS_WIDTH][EXEC_MATCH_FLAGS_SIZE];	/* mods + unsafe + ix + pux * u::o */
 ExactMatchFlag *exact_match_flags[FLAGS_WIDTH][EXEC_MATCH_FLAGS_SIZE];	/* mods + unsafe + ix + pux *u::o */
 
-extern "C" void aare_reset_matchflags(void)
+void aare_reset_matchflags(void)
 {
 	uint32_t i, j;
 #define RESET_FLAGS(group, size) { \
@@ -94,7 +94,7 @@ extern "C" void aare_reset_matchflags(void)
 #undef RESET_FLAGS
 }
 
-extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
+int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 				 uint32_t perms, uint32_t audit,
 				 int count, char **rulev, dfaflags_t flags)
 {
@@ -243,7 +243,7 @@ extern "C" int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
  * returns: buffer contain dfa tables, @size set to the size of the tables
  *          else NULL on failure
  */
-extern "C" void *aare_create_dfa(aare_ruleset_t *rules, size_t *size,
+void *aare_create_dfa(aare_ruleset_t *rules, size_t *size,
 				 dfaflags_t flags)
 {
 	char *buffer = NULL;

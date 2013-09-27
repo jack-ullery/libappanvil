@@ -68,7 +68,7 @@
 
 int parser_token = 0;
 
-struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
+struct cod_entry *do_file_rule(char *ns, char *id, int mode,
 			       char *link_id, char *nt);
 struct mnt_entry *do_mnt_rule(struct cond_entry *src_conds, char *src,
 			      struct cond_entry *dst_conds, char *dst,
@@ -225,7 +225,7 @@ void add_local_entry(struct codomain *cod);
 %type <boolean> opt_profile_flag
 %type <boolean> opt_flags
 %type <boolean> opt_perm_mode
-%type <id>	opt_namespace
+%type <id>	opt_ns
 %type <id>	opt_id
 %type <prefix>  opt_prefix
 %type <fmode>	dbus_perm
@@ -253,7 +253,7 @@ opt_profile_flag: { /* nothing */ $$ = 0; }
 	| TOK_PROFILE { $$ = 1; }
 	| hat_start { $$ = 2; }
 
-opt_namespace: { /* nothing */ $$ = NULL; }
+opt_ns: { /* nothing */ $$ = NULL; }
 	| TOK_COLON TOK_ID TOK_COLON { $$ = $2; }
 
 opt_id: { /* nothing */ $$ = NULL; }
@@ -289,7 +289,7 @@ profile_base: TOK_ID opt_id flags TOK_OPEN rules TOK_CLOSE
 
 	};
 
-profile:  opt_profile_flag opt_namespace profile_base
+profile:  opt_profile_flag opt_ns profile_base
 	{
 		struct codomain *cod = $3;
 		if ($2)
@@ -300,7 +300,7 @@ profile:  opt_profile_flag opt_namespace profile_base
 		if ($3->name[0] != '/' && !($1 || $2))
 			yyerror(_("Profile names must begin with a '/', namespace or keyword 'profile' or 'hat'."));
 
-		cod->namespace = $2;
+		cod->ns = $2;
 		if ($1 == 2)
 			cod->flags.hat = 1;
 		$$ = cod;
@@ -613,13 +613,13 @@ rules: rules opt_prefix network_rule
 		if (!$3)
 			yyerror(_("Assert: `network_rule' return invalid protocol."));
 		if (!$1->network_allowed) {
-			$1->network_allowed = calloc(get_af_max(),
-						     sizeof(unsigned int));
-			$1->audit_network = calloc(get_af_max(),
+			$1->network_allowed = (unsigned int *) calloc(get_af_max(),
+						      sizeof(unsigned int));
+			$1->audit_network = (unsigned int *)calloc(get_af_max(),
 						   sizeof(unsigned int));
-			$1->deny_network = calloc(get_af_max(),
+			$1->deny_network = (unsigned int *)calloc(get_af_max(),
 						     sizeof(unsigned int));
-			$1->quiet_network = calloc(get_af_max(),
+			$1->quiet_network = (unsigned int *)calloc(get_af_max(),
 						     sizeof(unsigned int));
 			if (!$1->network_allowed || !$1->audit_network ||
 			    !$1->deny_network || !$1->quiet_network)
@@ -908,19 +908,19 @@ id_or_var: TOK_SET_VAR { $$ = $1; };
 opt_named_transition:
 	{ /* nothing */
 		$$.present = 0;
-		$$.namespace = NULL;
+		$$.ns = NULL;
 		$$.name = NULL;
 	}
 	| TOK_ARROW id_or_var
 	{
 		$$.present = 1;
-		$$.namespace = NULL;
+		$$.ns = NULL;
 		$$.name = $2;
 	}
 	| TOK_ARROW TOK_COLON id_or_var TOK_COLON id_or_var
 	{
 		$$.present = 1;
-		$$.namespace = $3;
+		$$.ns = $3;
 		$$.name = $5;
 	};
 
@@ -937,7 +937,7 @@ opt_file: { /* nothing */ $$ = 0; }
 
 frule:	id_or_var file_mode opt_named_transition TOK_END_OF_RULE
 	{
-		$$ = do_file_rule($3.namespace, $1, $2, NULL, $3.name);
+		$$ = do_file_rule($3.ns, $1, $2, NULL, $3.name);
 	};
 
 frule:	file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE
@@ -946,14 +946,14 @@ frule:	file_mode opt_subset_flag id_or_var opt_named_transition TOK_END_OF_RULE
 			yyerror(_("subset can only be used with link rules."));
 		if ($4.present && ($1 & AA_LINK_BITS) && ($1 & AA_EXEC_BITS))
 			yyerror(_("link and exec perms conflict on a file rule using ->"));
-		if ($4.present && $4.namespace && ($1 & AA_LINK_BITS))
+		if ($4.present && $4.ns && ($1 & AA_LINK_BITS))
 			yyerror(_("link perms are not allowed on a named profile transition.\n"));
 		if (($1 & AA_LINK_BITS)) {
 			$$ = do_file_rule(NULL, $3, $1, $4.name, NULL);
 			$$->subset = $2;
 
 		} else {
-			$$ = do_file_rule($4.namespace, $3, $1, NULL, $4.name);
+			$$ = do_file_rule($4.ns, $3, $1, NULL, $4.name);
 		}
  	};
 
@@ -1133,15 +1133,15 @@ mnt_rule: TOK_UMOUNT opt_conds opt_id TOK_END_OF_RULE
 mnt_rule: TOK_PIVOTROOT opt_conds opt_id opt_named_transition TOK_END_OF_RULE
 	{
 		char *name = NULL;
-		if ($4.present && $4.namespace) {
-			name = malloc(strlen($4.namespace) +
-				      strlen($4.name) + 3);
+		if ($4.present && $4.ns) {
+			name = (char *) malloc(strlen($4.ns) +
+					       strlen($4.name) + 3);
 			if (!name) {
 				PERROR("Memory allocation error\n");
 				exit(1);
 			}
-			sprintf(name, ":%s:%s", $4.namespace, $4.name);
-			free($4.namespace);
+			sprintf(name, ":%s:%s", $4.ns, $4.name);
+			free($4.ns);
 			free($4.name);
 		} else if ($4.present)
 			name = $4.name;
@@ -1291,12 +1291,12 @@ void yyerror(const char *msg, ...)
 	exit(1);
 }
 
-struct cod_entry *do_file_rule(char *namespace, char *id, int mode,
+struct cod_entry *do_file_rule(char *ns, char *id, int mode,
 			       char *link_id, char *nt)
 {
 		struct cod_entry *entry;
 		PDEBUG("Matched: tok_id (%s) tok_mode (0x%x)\n", id, mode);
-		entry = new_entry(namespace, id, mode, link_id);
+		entry = new_entry(ns, id, mode, link_id);
 		if (!entry)
 			yyerror(_("Memory allocation error."));
 		entry->nt_name = nt;
@@ -1312,7 +1312,7 @@ void add_local_entry(struct codomain *cod)
 	/* ugh this has to be called after the hat is attached to its parent */
 	if (cod->local_mode) {
 		struct cod_entry *entry;
-		char *trans = malloc(strlen(cod->parent->name) +
+		char *trans = (char *) malloc(strlen(cod->parent->name) +
 				    strlen(cod->name) + 3);
 		char *name = strdup(cod->name);
 		if (!trans)
@@ -1329,7 +1329,7 @@ void add_local_entry(struct codomain *cod)
 	}
 }
 
-static char *mnt_cond_msg[] = {"",
+static const char *mnt_cond_msg[] = {"",
 			 " not allowed as source conditional",
 			 " not allowed as target conditional",
 			 "",

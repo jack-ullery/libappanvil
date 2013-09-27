@@ -22,11 +22,17 @@
 #ifndef __AA_PARSER_H
 #define __AA_PARSER_H
 
+
+#include <string.h>
 #include <netinet/in.h>
 #include <sys/resource.h>
 #include "immunix.h"
 #include "libapparmor_re/apparmor_re.h"
 #include "libapparmor_re/aare_rules.h"
+
+using namespace std;
+
+#include <set>
 
 struct mnt_ent;
 
@@ -52,7 +58,7 @@ struct flagval {
 
 struct named_transition {
 	int present;
-	char *namespace;
+	char *ns;
 	char *name;
 };
 
@@ -75,7 +81,7 @@ struct cond_entry {
 };
 
 struct cod_entry {
-	char *namespace;
+	char *ns;
 	char *name;
 	char *link_name;
 	char *nt_name;
@@ -115,7 +121,7 @@ struct alt_name {
 };
 
 struct codomain {
-	char *namespace;
+	char *ns;
 	char *name;				/* codomain name */
 	char *attachment;
 	struct alt_name *altnames;
@@ -287,7 +293,7 @@ extern dfaflags_t dfaflags;
 extern char *progname;
 extern char *subdomainbase;
 extern char *profilename;
-extern char *profile_namespace;
+extern char *profile_ns;
 extern char *current_filename;
 extern FILE *ofile;
 extern int read_implies_exec;
@@ -342,8 +348,7 @@ extern int get_rlimit(const char *name);
 extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);
 extern int parse_dbus_mode(const char *str_mode, int *mode, int fail);
-extern struct cod_entry *new_entry(char *namespace, char *id, int mode,
-				   char *link_id);
+extern struct cod_entry *new_entry(char *ns, char *id, int mode, char *link_id);
 extern struct aa_network_entry *new_network_ent(unsigned int family,
 						unsigned int type,
 						unsigned int protocol);

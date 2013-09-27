@@ -1,7 +1,7 @@
 #
 #=DESCRIPTION basic network tests
-#=EXRESULT FAIL
+#=EXRESULT PASS
 #
 /usr/bin/foo {
-  network unix,
+  network netlink,
 }

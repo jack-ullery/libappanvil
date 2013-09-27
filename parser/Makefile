@@ -40,11 +40,11 @@ LEXFLAGS = -B -v
 WARNINGS = -Wall
 EXTRA_WARNINGS = -Wsign-compare -Wmissing-field-initializers -Wformat-security -Wunused-parameter
 CXX_WARNINGS = ${WARNINGS} $(shell for warning in ${EXTRA_WARNINGS} ; do \
-			if ${CC} $${warning} -S -o /dev/null -xc /dev/null >/dev/null 2>&1; then \
+			if ${CXX} $${warning} -S -o /dev/null -xc /dev/null >/dev/null 2>&1; then \
 				echo "$${warning}"; \
 			fi ; \
 		done)
-CPP_WARNINGS = -Wstrict-prototypes -Wnested-externs
+CPP_WARNINGS =
 ifndef CFLAGS
 CFLAGS	= -g -O2 -pipe
 
@@ -163,52 +163,52 @@ parser_lex.c: parser_lex.l parser_yacc.h parser.h
 	$(LEX) ${LEXFLAGS} -o$@ $<
 
 parser_lex.o: parser_lex.c parser.h parser_yacc.h
-	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_misc.o: parser_misc.c parser.h parser_yacc.h af_names.h cap_names.h
-	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_yacc.o: parser_yacc.c parser_yacc.h
-	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_main.o: parser_main.c parser.h parser_version.h libapparmor_re/apparmor_re.h
-	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_interface.o: parser_interface.c parser.h libapparmor_re/apparmor_re.h
-	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_include.o: parser_include.c parser.h parser_include.h
-	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_merge.o: parser_merge.c parser.h
-	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_regex.o: parser_regex.c parser.h libapparmor_re/apparmor_re.h
-	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_symtab.o: parser_symtab.c parser.h
-	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_variable.o: parser_variable.c parser.h
-	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_policy.o: parser_policy.c parser.h parser_yacc.h
-	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_alias.o: parser_alias.c parser.h
-	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_common.o: parser_common.c parser.h
-	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 mount.o: mount.c mount.h parser.h immunix.h
-	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 lib.o: lib.c lib.h parser.h
-	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 dbus.o: dbus.c dbus.h parser.h immunix.h
-	$(CC) $(EXTRA_CFLAGS) -c -o $@ $<
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_version.h: Makefile
 	@echo \#define PARSER_VERSION \"$(VERSION)\" > .ver
@@ -228,7 +228,7 @@ cap_names.h: /usr/include/linux/capability.h
 	echo "$(CAPABILITIES)" | LC_ALL=C sed -n -e "s/[ \\t]\\?CAP_\\([A-Z0-9_]\\+\\)/\{\"\\L\\1\", \\UCAP_\\1\},\\n/pg" > $@
 
 tst_%: parser_%.c parser.h $(filter-out parser_%.o, ${TEST_OBJECTS})
-	$(CC) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS)
+	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS)
 
 .SILENT: check
 .PHONY: check

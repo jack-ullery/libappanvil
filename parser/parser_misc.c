@@ -51,7 +51,7 @@
 #define NPDEBUG(fmt, args...)	/* Do nothing */
 
 struct keyword_table {
-	char *keyword;
+	const char *keyword;
 	int token;
 };
 
@@ -169,11 +169,11 @@ int get_rlimit(const char *name)
 }
 
 struct network_tuple {
-	char *family_name;
+	const char *family_name;
 	unsigned int family;
-	char *type_name;
+	const char *type_name;
 	unsigned int type;
-	char *protocol_name;
+	const char *protocol_name;
 	unsigned int protocol;
 };
 
@@ -334,7 +334,7 @@ struct aa_network_entry *new_network_ent(unsigned int family,
 					 unsigned int protocol)
 {
 	struct aa_network_entry *new_entry;
-	new_entry = calloc(1, sizeof(struct aa_network_entry));
+	new_entry = (struct aa_network_entry *) calloc(1, sizeof(struct aa_network_entry));
 	if (new_entry) {
 		new_entry->family = family;
 		new_entry->type = type;
@@ -562,13 +562,13 @@ static int parse_sub_mode(const char *str_mode, const char *mode_desc __unused)
 
 	p = str_mode;
 	while (*p) {
-		char this = *p;
+		char thisc = *p;
 		char next = *(p + 1);
 		char lower;
 		int tmode = 0;
 
 reeval:
-		switch (this) {
+		switch (thisc) {
 		case COD_READ_CHAR:
 			if (read_implies_exec) {
 				PDEBUG("Parsing mode: found %s READ imply X\n", mode_desc);
@@ -626,7 +626,7 @@ reeval:
 			PDEBUG("Parsing mode: found UNCONFINED\n");
 			if (IS_DIFF_QUAL(mode, tmode)) {
 				yyerror(_("Exec qualifier '%c' invalid, conflicting qualifier already specified"),
-					this);
+					thisc);
 			} else {
 				if (next != tolower(next))
 					warn_uppercase();
@@ -642,7 +642,7 @@ reeval:
 			/* fall through */
 		case COD_PROFILE_CHAR:
 		case COD_LOCAL_CHAR:
-			if (tolower(this) == COD_UNSAFE_PROFILE_CHAR)
+			if (tolower(thisc) == COD_UNSAFE_PROFILE_CHAR)
 				tmode |= AA_EXEC_PROFILE | AA_MAY_EXEC;
 			else
 			{
@@ -652,7 +652,7 @@ reeval:
 			if (tolower(next) == COD_INHERIT_CHAR) {
 				tmode |= AA_EXEC_INHERIT;
 				if (IS_DIFF_QUAL(mode, tmode)) {
-					yyerror(_("Exec qualifier '%c%c' invalid, conflicting qualifier already specified"), this, next);
+					yyerror(_("Exec qualifier '%c%c' invalid, conflicting qualifier already specified"), thisc, next);
 				} else {
 					mode |= tmode;
 					p += 2;		/* skip x */
@@ -660,13 +660,13 @@ reeval:
 			} else if (tolower(next) == COD_UNSAFE_UNCONFINED_CHAR) {
 				tmode |= AA_EXEC_PUX;
 				if (IS_DIFF_QUAL(mode, tmode)) {
-					yyerror(_("Exec qualifier '%c%c' invalid, conflicting qualifier already specified"), this, next);
+					yyerror(_("Exec qualifier '%c%c' invalid, conflicting qualifier already specified"), thisc, next);
 				} else {
 					mode |= tmode;
 					p += 2;		/* skip x */
 				}
 			} else if (IS_DIFF_QUAL(mode, tmode)) {
-				yyerror(_("Exec qualifier '%c' invalid, conflicting qualifier already specified"), this);
+				yyerror(_("Exec qualifier '%c' invalid, conflicting qualifier already specified"), thisc);
 
 			} else {
 				if (next != tolower(next))
@@ -683,7 +683,7 @@ reeval:
 			break;
 
 		case COD_EXEC_CHAR:
-			/* this is valid for deny rules, and named transitions
+			/* thisc is valid for deny rules, and named transitions
 			 * but invalid for regular x transitions
 			 * sort it out later.
 			 */
@@ -693,7 +693,7 @@ reeval:
  		/* error cases */
 
 		default:
-			lower = tolower(this);
+			lower = tolower(thisc);
 			switch (lower) {
 			case COD_READ_CHAR:
 			case COD_WRITE_CHAR:
@@ -702,14 +702,14 @@ reeval:
 			case COD_INHERIT_CHAR:
 			case COD_MMAP_CHAR:
 			case COD_EXEC_CHAR:
-				PDEBUG("Parsing mode: found invalid upper case char %c\n", this);
+				PDEBUG("Parsing mode: found invalid upper case char %c\n", thisc);
 				warn_uppercase();
-				this = lower;
+				thisc = lower;
 				goto reeval;
 				break;
 			default:
 				yyerror(_("Internal: unexpected mode character '%c' in input"),
-					this);
+					thisc);
 				break;
 			}
 			break;
@@ -746,11 +746,11 @@ static int parse_dbus_sub_mode(const char *str_mode, int *result, int fail, cons
 
 	p = str_mode;
 	while (*p) {
-		char this = *p;
+		char current = *p;
 		char lower;
 
 reeval:
-		switch (this) {
+		switch (current) {
 		case COD_READ_CHAR:
 			PDEBUG("Parsing DBus mode: found %s READ\n", mode_desc);
 			mode |= AA_DBUS_RECEIVE;
@@ -765,20 +765,20 @@ reeval:
 		/* error cases */
 
 		default:
-			lower = tolower(this);
+			lower = tolower(current);
 			switch (lower) {
 			case COD_READ_CHAR:
 			case COD_WRITE_CHAR:
 				PDEBUG("Parsing DBus mode: found invalid upper case char %c\n",
-				       this);
+				       current);
 				warn_uppercase();
-				this = lower;
+				current = lower;
 				goto reeval;
 				break;
 			default:
 				if (fail)
 					yyerror(_("Internal: unexpected DBus mode character '%c' in input"),
-						this);
+						current);
 				else
 					return 0;
 				break;
@@ -809,7 +809,7 @@ int parse_dbus_mode(const char *str_mode, int *mode, int fail)
 	return 1;
 }
 
-struct cod_entry *new_entry(char *namespace, char *id, int mode, char *link_id)
+struct cod_entry *new_entry(char *ns, char *id, int mode, char *link_id)
 {
 	struct cod_entry *entry = NULL;
 
@@ -817,7 +817,7 @@ struct cod_entry *new_entry(char *namespace, char *id, int mode, char *link_id)
 	if (!entry)
 		return NULL;
 
-	entry->namespace = namespace;
+	entry->ns = ns;
 	entry->name = id;
 	entry->link_name = link_id;
 	entry->mode = mode;
@@ -841,7 +841,7 @@ struct cod_entry *copy_cod_entry(struct cod_entry *orig)
 	if (!entry)
 		return NULL;
 
-	DUP_STRING(orig, entry, namespace, err);
+	DUP_STRING(orig, entry, ns, err);
 	DUP_STRING(orig, entry, name, err);
 	DUP_STRING(orig, entry, link_name, err);
 	entry->mode = orig->mode;
@@ -867,8 +867,8 @@ void free_cod_entries(struct cod_entry *list)
 		return;
 	if (list->next)
 		free_cod_entries(list->next);
-	if (list->namespace)
-		free(list->namespace);
+	if (list->ns)
+		free(list->ns);
 	if (list->name)
 		free(list->name);
 	if (list->link_name)
@@ -943,8 +943,8 @@ void debug_cod_entries(struct cod_entry *list)
 		else
 			printf("\tName:\tNULL\n");
 
-		if (item->namespace)
-			printf("\tNamespace:\t(%s)\n", item->namespace);
+		if (item->ns)
+			printf("\tNs:\t(%s)\n", item->ns);
 
 		if (AA_LINK_BITS & item->mode)
 			printf("\tlink:\t(%s)\n", item->link_name ? item->link_name : "/**");
@@ -1041,23 +1041,31 @@ void debug_capabilities(struct codomain *cod)
 		__debug_capabilities(cod->quiet_caps, "Quiet Caps");
 }
 
+/* Bleah C++ doesn't have non-trivial designated initializers so we just
+ * have to make sure these are in order.  This means we are more brittle
+ * but there isn't much we can do.
+ */
 const char *sock_types[] = {
-	[0] = "none",
-	[SOCK_STREAM] = "stream",
-	[SOCK_DGRAM] = "dgram",
-	[SOCK_RAW] = "raw",
-	[SOCK_RDM] = "rdm",
-	[SOCK_SEQPACKET] = "seqpacket",
-	[SOCK_PACKET] = "packet",
+	"none",		/* 0 */
+	"stream",	/* 1 [SOCK_STREAM] */
+	"dgram",	/* 2 [SOCK_DGRAM] */
+	"raw",		/* 3 [SOCK_RAW] */
+	"rdm",		/* 4 [SOCK_RDM] */
+	"seqpacket",	/* 5 [SOCK_SEQPACKET] */
+	"dccp",		/* 6 [SOCK_DCCP] */
+	"invalid",	/* 7 */
+	"invalid",	/* 8 */
+	"invalid",	/* 9 */
+	"packet",	/* 10 [SOCK_PACKET] */
 	/*
 	 * See comment above
-	[SOCK_DCCP] = "dccp",
 	*/
 };
 #define ALL_TYPES 0x43e
 
+/* another case of C++ not supporting non-trivial designated initializers */
 #undef AA_GEN_NET_ENT
-#define AA_GEN_NET_ENT(name, AF) [AF] = name,
+#define AA_GEN_NET_ENT(name, AF) name, /* [AF] = name, */
 
 static const char *network_families[] = {
 #include "af_names.h"
@@ -1136,8 +1144,8 @@ void debug_network(struct codomain *cod)
 
 void debug_cod_list(struct codomain *cod)
 {
-	if (cod->namespace)
-		printf("Namespace:\t\t%s\n", cod->namespace);
+	if (cod->ns)
+		printf("Ns:\t\t%s\n", cod->ns);
 
 	if (cod->name)
 		printf("Name:\t\t%s\n", cod->name);
@@ -1162,7 +1170,7 @@ void debug_cod_list(struct codomain *cod)
 
 struct value_list *new_value_list(char *value)
 {
-	struct value_list *val = calloc(1, sizeof(struct value_list));
+	struct value_list *val = (struct value_list *) calloc(1, sizeof(struct value_list));
 	if (val)
 		val->value = value;
 	return val;
@@ -1228,7 +1236,7 @@ void print_value_list(struct value_list *list)
 
 struct cond_entry *new_cond_entry(char *name, int eq, struct value_list *list)
 {
-	struct cond_entry *ent = calloc(1, sizeof(struct cond_entry));
+	struct cond_entry *ent = (struct cond_entry *) calloc(1, sizeof(struct cond_entry));
 	if (ent) {
 		ent->name = name;
 		ent->vals = list;

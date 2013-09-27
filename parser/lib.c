@@ -70,11 +70,13 @@ int dirat_for_each(DIR *dir, const char *name, void *data,
 	}
 
 	if (dir && (!name || *name != '/')) {
-		dirent = malloc(offsetof(struct dirent, d_name) +
-				fpathconf(dirfd(dir), _PC_NAME_MAX) + 1);
+		dirent = (struct dirent *)
+			malloc(offsetof(struct dirent, d_name) +
+			       fpathconf(dirfd(dir), _PC_NAME_MAX) + 1);
 	} else {
-		dirent = malloc(offsetof(struct dirent, d_name) +
-				pathconf(name, _PC_NAME_MAX) + 1);
+		dirent = (struct dirent *)
+			malloc(offsetof(struct dirent, d_name) +
+			       pathconf(name, _PC_NAME_MAX) + 1);
 	}
 	if (!dirent) {
 		PDEBUG("could not alloc dirent");
