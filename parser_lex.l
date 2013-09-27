@@ -104,10 +104,10 @@ do { \
 #define YY_NO_INPUT
 
 #define STATE_TABLE_ENT(X) [(X)] = #X
-static const char *const state_names[];
+/* static char *const state_names[]; */
 
 struct ignored_suffix_t {
-	char * text;
+	const char * text;
 	int len;
 	int silent;
 };
@@ -136,7 +136,7 @@ static int is_blacklisted(const char *name, const char *path)
 	/* skip blacklisted suffixes */
 	for (suffix = ignored_suffixes; suffix->text; suffix++) {
 		char *found;
-		if ( (found = strstr(name, suffix->text)) &&
+		if ( (found = strstr((char *) name, suffix->text)) &&
 		     found - name + suffix->len == name_len ) {
 			if (!suffix->silent)
 				PERROR("Ignoring: '%s'\n", path);
@@ -637,15 +637,16 @@ static const char *const state_names[] = {
 	STATE_TABLE_ENT(SUB_ID),
 	STATE_TABLE_ENT(SUB_VALUE),
 	STATE_TABLE_ENT(EXTCOND_MODE),
-	STATE_TABLE_ENT(LIST_COND_VAL),
-	STATE_TABLE_ENT(LIST_COND_PAREN_VAL),
-	STATE_TABLE_ENT(LIST_COND_MODE),
 	STATE_TABLE_ENT(EXTCONDLIST_MODE),
 	STATE_TABLE_ENT(NETWORK_MODE),
 	STATE_TABLE_ENT(LIST_VAL_MODE),
+	STATE_TABLE_ENT(LIST_COND_MODE),
+	STATE_TABLE_ENT(LIST_COND_VAL),
+	STATE_TABLE_ENT(LIST_COND_PAREN_VAL),
 	STATE_TABLE_ENT(ASSIGN_MODE),
 	STATE_TABLE_ENT(RLIMIT_MODE),
 	STATE_TABLE_ENT(MOUNT_MODE),
+	STATE_TABLE_ENT(DBUS_MODE),
 	STATE_TABLE_ENT(CHANGE_PROFILE_MODE),
 	STATE_TABLE_ENT(INCLUDE),
 };

@@ -34,11 +34,11 @@ int names_only = 0;
 int current_lineno = 1;
 int option = OPTION_ADD;
 
-dfaflags_t dfaflags = DFA_CONTROL_TREE_NORMAL | DFA_CONTROL_TREE_SIMPLE | DFA_CONTROL_MINIMIZE | DFA_CONTROL_MINIMIZE_HASH_TRANS;
+dfaflags_t dfaflags = (dfaflags_t)(DFA_CONTROL_TREE_NORMAL | DFA_CONTROL_TREE_SIMPLE | DFA_CONTROL_MINIMIZE | DFA_CONTROL_MINIMIZE_HASH_TRANS);
 
 char *subdomainbase = NULL;
 char *progname = __FILE__;
-char *profile_namespace = NULL;
+char *profile_ns = NULL;
 char *profilename = NULL;
 char *current_filename = NULL;
 

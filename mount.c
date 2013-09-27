@@ -220,7 +220,7 @@
 #include "mount.h"
 
 struct mnt_keyword_table {
-	char *keyword;
+	const char *keyword;
 	unsigned int set;
 	unsigned int clear;
 };
@@ -272,8 +272,8 @@ static struct mnt_keyword_table mnt_opts_table[] = {
 	{"iversion",		MS_IVERSION, 0},
 	{"noiversion",		0, MS_IVERSION},
 	{"strictatime",		MS_STRICTATIME, 0},
-	{"user",		0, MS_NOUSER},
-	{"nouser",		MS_NOUSER, 0},
+	{"user",		0, (unsigned int) MS_NOUSER},
+	{"nouser",		(unsigned int) MS_NOUSER, 0},
 
 	{NULL, 0, 0}
 };

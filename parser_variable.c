@@ -54,29 +54,29 @@ static inline char *get_var_end(char *var)
 static struct var_string *split_string(char *string, char *var_begin,
 				       char *var_end)
 {
-	struct var_string *new = calloc(1, sizeof(struct var_string));
+	struct var_string *n = (struct var_string *) calloc(1, sizeof(struct var_string));
 	unsigned int offset = strlen("@{");
-	if (!new) {
+	if (!n) {
 		PERROR("Memory allocation error\n");
 		return NULL;
 	}
 
 	if (var_begin != string) {
-		new->prefix = strndup(string, var_begin - string);
+		n->prefix = strndup(string, var_begin - string);
 	}
 
-	new->var = strndup(var_begin + offset, var_end - (var_begin + offset));
+	n->var = strndup(var_begin + offset, var_end - (var_begin + offset));
 
 	if (strlen(var_end + 1) != 0) {
-		new->suffix = strdup(var_end + 1);
+		n->suffix = strdup(var_end + 1);
 	}
 
-	return new;
+	return n;
 }
 
 struct var_string *split_out_var(char *string)
 {
-	struct var_string *new = NULL;
+	struct var_string *n = NULL;
 	char *sptr;
 	BOOL bEscape = 0;	/* flag to indicate escape */
 
@@ -85,7 +85,7 @@ struct var_string *split_out_var(char *string)
 
 	sptr = string;
 
-	while (!new && *sptr) {
+	while (!n && *sptr) {
 		switch (*sptr) {
 		case '\\':
 			if (bEscape) {
@@ -106,7 +106,7 @@ struct var_string *split_out_var(char *string)
 					PERROR("Empty variable name found!\n");
 					exit(1);
 				}
-				new = split_string(string, sptr, eptr);
+				n = split_string(string, sptr, eptr);
 			}
 			break;
 		default:
@@ -116,7 +116,7 @@ struct var_string *split_out_var(char *string)
 		sptr++;
 	}
 
-	return new;
+	return n;
 }
 
 void free_var_string(struct var_string *var)
@@ -191,7 +191,7 @@ static int expand_entry_variables(char **name, void *entry,
 
 int clone_and_chain_cod(void *v)
 {
-	struct cod_entry *entry = v;
+	struct cod_entry *entry = (struct cod_entry *) v;
 	struct cod_entry *dup = copy_cod_entry(entry);
 	if (!dup)
 		return 0;
@@ -203,7 +203,7 @@ int clone_and_chain_cod(void *v)
 
 int clone_and_chain_mnt(void *v)
 {
-	struct mnt_entry *entry = v;
+	struct mnt_entry *entry = (struct mnt_entry *) v;
 
 	struct mnt_entry *dup = dup_mnt_entry(entry);
 	if (!dup)
@@ -216,7 +216,7 @@ int clone_and_chain_mnt(void *v)
 
 int clone_and_chain_dbus(void *v)
 {
-	struct dbus_entry *entry = v;
+	struct dbus_entry *entry = (struct dbus_entry *) v;
 
 	struct dbus_entry *dup = dup_dbus_entry(entry);
 	if (!dup)

@@ -518,9 +518,9 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 		/* allow change_profile for all execs */
 		vec[0] = "/[^\\x00]*";
 
-		if (entry->namespace) {
+		if (entry->ns) {
 			int pos;
-			ptype = convert_aaregex_to_pcre(entry->namespace, 0, lbuf, PATH_MAX + 8, &pos);
+			ptype = convert_aaregex_to_pcre(entry->ns, 0, lbuf, PATH_MAX + 8, &pos);
 			vec[index++] = lbuf;
 		}
 		vec[index++] = tbuf;
@@ -536,9 +536,9 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 	}
 	if (entry->mode & (AA_USER_PTRACE | AA_OTHER_PTRACE)) {
 		int mode = entry->mode & (AA_USER_PTRACE | AA_OTHER_PTRACE);
-		if (entry->namespace) {
+		if (entry->ns) {
 			char *vec[2];
-			vec[0] = entry->namespace;
+			vec[0] = entry->ns;
 			vec[1] = entry->name;
 			if (!aare_add_rule_vec(dfarules, 0, mode, 0, 2, vec, dfaflags))
 			    return FALSE;

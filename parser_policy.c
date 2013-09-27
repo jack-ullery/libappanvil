@@ -19,6 +19,8 @@
  *   Ltd.
  */
 
+#include <algorithm>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -49,12 +51,12 @@ static int codomain_compare(const void *a, const void *b)
 	struct codomain *B = (struct codomain *) b;
 
 	int res = 0;
-	if (A->namespace) {
-		if (B->namespace)
-			res = strcmp(A->namespace, B->namespace);
+	if (A->ns) {
+		if (B->ns)
+			res = strcmp(A->ns, B->ns);
 		else
 			res = -1;
-	} else if (B->namespace)
+	} else if (B->ns)
 		res = 1;
 	if (res)
 		return res;
@@ -119,7 +121,7 @@ static int add_named_transition(struct codomain *cod, struct cod_entry *entry)
 	char *name = NULL;
 
 	/* check to see if it is a local transition */
-	if (!entry->namespace) {
+	if (!entry->ns) {
 		char *sub = strstr(entry->nt_name, "//");
 		/* does the subprofile name match the rule */
 
@@ -138,7 +140,7 @@ static int add_named_transition(struct codomain *cod, struct cod_entry *entry)
 				return AA_EXEC_LOCAL >> 10;
 			}
 			/* specified as cix so profile name is implicit */
-			name = malloc(strlen(cod->name) + strlen(entry->nt_name)
+			name = (char *) malloc(strlen(cod->name) + strlen(entry->nt_name)
 				      + 3);
 			if (!name) {
 				PERROR("Memory allocation error\n");
@@ -149,16 +151,16 @@ static int add_named_transition(struct codomain *cod, struct cod_entry *entry)
 			entry->nt_name = name;
 		}
 	}
-	if (entry->namespace) {
-		name = malloc(strlen(entry->namespace) + strlen(entry->nt_name) + 3);
+	if (entry->ns) {
+	  name = (char *) malloc(strlen(entry->ns) + strlen(entry->nt_name) + 3);
 		if (!name) {
 			PERROR("Memory allocation error\n");
 			exit(1);
 		}
-		sprintf(name, ":%s:%s", entry->namespace, entry->nt_name);
-		free(entry->namespace);
+		sprintf(name, ":%s:%s", entry->ns, entry->nt_name);
+		free(entry->ns);
 		free(entry->nt_name);
-		entry->namespace = NULL;
+		entry->ns = NULL;
 		entry->nt_name = NULL;
 	} else {
 		name = entry->nt_name;
@@ -192,7 +194,7 @@ void post_process_file_entries(struct codomain *cod)
 				mode |= SHIFT_MODE(n << 10, AA_OTHER_SHIFT);
 			entry->mode = ((entry->mode & ~AA_ALL_EXEC_MODIFIERS) |
 				       (mode & AA_ALL_EXEC_MODIFIERS));
-			entry->namespace = NULL;
+			entry->ns = NULL;
 			entry->nt_name = NULL;
 		}
 		/* FIXME: currently change_profile also implies onexec */
@@ -451,7 +453,7 @@ static void __add_hat_rules_parent(const void *nodep, const VISIT value,
 	 */
 	if ((flag_changehat_version == FLAG_CHANGEHAT_1_4) &&
 	    (*t)->parent) {
-		char *buffer = malloc(strlen((*t)->name) + 1);
+		char *buffer = (char *) malloc(strlen((*t)->name) + 1);
 		if (!buffer) {
 			PERROR("Memory allocation error\n");
 			exit(1);
@@ -828,8 +830,8 @@ void free_policy(struct codomain *cod)
 		free(cod->name);
 	if (cod->attachment)
 		free(cod->attachment);
-	if (cod->namespace)
-		free(cod->namespace);
+	if (cod->ns)
+		free(cod->ns);
 	if (cod->network_allowed)
 		free(cod->network_allowed);
 	if (cod->audit_network)

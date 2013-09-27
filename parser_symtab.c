@@ -46,51 +46,51 @@ static int __expand_variable(struct symtab *symbol);
 
 static struct symtab *new_symtab_entry(const char *name)
 {
-	struct symtab *new = calloc(1, sizeof(*new));
+	struct symtab *n = (struct symtab *) calloc(1, sizeof(*n));
 
-	if (!new) {
+	if (!n) {
 		PERROR("Failed to allocate memory: %s\n", strerror(errno));
 		return NULL;
 	}
 
-	new->var_name = strndup(name, PATH_MAX);
-	if (!new->var_name) {
+	n->var_name = strndup(name, PATH_MAX);
+	if (!n->var_name) {
 		PERROR("Failed to allocate memory: %s\n", strerror(errno));
-		free(new);
+		free(n);
 		return NULL;
 	}
 
-	return new;
+	return n;
 }
 
 static struct set_value *new_set_value(const char *val)
 {
-	struct set_value *new = calloc(1, sizeof(*new));
+	struct set_value *n = (struct set_value *) calloc(1, sizeof(*n));
 
-	if (!new) {
+	if (!n) {
 		PERROR("Failed to allocate memory: %s\n", strerror(errno));
 		return NULL;
 	}
 
-	new->val = strndup(val, PATH_MAX);
-	if (!new->val) {
+	n->val = strndup(val, PATH_MAX);
+	if (!n->val) {
 		PERROR("Failed to allocate memory: %s\n", strerror(errno));
-		free(new);
+		free(n);
 		return NULL;
 	}
 
-	return new;
+	return n;
 }
 
 static void free_values(struct set_value *val)
 {
-	struct set_value *this = val, *tmp;
+	struct set_value *i = val, *tmp;
 
-	while (this) {
-		if (this->val)
-			free(this->val);
-		tmp = this;
-		this = this->next;
+	while (i) {
+		if (i->val)
+			free(i->val);
+		tmp = i;
+		i = i->next;
 		free(tmp);
 	}
 }
@@ -153,26 +153,26 @@ out:
 
 int add_boolean_var(const char *var, int value)
 {
-	struct symtab *new, **result;
+	struct symtab *n, **result;
 	int rc = 0;
 
-	new = new_symtab_entry(var);
-	if (!new) {
+	n = new_symtab_entry(var);
+	if (!n) {
 		rc = ENOMEM;
 		goto err;
 	}
 
-	new->type = sd_boolean;
-	new->boolean = value;
+	n->type = sd_boolean;
+	n->boolean = value;
 
-	result = (struct symtab **) tsearch(new, &my_symtab, (comparison_fn_t) &compare_symtabs);
+	result = (struct symtab **) tsearch(n, &my_symtab, (comparison_fn_t) &compare_symtabs);
 	if (!result) {
 		PERROR("Failed to allocate memory: %s\n", strerror(errno));
 		rc = errno;
 		goto err;
 	}
 
-	if (*result != new) {
+	if (*result != n) {
 		/* already existing variable */
 		PERROR("'%s' is already defined\n", var);
 		rc = 1;
@@ -182,7 +182,7 @@ int add_boolean_var(const char *var, int value)
 	return 0;
 
 err:
-	free_symtab(new);
+	free_symtab(n);
 	return rc;
 };
 
@@ -213,26 +213,26 @@ out:
  */
 int new_set_var(const char *var, const char *value)
 {
-	struct symtab *new, **result;
+	struct symtab *n, **result;
 	int rc = 0;
 
-	new = new_symtab_entry(var);
-	if (!new) {
+	n = new_symtab_entry(var);
+	if (!n) {
 		rc = ENOMEM;
 		goto err;
 	}
 
-	new->type = sd_set;
-	add_to_set(&(new->values), value);
+	n->type = sd_set;
+	add_to_set(&(n->values), value);
 
-	result = (struct symtab **) tsearch(new, &my_symtab, (comparison_fn_t) &compare_symtabs);
+	result = (struct symtab **) tsearch(n, &my_symtab, (comparison_fn_t) &compare_symtabs);
 	if (!result) {
 		PERROR("Failed to allocate memory: %s\n", strerror(errno));
 		rc = errno;
 		goto err;
 	}
 
-	if (*result != new) {
+	if (*result != n) {
 		/* already existing variable */
 		PERROR("'%s' is already defined\n", var);
 		rc = 1;
@@ -242,7 +242,7 @@ int new_set_var(const char *var, const char *value)
 	return 0;
 
 err:
-	free_symtab(new);
+	free_symtab(n);
 	return rc;
 }
 
@@ -382,15 +382,15 @@ static int __expand_variable(struct symtab *symbol)
 		while (work_list) {
 			struct symtab *ref;
 			struct set_value *ref_item;
-			struct set_value *this_value = work_list;
+			struct set_value *t_value = work_list;
 			int rc;
 
 			work_list = work_list->next;
 
-			split = split_out_var(this_value->val);
+			split = split_out_var(t_value->val);
 			if (!split) {
 				/* fully expanded */
-				add_to_set(&expanded, this_value->val);
+				add_to_set(&expanded, t_value->val);
 				goto next;
 			}
 
@@ -399,7 +399,7 @@ static int __expand_variable(struct symtab *symbol)
 				PERROR("Variable @{%s} is referenced recursively (by @{%s})\n",
 		       		       split->var, symbol->var_name);
 				retval = 1;
-				free_values(this_value);
+				free_values(t_value);
 				goto out;
 			}
 
@@ -408,14 +408,14 @@ static int __expand_variable(struct symtab *symbol)
 				PERROR("Variable @{%s} references undefined variable @{%s}\n",
 				       symbol->var_name, split->var);
 				retval = 3;
-				free_values(this_value);
+				free_values(t_value);
 				goto out;
 			}
 
 			rc = __expand_variable(ref);
 			if (rc != 0) {
 				retval = rc;
-				free_values(this_value);
+				free_values(t_value);
 				goto out;
 			}
 
@@ -439,8 +439,8 @@ static int __expand_variable(struct symtab *symbol)
 			}
 
 next:
-			this_value->next = NULL;
-			free_values(this_value);
+			t_value->next = NULL;
+			free_values(t_value);
 			free_var_string(split);
 		}
 	}
@@ -472,10 +472,10 @@ void expand_variables(void)
 
 static inline void dump_set_values(struct set_value *value)
 {
-	struct set_value *this = value;
-	while (this) {
-		printf(" \"%s\"", this->val);
-		this = this->next;
+	struct set_value *t = value;
+	while (t) {
+		printf(" \"%s\"", t->val);
+		t = t->next;
 	}
 }
 

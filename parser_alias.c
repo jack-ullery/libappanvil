@@ -50,7 +50,7 @@ int new_alias(const char *from, const char *to)
 {
 	struct alias_rule *alias, **result;
 
-	alias = calloc(1, sizeof(struct alias_rule));
+	alias = (struct alias_rule *) calloc(1, sizeof(struct alias_rule));
 	if (!alias) {
 		PERROR("Failed to allocate memory: %s\n", strerror(errno));
 		goto fail;
@@ -95,14 +95,14 @@ fail:
 static char *do_alias(struct alias_rule *alias, const char *target)
 {
 	int len = strlen(target) - strlen(alias->from) + strlen(alias->to);
-	char *new = malloc(len + 1);
-	if (!new) {
+	char *n = (char *) malloc(len + 1);
+	if (!n) {
 		PERROR("Failed to allocate memory: %s\n", strerror(errno));
 		return NULL;
 	}
-	sprintf(new, "%s%s", alias->to, target + strlen(alias->from));
+	sprintf(n, "%s%s", alias->to, target + strlen(alias->from));
 /*fprintf(stderr, "replaced alias: from: %s, to: %s, name: %s\n  %s\n", alias->from, alias->to, target, new);*/
-	return new;
+	return n;
 }
 
 static struct codomain *target_cod;
@@ -123,22 +123,22 @@ static void process_entries(const void *nodep, VISIT value, int __unused level)
 		    entry->alias_ignore)
 			continue;
 		if (entry->name && strncmp((*t)->from, entry->name, len) == 0) {
-			char *new = do_alias(*t, entry->name);
-			if (!new)
+			char *n = do_alias(*t, entry->name);
+			if (!n)
 				return;
 			dup = copy_cod_entry(entry);
 			free(dup->name);
-			dup->name = new;
+			dup->name = n;
 		}
 		if (entry->link_name &&
 		    strncmp((*t)->from, entry->link_name, len) == 0) {
-			char *new = do_alias(*t, entry->link_name);
-			if (!new)
+			char *n = do_alias(*t, entry->link_name);
+			if (!n)
 				return;
 			if (!dup)
 				dup = copy_cod_entry(entry);
 			free(dup->link_name);
-			dup->link_name = new;
+			dup->link_name = n;
 		}
 		if (dup) {
 			dup->alias_ignore = 1;
@@ -152,7 +152,6 @@ static void process_entries(const void *nodep, VISIT value, int __unused level)
 	}
 }
 
-static struct codomain *target_cod;
 static void process_name(const void *nodep, VISIT value, int __unused level)
 {
 	struct alias_rule **t = (struct alias_rule **) nodep;
@@ -172,14 +171,14 @@ static void process_name(const void *nodep, VISIT value, int __unused level)
 
 	if (name && strncmp((*t)->from, name, len) == 0) {
 		struct alt_name *alt;
-		char *new = do_alias(*t, name);
-		if (!new)
+		char *n = do_alias(*t, name);
+		if (!n)
 			return;
 		/* aliases create alternate names */
-		alt = calloc(1, sizeof(struct alt_name));
+		alt = (struct alt_name *) calloc(1, sizeof(struct alt_name));
 		if (!alt)
 			return;
-		alt->name = new;
+		alt->name = n;
 		alt->next = cod->altnames;
 		cod->altnames = alt;
 	}

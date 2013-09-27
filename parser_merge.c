@@ -35,12 +35,12 @@ static int file_comp(const void *c1, const void *c2)
 	int res = 0;
 
 	//PERROR("strcmp %s %s\n", (*e1)->name, (*e2)->name);
-	if ((*e1)->namespace) {
-		if ((*e2)->namespace)
-			res = strcmp((*e1)->namespace, (*e2)->namespace);
+	if ((*e1)->ns) {
+		if ((*e2)->ns)
+			res = strcmp((*e1)->ns, (*e2)->ns);
 		else
 			return 1;
-	} else if ((*e2)->namespace) {
+	} else if ((*e2)->ns) {
 		return -1;
 	}
 	if (res)
@@ -86,7 +86,7 @@ static int process_file_entries(struct codomain *cod)
 	if (count < 2)
 		return 1;
 
-	table = malloc(sizeof(struct cod_entry *) * (count + 1));
+	table = (struct cod_entry **) malloc(sizeof(struct cod_entry *) * (count + 1));
 	if (!table) {
 		PERROR(_("Couldn't merge entries. Out of Memory\n"));
 		return 0;

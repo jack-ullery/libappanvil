@@ -291,7 +291,7 @@ void push_include_stack(char *filename)
 {
 	struct include_stack_t *include = NULL;
 
-	include = malloc(sizeof(*include));
+	include = (struct include_stack_t *) malloc(sizeof(*include));
 	if (!include) {
 		perror("malloc of included file stack tracker");
 		/* failures in this area are non-fatal */

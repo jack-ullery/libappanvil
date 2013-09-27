@@ -214,7 +214,7 @@ struct __sdserialize {
 
 sd_serialize *alloc_sd_serial(void)
 {
-	sd_serialize *p = calloc(1, sizeof(sd_serialize));
+	sd_serialize *p = (sd_serialize *) calloc(1, sizeof(sd_serialize));
 	if (!p)
 		return NULL;
 	p->buffer = malloc(BUFFERINC);
@@ -255,7 +255,7 @@ static inline void sd_inc(sd_serialize *p, int size)
 
 inline long sd_serial_size(sd_serialize *p)
 {
-	return (p->pos - p->buffer);
+	return (long) (p->pos) - (long) (p->buffer);
 }
 
 /* routines for writing data to the serialization buffer */
@@ -265,14 +265,14 @@ inline int sd_prepare_write(sd_serialize *p, enum sd_code code, size_t size)
 	if (p->pos + SD_CODE_SIZE + size > p->extent) {
 		long pos;
 		/* try and reallocate the buffer */
-		void *buffer = malloc(p->extent - p->buffer + (BUFFERINC * num));
-		memcpy(buffer, p->buffer, p->extent - p->buffer);
+		void *buffer = malloc((long)(p->extent) - (long)(p->buffer) + (BUFFERINC * num));
+		memcpy(buffer, p->buffer, (long)(p->extent) - (long)(p->buffer));
 
-		pos = p->pos - p->buffer;
+		pos = (long)(p->pos) - (long)(p->buffer);
 		if (buffer == NULL || errno == ENOMEM)
 			return 0;
 
-		p->extent = buffer + (p->extent - p->buffer) + (BUFFERINC * num);
+		p->extent = buffer + ((long)(p->extent) - (long)(p->buffer)) + (BUFFERINC * num);
 		free(p->buffer);
 		p->buffer = buffer;
 		p->pos = buffer + pos;
@@ -367,7 +367,7 @@ inline int sd_write_aligned_blob(sd_serialize *p, void *b, int buf_size,
 	u32 tmp;
 	if (!sd_write_name(p, name))
 		return 0;
-	pad = align64((p->pos + 5) - p->buffer) - ((p->pos + 5) - p->buffer);
+	pad = align64(((long)(p->pos + 5) - (long)(p->buffer)) - ((long)(p->pos + 5) - (long)(p->buffer)));
 	if (!sd_prepare_write(p, SD_BLOB, 4 + buf_size + pad))
 		return 0;
 	tmp = cpu_to_le32(buf_size + pad);
@@ -555,7 +555,7 @@ int sd_serialize_profile(sd_serialize *p, struct codomain *profile,
 		assert(profile->parent);
 		int res;
 
-		char *name = malloc(3 + strlen(profile->name) +
+		char *name = (char *) malloc(3 + strlen(profile->name) +
 				    strlen(profile->parent->name));
 		if (!name)
 			return 0;
@@ -687,11 +687,11 @@ int sd_serialize_top_profile(sd_serialize *p, struct codomain *profile)
 	if (!sd_write32(p, version))
 		return 0;
 
-	if (profile_namespace) {
-		if (!sd_write_string(p, profile_namespace, "namespace"))
+	if (profile_ns) {
+		if (!sd_write_string(p, profile_ns, "namespace"))
 			return 0;
-	} else if (profile->namespace) {
-		if (!sd_write_string(p, profile->namespace, "namespace"))
+	} else if (profile->ns) {
+		if (!sd_write_string(p, profile->ns, "namespace"))
 			return 0;
 	}
 
@@ -751,15 +751,15 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 		char *name, *ns = NULL;
 		int len = 0;
 
-		if (profile_namespace) {
-			len += strlen(profile_namespace) + 2;
-			ns = profile_namespace;
-		} else if (cod->namespace) {
-			len += strlen(cod->namespace) + 2;
-			ns = cod->namespace;
+		if (profile_ns) {
+			len += strlen(profile_ns) + 2;
+			ns = profile_ns;
+		} else if (cod->ns) {
+			len += strlen(cod->ns) + 2;
+			ns = cod->ns;
 		}
 		if (cod->parent) {
-			name = malloc(strlen(cod->name) + 3 +
+			name = (char *) malloc(strlen(cod->name) + 3 +
 				      strlen(cod->parent->name) + len);
 			if (!name) {
 				PERROR(_("Memory Allocation Error: Unable to remove ^%s\n"), cod->name);
@@ -773,7 +773,7 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 				sprintf(name, "%s//%s", cod->parent->name,
 					cod->name);
 		} else if (ns) {
-			name = malloc(len + strlen(cod->name) + 1);
+			name = (char *) malloc(len + strlen(cod->name) + 1);
 			if (!name) {
 				PERROR(_("Memory Allocation Error: Unable to remove %s:%s."), ns, cod->name);
 				error = -errno;
@@ -809,7 +809,7 @@ int sd_serialize_codomain(int option, struct codomain *cod)
 			goto exit;
 		}
 
-		size = work_area->pos - work_area->buffer;
+		size = (long) (work_area->pos) - (long)(work_area->buffer);
 		if (kernel_load || option == OPTION_STDOUT || option == OPTION_OFILE) {
 			wsize = write(fd, work_area->buffer, size);
 			if (wsize < 0) {
