@@ -209,9 +209,6 @@ struct var_string {
 #define OPTION_STDOUT	4
 #define OPTION_OFILE	5
 
-#define AARE_NONE 0
-#define AARE_DFA 2
-
 #define BOOL int
 
 #define FLAG_CHANGEHAT_1_4  2
@@ -275,7 +272,6 @@ extern int preprocess_only;
 	} while (0)
 
 /* from parser_common.c */
-extern int regex_type;
 extern int perms_create;
 extern int net_af_max_override;
 extern int kernel_load;

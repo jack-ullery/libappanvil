@@ -557,8 +557,7 @@ int post_process_entries(struct codomain *cod)
 	int count = 0;
 
 	list_for_each(cod->entries, entry) {
-		if (regex_type == AARE_DFA &&
-		    !process_dfa_entry(cod->dfarules, entry))
+		if (!process_dfa_entry(cod->dfarules, entry))
 			ret = FALSE;
 		count++;
 	}
@@ -571,18 +570,17 @@ int process_regex(struct codomain *cod)
 {
 	int error = -1;
 
-	if (regex_type == AARE_DFA) {
-		if (!process_profile_name_xmatch(cod))
-			goto out;
+	if (!process_profile_name_xmatch(cod))
+		goto out;
 
-		cod->dfarules = aare_new_ruleset(0);
-		if (!cod->dfarules)
-			goto out;
-	}
+	cod->dfarules = aare_new_ruleset(0);
+	if (!cod->dfarules)
+		goto out;
+
 	if (!post_process_entries(cod))
 		goto out;
 
-	if (regex_type == AARE_DFA && cod->dfarule_count > 0) {
+	if (cod->dfarule_count > 0) {
 		cod->dfa = aare_create_dfa(cod->dfarules, &cod->dfa_size,
 					   dfaflags);
 		aare_delete_ruleset(cod->dfarules);
@@ -1151,8 +1149,7 @@ static int post_process_mnt_ents(struct codomain *cod)
 	if (cod->mnt_ents && kernel_supports_mount) {
 		struct mnt_entry *entry;
 		list_for_each(cod->mnt_ents, entry) {
-			if (regex_type == AARE_DFA &&
-			    !process_mnt_entry(cod->policy_rules, entry))
+			if (!process_mnt_entry(cod->policy_rules, entry))
 				ret = FALSE;
 			count++;
 		}
@@ -1170,8 +1167,7 @@ static int post_process_dbus_ents(struct codomain *cod)
 	int count = 0;
 
 	list_for_each(cod->dbus_ents, entry) {
-		if (regex_type == AARE_DFA &&
-		    !process_dbus_entry(cod->policy_rules, entry))
+		if (!process_dbus_entry(cod->policy_rules, entry))
 			ret = FALSE;
 		count++;
 	}
@@ -1194,16 +1190,14 @@ int process_policydb(struct codomain *cod)
 {
 	int error = -1;
 
-	if (regex_type == AARE_DFA) {
-		cod->policy_rules = aare_new_ruleset(0);
-		if (!cod->policy_rules)
-			goto out;
-	}
+	cod->policy_rules = aare_new_ruleset(0);
+	if (!cod->policy_rules)
+		goto out;
 
 	if (!post_process_policydb_ents(cod))
 		goto out;
 
-	if (regex_type == AARE_DFA && cod->policy_rule_count > 0) {
+	if (cod->policy_rule_count > 0) {
 		cod->policy_dfa = aare_create_dfa(cod->policy_rules,
 						  &cod->policy_dfa_size,
 						  dfaflags);
