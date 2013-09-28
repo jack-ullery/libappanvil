@@ -36,6 +36,15 @@ required_features()
 	done
 }
 
+requires_query_interface()
+{
+	if [ ! -e "/sys/kernel/security/apparmor/.access" ]
+	then
+		echo "Kernel query interface not supported. Skipping tests ..."
+		exit 0
+	fi
+}
+
 fatalerror()
 {
 	# global _fatal

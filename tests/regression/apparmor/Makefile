@@ -51,6 +51,7 @@ SRC=access.c \
     ptrace.c \
     ptrace_helper.c \
     pwrite.c \
+    query_label.c \
     rename.c \
     readdir.c \
     rw.c \
@@ -145,6 +146,7 @@ TESTS=access \
       pipe \
       ptrace \
       pwrite \
+      query_label \
       regex \
       rename \
       readdir \
