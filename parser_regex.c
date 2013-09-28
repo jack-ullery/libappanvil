@@ -1112,11 +1112,17 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 	}
 
 	if (entry->mode & AA_DBUS_BIND) {
-		if (!aare_add_rule_vec(dfarules, entry->deny, entry->mode & AA_DBUS_BIND, entry->audit & AA_DBUS_BIND, 2, vec, dfaflags))
+		if (!aare_add_rule_vec(dfarules, entry->deny,
+				       entry->mode & AA_DBUS_BIND,
+				       entry->audit & AA_DBUS_BIND,
+				       2, vec, dfaflags))
 			goto fail;
 	}
-	if (entry->mode & ~AA_DBUS_BIND) {
-		if (!aare_add_rule_vec(dfarules, entry->deny, entry->mode, entry->audit, 6, vec, dfaflags))
+	if (entry->mode & (AA_DBUS_SEND | AA_DBUS_RECEIVE)) {
+		if (!aare_add_rule_vec(dfarules, entry->deny,
+				entry->mode & (AA_DBUS_SEND | AA_DBUS_RECEIVE),
+				entry->audit & (AA_DBUS_SEND | AA_DBUS_RECEIVE),
+				6, vec, dfaflags))
 			goto fail;
 	}
 	return TRUE;
