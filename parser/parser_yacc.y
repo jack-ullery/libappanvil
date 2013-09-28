@@ -658,7 +658,9 @@ rules:  rules opt_prefix mnt_rule
 	{
 		if ($2.owner)
 			yyerror(_("owner prefix not allow on mount rules"));
-		if ($2.deny) {
+		if ($2.deny && $2.audit) {
+			$3->deny = 1;
+		} else if ($2.deny) {
 			$3->deny = 1;
 			$3->audit = $3->allow;
 		} else if ($2.audit) {
@@ -673,7 +675,9 @@ rules:  rules opt_prefix dbus_rule
 	{
 		if ($2.owner)
 			yyerror(_("owner prefix not allow on dbus rules"));
-		if ($2.deny) {
+		if ($2.deny && $2.audit) {
+			$3->deny = 1;
+		} else if ($2.deny) {
 			$3->deny = 1;
 			$3->audit = $3->mode;
 		} else if ($2.audit) {
