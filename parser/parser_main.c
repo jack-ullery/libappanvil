@@ -28,7 +28,6 @@
 #include <getopt.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <mntent.h>
 #include <libintl.h>
 #include <locale.h>
 #include <dirent.h>
@@ -42,6 +41,7 @@
 #include <sys/sysctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/apparmor.h>
 
 #include "lib.h"
 #include "parser.h"
@@ -607,58 +607,10 @@ static int process_config_file(const char *name)
 	return 1;
 }
 
-static inline char *try_subdomainfs_mountpoint(const char *mntpnt,
-					       const char *path)
-{
-	char *proposed_base = NULL;
-	char *retval = NULL;
-	struct stat buf;
-
-	if (asprintf(&proposed_base, "%s%s", mntpnt, path)<0 || !proposed_base) {
-		PERROR(_("%s: Could not allocate memory for subdomainbase mount point\n"),
-		       progname);
-		exit(ENOMEM);
-	}
-	if (stat(proposed_base, &buf) == 0) {
-		retval = proposed_base;
-	} else {
-		free(proposed_base);
-	}
-	return retval;
-}
 
 int find_subdomainfs_mountpoint(void)
 {
-	FILE *mntfile;
-	struct mntent *mntpt;
-
-	if ((mntfile = setmntent(MOUNTED_FS, "r"))) {
-		while ((mntpt = getmntent(mntfile))) {
-			char *proposed = NULL;
-			if (strcmp(mntpt->mnt_type, "securityfs") == 0) {
-				proposed = try_subdomainfs_mountpoint(mntpt->mnt_dir, "/" MODULE_NAME);
-				if (proposed != NULL) {
-					subdomainbase = proposed;
-					break;
-				}
-				proposed = try_subdomainfs_mountpoint(mntpt->mnt_dir, "/" OLD_MODULE_NAME);
-				if (proposed != NULL) {
-					subdomainbase = proposed;
-					break;
-				}
-			}
-			if (strcmp(mntpt->mnt_type, "subdomainfs") == 0) {
-				proposed = try_subdomainfs_mountpoint(mntpt->mnt_dir, "");
-				if (proposed != NULL) {
-					subdomainbase = proposed;
-					break;
-				}
-			}
-		}
-		endmntent(mntfile);
-	}
-
-	if (!subdomainbase) {
+	if (aa_find_mountpoint(&subdomainbase) == -1) {
 		struct stat buf;
 		if (stat(DEFAULT_APPARMORFS, &buf) == -1) {
 		PERROR(_("Warning: unable to find a suitable fs in %s, is it "
@@ -671,7 +623,6 @@ int find_subdomainfs_mountpoint(void)
 
 	return (subdomainbase == NULL);
 }
-
 
 int have_enough_privilege(void)
 {

@@ -86,6 +86,7 @@ AAREDIR= libapparmor_re
 AAREOBJECT = ${AAREDIR}/libapparmor_re.a
 AAREOBJECTS = $(AAREOBJECT) libstdc++.a
 AARE_LDFLAGS=-static-libgcc -L.
+AALIB = -lapparmor
 
 LEX_C_FILES	= parser_lex.c
 YACC_C_FILES	= parser_yacc.c parser_yacc.h
@@ -154,7 +155,7 @@ libstdc++.a:
 
 apparmor_parser: $(OBJECTS) $(AAREOBJECTS)
 	$(CXX) $(LDFLAGS) $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(LIBS) \
-	      ${LEXLIB}  $(AAREOBJECTS) $(AARE_LDFLAGS)
+	      ${LEXLIB}  $(AAREOBJECTS) $(AARE_LDFLAGS) $(AALIB)
 
 parser_yacc.c parser_yacc.h: parser_yacc.y parser.h profile.h
 	$(YACC) $(YFLAGS) -o parser_yacc.c parser_yacc.y
