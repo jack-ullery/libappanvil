@@ -1201,6 +1201,7 @@ static void setup_flags(void)
 {
 	char *cache_features_path = NULL;
 	char *cache_flags = NULL;
+	int rc;
 
 	/* Get the match string to determine type of regex support needed */
 	get_match_string();
@@ -1227,7 +1228,11 @@ static void setup_flags(void)
          *  - If cache/.features exists, and does not match flags_string,
          *    force cache reading/writing off.
          */
-	if (asprintf(&cache_features_path, "%s/cache/.features", basedir) == -1) {
+	if (cacheloc)
+		rc = asprintf(&cache_features_path, "%s/.features", cacheloc);
+	else
+		rc = asprintf(&cache_features_path, "%s/cache/.features", basedir);
+	if (rc == -1) {
 		perror("asprintf");
 		exit(1);
 	}
