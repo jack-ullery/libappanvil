@@ -74,6 +74,7 @@ int skip_read_cache = 0;
 int write_cache = 0;
 int cond_clear_cache = 1;		/* only applies if write is set */
 int force_clear_cache = 0;		/* force clearing regargless of state */
+int create_cache_dir = 0;		/* create the cache dir if missing? */
 int preprocess_only = 0;
 int skip_mode_force = 0;
 struct timespec mru_tstamp;
@@ -114,6 +115,7 @@ struct option long_options[] = {
 	{"show-cache",		0, 0, 'k'},
 	{"skip-bad-cache",	0, 0, 129},	/* no short option */
 	{"purge-cache",		0, 0, 130},	/* no short option */
+	{"create-cache-dir",	0, 0, 131},	/* no short option */
 	{"cache-loc",		1, 0, 'L'},
 	{"debug",		0, 0, 'd'},
 	{"dump",		1, 0, 'D'},
@@ -158,6 +160,7 @@ static void display_usage(char *command)
 	       "-W, --write-cache	Save cached profile (force with -T)\n"
 	       "    --skip-bad-cache	Don't clear cache if out of sync\n"
 	       "    --purge-cache	Clear cache regardless of its state\n"
+	       "    --create-cache-dire	Create the cache dir if missing\n"
 	       "-L, --cache-loc n	Set the location of the profile cache\n"
 	       "-q, --quiet		Don't emit warnings\n"
 	       "-v, --verbose		Show profile names as they load\n"
@@ -541,6 +544,9 @@ static int process_arg(int c, char *optarg)
 		break;
 	case 130:
 		force_clear_cache = 1;
+		break;
+	case 131:
+		create_cache_dir = 1;
 		break;
 	case 'L':
 		cacheloc = strdup(optarg);
@@ -1168,6 +1174,7 @@ static int create_cache(const char *cachedir, const char *path,
 	if (cond_clear_cache && clear_cache_files(cacheloc) != 0)
 		goto error;
 
+create_file:
 	f = fopen(path, "w");
 	if (f) {
 		if (fwrite(features, strlen(features), 1, f) != 1 )
@@ -1181,7 +1188,9 @@ static int create_cache(const char *cachedir, const char *path,
 
 error:
 	/* does the dir exist? */
-	if (stat(cachedir, &stat_file) == -1) {
+	if (stat(cachedir, &stat_file) == -1 && create_cache_dir) {
+		if (mkdir(cachedir, 0700) == 0)
+			goto create_file;
 		if (show_cache)
 			PERROR(_("Can't create cache directory: %s\n"), cachedir);
 	} else if (!S_ISDIR(stat_file.st_mode)) {
