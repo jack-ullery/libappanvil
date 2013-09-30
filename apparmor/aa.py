@@ -911,6 +911,7 @@ def handle_children(profile, hat, root):
     family = None
     sock_type = None
     protocol = None
+    global seen_events
     regex_nullcomplain = re.compile('^null(-complain)*-profile$')
 
     for entry in entries:
@@ -1070,7 +1071,7 @@ def handle_children(profile, hat, root):
                     context_new = profile
                     if profile != hat:
                         context_new = context_new + '^%s' % hat
-                    context_new = context + ' ->%s' % exec_target
+                    context_new = context_new + ' -> %s' % exec_target
 
                     ans_new = transitions.get(context_new, '')
                     combinedmode = set()
@@ -1218,20 +1219,21 @@ def handle_children(profile, hat, root):
                         q['headers'] += [_('Severity'), severity]
 
                         q['functions'] = []
-                        prompt = '\n%s\n' % context
+                        prompt = '\n%s\n' % context_new
                         exec_toggle = False
-                        q['functions'].append(build_x_functions(default, options, exec_toggle))
+                        q['functions'] += build_x_functions(default, options, exec_toggle)
 
                         options = '|'.join(options)
                         seen_events += 1
                         regex_options = re.compile('^CMD_(ix|px|cx|nx|pix|cix|nix|px_safe|cx_safe|nx_safe|pix_safe|cix_safe|nix_safe|ux|ux_safe|EXEC_TOGGLE|DENY)$')
 
-                        while regex_options.search(ans):
-                            ans = UI_PromptUser(q).strip()
+                        ans = ''
+                        while not regex_options.search(ans):
+                            ans = UI_PromptUser(q)[0].strip()
                             if ans.startswith('CMD_EXEC_IX_'):
                                 exec_toggle = not exec_toggle
                                 q['functions'] = []
-                                q['functions'].append(build_x_functions(default, options, exec_toggle))
+                                q['functions'] += build_x_functions(default, options, exec_toggle)
                                 ans = ''
                                 continue
                             if ans == 'CMD_nx' or ans == 'CMD_nix':
@@ -1277,7 +1279,7 @@ def handle_children(profile, hat, root):
                                         exec_mode = exec_mode - (AA_EXEC_UNSAFE | AA_OTHER(AA_EXEC_UNSAFE))
                                 else:
                                     ans = 'INVALID'
-                        transitions[context] = ans
+                        transitions[context_new] = ans
 
                         regex_options = re.compile('CMD_(ix|px|cx|nx|pix|cix|nix)')
                         if regex_options.search(ans):
@@ -1573,7 +1575,7 @@ def ask_the_questions():
 
                             changed[profile] = True
 
-                            UI_Info(_('Adding capability %s to profile.'), capability)
+                            UI_Info(_('Adding capability %s to profile.') % capability)
                             done = True
 
                         elif ans == 'CMD_DENY':
@@ -1647,10 +1649,10 @@ def ask_the_questions():
                     matches = []
 
                     if fmode:
-                        matches.append += fm
+                        matches += fm
 
                     if imode:
-                        matches.append += im
+                        matches += im
 
                     if not mode_contains(allow_mode, mode):
                         default_option = 1
