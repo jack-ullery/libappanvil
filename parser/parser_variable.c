@@ -32,9 +32,9 @@
 #include "mount.h"
 #include "dbus.h"
 
-static inline char *get_var_end(char *var)
+static inline const char *get_var_end(const char *var)
 {
-	char *eptr = var;
+	const char *eptr = var;
 
 	while (*eptr) {
 		if (*eptr == '}')
@@ -52,8 +52,8 @@ static inline char *get_var_end(char *var)
 	return NULL; /* no terminating '}' */
 }
 
-static struct var_string *split_string(char *string, char *var_begin,
-				       char *var_end)
+static struct var_string *split_string(const char *string, const char *var_begin,
+				       const char *var_end)
 {
 	struct var_string *n = (struct var_string *) calloc(1, sizeof(struct var_string));
 	unsigned int offset = strlen("@{");
@@ -75,10 +75,10 @@ static struct var_string *split_string(char *string, char *var_begin,
 	return n;
 }
 
-struct var_string *split_out_var(char *string)
+struct var_string *split_out_var(const char *string)
 {
 	struct var_string *n = NULL;
-	char *sptr;
+	const char *sptr;
 	BOOL bEscape = 0;	/* flag to indicate escape */
 
 	if (!string) 		/* shouldn't happen */
@@ -99,7 +99,7 @@ struct var_string *split_out_var(char *string)
 			if (bEscape) {
 				bEscape = FALSE;
 			} else if (*(sptr + 1) == '{') {
-				char *eptr = get_var_end(sptr + 2);
+				const char *eptr = get_var_end(sptr + 2);
 				if (!eptr)
 					break; /* no variable end found */
 				if (eptr == sptr + 2) {
@@ -325,8 +325,8 @@ int process_profile_variables(Profile *prof)
 int test_get_var_end(void)
 {
 	int rc = 0;
-	char *retchar;
-	char *testchar;
+	const char *retchar;
+	const char *testchar;
 
 	testchar = "TRUE}";
 	retchar = get_var_end(testchar);
@@ -356,9 +356,9 @@ int test_split_string(void)
 	int rc = 0;
 	char *tst_string, *var_start, *var_end;
 	struct var_string *ret_struct;
-	char *prefix = "abcdefg";
-	char *var = "boogie";
-	char *suffix = "suffixication";
+	const char *prefix = "abcdefg";
+	const char *var = "boogie";
+	const char *suffix = "suffixication";
 
 	asprintf(&tst_string, "%s@{%s}%s", prefix, var, suffix);
 	var_start = tst_string + strlen(prefix);
@@ -404,11 +404,11 @@ int test_split_out_var(void)
 	int rc = 0;
 	char *tst_string, *tmp;
 	struct var_string *ret_struct;
-	char *prefix = "abcdefg";
-	char *var = "boogie";
-	char *var2 = "V4rW1thNum5";
-	char *var3 = "boogie_board";
-	char *suffix = "suffixication";
+	const char *prefix = "abcdefg";
+	const char *var = "boogie";
+	const char *var2 = "V4rW1thNum5";
+	const char *var3 = "boogie_board";
+	const char *suffix = "suffixication";
 
 	/* simple case */
 	asprintf(&tst_string, "%s@{%s}%s", prefix, var, suffix);

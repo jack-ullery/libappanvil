@@ -22,7 +22,7 @@
 
 extern int preprocess_only;
 
-extern int add_search_dir(char *dir);
+extern int add_search_dir(const char *dir);
 extern void init_base_dir(void);
 extern void set_base_dir(char *dir);
 extern void parse_default_paths(void);

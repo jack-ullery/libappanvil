@@ -134,7 +134,7 @@ static void display_version(void)
 	       parser_copyright);
 }
 
-static void display_usage(char *command)
+static void display_usage(const char *command)
 {
 	display_version();
 	printf("\nUsage: %s [options] [profile]\n\n"
@@ -298,7 +298,7 @@ static int handle_flag_table(optflag_table_t *table, const char *optarg,
 	return 0;
 }
 
-static void display_dump(char *command)
+static void display_dump(const char *command)
 {
 	display_version();
 	printf("\n%s: --dump [Option]\n\n"
@@ -310,7 +310,7 @@ static void display_dump(char *command)
 	print_flag_table(dumpflag_table);
 }
 
-static void display_optimize(char *command)
+static void display_optimize(const char *command)
 {
 	display_version();
 	printf("\n%s: -O [Option]\n\n"
@@ -617,7 +617,7 @@ int find_subdomainfs_mountpoint(void)
 			 "mounted?\nUse --subdomainfs to override.\n"),
 		       MOUNTED_FS);
 		} else {
-			subdomainbase = DEFAULT_APPARMORFS;
+			subdomainbase = strdup(DEFAULT_APPARMORFS);
 		}
 	}
 
@@ -788,7 +788,7 @@ out:
 	return;
 }
 
-static void get_flags_string(char **flags, char *flags_file) {
+static void get_flags_string(char **flags, const char *flags_file) {
 	char *pos;
 	FILE *f = NULL;
 	size_t size;
