@@ -230,14 +230,14 @@ extern int names_only;
 extern int option;
 extern int current_lineno;
 extern dfaflags_t dfaflags;
-extern char *progname;
+extern const char *progname;
 extern char *subdomainbase;
 extern char *profilename;
 extern char *profile_ns;
 extern char *current_filename;
 extern FILE *ofile;
 extern int read_implies_exec;
-extern void pwarn(char *fmt, ...) __attribute__((__format__(__printf__, 1, 2)));
+extern void pwarn(const char *fmt, ...) __attribute__((__format__(__printf__, 1, 2)));
 
 /* from parser_main (cannot be used in tst builds) */
 extern int force_complain;
@@ -252,7 +252,7 @@ extern void yyerror(const char *msg, ...);
 extern int yylex(void);
 
 /* parser_include.c */
-extern char *basedir;
+extern const char *basedir;
 
 /* parser_regex.c */
 extern int process_regex(Profile *prof);
@@ -267,7 +267,7 @@ extern int process_policy_ents(Profile *prof);
 
 /* parser_variable.c */
 extern int process_variables(Profile *prof);
-extern struct var_string *split_out_var(char *string);
+extern struct var_string *split_out_var(const char *string);
 extern void free_var_string(struct var_string *var);
 
 /* parser_misc.c */
@@ -279,9 +279,9 @@ extern struct cond_entry *new_cond_entry(char *name, int eq, struct value_list *
 extern void free_cond_entry(struct cond_entry *ent);
 extern void free_cond_list(struct cond_entry *ents);
 extern void print_cond_entry(struct cond_entry *ent);
-extern char *processid(char *string, int len);
-extern char *processquoted(char *string, int len);
-extern char *processunquoted(char *string, int len);
+extern char *processid(const char *string, int len);
+extern char *processquoted(const char *string, int len);
+extern char *processunquoted(const char *string, int len);
 extern int get_keyword_token(const char *keyword);
 extern int name_to_capability(const char *keyword);
 extern int get_rlimit(const char *name);

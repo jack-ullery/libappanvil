@@ -327,7 +327,7 @@ inline int sd_write64(sd_serialize *p, u64 b)
 	return 1;
 }
 
-inline int sd_write_name(sd_serialize *p, char *name)
+inline int sd_write_name(sd_serialize *p, const char *name)
 {
 	long size = 0;
 	PDEBUG("Writing name '%s'\n", name);
@@ -362,7 +362,7 @@ inline int sd_write_blob(sd_serialize *p, void *b, int buf_size, char *name)
 
 #define align64(X) (((size_t) (X) + (size_t) 7) & ~((size_t) 7))
 inline int sd_write_aligned_blob(sd_serialize *p, void *b, int buf_size,
-				 char *name)
+				 const char *name)
 {
 	size_t pad;
 	u32 tmp;
@@ -381,7 +381,7 @@ inline int sd_write_aligned_blob(sd_serialize *p, void *b, int buf_size,
 	return 1;
 }
 
-static int sd_write_strn(sd_serialize *p, char *b, int size, char *name)
+static int sd_write_strn(sd_serialize *p, char *b, int size, const char *name)
 {
 	u16 tmp;
 	if (!sd_write_name(p, name))
@@ -396,12 +396,12 @@ static int sd_write_strn(sd_serialize *p, char *b, int size, char *name)
 	return 1;
 }
 
-inline int sd_write_string(sd_serialize *p, char *b, char *name)
+inline int sd_write_string(sd_serialize *p, char *b, const char *name)
 {
 	return sd_write_strn(p, b, strlen(b) + 1, name);
 }
 
-inline int sd_write_struct(sd_serialize *p, char *name)
+inline int sd_write_struct(sd_serialize *p, const char *name)
 {
 	if (!sd_write_name(p, name))
 		return 0;
@@ -417,7 +417,7 @@ inline int sd_write_structend(sd_serialize *p)
 	return 1;
 }
 
-inline int sd_write_array(sd_serialize *p, char *name, int size)
+inline int sd_write_array(sd_serialize *p, const char *name, int size)
 {
 	u16 tmp;
 	if (!sd_write_name(p, name))
@@ -437,7 +437,7 @@ inline int sd_write_arrayend(sd_serialize *p)
 	return 1;
 }
 
-inline int sd_write_list(sd_serialize *p, char *name)
+inline int sd_write_list(sd_serialize *p, const char *name)
 {
 	if (!sd_write_name(p, name))
 		return 0;
@@ -724,7 +724,7 @@ int __sd_serialize_profile(int option, Profile *prof)
 		if (kernel_load) fd = open(filename, O_WRONLY);
 		break;
 	case OPTION_STDOUT:
-		filename = "stdout";
+		filename = strdup("stdout");
 		fd = dup(1);
 		break;
 	case OPTION_OFILE:
@@ -745,8 +745,7 @@ int __sd_serialize_profile(int option, Profile *prof)
 
 	error = 0;
 
-	if (option != OPTION_STDOUT && option != OPTION_OFILE)
-		free(filename);
+	free(filename);
 
 	if (option == OPTION_REMOVE) {
 		char *name, *ns = NULL;

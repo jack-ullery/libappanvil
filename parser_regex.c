@@ -494,7 +494,7 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 		/* add the pair rule */
 		char lbuf[PATH_MAX + 8];
 		int perms = AA_LINK_BITS & entry->mode;
-		char *vec[2];
+		const char *vec[2];
 		int pos;
 		vec[0] = tbuf;
 		if (entry->link_name) {
@@ -512,7 +512,7 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 			return FALSE;
 	}
 	if (entry->mode & AA_CHANGE_PROFILE) {
-		char *vec[3];
+		const char *vec[3];
 		char lbuf[PATH_MAX + 8];
 		int index = 1;
 
@@ -538,7 +538,7 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 	if (entry->mode & (AA_USER_PTRACE | AA_OTHER_PTRACE)) {
 		int mode = entry->mode & (AA_USER_PTRACE | AA_OTHER_PTRACE);
 		if (entry->ns) {
-			char *vec[2];
+			const char *vec[2];
 			vec[0] = entry->ns;
 			vec[1] = entry->name;
 			if (!aare_add_rule_vec(dfarules, 0, mode, 0, 2, vec, dfaflags))
@@ -767,7 +767,8 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 	char typebuf[PATH_MAX + 3];
 	char flagsbuf[PATH_MAX + 3];
 	char optsbuf[PATH_MAX + 3];
-	char *p, *vec[5];
+	char *p;
+	const char *vec[5];
 	int count = 0;
 	unsigned int flags, inv_flags;
 
@@ -1033,7 +1034,8 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 	char pathbuf[PATH_MAX + 3];
 	char ifacebuf[PATH_MAX + 3];
 	char memberbuf[PATH_MAX + 3];
-	char *p, *vec[6];
+	char *p;
+	const char *vec[6];
 
 	pattern_t ptype;
 	int pos;

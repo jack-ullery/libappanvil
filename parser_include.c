@@ -73,9 +73,9 @@ static char *stripblanks(char *s);
 /* default base directory is /etc/subdomain.d, it can be overriden
    with the -b option. */
 
-char *basedir;
-static char *default_basedir = "/etc/apparmor.d";
-static char *old_basedir = "/etc/subdomain.d";
+const char *basedir;
+static const char *default_basedir = "/etc/apparmor.d";
+static const char *old_basedir = "/etc/subdomain.d";
 
 
 /* set up basedir so that it can be overridden/used later. */
@@ -130,7 +130,7 @@ void set_base_dir(char *dir)
 }
 
 /* Add a directory to the search path. */
-int add_search_dir(char *dir)
+int add_search_dir(const char *dir)
 {
 	char *t;
 	if (npath >= MAX_PATH) {

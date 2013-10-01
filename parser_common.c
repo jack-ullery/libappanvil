@@ -36,7 +36,7 @@ int option = OPTION_ADD;
 dfaflags_t dfaflags = (dfaflags_t)(DFA_CONTROL_TREE_NORMAL | DFA_CONTROL_TREE_SIMPLE | DFA_CONTROL_MINIMIZE | DFA_CONTROL_MINIMIZE_HASH_TRANS);
 
 char *subdomainbase = NULL;
-char *progname = __FILE__;
+const char *progname = __FILE__;
 char *profile_ns = NULL;
 char *profilename = NULL;
 char *current_filename = NULL;
@@ -49,7 +49,7 @@ int read_implies_exec = 1;
 int read_implies_exec = 0;
 #endif
 
-void pwarn(char *fmt, ...)
+void pwarn(const char *fmt, ...)
 {
         va_list arg;
         char *newfmt;

@@ -384,7 +384,7 @@ struct aa_network_entry *network_entry(const char *family, const char *type,
 	return entry;
 };
 
-char *processunquoted(char *string, int len)
+char *processunquoted(const char *string, int len)
 {
 	char *tmp, *s;
 	int l;
@@ -420,7 +420,7 @@ char *processunquoted(char *string, int len)
 	return tmp;
 }
 
-char *processid(char *string, int len)
+char *processid(const char *string, int len)
 {
 	/* lexer should never call this fn if len <= 0 */
 	assert(len > 0);
@@ -433,7 +433,7 @@ char *processid(char *string, int len)
 /* rewrite a quoted string substituting escaped characters for the
  * real thing.  Strip the quotes around the string */
 
-char *processquoted(char *string, int len)
+char *processquoted(const char *string, int len)
 {
 	char *tmp, *s;
 	int l;
@@ -1235,7 +1235,7 @@ int test_str_to_boolean(void)
 int test_processunquoted(void)
 {
 	int rc = 0;
-	char *teststring, *processedstring;
+	const char *teststring, *processedstring;
 
 	teststring = "";
 	MY_TEST(strcmp(teststring, processunquoted(teststring, strlen(teststring))) == 0,
@@ -1263,7 +1263,7 @@ int test_processunquoted(void)
 int test_processquoted(void)
 {
 	int rc = 0;
-	char *teststring, *processedstring;
+	const char *teststring, *processedstring;
 	char *out;
 
 	teststring = "";

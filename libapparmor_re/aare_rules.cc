@@ -62,7 +62,7 @@ void aare_delete_ruleset(aare_ruleset_t *rules)
 	aare_reset_matchflags();
 }
 
-int aare_add_rule(aare_ruleset_t *rules, char *rule, int deny,
+int aare_add_rule(aare_ruleset_t *rules, const char *rule, int deny,
 			     uint32_t perms, uint32_t audit, dfaflags_t flags)
 {
 	return aare_add_rule_vec(rules, deny, perms, audit, 1, &rule, flags);
@@ -96,7 +96,7 @@ void aare_reset_matchflags(void)
 
 int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 				 uint32_t perms, uint32_t audit,
-				 int count, char **rulev, dfaflags_t flags)
+				 int count, const char **rulev, dfaflags_t flags)
 {
 	Node *tree = NULL, *accept;
 	int exact_match;
