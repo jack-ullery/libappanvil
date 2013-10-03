@@ -27,10 +27,6 @@
   capability sys_time,
   capability sys_nice,
 
-  network inet dgram,
-  network inet stream,
-  network inet6 stream,
-
   /drift/ntp.drift rwl,
   /drift/ntp.drift.TEMP rwl,
   /etc/ntp.conf r,
@@ -39,7 +35,6 @@
   /etc/ntp/step-tickers r,
   /etc/ntpd.conf r,
   /etc/ntpd.conf.tmp r,
-  /etc/gai.conf r,
 
   /tmp/ntp* rwl,
   /usr/sbin/ntpd rmix,
@@ -60,7 +55,6 @@
   /{,var/}run/ntpd.pid w,
   /var/tmp/ntp* rwl,
   @{PROC}/@{pid}/net/if_inet6 r,
-  @{PROC}/sys/kernel/ngroups_max r,
 
   # allow access for when chrooted
   /var/lib/ntp/@{PROC}/@{pid}/net/if_inet6 r,
