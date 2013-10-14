@@ -2,6 +2,9 @@
  *   Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
  *   NOVELL (All rights reserved)
  *
+ *   Copyright (c) 2013
+ *   Canonical Ltd. (All rights reserved)
+ *
  *   This program is free software; you can redistribute it and/or
  *   modify it under the terms of version 2 of the GNU General Public
  *   License published by the Free Software Foundation.
@@ -208,9 +211,9 @@ const char *sd_code_names[] = {
 /* Currently we will just use a contiguous block of memory
    be we are going to just hide this for the moment.  */
 struct __sdserialize {
-	void *buffer;
-	void *pos;
-	void *extent;
+	u8 *buffer;
+	u8 *pos;
+	u8 *extent;
 };
 
 sd_serialize *alloc_sd_serial(void)
@@ -218,7 +221,7 @@ sd_serialize *alloc_sd_serial(void)
 	sd_serialize *p = (sd_serialize *) calloc(1, sizeof(sd_serialize));
 	if (!p)
 		return NULL;
-	p->buffer = malloc(BUFFERINC);
+	p->buffer = (u8 *) malloc(BUFFERINC);
 	if (!p->buffer) {
 		free(p);
 		return NULL;
@@ -266,7 +269,7 @@ inline int sd_prepare_write(sd_serialize *p, enum sd_code code, size_t size)
 	if (p->pos + SD_CODE_SIZE + size > p->extent) {
 		long pos;
 		/* try and reallocate the buffer */
-		void *buffer = malloc((long)(p->extent) - (long)(p->buffer) + (BUFFERINC * num));
+		u8 *buffer = (u8 *) malloc((long)(p->extent) - (long)(p->buffer) + (BUFFERINC * num));
 		memcpy(buffer, p->buffer, (long)(p->extent) - (long)(p->buffer));
 
 		pos = (long)(p->pos) - (long)(p->buffer);
