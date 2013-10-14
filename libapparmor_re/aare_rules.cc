@@ -1,7 +1,7 @@
 /*
  * (C) 2006, 2007 Andreas Gruenbacher <agruen@suse.de>
  * Copyright (c) 2003-2008 Novell, Inc. (All rights reserved)
- * Copyright 2009-2012 Canonical Ltd.
+ * Copyright 2009-2013 Canonical Ltd. (All rights reserved)
  *
  * The libapparmor library is licensed under the terms of the GNU
  * Lesser General Public License, version 2.1. Please see the file
@@ -123,7 +123,7 @@ int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 	 * on how we split permission bitmasks here.
 	 */
 	exact_match = 1;
-	for (depth_first_traversal i(tree); i; i++) {
+	for (depth_first_traversal i(tree); i && exact_match; i++) {
 		if (dynamic_cast<StarNode *>(*i) ||
 		    dynamic_cast<PlusNode *>(*i) ||
 		    dynamic_cast<AnyCharNode *>(*i) ||
