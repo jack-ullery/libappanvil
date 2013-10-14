@@ -208,7 +208,7 @@ mount.o: mount.c mount.h parser.h immunix.h
 lib.o: lib.c lib.h parser.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-dbus.o: dbus.c dbus.h parser.h immunix.h
+dbus.o: dbus.c dbus.h parser.h immunix.h parser_yacc.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 profile.o: profile.cc profile.h parser.h
