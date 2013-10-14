@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2012
+ *   Copyright (c) 2012, 2013
  *   Canonical, Ltd. (All rights reserved)
  *
  *   This program is free software; you can redistribute it and/or
@@ -72,12 +72,17 @@ Profile::~Profile()
 		aare_delete_ruleset(policy.rules);
 	if (policy.dfa)
 		free(policy.dfa);
+	if (xmatch)
+		free(xmatch);
 	if (name)
 		free(name);
 	if (attachment)
 		free(attachment);
 	if (ns)
 		free(ns);
+	for (int i = (AA_EXEC_LOCAL >> 10) + 1; i < AA_EXEC_COUNT; i++)
+		if (exec_table[i])
+			free(exec_table[i]);
 	if (net.allow)
 		free(net.allow);
 	if (net.audit)

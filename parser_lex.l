@@ -1,8 +1,8 @@
 /*
  *   Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
  *   NOVELL (All rights reserved)
- *   Copyright (c) 2010 - 2012
- *   Canonical Ltd.
+ *   Copyright (c) 2010 - 2013
+ *   Canonical Ltd. (All rights reserved)
  *
  *   This program is free software; you can redistribute it and/or
  *   modify it under the terms of version 2 of the GNU General Public
@@ -167,8 +167,10 @@ static int include_dir_cb(__unused DIR *dir, const char *name, struct stat *st,
 	if (asprintf(&path, "%s/%s", d->fullpath, name) < 0)
 		yyerror("Out of memory");
 
-	if (is_blacklisted(name, path))
+	if (is_blacklisted(name, path)) {
+		free(path);
 		return 0;
+	}
 
 	if (S_ISREG(st->st_mode)) {
 		if (!(yyin = fopen(path,"r")))
