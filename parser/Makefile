@@ -53,7 +53,9 @@ CFLAGS += -pg -D DEBUG
 endif
 endif #CFLAGS
 
-EXTRA_CXXFLAGS = ${CFLAGS} ${CXX_WARNINGS} -D_GNU_SOURCE
+LIBAPPARMOR_PATH=../libraries/libapparmor/src/
+LIBAPPARMOR_LDPATH=$(LIBAPPARMOR_PATH)/.libs/
+EXTRA_CXXFLAGS = ${CFLAGS} ${CXX_WARNINGS} -D_GNU_SOURCE -I$(LIBAPPARMOR_PATH)
 EXTRA_CFLAGS = ${EXTRA_CXXFLAGS} ${CPP_WARNINGS}
 
 #LEXLIB	:= -lfl
@@ -85,7 +87,7 @@ OBJECTS = $(SRCS:.c=.o)
 AAREDIR= libapparmor_re
 AAREOBJECT = ${AAREDIR}/libapparmor_re.a
 AAREOBJECTS = $(AAREOBJECT) libstdc++.a
-AARE_LDFLAGS=-static-libgcc -L.
+AARE_LDFLAGS=-static-libgcc -L. -L$(LIBAPPARMOR_LDPATH)
 AALIB = -lapparmor
 
 LEX_C_FILES	= parser_lex.c
