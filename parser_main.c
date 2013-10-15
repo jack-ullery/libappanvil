@@ -1122,7 +1122,7 @@ static int create_cache(const char *cachedir, const char *path,
 	struct stat stat_file;
 	FILE * f = NULL;
 
-	if (cond_clear_cache && clear_cache_files(cacheloc) != 0)
+	if (clear_cache_files(cacheloc) != 0)
 		goto error;
 
 create_file:
@@ -1197,7 +1197,7 @@ static void setup_flags(void)
 	get_flags_string(&cache_flags, cache_features_path);
 	if (cache_flags) {
 		if (strcmp(flags_string, cache_flags) != 0) {
-			if (write_cache) {
+			if (write_cache && cond_clear_cache) {
 				if (create_cache(cacheloc, cache_features_path,
 						 flags_string))
 					skip_read_cache = 1;
