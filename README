@@ -81,7 +81,7 @@ $ make install
 
 parser:
 $ cd parser
-$ make
+$ make		# depends on libapparmor having been built first
 $ make check
 $ make install
 
