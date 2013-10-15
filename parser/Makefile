@@ -86,8 +86,8 @@ OBJECTS = $(SRCS:.c=.o)
 
 AAREDIR= libapparmor_re
 AAREOBJECT = ${AAREDIR}/libapparmor_re.a
-AAREOBJECTS = $(AAREOBJECT) libstdc++.a
-AARE_LDFLAGS=-static-libgcc -L. -L$(LIBAPPARMOR_LDPATH)
+AAREOBJECTS = $(AAREOBJECT)
+AARE_LDFLAGS=-static-libgcc -static-libstdc++ -L. -L$(LIBAPPARMOR_LDPATH)
 AALIB = -lapparmor
 
 LEX_C_FILES	= parser_lex.c
@@ -149,11 +149,6 @@ indep: docs
 
 all:	arch indep
 
-
-.PHONY: libstdc++.a
-libstdc++.a:
-	rm -f ./libstdc++.a
-	ln -s `$(CXX) -print-file-name=libstdc++.a`
 
 apparmor_parser: $(OBJECTS) $(AAREOBJECTS)
 	$(CXX) $(LDFLAGS) $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(LIBS) \
