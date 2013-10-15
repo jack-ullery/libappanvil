@@ -27,7 +27,7 @@ gen_dbus: $(GEN_TRANS_DIRS)
 	./gen-dbus.pl
 
 error_output: $(PARSER)
-	$(PARSER) -S -I errors >/dev/null errors/okay.sd
+	LANG=C $(PARSER) -S -I errors >/dev/null errors/okay.sd
 	LANG=C $(PARSER) -S -I errors 2>&1 >/dev/null errors/single.sd | \
 		grep -q "AppArmor parser error for errors/single.sd in errors/single.sd at line 3: Could not open 'failure'"
 	LANG=C $(PARSER) -S -I errors 2>&1 >/dev/null errors/double.sd | \
