@@ -50,6 +50,9 @@ minimize: $(PARSER)
 equality: $(PARSER)
 	LANG=C APPARMOR_PARSER="$(PARSER)" ./equality.sh
 
+valgrind: $(PARSER)
+	LANG=C ./valgrind_simple.py -p "$(PARSER)" -v simple_tests
+
 $(PARSER):
 	make -C $(PARSER_DIR) $(PARSER_BIN)
 
