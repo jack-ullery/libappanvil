@@ -88,7 +88,7 @@ AAREDIR= libapparmor_re
 AAREOBJECT = ${AAREDIR}/libapparmor_re.a
 AAREOBJECTS = $(AAREOBJECT)
 AARE_LDFLAGS=-static-libgcc -static-libstdc++ -L. -L$(LIBAPPARMOR_LDPATH)
-AALIB = -lapparmor
+AALIB = -Wl,-Bstatic -lapparmor -Wl,-Bdynamic -lpthread
 
 LEX_C_FILES	= parser_lex.c
 YACC_C_FILES	= parser_yacc.c parser_yacc.h
