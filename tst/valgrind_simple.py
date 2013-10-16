@@ -57,7 +57,7 @@ VALGRIND_SUPPRESSIONS = '''
 }'''
 
 
-class AAParserValgrindTests(unittest.TestCase):
+class AAParserValgrindTests(testlib.AATestTemplate):
     def setUp(self):
         # REPORT ALL THE OUTPUT
         self.maxDiff = None
@@ -70,7 +70,7 @@ class AAParserValgrindTests(unittest.TestCase):
         command.append(config.parser)
         command.extend(parser_args)
         command.append(testname)
-        rc, output = testlib.run_cmd(command, timeout=120)
+        rc, output = self.run_cmd(command, timeout=120)
         self.assertNotIn(rc, failure_rc,
                     "valgrind returned error code %d, gave the following output\n%s" % (rc, output))
 
