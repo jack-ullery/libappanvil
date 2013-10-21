@@ -138,8 +138,18 @@ def UI_YesNoCancel(text, default):
                     ans = 'y'
                 elif ans == nokey:
                     ans = 'n'
-                elif ans== cancelkey:
+                elif ans == cancelkey:
                     ans= 'c'
+                elif ans == 'left':
+                    if default == 'n':
+                        default = 'y'
+                    elif default == 'c':
+                        default = 'n'
+                elif ans == 'right':
+                    if default == 'y':
+                        default = 'n'
+                    elif default == 'n':
+                        default = 'c'
             else:
                 ans = default
     else:
