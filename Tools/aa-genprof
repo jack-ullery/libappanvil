@@ -19,6 +19,9 @@ import re
 import subprocess
 import sys
 
+from apparmor.common import init_translations
+init_translations()
+
 import apparmor.aa as apparmor
 
 def sysctl_read(path):

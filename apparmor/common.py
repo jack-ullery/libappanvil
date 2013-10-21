@@ -11,6 +11,7 @@
 from __future__ import print_function
 import codecs
 import collections
+import gettext
 import glob
 import logging
 import os
@@ -164,6 +165,12 @@ def hasher():
     """A neat alternative to perl's hash reference"""
     # Creates a dictionary for any depth and returns empty dictionary otherwise
     return collections.defaultdict(hasher)
+
+def init_translations(domain='apparmor-utils'):
+    """Installs the translations for the given domain, defaults to apparmor-utils domain"""
+    #Setup Translation
+    gettext.translation(domain, fallback=True)
+    gettext.install(domain)
 
 
 def convert_regexp(regexp):

@@ -13,11 +13,28 @@
 #
 # ----------------------------------------------------------------------
 import argparse
+import gettext
+import locale
 import os
 import re
 import sys
 
+from apparmor.common import init_translations
+init_translations()
+
 import apparmor.aa as apparmor
+
+#gettext.bindtextdomain('apparmor-utils', '/usr/share/locale/')#/%s/LC_MESSAGES/apparmor-utils.mo' % locale.getlocale()[0])
+#gettext.textdomain('apparmor-utils')
+#_ = gettext.gettext
+#gettext.translation('apparmor-utils','./Trans/')
+#gettext.install('apparmor-utils')
+#print(os.path.join('/usr/share/locale', locale.getlocale()[0], 'LC_MESSAGES', '%s.mo' % 
+#         'apparmor-utils'))
+#_ = gettext.translation('apparmor-utils', '/usr/share/locale', [locale.getlocale()[0]]).gettext
+
+#gettext.find
+
 
 parser = argparse.ArgumentParser(description=_('Lists unconfined processes having tcp or udp ports'))
 parser.add_argument('--paranoid', action='store_true', help=_('scan all processes from /proc'))

@@ -15,6 +15,9 @@
 import argparse
 import sys
 
+from apparmor.common import init_translations
+init_translations()
+
 import apparmor.aa
 import apparmor.aamode
 import apparmor.severity

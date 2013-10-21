@@ -14,6 +14,9 @@
 # ----------------------------------------------------------------------
 import argparse
 
+from apparmor.common import init_translations
+init_translations()
+
 import apparmor.tools
 
 parser = argparse.ArgumentParser(description=_('Switch the given program to enforce mode'))

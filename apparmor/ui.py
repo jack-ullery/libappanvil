@@ -34,7 +34,7 @@ def getkey():
             key = readkey()
             if(ARROWS.get(key, False)):
                 key = ARROWS[key]
-    return key
+    return key.strip()
 
 def UI_Info(text):
     debug_logger.info(text)
@@ -56,8 +56,10 @@ def UI_Important(text):
 
 def get_translated_hotkey(translated, cmsg=''):
     msg = 'PromptUser: '+_('Invalid hotkey for')
-    if re.search('\((\S)\)', translated):
-        return re.search('\((\S)\)', translated).groups()[0]
+
+    # Originally (\S) was used but with translations it would not work :(
+    if re.search('\((\S*)\)', translated, re.LOCALE):
+        return re.search('\((\S*)\)', translated, re.LOCALE).groups()[0]
     else:
         if cmsg:
             raise AppArmorException(cmsg)
@@ -86,8 +88,12 @@ def UI_YesNo(text, default):
                 ans = ans.lower()
                 if ans == yeskey:
                     ans = 'y'
-                else:
+                elif ans == nokey:
                     ans = 'n'
+                elif ans == 'left':
+                    default = 'y'
+                elif ans == 'right':
+                    default = 'n'
             else:
                 ans = default
 

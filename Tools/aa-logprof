@@ -15,6 +15,9 @@
 import argparse
 import os
 
+from apparmor.common import init_translations
+init_translations()
+
 import apparmor.aa as apparmor
 
 parser = argparse.ArgumentParser(description=_('Process log entries to generate profiles'))
@@ -26,6 +29,7 @@ args = parser.parse_args()
 profiledir = args.dir
 filename = args.file
 logmark = args.mark or ''
+
 
 aa_mountpoint = apparmor.check_for_apparmor()
 if not aa_mountpoint:

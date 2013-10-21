@@ -105,6 +105,17 @@ class Test(unittest.TestCase):
 
     def test_autodep(self):
         pass
+    
+    def test_unconfined(self):
+        output = subprocess.check_output('%s ./../Tools/aa-unconfined'%python_interpreter, shell=True)
+        
+        output_force = subprocess.check_output('%s ./../Tools/aa-unconfined --paranoid'%python_interpreter, shell=True)
+        
+        self.assertIsNot(output, '', 'Failed to run aa-unconfined')
+        
+        self.assertIsNot(output_force, '', 'Failed to run aa-unconfined in paranoid mode')
+        
+        
 
     def test_cleanprof(self):
         input_file = 'cleanprof_test.in'
