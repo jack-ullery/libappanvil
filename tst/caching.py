@@ -59,8 +59,7 @@ class AAParserCachingCommon(testlib.AATestTemplate):
         os.mkdir(self.cache_dir)
 
         # write our sample profile out
-        self.profile = os.path.join(self.tmp_dir, PROFILE)
-        testlib.write_file(self.profile, PROFILE_CONTENTS)
+        self.profile = testlib.write_file(self.tmp_dir, PROFILE, PROFILE_CONTENTS)
 
         if config.debug:
             self.do_cleanup = False
@@ -256,7 +255,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         self._generate_cache_file()
 
-        testlib.write_file(os.path.join(self.cache_dir, '.features'), 'monkey\n')
+        testlib.write_file(self.cache_dir, '.features', 'monkey\n')
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '-r', self.profile])
@@ -266,8 +265,7 @@ class AAParserCachingTests(AAParserCachingCommon):
     def test_cache_writing_does_not_overwrite_features_when_features_differ(self):
         '''test cache writing does not overwrite the features files when it differs and --skip-bad-cache is given'''
 
-        features_file = os.path.join(self.cache_dir, '.features')
-        testlib.write_file(features_file, 'monkey\n')
+        features_file = testlib.write_file(self.cache_dir, '.features', 'monkey\n')
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '--write-cache', '--skip-bad-cache', '-r', self.profile])
@@ -280,7 +278,7 @@ class AAParserCachingTests(AAParserCachingCommon):
     def test_cache_writing_skipped_when_features_differ(self):
         '''test cache writing is skipped when features file differs'''
 
-        testlib.write_file(os.path.join(self.cache_dir, '.features'), 'monkey\n')
+        testlib.write_file(self.cache_dir, '.features', 'monkey\n')
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '--write-cache', '--skip-bad-cache', '-r', self.profile])
@@ -291,8 +289,7 @@ class AAParserCachingTests(AAParserCachingCommon):
     def test_cache_writing_updates_features(self):
         '''test cache writing updates features'''
 
-        features_file = os.path.join(self.cache_dir, '.features')
-        testlib.write_file(features_file, 'monkey\n')
+        features_file = testlib.write_file(self.cache_dir, '.features', 'monkey\n')
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '--write-cache', '-r', self.profile])
@@ -304,8 +301,7 @@ class AAParserCachingTests(AAParserCachingCommon):
     def test_cache_writing_updates_cache_file(self):
         '''test cache writing updates cache file'''
 
-        cache_file = os.path.join(self.cache_dir, PROFILE)
-        testlib.write_file(cache_file, 'monkey\n')
+        cache_file = testlib.write_file(self.cache_dir, PROFILE, 'monkey\n')
         orig_size = os.stat(cache_file).st_size
 
         cmd = list(self.cmd_prefix)
@@ -323,8 +319,7 @@ class AAParserCachingTests(AAParserCachingCommon):
     def test_cache_writing_clears_all_files(self):
         '''test cache writing clears all cache files'''
 
-        check_file = os.path.join(self.cache_dir, 'monkey')
-        testlib.write_file(check_file, 'monkey\n')
+        check_file = testlib.write_file(self.cache_dir, 'monkey', 'monkey\n')
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '--write-cache', '-r', self.profile])
@@ -362,8 +357,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
     def _purge_cache_test(self, location):
 
-        cache_file = os.path.join(self.cache_dir, location)
-        testlib.write_file(cache_file, 'monkey\n')
+        cache_file = testlib.write_file(self.cache_dir, location, 'monkey\n')
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '--purge-cache', '-r', self.profile])
@@ -415,7 +409,7 @@ class AAParserAltCacheTests(AAParserCachingTests):
         filelist = [PROFILE, '.features', 'monkey']
 
         for f in filelist:
-            testlib.write_file(os.path.join(self.orig_cache_dir, f), 'monkey\n')
+            testlib.write_file(self.orig_cache_dir, f, 'monkey\n')
 
         self._purge_cache_test(PROFILE)
 

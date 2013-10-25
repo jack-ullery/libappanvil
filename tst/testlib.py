@@ -165,10 +165,12 @@ def touch(path):
     return os.utime(path, None)
 
 
-def write_file(path, contents):
-    '''write contents to path'''
+def write_file(directory, file, contents):
+    '''construct path, write contents to it, and return the constructed path'''
+    path = os.path.join(directory, file)
     with open(path, 'w+') as f:
         f.write(contents)
+    return path
 
 
 def keep_on_fail(unittest_func):
