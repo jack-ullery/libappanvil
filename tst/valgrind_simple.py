@@ -72,7 +72,7 @@ class AAParserValgrindTests(testlib.AATestTemplate):
         command.append(testname)
         rc, output = self.run_cmd(command, timeout=120)
         self.assertNotIn(rc, failure_rc,
-                    "valgrind returned error code %d, gave the following output\n%s" % (rc, output))
+                    "valgrind returned error code %d, gave the following output\n%s\ncommand run: %s" % (rc, output, " ".join(command)))
 
 
 def find_testcases(testdir):
