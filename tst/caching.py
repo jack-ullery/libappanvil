@@ -228,7 +228,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '-r', self.profile])
-        report = self.run_cmd_check(cmd, expected_string='Cached reload succeeded')
+        self.run_cmd_check(cmd, expected_string='Cached reload succeeded')
 
     @testlib.keep_on_fail
     def test_cache_not_loaded_when_skip_arg(self):
@@ -238,7 +238,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '--skip-cache', '-r', self.profile])
-        report = self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
+        self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
     @testlib.keep_on_fail
     def test_cache_not_loaded_when_skip_read_arg(self):
@@ -248,7 +248,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '--skip-read-cache', '-r', self.profile])
-        report = self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
+        self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
     @testlib.keep_on_fail
     def test_cache_not_loaded_when_features_differ(self):
@@ -260,7 +260,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '-r', self.profile])
-        report = self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
+        self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
     @testlib.keep_on_fail
     def test_cache_writing_does_not_overwrite_features_when_features_differ(self):
@@ -271,7 +271,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '--write-cache', '--skip-bad-cache', '-r', self.profile])
-        report = self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
+        self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
         self.assert_path_exists(features_file)
         # ensure that the features does *not* match the current features set
         self.compare_features_file(features_file, expected=False)
@@ -284,7 +284,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '--write-cache', '--skip-bad-cache', '-r', self.profile])
-        report = self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
+        self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
         self.assert_path_exists(os.path.join(self.cache_dir, PROFILE), expected=False)
 
     @testlib.keep_on_fail
@@ -296,7 +296,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '--write-cache', '-r', self.profile])
-        report = self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
+        self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
         self.assert_path_exists(features_file)
         self.compare_features_file(features_file)
 
@@ -310,7 +310,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '--write-cache', '-r', self.profile])
-        report = self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
+        self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
         self.assert_path_exists(cache_file)
         with open(cache_file, 'rb') as f:
             new_size = os.fstat(f.fileno()).st_size
@@ -328,7 +328,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '--write-cache', '-r', self.profile])
-        report = self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
+        self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
         self.assert_path_exists(check_file, expected=False)
 
     @testlib.keep_on_fail
@@ -341,7 +341,7 @@ class AAParserCachingTests(AAParserCachingCommon):
 
         cmd = list(self.cmd_prefix)
         cmd.extend(['-v', '-r', self.profile])
-        report = self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
+        self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
     @testlib.keep_on_fail
     def test_parser_newer_skips_cache(self):
@@ -358,7 +358,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         cmd = list(self.cmd_prefix)
         cmd[0] = new_parser
         cmd.extend(['-v', '-r', self.profile])
-        report = self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
+        self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
     def _purge_cache_test(self, location):
 
