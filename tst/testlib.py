@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # ------------------------------------------------------------------
 #
 #   Copyright (C) 2013 Canonical Ltd.
@@ -31,7 +31,31 @@ def subprocess_setup():
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 
-class AATestTemplate(unittest.TestCase):
+class AANoCleanupMetaClass(type):
+    def __new__(cls, name, bases, attrs):
+
+        for attr_name, attr_value in attrs.items():
+            if attr_name.startswith("test_"):
+                attrs[attr_name] = cls.keep_on_fail(attr_value)
+        return super(AANoCleanupMetaClass, cls).__new__(cls, name, bases, attrs)
+
+    @classmethod
+    def keep_on_fail(cls, unittest_func):
+        '''wrapping function for unittest testcases to detect failure
+           and leave behind test files in tearDown(); to be used as
+           a decorator'''
+
+        def new_unittest_func(self):
+            try:
+                return unittest_func(self)
+            except Exception:
+                self.do_cleanup = False
+                raise
+
+        return new_unittest_func
+
+
+class AATestTemplate(unittest.TestCase, metaclass=AANoCleanupMetaClass):
     '''Stub class for use by test scripts'''
     debug = False
     do_cleanup = True
@@ -173,16 +197,3 @@ def write_file(directory, file, contents):
     return path
 
 
-def keep_on_fail(unittest_func):
-    '''wrapping function for unittest testcases to detect failure
-       and leave behind test files in tearDown(); to be used as a
-       decorator'''
-
-    def new_unittest_func(self):
-        try:
-            unittest_func(self)
-        except Exception:
-            self.do_cleanup = False
-            raise
-
-    return new_unittest_func
