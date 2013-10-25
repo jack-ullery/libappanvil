@@ -103,7 +103,9 @@ def main():
                    help="Don't use valgrind suppressions to skip false positives")
     p.add_argument('--dump-suppressions', action="store_true", dest="dump_suppressions",
                    help="Dump valgrind suppressions to stdout")
-    config, args = p.parse_args()
+    p.add_argument('testdir', action="store", default=DEFAULT_TESTDIR, nargs='?', metavar='dir',
+                   help="run tests on alternate directory [default = %(default)s]")
+    config = p.parse_args()
 
     if config.dump_suppressions:
         print(VALGRIND_SUPPRESSIONS)
@@ -112,11 +114,6 @@ def main():
     verbosity = 1
     if config.verbose:
         verbosity = 2
-
-    if len(args) == 1:
-        config.testdir = args[0]
-    else:
-        config.testdir = DEFAULT_TESTDIR
 
     if not config.skip_suppressions:
         suppression_file = create_suppressions()
