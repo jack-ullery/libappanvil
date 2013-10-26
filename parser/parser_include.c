@@ -279,7 +279,7 @@ struct include_stack_t {
 
 struct include_stack_t *include_stack_head = NULL;
 
-static void start_include_position(char *filename)
+static void start_include_position(const char *filename)
 {
 	if (current_filename)
 		free(current_filename);
@@ -323,7 +323,7 @@ void pop_include_stack(void)
 	free(include);
 }
 
-void reset_include_stack(char *filename)
+void reset_include_stack(const char *filename)
 {
 	while (include_stack_head)
 		pop_include_stack();

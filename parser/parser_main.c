@@ -160,7 +160,7 @@ static void display_usage(const char *command)
 	       "-W, --write-cache	Save cached profile (force with -T)\n"
 	       "    --skip-bad-cache	Don't clear cache if out of sync\n"
 	       "    --purge-cache	Clear cache regardless of its state\n"
-	       "    --create-cache-dire	Create the cache dir if missing\n"
+	       "    --create-cache-dir	Create the cache dir if missing\n"
 	       "-L, --cache-loc n	Set the location of the profile cache\n"
 	       "-q, --quiet		Don't emit warnings\n"
 	       "-v, --verbose		Show profile names as they load\n"
@@ -821,7 +821,7 @@ fail:
 	return;
 }
 
-int process_binary(int option, char *profilename)
+int process_binary(int option, const char *profilename)
 {
 	char *buffer = NULL;
 	int retval = 0, size = 0, asize = 0, rsize;
@@ -882,7 +882,7 @@ int process_binary(int option, char *profilename)
 	return retval;
 }
 
-void reset_parser(char *filename)
+void reset_parser(const char *filename)
 {
 	memset(&mru_tstamp, 0, sizeof(mru_tstamp));
 	free_aliases();
@@ -927,13 +927,13 @@ void update_mru_tstamp(FILE *file)
 		mru_tstamp = stat_file.st_ctim;
 }
 
-int process_profile(int option, char *profilename)
+int process_profile(int option, const char *profilename)
 {
 	struct stat stat_bin;
 	int retval = 0;
 	char * cachename = NULL;
 	char * cachetemp = NULL;
-	char *basename = NULL;
+	const char *basename = NULL;
 	FILE *cmd;
 
 	/* per-profile states */
@@ -1100,6 +1100,40 @@ out:
 	return retval;
 }
 
+/* data - name of parent dir */
+static int profile_dir_cb(__unused DIR *dir, const char *name, struct stat *st,
+			  void *data)
+{
+	int rc = 0;
+
+	if (!S_ISDIR(st->st_mode) && !is_blacklisted(name, NULL)) {
+		const char *dirname = (const char *)data;
+		char *path;
+		if (asprintf(&path, "%s/%s", dirname, name) < 0)
+			PERROR(_("Out of memory"));
+		rc = process_profile(option, path);
+		free(path);
+	}
+	return rc;
+}
+
+/* data - name of parent dir */
+static int binary_dir_cb(__unused DIR *dir, const char *name, struct stat *st,
+			 void *data)
+{
+	int rc = 0;
+
+	if (!S_ISDIR(st->st_mode) && !is_blacklisted(name, NULL)) {
+		const char *dirname = (const char *)data;
+		char *path;
+		if (asprintf(&path, "%s/%s", dirname, name) < 0)
+			PERROR(_("Out of memory"));
+		rc = process_binary(option, path);
+		free(path);
+	}
+	return rc;
+}
+
 static int clear_cache_cb(DIR *dir, const char *path, struct stat *st,
 			  __unused void *data)
 {
@@ -1264,6 +1298,8 @@ int main(int argc, char *argv[])
 
 	retval = 0;
 	for (i = optind; retval == 0 && i <= argc; i++) {
+		struct stat stat_file;
+
 		if (i < argc && !(profilename = strdup(argv[i]))) {
 			perror("strdup");
 			return -1;
@@ -1272,7 +1308,21 @@ int main(int argc, char *argv[])
 		if (i == argc && optind != argc)
 			continue;
 
-		if (binary_input) {
+		if (profilename && stat(profilename, &stat_file) == -1) {
+			PERROR("File %s not found, skipping...\n", profilename);
+			continue;
+		}
+
+		if (profilename && S_ISDIR(stat_file.st_mode)) {
+			int (*cb)(DIR *dir, const char *name, struct stat *st,
+				  void *data);
+			cb = binary_input ? binary_dir_cb : profile_dir_cb;
+			if (dirat_for_each(NULL, profilename, profilename, cb)) {
+				PDEBUG("Failed loading profiles from %s\n",
+				       profilename);
+				exit(1);
+			}
+		} else if (binary_input) {
 			retval = process_binary(option, profilename);
 		} else {
 			retval = process_profile(option, profilename);
