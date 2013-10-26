@@ -271,6 +271,7 @@ extern struct var_string *split_out_var(const char *string);
 extern void free_var_string(struct var_string *var);
 
 /* parser_misc.c */
+extern int is_blacklisted(const char *name, const char *path);
 extern struct value_list *new_value_list(char *value);
 extern struct value_list *dup_value_list(struct value_list *list);
 extern void free_value_list(struct value_list *list);

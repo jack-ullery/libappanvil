@@ -31,6 +31,6 @@ FILE *search_path(char *filename, char **fullpath);
 
 extern void push_include_stack(char *filename);
 extern void pop_include_stack(void);
-extern void reset_include_stack(char *filename);
+extern void reset_include_stack(const char *filename);
 
 #endif
