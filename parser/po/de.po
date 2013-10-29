@@ -235,7 +235,7 @@ msgstr "Qualifizierer in Großbuchstaben \"RWLIMX\" werden außer Kraft gesetzt.
 #: ../parser_misc.c:473 ../parser_misc.c:480 ../parser_misc.c:487
 #: ../parser_misc.c:484 ../parser_misc.c:491
 msgid "Conflict 'a' and 'w' perms are mutually exclusive."
-msgstr "Konfliktive permanente Werte für 'a' und 'W' schließen sich gegenseitig aus."
+msgstr "Berechtigungskonflikt - 'a' und 'w' schließen sich gegenseitig aus."
 
 #: ../parser_misc.c:497 ../parser_misc.c:504 ../parser_misc.c:508
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
@@ -335,16 +335,16 @@ msgstr "Assert: Für 'hat rule' wurde NULL zurückgegeben."
 
 #: parser_yacc.y:640 parser_yacc.y:637
 msgid "Assert: 'local_profile rule' returned NULL."
-msgstr "Assert: 'llocal_profile rulel' hat NULL zurückgegeben."
+msgstr "Assert: 'local_profile rule' hat NULL zurückgegeben."
 
 #: parser_yacc.y:772
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr "In Bedingungssatz verwendete Boolesche Variable '%s' deaktivieren"
+msgstr "In Bedingungssatz verwendete Boolsche Variable '%s' deaktivieren"
 
 #: parser_yacc.y:830
 msgid "subset can only be used with link rules."
-msgstr "Teilmenge kann nur mit Link-Regeln verwendet werden."
+msgstr "subset kann nur mit Link-Regeln verwendet werden."
 
 #: parser_yacc.y:832
 msgid "link and exec perms conflict on a file rule using ->"
@@ -356,7 +356,7 @@ msgstr "Link-Berechtigungen sind bei einem benannten Profilübergang nicht erlau
 
 #: parser_yacc.y:850
 msgid "unsafe rule missing exec permissions"
-msgstr "Unsichere Exec-Berechtigungen bei fehlender Regel"
+msgstr "Fehlende Exec-Berechtigungen bei unsicherer Regel"
 
 #: parser_yacc.y:853
 msgid "link perms are not allowed on a named profile transtion.\n"
@@ -374,7 +374,7 @@ msgstr "Ungültiger Netzwerkeintrag."
 #: parser_yacc.y:1064 parser_yacc.y:1072 parser_yacc.y:1053 parser_yacc.y:1061
 #, c-format
 msgid "Invalid capability %s."
-msgstr "Ungültige Funktion %s."
+msgstr "Ungültige Capability %s."
 
 #: parser_yacc.y:1089 parser_yacc.y:1078
 #, c-format
@@ -389,7 +389,7 @@ msgstr "AppArmor-Analysefehler, Zeile '%d': '%s'\n"
 #: ../parser_regex.c:283
 #, c-format
 msgid "%s: Illegal open {, nesting groupings not allowed\n"
-msgstr "%s: Öffnen ungültig {, verschachtelte Gruppierungen sind nicht zulässig\n"
+msgstr "%s: Ungültige öffnende {, verschachtelte Gruppierungen sind nicht zulässig\n"
 
 #: ../parser_regex.c:303
 #, c-format
@@ -454,7 +454,7 @@ msgstr "FEHLER bei der Verarbeitung von regexs für Profil '%s'. Fehler beim Lad
 #: ../parser_policy.c:298 ../parser_policy.c:304
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr "FEHLER bei der Erweiterung von Variablen für Profil '%s'. Fehler beim Laden\n"
+msgstr "FEHLER beim Expandieren von Variablen für Profil '%s'. Fehler beim Laden\n"
 
 #: ../parser_policy.c:481 ../parser_policy.c:486
 #, c-format
