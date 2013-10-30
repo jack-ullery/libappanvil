@@ -6714,6 +6714,11 @@ sub parse_event($) {
 
     LibAppArmor::free_record($event);
 
+    if ($ev{'operation'} && $ev{'operation'} =~ /^(capable|dbus|mount|pivotroot|umount)/) {
+       $DEBUGGING && debug("parser_event: previous event IGNORED");
+       return( undef );
+    }
+
     #map new c and d to w as logprof doesn't support them yet
     if ($rmask) {
         $rmask =~ s/c/w/g;
