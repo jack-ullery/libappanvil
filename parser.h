@@ -224,6 +224,7 @@ extern int net_af_max_override;
 extern int kernel_load;
 extern int kernel_supports_network;
 extern int kernel_supports_mount;
+extern int kernel_supports_dbus;
 extern int conf_verbose;
 extern int conf_quiet;
 extern int names_only;

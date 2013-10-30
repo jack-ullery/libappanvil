@@ -1157,14 +1157,18 @@ static int post_process_mnt_ents(Profile *prof)
 static int post_process_dbus_ents(Profile *prof)
 {
 	int ret = TRUE;
-	struct dbus_entry *entry;
 	int count = 0;
 
-	list_for_each(prof->dbus_ents, entry) {
-		if (!process_dbus_entry(prof->policy.rules, entry))
-			ret = FALSE;
-		count++;
-	}
+	if (prof->dbus_ents && kernel_supports_dbus) {
+		struct dbus_entry *entry;
+
+		list_for_each(prof->dbus_ents, entry) {
+			if (!process_dbus_entry(prof->policy.rules, entry))
+				ret = FALSE;
+			count++;
+		}
+	} else if (prof->dbus_ents && !kernel_supports_dbus)
+		pwarn("profile %s dbus rules not enforced\n", prof->name);
 
 	prof->policy.count += count;
 	return ret;

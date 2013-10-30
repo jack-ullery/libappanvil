@@ -27,6 +27,7 @@ int net_af_max_override = -1;           /* use kernel to determine af_max */
 int kernel_load = 1;
 int kernel_supports_network = 1;        /* kernel supports network rules */
 int kernel_supports_mount = 0;	        /* kernel supports mount rules */
+int kernel_supports_dbus = 0;		/* kernel supports dbus rules */
 int conf_verbose = 0;
 int conf_quiet = 0;
 int names_only = 0;

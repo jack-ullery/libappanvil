@@ -757,6 +757,8 @@ static void get_match_string(void) {
 			kernel_supports_network = 0;
 		if (strstr(flags_string, "mount"))
 			kernel_supports_mount = 1;
+		if (strstr(flags_string, "dbus"))
+			kernel_supports_dbus = 1;
 		return;
 	}
 
