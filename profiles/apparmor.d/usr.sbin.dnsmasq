@@ -43,10 +43,10 @@
   @{TFTP_DIR}/ r,
   @{TFTP_DIR}/** r,
 
-  # libvirt lease and hosts files for dnsmasq
+  # libvirt config, lease and hosts files for dnsmasq
   /var/lib/libvirt/dnsmasq/            r,
+  /var/lib/libvirt/dnsmasq/*        r,
   /var/lib/libvirt/dnsmasq/*.leases rw,
-  /var/lib/libvirt/dnsmasq/*.hostsfile r,
 
   # libvirt pid files for dnsmasq
   /{,var/}run/libvirt/network/      r,
