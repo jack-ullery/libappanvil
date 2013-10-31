@@ -13,7 +13,7 @@ endif
 all: tests
 
 .PHONY: tests error_output gen_xtrans parser_sanity caching minimize equality
-tests: error_output gen_xtrans gen_dbus parser_sanity caching minimize equality
+tests: error_output parser_sanity caching minimize equality
 
 GEN_TRANS_DIRS=simple_tests/generated_x/ simple_tests/generated_perms_leading/ simple_tests/generated_perms_safe/ simple_tests/generated_dbus
 
@@ -38,7 +38,7 @@ error_output: $(PARSER)
 		grep -q "AppArmor parser error for errors/multi_include.sd in errors/multi_include.sd at line 12: Could not open 'failure'"
 	@echo "Error Output: PASS"
 
-parser_sanity: $(PARSER)
+parser_sanity: $(PARSER) gen_xtrans gen_dbus
 	$(Q)LANG=C APPARMOR_PARSER="$(PARSER)" ${PROVE} ${PROVE_ARG} ${TESTS}
 
 caching: $(PARSER)
@@ -50,7 +50,7 @@ minimize: $(PARSER)
 equality: $(PARSER)
 	LANG=C APPARMOR_PARSER="$(PARSER)" ./equality.sh
 
-valgrind: $(PARSER)
+valgrind: $(PARSER) gen_xtrans gen_dbus
 	LANG=C ./valgrind_simple.py -p "$(PARSER)" -v simple_tests
 
 $(PARSER):
