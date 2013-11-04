@@ -105,8 +105,6 @@ CHANGEHAT_FLAGS=$(shell if [ ! -f /usr/include/sys/apparmor.h ] ; then \
 
 LIBIMMUNIX:=$(shell	if ldconfig -p | grep -q libapparmor\.so ; then \
 				echo -lapparmor ; \
-			elif ldconfig -p | grep -q libimmunix\.so ; then \
-				echo -limmunix ; \
 			fi )
 
 CFLAGS+=$(CHANGEHAT_FLAGS) -Wall -Wstrict-prototypes
