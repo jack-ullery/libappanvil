@@ -8,7 +8,9 @@ libapparmor_wrap.c: $(srcdir)/../SWIG/libapparmor.i
 
 MOSTLYCLEANFILES=libapparmor_wrap.c LibAppArmor.pm
 
-Makefile.perl: Makefile.PL
+LibAppArmor.pm: libapparmor_wrap.c
+
+Makefile.perl: Makefile.PL LibAppArmor.pm
 	$(PERL) $< PREFIX=$(prefix) MAKEFILE=$@
 	sed -ie 's/^LD_RUN_PATH.*//g' Makefile.perl
 
