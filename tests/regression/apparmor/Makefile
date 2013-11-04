@@ -103,9 +103,9 @@ CHANGEHAT_FLAGS=$(shell if [ ! -f /usr/include/sys/apparmor.h ] ; then \
 	  			fi ;\
 			fi )
 
-LIBIMMUNIX:=$(shell	if [ -f /usr/lib/libapparmor.so -o -f /usr/lib64/libapparmor.so ] ; then \
+LIBIMMUNIX:=$(shell	if ldconfig -p | grep -q libapparmor\.so ; then \
 				echo -lapparmor ; \
-			elif [ -f /lib/libimmunix.so.1 -o -f /lib64/libimmunix.so ] ; then \
+			elif ldconfig -p | grep -q libimmunix\.so ; then \
 				echo -limmunix ; \
 			fi )
 
