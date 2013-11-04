@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _SYS_APPARMOR_H_
+#ifndef _SYS_APPARMOR_H
 #define _SYS_APPARMOR_H	1
 
 #include <stdint.h>
