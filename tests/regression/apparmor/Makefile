@@ -81,34 +81,12 @@ ifneq (,$(findstring $(shell uname -i),i386 i486 i586 i686 x86 x86_64))
 SRC+=syscall_ioperm.c syscall_iopl.c
 endif
 
-# Suck, Fedora Core 3 no longer includes /sbin/kernelversion
-KERNELVERSION:=$(shell if [ -x /sbin/kernelversion ] ; then \
-				/sbin/kernelversion ; \
-		       else \
-		       		uname -r ; \
-		       fi )
-KERNELMAJOR:=$(shell echo ${KERNELVERSION} | cut -d. -f1)
-KERNELMINOR:=$(shell echo ${KERNELVERSION} | cut -d. -f2)
-CHANGEHAT_FLAGS=$(shell if [ ! -f /usr/include/sys/apparmor.h ] ; then \
-        			if [ -f /usr/include/sys/immunix.h ] ; then \
-					echo -DUSE_COMPAT_IMMUNIX_H ; \
-				else \
-					(echo -DCHANGEHAT_NOT_IN_LIBRARY; \
-					[ $(KERNELMAJOR) -eq 2 ] && \
-	  				if [ $(KERNELMINOR) -eq 4 ] ; then \
-						echo -DCHANGEHAT_2_4_KERNEL ; \
-	  				elif [ $(KERNELMINOR) -eq 2 ] ; then \
-						echo -DCHANGEHAT_2_2_KERNEL ;\
-	       				fi ) \
-	  			fi ;\
-			fi )
-
-LIBIMMUNIX:=$(shell	if ldconfig -p | grep -q libapparmor\.so ; then \
+LIBAPPARMOR:=$(shell	if ldconfig -p | grep -q libapparmor\.so ; then \
 				echo -lapparmor ; \
 			fi )
 
-CFLAGS+=$(CHANGEHAT_FLAGS) -Wall -Wstrict-prototypes
-LDLIBS+=$(LIBIMMUNIX)
+CFLAGS+=-Wall -Wstrict-prototypes
+LDLIBS+=$(LIBAPPARMOR)
 
 EXEC=$(SRC:%.c=%)
 
