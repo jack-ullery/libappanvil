@@ -57,6 +57,7 @@ static inline Chars* insert_char_range(Chars* cset, uchar a, uchar b)
 
 %pure-parser
 /* %error-verbose */
+%lex-param {YYLEX_PARAM}
 %parse-param {Node **root}
 %parse-param {const char *text}
 %name-prefix = "regex_"
