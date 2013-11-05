@@ -92,7 +92,7 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 		_dest += _len; \
 	}
 #define update_re_pos(X) if (!(*first_re_pos)) { *first_re_pos = (X); }
-
+#define MAX_ALT_DEPTH 50
 	*first_re_pos = 0;
 
 	int ret = TRUE;
@@ -106,6 +106,7 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 	BOOL bEscape = 0;	/* flag to indicate escape */
 	int ingrouping = 0;	/* flag to indicate {} context */
 	int incharclass = 0;	/* flag to indicate [ ] context */
+	int grouping_count[MAX_ALT_DEPTH];
 
 	error = e_no_error;
 	ptype = ePatternBasic;	/* assume no regex */
@@ -245,13 +246,14 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 				/* { is a PCRE special character */
 				STORE("\\{", dptr, 2);
 			} else {
-				if (ingrouping) {
+				update_re_pos(sptr - aare);
+				ingrouping++;
+				if (ingrouping >= MAX_ALT_DEPTH) {
 					error = e_parse_error;
-					PERROR(_("%s: Illegal open {, nesting groupings not allowed\n"),
-					       progname);
+					PERROR(_("%s: Regex grouping error: Exceeded maximum nesting of {}\n"), progname);
+
 				} else {
-					update_re_pos(sptr - aare);
-					ingrouping = 1;
+					grouping_count[ingrouping] = 0;
 					ptype = ePatternRegex;
 					STORE("(", dptr, 1);
 				}
@@ -263,24 +265,18 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 				/* { is a PCRE special character */
 				STORE("\\}", dptr, 2);
 			} else {
-				if (ingrouping <= 1) {
-
+				if (grouping_count[ingrouping] == 0) {
 					error = e_parse_error;
+					PERROR(_("%s: Regex grouping error: Invalid number of items between {}\n"), progname);
 
-					if (ingrouping == 1) {
-						PERROR(_("%s: Regex grouping error: Invalid number of items between {}\n"),
-						       progname);
-
-						ingrouping = 0;	/* prevent further errors */
-
-					} else {	/* ingrouping == 0 */
-						PERROR(_("%s: Regex grouping error: Invalid close }, no matching open { detected\n"),
-						       progname);
-					}
-				} else {	/* ingrouping > 1 */
-					ingrouping = 0;
-					STORE(")", dptr, 1);
 				}
+				ingrouping--;
+				if (ingrouping < 0) {
+					error = e_parse_error;
+					PERROR(_("%s: Regex grouping error: Invalid close }, no matching open { detected\n"), progname);
+					ingrouping = 0;
+				}
+				STORE(")", dptr, 1);
 			}	/* bEscape */
 
 			break;
@@ -294,7 +290,7 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 				STORE(sptr, dptr, 1);
 			} else {
 				if (ingrouping) {
-					++ingrouping;
+					grouping_count[ingrouping]++;
 					STORE("|", dptr, 1);
 				} else {
 					STORE(sptr, dptr, 1);
