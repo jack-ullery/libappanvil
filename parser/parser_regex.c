@@ -236,6 +236,10 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 				/* ] is a PCRE special character */
 				STORE("\\]", dptr, 2);
 			} else {
+				if (incharclass == 0) {
+					error = e_parse_error;
+					PERROR(_("%s: Regex grouping error: Invalid close ], no matching open [ detected\n"), progname);
+				}
 				incharclass = 0;
 				STORE(sptr, dptr, 1);
 			}
