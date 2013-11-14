@@ -40,6 +40,8 @@
   /usr/sbin/ntpd rmix,
   /var/lib/ntp/drift rwl,
   /var/lib/ntp/drift.TEMP rwl,
+  /var/lib/ntp/drift/driftfile rw,
+  /var/lib/ntp/drift/driftfile.TEMP rw,
   /var/lib/ntp/drift/ntp.drift rw,
   /var/lib/ntp/drift/ntp.drift.TEMP rw,
   /var/lib/ntp/etc/* r,
