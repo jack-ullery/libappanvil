@@ -12,7 +12,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-11-15 05:15+0000\n"
+"X-Launchpad-Export-Date: 2013-11-16 05:14+0000\n"
 "X-Generator: Launchpad (build 16831)\n"
 
 #: ../parser_include.c:113
@@ -698,77 +698,3 @@ msgstr ""
 #, c-format
 msgid "ERROR replacing aliases for profile %s, failed to load\n"
 msgstr ""
-
-#~ msgid "Error: Could not allocate temporary file.\n"
-#~ msgstr "Error: no se ha podido asignar un archivo temporal.\n"
-
-#~ msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-#~ msgstr ""
-#~ "Error: no se ha podido asignar el buffer para el valor de include de la "
-#~ "línea %d de %s.\n"
-
-#~ msgid "Error: Bad include at line %d in %s.\n"
-#~ msgstr "Error: valor de include incorrecto en la línea %d de %s.\n"
-
-#~ msgid "Error: #include %s%c not found at line %d in %s.\n"
-#~ msgstr "Error: no se ha encontrado #include %s%c en la línea %d de %s.\n"
-
-#~ msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-#~ msgstr ""
-#~ "Error: más de %d niveles de líneas include. %s líneas include no se "
-#~ "procesarán.\n"
-
-#~ msgid "Couldn't copy profile Bad memory address\n"
-#~ msgstr "No es posible copiar la dirección de memoria incorrecta del perfil\n"
-
-#~ msgid "Unknown error\n"
-#~ msgstr "Error desconocido\n"
-
-#~ msgid "Warning (%s line %d): %s"
-#~ msgstr "Advertencia (%s línea %d): %s"
-
-#~ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-#~ msgstr "perfil %s: regla %s fusionada con varios modificadores x\n"
-
-#~ msgid "Profile names must begin with a '/', or keyword 'profile'."
-#~ msgstr ""
-#~ "Los nombres de perfil deben empezar con una barra (/) o con la palabra clave "
-#~ "profile."
-
-#~ msgid "Assert: `change_hat' returned NULL."
-#~ msgstr "Afirmación: change_hat ha devuelto un valor nulo."
-
-#~ msgid "link perms are not allowed on a named profile transtion.\n"
-#~ msgstr ""
-#~ "No se permiten los permisos de enlace en una transición de perfil con "
-#~ "nombre.\n"
-
-#~ msgid "AppArmor parser error in %s at line %d: %s\n"
-#~ msgstr "Error del analizador de AppArmor en %s, en la línea %d: %s\n"
-
-#~ msgid "AppArmor parser error, line %d: %s\n"
-#~ msgstr "Error del analizador de AppArmor, línea %d: %s\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-#~ msgstr "%s: error al compilar regex '%s' [original: '%s']\n"
-
-#~ msgid "%s: error near               "
-#~ msgstr "%s: error cercano               "
-
-#~ msgid "%s: error reason: '%s'\n"
-#~ msgstr "%s: motivo del error: '%s'\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-#~ msgstr ""
-#~ "%s: error al compilar regex '%s' [original: '%s'] - error de malloc\n"
-
-#~ msgid "%s permission: not supported on current system.\n"
-#~ msgstr "Permiso %s: no se admite en el sistema en uso.\n"
-
-#~ msgid "%s rule: not supported on current system.\n"
-#~ msgstr "Regla %s: no se admite en el sistema en uso.\n"
-
-#~ msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
-#~ msgstr ""
-#~ "Los nombres de perfil deben empezar con una barra (/) o con las palabras "
-#~ "clave profile o hat."

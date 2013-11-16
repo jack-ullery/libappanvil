@@ -8,56 +8,56 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2013-11-14 10:18-0800\n"
-"PO-Revision-Date: 2013-11-14 22:00+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2013-11-15 22:02+0000\n"
+"Last-Translator: Andi Chandler <Unknown>\n"
 "Language-Team: English (United Kingdom) <en_GB@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-11-15 05:16+0000\n"
+"X-Launchpad-Export-Date: 2013-11-16 05:14+0000\n"
 "X-Generator: Launchpad (build 16831)\n"
 
 #: ../parser_include.c:113
 msgid "Error: Out of memory.\n"
-msgstr ""
+msgstr "Error: Out of memory.\n"
 
 #: ../parser_include.c:123
 #, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
-msgstr ""
+msgstr "Error: basedir %s is not a directory, skipping.\n"
 
 #: ../parser_include.c:137
 #, c-format
 msgid "Error: Could not add directory %s to search path.\n"
-msgstr ""
+msgstr "Error: Could not add directory %s to search path.\n"
 
 #: ../parser_include.c:147
 msgid "Error: Could not allocate memory.\n"
-msgstr ""
+msgstr "Error: Could not allocate memory.\n"
 
 #: ../parser_interface.c:69 ../parser_interface.c:72
 msgid "Bad write position\n"
-msgstr ""
+msgstr "Bad write position\n"
 
 #: ../parser_interface.c:72 ../parser_interface.c:75
 msgid "Permission denied\n"
-msgstr ""
+msgstr "Permission denied\n"
 
 #: ../parser_interface.c:75 ../parser_interface.c:78
 msgid "Out of memory\n"
-msgstr ""
+msgstr "Out of memory\n"
 
 #: ../parser_interface.c:78 ../parser_interface.c:81
 msgid "Couldn't copy profile: Bad memory address\n"
-msgstr ""
+msgstr "Could not copy profile: Bad memory address\n"
 
 #: ../parser_interface.c:81 ../parser_interface.c:84
 msgid "Profile doesn't conform to protocol\n"
-msgstr ""
+msgstr "Profile does not conform to protocol\n"
 
 #: ../parser_interface.c:84 ../parser_interface.c:87
 msgid "Profile does not match signature\n"
-msgstr ""
+msgstr "Profile does not match signature\n"
 
 #: ../parser_interface.c:87 ../parser_interface.c:90
 msgid "Profile version not supported by Apparmor module\n"

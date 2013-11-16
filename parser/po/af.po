@@ -14,7 +14,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-11-15 05:15+0000\n"
+"X-Launchpad-Export-Date: 2013-11-16 05:13+0000\n"
 "X-Generator: Launchpad (build 16831)\n"
 
 #: ../parser_include.c:113
@@ -655,74 +655,3 @@ msgstr ""
 #, c-format
 msgid "ERROR replacing aliases for profile %s, failed to load\n"
 msgstr ""
-
-#~ msgid "Couldn't copy profile Bad memory address\n"
-#~ msgstr "Kon profiel Slegte geheueadres nie kopieer nie\n"
-
-#~ msgid "Unknown error\n"
-#~ msgstr "Onbekende fout\n"
-
-#~ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-#~ msgstr ""
-#~ "profiel %s: het reël %s saam met veelvuldige x-modifiseerders gevleg\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-#~ msgstr "%s: Misluk om regex '%s' saam te stel [oorspronklik: '%s']\n"
-
-#~ msgid "%s: error near               "
-#~ msgstr "%s: fout naby               "
-
-#~ msgid "%s: error reason: '%s'\n"
-#~ msgstr "%s: foutrede: '%s'\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-#~ msgstr ""
-#~ "%s: Misluk om regex '%s' saam te stel [oorspronklik: '%s'] - malloc het "
-#~ "misluk\n"
-
-#~ msgid "(ip_mode) Found unexpected character: '%s'"
-#~ msgstr "(ip_modus) Onverwagte karakter gevind: '%s'"
-
-#~ msgid "Exec qualifier 'i' must be followed by 'x'"
-#~ msgstr "Uitvoerende kwalifiseerder 'i' moet deur 'x' gevolg word"
-
-#~ msgid "Assert: `netrule' returned NULL."
-#~ msgstr "Beweer: `net-reël' het NUL teruggestuur."
-
-#~ msgid "Assert: `addresses' returned NULL."
-#~ msgstr "Beweer: `adresse' het NUL teruggestuur."
-
-#~ msgid "Network entries can only have one TO address."
-#~ msgstr "Netwerkinskrywings kan slegs een AAN-adres hê."
-
-#~ msgid "Network entries can only have one FROM address."
-#~ msgstr "Netwerkinskrywings kan slegs een VAN-adres hê."
-
-#~ msgid "`%s' is not a valid ip address."
-#~ msgstr "`%s' is nie ’n geldige ip-adres nie."
-
-#~ msgid "`/%d' is not a valid netmask."
-#~ msgstr "`/%d' is nie ’n geldige netmasker nie."
-
-#~ msgid "`%s' is not a valid netmask."
-#~ msgstr "`%s' is nie ’n geldige netmasker nie."
-
-#~ msgid "ports must be between %d and %d"
-#~ msgstr "poorte moet tussen %d en %d wees"
-
-#~ msgid ""
-#~ "%s: Unable to query modules - '%s'\n"
-#~ "Either modules are disabled or your kernel is too old.\n"
-#~ msgstr ""
-#~ "%s: Kan modules nie bevraagteken nie - '%s'\n"
-#~ "Óf modules word versper, óf u kern is te oud.\n"
-
-#~ msgid "%s: Unable to find "
-#~ msgstr "%s: Kan nie vind nie "
-
-#~ msgid ""
-#~ "!\n"
-#~ "Ensure that it has been loaded.\n"
-#~ msgstr ""
-#~ "!\n"
-#~ "Verseker dat dit gelaai is.\n"

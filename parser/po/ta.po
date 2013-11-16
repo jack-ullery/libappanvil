@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-11-15 05:15+0000\n"
+"X-Launchpad-Export-Date: 2013-11-16 05:14+0000\n"
 "X-Generator: Launchpad (build 16831)\n"
 
 #: ../parser_include.c:113
@@ -653,76 +653,3 @@ msgstr ""
 #, c-format
 msgid "ERROR replacing aliases for profile %s, failed to load\n"
 msgstr ""
-
-#~ msgid "Couldn't copy profile Bad memory address\n"
-#~ msgstr "விவரத்தை பிரதியெடுக்க முடியவில்லை மோசமான நினைவக முகவரி\n"
-
-#~ msgid "Unknown error\n"
-#~ msgstr "அறியப்படாத பிழை\n"
-
-#~ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-#~ msgstr "விவரம் %s: விதி %sஐ பல x மாற்றிகளுடன் சேர்த்துள்ளது\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-#~ msgstr "%s: ரீஜெக்ஸ் '%s' தொகுப்பது தோல்வியுற்றது [அசல்: '%s']\n"
-
-#~ msgid "%s: error near               "
-#~ msgstr "%s: அருகில் பிழை               "
-
-#~ msgid "%s: error reason: '%s'\n"
-#~ msgstr "%s: பிழை காரணம்: '%s'\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-#~ msgstr ""
-#~ "%s: ரீஜெக்ஸ் '%s' தொகுப்பது தோல்வியுற்றது [அசல்: '%s'] - malloc "
-#~ "தோல்வியுற்றது\n"
-
-#~ msgid "(ip_mode) Found unexpected character: '%s'"
-#~ msgstr "(ip_mode) எதிர்பாராத எழுத்தை கண்டுள்ளது: '%s'"
-
-#~ msgid "Exec qualifier 'i' must be followed by 'x'"
-#~ msgstr "செயலாக்க தகுதி 'i'யை தொடர்ந்து 'x' வர வேண்டும்"
-
-#~ msgid "Assert: `netrule' returned NULL."
-#~ msgstr "உறுதிசெய்தல்: ‘நெட்விதி’ மதிப்பின்றி திருப்பப்பட்டது."
-
-#~ msgid "Assert: `addresses' returned NULL."
-#~ msgstr "உறுதிசெய்தல்: ‘முகவரிகள்’ மதிப்பின்றி திருப்பப்பட்டது."
-
-#~ msgid "Network entries can only have one TO address."
-#~ msgstr ""
-#~ "வலையமைப்பு உள்ளீடுகளுக்கு ஒரு பெறுநர் முகவரி மட்டும் இருக்க வேண்டும்."
-
-#~ msgid "Network entries can only have one FROM address."
-#~ msgstr ""
-#~ "வலையமைப்பு உள்ளீடுகளுக்கு ஒரு அனுப்புனர் முகவரி மட்டும் இருக்க வேண்டும்."
-
-#~ msgid "`%s' is not a valid ip address."
-#~ msgstr "`%s' ஒரு செல்லத்தக்க ip முகவரி அல்ல."
-
-#~ msgid "`/%d' is not a valid netmask."
-#~ msgstr "`/%d' ஒரு செல்லத்தக்க வலைமாஸ்க் அல்ல."
-
-#~ msgid "`%s' is not a valid netmask."
-#~ msgstr "`%s' ஒரு செல்லத்தக்க வலைமாஸ்க் அல்ல."
-
-#~ msgid "ports must be between %d and %d"
-#~ msgstr "%d மற்றும் %dக்கு இடையில் முணையங்கள் இருக்க வேண்டும்"
-
-#~ msgid ""
-#~ "%s: Unable to query modules - '%s'\n"
-#~ "Either modules are disabled or your kernel is too old.\n"
-#~ msgstr ""
-#~ "%s: கூறுகளை கேள்வி கேட்க முடியவில்லை - '%s'\n"
-#~ "கூறுகள் செயலிழக்கப்பட்டிருக்க வேண்டும் அல்லது உங்கள் கெர்னல் மிகப் பழையதாக "
-#~ "இருக்க வேண்டும்.\n"
-
-#~ msgid "%s: Unable to find "
-#~ msgstr "%s: கண்டுபிடிக்க முடியவில்லை "
-
-#~ msgid ""
-#~ "!\n"
-#~ "Ensure that it has been loaded.\n"
-#~ msgstr ""
-#~ "!\n"
-#~ "அது ஏற்றப்பட்டிருப்பதை உறுதி செய்து கொள்ளவும்.\n"

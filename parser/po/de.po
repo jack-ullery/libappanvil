@@ -12,7 +12,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-11-15 05:15+0000\n"
+"X-Launchpad-Export-Date: 2013-11-16 05:13+0000\n"
 "X-Generator: Launchpad (build 16831)\n"
 
 #: ../parser_include.c:113
@@ -709,77 +709,3 @@ msgstr ""
 #, c-format
 msgid "ERROR replacing aliases for profile %s, failed to load\n"
 msgstr ""
-
-#~ msgid "Error: Could not allocate temporary file.\n"
-#~ msgstr "Fehler: Temporäre Datei konnte nicht zugeordnet werden.\n"
-
-#~ msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-#~ msgstr ""
-#~ "Fehler: Es konnte kein Puffer zum Einfügen in Zeile '%d' in '%s' zugeordnet "
-#~ "werden.\n"
-
-#~ msgid "Error: Bad include at line %d in %s.\n"
-#~ msgstr "Fehler: Ungültige Einfügung in Zeile '%d' in '%s'.\n"
-
-#~ msgid "Error: #include %s%c not found at line %d in %s.\n"
-#~ msgstr "Fehler: #include '%s%c' nicht gefunden in Zeile '%d' in '%s'.\n"
-
-#~ msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-#~ msgstr ""
-#~ "Fehler: '%d' Include-Stufen überschritten. '%s'-Include wird nicht "
-#~ "verarbeitet.\n"
-
-#~ msgid "Couldn't copy profile Bad memory address\n"
-#~ msgstr "Ungültige Speicheradresse - Profil konnte nicht kopiert werden\n"
-
-#~ msgid "Unknown error\n"
-#~ msgstr "Unbekannter Fehler\n"
-
-#~ msgid "Warning (%s line %d): %s"
-#~ msgstr "Warnung ('%s' Zeile '%d'): '%s'"
-
-#~ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-#~ msgstr ""
-#~ "Profil %s: verfügt über zusammengeführte Regel %s mit mehreren x-Modifiern\n"
-
-#~ msgid "Profile names must begin with a '/', or keyword 'profile'."
-#~ msgstr ""
-#~ "Profilnamen müssen mit einem '/' oder dem Schlüsselwort 'profile' beginnen."
-
-#~ msgid "Assert: `change_hat' returned NULL."
-#~ msgstr "Assert: `change_hat' hat NULL zurückgegeben."
-
-#~ msgid "link perms are not allowed on a named profile transtion.\n"
-#~ msgstr ""
-#~ "Link-Berechtigungen sind bei einem benannten Profilübergang nicht erlaubt.\n"
-
-#~ msgid "AppArmor parser error in %s at line %d: %s\n"
-#~ msgstr "AppArmor-Analysefehler in '%s' in Zeile '%d': '%s'\n"
-
-#~ msgid "AppArmor parser error, line %d: %s\n"
-#~ msgstr "AppArmor-Analysefehler, Zeile '%d': '%s'\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-#~ msgstr "%s: Fehler beim Kompilieren von regex '%s' [ursprünglich: '%s']\n"
-
-#~ msgid "%s: error near               "
-#~ msgstr "%s: Fehler bei               "
-
-#~ msgid "%s: error reason: '%s'\n"
-#~ msgstr "%s: Fehlerursache: '%s'\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-#~ msgstr ""
-#~ "%s: Fehler beim Kompilieren von regex '%s' [ursprünglich: '%s'] - malloc "
-#~ "nicht erfolgreich\n"
-
-#~ msgid "%s permission: not supported on current system.\n"
-#~ msgstr "Berechtigung %s: auf diesem System nicht unterstützt.\n"
-
-#~ msgid "%s rule: not supported on current system.\n"
-#~ msgstr "Regel %s: auf diesem System nicht unterstützt.\n"
-
-#~ msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
-#~ msgstr ""
-#~ "Profilnamen müssen mit einem '/' oder dem Schlüsselwort 'profile' oder 'hat' "
-#~ "beginnen."

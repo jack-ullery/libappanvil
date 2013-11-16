@@ -12,7 +12,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-11-15 05:15+0000\n"
+"X-Launchpad-Export-Date: 2013-11-16 05:14+0000\n"
 "X-Generator: Launchpad (build 16831)\n"
 
 #: ../parser_include.c:113
@@ -691,71 +691,3 @@ msgstr ""
 #, c-format
 msgid "ERROR replacing aliases for profile %s, failed to load\n"
 msgstr ""
-
-#~ msgid "Error: Could not allocate temporary file.\n"
-#~ msgstr "Fel: Det gick inte att tilldela en temporär fil.\n"
-
-#~ msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-#~ msgstr ""
-#~ "Fel: Det gick inte att tilldela buffert för inkludering på rad %d i %s.\n"
-
-#~ msgid "Error: Bad include at line %d in %s.\n"
-#~ msgstr "Fel: Ogiltig inkludering på rad %d i %s.\n"
-
-#~ msgid "Error: #include %s%c not found at line %d in %s.\n"
-#~ msgstr "Fel: Det gick inte att hitta #include %s%c på rad %d i %s.\n"
-
-#~ msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-#~ msgstr ""
-#~ "Fel: %d inkluderingsnivåer överskreds.  %s-inkluderingen bearbetas inte.\n"
-
-#~ msgid "Couldn't copy profile Bad memory address\n"
-#~ msgstr "Det gick inte att kopiera profilen. Felaktig minnesadress\n"
-
-#~ msgid "Unknown error\n"
-#~ msgstr "Okänt fel\n"
-
-#~ msgid "Warning (%s line %d): %s"
-#~ msgstr "Varning (%s rad %d): %s"
-
-#~ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-#~ msgstr "profilen %s: har kopplat regeln %s till flera x-modifierare\n"
-
-#~ msgid "Profile names must begin with a '/', or keyword 'profile'."
-#~ msgstr "Profilnamn måste börja med / eller nyckelordet profile."
-
-#~ msgid "Assert: `change_hat' returned NULL."
-#~ msgstr "Förutsättning: change_hat returnerade NULL."
-
-#~ msgid "link perms are not allowed on a named profile transtion.\n"
-#~ msgstr "link-behörigheter är inte tillåtna i en namngiven profilövergång.\n"
-
-#~ msgid "AppArmor parser error in %s at line %d: %s\n"
-#~ msgstr "AppArmor-behandlarfel i %s på rad %d: %s\n"
-
-#~ msgid "AppArmor parser error, line %d: %s\n"
-#~ msgstr "AppArmor-behandlarfel, rad %d: %s\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-#~ msgstr "%s: Det gick inte att kompilera regex %s [ursprungligen: '%s']\n"
-
-#~ msgid "%s: error near               "
-#~ msgstr "%s: fel i närheten av               "
-
-#~ msgid "%s: error reason: '%s'\n"
-#~ msgstr "%s: felorsak: '%s'\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-#~ msgstr ""
-#~ "%s: Det gick inte att kompilera regex%s [ursprungligen: '%s'] - malloc "
-#~ "misslyckades\n"
-
-#~ msgid "%s permission: not supported on current system.\n"
-#~ msgstr "%s-behörighet kan inte användas med det nuvarande systemet.\n"
-
-#~ msgid "%s rule: not supported on current system.\n"
-#~ msgstr "%s-regel: kan inte användas med det nuvarande systemet.\n"
-
-#~ msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
-#~ msgstr ""
-#~ "Profilnamn måste börja med / eller något av nyckelorden profile och hat."

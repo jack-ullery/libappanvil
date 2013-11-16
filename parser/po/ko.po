@@ -12,7 +12,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-11-15 05:15+0000\n"
+"X-Launchpad-Export-Date: 2013-11-16 05:13+0000\n"
 "X-Generator: Launchpad (build 16831)\n"
 
 #: ../parser_include.c:113
@@ -662,66 +662,3 @@ msgstr ""
 #, c-format
 msgid "ERROR replacing aliases for profile %s, failed to load\n"
 msgstr ""
-
-#~ msgid "Error: Could not allocate temporary file.\n"
-#~ msgstr "오류: 임시 파일을 할당할 수 없습니다.\n"
-
-#~ msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-#~ msgstr "오류: %d행(%s)의 include에 대해 버퍼를 할당할 수 없습니다.\n"
-
-#~ msgid "Error: Bad include at line %d in %s.\n"
-#~ msgstr "오류: %d행(%s)의 include가 올바르지 않습니다.\n"
-
-#~ msgid "Error: #include %s%c not found at line %d in %s.\n"
-#~ msgstr "오류: #include %s%c이(가) %d 행(%s)에 없습니다.\n"
-
-#~ msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-#~ msgstr "오류: include가 %d 수준을 초과했습니다. %s include를 처리할 수 없습니다.\n"
-
-#~ msgid "Couldn't copy profile Bad memory address\n"
-#~ msgstr "메모리 주소가 잘못되어 프로파일을 복사할 수 없습니다.\n"
-
-#~ msgid "Unknown error\n"
-#~ msgstr "알 수 없는 오류입니다.\n"
-
-#~ msgid "Warning (%s line %d): %s"
-#~ msgstr "경고(%s행 %d): %s"
-
-#~ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-#~ msgstr "%s 프로파일은 복수 수정자 x를 사용하여 규칙 %s을(를) 병합했습니다.\n"
-
-#~ msgid "Profile names must begin with a '/', or keyword 'profile'."
-#~ msgstr "프로파일 이름은 '/' 또는 'profile' 키워드로 시작해야 합니다."
-
-#~ msgid "Assert: `change_hat' returned NULL."
-#~ msgstr "평가: `change_hat'이 NULL을 반환했습니다."
-
-#~ msgid "link perms are not allowed on a named profile transtion.\n"
-#~ msgstr "링크 권한이 명명된 프로파일 전환에서 허용되지 않습니다.\n"
-
-#~ msgid "AppArmor parser error in %s at line %d: %s\n"
-#~ msgstr "%2$d행 %1$s에서 AppArmor 분석 오류가 발생했습니다: %3$s\n"
-
-#~ msgid "AppArmor parser error, line %d: %s\n"
-#~ msgstr "%d행에서 AppArmor 파서 오류가 발생했습니다: %s\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-#~ msgstr "%s: 정규식 '%s'[원본: '%s']을(를) 컴파일하지 못했습니다.\n"
-
-#~ msgid "%s: error near               "
-#~ msgstr "%s: 오류 발생               "
-
-#~ msgid "%s: error reason: '%s'\n"
-#~ msgstr "%s: 오류 원인: '%s'\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-#~ msgstr "%s: 정규식 '%s'[원본: '%s']을(를) 컴파일하지 못했습니다. - malloc 실패\n"
-
-#~ msgid "%s permission: not supported on current system.\n"
-#~ msgstr "%s 권한: 현재 시스템에서는 지원되지 않습니다.\n"
-
-#~ msgid "%s rule: not supported on current system.\n"
-#~ msgstr "%s 규칙: 현재 시스템에서는 지원되지 않습니다.\n"
-
-#~ msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
-#~ msgstr "프로파일 이름은 '/' 또는, 키워드 'profile' 또는 'hat'으로 시작해야 합니다."

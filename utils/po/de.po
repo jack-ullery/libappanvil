@@ -13,7 +13,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-11-15 05:16+0000\n"
+"X-Launchpad-Export-Date: 2013-11-16 05:14+0000\n"
 "X-Generator: Launchpad (build 16831)\n"
 "Language: de\n"
 
@@ -821,61 +821,3 @@ msgstr "Ungültige Tastenkombination in Standardelement"
 #: ../Immunix/AppArmor.pm:6576
 msgid "Invalid default"
 msgstr ""
-
-#~ msgid "A profile for %s does not exist create one?"
-#~ msgstr "Ein Profil für %s existiert nicht. Neu erstellen?"
-
-#~ msgid "A local profile for %s does not exist create one?"
-#~ msgstr "Ein lokales Profil für %s existiert nicht. Neu erstellen?"
-
-#~ msgid "DBI Execution failed: %s."
-#~ msgstr "Fehler beim Ausführen von DBI: '%s'."
-
-#~ msgid "Couldn't open file: %s."
-#~ msgstr "Datei konnte nicht geöffnet werden: '%s'."
-
-#~ msgid "No type value passed.  Unable to determine page count."
-#~ msgstr ""
-#~ "Kein Wert für den Typ übergeben.  Seitenzahl konnte nicht ermittelt werden."
-
-#~ msgid "Failed copying %s."
-#~ msgstr "Fehler beim Kopieren von '%s'."
-
-#~ msgid "Export Log Error: Couldn't open %s"
-#~ msgstr "Fehler in Exportprotokoll: '%s' konnte nicht geöffnet werden"
-
-#~ msgid "Fatal error.  No report name given. Exiting."
-#~ msgstr ""
-#~ "Schwerwiegender Fehler.  Kein Berichtsname angegeben. Der Vorgang wird "
-#~ "beendet."
-
-#~ msgid ""
-#~ "Unable to get configuration info for %s.\n"
-#~ "                Unable to find %s."
-#~ msgstr ""
-#~ "Es konnten keine Konfigurationsinformationen für '%s' abgerufen werden.\n"
-#~ "                '%s' konnte nicht gefunden werden."
-
-#~ msgid "Failed to parse: %s."
-#~ msgstr "Analyse nicht möglich: '%s'."
-
-#~ msgid "Fatal Error.  Couldn't open %s."
-#~ msgstr "Schwerwiegender Fehler: ' %s' konnte nicht geöffnet werden."
-
-#~ msgid "Fatal Error.  Can't run %s.  Exiting."
-#~ msgstr ""
-#~ "Schwerwiegender Fehler.  '%s' kann nicht ausgeführt werden.  Der Vorgang "
-#~ "wird beendet."
-
-#~ msgid "Fatal Error.  No directory, %s, found.  Exiting."
-#~ msgstr ""
-#~ "Schwerwiegender Fehler.  Kein Verzeichnis, '%s', gefunden.  Der Vorgang wird "
-#~ "beendet."
-
-#~ msgid "Fatal Error.  Couldn't open %s.  Exiting"
-#~ msgstr ""
-#~ "Schwerwiegender Fehler.  '%s' konnte nicht geöffnet werden.  Der Vorgang "
-#~ "wird beendet."
-
-#~ msgid "Fatal Error.  getArchReport() couldn't open %s"
-#~ msgstr "Schwerwiegender Fehler.  getArchReport() konnte '%s' nicht öffnen"

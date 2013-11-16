@@ -12,7 +12,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-11-15 05:16+0000\n"
+"X-Launchpad-Export-Date: 2013-11-16 05:14+0000\n"
 "X-Generator: Launchpad (build 16831)\n"
 
 #: ../parser_include.c:113
@@ -661,66 +661,3 @@ msgstr ""
 #, c-format
 msgid "ERROR replacing aliases for profile %s, failed to load\n"
 msgstr ""
-
-#~ msgid "Error: Could not allocate temporary file.\n"
-#~ msgstr "錯誤︰無法配置暫存檔。\n"
-
-#~ msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-#~ msgstr "錯誤︰無法為第 %d 行 (%s 中) 的 include 配置緩衝區。\n"
-
-#~ msgid "Error: Bad include at line %d in %s.\n"
-#~ msgstr "錯誤︰第 %d 行 (%s 中) 的 include 無效。\n"
-
-#~ msgid "Error: #include %s%c not found at line %d in %s.\n"
-#~ msgstr "錯誤︰找不到 #include %s%c (第 %d 行，%s 中)。\n"
-
-#~ msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-#~ msgstr "錯誤：超出 include 的 %d 階層。未處理 %s include。\n"
-
-#~ msgid "Couldn't copy profile Bad memory address\n"
-#~ msgstr "無法複製設定檔不良的記憶體位址\n"
-
-#~ msgid "Unknown error\n"
-#~ msgstr "未知的錯誤\n"
-
-#~ msgid "Warning (%s line %d): %s"
-#~ msgstr "警告 (%s 第 %d 行)：%s"
-
-#~ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-#~ msgstr "設定檔 %s：已結合規則 %s 與多個 x Modifier\n"
-
-#~ msgid "Profile names must begin with a '/', or keyword 'profile'."
-#~ msgstr "設定檔名稱必須以「/」或關鍵字「profile」開頭。"
-
-#~ msgid "Assert: `change_hat' returned NULL."
-#~ msgstr "顯示：「change_hat」傳回 NULL。"
-
-#~ msgid "link perms are not allowed on a named profile transtion.\n"
-#~ msgstr "不允許對指定的設定檔轉換使用連結許可權。\n"
-
-#~ msgid "AppArmor parser error in %s at line %d: %s\n"
-#~ msgstr "%s 中的 AppArmor 剖析程式錯誤 (第 %d 行)︰%s\n"
-
-#~ msgid "AppArmor parser error, line %d: %s\n"
-#~ msgstr "AppArmor 剖析程式錯誤，第 %d 行：%s\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-#~ msgstr "%s: 無法編譯 regex '%s' [原始： '%s']\n"
-
-#~ msgid "%s: error near               "
-#~ msgstr "%s: 錯誤接近               "
-
-#~ msgid "%s: error reason: '%s'\n"
-#~ msgstr "%s: 錯誤原因： '%s'\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-#~ msgstr "%s: 無法編譯 regex '%s' [原始：'%s'] - malloc 失敗\n"
-
-#~ msgid "%s permission: not supported on current system.\n"
-#~ msgstr "%s 許可權：目前的系統不支援。\n"
-
-#~ msgid "%s rule: not supported on current system.\n"
-#~ msgstr "%s 規則：目前的系統不支援。\n"
-
-#~ msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
-#~ msgstr "設定檔名稱必須以「/」或關鍵字「profile」或「hat」開頭。"
