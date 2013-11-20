@@ -1,0 +1,819 @@
+# Russian translation for apparmor
+# Copyright (c) 2013 Rosetta Contributors and Canonical Ltd 2013
+# This file is distributed under the same license as the apparmor package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: apparmor\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2013-11-13 16:44-0800\n"
+"PO-Revision-Date: 2013-11-19 08:39+0000\n"
+"Last-Translator: Eugene Marshal <Unknown>\n"
+"Language-Team: Russian <ru@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-20 05:14+0000\n"
+"X-Generator: Launchpad (build 16831)\n"
+
+#: ../aa-genprof:72 ../aa-unconfined:54
+msgid ""
+"AppArmor does not appear to be started. Please enable AppArmor and try again."
+msgstr ""
+"AppArmor не запущен. Пожалуйста, запустите AppArmor и повторите заново."
+
+#: ../aa-genprof:86
+msgid "Please enter the program to profile: "
+msgstr "Введите программу для создания профиля: "
+
+#: ../aa-genprof:105
+#, perl-format
+msgid ""
+"Can't find %s in the system path list.  If the name of the application is "
+"correct, please run 'which %s' in the other window in order to find the "
+"fully-qualified path."
+msgstr ""
+
+#: ../aa-genprof:107 ../aa-autodep:110 ../aa-audit:120 ../aa-complain:119
+#: ../aa-enforce:130 ../aa-disable:140
+#, perl-format
+msgid "%s does not exist, please double-check the path."
+msgstr "%s не существует, пожалуйста дважды проверьте адрес."
+
+#: ../aa-genprof:141
+msgid ""
+"\n"
+"Before you begin, you may wish to check if a\n"
+"profile already exists for the application you\n"
+"wish to confine. See the following wiki page for\n"
+"more information:\n"
+"http://wiki.apparmor.net/index.php/Profiles"
+msgstr ""
+"\n"
+"Переде тем как начнёте, возможно вы захотите\n"
+"проверить наличие профиля для выбранного\n"
+"приложения. Дополнительные сведения\n"
+"представлены на wiki-странице:\n"
+"http://wiki.apparmor.net/index.php/Profiles"
+
+#: ../aa-genprof:143
+msgid ""
+"Please start the application to be profiled in \n"
+"another window and exercise its functionality now.\n"
+"\n"
+"Once completed, select the \"Scan\" button below in \n"
+"order to scan the system logs for AppArmor events.  \n"
+"\n"
+"For each AppArmor event, you will be given the  \n"
+"opportunity to choose whether the access should be  \n"
+"allowed or denied."
+msgstr ""
+"Запустите приложение, для которого необходимо\n"
+"создать профиль и проверьте его работоспособность.\n"
+"\n"
+"Когда закончите, выберите кнопку \"Проверить\", \n"
+" чтобы проверить системные события AppArmor.  \n"
+"\n"
+"Для каждого события AppArmor, существует  \n"
+"возможность разрешить или запретить доступ."
+
+#: ../aa-genprof:163
+msgid "Profiling"
+msgstr "Профилирование"
+
+#: ../aa-genprof:197
+msgid "Reloaded AppArmor profiles in enforce mode."
+msgstr "Перезагруженные профили AppArmor в принудительном режиме."
+
+#: ../aa-genprof:198
+msgid ""
+"\n"
+"Please consider contributing your new profile! See\n"
+"the following wiki page for more information:\n"
+"http://wiki.apparmor.net/index.php/Profiles\n"
+msgstr ""
+"\n"
+"Пожалуйста, поделитесь вашим новым профилем! \n"
+"Откройте следующую wiki-страницу для получения сведений:\n"
+"http://wiki.apparmor.net/index.php/Profiles\n"
+
+#: ../aa-genprof:199
+#, perl-format
+msgid "Finished generating profile for %s."
+msgstr "Создание профиля %s завершено."
+
+#: ../aa-genprof:203
+#, perl-format
+msgid ""
+"usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to "
+"profile ]"
+msgstr ""
+"команда: %s [ -d /адрес/расположения/профилей ] [ -f "
+"/расположение/файла/журнала ] [ программа, для  которой создаётся профиль ]"
+
+#: ../aa-logprof:69
+#, perl-format
+msgid ""
+"usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in "
+"log to start processing after\""
+msgstr ""
+"команда: %s [ -d /адрес/расположения/профилей ] [ -f "
+"/расположение/файла/журнала ] [ -m \"отметить в журнале для последующего "
+"запуска обработки\""
+
+#: ../aa-autodep:61
+#, perl-format
+msgid "Can't find AppArmor profiles in %s."
+msgstr "Невозможно найти профили AppArmor в %s."
+
+#: ../aa-autodep:69
+msgid "Please enter the program to create a profile for: "
+msgstr "Введите программу для которой создаётся профиль: "
+
+#: ../aa-autodep:93 ../Immunix/AppArmor.pm:6339
+#, perl-format
+msgid ""
+"%s is currently marked as a program that should not have it's own profile.  "
+"Usually, programs are marked this way if creating a profile for them is "
+"likely to break the rest of the system.  If you know what you're doing and "
+"are certain you want to create a profile for this program, edit the "
+"corresponding entry in the [qualifiers] section in "
+"/etc/apparmor/logprof.conf."
+msgstr ""
+"В настоящее время %s отмечена как программа для которой профиль ещё не "
+"создан.  Обычно, программы отмечены таким образом, если при создании профиля "
+"они могут привести к неполадкам в системе.  Если вы осознанно понимаете "
+"порядок действий и хотите создать профиль для этой программы, выполните "
+"редактирование соответствующей записи в разделе [qualifiers] (требующие "
+"уточнения) файла /etc/apparmor/logprof.conf."
+
+#: ../aa-autodep:100
+#, perl-format
+msgid "Profile for %s already exists - skipping."
+msgstr "Профиль %s уже существует,  выполняется пропуск."
+
+#: ../aa-autodep:107 ../aa-audit:117 ../aa-complain:116 ../aa-enforce:127
+#: ../aa-disable:137
+#, perl-format
+msgid ""
+"Can't find %s in the system path list.  If the name of the application is "
+"correct, please run 'which %s' as a user with the correct PATH environment "
+"set up in order to find the fully-qualified path."
+msgstr ""
+
+#: ../aa-audit:104
+#, perl-format
+msgid "Setting %s to audit mode."
+msgstr ""
+
+#: ../aa-audit:129
+#, perl-format
+msgid ""
+"usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
+msgstr ""
+"команда: %s [ -d /адрес/расположения/профилей ] [ программа для переключения "
+"в режим аудита ]"
+
+#: ../aa-complain:61
+msgid "Please enter the program to switch to complain mode: "
+msgstr "Введите программу для переключения в тревожный режим: "
+
+#: ../aa-complain:103 ../Immunix/AppArmor.pm:621 ../Immunix/AppArmor.pm:941
+#, perl-format
+msgid "Setting %s to complain mode."
+msgstr ""
+
+#: ../aa-complain:128
+#, perl-format
+msgid ""
+"usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
+msgstr ""
+"команда: %s [ -d /адрес/расположения/профилей ] [ программа для переключения "
+"в тревожный режим ]"
+
+#: ../aa-enforce:62
+msgid "Please enter the program to switch to enforce mode: "
+msgstr ""
+
+#: ../aa-enforce:103 ../Immunix/AppArmor.pm:634
+#, perl-format
+msgid "Setting %s to enforce mode."
+msgstr ""
+
+#: ../aa-enforce:139
+#, perl-format
+msgid ""
+"usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
+msgstr ""
+
+#: ../aa-unconfined:48
+#, perl-format
+msgid "Usage: %s [ --paranoid ]\n"
+msgstr "Команда: %s [ --paranoid ]\n"
+
+#: ../aa-unconfined:59
+msgid "Can't read /proc\n"
+msgstr "Нет доступа к /proc\n"
+
+#: ../aa-unconfined:97 ../aa-unconfined:99
+msgid "not confined\n"
+msgstr "без ограничений\n"
+
+#: ../aa-unconfined:108 ../aa-unconfined:110
+msgid "confined by"
+msgstr "ограничение"
+
+#: ../aa-disable:69
+msgid "Please enter the program whose profile should be disabled: "
+msgstr "Введите программу, профиль которой должен быть отключён: "
+
+#: ../aa-disable:113
+#, perl-format
+msgid "Could not find basename for %s."
+msgstr ""
+
+#: ../aa-disable:117
+#, perl-format
+msgid "Disabling %s."
+msgstr "Отключение %s."
+
+#: ../aa-disable:123
+#, perl-format
+msgid "Could not create %s symlink."
+msgstr ""
+
+#: ../aa-disable:149
+#, perl-format
+msgid ""
+"usage: %s [ -d /path/to/profiles ] [ program to have profile disabled ]"
+msgstr ""
+"команда: %s [ -d /адрес/расположения/профилей ] [ программа с отключённым "
+"профилем ]"
+
+#: ../Immunix/AppArmor.pm:619 ../Immunix/AppArmor.pm:632
+#, perl-format
+msgid "Can't find %s."
+msgstr "Невозможно найти %s."
+
+#: ../Immunix/AppArmor.pm:819 ../Immunix/AppArmor.pm:3326
+msgid "Connecting to repository....."
+msgstr "Подключение к репозиторию....."
+
+#: ../Immunix/AppArmor.pm:828
+#, perl-format
+msgid ""
+"WARNING: Error fetching profiles from the repository:\n"
+"%s\n"
+msgstr ""
+"ВНИМАНИЕ: Ошибка загрузки профилей из репозитория:\n"
+"%s\n"
+
+#: ../Immunix/AppArmor.pm:837
+msgid "Inactive local profile for "
+msgstr "Незадействованный локальный профиль "
+
+#: ../Immunix/AppArmor.pm:874 ../Immunix/AppArmor.pm:1900
+#: ../Immunix/AppArmor.pm:2188 ../Immunix/AppArmor.pm:3453
+#: ../Immunix/AppArmor.pm:3486 ../Immunix/AppArmor.pm:3686
+#: ../Immunix/AppArmor.pm:3952 ../Immunix/AppArmor.pm:4004
+msgid "Profile"
+msgstr "Профиль"
+
+#: ../Immunix/AppArmor.pm:908
+msgid "Profile submitted by"
+msgstr "Профиль подтверждён"
+
+#: ../Immunix/AppArmor.pm:949
+#, perl-format
+msgid "Error activating profiles: %s\n"
+msgstr "Ошибка задействования профилей: %s\n"
+
+#: ../Immunix/AppArmor.pm:1098 ../Immunix/AppArmor.pm:1151
+#, perl-format
+msgid ""
+"WARNING: Error syncronizing profiles with the repository:\n"
+"%s\n"
+msgstr ""
+"ВНИМАНИЕ: Ошибка синхронизации профилей и репозитория:\n"
+"%s\n"
+
+#: ../Immunix/AppArmor.pm:1178
+msgid "New profiles"
+msgstr "Новый профили"
+
+#: ../Immunix/AppArmor.pm:1180
+msgid ""
+"Please choose the newly created profiles that you would like\n"
+"to store in the repository"
+msgstr ""
+"Пожалуйста, выберите недавно созданные профили, которые\n"
+"вы хотите сохранить в репозитории"
+
+#: ../Immunix/AppArmor.pm:1187
+msgid "Submit newly created profiles to the repository"
+msgstr "Отправить недавно созданные профили в репозиторий"
+
+#: ../Immunix/AppArmor.pm:1189
+msgid "Would you like to upload the newly created profiles?"
+msgstr "Вы действительно хотите выгрузить недавно созданные профили?"
+
+#: ../Immunix/AppArmor.pm:1202
+msgid ""
+"Select which of the changed profiles you would like to upload\n"
+"to the repository"
+msgstr ""
+"Выберите те изменённые профили, которые хотите выгрузить\n"
+"в репозиторий"
+
+#: ../Immunix/AppArmor.pm:1204
+msgid "Changed profiles"
+msgstr "Изменённые профили"
+
+#: ../Immunix/AppArmor.pm:1210
+msgid "Submit changed profiles to the repository"
+msgstr "Отправить изменённые профили в репозиторий"
+
+#: ../Immunix/AppArmor.pm:1212
+msgid ""
+"The following profiles from the repository were changed.\n"
+"Would you like to upload your changes?"
+msgstr ""
+"Следующие профили из репозитория содержат изменения.\n"
+"Вы действительно хотите выгрузить внесённые изменения?"
+
+#: ../Immunix/AppArmor.pm:1279 ../Immunix/AppArmor.pm:1359
+#, perl-format
+msgid ""
+"WARNING: An error occured while uploading the profile %s\n"
+"%s\n"
+msgstr ""
+"ВНИМАНИЕ: Обнаружена ошибка во время выгрузки профиля %s\n"
+"%s\n"
+
+#: ../Immunix/AppArmor.pm:1284
+msgid "Uploaded changes to repository."
+msgstr "Выгруженные изменения в репозиторий."
+
+#: ../Immunix/AppArmor.pm:1306 ../Immunix/AppArmor.pm:3185
+#: ../Immunix/AppArmor.pm:3215
+msgid "Repository"
+msgstr "Репозиторий"
+
+#: ../Immunix/AppArmor.pm:1333
+msgid "Changelog Entry: "
+msgstr "Запись журнала изменений: "
+
+#: ../Immunix/AppArmor.pm:1354
+#, perl-format
+msgid "Uploaded %s to repository."
+msgstr "Выгружено %s в репозиторий."
+
+#: ../Immunix/AppArmor.pm:1365
+msgid ""
+"Repository Error\n"
+"Registration or Signin was unsuccessful. User login\n"
+"information is required to upload profiles to the\n"
+"repository. These changes have not been sent.\n"
+msgstr ""
+"Ошибка репозитория\n"
+"Регистрация или вход не выполнены. Сведения\n"
+"об имени пользователя необходимы для выгрузки\n"
+"профилей в репозиторий. Изменения не были отправлены.\n"
+
+#: ../Immunix/AppArmor.pm:1422 ../Immunix/AppArmor.pm:1462
+msgid "(Y)es"
+msgstr "(Д)а"
+
+#: ../Immunix/AppArmor.pm:1423 ../Immunix/AppArmor.pm:1463
+msgid "(N)o"
+msgstr "(Н)ет"
+
+#: ../Immunix/AppArmor.pm:1426 ../Immunix/AppArmor.pm:1467
+msgid "Invalid hotkey for"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:1464
+msgid "(C)ancel"
+msgstr "(О)тмена"
+
+#: ../Immunix/AppArmor.pm:1789
+msgid ""
+"Are you sure you want to abandon this set of profile changes and exit?"
+msgstr "Вы действительно хотите отказаться от изменений профиля и выйти?"
+
+#: ../Immunix/AppArmor.pm:1791
+msgid "Abandoning all changes."
+msgstr "Отказ от всех изменений."
+
+#: ../Immunix/AppArmor.pm:1902
+msgid "Default Hat"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:1904
+msgid "Requested Hat"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:2190
+msgid "Program"
+msgstr "Программа"
+
+#: ../Immunix/AppArmor.pm:2195
+msgid "Execute"
+msgstr "Выполнить"
+
+#: ../Immunix/AppArmor.pm:2196 ../Immunix/AppArmor.pm:3455
+#: ../Immunix/AppArmor.pm:3488 ../Immunix/AppArmor.pm:3741
+msgid "Severity"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:2241
+msgid "Enter profile name to transition to: "
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:2249
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"switching profiles?\n"
+"\n"
+"Sanitizing the environment is more secure,\n"
+"but some applications depend on the presence\n"
+"of LD_PRELOAD or LD_LIBRARY_PATH."
+msgstr ""
+"Должен ли AppArmor проводить обеззараживание окружения\n"
+"во время переключения профилей?\n"
+"\n"
+"Обеззараживание окружения наиболее безопасно,\n"
+"но некоторые программы зависят от доступности\n"
+"LD_PRELOAD или LD_LIBRARY_PATH."
+
+#: ../Immunix/AppArmor.pm:2251
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"switching profiles?\n"
+"\n"
+"Sanitizing the environment is more secure,\n"
+"but this application appears to use LD_PRELOAD\n"
+"or LD_LIBRARY_PATH and clearing these could\n"
+"cause functionality problems."
+msgstr ""
+"Должен ли AppArmor проводить обеззараживание окружения\n"
+"во время переключения профилей?\n"
+"\n"
+"Обеззараживание окружения наиболее безопасно,\n"
+"но эта программа использует LD_PRELOAD \n"
+"или LD_LIBRARY_PATH, удаление которых может\n"
+"привести к неполадкам в работоспособности."
+
+#: ../Immunix/AppArmor.pm:2260
+#, perl-format
+msgid ""
+"Launching processes in an unconfined state is a very\n"
+"dangerous operation and can cause serious security holes.\n"
+"\n"
+"Are you absolutely certain you wish to remove all\n"
+"AppArmor protection when executing %s?"
+msgstr ""
+"Выполнение процессов в режиме без ограничений крайне опасно \n"
+"и может привести к появлению критической бреши в безопасности.\n"
+"\n"
+"Вы действительно уверены, что хотите отменить всю\n"
+"предоставляемую AppArmor защиту при выполнении %s?"
+
+#: ../Immunix/AppArmor.pm:2262
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"running this program unconfined?\n"
+"\n"
+"Not sanitizing the environment when unconfining\n"
+"a program opens up significant security holes\n"
+"and should be avoided if at all possible."
+msgstr ""
+"Должен ли AppArmor обеззараживать окружение,\n"
+"во время выполнения этой программы в режиме без ограничений?\n"
+"\n"
+"Без обеззараживания окружения, когда  программа\n"
+"запускается без ограничений, может привести к появлению\n"
+"бреши в безопасности и при необходимости такой запуск\n"
+"производиться не должен."
+
+#: ../Immunix/AppArmor.pm:2352
+#, perl-format
+msgid "A profile for %s does not exist. Create one?"
+msgstr "Профиль %s не существует. Создать его?"
+
+#: ../Immunix/AppArmor.pm:2379
+#, perl-format
+msgid "A local profile for %s does not exist. Create one?"
+msgstr "Локальный профиль %s не существует. Создать его?"
+
+#: ../Immunix/AppArmor.pm:2584 ../Immunix/AppArmor.pm:6733
+#: ../Immunix/AppArmor.pm:6738
+#, perl-format
+msgid "Log contains unknown mode %s."
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:3068
+msgid ""
+"An updated version of this profile has been found in the profile repository. "
+" Would you like to use it?"
+msgstr ""
+"Обновлённая версия этого профиля обнаружена в репозитории профилей. Вы "
+"действительно хотите использовать его?"
+
+#: ../Immunix/AppArmor.pm:3098
+#, perl-format
+msgid "Updated profile %s to revision %s."
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:3105
+msgid "Error parsing repository profile."
+msgstr "Ошибка анализа профиля репозитория."
+
+#: ../Immunix/AppArmor.pm:3141
+msgid "Create New User?"
+msgstr "Создать нового пользователя?"
+
+#: ../Immunix/AppArmor.pm:3142
+msgid "Username: "
+msgstr "Пользователь: "
+
+#: ../Immunix/AppArmor.pm:3143
+msgid "Password: "
+msgstr "Пароль: "
+
+#: ../Immunix/AppArmor.pm:3144
+msgid "Email Addr: "
+msgstr "Эл. почта: "
+
+#: ../Immunix/AppArmor.pm:3146
+msgid "Save Configuration? "
+msgstr "Сохранить настройки? "
+
+#: ../Immunix/AppArmor.pm:3155
+msgid "The Profile Repository server returned the following error:"
+msgstr "Сервер репозитория профилей сообщил следующую ошибку:"
+
+#: ../Immunix/AppArmor.pm:3157
+msgid ""
+"Please re-enter registration information or contact the administrator."
+msgstr ""
+"Пожалуйста, повторно введите сведения о регистрации или свяжитесь с "
+"системным администратором."
+
+#: ../Immunix/AppArmor.pm:3158
+msgid "Login Error\n"
+msgstr "Ошибка входа\n"
+
+#: ../Immunix/AppArmor.pm:3165
+msgid ""
+"Login failure\n"
+" Please check username and password and try again."
+msgstr ""
+"Ошибка входа\n"
+" Пожалуйста, проверьте имя пользователя, пароль и повторите снова."
+
+#: ../Immunix/AppArmor.pm:3187
+msgid ""
+"Would you like to enable access to the\n"
+"profile repository?"
+msgstr ""
+"Вы действительно хотите задействовать доступ к\n"
+"репозиторию профилей?"
+
+#: ../Immunix/AppArmor.pm:3218
+msgid ""
+"Would you like to upload newly created and changed profiles to\n"
+"      the profile repository?"
+msgstr ""
+"Вы действительно хотите выгрузить недавно созданные и \n"
+"недавно изменённые профили в репозиторий профилей?"
+
+#: ../Immunix/AppArmor.pm:3337
+#, perl-format
+msgid ""
+"WARNING: Profile update check failed\n"
+"Error Detail:\n"
+"%s"
+msgstr ""
+"ВНИМАНИЕ: Ошибка проверки профиля\n"
+"Сведения об ошибке:\n"
+"%s"
+
+#: ../Immunix/AppArmor.pm:3351
+msgid "Change mode modifiers"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:3395
+msgid "Complain-mode changes:"
+msgstr "Изменения тревожного режима:"
+
+#: ../Immunix/AppArmor.pm:3397
+msgid "Enforce-mode changes:"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:3403
+#, perl-format
+msgid "Invalid mode found: %s"
+msgstr "Обнаружен недопустимый режим: %s"
+
+#: ../Immunix/AppArmor.pm:3454 ../Immunix/AppArmor.pm:3487
+msgid "Capability"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:3507 ../Immunix/AppArmor.pm:3781
+#: ../Immunix/AppArmor.pm:4028
+#, perl-format
+msgid "Adding #include <%s> to profile."
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:3510 ../Immunix/AppArmor.pm:3782
+#: ../Immunix/AppArmor.pm:3822 ../Immunix/AppArmor.pm:4032
+#, perl-format
+msgid "Deleted %s previous matching profile entries."
+msgstr "Удалены %s предыдущие совпадающие записи профиля."
+
+#: ../Immunix/AppArmor.pm:3521
+#, perl-format
+msgid "Adding capability %s to profile."
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:3526
+#, perl-format
+msgid "Denying capability %s to profile."
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:3687
+msgid "Path"
+msgstr "Расположение"
+
+#: ../Immunix/AppArmor.pm:3698 ../Immunix/AppArmor.pm:3730
+msgid "(owner permissions off)"
+msgstr "(разрешения владельца отключены)"
+
+#: ../Immunix/AppArmor.pm:3704
+msgid "(force new perms to owner)"
+msgstr "(принудительно назначить новые разрешения владельцу)"
+
+#: ../Immunix/AppArmor.pm:3707
+msgid "(force all rule perms to owner)"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:3719
+msgid "Old Mode"
+msgstr "Устаревший режим"
+
+#: ../Immunix/AppArmor.pm:3720
+msgid "New Mode"
+msgstr "Новый режим"
+
+#: ../Immunix/AppArmor.pm:3736
+msgid "(force perms to owner)"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:3739
+msgid "Mode"
+msgstr "Режим"
+
+#: ../Immunix/AppArmor.pm:3821
+#, perl-format
+msgid "Adding %s %s to profile."
+msgstr "Добавление %s %s в профиль."
+
+#: ../Immunix/AppArmor.pm:3837
+msgid "Enter new path: "
+msgstr "Введите новый адрес: "
+
+#: ../Immunix/AppArmor.pm:3840
+msgid "The specified path does not match this log entry:"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:3841
+msgid "Log Entry"
+msgstr "Событие журнала"
+
+#: ../Immunix/AppArmor.pm:3842
+msgid "Entered Path"
+msgstr "Введённый адрес"
+
+#: ../Immunix/AppArmor.pm:3843
+msgid "Do you really want to use this path?"
+msgstr "Вы действительно хотите использовать этот адрес?"
+
+#: ../Immunix/AppArmor.pm:3955 ../Immunix/AppArmor.pm:4007
+msgid "Network Family"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:3958 ../Immunix/AppArmor.pm:4010
+msgid "Socket Type"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:4058
+#, perl-format
+msgid "Adding network access %s %s to profile."
+msgstr "Добавление сетевого доступа %s %s в профиль."
+
+#: ../Immunix/AppArmor.pm:4077
+#, perl-format
+msgid "Denying network access %s %s to profile."
+msgstr "Запрет сетевого доступа %s %s в профиль."
+
+#: ../Immunix/AppArmor.pm:4285
+#, perl-format
+msgid "Reading log entries from %s."
+msgstr "Чтение событий журнала из %s."
+
+#: ../Immunix/AppArmor.pm:4286
+#, perl-format
+msgid "Updating AppArmor profiles in %s."
+msgstr "Обновление профилей AppArmor в %s."
+
+#: ../Immunix/AppArmor.pm:4290
+msgid "unknown\n"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:4324
+msgid ""
+"The profile analyzer has completed processing the log files.\n"
+"\n"
+"All updated profiles will be reloaded"
+msgstr ""
+"Анализатор профилей завершил обработку файлов журнала.\n"
+"\n"
+"Все обновлённые профили будут перезагружены"
+
+#: ../Immunix/AppArmor.pm:4330
+msgid "No unhandled AppArmor events were found in the system log."
+msgstr "Необработанные события AppArmor не найдены в журнале системы."
+
+#: ../Immunix/AppArmor.pm:4391
+msgid ""
+"Select which profile changes you would like to save to the\n"
+"local profile set"
+msgstr ""
+"Выберите, какие изменения профиля вы хотите сохранить в\n"
+"группу локального профиля"
+
+#: ../Immunix/AppArmor.pm:4392
+msgid "Local profile changes"
+msgstr "Изменения локального профиля"
+
+#: ../Immunix/AppArmor.pm:4419
+msgid ""
+"The following local profiles were changed.  Would you like to save them?"
+msgstr ""
+"Были внесены изменения в следующие локальные профили. Вы действительно "
+"хотите сохранить их?"
+
+#: ../Immunix/AppArmor.pm:4516
+msgid "Profile Changes"
+msgstr "Изменения профиля"
+
+#: ../Immunix/AppArmor.pm:5139 ../Immunix/AppArmor.pm:5155
+#: ../Immunix/AppArmor.pm:5166 ../Immunix/AppArmor.pm:5174
+#: ../Immunix/AppArmor.pm:5195 ../Immunix/AppArmor.pm:5215
+#: ../Immunix/AppArmor.pm:5224 ../Immunix/AppArmor.pm:5256
+#: ../Immunix/AppArmor.pm:5334 ../Immunix/AppArmor.pm:5382
+#, perl-format
+msgid "%s contains syntax errors."
+msgstr "%s содержит синтаксические ошибки."
+
+#: ../Immunix/AppArmor.pm:5275
+#, perl-format
+msgid "Profile %s contains invalid regexp %s."
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:5280
+#, perl-format
+msgid "Profile %s contains invalid mode %s."
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:5430
+#, perl-format
+msgid "%s contains syntax errors. Line [%s]"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:6022
+#, perl-format
+msgid "Writing updated profile for %s."
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:6528
+msgid "Unknown command"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:6536
+msgid "Invalid hotkey in"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:6546
+msgid "Duplicate hotkey for"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:6567
+msgid "Invalid hotkey in default item"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:6576
+msgid "Invalid default"
+msgstr ""
