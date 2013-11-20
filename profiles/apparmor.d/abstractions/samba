@@ -11,6 +11,7 @@
 
   /etc/samba/* r,
   /usr/share/samba/*.dat r,
+  /usr/share/samba/codepages/{lowcase,upcase,valid}.dat r,
   /var/lib/samba/**.tdb rwk,
   /var/log/samba/cores/ rw,
   /var/log/samba/cores/** rw,
