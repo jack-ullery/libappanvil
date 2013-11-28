@@ -1,7 +1,7 @@
 /*
  * (C) 2006, 2007 Andreas Gruenbacher <agruen@suse.de>
  * Copyright (c) 2003-2008 Novell, Inc. (All rights reserved)
- * Copyright 2009-2012 Canonical Ltd.
+ * Copyright 2009-2013 Canonical Ltd.
  *
  * The libapparmor library is licensed under the terms of the GNU
  * Lesser General Public License, version 2.1. Please see the file
@@ -126,6 +126,15 @@ public:
 	virtual int eq(Node *other) = 0;
 	virtual ostream &dump(ostream &os) = 0;
 	void dump_syntax_tree(ostream &os);
+	virtual void normalize(int dir)
+	{
+		if (child[dir])
+			child[dir]->normalize(dir);
+		if (child[!dir])
+			child[!dir]->normalize(dir);
+	}
+	/* return false if no work done */
+	virtual int normalize_eps(int dir __attribute__((unused))) { return 0; }
 
 	bool nullable;
 	NodeSet firstpos, lastpos, followpos;
@@ -157,11 +166,13 @@ public:
 class TwoChildNode: public InnerNode {
 public:
 	TwoChildNode(Node *left, Node *right): InnerNode(left, right) { };
+	virtual int normalize_eps(int dir);
 };
 
 class LeafNode: public Node {
 public:
 	LeafNode(): Node() { };
+	virtual void normalize(int dir __attribute__((unused))) { return; }
 };
 
 /* Match nothing (//). */
@@ -485,6 +496,7 @@ public:
 		child[1]->dump(os);
 		return os;
 	}
+	void normalize(int dir);
 };
 
 /* Match one of two alternative nodes. */
@@ -521,6 +533,7 @@ public:
 		os << ')';
 		return os;
 	}
+	void normalize(int dir);
 };
 
 /* Traverse the syntax tree depth-first in an iterator-like manner. */
