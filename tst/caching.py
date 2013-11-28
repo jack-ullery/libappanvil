@@ -51,6 +51,11 @@ class AAParserCachingCommon(testlib.AATestTemplate):
         # REPORT ALL THE OUTPUT
         self.maxDiff = None
 
+        # skip all the things if apparmor securityfs isn't mounted
+        if not os.path.exists("/sys/kernel/security/apparmor"):
+            raise unittest.SkipTest("WARNING: /sys/kernel/security/apparmor does not exist. "
+                                    "Skipping tests")
+
         self.tmp_dir = tempfile.mkdtemp(prefix='aa-caching-')
         os.chmod(self.tmp_dir, 0o755)
 
