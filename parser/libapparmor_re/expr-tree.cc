@@ -1,7 +1,7 @@
 /*
  * (C) 2006, 2007 Andreas Gruenbacher <agruen@suse.de>
  * Copyright (c) 2003-2008 Novell, Inc. (All rights reserved)
- * Copyright 2009-2012 Canonical Ltd.
+ * Copyright 2009-2013 Canonical Ltd.
  *
  * The libapparmor library is licensed under the terms of the GNU
  * Lesser General Public License, version 2.1. Please see the file
@@ -181,52 +181,72 @@ static void rotate_node(Node *t, int dir)
 	t->child[!dir] = left;
 }
 
-void normalize_tree(Node *t, int dir)
+/* return False if no work done */
+int TwoChildNode::normalize_eps(int dir)
 {
-	if (dynamic_cast<LeafNode *>(t))
-		return;
+	if ((&epsnode == child[dir]) &&
+	    (&epsnode != child[!dir])) {
+		// (E | a) -> (a | E)
+		// Ea -> aE
+		// Test for E | (E | E) and E . (E . E) which will
+		// result in an infinite loop
+		Node *c = child[!dir];
+		if (dynamic_cast<TwoChildNode *>(c) &&
+		    &epsnode == c->child[dir] &&
+		    &epsnode == c->child[!dir]) {
+			c->release();
+			c = &epsnode;
+		}
+		child[!dir] = child[dir];
+		child[dir] = c;
+		return 1;
+	}
 
+	return 0;
+}
+
+void CatNode::normalize(int dir)
+{
 	for (;;) {
-		if (dynamic_cast<TwoChildNode *>(t) &&
-		    (&epsnode == t->child[dir]) &&
-		    (&epsnode != t->child[!dir])) {
-			// (E | a) -> (a | E)
-			// Ea -> aE
-			// Test for E | (E | E) and E . (E . E) which will
-			// result in an infinite loop
-			Node *c = t->child[!dir];
-			if (dynamic_cast<TwoChildNode *>(c) &&
-			    &epsnode == c->child[dir] &&
-			    &epsnode == c->child[!dir]) {
-				c->release();
-				c = &epsnode;
-			}
-			t->child[dir] = c;
-			t->child[!dir] = &epsnode;
-			// Don't break here as 'a' may be a tree that
-			// can be pulled up.
-		} else if ((dynamic_cast<AltNode *>(t) &&
-			    dynamic_cast<AltNode *>(t->child[dir])) ||
-			   (dynamic_cast<CatNode *>(t) &&
-			    dynamic_cast<CatNode *>(t->child[dir]))) {
-			// (a | b) | c -> a | (b | c)
+		if (normalize_eps(dir)) {
+			continue;
+		} else if (dynamic_cast<CatNode *>(child[dir])) {
 			// (ab)c -> a(bc)
-			rotate_node(t, dir);
-		} else if (dynamic_cast<AltNode *>(t) &&
-			   dynamic_cast<CharSetNode *>(t->child[dir]) &&
-			   dynamic_cast<CharNode *>(t->child[!dir])) {
-			// [a] | b  ->  b | [a]
-			Node *c = t->child[dir];
-			t->child[dir] = t->child[!dir];
-			t->child[!dir] = c;
+			rotate_node(this, dir);
 		} else {
 			break;
 		}
 	}
-	if (t->child[dir])
-		normalize_tree(t->child[dir], dir);
-	if (t->child[!dir])
-		normalize_tree(t->child[!dir], dir);
+
+	if (child[dir])
+		child[dir]->normalize(dir);
+	if (child[!dir])
+		child[!dir]->normalize(dir);
+}
+
+void AltNode::normalize(int dir)
+{
+	for (;;) {
+		if (normalize_eps(dir)) {
+			continue;
+		} else if (dynamic_cast<AltNode *>(child[dir])) {
+			// (a | b) | c -> a | (b | c)
+			rotate_node(this, dir);
+		} else if (dynamic_cast<CharSetNode *>(child[dir]) &&
+			   dynamic_cast<CharNode *>(child[!dir])) {
+			// [a] | b  ->  b | [a]
+			Node *c = child[dir];
+			child[dir] = child[!dir];
+			child[!dir] = c;
+		} else {
+			break;
+		}
+	}
+
+	if (child[dir])
+		child[dir]->normalize(dir);
+	if (child[!dir])
+		child[!dir]->normalize(dir);
 }
 
 //charset conversion is disabled for now,
@@ -558,7 +578,7 @@ Node *simplify_tree(Node *t, dfaflags_t flags)
 			do {
 				modified = false;
 				if (flags & DFA_CONTROL_TREE_NORMAL)
-					normalize_tree(t, dir);
+					t->normalize(dir);
 				t = simplify_tree_base(t, dir, modified);
 				if (modified)
 					update = true;
