@@ -12,7 +12,9 @@ DIRS=parser \
      changehat/pam_apparmor \
      tests
 
-REPO_URL?=lp:apparmor
+#REPO_URL?=lp:apparmor
+# --per-file-timestamps is failing over SSH, https://bugs.launchpad.net/bzr/+bug/1257078
+REPO_URL?=https://code.launchpad.net/~apparmor-dev/apparmor/master
 # alternate possibilities to export from
 #REPO_URL=.
 #REPO_URL="bzr+ssh://bazaar.launchpad.net/~sbeattie/+junk/apparmor-dev/"
