@@ -1266,12 +1266,119 @@ static int test_filter_slashes(void)
 	return rc;
 }
 
+#define MY_REGEX_TEST(input, expected_str, expected_type)						\
+	do {												\
+		char tbuf[PATH_MAX + 3];								\
+		char *test_string;									\
+		char* output_string = NULL;							\
+		pattern_t ptype;									\
+		int pos;										\
+													\
+		test_string = strdup((input)); 								\
+		ptype = convert_aaregex_to_pcre(test_string, 0, tbuf, PATH_MAX + 3, &pos);		\
+		asprintf(&output_string, "simple regex conversion for '%s'\texpected = '%s'\tresult = '%s'", \
+				(input), expected_str, tbuf);						\
+		MY_TEST(strcmp(tbuf, (expected_str)) == 0, output_string);				\
+		MY_TEST(ptype == (expected_type), "simple regex conversion type check for '" input "'"); \
+		free(test_string); free(output_string);							\
+	}												\
+	while (0)
+
+#define MY_REGEX_FAIL_TEST(input)						\
+	do {												\
+		char tbuf[PATH_MAX + 3];								\
+		char *test_string;									\
+		pattern_t ptype;									\
+		int pos;										\
+													\
+		test_string = strdup((input)); 								\
+		ptype = convert_aaregex_to_pcre(test_string, 0, tbuf, PATH_MAX + 3, &pos);		\
+		MY_TEST(ptype == ePatternInvalid, "simple regex conversion invalid type check for '" input "'"); \
+		free(test_string); 									\
+	}												\
+	while (0)
+
+static int test_aaregex_to_pcre(void)
+{
+	int rc = 0;
+
+	MY_REGEX_TEST("/most/basic/test", "/most/basic/test", ePatternBasic);
+
+	//MY_REGEX_TEST("\\", "\\", ePatternBasic);
+	MY_REGEX_TEST("\\\\", "\\\\", ePatternBasic);
+	//MY_REGEX_TEST("\\blort", "\\blort", ePatternBasic);
+	MY_REGEX_TEST("\\\\blort", "\\\\blort", ePatternBasic);
+	//MY_REGEX_TEST("blort\\", "blort\\", ePatternBasic);
+	MY_REGEX_TEST("blort\\\\", "blort\\\\", ePatternBasic);
+	MY_REGEX_TEST("*", "[^/\\x00]*", ePatternRegex);
+	MY_REGEX_TEST("blort*", "blort[^/\\x00]*", ePatternRegex);
+	MY_REGEX_TEST("*blort", "[^/\\x00]*blort", ePatternRegex);
+	MY_REGEX_TEST("\\*", "\\*", ePatternBasic);
+	MY_REGEX_TEST("blort\\*", "blort\\*", ePatternBasic);
+	MY_REGEX_TEST("\\*blort", "\\*blort", ePatternBasic);
+
+	/* simple quoting */
+	MY_REGEX_TEST("\\[", "\\[", ePatternBasic);
+	MY_REGEX_TEST("\\]", "\\]", ePatternBasic);
+	MY_REGEX_TEST("\\?", "?", ePatternBasic);
+	MY_REGEX_TEST("\\{", "\\{", ePatternBasic);
+	MY_REGEX_TEST("\\}", "\\}", ePatternBasic);
+	MY_REGEX_TEST("\\,", ",", ePatternBasic);
+	MY_REGEX_TEST("^", "\\^", ePatternBasic);
+	MY_REGEX_TEST("$", "\\$", ePatternBasic);
+	MY_REGEX_TEST(".", "\\.", ePatternBasic);
+	MY_REGEX_TEST("+", "\\+", ePatternBasic);
+	MY_REGEX_TEST("|", "\\|", ePatternBasic);
+	MY_REGEX_TEST("(", "\\(", ePatternBasic);
+	MY_REGEX_TEST(")", "\\)", ePatternBasic);
+	MY_REGEX_TEST("\\^", "\\^", ePatternBasic);
+	MY_REGEX_TEST("\\$", "\\$", ePatternBasic);
+	MY_REGEX_TEST("\\.", "\\.", ePatternBasic);
+	MY_REGEX_TEST("\\+", "\\+", ePatternBasic);
+	MY_REGEX_TEST("\\|", "\\|", ePatternBasic);
+	MY_REGEX_TEST("\\(", "\\(", ePatternBasic);
+	MY_REGEX_TEST("\\)", "\\)", ePatternBasic);
+
+	/* simple character class tests */
+	MY_REGEX_TEST("[blort]", "[blort]", ePatternRegex);
+	MY_REGEX_FAIL_TEST("[blort");
+	MY_REGEX_FAIL_TEST("b[lort");
+	MY_REGEX_FAIL_TEST("blort[");
+	MY_REGEX_FAIL_TEST("blort]");
+	MY_REGEX_FAIL_TEST("blo]rt");
+	MY_REGEX_FAIL_TEST("]blort");
+
+	/* simple alternation tests */
+	MY_REGEX_TEST("{alpha,beta}", "(alpha|beta)", ePatternRegex);
+	MY_REGEX_TEST("baz{alpha,beta}blort", "baz(alpha|beta)blort", ePatternRegex);
+	MY_REGEX_FAIL_TEST("{beta}");
+	MY_REGEX_FAIL_TEST("biz{beta");
+	MY_REGEX_FAIL_TEST("biz}beta");
+	MY_REGEX_FAIL_TEST("biz{be,ta");
+	MY_REGEX_FAIL_TEST("biz,be}ta");
+	MY_REGEX_FAIL_TEST("biz{}beta");
+
+	/* nested alternations */
+	MY_REGEX_TEST("{{alpha,blort,nested},beta}", "((alpha|blort|nested)|beta)", ePatternRegex);
+	MY_REGEX_FAIL_TEST("{{alpha,blort,nested}beta}");
+	MY_REGEX_TEST("{{alpha,{blort,nested}},beta}", "((alpha|(blort|nested))|beta)", ePatternRegex);
+	MY_REGEX_TEST("{{alpha,alpha{blort,nested}}beta,beta}", "((alpha|alpha(blort|nested))beta|beta)", ePatternRegex);
+	MY_REGEX_TEST("{{alpha,alpha{blort,nested}}beta,beta}", "((alpha|alpha(blort|nested))beta|beta)", ePatternRegex);
+	MY_REGEX_TEST("{{a,b{c,d}}e,{f,{g,{h{i,j,k},l}m},n}o}", "((a|b(c|d))e|(f|(g|(h(i|j|k)|l)m)|n)o)", ePatternRegex);
+
+	return rc;
+}
+
 int main(void)
 {
 	int rc = 0;
 	int retval;
 
 	retval = test_filter_slashes();
+	if (retval != 0)
+		rc = retval;
+
+	retval = test_aaregex_to_pcre();
 	if (retval != 0)
 		rc = retval;
 
