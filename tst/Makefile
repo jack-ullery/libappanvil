@@ -13,7 +13,7 @@ endif
 
 all: tests
 
-.PHONY: tests error_output gen_dbus gen_xtrans parser_sanity caching minimize equality
+.PHONY: tests error_output gen_dbus gen_xtrans parser_sanity caching minimize equality valgrind
 tests: error_output caching minimize equality parser_sanity
 
 GEN_TRANS_DIRS=simple_tests/generated_x/ simple_tests/generated_perms_leading/ simple_tests/generated_perms_safe/ simple_tests/generated_dbus
