@@ -17,7 +17,9 @@
 #define __AA_POLICYDB_H
 
 /*
- * Class of mediation types in the AppArmor policy db
+ * Class of private mediation types in the AppArmor policy db
+ *
+ * See libapparmor's apparmor.h for public mediation types
  */
 #define AA_CLASS_COND		0
 #define AA_CLASS_UNKNOWN	1
@@ -32,7 +34,6 @@
 
 #define AA_CLASS_ENV		16
 
-#define AA_CLASS_DBUS		32
 #define AA_CLASS_X		33
 
 #endif /* __AA_POLICYDB_H */

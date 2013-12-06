@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <apparmor.h>
 
 #include "parser.h"
 #include "profile.h"

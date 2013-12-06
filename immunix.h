@@ -40,14 +40,6 @@
 #define AA_EXEC_MOD_2			(1 << 12)
 #define AA_EXEC_MOD_3			(1 << 13)
 
-#define AA_DBUS_SEND			AA_MAY_WRITE
-#define AA_DBUS_RECEIVE			AA_MAY_READ
-#define AA_DBUS_EAVESDROP		(1 << 5)
-#define AA_DBUS_BIND			(1 << 6)
-
-#define AA_VALID_DBUS_PERMS		(AA_DBUS_SEND | AA_DBUS_RECEIVE | \
-					 AA_DBUS_BIND | AA_DBUS_EAVESDROP)
-
 #define AA_BASE_PERMS			(AA_MAY_EXEC | AA_MAY_WRITE | \
 					 AA_MAY_READ | AA_MAY_APPEND | \
 					 AA_MAY_LINK | AA_MAY_LOCK | \
