@@ -29,4 +29,4 @@ parse.cc : parse.y parse.h flex-tables.h ../immunix.h
 	${BISON} -o $@ $<
 
 clean:
-	rm -f *.o parse.cc ${TARGET}
+	rm -f *.o parse.cc ${TARGET} *.gcda *.gcno
