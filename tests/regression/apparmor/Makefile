@@ -23,6 +23,7 @@ SRC=access.c \
     chown.c \
     clone.c \
     coredump.c \
+    dbus_eavesdrop.c \
     dbus_message.c \
     dbus_service.c \
     deleted.c \
@@ -101,6 +102,7 @@ TESTS=access \
       chdir \
       clone \
       coredump \
+      dbus_eavesdrop \
       dbus_message \
       dbus_service \
       deleted \
@@ -151,6 +153,9 @@ changehat_pthread: changehat_pthread.c changehat.h
 
 dbus_common.o: dbus_common.c dbus_common.h
 	${CC} ${CFLAGS} ${LDFLAGS} $^ -c ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
+
+dbus_eavesdrop: dbus_eavesdrop.c dbus_common.o
+	${CC} ${CFLAGS} ${LDFLAGS} $^ -o dbus_eavesdrop ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
 
 dbus_message: dbus_message.c dbus_common.o
 	${CC} ${CFLAGS} ${LDFLAGS} $^ -o dbus_message ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
