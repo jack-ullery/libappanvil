@@ -43,15 +43,13 @@ __BEGIN_DECLS
 #define AA_CLASS_X		33
 
 
-/* Permission Flags for Mediation classes */
-#define AA_MAY_WRITE		(1 << 1)
-#define AA_MAY_READ		(1 << 2)
-#define AA_MAY_BIND		(1 << 6)
-
-#define AA_DBUS_SEND		AA_MAY_WRITE
-#define AA_DBUS_RECEIVE		AA_MAY_READ
-#define AA_DBUS_EAVESDROP	(1 << 5)
-#define AA_DBUS_BIND		AA_MAY_BIND
+/* Permission flags for the AA_CLASS_DBUS mediation class */
+#define AA_DBUS_SEND			(1 << 1)
+#define AA_DBUS_RECEIVE		 	(1 << 2)
+#define AA_DBUS_EAVESDROP		(1 << 5)
+#define AA_DBUS_BIND			(1 << 6)
+#define AA_VALID_DBUS_PERMS		(AA_DBUS_SEND | AA_DBUS_RECEIVE | \
+					 AA_DBUS_BIND | AA_DBUS_EAVESDROP)
 
 
 /* Prototypes for apparmor state queries */
