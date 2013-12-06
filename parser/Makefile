@@ -51,6 +51,9 @@ CFLAGS	= -g -O2 -pipe
 ifdef DEBUG
 CFLAGS += -pg -D DEBUG
 endif
+ifdef COVERAGE
+CFLAGS = -g -pg -fprofile-arcs -ftest-coverage
+endif
 endif #CFLAGS
 
 LIBAPPARMOR_PATH=../libraries/libapparmor/src/
@@ -149,6 +152,9 @@ indep: docs
 
 all:	arch indep
 
+.PHONY: coverage
+coverage:
+	$(MAKE) clean apparmor_parser COVERAGE=1
 
 apparmor_parser: $(OBJECTS) $(AAREOBJECTS)
 	$(CXX) $(LDFLAGS) $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(LIBS) \
@@ -302,7 +308,8 @@ install-indep:
 .SILENT: clean
 .PHONY: clean
 clean: _clean
-	rm -f core core.* *.o *.s *.a *~
+	rm -f core core.* *.o *.s *.a *~ *.gcda *.gcno
+	rm -f gmon.out
 	rm -f $(TOOLS) $(TESTS)
 	rm -f $(LEX_C_FILES)
 	rm -f $(YACC_C_FILES)

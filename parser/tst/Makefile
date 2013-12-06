@@ -59,3 +59,4 @@ $(PARSER):
 
 clean:
 	find $(GEN_TRANS_DIRS) -type f | xargs rm -f
+	rm -f gmon.out
