@@ -1390,9 +1390,11 @@ static int test_aaregex_to_pcre(void)
 	MY_REGEX_TEST("/*", "/[^/\\x00][^/\\x00]*", ePatternRegex);
 	MY_REGEX_TEST("/blort/*", "/blort/[^/\\x00][^/\\x00]*", ePatternRegex);
 	MY_REGEX_TEST("/*/blort", "/[^/\\x00][^/\\x00]*/blort", ePatternRegex);
+	MY_REGEX_TEST("/*/", "/[^/\\x00][^/\\x00]*/", ePatternRegex);
 	MY_REGEX_TEST("/**", "/[^/\\x00][^\\x00]*", ePatternTailGlob);
 	MY_REGEX_TEST("/blort/**", "/blort/[^/\\x00][^\\x00]*", ePatternTailGlob);
 	MY_REGEX_TEST("/**/blort", "/[^/\\x00][^\\x00]*/blort", ePatternRegex);
+	MY_REGEX_TEST("/**/", "/[^/\\x00][^\\x00]*/", ePatternRegex);
 
 	/* more complicated quoting */
 	MY_REGEX_FAIL_TEST("\\\\[");
