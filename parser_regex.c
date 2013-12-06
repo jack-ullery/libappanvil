@@ -1359,6 +1359,7 @@ static int test_aaregex_to_pcre(void)
 	MY_REGEX_FAIL_TEST("blort]");
 	MY_REGEX_FAIL_TEST("blo]rt");
 	MY_REGEX_FAIL_TEST("]blort");
+	MY_REGEX_TEST("b[lor]t", "b[lor]t", ePatternRegex);
 
 	/* simple alternation tests */
 	MY_REGEX_TEST("{alpha,beta}", "(alpha|beta)", ePatternRegex);
@@ -1377,6 +1378,36 @@ static int test_aaregex_to_pcre(void)
 	MY_REGEX_TEST("{{alpha,alpha{blort,nested}}beta,beta}", "((alpha|alpha(blort|nested))beta|beta)", ePatternRegex);
 	MY_REGEX_TEST("{{alpha,alpha{blort,nested}}beta,beta}", "((alpha|alpha(blort|nested))beta|beta)", ePatternRegex);
 	MY_REGEX_TEST("{{a,b{c,d}}e,{f,{g,{h{i,j,k},l}m},n}o}", "((a|b(c|d))e|(f|(g|(h(i|j|k)|l)m)|n)o)", ePatternRegex);
+	/* max nesting depth = 50 */
+	MY_REGEX_TEST("{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a,b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b}b,blort}",
+			"(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)b|blort)", ePatternRegex);
+	MY_REGEX_FAIL_TEST("{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a,b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b}b,blort}");
+
+	/* simple single char */
+	MY_REGEX_TEST("blor?t", "blor[^/\\x00]t", ePatternRegex);
+
+	/* simple globbing */
+	MY_REGEX_TEST("/*", "/[^/\\x00][^/\\x00]*", ePatternRegex);
+	MY_REGEX_TEST("/blort/*", "/blort/[^/\\x00][^/\\x00]*", ePatternRegex);
+	MY_REGEX_TEST("/*/blort", "/[^/\\x00][^/\\x00]*/blort", ePatternRegex);
+	MY_REGEX_TEST("/**", "/[^/\\x00][^\\x00]*", ePatternTailGlob);
+	MY_REGEX_TEST("/blort/**", "/blort/[^/\\x00][^\\x00]*", ePatternTailGlob);
+	MY_REGEX_TEST("/**/blort", "/[^/\\x00][^\\x00]*/blort", ePatternRegex);
+
+	/* more complicated quoting */
+	MY_REGEX_FAIL_TEST("\\\\[");
+	MY_REGEX_FAIL_TEST("\\\\]");
+	MY_REGEX_TEST("\\\\?", "\\\\[^/\\x00]", ePatternRegex);
+	MY_REGEX_FAIL_TEST("\\\\{");
+	MY_REGEX_FAIL_TEST("\\\\}");
+	MY_REGEX_TEST("\\\\,", "\\\\,", ePatternBasic);
+	MY_REGEX_TEST("\\\\^", "\\\\\\^", ePatternBasic);
+	MY_REGEX_TEST("\\\\$", "\\\\\\$", ePatternBasic);
+	MY_REGEX_TEST("\\\\.", "\\\\\\.", ePatternBasic);
+	MY_REGEX_TEST("\\\\+", "\\\\\\+", ePatternBasic);
+	MY_REGEX_TEST("\\\\|", "\\\\\\|", ePatternBasic);
+	MY_REGEX_TEST("\\\\(", "\\\\\\(", ePatternBasic);
+	MY_REGEX_TEST("\\\\)", "\\\\\\)", ePatternBasic);
 
 	return rc;
 }
