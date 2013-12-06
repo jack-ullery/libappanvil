@@ -49,11 +49,15 @@ gen_files("message-rules", "PASS", \@quantifier, \@msg_perms, \@session,
 	  [""], \@path, \@interface, \@member, \@peer);
 gen_files("service-rules", "PASS", \@quantifier, ["bind"], \@session,
 	  \@name, [""], [""], [""], [""]);
+gen_files("eavesdrop-rules", "PASS", \@quantifier, ["eavesdrop"], \@session,
+	  [""], [""], [""], [""], [""]);
 gen_file("sloppy-formatting", "PASS", "", "(send , receive )", "bus=session",
 	 "", "path =\"/foo/bar\"", "interface = com.foo", "  member=bar",
 	 "peer =(   label= /usr/bin/app name  =\"com.foo\")");
 gen_file("sloppy-formatting", "PASS", "", "bind", "bus =session",
 	 "name= com.foo", "", "", "", "");
+gen_file("sloppy-formatting", "PASS", "", "eavesdrop", "bus = system",
+	 "", "", "", "", "");
 
 # Don't use the first element, which is empty, from each array since all empty
 # conditionals would PASS but we want all FAILs
@@ -73,6 +77,8 @@ gen_files("service-incompat", "FAIL", \@quantifier, ["bind"], \@session,
 	  \@name, [""], [""], \@member, [""]);
 gen_files("service-incompat", "FAIL", \@quantifier, ["bind"], \@session,
 	  \@name, [""], [""], [""], \@peer);
+gen_files("eavesdrop-incompat", "FAIL", \@quantifier, ["eavesdrop"], \@session,
+	  \@name, \@path, \@interface, \@member, \@peer);
 
 gen_files("pairing-unsupported", "FAIL", \@quantifier, ["send", "bind"],
 	  \@session, ["name=sn", "label=sl"], [""], [""], [""],
