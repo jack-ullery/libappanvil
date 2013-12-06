@@ -329,6 +329,12 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 			// fall through to default
 
 		default:
+			if (bEscape) {
+				/* quoting mark used for something that
+				 * does not need to be quoted; give a warning */
+				pwarn("Character %c was quoted unnecessarily, "
+				      "dropped preceding quote ('\\') character\n", *sptr);
+			}
 			STORE(sptr, dptr, 1);
 			break;
 		}	/* switch (*sptr) */
@@ -344,6 +350,12 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 		       progname);
 	}
 
+	if ((error == e_no_error) && bEscape) {
+		/* trailing backslash quote */
+		error = e_parse_error;
+		PERROR(_("%s: Regex error: trailing '\\' escape character\n"),
+		       progname);
+	}
 	/* anchor end and terminate pattern string */
 	if ((error == e_no_error) && anchor) {
 		STORE("$" , dptr, 1);
@@ -1304,11 +1316,11 @@ static int test_aaregex_to_pcre(void)
 
 	MY_REGEX_TEST("/most/basic/test", "/most/basic/test", ePatternBasic);
 
-	//MY_REGEX_TEST("\\", "\\", ePatternBasic);
+	MY_REGEX_FAIL_TEST("\\");
 	MY_REGEX_TEST("\\\\", "\\\\", ePatternBasic);
-	//MY_REGEX_TEST("\\blort", "\\blort", ePatternBasic);
+	MY_REGEX_TEST("\\blort", "blort", ePatternBasic);
 	MY_REGEX_TEST("\\\\blort", "\\\\blort", ePatternBasic);
-	//MY_REGEX_TEST("blort\\", "blort\\", ePatternBasic);
+	MY_REGEX_FAIL_TEST("blort\\");
 	MY_REGEX_TEST("blort\\\\", "blort\\\\", ePatternBasic);
 	MY_REGEX_TEST("*", "[^/\\x00]*", ePatternRegex);
 	MY_REGEX_TEST("blort*", "blort[^/\\x00]*", ePatternRegex);
