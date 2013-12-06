@@ -659,7 +659,7 @@ rules: rules opt_prefix network_rule
 rules:  rules opt_prefix mnt_rule
 	{
 		if ($2.owner)
-			yyerror(_("owner prefix not allow on mount rules"));
+			yyerror(_("owner prefix not allowed on mount rules"));
 		if ($2.deny && $2.audit) {
 			$3->deny = 1;
 		} else if ($2.deny) {
@@ -676,7 +676,7 @@ rules:  rules opt_prefix mnt_rule
 rules:  rules opt_prefix dbus_rule
 	{
 		if ($2.owner)
-			yyerror(_("owner prefix not allow on dbus rules"));
+			yyerror(_("owner prefix not allowed on dbus rules"));
 		if ($2.deny && $2.audit) {
 			$3->deny = 1;
 		} else if ($2.deny) {
@@ -703,7 +703,7 @@ rules:	rules change_profile
 rules:  rules opt_prefix capability
 	{
 		if ($2.owner)
-			yyerror(_("owner prefix not allow on capability rules"));
+			yyerror(_("owner prefix not allowed on capability rules"));
 
 		if ($2.deny)
 			$1->caps.deny |= $3;
