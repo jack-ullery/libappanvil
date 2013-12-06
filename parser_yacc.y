@@ -132,6 +132,7 @@ void add_local_entry(Profile *prof);
 %token TOK_BIND
 %token TOK_READ
 %token TOK_WRITE
+%token TOK_EAVESDROP
 %token TOK_PEER
 
  /* rlimits */
@@ -1165,6 +1166,8 @@ dbus_perm: TOK_VALUE
 			$$ = AA_DBUS_SEND;
 		else if (strcmp($1, "receive") == 0 || strcmp($1, "read") == 0)
 			$$ = AA_DBUS_RECEIVE;
+		else if (strcmp($1, "eavesdrop") == 0)
+			$$ = AA_DBUS_EAVESDROP;
 		else if ($1) {
 			parse_dbus_mode($1, &$$, 1);
 		} else
@@ -1178,6 +1181,7 @@ dbus_perm: TOK_VALUE
 	| TOK_RECEIVE { $$ = AA_DBUS_RECEIVE; }
 	| TOK_READ { $$ = AA_DBUS_RECEIVE; }
 	| TOK_WRITE { $$ = AA_DBUS_SEND; }
+	| TOK_EAVESDROP { $$ = AA_DBUS_EAVESDROP; }
 	| TOK_MODE
 	{
 		parse_dbus_mode($1, &$$, 1);

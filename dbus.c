@@ -129,12 +129,18 @@ struct dbus_entry *new_dbus_entry(int mode, struct cond_entry *conds,
 			yyerror("dbus \"bind\" access cannot be used with message rule conditionals\n");
 		else if (service_rule && (ent->mode & (AA_DBUS_SEND | AA_DBUS_RECEIVE)))
 			yyerror("dbus \"send\" and/or \"receive\" accesses cannot be used with service rule conditionals\n");
+		else if (ent->mode & AA_DBUS_EAVESDROP &&
+			 (ent->path || ent->interface || ent->member ||
+			  ent->peer_label || ent->name)) {
+			yyerror("dbus \"eavesdrop\" access can only contain a bus conditional\n");
+		}
 	} else {
-		ent->mode = AA_VALID_DBUS_PERMS;
 		if (message_rule)
-			ent->mode &= ~AA_DBUS_BIND;
+			ent->mode = (AA_DBUS_SEND | AA_DBUS_RECEIVE);
 		else if (service_rule)
-			ent->mode &= ~(AA_DBUS_SEND | AA_DBUS_RECEIVE);
+			ent->mode = (AA_DBUS_BIND);
+		else
+			ent->mode = AA_VALID_DBUS_PERMS;
 	}
 
 out:
@@ -184,6 +190,8 @@ void print_dbus_entry(struct dbus_entry *ent)
 		fprintf(stderr, "receive ");
 	if (ent->mode & AA_DBUS_BIND)
 		fprintf(stderr, "bind ");
+	if (ent->mode & AA_DBUS_EAVESDROP)
+		fprintf(stderr, "eavesdrop ");
 	fprintf(stderr, ")");
 
 	if (ent->bus)

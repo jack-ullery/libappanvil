@@ -1139,6 +1139,13 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 				6, vec, dfaflags))
 			goto fail;
 	}
+	if (entry->mode & AA_DBUS_EAVESDROP) {
+		if (!aare_add_rule_vec(dfarules, entry->deny,
+				entry->mode & AA_DBUS_EAVESDROP,
+				entry->audit & AA_DBUS_EAVESDROP,
+				1, vec, dfaflags))
+			goto fail;
+	}
 	return TRUE;
 
 fail:
