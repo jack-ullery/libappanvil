@@ -146,6 +146,7 @@ static struct keyword_table keyword_table[] = {
 	{"bind",                TOK_BIND},
 	{"read",                TOK_READ},
 	{"write",               TOK_WRITE},
+	{"eavesdrop",		TOK_EAVESDROP},
 	{"peer",		TOK_PEER},
 
 	/* terminate */
