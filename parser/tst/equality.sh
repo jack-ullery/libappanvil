@@ -170,12 +170,19 @@ verify_binary_equality "dbus variable expansion" \
 
 verify_binary_equality "dbus variable expansion, multiple values/rules" \
 	"/t { dbus (send, receive) path=/com/foo, dbus (send, receive) path=/com/bar, }" \
+	"/t { dbus (send, receive) path=/com/{foo,bar}, }" \
+	"/t { dbus (send, receive) path={/com/foo,/com/bar}, }" \
 	"@{FOO}=foo
 	    /t { dbus (send, receive) path=/com/@{FOO}, dbus (send, receive) path=/com/bar, }" \
 	"@{FOO}=foo bar
 	    /t { dbus (send, receive) path=/com/@{FOO}, }" \
 	"@{FOO}=bar foo
-	    /t { dbus (send, receive) path=/com/@{FOO}, }"
+	    /t { dbus (send, receive) path=/com/@{FOO}, }" \
+	"@{FOO}={bar,foo}
+	    /t { dbus (send, receive) path=/com/@{FOO}, }" \
+	"@{FOO}=foo
+	 @{BAR}=bar
+	    /t { dbus (send, receive) path=/com/{@{FOO},@{BAR}}, }" \
 
 verify_binary_equality "dbus variable expansion, ensure rule de-duping occurs" \
 	"/t { dbus (send, receive) path=/com/foo, dbus (send, receive) path=/com/bar, }" \
