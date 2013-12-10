@@ -251,17 +251,22 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 				/* { is a PCRE special character */
 				STORE("\\{", dptr, 2);
 			} else {
-				update_re_pos(sptr - aare);
-				ingrouping++;
-				if (ingrouping >= MAX_ALT_DEPTH) {
-					error = e_parse_error;
-					PERROR(_("%s: Regex grouping error: Exceeded maximum nesting of {}\n"), progname);
-
+				if (incharclass) {
+					/* don't expand inside [] */
+					STORE("{", dptr, 1);
 				} else {
-					grouping_count[ingrouping] = 0;
-					ptype = ePatternRegex;
-					STORE("(", dptr, 1);
-				}
+					update_re_pos(sptr - aare);
+					ingrouping++;
+					if (ingrouping >= MAX_ALT_DEPTH) {
+						error = e_parse_error;
+						PERROR(_("%s: Regex grouping error: Exceeded maximum nesting of {}\n"), progname);
+
+					} else {
+						grouping_count[ingrouping] = 0;
+						ptype = ePatternRegex;
+						STORE("(", dptr, 1);
+					}
+				}	/* incharclass */
 			}
 			break;
 
@@ -270,31 +275,43 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 				/* { is a PCRE special character */
 				STORE("\\}", dptr, 2);
 			} else {
-				if (grouping_count[ingrouping] == 0) {
-					error = e_parse_error;
-					PERROR(_("%s: Regex grouping error: Invalid number of items between {}\n"), progname);
+				if (incharclass) {
+					/* don't expand inside [] */
+					STORE("}", dptr, 1);
+				} else {
+					if (grouping_count[ingrouping] == 0) {
+						error = e_parse_error;
+						PERROR(_("%s: Regex grouping error: Invalid number of items between {}\n"), progname);
 
-				}
-				ingrouping--;
-				if (ingrouping < 0) {
-					error = e_parse_error;
-					PERROR(_("%s: Regex grouping error: Invalid close }, no matching open { detected\n"), progname);
-					ingrouping = 0;
-				}
-				STORE(")", dptr, 1);
+					}
+					ingrouping--;
+					if (ingrouping < 0) {
+						error = e_parse_error;
+						PERROR(_("%s: Regex grouping error: Invalid close }, no matching open { detected\n"), progname);
+						ingrouping = 0;
+					}
+					STORE(")", dptr, 1);
+				}	/* incharclass */
 			}	/* bEscape */
 
 			break;
 
 		case ',':
 			if (bEscape) {
-				/* , is not a PCRE regex character
-				 * so no need to escape, just skip
-				 * transform
-				 */
-				STORE(sptr, dptr, 1);
+				if (incharclass) {
+					/* escape inside char class is a
+					 * valid matching char for '\'
+					 */
+					STORE("\\,", dptr, 2);
+				} else {
+					/* ',' is not a PCRE regex character
+					 * so no need to escape, just skip
+					 * transform
+					 */
+					STORE(sptr, dptr, 1);
+				}
 			} else {
-				if (ingrouping) {
+				if (ingrouping && !incharclass) {
 					grouping_count[ingrouping]++;
 					STORE("|", dptr, 1);
 				} else {
@@ -1418,6 +1435,18 @@ static int test_aaregex_to_pcre(void)
 	MY_REGEX_TEST("\\\\|", "\\\\\\|", ePatternBasic);
 	MY_REGEX_TEST("\\\\(", "\\\\\\(", ePatternBasic);
 	MY_REGEX_TEST("\\\\)", "\\\\\\)", ePatternBasic);
+
+	/* more complicated character class tests */
+	/*   -- embedded alternations */
+	MY_REGEX_TEST("b[\\lor]t", "b[lor]t", ePatternRegex);
+	MY_REGEX_TEST("b[{a,b}]t", "b[{a,b}]t", ePatternRegex);
+	MY_REGEX_TEST("{alpha,b[{a,b}]t,gamma}", "(alpha|b[{a,b}]t|gamma)", ePatternRegex);
+
+	/* pcre will ignore the '\' before '\{', but it should be okay
+	 * for us to pass this on to pcre as '\{' */
+	MY_REGEX_TEST("b[\\{a,b\\}]t", "b[\\{a,b\\}]t", ePatternRegex);
+	MY_REGEX_TEST("{alpha,b[\\{a,b\\}]t,gamma}", "(alpha|b[\\{a,b\\}]t|gamma)", ePatternRegex);
+	MY_REGEX_TEST("{alpha,b[\\{a\\,b\\}]t,gamma}", "(alpha|b[\\{a\\,b\\}]t|gamma)", ePatternRegex);
 
 	return rc;
 }
