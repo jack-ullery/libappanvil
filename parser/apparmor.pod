@@ -6,6 +6,9 @@
 #    Copyright (c) 2010
 #    Canonical Ltd. (All rights reserved)
 #
+#    Copyright (c) 2013
+#    Christian Boltz (All rights reserved)
+#
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
 #    License published by the Free Software Foundation.
@@ -89,43 +92,46 @@ may execute, even if the process is running as root. A confined process
 cannot call the following system calls:
 
 	create_module(2) delete_module(2) init_module(2) ioperm(2)
-	iopl(2) mount(2) umount(2) ptrace(2) reboot(2) setdomainname(2)
+	iopl(2) ptrace(2) reboot(2) setdomainname(2)
 	sethostname(2) swapoff(2) swapon(2) sysctl(2)
-
-A confined process can not call mknod(2) to create character or block devices.
 
 =head1 ERRORS
 
 When a confined process tries to access a file it does not have permission
 to access, the kernel will report a message through audit, similar to:
 
-	audit(1148420912.879:96): REJECTING x access to /bin/uname
-	  (sh(6646) profile /tmp/sh active /tmp/sh)
+	audit(1386511672.612:238): apparmor="DENIED" operation="exec" 
+	  parent=7589 profile="/tmp/sh" name="/bin/uname" pid=7605 
+	  comm="sh" requested_mask="x" denied_mask="x" fsuid=0 ouid=0
 
-	audit(1148420912.879:97): REJECTING r access to /bin/uname
-	  (sh(6646) profile /tmp/sh active /tmp/sh)
+	audit(1386511672.613:239): apparmor="DENIED" operation="open" 
+	  parent=7589 profile="/tmp/sh" name="/bin/uname" pid=7605 
+	  comm="sh" requested_mask="r" denied_mask="r" fsuid=0 ouid=0
 
-	audit(1148420944.837:98): REJECTING access to capability
-	  'dac_override' (sh(6641) profile /tmp/sh active /tmp/sh)
+	audit(1386511772.804:246): apparmor="DENIED" operation="capable"
+	  parent=7246 profile="/tmp/sh" pid=7589 comm="sh" pid=7589 
+	  comm="sh" capability=2  capname="dac_override"
 
-
-The permissions requested by the process are immediately after
-REJECTING. The "name" and process id of the running program are reported,
-as well as the profile name and any "hat" that may be active. ("Name"
+The permissions requested by the process are described in the operation=
+and denied_mask= (for files - capabilities etc. use a slightly different
+log format).
+The "name" and process id of the running program are reported,
+as well as the profile name including any "hat" that may be active, 
+separated by "//". ("Name"
 is in quotes, because the process name is limited to 15 bytes; it is the
-same as reported through the Berkeley process accounting.) If no hat is
-active (see aa_change_hat(2)) then the profile name is printed for "active".
+same as reported through the Berkeley process accounting.)
 
 For confined processes running under a profile that has been loaded in 
 complain mode, enforcement will not take place and the log messages 
 reported to audit will be of the form:
 
-	audit(1146868287.904:237): PERMITTING r access to
-	  /etc/apparmor.d/tunables (du(3811) profile /usr/bin/du active
-	  /usr/bin/du)
+	audit(1386512577.017:275): apparmor="ALLOWED" operation="open"
+	  parent=8012 profile="/usr/bin/du" name="/etc/apparmor.d/tunables/"
+	  pid=8049 comm="du" requested_mask="r" denied_mask="r" fsuid=1000 ouid=0
 
-	audit(1146868287.904:238): PERMITTING r access to /etc/apparmor.d
-	  (du(3811) profile /usr/bin/du active /usr/bin/du)
+	audit(1386512577.017:276): apparmor="ALLOWED" operation="open"
+	  parent=8012 profile="/usr/bin/du" name="/etc/apparmor.d/tunables/"
+	  pid=8049 comm="du" requested_mask="r" denied_mask="r" fsuid=1000 ouid=0
 
 
 If the userland auditd is not running, the kernel will send audit events
