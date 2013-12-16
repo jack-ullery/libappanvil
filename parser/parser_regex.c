@@ -627,54 +627,30 @@ out:
 	return error;
 }
 
-static int build_list_val_expr(char *buffer, int size, struct value_list *list)
+static int build_list_val_expr(std::string& buffer, struct value_list *list)
 {
 	struct value_list *ent;
-	std::string tmp;
-	char *p;
-	int len;
 	pattern_t ptype;
 	int pos;
 
 	if (!list) {
-		strncpy(buffer, "[^\\000]*", size);
+		buffer.append("[^\\000]*");
 		return TRUE;
 	}
 
-	p = buffer;
-	strncpy(p, "(", size - (p - buffer));
-	p++;
-	if (p > buffer + size)
-		goto fail;
+	buffer.append("(");
 
-	ptype = convert_aaregex_to_pcre(list->value, 0, tmp, &pos);
+	ptype = convert_aaregex_to_pcre(list->value, 0, buffer, &pos);
 	if (ptype == ePatternInvalid)
 		goto fail;
 
-	len = tmp.length();
-	if (len > size - (p - buffer))
-		goto fail;
-	strcpy(p, tmp.c_str());
-	p += len;
-
 	list_for_each(list->next, ent) {
-		tmp.clear();
-		ptype = convert_aaregex_to_pcre(ent->value, 0, tmp, &pos);
+		buffer.append("|");
+		ptype = convert_aaregex_to_pcre(ent->value, 0, buffer, &pos);
 		if (ptype == ePatternInvalid)
 			goto fail;
-
-		strncpy(p, "|", size - (p - buffer));
-		p++;
-		len = tmp.length();
-		if (len > size - (p - buffer))
-			goto fail;
-		strcpy(p, tmp.c_str());
-		p += len;
 	}
-	strncpy(p, ")", size - (p - buffer));
-	p++;
-	if (p > buffer + size)
-		goto fail;
+	buffer.append(")");
 
 	return TRUE;
 fail:
@@ -768,7 +744,7 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 {
 	std::string mntbuf;
 	std::string devbuf;
-	char typebuf[PATH_MAX + 3];
+	std::string typebuf;
 	char flagsbuf[PATH_MAX + 3];
 	std::string optsbuf;
 	char class_mount_hdr[64];
@@ -845,7 +821,6 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 	if ((entry->allow & AA_MAY_MOUNT) && (entry->flags & MS_BIND)
 	    && !entry->dev_type && !entry->opts) {
 		/* bind mount rules can't be conditional on dev_type or data */
-		std::string tmpbuf;
 		/* rule class single byte header */
 		mntbuf.assign(class_mount_hdr);
 		if (!convert_entry(mntbuf, entry->mnt_point))
@@ -855,11 +830,10 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		if (!convert_entry(devbuf, entry->device))
 			goto fail;
 		vec[1] = devbuf.c_str();
-		/* FIXME: when typebuf gets converted to std::string,
-		 * switch tmpbuf back to typebuf */
-		if (!convert_entry(tmpbuf, NULL))
+		typebuf.clear();
+		if (!convert_entry(typebuf, NULL))
 			goto fail;
-		vec[2] = tmpbuf.c_str();
+		vec[2] = typebuf.c_str();
 
 		flags = entry->flags;
 		inv_flags = entry->inv_flags;
@@ -912,7 +886,6 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		/* mount move rules can not be conditional on dev_type,
 		 * or data
 		 */
-		std::string tmpbuf;
 		/* rule class single byte header */
 		mntbuf.assign(class_mount_hdr);
 		if (!convert_entry(mntbuf, entry->mnt_point))
@@ -923,11 +896,10 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 			goto fail;
 		vec[1] = devbuf.c_str();
 		/* skip type */
-		/* FIXME: when typebuf gets converted to std::string,
-		 * switch tmpbuf back to typebuf */
-		if (!convert_entry(tmpbuf, NULL))
+		typebuf.clear();
+		if (!convert_entry(typebuf, NULL))
 			goto fail;
-		vec[2] = tmpbuf.c_str();
+		vec[2] = typebuf.c_str();
 
 		flags = entry->flags;
 		inv_flags = entry->inv_flags;
@@ -958,9 +930,10 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		if (!convert_entry(devbuf, entry->device))
 			goto fail;
 		vec[1] = devbuf.c_str();
-		if (!build_list_val_expr(typebuf, PATH_MAX+2, entry->dev_type))
+		typebuf.clear();
+		if (!build_list_val_expr(typebuf, entry->dev_type))
 			goto fail;
-		vec[2] = typebuf;
+		vec[2] = typebuf.c_str();
 
 		flags = entry->flags;
 		inv_flags = entry->inv_flags;
