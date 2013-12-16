@@ -23,6 +23,8 @@
 #include <libintl.h>
 #include <linux/limits.h>
 
+#include <string>
+
 #define _(s) gettext(s)
 
 /* #define DEBUG */
@@ -133,13 +135,90 @@ void free_var_string(struct var_string *var)
 	free(var);
 }
 
+static void trim_trailing_slash(std::string& str)
+{
+	for (std::string::reverse_iterator rit = str.rbegin();
+			rit != str.rend() && *rit == '/'; ++rit) {
+		/* yuck, reverse_iterators are ugly */
+		str.erase(--rit.base());
+	}
+}
+
+static void write_replacement(const char separator, const char* value,
+			     std::string& replacement, bool filter_leading_slash,
+			     bool filter_trailing_slash)
+{
+	const char *p = value;
+
+	replacement.append(1, separator);
+
+	if (filter_leading_slash)
+		while (*p == '/')
+			p++;
+
+	replacement.append(p);
+	if (filter_trailing_slash)
+		trim_trailing_slash(replacement);
+}
+
+static int expand_by_alternations(struct set_value **valuelist,
+				  struct var_string *split_var,
+				  char **name)
+{
+	char *value, *first_value;
+	std::string replacement;
+	bool filter_leading_slash = false;
+	bool filter_trailing_slash = false;
+
+	first_value = get_next_set_value(valuelist);
+	if (!first_value) {
+		PERROR("ASSERT: set variable (%s) should always have at least one value assigned to it\n",
+		       split_var->var);
+		exit(1);
+	}
+
+	value = get_next_set_value(valuelist);
+	if (!value) {
+		/* only one entry for the variable, so just sub it in */
+		free(*name);
+		if (asprintf(name, "%s%s%s",
+			     split_var->prefix ? split_var->prefix : "",
+			     first_value,
+			     split_var->suffix ? split_var->suffix : "") == -1)
+			return -1;
+		return 0;
+	}
+
+	if (split_var->prefix && split_var->prefix[strlen(split_var->prefix) - 1] == '/')
+		filter_leading_slash = true;
+	if (split_var->suffix && *split_var->suffix == '/')
+		filter_trailing_slash = true;
+
+	write_replacement('{', first_value, replacement, filter_leading_slash, filter_trailing_slash);
+	write_replacement(',', value, replacement, filter_leading_slash, filter_trailing_slash);
+
+	while ((value = get_next_set_value(valuelist))) {
+		write_replacement(',', value, replacement, filter_leading_slash, filter_trailing_slash);
+	}
+
+	free(*name);
+	if (asprintf(name, "%s%s}%s",
+		     split_var->prefix ? split_var->prefix : "",
+		     replacement.c_str(),
+		     split_var->suffix ? split_var->suffix : "") == -1) {
+			return -1;
+	}
+
+	return 0;
+}
+
 /* doesn't handle variables in options atm */
-static int expand_entry_variables(char **name, void *entry, 
+static int expand_entry_variables(char **name, void *entry,
 				  int (dup_and_chain)(void *))
 {
 	struct set_value *valuelist;
-	char *value;
 	struct var_string *split_var;
+	int ret;
 
 	if (!entry) 		/* can happen when entry is optional */
 		return 0;
@@ -157,34 +236,12 @@ static int expand_entry_variables(char **name, void *entry,
 			exit(1);
 		}
 
-		value = get_next_set_value(&valuelist);
-		if (!value) {
-			PERROR("ASSERT: set variable (%s) should always have at least one value assigned to them\n",
-			       split_var->var);
-			exit(1);
-		}
-		free(*name);
-		if (asprintf(name, "%s%s%s",
-			     split_var->prefix ? split_var->prefix : "",
-			     value,
-			     split_var->suffix ? split_var->suffix : "") == -1)
-			return -1;
-
-		while ((value = get_next_set_value(&valuelist))) {
-			if (!dup_and_chain(entry)) {
-				PERROR("Memory allocation error while handling set variable %s\n",
-				       split_var->var);
-				exit(1);
-			}
-
-			free(*name);
-			if (asprintf(name, "%s%s%s",
-			      split_var->prefix ? split_var->prefix : "", value,
-			      split_var->suffix ? split_var->suffix : "") == -1)
-				return -1;
-		}
+		ret = expand_by_alternations(&valuelist, split_var, name);
 
 		free_var_string(split_var);
+		if (ret != 0)
+			return -1;
+
 	}
 	return 0;
 }
