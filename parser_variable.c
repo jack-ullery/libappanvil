@@ -213,8 +213,7 @@ static int expand_by_alternations(struct set_value **valuelist,
 }
 
 /* doesn't handle variables in options atm */
-static int expand_entry_variables(char **name, void *entry,
-				  int (dup_and_chain)(void *))
+static int expand_entry_variables(char **name, void *entry)
 {
 	struct set_value *valuelist;
 	struct var_string *split_var;
@@ -246,52 +245,13 @@ static int expand_entry_variables(char **name, void *entry,
 	return 0;
 }
 
-int clone_and_chain_cod(void *v)
-{
-	struct cod_entry *entry = (struct cod_entry *) v;
-	struct cod_entry *dup = copy_cod_entry(entry);
-	if (!dup)
-		return 0;
-
-	entry->next = dup;
-
-	return 1;
-}
-
-int clone_and_chain_mnt(void *v)
-{
-	struct mnt_entry *entry = (struct mnt_entry *) v;
-
-	struct mnt_entry *dup = dup_mnt_entry(entry);
-	if (!dup)
-		return 0;
-
-	entry->next = dup;
-
-	return 1;
-}
-
-int clone_and_chain_dbus(void *v)
-{
-	struct dbus_entry *entry = (struct dbus_entry *) v;
-
-	struct dbus_entry *dup = dup_dbus_entry(entry);
-	if (!dup)
-		return 0;
-
-	entry->next = dup;
-
-	return 1;
-}
-
 static int process_variables_in_entries(struct cod_entry *entry_list)
 {
 	int error = 0;
 	struct cod_entry *entry;
 
 	list_for_each(entry_list, entry) {
-		error = expand_entry_variables(&entry->name, entry,
-					       clone_and_chain_cod);
+		error = expand_entry_variables(&entry->name, entry);
 		if (error)
 			return error;
 	}
@@ -306,16 +266,13 @@ static int process_variables_in_mnt_entries(struct mnt_entry *entry_list)
 	struct mnt_entry *entry;
 
 	list_for_each(entry_list, entry) {
-		error = expand_entry_variables(&entry->mnt_point, entry,
-					       clone_and_chain_mnt);
+		error = expand_entry_variables(&entry->mnt_point, entry);
 		if (error)
 			return error;
-		error = expand_entry_variables(&entry->device, entry,
-					       clone_and_chain_mnt);
+		error = expand_entry_variables(&entry->device, entry);
 		if (error)
 			return error;
-		error = expand_entry_variables(&entry->trans, entry,
-					       clone_and_chain_mnt);
+		error = expand_entry_variables(&entry->trans, entry);
 		if (error)
 			return error;
 
@@ -330,28 +287,22 @@ static int process_dbus_variables(struct dbus_entry *entry_list)
 	struct dbus_entry *entry;
 
 	list_for_each(entry_list, entry) {
-		error = expand_entry_variables(&entry->bus, entry,
-					       clone_and_chain_dbus);
+		error = expand_entry_variables(&entry->bus, entry);
 		if (error)
 			return error;
-		error = expand_entry_variables(&entry->name, entry,
-					       clone_and_chain_dbus);
+		error = expand_entry_variables(&entry->name, entry);
 		if (error)
 			return error;
-		error = expand_entry_variables(&entry->peer_label, entry,
-					       clone_and_chain_dbus);
+		error = expand_entry_variables(&entry->peer_label, entry);
 		if (error)
 			return error;
-		error = expand_entry_variables(&entry->path, entry,
-					       clone_and_chain_dbus);
+		error = expand_entry_variables(&entry->path, entry);
 		if (error)
 			return error;
-		error = expand_entry_variables(&entry->interface, entry,
-					       clone_and_chain_dbus);
+		error = expand_entry_variables(&entry->interface, entry);
 		if (error)
 			return error;
-		error = expand_entry_variables(&entry->member, entry,
-					       clone_and_chain_dbus);
+		error = expand_entry_variables(&entry->member, entry);
 		if (error)
 			return error;
 
