@@ -58,6 +58,12 @@ profiling = args.program
 profiledir = args.dir
 filename = args.file
 
+
+if not os.path.isfile(filename):
+    raise apparmor.AppArmorException(_('The logfile %s does not exist. Please check the path') % filename)
+
+apparmor.filename = filename
+
 aa_mountpoint = apparmor.check_for_apparmor()
 if not aa_mountpoint:
     raise apparmor.AppArmorException(_('It seems AppArmor was not started. Please enable AppArmor and try again.'))

@@ -23,7 +23,7 @@ class Test(unittest.TestCase):
 
 
     def test_RegexParser(self):
-        tests=apparmor.config.Config('ini')
+        tests = apparmor.config.Config('ini')
         tests.CONF_DIR = '.'
         regex_tests = tests.read_config('regex_tests.ini')
         for regex in regex_tests.sections():

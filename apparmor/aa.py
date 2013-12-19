@@ -13,7 +13,6 @@
 # ----------------------------------------------------------------------
 # No old version logs, only 2.6 + supported
 from __future__ import with_statement
-import codecs
 import inspect
 import os
 import re
@@ -113,7 +112,7 @@ def check_for_LD_XXX(file):
     # Limit to checking files under 100k for the sake of speed
     if size >100000:
         return False
-    with codecs.open(file, 'r', encoding='ascii') as f_in:
+    with open_file_read(file, encoding='ascii') as f_in:
         for line in f_in:
             if 'LD_PRELOAD' in line or 'LD_LIBRARY_PATH' in line:
                 found = True

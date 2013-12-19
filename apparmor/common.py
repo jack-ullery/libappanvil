@@ -132,10 +132,10 @@ def get_directory_contents(path):
     files.sort()
     return files
 
-def open_file_read(path):
+def open_file_read(path, encoding='UTF-8'):
     '''Open specified file read-only'''
     try:
-        orig = codecs.open(path, 'r', 'UTF-8')
+        orig = codecs.open(path, 'r', encoding)
     except Exception:
         raise
 

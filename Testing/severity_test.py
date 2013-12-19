@@ -34,54 +34,54 @@ class Test(unittest.TestCase):
         shutil.rmtree('./profiles')
 
     def testRank_Test(self):
-        s = severity.Severity('severity.db')
-        rank = s.rank('/usr/bin/whatis', 'x')
+        sev_db = severity.Severity('severity.db')
+        rank = sev_db.rank('/usr/bin/whatis', 'x')
         self.assertEqual(rank, 5, 'Wrong rank')
-        rank = s.rank('/etc', 'x')
+        rank = sev_db.rank('/etc', 'x')
         self.assertEqual(rank, 10, 'Wrong rank')
-        rank = s.rank('/dev/doublehit', 'x')
+        rank = sev_db.rank('/dev/doublehit', 'x')
         self.assertEqual(rank, 0, 'Wrong rank')
-        rank = s.rank('/dev/doublehit', 'rx')
+        rank = sev_db.rank('/dev/doublehit', 'rx')
         self.assertEqual(rank, 4, 'Wrong rank')
-        rank = s.rank('/dev/doublehit', 'rwx')
+        rank = sev_db.rank('/dev/doublehit', 'rwx')
         self.assertEqual(rank, 8, 'Wrong rank')
-        rank = s.rank('/dev/tty10', 'rwx')
+        rank = sev_db.rank('/dev/tty10', 'rwx')
         self.assertEqual(rank, 9, 'Wrong rank')
-        rank = s.rank('/var/adm/foo/**', 'rx')
+        rank = sev_db.rank('/var/adm/foo/**', 'rx')
         self.assertEqual(rank, 3, 'Wrong rank')
-        rank = s.rank('CAP_KILL')
+        rank = sev_db.rank('CAP_KILL')
         self.assertEqual(rank, 8, 'Wrong rank')
-        rank = s.rank('CAP_SETPCAP')
+        rank = sev_db.rank('CAP_SETPCAP')
         self.assertEqual(rank, 9, 'Wrong rank')
-        self.assertEqual(s.rank('/etc/apparmor/**', 'r') , 6,  'Invalid Rank')
-        self.assertEqual(s.rank('/etc/**', 'r') , 10,  'Invalid Rank')
+        self.assertEqual(sev_db.rank('/etc/apparmor/**', 'r') , 6,  'Invalid Rank')
+        self.assertEqual(sev_db.rank('/etc/**', 'r') , 10,  'Invalid Rank')
 
         # Load all variables for /sbin/klogd and test them
-        s.load_variables('profiles/sbin.klogd')
-        self.assertEqual(s.rank('@{PROC}/sys/vm/overcommit_memory', 'r'), 6, 'Invalid Rank')
-        self.assertEqual(s.rank('@{HOME}/sys/@{PROC}/overcommit_memory', 'r'), 10, 'Invalid Rank')
-        self.assertEqual(s.rank('/overco@{multiarch}mmit_memory', 'r'), 10, 'Invalid Rank')
+        sev_db.load_variables('profiles/sbin.klogd')
+        self.assertEqual(sev_db.rank('@{PROC}/sys/vm/overcommit_memory', 'r'), 6, 'Invalid Rank')
+        self.assertEqual(sev_db.rank('@{HOME}/sys/@{PROC}/overcommit_memory', 'r'), 10, 'Invalid Rank')
+        self.assertEqual(sev_db.rank('/overco@{multiarch}mmit_memory', 'r'), 10, 'Invalid Rank')
 
-        s.unload_variables()
+        sev_db.unload_variables()
 
-        s.load_variables('profiles/usr.sbin.dnsmasq')
-        self.assertEqual(s.rank('@{PROC}/sys/@{TFTP_DIR}/overcommit_memory', 'r'), 6, 'Invalid Rank')
-        self.assertEqual(s.rank('@{PROC}/sys/vm/overcommit_memory', 'r'), 6, 'Invalid Rank')
-        self.assertEqual(s.rank('@{HOME}/sys/@{PROC}/overcommit_memory', 'r'), 10, 'Invalid Rank')
-        self.assertEqual(s.rank('/overco@{multiarch}mmit_memory', 'r'), 10, 'Invalid Rank')
+        sev_db.load_variables('profiles/usr.sbin.dnsmasq')
+        self.assertEqual(sev_db.rank('@{PROC}/sys/@{TFTP_DIR}/overcommit_memory', 'r'), 6, 'Invalid Rank')
+        self.assertEqual(sev_db.rank('@{PROC}/sys/vm/overcommit_memory', 'r'), 6, 'Invalid Rank')
+        self.assertEqual(sev_db.rank('@{HOME}/sys/@{PROC}/overcommit_memory', 'r'), 10, 'Invalid Rank')
+        self.assertEqual(sev_db.rank('/overco@{multiarch}mmit_memory', 'r'), 10, 'Invalid Rank')
 
-        #self.assertEqual(s.rank('/proc/@{PID}/maps', 'rw'), 9, 'Invalid Rank')
+        #self.assertEqual(sev_db.rank('/proc/@{PID}/maps', 'rw'), 9, 'Invalid Rank')
 
     def testInvalid(self):
-        s = severity.Severity('severity.db')
-        rank = s.rank('/dev/doublehit', 'i')
+        sev_db = severity.Severity('severity.db')
+        rank = sev_db.rank('/dev/doublehit', 'i')
         self.assertEqual(rank, 10, 'Wrong')
         try:
-            broken = severity.Severity('severity_broken.db')
+            severity.Severity('severity_broken.db')
         except AppArmorException:
             pass
-        rank =  s.rank('CAP_UNKOWN')
-        rank =  s.rank('CAP_K*')
+        rank =  sev_db.rank('CAP_UNKOWN')
+        rank =  sev_db.rank('CAP_K*')
 
 
 

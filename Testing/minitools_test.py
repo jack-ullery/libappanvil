@@ -27,7 +27,7 @@ test_path = '/usr/sbin/ntpd'
 local_profilename = './profiles/usr.sbin.ntpd'
 
 python_interpreter = 'python'
-if sys.version_info >= (3,0):
+if sys.version_info >= (3, 0):
     python_interpreter = 'python3'
 
 class Test(unittest.TestCase):
@@ -105,17 +105,16 @@ class Test(unittest.TestCase):
 
     def test_autodep(self):
         pass
-    
+
     def test_unconfined(self):
         output = subprocess.check_output('%s ./../Tools/aa-unconfined'%python_interpreter, shell=True)
-        
+
         output_force = subprocess.check_output('%s ./../Tools/aa-unconfined --paranoid'%python_interpreter, shell=True)
-        
+
         self.assertIsNot(output, '', 'Failed to run aa-unconfined')
-        
+
         self.assertIsNot(output_force, '', 'Failed to run aa-unconfined in paranoid mode')
-        
-        
+
 
     def test_cleanprof(self):
         input_file = 'cleanprof_test.in'
@@ -147,7 +146,7 @@ if __name__ == "__main__":
     #Should be the set of cleanprofile
     shutil.copytree('/etc/apparmor.d', './profiles', symlinks=True)
 
-    apparmor.profile_dir='./profiles'
+    apparmor.profile_dir = './profiles'
 
     atexit.register(clean_profile_dir)
 
