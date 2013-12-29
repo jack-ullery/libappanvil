@@ -31,10 +31,11 @@ filename = args.file
 logmark = args.mark or ''
 
 
-if not os.path.isfile(filename):
-    raise apparmor.AppArmorException(_('The logfile %s does not exist. Please check the path') % filename)
-
-apparmor.filename = filename
+if filename:
+    if not os.path.isfile(filename):
+        raise apparmor.AppArmorException(_('The logfile %s does not exist. Please check the path') % filename)
+    else:
+        apparmor.filename = filename
 
 aa_mountpoint = apparmor.check_for_apparmor()
 if not aa_mountpoint:

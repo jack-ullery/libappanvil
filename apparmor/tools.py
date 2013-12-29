@@ -67,7 +67,7 @@ class aa_tools:
                 if program and not program.startswith('/'):
                     program = apparmor.UI_GetString(_('The given program cannot be found, please try with the fully qualified path name of the program: '), '')
                 else:
-                    apparmor.UI_Info(_("%s does not exist, please double-check the path.")%program)
+                    apparmor.UI_Info(_("%s does not exist, please double-check the path.")%p)
                     sys.exit(1)
 
             if program and apparmor.profile_exists(program):#os.path.exists(program):

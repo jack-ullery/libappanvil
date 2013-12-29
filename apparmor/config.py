@@ -18,7 +18,7 @@ import shutil
 import stat
 import sys
 import tempfile
-if sys.version_info < (3,0):
+if sys.version_info < (3, 0):
     import ConfigParser as configparser
     # Class to provide the object[section][option] behavior in Python2
     class configparser_py2(configparser.ConfigParser):
@@ -34,13 +34,13 @@ else:
     import configparser
 
 
-from apparmor.common import AppArmorException, warn, msg, open_file_read
+from apparmor.common import AppArmorException, open_file_read#, warn, msg,
 
 
 # CFG = None
 # REPO_CFG = None
 # SHELL_FILES = ['easyprof.conf', 'notify.conf', 'parser.conf', 'subdomain.conf']
-class Config:
+class Config(object):
     def __init__(self, conf_type, conf_dir='/etc/apparmor'):
         self.CONF_DIR = conf_dir
         # The type of config file that'll be read and/or written
@@ -69,13 +69,13 @@ class Config:
         elif self.conf_type == 'shell':
             config = self.read_shell(filepath)
         elif self.conf_type == 'ini':
-            if sys.version_info > (3,0):
+            if sys.version_info > (3, 0):
                 config = configparser.ConfigParser()
             else:
                 config = configparser_py2()
             # Set the option form to string -prevents forced conversion to lowercase
             config.optionxform = str
-            if sys.version_info > (3,0):
+            if sys.version_info > (3, 0):
                 config.read(filepath)
             else:
                 try:
@@ -114,9 +114,9 @@ class Config:
     def find_first_file(self, file_list):
         """Returns name of first matching file None otherwise"""
         filename = None
-        for file in file_list.split():
-            if os.path.isfile(file):
-                filename = file
+        for f in file_list.split():
+            if os.path.isfile(f):
+                filename = f
                 break
         return filename
 
@@ -133,8 +133,8 @@ class Config:
     def read_shell(self, filepath):
         """Reads the shell type conf files and returns config[''][option]=value"""
         config = {'': dict()}
-        with open_file_read(filepath) as file:
-            for line in file:
+        with open_file_read(filepath) as conf_file:
+            for line in conf_file:
                 result = shlex.split(line, True)
                 # If not a comment of empty line
                 if result:

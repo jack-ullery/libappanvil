@@ -54,7 +54,7 @@ pids = list(map(int, set(pids)))
 for pid in sorted(pids):
     try:
         prog = os.readlink("/proc/%s/exe"%pid)
-    except IOError:
+    except OSError:
         continue
     attr = None
     if os.path.exists("/proc/%s/attr/current"%pid):

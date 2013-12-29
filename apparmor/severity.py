@@ -14,9 +14,9 @@
 from __future__ import with_statement
 import os
 import re
-from apparmor.common import AppArmorException, error, debug, open_file_read, warn, msg, convert_regexp
+from apparmor.common import AppArmorException, open_file_read, warn, convert_regexp #, msg, error, debug
 
-class Severity:
+class Severity(object):
     def __init__(self, dbname=None, default_rank=10):
         """Initialises the class object"""
         self.PROF_DIR = '/etc/apparmor.d'  # The profile directory
@@ -43,7 +43,7 @@ class Severity:
                     except ValueError:
                         raise AppArmorException("Insufficient values for permissions in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
                     else:
-                        if read not in range(0,11) or write not in range(0,11) or execute not in range(0,11):
+                        if read not in range(0, 11) or write not in range(0,11) or execute not in range(0,11):
                             raise AppArmorException("Inappropriate values for permissions in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
                         path = path.lstrip('/')
                         if '*' not in path:
@@ -69,7 +69,7 @@ class Severity:
                         #error(error_message)
                         raise AppArmorException(error_message) # from None
                     else:
-                        if severity not in range(0,11):
+                        if severity not in range(0, 11):
                             raise AppArmorException("Inappropriate severity value present in file: %s\n\t[Line %s]: %s" % (dbname, lineno, line))
                         self.severity['CAPABILITIES'][resource] = severity
                 else:

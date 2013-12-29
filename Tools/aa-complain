@@ -26,5 +26,5 @@ parser.add_argument('program', type=str, nargs='+', help=_('name of program'))
 args = parser.parse_args()
 
 complain = apparmor.tools.aa_tools('complain', args)
-print(args)
+#print(args)
 complain.act()

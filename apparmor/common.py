@@ -176,7 +176,7 @@ def init_translations(domain='apparmor-utils'):
 def convert_regexp(regexp):
     regex_paren = re.compile('^(.*){([^}]*)}(.*)$')
     regexp = regexp.strip()
-    new_reg = re.sub(r'(?<!\\)(\.|\+|\$)',r'\\\1',regexp)
+    new_reg = re.sub(r'(?<!\\)(\.|\+|\$)', r'\\\1', regexp)
 
     while regex_paren.search(new_reg):
         match = regex_paren.search(new_reg).groups()
@@ -201,7 +201,7 @@ def convert_regexp(regexp):
         new_reg =  new_reg + '$'
     return new_reg
 
-class DebugLogger:
+class DebugLogger(object):
     def __init__(self, module_name=__name__):
         self.debugging = False
         self.debug_level = logging.DEBUG
@@ -209,10 +209,10 @@ class DebugLogger:
             self.debugging = os.getenv('LOGPROF_DEBUG')
             try:
                 self.debugging = int(self.debugging)
-            except:
+            except Exception:
                 self.debugging = False
-            if self.debugging not in range(0,4):
-                sys.stderr.out('Environment Variable: LOGPROF_DEBUG contains invalid value: %s' %os.getenv('LOGPROF_DEBUG'))
+            if self.debugging not in range(0, 4):
+                sys.stderr.write('Environment Variable: LOGPROF_DEBUG contains invalid value: %s' %os.getenv('LOGPROF_DEBUG'))
             # self.debugging == 0 implies debugging = False
             if self.debugging == 1:
                 self.debug_level = logging.ERROR
@@ -227,15 +227,15 @@ class DebugLogger:
         self.logger = logging.getLogger(module_name)
 
 
-    def error(self, msg):
+    def error(self, message):
         if self.debugging:
-            self.logger.error(msg)
-    def info(self, msg):
+            self.logger.error(message)
+    def info(self, message):
         if self.debugging:
-            self.logger.info(msg)
-    def debug(self, msg):
+            self.logger.info(message)
+    def debug(self, message):
         if self.debugging:
-            self.logger.debug(msg)
+            self.logger.debug(message)
     def shutdown(self):
         logging.shutdown()
         #logging.shutdown([self.logger])
