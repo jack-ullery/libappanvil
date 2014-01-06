@@ -82,4 +82,6 @@ testsuite/Makefile
 testsuite/config/Makefile
 testsuite/libaalogparse.test/Makefile
 testsuite/lib/Makefile
+include/Makefile
+include/sys/Makefile
 )

@@ -2,7 +2,7 @@ AUTOMAKE_OPTIONS = foreign 1.4
 NAME = libapparmor
 SRCDIR = src
 
-SUBDIRS = doc src swig testsuite
+SUBDIRS = doc src include swig testsuite
 
 REPO_VERSION=$(shell if [ -x /usr/bin/svn ] ; then \
 	/usr/bin/svn info . 2> /dev/null | grep "^Last Changed Rev:" | sed "s/^Last Changed Rev: //" ; \

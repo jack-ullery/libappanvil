@@ -28,7 +28,7 @@ BUILT_SOURCES = grammar.h scanner.h af_protos.h
 AM_LFLAGS = -v
 AM_YFLAGS = -d -p aalogparse_
 AM_CFLAGS = -Wall
-AM_CPPFLAGS = -D_GNU_SOURCE
+AM_CPPFLAGS = -D_GNU_SOURCE -I$(top_srcdir)/include/
 scanner.h: scanner.l
 	$(LEX) -v $<
 
@@ -36,12 +36,6 @@ scanner.c: scanner.l
 
 af_protos.h: /usr/include/netinet/in.h
 	 LC_ALL=C  sed  -n -e "/IPPROTO_MAX/d"  -e "s/^\#define[ \\t]\\+IPPROTO_\\([A-Z0-9_]\\+\\)\\(.*\\)$$/AA_GEN_PROTO_ENT(\\UIPPROTO_\\1, \"\\L\\1\")/p" $< > $@
-
-changehatdir = $(includedir)/sys
-changehat_HEADERS = apparmor.h
-
-aalogparsedir = $(includedir)/aalogparse
-aalogparse_HEADERS = aalogparse.h
 
 lib_LTLIBRARIES = libapparmor.la
 noinst_HEADERS = grammar.h parser.h scanner.h af_protos.h

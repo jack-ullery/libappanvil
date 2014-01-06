@@ -1,13 +1,13 @@
 %module LibAppArmor
 
 %{
-#include "aalogparse.h"
-#include "apparmor.h"
+#include <aalogparse.h>
+#include <sys/apparmor.h>
 
 %}
 
 %include "typemaps.i"
-%include "aalogparse.h"
+%include <aalogparse.h>
 
 /* swig doesn't like the macro magic we do in apparmor.h so the fn prototypes
  * are manually inserted here

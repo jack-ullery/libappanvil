@@ -2,7 +2,7 @@ SUBDIRS = lib config libaalogparse.test
 PACKAGE = libaalogparse
 AUTOMAKE_OPTIONS = dejagnu
 
-INCLUDES = -I. -I$(top_srcdir)/src
+INCLUDES = -I. -I$(top_srcdir)/include
 
 AM_CPPFLAGS = $(DEBUG_FLAGS) -DLOCALEDIR=\"${localedir}\"
 AM_CFLAGS = -Wall
