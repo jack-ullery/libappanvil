@@ -1,9 +1,42 @@
 #	Copyright (C) 2002-2005 Novell/SUSE
+#	Copyright (C) 2013 Canonical, Ltd
 #
 #	This program is free software; you can redistribute it and/or
 #	modify it under the terms of the GNU General Public License as
 #	published by the Free Software Foundation, version 2 of the
 #	License.
+
+ifdef USE_SYSTEM
+  # use the system libapparmor headers and library
+  LIBAPPARMOR = $(shell if pkg-config --exists libapparmor ; then \
+				pkg-config --silence-errors --libs libapparmor ; \
+			elif ldconfig -p | grep -q libapparmor\.so$$ ; then \
+				echo -lapparmor ; \
+			fi )
+  ifeq ($(strip $(LIBAPPARMOR)),)
+    $(error Unable to find libapparmor installed on this system; either \
+	    install libapparmor devel packages, set the LIBAPPARMOR variable \
+	    manually, or build against in-tree libapparmor)
+  endif # LIBAPPARMOR not set
+  LDLIBS += $(LIBAPPARMOR)
+
+else # !USE_SYSTEM
+  # use in-tree versions
+  LIBAPPARMOR_SRC := ../../../libraries/libapparmor/
+  LIBAPPARMOR_INCLUDE = $(LIBAPPARMOR_SRC)/include
+  LIBAPPARMOR_PATH := $(LIBAPPARMOR_SRC)/src/.libs/
+  ifeq ($(realpath $(LIBAPPARMOR_PATH)/libapparmor.a),)
+    $(error $(LIBAPPARMOR_PATH)/libapparmor.a is missing; either build against \
+	    the in-tree libapparmor by building it first and then trying again \
+	    (see the top-level README for help) or build against the system \
+	    libapparmor by adding USE_SYSTEM=1 to your make command.)
+  endif
+
+  CFLAGS += -L$(LIBAPPARMOR_PATH) -I$(LIBAPPARMOR_INCLUDE)
+  LDLIBS += -Wl,-Bstatic -lapparmor -Wl,-Bdynamic -lpthread
+endif # USE_SYSTEM
+
+CFLAGS += -Wall -Wstrict-prototypes
 
 SRC=access.c \
     introspect.c \
@@ -81,13 +114,6 @@ SRC=access.c \
 ifneq (,$(findstring $(shell uname -i),i386 i486 i586 i686 x86 x86_64))
 SRC+=syscall_ioperm.c syscall_iopl.c
 endif
-
-LIBAPPARMOR:=$(shell	if ldconfig -p | grep -q libapparmor\.so ; then \
-				echo -lapparmor ; \
-			fi )
-
-CFLAGS+=-Wall -Wstrict-prototypes
-LDLIBS+=$(LIBAPPARMOR)
 
 EXEC=$(SRC:%.c=%)
 
