@@ -56,9 +56,7 @@ CFLAGS = -g -pg -fprofile-arcs -ftest-coverage
 endif
 endif #CFLAGS
 
-LIBAPPARMOR_PATH=../libraries/libapparmor/src/
-LIBAPPARMOR_LDPATH=$(LIBAPPARMOR_PATH)/.libs/
-EXTRA_CXXFLAGS = ${CFLAGS} ${CXX_WARNINGS} -std=gnu++0x -D_GNU_SOURCE -I$(LIBAPPARMOR_PATH)
+EXTRA_CXXFLAGS = ${CFLAGS} ${CXX_WARNINGS} -std=gnu++0x -D_GNU_SOURCE
 EXTRA_CFLAGS = ${EXTRA_CXXFLAGS} ${CPP_WARNINGS}
 
 #LEXLIB	:= -lfl
@@ -90,8 +88,25 @@ OBJECTS = $(SRCS:.c=.o)
 AAREDIR= libapparmor_re
 AAREOBJECT = ${AAREDIR}/libapparmor_re.a
 AAREOBJECTS = $(AAREOBJECT)
-AARE_LDFLAGS=-static-libgcc -static-libstdc++ -L. -L$(LIBAPPARMOR_LDPATH)
+AARE_LDFLAGS = -static-libgcc -static-libstdc++ -L.
 AALIB = -Wl,-Bstatic -lapparmor -Wl,-Bdynamic -lpthread
+
+ifdef USE_SYSTEM
+  # Using the system libapparmor so Makefile dependencies can't be used
+  LIBAPPARMOR_A =
+  INCLUDE_APPARMOR =
+  APPARMOR_H =
+else
+  LIBAPPARMOR_SRC = ../libraries/libapparmor/
+  LOCAL_LIBAPPARMOR_INCLUDE = $(LIBAPPARMOR_SRC)/include
+  LOCAL_LIBAPPARMOR_LDPATH = $(LIBAPPARMOR_SRC)/src/.libs
+
+  LIBAPPARMOR_A = $(LOCAL_LIBAPPARMOR_LDPATH)/libapparmor.a
+  INCLUDE_APPARMOR = -I$(LOCAL_LIBAPPARMOR_INCLUDE)
+  AARE_LDFLAGS += -L$(LOCAL_LIBAPPARMOR_LDPATH)
+  APPARMOR_H = $(LOCAL_LIBAPPARMOR_INCLUDE)/sys/apparmor.h
+endif
+EXTRA_CFLAGS += $(INCLUDE_APPARMOR)
 
 LEX_C_FILES	= parser_lex.c
 YACC_C_FILES	= parser_yacc.c parser_yacc.h
@@ -156,7 +171,17 @@ all:	arch indep
 coverage:
 	$(MAKE) clean apparmor_parser COVERAGE=1
 
-apparmor_parser: $(OBJECTS) $(AAREOBJECTS)
+ifndef USE_SYSTEM
+$(LIBAPPARMOR_A):
+	@if [ ! -f $@ ]; then \
+		echo "error: $@ is missing. Pick one of these possible solutions:" 1>&2; \
+		echo "  1) Build against the in-tree libapparmor by building it first and then trying again. See the top-level README for help." 1>&2; \
+		echo "  2) Build against the system libapparmor by adding USE_SYSTEM=1 to your make command." 1>&2;\
+		return 1; \
+	fi
+endif
+
+apparmor_parser: $(OBJECTS) $(AAREOBJECTS) $(LIBAPPARMOR_A)
 	$(CXX) $(LDFLAGS) $(EXTRA_CFLAGS) -o $@ $(OBJECTS) $(LIBS) \
 	      ${LEXLIB}  $(AAREOBJECTS) $(AARE_LDFLAGS) $(AALIB)
 
@@ -169,13 +194,13 @@ parser_lex.c: parser_lex.l parser_yacc.h parser.h profile.h
 parser_lex.o: parser_lex.c parser.h parser_yacc.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_misc.o: parser_misc.c parser.h parser_yacc.h profile.h af_names.h cap_names.h
+parser_misc.o: parser_misc.c parser.h parser_yacc.h profile.h af_names.h cap_names.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_yacc.o: parser_yacc.c parser_yacc.h
+parser_yacc.o: parser_yacc.c parser_yacc.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_main.o: parser_main.c parser.h parser_version.h libapparmor_re/apparmor_re.h
+parser_main.o: parser_main.c parser.h parser_version.h libapparmor_re/apparmor_re.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_interface.o: parser_interface.c parser.h profile.h libapparmor_re/apparmor_re.h
@@ -187,7 +212,7 @@ parser_include.o: parser_include.c parser.h parser_include.h
 parser_merge.o: parser_merge.c parser.h profile.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_regex.o: parser_regex.c parser.h profile.h libapparmor_re/apparmor_re.h
+parser_regex.o: parser_regex.c parser.h profile.h libapparmor_re/apparmor_re.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_symtab.o: parser_symtab.c parser.h
@@ -211,7 +236,7 @@ mount.o: mount.c mount.h parser.h immunix.h
 lib.o: lib.c lib.h parser.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-dbus.o: dbus.c dbus.h parser.h immunix.h parser_yacc.h
+dbus.o: dbus.c dbus.h parser.h immunix.h parser_yacc.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 profile.o: profile.cc profile.h parser.h
