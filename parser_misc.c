@@ -37,7 +37,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <apparmor.h>
+#include <sys/apparmor.h>
 
 #include "parser.h"
 #include "profile.h"

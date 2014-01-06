@@ -21,7 +21,7 @@
 #include <string.h>
 #include <libintl.h>
 #include <linux/limits.h>
-#include <apparmor.h>
+#include <sys/apparmor.h>
 #define _(s) gettext(s)
 
 #include <string>

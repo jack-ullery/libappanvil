@@ -41,7 +41,7 @@
 #include <sys/sysctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <apparmor.h>
+#include <sys/apparmor.h>
 
 #include "lib.h"
 #include "parser.h"
