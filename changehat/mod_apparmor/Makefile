@@ -48,7 +48,7 @@ ifdef USE_SYSTEM
                                 echo -lapparmor ; \
                         fi )
   ifeq ($(strip $(LIBAPPARMOR)),)
-    $(error Unable to find libapparmor installed on this system; either \
+    ERROR_MESSAGE = Unable to find libapparmor installed on this system; either \
             install libapparmor devel packages, set the LIBAPPARMOR variable \
             manually, or build against in-tree libapparmor)
   endif # LIBAPPARMOR not set
@@ -58,7 +58,7 @@ else
   LIBAPPARMOR_INCLUDE = $(LIBAPPARMOR_SRC)/include
   LIBAPPARMOR_PATH := $(LIBAPPARMOR_SRC)/src/.libs/
     ifeq ($(realpath $(LIBAPPARMOR_PATH)/libapparmor.a),)
-        $(error $(LIBAPPARMOR_PATH)/libapparmor.a is missing; either build against \
+        ERROR_MESSAGE = $(LIBAPPARMOR_PATH)/libapparmor.a is missing; either build against \
                 the in-tree libapparmor by building it first and then trying again \
                 (see the top-level README for help) or build against the system \
                 libapparmor by adding USE_SYSTEM=1 to your make command.)
@@ -69,7 +69,15 @@ else
   LDLIBS = -lapparmor
 endif
 
-all: $(TARGET) ${MANPAGES} ${HTMLMANPAGES}
+.PHONY: libapparmor_check
+.SILENT: libapparmor_check
+libapparmor_check:
+	@if [ -n "$(ERROR_MESSAGE)" ] ; then \
+		echo "$(ERROR_MESSAGE)" 1>&2 ; \
+		return 1 ; \
+	fi
+
+all: libapparmor_check $(TARGET) ${MANPAGES} ${HTMLMANPAGES}
 
 %.so: %.c
 	${APXS} ${LIBAPPARMOR_FLAGS} -c $< ${LDLIBS}
