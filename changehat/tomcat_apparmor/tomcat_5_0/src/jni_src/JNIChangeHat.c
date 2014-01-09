@@ -13,7 +13,7 @@
 
 #include "jni.h"
 #include <errno.h>
-#include "sys/apparmor.h"
+#include <sys/apparmor.h>
 #include "com_novell_apparmor_JNIChangeHat.h"
 
 /* c intermediate lib call for Java -> JNI -> c library execution of the change_hat call */
