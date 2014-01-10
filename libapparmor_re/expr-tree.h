@@ -591,7 +591,7 @@ void flip_tree(Node *node);
 class MatchFlag: public AcceptNode {
 public:
 	MatchFlag(uint32_t flag, uint32_t audit): flag(flag), audit(audit) { }
-	ostream &dump(ostream &os) { return os << '<' << flag << '>'; }
+	ostream &dump(ostream &os) { return os << "< 0x" << hex << flag << '>'; }
 
 	uint32_t flag;
 	uint32_t audit;
