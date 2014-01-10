@@ -31,7 +31,11 @@ typedef int dfaflags_t;
 #define DFA_CONTROL_FILTER_DENY 	(1 << 6)
 #define DFA_CONTROL_REMOVE_UNREACHABLE  (1 << 7)
 #define DFA_CONTROL_TRANS_HIGH		(1 << 8)
+#define DFA_CONTROL_DIFF_ENCODE		(1 << 9)
 
+#define DFA_DUMP_DIFF_PROGRESS		(1 << 10)
+#define DFA_DUMP_DIFF_ENCODE		(1 << 11)
+#define DFA_DUMP_DIFF_STATS		(1 << 12)
 #define DFA_DUMP_MIN_PARTS 		(1 << 13)
 #define DFA_DUMP_UNIQ_PERMS 		(1 << 14)
 #define DFA_DUMP_MIN_UNIQ_PERMS 	(1 << 15)

@@ -73,6 +73,194 @@ ostream &operator<<(ostream &os, const State &state)
 	return os;
 }
 
+/**
+ * diff_weight - Find differential compression distance between @rel and @this
+ * @rel: State to compare too
+ * Returns: An integer indicating how good rel is as a base, larger == better
+ *
+ * Find the relative weighted difference for differential state compression
+ * with queried state being compressed against @rel
+ *
+ * +1 for each transition that matches (char and dest - saves a transition)
+ * 0 for each transition that doesn't match and exists in both states
+ * 0  for transition that self has and @other doesn't (no extra required)
+ * -1 for each transition that is in @rel and not in @this (have to override)
+ *
+ * @rel should not be a state that has already been made differential or it may
+ * introduce extra transitions as it does not recurse to find all transitions
+ *
+ * Should be applied after state minimization 
+*/
+int State::diff_weight(State *rel)
+{
+	int weight = 0;
+
+	if (this == rel)
+		return 0;
+
+	if (rel->diff->rel) {
+		/* Can only be diff encoded against states that are relative
+		 * to a state of a lower depth. ie, at most one sibling in
+		 * the chain
+		 */
+		if (rel->diff->rel->diff->depth >= this->diff->depth)
+			return 0;
+	} else if (rel->diff->depth >= this->diff->depth)
+		return 0;
+
+	if (rel->flags & DiffEncodeFlag) {
+		for (int i = 0; i < 256; i++) {
+			State *state = rel->next(i);
+			StateTrans::iterator j = trans.find(i);
+			if (j != trans.end()) {
+				if (state == j->second)
+					weight++;
+				/* else
+				   0 - keep transition to mask
+				*/
+			} else if (state == otherwise) {
+				/* 0 - match of default against @rel
+				 * We don't save a transition but don't have
+				 * to mask either
+				 */
+			} else {
+				/* @rel has transition not covered by @this.
+				 * Need to add a transition to mask it
+				 */
+				weight--;
+			}
+		}
+		return weight;
+	}
+
+	unsigned int count = 0;
+	for (StateTrans::iterator i = rel->trans.begin(); i != rel->trans.end();
+ i++) {
+		StateTrans::iterator j = trans.find(i->first);
+		if (j != trans.end()) {
+			if (i->second == j->second)
+				weight++;
+			/* } else {
+				0 - keep transition to mask
+			*/
+			count++;
+		} else if (i->second == otherwise) {
+			/* 0 - match of default against @rel
+			 * We don't save a transition but don't have to
+			 * mask either
+			 */
+		} else {
+			/* rel has transition not covered by @this.  Need to
+			 * add a transition to mask
+			 */
+			weight--;
+		}
+	}
+
+	/* cover transitions in @this but not in @rel */
+	unsigned int this_count = 0;
+	if (count < trans.size()) {
+		for (StateTrans::iterator i = trans.begin(); i != trans.end(); i++) {
+			StateTrans::iterator j = rel->trans.find(i->first);
+			if (j == rel->trans.end()) {
+				this_count++;
+				if (i->second == rel->otherwise)
+					/* replaced by rel->cases.otherwise */
+					weight++;
+			}
+		}
+	}
+
+	if (rel->otherwise != otherwise) {
+		/* rel default transitions have to be masked with transitions
+		 * This covers all transitions not covered above
+		 */
+		weight -= 256 - (rel->trans.size() + this_count);
+	}
+
+	return weight;
+}
+
+/**
+ * make_relative - Make this state relative to @rel
+ * @rel: state to make this state relative too
+ *
+ * @rel can be a relative (differentially compressed state)
+ */
+int State::make_relative(State *rel)
+{
+	int weight = 0;
+
+	if (this == rel || !rel)
+		return 0;
+
+	if (flags & DiffEncodeFlag)
+		return 0;
+
+	flags |= DiffEncodeFlag;
+
+	for (int i = 0; i < 256 ; i++) {
+		State *next = rel->next(i);
+
+		StateTrans::iterator j = trans.find(i);
+		if (j != trans.end()) {
+			if (j->second == next) {
+				trans.erase(j);
+				weight++;
+			}
+			/* else keep transition to mask */
+		} else if (otherwise == next) {
+			/* do nothing, otherwise transition disappears when
+			 * reassigned
+			 */
+		} else {
+			/* need a new transition to mask those in lower state */
+			trans[i] = otherwise;
+			weight--;
+		}
+	}
+
+	otherwise = rel;
+
+	return weight;
+}
+
+/**
+ * flatten_differential - remove differential encode from this state
+ */
+void State::flatten_relative(void)
+{
+	if (!(flags & DiffEncodeFlag))
+		return;
+
+	map<State *, int> count;
+
+	for (int i = 0; i < 256; i++)
+		count[next(i)] += 1;
+
+	int j = 0;
+	State *def = next(0);
+	for (int i = 1; i < 256; i++) {
+		if (count[next(i)] > count[next(j)]) {
+			j = i;
+			def = next(i);
+		}
+	}
+
+	for (int i = 0; i < 256; i++) {
+		if (trans.find(i) != trans.end()) {
+			if (trans[i] == def)
+				trans.erase(i);
+		} else {
+			if (trans[i] != def)
+				trans[i] = next(i);
+		}
+	}
+
+	otherwise = def;
+	flags = flags & ~DiffEncodeFlag;
+}
+
 static void split_node_types(NodeSet *nodes, NodeSet **anodes, NodeSet **nnodes
 )
 {
@@ -175,6 +363,7 @@ void DFA::dump_node_to_dfa(void)
 DFA::DFA(Node *root, dfaflags_t flags): root(root)
 {
 	int i = 0;
+	diffcount = 0;		/* set by diff_encode */
 
 	if (flags & DFA_DUMP_PROGRESS)
 		fprintf(stderr, "Creating dfa:\r");
@@ -604,6 +793,239 @@ out:
 		partitions.pop_front();
 		delete(p);
 	}
+}
+
+
+/* diff_encode helper functions */
+static unsigned int add_to_dag(DiffDag *dag, State *state,
+			       State *parent)
+{
+	unsigned int rc = 0;
+	if (!state->diff) {
+		dag->rel = NULL;
+		if (parent)
+			dag->depth = parent->diff->depth + 1;
+		else
+			dag->depth = 1;
+		dag->state = state;
+		state->diff = dag;
+		rc = 1;
+	}
+	if (parent && parent->diff->depth < state->diff->depth)
+		state->diff->parents.push_back(parent);
+	return rc;
+}
+
+static int diff_partition(State *state, Partition &part, State **candidate)
+{
+	int weight = 0;
+	*candidate = NULL;
+
+	for (Partition::iterator i = part.begin(); i != part.end(); i++) {
+		if (*i == state)
+			continue;
+
+		int tmp = state->diff_weight(*i);
+		if (tmp > weight) {
+			weight = tmp;
+			*candidate = *i;
+		}
+	}
+	return weight;
+}
+
+/**
+ * diff_encode - compress dfa by differentially encoding state transitions
+ * @dfa_flags: flags controling dfa creation
+ *
+ * This function reduces the number of transitions that need to be stored
+ * by encoding transitions as the difference between the state and a
+ * another transitions that is set as the states default.
+ *
+ * For performance reasons this function does not try to compute the
+ * absolute best encoding (maximal spanning tree) but instead computes
+ * a very good encoding within the following limitations.
+ *   - Not all states have to be differentially encoded.  This allows for
+ *     multiple states to be used as a terminating basis.
+ *   - The number of state transitions needed to match an input of length
+ *     m will be 2m
+ *
+ * To guarentee this the ordering and distance calculation is done in the
+ * following manner.
+ * - A DAG of the DFA is created starting with the start state(s).
+ * - A state can only be relative (have a differential encoding) to
+ *   another state if that state has
+ *   - a lower depth in the DAG
+ *   - is a sibling (same depth) that is not relative
+ *   - is a sibling that is relative to a state with lower depth in the DAG
+ *
+ * The run time constraints are maintained by the DAG ordering + relative
+ * state constraints.  For any input character C when at state S with S being
+ * at level N in the DAG then at most 2N states must be traversed to find the
+ * transition for C.  However on the maximal number of transitions is not m*m,
+ * because  when a character is matched and forward movement is made through
+ * the DFA any relative transition search will move back through the DAG order.
+ * So say for character C we start matching on a state S that is at depth 10
+ * in the DAG.  The transition for C is not found in S and we recurse backwards
+ * to a depth of 6.  A transition is found and it steps to the next state, but
+ * the state transition at most will only move 1 deeper into the DAG so for
+ * the next state the maximum number of states traversed is 2*7.
+ */
+void DFA::diff_encode(dfaflags_t flags)
+{
+	DiffDag *dag;
+	unsigned int xcount = 0, xweight = 0, transitions = 0, depth = 0;
+
+	/* clear the depth flag */
+	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
+		(*i)->diff = NULL;
+		transitions += (*i)->trans.size();
+	}
+
+	/* Prealloc structures we need.  We know the exact number of elements,
+	 * and once setup they don't change so we don't need the flexibility
+	 * or overhead of stl, just allocate the needed data as an array
+	 */
+	dag = new DiffDag [states.size()];
+
+	/* Generate DAG ordering and parent sets */
+	add_to_dag(&dag[0], nonmatching, NULL);
+	add_to_dag(&dag[1], start, NULL);
+
+	unsigned int tail = 2;
+	for (unsigned int i = 1; i < tail; i++) {
+		State *state = dag[i].state;
+		State *child = dag[i].state->otherwise;
+		if (child)
+			tail += add_to_dag(&dag[tail], child, state);
+
+		for (StateTrans::iterator j = state->trans.begin(); j != state->trans.end(); j++) {
+			child = j->second;
+			tail += add_to_dag(&dag[tail], child, state);
+		}
+	}
+	depth = dag[tail - 1].depth;
+
+	/* calculate which state to make a transitions relative too */
+	for (unsigned int i = 2; i < tail; i++) {
+		State *state = dag[i].state;
+		State *candidate = NULL;
+
+		int weight = diff_partition(state,
+					    state->otherwise->diff->parents,
+					    &candidate);
+
+		for (StateTrans::iterator j = state->trans.begin(); j != state->trans.end(); j++) {
+			State *tmp_candidate;
+			int tmp = diff_partition(state,
+						 j->second->diff->parents,
+						 &tmp_candidate);
+			if (tmp > weight) {
+				weight = tmp;
+				candidate = tmp_candidate;
+			}
+		}
+
+		if ((flags & DFA_DUMP_DIFF_PROGRESS) && (i % 100 == 0))
+			cerr << "\033[2KDiff Encode: " << i << " of "
+			     << tail << ".  Diff states " << xcount
+			     << " Savings " << xweight << "\r";
+
+		state->diff->rel = candidate;
+		if (candidate) {
+			xcount++;
+			xweight += weight;
+		}
+	}
+
+	/* now make transitions relative, start at the back of the list so
+	 * as to start with the last transitions and work backwards to avoid
+	 * having to traverse multiple previous states (that have been made
+	 * relative already) to reconstruct previous state transition table
+	 */
+	unsigned int aweight = 0;
+	diffcount = 0;
+	for (int i = tail - 1; i > 1; i--) {
+		if (dag[i].rel) {
+			int weight = dag[i].state->make_relative(dag[i].rel);
+			aweight += weight;
+			diffcount++;
+		}
+	}
+
+	if (flags & DFA_DUMP_DIFF_STATS)
+		cerr << "Diff encode  states: " << diffcount << " of "
+                     << tail << " reached @ depth "  << depth << ". "
+		     <<  aweight << " trans removed\n";
+
+	if (xweight != aweight)
+		cerr << "Diff encode error: actual savings " << aweight
+		     << " != expected " << xweight << "\n";
+
+	if (xcount != diffcount)
+		cerr << "Diff encode error: actual count " << diffcount
+		     << " != expected " << xcount << " \n";
+
+	/* cleanup */
+	for (unsigned int i = 0; i < tail; i++)
+		dag[i].parents.clear();
+	delete [] dag;
+}
+
+/**
+ * flatten_differential - remove differential state encoding
+ *
+ * Flatten the dfa back into a flat encoding.
+ */
+void DFA::undiff_encode(void)
+{
+	for (Partition::iterator i = states.begin(); i != states.end(); i++)
+		(*i)->flatten_relative();
+	diffcount = 0;
+}
+
+void DFA::dump_diff_chain(ostream &os, map<State *, Partition> &relmap,
+			  Partition &chain, State *state, unsigned int &count,
+			  unsigned int &total, unsigned int &max)
+{
+	if (relmap[state].size() == 0) {
+		for (Partition::iterator i = chain.begin(); i != chain.end(); i++)
+			os << **i << " <- ";
+		os << *state << "\n";
+
+		count++;
+		total += chain.size() + 1;
+		if (chain.size() + 1 > max)
+			max = chain.size() + 1;
+	}
+
+	chain.push_back(state);
+	for (Partition::iterator i = relmap[state].begin(); i != relmap[state].end(); i++)
+		dump_diff_chain(os, relmap, chain, *i, count, total, max);
+	chain.pop_back();
+}
+
+/* Dump the DFA diff_encoding chains */
+void DFA::dump_diff_encode(ostream &os)
+{
+	map<State *, Partition> rel;
+	Partition base, chain;
+
+	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
+		if ((*i)->flags & DiffEncodeFlag)
+			rel[(*i)->otherwise].push_back(*i);
+		else
+			base.push_back(*i);
+	}
+
+	unsigned int count = 0, total = 0, max = 0;
+	for (Partition::iterator i = base.begin(); i != base.end(); i++)
+		dump_diff_chain(os, rel, chain, *i, count, total, max);
+
+	os << base.size() << " non-differentially encoded states\n";
+	os << "chains: " << count - base.size() << "\n";
+	os << "average chain size: " << (double) (total - base.size()) / (double) (count - base.size()) << "\n";
+	os << "longest chain: " << max << "\n";
 }
 
 /**

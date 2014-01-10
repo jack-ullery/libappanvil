@@ -32,6 +32,7 @@
 #include "hfa.h"
 #include "chfa.h"
 #include "../immunix.h"
+#include "flex-tables.h"
 
 void CHFA::init_free_list(vector<pair<size_t, size_t> > &free_list,
 				     size_t prev, size_t start)
@@ -52,6 +53,11 @@ CHFA::CHFA(DFA &dfa, map<uchar, uchar> &eq, dfaflags_t flags): eq(eq)
 {
 	if (flags & DFA_DUMP_TRANS_PROGRESS)
 		fprintf(stderr, "Compressing HFA:\r");
+
+	if (dfa.diffcount)
+		flags = YYTH_FLAG_DIFF_ENCODE;
+	else
+		flags = 0;
 
 	if (eq.empty())
 		max_eq = 255;
@@ -242,6 +248,8 @@ repeat:
 	}
 
 do_insert:
+	if (from->flags & DiffEncodeFlag)
+		base |= DiffEncodeBit32;
 	default_base.push_back(make_pair(default_state, base));
 }
 
@@ -279,7 +287,7 @@ void CHFA::dump(ostream &os)
 			   << *next_check[i].second << " -> "
 			   << *next_check[i].first << ": ";
 
-			size_t offs = i - default_base[num[next_check[i].second]].second;
+			size_t offs = i - base_mask_size(default_base[num[next_check[i].second]].second);
 			if (eq.size())
 				os << offs;
 			else
@@ -296,7 +304,6 @@ void CHFA::dump(ostream &os)
  * (Only the -Cf and -Ce formats are currently supported.)
  */
 
-#include "flex-tables.h"
 #define YYTH_REGEX_MAGIC 0x1B5E783D
 
 static inline size_t pad64(size_t i)
@@ -395,6 +402,7 @@ void CHFA::flex_table(ostream &os, const char *name)
 
 	size_t hsize = pad64(sizeof(th) + sizeof(th_version) + strlen(name) + 1);
 	th.th_magic = htonl(YYTH_REGEX_MAGIC);
+	th.th_flags = htonl(flags);
 	th.th_hsize = htonl(hsize);
 	th.th_ssize = htonl(hsize +
 			    flex_table_size(accept.begin(), accept.end()) +
