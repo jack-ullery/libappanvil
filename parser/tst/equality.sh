@@ -192,6 +192,29 @@ verify_binary_equality "dbus variable expansion, ensure rule de-duping occurs" \
 	"@{FOO}=bar foo bar foo
 	    /t { dbus (send, receive) path=/com/@{FOO}, dbus (send, receive) path=/com/@{FOO}, }"
 
+verify_binary_equality "dbus minimization with all perms" \
+	"/t { dbus, }" \
+	"/t { dbus bus=session, dbus, }" \
+	"/t { dbus (send, receive, bind, eavesdrop), dbus, }"
+
+verify_binary_equality "dbus minimization with bind" \
+	"/t { dbus bind, }" \
+	"/t { dbus bind bus=session, dbus bind, }" \
+	"/t { dbus bind bus=system name=com.foo, dbus bind, }"
+
+verify_binary_equality "dbus minimization with send and a bus conditional" \
+	"/t { dbus send bus=system, }" \
+	"/t { dbus send bus=system path=/com/foo interface=com.foo member=bar, dbus send bus=system, }" \
+	"/t { dbus send bus=system peer=(label=/usr/bin/foo), dbus send bus=system, }"
+
+verify_binary_equality "dbus minimization with an audit modifier" \
+	"/t { audit dbus eavesdrop, }" \
+	"/t { audit dbus eavesdrop bus=session, audit dbus eavesdrop, }"
+
+verify_binary_equality "dbus minimization with a deny modifier" \
+	"/t { deny dbus send bus=system peer=(name=com.foo), }" \
+	"/t { deny dbus send bus=system peer=(name=com.foo label=/usr/bin/foo), deny dbus send bus=system peer=(name=com.foo), }" \
+
 if [ $fails -ne 0 -o $errors -ne 0 ]
 then
 	printf "ERRORS: %d\nFAILS: %d\n" $errors $fails 2>&1
