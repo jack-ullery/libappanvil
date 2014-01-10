@@ -28,9 +28,12 @@
 #include <map>
 #include <vector>
 
+#include <assert.h>
 #include <stdint.h>
 
 #include "expr-tree.h"
+
+#define DiffEncodeFlag 1
 
 class State;
 
@@ -334,6 +337,19 @@ public:
 	}
 };
 
+/* Temporary state structure used when building differential encoding
+ * @parents - set of states that have transitions to this state
+ * @depth - level in the DAG
+ * @state - back reference to state this DAG entry belongs
+ * @rel - state that this state is relative to for differential encoding
+ */
+struct DiffDag {
+	Partition parents;
+	int depth;
+	State *state;
+	State *rel;
+};
+
 /*
  * State - DFA individual state information
  * label: a unique label to identify the state used for pretty printing
@@ -352,7 +368,7 @@ public:
 class State {
 public:
 	State(int l, ProtoState &n, State *other) throw(int):
-	label(l), perms(), trans()
+		label(l), flags(0), perms(), trans()
 	{
 		int error;
 
@@ -372,15 +388,30 @@ public:
 	};
 
 	State *next(uchar c) {
-		StateTrans::iterator i = trans.find(c);
-		if (i != trans.end())
-			return i->second;
-		return otherwise;
-	};
+		State *state = this;
+		do {
+			StateTrans::iterator i = state->trans.find(c);
+			if (i != state->trans.end())
+				return i->second;
+
+			if (!(state->flags & DiffEncodeFlag))
+				return state->otherwise;
+			state = state->otherwise;
+		} while (state);
+
+		/* never reached */
+		assert(0);
+		return NULL;
+	}
+
+	int diff_weight(State *rel);
+	int make_relative(State *rel);
+	void flatten_relative(void);
 
 	int apply_and_clear_deny(void) { return perms.apply_and_clear_deny(); }
 
 	int label;
+	int flags;
 	perms_t perms;
 	StateTrans trans;
 	State *otherwise;
@@ -389,6 +420,7 @@ public:
 	union {
 		Partition *partition;	/* used during minimization */
 		ProtoState proto;	/* used during creation */
+		DiffDag *diff;		/* used during diff encoding */
 	};
 };
 
@@ -429,12 +461,16 @@ public:
 	}
 };
 
-/* Transitions in the DFA. */
 
+/* Transitions in the DFA. */
 class DFA {
 	void dump_node_to_dfa(void);
 	State *add_new_state(NodeSet *nodes, State *other);
 	void update_state_transitions(State *state);
+	void dump_diff_chain(ostream &os, map<State *, Partition> &relmap,
+			     Partition &chain, State *state,
+			     unsigned int &count, unsigned int &total,
+			     unsigned int &max);
 
 	/* temporary values used during computations */
 	NodeCache anodes_cache;
@@ -455,11 +491,19 @@ public:
 	size_t hash_trans(State *s);
 	void minimize(dfaflags_t flags);
 	int apply_and_clear_deny(void);
+
+	void diff_encode(dfaflags_t flags);
+	void undiff_encode(void);
+	void dump_diff_encode(ostream &os);
+
 	void dump(ostream &os);
 	void dump_dot_graph(ostream &os);
 	void dump_uniq_perms(const char *s);
+
 	map<uchar, uchar> equivalence_classes(dfaflags_t flags);
 	void apply_equivalence_classes(map<uchar, uchar> &eq);
+
+	unsigned int diffcount;
 	Node *root;
 	State *nonmatching, *start;
 	Partition states;

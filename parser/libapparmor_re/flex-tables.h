@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #define YYTH_MAGIC	0xF13C57B1
+#define YYTH_FLAG_DIFF_ENCODE 1
 
 struct table_set_header {
 	uint32_t	th_magic;	/* TH_MAGIC */

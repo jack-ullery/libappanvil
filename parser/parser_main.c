@@ -194,10 +194,10 @@ optflag_table_t dumpflag_table[] = {
 	  DFA_DUMP_SIMPLE_TREE },
 	{ 1, "stats", "Dump all compile stats",
 	  DFA_DUMP_TREE_STATS | DFA_DUMP_STATS | DFA_DUMP_TRANS_STATS |
-	  DFA_DUMP_EQUIV_STATS },
+	  DFA_DUMP_EQUIV_STATS | DFA_DUMP_DIFF_STATS },
 	{ 1, "progress", "Dump progress for all compile phases",
 	  DFA_DUMP_PROGRESS | DFA_DUMP_STATS | DFA_DUMP_TRANS_PROGRESS |
-	  DFA_DUMP_TRANS_STATS },
+	  DFA_DUMP_TRANS_STATS | DFA_DUMP_DIFF_PROGRESS | DFA_DUMP_DIFF_STATS },
 	{ 1, "dfa-progress", "Dump dfa creation as in progress",
 	  DFA_DUMP_PROGRESS | DFA_DUMP_STATS },
 	{ 1, "dfa-stats", "Dump dfa creation stats", DFA_DUMP_STATS },
@@ -222,6 +222,12 @@ optflag_table_t dumpflag_table[] = {
 	{ 1, "equiv-stats", "Dump equivance class stats",
 	  DFA_DUMP_EQUIV_STATS },
 	{ 1, "equiv", "Dump equivance class", DFA_DUMP_EQUIV },
+	{ 1, "diff-encode", "Dump differential encoding",
+	  DFA_DUMP_DIFF_ENCODE },
+	{ 1, "diff-stats", "Dump differential encoding stats",
+	  DFA_DUMP_DIFF_STATS },
+	{ 1, "diff-progress", "Dump progress of differential encoding",
+	  DFA_DUMP_DIFF_PROGRESS | DFA_DUMP_DIFF_STATS },
 	{ 0, NULL, NULL, 0 },
 };
 
@@ -251,6 +257,8 @@ optflag_table_t optflag_table[] = {
 	  DFA_CONTROL_TRANS_HIGH },
 	{ 2, "compress-fast", "do faster dfa transition table compression",
 	  DFA_CONTROL_TRANS_HIGH },
+	{ 1, "diff-encode", "Differentially encode transitions",
+	  DFA_CONTROL_DIFF_ENCODE },
 	{ 0, NULL, NULL, 0 },
 };
 
