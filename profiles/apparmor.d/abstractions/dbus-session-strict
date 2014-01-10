@@ -9,9 +9,13 @@
 #
 # ------------------------------------------------------------------
 
-  # This abstraction grants full session bus access. Consider using the
-  # dbus-session-strict abstraction for fine-grained bus mediation.
+  # unique per-machine identifier
+  /etc/machine-id r,
+  /var/lib/dbus/machine-id r,
 
-  #include <abstractions/dbus-session-strict>
-  /usr/bin/dbus-launch ix,
-  dbus bus=session,
+  dbus send
+       bus=session
+       path=/org/freedesktop/DBus
+       interface=org.freedesktop.DBus
+       member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName}
+       peer=(name=org.freedesktop.DBus),
