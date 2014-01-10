@@ -27,7 +27,6 @@ typedef int dfaflags_t;
 #define DFA_CONTROL_TREE_SIMPLE 	(1 << 2)
 #define DFA_CONTROL_TREE_LEFT 		(1 << 3)
 #define DFA_CONTROL_MINIMIZE 		(1 << 4)
-#define DFA_CONTROL_MINIMIZE_HASH_TRANS (1 << 5)
 #define DFA_CONTROL_FILTER_DENY 	(1 << 6)
 #define DFA_CONTROL_REMOVE_UNREACHABLE  (1 << 7)
 #define DFA_CONTROL_TRANS_HIGH		(1 << 8)

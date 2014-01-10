@@ -550,48 +550,44 @@ void DFA::remove_unreachable(dfaflags_t flags)
 /* test if two states have the same transitions under partition_map */
 bool DFA::same_mappings(State *s1, State *s2)
 {
+	/* assumes otherwise is set to best choice, if there are multiple
+	 * otherwise choises this will fail to fully minimize the dfa
+	 * if we are not careful. Make sure in cases with multiple
+	 * equiv otherwise we always choose the same otherwise to avoid
+	 */
 	if (s1->otherwise->partition != s2->otherwise->partition)
 		return false;
 
-	if (s1->trans.size() != s2->trans.size())
-		return false;
-
-	for (StateTrans::iterator j1 = s1->trans.begin(); j1 != s1->trans.end(); j1++) {
-		StateTrans::iterator j2 = s2->trans.find(j1->first);
-		if (j2 == s2->trans.end())
+	StateTrans::iterator j1;
+	StateTrans::iterator j2;
+	for (j1 = s1->trans.begin(), j2 = s2->trans.begin();
+	     j1 != s1->trans.end() && j2 != s2->trans.end();
+	     /*inc inline*/) {
+		if (j1->first < j2->first) {
+			if (j1->second->partition != s2->otherwise->partition)
+				return false;
+			j1++;
+		} else if (j1->first == j2->first) {
+			if (j1->second->partition != j2->second->partition)
+				return false;
+			j1++;
+			j2++;
+		} else {
+			if (s1->otherwise->partition != j2->second->partition)
+				return false;
+			j2++;
+		}
+	}
+	for ( ; j1 != s1->trans.end(); j1++) {
+		if (j1->second->partition != s2->otherwise->partition)
 			return false;
-		if (j1->second->partition != j2->second->partition)
+	}
+	for ( ; j2 != s2->trans.end(); j2++) {
+		if (j2->second->partition != s1->otherwise->partition)
 			return false;
 	}
 
 	return true;
-}
-
-/* Do simple djb2 hashing against a States transition cases
- * this provides a rough initial guess at state equivalence as if a state
- * has a different number of transitions or has transitions on different
- * trans they will never be equivalent.
- * Note: this only hashes based off of the alphabet (not destination)
- * as different destinations could end up being equiv
- */
-size_t DFA::hash_trans(State *s)
-{
-	unsigned long hash = 5381;
-
-	for (StateTrans::iterator j = s->trans.begin(); j != s->trans.end(); j++) {
-		hash = ((hash << 5) + hash) + j->first;
-		State *k = j->second;
-		hash = ((hash << 5) + hash) + k->trans.size();
-	}
-
-	if (s->otherwise != nonmatching) {
-		hash = ((hash << 5) + hash) + 5381;
-		State *k = s->otherwise;
-		hash = ((hash << 5) + hash) + k->trans.size();
-	}
-
-	hash = (hash << 8) | s->trans.size();
-	return hash;
 }
 
 int DFA::apply_and_clear_deny(void)
@@ -624,8 +620,6 @@ void DFA::minimize(dfaflags_t flags)
 	for (Partition::iterator i = states.begin(); i != states.end(); i++) {
 		size_t hash = 0;
 		uint64_t permtype = ((uint64_t) (PACK_AUDIT_CTL((*i)->perms.audit, (*i)->perms.quiet & (*i)->perms.deny)) << 32) | (uint64_t) (*i)->perms.allow;
-		if (flags & DFA_CONTROL_MINIMIZE_HASH_TRANS)
-			hash |= hash_trans(*i);
 		pair<uint64_t, size_t> group = make_pair(permtype, hash);
 		map<pair<uint64_t, size_t>, Partition *>::iterator p = perm_map.find(group);
 		if (p == perm_map.end()) {
@@ -730,9 +724,14 @@ void DFA::minimize(dfaflags_t flags)
 		/* update representative state's transitions */
 		rep->otherwise = *rep->otherwise->partition->begin();
 
-		for (StateTrans::iterator c = rep->trans.begin(); c != rep->trans.end(); c++) {
+		for (StateTrans::iterator c = rep->trans.begin(); c != rep->trans.end(); ) {
 			Partition *partition = c->second->partition;
-			c->second = *partition->begin();
+			if (rep->otherwise != *partition->begin()) {
+				c->second = *partition->begin();
+				c++;
+			} else
+				/* transition is now covered by otherwise */
+				c = rep->trans.erase(c);
 		}
 
 //if ((*p)->size() > 1)
