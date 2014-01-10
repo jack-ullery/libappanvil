@@ -55,9 +55,9 @@ CHFA::CHFA(DFA &dfa, map<uchar, uchar> &eq, dfaflags_t flags): eq(eq)
 		fprintf(stderr, "Compressing HFA:\r");
 
 	if (dfa.diffcount)
-		flags = YYTH_FLAG_DIFF_ENCODE;
+		chfaflags = YYTH_FLAG_DIFF_ENCODE;
 	else
-		flags = 0;
+		chfaflags = 0;
 
 	if (eq.empty())
 		max_eq = 255;
@@ -402,7 +402,7 @@ void CHFA::flex_table(ostream &os, const char *name)
 
 	size_t hsize = pad64(sizeof(th) + sizeof(th_version) + strlen(name) + 1);
 	th.th_magic = htonl(YYTH_REGEX_MAGIC);
-	th.th_flags = htonl(flags);
+	th.th_flags = htonl(chfaflags);
 	th.th_hsize = htonl(hsize);
 	th.th_ssize = htonl(hsize +
 			    flex_table_size(accept.begin(), accept.end()) +

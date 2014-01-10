@@ -551,7 +551,7 @@ void DFA::remove_unreachable(dfaflags_t flags)
 bool DFA::same_mappings(State *s1, State *s2)
 {
 	/* assumes otherwise is set to best choice, if there are multiple
-	 * otherwise choises this will fail to fully minimize the dfa
+	 * otherwise choices this will fail to fully minimize the dfa
 	 * if we are not careful. Make sure in cases with multiple
 	 * equiv otherwise we always choose the same otherwise to avoid
 	 */
