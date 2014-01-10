@@ -215,6 +215,16 @@ verify_binary_equality "dbus minimization with a deny modifier" \
 	"/t { deny dbus send bus=system peer=(name=com.foo), }" \
 	"/t { deny dbus send bus=system peer=(name=com.foo label=/usr/bin/foo), deny dbus send bus=system peer=(name=com.foo), }" \
 
+verify_binary_equality "dbus minimization found in dbus abstractions" \
+	"/t { dbus send bus=session, }" \
+	"/t { dbus send
+                   bus=session
+                   path=/org/freedesktop/DBus
+                   interface=org.freedesktop.DBus
+                   member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName}
+                   peer=(name=org.freedesktop.DBus),
+	      dbus send bus=session, }"
+
 if [ $fails -ne 0 -o $errors -ne 0 ]
 then
 	printf "ERRORS: %d\nFAILS: %d\n" $errors $fails 2>&1
