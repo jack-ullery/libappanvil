@@ -98,9 +98,9 @@ CHFA::CHFA(DFA &dfa, map<uchar, uchar> &eq, dfaflags_t flags): eq(eq)
 	default_base.push_back(make_pair(dfa.nonmatching, 0));
 	num.insert(make_pair(dfa.nonmatching, num.size()));
 
-	accept.resize(max(dfa.states.size(), 2ul));
-	accept2.resize(max(dfa.states.size(), 2ul));
-	next_check.resize(max(optimal, 256ul));
+	accept.resize(max(dfa.states.size(), (size_t) 2));
+	accept2.resize(max(dfa.states.size(), (size_t) 2));
+	next_check.resize(max(optimal, (size_t) 256));
 	free_list.resize(next_check.size());
 
 	accept[0] = 0;
