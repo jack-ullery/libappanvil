@@ -9,8 +9,11 @@
 #
 # ------------------------------------------------------------------
 
-  # This abstraction grants full system bus access. Consider using the
-  # dbus-strict abstraction for fine-grained bus mediation.
+  /{,var/}run/dbus/system_bus_socket rw,
 
-  #include <abstractions/dbus-strict>
-  dbus bus=system,
+  dbus send
+       bus=system
+       path=/org/freedesktop/DBus
+       interface=org.freedesktop.DBus
+       member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName}
+       peer=(name=org.freedesktop.DBus),
