@@ -234,7 +234,8 @@ optflag_table_t dumpflag_table[] = {
 optflag_table_t optflag_table[] = {
 	{ 2, "0", "no optimizations",
 	  DFA_CONTROL_TREE_NORMAL | DFA_CONTROL_TREE_SIMPLE |
-	  DFA_CONTROL_MINIMIZE | DFA_CONTROL_REMOVE_UNREACHABLE
+	  DFA_CONTROL_MINIMIZE | DFA_CONTROL_REMOVE_UNREACHABLE |
+	  DFA_CONTROL_DIFF_ENCODE
 	},
 	{ 1, "equiv", "use equivalent classes", DFA_CONTROL_EQUIV },
 	{ 1, "expr-normalize", "expression tree normalization",

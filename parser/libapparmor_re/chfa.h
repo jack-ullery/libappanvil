@@ -55,7 +55,7 @@ class CHFA {
 	map<uchar, uchar> &eq;
 	uchar max_eq;
 	size_t first_free;
-	unsigned int flags;
+	unsigned int chfaflags;
 };
 
 #endif /* __LIBAA_RE_CHFA_H */
