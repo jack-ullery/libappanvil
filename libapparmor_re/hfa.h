@@ -488,7 +488,6 @@ public:
 
 	void remove_unreachable(dfaflags_t flags);
 	bool same_mappings(State *s1, State *s2);
-	size_t hash_trans(State *s);
 	void minimize(dfaflags_t flags);
 	int apply_and_clear_deny(void);
 
