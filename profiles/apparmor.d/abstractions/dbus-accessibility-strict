@@ -9,8 +9,9 @@
 #
 # ------------------------------------------------------------------
 
-  # This abstraction grants full accessibility bus access. Consider using the
-  # dbus-accessibility-strict abstraction for fine-grained bus mediation.
-
-  #include <abstractions/dbus-accessibility-strict>
-  dbus bus=accessibility,
+  dbus send
+       bus=accessibility
+       path=/org/freedesktop/DBus
+       interface=org.freedesktop.DBus
+       member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName}
+       peer=(name=org.freedesktop.DBus),
