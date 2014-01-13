@@ -1,7 +1,6 @@
 # 1. Path to apparmor parser
-subdomain=/sbin/apparmor_parser
-#subdomain=/home/steve/svn/immunix/SubDomain/parser/subdomain_parser
-#subdomain=/home/tonyj/subdomain_parser
+subdomain=${PWD}/../../../parser/apparmor_parser
+#subdomain=/sbin/apparmor_parser
 
 # 2. additional arguments to the apparmor parser
 parser_args="-q -K"
