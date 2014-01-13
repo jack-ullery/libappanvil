@@ -49,7 +49,7 @@ verify_binary_equality()
 	shift
 	shift
 
-	printf "Binary equality %s ..." "$desc"
+	printf "Binary equality %s" "$desc"
 	good_hash=$(hash_binary_policy "$good_profile")
 	if [ $? -ne 0 ]
 	then
@@ -80,7 +80,7 @@ verify_binary_equality()
 
 	if [ $ret -eq 0 ]
 	then
-		printf " ok\n\n"
+		printf " ok\n"
 	fi
 
 	return $ret
