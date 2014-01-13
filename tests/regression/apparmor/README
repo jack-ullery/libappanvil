@@ -48,7 +48,7 @@ will rerun the last failed command.
 
 Example:
 
-# sh unlink.sh -r
+# bash unlink.sh -r
 Files retained in: /tmp/sdtest.25406-19681
 
 #ls -l /tmp/sdtest.25406-19681
@@ -77,7 +77,7 @@ In order to debug more complicated test failures such as an expected
 shell error (test harness error) it is usually necessary to rerun the test with 
 debugging enabled, for example:
 
-# sh -x unlink.sh
+# bash -x unlink.sh
 
 
 Adding new tests
