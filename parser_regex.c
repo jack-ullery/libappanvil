@@ -21,7 +21,10 @@
 #include <string.h>
 #include <libintl.h>
 #include <linux/limits.h>
+#include <sys/apparmor.h>
 #define _(s) gettext(s)
+
+#include <string>
 
 /* #define DEBUG */
 
@@ -80,17 +83,11 @@ static void filter_slashes(char *path)
 	*dptr = 0;
 }
 
+/* converts the apparmor regex in aare and appends pcre regex output
+ * to pcre string */
 static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
-					 char *pcre, size_t pcre_size,
-					 int *first_re_pos)
+					 std::string& pcre, int *first_re_pos)
 {
-#define STORE(_src, _dest, _len) \
-	if ((const char*)_dest + _len > (pcre + pcre_size)){ \
-		error = e_buffer_overflow; \
-	} else { \
-		memcpy(_dest, _src, _len); \
-		_dest += _len; \
-	}
 #define update_re_pos(X) if (!(*first_re_pos)) { *first_re_pos = (X); }
 #define MAX_ALT_DEPTH 50
 	*first_re_pos = 0;
@@ -100,7 +97,6 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 	enum error_type error;
 
 	const char *sptr;
-	char *dptr;
 	pattern_t ptype;
 
 	BOOL bEscape = 0;	/* flag to indicate escape */
@@ -112,14 +108,13 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 	ptype = ePatternBasic;	/* assume no regex */
 
 	sptr = aare;
-	dptr = pcre;
 
 	if (dfaflags & DFA_DUMP_RULE_EXPR)
 		fprintf(stderr, "aare: %s   ->   ", aare);
 
 	if (anchor)
 		/* anchor beginning of regular expression */
-		*dptr++ = '^';
+		pcre.append("^");
 
 	while (error == e_no_error && *sptr) {
 		switch (*sptr) {
@@ -134,7 +129,7 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 			 * this is done by stripping later
 			 */
 			if (bEscape) {
-				STORE("\\\\", dptr, 2);
+				pcre.append("\\\\");
 			} else {
 				bEscape = TRUE;
 				++sptr;
@@ -148,9 +143,9 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 				 * end up using this regex buffer (i.e another
 				 * non-escaped regex follows)
 				 */
-				STORE("\\*", dptr, 2);
+				pcre.append("\\*");
 			} else {
-				if ((dptr > pcre) &&  *(dptr - 1) == '/') {
+				if ((pcre.length() > 0) && pcre[pcre.length() - 1]  == '/') {
 					#if 0
 					// handle comment containing use
 					// of C comment characters
@@ -176,7 +171,7 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 					while (*s == '*')
 						s++;
 					if (*s == '/' || !*s) {
-						STORE("[^/\\x00]", dptr, 8);
+						pcre.append("[^/\\x00]");
 					}
 				}
 				if (*(sptr + 1) == '*') {
@@ -194,12 +189,12 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 						ptype = ePatternRegex;
 					}
 
-					STORE("[^\\x00]*", dptr, 8);
+					pcre.append("[^\\x00]*");
 					sptr++;
 				} else {
 					update_re_pos(sptr - aare);
 					ptype = ePatternRegex;
-					STORE("[^/\\x00]*", dptr, 9);
+					pcre.append("[^/\\x00]*");
 				}	/* *(sptr+1) == '*' */
 			}	/* bEscape */
 
@@ -211,93 +206,110 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 				 * so no need to escape, just skip
 				 * transform
 				 */
-				STORE(sptr, dptr, 1);
+				pcre.append(1, *sptr);
 			} else {
 				update_re_pos(sptr - aare);
 				ptype = ePatternRegex;
-				STORE("[^/\\x00]", dptr, 8);
+				pcre.append("[^/\\x00]");
 			}
 			break;
 
 		case '[':
 			if (bEscape) {
 				/* [ is a PCRE special character */
-				STORE("\\[", dptr, 2);
+				pcre.append("\\[");
 			} else {
 				update_re_pos(sptr - aare);
 				incharclass = 1;
 				ptype = ePatternRegex;
-				STORE(sptr, dptr, 1);
+				pcre.append(1, *sptr);
 			}
 			break;
 
 		case ']':
 			if (bEscape) {
 				/* ] is a PCRE special character */
-				STORE("\\]", dptr, 2);
+				pcre.append("\\]");
 			} else {
 				if (incharclass == 0) {
 					error = e_parse_error;
 					PERROR(_("%s: Regex grouping error: Invalid close ], no matching open [ detected\n"), progname);
 				}
 				incharclass = 0;
-				STORE(sptr, dptr, 1);
+				pcre.append(1, *sptr);
 			}
 			break;
 
 		case '{':
 			if (bEscape) {
 				/* { is a PCRE special character */
-				STORE("\\{", dptr, 2);
+				pcre.append("\\{");
 			} else {
-				update_re_pos(sptr - aare);
-				ingrouping++;
-				if (ingrouping >= MAX_ALT_DEPTH) {
-					error = e_parse_error;
-					PERROR(_("%s: Regex grouping error: Exceeded maximum nesting of {}\n"), progname);
-
+				if (incharclass) {
+					/* don't expand inside [] */
+					pcre.append("{");
 				} else {
-					grouping_count[ingrouping] = 0;
-					ptype = ePatternRegex;
-					STORE("(", dptr, 1);
-				}
+					update_re_pos(sptr - aare);
+					ingrouping++;
+					if (ingrouping >= MAX_ALT_DEPTH) {
+						error = e_parse_error;
+						PERROR(_("%s: Regex grouping error: Exceeded maximum nesting of {}\n"), progname);
+
+					} else {
+						grouping_count[ingrouping] = 0;
+						ptype = ePatternRegex;
+						pcre.append("(");
+					}
+				}	/* incharclass */
 			}
 			break;
 
 		case '}':
 			if (bEscape) {
 				/* { is a PCRE special character */
-				STORE("\\}", dptr, 2);
+				pcre.append("\\}");
 			} else {
-				if (grouping_count[ingrouping] == 0) {
-					error = e_parse_error;
-					PERROR(_("%s: Regex grouping error: Invalid number of items between {}\n"), progname);
+				if (incharclass) {
+					/* don't expand inside [] */
+					pcre.append("}");
+				} else {
+					if (grouping_count[ingrouping] == 0) {
+						error = e_parse_error;
+						PERROR(_("%s: Regex grouping error: Invalid number of items between {}\n"), progname);
 
-				}
-				ingrouping--;
-				if (ingrouping < 0) {
-					error = e_parse_error;
-					PERROR(_("%s: Regex grouping error: Invalid close }, no matching open { detected\n"), progname);
-					ingrouping = 0;
-				}
-				STORE(")", dptr, 1);
+					}
+					ingrouping--;
+					if (ingrouping < 0) {
+						error = e_parse_error;
+						PERROR(_("%s: Regex grouping error: Invalid close }, no matching open { detected\n"), progname);
+						ingrouping = 0;
+					}
+					pcre.append(")");
+				}	/* incharclass */
 			}	/* bEscape */
 
 			break;
 
 		case ',':
 			if (bEscape) {
-				/* , is not a PCRE regex character
-				 * so no need to escape, just skip
-				 * transform
-				 */
-				STORE(sptr, dptr, 1);
-			} else {
-				if (ingrouping) {
-					grouping_count[ingrouping]++;
-					STORE("|", dptr, 1);
+				if (incharclass) {
+					/* escape inside char class is a
+					 * valid matching char for '\'
+					 */
+					pcre.append("\\,");
 				} else {
-					STORE(sptr, dptr, 1);
+					/* ',' is not a PCRE regex character
+					 * so no need to escape, just skip
+					 * transform
+					 */
+					pcre.append(1, *sptr);
+				}
+			} else {
+				if (ingrouping && !incharclass) {
+					grouping_count[ingrouping]++;
+					pcre.append("|");
+				} else {
+					pcre.append(1, *sptr);
 				}
 			}
 			break;
@@ -307,10 +319,10 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 		case '^':
 		case '$':
 			if (incharclass) {
-				STORE(sptr, dptr, 1);
+				pcre.append(1, *sptr);
 			} else {
-				STORE("\\", dptr, 1);
-				STORE(sptr, dptr, 1);
+				pcre.append("\\");
+				pcre.append(1, *sptr);
 			}
 			break;
 
@@ -325,11 +337,17 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 		case '|':
 		case '(':
 		case ')':
-			STORE("\\", dptr, 1);
+			pcre.append("\\");
 			// fall through to default
 
 		default:
-			STORE(sptr, dptr, 1);
+			if (bEscape) {
+				/* quoting mark used for something that
+				 * does not need to be quoted; give a warning */
+				pwarn("Character %c was quoted unnecessarily, "
+				      "dropped preceding quote ('\\') character\n", *sptr);
+			}
+			pcre.append(1, *sptr);
 			break;
 		}	/* switch (*sptr) */
 
@@ -344,12 +362,15 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 		       progname);
 	}
 
+	if ((error == e_no_error) && bEscape) {
+		/* trailing backslash quote */
+		error = e_parse_error;
+		PERROR(_("%s: Regex error: trailing '\\' escape character\n"),
+		       progname);
+	}
 	/* anchor end and terminate pattern string */
 	if ((error == e_no_error) && anchor) {
-		STORE("$" , dptr, 1);
-	}
-	if (error == e_no_error) {
-		STORE("", dptr, 1);
+		pcre.append("$");
 	}
 	/* check error  again, as above STORE may have set it */
 	if (error != e_no_error) {
@@ -370,7 +391,7 @@ out:
 		ptype = ePatternInvalid;
 
 	if (dfaflags & DFA_DUMP_RULE_EXPR)
-		fprintf(stderr, "%s\n", pcre);
+		fprintf(stderr, "%s\n", pcre.c_str());
 
 	return ptype;
 }
@@ -387,7 +408,7 @@ static const char *local_name(const char *name)
 
 static int process_profile_name_xmatch(Profile *prof)
 {
-	char tbuf[PATH_MAX + 3];	/* +3 for ^, $ and \0 */
+	std::string tbuf;
 	pattern_t ptype;
 	const char *name;
 
@@ -396,7 +417,7 @@ static int process_profile_name_xmatch(Profile *prof)
 		name = prof->attachment;
 	else
 		name = local_name(prof->name);
-	ptype = convert_aaregex_to_pcre(name, 0, tbuf, PATH_MAX + 3,
+	ptype = convert_aaregex_to_pcre(name, 0, tbuf,
 					&prof->xmatch_len);
 	if (ptype == ePatternBasic)
 		prof->xmatch_len = strlen(name);
@@ -414,7 +435,7 @@ static int process_profile_name_xmatch(Profile *prof)
 		aare_ruleset_t *rule = aare_new_ruleset(0);
 		if (!rule)
 			return FALSE;
-		if (!aare_add_rule(rule, tbuf, 0, AA_MAY_EXEC, 0, dfaflags)) {
+		if (!aare_add_rule(rule, tbuf.c_str(), 0, AA_MAY_EXEC, 0, dfaflags)) {
 			aare_delete_ruleset(rule);
 			return FALSE;
 		}
@@ -422,15 +443,15 @@ static int process_profile_name_xmatch(Profile *prof)
 			struct alt_name *alt;
 			list_for_each(prof->altnames, alt) {
 				int len;
+				tbuf.clear();
 				ptype = convert_aaregex_to_pcre(alt->name, 0,
 								tbuf,
-								PATH_MAX + 3,
 								&len);
 				if (ptype == ePatternBasic)
 					len = strlen(alt->name);
 				if (len < prof->xmatch_len)
 					prof->xmatch_len = len;
-				if (!aare_add_rule(rule, tbuf, 0, AA_MAY_EXEC, 0, dfaflags)) {
+				if (!aare_add_rule(rule, tbuf.c_str(), 0, AA_MAY_EXEC, 0, dfaflags)) {
 					aare_delete_ruleset(rule);
 					return FALSE;
 				}
@@ -448,7 +469,7 @@ static int process_profile_name_xmatch(Profile *prof)
 
 static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 {
-	char tbuf[PATH_MAX + 3];	/* +3 for ^, $ and \0 */
+	std::string tbuf;
 	pattern_t ptype;
 	int pos;
 
@@ -458,7 +479,7 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 
 	if (entry->mode & ~AA_CHANGE_PROFILE)
 		filter_slashes(entry->name);
-	ptype = convert_aaregex_to_pcre(entry->name, 0, tbuf, PATH_MAX+3, &pos);
+	ptype = convert_aaregex_to_pcre(entry->name, 0, tbuf, &pos);
 	if (ptype == ePatternInvalid)
 		return FALSE;
 
@@ -480,30 +501,30 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 	 * entry of the pair
 	 */
 	if (entry->deny && (entry->mode & AA_LINK_BITS)) {
-		if (!aare_add_rule(dfarules, tbuf, entry->deny,
+		if (!aare_add_rule(dfarules, tbuf.c_str(), entry->deny,
 				   entry->mode & ~AA_LINK_BITS,
 				   entry->audit & ~AA_LINK_BITS, dfaflags))
 			return FALSE;
 	} else if (entry->mode & ~AA_CHANGE_PROFILE) {
-		if (!aare_add_rule(dfarules, tbuf, entry->deny, entry->mode,
+		if (!aare_add_rule(dfarules, tbuf.c_str(), entry->deny, entry->mode,
 				   entry->audit, dfaflags))
 			return FALSE;
 	}
 
 	if (entry->mode & (AA_LINK_BITS)) {
 		/* add the pair rule */
-		char lbuf[PATH_MAX + 8];
+		std::string lbuf;
 		int perms = AA_LINK_BITS & entry->mode;
 		const char *vec[2];
 		int pos;
-		vec[0] = tbuf;
+		vec[0] = tbuf.c_str();
 		if (entry->link_name) {
-			ptype = convert_aaregex_to_pcre(entry->link_name, 0, lbuf, PATH_MAX + 8, &pos);
+			ptype = convert_aaregex_to_pcre(entry->link_name, 0, lbuf, &pos);
 			if (ptype == ePatternInvalid)
 				return FALSE;
 			if (entry->subset)
 				perms |= LINK_TO_LINK_SUBSET(perms);
-			vec[1] = lbuf;
+			vec[1] = lbuf.c_str();
 		} else {
 			perms |= LINK_TO_LINK_SUBSET(perms);
 			vec[1] = "/[^/].*";
@@ -513,7 +534,7 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 	}
 	if (entry->mode & AA_CHANGE_PROFILE) {
 		const char *vec[3];
-		char lbuf[PATH_MAX + 8];
+		std::string lbuf;
 		int index = 1;
 
 		/* allow change_profile for all execs */
@@ -521,10 +542,10 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 
 		if (entry->ns) {
 			int pos;
-			ptype = convert_aaregex_to_pcre(entry->ns, 0, lbuf, PATH_MAX + 8, &pos);
-			vec[index++] = lbuf;
+			ptype = convert_aaregex_to_pcre(entry->ns, 0, lbuf, &pos);
+			vec[index++] = lbuf.c_str();
 		}
-		vec[index++] = tbuf;
+		vec[index++] = tbuf.c_str();
 
 		/* regular change_profile rule */
 		if (!aare_add_rule_vec(dfarules, 0, AA_CHANGE_PROFILE | AA_ONEXEC, 0, index - 1, &vec[1], dfaflags))
@@ -606,76 +627,49 @@ out:
 	return error;
 }
 
-static int build_list_val_expr(char *buffer, int size, struct value_list *list)
+static int build_list_val_expr(std::string& buffer, struct value_list *list)
 {
 	struct value_list *ent;
-	char tmp[PATH_MAX + 3];
-	char *p;
-	int len;
 	pattern_t ptype;
 	int pos;
 
 	if (!list) {
-		strncpy(buffer, "[^\\000]*", size);
+		buffer.append("[^\\000]*");
 		return TRUE;
 	}
 
-	p = buffer;
-	strncpy(p, "(", size - (p - buffer));
-	p++;
-	if (p > buffer + size)
-		goto fail;
+	buffer.append("(");
 
-	ptype = convert_aaregex_to_pcre(list->value, 0, tmp, PATH_MAX+3, &pos);
+	ptype = convert_aaregex_to_pcre(list->value, 0, buffer, &pos);
 	if (ptype == ePatternInvalid)
 		goto fail;
 
-	len = strlen(tmp);
-	if (len > size - (p - buffer))
-		goto fail;
-	strcpy(p, tmp);
-	p += len;
-
 	list_for_each(list->next, ent) {
-		ptype = convert_aaregex_to_pcre(ent->value, 0, tmp,
-						PATH_MAX+3, &pos);
+		buffer.append("|");
+		ptype = convert_aaregex_to_pcre(ent->value, 0, buffer, &pos);
 		if (ptype == ePatternInvalid)
 			goto fail;
-
-		strncpy(p, "|", size - (p - buffer));
-		p++;
-		len = strlen(tmp);
-		if (len > size - (p - buffer))
-			goto fail;
-		strcpy(p, tmp);
-		p += len;
 	}
-	strncpy(p, ")", size - (p - buffer));
-	p++;
-	if (p > buffer + size)
-		goto fail;
+	buffer.append(")");
 
 	return TRUE;
 fail:
 	return FALSE;
 }
 
-static int convert_entry(char *buffer, int size, char *entry)
+static int convert_entry(std::string& buffer, char *entry)
 {
 	pattern_t ptype;
 	int pos;
 
 	if (entry) {
-		ptype = convert_aaregex_to_pcre(entry, 0, buffer, size, &pos);
+		ptype = convert_aaregex_to_pcre(entry, 0, buffer, &pos);
 		if (ptype == ePatternInvalid)
 			return FALSE;
 	} else {
-		/* match any char except \000 0 or more times */
-		if (size < 8)
-			return FALSE;
-
-		strcpy(buffer, "[^\\000]*");
+		buffer.append("[^\\000]*");
 	}
+
 	return TRUE;
 }
 
@@ -720,38 +714,24 @@ static int build_mnt_flags(char *buffer, int size, unsigned int flags,
 	return TRUE;
 }
 
-static int build_mnt_opts(char *buffer, int size, struct value_list *opts)
+static int build_mnt_opts(std::string& buffer, struct value_list *opts)
 {
 	struct value_list *ent;
-	char tmp[PATH_MAX + 3];
-	char *p;
-	int len;
 	pattern_t ptype;
 	int pos;
 
 	if (!opts) {
-		if (size < 8)
-			return FALSE;
-		strncpy(buffer, "[^\\000]*", size);
+		buffer.append("[^\\000]*");
 		return TRUE;
 	}
 
-	p = buffer;
 	list_for_each(opts, ent) {
-		ptype = convert_aaregex_to_pcre(ent->value, 0, tmp,
-						PATH_MAX+3, &pos);
+		ptype = convert_aaregex_to_pcre(ent->value, 0, buffer, &pos);
 		if (ptype == ePatternInvalid)
 			goto fail;
 
-		len = strlen(tmp);
-		if (len > size - (p - buffer))
-			goto fail;
-		strcpy(p, tmp);
-		p += len;
-		if (ent->next && size - (p - buffer) > 1) {
-			*p++ = ',';
-			*p = 0;
-		}
+		if (ent->next)
+			buffer.append(",");
 	}
 
 	return TRUE;
@@ -762,15 +742,17 @@ fail:
 
 static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 {
-	char mntbuf[PATH_MAX + 3];
-	char devbuf[PATH_MAX + 3];
-	char typebuf[PATH_MAX + 3];
+	std::string mntbuf;
+	std::string devbuf;
+	std::string typebuf;
 	char flagsbuf[PATH_MAX + 3];
-	char optsbuf[PATH_MAX + 3];
-	char *p;
+	std::string optsbuf;
+	char class_mount_hdr[64];
 	const char *vec[5];
 	int count = 0;
 	unsigned int flags, inv_flags;
+
+	sprintf(class_mount_hdr, "\\x%02x", AA_CLASS_MOUNT);
 
 	/* a single mount rule may result in multiple matching rules being
 	 * created in the backend to cover all the possible choices
@@ -780,25 +762,25 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 	    && !entry->device && !entry->dev_type) {
 		int allow;
 		/* remount can't be conditional on device and type */
-		p = mntbuf;
 		/* rule class single byte header */
-		p += sprintf(p, "\\x%02x", AA_CLASS_MOUNT);
+		mntbuf.assign(class_mount_hdr);
 		if (entry->mnt_point) {
 			/* both device && mnt_point or just mnt_point */
-			if (!convert_entry(p, PATH_MAX +3, entry->mnt_point))
+			if (!convert_entry(mntbuf, entry->mnt_point))
 				goto fail;
-			vec[0] = mntbuf;
+			vec[0] = mntbuf.c_str();
 		} else {
-			if (!convert_entry(p, PATH_MAX +3, entry->device))
+			if (!convert_entry(mntbuf, entry->device))
 				goto fail;
-			vec[0] = mntbuf;
+			vec[0] = mntbuf.c_str();
 		}
 		/* skip device */
-		if (!convert_entry(devbuf, PATH_MAX +3, NULL))
+		devbuf.clear();
+		if (!convert_entry(devbuf, NULL))
 			goto fail;
-		vec[1] = devbuf;
+		vec[1] = devbuf.c_str();
 		/* skip type */
-		vec[2] = devbuf;
+		vec[2] = devbuf.c_str();
 
 		flags = entry->flags;
 		inv_flags = entry->inv_flags;
@@ -809,8 +791,6 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		if (!build_mnt_flags(flagsbuf, PATH_MAX, flags, inv_flags))
 			goto fail;
 		vec[3] = flagsbuf;
-		if (!build_mnt_opts(optsbuf, PATH_MAX, entry->opts))
-			goto fail;
 
 		if (entry->opts)
 			allow = AA_MATCH_CONT;
@@ -826,9 +806,10 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 
 		if (entry->opts) {
 			/* rule with data match required */
-			if (!build_mnt_opts(optsbuf, PATH_MAX, entry->opts))
+			optsbuf.clear();
+			if (!build_mnt_opts(optsbuf, entry->opts))
 				goto fail;
-			vec[4] = optsbuf;
+			vec[4] = optsbuf.c_str();
 			if (!aare_add_rule_vec(dfarules, entry->deny,
 					       entry->allow,
 					       entry->audit | AA_AUDIT_MNT_DATA,
@@ -840,18 +821,19 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 	if ((entry->allow & AA_MAY_MOUNT) && (entry->flags & MS_BIND)
 	    && !entry->dev_type && !entry->opts) {
 		/* bind mount rules can't be conditional on dev_type or data */
-		p = mntbuf;
 		/* rule class single byte header */
-		p += sprintf(p, "\\x%02x", AA_CLASS_MOUNT);
-		if (!convert_entry(p, PATH_MAX +3, entry->mnt_point))
+		mntbuf.assign(class_mount_hdr);
+		if (!convert_entry(mntbuf, entry->mnt_point))
 			goto fail;
-		vec[0] = mntbuf;
-		if (!convert_entry(devbuf, PATH_MAX +3, entry->device))
+		vec[0] = mntbuf.c_str();
+		devbuf.clear();
+		if (!convert_entry(devbuf, entry->device))
 			goto fail;
-		vec[1] = devbuf;
-		if (!convert_entry(typebuf, PATH_MAX +3, NULL))
+		vec[1] = devbuf.c_str();
+		typebuf.clear();
+		if (!convert_entry(typebuf, NULL))
 			goto fail;
-		vec[2] = typebuf;
+		vec[2] = typebuf.c_str();
 
 		flags = entry->flags;
 		inv_flags = entry->inv_flags;
@@ -873,17 +855,17 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		/* change type base rules can not be conditional on device,
 		 * device type or data
 		 */
-		p = mntbuf;
 		/* rule class single byte header */
-		p += sprintf(p, "\\x%02x", AA_CLASS_MOUNT);
-		if (!convert_entry(p, PATH_MAX +3, entry->mnt_point))
+		mntbuf.assign(class_mount_hdr);
+		if (!convert_entry(mntbuf, entry->mnt_point))
 			goto fail;
-		vec[0] = mntbuf;
+		vec[0] = mntbuf.c_str();
 		/* skip device and type */
-		if (!convert_entry(devbuf, PATH_MAX +3, NULL))
+		devbuf.clear();
+		if (!convert_entry(devbuf, NULL))
 			goto fail;
-		vec[1] = devbuf;
-		vec[2] = devbuf;
+		vec[1] = devbuf.c_str();
+		vec[2] = devbuf.c_str();
 
 		flags = entry->flags;
 		inv_flags = entry->inv_flags;
@@ -904,19 +886,20 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		/* mount move rules can not be conditional on dev_type,
 		 * or data
 		 */
-		p = mntbuf;
 		/* rule class single byte header */
-		p += sprintf(p, "\\x%02x", AA_CLASS_MOUNT);
-		if (!convert_entry(p, PATH_MAX +3, entry->mnt_point))
+		mntbuf.assign(class_mount_hdr);
+		if (!convert_entry(mntbuf, entry->mnt_point))
 			goto fail;
-		vec[0] = mntbuf;
-		if (!convert_entry(devbuf, PATH_MAX +3, entry->device))
+		vec[0] = mntbuf.c_str();
+		devbuf.clear();
+		if (!convert_entry(devbuf, entry->device))
 			goto fail;
-		vec[1] = devbuf;
+		vec[1] = devbuf.c_str();
 		/* skip type */
-		if (!convert_entry(typebuf, PATH_MAX +3, NULL))
+		typebuf.clear();
+		if (!convert_entry(typebuf, NULL))
 			goto fail;
-		vec[2] = typebuf;
+		vec[2] = typebuf.c_str();
 
 		flags = entry->flags;
 		inv_flags = entry->inv_flags;
@@ -938,18 +921,19 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		/* generic mount if flags are set that are not covered by
 		 * above commands
 		 */
-		p = mntbuf;
 		/* rule class single byte header */
-		p += sprintf(p, "\\x%02x", AA_CLASS_MOUNT);
-		if (!convert_entry(p, PATH_MAX +3, entry->mnt_point))
+		mntbuf.assign(class_mount_hdr);
+		if (!convert_entry(mntbuf, entry->mnt_point))
 			goto fail;
-		vec[0] = mntbuf;
-		if (!convert_entry(devbuf, PATH_MAX +3, entry->device))
+		vec[0] = mntbuf.c_str();
+		devbuf.clear();
+		if (!convert_entry(devbuf, entry->device))
 			goto fail;
-		vec[1] = devbuf;
-		if (!build_list_val_expr(typebuf, PATH_MAX+2, entry->dev_type))
+		vec[1] = devbuf.c_str();
+		typebuf.clear();
+		if (!build_list_val_expr(typebuf, entry->dev_type))
 			goto fail;
-		vec[2] = typebuf;
+		vec[2] = typebuf.c_str();
 
 		flags = entry->flags;
 		inv_flags = entry->inv_flags;
@@ -975,9 +959,10 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 
 		if (entry->opts) {
 			/* rule with data match required */
-			if (!build_mnt_opts(optsbuf, PATH_MAX, entry->opts))
+			optsbuf.clear();
+			if (!build_mnt_opts(optsbuf, entry->opts))
 				goto fail;
-			vec[4] = optsbuf;
+			vec[4] = optsbuf.c_str();
 			if (!aare_add_rule_vec(dfarules, entry->deny,
 					       entry->allow,
 					       entry->audit | AA_AUDIT_MNT_DATA,
@@ -987,27 +972,26 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		}
 	}
 	if (entry->allow & AA_MAY_UMOUNT) {
-		p = mntbuf;
 		/* rule class single byte header */
-		p += sprintf(p, "\\x%02x", AA_CLASS_MOUNT);
-		if (!convert_entry(p, PATH_MAX +3, entry->mnt_point))
+		mntbuf.assign(class_mount_hdr);
+		if (!convert_entry(mntbuf, entry->mnt_point))
 			goto fail;
-		vec[0] = mntbuf;
+		vec[0] = mntbuf.c_str();
 		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
 				       entry->audit, 1, vec, dfaflags))
 			goto fail;
 		count++;
 	}
 	if (entry->allow & AA_MAY_PIVOTROOT) {
-		p = mntbuf;
 		/* rule class single byte header */
-		p += sprintf(p, "\\x%02x", AA_CLASS_MOUNT);
-		if (!convert_entry(p, PATH_MAX +3, entry->mnt_point))
+		mntbuf.assign(class_mount_hdr);
+		if (!convert_entry(mntbuf, entry->mnt_point))
 			goto fail;
-		vec[0] = mntbuf;
-		if (!convert_entry(devbuf, PATH_MAX +3, entry->device))
+		vec[0] = mntbuf.c_str();
+		devbuf.clear();
+		if (!convert_entry(devbuf, entry->device))
 			goto fail;
-		vec[1] = devbuf;
+		vec[1] = devbuf.c_str();
 		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
 				       entry->audit, 2, vec, dfaflags))
 			goto fail;
@@ -1028,13 +1012,13 @@ fail:
 
 static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry)
 {
-	char busbuf[PATH_MAX + 3];
-	char namebuf[PATH_MAX + 3];
-	char peer_labelbuf[PATH_MAX + 3];
-	char pathbuf[PATH_MAX + 3];
-	char ifacebuf[PATH_MAX + 3];
-	char memberbuf[PATH_MAX + 3];
-	char *p;
+	std::string busbuf;
+	std::string namebuf;
+	std::string peer_labelbuf;
+	std::string pathbuf;
+	std::string ifacebuf;
+	std::string memberbuf;
+	char buffer[128];
 	const char *vec[6];
 
 	pattern_t ptype;
@@ -1043,26 +1027,24 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 	if (!entry) 		/* shouldn't happen */
 		return TRUE;
 
-	p = busbuf;
-	p += sprintf(p, "\\x%02x", AA_CLASS_DBUS);
+	sprintf(buffer, "\\x%02x", AA_CLASS_DBUS);
+	busbuf.append(buffer);
 
 	if (entry->bus) {
-		ptype = convert_aaregex_to_pcre(entry->bus, 0, p,
-						PATH_MAX+3 - (p - busbuf), &pos);
+		ptype = convert_aaregex_to_pcre(entry->bus, 0, busbuf, &pos);
 		if (ptype == ePatternInvalid)
 			goto fail;
 	} else {
 		/* match any char except \000 0 or more times */
-		strcpy(p, "[^\\000]*");
+		busbuf.append("[^\\000]*");
 	}
-	vec[0] = busbuf;
+	vec[0] = busbuf.c_str();
 
 	if (entry->name) {
-		ptype = convert_aaregex_to_pcre(entry->name, 0, namebuf,
-						PATH_MAX+3, &pos);
+		ptype = convert_aaregex_to_pcre(entry->name, 0, namebuf, &pos);
 		if (ptype == ePatternInvalid)
 			goto fail;
-		vec[1] = namebuf;
+		vec[1] = namebuf.c_str();
 	} else {
 		/* match any char except \000 0 or more times */
 		vec[1] = "[^\\000]*";
@@ -1070,44 +1052,40 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 
 	if (entry->peer_label) {
 		ptype = convert_aaregex_to_pcre(entry->peer_label, 0,
-						peer_labelbuf, PATH_MAX+3,
-						&pos);
+						peer_labelbuf, &pos);
 		if (ptype == ePatternInvalid)
 			goto fail;
-		vec[2] = peer_labelbuf;
+		vec[2] = peer_labelbuf.c_str();
 	} else {
 		/* match any char except \000 0 or more times */
 		vec[2] = "[^\\000]*";
 	}
 
 	if (entry->path) {
-		ptype = convert_aaregex_to_pcre(entry->path, 0, pathbuf,
-						PATH_MAX+3, &pos);
+		ptype = convert_aaregex_to_pcre(entry->path, 0, pathbuf, &pos);
 		if (ptype == ePatternInvalid)
 			goto fail;
-		vec[3] = pathbuf;
+		vec[3] = pathbuf.c_str();
 	} else {
 		/* match any char except \000 0 or more times */
 		vec[3] = "[^\\000]*";
 	}
 
 	if (entry->interface) {
-		ptype = convert_aaregex_to_pcre(entry->interface, 0, ifacebuf,
-						PATH_MAX+3, &pos);
+		ptype = convert_aaregex_to_pcre(entry->interface, 0, ifacebuf, &pos);
 		if (ptype == ePatternInvalid)
 			goto fail;
-		vec[4] = ifacebuf;
+		vec[4] = ifacebuf.c_str();
 	} else {
 		/* match any char except \000 0 or more times */
 		vec[4] = "[^\\000]*";
 	}
 
 	if (entry->member) {
-		ptype = convert_aaregex_to_pcre(entry->member, 0, memberbuf,
-						PATH_MAX+3, &pos);
+		ptype = convert_aaregex_to_pcre(entry->member, 0, memberbuf, &pos);
 		if (ptype == ePatternInvalid)
 			goto fail;
-		vec[5] = memberbuf;
+		vec[5] = memberbuf.c_str();
 	} else {
 		/* match any char except \000 0 or more times */
 		vec[5] = "[^\\000]*";
@@ -1125,6 +1103,13 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 				entry->mode & (AA_DBUS_SEND | AA_DBUS_RECEIVE),
 				entry->audit & (AA_DBUS_SEND | AA_DBUS_RECEIVE),
 				6, vec, dfaflags))
+			goto fail;
+	}
+	if (entry->mode & AA_DBUS_EAVESDROP) {
+		if (!aare_add_rule_vec(dfarules, entry->deny,
+				entry->mode & AA_DBUS_EAVESDROP,
+				entry->audit & AA_DBUS_EAVESDROP,
+				1, vec, dfaflags))
 			goto fail;
 	}
 	return TRUE;
@@ -1266,12 +1251,174 @@ static int test_filter_slashes(void)
 	return rc;
 }
 
+#define MY_REGEX_TEST(input, expected_str, expected_type)						\
+	do {												\
+		std::string tbuf;									\
+		std::string tbuf2 = "testprefix";							\
+		char *test_string;									\
+		char *output_string = NULL;								\
+		std::string expected_str2;								\
+		pattern_t ptype;									\
+		int pos;										\
+													\
+		test_string = strdup((input)); 								\
+		ptype = convert_aaregex_to_pcre(test_string, 0, tbuf, &pos);				\
+		asprintf(&output_string, "simple regex conversion for '%s'\texpected = '%s'\tresult = '%s'", \
+				(input), expected_str, tbuf.c_str());					\
+		MY_TEST(strcmp(tbuf.c_str(), (expected_str)) == 0, output_string);			\
+		MY_TEST(ptype == (expected_type), "simple regex conversion type check for '" input "'"); \
+		free(output_string);									\
+		/* ensure convert_aaregex_to_pcre appends only to passed ref string */			\
+		expected_str2 = tbuf2;									\
+		expected_str2.append((expected_str));							\
+		ptype = convert_aaregex_to_pcre(test_string, 0, tbuf2, &pos);				\
+		asprintf(&output_string, "simple regex conversion for '%s'\texpected = '%s'\tresult = '%s'", \
+				(input), expected_str2.c_str(), tbuf2.c_str());				\
+		MY_TEST((tbuf2 == expected_str2), output_string);					\
+		free(test_string); free(output_string);							\
+	}												\
+	while (0)
+
+#define MY_REGEX_FAIL_TEST(input)						\
+	do {												\
+		std::string tbuf;									\
+		char *test_string;									\
+		pattern_t ptype;									\
+		int pos;										\
+													\
+		test_string = strdup((input)); 								\
+		ptype = convert_aaregex_to_pcre(test_string, 0, tbuf, &pos);				\
+		MY_TEST(ptype == ePatternInvalid, "simple regex conversion invalid type check for '" input "'"); \
+		free(test_string); 									\
+	}												\
+	while (0)
+
+static int test_aaregex_to_pcre(void)
+{
+	int rc = 0;
+
+	MY_REGEX_TEST("/most/basic/test", "/most/basic/test", ePatternBasic);
+
+	MY_REGEX_FAIL_TEST("\\");
+	MY_REGEX_TEST("\\\\", "\\\\", ePatternBasic);
+	MY_REGEX_TEST("\\blort", "blort", ePatternBasic);
+	MY_REGEX_TEST("\\\\blort", "\\\\blort", ePatternBasic);
+	MY_REGEX_FAIL_TEST("blort\\");
+	MY_REGEX_TEST("blort\\\\", "blort\\\\", ePatternBasic);
+	MY_REGEX_TEST("*", "[^/\\x00]*", ePatternRegex);
+	MY_REGEX_TEST("blort*", "blort[^/\\x00]*", ePatternRegex);
+	MY_REGEX_TEST("*blort", "[^/\\x00]*blort", ePatternRegex);
+	MY_REGEX_TEST("\\*", "\\*", ePatternBasic);
+	MY_REGEX_TEST("blort\\*", "blort\\*", ePatternBasic);
+	MY_REGEX_TEST("\\*blort", "\\*blort", ePatternBasic);
+
+	/* simple quoting */
+	MY_REGEX_TEST("\\[", "\\[", ePatternBasic);
+	MY_REGEX_TEST("\\]", "\\]", ePatternBasic);
+	MY_REGEX_TEST("\\?", "?", ePatternBasic);
+	MY_REGEX_TEST("\\{", "\\{", ePatternBasic);
+	MY_REGEX_TEST("\\}", "\\}", ePatternBasic);
+	MY_REGEX_TEST("\\,", ",", ePatternBasic);
+	MY_REGEX_TEST("^", "\\^", ePatternBasic);
+	MY_REGEX_TEST("$", "\\$", ePatternBasic);
+	MY_REGEX_TEST(".", "\\.", ePatternBasic);
+	MY_REGEX_TEST("+", "\\+", ePatternBasic);
+	MY_REGEX_TEST("|", "\\|", ePatternBasic);
+	MY_REGEX_TEST("(", "\\(", ePatternBasic);
+	MY_REGEX_TEST(")", "\\)", ePatternBasic);
+	MY_REGEX_TEST("\\^", "\\^", ePatternBasic);
+	MY_REGEX_TEST("\\$", "\\$", ePatternBasic);
+	MY_REGEX_TEST("\\.", "\\.", ePatternBasic);
+	MY_REGEX_TEST("\\+", "\\+", ePatternBasic);
+	MY_REGEX_TEST("\\|", "\\|", ePatternBasic);
+	MY_REGEX_TEST("\\(", "\\(", ePatternBasic);
+	MY_REGEX_TEST("\\)", "\\)", ePatternBasic);
+
+	/* simple character class tests */
+	MY_REGEX_TEST("[blort]", "[blort]", ePatternRegex);
+	MY_REGEX_FAIL_TEST("[blort");
+	MY_REGEX_FAIL_TEST("b[lort");
+	MY_REGEX_FAIL_TEST("blort[");
+	MY_REGEX_FAIL_TEST("blort]");
+	MY_REGEX_FAIL_TEST("blo]rt");
+	MY_REGEX_FAIL_TEST("]blort");
+	MY_REGEX_TEST("b[lor]t", "b[lor]t", ePatternRegex);
+
+	/* simple alternation tests */
+	MY_REGEX_TEST("{alpha,beta}", "(alpha|beta)", ePatternRegex);
+	MY_REGEX_TEST("baz{alpha,beta}blort", "baz(alpha|beta)blort", ePatternRegex);
+	MY_REGEX_FAIL_TEST("{beta}");
+	MY_REGEX_FAIL_TEST("biz{beta");
+	MY_REGEX_FAIL_TEST("biz}beta");
+	MY_REGEX_FAIL_TEST("biz{be,ta");
+	MY_REGEX_FAIL_TEST("biz,be}ta");
+	MY_REGEX_FAIL_TEST("biz{}beta");
+
+	/* nested alternations */
+	MY_REGEX_TEST("{{alpha,blort,nested},beta}", "((alpha|blort|nested)|beta)", ePatternRegex);
+	MY_REGEX_FAIL_TEST("{{alpha,blort,nested}beta}");
+	MY_REGEX_TEST("{{alpha,{blort,nested}},beta}", "((alpha|(blort|nested))|beta)", ePatternRegex);
+	MY_REGEX_TEST("{{alpha,alpha{blort,nested}}beta,beta}", "((alpha|alpha(blort|nested))beta|beta)", ePatternRegex);
+	MY_REGEX_TEST("{{alpha,alpha{blort,nested}}beta,beta}", "((alpha|alpha(blort|nested))beta|beta)", ePatternRegex);
+	MY_REGEX_TEST("{{a,b{c,d}}e,{f,{g,{h{i,j,k},l}m},n}o}", "((a|b(c|d))e|(f|(g|(h(i|j|k)|l)m)|n)o)", ePatternRegex);
+	/* max nesting depth = 50 */
+	MY_REGEX_TEST("{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a,b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b}b,blort}",
+			"(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)|b)b|blort)", ePatternRegex);
+	MY_REGEX_FAIL_TEST("{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a{a,b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b},b}b,blort}");
+
+	/* simple single char */
+	MY_REGEX_TEST("blor?t", "blor[^/\\x00]t", ePatternRegex);
+
+	/* simple globbing */
+	MY_REGEX_TEST("/*", "/[^/\\x00][^/\\x00]*", ePatternRegex);
+	MY_REGEX_TEST("/blort/*", "/blort/[^/\\x00][^/\\x00]*", ePatternRegex);
+	MY_REGEX_TEST("/*/blort", "/[^/\\x00][^/\\x00]*/blort", ePatternRegex);
+	MY_REGEX_TEST("/*/", "/[^/\\x00][^/\\x00]*/", ePatternRegex);
+	MY_REGEX_TEST("/**", "/[^/\\x00][^\\x00]*", ePatternTailGlob);
+	MY_REGEX_TEST("/blort/**", "/blort/[^/\\x00][^\\x00]*", ePatternTailGlob);
+	MY_REGEX_TEST("/**/blort", "/[^/\\x00][^\\x00]*/blort", ePatternRegex);
+	MY_REGEX_TEST("/**/", "/[^/\\x00][^\\x00]*/", ePatternRegex);
+
+	/* more complicated quoting */
+	MY_REGEX_FAIL_TEST("\\\\[");
+	MY_REGEX_FAIL_TEST("\\\\]");
+	MY_REGEX_TEST("\\\\?", "\\\\[^/\\x00]", ePatternRegex);
+	MY_REGEX_FAIL_TEST("\\\\{");
+	MY_REGEX_FAIL_TEST("\\\\}");
+	MY_REGEX_TEST("\\\\,", "\\\\,", ePatternBasic);
+	MY_REGEX_TEST("\\\\^", "\\\\\\^", ePatternBasic);
+	MY_REGEX_TEST("\\\\$", "\\\\\\$", ePatternBasic);
+	MY_REGEX_TEST("\\\\.", "\\\\\\.", ePatternBasic);
+	MY_REGEX_TEST("\\\\+", "\\\\\\+", ePatternBasic);
+	MY_REGEX_TEST("\\\\|", "\\\\\\|", ePatternBasic);
+	MY_REGEX_TEST("\\\\(", "\\\\\\(", ePatternBasic);
+	MY_REGEX_TEST("\\\\)", "\\\\\\)", ePatternBasic);
+
+	/* more complicated character class tests */
+	/*   -- embedded alternations */
+	MY_REGEX_TEST("b[\\lor]t", "b[lor]t", ePatternRegex);
+	MY_REGEX_TEST("b[{a,b}]t", "b[{a,b}]t", ePatternRegex);
+	MY_REGEX_TEST("{alpha,b[{a,b}]t,gamma}", "(alpha|b[{a,b}]t|gamma)", ePatternRegex);
+
+	/* pcre will ignore the '\' before '\{', but it should be okay
+	 * for us to pass this on to pcre as '\{' */
+	MY_REGEX_TEST("b[\\{a,b\\}]t", "b[\\{a,b\\}]t", ePatternRegex);
+	MY_REGEX_TEST("{alpha,b[\\{a,b\\}]t,gamma}", "(alpha|b[\\{a,b\\}]t|gamma)", ePatternRegex);
+	MY_REGEX_TEST("{alpha,b[\\{a\\,b\\}]t,gamma}", "(alpha|b[\\{a\\,b\\}]t|gamma)", ePatternRegex);
+
+	return rc;
+}
+
 int main(void)
 {
 	int rc = 0;
 	int retval;
 
 	retval = test_filter_slashes();
+	if (retval != 0)
+		rc = retval;
+
+	retval = test_aaregex_to_pcre();
 	if (retval != 0)
 		rc = retval;
 

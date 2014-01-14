@@ -41,7 +41,7 @@
 #include <sys/sysctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <apparmor.h>
+#include <sys/apparmor.h>
 
 #include "lib.h"
 #include "parser.h"
@@ -194,10 +194,10 @@ optflag_table_t dumpflag_table[] = {
 	  DFA_DUMP_SIMPLE_TREE },
 	{ 1, "stats", "Dump all compile stats",
 	  DFA_DUMP_TREE_STATS | DFA_DUMP_STATS | DFA_DUMP_TRANS_STATS |
-	  DFA_DUMP_EQUIV_STATS },
+	  DFA_DUMP_EQUIV_STATS | DFA_DUMP_DIFF_STATS },
 	{ 1, "progress", "Dump progress for all compile phases",
 	  DFA_DUMP_PROGRESS | DFA_DUMP_STATS | DFA_DUMP_TRANS_PROGRESS |
-	  DFA_DUMP_TRANS_STATS },
+	  DFA_DUMP_TRANS_STATS | DFA_DUMP_DIFF_PROGRESS | DFA_DUMP_DIFF_STATS },
 	{ 1, "dfa-progress", "Dump dfa creation as in progress",
 	  DFA_DUMP_PROGRESS | DFA_DUMP_STATS },
 	{ 1, "dfa-stats", "Dump dfa creation stats", DFA_DUMP_STATS },
@@ -222,13 +222,20 @@ optflag_table_t dumpflag_table[] = {
 	{ 1, "equiv-stats", "Dump equivance class stats",
 	  DFA_DUMP_EQUIV_STATS },
 	{ 1, "equiv", "Dump equivance class", DFA_DUMP_EQUIV },
+	{ 1, "diff-encode", "Dump differential encoding",
+	  DFA_DUMP_DIFF_ENCODE },
+	{ 1, "diff-stats", "Dump differential encoding stats",
+	  DFA_DUMP_DIFF_STATS },
+	{ 1, "diff-progress", "Dump progress of differential encoding",
+	  DFA_DUMP_DIFF_PROGRESS | DFA_DUMP_DIFF_STATS },
 	{ 0, NULL, NULL, 0 },
 };
 
 optflag_table_t optflag_table[] = {
 	{ 2, "0", "no optimizations",
 	  DFA_CONTROL_TREE_NORMAL | DFA_CONTROL_TREE_SIMPLE |
-	  DFA_CONTROL_MINIMIZE | DFA_CONTROL_REMOVE_UNREACHABLE
+	  DFA_CONTROL_MINIMIZE | DFA_CONTROL_REMOVE_UNREACHABLE |
+	  DFA_CONTROL_DIFF_ENCODE
 	},
 	{ 1, "equiv", "use equivalent classes", DFA_CONTROL_EQUIV },
 	{ 1, "expr-normalize", "expression tree normalization",
@@ -240,8 +247,6 @@ optflag_table_t optflag_table[] = {
 	{ 2, "expr-right-simplify", "right simplification first",
 	  DFA_CONTROL_TREE_LEFT },
 	{ 1, "minimize", "dfa state minimization", DFA_CONTROL_MINIMIZE },
-	{ 1, "hash-trans", "minimization - hash transitions during setup",
-	  DFA_CONTROL_MINIMIZE_HASH_TRANS },
 	{ 1, "filter-deny", "filter out deny information from final dfa",
 	  DFA_CONTROL_FILTER_DENY },
 	{ 1, "remove-unreachable", "dfa unreachable state removal",
@@ -251,6 +256,8 @@ optflag_table_t optflag_table[] = {
 	  DFA_CONTROL_TRANS_HIGH },
 	{ 2, "compress-fast", "do faster dfa transition table compression",
 	  DFA_CONTROL_TRANS_HIGH },
+	{ 1, "diff-encode", "Differentially encode transitions",
+	  DFA_CONTROL_DIFF_ENCODE },
 	{ 0, NULL, NULL, 0 },
 };
 

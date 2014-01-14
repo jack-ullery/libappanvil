@@ -174,7 +174,7 @@ public:
 		parent = NULL;
 
 		flags = { 0, 0, 0, 0};
-		rlimits = { 0 };
+		rlimits = {0, {}};
 
 		std::fill(exec_table, exec_table + AA_EXEC_COUNT, (char *)NULL);
 

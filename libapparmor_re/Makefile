@@ -3,8 +3,8 @@
 
 TARGET=libapparmor_re.a
 
-CFLAGS ?= -g -Wall -O2 ${EXTRA_CFLAGS}
-CXXFLAGS := ${CFLAGS} -std=c++0x
+CFLAGS ?= -g -Wall -O2 ${EXTRA_CFLAGS} -std=gnu++0x
+CXXFLAGS := ${CFLAGS}
 
 ARFLAGS=-rcs
 
@@ -29,4 +29,4 @@ parse.cc : parse.y parse.h flex-tables.h ../immunix.h
 	${BISON} -o $@ $<
 
 clean:
-	rm -f *.o parse.cc ${TARGET}
+	rm -f *.o parse.cc ${TARGET} *.gcda *.gcno
