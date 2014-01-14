@@ -1,7 +1,7 @@
 # vim:syntax=apparmor
 # ------------------------------------------------------------------
 #
-#    Copyright (C) 2013 Canonical Ltd.
+#    Copyright (C) 2009-2013 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -9,8 +9,11 @@
 #
 # ------------------------------------------------------------------
 
-  # This abstraction grants full accessibility bus access. Consider using the
-  # dbus-accessibility-strict abstraction for fine-grained bus mediation.
+  /{,var/}run/dbus/system_bus_socket rw,
 
-  #include <abstractions/dbus-accessibility-strict>
-  dbus bus=accessibility,
+  dbus send
+       bus=system
+       path=/org/freedesktop/DBus
+       interface=org.freedesktop.DBus
+       member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName}
+       peer=(name=org.freedesktop.DBus),

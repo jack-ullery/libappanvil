@@ -49,7 +49,7 @@ verify_binary_equality()
 	shift
 	shift
 
-	printf "Binary equality %s ..." "$desc"
+	printf "Binary equality %s" "$desc"
 	good_hash=$(hash_binary_policy "$good_profile")
 	if [ $? -ne 0 ]
 	then
@@ -80,7 +80,7 @@ verify_binary_equality()
 
 	if [ $ret -eq 0 ]
 	then
-		printf " ok\n\n"
+		printf " ok\n"
 	fi
 
 	return $ret
@@ -214,6 +214,16 @@ verify_binary_equality "dbus minimization with an audit modifier" \
 verify_binary_equality "dbus minimization with a deny modifier" \
 	"/t { deny dbus send bus=system peer=(name=com.foo), }" \
 	"/t { deny dbus send bus=system peer=(name=com.foo label=/usr/bin/foo), deny dbus send bus=system peer=(name=com.foo), }" \
+
+verify_binary_equality "dbus minimization found in dbus abstractions" \
+	"/t { dbus send bus=session, }" \
+	"/t { dbus send
+                   bus=session
+                   path=/org/freedesktop/DBus
+                   interface=org.freedesktop.DBus
+                   member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName}
+                   peer=(name=org.freedesktop.DBus),
+	      dbus send bus=session, }"
 
 if [ $fails -ne 0 -o $errors -ne 0 ]
 then
