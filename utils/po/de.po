@@ -6,641 +6,876 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
-"POT-Creation-Date: 2008-09-22 22:56-0700\n"
-"PO-Revision-Date: 2013-09-13 21:05+0200\n"
-"Last-Translator: Christian Boltz <apparmor@cboltz.de>\n"
+"POT-Creation-Date: 2013-11-13 16:44-0800\n"
+"PO-Revision-Date: 2013-11-15 02:37+0000\n"
+"Last-Translator: Christian Boltz <Unknown>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-15 05:16+0000\n"
+"X-Generator: Launchpad (build 16831)\n"
 "Language: de\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../genprof:69
-#, fuzzy
+#: ../aa-genprof:72 ../aa-unconfined:54
+msgid ""
+"AppArmor does not appear to be started. Please enable AppArmor and try again."
+msgstr ""
+"AppArmor wurde offenbar nicht gestartet. Aktivieren Sie AppArmor und "
+"versuchen Sie es erneut."
+
+#: ../aa-genprof:86
 msgid "Please enter the program to profile: "
-msgstr "Geben Sie das Programm für das Profil ein: "
+msgstr ""
 
-#: ../genprof:88
+#: ../aa-genprof:105
 #, perl-format
-msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' in the other window in order to find the fully-qualified path."
-msgstr "%s wurde in der Systempfadliste nicht gefunden. Wenn der Name der Anwendung richtig ist, führen Sie 'which %s' im anderen Fenster aus, um nach dem vollständigen Pfad zu suchen."
+msgid ""
+"Can't find %s in the system path list.  If the name of the application is "
+"correct, please run 'which %s' in the other window in order to find the "
+"fully-qualified path."
+msgstr ""
+"%s wurde in der Systempfadliste nicht gefunden. Wenn der Name der Anwendung "
+"richtig ist, führen Sie 'which %s' im anderen Fenster aus, um nach dem "
+"vollständigen Pfad zu suchen."
 
-#: ../genprof:90 ../autodep:112 ../audit:122 ../complain:122 ../enforce:122
+#: ../aa-genprof:107 ../aa-autodep:110 ../aa-audit:120 ../aa-complain:119
+#: ../aa-enforce:130 ../aa-disable:140
 #, perl-format
 msgid "%s does not exist, please double-check the path."
 msgstr "%s ist nicht vorhanden. Überprüfen Sie den Pfad."
 
-#: ../genprof:115
-msgid "Please start the application to be profiled in \nanother window and exercise its functionality now.\n\nOnce completed, select the \"Scan\" button below in \norder to scan the system logs for AppArmor events.  \n\nFor each AppArmor event, you will be given the  \nopportunity to choose whether the access should be  \nallowed or denied."
-msgstr "Starten Sie die Anwendung, die in einem anderen Fenster\nals Profil dargestellt werden soll, und führen Sie die Funktionalität jetzt aus.\n \n Nach Abschluss dieses Vorgangs wählen Sie unten \"Durchsuchen\", um\nin den Systemprotokollen nach AppArmor-Ereignissen zu suchen. \n \nFür jedes AppArmor-Ereignis haben Sie die Gelegenheit,\nanzugeben, ob der Zugriff\nzugelassen oder verweigert werden soll."
+#: ../aa-genprof:141
+msgid ""
+"\n"
+"Before you begin, you may wish to check if a\n"
+"profile already exists for the application you\n"
+"wish to confine. See the following wiki page for\n"
+"more information:\n"
+"http://wiki.apparmor.net/index.php/Profiles"
+msgstr ""
 
-#: ../genprof:135
+#: ../aa-genprof:143
+msgid ""
+"Please start the application to be profiled in \n"
+"another window and exercise its functionality now.\n"
+"\n"
+"Once completed, select the \"Scan\" button below in \n"
+"order to scan the system logs for AppArmor events.  \n"
+"\n"
+"For each AppArmor event, you will be given the  \n"
+"opportunity to choose whether the access should be  \n"
+"allowed or denied."
+msgstr ""
+"Starten Sie die Anwendung, die in einem anderen Fenster\n"
+"als Profil dargestellt werden soll, und führen Sie die Funktionalität jetzt "
+"aus.\n"
+" \n"
+" Nach Abschluss dieses Vorgangs wählen Sie unten \"Durchsuchen\", um\n"
+"in den Systemprotokollen nach AppArmor-Ereignissen zu suchen. \n"
+" \n"
+"Für jedes AppArmor-Ereignis haben Sie die Gelegenheit,\n"
+"anzugeben, ob der Zugriff\n"
+"zugelassen oder verweigert werden soll."
+
+#: ../aa-genprof:163
 msgid "Profiling"
 msgstr "Profilerstellung"
 
-#: ../genprof:169
+#: ../aa-genprof:197
 msgid "Reloaded AppArmor profiles in enforce mode."
 msgstr "AppArmor-Profile wurden im Erzwingen-Modus neu geladen."
 
-#: ../genprof:170
+#: ../aa-genprof:198
+msgid ""
+"\n"
+"Please consider contributing your new profile! See\n"
+"the following wiki page for more information:\n"
+"http://wiki.apparmor.net/index.php/Profiles\n"
+msgstr ""
+
+#: ../aa-genprof:199
 #, perl-format
 msgid "Finished generating profile for %s."
 msgstr "Profilerstellung für %s abgeschlossen."
 
-#: ../genprof:174
+#: ../aa-genprof:203
 #, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"
-msgstr "Syntax: %s [ -d /pfad/zu/profilen ] [ -f /pfad/zu/protokolldatei ] [ programm, für das ein profil erstellt werden soll ]"
+msgid ""
+"usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to "
+"profile ]"
+msgstr ""
+"Syntax: %s [ -d /pfad/zu/profilen ] [ -f /pfad/zu/protokolldatei ] [ "
+"programm, für das ein profil erstellt werden soll ]"
 
-#: ../logprof:72
+#: ../aa-logprof:69
 #, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in log to start processing after\""
-msgstr "Syntax: %s [ -d /pfad/zu/profilen ] [ -f /pfad/zu/protokolldatei ] [ -m \"Markierng im Protokoll, nach der die Verarbeitung gestartet werden soll\""
+msgid ""
+"usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in "
+"log to start processing after\""
+msgstr ""
+"Syntax: %s [ -d /pfad/zu/profilen ] [ -f /pfad/zu/protokolldatei ] [ -m "
+"\"Markierng im Protokoll, nach der die Verarbeitung gestartet werden soll\""
 
-#: ../autodep:63
+#: ../aa-autodep:61
 #, perl-format
 msgid "Can't find AppArmor profiles in %s."
 msgstr "In %s wurden keine AppArmor-Profile gefunden."
 
-#: ../autodep:71
+#: ../aa-autodep:69
 msgid "Please enter the program to create a profile for: "
 msgstr "Geben Sie das Programm an, für das ein Profil erstellt werden soll: "
 
-#: ../autodep:95 ../AppArmor.pm:6156
+#: ../aa-autodep:93 ../Immunix/AppArmor.pm:6339
 #, perl-format
-msgid "%s is currently marked as a program that should not have it's own profile.  Usually, programs are marked this way if creating a profile for them is likely to break the rest of the system.  If you know what you're doing and are certain you want to create a profile for this program, edit the corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf."
-msgstr "%s ist momentan als Programm markiert, das nicht über ein eigenes Profil verfügen sollte. In der Regel werden Programme auf diese Weise markiert, wenn es durch die Erstellung eines Profils für dieses Programm wahrscheinlich zu einer Beschädigung des Systems kommt. Wenn Sie sich darüber im Klaren sind, was Sie tun, und sich sicher sind, dass für dieses Programm ein Profil erstellt werden soll, bearbeiten Sie den entsprechenden Eintrag im Abschnitt [qualifiers] in der Datei /etc/apparmor/logprof.conf."
+msgid ""
+"%s is currently marked as a program that should not have it's own profile.  "
+"Usually, programs are marked this way if creating a profile for them is "
+"likely to break the rest of the system.  If you know what you're doing and "
+"are certain you want to create a profile for this program, edit the "
+"corresponding entry in the [qualifiers] section in "
+"/etc/apparmor/logprof.conf."
+msgstr ""
+"%s ist momentan als Programm markiert, das nicht über ein eigenes Profil "
+"verfügen sollte. In der Regel werden Programme auf diese Weise markiert, "
+"wenn es durch die Erstellung eines Profils für dieses Programm "
+"wahrscheinlich zu einer Beschädigung des Systems kommt. Wenn Sie sich "
+"darüber im Klaren sind, was Sie tun, und sich sicher sind, dass für dieses "
+"Programm ein Profil erstellt werden soll, bearbeiten Sie den entsprechenden "
+"Eintrag im Abschnitt [qualifiers] in der Datei /etc/apparmor/logprof.conf."
 
-#: ../autodep:102
+#: ../aa-autodep:100
 #, perl-format
 msgid "Profile for %s already exists - skipping."
 msgstr "Profil für %s existiert bereits - überspringen."
 
-#: ../autodep:109 ../audit:119 ../complain:119 ../enforce:119
+#: ../aa-autodep:107 ../aa-audit:117 ../aa-complain:116 ../aa-enforce:127
+#: ../aa-disable:137
 #, perl-format
-msgid "Can't find %s in the system path list.  If the name of the application is correct, please run 'which %s' as a user with the correct PATH environment set up in order to find the fully-qualified path."
-msgstr "%s wurde in der Systempfadliste nicht gefunden. Wenn der Name der Anwendung richtig ist, führen Sie 'which %s' als Benutzer mit korrekter PATH-Umgebung aus, um den vollständig qualifizierten Pfad zu finden."
+msgid ""
+"Can't find %s in the system path list.  If the name of the application is "
+"correct, please run 'which %s' as a user with the correct PATH environment "
+"set up in order to find the fully-qualified path."
+msgstr ""
+"%s wurde in der Systempfadliste nicht gefunden. Wenn der Name der Anwendung "
+"richtig ist, führen Sie 'which %s' als Benutzer mit korrekter PATH-Umgebung "
+"aus, um den vollständig qualifizierten Pfad zu finden."
 
-#: ../audit:106
+#: ../aa-audit:104
 #, perl-format
 msgid "Setting %s to audit mode."
 msgstr "%s wird in Prüfmodus versetzt."
 
-#: ../audit:131
+#: ../aa-audit:129
 #, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
-msgstr "Syntax: %s [ -d /pfad/zu/profilen ] [ Programm, das in den Prüfmodus versetzt werden soll ]"
+msgid ""
+"usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
+msgstr ""
+"Syntax: %s [ -d /pfad/zu/profilen ] [ Programm, das in den Prüfmodus "
+"versetzt werden soll ]"
 
-#: ../complain:64
+#: ../aa-complain:61
 msgid "Please enter the program to switch to complain mode: "
-msgstr "Geben Sie das Programm an, das in den Meldungsmodus versetzt werden soll: "
+msgstr ""
+"Geben Sie das Programm an, das in den Meldungsmodus versetzt werden soll: "
 
-#: ../complain:106 ../AppArmor.pm:579 ../AppArmor.pm:900
+#: ../aa-complain:103 ../Immunix/AppArmor.pm:621 ../Immunix/AppArmor.pm:941
 #, perl-format
 msgid "Setting %s to complain mode."
 msgstr "%s wird in Meldungsmodus versetzt."
 
-#: ../complain:131
+#: ../aa-complain:128
 #, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
-msgstr "Syntax: %s [ -d /pfad/zu/profilen ] [ Programm, das in den Meldungsmodus versetzt werden soll ]"
+msgid ""
+"usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
+msgstr ""
+"Syntax: %s [ -d /pfad/zu/profilen ] [ Programm, das in den Meldungsmodus "
+"versetzt werden soll ]"
 
-#: ../enforce:64
+#: ../aa-enforce:62
 msgid "Please enter the program to switch to enforce mode: "
-msgstr "Geben Sie das Programm an, das in den Erzwingen-Modus versetzt werden soll: "
+msgstr ""
+"Geben Sie das Programm an, das in den Erzwingen-Modus versetzt werden soll: "
 
-#: ../enforce:105 ../AppArmor.pm:592
+#: ../aa-enforce:103 ../Immunix/AppArmor.pm:634
 #, perl-format
 msgid "Setting %s to enforce mode."
 msgstr "%s wird in den Erwzingen-Modus versetzt."
 
-#: ../enforce:131
+#: ../aa-enforce:139
 #, perl-format
-msgid "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
-msgstr "Syntax: %s [ -d /pfad/zu/profilen ] [ Programm, das in den Erzwingen-Modus versetzt werden soll ]"
+msgid ""
+"usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
+msgstr ""
+"Syntax: %s [ -d /pfad/zu/profilen ] [ Programm, das in den Erzwingen-Modus "
+"versetzt werden soll ]"
 
-#: ../unconfined:50
+#: ../aa-unconfined:48
 #, perl-format
 msgid "Usage: %s [ --paranoid ]\n"
 msgstr "Syntax: %s [ --paranoid ]\n"
 
-#: ../unconfined:56
-msgid "AppArmor does not appear to be started. Please enable AppArmor and try again."
-msgstr "AppArmor wurde offenbar nicht gestartet. Aktivieren Sie AppArmor und versuchen Sie es erneut."
-
-#: ../unconfined:61
+#: ../aa-unconfined:59
 msgid "Can't read /proc\n"
 msgstr "/proc kann nicht gelesen werden\n"
 
-#: ../unconfined:93 ../unconfined:95
+#: ../aa-unconfined:97 ../aa-unconfined:99
 msgid "not confined\n"
 msgstr "nicht eingeschränkt\n"
 
-#: ../unconfined:105 ../unconfined:107
+#: ../aa-unconfined:108 ../aa-unconfined:110
 msgid "confined by"
 msgstr "eingeschränkt durch"
 
-#: ../AppArmor.pm:577 ../AppArmor.pm:590
+#: ../aa-disable:69
+msgid "Please enter the program whose profile should be disabled: "
+msgstr ""
+
+#: ../aa-disable:113
+#, perl-format
+msgid "Could not find basename for %s."
+msgstr ""
+
+#: ../aa-disable:117
+#, perl-format
+msgid "Disabling %s."
+msgstr ""
+
+#: ../aa-disable:123
+#, perl-format
+msgid "Could not create %s symlink."
+msgstr ""
+
+#: ../aa-disable:149
+#, perl-format
+msgid ""
+"usage: %s [ -d /path/to/profiles ] [ program to have profile disabled ]"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:619 ../Immunix/AppArmor.pm:632
 #, perl-format
 msgid "Can't find %s."
 msgstr "%s kann nicht gefunden werden."
 
-#: ../AppArmor.pm:778 ../AppArmor.pm:3173
+#: ../Immunix/AppArmor.pm:819 ../Immunix/AppArmor.pm:3326
 msgid "Connecting to repository....."
 msgstr "Verbindung zu Repository wird hergestellt..."
 
-#: ../AppArmor.pm:787
+#: ../Immunix/AppArmor.pm:828
 #, perl-format
-msgid "WARNING: Error fetching profiles from the repository:\n%s\n"
-msgstr "ACHTUNG: Fehler beim Abrufen der Profile aus dem Repository: \n%s\n"
+msgid ""
+"WARNING: Error fetching profiles from the repository:\n"
+"%s\n"
+msgstr ""
+"ACHTUNG: Fehler beim Abrufen der Profile aus dem Repository: \n"
+"%s\n"
 
-#: ../AppArmor.pm:796
+#: ../Immunix/AppArmor.pm:837
 msgid "Inactive local profile for "
 msgstr "Inaktives lokales Profil für "
 
-#: ../AppArmor.pm:833 ../AppArmor.pm:1852 ../AppArmor.pm:2140
-#: ../AppArmor.pm:3300 ../AppArmor.pm:3333 ../AppArmor.pm:3533
-#: ../AppArmor.pm:3799 ../AppArmor.pm:3851
+#: ../Immunix/AppArmor.pm:874 ../Immunix/AppArmor.pm:1900
+#: ../Immunix/AppArmor.pm:2188 ../Immunix/AppArmor.pm:3453
+#: ../Immunix/AppArmor.pm:3486 ../Immunix/AppArmor.pm:3686
+#: ../Immunix/AppArmor.pm:3952 ../Immunix/AppArmor.pm:4004
 msgid "Profile"
 msgstr "Profil"
 
-#: ../AppArmor.pm:867
+#: ../Immunix/AppArmor.pm:908
 msgid "Profile submitted by"
 msgstr "Profil weitergegeben von"
 
-#: ../AppArmor.pm:908
+#: ../Immunix/AppArmor.pm:949
 #, perl-format
 msgid "Error activating profiles: %s\n"
 msgstr "Fehler beim Aktivieren der Profile: %s\n"
 
-#: ../AppArmor.pm:1055 ../AppArmor.pm:1108
+#: ../Immunix/AppArmor.pm:1098 ../Immunix/AppArmor.pm:1151
 #, perl-format
-msgid "WARNING: Error syncronizing profiles with the repository:\n%s\n"
-msgstr "ACHTUNG: Fehler beim Synchronisieren der Profile mit dem Repository: \n%s\n"
+msgid ""
+"WARNING: Error syncronizing profiles with the repository:\n"
+"%s\n"
+msgstr ""
+"ACHTUNG: Fehler beim Synchronisieren der Profile mit dem Repository: \n"
+"%s\n"
 
-#: ../AppArmor.pm:1135
+#: ../Immunix/AppArmor.pm:1178
 msgid "New profiles"
 msgstr "Neue Profile"
 
-#: ../AppArmor.pm:1137
-msgid "Please choose the newly created profiles that you would like\nto store in the repository"
-msgstr "Wählen Sie die neu erstellten Profile, die Sie im Repository \nspeichern möchten."
+#: ../Immunix/AppArmor.pm:1180
+msgid ""
+"Please choose the newly created profiles that you would like\n"
+"to store in the repository"
+msgstr ""
+"Wählen Sie die neu erstellten Profile, die Sie im Repository \n"
+"speichern möchten."
 
-#: ../AppArmor.pm:1144
+#: ../Immunix/AppArmor.pm:1187
 msgid "Submit newly created profiles to the repository"
 msgstr "Neu erstellte Profile an das Repository weitergeben"
 
-#: ../AppArmor.pm:1146
+#: ../Immunix/AppArmor.pm:1189
 msgid "Would you like to upload the newly created profiles?"
 msgstr "Möchten Sie die neu erstellten Profile hochladen?"
 
-#: ../AppArmor.pm:1159
-msgid "Select which of the changed profiles you would like to upload\nto the repository"
-msgstr "Wählen Sie die geänderten Profile aus, die Sie in das Repository \nhochladen möchten"
+#: ../Immunix/AppArmor.pm:1202
+msgid ""
+"Select which of the changed profiles you would like to upload\n"
+"to the repository"
+msgstr ""
+"Wählen Sie die geänderten Profile aus, die Sie in das Repository \n"
+"hochladen möchten"
 
-#: ../AppArmor.pm:1161
+#: ../Immunix/AppArmor.pm:1204
 msgid "Changed profiles"
 msgstr "Geänderte Profile"
 
-#: ../AppArmor.pm:1167
+#: ../Immunix/AppArmor.pm:1210
 msgid "Submit changed profiles to the repository"
 msgstr "Geänderte Profile an das Repository weitergeben"
 
-#: ../AppArmor.pm:1169
-msgid "The following profiles from the repository were changed.\nWould you like to upload your changes?"
-msgstr "Die folgenden Profile im Repository wurden geändert.\nMöchten Sie Ihre Änderungen hochladen?"
+#: ../Immunix/AppArmor.pm:1212
+msgid ""
+"The following profiles from the repository were changed.\n"
+"Would you like to upload your changes?"
+msgstr ""
+"Die folgenden Profile im Repository wurden geändert.\n"
+"Möchten Sie Ihre Änderungen hochladen?"
 
-#: ../AppArmor.pm:1236 ../AppArmor.pm:1316
+#: ../Immunix/AppArmor.pm:1279 ../Immunix/AppArmor.pm:1359
 #, perl-format
-msgid "WARNING: An error occured while uploading the profile %s\n%s\n"
-msgstr "ACHTUNG: Fehler beim Hochladen von Profil %s\n%s\n"
+msgid ""
+"WARNING: An error occured while uploading the profile %s\n"
+"%s\n"
+msgstr ""
+"ACHTUNG: Fehler beim Hochladen von Profil %s\n"
+"%s\n"
 
-#: ../AppArmor.pm:1241
+#: ../Immunix/AppArmor.pm:1284
 msgid "Uploaded changes to repository."
 msgstr "Änderungen an das Repository hochgeladen."
 
-#: ../AppArmor.pm:1290
+#: ../Immunix/AppArmor.pm:1306 ../Immunix/AppArmor.pm:3185
+#: ../Immunix/AppArmor.pm:3215
+msgid "Repository"
+msgstr ""
+
+#: ../Immunix/AppArmor.pm:1333
 msgid "Changelog Entry: "
 msgstr "Protokolleintrag: "
 
-#: ../AppArmor.pm:1311
+#: ../Immunix/AppArmor.pm:1354
 #, perl-format
 msgid "Uploaded %s to repository."
 msgstr "'%s' ins Repository hochgeladen."
 
-#: ../AppArmor.pm:1322
-msgid "Repository Error\nRegistration or Signin was unsuccessful. User login\ninformation is required to upload profiles to the\nrepository. These changes have not been sent.\n"
-msgstr "Repository-Fehler\nRegistrierung oder Anmeldung war erfolglos. Die Anmeldeinformationen\ndes Nutzers werden benötigt, um Profile in das Repository\n hochzuladen. Diese Änderungen wurden nicht gesendet.\n"
+#: ../Immunix/AppArmor.pm:1365
+msgid ""
+"Repository Error\n"
+"Registration or Signin was unsuccessful. User login\n"
+"information is required to upload profiles to the\n"
+"repository. These changes have not been sent.\n"
+msgstr ""
+"Repository-Fehler\n"
+"Registrierung oder Anmeldung war erfolglos. Die Anmeldeinformationen\n"
+"des Nutzers werden benötigt, um Profile in das Repository\n"
+" hochzuladen. Diese Änderungen wurden nicht gesendet.\n"
 
-#: ../AppArmor.pm:1379 ../AppArmor.pm:1419
+#: ../Immunix/AppArmor.pm:1422 ../Immunix/AppArmor.pm:1462
 msgid "(Y)es"
 msgstr "(J)a"
 
-#: ../AppArmor.pm:1380 ../AppArmor.pm:1420
+#: ../Immunix/AppArmor.pm:1423 ../Immunix/AppArmor.pm:1463
 msgid "(N)o"
 msgstr "(N)ein"
 
-#: ../AppArmor.pm:1383 ../AppArmor.pm:1424
+#: ../Immunix/AppArmor.pm:1426 ../Immunix/AppArmor.pm:1467
 msgid "Invalid hotkey for"
 msgstr "Ungültige Tastenkombination für"
 
-#: ../AppArmor.pm:1421
+#: ../Immunix/AppArmor.pm:1464
 msgid "(C)ancel"
 msgstr "(A)bbrechen"
 
-#: ../AppArmor.pm:1746
-msgid "Are you sure you want to abandon this set of profile changes and exit?"
-msgstr "Möchten Sie diese Gruppe von Profiländerungen wirklich verwerfen und den Vorgang beenden?"
+#: ../Immunix/AppArmor.pm:1789
+msgid ""
+"Are you sure you want to abandon this set of profile changes and exit?"
+msgstr ""
+"Möchten Sie diese Gruppe von Profiländerungen wirklich verwerfen und den "
+"Vorgang beenden?"
 
-#: ../AppArmor.pm:1748
+#: ../Immunix/AppArmor.pm:1791
 msgid "Abandoning all changes."
 msgstr "Alle Änderungen verworfen."
 
-#: ../AppArmor.pm:1854
+#: ../Immunix/AppArmor.pm:1902
 msgid "Default Hat"
 msgstr "Standard-Hat"
 
-#: ../AppArmor.pm:1856
+#: ../Immunix/AppArmor.pm:1904
 msgid "Requested Hat"
 msgstr "Angeforderter Hat"
 
-#: ../AppArmor.pm:2142
+#: ../Immunix/AppArmor.pm:2190
 msgid "Program"
 msgstr "Programm"
 
-#: ../AppArmor.pm:2147
+#: ../Immunix/AppArmor.pm:2195
 msgid "Execute"
 msgstr "Ausführen"
 
-#: ../AppArmor.pm:2148 ../AppArmor.pm:3302 ../AppArmor.pm:3335
-#: ../AppArmor.pm:3588
+#: ../Immunix/AppArmor.pm:2196 ../Immunix/AppArmor.pm:3455
+#: ../Immunix/AppArmor.pm:3488 ../Immunix/AppArmor.pm:3741
 msgid "Severity"
 msgstr "Schweregrad"
 
-#: ../AppArmor.pm:2193
+#: ../Immunix/AppArmor.pm:2241
 msgid "Enter profile name to transition to: "
 msgstr "Profilname eingeben, zu dem gewechselt werden soll: "
 
-#: ../AppArmor.pm:2201
-msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut some applications depend on the presence\nof LD_PRELOAD or LD_LIBRARY_PATH."
-msgstr "Soll AppArmor die Umgebung beim Profilwechsel\nbereinigen?\n\nDie Bereinigung wäre sicherer,\neinige Anwendungen hängen jedoch vom Vorhandensein \nder Variablen LD_PRELOAD oder LD_LIBRARY_PATH ab."
+#: ../Immunix/AppArmor.pm:2249
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"switching profiles?\n"
+"\n"
+"Sanitizing the environment is more secure,\n"
+"but some applications depend on the presence\n"
+"of LD_PRELOAD or LD_LIBRARY_PATH."
+msgstr ""
+"Soll AppArmor die Umgebung beim Profilwechsel\n"
+"bereinigen?\n"
+"\n"
+"Die Bereinigung wäre sicherer,\n"
+"einige Anwendungen hängen jedoch vom Vorhandensein \n"
+"der Variablen LD_PRELOAD oder LD_LIBRARY_PATH ab."
 
-#: ../AppArmor.pm:2203
-msgid "Should AppArmor sanitize the environment when\nswitching profiles?\n\nSanitizing the environment is more secure,\nbut this application appears to use LD_PRELOAD\nor LD_LIBRARY_PATH and clearing these could\ncause functionality problems."
-msgstr "Soll AppArmor die Umgebung beim Profilwechsel\nbereinigen?\n\nDie Bereinigung wäre sicherer,\ndiese Anwendung scheint jedoch LD_PRELOAD\noder LD_LIBRARY_PATH zu nutzen. Das Entfernen dieser Variablen kann\nFunktionsprobleme nach sich ziehen."
+#: ../Immunix/AppArmor.pm:2251
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"switching profiles?\n"
+"\n"
+"Sanitizing the environment is more secure,\n"
+"but this application appears to use LD_PRELOAD\n"
+"or LD_LIBRARY_PATH and clearing these could\n"
+"cause functionality problems."
+msgstr ""
+"Soll AppArmor die Umgebung beim Profilwechsel\n"
+"bereinigen?\n"
+"\n"
+"Die Bereinigung wäre sicherer,\n"
+"diese Anwendung scheint jedoch LD_PRELOAD\n"
+"oder LD_LIBRARY_PATH zu nutzen. Das Entfernen dieser Variablen kann\n"
+"Funktionsprobleme nach sich ziehen."
 
-#: ../AppArmor.pm:2212
+#: ../Immunix/AppArmor.pm:2260
 #, perl-format
-msgid "Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s?"
-msgstr "Das Starten von Prozessen in einem uneingeschränkten Status ist ein\nsehr riskantes Vorgehen, das ernsthafte Sicherheitslücken zur Folge haben kann.\n\nSind Sie sich absolut sicher, dass %s ohne die Schutzvorkehrungen von \nAppArmor ausgeführt werden darf?"
+msgid ""
+"Launching processes in an unconfined state is a very\n"
+"dangerous operation and can cause serious security holes.\n"
+"\n"
+"Are you absolutely certain you wish to remove all\n"
+"AppArmor protection when executing %s?"
+msgstr ""
+"Das Starten von Prozessen in einem uneingeschränkten Status ist ein\n"
+"sehr riskantes Vorgehen, das ernsthafte Sicherheitslücken zur Folge haben "
+"kann.\n"
+"\n"
+"Sind Sie sich absolut sicher, dass %s ohne die Schutzvorkehrungen von \n"
+"AppArmor ausgeführt werden darf?"
 
-#: ../AppArmor.pm:2214
-msgid "Should AppArmor sanitize the environment when\nrunning this program unconfined?\n\nNot sanitizing the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."
-msgstr "Soll AppArmor die Umgebung bereinigen, wenn\ndieses Programm uneingeschränkt ausgeführt wird?\n\nOhne Bereinigung stellen uneingeschränkt ausgeführte\nProgramme ernsthafte Sicherheitslücken dar,\ndie möglichst vermieden werden sollten."
+#: ../Immunix/AppArmor.pm:2262
+msgid ""
+"Should AppArmor sanitize the environment when\n"
+"running this program unconfined?\n"
+"\n"
+"Not sanitizing the environment when unconfining\n"
+"a program opens up significant security holes\n"
+"and should be avoided if at all possible."
+msgstr ""
+"Soll AppArmor die Umgebung bereinigen, wenn\n"
+"dieses Programm uneingeschränkt ausgeführt wird?\n"
+"\n"
+"Ohne Bereinigung stellen uneingeschränkt ausgeführte\n"
+"Programme ernsthafte Sicherheitslücken dar,\n"
+"die möglichst vermieden werden sollten."
 
-#: ../AppArmor.pm:2303
+#: ../Immunix/AppArmor.pm:2352
 #, perl-format
-msgid "A profile for %s does not exist create one?"
-msgstr "Ein Profil für %s existiert nicht. Neu erstellen?"
+msgid "A profile for %s does not exist. Create one?"
+msgstr ""
 
-#: ../AppArmor.pm:2330
+#: ../Immunix/AppArmor.pm:2379
 #, perl-format
-msgid "A local profile for %s does not exist create one?"
-msgstr "Ein lokales Profil für %s existiert nicht. Neu erstellen?"
+msgid "A local profile for %s does not exist. Create one?"
+msgstr ""
 
-#: ../AppArmor.pm:2502 ../AppArmor.pm:6532 ../AppArmor.pm:6537
+#: ../Immunix/AppArmor.pm:2584 ../Immunix/AppArmor.pm:6733
+#: ../Immunix/AppArmor.pm:6738
 #, perl-format
 msgid "Log contains unknown mode %s."
 msgstr "Protokoll enthält unbekannten Modus %s."
 
-#: ../AppArmor.pm:2915
-msgid "An updated version of this profile has been found in the profile repository.  Would you like to use it?"
-msgstr "Es wurde eine aktualisierte Version dieses Profils im Profil-Repository gefunden.  Möchten Sie diese verwenden?"
+#: ../Immunix/AppArmor.pm:3068
+msgid ""
+"An updated version of this profile has been found in the profile repository. "
+" Would you like to use it?"
+msgstr ""
+"Es wurde eine aktualisierte Version dieses Profils im Profil-Repository "
+"gefunden.  Möchten Sie diese verwenden?"
 
-#: ../AppArmor.pm:2945
+#: ../Immunix/AppArmor.pm:3098
 #, perl-format
 msgid "Updated profile %s to revision %s."
 msgstr "Aktualisiertes Profil '%s' für Version '%s'."
 
-#: ../AppArmor.pm:2952
+#: ../Immunix/AppArmor.pm:3105
 msgid "Error parsing repository profile."
 msgstr "Fehler beim Analysieren des Repository-Profils."
 
-#: ../AppArmor.pm:2988
+#: ../Immunix/AppArmor.pm:3141
 msgid "Create New User?"
 msgstr "Neuen Benutzer erstellen?"
 
-#: ../AppArmor.pm:2989
+#: ../Immunix/AppArmor.pm:3142
 msgid "Username: "
 msgstr "Benutzername: "
 
-#: ../AppArmor.pm:2990
+#: ../Immunix/AppArmor.pm:3143
 msgid "Password: "
 msgstr "Passwort: "
 
-#: ../AppArmor.pm:2991
+#: ../Immunix/AppArmor.pm:3144
 msgid "Email Addr: "
 msgstr "E-Mail-Adresse: "
 
-#: ../AppArmor.pm:2993
+#: ../Immunix/AppArmor.pm:3146
 msgid "Save Configuration? "
 msgstr "Konfiguration speichern? "
 
-#: ../AppArmor.pm:3002
+#: ../Immunix/AppArmor.pm:3155
 msgid "The Profile Repository server returned the following error:"
 msgstr "Der Profil-Repository-Server hat folgenden Fehler zurückgegeben:"
 
-#: ../AppArmor.pm:3004
-msgid "Please re-enter registration information or contact the administrator."
-msgstr "Geben Sie die Registrierungsinformation erneut ein oder kontaktieren Sie den Administrator."
+#: ../Immunix/AppArmor.pm:3157
+msgid ""
+"Please re-enter registration information or contact the administrator."
+msgstr ""
+"Geben Sie die Registrierungsinformation erneut ein oder kontaktieren Sie den "
+"Administrator."
 
-#: ../AppArmor.pm:3005
+#: ../Immunix/AppArmor.pm:3158
 msgid "Login Error\n"
 msgstr "Anmeldefehler\n"
 
-#: ../AppArmor.pm:3012
-msgid "Login failure\n Please check username and password and try again."
-msgstr "Fehler bei der Anmeldung\nÜberprüfen Sie Benutzernamen und Passwort und versuchen Sie es erneut."
+#: ../Immunix/AppArmor.pm:3165
+msgid ""
+"Login failure\n"
+" Please check username and password and try again."
+msgstr ""
+"Fehler bei der Anmeldung\n"
+"Überprüfen Sie Benutzernamen und Passwort und versuchen Sie es erneut."
 
-#: ../AppArmor.pm:3034
-msgid "Would you like to enable access to the\nprofile repository?"
-msgstr "Möchten Sie den Zugriff auf das\nProfil-Repository aktivieren?"
+#: ../Immunix/AppArmor.pm:3187
+msgid ""
+"Would you like to enable access to the\n"
+"profile repository?"
+msgstr ""
+"Möchten Sie den Zugriff auf das\n"
+"Profil-Repository aktivieren?"
 
-#: ../AppArmor.pm:3065
-msgid "Would you like to upload newly created and changed profiles to\n      the profile repository?"
-msgstr "Möchten Sie neu erstellte und geänderte Profile an\n      das Profil-Repository hochladen?"
+#: ../Immunix/AppArmor.pm:3218
+msgid ""
+"Would you like to upload newly created and changed profiles to\n"
+"      the profile repository?"
+msgstr ""
+"Möchten Sie neu erstellte und geänderte Profile an\n"
+"      das Profil-Repository hochladen?"
 
-#: ../AppArmor.pm:3184
+#: ../Immunix/AppArmor.pm:3337
 #, perl-format
-msgid "WARNING: Profile update check failed\nError Detail:\n%s"
-msgstr "ACHTUNG: Fehler bei Profil-Update-Prüfung\nFehlerdetails:\n%s"
+msgid ""
+"WARNING: Profile update check failed\n"
+"Error Detail:\n"
+"%s"
+msgstr ""
+"ACHTUNG: Fehler bei Profil-Update-Prüfung\n"
+"Fehlerdetails:\n"
+"%s"
 
-#: ../AppArmor.pm:3198
+#: ../Immunix/AppArmor.pm:3351
 msgid "Change mode modifiers"
 msgstr "Modus-Modifizierer ändern"
 
-#: ../AppArmor.pm:3242
+#: ../Immunix/AppArmor.pm:3395
 msgid "Complain-mode changes:"
 msgstr "Änderungen im Meldungsmodus:"
 
-#: ../AppArmor.pm:3244
+#: ../Immunix/AppArmor.pm:3397
 msgid "Enforce-mode changes:"
 msgstr "Änderungen im Erzwingen-Modus:"
 
-#: ../AppArmor.pm:3250
+#: ../Immunix/AppArmor.pm:3403
 #, perl-format
 msgid "Invalid mode found: %s"
 msgstr "Ungültiger Modus gefunden: %s"
 
-#: ../AppArmor.pm:3301 ../AppArmor.pm:3334
-#, fuzzy
+#: ../Immunix/AppArmor.pm:3454 ../Immunix/AppArmor.pm:3487
 msgid "Capability"
-msgstr "Funktion"
+msgstr ""
 
-#: ../AppArmor.pm:3354 ../AppArmor.pm:3628 ../AppArmor.pm:3875
+#: ../Immunix/AppArmor.pm:3507 ../Immunix/AppArmor.pm:3781
+#: ../Immunix/AppArmor.pm:4028
 #, perl-format
 msgid "Adding #include <%s> to profile."
 msgstr "#include <%s> zum Profil hinzugefügt."
 
-#: ../AppArmor.pm:3357 ../AppArmor.pm:3629 ../AppArmor.pm:3669
-#: ../AppArmor.pm:3879
+#: ../Immunix/AppArmor.pm:3510 ../Immunix/AppArmor.pm:3782
+#: ../Immunix/AppArmor.pm:3822 ../Immunix/AppArmor.pm:4032
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
 msgstr "%s vorherige übereinstimmende Profileinträge wurden gelöscht."
 
-#: ../AppArmor.pm:3368
-#, fuzzy, perl-format
+#: ../Immunix/AppArmor.pm:3521
+#, perl-format
 msgid "Adding capability %s to profile."
-msgstr "Funktion %s wird dem Profil hinzugefügt."
+msgstr ""
 
-#: ../AppArmor.pm:3373
-#, fuzzy, perl-format
+#: ../Immunix/AppArmor.pm:3526
+#, perl-format
 msgid "Denying capability %s to profile."
-msgstr "Funktion %s wird dem Profil verweigert."
+msgstr ""
 
-#: ../AppArmor.pm:3534
+#: ../Immunix/AppArmor.pm:3687
 msgid "Path"
 msgstr "Pfad"
 
-#: ../AppArmor.pm:3545 ../AppArmor.pm:3577
+#: ../Immunix/AppArmor.pm:3698 ../Immunix/AppArmor.pm:3730
 msgid "(owner permissions off)"
 msgstr "(Eigentümerberechtigungen deaktiviert)"
 
-#: ../AppArmor.pm:3551
+#: ../Immunix/AppArmor.pm:3704
 msgid "(force new perms to owner)"
 msgstr "(neue Berechtigungen für Eigentümer erzwingen)"
 
-#: ../AppArmor.pm:3554
+#: ../Immunix/AppArmor.pm:3707
 msgid "(force all rule perms to owner)"
 msgstr "(alle Regelberechtigungen für Eigentümer erzwingen)"
 
-#: ../AppArmor.pm:3566
+#: ../Immunix/AppArmor.pm:3719
 msgid "Old Mode"
 msgstr "Alter Modus"
 
-#: ../AppArmor.pm:3567
+#: ../Immunix/AppArmor.pm:3720
 msgid "New Mode"
 msgstr "Neuer Modus"
 
-#: ../AppArmor.pm:3583
+#: ../Immunix/AppArmor.pm:3736
 msgid "(force perms to owner)"
 msgstr "(Berechtigungen für Eigentümer erzwingen)"
 
-#: ../AppArmor.pm:3586
+#: ../Immunix/AppArmor.pm:3739
 msgid "Mode"
 msgstr "Modus"
 
-#: ../AppArmor.pm:3668
+#: ../Immunix/AppArmor.pm:3821
 #, perl-format
 msgid "Adding %s %s to profile."
 msgstr "%s %s wird zum Profil hinzugefügt."
 
-#: ../AppArmor.pm:3684
+#: ../Immunix/AppArmor.pm:3837
 msgid "Enter new path: "
 msgstr "Neuen Pfad eingeben: "
 
-#: ../AppArmor.pm:3687
+#: ../Immunix/AppArmor.pm:3840
 msgid "The specified path does not match this log entry:"
 msgstr "Der angegebene Pfad stimmt nicht mit dem Protokolleintrag überein:"
 
-#: ../AppArmor.pm:3688
+#: ../Immunix/AppArmor.pm:3841
 msgid "Log Entry"
 msgstr "Protokolleintrag"
 
-#: ../AppArmor.pm:3689
+#: ../Immunix/AppArmor.pm:3842
 msgid "Entered Path"
 msgstr "Eingegebener Pfad"
 
-#: ../AppArmor.pm:3690
+#: ../Immunix/AppArmor.pm:3843
 msgid "Do you really want to use this path?"
 msgstr "Möchten Sie diesen Pfad wirklich verwenden?"
 
-#: ../AppArmor.pm:3802 ../AppArmor.pm:3854
+#: ../Immunix/AppArmor.pm:3955 ../Immunix/AppArmor.pm:4007
 msgid "Network Family"
 msgstr "Netzwerkfamilie"
 
-#: ../AppArmor.pm:3805 ../AppArmor.pm:3857
+#: ../Immunix/AppArmor.pm:3958 ../Immunix/AppArmor.pm:4010
 msgid "Socket Type"
 msgstr "Socket-Typ"
 
-#: ../AppArmor.pm:3905
+#: ../Immunix/AppArmor.pm:4058
 #, perl-format
 msgid "Adding network access %s %s to profile."
 msgstr "Netzwerkzugriff '%s' '%s' wird zum Profil hinzugefügt."
 
-#: ../AppArmor.pm:3924
+#: ../Immunix/AppArmor.pm:4077
 #, perl-format
 msgid "Denying network access %s %s to profile."
 msgstr "Netzwerkzugriff '%s' '%s' wird dem Profil verweigert."
 
-#: ../AppArmor.pm:4132
+#: ../Immunix/AppArmor.pm:4285
 #, perl-format
 msgid "Reading log entries from %s."
 msgstr "Protokolleinträge von %s werden eingelesen."
 
-#: ../AppArmor.pm:4133
+#: ../Immunix/AppArmor.pm:4286
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
 msgstr "AppArmor-Profile in %s werden aktualisiert."
 
-#: ../AppArmor.pm:4137
+#: ../Immunix/AppArmor.pm:4290
 msgid "unknown\n"
 msgstr "unbekannt\n"
 
-#: ../AppArmor.pm:4170
-msgid "The profile analyzer has completed processing the log files.\n\nAll updated profiles will be reloaded"
-msgstr "Die Verarbeitung der Protokolldateien durch die Profilanalyse ist abgeschlossen.\n\n Alle aktualisierten Profile werden neu geladen"
+#: ../Immunix/AppArmor.pm:4324
+msgid ""
+"The profile analyzer has completed processing the log files.\n"
+"\n"
+"All updated profiles will be reloaded"
+msgstr ""
+"Die Verarbeitung der Protokolldateien durch die Profilanalyse ist "
+"abgeschlossen.\n"
+"\n"
+" Alle aktualisierten Profile werden neu geladen"
 
-#: ../AppArmor.pm:4176
+#: ../Immunix/AppArmor.pm:4330
 msgid "No unhandled AppArmor events were found in the system log."
-msgstr "Im Systemprotokoll wurden keine unverarbeiteten AppArmor-Ereignisse gefunden."
+msgstr ""
+"Im Systemprotokoll wurden keine unverarbeiteten AppArmor-Ereignisse gefunden."
 
-#: ../AppArmor.pm:4237
-msgid "Select which profile changes you would like to save to the\nlocal profile set"
-msgstr "Wählen Sie die Profiländerungen aus, die Sie im \nlokalen Profilsatz speichern möchten."
+#: ../Immunix/AppArmor.pm:4391
+msgid ""
+"Select which profile changes you would like to save to the\n"
+"local profile set"
+msgstr ""
+"Wählen Sie die Profiländerungen aus, die Sie im \n"
+"lokalen Profilsatz speichern möchten."
 
-#: ../AppArmor.pm:4238
+#: ../Immunix/AppArmor.pm:4392
 msgid "Local profile changes"
 msgstr "Lokale Profiländerungen"
 
-#: ../AppArmor.pm:4265
-msgid "The following local profiles were changed.  Would you like to save them?"
-msgstr "Die folgenden lokalen Profile wurden geändert. Möchten Sie sie speichern?"
+#: ../Immunix/AppArmor.pm:4419
+msgid ""
+"The following local profiles were changed.  Would you like to save them?"
+msgstr ""
+"Die folgenden lokalen Profile wurden geändert. Möchten Sie sie speichern?"
 
-#: ../AppArmor.pm:4362
+#: ../Immunix/AppArmor.pm:4516
 msgid "Profile Changes"
 msgstr "Profiländerungen"
 
-#: ../AppArmor.pm:4974 ../AppArmor.pm:4990 ../AppArmor.pm:5001
-#: ../AppArmor.pm:5009 ../AppArmor.pm:5030 ../AppArmor.pm:5050
-#: ../AppArmor.pm:5059 ../AppArmor.pm:5091 ../AppArmor.pm:5153
-#: ../AppArmor.pm:5204
+#: ../Immunix/AppArmor.pm:5139 ../Immunix/AppArmor.pm:5155
+#: ../Immunix/AppArmor.pm:5166 ../Immunix/AppArmor.pm:5174
+#: ../Immunix/AppArmor.pm:5195 ../Immunix/AppArmor.pm:5215
+#: ../Immunix/AppArmor.pm:5224 ../Immunix/AppArmor.pm:5256
+#: ../Immunix/AppArmor.pm:5334 ../Immunix/AppArmor.pm:5382
 #, perl-format
 msgid "%s contains syntax errors."
 msgstr "%s enthält Syntax-Fehler."
 
-#: ../AppArmor.pm:5110
+#: ../Immunix/AppArmor.pm:5275
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
 msgstr "Profil %s enthält ungültigen regexp %s."
 
-#: ../AppArmor.pm:5115
+#: ../Immunix/AppArmor.pm:5280
 #, perl-format
 msgid "Profile %s contains invalid mode %s."
 msgstr "Profil '%s' enthält ungültigen Modus '%s'."
 
-#: ../AppArmor.pm:5250
+#: ../Immunix/AppArmor.pm:5430
 #, perl-format
 msgid "%s contains syntax errors. Line [%s]"
 msgstr "'%s' enthält Syntaxfehler. Zeile ['%s']"
 
-#: ../AppArmor.pm:5839
+#: ../Immunix/AppArmor.pm:6022
 #, perl-format
 msgid "Writing updated profile for %s."
 msgstr "Aktualisiertes Profil für %s wird geschrieben."
 
-#: ../AppArmor.pm:6344
+#: ../Immunix/AppArmor.pm:6528
 msgid "Unknown command"
 msgstr "Unbekannter Befehl"
 
-#: ../AppArmor.pm:6352
+#: ../Immunix/AppArmor.pm:6536
 msgid "Invalid hotkey in"
 msgstr "Ungültige Tastenkombination in"
 
-#: ../AppArmor.pm:6362
+#: ../Immunix/AppArmor.pm:6546
 msgid "Duplicate hotkey for"
 msgstr "Doppelte Tastenkombination für"
 
-#: ../AppArmor.pm:6383
+#: ../Immunix/AppArmor.pm:6567
 msgid "Invalid hotkey in default item"
 msgstr "Ungültige Tastenkombination in Standardelement"
 
-#: ../AppArmor.pm:6392
-#, fuzzy
+#: ../Immunix/AppArmor.pm:6576
 msgid "Invalid default"
-msgstr "Ungültiger Standard"
+msgstr ""
 
-#: ../Reports.pm:443 ../Reports.pm:532 ../Reports.pm:1480
-#, perl-format
-msgid "DBI Execution failed: %s."
-msgstr "Fehler beim Ausführen von DBI: '%s'."
+#~ msgid "A profile for %s does not exist create one?"
+#~ msgstr "Ein Profil für %s existiert nicht. Neu erstellen?"
 
-#: ../Reports.pm:556
-#, perl-format
-msgid "Couldn't open file: %s."
-msgstr "Datei konnte nicht geöffnet werden: '%s'."
+#~ msgid "A local profile for %s does not exist create one?"
+#~ msgstr "Ein lokales Profil für %s existiert nicht. Neu erstellen?"
 
-#: ../Reports.pm:560
-msgid "No type value passed.  Unable to determine page count."
-msgstr "Kein Wert für den Typ übergeben.  Seitenzahl konnte nicht ermittelt werden."
+#~ msgid "DBI Execution failed: %s."
+#~ msgstr "Fehler beim Ausführen von DBI: '%s'."
 
-#: ../Reports.pm:626
-#, perl-format
-msgid "Failed copying %s."
-msgstr "Fehler beim Kopieren von '%s'."
+#~ msgid "Couldn't open file: %s."
+#~ msgstr "Datei konnte nicht geöffnet werden: '%s'."
 
-#: ../Reports.pm:750
-#, perl-format
-msgid "Export Log Error: Couldn't open %s"
-msgstr "Fehler in Exportprotokoll: '%s' konnte nicht geöffnet werden"
+#~ msgid "No type value passed.  Unable to determine page count."
+#~ msgstr ""
+#~ "Kein Wert für den Typ übergeben.  Seitenzahl konnte nicht ermittelt werden."
 
-#: ../Reports.pm:772
-msgid "Fatal error.  No report name given. Exiting."
-msgstr "Schwerwiegender Fehler.  Kein Berichtsname angegeben. Der Vorgang wird beendet."
+#~ msgid "Failed copying %s."
+#~ msgstr "Fehler beim Kopieren von '%s'."
 
-#: ../Reports.pm:781
-#, perl-format
-msgid "Unable to get configuration info for %s.\n                Unable to find %s."
-msgstr "Es konnten keine Konfigurationsinformationen für '%s' abgerufen werden.\n                '%s' konnte nicht gefunden werden."
+#~ msgid "Export Log Error: Couldn't open %s"
+#~ msgstr "Fehler in Exportprotokoll: '%s' konnte nicht geöffnet werden"
 
-#: ../Reports.pm:828
-#, perl-format
-msgid "Failed to parse: %s."
-msgstr "Analyse nicht möglich: '%s'."
+#~ msgid "Fatal error.  No report name given. Exiting."
+#~ msgstr ""
+#~ "Schwerwiegender Fehler.  Kein Berichtsname angegeben. Der Vorgang wird "
+#~ "beendet."
 
-#: ../Reports.pm:837
-#, perl-format
-msgid "Fatal Error.  Couldn't open %s."
-msgstr "Schwerwiegender Fehler: ' %s' konnte nicht geöffnet werden."
+#~ msgid ""
+#~ "Unable to get configuration info for %s.\n"
+#~ "                Unable to find %s."
+#~ msgstr ""
+#~ "Es konnten keine Konfigurationsinformationen für '%s' abgerufen werden.\n"
+#~ "                '%s' konnte nicht gefunden werden."
 
-#: ../Reports.pm:885
-#, perl-format
-msgid "Fatal Error.  Can't run %s.  Exiting."
-msgstr "Schwerwiegender Fehler.  '%s' kann nicht ausgeführt werden.  Der Vorgang wird beendet."
+#~ msgid "Failed to parse: %s."
+#~ msgstr "Analyse nicht möglich: '%s'."
 
-#: ../Reports.pm:925
-#, perl-format
-msgid "Fatal Error.  No directory, %s, found.  Exiting."
-msgstr "Schwerwiegender Fehler.  Kein Verzeichnis, '%s', gefunden.  Der Vorgang wird beendet."
+#~ msgid "Fatal Error.  Couldn't open %s."
+#~ msgstr "Schwerwiegender Fehler: ' %s' konnte nicht geöffnet werden."
 
-#: ../Reports.pm:943
-#, perl-format
-msgid "Fatal Error.  Couldn't open %s.  Exiting"
-msgstr "Schwerwiegender Fehler.  '%s' konnte nicht geöffnet werden.  Der Vorgang wird beendet."
+#~ msgid "Fatal Error.  Can't run %s.  Exiting."
+#~ msgstr ""
+#~ "Schwerwiegender Fehler.  '%s' kann nicht ausgeführt werden.  Der Vorgang "
+#~ "wird beendet."
 
-#: ../Reports.pm:1592
-#, perl-format
-msgid "Fatal Error.  getArchReport() couldn't open %s"
-msgstr "Schwerwiegender Fehler.  getArchReport() konnte '%s' nicht öffnen"
+#~ msgid "Fatal Error.  No directory, %s, found.  Exiting."
+#~ msgstr ""
+#~ "Schwerwiegender Fehler.  Kein Verzeichnis, '%s', gefunden.  Der Vorgang wird "
+#~ "beendet."
 
+#~ msgid "Fatal Error.  Couldn't open %s.  Exiting"
+#~ msgstr ""
+#~ "Schwerwiegender Fehler.  '%s' konnte nicht geöffnet werden.  Der Vorgang "
+#~ "wird beendet."
+
+#~ msgid "Fatal Error.  getArchReport() couldn't open %s"
+#~ msgstr "Schwerwiegender Fehler.  getArchReport() konnte '%s' nicht öffnen"
