@@ -7,14 +7,14 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2013-11-13 16:44-0800\n"
-"PO-Revision-Date: 2013-11-15 02:37+0000\n"
+"PO-Revision-Date: 2013-12-06 18:42+0000\n"
 "Last-Translator: Christian Boltz <Unknown>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-11-15 05:16+0000\n"
-"X-Generator: Launchpad (build 16831)\n"
+"X-Launchpad-Export-Date: 2013-12-07 05:14+0000\n"
+"X-Generator: Launchpad (build 16869)\n"
 "Language: de\n"
 
 #: ../aa-genprof:72 ../aa-unconfined:54
@@ -27,6 +27,7 @@ msgstr ""
 #: ../aa-genprof:86
 msgid "Please enter the program to profile: "
 msgstr ""
+"Bitte geben Sie das Programm an, für das ein Profil erstellt werden soll: "
 
 #: ../aa-genprof:105
 #, perl-format
@@ -230,27 +231,30 @@ msgstr "eingeschränkt durch"
 #: ../aa-disable:69
 msgid "Please enter the program whose profile should be disabled: "
 msgstr ""
+"Bitte geben Sie das Programm an, dessen Profil deaktiviert werden soll: "
 
 #: ../aa-disable:113
 #, perl-format
 msgid "Could not find basename for %s."
-msgstr ""
+msgstr "Basisname von %s nicht gefunden."
 
 #: ../aa-disable:117
 #, perl-format
 msgid "Disabling %s."
-msgstr ""
+msgstr "Deaktiviere %s."
 
 #: ../aa-disable:123
 #, perl-format
 msgid "Could not create %s symlink."
-msgstr ""
+msgstr "Symlink %s konnte nicht erstellt werden."
 
 #: ../aa-disable:149
 #, perl-format
 msgid ""
 "usage: %s [ -d /path/to/profiles ] [ program to have profile disabled ]"
 msgstr ""
+"Syntax: %s [ -d /pfad/zu/den/profilen ] [ Programm, dessen Profil "
+"deaktiviert werden soll ]"
 
 #: ../Immunix/AppArmor.pm:619 ../Immunix/AppArmor.pm:632
 #, perl-format
@@ -359,7 +363,7 @@ msgstr "Änderungen an das Repository hochgeladen."
 #: ../Immunix/AppArmor.pm:1306 ../Immunix/AppArmor.pm:3185
 #: ../Immunix/AppArmor.pm:3215
 msgid "Repository"
-msgstr ""
+msgstr "Repository"
 
 #: ../Immunix/AppArmor.pm:1333
 msgid "Changelog Entry: "
@@ -503,12 +507,12 @@ msgstr ""
 #: ../Immunix/AppArmor.pm:2352
 #, perl-format
 msgid "A profile for %s does not exist. Create one?"
-msgstr ""
+msgstr "Ein Profil für %s existiert nicht. Möchten Sie eins erstellen?"
 
 #: ../Immunix/AppArmor.pm:2379
 #, perl-format
 msgid "A local profile for %s does not exist. Create one?"
-msgstr ""
+msgstr "Für %s existiert kein lokales Profil. Möchten Sie eins erstellen?"
 
 #: ../Immunix/AppArmor.pm:2584 ../Immunix/AppArmor.pm:6733
 #: ../Immunix/AppArmor.pm:6738
@@ -622,7 +626,7 @@ msgstr "Ungültiger Modus gefunden: %s"
 
 #: ../Immunix/AppArmor.pm:3454 ../Immunix/AppArmor.pm:3487
 msgid "Capability"
-msgstr ""
+msgstr "Capability"
 
 #: ../Immunix/AppArmor.pm:3507 ../Immunix/AppArmor.pm:3781
 #: ../Immunix/AppArmor.pm:4028
@@ -639,12 +643,12 @@ msgstr "%s vorherige übereinstimmende Profileinträge wurden gelöscht."
 #: ../Immunix/AppArmor.pm:3521
 #, perl-format
 msgid "Adding capability %s to profile."
-msgstr ""
+msgstr "Capability %s zum Profil hinzugefügt."
 
 #: ../Immunix/AppArmor.pm:3526
 #, perl-format
 msgid "Denying capability %s to profile."
-msgstr ""
+msgstr "Capability %s wird dem Profil verweigert."
 
 #: ../Immunix/AppArmor.pm:3687
 msgid "Path"
@@ -820,62 +824,4 @@ msgstr "Ungültige Tastenkombination in Standardelement"
 
 #: ../Immunix/AppArmor.pm:6576
 msgid "Invalid default"
-msgstr ""
-
-#~ msgid "A profile for %s does not exist create one?"
-#~ msgstr "Ein Profil für %s existiert nicht. Neu erstellen?"
-
-#~ msgid "A local profile for %s does not exist create one?"
-#~ msgstr "Ein lokales Profil für %s existiert nicht. Neu erstellen?"
-
-#~ msgid "DBI Execution failed: %s."
-#~ msgstr "Fehler beim Ausführen von DBI: '%s'."
-
-#~ msgid "Couldn't open file: %s."
-#~ msgstr "Datei konnte nicht geöffnet werden: '%s'."
-
-#~ msgid "No type value passed.  Unable to determine page count."
-#~ msgstr ""
-#~ "Kein Wert für den Typ übergeben.  Seitenzahl konnte nicht ermittelt werden."
-
-#~ msgid "Failed copying %s."
-#~ msgstr "Fehler beim Kopieren von '%s'."
-
-#~ msgid "Export Log Error: Couldn't open %s"
-#~ msgstr "Fehler in Exportprotokoll: '%s' konnte nicht geöffnet werden"
-
-#~ msgid "Fatal error.  No report name given. Exiting."
-#~ msgstr ""
-#~ "Schwerwiegender Fehler.  Kein Berichtsname angegeben. Der Vorgang wird "
-#~ "beendet."
-
-#~ msgid ""
-#~ "Unable to get configuration info for %s.\n"
-#~ "                Unable to find %s."
-#~ msgstr ""
-#~ "Es konnten keine Konfigurationsinformationen für '%s' abgerufen werden.\n"
-#~ "                '%s' konnte nicht gefunden werden."
-
-#~ msgid "Failed to parse: %s."
-#~ msgstr "Analyse nicht möglich: '%s'."
-
-#~ msgid "Fatal Error.  Couldn't open %s."
-#~ msgstr "Schwerwiegender Fehler: ' %s' konnte nicht geöffnet werden."
-
-#~ msgid "Fatal Error.  Can't run %s.  Exiting."
-#~ msgstr ""
-#~ "Schwerwiegender Fehler.  '%s' kann nicht ausgeführt werden.  Der Vorgang "
-#~ "wird beendet."
-
-#~ msgid "Fatal Error.  No directory, %s, found.  Exiting."
-#~ msgstr ""
-#~ "Schwerwiegender Fehler.  Kein Verzeichnis, '%s', gefunden.  Der Vorgang wird "
-#~ "beendet."
-
-#~ msgid "Fatal Error.  Couldn't open %s.  Exiting"
-#~ msgstr ""
-#~ "Schwerwiegender Fehler.  '%s' konnte nicht geöffnet werden.  Der Vorgang "
-#~ "wird beendet."
-
-#~ msgid "Fatal Error.  getArchReport() couldn't open %s"
-#~ msgstr "Schwerwiegender Fehler.  getArchReport() konnte '%s' nicht öffnen"
+msgstr "Ungültiger Standardwert."

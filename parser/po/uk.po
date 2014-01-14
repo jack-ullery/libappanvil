@@ -6,25 +6,26 @@
 #
 #
 # Ivan Petrouchtchak <ivanpetrouchtchak@yahoo.com>, 2006, 2007.
-# Yuri Chornoivan <yurchor@ukr.net>, 2008.
+# Yuri Chornoivan <yurchor@ukr.net>, 2008, 2013.
 # Ivan Petrouchtchak <fr.ivan@ukrainian-orthodox.org>, 2008.
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-parser.uk\n"
 "Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
 "POT-Creation-Date: 2013-11-14 10:18-0800\n"
-"PO-Revision-Date: 2013-11-15 04:57+0000\n"
-"Last-Translator: Yuri Chornoivan <yurchor@gmail.com>\n"
+"PO-Revision-Date: 2013-11-15 12:27+0000\n"
+"Last-Translator: yurchor <Unknown>\n"
 "Language-Team: Ukrainian <translation@linux.org.ua>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-11-15 05:16+0000\n"
+"X-Launchpad-Export-Date: 2013-11-16 05:14+0000\n"
 "X-Generator: Launchpad (build 16831)\n"
+"Language: uk\n"
 
 #: ../parser_include.c:113
 msgid "Error: Out of memory.\n"
-msgstr "Помилка: Не достатньо пам'яті.\n"
+msgstr "Помилка: недостатньо пам'яті.\n"
 
 #: ../parser_include.c:123
 #, c-format
@@ -141,11 +142,11 @@ msgstr ""
 #: ../parser_interface.c:656 ../parser_interface.c:658
 #, c-format
 msgid "profile %s network rules not enforced\n"
-msgstr ""
+msgstr "правила щодо мережі профілю %s не буде застосовано примусово\n"
 
 #: ../parser_interface.c:666
 msgid "Unknown pattern type\n"
-msgstr ""
+msgstr "Невідомий тип взірця\n"
 
 #: ../parser_interface.c:750 ../parser_interface.c:902
 #: ../parser_interface.c:743 ../parser_interface.c:894
@@ -181,32 +182,32 @@ msgstr "%s: Не вдається записати повний запис пр�
 #: ../parser_interface.c:839 ../parser_interface.c:831
 #, c-format
 msgid "%s: Unable to write entire profile entry to cache\n"
-msgstr ""
+msgstr "%s: не вдалося записати увесь запис профілю до кешу\n"
 
 #: parser_lex.l:100 parser_lex.l:163
 #, c-format
 msgid "Could not open '%s'"
-msgstr ""
+msgstr "Не вдалося відкрити «%s»"
 
 #: parser_lex.l:104 parser_lex.l:167
 #, c-format
 msgid "fstat failed for '%s'"
-msgstr ""
+msgstr "помилка fstat під час обробки «%s»"
 
 #: parser_lex.l:121
 #, c-format
 msgid "opendir failed '%s'"
-msgstr ""
+msgstr "помилка opendir під час оброби «%s»"
 
 #: parser_lex.l:152
 #, c-format
 msgid "stat failed for '%s'"
-msgstr ""
+msgstr "помилка stat під час обробки «%s»"
 
 #: parser_lex.l:155 parser_lex.l:133
 #, c-format
 msgid "Could not open '%s' in '%s'"
-msgstr ""
+msgstr "Не вдалося відкрити «%s» у «%s»"
 
 #: parser_lex.l:284 parser_lex.l:322 parser_lex.l:362 parser_lex.l:399
 #: parser_lex.l:469 parser_lex.l:655 parser_lex.l:586
@@ -216,7 +217,7 @@ msgstr "Знайдено несподіваний символ: \"%s\""
 
 #: parser_lex.l:386 parser_lex.l:418
 msgid "Variable declarations do not accept trailing commas"
-msgstr ""
+msgstr "У оголошеннях змінних не може бути завершальних ком"
 
 #: parser_lex.l:420
 #, c-format
@@ -226,7 +227,7 @@ msgstr "(network_mode) Знайдено неочікуваний символ: '
 #: ../parser_main.c:333 ../parser_common.c:61
 #, c-format
 msgid "Warning from %s (%s%sline %d): %s"
-msgstr ""
+msgstr "Попередження від %s (%s%sрядок %d): %s"
 
 #: ../parser_main.c:531
 #, c-format
@@ -288,12 +289,12 @@ msgstr "Помилка виділення пам'яті."
 #: ../parser_main.c:740 ../parser_main.c:872
 #, c-format
 msgid "Cached load succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Успішне завантаження кешу для «%s».\n"
 
 #: ../parser_main.c:744 ../parser_main.c:876
 #, c-format
 msgid "Cached reload succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Успішне перезавантаження кешу для «%s».\n"
 
 #: ../parser_main.c:910 ../parser_main.c:1058
 #, c-format
@@ -371,37 +372,41 @@ msgstr "Не вдалося об'єднати записи. Не вистача�
 #, c-format
 msgid "profile %s: has merged rule %s with conflicting x modifiers\n"
 msgstr ""
+"профіль %s: містить об’єднане правило %s з конфліктом x модифікаторів\n"
 
 #: parser_yacc.y:236 parser_yacc.y:277
 msgid "Profile attachment must begin with a '/'."
-msgstr ""
+msgstr "Долучення до профілю має починатися з «/»."
 
 #: parser_yacc.y:260 parser_yacc.y:302
 msgid ""
 "Profile names must begin with a '/', namespace or keyword 'profile' or 'hat'."
 msgstr ""
+"Назви профілів мають починатися з «/», назви простору назв або ключового "
+"слова «profile» чи «hat»."
 
 #: parser_yacc.y:296 parser_yacc.y:338
 #, c-format
 msgid "Failed to create alias %s -> %s\n"
-msgstr "Неможливо створити псевдонім %s -> %s\n"
+msgstr "Не вдалося створити псевдонім %s -> %s\n"
 
 #: parser_yacc.y:417 parser_yacc.y:460
 msgid "Profile flag chroot_relative conflicts with namespace_relative"
-msgstr ""
+msgstr "Прапорець профілю chroot_relative конфліктує з namespace_relative"
 
 #: parser_yacc.y:421 parser_yacc.y:464
 msgid "Profile flag mediate_deleted conflicts with delegate_deleted"
-msgstr ""
+msgstr "Прапорець профілю mediate_deleted конфліктує з delegate_deleted"
 
 #: parser_yacc.y:424 parser_yacc.y:467
 msgid ""
 "Profile flag attach_disconnected conflicts with no_attach_disconnected"
 msgstr ""
+"Прапорець профілю attach_disconnected конфліктує з no_attach_disconnected"
 
 #: parser_yacc.y:427 parser_yacc.y:470
 msgid "Profile flag chroot_attach conflicts with chroot_no_attach"
-msgstr ""
+msgstr "Прапорець профілю chroot_attach конфліктує з chroot_no_attach"
 
 #: parser_yacc.y:441 parser_yacc.y:484
 msgid "Profile flag 'debug' is no longer valid."
@@ -492,12 +497,12 @@ msgstr "Нечинна характеристика %s."
 #: parser_yacc.y:1066 parser_yacc.y:1269
 #, c-format
 msgid "AppArmor parser error for %s%s%s at line %d: %s\n"
-msgstr ""
+msgstr "Помилка аналізатора AppArmor, %s%s%s, рядок %d: %s\n"
 
 #: parser_yacc.y:1072 parser_yacc.y:1275
 #, c-format
 msgid "AppArmor parser error,%s%s line %d: %s\n"
-msgstr ""
+msgstr "Помилка аналізатора AppArmor,%s%s, рядок %d: %s\n"
 
 #: ../parser_regex.c:244
 #, c-format
@@ -543,7 +548,7 @@ msgstr "%s: Не вдається проаналізувати вхідний ф
 #: ../parser_regex.c:397 ../parser_regex.c:405
 #, c-format
 msgid "%s: Invalid profile name '%s' - bad regular expression\n"
-msgstr ""
+msgstr "%s: некоректна назва профілю, «%s» — помилковий формальний вираз\n"
 
 #: ../parser_policy.c:202 ../parser_policy.c:402
 #, c-format
@@ -583,7 +588,7 @@ msgstr "ПОМИЛКА додавання правила доступу hat дл
 #: ../parser_policy.c:490 ../parser_policy.c:271
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
-msgstr "ПОМИЛКА  в профілі %s, не вдалося завантажити\n"
+msgstr "ПОМИЛКА у профілі %s, не вдалося завантажити\n"
 
 #: ../parser_policy.c:675
 #, c-format
@@ -614,165 +619,102 @@ msgstr ""
 #: parser_lex.l:180
 #, c-format
 msgid "Could not process include directory '%s' in '%s'"
-msgstr ""
+msgstr "Не вдалося обробити каталог включення «%s» у «%s»"
 
 #: ../parser_main.c:660
 msgid "Feature buffer full."
-msgstr ""
+msgstr "Переповнено буфер можливостей."
 
 #: ../parser_main.c:1115 ../parser_main.c:1132
 msgid "Out of memory"
-msgstr ""
+msgstr "Недостатньо пам’яті"
 
 #: ../parser_main.c:1182
 #, c-format
 msgid "Can't create cache directory: %s\n"
-msgstr ""
+msgstr "Не вдалося створити каталог кешу: %s\n"
 
 #: ../parser_main.c:1185
 #, c-format
 msgid "File in cache directory location: %s\n"
-msgstr ""
+msgstr "Файл на місці каталогу кешу: %s\n"
 
 #: ../parser_main.c:1188
 #, c-format
 msgid "Can't update cache directory: %s\n"
-msgstr ""
+msgstr "Не вдалося оновити каталог кешу: %s\n"
 
 #: ../parser_misc.c:833
 #, c-format
 msgid "Internal: unexpected DBus mode character '%c' in input"
 msgstr ""
+"Внутрішня помилка: неочікуваний символ режиму DBus, «%c», у вхідних даних"
 
 #: ../parser_misc.c:857
 #, c-format
 msgid "Internal error generated invalid DBus perm 0x%x\n"
-msgstr ""
+msgstr "Внутрішня помилка, спричинена нечинними правами доступу DBus 0x%x\n"
 
 #: parser_yacc.y:575
 msgid "deny prefix not allowed"
-msgstr ""
+msgstr "не можна використовувати префікс deny"
 
 #: parser_yacc.y:612
 msgid "owner prefix not allowed"
-msgstr ""
+msgstr "не можна використовувати префікс owner"
 
 #: parser_yacc.y:660
 msgid "owner prefix not allow on mount rules"
-msgstr ""
+msgstr "у правилах mount не можна використовувати префікс owner"
 
 #: parser_yacc.y:677
 msgid "owner prefix not allow on dbus rules"
-msgstr ""
+msgstr "у правилах dbus не можна використовувати префікс owner"
 
 #: parser_yacc.y:704
 msgid "owner prefix not allow on capability rules"
-msgstr ""
+msgstr "у правилах capability не можна використовувати префікс owner"
 
 #: parser_yacc.y:1357
 #, c-format
 msgid "invalid mount conditional %s%s"
-msgstr ""
+msgstr "некоректна умова mount %s%s"
 
 #: parser_yacc.y:1374
 msgid "bad mount rule"
-msgstr ""
+msgstr "помилкове правило mount"
 
 #: parser_yacc.y:1381
 msgid "mount point conditions not currently supported"
-msgstr ""
+msgstr "підтримки умов на точку монтування у поточній версії не передбачено"
 
 #: parser_yacc.y:1398
 #, c-format
 msgid "invalid pivotroot conditional '%s'"
-msgstr ""
+msgstr "некоректна умова pivotroot, «%s»"
 
 #: ../parser_regex.c:241
 #, c-format
 msgid ""
 "%s: Regex grouping error: Invalid close ], no matching open [ detected\n"
 msgstr ""
+"%s: помилка групування формального виразу: нечинна завершальна дужка ], не "
+"знайдено відповідної початкової дужки [\n"
 
 #: ../parser_regex.c:257
 #, c-format
 msgid "%s: Regex grouping error: Exceeded maximum nesting of {}\n"
 msgstr ""
+"%s: помилка групування формального виразу: перевищено максимальний рівень "
+"вкладеності у дужках {}\n"
 
 #: ../parser_policy.c:366
 #, c-format
 msgid "ERROR processing policydb rules for profile %s, failed to load\n"
 msgstr ""
+"ПОМИЛКА обробки правил policydb для профілю %s, не вдалося завантажити\n"
 
 #: ../parser_policy.c:396
 #, c-format
 msgid "ERROR replacing aliases for profile %s, failed to load\n"
-msgstr ""
-
-#~ msgid "Error: Could not allocate temporary file.\n"
-#~ msgstr "Помилка: Не вдалося виділити тимчасовий файл.\n"
-
-#~ msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-#~ msgstr "Помилка: Не вдалося виділити буфер для включення в рядку %d в %s.\n"
-
-#~ msgid "Error: Bad include at line %d in %s.\n"
-#~ msgstr "Помилка: Погане включення в рядку %d в %s.\n"
-
-#~ msgid "Error: #include %s%c not found at line %d in %s.\n"
-#~ msgstr "Помилка: #include %s%c не знайдене в рядку %d в %s.\n"
-
-#~ msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-#~ msgstr ""
-#~ "Помилка: Перевищено %d рівнів включень. Включення %s не обробляється.\n"
-
-#~ msgid "Couldn't copy profile Bad memory address\n"
-#~ msgstr "Не вдалося скопіювати профіль; неправильна адреса пам'яті\n"
-
-#~ msgid "Unknown error\n"
-#~ msgstr "Невідома помилка\n"
-
-#~ msgid "Warning (%s line %d): %s"
-#~ msgstr "Попередження (%s рядок %d): %s"
-
-#~ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-#~ msgstr "профіль %s: об’єднано правило %s з кратними модифікаторами x\n"
-
-#~ msgid "Profile names must begin with a '/', or keyword 'profile'."
-#~ msgstr ""
-#~ "Назви профілів мають починатися з \"/\" або ключового слова \"profiles\"."
-
-#~ msgid "Assert: `change_hat' returned NULL."
-#~ msgstr "Виявлено: `change_hat' повернула NULL."
-
-#~ msgid "link perms are not allowed on a named profile transtion.\n"
-#~ msgstr "дозволи посилань не дозволено для перенесення іменованого профілю.\n"
-
-#~ msgid "AppArmor parser error in %s at line %d: %s\n"
-#~ msgstr "Помилка аналізатора AppArmor в %s в рядку %d: %s\n"
-
-#~ msgid "AppArmor parser error, line %d: %s\n"
-#~ msgstr "Помилка аналізатора AppArmor, рядок %d: %s\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-#~ msgstr "%s: Не вдалося обробити формальний вираз «%s» [початкове: «%s»]\n"
-
-#~ msgid "%s: error near               "
-#~ msgstr "%s: помилка біля               "
-
-#~ msgid "%s: error reason: '%s'\n"
-#~ msgstr "%s: причина помилки: '%s'\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-#~ msgstr ""
-#~ "%s: Не вдалося обробити формальний вираз «%s» [початкове: «%s»] - помилка у "
-#~ "функції malloc\n"
-
-#~ msgid "%s permission: not supported on current system.\n"
-#~ msgstr "дозвіл %s: не підтримується на цій системі.\n"
-
-#~ msgid "%s rule: not supported on current system.\n"
-#~ msgstr "правило %s rule: не підтримується в цій системі.\n"
-
-#~ msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
-#~ msgstr ""
-#~ "Назви профілів мають починатися з «/» або ключового слова «profiles» чи "
-#~ "«hat»."
+msgstr "ПОМИЛКА заміри псевдонімів для профілю %s, не вдалося завантажити\n"

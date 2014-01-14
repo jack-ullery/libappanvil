@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-11-15 05:15+0000\n"
+"X-Launchpad-Export-Date: 2013-11-16 05:13+0000\n"
 "X-Generator: Launchpad (build 16831)\n"
 
 #: ../parser_include.c:113
@@ -647,71 +647,3 @@ msgstr ""
 #, c-format
 msgid "ERROR replacing aliases for profile %s, failed to load\n"
 msgstr ""
-
-#~ msgid "Couldn't copy profile Bad memory address\n"
-#~ msgstr "प्रोफाईल प्रतिलिपित करता आला नाही. स्मृतीचा वाईट पत्ता.\n"
-
-#~ msgid "Unknown error\n"
-#~ msgstr "अज्ञात चूक\n"
-
-#~ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-#~ msgstr "प्रोफाइल %s: नियम %s व मल्टिपल x मॉडिफायर्स यांचे विलिनीकरण\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-#~ msgstr "%s: regex '%s' एकत्र करण्यात अपयश [मूळ: '%s']\n"
-
-#~ msgid "%s: error near               "
-#~ msgstr "%s: चूक जवळ               "
-
-#~ msgid "%s: error reason: '%s'\n"
-#~ msgstr "%s: चुकीचे कारण: '%s'\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-#~ msgstr "%s: regex '%s' एकत्र करण्यात अपयश [मूळ: '%s'] - नाही\n"
-
-#~ msgid "(ip_mode) Found unexpected character: '%s'"
-#~ msgstr "(ip_mode) अनपेक्षित वर्ण: '%s' आढळला"
-
-#~ msgid "Exec qualifier 'i' must be followed by 'x'"
-#~ msgstr "Exec क्वालिफायर 'i' नंतर 'x' असणे आवश्यक आहे"
-
-#~ msgid "Assert: `netrule' returned NULL."
-#~ msgstr "असर्ट: `नेटरुल' NULL परत आला."
-
-#~ msgid "Assert: `addresses' returned NULL."
-#~ msgstr "असर्ट: `पत्ते' NULL परत आले."
-
-#~ msgid "Network entries can only have one TO address."
-#~ msgstr "नेटवर्क प्रविष्टींमधे फक्त एकज TO पत्ता असू शकेल."
-
-#~ msgid "Network entries can only have one FROM address."
-#~ msgstr "नेटवर्क प्रविष्टींमधे फक्त एकच FROM पत्ता असू शकेल."
-
-#~ msgid "`%s' is not a valid ip address."
-#~ msgstr "`%s' हा वैध ip पत्ता नाही."
-
-#~ msgid "`/%d' is not a valid netmask."
-#~ msgstr "`/%d' हा वैध नेटमास्क नाही."
-
-#~ msgid "`%s' is not a valid netmask."
-#~ msgstr "`%s' हा वैध नेटमास्क नाही."
-
-#~ msgid "ports must be between %d and %d"
-#~ msgstr "पोर्ट्स %d आणि %d दरम्यान असणे आवश्यक आहे"
-
-#~ msgid ""
-#~ "%s: Unable to query modules - '%s'\n"
-#~ "Either modules are disabled or your kernel is too old.\n"
-#~ msgstr ""
-#~ "%s: मॉड्युल्स - '%s' ची चौकशी करणे अशक्य\n"
-#~ "एकतर मॉड्युल्स असमर्थ असतील किंवा आपला मुख्य भाग (कर्नल) खूप जुना असेल.\n"
-
-#~ msgid "%s: Unable to find "
-#~ msgstr "%s: शोधणे अशक्य "
-
-#~ msgid ""
-#~ "!\n"
-#~ "Ensure that it has been loaded.\n"
-#~ msgstr ""
-#~ "!\n"
-#~ "ते लोड केले असल्याची खात्री करुन घ्या.\n"

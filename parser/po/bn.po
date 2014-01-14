@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-11-15 05:15+0000\n"
+"X-Launchpad-Export-Date: 2013-11-16 05:13+0000\n"
 "X-Generator: Launchpad (build 16831)\n"
 
 #: ../parser_include.c:113
@@ -648,72 +648,3 @@ msgstr ""
 #, c-format
 msgid "ERROR replacing aliases for profile %s, failed to load\n"
 msgstr ""
-
-#~ msgid "Couldn't copy profile Bad memory address\n"
-#~ msgstr "খারাপ স্মৃতি ঠিকানা প্রোফাইল কপি করতে পারে নি\n"
-
-#~ msgid "Unknown error\n"
-#~ msgstr "অজানা ভুল\n"
-
-#~ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-#~ msgstr "প্রোফাইল %s: %s নিয়মকে একাধিক x মডিফায়ারের সাথে মিধিয়ে দিয়েছে\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-#~ msgstr "%s: regex '%s' সঙ্কলন করতে ব্যর্থ [মূল: '%s']\n"
-
-#~ msgid "%s: error near               "
-#~ msgstr "%s:                এর নিকটে ত্রুটি               "
-
-#~ msgid "%s: error reason: '%s'\n"
-#~ msgstr "%s: ত্রুটির কারণ: '%s'\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-#~ msgstr ""
-#~ "%s: regex '%s' সঙ্কলন করতে ব্যর্থ [মূল: '%s'] - malloc ব্যর্থ হয়েছে\n"
-
-#~ msgid "(ip_mode) Found unexpected character: '%s'"
-#~ msgstr "(ip_mode) অপ্রত্যাশিত অক্ষর পাওয়া গেছে: '%s'"
-
-#~ msgid "Exec qualifier 'i' must be followed by 'x'"
-#~ msgstr "Exec কোয়ালিফায়ার 'i' এর পরে অবশ্যই 'x' থাকতে হবে"
-
-#~ msgid "Assert: `netrule' returned NULL."
-#~ msgstr "দৃঢ় ঘোষণা: `netrule' NULL ফেরত পাঠিয়েছে।"
-
-#~ msgid "Assert: `addresses' returned NULL."
-#~ msgstr "দৃঢ় ঘোষণা: `addresses' NULL ফেরত পাঠিয়েছে৷"
-
-#~ msgid "Network entries can only have one TO address."
-#~ msgstr "নেটওয়ার্ক এনট্রিগুলিতে শুধুমাত্র একটি প্রতি ঠিকানা থাকতে পারে৷"
-
-#~ msgid "Network entries can only have one FROM address."
-#~ msgstr "নেটওয়ার্ক এনট্রিগুলিতে শুধুমাত্র একটি থেকে ঠিকানা থাকতে পারে৷"
-
-#~ msgid "`%s' is not a valid ip address."
-#~ msgstr "`%s' কোন বৈধ আইপি ঠিকানা নয়৷"
-
-#~ msgid "`/%d' is not a valid netmask."
-#~ msgstr "`/%d' বৈধ নেটমাস্ক নয়৷"
-
-#~ msgid "`%s' is not a valid netmask."
-#~ msgstr "`%s' বৈধ নেটমাস্ক নয়৷"
-
-#~ msgid "ports must be between %d and %d"
-#~ msgstr "পোর্টগুলিকে %d ও %d এর মাঝামাঝি হতেই হবে"
-
-#~ msgid ""
-#~ "%s: Unable to query modules - '%s'\n"
-#~ "Either modules are disabled or your kernel is too old.\n"
-#~ msgstr ""
-#~ "%s: মডিউলগুলিতে সন্ধান করতে পারে নি-'%s'\n"
-#~ "হয় মডিউলগুলি নিষ্ক্রিয় আছে অথবা আপনার কার্নেলটি অতিশয় পুরান।\n"
-
-#~ msgid "%s: Unable to find "
-#~ msgstr "%s: খুঁজে পেতে অক্ষম "
-
-#~ msgid ""
-#~ "!\n"
-#~ "Ensure that it has been loaded.\n"
-#~ msgstr ""
-#~ "!\n"
-#~ "সুনিশ্চিত করুন যেন এটি চালানো হয়ে থাকে।\n"

@@ -1,4 +1,4 @@
-# Bosnian translation for apparmor
+# Hindi translation for apparmor
 # Copyright (c) 2013 Rosetta Contributors and Canonical Ltd 2013
 # This file is distributed under the same license as the apparmor package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2013-11-13 16:44-0800\n"
-"PO-Revision-Date: 2013-11-14 23:32+0000\n"
-"Last-Translator: Steve Beattie <sbeattie@ubuntu.com>\n"
-"Language-Team: Bosnian <bs@li.org>\n"
+"PO-Revision-Date: 2013-12-07 11:01+0000\n"
+"Last-Translator: Kshitij Gupta <kgupta8592@gmail.com>\n"
+"Language-Team: Hindi <hi@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-11-16 05:14+0000\n"
-"X-Generator: Launchpad (build 16831)\n"
+"X-Launchpad-Export-Date: 2013-12-08 05:18+0000\n"
+"X-Generator: Launchpad (build 16869)\n"
 
 #: ../aa-genprof:72 ../aa-unconfined:54
 msgid ""
@@ -24,7 +24,7 @@ msgstr ""
 
 #: ../aa-genprof:86
 msgid "Please enter the program to profile: "
-msgstr ""
+msgstr "प्रोफाइल बनाने के लिए कृपया प्रोग्राम प्रविष्‍ट करें: "
 
 #: ../aa-genprof:105
 #, perl-format
@@ -33,12 +33,15 @@ msgid ""
 "correct, please run 'which %s' in the other window in order to find the "
 "fully-qualified path."
 msgstr ""
+"सिस्‍टम पथ सूची में %s को नहीं ढूंढ सका। यदि अनुप्रयोग का नाम सही है, तो "
+"कृपया 'which %s' को पूर्ण-योग्‍यता प्राप्‍त पथ को ढूंढने के लिहाज से दूसरे "
+"विंडों में चलाएं।"
 
 #: ../aa-genprof:107 ../aa-autodep:110 ../aa-audit:120 ../aa-complain:119
 #: ../aa-enforce:130 ../aa-disable:140
 #, perl-format
 msgid "%s does not exist, please double-check the path."
-msgstr ""
+msgstr "%s का अस्तित्‍व नहीं है, कृपया पथ की दोबारा जांच करें।"
 
 #: ../aa-genprof:141
 msgid ""
@@ -49,6 +52,11 @@ msgid ""
 "more information:\n"
 "http://wiki.apparmor.net/index.php/Profiles"
 msgstr ""
+"\n"
+"आरंभ करने से पहले कृप्या जांच लें की जिस अपलीकेशन की\n"
+"प्रोफाइल आप बनाना चाहते हैं उसका पहले से ही अस्तित्व ना हो।\n"
+"अधिक जानकारी के लिये कृप्या निम्नलिखित विकी पेज देखें :\n"
+"http://wiki.apparmor.net/index.php/Profiles"
 
 #: ../aa-genprof:143
 msgid ""
@@ -62,14 +70,23 @@ msgid ""
 "opportunity to choose whether the access should be  \n"
 "allowed or denied."
 msgstr ""
+"जिस अपलीकेशन की प्रोफाइल बनाई जा रही है कृप्या उसको किसी अन्य विंडो में\n"
+"आरम्भ करके उसकी कार्यक्षमता का अभ्यास अभी करें।\n"
+"\n"
+"एक बार इसके पूरा हो जाने पर, AppArmor घटनाओं को सिस्‍टम लॉग्‍स में\n"
+"जांचने के लिये नीचे दी गई \"Scan\" बटन को चुनें।\n"
+"\n"
+"प्रत्‍येक AppArmor घटना के लिए, आपको यह चुनने का\n"
+"अवसर दिया जाएगा कि पहुंच की स्‍वीकृति या अस्विकृति दी\n"
+"जानी चाहिए या नहीं।"
 
 #: ../aa-genprof:163
 msgid "Profiling"
-msgstr "Profilisanje"
+msgstr "प्रोफाइलिंग"
 
 #: ../aa-genprof:197
 msgid "Reloaded AppArmor profiles in enforce mode."
-msgstr ""
+msgstr "AppArmor प्रोफाइलें बाध्यकारी मोड में पुनः लोड र दी गई हैं।"
 
 #: ../aa-genprof:198
 msgid ""
@@ -78,11 +95,15 @@ msgid ""
 "the following wiki page for more information:\n"
 "http://wiki.apparmor.net/index.php/Profiles\n"
 msgstr ""
+"\n"
+"अपनी नई प्रोफाइल का योगदान पर विचार करें!\n"
+"अधिक जानकारी के लिये कृप्या निम्नलिखित विकी पेज देखें :\n"
+"http://wiki.apparmor.net/index.php/Profiles\n"
 
 #: ../aa-genprof:199
 #, perl-format
 msgid "Finished generating profile for %s."
-msgstr ""
+msgstr "%s के लिए प्रोफाइल उत्‍पन्‍न करना पूर्ण हुआ।"
 
 #: ../aa-genprof:203
 #, perl-format
@@ -90,6 +111,8 @@ msgid ""
 "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to "
 "profile ]"
 msgstr ""
+"उपयोग : %s [ -d /प्रोफाइलों/का/पथ ] [ -f /लॉग/का/पथ ] [ प्रोफाइल हेतु "
+"प्रोग्राम ]"
 
 #: ../aa-logprof:69
 #, perl-format
@@ -97,15 +120,17 @@ msgid ""
 "usage: %s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ -m \"mark in "
 "log to start processing after\""
 msgstr ""
+"उपयोग : %s [ -d /प्रोफाइलों/का/पथ ] [ -f /लॉग/का/पथ ] [ -m \"लॉग में चिन्ह "
+"जिसके पश्चात प्रोसेस करना है\""
 
 #: ../aa-autodep:61
 #, perl-format
 msgid "Can't find AppArmor profiles in %s."
-msgstr ""
+msgstr "%s में AppArmor प्रोफाइलें नहीं ढूंढी जा सकी हैं।"
 
 #: ../aa-autodep:69
 msgid "Please enter the program to create a profile for: "
-msgstr ""
+msgstr "जिस प्रोग्राम के लिये प्रोफाइल सृजित की जानी है उसे प्रविष्‍ट करें: "
 
 #: ../aa-autodep:93 ../Immunix/AppArmor.pm:6339
 #, perl-format
@@ -117,11 +142,18 @@ msgid ""
 "corresponding entry in the [qualifiers] section in "
 "/etc/apparmor/logprof.conf."
 msgstr ""
+"%s को वर्तमान में एक ऐसे प्रोग्राम के रूप में चिन्हित किया गया है जिसके पास "
+"स्‍वयं अपनी प्रोफाइल नहीं होनी चाहिये। आम तौर पर प्रोग्रामों को इस प्रकार से "
+"चिन्हित किया जाता है यदि उनके लिए प्रोफाइल सृजित करने पर शेष सिस्‍टम में "
+"व्‍यवधान पड़ने की संभावना हो। यदि आप जानते हैं कि आप क्‍या कर रहे हैं और "
+"निश्चित हों कि आप इस प्रोग्राम के लिए एक प्रोफाइल सृजित करना चाहते हैं, तो "
+"/etc/apparmor/logprof.conf में [qualifiers] खंड में संगत प्रविष्टि को "
+"संपादित करें।"
 
 #: ../aa-autodep:100
 #, perl-format
 msgid "Profile for %s already exists - skipping."
-msgstr ""
+msgstr "%s के लिए प्रोफाइल पहले से मौजूद है - इसे छोड़ा जा रहा है।"
 
 #: ../aa-autodep:107 ../aa-audit:117 ../aa-complain:116 ../aa-enforce:127
 #: ../aa-disable:137
@@ -131,94 +163,106 @@ msgid ""
 "correct, please run 'which %s' as a user with the correct PATH environment "
 "set up in order to find the fully-qualified path."
 msgstr ""
+"सिस्‍टम पथ सूची में %s को नहीं ढूंढा जा सका। यदि अपलीकेशन का नाम सही है, तो "
+"'which %s' को पूर्ण-योग्‍यता प्राप्‍त पथ को ढूंढने के लिहाज से एक सही PATH "
+"वातावरण के साथ एक उपयोगकर्ता के रूप में चलाएं।"
 
 #: ../aa-audit:104
 #, perl-format
 msgid "Setting %s to audit mode."
-msgstr ""
+msgstr "ऑडिट मोड के लिए %s सेटिंग की जा रही है।"
 
 #: ../aa-audit:129
 #, perl-format
 msgid ""
 "usage: %s [ -d /path/to/profiles ] [ program to switch to audit mode ]"
 msgstr ""
+"उपयोग : %s [ -d /प्रोफाइलों/का/पथ ] [ प्रोग्राम जिसको ऑडिट मोड में लगाना है ]"
 
 #: ../aa-complain:61
 msgid "Please enter the program to switch to complain mode: "
-msgstr ""
+msgstr "शिकायत मोड में बदलने के लिए कृपया प्रोग्राम को प्रवि‍ष्‍ट करें : "
 
 #: ../aa-complain:103 ../Immunix/AppArmor.pm:621 ../Immunix/AppArmor.pm:941
 #, perl-format
 msgid "Setting %s to complain mode."
-msgstr ""
+msgstr "%s की शिकायती मोड के लिए सेटिंग की जा रही है।"
 
 #: ../aa-complain:128
 #, perl-format
 msgid ""
 "usage: %s [ -d /path/to/profiles ] [ program to switch to complain mode ]"
 msgstr ""
+"उपयोग : %s [ -d /प्रोफाइलों/का/पथ ] [ शिकायती मोड में बदलने के लिए प्रोग्राम "
+"]"
 
 #: ../aa-enforce:62
 msgid "Please enter the program to switch to enforce mode: "
 msgstr ""
+"बाध्‍यकारी मोड में बदलने के लिए कृपया प्रोग्राम को प्रवि‍ष्‍ट करें : "
 
 #: ../aa-enforce:103 ../Immunix/AppArmor.pm:634
 #, perl-format
 msgid "Setting %s to enforce mode."
-msgstr ""
+msgstr "%s की बाध्‍यकारी मोड के लिए सेटिंग की जा रही है।"
 
 #: ../aa-enforce:139
 #, perl-format
 msgid ""
 "usage: %s [ -d /path/to/profiles ] [ program to switch to enforce mode ]"
 msgstr ""
+"उपयोग : %s [ -d /प्रोफाइलों/का/पथ ] [ बाध्‍यकारी मोड में बदलने के लिए "
+"प्रोग्राम ]"
 
 #: ../aa-unconfined:48
 #, perl-format
 msgid "Usage: %s [ --paranoid ]\n"
-msgstr ""
+msgstr "उपयोग : %s [ --paranoid ]\n"
 
 #: ../aa-unconfined:59
 msgid "Can't read /proc\n"
-msgstr ""
+msgstr "/proc को नहीं पढ़ सकता\n"
 
 #: ../aa-unconfined:97 ../aa-unconfined:99
 msgid "not confined\n"
-msgstr ""
+msgstr "सीमाबद्ध नहीं है\n"
 
 #: ../aa-unconfined:108 ../aa-unconfined:110
 msgid "confined by"
-msgstr ""
+msgstr "के द्वारा सीमाबद्ध"
 
 #: ../aa-disable:69
 msgid "Please enter the program whose profile should be disabled: "
 msgstr ""
+"जिस प्रोग्राम की प्रोफाइल असमर्थ की जानी है कृपया उसे प्रविष्‍ट करें: "
 
 #: ../aa-disable:113
 #, perl-format
 msgid "Could not find basename for %s."
-msgstr ""
+msgstr "%s के लिये बेसनाम नहीं ढूंढा जा सका है।"
 
 #: ../aa-disable:117
 #, perl-format
 msgid "Disabling %s."
-msgstr ""
+msgstr "%s निष्क्रिय किया जा राहा है।"
 
 #: ../aa-disable:123
 #, perl-format
 msgid "Could not create %s symlink."
-msgstr ""
+msgstr "%s सिमलिंक नहीं बनाया जा सका है।"
 
 #: ../aa-disable:149
 #, perl-format
 msgid ""
 "usage: %s [ -d /path/to/profiles ] [ program to have profile disabled ]"
 msgstr ""
+"उपयोग : %s [ -d /प्रोफ़ाइलों/का/पथ ] [ प्रोफ़ाइल निष्क्रिय करने के लिए "
+"प्रोग्राम ]"
 
 #: ../Immunix/AppArmor.pm:619 ../Immunix/AppArmor.pm:632
 #, perl-format
 msgid "Can't find %s."
-msgstr ""
+msgstr "%s नहीं ढूंढा जा सका है।"
 
 #: ../Immunix/AppArmor.pm:819 ../Immunix/AppArmor.pm:3326
 msgid "Connecting to repository....."
@@ -240,16 +284,16 @@ msgstr ""
 #: ../Immunix/AppArmor.pm:3486 ../Immunix/AppArmor.pm:3686
 #: ../Immunix/AppArmor.pm:3952 ../Immunix/AppArmor.pm:4004
 msgid "Profile"
-msgstr ""
+msgstr "प्रोफाइल"
 
 #: ../Immunix/AppArmor.pm:908
 msgid "Profile submitted by"
-msgstr ""
+msgstr "प्रोफाइल प्रस्तुतिकर्ता"
 
 #: ../Immunix/AppArmor.pm:949
 #, perl-format
 msgid "Error activating profiles: %s\n"
-msgstr ""
+msgstr "प्रोफाइलों को सक्रिय करने में त्रुटि: %s\n"
 
 #: ../Immunix/AppArmor.pm:1098 ../Immunix/AppArmor.pm:1151
 #, perl-format
@@ -260,7 +304,7 @@ msgstr ""
 
 #: ../Immunix/AppArmor.pm:1178
 msgid "New profiles"
-msgstr ""
+msgstr "नयी प्रोफाइलें"
 
 #: ../Immunix/AppArmor.pm:1180
 msgid ""
@@ -284,7 +328,7 @@ msgstr ""
 
 #: ../Immunix/AppArmor.pm:1204
 msgid "Changed profiles"
-msgstr ""
+msgstr "बदली गयी प्रोफाइलें"
 
 #: ../Immunix/AppArmor.pm:1210
 msgid "Submit changed profiles to the repository"
@@ -314,7 +358,7 @@ msgstr ""
 
 #: ../Immunix/AppArmor.pm:1333
 msgid "Changelog Entry: "
-msgstr ""
+msgstr "परिवर्तनलॉग प्रविष्टि: "
 
 #: ../Immunix/AppArmor.pm:1354
 #, perl-format
@@ -335,7 +379,7 @@ msgstr ""
 
 #: ../Immunix/AppArmor.pm:1423 ../Immunix/AppArmor.pm:1463
 msgid "(N)o"
-msgstr ""
+msgstr "(न)हीं"
 
 #: ../Immunix/AppArmor.pm:1426 ../Immunix/AppArmor.pm:1467
 msgid "Invalid hotkey for"
@@ -343,7 +387,7 @@ msgstr ""
 
 #: ../Immunix/AppArmor.pm:1464
 msgid "(C)ancel"
-msgstr ""
+msgstr "(र)द्द करें"
 
 #: ../Immunix/AppArmor.pm:1789
 msgid ""
@@ -352,32 +396,32 @@ msgstr ""
 
 #: ../Immunix/AppArmor.pm:1791
 msgid "Abandoning all changes."
-msgstr ""
+msgstr "सभी बदलावों को त्यागा जा रहा है।"
 
 #: ../Immunix/AppArmor.pm:1902
 msgid "Default Hat"
-msgstr ""
+msgstr "डिफॉल्‍ट हैट"
 
 #: ../Immunix/AppArmor.pm:1904
 msgid "Requested Hat"
-msgstr ""
+msgstr "अनुरोधित हैट"
 
 #: ../Immunix/AppArmor.pm:2190
 msgid "Program"
-msgstr ""
+msgstr "प्रोग्राम"
 
 #: ../Immunix/AppArmor.pm:2195
 msgid "Execute"
-msgstr ""
+msgstr "चलाएँ"
 
 #: ../Immunix/AppArmor.pm:2196 ../Immunix/AppArmor.pm:3455
 #: ../Immunix/AppArmor.pm:3488 ../Immunix/AppArmor.pm:3741
 msgid "Severity"
-msgstr ""
+msgstr "गंभीरता"
 
 #: ../Immunix/AppArmor.pm:2241
 msgid "Enter profile name to transition to: "
-msgstr ""
+msgstr "जिस प्रोफाइल में संक्रमण करना है उसका नाम प्रविष्ट करें: "
 
 #: ../Immunix/AppArmor.pm:2249
 msgid ""
@@ -388,6 +432,12 @@ msgid ""
 "but some applications depend on the presence\n"
 "of LD_PRELOAD or LD_LIBRARY_PATH."
 msgstr ""
+"क्या AppArmor को प्रोफाइल बदलते समय वातावरण को साफ\n"
+"कर देना चाहिये?\n"
+"\n"
+"वातावरण साफ करना अधिक सुरक्षित है, लेकिन कुछ अपलीकेशन्स\n"
+"LD_PRELOAD या LD_LIBRARY_PATH की मौजूदगी पर निर्भर\n"
+"करती हैं।"
 
 #: ../Immunix/AppArmor.pm:2251
 msgid ""
@@ -399,6 +449,12 @@ msgid ""
 "or LD_LIBRARY_PATH and clearing these could\n"
 "cause functionality problems."
 msgstr ""
+"क्या AppArmor को प्रोफाइल बदलते समय वातावरण को साफ\n"
+"कर देना चाहिये?\n"
+"\n"
+"वातावरण साफ करना अधिक सुरक्षित है, लेकिन ऐसा लगता है कि यह अपलीकेशन\n"
+"LD_PRELOAD या LD_LIBRARY_PATH करती प्रतीत हो रही है और इन्हें साफ\n"
+"करने से कार्यक्षमता में परेशानियां हो सकती हैं।"
 
 #: ../Immunix/AppArmor.pm:2260
 #, perl-format
@@ -409,6 +465,11 @@ msgid ""
 "Are you absolutely certain you wish to remove all\n"
 "AppArmor protection when executing %s?"
 msgstr ""
+"असीमाबद्ध स्थिति में प्रक्रियाओं को लांच करना एक बहुत\n"
+"खतरनाक प्रचालन है और गंभीर सुरक्षा छिद्रों की वजह बन सकता है।\n"
+"\n"
+"क्‍या आप पूरी तरह निश्चित हैं कि आप %s को निष्‍पादित करते समय\n"
+"AppArmor की सुरक्षा को हटाने की इच्‍छा रखते हैं?"
 
 #: ../Immunix/AppArmor.pm:2262
 msgid ""
@@ -419,22 +480,27 @@ msgid ""
 "a program opens up significant security holes\n"
 "and should be avoided if at all possible."
 msgstr ""
+"क्या AppArmor को इस प्रोग्राम को असीमित रूप में चलाते समय \n"
+"वातावरण को साफ कर देना चाहिये?\n"
+"\n"
+"सीमा बढ़ाते समय वातावरण को साफ न करने से प्रोग्राम महत्वपूर्ण सुरक्षा छिद्र\n"
+"खोलता है और यदि संभव हो इससे बचना चाहिए।"
 
 #: ../Immunix/AppArmor.pm:2352
 #, perl-format
 msgid "A profile for %s does not exist. Create one?"
-msgstr ""
+msgstr "%s के लिये प्रोफाइल मौजूद नहीं है। निर्माण कर दे?"
 
 #: ../Immunix/AppArmor.pm:2379
 #, perl-format
 msgid "A local profile for %s does not exist. Create one?"
-msgstr ""
+msgstr "%s के लिये लोकल प्रोफाइल मौजूद नहीं है। निर्माण कर दे?"
 
 #: ../Immunix/AppArmor.pm:2584 ../Immunix/AppArmor.pm:6733
 #: ../Immunix/AppArmor.pm:6738
 #, perl-format
 msgid "Log contains unknown mode %s."
-msgstr ""
+msgstr "लॉग में अज्ञात मोड %s मौजूद है।"
 
 #: ../Immunix/AppArmor.pm:3068
 msgid ""
@@ -512,50 +578,50 @@ msgstr ""
 
 #: ../Immunix/AppArmor.pm:3351
 msgid "Change mode modifiers"
-msgstr ""
+msgstr "मोड संशोधक को बदलें"
 
 #: ../Immunix/AppArmor.pm:3395
 msgid "Complain-mode changes:"
-msgstr ""
+msgstr "शिकायती-मोड बद्लाव:"
 
 #: ../Immunix/AppArmor.pm:3397
 msgid "Enforce-mode changes:"
-msgstr ""
+msgstr "बाध्‍यकारी-मोड बद्लाव:"
 
 #: ../Immunix/AppArmor.pm:3403
 #, perl-format
 msgid "Invalid mode found: %s"
-msgstr ""
+msgstr "अमान्‍य मोड प्राप्‍त हुआ: %s"
 
 #: ../Immunix/AppArmor.pm:3454 ../Immunix/AppArmor.pm:3487
 msgid "Capability"
-msgstr ""
+msgstr "क्षमता"
 
 #: ../Immunix/AppArmor.pm:3507 ../Immunix/AppArmor.pm:3781
 #: ../Immunix/AppArmor.pm:4028
 #, perl-format
 msgid "Adding #include <%s> to profile."
-msgstr ""
+msgstr "प्रोफाइल में #include <%s> जोड़ा जा रहा है।"
 
 #: ../Immunix/AppArmor.pm:3510 ../Immunix/AppArmor.pm:3782
 #: ../Immunix/AppArmor.pm:3822 ../Immunix/AppArmor.pm:4032
 #, perl-format
 msgid "Deleted %s previous matching profile entries."
-msgstr ""
+msgstr "पुरानी मेल खाने वाली %s प्रोफाइल प्रविष्टियों को हटाया गया।"
 
 #: ../Immunix/AppArmor.pm:3521
 #, perl-format
 msgid "Adding capability %s to profile."
-msgstr ""
+msgstr "प्रोफाइल के लिए %s क्षमता जोड़ी जा रही है।"
 
 #: ../Immunix/AppArmor.pm:3526
 #, perl-format
 msgid "Denying capability %s to profile."
-msgstr ""
+msgstr "प्रोफाइल के लिए %s क्षमता से इंकार किया जा रहा है।"
 
 #: ../Immunix/AppArmor.pm:3687
 msgid "Path"
-msgstr ""
+msgstr "पथ"
 
 #: ../Immunix/AppArmor.pm:3698 ../Immunix/AppArmor.pm:3730
 msgid "(owner permissions off)"
@@ -571,11 +637,11 @@ msgstr ""
 
 #: ../Immunix/AppArmor.pm:3719
 msgid "Old Mode"
-msgstr ""
+msgstr "पुराना मोड"
 
 #: ../Immunix/AppArmor.pm:3720
 msgid "New Mode"
-msgstr ""
+msgstr "नया मोड"
 
 #: ../Immunix/AppArmor.pm:3736
 msgid "(force perms to owner)"
@@ -583,64 +649,64 @@ msgstr ""
 
 #: ../Immunix/AppArmor.pm:3739
 msgid "Mode"
-msgstr ""
+msgstr "मोड"
 
 #: ../Immunix/AppArmor.pm:3821
 #, perl-format
 msgid "Adding %s %s to profile."
-msgstr ""
+msgstr "प्रोफाइल में %s %s जोड़ा जा रहा है।"
 
 #: ../Immunix/AppArmor.pm:3837
 msgid "Enter new path: "
-msgstr ""
+msgstr "नया पथ प्रविष्‍ट करें: "
 
 #: ../Immunix/AppArmor.pm:3840
 msgid "The specified path does not match this log entry:"
-msgstr ""
+msgstr "निर्दिष्‍ट किया गया पथ इस लॉग प्रविष्टि से मेल नहीं खाता:"
 
 #: ../Immunix/AppArmor.pm:3841
 msgid "Log Entry"
-msgstr ""
+msgstr "लॉग प्रविष्टि"
 
 #: ../Immunix/AppArmor.pm:3842
 msgid "Entered Path"
-msgstr ""
+msgstr "प्रविष्ट किया गया पथ"
 
 #: ../Immunix/AppArmor.pm:3843
 msgid "Do you really want to use this path?"
-msgstr ""
+msgstr "क्‍या आप सचमुच इस पथ का उपयोग करना चाहते हैं?"
 
 #: ../Immunix/AppArmor.pm:3955 ../Immunix/AppArmor.pm:4007
 msgid "Network Family"
-msgstr ""
+msgstr "नेटवर्क फॅमिली"
 
 #: ../Immunix/AppArmor.pm:3958 ../Immunix/AppArmor.pm:4010
 msgid "Socket Type"
-msgstr ""
+msgstr "सॉकेट प्रकार"
 
 #: ../Immunix/AppArmor.pm:4058
 #, perl-format
 msgid "Adding network access %s %s to profile."
-msgstr ""
+msgstr "प्रोफाइल में %s %s नेटवर्क के उपयोग को जोड़ा जा रहा है।"
 
 #: ../Immunix/AppArmor.pm:4077
 #, perl-format
 msgid "Denying network access %s %s to profile."
-msgstr ""
+msgstr "प्रोफाइल के लिए %s %s नेटवर्क के उपयोग से इंकार किया जा रहा है।"
 
 #: ../Immunix/AppArmor.pm:4285
 #, perl-format
 msgid "Reading log entries from %s."
-msgstr ""
+msgstr "%s से लॉग प्रविष्टियां पढी जा रही है ।"
 
 #: ../Immunix/AppArmor.pm:4286
 #, perl-format
 msgid "Updating AppArmor profiles in %s."
-msgstr ""
+msgstr "%s में AppArmor प्रोफाइलों को अपडेट किया जा रहा है।"
 
 #: ../Immunix/AppArmor.pm:4290
 msgid "unknown\n"
-msgstr ""
+msgstr "अज्ञात\n"
 
 #: ../Immunix/AppArmor.pm:4324
 msgid ""
@@ -648,29 +714,36 @@ msgid ""
 "\n"
 "All updated profiles will be reloaded"
 msgstr ""
+"प्रोफाइल विश्‍लेषक ने लॉग फाइलों का प्रसंस्‍करण पूरा कर लिया है।\n"
+"\n"
+"सभी अपडेटेड प्रोफाइलें फिर से लोड की जाएंगी"
 
 #: ../Immunix/AppArmor.pm:4330
 msgid "No unhandled AppArmor events were found in the system log."
-msgstr ""
+msgstr "सिस्‍टम लॉग में न संभाली गई कोई AppArmor घटना नहीं मिलीं थीं।"
 
 #: ../Immunix/AppArmor.pm:4391
 msgid ""
 "Select which profile changes you would like to save to the\n"
 "local profile set"
 msgstr ""
+"जिन प्रोफाइल बदलावों को आप लोकल प्रोफाइल सेट में सुरक्षित करना\n"
+"चाहते हैं उनका चुनाव करें"
 
 #: ../Immunix/AppArmor.pm:4392
 msgid "Local profile changes"
-msgstr ""
+msgstr "लोकल प्रोफाइल बद्लाव"
 
 #: ../Immunix/AppArmor.pm:4419
 msgid ""
 "The following local profiles were changed.  Would you like to save them?"
 msgstr ""
+"निम्नलिखित प्रोफाइलों में बदलाव हुए हैं।  क्या आप उन्हे सुरक्षित करना चाहते "
+"हैं?"
 
 #: ../Immunix/AppArmor.pm:4516
 msgid "Profile Changes"
-msgstr ""
+msgstr "प्रोफाइल बद्लाव"
 
 #: ../Immunix/AppArmor.pm:5139 ../Immunix/AppArmor.pm:5155
 #: ../Immunix/AppArmor.pm:5166 ../Immunix/AppArmor.pm:5174
@@ -679,44 +752,44 @@ msgstr ""
 #: ../Immunix/AppArmor.pm:5334 ../Immunix/AppArmor.pm:5382
 #, perl-format
 msgid "%s contains syntax errors."
-msgstr ""
+msgstr "%s में सिंटैक्‍स त्रुटियां निहित हैं।"
 
 #: ../Immunix/AppArmor.pm:5275
 #, perl-format
 msgid "Profile %s contains invalid regexp %s."
-msgstr ""
+msgstr "प्रोफाइल %s में अमान्‍य regexp %s निहित है।"
 
 #: ../Immunix/AppArmor.pm:5280
 #, perl-format
 msgid "Profile %s contains invalid mode %s."
-msgstr ""
+msgstr "प्रोफाइल %s में अमान्‍य मोड %s निहित है।"
 
 #: ../Immunix/AppArmor.pm:5430
 #, perl-format
 msgid "%s contains syntax errors. Line [%s]"
-msgstr ""
+msgstr "%s में सिंटैक्‍स त्रुटियां निहित हैं। लाइन [%s]"
 
 #: ../Immunix/AppArmor.pm:6022
 #, perl-format
 msgid "Writing updated profile for %s."
-msgstr ""
+msgstr "%s के लिए अपडेटेड प्रोफाइल लिख रहा है।"
 
 #: ../Immunix/AppArmor.pm:6528
 msgid "Unknown command"
-msgstr ""
+msgstr "अज्ञात निर्देश"
 
 #: ../Immunix/AppArmor.pm:6536
 msgid "Invalid hotkey in"
-msgstr ""
+msgstr "अमान्य कुंजी"
 
 #: ../Immunix/AppArmor.pm:6546
 msgid "Duplicate hotkey for"
-msgstr ""
+msgstr "के लिये दोहरी कुंजी"
 
 #: ../Immunix/AppArmor.pm:6567
 msgid "Invalid hotkey in default item"
-msgstr ""
+msgstr "डिफॉल्ट आईटेम में अमान्य कुंजी"
 
 #: ../Immunix/AppArmor.pm:6576
 msgid "Invalid default"
-msgstr ""
+msgstr "अमान्य डिफॉल्ट"

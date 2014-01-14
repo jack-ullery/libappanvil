@@ -22,7 +22,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-11-15 05:15+0000\n"
+"X-Launchpad-Export-Date: 2013-11-16 05:13+0000\n"
 "X-Generator: Launchpad (build 16831)\n"
 
 #: ../parser_include.c:113
@@ -702,72 +702,3 @@ msgstr ""
 #, c-format
 msgid "ERROR replacing aliases for profile %s, failed to load\n"
 msgstr ""
-
-#~ msgid "Error: Could not allocate temporary file.\n"
-#~ msgstr "Virhe: Ei voitu varata tilapäistä tiedostoa.\n"
-
-#~ msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-#~ msgstr ""
-#~ "Virhe: include-puskurin varaus ei onnistunut. rivi %d tiedostossa %s.\n"
-
-#~ msgid "Error: Bad include at line %d in %s.\n"
-#~ msgstr "Virhe: Viallinen include. Rivi %d tiedostossa %s.\n"
-
-#~ msgid "Error: #include %s%c not found at line %d in %s.\n"
-#~ msgstr "Virhe: #include %s%c ei löytynyt riviltä %d tiedostosta %s.\n"
-
-#~ msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-#~ msgstr "Virhe: Ylitettiin %d tasoa includeissa.  EI käsitellä includea %s.\n"
-
-#~ msgid "Couldn't copy profile Bad memory address\n"
-#~ msgstr "Profiilin kopiointi ei onnistunut. Virheellinen muistiosoite\n"
-
-#~ msgid "Unknown error\n"
-#~ msgstr "Tuntematon virhe\n"
-
-#~ msgid "Warning (%s line %d): %s"
-#~ msgstr "Varoitus (%s rivi %d): %s"
-
-#~ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-#~ msgstr "profiili %s: yhdistetty sääntö %s, jossa on monta x-muuntajaa\n"
-
-#~ msgid "Profile names must begin with a '/', or keyword 'profile'."
-#~ msgstr "Profiilin nimen täytyy alkaa merkillä / tai sanalla 'profile'."
-
-#~ msgid "Assert: `change_hat' returned NULL."
-#~ msgstr "Assert: `change_hat' palautti NULL."
-
-#~ msgid "link perms are not allowed on a named profile transtion.\n"
-#~ msgstr "linkkioikeuksia ei sallita nimetyssä profiilinsiirrossa.\n"
-
-#~ msgid "AppArmor parser error in %s at line %d: %s\n"
-#~ msgstr "AppArmor parser -virhe %s -tiedostossa, rivillä %d: %s\n"
-
-#~ msgid "AppArmor parser error, line %d: %s\n"
-#~ msgstr "AppArmor parser -virhe, rivi %d: %s\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-#~ msgstr ""
-#~ "%s: Säännöllisen lausekkeen '%s' kääntäminen ei onnistunut [alkuperäinen: "
-#~ "'%s']\n"
-
-#~ msgid "%s: error near               "
-#~ msgstr "%s: virhe lähellä               "
-
-#~ msgid "%s: error reason: '%s'\n"
-#~ msgstr "%s: virheen syy: '%s'\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-#~ msgstr ""
-#~ "%s: Säännöllisen lausekkeen '%s' kääntäminen ei onnistunut [alkuperäinen: "
-#~ "'%s'] - malloc epäonnistui\n"
-
-#~ msgid "%s permission: not supported on current system.\n"
-#~ msgstr "%s oikeus: ei tuettu nykyisessä järjestelmässä.\n"
-
-#~ msgid "%s rule: not supported on current system.\n"
-#~ msgstr "%s sääntö: ei tuettu nykyisessä järjestelmässä.\n"
-
-#~ msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
-#~ msgstr ""
-#~ "Profiilin nimen täytyy alkaa merkillä '/' tai sanalla 'profile' tai 'hat'."

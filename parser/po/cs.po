@@ -12,7 +12,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-11-15 05:15+0000\n"
+"X-Launchpad-Export-Date: 2013-11-16 05:13+0000\n"
 "X-Generator: Launchpad (build 16831)\n"
 
 #: ../parser_include.c:113
@@ -684,70 +684,3 @@ msgstr ""
 #, c-format
 msgid "ERROR replacing aliases for profile %s, failed to load\n"
 msgstr ""
-
-#~ msgid "Error: Could not allocate temporary file.\n"
-#~ msgstr "Chyba: Nelze přidělit dočasný soubor.\n"
-
-#~ msgid "Error: Could not allocate buffer for include at line %d in %s.\n"
-#~ msgstr ""
-#~ "Chyba: Nelze přidělit vyrovnávací paměť k zavedení na řádek %d v %s.\n"
-
-#~ msgid "Error: Bad include at line %d in %s.\n"
-#~ msgstr "Chyba: Chybné vložení na řádek %d v %s.\n"
-
-#~ msgid "Error: #include %s%c not found at line %d in %s.\n"
-#~ msgstr "Chyba: Číslo vložení %s%c na řádku %d v %s nebylo nalezeno.\n"
-
-#~ msgid "Error: Exceeded %d levels of includes.  Not processing %s include.\n"
-#~ msgstr "Chyba: Překročeno %d úrovní vkládání. Nezpracovává se vložení %s.\n"
-
-#~ msgid "Couldn't copy profile Bad memory address\n"
-#~ msgstr "Nelze zkopírovat profil - špatná adresa paměti\n"
-
-#~ msgid "Unknown error\n"
-#~ msgstr "Neznámá chyba\n"
-
-#~ msgid "Warning (%s line %d): %s"
-#~ msgstr "Varování (%s řádek %d): %s"
-
-#~ msgid "profile %s: has merged rule %s with multiple x modifiers\n"
-#~ msgstr "profil %s: sloučil pravidlo %s s více x modifikátory\n"
-
-#~ msgid "Profile names must begin with a '/', or keyword 'profile'."
-#~ msgstr ""
-#~ "Jméno profilu musí začínat znakem '/' nebo klíčovým slovem 'profile'."
-
-#~ msgid "Assert: `change_hat' returned NULL."
-#~ msgstr "Assert: `change_hat' vrátil NULL."
-
-#~ msgid "link perms are not allowed on a named profile transtion.\n"
-#~ msgstr "link perms nejsou povoleny na přechodu pojmenovaného profilu.\n"
-
-#~ msgid "AppArmor parser error in %s at line %d: %s\n"
-#~ msgstr "Chyba parseru AppArmor v %s na řádku %d: %s\n"
-
-#~ msgid "AppArmor parser error, line %d: %s\n"
-#~ msgstr "Chyba parseru AppArmor, řádek %d: %s\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s']\n"
-#~ msgstr "%s: Selhala kompilace regex '%s' [originál: '%s']\n"
-
-#~ msgid "%s: error near               "
-#~ msgstr "%s: chyba poblíž               "
-
-#~ msgid "%s: error reason: '%s'\n"
-#~ msgstr "%s: důvod chyby: '%s'\n"
-
-#~ msgid "%s: Failed to compile regex '%s' [original: '%s'] - malloc failed\n"
-#~ msgstr "%s: Selhala kompilace regex '%s' [originál: '%s'] - selhání malloc\n"
-
-#~ msgid "%s permission: not supported on current system.\n"
-#~ msgstr "%s povolení: není v současném systému podporováno.\n"
-
-#~ msgid "%s rule: not supported on current system.\n"
-#~ msgstr "%s pravidlo: není v současném systému podporováno.\n"
-
-#~ msgid "Profile names must begin with a '/', or keyword 'profile' or 'hat'."
-#~ msgstr ""
-#~ "Názvy profilů musí začínat znakem „/“ nebo klíčovými slovy „profile“ nebo "
-#~ "„hat“."
