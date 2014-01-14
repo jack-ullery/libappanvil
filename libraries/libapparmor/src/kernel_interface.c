@@ -31,7 +31,7 @@
 #include <inttypes.h>
 #include <pthread.h>
 
-#include "apparmor.h"
+#include <sys/apparmor.h>
 
 /* some non-Linux systems do not define a static value */
 #ifndef PATH_MAX

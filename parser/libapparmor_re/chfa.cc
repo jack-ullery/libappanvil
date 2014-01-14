@@ -32,6 +32,7 @@
 #include "hfa.h"
 #include "chfa.h"
 #include "../immunix.h"
+#include "flex-tables.h"
 
 void CHFA::init_free_list(vector<pair<size_t, size_t> > &free_list,
 				     size_t prev, size_t start)
@@ -52,6 +53,11 @@ CHFA::CHFA(DFA &dfa, map<uchar, uchar> &eq, dfaflags_t flags): eq(eq)
 {
 	if (flags & DFA_DUMP_TRANS_PROGRESS)
 		fprintf(stderr, "Compressing HFA:\r");
+
+	if (dfa.diffcount)
+		chfaflags = YYTH_FLAG_DIFF_ENCODE;
+	else
+		chfaflags = 0;
 
 	if (eq.empty())
 		max_eq = 255;
@@ -92,10 +98,10 @@ CHFA::CHFA(DFA &dfa, map<uchar, uchar> &eq, dfaflags_t flags): eq(eq)
 	default_base.push_back(make_pair(dfa.nonmatching, 0));
 	num.insert(make_pair(dfa.nonmatching, num.size()));
 
-	accept.resize(dfa.states.size());
-	accept2.resize(dfa.states.size());
-	next_check.resize(optimal);
-	free_list.resize(optimal);
+	accept.resize(max(dfa.states.size(), (size_t) 2));
+	accept2.resize(max(dfa.states.size(), (size_t) 2));
+	next_check.resize(max(optimal, (size_t) 256));
+	free_list.resize(next_check.size());
 
 	accept[0] = 0;
 	accept2[0] = 0;
@@ -242,6 +248,8 @@ repeat:
 	}
 
 do_insert:
+	if (from->flags & DiffEncodeFlag)
+		base |= DiffEncodeBit32;
 	default_base.push_back(make_pair(default_state, base));
 }
 
@@ -279,7 +287,7 @@ void CHFA::dump(ostream &os)
 			   << *next_check[i].second << " -> "
 			   << *next_check[i].first << ": ";
 
-			size_t offs = i - default_base[num[next_check[i].second]].second;
+			size_t offs = i - base_mask_size(default_base[num[next_check[i].second]].second);
 			if (eq.size())
 				os << offs;
 			else
@@ -296,7 +304,6 @@ void CHFA::dump(ostream &os)
  * (Only the -Cf and -Ce formats are currently supported.)
  */
 
-#include "flex-tables.h"
 #define YYTH_REGEX_MAGIC 0x1B5E783D
 
 static inline size_t pad64(size_t i)
@@ -395,6 +402,7 @@ void CHFA::flex_table(ostream &os, const char *name)
 
 	size_t hsize = pad64(sizeof(th) + sizeof(th_version) + strlen(name) + 1);
 	th.th_magic = htonl(YYTH_REGEX_MAGIC);
+	th.th_flags = htonl(chfaflags);
 	th.th_hsize = htonl(hsize);
 	th.th_ssize = htonl(hsize +
 			    flex_table_size(accept.begin(), accept.end()) +

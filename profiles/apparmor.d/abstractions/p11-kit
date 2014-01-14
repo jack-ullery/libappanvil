@@ -19,6 +19,9 @@
   /usr/share/p11-kit/modules/  r,
   /usr/share/p11-kit/modules/* r,
 
+  # gnome-keyring pkcs11 module
+  owner /{,var/}run/user/[0-9]*/keyring*/pkcs11 rw,
+
   # p11-kit also supports reading user configuration from ~/.pkcs11 depending
   # on how /etc/pkcs11/pkcs11.conf is configured. This should generally not be
   # included in this abstraction.

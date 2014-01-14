@@ -34,6 +34,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
+
+#include <unordered_map>
+#include <string>
+
 #define _(s) gettext(s)
 
 #include "parser.h"
@@ -48,7 +52,7 @@
 /* #define DEBUG */
 #ifdef DEBUG
 static int yy_top_state(void);
-#define PDEBUG(fmt, args...) printf("Lexer (Line %d) (state %s): " fmt, current_lineno, state_names[YY_START], ## args)
+#define PDEBUG(fmt, args...) printf("Lexer (Line %d) (state %s): " fmt, current_lineno, state_names[YY_START].c_str(), ## args)
 #else
 #define PDEBUG(fmt, args...)	/* Do nothing */
 #endif
@@ -72,13 +76,13 @@ do { \
 
 #define POP() \
 do { \
-	DUMP_AND_DEBUG(" (pop_to(%s)): Matched: %s\n", state_names[yy_top_state()], yytext); \
+	DUMP_AND_DEBUG(" (pop_to(%s)): Matched: %s\n", state_names[yy_top_state()].c_str(), yytext); \
 	yy_pop_state(); \
 } while (0)
 
 #define PUSH(X) \
 do { \
-	DUMP_AND_DEBUG(" (push(%s)): Matched: %s\n", state_names[(X)], yytext); \
+	DUMP_AND_DEBUG(" (push(%s)): Matched: %s\n", state_names[(X)].c_str(), yytext); \
 	yy_push_state(X); \
 } while (0)
 
@@ -96,7 +100,7 @@ do { \
 
 #define BEGIN_AND_RETURN(X, Y) \
 do { \
-	DUMP_AND_DEBUG(" (begin(%s)): Matched: %s\n", state_names[(X)], yytext); \
+	DUMP_AND_DEBUG(" (begin(%s)): Matched: %s\n", state_names[(X)].c_str(), yytext); \
 	BEGIN(X); \
 	return (Y); \
 } while (0)
@@ -104,9 +108,8 @@ do { \
 
 #define YY_NO_INPUT
 
-#define STATE_TABLE_ENT(X) [(X)] = #X
-/* static char *const state_names[]; */
-
+#define STATE_TABLE_ENT(X) {X, #X }
+extern unordered_map<int, string> state_names;
 
 struct cb_struct {
 	const char *fullpath;
@@ -465,6 +468,7 @@ LT_EQUAL	<=
 	bind		{ RETURN_TOKEN(TOK_BIND); }
 	read		{ RETURN_TOKEN(TOK_READ); }
 	write		{ RETURN_TOKEN(TOK_WRITE); }
+	eavesdrop	{ RETURN_TOKEN(TOK_EAVESDROP); }
 	{OPEN_PAREN}	{
 			yy_push_state(LIST_VAL_MODE);
 			RETURN_TOKEN(TOK_OPENPAREN);
@@ -591,7 +595,7 @@ LT_EQUAL	<=
 /* Create a table mapping lexer state number to the name used in the
  * in the code.  This allows for better debug output
  */
-static const char *const state_names[] = {
+unordered_map<int, string> state_names = {
 	STATE_TABLE_ENT(INITIAL),
 	STATE_TABLE_ENT(SUB_ID),
 	STATE_TABLE_ENT(SUB_VALUE),

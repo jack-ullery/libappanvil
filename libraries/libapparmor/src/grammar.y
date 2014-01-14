@@ -22,7 +22,7 @@
  * information about tokens given and rules matched. */
 #define YYDEBUG 0
 #include <string.h>
-#include "aalogparse.h"
+#include <aalogparse.h>
 #include "parser.h"
 #include "grammar.h"
 #include "scanner.h"

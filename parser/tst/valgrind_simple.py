@@ -45,15 +45,10 @@ VALGRIND_SUPPRESSIONS = '''
     valgrind-serialize_profile-obsessive-overreads
     Memcheck:Addr4
     fun:_Z*sd_serialize_profile*
-    fun:_Z*sd_serialize_codomain*
-    fun:_Z*load_codomain*
-    fun:_Z*__load_flattened_hat*
     ...
-    fun:twalk
-    fun:_Z*load_flattened_hats*
-    fun:_Z*sd_serialize_codomain*
-    fun:_Z*load_codomain*
-    fun:_Z*__load_policy*
+    fun:_Z*__sd_serialize_profile*
+    fun:_Z*load_profile*
+    fun:_Z*load_policy_list*
 }'''
 
 

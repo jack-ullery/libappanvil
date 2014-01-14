@@ -104,12 +104,20 @@ verify_binary_equality "dbus send + receive" \
 	"/t { dbus rw, }" \
 
 verify_binary_equality "dbus all accesses" \
-	"/t { dbus (send, receive, bind), }" \
-	"/t { dbus (read, write, bind), }" \
-	"/t { dbus (r, w, bind), }" \
-	"/t { dbus (rw, bind), }" \
+	"/t { dbus (send, receive, bind, eavesdrop), }" \
+	"/t { dbus (read, write, bind, eavesdrop), }" \
+	"/t { dbus (r, w, bind, eavesdrop), }" \
+	"/t { dbus (rw, bind, eavesdrop), }" \
 	"/t { dbus (), }" \
 	"/t { dbus, }" \
+
+verify_binary_equality "dbus implied accesses with a bus conditional" \
+	"/t { dbus (send, receive, bind, eavesdrop) bus=session, }" \
+	"/t { dbus (read, write, bind, eavesdrop) bus=session, }" \
+	"/t { dbus (r, w, bind, eavesdrop) bus=session, }" \
+	"/t { dbus (rw, bind, eavesdrop) bus=session, }" \
+	"/t { dbus () bus=session, }" \
+	"/t { dbus bus=session, }" \
 
 verify_binary_equality "dbus implied accesses for services" \
 	"/t { dbus bind name=com.foo, }" \
@@ -141,12 +149,12 @@ verify_binary_equality "dbus element parsing" \
 verify_binary_equality "dbus access parsing" \
 	"/t { dbus, }" \
 	"/t { dbus (), }" \
-	"/t { dbus (send, receive, bind), }" \
-	"/t { dbus (send receive bind), }" \
-	"/t { dbus (send,	receive                  bind), }" \
-	"/t { dbus (send,receive,bind), }" \
-	"/t { dbus (send,receive,,,,,,,,,,,,,,,,bind), }" \
-	"/t { dbus (send,send,send,send send receive,bind), }" \
+	"/t { dbus (send, receive, bind, eavesdrop), }" \
+	"/t { dbus (send receive bind eavesdrop), }" \
+	"/t { dbus (send,	receive                  bind,  eavesdrop), }" \
+	"/t { dbus (send,receive,bind,eavesdrop), }" \
+	"/t { dbus (send,receive,,,,,,,,,,,,,,,,bind,eavesdrop), }" \
+	"/t { dbus (send,send,send,send send receive,bind	eavesdrop), }" \
 
 verify_binary_equality "dbus variable expansion" \
 	"/t { dbus (send, receive) path=/com/foo member=spork interface=org.foo peer=(name=com.foo label=/com/foo), }" \
@@ -162,12 +170,19 @@ verify_binary_equality "dbus variable expansion" \
 
 verify_binary_equality "dbus variable expansion, multiple values/rules" \
 	"/t { dbus (send, receive) path=/com/foo, dbus (send, receive) path=/com/bar, }" \
+	"/t { dbus (send, receive) path=/com/{foo,bar}, }" \
+	"/t { dbus (send, receive) path={/com/foo,/com/bar}, }" \
 	"@{FOO}=foo
 	    /t { dbus (send, receive) path=/com/@{FOO}, dbus (send, receive) path=/com/bar, }" \
 	"@{FOO}=foo bar
 	    /t { dbus (send, receive) path=/com/@{FOO}, }" \
 	"@{FOO}=bar foo
-	    /t { dbus (send, receive) path=/com/@{FOO}, }"
+	    /t { dbus (send, receive) path=/com/@{FOO}, }" \
+	"@{FOO}={bar,foo}
+	    /t { dbus (send, receive) path=/com/@{FOO}, }" \
+	"@{FOO}=foo
+	 @{BAR}=bar
+	    /t { dbus (send, receive) path=/com/{@{FOO},@{BAR}}, }" \
 
 verify_binary_equality "dbus variable expansion, ensure rule de-duping occurs" \
 	"/t { dbus (send, receive) path=/com/foo, dbus (send, receive) path=/com/bar, }" \
@@ -176,6 +191,29 @@ verify_binary_equality "dbus variable expansion, ensure rule de-duping occurs" \
 	    /t { dbus (send, receive) path=/com/@{FOO}, }" \
 	"@{FOO}=bar foo bar foo
 	    /t { dbus (send, receive) path=/com/@{FOO}, dbus (send, receive) path=/com/@{FOO}, }"
+
+verify_binary_equality "dbus minimization with all perms" \
+	"/t { dbus, }" \
+	"/t { dbus bus=session, dbus, }" \
+	"/t { dbus (send, receive, bind, eavesdrop), dbus, }"
+
+verify_binary_equality "dbus minimization with bind" \
+	"/t { dbus bind, }" \
+	"/t { dbus bind bus=session, dbus bind, }" \
+	"/t { dbus bind bus=system name=com.foo, dbus bind, }"
+
+verify_binary_equality "dbus minimization with send and a bus conditional" \
+	"/t { dbus send bus=system, }" \
+	"/t { dbus send bus=system path=/com/foo interface=com.foo member=bar, dbus send bus=system, }" \
+	"/t { dbus send bus=system peer=(label=/usr/bin/foo), dbus send bus=system, }"
+
+verify_binary_equality "dbus minimization with an audit modifier" \
+	"/t { audit dbus eavesdrop, }" \
+	"/t { audit dbus eavesdrop bus=session, audit dbus eavesdrop, }"
+
+verify_binary_equality "dbus minimization with a deny modifier" \
+	"/t { deny dbus send bus=system peer=(name=com.foo), }" \
+	"/t { deny dbus send bus=system peer=(name=com.foo label=/usr/bin/foo), deny dbus send bus=system peer=(name=com.foo), }" \
 
 if [ $fails -ne 0 -o $errors -ne 0 ]
 then

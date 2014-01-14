@@ -27,6 +27,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <libintl.h>
+#include <sys/apparmor.h>
 #define _(s) gettext(s)
 
 /* #define DEBUG */
@@ -132,6 +133,7 @@ void add_local_entry(Profile *prof);
 %token TOK_BIND
 %token TOK_READ
 %token TOK_WRITE
+%token TOK_EAVESDROP
 %token TOK_PEER
 
  /* rlimits */
@@ -657,7 +659,7 @@ rules: rules opt_prefix network_rule
 rules:  rules opt_prefix mnt_rule
 	{
 		if ($2.owner)
-			yyerror(_("owner prefix not allow on mount rules"));
+			yyerror(_("owner prefix not allowed on mount rules"));
 		if ($2.deny && $2.audit) {
 			$3->deny = 1;
 		} else if ($2.deny) {
@@ -674,7 +676,7 @@ rules:  rules opt_prefix mnt_rule
 rules:  rules opt_prefix dbus_rule
 	{
 		if ($2.owner)
-			yyerror(_("owner prefix not allow on dbus rules"));
+			yyerror(_("owner prefix not allowed on dbus rules"));
 		if ($2.deny && $2.audit) {
 			$3->deny = 1;
 		} else if ($2.deny) {
@@ -701,7 +703,7 @@ rules:	rules change_profile
 rules:  rules opt_prefix capability
 	{
 		if ($2.owner)
-			yyerror(_("owner prefix not allow on capability rules"));
+			yyerror(_("owner prefix not allowed on capability rules"));
 
 		if ($2.deny)
 			$1->caps.deny |= $3;
@@ -1165,6 +1167,8 @@ dbus_perm: TOK_VALUE
 			$$ = AA_DBUS_SEND;
 		else if (strcmp($1, "receive") == 0 || strcmp($1, "read") == 0)
 			$$ = AA_DBUS_RECEIVE;
+		else if (strcmp($1, "eavesdrop") == 0)
+			$$ = AA_DBUS_EAVESDROP;
 		else if ($1) {
 			parse_dbus_mode($1, &$$, 1);
 		} else
@@ -1178,6 +1182,7 @@ dbus_perm: TOK_VALUE
 	| TOK_RECEIVE { $$ = AA_DBUS_RECEIVE; }
 	| TOK_READ { $$ = AA_DBUS_RECEIVE; }
 	| TOK_WRITE { $$ = AA_DBUS_SEND; }
+	| TOK_EAVESDROP { $$ = AA_DBUS_EAVESDROP; }
 	| TOK_MODE
 	{
 		parse_dbus_mode($1, &$$, 1);

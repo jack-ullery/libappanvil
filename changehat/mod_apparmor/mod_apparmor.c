@@ -23,7 +23,7 @@
 #include "apr_strings.h"
 #include "apr_lib.h"
 
-#include <apparmor.h>
+#include <sys/apparmor.h>
 #include <unistd.h>
 
 /* #define DEBUG */

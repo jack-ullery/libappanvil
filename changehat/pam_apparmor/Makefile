@@ -26,12 +26,48 @@ common/Make.rules: $(COMMONDIR)/Make.rules
 	ln -sf $(COMMONDIR) .
 endif
 
-EXTRA_CFLAGS=$(CFLAGS) -fPIC -shared -Wall -I../../libraries/libapparmor/src/
-LINK_FLAGS=-Xlinker -x -L../../libraries/libapparmor/src/.libs
-LIBS=-lpam -lapparmor
+ifdef USE_SYSTEM
+  LIBAPPARMOR = $(shell if pkg-config --exists libapparmor ; then \
+                                pkg-config --silence-errors --libs libapparmor ; \
+                        elif ldconfig -p | grep -q libapparmor\.so$$ ; then \
+                                echo -lapparmor ; \
+                        fi )
+  ifeq ($(strip $(LIBAPPARMOR)),)
+    ERROR_MESSAGE = Unable to find libapparmor installed on this system; either \
+            install libapparmor devel packages, set the LIBAPPARMOR variable \
+            manually, or build against in-tree libapparmor)
+  endif
+  LIBAPPARMOR_INCLUDE =
+  AA_LDLIBS = $(LIBAPPARMOR)
+  AA_LINK_FLAGS =
+else
+  LIBAPPARMOR_SRC := ../../libraries/libapparmor/
+  LIBAPPARMOR_INCLUDE_PATH = $(LIBAPPARMOR_SRC)/include
+  LIBAPPARMOR_PATH := $(LIBAPPARMOR_SRC)/src/.libs/
+    ifeq ($(realpath $(LIBAPPARMOR_PATH)/libapparmor.a),)
+        ERROR_MESSAGE = $(LIBAPPARMOR_PATH)/libapparmor.a is missing; either build against \
+                the in-tree libapparmor by building it first and then trying again \
+                (see the top-level README for help) or build against the system \
+                libapparmor by adding USE_SYSTEM=1 to your make command.)
+    endif
+  LIBAPPARMOR_INCLUDE = -I$(LIBAPPARMOR_INCLUDE_PATH)
+  AA_LINK_FLAGS = -L$(LIBAPPARMOR_PATH)
+  AA_LDLIBS = -lapparmor
+endif
+EXTRA_CFLAGS=$(CFLAGS) -fPIC -shared -Wall $(LIBAPPARMOR_INCLUDE)
+LINK_FLAGS=-Xlinker -x $(AA_LINK_FLAGS)
+LIBS=-lpam $(AA_LDLIBS)
 OBJECTS=${NAME}.o get_options.o
 
-all: $(NAME).so
+.PHONY: libapparmor_check
+.SILENT: libapparmor_check
+libapparmor_check:
+	 @if [ -n "$(ERROR_MESSAGE)" ] ; then \
+	 	echo "$(ERROR_MESSAGE)" 1>&2 ; \
+		return 1 ; \
+	fi
+
+all: libapparmor_check $(NAME).so
 
 $(NAME).so: ${OBJECTS}
 	$(CC) $(EXTRA_CFLAGS) $(LINK_FLAGS) -o $@ ${OBJECTS} $(LIBS)

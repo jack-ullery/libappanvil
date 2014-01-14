@@ -5,7 +5,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "aalogparse.h"
+#include <aalogparse.h>
 
 int print_results(aa_log_record *record);
 

@@ -99,11 +99,13 @@ B<MOUNT FLAGS> = ( 'ro' | 'rw' | 'nosuid' | 'suid' | 'nodev' | 'dev' | 'noexec' 
 
 B<MOUNT EXPRESSION> = ( I<ALPHANUMERIC> | I<AARE> ) ...
 
-B<DBUS RULE> = ( I<DBUS MESSAGE RULE> | I<DBUS SERVICE RULE> | I<DBUS COMBINED RULE> )
+B<DBUS RULE> = ( I<DBUS MESSAGE RULE> | I<DBUS SERVICE RULE> | I<DBUS EAVESDROP RULE> | I<DBUS COMBINED RULE> )
 
 B<DBUS MESSAGE RULE> = [ 'audit' ] [ 'deny' ] 'dbus' [ I<DBUS ACCESS EXPRESSION> ] [ I<DBUS BUS> ] [ I<DBUS PATH> ] [ I<DBUS INTERFACE> ] [ I<DBUS MEMBER> ] [ I<DBUS PEER> ]
 
 B<DBUS SERVICE RULE> = [ 'audit' ] [ 'deny' ] 'dbus' [ I<DBUS ACCESS EXPRESSION> ] [ I<DBUS BUS> ] [ I<DBUS NAME> ]
+
+B<DBUS EAVESDROP RULE> = [ 'audit' ] [ 'deny' ] 'dbus' [ I<DBUS ACCESS EXPRESSION> ] [ I<DBUS BUS> ]
 
 B<DBUS COMBINED RULE> = [ 'audit' ] [ 'deny' ] 'dbus' [ I<DBUS ACCESS EXPRESSION> ] [ I<DBUS BUS> ]
 
@@ -125,7 +127,7 @@ B<DBUS LABEL> = 'label' '=' '(' '"' I<AARE> '"' | I<AARE> ')'
 
 B<DBUS ACCESS LIST> = Comma separated list of I<DBUS ACCESS>
 
-B<DBUS ACCESS> = ( 'send' | 'receive' | 'bind' )  (some accesses are incompatible with some rules; see below.)
+B<DBUS ACCESS> = ( 'send' | 'receive' | 'bind' | 'eavesdrop' )  (some accesses are incompatible with some rules; see below.)
 
 B<AARE> = B<?*[]{}^> (see below for meanings)
 
@@ -669,7 +671,8 @@ examined.
 
 Some AppArmor DBus permissions are not compatible with all AppArmor DBus rules.
 The 'bind' permission cannot be used in message rules. The 'send' and 'receive'
-permissions cannot be used in service rules.
+permissions cannot be used in service rules. The 'eavesdrop' permission cannot
+be used in rules containing any conditionals outside of the 'bus' conditional.
 
 AppArmor DBus permissions are implied when a rule does not explicitly state an
 access list. By default, all DBus permissions are implied. Only message
@@ -704,6 +707,12 @@ Example AppArmor DBus rules:
          interface=com.example.Interface
          member=ExampleMethod
          peer=(name=(com.example.ExampleName1|com.example.ExampleName2)),
+
+    # Allow eavesdropping on the system bus
+    dbus eavesdrop bus=system,
+
+    # Allow and audit all eavesdropping
+    audit dbus eavesdrop,
 
 =head2 Variables
 

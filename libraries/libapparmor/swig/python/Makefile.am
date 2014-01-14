@@ -5,7 +5,7 @@ EXTRA_DIST      = libapparmor_wrap.c
 SUBDIRS = test
 
 libapparmor_wrap.c: $(srcdir)/../SWIG/libapparmor.i
-	$(SWIG) -python -I$(srcdir)/../../src -module LibAppArmor -o $@ $(srcdir)/../SWIG/libapparmor.i
+	$(SWIG) -python -I$(srcdir)/../../include -module LibAppArmor -o $@ $(srcdir)/../SWIG/libapparmor.i
 	mv LibAppArmor.py __init__.py
 
 MOSTLYCLEANFILES=libapparmor_wrap.c __init__.py

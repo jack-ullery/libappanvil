@@ -31,7 +31,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <netinet/in.h>
-#include "aalogparse.h"
+#include <aalogparse.h>
 #include "parser.h"
 
 /* This is mostly just a wrapper around the code in grammar.y */

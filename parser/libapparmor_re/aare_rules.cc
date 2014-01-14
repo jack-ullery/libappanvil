@@ -315,6 +315,13 @@ void *aare_create_dfa(aare_ruleset_t *rules, size_t *size,
 		} else if (flags & DFA_DUMP_EQUIV)
 			cerr << "\nDFA did not generate an equivalence class\n";
 
+		if (flags & DFA_CONTROL_DIFF_ENCODE) {
+			dfa.diff_encode(flags);
+
+			if (flags & DFA_DUMP_DIFF_ENCODE)
+				dfa.dump_diff_encode(cerr);
+		}
+
 		CHFA chfa(dfa, eq, flags);
 		if (flags & DFA_DUMP_TRANS_TABLE)
 			chfa.dump(cerr);

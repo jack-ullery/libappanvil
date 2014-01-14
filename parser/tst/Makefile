@@ -8,12 +8,13 @@ PROVE_ARG=-f
 
 ifeq ($(VERBOSE),1)
   PROVE_ARG+=-v
+  PYTEST_ARG = -v
 endif
 
 all: tests
 
-.PHONY: tests error_output gen_dbus gen_xtrans parser_sanity caching minimize equality
-tests: error_output parser_sanity caching minimize equality
+.PHONY: tests error_output gen_dbus gen_xtrans parser_sanity caching minimize equality valgrind
+tests: error_output caching minimize equality parser_sanity
 
 GEN_TRANS_DIRS=simple_tests/generated_x/ simple_tests/generated_perms_leading/ simple_tests/generated_perms_safe/ simple_tests/generated_dbus
 
@@ -42,7 +43,7 @@ parser_sanity: $(PARSER) gen_xtrans gen_dbus
 	$(Q)LANG=C APPARMOR_PARSER="$(PARSER)" ${PROVE} ${PROVE_ARG} ${TESTS}
 
 caching: $(PARSER)
-	LANG=C APPARMOR_PARSER="$(PARSER)" ./caching.sh
+	LANG=C ./caching.py -p "$(PARSER)" $(PYTEST_ARG)
 
 minimize: $(PARSER)
 	LANG=C APPARMOR_PARSER="$(PARSER)" ./minimize.sh
@@ -58,3 +59,4 @@ $(PARSER):
 
 clean:
 	find $(GEN_TRANS_DIRS) -type f | xargs rm -f
+	rm -f gmon.out

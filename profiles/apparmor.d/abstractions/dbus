@@ -10,4 +10,5 @@
 # ------------------------------------------------------------------
 
   # System socket. Be careful when including this abstraction.
-  /{,var/}run/dbus/system_bus_socket w,
+  /{,var/}run/dbus/system_bus_socket rw,
+  dbus bus=system,

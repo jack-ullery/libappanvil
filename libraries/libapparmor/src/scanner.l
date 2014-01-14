@@ -27,7 +27,7 @@
 %{
 
 #include "grammar.h"
-#include "aalogparse.h"
+#include <aalogparse.h>
 #include "parser.h"
 
 #include <assert.h>

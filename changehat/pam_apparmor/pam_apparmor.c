@@ -27,7 +27,7 @@
 #include <grp.h>
 #include <syslog.h>
 #include <errno.h>
-#include <apparmor.h>
+#include <sys/apparmor.h>
 #include <security/pam_ext.h>
 #include <security/pam_modutil.h>
 

@@ -1,5 +1,6 @@
 /*
  *	Copyright (C) 2002-2005 Novell/SUSE
+ *	Copyright (C) 2013 Canonical Ltd.
  *
  *	This program is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License as
@@ -69,14 +70,14 @@ int main(int argc, char *argv[])
 		if (rc != strlen(profile) + strlen(mode) + 4) {
 			/* rc includes mode. + 2 null term + 1 ( + 1 space */
 			fprintf(stderr,
-				"FAIL: expected return len %d != actual %d\n",
+				"FAIL: expected return len %zd != actual %d\n",
 				strlen(profile) + strlen(mode) + 4, rc);
 			exit(1);
 		}
 	} else if (rc != strlen(profile) + 1) {
 		/* rc includes null termination */
 		fprintf(stderr,
-			"FAIL: expected return len %d != actual %d\n",
+			"FAIL: expected return len %zd != actual %d\n",
 			strlen(profile) + 1, rc);
 		exit(1);
 	}

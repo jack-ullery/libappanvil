@@ -4,7 +4,7 @@ if HAVE_PERL
 noinst_DATA =LibAppArmor.so
 
 libapparmor_wrap.c: $(srcdir)/../SWIG/libapparmor.i
-	$(SWIG) -perl -I$(srcdir)/../../src -module LibAppArmor -o $@ $(srcdir)/../SWIG/libapparmor.i
+	$(SWIG) -perl -I$(srcdir)/../../include -module LibAppArmor -o $@ $(srcdir)/../SWIG/libapparmor.i
 
 MOSTLYCLEANFILES=libapparmor_wrap.c LibAppArmor.pm
 

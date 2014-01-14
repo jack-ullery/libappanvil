@@ -24,33 +24,19 @@
 __BEGIN_DECLS
 
 /*
- * Class of mediation types in the AppArmor policy db
+ * Class of public mediation types in the AppArmor policy db
  */
-#define AA_CLASS_COND		0
-#define AA_CLASS_UNKNOWN	1
-#define AA_CLASS_FILE		2
-#define AA_CLASS_CAP		3
-#define AA_CLASS_NET		4
-#define AA_CLASS_RLIMITS	5
-#define AA_CLASS_DOMAIN		6
-#define AA_CLASS_MOUNT		7
-#define AA_CLASS_NS_DOMAIN	8
-#define AA_CLASS_PTRACE		9
-
-#define AA_CLASS_ENV		16
 
 #define AA_CLASS_DBUS		32
-#define AA_CLASS_X		33
 
 
-/* Permission Flags for Mediation classes */
-#define AA_MAY_WRITE		(1 << 1)
-#define AA_MAY_READ		(1 << 2)
-#define AA_MAY_BIND		(1 << 6)
-
-#define AA_DBUS_SEND		AA_MAY_WRITE
-#define AA_DBUS_RECEIVE		AA_MAY_READ
-#define AA_DBUS_BIND		AA_MAY_BIND
+/* Permission flags for the AA_CLASS_DBUS mediation class */
+#define AA_DBUS_SEND			(1 << 1)
+#define AA_DBUS_RECEIVE		 	(1 << 2)
+#define AA_DBUS_EAVESDROP		(1 << 5)
+#define AA_DBUS_BIND			(1 << 6)
+#define AA_VALID_DBUS_PERMS		(AA_DBUS_SEND | AA_DBUS_RECEIVE | \
+					 AA_DBUS_BIND | AA_DBUS_EAVESDROP)
 
 
 /* Prototypes for apparmor state queries */
