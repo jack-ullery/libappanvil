@@ -5,8 +5,8 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor\n"
-"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"Project-Id-Version: apparmor-utils\n"
+"Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2013-11-13 16:44-0800\n"
 "PO-Revision-Date: 2013-12-07 11:01+0000\n"
 "Last-Translator: Kshitij Gupta <kgupta8592@gmail.com>\n"

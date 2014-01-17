@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-parser\n"
-"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2013-11-14 10:18-0800\n"
 "PO-Revision-Date: 2013-12-06 18:48+0000\n"
 "Last-Translator: Christian Boltz <Unknown>\n"
