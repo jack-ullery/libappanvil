@@ -9,8 +9,8 @@
 # Vasileios Giannakopoulos <billg@billg.gr>, 2008.
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-parser.el\n"
-"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"Project-Id-Version: apparmor-parser\n"
+"Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2013-11-14 10:18-0800\n"
 "PO-Revision-Date: 2013-11-15 01:42+0000\n"
 "Last-Translator: Vasileios Giannakopoulos <Unknown>\n"

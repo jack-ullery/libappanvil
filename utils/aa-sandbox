@@ -10,9 +10,8 @@
 # ------------------------------------------------------------------
 
 import apparmor.sandbox
-from apparmor.common import AppArmorException, error
+from apparmor.common import error
 import optparse
-import os
 import sys
 
 if __name__ == "__main__":

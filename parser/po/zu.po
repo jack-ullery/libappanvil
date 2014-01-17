@@ -5,8 +5,8 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: subdomain-parser 1.1\n"
-"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"Project-Id-Version: apparmor-parser\n"
+"Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2013-11-14 10:18-0800\n"
 "PO-Revision-Date: 2013-11-15 04:18+0000\n"
 "Last-Translator: Novell Language <Unknown>\n"

@@ -8,8 +8,8 @@
 # Carlos Gonçalves <cgoncalves@opensuse.org>, 2007.
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-parser.pt\n"
-"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"Project-Id-Version: apparmor-parser\n"
+"Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2013-11-14 10:18-0800\n"
 "PO-Revision-Date: 2013-11-15 03:44+0000\n"
 "Last-Translator: Antonio Cardoso Martins <digiplan.pt@gmail.com>\n"

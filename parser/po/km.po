@@ -4,8 +4,8 @@
 # translation of apparmor-parser.km.po to
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-parser.km\n"
-"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"Project-Id-Version: apparmor-parser\n"
+"Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2013-11-14 10:18-0800\n"
 "PO-Revision-Date: 2013-11-15 02:34+0000\n"
 "Last-Translator: Khoem Sokhem <khoemsokhem@khmeros.info>\n"

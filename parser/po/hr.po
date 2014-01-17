@@ -8,8 +8,8 @@
 # Krešimir Jozić <kjozic@gmail.com>, 2006, 2007, 2008.
 msgid ""
 msgstr ""
-"Project-Id-Version: apparmor-parser.hr\n"
-"Report-Msgid-Bugs-To: apparmor-general@forge.novell.com\n"
+"Project-Id-Version: apparmor-parser\n"
+"Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2013-11-14 10:18-0800\n"
 "PO-Revision-Date: 2013-11-15 02:58+0000\n"
 "Last-Translator: Krešimir Jozić <Unknown>\n"

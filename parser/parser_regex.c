@@ -728,16 +728,13 @@ static int build_mnt_opts(std::string& buffer, struct value_list *opts)
 	list_for_each(opts, ent) {
 		ptype = convert_aaregex_to_pcre(ent->value, 0, buffer, &pos);
 		if (ptype == ePatternInvalid)
-			goto fail;
+			return FALSE;
 
 		if (ent->next)
 			buffer.append(",");
 	}
 
 	return TRUE;
-
-fail:
-	return FALSE;
 }
 
 static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
