@@ -55,6 +55,7 @@
   # NetworkManager integration
   /{,var/}run/nm-dns-dnsmasq.conf r,
   /{,var/}run/sendsigs.omit.d/*dnsmasq.pid w,
+  /{,var/}run/NetworkManager/dnsmasq.conf r,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.dnsmasq>
