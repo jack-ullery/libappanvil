@@ -55,11 +55,10 @@ if __name__ == "__main__":
             files = [os.path.join(easyp.dirs['policygroups'], g)]
             apparmor.easyprof.print_files(files)
         sys.exit(0)
-    elif binary == None:
+    elif binary is None:
         error("Must specify full path to binary\n%s" % m)
 
     # if we made it here, generate a profile
     params = apparmor.easyprof.gen_policy_params(binary, opt)
     p = easyp.gen_policy(**params)
     sys.stdout.write('%s\n' % p)
-
