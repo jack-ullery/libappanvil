@@ -38,6 +38,7 @@
 
 /* Compatibility with apache 2.2 */
 #if AP_SERVER_MAJORVERSION_NUMBER == 2 && AP_SERVER_MINORVERSION_NUMBER < 3
+  #define APLOG_TRACE1 APLOG_DEBUG
   server_rec *ap_server_conf = NULL;
 #endif
 
@@ -79,7 +80,7 @@ immunix_init (apr_pool_t *p, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s)
     } else {
         ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf, "Failed to open /dev/urandom");
     }
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "Opened /dev/urandom successfully");
+    ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf, "Opened /dev/urandom successfully");
 
     return OK;
 }
@@ -92,7 +93,7 @@ immunix_child_init (apr_pool_t *p, server_rec *s)
 {
     int ret;
 
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "init: calling change_hat");
+    ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf, "init: calling change_hat");
     ret = change_hat (DEFAULT_HAT, magic_token);
     if (ret < 0) {
     	change_hat (NULL, magic_token);
@@ -139,7 +140,7 @@ immunix_enter_hat (request_rec *r)
     		ap_get_module_config (r->server->module_config, &apparmor_module);
 
     debug_dump_uri (&r->parsed_uri);
-    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "in immunix_enter_hat (%s) n:0x%lx p:0x%lx main:0x%lx",
+    ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "in immunix_enter_hat (%s) n:0x%lx p:0x%lx main:0x%lx",
     	dcfg->path, (unsigned long) r->next, (unsigned long) r->prev, 
 	(unsigned long) r->main);
 
@@ -195,7 +196,7 @@ immunix_exit_hat (request_rec *r)
     		ap_get_module_config (r->per_dir_config, &apparmor_module);
     /* immunix_srv_cfg * scfg = (immunix_srv_cfg *)
     		ap_get_module_config (r->server->module_config, &apparmor_module); */
-    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "exiting change_hat - dir hat %s path %s", dcfg->hat_name, dcfg->path);
+    ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "exiting change_hat - dir hat %s path %s", dcfg->hat_name, dcfg->path);
     change_hat (NULL, magic_token);
 
     sd_ret = change_hat (DEFAULT_HAT, magic_token);
@@ -269,7 +270,7 @@ immunix_create_dir_config (apr_pool_t * p, char * path)
 {
     immunix_dir_cfg * newcfg = (immunix_dir_cfg *) apr_pcalloc(p, sizeof(* newcfg));
 
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "in immunix_create_dir (%s)", path ? path : ":no path:");
+    ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf, "in immunix_create_dir (%s)", path ? path : ":no path:");
     if (newcfg == NULL) {
         ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf, "immunix_create_dir: couldn't alloc dir config");
     	return NULL;
@@ -286,7 +287,7 @@ immunix_merge_dir_config (apr_pool_t * p, void * parent, void * child)
 {
     immunix_dir_cfg * newcfg = (immunix_dir_cfg *) apr_pcalloc(p, sizeof(* newcfg));
 
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "in immunix_merge_dir ()");
+    ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf, "in immunix_merge_dir ()");
     if (newcfg == NULL)
     	return NULL;
 
@@ -299,7 +300,7 @@ immunix_create_srv_config (apr_pool_t * p, server_rec * srv)
 {
     immunix_srv_cfg * newcfg = (immunix_srv_cfg *) apr_pcalloc(p, sizeof(* newcfg));
 
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "in immunix_create_srv");
+    ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf, "in immunix_create_srv");
     if (newcfg == NULL) {
         ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf, "immunix_create_srv: couldn't alloc srv config");
     	return NULL;
