@@ -93,7 +93,8 @@ immunix_child_init (apr_pool_t *p, server_rec *s)
 {
     int ret;
 
-    ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf, "init: calling change_hat");
+    ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf,
+		    "init: calling change_hat with '%s'", DEFAULT_HAT);
     ret = aa_change_hat(DEFAULT_HAT, magic_token);
     if (ret < 0) {
     	aa_change_hat(NULL, magic_token);
@@ -192,7 +193,8 @@ immunix_exit_hat (request_rec *r)
     		ap_get_module_config (r->per_dir_config, &apparmor_module);
     /* immunix_srv_cfg * scfg = (immunix_srv_cfg *)
     		ap_get_module_config (r->server->module_config, &apparmor_module); */
-    ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "exiting change_hat - dir hat %s path %s", dcfg->hat_name, dcfg->path);
+    ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "exiting change_hat: dir hat %s dir path %s",
+		    dcfg->hat_name, dcfg->path);
     aa_change_hat(NULL, magic_token);
 
     sd_ret = aa_change_hat(DEFAULT_HAT, magic_token);
