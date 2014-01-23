@@ -355,7 +355,7 @@ int aa_change_hat(const char *subprofile, unsigned long token)
 	int rc = -1;
 	int len = 0;
 	char *buf = NULL;
-	const char *fmt = "changehat %016x^%s";
+	const char *fmt = "changehat %016lx^%s";
 
 	/* both may not be null */
 	if (!(token || subprofile)) {
