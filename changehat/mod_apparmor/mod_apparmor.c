@@ -104,24 +104,20 @@ immunix_child_init (apr_pool_t *p, server_rec *s)
     }
 }    			 
 
-#ifdef DEBUG
 static void
-debug_dump_uri (apr_uri_t * uri) 
+debug_dump_uri(request_rec *r)
 {
-    if (uri) 
-    	ap_log_error (APLOG_MARK, APLOG_ERR, 0, NULL, "Dumping uri info "
+    apr_uri_t *uri = &r->parsed_uri;
+    if (uri)
+    	ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "Dumping uri info "
     	          "scheme='%s' host='%s' path='%s' query='%s' fragment='%s'",
     		  uri->scheme, uri->hostname, uri->path, uri->query,
 		  uri->fragment);
     else
-    	ap_log_error (APLOG_MARK, APLOG_ERR, 0, NULL, "Asked to dump NULL uri");
+    	ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "Asked to dump NULL uri");
 
 }
-#else
-static void
-debug_dump_uri (apr_uri_t * __unused uri) { }
-#endif
-    
+
 /* 
    immunix_enter_hat will attempt to change_hat in the following order:
    (1) to a hatname in a location directive
@@ -139,7 +135,7 @@ immunix_enter_hat (request_rec *r)
     immunix_srv_cfg * scfg = (immunix_srv_cfg *) 
     		ap_get_module_config (r->server->module_config, &apparmor_module);
 
-    debug_dump_uri (&r->parsed_uri);
+    debug_dump_uri(r);
     ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "in immunix_enter_hat (%s) n:0x%lx p:0x%lx main:0x%lx",
     	dcfg->path, (unsigned long) r->next, (unsigned long) r->prev, 
 	(unsigned long) r->main);
