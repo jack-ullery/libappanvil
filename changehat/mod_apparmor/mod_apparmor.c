@@ -175,13 +175,23 @@ immunix_enter_hat (request_rec *r)
     } else {
     	ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "scfg is null");
     }
-    if (scfg != NULL && scfg->hat_name != NULL) {
-        ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat [scfg] %s", scfg->hat_name);
-        sd_ret = aa_change_hat(scfg->hat_name, magic_token);
-	if (sd_ret < 0) {
-	    aa_change_hat(NULL, magic_token);
-	} else {
-	    return OK;
+    if (scfg != NULL) {
+	if (scfg->hat_name != NULL) {
+            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat [scfg] %s", scfg->hat_name);
+            sd_ret = aa_change_hat(scfg->hat_name, magic_token);
+	    if (sd_ret < 0) {
+	        aa_change_hat(NULL, magic_token);
+	    } else {
+	        return OK;
+	    }
+        } else {
+            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat w/server_name %s", r->server->server_hostname);
+            sd_ret = aa_change_hat(r->server->server_hostname, magic_token);
+	    if (sd_ret < 0) {
+	        aa_change_hat(NULL, magic_token);
+	    } else {
+	        return OK;
+	    }
 	}
     }
 
