@@ -1,33 +1,32 @@
-# Last Modified: Mon Mar 26 20:28:18 2012
 #include <tunables/global>
 
 /usr/sbin/winbindd {
   #include <abstractions/base>
   #include <abstractions/nameservice>
+  #include <abstractions/samba>
 
-  /etc/samba/dhcp.conf r,
+  deny capability block_suspend,
+
+  capability ipc_lock,
+  capability setuid,
+
   /etc/samba/passdb.tdb rwk,
   /etc/samba/secrets.tdb rwk,
   @{PROC}/sys/kernel/core_pattern r,
   /tmp/.winbindd/ w,
+  /tmp/krb5cc_* rwk,
   /usr/lib*/samba/idmap/*.so mr,
   /usr/lib*/samba/nss_info/*.so mr,
+  /usr/lib*/samba/pdb/*.so mr,
   /usr/sbin/winbindd mr,
-  /var/lib/samba/account_policy.tdb rwk,
-  /var/lib/samba/gencache.tdb rwk,
-  /var/lib/samba/gencache_notrans.tdb rwk,
-  /var/lib/samba/group_mapping.tdb rwk,
-  /var/lib/samba/messages.tdb rwk,
-  /var/lib/samba/netsamlogon_cache.tdb rwk,
-  /var/lib/samba/serverid.tdb rwk,
-  /var/lib/samba/winbindd_cache.tdb rwk,
-  /var/lib/samba/winbindd_privileged/pipe w,
-  /var/log/samba/cores/ rw,
-  /var/log/samba/cores/winbindd/ rw,
-  /var/log/samba/cores/winbindd/** rw,
-  /var/log/samba/log.wb-* w,
+  /var/cache/samba/*.tdb rwk,
+  /var/lib/samba/smb_krb5/krb5.conf.* rw,
+  /var/lib/samba/smb_tmp_krb5.* rw,
+  /var/lib/samba/winbindd_cache.tdb* rwk,
   /var/log/samba/log.winbindd rw,
   /{var/,}run/samba/winbindd.pid rwk,
+  /{var/,}run/samba/winbindd/ rw,
+  /{var/,}run/samba/winbindd/pipe w,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.winbindd>
