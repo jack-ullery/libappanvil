@@ -17,6 +17,7 @@
 #include "http_config.h"
 #include "http_request.h"
 #include "http_log.h"
+#include "http_main.h"
 #include "http_protocol.h"
 #include "util_filter.h"
 #include "apr.h"
@@ -35,6 +36,14 @@
 #define DEFAULT_HAT "HANDLING_UNTRUSTED_INPUT"
 #define DEFAULT_URI_HAT "DEFAULT_URI"
 
+/* Compatibility with apache 2.2 */
+#if AP_SERVER_MAJORVERSION_NUMBER == 2 && AP_SERVER_MINORVERSION_NUMBER < 3
+  server_rec *ap_server_conf = NULL;
+#endif
+
+#ifdef APLOG_USE_MODULE
+  APLOG_USE_MODULE(apparmor);
+#endif
 module AP_MODULE_DECLARE_DATA apparmor_module;
 
 static unsigned int magic_token = 0;
@@ -68,9 +77,9 @@ immunix_init (apr_pool_t *p, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s)
     	apr_file_read (file, (void *) &magic_token, &size);
 	apr_file_close (file);
     } else {
-        ap_log_error (APLOG_MARK, APLOG_ERR, 0, NULL, "Failed to open /dev/urandom");
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf, "Failed to open /dev/urandom");
     }
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "Opened /dev/urandom successfully");
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "Opened /dev/urandom successfully");
 
     return OK;
 }
@@ -83,11 +92,11 @@ immunix_child_init (apr_pool_t *p, server_rec *s)
 {
     int ret;
 
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "init: calling change_hat");
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "init: calling change_hat");
     ret = change_hat (DEFAULT_HAT, magic_token);
     if (ret < 0) {
     	change_hat (NULL, magic_token);
-        ap_log_error (APLOG_MARK, APLOG_ERR, 0, NULL, "Failed to change_hat to '%s'",
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf, "Failed to change_hat to '%s'",
 			DEFAULT_HAT);
     } else {
         inside_default_hat = 1;
@@ -130,7 +139,7 @@ immunix_enter_hat (request_rec *r)
     		ap_get_module_config (r->server->module_config, &apparmor_module);
 
     debug_dump_uri (&r->parsed_uri);
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "in immunix_enter_hat (%s) n:0x%lx p:0x%lx main:0x%lx", 
+    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "in immunix_enter_hat (%s) n:0x%lx p:0x%lx main:0x%lx",
     	dcfg->path, (unsigned long) r->next, (unsigned long) r->prev, 
 	(unsigned long) r->main);
 
@@ -144,7 +153,7 @@ immunix_enter_hat (request_rec *r)
     }
 
     if (dcfg != NULL && dcfg->hat_name != NULL) {
-        ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "calling change_hat [dcfg] %s", dcfg->hat_name);
+        ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat [dcfg] %s", dcfg->hat_name);
         sd_ret = change_hat (dcfg->hat_name, magic_token);
 	if (sd_ret < 0) {
 	    change_hat (NULL, magic_token);
@@ -153,7 +162,7 @@ immunix_enter_hat (request_rec *r)
 	}
     }
 
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "calling change_hat [uri] %s", r->uri);
+    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat [uri] %s", r->uri);
     sd_ret = change_hat (r->uri, magic_token);
     if (sd_ret < 0) {
     	change_hat (NULL, magic_token);
@@ -162,7 +171,7 @@ immunix_enter_hat (request_rec *r)
     }
 
     if (scfg != NULL && scfg->hat_name != NULL) {
-        ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "calling change_hat [scfg] %s", scfg->hat_name);
+        ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat [scfg] %s", scfg->hat_name);
         sd_ret = change_hat (scfg->hat_name, magic_token);
 	if (sd_ret < 0) {
 	    change_hat (NULL, magic_token);
@@ -171,7 +180,7 @@ immunix_enter_hat (request_rec *r)
 	}
     }
 
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "calling change_hat DEFAULT_URI");
+    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat DEFAULT_URI");
     sd_ret = change_hat (DEFAULT_URI_HAT, magic_token);
     if (sd_ret < 0) change_hat (NULL, magic_token);
 
@@ -186,13 +195,13 @@ immunix_exit_hat (request_rec *r)
     		ap_get_module_config (r->per_dir_config, &apparmor_module);
     /* immunix_srv_cfg * scfg = (immunix_srv_cfg *)
     		ap_get_module_config (r->server->module_config, &apparmor_module); */
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "exiting change_hat - dir hat %s path %s", dcfg->hat_name, dcfg->path);
+    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "exiting change_hat - dir hat %s path %s", dcfg->hat_name, dcfg->path);
     change_hat (NULL, magic_token);
 
     sd_ret = change_hat (DEFAULT_HAT, magic_token);
     if (sd_ret < 0) {
     	change_hat (NULL, magic_token);
-        ap_log_error (APLOG_MARK, APLOG_ERR, 0, NULL, "Failed to change_hat to '%s'",
+        ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, "Failed to change_hat to '%s'",
 			DEFAULT_HAT);
     } else {
         inside_default_hat = 1;
@@ -204,7 +213,7 @@ immunix_exit_hat (request_rec *r)
 static const char *
 aa_cmd_ch_path (cmd_parms * cmd, void * mconfig, const char * parm1)
 {
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, NULL, "config change hat %s",
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "directory config change hat %s",
     			parm1 ? parm1 : "DEFAULT");
     immunix_dir_cfg * dcfg = mconfig;
     if (parm1 != NULL) {
@@ -221,7 +230,7 @@ static const char *
 immunix_cmd_ch_path (cmd_parms * cmd, void * mconfig, const char * parm1)
 {
     if (path_warn_once == 0) {
-    	ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL, "ImmHatName is "
+    	ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf, "ImmHatName is "
 		     "deprecated, please use AAHatName instead");
 	path_warn_once = 1;
     }
@@ -231,7 +240,7 @@ immunix_cmd_ch_path (cmd_parms * cmd, void * mconfig, const char * parm1)
 static const char *
 aa_cmd_ch_srv (cmd_parms * cmd, void * mconfig, const char * parm1)
 {
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, NULL, "config change hat %s",
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "server config change hat %s",
     			parm1 ? parm1 : "DEFAULT");
     immunix_srv_cfg * scfg = mconfig;
     if (parm1 != NULL) {
@@ -248,7 +257,7 @@ static const char *
 immunix_cmd_ch_srv (cmd_parms * cmd, void * mconfig, const char * parm1)
 {
     if (srv_warn_once == 0) {
-	ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL, "ImmDefaultHatName is "
+	ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf, "ImmDefaultHatName is "
 		     "deprecated, please use AADefaultHatName instead");
 	srv_warn_once = 1;
     }
@@ -260,9 +269,9 @@ immunix_create_dir_config (apr_pool_t * p, char * path)
 {
     immunix_dir_cfg * newcfg = (immunix_dir_cfg *) apr_pcalloc(p, sizeof(* newcfg));
 
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "in immunix_create_dir (%s)", path ? path : ":no path:");
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "in immunix_create_dir (%s)", path ? path : ":no path:");
     if (newcfg == NULL) {
-        ap_log_error (APLOG_MARK, APLOG_ERR, 0, NULL, "immunix_create_dir: couldn't alloc dir config");
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf, "immunix_create_dir: couldn't alloc dir config");
     	return NULL;
     }
     newcfg->path = apr_pstrdup (p, path ? path : ":no path:");
@@ -277,7 +286,7 @@ immunix_merge_dir_config (apr_pool_t * p, void * parent, void * child)
 {
     immunix_dir_cfg * newcfg = (immunix_dir_cfg *) apr_pcalloc(p, sizeof(* newcfg));
 
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "in immunix_merge_dir ()");
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "in immunix_merge_dir ()");
     if (newcfg == NULL)
     	return NULL;
 
@@ -290,9 +299,9 @@ immunix_create_srv_config (apr_pool_t * p, server_rec * srv)
 {
     immunix_srv_cfg * newcfg = (immunix_srv_cfg *) apr_pcalloc(p, sizeof(* newcfg));
 
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "in immunix_create_srv");
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "in immunix_create_srv");
     if (newcfg == NULL) {
-        ap_log_error (APLOG_MARK, APLOG_ERR, 0, NULL, "immunix_create_srv: couldn't alloc srv config");
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf, "immunix_create_srv: couldn't alloc srv config");
     	return NULL;
     }
 
