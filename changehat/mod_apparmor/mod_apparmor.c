@@ -47,7 +47,7 @@
 #endif
 module AP_MODULE_DECLARE_DATA apparmor_module;
 
-static unsigned int magic_token = 0;
+static unsigned long magic_token = 0;
 static int inside_default_hat = 0;
 
 typedef struct {
@@ -94,9 +94,9 @@ immunix_child_init (apr_pool_t *p, server_rec *s)
     int ret;
 
     ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf, "init: calling change_hat");
-    ret = change_hat (DEFAULT_HAT, magic_token);
+    ret = aa_change_hat(DEFAULT_HAT, magic_token);
     if (ret < 0) {
-    	change_hat (NULL, magic_token);
+    	aa_change_hat(NULL, magic_token);
         ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf, "Failed to change_hat to '%s'",
 			DEFAULT_HAT);
     } else {
@@ -145,41 +145,41 @@ immunix_enter_hat (request_rec *r)
     	return OK;
 
     if (inside_default_hat) {
-        change_hat (NULL, magic_token);
+        aa_change_hat(NULL, magic_token);
 	inside_default_hat = 0;
     }
 
     if (dcfg != NULL && dcfg->hat_name != NULL) {
         ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat [dcfg] %s", dcfg->hat_name);
-        sd_ret = change_hat (dcfg->hat_name, magic_token);
+        sd_ret = aa_change_hat(dcfg->hat_name, magic_token);
 	if (sd_ret < 0) {
-	    change_hat (NULL, magic_token);
+	    aa_change_hat(NULL, magic_token);
 	} else {
 	    return OK;
 	}
     }
 
     ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat [uri] %s", r->uri);
-    sd_ret = change_hat (r->uri, magic_token);
+    sd_ret = aa_change_hat(r->uri, magic_token);
     if (sd_ret < 0) {
-    	change_hat (NULL, magic_token);
+    	aa_change_hat(NULL, magic_token);
     } else {
 	    return OK;
     }
 
     if (scfg != NULL && scfg->hat_name != NULL) {
         ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat [scfg] %s", scfg->hat_name);
-        sd_ret = change_hat (scfg->hat_name, magic_token);
+        sd_ret = aa_change_hat(scfg->hat_name, magic_token);
 	if (sd_ret < 0) {
-	    change_hat (NULL, magic_token);
+	    aa_change_hat(NULL, magic_token);
 	} else {
 	    return OK;
 	}
     }
 
     ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat DEFAULT_URI");
-    sd_ret = change_hat (DEFAULT_URI_HAT, magic_token);
-    if (sd_ret < 0) change_hat (NULL, magic_token);
+    sd_ret = aa_change_hat(DEFAULT_URI_HAT, magic_token);
+    if (sd_ret < 0) aa_change_hat(NULL, magic_token);
 
     return OK;
 }
@@ -193,11 +193,11 @@ immunix_exit_hat (request_rec *r)
     /* immunix_srv_cfg * scfg = (immunix_srv_cfg *)
     		ap_get_module_config (r->server->module_config, &apparmor_module); */
     ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "exiting change_hat - dir hat %s path %s", dcfg->hat_name, dcfg->path);
-    change_hat (NULL, magic_token);
+    aa_change_hat(NULL, magic_token);
 
-    sd_ret = change_hat (DEFAULT_HAT, magic_token);
+    sd_ret = aa_change_hat(DEFAULT_HAT, magic_token);
     if (sd_ret < 0) {
-    	change_hat (NULL, magic_token);
+    	aa_change_hat(NULL, magic_token);
         ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, "Failed to change_hat to '%s'",
 			DEFAULT_HAT);
     } else {
