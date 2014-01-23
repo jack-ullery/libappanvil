@@ -168,6 +168,13 @@ immunix_enter_hat (request_rec *r)
 	    return OK;
     }
 
+    if (scfg) {
+    	ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "Dumping scfg info: "
+    	          "scfg='0x%lx' scfg->hat_name='%s'",
+    		  (unsigned long) scfg, scfg->hat_name);
+    } else {
+    	ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "scfg is null");
+    }
     if (scfg != NULL && scfg->hat_name != NULL) {
         ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat [scfg] %s", scfg->hat_name);
         sd_ret = aa_change_hat(scfg->hat_name, magic_token);
@@ -241,7 +248,8 @@ aa_cmd_ch_srv (cmd_parms * cmd, void * mconfig, const char * parm1)
 {
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "server config change hat %s",
     			parm1 ? parm1 : "DEFAULT");
-    immunix_srv_cfg * scfg = mconfig;
+    immunix_srv_cfg * scfg = (immunix_srv_cfg *)
+	    ap_get_module_config(cmd->server->module_config, &apparmor_module);
     if (parm1 != NULL) {
     	scfg->hat_name = parm1;
     } else {
