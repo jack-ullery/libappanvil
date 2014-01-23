@@ -78,7 +78,8 @@ immunix_init (apr_pool_t *p, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s)
     	apr_file_read (file, (void *) &magic_token, &size);
 	apr_file_close (file);
     } else {
-        ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf, "Failed to open /dev/urandom");
+        ap_log_error(APLOG_MARK, APLOG_ERR, errno, ap_server_conf,
+			"Failed to open /dev/urandom");
     }
     ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf, "Opened /dev/urandom successfully");
 
@@ -97,8 +98,8 @@ immunix_child_init (apr_pool_t *p, server_rec *s)
 		    "init: calling change_hat with '%s'", DEFAULT_HAT);
     ret = aa_change_hat(DEFAULT_HAT, magic_token);
     if (ret < 0) {
-        ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf, "Failed to change_hat to '%s'",
-			DEFAULT_HAT);
+        ap_log_error(APLOG_MARK, APLOG_ERR, errno, ap_server_conf,
+			"Failed to change_hat to '%s'", DEFAULT_HAT);
     } else {
         inside_default_hat = 1;
     }
@@ -243,8 +244,8 @@ immunix_exit_hat (request_rec *r)
 
     sd_ret = aa_change_hat(DEFAULT_HAT, magic_token);
     if (sd_ret < 0) {
-        ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, "Failed to change_hat to '%s'",
-			DEFAULT_HAT);
+        ap_log_rerror(APLOG_MARK, APLOG_ERR, errno, r,
+			"Failed to change_hat to '%s'", DEFAULT_HAT);
     } else {
         inside_default_hat = 1;
     }
