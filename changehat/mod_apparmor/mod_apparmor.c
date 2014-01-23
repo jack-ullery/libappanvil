@@ -135,6 +135,8 @@ immunix_enter_hat (request_rec *r)
     		ap_get_module_config (r->per_dir_config, &apparmor_module);
     immunix_srv_cfg * scfg = (immunix_srv_cfg *) 
     		ap_get_module_config (r->server->module_config, &apparmor_module);
+    const char *aa_hat_array[5] = { NULL, NULL, NULL, NULL, NULL };
+    int i = 0;
 
     debug_dump_uri(r);
     ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "in immunix_enter_hat (%s) n:0x%lx p:0x%lx main:0x%lx",
@@ -151,22 +153,14 @@ immunix_enter_hat (request_rec *r)
     }
 
     if (dcfg != NULL && dcfg->hat_name != NULL) {
-        ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat [dcfg] %s", dcfg->hat_name);
-        sd_ret = aa_change_hat(dcfg->hat_name, magic_token);
-	if (sd_ret < 0) {
-	    aa_change_hat(NULL, magic_token);
-	} else {
-	    return OK;
-	}
+        ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,
+			"[dcfg] adding hat '%s' to aa_change_hat vector", dcfg->hat_name);
+        aa_hat_array[i++] = dcfg->hat_name;
     }
 
-    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat [uri] %s", r->uri);
-    sd_ret = aa_change_hat(r->uri, magic_token);
-    if (sd_ret < 0) {
-    	aa_change_hat(NULL, magic_token);
-    } else {
-	    return OK;
-    }
+    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,
+		    "[uri] adding uri '%s' to aa_change_hat vector", r->uri);
+    aa_hat_array[i++] = r->uri;
 
     if (scfg) {
     	ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "Dumping scfg info: "
@@ -177,27 +171,25 @@ immunix_enter_hat (request_rec *r)
     }
     if (scfg != NULL) {
 	if (scfg->hat_name != NULL) {
-            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat [scfg] %s", scfg->hat_name);
-            sd_ret = aa_change_hat(scfg->hat_name, magic_token);
-	    if (sd_ret < 0) {
-	        aa_change_hat(NULL, magic_token);
-	    } else {
-	        return OK;
-	    }
+            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,
+			    "[scfg] adding hat '%s' to aa_change_hat vector", scfg->hat_name);
+            aa_hat_array[i++] = scfg->hat_name;
         } else {
-            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat w/server_name %s", r->server->server_hostname);
-            sd_ret = aa_change_hat(r->server->server_hostname, magic_token);
-	    if (sd_ret < 0) {
-	        aa_change_hat(NULL, magic_token);
-	    } else {
-	        return OK;
-	    }
+            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,
+			    "[scfg] adding server_name '%s' to aa_change_hat vector",
+			    r->server->server_hostname);
+            aa_hat_array[i++] = r->server->server_hostname;
 	}
     }
 
-    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "calling change_hat DEFAULT_URI");
-    sd_ret = aa_change_hat(DEFAULT_URI_HAT, magic_token);
-    if (sd_ret < 0) aa_change_hat(NULL, magic_token);
+    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,
+		    "[default] adding '%s' to aa_change_hat vector", DEFAULT_URI_HAT);
+    aa_hat_array[i++] = DEFAULT_URI_HAT;
+
+    sd_ret = aa_change_hatv(aa_hat_array, magic_token);
+    if (sd_ret < 0) {
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, errno, r, "aa_change_hatv call failed");
+    }
 
     return OK;
 }
@@ -212,7 +204,11 @@ immunix_exit_hat (request_rec *r)
     		ap_get_module_config (r->server->module_config, &apparmor_module); */
     ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "exiting change_hat: dir hat %s dir path %s",
 		    dcfg->hat_name, dcfg->path);
-    aa_change_hat(NULL, magic_token);
+
+    /* can convert the following back to aa_change_hat() when the
+     * aa_change_hat() bug addressed in trunk commit 2329 lands in most
+     * system libapparmors */
+    aa_change_hatv(NULL, magic_token);
 
     sd_ret = aa_change_hat(DEFAULT_HAT, magic_token);
     if (sd_ret < 0) {
