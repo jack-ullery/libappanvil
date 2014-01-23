@@ -137,6 +137,7 @@ immunix_enter_hat (request_rec *r)
     		ap_get_module_config (r->server->module_config, &apparmor_module);
     const char *aa_hat_array[5] = { NULL, NULL, NULL, NULL, NULL };
     int i = 0;
+    char *aa_con, *aa_mode, *aa_hat;
 
     debug_dump_uri(r);
     ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "in immunix_enter_hat (%s) n:0x%lx p:0x%lx main:0x%lx",
@@ -189,6 +190,37 @@ immunix_enter_hat (request_rec *r)
     sd_ret = aa_change_hatv(aa_hat_array, magic_token);
     if (sd_ret < 0) {
         ap_log_rerror(APLOG_MARK, APLOG_WARNING, errno, r, "aa_change_hatv call failed");
+    }
+
+    /* Check to see if a defined AAHatName or AADefaultHatName would
+     * apply, but wasn't the hat we landed up in; report a warning if
+     * that's the case. */
+    sd_ret = aa_getcon(&aa_con, &aa_mode);
+    if (sd_ret < 0) {
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, errno, r, "aa_getcon call failed");
+    } else {
+    	ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r,
+			    "AA checks: aa_getcon result is '%s', mode '%s'", aa_con, aa_mode);
+	/* TODO: use libapparmor get hat_name fn here once it is implemented */
+	aa_hat = strstr(aa_con, "//");
+	if (aa_hat != NULL && strcmp(aa_mode, "enforce") == 0) {
+	    aa_hat += 2;  /* skip "//" */
+    	    ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r,
+			    "AA checks: apache is in hat '%s', mode '%s'", aa_hat, aa_mode);
+	    if (dcfg != NULL && dcfg->hat_name != NULL) {
+		if (strcmp(aa_hat, dcfg->hat_name) != 0)
+        	    ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
+			"AAHatName '%s' applies, but does not appear to be a hat in the apache apparmor policy",
+			dcfg->hat_name);
+	    } else if (scfg != NULL && scfg->hat_name != NULL) {
+		if (strcmp(aa_hat, scfg->hat_name) != 0 &&
+		    strcmp(aa_hat, r->uri) != 0)
+        	    ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
+			"AADefaultHatName '%s' applies, but does not appear to be a hat in the apache apparmor policy",
+			scfg->hat_name);
+	    }
+	}
+	free(aa_con);
     }
 
     return OK;
