@@ -97,7 +97,6 @@ immunix_child_init (apr_pool_t *p, server_rec *s)
 		    "init: calling change_hat with '%s'", DEFAULT_HAT);
     ret = aa_change_hat(DEFAULT_HAT, magic_token);
     if (ret < 0) {
-    	aa_change_hat(NULL, magic_token);
         ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf, "Failed to change_hat to '%s'",
 			DEFAULT_HAT);
     } else {
@@ -244,7 +243,6 @@ immunix_exit_hat (request_rec *r)
 
     sd_ret = aa_change_hat(DEFAULT_HAT, magic_token);
     if (sd_ret < 0) {
-    	aa_change_hat(NULL, magic_token);
         ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, "Failed to change_hat to '%s'",
 			DEFAULT_HAT);
     } else {
