@@ -1252,41 +1252,36 @@ static int test_filter_slashes(void)
 	do {												\
 		std::string tbuf;									\
 		std::string tbuf2 = "testprefix";							\
-		char *test_string;									\
 		char *output_string = NULL;								\
 		std::string expected_str2;								\
 		pattern_t ptype;									\
 		int pos;										\
 													\
-		test_string = strdup((input)); 								\
-		ptype = convert_aaregex_to_pcre(test_string, 0, tbuf, &pos);				\
+		ptype = convert_aaregex_to_pcre((input), 0, tbuf, &pos);				\
 		asprintf(&output_string, "simple regex conversion for '%s'\texpected = '%s'\tresult = '%s'", \
-				(input), expected_str, tbuf.c_str());					\
+				(input), (expected_str), tbuf.c_str());					\
 		MY_TEST(strcmp(tbuf.c_str(), (expected_str)) == 0, output_string);			\
 		MY_TEST(ptype == (expected_type), "simple regex conversion type check for '" input "'"); \
 		free(output_string);									\
 		/* ensure convert_aaregex_to_pcre appends only to passed ref string */			\
 		expected_str2 = tbuf2;									\
 		expected_str2.append((expected_str));							\
-		ptype = convert_aaregex_to_pcre(test_string, 0, tbuf2, &pos);				\
+		ptype = convert_aaregex_to_pcre((input), 0, tbuf2, &pos);				\
 		asprintf(&output_string, "simple regex conversion for '%s'\texpected = '%s'\tresult = '%s'", \
 				(input), expected_str2.c_str(), tbuf2.c_str());				\
 		MY_TEST((tbuf2 == expected_str2), output_string);					\
-		free(test_string); free(output_string);							\
+		free(output_string);									\
 	}												\
 	while (0)
 
 #define MY_REGEX_FAIL_TEST(input)						\
 	do {												\
 		std::string tbuf;									\
-		char *test_string;									\
 		pattern_t ptype;									\
 		int pos;										\
 													\
-		test_string = strdup((input)); 								\
-		ptype = convert_aaregex_to_pcre(test_string, 0, tbuf, &pos);				\
+		ptype = convert_aaregex_to_pcre((input), 0, tbuf, &pos);				\
 		MY_TEST(ptype == ePatternInvalid, "simple regex conversion invalid type check for '" input "'"); \
-		free(test_string); 									\
 	}												\
 	while (0)
 
