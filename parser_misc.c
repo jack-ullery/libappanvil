@@ -175,6 +175,9 @@ static struct keyword_table rlimit_table[] = {
 #ifdef RLIMIT_RTPRIO
 	{"rtprio",		RLIMIT_RTPRIO},
 #endif
+#ifdef RLIMIT_RTTIME
+	{"rttime",		RLIMIT_RTTIME},
+#endif
 	/* terminate */
 	{NULL, 0}
 };
