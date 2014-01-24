@@ -44,6 +44,9 @@ enum error_type {
 	e_parse_error,
 };
 
+/* match any char except \000 0 or more times */
+static const char *default_match_pattern = "[^\\000]*";
+
 /* Filters out multiple slashes (except if the first two are slashes,
  * that's a distinct namespace in linux) and trailing slashes.
  * NOTE: modifies in place the contents of the path argument */
@@ -631,7 +634,7 @@ static int build_list_val_expr(std::string& buffer, struct value_list *list)
 	int pos;
 
 	if (!list) {
-		buffer.append("[^\\000]*");
+		buffer.append(default_match_pattern);
 		return TRUE;
 	}
 
@@ -664,10 +667,16 @@ static int convert_entry(std::string& buffer, char *entry)
 		if (ptype == ePatternInvalid)
 			return FALSE;
 	} else {
-		buffer.append("[^\\000]*");
+		buffer.append(default_match_pattern);
 	}
 
 	return TRUE;
+}
+
+static int clear_and_convert_entry(std::string& buffer, char *entry)
+{
+	buffer.clear();
+	return convert_entry(buffer, entry);
 }
 
 static int build_mnt_flags(char *buffer, int size, unsigned int flags,
@@ -678,7 +687,7 @@ static int build_mnt_flags(char *buffer, int size, unsigned int flags,
 
 	if (flags == MS_ALL_FLAGS) {
 		/* all flags are optional */
-		len = snprintf(p, size, "[^\\000]*");
+		len = snprintf(p, size, "%s", default_match_pattern);
 		if (len < 0 || len >= size)
 			return FALSE;
 		return TRUE;
@@ -718,7 +727,7 @@ static int build_mnt_opts(std::string& buffer, struct value_list *opts)
 	int pos;
 
 	if (!opts) {
-		buffer.append("[^\\000]*");
+		buffer.append(default_match_pattern);
 		return TRUE;
 	}
 
@@ -769,12 +778,9 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 			vec[0] = mntbuf.c_str();
 		}
 		/* skip device */
-		devbuf.clear();
-		if (!convert_entry(devbuf, NULL))
-			goto fail;
-		vec[1] = devbuf.c_str();
+		vec[1] = default_match_pattern;
 		/* skip type */
-		vec[2] = devbuf.c_str();
+		vec[2] = default_match_pattern;
 
 		flags = entry->flags;
 		inv_flags = entry->inv_flags;
@@ -820,14 +826,11 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		if (!convert_entry(mntbuf, entry->mnt_point))
 			goto fail;
 		vec[0] = mntbuf.c_str();
-		devbuf.clear();
-		if (!convert_entry(devbuf, entry->device))
+		if (!clear_and_convert_entry(devbuf, entry->device))
 			goto fail;
 		vec[1] = devbuf.c_str();
-		typebuf.clear();
-		if (!convert_entry(typebuf, NULL))
-			goto fail;
-		vec[2] = typebuf.c_str();
+		/* skip type */
+		vec[2] = default_match_pattern;
 
 		flags = entry->flags;
 		inv_flags = entry->inv_flags;
@@ -855,11 +858,8 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 			goto fail;
 		vec[0] = mntbuf.c_str();
 		/* skip device and type */
-		devbuf.clear();
-		if (!convert_entry(devbuf, NULL))
-			goto fail;
-		vec[1] = devbuf.c_str();
-		vec[2] = devbuf.c_str();
+		vec[1] = default_match_pattern;
+		vec[2] = default_match_pattern;
 
 		flags = entry->flags;
 		inv_flags = entry->inv_flags;
@@ -885,15 +885,11 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		if (!convert_entry(mntbuf, entry->mnt_point))
 			goto fail;
 		vec[0] = mntbuf.c_str();
-		devbuf.clear();
-		if (!convert_entry(devbuf, entry->device))
+		if (!clear_and_convert_entry(devbuf, entry->device))
 			goto fail;
 		vec[1] = devbuf.c_str();
 		/* skip type */
-		typebuf.clear();
-		if (!convert_entry(typebuf, NULL))
-			goto fail;
-		vec[2] = typebuf.c_str();
+		vec[2] = default_match_pattern;
 
 		flags = entry->flags;
 		inv_flags = entry->inv_flags;
@@ -920,8 +916,7 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		if (!convert_entry(mntbuf, entry->mnt_point))
 			goto fail;
 		vec[0] = mntbuf.c_str();
-		devbuf.clear();
-		if (!convert_entry(devbuf, entry->device))
+		if (!clear_and_convert_entry(devbuf, entry->device))
 			goto fail;
 		vec[1] = devbuf.c_str();
 		typebuf.clear();
@@ -982,8 +977,7 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		if (!convert_entry(mntbuf, entry->mnt_point))
 			goto fail;
 		vec[0] = mntbuf.c_str();
-		devbuf.clear();
-		if (!convert_entry(devbuf, entry->device))
+		if (!clear_and_convert_entry(devbuf, entry->device))
 			goto fail;
 		vec[1] = devbuf.c_str();
 		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
@@ -1030,7 +1024,7 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 			goto fail;
 	} else {
 		/* match any char except \000 0 or more times */
-		busbuf.append("[^\\000]*");
+		busbuf.append(default_match_pattern);
 	}
 	vec[0] = busbuf.c_str();
 
@@ -1041,7 +1035,7 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 		vec[1] = namebuf.c_str();
 	} else {
 		/* match any char except \000 0 or more times */
-		vec[1] = "[^\\000]*";
+		vec[1] = default_match_pattern;
 	}
 
 	if (entry->peer_label) {
@@ -1052,7 +1046,7 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 		vec[2] = peer_labelbuf.c_str();
 	} else {
 		/* match any char except \000 0 or more times */
-		vec[2] = "[^\\000]*";
+		vec[2] = default_match_pattern;
 	}
 
 	if (entry->path) {
@@ -1062,7 +1056,7 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 		vec[3] = pathbuf.c_str();
 	} else {
 		/* match any char except \000 0 or more times */
-		vec[3] = "[^\\000]*";
+		vec[3] = default_match_pattern;
 	}
 
 	if (entry->interface) {
@@ -1072,7 +1066,7 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 		vec[4] = ifacebuf.c_str();
 	} else {
 		/* match any char except \000 0 or more times */
-		vec[4] = "[^\\000]*";
+		vec[4] = default_match_pattern;
 	}
 
 	if (entry->member) {
@@ -1082,7 +1076,7 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 		vec[5] = memberbuf.c_str();
 	} else {
 		/* match any char except \000 0 or more times */
-		vec[5] = "[^\\000]*";
+		vec[5] = default_match_pattern;
 	}
 
 	if (entry->mode & AA_DBUS_BIND) {
