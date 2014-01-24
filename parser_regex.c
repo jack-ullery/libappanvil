@@ -42,7 +42,6 @@
 enum error_type {
 	e_no_error,
 	e_parse_error,
-	e_buffer_overflow
 };
 
 /* Filters out multiple slashes (except if the first two are slashes,
@@ -377,11 +376,6 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 	}
 	/* check error  again, as above STORE may have set it */
 	if (error != e_no_error) {
-		if (error == e_buffer_overflow) {
-			PERROR(_("%s: Internal buffer overflow detected, %d characters exceeded\n"),
-			       progname, PATH_MAX);
-		}
-
 		PERROR(_("%s: Unable to parse input line '%s'\n"),
 		       progname, aare);
 
