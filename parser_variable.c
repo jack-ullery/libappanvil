@@ -137,11 +137,11 @@ void free_var_string(struct var_string *var)
 
 static void trim_trailing_slash(std::string& str)
 {
-	for (std::string::reverse_iterator rit = str.rbegin();
-			rit != str.rend() && *rit == '/'; ++rit) {
-		/* yuck, reverse_iterators are ugly */
-		str.erase(--rit.base());
-	}
+	std::size_t found = str.find_last_not_of('/');
+	if (found != std::string::npos)
+		str.erase(found + 1);
+	else
+		str.clear(); // str is all '/'
 }
 
 static void write_replacement(const char separator, const char* value,
