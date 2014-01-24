@@ -611,6 +611,7 @@ static int process_config_file(const char *name)
 
 	while ((c = getopt_long_file(f, long_options, &optarg, &o)) != -1)
 		process_arg(c, optarg);
+	fclose(f);
 	return 1;
 }
 
