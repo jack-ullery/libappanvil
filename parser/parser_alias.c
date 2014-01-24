@@ -177,8 +177,10 @@ static void process_name(const void *nodep, VISIT value, int __unused level)
 			return;
 		/* aliases create alternate names */
 		alt = (struct alt_name *) calloc(1, sizeof(struct alt_name));
-		if (!alt)
+		if (!alt) {
+			free(n);
 			return;
+		}
 		alt->name = n;
 		alt->next = prof->altnames;
 		prof->altnames = alt;
