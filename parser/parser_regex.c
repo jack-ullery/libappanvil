@@ -24,7 +24,10 @@
 #include <sys/apparmor.h>
 #define _(s) gettext(s)
 
+#include <iomanip>
 #include <string>
+#include <sstream>
+
 
 /* #define DEBUG */
 
@@ -1015,7 +1018,7 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 	std::string pathbuf;
 	std::string ifacebuf;
 	std::string memberbuf;
-	char buffer[128];
+	std::ostringstream buffer;
 	const char *vec[6];
 
 	pattern_t ptype;
@@ -1024,8 +1027,8 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 	if (!entry) 		/* shouldn't happen */
 		return TRUE;
 
-	sprintf(buffer, "\\x%02x", AA_CLASS_DBUS);
-	busbuf.append(buffer);
+	buffer << "\\x" << std::setfill('0') << std::setw(2) << std::hex << AA_CLASS_DBUS;
+	busbuf.append(buffer.str());
 
 	if (entry->bus) {
 		ptype = convert_aaregex_to_pcre(entry->bus, 0, busbuf, &pos);
