@@ -89,11 +89,11 @@ filename = r'(\/|\@\{\S*\})\S*'
 
 aa_regex_map = {
     'FILENAME':         filename,
-    'FILE':             r'\v^\s*(audit\s+)?(deny\s+|allow\s+)?(owner\s+)?' + filename + r'\s+',  # Start of a file rule
+    'FILE':             r'\v^\s*(audit\s+)?(deny\s+|allow\s+)?(owner\s+|other\s+)?' + filename + r'\s+',  # Start of a file rule
                         # (whitespace_+_, owner etc. flag_?_, filename pattern, whitespace_+_)
-    'DENYFILE':         r'\v^\s*(audit\s+)?deny\s+(owner\s+)?' + filename + r'\s+',  # deny, otherwise like FILE
-    'auditdenyowner':   r'(audit\s+)?(deny\s+|allow\s+)?(owner\s+)?',
-    'audit_DENY_owner': r'(audit\s+)?deny\s+(owner\s+)?',  # must include "deny", otherwise like auditdenyowner
+    'DENYFILE':         r'\v^\s*(audit\s+)?deny\s+(owner\s+|other\s+)?' + filename + r'\s+',  # deny, otherwise like FILE
+    'auditdenyowner':   r'(audit\s+)?(deny\s+|allow\s+)?(owner\s+|other\s+)?',
+    'audit_DENY_owner': r'(audit\s+)?deny\s+(owner\s+|other\s+)?',  # must include "deny", otherwise like auditdenyowner
     'auditdeny':        r'(audit\s+)?(deny\s+|allow\s+)?',
     'EOL':              r'\s*,(\s*$|(\s*#.*$)\@=)',  # End of a line (whitespace_?_, comma, whitespace_?_ comment.*)
     'TRANSITION':       r'(\s+-\>\s+\S+)?',
