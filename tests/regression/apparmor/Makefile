@@ -186,16 +186,16 @@ changehat_pthread: changehat_pthread.c changehat.h
 	${CC} ${CFLAGS} ${LDFLAGS} $< -o $@ ${LDLIBS} -pthread
 
 dbus_common.o: dbus_common.c dbus_common.h
-	${CC} ${CFLAGS} ${LDFLAGS} $^ -c ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
+	${CC} ${CFLAGS} ${LDFLAGS} $< -c ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
 
 dbus_eavesdrop: dbus_eavesdrop.c dbus_common.o
-	${CC} ${CFLAGS} ${LDFLAGS} $^ -o dbus_eavesdrop ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
+	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
 
 dbus_message: dbus_message.c dbus_common.o
-	${CC} ${CFLAGS} ${LDFLAGS} $^ -o dbus_message ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
+	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
 
 dbus_service: dbus_message dbus_service.c dbus_common.o
-	${CC} ${CFLAGS} ${LDFLAGS} $(filter-out dbus_message, $^) -o dbus_service ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
+	${CC} ${CFLAGS} ${LDFLAGS} $(filter-out dbus_message, $^) -o $@ ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
 
 tests: all
 	@if [ `whoami` = "root" ] ;\
