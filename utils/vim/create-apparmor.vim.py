@@ -78,7 +78,7 @@ aa_network_types = r'\s+tcp|\s+udp|\s+icmp'
 
 aa_flags = ['complain',
             'audit',
-            'attach_disconnect',
+            'attach_disconnected',
             'no_attach_disconnected',
             'chroot_attach',
             'chroot_no_attach',
