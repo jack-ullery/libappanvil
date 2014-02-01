@@ -197,7 +197,7 @@ class Severity(object):
                                 try:
                                     self.severity['VARIABLES'][line[0]] += [i.strip('"') for i in line[1].split()]
                                 except KeyError:
-                                    raise AppArmorException("Variable %s was not previously declared, but is being assigned additional values in file: %s" % (line[0], prof_path))
+                                    raise AppArmorException("Variable %s was not previously declared, but is being assigned additional value in file: %s" % (line[0], prof_path))
                             else:
                                 line = line.split('=')
                                 if line[0] in self.severity['VARIABLES'].keys():

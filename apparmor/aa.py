@@ -73,7 +73,7 @@ user_globs = []
 
 ## Variables used under logprof
 ### Were our
-t = hasher()#dict()
+t = hasher()  # dict()
 transitions = hasher()
 aa = hasher()  # Profiles originally in sd, replace by aa
 original_aa =  hasher()
@@ -82,7 +82,7 @@ extras = hasher()  # Inactive profiles from extras
 log = []
 pid = dict()
 
-seen = hasher()#dir()
+seen = hasher()  # dir()
 profile_changes = hasher()
 prelog = hasher()
 log_dict = hasher()#dict()
@@ -380,7 +380,7 @@ def create_new_profile(localfile):
     local_profile[localfile]['flags'] = 'complain'
     local_profile[localfile]['include']['abstractions/base'] = 1
 
-    if os.path.isfile(localfile):
+    if os.path.exists(localfile) and os.path.isfile(localfile):
         hashbang = head(localfile)
         if hashbang.startswith('#!'):
             interpreter_path = get_full_path(hashbang.lstrip('#!').strip())
@@ -418,7 +418,8 @@ def create_new_profile(localfile):
                 local_profile[hat]['flags'] = 'complain'
 
     created.append(localfile)
-
+    changed.append(localfile)
+    
     debug_logger.debug("Profile for %s:\n\t%s" % (localfile, local_profile.__str__()))
     return {localfile: local_profile}
 
@@ -552,6 +553,9 @@ def autodep(bin_name, pname=''):
         # Return if exectuable path not found
         if not bin_full:
             return None
+    else:
+        bin_full = pname  # for named profiles
+
     pname = bin_full
     read_inactive_profiles()
     profile_data = get_profile(pname)
@@ -865,34 +869,42 @@ def set_profiles_local_only(profs):
 
 def build_x_functions(default, options, exec_toggle):
     ret_list = []
+    fallback_toggle = False
     if exec_toggle:
         if 'i' in options:
             ret_list.append('CMD_ix')
             if 'p' in options:
                 ret_list.append('CMD_pix')
-                ret_list.append('CMD_EXEC_IX_OFF')
-            elif 'c' in options:
+                fallback_toggle = True
+            if 'c' in options:
                 ret_list.append('CMD_cix')
-                ret_list.append('CMD_EXEC_IX_OFF')
-            elif 'n' in options:
+                fallback_toggle = True
+            if 'n' in options:
                 ret_list.append('CMD_nix')
+                fallback_toggle = True
+            if fallback_toggle:
                 ret_list.append('CMD_EXEC_IX_OFF')
-        elif 'u' in options:
+        if 'u' in options:
             ret_list.append('CMD_ux')
+            
     else:
         if 'i' in options:
             ret_list.append('CMD_ix')
-        elif 'c' in options:
+        if 'c' in options:
             ret_list.append('CMD_cx')
-            ret_list.append('CMD_EXEC_IX_ON')
-        elif 'p' in options:
+            fallback_toggle = True
+        if 'p' in options:
             ret_list.append('CMD_px')
-            ret_list.append('CMD_EXEC_IX_OFF')
-        elif 'n' in options:
+            fallback_toggle = True
+        if 'n' in options:
             ret_list.append('CMD_nx')
-            ret_list.append('CMD_EXEC_IX_OFF')
-        elif 'u' in options:
+            fallback_toggle = True
+        if 'u' in options:
             ret_list.append('CMD_ux')
+
+        if fallback_toggle:
+            ret_list.append('CMD_EXEC_IX_ON')
+
     ret_list += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
     return ret_list
 
@@ -1223,7 +1235,7 @@ def handle_children(profile, hat, root):
                         exec_toggle = False
                         q['functions'] += build_x_functions(default, options, exec_toggle)
 
-                        options = '|'.join(options)
+                        # options = '|'.join(options)
                         seen_events += 1
                         regex_options = re.compile('^CMD_(ix|px|cx|nx|pix|cix|nix|px_safe|cx_safe|nx_safe|pix_safe|cix_safe|nix_safe|ux|ux_safe|EXEC_TOGGLE|DENY)$')
 

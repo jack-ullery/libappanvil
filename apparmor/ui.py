@@ -94,6 +94,9 @@ def UI_YesNo(text, default):
                     default = 'y'
                 elif ans == 'right':
                     default = 'n'
+                else:
+                    ans = 'XXXINVALIDXXX'
+                    continue  # If user presses any other button ask again
             else:
                 ans = default
 
@@ -227,8 +230,8 @@ CMDS = {
         'CMD_px_safe': _('(P)rofile Clean Exec'),
         'CMD_cx': _('(C)hild'),
         'CMD_cx_safe': _('(C)hild Clean Exec'),
-        'CMD_nx': _('Named'),
-        'CMD_nx_safe': _('Named Clean Exec'),
+        'CMD_nx': _('(N)amed'),
+        'CMD_nx_safe': _('(N)amed Clean Exec'),
         'CMD_ux': _('(U)nconfined'),
         'CMD_ux_safe': _('(U)nconfined Clean Exec'),
         'CMD_pix': _('(P)rofile Inherit'),

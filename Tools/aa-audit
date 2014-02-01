@@ -25,6 +25,10 @@ parser.add_argument('-r', '--remove', action='store_true', help=_('remove audit 
 parser.add_argument('program', type=str, nargs='+', help=_('name of program'))
 args = parser.parse_args()
 
-audit = apparmor.tools.aa_tools('audit', args)
+try:
+    audit = apparmor.tools.aa_tools('audit', args)
 
-audit.act()
+    audit.act()
+except Exception as e:
+    print(e)
+    raise e

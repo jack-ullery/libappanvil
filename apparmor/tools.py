@@ -15,6 +15,7 @@ import os
 import sys
 
 import apparmor.aa as apparmor
+from apparmor.common import user_perm
 
 class aa_tools:
     def __init__(self, tool_name, args):
@@ -23,6 +24,7 @@ class aa_tools:
         self.profiling = args.program
         self.check_profile_dir()
         self.silent = None
+        
         if tool_name in ['audit', 'complain']:
             self.remove = args.remove
         elif tool_name == 'disable':
@@ -40,6 +42,9 @@ class aa_tools:
             apparmor.profile_dir = apparmor.get_full_path(self.profiledir)
             if not os.path.isdir(apparmor.profile_dir):
                 raise apparmor.AppArmorException("%s is not a directory." %self.profiledir)
+
+        if not user_perm(apparmor.profile_dir):
+            raise apparmor.AppArmorException("Cannot write to profile directory: %s." %(apparmor.profile_dir))
 
     def check_disable_dir(self):
         if not os.path.isdir(self.disabledir):
@@ -70,11 +75,11 @@ class aa_tools:
                     apparmor.UI_Info(_("%s does not exist, please double-check the path.")%p)
                     sys.exit(1)
 
-            if program and apparmor.profile_exists(program):#os.path.exists(program):
-                if self.name == 'autodep':
-                    self.use_autodep(program)
-
-                elif self.name == 'cleanprof':
+            if self.name == 'autodep' and program and os.path.exists(program):
+                self.use_autodep(program)
+                
+            elif program and apparmor.profile_exists(program):
+                if self.name == 'cleanprof':
                     self.clean_profile(program, p)
 
                 else:

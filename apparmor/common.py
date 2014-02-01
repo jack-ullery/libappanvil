@@ -142,7 +142,7 @@ def open_file_read(path, encoding='UTF-8'):
     return orig
 
 def open_file_write(path):
-    """Open specified file in write/overwrite mode"""
+    '''Open specified file in write/overwrite mode'''
     try:
         orig = codecs.open(path, 'w', 'UTF-8')
     except Exception:
@@ -150,7 +150,7 @@ def open_file_write(path):
     return orig
 
 def readkey():
-    """Returns the pressed key"""
+    '''Returns the pressed key'''
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     try:
@@ -162,7 +162,7 @@ def readkey():
     return ch
 
 def hasher():
-    """A neat alternative to perl's hash reference"""
+    '''A neat alternative to perl's hash reference'''
     # Creates a dictionary for any depth and returns empty dictionary otherwise
     return collections.defaultdict(hasher)
 
@@ -201,9 +201,16 @@ def convert_regexp(regexp):
         new_reg =  new_reg + '$'
     return new_reg
 
+def user_perm(prof_dir):
+    if not os.access(prof_dir, os.R_OK):
+        sys.stdout.write("Cannot write to profile directory.\n" +
+                         "Please run as a user with appropriate permissions." )
+        return False
+
 class DebugLogger(object):
     def __init__(self, module_name=__name__):
         self.debugging = False
+        self.logfile = '/var/log/apparmor/logprof.log'
         self.debug_level = logging.DEBUG
         if os.getenv('LOGPROF_DEBUG', False):
             self.debugging = os.getenv('LOGPROF_DEBUG')
@@ -212,30 +219,44 @@ class DebugLogger(object):
             except Exception:
                 self.debugging = False
             if self.debugging not in range(0, 4):
-                sys.stderr.write('Environment Variable: LOGPROF_DEBUG contains invalid value: %s' %os.getenv('LOGPROF_DEBUG'))
-            # self.debugging == 0 implies debugging = False
+                sys.stdout.write('Environment Variable: LOGPROF_DEBUG contains invalid value: %s'
+                                 %os.getenv('LOGPROF_DEBUG'))
+            if self.debugging == 0:  # debugging disabled, don't need to setup logging
+                return
             if self.debugging == 1:
                 self.debug_level = logging.ERROR
             elif self.debugging == 2:
                 self.debug_level = logging.INFO
             elif self.debugging == 3:
                 self.debug_level = logging.DEBUG
-
-
-        logging.basicConfig(filename='/var/log/apparmor/logprof.log', level=self.debug_level, format='%(asctime)s - %(name)s - %(message)s\n')
-
-        self.logger = logging.getLogger(module_name)
+            
+            try:
+                logging.basicConfig(filename=self.logfile, level=self.debug_level,
+                                    format='%(asctime)s - %(name)s - %(message)s\n')
+            except OSError:
+                # Unable to open the default logfile, so create a temporary logfile and tell use about it
+                import tempfile
+                templog = tempfile.NamedTemporaryFile('w', prefix='apparmor', suffix='.log' ,delete=False)
+                sys.stdout.write("\nCould not open: %s\nLogging to: %s\n"%(self.logfile, templog.name))
+                
+                logging.basicConfig(filename=templog.name, level=self.debug_level,
+                                    format='%(asctime)s - %(name)s - %(message)s\n')
+            
+            self.logger = logging.getLogger(module_name)
 
 
     def error(self, message):
         if self.debugging:
             self.logger.error(message)
+
     def info(self, message):
         if self.debugging:
             self.logger.info(message)
+
     def debug(self, message):
         if self.debugging:
             self.logger.debug(message)
+
     def shutdown(self):
         logging.shutdown()
         #logging.shutdown([self.logger])
