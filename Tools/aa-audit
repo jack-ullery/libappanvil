@@ -23,6 +23,7 @@ parser = argparse.ArgumentParser(description=_('Switch the given programs to aud
 parser.add_argument('-d', '--dir', type=str, help=_('path to profiles'))
 parser.add_argument('-r', '--remove', action='store_true', help=_('remove audit mode'))
 parser.add_argument('program', type=str, nargs='+', help=_('name of program'))
+parser.add_argument('--trace', action='store_true', help=_('Show full trace'))
 args = parser.parse_args()
 
 try:
@@ -30,5 +31,7 @@ try:
 
     audit.act()
 except Exception as e:
-    print(e)
-    raise e
+    if not args.trace:
+        print(e.value)
+    else:
+        raise e

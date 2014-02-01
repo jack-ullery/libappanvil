@@ -202,10 +202,11 @@ def convert_regexp(regexp):
     return new_reg
 
 def user_perm(prof_dir):
-    if not os.access(prof_dir, os.R_OK):
+    if not os.access(prof_dir, os.W_OK):
         sys.stdout.write("Cannot write to profile directory.\n" +
-                         "Please run as a user with appropriate permissions." )
+                         "Please run as a user with appropriate permissions.")
         return False
+    return True
 
 class DebugLogger(object):
     def __init__(self, module_name=__name__):
