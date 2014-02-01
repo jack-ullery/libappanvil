@@ -13,6 +13,7 @@
 #
 # ----------------------------------------------------------------------
 import argparse
+import traceback
 
 from apparmor.common import init_translations
 init_translations()
@@ -32,6 +33,7 @@ try:
     audit.act()
 except Exception as e:
     if not args.trace:
-        print(e.value)
+        print(e.value + "\n")
+
     else:
-        raise e
+        traceback.print_exc()

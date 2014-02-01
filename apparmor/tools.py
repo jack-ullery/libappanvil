@@ -44,11 +44,11 @@ class aa_tools:
                 raise apparmor.AppArmorException("%s is not a directory." %self.profiledir)
 
         if not user_perm(apparmor.profile_dir):
-            raise apparmor.AppArmorException("Cannot write to profile directory: %s." %(apparmor.profile_dir))
+            raise apparmor.AppArmorException("Cannot write to profile directory: %s" %(apparmor.profile_dir))
 
     def check_disable_dir(self):
         if not os.path.isdir(self.disabledir):
-            raise apparmor.AppArmorException("Can't find AppArmor disable directory %s." %self.disabledir)
+            raise apparmor.AppArmorException("Can't find AppArmor disable directory %s" %self.disabledir)
 
     def act(self):
         for p in self.profiling:

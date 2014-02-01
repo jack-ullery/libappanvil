@@ -204,7 +204,7 @@ def convert_regexp(regexp):
 def user_perm(prof_dir):
     if not os.access(prof_dir, os.W_OK):
         sys.stdout.write("Cannot write to profile directory.\n" +
-                         "Please run as a user with appropriate permissions.")
+                         "Please run as a user with appropriate permissions.\n")
         return False
     return True
 
