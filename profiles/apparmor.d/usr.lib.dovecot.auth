@@ -23,6 +23,10 @@
   capability setgid,
   capability setuid,
 
+  /etc/my.cnf r,
+  /etc/my.cnf.d/ r,
+  /etc/my.cnf.d/*.cnf r,
+
   /etc/dovecot/dovecot-database.conf.ext r,
   /etc/dovecot/dovecot-sql.conf.ext r,
   /usr/lib/dovecot/auth mr,
