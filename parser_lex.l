@@ -488,7 +488,12 @@ LT_EQUAL	<=
 	}
 }
 
-#include/.*\r?\n	{ PUSH(INCLUDE); }
+#include/.*\r?\n	{
+	/* Don't use push here as we don't want #include echoed out. It needs
+	 * to be handled specially
+	 */ 
+	yy_push_state(INCLUDE);
+}
 
 #.*\r?\n	{ /* normal comment */
 	DUMP_AND_DEBUG("comment(%d): %s\n", current_lineno, yytext);
@@ -536,7 +541,6 @@ LT_EQUAL	<=
 {OPEN_PAREN}	{ PUSH_AND_RETURN(LIST_VAL_MODE, TOK_OPENPAREN); }
 
 {VARIABLE_NAME}	{
-	DUMP_PREPROCESS;
 	int token = get_keyword_token(yytext);
 	int state = INITIAL;
 
