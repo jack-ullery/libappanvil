@@ -583,7 +583,7 @@ static int process_args(int argc, char *argv[])
 	int count = 0;
 	option = OPTION_ADD;
 
-	while ((c = getopt_long(argc, argv, "adf:h::rRVvI:b:BCD:NSm:qQn:XKTWkO:po:", long_options, &o)) != -1)
+	while ((c = getopt_long(argc, argv, "adf:h::rRVvI:b:BCD:NSm:qQn:XKTWkL:O:po:", long_options, &o)) != -1)
 	{
 		count += process_arg(c, optarg);
 	}
