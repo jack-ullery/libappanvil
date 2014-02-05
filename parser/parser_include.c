@@ -133,13 +133,19 @@ void set_base_dir(char *dir)
 int add_search_dir(const char *dir)
 {
 	char *t;
+	size_t len;
+
 	if (npath >= MAX_PATH) {
 		PERROR(_("Error: Could not add directory %s to search path.\n"),
 		       dir);
 		return 0;
 	}
 
-	if (!dir || strlen(dir) <= 0)
+	if (!dir)
+		return 1;
+
+	len = strlen(dir);
+	if (len == 0)
 		return 1;
 
 	t = strdup(dir);
@@ -149,8 +155,8 @@ int add_search_dir(const char *dir)
 	}
 
 	/*strip trailing /'s */
-	while (t[strlen(t) - 1] == '/')
-		t[strlen(t) - 1] = 0;
+	while (len > 0 && t[--len] == '/')
+		t[len] = '\0';
 	path[npath] = t;
 	npath++;
 
