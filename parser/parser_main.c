@@ -87,6 +87,8 @@ char *cacheloc = NULL;
 /* per-profile settings */
 int force_complain = 0;
 
+/* Make sure to update BOTH the short and long_options */
+static const char *short_options = "adf:h::rRVvI:b:BCD:NSm:qQn:XKTWkL:O:po:";
 struct option long_options[] = {
 	{"add", 		0, 0, 'a'},
 	{"binary",		0, 0, 'B'},
@@ -583,7 +585,7 @@ static int process_args(int argc, char *argv[])
 	int count = 0;
 	option = OPTION_ADD;
 
-	while ((c = getopt_long(argc, argv, "adf:h::rRVvI:b:BCD:NSm:qQn:XKTWkL:O:po:", long_options, &o)) != -1)
+	while ((c = getopt_long(argc, argv, short_options, long_options, &o)) != -1)
 	{
 		count += process_arg(c, optarg);
 	}
