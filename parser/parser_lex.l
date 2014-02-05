@@ -273,8 +273,7 @@ LT_EQUAL	<=
 
 <INCLUDE>{
 	(\<([^\> \t\n]+)\>|\"([^\" \t\n]+)\")	{	/* <filename> */
-		char *filename = strdup(yytext);
-		filename[strlen(filename) - 1] = '\0';
+		char *filename = strndup(yytext, yyleng - 1);
 		include_filename(filename + 1, *filename == '<');
 		free(filename);
 		yy_pop_state();
