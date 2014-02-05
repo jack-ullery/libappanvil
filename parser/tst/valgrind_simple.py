@@ -33,15 +33,6 @@ VALGRIND_SUPPRESSIONS = '''
 }
 
 {
-    valgrind-yylex-obsessive-overreads
-    Memcheck:Addr4
-    fun:_Z?yylex?
-    fun:_Z*yyparse*
-    fun:_Z*process_profile*
-    fun:main
-}
-
-{
     valgrind-serialize_profile-obsessive-overreads
     Memcheck:Addr4
     fun:_Z*sd_serialize_profile*
