@@ -16,7 +16,7 @@ import re
 def AA_OTHER(mode):
     other = set()
     for i in mode:
-        other.add('::%s'%i)
+        other.add('::%s' % i)
     return other
 
 def AA_OTHER_REMOVE(mode):
@@ -57,14 +57,14 @@ MODE_HASH = {'x': AA_MAY_EXEC, 'X': AA_MAY_EXEC,
              'm': AA_EXEC_MMAP, 'M': AA_EXEC_MMAP,
              'i': AA_EXEC_INHERIT, 'I': AA_EXEC_INHERIT,
              'u': AA_EXEC_UNCONFINED | AA_EXEC_UNSAFE,  # Unconfined + Unsafe
-              'U': AA_EXEC_UNCONFINED,
-              'p': AA_EXEC_PROFILE | AA_EXEC_UNSAFE,    # Profile + unsafe
-              'P': AA_EXEC_PROFILE,
-              'c': AA_EXEC_CHILD | AA_EXEC_UNSAFE,  # Child + Unsafe
-              'C': AA_EXEC_CHILD,
-              'n': AA_EXEC_NT | AA_EXEC_UNSAFE,
-              'N': AA_EXEC_NT
-              }
+             'U': AA_EXEC_UNCONFINED,
+             'p': AA_EXEC_PROFILE | AA_EXEC_UNSAFE,    # Profile + unsafe
+             'P': AA_EXEC_PROFILE,
+             'c': AA_EXEC_CHILD | AA_EXEC_UNSAFE,  # Child + Unsafe
+             'C': AA_EXEC_CHILD,
+             'n': AA_EXEC_NT | AA_EXEC_UNSAFE,
+             'N': AA_EXEC_NT
+             }
 
 LOG_MODE_RE = re.compile('(r|w|l|m|k|a|x|ix|ux|px|cx|nx|pix|cix|Ix|Ux|Px|PUx|Cx|Nx|Pix|Cix)')
 MODE_MAP_RE = re.compile('(r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N)')

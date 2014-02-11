@@ -75,7 +75,7 @@ include = dict()
 
 existing_profiles = dict()
 
-seen_events = 0     # was our
+seen_events = 0  # was our
 # To store the globs entered by users so they can be provided again
 user_globs = []
 
@@ -84,7 +84,7 @@ user_globs = []
 t = hasher()  # dict()
 transitions = hasher()
 aa = hasher()  # Profiles originally in sd, replace by aa
-original_aa =  hasher()
+original_aa = hasher()
 extras = hasher()  # Inactive profiles from extras
 ### end our
 log = []
@@ -93,11 +93,11 @@ pid = dict()
 seen = hasher()  # dir()
 profile_changes = hasher()
 prelog = hasher()
-log_dict = hasher()#dict()
+log_dict = hasher()  # dict()
 changed = dict()
 created = []
 skip = hasher()
-helpers = dict() # Preserve this between passes # was our
+helpers = dict()  # Preserve this between passes # was our
 ### logprof ends
 
 filelist = hasher()    # File level variables and stuff in config files
@@ -118,7 +118,7 @@ def check_for_LD_XXX(file):
         return False
     size = os.stat(file).st_size
     # Limit to checking files under 100k for the sake of speed
-    if size >100000:
+    if size > 100000:
         return False
     with open_file_read(file, encoding='ascii') as f_in:
         for line in f_in:
@@ -136,7 +136,7 @@ def fatal_error(message):
     caller = inspect.stack()[1][3]
 
     # If caller is SendDataToYast or GetDatFromYast simply exit
-    if caller == 'SendDataToYast' or caller== 'GetDatFromYast':
+    if caller == 'SendDataToYast' or caller == 'GetDatFromYast':
         sys.exit(1)
 
     # Else tell user what happened
@@ -172,7 +172,7 @@ def check_for_apparmor():
 
 def which(file):
     """Returns the executable fullpath for the file, None otherwise"""
-    if sys.version_info >= (3,3):
+    if sys.version_info >= (3, 3):
         return shutil.which(file)
     env_dirs = os.getenv('PATH').split(':')
     for env_dir in env_dirs:
@@ -246,14 +246,14 @@ def name_to_prof_filename(prof_filename):
 def complain(path):
     """Sets the profile to complain mode if it exists"""
     prof_filename, name = name_to_prof_filename(path)
-    if not prof_filename :
+    if not prof_filename:
         fatal_error(_("Can't find %s") % path)
     set_complain(prof_filename, name)
 
 def enforce(path):
     """Sets the profile to enforce mode if it exists"""
     prof_filename, name = name_to_prof_filename(path)
-    if not prof_filename :
+    if not prof_filename:
         fatal_error(_("Can't find %s") % path)
     set_enforce(prof_filename, name)
 
@@ -272,7 +272,7 @@ def set_enforce(filename, program):
 
 def delete_symlink(subdir, filename):
     path = filename
-    link = re.sub('^%s'%profile_dir, '%s/%s'%(profile_dir, subdir), path)
+    link = re.sub('^%s' % profile_dir, '%s/%s' % (profile_dir, subdir), path)
     if link != path and os.path.islink(link):
         os.remove(link)
 
@@ -280,13 +280,13 @@ def create_symlink(subdir, filename):
     path = filename
     bname = os.path.basename(filename)
     if not bname:
-        raise AppArmorException(_('Unable to find basename for %s.')%filename)
+        raise AppArmorException(_('Unable to find basename for %s.') % filename)
     #print(filename)
-    link = re.sub('^%s'%profile_dir, '%s/%s'%(profile_dir, subdir), path)
+    link = re.sub('^%s' % profile_dir, '%s/%s' % (profile_dir, subdir), path)
     #print(link)
     #link = link + '/%s'%bname
     #print(link)
-    symlink_dir=os.path.dirname(link)
+    symlink_dir = os.path.dirname(link)
     if not os.path.exists(symlink_dir):
         # If the symlink directory does not exist create it
         os.makedirs(symlink_dir)
@@ -295,7 +295,7 @@ def create_symlink(subdir, filename):
         try:
             os.symlink(filename, link)
         except:
-            raise AppArmorException(_('Could not create %s symlink to %s.')%(link, filename))
+            raise AppArmorException(_('Could not create %s symlink to %s.') % (link, filename))
 
 def head(file):
     """Returns the first/head line of the file"""
@@ -308,7 +308,7 @@ def head(file):
                 pass
             return first
     else:
-        raise AppArmorException(_('Unable to read first line from %s: File Not Found') %file)
+        raise AppArmorException(_('Unable to read first line from %s: File Not Found') % file)
 
 def get_output(params):
     """Returns the return code output by running the program with the args given in the list"""
@@ -322,7 +322,7 @@ def get_output(params):
             # Get the output of the program
             output = subprocess.check_output(params)
         except OSError as e:
-            raise  AppArmorException(_("Unable to fork: %s\n\t%s") %(program, str(e)))
+            raise AppArmorException(_("Unable to fork: %s\n\t%s") % (program, str(e)))
             # If exit-codes besides 0
         except subprocess.CalledProcessError as e:
             output = e.output
@@ -427,7 +427,7 @@ def create_new_profile(localfile):
 
     created.append(localfile)
     changed.append(localfile)
-    
+
     debug_logger.debug("Profile for %s:\n\t%s" % (localfile, local_profile.__str__()))
     return {localfile: local_profile}
 
@@ -506,8 +506,7 @@ def get_profile(prof_name):
         q['selected'] = options.index(options[arg])
         if ans == 'CMD_VIEW_PROFILE':
             if aaui.UI_mode == 'yast':
-                SendDataToYast({
-                                'type': 'dialogue-view-profile',
+                SendDataToYast({'type': 'dialogue-view-profile',
                                 'user': options[arg],
                                 'profile': p['profile'],
                                 'profile_type': p['profile_type']
@@ -593,7 +592,7 @@ def get_profile_flags(filename, program):
                 if profile == program:
                     return flags
 
-    raise AppArmorException(_('%s contains no profile')%filename)
+    raise AppArmorException(_('%s contains no profile') % filename)
 
 def change_profile_flags(filename, program, flag, set_flag):
     old_flags = get_profile_flags(filename, program)
@@ -603,7 +602,7 @@ def change_profile_flags(filename, program, flag, set_flag):
         # Flags maybe white-space and/or , separated
         old_flags = old_flags.split(',')
 
-        if type(old_flags) == type([]):
+        if not isinstance(old_flags, str):
             for i in old_flags:
                 newflags += i.split()
         else:
@@ -627,7 +626,7 @@ def set_profile_flags(prof_filename, program, newflags):
     regex_hat_flag = re.compile('^([a-z]*)\s+([A-Z]*)\s*(#.*)?$')
     if os.path.isfile(prof_filename):
         with open_file_read(prof_filename) as f_in:
-            temp_file = tempfile.NamedTemporaryFile('w', prefix=prof_filename , suffix='~', delete=False, dir=profile_dir)
+            temp_file = tempfile.NamedTemporaryFile('w', prefix=prof_filename, suffix='~', delete=False, dir=profile_dir)
             shutil.copymode(prof_filename, temp_file.name)
             with open_file_write(temp_file.name) as f_out:
                 for line in f_in:
@@ -778,8 +777,7 @@ def yast_select_and_upload_profiles(title, message, profiles_up):
     profs = profiles_up[:]
     for p in profs:
         profile_changes[p[0]] = get_profile_diff(p[2], p[1])
-    SendDataToYast({
-                    'type': 'dialog-select-profiles',
+    SendDataToYast({'type': 'dialog-select-profiles',
                     'title': title,
                     'explanation': message,
                     'default_select': 'false',
@@ -855,7 +853,7 @@ def console_select_and_upload_profiles(title, message, profiles_up):
                 prof_string = p_data[1]
                 status_ok, ret = upload_profile(url, user, passw,
                                                 cfg['repository']['distro'],
-                                                prof, prof_string, changelog )
+                                                prof, prof_string, changelog)
                 if status_ok:
                     newprof = ret
                     newid = newprof['id']
@@ -894,7 +892,7 @@ def build_x_functions(default, options, exec_toggle):
                 ret_list.append('CMD_EXEC_IX_OFF')
         if 'u' in options:
             ret_list.append('CMD_ux')
-            
+
     else:
         if 'i' in options:
             ret_list.append('CMD_ix')
@@ -1098,7 +1096,7 @@ def handle_children(profile, hat, root):
                     combinedaudit = set()
                     ## Check return Value Consistency
                     # Check if path matches any existing regexps in profile
-                    cm, am , m = rematchfrag(aa[profile][hat], 'allow', exec_target)
+                    cm, am, m = rematchfrag(aa[profile][hat], 'allow', exec_target)
                     if cm:
                         combinedmode |= cm
                     if am:
@@ -1210,7 +1208,7 @@ def handle_children(profile, hat, root):
                         default = None
                         if 'p' in options and os.path.exists(get_profile_filename(exec_target)):
                             default = 'CMD_px'
-                            sys.stdout.write(_('Target profile exists: %s\n') %get_profile_filename(exec_target))
+                            sys.stdout.write(_('Target profile exists: %s\n') % get_profile_filename(exec_target))
                         elif 'i' in options:
                             default = 'CMD_ix'
                         elif 'c' in options:
@@ -1353,7 +1351,7 @@ def handle_children(profile, hat, root):
 
                     if ans == 'CMD_ix':
                         if hat:
-                            profile_changes[pid] = '%s//%s' %(profile, hat)
+                            profile_changes[pid] = '%s//%s' % (profile, hat)
                         else:
                             profile_changes[pid] = '%s//' % profile
                     elif re.search('^CMD_(px|nx|pix|nix)', ans):
@@ -1369,7 +1367,7 @@ def handle_children(profile, hat, root):
                         if not os.path.exists(get_profile_filename(exec_target)):
                             ynans = 'y'
                             if exec_mode & str_to_mode('i'):
-                                ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') %exec_target, 'n')
+                                ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
                             if ynans == 'y':
                                 helpers[exec_target] = 'enforce'
                                 if to_name:
@@ -1528,7 +1526,7 @@ def ask_the_questions():
                     q = hasher()
 
                     if newincludes:
-                        options += list(map(lambda inc: '#include <%s>' %inc, sorted(set(newincludes))))
+                        options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
 
                     if options:
                         options.append('capability %s' % capability)
@@ -1582,7 +1580,7 @@ def ask_the_questions():
                             match = re_match_include(selection)
                             if match:
                                 deleted = False
-                                inc = match #.groups()[0]
+                                inc = match  # .groups()[0]
                                 deleted = delete_duplicates(aa[profile][hat], inc)
                                 aa[profile][hat]['include'][inc] = True
 
@@ -1686,7 +1684,7 @@ def ask_the_questions():
                             if aa[profile][hat][incname]:
                                 continue
                             if incname.startswith(profile_dir):
-                                incname = incname.replace(profile_dir+'/', '', 1)
+                                incname = incname.replace(profile_dir + '/', '', 1)
 
                             include_valid = valid_include('', incname)
 
@@ -1733,7 +1731,7 @@ def ask_the_questions():
                             owner_toggle = cfg['settings']['default_owner_prompt']
                         done = False
                         while not done:
-                            q =  hasher()
+                            q = hasher()
                             q['headers'] = [_('Profile'), combine_name(profile, hat),
                                             _('Path'), path]
 
@@ -1814,13 +1812,13 @@ def ask_the_questions():
                             elif ans == 'CMD_ALLOW':
                                 path = options[selected]
                                 done = True
-                                match = re_match_include(path) #.search('^#include\s+<(.+)>$', path)
+                                match = re_match_include(path)  # .search('^#include\s+<(.+)>$', path)
                                 if match:
-                                    inc = match #.groups()[0]
+                                    inc = match  # .groups()[0]
                                     deleted = 0
                                     deleted = delete_duplicates(aa[profile][hat], inc)
-                                    aa[profile][hat]['include'][inc] =  True
-                                    changed[profile] =  True
+                                    aa[profile][hat]['include'][inc] = True
+                                    changed[profile] = True
                                     aaui.UI_Info(_('Adding %s to profile.') % path)
                                     if deleted:
                                         aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
@@ -1853,7 +1851,7 @@ def ask_the_questions():
 
                                     tmpmode = set()
                                     if audit_toggle == 1:
-                                        tmpmode = mode- allow_mode
+                                        tmpmode = mode - allow_mode
                                     elif audit_toggle == 2:
                                         tmpmode = mode
 
@@ -1882,7 +1880,7 @@ def ask_the_questions():
                                     ans = aaui.UI_GetString(_('Enter new path: '), arg)
                                     if ans:
                                         if not matchliteral(ans, path):
-                                            ynprompt = _('The specified path does not match this log entry:\n\n  Log Entry: %s\n  Entered Path:  %s\nDo you really want to use this path?') % (path,ans)
+                                            ynprompt = _('The specified path does not match this log entry:\n\n  Log Entry: %s\n  Entered Path:  %s\nDo you really want to use this path?') % (path, ans)
                                             key = aaui.UI_YesNo(ynprompt, 'n')
                                             if key == 'n':
                                                 continue
@@ -1927,7 +1925,7 @@ def ask_the_questions():
                         newincludes = match_net_includes(aa[profile][hat], family, sock_type)
                         q = hasher()
                         if newincludes:
-                            options += list(map(lambda s: '#include <%s>'%s, sorted(set(newincludes))))
+                            options += list(map(lambda s: '#include <%s>' % s, sorted(set(newincludes))))
                         if options:
                             options.append('network %s %s' % (family, sock_type))
                             q['options'] = options
@@ -1971,9 +1969,9 @@ def ask_the_questions():
                             elif ans == 'CMD_ALLOW':
                                 selection = options[selected]
                                 done = True
-                                if re_match_include(selection): #re.search('#include\s+<.+>$', selection):
-                                    inc =  re_match_include(selection) #re.search('#include\s+<(.+)>$', selection).groups()[0]
-                                    deleted =  0
+                                if re_match_include(selection):  # re.search('#include\s+<.+>$', selection):
+                                    inc = re_match_include(selection)  # re.search('#include\s+<(.+)>$', selection).groups()[0]
+                                    deleted = 0
                                     deleted = delete_duplicates(aa[profile][hat], inc)
 
                                     aa[profile][hat]['include'][inc] = True
@@ -2006,13 +2004,13 @@ def glob_path(newpath):
     if newpath[-1] == '/':
         if newpath[-4:] == '/**/' or newpath[-3:] == '/*/':
             # /foo/**/ and /foo/*/ => /**/
-            newpath = re.sub('/[^/]+/\*{1,2}/$', '/**/', newpath) #re.sub('/[^/]+/\*{1,2}$/', '/\*\*/', newpath)
+            newpath = re.sub('/[^/]+/\*{1,2}/$', '/**/', newpath)  # re.sub('/[^/]+/\*{1,2}$/', '/\*\*/', newpath)
         elif re.search('/[^/]+\*\*[^/]*/$', newpath):
             # /foo**/ and /foo**bar/ => /**/
-            newpath =  re.sub('/[^/]+\*\*[^/]*/$', '/**/', newpath)
+            newpath = re.sub('/[^/]+\*\*[^/]*/$', '/**/', newpath)
         elif re.search('/\*\*[^/]+/$', newpath):
             # /**bar/ => /**/
-            newpath =  re.sub('/\*\*[^/]+/$', '/**/', newpath)
+            newpath = re.sub('/\*\*[^/]+/$', '/**/', newpath)
         else:
             newpath = re.sub('/[^/]+/$', '/*/', newpath)
     else:
@@ -2024,7 +2022,7 @@ def glob_path(newpath):
                 newpath = re.sub('/[^/]*\*\*[^/]+$', '/**', newpath)
             elif re.search('/[^/]+\*\*$', newpath):
                 # /foo** => /**
-                newpath =  re.sub('/[^/]+\*\*$', '/**', newpath)
+                newpath = re.sub('/[^/]+\*\*$', '/**', newpath)
             else:
                 newpath = re.sub('/[^/]+$', '/*', newpath)
     return newpath
@@ -2035,19 +2033,19 @@ def glob_path_withext(newpath):
     match = re.search('/\*{1,2}(\.[^/]+)$', newpath)
     if match:
         # /foo/**.ext and /foo/*.ext => /**.ext
-        newpath = re.sub('/[^/]+/\*{1,2}\.[^/]+$', '/**'+match.groups()[0], newpath)
+        newpath = re.sub('/[^/]+/\*{1,2}\.[^/]+$', '/**' + match.groups()[0], newpath)
     elif re.search('/[^/]+\*\*[^/]*\.[^/]+$', newpath):
         # /foo**.ext and /foo**bar.ext => /**.ext
         match = re.search('/[^/]+\*\*[^/]*(\.[^/]+)$', newpath)
-        newpath = re.sub('/[^/]+\*\*[^/]*\.[^/]+$', '/**'+match.groups()[0], newpath)
+        newpath = re.sub('/[^/]+\*\*[^/]*\.[^/]+$', '/**' + match.groups()[0], newpath)
     elif re.search('/\*\*[^/]+\.[^/]+$', newpath):
         # /**foo.ext => /**.ext
         match = re.search('/\*\*[^/]+(\.[^/]+)$', newpath)
-        newpath = re.sub('/\*\*[^/]+\.[^/]+$', '/**'+match.groups()[0], newpath)
+        newpath = re.sub('/\*\*[^/]+\.[^/]+$', '/**' + match.groups()[0], newpath)
     else:
         match = re.search('(\.[^/]+)$', newpath)
         if match:
-            newpath = re.sub('/[^/]+(\.[^/]+)$', '/*'+match.groups()[0], newpath)
+            newpath = re.sub('/[^/]+(\.[^/]+)$', '/*' + match.groups()[0], newpath)
     return newpath
 
 def delete_net_duplicates(netrules, incnetrules):
@@ -2089,7 +2087,7 @@ def delete_cap_duplicates(profilecaps, inccaps):
 def delete_path_duplicates(profile, incname, allow):
     deleted = []
     for entry in profile[allow]['path'].keys():
-        if entry == '#include <%s>'%incname:
+        if entry == '#include <%s>' % incname:
             continue
         cm, am, m = match_include_to_path(incname, allow, entry)
         if cm and mode_contains(cm, profile[allow]['path'][entry]['mode']) and mode_contains(am, profile[allow]['path'][entry]['audit']):
@@ -2209,10 +2207,10 @@ def do_logprof_pass(logmark='', passno=0, pid=pid):
     skip = hasher()
 #    filelist = hasher()
 
-    aaui.UI_Info(_('Reading log entries from %s.') %filename)
+    aaui.UI_Info(_('Reading log entries from %s.') % filename)
 
     if not passno:
-        aaui.UI_Info(_('Updating AppArmor profiles in %s.') %profile_dir)
+        aaui.UI_Info(_('Updating AppArmor profiles in %s.') % profile_dir)
         read_profiles()
 
     if not sev_db:
@@ -2281,8 +2279,7 @@ def save_profiles():
                 profile_changes[prof] = get_profile_diff(oldprofile, newprofile)
             explanation = _('Select which profile changes you would like to save to the\nlocal profile set.')
             title = _('Local profile changes')
-            SendDataToYast({
-                            'type': 'dialog-select-profiles',
+            SendDataToYast({'type': 'dialog-select-profiles',
                             'title': title,
                             'explanation': explanation,
                             'dialog_select': 'true',
@@ -2307,7 +2304,7 @@ def save_profiles():
             q['default'] = 'CMD_VIEW_CHANGES'
             q['options'] = changed
             q['selected'] = 0
-            p =None
+            p = None
             ans = ''
             arg = None
             while ans != 'CMD_SAVE_CHANGES':
@@ -2358,7 +2355,7 @@ def generate_diff(oldprofile, newprofile):
 
     difftemp = tempfile.NamedTemporaryFile('w', delete=False)
 
-    subprocess.call('diff -u -p %s %s > %s' %(oldtemp.name, newtemp.name, difftemp.name), shell=True)
+    subprocess.call('diff -u -p %s %s > %s' % (oldtemp.name, newtemp.name, difftemp.name), shell=True)
 
     oldtemp.close()
     newtemp.close()
@@ -2381,14 +2378,14 @@ def display_changes(oldprofile, newprofile):
         aaui.UI_LongMessage(_('Profile Changes'), get_profile_diff(oldprofile, newprofile))
     else:
         difftemp = generate_diff(oldprofile, newprofile)
-        subprocess.call('less %s' %difftemp.name, shell=True)
+        subprocess.call('less %s' % difftemp.name, shell=True)
         difftemp.delete = True
         difftemp.close()
 
 def display_changes_with_comments(oldprofile, newprofile):
     """Compare the new profile with the existing profile inclusive of all the comments"""
     if not os.path.exists(oldprofile):
-        raise AppArmorException(_("Can't find existing profile %s to compare changes.") %oldprofile)
+        raise AppArmorException(_("Can't find existing profile %s to compare changes.") % oldprofile)
     if aaui.UI_mode == 'yast':
         #To-Do
         pass
@@ -2399,10 +2396,10 @@ def display_changes_with_comments(oldprofile, newprofile):
 
         difftemp = tempfile.NamedTemporaryFile('w')
 
-        subprocess.call('diff -u -p %s %s > %s' %(oldprofile, newtemp.name, difftemp.name), shell=True)
+        subprocess.call('diff -u -p %s %s > %s' % (oldprofile, newtemp.name, difftemp.name), shell=True)
 
         newtemp.close()
-        subprocess.call('less %s' %difftemp.name, shell=True)
+        subprocess.call('less %s' % difftemp.name, shell=True)
         difftemp.close()
 
 def set_process(pid, profile):
@@ -2505,8 +2502,8 @@ def validate_profile_mode(mode, allow, nt_name=None):
 def is_skippable_file(path):
     """Returns True if filename matches something to be skipped"""
     if (re.search('(^|/)\.[^/]*$', path) or re.search('\.rpm(save|new)$', path)
-        or re.search('\.dpkg-(old|new)$', path) or re.search('\.swp$', path)
-        or path[-1] == '~' or path == 'README'):
+            or re.search('\.dpkg-(old|new)$', path) or re.search('\.swp$', path)
+            or path[-1] == '~' or path == 'README'):
         return True
 
 def is_skippable_dir(path):
@@ -2525,7 +2522,7 @@ def check_profile_syntax(errors):
 def read_profiles():
     try:
         os.listdir(profile_dir)
-    except :
+    except:
         fatal_error(_("Can't read AppArmor profiles in %s") % profile_dir)
 
     for file in os.listdir(profile_dir):
@@ -2540,7 +2537,7 @@ def read_inactive_profiles():
         return None
     try:
         os.listdir(profile_dir)
-    except :
+    except:
         fatal_error(_("Can't read AppArmor profiles in %s") % extra_profile_dir)
 
     for file in os.listdir(profile_dir):
@@ -2556,7 +2553,7 @@ def read_profile(file, active_profile):
         with open_file_read(file) as f_in:
             data = f_in.readlines()
     except IOError:
-        debug_logger.debug("read_profile: can't read %s - skipping" %file)
+        debug_logger.debug("read_profile: can't read %s - skipping" % file)
         return None
 
     profile_data = parse_profile_data(data, file, 0)
@@ -2617,13 +2614,13 @@ def parse_profile_data(data, file, do_include):
             if profile:
                 #print(profile, hat)
                 if profile != hat or not matches[3]:
-                    raise AppArmorException(_('%s profile in %s contains syntax errors in line: %s.') % (profile, file, lineno+1))
+                    raise AppArmorException(_('%s profile in %s contains syntax errors in line: %s.') % (profile, file, lineno + 1))
             # Keep track of the start of a profile
             if profile and profile == hat and matches[3]:
                 # local profile
                 hat = matches[3]
                 in_contained_hat = True
-                profile_data[profile][hat]['profile'] =  True
+                profile_data[profile][hat]['profile'] = True
             else:
                 if matches[1]:
                     profile = matches[1]
@@ -2669,7 +2666,7 @@ def parse_profile_data(data, file, do_include):
         elif RE_PROFILE_END.search(line):
             # If profile ends and we're not in one
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected End of Profile reached in file: %s line: %s') % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected End of Profile reached in file: %s line: %s') % (file, lineno + 1))
 
             if in_contained_hat:
                 hat = profile
@@ -2684,7 +2681,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_CAP.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected capability entry found in file: %s line: %s') % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected capability entry found in file: %s line: %s') % (file, lineno + 1))
 
             audit = False
             if matches[0]:
@@ -2703,7 +2700,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_LINK.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected link entry found in file: %s line: %s') % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected link entry found in file: %s line: %s') % (file, lineno + 1))
 
             audit = False
             if matches[0]:
@@ -2731,7 +2728,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_CHANGE_PROFILE.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected change profile entry found in file: %s line: %s') % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected change profile entry found in file: %s line: %s') % (file, lineno + 1))
 
             cp = strip_quotes(matches[0])
             profile_data[profile][hat]['changes_profile'][cp] = True
@@ -2753,7 +2750,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_RLIMIT.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected rlimit entry found in file: %s line: %s') % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected rlimit entry found in file: %s line: %s') % (file, lineno + 1))
 
             from_name = matches[0]
             to_name = matches[2]
@@ -2764,7 +2761,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_BOOLEAN.search(line)
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected boolean definition found in file: %s line: %s') % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected boolean definition found in file: %s line: %s') % (file, lineno + 1))
 
             bool_var = matches[0]
             value = matches[1]
@@ -2804,7 +2801,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_PATH_ENTRY.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected path entry found in file: %s line: %s') % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected path entry found in file: %s line: %s') % (file, lineno + 1))
 
             audit = False
             if matches[0]:
@@ -2828,10 +2825,10 @@ def parse_profile_data(data, file, do_include):
             try:
                 re.compile(p_re)
             except:
-                raise AppArmorException(_('Syntax Error: Invalid Regex %s in file: %s line: %s') % (path, file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Invalid Regex %s in file: %s line: %s') % (path, file, lineno + 1))
 
             if not validate_profile_mode(mode, allow, nt_name):
-                raise AppArmorException(_('Invalid mode %s in file: %s line: %s') % (mode, file, lineno+1))
+                raise AppArmorException(_('Invalid mode %s in file: %s line: %s') % (mode, file, lineno + 1))
 
             tmpmode = set()
             if user:
@@ -2855,7 +2852,6 @@ def parse_profile_data(data, file, do_include):
             if include_name.startswith('local/'):
                 profile_data[profile][hat]['localinclude'][include_name] = True
 
-
             if profile:
                 profile_data[profile][hat]['include'][include_name] = True
             else:
@@ -2870,7 +2866,7 @@ def parse_profile_data(data, file, do_include):
                         continue
                     if os.path.isfile(profile_dir + '/' + include_name + '/' + path):
                         file_name = include_name + '/' + path
-                        file_name = file_name.replace(profile_dir+'/', '')
+                        file_name = file_name.replace(profile_dir + '/', '')
                         if not include.get(file_name, False):
                             load_include(file_name)
             else:
@@ -2881,7 +2877,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_NETWORK.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected network entry found in file: %s line: %s') % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected network entry found in file: %s line: %s') % (file, lineno + 1))
 
             audit = False
             if matches[0]:
@@ -2897,7 +2893,7 @@ def parse_profile_data(data, file, do_include):
                 ##Simply ignore any type subrules if family has True (seperately for allow and deny)
                 ##This will lead to those type specific rules being lost when written
                 #if type(profile_data[profile][hat][allow]['netdomain']['rule'].get(fam, False)) == dict:
-                profile_data[profile][hat][allow]['netdomain']['rule'][fam][typ] =  1
+                profile_data[profile][hat][allow]['netdomain']['rule'][fam][typ] = 1
                 profile_data[profile][hat][allow]['netdomain']['audit'][fam][typ] = audit
             elif RE_NETWORK_FAMILY.search(network):
                 fam = RE_NETWORK_FAMILY.search(network).groups()[0]
@@ -2905,13 +2901,13 @@ def parse_profile_data(data, file, do_include):
                 profile_data[profile][hat][allow]['netdomain']['audit'][fam] = audit
             else:
                 profile_data[profile][hat][allow]['netdomain']['rule']['all'] = True
-                profile_data[profile][hat][allow]['netdomain']['audit']['all'] = audit # True
+                profile_data[profile][hat][allow]['netdomain']['audit']['all'] = audit  # True
 
         elif RE_PROFILE_CHANGE_HAT.search(line):
             matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected change hat declaration found in file: %s line: %s') % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected change hat declaration found in file: %s line: %s') % (file, lineno + 1))
 
             hat = matches[0]
             hat = strip_quotes(hat)
@@ -2923,7 +2919,7 @@ def parse_profile_data(data, file, do_include):
             # An embedded hat syntax definition starts
             matches = RE_PROFILE_HAT_DEF.search(line).groups()
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected hat definition found in file: %s line: %s') % (file, lineno+1))
+                raise AppArmorException(_('Syntax Error: Unexpected hat definition found in file: %s line: %s') % (file, lineno + 1))
 
             in_contained_hat = True
             hat = matches[0]
@@ -2939,7 +2935,7 @@ def parse_profile_data(data, file, do_include):
                 profile_data[profile][hat]['initial_comment'] = initial_comment
             initial_comment = ''
             if filelist[file]['profiles'][profile].get(hat, False):
-                raise AppArmorException(_('Error: Multiple definitions for hat %s in profile %s.') %(hat, profile))
+                raise AppArmorException(_('Error: Multiple definitions for hat %s in profile %s.') % (hat, profile))
             filelist[file]['profiles'][profile][hat] = True
 
         elif line[0] == '#':
@@ -2959,7 +2955,7 @@ def parse_profile_data(data, file, do_include):
                     initial_comment = ' '.join(line) + '\n'
 
         else:
-            raise AppArmorException(_('Syntax Error: Unknown line found in file: %s line: %s') % (file, lineno+1))
+            raise AppArmorException(_('Syntax Error: Unknown line found in file: %s line: %s') % (file, lineno + 1))
 
     # Below is not required I'd say
     if not do_include:
@@ -3003,18 +2999,18 @@ def store_list_var(var, list_var, value, var_operation):
             var[list_var] = set(vlist)
         else:
             #print('Ignored: New definition for variable for:',list_var,'=', value, 'operation was:',var_operation,'old value=', var[list_var])
-            raise AppArmorException(_('An existing variable redefined: %s') %list_var)
+            raise AppArmorException(_('An existing variable redefined: %s') % list_var)
     elif var_operation == '+=':
         if var.get(list_var, False):
             var[list_var] = set(var[list_var] + vlist)
         else:
-            raise AppArmorException(_('Values added to a non-existing variable: %s') %list_var)
+            raise AppArmorException(_('Values added to a non-existing variable: %s') % list_var)
     else:
-        raise AppArmorException(_('Unknown variable operation: %s') %var_operation)
+        raise AppArmorException(_('Unknown variable operation: %s') % var_operation)
 
 
 def strip_quotes(data):
-    if data[0]+data[-1] == '""':
+    if data[0] + data[-1] == '""':
         return data[1:-1]
     else:
         return data
@@ -3037,7 +3033,7 @@ def write_header(prof_data, depth, name, embedded_hat, write_flags):
     data = []
     name = quote_if_needed(name)
 
-    if (not embedded_hat and re.search('^[^/]|^"[^/]', name)) or (embedded_hat and re.search('^[^^]' ,name)):
+    if (not embedded_hat and re.search('^[^/]|^"[^/]', name)) or (embedded_hat and re.search('^[^^]', name)):
         name = 'profile %s' % name
 
     if write_flags and prof_data['flags']:
@@ -3055,7 +3051,7 @@ def write_single(prof_data, depth, allow, name, prefix, tail):
     if ref.get(name, False):
         for key in sorted(ref[name].keys()):
             qkey = quote_if_needed(key)
-            data.append('%s%s%s%s%s' %(pre, allow, prefix, qkey, tail))
+            data.append('%s%s%s%s%s' % (pre, allow, prefix, qkey, tail))
         if ref[name].keys():
             data.append('')
 
@@ -3085,8 +3081,8 @@ def write_pair(prof_data, depth, allow, name, prefix, sep, tail, fn):
 
     if ref.get(name, False):
         for key in sorted(ref[name].keys()):
-            value = fn(ref[name][key])#eval('%s(%s)' % (fn, ref[name][key]))
-            data.append('%s%s%s%s%s%s' %(pre, allow, prefix, key, sep, value))
+            value = fn(ref[name][key])  # eval('%s(%s)' % (fn, ref[name][key]))
+            data.append('%s%s%s%s%s%s' % (pre, allow, prefix, key, sep, value))
         if ref[name].keys():
             data.append('')
 
@@ -3124,7 +3120,7 @@ def write_cap_rules(prof_data, depth, allow):
             if prof_data[allow]['capability'][cap].get('audit', False):
                 audit = 'audit '
             if prof_data[allow]['capability'][cap].get('set', False):
-                data.append('%s%s%scapability %s,' %(pre, audit, allowstr, cap))
+                data.append('%s%s%scapability %s,' % (pre, audit, allowstr, cap))
         data.append('')
 
     return data
@@ -3144,10 +3140,10 @@ def write_net_rules(prof_data, depth, allow):
         if prof_data[allow]['netdomain'].get('rule', False) == 'all':
             if prof_data[allow]['netdomain']['audit'].get('all', False):
                 audit = 'audit '
-            data.append('%s%snetwork,' %(pre, audit))
+            data.append('%s%snetwork,' % (pre, audit))
         else:
             for fam in sorted(prof_data[allow]['netdomain']['rule'].keys()):
-                if prof_data[allow]['netdomain']['rule'][fam] == True:
+                if prof_data[allow]['netdomain']['rule'][fam] is True:
                     if prof_data[allow]['netdomain']['audit'][fam]:
                         audit = 'audit'
                     data.append('%s%s%snetwork %s' % (pre, audit, allowstr, fam))
@@ -3155,7 +3151,7 @@ def write_net_rules(prof_data, depth, allow):
                     for typ in sorted(prof_data[allow]['netdomain']['rule'][fam].keys()):
                         if prof_data[allow]['netdomain']['audit'][fam].get(typ, False):
                             audit = 'audit'
-                        data.append('%s%s%snetwork %s %s,' % (pre, audit, allowstr,fam, typ))
+                        data.append('%s%s%snetwork %s %s,' % (pre, audit, allowstr, fam, typ))
         if prof_data[allow].get('netdomain', False):
             data.append('')
 
@@ -3182,7 +3178,7 @@ def write_link_rules(prof_data, depth, allow):
                 audit = 'audit '
             path = quote_if_needed(path)
             to_name = quote_if_needed(to_name)
-            data.append('%s%s%slink %s%s -> %s,' %(pre, audit, allowstr, subset, path, to_name))
+            data.append('%s%s%slink %s%s -> %s,' % (pre, audit, allowstr, subset, path, to_name))
         data.append('')
 
     return data
@@ -3234,13 +3230,13 @@ def write_path_rules(prof_data, depth, allow):
                 if tmpmode & tmpaudit:
                     modestr = mode_to_str(tmpmode & tmpaudit)
                     path = quote_if_needed(path)
-                    data.append('%saudit %s%s%s %s%s,' %(pre, allowstr, ownerstr, path, modestr, tail))
+                    data.append('%saudit %s%s%s %s%s,' % (pre, allowstr, ownerstr, path, modestr, tail))
                     tmpmode = tmpmode - tmpaudit
 
                 if tmpmode:
                     modestr = mode_to_str(tmpmode)
                     path = quote_if_needed(path)
-                    data.append('%s%s%s%s %s%s,' %(pre, allowstr, ownerstr, path, modestr, tail))
+                    data.append('%s%s%s%s %s%s,' % (pre, allowstr, ownerstr, path, modestr, tail))
 
         data.append('')
     return data
@@ -3276,13 +3272,13 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
         name = nhat
         inhat = True
     data += write_header(profile_data[name], depth, wname, False, write_flags)
-    data += write_rules(profile_data[name], depth+1)
+    data += write_rules(profile_data[name], depth + 1)
 
-    pre2 = '  ' * (depth+1)
+    pre2 = '  ' * (depth + 1)
     # External hat declarations
     for hat in list(filter(lambda x: x != name, sorted(profile_data.keys()))):
         if profile_data[hat].get('declared', False):
-            data.append('%s^%s,' %(pre2, hat))
+            data.append('%s^%s,' % (pre2, hat))
 
     if not inhat:
         # Embedded hats
@@ -3290,21 +3286,21 @@ def write_piece(profile_data, depth, name, nhat, write_flags):
             if not profile_data[hat]['external'] and not profile_data[hat]['declared']:
                 data.append('')
                 if profile_data[hat]['profile']:
-                    data += list(map(str, write_header(profile_data[hat], depth+1, hat, True, write_flags)))
+                    data += list(map(str, write_header(profile_data[hat], depth + 1, hat, True, write_flags)))
                 else:
-                    data += list(map(str, write_header(profile_data[hat], depth+1, '^'+hat, True, write_flags)))
+                    data += list(map(str, write_header(profile_data[hat], depth + 1, '^' + hat, True, write_flags)))
 
-                data += list(map(str, write_rules(profile_data[hat], depth+2)))
+                data += list(map(str, write_rules(profile_data[hat], depth + 2)))
 
-                data.append('%s}' %pre2)
+                data.append('%s}' % pre2)
 
-        data.append('%s}' %pre)
+        data.append('%s}' % pre)
 
         # External hats
         for hat in list(filter(lambda x: x != name, sorted(profile_data.keys()))):
             if name == nhat and profile_data[hat].get('external', False):
                 data.append('')
-                data += list(map(lambda x: '  %s' %x, write_piece(profile_data, depth-1, name, nhat, write_flags)))
+                data += list(map(lambda x: '  %s' % x, write_piece(profile_data, depth - 1, name, nhat, write_flags)))
                 data.append('  }')
 
     return data
@@ -3313,21 +3309,23 @@ def serialize_profile(profile_data, name, options):
     string = ''
     include_metadata = False
     include_flags = True
-    data= []
+    data = []
 
-    if options:# and type(options) == dict:
+    if options:  # and type(options) == dict:
         if options.get('METADATA', False):
             include_metadata = True
         if options.get('NO_FLAGS', False):
             include_flags = False
 
     if include_metadata:
-        string = '# Last Modified: %s\n' %time.asctime()
+        string = '# Last Modified: %s\n' % time.asctime()
 
-        if (profile_data[name].get('repo', False) and profile_data[name]['repo']['url']
-            and profile_data[name]['repo']['user'] and profile_data[name]['repo']['id']):
+        if (profile_data[name].get('repo', False) and
+                profile_data[name]['repo']['url'] and
+                profile_data[name]['repo']['user'] and
+                profile_data[name]['repo']['id']):
             repo = profile_data[name]['repo']
-            string += '# REPOSITORY: %s %s %s\n' %(repo['url'], repo['user'], repo['id'])
+            string += '# REPOSITORY: %s %s %s\n' % (repo['url'], repo['user'], repo['id'])
         elif profile_data[name]['repo']['neversubmit']:
             string += '# REPOSITORY: NEVERSUBMIT\n'
 
@@ -3359,7 +3357,7 @@ def serialize_profile(profile_data, name, options):
 
     string += '\n'.join(data)
 
-    return string+'\n'
+    return string + '\n'
 
 def serialize_profile_from_old_profile(profile_data, name, options):
     data = []
@@ -3371,28 +3369,29 @@ def serialize_profile_from_old_profile(profile_data, name, options):
     write_filelist = deepcopy(filelist[prof_filename])
     write_prof_data = deepcopy(profile_data)
 
-    if options:# and type(options) == dict:
+    if options:  # and type(options) == dict:
         if options.get('METADATA', False):
             include_metadata = True
         if options.get('NO_FLAGS', False):
             include_flags = False
 
     if include_metadata:
-        string = '# Last Modified: %s\n' %time.asctime()
+        string = '# Last Modified: %s\n' % time.asctime()
 
-        if (profile_data[name].get('repo', False) and profile_data[name]['repo']['url']
-            and profile_data[name]['repo']['user'] and profile_data[name]['repo']['id']):
+        if (profile_data[name].get('repo', False) and
+                profile_data[name]['repo']['url'] and
+                profile_data[name]['repo']['user'] and
+                profile_data[name]['repo']['id']):
             repo = profile_data[name]['repo']
-            string += '# REPOSITORY: %s %s %s\n' %(repo['url'], repo['user'], repo['id'])
+            string += '# REPOSITORY: %s %s %s\n' % (repo['url'], repo['user'], repo['id'])
         elif profile_data[name]['repo']['neversubmit']:
             string += '# REPOSITORY: NEVERSUBMIT\n'
 
-
     if not os.path.isfile(prof_filename):
         raise AppArmorException(_("Can't find existing profile to modify"))
-    
+
     profiles_list = filelist[prof_filename].keys()
-    
+
     with open_file_read(prof_filename) as f_in:
         profile = None
         hat = None
@@ -3407,8 +3406,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                          'change_profile': write_change_profile,
                          }
         prof_correct = True
-        segments = {
-                    'alias': False,
+        segments = {'alias': False,
                     'lvar': False,
                     'include': False,
                     'rlimit': False,
@@ -3418,7 +3416,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     'path': False,
                     'change_profile': False,
                     'include_local_started': False,
-        }
+                    }
         #data.append('reading prof')
         for line in f_in:
             correct = True
@@ -3454,7 +3452,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 if not write_prof_data[hat]['name'] == profile:
                     correct = False
 
-                if not write_filelist['profiles'][profile][hat] == True:
+                if not write_filelist['profiles'][profile][hat] is True:
                     correct = False
 
                 if not write_prof_data[hat]['flags'] == flags:
@@ -3470,7 +3468,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 else:
                     if write_prof_data[hat]['name'] == profile:
                         depth = len(line) - len(line.lstrip())
-                        data += write_header(write_prof_data[name], int(depth/2), name, False, include_flags)
+                        data += write_header(write_prof_data[name], int(depth / 2), name, False, include_flags)
 
             elif RE_PROFILE_END.search(line):
                 # DUMP REMAINDER OF PROFILE
@@ -3479,11 +3477,12 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     if True in segments.values():
                         for segs in list(filter(lambda x: segments[x], segments.keys())):
 
-                            data += write_methods[segs](write_prof_data[name], int(depth/2))
+                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
                             segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False): write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False): write_prof_data[name]['deny'].pop(segs)
-
+                            if write_prof_data[name]['allow'].get(segs, False):
+                                write_prof_data[name]['allow'].pop(segs)
+                            if write_prof_data[name]['deny'].get(segs, False):
+                                write_prof_data[name]['deny'].pop(segs)
 
                     data += write_alias(write_prof_data[name], depth)
                     data += write_list_vars(write_prof_data[name], depth)
@@ -3502,25 +3501,25 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if not in_contained_hat:
                     # Embedded hats
-                    depth = int((len(line) - len(line.lstrip()))/2)
-                    pre2 = '  ' * (depth+1)
+                    depth = int((len(line) - len(line.lstrip())) / 2)
+                    pre2 = '  ' * (depth + 1)
                     for hat in list(filter(lambda x: x != name, sorted(profile_data.keys()))):
                         if not profile_data[hat]['external'] and not profile_data[hat]['declared']:
                             data.append('')
                             if profile_data[hat]['profile']:
-                                data += list(map(str, write_header(profile_data[hat], depth+1, hat, True, include_flags)))
+                                data += list(map(str, write_header(profile_data[hat], depth + 1, hat, True, include_flags)))
                             else:
-                                data += list(map(str, write_header(profile_data[hat], depth+1, '^'+hat, True, include_flags)))
+                                data += list(map(str, write_header(profile_data[hat], depth + 1, '^' + hat, True, include_flags)))
 
-                            data += list(map(str, write_rules(profile_data[hat], depth+2)))
+                            data += list(map(str, write_rules(profile_data[hat], depth + 2)))
 
-                            data.append('%s}' %pre2)
+                            data.append('%s}' % pre2)
 
                     # External hats
                     for hat in list(filter(lambda x: x != name, sorted(profile_data.keys()))):
                         if profile_data[hat].get('external', False):
                             data.append('')
-                            data += list(map(lambda x: '  %s' %x, write_piece(profile_data, depth-1, name, name, include_flags)))
+                            data += list(map(lambda x: '  %s' % x, write_piece(profile_data, depth - 1, name, name, include_flags)))
                             data.append('  }')
 
                 if in_contained_hat:
@@ -3529,7 +3528,6 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     in_contained_hat = False
                 else:
                     profile = None
-
 
             elif RE_PROFILE_CAP.search(line):
                 matches = RE_PROFILE_CAP.search(line).groups()
@@ -3552,10 +3550,12 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     if not segments['capability'] and True in segments.values():
                         for segs in list(filter(lambda x: segments[x], segments.keys())):
                             depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth/2))
+                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
                             segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False): write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False): write_prof_data[name]['deny'].pop(segs)
+                            if write_prof_data[name]['allow'].get(segs, False):
+                                write_prof_data[name]['allow'].pop(segs)
+                            if write_prof_data[name]['deny'].get(segs, False):
+                                write_prof_data[name]['deny'].pop(segs)
                     segments['capability'] = True
                     write_prof_data[hat][allow]['capability'].pop(capability)
                     data.append(line)
@@ -3591,10 +3591,12 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     if not segments['link'] and True in segments.values():
                         for segs in list(filter(lambda x: segments[x], segments.keys())):
                             depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth/2))
+                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
                             segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False): write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False): write_prof_data[name]['deny'].pop(segs)
+                            if write_prof_data[name]['allow'].get(segs, False):
+                                write_prof_data[name]['allow'].pop(segs)
+                            if write_prof_data[name]['deny'].get(segs, False):
+                                write_prof_data[name]['deny'].pop(segs)
                     segments['link'] = True
                     write_prof_data[hat][allow]['link'].pop(link)
                     data.append(line)
@@ -3606,17 +3608,19 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 matches = RE_PROFILE_CHANGE_PROFILE.search(line).groups()
                 cp = strip_quotes(matches[0])
 
-                if not write_prof_data[hat]['changes_profile'][cp] == True:
+                if not write_prof_data[hat]['changes_profile'][cp] is True:
                     correct = False
 
                 if correct:
                     if not segments['change_profile'] and True in segments.values():
                         for segs in list(filter(lambda x: segments[x], segments.keys())):
                             depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth/2))
+                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
                             segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False): write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False): write_prof_data[name]['deny'].pop(segs)
+                            if write_prof_data[name]['allow'].get(segs, False):
+                                write_prof_data[name]['allow'].pop(segs)
+                            if write_prof_data[name]['deny'].get(segs, False):
+                                write_prof_data[name]['deny'].pop(segs)
                     segments['change_profile'] = True
                     write_prof_data[hat]['change_profile'].pop(cp)
                     data.append(line)
@@ -3641,10 +3645,12 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     if not segments['alias'] and True in segments.values():
                         for segs in list(filter(lambda x: segments[x], segments.keys())):
                             depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth/2))
+                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
                             segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False): write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False): write_prof_data[name]['deny'].pop(segs)
+                            if write_prof_data[name]['allow'].get(segs, False):
+                                write_prof_data[name]['allow'].pop(segs)
+                            if write_prof_data[name]['deny'].get(segs, False):
+                                write_prof_data[name]['deny'].pop(segs)
                     segments['alias'] = True
                     if profile:
                         write_prof_data[hat]['alias'].pop(from_name)
@@ -3668,10 +3674,12 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     if not segments['rlimit'] and True in segments.values():
                         for segs in list(filter(lambda x: segments[x], segments.keys())):
                             depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth/2))
+                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
                             segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False): write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False): write_prof_data[name]['deny'].pop(segs)
+                            if write_prof_data[name]['allow'].get(segs, False):
+                                write_prof_data[name]['allow'].pop(segs)
+                            if write_prof_data[name]['deny'].get(segs, False):
+                                write_prof_data[name]['deny'].pop(segs)
                     segments['rlimit'] = True
                     write_prof_data[hat]['rlimit'].pop(from_name)
                     data.append(line)
@@ -3691,10 +3699,12 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     if not segments['lvar'] and True in segments.values():
                         for segs in list(filter(lambda x: segments[x], segments.keys())):
                             depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth/2))
+                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
                             segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False): write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False): write_prof_data[name]['deny'].pop(segs)
+                            if write_prof_data[name]['allow'].get(segs, False):
+                                write_prof_data[name]['allow'].pop(segs)
+                            if write_prof_data[name]['deny'].get(segs, False):
+                                write_prof_data[name]['deny'].pop(segs)
                     segments['lvar'] = True
                     write_prof_data[hat]['lvar'].pop(bool_var)
                     data.append(line)
@@ -3720,10 +3730,12 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     if not segments['lvar'] and True in segments.values():
                         for segs in list(filter(lambda x: segments[x], segments.keys())):
                             depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth/2))
+                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
                             segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False): write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False): write_prof_data[name]['deny'].pop(segs)
+                            if write_prof_data[name]['allow'].get(segs, False):
+                                write_prof_data[name]['allow'].pop(segs)
+                            if write_prof_data[name]['deny'].get(segs, False):
+                                write_prof_data[name]['deny'].pop(segs)
                     segments['lvar'] = True
                     if profile:
                         write_prof_data[hat]['lvar'].pop(list_var)
@@ -3755,7 +3767,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 tmpmode = set()
                 if user:
-                    tmpmode = str_to_mode('%s::' %mode)
+                    tmpmode = str_to_mode('%s::' % mode)
                 else:
                     tmpmode = str_to_mode(mode)
 
@@ -3772,10 +3784,12 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     if not segments['path'] and True in segments.values():
                         for segs in list(filter(lambda x: segments[x], segments.keys())):
                             depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth/2))
+                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
                             segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False): write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False): write_prof_data[name]['deny'].pop(segs)
+                            if write_prof_data[name]['allow'].get(segs, False):
+                                write_prof_data[name]['allow'].pop(segs)
+                            if write_prof_data[name]['deny'].get(segs, False):
+                                write_prof_data[name]['deny'].pop(segs)
                     segments['path'] = True
                     write_prof_data[hat][allow]['path'].pop(path)
                     data.append(line)
@@ -3790,10 +3804,12 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                         if not segments['include'] and True in segments.values():
                             for segs in list(filter(lambda x: segments[x], segments.keys())):
                                 depth = len(line) - len(line.lstrip())
-                                data += write_methods[segs](write_prof_data[name], int(depth/2))
+                                data += write_methods[segs](write_prof_data[name], int(depth / 2))
                                 segments[segs] = False
-                                if write_prof_data[name]['allow'].get(segs, False): write_prof_data[name]['allow'].pop(segs)
-                                if write_prof_data[name]['deny'].get(segs, False): write_prof_data[name]['deny'].pop(segs)
+                                if write_prof_data[name]['allow'].get(segs, False):
+                                    write_prof_data[name]['allow'].pop(segs)
+                                if write_prof_data[name]['deny'].get(segs, False):
+                                    write_prof_data[name]['deny'].pop(segs)
                             segments['include'] = True
                         write_prof_data[hat]['include'].pop(include_name)
                         data.append(line)
@@ -3841,16 +3857,18 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     if not segments['netdomain'] and True in segments.values():
                         for segs in list(filter(lambda x: segments[x], segments.keys())):
                             depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth/2))
+                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
                             segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False): write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False): write_prof_data[name]['deny'].pop(segs)
+                            if write_prof_data[name]['allow'].get(segs, False):
+                                write_prof_data[name]['allow'].pop(segs)
+                            if write_prof_data[name]['deny'].get(segs, False):
+                                write_prof_data[name]['deny'].pop(segs)
                     segments['netdomain'] = True
 
             elif RE_PROFILE_CHANGE_HAT.search(line):
                 matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
                 hat = matches[0]
-                hat =  strip_quotes(hat)
+                hat = strip_quotes(hat)
                 if not write_prof_data[hat]['declared']:
                     correct = False
                 if correct:
@@ -3866,7 +3884,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 flags = matches[3]
                 if not write_prof_data[hat]['flags'] == flags:
                     correct = False
-                if not write_prof_data[hat]['declared'] == False:
+                if not write_prof_data[hat]['declared'] is False:
                     correct = False
                 if not write_filelist['profile'][profile][hat]:
                     correct = False
@@ -3891,10 +3909,10 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
     string += '\n'.join(data)
 
-    return string+'\n'
+    return string + '\n'
 
 def write_profile_ui_feedback(profile):
-    aaui.UI_Info(_('Writing updated profile for %s.') %profile)
+    aaui.UI_Info(_('Writing updated profile for %s.') % profile)
     write_profile(profile)
 
 def write_profile(profile):
@@ -3904,7 +3922,7 @@ def write_profile(profile):
     else:
         prof_filename = get_profile_filename(profile)
 
-    newprof = tempfile.NamedTemporaryFile('w', suffix='~' ,delete=False, dir=profile_dir)
+    newprof = tempfile.NamedTemporaryFile('w', suffix='~', delete=False, dir=profile_dir)
     if os.path.exists(prof_filename):
         shutil.copymode(prof_filename, newprof.name)
     else:
@@ -3925,7 +3943,7 @@ def write_profile(profile):
     original_aa[profile] = deepcopy(aa[profile])
 
 def matchliteral(aa_regexp, literal):
-    p_regexp = '^'+convert_regexp(aa_regexp)+'$'
+    p_regexp = '^' + convert_regexp(aa_regexp) + '$'
     match = False
     try:
         match = re.search(p_regexp, literal)
@@ -3994,11 +4012,11 @@ def netrules_access_check(netrules, family, sock_type):
     net_family_sock = False
     if netrules['rule'].get('all', False):
         all_net = True
-    if netrules['rule'].get(family, False) == True:
+    if netrules['rule'].get(family, False) is True:
         all_net_family = True
     if (netrules['rule'].get(family, False) and
-        type(netrules['rule'][family]) == dict and
-        netrules['rule'][family][sock_type]):
+            type(netrules['rule'][family]) == dict and
+            netrules['rule'][family][sock_type]):
         net_family_sock = True
 
     if all_net or all_net_family or net_family_sock:
@@ -4012,7 +4030,7 @@ def reload_base(bin_path):
 
     prof_filename = get_profile_filename(bin_path)
 
-    subprocess.call("cat '%s' | %s -I%s -r >/dev/null 2>&1" %(prof_filename, parser ,profile_dir), shell=True)
+    subprocess.call("cat '%s' | %s -I%s -r >/dev/null 2>&1" % (prof_filename, parser, profile_dir), shell=True)
 
 def reload(bin_path):
     bin_path = find_executable(bin_path)
@@ -4028,7 +4046,7 @@ def get_include_data(filename):
         with open_file_read(filename) as f_in:
             data = f_in.readlines()
     else:
-        raise AppArmorException(_('File Not Found: %s') %filename)
+        raise AppArmorException(_('File Not Found: %s') % filename)
     return data
 
 def load_include(incname):
@@ -4037,7 +4055,7 @@ def load_include(incname):
         return 0
     while load_includeslist:
         incfile = load_includeslist.pop(0)
-        if os.path.isfile(profile_dir+'/'+incfile):
+        if os.path.isfile(profile_dir + '/' + incfile):
             data = get_include_data(incfile)
             incdata = parse_profile_data(data, incfile, True)
             #print(incdata)
@@ -4048,8 +4066,8 @@ def load_include(incname):
                 incdata[incname] = hasher()
             attach_profile_data(include, incdata)
         #If the include is a directory means include all subfiles
-        elif os.path.isdir(profile_dir+'/'+incfile):
-            load_includeslist += list(map(lambda x: incfile+'/'+x, os.listdir(profile_dir+'/'+incfile)))
+        elif os.path.isdir(profile_dir + '/' + incfile):
+            load_includeslist += list(map(lambda x: incfile + '/' + x, os.listdir(profile_dir + '/' + incfile)))
 
     return 0
 
@@ -4077,7 +4095,7 @@ def match_include_to_path(incname, allow, path):
     while includelist:
         incfile = str(includelist.pop(0))
         ret = load_include(incfile)
-        if not include.get(incfile,{}):
+        if not include.get(incfile, {}):
             continue
         cm, am, m = rematchfrag(include[incfile].get(incfile, {}), allow, path)
         #print(incfile, cm, am, m)
@@ -4119,7 +4137,7 @@ def suggest_incs_for_path(incname, path, allow):
     includelist = [incname]
     while includelist:
         inc = includelist.pop(0)
-        cm, am , m = rematchfrag(include[inc][inc], 'allow', path)
+        cm, am, m = rematchfrag(include[inc][inc], 'allow', path)
         if cm:
             combinedmode |= cm
             combinedaudit |= am
@@ -4137,12 +4155,12 @@ def suggest_incs_for_path(incname, path, allow):
 def check_qualifiers(program):
     if cfg['qualifiers'].get(program, False):
         if cfg['qualifiers'][program] != 'p':
-            fatal_error(_("%s is currently marked as a program that should not have its own\nprofile.  Usually, programs are marked this way if creating a profile for \nthem is likely to break the rest of the system.  If you know what you\'re\ndoing and are certain you want to create a profile for this program, edit\nthe corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf.") %program)
+            fatal_error(_("%s is currently marked as a program that should not have its own\nprofile.  Usually, programs are marked this way if creating a profile for \nthem is likely to break the rest of the system.  If you know what you\'re\ndoing and are certain you want to create a profile for this program, edit\nthe corresponding entry in the [qualifiers] section in /etc/apparmor/logprof.conf.") % program)
     return False
 
 def get_subdirectories(current_dir):
     """Returns a list of all directories directly inside given directory"""
-    if sys.version_info < (3,0):
+    if sys.version_info < (3, 0):
         return os.walk(current_dir).next()[1]
     else:
         return os.walk(current_dir).__next__()[1]
@@ -4160,7 +4178,7 @@ def loadincludes():
                     continue
                 else:
                     fi = dirpath + '/' + fi
-                    fi = fi.replace(profile_dir+'/', '', 1)
+                    fi = fi.replace(profile_dir + '/', '', 1)
                     load_include(fi)
 
 def glob_common(path):
@@ -4186,7 +4204,7 @@ def combine_name(name1, name2):
     if name1 == name2:
         return name1
     else:
-        return '%s^%s' %(name1, name2)
+        return '%s^%s' % (name1, name2)
 
 def split_name(name):
     names = name.split('^')
@@ -4195,7 +4213,7 @@ def split_name(name):
     else:
         return names[0], names[1]
 def commonprefix(new, old):
-    match=re.search(r'^([^\0]*)[^\0]*(\0\1[^\0]*)*$', '\0'.join([new, old]))
+    match = re.search(r'^([^\0]*)[^\0]*(\0\1[^\0]*)*$', '\0'.join([new, old]))
     if match:
         return match.groups()[0]
     return match
@@ -4242,7 +4260,7 @@ if cfg['settings'].get('default_owner_prompt', False):
 
 profile_dir = conf.find_first_dir(cfg['settings']['profiledir']) or '/etc/apparmor.d'
 if not os.path.isdir(profile_dir):
-    raise AppArmorException('Can\'t find AppArmor profiles' )
+    raise AppArmorException('Can\'t find AppArmor profiles')
 
 extra_profile_dir = conf.find_first_dir(cfg['settings']['inactive_profiledir']) or '/etc/apparmor/profiles/extras/'
 

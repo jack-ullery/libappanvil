@@ -20,6 +20,7 @@ import sys
 import tempfile
 if sys.version_info < (3, 0):
     import ConfigParser as configparser
+
     # Class to provide the object[section][option] behavior in Python2
     class configparser_py2(configparser.ConfigParser):
         def __getitem__(self, section):
@@ -34,7 +35,7 @@ else:
     import configparser
 
 
-from apparmor.common import AppArmorException, open_file_read#, warn, msg,
+from apparmor.common import AppArmorException, open_file_read  # , warn, msg,
 
 
 # CFG = None
@@ -110,7 +111,6 @@ class Config(object):
             # Replace the target config file with the temporary file
             os.rename(config_file.name, filepath)
 
-
     def find_first_file(self, file_list):
         """Returns name of first matching file None otherwise"""
         filename = None
@@ -164,7 +164,7 @@ class Config(object):
                             option, value = result[0].split('=')
                             if '#' in line:
                                 comment = value.split('#', 1)[1]
-                                comment = '#'+comment
+                                comment = '#' + comment
                             else:
                                 comment = ''
                             # If option exists in the new config file
@@ -172,7 +172,7 @@ class Config(object):
                                 # If value is different
                                 if value != config[''][option]:
                                     value_new = config[''][option]
-                                    if value_new != None:
+                                    if value_new is not None:
                                         # Update value
                                         if '"' in line:
                                             value_new = '"' + value_new + '"'
@@ -190,7 +190,7 @@ class Config(object):
                             # If option exists in the new config file
                             if option in options:
                                 # If its no longer option type
-                                if config[''][option] != None:
+                                if config[''][option] is not None:
                                     value = config[''][option]
                                     line = option + '=' + value + '\n'
                                 f_out.write(line)
@@ -204,7 +204,7 @@ class Config(object):
             for option in options:
                 value = config[''][option]
                 # option type entry
-                if value == None:
+                if value is None:
                     line = option + '\n'
                 # option=value type entry
                 else:
@@ -273,7 +273,7 @@ class Config(object):
         if section in sections:
             sections.remove(section)
         for section in sections:
-            f_out.write('\n['+section+']\n')
+            f_out.write('\n[%s]\n' % section)
             options = config.options(section)
             for option in options:
                 line = '  ' + option + ' = ' + config[section][option] + '\n'

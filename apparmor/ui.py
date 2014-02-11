@@ -52,14 +52,13 @@ def UI_Important(text):
     if UI_mode == 'text':
         sys.stdout.write('\n' + text + '\n')
     else:
-        SendDataToYast({
-                        'type': 'dialog-error',
+        SendDataToYast({'type': 'dialog-error',
                         'message': text
                         })
         path, yarg = GetDataFromYast()
 
 def get_translated_hotkey(translated, cmsg=''):
-    msg = 'PromptUser: '+_('Invalid hotkey for')
+    msg = 'PromptUser: ' + _('Invalid hotkey for')
 
     # Originally (\S) was used but with translations it would not work :(
     if re.search('\((\S+)\)', translated, re.LOCALE):
@@ -68,10 +67,10 @@ def get_translated_hotkey(translated, cmsg=''):
         if cmsg:
             raise AppArmorException(cmsg)
         else:
-            raise AppArmorException('%s %s' %(msg, translated))
+            raise AppArmorException('%s %s' % (msg, translated))
 
 def UI_YesNo(text, default):
-    debug_logger.debug('UI_YesNo: %s: %s %s' %(UI_mode, text, default))
+    debug_logger.debug('UI_YesNo: %s: %s %s' % (UI_mode, text, default))
     default = default.lower()
     ans = None
     if UI_mode == 'text':
@@ -105,10 +104,9 @@ def UI_YesNo(text, default):
                 ans = default
 
     else:
-        SendDataToYast({
-                         'type': 'dialog-yesno',
-                         'question': text
-                         })
+        SendDataToYast({'type': 'dialog-yesno',
+                        'question': text
+                        })
         ypath, yarg = GetDataFromYast()
         ans = yarg['answer']
         if not ans:
@@ -146,7 +144,7 @@ def UI_YesNoCancel(text, default):
                 elif ans == nokey:
                     ans = 'n'
                 elif ans == cancelkey:
-                    ans= 'c'
+                    ans = 'c'
                 elif ans == 'left':
                     if default == 'n':
                         default = 'y'
@@ -160,8 +158,7 @@ def UI_YesNoCancel(text, default):
             else:
                 ans = default
     else:
-        SendDataToYast({
-                        'type': 'dialog-yesnocancel',
+        SendDataToYast({'type': 'dialog-yesnocancel',
                         'question': text
                         })
         ypath, yarg = GetDataFromYast()
@@ -177,8 +174,7 @@ def UI_GetString(text, default):
         sys.stdout.write('\n' + text)
         string = sys.stdin.readline()
     else:
-        SendDataToYast({
-                        'type': 'dialog-getstring',
+        SendDataToYast({'type': 'dialog-getstring',
                         'label': text,
                         'default': default
                         })
@@ -205,8 +201,7 @@ def UI_BusyStart(message):
     if UI_mode == 'text':
         UI_Info(message)
     else:
-        SendDataToYast({
-                        'type': 'dialog-busy-start',
+        SendDataToYast({'type': 'dialog-busy-start',
                         'message': message
                         })
         ypath, yarg = GetDataFromYast()
@@ -217,8 +212,7 @@ def UI_BusyStop():
         SendDataToYast({'type': 'dialog-busy-stop'})
         ypath, yarg = GetDataFromYast()
 
-CMDS = {
-        'CMD_ALLOW': _('(A)llow'),
+CMDS = {'CMD_ALLOW': _('(A)llow'),
         'CMD_OTHER': _('(M)ore'),
         'CMD_AUDIT_NEW': _('Audi(t)'),
         'CMD_AUDIT_OFF': _('Audi(t) off'),
@@ -311,16 +305,14 @@ def confirm_and_abort():
         sys.exit(0)
 
 def UI_ShortMessage(title, message):
-    SendDataToYast({
-                    'type': 'short-dialog-message',
+    SendDataToYast({'type': 'short-dialog-message',
                     'headline': title,
                     'message': message
                     })
     ypath, yarg = GetDataFromYast()
 
 def UI_LongMessage(title, message):
-    SendDataToYast({
-                    'type': 'long-dialog-message',
+    SendDataToYast({'type': 'long-dialog-message',
                     'headline': title,
                     'message': message
                     })
@@ -360,7 +352,7 @@ def Text_PromptUser(question):
         keys[key] = cmd
 
         if default and default == cmd:
-            menutext = '[%s]' %menutext
+            menutext = '[%s]' % menutext
 
         menu_items.append(menutext)
 
@@ -396,14 +388,14 @@ def Text_PromptUser(question):
 
         prompt = '\n'
         if title:
-            prompt += '= %s =\n\n' %title
+            prompt += '= %s =\n\n' % title
 
         if headers:
             header_copy = headers[:]
             while header_copy:
                 header = header_copy.pop(0)
                 value = header_copy.pop(0)
-                prompt += formatstr %(header+':', value)
+                prompt += formatstr % (header + ':', value)
             prompt += '\n'
 
         if explanation:
@@ -415,12 +407,12 @@ def Text_PromptUser(question):
                     format_option = ' [%s - %s]'
                 else:
                     format_option = '  %s - %s '
-                prompt += format_option %(index+1, option)
+                prompt += format_option % (index + 1, option)
                 prompt += '\n'
 
         prompt += ' / '.join(menu_items)
 
-        sys.stdout.write(prompt+'\n')
+        sys.stdout.write(prompt + '\n')
 
         ans = getkey().lower()
 
@@ -431,7 +423,7 @@ def Text_PromptUser(question):
                 ans = 'XXXINVALIDXXX'
 
             elif ans == 'down':
-                if options and selected < len(options)-1:
+                if options and selected < len(options) - 1:
                     selected += 1
                 ans = 'XXXINVALIDXXX'
 
@@ -450,7 +442,7 @@ def Text_PromptUser(question):
                 ans = 'XXXINVALIDXXX'
 
         if keys.get(ans, False) == 'CMD_HELP':
-            sys.stdout.write('\n%s\n' %helptext)
+            sys.stdout.write('\n%s\n' % helptext)
             ans = 'again'
 
     if keys.get(ans, False):

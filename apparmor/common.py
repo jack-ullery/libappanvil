@@ -111,7 +111,7 @@ def valid_path(path):
         debug("%s (relative)" % (m))
         return False
 
-    if '"' in path: # We double quote elsewhere
+    if '"' in path:  # We double quote elsewhere
         return False
 
     try:
@@ -176,8 +176,8 @@ def convert_regexp(regexp):
         match = regex_paren.search(new_reg).groups()
         prev = match[0]
         after = match[2]
-        p1 = match[1].replace(',','|')
-        new_reg = prev+'('+p1+')'+after
+        p1 = match[1].replace(',', '|')
+        new_reg = prev + '(' + p1 + ')' + after
 
     new_reg = new_reg.replace('?', '[^/\000]')
 
@@ -192,7 +192,7 @@ def convert_regexp(regexp):
     if regexp[0] != '^':
         new_reg = '^' + new_reg
     if regexp[-1] != '$':
-        new_reg =  new_reg + '$'
+        new_reg = new_reg + '$'
     return new_reg
 
 def user_perm(prof_dir):
@@ -215,7 +215,7 @@ class DebugLogger(object):
                 self.debugging = False
             if self.debugging not in range(0, 4):
                 sys.stdout.write('Environment Variable: LOGPROF_DEBUG contains invalid value: %s'
-                                 %os.getenv('LOGPROF_DEBUG'))
+                                 % os.getenv('LOGPROF_DEBUG'))
             if self.debugging == 0:  # debugging disabled, don't need to setup logging
                 return
             if self.debugging == 1:
@@ -224,21 +224,20 @@ class DebugLogger(object):
                 self.debug_level = logging.INFO
             elif self.debugging == 3:
                 self.debug_level = logging.DEBUG
-            
+
             try:
                 logging.basicConfig(filename=self.logfile, level=self.debug_level,
                                     format='%(asctime)s - %(name)s - %(message)s\n')
             except OSError:
                 # Unable to open the default logfile, so create a temporary logfile and tell use about it
                 import tempfile
-                templog = tempfile.NamedTemporaryFile('w', prefix='apparmor', suffix='.log' ,delete=False)
-                sys.stdout.write("\nCould not open: %s\nLogging to: %s\n"%(self.logfile, templog.name))
-                
+                templog = tempfile.NamedTemporaryFile('w', prefix='apparmor', suffix='.log', delete=False)
+                sys.stdout.write("\nCould not open: %s\nLogging to: %s\n" % (self.logfile, templog.name))
+
                 logging.basicConfig(filename=templog.name, level=self.debug_level,
                                     format='%(asctime)s - %(name)s - %(message)s\n')
-            
-            self.logger = logging.getLogger(module_name)
 
+            self.logger = logging.getLogger(module_name)
 
     def error(self, message):
         if self.debugging:
