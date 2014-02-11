@@ -18,7 +18,6 @@ import inspect
 import os
 import re
 import shutil
-import stat
 import subprocess
 import sys
 import time
@@ -37,9 +36,13 @@ from apparmor.common import (AppArmorException, error, debug, msg, cmd,
                              open_file_read, valid_path, TRANSLATION_DOMAIN,
                              hasher, open_file_write, convert_regexp, DebugLogger)
 
-from apparmor.ui import *
+import apparmor.ui as aaui
 
-from apparmor.aamode import *
+from apparmor.aamode import (str_to_mode, mode_to_str, contains, split_mode,
+                             mode_to_str_user, mode_contains, AA_OTHER,
+                             flatten_mode, owner_flatten_mode)
+
+from apparmor.yasti import SendDataToYast, GetDataFromYast, shutdown_yast
 
 # setup module translations
 t = gettext.translation(TRANSLATION_DOMAIN, fallback=True)
@@ -137,7 +140,7 @@ def fatal_error(message):
         sys.exit(1)
 
     # Else tell user what happened
-    UI_Important(message)
+    aaui.UI_Important(message)
     shutdown_yast()
     sys.exit(1)
 
@@ -256,13 +259,13 @@ def enforce(path):
 
 def set_complain(filename, program):
     """Sets the profile to complain mode"""
-    UI_Info(_('Setting %s to complain mode.') % program)
+    aaui.UI_Info(_('Setting %s to complain mode.') % program)
     create_symlink('force-complain', filename)
     change_profile_flags(filename, program, 'complain', True)
 
 def set_enforce(filename, program):
     """Sets the profile to enforce mode"""
-    UI_Info(_('Setting %s to enforce mode.') % program)
+    aaui.UI_Info(_('Setting %s to enforce mode.') % program)
     delete_symlink('force-complain', filename)
     delete_symlink('disable', filename)
     change_profile_flags(filename, program, 'complain', False)
@@ -439,9 +442,9 @@ def delete_profile(local_prof):
     #prof_unload(local_prof)
 
 def confirm_and_abort():
-    ans = UI_YesNo(_('Are you sure you want to abandon this set of profile changes and exit?'), 'n')
+    ans = aaui.UI_YesNo(_('Are you sure you want to abandon this set of profile changes and exit?'), 'n')
     if ans == 'y':
-        UI_Info(_('Abandoning all changes.'))
+        aaui.UI_Info(_('Abandoning all changes.'))
         shutdown_yast()
         for prof in created:
             delete_profile(prof)
@@ -454,13 +457,13 @@ def get_profile(prof_name):
     local_profiles = []
     profile_hash = hasher()
     if repo_is_enabled():
-        UI_BusyStart(_('Connecting to repository...'))
+        aaui.UI_BusyStart(_('Connecting to repository...'))
         status_ok, ret = fetch_profiles_by_name(repo_url, distro, prof_name)
-        UI_BusyStop()
+        aaui.UI_BusyStop()
         if status_ok:
             profile_hash = ret
         else:
-            UI_Important(_('WARNING: Error fetching profiles from the repository'))
+            aaui.UI_Important(_('WARNING: Error fetching profiles from the repository'))
     inactive_profile = get_inactive_profile(prof_name)
     if inactive_profile:
         uname = 'Inactive local profile for %s' % prof_name
@@ -498,11 +501,11 @@ def get_profile(prof_name):
 
     ans = ''
     while 'CMD_USE_PROFILE' not in ans and 'CMD_CREATE_PROFILE' not in ans:
-        ans, arg = UI_PromptUser(q)
+        ans, arg = aaui.UI_PromptUser(q)
         p = profile_hash[options[arg]]
         q['selected'] = options.index(options[arg])
         if ans == 'CMD_VIEW_PROFILE':
-            if UI_mode == 'yast':
+            if aaui.UI_mode == 'yast':
                 SendDataToYast({
                                 'type': 'dialogue-view-profile',
                                 'user': options[arg],
@@ -535,7 +538,7 @@ def activate_repo_profiles(url, profiles, complain):
             if complain:
                 fname = get_profile_filename(pname)
                 set_profile_flags(profile_dir + fname, 'complain')
-                UI_Info(_('Setting %s to complain mode.') % pname)
+                aaui.UI_Info(_('Setting %s to complain mode.') % pname)
     except Exception as e:
             sys.stderr.write(_("Error activating profiles: %s") % e)
 
@@ -684,7 +687,7 @@ def sync_profile():
     if not status_ok:
         if not ret:
             ret = 'UNKNOWN ERROR'
-        UI_Important(_('WARNING: Error synchronizing profiles with the repository:\n%s\n') % ret)
+        aaui.UI_Important(_('WARNING: Error synchronizing profiles with the repository:\n%s\n') % ret)
     else:
         users_repo_profiles = ret
         serialize_opts['NO_FLAGS'] = True
@@ -722,7 +725,7 @@ def sync_profile():
                         else:
                             if not ret:
                                 ret = 'UNKNOWN ERROR'
-                            UI_Important(_('WARNING: Error synchronizing profiles with the repository\n%s') % ret)
+                            aaui.UI_Important(_('WARNING: Error synchronizing profiles with the repository\n%s') % ret)
                             continue
                     if p_repo != p_local:
                         changed_profiles.append(prof)
@@ -748,7 +751,7 @@ def fetch_profiles_by_user(url, distro, user):
 def submit_created_profiles(new_profiles):
     #url = cfg['repository']['url']
     if new_profiles:
-        if UI_mode == 'yast':
+        if aaui.UI_mode == 'yast':
             title = 'New Profiles'
             message = 'Please select the newly created profiles that you would like to store in the repository'
             yast_select_and_upload_profiles(title, message, new_profiles)
@@ -760,7 +763,7 @@ def submit_created_profiles(new_profiles):
 def submit_changed_profiles(changed_profiles):
     #url = cfg['repository']['url']
     if changed_profiles:
-        if UI_mode == 'yast':
+        if aaui.UI_mode == 'yast':
             title = 'Changed Profiles'
             message = 'Please select which of the changed profiles would you like to upload to the repository'
             yast_select_and_upload_profiles(title, message, changed_profiles)
@@ -811,8 +814,8 @@ def yast_select_and_upload_profiles(title, message, profiles_up):
         else:
             if not ret:
                 ret = 'UNKNOWN ERROR'
-            UI_Important(_('WARNING: An error occurred while uploading the profile %s\n%s') % (p, ret))
-    UI_Info(_('Uploaded changes to repository.'))
+            aaui.UI_Important(_('WARNING: An error occurred while uploading the profile %s\n%s') % (p, ret))
+    aaui.UI_Info(_('Uploaded changes to repository.'))
     if yarg.get('NEVER_ASK_AGAIN'):
         unselected_profiles = []
         for p in profs:
@@ -838,13 +841,13 @@ def console_select_and_upload_profiles(title, message, profiles_up):
     q['selected'] = 0
     ans = ''
     while 'CMD_UPLOAD_CHANGES' not in ans and 'CMD_ASK_NEVER' not in ans and 'CMD_ASK_LATER' not in ans:
-        ans, arg = UI_PromptUser(q)
+        ans, arg = aaui.UI_PromptUser(q)
         if ans == 'CMD_VIEW_CHANGES':
             display_changes(profs[arg][2], profs[arg][1])
     if ans == 'CMD_NEVER_ASK':
         set_profiles_local_only([i[0] for i in profs])
     elif ans == 'CMD_UPLOAD_CHANGES':
-        changelog = UI_GetString(_('Changelog Entry: '), '')
+        changelog = aaui.UI_GetString(_('Changelog Entry: '), '')
         user, passw = get_repo_user_pass()
         if user and passw:
             for p_data in profs:
@@ -858,13 +861,13 @@ def console_select_and_upload_profiles(title, message, profiles_up):
                     newid = newprof['id']
                     set_repo_info(aa[prof][prof], url, user, newid)
                     write_profile_ui_feedback(prof)
-                    UI_Info('Uploaded %s to repository' % prof)
+                    aaui.UI_Info('Uploaded %s to repository' % prof)
                 else:
                     if not ret:
                         ret = 'UNKNOWN ERROR'
-                    UI_Important(_('WARNING: An error occurred while uploading the profile %s\n%s') % (prof, ret))
+                    aaui.UI_Important(_('WARNING: An error occurred while uploading the profile %s\n%s') % (prof, ret))
         else:
-            UI_Important(_('Repository Error\nRegistration or Signin was unsuccessful. User login\ninformation is required to upload profiles to the repository.\nThese changes could not be sent.'))
+            aaui.UI_Important(_('Repository Error\nRegistration or Signin was unsuccessful. User login\ninformation is required to upload profiles to the repository.\nThese changes could not be sent.'))
 
 def set_profiles_local_only(profs):
     for p in profs:
@@ -990,7 +993,7 @@ def handle_children(profile, hat, root):
 
                     seen_events += 1
 
-                    ans = UI_PromptUser(q)
+                    ans = aaui.UI_PromptUser(q)
 
                 transitions[context] = ans
 
@@ -1048,7 +1051,7 @@ def handle_children(profile, hat, root):
                     else:
                         do_execute = True
 
-                if mode & AA_MAY_LINK:
+                if mode & apparmor.aamode.AA_MAY_LINK:
                     regex_link = re.compile('^from (.+) to (.+)$')
                     match = regex_link.search(detail)
                     if match:
@@ -1246,7 +1249,7 @@ def handle_children(profile, hat, root):
 
                         ans = ''
                         while not regex_options.search(ans):
-                            ans = UI_PromptUser(q)[0].strip()
+                            ans = aaui.UI_PromptUser(q)[0].strip()
                             if ans.startswith('CMD_EXEC_IX_'):
                                 exec_toggle = not exec_toggle
                                 q['functions'] = []
@@ -1257,7 +1260,7 @@ def handle_children(profile, hat, root):
                                 arg = exec_target
                                 ynans = 'n'
                                 if profile == hat:
-                                    ynans = UI_YesNo(_('Are you specifying a transition to a local profile?'), 'n')
+                                    ynans = aaui.UI_YesNo(_('Are you specifying a transition to a local profile?'), 'n')
                                 if ynans == 'y':
                                     if ans == 'CMD_nx':
                                         ans = 'CMD_cx'
@@ -1269,7 +1272,7 @@ def handle_children(profile, hat, root):
                                     else:
                                         ans = 'CMD_pix'
 
-                                to_name = UI_GetString(_('Enter profile name to transition to: '), arg)
+                                to_name = aaui.UI_GetString(_('Enter profile name to transition to: '), arg)
 
                             regex_optmode = re.compile('CMD_(px|cx|nx|pix|cix|nix)')
                             if ans == 'CMD_ix':
@@ -1282,18 +1285,18 @@ def handle_children(profile, hat, root):
                                 if parent_uses_ld_xxx:
                                     px_msg = _("Should AppArmor sanitise the environment when\nswitching profiles?\n\nSanitising environment is more secure,\nbut this application appears to be using LD_PRELOAD\nor LD_LIBRARY_PATH and sanitising the environment\ncould cause functionality problems.")
 
-                                ynans = UI_YesNo(px_msg, px_default)
+                                ynans = aaui.UI_YesNo(px_msg, px_default)
                                 if ynans == 'y':
                                     # Disable the unsafe mode
-                                    exec_mode = exec_mode - (AA_EXEC_UNSAFE | AA_OTHER(AA_EXEC_UNSAFE))
+                                    exec_mode = exec_mode - (apparmor.aamode.AA_EXEC_UNSAFE | AA_OTHER(apparmor.aamode.AA_EXEC_UNSAFE))
                             elif ans == 'CMD_ux':
                                 exec_mode = str_to_mode('ux')
-                                ynans = UI_YesNo(_("Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s ?") % exec_target, 'n')
+                                ynans = aaui.UI_YesNo(_("Launching processes in an unconfined state is a very\ndangerous operation and can cause serious security holes.\n\nAre you absolutely certain you wish to remove all\nAppArmor protection when executing %s ?") % exec_target, 'n')
                                 if ynans == 'y':
-                                    ynans = UI_YesNo(_("Should AppArmor sanitise the environment when\nrunning this program unconfined?\n\nNot sanitising the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."), 'y')
+                                    ynans = aaui.UI_YesNo(_("Should AppArmor sanitise the environment when\nrunning this program unconfined?\n\nNot sanitising the environment when unconfining\na program opens up significant security holes\nand should be avoided if at all possible."), 'y')
                                     if ynans == 'y':
                                         # Disable the unsafe mode
-                                        exec_mode = exec_mode - (AA_EXEC_UNSAFE | AA_OTHER(AA_EXEC_UNSAFE))
+                                        exec_mode = exec_mode - (apparmor.aamode.AA_EXEC_UNSAFE | AA_OTHER(apparmor.aamode.AA_EXEC_UNSAFE))
                                 else:
                                     ans = 'INVALID'
                         transitions[context_new] = ans
@@ -1366,7 +1369,7 @@ def handle_children(profile, hat, root):
                         if not os.path.exists(get_profile_filename(exec_target)):
                             ynans = 'y'
                             if exec_mode & str_to_mode('i'):
-                                ynans = UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') %exec_target, 'n')
+                                ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') %exec_target, 'n')
                             if ynans == 'y':
                                 helpers[exec_target] = 'enforce'
                                 if to_name:
@@ -1384,7 +1387,7 @@ def handle_children(profile, hat, root):
                         if not aa[profile].get(exec_target, False):
                             ynans = 'y'
                             if exec_mode & str_to_mode('i'):
-                                ynans = UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
+                                ynans = aaui.UI_YesNo(_('A profile for %s does not exist.\nDo you want to create one?') % exec_target, 'n')
                             if ynans == 'y':
                                 hat = exec_target
                                 aa[profile][hat]['declared'] = False
@@ -1493,9 +1496,9 @@ def ask_the_questions():
     for aamode in sorted(log_dict.keys()):
         # Describe the type of changes
         if aamode == 'PERMITTING':
-            UI_Info(_('Complain-mode changes:'))
+            aaui.UI_Info(_('Complain-mode changes:'))
         elif aamode == 'REJECTING':
-            UI_Info(_('Enforce-mode changes:'))
+            aaui.UI_Info(_('Enforce-mode changes:'))
         else:
             # This is so wrong!
             fatal_error(_('Invalid mode found: %s') % aamode)
@@ -1551,7 +1554,7 @@ def ask_the_questions():
 
                     done = False
                     while not done:
-                        ans, selected = UI_PromptUser(q)
+                        ans, selected = aaui.UI_PromptUser(q)
                         # Ignore the log entry
                         if ans == 'CMD_IGNORE_ENTRY':
                             done = True
@@ -1583,23 +1586,23 @@ def ask_the_questions():
                                 deleted = delete_duplicates(aa[profile][hat], inc)
                                 aa[profile][hat]['include'][inc] = True
 
-                                UI_Info(_('Adding %s to profile.') % selection)
+                                aaui.UI_Info(_('Adding %s to profile.') % selection)
                                 if deleted:
-                                    UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
+                                    aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                             aa[profile][hat]['allow']['capability'][capability]['set'] = True
                             aa[profile][hat]['allow']['capability'][capability]['audit'] = audit_toggle
 
                             changed[profile] = True
 
-                            UI_Info(_('Adding capability %s to profile.') % capability)
+                            aaui.UI_Info(_('Adding capability %s to profile.') % capability)
                             done = True
 
                         elif ans == 'CMD_DENY':
                             aa[profile][hat]['deny']['capability'][capability]['set'] = True
                             changed[profile] = True
 
-                            UI_Info(_('Denying capability %s to profile.') % capability)
+                            aaui.UI_Info(_('Denying capability %s to profile.') % capability)
                             done = True
                         else:
                             done = False
@@ -1637,7 +1640,7 @@ def ask_the_questions():
                     if cam:
                         deny_audit |= cam
 
-                    if deny_mode & AA_MAY_EXEC:
+                    if deny_mode & apparmor.aamode.AA_MAY_EXEC:
                         deny_mode |= apparmor.aamode.ALL_AA_EXEC_TYPE
 
                     # Mask off the denied modes
@@ -1646,10 +1649,10 @@ def ask_the_questions():
                     # If we get an exec request from some kindof event that generates 'PERMITTING X'
                     # check if its already in allow_mode
                     # if not add ix permission
-                    if mode & AA_MAY_EXEC:
+                    if mode & apparmor.aamode.AA_MAY_EXEC:
                         # Remove all type access permission
                         mode = mode - apparmor.aamode.ALL_AA_EXEC_TYPE
-                        if not allow_mode & AA_MAY_EXEC:
+                        if not allow_mode & apparmor.aamode.AA_MAY_EXEC:
                             mode |= str_to_mode('ix')
 
                     # m is not implied by ix
@@ -1794,7 +1797,7 @@ def ask_the_questions():
 
                             seen_events += 1
 
-                            ans, selected = UI_PromptUser(q)
+                            ans, selected = aaui.UI_PromptUser(q)
 
                             if ans == 'CMD_IGNORE_ENTRY':
                                 done = True
@@ -1818,9 +1821,9 @@ def ask_the_questions():
                                     deleted = delete_duplicates(aa[profile][hat], inc)
                                     aa[profile][hat]['include'][inc] =  True
                                     changed[profile] =  True
-                                    UI_Info(_('Adding %s to profile.') % path)
+                                    aaui.UI_Info(_('Adding %s to profile.') % path)
                                     if deleted:
-                                        UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
+                                        aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                 else:
                                     if aa[profile][hat]['allow']['path'][path].get('mode', False):
@@ -1858,9 +1861,9 @@ def ask_the_questions():
 
                                     changed[profile] = True
 
-                                    UI_Info(_('Adding %s %s to profile') % (path, mode_to_str_user(mode)))
+                                    aaui.UI_Info(_('Adding %s %s to profile') % (path, mode_to_str_user(mode)))
                                     if deleted:
-                                        UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
+                                        aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                             elif ans == 'CMD_DENY':
                                 path = options[selected].strip()
@@ -1876,11 +1879,11 @@ def ask_the_questions():
                             elif ans == 'CMD_NEW':
                                 arg = options[selected]
                                 if not re_match_include(arg):
-                                    ans = UI_GetString(_('Enter new path: '), arg)
+                                    ans = aaui.UI_GetString(_('Enter new path: '), arg)
                                     if ans:
                                         if not matchliteral(ans, path):
                                             ynprompt = _('The specified path does not match this log entry:\n\n  Log Entry: %s\n  Entered Path:  %s\nDo you really want to use this path?') % (path,ans)
-                                            key = UI_YesNo(ynprompt, 'n')
+                                            key = aaui.UI_YesNo(ynprompt, 'n')
                                             if key == 'n':
                                                 continue
 
@@ -1946,7 +1949,7 @@ def ask_the_questions():
 
                         done = False
                         while not done:
-                            ans, selected = UI_PromptUser(q)
+                            ans, selected = aaui.UI_PromptUser(q)
                             if ans == 'CMD_IGNORE_ENTRY':
                                 done = True
                                 break
@@ -1977,9 +1980,9 @@ def ask_the_questions():
 
                                     changed[profile] = True
 
-                                    UI_Info(_('Adding %s to profile') % selection)
+                                    aaui.UI_Info(_('Adding %s to profile') % selection)
                                     if deleted:
-                                        UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
+                                        aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                 else:
                                     aa[profile][hat]['allow']['netdomain']['audit'][family][sock_type] = audit_toggle
@@ -1987,13 +1990,13 @@ def ask_the_questions():
 
                                     changed[profile] = True
 
-                                    UI_Info(_('Adding network access %s %s to profile.') % (family, sock_type))
+                                    aaui.UI_Info(_('Adding network access %s %s to profile.') % (family, sock_type))
 
                             elif ans == 'CMD_DENY':
                                 done = True
                                 aa[profile][hat]['deny']['netdomain']['rule'][family][sock_type] = True
                                 changed[profile] = True
-                                UI_Info(_('Denying network access %s %s to profile') % (family, sock_type))
+                                aaui.UI_Info(_('Denying network access %s %s to profile') % (family, sock_type))
 
                             else:
                                 done = False
@@ -2206,10 +2209,10 @@ def do_logprof_pass(logmark='', passno=0, pid=pid):
     skip = hasher()
 #    filelist = hasher()
 
-    UI_Info(_('Reading log entries from %s.') %filename)
+    aaui.UI_Info(_('Reading log entries from %s.') %filename)
 
     if not passno:
-        UI_Info(_('Updating AppArmor profiles in %s.') %profile_dir)
+        aaui.UI_Info(_('Updating AppArmor profiles in %s.') %profile_dir)
         read_profiles()
 
     if not sev_db:
@@ -2236,7 +2239,7 @@ def do_logprof_pass(logmark='', passno=0, pid=pid):
 
     ask_the_questions()
 
-    if UI_mode == 'yast':
+    if aaui.UI_mode == 'yast':
         # To-Do
         pass
 
@@ -2268,7 +2271,7 @@ def save_profiles():
 
     if changed_list:
 
-        if UI_mode == 'yast':
+        if aaui.UI_mode == 'yast':
             # To-Do
             selected_profiles = []
             profile_changes = dict()
@@ -2310,7 +2313,7 @@ def save_profiles():
             while ans != 'CMD_SAVE_CHANGES':
                 if not changed:
                     return
-                ans, arg = UI_PromptUser(q)
+                ans, arg = aaui.UI_PromptUser(q)
                 if ans == 'CMD_SAVE_SELECTED':
                     profile_name = list(changed.keys())[arg]
                     write_profile_ui_feedback(profile_name)
@@ -2374,8 +2377,8 @@ def get_profile_diff(oldprofile, newprofile):
     return ''.join(diff)
 
 def display_changes(oldprofile, newprofile):
-    if UI_mode == 'yast':
-        UI_LongMessage(_('Profile Changes'), get_profile_diff(oldprofile, newprofile))
+    if aaui.UI_mode == 'yast':
+        aaui.UI_LongMessage(_('Profile Changes'), get_profile_diff(oldprofile, newprofile))
     else:
         difftemp = generate_diff(oldprofile, newprofile)
         subprocess.call('less %s' %difftemp.name, shell=True)
@@ -2386,7 +2389,7 @@ def display_changes_with_comments(oldprofile, newprofile):
     """Compare the new profile with the existing profile inclusive of all the comments"""
     if not os.path.exists(oldprofile):
         raise AppArmorException(_("Can't find existing profile %s to compare changes.") %oldprofile)
-    if UI_mode == 'yast':
+    if aaui.UI_mode == 'yast':
         #To-Do
         pass
     else:
@@ -2714,13 +2717,13 @@ def parse_profile_data(data, file, do_include):
             link = strip_quotes(matches[6])
             value = strip_quotes(matches[7])
             profile_data[profile][hat][allow]['link'][link]['to'] = value
-            profile_data[profile][hat][allow]['link'][link]['mode'] = profile_data[profile][hat][allow]['link'][link].get('mode', set()) | AA_MAY_LINK
+            profile_data[profile][hat][allow]['link'][link]['mode'] = profile_data[profile][hat][allow]['link'][link].get('mode', set()) | apparmor.aamode.AA_MAY_LINK
 
             if subset:
-                profile_data[profile][hat][allow]['link'][link]['mode'] |= AA_LINK_SUBSET
+                profile_data[profile][hat][allow]['link'][link]['mode'] |= apparmor.aamode.AA_LINK_SUBSET
 
             if audit:
-                profile_data[profile][hat][allow]['link'][link]['audit'] = profile_data[profile][hat][allow]['link'][link].get('audit', set()) | AA_LINK_SUBSET
+                profile_data[profile][hat][allow]['link'][link]['audit'] = profile_data[profile][hat][allow]['link'][link].get('audit', set()) | apparmor.aamode.AA_LINK_SUBSET
             else:
                 profile_data[profile][hat][allow]['link'][link]['audit'] = set()
 
@@ -3172,7 +3175,7 @@ def write_link_rules(prof_data, depth, allow):
         for path in sorted(prof_data[allow]['link'].keys()):
             to_name = prof_data[allow]['link'][path]['to']
             subset = ''
-            if prof_data[allow]['link'][path]['mode'] & AA_LINK_SUBSET:
+            if prof_data[allow]['link'][path]['mode'] & apparmor.aamode.AA_LINK_SUBSET:
                 subset = 'subset'
             audit = ''
             if prof_data[allow]['link'][path].get('audit', False):
@@ -3577,11 +3580,11 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 value = strip_quotes(matches[7])
                 if not write_prof_data[hat][allow]['link'][link]['to'] == value:
                     correct = False
-                if not write_prof_data[hat][allow]['link'][link]['mode'] & AA_MAY_LINK:
+                if not write_prof_data[hat][allow]['link'][link]['mode'] & apparmor.aamode.AA_MAY_LINK:
                     correct = False
-                if subset and not write_prof_data[hat][allow]['link'][link]['mode'] & AA_LINK_SUBSET:
+                if subset and not write_prof_data[hat][allow]['link'][link]['mode'] & apparmor.aamode.AA_LINK_SUBSET:
                     correct = False
-                if audit and not write_prof_data[hat][allow]['link'][link]['audit'] & AA_LINK_SUBSET:
+                if audit and not write_prof_data[hat][allow]['link'][link]['audit'] & apparmor.aamode.AA_LINK_SUBSET:
                     correct = False
 
                 if correct:
@@ -3891,7 +3894,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
     return string+'\n'
 
 def write_profile_ui_feedback(profile):
-    UI_Info(_('Writing updated profile for %s.') %profile)
+    aaui.UI_Info(_('Writing updated profile for %s.') %profile)
     write_profile(profile)
 
 def write_profile(profile):
@@ -3937,19 +3940,19 @@ def profile_known_exec(profile, typ, exec_target):
         m = []
 
         cm, am, m = rematchfrag(profile, 'deny', exec_target)
-        if cm & AA_MAY_EXEC:
+        if cm & apparmor.aamode.AA_MAY_EXEC:
             return -1
 
         cm, am, m = match_prof_incs_to_path(profile, 'deny', exec_target)
-        if cm & AA_MAY_EXEC:
+        if cm & apparmor.aamode.AA_MAY_EXEC:
             return -1
 
         cm, am, m = rematchfrag(profile, 'allow', exec_target)
-        if cm & AA_MAY_EXEC:
+        if cm & apparmor.aamode.AA_MAY_EXEC:
             return 1
 
         cm, am, m = match_prof_incs_to_path(profile, 'allow', exec_target)
-        if cm & AA_MAY_EXEC:
+        if cm & apparmor.aamode.AA_MAY_EXEC:
             return 1
 
     return 0

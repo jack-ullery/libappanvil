@@ -17,11 +17,11 @@ import re
 import sys
 import time
 import LibAppArmor
-from apparmor.common import (AppArmorException, error, debug, msg,
+from apparmor.common import (AppArmorException, error, debug,
                              open_file_read, valid_path, TRANSLATION_DOMAIN,
                              hasher, open_file_write, convert_regexp, DebugLogger)
 
-from apparmor.aamode import *
+from apparmor.aamode import validate_log_mode, log_str_to_mode, hide_log_mode, AA_MAY_EXEC
 
 # setup module translations
 t = gettext.translation(TRANSLATION_DOMAIN, fallback=True)

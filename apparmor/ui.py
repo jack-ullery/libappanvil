@@ -13,11 +13,10 @@
 # ----------------------------------------------------------------------
 import gettext
 import sys
-import os
 import re
 from apparmor.yasti import yastLog, SendDataToYast, GetDataFromYast
 
-from apparmor.common import readkey, AppArmorException, DebugLogger, msg, TRANSLATION_DOMAIN
+from apparmor.common import readkey, AppArmorException, DebugLogger, TRANSLATION_DOMAIN
 
 # setup module translations
 t = gettext.translation(TRANSLATION_DOMAIN, fallback=True)
