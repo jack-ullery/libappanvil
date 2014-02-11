@@ -11,16 +11,21 @@
 #    GNU General Public License for more details.
 #
 # ----------------------------------------------------------------------
+import gettext
 import os
 import re
 import sys
 import time
 import LibAppArmor
 from apparmor.common import (AppArmorException, error, debug, msg,
-                             open_file_read, valid_path,
+                             open_file_read, valid_path, TRANSLATION_DOMAIN,
                              hasher, open_file_write, convert_regexp, DebugLogger)
 
 from apparmor.aamode import *
+
+# setup module translations
+t = gettext.translation(TRANSLATION_DOMAIN, fallback=True)
+_ = t.gettext
 
 class ReadLog:
     RE_LOG_v2_6_syslog = re.compile('kernel:\s+(\[[\d\.\s]+\]\s+)?type=\d+\s+audit\([\d\.\:]+\):\s+apparmor=')

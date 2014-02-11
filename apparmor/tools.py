@@ -11,11 +11,16 @@
 #    GNU General Public License for more details.
 #
 # ----------------------------------------------------------------------
+import gettext
 import os
 import sys
 
 import apparmor.aa as apparmor
-from apparmor.common import user_perm
+from apparmor.common import user_perm, TRANSLATION_DOMAIN
+
+# setup module translations
+t = gettext.translation(TRANSLATION_DOMAIN, fallback=True)
+_ = t.gettext
 
 class aa_tools:
     def __init__(self, tool_name, args):

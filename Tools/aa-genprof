@@ -14,15 +14,19 @@
 # ----------------------------------------------------------------------
 import argparse
 import atexit
+import gettext
 import os
 import re
 import subprocess
 import sys
 
 from apparmor.common import init_translations
-init_translations()
 
 import apparmor.aa as apparmor
+
+# setup module translations
+t = gettext.translation(TRANSLATION_DOMAIN, fallback=True)
+_ = t.gettext
 
 def sysctl_read(path):
     value = None

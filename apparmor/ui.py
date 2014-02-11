@@ -11,12 +11,17 @@
 #    GNU General Public License for more details.
 #
 # ----------------------------------------------------------------------
+import gettext
 import sys
 import os
 import re
 from apparmor.yasti import yastLog, SendDataToYast, GetDataFromYast
 
-from apparmor.common import readkey, AppArmorException, DebugLogger, msg
+from apparmor.common import readkey, AppArmorException, DebugLogger, msg, TRANSLATION_DOMAIN
+
+# setup module translations
+t = gettext.translation(TRANSLATION_DOMAIN, fallback=True)
+_ = t.gettext
 
 # Set up UI logger for separate messages from UI module
 debug_logger = DebugLogger('UI')

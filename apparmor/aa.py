@@ -13,6 +13,7 @@
 # ----------------------------------------------------------------------
 # No old version logs, only 2.6 + supported
 from __future__ import with_statement
+import gettext
 import inspect
 import os
 import re
@@ -33,12 +34,16 @@ import LibAppArmor
 from copy import deepcopy
 
 from apparmor.common import (AppArmorException, error, debug, msg, cmd,
-                             open_file_read, valid_path,
+                             open_file_read, valid_path, TRANSLATION_DOMAIN,
                              hasher, open_file_write, convert_regexp, DebugLogger)
 
 from apparmor.ui import *
 
 from apparmor.aamode import *
+
+# setup module translations
+t = gettext.translation(TRANSLATION_DOMAIN, fallback=True)
+_ = t.gettext
 
 # Setup logging incase of debugging is enabled
 debug_logger = DebugLogger('aa')
