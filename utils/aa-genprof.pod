@@ -26,15 +26,23 @@ aa-genprof - profile generation utility for AppArmor
 
 =head1 SYNOPSIS
 
-B<aa-genprof I<E<lt>executableE<gt>> [I<-d /path/to/profiles>]>
+B<aa-genprof I<E<lt>executableE<gt>> [I<-d /path/to/profiles>] [I<-f /path/to/logfile>]>
 
 =head1 OPTIONS
 
-B<-d --dir /path/to/profiles>
+B<-d --dir  /path/to/profiles>
 
    Specifies where to look for the AppArmor security profile set.
    Defaults to /etc/apparmor.d.
 
+B<-f --file  /path/to/logfile>
+	
+	Specifies the location of logfile.
+	Default locations are read from F</etc/apparmor/logprof.conf>.
+	Typical defaults are:
+		 /var/log/audit/audit.log
+		 /var/log/syslog
+		 /var/log/messages
 
 =head1 DESCRIPTION
 
@@ -64,7 +72,7 @@ using aa-logprof(1).
 After the user finishes selecting profile entries based on violations 
 that were detected during the program execution, aa-genprof will reload
 the updated profiles in complain mode and again prompt the user for (S)can and 
-(D)one. This cycle can then be repeated as necessary until all application 
+(F)inish. This cycle can then be repeated as necessary until all application 
 functionality has been exercised without generating access violations.
 
 When the user eventually hits (F)inish, aa-genprof will set the main profile,
