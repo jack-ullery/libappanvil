@@ -21,7 +21,6 @@ import termios
 import tty
 
 DEBUGGING = False
-TRANSLATION_DOMAIN = 'apparmor-utils'
 
 
 #

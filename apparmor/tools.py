@@ -16,11 +16,11 @@ import os
 import sys
 
 import apparmor.aa as apparmor
-from apparmor.common import user_perm, TRANSLATION_DOMAIN
+from apparmor.common import user_perm
 
 # setup module translations
-t = gettext.translation(TRANSLATION_DOMAIN, fallback=True)
-_ = t.gettext
+from apparmor.translations import init_translation
+_ = init_translation()
 
 class aa_tools:
     def __init__(self, tool_name, args):

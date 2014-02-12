@@ -13,15 +13,12 @@
 #
 # ----------------------------------------------------------------------
 import argparse
-import gettext
-
-from apparmor.common import TRANSLATION_DOMAIN
 
 import apparmor.tools
 
 # setup module translations
-t = gettext.translation(TRANSLATION_DOMAIN, fallback=True)
-_ = t.gettext
+from apparmor.translations import init_translation
+_ = init_translation()
 
 parser = argparse.ArgumentParser(description=_('Switch the given program to complain mode'))
 parser.add_argument('-d', '--dir', type=str, help=_('path to profiles'))

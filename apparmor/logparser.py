@@ -18,14 +18,15 @@ import sys
 import time
 import LibAppArmor
 from apparmor.common import (AppArmorException, error, debug,
-                             open_file_read, valid_path, TRANSLATION_DOMAIN,
-                             hasher, open_file_write, convert_regexp, DebugLogger)
+                             open_file_read, valid_path, hasher,
+                             open_file_write, convert_regexp,
+                             DebugLogger)
 
 from apparmor.aamode import validate_log_mode, log_str_to_mode, hide_log_mode, AA_MAY_EXEC
 
 # setup module translations
-t = gettext.translation(TRANSLATION_DOMAIN, fallback=True)
-_ = t.gettext
+from apparmor.translations import init_translation
+_ = init_translation()
 
 class ReadLog:
     RE_LOG_v2_6_syslog = re.compile('kernel:\s+(\[[\d\.\s]+\]\s+)?type=\d+\s+audit\([\d\.\:]+\):\s+apparmor=')

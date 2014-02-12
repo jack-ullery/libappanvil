@@ -13,10 +13,7 @@
 #
 # ----------------------------------------------------------------------
 import argparse
-import gettext
 import sys
-
-from apparmor.common import TRANSLATION_DOMAIN
 
 import apparmor.aa
 import apparmor.aamode
@@ -24,8 +21,8 @@ import apparmor.severity
 import apparmor.cleanprofile as cleanprofile
 
 # setup module translations
-t = gettext.translation(TRANSLATION_DOMAIN, fallback=True)
-_ = t.gettext
+from apparmor.translations import init_translation
+_ = init_translation()
 
 parser = argparse.ArgumentParser(description=_('Perform a 3way merge on the given profiles'))
 parser.add_argument('mine', type=str, help=_('your profile'))

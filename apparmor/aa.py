@@ -33,8 +33,8 @@ import LibAppArmor
 from copy import deepcopy
 
 from apparmor.common import (AppArmorException, error, debug, msg, cmd,
-                             open_file_read, valid_path, TRANSLATION_DOMAIN,
-                             hasher, open_file_write, convert_regexp, DebugLogger)
+                             open_file_read, valid_path, hasher,
+                             open_file_write, convert_regexp, DebugLogger)
 
 import apparmor.ui as aaui
 
@@ -45,8 +45,8 @@ from apparmor.aamode import (str_to_mode, mode_to_str, contains, split_mode,
 from apparmor.yasti import SendDataToYast, GetDataFromYast, shutdown_yast
 
 # setup module translations
-t = gettext.translation(TRANSLATION_DOMAIN, fallback=True)
-_ = t.gettext
+from apparmor.translations import init_translation
+_ = init_translation()
 
 # Setup logging incase of debugging is enabled
 debug_logger = DebugLogger('aa')

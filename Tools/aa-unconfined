@@ -13,18 +13,15 @@
 #
 # ----------------------------------------------------------------------
 import argparse
-import gettext
 import os
 import re
 import sys
 
-from apparmor.common import TRANSLATION_DOMAIN
-
 import apparmor.aa as apparmor
 
 # setup module translations
-t = gettext.translation(TRANSLATION_DOMAIN, fallback=True)
-_ = t.gettext
+from apparmor.translations import init_translation
+_ = init_translation()
 
 parser = argparse.ArgumentParser(description=_("Lists unconfined processes having tcp or udp ports"))
 parser.add_argument("--paranoid", action="store_true", help=_("scan all processes from /proc"))

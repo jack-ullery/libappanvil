@@ -16,11 +16,11 @@ import sys
 import re
 from apparmor.yasti import yastLog, SendDataToYast, GetDataFromYast
 
-from apparmor.common import readkey, AppArmorException, DebugLogger, TRANSLATION_DOMAIN
+from apparmor.common import readkey, AppArmorException, DebugLogger
 
 # setup module translations
-t = gettext.translation(TRANSLATION_DOMAIN, fallback=True)
-_ = t.gettext
+from apparmor.translations import init_translation
+_ = init_translation()
 
 # Set up UI logger for separate messages from UI module
 debug_logger = DebugLogger('UI')
