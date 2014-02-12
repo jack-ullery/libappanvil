@@ -13,12 +13,12 @@
   /usr/lib{,32,64}/python2.[4567]/**.{pyc,so}           mr,
   /usr/lib{,32,64}/python2.[4567]/**.{egg,py,pth}       r,
   /usr/lib{,32,64}/python2.[4567]/{site,dist}-packages/ r,
-  /usr/lib{,32,64}/python3.3/lib-dynload/*.so           mr,
+  /usr/lib{,32,64}/python3.[234]/lib-dynload/*.so       mr,
 
   /usr/local/lib{,32,64}/python2.[4567]/**.{pyc,so}           mr,
   /usr/local/lib{,32,64}/python2.[4567]/**.{egg,py,pth}       r,
   /usr/local/lib{,32,64}/python2.[4567]/{site,dist}-packages/ r,
-  /usr/local/lib{,32,64}/python3.3/lib-dynload/*.so           mr,
+  /usr/local/lib{,32,64}/python3.[234]/lib-dynload/*.so       mr,
 
   # Site-wide configuration
   /etc/python2.[4567]/** r,
