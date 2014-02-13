@@ -155,8 +155,8 @@ while not done_profiling:
 
 for p in sorted(apparmor.helpers.keys()):
     if apparmor.helpers[p] == 'enforce':
-        enforce(p)
-        reload(p)
+        apparmor.enforce(p)
+        apparmor.reload(p)
 
 apparmor.UI_Info(_('\nReloaded AppArmor profiles in enforce mode.'))
 apparmor.UI_Info(_('\nPlease consider contributing your new profile!\nSee the following wiki page for more information:')+'\nhttp://wiki.apparmor.net/index.php/Profiles\n')

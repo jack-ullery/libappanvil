@@ -13,7 +13,7 @@
 #
 # ----------------------------------------------------------------------
 import argparse
-import sys
+import re
 
 import apparmor.aa
 import apparmor.aamode
@@ -492,7 +492,7 @@ class Merge(object):
                                     if match:
                                         inc = match 
                                         deleted = 0
-                                        deleted = apparmor.aa.delete_duplicates(aa[profile][hat], inc)
+                                        deleted = apparmor.aa.delete_duplicates(self.user.aa[profile][hat], inc)
                                         self.user.aa[profile][hat]['include'][inc] =  True
                                         apparmor.aa.changed[profile] =  True
                                         apparmor.aa.UI_Info(_('Adding %s to profile.') % path)
