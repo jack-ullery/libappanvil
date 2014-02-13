@@ -94,7 +94,7 @@ check: check_severity_db
 		perl -c $$i || exit 1; \
 	done
 	tmpfile=$$(mktemp --tmpdir aa-pyflakes-XXXXXX); \
-	for i in ${PYTOOLS} apparmor aa-status test/*.py; do \
+	for i in ${PYTOOLS} apparmor test/*.py; do \
 		echo Checking $$i; \
 		pyflakes $$i 2>&1 | grep -v "undefined name '_'" > $$tmpfile; \
 		test -s $$tmpfile && cat $$tmpfile && rm -f $$tmpfile && exit 1; \
