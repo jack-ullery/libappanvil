@@ -113,35 +113,16 @@ class Test(unittest.TestCase):
 
     def test_modes_to_string(self):
 
-
         for string in self.MODE_TEST.keys():
             mode = self.MODE_TEST[string]
             self.assertEqual(apparmor.aamode.mode_to_str(mode), string, 'mode is %s and string is %s'%(mode, string))
 
     def test_string_to_modes(self):
 
-        #self.assertEqual(apparmor.aa.str_to_mode('wc'), 32270)
-        MODE_TEST = {'x': apparmor.aamode.AA_MAY_EXEC,
-             'w': apparmor.aamode.AA_MAY_WRITE,
-             'r': apparmor.aamode.AA_MAY_READ,
-             'a': apparmor.aamode.AA_MAY_APPEND,
-             'l': apparmor.aamode.AA_MAY_LINK,
-             'k': apparmor.aamode.AA_MAY_LOCK,
-             'm': apparmor.aamode.AA_EXEC_MMAP,
-             'i': apparmor.aamode.AA_EXEC_INHERIT,
-             'u': apparmor.aamode.AA_EXEC_UNCONFINED | apparmor.aamode.AA_EXEC_UNSAFE,  # Unconfined + Unsafe
-              'U': apparmor.aamode.AA_EXEC_UNCONFINED,
-              'p': apparmor.aamode.AA_EXEC_PROFILE | apparmor.aamode.AA_EXEC_UNSAFE,    # Profile + unsafe
-              'P': apparmor.aamode.AA_EXEC_PROFILE,
-              'c': apparmor.aamode.AA_EXEC_CHILD | apparmor.aamode.AA_EXEC_UNSAFE,  # Child + Unsafe
-              'C': apparmor.aamode.AA_EXEC_CHILD,
-              }
-
-        #while MODE_TEST:
-        #    string,mode = MODE_TEST.popitem()
-        #    self.assertEqual(apparmor.aamode.str_to_mode(string), mode)
-
-        #self.assertEqual(apparmor.aa.str_to_mode('C'), 2048)
+        for string in self.MODE_TEST.keys():
+            mode = self.MODE_TEST[string] | apparmor.aamode.AA_OTHER(self.MODE_TEST[string])
+            #print("mode: %s string: %s str_to_mode(string): %s" % (mode, string,  apparmor.aamode.str_to_mode(string)))
+            self.assertEqual(mode, apparmor.aamode.str_to_mode(string), 'mode is %s and string is %s'%(mode, string))
 
 
 if __name__ == "__main__":
