@@ -24,4 +24,4 @@ include ../common/Make-po.rules
 ../common/Make-po.rules:
 	make -C .. common/Make.rules
 
-XGETTEXT_ARGS+=--language=perl
+XGETTEXT_ARGS+=--language=perl --language=python
