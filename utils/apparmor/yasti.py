@@ -12,8 +12,12 @@
 #
 # ----------------------------------------------------------------------
 import re
-import ycp
 import sys
+try:
+    import ycp
+except ImportError:
+    # ycp isn't found everywhere.
+    ycp = None
 
 from apparmor.common import error, DebugLogger
 
