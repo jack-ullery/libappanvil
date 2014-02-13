@@ -54,7 +54,6 @@ def main():
         q['default'] = 'CMD_VIEW_CHANGES'
         q['options'] = []
         q['selected'] = 0
-        p =None
         ans = ''
         arg = None
         programs = list(mergeprofiles.user.aa.keys())
@@ -110,7 +109,7 @@ class Merge(object):
         deleted += user_base.compare_profiles()
         
         #Remove off the parts in other profile which are common/superfluous from base profile
-        base_other = cleanprofile.CleanProf(False, self.base, self.other)
+        # base_other = cleanprofile.CleanProf(False, self.base, self.other)  # XXX base_other not used?
         deleted += user_base.compare_profiles()
 
     def conflict_mode(self, profile, hat, allow, path, mode, new_mode, old_mode):
