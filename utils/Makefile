@@ -26,16 +26,14 @@ common/Make.rules: $(COMMONDIR)/Make.rules
 	ln -sf $(COMMONDIR) .
 endif
 
-MODDIR = Immunix
-PERLTOOLS = aa-genprof aa-logprof aa-autodep aa-audit aa-complain aa-enforce \
-	aa-unconfined aa-notify aa-disable aa-exec
-TOOLS = ${PERLTOOLS} aa-decode aa-status
-MODULES = ${MODDIR}/AppArmor.pm ${MODDIR}/Repository.pm \
-	${MODDIR}/Config.pm ${MODDIR}/Severity.pm
-PYTOOLS = aa-easyprof
+PERLTOOLS = aa-exec aa-notify
+PYTOOLS = aa-easyprof aa-genprof aa-logprof aa-cleanprof aa-mergeprof \
+          aa-autodep aa-audit aa-complain aa-enforce aa-disable \
+	  aa-status aa-unconfined
+TOOLS = ${PERLTOOLS} ${PYTOOLS} aa-decode
 PYSETUP = python-tools-setup.py
 
-MANPAGES = ${TOOLS:=.8} logprof.conf.5 ${PYTOOLS:=.8}
+MANPAGES = ${TOOLS:=.8} logprof.conf.5
 
 all: ${MANPAGES} ${HTMLMANPAGES}
 	$(MAKE) -C po all
@@ -45,12 +43,10 @@ all: ${MANPAGES} ${HTMLMANPAGES}
 DESTDIR=/
 BINDIR=${DESTDIR}/usr/sbin
 CONFDIR=${DESTDIR}/etc/apparmor
-VENDOR_PERL=$(shell perl -e 'use Config; print $$Config{"vendorlib"};')
-PERLDIR=${DESTDIR}${VENDOR_PERL}/${MODDIR}
 PYPREFIX=/usr
 
-po/${NAME}.pot: ${TOOLS} ${PYTOOLS}
-	$(MAKE) -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} ${MODULES} ${PYTOOLS}"
+po/${NAME}.pot: ${TOOLS}
+	$(MAKE) -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} ${MODULES}"
 
 .PHONY: install
 install: ${MANPAGES} ${HTMLMANPAGES}
@@ -59,8 +55,6 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 	install -d ${BINDIR}
 	ln -sf aa-status ${BINDIR}/apparmor_status
 	install -m 755 ${TOOLS} ${BINDIR}
-	install -d ${PERLDIR}
-	install -m 644 ${MODULES} ${PERLDIR}
 	$(MAKE) -C po install DESTDIR=${DESTDIR} NAME=${NAME}
 	$(MAKE) install_manpages DESTDIR=${DESTDIR}
 	$(MAKE) -C vim install DESTDIR=${DESTDIR}
