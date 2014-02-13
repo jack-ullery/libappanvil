@@ -1088,7 +1088,7 @@ def handle_children(profile, hat, root):
                         context_new = context_new + '^%s' % hat
                     context_new = context_new + ' -> %s' % exec_target
 
-                    ans_new = transitions.get(context_new, '')
+                    # ans_new = transitions.get(context_new, '')  # XXX ans meant here?
                     combinedmode = set()
                     combinedaudit = set()
                     ## Check return Value Consistency
@@ -1120,7 +1120,7 @@ def handle_children(profile, hat, root):
                         nt_name = None
                         for entr in m:
                             if aa[profile][hat]['allow']['path'][entry]['to']:
-                                int_name = aa[profile][hat]['allow']['path'][entry]['to']
+                                nt_name = aa[profile][hat]['allow']['path'][entry]['to']
                                 break
                         if to_name and to_name != nt_name:
                             pass
@@ -1234,7 +1234,7 @@ def handle_children(profile, hat, root):
                         q['headers'] += [_('Severity'), severity]
 
                         q['functions'] = []
-                        prompt = '\n%s\n' % context_new
+                        # prompt = '\n%s\n' % context_new  # XXX
                         exec_toggle = False
                         q['functions'] += build_x_functions(default, options, exec_toggle)
 
@@ -2188,9 +2188,9 @@ def match_net_includes(profile, family, nettype):
 
 def do_logprof_pass(logmark='', passno=0, pid=pid):
     # set up variables for this pass
-    t = hasher()
+#    t = hasher()
 #    transitions = hasher()
-    seen = hasher()
+#    seen = hasher()  # XXX global?
     global log
     global existing_profiles
     log = []
@@ -2201,7 +2201,7 @@ def do_logprof_pass(logmark='', passno=0, pid=pid):
     log = []
 #     log_dict = hasher()
 #     changed = dict()
-    skip = hasher()
+#    skip = hasher()  # XXX global?
 #    filelist = hasher()
 
     aaui.UI_Info(_('Reading log entries from %s.') % filename)
@@ -2268,7 +2268,7 @@ def save_profiles():
 
         if aaui.UI_mode == 'yast':
             # To-Do
-            selected_profiles = []
+            # selected_profiles = []  # XXX selected_profiles_ref?
             profile_changes = dict()
             for prof in changed_list:
                 oldprofile = serialize_profile(original_aa[prof], prof)
@@ -2301,7 +2301,6 @@ def save_profiles():
             q['default'] = 'CMD_VIEW_CHANGES'
             q['options'] = changed
             q['selected'] = 0
-            p = None
             ans = ''
             arg = None
             while ans != 'CMD_SAVE_CHANGES':
@@ -3387,7 +3386,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
     if not os.path.isfile(prof_filename):
         raise AppArmorException(_("Can't find existing profile to modify"))
 
-    profiles_list = filelist[prof_filename].keys()
+    # profiles_list = filelist[prof_filename].keys()  # XXX
 
     with open_file_read(prof_filename) as f_in:
         profile = None
@@ -3402,7 +3401,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                          'path': write_paths,
                          'change_profile': write_change_profile,
                          }
-        prof_correct = True
+        # prof_correct = True  # XXX correct?
         segments = {'alias': False,
                     'lvar': False,
                     'include': False,
@@ -4091,7 +4090,8 @@ def match_include_to_path(incname, allow, path):
     includelist = [incname]
     while includelist:
         incfile = str(includelist.pop(0))
-        ret = load_include(incfile)
+        # ret = load_include(incfile)
+        load_include(incfile)
         if not include.get(incfile, {}):
             continue
         cm, am, m = rematchfrag(include[incfile].get(incfile, {}), allow, path)
