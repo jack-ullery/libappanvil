@@ -11,7 +11,6 @@
 #    GNU General Public License for more details.
 #
 # ----------------------------------------------------------------------
-import gettext
 import sys
 import re
 from apparmor.yasti import yastLog, SendDataToYast, GetDataFromYast

@@ -64,7 +64,7 @@ class Severity(object):
                     try:
                         resource, severity = line.split()
                         severity = int(severity)
-                    except ValueError as e:
+                    except ValueError:
                         error_message = 'No severity value present in file: %s\n\t[Line %s]: %s' % (dbname, lineno, line)
                         #error(error_message)
                         raise AppArmorException(error_message)  # from None

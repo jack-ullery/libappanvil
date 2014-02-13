@@ -11,16 +11,12 @@
 #    GNU General Public License for more details.
 #
 # ----------------------------------------------------------------------
-import gettext
 import os
 import re
 import sys
 import time
 import LibAppArmor
-from apparmor.common import (AppArmorException, error, debug,
-                             open_file_read, valid_path, hasher,
-                             open_file_write, convert_regexp,
-                             DebugLogger)
+from apparmor.common import AppArmorException, open_file_read, DebugLogger
 
 from apparmor.aamode import validate_log_mode, log_str_to_mode, hide_log_mode, AA_MAY_EXEC
 

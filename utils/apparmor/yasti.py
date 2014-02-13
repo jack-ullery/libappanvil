@@ -13,7 +13,6 @@
 # ----------------------------------------------------------------------
 import re
 #import ycp
-import os
 import sys
 
 from apparmor.common import error, DebugLogger

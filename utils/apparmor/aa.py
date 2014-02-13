@@ -13,7 +13,6 @@
 # ----------------------------------------------------------------------
 # No old version logs, only 2.6 + supported
 from __future__ import with_statement
-import gettext
 import inspect
 import os
 import re
@@ -28,12 +27,10 @@ import tempfile
 import apparmor.config
 import apparmor.logparser
 import apparmor.severity
-import LibAppArmor
 
 from copy import deepcopy
 
-from apparmor.common import (AppArmorException, error, debug, msg, cmd,
-                             open_file_read, valid_path, hasher,
+from apparmor.common import (AppArmorException, open_file_read, valid_path, hasher,
                              open_file_write, convert_regexp, DebugLogger)
 
 import apparmor.ui as aaui
@@ -313,7 +310,7 @@ def head(file):
 def get_output(params):
     """Returns the return code output by running the program with the args given in the list"""
     program = params[0]
-    args = params[1:]
+    # args = params[1:]
     ret = -1
     output = []
     # program is executable
@@ -454,7 +451,7 @@ def get_profile(prof_name):
     profile_data = None
     distro = cfg['repository']['distro']
     repo_url = cfg['repository']['url']
-    local_profiles = []
+    # local_profiles = []
     profile_hash = hasher()
     if repo_is_enabled():
         aaui.UI_BusyStart(_('Connecting to repository...'))
