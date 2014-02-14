@@ -55,3 +55,6 @@
 
   # Virus scanners
   /usr/bin/clamscan Cx -> sanitized_helper,
+
+  # gxine (LP: #1057642)
+  /var/lib/xine/gxine.desktop r,
