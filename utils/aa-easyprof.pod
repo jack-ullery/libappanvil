@@ -78,8 +78,15 @@ Like --read-path but also allow owner writes in additions to reads.
 =item -n NAME, --name=NAME
 
 Specify NAME of policy. If not specified, NAME is set to the name of the
-binary. The NAME of the policy is often used as part of the path in the
-various templates.
+binary. The NAME of the policy is typically only used for profile meta
+data and does not specify the AppArmor profile name.
+
+=item --profile-name=PROFILENAME
+
+Specify the AppArmor profile name. When set, uses 'profile PROFILENAME' in the
+profile. When set and specifying a binary, uses 'profile PROFILENAME BINARY'
+in the profile. If not set, the binary will be used as the profile name and
+profile attachment.
 
 =item --template-var="@{VAR}=VALUE"
 
@@ -110,6 +117,32 @@ Display policy groups specified with --policy.
 
 Use PATH instead of system policy-groups directory.
 
+=item --policy-version=VERSION
+
+Must be used with --policy-vendor and is used to specify the version of policy
+groups and templates. When specified, B<aa-easyprof> looks for the subdirectory
+VENDOR/VERSION within the policy-groups and templates directory. The specified
+version must be a positive decimal number compatible with the JSON Number type.
+Eg, when using:
+
+=over
+
+ $ aa-easyprof --templates-dir=/usr/share/apparmor/easyprof/templates \
+               --policy-groups-dir=/usr/share/apparmor/easyprof/policygroups \
+               --policy-vendor="foo" \
+               --policy-version=1.0
+
+=back
+
+Then /usr/share/apparmor/easyprof/templates/foo/1.0 will be searched for
+templates and /usr/share/apparmor/easyprof/policygroups/foo/1.0 for policy
+groups.
+
+=item --policy-vendor=VENDOR
+
+Must be used with --policy-version and is used to specify the vendor for policy
+groups and templates. See --policy-version for more information.
+
 =item --author
 
 Specify author of the policy.
@@ -122,6 +155,104 @@ Specify copyright of the policy.
 
 Specify comment for the policy.
 
+=item -m MANIFEST, --manifest=MANIFEST
+
+B<aa-easyprof> also supports using a JSON manifest file for specifying options
+related to policy. Unlike command line arguments, the JSON file may specify
+multiple profiles. The structure of the JSON is:
+
+  {
+    "security": {
+      "profiles": {
+        "<profile name 1>": {
+          ... attributes specific to this profile ...
+        },
+        "<profile name 2>": {
+          ...
+        }
+      }
+    }
+  }
+
+Each profile JSON object (ie, everything under a profile name) may specify any
+fields related to policy. The "security" JSON container object is optional and
+may be omitted. An example manifest file demonstrating all fields is:
+
+  {
+    "security": {
+      "profiles": {
+        "com.example.foo": {
+          "abstractions": [
+            "audio",
+            "gnome"
+          ],
+          "author": "Your Name",
+          "binary": "/opt/foo/**",
+          "comment": "Unstructured single-line comment",
+          "copyright": "Unstructured single-line copyright statement",
+          "name": "My Foo App",
+          "policy_groups": [
+            "networking",
+            "user-application"
+          ],
+          "policy_vendor": "somevendor",
+          "policy_version": 1.0,
+          "read_path": [
+            "/tmp/foo_r",
+            "/tmp/bar_r/"
+          ],
+          "template": "user-application",
+          "template_variables": {
+            "APPNAME": "foo",
+            "VAR1": "bar",
+            "VAR2": "baz"
+          },
+          "write_path": [
+            "/tmp/foo_w",
+            "/tmp/bar_w/"
+          ]
+        }
+      }
+    }
+  }
+
+A manifest file does not have to include all the fields. Eg, a manifest file
+for an Ubuntu SDK application might be:
+
+  {
+    "security": {
+      "profiles": {
+        "com.ubuntu.developer.myusername.MyCoolApp": {
+          "policy_groups": [
+            "networking",
+            "online-accounts"
+          ],
+          "policy_vendor": "ubuntu",
+          "policy_version": 1.0,
+          "template": "ubuntu-sdk",
+          "template_variables": {
+            "APPNAME": "MyCoolApp",
+            "APPVERSION": "0.1.2"
+          }
+        }
+      }
+    }
+  }
+
+=item --verify-manifest
+
+When used with --manifest, warn about potentially unsafe definitions in the
+manifest file.
+
+=item --output-format=FORMAT
+
+Specify either B<text> (default if unspecified) for AppArmor policy output or
+B<json> for JSON manifest format.
+
+=item --output-directory=DIR
+
+Specify output directory for profile. If unspecified, policy is sent to stdout.
+
 =back
 
 =head1 EXAMPLE
@@ -130,7 +261,41 @@ Example usage for a program named 'foo' which is installed in /opt/foo:
 
 =over
 
-$ aa-easyprof --template=user-application --template-var="@{APPNAME}=foo" --policy-groups=opt-application,user-application /opt/foo/bin/FooApp
+ $ aa-easyprof --template=user-application --template-var="@{APPNAME}=foo" \
+               --policy-groups=opt-application,user-application \
+               /opt/foo/bin/FooApp
+
+=back
+
+When using a manifest file:
+
+=over
+
+ $ aa-easyprof --manifest=manifest.json
+
+=back
+
+To output a manifest file based on aa-easyprof arguments:
+
+=over
+
+ $ aa-easyprof --output-format=json \
+               --author="Your Name" \
+               --comment="Unstructured single-line comment" \
+               --copyright="Unstructured single-line copyright statement" \
+               --name="My Foo App" \
+               --profile-name="com.example.foo" \
+               --template="user-application" \
+               --policy-groups="user-application,networking" \
+               --abstractions="audio,gnome" \
+               --read-path="/tmp/foo_r" \
+               --read-path="/tmp/bar_r/" \
+               --write-path="/tmp/foo_w" \
+               --write-path=/tmp/bar_w/ \
+               --template-var="@{APPNAME}=foo" \
+               --template-var="@{VAR1}=bar" \
+               --template-var="@{VAR2}=baz" \
+               "/opt/foo/**"
 
 =back
 

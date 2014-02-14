@@ -33,3 +33,9 @@
   /usr/lib/@{multiarch}/xfce4/exo-1/exo-helper-1 ixr,
   /etc/xdg/xdg-xubuntu/xfce4/helpers.rc r,
   /etc/xdg/xfce4/helpers.rc r,
+
+  # unity webapps integration. Could go in its own abstraction
+  owner /run/user/*/dconf/user rw,
+  owner @{HOME}/.local/share/unity-webapps/availableapps*.db rwk,
+  /usr/bin/debconf-communicate Cxr -> sanitized_helper,
+  owner @{HOME}/.config/libaccounts-glib/accounts.db rk,

@@ -14,6 +14,7 @@
 
 /usr/lib/dovecot/lmtp {
   #include <abstractions/base>
+  #include <abstractions/nameservice>
 
   deny capability block_suspend,
 
@@ -24,7 +25,6 @@
   @{DOVECOT_MAILSTORE}/ rw,
   @{DOVECOT_MAILSTORE}/** rwkl,
 
-  /etc/resolv.conf r,
   /proc/*/mounts r,
   /tmp/dovecot.lmtp.* rw,
   /usr/lib/dovecot/lmtp mr,
