@@ -35,6 +35,7 @@
   # DRI
   /usr/lib{,32,64}/dri/**         mr,
   /usr/lib/@{multiarch}/dri/**    mr,
+  /usr/lib/fglrx/dri/**           mr,
   /dev/dri/**                     rw,
   /etc/drirc                      r,
   owner @{HOME}/.drirc            r,
