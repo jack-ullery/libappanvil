@@ -15,6 +15,7 @@ import os
 import sys
 
 import apparmor.aa as apparmor
+import apparmor.ui as aaui
 from apparmor.common import user_perm
 
 # setup module translations
@@ -74,9 +75,9 @@ class aa_tools:
 
             if not program or not(os.path.exists(program) or apparmor.profile_exists(program)):
                 if program and not program.startswith('/'):
-                    program = apparmor.UI_GetString(_('The given program cannot be found, please try with the fully qualified path name of the program: '), '')
+                    program = aaui.UI_GetString(_('The given program cannot be found, please try with the fully qualified path name of the program: '), '')
                 else:
-                    apparmor.UI_Info(_("%s does not exist, please double-check the path.") % p)
+                    aaui.UI_Info(_("%s does not exist, please double-check the path.") % p)
                     sys.exit(1)
 
             if self.name == 'autodep' and program and os.path.exists(program):
@@ -90,21 +91,21 @@ class aa_tools:
                     filename = apparmor.get_profile_filename(program)
 
                     if not os.path.isfile(filename) or apparmor.is_skippable_file(filename):
-                        apparmor.UI_Info(_('Profile for %s not found, skipping') % p)
+                        aaui.UI_Info(_('Profile for %s not found, skipping') % p)
 
                     elif self.name == 'disable':
                         if not self.revert:
-                            apparmor.UI_Info(_('Disabling %s.') % program)
+                            aaui.UI_Info(_('Disabling %s.') % program)
                             self.disable_profile(filename)
                         else:
-                            apparmor.UI_Info(_('Enabling %s.') % program)
+                            aaui.UI_Info(_('Enabling %s.') % program)
                             self.enable_profile(filename)
 
                     elif self.name == 'audit':
                         if not self.remove:
-                            apparmor.UI_Info(_('Setting %s to audit mode.') % program)
+                            aaui.UI_Info(_('Setting %s to audit mode.') % program)
                         else:
-                            apparmor.UI_Info(_('Removing audit mode from %s.') % program)
+                            aaui.UI_Info(_('Removing audit mode from %s.') % program)
                         apparmor.change_profile_flags(filename, program, 'audit', not self.remove)
 
                     elif self.name == 'complain':
@@ -125,9 +126,9 @@ class aa_tools:
 
             else:
                 if '/' not in p:
-                    apparmor.UI_Info(_("Can't find %s in the system path list. If the name of the application\nis correct, please run 'which %s' as a user with correct PATH\nenvironment set up in order to find the fully-qualified path and\nuse the full path as parameter.") % (p, p))
+                    aaui.UI_Info(_("Can't find %s in the system path list. If the name of the application\nis correct, please run 'which %s' as a user with correct PATH\nenvironment set up in order to find the fully-qualified path and\nuse the full path as parameter.") % (p, p))
                 else:
-                    apparmor.UI_Info(_("%s does not exist, please double-check the path.") % p)
+                    aaui.UI_Info(_("%s does not exist, please double-check the path.") % p)
                     sys.exit(1)
 
     def clean_profile(self, program, p):
@@ -136,7 +137,7 @@ class aa_tools:
         prof = cleanprofile.Prof(filename)
         cleanprof = cleanprofile.CleanProf(True, prof, prof)
         deleted = cleanprof.remove_duplicate_rules(program)
-        apparmor.UI_Info(_("\nDeleted %s rules.") % deleted)
+        aaui.UI_Info(_("\nDeleted %s rules.") % deleted)
         apparmor.changed[program] = True
 
         if filename:
@@ -153,7 +154,7 @@ class aa_tools:
                 ans = ''
                 arg = None
                 while ans != 'CMD_SAVE_CHANGES':
-                    ans, arg = apparmor.UI_PromptUser(q)
+                    ans, arg = aaui.UI_PromptUser(q)
                     if ans == 'CMD_SAVE_CHANGES':
                         apparmor.write_profile_ui_feedback(program)
                         apparmor.reload_base(program)
@@ -170,8 +171,8 @@ class aa_tools:
     def use_autodep(self, program):
         apparmor.check_qualifiers(program)
 
-        if os.path.exists(apparmor.get_profile_filename(program) and not self.force):
-            apparmor.UI_Info('Profile for %s already exists - skipping.' % program)
+        if os.path.exists(apparmor.get_profile_filename(program)) and not self.force:
+            aaui.UI_Info('Profile for %s already exists - skipping.' % program)
         else:
             apparmor.autodep(program)
             if self.aa_mountpoint:
