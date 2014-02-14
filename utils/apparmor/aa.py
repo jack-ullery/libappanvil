@@ -423,7 +423,7 @@ def create_new_profile(localfile):
                 local_profile[hat]['flags'] = 'complain'
 
     created.append(localfile)
-    changed[local_profile] = True
+    changed[localfile] = True
 
     debug_logger.debug("Profile for %s:\n\t%s" % (localfile, local_profile.__str__()))
     return {localfile: local_profile}
