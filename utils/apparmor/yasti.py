@@ -42,7 +42,7 @@ def SendDataToYast(data):
         ycommand, ypath, yargument = ParseCommand(line)
         if ycommand and ycommand == 'Read':
             debug_logger.info('SendDataToYast: Sending--%s' % data)
-            ycp.Return(data)  # XXX is this right?
+            ycp.Return(data)
             return True
         else:
             debug_logger.info('SendDataToYast: Expected \'Read\' but got-- %s' % line)
@@ -55,7 +55,7 @@ def GetDataFromYast():
         ycommand, ypath, yarg = ParseCommand(line)
         debug_logger.info('GetDataFromYast: Recieved--\n%s' % yarg)
         if ycommand and ycommand == 'Write':
-            ycp.Return('true')  # XXX is this right?
+            ycp.Return('true')
             return ypath, yarg
         else:
             debug_logger.info('GetDataFromYast: Expected Write but got-- %s' % line)
@@ -98,7 +98,7 @@ def ParseTerm(inp):
     inp = regex_term.sub('', inp)
     if not inp.startswith('('):
         ycp.y2error('No term parantheses')
-    argref, err, rest = ycp.ParseYcpTermBody(inp)  # XXX
+    argref, err, rest = ycp.ParseYcpTermBody(inp)
     if err:
         ycp.y2error('%s (%s)' % (err, rest))
     else:
