@@ -13,7 +13,6 @@
 #
 # ----------------------------------------------------------------------
 import argparse
-import traceback
 
 import apparmor.tools
 
@@ -21,20 +20,12 @@ import apparmor.tools
 from apparmor.translations import init_translation
 _ = init_translation()
 
-parser = argparse.ArgumentParser(description=_('Switch the given programs to audit mode'))
+parser = argparse.ArgumentParser(description=_('Cleanup the profiles for the given programs'))
 parser.add_argument('-d', '--dir', type=str, help=_('path to profiles'))
-parser.add_argument('-r', '--remove', action='store_true', help=_('remove audit mode'))
 parser.add_argument('program', type=str, nargs='+', help=_('name of program'))
-parser.add_argument('--trace', action='store_true', help=_('Show full trace'))
+parser.add_argument('-s', '--silent', action='store_true', help=_('Silently overwrite with a clean profile'))
 args = parser.parse_args()
 
-try:
-    audit = apparmor.tools.aa_tools('audit', args)
+clean = apparmor.tools.aa_tools('cleanprof', args)
 
-    audit.act()
-except Exception as e:
-    if not args.trace:
-        print(e.value + "\n")
-
-    else:
-        traceback.print_exc()
+clean.act()

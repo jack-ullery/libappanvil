@@ -1,0 +1,17 @@
+#include <tunables/global>
+
+# A simple test comment which will persist
+
+
+/usr/bin/a/simple/cleanprof/test/profile {
+  #include <abstractions/base>
+
+  /home/*/** r,
+  /home/foo/** w,
+
+}
+/usr/bin/other/cleanprof/test/profile {
+  /home/*/** rw,
+  /home/foo/bar r,
+
+}
