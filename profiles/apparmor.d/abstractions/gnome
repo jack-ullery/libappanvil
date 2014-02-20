@@ -21,6 +21,7 @@
   /etc/gtk/*                      r,
   /usr/lib{,32,64}/gtk/**         mr,
   /usr/lib/@{multiarch}/gtk/**    mr,
+  /usr/share/themes/              r,
   /usr/share/themes/**            r,
 
   # for gnome 1 applications
@@ -82,4 +83,5 @@
 
   # mime-types
   /etc/gnome/defaults.list r,
+  /usr/share/gnome/applications/ r,
   /usr/share/gnome/applications/mimeinfo.cache r,
