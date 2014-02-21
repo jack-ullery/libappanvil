@@ -572,7 +572,7 @@ static int process_arg(int c, char *optarg)
 		break;
 	default:
 		display_usage(progname);
-		exit(0);
+		exit(1);
 		break;
 	}
 
