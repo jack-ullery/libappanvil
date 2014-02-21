@@ -24,7 +24,10 @@
 #include <sys/apparmor.h>
 #define _(s) gettext(s)
 
+#include <iomanip>
 #include <string>
+#include <sstream>
+
 
 /* #define DEBUG */
 
@@ -39,8 +42,10 @@
 enum error_type {
 	e_no_error,
 	e_parse_error,
-	e_buffer_overflow
 };
+
+/* match any char except \000 0 or more times */
+static const char *default_match_pattern = "[^\\000]*";
 
 /* Filters out multiple slashes (except if the first two are slashes,
  * that's a distinct namespace in linux) and trailing slashes.
@@ -374,11 +379,6 @@ static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 	}
 	/* check error  again, as above STORE may have set it */
 	if (error != e_no_error) {
-		if (error == e_buffer_overflow) {
-			PERROR(_("%s: Internal buffer overflow detected, %d characters exceeded\n"),
-			       progname, PATH_MAX);
-		}
-
 		PERROR(_("%s: Unable to parse input line '%s'\n"),
 		       progname, aare);
 
@@ -634,7 +634,7 @@ static int build_list_val_expr(std::string& buffer, struct value_list *list)
 	int pos;
 
 	if (!list) {
-		buffer.append("[^\\000]*");
+		buffer.append(default_match_pattern);
 		return TRUE;
 	}
 
@@ -667,10 +667,16 @@ static int convert_entry(std::string& buffer, char *entry)
 		if (ptype == ePatternInvalid)
 			return FALSE;
 	} else {
-		buffer.append("[^\\000]*");
+		buffer.append(default_match_pattern);
 	}
 
 	return TRUE;
+}
+
+static int clear_and_convert_entry(std::string& buffer, char *entry)
+{
+	buffer.clear();
+	return convert_entry(buffer, entry);
 }
 
 static int build_mnt_flags(char *buffer, int size, unsigned int flags,
@@ -681,7 +687,7 @@ static int build_mnt_flags(char *buffer, int size, unsigned int flags,
 
 	if (flags == MS_ALL_FLAGS) {
 		/* all flags are optional */
-		len = snprintf(p, size, "[^\\000]*");
+		len = snprintf(p, size, "%s", default_match_pattern);
 		if (len < 0 || len >= size)
 			return FALSE;
 		return TRUE;
@@ -721,7 +727,7 @@ static int build_mnt_opts(std::string& buffer, struct value_list *opts)
 	int pos;
 
 	if (!opts) {
-		buffer.append("[^\\000]*");
+		buffer.append(default_match_pattern);
 		return TRUE;
 	}
 
@@ -772,12 +778,9 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 			vec[0] = mntbuf.c_str();
 		}
 		/* skip device */
-		devbuf.clear();
-		if (!convert_entry(devbuf, NULL))
-			goto fail;
-		vec[1] = devbuf.c_str();
+		vec[1] = default_match_pattern;
 		/* skip type */
-		vec[2] = devbuf.c_str();
+		vec[2] = default_match_pattern;
 
 		flags = entry->flags;
 		inv_flags = entry->inv_flags;
@@ -823,14 +826,11 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		if (!convert_entry(mntbuf, entry->mnt_point))
 			goto fail;
 		vec[0] = mntbuf.c_str();
-		devbuf.clear();
-		if (!convert_entry(devbuf, entry->device))
+		if (!clear_and_convert_entry(devbuf, entry->device))
 			goto fail;
 		vec[1] = devbuf.c_str();
-		typebuf.clear();
-		if (!convert_entry(typebuf, NULL))
-			goto fail;
-		vec[2] = typebuf.c_str();
+		/* skip type */
+		vec[2] = default_match_pattern;
 
 		flags = entry->flags;
 		inv_flags = entry->inv_flags;
@@ -858,11 +858,8 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 			goto fail;
 		vec[0] = mntbuf.c_str();
 		/* skip device and type */
-		devbuf.clear();
-		if (!convert_entry(devbuf, NULL))
-			goto fail;
-		vec[1] = devbuf.c_str();
-		vec[2] = devbuf.c_str();
+		vec[1] = default_match_pattern;
+		vec[2] = default_match_pattern;
 
 		flags = entry->flags;
 		inv_flags = entry->inv_flags;
@@ -888,15 +885,11 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		if (!convert_entry(mntbuf, entry->mnt_point))
 			goto fail;
 		vec[0] = mntbuf.c_str();
-		devbuf.clear();
-		if (!convert_entry(devbuf, entry->device))
+		if (!clear_and_convert_entry(devbuf, entry->device))
 			goto fail;
 		vec[1] = devbuf.c_str();
 		/* skip type */
-		typebuf.clear();
-		if (!convert_entry(typebuf, NULL))
-			goto fail;
-		vec[2] = typebuf.c_str();
+		vec[2] = default_match_pattern;
 
 		flags = entry->flags;
 		inv_flags = entry->inv_flags;
@@ -923,8 +916,7 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		if (!convert_entry(mntbuf, entry->mnt_point))
 			goto fail;
 		vec[0] = mntbuf.c_str();
-		devbuf.clear();
-		if (!convert_entry(devbuf, entry->device))
+		if (!clear_and_convert_entry(devbuf, entry->device))
 			goto fail;
 		vec[1] = devbuf.c_str();
 		typebuf.clear();
@@ -985,8 +977,7 @@ static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
 		if (!convert_entry(mntbuf, entry->mnt_point))
 			goto fail;
 		vec[0] = mntbuf.c_str();
-		devbuf.clear();
-		if (!convert_entry(devbuf, entry->device))
+		if (!clear_and_convert_entry(devbuf, entry->device))
 			goto fail;
 		vec[1] = devbuf.c_str();
 		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
@@ -1015,7 +1006,7 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 	std::string pathbuf;
 	std::string ifacebuf;
 	std::string memberbuf;
-	char buffer[128];
+	std::ostringstream buffer;
 	const char *vec[6];
 
 	pattern_t ptype;
@@ -1024,8 +1015,8 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 	if (!entry) 		/* shouldn't happen */
 		return TRUE;
 
-	sprintf(buffer, "\\x%02x", AA_CLASS_DBUS);
-	busbuf.append(buffer);
+	buffer << "\\x" << std::setfill('0') << std::setw(2) << std::hex << AA_CLASS_DBUS;
+	busbuf.append(buffer.str());
 
 	if (entry->bus) {
 		ptype = convert_aaregex_to_pcre(entry->bus, 0, busbuf, &pos);
@@ -1033,7 +1024,7 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 			goto fail;
 	} else {
 		/* match any char except \000 0 or more times */
-		busbuf.append("[^\\000]*");
+		busbuf.append(default_match_pattern);
 	}
 	vec[0] = busbuf.c_str();
 
@@ -1044,7 +1035,7 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 		vec[1] = namebuf.c_str();
 	} else {
 		/* match any char except \000 0 or more times */
-		vec[1] = "[^\\000]*";
+		vec[1] = default_match_pattern;
 	}
 
 	if (entry->peer_label) {
@@ -1055,7 +1046,7 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 		vec[2] = peer_labelbuf.c_str();
 	} else {
 		/* match any char except \000 0 or more times */
-		vec[2] = "[^\\000]*";
+		vec[2] = default_match_pattern;
 	}
 
 	if (entry->path) {
@@ -1065,7 +1056,7 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 		vec[3] = pathbuf.c_str();
 	} else {
 		/* match any char except \000 0 or more times */
-		vec[3] = "[^\\000]*";
+		vec[3] = default_match_pattern;
 	}
 
 	if (entry->interface) {
@@ -1075,7 +1066,7 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 		vec[4] = ifacebuf.c_str();
 	} else {
 		/* match any char except \000 0 or more times */
-		vec[4] = "[^\\000]*";
+		vec[4] = default_match_pattern;
 	}
 
 	if (entry->member) {
@@ -1085,7 +1076,7 @@ static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry
 		vec[5] = memberbuf.c_str();
 	} else {
 		/* match any char except \000 0 or more times */
-		vec[5] = "[^\\000]*";
+		vec[5] = default_match_pattern;
 	}
 
 	if (entry->mode & AA_DBUS_BIND) {
@@ -1252,41 +1243,36 @@ static int test_filter_slashes(void)
 	do {												\
 		std::string tbuf;									\
 		std::string tbuf2 = "testprefix";							\
-		char *test_string;									\
 		char *output_string = NULL;								\
 		std::string expected_str2;								\
 		pattern_t ptype;									\
 		int pos;										\
 													\
-		test_string = strdup((input)); 								\
-		ptype = convert_aaregex_to_pcre(test_string, 0, tbuf, &pos);				\
+		ptype = convert_aaregex_to_pcre((input), 0, tbuf, &pos);				\
 		asprintf(&output_string, "simple regex conversion for '%s'\texpected = '%s'\tresult = '%s'", \
-				(input), expected_str, tbuf.c_str());					\
+				(input), (expected_str), tbuf.c_str());					\
 		MY_TEST(strcmp(tbuf.c_str(), (expected_str)) == 0, output_string);			\
 		MY_TEST(ptype == (expected_type), "simple regex conversion type check for '" input "'"); \
 		free(output_string);									\
 		/* ensure convert_aaregex_to_pcre appends only to passed ref string */			\
 		expected_str2 = tbuf2;									\
 		expected_str2.append((expected_str));							\
-		ptype = convert_aaregex_to_pcre(test_string, 0, tbuf2, &pos);				\
+		ptype = convert_aaregex_to_pcre((input), 0, tbuf2, &pos);				\
 		asprintf(&output_string, "simple regex conversion for '%s'\texpected = '%s'\tresult = '%s'", \
 				(input), expected_str2.c_str(), tbuf2.c_str());				\
 		MY_TEST((tbuf2 == expected_str2), output_string);					\
-		free(test_string); free(output_string);							\
+		free(output_string);									\
 	}												\
 	while (0)
 
 #define MY_REGEX_FAIL_TEST(input)						\
 	do {												\
 		std::string tbuf;									\
-		char *test_string;									\
 		pattern_t ptype;									\
 		int pos;										\
 													\
-		test_string = strdup((input)); 								\
-		ptype = convert_aaregex_to_pcre(test_string, 0, tbuf, &pos);				\
+		ptype = convert_aaregex_to_pcre((input), 0, tbuf, &pos);				\
 		MY_TEST(ptype == ePatternInvalid, "simple regex conversion invalid type check for '" input "'"); \
-		free(test_string); 									\
 	}												\
 	while (0)
 

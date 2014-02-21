@@ -754,6 +754,7 @@ rules: rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE TOK_END_OF_RULE
 			value = RLIM_INFINITY;
 		} else {
 			const char *seconds = "seconds";
+			const char *milliseconds = "ms";
 			const char *minutes = "minutes";
 			const char *hours = "hours";
 			const char *days = "days";
@@ -775,6 +776,22 @@ rules: rules TOK_SET TOK_RLIMIT TOK_ID TOK_LE TOK_VALUE TOK_END_OF_RULE
 					value = tmp * 60 * 60;
 				} else if (strstr(days, end) == days) {
 					value = tmp * 60 * 60 * 24;
+				} else {
+					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
+				}
+				break;
+			case RLIMIT_RTTIME:
+				/* RTTIME is measured in microseconds */
+				if (!end || $6 == end || tmp < 0)
+					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
+				if (*end == '\0') {
+					value = tmp;
+				} else if (strstr(milliseconds, end) == milliseconds) {
+					value = tmp * 1000;
+				} else if (strstr(seconds, end) == seconds) {
+					value = tmp * 1000 * 1000;
+				} else if (strstr(minutes, end) == minutes) {
+					value = tmp * 1000 * 1000 * 60;
 				} else {
 					yyerror("RLIMIT '%s' invalid value %s\n", $4, $6);
 				}

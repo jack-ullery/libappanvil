@@ -137,11 +137,11 @@ void free_var_string(struct var_string *var)
 
 static void trim_trailing_slash(std::string& str)
 {
-	for (std::string::reverse_iterator rit = str.rbegin();
-			rit != str.rend() && *rit == '/'; ++rit) {
-		/* yuck, reverse_iterators are ugly */
-		str.erase(--rit.base());
-	}
+	std::size_t found = str.find_last_not_of('/');
+	if (found != std::string::npos)
+		str.erase(found + 1);
+	else
+		str.clear(); // str is all '/'
 }
 
 static void write_replacement(const char separator, const char* value,
@@ -177,10 +177,11 @@ static int expand_by_alternations(struct set_value **valuelist,
 		exit(1);
 	}
 
+	free(*name);
+
 	value = get_next_set_value(valuelist);
 	if (!value) {
 		/* only one entry for the variable, so just sub it in */
-		free(*name);
 		if (asprintf(name, "%s%s%s",
 			     split_var->prefix ? split_var->prefix : "",
 			     first_value,
@@ -201,7 +202,6 @@ static int expand_by_alternations(struct set_value **valuelist,
 		write_replacement(',', value, replacement, filter_leading_slash, filter_trailing_slash);
 	}
 
-	free(*name);
 	if (asprintf(name, "%s%s}%s",
 		     split_var->prefix ? split_var->prefix : "",
 		     replacement.c_str(),
