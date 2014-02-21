@@ -18,8 +18,8 @@ INCLUDES = $(all_includes)
 #    release, then
 #    - set AA_LIB_AGE to 0.
 #
-AA_LIB_CURRENT = 1
-AA_LIB_REVISION = 2
+AA_LIB_CURRENT = 2
+AA_LIB_REVISION = 0
 AA_LIB_AGE = 0
 
 SUFFIXES = .pc.in .pc

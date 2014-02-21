@@ -27,7 +27,14 @@ not have AppArmor profiles loaded
 
 =head1 SYNOPSIS
 
-B<aa-unconfined>
+B<aa-unconfined [I<--paranoid>]>
+
+=head1 OPTIONS
+
+B<--paranoid>
+
+   Displays all processes from F</proc> filesystem with tcp or udp ports
+   that do not have AppArmor profiles loaded.
 
 =head1 DESCRIPTION
 
@@ -39,7 +46,7 @@ network sockets and do not have AppArmor profiles loaded into the kernel.
 B<aa-unconfined> must be run as root to retrieve the process executable
 link from the F</proc> filesystem. This program is susceptible to race
 conditions of several flavours: an unlinked executable will be mishandled;
-an executable started before a AppArmor profile is loaded will not
+an executable started before an AppArmor profile is loaded will not
 appear in the output, despite running without confinement; a process that dies
 between the netstat(8) and further checks will be mishandled. This
 program only lists processes using TCP and UDP. In short, this

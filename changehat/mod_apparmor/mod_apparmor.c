@@ -17,6 +17,7 @@
 #include "http_config.h"
 #include "http_request.h"
 #include "http_log.h"
+#include "http_main.h"
 #include "http_protocol.h"
 #include "util_filter.h"
 #include "apr.h"
@@ -35,9 +36,18 @@
 #define DEFAULT_HAT "HANDLING_UNTRUSTED_INPUT"
 #define DEFAULT_URI_HAT "DEFAULT_URI"
 
+/* Compatibility with apache 2.2 */
+#if AP_SERVER_MAJORVERSION_NUMBER == 2 && AP_SERVER_MINORVERSION_NUMBER < 3
+  #define APLOG_TRACE1 APLOG_DEBUG
+  server_rec *ap_server_conf = NULL;
+#endif
+
+#ifdef APLOG_USE_MODULE
+  APLOG_USE_MODULE(apparmor);
+#endif
 module AP_MODULE_DECLARE_DATA apparmor_module;
 
-static unsigned int magic_token = 0;
+static unsigned long magic_token = 0;
 static int inside_default_hat = 0;
 
 typedef struct {
@@ -68,9 +78,10 @@ immunix_init (apr_pool_t *p, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s)
     	apr_file_read (file, (void *) &magic_token, &size);
 	apr_file_close (file);
     } else {
-        ap_log_error (APLOG_MARK, APLOG_ERR, 0, NULL, "Failed to open /dev/urandom");
+        ap_log_error(APLOG_MARK, APLOG_ERR, errno, ap_server_conf,
+			"Failed to open /dev/urandom");
     }
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "Opened /dev/urandom successfully");
+    ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf, "Opened /dev/urandom successfully");
 
     return OK;
 }
@@ -83,35 +94,31 @@ immunix_child_init (apr_pool_t *p, server_rec *s)
 {
     int ret;
 
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "init: calling change_hat");
-    ret = change_hat (DEFAULT_HAT, magic_token);
+    ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf,
+		    "init: calling change_hat with '%s'", DEFAULT_HAT);
+    ret = aa_change_hat(DEFAULT_HAT, magic_token);
     if (ret < 0) {
-    	change_hat (NULL, magic_token);
-        ap_log_error (APLOG_MARK, APLOG_ERR, 0, NULL, "Failed to change_hat to '%s'",
-			DEFAULT_HAT);
+        ap_log_error(APLOG_MARK, APLOG_ERR, errno, ap_server_conf,
+			"Failed to change_hat to '%s'", DEFAULT_HAT);
     } else {
         inside_default_hat = 1;
     }
 }    			 
 
-#ifdef DEBUG
 static void
-debug_dump_uri (apr_uri_t * uri) 
+debug_dump_uri(request_rec *r)
 {
-    if (uri) 
-    	ap_log_error (APLOG_MARK, APLOG_ERR, 0, NULL, "Dumping uri info "
+    apr_uri_t *uri = &r->parsed_uri;
+    if (uri)
+    	ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "Dumping uri info "
     	          "scheme='%s' host='%s' path='%s' query='%s' fragment='%s'",
     		  uri->scheme, uri->hostname, uri->path, uri->query,
 		  uri->fragment);
     else
-    	ap_log_error (APLOG_MARK, APLOG_ERR, 0, NULL, "Asked to dump NULL uri");
+    	ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "Asked to dump NULL uri");
 
 }
-#else
-static void
-debug_dump_uri (apr_uri_t * __unused uri) { }
-#endif
-    
+
 /* 
    immunix_enter_hat will attempt to change_hat in the following order:
    (1) to a hatname in a location directive
@@ -128,9 +135,12 @@ immunix_enter_hat (request_rec *r)
     		ap_get_module_config (r->per_dir_config, &apparmor_module);
     immunix_srv_cfg * scfg = (immunix_srv_cfg *) 
     		ap_get_module_config (r->server->module_config, &apparmor_module);
+    const char *aa_hat_array[5] = { NULL, NULL, NULL, NULL, NULL };
+    int i = 0;
+    char *aa_con, *aa_mode, *aa_hat;
 
-    debug_dump_uri (&r->parsed_uri);
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "in immunix_enter_hat (%s) n:0x%lx p:0x%lx main:0x%lx", 
+    debug_dump_uri(r);
+    ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "in immunix_enter_hat (%s) n:0x%lx p:0x%lx main:0x%lx",
     	dcfg->path, (unsigned long) r->next, (unsigned long) r->prev, 
 	(unsigned long) r->main);
 
@@ -139,41 +149,79 @@ immunix_enter_hat (request_rec *r)
     	return OK;
 
     if (inside_default_hat) {
-        change_hat (NULL, magic_token);
+        aa_change_hat(NULL, magic_token);
 	inside_default_hat = 0;
     }
 
     if (dcfg != NULL && dcfg->hat_name != NULL) {
-        ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "calling change_hat [dcfg] %s", dcfg->hat_name);
-        sd_ret = change_hat (dcfg->hat_name, magic_token);
-	if (sd_ret < 0) {
-	    change_hat (NULL, magic_token);
-	} else {
-	    return OK;
-	}
+        ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,
+			"[dcfg] adding hat '%s' to aa_change_hat vector", dcfg->hat_name);
+        aa_hat_array[i++] = dcfg->hat_name;
     }
 
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "calling change_hat [uri] %s", r->uri);
-    sd_ret = change_hat (r->uri, magic_token);
-    if (sd_ret < 0) {
-    	change_hat (NULL, magic_token);
+    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,
+		    "[uri] adding uri '%s' to aa_change_hat vector", r->uri);
+    aa_hat_array[i++] = r->uri;
+
+    if (scfg) {
+    	ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "Dumping scfg info: "
+    	          "scfg='0x%lx' scfg->hat_name='%s'",
+    		  (unsigned long) scfg, scfg->hat_name);
     } else {
-	    return OK;
+    	ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "scfg is null");
     }
-
-    if (scfg != NULL && scfg->hat_name != NULL) {
-        ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "calling change_hat [scfg] %s", scfg->hat_name);
-        sd_ret = change_hat (scfg->hat_name, magic_token);
-	if (sd_ret < 0) {
-	    change_hat (NULL, magic_token);
-	} else {
-	    return OK;
+    if (scfg != NULL) {
+	if (scfg->hat_name != NULL) {
+            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,
+			    "[scfg] adding hat '%s' to aa_change_hat vector", scfg->hat_name);
+            aa_hat_array[i++] = scfg->hat_name;
+        } else {
+            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,
+			    "[scfg] adding server_name '%s' to aa_change_hat vector",
+			    r->server->server_hostname);
+            aa_hat_array[i++] = r->server->server_hostname;
 	}
     }
 
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "calling change_hat DEFAULT_URI");
-    sd_ret = change_hat (DEFAULT_URI_HAT, magic_token);
-    if (sd_ret < 0) change_hat (NULL, magic_token);
+    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,
+		    "[default] adding '%s' to aa_change_hat vector", DEFAULT_URI_HAT);
+    aa_hat_array[i++] = DEFAULT_URI_HAT;
+
+    sd_ret = aa_change_hatv(aa_hat_array, magic_token);
+    if (sd_ret < 0) {
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, errno, r, "aa_change_hatv call failed");
+    }
+
+    /* Check to see if a defined AAHatName or AADefaultHatName would
+     * apply, but wasn't the hat we landed up in; report a warning if
+     * that's the case. */
+    sd_ret = aa_getcon(&aa_con, &aa_mode);
+    if (sd_ret < 0) {
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, errno, r, "aa_getcon call failed");
+    } else {
+    	ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r,
+			    "AA checks: aa_getcon result is '%s', mode '%s'", aa_con, aa_mode);
+	/* TODO: use libapparmor get hat_name fn here once it is implemented */
+	aa_hat = strstr(aa_con, "//");
+	if (aa_hat != NULL && strcmp(aa_mode, "enforce") == 0) {
+	    aa_hat += 2;  /* skip "//" */
+    	    ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r,
+			    "AA checks: apache is in hat '%s', mode '%s'", aa_hat, aa_mode);
+	    if (dcfg != NULL && dcfg->hat_name != NULL) {
+		if (strcmp(aa_hat, dcfg->hat_name) != 0)
+        	    ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
+			"AAHatName '%s' applies, but does not appear to be a hat in the apache apparmor policy",
+			dcfg->hat_name);
+	    } else if (scfg != NULL && scfg->hat_name != NULL) {
+		if (strcmp(aa_hat, scfg->hat_name) != 0 &&
+		    strcmp(aa_hat, r->uri) != 0)
+        	    ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
+			"AADefaultHatName '%s' applies, but does not appear to be a hat in the apache apparmor policy",
+			scfg->hat_name);
+	    }
+	}
+	free(aa_con);
+    }
 
     return OK;
 }
@@ -186,14 +234,18 @@ immunix_exit_hat (request_rec *r)
     		ap_get_module_config (r->per_dir_config, &apparmor_module);
     /* immunix_srv_cfg * scfg = (immunix_srv_cfg *)
     		ap_get_module_config (r->server->module_config, &apparmor_module); */
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "exiting change_hat - dir hat %s path %s", dcfg->hat_name, dcfg->path);
-    change_hat (NULL, magic_token);
+    ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "exiting change_hat: dir hat %s dir path %s",
+		    dcfg->hat_name, dcfg->path);
 
-    sd_ret = change_hat (DEFAULT_HAT, magic_token);
+    /* can convert the following back to aa_change_hat() when the
+     * aa_change_hat() bug addressed in trunk commit 2329 lands in most
+     * system libapparmors */
+    aa_change_hatv(NULL, magic_token);
+
+    sd_ret = aa_change_hat(DEFAULT_HAT, magic_token);
     if (sd_ret < 0) {
-    	change_hat (NULL, magic_token);
-        ap_log_error (APLOG_MARK, APLOG_ERR, 0, NULL, "Failed to change_hat to '%s'",
-			DEFAULT_HAT);
+        ap_log_rerror(APLOG_MARK, APLOG_ERR, errno, r,
+			"Failed to change_hat to '%s'", DEFAULT_HAT);
     } else {
         inside_default_hat = 1;
     }
@@ -204,7 +256,7 @@ immunix_exit_hat (request_rec *r)
 static const char *
 aa_cmd_ch_path (cmd_parms * cmd, void * mconfig, const char * parm1)
 {
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, NULL, "config change hat %s",
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "directory config change hat %s",
     			parm1 ? parm1 : "DEFAULT");
     immunix_dir_cfg * dcfg = mconfig;
     if (parm1 != NULL) {
@@ -221,7 +273,7 @@ static const char *
 immunix_cmd_ch_path (cmd_parms * cmd, void * mconfig, const char * parm1)
 {
     if (path_warn_once == 0) {
-    	ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL, "ImmHatName is "
+    	ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf, "ImmHatName is "
 		     "deprecated, please use AAHatName instead");
 	path_warn_once = 1;
     }
@@ -231,9 +283,10 @@ immunix_cmd_ch_path (cmd_parms * cmd, void * mconfig, const char * parm1)
 static const char *
 aa_cmd_ch_srv (cmd_parms * cmd, void * mconfig, const char * parm1)
 {
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, NULL, "config change hat %s",
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "server config change hat %s",
     			parm1 ? parm1 : "DEFAULT");
-    immunix_srv_cfg * scfg = mconfig;
+    immunix_srv_cfg * scfg = (immunix_srv_cfg *)
+	    ap_get_module_config(cmd->server->module_config, &apparmor_module);
     if (parm1 != NULL) {
     	scfg->hat_name = parm1;
     } else {
@@ -248,7 +301,7 @@ static const char *
 immunix_cmd_ch_srv (cmd_parms * cmd, void * mconfig, const char * parm1)
 {
     if (srv_warn_once == 0) {
-	ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL, "ImmDefaultHatName is "
+	ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf, "ImmDefaultHatName is "
 		     "deprecated, please use AADefaultHatName instead");
 	srv_warn_once = 1;
     }
@@ -260,9 +313,9 @@ immunix_create_dir_config (apr_pool_t * p, char * path)
 {
     immunix_dir_cfg * newcfg = (immunix_dir_cfg *) apr_pcalloc(p, sizeof(* newcfg));
 
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "in immunix_create_dir (%s)", path ? path : ":no path:");
+    ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf, "in immunix_create_dir (%s)", path ? path : ":no path:");
     if (newcfg == NULL) {
-        ap_log_error (APLOG_MARK, APLOG_ERR, 0, NULL, "immunix_create_dir: couldn't alloc dir config");
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf, "immunix_create_dir: couldn't alloc dir config");
     	return NULL;
     }
     newcfg->path = apr_pstrdup (p, path ? path : ":no path:");
@@ -277,7 +330,7 @@ immunix_merge_dir_config (apr_pool_t * p, void * parent, void * child)
 {
     immunix_dir_cfg * newcfg = (immunix_dir_cfg *) apr_pcalloc(p, sizeof(* newcfg));
 
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "in immunix_merge_dir ()");
+    ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf, "in immunix_merge_dir ()");
     if (newcfg == NULL)
     	return NULL;
 
@@ -290,9 +343,9 @@ immunix_create_srv_config (apr_pool_t * p, server_rec * srv)
 {
     immunix_srv_cfg * newcfg = (immunix_srv_cfg *) apr_pcalloc(p, sizeof(* newcfg));
 
-    ap_log_error (APLOG_MARK, APLOG_DEBUG, 0, NULL, "in immunix_create_srv");
+    ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf, "in immunix_create_srv");
     if (newcfg == NULL) {
-        ap_log_error (APLOG_MARK, APLOG_ERR, 0, NULL, "immunix_create_srv: couldn't alloc srv config");
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf, "immunix_create_srv: couldn't alloc srv config");
     	return NULL;
     }
 

@@ -16,7 +16,7 @@
 
 ###VAR###
 
-###BINARY### {
+###PROFILEATTACH### {
   #include <abstractions/base>
 
   ###ABSTRACTIONS###

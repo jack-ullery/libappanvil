@@ -706,6 +706,7 @@ def run_xsandbox(command, opt):
         x.start()
     except Exception as e:
         error(e)
+    os.chdir(old_cwd)
 
     if not opt.read_path:
         opt.read_path = []
@@ -721,6 +722,5 @@ def run_xsandbox(command, opt):
         x.cleanup()
         raise
     x.cleanup()
-    os.chdir(old_cwd)
 
     return rc, report

@@ -29,6 +29,8 @@
   /etc/dnsmasq.d/ r,
   /etc/dnsmasq.d/* r,
   /etc/ethers r,
+  /etc/NetworkManager/dnsmasq.d/ r,
+  /etc/NetworkManager/dnsmasq.d/* r,
 
   /usr/sbin/dnsmasq mr,
 
@@ -56,6 +58,7 @@
   /{,var/}run/nm-dns-dnsmasq.conf r,
   /{,var/}run/sendsigs.omit.d/*dnsmasq.pid w,
   /{,var/}run/NetworkManager/dnsmasq.conf r,
+  /{,var/}run/NetworkManager/dnsmasq.pid w,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.dnsmasq>

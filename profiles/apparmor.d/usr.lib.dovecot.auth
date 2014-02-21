@@ -1,0 +1,42 @@
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2013 Christian Boltz
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+# vim: ft=apparmor
+
+#include <tunables/global>
+
+/usr/lib/dovecot/auth {
+  #include <abstractions/authentication>
+  #include <abstractions/base>
+  #include <abstractions/mysql>
+  #include <abstractions/nameservice>
+
+  deny capability block_suspend,
+
+  capability audit_write,
+  capability setgid,
+  capability setuid,
+
+  /etc/my.cnf r,
+  /etc/my.cnf.d/ r,
+  /etc/my.cnf.d/*.cnf r,
+
+  /etc/dovecot/dovecot-database.conf.ext r,
+  /etc/dovecot/dovecot-sql.conf.ext r,
+  /usr/lib/dovecot/auth mr,
+
+  # kerberos replay cache
+  /var/tmp/imap_* rw,
+  /var/tmp/pop_* rw,
+  /var/tmp/sieve_* rw,
+  /var/tmp/smtp_* rw,
+
+  # Site-specific additions and overrides. See local/README for details.
+  #include <local/usr.lib.dovecot.auth>
+}

@@ -25,23 +25,6 @@ VALGRIND_ARGS = ['--leak-check=full', '--error-exitcode=%d' % (VALGRIND_ERROR_CO
 
 VALGRIND_SUPPRESSIONS = '''
 {
-    valgrind-add_search_dir-obsessive-overreads
-    Memcheck:Addr4
-    fun:_Z*add_search_dir*
-    fun:_Z*process_arg*
-    fun:main
-}
-
-{
-    valgrind-yylex-obsessive-overreads
-    Memcheck:Addr4
-    fun:_Z?yylex?
-    fun:_Z*yyparse*
-    fun:_Z*process_profile*
-    fun:main
-}
-
-{
     valgrind-serialize_profile-obsessive-overreads
     Memcheck:Addr4
     fun:_Z*sd_serialize_profile*

@@ -38,6 +38,9 @@ profile sanitized_helper {
   network inet,
   network inet6,
 
+  # Allow all DBus communications
+  dbus,
+
   # Allow exec of anything, but under this profile. Allow transition
   # to other profiles if they exist.
   /bin/* Pixr,

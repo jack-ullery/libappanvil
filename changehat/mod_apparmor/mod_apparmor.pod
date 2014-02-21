@@ -41,10 +41,12 @@ apparmor is also functioning.
 
 Once mod_apparmor is loaded within Apache, all requests to Apache will
 cause mod_apparmor to attempt to change into a hat named by the URI
-(e.g. /app/some.cgi). If no such hat is found, it will fall back to
+(e.g. /app/some.cgi). If no such hat is found, it will first fall
+back by attempting to change into a hat that matches the ServerName
+for the server/vhost. If that hat is not found, it will fall back to
 attempting to use the hat DEFAULT_URI; if that also does not exist,
-it will fall back to using the global Apache profile. Most static web
-pages can simply make use of the DEFAULT_URI hat.
+it will fall back to using the global Apache profile. Most static
+web pages can simply make use of the DEFAULT_URI hat.
 
 Additionally, before any requests come in to Apache, mod_apparmor
 will attempt to change hat into the HANDLING_UNTRUSTED_INPUT hat.
@@ -70,13 +72,14 @@ behavior described above.
 
 =item B<AADefaultHatName>
 
-AADefaultHatName allows you to specify a default hat to be used for
-virtual hosts and other Apache server directives, so that you can have
-different defaults for different virtual hosts. This can be overridden by
-the AAHatName directive and is checked for only if there isn't a matching
-AAHatName or hat named by the URI. If the AADefaultHatName hat does not
-exist, it falls back to the DEFAULT_URI hat if it exists (as described
-above).
+AADefaultHatName allows you to specify a default hat to be used
+for virtual hosts and other Apache server directives, so that you
+can have different defaults for different virtual hosts. This can
+be overridden by the AAHatName directive and is checked for only if
+there isn't a matching AAHatName or hat named by the URI. The default
+value of AADefaultHatName is the ServerName for the server/vhost
+configuration. If the AADefaultHatName hat does not exist, it falls
+back to the DEFAULT_URI hat if it exists (as described above).
 
 =back
 
@@ -98,8 +101,9 @@ applies, otherwise it will
 
 2. try to aa_change_hat(2) into the URI itself, otherwise it will
 
-3. try to aa_change_hat(2) into an AADefaultHatName hat if it has been defined
-for the server/vhost, otherwise it will
+3. try to aa_change_hat(2) into an AADefaultHatName hat, either the
+ServerName (the default) or the configuration value specified by the
+AADefaultHatName directive, for the server/vhost, otherwise it will
 
 4. try to aa_change_hat(2) into the DEFAULT_URI hat, if it exists, otherwise it
 will
@@ -112,7 +116,8 @@ will
 
 mod_apparmor() currently only supports apache2, and has only been tested
 with the prefork MPM configuration -- threaded configurations of Apache
-may not work correctly.
+may not work correctly. For Apache 2.4 users, you should enable the mpm_prefork
+module.
 
 There are likely other bugs lurking about; if you find any, please report
 them at L<https://bugs.launchpad.net/apparmor/+filebug>.

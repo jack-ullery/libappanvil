@@ -44,6 +44,7 @@ local:
 	for profile in ${TOPLEVEL_PROFILES}; do \
 		fn=$$(basename $$profile); \
 		echo "# Site-specific additions and overrides for '$$fn'" > ${PROFILES_SOURCE}/local/$$fn; \
+		grep "include\\s\\s*<local/$$fn>" "$$profile" >/dev/null || { echo "$$profile doesn't contain #include <local/$$fn>" ; exit 1; } ; \
 	done; \
 
 .PHONY: install

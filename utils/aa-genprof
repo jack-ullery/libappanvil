@@ -1,6 +1,6 @@
-#!/usr/bin/perl
+#! /usr/bin/env python
 # ----------------------------------------------------------------------
-#    Copyright (c) 2005 Novell, Inc. All Rights Reserved.
+#    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -11,206 +11,154 @@
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program; if not, contact Novell, Inc.
-#
-#    To contact Novell about this file by physical or electronic mail,
-#    you may find current contact information at www.novell.com.
 # ----------------------------------------------------------------------
+import argparse
+import atexit
+import os
+import re
+import subprocess
+import sys
 
-use strict;
-use Getopt::Long;
+import apparmor.aa as apparmor
 
-use Immunix::AppArmor;
+# setup module translations
+from apparmor.translations import init_translation
+_ = init_translation()
 
-use Data::Dumper;
+def sysctl_read(path):
+    value = None
+    with open(path, 'r') as f_in:
+        value = int(f_in.readline())
+    return value
 
-use Locale::gettext;
-use POSIX;
+def sysctl_write(path, value):
+    if not value:
+        return
+    with open(path, 'w') as f_out:
+        f_out.write(str(value))
 
-sub sysctl_read($) {
-    my $path = shift;
-    my $value = undef;
-    if (open(SYSCTL, "<$path")) {
-        $value = int(<SYSCTL>);
-    }
-    close(SYSCTL);
-    return $value;
-}
+def last_audit_entry_time():
+    out = subprocess.check_output(['tail', '-1', '/var/log/audit/audit.log'], shell=True)
+    logmark = None
+    if re.search('^*msg\=audit\((\d+\.\d+\:\d+).*\).*$', out):
+        logmark = re.search('^*msg\=audit\((\d+\.\d+\:\d+).*\).*$', out).groups()[0]
+    else:
+        logmark = ''
+    return logmark
 
-sub sysctl_write($$) {
-    my $path = shift;
-    my $value = shift;
-    return if (!defined($value));
-    if (open(SYSCTL, ">$path")) {
-        print SYSCTL $value;
-        close(SYSCTl);
-    }
-}
+def restore_ratelimit():
+    sysctl_write(ratelimit_sysctl, ratelimit_saved)
 
-# force $PATH to be sane
-$ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
+parser = argparse.ArgumentParser(description=_('Generate profile for the given program'))
+parser.add_argument('-d', '--dir', type=str, help=_('path to profiles'))
+parser.add_argument('-f', '--file', type=str, help=_('path to logfile'))
+parser.add_argument('program', type=str, help=_('name of program to profile'))
+args = parser.parse_args()
 
-# initialize the local poo
-setlocale(LC_MESSAGES, "");
-textdomain("apparmor-utils");
-
-# options variables
-my $help = '';
-
-GetOptions(
-    'file|f=s' => \$filename,
-    'dir|d=s'  => \$profiledir,
-    'help|h'   => \$help,
-);
-
-# tell 'em how to use it...
-&usage && exit if $help;
-
-my $sd_mountpoint = check_for_subdomain();
-unless ($sd_mountpoint) {
-    fatal_error(gettext("AppArmor does not appear to be started. Please enable AppArmor and try again."));
-}
-
-# let's convert it to full path...
-$profiledir = get_full_path($profiledir);
-
-unless (-d $profiledir) {
-    fatal_error "Can't find AppArmor profiles in $profiledir.";
-}
-
-# what are we profiling?
-my $profiling = shift;
-
-unless ($profiling) {
-    $profiling = UI_GetString(gettext("Please enter the program to profile: "), "")
-      || exit 0;
-}
-
-my $fqdbin;
-if (-e $profiling) {
-    $fqdbin = get_full_path($profiling);
-    chomp($fqdbin);
-} else {
-    if ($profiling !~ /\//) {
-        my $which = which($profiling);
-        if ($which) {
-            $fqdbin = get_full_path($which);
-        }
-    }
-}
-
-unless ($fqdbin && -e $fqdbin) {
-    if ($profiling =~ /^[^\/]+$/) {
-        fatal_error(sprintf(gettext('Can\'t find %s in the system path list.  If the name of the application is correct, please run \'which %s\' in the other window in order to find the fully-qualified path.'), $profiling, $profiling));
-    } else {
-        fatal_error(sprintf(gettext('%s does not exist, please double-check the path.'), $profiling));
-    }
-}
+profiling = args.program
+profiledir = args.dir
+filename = args.file
 
 
-# make sure that the app they're requesting to profile is not marked as
-# not allowed to have it's own profile
-check_qualifiers($fqdbin);
+if filename:
+    if not os.path.isfile(filename):
+        raise apparmor.AppArmorException(_('The logfile %s does not exist. Please check the path') % filename)
+    else:
+        apparmor.filename = filename
 
-# load all the include files
-loadincludes();
+aa_mountpoint = apparmor.check_for_apparmor()
+if not aa_mountpoint:
+    raise apparmor.AppArmorException(_('It seems AppArmor was not started. Please enable AppArmor and try again.'))
 
-my $profilefilename = getprofilefilename($fqdbin);
-if (-e $profilefilename) {
-    $helpers{$fqdbin} = getprofileflags($profilefilename) || "enforce";
-} else {
-    autodep($fqdbin);
-    $helpers{$fqdbin} = "enforce";
-}
+if profiledir:
+    apparmor.profile_dir = apparmor.get_full_path(profiledir)
+    if not os.path.isdir(apparmor.profile_dir):
+        raise apparmor.AppArmorException(_("%s is not a directory.") %profiledir)
 
-if ($helpers{$fqdbin} eq "enforce") {
-    complain($fqdbin);
-    reload($fqdbin);
-}
+program = None
+#if os.path.exists(apparmor.which(profiling.strip())):
+if os.path.exists(profiling):
+    program = apparmor.get_full_path(profiling)
+else:
+    if '/' not in profiling:
+        which = apparmor.which(profiling)
+        if which:
+            program = apparmor.get_full_path(which)
+
+if not program or not os.path.exists(program):
+    if '/' not in profiling:
+        raise apparmor.AppArmorException(_("Can't find %s in the system path list. If the name of the application\nis correct, please run 'which %s' as a user with correct PATH\nenvironment set up in order to find the fully-qualified path and\nuse the full path as parameter.") %(profiling, profiling))
+    else:
+        raise apparmor.AppArmorException(_('%s does not exists, please double-check the path.') %profiling)
+
+# Check if the program has been marked as not allowed to have a profile
+apparmor.check_qualifiers(program)
+
+apparmor.loadincludes()
+
+profile_filename = apparmor.get_profile_filename(program)
+if os.path.exists(profile_filename):
+    apparmor.helpers[program] = apparmor.get_profile_flags(profile_filename, program)
+else:
+    apparmor.autodep(program)
+    apparmor.helpers[program] = 'enforce'
+
+if apparmor.helpers[program] == 'enforce':
+    apparmor.complain(program)
+    apparmor.reload(program)
 
 # When reading from syslog, it is possible to hit the default kernel
 # printk ratelimit. This will result in audit entries getting skipped,
 # making profile generation inaccurate. When using genprof, disable
 # the printk ratelimit, and restore it on exit.
-my $ratelimit_sysctl = "/proc/sys/kernel/printk_ratelimit";
-my $ratelimit_saved = sysctl_read($ratelimit_sysctl);
-END { sysctl_write($ratelimit_sysctl, $ratelimit_saved); }
-sysctl_write($ratelimit_sysctl, 0);
+ratelimit_sysctl = '/proc/sys/kernel/printk_ratelimit'
+ratelimit_saved = sysctl_read(ratelimit_sysctl)
+sysctl_write(ratelimit_sysctl, 0)
 
-UI_Info(gettext("\nBefore you begin, you may wish to check if a\nprofile already exists for the application you\nwish to confine. See the following wiki page for\nmore information:\nhttp://wiki.apparmor.net/index.php/Profiles"));
+atexit.register(restore_ratelimit)
 
-UI_Important(gettext("Please start the application to be profiled in \nanother window and exercise its functionality now.\n\nOnce completed, select the \"Scan\" button below in \norder to scan the system logs for AppArmor events.  \n\nFor each AppArmor event, you will be given the  \nopportunity to choose whether the access should be  \nallowed or denied."));
+apparmor.UI_Info(_('\nBefore you begin, you may wish to check if a\nprofile already exists for the application you\nwish to confine. See the following wiki page for\nmore information:')+'\nhttp://wiki.apparmor.net/index.php/Profiles')
 
-my $syslog         = 1;
-my $logmark        = "";
-my $done_profiling = 0;
+apparmor.UI_Important(_('Please start the application to be profiled in\nanother window and exercise its functionality now.\n\nOnce completed, select the "Scan" option below in \norder to scan the system logs for AppArmor events. \n\nFor each AppArmor event, you will be given the \nopportunity to choose whether the access should be \nallowed or denied.'))
 
-$syslog = 0 if (-e "/var/log/audit/audit.log");
+syslog = True
+logmark = ''
+done_profiling = False
 
-while (not $done_profiling) {
-    if ($syslog) {
-        $logmark = `date | md5sum`;
-        chomp $logmark;
-        $logmark = $1 if $logmark =~ /^([0-9a-f]+)/;
-        system("$logger -p kern.warn 'GenProf: $logmark'");
-    } else {
-        $logmark = last_audit_entry_time();
-    }
-    eval {
+if os.path.exists('/var/log/audit/audit.log'):
+    syslog = False
 
-        my $q = {};
-        $q->{headers} = [ gettext("Profiling"), $fqdbin ];
-        $q->{functions} = [ "CMD_SCAN", "CMD_FINISHED" ];
-        $q->{default} = "CMD_SCAN";
+passno = 0
+while not done_profiling:
+    if syslog:
+        logmark = subprocess.check_output(['date | md5sum'], shell=True)
+        logmark = logmark.decode('ascii').strip()
+        logmark = re.search('^([0-9a-f]+)', logmark).groups()[0]
+        t=subprocess.call("%s -p kern.warn 'GenProf: %s'"%(apparmor.logger, logmark), shell=True)
 
-        my ($ans, $arg) = UI_PromptUser($q);
+    else:
+        logmark = last_audit_entry_time()
 
-        if ($ans eq "CMD_SCAN") {
+    q=apparmor.hasher()
+    q['headers'] = [_('Profiling'), program]
+    q['functions'] = ['CMD_SCAN', 'CMD_FINISHED']
+    q['default'] = 'CMD_SCAN'
+    ans, arg = apparmor.UI_PromptUser(q, 'noexit')
 
-            my $lp_ret = do_logprof_pass($logmark);
+    if ans == 'CMD_SCAN':
+        lp_ret = apparmor.do_logprof_pass(logmark, passno)
+        passno += 1
+        if lp_ret == 'FINISHED':
+            done_profiling = True
+    else:
+        done_profiling = True
 
-            $done_profiling = 1 if $lp_ret eq "FINISHED";
+for p in sorted(apparmor.helpers.keys()):
+    if apparmor.helpers[p] == 'enforce':
+        apparmor.enforce(p)
+        apparmor.reload(p)
 
-        } else {
-
-            $done_profiling = 1;
-
-        }
-    };
-    if ($@) {
-        if ($@ =~ /FINISHING/) {
-            $done_profiling = 1;
-        } else {
-            die $@;
-        }
-    }
-}
-
-for my $p (sort keys %helpers) {
-    if ($helpers{$p} eq "enforce") {
-        enforce($p);
-        reload($p);
-    }
-}
-
-UI_Info(gettext("Reloaded AppArmor profiles in enforce mode."));
-UI_Info(gettext("\nPlease consider contributing your new profile! See\nthe following wiki page for more information:\nhttp://wiki.apparmor.net/index.php/Profiles\n"));
-UI_Info(sprintf(gettext('Finished generating profile for %s.'), $fqdbin));
-exit 0;
-
-sub usage {
-    UI_Info(sprintf(gettext("usage: \%s [ -d /path/to/profiles ] [ -f /path/to/logfile ] [ program to profile ]"), $0));
-    exit 0;
-}
-
-sub last_audit_entry_time {
-    local $_ = `tail -1 /var/log/audit/audit.log`;
-    my $logmark;
-    if (/^*msg\=audit\((\d+\.\d+\:\d+).*\).*$/) {
-        $logmark = $1;
-    } else {
-        $logmark = "";
-    }
-    return $logmark;
-}
+apparmor.UI_Info(_('\nReloaded AppArmor profiles in enforce mode.'))
+apparmor.UI_Info(_('\nPlease consider contributing your new profile!\nSee the following wiki page for more information:')+'\nhttp://wiki.apparmor.net/index.php/Profiles\n')
+apparmor.UI_Info(_('Finished generating profile for %s.')%program)
+sys.exit(0)

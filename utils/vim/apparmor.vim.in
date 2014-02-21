@@ -160,7 +160,8 @@ syn match sdRLimit /\v^\s*set\s+rlimit\s+(locks|sigpending)\s+\<\=\s+[0-9]+@@EOL
 syn match sdRLimit /\v^\s*set\s+rlimit\s+(fsize|data|stack|core|rss|as|memlock|msgqueue)\s+\<\=\s+[0-9]+([KMG]B)?@@EOL@@/ contains=sdComment
 syn match sdRLimit /\v^\s*set\s+rlimit\s+nice\s+\<\=\s+(-1?[0-9]|-20|1?[0-9])@@EOL@@/ contains=sdComment
 syn match sdRLimit /\v^\s*set\s+rlimit\s+cpu\s+\<\=\s+[0-9]+(seconds|minutes|hours|days)?@@EOL@@/ contains=sdComment
-syn match sdRLimit /\v^\s*set\s+rlimit\s+(cpu|nofile|nproc|rtprio|locks|sigpending|fsize|data|stack|core|rss|as|memlock|msgqueue|nice)\s+\<\=\s+infinity@@EOL@@/ contains=sdComment
+syn match sdRLimit /\v^\s*set\s+rlimit\s+rttime\s+\<\=\s+[0-9]+(ms|seconds|minutes)?@@EOL@@/ contains=sdComment
+syn match sdRLimit /\v^\s*set\s+rlimit\s+(cpu|rttime|nofile|nproc|rtprio|locks|sigpending|fsize|data|stack|core|rss|as|memlock|msgqueue|nice)\s+\<\=\s+infinity@@EOL@@/ contains=sdComment
 
 " link rules
 syn match sdEntryW /\v^\s+@@auditdenyowner@@link\s+(subset\s+)?@@FILENAME@@\s+-\>\s+@@FILENAME@@@@EOL@@/ contains=sdGlob

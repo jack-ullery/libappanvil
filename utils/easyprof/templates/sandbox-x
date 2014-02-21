@@ -13,7 +13,7 @@
 
 ###VAR###
 
-###BINARY### {
+###PROFILEATTACH### {
   #include <abstractions/base>
   #include <abstractions/gnome>
   #include <abstractions/kde>

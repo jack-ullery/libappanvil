@@ -52,3 +52,6 @@
 
   # poppler CMap tables
   /usr/share/poppler/cMap/**            r,
+
+  # data files for LibThai
+  /usr/share/libthai/thbrk.tri          r,
