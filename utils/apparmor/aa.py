@@ -2937,10 +2937,10 @@ def parse_profile_data(data, file, do_include):
         elif line[0] == '#':
             # Handle initial comments
             if not profile:
-                if line.startswith('# vim:syntax') or line.startswith('# Last Modified:'):
+                if line.startswith('# Last Modified:'):
                     continue
-                line = line.split()
-                if len(line) > 1 and line[1] == 'REPOSITORY:':
+                elif line.startswith('# REPOSITORY'): # TODO: allow any number of spaces/tabs
+                    line = line.split()
                     if len(line) == 3:
                         repo_data = {'neversubmit': True}
                     elif len(line) == 5:
@@ -2948,7 +2948,7 @@ def parse_profile_data(data, file, do_include):
                                      'user': line[3],
                                      'id': line[4]}
                 else:
-                    initial_comment = ' '.join(line) + '\n'
+                    initial_comment = initial_comment + line + '\n'
 
         else:
             raise AppArmorException(_('Syntax Error: Unknown line found in file: %s line: %s') % (file, lineno + 1))
