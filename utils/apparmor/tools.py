@@ -16,7 +16,7 @@ import sys
 
 import apparmor.aa as apparmor
 import apparmor.ui as aaui
-from apparmor.common import user_perm
+from apparmor.common import user_perm, cmd
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -118,8 +118,7 @@ class aa_tools:
                         # One simply does not walk in here!
                         raise apparmor.AppArmorException('Unknown tool: %s' % self.name)
 
-                    cmd_info = apparmor.cmd([apparmor.parser, filename, '-I%s' % apparmor.profile_dir, '-R 2>&1', '1>/dev/null'])
-                    #cmd_info = apparmor.cmd(['cat', filename, '|', apparmor.parser, '-I%s'%apparmor.profile_dir, '-R 2>&1', '1>/dev/null'])
+                    cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '-R', filename])
 
                     if cmd_info[0] != 0:
                         raise apparmor.AppArmorException(cmd_info[1])
