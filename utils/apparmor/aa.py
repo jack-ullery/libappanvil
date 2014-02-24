@@ -498,6 +498,10 @@ def get_profile(prof_name):
 
     ans = ''
     while 'CMD_USE_PROFILE' not in ans and 'CMD_CREATE_PROFILE' not in ans:
+        if ans == 'CMD_FINISHED':
+            save_profiles()
+            return
+
         ans, arg = aaui.UI_PromptUser(q)
         p = profile_hash[options[arg]]
         q['selected'] = options.index(options[arg])
@@ -990,6 +994,10 @@ def handle_children(profile, hat, root):
 
                     ans = aaui.UI_PromptUser(q)
 
+                    if ans == 'CMD_FINISHED':
+                        save_profiles()
+                        return
+
                 transitions[context] = ans
 
                 if ans == 'CMD_ADDHAT':
@@ -1251,6 +1259,11 @@ def handle_children(profile, hat, root):
                                 q['functions'] += build_x_functions(default, options, exec_toggle)
                                 ans = ''
                                 continue
+
+                            if ans == 'CMD_FINISHED':
+                                save_profiles()
+                                return
+
                             if ans == 'CMD_nx' or ans == 'CMD_nix':
                                 arg = exec_target
                                 ynans = 'n'
@@ -1550,6 +1563,11 @@ def ask_the_questions():
                     done = False
                     while not done:
                         ans, selected = aaui.UI_PromptUser(q)
+
+                        if ans == 'CMD_FINISHED':
+                            save_profiles()
+                            return
+
                         # Ignore the log entry
                         if ans == 'CMD_IGNORE_ENTRY':
                             done = True
@@ -1794,6 +1812,10 @@ def ask_the_questions():
 
                             ans, selected = aaui.UI_PromptUser(q)
 
+                            if ans == 'CMD_FINISHED':
+                                save_profiles()
+                                return
+
                             if ans == 'CMD_IGNORE_ENTRY':
                                 done = True
                                 break
@@ -1945,6 +1967,11 @@ def ask_the_questions():
                         done = False
                         while not done:
                             ans, selected = aaui.UI_PromptUser(q)
+
+                            if ans == 'CMD_FINISHED':
+                                save_profiles()
+                                return
+
                             if ans == 'CMD_IGNORE_ENTRY':
                                 done = True
                                 break
