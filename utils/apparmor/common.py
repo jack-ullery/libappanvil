@@ -112,6 +112,7 @@ def valid_path(path):
         return False
 
     if '"' in path:  # We double quote elsewhere
+        debug("%s (contains quote)" % (m))
         return False
 
     try:
@@ -228,7 +229,7 @@ class DebugLogger(object):
             try:
                 logging.basicConfig(filename=self.logfile, level=self.debug_level,
                                     format='%(asctime)s - %(name)s - %(message)s\n')
-            except OSError:
+            except IOError:
                 # Unable to open the default logfile, so create a temporary logfile and tell use about it
                 import tempfile
                 templog = tempfile.NamedTemporaryFile('w', prefix='apparmor', suffix='.log', delete=False)
