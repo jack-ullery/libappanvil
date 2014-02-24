@@ -2939,14 +2939,17 @@ def parse_profile_data(data, file, do_include):
             if not profile:
                 if line.startswith('# Last Modified:'):
                     continue
-                elif line.startswith('# REPOSITORY'): # TODO: allow any number of spaces/tabs
-                    line = line.split()
-                    if len(line) == 3:
+                elif line.startswith('# REPOSITORY:'): # TODO: allow any number of spaces/tabs
+                    parts = line.split()
+                    if len(parts) == 3 and parts[2] == 'NEVERSUBMIT':
                         repo_data = {'neversubmit': True}
-                    elif len(line) == 5:
-                        repo_data = {'url': line[2],
-                                     'user': line[3],
-                                     'id': line[4]}
+                    elif len(parts) == 5:
+                        repo_data = {'url': parts[2],
+                                     'user': parts[3],
+                                     'id': parts[4]}
+                    else:
+                        aaui.UI_Important(_('Warning: invalid "REPOSITORY:" line in %s, ignoring.') % file)
+                        initial_comment = initial_comment + line + '\n'
                 else:
                     initial_comment = initial_comment + line + '\n'
 
