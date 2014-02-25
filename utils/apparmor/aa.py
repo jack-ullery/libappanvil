@@ -257,7 +257,8 @@ def enforce(path):
 def set_complain(filename, program):
     """Sets the profile to complain mode"""
     aaui.UI_Info(_('Setting %s to complain mode.') % program)
-    create_symlink('force-complain', filename)
+    # a force-complain symlink is more packaging-friendly, but breaks caching
+    # create_symlink('force-complain', filename)
     change_profile_flags(filename, program, 'complain', True)
 
 def set_enforce(filename, program):
