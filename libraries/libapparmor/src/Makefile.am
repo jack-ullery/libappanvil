@@ -1,7 +1,7 @@
 INCLUDES = $(all_includes)
 
 # variables to set the library versions used by libtool
-# Use these rules to update the library version.
+# Step through these rules IN ORDER to update the library version.
 # 1. Update the version information only immediately before a public release
 #    of your software. More frequent updates are unnecessary, and only
 #    guarantee that the current interface number gets larger faster.
@@ -18,9 +18,17 @@ INCLUDES = $(all_includes)
 #    release, then
 #    - set AA_LIB_AGE to 0.
 #
+# The resulting library version triplet will be:
+#   (AA_LIB_CURRENT - AA_LIB_AGE).AA_LIB_AGE.AA_LIB_REVISION
+# and the SONAME will be:
+#   libapparmor.so.(AA_LIB_CURRENT - AA_LIB_AGE)
+#
+# For more information, see:
+# http://www.gnu.org/software/libtool/manual/html_node/Libtool-versioning.html
+#
 AA_LIB_CURRENT = 2
 AA_LIB_REVISION = 0
-AA_LIB_AGE = 0
+AA_LIB_AGE = 1
 
 SUFFIXES = .pc.in .pc
 
@@ -42,7 +50,7 @@ noinst_HEADERS = grammar.h parser.h scanner.h af_protos.h
 
 libapparmor_la_SOURCES = grammar.y libaalogparse.c kernel_interface.c scanner.c
 libapparmor_la_LDFLAGS = -version-info $(AA_LIB_CURRENT):$(AA_LIB_REVISION):$(AA_LIB_AGE) -XCClinker -dynamic -pthread \
-	-Wl,--version-script=$(top_srcdir)/src/libapparmor.map -Wl,-soname=libapparmor.so.1
+	-Wl,--version-script=$(top_srcdir)/src/libapparmor.map
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libapparmor.pc
