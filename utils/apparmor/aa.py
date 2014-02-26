@@ -578,6 +578,7 @@ def autodep(bin_name, pname=''):
         if not filelist.get(file, False):
             filelist[file] = hasher()
         filelist[file]['include']['tunables/global'] = True
+        filelist[file]['profiles'][pname] = True
     write_profile_ui_feedback(pname)
 
 def get_profile_flags(filename, program):
