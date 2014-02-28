@@ -18,7 +18,7 @@ import unittest
 # The locationg of the aa-decode utility can be overridden by setting
 # the APPARMOR_DECODE environment variable; this is useful for running
 # these tests in an installed environment
-aadecode_bin = "./aa-decode"
+aadecode_bin = "../aa-decode"
 
 # http://www.chiark.greenend.org.uk/ucgi/~cjwatson/blosxom/2009-07-02-python-sigpipe.html
 # This is needed so that the subprocesses that produce endless output

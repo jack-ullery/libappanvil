@@ -70,9 +70,10 @@ clean: _clean
 	rm -f Make.rules
 	$(MAKE) -C po clean
 	$(MAKE) -C vim clean
+	$(MAKE) -C test clean
 	rm -rf staging/ build/
 	rm -f apparmor/*.pyc
-	rm -rf test/__pycache__/ apparmor/__pycache__/
+	rm -rf apparmor/__pycache__/
 
 # ${CAPABILITIES} is defined in common/Make.rules
 .PHONY: check_severity_db
@@ -100,4 +101,4 @@ check: check_severity_db
 		test -s $$tmpfile && cat $$tmpfile && rm -f $$tmpfile && exit 1; \
 	done || true; \
 	rm -f $$tmpfile
-	$(foreach test, $(wildcard test/test-*.py), $(call pyalldo, $(test)))
+	$(MAKE) -C test check
