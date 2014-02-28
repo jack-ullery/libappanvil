@@ -31,7 +31,7 @@ ifndef VERBOSE
 .SILENT: clean
 endif
 clean: _clean
-	rm -rf __pycache__/
+	rm -rf __pycache__/ common
 
 .PHONY: check
 ifndef VERBOSE
