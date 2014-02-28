@@ -24,7 +24,8 @@ install: apparmor.vim manpages
 	install -m 644 $< $(VIM_INSTALL_PATH)
 	$(MAKE) install_manpages DESTDIR=${DESTDIR}
 
-test: apparmor.vim.in Makefile create-apparmor.vim.py
+.PHONY: check
+check:
 	#Testing with all pythons
 	$(call pyalldo, create-apparmor.vim.py > /dev/null)
 

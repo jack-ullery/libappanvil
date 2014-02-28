@@ -102,3 +102,4 @@ check: check_severity_db
 	done || true; \
 	rm -f $$tmpfile
 	$(MAKE) -C test check
+	$(MAKE) -C vim check
