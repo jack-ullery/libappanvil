@@ -71,6 +71,38 @@ def debug(out):
         except IOError:
             pass
 
+def recursive_print(src, dpth = 0, key = ''):
+    # print recursively in a nicely formatted way
+    # useful for debugging, too verbose for production code ;-)
+
+    # "stolen" from http://code.activestate.com/recipes/578094-recursively-print-nested-dictionaries/
+    # by Scott S-Allen / MIT License
+    # (output format slightly modified)
+    """ Recursively prints nested elements."""
+    tabs = lambda n: ' ' * n * 4  # or 2 or 8 or...
+    brace = lambda s, n: '[%s]' % (s)
+
+    if isinstance(src, dict):
+        empty = True
+        for key, value in src.iteritems():
+            print (tabs(dpth) + brace(key, dpth))
+            recursive_print(value, dpth + 1, key)
+            empty = False
+        if empty:
+            print (tabs(dpth) + '[--- empty ---]')
+    elif isinstance(src, list) or isinstance(src, tuple):
+        empty = True
+        for litem in src:
+            recursive_print(litem, dpth + 2)
+            empty = False
+        if empty:
+            print (tabs(dpth) + '[--- empty ---]')
+    else:
+        if key:
+            print (tabs(dpth) + '%s = %s' % (key, src))
+        else:
+            print (tabs(dpth) + '- %s' % src)
+
 def cmd(command):
     '''Try to execute the given command.'''
     debug(command)
