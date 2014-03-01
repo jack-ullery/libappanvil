@@ -702,8 +702,8 @@ static void aafs_access_init_once(void)
  *          ENOENT, the subject label in the query string is unknown to the
  *          kernel.
  */
-int aa_query_label(uint32_t mask, char *query, size_t size, int *allowed,
-		   int *audited)
+int query_label(uint32_t mask, char *query, size_t size, int *allowed,
+		int *audited)
 {
 	char buf[QUERY_LABEL_REPLY_LEN];
 	uint32_t allow, deny, audit, quiet;
@@ -770,3 +770,9 @@ int aa_query_label(uint32_t mask, char *query, size_t size, int *allowed,
 
 	return 0;
 }
+
+/* export multiple aa_query_label symbols to compensate for downstream
+ * releases with differing symbol versions. */
+extern typeof((query_label)) __aa_query_label __attribute__((alias ("query_label")));
+symbol_version(__aa_query_label, aa_query_label, APPARMOR_1.1);
+default_symbol_version(query_label, aa_query_label, APPARMOR_3.0);

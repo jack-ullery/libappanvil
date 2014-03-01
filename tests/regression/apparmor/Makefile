@@ -20,6 +20,9 @@ ifdef USE_SYSTEM
   endif # LIBAPPARMOR not set
   LDLIBS += $(LIBAPPARMOR)
 
+uservars.out: uservars.inc
+	cat uservars.inc > uservars.out
+
 else # !USE_SYSTEM
   # use in-tree versions
   LIBAPPARMOR_SRC := ../../../libraries/libapparmor/
@@ -34,6 +37,9 @@ else # !USE_SYSTEM
 
   CFLAGS += -L$(LIBAPPARMOR_PATH) -I$(LIBAPPARMOR_INCLUDE)
   LDLIBS += -Wl,-Bstatic -lapparmor -Wl,-Bdynamic -lpthread
+
+uservars.out:
+	echo uservars.inc > uservars.out
 endif # USE_SYSTEM
 
 CFLAGS += -Wall -Wstrict-prototypes
