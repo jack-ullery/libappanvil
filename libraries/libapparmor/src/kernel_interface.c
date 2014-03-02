@@ -775,4 +775,4 @@ int query_label(uint32_t mask, char *query, size_t size, int *allowed,
  * releases with differing symbol versions. */
 extern typeof((query_label)) __aa_query_label __attribute__((alias ("query_label")));
 symbol_version(__aa_query_label, aa_query_label, APPARMOR_1.1);
-default_symbol_version(query_label, aa_query_label, APPARMOR_3.0);
+default_symbol_version(query_label, aa_query_label, APPARMOR_2.9);
