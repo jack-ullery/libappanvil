@@ -26,7 +26,7 @@ parser.add_argument('-r', '--revert', action='store_true', help=_('enable the pr
 parser.add_argument('program', type=str, nargs='+', help=_('name of program'))
 args = parser.parse_args()
 
-disable = apparmor.tools.aa_tools('disable', args)
+tool = apparmor.tools.aa_tools('disable', args)
 
-disable.act()
+tool.cmd_disable()
 
