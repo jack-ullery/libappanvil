@@ -35,10 +35,6 @@ B<-d --dir  /path/to/profiles>
    Specifies where to look for the AppArmor security profile set.
    Defaults to /etc/apparmor.d.
 
-B<-r --revert>
-
-   Enables the profile and loads it.  
-
 =head1 DESCRIPTION
 
 B<aa-disable> is used to I<disable> one or more profiles. 

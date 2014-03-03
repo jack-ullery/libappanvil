@@ -33,7 +33,6 @@ class aa_tools:
         if tool_name in ['audit', 'complain']:
             self.remove = args.remove
         elif tool_name == 'disable':
-            self.revert = args.revert
             self.disabledir = apparmor.profile_dir + '/disable'
             self.check_disable_dir()
         elif tool_name == 'autodep':

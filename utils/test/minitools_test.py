@@ -97,12 +97,6 @@ class Test(unittest.TestCase):
 
         self.assertEqual(os.path.islink('./profiles/disable/%s'%os.path.basename(local_profilename)), True, 'Failed to create a symlink for %s in disable'%local_profilename)
 
-        #Enable the ntpd profile and check if it was correctly re-enabled
-        subprocess.check_output('%s ./../aa-disable -d ./profiles -r %s'%(python_interpreter, test_path), shell=True)
-
-        self.assertEqual(os.path.islink('./profiles/disable/%s'%os.path.basename(local_profilename)), False, 'Failed to remove a symlink for %s from disable'%local_profilename)
-
-
     def test_autodep(self):
         pass
 
