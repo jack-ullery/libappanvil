@@ -43,8 +43,6 @@ profile from being loaded on AppArmor startup.
 The I<aa-enforce> and I<aa-complain> utilities may be used to to change
 this behavior.
 
-The I<--revert> option can be used to enable the profile.
-
 =head1 BUGS
 
 If you find any bugs, please report them at
