@@ -100,6 +100,10 @@ class Manifest(object):
 # Our test class
 #
 class T(unittest.TestCase):
+
+    # work around UsrMove
+    ls = os.path.realpath('/bin/ls')
+
     def setUp(self):
         '''Setup for tests'''
         global topdir
@@ -424,14 +428,14 @@ POLICYGROUPS_DIR="%s/templates"
 #
     def test_binary_without_profile_name(self):
         '''Test binary (<binary> { })'''
-        easyprof.AppArmorEasyProfile('/bin/ls', self.options)
+        easyprof.AppArmorEasyProfile(self.ls, self.options)
 
     def test_binary_with_profile_name(self):
         '''Test binary (profile <name> <binary> { })'''
         args = self.full_args
         args += ['--profile-name=some-profile-name']
         (self.options, self.args) = easyprof.parse_args(args)
-        easyprof.AppArmorEasyProfile('/bin/ls', self.options)
+        easyprof.AppArmorEasyProfile(self.ls, self.options)
 
     def test_binary_omitted_with_profile_name(self):
         '''Test binary (profile <name> { })'''
@@ -1206,7 +1210,7 @@ POLICYGROUPS_DIR="%s/templates"
     def test_gen_manifest_policy_with_binary_with_profile_name(self):
         '''Test gen_manifest_policy (binary with profile name)'''
         m = Manifest("test_gen_manifest_policy")
-        m.add_binary('/bin/ls')
+        m.add_binary(self.ls)
         self._gen_manifest_policy(m)
 
     def test_gen_manifest_policy_without_binary_with_profile_name(self):
