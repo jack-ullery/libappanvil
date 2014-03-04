@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
 	int filedes[2];
 	int c, o;
 	char buf[BUFSIZ];
-	unsigned int magic_token = SD_ID_MAGIC+1;
+	unsigned long magic_token = SD_ID_MAGIC+1;
 	int manual = 0;
 	int exit_hat = 0;
 	char * manual_string;
