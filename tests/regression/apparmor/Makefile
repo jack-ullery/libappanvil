@@ -20,9 +20,6 @@ ifdef USE_SYSTEM
   endif # LIBAPPARMOR not set
   LDLIBS += $(LIBAPPARMOR)
 
-uservars.out: uservars.inc
-	cat uservars.inc > uservars.out
-
 else # !USE_SYSTEM
   # use in-tree versions
   LIBAPPARMOR_SRC := ../../../libraries/libapparmor/
@@ -37,9 +34,6 @@ else # !USE_SYSTEM
 
   CFLAGS += -L$(LIBAPPARMOR_PATH) -I$(LIBAPPARMOR_INCLUDE)
   LDLIBS += -Wl,-Bstatic -lapparmor -Wl,-Bdynamic -lpthread
-
-uservars.out:
-	echo uservars.inc > uservars.out
 endif # USE_SYSTEM
 
 CFLAGS += -Wall -Wstrict-prototypes
@@ -186,7 +180,14 @@ libapparmor_check:
 		return 1 ; \
 	fi
 
-all: libapparmor_check $(EXEC) changehat.h
+all: libapparmor_check $(EXEC) changehat.h uservars.inc
+
+uservars.inc: uservars.inc.source uservars.inc.system
+ifdef USE_SYSTEM
+	cp uservars.inc.system uservars.inc
+else # !USE_SYSTEM
+	cp uservars.inc.source uservars.inc
+endif # USE_SYSTEM
 
 changehat_pthread: changehat_pthread.c changehat.h
 	${CC} ${CFLAGS} ${LDFLAGS} $< -o $@ ${LDLIBS} -pthread
@@ -242,6 +243,6 @@ alltests: all
 	fi
 
 clean:
-	rm -f $(EXEC) dbus_common.o
+	rm -f $(EXEC) dbus_common.o uservars.inc
 
 regex.sh: open exec
