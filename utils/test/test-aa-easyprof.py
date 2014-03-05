@@ -108,7 +108,7 @@ class T(unittest.TestCase):
         '''Setup for tests'''
         global topdir
 
-        self.tmpdir = tempfile.mkdtemp(prefix='test-aa-easyprof')
+        self.tmpdir = os.path.realpath(tempfile.mkdtemp(prefix='test-aa-easyprof'))
 
         # Copy everything into place
         for d in ['easyprof/policygroups', 'easyprof/templates']:
