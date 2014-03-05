@@ -241,7 +241,8 @@ TEMPLATES_DIR="%s/templates"
         easyp = easyprof.AppArmorEasyProfile(self.binary, self.options)
 
         # no fallback
-        self.assertTrue(easyp.dirs['policygroups'] == rel, "Not using specified --policy-groups-dir")
+        self.assertTrue(easyp.dirs['policygroups'] == rel, "Not using specified --policy-groups-dir\n" +
+                                                           "Specified dir: %s\nActual dir: %s" % (rel, str(easyp.dirs['policygroups'])))
         self.assertFalse(easyp.get_policy_groups() == None, "Could not find policy-groups")
 
     def test_policygroups_dir_nonexistent(self):
@@ -364,7 +365,8 @@ POLICYGROUPS_DIR="%s/templates"
         easyp = easyprof.AppArmorEasyProfile(self.binary, self.options)
 
         # no fallback
-        self.assertTrue(easyp.dirs['templates'] == rel, "Not using specified --template-dir")
+        self.assertTrue(easyp.dirs['templates'] == rel, "Not using specified --template-dir\n" +
+                                                        "Specified dir: %s\nActual dir: %s" % (rel, str(easyp.dirs['templates'])))
         self.assertFalse(easyp.get_templates() == None, "Could not find templates")
 
     def test_templates_dir_nonexistent(self):
