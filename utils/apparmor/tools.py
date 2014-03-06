@@ -115,13 +115,6 @@ class aa_tools:
                     if not os.path.isfile(filename) or apparmor.is_skippable_file(filename):
                         aaui.UI_Info(_('Profile for %s not found, skipping') % program)
 
-                    elif self.name == 'audit':
-                        if not self.remove:
-                            aaui.UI_Info(_('Setting %s to audit mode.') % program)
-                        else:
-                            aaui.UI_Info(_('Removing audit mode from %s.') % program)
-                        apparmor.change_profile_flags(filename, program, 'audit', not self.remove)
-
                     else:
                         # One simply does not walk in here!
                         raise apparmor.AppArmorException('Unknown tool: %s' % self.name)
@@ -186,6 +179,29 @@ class aa_tools:
                 continue
 
             apparmor.set_complain(profile, program)
+
+            # FIXME: this should be a profile_reload function/method
+            cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '-r', profile])
+
+            if cmd_info[0] != 0:
+                raise apparmor.AppArmorException(cmd_info[1])
+
+    def cmd_audit(self):
+        for (program, profile) in self.get_next_to_profile():
+
+            apparmor.read_profiles()
+            output_name = profile if program is None else program
+
+            if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
+                aaui.UI_Info(_('Profile for %s not found, skipping') % output_name)
+                continue
+
+            # keep this to allow toggling 'audit' flags
+            if not self.remove:
+                aaui.UI_Info(_('Setting %s to audit mode.') % output_name)
+            else:
+                aaui.UI_Info(_('Removing audit mode from %s.') % output_name)
+            apparmor.change_profile_flags(profile, program, 'audit', not self.remove)
 
             # FIXME: this should be a profile_reload function/method
             cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '-r', profile])
