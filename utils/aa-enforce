@@ -29,6 +29,6 @@ args = parser.parse_args()
 # on the Tool class are implemented
 args.remove = True
 
-enforce = apparmor.tools.aa_tools('complain', args)
+tool = apparmor.tools.aa_tools('complain', args)
 
-enforce.act()
+tool.cmd_enforce()

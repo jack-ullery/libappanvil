@@ -163,6 +163,24 @@ class aa_tools:
             if cmd_info[0] != 0:
                 raise apparmor.AppArmorException(cmd_info[1])
 
+    def cmd_enforce(self):
+        for (program, profile) in self.get_next_to_profile():
+
+            apparmor.read_profiles()
+            output_name = profile if program is None else program
+
+            if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
+                aaui.UI_Info(_('Profile for %s not found, skipping') % output_name)
+                continue
+
+            apparmor.set_enforce(profile, program)
+
+            # FIXME: this should be a profile_reload function/method
+            cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '-r', profile])
+
+            if cmd_info[0] != 0:
+                raise apparmor.AppArmorException(cmd_info[1])
+
     def clean_profile(self, program):
         filename = apparmor.get_profile_filename(program)
         import apparmor.cleanprofile as cleanprofile

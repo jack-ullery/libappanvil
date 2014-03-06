@@ -256,14 +256,14 @@ def enforce(path):
 
 def set_complain(filename, program):
     """Sets the profile to complain mode"""
-    aaui.UI_Info(_('Setting %s to complain mode.') % program)
+    aaui.UI_Info(_('Setting %s to complain mode.') % (filename if program is None else program))
     # a force-complain symlink is more packaging-friendly, but breaks caching
     # create_symlink('force-complain', filename)
     change_profile_flags(filename, program, 'complain', True)
 
 def set_enforce(filename, program):
     """Sets the profile to enforce mode"""
-    aaui.UI_Info(_('Setting %s to enforce mode.') % program)
+    aaui.UI_Info(_('Setting %s to enforce mode.') % (filename if program is None else program))
     delete_symlink('force-complain', filename)
     delete_symlink('disable', filename)
     change_profile_flags(filename, program, 'complain', False)
@@ -592,7 +592,7 @@ def get_profile_flags(filename, program):
                 matches = RE_PROFILE_START.search(line).groups()
                 profile = matches[1] or matches[3]
                 flags = matches[6]
-                if profile == program:
+                if profile == program or program is None:
                     return flags
 
     raise AppArmorException(_('%s contains no profile') % filename)
@@ -644,7 +644,7 @@ def set_profile_flags(prof_filename, program, newflags):
                         binary = matches[1]
                         flag = matches[6] or 'flags='
                         flags = matches[7]
-                        if binary == program:
+                        if binary == program or program is None:
                             if newflags:
                                 line = '%s%s %s(%s) {%s\n' % (space, binary, flag, newflags, comment)
                             else:
