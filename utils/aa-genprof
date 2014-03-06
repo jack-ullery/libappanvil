@@ -20,6 +20,7 @@ import subprocess
 import sys
 
 import apparmor.aa as apparmor
+import apparmor.ui as aaui
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -117,9 +118,9 @@ sysctl_write(ratelimit_sysctl, 0)
 
 atexit.register(restore_ratelimit)
 
-apparmor.UI_Info(_('\nBefore you begin, you may wish to check if a\nprofile already exists for the application you\nwish to confine. See the following wiki page for\nmore information:')+'\nhttp://wiki.apparmor.net/index.php/Profiles')
+aaui.UI_Info(_('\nBefore you begin, you may wish to check if a\nprofile already exists for the application you\nwish to confine. See the following wiki page for\nmore information:')+'\nhttp://wiki.apparmor.net/index.php/Profiles')
 
-apparmor.UI_Important(_('Please start the application to be profiled in\nanother window and exercise its functionality now.\n\nOnce completed, select the "Scan" option below in \norder to scan the system logs for AppArmor events. \n\nFor each AppArmor event, you will be given the \nopportunity to choose whether the access should be \nallowed or denied.'))
+aaui.UI_Important(_('Please start the application to be profiled in\nanother window and exercise its functionality now.\n\nOnce completed, select the "Scan" option below in \norder to scan the system logs for AppArmor events. \n\nFor each AppArmor event, you will be given the \nopportunity to choose whether the access should be \nallowed or denied.'))
 
 syslog = True
 logmark = ''
@@ -143,7 +144,7 @@ while not done_profiling:
     q['headers'] = [_('Profiling'), program]
     q['functions'] = ['CMD_SCAN', 'CMD_FINISHED']
     q['default'] = 'CMD_SCAN'
-    ans, arg = apparmor.UI_PromptUser(q, 'noexit')
+    ans, arg = aaui.UI_PromptUser(q, 'noexit')
 
     if ans == 'CMD_SCAN':
         lp_ret = apparmor.do_logprof_pass(logmark, passno)
@@ -158,7 +159,7 @@ for p in sorted(apparmor.helpers.keys()):
         apparmor.enforce(p)
         apparmor.reload(p)
 
-apparmor.UI_Info(_('\nReloaded AppArmor profiles in enforce mode.'))
-apparmor.UI_Info(_('\nPlease consider contributing your new profile!\nSee the following wiki page for more information:')+'\nhttp://wiki.apparmor.net/index.php/Profiles\n')
-apparmor.UI_Info(_('Finished generating profile for %s.')%program)
+aaui.UI_Info(_('\nReloaded AppArmor profiles in enforce mode.'))
+aaui.UI_Info(_('\nPlease consider contributing your new profile!\nSee the following wiki page for more information:')+'\nhttp://wiki.apparmor.net/index.php/Profiles\n')
+aaui.UI_Info(_('Finished generating profile for %s.')%program)
 sys.exit(0)
