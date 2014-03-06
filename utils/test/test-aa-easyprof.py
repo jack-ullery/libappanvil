@@ -172,7 +172,8 @@ TEMPLATES_DIR="%s/templates"
         if os.path.exists(self.tmpdir):
             if debugging:
                 sys.stdout.write("%s\n" % self.tmpdir)
-            recursive_rm(self.tmpdir)
+            else:
+                recursive_rm(self.tmpdir)
 
 #
 # config file tests
