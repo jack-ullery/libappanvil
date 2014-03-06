@@ -599,7 +599,6 @@ def get_profile_flags(filename, program):
 
 def change_profile_flags(filename, program, flag, set_flag):
     old_flags = get_profile_flags(filename, program)
-    print(old_flags)
     newflags = []
     if old_flags:
         # Flags maybe white-space and/or , separated
@@ -2221,13 +2220,12 @@ def do_logprof_pass(logmark='', passno=0, pid=pid):
 #    transitions = hasher()
 #    seen = hasher()  # XXX global?
     global log
-    global existing_profiles
     log = []
+    global existing_profiles
     global sev_db
 #    aa = hasher()
 #    profile_changes = hasher()
 #     prelog = hasher()
-    log = []
 #     log_dict = hasher()
 #     changed = dict()
 #    skip = hasher()  # XXX global?
