@@ -30,4 +30,4 @@ check:
 	$(call pyalldo, create-apparmor.vim.py > /dev/null)
 
 clean:
-	rm -f apparmor.vim common
+	rm -f apparmor.vim common $(MANPAGES)
