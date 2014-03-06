@@ -55,22 +55,43 @@ class aa_tools:
             raise apparmor.AppArmorException("Can't find AppArmor disable directory %s" % self.disabledir)
 
     def get_next_to_profile(self):
+        '''Iterator function to walk the list of arguments passed'''
+
         for p in self.profiling:
             if not p:
                 continue
 
-            program = p
+            program = None
+            profile = None
             if os.path.exists(p):
-                program = apparmor.get_full_path(p).strip()
+                fq_path = apparmor.get_full_path(p).strip()
+                if os.path.commonprefix([apparmor.profile_dir, fq_path]) == apparmor.profile_dir:
+                    program = None
+                    profile = fq_path
+                else:
+                    program = fq_path
+                    profile = apparmor.get_profile_filename(fq_path)
             else:
                 which = apparmor.which(p)
-                if which:
+                if which is not None:
                     program = apparmor.get_full_path(which)
+                    profile = apparmor.get_profile_filename(program)
+                elif os.path.exists(os.path.join(apparmor.profile_dir, p)):
+                    program = None
+                    profile = apparmor.get_full_path(os.path.join(apparmor.profile_dir, p)).strip()
+                else:
+                    if '/' not in p:
+                        aaui.UI_Info(_("Can't find %s in the system path list. If the name of the application\nis correct, please run 'which %s' as a user with correct PATH\nenvironment set up in order to find the fully-qualified path and\nuse the full path as parameter.") % (p, p))
+                    else:
+                        aaui.UI_Info(_("%s does not exist, please double-check the path.") % p)
+                    continue
 
-            yield program
+            yield (program, profile)
 
     def act(self):
-        for program in self.get_next_to_profile():
+        for (program, profile) in self.get_next_to_profile():
+            if program is None:
+                program = profile
 
             apparmor.read_profiles()
 
@@ -124,19 +145,20 @@ class aa_tools:
                     sys.exit(1)
 
     def cmd_disable(self):
-        for program in self.get_next_to_profile():
-            filename = apparmor.get_profile_filename(program)
+        for (program, profile) in self.get_next_to_profile():
 
-            if not os.path.isfile(filename) or apparmor.is_skippable_file(filename):
-                aaui.UI_Info(_('Profile for %s not found, skipping') % program)
+            output_name = profile if program is None else program
+
+            if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
+                aaui.UI_Info(_('Profile for %s not found, skipping') % output_name)
                 continue
 
-            aaui.UI_Info(_('Disabling %s.') % program)
-            self.disable_profile(filename)
+            aaui.UI_Info(_('Disabling %s.') % output_name)
+            self.disable_profile(profile)
 
             # FIXME: this should be a profile_remove function/method
             # FIXME: should ensure profile is loaded before unloading
-            cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '-R', filename])
+            cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '-R', profile])
 
             if cmd_info[0] != 0:
                 raise apparmor.AppArmorException(cmd_info[1])
