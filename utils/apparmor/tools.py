@@ -30,7 +30,7 @@ class aa_tools:
         self.check_profile_dir()
         self.silent = None
 
-        if tool_name in ['audit', 'complain']:
+        if tool_name in ['audit']:
             self.remove = args.remove
         elif tool_name == 'disable':
             self.disabledir = apparmor.profile_dir + '/disable'
@@ -122,12 +122,6 @@ class aa_tools:
                             aaui.UI_Info(_('Removing audit mode from %s.') % program)
                         apparmor.change_profile_flags(filename, program, 'audit', not self.remove)
 
-                    elif self.name == 'complain':
-                        if not self.remove:
-                            apparmor.set_complain(filename, program)
-                        else:
-                            apparmor.set_enforce(filename, program)
-                        #apparmor.set_profile_flags(filename, self.name)
                     else:
                         # One simply does not walk in here!
                         raise apparmor.AppArmorException('Unknown tool: %s' % self.name)
@@ -174,6 +168,24 @@ class aa_tools:
                 continue
 
             apparmor.set_enforce(profile, program)
+
+            # FIXME: this should be a profile_reload function/method
+            cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '-r', profile])
+
+            if cmd_info[0] != 0:
+                raise apparmor.AppArmorException(cmd_info[1])
+
+    def cmd_complain(self):
+        for (program, profile) in self.get_next_to_profile():
+
+            apparmor.read_profiles()
+            output_name = profile if program is None else program
+
+            if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
+                aaui.UI_Info(_('Profile for %s not found, skipping') % output_name)
+                continue
+
+            apparmor.set_complain(profile, program)
 
             # FIXME: this should be a profile_reload function/method
             cmd_info = cmd([apparmor.parser, '-I%s' % apparmor.profile_dir, '-r', profile])
