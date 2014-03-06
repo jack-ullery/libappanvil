@@ -102,10 +102,7 @@ class aa_tools:
                     aaui.UI_Info(_("%s does not exist, please double-check the path.") % program)
                     sys.exit(1)
 
-            if self.name == 'autodep' and program and os.path.exists(program):
-                self.use_autodep(program)
-
-            elif program and apparmor.profile_exists(program):
+            if program and apparmor.profile_exists(program):
                 if self.name == 'cleanprof':
                     self.clean_profile(program)
 
@@ -209,6 +206,23 @@ class aa_tools:
             if cmd_info[0] != 0:
                 raise apparmor.AppArmorException(cmd_info[1])
 
+    def cmd_autodep(self):
+        for (program, profile) in self.get_next_to_profile():
+            if not program:
+                aaui.UI_Info(_('Please pass an application to generate a profile for, not a profile itself - skipping %s.') % profile)
+                continue
+
+            apparmor.read_profiles()
+
+            apparmor.check_qualifiers(program)
+
+            if os.path.exists(apparmor.get_profile_filename(program)) and not self.force:
+                aaui.UI_Info(_('Profile for %s already exists - skipping.') % program)
+            else:
+                apparmor.autodep(program)
+                if self.aa_mountpoint:
+                    apparmor.reload(program)
+
     def clean_profile(self, program):
         filename = apparmor.get_profile_filename(program)
         import apparmor.cleanprofile as cleanprofile
@@ -244,16 +258,6 @@ class aa_tools:
                 apparmor.reload_base(program)
         else:
             raise apparmor.AppArmorException(_('The profile for %s does not exists. Nothing to clean.') % program)
-
-    def use_autodep(self, program):
-        apparmor.check_qualifiers(program)
-
-        if os.path.exists(apparmor.get_profile_filename(program)) and not self.force:
-            aaui.UI_Info('Profile for %s already exists - skipping.' % program)
-        else:
-            apparmor.autodep(program)
-            if self.aa_mountpoint:
-                apparmor.reload(program)
 
     def enable_profile(self, filename):
         apparmor.delete_symlink('disable', filename)
