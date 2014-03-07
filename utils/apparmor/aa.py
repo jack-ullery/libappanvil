@@ -2615,7 +2615,15 @@ RE_PROFILE_CHANGE_HAT = re.compile('^\s*\^(\"??.+?\"??)\s*,\s*(#.*)?$')
 RE_PROFILE_HAT_DEF = re.compile('^\s*\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$')
 RE_NETWORK_FAMILY_TYPE = re.compile('\s+(\S+)\s+(\S+)\s*,$')
 RE_NETWORK_FAMILY = re.compile('\s+(\S+)\s*,$')
-RE_PROFILE_DBUS = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(dbus[^#]*)\s*(#.*)?$')
+RE_PROFILE_DBUS = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(dbus[^#]*\s*,)\s*(#.*)?$')
+
+# match anything that's not " or #, or matching quotes with anything except quotes inside
+__re_no_or_quoted_hash = '([^#"]|"[^"]*")*'
+
+RE_RULE_HAS_COMMA = re.compile('^' + __re_no_or_quoted_hash +
+    ',\s*(#.*)?$')  # match comma plus any trailing comment
+RE_HAS_COMMENT_SPLIT = re.compile('^(?P<not_comment>' + __re_no_or_quoted_hash + ')' + # store in 'not_comment' group
+    '(?P<comment>#.*)$')  # match trailing comment and store in 'comment' group
 
 def parse_profile_data(data, file, do_include):
     profile_data = hasher()
@@ -2625,6 +2633,7 @@ def parse_profile_data(data, file, do_include):
     repo_data = None
     parsed_profiles = []
     initial_comment = ''
+    lastline = None
 
     if do_include:
         profile = file
@@ -2633,6 +2642,10 @@ def parse_profile_data(data, file, do_include):
         line = line.strip()
         if not line:
             continue
+        # we're dealing with a multiline statement
+        if lastline:
+            line = '%s %s' % (lastline, line)
+            lastline = None
         # Starting line of a profile
         if RE_PROFILE_START.search(line):
             matches = RE_PROFILE_START.search(line).groups()
@@ -3007,6 +3020,13 @@ def parse_profile_data(data, file, do_include):
                 else:
                     initial_comment = initial_comment + line + '\n'
 
+        elif not RE_RULE_HAS_COMMA.search(line):
+            # Bah, line continues on to the next line
+            if RE_HAS_COMMENT_SPLIT.search(line):
+                # filter trailing comments
+                lastline = RE_HAS_COMMENT_SPLIT.search(line).group('not_comment')
+            else:
+                lastline = line
         else:
             raise AppArmorException(_('Syntax Error: Unknown line found in file: %s line: %s') % (file, lineno + 1))
 
