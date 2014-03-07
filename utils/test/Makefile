@@ -38,4 +38,4 @@ ifndef VERBOSE
 .SILENT: check
 endif
 check:
-	$(foreach test, $(wildcard test-*.py), $(call pyalldo, $(test)))
+	export PYTHONPATH=.. ; $(foreach test, $(wildcard test-*.py), $(call pyalldo, $(test)))

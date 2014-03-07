@@ -39,6 +39,8 @@ from apparmor.aamode import (str_to_mode, mode_to_str, contains, split_mode,
                              mode_to_str_user, mode_contains, AA_OTHER,
                              flatten_mode, owner_flatten_mode)
 
+import apparmor.rules as aarules
+
 from apparmor.yasti import SendDataToYast, GetDataFromYast, shutdown_yast
 
 # setup module translations
@@ -2613,6 +2615,7 @@ RE_PROFILE_CHANGE_HAT = re.compile('^\s*\^(\"??.+?\"??)\s*,\s*(#.*)?$')
 RE_PROFILE_HAT_DEF = re.compile('^\s*\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$')
 RE_NETWORK_FAMILY_TYPE = re.compile('\s+(\S+)\s+(\S+)\s*,$')
 RE_NETWORK_FAMILY = re.compile('\s+(\S+)\s*,$')
+RE_PROFILE_DBUS = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(dbus[^#]*)\s*(#.*)?$')
 
 def parse_profile_data(data, file, do_include):
     profile_data = hasher()
@@ -2676,6 +2679,7 @@ def parse_profile_data(data, file, do_include):
 
             profile_data[profile][hat]['allow']['netdomain'] = hasher()
             profile_data[profile][hat]['allow']['path'] = hasher()
+            profile_data[profile][hat]['allow']['dbus'] = list()
             # Save the initial comment
             if initial_comment:
                 profile_data[profile][hat]['initial_comment'] = initial_comment
@@ -2926,6 +2930,29 @@ def parse_profile_data(data, file, do_include):
                 profile_data[profile][hat][allow]['netdomain']['rule']['all'] = True
                 profile_data[profile][hat][allow]['netdomain']['audit']['all'] = audit  # True
 
+        elif RE_PROFILE_DBUS.search(line):
+            matches = RE_PROFILE_DBUS.search(line).groups()
+
+            if not profile:
+                raise AppArmorException(_('Syntax Error: Unexpected dbus entry found in file: %s line: %s') % (file, lineno + 1))
+
+            audit = False
+            if matches[0]:
+                audit = True
+            allow = 'allow'
+            if matches[1] and matches[1].strip() == 'deny':
+                allow = 'deny'
+            dbus = matches[2]
+
+            #parse_dbus_rule(profile_data[profile], dbus, audit, allow)
+            dbus_rule = parse_dbus_rule(dbus)
+            dbus_rule.audit = audit
+            dbus_rule.deny = (allow == 'deny')
+
+            dbus_rules = profile_data[profile][hat][allow].get('dbus', list())
+            dbus_rules.append(dbus_rule)
+            profile_data[profile][hat][allow]['dbus'] = dbus_rules
+
         elif RE_PROFILE_CHANGE_HAT.search(line):
             matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
 
@@ -2997,6 +3024,21 @@ def parse_profile_data(data, file, do_include):
         raise AppArmorException(_("Syntax Error: Missing '}' . Reached end of file %s  while inside profile %s") % (file, profile))
 
     return profile_data
+
+# RE_DBUS_ENTRY = re.compile('^dbus\s*()?,\s*$')
+#   use stuff like '(?P<action>(send|write|w|receive|read|r|rw))'
+
+def parse_dbus_rule(line):
+    # XXX Do real parsing here
+    return aarules.Raw_DBUS_Rule(line)
+
+    #matches = RE_DBUS_ENTRY.search(line).groups()
+    #if len(matches) == 1:
+        # XXX warn?
+        # matched nothing
+    #    print('no matches')
+    #    return aarules.DBUS_Rule()
+    #print(line)
 
 def separate_vars(vs):
     """Returns a list of all the values for a variable"""
@@ -3188,6 +3230,24 @@ def write_netdomain(prof_data, depth):
     data += write_net_rules(prof_data, depth, 'allow')
     return data
 
+def write_dbus_rules(prof_data, depth, allow):
+    pre = '  ' * depth
+    data = []
+
+    # no dbus rules, so return
+    if not prof_data[allow].get('dbus', False):
+        return data
+
+    for dbus_rule in prof_data[allow]['dbus']:
+        data.append('%s%s' % (pre, dbus_rule.serialize()))
+    data.append('')
+    return data
+
+def write_dbus(prof_data, depth):
+    data = write_dbus_rules(prof_data, depth, 'deny')
+    data += write_net_rules(prof_data, depth, 'allow')
+    return data
+
 def write_link_rules(prof_data, depth, allow):
     pre = '  ' * depth
     data = []
@@ -3280,6 +3340,7 @@ def write_rules(prof_data, depth):
     data += write_rlimits(prof_data, depth)
     data += write_capabilities(prof_data, depth)
     data += write_netdomain(prof_data, depth)
+    data += write_dbus(prof_data, depth)
     data += write_links(prof_data, depth)
     data += write_paths(prof_data, depth)
     data += write_change_profile(prof_data, depth)
@@ -3427,6 +3488,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                          'rlimit': write_rlimits,
                          'capability': write_capabilities,
                          'netdomain': write_netdomain,
+                         'dbus': write_dbus,
                          'link': write_links,
                          'path': write_paths,
                          'change_profile': write_change_profile,
@@ -3438,6 +3500,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     'rlimit': False,
                     'capability': False,
                     'netdomain': False,
+                    'dbus': False,
                     'link': False,
                     'path': False,
                     'change_profile': False,
@@ -3516,6 +3579,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     data += write_rlimits(write_prof_data, depth)
                     data += write_capabilities(write_prof_data[name], depth)
                     data += write_netdomain(write_prof_data[name], depth)
+                    data += write_dbus(write_prof_data[name], depth)
                     data += write_links(write_prof_data[name], depth)
                     data += write_paths(write_prof_data[name], depth)
                     data += write_change_profile(write_prof_data[name], depth)
