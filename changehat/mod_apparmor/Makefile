@@ -48,9 +48,12 @@ ifdef USE_SYSTEM
                                 echo -lapparmor ; \
                         fi )
   ifeq ($(strip $(LIBAPPARMOR)),)
-    ERROR_MESSAGE = Unable to find libapparmor installed on this system; either \
-            install libapparmor devel packages, set the LIBAPPARMOR variable \
-            manually, or build against in-tree libapparmor)
+    ERROR_MESSAGE = $(error ${nl}\
+************************************************************************${nl}\
+Unable to find libapparmor installed on this system; either${nl}\
+install libapparmor devel packages, set the LIBAPPARMOR variable${nl}\
+manually, or build against in-tree libapparmor.${nl}\
+************************************************************************${nl})
   endif # LIBAPPARMOR not set
   LDLIBS += $(LIBAPPARMOR)
 else
@@ -58,10 +61,13 @@ else
   LIBAPPARMOR_INCLUDE = $(LIBAPPARMOR_SRC)/include
   LIBAPPARMOR_PATH := $(LIBAPPARMOR_SRC)/src/.libs/
     ifeq ($(realpath $(LIBAPPARMOR_PATH)/libapparmor.a),)
-        ERROR_MESSAGE = $(LIBAPPARMOR_PATH)/libapparmor.a is missing; either build against \
-                the in-tree libapparmor by building it first and then trying again \
-                (see the top-level README for help) or build against the system \
-                libapparmor by adding USE_SYSTEM=1 to your make command.)
+        ERROR_MESSAGE = $(error ${nl}\
+************************************************************************${nl}\
+$(LIBAPPARMOR_PATH)/libapparmor.a is missing; either build against${nl}\
+the in-tree libapparmor by building it first and then trying again${nl}\
+(see the top-level README for help) or build against the system${nl}\
+libapparmor by adding USE_SYSTEM=1 to your make command.${nl}\
+************************************************************************${nl})
     endif
   # Need to pass -Wl twice here to get past both apxs2 and libtool, as
   # libtool will add the path to the RPATH of the library if passed -L/some/path
@@ -71,11 +77,7 @@ endif
 
 .PHONY: libapparmor_check
 .SILENT: libapparmor_check
-libapparmor_check:
-	@if [ -n "$(ERROR_MESSAGE)" ] ; then \
-		echo "$(ERROR_MESSAGE)" 1>&2 ; \
-		return 1 ; \
-	fi
+libapparmor_check: ; $(ERROR_MESSAGE)
 
 all: libapparmor_check $(TARGET) ${MANPAGES} ${HTMLMANPAGES}
 

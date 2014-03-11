@@ -36,6 +36,11 @@ ifndef AWK
 $(error awk utility required for build but not available)
 endif
 
+define nl
+
+
+endef
+
 # OVERRIDABLE variables
 # Set these variables before including Make.rules to change its behavior
 #   SPECFILE - for packages that have a non-standard specfile name
