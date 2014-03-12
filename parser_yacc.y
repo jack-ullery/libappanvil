@@ -203,7 +203,6 @@ void add_local_entry(Profile *prof);
 %type <user_entry> file_rule
 %type <user_entry> file_rule_tail
 %type <user_entry> link_rule
-%type <user_entry> ptrace_rule
 %type <user_entry> frule
 %type <mnt_entry> mnt_rule
 %type <cond_entry> opt_conds
@@ -558,9 +557,9 @@ rules:  rules opt_prefix rule
 			yyerror(_("Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"));
 
 		if ($2.owner == 1)
-			$3->mode &= (AA_USER_PERMS | AA_SHARED_PERMS | AA_USER_PTRACE);
+			$3->mode &= (AA_USER_PERMS | AA_SHARED_PERMS);
 		else if ($2.owner == 2)
-			$3->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS | AA_OTHER_PTRACE);
+			$3->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS);
 		/* only set audit ctl quieting if the rule is not audited */
 		if (($2.deny && !$2.audit) || (!$2.deny && $2.audit))
 			$3->audit = $3->mode & ~ALL_AA_EXEC_TYPE;
@@ -589,9 +588,9 @@ rules: rules opt_prefix TOK_OPEN rules TOK_CLOSE
 					yyerror(_("Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"));
 			}
 			if ($2.owner == 1)
- 				entry->mode &= (AA_USER_PERMS | AA_SHARED_PERMS | AA_USER_PTRACE);
+ 				entry->mode &= (AA_USER_PERMS | AA_SHARED_PERMS);
 			else if ($2.owner == 2)
-				entry->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS | AA_OTHER_PTRACE);
+				entry->mode &= (AA_OTHER_PERMS | AA_SHARED_PERMS);
 
 			if ($2.audit && !entry->deny)
 				entry->audit = entry->mode & ~ALL_AA_EXEC_TYPE;
@@ -953,7 +952,6 @@ opt_named_transition:
 
 rule: file_rule { $$ = $1; }
 	| link_rule { $$ = $1; }
-	| ptrace_rule {$$ = $1; }
 
 opt_unsafe: { /* nothing */ $$ = 0; }
 	| TOK_UNSAFE { $$ = 1; };
@@ -1029,24 +1027,6 @@ link_rule: TOK_LINK opt_subset_flag TOK_ID TOK_ARROW TOK_ID TOK_END_OF_RULE
 		entry = new_entry(NULL, $3, AA_LINK_BITS, $5);
 		entry->subset = $2;
 		PDEBUG("rule.entry: link (%s)\n", entry->name);
-		$$ = entry;
-	};
-
-ptrace_rule: TOK_PTRACE TOK_ID TOK_END_OF_RULE
-	{
-		struct cod_entry *entry;
-		entry = new_entry(NULL, $2, AA_USER_PTRACE | AA_OTHER_PTRACE, NULL);
-		if (!entry)
-			yyerror(_("Memory allocation error."));
-		$$ = entry;
-	};
-
-ptrace_rule: TOK_PTRACE TOK_COLON TOK_ID TOK_COLON TOK_ID TOK_END_OF_RULE
-	{
-		struct cod_entry *entry;
-		entry = new_entry($3, $5, AA_USER_PTRACE | AA_OTHER_PTRACE, NULL);
-		if (!entry)
-			yyerror(_("Memory allocation error."));
 		$$ = entry;
 	};
 
