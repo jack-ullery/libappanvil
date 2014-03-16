@@ -3451,7 +3451,7 @@ def serialize_profile(profile_data, name, options):
     for prof in sorted(filelist[prof_filename]['profiles'].keys()):
         if prof != name:
             if original_aa[prof][prof].get('initial_comment', False):
-                comment = profile_data[name]['initial_comment']
+                comment = original_aa[prof][prof]['initial_comment']
                 comment.replace('\\n', '\n')
                 data += [comment + '\n']
             data += write_piece(original_aa[prof], 0, prof, prof, include_flags)
