@@ -9,6 +9,16 @@
 %include "typemaps.i"
 %include <aalogparse.h>
 
+#ifdef SWIGPYTHON
+%exception {
+  $action
+  if (result < 0) {
+    PyErr_SetFromErrno(PyExc_OSError);
+    return NULL;
+  }
+}
+#endif
+
 /* swig doesn't like the macro magic we do in apparmor.h so the fn prototypes
  * are manually inserted here
  */
@@ -29,3 +39,5 @@ extern int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode);
 extern int aa_getpeercon(int fd, char **con, char **mode);
 extern int aa_query_label(uint32_t mask, char *query, size_t size, int *allow,
 			  int *audit);
+
+%exception;

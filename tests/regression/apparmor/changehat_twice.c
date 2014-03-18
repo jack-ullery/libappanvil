@@ -22,7 +22,8 @@
 
 int main(int argc, char *argv[])
 {
-	int rc, magic;
+	int rc;
+	unsigned long magic;
 
 	if (argc != 5){
 		fprintf(stderr, "usage: %s profile1 profile2 goodmagic|badmagic file\n",

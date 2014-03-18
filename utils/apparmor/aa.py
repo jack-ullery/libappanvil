@@ -39,6 +39,8 @@ from apparmor.aamode import (str_to_mode, mode_to_str, contains, split_mode,
                              mode_to_str_user, mode_contains, AA_OTHER,
                              flatten_mode, owner_flatten_mode)
 
+import apparmor.rules as aarules
+
 from apparmor.yasti import SendDataToYast, GetDataFromYast, shutdown_yast
 
 # setup module translations
@@ -256,13 +258,14 @@ def enforce(path):
 
 def set_complain(filename, program):
     """Sets the profile to complain mode"""
-    aaui.UI_Info(_('Setting %s to complain mode.') % program)
-    create_symlink('force-complain', filename)
+    aaui.UI_Info(_('Setting %s to complain mode.') % (filename if program is None else program))
+    # a force-complain symlink is more packaging-friendly, but breaks caching
+    # create_symlink('force-complain', filename)
     change_profile_flags(filename, program, 'complain', True)
 
 def set_enforce(filename, program):
     """Sets the profile to enforce mode"""
-    aaui.UI_Info(_('Setting %s to enforce mode.') % program)
+    aaui.UI_Info(_('Setting %s to enforce mode.') % (filename if program is None else program))
     delete_symlink('force-complain', filename)
     delete_symlink('disable', filename)
     change_profile_flags(filename, program, 'complain', False)
@@ -498,6 +501,10 @@ def get_profile(prof_name):
 
     ans = ''
     while 'CMD_USE_PROFILE' not in ans and 'CMD_CREATE_PROFILE' not in ans:
+        if ans == 'CMD_FINISHED':
+            save_profiles()
+            return
+
         ans, arg = aaui.UI_PromptUser(q)
         p = profile_hash[options[arg]]
         q['selected'] = options.index(options[arg])
@@ -573,6 +580,7 @@ def autodep(bin_name, pname=''):
         if not filelist.get(file, False):
             filelist[file] = hasher()
         filelist[file]['include']['tunables/global'] = True
+        filelist[file]['profiles'][pname] = True
     write_profile_ui_feedback(pname)
 
 def get_profile_flags(filename, program):
@@ -586,14 +594,13 @@ def get_profile_flags(filename, program):
                 matches = RE_PROFILE_START.search(line).groups()
                 profile = matches[1] or matches[3]
                 flags = matches[6]
-                if profile == program:
+                if profile == program or program is None:
                     return flags
 
     raise AppArmorException(_('%s contains no profile') % filename)
 
 def change_profile_flags(filename, program, flag, set_flag):
     old_flags = get_profile_flags(filename, program)
-    print(old_flags)
     newflags = []
     if old_flags:
         # Flags maybe white-space and/or , separated
@@ -639,7 +646,7 @@ def set_profile_flags(prof_filename, program, newflags):
                         binary = matches[1]
                         flag = matches[6] or 'flags='
                         flags = matches[7]
-                        if binary == program:
+                        if binary == program or program is None:
                             if newflags:
                                 line = '%s%s %s(%s) {%s\n' % (space, binary, flag, newflags, comment)
                             else:
@@ -990,6 +997,10 @@ def handle_children(profile, hat, root):
 
                     ans = aaui.UI_PromptUser(q)
 
+                    if ans == 'CMD_FINISHED':
+                        save_profiles()
+                        return
+
                 transitions[context] = ans
 
                 if ans == 'CMD_ADDHAT':
@@ -1251,6 +1262,11 @@ def handle_children(profile, hat, root):
                                 q['functions'] += build_x_functions(default, options, exec_toggle)
                                 ans = ''
                                 continue
+
+                            if ans == 'CMD_FINISHED':
+                                save_profiles()
+                                return
+
                             if ans == 'CMD_nx' or ans == 'CMD_nix':
                                 arg = exec_target
                                 ynans = 'n'
@@ -1550,6 +1566,11 @@ def ask_the_questions():
                     done = False
                     while not done:
                         ans, selected = aaui.UI_PromptUser(q)
+
+                        if ans == 'CMD_FINISHED':
+                            save_profiles()
+                            return
+
                         # Ignore the log entry
                         if ans == 'CMD_IGNORE_ENTRY':
                             done = True
@@ -1794,6 +1815,10 @@ def ask_the_questions():
 
                             ans, selected = aaui.UI_PromptUser(q)
 
+                            if ans == 'CMD_FINISHED':
+                                save_profiles()
+                                return
+
                             if ans == 'CMD_IGNORE_ENTRY':
                                 done = True
                                 break
@@ -1945,6 +1970,11 @@ def ask_the_questions():
                         done = False
                         while not done:
                             ans, selected = aaui.UI_PromptUser(q)
+
+                            if ans == 'CMD_FINISHED':
+                                save_profiles()
+                                return
+
                             if ans == 'CMD_IGNORE_ENTRY':
                                 done = True
                                 break
@@ -2192,13 +2222,12 @@ def do_logprof_pass(logmark='', passno=0, pid=pid):
 #    transitions = hasher()
 #    seen = hasher()  # XXX global?
     global log
-    global existing_profiles
     log = []
+    global existing_profiles
     global sev_db
 #    aa = hasher()
 #    profile_changes = hasher()
 #     prelog = hasher()
-    log = []
 #     log_dict = hasher()
 #     changed = dict()
 #    skip = hasher()  # XXX global?
@@ -2586,6 +2615,15 @@ RE_PROFILE_CHANGE_HAT = re.compile('^\s*\^(\"??.+?\"??)\s*,\s*(#.*)?$')
 RE_PROFILE_HAT_DEF = re.compile('^\s*\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$')
 RE_NETWORK_FAMILY_TYPE = re.compile('\s+(\S+)\s+(\S+)\s*,$')
 RE_NETWORK_FAMILY = re.compile('\s+(\S+)\s*,$')
+RE_PROFILE_DBUS = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(dbus[^#]*\s*,)\s*(#.*)?$')
+
+# match anything that's not " or #, or matching quotes with anything except quotes inside
+__re_no_or_quoted_hash = '([^#"]|"[^"]*")*'
+
+RE_RULE_HAS_COMMA = re.compile('^' + __re_no_or_quoted_hash +
+    ',\s*(#.*)?$')  # match comma plus any trailing comment
+RE_HAS_COMMENT_SPLIT = re.compile('^(?P<not_comment>' + __re_no_or_quoted_hash + ')' + # store in 'not_comment' group
+    '(?P<comment>#.*)$')  # match trailing comment and store in 'comment' group
 
 def parse_profile_data(data, file, do_include):
     profile_data = hasher()
@@ -2595,6 +2633,7 @@ def parse_profile_data(data, file, do_include):
     repo_data = None
     parsed_profiles = []
     initial_comment = ''
+    lastline = None
 
     if do_include:
         profile = file
@@ -2603,6 +2642,10 @@ def parse_profile_data(data, file, do_include):
         line = line.strip()
         if not line:
             continue
+        # we're dealing with a multiline statement
+        if lastline:
+            line = '%s %s' % (lastline, line)
+            lastline = None
         # Starting line of a profile
         if RE_PROFILE_START.search(line):
             matches = RE_PROFILE_START.search(line).groups()
@@ -2649,6 +2692,7 @@ def parse_profile_data(data, file, do_include):
 
             profile_data[profile][hat]['allow']['netdomain'] = hasher()
             profile_data[profile][hat]['allow']['path'] = hasher()
+            profile_data[profile][hat]['allow']['dbus'] = list()
             # Save the initial comment
             if initial_comment:
                 profile_data[profile][hat]['initial_comment'] = initial_comment
@@ -2899,6 +2943,29 @@ def parse_profile_data(data, file, do_include):
                 profile_data[profile][hat][allow]['netdomain']['rule']['all'] = True
                 profile_data[profile][hat][allow]['netdomain']['audit']['all'] = audit  # True
 
+        elif RE_PROFILE_DBUS.search(line):
+            matches = RE_PROFILE_DBUS.search(line).groups()
+
+            if not profile:
+                raise AppArmorException(_('Syntax Error: Unexpected dbus entry found in file: %s line: %s') % (file, lineno + 1))
+
+            audit = False
+            if matches[0]:
+                audit = True
+            allow = 'allow'
+            if matches[1] and matches[1].strip() == 'deny':
+                allow = 'deny'
+            dbus = matches[2]
+
+            #parse_dbus_rule(profile_data[profile], dbus, audit, allow)
+            dbus_rule = parse_dbus_rule(dbus)
+            dbus_rule.audit = audit
+            dbus_rule.deny = (allow == 'deny')
+
+            dbus_rules = profile_data[profile][hat][allow].get('dbus', list())
+            dbus_rules.append(dbus_rule)
+            profile_data[profile][hat][allow]['dbus'] = dbus_rules
+
         elif RE_PROFILE_CHANGE_HAT.search(line):
             matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
 
@@ -2937,19 +3004,29 @@ def parse_profile_data(data, file, do_include):
         elif line[0] == '#':
             # Handle initial comments
             if not profile:
-                if line.startswith('# vim:syntax') or line.startswith('# Last Modified:'):
+                if line.startswith('# Last Modified:'):
                     continue
-                line = line.split()
-                if len(line) > 1 and line[1] == 'REPOSITORY:':
-                    if len(line) == 3:
+                elif line.startswith('# REPOSITORY:'): # TODO: allow any number of spaces/tabs
+                    parts = line.split()
+                    if len(parts) == 3 and parts[2] == 'NEVERSUBMIT':
                         repo_data = {'neversubmit': True}
-                    elif len(line) == 5:
-                        repo_data = {'url': line[2],
-                                     'user': line[3],
-                                     'id': line[4]}
+                    elif len(parts) == 5:
+                        repo_data = {'url': parts[2],
+                                     'user': parts[3],
+                                     'id': parts[4]}
+                    else:
+                        aaui.UI_Important(_('Warning: invalid "REPOSITORY:" line in %s, ignoring.') % file)
+                        initial_comment = initial_comment + line + '\n'
                 else:
-                    initial_comment = ' '.join(line) + '\n'
+                    initial_comment = initial_comment + line + '\n'
 
+        elif not RE_RULE_HAS_COMMA.search(line):
+            # Bah, line continues on to the next line
+            if RE_HAS_COMMENT_SPLIT.search(line):
+                # filter trailing comments
+                lastline = RE_HAS_COMMENT_SPLIT.search(line).group('not_comment')
+            else:
+                lastline = line
         else:
             raise AppArmorException(_('Syntax Error: Unknown line found in file: %s line: %s') % (file, lineno + 1))
 
@@ -2967,6 +3044,21 @@ def parse_profile_data(data, file, do_include):
         raise AppArmorException(_("Syntax Error: Missing '}' . Reached end of file %s  while inside profile %s") % (file, profile))
 
     return profile_data
+
+# RE_DBUS_ENTRY = re.compile('^dbus\s*()?,\s*$')
+#   use stuff like '(?P<action>(send|write|w|receive|read|r|rw))'
+
+def parse_dbus_rule(line):
+    # XXX Do real parsing here
+    return aarules.Raw_DBUS_Rule(line)
+
+    #matches = RE_DBUS_ENTRY.search(line).groups()
+    #if len(matches) == 1:
+        # XXX warn?
+        # matched nothing
+    #    print('no matches')
+    #    return aarules.DBUS_Rule()
+    #print(line)
 
 def separate_vars(vs):
     """Returns a list of all the values for a variable"""
@@ -3158,6 +3250,24 @@ def write_netdomain(prof_data, depth):
     data += write_net_rules(prof_data, depth, 'allow')
     return data
 
+def write_dbus_rules(prof_data, depth, allow):
+    pre = '  ' * depth
+    data = []
+
+    # no dbus rules, so return
+    if not prof_data[allow].get('dbus', False):
+        return data
+
+    for dbus_rule in prof_data[allow]['dbus']:
+        data.append('%s%s' % (pre, dbus_rule.serialize()))
+    data.append('')
+    return data
+
+def write_dbus(prof_data, depth):
+    data = write_dbus_rules(prof_data, depth, 'deny')
+    data += write_net_rules(prof_data, depth, 'allow')
+    return data
+
 def write_link_rules(prof_data, depth, allow):
     pre = '  ' * depth
     data = []
@@ -3250,6 +3360,7 @@ def write_rules(prof_data, depth):
     data += write_rlimits(prof_data, depth)
     data += write_capabilities(prof_data, depth)
     data += write_netdomain(prof_data, depth)
+    data += write_dbus(prof_data, depth)
     data += write_links(prof_data, depth)
     data += write_paths(prof_data, depth)
     data += write_change_profile(prof_data, depth)
@@ -3397,6 +3508,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                          'rlimit': write_rlimits,
                          'capability': write_capabilities,
                          'netdomain': write_netdomain,
+                         'dbus': write_dbus,
                          'link': write_links,
                          'path': write_paths,
                          'change_profile': write_change_profile,
@@ -3408,6 +3520,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     'rlimit': False,
                     'capability': False,
                     'netdomain': False,
+                    'dbus': False,
                     'link': False,
                     'path': False,
                     'change_profile': False,
@@ -3486,6 +3599,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     data += write_rlimits(write_prof_data, depth)
                     data += write_capabilities(write_prof_data[name], depth)
                     data += write_netdomain(write_prof_data[name], depth)
+                    data += write_dbus(write_prof_data[name], depth)
                     data += write_links(write_prof_data[name], depth)
                     data += write_paths(write_prof_data[name], depth)
                     data += write_change_profile(write_prof_data[name], depth)

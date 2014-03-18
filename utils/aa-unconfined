@@ -17,7 +17,9 @@ import os
 import re
 import sys
 
-import apparmor.aa as apparmor
+import apparmor.aa as aa
+import apparmor.ui as ui
+import apparmor.common
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -29,13 +31,13 @@ args = parser.parse_args()
 
 paranoid = args.paranoid
 
-aa_mountpoint = apparmor.check_for_apparmor()
+aa_mountpoint = aa.check_for_apparmor()
 if not aa_mountpoint:
-    raise apparmor.AppArmorException(_("It seems AppArmor was not started. Please enable AppArmor and try again."))
+    raise aa.AppArmorException(_("It seems AppArmor was not started. Please enable AppArmor and try again."))
 
 pids = []
 if paranoid:
-    pids = list(filter(lambda x: re.search(r"^\d+$", x), apparmor.get_subdirectories("/proc")))
+    pids = list(filter(lambda x: re.search(r"^\d+$", x), aa.get_subdirectories("/proc")))
 else:
     regex_tcp_udp = re.compile(r"^(tcp|udp)\s+\d+\s+\d+\s+\S+\:(\d+)\s+\S+\:(\*|\d+)\s+(LISTEN|\s+)\s+(\d+)\/(\S+)")
     import subprocess
@@ -59,12 +61,12 @@ for pid in sorted(pids):
         continue
     attr = None
     if os.path.exists("/proc/%s/attr/current"%pid):
-        with apparmor.open_file_read("/proc/%s/attr/current"%pid) as current:
+        with aa.open_file_read("/proc/%s/attr/current"%pid) as current:
             for line in current:
                 if line.startswith("/") or line.startswith("null"):
                     attr = line.strip()
 
-    cmdline = apparmor.cmd(["cat", "/proc/%s/cmdline"%pid])[1]
+    cmdline = apparmor.common.cmd(["cat", "/proc/%s/cmdline"%pid])[1]
     pname = cmdline.split("\0")[0]
     if '/' in pname and pname != prog:
         pname = "(%s)"% pname
@@ -76,17 +78,17 @@ for pid in sorted(pids):
             cmdline = re.sub(r"\x00", " ", cmdline)
             cmdline = re.sub(r"\s+$", "", cmdline).strip()
 
-            apparmor.UI_Info(_("%s %s (%s) not confined\n")%(pid, prog, cmdline))
+            ui.UI_Info(_("%s %s (%s) not confined")%(pid, prog, cmdline))
         else:
             if pname and pname[-1] == ')':
                 pname += ' '
-            apparmor.UI_Info(_("%s %s %snot confined\n")%(pid, prog, pname))
+            ui.UI_Info(_("%s %s %snot confined")%(pid, prog, pname))
     else:
         if regex_interpreter.search(prog):
             cmdline = re.sub(r"\0", " ", cmdline)
             cmdline = re.sub(r"\s+$", "", cmdline).strip()
-            apparmor.UI_Info(_("%s %s (%s) confined by '%s'\n")%(pid, prog, cmdline, attr))
+            ui.UI_Info(_("%s %s (%s) confined by '%s'")%(pid, prog, cmdline, attr))
         else:
             if pname and pname[-1] == ')':
                 pname += ' '
-            apparmor.UI_Info(_("%s %s %sconfined by '%s'\n")%(pid, prog, pname, attr))
+            ui.UI_Info(_("%s %s %sconfined by '%s'")%(pid, prog, pname, attr))

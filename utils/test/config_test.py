@@ -37,8 +37,8 @@ class Test(unittest.TestCase):
         shell_config.CONF_DIR = '.'
         conf = shell_config.read_config('easyprof.conf')
         easyprof_sections = ['POLICYGROUPS_DIR', 'TEMPLATES_DIR']
-        easyprof_Policygroup = '/usr/share/apparmor/easyprof/policygroups'
-        easyprof_Templates = '/usr/share/apparmor/easyprof/templates'
+        easyprof_Policygroup = './policygroups'
+        easyprof_Templates = './templates'
 
         self.assertEqual(sorted(list(conf[''].keys())), sorted(easyprof_sections))
         self.assertEqual(conf['']['POLICYGROUPS_DIR'], easyprof_Policygroup)

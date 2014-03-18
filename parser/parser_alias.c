@@ -120,8 +120,7 @@ static void process_entries(const void *nodep, VISIT value, int __unused level)
 	len = strlen((*t)->from);
 
 	list_for_each(target_list, entry) {
-		if (entry->mode & (AA_SHARED_PERMS & AA_PTRACE_PERMS) ||
-		    entry->alias_ignore)
+		if ((entry->mode & AA_SHARED_PERMS) || entry->alias_ignore)
 			continue;
 		if (entry->name && strncmp((*t)->from, entry->name, len) == 0) {
 			char *n = do_alias(*t, entry->name);

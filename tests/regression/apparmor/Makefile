@@ -6,6 +6,10 @@
 #	published by the Free Software Foundation, version 2 of the
 #	License.
 
+all:
+COMMONDIR=../../../common/
+include $(COMMONDIR)/Make.rules
+
 ifdef USE_SYSTEM
   # use the system libapparmor headers and library
   LIBAPPARMOR = $(shell if pkg-config --exists libapparmor ; then \
@@ -14,9 +18,12 @@ ifdef USE_SYSTEM
 				echo -lapparmor ; \
 			fi )
   ifeq ($(strip $(LIBAPPARMOR)),)
-    ERROR_MESSAGE = Unable to find libapparmor installed on this system; either \
-	    install libapparmor devel packages, set the LIBAPPARMOR variable \
-	    manually, or build against in-tree libapparmor)
+    ERROR_MESSAGE = $(error ${nl}\
+************************************************************************${nl}\
+Unable to find libapparmor installed on this system; either${nl}\
+install libapparmor devel packages, set the LIBAPPARMOR variable${nl}\
+manually, or build against in-tree libapparmor.${nl}\
+************************************************************************${nl})
   endif # LIBAPPARMOR not set
   LDLIBS += $(LIBAPPARMOR)
 
@@ -26,10 +33,13 @@ else # !USE_SYSTEM
   LIBAPPARMOR_INCLUDE = $(LIBAPPARMOR_SRC)/include
   LIBAPPARMOR_PATH := $(LIBAPPARMOR_SRC)/src/.libs/
   ifeq ($(realpath $(LIBAPPARMOR_PATH)/libapparmor.a),)
-    ERROR_MESSAGE = $(LIBAPPARMOR_PATH)/libapparmor.a is missing; either build against \
-	    the in-tree libapparmor by building it first and then trying again \
-	    (see the top-level README for help) or build against the system \
-	    libapparmor by adding USE_SYSTEM=1 to your make command.)
+        ERROR_MESSAGE = $(error ${nl}\
+************************************************************************${nl}\
+$(LIBAPPARMOR_PATH)/libapparmor.a is missing; either build against${nl}\
+the in-tree libapparmor by building it first and then trying again${nl}\
+(see the top-level README for help) or build against the system${nl}\
+libapparmor by adding USE_SYSTEM=1 to your make command.${nl}\
+************************************************************************${nl})
   endif
 
   CFLAGS += -L$(LIBAPPARMOR_PATH) -I$(LIBAPPARMOR_INCLUDE)
@@ -174,13 +184,16 @@ RISKY_TESTS=
 
 .PHONY: libapparmor_check
 .SILENT: libapparmor_check
-libapparmor_check:
-	@if [ -n "$(ERROR_MESSAGE)" ] ; then \
-		echo "$(ERROR_MESSAGE)" 1>&2 ; \
-		return 1 ; \
-	fi
+libapparmor_check: ; $(ERROR_MESSAGE)
 
-all: libapparmor_check $(EXEC) changehat.h
+all: libapparmor_check $(EXEC) changehat.h uservars.inc
+
+uservars.inc: uservars.inc.source uservars.inc.system
+ifdef USE_SYSTEM
+	cp uservars.inc.system uservars.inc
+else # !USE_SYSTEM
+	cp uservars.inc.source uservars.inc
+endif # USE_SYSTEM
 
 changehat_pthread: changehat_pthread.c changehat.h
 	${CC} ${CFLAGS} ${LDFLAGS} $< -o $@ ${LDLIBS} -pthread
@@ -236,6 +249,6 @@ alltests: all
 	fi
 
 clean:
-	rm -f $(EXEC) dbus_common.o
+	rm -f $(EXEC) dbus_common.o uservars.inc
 
 regex.sh: open exec

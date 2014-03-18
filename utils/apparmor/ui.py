@@ -288,10 +288,6 @@ def UI_PromptUser(q, params=''):
     if cmd == 'CMD_ABORT':
         confirm_and_abort()
         cmd = 'XXXINVALIDXXX'
-    elif cmd == 'CMD_FINISHED':
-        if not params:
-            confirm_and_finish()
-        cmd = 'XXXINVALIDXXX'
     return (cmd, arg)
 
 def confirm_and_abort():
@@ -317,9 +313,6 @@ def UI_LongMessage(title, message):
                     })
     ypath, yarg = GetDataFromYast()
 
-def confirm_and_finish():
-    sys.stdout.write(_('FINISHING...\n'))
-    sys.exit(0)
 
 def Text_PromptUser(question):
     title = question['title']

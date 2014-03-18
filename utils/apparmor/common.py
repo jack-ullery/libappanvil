@@ -71,6 +71,38 @@ def debug(out):
         except IOError:
             pass
 
+def recursive_print(src, dpth = 0, key = ''):
+    # print recursively in a nicely formatted way
+    # useful for debugging, too verbose for production code ;-)
+
+    # "stolen" from http://code.activestate.com/recipes/578094-recursively-print-nested-dictionaries/
+    # by Scott S-Allen / MIT License
+    # (output format slightly modified)
+    """ Recursively prints nested elements."""
+    tabs = lambda n: ' ' * n * 4  # or 2 or 8 or...
+    brace = lambda s, n: '[%s]' % (s)
+
+    if isinstance(src, dict):
+        empty = True
+        for key, value in src.iteritems():
+            print (tabs(dpth) + brace(key, dpth))
+            recursive_print(value, dpth + 1, key)
+            empty = False
+        if empty:
+            print (tabs(dpth) + '[--- empty ---]')
+    elif isinstance(src, list) or isinstance(src, tuple):
+        empty = True
+        for litem in src:
+            recursive_print(litem, dpth + 2)
+            empty = False
+        if empty:
+            print (tabs(dpth) + '[--- empty ---]')
+    else:
+        if key:
+            print (tabs(dpth) + '%s = %s' % (key, src))
+        else:
+            print (tabs(dpth) + '- %s' % src)
+
 def cmd(command):
     '''Try to execute the given command.'''
     debug(command)
@@ -112,6 +144,7 @@ def valid_path(path):
         return False
 
     if '"' in path:  # We double quote elsewhere
+        debug("%s (contains quote)" % (m))
         return False
 
     try:
@@ -228,7 +261,7 @@ class DebugLogger(object):
             try:
                 logging.basicConfig(filename=self.logfile, level=self.debug_level,
                                     format='%(asctime)s - %(name)s - %(message)s\n')
-            except OSError:
+            except IOError:
                 # Unable to open the default logfile, so create a temporary logfile and tell use about it
                 import tempfile
                 templog = tempfile.NamedTemporaryFile('w', prefix='apparmor', suffix='.log', delete=False)

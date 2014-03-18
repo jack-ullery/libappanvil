@@ -100,11 +100,15 @@ class Manifest(object):
 # Our test class
 #
 class T(unittest.TestCase):
+
+    # work around UsrMove
+    ls = os.path.realpath('/bin/ls')
+
     def setUp(self):
         '''Setup for tests'''
         global topdir
 
-        self.tmpdir = tempfile.mkdtemp(prefix='test-aa-easyprof')
+        self.tmpdir = os.path.realpath(tempfile.mkdtemp(prefix='test-aa-easyprof'))
 
         # Copy everything into place
         for d in ['easyprof/policygroups', 'easyprof/templates']:
@@ -168,7 +172,8 @@ TEMPLATES_DIR="%s/templates"
         if os.path.exists(self.tmpdir):
             if debugging:
                 sys.stdout.write("%s\n" % self.tmpdir)
-            recursive_rm(self.tmpdir)
+            else:
+                recursive_rm(self.tmpdir)
 
 #
 # config file tests
@@ -237,7 +242,8 @@ TEMPLATES_DIR="%s/templates"
         easyp = easyprof.AppArmorEasyProfile(self.binary, self.options)
 
         # no fallback
-        self.assertTrue(easyp.dirs['policygroups'] == rel, "Not using specified --policy-groups-dir")
+        self.assertTrue(easyp.dirs['policygroups'] == rel, "Not using specified --policy-groups-dir\n" +
+                                                           "Specified dir: %s\nActual dir: %s" % (rel, str(easyp.dirs['policygroups'])))
         self.assertFalse(easyp.get_policy_groups() == None, "Could not find policy-groups")
 
     def test_policygroups_dir_nonexistent(self):
@@ -360,7 +366,8 @@ POLICYGROUPS_DIR="%s/templates"
         easyp = easyprof.AppArmorEasyProfile(self.binary, self.options)
 
         # no fallback
-        self.assertTrue(easyp.dirs['templates'] == rel, "Not using specified --template-dir")
+        self.assertTrue(easyp.dirs['templates'] == rel, "Not using specified --template-dir\n" +
+                                                        "Specified dir: %s\nActual dir: %s" % (rel, str(easyp.dirs['templates'])))
         self.assertFalse(easyp.get_templates() == None, "Could not find templates")
 
     def test_templates_dir_nonexistent(self):
@@ -424,14 +431,14 @@ POLICYGROUPS_DIR="%s/templates"
 #
     def test_binary_without_profile_name(self):
         '''Test binary (<binary> { })'''
-        easyprof.AppArmorEasyProfile('/bin/ls', self.options)
+        easyprof.AppArmorEasyProfile(self.ls, self.options)
 
     def test_binary_with_profile_name(self):
         '''Test binary (profile <name> <binary> { })'''
         args = self.full_args
         args += ['--profile-name=some-profile-name']
         (self.options, self.args) = easyprof.parse_args(args)
-        easyprof.AppArmorEasyProfile('/bin/ls', self.options)
+        easyprof.AppArmorEasyProfile(self.ls, self.options)
 
     def test_binary_omitted_with_profile_name(self):
         '''Test binary (profile <name> { })'''
@@ -1206,7 +1213,7 @@ POLICYGROUPS_DIR="%s/templates"
     def test_gen_manifest_policy_with_binary_with_profile_name(self):
         '''Test gen_manifest_policy (binary with profile name)'''
         m = Manifest("test_gen_manifest_policy")
-        m.add_binary('/bin/ls')
+        m.add_binary(self.ls)
         self._gen_manifest_policy(m)
 
     def test_gen_manifest_policy_without_binary_with_profile_name(self):

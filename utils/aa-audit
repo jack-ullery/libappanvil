@@ -29,9 +29,10 @@ parser.add_argument('--trace', action='store_true', help=_('Show full trace'))
 args = parser.parse_args()
 
 try:
-    audit = apparmor.tools.aa_tools('audit', args)
+    tool = apparmor.tools.aa_tools('audit', args)
 
-    audit.act()
+    tool.cmd_audit()
+
 except Exception as e:
     if not args.trace:
         print(e.value + "\n")
