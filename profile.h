@@ -82,7 +82,7 @@ struct capabilities {
 	uint64_t deny;
 	uint64_t quiet;
 
-	capabilities(void) { allow = audit = deny = quiet; }
+	capabilities(void) { allow = audit = deny = quiet = 0; }
 
 	void dump()
 		{

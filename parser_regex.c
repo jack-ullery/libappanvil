@@ -493,8 +493,6 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 	if ((entry->mode >> AA_USER_SHIFT) & AA_EXEC_INHERIT)
 		entry->mode |= AA_EXEC_MMAP << AA_USER_SHIFT;
 
-	/* relying on ptrace and change_profile not getting merged earlier */
-
 	/* the link bit on the first pair entry should not get masked
 	 * out by a deny rule, as both pieces of the link pair must
 	 * match.  audit info for the link is carried on the second
@@ -555,19 +553,6 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 			return FALSE;
 		if (!aare_add_rule_vec(dfarules, 0, AA_ONEXEC, 0, index, vec, dfaflags))
 			return FALSE;
-	}
-	if (entry->mode & (AA_USER_PTRACE | AA_OTHER_PTRACE)) {
-		int mode = entry->mode & (AA_USER_PTRACE | AA_OTHER_PTRACE);
-		if (entry->ns) {
-			const char *vec[2];
-			vec[0] = entry->ns;
-			vec[1] = entry->name;
-			if (!aare_add_rule_vec(dfarules, 0, mode, 0, 2, vec, dfaflags))
-			    return FALSE;
-		} else {
-		  if (!aare_add_rule(dfarules, entry->name, 0, mode, 0, dfaflags))
-				return FALSE;
-		}
 	}
 	return TRUE;
 }
