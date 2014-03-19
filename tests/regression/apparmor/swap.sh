@@ -27,6 +27,15 @@ bin=$pwd
 ## A. SWAP
 ##
 
+# check if we can run the test at all
+fstype=$(stat -f --format '%T' "${tmpdir}")
+if [ "${fstype}" == "tmpfs" ] ; then
+	echo "ERROR: tmpdir '${tmpdir}' is of type tmpfs; can't mount a swapfile on it" 1>&2
+	echo "ERROR: skipping swap tests" 1>&2
+	num_testfailures=1
+	exit
+fi
+
 swap_file=$tmpdir/swapfile
 
 dd if=/dev/zero of=${swap_file} bs=1024 count=512 2> /dev/null
