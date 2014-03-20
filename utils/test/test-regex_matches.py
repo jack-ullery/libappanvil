@@ -110,6 +110,50 @@ def setup_split_comment_testcases():
         stub_test.__doc__ = "test '%s'" % (test_string)
         setattr(AARegexSplitComment, 'test_split_comment_%d' % (i), stub_test)
 
+class AARegexCapability(unittest.TestCase):
+    '''Tests for RE_PROFILE_CAP'''
+
+    def test_simple_capability_01(self):
+        '''test '   capability net_raw,' '''
+
+        line = '   capability net_raw,'
+        result = aa.RE_PROFILE_CAP.search(line)
+        self.assertTrue(result, 'Couldn\'t find capability rule in "%s"' % line)
+        cap = result.groups()[2].strip()
+        self.assertEqual(cap, 'net_raw', 'Expected capability "%s", got "%s"'
+                         % ('net_raw', cap))
+
+    def test_simple_capability_02(self):
+        '''test '   capability net_raw   ,  ' '''
+
+        line = 'capability     net_raw   ,  '
+        result = aa.RE_PROFILE_CAP.search(line)
+        self.assertTrue(result, 'Couldn\'t find capability rule in "%s"' % line)
+        cap = result.groups()[2].strip()
+        self.assertEqual(cap, 'net_raw', 'Expected capability "%s", got "%s"'
+                         % ('net_raw', cap))
+
+    def test_capability_all_01(self):
+        '''test '   capability,' '''
+
+        line = '   capability,'
+        result = aa.RE_PROFILE_CAP.search(line)
+        self.assertTrue(result, 'Couldn\'t find capability rule in "%s"' % line)
+
+    def test_capability_all_02(self):
+        '''test '   capability   ,  ' '''
+
+        line = '   capability   ,  '
+        result = aa.RE_PROFILE_CAP.search(line)
+        self.assertTrue(result, 'Couldn\'t find capability rule in "%s"' % line)
+
+    def test_simple_bad_capability_01(self):
+        '''test '   capabilitynet_raw,' '''
+
+        line = '   capabilitynet_raw,'
+        result = aa.RE_PROFILE_CAP.search(line)
+        self.assertFalse(result, 'Found unexpected capability rule in "%s"' % line)
+
 if __name__ == '__main__':
     verbosity = 2
 
@@ -119,6 +163,7 @@ if __name__ == '__main__':
     test_suite = unittest.TestSuite()
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexHasComma))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexSplitComment))
+    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexCapability))
     result = unittest.TextTestRunner(verbosity=verbosity).run(test_suite)
     if not result.wasSuccessful():
         exit(1)
