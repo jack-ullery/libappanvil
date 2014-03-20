@@ -1,8 +1,0 @@
-In order to actually use aadbus, you need to tell auditd to use it as a dispatcher.  It's simple:
-
-* As root, edit /etc/auditd.conf
-
-* Add the following line (using the correct path, of course):
-	dispatcher=/usr/local/bin/apparmor-dbus
-
-* Restart auditd
