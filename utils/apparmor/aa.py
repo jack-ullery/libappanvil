@@ -2616,6 +2616,7 @@ RE_PROFILE_HAT_DEF = re.compile('^\s*\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{
 RE_NETWORK_FAMILY_TYPE = re.compile('\s+(\S+)\s+(\S+)\s*,$')
 RE_NETWORK_FAMILY = re.compile('\s+(\S+)\s*,$')
 RE_PROFILE_DBUS = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(dbus[^#]*\s*,)\s*(#.*)?$')
+RE_PROFILE_MOUNT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((mount|remount|umount)[^#]*\s*,)\s*(#.*)?$')
 
 # match anything that's not " or #, or matching quotes with anything except quotes inside
 __re_no_or_quoted_hash = '([^#"]|"[^"]*")*'
@@ -2693,6 +2694,7 @@ def parse_profile_data(data, file, do_include):
             profile_data[profile][hat]['allow']['netdomain'] = hasher()
             profile_data[profile][hat]['allow']['path'] = hasher()
             profile_data[profile][hat]['allow']['dbus'] = list()
+            profile_data[profile][hat]['allow']['mount'] = list()
             # Save the initial comment
             if initial_comment:
                 profile_data[profile][hat]['initial_comment'] = initial_comment
@@ -2966,6 +2968,28 @@ def parse_profile_data(data, file, do_include):
             dbus_rules.append(dbus_rule)
             profile_data[profile][hat][allow]['dbus'] = dbus_rules
 
+        elif RE_PROFILE_MOUNT.search(line):
+            matches = RE_PROFILE_MOUNT.search(line).groups()
+
+            if not profile:
+                raise AppArmorException(_('Syntax Error: Unexpected mount entry found in file: %s line: %s') % (file, lineno + 1))
+
+            audit = False
+            if matches[0]:
+                audit = True
+            allow = 'allow'
+            if matches[1] and matches[1].strip() == 'deny':
+                allow = 'deny'
+            mount = matches[2]
+
+            mount_rule = parse_mount_rule(mount)
+            mount_rule.audit = audit
+            mount_rule.deny = (allow == 'deny')
+
+            mount_rules = profile_data[profile][hat][allow].get('mount', list())
+            mount_rules.append(mount_rule)
+            profile_data[profile][hat][allow]['mount'] = mount_rules
+
         elif RE_PROFILE_CHANGE_HAT.search(line):
             matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
 
@@ -3059,6 +3083,10 @@ def parse_dbus_rule(line):
     #    print('no matches')
     #    return aarules.DBUS_Rule()
     #print(line)
+
+def parse_mount_rule(line):
+    # XXX Do real parsing here
+    return aarules.Raw_Mount_Rule(line)
 
 def separate_vars(vs):
     """Returns a list of all the values for a variable"""
@@ -3268,6 +3296,24 @@ def write_dbus(prof_data, depth):
     data += write_dbus_rules(prof_data, depth, 'allow')
     return data
 
+def write_mount_rules(prof_data, depth, allow):
+    pre = '  ' * depth
+    data = []
+
+    # no mount rules, so return
+    if not prof_data[allow].get('mount', False):
+        return data
+
+    for mount_rule in prof_data[allow]['mount']:
+        data.append('%s%s' % (pre, mount_rule.serialize()))
+    data.append('')
+    return data
+
+def write_mount(prof_data, depth):
+    data = write_mount_rules(prof_data, depth, 'deny')
+    data += write_mount_rules(prof_data, depth, 'allow')
+    return data
+
 def write_link_rules(prof_data, depth, allow):
     pre = '  ' * depth
     data = []
@@ -3361,6 +3407,7 @@ def write_rules(prof_data, depth):
     data += write_capabilities(prof_data, depth)
     data += write_netdomain(prof_data, depth)
     data += write_dbus(prof_data, depth)
+    data += write_mount(prof_data, depth)
     data += write_links(prof_data, depth)
     data += write_paths(prof_data, depth)
     data += write_change_profile(prof_data, depth)
@@ -3509,6 +3556,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                          'capability': write_capabilities,
                          'netdomain': write_netdomain,
                          'dbus': write_dbus,
+                         'mount': write_mount,
                          'link': write_links,
                          'path': write_paths,
                          'change_profile': write_change_profile,
@@ -3600,6 +3648,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     data += write_capabilities(write_prof_data[name], depth)
                     data += write_netdomain(write_prof_data[name], depth)
                     data += write_dbus(write_prof_data[name], depth)
+                    data += write_mount(write_prof_data[name], depth)
                     data += write_links(write_prof_data[name], depth)
                     data += write_paths(write_prof_data[name], depth)
                     data += write_change_profile(write_prof_data[name], depth)
