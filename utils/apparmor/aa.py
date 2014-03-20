@@ -3265,7 +3265,7 @@ def write_dbus_rules(prof_data, depth, allow):
 
 def write_dbus(prof_data, depth):
     data = write_dbus_rules(prof_data, depth, 'deny')
-    data += write_net_rules(prof_data, depth, 'allow')
+    data += write_dbus_rules(prof_data, depth, 'allow')
     return data
 
 def write_link_rules(prof_data, depth, allow):
