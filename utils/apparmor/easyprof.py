@@ -296,6 +296,7 @@ class AppArmorEasyProfile:
         verify_options(opt)
         opt.ensure_value("conffile", "/etc/apparmor/easyprof.conf")
         self.conffile = os.path.abspath(opt.conffile)
+        debug("Examining confile=%s" % (self.conffile))
 
         self.dirs = dict()
         if os.path.isfile(self.conffile):
@@ -1085,10 +1086,10 @@ def verify_options(opt, strict=False):
                 raise AppArmorException("Invalid write path '%s'" % i)
 
 
-def verify_manifest(params):
+def verify_manifest(params, args=None):
     '''Verify manifest for safe and unsafe options'''
     err_str = ""
-    (opt, args) = parse_args()
+    (opt, args) = parse_args(args)
     fake_easyp = AppArmorEasyProfile(None, opt)
 
     unsafe_keys = ['read_path', 'write_path']

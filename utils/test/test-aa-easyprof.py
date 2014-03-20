@@ -1644,9 +1644,9 @@ POLICYGROUPS_DIR="%s/templates"
             raise
         params = easyprof.gen_policy_params(binary, options)
         if expected:
-            self.assertTrue(easyprof.verify_manifest(params), "params=%s\nmanifest=%s" % (params,m))
+            self.assertTrue(easyprof.verify_manifest(params, args), "params=%s\nmanifest=%s" % (params,m))
         else:
-            self.assertFalse(easyprof.verify_manifest(params), "params=%s\nmanifest=%s" % (params,m))
+            self.assertFalse(easyprof.verify_manifest(params, args), "params=%s\nmanifest=%s" % (params,m))
 
     def test_verify_manifest_full(self):
         '''Test verify_manifest (full)'''
