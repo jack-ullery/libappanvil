@@ -78,6 +78,9 @@ seen_events = 0  # was our
 # To store the globs entered by users so they can be provided again
 user_globs = []
 
+# The key for representing bare rules such as "capability," or "file,"
+ALL = '_ALL'
+
 ## Variables used under logprof
 ### Were our
 t = hasher()  # dict()
@@ -2104,6 +2107,9 @@ def delete_cap_duplicates(profilecaps, inccaps):
     deleted = []
     if profilecaps and inccaps:
         for capname in profilecaps.keys():
+            # XXX The presence of a bare capability rule ("capability,") should
+            #     cause more specific capability rules
+            #     ("capability audit_control,") to be deleted
             if inccaps[capname].get('set', False) == 1:
                 deleted.append(capname)
         for capname in deleted:
@@ -2599,7 +2605,7 @@ def attach_profile_data(profiles, profile_data):
 ## Profile parsing regex
 RE_PROFILE_START = re.compile('^\s*(("??/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.+)\)\s+)?\{\s*(#.*)?$')
 RE_PROFILE_END = re.compile('^\s*\}\s*(#.*)?$')
-RE_PROFILE_CAP = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?capability\s+(\S+)\s*,\s*(#.*)?$')
+RE_PROFILE_CAP = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?capability(\s+\S+)?\s*,\s*(#.*)?$')
 RE_PROFILE_LINK = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)\s*,\s*(#.*)?$')
 RE_PROFILE_CHANGE_PROFILE = re.compile('^\s*change_profile\s+->\s*("??.+?"??),(#.*)?$')
 RE_PROFILE_ALIAS = re.compile('^\s*alias\s+("??.+?"??)\s+->\s*("??.+?"??)\s*,(#.*)?$')
@@ -2733,7 +2739,9 @@ def parse_profile_data(data, file, do_include):
             if matches[1] and matches[1].strip() == 'deny':
                 allow = 'deny'
 
-            capability = matches[2]
+            capability = ALL
+            if matches[2]:
+                capability = matches[2].strip()
 
             profile_data[profile][hat][allow]['capability'][capability]['set'] = True
             profile_data[profile][hat][allow]['capability'][capability]['audit'] = audit
@@ -3236,7 +3244,10 @@ def write_cap_rules(prof_data, depth, allow):
             if prof_data[allow]['capability'][cap].get('audit', False):
                 audit = 'audit '
             if prof_data[allow]['capability'][cap].get('set', False):
-                data.append('%s%s%scapability %s,' % (pre, audit, allowstr, cap))
+                if cap == ALL:
+                    data.append('%s%s%scapability,' % (pre, audit, allowstr))
+                else:
+                    data.append('%s%s%scapability %s,' % (pre, audit, allowstr, cap))
         data.append('')
 
     return data
@@ -3698,7 +3709,9 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 if matches[1] and matches[1].strip() == 'deny':
                     allow = 'deny'
 
-                capability = matches[2]
+                capability = ALL
+                if matches[2]:
+                    capability = matches[2].strip()
 
                 if not write_prof_data[hat][allow]['capability'][capability].get('set', False):
                     correct = False
