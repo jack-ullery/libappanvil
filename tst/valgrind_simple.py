@@ -15,6 +15,7 @@
 
 from argparse import ArgumentParser  # requires python 2.7 or newer
 import os
+import sys
 import tempfile
 import unittest
 import testlib
@@ -43,7 +44,7 @@ class AAParserValgrindTests(testlib.AATestTemplate):
     def _runtest(self, testname, config):
         parser_args = ['-Q', '-I', config.testdir]
         failure_rc = [VALGRIND_ERROR_CODE, testlib.TIMEOUT_ERROR_CODE]
-        command = ['valgrind']
+        command = [config.valgrind]
         command.extend(VALGRIND_ARGS)
         command.append(config.parser)
         command.extend(parser_args)
@@ -75,8 +76,11 @@ def create_suppressions():
 def main():
     rc = 0
     p = ArgumentParser()
-    p.add_argument('-p', '--parser', default=testlib.DEFAULT_PARSER, action="store", dest='parser')
+    p.add_argument('-p', '--parser', default=testlib.DEFAULT_PARSER, action="store", dest='parser',
+                   help="Specify path of apparmor parser to use [default = %(default)s]")
     p.add_argument('-v', '--verbose', action="store_true", dest="verbose")
+    p.add_argument('-V', '--valgrind', default='/usr/bin/valgrind', action="store", dest="valgrind",
+                   help="Specify path of valgrind to use [default = %(default)s]")
     p.add_argument('-s', '--skip-suppressions', action="store_true", dest="skip_suppressions",
                    help="Don't use valgrind suppressions to skip false positives")
     p.add_argument('--dump-suppressions', action="store_true", dest="dump_suppressions",
@@ -88,6 +92,11 @@ def main():
     if config.dump_suppressions:
         print(VALGRIND_SUPPRESSIONS)
         return rc
+
+    if not os.path.exists(config.valgrind):
+        print("Unable to find valgrind at '%s', ensure that it is installed" % (config.valgrind),
+              file=sys.stderr)
+        exit(1)
 
     verbosity = 1
     if config.verbose:
