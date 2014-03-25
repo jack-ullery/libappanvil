@@ -54,7 +54,8 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 	install -m 644 logprof.conf severity.db notify.conf ${CONFDIR}
 	install -d ${BINDIR}
 	ln -sf aa-status ${BINDIR}/apparmor_status
-	install -m 755 ${TOOLS} ${BINDIR}
+	# aa-easyprof is installed by python-tools-setup.py
+	install -m 755 $(filter-out aa-easyprof, ${TOOLS}) ${BINDIR}
 	$(MAKE) -C po install DESTDIR=${DESTDIR} NAME=${NAME}
 	$(MAKE) install_manpages DESTDIR=${DESTDIR}
 	$(MAKE) -C vim install DESTDIR=${DESTDIR}
