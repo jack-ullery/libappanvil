@@ -18,7 +18,7 @@ pwd=`cd $pwd ; /bin/pwd`
 bin=$pwd
 
 . $bin/prologue.inc
-required_features dbus
+requires_features dbus
 . $bin/dbus.inc
 
 listnames="--type=method_call --session --name=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.ListNames"

@@ -21,19 +21,32 @@
 #
 # For this file, functions are first, entry point code is at end, see "MAIN"
 
-required_features()
+#use $() to retreive the failure message or "true" if success
+have_features()
 {
 	if [ ! -e "/sys/kernel/security/apparmor/features/" ] ; then
-		echo "Kernel feature masks not supported. Skipping tests ..."
-		exit 0
+		echo "Kernel feature masks not supported."
+		return 1;
 	fi
 
 	for f in $@ ; do
 		if [ ! -e "/sys/kernel/security/apparmor/features/$f" ] ; then
-			echo "Required feature $f not available. Skipping tests ..."
-			exit 0
+			echo "Required feature '$f' not available."
+			return 2;
 		fi
 	done
+
+	echo "true"
+	return 0;
+}
+
+requires_features()
+{
+	local res=$(have_features $@)
+	if [ "$res" != "true" ] ; then
+		echo "$res. Skipping tests ..."
+		exit 0
+	fi
 }
 
 requires_query_interface()

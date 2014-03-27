@@ -17,7 +17,7 @@ pwd=`cd $pwd ; /bin/pwd`
 bin=$pwd
 
 . $bin/prologue.inc
-required_features dbus
+requires_features dbus
 . $bin/dbus.inc
 
 service="--$bus --name=$dest $path $iface"
