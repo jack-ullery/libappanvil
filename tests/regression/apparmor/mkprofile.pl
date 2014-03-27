@@ -174,6 +174,78 @@ sub gen_cap($) {
   }
 }
 
+sub gen_mount($) {
+    my $rule = shift;
+    my @rules = split (/:/, $rule);
+    if (@rules == 2) {
+	if ($rules[1] =~ /^ALL$/) {
+	    push (@{$output_rules{$hat}}, "  mount,\n");
+	} else {
+	    push (@{$output_rules{$hat}}, "  mount $rules[1],\n");
+	}
+    } elsif (@rules == 3) {
+	push (@{$output_rules{$hat}}, "  mount $rules[1] $rules[2],\n");
+    } elsif (@rules == 4) {
+	push (@{$output_rules{$hat}}, "  mount $rules[1] $rules[2] $rules[3],\n");
+    } elsif (@rules == 5) {
+	push (@{$output_rules{$hat}}, "  mount $rules[1] $rules[2] $rules[3] $rules[4],\n");
+    } elsif (@rules == 6) {
+	push (@{$output_rules{$hat}}, "  mount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5],\n");
+    } elsif (@rules == 7) {
+	push (@{$output_rules{$hat}}, "  mount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5] $rules[6],\n");
+    } else {
+	(!$nowarn) && print STDERR "Warning: invalid mount description '$rule', ignored\n";
+    }
+}
+
+sub gen_remount($) {
+    my $rule = shift;
+    my @rules = split (/:/, $rule);
+    if (@rules == 2) {
+	if ($rules[1] =~ /^ALL$/) {
+	    push (@{$output_rules{$hat}}, "  remount,\n");
+	} else {
+	    push (@{$output_rules{$hat}}, "  remount $rules[1],\n");
+	}
+    } elsif (@rules == 3) {
+	push (@{$output_rules{$hat}}, "  remount $rules[1] $rules[2],\n");
+    } elsif (@rules == 4) {
+	push (@{$output_rules{$hat}}, "  remount $rules[1] $rules[2] $rules[3],\n");
+    } elsif (@rules == 5) {
+	push (@{$output_rules{$hat}}, "  remount $rules[1] $rules[2] $rules[3] $rules[4],\n");
+    } elsif (@rules == 6) {
+	push (@{$output_rules{$hat}}, "  remount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5],\n");
+    } elsif (@rules == 7) {
+	push (@{$output_rules{$hat}}, "  remount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5] $rules[6],\n");
+    } else {
+	(!$nowarn) && print STDERR "Warning: invalid remount description '$rule', ignored\n";
+    }
+}
+
+sub gen_umount($) {
+    my $rule = shift;
+    my @rules = split (/:/, $rule);
+    if (@rules == 2) {
+	if ($rules[1] =~ /^ALL$/) {
+	    push (@{$output_rules{$hat}}, "  umount,\n");
+	} else {
+	    push (@{$output_rules{$hat}}, "  umount $rules[1],\n");
+	}
+    } elsif (@rules == 3) {
+	push (@{$output_rules{$hat}}, "  umount $rules[1] $rules[2],\n");
+    } elsif (@rules == 4) {
+	push (@{$output_rules{$hat}}, "  umount $rules[1] $rules[2] $rules[3],\n");
+    } elsif (@rules == 5) {
+	push (@{$output_rules{$hat}}, "  umount $rules[1] $rules[2] $rules[3] $rules[4],\n");
+    } elsif (@rules == 6) {
+	push (@{$output_rules{$hat}}, "  umount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5],\n");
+    } elsif (@rules == 7) {
+	push (@{$output_rules{$hat}}, "  umount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5] $rules[6],\n");
+    } else {
+	(!$nowarn) && print STDERR "Warning: invalid umount description '$rule', ignored\n";
+    }
+}
+
 sub gen_file($) {
   my $rule = shift;
   my @rules = split (/:/, $rule);
@@ -260,6 +332,12 @@ sub gen_from_args() {
       gen_network($rule);
     } elsif ($rule =~ /^cap:/) {
       gen_cap($rule);
+    } elsif ($rule =~ /^mount:/) {
+      gen_mount($rule);
+    } elsif ($rule =~ /^remount:/) {
+      gen_remount($rule);
+    } elsif ($rule =~ /^umount:/) {
+      gen_umount($rule);
     } elsif ($rule =~ /^flag:/) {
       gen_flag($rule);
     } elsif ($rule =~ /^hat:/) {
