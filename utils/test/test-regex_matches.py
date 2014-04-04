@@ -96,6 +96,9 @@ regex_split_comment_testcases = [
     ('dbus send member=no_comment, ', False),
     ('audit "/tmp/foo, # bar" rw', False),
     ('audit "/tmp/foo, # bar" rw # comment', ('audit "/tmp/foo, # bar" rw ', '# comment')),
+    ('file,', False),
+    ('file, # bare', ('file, ', '# bare')),
+    ('file /tmp/foo rw, # read-write', ('file /tmp/foo rw, ', '# read-write')),
 ]
 
 def setup_split_comment_testcases():
@@ -154,6 +157,125 @@ class AARegexCapability(unittest.TestCase):
         result = aa.RE_PROFILE_CAP.search(line)
         self.assertFalse(result, 'Found unexpected capability rule in "%s"' % line)
 
+class AARegexPath(unittest.TestCase):
+    '''Tests for RE_PROFILE_PATH_ENTRY'''
+
+    def test_simple_path_01(self):
+        '''test '   /tmp/foo r,' '''
+
+        line = '   /tmp/foo r,'
+        result = aa.RE_PROFILE_PATH_ENTRY.search(line)
+        self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
+        mode = result.groups()[4].strip()
+        self.assertEqual(mode, 'r', 'Expected mode "r", got "%s"' % (mode))
+
+    def test_simple_path_02(self):
+        '''test '   audit /tmp/foo rw,' '''
+
+        line = '   audit /tmp/foo rw,'
+        result = aa.RE_PROFILE_PATH_ENTRY.search(line)
+        self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
+        audit = result.groups()[0].strip()
+        self.assertEqual(audit, 'audit', 'Couldn\t find audit modifier')
+        mode = result.groups()[4].strip()
+        self.assertEqual(mode, 'rw', 'Expected mode "rw", got "%s"' % (mode))
+
+    def test_simple_path_03(self):
+        '''test '   audit deny /tmp/foo rw,' '''
+
+        line = '   audit deny /tmp/foo rw,'
+        result = aa.RE_PROFILE_PATH_ENTRY.search(line)
+        self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
+        audit = result.groups()[0].strip()
+        self.assertEqual(audit, 'audit', 'Couldn\t find audit modifier')
+        deny = result.groups()[1].strip()
+        self.assertEqual(deny, 'deny', 'Couldn\t find deny modifier')
+        mode = result.groups()[4].strip()
+        self.assertEqual(mode, 'rw', 'Expected mode "rw", got "%s"' % (mode))
+
+    def test_simple_bad_path_01(self):
+        '''test '   file,' '''
+
+        line = '   file,'
+        result = aa.RE_PROFILE_PATH_ENTRY.search(line)
+        self.assertFalse(result, 'RE_PROFILE_PATH_ENTRY unexpectedly matched "%s"' % line)
+
+    def test_simple_bad_path_02(self):
+        '''test '   file /tmp/foo rw,' '''
+
+        line = '   file /tmp/foo rw,'
+        result = aa.RE_PROFILE_PATH_ENTRY.search(line)
+        self.assertFalse(result, 'RE_PROFILE_PATH_ENTRY unexpectedly matched "%s"' % line)
+
+class AARegexFile(unittest.TestCase):
+    '''Tests for RE_PROFILE_FILE_ENTRY'''
+
+    def _assertEqualStrings(self, str1, str2):
+        self.assertEqual(str1, str2, 'Expected %s, got "%s"' % (str1, str2))
+
+    def test_simple_file_01(self):
+        '''test '   file /tmp/foo rw,' '''
+
+        path = '/tmp/foo'
+        mode = 'rw'
+        line = '   file %s %s,' % (path, mode)
+        result = aa.RE_PROFILE_FILE_ENTRY.search(line)
+        self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
+        self._assertEqualStrings(path, result.groups()[3].strip())
+        self._assertEqualStrings(mode, result.groups()[4].strip())
+
+    def test_simple_file_02(self):
+        '''test '   file,' '''
+
+        line = '   file,'
+        result = aa.RE_PROFILE_FILE_ENTRY.search(line)
+        self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
+        path = result.groups()[3]
+        self.assertEqual(path, None, 'Unexpected path, got "%s"' % path)
+        mode = result.groups()[4]
+        self.assertEqual(mode, None, 'Unexpected mode, got "%s"' % (mode))
+
+    def test_simple_file_03(self):
+        '''test '   audit file,' '''
+
+        line = '   audit file,'
+        result = aa.RE_PROFILE_FILE_ENTRY.search(line)
+        self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
+        audit = result.groups()[0].strip()
+        self.assertEqual(audit, 'audit', 'Couldn\t find audit modifier')
+        path = result.groups()[3]
+        self.assertEqual(path, None, 'Unexpected path, got "%s"' % path)
+        mode = result.groups()[4]
+        self.assertEqual(mode, None, 'Unexpected mode, got "%s"' % (mode))
+
+    def test_simple_bad_file_01(self):
+        '''test '   dbus,' '''
+
+        line = '   dbus,'
+        result = aa.RE_PROFILE_FILE_ENTRY.search(line)
+        self.assertFalse(result, 'RE_PROFILE_FILE_ENTRY unexpectedly matched "%s"' % line)
+
+    def test_simple_bad_file_02(self):
+        '''test '   /tmp/foo rw,' '''
+
+        line = '   /tmp/foo rw,'
+        result = aa.RE_PROFILE_FILE_ENTRY.search(line)
+        self.assertFalse(result, 'RE_PROFILE_FILE_ENTRY unexpectedly matched "%s"' % line)
+
+    def test_simple_bad_file_03(self):
+        '''test '   file /tmp/foo,' '''
+
+        line = '   file /tmp/foo,'
+        result = aa.RE_PROFILE_FILE_ENTRY.search(line)
+        self.assertFalse(result, 'RE_PROFILE_FILE_ENTRY unexpectedly matched "%s"' % line)
+
+    def test_simple_bad_file_04(self):
+        '''test '   file r,' '''
+
+        line = '   file r,'
+        result = aa.RE_PROFILE_FILE_ENTRY.search(line)
+        self.assertFalse(result, 'RE_PROFILE_FILE_ENTRY unexpectedly matched "%s"' % line)
+
 if __name__ == '__main__':
     verbosity = 2
 
@@ -164,6 +286,8 @@ if __name__ == '__main__':
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexHasComma))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexSplitComment))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexCapability))
+    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexPath))
+    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexFile))
     result = unittest.TextTestRunner(verbosity=verbosity).run(test_suite)
     if not result.wasSuccessful():
         exit(1)
