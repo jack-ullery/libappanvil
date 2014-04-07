@@ -331,6 +331,7 @@ extern int name_to_capability(const char *keyword);
 extern int get_rlimit(const char *name);
 extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);
+extern int parse_X_mode(const char *X, int valid, const char *str_mode, int *mode, int fail);
 extern struct cod_entry *new_entry(char *ns, char *id, int mode, char *link_id);
 extern struct aa_network_entry *new_network_ent(unsigned int family,
 						unsigned int type,

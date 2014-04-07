@@ -792,6 +792,81 @@ int parse_mode(const char *str_mode)
 	return mode;
 }
 
+static int parse_X_sub_mode(const char *X, const char *str_mode, int *result, int fail, const char *mode_desc __unused)
+{
+	int mode = 0;
+	const char *p;
+
+	PDEBUG("Parsing X mode: %s\n", X, str_mode);
+
+	if (!str_mode)
+		return 0;
+
+	p = str_mode;
+	while (*p) {
+		char current = *p;
+		char lower;
+
+reeval:
+		switch (current) {
+		case COD_READ_CHAR:
+			PDEBUG("Parsing %s mode: found %s READ\n", X, mode_desc);
+			mode |= AA_DBUS_RECEIVE;
+			break;
+
+		case COD_WRITE_CHAR:
+			PDEBUG("Parsing %s mode: found %s WRITE\n", X,
+			       mode_desc);
+			mode |= AA_DBUS_SEND;
+			break;
+
+		/* error cases */
+
+		default:
+			lower = tolower(current);
+			switch (lower) {
+			case COD_READ_CHAR:
+			case COD_WRITE_CHAR:
+				PDEBUG("Parsing %s mode: found invalid upper case char %c\n",
+				       X, current);
+				warn_uppercase();
+				current = lower;
+				goto reeval;
+				break;
+			default:
+				if (fail)
+					yyerror(_("Internal: unexpected %s mode character '%c' in input"),
+						X, current);
+				else
+					return 0;
+				break;
+			}
+			break;
+		}
+		p++;
+	}
+
+	PDEBUG("Parsed %s mode: %s 0x%x\n", X, str_mode, mode);
+
+	*result = mode;
+	return 1;
+}
+
+int parse_X_mode(const char *X, int valid, const char *str_mode, int *mode, int fail)
+{
+	*mode = 0;
+	if (!parse_X_sub_mode(X, str_mode, mode, fail, ""))
+		return 0;
+	if (*mode & ~valid) {
+		if (fail)
+			yyerror(_("Internal error generated invalid %s perm 0x%x\n"),
+				X, mode);
+		else
+			return 0;
+	}
+	return 1;
+}
+
 struct cod_entry *new_entry(char *ns, char *id, int mode, char *link_id)
 {
 	struct cod_entry *entry = NULL;
