@@ -215,8 +215,12 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <linux/limits.h>
+#include <iostream>
 
 #include "parser.h"
+#include "policydb.h"
+#include "profile.h"
 #include "mount.h"
 
 struct mnt_keyword_table {
@@ -389,146 +393,469 @@ static struct value_list *extract_options(struct cond_entry **conds, int eq)
 	return list;
 }
 
-struct mnt_entry *new_mnt_entry(struct cond_entry *src_conds, char *device,
-				struct cond_entry *dst_conds __unused, char *mnt_point,
-				int allow)
+mnt_rule::mnt_rule(struct cond_entry *src_conds, char *device_p,
+		   struct cond_entry *dst_conds __unused, char *mnt_point_p,
+		   int allow_p):
+	mnt_point(mnt_point_p), device(device_p), trans(NULL), opts(NULL),
+	audit(0), deny(0)
 {
 	/* FIXME: dst_conds are ignored atm */
+	dev_type = extract_fstype(&src_conds);
 
-	struct mnt_entry *ent;
-	ent = (struct mnt_entry *) calloc(1, sizeof(struct mnt_entry));
-	if (ent) {
-		ent->mnt_point = mnt_point;
-		ent->device = device;
-		ent->dev_type = extract_fstype(&src_conds);
+	if (src_conds) {
+		struct value_list *list = extract_options(&src_conds, 0);
 
-		ent->flags = 0;
-		ent->inv_flags = 0;
+		opts = extract_options(&src_conds, 1);
+		if (opts)
+			flags = extract_flags(&opts, &inv_flags);
 
-		if (src_conds) {
-			unsigned int flags = 0, inv_flags = 0;
-			struct value_list *list = extract_options(&src_conds, 0);
+		if (list) {
+			unsigned int tmpflags, tmpinv_flags = 0;
 
-			ent->opts = extract_options(&src_conds, 1);
-			if (ent->opts)
-				ent->flags = extract_flags(&ent->opts,
-							   &ent->inv_flags);
+			tmpflags = extract_flags(&list, &tmpinv_flags);
+			/* these flags are optional so set both */
+			tmpflags |= tmpinv_flags;
+			tmpinv_flags |= tmpflags;
 
-			if (list) {
-				flags = extract_flags(&list, &inv_flags);
-				/* these flags are optional so set both */
-				flags |= inv_flags;
-				inv_flags |= flags;
+			flags |= tmpflags;
+			inv_flags |= tmpinv_flags;
 
-				ent->flags |= flags;
-				ent->inv_flags |= inv_flags;
-
-				if (ent->opts)
-					list_append(ent->opts, list);
-				else if (list)
-					ent->opts = list;
-			}
+			if (opts)
+				list_append(opts, list);
+			else if (list)
+				opts = list;
 		}
+	}
 
-		if (allow & AA_DUMMY_REMOUNT) {
-			allow = AA_MAY_MOUNT;
-			ent->flags |= MS_REMOUNT;
-			ent->inv_flags = 0;
-		} else if (!(ent->flags | ent->inv_flags)) {
-			/* no flag options, and not remount, allow everything */
-			ent->flags = MS_ALL_FLAGS;
-			ent->inv_flags = MS_ALL_FLAGS;
+	if (allow_p & AA_DUMMY_REMOUNT) {
+		allow_p = AA_MAY_MOUNT;
+		flags |= MS_REMOUNT;
+		inv_flags = 0;
+	} else if (!(flags | inv_flags)) {
+		/* no flag options, and not remount, allow everything */
+		flags = MS_ALL_FLAGS;
+		inv_flags = MS_ALL_FLAGS;
+	}
+
+	allow = allow_p;
+
+	if (src_conds) {
+		PERROR("  unsupported mount conditions\n");
+		exit(1);
+	}
+}
+
+ostream &mnt_rule::dump(ostream &os)
+{
+	if (allow & AA_MAY_MOUNT)
+		os << "mount";
+	else if (allow & AA_MAY_UMOUNT)
+		os << "umount";
+	else if (allow & AA_MAY_PIVOTROOT)
+		os << "pivotroot";
+	else
+		os << "error: unknonwn mount perm";
+
+	os << " (0x" << hex << flags << " - 0x" << inv_flags << ") ";
+	if (dev_type) {
+		os << " type=";
+		print_value_list(dev_type);
+	}
+	if (opts) {
+		os << " options=";
+		print_value_list(opts);
+	}
+	if (device)
+		os << " " << device;
+	if (mnt_point)
+		os << " -> " << mnt_point;
+	if (trans)
+		os << " -> " << trans;
+
+	const char *prefix = deny ? "deny" : "";
+	os << " " << prefix << "(0x" << hex << allow << "/0x" << audit << ")";
+	os << ",\n";
+
+	return os;
+}
+
+/* does not currently support expansion of vars in options */
+int mnt_rule::expand_variables(void)
+{
+	int error = 0;
+
+	error = expand_entry_variables(&mnt_point);
+	if (error)
+		return error;
+	error = expand_entry_variables(&device);
+	if (error)
+		return error;
+	error = expand_entry_variables(&trans);
+	if (error)
+		return error;
+
+	return 0;
+}
+
+static int build_mnt_flags(char *buffer, int size, unsigned int flags,
+			   unsigned int inv_flags)
+{
+	char *p = buffer;
+	int i, len = 0;
+
+	if (flags == MS_ALL_FLAGS) {
+		/* all flags are optional */
+		len = snprintf(p, size, "%s", default_match_pattern);
+		if (len < 0 || len >= size)
+			return FALSE;
+		return TRUE;
+	}
+	for (i = 0; i <= 31; ++i) {
+		if ((flags & inv_flags) & (1 << i))
+			len = snprintf(p, size, "(\\x%02x|)", i + 1);
+		else if (flags & (1 << i))
+			len = snprintf(p, size, "\\x%02x", i + 1);
+		else	/* no entry = not set */
+			continue;
+
+		if (len < 0 || len >= size)
+			return FALSE;
+		p += len;
+		size -= len;
+	}
+
+	/* this needs to go once the backend is updated. */
+	if (buffer == p) {
+		/* match nothing - use impossible 254 as regex parser doesn't
+		 * like the empty string
+		 */
+		if (size < 9)
+			return FALSE;
+
+		strcpy(p, "(\\xfe|)");
+	}
+
+	return TRUE;
+}
+
+static int build_mnt_opts(std::string& buffer, struct value_list *opts)
+{
+	struct value_list *ent;
+	pattern_t ptype;
+	int pos;
+
+	if (!opts) {
+		buffer.append(default_match_pattern);
+		return TRUE;
+	}
+
+	list_for_each(opts, ent) {
+		ptype = convert_aaregex_to_pcre(ent->value, 0, buffer, &pos);
+		if (ptype == ePatternInvalid)
+			return FALSE;
+
+		if (ent->next)
+			buffer.append(",");
+	}
+
+	return TRUE;
+}
+
+/* do we want to warn once/profile or just once per compile?? */
+static void warn_once(const char *name)
+{
+	static const char *warned_name = NULL;
+
+	if (warned_name != name) {
+		cerr << "Warning from profile " << name << " (";
+		if (current_filename)
+			cerr << current_filename;
+		else
+			cerr << "stdin";
+		cerr << ") mount rules not enforced\n";
+		warned_name = name;
+	}
+}
+
+int mnt_rule::gen_policy_re(Profile &prof)
+{
+	std::string mntbuf;
+	std::string devbuf;
+	std::string typebuf;
+	char flagsbuf[PATH_MAX + 3];
+	std::string optsbuf;
+	char class_mount_hdr[64];
+	const char *vec[5];
+	int count = 0;
+	unsigned int tmpflags, tmpinv_flags;
+
+	if (!kernel_supports_mount) {
+		warn_once(prof.name);
+		return RULE_NOT_SUPPORTED;
+	}
+
+	sprintf(class_mount_hdr, "\\x%02x", AA_CLASS_MOUNT);
+
+	/* a single mount rule may result in multiple matching rules being
+	 * created in the backend to cover all the possible choices
+	 */
+
+	if ((allow & AA_MAY_MOUNT) && (flags & MS_REMOUNT)
+	    && !device && !dev_type) {
+		int tmpallow;
+		/* remount can't be conditional on device and type */
+		/* rule class single byte header */
+		mntbuf.assign(class_mount_hdr);
+		if (mnt_point) {
+			/* both device && mnt_point or just mnt_point */
+			if (!convert_entry(mntbuf, mnt_point))
+				goto fail;
+			vec[0] = mntbuf.c_str();
+		} else {
+			if (!convert_entry(mntbuf, device))
+				goto fail;
+			vec[0] = mntbuf.c_str();
 		}
+		/* skip device */
+		vec[1] = default_match_pattern;
+		/* skip type */
+		vec[2] = default_match_pattern;
 
-		ent->allow = allow;
+		tmpflags = flags;
+		tmpinv_flags = inv_flags;
+		if (tmpflags != MS_ALL_FLAGS)
+			tmpflags &= MS_REMOUNT_FLAGS;
+		if (tmpinv_flags != MS_ALL_FLAGS)
+			tmpflags &= MS_REMOUNT_FLAGS;
+		if (!build_mnt_flags(flagsbuf, PATH_MAX, tmpflags, tmpinv_flags))
+			goto fail;
+		vec[3] = flagsbuf;
 
-		if (src_conds) {
-			PERROR("  unsupported mount conditions\n");
+		if (opts)
+			tmpallow = AA_MATCH_CONT;
+		else
+			tmpallow = allow;
+
+		/* rule for match without required data || data MATCH_CONT */
+		if (!aare_add_rule_vec(prof.policy.rules, deny, tmpallow,
+				       audit | AA_AUDIT_MNT_DATA, 4,
+				       vec, dfaflags))
+			goto fail;
+		count++;
+
+		if (opts) {
+			/* rule with data match required */
+			optsbuf.clear();
+			if (!build_mnt_opts(optsbuf, opts))
+				goto fail;
+			vec[4] = optsbuf.c_str();
+			if (!aare_add_rule_vec(prof.policy.rules, deny,
+					       allow,
+					       audit | AA_AUDIT_MNT_DATA,
+					       5, vec, dfaflags))
+				goto fail;
+			count++;
+		}
+	}
+	if ((allow & AA_MAY_MOUNT) && (flags & MS_BIND)
+	    && !dev_type && !opts) {
+		/* bind mount rules can't be conditional on dev_type or data */
+		/* rule class single byte header */
+		mntbuf.assign(class_mount_hdr);
+		if (!convert_entry(mntbuf, mnt_point))
+			goto fail;
+		vec[0] = mntbuf.c_str();
+		if (!clear_and_convert_entry(devbuf, device))
+			goto fail;
+		vec[1] = devbuf.c_str();
+		/* skip type */
+		vec[2] = default_match_pattern;
+
+		tmpflags = flags;
+		tmpinv_flags = inv_flags;
+		if (tmpflags != MS_ALL_FLAGS)
+			tmpflags &= MS_BIND_FLAGS;
+		if (tmpinv_flags != MS_ALL_FLAGS)
+			tmpflags &= MS_BIND_FLAGS;
+		if (!build_mnt_flags(flagsbuf, PATH_MAX, tmpflags, tmpinv_flags))
+			goto fail;
+		vec[3] = flagsbuf;
+		if (!aare_add_rule_vec(prof.policy.rules, deny, allow,
+				       audit, 4, vec, dfaflags))
+			goto fail;
+		count++;
+	}
+	if ((allow & AA_MAY_MOUNT) &&
+	    (flags & (MS_UNBINDABLE | MS_PRIVATE | MS_SLAVE | MS_SHARED))
+	    && !device && !dev_type && !opts) {
+		/* change type base rules can not be conditional on device,
+		 * device type or data
+		 */
+		/* rule class single byte header */
+		mntbuf.assign(class_mount_hdr);
+		if (!convert_entry(mntbuf, mnt_point))
+			goto fail;
+		vec[0] = mntbuf.c_str();
+		/* skip device and type */
+		vec[1] = default_match_pattern;
+		vec[2] = default_match_pattern;
+
+		tmpflags = flags;
+		tmpinv_flags = inv_flags;
+		if (tmpflags != MS_ALL_FLAGS)
+			tmpflags &= MS_MAKE_FLAGS;
+		if (tmpinv_flags != MS_ALL_FLAGS)
+			tmpflags &= MS_MAKE_FLAGS;
+		if (!build_mnt_flags(flagsbuf, PATH_MAX, tmpflags, tmpinv_flags))
+			goto fail;
+		vec[3] = flagsbuf;
+		if (!aare_add_rule_vec(prof.policy.rules, deny, allow,
+				       audit, 4, vec, dfaflags))
+			goto fail;
+		count++;
+	}
+	if ((allow & AA_MAY_MOUNT) && (flags & MS_MOVE)
+	    && !dev_type && !opts) {
+		/* mount move rules can not be conditional on dev_type,
+		 * or data
+		 */
+		/* rule class single byte header */
+		mntbuf.assign(class_mount_hdr);
+		if (!convert_entry(mntbuf, mnt_point))
+			goto fail;
+		vec[0] = mntbuf.c_str();
+		if (!clear_and_convert_entry(devbuf, device))
+			goto fail;
+		vec[1] = devbuf.c_str();
+		/* skip type */
+		vec[2] = default_match_pattern;
+
+		tmpflags = flags;
+		tmpinv_flags = inv_flags;
+		if (tmpflags != MS_ALL_FLAGS)
+			tmpflags &= MS_MOVE_FLAGS;
+		if (tmpinv_flags != MS_ALL_FLAGS)
+			tmpflags &= MS_MOVE_FLAGS;
+		if (!build_mnt_flags(flagsbuf, PATH_MAX, tmpflags, tmpinv_flags))
+			goto fail;
+		vec[3] = flagsbuf;
+		if (!aare_add_rule_vec(prof.policy.rules, deny, allow,
+				       audit, 4, vec, dfaflags))
+			goto fail;
+		count++;
+	}
+	if ((allow & AA_MAY_MOUNT) &&
+	    (flags | inv_flags) & ~MS_CMDS) {
+		int tmpallow;
+		/* generic mount if flags are set that are not covered by
+		 * above commands
+		 */
+		/* rule class single byte header */
+		mntbuf.assign(class_mount_hdr);
+		if (!convert_entry(mntbuf, mnt_point))
+			goto fail;
+		vec[0] = mntbuf.c_str();
+		if (!clear_and_convert_entry(devbuf, device))
+			goto fail;
+		vec[1] = devbuf.c_str();
+		typebuf.clear();
+		if (!build_list_val_expr(typebuf, dev_type))
+			goto fail;
+		vec[2] = typebuf.c_str();
+
+		tmpflags = flags;
+		tmpinv_flags = inv_flags;
+		if (tmpflags != MS_ALL_FLAGS)
+			tmpflags &= ~MS_CMDS;
+		if (tmpinv_flags != MS_ALL_FLAGS)
+			tmpinv_flags &= ~MS_CMDS;
+		if (!build_mnt_flags(flagsbuf, PATH_MAX, tmpflags, tmpinv_flags))
+			goto fail;
+		vec[3] = flagsbuf;
+
+		if (opts)
+			tmpallow = AA_MATCH_CONT;
+		else
+			tmpallow = allow;
+
+		/* rule for match without required data || data MATCH_CONT */
+		if (!aare_add_rule_vec(prof.policy.rules, deny, tmpallow,
+				       audit | AA_AUDIT_MNT_DATA, 4,
+				       vec, dfaflags))
+			goto fail;
+		count++;
+
+		if (opts) {
+			/* rule with data match required */
+			optsbuf.clear();
+			if (!build_mnt_opts(optsbuf, opts))
+				goto fail;
+			vec[4] = optsbuf.c_str();
+			if (!aare_add_rule_vec(prof.policy.rules, deny,
+					       allow,
+					       audit | AA_AUDIT_MNT_DATA,
+					       5, vec, dfaflags))
+				goto fail;
+			count++;
+		}
+	}
+	if (allow & AA_MAY_UMOUNT) {
+		/* rule class single byte header */
+		mntbuf.assign(class_mount_hdr);
+		if (!convert_entry(mntbuf, mnt_point))
+			goto fail;
+		vec[0] = mntbuf.c_str();
+		if (!aare_add_rule_vec(prof.policy.rules, deny, allow,
+				       audit, 1, vec, dfaflags))
+			goto fail;
+		count++;
+	}
+	if (allow & AA_MAY_PIVOTROOT) {
+		/* rule class single byte header */
+		mntbuf.assign(class_mount_hdr);
+		if (!convert_entry(mntbuf, mnt_point))
+			goto fail;
+		vec[0] = mntbuf.c_str();
+		if (!clear_and_convert_entry(devbuf, device))
+			goto fail;
+		vec[1] = devbuf.c_str();
+		if (!aare_add_rule_vec(prof.policy.rules, deny, allow,
+				       audit, 2, vec, dfaflags))
+			goto fail;
+		count++;
+	}
+
+	if (!count)
+		/* didn't actually encode anything */
+		goto fail;
+
+	prof.policy.count++;
+	return RULE_OK;
+
+fail:
+	PERROR("Enocoding of mount rule failed\n");
+	return RULE_ERROR;
+}
+
+void mnt_rule::post_process(Profile &prof)
+{
+	if (trans) {
+		unsigned int mode = 0;
+		int n = add_entry_to_x_table(&prof, trans);
+		if (!n) {
+			PERROR("Profile %s has too many specified profile transitions.\n", prof.name);
 			exit(1);
 		}
+
+		if (allow & AA_USER_EXEC)
+			mode |= SHIFT_MODE(n << 10, AA_USER_SHIFT);
+		if (allow & AA_OTHER_EXEC)
+			mode |= SHIFT_MODE(n << 10, AA_OTHER_SHIFT);
+		allow = ((allow & ~AA_ALL_EXEC_MODIFIERS) |
+				(mode & AA_ALL_EXEC_MODIFIERS));
+
+		trans = NULL;
 	}
-
-	return ent;
 }
 
-void free_mnt_entry(struct mnt_entry *ent)
-{
-	if (!ent)
-		return;
 
-	free_mnt_entry(ent->next);
-	free_value_list(ent->opts);
-	free_value_list(ent->dev_type);
-	free(ent->device);
-	free(ent->mnt_point);
-	free(ent->trans);
-
-	free(ent);
-}
-
-struct mnt_entry *dup_mnt_entry(struct mnt_entry *orig)
-{
-	struct mnt_entry *entry = NULL;
-
-	entry = (struct mnt_entry *) calloc(1, sizeof(struct mnt_entry));
-	if (!entry)
-		return NULL;
-
-	DUP_STRING(orig, entry, mnt_point, err);
-	DUP_STRING(orig, entry, device, err);
-	DUP_STRING(orig, entry, trans, err);
-
-	entry->dev_type = dup_value_list(orig->dev_type);
-	if (orig->dev_type && !(entry->dev_type))
-		goto err;
-
-	entry->opts = dup_value_list(orig->opts);
-	if (orig->opts && !(entry->opts))
-		goto err;
-
-	entry->flags = orig->flags;
-	entry->inv_flags = orig->inv_flags;
-
-	entry->allow = orig->allow;
-	entry->audit = orig->audit;
-	entry->deny = orig->deny;
-
-	entry->next = orig->next;
-
-	return entry;
-
-err:
-	free_mnt_entry(entry);
-	return NULL;
-}
-
-void print_mnt_entry(struct mnt_entry *entry)
-{
-	if (entry->allow & AA_MAY_MOUNT)
-		fprintf(stderr, "mount");
-	else if (entry->allow & AA_MAY_UMOUNT)
-		fprintf(stderr, "umount");
-	else if (entry->allow & AA_MAY_PIVOTROOT)
-		fprintf(stderr, "pivotroot");
-	else
-		fprintf(stderr, "error: unknonwn mount perm");
-
-	fprintf(stderr, " (0x%x - 0x%x) ", entry->flags, entry->inv_flags);
-	if (entry->dev_type) {
-		fprintf(stderr, " type=");
-		print_value_list(entry->dev_type);
-	}
-	if (entry->opts) {
-		fprintf(stderr, " options=");
-		print_value_list(entry->opts);
-	}
-	if (entry->device)
-		fprintf(stderr, " %s", entry->device);
-	if (entry->mnt_point)
-		fprintf(stderr, " -> %s", entry->mnt_point);
-	if (entry->trans)
-		fprintf(stderr, " -> %s", entry->trans);
-
-	fprintf(stderr, " %s (0x%x/0x%x)", entry->deny ? "deny" : "", entry->allow, entry->audit); 
-	fprintf(stderr, ",\n");
-}

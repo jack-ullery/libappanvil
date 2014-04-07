@@ -19,7 +19,11 @@
 #ifndef __AA_MOUNT_H
 #define __AA_MOUNT_H
 
+#include <ostream>
+
 #include "parser.h"
+#include "rule.h"
+
 
 #define MS_RDONLY	(1 << 0)
 #define MS_RW		0
@@ -109,7 +113,8 @@
 					 * remapped to a mount option*/
 
 
-struct mnt_entry {
+class mnt_rule: public rule_t {
+public:
 	char *mnt_point;
 	char *device;
 	char *trans;
@@ -120,17 +125,26 @@ struct mnt_entry {
 
 	int allow, audit;
 	int deny;
-	struct mnt_entry *next;
+
+	mnt_rule(struct cond_entry *src_conds, char *device_p,
+		   struct cond_entry *dst_conds __unused, char *mnt_point_p,
+		   int allow_p);
+	virtual ~mnt_rule()
+	{
+		free_value_list(opts);
+		free_value_list(dev_type);
+		free(device);
+		free(mnt_point);
+		free(trans);
+	}
+
+	virtual ostream &dump(ostream &os);
+	virtual int expand_variables(void);
+	virtual int gen_policy_re(Profile &prof);
+	virtual void post_process(Profile &prof __unused);
 };
 
-void print_mnt_entry(struct mnt_entry *entry);
-
 int is_valid_mnt_cond(const char *name, int src);
-struct mnt_entry *new_mnt_entry(struct cond_entry *sconds, char *device,
-				struct cond_entry *dconds, char *mnt_point,
-				int mode);
-struct mnt_entry *dup_mnt_entry(struct mnt_entry *orig);
-void free_mnt_entry(struct mnt_entry *ent);
 
 
 #endif /* __AA_MOUNT_H */

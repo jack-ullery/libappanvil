@@ -79,8 +79,8 @@ EXTRA_CFLAGS+=-DSUBDOMAIN_CONFDIR=\"${CONFDIR}\"
 SRCS = parser_common.c parser_include.c parser_interface.c parser_lex.c \
        parser_main.c parser_misc.c parser_merge.c parser_symtab.c \
        parser_yacc.c parser_regex.c parser_variable.c parser_policy.c \
-       parser_alias.c mount.c dbus.c lib.c profile.cc
-HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h
+       parser_alias.c mount.c dbus.c lib.c profile.cc rule.c
+HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h rule.h
 TOOLS = apparmor_parser
 
 OBJECTS = $(SRCS:.c=.o)
@@ -188,7 +188,7 @@ apparmor_parser: $(OBJECTS) $(AAREOBJECTS) $(LIBAPPARMOR_A)
 parser_yacc.c parser_yacc.h: parser_yacc.y parser.h profile.h
 	$(YACC) $(YFLAGS) -o parser_yacc.c parser_yacc.y
 
-parser_lex.c: parser_lex.l parser_yacc.h parser.h profile.h
+parser_lex.c: parser_lex.l parser_yacc.h parser.h profile.h mount.h dbus.h
 	$(LEX) ${LEXFLAGS} -o$@ $<
 
 parser_lex.o: parser_lex.c parser.h parser_yacc.h
@@ -230,16 +230,19 @@ parser_alias.o: parser_alias.c parser.h profile.h
 parser_common.o: parser_common.c parser.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-mount.o: mount.c mount.h parser.h immunix.h
+mount.o: mount.c mount.h parser.h immunix.h rule.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 lib.o: lib.c lib.h parser.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-dbus.o: dbus.c dbus.h parser.h immunix.h parser_yacc.h $(APPARMOR_H)
+dbus.o: dbus.c dbus.h parser.h immunix.h parser_yacc.h rule.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 profile.o: profile.cc profile.h parser.h
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
+
+rule.o: rule.c rule.h policydb.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_version.h: Makefile

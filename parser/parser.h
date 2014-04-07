@@ -30,12 +30,13 @@
 #include "libapparmor_re/apparmor_re.h"
 #include "libapparmor_re/aare_rules.h"
 
+#include <string>
+
 using namespace std;
 
 #include <set>
 class Profile;
-
-struct mnt_ent;
+class rule_t;
 
 /* Global variable to pass token to lexer.  Will be replaced by parameter
  * when lexer and parser are made reentrant
@@ -256,9 +257,14 @@ extern int yylex(void);
 extern const char *basedir;
 
 /* parser_regex.c */
+extern const char *default_match_pattern;
+extern pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
+					 std::string& pcre, int *first_re_pos);
+extern int build_list_val_expr(std::string& buffer, struct value_list *list);
+extern int convert_entry(std::string& buffer, char *entry);
+extern int clear_and_convert_entry(std::string& buffer, char *entry);
 extern int process_regex(Profile *prof);
 extern int post_process_entry(struct cod_entry *entry);
-extern int process_dbus(Profile *prof);
 
 extern void reset_regex(void);
 
@@ -267,11 +273,13 @@ extern int process_policydb(Profile *prof);
 extern int process_policy_ents(Profile *prof);
 
 /* parser_variable.c */
+int expand_entry_variables(char **name);
 extern int process_variables(Profile *prof);
 extern struct var_string *split_out_var(const char *string);
 extern void free_var_string(struct var_string *var);
 
 /* parser_misc.c */
+extern void warn_uppercase(void);
 extern int is_blacklisted(const char *name, const char *path);
 extern struct value_list *new_value_list(char *value);
 extern struct value_list *dup_value_list(struct value_list *list);
@@ -289,7 +297,6 @@ extern int name_to_capability(const char *keyword);
 extern int get_rlimit(const char *name);
 extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);
-extern int parse_dbus_mode(const char *str_mode, int *mode, int fail);
 extern struct cod_entry *new_entry(char *ns, char *id, int mode, char *link_id);
 extern struct aa_network_entry *new_network_ent(unsigned int family,
 						unsigned int type,
@@ -303,15 +310,13 @@ extern size_t get_af_max(void);
 extern int str_to_boolean(const char* str);
 extern struct cod_entry *copy_cod_entry(struct cod_entry *cod);
 extern void free_cod_entries(struct cod_entry *list);
-extern void free_mnt_entries(struct mnt_entry *list);
-extern void free_dbus_entries(struct dbus_entry *list);
 extern void __debug_capabilities(uint64_t capset, const char *name);
 void __debug_network(unsigned int *array, const char *name);
 void debug_cod_entries(struct cod_entry *list);
 
 
 /* parser_symtab.c */
-struct set_value {;
+struct set_value {
 	char *val;
 	struct set_value *next;
 };
@@ -345,9 +350,10 @@ extern int cache_fd;
 /* parser_policy.c */
 extern void add_to_list(Profile *profile);
 extern void add_hat_to_policy(Profile *policy, Profile *hat);
+extern int add_entry_to_x_table(Profile *prof, char *name);
 extern void add_entry_to_policy(Profile *policy, struct cod_entry *entry);
 extern void post_process_file_entries(Profile *prof);
-extern void post_process_mnt_entries(Profile *prof);
+extern void post_process_rule_entries(Profile *prof);
 extern int post_process_policy(int debug_only);
 extern int process_profile_regex(Profile *prof);
 extern int process_profile_variables(Profile *prof);

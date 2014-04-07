@@ -20,23 +20,91 @@
 #include <string.h>
 #include <sys/apparmor.h>
 
+#include <iomanip>
+#include <string>
+#include <iostream>
+#include <sstream>
+
 #include "parser.h"
 #include "profile.h"
 #include "parser_yacc.h"
 #include "dbus.h"
 
-void free_dbus_entry(struct dbus_entry *ent)
-{
-	if (!ent)
-		return;
-	free(ent->bus);
-	free(ent->name);
-	free(ent->peer_label);
-	free(ent->path);
-	free(ent->interface);
-	free(ent->member);
+#define _(s) gettext(s)
 
-	free(ent);
+static int parse_dbus_sub_mode(const char *str_mode, int *result, int fail, const char *mode_desc __unused)
+{
+	int mode = 0;
+	const char *p;
+
+	PDEBUG("Parsing DBus mode: %s\n", str_mode);
+
+	if (!str_mode)
+		return 0;
+
+	p = str_mode;
+	while (*p) {
+		char current = *p;
+		char lower;
+
+reeval:
+		switch (current) {
+		case COD_READ_CHAR:
+			PDEBUG("Parsing DBus mode: found %s READ\n", mode_desc);
+			mode |= AA_DBUS_RECEIVE;
+			break;
+
+		case COD_WRITE_CHAR:
+			PDEBUG("Parsing DBus mode: found %s WRITE\n",
+			       mode_desc);
+			mode |= AA_DBUS_SEND;
+			break;
+
+		/* error cases */
+
+		default:
+			lower = tolower(current);
+			switch (lower) {
+			case COD_READ_CHAR:
+			case COD_WRITE_CHAR:
+				PDEBUG("Parsing DBus mode: found invalid upper case char %c\n",
+				       current);
+				warn_uppercase();
+				current = lower;
+				goto reeval;
+				break;
+			default:
+				if (fail)
+					yyerror(_("Internal: unexpected DBus mode character '%c' in input"),
+						current);
+				else
+					return 0;
+				break;
+			}
+			break;
+		}
+		p++;
+	}
+
+	PDEBUG("Parsed DBus mode: %s 0x%x\n", str_mode, mode);
+
+	*result = mode;
+	return 1;
+}
+
+int parse_dbus_mode(const char *str_mode, int *mode, int fail)
+{
+	*mode = 0;
+	if (!parse_dbus_sub_mode(str_mode, mode, fail, ""))
+		return 0;
+	if (*mode & ~AA_VALID_DBUS_PERMS) {
+		if (fail)
+			yyerror(_("Internal error generated invalid DBus perm 0x%x\n"),
+				  mode);
+		else
+			return 0;
+	}
+	return 1;
 }
 
 static int list_len(struct value_list *v)
@@ -60,7 +128,7 @@ static void move_conditional_value(char **dst_ptr, struct cond_entry *cond_ent)
 	cond_ent->vals->value = NULL;
 }
 
-static void move_conditionals(struct dbus_entry *ent, struct cond_entry *conds)
+void dbus_rule::move_conditionals(struct cond_entry *conds)
 {
 	struct cond_entry *cond_ent;
 
@@ -73,17 +141,17 @@ static void move_conditionals(struct dbus_entry *ent, struct cond_entry *conds)
 				cond_ent->name);
 
 		if (strcmp(cond_ent->name, "bus") == 0) {
-			move_conditional_value(&ent->bus, cond_ent);
+			move_conditional_value(&bus, cond_ent);
 		} else if (strcmp(cond_ent->name, "name") == 0) {
-			move_conditional_value(&ent->name, cond_ent);
+			move_conditional_value(&name, cond_ent);
 		} else if (strcmp(cond_ent->name, "label") == 0) {
-			move_conditional_value(&ent->peer_label, cond_ent);
+			move_conditional_value(&peer_label, cond_ent);
 		} else if (strcmp(cond_ent->name, "path") == 0) {
-			move_conditional_value(&ent->path, cond_ent);
+			move_conditional_value(&path, cond_ent);
 		} else if (strcmp(cond_ent->name, "interface") == 0) {
-			move_conditional_value(&ent->interface, cond_ent);
+			move_conditional_value(&interface, cond_ent);
 		} else if (strcmp(cond_ent->name, "member") == 0) {
-			move_conditional_value(&ent->member, cond_ent);
+			move_conditional_value(&member, cond_ent);
 		} else {
 			yyerror("invalid dbus conditional \"%s\"\n",
 				cond_ent->name);
@@ -91,129 +159,252 @@ static void move_conditionals(struct dbus_entry *ent, struct cond_entry *conds)
 	}
 }
 
-struct dbus_entry *new_dbus_entry(int mode, struct cond_entry *conds,
-				  struct cond_entry *peer_conds)
+dbus_rule::dbus_rule(int mode_p, struct cond_entry *conds,
+		     struct cond_entry *peer_conds):
+	bus(NULL), name(NULL), peer_label(NULL), path(NULL), interface(NULL), member(NULL),
+	mode(0), audit(0), deny(0)
 {
-	struct dbus_entry *ent;
 	int name_is_subject_cond = 0, message_rule = 0, service_rule = 0;
 
-	ent = (struct dbus_entry*) calloc(1, sizeof(struct dbus_entry));
-	if (!ent)
-		goto out;
-
 	/* Move the global/subject conditionals over & check the results */
-	move_conditionals(ent, conds);
-	if (ent->name)
+	move_conditionals(conds);
+	if (name)
 		name_is_subject_cond = 1;
-	if (ent->peer_label)
+	if (peer_label)
 		yyerror("dbus \"label\" conditional can only be used inside of the \"peer=()\" grouping\n");
 
 	/* Move the peer conditionals */
-	move_conditionals(ent, peer_conds);
+	move_conditionals(peer_conds);
 
-	if (ent->path || ent->interface || ent->member || ent->peer_label ||
-	    (ent->name && !name_is_subject_cond))
+	if (path || interface || member || peer_label ||
+	    (name && !name_is_subject_cond))
 		message_rule = 1;
 
-	if (ent->name && name_is_subject_cond)
+	if (name && name_is_subject_cond)
 		service_rule = 1;
 
 	if (message_rule && service_rule)
 		yyerror("dbus rule contains message conditionals and service conditionals\n");
 
 	/* Copy mode. If no mode was specified, assign an implied mode. */
-	if (mode) {
-		ent->mode = mode;
-		if (ent->mode & ~AA_VALID_DBUS_PERMS)
+	if (mode_p) {
+		mode = mode_p;
+		if (mode & ~AA_VALID_DBUS_PERMS)
 			yyerror("mode contains unknown dbus accesss\n");
-		else if (message_rule && (ent->mode & AA_DBUS_BIND))
+		else if (message_rule && (mode & AA_DBUS_BIND))
 			yyerror("dbus \"bind\" access cannot be used with message rule conditionals\n");
-		else if (service_rule && (ent->mode & (AA_DBUS_SEND | AA_DBUS_RECEIVE)))
+		else if (service_rule && (mode & (AA_DBUS_SEND | AA_DBUS_RECEIVE)))
 			yyerror("dbus \"send\" and/or \"receive\" accesses cannot be used with service rule conditionals\n");
-		else if (ent->mode & AA_DBUS_EAVESDROP &&
-			 (ent->path || ent->interface || ent->member ||
-			  ent->peer_label || ent->name)) {
+		else if (mode & AA_DBUS_EAVESDROP &&
+			 (path || interface || member ||
+			  peer_label || name)) {
 			yyerror("dbus \"eavesdrop\" access can only contain a bus conditional\n");
 		}
 	} else {
 		if (message_rule)
-			ent->mode = (AA_DBUS_SEND | AA_DBUS_RECEIVE);
+			mode = (AA_DBUS_SEND | AA_DBUS_RECEIVE);
 		else if (service_rule)
-			ent->mode = (AA_DBUS_BIND);
+			mode = (AA_DBUS_BIND);
 		else
-			ent->mode = AA_VALID_DBUS_PERMS;
+			mode = AA_VALID_DBUS_PERMS;
 	}
 
-out:
 	free_cond_list(conds);
 	free_cond_list(peer_conds);
-	return ent;
 }
 
-struct dbus_entry *dup_dbus_entry(struct dbus_entry *orig)
+ostream &dbus_rule::dump(ostream &os)
 {
-	struct dbus_entry *ent = NULL;
-	ent = (struct dbus_entry *) calloc(1, sizeof(struct dbus_entry));
-	if (!ent)
-		return NULL;
+	if (audit)
+		os << "audit ";
+	if (deny)
+		os << "deny ";
 
-	DUP_STRING(orig, ent, bus, err);
-	DUP_STRING(orig, ent, name, err);
-	DUP_STRING(orig, ent, peer_label, err);
-	DUP_STRING(orig, ent, path, err);
-	DUP_STRING(orig, ent, interface, err);
-	DUP_STRING(orig, ent, member, err);
-	ent->mode = orig->mode;
-	ent->audit = orig->audit;
-	ent->deny = orig->deny;
+	os << "dbus ( ";
 
-	ent->next = orig->next;
+	if (mode & AA_DBUS_SEND)
+		os << "send ";
+	if (mode & AA_DBUS_RECEIVE)
+		os << "receive ";
+	if (mode & AA_DBUS_BIND)
+		os << "bind ";
+	if (mode & AA_DBUS_EAVESDROP)
+		os << "eavesdrop ";
+	os << ")";
 
-	return ent;
+	if (bus)
+		os << " bus=\"" << bus << "\"";
+	if ((mode & AA_DBUS_BIND) && name)
+		os << " name=\"" << name << "\"";
+	if (path)
+		os << " path=\"" << path << "\"";
+	if (interface)
+		os << " interface=\"" << interface << "\"";
+	if (member)
+		os << " member=\"" << member << os << "\"";
 
-err:
-	free_dbus_entry(ent);
-	return NULL;
-}
-
-void print_dbus_entry(struct dbus_entry *ent)
-{
-	if (ent->audit)
-		fprintf(stderr, "audit ");
-	if (ent->deny)
-		fprintf(stderr, "deny ");
-
-	fprintf(stderr, "dbus ( ");
-
-	if (ent->mode & AA_DBUS_SEND)
-		fprintf(stderr, "send ");
-	if (ent->mode & AA_DBUS_RECEIVE)
-		fprintf(stderr, "receive ");
-	if (ent->mode & AA_DBUS_BIND)
-		fprintf(stderr, "bind ");
-	if (ent->mode & AA_DBUS_EAVESDROP)
-		fprintf(stderr, "eavesdrop ");
-	fprintf(stderr, ")");
-
-	if (ent->bus)
-		fprintf(stderr, " bus=\"%s\"", ent->bus);
-	if ((ent->mode & AA_DBUS_BIND) && ent->name)
-		fprintf(stderr, " name=\"%s\"", ent->name);
-	if (ent->path)
-		fprintf(stderr, " path=\"%s\"", ent->path);
-	if (ent->interface)
-		fprintf(stderr, " interface=\"%s\"", ent->interface);
-	if (ent->member)
-		fprintf(stderr, " member=\"%s\"", ent->member);
-
-	if (!(ent->mode & AA_DBUS_BIND) && (ent->peer_label || ent->name)) {
-		fprintf(stderr, " peer=( ");
-		if (ent->peer_label)
-			fprintf(stderr, "label=\"%s\" ", ent->peer_label);
-		if (ent->name)
-			fprintf(stderr, "name=\"%s\" ", ent->name);
-		fprintf(stderr, ")");
+	if (!(mode & AA_DBUS_BIND) && (peer_label || name)) {
+		os << " peer=( ";
+		if (peer_label)
+			os << "label=\"" << peer_label << "\" ";
+		if (name)
+			os << "name=\"" << name << "\" ";
+		os << ")";
 	}
 
-	fprintf(stderr, ",\n");
+	os << ",\n";
+
+	return os;
+}
+
+int dbus_rule::expand_variables(void)
+{
+	int error = expand_entry_variables(&bus);
+	if (error)
+		return error;
+	error = expand_entry_variables(&name);
+	if (error)
+		return error;
+	error = expand_entry_variables(&peer_label);
+	if (error)
+		return error;
+	error = expand_entry_variables(&path);
+	if (error)
+		return error;
+	error = expand_entry_variables(&interface);
+	if (error)
+		return error;
+	error = expand_entry_variables(&member);
+	if (error)
+		return error;
+
+	return 0;
+}
+
+/* do we want to warn once/profile or just once per compile?? */
+static void warn_once(const char *name)
+{
+	static const char *warned_name = NULL;
+
+	if (warned_name != name) {
+		cerr << "Warning from profile " << name << " (";
+		if (current_filename)
+			cerr << current_filename;
+		else
+			cerr << "stdin";
+		cerr << ") dbus rules not enforced\n";
+		warned_name = name;
+	}
+}
+
+int dbus_rule::gen_policy_re(Profile &prof)
+{
+	std::string busbuf;
+	std::string namebuf;
+	std::string peer_labelbuf;
+	std::string pathbuf;
+	std::string ifacebuf;
+	std::string memberbuf;
+	std::ostringstream buffer;
+	const char *vec[6];
+
+	pattern_t ptype;
+	int pos;
+
+	if (!kernel_supports_dbus) {
+		warn_once(prof.name);
+		return RULE_NOT_SUPPORTED;
+	}
+
+	buffer << "\\x" << std::setfill('0') << std::setw(2) << std::hex << AA_CLASS_DBUS;
+	busbuf.append(buffer.str());
+
+	if (bus) {
+		ptype = convert_aaregex_to_pcre(bus, 0, busbuf, &pos);
+		if (ptype == ePatternInvalid)
+			goto fail;
+	} else {
+		/* match any char except \000 0 or more times */
+		busbuf.append(default_match_pattern);
+	}
+	vec[0] = busbuf.c_str();
+
+	if (name) {
+		ptype = convert_aaregex_to_pcre(name, 0, namebuf, &pos);
+		if (ptype == ePatternInvalid)
+			goto fail;
+		vec[1] = namebuf.c_str();
+	} else {
+		/* match any char except \000 0 or more times */
+		vec[1] = default_match_pattern;
+	}
+
+	if (peer_label) {
+		ptype = convert_aaregex_to_pcre(peer_label, 0,
+						peer_labelbuf, &pos);
+		if (ptype == ePatternInvalid)
+			goto fail;
+		vec[2] = peer_labelbuf.c_str();
+	} else {
+		/* match any char except \000 0 or more times */
+		vec[2] = default_match_pattern;
+	}
+
+	if (path) {
+		ptype = convert_aaregex_to_pcre(path, 0, pathbuf, &pos);
+		if (ptype == ePatternInvalid)
+			goto fail;
+		vec[3] = pathbuf.c_str();
+	} else {
+		/* match any char except \000 0 or more times */
+		vec[3] = default_match_pattern;
+	}
+
+	if (interface) {
+		ptype = convert_aaregex_to_pcre(interface, 0, ifacebuf, &pos);
+		if (ptype == ePatternInvalid)
+			goto fail;
+		vec[4] = ifacebuf.c_str();
+	} else {
+		/* match any char except \000 0 or more times */
+		vec[4] = default_match_pattern;
+	}
+
+	if (member) {
+		ptype = convert_aaregex_to_pcre(member, 0, memberbuf, &pos);
+		if (ptype == ePatternInvalid)
+			goto fail;
+		vec[5] = memberbuf.c_str();
+	} else {
+		/* match any char except \000 0 or more times */
+		vec[5] = default_match_pattern;
+	}
+
+	if (mode & AA_DBUS_BIND) {
+		if (!aare_add_rule_vec(prof.policy.rules, deny,
+				       mode & AA_DBUS_BIND,
+				       audit & AA_DBUS_BIND,
+				       2, vec, dfaflags))
+			goto fail;
+	}
+	if (mode & (AA_DBUS_SEND | AA_DBUS_RECEIVE)) {
+		if (!aare_add_rule_vec(prof.policy.rules, deny,
+				mode & (AA_DBUS_SEND | AA_DBUS_RECEIVE),
+				audit & (AA_DBUS_SEND | AA_DBUS_RECEIVE),
+				6, vec, dfaflags))
+			goto fail;
+	}
+	if (mode & AA_DBUS_EAVESDROP) {
+		if (!aare_add_rule_vec(prof.policy.rules, deny,
+				mode & AA_DBUS_EAVESDROP,
+				audit & AA_DBUS_EAVESDROP,
+				1, vec, dfaflags))
+			goto fail;
+	}
+
+	prof.policy.count++;
+	return RULE_OK;
+
+fail:
+	return RULE_ERROR;
 }

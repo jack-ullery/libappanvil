@@ -13,6 +13,7 @@
  */
 
 #include "profile.h"
+#include "rule.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,8 +63,9 @@ Profile::~Profile()
 {
 	hat_table.clear();
 	free_cod_entries(entries);
-	free_mnt_entries(mnt_ents);
-	free_dbus_entries(dbus_ents);
+
+	for (RuleList::iterator i = rule_ents.begin(); i != rule_ents.end(); i++)
+		delete *i;
 	if (dfa.rules)
 		aare_delete_ruleset(dfa.rules);
 	if (dfa.dfa)

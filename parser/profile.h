@@ -17,6 +17,7 @@
 #include <set>
 
 #include "parser.h"
+#include "rule.h"
 
 class Profile;
 
@@ -153,8 +154,7 @@ public:
 
 	char *exec_table[AA_EXEC_COUNT];
 	struct cod_entry *entries;
-	struct mnt_entry *mnt_ents;
-	struct dbus_entry *dbus_ents;
+	RuleList rule_ents;
 
 	ProfileList hat_table;
 
@@ -179,9 +179,6 @@ public:
 		std::fill(exec_table, exec_table + AA_EXEC_COUNT, (char *)NULL);
 
 		entries = NULL;
-		mnt_ents = NULL;
-		dbus_ents = NULL;
-
 	};
 
 	virtual ~Profile();

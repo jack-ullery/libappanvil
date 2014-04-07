@@ -35,9 +35,8 @@
 #include "profile.h"
 #include "libapparmor_re/apparmor_re.h"
 #include "libapparmor_re/aare_rules.h"
-#include "mount.h"
-#include "dbus.h"
 #include "policydb.h"
+#include "rule.h"
 
 enum error_type {
 	e_no_error,
@@ -45,7 +44,7 @@ enum error_type {
 };
 
 /* match any char except \000 0 or more times */
-static const char *default_match_pattern = "[^\\000]*";
+const char *default_match_pattern = "[^\\000]*";
 
 /* Filters out multiple slashes (except if the first two are slashes,
  * that's a distinct namespace in linux) and trailing slashes.
@@ -90,8 +89,8 @@ static void filter_slashes(char *path)
 
 /* converts the apparmor regex in aare and appends pcre regex output
  * to pcre string */
-static pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
-					 std::string& pcre, int *first_re_pos)
+pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
+				  std::string& pcre, int *first_re_pos)
 {
 #define update_re_pos(X) if (!(*first_re_pos)) { *first_re_pos = (X); }
 #define MAX_ALT_DEPTH 50
@@ -612,7 +611,7 @@ out:
 	return error;
 }
 
-static int build_list_val_expr(std::string& buffer, struct value_list *list)
+int build_list_val_expr(std::string& buffer, struct value_list *list)
 {
 	struct value_list *ent;
 	pattern_t ptype;
@@ -642,7 +641,7 @@ fail:
 	return FALSE;
 }
 
-static int convert_entry(std::string& buffer, char *entry)
+int convert_entry(std::string& buffer, char *entry)
 {
 	pattern_t ptype;
 	int pos;
@@ -658,486 +657,18 @@ static int convert_entry(std::string& buffer, char *entry)
 	return TRUE;
 }
 
-static int clear_and_convert_entry(std::string& buffer, char *entry)
+int clear_and_convert_entry(std::string& buffer, char *entry)
 {
 	buffer.clear();
 	return convert_entry(buffer, entry);
 }
 
-static int build_mnt_flags(char *buffer, int size, unsigned int flags,
-			   unsigned int inv_flags)
-{
-	char *p = buffer;
-	int i, len = 0;
-
-	if (flags == MS_ALL_FLAGS) {
-		/* all flags are optional */
-		len = snprintf(p, size, "%s", default_match_pattern);
-		if (len < 0 || len >= size)
-			return FALSE;
-		return TRUE;
-	}
-	for (i = 0; i <= 31; ++i) {
-		if ((flags & inv_flags) & (1 << i))
-			len = snprintf(p, size, "(\\x%02x|)", i + 1);
-		else if (flags & (1 << i))
-			len = snprintf(p, size, "\\x%02x", i + 1);
-		else	/* no entry = not set */
-			continue;
-
-		if (len < 0 || len >= size)
-			return FALSE;
-		p += len;
-		size -= len;
-	}
-
-	/* this needs to go once the backend is updated. */
-	if (buffer == p) {
-		/* match nothing - use impossible 254 as regex parser doesn't
-		 * like the empty string
-		 */
-		if (size < 9)
-			return FALSE;
-
-		strcpy(p, "(\\xfe|)");
-	}
-
-	return TRUE;
-}
-
-static int build_mnt_opts(std::string& buffer, struct value_list *opts)
-{
-	struct value_list *ent;
-	pattern_t ptype;
-	int pos;
-
-	if (!opts) {
-		buffer.append(default_match_pattern);
-		return TRUE;
-	}
-
-	list_for_each(opts, ent) {
-		ptype = convert_aaregex_to_pcre(ent->value, 0, buffer, &pos);
-		if (ptype == ePatternInvalid)
-			return FALSE;
-
-		if (ent->next)
-			buffer.append(",");
-	}
-
-	return TRUE;
-}
-
-static int process_mnt_entry(aare_ruleset_t *dfarules, struct mnt_entry *entry)
-{
-	std::string mntbuf;
-	std::string devbuf;
-	std::string typebuf;
-	char flagsbuf[PATH_MAX + 3];
-	std::string optsbuf;
-	char class_mount_hdr[64];
-	const char *vec[5];
-	int count = 0;
-	unsigned int flags, inv_flags;
-
-	sprintf(class_mount_hdr, "\\x%02x", AA_CLASS_MOUNT);
-
-	/* a single mount rule may result in multiple matching rules being
-	 * created in the backend to cover all the possible choices
-	 */
-
-	if ((entry->allow & AA_MAY_MOUNT) && (entry->flags & MS_REMOUNT)
-	    && !entry->device && !entry->dev_type) {
-		int allow;
-		/* remount can't be conditional on device and type */
-		/* rule class single byte header */
-		mntbuf.assign(class_mount_hdr);
-		if (entry->mnt_point) {
-			/* both device && mnt_point or just mnt_point */
-			if (!convert_entry(mntbuf, entry->mnt_point))
-				goto fail;
-			vec[0] = mntbuf.c_str();
-		} else {
-			if (!convert_entry(mntbuf, entry->device))
-				goto fail;
-			vec[0] = mntbuf.c_str();
-		}
-		/* skip device */
-		vec[1] = default_match_pattern;
-		/* skip type */
-		vec[2] = default_match_pattern;
-
-		flags = entry->flags;
-		inv_flags = entry->inv_flags;
-		if (flags != MS_ALL_FLAGS)
-			flags &= MS_REMOUNT_FLAGS;
-		if (inv_flags != MS_ALL_FLAGS)
-			flags &= MS_REMOUNT_FLAGS;
-		if (!build_mnt_flags(flagsbuf, PATH_MAX, flags, inv_flags))
-			goto fail;
-		vec[3] = flagsbuf;
-
-		if (entry->opts)
-			allow = AA_MATCH_CONT;
-		else
-			allow = entry->allow;
-
-		/* rule for match without required data || data MATCH_CONT */
-		if (!aare_add_rule_vec(dfarules, entry->deny, allow,
-				       entry->audit | AA_AUDIT_MNT_DATA, 4,
-				       vec, dfaflags))
-			goto fail;
-		count++;
-
-		if (entry->opts) {
-			/* rule with data match required */
-			optsbuf.clear();
-			if (!build_mnt_opts(optsbuf, entry->opts))
-				goto fail;
-			vec[4] = optsbuf.c_str();
-			if (!aare_add_rule_vec(dfarules, entry->deny,
-					       entry->allow,
-					       entry->audit | AA_AUDIT_MNT_DATA,
-					       5, vec, dfaflags))
-				goto fail;
-			count++;
-		}
-	}
-	if ((entry->allow & AA_MAY_MOUNT) && (entry->flags & MS_BIND)
-	    && !entry->dev_type && !entry->opts) {
-		/* bind mount rules can't be conditional on dev_type or data */
-		/* rule class single byte header */
-		mntbuf.assign(class_mount_hdr);
-		if (!convert_entry(mntbuf, entry->mnt_point))
-			goto fail;
-		vec[0] = mntbuf.c_str();
-		if (!clear_and_convert_entry(devbuf, entry->device))
-			goto fail;
-		vec[1] = devbuf.c_str();
-		/* skip type */
-		vec[2] = default_match_pattern;
-
-		flags = entry->flags;
-		inv_flags = entry->inv_flags;
-		if (flags != MS_ALL_FLAGS)
-			flags &= MS_BIND_FLAGS;
-		if (inv_flags != MS_ALL_FLAGS)
-			flags &= MS_BIND_FLAGS;
-		if (!build_mnt_flags(flagsbuf, PATH_MAX, flags, inv_flags))
-			goto fail;
-		vec[3] = flagsbuf;
-		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
-				       entry->audit, 4, vec, dfaflags))
-			goto fail;
-		count++;
-	}
-	if ((entry->allow & AA_MAY_MOUNT) &&
-	    (entry->flags & (MS_UNBINDABLE | MS_PRIVATE | MS_SLAVE | MS_SHARED))
-	    && !entry->device && !entry->dev_type && !entry->opts) {
-		/* change type base rules can not be conditional on device,
-		 * device type or data
-		 */
-		/* rule class single byte header */
-		mntbuf.assign(class_mount_hdr);
-		if (!convert_entry(mntbuf, entry->mnt_point))
-			goto fail;
-		vec[0] = mntbuf.c_str();
-		/* skip device and type */
-		vec[1] = default_match_pattern;
-		vec[2] = default_match_pattern;
-
-		flags = entry->flags;
-		inv_flags = entry->inv_flags;
-		if (flags != MS_ALL_FLAGS)
-			flags &= MS_MAKE_FLAGS;
-		if (inv_flags != MS_ALL_FLAGS)
-			flags &= MS_MAKE_FLAGS;
-		if (!build_mnt_flags(flagsbuf, PATH_MAX, flags, inv_flags))
-			goto fail;
-		vec[3] = flagsbuf;
-		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
-				       entry->audit, 4, vec, dfaflags))
-			goto fail;
-		count++;
-	}
-	if ((entry->allow & AA_MAY_MOUNT) && (entry->flags & MS_MOVE)
-	    && !entry->dev_type && !entry->opts) {
-		/* mount move rules can not be conditional on dev_type,
-		 * or data
-		 */
-		/* rule class single byte header */
-		mntbuf.assign(class_mount_hdr);
-		if (!convert_entry(mntbuf, entry->mnt_point))
-			goto fail;
-		vec[0] = mntbuf.c_str();
-		if (!clear_and_convert_entry(devbuf, entry->device))
-			goto fail;
-		vec[1] = devbuf.c_str();
-		/* skip type */
-		vec[2] = default_match_pattern;
-
-		flags = entry->flags;
-		inv_flags = entry->inv_flags;
-		if (flags != MS_ALL_FLAGS)
-			flags &= MS_MOVE_FLAGS;
-		if (inv_flags != MS_ALL_FLAGS)
-			flags &= MS_MOVE_FLAGS;
-		if (!build_mnt_flags(flagsbuf, PATH_MAX, flags, inv_flags))
-			goto fail;
-		vec[3] = flagsbuf;
-		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
-				       entry->audit, 4, vec, dfaflags))
-			goto fail;
-		count++;
-	}
-	if ((entry->allow & AA_MAY_MOUNT) &&
-	    (entry->flags | entry->inv_flags) & ~MS_CMDS) {
-		int allow;
-		/* generic mount if flags are set that are not covered by
-		 * above commands
-		 */
-		/* rule class single byte header */
-		mntbuf.assign(class_mount_hdr);
-		if (!convert_entry(mntbuf, entry->mnt_point))
-			goto fail;
-		vec[0] = mntbuf.c_str();
-		if (!clear_and_convert_entry(devbuf, entry->device))
-			goto fail;
-		vec[1] = devbuf.c_str();
-		typebuf.clear();
-		if (!build_list_val_expr(typebuf, entry->dev_type))
-			goto fail;
-		vec[2] = typebuf.c_str();
-
-		flags = entry->flags;
-		inv_flags = entry->inv_flags;
-		if (flags != MS_ALL_FLAGS)
-			flags &= ~MS_CMDS;
-		if (inv_flags != MS_ALL_FLAGS)
-			flags &= ~MS_CMDS;
-		if (!build_mnt_flags(flagsbuf, PATH_MAX, flags, inv_flags))
-			goto fail;
-		vec[3] = flagsbuf;
-
-		if (entry->opts)
-			allow = AA_MATCH_CONT;
-		else
-			allow = entry->allow;
-
-		/* rule for match without required data || data MATCH_CONT */
-		if (!aare_add_rule_vec(dfarules, entry->deny, allow,
-				       entry->audit | AA_AUDIT_MNT_DATA, 4,
-				       vec, dfaflags))
-			goto fail;
-		count++;
-
-		if (entry->opts) {
-			/* rule with data match required */
-			optsbuf.clear();
-			if (!build_mnt_opts(optsbuf, entry->opts))
-				goto fail;
-			vec[4] = optsbuf.c_str();
-			if (!aare_add_rule_vec(dfarules, entry->deny,
-					       entry->allow,
-					       entry->audit | AA_AUDIT_MNT_DATA,
-					       5, vec, dfaflags))
-				goto fail;
-			count++;
-		}
-	}
-	if (entry->allow & AA_MAY_UMOUNT) {
-		/* rule class single byte header */
-		mntbuf.assign(class_mount_hdr);
-		if (!convert_entry(mntbuf, entry->mnt_point))
-			goto fail;
-		vec[0] = mntbuf.c_str();
-		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
-				       entry->audit, 1, vec, dfaflags))
-			goto fail;
-		count++;
-	}
-	if (entry->allow & AA_MAY_PIVOTROOT) {
-		/* rule class single byte header */
-		mntbuf.assign(class_mount_hdr);
-		if (!convert_entry(mntbuf, entry->mnt_point))
-			goto fail;
-		vec[0] = mntbuf.c_str();
-		if (!clear_and_convert_entry(devbuf, entry->device))
-			goto fail;
-		vec[1] = devbuf.c_str();
-		if (!aare_add_rule_vec(dfarules, entry->deny, entry->allow,
-				       entry->audit, 2, vec, dfaflags))
-			goto fail;
-		count++;
-	}
-
-	if (!count)
-		/* didn't actually encode anything */
-		goto fail;
-
-	return TRUE;
-
-fail:
-	PERROR("Enocoding of mount rule failed\n");
-	return FALSE;
-}
-
-
-static int process_dbus_entry(aare_ruleset_t *dfarules, struct dbus_entry *entry)
-{
-	std::string busbuf;
-	std::string namebuf;
-	std::string peer_labelbuf;
-	std::string pathbuf;
-	std::string ifacebuf;
-	std::string memberbuf;
-	std::ostringstream buffer;
-	const char *vec[6];
-
-	pattern_t ptype;
-	int pos;
-
-	if (!entry) 		/* shouldn't happen */
-		return TRUE;
-
-	buffer << "\\x" << std::setfill('0') << std::setw(2) << std::hex << AA_CLASS_DBUS;
-	busbuf.append(buffer.str());
-
-	if (entry->bus) {
-		ptype = convert_aaregex_to_pcre(entry->bus, 0, busbuf, &pos);
-		if (ptype == ePatternInvalid)
-			goto fail;
-	} else {
-		/* match any char except \000 0 or more times */
-		busbuf.append(default_match_pattern);
-	}
-	vec[0] = busbuf.c_str();
-
-	if (entry->name) {
-		ptype = convert_aaregex_to_pcre(entry->name, 0, namebuf, &pos);
-		if (ptype == ePatternInvalid)
-			goto fail;
-		vec[1] = namebuf.c_str();
-	} else {
-		/* match any char except \000 0 or more times */
-		vec[1] = default_match_pattern;
-	}
-
-	if (entry->peer_label) {
-		ptype = convert_aaregex_to_pcre(entry->peer_label, 0,
-						peer_labelbuf, &pos);
-		if (ptype == ePatternInvalid)
-			goto fail;
-		vec[2] = peer_labelbuf.c_str();
-	} else {
-		/* match any char except \000 0 or more times */
-		vec[2] = default_match_pattern;
-	}
-
-	if (entry->path) {
-		ptype = convert_aaregex_to_pcre(entry->path, 0, pathbuf, &pos);
-		if (ptype == ePatternInvalid)
-			goto fail;
-		vec[3] = pathbuf.c_str();
-	} else {
-		/* match any char except \000 0 or more times */
-		vec[3] = default_match_pattern;
-	}
-
-	if (entry->interface) {
-		ptype = convert_aaregex_to_pcre(entry->interface, 0, ifacebuf, &pos);
-		if (ptype == ePatternInvalid)
-			goto fail;
-		vec[4] = ifacebuf.c_str();
-	} else {
-		/* match any char except \000 0 or more times */
-		vec[4] = default_match_pattern;
-	}
-
-	if (entry->member) {
-		ptype = convert_aaregex_to_pcre(entry->member, 0, memberbuf, &pos);
-		if (ptype == ePatternInvalid)
-			goto fail;
-		vec[5] = memberbuf.c_str();
-	} else {
-		/* match any char except \000 0 or more times */
-		vec[5] = default_match_pattern;
-	}
-
-	if (entry->mode & AA_DBUS_BIND) {
-		if (!aare_add_rule_vec(dfarules, entry->deny,
-				       entry->mode & AA_DBUS_BIND,
-				       entry->audit & AA_DBUS_BIND,
-				       2, vec, dfaflags))
-			goto fail;
-	}
-	if (entry->mode & (AA_DBUS_SEND | AA_DBUS_RECEIVE)) {
-		if (!aare_add_rule_vec(dfarules, entry->deny,
-				entry->mode & (AA_DBUS_SEND | AA_DBUS_RECEIVE),
-				entry->audit & (AA_DBUS_SEND | AA_DBUS_RECEIVE),
-				6, vec, dfaflags))
-			goto fail;
-	}
-	if (entry->mode & AA_DBUS_EAVESDROP) {
-		if (!aare_add_rule_vec(dfarules, entry->deny,
-				entry->mode & AA_DBUS_EAVESDROP,
-				entry->audit & AA_DBUS_EAVESDROP,
-				1, vec, dfaflags))
-			goto fail;
-	}
-	return TRUE;
-
-fail:
-	return FALSE;
-}
-
-static int post_process_mnt_ents(Profile *prof)
-{
-	int ret = TRUE;
-	int count = 0;
-
-	/* Add fns for rules that should be added to policydb here */
-	if (prof->mnt_ents && kernel_supports_mount) {
-		struct mnt_entry *entry;
-		list_for_each(prof->mnt_ents, entry) {
-			if (!process_mnt_entry(prof->policy.rules, entry))
-				ret = FALSE;
-			count++;
-		}
-	} else if (prof->mnt_ents && !kernel_supports_mount)
-		pwarn("profile %s mount rules not enforced\n", prof->name);
-
-	prof->policy.count += count;
-
-	return ret;
-}
-
-static int post_process_dbus_ents(Profile *prof)
-{
-	int ret = TRUE;
-	int count = 0;
-
-	if (prof->dbus_ents && kernel_supports_dbus) {
-		struct dbus_entry *entry;
-
-		list_for_each(prof->dbus_ents, entry) {
-			if (!process_dbus_entry(prof->policy.rules, entry))
-				ret = FALSE;
-			count++;
-		}
-	} else if (prof->dbus_ents && !kernel_supports_dbus)
-		pwarn("profile %s dbus rules not enforced\n", prof->name);
-
-	prof->policy.count += count;
-	return ret;
-}
-
 int post_process_policydb_ents(Profile *prof)
 {
-	if (!post_process_mnt_ents(prof))
-		return FALSE;
-	if (!post_process_dbus_ents(prof))
-		return FALSE;
+	for (RuleList::iterator i = prof->rule_ents.begin(); i != prof->rule_ents.end(); i++) {
+		if ((*i)->gen_policy_re(*prof) == RULE_ERROR)
+			return FALSE;
+	}
 
 	return TRUE;
 }
