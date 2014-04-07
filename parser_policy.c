@@ -32,8 +32,6 @@
 
 #include "parser.h"
 #include "profile.h"
-#include "mount.h"
-#include "dbus.h"
 #include "parser_yacc.h"
 
 /* #define DEBUG */
@@ -70,7 +68,7 @@ void add_hat_to_policy(Profile *prof, Profile *hat)
 	}
 }
 
-static int add_entry_to_x_table(Profile *prof, char *name)
+int add_entry_to_x_table(Profile *prof, char *name)
 {
 	int i;
 	for (i = (AA_EXEC_LOCAL >> 10) + 1; i < AA_EXEC_COUNT; i++) {
@@ -192,29 +190,10 @@ void post_process_file_entries(Profile *prof)
 	}
 }
 
-void post_process_mnt_entries(Profile *prof)
+void post_process_rule_entries(Profile *prof)
 {
-	struct mnt_entry *entry;
-
-	list_for_each(prof->mnt_ents, entry) {
-		if (entry->trans) {
-			unsigned int mode = 0;
-			int n = add_entry_to_x_table(prof, entry->trans);
-			if (!n) {
-				PERROR("Profile %s has too many specified profile transitions.\n", prof->name);
-				exit(1);
-			}
-
-			if (entry->allow & AA_USER_EXEC)
-				mode |= SHIFT_MODE(n << 10, AA_USER_SHIFT);
-			if (entry->allow & AA_OTHER_EXEC)
-				mode |= SHIFT_MODE(n << 10, AA_OTHER_SHIFT);
-			entry->allow = ((entry->allow & ~AA_ALL_EXEC_MODIFIERS) |
-				       (mode & AA_ALL_EXEC_MODIFIERS));
-
-			entry->trans = NULL;
-		}
-	}
+	for (RuleList::iterator i = prof->rule_ents.begin(); i != prof->rule_ents.end(); i++)
+		(*i)->post_process(*prof);
 }
 
 

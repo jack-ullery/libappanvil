@@ -20,8 +20,14 @@
 #define __AA_DBUS_H
 
 #include "parser.h"
+#include "rule.h"
+#include "profile.h"
 
-struct dbus_entry {
+extern int parse_dbus_mode(const char *str_mode, int *mode, int fail);
+
+class dbus_rule: public rule_t {
+	void move_conditionals(struct cond_entry *conds);
+public:
 	char *bus;
 	/**
 	 * Be careful! ->name can be the subject or the peer name, depending on
@@ -37,13 +43,23 @@ struct dbus_entry {
 	int audit;
 	int deny;
 
-	struct dbus_entry *next;
-};
+	dbus_rule(int mode_p, struct cond_entry *conds,
+		  struct cond_entry *peer_conds);
+	virtual ~dbus_rule() {
+		free(bus);
+		free(name);
+		free(peer_label);
+		free(path);
+		free(interface);
+		free(member);
+	};
 
-void free_dbus_entry(struct dbus_entry *ent);
-struct dbus_entry *new_dbus_entry(int mode, struct cond_entry *conds,
-				  struct cond_entry *peer_conds);
-struct dbus_entry *dup_dbus_entry(struct dbus_entry *ent);
-void print_dbus_entry(struct dbus_entry *ent);
+	virtual ostream &dump(ostream &os);
+	virtual int expand_variables(void);
+	virtual int gen_policy_re(Profile &prof);
+	virtual void post_process(Profile &prof __unused) { };
+
+
+};
 
 #endif /* __AA_DBUS_H */

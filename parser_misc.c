@@ -596,7 +596,7 @@ int str_to_boolean(const char *value)
 
 static int warned_uppercase = 0;
 
-static void warn_uppercase(void)
+void warn_uppercase(void)
 {
 	if (!warned_uppercase) {
 		pwarn(_("Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
@@ -792,81 +792,6 @@ int parse_mode(const char *str_mode)
 	return mode;
 }
 
-static int parse_dbus_sub_mode(const char *str_mode, int *result, int fail, const char *mode_desc __unused)
-{
-	int mode = 0;
-	const char *p;
-
-	PDEBUG("Parsing DBus mode: %s\n", str_mode);
-
-	if (!str_mode)
-		return 0;
-
-	p = str_mode;
-	while (*p) {
-		char current = *p;
-		char lower;
-
-reeval:
-		switch (current) {
-		case COD_READ_CHAR:
-			PDEBUG("Parsing DBus mode: found %s READ\n", mode_desc);
-			mode |= AA_DBUS_RECEIVE;
-			break;
-
-		case COD_WRITE_CHAR:
-			PDEBUG("Parsing DBus mode: found %s WRITE\n",
-			       mode_desc);
-			mode |= AA_DBUS_SEND;
-			break;
-
-		/* error cases */
-
-		default:
-			lower = tolower(current);
-			switch (lower) {
-			case COD_READ_CHAR:
-			case COD_WRITE_CHAR:
-				PDEBUG("Parsing DBus mode: found invalid upper case char %c\n",
-				       current);
-				warn_uppercase();
-				current = lower;
-				goto reeval;
-				break;
-			default:
-				if (fail)
-					yyerror(_("Internal: unexpected DBus mode character '%c' in input"),
-						current);
-				else
-					return 0;
-				break;
-			}
-			break;
-		}
-		p++;
-	}
-
-	PDEBUG("Parsed DBus mode: %s 0x%x\n", str_mode, mode);
-
-	*result = mode;
-	return 1;
-}
-
-int parse_dbus_mode(const char *str_mode, int *mode, int fail)
-{
-	*mode = 0;
-	if (!parse_dbus_sub_mode(str_mode, mode, fail, ""))
-		return 0;
-	if (*mode & ~AA_VALID_DBUS_PERMS) {
-		if (fail)
-			yyerror(_("Internal error generated invalid DBus perm 0x%x\n"),
-				  mode);
-		else
-			return 0;
-	}
-	return 1;
-}
-
 struct cod_entry *new_entry(char *ns, char *id, int mode, char *link_id)
 {
 	struct cod_entry *entry = NULL;
@@ -936,30 +861,6 @@ void free_cod_entries(struct cod_entry *list)
 	if (list->pat.regex)
 		free(list->pat.regex);
 	free(list);
-}
-
-void free_mnt_entries(struct mnt_entry *list)
-{
-	if (!list)
-		return;
-	if (list->next)
-		free_mnt_entries(list->next);
-	free(list->mnt_point);
-	free(list->device);
-	free_value_list(list->dev_type);
-	free_value_list(list->opts);
-
-	free(list);
-}
-
-void free_dbus_entries(struct dbus_entry *list)
-{
-	if (!list)
-		return;
-	if (list->next)
-		free_dbus_entries(list->next);
-
-	free_dbus_entry(list);
 }
 
 static void debug_base_perm_mask(int mask)

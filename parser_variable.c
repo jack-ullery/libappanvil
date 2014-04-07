@@ -15,6 +15,7 @@
  *   along with this program; if not, contact Novell, Inc.
  */
 
+#include <assert.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -213,13 +214,15 @@ static int expand_by_alternations(struct set_value **valuelist,
 }
 
 /* doesn't handle variables in options atm */
-static int expand_entry_variables(char **name, void *entry)
+int expand_entry_variables(char **name)
 {
 	struct set_value *valuelist;
 	struct var_string *split_var;
 	int ret;
 
-	if (!entry) 		/* can happen when entry is optional */
+	assert(name);
+
+	if (!*name) 		/* can happen when entry is optional */
 		return 0;
 
 	while ((split_var = split_out_var(*name))) {
@@ -251,7 +254,7 @@ static int process_variables_in_entries(struct cod_entry *entry_list)
 	struct cod_entry *entry;
 
 	list_for_each(entry_list, entry) {
-		error = expand_entry_variables(&entry->name, entry);
+		error = expand_entry_variables(&entry->name);
 		if (error)
 			return error;
 	}
@@ -259,69 +262,24 @@ static int process_variables_in_entries(struct cod_entry *entry_list)
 	return 0;
 }
 
-/* does not currently support expansion of vars in options */
-static int process_variables_in_mnt_entries(struct mnt_entry *entry_list)
+static int process_variables_in_rules(Profile &prof)
 {
-	int error = 0;
-	struct mnt_entry *entry;
-
-	list_for_each(entry_list, entry) {
-		error = expand_entry_variables(&entry->mnt_point, entry);
+	for (RuleList::iterator i = prof.rule_ents.begin(); i != prof.rule_ents.end(); i++) {
+	  int error = (*i)->expand_variables();
 		if (error)
 			return error;
-		error = expand_entry_variables(&entry->device, entry);
-		if (error)
-			return error;
-		error = expand_entry_variables(&entry->trans, entry);
-		if (error)
-			return error;
-
 	}
 
 	return 0;
 }
 
-static int process_dbus_variables(struct dbus_entry *entry_list)
-{
-	int error = 0;
-	struct dbus_entry *entry;
-
-	list_for_each(entry_list, entry) {
-		error = expand_entry_variables(&entry->bus, entry);
-		if (error)
-			return error;
-		error = expand_entry_variables(&entry->name, entry);
-		if (error)
-			return error;
-		error = expand_entry_variables(&entry->peer_label, entry);
-		if (error)
-			return error;
-		error = expand_entry_variables(&entry->path, entry);
-		if (error)
-			return error;
-		error = expand_entry_variables(&entry->interface, entry);
-		if (error)
-			return error;
-		error = expand_entry_variables(&entry->member, entry);
-		if (error)
-			return error;
-
-	}
-
-	return 0;
-}
 
 int process_profile_variables(Profile *prof)
 {
 	int error = 0;
-
-	error = process_variables_in_entries(prof->entries);
-
-	if (!error)
-		error = process_variables_in_mnt_entries(prof->mnt_ents);
-
-	if (!error)
-		error = process_dbus_variables(prof->dbus_ents);
+       	error = process_variables_in_entries(prof->entries);
+       	if (!error)
+		error = process_variables_in_rules(*prof);
 
 	return error;
 }

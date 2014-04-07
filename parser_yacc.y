@@ -72,11 +72,11 @@ int parser_token = 0;
 
 struct cod_entry *do_file_rule(char *ns, char *id, int mode,
 			       char *link_id, char *nt);
-struct mnt_entry *do_mnt_rule(struct cond_entry *src_conds, char *src,
-			      struct cond_entry *dst_conds, char *dst,
-			      int mode);
-struct mnt_entry *do_pivot_rule(struct cond_entry *old, char *root,
-				char *transition);
+mnt_rule *do_mnt_rule(struct cond_entry *src_conds, char *src,
+		      struct cond_entry *dst_conds, char *dst,
+		      int mode);
+mnt_rule *do_pivot_rule(struct cond_entry *old, char *root,
+			char *transition);
 
 void add_local_entry(Profile *prof);
 
@@ -162,6 +162,12 @@ void add_local_entry(Profile *prof);
 /* debug flag values */
 %token TOK_FLAGS
 
+%code requires {
+	#include "profile.h"
+	#include "mount.h"
+	#include "dbus.h"
+}
+
 %union {
 	char *id;
 	char *flag_id;
@@ -170,8 +176,9 @@ void add_local_entry(Profile *prof);
 	Profile *prof;
 	struct cod_net_entry *net_entry;
 	struct cod_entry *user_entry;
-	struct mnt_entry *mnt_entry;
-	struct dbus_entry *dbus_entry;
+
+	mnt_rule *mnt_entry;
+	dbus_rule *dbus_entry;
 
 	flagvals flags;
 	int fmode;
@@ -281,7 +288,7 @@ profile_base: TOK_ID opt_id flags TOK_OPEN rules TOK_CLOSE
 			prof->flags.complain = 1;
 
 		post_process_file_entries(prof);
-		post_process_mnt_entries(prof);
+		post_process_rule_entries(prof);
 		PDEBUG("%s: flags='%s%s'\n",
 		       $2,
 		       prof->flags.complain ? "complain, " : "",
@@ -667,8 +674,8 @@ rules:  rules opt_prefix mnt_rule
 		} else if ($2.audit) {
 			$3->audit = $3->allow;
 		}
-		$3->next = $1->mnt_ents;
-		$1->mnt_ents = $3;
+
+		$1->rule_ents.push_back($3);
 		$$ = $1;
 	}
 
@@ -684,8 +691,7 @@ rules:  rules opt_prefix dbus_rule
 		} else if ($2.audit) {
 			$3->audit = $3->mode;
 		}
-		$3->next = $1->dbus_ents;
-		$1->dbus_ents = $3;
+		$1->rule_ents.push_back($3);
 		$$ = $1;
 	}
 
@@ -1196,9 +1202,9 @@ opt_dbus_perm: { /* nothing */ $$ = 0; }
 
 dbus_rule: TOK_DBUS opt_dbus_perm opt_conds opt_cond_list TOK_END_OF_RULE
 	{
-		struct dbus_entry *ent;
+		dbus_rule *ent;
 
-		ent = new_dbus_entry($2, $3, $4);
+		ent = new dbus_rule($2, $3, $4);
 		if (!ent) {
 			yyerror(_("Memory allocation error."));
 		}
@@ -1366,12 +1372,10 @@ int verify_mnt_conds(struct cond_entry *conds, int src)
 	return error;
 }
 
-struct mnt_entry *do_mnt_rule(struct cond_entry *src_conds, char *src,
-			      struct cond_entry *dst_conds, char *dst,
-			      int mode)
+mnt_rule *do_mnt_rule(struct cond_entry *src_conds, char *src,
+		      struct cond_entry *dst_conds, char *dst,
+		      int mode)
 {
-	struct mnt_entry *ent;
-
 	if (verify_mnt_conds(src_conds, MNT_SRC_OPT) != 0)
 		yyerror(_("bad mount rule"));
 
@@ -1382,7 +1386,7 @@ struct mnt_entry *do_mnt_rule(struct cond_entry *src_conds, char *src,
 	if (dst_conds)
 		yyerror(_("mount point conditions not currently supported"));
 
-	ent = new_mnt_entry(src_conds, src, dst_conds, dst, mode);
+	mnt_rule *ent = new mnt_rule(src_conds, src, dst_conds, dst, mode);
 	if (!ent) {
 		yyerror(_("Memory allocation error."));
 	}
@@ -1390,10 +1394,8 @@ struct mnt_entry *do_mnt_rule(struct cond_entry *src_conds, char *src,
 	return ent;
 }
 
-struct mnt_entry *do_pivot_rule(struct cond_entry *old, char *root,
-				char *transition)
+mnt_rule *do_pivot_rule(struct cond_entry *old, char *root, char *transition)
 {
-	struct mnt_entry *ent = NULL;
 	char *device = NULL;
 	if (old) {
 		if (strcmp(old->name, "oldroot") != 0)
@@ -1405,8 +1407,7 @@ struct mnt_entry *do_pivot_rule(struct cond_entry *old, char *root,
 		free_cond_entry(old);
 	}
 
-	ent = new_mnt_entry(NULL, device, NULL, root,
-			    AA_MAY_PIVOTROOT);
+	mnt_rule *ent = new mnt_rule(NULL, device, NULL, root, AA_MAY_PIVOTROOT);
 	ent->trans = transition;
 
 	return ent;
