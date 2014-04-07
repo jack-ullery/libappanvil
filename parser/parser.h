@@ -212,6 +212,40 @@ extern int preprocess_only;
 		___tmp->next = (LISTB);		\
 	} while (0)
 
+#define list_len(LIST)		\
+({				\
+	int len = 0;		\
+	typeof(LIST) tmp;		\
+	list_for_each((LIST), tmp)	\
+		len++;		\
+	len;			\
+})
+
+#define list_find_prev(LIST, ENTRY)	\
+({					\
+	typeof(ENTRY) tmp, prev = NULL;	\
+	list_for_each((LIST), tmp) {	\
+		if (tmp == (ENTRY))	\
+			break;		\
+		prev = tmp;		\
+	}				\
+	prev;				\
+})
+
+#define list_remove_at(LIST, PREV, ENTRY)			\
+	if (PREV)						\
+		(PREV)->next = (ENTRY)->next;			\
+	if ((ENTRY) == (LIST))					\
+		(LIST) = (ENTRY)->next;				\
+	(ENTRY)->next = NULL;					\
+
+#define list_remove(LIST, ENTRY)				\
+do {								\
+	typeof(ENTRY) prev = list_find_prev((LIST), (ENTRY));	\
+	list_remove_at((LIST), prev, (ENTRY));			\
+} while (0)
+
+
 #define DUP_STRING(orig, new, field, fail_target) \
 	do {									\
 		(new)->field = ((orig)->field) ? strdup((orig)->field) : NULL;	\

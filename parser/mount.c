@@ -350,11 +350,7 @@ static struct value_list *extract_fstype(struct cond_entry **conds)
 		if (strcmp(entry->name, "fstype") == 0 ||
 		    strcmp(entry->name, "vfstype") == 0) {
 			PDEBUG("  extracting fstype\n");
-			if (prev)
-				prev->next = tmp;
-			if (entry == *conds)
-				*conds = tmp;
-			entry->next = NULL;
+			list_remove_at(*conds, prev, entry);
 			list_append(entry->vals, list);
 			list = entry->vals;
 			entry->vals = NULL;
@@ -376,11 +372,7 @@ static struct value_list *extract_options(struct cond_entry **conds, int eq)
 		if ((strcmp(entry->name, "options") == 0 ||
 		     strcmp(entry->name, "option") == 0) &&
 		    entry->eq == eq) {
-			if (prev)
-				prev->next = tmp;
-			if (entry == *conds)
-				*conds = tmp;
-			entry->next = NULL;
+			list_remove_at(*conds, prev, entry);
 			PDEBUG("  extracting option %s\n", entry->name);
 			list_append(entry->vals, list);
 			list = entry->vals;
