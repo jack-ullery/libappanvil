@@ -397,7 +397,7 @@ mnt_rule::mnt_rule(struct cond_entry *src_conds, char *device_p,
 		   struct cond_entry *dst_conds __unused, char *mnt_point_p,
 		   int allow_p):
 	mnt_point(mnt_point_p), device(device_p), trans(NULL), opts(NULL),
-	audit(0), deny(0)
+	flags(0), inv_flags(0), audit(0), deny(0)
 {
 	/* FIXME: dst_conds are ignored atm */
 	dev_type = extract_fstype(&src_conds);
