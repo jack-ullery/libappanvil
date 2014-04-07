@@ -32,79 +32,10 @@
 
 #define _(s) gettext(s)
 
-static int parse_dbus_sub_mode(const char *str_mode, int *result, int fail, const char *mode_desc __unused)
-{
-	int mode = 0;
-	const char *p;
-
-	PDEBUG("Parsing DBus mode: %s\n", str_mode);
-
-	if (!str_mode)
-		return 0;
-
-	p = str_mode;
-	while (*p) {
-		char current = *p;
-		char lower;
-
-reeval:
-		switch (current) {
-		case COD_READ_CHAR:
-			PDEBUG("Parsing DBus mode: found %s READ\n", mode_desc);
-			mode |= AA_DBUS_RECEIVE;
-			break;
-
-		case COD_WRITE_CHAR:
-			PDEBUG("Parsing DBus mode: found %s WRITE\n",
-			       mode_desc);
-			mode |= AA_DBUS_SEND;
-			break;
-
-		/* error cases */
-
-		default:
-			lower = tolower(current);
-			switch (lower) {
-			case COD_READ_CHAR:
-			case COD_WRITE_CHAR:
-				PDEBUG("Parsing DBus mode: found invalid upper case char %c\n",
-				       current);
-				warn_uppercase();
-				current = lower;
-				goto reeval;
-				break;
-			default:
-				if (fail)
-					yyerror(_("Internal: unexpected DBus mode character '%c' in input"),
-						current);
-				else
-					return 0;
-				break;
-			}
-			break;
-		}
-		p++;
-	}
-
-	PDEBUG("Parsed DBus mode: %s 0x%x\n", str_mode, mode);
-
-	*result = mode;
-	return 1;
-}
 
 int parse_dbus_mode(const char *str_mode, int *mode, int fail)
 {
-	*mode = 0;
-	if (!parse_dbus_sub_mode(str_mode, mode, fail, ""))
-		return 0;
-	if (*mode & ~AA_VALID_DBUS_PERMS) {
-		if (fail)
-			yyerror(_("Internal error generated invalid DBus perm 0x%x\n"),
-				  mode);
-		else
-			return 0;
-	}
-	return 1;
+	return parse_X_mode("DBus", AA_VALID_DBUS_PERMS, str_mode, mode, fail);
 }
 
 static void move_conditional_value(char **dst_ptr, struct cond_entry *cond_ent)
