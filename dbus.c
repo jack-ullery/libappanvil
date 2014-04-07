@@ -107,17 +107,6 @@ int parse_dbus_mode(const char *str_mode, int *mode, int fail)
 	return 1;
 }
 
-static int list_len(struct value_list *v)
-{
-	int len = 0;
-	struct value_list *tmp;
-
-	list_for_each(v, tmp)
-		len++;
-
-	return len;
-}
-
 static void move_conditional_value(char **dst_ptr, struct cond_entry *cond_ent)
 {
 	if (*dst_ptr)
