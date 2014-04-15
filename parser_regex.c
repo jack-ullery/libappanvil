@@ -673,6 +673,12 @@ int post_process_policydb_ents(Profile *prof)
 	return TRUE;
 }
 
+#define MAKE_STR(X) #X
+#define CLASS_STR(X) "\\d" MAKE_STR(X)
+
+static const char *mediates_mount = CLASS_STR(AA_CLASS_MOUNT);
+static const char *mediates_dbus =  CLASS_STR(AA_CLASS_DBUS);
+
 int process_profile_policydb(Profile *prof)
 {
 	int error = -1;
@@ -684,6 +690,20 @@ int process_profile_policydb(Profile *prof)
 	if (!post_process_policydb_ents(prof))
 		goto out;
 
+	/* insert entries to show indicate what compiler/policy expects
+	 * to be supported
+	 */
+
+	if (kernel_supports_mount) {
+		if (!aare_add_rule(prof->policy.rules, mediates_mount, 0, AA_MAY_READ, 0, dfaflags))
+			goto out;
+		prof->policy.count++;
+	}
+	if (kernel_supports_dbus) {
+		if (!aare_add_rule(prof->policy.rules, mediates_dbus, 0, AA_MAY_READ, 0, dfaflags))
+			goto out;
+		prof->policy.count++;
+	}
 	if (prof->policy.count > 0) {
 		prof->policy.dfa = aare_create_dfa(prof->policy.rules,
 						  &prof->policy.size,
