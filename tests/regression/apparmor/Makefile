@@ -92,6 +92,7 @@ SRC=access.c \
     open.c \
     openat.c \
     pipe.c \
+    pivot_root.c \
     ptrace.c \
     ptrace_helper.c \
     pwrite.c \
@@ -160,6 +161,7 @@ TESTS=access \
       open \
       openat \
       pipe \
+      pivot_root \
       ptrace \
       pwrite \
       query_label \

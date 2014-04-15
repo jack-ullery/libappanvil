@@ -246,6 +246,20 @@ sub gen_umount($) {
     }
 }
 
+sub gen_pivot_root($) {
+    my $rule = shift;
+    my @rules = split (/:/, $rule);
+    if (@rules == 2) {
+	if ($rules[1] =~ /^ALL$/) {
+	    push (@{$output_rules{$hat}}, "  pivot_root,\n");
+	} else {
+	    push (@{$output_rules{$hat}}, "  pivot_root $rules[1],\n");
+	}
+    } else {
+	(!$nowarn) && print STDERR "Warning: invalid pivot_root description '$rule', ignored\n";
+    }
+}
+
 sub gen_file($) {
   my $rule = shift;
   my @rules = split (/:/, $rule);
@@ -338,6 +352,8 @@ sub gen_from_args() {
       gen_remount($rule);
     } elsif ($rule =~ /^umount:/) {
       gen_umount($rule);
+    } elsif ($rule =~ /^pivot_root:/) {
+      gen_pivot_root($rule);
     } elsif ($rule =~ /^flag:/) {
       gen_flag($rule);
     } elsif ($rule =~ /^hat:/) {

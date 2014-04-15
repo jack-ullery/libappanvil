@@ -162,7 +162,7 @@ else
 
 fi
 
-#need tests for move mount, remount, bind mount, pivot root, chroot
+#need tests for move mount, remount, bind mount, chroot
 
 # cleanup, umount file
 /bin/umount ${loop_device} > /dev/null 2> /dev/null  || /sbin/losetup -d ${loop_device} > /dev/null 2> /dev/null
