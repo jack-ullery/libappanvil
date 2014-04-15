@@ -111,7 +111,7 @@ EXTRA_CFLAGS += $(INCLUDE_APPARMOR)
 LEX_C_FILES	= parser_lex.c
 YACC_C_FILES	= parser_yacc.c parser_yacc.h
 
-TESTS = tst_regex tst_misc tst_symtab tst_variable
+TESTS = tst_regex tst_misc tst_symtab tst_variable tst_lib
 TEST_CFLAGS = $(EXTRA_CFLAGS) -DUNIT_TEST -Wno-unused-result
 TEST_OBJECTS = $(filter-out \
 			parser_lex.o \
@@ -262,6 +262,8 @@ af_names.h:
 cap_names.h: /usr/include/linux/capability.h
 	echo "$(CAPABILITIES)" | LC_ALL=C sed -n -e "s/[ \\t]\\?CAP_\\([A-Z0-9_]\\+\\)/\{\"\\L\\1\", \\UCAP_\\1\},\\n/pg" > $@
 
+tst_lib: lib.c parser.h $(filter-out lib.o, ${TEST_OBJECTS})
+	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS)
 tst_%: parser_%.c parser.h $(filter-out parser_%.o, ${TEST_OBJECTS})
 	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS)
 

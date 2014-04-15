@@ -39,6 +39,7 @@
 #include <unistd.h>
 #include <sys/apparmor.h>
 
+#include "lib.h"
 #include "parser.h"
 #include "profile.h"
 #include "parser_yacc.h"
@@ -443,38 +444,48 @@ struct aa_network_entry *network_entry(const char *family, const char *type,
 
 char *processunquoted(const char *string, int len)
 {
-	char *tmp, *s;
-	int l;
+	char *buffer, *s;
 
-	tmp = (char *)malloc(len + 1);
-	if (!tmp)
+	s = buffer = (char *) malloc(len + 1);
+	if (!buffer)
 		return NULL;
 
-	s = tmp;
-	for (l = 0; l < len; l++) {
-		if (string[l] == '\\' && l < len - 3) {
-			if (strchr("0123", string[l + 1]) &&
-			    strchr("0123456789", string[l + 2]) &&
-			    strchr("0123456789", string[l + 3])) {
-				/* three digit octal */
-				int res = (string[l + 1] - '0') * 64 +
-				    	  (string[l + 2] - '0') * 8 +
-					  (string[l + 3] - '0');
-				*s = res;
-				l += 3;
-			} else {
-				*s = string[l];
-			}
-			s++;
+	while (len > 0) {
+		const char *pos = string + 1;
+		long c;
+		if (*string == '\\' && len > 1 &&
+		    (c = strn_escseq(&pos, "", len)) != -1) {
+			*s++ = c;
+			len -= pos - string;
+			string = pos;
 		} else {
-			*s = string[l];
-			s++;
+			/* either unescaped char OR
+			 * unsupported escape sequence resulting in char being
+			 * copied.
+			 */
+			*s++ = *string++;
+			len--;
 		}
 	}
-
 	*s = 0;
 
-	return tmp;
+	return buffer;
+}
+
+/* rewrite a quoted string substituting escaped characters for the
+ * real thing.  Strip the quotes around the string */
+char *processquoted(const char *string, int len)
+{
+	/* skip leading " and eat trailing " */
+	if (*string == '"') {
+		len -= 2;
+		if (len < 0)	/* start and end point to same quote */
+			len = 0;
+		return processunquoted(string + 1, len);
+	}
+
+	/* no quotes? treat as unquoted */
+	return processunquoted(string, len);
 }
 
 char *processid(const char *string, int len)
@@ -485,72 +496,6 @@ char *processid(const char *string, int len)
 	if (*string == '"')
 		return processquoted(string, len);
 	return processunquoted(string, len);
-}
-
-/* rewrite a quoted string substituting escaped characters for the
- * real thing.  Strip the quotes around the string */
-
-char *processquoted(const char *string, int len)
-{
-	char *tmp, *s;
-	int l;
-	/* the result string will be shorter or equal in length */
-	tmp = (char *)malloc(len + 1);
-	if (!tmp)
-		return NULL;
-
-	s = tmp;
-	for (l = 1; l < len - 1; l++) {
-		if (string[l] == '\\' && l < len - 2) {
-			switch (string[l + 1]) {
-			case 't':
-				*s = '\t';
-				l++;
-				break;
-			case 'n':
-				*s = '\n';
-				l++;
-				break;
-			case 'r':
-				*s = '\r';
-				l++;
-				break;
-			case '"':
-				*s = '"';
-				l++;
-				break;
-			case '\\':
-				*s = '\\';
-				l++;
-				break;
-			case '0': case '1': case '2': case '3':
-				if ((l < len - 4) &&
-				    strchr("0123456789", string[l + 2]) &&
-				    strchr("0123456789", string[l + 3])) {
-					/* three digit octal */
-					int res = (string[l + 1] - '0') * 64 +
-					    (string[l + 2] - '0') * 8 +
-					    (string[l + 3] - '0');
-					*s = res;
-					l += 3;
-					break;
-				}
-				/* fall through */
-			default:
-				/* any unsupported escape sequence results in all
-				   chars being copied. */
-				*s = string[l];
-			}
-			s++;
-		} else {
-			*s = string[l];
-			s++;
-		}
-	}
-
-	*s = 0;
-
-	return tmp;
 }
 
 /* strip off surrounding delimiters around variables */
@@ -1270,27 +1215,82 @@ int test_str_to_boolean(void)
 int test_processunquoted(void)
 {
 	int rc = 0;
-	const char *teststring, *processedstring;
+	const char *teststring;
+	const char *resultstring;
 
 	teststring = "";
 	MY_TEST(strcmp(teststring, processunquoted(teststring, strlen(teststring))) == 0,
 			"processunquoted on empty string");
 
+	teststring = "\\1";
+	resultstring = "\001";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on one digit octal");
+
+	teststring = "\\8";
+	resultstring = "\\8";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on invalid octal digit \\8");
+
+	teststring = "\\18";
+	resultstring = "\0018";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on one digit octal followed by invalid octal digit");
+
+	teststring = "\\1a";
+	resultstring = "\001a";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on one digit octal followed by hex digit a");
+
+	teststring = "\\1z";
+	resultstring = "\001z";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on one digit octal follow by char z");
+
+	teststring = "\\11";
+	resultstring = "\011";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on two digit octal");
+
+	teststring = "\\118";
+	resultstring = "\0118";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on two digit octal followed by invalid octal digit");
+
+	teststring = "\\11a";
+	resultstring = "\011a";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on two digit octal followed by hex digit a");
+
+	teststring = "\\11z";
+	resultstring = "\011z";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on two digit octal followed by char z");
+
+	teststring = "\\111";
+	resultstring = "\111";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on three digit octal");
+
+	teststring = "\\378";
+	resultstring = "\0378";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on three digit octal two large, taken as 2 digit octal plus trailing char");
+
 	teststring = "123\\421123";
-	MY_TEST(strcmp(teststring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on invalid octal");
+	resultstring = "123\0421123";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on two character octal followed by valid octal digit \\421");
 
-/* Oh wow, our octal processing is busticated - FIXME
 	teststring = "123\\109123";
-	processedstring = "123\109123";
-	MY_TEST(strcmp(processedstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on octal 10");
+	resultstring = "123\109123";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on octal 109");
 
-	teststring = "123\\189123";
-	processedstring = "123\189123";
-	MY_TEST(strcmp(processedstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on octal 10");
-*/
+	teststring = "123\\1089123";
+	resultstring = "123\1089123";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on octal 108");
 
 	return rc;
 }
@@ -1377,19 +1377,30 @@ int test_processquoted(void)
 			"processquoted on quoted octal \\176");
 	free(out);
 
-	/* yes, our octal processing is lame; patches accepted */
-	teststring = "\"abc\\42defg\"";
-	processedstring = "abc\\42defg";
+	teststring = "\"abc\\429defg\"";
+	processedstring = "abc\0429defg";
 	out = processquoted(teststring, strlen(teststring));
 	MY_TEST(strcmp(processedstring, out) == 0,
-			"processquoted passthrough quoted invalid octal \\42");
+			"processquoted passthrough quoted invalid octal \\429");
 	free(out);
 
-	teststring = "\"abcdefg\\04\"";
-	processedstring = "abcdefg\\04";
+	teststring = "\"abcdefg\\4\"";
+	processedstring = "abcdefg\004";
 	out = processquoted(teststring, strlen(teststring));
 	MY_TEST(strcmp(processedstring, out) == 0,
-			"processquoted passthrough quoted invalid trailing octal \\04");
+			"processquoted passthrough quoted one digit trailing octal \\4");
+
+	teststring = "\"abcdefg\\04\"";
+	processedstring = "abcdefg\004";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(processedstring, out) == 0,
+			"processquoted passthrough quoted two digit trailing octal \\04");
+
+	teststring = "\"abcdefg\\004\"";
+	processedstring = "abcdefg\004";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(processedstring, out) == 0,
+			"processquoted passthrough quoted three digit trailing octal \\004");
 	free(out);
 
 	return rc;
