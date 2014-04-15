@@ -712,6 +712,9 @@ int process_profile_policydb(Profile *prof)
 		prof->policy.rules = NULL;
 		if (!prof->policy.dfa)
 			goto out;
+	} else {
+		aare_delete_ruleset(prof->policy.rules);
+		prof->policy.rules = NULL;
 	}
 
 	aare_reset_matchflags();
@@ -719,6 +722,9 @@ int process_profile_policydb(Profile *prof)
 	error = 0;
 
 out:
+	aare_delete_ruleset(prof->policy.rules);
+	prof->policy.rules = NULL;
+
 	return error;
 }
 
