@@ -3,11 +3,6 @@
 
 #include <dirent.h>
 
-#define min(a,b) \
-   ({ __typeof__ (a) _a = (a); \
-       __typeof__ (b) _b = (b); \
-     _a < _b ? _a : _b; })
-
 int dirat_for_each(DIR *dir, const char *name, void *data,
 		   int (* cb)(DIR *, const char *, struct stat *, void *));
 
