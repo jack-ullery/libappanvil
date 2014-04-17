@@ -233,7 +233,7 @@ int strn_escseq(const char **pos, const char *chrs, size_t n)
 		return -1;
 
 	if (isodigit(**pos)) {
-		tmp = strntol(*pos, &end, 8, 255, min(3ul, n));
+		tmp = strntol(*pos, &end, 8, 255, min((size_t) 3, n));
 		if (tmp == 0 && end == *pos) {
 			/* this should never happen because of isodigit test */
 			return -1;
@@ -249,7 +249,7 @@ int strn_escseq(const char **pos, const char *chrs, size_t n)
 	case '"':
 		return '"';
 	case 'd':
-		tmp = strntol(*pos, &end, 10, 255, min(3ul, n));
+		tmp = strntol(*pos, &end, 10, 255, min((size_t) 3, n));
 		if (tmp == 0 && end == *pos) {
 			/* \d no valid encoding */
 			return -1;
@@ -257,7 +257,7 @@ int strn_escseq(const char **pos, const char *chrs, size_t n)
 		*pos = end;
 		return tmp;
 	case 'x':
-		tmp = strntol(*pos, &end, 16, 255, min(2ul, n));
+		tmp = strntol(*pos, &end, 16, 255, min((size_t) 2, n));
 		if (tmp == 0 && end == *pos) {
 			/* \x no valid encoding */
 			return -1;
