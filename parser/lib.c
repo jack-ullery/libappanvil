@@ -29,6 +29,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <cstdint>
+
 #include "lib.h"
 #include "parser.h"
 
