@@ -10,7 +10,7 @@
   capability ipc_lock,
   capability setuid,
 
-  /etc/samba/passdb.tdb rwk,
+  /etc/samba/passdb.tdb{,.tmp} rwk,
   /etc/samba/secrets.tdb rwk,
   @{PROC}/sys/kernel/core_pattern r,
   /tmp/.winbindd/ w,
@@ -19,6 +19,7 @@
   /usr/lib*/samba/nss_info/*.so mr,
   /usr/lib*/samba/pdb/*.so mr,
   /usr/sbin/winbindd mr,
+  /var/cache/krb5rcache/* rw,
   /var/cache/samba/*.tdb rwk,
   /var/lib/samba/smb_krb5/krb5.conf.* rw,
   /var/lib/samba/smb_tmp_krb5.* rw,
