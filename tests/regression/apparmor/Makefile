@@ -66,9 +66,6 @@ SRC=access.c \
     chown.c \
     clone.c \
     coredump.c \
-    dbus_eavesdrop.c \
-    dbus_message.c \
-    dbus_service.c \
     deleted.c \
     environ.c \
     env_check.c \
@@ -126,6 +123,17 @@ ifneq (,$(findstring $(shell uname -i),i386 i486 i586 i686 x86 x86_64))
 SRC+=syscall_ioperm.c syscall_iopl.c
 endif
 
+#only do dbus if proper libs are installl
+ifneq (,$(shell pkg-config --exists dbus-1 && echo TRUE))
+SRC+=dbus_eavesdrop.c dbus_message.c dbus_service.c
+else
+$(warning ${nl}\
+************************************************************************${nl}\
+No dbus pkg-config skipping dbus_eavesdrop dbus_message dbus_services tests ...${nl}\
+Install libdbus-1-dev or equivalent package to build and run these tests${nl}\
+************************************************************************${nl})
+endif
+
 EXEC=$(SRC:%.c=%)
 
 TESTS=access \
@@ -139,9 +147,6 @@ TESTS=access \
       chdir \
       clone \
       coredump \
-      dbus_eavesdrop \
-      dbus_message \
-      dbus_service \
       deleted \
       environ \
       exec \
@@ -180,6 +185,11 @@ TESTS=access \
       unlink\
       xattrs\
       longpath
+
+#only do dbus if proper libs are installl
+ifneq (,$(shell pkg-config --exists dbus-1 && echo TRUE))
+TESTS+=dbus_eavesdrop dbus_message dbus_service
+endif
 
 # Tests that can crash the kernel should be placed here
 RISKY_TESTS=
