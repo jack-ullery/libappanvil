@@ -29,7 +29,7 @@ badperm=r
 
 # PASS TEST (pt 1)
 
-genprofile $file:$okperm 
+genprofile $file:$okperm signal:receive:peer=unconfined
 
 runtestbg "READ/WRITE pass1" pass $file
 
@@ -47,13 +47,13 @@ rm -f $file
 
 # FAILURE TEST (pt 1)
 
-genprofile $file:$okperm 
+genprofile $file:$okperm signal:receive:peer=unconfined
 
 runtestbg "READ/WRITE pass2" pass $file
 
 sleep 2
 
-genprofile $file:$badperm 
+genprofile $file:$badperm signal:receive:peer=unconfined 
 
 # FAILURE TEST (pt 2)
 

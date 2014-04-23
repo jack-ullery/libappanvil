@@ -21,7 +21,7 @@ echo "   using ptrace v6 tests ..."
 
 #unconfined tracing confined helper
 #confined helper asking unconfined process to ptrace it
-genprofile image=$helper signal:ALL
+genprofile image=$helper signal:ALL ptrace:tracedby:peer=unconfined
 
 runchecktest "test 3 -h" pass -h -n 100 $helper
 runchecktest "test 3 -hc " pass -h -c -n 100 $helper
@@ -220,14 +220,14 @@ runchecktest "test 12p -h" pass -h -n 100 $helper
 runchecktest "test 12p -hc" pass -h -c -n 100 $helper
 runchecktest "test 12p -h prog" pass -h -n 100 $helper /bin/true
 runchecktest "test 12p -hc prog" pass -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rix $helper:rix signal:ALL ptrace:$test
+genprofile /bin/true:rix $helper:rix signal:ALL ptrace:peer=$test
 runchecktest "test 12p1" pass -n 100 /bin/true
 runchecktest "test 12p1 -c" pass -c -n 100 /bin/true
 runchecktest "test 12p1 -h" pass -h -n 100 $helper
 runchecktest "test 12p1 -hc" pass -h -c -n 100 $helper
 runchecktest "test 12p1 -h prog" pass -h -n 100 $helper /bin/true
 runchecktest "test 12p1 -hc prog" pass -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rix $helper:rix signal:ALL ptrace:notaprofile
+genprofile /bin/true:rix $helper:rix signal:ALL ptrace:peer=notaprofile
 runchecktest "test 12p2" fail -n 100 /bin/true
 runchecktest "test 12p2 -c" fail -c -n 100 /bin/true
 runchecktest "test 12p2 -h" fail -h -n 100 $helper
@@ -237,137 +237,137 @@ runchecktest "test 12p2 -hc prog" fail -h -c -n 100 $helper /bin/true
 
 
 #ptraced confined app traced by profile can px
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:/bin/true -- image=/bin/true /bin/true:rix
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:peer=/bin/true -- image=/bin/true /bin/true:rix
 runchecktest "test 13p1 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p2 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:/bin/true -- image=/bin/true /bin/true:rix ptrace:tracedby
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:peer=/bin/true -- image=/bin/true /bin/true:rix ptrace:tracedby
 runchecktest "test 13p3 -h prog" pass -h -n 100 $helper /bin/true
 runchecktest "test 13p4 -hc prog" pass -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:/bin/true -- image=/bin/true /bin/true:rix ptrace:tracedby:$test
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:peer=/bin/true -- image=/bin/true /bin/true:rix ptrace:tracedby:peer=$test
 runchecktest "test 13p5 -h prog" pass -h -n 100 $helper /bin/true
 runchecktest "test 13p6 -hc prog" pass -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:/bin/true -- image=/bin/true /bin/true:rix ptrace:tracedby:notaprofile
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:peer=/bin/true -- image=/bin/true /bin/true:rix ptrace:tracedby:peer=notaprofile
 runchecktest "test 13p7 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p8 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:/bin/true -- image=/bin/true /bin/true:rix ptrace:trace
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:peer=/bin/true -- image=/bin/true /bin/true:rix ptrace:trace
 runchecktest "test 13p9 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pa -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:/bin/true -- image=/bin/true /bin/true:rix ptrace:trace:$test
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:peer=/bin/true -- image=/bin/true /bin/true:rix ptrace:trace:peer=$test
 runchecktest "test 13pb -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pc -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:/bin/true -- image=/bin/true /bin/true:rix ptrace:trace:notaprofile
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:peer=/bin/true -- image=/bin/true /bin/true:rix ptrace:trace:peer=notaprofile
 runchecktest "test 13pd -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pe -hc prog" fail -h -c -n 100 $helper /bin/true
 
 
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:trace:/bin/true -- image=/bin/true /bin/true:rix
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:trace:peer=/bin/true -- image=/bin/true /bin/true:rix
 runchecktest "test 13p11 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p21 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:trace:/bin/true -- image=/bin/true /bin/true:rix ptrace:tracedby
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:trace:peer=/bin/true -- image=/bin/true /bin/true:rix ptrace:tracedby
 runchecktest "test 13p31 -h prog" pass -h -n 100 $helper /bin/true
 runchecktest "test 13p41 -hc prog" pass -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:trace:/bin/true -- image=/bin/true /bin/true:rix ptrace:tracedby:$test
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:trace:peer=/bin/true -- image=/bin/true /bin/true:rix ptrace:tracedby:peer=$test
 runchecktest "test 13p51 -h prog" pass -h -n 100 $helper /bin/true
 runchecktest "test 13p61 -hc prog" pass -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:trace:/bin/true -- image=/bin/true /bin/true:rix ptrace:tracedby:notaprofile
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:trace:peer=/bin/true -- image=/bin/true /bin/true:rix ptrace:tracedby:peer=notaprofile
 runchecktest "test 13p71 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p81 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:trace:/bin/true -- image=/bin/true /bin/true:rix ptrace:trace
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:trace:peer=/bin/true -- image=/bin/true /bin/true:rix ptrace:trace
 runchecktest "test 13p91 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pa1 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:trace:/bin/true -- image=/bin/true /bin/true:rix ptrace:trace:$test
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:trace:peer=/bin/true -- image=/bin/true /bin/true:rix ptrace:trace:peer=$test
 runchecktest "test 13pb1 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pc1 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:trace:/bin/true -- image=/bin/true /bin/true:rix ptrace:trace:notaprofile
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:trace:peer=/bin/true -- image=/bin/true /bin/true:rix ptrace:trace:peer=notaprofile
 runchecktest "test 13pd1 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pe1 -hc prog" fail -h -c -n 100 $helper /bin/true
 
 
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:ALL -- image=/bin/true /bin/true:rix
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:ALL -- image=/bin/true /bin/true:rix
 runchecktest "test 13p12 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p22 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:ALL -- image=/bin/true /bin/true:rix ptrace:tracedby
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:ALL -- image=/bin/true /bin/true:rix ptrace:tracedby
 runchecktest "test 13p32 -h prog" pass -h -n 100 $helper /bin/true
 runchecktest "test 13p42 -hc prog" pass -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:ALL -- image=/bin/true /bin/true:rix ptrace:tracedby:$test
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:ALL -- image=/bin/true /bin/true:rix ptrace:tracedby:peer=$test
 runchecktest "test 13p52 -h prog" pass -h -n 100 $helper /bin/true
 runchecktest "test 13p62 -hc prog" pass -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:ALL -- image=/bin/true /bin/true:rix ptrace:tracedby:notaprofile
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:ALL -- image=/bin/true /bin/true:rix ptrace:tracedby:peer=notaprofile
 runchecktest "test 13p72 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p82 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:ALL -- image=/bin/true /bin/true:rix ptrace:trace
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:ALL -- image=/bin/true /bin/true:rix ptrace:trace
 runchecktest "test 13p92 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pa2 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:ALL -- image=/bin/true /bin/true:rix ptrace:trace:$test
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:ALL -- image=/bin/true /bin/true:rix ptrace:trace:peer=$test
 runchecktest "test 13pb2 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pc2 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:ALL -- image=/bin/true /bin/true:rix ptrace:trace:notaprofile
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:ALL -- image=/bin/true /bin/true:rix ptrace:trace:peer=notaprofile
 runchecktest "test 13pd2 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pe2 -hc prog" fail -h -c -n 100 $helper /bin/true
 
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:tracedby -- image=/bin/true /bin/true:rix
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:tracedby -- image=/bin/true /bin/true:rix
 runchecktest "test 13p13 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p23 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:tracedby -- image=/bin/true /bin/true:rix ptrace:tracedby
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:tracedby -- image=/bin/true /bin/true:rix ptrace:tracedby
 runchecktest "test 13p33 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p43 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:tracedby -- image=/bin/true /bin/true:rix ptrace:tracedby:$test
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:tracedby -- image=/bin/true /bin/true:rix ptrace:tracedby:peer=$test
 runchecktest "test 13p53 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p63 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:tracedby -- image=/bin/true /bin/true:rix ptrace:tracedby:notaprofile
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:tracedby -- image=/bin/true /bin/true:rix ptrace:tracedby:peer=notaprofile
 runchecktest "test 13p73 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p83 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:tracedby -- image=/bin/true /bin/true:rix ptrace:trace
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:tracedby -- image=/bin/true /bin/true:rix ptrace:trace
 runchecktest "test 13p93 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pa3 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:tracedby -- image=/bin/true /bin/true:rix ptrace:trace:$test
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:tracedby -- image=/bin/true /bin/true:rix ptrace:trace:peer=$test
 runchecktest "test 13pb3 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pc3 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:tracedby -- image=/bin/true /bin/true:rix ptrace:trace:notaprofile
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:tracedby -- image=/bin/true /bin/true:rix ptrace:trace:peer=notaprofile
 runchecktest "test 13pd3 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pe3 -hc prog" fail -h -c -n 100 $helper /bin/true
 
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:tracedby:notaprofile -- image=/bin/true /bin/true:rix
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:tracedby:peer=notaprofile -- image=/bin/true /bin/true:rix
 runchecktest "test 13p14 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p24 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:tracedby:notaprofile -- image=/bin/true /bin/true:rix ptrace:tracedby
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:tracedby:peer=notaprofile -- image=/bin/true /bin/true:rix ptrace:tracedby
 runchecktest "test 13p34 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p44 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:tracedby:notaprofile -- image=/bin/true /bin/true:rix ptrace:tracedby:$test
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:tracedby:peer=notaprofile -- image=/bin/true /bin/true:rix ptrace:tracedby:peer=$test
 runchecktest "test 13p54 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p64 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:tracedby:notaprofile -- image=/bin/true /bin/true:rix ptrace:tracedby:notaprofile
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:tracedby:peer=notaprofile -- image=/bin/true /bin/true:rix ptrace:tracedby:peer=notaprofile
 runchecktest "test 13p74 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p84 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:tracedby:notaprofile -- image=/bin/true /bin/true:rix ptrace:trace
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:tracedby:peer=notaprofile -- image=/bin/true /bin/true:rix ptrace:trace
 runchecktest "test 13p94 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pa4 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:tracedby:notaprofile -- image=/bin/true /bin/true:rix ptrace:trace:$test
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:tracedby:peer=notaprofile -- image=/bin/true /bin/true:rix ptrace:trace:peer=$test
 runchecktest "test 13pb4 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pc4 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:tracedby:notaprofile -- image=/bin/true /bin/true:rix ptrace:trace:notaprofile
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:tracedby:peer=notaprofile -- image=/bin/true /bin/true:rix ptrace:trace:peer=notaprofile
 runchecktest "test 13pd4 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pe4 -hc prog" fail -h -c -n 100 $helper /bin/true
 
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:notaprofile -- image=/bin/true /bin/true:rix
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:peer=notaprofile -- image=/bin/true /bin/true:rix
 runchecktest "test 13p15 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p25 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:notaprofile -- image=/bin/true /bin/true:rix ptrace:tracedby
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:peer=notaprofile -- image=/bin/true /bin/true:rix ptrace:tracedby
 runchecktest "test 13p35 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p45 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:notaprofile -- image=/bin/true /bin/true:rix ptrace:tracedby:$test
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:peer=notaprofile -- image=/bin/true /bin/true:rix ptrace:tracedby:peer=$test
 runchecktest "test 13p55 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p65 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:notaprofile -- image=/bin/true /bin/true:rix ptrace:tracedby:notaprofile
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:peer=notaprofile -- image=/bin/true /bin/true:rix ptrace:tracedby:peer=notaprofile
 runchecktest "test 13p75 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13p85 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:notaprofile -- image=/bin/true /bin/true:rix ptrace:trace
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:peer=notaprofile -- image=/bin/true /bin/true:rix ptrace:trace
 runchecktest "test 13p95 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pa5 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:notaprofile -- image=/bin/true /bin/true:rix ptrace:trace:$test
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:peer=notaprofile -- image=/bin/true /bin/true:rix ptrace:trace:peer=$test
 runchecktest "test 13pb5 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pc5 -hc prog" fail -h -c -n 100 $helper /bin/true
-genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:$test ptrace:notaprofile -- image=/bin/true /bin/true:rix ptrace:trace:notaprofile
+genprofile /bin/true:rpx $helper:rix signal:ALL ptrace:peer=$test ptrace:peer=notaprofile -- image=/bin/true /bin/true:rix ptrace:trace:peer=notaprofile
 runchecktest "test 13pd5 -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 13pe5 -hc prog" fail -h -c -n 100 $helper /bin/true
 

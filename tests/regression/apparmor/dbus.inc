@@ -14,6 +14,7 @@ ${__dbus_var_decl}
 $test {
   @{gen $test}
   $@
+  signal receive peer=unconfined,
 }
 EOF
 	unset __dbus_var_decl
