@@ -672,6 +672,7 @@ int post_process_policydb_ents(Profile *prof)
 #define MAKE_STR(X) #X
 #define CLASS_STR(X) "\\d" MAKE_STR(X)
 
+static const char *mediates_file = CLASS_STR(AA_CLASS_FILE);
 static const char *mediates_mount = CLASS_STR(AA_CLASS_MOUNT);
 static const char *mediates_dbus =  CLASS_STR(AA_CLASS_DBUS);
 
@@ -690,6 +691,10 @@ int process_profile_policydb(Profile *prof)
 	 * to be supported
 	 */
 
+	/* note: this activates unix domain sockets mediation on connect */
+	if (kernel_policy_version > 5 &&
+	    !prof->policy.rules->add_rule(mediates_file, 0, AA_MAY_READ, 0, dfaflags))
+		goto out;
 	if (kernel_supports_mount &&
 	    !prof->policy.rules->add_rule(mediates_mount, 0, AA_MAY_READ, 0, dfaflags))
 			goto out;
