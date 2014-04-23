@@ -814,11 +814,11 @@ static void set_features_by_match_file(void)
 		if (strstr(match_string, " perms=c"))
 			perms_create = 1;
 		free(match_string);
+		kernel_supports_network = 1;
 		goto out;
 	}
 no_match:
 	perms_create = 1;
-	kernel_supports_network = 0;
 
 out:
 	if (ms)
