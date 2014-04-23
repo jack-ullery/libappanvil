@@ -143,6 +143,7 @@ static struct keyword_table keyword_table[] = {
 	{"pivot_root",		TOK_PIVOTROOT},
 	{"in",			TOK_IN},
 	{"dbus",		TOK_DBUS},
+	{"signal",		TOK_SIGNAL},
 	{"send",                TOK_SEND},
 	{"receive",             TOK_RECEIVE},
 	{"bind",                TOK_BIND},

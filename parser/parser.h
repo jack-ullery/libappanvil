@@ -298,6 +298,7 @@ extern int kernel_supports_policydb;
 extern int kernel_supports_diff_encode;
 extern int kernel_supports_mount;
 extern int kernel_supports_dbus;
+extern int kernel_supports_signal;
 extern int conf_verbose;
 extern int conf_quiet;
 extern int names_only;
@@ -330,7 +331,9 @@ extern int yylex(void);
 extern const char *basedir;
 
 /* parser_regex.c */
-extern const char *default_match_pattern;
+#define default_match_pattern "[^\\000]*"
+#define anyone_match_pattern "[^\\000]+"
+
 extern pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 					 std::string& pcre, int *first_re_pos);
 extern int build_list_val_expr(std::string& buffer, struct value_list *list);

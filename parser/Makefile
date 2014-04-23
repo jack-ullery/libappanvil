@@ -79,9 +79,10 @@ EXTRA_CFLAGS+=-DSUBDOMAIN_CONFDIR=\"${CONFDIR}\"
 SRCS = parser_common.c parser_include.c parser_interface.c parser_lex.c \
        parser_main.c parser_misc.c parser_merge.c parser_symtab.c \
        parser_yacc.c parser_regex.c parser_variable.c parser_policy.c \
-       parser_alias.c mount.c dbus.c lib.c profile.cc rule.c common_optarg.c
+       parser_alias.c mount.c dbus.c lib.c profile.cc rule.c common_optarg.c \
+       signal.c
 HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h \
-       rule.h common_optarg.h
+       rule.h common_optarg.h signal.h
 TOOLS = apparmor_parser
 
 OBJECTS = $(SRCS:.c=.o)
@@ -242,6 +243,9 @@ lib.o: lib.c lib.h parser.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 dbus.o: dbus.c dbus.h parser.h immunix.h parser_yacc.h rule.h $(APPARMOR_H)
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
+
+signal.o: signal.c signal.h parser.h immunix.h parser_yacc.h rule.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 profile.o: profile.cc profile.h parser.h

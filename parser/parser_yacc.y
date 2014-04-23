@@ -28,6 +28,8 @@
 #include <fcntl.h>
 #include <libintl.h>
 #include <sys/apparmor.h>
+
+#include <iostream>
 #define _(s) gettext(s)
 
 /* #define DEBUG */
@@ -128,6 +130,7 @@ void add_local_entry(Profile *prof);
 %token TOK_PIVOTROOT
 %token TOK_IN
 %token TOK_DBUS
+%token TOK_SIGNAL
 %token TOK_SEND
 %token TOK_RECEIVE
 %token TOK_BIND
@@ -166,6 +169,7 @@ void add_local_entry(Profile *prof);
 	#include "profile.h"
 	#include "mount.h"
 	#include "dbus.h"
+	#include "signal.h"
 }
 
 %union {
@@ -179,6 +183,7 @@ void add_local_entry(Profile *prof);
 
 	mnt_rule *mnt_entry;
 	dbus_rule *dbus_entry;
+	signal_rule *signal_entry;
 
 	flagvals flags;
 	int fmode;
@@ -241,6 +246,10 @@ void add_local_entry(Profile *prof);
 %type <fmode>	dbus_perms
 %type <fmode>	opt_dbus_perm
 %type <dbus_entry>	dbus_rule
+%type <fmode>	signal_perm
+%type <fmode>	signal_perms
+%type <fmode>	opt_signal_perm
+%type <signal_entry>	signal_rule
 %type <transition> opt_named_transition
 %type <boolean> opt_unsafe
 %type <boolean> opt_file
@@ -686,6 +695,22 @@ rules:  rules opt_prefix dbus_rule
 	{
 		if ($2.owner)
 			yyerror(_("owner prefix not allowed on dbus rules"));
+		if ($2.deny && $2.audit) {
+			$3->deny = 1;
+		} else if ($2.deny) {
+			$3->deny = 1;
+			$3->audit = $3->mode;
+		} else if ($2.audit) {
+			$3->audit = $3->mode;
+		}
+		$1->rule_ents.push_back($3);
+		$$ = $1;
+	}
+
+rules:  rules opt_prefix signal_rule
+	{
+		if ($2.owner)
+			yyerror(_("owner prefix not allowed on signal rules"));
 		if ($2.deny && $2.audit) {
 			$3->deny = 1;
 		} else if ($2.deny) {
@@ -1211,6 +1236,49 @@ dbus_rule: TOK_DBUS opt_dbus_perm opt_conds opt_cond_list TOK_END_OF_RULE
 		if (!ent) {
 			yyerror(_("Memory allocation error."));
 		}
+		$$ = ent;
+	}
+
+signal_perm: TOK_VALUE
+	{
+		if (strcmp($1, "send") == 0 || strcmp($1, "write") == 0)
+			$$ = AA_MAY_SEND;
+		else if (strcmp($1, "receive") == 0 || strcmp($1, "read") == 0)
+			$$ = AA_MAY_RECEIVE;
+		else if ($1) {
+			parse_signal_mode($1, &$$, 1);
+		} else
+			$$ = 0;
+
+		if ($1)
+			free($1);
+	}
+	| TOK_SEND { $$ = AA_MAY_SEND; }
+	| TOK_RECEIVE { $$ = AA_MAY_RECEIVE; }
+	| TOK_READ { $$ = AA_MAY_RECEIVE; }
+	| TOK_WRITE { $$ = AA_MAY_SEND; }
+	| TOK_MODE
+	{
+		parse_signal_mode($1, &$$, 1);
+		free($1);
+	}
+
+signal_perms: { /* nothing */ $$ = 0; }
+	| signal_perms signal_perm { $$ = $1 | $2; }
+	| signal_perms TOK_COMMA signal_perm { $$ = $1 | $3; }
+
+opt_signal_perm: { /* nothing */ $$ = 0; }
+	| signal_perm { $$ = $1; }
+	| TOK_OPENPAREN signal_perms TOK_CLOSEPAREN { $$ = $2; }
+
+signal_rule: TOK_SIGNAL opt_signal_perm opt_conds TOK_END_OF_RULE
+	{
+		signal_rule *ent = new signal_rule($2, $3, NULL);
+		$$ = ent;
+	}
+	|  TOK_SIGNAL opt_signal_perm opt_conds TOK_ID TOK_END_OF_RULE
+	{
+		signal_rule *ent = new signal_rule($2, $3, $4);
 		$$ = ent;
 	}
 
