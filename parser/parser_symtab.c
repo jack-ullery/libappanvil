@@ -330,6 +330,50 @@ char *get_next_set_value(struct set_value **list)
 	return ret;
 }
 
+/* delete_symbol
+ * removes an individual variable from the symbol table. We don't
+ * support this in the language, but for special variables that change
+ * between profiles, we need this.
+ */
+int delete_set_var(const char *var_name)
+{
+	int rc = 0;
+	struct symtab **result, *n, *var;
+
+	n = new_symtab_entry(var_name);
+	if (!n) {
+		rc = ENOMEM;
+		goto out;
+	}
+
+	result = (struct symtab **) tfind(n, &my_symtab, (comparison_fn_t) &compare_symtabs);
+	if (!result) {
+		/* XXX Warning? */
+		goto out;
+	}
+
+	var = (*result);
+
+	result = (struct symtab **) tdelete(n, &my_symtab, (comparison_fn_t) &compare_symtabs);
+	if (!result) {
+		PERROR("ASSERT: delete_set_var: tfind found var %s but tdelete failed to delete it\n",
+				var_name);
+		exit(1);
+	}
+
+	if (var->type != sd_set) {
+		PERROR("ASSERT: delete_set_var: deleting %s but is a boolean variable\n",
+				var_name);
+		exit(1);
+	}
+
+	free_symtab(var);
+
+out:
+	free_symtab(n);
+	return rc;
+}
+
 static void *seenlist = NULL;
 
 static int is_seen(const char *var)
@@ -708,6 +752,21 @@ int test_expand_set_var_during_dump(void)
 	return rc;
 }
 
+int test_delete_set_var(void)
+{
+	int rc = 0;
+	int retval;
+
+	retval = new_set_var("deleteme", "delete this variable");
+	MY_TEST(retval == 0, "new delete set variable");
+	retval = delete_set_var("deleteme");
+	MY_TEST(retval == 0, "delete set variable");
+
+	free_symtabs();
+
+	return rc;
+}
+
 int main(void)
 {
 	int rc = 0;
@@ -737,6 +796,10 @@ int main(void)
 		rc = retval;
 
 	retval = test_expand_set_var_during_dump();
+	if (rc == 0)
+		rc = retval;
+
+	retval = test_delete_set_var();
 	if (rc == 0)
 		rc = retval;
 

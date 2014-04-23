@@ -15,6 +15,8 @@
 #define __AA_PROFILE_H
 
 #include <set>
+#include <string>
+#include <iostream>
 
 #include "parser.h"
 #include "rule.h"
@@ -229,13 +231,25 @@ public:
 		hat_table.dump();
 	}
 
+	std::string* get_name(bool fqp)
+	{
+		std::string *buf;
+		if (fqp && parent) {
+			buf = parent->get_name(fqp);
+			buf->append("//");
+			buf->append(name);
+		} else {
+			return new std::string(name);
+		}
+
+		return buf;
+	}
+
 	void dump_name(bool fqp)
 	{
-		if (fqp && parent) {
-			parent->dump_name(fqp);
-			printf("//%s", name);
-		} else
-			printf("%s", name);
+		std::string *buf = get_name(fqp);;
+		cout << *buf;
+		delete buf;
 	}
 };
 
