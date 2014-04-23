@@ -306,6 +306,7 @@ static int handle_flag_table(optflag_table_t *table, const char *optarg,
 			return 1;
 		}
 	}
+
 	return 0;
 }
 
@@ -847,6 +848,11 @@ static void set_supported_features(void) {
 		kernel_supports_mount = 1;
 	if (strstr(features_string, "dbus"))
 		kernel_supports_dbus = 1;
+	if (strstr(features_string, "diff_encode"))
+		kernel_supports_diff_encode = 1;
+	else if (dfaflags & DFA_CONTROL_DIFF_ENCODE)
+		/* clear diff_encode because it is not supported */
+		dfaflags &= ~DFA_CONTROL_DIFF_ENCODE;
 }
 
 int process_binary(int option, const char *profilename)
