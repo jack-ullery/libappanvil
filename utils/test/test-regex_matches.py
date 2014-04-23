@@ -187,7 +187,7 @@ class AARegexPath(unittest.TestCase):
         line = '   /tmp/foo r,'
         result = aa.RE_PROFILE_PATH_ENTRY.search(line)
         self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
-        mode = result.groups()[4].strip()
+        mode = result.groups()[5].strip()
         self.assertEqual(mode, 'r', 'Expected mode "r", got "%s"' % (mode))
 
     def test_simple_path_02(self):
@@ -198,7 +198,7 @@ class AARegexPath(unittest.TestCase):
         self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
         audit = result.groups()[0].strip()
         self.assertEqual(audit, 'audit', 'Couldn\t find audit modifier')
-        mode = result.groups()[4].strip()
+        mode = result.groups()[5].strip()
         self.assertEqual(mode, 'rw', 'Expected mode "rw", got "%s"' % (mode))
 
     def test_simple_path_03(self):
@@ -211,7 +211,18 @@ class AARegexPath(unittest.TestCase):
         self.assertEqual(audit, 'audit', 'Couldn\t find audit modifier')
         deny = result.groups()[1].strip()
         self.assertEqual(deny, 'deny', 'Couldn\t find deny modifier')
-        mode = result.groups()[4].strip()
+        mode = result.groups()[5].strip()
+        self.assertEqual(mode, 'rw', 'Expected mode "rw", got "%s"' % (mode))
+
+    def test_simple_path_04(self):
+        '''test '   file /tmp/foo rw,' '''
+
+        line = '   file /tmp/foo rw,'
+        result = aa.RE_PROFILE_PATH_ENTRY.search(line)
+        self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
+        path = result.groups()[4].strip()
+        self.assertEqual(path, "/tmp/foo", 'Couldn\'t find path')
+        mode = result.groups()[5].strip()
         self.assertEqual(mode, 'rw', 'Expected mode "rw", got "%s"' % (mode))
 
     def test_simple_bad_path_01(self):
@@ -221,81 +232,46 @@ class AARegexPath(unittest.TestCase):
         result = aa.RE_PROFILE_PATH_ENTRY.search(line)
         self.assertFalse(result, 'RE_PROFILE_PATH_ENTRY unexpectedly matched "%s"' % line)
 
-    def test_simple_bad_path_02(self):
-        '''test '   file /tmp/foo rw,' '''
-
-        line = '   file /tmp/foo rw,'
-        result = aa.RE_PROFILE_PATH_ENTRY.search(line)
-        self.assertFalse(result, 'RE_PROFILE_PATH_ENTRY unexpectedly matched "%s"' % line)
-
-class AARegexFile(unittest.TestCase):
-    '''Tests for RE_PROFILE_FILE_ENTRY'''
+class AARegexBareFile(unittest.TestCase):
+    '''Tests for RE_PROFILE_BARE_FILE_ENTRY'''
 
     def _assertEqualStrings(self, str1, str2):
         self.assertEqual(str1, str2, 'Expected %s, got "%s"' % (str1, str2))
 
-    def test_simple_file_01(self):
-        '''test '   file /tmp/foo rw,' '''
-
-        path = '/tmp/foo'
-        mode = 'rw'
-        line = '   file %s %s,' % (path, mode)
-        result = aa.RE_PROFILE_FILE_ENTRY.search(line)
-        self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
-        self._assertEqualStrings(path, result.groups()[3].strip())
-        self._assertEqualStrings(mode, result.groups()[4].strip())
-
-    def test_simple_file_02(self):
+    def test_bare_file_01(self):
         '''test '   file,' '''
 
         line = '   file,'
-        result = aa.RE_PROFILE_FILE_ENTRY.search(line)
+        result = aa.RE_PROFILE_BARE_FILE_ENTRY.search(line)
         self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
-        path = result.groups()[3]
-        self.assertEqual(path, None, 'Unexpected path, got "%s"' % path)
-        mode = result.groups()[4]
-        self.assertEqual(mode, None, 'Unexpected mode, got "%s"' % (mode))
-
-    def test_simple_file_03(self):
-        '''test '   audit file,' '''
-
-        line = '   audit file,'
-        result = aa.RE_PROFILE_FILE_ENTRY.search(line)
-        self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
-        audit = result.groups()[0].strip()
-        self.assertEqual(audit, 'audit', 'Couldn\t find audit modifier')
-        path = result.groups()[3]
-        self.assertEqual(path, None, 'Unexpected path, got "%s"' % path)
-        mode = result.groups()[4]
-        self.assertEqual(mode, None, 'Unexpected mode, got "%s"' % (mode))
 
     def test_simple_bad_file_01(self):
         '''test '   dbus,' '''
 
         line = '   dbus,'
-        result = aa.RE_PROFILE_FILE_ENTRY.search(line)
-        self.assertFalse(result, 'RE_PROFILE_FILE_ENTRY unexpectedly matched "%s"' % line)
+        result = aa.RE_PROFILE_BARE_FILE_ENTRY.search(line)
+        self.assertFalse(result, 'RE_PROFILE_BARE_FILE_ENTRY unexpectedly matched "%s"' % line)
 
     def test_simple_bad_file_02(self):
-        '''test '   /tmp/foo rw,' '''
+        '''test '   file /tmp/foo rw,' '''
 
-        line = '   /tmp/foo rw,'
-        result = aa.RE_PROFILE_FILE_ENTRY.search(line)
-        self.assertFalse(result, 'RE_PROFILE_FILE_ENTRY unexpectedly matched "%s"' % line)
+        line = '   file /tmp/foo rw,'
+        result = aa.RE_PROFILE_BARE_FILE_ENTRY.search(line)
+        self.assertFalse(result, 'RE_PROFILE_BARE_FILE_ENTRY unexpectedly matched "%s"' % line)
 
     def test_simple_bad_file_03(self):
         '''test '   file /tmp/foo,' '''
 
         line = '   file /tmp/foo,'
-        result = aa.RE_PROFILE_FILE_ENTRY.search(line)
-        self.assertFalse(result, 'RE_PROFILE_FILE_ENTRY unexpectedly matched "%s"' % line)
+        result = aa.RE_PROFILE_BARE_FILE_ENTRY.search(line)
+        self.assertFalse(result, 'RE_PROFILE_BARE_FILE_ENTRY unexpectedly matched "%s"' % line)
 
     def test_simple_bad_file_04(self):
         '''test '   file r,' '''
 
         line = '   file r,'
-        result = aa.RE_PROFILE_FILE_ENTRY.search(line)
-        self.assertFalse(result, 'RE_PROFILE_FILE_ENTRY unexpectedly matched "%s"' % line)
+        result = aa.RE_PROFILE_BARE_FILE_ENTRY.search(line)
+        self.assertFalse(result, 'RE_PROFILE_BARE_FILE_ENTRY unexpectedly matched "%s"' % line)
 
 class AARegexSignal(unittest.TestCase):
     '''Tests for RE_PROFILE_SIGNAL'''
@@ -532,7 +508,7 @@ if __name__ == '__main__':
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexSplitComment))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexCapability))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexPath))
-    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexFile))
+    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexBareFile))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexSignal))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexPtrace))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexPivotRoot))

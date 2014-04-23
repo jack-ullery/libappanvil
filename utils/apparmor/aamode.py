@@ -40,6 +40,7 @@ AA_EXEC_PROFILE = set('P')
 AA_EXEC_CHILD = set('C')
 AA_EXEC_NT = set('N')
 AA_LINK_SUBSET = set(['linksubset'])
+AA_BARE_FILE_MODE = set(['bare_file_mode'])
 #AA_OTHER_SHIFT = 14
 #AA_USER_MASK = 16384 - 1
 
