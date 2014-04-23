@@ -138,6 +138,9 @@ void add_local_entry(Profile *prof);
 %token TOK_WRITE
 %token TOK_EAVESDROP
 %token TOK_PEER
+%token TOK_TRACE
+%token TOK_TRACEDBY
+%token TOK_READBY
 
  /* rlimits */
 %token TOK_RLIMIT
@@ -171,6 +174,7 @@ void add_local_entry(Profile *prof);
 	#include "mount.h"
 	#include "dbus.h"
 	#include "signal.h"
+	#include "ptrace.h"
 }
 
 %union {
@@ -185,6 +189,7 @@ void add_local_entry(Profile *prof);
 	mnt_rule *mnt_entry;
 	dbus_rule *dbus_entry;
 	signal_rule *signal_entry;
+	ptrace_rule *ptrace_entry;
 
 	flagvals flags;
 	int fmode;
@@ -252,6 +257,10 @@ void add_local_entry(Profile *prof);
 %type <fmode>	signal_perms
 %type <fmode>	opt_signal_perm
 %type <signal_entry>	signal_rule
+%type <fmode>	ptrace_perm
+%type <fmode>	ptrace_perms
+%type <fmode>	opt_ptrace_perm
+%type <ptrace_entry>	ptrace_rule
 %type <transition> opt_named_transition
 %type <boolean> opt_unsafe
 %type <boolean> opt_file
@@ -713,6 +722,22 @@ rules:  rules opt_prefix signal_rule
 	{
 		if ($2.owner)
 			yyerror(_("owner prefix not allowed on signal rules"));
+		if ($2.deny && $2.audit) {
+			$3->deny = 1;
+		} else if ($2.deny) {
+			$3->deny = 1;
+			$3->audit = $3->mode;
+		} else if ($2.audit) {
+			$3->audit = $3->mode;
+		}
+		$1->rule_ents.push_back($3);
+		$$ = $1;
+	}
+
+rules:  rules opt_prefix ptrace_rule
+	{
+		if ($2.owner)
+			yyerror(_("owner prefix not allowed on ptrace rules"));
 		if ($2.deny && $2.audit) {
 			$3->deny = 1;
 		} else if ($2.deny) {
@@ -1282,6 +1307,54 @@ opt_signal_perm: { /* nothing */ $$ = 0; }
 signal_rule: TOK_SIGNAL opt_signal_perm opt_conds TOK_END_OF_RULE
 	{
 		signal_rule *ent = new signal_rule($2, $3);
+		$$ = ent;
+	}
+
+ptrace_perm: TOK_VALUE
+	{
+		if (strcmp($1, "trace") == 0 || strcmp($1, "write") == 0)
+			$$ = AA_MAY_TRACE;
+		else if (strcmp($1, "read") == 0)
+			$$ = AA_MAY_READ;
+		else if (strcmp($1, "tracedby") == 0)
+			$$ = AA_MAY_TRACEDBY;
+		else if (strcmp($1, "readby") == 0)
+			$$ = AA_MAY_READBY;
+		else if ($1)
+			parse_ptrace_mode($1, &$$, 1);
+		else
+			$$ = 0;
+
+		if ($1)
+			free($1);
+	}
+	| TOK_TRACE { $$ = AA_MAY_TRACE; }
+	| TOK_TRACEDBY { $$ = AA_MAY_TRACEDBY; }
+	| TOK_READ { $$ = AA_MAY_READ; }
+	| TOK_WRITE { $$ = AA_MAY_TRACE; }
+	| TOK_READBY { $$ = AA_MAY_READBY; }
+	| TOK_MODE
+	{
+		parse_ptrace_mode($1, &$$, 1);
+		free($1);
+	}
+
+ptrace_perms: { /* nothing */ $$ = 0; }
+	| ptrace_perms ptrace_perm { $$ = $1 | $2; }
+	| ptrace_perms TOK_COMMA ptrace_perm { $$ = $1 | $3; }
+
+opt_ptrace_perm: { /* nothing */ $$ = 0; }
+	| ptrace_perm { $$ = $1; }
+	| TOK_OPENPAREN ptrace_perms TOK_CLOSEPAREN { $$ = $2; }
+
+ptrace_rule: TOK_PTRACE opt_ptrace_perm opt_conds TOK_END_OF_RULE
+	{
+		ptrace_rule *ent = new ptrace_rule($2, $3, NULL);
+		$$ = ent;
+	}
+	|  TOK_PTRACE opt_ptrace_perm opt_conds TOK_ID TOK_END_OF_RULE
+	{
+		ptrace_rule *ent = new ptrace_rule($2, $3, $4);
 		$$ = ent;
 	}
 

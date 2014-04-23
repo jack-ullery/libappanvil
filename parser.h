@@ -305,6 +305,7 @@ extern int kernel_supports_diff_encode;
 extern int kernel_supports_mount;
 extern int kernel_supports_dbus;
 extern int kernel_supports_signal;
+extern int kernel_supports_ptrace;
 extern int conf_verbose;
 extern int conf_quiet;
 extern int names_only;

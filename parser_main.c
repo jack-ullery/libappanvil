@@ -697,6 +697,8 @@ static void set_supported_features(void) {
 		kernel_supports_dbus = 1;
 	if (strstr(features_string, "signal"))
 		kernel_supports_signal = 1;
+	if (strstr(features_string, "ptrace {"))
+		kernel_supports_ptrace = 1;
 	if (strstr(features_string, "diff_encode"))
 		kernel_supports_diff_encode = 1;
 	else if (dfaflags & DFA_CONTROL_DIFF_ENCODE)
