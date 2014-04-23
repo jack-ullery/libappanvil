@@ -70,13 +70,14 @@ int kernel_supports_network = 0;        /* kernel supports network rules */
 int kernel_supports_policydb = 0;	/* kernel supports new policydb */
 int kernel_supports_mount = 0;	        /* kernel supports mount rules */
 int kernel_supports_dbus = 0;		/* kernel supports dbus rules */
+int kernel_supports_diff_encode = 0;	/* kernel supports diff_encode */
 int conf_verbose = 0;
 int conf_quiet = 0;
 int names_only = 0;
 int current_lineno = 1;
 int option = OPTION_ADD;
 
-dfaflags_t dfaflags = (dfaflags_t)(DFA_CONTROL_TREE_NORMAL | DFA_CONTROL_TREE_SIMPLE | DFA_CONTROL_MINIMIZE );
+dfaflags_t dfaflags = (dfaflags_t)(DFA_CONTROL_TREE_NORMAL | DFA_CONTROL_TREE_SIMPLE | DFA_CONTROL_MINIMIZE | DFA_CONTROL_DIFF_ENCODE);
 
 char *subdomainbase = NULL;
 const char *progname = __FILE__;
