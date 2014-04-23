@@ -52,7 +52,7 @@
 /* #define DEBUG */
 #ifdef DEBUG
 static int yy_top_state(void);
-#define PDEBUG(fmt, args...) printf("Lexer (Line %d) (state %s): " fmt, current_lineno, state_names[YY_START].c_str(), ## args)
+#define PDEBUG(fmt, args...) fprintf(stderr, "Lexer (Line %d) (state %s): " fmt, current_lineno, state_names[YY_START].c_str(), ## args)
 #else
 #define PDEBUG(fmt, args...)	/* Do nothing */
 #endif
@@ -70,7 +70,7 @@ do { \
 
 #define RETURN_TOKEN(X) \
 do { \
-	DUMP_AND_DEBUG("Matched: %s\n", yytext); \
+	DUMP_AND_DEBUG("Matched: '%s'	Returning(%s)\n", yytext, #X); \
 	return (X); \
 } while (0)
 
@@ -276,12 +276,12 @@ LT_EQUAL	<=
 		char *filename = strndup(yytext, yyleng - 1);
 		include_filename(filename + 1, *filename == '<');
 		free(filename);
-		yy_pop_state();
+		POP();
 	}
 
 	[^\<\>\" \t\n]+ {	/* filename */
 		include_filename(yytext, 0);
-		yy_pop_state();
+		POP();
 	}
 }
 
@@ -425,7 +425,7 @@ LT_EQUAL	<=
 	\r?\n	{
 		DUMP_PREPROCESS;
 		current_lineno++;
-		yy_pop_state();
+		POP();
 	}
 }
 
@@ -469,8 +469,7 @@ LT_EQUAL	<=
 	write		{ RETURN_TOKEN(TOK_WRITE); }
 	eavesdrop	{ RETURN_TOKEN(TOK_EAVESDROP); }
 	{OPEN_PAREN}	{
-			yy_push_state(LIST_VAL_MODE);
-			RETURN_TOKEN(TOK_OPENPAREN);
+			PUSH_AND_RETURN(LIST_VAL_MODE, TOK_OPENPAREN);
 			}
 	(r|w|rw|wr)/([[:space:],])	{
 			yylval.mode = strdup(yytext);
@@ -488,8 +487,8 @@ LT_EQUAL	<=
 }
 
 #include/.*\r?\n	{
-	/* Don't use push here as we don't want #include echoed out. It needs
-	 * to be handled specially
+	/* Don't use PUSH() macro here as we don't want #include echoed out.
+	 * It needs to be handled specially
 	 */ 
 	yy_push_state(INCLUDE);
 }
@@ -576,7 +575,7 @@ LT_EQUAL	<=
 <INITIAL,NETWORK_MODE,RLIMIT_MODE,MOUNT_MODE,DBUS_MODE>{
 	{END_OF_RULE}	{
 		if (YY_START != INITIAL)
-			yy_pop_state();
+			POP();
 		RETURN_TOKEN(TOK_END_OF_RULE);
 	}
 
