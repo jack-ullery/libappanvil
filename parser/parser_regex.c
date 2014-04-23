@@ -674,6 +674,7 @@ static const char *mediates_file = CLASS_STR(AA_CLASS_FILE);
 static const char *mediates_mount = CLASS_STR(AA_CLASS_MOUNT);
 static const char *mediates_dbus =  CLASS_STR(AA_CLASS_DBUS);
 static const char *mediates_signal =  CLASS_STR(AA_CLASS_SIGNAL);
+static const char *mediates_ptrace =  CLASS_STR(AA_CLASS_PTRACE);
 
 int process_profile_policydb(Profile *prof)
 {
@@ -702,6 +703,9 @@ int process_profile_policydb(Profile *prof)
 		goto out;
 	if (kernel_supports_signal &&
 	    !prof->policy.rules->add_rule(mediates_signal, 0, AA_MAY_READ, 0, dfaflags))
+		goto out;
+	if (kernel_supports_ptrace &&
+	    !prof->policy.rules->add_rule(mediates_ptrace, 0, AA_MAY_READ, 0, dfaflags))
 		goto out;
 
 	if (prof->policy.rules->rule_count > 0) {
