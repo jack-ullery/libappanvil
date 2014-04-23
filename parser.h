@@ -290,6 +290,9 @@ do {								\
 	version;					\
 })
 
+/* The parser fills this variable in automatically */
+#define PROFILE_NAME_VARIABLE "profile_name"
+
 /* from parser_common.c */
 extern uint32_t policy_version;
 extern uint32_t parser_abi_version;
@@ -412,6 +415,7 @@ extern int new_set_var(const char *var, const char *value);
 extern int add_set_value(const char *var, const char *value);
 extern struct set_value *get_set_var(const char *var);
 extern char *get_next_set_value(struct set_value **context);
+extern int delete_set_var(const char *var_name);
 extern void dump_symtab(void);
 extern void dump_expanded_symtab(void);
 void free_symtabs(void);
