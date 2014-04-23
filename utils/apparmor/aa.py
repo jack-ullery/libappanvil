@@ -2627,9 +2627,9 @@ RE_NETWORK_FAMILY_TYPE = re.compile('\s+(\S+)\s+(\S+)\s*,$')
 RE_NETWORK_FAMILY = re.compile('\s+(\S+)\s*,$')
 RE_PROFILE_DBUS = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(dbus[^#]*\s*,)\s*(#.*)?$')
 RE_PROFILE_MOUNT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((mount|remount|umount)[^#]*\s*,)\s*(#.*)?$')
-RE_PROFILE_SIGNAL = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((signal)[^#]*\s*,)\s*(#.*)?$')
-RE_PROFILE_PTRACE = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((ptrace)[^#]*\s*,)\s*(#.*)?$')
-RE_PROFILE_PIVOT_ROOT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((pivot_root)[^#]*\s*,)\s*(#.*)?$')
+RE_PROFILE_SIGNAL = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(signal[^#]*\s*,)\s*(#.*)?$')
+RE_PROFILE_PTRACE = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(ptrace[^#]*\s*,)\s*(#.*)?$')
+RE_PROFILE_PIVOT_ROOT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(pivot_root[^#]*\s*,)\s*(#.*)?$')
 
 # match anything that's not " or #, or matching quotes with anything except quotes inside
 __re_no_or_quoted_hash = '([^#"]|"[^"]*")*'
