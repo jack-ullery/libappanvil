@@ -431,11 +431,11 @@ static int process_profile_name_xmatch(Profile *prof)
 		prof->xmatch_size = 0;
 	} else {
 		/* build a dfa */
-		aare_ruleset_t *rule = aare_new_ruleset(0);
-		if (!rule)
+		aare_rules *rules = new aare_rules();
+		if (!rules)
 			return FALSE;
-		if (!aare_add_rule(rule, tbuf.c_str(), 0, AA_MAY_EXEC, 0, dfaflags)) {
-			aare_delete_ruleset(rule);
+		if (!rules->add_rule(tbuf.c_str(), 0, AA_MAY_EXEC, 0, dfaflags)) {
+			delete rules;
 			return FALSE;
 		}
 		if (prof->altnames) {
@@ -450,15 +450,14 @@ static int process_profile_name_xmatch(Profile *prof)
 					len = strlen(alt->name);
 				if (len < prof->xmatch_len)
 					prof->xmatch_len = len;
-				if (!aare_add_rule(rule, tbuf.c_str(), 0, AA_MAY_EXEC, 0, dfaflags)) {
-					aare_delete_ruleset(rule);
+				if (!rules->add_rule(tbuf.c_str(), 0, AA_MAY_EXEC, 0, dfaflags)) {
+					delete rules;
 					return FALSE;
 				}
 			}
 		}
-		prof->xmatch = aare_create_dfa(rule, &prof->xmatch_size,
-					      dfaflags);
-		aare_delete_ruleset(rule);
+		prof->xmatch = rules->create_dfa(&prof->xmatch_size, dfaflags);
+		delete rules;
 		if (!prof->xmatch)
 			return FALSE;
 	}
@@ -466,7 +465,7 @@ static int process_profile_name_xmatch(Profile *prof)
 	return TRUE;
 }
 
-static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
+static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 {
 	std::string tbuf;
 	pattern_t ptype;
@@ -498,13 +497,13 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 	 * entry of the pair
 	 */
 	if (entry->deny && (entry->mode & AA_LINK_BITS)) {
-		if (!aare_add_rule(dfarules, tbuf.c_str(), entry->deny,
-				   entry->mode & ~AA_LINK_BITS,
-				   entry->audit & ~AA_LINK_BITS, dfaflags))
+		if (!dfarules->add_rule(tbuf.c_str(), entry->deny,
+					entry->mode & ~AA_LINK_BITS,
+					entry->audit & ~AA_LINK_BITS, dfaflags))
 			return FALSE;
 	} else if (entry->mode & ~AA_CHANGE_PROFILE) {
-		if (!aare_add_rule(dfarules, tbuf.c_str(), entry->deny, entry->mode,
-				   entry->audit, dfaflags))
+		if (!dfarules->add_rule(tbuf.c_str(), entry->deny, entry->mode,
+					entry->audit, dfaflags))
 			return FALSE;
 	}
 
@@ -526,7 +525,7 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 			perms |= LINK_TO_LINK_SUBSET(perms);
 			vec[1] = "/[^/].*";
 		}
-		if (!aare_add_rule_vec(dfarules, entry->deny, perms, entry->audit & AA_LINK_BITS, 2, vec, dfaflags))
+		if (!dfarules->add_rule_vec(entry->deny, perms, entry->audit & AA_LINK_BITS, 2, vec, dfaflags))
 			return FALSE;
 	}
 	if (entry->mode & AA_CHANGE_PROFILE) {
@@ -545,12 +544,12 @@ static int process_dfa_entry(aare_ruleset_t *dfarules, struct cod_entry *entry)
 		vec[index++] = tbuf.c_str();
 
 		/* regular change_profile rule */
-		if (!aare_add_rule_vec(dfarules, 0, AA_CHANGE_PROFILE | AA_ONEXEC, 0, index - 1, &vec[1], dfaflags))
+		if (!dfarules->add_rule_vec(0, AA_CHANGE_PROFILE | AA_ONEXEC, 0, index - 1, &vec[1], dfaflags))
 			return FALSE;
 		/* onexec rules - both rules are needed for onexec */
-		if (!aare_add_rule_vec(dfarules, 0, AA_ONEXEC, 0, 1, vec, dfaflags))
+		if (!dfarules->add_rule_vec(0, AA_ONEXEC, 0, 1, vec, dfaflags))
 			return FALSE;
-		if (!aare_add_rule_vec(dfarules, 0, AA_ONEXEC, 0, index, vec, dfaflags))
+		if (!dfarules->add_rule_vec(0, AA_ONEXEC, 0, index, vec, dfaflags))
 			return FALSE;
 	}
 	return TRUE;
@@ -560,15 +559,12 @@ int post_process_entries(Profile *prof)
 {
 	int ret = TRUE;
 	struct cod_entry *entry;
-	int count = 0;
 
 	list_for_each(prof->entries, entry) {
 		if (!process_dfa_entry(prof->dfa.rules, entry))
 			ret = FALSE;
-		count++;
 	}
 
-	prof->dfa.count = count;
 	return ret;
 }
 
@@ -579,17 +575,17 @@ int process_profile_regex(Profile *prof)
 	if (!process_profile_name_xmatch(prof))
 		goto out;
 
-	prof->dfa.rules = aare_new_ruleset(0);
+	prof->dfa.rules = new aare_rules();
 	if (!prof->dfa.rules)
 		goto out;
 
 	if (!post_process_entries(prof))
 		goto out;
 
-	if (prof->dfa.count > 0) {
-		prof->dfa.dfa = aare_create_dfa(prof->dfa.rules, &prof->dfa.size,
-						dfaflags);
-		aare_delete_ruleset(prof->dfa.rules);
+	if (prof->dfa.rules->rule_count > 0) {
+		prof->dfa.dfa = prof->dfa.rules->create_dfa(&prof->dfa.size,
+							    dfaflags);
+		delete prof->dfa.rules;
 		prof->dfa.rules = NULL;
 		if (!prof->dfa.dfa)
 			goto out;
@@ -683,7 +679,7 @@ int process_profile_policydb(Profile *prof)
 {
 	int error = -1;
 
-	prof->policy.rules = aare_new_ruleset(0);
+	prof->policy.rules = new aare_rules();
 	if (!prof->policy.rules)
 		goto out;
 
@@ -694,26 +690,21 @@ int process_profile_policydb(Profile *prof)
 	 * to be supported
 	 */
 
-	if (kernel_supports_mount) {
-		if (!aare_add_rule(prof->policy.rules, mediates_mount, 0, AA_MAY_READ, 0, dfaflags))
+	if (kernel_supports_mount &&
+	    !prof->policy.rules->add_rule(mediates_mount, 0, AA_MAY_READ, 0, dfaflags))
 			goto out;
-		prof->policy.count++;
-	}
-	if (kernel_supports_dbus) {
-		if (!aare_add_rule(prof->policy.rules, mediates_dbus, 0, AA_MAY_READ, 0, dfaflags))
-			goto out;
-		prof->policy.count++;
-	}
-	if (prof->policy.count > 0) {
-		prof->policy.dfa = aare_create_dfa(prof->policy.rules,
-						  &prof->policy.size,
-						  dfaflags);
-		aare_delete_ruleset(prof->policy.rules);
+	if (kernel_supports_dbus &&
+	    !prof->policy.rules->add_rule(mediates_dbus, 0, AA_MAY_READ, 0, dfaflags))
+		goto out;
+	if (prof->policy.rules->rule_count > 0) {
+		prof->policy.dfa = prof->policy.rules->create_dfa(&prof->policy.size, dfaflags);
+		delete prof->policy.rules;
+
 		prof->policy.rules = NULL;
 		if (!prof->policy.dfa)
 			goto out;
 	} else {
-		aare_delete_ruleset(prof->policy.rules);
+		delete prof->policy.rules;
 		prof->policy.rules = NULL;
 	}
 
@@ -722,7 +713,7 @@ int process_profile_policydb(Profile *prof)
 	error = 0;
 
 out:
-	aare_delete_ruleset(prof->policy.rules);
+	delete prof->policy.rules;
 	prof->policy.rules = NULL;
 
 	return error;

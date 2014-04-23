@@ -34,38 +34,20 @@
 #include "chfa.h"
 #include "../immunix.h"
 
-struct aare_ruleset {
-	int reverse;
-	Node *root;
-};
 
-aare_ruleset_t *aare_new_ruleset(int reverse)
+
+aare_rules::~aare_rules(void)
 {
-	aare_ruleset_t *container = (aare_ruleset_t *) malloc(sizeof(aare_ruleset_t));
-	if (!container)
-		return NULL;
-
-	container->root = NULL;
-	container->reverse = reverse;
-
-	return container;
-}
-
-void aare_delete_ruleset(aare_ruleset_t *rules)
-{
-	if (rules) {
-		if (rules->root)
-			rules->root->release();
-		free(rules);
-	}
+	if (root)
+		root->release();
 
 	aare_reset_matchflags();
 }
 
-int aare_add_rule(aare_ruleset_t *rules, const char *rule, int deny,
-			     uint32_t perms, uint32_t audit, dfaflags_t flags)
+bool aare_rules::add_rule(const char *rule, int deny, uint32_t perms,
+			  uint32_t audit, dfaflags_t flags)
 {
-	return aare_add_rule_vec(rules, deny, perms, audit, 1, &rule, flags);
+	return add_rule_vec(deny, perms, audit, 1, &rule, flags);
 }
 
 #define FLAGS_WIDTH 2
@@ -94,9 +76,8 @@ void aare_reset_matchflags(void)
 #undef RESET_FLAGS
 }
 
-int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
-				 uint32_t perms, uint32_t audit,
-				 int count, const char **rulev, dfaflags_t flags)
+bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
+			      int count, const char **rulev, dfaflags_t flags)
 {
 	Node *tree = NULL, *accept;
 	int exact_match;
@@ -105,15 +86,15 @@ int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 	assert(perms != 0);
 
 	if (regex_parse(&tree, rulev[0]))
-		return 0;
+		return false;
 	for (int i = 1; i < count; i++) {
 		Node *subtree = NULL;
 		Node *node = new CharNode(0);
 		if (!node)
-			return 0;
+			return false;
 		tree = new CatNode(tree, node);
 		if (regex_parse(&subtree, rulev[i]))
-			return 0;
+			return false;
 		tree = new CatNode(tree, subtree);
 	}
 
@@ -132,26 +113,15 @@ int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
 			exact_match = 0;
 	}
 
-	if (rules->reverse)
+	if (reverse)
 		flip_tree(tree);
 
 /* 0x7f == 4 bits x mods + 1 bit unsafe mask + 1 bit ix, + 1 pux after shift */
 #define EXTRACT_X_INDEX(perm, shift) (((perm) >> (shift + 7)) & 0x7f)
 
-//if (perms & ALL_AA_EXEC_TYPE && (!perms & AA_EXEC_BITS))
-//      fprintf(stderr, "adding X rule without MAY_EXEC: 0x%x %s\n", perms, rulev[0]);
 
-//if (perms & ALL_EXEC_TYPE)
-//    fprintf(stderr, "adding X rule %s 0x%x\n", rulev[0], perms);
-
-//if (audit)
-//fprintf(stderr, "adding rule with audit bits set: 0x%x %s\n", audit, rulev[0]);
-
-//if (perms & AA_CHANGE_HAT)
-//    fprintf(stderr, "adding change_hat rule %s\n", rulev[0]);
-
-/* the permissions set is assumed to be non-empty if any audit
- * bits are specified */
+	/* the permissions set is assumed to be non-empty if any audit
+	 * bits are specified */
 	accept = NULL;
 	for (unsigned int n = 0; perms && n < (sizeof(perms) * 8); n++) {
 		uint32_t mask = 1 << n;
@@ -230,44 +200,44 @@ int aare_add_rule_vec(aare_ruleset_t *rules, int deny,
  		cerr << "\n\n";
 	}
 
-	if (rules->root)
-		rules->root = new AltNode(rules->root, new CatNode(tree, accept));
+	if (root)
+		root = new AltNode(root, new CatNode(tree, accept));
 	else
-		rules->root = new CatNode(tree, accept);
+		root = new CatNode(tree, accept);
 
-	return 1;
+	rule_count++;
 
+	return true;
 }
 
 /* create a dfa from the ruleset
  * returns: buffer contain dfa tables, @size set to the size of the tables
  *          else NULL on failure
  */
-void *aare_create_dfa(aare_ruleset_t *rules, size_t *size,
-				 dfaflags_t flags)
+void *aare_rules::create_dfa(size_t *size, dfaflags_t flags)
 {
 	char *buffer = NULL;
 
-	label_nodes(rules->root);
+	label_nodes(root);
 	if (flags & DFA_DUMP_TREE) {
 		cerr << "\nDFA: Expression Tree\n";
-		rules->root->dump(cerr);
+		root->dump(cerr);
 		cerr << "\n\n";
 	}
 
 	if (flags & DFA_CONTROL_TREE_SIMPLE) {
-		rules->root = simplify_tree(rules->root, flags);
+		root = simplify_tree(root, flags);
 
 		if (flags & DFA_DUMP_SIMPLE_TREE) {
 			cerr << "\nDFA: Simplified Expression Tree\n";
-			rules->root->dump(cerr);
+			root->dump(cerr);
 			cerr << "\n\n";
 		}
 	}
 
 	stringstream stream;
 	try {
-		DFA dfa(rules->root, flags);
+		DFA dfa(root, flags);
 		if (flags & DFA_DUMP_UNIQ_PERMS)
 			dfa.dump_uniq_perms("dfa");
 

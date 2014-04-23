@@ -18,6 +18,7 @@
 
 #include "parser.h"
 #include "rule.h"
+#include "libapparmor_re/aare_rules.h"
 
 class Profile;
 
@@ -120,12 +121,11 @@ struct network {
 };
 
 struct dfa_stuff {
-	aare_ruleset_t *rules;
-	int count;
+	aare_rules *rules;
 	void *dfa;
 	size_t size;
 
-	dfa_stuff(void): rules(NULL), count(0), dfa(NULL), size(0) { }
+	dfa_stuff(void): rules(NULL), dfa(NULL), size(0) { }
 };
 
 class Profile {

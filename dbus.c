@@ -301,28 +301,26 @@ int dbus_rule::gen_policy_re(Profile &prof)
 	}
 
 	if (mode & AA_DBUS_BIND) {
-		if (!aare_add_rule_vec(prof.policy.rules, deny,
-				       mode & AA_DBUS_BIND,
-				       audit & AA_DBUS_BIND,
-				       2, vec, dfaflags))
+		if (!prof.policy.rules->add_rule_vec(deny, mode & AA_DBUS_BIND,
+						    audit & AA_DBUS_BIND,
+						    2, vec, dfaflags))
 			goto fail;
 	}
 	if (mode & (AA_DBUS_SEND | AA_DBUS_RECEIVE)) {
-		if (!aare_add_rule_vec(prof.policy.rules, deny,
-				mode & (AA_DBUS_SEND | AA_DBUS_RECEIVE),
-				audit & (AA_DBUS_SEND | AA_DBUS_RECEIVE),
-				6, vec, dfaflags))
+		if (!prof.policy.rules->add_rule_vec(deny,
+				       mode & (AA_DBUS_SEND | AA_DBUS_RECEIVE),
+				       audit & (AA_DBUS_SEND | AA_DBUS_RECEIVE),
+				       6, vec, dfaflags))
 			goto fail;
 	}
 	if (mode & AA_DBUS_EAVESDROP) {
-		if (!aare_add_rule_vec(prof.policy.rules, deny,
-				mode & AA_DBUS_EAVESDROP,
-				audit & AA_DBUS_EAVESDROP,
-				1, vec, dfaflags))
+		if (!prof.policy.rules->add_rule_vec(deny,
+						    mode & AA_DBUS_EAVESDROP,
+						    audit & AA_DBUS_EAVESDROP,
+						    1, vec, dfaflags))
 			goto fail;
 	}
 
-	prof.policy.count++;
 	return RULE_OK;
 
 fail:

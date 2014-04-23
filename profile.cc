@@ -67,11 +67,11 @@ Profile::~Profile()
 	for (RuleList::iterator i = rule_ents.begin(); i != rule_ents.end(); i++)
 		delete *i;
 	if (dfa.rules)
-		aare_delete_ruleset(dfa.rules);
+		delete dfa.rules;
 	if (dfa.dfa)
 		free(dfa.dfa);
 	if (policy.rules)
-		aare_delete_ruleset(policy.rules);
+		delete policy.rules;
 	if (policy.dfa)
 		free(policy.dfa);
 	if (xmatch)

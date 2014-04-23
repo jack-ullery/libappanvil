@@ -24,26 +24,24 @@
 #include <stdint.h>
 
 #include "apparmor_re.h"
+#include "expr-tree.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class aare_rules {
+	Node *root;
+public:
+	int reverse;
+	int rule_count;
+	aare_rules(): root(NULL), reverse(0), rule_count(0) { };
+	aare_rules(int reverse): root(NULL), reverse(reverse), rule_count(0) { };
+	~aare_rules();
 
-struct aare_ruleset;
+	bool add_rule(const char *rule, int deny, uint32_t perms,
+		      uint32_t audit, dfaflags_t flags);
+	bool add_rule_vec(int deny, uint32_t perms, uint32_t audit, int count,
+			  const char **rulev, dfaflags_t flags);
+	void *create_dfa(size_t *size, dfaflags_t flags);
+};
 
-typedef struct aare_ruleset aare_ruleset_t;
-
-aare_ruleset_t *aare_new_ruleset(int reverse);
-void aare_delete_ruleset(aare_ruleset_t *rules);
-int aare_add_rule(aare_ruleset_t *rules, const char *rule, int deny, uint32_t perms,
-		  uint32_t audit, dfaflags_t flags);
-int aare_add_rule_vec(aare_ruleset_t *rules, int deny, uint32_t perms,
-		      uint32_t audit, int count, const char **rulev,
-		      dfaflags_t flags);
-void *aare_create_dfa(aare_ruleset_t *rules, size_t *size, dfaflags_t flags);
 void aare_reset_matchflags(void);
 
-#ifdef __cplusplus
-}
-#endif
 #endif				/* __LIBAA_RE_RULES_H */
