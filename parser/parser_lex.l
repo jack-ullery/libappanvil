@@ -301,7 +301,7 @@ LT_EQUAL	<=
 }
 
 <INITIAL,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE>{
-	{VARIABLE_NAME}/{WS}*={WS}*\(	{
+	peer/{WS}*={WS}*\(	{
 		/* we match to the = in the lexer so that we can switch scanner
 		 * state.  By the time the parser see the = it may be too late
 		 * as bison may have requested the next token from the scanner
