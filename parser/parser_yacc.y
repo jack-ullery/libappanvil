@@ -1349,12 +1349,7 @@ opt_ptrace_perm: { /* nothing */ $$ = 0; }
 
 ptrace_rule: TOK_PTRACE opt_ptrace_perm opt_conds TOK_END_OF_RULE
 	{
-		ptrace_rule *ent = new ptrace_rule($2, $3, NULL);
-		$$ = ent;
-	}
-	|  TOK_PTRACE opt_ptrace_perm opt_conds TOK_ID TOK_END_OF_RULE
-	{
-		ptrace_rule *ent = new ptrace_rule($2, $3, $4);
+		ptrace_rule *ent = new ptrace_rule($2, $3);
 		$$ = ent;
 	}
 
