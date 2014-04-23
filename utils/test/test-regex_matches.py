@@ -48,6 +48,11 @@ regex_has_comma_testcases = [
     ('signal (send, receive)%s', 'embedded parens signal 01'),
     ('signal (send, receive) set=(hup, quit)%s', 'embedded parens signal 02'),
 
+    ('ptrace%s', 'bare ptrace'),
+    ('ptrace trace%s', 'simple ptrace'),
+    ('ptrace (tracedby, readby)%s', 'embedded parens ptrace 01'),
+    ('ptrace (trace) peer=/usr/bin/foo%s', 'embedded parens ptrace 02'),
+
     # the following fail due to inadequacies in the regex
     # ('dbus (r, w, %s', 'incomplete dbus action'),
     # ('member="{Hello,AddMatch,RemoveMatch, %s', 'incomplete {} regex'),  # also invalid policy
@@ -106,6 +111,8 @@ regex_split_comment_testcases = [
     ('file /tmp/foo rw, # read-write', ('file /tmp/foo rw, ', '# read-write')),
     ('signal, # comment', ('signal, ', '# comment')),
     ('signal receive set=(usr1 usr2) peer=foo,', False),
+    ('ptrace, # comment', ('ptrace, ', '# comment')),
+    ('ptrace (trace read) peer=/usr/bin/foo,', False),
 ]
 
 def setup_split_comment_testcases():
@@ -365,6 +372,77 @@ class AARegexSignal(unittest.TestCase):
         self.assertEqual(parsed, rule, 'Expected signal rule "%s", got "%s"'
                          % (rule, parsed))
 
+class AARegexPtrace(unittest.TestCase):
+    '''Tests for RE_PROFILE_PTRACE'''
+
+    def test_bare_ptrace_01(self):
+        '''test '   ptrace,' '''
+
+        rule = 'ptrace,'
+        line = '   %s' % rule
+        result = aa.RE_PROFILE_PTRACE.search(line)
+        self.assertTrue(result, 'Couldn\'t find ptrace rule in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected ptrace rule "%s", got "%s"'
+                         % (rule, parsed))
+
+    def test_bare_ptrace_02(self):
+        '''test '   audit ptrace,' '''
+
+        rule = 'ptrace,'
+        line = '   audit %s' % rule
+        result = aa.RE_PROFILE_PTRACE.search(line)
+        self.assertTrue(result, 'Couldn\'t find ptrace rule in "%s"' % line)
+        self.assertTrue(result.groups()[0], 'Couldn\'t find audit modifier in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected ptrace rule "%s", got "%s"'
+                         % (rule, parsed))
+
+    def test_simple_ptrace_01(self):
+        '''test '   ptrace trace,' '''
+
+        rule = 'ptrace trace,'
+        line = '   %s' % rule
+        result = aa.RE_PROFILE_PTRACE.search(line)
+        self.assertTrue(result, 'Couldn\'t find ptrace rule in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected ptrace rule "%s", got "%s"'
+                         % (rule, parsed))
+
+    def test_simple_ptrace_02(self):
+        '''test '   ptrace (tracedby, readby),' '''
+
+        rule = 'ptrace (tracedby, readby),'
+        line = '   %s' % rule
+        result = aa.RE_PROFILE_PTRACE.search(line)
+        self.assertTrue(result, 'Couldn\'t find ptrace rule in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected ptrace rule "%s", got "%s"'
+                         % (rule, parsed))
+
+    def test_simple_ptrace_03(self):
+        '''test '   audit ptrace (read),' '''
+
+        rule = 'ptrace (read),'
+        line = '   audit %s' % rule
+        result = aa.RE_PROFILE_PTRACE.search(line)
+        self.assertTrue(result, 'Couldn\'t find ptrace rule in "%s"' % line)
+        self.assertTrue(result.groups()[0], 'Couldn\'t find audit modifier in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected ptrace rule "%s", got "%s"'
+                         % (rule, parsed))
+
+    def test_peer_ptrace_01(self):
+        '''test '   ptrace trace peer=/usr/sbin/daemon,' '''
+
+        rule = 'ptrace trace peer=/usr/sbin/daemon,'
+        line = '   %s' % rule
+        result = aa.RE_PROFILE_PTRACE.search(line)
+        self.assertTrue(result, 'Couldn\'t find ptrace rule in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected ptrace rule "%s", got "%s"'
+                         % (rule, parsed))
+
 if __name__ == '__main__':
     verbosity = 2
 
@@ -378,6 +456,7 @@ if __name__ == '__main__':
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexPath))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexFile))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexSignal))
+    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexPtrace))
     result = unittest.TextTestRunner(verbosity=verbosity).run(test_suite)
     if not result.wasSuccessful():
         exit(1)

@@ -2625,6 +2625,7 @@ RE_NETWORK_FAMILY = re.compile('\s+(\S+)\s*,$')
 RE_PROFILE_DBUS = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(dbus[^#]*\s*,)\s*(#.*)?$')
 RE_PROFILE_MOUNT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((mount|remount|umount)[^#]*\s*,)\s*(#.*)?$')
 RE_PROFILE_SIGNAL = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((signal)[^#]*\s*,)\s*(#.*)?$')
+RE_PROFILE_PTRACE = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((ptrace)[^#]*\s*,)\s*(#.*)?$')
 
 # match anything that's not " or #, or matching quotes with anything except quotes inside
 __re_no_or_quoted_hash = '([^#"]|"[^"]*")*'
@@ -2704,6 +2705,7 @@ def parse_profile_data(data, file, do_include):
             profile_data[profile][hat]['allow']['dbus'] = list()
             profile_data[profile][hat]['allow']['mount'] = list()
             profile_data[profile][hat]['allow']['signal'] = list()
+            profile_data[profile][hat]['allow']['ptrace'] = list()
             # Save the initial comment
             if initial_comment:
                 profile_data[profile][hat]['initial_comment'] = initial_comment
@@ -3086,6 +3088,28 @@ def parse_profile_data(data, file, do_include):
             signal_rules.append(signal_rule)
             profile_data[profile][hat][allow]['signal'] = signal_rules
 
+        elif RE_PROFILE_PTRACE.search(line):
+            matches = RE_PROFILE_PTRACE.search(line).groups()
+
+            if not profile:
+                raise AppArmorException(_('Syntax Error: Unexpected ptrace entry found in file: %s line: %s') % (file, lineno + 1))
+
+            audit = False
+            if matches[0]:
+                audit = True
+            allow = 'allow'
+            if matches[1] and matches[1].strip() == 'deny':
+                allow = 'deny'
+            ptrace = matches[2].strip()
+
+            ptrace_rule = parse_ptrace_rule(ptrace)
+            ptrace_rule.audit = audit
+            ptrace_rule.deny = (allow == 'deny')
+
+            ptrace_rules = profile_data[profile][hat][allow].get('ptrace', list())
+            ptrace_rules.append(ptrace_rule)
+            profile_data[profile][hat][allow]['ptrace'] = ptrace_rules
+
         elif RE_PROFILE_CHANGE_HAT.search(line):
             matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
 
@@ -3187,6 +3211,10 @@ def parse_mount_rule(line):
 def parse_signal_rule(line):
     # XXX Do real parsing here
     return aarules.Raw_Signal_Rule(line)
+
+def parse_ptrace_rule(line):
+    # XXX Do real parsing here
+    return aarules.Raw_Ptrace_Rule(line)
 
 def separate_vars(vs):
     """Returns a list of all the values for a variable"""
@@ -3435,6 +3463,24 @@ def write_signal(prof_data, depth):
     data += write_signal_rules(prof_data, depth, 'allow')
     return data
 
+def write_ptrace_rules(prof_data, depth, allow):
+    pre = '  ' * depth
+    data = []
+
+    # no ptrace rules, so return
+    if not prof_data[allow].get('ptrace', False):
+        return data
+
+    for ptrace_rule in prof_data[allow]['ptrace']:
+        data.append('%s%s' % (pre, ptrace_rule.serialize()))
+    data.append('')
+    return data
+
+def write_ptrace(prof_data, depth):
+    data = write_ptrace_rules(prof_data, depth, 'deny')
+    data += write_ptrace_rules(prof_data, depth, 'allow')
+    return data
+
 def write_link_rules(prof_data, depth, allow):
     pre = '  ' * depth
     data = []
@@ -3542,6 +3588,7 @@ def write_rules(prof_data, depth):
     data += write_dbus(prof_data, depth)
     data += write_mount(prof_data, depth)
     data += write_signal(prof_data, depth)
+    data += write_ptrace(prof_data, depth)
     data += write_links(prof_data, depth)
     data += write_paths(prof_data, depth)
     data += write_change_profile(prof_data, depth)
@@ -3692,6 +3739,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                          'dbus': write_dbus,
                          'mount': write_mount,
                          'signal': write_signal,
+                         'ptrace': write_ptrace,
                          'link': write_links,
                          'path': write_paths,
                          'change_profile': write_change_profile,
@@ -3785,6 +3833,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     data += write_dbus(write_prof_data[name], depth)
                     data += write_mount(write_prof_data[name], depth)
                     data += write_signal(write_prof_data[name], depth)
+                    data += write_ptrace(write_prof_data[name], depth)
                     data += write_links(write_prof_data[name], depth)
                     data += write_paths(write_prof_data[name], depth)
                     data += write_change_profile(write_prof_data[name], depth)
