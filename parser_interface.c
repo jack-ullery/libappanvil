@@ -37,9 +37,6 @@
 #include <unistd.h>
 #include <linux/unistd.h>
 
-/* only for x86 at the moment */
-#include <endian.h>
-#include <byteswap.h>
 #include <libintl.h>
 #define _(s) gettext(s)
 
