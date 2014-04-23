@@ -23,9 +23,11 @@
 #define __AA_PARSER_H
 
 
+#include <endian.h>
 #include <string.h>
 #include <netinet/in.h>
 #include <sys/resource.h>
+
 #include "immunix.h"
 #include "libapparmor_re/apparmor_re.h"
 #include "libapparmor_re/aare_rules.h"
@@ -258,15 +260,10 @@ do {								\
 #define u16 uint16_t
 #define u32 uint32_t
 #define u64 uint64_t
-#if __BYTE_ORDER == __BIG_ENDIAN
-#  define cpu_to_le16(x) ((u16)(bswap_16 ((u16) x)))
-#  define cpu_to_le32(x) ((u32)(bswap_32 ((u32) x)))
-#  define cpu_to_le64(x) ((u64)(bswap_64 ((u64) x)))
-#else
-#  define cpu_to_le16(x) ((u16)(x))
-#  define cpu_to_le32(x) ((u32)(x))
-#  define cpu_to_le64(x) ((u64)(x))
-#endif
+
+#define cpu_to_le16(x) ((u16)(htole16 ((u16) x)))
+#define cpu_to_le32(x) ((u32)(htole32 ((u32) x)))
+#define cpu_to_le64(x) ((u64)(htole64 ((u64) x)))
 
 /* The encoding for kernal abi > 5 is
  * 28-31: reserved

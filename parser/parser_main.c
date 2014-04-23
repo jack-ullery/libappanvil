@@ -946,11 +946,7 @@ int test_for_dir_mode(const char *basename, const char *linkdir)
 	return rc;
 }
 
-#if __BYTE_ORDER == __BIG_ENDIAN
-#  define le16_to_cpu(x) ((uint16_t)(bswap_16 (*(uint16_t *) x)))
-#else
-#  define le16_to_cpu(x) (*(uint16_t *)(x))
-#endif
+#define le16_to_cpu(x) ((uint16_t)(le16toh (*(uint16_t *) x)))
 
 const char header_string[] = "\004\010\000version\000\002";
 #define HEADER_STRING_SIZE 12
