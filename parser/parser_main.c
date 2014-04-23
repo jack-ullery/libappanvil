@@ -53,8 +53,8 @@
 #define OLD_MODULE_NAME "subdomain"
 #define PROC_MODULES "/proc/modules"
 #define DEFAULT_APPARMORFS "/sys/kernel/security/" MODULE_NAME
-#define MATCH_STRING "/sys/kernel/security/" MODULE_NAME "/matching"
-#define FLAGS_FILE "/sys/kernel/security/" MODULE_NAME "/features"
+#define MATCH_FILE "/sys/kernel/security/" MODULE_NAME "/matching"
+#define FEATURES_FILE "/sys/kernel/security/" MODULE_NAME "/features"
 #define MOUNTED_FS "/proc/mounts"
 #define AADFA "pattern=aadfa"
 
@@ -79,16 +79,17 @@ int preprocess_only = 0;
 int skip_mode_force = 0;
 struct timespec mru_tstamp;
 
-#define FLAGS_STRING_SIZE 8192
-char *match_string = NULL;
-char *flags_string = NULL;
+#define FEATURES_STRING_SIZE 8192
+char *features_string = NULL;
 char *cacheloc = NULL;
 
 /* per-profile settings */
 int force_complain = 0;
 
+static int load_features(const char *name);
+
 /* Make sure to update BOTH the short and long_options */
-static const char *short_options = "adf:h::rRVvI:b:BCD:NSm:qQn:XKTWkL:O:po:";
+static const char *short_options = "adf:h::rRVvI:b:BCD:NSm:M:qQn:XKTWkL:O:po:";
 struct option long_options[] = {
 	{"add", 		0, 0, 'a'},
 	{"binary",		0, 0, 'B'},
@@ -106,6 +107,7 @@ struct option long_options[] = {
 	{"stdout",		0, 0, 'S'},
 	{"ofile",		1, 0, 'o'},
 	{"match-string",	1, 0, 'm'},
+	{"features-file",	1, 0, 'M'},
 	{"quiet",		0, 0, 'q'},
 	{"skip-kernel-load",	0, 0, 'Q'},
 	{"verbose",		0, 0, 'v'},
@@ -153,7 +155,8 @@ static void display_usage(const char *command)
 	       "-b n, --base n		Set base dir and cwd\n"
 	       "-I n, --Include n	Add n to the search path\n"
 	       "-f n, --subdomainfs n	Set location of apparmor filesystem\n"
-	       "-m n, --match-string n  Use only match features n\n"
+	       "-m n, --match-string n  Use only features n\n"
+	       "-M n, --features-file n Use only features in file n\n"
 	       "-n n, --namespace n	Set Namespace for the profile\n"
 	       "-X, --readimpliesX	Map profile read permissions to mr\n"
 	       "-k, --show-cache	Report cache hit/miss details\n"
@@ -520,7 +523,14 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'm':
-		match_string = strdup(optarg);
+		features_string = strdup(optarg);
+		break;
+	case 'M':
+		if (load_features(optarg) == -1) {
+			fprintf(stderr, "Failed to load features from '%s'\n",
+				optarg);
+			exit(1);
+		}
 		break;
 	case 'q':
 		conf_verbose = 0;
@@ -733,104 +743,107 @@ static char *handle_features_dir(const char *filename, char **buffer, int size,
 	struct features_struct fst = { buffer, size, pos };
 
 	if (dirat_for_each(NULL, filename, &fst, features_dir_cb)) {
-		PDEBUG("Failed evaluating .features\n");
+		PDEBUG("Failed evaluating %s\n", filename);
 		exit(1);
 	}
 
 	return fst.pos;
 }
 
-/* match_string == NULL --> no match_string available
-   match_string != NULL --> either a matching string specified on the
-   command line, or the kernel supplied a match string */
-static void get_match_string(void) {
-
-	FILE *ms = NULL;
-	struct stat stat_file;
-
-	/* has process_args() already assigned a match string? */
-	if (match_string)
-		goto out;
-
-	if (stat(FLAGS_FILE, &stat_file) == -1)
-		goto out;
-
-	if (S_ISDIR(stat_file.st_mode)) {
-		/* if we have a features directory default to */
-		perms_create = 1;
-
-		flags_string = (char *) malloc(FLAGS_STRING_SIZE);
-		handle_features_dir(FLAGS_FILE, &flags_string, FLAGS_STRING_SIZE, flags_string);
-		if (strstr(flags_string, "network"))
-			kernel_supports_network = 1;
-		else
-			kernel_supports_network = 0;
-		if (strstr(flags_string, "mount"))
-			kernel_supports_mount = 1;
-		if (strstr(flags_string, "dbus"))
-			kernel_supports_dbus = 1;
-		return;
-	}
-
-	ms = fopen(MATCH_STRING, "r");
-	if (!ms)
-		goto out;
-
-	match_string = (char *) malloc(1000);
-	if (!match_string) {
-		goto out;
-	}
-
-	if (!fgets(match_string, 1000, ms)) {
-		free(match_string);
-		match_string = NULL;
-	}
-
-out:
-	if (match_string) {
-		if (strstr(match_string, " perms=c"))
-			perms_create = 1;
-	} else {
-		perms_create = 1;
-		kernel_supports_network = 0;
-	}
-
-	if (ms)
-		fclose(ms);
-	return;
-}
-
-static void get_flags_string(char **flags, const char *flags_file) {
-	char *pos;
+static char *load_features_file(const char *name) {
+	char *buffer;
 	FILE *f = NULL;
 	size_t size;
 
-	/* abort if missing or already set */
-	if (!flags || *flags)
-		return;
-
-	f = fopen(flags_file, "r");
+	f = fopen(name, "r");
 	if (!f)
-		return;
+		return NULL;
 
-	*flags = (char *) malloc(FLAGS_STRING_SIZE);
-	if (!*flags)
+	buffer = (char *) malloc(FEATURES_STRING_SIZE);
+	if (!buffer)
 		goto fail;
 
-	size = fread(*flags, 1, FLAGS_STRING_SIZE - 1, f);
+	size = fread(buffer, 1, FEATURES_STRING_SIZE - 1, f);
 	if (!size || ferror(f))
 		goto fail;
-	(*flags)[size] = 0;
+	buffer[size] = 0;
 
 	fclose(f);
-	return;
+	return buffer;
 
 fail:
-	free(*flags);
-	*flags = NULL;
+	int save = errno;
+	free(buffer);
 	if (f)
 		fclose(f);
-	return;
+	errno = save;
+	return NULL;
+}
+
+static int load_features(const char *name)
+{
+	struct stat stat_file;
+
+	if (stat(name, &stat_file) == -1)
+		return -1;
+
+	if (S_ISDIR(stat_file.st_mode)) {
+		/* if we have a features directory default to */
+		features_string = (char *) malloc(FEATURES_STRING_SIZE);
+		handle_features_dir(name, &features_string, FEATURES_STRING_SIZE, features_string);
+	} else {
+		features_string = load_features_file(name);
+		if (!features_string)
+			return -1;
+	}
+
+	return 0;
+}
+
+static void set_features_by_match_file(void)
+{
+	FILE *ms = fopen(MATCH_FILE, "r");
+	if (ms) {
+		char *match_string = (char *) malloc(1000);
+		if (!match_string)
+			goto no_match;
+		if (!fgets(match_string, 1000, ms)) {
+			free(match_string);
+			goto no_match;
+		}
+		if (strstr(match_string, " perms=c"))
+			perms_create = 1;
+		free(match_string);
+		goto out;
+	}
+no_match:
+	perms_create = 1;
+	kernel_supports_network = 0;
+
+out:
+	if (ms)
+		fclose(ms);
+}
+
+static void set_supported_features(void) {
+
+	/* has process_args() already assigned a match string? */
+	if (!features_string) {
+		if (load_features(FEATURES_FILE) == -1) {
+			set_features_by_match_file();
+			return;
+		}
+	}
+
+	perms_create = 1;
+
+	/* TODO: make this real parsing and config setting */
+	if (strstr(features_string, "network"))
+		kernel_supports_network = 1;
+	if (strstr(features_string, "mount"))
+		kernel_supports_mount = 1;
+	if (strstr(features_string, "dbus"))
+		kernel_supports_dbus = 1;
 }
 
 int process_binary(int option, const char *profilename)
@@ -1211,28 +1224,23 @@ static void setup_flags(void)
 	char *cache_flags = NULL;
 
 	/* Get the match string to determine type of regex support needed */
-	get_match_string();
-	/* Get kernel features string */
-	get_flags_string(&flags_string, FLAGS_FILE);
+	set_supported_features();
+
 	/* Gracefully handle AppArmor kernel without compatibility patch */
-	if (!flags_string) {
+	if (!features_string) {
 		PERROR("Cache read/write disabled: %s interface file missing. "
 			"(Kernel needs AppArmor 2.4 compatibility patch.)\n",
-			FLAGS_FILE);
+			FEATURES_FILE);
 		write_cache = 0;
 		skip_read_cache = 1;
 		return;
-	} else if (strstr(flags_string, "network"))
-		kernel_supports_network = 1;
-	else
-		kernel_supports_network = 0;
-
+	}
 
 
 	/*
          * Deal with cache directory versioning:
          *  - If cache/.features is missing, create it if --write-cache.
-         *  - If cache/.features exists, and does not match flags_string,
+         *  - If cache/.features exists, and does not match features_string,
          *    force cache reading/writing off.
          */
 	if (asprintf(&cache_features_path, "%s/.features", cacheloc) == -1) {
@@ -1240,16 +1248,16 @@ static void setup_flags(void)
 		exit(1);
 	}
 
-	get_flags_string(&cache_flags, cache_features_path);
+	cache_flags = load_features_file(cache_features_path);
 	if (cache_flags) {
-		if (strcmp(flags_string, cache_flags) != 0) {
+		if (strcmp(features_string, cache_flags) != 0) {
 			if (write_cache && cond_clear_cache) {
 				if (create_cache(cacheloc, cache_features_path,
-						 flags_string))
+						 features_string))
 					skip_read_cache = 1;
 			} else {
 				if (show_cache)
-					PERROR("Cache read/write disabled: %s does not match %s\n", FLAGS_FILE, cache_features_path);
+					PERROR("Cache read/write disabled: %s does not match %s\n", FEATURES_FILE, cache_features_path);
 				write_cache = 0;
 				skip_read_cache = 1;
 			}
@@ -1257,7 +1265,7 @@ static void setup_flags(void)
 		free(cache_flags);
 		cache_flags = NULL;
 	} else if (write_cache) {
-		create_cache(cacheloc, cache_features_path, flags_string);
+		create_cache(cacheloc, cache_features_path, features_string);
 	}
 
 	free(cache_features_path);
