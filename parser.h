@@ -78,6 +78,12 @@ struct cond_entry {
 	struct cond_entry *next;
 };
 
+struct cond_entry_list {
+	char *name;
+
+	struct cond_entry *list;
+};
+
 struct cod_entry {
 	char *ns;
 	char *name;
@@ -362,6 +368,8 @@ extern struct value_list *dup_value_list(struct value_list *list);
 extern void free_value_list(struct value_list *list);
 extern void print_value_list(struct value_list *list);
 extern struct cond_entry *new_cond_entry(char *name, int eq, struct value_list *list);
+extern void move_conditional_value(const char *rulename, char **dst_ptr,
+				   struct cond_entry *cond_ent);
 extern void free_cond_entry(struct cond_entry *ent);
 extern void free_cond_list(struct cond_entry *ents);
 extern void print_cond_entry(struct cond_entry *ent);

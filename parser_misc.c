@@ -1150,6 +1150,17 @@ void print_value_list(struct value_list *list)
 	}
 }
 
+void move_conditional_value(const char *rulename, char **dst_ptr,
+			    struct cond_entry *cond_ent)
+{
+	if (*dst_ptr)
+		yyerror("%s conditional \"%s\" can only be specified once\n",
+			rulename, cond_ent->name);
+
+	*dst_ptr = cond_ent->vals->value;
+	cond_ent->vals->value = NULL;
+}
+
 struct cond_entry *new_cond_entry(char *name, int eq, struct value_list *list)
 {
 	struct cond_entry *ent = (struct cond_entry *) calloc(1, sizeof(struct cond_entry));

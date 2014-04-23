@@ -301,19 +301,21 @@ LT_EQUAL	<=
 }
 
 <INITIAL,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE>{
+	{VARIABLE_NAME}/{WS}*={WS}*\(	{
+		/* we match to the = in the lexer so that we can switch scanner
+		 * state.  By the time the parser see the = it may be too late
+		 * as bison may have requested the next token from the scanner
+		 */
+		yylval.id = processid(yytext, yyleng);
+		PUSH_AND_RETURN(EXTCONDLIST_MODE, TOK_CONDLISTID);
+	}
 	{VARIABLE_NAME}/{WS}*=	{
 		/* we match to the = in the lexer so that we can switch scanner
 		 * state.  By the time the parser see the = it may be too late
 		 * as bison may have requested the next token from the scanner
 		 */
-		int token = get_keyword_token(yytext);
-
-		if (token == TOK_PEER) {
-			PUSH_AND_RETURN(EXTCONDLIST_MODE, TOK_CONDLISTID);
-		} else {
-			yylval.id = processid(yytext, yyleng);
-			PUSH_AND_RETURN(EXTCOND_MODE, TOK_CONDID);
-		}
+		yylval.id = processid(yytext, yyleng);
+		PUSH_AND_RETURN(EXTCOND_MODE, TOK_CONDID);
 	}
 	{VARIABLE_NAME}/{WS}+in{WS}*\(	{
 		/* we match to 'in' in the lexer so that we can switch scanner
