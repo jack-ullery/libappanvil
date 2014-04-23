@@ -317,6 +317,7 @@ extern void pwarn(const char *fmt, ...) __attribute__((__format__(__printf__, 1,
 extern int force_complain;
 extern struct timespec mru_tstamp;
 extern void update_mru_tstamp(FILE *file);
+extern void display_version(void);
 
 /* provided by parser_lex.l (cannot be used in tst builds) */
 extern FILE *yyin;

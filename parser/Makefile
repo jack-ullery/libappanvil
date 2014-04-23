@@ -79,8 +79,9 @@ EXTRA_CFLAGS+=-DSUBDOMAIN_CONFDIR=\"${CONFDIR}\"
 SRCS = parser_common.c parser_include.c parser_interface.c parser_lex.c \
        parser_main.c parser_misc.c parser_merge.c parser_symtab.c \
        parser_yacc.c parser_regex.c parser_variable.c parser_policy.c \
-       parser_alias.c mount.c dbus.c lib.c profile.cc rule.c
-HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h rule.h
+       parser_alias.c mount.c dbus.c lib.c profile.cc rule.c common_optarg.c
+HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h \
+       rule.h common_optarg.h
 TOOLS = apparmor_parser
 
 OBJECTS = $(SRCS:.c=.o)
@@ -116,6 +117,7 @@ TEST_CFLAGS = $(EXTRA_CFLAGS) -DUNIT_TEST -Wno-unused-result
 TEST_OBJECTS = $(filter-out \
 			parser_lex.o \
 			parser_yacc.o \
+			common_optarg.o \
 			parser_main.o, ${OBJECTS}) \
                $(AAREOBJECTS)
 TEST_LDFLAGS = $(AARE_LDFLAGS)
@@ -231,6 +233,9 @@ parser_common.o: parser_common.c parser.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 mount.o: mount.c mount.h parser.h immunix.h rule.h
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
+
+common_optarg.o: common_optarg.c common_optarg.h parser.h libapparmor_re/apparmor_re.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 lib.o: lib.c lib.h parser.h
