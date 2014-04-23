@@ -41,7 +41,12 @@ regex_has_comma_testcases = [
     ('audit "/tmp/foo, # bar" rw%s # comment', 'comment embedded in quote 02'),
 
     # lifted from parser/tst/simple_tests/vars/vars_alternation_3.sd
-    ('/does/not/@{BAR},exist,notexist} r%s', 'partial alternation')
+    ('/does/not/@{BAR},exist,notexist} r%s', 'partial alternation'),
+
+    ('signal%s', 'bare signal'),
+    ('signal receive%s', 'simple signal'),
+    ('signal (send, receive)%s', 'embedded parens signal 01'),
+    ('signal (send, receive) set=(hup, quit)%s', 'embedded parens signal 02'),
 
     # the following fail due to inadequacies in the regex
     # ('dbus (r, w, %s', 'incomplete dbus action'),
@@ -99,6 +104,8 @@ regex_split_comment_testcases = [
     ('file,', False),
     ('file, # bare', ('file, ', '# bare')),
     ('file /tmp/foo rw, # read-write', ('file /tmp/foo rw, ', '# read-write')),
+    ('signal, # comment', ('signal, ', '# comment')),
+    ('signal receive set=(usr1 usr2) peer=foo,', False),
 ]
 
 def setup_split_comment_testcases():
@@ -276,6 +283,88 @@ class AARegexFile(unittest.TestCase):
         result = aa.RE_PROFILE_FILE_ENTRY.search(line)
         self.assertFalse(result, 'RE_PROFILE_FILE_ENTRY unexpectedly matched "%s"' % line)
 
+class AARegexSignal(unittest.TestCase):
+    '''Tests for RE_PROFILE_SIGNAL'''
+
+    def test_bare_signal_01(self):
+        '''test '   signal,' '''
+
+        rule = 'signal,'
+        line = '   %s' % rule
+        result = aa.RE_PROFILE_SIGNAL.search(line)
+        self.assertTrue(result, 'Couldn\'t find signal rule in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected signal rule "%s", got "%s"'
+                         % (rule, parsed))
+
+    def test_bare_signal_02(self):
+        '''test '   audit signal,' '''
+
+        rule = 'signal,'
+        line = '   audit %s' % rule
+        result = aa.RE_PROFILE_SIGNAL.search(line)
+        self.assertTrue(result, 'Couldn\'t find signal rule in "%s"' % line)
+        self.assertTrue(result.groups()[0], 'Couldn\'t find audit modifier in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected signal rule "%s", got "%s"'
+                         % (rule, parsed))
+
+    def test_simple_signal_01(self):
+        '''test '   signal receive,' '''
+
+        rule = 'signal receive,'
+        line = '   %s' % rule
+        result = aa.RE_PROFILE_SIGNAL.search(line)
+        self.assertTrue(result, 'Couldn\'t find signal rule in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected signal rule "%s", got "%s"'
+                         % (rule, parsed))
+
+    def test_simple_signal_02(self):
+        '''test '   signal (send, receive),' '''
+
+        rule = 'signal (send, receive),'
+        line = '   %s' % rule
+        result = aa.RE_PROFILE_SIGNAL.search(line)
+        self.assertTrue(result, 'Couldn\'t find signal rule in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected signal rule "%s", got "%s"'
+                         % (rule, parsed))
+
+    def test_simple_signal_03(self):
+        '''test '   audit signal (receive),' '''
+
+        rule = 'signal (receive),'
+        line = '   audit %s' % rule
+        result = aa.RE_PROFILE_SIGNAL.search(line)
+        self.assertTrue(result, 'Couldn\'t find signal rule in "%s"' % line)
+        self.assertTrue(result.groups()[0], 'Couldn\'t find audit modifier in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected signal rule "%s", got "%s"'
+                         % (rule, parsed))
+
+    def test_set_signal_01(self):
+        '''test '   signal (send, receive) set=(usr1 usr2),' '''
+
+        rule = 'signal (send, receive) set=(usr1 usr2),'
+        line = '   %s' % rule
+        result = aa.RE_PROFILE_SIGNAL.search(line)
+        self.assertTrue(result, 'Couldn\'t find signal rule in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected signal rule "%s", got "%s"'
+                         % (rule, parsed))
+
+    def test_peer_signal_01(self):
+        '''test '   signal send set=(hup, quit) peer=/usr/sbin/daemon,' '''
+
+        rule = 'signal send set=(hup, quit) peer=/usr/sbin/daemon,'
+        line = '   %s' % rule
+        result = aa.RE_PROFILE_SIGNAL.search(line)
+        self.assertTrue(result, 'Couldn\'t find signal rule in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected signal rule "%s", got "%s"'
+                         % (rule, parsed))
+
 if __name__ == '__main__':
     verbosity = 2
 
@@ -288,6 +377,7 @@ if __name__ == '__main__':
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexCapability))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexPath))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexFile))
+    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexSignal))
     result = unittest.TextTestRunner(verbosity=verbosity).run(test_suite)
     if not result.wasSuccessful():
         exit(1)
