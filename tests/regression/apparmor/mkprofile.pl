@@ -174,6 +174,22 @@ sub gen_cap($) {
   }
 }
 
+sub gen_signal($) {
+    my $rule = shift;
+    my @rules = split (/:/, $rule);
+    if (@rules == 2) {
+	if ($rules[1] =~ /^ALL$/) {
+	    push (@{$output_rules{$hat}}, "  signal,\n");
+	} else {
+	    push (@{$output_rules{$hat}}, "  signal $rules[1],\n");
+	}
+    } elsif (@rules == 3) {
+	push (@{$output_rules{$hat}}, "  signal $rules[1] $rules[2],\n");
+    } else {
+	(!$nowarn) && print STDERR "Warning: invalid signal description '$rule', ignored\n";
+    }
+}
+
 sub gen_mount($) {
     my $rule = shift;
     my @rules = split (/:/, $rule);
@@ -346,6 +362,8 @@ sub gen_from_args() {
       gen_network($rule);
     } elsif ($rule =~ /^cap:/) {
       gen_cap($rule);
+    } elsif ($rule =~ /^signal:/) {
+      gen_signal($rule);
     } elsif ($rule =~ /^mount:/) {
       gen_mount($rule);
     } elsif ($rule =~ /^remount:/) {

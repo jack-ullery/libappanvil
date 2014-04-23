@@ -148,25 +148,25 @@ genprofile /bin/t\?ue:$okperm
 runchecktest "QUESTION MARK (exec)" pass $file
 
 # FAIL TEST - looking for *
-genprofile /sbin/\*:$okperm
+genprofile /sbin/\*:$okperm signal:ALL
 runchecktest "SINGLE TAILGLOB (exec, fail)" fail $file
 
 # FAIL TEST - looking for **
-genprofile /sbi\*\*:$okperm
+genprofile /sbi\*\*:$okperm signal:ALL
 runchecktest "DOUBLE TAILGLOB (exec, fail)" fail $file
 
 # FAIL TEST - looking for { , }
-genprofile /bin/\{flase,false\}:$okperm
+genprofile /bin/\{flase,false\}:$okperm signal:ALL
 runchecktest "CURLY BRACES (exec, fail)" fail $file
 
 # FAIL TEST - looking for []
-genprofile /bin/\[aef\]rue:$okperm
+genprofile /bin/\[aef\]rue:$okperm signal:ALL
 runchecktest "SQUARE BRACES 1 (exec, fail)" fail $file
 
 # FAIL TEST - looking for []
-genprofile /bin/\[u-x\]rue:$okperm
+genprofile /bin/\[u-x\]rue:$okperm signal:ALL
 runchecktest "SQUARE BRACES 2 (exec, fail)" fail $file
 
 # FAIL TEST - looking for ?
-genprofile /bin/b\?ue:$okperm
+genprofile /bin/b\?ue:$okperm signal:ALL
 runchecktest "QUESTION MARK (exec, fail)" fail $file
