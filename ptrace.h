@@ -37,7 +37,7 @@ public:
 	int audit;
 	int deny;
 
-	ptrace_rule(int mode, struct cond_entry *conds, char *peer);
+	ptrace_rule(int mode, struct cond_entry *conds);
 	virtual ~ptrace_rule()
 	{
 		free(peer_label);

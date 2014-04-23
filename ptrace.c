@@ -39,14 +39,17 @@ void ptrace_rule::move_conditionals(struct cond_entry *conds)
 		if (!cond_ent->eq)
 			yyerror("keyword \"in\" is not allowed in ptrace rules\n");
 
-		/* no valid conditionals atm */
-		yyerror("invalid ptrace rule conditional \"%s\"\n",
-			cond_ent->name);
+		if (strcmp(cond_ent->name, "peer") == 0) {
+			move_conditional_value("ptrace", &peer_label, cond_ent);
+		} else {
+			yyerror("invalid ptrace rule conditional \"%s\"\n",
+				cond_ent->name);
+		}
 	}
 }
 
-ptrace_rule::ptrace_rule(int mode_p, struct cond_entry *conds, char *peer):
-	peer_label(peer), audit(0), deny(0)
+ptrace_rule::ptrace_rule(int mode_p, struct cond_entry *conds):
+	peer_label(NULL), audit(0), deny(0)
 {
 	if (mode_p) {
 		if (mode_p & ~AA_VALID_PTRACE_PERMS)
