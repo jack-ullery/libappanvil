@@ -253,11 +253,49 @@ do {								\
 				goto fail_target;				\
 	} while (0)
 
+
+#define u8  unsigned char
+#define u16 uint16_t
+#define u32 uint32_t
+#define u64 uint64_t
+#if __BYTE_ORDER == __BIG_ENDIAN
+#  define cpu_to_le16(x) ((u16)(bswap_16 ((u16) x)))
+#  define cpu_to_le32(x) ((u32)(bswap_32 ((u32) x)))
+#  define cpu_to_le64(x) ((u64)(bswap_64 ((u64) x)))
+#else
+#  define cpu_to_le16(x) ((u16)(x))
+#  define cpu_to_le32(x) ((u32)(x))
+#  define cpu_to_le64(x) ((u64)(x))
+#endif
+
+/* The encoding for kernal abi > 5 is
+ * 28-31: reserved
+ * 20-27: policy version
+ * 12-19: policy abi version
+ * 11:    force complain flag
+ * 10:    reserved
+ * 0-9:   kernel abi version
+ */
+#define ENCODE_VERSION(C, P, PABI, KABI)		\
+({							\
+	u32 version = (KABI) & 0x3ff;			\
+	if ((KABI) > 5) {				\
+		version |= (C) ? 1 << 11 : 0;		\
+		version |= ((PABI) & 0xff) << 12;	\
+		version |= ((P) & 0xff) << 20;		\
+	}						\
+	version;					\
+})
+
 /* from parser_common.c */
+extern uint32_t policy_version;
+extern uint32_t parser_abi_version;
+extern uint32_t kernel_abi_version;
+
+extern int force_complain;
 extern int perms_create;
 extern int net_af_max_override;
 extern int kernel_load;
-extern int kernel_policy_version;
 extern int kernel_supports_network;
 extern int kernel_supports_policydb;
 extern int kernel_supports_mount;
