@@ -243,14 +243,10 @@ int load_policy(int option)
 	return load_policy_list(policy_list, option);
 }
 
-int load_hats(sd_serialize *p, Profile *prof)
+int load_hats(std::ostringstream &buf, Profile *prof)
 {
 	for (ProfileList::iterator i = prof->hat_table.begin(); i != prof->hat_table.end(); i++) {
-		if (!sd_serialize_profile(p, *i, 0)) {
-			PERROR(_("ERROR in profile %s, failed to load\n"),
-			       (*i)->name);
-			return -EINVAL;
-		}
+		sd_serialize_profile(buf, *i, 0);
 	}
 
 	return 0;
