@@ -86,16 +86,16 @@ def str_to_mode(string):
 
 def sub_str_to_mode(string):
     mode = set()
-    if not string:
-        return mode
+
     while string:
         tmp = MODE_MAP_RE.search(string)
         if not tmp:
             break
-        tmp = tmp.groups()[0]
         string = MODE_MAP_RE.sub('', string, 1)
-        if tmp and MODE_HASH.get(tmp, False):
-            mode |= MODE_HASH[tmp]
+
+        mode_char = tmp.groups()[0]
+        if MODE_HASH.get(mode_char, False):
+            mode |= MODE_HASH[mode_char]
         else:
             pass
 
