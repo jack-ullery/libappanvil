@@ -38,16 +38,6 @@ int parse_dbus_mode(const char *str_mode, int *mode, int fail)
 	return parse_X_mode("DBus", AA_VALID_DBUS_PERMS, str_mode, mode, fail);
 }
 
-static void move_conditional_value(char **dst_ptr, struct cond_entry *cond_ent)
-{
-	if (*dst_ptr)
-		yyerror("dbus conditional \"%s\" can only be specified once\n",
-			cond_ent->name);
-
-	*dst_ptr = cond_ent->vals->value;
-	cond_ent->vals->value = NULL;
-}
-
 void dbus_rule::move_conditionals(struct cond_entry *conds)
 {
 	struct cond_entry *cond_ent;
@@ -61,17 +51,17 @@ void dbus_rule::move_conditionals(struct cond_entry *conds)
 				cond_ent->name);
 
 		if (strcmp(cond_ent->name, "bus") == 0) {
-			move_conditional_value(&bus, cond_ent);
+			move_conditional_value("dbus", &bus, cond_ent);
 		} else if (strcmp(cond_ent->name, "name") == 0) {
-			move_conditional_value(&name, cond_ent);
+			move_conditional_value("dbus", &name, cond_ent);
 		} else if (strcmp(cond_ent->name, "label") == 0) {
-			move_conditional_value(&peer_label, cond_ent);
+			move_conditional_value("dbus", &peer_label, cond_ent);
 		} else if (strcmp(cond_ent->name, "path") == 0) {
-			move_conditional_value(&path, cond_ent);
+			move_conditional_value("dbus", &path, cond_ent);
 		} else if (strcmp(cond_ent->name, "interface") == 0) {
-			move_conditional_value(&interface, cond_ent);
+			move_conditional_value("dbus", &interface, cond_ent);
 		} else if (strcmp(cond_ent->name, "member") == 0) {
-			move_conditional_value(&member, cond_ent);
+			move_conditional_value("dbus", &member, cond_ent);
 		} else {
 			yyerror("invalid dbus conditional \"%s\"\n",
 				cond_ent->name);

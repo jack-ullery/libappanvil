@@ -165,6 +165,8 @@ void signal_rule::move_conditionals(struct cond_entry *conds)
 			yyerror("keyword \"in\" is not allowed in signal rules\n");
 		if (strcmp(cond_ent->name, "set") == 0) {
 			extract_sigs(&cond_ent->vals);
+		} else if (strcmp(cond_ent->name, "peer") == 0) {
+			move_conditional_value("signal", &peer_label, cond_ent);
 		} else {
 			yyerror("invalid signal rule conditional \"%s\"\n",
 				cond_ent->name);
@@ -172,9 +174,8 @@ void signal_rule::move_conditionals(struct cond_entry *conds)
 	}
 }
 
-signal_rule::signal_rule(int mode_p, struct cond_entry *conds,
-			 char *peer):
-	signals(), peer_label(peer), audit(0), deny(0)
+signal_rule::signal_rule(int mode_p, struct cond_entry *conds):
+	signals(), peer_label(NULL), audit(0), deny(0)
 {
 	if (mode_p) {
 		mode = mode_p;

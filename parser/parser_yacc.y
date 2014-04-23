@@ -166,6 +166,7 @@ void add_local_entry(Profile *prof);
 %token TOK_FLAGS
 
 %code requires {
+	#include "parser.h"
 	#include "profile.h"
 	#include "mount.h"
 	#include "dbus.h"
@@ -194,6 +195,7 @@ void add_local_entry(Profile *prof);
 	char *var_val;
 	struct value_list *val_list;
 	struct cond_entry *cond_entry;
+	struct cond_entry_list cond_entry_list;
 	int boolean;
 	struct named_transition transition;
 	struct prefixes prefix;
@@ -219,8 +221,8 @@ void add_local_entry(Profile *prof);
 %type <mnt_entry> mnt_rule
 %type <cond_entry> opt_conds
 %type <cond_entry> cond
-%type <cond_entry> cond_list
-%type <cond_entry> opt_cond_list
+%type <cond_entry_list> cond_list
+%type <cond_entry_list> opt_cond_list
 %type <flags>	flags
 %type <flags>	flagvals
 %type <flags>	flagval
@@ -1145,10 +1147,11 @@ opt_conds: { /* nothing */ $$ = NULL; }
 
 cond_list: TOK_CONDLISTID TOK_EQUALS TOK_OPENPAREN opt_conds TOK_CLOSEPAREN
 	{
-		$$ = $4;
+		$$.name = $1;
+		$$.list = $4;
 	}
 
-opt_cond_list: { /* nothing */ $$ = NULL; }
+opt_cond_list: { /* nothing */ $$ = { NULL, NULL }; }
 	| cond_list { $$ = $1; }
 
 mnt_rule: TOK_MOUNT opt_conds opt_id TOK_END_OF_RULE
@@ -1232,7 +1235,12 @@ dbus_rule: TOK_DBUS opt_dbus_perm opt_conds opt_cond_list TOK_END_OF_RULE
 	{
 		dbus_rule *ent;
 
-		ent = new dbus_rule($2, $3, $4);
+		if ($4.name) {
+			if (strcmp($4.name, "peer") != 0)
+				yyerror(_("dbus rule: invalid conditional group %s=()"), $4.name);
+			free($4.name);
+		}
+		ent = new dbus_rule($2, $3, $4.list);
 		if (!ent) {
 			yyerror(_("Memory allocation error."));
 		}
@@ -1273,12 +1281,7 @@ opt_signal_perm: { /* nothing */ $$ = 0; }
 
 signal_rule: TOK_SIGNAL opt_signal_perm opt_conds TOK_END_OF_RULE
 	{
-		signal_rule *ent = new signal_rule($2, $3, NULL);
-		$$ = ent;
-	}
-	|  TOK_SIGNAL opt_signal_perm opt_conds TOK_ID TOK_END_OF_RULE
-	{
-		signal_rule *ent = new signal_rule($2, $3, $4);
+		signal_rule *ent = new signal_rule($2, $3);
 		$$ = ent;
 	}
 

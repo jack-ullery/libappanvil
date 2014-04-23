@@ -43,7 +43,7 @@ public:
 	int audit;
 	int deny;
 
-	signal_rule(int mode, struct cond_entry *conds, char *peer);
+	signal_rule(int mode, struct cond_entry *conds);
 	virtual ~signal_rule() {
 		signals.clear();
 		free(peer_label);
