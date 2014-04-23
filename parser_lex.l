@@ -80,6 +80,12 @@ do { \
 	yy_pop_state(); \
 } while (0)
 
+#define POP_NODUMP() \
+do { \
+	PDEBUG(" (pop_to(%s)): Matched: %s\n", state_names[yy_top_state()].c_str(), yytext); \
+	yy_pop_state(); \
+} while (0)
+
 #define PUSH(X) \
 do { \
 	DUMP_AND_DEBUG(" (push(%s)): Matched: %s\n", state_names[(X)].c_str(), yytext); \
@@ -276,12 +282,12 @@ LT_EQUAL	<=
 		char *filename = strndup(yytext, yyleng - 1);
 		include_filename(filename + 1, *filename == '<');
 		free(filename);
-		POP();
+		POP_NODUMP();
 	}
 
 	[^\<\>\" \t\n]+ {	/* filename */
 		include_filename(yytext, 0);
-		POP();
+		POP_NODUMP();
 	}
 }
 
