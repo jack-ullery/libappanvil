@@ -328,8 +328,8 @@ class AAParserCachingTests(AAParserCachingCommon):
         cmd.extend(['-v', '-r', self.profile])
         self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
 
-    def test_parser_newer_skips_cache(self):
-        '''test cache is skipped if parser is newer'''
+    def test_parser_newer_uses_cache(self):
+        '''test cache is not skipped if parser is newer'''
 
         self._generate_cache_file()
         time.sleep(config.timeout)
@@ -342,7 +342,7 @@ class AAParserCachingTests(AAParserCachingCommon):
         cmd = list(self.cmd_prefix)
         cmd[0] = new_parser
         cmd.extend(['-v', '-r', self.profile])
-        self.run_cmd_check(cmd, expected_string='Replacement succeeded for')
+        self.run_cmd_check(cmd, expected_string='Cached reload succeeded for')
 
     def _purge_cache_test(self, location):
 

@@ -996,7 +996,6 @@ int process_profile(int option, const char *profilename)
 	char * cachename = NULL;
 	char * cachetemp = NULL;
 	const char *basename = NULL;
-	FILE *cmd;
 
 	/* per-profile states */
 	force_complain = opt_force_complain;
@@ -1042,12 +1041,6 @@ int process_profile(int option, const char *profilename)
 	if (yyin) {
 		yyrestart(yyin);
 		update_mru_tstamp(yyin);
-	}
-
-	cmd = fopen("/proc/self/exe", "r");
-	if (cmd) {
-		update_mru_tstamp(cmd);
-		fclose(cmd);
 	}
 
 	retval = yyparse();
