@@ -84,7 +84,6 @@ char *features_string = NULL;
 char *cacheloc = NULL;
 
 /* per-profile settings */
-int force_complain = 0;
 
 static int load_features(const char *name);
 
@@ -841,7 +840,7 @@ static void set_supported_features(void) {
 	if (strstr(features_string, "file {"))	/* pre policydb is file= */
 		kernel_supports_policydb = 1;
 	if (strstr(features_string, "v6"))
-		kernel_policy_version = 6;
+		kernel_abi_version = 6;
 	if (strstr(features_string, "network"))
 		kernel_supports_network = 1;
 	if (strstr(features_string, "mount"))
@@ -941,6 +940,40 @@ int test_for_dir_mode(const char *basename, const char *linkdir)
 	return rc;
 }
 
+#if __BYTE_ORDER == __BIG_ENDIAN
+#  define le16_to_cpu(x) ((uint16_t)(bswap_16 (*(uint16_t *) x)))
+#else
+#  define le16_to_cpu(x) (*(uint16_t *)(x))
+#endif
+
+const char header_string[] = "\004\010\000version\000\002";
+#define HEADER_STRING_SIZE 12
+static bool valid_cached_file_version(const char *cachename)
+{
+	char buffer[16];
+	FILE *f;
+	if (!(f = fopen(cachename, "r"))) {
+		PERROR(_("Error: Could not read cache file '%s', skipping...\n"), cachename);
+		return false;
+	}
+	size_t res = fread(buffer, 1, 16, f);
+	fclose(f);
+	if (res < 16)
+		return false;
+
+	/* 12 byte header that is always the same and then 4 byte version # */
+	if (memcmp(buffer, header_string, HEADER_STRING_SIZE) != 0)
+		return false;
+
+	uint32_t version = cpu_to_le32(ENCODE_VERSION(force_complain,
+						      policy_version,
+						      parser_abi_version,
+						      kernel_abi_version));
+	if (memcmp(buffer + 12, &version, 4) != 0)
+		return false;
+
+	return true;
+}
 
 /* returns true if time is more recent than mru_tstamp */
 #define mru_t_cmp(a) \
@@ -1045,7 +1078,8 @@ int process_profile(int option, const char *profilename)
 		/* Load a binary cache if it exists and is newest */
 		if (!skip_read_cache &&
 		    stat(cachename, &stat_bin) == 0 &&
-		    stat_bin.st_size > 0 && (mru_t_cmp(stat_bin.st_mtim))) {
+		    stat_bin.st_size > 0 && (mru_t_cmp(stat_bin.st_mtim)) &&
+		    valid_cached_file_version(cachename)) {
 			if (show_cache)
 				PERROR("Cache hit: %s\n", cachename);
 			retval = process_binary(option, cachename);

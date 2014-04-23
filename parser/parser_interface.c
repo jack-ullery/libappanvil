@@ -40,23 +40,10 @@
 #include <libintl.h>
 #define _(s) gettext(s)
 
-#define u8  unsigned char
-#define u16 uint16_t
-#define u32 uint32_t
-#define u64 uint64_t
 
 #define BUFFERINC 65536
 //#define BUFFERINC 16
 
-#if __BYTE_ORDER == __BIG_ENDIAN
-#  define cpu_to_le16(x) ((u16)(bswap_16 ((u16) x)))
-#  define cpu_to_le32(x) ((u32)(bswap_32 ((u32) x)))
-#  define cpu_to_le64(x) ((u64)(bswap_64 ((u64) x)))
-#else
-#  define cpu_to_le16(x) ((u16)(x))
-#  define cpu_to_le32(x) ((u32)(x))
-#  define cpu_to_le64(x) ((u64)(x))
-#endif
 
 #define SD_CODE_SIZE (sizeof(u8))
 #define SD_STR_LEN (sizeof(u16))
@@ -680,9 +667,10 @@ int sd_serialize_profile(sd_serialize *p, Profile *profile,
 
 int sd_serialize_top_profile(sd_serialize *p, Profile *profile)
 {
-	int version;
+	uint32_t version;
 
-	version = kernel_policy_version;
+	version = ENCODE_VERSION(force_complain, policy_version,
+				 parser_abi_version, kernel_abi_version);
 
 	if (!sd_write_name(p, "version"))
 		return 0;

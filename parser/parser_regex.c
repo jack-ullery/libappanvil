@@ -692,7 +692,7 @@ int process_profile_policydb(Profile *prof)
 	 */
 
 	/* note: this activates unix domain sockets mediation on connect */
-	if (kernel_policy_version > 5 &&
+	if (kernel_abi_version > 5 &&
 	    !prof->policy.rules->add_rule(mediates_file, 0, AA_MAY_READ, 0, dfaflags))
 		goto out;
 	if (kernel_supports_mount &&

@@ -284,7 +284,10 @@ profile_base: TOK_ID opt_id flags TOK_OPEN rules TOK_CLOSE
 			 */
 			yyerror(_("Profile attachment must begin with a '/'."));
 		prof->flags = $3;
-		if (force_complain)
+		if (force_complain && kernel_abi_version == 5)
+			/* newer abis encode force complain as part of the
+			 * header
+			 */
 			prof->flags.complain = 1;
 
 		post_process_file_entries(prof);
