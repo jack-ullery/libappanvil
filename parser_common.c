@@ -71,6 +71,7 @@ int kernel_supports_policydb = 0;	/* kernel supports new policydb */
 int kernel_supports_mount = 0;	        /* kernel supports mount rules */
 int kernel_supports_dbus = 0;		/* kernel supports dbus rules */
 int kernel_supports_diff_encode = 0;	/* kernel supports diff_encode */
+int kernel_supports_signal = 0;		/* kernel supports signal rules */
 int conf_verbose = 0;
 int conf_quiet = 0;
 int names_only = 0;

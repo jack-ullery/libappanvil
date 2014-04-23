@@ -43,8 +43,6 @@ enum error_type {
 	e_parse_error,
 };
 
-/* match any char except \000 0 or more times */
-const char *default_match_pattern = "[^\\000]*";
 
 /* Filters out multiple slashes (except if the first two are slashes,
  * that's a distinct namespace in linux) and trailing slashes.
@@ -675,6 +673,7 @@ int post_process_policydb_ents(Profile *prof)
 static const char *mediates_file = CLASS_STR(AA_CLASS_FILE);
 static const char *mediates_mount = CLASS_STR(AA_CLASS_MOUNT);
 static const char *mediates_dbus =  CLASS_STR(AA_CLASS_DBUS);
+static const char *mediates_signal =  CLASS_STR(AA_CLASS_SIGNAL);
 
 int process_profile_policydb(Profile *prof)
 {
@@ -701,6 +700,10 @@ int process_profile_policydb(Profile *prof)
 	if (kernel_supports_dbus &&
 	    !prof->policy.rules->add_rule(mediates_dbus, 0, AA_MAY_READ, 0, dfaflags))
 		goto out;
+	if (kernel_supports_signal &&
+	    !prof->policy.rules->add_rule(mediates_signal, 0, AA_MAY_READ, 0, dfaflags))
+		goto out;
+
 	if (prof->policy.rules->rule_count > 0) {
 		prof->policy.dfa = prof->policy.rules->create_dfa(&prof->policy.size, dfaflags);
 		delete prof->policy.rules;
