@@ -134,368 +134,151 @@ def setup_split_comment_testcases():
         stub_test.__doc__ = "test '%s'" % (test_string)
         setattr(AARegexSplitComment, 'test_split_comment_%d' % (i), stub_test)
 
+
+def regex_test(self, line, expected):
+    '''Run a line through self.regex.search() and verify the result
+
+    Keyword arguments:
+    line -- the line to search
+    expected -- False if the search isn't expected to match or, if the search
+                is expected to match, a tuple of expected match groups with all
+                of the strings stripped
+    '''
+    result = self.regex.search(line)
+    if not expected:
+        self.assertFalse(result)
+        return
+
+    self.assertTrue(result)
+
+    groups = result.groups()
+    self.assertEqual(len(groups), len(expected))
+    for (i, group) in enumerate(groups):
+        if group:
+            group = group.strip()
+        self.assertEqual(group, expected[i], 'Group %d mismatch' % i)
+
+
+def setup_regex_tests(test_class):
+    '''Create tests in test_class using test_class.tests and regex_tests()
+
+    test_class.tests should be tuples of (line, expected_results) where
+    expected_results is False if test_class.regex.search(line) should not
+    match. If the search should match, expected_results should be a tuple of
+    the expected groups, with all of the strings stripped.
+    '''
+    for (i, (line, expected)) in enumerate(test_class.tests):
+        def stub_test(self, line=line, expected=expected):
+            regex_test(self, line, expected)
+
+        stub_test.__doc__ = "test '%s'" % (line)
+        setattr(test_class, 'test_%d' % (i), stub_test)
+
+
 class AARegexCapability(unittest.TestCase):
     '''Tests for RE_PROFILE_CAP'''
 
-    def test_simple_capability_01(self):
-        '''test '   capability net_raw,' '''
+    regex = aa.RE_PROFILE_CAP
 
-        line = '   capability net_raw,'
-        result = aa.RE_PROFILE_CAP.search(line)
-        self.assertTrue(result, 'Couldn\'t find capability rule in "%s"' % line)
-        cap = result.groups()[2].strip()
-        self.assertEqual(cap, 'net_raw', 'Expected capability "%s", got "%s"'
-                         % ('net_raw', cap))
+    tests = [
+        ('   capability net_raw,', (None, None, 'net_raw', None)),
+        ('capability     net_raw   ,  ', (None, None, 'net_raw', None)),
+        ('   capability,', (None, None, None, None)),
+        ('   capability   ,  ', (None, None, None, None)),
+        ('   capabilitynet_raw,', False)
+    ]
 
-    def test_simple_capability_02(self):
-        '''test '   capability net_raw   ,  ' '''
-
-        line = 'capability     net_raw   ,  '
-        result = aa.RE_PROFILE_CAP.search(line)
-        self.assertTrue(result, 'Couldn\'t find capability rule in "%s"' % line)
-        cap = result.groups()[2].strip()
-        self.assertEqual(cap, 'net_raw', 'Expected capability "%s", got "%s"'
-                         % ('net_raw', cap))
-
-    def test_capability_all_01(self):
-        '''test '   capability,' '''
-
-        line = '   capability,'
-        result = aa.RE_PROFILE_CAP.search(line)
-        self.assertTrue(result, 'Couldn\'t find capability rule in "%s"' % line)
-
-    def test_capability_all_02(self):
-        '''test '   capability   ,  ' '''
-
-        line = '   capability   ,  '
-        result = aa.RE_PROFILE_CAP.search(line)
-        self.assertTrue(result, 'Couldn\'t find capability rule in "%s"' % line)
-
-    def test_simple_bad_capability_01(self):
-        '''test '   capabilitynet_raw,' '''
-
-        line = '   capabilitynet_raw,'
-        result = aa.RE_PROFILE_CAP.search(line)
-        self.assertFalse(result, 'Found unexpected capability rule in "%s"' % line)
 
 class AARegexPath(unittest.TestCase):
     '''Tests for RE_PROFILE_PATH_ENTRY'''
 
-    def test_simple_path_01(self):
-        '''test '   /tmp/foo r,' '''
+    regex = aa.RE_PROFILE_PATH_ENTRY
 
-        line = '   /tmp/foo r,'
-        result = aa.RE_PROFILE_PATH_ENTRY.search(line)
-        self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
-        mode = result.groups()[5].strip()
-        self.assertEqual(mode, 'r', 'Expected mode "r", got "%s"' % (mode))
+    tests = [
+        ('   /tmp/foo r,',
+         (None, None, None, None, '/tmp/foo', 'r', None, None, None)),
+        ('   audit /tmp/foo rw,',
+         ('audit', None, None, None, '/tmp/foo', 'rw', None, None, None)),
+        ('   audit deny /tmp/foo rw,',
+         ('audit', 'deny', None, None, '/tmp/foo', 'rw', None, None, None)),
+        ('   file /tmp/foo rw,',
+         (None, None, None, 'file', '/tmp/foo', 'rw', None, None, None)),
+        ('   file,', False),
+    ]
 
-    def test_simple_path_02(self):
-        '''test '   audit /tmp/foo rw,' '''
-
-        line = '   audit /tmp/foo rw,'
-        result = aa.RE_PROFILE_PATH_ENTRY.search(line)
-        self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
-        audit = result.groups()[0].strip()
-        self.assertEqual(audit, 'audit', 'Couldn\t find audit modifier')
-        mode = result.groups()[5].strip()
-        self.assertEqual(mode, 'rw', 'Expected mode "rw", got "%s"' % (mode))
-
-    def test_simple_path_03(self):
-        '''test '   audit deny /tmp/foo rw,' '''
-
-        line = '   audit deny /tmp/foo rw,'
-        result = aa.RE_PROFILE_PATH_ENTRY.search(line)
-        self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
-        audit = result.groups()[0].strip()
-        self.assertEqual(audit, 'audit', 'Couldn\t find audit modifier')
-        deny = result.groups()[1].strip()
-        self.assertEqual(deny, 'deny', 'Couldn\t find deny modifier')
-        mode = result.groups()[5].strip()
-        self.assertEqual(mode, 'rw', 'Expected mode "rw", got "%s"' % (mode))
-
-    def test_simple_path_04(self):
-        '''test '   file /tmp/foo rw,' '''
-
-        line = '   file /tmp/foo rw,'
-        result = aa.RE_PROFILE_PATH_ENTRY.search(line)
-        self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
-        path = result.groups()[4].strip()
-        self.assertEqual(path, "/tmp/foo", 'Couldn\'t find path')
-        mode = result.groups()[5].strip()
-        self.assertEqual(mode, 'rw', 'Expected mode "rw", got "%s"' % (mode))
-
-    def test_simple_bad_path_01(self):
-        '''test '   file,' '''
-
-        line = '   file,'
-        result = aa.RE_PROFILE_PATH_ENTRY.search(line)
-        self.assertFalse(result, 'RE_PROFILE_PATH_ENTRY unexpectedly matched "%s"' % line)
 
 class AARegexBareFile(unittest.TestCase):
     '''Tests for RE_PROFILE_BARE_FILE_ENTRY'''
 
-    def _assertEqualStrings(self, str1, str2):
-        self.assertEqual(str1, str2, 'Expected %s, got "%s"' % (str1, str2))
+    regex = aa.RE_PROFILE_BARE_FILE_ENTRY
 
-    def test_bare_file_01(self):
-        '''test '   file,' '''
+    tests = [
+        ('   file,', (None, None, None, None)),
+        ('   dbus,', False),
+        ('   file /tmp/foo rw,', False),
+        ('   file /tmp/foo,', False),
+        ('   file r,', False),
+        ('  owner file  , ', (None, None, 'owner', None)),
+        ('  audit owner file  , ', ('audit', None, 'owner', None)),
+        ('  deny file  , ', (None, 'deny', None, None)),
+    ]
 
-        line = '   file,'
-        result = aa.RE_PROFILE_BARE_FILE_ENTRY.search(line)
-        self.assertTrue(result, 'Couldn\'t find file rule in "%s"' % line)
-
-    def test_simple_bad_file_01(self):
-        '''test '   dbus,' '''
-
-        line = '   dbus,'
-        result = aa.RE_PROFILE_BARE_FILE_ENTRY.search(line)
-        self.assertFalse(result, 'RE_PROFILE_BARE_FILE_ENTRY unexpectedly matched "%s"' % line)
-
-    def test_simple_bad_file_02(self):
-        '''test '   file /tmp/foo rw,' '''
-
-        line = '   file /tmp/foo rw,'
-        result = aa.RE_PROFILE_BARE_FILE_ENTRY.search(line)
-        self.assertFalse(result, 'RE_PROFILE_BARE_FILE_ENTRY unexpectedly matched "%s"' % line)
-
-    def test_simple_bad_file_03(self):
-        '''test '   file /tmp/foo,' '''
-
-        line = '   file /tmp/foo,'
-        result = aa.RE_PROFILE_BARE_FILE_ENTRY.search(line)
-        self.assertFalse(result, 'RE_PROFILE_BARE_FILE_ENTRY unexpectedly matched "%s"' % line)
-
-    def test_simple_bad_file_04(self):
-        '''test '   file r,' '''
-
-        line = '   file r,'
-        result = aa.RE_PROFILE_BARE_FILE_ENTRY.search(line)
-        self.assertFalse(result, 'RE_PROFILE_BARE_FILE_ENTRY unexpectedly matched "%s"' % line)
 
 class AARegexSignal(unittest.TestCase):
     '''Tests for RE_PROFILE_SIGNAL'''
 
-    def test_bare_signal_01(self):
-        '''test '   signal,' '''
+    regex = aa.RE_PROFILE_SIGNAL
 
-        rule = 'signal,'
-        line = '   %s' % rule
-        result = aa.RE_PROFILE_SIGNAL.search(line)
-        self.assertTrue(result, 'Couldn\'t find signal rule in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected signal rule "%s", got "%s"'
-                         % (rule, parsed))
+    tests = [
+        ('   signal,', (None, None, 'signal,', None)),
+        ('   audit signal,', ('audit', None, 'signal,', None)),
+        ('   signal receive,', (None, None, 'signal receive,', None)),
+        ('   signal (send, receive),',
+         (None, None, 'signal (send, receive),', None)),
+        ('   audit signal (receive),',
+         ('audit', None, 'signal (receive),', None)),
+        ('   signal (send, receive) set=(usr1 usr2),',
+         (None, None, 'signal (send, receive) set=(usr1 usr2),', None)),
+        ('   signal send set=(hup, quit) peer=/usr/sbin/daemon,',
+         (None, None,
+          'signal send set=(hup, quit) peer=/usr/sbin/daemon,', None)),
+    ]
 
-    def test_bare_signal_02(self):
-        '''test '   audit signal,' '''
-
-        rule = 'signal,'
-        line = '   audit %s' % rule
-        result = aa.RE_PROFILE_SIGNAL.search(line)
-        self.assertTrue(result, 'Couldn\'t find signal rule in "%s"' % line)
-        self.assertTrue(result.groups()[0], 'Couldn\'t find audit modifier in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected signal rule "%s", got "%s"'
-                         % (rule, parsed))
-
-    def test_simple_signal_01(self):
-        '''test '   signal receive,' '''
-
-        rule = 'signal receive,'
-        line = '   %s' % rule
-        result = aa.RE_PROFILE_SIGNAL.search(line)
-        self.assertTrue(result, 'Couldn\'t find signal rule in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected signal rule "%s", got "%s"'
-                         % (rule, parsed))
-
-    def test_simple_signal_02(self):
-        '''test '   signal (send, receive),' '''
-
-        rule = 'signal (send, receive),'
-        line = '   %s' % rule
-        result = aa.RE_PROFILE_SIGNAL.search(line)
-        self.assertTrue(result, 'Couldn\'t find signal rule in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected signal rule "%s", got "%s"'
-                         % (rule, parsed))
-
-    def test_simple_signal_03(self):
-        '''test '   audit signal (receive),' '''
-
-        rule = 'signal (receive),'
-        line = '   audit %s' % rule
-        result = aa.RE_PROFILE_SIGNAL.search(line)
-        self.assertTrue(result, 'Couldn\'t find signal rule in "%s"' % line)
-        self.assertTrue(result.groups()[0], 'Couldn\'t find audit modifier in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected signal rule "%s", got "%s"'
-                         % (rule, parsed))
-
-    def test_set_signal_01(self):
-        '''test '   signal (send, receive) set=(usr1 usr2),' '''
-
-        rule = 'signal (send, receive) set=(usr1 usr2),'
-        line = '   %s' % rule
-        result = aa.RE_PROFILE_SIGNAL.search(line)
-        self.assertTrue(result, 'Couldn\'t find signal rule in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected signal rule "%s", got "%s"'
-                         % (rule, parsed))
-
-    def test_peer_signal_01(self):
-        '''test '   signal send set=(hup, quit) peer=/usr/sbin/daemon,' '''
-
-        rule = 'signal send set=(hup, quit) peer=/usr/sbin/daemon,'
-        line = '   %s' % rule
-        result = aa.RE_PROFILE_SIGNAL.search(line)
-        self.assertTrue(result, 'Couldn\'t find signal rule in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected signal rule "%s", got "%s"'
-                         % (rule, parsed))
 
 class AARegexPtrace(unittest.TestCase):
     '''Tests for RE_PROFILE_PTRACE'''
 
-    def test_bare_ptrace_01(self):
-        '''test '   ptrace,' '''
+    regex = aa.RE_PROFILE_PTRACE
 
-        rule = 'ptrace,'
-        line = '   %s' % rule
-        result = aa.RE_PROFILE_PTRACE.search(line)
-        self.assertTrue(result, 'Couldn\'t find ptrace rule in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected ptrace rule "%s", got "%s"'
-                         % (rule, parsed))
+    tests = [
+        ('   ptrace,', (None, None, 'ptrace,', None)),
+        ('   audit ptrace,', ('audit', None, 'ptrace,', None)),
+        ('   ptrace trace,', (None, None, 'ptrace trace,', None)),
+        ('   ptrace (tracedby, readby),',
+         (None, None, 'ptrace (tracedby, readby),', None)),
+        ('   audit ptrace (read),', ('audit', None, 'ptrace (read),', None)),
+        ('   ptrace trace peer=/usr/sbin/daemon,',
+         (None, None, 'ptrace trace peer=/usr/sbin/daemon,', None)),
+    ]
 
-    def test_bare_ptrace_02(self):
-        '''test '   audit ptrace,' '''
-
-        rule = 'ptrace,'
-        line = '   audit %s' % rule
-        result = aa.RE_PROFILE_PTRACE.search(line)
-        self.assertTrue(result, 'Couldn\'t find ptrace rule in "%s"' % line)
-        self.assertTrue(result.groups()[0], 'Couldn\'t find audit modifier in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected ptrace rule "%s", got "%s"'
-                         % (rule, parsed))
-
-    def test_simple_ptrace_01(self):
-        '''test '   ptrace trace,' '''
-
-        rule = 'ptrace trace,'
-        line = '   %s' % rule
-        result = aa.RE_PROFILE_PTRACE.search(line)
-        self.assertTrue(result, 'Couldn\'t find ptrace rule in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected ptrace rule "%s", got "%s"'
-                         % (rule, parsed))
-
-    def test_simple_ptrace_02(self):
-        '''test '   ptrace (tracedby, readby),' '''
-
-        rule = 'ptrace (tracedby, readby),'
-        line = '   %s' % rule
-        result = aa.RE_PROFILE_PTRACE.search(line)
-        self.assertTrue(result, 'Couldn\'t find ptrace rule in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected ptrace rule "%s", got "%s"'
-                         % (rule, parsed))
-
-    def test_simple_ptrace_03(self):
-        '''test '   audit ptrace (read),' '''
-
-        rule = 'ptrace (read),'
-        line = '   audit %s' % rule
-        result = aa.RE_PROFILE_PTRACE.search(line)
-        self.assertTrue(result, 'Couldn\'t find ptrace rule in "%s"' % line)
-        self.assertTrue(result.groups()[0], 'Couldn\'t find audit modifier in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected ptrace rule "%s", got "%s"'
-                         % (rule, parsed))
-
-    def test_peer_ptrace_01(self):
-        '''test '   ptrace trace peer=/usr/sbin/daemon,' '''
-
-        rule = 'ptrace trace peer=/usr/sbin/daemon,'
-        line = '   %s' % rule
-        result = aa.RE_PROFILE_PTRACE.search(line)
-        self.assertTrue(result, 'Couldn\'t find ptrace rule in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected ptrace rule "%s", got "%s"'
-                         % (rule, parsed))
 
 class AARegexPivotRoot(unittest.TestCase):
     '''Tests for RE_PROFILE_PIVOT_ROOT'''
 
-    def test_bare_pivot_root_01(self):
-        '''test '   pivot_root,' '''
+    regex = aa.RE_PROFILE_PIVOT_ROOT
 
-        rule = 'pivot_root,'
-        line = '   %s' % rule
-        result = aa.RE_PROFILE_PIVOT_ROOT.search(line)
-        self.assertTrue(result, 'Couldn\'t find pivot_root rule in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected pivot_root rule "%s", got "%s"'
-                         % (rule, parsed))
-
-    def test_bare_pivot_root_02(self):
-        '''test '   audit pivot_root,' '''
-
-        rule = 'pivot_root,'
-        line = '   audit %s' % rule
-        result = aa.RE_PROFILE_PIVOT_ROOT.search(line)
-        self.assertTrue(result, 'Couldn\'t find pivot_root rule in "%s"' % line)
-        self.assertTrue(result.groups()[0], 'Couldn\'t find audit modifier in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected pivot_root rule "%s", got "%s"'
-                         % (rule, parsed))
-
-    def test_old_pivot_root_01(self):
-        '''test '   pivot_root /old,' '''
-
-        rule = 'pivot_root /old,'
-        line = '   %s' % rule
-        result = aa.RE_PROFILE_PIVOT_ROOT.search(line)
-        self.assertTrue(result, 'Couldn\'t find pivot_root rule in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected pivot_root rule "%s", got "%s"'
-                         % (rule, parsed))
-
-    def test_new_pivot_root_01(self):
-        '''test '   pivot_root /old /new,' '''
-
-        rule = 'pivot_root /old /new,'
-        line = '   %s' % rule
-        result = aa.RE_PROFILE_PIVOT_ROOT.search(line)
-        self.assertTrue(result, 'Couldn\'t find pivot_root rule in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected pivot_root rule "%s", got "%s"'
-                         % (rule, parsed))
-
-    def test_child_pivot_root_01(self):
-        '''test '   pivot_root /old /new -> child,' '''
-
-        rule = 'pivot_root /old /new -> child,'
-        line = '   %s' % rule
-        result = aa.RE_PROFILE_PIVOT_ROOT.search(line)
-        self.assertTrue(result, 'Couldn\'t find pivot_root rule in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected pivot_root rule "%s", got "%s"'
-                         % (rule, parsed))
-
-    def test_child_pivot_root_02(self):
-        '''test '   audit pivot_root /old /new -> child,' '''
-
-        rule = 'pivot_root /old /new -> child,'
-        line = '   audit %s' % rule
-        result = aa.RE_PROFILE_PIVOT_ROOT.search(line)
-        self.assertTrue(result, 'Couldn\'t find pivot_root rule in "%s"' % line)
-        self.assertTrue(result.groups()[0], 'Couldn\'t find audit modifier in "%s"' % line)
-        parsed = result.groups()[2].strip()
-        self.assertEqual(parsed, rule, 'Expected pivot_root rule "%s", got "%s"'
-                         % (rule, parsed))
+    tests = [
+        ('   pivot_root,', (None, None, 'pivot_root,', None)),
+        ('   audit pivot_root,', ('audit', None, 'pivot_root,', None)),
+        ('   pivot_root oldroot=/new/old,',
+         (None, None, 'pivot_root oldroot=/new/old,', None)),
+        ('   pivot_root oldroot=/new/old /new,',
+         (None, None, 'pivot_root oldroot=/new/old /new,', None)),
+        ('   pivot_root oldroot=/new/old /new -> child,',
+         (None, None, 'pivot_root oldroot=/new/old /new -> child,', None)),
+        ('   audit pivot_root oldroot=/new/old /new -> child,',
+         ('audit', None, 'pivot_root oldroot=/new/old /new -> child,', None)),
+    ]
 
 if __name__ == '__main__':
     verbosity = 2
@@ -506,12 +289,12 @@ if __name__ == '__main__':
     test_suite = unittest.TestSuite()
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexHasComma))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexSplitComment))
-    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexCapability))
-    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexPath))
-    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexBareFile))
-    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexSignal))
-    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexPtrace))
-    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexPivotRoot))
+
+    for tests in (AARegexCapability, AARegexPath, AARegexBareFile,
+                  AARegexSignal, AARegexPtrace, AARegexPivotRoot):
+        setup_regex_tests(tests)
+        test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(tests))
+
     result = unittest.TextTestRunner(verbosity=verbosity).run(test_suite)
     if not result.wasSuccessful():
         exit(1)
