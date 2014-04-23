@@ -257,7 +257,9 @@ do {								\
 extern int perms_create;
 extern int net_af_max_override;
 extern int kernel_load;
+extern int kernel_policy_version;
 extern int kernel_supports_network;
+extern int kernel_supports_policydb;
 extern int kernel_supports_mount;
 extern int kernel_supports_dbus;
 extern int conf_verbose;

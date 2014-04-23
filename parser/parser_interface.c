@@ -61,7 +61,6 @@
 #define SD_CODE_SIZE (sizeof(u8))
 #define SD_STR_LEN (sizeof(u16))
 
-#define SUBDOMAIN_INTERFACE_DFA_VERSION 5
 
 int __sd_serialize_profile(int option, Profile *prof);
 
@@ -683,7 +682,7 @@ int sd_serialize_top_profile(sd_serialize *p, Profile *profile)
 {
 	int version;
 
-	version = SUBDOMAIN_INTERFACE_DFA_VERSION;
+	version = kernel_policy_version;
 
 	if (!sd_write_name(p, "version"))
 		return 0;

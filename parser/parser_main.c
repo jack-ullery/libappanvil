@@ -838,6 +838,10 @@ static void set_supported_features(void) {
 	perms_create = 1;
 
 	/* TODO: make this real parsing and config setting */
+	if (strstr(features_string, "file {"))	/* pre policydb is file= */
+		kernel_supports_policydb = 1;
+	if (strstr(features_string, "v6"))
+		kernel_policy_version = 6;
 	if (strstr(features_string, "network"))
 		kernel_supports_network = 1;
 	if (strstr(features_string, "mount"))
