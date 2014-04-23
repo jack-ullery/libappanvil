@@ -221,6 +221,10 @@ public:
 		if (entries)
 			debug_cod_entries(entries);
 
+		for (RuleList::iterator i = rule_ents.begin(); i != rule_ents.end(); i++) {
+			(*i)->dump(cout);
+		}
+
 		printf("\n");
 		hat_table.dump();
 	}
