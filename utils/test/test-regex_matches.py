@@ -53,6 +53,11 @@ regex_has_comma_testcases = [
     ('ptrace (tracedby, readby)%s', 'embedded parens ptrace 01'),
     ('ptrace (trace) peer=/usr/bin/foo%s', 'embedded parens ptrace 02'),
 
+    ('pivot_root%s', 'bare pivot_root'),
+    ('pivot_root /old%s', 'pivot_root with old'),
+    ('pivot_root /old new%s', 'pivot_root with new'),
+    ('pivot_root /old /new -> child%s', 'pivot_root with child'),
+
     # the following fail due to inadequacies in the regex
     # ('dbus (r, w, %s', 'incomplete dbus action'),
     # ('member="{Hello,AddMatch,RemoveMatch, %s', 'incomplete {} regex'),  # also invalid policy
@@ -113,6 +118,8 @@ regex_split_comment_testcases = [
     ('signal receive set=(usr1 usr2) peer=foo,', False),
     ('ptrace, # comment', ('ptrace, ', '# comment')),
     ('ptrace (trace read) peer=/usr/bin/foo,', False),
+    ('pivot_root, # comment', ('pivot_root, ', '# comment')),
+    ('pivot_root /old /new -> child,', False),
 ]
 
 def setup_split_comment_testcases():
@@ -443,6 +450,77 @@ class AARegexPtrace(unittest.TestCase):
         self.assertEqual(parsed, rule, 'Expected ptrace rule "%s", got "%s"'
                          % (rule, parsed))
 
+class AARegexPivotRoot(unittest.TestCase):
+    '''Tests for RE_PROFILE_PIVOT_ROOT'''
+
+    def test_bare_pivot_root_01(self):
+        '''test '   pivot_root,' '''
+
+        rule = 'pivot_root,'
+        line = '   %s' % rule
+        result = aa.RE_PROFILE_PIVOT_ROOT.search(line)
+        self.assertTrue(result, 'Couldn\'t find pivot_root rule in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected pivot_root rule "%s", got "%s"'
+                         % (rule, parsed))
+
+    def test_bare_pivot_root_02(self):
+        '''test '   audit pivot_root,' '''
+
+        rule = 'pivot_root,'
+        line = '   audit %s' % rule
+        result = aa.RE_PROFILE_PIVOT_ROOT.search(line)
+        self.assertTrue(result, 'Couldn\'t find pivot_root rule in "%s"' % line)
+        self.assertTrue(result.groups()[0], 'Couldn\'t find audit modifier in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected pivot_root rule "%s", got "%s"'
+                         % (rule, parsed))
+
+    def test_old_pivot_root_01(self):
+        '''test '   pivot_root /old,' '''
+
+        rule = 'pivot_root /old,'
+        line = '   %s' % rule
+        result = aa.RE_PROFILE_PIVOT_ROOT.search(line)
+        self.assertTrue(result, 'Couldn\'t find pivot_root rule in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected pivot_root rule "%s", got "%s"'
+                         % (rule, parsed))
+
+    def test_new_pivot_root_01(self):
+        '''test '   pivot_root /old /new,' '''
+
+        rule = 'pivot_root /old /new,'
+        line = '   %s' % rule
+        result = aa.RE_PROFILE_PIVOT_ROOT.search(line)
+        self.assertTrue(result, 'Couldn\'t find pivot_root rule in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected pivot_root rule "%s", got "%s"'
+                         % (rule, parsed))
+
+    def test_child_pivot_root_01(self):
+        '''test '   pivot_root /old /new -> child,' '''
+
+        rule = 'pivot_root /old /new -> child,'
+        line = '   %s' % rule
+        result = aa.RE_PROFILE_PIVOT_ROOT.search(line)
+        self.assertTrue(result, 'Couldn\'t find pivot_root rule in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected pivot_root rule "%s", got "%s"'
+                         % (rule, parsed))
+
+    def test_child_pivot_root_02(self):
+        '''test '   audit pivot_root /old /new -> child,' '''
+
+        rule = 'pivot_root /old /new -> child,'
+        line = '   audit %s' % rule
+        result = aa.RE_PROFILE_PIVOT_ROOT.search(line)
+        self.assertTrue(result, 'Couldn\'t find pivot_root rule in "%s"' % line)
+        self.assertTrue(result.groups()[0], 'Couldn\'t find audit modifier in "%s"' % line)
+        parsed = result.groups()[2].strip()
+        self.assertEqual(parsed, rule, 'Expected pivot_root rule "%s", got "%s"'
+                         % (rule, parsed))
+
 if __name__ == '__main__':
     verbosity = 2
 
@@ -457,6 +535,7 @@ if __name__ == '__main__':
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexFile))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexSignal))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexPtrace))
+    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexPivotRoot))
     result = unittest.TextTestRunner(verbosity=verbosity).run(test_suite)
     if not result.wasSuccessful():
         exit(1)

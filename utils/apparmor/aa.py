@@ -2626,6 +2626,7 @@ RE_PROFILE_DBUS = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(dbus[^#]*\s*,)\
 RE_PROFILE_MOUNT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((mount|remount|umount)[^#]*\s*,)\s*(#.*)?$')
 RE_PROFILE_SIGNAL = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((signal)[^#]*\s*,)\s*(#.*)?$')
 RE_PROFILE_PTRACE = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((ptrace)[^#]*\s*,)\s*(#.*)?$')
+RE_PROFILE_PIVOT_ROOT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((pivot_root)[^#]*\s*,)\s*(#.*)?$')
 
 # match anything that's not " or #, or matching quotes with anything except quotes inside
 __re_no_or_quoted_hash = '([^#"]|"[^"]*")*'
@@ -2706,6 +2707,7 @@ def parse_profile_data(data, file, do_include):
             profile_data[profile][hat]['allow']['mount'] = list()
             profile_data[profile][hat]['allow']['signal'] = list()
             profile_data[profile][hat]['allow']['ptrace'] = list()
+            profile_data[profile][hat]['allow']['pivot_root'] = list()
             # Save the initial comment
             if initial_comment:
                 profile_data[profile][hat]['initial_comment'] = initial_comment
@@ -3110,6 +3112,28 @@ def parse_profile_data(data, file, do_include):
             ptrace_rules.append(ptrace_rule)
             profile_data[profile][hat][allow]['ptrace'] = ptrace_rules
 
+        elif RE_PROFILE_PIVOT_ROOT.search(line):
+            matches = RE_PROFILE_PIVOT_ROOT.search(line).groups()
+
+            if not profile:
+                raise AppArmorException(_('Syntax Error: Unexpected pivot_root entry found in file: %s line: %s') % (file, lineno + 1))
+
+            audit = False
+            if matches[0]:
+                audit = True
+            allow = 'allow'
+            if matches[1] and matches[1].strip() == 'deny':
+                allow = 'deny'
+            pivot_root = matches[2].strip()
+
+            pivot_root_rule = parse_pivot_root_rule(pivot_root)
+            pivot_root_rule.audit = audit
+            pivot_root_rule.deny = (allow == 'deny')
+
+            pivot_root_rules = profile_data[profile][hat][allow].get('pivot_root', list())
+            pivot_root_rules.append(pivot_root_rule)
+            profile_data[profile][hat][allow]['pivot_root'] = pivot_root_rules
+
         elif RE_PROFILE_CHANGE_HAT.search(line):
             matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
 
@@ -3215,6 +3239,10 @@ def parse_signal_rule(line):
 def parse_ptrace_rule(line):
     # XXX Do real parsing here
     return aarules.Raw_Ptrace_Rule(line)
+
+def parse_pivot_root_rule(line):
+    # XXX Do real parsing here
+    return aarules.Raw_Pivot_Root_Rule(line)
 
 def separate_vars(vs):
     """Returns a list of all the values for a variable"""
@@ -3481,6 +3509,24 @@ def write_ptrace(prof_data, depth):
     data += write_ptrace_rules(prof_data, depth, 'allow')
     return data
 
+def write_pivot_root_rules(prof_data, depth, allow):
+    pre = '  ' * depth
+    data = []
+
+    # no pivot_root rules, so return
+    if not prof_data[allow].get('pivot_root', False):
+        return data
+
+    for pivot_root_rule in prof_data[allow]['pivot_root']:
+        data.append('%s%s' % (pre, pivot_root_rule.serialize()))
+    data.append('')
+    return data
+
+def write_pivot_root(prof_data, depth):
+    data = write_pivot_root_rules(prof_data, depth, 'deny')
+    data += write_pivot_root_rules(prof_data, depth, 'allow')
+    return data
+
 def write_link_rules(prof_data, depth, allow):
     pre = '  ' * depth
     data = []
@@ -3589,6 +3635,7 @@ def write_rules(prof_data, depth):
     data += write_mount(prof_data, depth)
     data += write_signal(prof_data, depth)
     data += write_ptrace(prof_data, depth)
+    data += write_pivot_root(prof_data, depth)
     data += write_links(prof_data, depth)
     data += write_paths(prof_data, depth)
     data += write_change_profile(prof_data, depth)
@@ -3740,6 +3787,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                          'mount': write_mount,
                          'signal': write_signal,
                          'ptrace': write_ptrace,
+                         'pivot_root': write_pivot_root,
                          'link': write_links,
                          'path': write_paths,
                          'change_profile': write_change_profile,
@@ -3834,6 +3882,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     data += write_mount(write_prof_data[name], depth)
                     data += write_signal(write_prof_data[name], depth)
                     data += write_ptrace(write_prof_data[name], depth)
+                    data += write_pivot_root(write_prof_data[name], depth)
                     data += write_links(write_prof_data[name], depth)
                     data += write_paths(write_prof_data[name], depth)
                     data += write_change_profile(write_prof_data[name], depth)

@@ -91,3 +91,15 @@ class Raw_Ptrace_Rule(object):
         return "%s%s%s" % ('audit ' if self.audit else '',
                            'deny '  if self.deny else '',
                            self.rule)
+
+class Raw_Pivot_Root_Rule(object):
+    audit = False
+    deny = False
+
+    def __init__(self, rule):
+        self.rule = rule
+
+    def serialize(self):
+        return "%s%s%s" % ('audit ' if self.audit else '',
+                           'deny '  if self.deny else '',
+                           self.rule)
