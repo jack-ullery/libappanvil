@@ -89,9 +89,6 @@ testfailed()
 
 error_handler()
 {
-	#invoke exit_handler to cleanup
-	exit_handler
-
 	fatalerror "Unexpected shell error. Run with -x to debug"
 }
 
