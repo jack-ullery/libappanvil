@@ -33,8 +33,8 @@ loop_device="unset"
 fstype="ext2"
 
 setup_mnt() {
-	/bin/mount -t${fstype} ${loop_device} ${mount_point}
-#	/bin/mount -t${fstype} ${loop_device} ${mount_bad}
+	/bin/mount -n -t${fstype} ${loop_device} ${mount_point}
+#	/bin/mount -n -t${fstype} ${loop_device} ${mount_bad}
 }
 remove_mnt() {
 	mountpoint -q "${mount_point}"
