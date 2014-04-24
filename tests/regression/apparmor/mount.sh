@@ -47,6 +47,15 @@ remove_mnt() {
 	fi
 }
 
+mount_cleanup() {
+	remove_mnt &> /dev/null
+	if [ "$loop_device" != "unset" ]
+	then
+		/sbin/losetup -d ${loop_device} &> /dev/null
+	fi
+}
+do_onexit="mount_cleanup"
+
 dd if=/dev/zero of=${mount_file} bs=1024 count=512 2> /dev/null
 /sbin/mkfs -t${fstype} -F ${mount_file} > /dev/null 2> /dev/null
 /bin/mkdir ${mount_point}
@@ -163,8 +172,3 @@ else
 fi
 
 #need tests for move mount, remount, bind mount, chroot
-
-# cleanup, umount file
-/bin/umount ${loop_device} > /dev/null 2> /dev/null  || /sbin/losetup -d ${loop_device} > /dev/null 2> /dev/null
-
-/sbin/losetup -d ${loop_device} > /dev/null 2> /dev/null
