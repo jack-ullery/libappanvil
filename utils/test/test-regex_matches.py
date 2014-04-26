@@ -224,6 +224,42 @@ class AARegexBareFile(unittest.TestCase):
     ]
 
 
+class AARegexDbus(unittest.TestCase):
+    '''Tests for RE_PROFILE_DBUS'''
+
+    regex = aa.RE_PROFILE_DBUS
+
+    tests = [
+        ('   dbus,', (None, None, 'dbus,', None)),
+        ('   audit dbus,', ('audit', None, 'dbus,', None)),
+        ('   dbus send member=no_comment,', (None, None, 'dbus send member=no_comment,', None)),
+        ('   dbus send member=no_comment, # comment', (None, None, 'dbus send member=no_comment,', '# comment')),
+
+        ('   dbusdriver,', False),
+        ('   audit dbusdriver,', False),
+    ]
+
+class AARegexMount(unittest.TestCase):
+    '''Tests for RE_PROFILE_MOUNT'''
+
+    regex = aa.RE_PROFILE_MOUNT
+
+    tests = [
+        ('   mount,', (None, None, 'mount,', 'mount', None, None)),
+        ('   audit mount,', ('audit', None, 'mount,', 'mount', None, None)),
+        ('   umount,', (None, None, 'umount,', 'umount', None, None)),
+        ('   audit umount,', ('audit', None, 'umount,', 'umount', None, None)),
+        ('   remount,', (None, None, 'remount,', 'remount', None, None)),
+        ('   deny remount,', (None, 'deny', 'remount,', 'remount', None, None)),
+
+        ('   mount, # comment', (None, None, 'mount,', 'mount', None, '# comment')),
+
+        ('   mountain,', False),
+        ('   audit mountain,', False),
+    ]
+
+
+
 class AARegexSignal(unittest.TestCase):
     '''Tests for RE_PROFILE_SIGNAL'''
 
@@ -242,6 +278,10 @@ class AARegexSignal(unittest.TestCase):
         ('   signal send set=(hup, quit) peer=/usr/sbin/daemon,',
          (None, None,
           'signal send set=(hup, quit) peer=/usr/sbin/daemon,', None)),
+
+        ('   signalling,', False),
+        ('   audit signalling,', False),
+        ('   signalling receive,', False),
     ]
 
 
@@ -259,6 +299,10 @@ class AARegexPtrace(unittest.TestCase):
         ('   audit ptrace (read),', ('audit', None, 'ptrace (read),', None)),
         ('   ptrace trace peer=/usr/sbin/daemon,',
          (None, None, 'ptrace trace peer=/usr/sbin/daemon,', None)),
+
+        ('   ptraceback,', False),
+        ('   audit ptraceback,', False),
+        ('   ptraceback trace,', False),
     ]
 
 
@@ -278,6 +322,14 @@ class AARegexPivotRoot(unittest.TestCase):
          (None, None, 'pivot_root oldroot=/new/old /new -> child,', None)),
         ('   audit pivot_root oldroot=/new/old /new -> child,',
          ('audit', None, 'pivot_root oldroot=/new/old /new -> child,', None)),
+
+        ('pivot_root', False),  # comma missing
+
+        ('pivot_rootbeer,', False),
+        ('pivot_rootbeer    ,  ', False),
+        ('pivot_rootbeer, # comment', False),
+        ('pivot_rootbeer /new,  ', False),
+        ('pivot_rootbeer /new, # comment', False),
     ]
 
 if __name__ == '__main__':
@@ -291,6 +343,7 @@ if __name__ == '__main__':
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexSplitComment))
 
     for tests in (AARegexCapability, AARegexPath, AARegexBareFile,
+                  AARegexDbus, AARegexMount,
                   AARegexSignal, AARegexPtrace, AARegexPivotRoot):
         setup_regex_tests(tests)
         test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(tests))
