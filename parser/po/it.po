@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2013-11-14 10:18-0800\n"
-"PO-Revision-Date: 2014-04-11 18:31+0000\n"
+"PO-Revision-Date: 2014-04-30 21:43+0000\n"
 "Last-Translator: Gio <gio.scino@gmail.com>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-04-12 05:40+0000\n"
-"X-Generator: Launchpad (build 16976)\n"
+"X-Launchpad-Export-Date: 2014-05-01 05:27+0000\n"
+"X-Generator: Launchpad (build 16985)\n"
 "Language: it\n"
 
 #: ../parser_include.c:113
@@ -49,7 +49,7 @@ msgstr "Memoria esaurita\n"
 
 #: ../parser_interface.c:78 ../parser_interface.c:81
 msgid "Couldn't copy profile: Bad memory address\n"
-msgstr ""
+msgstr "Impossibile copiare il profilo: indirizzo di memoria errato\n"
 
 #: ../parser_interface.c:81 ../parser_interface.c:84
 msgid "Profile doesn't conform to protocol\n"
@@ -180,7 +180,7 @@ msgstr ""
 #: parser_lex.l:100 parser_lex.l:163
 #, c-format
 msgid "Could not open '%s'"
-msgstr ""
+msgstr "Impossibile aprire \"%s\""
 
 #: parser_lex.l:104 parser_lex.l:167
 #, c-format
@@ -285,7 +285,7 @@ msgstr ""
 #: ../parser_main.c:744 ../parser_main.c:876
 #, c-format
 msgid "Cached reload succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Ricaricamento cache eseguito con successo per \"%s\".\n"
 
 #: ../parser_main.c:910 ../parser_main.c:1058
 #, c-format
@@ -487,12 +487,12 @@ msgstr "Funzionalità non valida %s."
 #: parser_yacc.y:1066 parser_yacc.y:1269
 #, c-format
 msgid "AppArmor parser error for %s%s%s at line %d: %s\n"
-msgstr ""
+msgstr "Errore di analisi di AppArmor per %s%s%s alla riga %d: %s\n"
 
 #: parser_yacc.y:1072 parser_yacc.y:1275
 #, c-format
 msgid "AppArmor parser error,%s%s line %d: %s\n"
-msgstr ""
+msgstr "Errore di analisi di AppArmor, %s%s riga %d: %s\n"
 
 #: ../parser_regex.c:244
 #, c-format
@@ -622,7 +622,7 @@ msgstr ""
 #: ../parser_main.c:1182
 #, c-format
 msgid "Can't create cache directory: %s\n"
-msgstr ""
+msgstr "Impossibile creare la directory di cache: %s\n"
 
 #: ../parser_main.c:1185
 #, c-format
@@ -646,23 +646,23 @@ msgstr ""
 
 #: parser_yacc.y:575
 msgid "deny prefix not allowed"
-msgstr ""
+msgstr "prefisso di negazione non consentito"
 
 #: parser_yacc.y:612
 msgid "owner prefix not allowed"
-msgstr ""
+msgstr "prefisso di proprietà non consentito"
 
 #: parser_yacc.y:660
 msgid "owner prefix not allow on mount rules"
-msgstr ""
+msgstr "prefisso di proprietà non consentito nelle regole di montaggio"
 
 #: parser_yacc.y:677
 msgid "owner prefix not allow on dbus rules"
-msgstr ""
+msgstr "prefisso di proprietà non consentito nelle regole dbus"
 
 #: parser_yacc.y:704
 msgid "owner prefix not allow on capability rules"
-msgstr ""
+msgstr "prefisso di proprietà non consentito nelle regole di funzionalità"
 
 #: parser_yacc.y:1357
 #, c-format
@@ -671,7 +671,7 @@ msgstr ""
 
 #: parser_yacc.y:1374
 msgid "bad mount rule"
-msgstr ""
+msgstr "regola di montaggio errata"
 
 #: parser_yacc.y:1381
 msgid "mount point conditions not currently supported"
