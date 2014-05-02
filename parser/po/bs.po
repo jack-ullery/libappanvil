@@ -8,154 +8,155 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2013-11-14 10:18-0800\n"
-"PO-Revision-Date: 2013-11-14 22:00+0000\n"
-"Last-Translator: Damir Bjelobradic <Nagual@lugbih.org>\n"
+"PO-Revision-Date: 2014-05-01 19:36+0000\n"
+"Last-Translator: Samir Ribić <Unknown>\n"
 "Language-Team: Bosnian <i18n@suse.de>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-03-26 05:40+0000\n"
-"X-Generator: Launchpad (build 16967)\n"
+"X-Launchpad-Export-Date: 2014-05-02 05:29+0000\n"
+"X-Generator: Launchpad (build 16985)\n"
 "Language: bs\n"
 
 #: ../parser_include.c:113
 msgid "Error: Out of memory.\n"
-msgstr ""
+msgstr "Greška: Nema više memorije.\n"
 
 #: ../parser_include.c:123
 #, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
-msgstr ""
+msgstr "Greška: osnovni direktorij %s nije direktorij, preskačem.\n"
 
 #: ../parser_include.c:137
 #, c-format
 msgid "Error: Could not add directory %s to search path.\n"
-msgstr ""
+msgstr "Greška: Ne mogu dodati direktorij  %s u stazu koja se traži.\n"
 
 #: ../parser_include.c:147
 msgid "Error: Could not allocate memory.\n"
-msgstr ""
+msgstr "Greška: Ne mogu alocirati memoriju.\n"
 
 #: ../parser_interface.c:69 ../parser_interface.c:72
 msgid "Bad write position\n"
-msgstr ""
+msgstr "Neipravan položaj za zapisivanje\n"
 
 #: ../parser_interface.c:72 ../parser_interface.c:75
 msgid "Permission denied\n"
-msgstr ""
+msgstr "Odobrenje odbijeno\n"
 
 #: ../parser_interface.c:75 ../parser_interface.c:78
 msgid "Out of memory\n"
-msgstr ""
+msgstr "Nedostaje mi slobodne memorije\n"
 
 #: ../parser_interface.c:78 ../parser_interface.c:81
 msgid "Couldn't copy profile: Bad memory address\n"
-msgstr ""
+msgstr "Ne mogu kopirati profil: Loša memorijska adresa\n"
 
 #: ../parser_interface.c:81 ../parser_interface.c:84
 msgid "Profile doesn't conform to protocol\n"
-msgstr ""
+msgstr "Profil ne odgovara protokolu\n"
 
 #: ../parser_interface.c:84 ../parser_interface.c:87
 msgid "Profile does not match signature\n"
-msgstr ""
+msgstr "Profil ne odgovara potpisu\n"
 
 #: ../parser_interface.c:87 ../parser_interface.c:90
 msgid "Profile version not supported by Apparmor module\n"
-msgstr ""
+msgstr "Verzija profila nije podržana Apparmor modulom\n"
 
 #: ../parser_interface.c:90 ../parser_interface.c:93
 msgid "Profile already exists\n"
-msgstr ""
+msgstr "Profil već postoji\n"
 
 #: ../parser_interface.c:93 ../parser_interface.c:96
 msgid "Profile doesn't exist\n"
-msgstr ""
+msgstr "Profil ne postoji\n"
 
 #: ../parser_interface.c:96 ../parser_interface.c:99
 msgid "Permission denied; attempted to load a profile while confined?\n"
-msgstr ""
+msgstr "Dozvola odbijena; pokušao da učita profil, dok je zatvoren?\n"
 
 #: ../parser_interface.c:99 ../parser_interface.c:102
 #, c-format
 msgid "Unknown error (%d): %s\n"
-msgstr ""
+msgstr "Nepoznata greška (%d): %s\n"
 
 #: ../parser_interface.c:116 ../parser_interface.c:119
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr ""
+msgstr "%s: Ne mogu dodati \"%s\".  "
 
 #: ../parser_interface.c:121 ../parser_interface.c:124
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr ""
+msgstr "%s: Ne mogu zamijeniti \"%s\".  "
 
 #: ../parser_interface.c:126 ../parser_interface.c:129
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr ""
+msgstr "%s : Ne mogu ukloniti  \"%s\".  "
 
 #: ../parser_interface.c:131 ../parser_interface.c:134
 #, c-format
 msgid "%s: Unable to write to stdout\n"
-msgstr ""
+msgstr "%s: Ne mogu pisati na stdout\n"
 
 #: ../parser_interface.c:135 ../parser_interface.c:138
 #, c-format
 msgid "%s: Unable to write to output file\n"
-msgstr ""
+msgstr "%s: Ne mogu pisati u izlaznu datoteku\n"
 
 #: ../parser_interface.c:138 ../parser_interface.c:162
 #: ../parser_interface.c:141 ../parser_interface.c:165
 #, c-format
 msgid "%s: ASSERT: Invalid option: %d\n"
-msgstr ""
+msgstr "%s: PROVJERA: Neispravan izbor: %d\n"
 
 #: ../parser_interface.c:147 ../parser_interface.c:150
 #, c-format
 msgid "Addition succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Dodavanje je uspjelo za \"%s\".\n"
 
 #: ../parser_interface.c:151 ../parser_interface.c:154
 #, c-format
 msgid "Replacement succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Zamjena je uspjela za \"%s\".\n"
 
 #: ../parser_interface.c:155 ../parser_interface.c:158
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Uklanjanje je uspjelo za \"%s\".\n"
 
 #: ../parser_interface.c:251 ../parser_interface.c:254
 #, c-format
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 msgstr ""
+"PANIKA neispravan inkrementalni spremnik %p pol %p ekst %p vel %d raz %p\n"
 
 #: ../parser_interface.c:656 ../parser_interface.c:658
 #, c-format
 msgid "profile %s network rules not enforced\n"
-msgstr ""
+msgstr "profil %s mrežna pravila nisu primijenjena\n"
 
 #: ../parser_interface.c:666
 msgid "Unknown pattern type\n"
-msgstr ""
+msgstr "Nepoznat tip uzorka\n"
 
 #: ../parser_interface.c:750 ../parser_interface.c:902
 #: ../parser_interface.c:743 ../parser_interface.c:894
 #, c-format
 msgid "Unable to open %s - %s\n"
-msgstr ""
+msgstr "Ne mogu otvoriti %s - %s\n"
 
 #: ../parser_interface.c:776 ../parser_interface.c:768
 #, c-format
 msgid "Memory Allocation Error: Unable to remove ^%s\n"
-msgstr ""
+msgstr "Greška memorijske alokacije: Ne mogu ukloniti ^%s\n"
 
 #: ../parser_interface.c:789 ../parser_interface.c:781
 #, c-format
 msgid "Memory Allocation Error: Unable to remove %s:%s."
-msgstr ""
+msgstr "Greška memorijske alokacije: Ne mogu ukloniti %s:%s."
 
 #: ../parser_interface.c:810 ../parser_interface.c:802
 msgid "unable to create work area\n"
