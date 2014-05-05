@@ -741,6 +741,9 @@ Example AppArmor DBus rules:
          member=ExampleMethod
          peer=(name=(com.example.ExampleName1|com.example.ExampleName2)),
 
+    # Allow receive access for all unconfined peers
+    dbus receive peer=(label=unconfined)),
+
     # Allow eavesdropping on the system bus
     dbus eavesdrop bus=system,
 
