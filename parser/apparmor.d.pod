@@ -668,6 +668,9 @@ AppArmor 'pivot_root' rules can specify a profile transition to occur during
 the pivot_root(2) system call. Note that AppArmor will only transition the
 process calling pivot_root(2) to the new profile.
 
+The paths specified in 'pivot_root' rules must end with '/' since they are
+directories.
+
 Here are some example 'pivot_root' rules:
 
     # Allow any pivot
