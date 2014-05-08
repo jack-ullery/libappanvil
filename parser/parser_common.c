@@ -66,6 +66,7 @@ int force_complain = 0;
 int perms_create = 0;                   /* perms contain create flag */
 int net_af_max_override = -1;           /* use kernel to determine af_max */
 int kernel_load = 1;
+int kernel_supports_setload = 0;	/* kernel supports atomic set loads */
 int kernel_supports_network = 0;        /* kernel supports network rules */
 int kernel_supports_policydb = 0;	/* kernel supports new policydb */
 int kernel_supports_mount = 0;	        /* kernel supports mount rules */

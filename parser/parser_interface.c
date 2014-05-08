@@ -634,52 +634,73 @@ static char *next_profile_buffer(char *buffer, int size)
 	return NULL;
 }
 
+static int write_buffer(int fd, char *buffer, int size, bool set)
+{
+	const char *err_str = set ? "profile set" : "profile";
+	int wsize = write(fd, buffer, size);
+	if (wsize < 0) {
+		PERROR(_("%s: Unable to write %s\n"), progname, err_str);
+		return -errno;
+	} else if (wsize < size) {
+		PERROR(_("%s: Unable to write %s\n"), progname, err_str);
+		return -EPROTO;
+	}
+	return 0;
+}
+
 int sd_load_buffer(int option, char *buffer, int size)
 {
 	int fd = -1;
-	int error = -ENOMEM, wsize, bsize;
+	int error, bsize;
 	char *filename = NULL;
-	char *b;
+
+	/* TODO: push backup into caller */
+	if (!kernel_load)
+		return 0;
 
 	switch (option) {
 	case OPTION_ADD:
 		if (asprintf(&filename, "%s/.load", subdomainbase) == -1)
-			goto exit;
-		if (kernel_load) fd = open(filename, O_WRONLY);
+			return -ENOMEM;
 		break;
 	case OPTION_REPLACE:
 		if (asprintf(&filename, "%s/.replace", subdomainbase) == -1)
-			goto exit;
-		if (kernel_load) fd = open(filename, O_WRONLY);
+			return -ENOMEM;
 		break;
 	default:
-		error = -EINVAL;
-		goto exit;
-		break;
+		return -EINVAL;
 	}
 
-	if (kernel_load && fd < 0) {
+	fd = open(filename, O_WRONLY);
+	if (fd < 0) {
 		PERROR(_("Unable to open %s - %s\n"), filename,
 		       strerror(errno));
 		error = -errno;
-		goto exit;
+		goto out;
 	}
 
-	error = 0;
-	for (b = buffer; b ; b = next_profile_buffer(b + sizeof(header_version), bsize)) {
-		bsize = size - (b - buffer);
-		if (kernel_load) {
-			wsize = write(fd, b, bsize);
-			if (wsize < 0) {
-				error = -errno;
-			} else if (wsize < bsize) {
-				PERROR(_("%s: Unable to write entire profile entry\n"),
-				       progname);
-			}
+	if (kernel_supports_setload) {
+		error = write_buffer(fd, buffer, size, true);
+	} else {
+		char *b, *next;
+
+		error = 0;	/* in case there are no profiles */
+		for (b = buffer; b; b = next, size -= bsize) {
+			next = next_profile_buffer(b + sizeof(header_version),
+						   size);
+			if (next)
+				bsize = next - b;
+			else
+				bsize = size;
+			error = write_buffer(fd, b, bsize, false);
+			if (error)
+				break;
 		}
 	}
-	if (kernel_load) close(fd);
-exit:
+	close(fd);
+
+out:
 	free(filename);
+
 	return error;
 }
