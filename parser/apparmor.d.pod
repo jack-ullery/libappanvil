@@ -99,6 +99,32 @@ B<MOUNT EXPRESSION> = ( I<ALPHANUMERIC> | I<AARE> ) ...
 
 B<PIVOT ROOT RULE> = [ 'audit' ] [ 'deny' ] pivot_root [ oldroot=I<OLD PUT FILEGLOB> ] [ I<NEW ROOT FILEGLOB> ] [ -> I<PROGRAMCHILD> ]
 
+B<PTRACE_RULE> = [ 'audit' ] [ 'deny' ] 'ptrace' [ I<PTRACE ACCESS PERMISSIONS> ] [ I<PTRACE PEER> ]
+
+B<PTRACE ACCESS PERMISSIONS> = I<PTRACE ACCESS> | I<PTRACE ACCESS LIST>
+
+B<PTRACE ACCESS LIST> = '(' Comma or space separated list of I<PTRACE ACCESS> ')'
+
+B<PTRACE ACCESS> = ( 'r' | 'w' | 'rw' | 'read' | 'readby' | 'trace' | 'tracedby' )
+
+B<PTRACE PEER> = 'peer' '=' I<AARE>
+
+B<SIGNAL_RULE> = [ 'audit' ] [ 'deny' ] 'signal' [ I<SIGNAL ACCESS PERMISSIONS> ] [ I<SIGNAL SET> ] [ I<SIGNAL PEER> ]
+
+B<SIGNAL ACCESS PERMISSIONS> = I<SIGNAL ACCESS> | I<SIGNAL ACCESS LIST>
+
+B<SIGNAL ACCESS LIST> = '(' Comma or space separated list of I<SIGNAL ACCESS> ')'
+
+B<SIGNAL ACCESS> = ( 'r' | 'w' | 'rw' | 'read' | 'write' | 'send' | 'receive' )
+
+B<SIGNAL SET> = 'set' '=' '(' I<SIGNAL LIST> ')'
+
+B<SIGNAL LIST> = Comma or space separated list of I<SIGNALS>
+
+B<SIGNALS> = ( 'hup' | 'int' | 'quit' | 'ill' | 'trap' | 'abrt' | 'bus' | 'fpe' | 'kill' | 'usr1' | 'segv' | 'usr2' | 'pipe' | 'alrm' | 'term' | 'stkflt' | 'chld' | 'cont' | 'stop' | 'stp' | 'ttin' | 'ttou' | 'urg' | 'xcpu' | 'xfsz' | 'vtalrm' | 'prof' | 'winch' | 'io' | 'pwr' | 'sys' | 'emt' | 'exists' )
+
+B<SIGNAL PEER> = 'peer' '=' I<AARE>
+
 B<DBUS RULE> = ( I<DBUS MESSAGE RULE> | I<DBUS SERVICE RULE> | I<DBUS EAVESDROP RULE> | I<DBUS COMBINED RULE> )
 
 B<DBUS MESSAGE RULE> = [ 'audit' ] [ 'deny' ] 'dbus' [ I<DBUS ACCESS EXPRESSION> ] [ I<DBUS BUS> ] [ I<DBUS PATH> ] [ I<DBUS INTERFACE> ] [ I<DBUS MEMBER> ] [ I<DBUS PEER> ]
@@ -691,6 +717,78 @@ Here are some example 'pivot_root' rules:
     # /mnt/root/old/ and transition to the /mnt/root/sbin/init profile
     pivot_root oldroot=/mnt/root/old/ /mnt/root/ -> /mnt/root/sbin/init,
 
+=head2 PTrace rules
+
+AppArmor supports mediation of ptrace(2). AppArmor PTrace rules are accumulated
+so that the granted PTrace permissions are the union of all the listed PTrace
+rule permissions.
+
+AppArmor PTrace permissions are implied when a rule does not explicitly state
+an access list. By default, all PTrace permissions are implied.
+
+The trace and tracedby permissions govern ptrace(2) while read and readby
+govern certain proc(5) filesystem accesses, kcmp(2), futexes
+(get_robust_list(2)) and perf trace events.
+
+For a ptrace operation to be allowed the profile of the tracing process and the
+profile of the target task must both have the correct permissions. For example,
+the profile of the process attaching to another task must have the trace
+permission for the target task's profile, and the task being traced must have
+the tracedby permission for the tracing process' profile.
+
+Example AppArmor PTrace rules:
+
+    # Allow all PTrace access
+    ptrace,
+
+    # Explicitly allow all PTrace access,
+    ptrace (read, readby, trace, tracedby),
+
+    # Explicitly deny use of ptrace(2)
+    deny ptrace (trace),
+
+    # Allow unconfined processes (eg, a debugger) to ptrace us
+    ptrace (readby, tracedby) peer=unconfined,
+
+    # Allow ptrace of a process running under the /usr/bin/foo profile
+    ptrace (trace) peer=/usr/bin/foo,
+
+=head2 Signal rules
+
+AppArmor supports mediation of signal(7). AppArmor signal rules are accumulated
+so that the granted signal permissions are the union of all the listed signal
+rule permissions.
+
+AppArmor signal permissions are implied when a rule does not explicitly state
+an access list. By default, all signal permissions are implied.
+
+For the sending of a signal to be allowed, the profile of the sending process
+and the profile of the target task must both have the correct permissions. For
+example, the profile of a process sending a signal to another task must have
+the send permission for the target task's profile, and the task receiving the
+signal must have a receive permission for the sending process' profile.
+
+Example AppArmor signal rules:
+
+    # Allow all signal access
+    signal,
+
+    # Explicitly deny sending the HUP and INT signals
+    deny signal (send) set=(hup, int),
+
+    # Allow unconfined processes to send us signals
+    signal (receive) peer=unconfined,
+
+    # Allow sending of signals to a process running under the /usr/bin/foo
+    # profile
+    signal (send) peer=/usr/bin/foo,
+
+    # Allow checking for PID existence
+    signal (receive, send) set=("exists"),
+
+    # Allow us to signal ourselves using the built-in @{profile_name} variable
+    signal peer=@{profile_name},
+
 =head2 DBus rules
 
 AppArmor supports DBus mediation. The mediation is performed in conjunction
@@ -764,11 +862,36 @@ The parser will automatically expand variables to include all values
 that they have been assigned; it is an error to reference a variable
 without setting at least one value.
 
-At the time of this writing, only B<@{HOME}> and B<@{HOMEDIRS}> are defined
-in the AppArmor policy provided, in the F</etc/apparmor.d/tunables/home>
-file; these variables are used in many of the abstractions described later.
+At the time of this writing, the following variables are defined in the
+provided AppArmor policy:
+
+  @{HOME}
+  @{HOMEDIRS}
+  @{multiarch}
+  @{pid}
+  @{PROC}
+  @{securityfs}
+  @{sys}
+  @{tid}
+  @{XDG_DESKTOP_DIR}
+  @{XDG_DOWNLOAD_DIR}
+  @{XDG_TEMPLATES_DIR}
+  @{XDG_PUBLICSHARE_DIR}
+  @{XDG_DOCUMENTS_DIR}
+  @{XDG_MUSIC_DIR}
+  @{XDG_PICTURES_DIR}
+  @{XDG_VIDEOS_DIR}
+
+These are defined in files in F</etc/apparmor.d/tunables> and are used in many
+of the abstractions described later.
+
 You may also add files in F</etc/apparmor.d/tunables/home.d> for
-site-specific customization of B<@{HOMEDIRS}>.
+site-specific customization of B<@{HOMEDIRS}>,
+F</etc/apparmor.d/tunables/multiarch.d> for B<@{multiarch}> and
+F</etc/apparmor.d/tunables/xdg-user-dirs.d> for B<@{XDG_*}>.
+
+The special B<@{profile_name}> variable is set to the profile name and may be
+used in all policy.
 
 =head2 Alias rules
 
