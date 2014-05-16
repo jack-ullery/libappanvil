@@ -32,6 +32,9 @@
   /usr/share/X11/**               r,
   /usr/X11R6/**.so*               mr,
 
+  # EGL
+  /usr/lib/@{multiarch}/egl/*.so* mr,
+
   # DRI
   /usr/lib{,32,64}/dri/**         mr,
   /usr/lib/@{multiarch}/dri/**    mr,
