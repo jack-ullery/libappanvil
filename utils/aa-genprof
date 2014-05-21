@@ -39,8 +39,9 @@ def sysctl_write(path, value):
         f_out.write(str(value))
 
 def last_audit_entry_time():
-    out = subprocess.check_output(['tail', '-1', '/var/log/audit/audit.log'])
+    out = subprocess.check_output(['tail', '-1', apparmor.filename])
     logmark = None
+    out = out.decode('ascii')
     if re.search('^.*msg\=audit\((\d+\.\d+\:\d+).*\).*$', out):
         logmark = re.search('^.*msg\=audit\((\d+\.\d+\:\d+).*\).*$', out).groups()[0]
     else:
