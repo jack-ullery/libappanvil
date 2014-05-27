@@ -350,10 +350,6 @@ fi
 		# mandatory after --
 		case "$1" in
 			image=*) imagename=`echo $1 | sed 's/^image=\([^:]*\).*$/\1/'`
-				 if [ ! -x "$imagename" ]
-				 then
-					fatalerror "invalid imagename specified in input '$1'"
-				 fi
 				 num_emitted=0
 				 shift
 				 ;;
