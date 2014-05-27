@@ -97,6 +97,7 @@ SRC=access.c \
     rename.c \
     readdir.c \
     rw.c \
+    socketpair.c \
     symlink.c \
     syscall_mknod.c \
     swap.c \
@@ -174,6 +175,7 @@ TESTS=access \
       rename \
       readdir \
       rw \
+      socketpair \
       swap \
       sd_flags \
       setattr \
