@@ -1234,7 +1234,7 @@ def handle_children(profile, hat, root):
                         parent_uses_ld_xxx = check_for_LD_XXX(profile)
 
                         sev_db.unload_variables()
-                        sev_db.load_variables(profile)
+                        sev_db.load_variables(get_profile_filename(profile))
                         severity = sev_db.rank(exec_target, 'x')
 
                         # Prompt portion starts
