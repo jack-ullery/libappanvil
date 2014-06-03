@@ -2627,7 +2627,7 @@ RE_PROFILE_HAT_DEF = re.compile('^\s*\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{
 RE_NETWORK_FAMILY_TYPE = re.compile('\s+(\S+)\s+(\S+)\s*,$')
 RE_NETWORK_FAMILY = re.compile('\s+(\S+)\s*,$')
 RE_PROFILE_DBUS = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(dbus\s*,|dbus\s+[^#]*\s*,)\s*(#.*)?$')
-RE_PROFILE_MOUNT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((mount|remount|umount)(\s+[^#]*)?\s*,)\s*(#.*)?$')
+RE_PROFILE_MOUNT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((mount|remount|umount|unmount)(\s+[^#]*)?\s*,)\s*(#.*)?$')
 RE_PROFILE_SIGNAL = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(signal\s*,|signal\s+[^#]*\s*,)\s*(#.*)?$')
 RE_PROFILE_PTRACE = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(ptrace\s*,|ptrace\s+[^#]*\s*,)\s*(#.*)?$')
 RE_PROFILE_PIVOT_ROOT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(pivot_root\s*,|pivot_root\s+[^#]*\s*,)\s*(#.*)?$')

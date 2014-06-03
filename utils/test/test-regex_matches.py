@@ -249,6 +249,8 @@ class AARegexMount(unittest.TestCase):
         ('   audit mount,', ('audit', None, 'mount,', 'mount', None, None)),
         ('   umount,', (None, None, 'umount,', 'umount', None, None)),
         ('   audit umount,', ('audit', None, 'umount,', 'umount', None, None)),
+        ('   unmount,', (None, None, 'unmount,', 'unmount', None, None)),
+        ('   audit unmount,', ('audit', None, 'unmount,', 'unmount', None, None)),
         ('   remount,', (None, None, 'remount,', 'remount', None, None)),
         ('   deny remount,', (None, 'deny', 'remount,', 'remount', None, None)),
 

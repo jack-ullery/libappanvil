@@ -66,5 +66,17 @@ class AAParseUmountTest(unittest.TestCase):
         self.assertEqual(rule, mount.serialize(),
                 'mount object returned "%s", expected "%s"' % (mount.serialize(), rule))
 
+    def test_parse_plain_unmount_rule(self):
+        rule = 'unmount,'
+        mount = aa.parse_mount_rule(rule)
+        self.assertEqual(rule, mount.serialize(),
+                'mount object returned "%s", expected "%s"' % (mount.serialize(), rule))
+
+    def test_parse_unmount_with_mount_point(self):
+        rule = 'unmount /mnt/external,'
+        mount = aa.parse_mount_rule(rule)
+        self.assertEqual(rule, mount.serialize(),
+                'mount object returned "%s", expected "%s"' % (mount.serialize(), rule))
+
 if __name__ == '__main__':
     unittest.main()
