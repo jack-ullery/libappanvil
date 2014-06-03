@@ -59,7 +59,7 @@
  * numbers where supported.
  */
 uint32_t policy_version = 2;
-uint32_t parser_abi_version = 0;
+uint32_t parser_abi_version = 1;
 uint32_t kernel_abi_version = 5;
 
 int force_complain = 0;
