@@ -13,3 +13,8 @@
 
   @{PROC}/interrupts r,
   @{PROC}/sys/vm/max_map_count r,
+  @{PROC}/driver/nvidia/params r,
+  @{PROC}/modules r,
+
+  owner @{HOME}/.nv/GLCache/ r,
+  owner @{HOME}/.nv/GLCache/** rwk,
