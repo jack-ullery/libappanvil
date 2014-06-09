@@ -21,6 +21,7 @@ import sys
 
 import apparmor.aa as apparmor
 import apparmor.ui as aaui
+from apparmor.common import warn
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -33,7 +34,8 @@ def sysctl_read(path):
     return value
 
 def sysctl_write(path, value):
-    if not value:
+    if value is None:
+        warn('Not writing invalid value "None" to %s'%path)
         return
     with open(path, 'w') as f_out:
         f_out.write(str(value))
