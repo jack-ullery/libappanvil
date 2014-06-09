@@ -386,7 +386,7 @@ def get_inactive_profile(local_profile):
         return {local_profile: extras[local_profile]}
     return dict()
 
-def create_new_profile(localfile):
+def create_new_profile(localfile, is_stub=False):
     local_profile = hasher()
     local_profile[localfile]['flags'] = 'complain'
     local_profile[localfile]['include']['abstractions/base'] = 1
@@ -428,8 +428,9 @@ def create_new_profile(localfile):
             for hat in sorted(cfg['required_hats'][hatglob].split()):
                 local_profile[hat]['flags'] = 'complain'
 
-    created.append(localfile)
-    changed[localfile] = True
+    if not is_stub:
+        created.append(localfile)
+        changed[localfile] = True
 
     debug_logger.debug("Profile for %s:\n\t%s" % (localfile, local_profile.__str__()))
     return {localfile: local_profile}
@@ -1411,7 +1412,7 @@ def handle_children(profile, hat, root):
                                 if profile != hat:
                                     aa[profile][hat]['flags'] = aa[profile][profile]['flags']
 
-                                stub_profile = create_new_profile(hat)
+                                stub_profile = create_new_profile(hat, True)
 
                                 aa[profile][hat]['flags'] = 'complain'
 
@@ -2299,6 +2300,8 @@ def save_profiles():
     # Ensure the changed profiles are actual active profiles
     for prof_name in changed.keys():
         if not is_active_profile(prof_name):
+            print("*** save_profiles(): removing %s" % prof_name)
+            print('*** This should not happen. Please open a bugreport!')
             changed.pop(prof_name)
 
     changed_list = sorted(changed.keys())
