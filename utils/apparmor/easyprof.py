@@ -279,7 +279,7 @@ def verify_policy(policy):
         os.write(f, policy)
         os.close(f)
 
-    rc, out = cmd([exe, '-p', fn])
+    rc, out = cmd([exe, '-QTK', fn])
     os.unlink(fn)
     if rc == 0:
         return True
