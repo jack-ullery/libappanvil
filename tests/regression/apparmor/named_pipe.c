@@ -66,14 +66,6 @@ int do_parent (char * hat, char * file)
 {
 	int fd;
 
-	fd=open(file, O_RDONLY, 0);
-	if (fd == -1){
-		fprintf(stderr, "FAIL: open read %s failed - %s\n",
-			file,
-			strerror(errno));
-		return 1;
-	}
-
 	/* change hat if hatname != nochange */
 	if (strcmp(hat, "nochange") != 0){
 		if (change_hat(hat, SD_ID_MAGIC+1) == -1){
@@ -83,12 +75,36 @@ int do_parent (char * hat, char * file)
 		}
 	}
 
+	if (alarm(5) != 0) {
+		fprintf(stderr, "FAIL: alarm already set\n");
+		exit(1);
+	}
+
+	fd=open(file, O_RDONLY, 0);
+	if (fd == -1){
+		fprintf(stderr, "FAIL: open read %s failed - %s\n",
+			file,
+			strerror(errno));
+		return 1;
+	}
+
+	alarm(0);
+
 	return(do_read(fd));
 }
 
 int do_child (char * hat, char * file)
 {
 	int fd;
+
+	/* change hat if hatname != nochange */
+	if (strcmp(hat, "nochange") != 0){
+		if (change_hat(hat, SD_ID_MAGIC+1) == -1){
+			fprintf(stderr, "FAIL: changehat %s failed - %s\n",
+				hat, strerror(errno));
+			exit(1);
+		}
+	}
 
 	fd=open(file, O_WRONLY, 0);
 	if (fd == -1){
@@ -98,29 +114,39 @@ int do_child (char * hat, char * file)
 		return 1;
 	}
 
-	/* change hat if hatname != nochange */
-	if (strcmp(hat, "nochange") != 0){
-		if (change_hat(hat, SD_ID_MAGIC+1) == -1){
-			fprintf(stderr, "FAIL: changehat %s failed - %s\n",
-				hat, strerror(errno));
-			exit(1);
-		}
-	}
-
 	return (do_write(fd));
+}
+
+pid_t pid = -1;
+
+void kill_child(void)
+{
+	if (pid > 0)
+		kill(pid, SIGKILL);
+}
+
+void sigalrm_handler(int sig)
+{
+	fprintf(stderr, "FAIL: parent timed out waiting for child\n");
+	exit(1);
 }
 
 int main(int argc, char *argv[])
 {
 	int rc;
-	pid_t pid;
 	int waitstatus;
 	int read_error = 0;
 
-	if (argc != 3){
-		fprintf(stderr, "usage: %s hatname filename\n",
+	if (argc != 4){
+		fprintf(stderr, "usage: %s parent_hatname child_hatname filename\n",
 			argv[0]);
 		return 1;
+	}
+
+	if (signal(SIGALRM, sigalrm_handler) == SIG_ERR) {
+		fprintf(stderr, "FAIL: signal failed - %s\n",
+			strerror(errno));
+		exit(1);
 	}
 
 	pid = fork();
@@ -130,7 +156,8 @@ int main(int argc, char *argv[])
 		exit(1);
 	} else if (pid != 0) {
 		/* parent */
-		read_error = do_parent(argv[1], argv[2]);
+		atexit(kill_child);
+		read_error = do_parent(argv[1], argv[3]);
 		rc = wait(&waitstatus);
 		if (rc == -1){
 			fprintf(stderr, "FAIL: wait failed - %s\n",
@@ -139,7 +166,7 @@ int main(int argc, char *argv[])
 		}
 	} else {
 		/* child */
-		exit(do_child(argv[1], argv[2]));
+		exit(do_child(argv[2], argv[3]));
 	}
 
 	if ((WIFEXITED(waitstatus) != 0) && (WEXITSTATUS(waitstatus) == 0) 

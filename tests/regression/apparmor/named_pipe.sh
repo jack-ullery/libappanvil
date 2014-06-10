@@ -22,38 +22,63 @@ bin=$pwd
 
 . $bin/prologue.inc
 
-subtest=sub
 fifo=${tmpdir}/pipe
+
+subtest=sub
 okperm=rw
+
+subparent=parent
+okparent=r
+
+subchild=child
+okchild=w
 
 mknod ${fifo} p
 
 # NAMED PIPE - no confinement 
 
-runchecktest "NAMED PIPE (no confinement)" pass nochange ${fifo}
+runchecktest "NAMED PIPE (no confinement)" pass nochange nochange ${fifo}
 
 # PIPE - confined.
 
 #rm -f ${fifo} && mknod ${fifo} p
 genprofile $fifo:${okperm}
-runchecktest "NAMED PIPE RW (confinement)" pass nochange ${fifo}
+runchecktest "NAMED PIPE RW (confinement)" pass nochange nochange ${fifo}
 
 # PIPE - confined - no access.
 
 #rm -f ${fifo} && mknod ${fifo} p
 genprofile 
-runchecktest "NAMED PIPE (confinement)" fail nochange ${fifo}
+runchecktest "NAMED PIPE (confinement)" fail nochange nochange ${fifo}
 
 # PIPE - in a subprofile.
 
 #rm -f ${fifo} && mknod ${fifo} p
 genprofile ${fifo}:${okperm} hat:$subtest ${fifo}:${okperm}
 
-runchecktest "NAMED PIPE RW (subprofile)" pass ${subtest} ${fifo}
+runchecktest "NAMED PIPE RW (subprofile)" pass ${subtest} ${subtest} ${fifo}
 
 # PIPE - in a subprofile - no access
 
 #rm -f ${fifo} && mknod ${fifo} p
 genprofile ${fifo}:${okperm} hat:$subtest
 
-runchecktest "NAMED PIPE (subprofile)" fail ${subtest} ${fifo}
+runchecktest "NAMED PIPE (subprofile)" fail ${subtest} ${subtest} ${fifo}
+
+# PIPE - in separate subprofiles
+
+genprofile hat:$subparent ${fifo}:${okparent} hat:$subchild ${fifo}:${okchild}
+
+runchecktest "NAMED PIPE RW (parent & child subprofiles)" pass ${subparent} ${subchild} ${fifo}
+
+# PIPE - in separate subprofiles - no access for child
+
+genprofile hat:$subparent ${fifo}:${okparent} hat:$subchild
+
+runchecktest "NAMED PIPE R (parent & child subprofiles)" fail ${subparent} ${subchild} ${fifo}
+
+# PIPE - in separate subprofiles - no access for parent
+
+genprofile hat:$subparent hat:$subchild ${fifo}:${okchild}
+
+runchecktest "NAMED PIPE W (parent & child subprofiles)" fail ${subparent} ${subchild} ${fifo}
