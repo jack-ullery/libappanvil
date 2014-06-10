@@ -46,7 +46,7 @@ libapparmor by adding USE_SYSTEM=1 to your make command.${nl}\
   LDLIBS += -Wl,-Bstatic -lapparmor -Wl,-Bdynamic -lpthread
 endif # USE_SYSTEM
 
-CFLAGS += -Wall -Wstrict-prototypes
+CFLAGS += -g -O0 -Wall -Wstrict-prototypes
 
 SRC=access.c \
     introspect.c \
