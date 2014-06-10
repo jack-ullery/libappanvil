@@ -29,9 +29,11 @@ okperm=rw
 
 subparent=parent
 okparent=r
+badparent=w
 
 subchild=child
 okchild=w
+badchild=r
 
 # Add genprofile params that are common to all hats here
 common=""
@@ -93,3 +95,17 @@ genprofile hat:$subparent $common \
 	   hat:$subchild $common ${fifo}:${okchild}
 
 runchecktest "NAMED PIPE W (parent & child subprofiles)" fail ${subparent} ${subchild} ${fifo}
+
+# PIPE - in separate subprofiles - bad access for child
+
+genprofile hat:$subparent $common ${fifo}:${okparent} \
+	   hat:$subchild $common ${fifo}:${badchild}
+
+runchecktest "NAMED PIPE bad child (parent & child subprofiles)" fail ${subparent} ${subchild} ${fifo}
+
+# PIPE - in separate subprofiles - bad access for parent
+
+genprofile hat:$subparent $common ${fifo}:${badparent} \
+	   hat:$subchild $common ${fifo}:${okchild}
+
+runchecktest "NAMED PIPE bad parent (parent & child subprofiles)" fail ${subparent} ${subchild} ${fifo}
