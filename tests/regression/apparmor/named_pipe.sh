@@ -33,6 +33,14 @@ okparent=r
 subchild=child
 okchild=w
 
+# Add genprofile params that are common to all hats here
+common=""
+
+if [ "$(have_features signal)" == "true" ] ; then
+	# Allow send/receive of all signals
+	common="${common} signal:ALL"
+fi
+
 mknod ${fifo} p
 
 # NAMED PIPE - no confinement 
@@ -42,43 +50,46 @@ runchecktest "NAMED PIPE (no confinement)" pass nochange nochange ${fifo}
 # PIPE - confined.
 
 #rm -f ${fifo} && mknod ${fifo} p
-genprofile $fifo:${okperm}
+genprofile $common $fifo:${okperm}
 runchecktest "NAMED PIPE RW (confinement)" pass nochange nochange ${fifo}
 
 # PIPE - confined - no access.
 
 #rm -f ${fifo} && mknod ${fifo} p
-genprofile 
+genprofile $common
 runchecktest "NAMED PIPE (confinement)" fail nochange nochange ${fifo}
 
 # PIPE - in a subprofile.
 
 #rm -f ${fifo} && mknod ${fifo} p
-genprofile ${fifo}:${okperm} hat:$subtest ${fifo}:${okperm}
+genprofile $common ${fifo}:${okperm} hat:$subtest $common ${fifo}:${okperm}
 
 runchecktest "NAMED PIPE RW (subprofile)" pass ${subtest} ${subtest} ${fifo}
 
 # PIPE - in a subprofile - no access
 
 #rm -f ${fifo} && mknod ${fifo} p
-genprofile ${fifo}:${okperm} hat:$subtest
+genprofile $common ${fifo}:${okperm} hat:$subtest $common
 
 runchecktest "NAMED PIPE (subprofile)" fail ${subtest} ${subtest} ${fifo}
 
 # PIPE - in separate subprofiles
 
-genprofile hat:$subparent ${fifo}:${okparent} hat:$subchild ${fifo}:${okchild}
+genprofile hat:$subparent $common ${fifo}:${okparent} \
+	   hat:$subchild $common ${fifo}:${okchild}
 
 runchecktest "NAMED PIPE RW (parent & child subprofiles)" pass ${subparent} ${subchild} ${fifo}
 
 # PIPE - in separate subprofiles - no access for child
 
-genprofile hat:$subparent ${fifo}:${okparent} hat:$subchild
+genprofile hat:$subparent $common ${fifo}:${okparent} \
+	   hat:$subchild $common
 
 runchecktest "NAMED PIPE R (parent & child subprofiles)" fail ${subparent} ${subchild} ${fifo}
 
 # PIPE - in separate subprofiles - no access for parent
 
-genprofile hat:$subparent hat:$subchild ${fifo}:${okchild}
+genprofile hat:$subparent $common \
+	   hat:$subchild $common ${fifo}:${okchild}
 
 runchecktest "NAMED PIPE W (parent & child subprofiles)" fail ${subparent} ${subchild} ${fifo}
