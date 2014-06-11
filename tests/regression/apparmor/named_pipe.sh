@@ -61,14 +61,44 @@ runchecktest "NAMED PIPE RW (confinement)" pass nochange nochange ${fifo}
 genprofile $common
 runchecktest "NAMED PIPE (confinement)" fail nochange nochange ${fifo}
 
-# PIPE - in a subprofile.
+# PIPE - child in subprofile.
+
+genprofile $common ${fifo}:${okparent} hat:$subchild $common ${fifo}:${okchild}
+
+runchecktest "NAMED PIPE (child subprofile)" pass nochange ${subchild} ${fifo}
+
+# PIPE - child in subprofile - no child access.
+
+genprofile $common ${fifo}:${okparent} hat:$subchild $common
+
+runchecktest "NAMED PIPE no child access (child subprofile)" fail nochange ${subchild} ${fifo}
+
+# PIPE - child in subprofile - bad child access.
+
+genprofile $common ${fifo}:${okparent} hat:$subchild $common ${fifo}:${badchild}
+
+runchecktest "NAMED PIPE bad child access (child subprofile)" fail nochange ${subchild} ${fifo}
+
+# PIPE - child in subprofile - no parent access.
+
+genprofile $common hat:$subchild $common
+
+runchecktest "NAMED PIPE no parent access (child subprofile)" fail nochange ${subchild} ${fifo}
+
+# PIPE - child in subprofile - bad parent access.
+
+genprofile $common ${fifo}:${badparent} hat:$subchild $common ${fifo}:${badchild}
+
+runchecktest "NAMED PIPE bad parent access (child subprofile)" fail nochange ${subchild} ${fifo}
+
+# PIPE - in the same subprofile.
 
 #rm -f ${fifo} && mknod ${fifo} p
 genprofile $common ${fifo}:${okperm} hat:$subtest $common ${fifo}:${okperm}
 
 runchecktest "NAMED PIPE RW (subprofile)" pass ${subtest} ${subtest} ${fifo}
 
-# PIPE - in a subprofile - no access
+# PIPE - in the same subprofile - no access
 
 #rm -f ${fifo} && mknod ${fifo} p
 genprofile $common ${fifo}:${okperm} hat:$subtest $common
