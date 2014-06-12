@@ -4,6 +4,11 @@
 
   #include <abstractions/nameservice>
 
+  # Allow apache to send us signals by default
+  signal (receive) peer=/usr/sbin/apache2,
+  # Allow us to signal ourselves
+  signal peer=@{profile_name},
+
   # Apache
   network inet stream,
   network inet6 stream,
@@ -11,7 +16,7 @@
   /usr/share/apache2/** r,
 
   # changehat itself
-  @{PROC}/@{pid}/attr/current                        w,
+  @{PROC}/@{pid}/attr/current                        rw,
 
   # htaccess files - for what ever it is worth
   /**/.htaccess            r,
