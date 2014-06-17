@@ -840,8 +840,8 @@ void update_mru_tstamp(FILE *file)
 	struct stat stat_file;
 	if (fstat(fileno(file), &stat_file))
 		return;
-	if (mru_t_cmp(stat_file.st_ctim))
-		mru_tstamp = stat_file.st_ctim;
+	if (mru_t_cmp(stat_file.st_mtim))
+		mru_tstamp = stat_file.st_mtim;
 }
 
 int process_profile(int option, const char *profilename)
