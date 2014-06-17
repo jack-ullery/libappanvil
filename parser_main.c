@@ -718,7 +718,7 @@ int process_binary(int option, const char *profilename)
 	if (profilename) {
 		fd = open(profilename, O_RDONLY);
 		if (fd == -1) {
-			PERROR(_("Error: Could not read profile %s: %s.\n"),
+			PERROR(_("Error: Could not read binary profile or cache file %s: %s.\n"),
 			       profilename, strerror(errno));
 			exit(errno);
 		}
