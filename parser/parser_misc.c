@@ -1352,7 +1352,7 @@ int test_processquoted(void)
 	free(out);
 
 	teststring = "\"a\\\\bcdefg\"";
-	processedstring = "a\\bcdefg";
+	processedstring = "a\\\\bcdefg";
 	out = processquoted(teststring, strlen(teststring));
 	MY_TEST(strcmp(processedstring, out) == 0,
 			"processquoted on quoted slash");
