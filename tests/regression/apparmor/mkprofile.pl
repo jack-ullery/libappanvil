@@ -301,7 +301,7 @@ sub gen_file($) {
       push (@{$output_rules{$hat}}, "  $rules[0],\n");
   } elsif (@rules == 2) {
     if ($escape) {
-      $rules[0]=~ s/(["[\]{}\\\:\#])/\\$1/g;
+      $rules[0]=~ s/(["[\]{}\:])/\\$1/g;
       $rules[0]=~ s/(\#)/\\043/g;
     }
     if ($rules[0]=~ /[\s\!\"\^]/) {
