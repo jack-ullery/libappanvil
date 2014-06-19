@@ -459,7 +459,14 @@ char *processunquoted(const char *string, int len)
 		long c;
 		if (*string == '\\' && len > 1 &&
 		    (c = strn_escseq(&pos, "", len)) != -1) {
-			*s++ = c;
+			/* catch \\ or \134 and pass it through to be handled
+			 * by the backend pcre conversion
+			 */
+			if (c == '\\') {
+				*s++ = '\\';
+				*s++ = '\\';
+			} else
+				*s++ = c;
 			len -= pos - string;
 			string = pos;
 		} else {
