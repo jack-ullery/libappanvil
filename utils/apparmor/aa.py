@@ -631,7 +631,11 @@ def change_profile_flags(filename, program, flag, set_flag):
 
 def set_profile_flags(prof_filename, program, newflags):
     """Reads the old profile file and updates the flags accordingly"""
-    regex_bin_flag = re.compile('^(\s*)(("??/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.*)\)\s+)?\{\s*(#.*)?$')
+    regex_bin_flag = re.compile('^(\s*)("?(/.+?)"??|(profile\s+"?(.+?)"??))\s+((flags=)?\((.*)\)\s+)?\{\s*(#.*)?$')
+    # TODO: use RE_PROFILE_START (only difference: doesn't have a match group for the leading space)
+    # TODO: also use the global regex for matching the hat
+    # TODO: count the number of matching lines (separated by profile and hat?) and return it
+    #       so that code calling this function can make sure to only report success if there was a match
     regex_hat_flag = re.compile('^([a-z]*)\s+([A-Z]*)\s*(#.*)?$')
     if os.path.isfile(prof_filename):
         with open_file_read(prof_filename) as f_in:
@@ -648,14 +652,18 @@ def set_profile_flags(prof_filename, program, newflags):
                     elif match:
                         matches = match.groups()
                         space = matches[0]
-                        binary = matches[1]
+                        profile = matches[1]  # profile name including quotes and "profile" keyword
+                        if matches[2]:
+                            binary = matches[2]
+                        else:
+                            binary = matches[4]
                         flag = matches[6] or 'flags='
                         flags = matches[7]
                         if binary == program or program is None:
                             if newflags:
-                                line = '%s%s %s(%s) {%s\n' % (space, binary, flag, newflags, comment)
+                                line = '%s%s %s(%s) {%s\n' % (space, profile, flag, newflags, comment)
                             else:
-                                line = '%s%s {%s\n' % (space, binary, comment)
+                                line = '%s%s {%s\n' % (space, profile, comment)
                     else:
                         match = regex_hat_flag.search(line)
                         if match:
@@ -2610,7 +2618,7 @@ def attach_profile_data(profiles, profile_data):
         profiles[p] = deepcopy(profile_data[p])
 
 ## Profile parsing regex
-RE_PROFILE_START = re.compile('^\s*(("??/.+?"??)|(profile\s+("??.+?"??)))\s+((flags=)?\((.+)\)\s+)?\{\s*(#.*)?$')
+RE_PROFILE_START = re.compile('^\s*("?(/.+?)"??|(profile\s+"?(.+?)"??))\s+((flags=)?\((.+)\)\s+)?\{\s*(#.*)?$')
 RE_PROFILE_END = re.compile('^\s*\}\s*(#.*)?$')
 RE_PROFILE_CAP = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?capability(\s+\S+)?\s*,\s*(#.*)?$')
 RE_PROFILE_LINK = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)\s*,\s*(#.*)?$')
