@@ -172,14 +172,15 @@ int regex_lex(YYSTYPE *val, const char **pos)
 		return *(*pos - 1);
 
 	case '\\':
-		tmp = str_escseq(pos, "*+.|^-[]()");
-		if (tmp == -1)
+		tmp = str_escseq(pos, "*+.|^$-[](){}");
+		if (tmp == -1) {
 			/* bad escape sequence, just skip it for now, that
 			 * is output \\ followed by the invalid esc seq
 			 * TODO: output error message
 			 */
 			val->c = '\\';
-		else
+			(*pos)--;
+		} else
 			val->c = tmp;
 		break;
 	}
