@@ -2851,11 +2851,11 @@ def parse_profile_data(data, file, do_include):
             if profile:
                 if not profile_data[profile][hat].get('lvar', False):
                     profile_data[profile][hat]['lvar'][list_var] = []
-                store_list_var(profile_data[profile]['lvar'], list_var, value, var_operation)
+                store_list_var(profile_data[profile]['lvar'], list_var, value, var_operation, file)
             else:
                 if not filelist[file].get('lvar', False):
                     filelist[file]['lvar'][list_var] = []
-                store_list_var(filelist[file]['lvar'], list_var, value, var_operation)
+                store_list_var(filelist[file]['lvar'], list_var, value, var_operation, file)
 
         elif RE_PROFILE_CONDITIONAL.search(line):
             # Conditional Boolean
@@ -3245,7 +3245,7 @@ def is_active_profile(pname):
     else:
         return False
 
-def store_list_var(var, list_var, value, var_operation):
+def store_list_var(var, list_var, value, var_operation, filename):
     """Store(add new variable or add values to variable) the variables encountered in the given list_var"""
     vlist = separate_vars(value)
     if var_operation == '=':
@@ -3253,14 +3253,14 @@ def store_list_var(var, list_var, value, var_operation):
             var[list_var] = set(vlist)
         else:
             #print('Ignored: New definition for variable for:',list_var,'=', value, 'operation was:',var_operation,'old value=', var[list_var])
-            raise AppArmorException(_('An existing variable redefined: %s') % list_var)
+            raise AppArmorException(_('Redefining existing variable %s: %s in %s') % (list_var, value, filename))
     elif var_operation == '+=':
         if var.get(list_var, False):
             var[list_var] = set(var[list_var] + vlist)
         else:
-            raise AppArmorException(_('Values added to a non-existing variable: %s') % list_var)
+            raise AppArmorException(_('Values added to a non-existing variable %s: %s in %s') % (list_var, value, filename))
     else:
-        raise AppArmorException(_('Unknown variable operation: %s') % var_operation)
+        raise AppArmorException(_('Unknown variable operation %s for variable %s in %s') % (var_operation, list_var, filename))
 
 
 def strip_quotes(data):
@@ -4097,11 +4097,11 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 value = strip_quotes(matches[2])
                 var_set = hasher()
                 if profile:
-                    store_list_var(var_set, list_var, value, var_operation)
+                    store_list_var(var_set, list_var, value, var_operation, prof_filename)
                     if not var_set[list_var] == write_prof_data['lvar'].get(list_var, False):
                         correct = False
                 else:
-                    store_list_var(var_set, list_var, value, var_operation)
+                    store_list_var(var_set, list_var, value, var_operation, prof_filename)
                     if not var_set[list_var] == write_filelist['lvar'].get(list_var, False):
                         correct = False
 
