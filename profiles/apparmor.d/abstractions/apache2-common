@@ -4,6 +4,8 @@
 
   #include <abstractions/nameservice>
 
+  # Allow unconfined processes to send us signals by default
+  signal (receive) peer=unconfined,
   # Allow apache to send us signals by default
   signal (receive) peer=/usr/sbin/apache2,
   # Allow us to signal ourselves
