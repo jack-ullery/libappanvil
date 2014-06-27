@@ -16,11 +16,9 @@
   #include <abstractions/base>
   #include <abstractions/mysql>
   #include <abstractions/nameservice>
-
-  deny capability block_suspend,
+  #include <abstractions/dovecot-common>
 
   capability audit_write,
-  capability setgid,
   capability setuid,
 
   /etc/my.cnf r,

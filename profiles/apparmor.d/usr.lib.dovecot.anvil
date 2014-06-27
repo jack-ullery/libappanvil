@@ -13,8 +13,8 @@
 
 /usr/lib/dovecot/anvil {
   #include <abstractions/base>
+  #include <abstractions/dovecot-common>
 
-  capability setgid,
   capability setuid,
   capability sys_chroot,
 

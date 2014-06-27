@@ -13,6 +13,7 @@
 
 /usr/lib/dovecot/managesieve {
   #include <abstractions/base>
+  #include <abstractions/dovecot-common>
 
   /etc/dovecot/** r,
   /usr/bin/doveconf rix,

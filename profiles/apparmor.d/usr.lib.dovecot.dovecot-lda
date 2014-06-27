@@ -15,8 +15,8 @@
 /usr/lib/dovecot/dovecot-lda {
   #include <abstractions/base>
   #include <abstractions/nameservice>
+  #include <abstractions/dovecot-common>
 
-  capability setgid,
   capability setuid,
 
   @{DOVECOT_MAILSTORE}/ rw,

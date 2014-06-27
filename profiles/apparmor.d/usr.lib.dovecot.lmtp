@@ -15,11 +15,9 @@
 /usr/lib/dovecot/lmtp {
   #include <abstractions/base>
   #include <abstractions/nameservice>
-
-  deny capability block_suspend,
+  #include <abstractions/dovecot-common>
 
   capability dac_override,
-  capability setgid,
   capability setuid,
 
   @{DOVECOT_MAILSTORE}/ rw,
