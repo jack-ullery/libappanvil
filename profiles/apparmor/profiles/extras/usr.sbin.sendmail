@@ -21,7 +21,7 @@
   #include <abstractions/nameservice>
   #include <abstractions/nameservice>
   #include <abstractions/user-tmp>
-  #include <program-chunks/postfix-common>
+  #include <abstractions/postfix-common>
 
   /usr/bin/procmail           Px,
 

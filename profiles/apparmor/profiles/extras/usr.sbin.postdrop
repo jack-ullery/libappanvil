@@ -15,7 +15,7 @@
   #include <abstractions/base>
   #include <abstractions/kerberosclient>
   #include <abstractions/nameservice>
-  #include <program-chunks/postfix-common>
+  #include <abstractions/postfix-common>
 
   # This is needed at least for permissions=paranoid
   capability dac_override,

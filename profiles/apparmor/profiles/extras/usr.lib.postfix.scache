@@ -15,7 +15,7 @@
 /usr/lib/postfix/scache {
   #include <abstractions/base>
   #include <abstractions/nameservice>
-  #include <program-chunks/postfix-common>
+  #include <abstractions/postfix-common>
 
   /usr/lib/postfix/scache rmix,
 

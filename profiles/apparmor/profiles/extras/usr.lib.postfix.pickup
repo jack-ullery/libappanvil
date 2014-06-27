@@ -14,7 +14,7 @@
   #include <abstractions/base>
   #include <abstractions/kerberosclient>
   #include <abstractions/nameservice>
-  #include <program-chunks/postfix-common>
+  #include <abstractions/postfix-common>
 
   /usr/lib/postfix/pickup                     rmix,
 

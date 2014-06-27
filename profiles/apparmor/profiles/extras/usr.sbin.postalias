@@ -15,7 +15,7 @@
   #include <abstractions/kerberosclient>
   #include <abstractions/nameservice>
   #include <abstractions/consoles>
-  #include <program-chunks/postfix-common>
+  #include <abstractions/postfix-common>
   /etc/aliases                         r,
   /etc/aliases.db                      rwl,
   /etc/postfix                         r,
