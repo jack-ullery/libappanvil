@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2013 Christian Boltz
+#    Copyright (C) 2014 Christian Wittmer
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -10,10 +11,19 @@
 # vim: ft=apparmor
 
 #include <tunables/global>
+#include <tunables/dovecot>
 
 /usr/lib/dovecot/managesieve {
   #include <abstractions/base>
   #include <abstractions/dovecot-common>
+
+  capability setuid,
+
+  network inet stream,
+  network inet6 stream,
+
+  @{DOVECOT_MAILSTORE}/ rw,
+  @{DOVECOT_MAILSTORE}/** rwkl,
 
   /etc/dovecot/** r,
   /usr/bin/doveconf rix,
