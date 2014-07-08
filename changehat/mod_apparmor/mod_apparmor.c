@@ -122,8 +122,8 @@ debug_dump_uri(request_rec *r)
 /* 
    immunix_enter_hat will attempt to change_hat in the following order:
    (1) to a hatname in a location directive
-   (2) to the uri
-   (3) to a per-server default 
+   (2) to the server name or a defined per-server default
+   (3) to the uri
    (4) to DEFAULT_URI
    (5) back to the parent profile
 */
@@ -159,10 +159,6 @@ immunix_enter_hat (request_rec *r)
         aa_hat_array[i++] = dcfg->hat_name;
     }
 
-    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,
-		    "[uri] adding uri '%s' to aa_change_hat vector", r->uri);
-    aa_hat_array[i++] = r->uri;
-
     if (scfg) {
     	ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "Dumping scfg info: "
     	          "scfg='0x%lx' scfg->hat_name='%s'",
@@ -182,6 +178,10 @@ immunix_enter_hat (request_rec *r)
             aa_hat_array[i++] = r->server->server_hostname;
 	}
     }
+
+    ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,
+		    "[uri] adding uri '%s' to aa_change_hat vector", r->uri);
+    aa_hat_array[i++] = r->uri;
 
     ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,
 		    "[default] adding '%s' to aa_change_hat vector", DEFAULT_URI_HAT);
