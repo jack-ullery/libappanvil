@@ -123,9 +123,10 @@ debug_dump_uri(request_rec *r)
    immunix_enter_hat will attempt to change_hat in the following order:
    (1) to a hatname in a location directive
    (2) to the server name or a defined per-server default
-   (3) to the uri
-   (4) to DEFAULT_URI
-   (5) back to the parent profile
+   (3) to the server name + "-" + uri
+   (4) to the uri
+   (5) to DEFAULT_URI
+   (6) back to the parent profile
 */
 static int 
 immunix_enter_hat (request_rec *r)
@@ -135,9 +136,10 @@ immunix_enter_hat (request_rec *r)
     		ap_get_module_config (r->per_dir_config, &apparmor_module);
     immunix_srv_cfg * scfg = (immunix_srv_cfg *) 
     		ap_get_module_config (r->server->module_config, &apparmor_module);
-    const char *aa_hat_array[5] = { NULL, NULL, NULL, NULL, NULL };
+    const char *aa_hat_array[6] = { NULL, NULL, NULL, NULL, NULL, NULL };
     int i = 0;
     char *aa_con, *aa_mode, *aa_hat;
+    const char *vhost_uri;
 
     debug_dump_uri(r);
     ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "in immunix_enter_hat (%s) n:0x%lx p:0x%lx main:0x%lx",
@@ -177,6 +179,11 @@ immunix_enter_hat (request_rec *r)
 			    r->server->server_hostname);
             aa_hat_array[i++] = r->server->server_hostname;
 	}
+
+	vhost_uri = apr_pstrcat(r->pool, r->server->server_hostname, "-", r->uri, NULL);
+	ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,
+		      "[vhost+uri] adding vhost+uri '%s' to aa_change_hat vector", vhost_uri);
+	aa_hat_array[i++] = vhost_uri;
     }
 
     ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,
