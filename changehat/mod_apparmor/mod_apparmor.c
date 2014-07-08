@@ -1,12 +1,13 @@
 /*
  *   Copyright (c) 2004, 2005, 2006 NOVELL (All rights reserved)
+ *   Copyright (c) 2014 Canonical, Ltd. (All rights reserved)
  *
  *    The mod_apparmor module is licensed under the terms of the GNU
  *    Lesser General Public License, version 2.1. Please see the file
  *    COPYING.LGPL.
  *
  * mod_apparmor - (apache 2.0.x)
- * Author: Steve Beattie <sbeattie@suse.de>
+ * Author: Steve Beattie <steve@nxnw.org>
  *
  * This currently only implements change_hat functionality, but could be
  * extended for other stuff we decide to do.
@@ -53,21 +54,21 @@ static int inside_default_hat = 0;
 typedef struct {
 	const char * hat_name;
 	char * path;
-} immunix_dir_cfg;
+} apparmor_dir_cfg;
 
 typedef struct {
 	const char * hat_name;
 	int is_initialized;
-} immunix_srv_cfg;
+} apparmor_srv_cfg;
 
-/* immunix_init() gets invoked in the post_config stage of apache.
+/* aa_init() gets invoked in the post_config stage of apache.
  * Unfortunately, apache reads its config once when it starts up, then
  * it re-reads it when goes into its restart loop, where it starts it's
  * children. This means we cannot call change_hat here, as the modules
  * memory will be wiped out, and the magic_token will be lost, so apache
  * wouldn't be able to change_hat back out. */
-static int 
-immunix_init (apr_pool_t *p, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s)
+static int
+aa_init(apr_pool_t *p, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s)
 {
     apr_file_t * file;
     apr_size_t size = sizeof (magic_token);
@@ -89,8 +90,8 @@ immunix_init (apr_pool_t *p, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s)
 /* As each child starts up, we'll change_hat into a default hat, mostly
  * to protect ourselves from bugs in parsing network input, but before
  * we change_hat to the uri specific hat. */
-static void 
-immunix_child_init (apr_pool_t *p, server_rec *s)
+static void
+aa_child_init(apr_pool_t *p, server_rec *s)
 {
     int ret;
 
@@ -120,7 +121,7 @@ debug_dump_uri(request_rec *r)
 }
 
 /* 
-   immunix_enter_hat will attempt to change_hat in the following order:
+   aa_enter_hat will attempt to change_hat in the following order:
    (1) to a hatname in a location directive
    (2) to the server name or a defined per-server default
    (3) to the server name + "-" + uri
@@ -128,21 +129,21 @@ debug_dump_uri(request_rec *r)
    (5) to DEFAULT_URI
    (6) back to the parent profile
 */
-static int 
-immunix_enter_hat (request_rec *r)
+static int
+aa_enter_hat(request_rec *r)
 {
-    int sd_ret = -1;
-    immunix_dir_cfg * dcfg = (immunix_dir_cfg *) 
-    		ap_get_module_config (r->per_dir_config, &apparmor_module);
-    immunix_srv_cfg * scfg = (immunix_srv_cfg *) 
-    		ap_get_module_config (r->server->module_config, &apparmor_module);
+    int aa_ret = -1;
+    apparmor_dir_cfg *dcfg = (apparmor_dir_cfg *)
+    		ap_get_module_config(r->per_dir_config, &apparmor_module);
+    apparmor_srv_cfg *scfg = (apparmor_srv_cfg *)
+    		ap_get_module_config(r->server->module_config, &apparmor_module);
     const char *aa_hat_array[6] = { NULL, NULL, NULL, NULL, NULL, NULL };
     int i = 0;
     char *aa_con, *aa_mode, *aa_hat;
     const char *vhost_uri;
 
     debug_dump_uri(r);
-    ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "in immunix_enter_hat (%s) n:0x%lx p:0x%lx main:0x%lx",
+    ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "aa_enter_hat (%s) n:0x%lx p:0x%lx main:0x%lx",
     	dcfg->path, (unsigned long) r->next, (unsigned long) r->prev, 
 	(unsigned long) r->main);
 
@@ -194,16 +195,16 @@ immunix_enter_hat (request_rec *r)
 		    "[default] adding '%s' to aa_change_hat vector", DEFAULT_URI_HAT);
     aa_hat_array[i++] = DEFAULT_URI_HAT;
 
-    sd_ret = aa_change_hatv(aa_hat_array, magic_token);
-    if (sd_ret < 0) {
+    aa_ret = aa_change_hatv(aa_hat_array, magic_token);
+    if (aa_ret < 0) {
         ap_log_rerror(APLOG_MARK, APLOG_WARNING, errno, r, "aa_change_hatv call failed");
     }
 
     /* Check to see if a defined AAHatName or AADefaultHatName would
      * apply, but wasn't the hat we landed up in; report a warning if
      * that's the case. */
-    sd_ret = aa_getcon(&aa_con, &aa_mode);
-    if (sd_ret < 0) {
+    aa_ret = aa_getcon(&aa_con, &aa_mode);
+    if (aa_ret < 0) {
         ap_log_rerror(APLOG_MARK, APLOG_WARNING, errno, r, "aa_getcon call failed");
     } else {
     	ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r,
@@ -233,14 +234,14 @@ immunix_enter_hat (request_rec *r)
     return OK;
 }
 
-static int 
-immunix_exit_hat (request_rec *r)
+static int
+aa_exit_hat(request_rec *r)
 {
-    int sd_ret;
-    immunix_dir_cfg * dcfg = (immunix_dir_cfg *) 
-    		ap_get_module_config (r->per_dir_config, &apparmor_module);
-    /* immunix_srv_cfg * scfg = (immunix_srv_cfg *)
-    		ap_get_module_config (r->server->module_config, &apparmor_module); */
+    int aa_ret;
+    apparmor_dir_cfg *dcfg = (apparmor_dir_cfg *)
+    		ap_get_module_config(r->per_dir_config, &apparmor_module);
+    /* apparmor_srv_cfg *scfg = (apparmor_srv_cfg *)
+    		ap_get_module_config(r->server->module_config, &apparmor_module); */
     ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r, "exiting change_hat: dir hat %s dir path %s",
 		    dcfg->hat_name, dcfg->path);
 
@@ -249,8 +250,8 @@ immunix_exit_hat (request_rec *r)
      * system libapparmors */
     aa_change_hatv(NULL, magic_token);
 
-    sd_ret = aa_change_hat(DEFAULT_HAT, magic_token);
-    if (sd_ret < 0) {
+    aa_ret = aa_change_hat(DEFAULT_HAT, magic_token);
+    if (aa_ret < 0) {
         ap_log_rerror(APLOG_MARK, APLOG_ERR, errno, r,
 			"Failed to change_hat to '%s'", DEFAULT_HAT);
     } else {
@@ -265,7 +266,7 @@ aa_cmd_ch_path (cmd_parms * cmd, void * mconfig, const char * parm1)
 {
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "directory config change hat %s",
     			parm1 ? parm1 : "DEFAULT");
-    immunix_dir_cfg * dcfg = mconfig;
+    apparmor_dir_cfg *dcfg = mconfig;
     if (parm1 != NULL) {
     	dcfg->hat_name = parm1;
     } else {
@@ -292,7 +293,7 @@ aa_cmd_ch_srv (cmd_parms * cmd, void * mconfig, const char * parm1)
 {
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "server config change hat %s",
     			parm1 ? parm1 : "DEFAULT");
-    immunix_srv_cfg * scfg = (immunix_srv_cfg *)
+    apparmor_srv_cfg *scfg = (apparmor_srv_cfg *)
 	    ap_get_module_config(cmd->server->module_config, &apparmor_module);
     if (parm1 != NULL) {
     	scfg->hat_name = parm1;
@@ -316,13 +317,15 @@ immunix_cmd_ch_srv (cmd_parms * cmd, void * mconfig, const char * parm1)
 }
 
 static void *
-immunix_create_dir_config (apr_pool_t * p, char * path)
+aa_create_dir_config(apr_pool_t *p, char *path)
 {
-    immunix_dir_cfg * newcfg = (immunix_dir_cfg *) apr_pcalloc(p, sizeof(* newcfg));
+    apparmor_dir_cfg *newcfg = (apparmor_dir_cfg *) apr_pcalloc(p, sizeof(*newcfg));
 
-    ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf, "in immunix_create_dir (%s)", path ? path : ":no path:");
+    ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf,
+		    "aa_create_dir_cfg (%s)", path ? path : ":no path:");
     if (newcfg == NULL) {
-        ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf, "immunix_create_dir: couldn't alloc dir config");
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf,
+			"aa_create_dir_config: couldn't alloc dir config");
     	return NULL;
     }
     newcfg->path = apr_pstrdup (p, path ? path : ":no path:");
@@ -333,9 +336,9 @@ immunix_create_dir_config (apr_pool_t * p, char * path)
 /* XXX: Should figure out an appropriate action to take here, if any
 
 static void *
-immunix_merge_dir_config (apr_pool_t * p, void * parent, void * child)
+aa_merge_dir_config(apr_pool_t * p, void * parent, void * child)
 {
-    immunix_dir_cfg * newcfg = (immunix_dir_cfg *) apr_pcalloc(p, sizeof(* newcfg));
+    apparmor_dir_cfg *newcfg = (apparmor_dir_cfg *) apr_pcalloc(p, sizeof(*newcfg));
 
     ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf, "in immunix_merge_dir ()");
     if (newcfg == NULL)
@@ -346,13 +349,15 @@ immunix_merge_dir_config (apr_pool_t * p, void * parent, void * child)
 */
 
 static void *
-immunix_create_srv_config (apr_pool_t * p, server_rec * srv)
+aa_create_srv_config(apr_pool_t *p, server_rec *srv)
 {
-    immunix_srv_cfg * newcfg = (immunix_srv_cfg *) apr_pcalloc(p, sizeof(* newcfg));
+    apparmor_srv_cfg *newcfg = (apparmor_srv_cfg *) apr_pcalloc(p, sizeof(*newcfg));
 
-    ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf, "in immunix_create_srv");
+    ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf,
+		    "in aa_create_srv_config");
     if (newcfg == NULL) {
-        ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf, "immunix_create_srv: couldn't alloc srv config");
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, ap_server_conf,
+			"aa_create_srv_config: couldn't alloc srv config");
     	return NULL;
     }
 
@@ -360,7 +365,7 @@ immunix_create_srv_config (apr_pool_t * p, server_rec * srv)
 }
 
 
-static const command_rec immunix_cmds[] = {
+static const command_rec mod_apparmor_cmds[] = {
 
     AP_INIT_TAKE1 (
         "ImmHatName",
@@ -396,20 +401,20 @@ static const command_rec immunix_cmds[] = {
 static void 
 register_hooks (apr_pool_t *p)
 {
-    ap_hook_post_config (immunix_init, NULL, NULL, APR_HOOK_MIDDLE);
-    ap_hook_child_init (immunix_child_init, NULL, NULL, APR_HOOK_MIDDLE);
-    ap_hook_access_checker(immunix_enter_hat, NULL, NULL, APR_HOOK_FIRST);
-    /* ap_hook_post_read_request(immunix_enter_hat, NULL, NULL, APR_HOOK_FIRST); */
-    ap_hook_log_transaction(immunix_exit_hat, NULL, NULL, APR_HOOK_LAST);
+    ap_hook_post_config(aa_init, NULL, NULL, APR_HOOK_MIDDLE);
+    ap_hook_child_init(aa_child_init, NULL, NULL, APR_HOOK_MIDDLE);
+    ap_hook_access_checker(aa_enter_hat, NULL, NULL, APR_HOOK_FIRST);
+    /* ap_hook_post_read_request(aa_enter_hat, NULL, NULL, APR_HOOK_FIRST); */
+    ap_hook_log_transaction(aa_exit_hat, NULL, NULL, APR_HOOK_LAST);
 }
 
 module AP_MODULE_DECLARE_DATA apparmor_module = {
     STANDARD20_MODULE_STUFF,
-    immunix_create_dir_config,	/* dir config creater */
+    aa_create_dir_config,	/* dir config creater */
     NULL,			/* dir merger --- default is to override */
     /* immunix_merge_dir_config, */	/* dir merger --- default is to override */
-    immunix_create_srv_config,	/* server config */
+    aa_create_srv_config,	/* server config */
     NULL,			/* merge server config */
-    immunix_cmds,		/* command table */
+    mod_apparmor_cmds,		/* command table */
     register_hooks		/* register hooks */
 };
