@@ -196,15 +196,15 @@ other_audit: TOK_TYPE_OTHER audit_msg TOK_MSG_REST
 
 syslog_type:
 	  syslog_date TOK_ID TOK_SYSLOG_KERNEL audit_id key_list
-	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); }
 	| syslog_date TOK_ID TOK_SYSLOG_KERNEL key_type audit_id key_list
-	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); }
 	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP audit_id key_list
-	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); free($4); }
 	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP key_type audit_id key_list
-	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); free($4); }
 	| syslog_date TOK_ID TOK_SYSLOG_USER key_list
-	  { ret_record->version = AA_RECORD_SYNTAX_V2; }
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); }
 	;
 
 /* when audit dispatches a message it doesn't prepend the audit type string */
@@ -229,8 +229,10 @@ audit_id: TOK_AUDIT TOK_OPEN_PAREN TOK_AUDIT_DIGITS TOK_PERIOD TOK_AUDIT_DIGITS 
 		free($7);
 	} ;
 
-syslog_date: TOK_DATE_MONTH TOK_DIGITS TOK_TIME { /* do nothing? */ }
-	| TOK_DATE TOK_TIME { /* do nothing */ }
+syslog_date: TOK_DATE_MONTH TOK_DIGITS TOK_TIME
+		{ free($1); free($3); /* do nothing */ }
+	| TOK_DATE TOK_TIME
+		{ free($1); free($2); /* do nothing */ }
 	;
 
 key_list: key
