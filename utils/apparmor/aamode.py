@@ -67,7 +67,7 @@ MODE_HASH = {'x': AA_MAY_EXEC, 'X': AA_MAY_EXEC,
              'N': AA_EXEC_NT
              }
 
-LOG_MODE_RE = re.compile('(r|w|l|m|k|a|x|ix|ux|px|cx|nx|pix|cix|Ix|Ux|Px|PUx|Cx|Nx|Pix|Cix)')
+LOG_MODE_RE = re.compile('(r|w|l|m|k|a|x|ix|ux|px|pux|cx|nx|pix|cix|Ux|Px|PUx|Cx|Nx|Pix|Cix)')
 MODE_MAP_RE = re.compile('(r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N)')
 
 def str_to_mode(string):
