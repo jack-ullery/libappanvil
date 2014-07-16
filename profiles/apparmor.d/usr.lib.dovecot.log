@@ -13,10 +13,7 @@
 
 /usr/lib/dovecot/log {
   #include <abstractions/base>
-
-  deny capability block_suspend,
-
-  capability setgid,
+  #include <abstractions/dovecot-common>
 
   /usr/lib/dovecot/log mr,
 

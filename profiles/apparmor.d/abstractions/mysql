@@ -9,7 +9,7 @@
 #
 # ------------------------------------------------------------------
 
-   /var/lib/mysql/mysql.sock rw,
-   /{var/,}run/mysql/mysql.sock rw,
+   /var/lib/mysql{,d}/mysql{,d}.sock rw,
+   /{var/,}run/mysql{,d}/mysql{,d}.sock rw,
    /usr/share/{mysql,mysql-community-server,mariadb}/charsets/ r,
    /usr/share/{mysql,mysql-community-server,mariadb}/charsets/*.xml r,

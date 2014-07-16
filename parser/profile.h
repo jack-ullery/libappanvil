@@ -15,8 +15,12 @@
 #define __AA_PROFILE_H
 
 #include <set>
+#include <string>
+#include <iostream>
 
 #include "parser.h"
+#include "rule.h"
+#include "libapparmor_re/aare_rules.h"
 
 class Profile;
 
@@ -119,12 +123,11 @@ struct network {
 };
 
 struct dfa_stuff {
-	aare_ruleset_t *rules;
-	int count;
+	aare_rules *rules;
 	void *dfa;
 	size_t size;
 
-	dfa_stuff(void): rules(NULL), count(0), dfa(NULL), size(0) { }
+	dfa_stuff(void): rules(NULL), dfa(NULL), size(0) { }
 };
 
 class Profile {
@@ -153,8 +156,7 @@ public:
 
 	char *exec_table[AA_EXEC_COUNT];
 	struct cod_entry *entries;
-	struct mnt_entry *mnt_ents;
-	struct dbus_entry *dbus_ents;
+	RuleList rule_ents;
 
 	ProfileList hat_table;
 
@@ -179,9 +181,6 @@ public:
 		std::fill(exec_table, exec_table + AA_EXEC_COUNT, (char *)NULL);
 
 		entries = NULL;
-		mnt_ents = NULL;
-		dbus_ents = NULL;
-
 	};
 
 	virtual ~Profile();
@@ -224,17 +223,33 @@ public:
 		if (entries)
 			debug_cod_entries(entries);
 
+		for (RuleList::iterator i = rule_ents.begin(); i != rule_ents.end(); i++) {
+			(*i)->dump(cout);
+		}
+
 		printf("\n");
 		hat_table.dump();
 	}
 
+	std::string* get_name(bool fqp)
+	{
+		std::string *buf;
+		if (fqp && parent) {
+			buf = parent->get_name(fqp);
+			buf->append("//");
+			buf->append(name);
+		} else {
+			return new std::string(name);
+		}
+
+		return buf;
+	}
+
 	void dump_name(bool fqp)
 	{
-		if (fqp && parent) {
-			parent->dump_name(fqp);
-			printf("//%s", name);
-		} else
-			printf("%s", name);
+		std::string *buf = get_name(fqp);;
+		cout << *buf;
+		delete buf;
 	}
 };
 

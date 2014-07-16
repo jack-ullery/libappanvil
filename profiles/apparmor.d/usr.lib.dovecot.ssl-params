@@ -13,10 +13,7 @@
 
 /usr/lib/dovecot/ssl-params {
   #include <abstractions/base>
-
-  deny capability block_suspend,
-
-  capability setgid,
+  #include <abstractions/dovecot-common>
 
   /usr/lib/dovecot/ssl-params mr,
   /var/lib/dovecot/ssl-parameters.dat rw,

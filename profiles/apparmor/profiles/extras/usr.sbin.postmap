@@ -14,7 +14,7 @@
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/kerberosclient>
-  #include <program-chunks/postfix-common>
+  #include <abstractions/postfix-common>
 
   /etc/fstab                        r,
   /etc/mtab                         r,

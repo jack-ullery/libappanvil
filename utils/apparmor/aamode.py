@@ -40,6 +40,7 @@ AA_EXEC_PROFILE = set('P')
 AA_EXEC_CHILD = set('C')
 AA_EXEC_NT = set('N')
 AA_LINK_SUBSET = set(['linksubset'])
+AA_BARE_FILE_MODE = set(['bare_file_mode'])
 #AA_OTHER_SHIFT = 14
 #AA_USER_MASK = 16384 - 1
 
@@ -66,7 +67,7 @@ MODE_HASH = {'x': AA_MAY_EXEC, 'X': AA_MAY_EXEC,
              'N': AA_EXEC_NT
              }
 
-LOG_MODE_RE = re.compile('(r|w|l|m|k|a|x|ix|ux|px|cx|nx|pix|cix|Ix|Ux|Px|PUx|Cx|Nx|Pix|Cix)')
+LOG_MODE_RE = re.compile('(r|w|l|m|k|a|x|ix|ux|px|pux|cx|nx|pix|cix|Ux|Px|PUx|Cx|Nx|Pix|Cix)')
 MODE_MAP_RE = re.compile('(r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N)')
 
 def str_to_mode(string):
@@ -86,15 +87,16 @@ def str_to_mode(string):
 
 def sub_str_to_mode(string):
     mode = set()
-    if not string:
-        return mode
+
     while string:
         tmp = MODE_MAP_RE.search(string)
-        if tmp:
-            tmp = tmp.groups()[0]
+        if not tmp:
+            break
         string = MODE_MAP_RE.sub('', string, 1)
-        if tmp and MODE_HASH.get(tmp, False):
-            mode |= MODE_HASH[tmp]
+
+        mode_char = tmp.groups()[0]
+        if MODE_HASH.get(mode_char, False):
+            mode |= MODE_HASH[mode_char]
         else:
             pass
 

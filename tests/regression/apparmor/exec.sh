@@ -43,19 +43,19 @@ runchecktest "EXEC with px" pass $file
 
 # FAIL TEST - px/no profile
 
-genprofile $file:$ok_px_perm
+genprofile $file:$ok_px_perm signal:ALL
 
 runchecktest "EXEC with px - no profile" fail $file
 
 # NOLINK PERMTEST
 
-genprofile $file:$badperm
+genprofile $file:$badperm signal:ALL
 
 runchecktest "EXEC no x" fail $file
 
 # MMAP exec
 
-genprofile $file:$bad_mx_perm
+genprofile $file:$bad_mx_perm signal:ALL
 
 runchecktest "EXEC mmap x" fail $file
 

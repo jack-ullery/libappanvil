@@ -64,6 +64,7 @@ net_raw_net_raw=TRUE
 
 # we completely disable ptrace(), but it's not clear if we should allow it
 # when the sys_ptrace cap is specified.
+# NOTE: we handle special casing of v6 ptrace not needing ptrace cap inline
 syscall_ptrace_sys_ptrace=TRUE
 
 # if a test case requires arguments, add them here.
@@ -77,7 +78,7 @@ syscall_ptrace_args=sub
 
 # if a testcase requires extra subdomain rules, add them here
 syscall_chroot_extra_entries="/:r ${tmpdir}/:r"
-syscall_ptrace_extra_entries="hat:sub"
+syscall_ptrace_extra_entries="ptrace:ALL hat:sub ptrace:ALL"
 net_raw_extra_entries="network:"
 
 testwrapper=changehat_wrapper
@@ -96,7 +97,13 @@ for TEST in ${TESTS} ; do
 
 	# no capabilities allowed
 	genprofile ${my_entries}
-	runchecktest "${TEST} -- no caps" fail ${my_arg}
+	if [ "${TEST}" == "syscall_ptrace" -a "$(have_features ptrace)" == "true" ] ; then
+	    # ptrace between profiles confining tasks of same pid is controlled by the ptrace rule
+	    # capability + ptrace rule needed between pids
+	    runchecktest "${TEST} -- no caps" pass ${my_arg}
+	else
+	    runchecktest "${TEST} -- no caps" fail ${my_arg}
+	fi
 
 	# all capabilities allowed
 	genprofile cap:ALL ${my_entries}
@@ -105,6 +112,8 @@ for TEST in ${TESTS} ; do
 	# iterate through each of the capabilities
 	for cap in ${CAPABILITIES} ; do
 		if [ "X$(eval echo \${${TEST}_${cap}})" == "XTRUE" ] ; then
+			expected_result=pass
+		elif [ "${TEST}" == "syscall_ptrace" -a "$(have_features ptrace)" == "true" ]; then
 			expected_result=pass
 		else
 			expected_result=fail
@@ -117,7 +126,13 @@ for TEST in ${TESTS} ; do
 	# a subprofile.
 	settest ${testwrapper}
 	genprofile hat:$bin/${TEST} addimage:${bin}/${TEST} ${my_entries}
-	runchecktest "${TEST} changehat -- no caps" fail $bin/${TEST} ${my_arg}
+	if [ "${TEST}" == "syscall_ptrace" -a "$(have_features ptrace)" == "true" ] ; then
+	    # ptrace between profiles confining tasks of same pid is controlled by the ptrace rule
+	    # capability + ptrace rule needed between pids
+	    runchecktest "${TEST} changehat -- no caps" pass $bin/${TEST} ${my_arg}
+	else
+	    runchecktest "${TEST} changehat -- no caps" fail $bin/${TEST} ${my_arg}
+	fi
 
 	# all capabilities allowed
 	genprofile hat:$bin/${TEST} addimage:${bin}/${TEST} cap:ALL ${my_entries}
@@ -125,6 +140,8 @@ for TEST in ${TESTS} ; do
 
 	for cap in ${CAPABILITIES} ; do
 		if [ "X$(eval echo \${${TEST}_${cap}})" == "XTRUE" ] ; then
+			expected_result=pass
+		elif [ "${TEST}" == "syscall_ptrace" -a "$(have_features ptrace)" == "true" ]; then
 			expected_result=pass
 		else
 			expected_result=fail

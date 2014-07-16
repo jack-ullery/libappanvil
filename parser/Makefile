@@ -79,8 +79,10 @@ EXTRA_CFLAGS+=-DSUBDOMAIN_CONFDIR=\"${CONFDIR}\"
 SRCS = parser_common.c parser_include.c parser_interface.c parser_lex.c \
        parser_main.c parser_misc.c parser_merge.c parser_symtab.c \
        parser_yacc.c parser_regex.c parser_variable.c parser_policy.c \
-       parser_alias.c mount.c dbus.c lib.c profile.cc
-HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h
+       parser_alias.c common_optarg.c lib.c \
+       mount.cc dbus.cc profile.cc rule.cc signal.cc ptrace.cc
+HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h \
+       rule.h common_optarg.h signal.h ptrace.h
 TOOLS = apparmor_parser
 
 OBJECTS = $(SRCS:.c=.o)
@@ -111,11 +113,12 @@ EXTRA_CFLAGS += $(INCLUDE_APPARMOR)
 LEX_C_FILES	= parser_lex.c
 YACC_C_FILES	= parser_yacc.c parser_yacc.h
 
-TESTS = tst_regex tst_misc tst_symtab tst_variable
+TESTS = tst_regex tst_misc tst_symtab tst_variable tst_lib
 TEST_CFLAGS = $(EXTRA_CFLAGS) -DUNIT_TEST -Wno-unused-result
 TEST_OBJECTS = $(filter-out \
 			parser_lex.o \
 			parser_yacc.o \
+			common_optarg.o \
 			parser_main.o, ${OBJECTS}) \
                $(AAREOBJECTS)
 TEST_LDFLAGS = $(AARE_LDFLAGS)
@@ -188,7 +191,7 @@ apparmor_parser: $(OBJECTS) $(AAREOBJECTS) $(LIBAPPARMOR_A)
 parser_yacc.c parser_yacc.h: parser_yacc.y parser.h profile.h
 	$(YACC) $(YFLAGS) -o parser_yacc.c parser_yacc.y
 
-parser_lex.c: parser_lex.l parser_yacc.h parser.h profile.h
+parser_lex.c: parser_lex.l parser_yacc.h parser.h profile.h mount.h dbus.h
 	$(LEX) ${LEXFLAGS} -o$@ $<
 
 parser_lex.o: parser_lex.c parser.h parser_yacc.h
@@ -230,16 +233,28 @@ parser_alias.o: parser_alias.c parser.h profile.h
 parser_common.o: parser_common.c parser.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-mount.o: mount.c mount.h parser.h immunix.h
+mount.o: mount.c mount.h parser.h immunix.h rule.h
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
+
+common_optarg.o: common_optarg.c common_optarg.h parser.h libapparmor_re/apparmor_re.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 lib.o: lib.c lib.h parser.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-dbus.o: dbus.c dbus.h parser.h immunix.h parser_yacc.h $(APPARMOR_H)
+dbus.o: dbus.c dbus.h parser.h immunix.h parser_yacc.h rule.h $(APPARMOR_H)
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
+
+signal.o: signal.c signal.h parser.h immunix.h parser_yacc.h rule.h $(APPARMOR_H)
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
+
+ptrace.o: ptrace.c ptrace.h parser.h immunix.h parser_yacc.h rule.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 profile.o: profile.cc profile.h parser.h
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
+
+rule.o: rule.c rule.h policydb.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_version.h: Makefile
@@ -259,6 +274,8 @@ af_names.h:
 cap_names.h: /usr/include/linux/capability.h
 	echo "$(CAPABILITIES)" | LC_ALL=C sed -n -e "s/[ \\t]\\?CAP_\\([A-Z0-9_]\\+\\)/\{\"\\L\\1\", \\UCAP_\\1\},\\n/pg" > $@
 
+tst_lib: lib.c parser.h $(filter-out lib.o, ${TEST_OBJECTS})
+	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS)
 tst_%: parser_%.c parser.h $(filter-out parser_%.o, ${TEST_OBJECTS})
 	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS)
 

@@ -47,14 +47,15 @@
 #include "parser.h"
 #include "parser_version.h"
 #include "parser_include.h"
+#include "common_optarg.h"
 #include "libapparmor_re/apparmor_re.h"
 
 #define MODULE_NAME "apparmor"
 #define OLD_MODULE_NAME "subdomain"
 #define PROC_MODULES "/proc/modules"
 #define DEFAULT_APPARMORFS "/sys/kernel/security/" MODULE_NAME
-#define MATCH_STRING "/sys/kernel/security/" MODULE_NAME "/matching"
-#define FLAGS_FILE "/sys/kernel/security/" MODULE_NAME "/features"
+#define MATCH_FILE "/sys/kernel/security/" MODULE_NAME "/matching"
+#define FEATURES_FILE "/sys/kernel/security/" MODULE_NAME "/features"
 #define MOUNTED_FS "/proc/mounts"
 #define AADFA "pattern=aadfa"
 
@@ -79,16 +80,16 @@ int preprocess_only = 0;
 int skip_mode_force = 0;
 struct timespec mru_tstamp;
 
-#define FLAGS_STRING_SIZE 8192
-char *match_string = NULL;
-char *flags_string = NULL;
+#define FEATURES_STRING_SIZE 8192
+char *features_string = NULL;
 char *cacheloc = NULL;
 
 /* per-profile settings */
-int force_complain = 0;
+
+static int load_features(const char *name);
 
 /* Make sure to update BOTH the short and long_options */
-static const char *short_options = "adf:h::rRVvI:b:BCD:NSm:qQn:XKTWkL:O:po:";
+static const char *short_options = "adf:h::rRVvI:b:BCD:NSm:M:qQn:XKTWkL:O:po:";
 struct option long_options[] = {
 	{"add", 		0, 0, 'a'},
 	{"binary",		0, 0, 'B'},
@@ -106,6 +107,7 @@ struct option long_options[] = {
 	{"stdout",		0, 0, 'S'},
 	{"ofile",		1, 0, 'o'},
 	{"match-string",	1, 0, 'm'},
+	{"features-file",	1, 0, 'M'},
 	{"quiet",		0, 0, 'q'},
 	{"skip-kernel-load",	0, 0, 'Q'},
 	{"verbose",		0, 0, 'v'},
@@ -130,7 +132,7 @@ struct option long_options[] = {
 
 static int debug = 0;
 
-static void display_version(void)
+void display_version(void)
 {
 	printf("%s version " PARSER_VERSION "\n%s\n", parser_title,
 	       parser_copyright);
@@ -153,7 +155,8 @@ static void display_usage(const char *command)
 	       "-b n, --base n		Set base dir and cwd\n"
 	       "-I n, --Include n	Add n to the search path\n"
 	       "-f n, --subdomainfs n	Set location of apparmor filesystem\n"
-	       "-m n, --match-string n  Use only match features n\n"
+	       "-m n, --match-string n  Use only features n\n"
+	       "-M n, --features-file n Use only features in file n\n"
 	       "-n n, --namespace n	Set Namespace for the profile\n"
 	       "-X, --readimpliesX	Map profile read permissions to mr\n"
 	       "-k, --show-cache	Report cache hit/miss details\n"
@@ -174,159 +177,6 @@ static void display_usage(const char *command)
 	       "-O [n], --Optimize	Control dfa optimizations\n"
 	       "-h [cmd], --help[=cmd]  Display this text or info about cmd\n"
 	       ,command);
-}
-
-/*
- * flag: 1 - allow no- inversion
- * flag: 2 - flags specified should be masked off
- */
-typedef struct {
-	int control;
-	const char *option;
-	const char *desc;
-	dfaflags_t flags;
-} optflag_table_t;
-
-optflag_table_t dumpflag_table[] = {
-	{ 1, "rule-exprs", "Dump rule to expr tree conversions",
-	  DFA_DUMP_RULE_EXPR },
-	{ 1, "expr-stats", "Dump stats on expr tree", DFA_DUMP_TREE_STATS },
-	{ 1, "expr-tree", "Dump expression tree", DFA_DUMP_TREE },
-	{ 1, "expr-simplified", "Dump simplified expression tree",
-	  DFA_DUMP_SIMPLE_TREE },
-	{ 1, "stats", "Dump all compile stats",
-	  DFA_DUMP_TREE_STATS | DFA_DUMP_STATS | DFA_DUMP_TRANS_STATS |
-	  DFA_DUMP_EQUIV_STATS | DFA_DUMP_DIFF_STATS },
-	{ 1, "progress", "Dump progress for all compile phases",
-	  DFA_DUMP_PROGRESS | DFA_DUMP_STATS | DFA_DUMP_TRANS_PROGRESS |
-	  DFA_DUMP_TRANS_STATS | DFA_DUMP_DIFF_PROGRESS | DFA_DUMP_DIFF_STATS },
-	{ 1, "dfa-progress", "Dump dfa creation as in progress",
-	  DFA_DUMP_PROGRESS | DFA_DUMP_STATS },
-	{ 1, "dfa-stats", "Dump dfa creation stats", DFA_DUMP_STATS },
-	{ 1, "dfa-states", "Dump dfa state diagram", DFA_DUMP_STATES },
-	{ 1, "dfa-graph", "Dump dfa dot (graphviz) graph", DFA_DUMP_GRAPH },
-	{ 1, "dfa-minimize", "Dump dfa minimization", DFA_DUMP_MINIMIZE },
-	{ 1, "dfa-unreachable", "Dump dfa unreachable states",
-	  DFA_DUMP_UNREACHABLE },
-	{ 1, "dfa-node-map", "Dump expr node set to state mapping",
-	  DFA_DUMP_NODE_TO_DFA },
-	{ 1, "dfa-uniq-perms", "Dump unique perms",
-	  DFA_DUMP_UNIQ_PERMS },
-	{ 1, "dfa-minimize-uniq-perms", "Dump unique perms post minimization",
-	  DFA_DUMP_MIN_UNIQ_PERMS },
-	{ 1, "dfa-minimize-partitions", "Dump dfa minimization partitions",
-	  DFA_DUMP_MIN_PARTS },
-	{ 1, "compress-progress", "Dump progress of compression",
-	  DFA_DUMP_TRANS_PROGRESS | DFA_DUMP_TRANS_STATS },
-	{ 1, "compress-stats", "Dump stats on compression",
-	  DFA_DUMP_TRANS_STATS },
-	{ 1, "compressed-dfa", "Dump compressed dfa", DFA_DUMP_TRANS_TABLE },
-	{ 1, "equiv-stats", "Dump equivance class stats",
-	  DFA_DUMP_EQUIV_STATS },
-	{ 1, "equiv", "Dump equivance class", DFA_DUMP_EQUIV },
-	{ 1, "diff-encode", "Dump differential encoding",
-	  DFA_DUMP_DIFF_ENCODE },
-	{ 1, "diff-stats", "Dump differential encoding stats",
-	  DFA_DUMP_DIFF_STATS },
-	{ 1, "diff-progress", "Dump progress of differential encoding",
-	  DFA_DUMP_DIFF_PROGRESS | DFA_DUMP_DIFF_STATS },
-	{ 0, NULL, NULL, 0 },
-};
-
-optflag_table_t optflag_table[] = {
-	{ 2, "0", "no optimizations",
-	  DFA_CONTROL_TREE_NORMAL | DFA_CONTROL_TREE_SIMPLE |
-	  DFA_CONTROL_MINIMIZE | DFA_CONTROL_REMOVE_UNREACHABLE |
-	  DFA_CONTROL_DIFF_ENCODE
-	},
-	{ 1, "equiv", "use equivalent classes", DFA_CONTROL_EQUIV },
-	{ 1, "expr-normalize", "expression tree normalization",
-	  DFA_CONTROL_TREE_NORMAL },
-	{ 1, "expr-simplify", "expression tree simplification",
-	  DFA_CONTROL_TREE_SIMPLE },
-	{ 0, "expr-left-simplify", "left simplification first",
-	  DFA_CONTROL_TREE_LEFT },
-	{ 2, "expr-right-simplify", "right simplification first",
-	  DFA_CONTROL_TREE_LEFT },
-	{ 1, "minimize", "dfa state minimization", DFA_CONTROL_MINIMIZE },
-	{ 1, "filter-deny", "filter out deny information from final dfa",
-	  DFA_CONTROL_FILTER_DENY },
-	{ 1, "remove-unreachable", "dfa unreachable state removal",
-	  DFA_CONTROL_REMOVE_UNREACHABLE },
-	{ 0, "compress-small",
-	  "do slower dfa transition table compression",
-	  DFA_CONTROL_TRANS_HIGH },
-	{ 2, "compress-fast", "do faster dfa transition table compression",
-	  DFA_CONTROL_TRANS_HIGH },
-	{ 1, "diff-encode", "Differentially encode transitions",
-	  DFA_CONTROL_DIFF_ENCODE },
-	{ 0, NULL, NULL, 0 },
-};
-
-static void print_flag_table(optflag_table_t *table)
-{
-	int i;
-	unsigned int longest = 0;
-	for (i = 0; table[i].option; i++) {
-		if (strlen(table[i].option) > longest)
-			longest = strlen(table[i].option);
-	}
-
-	for (i = 0; table[i].option; i++) {
-		printf("%5s%-*s \t%s\n", (table[i].control & 1) ? "[no-]" : "",
-		       longest, table[i].option, table[i].desc);
-	}
-}
-
-static int handle_flag_table(optflag_table_t *table, const char *optarg,
-			     dfaflags_t *flags)
-{
-	const char *arg = optarg;
-	int i, invert = 0;
-
-	if (strncmp(optarg, "no-", 3) == 0) {
-		arg = optarg + 3;
-		invert = 1;
-	}
-
-	for (i = 0; table[i].option; i++) {
-		if (strcmp(table[i].option, arg) == 0) {
-			/* check if leading no- was specified but is not
-			 * supported by the option */
-			if (invert && !(table[i].control & 1))
-				return 0;
-			if (table[i].control & 2)
-				invert |= 1;
-			if (invert)
-				*flags &= ~table[i].flags;
-			else
-				*flags |= table[i].flags;
-			return 1;
-		}
-	}
-	return 0;
-}
-
-static void display_dump(const char *command)
-{
-	display_version();
-	printf("\n%s: --dump [Option]\n\n"
-	       "Options:\n"
-	       "--------\n"
-	       "     none specified \tDump variables\n"
-	       "     variables      \tDump variables\n"
-	       ,command);
-	print_flag_table(dumpflag_table);
-}
-
-static void display_optimize(const char *command)
-{
-	display_version();
-	printf("\n%s: -O [Option]\n\n"
-	       "Options:\n"
-	       "--------\n"
-	       ,command);
-	print_flag_table(optflag_table);
 }
 
 
@@ -520,7 +370,14 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'm':
-		match_string = strdup(optarg);
+		features_string = strdup(optarg);
+		break;
+	case 'M':
+		if (load_features(optarg) == -1) {
+			fprintf(stderr, "Failed to load features from '%s'\n",
+				optarg);
+			exit(1);
+		}
 		break;
 	case 'q':
 		conf_verbose = 0;
@@ -733,104 +590,122 @@ static char *handle_features_dir(const char *filename, char **buffer, int size,
 	struct features_struct fst = { buffer, size, pos };
 
 	if (dirat_for_each(NULL, filename, &fst, features_dir_cb)) {
-		PDEBUG("Failed evaluating .features\n");
+		PDEBUG("Failed evaluating %s\n", filename);
 		exit(1);
 	}
 
 	return fst.pos;
 }
 
-/* match_string == NULL --> no match_string available
-   match_string != NULL --> either a matching string specified on the
-   command line, or the kernel supplied a match string */
-static void get_match_string(void) {
-
-	FILE *ms = NULL;
-	struct stat stat_file;
-
-	/* has process_args() already assigned a match string? */
-	if (match_string)
-		goto out;
-
-	if (stat(FLAGS_FILE, &stat_file) == -1)
-		goto out;
-
-	if (S_ISDIR(stat_file.st_mode)) {
-		/* if we have a features directory default to */
-		perms_create = 1;
-
-		flags_string = (char *) malloc(FLAGS_STRING_SIZE);
-		handle_features_dir(FLAGS_FILE, &flags_string, FLAGS_STRING_SIZE, flags_string);
-		if (strstr(flags_string, "network"))
-			kernel_supports_network = 1;
-		else
-			kernel_supports_network = 0;
-		if (strstr(flags_string, "mount"))
-			kernel_supports_mount = 1;
-		if (strstr(flags_string, "dbus"))
-			kernel_supports_dbus = 1;
-		return;
-	}
-
-	ms = fopen(MATCH_STRING, "r");
-	if (!ms)
-		goto out;
-
-	match_string = (char *) malloc(1000);
-	if (!match_string) {
-		goto out;
-	}
-
-	if (!fgets(match_string, 1000, ms)) {
-		free(match_string);
-		match_string = NULL;
-	}
-
-out:
-	if (match_string) {
-		if (strstr(match_string, " perms=c"))
-			perms_create = 1;
-	} else {
-		perms_create = 1;
-		kernel_supports_network = 0;
-	}
-
-	if (ms)
-		fclose(ms);
-	return;
-}
-
-static void get_flags_string(char **flags, const char *flags_file) {
-	char *pos;
+static char *load_features_file(const char *name) {
+	char *buffer;
 	FILE *f = NULL;
 	size_t size;
 
-	/* abort if missing or already set */
-	if (!flags || *flags)
-		return;
-
-	f = fopen(flags_file, "r");
+	f = fopen(name, "r");
 	if (!f)
-		return;
+		return NULL;
 
-	*flags = (char *) malloc(FLAGS_STRING_SIZE);
-	if (!*flags)
+	buffer = (char *) malloc(FEATURES_STRING_SIZE);
+	if (!buffer)
 		goto fail;
 
-	size = fread(*flags, 1, FLAGS_STRING_SIZE - 1, f);
+	size = fread(buffer, 1, FEATURES_STRING_SIZE - 1, f);
 	if (!size || ferror(f))
 		goto fail;
-	(*flags)[size] = 0;
+	buffer[size] = 0;
 
 	fclose(f);
-	return;
+	return buffer;
 
 fail:
-	free(*flags);
-	*flags = NULL;
+	int save = errno;
+	free(buffer);
 	if (f)
 		fclose(f);
-	return;
+	errno = save;
+	return NULL;
+}
+
+static int load_features(const char *name)
+{
+	struct stat stat_file;
+
+	if (stat(name, &stat_file) == -1)
+		return -1;
+
+	if (S_ISDIR(stat_file.st_mode)) {
+		/* if we have a features directory default to */
+		features_string = (char *) malloc(FEATURES_STRING_SIZE);
+		handle_features_dir(name, &features_string, FEATURES_STRING_SIZE, features_string);
+	} else {
+		features_string = load_features_file(name);
+		if (!features_string)
+			return -1;
+	}
+
+	return 0;
+}
+
+static void set_features_by_match_file(void)
+{
+	FILE *ms = fopen(MATCH_FILE, "r");
+	if (ms) {
+		char *match_string = (char *) malloc(1000);
+		if (!match_string)
+			goto no_match;
+		if (!fgets(match_string, 1000, ms)) {
+			free(match_string);
+			goto no_match;
+		}
+		if (strstr(match_string, " perms=c"))
+			perms_create = 1;
+		free(match_string);
+		kernel_supports_network = 1;
+		goto out;
+	}
+no_match:
+	perms_create = 1;
+
+out:
+	if (ms)
+		fclose(ms);
+}
+
+static void set_supported_features(void) {
+
+	/* has process_args() already assigned a match string? */
+	if (!features_string) {
+		if (load_features(FEATURES_FILE) == -1) {
+			set_features_by_match_file();
+			return;
+		}
+	}
+
+	perms_create = 1;
+
+	/* TODO: make this real parsing and config setting */
+	if (strstr(features_string, "file {"))	/* pre policydb is file= */
+		kernel_supports_policydb = 1;
+	if (strstr(features_string, "v6"))
+		kernel_abi_version = 6;
+	if (strstr(features_string, "set_load"))
+		kernel_supports_setload = 1;
+	if (strstr(features_string, "network"))
+		kernel_supports_network = 1;
+	if (strstr(features_string, "mount"))
+		kernel_supports_mount = 1;
+	if (strstr(features_string, "dbus"))
+		kernel_supports_dbus = 1;
+	if (strstr(features_string, "signal"))
+		kernel_supports_signal = 1;
+	if (strstr(features_string, "ptrace {"))
+		kernel_supports_ptrace = 1;
+	if (strstr(features_string, "diff_encode"))
+		kernel_supports_diff_encode = 1;
+	else if (dfaflags & DFA_CONTROL_DIFF_ENCODE)
+		/* clear diff_encode because it is not supported */
+		dfaflags &= ~DFA_CONTROL_DIFF_ENCODE;
 }
 
 int process_binary(int option, const char *profilename)
@@ -843,7 +718,7 @@ int process_binary(int option, const char *profilename)
 	if (profilename) {
 		fd = open(profilename, O_RDONLY);
 		if (fd == -1) {
-			PERROR(_("Error: Could not read profile %s: %s.\n"),
+			PERROR(_("Error: Could not read binary profile or cache file %s: %s.\n"),
 			       profilename, strerror(errno));
 			exit(errno);
 		}
@@ -924,6 +799,36 @@ int test_for_dir_mode(const char *basename, const char *linkdir)
 	return rc;
 }
 
+#define le16_to_cpu(x) ((uint16_t)(le16toh (*(uint16_t *) x)))
+
+const char header_string[] = "\004\010\000version\000\002";
+#define HEADER_STRING_SIZE 12
+static bool valid_cached_file_version(const char *cachename)
+{
+	char buffer[16];
+	FILE *f;
+	if (!(f = fopen(cachename, "r"))) {
+		PERROR(_("Error: Could not read cache file '%s', skipping...\n"), cachename);
+		return false;
+	}
+	size_t res = fread(buffer, 1, 16, f);
+	fclose(f);
+	if (res < 16)
+		return false;
+
+	/* 12 byte header that is always the same and then 4 byte version # */
+	if (memcmp(buffer, header_string, HEADER_STRING_SIZE) != 0)
+		return false;
+
+	uint32_t version = cpu_to_le32(ENCODE_VERSION(force_complain,
+						      policy_version,
+						      parser_abi_version,
+						      kernel_abi_version));
+	if (memcmp(buffer + 12, &version, 4) != 0)
+		return false;
+
+	return true;
+}
 
 /* returns true if time is more recent than mru_tstamp */
 #define mru_t_cmp(a) \
@@ -935,8 +840,8 @@ void update_mru_tstamp(FILE *file)
 	struct stat stat_file;
 	if (fstat(fileno(file), &stat_file))
 		return;
-	if (mru_t_cmp(stat_file.st_ctim))
-		mru_tstamp = stat_file.st_ctim;
+	if (mru_t_cmp(stat_file.st_mtim))
+		mru_tstamp = stat_file.st_mtim;
 }
 
 int process_profile(int option, const char *profilename)
@@ -946,7 +851,6 @@ int process_profile(int option, const char *profilename)
 	char * cachename = NULL;
 	char * cachetemp = NULL;
 	const char *basename = NULL;
-	FILE *cmd;
 
 	/* per-profile states */
 	force_complain = opt_force_complain;
@@ -994,12 +898,6 @@ int process_profile(int option, const char *profilename)
 		update_mru_tstamp(yyin);
 	}
 
-	cmd = fopen("/proc/self/exe", "r");
-	if (cmd) {
-		update_mru_tstamp(cmd);
-		fclose(cmd);
-	}
-
 	retval = yyparse();
 	if (retval != 0)
 		goto out;
@@ -1028,7 +926,8 @@ int process_profile(int option, const char *profilename)
 		/* Load a binary cache if it exists and is newest */
 		if (!skip_read_cache &&
 		    stat(cachename, &stat_bin) == 0 &&
-		    stat_bin.st_size > 0 && (mru_t_cmp(stat_bin.st_mtim))) {
+		    stat_bin.st_size > 0 && (mru_t_cmp(stat_bin.st_mtim)) &&
+		    valid_cached_file_version(cachename)) {
 			if (show_cache)
 				PERROR("Cache hit: %s\n", cachename);
 			retval = process_binary(option, cachename);
@@ -1211,28 +1110,23 @@ static void setup_flags(void)
 	char *cache_flags = NULL;
 
 	/* Get the match string to determine type of regex support needed */
-	get_match_string();
-	/* Get kernel features string */
-	get_flags_string(&flags_string, FLAGS_FILE);
+	set_supported_features();
+
 	/* Gracefully handle AppArmor kernel without compatibility patch */
-	if (!flags_string) {
+	if (!features_string) {
 		PERROR("Cache read/write disabled: %s interface file missing. "
 			"(Kernel needs AppArmor 2.4 compatibility patch.)\n",
-			FLAGS_FILE);
+			FEATURES_FILE);
 		write_cache = 0;
 		skip_read_cache = 1;
 		return;
-	} else if (strstr(flags_string, "network"))
-		kernel_supports_network = 1;
-	else
-		kernel_supports_network = 0;
-
+	}
 
 
 	/*
          * Deal with cache directory versioning:
          *  - If cache/.features is missing, create it if --write-cache.
-         *  - If cache/.features exists, and does not match flags_string,
+         *  - If cache/.features exists, and does not match features_string,
          *    force cache reading/writing off.
          */
 	if (asprintf(&cache_features_path, "%s/.features", cacheloc) == -1) {
@@ -1240,16 +1134,16 @@ static void setup_flags(void)
 		exit(1);
 	}
 
-	get_flags_string(&cache_flags, cache_features_path);
+	cache_flags = load_features_file(cache_features_path);
 	if (cache_flags) {
-		if (strcmp(flags_string, cache_flags) != 0) {
+		if (strcmp(features_string, cache_flags) != 0) {
 			if (write_cache && cond_clear_cache) {
 				if (create_cache(cacheloc, cache_features_path,
-						 flags_string))
+						 features_string))
 					skip_read_cache = 1;
 			} else {
 				if (show_cache)
-					PERROR("Cache read/write disabled: %s does not match %s\n", FLAGS_FILE, cache_features_path);
+					PERROR("Cache read/write disabled: %s does not match %s\n", FEATURES_FILE, cache_features_path);
 				write_cache = 0;
 				skip_read_cache = 1;
 			}
@@ -1257,7 +1151,7 @@ static void setup_flags(void)
 		free(cache_flags);
 		cache_flags = NULL;
 	} else if (write_cache) {
-		create_cache(cacheloc, cache_features_path, flags_string);
+		create_cache(cacheloc, cache_features_path, features_string);
 	}
 
 	free(cache_features_path);

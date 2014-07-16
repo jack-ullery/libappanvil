@@ -16,7 +16,7 @@
   #include <abstractions/consoles>
   #include <abstractions/kerberosclient>
   #include <abstractions/user-tmp>
-  #include <program-chunks/postfix-common>
+  #include <abstractions/postfix-common>
 
   /etc/mtab                                r,
   /etc/postfix                             r,

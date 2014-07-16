@@ -46,7 +46,7 @@ libapparmor by adding USE_SYSTEM=1 to your make command.${nl}\
   LDLIBS += -Wl,-Bstatic -lapparmor -Wl,-Bdynamic -lpthread
 endif # USE_SYSTEM
 
-CFLAGS += -Wall -Wstrict-prototypes
+CFLAGS += -g -O0 -Wall -Wstrict-prototypes
 
 SRC=access.c \
     introspect.c \
@@ -66,9 +66,6 @@ SRC=access.c \
     chown.c \
     clone.c \
     coredump.c \
-    dbus_eavesdrop.c \
-    dbus_message.c \
-    dbus_service.c \
     deleted.c \
     environ.c \
     env_check.c \
@@ -92,6 +89,7 @@ SRC=access.c \
     open.c \
     openat.c \
     pipe.c \
+    pivot_root.c \
     ptrace.c \
     ptrace_helper.c \
     pwrite.c \
@@ -99,6 +97,7 @@ SRC=access.c \
     rename.c \
     readdir.c \
     rw.c \
+    socketpair.c \
     symlink.c \
     syscall_mknod.c \
     swap.c \
@@ -125,6 +124,17 @@ ifneq (,$(findstring $(shell uname -i),i386 i486 i586 i686 x86 x86_64))
 SRC+=syscall_ioperm.c syscall_iopl.c
 endif
 
+#only do dbus if proper libs are installl
+ifneq (,$(shell pkg-config --exists dbus-1 && echo TRUE))
+SRC+=dbus_eavesdrop.c dbus_message.c dbus_service.c
+else
+$(warning ${nl}\
+************************************************************************${nl}\
+No dbus pkg-config skipping dbus_eavesdrop dbus_message dbus_services tests ...${nl}\
+Install libdbus-1-dev or equivalent package to build and run these tests${nl}\
+************************************************************************${nl})
+endif
+
 EXEC=$(SRC:%.c=%)
 
 TESTS=access \
@@ -138,9 +148,6 @@ TESTS=access \
       chdir \
       clone \
       coredump \
-      dbus_eavesdrop \
-      dbus_message \
-      dbus_service \
       deleted \
       environ \
       exec \
@@ -160,6 +167,7 @@ TESTS=access \
       open \
       openat \
       pipe \
+      pivot_root \
       ptrace \
       pwrite \
       query_label \
@@ -167,6 +175,7 @@ TESTS=access \
       rename \
       readdir \
       rw \
+      socketpair \
       swap \
       sd_flags \
       setattr \
@@ -178,6 +187,11 @@ TESTS=access \
       unlink\
       xattrs\
       longpath
+
+#only do dbus if proper libs are installl
+ifneq (,$(shell pkg-config --exists dbus-1 && echo TRUE))
+TESTS+=dbus_eavesdrop dbus_message dbus_service
+endif
 
 # Tests that can crash the kernel should be placed here
 RISKY_TESTS=

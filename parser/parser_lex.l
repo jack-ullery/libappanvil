@@ -52,7 +52,7 @@
 /* #define DEBUG */
 #ifdef DEBUG
 static int yy_top_state(void);
-#define PDEBUG(fmt, args...) printf("Lexer (Line %d) (state %s): " fmt, current_lineno, state_names[YY_START].c_str(), ## args)
+#define PDEBUG(fmt, args...) fprintf(stderr, "Lexer (Line %d) (state %s): " fmt, current_lineno, state_names[YY_START].c_str(), ## args)
 #else
 #define PDEBUG(fmt, args...)	/* Do nothing */
 #endif
@@ -70,13 +70,19 @@ do { \
 
 #define RETURN_TOKEN(X) \
 do { \
-	DUMP_AND_DEBUG("Matched: %s\n", yytext); \
+	DUMP_AND_DEBUG("Matched: '%s'	Returning(%s)\n", yytext, #X); \
 	return (X); \
 } while (0)
 
 #define POP() \
 do { \
 	DUMP_AND_DEBUG(" (pop_to(%s)): Matched: %s\n", state_names[yy_top_state()].c_str(), yytext); \
+	yy_pop_state(); \
+} while (0)
+
+#define POP_NODUMP() \
+do { \
+	PDEBUG(" (pop_to(%s)): Matched: %s\n", state_names[yy_top_state()].c_str(), yytext); \
 	yy_pop_state(); \
 } while (0)
 
@@ -253,6 +259,8 @@ LT_EQUAL	<=
 %x RLIMIT_MODE
 %x MOUNT_MODE
 %x DBUS_MODE
+%x SIGNAL_MODE
+%x PTRACE_MODE
 %x CHANGE_PROFILE_MODE
 %x INCLUDE
 
@@ -267,7 +275,7 @@ LT_EQUAL	<=
 	}
 %}
 
-<INITIAL,INCLUDE,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,RLIMIT_MODE,MOUNT_MODE,DBUS_MODE>{
+<INITIAL,INCLUDE,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,RLIMIT_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE>{
 	{WS}+	{  DUMP_PREPROCESS; /* Ignoring whitespace */ }
 }
 
@@ -276,12 +284,12 @@ LT_EQUAL	<=
 		char *filename = strndup(yytext, yyleng - 1);
 		include_filename(filename + 1, *filename == '<');
 		free(filename);
-		yy_pop_state();
+		POP_NODUMP();
 	}
 
 	[^\<\>\" \t\n]+ {	/* filename */
 		include_filename(yytext, 0);
-		yy_pop_state();
+		POP_NODUMP();
 	}
 }
 
@@ -293,20 +301,22 @@ LT_EQUAL	<=
 		yyterminate();
 }
 
-<INITIAL,MOUNT_MODE,DBUS_MODE>{
+<INITIAL,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE>{
+	peer/{WS}*={WS}*\(	{
+		/* we match to the = in the lexer so that we can switch scanner
+		 * state.  By the time the parser see the = it may be too late
+		 * as bison may have requested the next token from the scanner
+		 */
+		yylval.id = processid(yytext, yyleng);
+		PUSH_AND_RETURN(EXTCONDLIST_MODE, TOK_CONDLISTID);
+	}
 	{VARIABLE_NAME}/{WS}*=	{
 		/* we match to the = in the lexer so that we can switch scanner
 		 * state.  By the time the parser see the = it may be too late
 		 * as bison may have requested the next token from the scanner
 		 */
-		int token = get_keyword_token(yytext);
-
-		if (token == TOK_PEER) {
-			PUSH_AND_RETURN(EXTCONDLIST_MODE, TOK_CONDLISTID);
-		} else {
-			yylval.id = processid(yytext, yyleng);
-			PUSH_AND_RETURN(EXTCOND_MODE, TOK_CONDID);
-		}
+		yylval.id = processid(yytext, yyleng);
+		PUSH_AND_RETURN(EXTCOND_MODE, TOK_CONDID);
 	}
 	{VARIABLE_NAME}/{WS}+in{WS}*\(	{
 		/* we match to 'in' in the lexer so that we can switch scanner
@@ -425,7 +435,7 @@ LT_EQUAL	<=
 	\r?\n	{
 		DUMP_PREPROCESS;
 		current_lineno++;
-		yy_pop_state();
+		POP();
 	}
 }
 
@@ -462,15 +472,26 @@ LT_EQUAL	<=
 }
 
 <DBUS_MODE>{
+	bind		{ RETURN_TOKEN(TOK_BIND); }
+	eavesdrop	{ RETURN_TOKEN(TOK_EAVESDROP); }
+}
+
+<DBUS_MODE,SIGNAL_MODE>{
 	send		{ RETURN_TOKEN(TOK_SEND); }
 	receive		{ RETURN_TOKEN(TOK_RECEIVE); }
-	bind		{ RETURN_TOKEN(TOK_BIND); }
+}
+
+<PTRACE_MODE>{
+	trace		{ RETURN_TOKEN(TOK_TRACE); }
+	readby		{ RETURN_TOKEN(TOK_READBY); }
+	tracedby	{ RETURN_TOKEN(TOK_TRACEDBY); }
+}
+
+<DBUS_MODE,SIGNAL_MODE,PTRACE_MODE>{
 	read		{ RETURN_TOKEN(TOK_READ); }
 	write		{ RETURN_TOKEN(TOK_WRITE); }
-	eavesdrop	{ RETURN_TOKEN(TOK_EAVESDROP); }
 	{OPEN_PAREN}	{
-			yy_push_state(LIST_VAL_MODE);
-			RETURN_TOKEN(TOK_OPENPAREN);
+			PUSH_AND_RETURN(LIST_VAL_MODE, TOK_OPENPAREN);
 			}
 	(r|w|rw|wr)/([[:space:],])	{
 			yylval.mode = strdup(yytext);
@@ -478,9 +499,11 @@ LT_EQUAL	<=
 			}
 }
 
-<MOUNT_MODE,DBUS_MODE>{
+<MOUNT_MODE>{
 	{ARROW}		{ RETURN_TOKEN(TOK_ARROW); }
+}
 
+<MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE>{
 	({IDS_NOEQ}|{PATHNAME}|{QUOTED_ID}) {
 		yylval.id = processid(yytext, yyleng);
 		RETURN_TOKEN(TOK_ID);
@@ -488,8 +511,8 @@ LT_EQUAL	<=
 }
 
 #include/.*\r?\n	{
-	/* Don't use push here as we don't want #include echoed out. It needs
-	 * to be handled specially
+	/* Don't use PUSH() macro here as we don't want #include echoed out.
+	 * It needs to be handled specially
 	 */ 
 	yy_push_state(INCLUDE);
 }
@@ -567,16 +590,21 @@ LT_EQUAL	<=
 	case TOK_DBUS:
 		state = DBUS_MODE;
 		break;
+	case TOK_SIGNAL:
+		state = SIGNAL_MODE;
+		break;
+	case TOK_PTRACE:
+		state = PTRACE_MODE;
 	default: /* nothing */
 		break;
 	}
 	PUSH_AND_RETURN(state, token);
 }
 
-<INITIAL,NETWORK_MODE,RLIMIT_MODE,MOUNT_MODE,DBUS_MODE>{
+<INITIAL,NETWORK_MODE,RLIMIT_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE>{
 	{END_OF_RULE}	{
 		if (YY_START != INITIAL)
-			yy_pop_state();
+			POP_NODUMP();
 		RETURN_TOKEN(TOK_END_OF_RULE);
 	}
 
@@ -586,7 +614,7 @@ LT_EQUAL	<=
 	}
 }
 
-<INITIAL,SUB_ID,SUB_VALUE,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,MOUNT_MODE,DBUS_MODE>{
+<INITIAL,SUB_ID,SUB_VALUE,LIST_VAL_MODE,EXTCOND_MODE,LIST_COND_VAL,LIST_COND_PAREN_VAL,LIST_COND_MODE,EXTCONDLIST_MODE,ASSIGN_MODE,NETWORK_MODE,CHANGE_PROFILE_MODE,MOUNT_MODE,DBUS_MODE,SIGNAL_MODE,PTRACE_MODE>{
 	[^\n]	{
 		DUMP_PREPROCESS;
 		/* Something we didn't expect */
@@ -613,6 +641,8 @@ unordered_map<int, string> state_names = {
 	STATE_TABLE_ENT(RLIMIT_MODE),
 	STATE_TABLE_ENT(MOUNT_MODE),
 	STATE_TABLE_ENT(DBUS_MODE),
+	STATE_TABLE_ENT(SIGNAL_MODE),
+	STATE_TABLE_ENT(PTRACE_MODE),
 	STATE_TABLE_ENT(CHANGE_PROFILE_MODE),
 	STATE_TABLE_ENT(INCLUDE),
 };

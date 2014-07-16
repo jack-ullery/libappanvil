@@ -132,10 +132,12 @@ runchecktest "fd passing; confined -> confined (no perm)" fail $file $socket $fd
 sleep 1
 rm -f ${socket}
 
-# FAIL - confined client, no access to the socket file
+if [ "$(have_features policy/versions/v6)" == "true" ] ; then
+    # FAIL - confined client, no access to the socket file
 
-genprofile $file:$okperm $socket:rw $fd_client:px -- image=$fd_client $file:$okperm
-runchecktest "fd passing; confined client w/o socket access" fail $file $socket $fd_client
+    genprofile $file:$okperm $socket:rw $fd_client:px -- image=$fd_client $file:$okperm
+    runchecktest "fd passing; confined client w/o socket access" fail $file $socket $fd_client
 
-sleep 1
-rm -f ${socket}
+    sleep 1
+    rm -f ${socket}
+fi

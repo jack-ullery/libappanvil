@@ -28,11 +28,38 @@ bin=$pwd
 
 mount_file=$tmpdir/mountfile
 mount_point=$tmpdir/mountpoint
+mount_bad=$tmpdir/mountbad
 loop_device="unset" 
+fstype="ext2"
+
+setup_mnt() {
+	/bin/mount -n -t${fstype} ${loop_device} ${mount_point}
+#	/bin/mount -n -t${fstype} ${loop_device} ${mount_bad}
+}
+remove_mnt() {
+	mountpoint -q "${mount_point}"
+	if [ $? -eq 0 ] ; then
+		/bin/umount -t${fstype} ${mount_point}
+	fi
+	mountpoint -q "${mount_bad}"
+	if [ $? -eq 0 ] ; then
+		/bin/umount -t${fstype} ${mount_bad}
+	fi
+}
+
+mount_cleanup() {
+	remove_mnt &> /dev/null
+	if [ "$loop_device" != "unset" ]
+	then
+		/sbin/losetup -d ${loop_device} &> /dev/null
+	fi
+}
+do_onexit="mount_cleanup"
 
 dd if=/dev/zero of=${mount_file} bs=1024 count=512 2> /dev/null
-/sbin/mkfs -text2 -F ${mount_file} > /dev/null 2> /dev/null
+/sbin/mkfs -t${fstype} -F ${mount_file} > /dev/null 2> /dev/null
 /bin/mkdir ${mount_point}
+/bin/mkdir ${mount_bad}
 
 # in a modular udev world, the devices won't exist until the loopback
 # module is loaded.
@@ -56,34 +83,92 @@ then
 	fatalerror 'Unable to find a free loop device'
 fi
 
+
 # TEST 1.  Make sure can mount and umount unconfined
-
 runchecktest "MOUNT (unconfined)" pass mount ${loop_device} ${mount_point}
+remove_mnt
+
+setup_mnt
 runchecktest "UMOUNT (unconfined)" pass umount ${loop_device} ${mount_point}
+remove_mnt
 
-# TEST A2.  confine MOUNT 
-
+# TEST A2.  confine MOUNT no perms
 genprofile
-runchecktest "MOUNT (confined)" fail mount ${loop_device} ${mount_point}
+runchecktest "MOUNT (confined no perm)" fail mount ${loop_device} ${mount_point}
+remove_mnt
 
-# TEST A3.  confine MOUNT - cap sys_admin is not sufficient to mount
-genprofile capability:sys_admin
-runchecktest "MOUNT (confined)" fail mount ${loop_device} ${mount_point}
+setup_mnt
+runchecktest "UMOUNT (confined no perm)" fail umount ${loop_device} ${mount_point}
+remove_mnt
 
-/bin/umount -text2 ${mount_point}
 
-# TEST A4.  confine UMOUNT
+if [ "$(have_features mount)" != "true" ] ; then
+	genprofile capability:sys_admin
+	runchecktest "MOUNT (confined cap)" pass mount ${loop_device} ${mount_point}
+	remove_mnt
 
-/bin/mount -text2 ${loop_device} ${mount_point}
+	setup_mnt
+	runchecktest "UMOUNT (confined cap)" pass umount ${loop_device} ${mount_point}
+	remove_mnt
+else
+	echo "    using mount rules ..."
 
-genprofile
-runchecktest "UMOUNT (confined)" fail umount ${loop_device} ${mount_point}
+	genprofile capability:sys_admin
+	runchecktest "MOUNT (confined cap)" fail mount ${loop_device} ${mount_point}
+	remove_mnt
 
-# TEST A4.  confine UMOUNT - cap sys_admin allows unmount
-genprofile capability:sys_admin
-runchecktest "UMOUNT (confined)" pass umount ${loop_device} ${mount_point}
+	setup_mnt
+	runchecktest "UMOUNT (confined cap)" fail umount ${loop_device} ${mount_point}
+	remove_mnt
 
-# cleanup, umount file
-/bin/umount ${loop_device} > /dev/null 2> /dev/null  || /sbin/losetup -d ${loop_device} > /dev/null 2> /dev/null
 
-/sbin/losetup -d ${loop_device} > /dev/null 2> /dev/null
+	genprofile mount:ALL
+	runchecktest "MOUNT (confined mount:ALL)" fail mount ${loop_device} ${mount_point}
+	remove_mnt
+
+
+	genprofile "mount:-> ${mount_point}/"
+	runchecktest "MOUNT (confined bad mntpnt mount -> mntpnt)" fail mount ${loop_device} ${mount_bad}
+	remove_mnt
+
+	runchecktest "MOUNT (confined mount -> mntpnt)" fail mount ${loop_device} ${mount_point}
+	remove_mnt
+
+
+
+	genprofile umount:ALL
+	setup_mnt
+	runchecktest "UMOUNT (confined umount:ALL)" fail umount ${loop_device} ${mount_point}
+	remove_mnt
+
+
+	genprofile mount:ALL cap:sys_admin
+	runchecktest "MOUNT (confined cap mount:ALL)" pass mount ${loop_device} ${mount_point}
+	remove_mnt
+
+
+	genprofile cap:sys_admin "mount:-> ${mount_point}/"
+	runchecktest "MOUNT (confined bad mntpnt cap mount -> mntpnt)" fail mount ${loop_device} ${mount_bad}
+	remove_mnt
+
+	runchecktest "MOUNT (confined cap mount -> mntpnt)" pass mount ${loop_device} ${mount_point}
+	remove_mnt
+
+
+	genprofile cap:sys_admin "mount:fstype=${fstype}XXX"
+	runchecktest "MOUNT (confined cap mount bad fstype)" fail mount ${loop_device} ${mount_point}
+	remove_mnt
+
+	genprofile cap:sys_admin "mount:fstype=${fstype}"
+	runchecktest "MOUNT (confined cap mount fstype)" pass mount ${loop_device} ${mount_point}
+	remove_mnt
+
+
+	genprofile cap:sys_admin umount:ALL
+	setup_mnt
+	runchecktest "UMOUNT (confined cap umount:ALL)" pass umount ${loop_device} ${mount_point}
+	remove_mnt
+
+fi
+
+#need tests for move mount, remount, bind mount, chroot

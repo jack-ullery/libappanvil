@@ -12,6 +12,8 @@ BISON := bison
 
 all : ${TARGET}
 
+UNITTESTS = tst_parse
+
 libapparmor_re.a: parse.o expr-tree.o hfa.o chfa.o aare_rules.o
 	ar ${ARFLAGS} $@ $^
 

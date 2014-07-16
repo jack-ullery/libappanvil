@@ -29,7 +29,7 @@ badperm=r
 
 # PASS TEST (pt 1)
 
-genprofile $file:$okperm 
+genprofile $file:$okperm signal:receive:peer=unconfined
 
 runtestbg "READ/WRITE pass" pass $file
 

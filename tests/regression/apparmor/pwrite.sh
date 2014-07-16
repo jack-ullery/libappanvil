@@ -23,7 +23,7 @@ badreadperm=w
 
 # PASS TEST (pass 1)
 
-genprofile $file:$okperm
+genprofile $file:$okperm signal:receive:peer=unconfined
 
 runtestbg "PREAD/PWRITE with rw" pass $file
 

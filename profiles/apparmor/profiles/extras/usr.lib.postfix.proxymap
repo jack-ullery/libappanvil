@@ -13,7 +13,7 @@
 /usr/lib/postfix/proxymap {
   #include <abstractions/base>
   #include <abstractions/nameservice>
-  #include <program-chunks/postfix-common>
+  #include <abstractions/postfix-common>
 
   capability setgid,
   capability setuid,

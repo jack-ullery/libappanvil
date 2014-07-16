@@ -17,8 +17,8 @@
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/wutmp>
+  #include <abstractions/dovecot-common>
 
-  capability setgid,
   capability chown,
   capability dac_override,
 

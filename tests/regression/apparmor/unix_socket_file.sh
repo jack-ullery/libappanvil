@@ -27,6 +27,7 @@ pwd=`cd $pwd ; /bin/pwd`
 bin=$pwd
 
 . $bin/prologue.inc
+requires_features policy/versions/v6
 
 client=$bin/unix_socket_file_client
 socket=${tmpdir}/unix_socket_file.sock

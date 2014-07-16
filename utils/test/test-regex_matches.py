@@ -41,7 +41,22 @@ regex_has_comma_testcases = [
     ('audit "/tmp/foo, # bar" rw%s # comment', 'comment embedded in quote 02'),
 
     # lifted from parser/tst/simple_tests/vars/vars_alternation_3.sd
-    ('/does/not/@{BAR},exist,notexist} r%s', 'partial alternation')
+    ('/does/not/@{BAR},exist,notexist} r%s', 'partial alternation'),
+
+    ('signal%s', 'bare signal'),
+    ('signal receive%s', 'simple signal'),
+    ('signal (send, receive)%s', 'embedded parens signal 01'),
+    ('signal (send, receive) set=(hup, quit)%s', 'embedded parens signal 02'),
+
+    ('ptrace%s', 'bare ptrace'),
+    ('ptrace trace%s', 'simple ptrace'),
+    ('ptrace (tracedby, readby)%s', 'embedded parens ptrace 01'),
+    ('ptrace (trace) peer=/usr/bin/foo%s', 'embedded parens ptrace 02'),
+
+    ('pivot_root%s', 'bare pivot_root'),
+    ('pivot_root /old%s', 'pivot_root with old'),
+    ('pivot_root /old new%s', 'pivot_root with new'),
+    ('pivot_root /old /new -> child%s', 'pivot_root with child'),
 
     # the following fail due to inadequacies in the regex
     # ('dbus (r, w, %s', 'incomplete dbus action'),
@@ -96,6 +111,15 @@ regex_split_comment_testcases = [
     ('dbus send member=no_comment, ', False),
     ('audit "/tmp/foo, # bar" rw', False),
     ('audit "/tmp/foo, # bar" rw # comment', ('audit "/tmp/foo, # bar" rw ', '# comment')),
+    ('file,', False),
+    ('file, # bare', ('file, ', '# bare')),
+    ('file /tmp/foo rw, # read-write', ('file /tmp/foo rw, ', '# read-write')),
+    ('signal, # comment', ('signal, ', '# comment')),
+    ('signal receive set=(usr1 usr2) peer=foo,', False),
+    ('ptrace, # comment', ('ptrace, ', '# comment')),
+    ('ptrace (trace read) peer=/usr/bin/foo,', False),
+    ('pivot_root, # comment', ('pivot_root, ', '# comment')),
+    ('pivot_root /old /new -> child,', False),
 ]
 
 def setup_split_comment_testcases():
@@ -110,6 +134,206 @@ def setup_split_comment_testcases():
         stub_test.__doc__ = "test '%s'" % (test_string)
         setattr(AARegexSplitComment, 'test_split_comment_%d' % (i), stub_test)
 
+
+def regex_test(self, line, expected):
+    '''Run a line through self.regex.search() and verify the result
+
+    Keyword arguments:
+    line -- the line to search
+    expected -- False if the search isn't expected to match or, if the search
+                is expected to match, a tuple of expected match groups with all
+                of the strings stripped
+    '''
+    result = self.regex.search(line)
+    if not expected:
+        self.assertFalse(result)
+        return
+
+    self.assertTrue(result)
+
+    groups = result.groups()
+    self.assertEqual(len(groups), len(expected))
+    for (i, group) in enumerate(groups):
+        if group:
+            group = group.strip()
+        self.assertEqual(group, expected[i], 'Group %d mismatch' % i)
+
+
+def setup_regex_tests(test_class):
+    '''Create tests in test_class using test_class.tests and regex_tests()
+
+    test_class.tests should be tuples of (line, expected_results) where
+    expected_results is False if test_class.regex.search(line) should not
+    match. If the search should match, expected_results should be a tuple of
+    the expected groups, with all of the strings stripped.
+    '''
+    for (i, (line, expected)) in enumerate(test_class.tests):
+        def stub_test(self, line=line, expected=expected):
+            regex_test(self, line, expected)
+
+        stub_test.__doc__ = "test '%s'" % (line)
+        setattr(test_class, 'test_%d' % (i), stub_test)
+
+
+class AARegexCapability(unittest.TestCase):
+    '''Tests for RE_PROFILE_CAP'''
+
+    regex = aa.RE_PROFILE_CAP
+
+    tests = [
+        ('   capability net_raw,', (None, None, 'net_raw', None)),
+        ('capability     net_raw   ,  ', (None, None, 'net_raw', None)),
+        ('   capability,', (None, None, None, None)),
+        ('   capability   ,  ', (None, None, None, None)),
+        ('   capabilitynet_raw,', False)
+    ]
+
+
+class AARegexPath(unittest.TestCase):
+    '''Tests for RE_PROFILE_PATH_ENTRY'''
+
+    regex = aa.RE_PROFILE_PATH_ENTRY
+
+    tests = [
+        ('   /tmp/foo r,',
+         (None, None, None, None, '/tmp/foo', 'r', None, None, None)),
+        ('   audit /tmp/foo rw,',
+         ('audit', None, None, None, '/tmp/foo', 'rw', None, None, None)),
+        ('   audit deny /tmp/foo rw,',
+         ('audit', 'deny', None, None, '/tmp/foo', 'rw', None, None, None)),
+        ('   file /tmp/foo rw,',
+         (None, None, None, 'file', '/tmp/foo', 'rw', None, None, None)),
+        ('   file,', False),
+    ]
+
+
+class AARegexBareFile(unittest.TestCase):
+    '''Tests for RE_PROFILE_BARE_FILE_ENTRY'''
+
+    regex = aa.RE_PROFILE_BARE_FILE_ENTRY
+
+    tests = [
+        ('   file,', (None, None, None, None)),
+        ('   dbus,', False),
+        ('   file /tmp/foo rw,', False),
+        ('   file /tmp/foo,', False),
+        ('   file r,', False),
+        ('  owner file  , ', (None, None, 'owner', None)),
+        ('  audit owner file  , ', ('audit', None, 'owner', None)),
+        ('  deny file  , ', (None, 'deny', None, None)),
+    ]
+
+
+class AARegexDbus(unittest.TestCase):
+    '''Tests for RE_PROFILE_DBUS'''
+
+    regex = aa.RE_PROFILE_DBUS
+
+    tests = [
+        ('   dbus,', (None, None, 'dbus,', None)),
+        ('   audit dbus,', ('audit', None, 'dbus,', None)),
+        ('   dbus send member=no_comment,', (None, None, 'dbus send member=no_comment,', None)),
+        ('   dbus send member=no_comment, # comment', (None, None, 'dbus send member=no_comment,', '# comment')),
+
+        ('   dbusdriver,', False),
+        ('   audit dbusdriver,', False),
+    ]
+
+class AARegexMount(unittest.TestCase):
+    '''Tests for RE_PROFILE_MOUNT'''
+
+    regex = aa.RE_PROFILE_MOUNT
+
+    tests = [
+        ('   mount,', (None, None, 'mount,', 'mount', None, None)),
+        ('   audit mount,', ('audit', None, 'mount,', 'mount', None, None)),
+        ('   umount,', (None, None, 'umount,', 'umount', None, None)),
+        ('   audit umount,', ('audit', None, 'umount,', 'umount', None, None)),
+        ('   unmount,', (None, None, 'unmount,', 'unmount', None, None)),
+        ('   audit unmount,', ('audit', None, 'unmount,', 'unmount', None, None)),
+        ('   remount,', (None, None, 'remount,', 'remount', None, None)),
+        ('   deny remount,', (None, 'deny', 'remount,', 'remount', None, None)),
+
+        ('   mount, # comment', (None, None, 'mount,', 'mount', None, '# comment')),
+
+        ('   mountain,', False),
+        ('   audit mountain,', False),
+    ]
+
+
+
+class AARegexSignal(unittest.TestCase):
+    '''Tests for RE_PROFILE_SIGNAL'''
+
+    regex = aa.RE_PROFILE_SIGNAL
+
+    tests = [
+        ('   signal,', (None, None, 'signal,', None)),
+        ('   audit signal,', ('audit', None, 'signal,', None)),
+        ('   signal receive,', (None, None, 'signal receive,', None)),
+        ('   signal (send, receive),',
+         (None, None, 'signal (send, receive),', None)),
+        ('   audit signal (receive),',
+         ('audit', None, 'signal (receive),', None)),
+        ('   signal (send, receive) set=(usr1 usr2),',
+         (None, None, 'signal (send, receive) set=(usr1 usr2),', None)),
+        ('   signal send set=(hup, quit) peer=/usr/sbin/daemon,',
+         (None, None,
+          'signal send set=(hup, quit) peer=/usr/sbin/daemon,', None)),
+
+        ('   signalling,', False),
+        ('   audit signalling,', False),
+        ('   signalling receive,', False),
+    ]
+
+
+class AARegexPtrace(unittest.TestCase):
+    '''Tests for RE_PROFILE_PTRACE'''
+
+    regex = aa.RE_PROFILE_PTRACE
+
+    tests = [
+        ('   ptrace,', (None, None, 'ptrace,', None)),
+        ('   audit ptrace,', ('audit', None, 'ptrace,', None)),
+        ('   ptrace trace,', (None, None, 'ptrace trace,', None)),
+        ('   ptrace (tracedby, readby),',
+         (None, None, 'ptrace (tracedby, readby),', None)),
+        ('   audit ptrace (read),', ('audit', None, 'ptrace (read),', None)),
+        ('   ptrace trace peer=/usr/sbin/daemon,',
+         (None, None, 'ptrace trace peer=/usr/sbin/daemon,', None)),
+
+        ('   ptraceback,', False),
+        ('   audit ptraceback,', False),
+        ('   ptraceback trace,', False),
+    ]
+
+
+class AARegexPivotRoot(unittest.TestCase):
+    '''Tests for RE_PROFILE_PIVOT_ROOT'''
+
+    regex = aa.RE_PROFILE_PIVOT_ROOT
+
+    tests = [
+        ('   pivot_root,', (None, None, 'pivot_root,', None)),
+        ('   audit pivot_root,', ('audit', None, 'pivot_root,', None)),
+        ('   pivot_root oldroot=/new/old,',
+         (None, None, 'pivot_root oldroot=/new/old,', None)),
+        ('   pivot_root oldroot=/new/old /new,',
+         (None, None, 'pivot_root oldroot=/new/old /new,', None)),
+        ('   pivot_root oldroot=/new/old /new -> child,',
+         (None, None, 'pivot_root oldroot=/new/old /new -> child,', None)),
+        ('   audit pivot_root oldroot=/new/old /new -> child,',
+         ('audit', None, 'pivot_root oldroot=/new/old /new -> child,', None)),
+
+        ('pivot_root', False),  # comma missing
+
+        ('pivot_rootbeer,', False),
+        ('pivot_rootbeer    ,  ', False),
+        ('pivot_rootbeer, # comment', False),
+        ('pivot_rootbeer /new,  ', False),
+        ('pivot_rootbeer /new, # comment', False),
+    ]
+
 if __name__ == '__main__':
     verbosity = 2
 
@@ -119,6 +343,13 @@ if __name__ == '__main__':
     test_suite = unittest.TestSuite()
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexHasComma))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexSplitComment))
+
+    for tests in (AARegexCapability, AARegexPath, AARegexBareFile,
+                  AARegexDbus, AARegexMount,
+                  AARegexSignal, AARegexPtrace, AARegexPivotRoot):
+        setup_regex_tests(tests)
+        test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(tests))
+
     result = unittest.TextTestRunner(verbosity=verbosity).run(test_suite)
     if not result.wasSuccessful():
         exit(1)

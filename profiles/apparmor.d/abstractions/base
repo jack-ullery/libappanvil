@@ -103,6 +103,29 @@
   # glibc malloc (man 5 proc)
   @{PROC}/sys/vm/overcommit_memory r,
 
+  # Allow other processes to read our /proc entries, futexes, perf tracing and
+  # kcmp for now (they will need 'read' in the first place). Administrators can
+  # override with:
+  #   deny ptrace (readby) ...
+  ptrace (readby),
+
+  # Allow other processes to trace us by default (they will need 'trace' in
+  # the first place). Administrators can override with:
+  #   deny ptrace (tracedby) ...
+  ptrace (tracedby),
+
+  # Allow us to ptrace read ourselves
+  ptrace (read) peer=@{profile_name},
+
+  # Allow unconfined processes to send us signals by default
+  signal (receive) peer=unconfined,
+
+  # Allow us to signal ourselves
+  signal peer=@{profile_name},
+
+  # Checking for PID existence is quite common so add it by default for now
+  signal (receive, send) set=("exists"),
+
   # Workaround https://launchpad.net/bugs/359338 until upstream handles stacked
   # filesystems generally. This does not appreciably decrease security with
   # Ubuntu profiles because the user is expected to have access to files owned

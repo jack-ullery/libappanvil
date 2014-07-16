@@ -3,7 +3,7 @@
 #                  2008, 2009
 #    NOVELL (All rights reserved)
 #
-#    Copyright (c) 2010 - 2013
+#    Copyright (c) 2010 - 2014
 #    Canonical Ltd. (All rights reserved)
 #
 #    This program is free software; you can redistribute it and/or
@@ -54,7 +54,7 @@ B<COMMENT> = '#' I<TEXT>
 
 B<TEXT> = any characters
 
-B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> | I<NETWORK RULE> | I<MOUNT RULE> | I<DBUS RULE> | I<FILE RULE> | 'change_profile -> ' I<PROGRAMCHILD> ) ... ] '}'
+B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<DBUS RULE> | I<FILE RULE> | 'change_profile -> ' I<PROGRAMCHILD> ) ... ] '}'
 
 B<SUBPROFILE> = [ I<COMMENT> ... ] ( I<PROGRAMHAT> | 'profile ' I<PROGRAMCHILD> ) '{' [ ( I<FILE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}'
 
@@ -75,15 +75,13 @@ B<PROGRAMHAT> = '^'  (non-whitespace characters; see aa_change_hat(2) for a desc
 
 B<PROGRAMCHILD> = I<SUBPROFILE> name
 
-B<MOUNT RULE> = ( I<MOUNT> | I<REMOUNT> | I<UMOUNT> | I<PIVOT ROOT> )
+B<MOUNT RULE> = ( I<MOUNT> | I<REMOUNT> | I<UMOUNT> )
 
 B<MOUNT> = [ 'audit' ] [ 'deny' ] 'mount' [ I<MOUNT CONDITIONS> ] [ I<SOURCE FILEGLOB> ] [ -> [ I<MOUNTPOINT FILEGLOB> ]
 
 B<REMOUNT> = [ 'audit' ] [ 'deny' ] 'remount' [ I<MOUNT CONDITIONS> ] I<MOUNTPOINT FILEGLOB>
 
 B<UMOUNT> = [ 'audit' ] [ 'deny' ] 'umount' [ I<MOUNT CONDITIONS> ] I<MOUNTPOINT FILEGLOB>
-
-B<PIVOT ROOT> = [ 'audit' ] [ 'deny' ] pivot_root [ I<OLD ABS PATH> ] [ I<MOUNTPOINT ABS PATH> ] [ -> I<PROGRAMCHILD> ]
 
 B<MOUNT CONDITIONS> = [ ( 'fstype' | 'vfstype' ) ( '=' | 'in' ) I<MOUNT FSTYPE EXPRESSION> ] [ 'options' ( '=' | 'in' ) I<MOUNT FLAGS EXPRESSION> ]
 
@@ -98,6 +96,34 @@ B<MOUNT FLAGS LIST> = Comma separated list of I<MOUNT FLAGS>.
 B<MOUNT FLAGS> = ( 'ro' | 'rw' | 'nosuid' | 'suid' | 'nodev' | 'dev' | 'noexec' | 'exec' | 'sync' | 'async' | 'remount' | 'mand' | 'nomand' | 'dirsync' | 'nodirsync' | 'noatime' | 'atime' | 'nodiratime' | 'diratime' | 'bind' | 'move' | 'rec' | 'verbose' | 'silent' | 'load' | 'acl' | 'noacl' | 'unbindable' | 'private' | 'slave' | 'shared' | 'relative' | 'norelative' | 'iversion' | 'noiversion' | 'strictatime' | 'nouser' | 'user' )
 
 B<MOUNT EXPRESSION> = ( I<ALPHANUMERIC> | I<AARE> ) ...
+
+B<PIVOT ROOT RULE> = [ 'audit' ] [ 'deny' ] pivot_root [ oldroot=I<OLD PUT FILEGLOB> ] [ I<NEW ROOT FILEGLOB> ] [ -> I<PROGRAMCHILD> ]
+
+B<PTRACE_RULE> = [ 'audit' ] [ 'deny' ] 'ptrace' [ I<PTRACE ACCESS PERMISSIONS> ] [ I<PTRACE PEER> ]
+
+B<PTRACE ACCESS PERMISSIONS> = I<PTRACE ACCESS> | I<PTRACE ACCESS LIST>
+
+B<PTRACE ACCESS LIST> = '(' Comma or space separated list of I<PTRACE ACCESS> ')'
+
+B<PTRACE ACCESS> = ( 'r' | 'w' | 'rw' | 'read' | 'readby' | 'trace' | 'tracedby' )
+
+B<PTRACE PEER> = 'peer' '=' I<AARE>
+
+B<SIGNAL_RULE> = [ 'audit' ] [ 'deny' ] 'signal' [ I<SIGNAL ACCESS PERMISSIONS> ] [ I<SIGNAL SET> ] [ I<SIGNAL PEER> ]
+
+B<SIGNAL ACCESS PERMISSIONS> = I<SIGNAL ACCESS> | I<SIGNAL ACCESS LIST>
+
+B<SIGNAL ACCESS LIST> = '(' Comma or space separated list of I<SIGNAL ACCESS> ')'
+
+B<SIGNAL ACCESS> = ( 'r' | 'w' | 'rw' | 'read' | 'write' | 'send' | 'receive' )
+
+B<SIGNAL SET> = 'set' '=' '(' I<SIGNAL LIST> ')'
+
+B<SIGNAL LIST> = Comma or space separated list of I<SIGNALS>
+
+B<SIGNALS> = ( 'hup' | 'int' | 'quit' | 'ill' | 'trap' | 'abrt' | 'bus' | 'fpe' | 'kill' | 'usr1' | 'segv' | 'usr2' | 'pipe' | 'alrm' | 'term' | 'stkflt' | 'chld' | 'cont' | 'stop' | 'stp' | 'ttin' | 'ttou' | 'urg' | 'xcpu' | 'xfsz' | 'vtalrm' | 'prof' | 'winch' | 'io' | 'pwr' | 'sys' | 'emt' | 'exists' )
+
+B<SIGNAL PEER> = 'peer' '=' I<AARE>
 
 B<DBUS RULE> = ( I<DBUS MESSAGE RULE> | I<DBUS SERVICE RULE> | I<DBUS EAVESDROP RULE> | I<DBUS COMBINED RULE> )
 
@@ -384,12 +410,12 @@ eg.
 
 AppArmor supports mount mediation and allows specifying filesystem types and
 mount flags. The syntax of mount rules in AppArmor is based on the mount(8)
-command syntax. Mount rules must contain one of the mount, remount, umount or
-pivot_root keywords, but all mount conditions are optional. Unspecified
-optional conditionals are assumed to match all entries (eg, not specifying
-fstype means all fstypes are matched). Due to the complexity of the mount
-command and how options may be specified, AppArmor allows specifying
-conditionals three different ways:
+command syntax. Mount rules must contain one of the mount, remount or umount
+keywords, but all mount conditions are optional. Unspecified optional
+conditionals are assumed to match all entries (eg, not specifying fstype means
+all fstypes are matched). Due to the complexity of the mount command and how
+options may be specified, AppArmor allows specifying conditionals three
+different ways:
 
 =over 4
 
@@ -655,6 +681,114 @@ $ mount -o nodev,user /dev/foo /mnt
 
 =back
 
+=head2 Pivot Root Rules
+
+AppArmor mediates changing of the root filesystem through the pivot_root(2)
+system call. The syntax of 'pivot_root' rules in AppArmor is based on the
+pivot_root(2) system call parameters with the notable exception that the
+ordering is reversed. The path corresponding to the put_old parameter of
+pivot_root(2) is optionally specified in the 'pivot_root' rule using the
+'oldroot=' prefix.
+
+AppArmor 'pivot_root' rules can specify a profile transition to occur during
+the pivot_root(2) system call. Note that AppArmor will only transition the
+process calling pivot_root(2) to the new profile.
+
+The paths specified in 'pivot_root' rules must end with '/' since they are
+directories.
+
+Here are some example 'pivot_root' rules:
+
+    # Allow any pivot
+    pivot_root,
+
+    # Allow pivoting to any new root directory and putting the old root
+    # directory at /mnt/root/old/
+    pivot_root oldroot=/mnt/root/old/,
+
+    # Allow pivoting the root directory to /mnt/root/
+    pivot_root /mnt/root/,
+
+    # Allow pivoting to /mnt/root/ and putting the old root directory at
+    # /mnt/root/old/
+    pivot_root oldroot=/mnt/root/old/ /mnt/root/,
+
+    # Allow pivoting to /mnt/root/, putting the old root directory at
+    # /mnt/root/old/ and transition to the /mnt/root/sbin/init profile
+    pivot_root oldroot=/mnt/root/old/ /mnt/root/ -> /mnt/root/sbin/init,
+
+=head2 PTrace rules
+
+AppArmor supports mediation of ptrace(2). AppArmor PTrace rules are accumulated
+so that the granted PTrace permissions are the union of all the listed PTrace
+rule permissions.
+
+AppArmor PTrace permissions are implied when a rule does not explicitly state
+an access list. By default, all PTrace permissions are implied.
+
+The trace and tracedby permissions govern ptrace(2) while read and readby
+govern certain proc(5) filesystem accesses, kcmp(2), futexes
+(get_robust_list(2)) and perf trace events.
+
+For a ptrace operation to be allowed the profile of the tracing process and the
+profile of the target task must both have the correct permissions. For example,
+the profile of the process attaching to another task must have the trace
+permission for the target task's profile, and the task being traced must have
+the tracedby permission for the tracing process' profile.
+
+Example AppArmor PTrace rules:
+
+    # Allow all PTrace access
+    ptrace,
+
+    # Explicitly allow all PTrace access,
+    ptrace (read, readby, trace, tracedby),
+
+    # Explicitly deny use of ptrace(2)
+    deny ptrace (trace),
+
+    # Allow unconfined processes (eg, a debugger) to ptrace us
+    ptrace (readby, tracedby) peer=unconfined,
+
+    # Allow ptrace of a process running under the /usr/bin/foo profile
+    ptrace (trace) peer=/usr/bin/foo,
+
+=head2 Signal rules
+
+AppArmor supports mediation of signal(7). AppArmor signal rules are accumulated
+so that the granted signal permissions are the union of all the listed signal
+rule permissions.
+
+AppArmor signal permissions are implied when a rule does not explicitly state
+an access list. By default, all signal permissions are implied.
+
+For the sending of a signal to be allowed, the profile of the sending process
+and the profile of the target task must both have the correct permissions. For
+example, the profile of a process sending a signal to another task must have
+the send permission for the target task's profile, and the task receiving the
+signal must have a receive permission for the sending process' profile.
+
+Example AppArmor signal rules:
+
+    # Allow all signal access
+    signal,
+
+    # Explicitly deny sending the HUP and INT signals
+    deny signal (send) set=(hup, int),
+
+    # Allow unconfined processes to send us signals
+    signal (receive) peer=unconfined,
+
+    # Allow sending of signals to a process running under the /usr/bin/foo
+    # profile
+    signal (send) peer=/usr/bin/foo,
+
+    # Allow checking for PID existence
+    signal (receive, send) set=("exists"),
+
+    # Allow us to signal ourselves using the built-in @{profile_name} variable
+    signal peer=@{profile_name},
+
 =head2 DBus rules
 
 AppArmor supports DBus mediation. The mediation is performed in conjunction
@@ -708,6 +842,9 @@ Example AppArmor DBus rules:
          member=ExampleMethod
          peer=(name=(com.example.ExampleName1|com.example.ExampleName2)),
 
+    # Allow receive access for all unconfined peers
+    dbus receive peer=(label=unconfined)),
+
     # Allow eavesdropping on the system bus
     dbus eavesdrop bus=system,
 
@@ -725,11 +862,36 @@ The parser will automatically expand variables to include all values
 that they have been assigned; it is an error to reference a variable
 without setting at least one value.
 
-At the time of this writing, only B<@{HOME}> and B<@{HOMEDIRS}> are defined
-in the AppArmor policy provided, in the F</etc/apparmor.d/tunables/home>
-file; these variables are used in many of the abstractions described later.
+At the time of this writing, the following variables are defined in the
+provided AppArmor policy:
+
+  @{HOME}
+  @{HOMEDIRS}
+  @{multiarch}
+  @{pid}
+  @{PROC}
+  @{securityfs}
+  @{sys}
+  @{tid}
+  @{XDG_DESKTOP_DIR}
+  @{XDG_DOWNLOAD_DIR}
+  @{XDG_TEMPLATES_DIR}
+  @{XDG_PUBLICSHARE_DIR}
+  @{XDG_DOCUMENTS_DIR}
+  @{XDG_MUSIC_DIR}
+  @{XDG_PICTURES_DIR}
+  @{XDG_VIDEOS_DIR}
+
+These are defined in files in F</etc/apparmor.d/tunables> and are used in many
+of the abstractions described later.
+
 You may also add files in F</etc/apparmor.d/tunables/home.d> for
-site-specific customization of B<@{HOMEDIRS}>.
+site-specific customization of B<@{HOMEDIRS}>,
+F</etc/apparmor.d/tunables/multiarch.d> for B<@{multiarch}> and
+F</etc/apparmor.d/tunables/xdg-user-dirs.d> for B<@{XDG_*}>.
+
+The special B<@{profile_name}> variable is set to the profile name and may be
+used in all policy.
 
 =head2 Alias rules
 

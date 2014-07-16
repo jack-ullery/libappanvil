@@ -30,3 +30,6 @@
 
   # MySQL extension
   /usr/share/mysql/** r,
+
+  # Zend opcache
+  /tmp/.ZendSem.* rwlk,

@@ -155,29 +155,11 @@ cset_char   : CHAR
 
 %%
 
-
-int octdigit(char c)
-{
-	if (c >= '0' && c <= '7')
-		return c - '0';
-	return -1;
-}
-
-int hexdigit(char c)
-{
-	if (c >= '0' && c <= '9')
-		return c - '0';
-	else if (c >= 'A' && c <= 'F')
-		return 10 + c - 'A';
-	else if (c >= 'a' && c <= 'f')
-		return 10 + c - 'a';
-	else
-		return -1;
-}
+#include "../lib.h"
 
 int regex_lex(YYSTYPE *val, const char **pos)
 {
-	int c;
+	int tmp;
 
 	val->c = **pos;
 	switch(*(*pos)++) {
@@ -190,67 +172,17 @@ int regex_lex(YYSTYPE *val, const char **pos)
 		return *(*pos - 1);
 
 	case '\\':
-		val->c = **pos;
-		switch(*(*pos)++) {
-		case '\0':
-			(*pos)--;
-			/* fall through */
-		case '\\':
+		tmp = str_escseq(pos, "*+.|^$-[](){}");
+		if (tmp == -1) {
+			/* bad escape sequence, just skip it for now, that
+			 * is output \\ followed by the invalid esc seq
+			 * TODO: output error message
+			 */
 			val->c = '\\';
-			break;
-
-		case '0':
-			val->c = 0;
-			if ((c = octdigit(**pos)) >= 0) {
-				val->c = c;
-				(*pos)++;
-			}
-			if ((c = octdigit(**pos)) >= 0) {
-				val->c = (val->c << 3) + c;
-				(*pos)++;
-			}
-			if ((c = octdigit(**pos)) >= 0) {
-				val->c = (val->c << 3) + c;
-				(*pos)++;
-			}
-			break;
-
-		case 'x':
-			val->c = 0;
-			if ((c = hexdigit(**pos)) >= 0) {
-				val->c = c;
-				(*pos)++;
-			}
-			if ((c = hexdigit(**pos)) >= 0) {
-				val->c = (val->c << 4) + c;
-				(*pos)++;
-			}
-			break;
-
-		case 'a':
-			val->c = '\a';
-			break;
-
-		case 'e':
-			val->c = 033  /* ESC */;
-			break;
-
-		case 'f':
-			val->c = '\f';
-			break;
-
-		case 'n':
-			val->c = '\n';
-			break;
-
-		case 'r':
-			val->c = '\r';
-			break;
-
-		case 't':
-			val->c = '\t';
-			break;
-		}
+			(*pos)--;
+		} else
+			val->c = tmp;
+		break;
 	}
 	return CHAR;
 }

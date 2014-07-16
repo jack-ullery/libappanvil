@@ -28,6 +28,8 @@
 #include <fcntl.h>
 #include <libintl.h>
 #include <sys/apparmor.h>
+
+#include <iostream>
 #define _(s) gettext(s)
 
 /* #define DEBUG */
@@ -72,11 +74,11 @@ int parser_token = 0;
 
 struct cod_entry *do_file_rule(char *ns, char *id, int mode,
 			       char *link_id, char *nt);
-struct mnt_entry *do_mnt_rule(struct cond_entry *src_conds, char *src,
-			      struct cond_entry *dst_conds, char *dst,
-			      int mode);
-struct mnt_entry *do_pivot_rule(struct cond_entry *old, char *root,
-				char *transition);
+mnt_rule *do_mnt_rule(struct cond_entry *src_conds, char *src,
+		      struct cond_entry *dst_conds, char *dst,
+		      int mode);
+mnt_rule *do_pivot_rule(struct cond_entry *old, char *root,
+			char *transition);
 
 void add_local_entry(Profile *prof);
 
@@ -128,6 +130,7 @@ void add_local_entry(Profile *prof);
 %token TOK_PIVOTROOT
 %token TOK_IN
 %token TOK_DBUS
+%token TOK_SIGNAL
 %token TOK_SEND
 %token TOK_RECEIVE
 %token TOK_BIND
@@ -135,6 +138,9 @@ void add_local_entry(Profile *prof);
 %token TOK_WRITE
 %token TOK_EAVESDROP
 %token TOK_PEER
+%token TOK_TRACE
+%token TOK_TRACEDBY
+%token TOK_READBY
 
  /* rlimits */
 %token TOK_RLIMIT
@@ -162,6 +168,15 @@ void add_local_entry(Profile *prof);
 /* debug flag values */
 %token TOK_FLAGS
 
+%code requires {
+	#include "parser.h"
+	#include "profile.h"
+	#include "mount.h"
+	#include "dbus.h"
+	#include "signal.h"
+	#include "ptrace.h"
+}
+
 %union {
 	char *id;
 	char *flag_id;
@@ -170,8 +185,11 @@ void add_local_entry(Profile *prof);
 	Profile *prof;
 	struct cod_net_entry *net_entry;
 	struct cod_entry *user_entry;
-	struct mnt_entry *mnt_entry;
-	struct dbus_entry *dbus_entry;
+
+	mnt_rule *mnt_entry;
+	dbus_rule *dbus_entry;
+	signal_rule *signal_entry;
+	ptrace_rule *ptrace_entry;
 
 	flagvals flags;
 	int fmode;
@@ -182,6 +200,7 @@ void add_local_entry(Profile *prof);
 	char *var_val;
 	struct value_list *val_list;
 	struct cond_entry *cond_entry;
+	struct cond_entry_list cond_entry_list;
 	int boolean;
 	struct named_transition transition;
 	struct prefixes prefix;
@@ -207,8 +226,8 @@ void add_local_entry(Profile *prof);
 %type <mnt_entry> mnt_rule
 %type <cond_entry> opt_conds
 %type <cond_entry> cond
-%type <cond_entry> cond_list
-%type <cond_entry> opt_cond_list
+%type <cond_entry_list> cond_list
+%type <cond_entry_list> opt_cond_list
 %type <flags>	flags
 %type <flags>	flagvals
 %type <flags>	flagval
@@ -234,6 +253,14 @@ void add_local_entry(Profile *prof);
 %type <fmode>	dbus_perms
 %type <fmode>	opt_dbus_perm
 %type <dbus_entry>	dbus_rule
+%type <fmode>	signal_perm
+%type <fmode>	signal_perms
+%type <fmode>	opt_signal_perm
+%type <signal_entry>	signal_rule
+%type <fmode>	ptrace_perm
+%type <fmode>	ptrace_perms
+%type <fmode>	opt_ptrace_perm
+%type <ptrace_entry>	ptrace_rule
 %type <transition> opt_named_transition
 %type <boolean> opt_unsafe
 %type <boolean> opt_file
@@ -277,11 +304,14 @@ profile_base: TOK_ID opt_id flags TOK_OPEN rules TOK_CLOSE
 			 */
 			yyerror(_("Profile attachment must begin with a '/'."));
 		prof->flags = $3;
-		if (force_complain)
+		if (force_complain && kernel_abi_version == 5)
+			/* newer abis encode force complain as part of the
+			 * header
+			 */
 			prof->flags.complain = 1;
 
 		post_process_file_entries(prof);
-		post_process_mnt_entries(prof);
+		post_process_rule_entries(prof);
 		PDEBUG("%s: flags='%s%s'\n",
 		       $2,
 		       prof->flags.complain ? "complain, " : "",
@@ -667,8 +697,8 @@ rules:  rules opt_prefix mnt_rule
 		} else if ($2.audit) {
 			$3->audit = $3->allow;
 		}
-		$3->next = $1->mnt_ents;
-		$1->mnt_ents = $3;
+
+		$1->rule_ents.push_back($3);
 		$$ = $1;
 	}
 
@@ -684,8 +714,39 @@ rules:  rules opt_prefix dbus_rule
 		} else if ($2.audit) {
 			$3->audit = $3->mode;
 		}
-		$3->next = $1->dbus_ents;
-		$1->dbus_ents = $3;
+		$1->rule_ents.push_back($3);
+		$$ = $1;
+	}
+
+rules:  rules opt_prefix signal_rule
+	{
+		if ($2.owner)
+			yyerror(_("owner prefix not allowed on signal rules"));
+		if ($2.deny && $2.audit) {
+			$3->deny = 1;
+		} else if ($2.deny) {
+			$3->deny = 1;
+			$3->audit = $3->mode;
+		} else if ($2.audit) {
+			$3->audit = $3->mode;
+		}
+		$1->rule_ents.push_back($3);
+		$$ = $1;
+	}
+
+rules:  rules opt_prefix ptrace_rule
+	{
+		if ($2.owner)
+			yyerror(_("owner prefix not allowed on ptrace rules"));
+		if ($2.deny && $2.audit) {
+			$3->deny = 1;
+		} else if ($2.deny) {
+			$3->deny = 1;
+			$3->audit = $3->mode;
+		} else if ($2.audit) {
+			$3->audit = $3->mode;
+		}
+		$1->rule_ents.push_back($3);
 		$$ = $1;
 	}
 
@@ -1111,10 +1172,11 @@ opt_conds: { /* nothing */ $$ = NULL; }
 
 cond_list: TOK_CONDLISTID TOK_EQUALS TOK_OPENPAREN opt_conds TOK_CLOSEPAREN
 	{
-		$$ = $4;
+		$$.name = $1;
+		$$.list = $4;
 	}
 
-opt_cond_list: { /* nothing */ $$ = NULL; }
+opt_cond_list: { /* nothing */ $$ = { NULL, NULL }; }
 	| cond_list { $$ = $1; }
 
 mnt_rule: TOK_MOUNT opt_conds opt_id TOK_END_OF_RULE
@@ -1196,12 +1258,98 @@ opt_dbus_perm: { /* nothing */ $$ = 0; }
 
 dbus_rule: TOK_DBUS opt_dbus_perm opt_conds opt_cond_list TOK_END_OF_RULE
 	{
-		struct dbus_entry *ent;
+		dbus_rule *ent;
 
-		ent = new_dbus_entry($2, $3, $4);
+		if ($4.name) {
+			if (strcmp($4.name, "peer") != 0)
+				yyerror(_("dbus rule: invalid conditional group %s=()"), $4.name);
+			free($4.name);
+		}
+		ent = new dbus_rule($2, $3, $4.list);
 		if (!ent) {
 			yyerror(_("Memory allocation error."));
 		}
+		$$ = ent;
+	}
+
+signal_perm: TOK_VALUE
+	{
+		if (strcmp($1, "send") == 0 || strcmp($1, "write") == 0)
+			$$ = AA_MAY_SEND;
+		else if (strcmp($1, "receive") == 0 || strcmp($1, "read") == 0)
+			$$ = AA_MAY_RECEIVE;
+		else if ($1) {
+			parse_signal_mode($1, &$$, 1);
+		} else
+			$$ = 0;
+
+		if ($1)
+			free($1);
+	}
+	| TOK_SEND { $$ = AA_MAY_SEND; }
+	| TOK_RECEIVE { $$ = AA_MAY_RECEIVE; }
+	| TOK_READ { $$ = AA_MAY_RECEIVE; }
+	| TOK_WRITE { $$ = AA_MAY_SEND; }
+	| TOK_MODE
+	{
+		parse_signal_mode($1, &$$, 1);
+		free($1);
+	}
+
+signal_perms: { /* nothing */ $$ = 0; }
+	| signal_perms signal_perm { $$ = $1 | $2; }
+	| signal_perms TOK_COMMA signal_perm { $$ = $1 | $3; }
+
+opt_signal_perm: { /* nothing */ $$ = 0; }
+	| signal_perm { $$ = $1; }
+	| TOK_OPENPAREN signal_perms TOK_CLOSEPAREN { $$ = $2; }
+
+signal_rule: TOK_SIGNAL opt_signal_perm opt_conds TOK_END_OF_RULE
+	{
+		signal_rule *ent = new signal_rule($2, $3);
+		$$ = ent;
+	}
+
+ptrace_perm: TOK_VALUE
+	{
+		if (strcmp($1, "trace") == 0 || strcmp($1, "write") == 0)
+			$$ = AA_MAY_TRACE;
+		else if (strcmp($1, "read") == 0)
+			$$ = AA_MAY_READ;
+		else if (strcmp($1, "tracedby") == 0)
+			$$ = AA_MAY_TRACEDBY;
+		else if (strcmp($1, "readby") == 0)
+			$$ = AA_MAY_READBY;
+		else if ($1)
+			parse_ptrace_mode($1, &$$, 1);
+		else
+			$$ = 0;
+
+		if ($1)
+			free($1);
+	}
+	| TOK_TRACE { $$ = AA_MAY_TRACE; }
+	| TOK_TRACEDBY { $$ = AA_MAY_TRACEDBY; }
+	| TOK_READ { $$ = AA_MAY_READ; }
+	| TOK_WRITE { $$ = AA_MAY_TRACE; }
+	| TOK_READBY { $$ = AA_MAY_READBY; }
+	| TOK_MODE
+	{
+		parse_ptrace_mode($1, &$$, 1);
+		free($1);
+	}
+
+ptrace_perms: { /* nothing */ $$ = 0; }
+	| ptrace_perms ptrace_perm { $$ = $1 | $2; }
+	| ptrace_perms TOK_COMMA ptrace_perm { $$ = $1 | $3; }
+
+opt_ptrace_perm: { /* nothing */ $$ = 0; }
+	| ptrace_perm { $$ = $1; }
+	| TOK_OPENPAREN ptrace_perms TOK_CLOSEPAREN { $$ = $2; }
+
+ptrace_rule: TOK_PTRACE opt_ptrace_perm opt_conds TOK_END_OF_RULE
+	{
+		ptrace_rule *ent = new ptrace_rule($2, $3);
 		$$ = ent;
 	}
 
@@ -1366,12 +1514,10 @@ int verify_mnt_conds(struct cond_entry *conds, int src)
 	return error;
 }
 
-struct mnt_entry *do_mnt_rule(struct cond_entry *src_conds, char *src,
-			      struct cond_entry *dst_conds, char *dst,
-			      int mode)
+mnt_rule *do_mnt_rule(struct cond_entry *src_conds, char *src,
+		      struct cond_entry *dst_conds, char *dst,
+		      int mode)
 {
-	struct mnt_entry *ent;
-
 	if (verify_mnt_conds(src_conds, MNT_SRC_OPT) != 0)
 		yyerror(_("bad mount rule"));
 
@@ -1382,7 +1528,7 @@ struct mnt_entry *do_mnt_rule(struct cond_entry *src_conds, char *src,
 	if (dst_conds)
 		yyerror(_("mount point conditions not currently supported"));
 
-	ent = new_mnt_entry(src_conds, src, dst_conds, dst, mode);
+	mnt_rule *ent = new mnt_rule(src_conds, src, dst_conds, dst, mode);
 	if (!ent) {
 		yyerror(_("Memory allocation error."));
 	}
@@ -1390,10 +1536,8 @@ struct mnt_entry *do_mnt_rule(struct cond_entry *src_conds, char *src,
 	return ent;
 }
 
-struct mnt_entry *do_pivot_rule(struct cond_entry *old, char *root,
-				char *transition)
+mnt_rule *do_pivot_rule(struct cond_entry *old, char *root, char *transition)
 {
-	struct mnt_entry *ent = NULL;
 	char *device = NULL;
 	if (old) {
 		if (strcmp(old->name, "oldroot") != 0)
@@ -1405,8 +1549,7 @@ struct mnt_entry *do_pivot_rule(struct cond_entry *old, char *root,
 		free_cond_entry(old);
 	}
 
-	ent = new_mnt_entry(NULL, device, NULL, root,
-			    AA_MAY_PIVOTROOT);
+	mnt_rule *ent = new mnt_rule(NULL, device, NULL, root, AA_MAY_PIVOTROOT);
 	ent->trans = transition;
 
 	return ent;

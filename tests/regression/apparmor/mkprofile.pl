@@ -174,6 +174,124 @@ sub gen_cap($) {
   }
 }
 
+sub gen_ptrace($) {
+    my $rule = shift;
+    my @rules = split (/:/, $rule);
+    if (@rules == 2) {
+	if ($rules[1] =~ /^ALL$/) {
+	    push (@{$output_rules{$hat}}, "  ptrace,\n");
+	} else {
+	    push (@{$output_rules{$hat}}, "  ptrace $rules[1],\n");
+	}
+    } elsif (@rules == 3) {
+	push (@{$output_rules{$hat}}, "  ptrace $rules[1] $rules[2],\n");
+    } else {
+	(!$nowarn) && print STDERR "Warning: invalid ptrace description '$rule', ignored\n";
+    }
+}
+
+sub gen_signal($) {
+    my $rule = shift;
+    my @rules = split (/:/, $rule);
+    if (@rules == 2) {
+	if ($rules[1] =~ /^ALL$/) {
+	    push (@{$output_rules{$hat}}, "  signal,\n");
+	} else {
+	    push (@{$output_rules{$hat}}, "  signal $rules[1],\n");
+	}
+    } elsif (@rules == 3) {
+	push (@{$output_rules{$hat}}, "  signal $rules[1] $rules[2],\n");
+    } else {
+	(!$nowarn) && print STDERR "Warning: invalid signal description '$rule', ignored\n";
+    }
+}
+
+sub gen_mount($) {
+    my $rule = shift;
+    my @rules = split (/:/, $rule);
+    if (@rules == 2) {
+	if ($rules[1] =~ /^ALL$/) {
+	    push (@{$output_rules{$hat}}, "  mount,\n");
+	} else {
+	    push (@{$output_rules{$hat}}, "  mount $rules[1],\n");
+	}
+    } elsif (@rules == 3) {
+	push (@{$output_rules{$hat}}, "  mount $rules[1] $rules[2],\n");
+    } elsif (@rules == 4) {
+	push (@{$output_rules{$hat}}, "  mount $rules[1] $rules[2] $rules[3],\n");
+    } elsif (@rules == 5) {
+	push (@{$output_rules{$hat}}, "  mount $rules[1] $rules[2] $rules[3] $rules[4],\n");
+    } elsif (@rules == 6) {
+	push (@{$output_rules{$hat}}, "  mount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5],\n");
+    } elsif (@rules == 7) {
+	push (@{$output_rules{$hat}}, "  mount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5] $rules[6],\n");
+    } else {
+	(!$nowarn) && print STDERR "Warning: invalid mount description '$rule', ignored\n";
+    }
+}
+
+sub gen_remount($) {
+    my $rule = shift;
+    my @rules = split (/:/, $rule);
+    if (@rules == 2) {
+	if ($rules[1] =~ /^ALL$/) {
+	    push (@{$output_rules{$hat}}, "  remount,\n");
+	} else {
+	    push (@{$output_rules{$hat}}, "  remount $rules[1],\n");
+	}
+    } elsif (@rules == 3) {
+	push (@{$output_rules{$hat}}, "  remount $rules[1] $rules[2],\n");
+    } elsif (@rules == 4) {
+	push (@{$output_rules{$hat}}, "  remount $rules[1] $rules[2] $rules[3],\n");
+    } elsif (@rules == 5) {
+	push (@{$output_rules{$hat}}, "  remount $rules[1] $rules[2] $rules[3] $rules[4],\n");
+    } elsif (@rules == 6) {
+	push (@{$output_rules{$hat}}, "  remount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5],\n");
+    } elsif (@rules == 7) {
+	push (@{$output_rules{$hat}}, "  remount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5] $rules[6],\n");
+    } else {
+	(!$nowarn) && print STDERR "Warning: invalid remount description '$rule', ignored\n";
+    }
+}
+
+sub gen_umount($) {
+    my $rule = shift;
+    my @rules = split (/:/, $rule);
+    if (@rules == 2) {
+	if ($rules[1] =~ /^ALL$/) {
+	    push (@{$output_rules{$hat}}, "  umount,\n");
+	} else {
+	    push (@{$output_rules{$hat}}, "  umount $rules[1],\n");
+	}
+    } elsif (@rules == 3) {
+	push (@{$output_rules{$hat}}, "  umount $rules[1] $rules[2],\n");
+    } elsif (@rules == 4) {
+	push (@{$output_rules{$hat}}, "  umount $rules[1] $rules[2] $rules[3],\n");
+    } elsif (@rules == 5) {
+	push (@{$output_rules{$hat}}, "  umount $rules[1] $rules[2] $rules[3] $rules[4],\n");
+    } elsif (@rules == 6) {
+	push (@{$output_rules{$hat}}, "  umount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5],\n");
+    } elsif (@rules == 7) {
+	push (@{$output_rules{$hat}}, "  umount $rules[1] $rules[2] $rules[3] $rules[4] $rules[5] $rules[6],\n");
+    } else {
+	(!$nowarn) && print STDERR "Warning: invalid umount description '$rule', ignored\n";
+    }
+}
+
+sub gen_pivot_root($) {
+    my $rule = shift;
+    my @rules = split (/:/, $rule);
+    if (@rules == 2) {
+	if ($rules[1] =~ /^ALL$/) {
+	    push (@{$output_rules{$hat}}, "  pivot_root,\n");
+	} else {
+	    push (@{$output_rules{$hat}}, "  pivot_root $rules[1],\n");
+	}
+    } else {
+	(!$nowarn) && print STDERR "Warning: invalid pivot_root description '$rule', ignored\n";
+    }
+}
+
 sub gen_file($) {
   my $rule = shift;
   my @rules = split (/:/, $rule);
@@ -183,7 +301,7 @@ sub gen_file($) {
       push (@{$output_rules{$hat}}, "  $rules[0],\n");
   } elsif (@rules == 2) {
     if ($escape) {
-      $rules[0]=~ s/(["[\]{}\\\:\#])/\\$1/g;
+      $rules[0]=~ s/(["[\]{}\:])/\\$1/g;
       $rules[0]=~ s/(\#)/\\043/g;
     }
     if ($rules[0]=~ /[\s\!\"\^]/) {
@@ -244,7 +362,7 @@ sub emit_flags($) {
 # generate profiles based on cmd line arguments
 sub gen_from_args() {
   my $bin = shift @ARGV;
-  !(-e $bin || $nowarn) && print STDERR "Warning: execname '$bin': no such file or directory\n";
+  my $addimage = 0;
 
   unless ($nodefault) {
     gen_default_rules();
@@ -260,18 +378,36 @@ sub gen_from_args() {
       gen_network($rule);
     } elsif ($rule =~ /^cap:/) {
       gen_cap($rule);
+    } elsif ($rule =~ /^ptrace:/) {
+      gen_ptrace($rule);
+    } elsif ($rule =~ /^signal:/) {
+      gen_signal($rule);
+    } elsif ($rule =~ /^mount:/) {
+      gen_mount($rule);
+    } elsif ($rule =~ /^remount:/) {
+      gen_remount($rule);
+    } elsif ($rule =~ /^umount:/) {
+      gen_umount($rule);
+    } elsif ($rule =~ /^pivot_root:/) {
+      gen_pivot_root($rule);
     } elsif ($rule =~ /^flag:/) {
       gen_flag($rule);
     } elsif ($rule =~ /^hat:/) {
       gen_hat($rule);
     } elsif ($rule =~ /^addimage:/) {
       gen_addimage($rule);
+      $addimage = 1;
     } else {
       gen_file($rule);
     }
   }
 
+  !(-e $bin || $addimage || $nowarn) && print STDERR "Warning: execname '$bin': no such file or directory\n";
+
   print STDOUT "# Profile autogenerated by $__VERSION__\n";
+  if (not substr($bin, 0, 1) eq "/") {
+	  print STDOUT "profile "
+  }
   print STDOUT "$bin ";
   emit_flags('__no_hat');
   print STDOUT "{\n";

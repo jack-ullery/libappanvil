@@ -330,6 +330,50 @@ char *get_next_set_value(struct set_value **list)
 	return ret;
 }
 
+/* delete_symbol
+ * removes an individual variable from the symbol table. We don't
+ * support this in the language, but for special variables that change
+ * between profiles, we need this.
+ */
+int delete_set_var(const char *var_name)
+{
+	int rc = 0;
+	struct symtab **result, *n, *var;
+
+	n = new_symtab_entry(var_name);
+	if (!n) {
+		rc = ENOMEM;
+		goto out;
+	}
+
+	result = (struct symtab **) tfind(n, &my_symtab, (comparison_fn_t) &compare_symtabs);
+	if (!result) {
+		/* XXX Warning? */
+		goto out;
+	}
+
+	var = (*result);
+
+	result = (struct symtab **) tdelete(n, &my_symtab, (comparison_fn_t) &compare_symtabs);
+	if (!result) {
+		PERROR("ASSERT: delete_set_var: tfind found var %s but tdelete failed to delete it\n",
+				var_name);
+		exit(1);
+	}
+
+	if (var->type != sd_set) {
+		PERROR("ASSERT: delete_set_var: deleting %s but is a boolean variable\n",
+				var_name);
+		exit(1);
+	}
+
+	free_symtab(var);
+
+out:
+	free_symtab(n);
+	return rc;
+}
+
 static void *seenlist = NULL;
 
 static int is_seen(const char *var)
@@ -446,8 +490,9 @@ next:
 	}
 
 	symbol->expanded = expanded;
-	pop_seen_var(symbol->var_name);
+
 out:
+	pop_seen_var(symbol->var_name);
 	free_var_string(split);
 	return retval;
 }
@@ -545,12 +590,11 @@ void free_symtabs(void)
 
 #include "unit_test.h"
 
-int main(void)
+int test_compare_symtab(void)
 {
 	int rc = 0;
 	int retval;
-	struct set_value *retptr;
-	struct symtab *a, *b;
+	struct symtab *a, *b, *c;
 
 	a = new_symtab_entry("blah");
 	b = new_symtab_entry("suck");
@@ -564,6 +608,200 @@ int main(void)
 
 	retval = compare_symtabs(b, a);
 	MY_TEST(retval != 0, "comparison 3");
+
+	retval = compare_symtabs(b, b);
+	MY_TEST(retval == 0, "comparison 4");
+
+	c = new_symtab_entry("blah");
+	retval = compare_symtabs(a, c);
+	MY_TEST(retval == 0, "comparison 5");
+
+	free_symtab(a);
+	free_symtab(b);
+	free_symtab(c);
+
+	return rc;
+}
+
+int test_seenlist(void)
+{
+	int rc = 0;
+
+	MY_TEST(!is_seen("oogabooga"), "lookup unseen variable");
+
+	push_seen_var("oogabooga");
+	MY_TEST(is_seen("oogabooga"), "lookup seen variable 1");
+	MY_TEST(!is_seen("not_seen"), "lookup unseen variable 2");
+
+	push_seen_var("heebiejeebie");
+	MY_TEST(is_seen("oogabooga"), "lookup seen variable 2");
+	MY_TEST(is_seen("heebiejeebie"), "lookup seen variable 3");
+	MY_TEST(!is_seen("not_seen"), "lookup unseen variable 3");
+
+	pop_seen_var("oogabooga");
+	MY_TEST(!is_seen("oogabooga"), "lookup unseen variable 4");
+	MY_TEST(is_seen("heebiejeebie"), "lookup seen variable 4");
+	MY_TEST(!is_seen("not_seen"), "lookup unseen variable 5");
+
+	pop_seen_var("heebiejeebie");
+	MY_TEST(!is_seen("heebiejeebie"), "lookup unseen variable 6");
+
+	//pop_seen_var("not_seen"); /* triggers assert */
+
+	return rc;
+}
+
+int test_add_set_to_boolean(void)
+{
+	int rc = 0;
+	int retval;
+
+	/* test adding a set value to a boolean variable */
+	retval = add_boolean_var("not_a_set_variable", 1);
+	MY_TEST(retval == 0, "new boolean variable 3");
+	retval = add_set_value("not_a_set_variable", "a set value");
+	MY_TEST(retval != 0, "add set value to boolean");
+
+	free_symtabs();
+
+	return rc;
+}
+
+int test_expand_bool_within_set(void)
+{
+	int rc = 0;
+	int retval;
+	struct symtab *retsym;
+
+	/* test expanding a boolean var within a set variable */
+	retval = add_boolean_var("not_a_set_variable", 1);
+	MY_TEST(retval == 0, "new boolean variable 4");
+	retval = new_set_var("set_variable", "set_value@{not_a_set_variable}");
+	MY_TEST(retval == 0, "add set value with embedded boolean");
+	retsym = lookup_existing_symbol("set_variable");
+	MY_TEST(retsym != NULL, "get set variable w/boolean");
+	retval = __expand_variable(retsym);
+	MY_TEST(retval != 0, "expand set variable with embedded boolean");
+
+	free_symtabs();
+
+	return rc;
+}
+
+int test_expand_recursive_set_vars(void)
+{
+	int rc = 0;
+	int retval;
+	struct symtab *retsym;
+
+	/* test expanding a recursive var within a set variable */
+	retval = new_set_var("recursive_1", "set_value@{recursive_2}");
+	MY_TEST(retval == 0, "new recursive set variable 1");
+	retval = new_set_var("recursive_2", "set_value@{recursive_3}");
+	MY_TEST(retval == 0, "new recursive set variable 2");
+	retval = new_set_var("recursive_3", "set_value@{recursive_1}");
+	MY_TEST(retval == 0, "new recursive set variable 3");
+	retsym = lookup_existing_symbol("recursive_1");
+	MY_TEST(retsym != NULL, "get recursive set variable");
+	retval = __expand_variable(retsym);
+	MY_TEST(retval != 0, "expand recursive set variable");
+
+	free_symtabs();
+
+	return rc;
+}
+
+int test_expand_undefined_set_var(void)
+{
+	int rc = 0;
+	int retval;
+	struct symtab *retsym;
+
+	/* test expanding an undefined var within a set variable */
+	retval = new_set_var("defined_var", "set_value@{undefined_var}");
+	MY_TEST(retval == 0, "new undefined test set variable");
+	retsym = lookup_existing_symbol("defined_var");
+	MY_TEST(retsym != NULL, "get undefined test set variable");
+	retval = __expand_variable(retsym);
+	MY_TEST(retval != 0, "expand undefined set variable");
+
+	free_symtabs();
+
+	return rc;
+}
+
+int test_expand_set_var_during_dump(void)
+{
+	int rc = 0;
+	int retval;
+	struct symtab *retsym;
+
+	/* test expanding an defined var within a set variable during var dump*/
+	retval = new_set_var("set_var_1", "set_value@{set_var_2}");
+	MY_TEST(retval == 0, "new dump expansion set variable 1");
+	retval = new_set_var("set_var_2", "some other set_value");
+	MY_TEST(retval == 0, "new dump expansion set variable 2");
+	retsym = lookup_existing_symbol("set_var_1");
+	MY_TEST(retsym != NULL, "get dump expansion set variable 1");
+	__dump_symtab_entry(retsym, 0);
+	__dump_symtab_entry(retsym, 1);
+	__dump_symtab_entry(retsym, 0);
+
+	free_symtabs();
+
+	return rc;
+}
+
+int test_delete_set_var(void)
+{
+	int rc = 0;
+	int retval;
+
+	retval = new_set_var("deleteme", "delete this variable");
+	MY_TEST(retval == 0, "new delete set variable");
+	retval = delete_set_var("deleteme");
+	MY_TEST(retval == 0, "delete set variable");
+
+	free_symtabs();
+
+	return rc;
+}
+
+int main(void)
+{
+	int rc = 0;
+	int retval;
+	struct set_value *retptr;
+
+	rc = test_compare_symtab();
+
+	retval = test_seenlist();
+	if (rc == 0)
+		rc = retval;
+
+	retval = test_add_set_to_boolean();
+	if (rc == 0)
+		rc = retval;
+
+	retval = test_expand_bool_within_set();
+	if (rc == 0)
+		rc = retval;
+
+	retval = test_expand_recursive_set_vars();
+	if (rc == 0)
+		rc = retval;
+
+	retval = test_expand_undefined_set_var();
+	if (rc == 0)
+		rc = retval;
+
+	retval = test_expand_set_var_during_dump();
+	if (rc == 0)
+		rc = retval;
+
+	retval = test_delete_set_var();
+	if (rc == 0)
+		rc = retval;
 
 	retval = new_set_var("test", "test value");
 	MY_TEST(retval == 0, "new set variable 1");
@@ -619,34 +857,12 @@ int main(void)
 	retptr = get_set_var("abuse");
 	MY_TEST(retptr == NULL, "get set variable that's declared a boolean");
 
+	/* test walking set values */
 	retptr = get_set_var("monopuff");
 	MY_TEST(retptr != NULL, "get set variable 1");
-
 	retval = strcmp(get_next_set_value(&retptr), "Mockingbird");
 	MY_TEST(retval == 0, "get set value 1");
-
 	MY_TEST(get_next_set_value(&retptr) == NULL, "get no more set values 1");
-
-	MY_TEST(!is_seen("oogabooga"), "lookup unseen variable");
-
-	push_seen_var("oogabooga");
-	MY_TEST(is_seen("oogabooga"), "lookup seen variable 1");
-	MY_TEST(!is_seen("not_seen"), "lookup unseen variable 2");
-
-	push_seen_var("heebiejeebie");
-	MY_TEST(is_seen("oogabooga"), "lookup seen variable 2");
-	MY_TEST(is_seen("heebiejeebie"), "lookup seen variable 3");
-	MY_TEST(!is_seen("not_seen"), "lookup unseen variable 3");
-
-	pop_seen_var("oogabooga");
-	MY_TEST(!is_seen("oogabooga"), "lookup unseen variable 4");
-	MY_TEST(is_seen("heebiejeebie"), "lookup seen variable 4");
-	MY_TEST(!is_seen("not_seen"), "lookup unseen variable 5");
-
-	pop_seen_var("heebiejeebie");
-	MY_TEST(!is_seen("heebiejeebie"), "lookup unseen variable 6");
-
-	//pop_seen_var("not_seen"); /* triggers assert */
 
 	retval = new_set_var("eek", "Mocking@{monopuff}bir@{stereopuff}d@{stereopuff}");
 	MY_TEST(retval == 0, "new set variable 4");
@@ -655,6 +871,8 @@ int main(void)
 	expand_variables();
 	dump_symtab();
 	dump_expanded_symtab();
+
+	free_symtabs();
 
 	return rc;
 }

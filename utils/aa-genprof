@@ -21,6 +21,7 @@ import sys
 
 import apparmor.aa as apparmor
 import apparmor.ui as aaui
+from apparmor.common import warn
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -33,16 +34,18 @@ def sysctl_read(path):
     return value
 
 def sysctl_write(path, value):
-    if not value:
+    if value is None:
+        warn('Not writing invalid value "None" to %s'%path)
         return
     with open(path, 'w') as f_out:
         f_out.write(str(value))
 
 def last_audit_entry_time():
-    out = subprocess.check_output(['tail', '-1', '/var/log/audit/audit.log'], shell=True)
+    out = subprocess.check_output(['tail', '-1', apparmor.filename])
     logmark = None
-    if re.search('^*msg\=audit\((\d+\.\d+\:\d+).*\).*$', out):
-        logmark = re.search('^*msg\=audit\((\d+\.\d+\:\d+).*\).*$', out).groups()[0]
+    out = out.decode('ascii')
+    if re.search('^.*msg\=audit\((\d+\.\d+\:\d+).*\).*$', out):
+        logmark = re.search('^.*msg\=audit\((\d+\.\d+\:\d+).*\).*$', out).groups()[0]
     else:
         logmark = ''
     return logmark

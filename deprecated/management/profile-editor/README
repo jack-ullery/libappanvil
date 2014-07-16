@@ -1,6 +1,0 @@
-The profile editor requires wxWidgets 2.6 or higher.  Your distro probably has a 
-binary package you could install, or you can install from a source distribution 
-from http://www.wxwidgets.org
-
-This program is released under the GPL, except for all source files under
-the src/wxStyledTextCtrl directory.  Check there for license details for those files.

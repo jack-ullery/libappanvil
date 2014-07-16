@@ -39,6 +39,7 @@
 #include <unistd.h>
 #include <sys/apparmor.h>
 
+#include "lib.h"
 #include "parser.h"
 #include "profile.h"
 #include "parser_yacc.h"
@@ -142,6 +143,7 @@ static struct keyword_table keyword_table[] = {
 	{"pivot_root",		TOK_PIVOTROOT},
 	{"in",			TOK_IN},
 	{"dbus",		TOK_DBUS},
+	{"signal",		TOK_SIGNAL},
 	{"send",                TOK_SEND},
 	{"receive",             TOK_RECEIVE},
 	{"bind",                TOK_BIND},
@@ -149,6 +151,9 @@ static struct keyword_table keyword_table[] = {
 	{"write",               TOK_WRITE},
 	{"eavesdrop",		TOK_EAVESDROP},
 	{"peer",		TOK_PEER},
+	{"trace",		TOK_TRACE},
+	{"tracedby",		TOK_TRACEDBY},
+	{"readby",		TOK_READBY},
 
 	/* terminate */
 	{NULL, 0}
@@ -443,38 +448,56 @@ struct aa_network_entry *network_entry(const char *family, const char *type,
 
 char *processunquoted(const char *string, int len)
 {
-	char *tmp, *s;
-	int l;
+	char *buffer, *s;
 
-	tmp = (char *)malloc(len + 1);
-	if (!tmp)
+	s = buffer = (char *) malloc(len + 1);
+	if (!buffer)
 		return NULL;
 
-	s = tmp;
-	for (l = 0; l < len; l++) {
-		if (string[l] == '\\' && l < len - 3) {
-			if (strchr("0123", string[l + 1]) &&
-			    strchr("0123456789", string[l + 2]) &&
-			    strchr("0123456789", string[l + 3])) {
-				/* three digit octal */
-				int res = (string[l + 1] - '0') * 64 +
-				    	  (string[l + 2] - '0') * 8 +
-					  (string[l + 3] - '0');
-				*s = res;
-				l += 3;
-			} else {
-				*s = string[l];
-			}
-			s++;
+	while (len > 0) {
+		const char *pos = string + 1;
+		long c;
+		if (*string == '\\' && len > 1 &&
+		    (c = strn_escseq(&pos, "", len)) != -1) {
+			/* catch \\ or \134 and other aare special chars and
+			 * pass it through to be handled by the backend
+			 * pcre conversion
+			 */
+			if (strchr("*?[]{}^,\\", c) != NULL) {
+				*s++ = '\\';
+				*s++ = c;
+			} else
+				*s++ = c;
+			len -= pos - string;
+			string = pos;
 		} else {
-			*s = string[l];
-			s++;
+			/* either unescaped char OR
+			 * unsupported escape sequence resulting in char being
+			 * copied.
+			 */
+			*s++ = *string++;
+			len--;
 		}
 	}
-
 	*s = 0;
 
-	return tmp;
+	return buffer;
+}
+
+/* rewrite a quoted string substituting escaped characters for the
+ * real thing.  Strip the quotes around the string */
+char *processquoted(const char *string, int len)
+{
+	/* skip leading " and eat trailing " */
+	if (*string == '"') {
+		len -= 2;
+		if (len < 0)	/* start and end point to same quote */
+			len = 0;
+		return processunquoted(string + 1, len);
+	}
+
+	/* no quotes? treat as unquoted */
+	return processunquoted(string, len);
 }
 
 char *processid(const char *string, int len)
@@ -485,72 +508,6 @@ char *processid(const char *string, int len)
 	if (*string == '"')
 		return processquoted(string, len);
 	return processunquoted(string, len);
-}
-
-/* rewrite a quoted string substituting escaped characters for the
- * real thing.  Strip the quotes around the string */
-
-char *processquoted(const char *string, int len)
-{
-	char *tmp, *s;
-	int l;
-	/* the result string will be shorter or equal in length */
-	tmp = (char *)malloc(len + 1);
-	if (!tmp)
-		return NULL;
-
-	s = tmp;
-	for (l = 1; l < len - 1; l++) {
-		if (string[l] == '\\' && l < len - 2) {
-			switch (string[l + 1]) {
-			case 't':
-				*s = '\t';
-				l++;
-				break;
-			case 'n':
-				*s = '\n';
-				l++;
-				break;
-			case 'r':
-				*s = '\r';
-				l++;
-				break;
-			case '"':
-				*s = '"';
-				l++;
-				break;
-			case '\\':
-				*s = '\\';
-				l++;
-				break;
-			case '0': case '1': case '2': case '3':
-				if ((l < len - 4) &&
-				    strchr("0123456789", string[l + 2]) &&
-				    strchr("0123456789", string[l + 3])) {
-					/* three digit octal */
-					int res = (string[l + 1] - '0') * 64 +
-					    (string[l + 2] - '0') * 8 +
-					    (string[l + 3] - '0');
-					*s = res;
-					l += 3;
-					break;
-				}
-				/* fall through */
-			default:
-				/* any unsupported escape sequence results in all
-				   chars being copied. */
-				*s = string[l];
-			}
-			s++;
-		} else {
-			*s = string[l];
-			s++;
-		}
-	}
-
-	*s = 0;
-
-	return tmp;
 }
 
 /* strip off surrounding delimiters around variables */
@@ -596,7 +553,7 @@ int str_to_boolean(const char *value)
 
 static int warned_uppercase = 0;
 
-static void warn_uppercase(void)
+void warn_uppercase(void)
 {
 	if (!warned_uppercase) {
 		pwarn(_("Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
@@ -792,12 +749,12 @@ int parse_mode(const char *str_mode)
 	return mode;
 }
 
-static int parse_dbus_sub_mode(const char *str_mode, int *result, int fail, const char *mode_desc __unused)
+static int parse_X_sub_mode(const char *X, const char *str_mode, int *result, int fail, const char *mode_desc __unused)
 {
 	int mode = 0;
 	const char *p;
 
-	PDEBUG("Parsing DBus mode: %s\n", str_mode);
+	PDEBUG("Parsing X mode: %s\n", X, str_mode);
 
 	if (!str_mode)
 		return 0;
@@ -810,12 +767,12 @@ static int parse_dbus_sub_mode(const char *str_mode, int *result, int fail, cons
 reeval:
 		switch (current) {
 		case COD_READ_CHAR:
-			PDEBUG("Parsing DBus mode: found %s READ\n", mode_desc);
+			PDEBUG("Parsing %s mode: found %s READ\n", X, mode_desc);
 			mode |= AA_DBUS_RECEIVE;
 			break;
 
 		case COD_WRITE_CHAR:
-			PDEBUG("Parsing DBus mode: found %s WRITE\n",
+			PDEBUG("Parsing %s mode: found %s WRITE\n", X,
 			       mode_desc);
 			mode |= AA_DBUS_SEND;
 			break;
@@ -827,16 +784,16 @@ reeval:
 			switch (lower) {
 			case COD_READ_CHAR:
 			case COD_WRITE_CHAR:
-				PDEBUG("Parsing DBus mode: found invalid upper case char %c\n",
-				       current);
+				PDEBUG("Parsing %s mode: found invalid upper case char %c\n",
+				       X, current);
 				warn_uppercase();
 				current = lower;
 				goto reeval;
 				break;
 			default:
 				if (fail)
-					yyerror(_("Internal: unexpected DBus mode character '%c' in input"),
-						current);
+					yyerror(_("Internal: unexpected %s mode character '%c' in input"),
+						X, current);
 				else
 					return 0;
 				break;
@@ -846,21 +803,21 @@ reeval:
 		p++;
 	}
 
-	PDEBUG("Parsed DBus mode: %s 0x%x\n", str_mode, mode);
+	PDEBUG("Parsed %s mode: %s 0x%x\n", X, str_mode, mode);
 
 	*result = mode;
 	return 1;
 }
 
-int parse_dbus_mode(const char *str_mode, int *mode, int fail)
+int parse_X_mode(const char *X, int valid, const char *str_mode, int *mode, int fail)
 {
 	*mode = 0;
-	if (!parse_dbus_sub_mode(str_mode, mode, fail, ""))
+	if (!parse_X_sub_mode(X, str_mode, mode, fail, ""))
 		return 0;
-	if (*mode & ~AA_VALID_DBUS_PERMS) {
+	if (*mode & ~valid) {
 		if (fail)
-			yyerror(_("Internal error generated invalid DBus perm 0x%x\n"),
-				  mode);
+			yyerror(_("Internal error generated invalid %s perm 0x%x\n"),
+				X, mode);
 		else
 			return 0;
 	}
@@ -936,30 +893,6 @@ void free_cod_entries(struct cod_entry *list)
 	if (list->pat.regex)
 		free(list->pat.regex);
 	free(list);
-}
-
-void free_mnt_entries(struct mnt_entry *list)
-{
-	if (!list)
-		return;
-	if (list->next)
-		free_mnt_entries(list->next);
-	free(list->mnt_point);
-	free(list->device);
-	free_value_list(list->dev_type);
-	free_value_list(list->opts);
-
-	free(list);
-}
-
-void free_dbus_entries(struct dbus_entry *list)
-{
-	if (!list)
-		return;
-	if (list->next)
-		free_dbus_entries(list->next);
-
-	free_dbus_entry(list);
 }
 
 static void debug_base_perm_mask(int mask)
@@ -1228,6 +1161,17 @@ void print_value_list(struct value_list *list)
 	}
 }
 
+void move_conditional_value(const char *rulename, char **dst_ptr,
+			    struct cond_entry *cond_ent)
+{
+	if (*dst_ptr)
+		yyerror("%s conditional \"%s\" can only be specified once\n",
+			rulename, cond_ent->name);
+
+	*dst_ptr = cond_ent->vals->value;
+	cond_ent->vals->value = NULL;
+}
+
 struct cond_entry *new_cond_entry(char *name, int eq, struct value_list *list)
 {
 	struct cond_entry *ent = (struct cond_entry *) calloc(1, sizeof(struct cond_entry));
@@ -1294,27 +1238,82 @@ int test_str_to_boolean(void)
 int test_processunquoted(void)
 {
 	int rc = 0;
-	const char *teststring, *processedstring;
+	const char *teststring;
+	const char *resultstring;
 
 	teststring = "";
 	MY_TEST(strcmp(teststring, processunquoted(teststring, strlen(teststring))) == 0,
 			"processunquoted on empty string");
 
+	teststring = "\\1";
+	resultstring = "\001";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on one digit octal");
+
+	teststring = "\\8";
+	resultstring = "\\8";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on invalid octal digit \\8");
+
+	teststring = "\\18";
+	resultstring = "\0018";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on one digit octal followed by invalid octal digit");
+
+	teststring = "\\1a";
+	resultstring = "\001a";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on one digit octal followed by hex digit a");
+
+	teststring = "\\1z";
+	resultstring = "\001z";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on one digit octal follow by char z");
+
+	teststring = "\\11";
+	resultstring = "\011";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on two digit octal");
+
+	teststring = "\\118";
+	resultstring = "\0118";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on two digit octal followed by invalid octal digit");
+
+	teststring = "\\11a";
+	resultstring = "\011a";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on two digit octal followed by hex digit a");
+
+	teststring = "\\11z";
+	resultstring = "\011z";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on two digit octal followed by char z");
+
+	teststring = "\\111";
+	resultstring = "\111";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on three digit octal");
+
+	teststring = "\\378";
+	resultstring = "\0378";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on three digit octal two large, taken as 2 digit octal plus trailing char");
+
 	teststring = "123\\421123";
-	MY_TEST(strcmp(teststring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on invalid octal");
+	resultstring = "123\0421123";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on two character octal followed by valid octal digit \\421");
 
-/* Oh wow, our octal processing is busticated - FIXME
 	teststring = "123\\109123";
-	processedstring = "123\109123";
-	MY_TEST(strcmp(processedstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on octal 10");
+	resultstring = "123\109123";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on octal 109");
 
-	teststring = "123\\189123";
-	processedstring = "123\189123";
-	MY_TEST(strcmp(processedstring, processunquoted(teststring, strlen(teststring))) == 0,
-			"processunquoted on octal 10");
-*/
+	teststring = "123\\1089123";
+	resultstring = "123\1089123";
+	MY_TEST(strcmp(resultstring, processunquoted(teststring, strlen(teststring))) == 0,
+			"processunquoted on octal 108");
 
 	return rc;
 }
@@ -1353,7 +1352,7 @@ int test_processquoted(void)
 	free(out);
 
 	teststring = "\"a\\\\bcdefg\"";
-	processedstring = "a\\bcdefg";
+	processedstring = "a\\\\bcdefg";
 	out = processquoted(teststring, strlen(teststring));
 	MY_TEST(strcmp(processedstring, out) == 0,
 			"processquoted on quoted slash");
@@ -1401,19 +1400,30 @@ int test_processquoted(void)
 			"processquoted on quoted octal \\176");
 	free(out);
 
-	/* yes, our octal processing is lame; patches accepted */
-	teststring = "\"abc\\42defg\"";
-	processedstring = "abc\\42defg";
+	teststring = "\"abc\\429defg\"";
+	processedstring = "abc\0429defg";
 	out = processquoted(teststring, strlen(teststring));
 	MY_TEST(strcmp(processedstring, out) == 0,
-			"processquoted passthrough quoted invalid octal \\42");
+			"processquoted passthrough quoted invalid octal \\429");
 	free(out);
 
-	teststring = "\"abcdefg\\04\"";
-	processedstring = "abcdefg\\04";
+	teststring = "\"abcdefg\\4\"";
+	processedstring = "abcdefg\004";
 	out = processquoted(teststring, strlen(teststring));
 	MY_TEST(strcmp(processedstring, out) == 0,
-			"processquoted passthrough quoted invalid trailing octal \\04");
+			"processquoted passthrough quoted one digit trailing octal \\4");
+
+	teststring = "\"abcdefg\\04\"";
+	processedstring = "abcdefg\004";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(processedstring, out) == 0,
+			"processquoted passthrough quoted two digit trailing octal \\04");
+
+	teststring = "\"abcdefg\\004\"";
+	processedstring = "abcdefg\004";
+	out = processquoted(teststring, strlen(teststring));
+	MY_TEST(strcmp(processedstring, out) == 0,
+			"processquoted passthrough quoted three digit trailing octal \\004");
 	free(out);
 
 	return rc;

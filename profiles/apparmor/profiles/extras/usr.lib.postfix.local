@@ -16,7 +16,7 @@
   #include <abstractions/nameservice>
   #include <abstractions/kerberosclient>
   #include <abstractions/user-mail>
-  #include <program-chunks/postfix-common>
+  #include <abstractions/postfix-common>
 
   /usr/bin/procmail                                     Px,
 

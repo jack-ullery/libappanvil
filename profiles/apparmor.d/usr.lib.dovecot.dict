@@ -15,8 +15,8 @@
   #include <abstractions/base>
   #include <abstractions/mysql>
   #include <abstractions/nameservice>
+  #include <abstractions/dovecot-common>
 
-  capability setgid,
   capability setuid,
 
   network inet stream,
