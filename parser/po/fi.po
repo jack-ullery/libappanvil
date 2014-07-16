@@ -16,14 +16,14 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2013-11-14 10:18-0800\n"
-"PO-Revision-Date: 2013-11-15 02:02+0000\n"
-"Last-Translator: Sami Ojanen <Unknown>\n"
+"PO-Revision-Date: 2014-05-01 19:38+0000\n"
+"Last-Translator: Jiri Grönroos <Unknown>\n"
 "Language-Team: Suomi <fi@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-03-26 05:40+0000\n"
-"X-Generator: Launchpad (build 16967)\n"
+"X-Launchpad-Export-Date: 2014-05-02 05:29+0000\n"
+"X-Generator: Launchpad (build 16985)\n"
 "Language: fi\n"
 
 #: ../parser_include.c:113
@@ -87,7 +87,7 @@ msgstr ""
 #: ../parser_interface.c:99 ../parser_interface.c:102
 #, c-format
 msgid "Unknown error (%d): %s\n"
-msgstr ""
+msgstr "Tuntematon virhe (%d): %s\n"
 
 #: ../parser_interface.c:116 ../parser_interface.c:119
 #, c-format

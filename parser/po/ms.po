@@ -8,224 +8,224 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2013-11-14 10:18-0800\n"
-"PO-Revision-Date: 2013-11-14 22:00+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2014-07-15 06:18+0000\n"
+"Last-Translator: abuyop <Unknown>\n"
 "Language-Team: Malay <ms@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-03-26 05:40+0000\n"
-"X-Generator: Launchpad (build 16967)\n"
+"X-Launchpad-Export-Date: 2014-07-16 05:44+0000\n"
+"X-Generator: Launchpad (build 17112)\n"
 "Language: ms\n"
 
 #: ../parser_include.c:113
 msgid "Error: Out of memory.\n"
-msgstr ""
+msgstr "Ralat: Kehabisan ingatan.\n"
 
 #: ../parser_include.c:123
 #, c-format
 msgid "Error: basedir %s is not a directory, skipping.\n"
-msgstr ""
+msgstr "Ralat: basedir %s bukanlah direktori, melangkau.\n"
 
 #: ../parser_include.c:137
 #, c-format
 msgid "Error: Could not add directory %s to search path.\n"
-msgstr ""
+msgstr "Ralat: Tidak dapat tambah direktori %s untuk gelintar laluan.\n"
 
 #: ../parser_include.c:147
 msgid "Error: Could not allocate memory.\n"
-msgstr ""
+msgstr "Ralat: Tidak dapat peruntuk ingatan.\n"
 
 #: ../parser_interface.c:69 ../parser_interface.c:72
 msgid "Bad write position\n"
-msgstr ""
+msgstr "Kedudukan tulis teruk\n"
 
 #: ../parser_interface.c:72 ../parser_interface.c:75
 msgid "Permission denied\n"
-msgstr ""
+msgstr "Keizinan dinafikan\n"
 
 #: ../parser_interface.c:75 ../parser_interface.c:78
 msgid "Out of memory\n"
-msgstr ""
+msgstr "Kehabisan ingatan\n"
 
 #: ../parser_interface.c:78 ../parser_interface.c:81
 msgid "Couldn't copy profile: Bad memory address\n"
-msgstr ""
+msgstr "Tidak dapat salin profil. Alamat ingatan teruk\n"
 
 #: ../parser_interface.c:81 ../parser_interface.c:84
 msgid "Profile doesn't conform to protocol\n"
-msgstr ""
+msgstr "Profil tidak menyebentuk ke protokol\n"
 
 #: ../parser_interface.c:84 ../parser_interface.c:87
 msgid "Profile does not match signature\n"
-msgstr ""
+msgstr "Profil tidak sepadan dengan tandatangan\n"
 
 #: ../parser_interface.c:87 ../parser_interface.c:90
 msgid "Profile version not supported by Apparmor module\n"
-msgstr ""
+msgstr "Versi profil tidak disokong oleh modul Apparmor\n"
 
 #: ../parser_interface.c:90 ../parser_interface.c:93
 msgid "Profile already exists\n"
-msgstr ""
+msgstr "Profil sudah wujud\n"
 
 #: ../parser_interface.c:93 ../parser_interface.c:96
 msgid "Profile doesn't exist\n"
-msgstr ""
+msgstr "Profil tidak wujud\n"
 
 #: ../parser_interface.c:96 ../parser_interface.c:99
 msgid "Permission denied; attempted to load a profile while confined?\n"
-msgstr ""
+msgstr "Keizinan dinafikan; cuba untuk muatkan profil semasa dikurung?\n"
 
 #: ../parser_interface.c:99 ../parser_interface.c:102
 #, c-format
 msgid "Unknown error (%d): %s\n"
-msgstr ""
+msgstr "Ralat tidak diketahui (%d): %s\n"
 
 #: ../parser_interface.c:116 ../parser_interface.c:119
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr ""
+msgstr "%s: Tidak boleh tambah \"%s\".  "
 
 #: ../parser_interface.c:121 ../parser_interface.c:124
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr ""
+msgstr "%s: Tidak boleh ganti \"%s\".  "
 
 #: ../parser_interface.c:126 ../parser_interface.c:129
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr ""
+msgstr "%s: Tidak boleh buang \"%s\".  "
 
 #: ../parser_interface.c:131 ../parser_interface.c:134
 #, c-format
 msgid "%s: Unable to write to stdout\n"
-msgstr ""
+msgstr "%s: Tidak boleh tulis ke stdout\n"
 
 #: ../parser_interface.c:135 ../parser_interface.c:138
 #, c-format
 msgid "%s: Unable to write to output file\n"
-msgstr ""
+msgstr "%s: Tidak boleh tulis ke fail output\n"
 
 #: ../parser_interface.c:138 ../parser_interface.c:162
 #: ../parser_interface.c:141 ../parser_interface.c:165
 #, c-format
 msgid "%s: ASSERT: Invalid option: %d\n"
-msgstr ""
+msgstr "%s: ASSERT: Pilihan tidak sah: %d\n"
 
 #: ../parser_interface.c:147 ../parser_interface.c:150
 #, c-format
 msgid "Addition succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Penambahan berjaya untuk \"%s\".\n"
 
 #: ../parser_interface.c:151 ../parser_interface.c:154
 #, c-format
 msgid "Replacement succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Penggantian berjaya bagi \"%s\".\n"
 
 #: ../parser_interface.c:155 ../parser_interface.c:158
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Pembuangan berjaya bagi \"%s\".\n"
 
 #: ../parser_interface.c:251 ../parser_interface.c:254
 #, c-format
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
-msgstr ""
+msgstr "penimbal tokokan teruk PANIC %p pos %p ext %p saiz %d res %p\n"
 
 #: ../parser_interface.c:656 ../parser_interface.c:658
 #, c-format
 msgid "profile %s network rules not enforced\n"
-msgstr ""
+msgstr "peraturan rangkaian profil %s tidak dikuat kuasakan\n"
 
 #: ../parser_interface.c:666
 msgid "Unknown pattern type\n"
-msgstr ""
+msgstr "Jenis corak tidak diketahui\n"
 
 #: ../parser_interface.c:750 ../parser_interface.c:902
 #: ../parser_interface.c:743 ../parser_interface.c:894
 #, c-format
 msgid "Unable to open %s - %s\n"
-msgstr ""
+msgstr "Tidak boleh buka %s - %s\n"
 
 #: ../parser_interface.c:776 ../parser_interface.c:768
 #, c-format
 msgid "Memory Allocation Error: Unable to remove ^%s\n"
-msgstr ""
+msgstr "Ralat Peruntukan Ingatan: Tidak boleh buang ^%s\n"
 
 #: ../parser_interface.c:789 ../parser_interface.c:781
 #, c-format
 msgid "Memory Allocation Error: Unable to remove %s:%s."
-msgstr ""
+msgstr "Ralat Peruntukan Ingatan: Tidak boleh buang %s:%s."
 
 #: ../parser_interface.c:810 ../parser_interface.c:802
 msgid "unable to create work area\n"
-msgstr ""
+msgstr "tidak boleh cipta kawasan kerja\n"
 
 #: ../parser_interface.c:818 ../parser_interface.c:810
 #, c-format
 msgid "unable to serialize profile %s\n"
-msgstr ""
+msgstr "tidak boleh serialkan profil %s\n"
 
 #: ../parser_interface.c:829 ../parser_interface.c:916
 #: ../parser_interface.c:821 ../parser_interface.c:908
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
-msgstr ""
+msgstr "%s: Tidak boleh tulis keseluruhan masukan profil\n"
 
 #: ../parser_interface.c:839 ../parser_interface.c:831
 #, c-format
 msgid "%s: Unable to write entire profile entry to cache\n"
-msgstr ""
+msgstr "%s: Tidak boleh tulis keseluruhan masukan profil ke cache\n"
 
 #: parser_lex.l:100 parser_lex.l:163
 #, c-format
 msgid "Could not open '%s'"
-msgstr ""
+msgstr "Tidak dapat buka '%s'"
 
 #: parser_lex.l:104 parser_lex.l:167
 #, c-format
 msgid "fstat failed for '%s'"
-msgstr ""
+msgstr "fstat gagal bagi '%s'"
 
 #: parser_lex.l:121
 #, c-format
 msgid "opendir failed '%s'"
-msgstr ""
+msgstr "opendir gagalkan '%s'"
 
 #: parser_lex.l:152
 #, c-format
 msgid "stat failed for '%s'"
-msgstr ""
+msgstr "stat gagal bagi '%s'"
 
 #: parser_lex.l:155 parser_lex.l:133
 #, c-format
 msgid "Could not open '%s' in '%s'"
-msgstr ""
+msgstr "Tidak dapat buka '%s' dalam '%s'"
 
 #: parser_lex.l:284 parser_lex.l:322 parser_lex.l:362 parser_lex.l:399
 #: parser_lex.l:469 parser_lex.l:655 parser_lex.l:586
 #, c-format
 msgid "Found unexpected character: '%s'"
-msgstr ""
+msgstr "Temui aksara tidak jangka: '%s'"
 
 #: parser_lex.l:386 parser_lex.l:418
 msgid "Variable declarations do not accept trailing commas"
-msgstr ""
+msgstr "Deklarasi pembolehubah tidak menerima koma bertitik"
 
 #: parser_lex.l:420
 #, c-format
 msgid "(network_mode) Found unexpected character: '%s'"
-msgstr ""
+msgstr "(network_mode) Temui aksara tidak jangka: '%s'"
 
 #: ../parser_main.c:333 ../parser_common.c:61
 #, c-format
 msgid "Warning from %s (%s%sline %d): %s"
-msgstr ""
+msgstr "Amaran dari %s (%s%sbaris %d): %s"
 
 #: ../parser_main.c:531
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
-msgstr ""
+msgstr "%s: Tidak dapat peruntuk ingatan untuk titik lekap subdomainbase\n"
 
 #: ../parser_main.c:577 ../parser_main.c:616
 #, c-format
@@ -233,6 +233,8 @@ msgid ""
 "Warning: unable to find a suitable fs in %s, is it mounted?\n"
 "Use --subdomainfs to override.\n"
 msgstr ""
+"Amaran: tidak boleh cari fs yang sesuai dalam %s, adakah ia dilekap?\n"
+"Guna --subdomainfs untuk batalkan.\n"
 
 #: ../parser_main.c:597 ../parser_main.c:635
 #, c-format
@@ -240,6 +242,8 @@ msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
 msgstr ""
+"%s: Maaf. Anda perlukan kelayakan root untuk jalankan program ini.\n"
+"\n"
 
 #: ../parser_main.c:604 ../parser_main.c:642
 #, c-format
@@ -248,12 +252,16 @@ msgid ""
 "Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 msgstr ""
+"%s: Amaran! Anda telah tetapkan root setuid program ini.\n"
+"Sesiapa sahaja boleh jalankan program ini boleh kemaskin profil AppArmor "
+"anda.\n"
+"\n"
 
 #: ../parser_main.c:704 ../parser_main.c:813 ../parser_main.c:836
 #: ../parser_main.c:946
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
-msgstr ""
+msgstr "Ralat: Tidak dapat baca profil %s: %s.\n"
 
 #: ../parser_main.c:718 ../parser_misc.c:270 parser_yacc.y:227
 #: parser_yacc.y:374 parser_yacc.y:386 parser_yacc.y:484 parser_yacc.y:586
@@ -267,37 +275,40 @@ msgstr ""
 #: parser_yacc.y:1102 parser_yacc.y:1201 parser_yacc.y:1223 parser_yacc.y:1234
 #: parser_yacc.y:1309 parser_yacc.y:1327 parser_yacc.y:1334 parser_yacc.y:1385
 msgid "Memory allocation error."
-msgstr ""
+msgstr "Ralat peruntukan ingatan."
 
 #: ../parser_main.c:740 ../parser_main.c:872
 #, c-format
 msgid "Cached load succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Berjaya muatkan cache untuk \"%s\".\n"
 
 #: ../parser_main.c:744 ../parser_main.c:876
 #, c-format
 msgid "Cached reload succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Berjaya muatkan semula cache untuk \"%s\".\n"
 
 #: ../parser_main.c:910 ../parser_main.c:1058
 #, c-format
 msgid "%s: Errors found in file. Aborting.\n"
-msgstr ""
+msgstr "%s: Ralat ditemui dalam fail. Menghenti paksa.\n"
 
 #: ../parser_misc.c:426 ../parser_misc.c:597
 msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
 msgstr ""
+"Penerang huruf besar \"RWLIMX\" sudah lapok, sila tukar ia kepada huruf "
+"kecil\n"
+"Lihat halaman panduan apparmor.d(5) untuk perincian.\n"
 
 #: ../parser_misc.c:467 ../parser_misc.c:474 ../parser_misc.c:638
 #: ../parser_misc.c:645
 msgid "Conflict 'a' and 'w' perms are mutually exclusive."
-msgstr ""
+msgstr "Konflik kekal 'a' dan 'w' adalah ekslusif secara bersama."
 
 #: ../parser_misc.c:491 ../parser_misc.c:662
 msgid "Exec qualifier 'i' invalid, conflicting qualifier already specified"
-msgstr ""
+msgstr "Penerang exec 'i' tidak sah, penerang berkonflik sudah dinyatakan"
 
 #: ../parser_misc.c:502 ../parser_misc.c:673
 #, c-format
@@ -305,180 +316,196 @@ msgid ""
 "Unconfined exec qualifier (%c%c) allows some dangerous environment variables "
 "to be passed to the unconfined process; 'man 5 apparmor.d' for details.\n"
 msgstr ""
+"Penerang exec tidak terkurung (%c%c) membolehkan beberapa pembolehubah "
+"persekitaran merbahaya melepasi ke proses tidak terkurung; 'man 5 "
+"apparmor.d' untuk perincian.\n"
 
 #: ../parser_misc.c:510 ../parser_misc.c:551 ../parser_misc.c:681
 #: ../parser_misc.c:722
 #, c-format
 msgid "Exec qualifier '%c' invalid, conflicting qualifier already specified"
-msgstr ""
+msgstr "Penerang exec '%c' tidak sah, penerang berkonflik sudah dinyatakan"
 
 #: ../parser_misc.c:537 ../parser_misc.c:545 ../parser_misc.c:708
 #: ../parser_misc.c:716
 #, c-format
 msgid ""
 "Exec qualifier '%c%c' invalid, conflicting qualifier already specified"
-msgstr ""
+msgstr "Penerang exec '%c%c' tidak sah, penerang berkonflik sudah dinyatakan"
 
 #: ../parser_misc.c:593 ../parser_misc.c:764
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr ""
+msgstr "Dalaman: Mod aksara '%c' tidak dijangka dalam input"
 
 #: ../parser_misc.c:615 ../parser_misc.c:786
 #, c-format
 msgid "Internal error generated invalid perm 0x%llx\n"
-msgstr ""
+msgstr "Ralat dalaman menjana perm 0x%llx tidak sah\n"
 
 #: ../parser_misc.c:865 ../parser_symtab.c:561 ../parser_regex.c:626
 #: ../parser_variable.c:229
 #, c-format
 msgid "AppArmor parser error: %s\n"
-msgstr ""
+msgstr "Ralat penghurai AppArmor: %s\n"
 
 #: ../parser_merge.c:92 ../parser_merge.c:91
 msgid "Couldn't merge entries. Out of Memory\n"
-msgstr ""
+msgstr "Tidak dapat gabungkan masukan. Kehabisan Ingatan\n"
 
 #: ../parser_merge.c:111 ../parser_merge.c:113
 #, c-format
 msgid "profile %s: has merged rule %s with conflicting x modifiers\n"
 msgstr ""
+"profil %s: mempunyai peraturan tergabung %s dengan penerang x yang "
+"berkonflik\n"
 
 #: parser_yacc.y:236 parser_yacc.y:277
 msgid "Profile attachment must begin with a '/'."
-msgstr ""
+msgstr "Lampiran profil mesti bermula dengan tanda '/'."
 
 #: parser_yacc.y:260 parser_yacc.y:302
 msgid ""
 "Profile names must begin with a '/', namespace or keyword 'profile' or 'hat'."
 msgstr ""
+"Nama profil mesti bermula dengan tanda '/', ruang nama atau kata kunci "
+"'profile' atau 'hat'."
 
 #: parser_yacc.y:296 parser_yacc.y:338
 #, c-format
 msgid "Failed to create alias %s -> %s\n"
-msgstr ""
+msgstr "Gagal cipta alias %s -> %s\n"
 
 #: parser_yacc.y:417 parser_yacc.y:460
 msgid "Profile flag chroot_relative conflicts with namespace_relative"
-msgstr ""
+msgstr "Bendera profil chroot_relative berkonflik dengan namespace_relative"
 
 #: parser_yacc.y:421 parser_yacc.y:464
 msgid "Profile flag mediate_deleted conflicts with delegate_deleted"
-msgstr ""
+msgstr "Bendera profil mediate_deleted berkonflik dengan delegate_deleted"
 
 #: parser_yacc.y:424 parser_yacc.y:467
 msgid ""
 "Profile flag attach_disconnected conflicts with no_attach_disconnected"
 msgstr ""
+"Bendera profil attach_disconnected berkonflik dengan no_attach_disconnected"
 
 #: parser_yacc.y:427 parser_yacc.y:470
 msgid "Profile flag chroot_attach conflicts with chroot_no_attach"
-msgstr ""
+msgstr "Bendera profil chroot_attach berkonflik dengan chroot_no_attach"
 
 #: parser_yacc.y:441 parser_yacc.y:484
 msgid "Profile flag 'debug' is no longer valid."
-msgstr ""
+msgstr "Bendera profil 'nyahpepijat' tidak lagi sah."
 
 #: parser_yacc.y:463 parser_yacc.y:506
 #, c-format
 msgid "Invalid profile flag: %s."
-msgstr ""
+msgstr "Bendera profil tidak sah: %s."
 
 #: parser_yacc.y:498 parser_yacc.y:520 parser_yacc.y:548
 msgid "Assert: `rule' returned NULL."
-msgstr ""
+msgstr "Terap:'rule' kembalikan NOL."
 
 #: parser_yacc.y:501 parser_yacc.y:546 parser_yacc.y:552 parser_yacc.y:584
 msgid ""
 "Invalid mode, in deny rules 'x' must not be preceded by exec qualifier 'i', "
 "'p', or 'u'"
 msgstr ""
+"Mod tidak sah, semasa menafikan peraturan 'x' tidak boleh didahului oleh "
+"penerang exec 'i', 'p', atau 'u'"
 
 #: parser_yacc.y:524 parser_yacc.y:556
 msgid ""
 "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', 'c', or 'u'"
 msgstr ""
+"Mod tidak sah, 'x' mesti didahului oleh penerang exec 'i', 'p', 'c', atau 'u'"
 
 #: parser_yacc.y:549 parser_yacc.y:587
 msgid "Invalid mode, 'x' must be preceded by exec qualifier 'i', 'p', or 'u'"
 msgstr ""
+"Mod tidak sah, 'x' mesti didahului oleh penerang exec 'i', 'p', atau 'u'"
 
 #: parser_yacc.y:574 parser_yacc.y:612 parser_yacc.y:614
 msgid "Assert: `network_rule' return invalid protocol."
-msgstr ""
+msgstr "Terap: 'network_rule' kembalikan protokol tidak sah."
 
 #: parser_yacc.y:649 parser_yacc.y:696
 msgid "Assert: `change_profile' returned NULL."
-msgstr ""
+msgstr "Terap: 'change_profile' kembalikan NOL."
 
 #: parser_yacc.y:680 parser_yacc.y:720
 msgid "Assert: 'hat rule' returned NULL."
-msgstr ""
+msgstr "Terap: 'hat rule' kembalikan NOL."
 
 #: parser_yacc.y:689 parser_yacc.y:729
 msgid "Assert: 'local_profile rule' returned NULL."
-msgstr ""
+msgstr "Terap: 'local_profile rule' kembalikan NOL."
 
 #: parser_yacc.y:824 parser_yacc.y:885
 #, c-format
 msgid "Unset boolean variable %s used in if-expression"
-msgstr ""
+msgstr "Pembolehubah boolean %s tidak ditetap digunakan dalam ungkapan-if"
 
 #: parser_yacc.y:882 parser_yacc.y:986
 msgid "unsafe rule missing exec permissions"
-msgstr ""
+msgstr "peraturan tidak selamat kehilangan keizinan exec"
 
 #: parser_yacc.y:901 parser_yacc.y:954
 msgid "subset can only be used with link rules."
-msgstr ""
+msgstr "subset hanya boleh digunakan dengan peraturan pautan."
 
 #: parser_yacc.y:903 parser_yacc.y:956
 msgid "link and exec perms conflict on a file rule using ->"
-msgstr ""
+msgstr "konflik kekal pautan dan exec pada peraturan fail menggunakan ->"
 
 #: parser_yacc.y:905 parser_yacc.y:958
 msgid "link perms are not allowed on a named profile transition.\n"
-msgstr ""
+msgstr "perms pautan tidak dibenarkan pada peralihan profil bernama.\n"
 
 #: parser_yacc.y:921 parser_yacc.y:1003
 #, c-format
 msgid "missing an end of line character? (entry: %s)"
-msgstr ""
+msgstr "hilang penghujung baris aksara? (masukan: %s)"
 
 #: parser_yacc.y:975 parser_yacc.y:985 parser_yacc.y:1057 parser_yacc.y:1067
 msgid "Invalid network entry."
-msgstr ""
+msgstr "Masukan rangkaian tidak sah."
 
 #: parser_yacc.y:1039 parser_yacc.y:1048 parser_yacc.y:1254
 #, c-format
 msgid "Invalid capability %s."
-msgstr ""
+msgstr "Keupayaan %s tidak sah."
 
 #: parser_yacc.y:1066 parser_yacc.y:1269
 #, c-format
 msgid "AppArmor parser error for %s%s%s at line %d: %s\n"
-msgstr ""
+msgstr "Ralat penghurai AppArmor untuk %s%s%s pada baris %d: %s\n"
 
 #: parser_yacc.y:1072 parser_yacc.y:1275
 #, c-format
 msgid "AppArmor parser error,%s%s line %d: %s\n"
-msgstr ""
+msgstr "Ralat penghurai AppArmor, %s%s pada baris %d: %s\n"
 
 #: ../parser_regex.c:244
 #, c-format
 msgid "%s: Illegal open {, nesting groupings not allowed\n"
 msgstr ""
+"%s: Pembuka { tidak dibolehkan, pengumpulan bersarang tidak dibenarkan\n"
 
 #: ../parser_regex.c:265 ../parser_regex.c:274
 #, c-format
 msgid "%s: Regex grouping error: Invalid number of items between {}\n"
 msgstr ""
+"%s: Ralat pengumpulan ungkapan nalar: Bilangan item tidak sah diantara {}\n"
 
 #: ../parser_regex.c:271 ../parser_regex.c:280
 #, c-format
 msgid ""
 "%s: Regex grouping error: Invalid close }, no matching open { detected\n"
 msgstr ""
+"%s: Ralat pengumpulan ungkapan nalar: Penutup } tidak sah, tiada pembuka { "
+"yang sepadan dikesan\n"
 
 #: ../parser_regex.c:337 ../parser_regex.c:343
 #, c-format
@@ -486,26 +513,28 @@ msgid ""
 "%s: Regex grouping error: Unclosed grouping or character class, expecting "
 "close }\n"
 msgstr ""
+"%s: Ralat pengumpulan ungkapan nalar: Pengumpulan atau kelas aksara tidak "
+"ditutup, menjangkakan penutup }\n"
 
 #: ../parser_regex.c:351 ../parser_regex.c:357
 #, c-format
 msgid "%s: Internal buffer overflow detected, %d characters exceeded\n"
-msgstr ""
+msgstr "%s: Penimbal dalaman melimpah dikesan, %d aksara terlebih\n"
 
 #: ../parser_regex.c:355 ../parser_regex.c:361
 #, c-format
 msgid "%s: Unable to parse input line '%s'\n"
-msgstr ""
+msgstr "%s: Tidak boleh hurai baris input '%s'\n"
 
 #: ../parser_regex.c:397 ../parser_regex.c:405
 #, c-format
 msgid "%s: Invalid profile name '%s' - bad regular expression\n"
-msgstr ""
+msgstr "%s: Nama profil '%s' tidak sah - ungkapan nalar teruk\n"
 
 #: ../parser_policy.c:202 ../parser_policy.c:402
 #, c-format
 msgid "ERROR merging rules for profile %s, failed to load\n"
-msgstr ""
+msgstr "RALAT menggabung peraturan untuk profil %s, gagal dimuatkan\n"
 
 #: ../parser_policy.c:234
 #, c-format
@@ -514,140 +543,150 @@ msgid ""
 "\t'*', '?', character ranges, and alternations are not allowed.\n"
 "\t'**' may only be used at the end of a rule.\n"
 msgstr ""
+"RALAT profil %s mengandungi unsur polisi yang tidak boleh diguna oleh kernel "
+"ini:\n"
+"\tjulat aksara '*', '?', dan penyelangan tidak dibenarkan.\n"
+"\t'**' hanya boleh digunakan dihujung peraturan.\n"
 
 #: ../parser_policy.c:279 ../parser_policy.c:359
 #, c-format
 msgid "ERROR processing regexs for profile %s, failed to load\n"
-msgstr ""
+msgstr "RALAT memproses ungkapan nalar untuk profil %s, gagal dimuatkan\n"
 
 #: ../parser_policy.c:306 ../parser_policy.c:389
 #, c-format
 msgid "ERROR expanding variables for profile %s, failed to load\n"
-msgstr ""
+msgstr "RALAT mengembangkan pembolehubah untuk profil %s, gagal dimuatkan\n"
 
 #: ../parser_policy.c:390 ../parser_policy.c:382
 #, c-format
 msgid "ERROR adding hat access rule for profile %s\n"
-msgstr ""
+msgstr "RALAT menambah peraturan capaian hat untuk profil %s\n"
 
 #: ../parser_policy.c:490 ../parser_policy.c:271
 #, c-format
 msgid "ERROR in profile %s, failed to load\n"
-msgstr ""
+msgstr "RALAT dalam profil %s, gagal dimuatkan\n"
 
 #: ../parser_policy.c:675
 #, c-format
 msgid "%s: Errors found during postprocessing.  Aborting.\n"
-msgstr ""
+msgstr "%s: Ralat ditemui semasa pos-pemprosesan. Menghenti paksa.\n"
 
 #: ../parser_policy.c:682 ../parser_policy.c:704
 #, c-format
 msgid "%s: Errors found during regex postprocess.  Aborting.\n"
 msgstr ""
+"%s: Ralat ditemui semasa pos-proses ungkapan nalar. Menghenti paksa.\n"
 
 #: ../parser_policy.c:689
 #, c-format
 msgid "%s: Errors found during postprocess.  Aborting.\n"
-msgstr ""
+msgstr "%s: Ralat ditemui semasa pos-proses. Menghenti paksa.\n"
 
 #: ../parser_policy.c:696
 #, c-format
 msgid "%s: Errors found in combining rules postprocessing. Aborting.\n"
 msgstr ""
+"%s: Ralat ditemui semasa menggabungkan pos-pemprosesan peraturan. Menghenti "
+"paksa.\n"
 
 #: parser_lex.l:180
 #, c-format
 msgid "Could not process include directory '%s' in '%s'"
-msgstr ""
+msgstr "Tidak dapat proses direktori include '%s' dalam '%s'"
 
 #: ../parser_main.c:660
 msgid "Feature buffer full."
-msgstr ""
+msgstr "Penimbal fitur penuh."
 
 #: ../parser_main.c:1115 ../parser_main.c:1132
 msgid "Out of memory"
-msgstr ""
+msgstr "Kehabisan ingatan"
 
 #: ../parser_main.c:1182
 #, c-format
 msgid "Can't create cache directory: %s\n"
-msgstr ""
+msgstr "Tidak dapat cipta direktori cache: %s\n"
 
 #: ../parser_main.c:1185
 #, c-format
 msgid "File in cache directory location: %s\n"
-msgstr ""
+msgstr "Fail dalam lokasi direktori cache: %s\n"
 
 #: ../parser_main.c:1188
 #, c-format
 msgid "Can't update cache directory: %s\n"
-msgstr ""
+msgstr "Tidak dapat kemaskini direktori cache: %s\n"
 
 #: ../parser_misc.c:833
 #, c-format
 msgid "Internal: unexpected DBus mode character '%c' in input"
-msgstr ""
+msgstr "Dalaman: aksara mod DBus '%c' tidak dijangka dalam input"
 
 #: ../parser_misc.c:857
 #, c-format
 msgid "Internal error generated invalid DBus perm 0x%x\n"
-msgstr ""
+msgstr "Ralat dalaman dijana menjana DBus perm 0x%x tidak sah\n"
 
 #: parser_yacc.y:575
 msgid "deny prefix not allowed"
-msgstr ""
+msgstr "nafi awalan tidak dibenarkan"
 
 #: parser_yacc.y:612
 msgid "owner prefix not allowed"
-msgstr ""
+msgstr "awalan pemilik tidak dibenarkan"
 
 #: parser_yacc.y:660
 msgid "owner prefix not allow on mount rules"
-msgstr ""
+msgstr "awalan pemilik tidak dibenarkan pada peraturan lekap"
 
 #: parser_yacc.y:677
 msgid "owner prefix not allow on dbus rules"
-msgstr ""
+msgstr "awalan pemilik tidak dibenarkan pada peraturan dbus"
 
 #: parser_yacc.y:704
 msgid "owner prefix not allow on capability rules"
-msgstr ""
+msgstr "awalan pemilik tidak dibenarkan pada peraturan keupayaan"
 
 #: parser_yacc.y:1357
 #, c-format
 msgid "invalid mount conditional %s%s"
-msgstr ""
+msgstr "syarat lekap %s%s tidak sah"
 
 #: parser_yacc.y:1374
 msgid "bad mount rule"
-msgstr ""
+msgstr "peraturan lekap teruk"
 
 #: parser_yacc.y:1381
 msgid "mount point conditions not currently supported"
-msgstr ""
+msgstr "syarat titik lekap buat masa ini tidak disokong"
 
 #: parser_yacc.y:1398
 #, c-format
 msgid "invalid pivotroot conditional '%s'"
-msgstr ""
+msgstr "syarat pivotroot '%s' tidak sah"
 
 #: ../parser_regex.c:241
 #, c-format
 msgid ""
 "%s: Regex grouping error: Invalid close ], no matching open [ detected\n"
 msgstr ""
+"%s: ralat pengumpulan ungkapan nalar: simbol ] tidak sah, tiada simbol [ "
+"dikesan\n"
 
 #: ../parser_regex.c:257
 #, c-format
 msgid "%s: Regex grouping error: Exceeded maximum nesting of {}\n"
 msgstr ""
+"%s: ralat pengumpulan ungkapan nalar: Penyarangan maksimum {} dicapai\n"
 
 #: ../parser_policy.c:366
 #, c-format
 msgid "ERROR processing policydb rules for profile %s, failed to load\n"
-msgstr ""
+msgstr "RALAT memproses peraturan policydb bagi profil %s, gagal dimuatkan\n"
 
 #: ../parser_policy.c:396
 #, c-format
 msgid "ERROR replacing aliases for profile %s, failed to load\n"
-msgstr ""
+msgstr "RALAT menggantikan alias untuk profil %s, gagal dimuatkan\n"
