@@ -27,7 +27,7 @@ class Test(unittest.TestCase):
         #copy the local profiles to the test directory
         if os.path.exists('./profiles'):
             shutil.rmtree('./profiles')
-        shutil.copytree('/etc/apparmor.d/', './profiles/', symlinks=True)
+        shutil.copytree('../../profiles/apparmor.d/', './profiles/', symlinks=True)
 
     def tearDown(self):
         #Wipe the local profiles from the test directory

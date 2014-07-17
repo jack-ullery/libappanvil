@@ -133,7 +133,7 @@ if __name__ == "__main__":
 
     #copy the local profiles to the test directory
     #Should be the set of cleanprofile
-    shutil.copytree('/etc/apparmor.d', './profiles', symlinks=True)
+    shutil.copytree('../../profiles/apparmor.d/', './profiles', symlinks=True)
 
     apparmor.profile_dir = './profiles'
 
