@@ -47,6 +47,7 @@
        CAP_WAKE_ALARM 8
        CAP_BLOCK_SUSPEND 8
        CAP_DAC_READ_SEARCH 7
+       CAP_AUDIT_READ 7
 # unused
        CAP_NET_BROADCAST 0
 
