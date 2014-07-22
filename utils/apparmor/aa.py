@@ -2361,8 +2361,6 @@ def save_profiles():
                     profile_name = list(changed.keys())[arg]
                     write_profile_ui_feedback(profile_name)
                     reload_base(profile_name)
-                    #changed.pop(profile_name)
-                    #q['options'] = changed
 
                 elif ans == 'CMD_VIEW_CHANGES':
                     which = list(changed.keys())[arg]
@@ -2382,7 +2380,7 @@ def save_profiles():
 
                     display_changes(oldprofile, newprofile)
 
-            for profile_name in changed_list:
+            for profile_name in sorted(changed.keys()):
                 write_profile_ui_feedback(profile_name)
                 reload_base(profile_name)
 
