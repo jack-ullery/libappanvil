@@ -13,10 +13,7 @@
 # ----------------------------------------------------------------------
 import os
 import shutil
-import sys
 import unittest
-
-sys.path.append('../')
 
 import apparmor.severity as severity
 from apparmor.common import AppArmorException

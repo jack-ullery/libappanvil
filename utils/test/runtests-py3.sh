@@ -11,6 +11,8 @@
 
 test -z "$RUNTESTS_PY__PYTHON_BINARY" && RUNTESTS_PY__PYTHON_BINARY=python3
 
+export PYTHONPATH=.. 
+
 failed=""
 for file in *.py ; do 
 	echo "running $file..." 

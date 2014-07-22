@@ -13,9 +13,7 @@
 # ----------------------------------------------------------------------
 import unittest
 import re
-import sys
 
-sys.path.append('../')
 import apparmor.common
 import apparmor.config
 
