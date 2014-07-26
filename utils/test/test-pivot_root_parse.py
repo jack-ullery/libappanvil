@@ -32,4 +32,4 @@ class AAParsePivotRootTest(unittest.TestCase):
         self._test_parse_pivot_root_rule('pivot_root /old /new -> /usr/bin/child,')
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

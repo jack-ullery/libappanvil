@@ -59,4 +59,4 @@ class AAParseSignalTest(unittest.TestCase):
         self._test_parse_signal_rule('signal wr set=(pipe, usr1) peer=/sbin/baz,')
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

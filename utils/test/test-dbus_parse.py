@@ -27,4 +27,4 @@ class AAParseDBUSTest(unittest.TestCase):
                 'dbus object returned "%s", expected "%s"' % (dbus.serialize(), dstring))
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

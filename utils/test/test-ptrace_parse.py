@@ -50,4 +50,4 @@ class AAParsePtraceTest(unittest.TestCase):
         self._test_parse_ptrace_rule('ptrace wr peer=/sbin/baz,')
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)
