@@ -19,6 +19,7 @@ import apparmor.aa
 import apparmor.aamode
 import apparmor.severity
 import apparmor.cleanprofile as cleanprofile
+import apparmor.ui as aaui
 
 # setup module translations
 from apparmor.translations import init_translation
@@ -60,7 +61,7 @@ def main():
         programs = list(mergeprofiles.user.aa.keys())
         program = programs[0]
         while ans != 'CMD_SAVE_CHANGES':
-            ans, arg = apparmor.aa.UI_PromptUser(q)
+            ans, arg = aaui.UI_PromptUser(q)
             if ans == 'CMD_SAVE_CHANGES':
                 apparmor.aa.write_profile_ui_feedback(program)
                 apparmor.aa.reload_base(program)
@@ -137,7 +138,7 @@ class Merge(object):
                 q['functions'] = ['CMD_ALLOW', 'CMD_ABORT']
                 done = False
                 while not done:
-                    ans, selected = apparmor.aa.UI_PromptUser(q)
+                    ans, selected = aaui.UI_PromptUser(q)
                     if ans == 'CMD_ALLOW':
                         if selected == 0:
                             self.user.aa[profile][hat][allow]['path'][path][mode] = m#apparmor.aa.owner_flatten_mode(new_mode)#(old_mode | new_mode) - (old_mode & conflict_x)
@@ -167,7 +168,7 @@ class Merge(object):
         q['functions'] = ['CMD_ALLOW', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
         q['default'] = 'CMD_ALLOW'
         while not done and options:
-            ans, selected = apparmor.aa.UI_PromptUser(q)
+            ans, selected = aaui.UI_PromptUser(q)
             if ans == 'CMD_IGNORE_ENTRY':
                 done = True
             elif ans == 'CMD_ALLOW':
@@ -175,7 +176,7 @@ class Merge(object):
                 inc = apparmor.aa.re_match_include(selection)
                 self.user.filelist[self.user.filename]['include'][inc] = True
                 options.pop(selected)
-                apparmor.aa.UI_Info(_('Adding %s to the file.') % selection)
+                aaui.UI_Info(_('Adding %s to the file.') % selection)
 
         sev_db = apparmor.aa.sev_db
         if not sev_db:
@@ -193,7 +194,7 @@ class Merge(object):
                 q['functions'] = ['CMD_ALLOW', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
                 q['default'] = 'CMD_ALLOW'
                 while not done and options:
-                    ans, selected = apparmor.aa.UI_PromptUser(q)
+                    ans, selected = aaui.UI_PromptUser(q)
                     if ans == 'CMD_IGNORE_ENTRY':
                         done = True
                     elif ans == 'CMD_ALLOW':
@@ -202,9 +203,9 @@ class Merge(object):
                         deleted = apparmor.aa.delete_duplicates(self.user.aa[profile][hat], inc)
                         self.user.aa[profile][hat]['include'][inc] = True
                         options.pop(selected)
-                        apparmor.aa.UI_Info(_('Adding %s to the file.') % selection)
+                        aaui.UI_Info(_('Adding %s to the file.') % selection)
                         if deleted:
-                            apparmor.aa.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
+                            aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                 #Add the capabilities
                 for allow in ['allow', 'deny']:
@@ -236,7 +237,7 @@ class Merge(object):
 
                         done = False
                         while not done:
-                            ans, selected = apparmor.aa.UI_PromptUser(q)
+                            ans, selected = aaui.UI_PromptUser(q)
                             # Ignore the log entry
                             if ans == 'CMD_IGNORE_ENTRY':
                                 done = True
@@ -253,23 +254,23 @@ class Merge(object):
                                     deleted = apparmor.aa.delete_duplicates(self.user.aa[profile][hat], inc)
                                     self.user.aa[profile][hat]['include'][inc] = True
 
-                                    apparmor.aa.UI_Info(_('Adding %s to profile.') % selection)
+                                    aaui.UI_Info(_('Adding %s to profile.') % selection)
                                     if deleted:
-                                        apparmor.aa.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
+                                        aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                 self.user.aa[profile][hat]['allow']['capability'][capability]['set'] = True
                                 self.user.aa[profile][hat]['allow']['capability'][capability]['audit'] = other.aa[profile][hat]['allow']['capability'][capability]['audit']
 
                                 apparmor.aa.changed[profile] = True
 
-                                apparmor.aa.UI_Info(_('Adding capability %s to profile.'), capability)
+                                aaui.UI_Info(_('Adding capability %s to profile.'), capability)
                                 done = True
 
                             elif ans == 'CMD_DENY':
                                 self.user.aa[profile][hat]['deny']['capability'][capability]['set'] = True
                                 apparmor.aa.changed[profile] = True
 
-                                apparmor.aa.UI_Info(_('Denying capability %s to profile.') % capability)
+                                aaui.UI_Info(_('Denying capability %s to profile.') % capability)
                                 done = True
                             else:
                                 done = False
@@ -315,7 +316,7 @@ class Merge(object):
                         if cam:
                             deny_audit |= cam
 
-                        if deny_mode & apparmor.aa.AA_MAY_EXEC:
+                        if deny_mode & apparmor.aamode.AA_MAY_EXEC:
                             deny_mode |= apparmor.aamode.ALL_AA_EXEC_TYPE
 
                         # Mask off the denied modes
@@ -324,10 +325,10 @@ class Merge(object):
                         # If we get an exec request from some kindof event that generates 'PERMITTING X'
                         # check if its already in allow_mode
                         # if not add ix permission
-                        if mode & apparmor.aa.AA_MAY_EXEC:
+                        if mode & apparmor.aamode.AA_MAY_EXEC:
                             # Remove all type access permission
                             mode = mode - apparmor.aamode.ALL_AA_EXEC_TYPE
-                            if not allow_mode & apparmor.aa.AA_MAY_EXEC:
+                            if not allow_mode & apparmor.aamode.AA_MAY_EXEC:
                                 mode |= apparmor.aa.str_to_mode('ix')
 
                         # m is not implied by ix
@@ -470,14 +471,14 @@ class Merge(object):
                                 q['default'] = 'CMD_ALLOW'
 
 
-                                ans, selected = apparmor.aa.UI_PromptUser(q)
+                                ans, selected = aaui.UI_PromptUser(q)
 
                                 if ans == 'CMD_IGNORE_ENTRY':
                                     done = True
                                     break
 
                                 if ans == 'CMD_OTHER':
-                                    audit_toggle, owner_toggle = apparmor.aa.UI_ask_mode_toggles(audit_toggle, owner_toggle, allow_mode)
+                                    audit_toggle, owner_toggle = aaui.UI_ask_mode_toggles(audit_toggle, owner_toggle, allow_mode)
                                 elif ans == 'CMD_USER_TOGGLE':
                                     owner_toggle += 1
                                     if not allow_mode and owner_toggle == 2:
@@ -494,9 +495,9 @@ class Merge(object):
                                         deleted = apparmor.aa.delete_duplicates(self.user.aa[profile][hat], inc)
                                         self.user.aa[profile][hat]['include'][inc] =  True
                                         apparmor.aa.changed[profile] =  True
-                                        apparmor.aa.UI_Info(_('Adding %s to profile.') % path)
+                                        aaui.UI_Info(_('Adding %s to profile.') % path)
                                         if deleted:
-                                            apparmor.aa.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
+                                            aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                     else:
                                         if self.user.aa[profile][hat]['allow']['path'][path].get('mode', False):
@@ -536,9 +537,9 @@ class Merge(object):
 
                                         apparmor.aa.changed[profile] = True
 
-                                        apparmor.aa.UI_Info(_('Adding %s %s to profile') % (path, apparmor.aa.mode_to_str_user(mode)))
+                                        aaui.UI_Info(_('Adding %s %s to profile') % (path, apparmor.aa.mode_to_str_user(mode)))
                                         if deleted:
-                                            apparmor.aa.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
+                                            aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                 elif ans == 'CMD_DENY':
                                     path = options[selected].strip()
@@ -554,11 +555,11 @@ class Merge(object):
                                 elif ans == 'CMD_NEW':
                                     arg = options[selected]
                                     if not apparmor.aa.re_match_include(arg):
-                                        ans = apparmor.aa.UI_GetString(_('Enter new path: '), arg)
+                                        ans = aaui.UI_GetString(_('Enter new path: '), arg)
 #                                         if ans:
 #                                             if not matchliteral(ans, path):
 #                                                 ynprompt = _('The specified path does not match this log entry:\n\n  Log Entry: %s\n  Entered Path:  %s\nDo you really want to use this path?') % (path,ans)
-#                                                 key = apparmor.aa.UI_YesNo(ynprompt, 'n')
+#                                                 key = aaui.UI_YesNo(ynprompt, 'n')
 #                                                 if key == 'n':
 #                                                     continue    
                                         apparmor.aa.user_globs.append(ans)
@@ -621,7 +622,7 @@ class Merge(object):
 
                             done = False
                             while not done:
-                                ans, selected = apparmor.aa.UI_PromptUser(q)
+                                ans, selected = aaui.UI_PromptUser(q)
                                 if ans == 'CMD_IGNORE_ENTRY':
                                     done = True
                                     break
@@ -653,9 +654,9 @@ class Merge(object):
 
                                         apparmor.aa.changed[profile] = True
 
-                                        apparmor.aa.UI_Info(_('Adding %s to profile') % selection)
+                                        aaui.UI_Info(_('Adding %s to profile') % selection)
                                         if deleted:
-                                            apparmor.aa.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
+                                            aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                     else:
                                         self.user.aa[profile][hat]['allow']['netdomain']['audit'][family][sock_type] = audit_toggle
@@ -663,13 +664,13 @@ class Merge(object):
 
                                         apparmor.aa.changed[profile] = True
 
-                                        apparmor.aa.UI_Info(_('Adding network access %s %s to profile.') % (family, sock_type))
+                                        aaui.UI_Info(_('Adding network access %s %s to profile.') % (family, sock_type))
 
                                 elif ans == 'CMD_DENY':
                                     done = True
                                     self.user.aa[profile][hat]['deny']['netdomain']['rule'][family][sock_type] = True
                                     apparmor.aa.changed[profile] = True
-                                    apparmor.aa.UI_Info(_('Denying network access %s %s to profile') % (family, sock_type))
+                                    aaui.UI_Info(_('Denying network access %s %s to profile') % (family, sock_type))
 
                                 else:
                                     done = False
