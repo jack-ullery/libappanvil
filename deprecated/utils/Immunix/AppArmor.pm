@@ -5251,7 +5251,7 @@ sub parse_profile_data($$$) {
         } elsif (m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- variable defined
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean defined
-        } elsif (m/^\s*(audit\s+)?(deny\s+)?(owner\s+)?([\"\@\/].*?)\s+(\S+)(\s+->\s*(.*?))?\s*,\s*(#.*)?$/) {     # path entry
+        } elsif (m/^\s*(audit\s+)?(deny\s+)?(owner\s+)?(file|([\"\@\/].*?)\s+(\S+))(\s+->\s*(.*?))?\s*,\s*(#.*)?$/) {     # path entry
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
@@ -5259,7 +5259,19 @@ sub parse_profile_data($$$) {
 	    my $audit = $1 ? 1 : 0;
 	    my $allow = $2 ? 'deny' : 'allow';
 	    my $user = $3 ? 1 : 0;
-            my ($path, $mode, $nt_name) = ($4, $5, $7);
+            my ($path, $mode, $nt_name) = ($5, $6, $8);
+            my $file_keyword = 0;
+            my $use_mode = 1;
+
+            if ($4 eq "file") {
+                $path = "/{**,}";
+                $file_keyword = 1;
+                if (!$mode) {
+                    # what the parser uses, but we don't care
+                    $mode = "rwixlka";
+                    $use_mode = 0;
+                }
+            }
 
             # strip off any trailing spaces.
             $path =~ s/\s+$//;
@@ -5279,6 +5291,9 @@ sub parse_profile_data($$$) {
             if (!validate_profile_mode($mode, $allow, $nt_name)) {
                 fatal_error(sprintf(gettext('Profile %s contains invalid mode %s.'), $file, $mode));
             }
+
+	    $profile_data->{$profile}{$hat}{$allow}{path}{$path}{use_mode} = $use_mode;
+	    $profile_data->{$profile}{$hat}{$allow}{path}{$path}{file_keyword} = 1 if $file_keyword;
 
 	    my $tmpmode;
 	    if ($user) {
@@ -5845,7 +5860,13 @@ sub writepath_rules ($$$) {
 		    }
 		    $tmpmode &= ~$tmpaudit;
 		}
-		if ($tmpmode) {
+		my $kw = $profile_data->{$allow}{path}{$path}{file_keyword};
+		my $use_mode = $profile_data->{$allow}{path}{$path}{use_mode};
+		if ($kw) {
+		    my $modestr = "";
+		    $modestr = " " . mode_to_str($tmpmode) if $use_mode;
+		    push @data, "${pre}${allowstr}${ownerstr}file${modestr}${tail},";
+		} elsif ($tmpmode) {
 		    my $modestr = mode_to_str($tmpmode);
 		    if ($path =~ /\s/) {
 			push @data, "${pre}${allowstr}${ownerstr}\"$path\" ${modestr}${tail},";
