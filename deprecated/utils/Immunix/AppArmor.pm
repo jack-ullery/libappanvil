@@ -5352,7 +5352,7 @@ sub parse_profile_data($$$) {
 		$profile_data->{$profile}{$hat}{$allow}{netdomain}{audit}{$fam} = $audit;
             } else {
                 $profile_data->{$profile}{$hat}{$allow}{netdomain}{rule}{all} = 1;
-                $profile_data->{$profile}{$hat}{$allow}{netdomain}{audit}{all} = 1;
+                $profile_data->{$profile}{$hat}{$allow}{netdomain}{audit}{all} = $audit;
             }
         } elsif (/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
 # just ignore and drop old style network
@@ -5709,7 +5709,7 @@ sub writenet_rules ($$$) {
     # dump out the netdomain entries...
     if (exists $profile_data->{$allow}{netdomain}) {
         if ( $profile_data->{$allow}{netdomain}{rule} &&
-             $profile_data->{$allow}{netdomain}{rule} eq 'all') {
+             $profile_data->{$allow}{netdomain}{rule}{all}) {
 	    $audit = "audit " if $profile_data->{$allow}{netdomain}{audit}{all};
             push @data, "${pre}${audit}network,";
         } else {
