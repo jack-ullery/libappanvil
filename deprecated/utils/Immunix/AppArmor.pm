@@ -5150,7 +5150,7 @@ sub parse_profile_data($$$) {
 
             $initial_comment = "";
 
-        } elsif (m/^\s*(audit\s+)?(deny\s+)?capability\s+(\S+)\s*,\s*(#.*)?$/) {  # capability entry
+        } elsif (m/^\s*(audit\s+)?(deny\s+)?capability(\s+(\S+))?\s*,\s*(#.*)?$/) {  # capability entry
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
@@ -5158,7 +5158,7 @@ sub parse_profile_data($$$) {
 	    my $audit = $1 ? 1 : 0;
 	    my $allow = $2 ? 'deny' : 'allow';
 	    $allow = 'deny' if ($2);
-            my $capability = $3;
+            my $capability = $3 ? $3 : 'all';
             $profile_data->{$profile}{$hat}{$allow}{capability}{$capability}{set} = 1;
             $profile_data->{$profile}{$hat}{$allow}{capability}{$capability}{audit} = $audit;
         } elsif (m/^\s*set capability\s+(\S+)\s*,\s*(#.*)?$/) {  # capability entry
@@ -5676,7 +5676,13 @@ sub writecap_rules ($$$) {
 
     my @data;
     if (exists $profile_data->{$allow}{capability}) {
-        for my $cap (sort keys %{$profile_data->{$allow}{capability}}) {
+	my $audit;
+	if (exists $profile_data->{$allow}{capability}{all}) {
+	    $audit = ($profile_data->{$allow}{capability}{all}{audit}) ? 'audit ' : '';
+	    push @data, "${pre}${audit}${allowstr}capability,";
+	}
+	for my $cap (sort keys %{$profile_data->{$allow}{capability}}) {
+	    next if ($cap eq "all");
 	    my $audit = ($profile_data->{$allow}{capability}{$cap}{audit}) ? 'audit ' : '';
 	    if ($profile_data->{$allow}{capability}{$cap}{set}) {
 		push @data, "${pre}${audit}${allowstr}capability ${cap},";
