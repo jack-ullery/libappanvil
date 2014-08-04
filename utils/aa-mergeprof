@@ -14,6 +14,7 @@
 # ----------------------------------------------------------------------
 import argparse
 import re
+import os
 
 import apparmor.aa
 import apparmor.aamode
@@ -37,6 +38,13 @@ args = parser.parse_args()
 merge_mode = 2 if args.other == None else 3
 
 profiles = [args.mine, args.base, args.other]
+
+profiledir = args.dir
+if profiledir:
+    apparmor.aa.profile_dir = apparmor.aa.get_full_path(profiledir)
+    if not os.path.isdir(apparmor.aa.profile_dir):
+        raise apparmor.AppArmorException(_("%s is not a directory.") %profiledir)
+
 
 def main():
     mergeprofiles = Merge(profiles)
