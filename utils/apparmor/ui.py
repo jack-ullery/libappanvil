@@ -13,6 +13,7 @@
 # ----------------------------------------------------------------------
 import sys
 import re
+import readline
 from apparmor.yasti import yastLog, SendDataToYast, GetDataFromYast
 
 from apparmor.common import readkey, AppArmorException, DebugLogger
@@ -170,8 +171,16 @@ def UI_GetString(text, default):
     debug_logger.debug('UI_GetString: %s: %s %s' % (UI_mode, text, default))
     string = default
     if UI_mode == 'text':
-        sys.stdout.write('\n' + text)
-        string = sys.stdin.readline()
+        readline.set_startup_hook(lambda: readline.insert_text(default))
+        try:
+            if sys.version_info[0] >= 3:
+                string = input('\n' + text)
+            else:
+                string = raw_input('\n' + text)
+        except EOFError:
+            string = ''
+        finally:
+            readline.set_startup_hook()
     else:
         SendDataToYast({'type': 'dialog-getstring',
                         'label': text,
