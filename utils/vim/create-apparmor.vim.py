@@ -83,7 +83,9 @@ aa_flags = ['complain',
             'chroot_attach',
             'chroot_no_attach',
             'chroot_relative',
-            'namespace_relative']
+            'namespace_relative',
+            'mediate_deleted',
+            'delegate_deleted']
 
 filename = r'(\/|\@\{\S*\})\S*'
 
