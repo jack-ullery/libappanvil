@@ -114,8 +114,8 @@ SRC=access.c \
     tcp.c \
     unix_fd_client.c \
     unix_fd_server.c \
-    unix_socket_file.c \
-    unix_socket_file_client.c \
+    unix_socket.c \
+    unix_socket_client.c \
     unlink.c \
     xattrs.c
 
@@ -183,7 +183,7 @@ TESTS=access \
       syscall \
       tcp \
       unix_fd_server \
-      unix_socket_file \
+      unix_socket \
       unlink\
       xattrs\
       longpath

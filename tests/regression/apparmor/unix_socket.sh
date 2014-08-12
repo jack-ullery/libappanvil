@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, contact Canonical Ltd.
 
-#=NAME unix_socket_file
+#=NAME unix_socket
 #=DESCRIPTION
 # This tests file access to path-based unix domain sockets. The server
 # opens a socket, forks a client with it's own profile, sends a message
@@ -29,8 +29,8 @@ bin=$pwd
 . $bin/prologue.inc
 requires_features policy/versions/v6
 
-client=$bin/unix_socket_file_client
-socket=${tmpdir}/unix_socket_file.sock
+client=$bin/unix_socket_client
+socket=${tmpdir}/unix_socket.sock
 message=4a0c83d87aaa7afa2baab5df3ee4df630f0046d5bfb7a3080c550b721f401b3b\
 8a738e1435a3b77aa6482a70fb51c44f20007221b85541b0184de66344d46a4c
 okserver=w
