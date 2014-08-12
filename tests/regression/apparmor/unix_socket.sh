@@ -34,8 +34,15 @@ sockpath_pathname=${tmpdir}/unix_socket.sock
 sockpath_abstract="@apparmor_unix_socket"
 message=4a0c83d87aaa7afa2baab5df3ee4df630f0046d5bfb7a3080c550b721f401b3b\
 8a738e1435a3b77aa6482a70fb51c44f20007221b85541b0184de66344d46a4c
+
+# v6 requires 'w' and v7 requires 'rw'
 okserver=w
-badserver=r
+badserver1=r
+badserver2=
+if [ "$(have_features policy/versions/v7)" == "true" ] ; then
+	okserver=rw
+	badserver2=w
+fi
 
 okclient=rw
 badclient1=r
@@ -91,9 +98,19 @@ testsocktype()
 
 	# FAIL - server w/ bad access to the file
 
-	genprofile $sockpath:$badserver $client:Ux
-	runchecktest "$testdesc; confined server w/ bad access ($badserver)" fail $args
+	genprofile $sockpath:$badserver1 $client:Ux
+	runchecktest "$testdesc; confined server w/ bad access ($badserver1)" fail $args
 	removesocket $sockpath
+
+	# $badserver2 is set to non-null at the top of the test script if the
+	# kernel advertises ABI v7 or newer
+	if [ -n "$badserver2" ] ; then
+		# FAIL - server w/ bad access to the file
+
+		genprofile $sockpath:$badserver2 $client:Ux
+		runchecktest "$testdesc; confined server w/ bad access ($badserver2)" fail $args
+		removesocket $sockpath
+	fi
 
 	# PASS - client w/ access to the file
 
