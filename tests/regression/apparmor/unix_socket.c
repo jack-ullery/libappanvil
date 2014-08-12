@@ -87,15 +87,31 @@ int main (int argc, char *argv[])
 	struct pollfd pfd;
 	char msg_buf[MSG_BUF_MAX];
 	size_t msg_buf_len;
+	const char *sun_path;
+	size_t sun_path_len;
 	pid_t pid;
 	int sock, type, rc;
 
 	if (argc != 5) {
 		fprintf(stderr,
 			"Usage: %s <socket> <type> <message> <client>\n\n"
+			"  socket\t\ta path for a bound socket or a name prepended with '@' for an abstract socket\n"
 			"  type\t\tstream, dgram, or seqpacket\n",
 			argv[0]);
 		exit(1);
+	}
+
+	addr.sun_family = AF_UNIX;
+	memset(addr.sun_path, 0, sizeof(addr.sun_path));
+
+	sun_path = argv[1];
+	sun_path_len = strlen(sun_path);
+	if (sun_path[0] == '@') {
+		memcpy(addr.sun_path, sun_path, sun_path_len);
+		addr.sun_path[0] = '\0';
+		sun_path_len = sizeof(addr.sun_path);
+	} else {
+		memcpy(addr.sun_path, sun_path, sun_path_len + 1);
 	}
 
 	if (!strcmp(argv[2], "stream")) {
@@ -122,10 +138,8 @@ int main (int argc, char *argv[])
 		exit(1);
 	}
 
-	addr.sun_family = AF_UNIX;
-	strcpy(addr.sun_path, argv[1]);
 	rc = bind(sock, (struct sockaddr *)&addr,
-		  strlen(addr.sun_path) + sizeof(addr.sun_family));
+		  sun_path_len + sizeof(addr.sun_family));
 	if (rc < 0) {
 		perror("FAIL - bind");
 		exit(1);
@@ -144,7 +158,7 @@ int main (int argc, char *argv[])
 		perror("FAIL - fork");
 		exit(1);
 	} else if (!pid) {
-		execl(argv[4], argv[4], argv[1], argv[2], NULL);
+		execl(argv[4], argv[4], sun_path, argv[2], NULL);
 		exit(0);
 	}
 
