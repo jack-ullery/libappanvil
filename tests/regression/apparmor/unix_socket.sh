@@ -16,9 +16,9 @@
 
 #=NAME unix_socket
 #=DESCRIPTION
-# This tests file access to path-based unix domain sockets. The server
-# opens a socket, forks a client with it's own profile, sends a message
-# to the client over the socket, and sees what happens.
+# This tests file access to unix domain sockets. The server opens a socket,
+# forks a client with it's own profile, sends a message to the client over the
+# socket, and sees what happens.
 #=END
 
 pwd=`dirname $0`
@@ -30,7 +30,8 @@ bin=$pwd
 requires_features policy/versions/v6
 
 client=$bin/unix_socket_client
-socket=${tmpdir}/unix_socket.sock
+sockpath_pathname=${tmpdir}/unix_socket.sock
+sockpath_abstract="@apparmor_unix_socket"
 message=4a0c83d87aaa7afa2baab5df3ee4df630f0046d5bfb7a3080c550b721f401b3b\
 8a738e1435a3b77aa6482a70fb51c44f20007221b85541b0184de66344d46a4c
 okserver=w
@@ -40,67 +41,115 @@ okclient=rw
 badclient1=r
 badclient2=w
 
+isabstract()
+{
+	[ "${1:0:1}" == "@" ]
+}
+
 removesocket()
 {
-	rm -f ${socket}
+	if ! isabstract "$1"; then
+		rm -f "$1"
+	fi
 }
 
 testsocktype()
 {
-	local socktype=$1 # socket type - stream, dgram, or seqpacket
-	local args="$socket $socktype $message $client"
+	local testdesc=$1 # description (eg, "AF_UNIX abstract socket (dgram)")
+	local sockpath=$2 # fs path or "@NAME" for an abstract sock
+	local socktype=$3 # stream, dgram, or seqpacket
+	local args="$sockpath $socktype $message $client"
+
+	removesocket $sockpath
 
 	# PASS - unconfined
 
-	runchecktest "socket file ($socktype); unconfined" pass $args
-	removesocket
+	runchecktest "$testdesc; unconfined" pass $args
+	removesocket $sockpath
+
+	# TODO: Make additional changes to test abstract sockets w/ confinement
+	#
+	#  * Adjust genprofile to generate af_unix abstract socket rules
+	#  * Create variables to hold genprofile arguments for socket accesses
+	#    and initialize them according to socket address type
+	#  * Remove the following conditional
+	if isabstract $sockpath; then
+		return
+	fi
 
 	# PASS - server w/ access to the file
 
-	genprofile $socket:$okserver $client:Ux
-	runchecktest "socket file ($socktype); confined server w/ access ($okserver)" pass $args
-	removesocket
+	genprofile $sockpath:$okserver $client:Ux
+	runchecktest "$testdesc; confined server w/ access ($okserver)" pass $args
+	removesocket $sockpath
 
 	# FAIL - server w/o access to the file
 
 	genprofile $client:Ux
-	runchecktest "socket file ($socktype); confined server w/o access" fail $args
-	removesocket
+	runchecktest "$testdesc; confined server w/o access" fail $args
+	removesocket $sockpath
 
 	# FAIL - server w/ bad access to the file
 
-	genprofile $socket:$badserver $client:Ux
-	runchecktest "socket file ($socktype); confined server w/ bad access ($badserver)" fail $args
-	removesocket
+	genprofile $sockpath:$badserver $client:Ux
+	runchecktest "$testdesc; confined server w/ bad access ($badserver)" fail $args
+	removesocket $sockpath
 
 	# PASS - client w/ access to the file
 
-	genprofile $socket:$okserver $client:px -- image=$client $socket:$okclient
-	runchecktest "socket file ($socktype); confined client w/ access ($okclient)" pass $args
-	removesocket
+	genprofile $sockpath:$okserver $client:px -- image=$client $sockpath:$okclient
+	runchecktest "$testdesc; confined client w/ access ($okclient)" pass $args
+	removesocket $sockpath
 
 	# FAIL - client w/o access to the file
 
-	genprofile $socket:$okserver $client:px -- image=$client
-	runchecktest "socket file ($socktype); confined client w/o access" fail $args
-	removesocket
+	genprofile $sockpath:$okserver $client:px -- image=$client
+	runchecktest "$testdesc; confined client w/o access" fail $args
+	removesocket $sockpath
 
 	# FAIL - client w/ bad access to the file
 
-	genprofile $socket:$okserver $client:px -- image=$client $socket:$badclient1
-	runchecktest "socket file ($socktype); confined client w/ bad access ($badclient1)" fail $args
-	removesocket
+	genprofile $sockpath:$okserver $client:px -- image=$client $sockpath:$badclient1
+	runchecktest "$testdesc; confined client w/ bad access ($badclient1)" fail $args
+	removesocket $sockpath
 
 	# FAIL - client w/ bad access to the file
 
-	genprofile $socket:$okserver $client:px -- image=$client $socket:$badclient2
-	runchecktest "socket file ($socktype); confined client w/ bad access ($badclient2)" fail $args
-	removesocket
+	genprofile $sockpath:$okserver $client:px -- image=$client $sockpath:$badclient2
+	runchecktest "$testdesc; confined client w/ bad access ($badclient2)" fail $args
+	removesocket $sockpath
 
 	removeprofile
 }
 
-removesocket
-testsocktype stream
-testsocktype dgram
-testsocktype seqpacket
+testsockpath()
+{
+	local sockpath="$1" # $sockpath_pathname or $sockpath_abstract
+	local testdesc="AF_UNIX "
+	local socktype=
+
+	if [ "$sockpath" == "$sockpath_pathname" ]; then
+		testdesc+="pathname socket"
+	elif [ "$sockpath" == "$sockpath_abstract" ]; then
+		testdesc+="abstract socket"
+	else
+		fatalerror "Unknown sockpath addr type: $sockpath"
+	fi
+
+	for socktype in stream dgram seqpacket; do
+		testsocktype "$testdesc ($socktype)" "$sockpath" "$socktype"
+	done
+}
+
+testsockpath "$sockpath_pathname"
+testsockpath "$sockpath_abstract"
+# TODO: testsockpath "$sockpath_unnamed"
+#
+#  * Adjust unix_socket.c and unix_socket_client.c when the socket path is
+#    "UNNAMED"
+#    - Don't bind() the socket
+#    - Don't set SO_CLOEXEC so that the fd can be passed over exec()
+#  * Decide how to generate appropriate access rules (if any are needed)
+#  * Define sockpath_unnamed as "UNNAMED"
+#  * Update testsockpath() to handle sockpath_unnamed
+#  * Create isunnamed() and update removesocket() to call it
