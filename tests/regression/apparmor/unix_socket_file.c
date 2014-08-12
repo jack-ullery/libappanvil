@@ -116,7 +116,7 @@ int main (int argc, char *argv[])
 	}
 	memcpy(msg_buf, argv[3], msg_buf_len);
 
-	sock = socket(AF_UNIX, type, 0);
+	sock = socket(AF_UNIX, type | SOCK_CLOEXEC, 0);
 	if (sock == -1) {
 		perror("FAIL - socket");
 		exit(1);
@@ -131,7 +131,7 @@ int main (int argc, char *argv[])
 		exit(1);
 	}
 
-	if (type == SOCK_STREAM || type == SOCK_SEQPACKET) {
+	if (type & SOCK_STREAM || type & SOCK_SEQPACKET) {
 		rc = listen(sock, 2);
 		if (rc < 0) {
 			perror("FAIL - listen");
@@ -159,7 +159,7 @@ int main (int argc, char *argv[])
 		exit(1);
 	}
 
-	rc = (type == SOCK_STREAM || type == SOCK_SEQPACKET) ?
+	rc = (type & SOCK_STREAM || type & SOCK_SEQPACKET) ?
 		connection_based_messaging(sock, msg_buf, msg_buf_len) :
 		connectionless_messaging(sock, msg_buf, msg_buf_len);
 	if (rc)
