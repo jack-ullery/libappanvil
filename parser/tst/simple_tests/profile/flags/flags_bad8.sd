@@ -6,8 +6,6 @@
 #
 /does/not/exist ({{{ }} { } { } audit
 {{}}}{{{} {}{}{} / ^ ) {
-  #include <includes/base>
-
   /usr/X11R6/lib/lib*so* r,
   /does/not/exist r,
 }
