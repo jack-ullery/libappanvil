@@ -255,10 +255,7 @@ class ReadLog:
             if e.get('info', False) and e['info'] == 'mandatory profile missing':
                 self.add_to_tree(e['pid'], e['parent'], 'exec',
                                  [profile, hat, aamode, 'PERMITTING', e['denied_mask'], e['name'], e['name2']])
-            elif e.get('name2', False) and '\\null-/' in e['name2']:
-                self.add_to_tree(e['pid'], e['parent'], 'exec',
-                                 [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
-            elif e.get('name', False):
+            elif (e.get('name2', False) and '//null-' in e['name2']) or e.get('name', False):
                 self.add_to_tree(e['pid'], e['parent'], 'exec',
                                  [profile, hat, prog, aamode, e['denied_mask'], e['name'], ''])
             else:
