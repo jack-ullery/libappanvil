@@ -1,5 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
+#    Copyright (C) 2014 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -115,18 +116,17 @@ atexit.register(on_exit)
 def check_for_LD_XXX(file):
     """Returns True if specified program contains references to LD_PRELOAD or
     LD_LIBRARY_PATH to give the Px/Ux code better suggestions"""
-    found = False
     if not os.path.isfile(file):
         return False
     size = os.stat(file).st_size
     # Limit to checking files under 100k for the sake of speed
     if size > 100000:
         return False
-    with open_file_read(file, encoding='ascii') as f_in:
+    with open(file, 'rb') as f_in:
         for line in f_in:
-            if 'LD_PRELOAD' in line or 'LD_LIBRARY_PATH' in line:
-                found = True
-    return found
+            if b'LD_PRELOAD' in line or b'LD_LIBRARY_PATH' in line:
+                return True
+    return False
 
 def fatal_error(message):
     # Get the traceback to the message
