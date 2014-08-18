@@ -27,10 +27,6 @@ _ = init_translation()
 class ReadLog:
     RE_LOG_v2_6_syslog = re.compile('kernel:\s+(\[[\d\.\s]+\]\s+)?type=\d+\s+audit\([\d\.\:]+\):\s+apparmor=')
     RE_LOG_v2_6_audit = re.compile('type=AVC\s+(msg=)?audit\([\d\.\:]+\):\s+apparmor=')
-    MODE_MAP_RE = re.compile('r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N')
-    PROFILE_MODE_RE = re.compile('r|w|l|m|k|a|ix|ux|px|cx|pix|cix|Ux|Px|PUx|Cx|Pix|Cix')
-    PROFILE_MODE_NT_RE = re.compile('r|w|l|m|k|a|x|ix|ux|px|cx|pix|cix|Ux|Px|PUx|Cx|Pix|Cix')
-    PROFILE_MODE_DENY_RE = re.compile('r|w|l|m|k|a|x')
     # Used by netdomain to identify the operation types
     # New socket names
     OPERATION_TYPES = {'create': 'net',
