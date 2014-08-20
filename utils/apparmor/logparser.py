@@ -151,7 +151,7 @@ class ReadLog:
             # Convert aamode values to their counter-parts
             mode_convertor = {0: 'UNKNOWN',
                               1: 'ERROR',
-                              2: 'AUDITING',
+                              2: 'AUDIT',
                               3: 'PERMITTING',
                               4: 'REJECTING',
                               5: 'HINT',
