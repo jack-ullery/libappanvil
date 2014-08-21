@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
+#    Copyright (C) 2014 Canonical Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -231,6 +232,8 @@
 /usr/lib/lib*so*	3 8 4
 /usr/lib/iptables/*	2 8 2
 /usr/lib/perl5/**	4 10 6
+/usr/lib/*/perl/**	4 10 6
+/usr/lib/*/perl5/**	4 10 6
 /usr/lib/gconv/*	4 7 4
 /usr/lib/locale/**	4 8 0
 /usr/lib/jvm/**		5 7 5
