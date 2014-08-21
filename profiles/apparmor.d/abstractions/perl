@@ -15,7 +15,7 @@
 
   /usr/lib{,32,64}/perl5/**                    r,
   /usr/lib{,32,64}/perl{,5}/**.so*             mr,
-  /usr/lib/@{multiarch}/perl/**                r,
+  /usr/lib/@{multiarch}/perl{,5}/**            r,
   /usr/lib/@{multiarch}/perl{,5}/[0-9]*/**.so* mr,
 
   /usr/share/perl/**             r,
