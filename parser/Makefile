@@ -79,10 +79,10 @@ EXTRA_CFLAGS+=-DSUBDOMAIN_CONFDIR=\"${CONFDIR}\"
 SRCS = parser_common.c parser_include.c parser_interface.c parser_lex.c \
        parser_main.c parser_misc.c parser_merge.c parser_symtab.c \
        parser_yacc.c parser_regex.c parser_variable.c parser_policy.c \
-       parser_alias.c common_optarg.c lib.c \
+       parser_alias.c common_optarg.c lib.c network.c \
        mount.cc dbus.cc profile.cc rule.cc signal.cc ptrace.cc
 HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h \
-       rule.h common_optarg.h signal.h ptrace.h
+       rule.h common_optarg.h signal.h ptrace.h network.h
 TOOLS = apparmor_parser
 
 OBJECTS = $(SRCS:.c=.o)
@@ -197,7 +197,7 @@ parser_lex.c: parser_lex.l parser_yacc.h parser.h profile.h mount.h dbus.h
 parser_lex.o: parser_lex.c parser.h parser_yacc.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_misc.o: parser_misc.c parser.h parser_yacc.h profile.h af_names.h cap_names.h $(APPARMOR_H)
+parser_misc.o: parser_misc.c parser.h parser_yacc.h profile.h cap_names.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_yacc.o: parser_yacc.c parser_yacc.h $(APPARMOR_H)
@@ -251,7 +251,10 @@ signal.o: signal.c signal.h parser.h immunix.h parser_yacc.h rule.h $(APPARMOR_H
 ptrace.o: ptrace.c ptrace.h parser.h immunix.h parser_yacc.h rule.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-profile.o: profile.cc profile.h parser.h
+network.o: network.c network.h parser.h immunix.h parser_yacc.h rule.h af_names.h $(APPARMOR_H)
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
+
+profile.o: profile.cc profile.h parser.h network.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 rule.o: rule.c rule.h policydb.h

@@ -25,7 +25,6 @@
 
 #include <endian.h>
 #include <string.h>
-#include <netinet/in.h>
 #include <sys/resource.h>
 
 #include <libintl.h>
@@ -108,15 +107,6 @@ struct cod_entry {
 	struct cod_entry *next;
 };
 
-/* supported AF protocols */
-struct aa_network_entry {
-	unsigned int family;
-	unsigned int type;
-	unsigned int protocol;
-
-	struct aa_network_entry *next;
-};
-
 struct aa_rlimits {
 	unsigned int specified;			/* limits that are set */
 	rlim_t limits[RLIMIT_NLIMITS];
@@ -130,18 +120,6 @@ struct alt_name {
 struct sd_hat {
 	char *hat_name;
 	unsigned int hat_magic;
-};
-
-/* describe an ip address */
-struct ipv4_desc {
-	struct in_addr addr;
-	unsigned long mask;
-	unsigned short port[2];
-};
-
-struct ipv4_endpoints {
-	struct ipv4_desc * src;
-	struct ipv4_desc * dest;
 };
 
 struct var_string {
@@ -391,20 +369,12 @@ extern char *process_var(const char *var);
 extern int parse_mode(const char *mode);
 extern int parse_X_mode(const char *X, int valid, const char *str_mode, int *mode, int fail);
 extern struct cod_entry *new_entry(char *ns, char *id, int mode, char *link_id);
-extern struct aa_network_entry *new_network_ent(unsigned int family,
-						unsigned int type,
-						unsigned int protocol);
-extern struct aa_network_entry *network_entry(const char *family,
-					      const char *type,
-					      const char *protocol);
-extern size_t get_af_max(void);
 
 /* returns -1 if value != true or false, otherwise 0 == false, 1 == true */
 extern int str_to_boolean(const char* str);
 extern struct cod_entry *copy_cod_entry(struct cod_entry *cod);
 extern void free_cod_entries(struct cod_entry *list);
 extern void __debug_capabilities(uint64_t capset, const char *name);
-void __debug_network(unsigned int *array, const char *name);
 void debug_cod_entries(struct cod_entry *list);
 
 
