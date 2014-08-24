@@ -35,6 +35,15 @@
 #include "rule.h"
 #include "profile.h"
 
+struct network_tuple {
+	const char *family_name;
+	unsigned int family;
+	const char *type_name;
+	unsigned int type;
+	const char *protocol_name;
+	unsigned int protocol;
+};
+
 /* supported AF protocols */
 struct aa_network_entry {
 	unsigned int family;
@@ -79,5 +88,8 @@ int net_find_type_val(const char *type);
 const char *net_find_type_name(int type);
 int net_find_af_val(const char *af);
 const char *net_find_af_name(unsigned int af);
+const struct network_tuple *net_find_mapping(const char *family,
+					     const char *type,
+					     const char *protocol);
 
 #endif /* __AA_NETWORK_H */

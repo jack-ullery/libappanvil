@@ -80,14 +80,6 @@ const char *net_find_type_name(int type)
 	return NULL;
 }
 
-struct network_tuple {
-	const char *family_name;
-	unsigned int family;
-	const char *type_name;
-	unsigned int type;
-	const char *protocol_name;
-	unsigned int protocol;
-};
 
 /* FIXME: currently just treating as a bit mask this will have to change
  * set up a table of mappings, there can be several mappings for a
@@ -256,11 +248,12 @@ struct aa_network_entry *new_network_ent(unsigned int family,
 	return new_entry;
 }
 
-struct aa_network_entry *network_entry(const char *family, const char *type,
-				       const char *protocol)
+
+const struct network_tuple *net_find_mapping(const char *family,
+					     const char *type,
+					     const char *protocol)
 {
 	int i;
-	struct aa_network_entry *new_entry, *entry = NULL;
 
 	for (i = 0; network_mappings[i].family_name; i++) {
 		if (family) {
@@ -276,16 +269,37 @@ struct aa_network_entry *network_entry(const char *family, const char *type,
 			PDEBUG("Found type %s\n", type);
 		}
 		if (protocol) {
-			PDEBUG("Checking protocol %s\n", network_mappings[i].protocol_name);
+			/* allows the proto to be the "type", ie. tcp implies
+			 * stream */
+			if (!type) {
+				PDEBUG("Checking protocol type %s\n", network_mappings[i].type_name);
+				if (strcmp(protocol, network_mappings[i].type_name) == 0)
+					goto match;
+			}
+			PDEBUG("Checking type %s protocol %s\n", network_mappings[i].type_name, network_mappings[i].protocol_name);
 			if (strcmp(protocol, network_mappings[i].protocol_name) != 0)
 				continue;
 			/* fixme should we allow specifying protocol by #
 			 * without needing the protocol mapping? */
 		}
-		/* if here we have a match */
-		new_entry = new_network_ent(network_mappings[i].family,
-					    network_mappings[i].type,
-					    network_mappings[i].protocol);
+
+		/* if we get this far we have a match */
+	match:
+		return &network_mappings[i];
+	}
+
+	return NULL;
+}
+
+struct aa_network_entry *network_entry(const char *family, const char *type,
+				       const char *protocol)
+{
+	struct aa_network_entry *new_entry, *entry = NULL;
+	const struct network_tuple *mapping = net_find_mapping(family, type, protocol);
+
+	if (mapping) {
+		new_entry = new_network_ent(mapping->family, mapping->type,
+					    mapping->protocol);
 		if (!new_entry)
 			yyerror(_("Memory allocation error."));
 		new_entry->next = entry;
