@@ -26,11 +26,9 @@
 #include <getopt.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <libintl.h>
 #include <sys/apparmor.h>
 
 #include <iostream>
-#define _(s) gettext(s)
 
 /* #define DEBUG */
 

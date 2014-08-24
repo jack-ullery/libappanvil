@@ -20,9 +20,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
-#include <libintl.h>
 #include <linux/limits.h>
-#define _(s) gettext(s)
 
 #include "immunix.h"
 #include "parser.h"

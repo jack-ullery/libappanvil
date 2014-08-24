@@ -30,8 +30,6 @@
 #include "parser_yacc.h"
 #include "dbus.h"
 
-#define _(s) gettext(s)
-
 
 int parse_dbus_mode(const char *str_mode, int *mode, int fail)
 {

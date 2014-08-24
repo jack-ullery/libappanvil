@@ -24,7 +24,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <unistd.h>
-#define _(s) gettext(s)
 
 #include <sys/stat.h>
 #include <sys/types.h>

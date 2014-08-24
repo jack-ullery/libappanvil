@@ -28,10 +28,7 @@
 #include <getopt.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <libintl.h>
-#include <locale.h>
 #include <dirent.h>
-#define _(s) gettext(s)
 
 /* enable the following line to get voluminous debug info */
 /* #define DEBUG */

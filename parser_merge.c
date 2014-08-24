@@ -21,8 +21,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <libintl.h>
-#define _(s) gettext(s)
 
 #include "parser.h"
 #include "profile.h"

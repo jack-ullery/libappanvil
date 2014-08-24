@@ -24,8 +24,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <libintl.h>
-#define _(s) gettext(s)
 
 #include <string>
 #include <sstream>
@@ -36,11 +34,6 @@
 
 #include <unistd.h>
 #include <linux/unistd.h>
-
-#include <libintl.h>
-#define _(s) gettext(s)
-
-
 
 
 #define SD_CODE_SIZE (sizeof(u8))
