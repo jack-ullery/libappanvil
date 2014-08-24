@@ -35,22 +35,50 @@
  * have to make sure these are in order.  This means we are more brittle
  * but there isn't much we can do.
  */
-const char *sock_types[] = {
-	"none",		/* 0 */
-	"stream",	/* 1 [SOCK_STREAM] */
-	"dgram",	/* 2 [SOCK_DGRAM] */
-	"raw",		/* 3 [SOCK_RAW] */
-	"rdm",		/* 4 [SOCK_RDM] */
-	"seqpacket",	/* 5 [SOCK_SEQPACKET] */
-	"dccp",		/* 6 [SOCK_DCCP] */
-	"invalid",	/* 7 */
-	"invalid",	/* 8 */
-	"invalid",	/* 9 */
-	"packet",	/* 10 [SOCK_PACKET] */
+struct sock_type_map {
+	const char *name;
+	int	value;
+};
+
+struct sock_type_map sock_types[] = {
+	{ "none",	0 },
+	{ "stream",	SOCK_STREAM },
+	{ "dgram",	SOCK_DGRAM },
+	{ "raw",	SOCK_RAW },
+	{ "rdm",	SOCK_RDM },
+	{ "seqpacket",	SOCK_SEQPACKET },
+	{ "dccp",	SOCK_DCCP },
+	{ "invalid",	-1 },
+	{ "invalid",	-1 },
+	{ "invalid",	-1 },
+	{ "packet",	SOCK_PACKET },
+	{ NULL, -1 },
 	/*
 	 * See comment above
 	*/
 };
+
+int net_find_type_val(const char *type)
+{
+	int i;
+	for (i = 0; sock_types[i].name; i++) {
+		if (strcmp(sock_types[i].name, type) == 0)
+			return sock_types[i].value;
+	}
+
+	return -1;
+}
+
+const char *net_find_type_name(int type)
+{
+	int i;
+	for (i = 0; sock_types[i].name; i++) {
+		if (sock_types[i].value  == type)
+			return sock_types[i].name;
+	}
+
+	return NULL;
+}
 
 struct network_tuple {
 	const char *family_name;
@@ -319,7 +347,7 @@ void __debug_network(unsigned int *array, const char *name)
 			for (j = 0; j < count; j++) {
 				const char *type;
 				if (array[i] & (1 << j)) {
-					type = sock_types[j];
+					type = sock_types[j].name;
 					if (type)
 						printf("%s ", type);
 					else

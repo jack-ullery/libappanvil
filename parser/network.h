@@ -75,4 +75,7 @@ struct network {
 	}
 };
 
+int net_find_type_val(const char *type);
+const char *net_find_type_name(int type);
+
 #endif /* __AA_NETWORK_H */
