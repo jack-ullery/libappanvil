@@ -305,6 +305,25 @@ static const char *network_families[] = {
 #include "af_names.h"
 };
 
+int net_find_af_val(const char *af)
+{
+	int i;
+	for (i = 0; network_families[i]; i++) {
+		if (strcmp(network_families[i], af) == 0)
+			return i;
+	}
+
+	return -1;
+}
+
+const char *net_find_af_name(unsigned int af)
+{
+	if (af < 0 || af > get_af_max())
+		return NULL;
+
+	return network_families[af];
+}
+
 void __debug_network(unsigned int *array, const char *name)
 {
 	unsigned int count = sizeof(sock_types)/sizeof(sock_types[0]);
