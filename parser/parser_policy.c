@@ -26,9 +26,7 @@
 #include <stdarg.h>
 #include <search.h>
 #include <string.h>
-#include <libintl.h>
 #include <errno.h>
-#define _(s) gettext(s)
 
 #include "parser.h"
 #include "profile.h"

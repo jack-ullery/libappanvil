@@ -19,10 +19,8 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <libintl.h>
 #include <linux/limits.h>
 #include <sys/apparmor.h>
-#define _(s) gettext(s)
 
 #include <iomanip>
 #include <string>

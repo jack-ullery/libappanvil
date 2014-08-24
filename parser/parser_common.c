@@ -17,9 +17,7 @@
  */
 #include <stdlib.h>
 #include <stdarg.h>
-#include <libintl.h>
-#include <locale.h>
-#define _(s) gettext(s)
+
 #include "parser.h"
 
 /* Policy versioning is determined by a combination of 3 values:

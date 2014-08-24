@@ -29,7 +29,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <libintl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -37,8 +36,6 @@
 
 #include <unordered_map>
 #include <string>
-
-#define _(s) gettext(s)
 
 #include "parser.h"
 #include "profile.h"

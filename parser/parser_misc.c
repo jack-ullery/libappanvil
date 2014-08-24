@@ -26,8 +26,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <libintl.h>
-#define _(s) gettext(s)
 #include <netinet/in.h>
 #include <linux/socket.h>
 #include <linux/limits.h>
