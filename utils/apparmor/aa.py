@@ -1127,7 +1127,7 @@ def handle_children(profile, hat, root):
                         nt_name = None
                         for entr in m:
                             if aa[profile][hat]['allow']['path'].get(entr, False):
-                                nt_name = aa[profile][hat]
+                                nt_name = entr
                                 break
                         if to_name and to_name != nt_name:
                             pass
