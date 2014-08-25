@@ -3189,7 +3189,7 @@ def parse_profile_data(data, file, do_include):
 
     # End of file reached but we're stuck in a profile
     if profile and not do_include:
-        raise AppArmorException(_("Syntax Error: Missing '}' . Reached end of file %s  while inside profile %s") % (file, profile))
+        raise AppArmorException(_("Syntax Error: Missing '}' or ','. Reached end of file %s while inside profile %s") % (file, profile))
 
     return profile_data
 
