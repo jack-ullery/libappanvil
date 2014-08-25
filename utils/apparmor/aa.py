@@ -1921,30 +1921,19 @@ def ask_the_questions():
                                                 continue
 
                                         user_globs.append(ans)
-                                        options.append(ans)
-                                        default_option = len(options)
+                                        options, default_option = add_to_options(options, ans)
 
                             elif ans == 'CMD_GLOB':
                                 newpath = options[selected].strip()
                                 if not re_match_include(newpath):
                                     newpath = glob_path(newpath)
-
-                                    if newpath not in options:
-                                        options.append(newpath)
-                                        default_option = len(options)
-                                    else:
-                                        default_option = options.index(newpath) + 1
+                                    options, default_option = add_to_options(options, newpath)
 
                             elif ans == 'CMD_GLOBEXT':
                                 newpath = options[selected].strip()
                                 if not re_match_include(newpath):
                                     newpath = glob_path_withext(newpath)
-
-                                    if newpath not in options:
-                                        options.append(newpath)
-                                        default_option = len(options)
-                                    else:
-                                        default_option = options.index(newpath) + 1
+                                    options, default_option = add_to_options(options, newpath)
 
                             elif re.search('\d', ans):
                                 default_option = ans
@@ -2038,6 +2027,13 @@ def ask_the_questions():
 
                             else:
                                 done = False
+
+def add_to_options(options, newpath):
+    if newpath not in options:
+        options.append(newpath)
+
+    default_option = options.index(newpath) + 1
+    return (options, default_option)
 
 def glob_path(newpath):
     """Glob the given file path"""
