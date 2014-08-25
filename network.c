@@ -249,22 +249,27 @@ struct aa_network_entry *new_network_ent(unsigned int family,
 }
 
 
-const struct network_tuple *net_find_mapping(const char *family,
+const struct network_tuple *net_find_mapping(const struct network_tuple *map,
+					     const char *family,
 					     const char *type,
 					     const char *protocol)
 {
-	int i;
+	if (!map)
+		map = network_mappings;
+	else
+		/* assumes it points to last entry returned */
+		map++;
 
-	for (i = 0; network_mappings[i].family_name; i++) {
+	for (; map->family_name; map++) {
 		if (family) {
-			PDEBUG("Checking family %s\n", network_mappings[i].family_name);
-			if (strcmp(family, network_mappings[i].family_name) != 0)
+			PDEBUG("Checking family %s\n", map->family_name);
+			if (strcmp(family, map->family_name) != 0)
 				continue;
 			PDEBUG("Found family %s\n", family);
 		}
 		if (type) {
-			PDEBUG("Checking type %s\n", network_mappings[i].type_name);
-			if (strcmp(type, network_mappings[i].type_name) != 0)
+			PDEBUG("Checking type %s\n", map->type_name);
+			if (strcmp(type, map->type_name) != 0)
 				continue;
 			PDEBUG("Found type %s\n", type);
 		}
@@ -272,12 +277,12 @@ const struct network_tuple *net_find_mapping(const char *family,
 			/* allows the proto to be the "type", ie. tcp implies
 			 * stream */
 			if (!type) {
-				PDEBUG("Checking protocol type %s\n", network_mappings[i].type_name);
-				if (strcmp(protocol, network_mappings[i].type_name) == 0)
+				PDEBUG("Checking protocol type %s\n", map->type_name);
+				if (strcmp(protocol, map->type_name) == 0)
 					goto match;
 			}
-			PDEBUG("Checking type %s protocol %s\n", network_mappings[i].type_name, network_mappings[i].protocol_name);
-			if (strcmp(protocol, network_mappings[i].protocol_name) != 0)
+			PDEBUG("Checking type %s protocol %s\n", map->type_name, map->protocol_name);
+			if (strcmp(protocol, map->protocol_name) != 0)
 				continue;
 			/* fixme should we allow specifying protocol by #
 			 * without needing the protocol mapping? */
@@ -285,7 +290,7 @@ const struct network_tuple *net_find_mapping(const char *family,
 
 		/* if we get this far we have a match */
 	match:
-		return &network_mappings[i];
+		return map;
 	}
 
 	return NULL;
@@ -295,9 +300,9 @@ struct aa_network_entry *network_entry(const char *family, const char *type,
 				       const char *protocol)
 {
 	struct aa_network_entry *new_entry, *entry = NULL;
-	const struct network_tuple *mapping = net_find_mapping(family, type, protocol);
+	const struct network_tuple *mapping = NULL;
 
-	if (mapping) {
+	while ((mapping = net_find_mapping(mapping, family, type, protocol))) {
 		new_entry = new_network_ent(mapping->family, mapping->type,
 					    mapping->protocol);
 		if (!new_entry)
