@@ -192,9 +192,11 @@ static void warn_once(const char *name)
 std::ostringstream &writeu16(std::ostringstream &o, int v)
 {
 	u16 tmp = htobe16((u16) v);
-	char *c = (char *) &tmp;
-	o << "\\x" << std::setfill('0') << std::setw(2) << std::hex << *c++;
-	o << "\\x" << std::setfill('0') << std::setw(2) << std::hex << *c;
+	u8 *byte1 = (u8 *)&tmp;
+	u8 *byte2 = byte1 + 1;
+
+	o << "\\x" << std::setfill('0') << std::setw(2) << std::hex << static_cast<unsigned int>(*byte1);
+	o << "\\x" << std::setfill('0') << std::setw(2) << std::hex << static_cast<unsigned int>(*byte2);
 	return o;
 }
 
