@@ -54,7 +54,7 @@ B<COMMENT> = '#' I<TEXT>
 
 B<TEXT> = any characters
 
-B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<DBUS RULE> | I<FILE RULE> | 'change_profile -> ' I<PROGRAMCHILD> ) ... ] '}'
+B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<DBUS RULE> | I<UNIX RULE> I<FILE RULE> | 'change_profile -> ' I<PROGRAMCHILD> ) ... ] '}'
 
 B<SUBPROFILE> = [ I<COMMENT> ... ] ( I<PROGRAMHAT> | 'profile ' I<PROGRAMCHILD> ) '{' [ ( I<FILE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}'
 
@@ -156,6 +156,38 @@ B<DBUS ACCESS LIST> = Comma separated list of I<DBUS ACCESS>
 B<DBUS ACCESS> = ( 'send' | 'receive' | 'bind' | 'eavesdrop' )  (some accesses are incompatible with some rules; see below.)
 
 B<AARE> = B<?*[]{}^> (see below for meanings)
+
+B<UNIX RILE> = [ I<UNIX QUALIFIERS> ] 'unix' [ I<UNIX ACCESS EXPR> ] [ I<UNIX RULE CONDS> ] [ I<UNIX LOCAL EXPR> ] [ I<UNIX PEER EXPR> ]
+
+B<UNIX QUALIFIERS> = [ 'audit' ] [ 'allow' | 'deny' ]
+
+B<UNIX ACCESS EXPR> = ( I<UNIX ACCESS> | I<UNIX ACCESS LIST> )
+
+B<UNIX ACCESS> = ( 'create' | 'bind' | 'listen' | 'accept' | 'connect' | 'shutdown' | 'getattr' | 'setattr' | 'getopt' | 'setopt' | 'send' | 'receive' | 'r' | 'w' | 'rw' )
+ (some access modes are incompatible with some rules or require additional parameters)
+
+B<UNIX ACCESS LIST> = '(' I<UNIX ACCESS> ( [','] <UNIX ACCESS> )* ')'
+
+B<UNIX RULE CONDS> = ( I<TYPE COND> | I<PROTO COND> )
+ each cond can appear at most once
+
+B<TYPE COND> = 'type' '='  ( <AARE> | '(' ( '"' <AARE> '"' | <AARE> )+ ')' )
+
+B<PROTO COND> = 'protocol' '='  ( <AARE> | '(' ( '"' <AARE> '"' | <AARE> )+ ')' )
+
+B<UNIX LOCAL EXPR> = ( I<UNIX PATH COND> | I<UNIX LABEL COND> | I<UNIX ATTR COND> | I<UNIX OPT COND> )*
+ each cond can appear at most once
+
+B<UNIX PEER EXPR> = 'peer' '=' ( I<UNIX PATH COND> | I<UNIX LABEL COND> )+
+ each cond can appear at most once
+
+B<UNIX PATH COND> 'path' '=' ( <AARE> | '(' '"' <AARE> '"' | <AARE> ')' )
+
+B<UNIX LABEL COND> 'label' '=' ( <AARE> | '(' '"' <AARE> '"' | <AARE> ')' )
+
+B<UNIX ATTR COND> 'attr' '=' ( <AARE> | '(' '"' <AARE> '"' | <AARE> ')' )
+
+B<UNIX OPT COND> 'opt' '=' ( <AARE> | '(' '"' <AARE> '"' | <AARE> ')' )
 
 B<FILE RULE> = I<RULE QUALIFIER> ( '"' I<FILEGLOB> '"' | I<FILEGLOB> ) I<ACCESS> ','
 
@@ -850,6 +882,135 @@ Example AppArmor DBus rules:
 
     # Allow and audit all eavesdropping
     audit dbus eavesdrop,
+
+=head2 Unix socket rules
+
+AppArmor supports fine grained mediation of unix domain abstract and
+anonymous sockets. Unix domain sockets with file system paths are
+mediated via file access rules.
+TODO: do we want to revise this to allow certain permission to be
+      specified by unix rules that can not be specified via file
+      paths?
+
+Abstract unix domain sockets is a nonprotable Linux extension of unix
+domain sockets, see man 7 unix for more information.
+
+=head3 Unix socket paths
+
+The path component of a unix domain socket is specified by the
+  path=
+conditional. If a path conditional is not specified as part of a rule
+then the rule matches both abstract and anonymous sockets.
+
+In apparmor the path of an abstract unix domain socket begins with the
+I<@> character, similar to how they are reported by netstat -x. The name
+then follows and may contain pattern matching and any characters including
+the null character. In apparmor null characters must be specified by using
+an escape sequence I<\000> or I<\x00>. The pattern matching is the same
+as is used by path matching so * will not match I</> even though it
+has no special meaning with in an abstract socket name. Eg.
+  unix path=@*,
+
+Anonymous unix domain sockets have no path associated with them, however
+it can be specified with the special I<none> keyword to indicate the
+rule only applies to anonymous unix domain sockets. Eg.
+  unix path=none,
+
+If the path component of a rule is not specified then the rule applies
+to both abstract and anonymous sockets.
+
+=head3 Unix socket permissions
+Unix domain socket rules are accumulated so that the granted unix              
+socket permissions are the union of all the listed unix rule permissions.      
+
+Unix domain socket rules are broad and general and become more restrictive     
+as further information is specified. Policy may be specified down to           
+the path and label level. The content of the communication is not              
+examined.                                                                      
+
+Unix socket rule permissions are implied when a rule does not explicitly       
+state an access list. By default if a rule does not have an access list        
+all permissions that are compatible with the specified set of local            
+and peer conditionals are implied.                                             
+
+The create, bind, listen, shutdown, getattr, setattr permissions are
+applied to the local socket. The accept, connect, send, receive permissions
+apply to the combination of a local and peer. Currently it is required that
+create, bind, listen, shutdown, getattr, and settr permission are only
+specified in rules that do not have a peer component.
+???TODO: Do we really want this????
+
+If a rule is specified with a peer component it will not imply the
+create, bind, listen, shutdown, getattr, or setattr permissions.
+
+??? TODO: Describe explicitly labeled sockets ???? !!!
+
+=head3 Example Unix domain socket rules:
+
+    # Allow all permissions to unix sockets
+    unix,
+
+    # Explicitly allow all unix permissions
+    unix (create, listen, accept, connect, send, receive, getattr, setattr, setopt, getopt),
+
+    # Explicitly deny unix socket access ??? should this block unix file as well???
+    deny unix,
+
+    
+  unix type=stream,
+
+  unix type=dgram,
+
+  unix path=none
+
+  unix path=@foo,
+
+  unix type=stream path=@foo,
+
+  unix server path=@foo,
+
+  unix accept path=@foo peer=(label=/bar),
+
+  unix receive path=@foo peer=(label=/bar),
+
+
+  unix path=none
+
+
+=head3 Abstract unix domain sockets autobind
+
+Abstract unix domain sockets can autobind to an address. The autobind
+address is a unique 5 digit string of decimal numbers, eg. @00001. There
+is nothing that prevents a task from manually binding to addresses with a
+similar pattern so it is impossible to reliably identify autobind addresses
+from a regular address.
+
+=head3 Interaction of network rules and fine grained unix domain socket rules
+
+The coarse grained networking rules can be used to control unix domain
+sockets as well. When fine grained unix domain socket mediation is available
+the coase grained network rule is mapped into the equivalent unix socket
+rule.
+
+Eg.
+    network unix,  =>  unix,
+
+    network unix stream,   =>  unix stream,
+
+Fine grained mediation rules however can not be lossly converted back
+to the coarse grained network rule. Eg
+
+   unix bind path=@example,
+
+Has no exact match under coarse grained network rules, the closest match is
+the much wider permission rule of.
+   network unix,
+
+TODO: ??? should we make unix rules imply this when fine grained mediation
+is not available, or do we fail? Warning to wider is similar to the
+current behavior of loading policy which specify rules that can't be
+enforced. Hrmmm this behavior really needs to be a config option, to
+fail or warn.
 
 =head2 Variables
 

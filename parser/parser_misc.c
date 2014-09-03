@@ -107,6 +107,7 @@ struct keyword_table {
 static struct keyword_table keyword_table[] = {
 	/* network */
 	{"network",		TOK_NETWORK},
+	{"unix",		TOK_UNIX},
 	/* misc keywords */
 	{"capability",		TOK_CAPABILITY},
 	{"if",			TOK_IF},

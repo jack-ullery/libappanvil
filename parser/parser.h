@@ -291,6 +291,7 @@ extern int kernel_supports_mount;
 extern int kernel_supports_dbus;
 extern int kernel_supports_signal;
 extern int kernel_supports_ptrace;
+extern int kernel_supports_unix;
 extern int conf_verbose;
 extern int conf_quiet;
 extern int names_only;
