@@ -357,12 +357,37 @@ void DFA::dump_node_to_dfa(void)
 		cerr << "  " << (*i)->label << " <= " << (*i)->proto << "\n";
 }
 
+void DFA::process_work_queue(const char *header, dfaflags_t flags)
+{
+	int i = 0;
+
+	while (!work_queue.empty()) {
+		if (i % 1000 == 0 && (flags & DFA_DUMP_PROGRESS)) {
+			cerr << "\033[2K" << header << ": queue "
+			     << work_queue.size()
+			     << "\tstates "
+			     << states.size()
+			     << "\teliminated duplicates "
+			     << node_map.dup
+			     << "\r";
+		}
+		i++;
+
+		State *from = work_queue.front();
+		work_queue.pop_front();
+
+		/* Update 'from's transitions, and if it transitions to any
+		 * unknown State create it and add it to the work_queue
+		 */
+		update_state_transitions(from);
+	}  /* while (!work_queue.empty()) */
+}
+
 /**
  * Construct a DFA from a syntax tree.
  */
 DFA::DFA(Node *root, dfaflags_t flags): root(root)
 {
-	int i = 0;
 	diffcount = 0;		/* set by diff_encode */
 
 	if (flags & DFA_DUMP_PROGRESS)
@@ -394,28 +419,7 @@ DFA::DFA(Node *root, dfaflags_t flags): root(root)
 	 *       work_queue at any given time, thus reducing peak memory use.
 	 */
 	work_queue.push_back(start);
-
-	while (!work_queue.empty()) {
-		if (i % 1000 == 0 && (flags & DFA_DUMP_PROGRESS)) {
-			cerr << "\033[2KCreating dfa: queue "
-			     << work_queue.size()
-			     << "\tstates "
-			     << states.size()
-			     << "\teliminated duplicates "
-			     << node_map.dup
-			     << "\r";
-		}
-		i++;
-
-		State *from = work_queue.front();
-		work_queue.pop_front();
-
-		/* Update 'from's transitions, and if it transitions to any
-		 * unknown State create it and add it to the work_queue
-		 */
-		update_state_transitions(from);
-
-	}  /* while (!work_queue.empty()) */
+	process_work_queue("Creating dfa", flags);
 
 	/* cleanup Sets of nodes used computing the DFA as they are no longer
 	 * needed.
