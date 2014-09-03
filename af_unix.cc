@@ -37,7 +37,7 @@ int parse_unix_mode(const char *str_mode, int *mode, int fail)
 
 
 static struct supported_cond supported_conds[] = {
-	{ "path", true, false, false, either_cond },
+	{ "addr", true, false, false, either_cond },
 	{ NULL, false, false, false, local_cond },	/* sentinal */
 };
 
@@ -53,10 +53,10 @@ void unix_rule::move_conditionals(struct cond_entry *conds)
 				ent->name);
 			continue;
 		}
-		if (strcmp(ent->name, "path") == 0) {
-			move_conditional_value("unix socket", &path, ent);
-			if (path[0] != '@' && strcmp(path, "none") != 0)
-				yyerror("unix rule: invalid value for path='%s'\n", path);
+		if (strcmp(ent->name, "addr") == 0) {
+			move_conditional_value("unix socket", &addr, ent);
+			if (addr[0] != '@' && strcmp(addr, "none") != 0)
+				yyerror("unix rule: invalid value for addr='%s'\n", addr);
 		}
 
 		/* TODO: add conditionals for
@@ -81,16 +81,16 @@ void unix_rule::move_peer_conditionals(struct cond_entry *conds)
 				ent->name);
 			continue;
 		}
-		if (strcmp(ent->name, "path") == 0) {
-			move_conditional_value("unix", &peer_path, ent);
-			if (peer_path[0] != '@' && strcmp(path, "none") != 0)
-				yyerror("unix rule: invalid value for path='%s'\n", peer_path);
+		if (strcmp(ent->name, "addr") == 0) {
+			move_conditional_value("unix", &peer_addr, ent);
+			if (peer_addr[0] != '@' && strcmp(addr, "none") != 0)
+				yyerror("unix rule: invalid value for addr='%s'\n", peer_addr);
 		}
 	}
 }
 
 unix_rule::unix_rule(unsigned int type_p, bool audit_p, bool denied):
-	af_rule("unix"), path(NULL), peer_path(NULL)
+	af_rule("unix"), addr(NULL), peer_addr(NULL)
 {
 	if (type_p != 0xffffffff) {
 		sock_type_n = type_p;
@@ -105,7 +105,7 @@ unix_rule::unix_rule(unsigned int type_p, bool audit_p, bool denied):
 
 unix_rule::unix_rule(int mode_p, struct cond_entry *conds,
 		     struct cond_entry *peer_conds):
-	af_rule("unix"), path(NULL), peer_path(NULL)
+	af_rule("unix"), addr(NULL), peer_addr(NULL)
 {
 	move_conditionals(conds);
 	move_peer_conditionals(peer_conds);
@@ -138,16 +138,16 @@ unix_rule::unix_rule(int mode_p, struct cond_entry *conds,
 ostream &unix_rule::dump_local(ostream &os)
 {
 	af_rule::dump_local(os);
-	if (path)
-		os << "path='" << path << "'";
+	if (addr)
+		os << "addr='" << addr << "'";
 	return os;
 }
 
 ostream &unix_rule::dump_peer(ostream &os)
 {
 	af_rule::dump_peer(os);
-	if (peer_path)
-		os << "path='" << peer_path << "'";
+	if (peer_addr)
+		os << "addr='" << peer_addr << "'";
 	return os;
 }
 
@@ -157,10 +157,10 @@ int unix_rule::expand_variables(void)
 	int error = af_rule::expand_variables();
 	if (error)
 		return error;
-	error = expand_entry_variables(&path);
+	error = expand_entry_variables(&addr);
 	if (error)
 		return error;
-	error = expand_entry_variables(&peer_path);
+	error = expand_entry_variables(&peer_addr);
 	if (error)
 		return error;
 
@@ -266,12 +266,12 @@ int unix_rule::gen_policy_re(Profile &prof)
 	}
 
 	/* local addr */
-	if (path) {
-		if (strcmp(path, "none") == 0) {
+	if (addr) {
+		if (strcmp(addr, "none") == 0) {
 			buffer << "\\x01";
 		} else {
 			/* skip leading @ */
-			ptype = convert_aaregex_to_pcre(path + 1, 0, buf, &pos);
+			ptype = convert_aaregex_to_pcre(addr + 1, 0, buf, &pos);
 			if (ptype == ePatternInvalid)
 				goto fail;
 			/* kernel starts abstract with \0 */
@@ -349,12 +349,12 @@ int unix_rule::gen_policy_re(Profile &prof)
 		buffer << "\\x" << std::setfill('0') << std::setw(2) << std::hex << CMD_ADDR;
 
 		/* peer addr */
-		if (peer_path) {
-			if (strcmp(peer_path, "none") == 0) {
+		if (peer_addr) {
+			if (strcmp(peer_addr, "none") == 0) {
 				buffer << "\\x01";
 			} else {
 				/* skip leading @ */
-				ptype = convert_aaregex_to_pcre(peer_path + 1, 0, buf, &pos);
+				ptype = convert_aaregex_to_pcre(peer_addr + 1, 0, buf, &pos);
 				if (ptype == ePatternInvalid)
 					goto fail;
 				/* kernel starts abstract with \0 */

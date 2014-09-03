@@ -3,5 +3,5 @@
 #=EXRESULT PASS
 
 profile a_profile {
-  unix (send) path=none,
+  unix (send) addr=none,
 }
