@@ -123,10 +123,6 @@ unix_rule::unix_rule(int mode_p, struct cond_entry *conds,
 			 ((mode & AA_PEER_NET_PERMS) || has_peer_conds()))
 			/* Do we want to loosen this? */
 			yyerror("unix socket 'listen' access cannot be used with message rule conditionals\n");
-		else if ((mode & AA_NET_ACCEPT) &&
-			 ((mode & AA_PEER_NET_PERMS) || has_peer_conds()))
-			/* Do we want to loosen this? */
-			yyerror("unix socket 'accept' access cannot be used with message rule conditionals\n");
 	} else {
 		mode = AA_VALID_NET_PERMS;
 	}
