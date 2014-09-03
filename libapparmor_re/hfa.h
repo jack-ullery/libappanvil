@@ -291,6 +291,7 @@ public:
 class DFA {
 	void dump_node_to_dfa(void);
 	State *add_new_state(NodeSet *nodes, State *other);
+	State *add_new_state(NodeSet *anodes, NodeSet *nnodes, State *other);
 	void update_state_transitions(State *state);
 	void process_work_queue(const char *header, dfaflags_t);
 	void dump_diff_chain(ostream &os, map<State *, Partition> &relmap,
