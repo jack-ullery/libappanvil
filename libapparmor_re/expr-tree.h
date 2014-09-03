@@ -216,6 +216,7 @@ public:
 	void compute_lastpos() { lastpos.insert(this); }
 	virtual void follow(Cases &cases) = 0;
 	virtual int is_accept(void) = 0;
+	virtual int is_postprocess(void) = 0;
 };
 
 /* common base class for all the different classes that contain
@@ -225,6 +226,7 @@ class CNode: public ImportantNode {
 public:
 	CNode(): ImportantNode() { }
 	int is_accept(void) { return false; }
+	int is_postprocess(void) { return false; }
 };
 
 /* Match one specific character (/c/). */
@@ -369,35 +371,6 @@ public:
 	ostream &dump(ostream &os) { return os << "."; }
 };
 
-/**
- * Indicate that a regular expression matches. An AcceptNode itself
- * doesn't match anything, so it will never generate any transitions.
- */
-class AcceptNode: public ImportantNode {
-public:
-	AcceptNode() { }
-	int is_accept(void) { return true; }
-	void release(void)
-	{
-		/* don't delete AcceptNode via release as they are shared, and
-		 * will be deleted when the table the are stored in is deleted
-		 */
-	}
-
-	void follow(Cases &cases __attribute__ ((unused)))
-	{
-		/* Nothing to follow. */
-	}
-
-	/* requires accept nodes to be common by pointer */
-	int eq(Node *other)
-	{
-		if (dynamic_cast<AcceptNode *>(other))
-			return (this == other);
-		return 0;
-	}
-};
-
 /* Match a node zero or more times. (This is a unary operator.) */
 class StarNode: public OneChildNode {
 public:
@@ -536,6 +509,55 @@ public:
 	void normalize(int dir);
 };
 
+class SharedNode: public ImportantNode {
+public:
+	SharedNode() { }
+	void release(void)
+	{
+		/* don't delete SharedNodes via release as they are shared, and
+		 * will be deleted when the table they are stored in is deleted
+		 */
+	}
+
+	void follow(Cases &cases __attribute__ ((unused)))
+	{
+		/* Nothing to follow. */
+	}
+
+	/* requires shared nodes to be common by pointer */
+	int eq(Node *other) { return (this == other); }
+};
+
+/**
+ * Indicate that a regular expression matches. An AcceptNode itself
+ * doesn't match anything, so it will never generate any transitions.
+ */
+class AcceptNode: public SharedNode {
+public:
+	AcceptNode() { }
+	int is_accept(void) { return true; }
+	int is_postprocess(void) { return false; }
+};
+
+class MatchFlag: public AcceptNode {
+public:
+	MatchFlag(uint32_t flag, uint32_t audit): flag(flag), audit(audit) { }
+	ostream &dump(ostream &os) { return os << "< 0x" << hex << flag << '>'; }
+
+	uint32_t flag;
+	uint32_t audit;
+};
+
+class ExactMatchFlag: public MatchFlag {
+public:
+	ExactMatchFlag(uint32_t flag, uint32_t audit): MatchFlag(flag, audit) {}
+};
+
+class DenyMatchFlag: public MatchFlag {
+public:
+	DenyMatchFlag(uint32_t flag, uint32_t quiet): MatchFlag(flag, quiet) {}
+};
+
 /* Traverse the syntax tree depth-first in an iterator-like manner. */
 class depth_first_traversal {
 	stack<Node *>pos;
@@ -587,25 +609,6 @@ void label_nodes(Node *root);
 unsigned long hash_NodeSet(NodeSet *ns);
 void flip_tree(Node *node);
 
-
-class MatchFlag: public AcceptNode {
-public:
-	MatchFlag(uint32_t flag, uint32_t audit): flag(flag), audit(audit) { }
-	ostream &dump(ostream &os) { return os << "< 0x" << hex << flag << '>'; }
-
-	uint32_t flag;
-	uint32_t audit;
-};
-
-class ExactMatchFlag: public MatchFlag {
-public:
-	ExactMatchFlag(uint32_t flag, uint32_t audit): MatchFlag(flag, audit) {}
-};
-
-class DenyMatchFlag: public MatchFlag {
-public:
-	DenyMatchFlag(uint32_t flag, uint32_t quiet): MatchFlag(flag, quiet) {}
-};
 
 
 /*
