@@ -312,7 +312,7 @@ bool unix_rule::write_label(std::ostringstream &buffer, const char *label)
  */
 int unix_rule::gen_policy_re(Profile &prof)
 {
-	std::ostringstream buffer, tmp;
+	std::ostringstream buffer;
 	std::string buf;
 
 	int mask = mode;
@@ -367,7 +367,8 @@ int unix_rule::gen_policy_re(Profile &prof)
 		}
 
 		if (mask & AA_NET_LISTEN) {
-			tmp.str(buffer.str());
+			std::ostringstream tmp(buffer.str());
+			tmp.seekp(0, ios_base::end);
 			tmp << "\\x" << std::setfill('0') << std::setw(2) << std::hex << CMD_LISTEN;
 			/* TODO: backlog conditional: for now match anything*/
 			tmp << "..";
@@ -379,7 +380,8 @@ int unix_rule::gen_policy_re(Profile &prof)
 				goto fail;
 		}
 		if (mask & AA_NET_OPT) {
-			tmp.str(buffer.str());
+			std::ostringstream tmp(buffer.str());
+			tmp.seekp(0, ios_base::end);
 			tmp << "\\x" << std::setfill('0') << std::setw(2) << std::hex << CMD_OPT;
 			/* TODO: sockopt conditional: for now match anything */
 			tmp << "..";
