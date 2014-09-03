@@ -91,41 +91,12 @@ static Node *cat_with_null_seperator(Node *l, Node *r)
 	return new CatNode(new CatNode(l, new CharNode(0)), r);
 }
 
-bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
-			      int count, const char **rulev, dfaflags_t flags)
+static Node *convert_file_perms(int deny, uint32_t perms, uint32_t audit,
+				bool exact_match)
 {
-	Node *tree = NULL, *accept;
-	int exact_match;
-	uint32_t allow = perms;
+	Node *accept;
 
 	assert(perms != 0);
-
-	if (regex_parse(&tree, rulev[0]))
-		return false;
-	for (int i = 1; i < count; i++) {
-		Node *subtree = NULL;
-		if (regex_parse(&subtree, rulev[i]))
-			return false;
-		tree = cat_with_null_seperator(tree, subtree);
-	}
-
-	/*
-	 * Check if we have an expression with or without wildcards. This
-	 * determines how exec modifiers are merged in accept_perms() based
-	 * on how we split permission bitmasks here.
-	 */
-	exact_match = 1;
-	for (depth_first_traversal i(tree); i && exact_match; i++) {
-		if (dynamic_cast<StarNode *>(*i) ||
-		    dynamic_cast<PlusNode *>(*i) ||
-		    dynamic_cast<AnyCharNode *>(*i) ||
-		    dynamic_cast<CharSetNode *>(*i) ||
-		    dynamic_cast<NotCharSetNode *>(*i))
-			exact_match = 0;
-	}
-
-	if (reverse)
-		flip_tree(tree);
 
 /* 0x7f == 4 bits x mods + 1 bit unsafe mask + 1 bit ix, + 1 pux after shift */
 #define EXTRACT_X_INDEX(perm, shift) (((perm) >> (shift + 7)) & 0x7f)
@@ -195,6 +166,44 @@ bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
 			accept = flag;
 	} /* for ... */
 
+	return accept;
+}
+
+bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
+			      int count, const char **rulev, dfaflags_t flags)
+{
+	Node *tree = NULL, *accept;
+	int exact_match;
+
+	if (regex_parse(&tree, rulev[0]))
+		return false;
+	for (int i = 1; i < count; i++) {
+		Node *subtree = NULL;
+		if (regex_parse(&subtree, rulev[i]))
+			return false;
+		tree = cat_with_null_seperator(tree, subtree);
+	}
+
+	/*
+	 * Check if we have an expression with or without wildcards. This
+	 * determines how exec modifiers are merged in accept_perms() based
+	 * on how we split permission bitmasks here.
+	 */
+	exact_match = 1;
+	for (depth_first_traversal i(tree); i && exact_match; i++) {
+		if (dynamic_cast<StarNode *>(*i) ||
+		    dynamic_cast<PlusNode *>(*i) ||
+		    dynamic_cast<AnyCharNode *>(*i) ||
+		    dynamic_cast<CharSetNode *>(*i) ||
+		    dynamic_cast<NotCharSetNode *>(*i))
+			exact_match = 0;
+	}
+
+	if (reverse)
+		flip_tree(tree);
+
+	accept = convert_file_perms(deny, perms, audit, exact_match);
+
 	if (flags & DFA_DUMP_RULE_EXPR) {
 		cerr << "rule: ";
 		cerr << rulev[0];
@@ -206,7 +215,7 @@ bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
 		tree->dump(cerr);
 		if (deny)
 			cerr << " deny";
-		cerr << " (0x" << hex << allow <<"/" << audit << dec << ")";
+		cerr << " (0x" << hex << perms <<"/" << audit << dec << ")";
 		accept->dump(cerr);
  		cerr << "\n\n";
 	}
