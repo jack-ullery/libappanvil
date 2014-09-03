@@ -28,6 +28,7 @@
 
 class aare_rules {
 	Node *root;
+	void add_to_rules(Node *tree, Node *perms);
 public:
 	int reverse;
 	int rule_count;
