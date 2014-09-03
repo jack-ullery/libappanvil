@@ -278,14 +278,9 @@ static void split_node_types(NodeSet *nodes, NodeSet **anodes, NodeSet **nnodes
 	*nnodes = nodes;
 }
 
-State *DFA::add_new_state(NodeSet *nodes, State *other)
+State *DFA::add_new_state(NodeSet *anodes, NodeSet *nnodes, State *other)
 {
-	/* The splitting of nodes should probably get pushed down into
-	 * follow(), ie. put in separate lists from the start
-	 */
-	NodeSet *anodes, *nnodes;
 	hashedNodeVec *nnodev;
-	split_node_types(nodes, &anodes, &nnodes);
 	nnodev = nnodes_cache.insert(nnodes);
 	anodes = anodes_cache.insert(anodes);
 
@@ -301,6 +296,19 @@ State *DFA::add_new_state(NodeSet *nodes, State *other)
 	}
 
 	return x.first->second;
+}
+
+State *DFA::add_new_state(NodeSet *nodes, State *other)
+{
+	/* The splitting of nodes should probably get pushed down into
+	 * follow(), ie. put in separate lists from the start
+	 */
+	NodeSet *anodes, *nnodes;
+	split_node_types(nodes, &anodes, &nnodes);
+
+	State *state = add_new_state(anodes, nnodes, other);
+
+	return state;
 }
 
 void DFA::update_state_transitions(State *state)
