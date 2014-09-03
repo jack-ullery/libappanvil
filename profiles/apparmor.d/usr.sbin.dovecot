@@ -52,6 +52,8 @@
   /usr/lib/dovecot/ssl-build-param rix,
   /usr/lib/dovecot/ssl-params Px,
   /usr/sbin/dovecot mrix,
+  /usr/share/dovecot/protocols.d/   r,
+  /usr/share/dovecot/protocols.d/** r,
   /var/lib/dovecot/ w,
   /var/lib/dovecot/* rwkl,
   /var/spool/postfix/private/auth w,
