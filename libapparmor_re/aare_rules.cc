@@ -76,6 +76,21 @@ void aare_reset_matchflags(void)
 #undef RESET_FLAGS
 }
 
+void aare_rules::add_to_rules(Node *tree, Node *perms)
+{
+	if (reverse)
+		flip_tree(tree);
+	if (root)
+		root = new AltNode(root, new CatNode(tree, perms));
+	else
+		root = new CatNode(tree, perms);
+}
+
+static Node *cat_with_null_seperator(Node *l, Node *r)
+{
+	return new CatNode(new CatNode(l, new CharNode(0)), r);
+}
+
 bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
 			      int count, const char **rulev, dfaflags_t flags)
 {
@@ -89,13 +104,9 @@ bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
 		return false;
 	for (int i = 1; i < count; i++) {
 		Node *subtree = NULL;
-		Node *node = new CharNode(0);
-		if (!node)
-			return false;
-		tree = new CatNode(tree, node);
 		if (regex_parse(&subtree, rulev[i]))
 			return false;
-		tree = new CatNode(tree, subtree);
+		tree = cat_with_null_seperator(tree, subtree);
 	}
 
 	/*
@@ -200,10 +211,7 @@ bool aare_rules::add_rule_vec(int deny, uint32_t perms, uint32_t audit,
  		cerr << "\n\n";
 	}
 
-	if (root)
-		root = new AltNode(root, new CatNode(tree, accept));
-	else
-		root = new CatNode(tree, accept);
+	add_to_rules(tree, accept);
 
 	rule_count++;
 
