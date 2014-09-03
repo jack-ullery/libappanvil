@@ -22,6 +22,8 @@
   capability sys_chroot,
   capability sys_resource,
 
+  network netlink dgram,
+
   /usr/sbin/mdnsd rmix,
 
   @{PROC}/net/ r,
