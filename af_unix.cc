@@ -189,7 +189,7 @@ static void warn_once(const char *name)
 	warn_once(name, "extended network unix socket rules not enforced");
 }
 
-std::ostringstream &writeu16(std::ostringstream &o, int v)
+static void writeu16(std::ostringstream &o, int v)
 {
 	u16 tmp = htobe16((u16) v);
 	u8 *byte1 = (u8 *)&tmp;
@@ -197,7 +197,6 @@ std::ostringstream &writeu16(std::ostringstream &o, int v)
 
 	o << "\\x" << std::setfill('0') << std::setw(2) << std::hex << static_cast<unsigned int>(*byte1);
 	o << "\\x" << std::setfill('0') << std::setw(2) << std::hex << static_cast<unsigned int>(*byte2);
-	return o;
 }
 
 #define CMD_ADDR	1
@@ -256,13 +255,13 @@ int unix_rule::gen_policy_re(Profile &prof)
 
 
 	buffer << "\\x" << std::setfill('0') << std::setw(2) << std::hex << AA_CLASS_NET;
-	buffer << writeu16(buffer, AF_UNIX);
+	writeu16(buffer, AF_UNIX);
 	if (sock_type)
-		buffer << writeu16(buffer, sock_type_n);
+		writeu16(buffer, sock_type_n);
 	else
 		buffer << "..";
 	if (proto)
-		buffer << writeu16(buffer, proto_n);
+		writeu16(buffer, proto_n);
 	else
 		buffer << "..";
 
