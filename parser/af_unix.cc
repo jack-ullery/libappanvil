@@ -115,12 +115,10 @@ unix_rule::unix_rule(int mode_p, struct cond_entry *conds,
 		mode = mode_p;
 		if (mode & ~AA_VALID_NET_PERMS)
 			yyerror("mode contains invalid permissions for unix socket rules\n");
-		else if ((mode & AA_NET_BIND) &&
-			 ((mode & AA_PEER_NET_PERMS) || has_peer_conds()))
+		else if ((mode & AA_NET_BIND) && has_peer_conds())
 			/* Do we want to loosen this? */
 			yyerror("unix socket 'bind' access cannot be used with message rule conditionals\n");
-		else if ((mode & AA_NET_LISTEN) &&
-			 ((mode & AA_PEER_NET_PERMS) || has_peer_conds()))
+		else if ((mode & AA_NET_LISTEN) && has_peer_conds())
 			/* Do we want to loosen this? */
 			yyerror("unix socket 'listen' access cannot be used with message rule conditionals\n");
 	} else {
