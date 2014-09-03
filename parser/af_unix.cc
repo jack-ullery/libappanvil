@@ -350,7 +350,7 @@ int unix_rule::gen_policy_re(Profile &prof)
 
 		/* peer addr */
 		if (peer_path) {
-			if (strcmp(path, "none") == 0) {
+			if (strcmp(peer_path, "none") == 0) {
 				buffer << "\\x01";
 			} else {
 				/* skip leading @ */

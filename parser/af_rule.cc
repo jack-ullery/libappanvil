@@ -80,7 +80,7 @@ int af_rule::move_base_cond(struct cond_entry *ent, bool peer)
 	} else if (strcmp(ent->name, "protocol") == 0) {
 		yyerror("socket rule: 'protocol' conditional is not currently supported\n");
 	} else if (strcmp(ent->name, "label") == 0) {
-		if (peer)
+		if (!peer)
 			move_conditional_value("unix", &label, ent);
 		else
 			move_conditional_value("unix", &peer_label, ent);
