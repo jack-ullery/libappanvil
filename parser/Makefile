@@ -233,7 +233,7 @@ parser_alias.o: parser_alias.c parser.h profile.h
 parser_common.o: parser_common.c parser.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-mount.o: mount.c mount.h parser.h immunix.h rule.h
+mount.o: mount.cc mount.h parser.h immunix.h rule.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 common_optarg.o: common_optarg.c common_optarg.h parser.h libapparmor_re/apparmor_re.h
@@ -242,13 +242,13 @@ common_optarg.o: common_optarg.c common_optarg.h parser.h libapparmor_re/apparmo
 lib.o: lib.c lib.h parser.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-dbus.o: dbus.c dbus.h parser.h immunix.h parser_yacc.h rule.h $(APPARMOR_H)
+dbus.o: dbus.cc dbus.h parser.h immunix.h parser_yacc.h rule.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-signal.o: signal.c signal.h parser.h immunix.h parser_yacc.h rule.h $(APPARMOR_H)
+signal.o: signal.cc signal.h parser.h immunix.h parser_yacc.h rule.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-ptrace.o: ptrace.c ptrace.h parser.h immunix.h parser_yacc.h rule.h $(APPARMOR_H)
+ptrace.o: ptrace.cc ptrace.h parser.h immunix.h parser_yacc.h rule.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 network.o: network.c network.h parser.h immunix.h parser_yacc.h rule.h af_names.h $(APPARMOR_H)
@@ -257,7 +257,7 @@ network.o: network.c network.h parser.h immunix.h parser_yacc.h rule.h af_names.
 profile.o: profile.cc profile.h parser.h network.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-rule.o: rule.c rule.h policydb.h
+rule.o: rule.cc rule.h policydb.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_version.h: Makefile
