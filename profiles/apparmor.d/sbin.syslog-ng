@@ -30,6 +30,9 @@
   capability sys_resource,
   capability syslog,
 
+  unix (receive) type=dgram,
+  unix (receive) type=stream,
+
   /dev/log w,
   /dev/syslog w,
   /dev/tty10 rw,

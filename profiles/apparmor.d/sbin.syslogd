@@ -23,6 +23,9 @@
   capability setgid,
   capability syslog,
 
+  unix (receive) type=dgram,
+  unix (receive) type=stream,
+
   /dev/log                      wl,
   /var/lib/*/dev/log            wl,
 
