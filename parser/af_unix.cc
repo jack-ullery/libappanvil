@@ -226,13 +226,99 @@ static uint32_t map_perms(uint32_t mask)
 		((mask & (AA_NET_SETOPT | AA_NET_GETOPT)) >> 5); /* 5 + (AA_OTHER_SHIFT - 24) */
 }
 
+void unix_rule::write_to_prot(std::ostringstream &buffer)
+{
+	buffer << "\\x" << std::setfill('0') << std::setw(2) << std::hex << AA_CLASS_NET;
+	writeu16(buffer, AF_UNIX);
+	if (sock_type)
+		writeu16(buffer, sock_type_n);
+	else
+		buffer << "..";
+	if (proto)
+		writeu16(buffer, proto_n);
+	else
+		buffer << "..";
+}
+
+bool unix_rule::write_addr(std::ostringstream &buffer, const char *addr)
+{
+	std::string buf;
+	pattern_t ptype;
+
+	if (addr) {
+		int pos;
+		if (strcmp(addr, "none") == 0) {
+			/* anonymous */
+			buffer << "\\x01";
+		} else {
+			/* skip leading @ */
+			ptype = convert_aaregex_to_pcre(addr + 1, 0, buf, &pos);
+			if (ptype == ePatternInvalid)
+				return false;
+			/* kernel starts abstract with \0 */
+			buffer << "\\x00";
+			buffer << buf;
+		}
+	} else
+		/* match any addr or anonymous */
+		buffer << ".*";
+
+	/* todo: change to out of band separator */
+	buffer << "\\x00";
+
+	return true;
+}
+
+bool unix_rule::write_label(std::ostringstream &buffer, const char *label)
+{
+	std::string buf;
+	pattern_t ptype;
+
+	if (label) {
+		int pos;
+		ptype = convert_aaregex_to_pcre(label, 0, buf, &pos);
+		if (ptype == ePatternInvalid)
+			return false;
+		/* kernel starts abstract with \0 */
+		buffer << buf;
+	} else
+		buffer << default_match_pattern;
+
+	return true;
+}
+
+/* General Layout
+ *
+ * Local socket end point perms
+ * CLASS_NET  AF  TYPE PROTO  local (addr\0label) \0 cmd cmd_option
+ *          ^   ^           ^                       ^              ^
+ *          |   |           |                       |              |
+ *  stub perm   |           |                       |              |
+ *              |           |                       |              |
+ *  sub stub perm           |                       |              |
+ *                          |                       |              |
+ *                create perm                       |              |
+ *                                                  |              |
+ *                                                  |              |
+ *                         bind, accept, get/set attr              |
+ *                                                                 |
+ *                                          listen, set/get opt perm
+ *
+ *
+ * peer socket end point perms
+ * CLASS_NET  AF  TYPE PROTO  local(addr\0label\0) cmd_addr peer(addr\0label )
+ *                                                                          ^
+ *                                                                          |
+ *                                           send/receive connect/accept perm
+ *
+ * NOTE: accept is encoded twice, locally to check if a socket is allowed
+ *       to accept, and then as a pair to test that it can accept the pair.
+ */
 int unix_rule::gen_policy_re(Profile &prof)
 {
 	std::ostringstream buffer, tmp;
 	std::string buf;
 
-	pattern_t ptype;
-	int pos;
 	int mask = mode;
 
 	/* always generate a downgraded rule. This doesn't change generated
@@ -253,18 +339,7 @@ int unix_rule::gen_policy_re(Profile &prof)
 		return RULE_NOT_SUPPORTED;
 	}
 
-
-	buffer << "\\x" << std::setfill('0') << std::setw(2) << std::hex << AA_CLASS_NET;
-	writeu16(buffer, AF_UNIX);
-	if (sock_type)
-		writeu16(buffer, sock_type_n);
-	else
-		buffer << "..";
-	if (proto)
-		writeu16(buffer, proto_n);
-	else
-		buffer << "..";
-
+	write_to_prot(buffer);
 	if (mask & AA_NET_CREATE) {
 		buf = buffer.str();
 		if (!prof.policy.rules->add_rule(buf.c_str(), deny,
@@ -275,35 +350,14 @@ int unix_rule::gen_policy_re(Profile &prof)
 		mask &= ~AA_NET_CREATE;
 	}
 
-	/* local addr */
-	if (addr) {
-		if (strcmp(addr, "none") == 0) {
-			buffer << "\\x01";
-		} else {
-			/* skip leading @ */
-			ptype = convert_aaregex_to_pcre(addr + 1, 0, buf, &pos);
-			if (ptype == ePatternInvalid)
-				goto fail;
-			/* kernel starts abstract with \0 */
-			buffer << "\\x00";
-			buffer << buf;
-		}
-	} else
-		buffer << ".*";
-
-	/* change to out of band separator */
-	buffer << "\\x00";
-
-	if (mask & AA_LOCAL_NET_PERMS) {
+	if (mask) {
+		/* local addr */
+		if (!write_addr(buffer, addr))
+			goto fail;
 		/* local label option */
-		if (label) {
-			ptype = convert_aaregex_to_pcre(label, 0, buf, &pos);
-			if (ptype == ePatternInvalid)
-				goto fail;
-			/* kernel starts abstract with \0 */
-			buffer << buf;
-		} else
-			tmp << anyone_match_pattern;
+		if (!write_label(buffer, label))
+			goto fail;
+		/* seperator */
 		buffer << "\\x00";
 
 		/* create already masked off */
@@ -316,21 +370,10 @@ int unix_rule::gen_policy_re(Profile &prof)
 				goto fail;
 		}
 
-		/* cmd selector - drop accept??? */
-		if (mask & AA_NET_ACCEPT) {
-			tmp.str(buffer.str());
-			tmp << "\\x" << std::setfill('0') << std::setw(2) << std::hex << CMD_ACCEPT;
-			buf = tmp.str();
-			if (!prof.policy.rules->add_rule(buf.c_str(), deny,
-							 map_perms(AA_NET_ACCEPT),
-							 map_perms(audit & AA_NET_ACCEPT),
-							 dfaflags))
-				goto fail;
-		}
 		if (mask & AA_NET_LISTEN) {
 			tmp.str(buffer.str());
 			tmp << "\\x" << std::setfill('0') << std::setw(2) << std::hex << CMD_LISTEN;
-			/* TODO: backlog conditional */
+			/* TODO: backlog conditional: for now match anything*/
 			tmp << "..";
 			buf = tmp.str();
 			if (!prof.policy.rules->add_rule(buf.c_str(), deny,
@@ -342,7 +385,7 @@ int unix_rule::gen_policy_re(Profile &prof)
 		if (mask & AA_NET_OPT) {
 			tmp.str(buffer.str());
 			tmp << "\\x" << std::setfill('0') << std::setw(2) << std::hex << CMD_OPT;
-			/* TODO: sockopt conditional */
+			/* TODO: sockopt conditional: for now match anything */
 			tmp << "..";
 			buf = tmp.str();
 			if (!prof.policy.rules->add_rule(buf.c_str(), deny,
@@ -351,38 +394,19 @@ int unix_rule::gen_policy_re(Profile &prof)
 							 dfaflags))
 				goto fail;
 		}
-		mask &= ~AA_LOCAL_NET_PERMS;
-	}
+		mask &= ~AA_LOCAL_NET_PERMS | AA_NET_ACCEPT;
+	} /* if (mask) */
 
 	if (mask & AA_PEER_NET_PERMS) {
 		/* cmd selector */
 		buffer << "\\x" << std::setfill('0') << std::setw(2) << std::hex << CMD_ADDR;
 
-		/* peer addr */
-		if (peer_addr) {
-			if (strcmp(peer_addr, "none") == 0) {
-				buffer << "\\x01";
-			} else {
-				/* skip leading @ */
-				ptype = convert_aaregex_to_pcre(peer_addr + 1, 0, buf, &pos);
-				if (ptype == ePatternInvalid)
-					goto fail;
-				/* kernel starts abstract with \0 */
-				buffer << "\\x00";
-				buffer << buf;
-			}
-		}
-		/* change to out of band separator */
-		buffer << "\\x00";
-
-		if (peer_label) {
-			ptype = convert_aaregex_to_pcre(peer_label, 0, buf, &pos);
-			if (ptype == ePatternInvalid)
-				goto fail;
-			buffer << buf;
-		} else {
-			buffer << anyone_match_pattern;
-		}
+		/* local addr */
+		if (!write_addr(buffer, peer_addr))
+			goto fail;
+		/* local label option */
+		if (!write_label(buffer, peer_label))
+			goto fail;
 
 		buf = buffer.str();
 		if (!prof.policy.rules->add_rule(buf.c_str(), deny, map_perms(mode & AA_PEER_NET_PERMS), map_perms(audit), dfaflags))

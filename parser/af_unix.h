@@ -27,6 +27,9 @@
 int parse_unix_mode(const char *str_mode, int *mode, int fail);
 
 class unix_rule: public af_rule {
+	void write_to_prot(std::ostringstream &buffer);
+	bool write_addr(std::ostringstream &buffer, const char *addr);
+	bool write_label(std::ostringstream &buffer, const char *label);
 	void move_conditionals(struct cond_entry *conds);
 	void move_peer_conditionals(struct cond_entry *conds);
 	void downgrade_rule(Profile &prof);
