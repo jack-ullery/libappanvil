@@ -3,5 +3,5 @@
 #=EXRESULT PASS
 
 profile a_profile {
-  unix (send) peer=(path=@foo),
+  unix (send) peer=(addr=@foo),
 }

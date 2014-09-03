@@ -3,7 +3,7 @@
 #=EXRESULT FAIL
 #
 
-# path must be none for anonymous or start with @ for abstract
+# path address must be none for anonymous or start with @ for abstract
 profile foo {
-  unix send peer(path=wat),
+  unix send peer(addr=wat),
 }

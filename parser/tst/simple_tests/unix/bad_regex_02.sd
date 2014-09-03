@@ -4,5 +4,5 @@
 #
 
 profile foo {
-  unix bind path=abcd]efg,
+  unix bind addr=abcd]efg,
 }

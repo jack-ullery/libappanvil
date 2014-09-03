@@ -175,13 +175,13 @@ B<TYPE COND> = 'type' '='  ( <AARE> | '(' ( '"' <AARE> '"' | <AARE> )+ ')' )
 
 B<PROTO COND> = 'protocol' '='  ( <AARE> | '(' ( '"' <AARE> '"' | <AARE> )+ ')' )
 
-B<UNIX LOCAL EXPR> = ( I<UNIX PATH COND> | I<UNIX LABEL COND> | I<UNIX ATTR COND> | I<UNIX OPT COND> )*
+B<UNIX LOCAL EXPR> = ( I<UNIX ADDRESS COND> | I<UNIX LABEL COND> | I<UNIX ATTR COND> | I<UNIX OPT COND> )*
  each cond can appear at most once
 
-B<UNIX PEER EXPR> = 'peer' '=' ( I<UNIX PATH COND> | I<UNIX LABEL COND> )+
+B<UNIX PEER EXPR> = 'peer' '=' ( I<UNIX ADDRESS COND> | I<UNIX LABEL COND> )+
  each cond can appear at most once
 
-B<UNIX PATH COND> 'path' '=' ( <AARE> | '(' '"' <AARE> '"' | <AARE> ')' )
+B<UNIX ADDRESS COND> 'addr' '=' ( <AARE> | '(' '"' <AARE> '"' | <AARE> ')' )
 
 B<UNIX LABEL COND> 'label' '=' ( <AARE> | '(' '"' <AARE> '"' | <AARE> ')' )
 
@@ -897,26 +897,28 @@ domain sockets, see man 7 unix for more information.
 
 =head3 Unix socket paths
 
-The path component of a unix domain socket is specified by the
-  path=
-conditional. If a path conditional is not specified as part of a rule
-then the rule matches both abstract and anonymous sockets.
+The path address component of a unix domain socket is specified by the
+  addr=
 
-In apparmor the path of an abstract unix domain socket begins with the
-I<@> character, similar to how they are reported by netstat -x. The name
-then follows and may contain pattern matching and any characters including
-the null character. In apparmor null characters must be specified by using
-an escape sequence I<\000> or I<\x00>. The pattern matching is the same
-as is used by path matching so * will not match I</> even though it
-has no special meaning with in an abstract socket name. Eg.
-  unix path=@*,
+conditional. If an address conditional is not specified as part of
+a rule then the rule matches both abstract and anonymous sockets.
 
-Anonymous unix domain sockets have no path associated with them, however
-it can be specified with the special I<none> keyword to indicate the
-rule only applies to anonymous unix domain sockets. Eg.
-  unix path=none,
+In apparmor the address of an abstract unix domain socket begins with
+the I<@> character, similar to how they are reported (as paths) by
+netstat -x. The address then follows and may contain pattern matching
+and any characters including the null character. In apparmor null
+characters must be specified by using an escape sequence I<\000> or
+I<\x00>. The pattern matching is the same as is used by path matching
+so * will not match I</> even though it has no special meaning with
+in an abstract socket name. Eg.
+  unix addr=@*,
 
-If the path component of a rule is not specified then the rule applies
+Anonymous unix domain sockets have no address associated with
+them, however it can be specified with the special I<none> keyword
+to indicate the rule only applies to anonymous unix domain sockets. Eg.
+  unix addr=none,
+
+If the address component of a rule is not specified then the rule applies
 to both abstract and anonymous sockets.
 
 =head3 Unix socket permissions
@@ -925,7 +927,7 @@ socket permissions are the union of all the listed unix rule permissions.
 
 Unix domain socket rules are broad and general and become more restrictive     
 as further information is specified. Policy may be specified down to           
-the path and label level. The content of the communication is not              
+the addr and label level. The content of the communication is not              
 examined.                                                                      
 
 Unix socket rule permissions are implied when a rule does not explicitly       
@@ -961,20 +963,20 @@ create, bind, listen, shutdown, getattr, or setattr permissions.
 
   unix type=dgram,
 
-  unix path=none
+  unix addr=none
 
-  unix path=@foo,
+  unix addr=@foo,
 
-  unix type=stream path=@foo,
+  unix type=stream addr=@foo,
 
-  unix server path=@foo,
+  unix server addr=@foo,
 
-  unix accept path=@foo peer=(label=/bar),
+  unix accept addr=@foo peer=(label=/bar),
 
-  unix receive path=@foo peer=(label=/bar),
+  unix receive addr=@foo peer=(label=/bar),
 
 
-  unix path=none
+  unix addr=none
 
 
 =head3 Abstract unix domain sockets autobind
@@ -1000,7 +1002,7 @@ Eg.
 Fine grained mediation rules however can not be lossly converted back
 to the coarse grained network rule. Eg
 
-   unix bind path=@example,
+   unix bind addr=@example,
 
 Has no exact match under coarse grained network rules, the closest match is
 the much wider permission rule of.

@@ -31,8 +31,8 @@ class unix_rule: public af_rule {
 	void move_peer_conditionals(struct cond_entry *conds);
 	void downgrade_rule(Profile &prof);
 public:
-	char *path;
-	char *peer_path;
+	char *addr;
+	char *peer_addr;
 	int mode;
 	int audit;
 	bool deny;
@@ -42,12 +42,12 @@ public:
 		  struct cond_entry *peer_conds);
 	virtual ~unix_rule()
 	{
-		free(path);
-		free(peer_path);
+		free(addr);
+		free(peer_addr);
 	};
 
 	virtual bool has_peer_conds(void) {
-		return af_rule::has_peer_conds() || peer_path;
+		return af_rule::has_peer_conds() || peer_addr;
 	}
 
 	virtual ostream &dump_local(ostream &os);

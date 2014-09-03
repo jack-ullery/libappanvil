@@ -3,5 +3,5 @@
 #=EXRESULT PASS
 
 profile a_profile {
-  unix path=@SomeService,
+  unix addr=@SomeService,
 }

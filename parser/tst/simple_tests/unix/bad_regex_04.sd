@@ -1,8 +1,8 @@
 #
-#=DESCRIPTION unix rule with a bad path regex expansion
+#=DESCRIPTION unix rule with a bad path address regex expansion
 #=EXRESULT FAIL
 #
 
 profile foo {
-  unix send path=/some/random/{path peer=(label=splat),
+  unix send addr=/some/random/{path peer=(label=splat),
 }
