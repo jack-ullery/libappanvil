@@ -83,7 +83,7 @@ void unix_rule::move_peer_conditionals(struct cond_entry *conds)
 		}
 		if (strcmp(ent->name, "addr") == 0) {
 			move_conditional_value("unix", &peer_addr, ent);
-			if (peer_addr[0] != '@' && strcmp(addr, "none") != 0)
+			if (peer_addr[0] != '@' && strcmp(peer_addr, "none") != 0)
 				yyerror("unix rule: invalid value for addr='%s'\n", peer_addr);
 		}
 	}
