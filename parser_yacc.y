@@ -36,6 +36,7 @@
 #include "profile.h"
 #include "mount.h"
 #include "dbus.h"
+#include "af_unix.h"
 #include "parser_include.h"
 #include <unistd.h>
 #include <netinet/in.h>
@@ -103,6 +104,16 @@ void add_local_entry(Profile *prof);
 %token TOK_DEFINED
 %token TOK_CHANGE_PROFILE
 %token TOK_NETWORK
+%token TOK_UNIX
+%token TOK_CREATE
+%token TOK_SHUTDOWN
+%token TOK_ACCEPT
+%token TOK_CONNECT
+%token TOK_LISTEN
+%token TOK_SETOPT
+%token TOK_GETOPT
+%token TOK_SETATTR
+%token TOK_GETATTR
 %token TOK_HAT
 %token TOK_UNSAFE
 %token TOK_SAFE
@@ -173,6 +184,7 @@ void add_local_entry(Profile *prof);
 	#include "dbus.h"
 	#include "signal.h"
 	#include "ptrace.h"
+	#include "af_unix.h"
 }
 
 %union {
@@ -188,6 +200,7 @@ void add_local_entry(Profile *prof);
 	dbus_rule *dbus_entry;
 	signal_rule *signal_entry;
 	ptrace_rule *ptrace_entry;
+	unix_rule *unix_entry;
 
 	flagvals flags;
 	int fmode;
@@ -259,6 +272,10 @@ void add_local_entry(Profile *prof);
 %type <fmode>	ptrace_perms
 %type <fmode>	opt_ptrace_perm
 %type <ptrace_entry>	ptrace_rule
+%type <fmode>	net_perm
+%type <fmode>	net_perms
+%type <fmode>	opt_net_perm
+%type <unix_entry>	unix_rule
 %type <transition> opt_named_transition
 %type <boolean> opt_unsafe
 %type <boolean> opt_file
@@ -641,20 +658,17 @@ rules: rules opt_prefix network_rule
 			yyerror(_("owner prefix not allowed"));
 		if (!$3)
 			yyerror(_("Assert: `network_rule' return invalid protocol."));
-		if (!$1->net.allow) {
-			$1->net.allow = (unsigned int *) calloc(get_af_max(),
-						     sizeof(unsigned int));
-			$1->net.audit = (unsigned int *)calloc(get_af_max(),
-						   sizeof(unsigned int));
-			$1->net.deny = (unsigned int *)calloc(get_af_max(),
-						     sizeof(unsigned int));
-			$1->net.quiet = (unsigned int *)calloc(get_af_max(),
-						     sizeof(unsigned int));
-			if (!$1->net.allow || !$1->net.audit ||
-			    !$1->net.deny || !$1->net.quiet)
-				yyerror(_("Memory allocation error."));
-		}
+		if (!$1->alloc_net_table())
+			yyerror(_("Memory allocation error."));
 		list_for_each_safe($3, entry, tmp) {
+
+			/* map to extended mediation if available */
+			if (entry->family == AF_UNIX && kernel_supports_unix) {
+				unix_rule *rule = new unix_rule(entry->type, $2.audit, $2.deny);
+				if (!rule)
+					yyerror(_("Memory allocation error."));
+				$1->rule_ents.push_back(rule);
+			}
 			if (entry->type > SOCK_PACKET) {
 				/* setting mask instead of a bit */
 				if ($2.deny) {
@@ -736,6 +750,22 @@ rules:  rules opt_prefix ptrace_rule
 	{
 		if ($2.owner)
 			yyerror(_("owner prefix not allowed on ptrace rules"));
+		if ($2.deny && $2.audit) {
+			$3->deny = 1;
+		} else if ($2.deny) {
+			$3->deny = 1;
+			$3->audit = $3->mode;
+		} else if ($2.audit) {
+			$3->audit = $3->mode;
+		}
+		$1->rule_ents.push_back($3);
+		$$ = $1;
+	}
+
+rules:  rules opt_prefix unix_rule
+	{
+		if ($2.owner)
+			yyerror(_("owner prefix not allowed on unix rules"));
 		if ($2.deny && $2.audit) {
 			$3->deny = 1;
 		} else if ($2.deny) {
@@ -1264,6 +1294,84 @@ dbus_rule: TOK_DBUS opt_dbus_perm opt_conds opt_cond_list TOK_END_OF_RULE
 			free($4.name);
 		}
 		ent = new dbus_rule($2, $3, $4.list);
+		if (!ent) {
+			yyerror(_("Memory allocation error."));
+		}
+		$$ = ent;
+	}
+
+net_perm: TOK_VALUE
+	{
+		if (strcmp($1, "create") == 0)
+			$$ = AA_NET_CREATE;
+		else if (strcmp($1, "bind") == 0)
+			$$ = AA_NET_BIND;
+		else if (strcmp($1, "listen") == 0)
+			$$ = AA_NET_LISTEN;
+		else if (strcmp($1, "accept") == 0)
+			$$ = AA_NET_ACCEPT;
+		else if (strcmp($1, "connect") == 0)
+			$$ = AA_NET_CONNECT;
+		else if (strcmp($1, "shutdown") == 0)
+			$$ = AA_NET_SHUTDOWN;
+		else if (strcmp($1, "getattr") == 0)
+			$$ = AA_NET_GETATTR;
+		else if (strcmp($1, "setattr") == 0)
+			$$ = AA_NET_SETATTR;
+		else if (strcmp($1, "getopt") == 0)
+			$$ = AA_NET_GETOPT;
+		else if (strcmp($1, "setopt") == 0)
+			$$ = AA_NET_SETOPT;
+		else if (strcmp($1, "send") == 0 || strcmp($1, "write") == 0)
+			$$ = AA_NET_SEND;
+		else if (strcmp($1, "receive") == 0 || strcmp($1, "read") == 0)
+			$$ = AA_NET_RECEIVE;
+		else if ($1) {
+			parse_net_mode($1, &$$, 1);
+		} else
+			$$ = 0;
+
+		if ($1)
+			free($1);
+	}
+	| TOK_CREATE { $$ = AA_NET_CREATE; }
+	| TOK_BIND { $$ = AA_NET_BIND; }
+	| TOK_LISTEN { $$ = AA_NET_LISTEN; }
+	| TOK_ACCEPT { $$ = AA_NET_ACCEPT; }
+	| TOK_CONNECT { $$ = AA_NET_CONNECT; }
+	| TOK_SHUTDOWN { $$ = AA_NET_SHUTDOWN; }
+	| TOK_GETATTR { $$ = AA_NET_GETATTR; }
+	| TOK_SETATTR { $$ = AA_NET_SETATTR; }
+	| TOK_GETOPT { $$ = AA_NET_GETOPT; }
+	| TOK_SETOPT { $$ = AA_NET_SETOPT; }
+	| TOK_SEND { $$ = AA_NET_SEND; }
+	| TOK_RECEIVE { $$ = AA_NET_RECEIVE; }
+	| TOK_READ { $$ = AA_NET_RECEIVE; }
+	| TOK_WRITE { $$ = AA_NET_SEND; }
+	| TOK_MODE
+	{
+		parse_unix_mode($1, &$$, 1);
+		free($1);
+	}
+
+net_perms: { /* nothing */ $$ = 0; }
+	| net_perms net_perm { $$ = $1 | $2; }
+	| net_perms TOK_COMMA net_perm { $$ = $1 | $3; }
+
+opt_net_perm: { /* nothing */ $$ = 0; }
+	| net_perm  { $$ = $1; }
+	| TOK_OPENPAREN net_perms TOK_CLOSEPAREN { $$ = $2; }
+
+unix_rule: TOK_UNIX opt_net_perm opt_conds opt_cond_list TOK_END_OF_RULE
+	{
+		unix_rule *ent;
+
+		if ($4.name) {
+			if (strcmp($4.name, "peer") != 0)
+				yyerror(_("unix rule: invalid conditional group %s=()"), $4.name);
+			free($4.name);
+		}
+		ent = new unix_rule($2, $3, $4.list);
 		if (!ent) {
 			yyerror(_("Memory allocation error."));
 		}

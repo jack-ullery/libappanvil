@@ -31,6 +31,11 @@
 #include "network.h"
 
 
+int parse_net_mode(const char *str_mode, int *mode, int fail)
+{
+	return parse_X_mode("net", AA_VALID_NET_PERMS, str_mode, mode, fail);
+}
+
 /* Bleah C++ doesn't have non-trivial designated initializers so we just
  * have to make sure these are in order.  This means we are more brittle
  * but there isn't much we can do.

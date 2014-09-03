@@ -665,14 +665,17 @@ int post_process_policydb_ents(Profile *prof)
 	return TRUE;
 }
 
-#define MAKE_STR(X) #X
-#define CLASS_STR(X) "\\d" MAKE_STR(X)
+#define MAKE_STR(A) #A
+#define CLASS_STR(X) "\\000\\d" MAKE_STR(X)
+#define CLASS_SUB_STR(X, Y) MAKE_STR(X) MAKE_STR(Y)
 
 static const char *mediates_file = CLASS_STR(AA_CLASS_FILE);
 static const char *mediates_mount = CLASS_STR(AA_CLASS_MOUNT);
 static const char *mediates_dbus =  CLASS_STR(AA_CLASS_DBUS);
 static const char *mediates_signal =  CLASS_STR(AA_CLASS_SIGNAL);
 static const char *mediates_ptrace =  CLASS_STR(AA_CLASS_PTRACE);
+static const char *mediates_extended_net = CLASS_STR(AA_CLASS_NET);
+static const char *mediates_net_unix = CLASS_SUB_STR(AA_CLASS_NET, AF_UNIX);
 
 int process_profile_policydb(Profile *prof)
 {
@@ -689,7 +692,7 @@ int process_profile_policydb(Profile *prof)
 	 * to be supported
 	 */
 
-	/* note: this activates unix domain sockets mediation on connect */
+	/* note: this activates fs based unix domain sockets mediation on connect */
 	if (kernel_abi_version > 5 &&
 	    !prof->policy.rules->add_rule(mediates_file, 0, AA_MAY_READ, 0, dfaflags))
 		goto out;
@@ -704,6 +707,10 @@ int process_profile_policydb(Profile *prof)
 		goto out;
 	if (kernel_supports_ptrace &&
 	    !prof->policy.rules->add_rule(mediates_ptrace, 0, AA_MAY_READ, 0, dfaflags))
+		goto out;
+	if (kernel_supports_unix &&
+	    (!prof->policy.rules->add_rule(mediates_extended_net, 0, AA_MAY_READ, 0, dfaflags) ||
+	     !prof->policy.rules->add_rule(mediates_net_unix, 0, AA_MAY_READ, 0, dfaflags)))
 		goto out;
 
 	if (prof->policy.rules->rule_count > 0) {

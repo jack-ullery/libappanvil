@@ -686,10 +686,14 @@ static void set_supported_features(void) {
 		kernel_supports_policydb = 1;
 	if (strstr(features_string, "v6"))
 		kernel_abi_version = 6;
+	if (strstr(features_string, "v7"))
+		kernel_abi_version = 7;
 	if (strstr(features_string, "set_load"))
 		kernel_supports_setload = 1;
 	if (strstr(features_string, "network"))
 		kernel_supports_network = 1;
+	if (strstr(features_string, "af_unix"))
+		kernel_supports_unix = 1;
 	if (strstr(features_string, "mount"))
 		kernel_supports_mount = 1;
 	if (strstr(features_string, "dbus"))
