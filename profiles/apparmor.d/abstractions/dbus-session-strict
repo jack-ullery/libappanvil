@@ -15,7 +15,7 @@
 
   unix (connect, receive, send)
        type=stream
-       peer=(label=unconfined,addr="@/tmp/dbus-*"),
+       peer=(addr="@/tmp/dbus-*"),
 
   dbus send
        bus=session
