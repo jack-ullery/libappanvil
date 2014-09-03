@@ -23,7 +23,9 @@
   /usr/sbin/identd	   rmix,
   @{PROC}/net/tcp          r,
   @{PROC}/net/tcp6         r,
-  /{,var/}run/identd.pid      w,
+  /{,var/}run/identd.pid   w,
+  /{,var/}run/identd/           w,
+  /{,var/}run/identd/identd.pid w,
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.sbin.identd>
