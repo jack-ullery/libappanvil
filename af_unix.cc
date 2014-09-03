@@ -216,6 +216,14 @@ void unix_rule::downgrade_rule(Profile &prof) {
 	}
 }
 
+static uint32_t map_perms(uint32_t mask)
+{
+	return (mask & 0x7f) |
+		((mask & (AA_NET_GETATTR | AA_NET_SETATTR)) << (AA_OTHER_SHIFT - 8)) |
+		((mask & (AA_NET_ACCEPT | AA_NET_BIND | AA_NET_LISTEN)) >> 4) | /* 2 + (AA_OTHER_SHIFT - 20) */
+		((mask & (AA_NET_SETOPT | AA_NET_GETOPT)) >> 5); /* 5 + (AA_OTHER_SHIFT - 24) */
+}
+
 int unix_rule::gen_policy_re(Profile &prof)
 {
 	std::ostringstream buffer, tmp;
@@ -258,8 +266,8 @@ int unix_rule::gen_policy_re(Profile &prof)
 	if (mask & AA_NET_CREATE) {
 		buf = buffer.str();
 		if (!prof.policy.rules->add_rule(buf.c_str(), deny,
-						 AA_NET_CREATE,
-						 audit & AA_NET_CREATE,
+						 map_perms(AA_NET_CREATE),
+						 map_perms(audit & AA_NET_CREATE),
 						 dfaflags))
 			goto fail;
 		mask &= ~AA_NET_CREATE;
@@ -300,8 +308,8 @@ int unix_rule::gen_policy_re(Profile &prof)
 		if (mask & AA_LOCAL_NET_PERMS & ~AA_LOCAL_NET_CMD) {
 			buf = buffer.str();
 			if (!prof.policy.rules->add_rule(buf.c_str(), deny,
-							 mask & AA_LOCAL_NET_PERMS & ~AA_LOCAL_NET_CMD,
-							 audit & AA_LOCAL_NET_PERMS & ~AA_LOCAL_NET_CMD,
+							 map_perms(mask & AA_LOCAL_NET_PERMS & ~AA_LOCAL_NET_CMD),
+							 map_perms(audit & AA_LOCAL_NET_PERMS & ~AA_LOCAL_NET_CMD),
 							 dfaflags))
 				goto fail;
 		}
@@ -312,8 +320,8 @@ int unix_rule::gen_policy_re(Profile &prof)
 			tmp << "\\x" << std::setfill('0') << std::setw(2) << std::hex << CMD_ACCEPT;
 			buf = tmp.str();
 			if (!prof.policy.rules->add_rule(buf.c_str(), deny,
-							 AA_NET_ACCEPT,
-							 audit & AA_NET_ACCEPT,
+							 map_perms(AA_NET_ACCEPT),
+							 map_perms(audit & AA_NET_ACCEPT),
 							 dfaflags))
 				goto fail;
 		}
@@ -324,8 +332,8 @@ int unix_rule::gen_policy_re(Profile &prof)
 			tmp << "..";
 			buf = tmp.str();
 			if (!prof.policy.rules->add_rule(buf.c_str(), deny,
-							 AA_NET_LISTEN,
-							 audit & AA_NET_LISTEN,
+							 map_perms(AA_NET_LISTEN),
+							 map_perms(audit & AA_NET_LISTEN),
 							 dfaflags))
 				goto fail;
 		}
@@ -336,8 +344,8 @@ int unix_rule::gen_policy_re(Profile &prof)
 			tmp << "..";
 			buf = tmp.str();
 			if (!prof.policy.rules->add_rule(buf.c_str(), deny,
-							 AA_NET_OPT,
-							 audit & AA_NET_OPT,
+							 map_perms(AA_NET_OPT),
+							 map_perms(audit & AA_NET_OPT),
 							 dfaflags))
 				goto fail;
 		}
@@ -375,7 +383,7 @@ int unix_rule::gen_policy_re(Profile &prof)
 		}
 
 		buf = buffer.str();
-		if (!prof.policy.rules->add_rule(buf.c_str(), deny, mode & AA_PEER_NET_PERMS, audit, dfaflags))
+		if (!prof.policy.rules->add_rule(buf.c_str(), deny, map_perms(mode & AA_PEER_NET_PERMS), map_perms(audit), dfaflags))
 			goto fail;
 	}
 
