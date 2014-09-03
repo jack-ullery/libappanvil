@@ -126,6 +126,18 @@
   # Checking for PID existence is quite common so add it by default for now
   signal (receive, send) set=("exists"),
 
+  # Allow us to create and use abstract and anonymous sockets
+  unix peer=(label=@{profile_name}),
+
+  # Allow unconfined processes to us via unix sockets
+  unix (receive) peer=(label=unconfined),
+
+  # Allow us to create abstract and anonymous sockets
+  unix (create),
+
+  # Allow us to getattr, getopt, setop and shutdown for anonymous sockets
+  unix (getattr, getopt, setopt, shutdown) peer=(addr=none),
+
   # Workaround https://launchpad.net/bugs/359338 until upstream handles stacked
   # filesystems generally. This does not appreciably decrease security with
   # Ubuntu profiles because the user is expected to have access to files owned

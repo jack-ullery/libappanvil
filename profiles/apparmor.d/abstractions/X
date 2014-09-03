@@ -22,6 +22,9 @@
 
   # the unix socket to use to connect to the display
   /tmp/.X11-unix/*           w,
+  unix (connect, receive, send)
+       type=stream
+       peer=(label=unconfined,addr="@/tmp/.X11-unix/X[0-9]*"),
 
   /usr/include/X11/               r,
   /usr/include/X11/**             r,

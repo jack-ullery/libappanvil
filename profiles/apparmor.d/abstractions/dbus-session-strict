@@ -13,6 +13,10 @@
   /etc/machine-id r,
   /var/lib/dbus/machine-id r,
 
+  unix (connect, receive, send)
+       type=stream
+       peer=(label=unconfined,addr="@/tmp/dbus-*"),
+
   dbus send
        bus=session
        path=/org/freedesktop/DBus
