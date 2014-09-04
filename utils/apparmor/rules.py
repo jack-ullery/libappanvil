@@ -44,6 +44,18 @@ class DBUS_Rule(object):
         out += ','
         return out
 
+class _Raw_Rule(object):
+    audit = False
+    deny = False
+
+    def __init__(self, rule):
+        self.rule = rule
+
+    def serialize(self):
+        return "%s%s%s" % ('audit ' if self.audit else '',
+                           'deny '  if self.deny else '',
+                           self.rule)
+
 class Raw_DBUS_Rule(object):
     audit = False
     deny = False
@@ -103,3 +115,6 @@ class Raw_Pivot_Root_Rule(object):
         return "%s%s%s" % ('audit ' if self.audit else '',
                            'deny '  if self.deny else '',
                            self.rule)
+
+class Raw_Unix_Rule(_Raw_Rule):
+    pass

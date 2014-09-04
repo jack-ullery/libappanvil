@@ -2636,6 +2636,7 @@ RE_PROFILE_MOUNT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((mount|remount
 RE_PROFILE_SIGNAL = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(signal\s*,|signal\s+[^#]*\s*,)\s*(#.*)?$')
 RE_PROFILE_PTRACE = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(ptrace\s*,|ptrace\s+[^#]*\s*,)\s*(#.*)?$')
 RE_PROFILE_PIVOT_ROOT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(pivot_root\s*,|pivot_root\s+[^#]*\s*,)\s*(#.*)?$')
+RE_PROFILE_UNIX = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(unix\s*,|unix\s+[^#]*\s*,)\s*(#.*)?$')
 
 # match anything that's not " or #, or matching quotes with anything except quotes inside
 __re_no_or_quoted_hash = '([^#"]|"[^"]*")*'
@@ -3110,6 +3111,28 @@ def parse_profile_data(data, file, do_include):
             pivot_root_rules.append(pivot_root_rule)
             profile_data[profile][hat][allow]['pivot_root'] = pivot_root_rules
 
+        elif RE_PROFILE_UNIX.search(line):
+            matches = RE_PROFILE_UNIX.search(line).groups()
+
+            if not profile:
+                raise AppArmorException(_('Syntax Error: Unexpected unix entry found in file: %s line: %s') % (file, lineno + 1))
+
+            audit = False
+            if matches[0]:
+                audit = True
+            allow = 'allow'
+            if matches[1] and matches[1].strip() == 'deny':
+                allow = 'deny'
+            unix = matches[2].strip()
+
+            unix_rule = parse_unix_rule(unix)
+            unix_rule.audit = audit
+            unix_rule.deny = (allow == 'deny')
+
+            unix_rules = profile_data[profile][hat][allow].get('unix', list())
+            unix_rules.append(unix_rule)
+            profile_data[profile][hat][allow]['unix'] = unix_rules
+
         elif RE_PROFILE_CHANGE_HAT.search(line):
             matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
 
@@ -3219,6 +3242,10 @@ def parse_ptrace_rule(line):
 def parse_pivot_root_rule(line):
     # XXX Do real parsing here
     return aarules.Raw_Pivot_Root_Rule(line)
+
+def parse_unix_rule(line):
+    # XXX Do real parsing here
+    return aarules.Raw_Unix_Rule(line)
 
 def separate_vars(vs):
     """Returns a list of all the values for a variable"""
