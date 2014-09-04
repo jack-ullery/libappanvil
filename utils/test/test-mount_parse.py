@@ -11,72 +11,36 @@
 
 import apparmor.aa as aa
 import unittest
+from common_test import AAParseTest, setup_regex_tests
 
-class AAParseMountTest(unittest.TestCase):
+class BaseAAParseMountTest(AAParseTest):
+    def setUp(self):
+        self.parse_function = aa.parse_mount_rule
 
-    def test_parse_plain_mount_rule(self):
-        rule = 'mount,'
-        mount = aa.parse_mount_rule(rule)
-        self.assertEqual(rule, mount.serialize(),
-                'mount object returned "%s", expected "%s"' % (mount.serialize(), rule))
+class AAParseMountTest(BaseAAParseMountTest):
+    tests = [
+        ('mount,', 'mount base keyword rule'),
+        ('mount -o ro,', 'mount ro rule'),
+        ('mount -o rw /dev/sdb1 -> /mnt/external,', 'mount rw with mount point'),
+    ]
 
-    def test_parse_ro_mount(self):
-        rule = 'mount -o ro,'
-        mount = aa.parse_mount_rule(rule)
-        self.assertEqual(rule, mount.serialize(),
-                'mount object returned "%s", expected "%s"' % (mount.serialize(), rule))
+class AAParseRemountTest(BaseAAParseMountTest):
+    tests = [
+        ('remount,', 'remount base keyword rule'),
+        ('remount -o ro,', 'remount ro rule'),
+        ('remount -o ro /,', 'remount ro with mountpoint'),
+    ]
 
-    def test_parse_rw_mount_with_mount_points(self):
-        rule = 'mount -o rw /dev/sdb1 -> /mnt/external,'
-        mount = aa.parse_mount_rule(rule)
-        self.assertEqual(rule, mount.serialize(),
-                'mount object returned "%s", expected "%s"' % (mount.serialize(), rule))
-
-class AAParseRemountTest(unittest.TestCase):
-
-    def test_parse_plain_remount_rule(self):
-        rule = 'remount,'
-        mount = aa.parse_mount_rule(rule)
-        self.assertEqual(rule, mount.serialize(),
-                'mount object returned "%s", expected "%s"' % (mount.serialize(), rule))
-
-    def test_parse_ro_remount(self):
-        rule = 'remount -o ro,'
-        mount = aa.parse_mount_rule(rule)
-        self.assertEqual(rule, mount.serialize(),
-                'mount object returned "%s", expected "%s"' % (mount.serialize(), rule))
-
-    def test_parse_ro_remount_with_mount_point(self):
-        rule = 'remount -o ro /,'
-        mount = aa.parse_mount_rule(rule)
-        self.assertEqual(rule, mount.serialize(),
-                'mount object returned "%s", expected "%s"' % (mount.serialize(), rule))
-
-class AAParseUmountTest(unittest.TestCase):
-
-    def test_parse_plain_umount_rule(self):
-        rule = 'umount,'
-        mount = aa.parse_mount_rule(rule)
-        self.assertEqual(rule, mount.serialize(),
-                'mount object returned "%s", expected "%s"' % (mount.serialize(), rule))
-
-    def test_parse_umount_with_mount_point(self):
-        rule = 'umount /mnt/external,'
-        mount = aa.parse_mount_rule(rule)
-        self.assertEqual(rule, mount.serialize(),
-                'mount object returned "%s", expected "%s"' % (mount.serialize(), rule))
-
-    def test_parse_plain_unmount_rule(self):
-        rule = 'unmount,'
-        mount = aa.parse_mount_rule(rule)
-        self.assertEqual(rule, mount.serialize(),
-                'mount object returned "%s", expected "%s"' % (mount.serialize(), rule))
-
-    def test_parse_unmount_with_mount_point(self):
-        rule = 'unmount /mnt/external,'
-        mount = aa.parse_mount_rule(rule)
-        self.assertEqual(rule, mount.serialize(),
-                'mount object returned "%s", expected "%s"' % (mount.serialize(), rule))
+class AAParseUmountTest(BaseAAParseMountTest):
+    tests = [
+        ('umount,', 'umount base keyword rule'),
+        ('umount /mnt/external,', 'umount with mount point'),
+        ('unmount,', 'unmount base keyword rule'),
+        ('unmount /mnt/external,', 'unmount with mount point'),
+    ]
 
 if __name__ == '__main__':
+    setup_regex_tests(AAParseMountTest)
+    setup_regex_tests(AAParseRemountTest)
+    setup_regex_tests(AAParseUmountTest)
     unittest.main(verbosity=2)
