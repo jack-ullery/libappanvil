@@ -11,49 +11,29 @@
 
 import apparmor.aa as aa
 import unittest
+from common_test import AAParseTest, setup_regex_tests
 
-class AAParseUnixTest(unittest.TestCase):
+class AAParseUnixTest(AAParseTest):
 
-    def _test_parse_unix_rule(self, rule):
-        unix = aa.parse_unix_rule(rule)
-        self.assertEqual(rule, unix.serialize(),
-                'ptrace object returned "%s", expected "%s"' % (unix.serialize(), rule))
+    def setUp(self):
+        self.parse_function = aa.parse_unix_rule
 
-    def test_parse_plain_unix_rule(self):
-        self._test_parse_unix_rule('unix,')
-
-    def test_parse_r_unix_rule(self):
-        self._test_parse_unix_rule('unix r,')
-
-    def test_parse_w_unix_rule(self):
-        self._test_parse_unix_rule('unix w,')
-
-    def test_parse_rw_unix_rule(self):
-        self._test_parse_unix_rule('unix rw,')
-
-    def test_parse_send_unix_rule(self):
-        self._test_parse_unix_rule('unix send,')
-
-    def test_parse_receive_unix_rule(self):
-        self._test_parse_unix_rule('unix receive,')
-
-    def test_parse_r_paren_unix_rule(self):
-        self._test_parse_unix_rule('unix (r),')
-
-    def test_parse_w_paren_unix_rule(self):
-        self._test_parse_unix_rule('unix (w),')
-
-    def test_parse_rw_paren_unix_rule(self):
-        self._test_parse_unix_rule('unix (rw),')
-
-    def test_parse_send_paren_unix_rule(self):
-        self._test_parse_unix_rule('unix (send),')
-
-    def test_parse_receive_paren_unix_rule(self):
-        self._test_parse_unix_rule('unix (receive),')
-
-    def test_parse_complex_unix_rule(self):
-        self._test_parse_unix_rule('unix (connect, receive, send) type=stream peer=(label=unconfined,addr="@/tmp/.X11-unix/X[0-9]*"),')
+    tests = [
+        ('unix,', 'unix base keyword'),
+        ('unix r,', 'unix r rule'),
+        ('unix w,', 'unix w rule'),
+        ('unix rw,', 'unix rw rule'),
+        ('unix send,', 'unix send rule'),
+        ('unix receive,', 'unix receive rule'),
+        ('unix (r),', 'unix (r) rule'),
+        ('unix (w),', 'unix (w) rule'),
+        ('unix (rw),', 'unix (rw) rule'),
+        ('unix (send),', 'unix (send) rule'),
+        ('unix (receive),', 'unix (receive) rule'),
+        ('unix (connect, receive, send) type=stream peer=(label=unconfined,addr="@/tmp/.X11-unix/X[0-9]*"),',
+            'complex unix rule'),
+    ]
 
 if __name__ == '__main__':
+    setup_regex_tests(AAParseUnixTest)
     unittest.main(verbosity=2)
