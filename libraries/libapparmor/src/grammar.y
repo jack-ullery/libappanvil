@@ -128,6 +128,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_PEER_PID
 %token TOK_KEY_PROFILE
 %token TOK_KEY_PEER_PROFILE
+%token TOK_KEY_PEER
 %token TOK_AUDIT
 %token TOK_KEY_FAMILY
 %token TOK_KEY_SOCK_TYPE
@@ -157,6 +158,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_PATH
 %token TOK_KEY_INTERFACE
 %token TOK_KEY_MEMBER
+%token TOK_KEY_SIGNAL
 
 %token TOK_SYSLOG_KERNEL
 %token TOK_SYSLOG_USER
@@ -267,6 +269,8 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->info = $3;}
 	| TOK_KEY_PEER_INFO TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->peer_info = $3;}
+	| TOK_KEY_PEER TOK_EQUALS TOK_QUOTED_STRING
+	{ ret_record->peer = $3;}
 	| key_pid
 	| key_peer_pid
 	| TOK_KEY_PROFILE TOK_EQUALS safe_string
@@ -348,6 +352,8 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->dbus_interface = $3; }
 	| TOK_KEY_MEMBER TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->dbus_member = $3; }
+	| TOK_KEY_SIGNAL TOK_EQUALS TOK_ID
+	{ ret_record->signal = $3; }
 	| TOK_MSG_REST
 	{
 		ret_record->event = AA_RECORD_INVALID;

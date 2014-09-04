@@ -152,6 +152,8 @@ typedef struct
 	char *dbus_path;
 	char *dbus_interface;
 	char *dbus_member;
+	char *signal;			/* signal name */
+	char *peer;
 } aa_log_record;
 
 /**
