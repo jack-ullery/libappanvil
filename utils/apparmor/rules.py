@@ -56,65 +56,20 @@ class _Raw_Rule(object):
                            'deny '  if self.deny else '',
                            self.rule)
 
-class Raw_DBUS_Rule(object):
-    audit = False
-    deny = False
+class Raw_DBUS_Rule(_Raw_Rule):
+    pass
 
-    def __init__(self, rule):
-        self.rule = rule
+class Raw_Mount_Rule(_Raw_Rule):
+    pass
 
-    def serialize(self):
-        return "%s%s%s" % ('audit ' if self.audit else '',
-                           'deny '  if self.deny else '',
-                           self.rule)
+class Raw_Signal_Rule(_Raw_Rule):
+    pass
 
-class Raw_Mount_Rule(object):
-    audit = False
-    deny = False
+class Raw_Ptrace_Rule(_Raw_Rule):
+    pass
 
-    def __init__(self, rule):
-        self.rule = rule
-
-    def serialize(self):
-        return "%s%s%s" % ('audit ' if self.audit else '',
-                           'deny '  if self.deny else '',
-                           self.rule)
-
-class Raw_Signal_Rule(object):
-    audit = False
-    deny = False
-
-    def __init__(self, rule):
-        self.rule = rule
-
-    def serialize(self):
-        return "%s%s%s" % ('audit ' if self.audit else '',
-                           'deny '  if self.deny else '',
-                           self.rule)
-
-class Raw_Ptrace_Rule(object):
-    audit = False
-    deny = False
-
-    def __init__(self, rule):
-        self.rule = rule
-
-    def serialize(self):
-        return "%s%s%s" % ('audit ' if self.audit else '',
-                           'deny '  if self.deny else '',
-                           self.rule)
-
-class Raw_Pivot_Root_Rule(object):
-    audit = False
-    deny = False
-
-    def __init__(self, rule):
-        self.rule = rule
-
-    def serialize(self):
-        return "%s%s%s" % ('audit ' if self.audit else '',
-                           'deny '  if self.deny else '',
-                           self.rule)
+class Raw_Pivot_Root_Rule(_Raw_Rule):
+    pass
 
 class Raw_Unix_Rule(_Raw_Rule):
     pass
