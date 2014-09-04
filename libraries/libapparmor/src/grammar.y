@@ -68,7 +68,7 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %}
 
 %defines
-%pure_parser
+%define api.pure
 %lex-param{void *scanner}
 %parse-param{void *scanner}
 
