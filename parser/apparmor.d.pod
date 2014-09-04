@@ -63,7 +63,7 @@ capabilities(7))
 
 B<NETWORK RULE> = 'network' [ [ I<DOMAIN> ] [ I<TYPE> ] [ I <PROTOCOL> ] ] ','
 
-B<DOMAIN> = ( 'inet' | 'ax25' | 'ipx' | 'appletalk' | 'netrom' | 'bridge' | 'atmpvc' | 'x25' | 'inet6' | 'rose' | 'netbeui' | 'security' | 'key' | 'packet' | 'ash' | 'econet' | 'atmsvc' | 'sna' | 'irda' | 'pppox' | 'wanpipe' | 'bluetooth' ) ','
+B<DOMAIN> = ( 'inet' | 'ax25' | 'ipx' | 'appletalk' | 'netrom' | 'bridge' | 'atmpvc' | 'x25' | 'inet6' | 'rose' | 'netbeui' | 'security' | 'key' | 'packet' | 'ash' | 'econet' | 'atmsvc' | 'sna' | 'irda' | 'pppox' | 'wanpipe' | 'bluetooth' | 'netlink' ) ','
 
 B<TYPE> = ( 'stream' | 'dgram' | 'seqpacket' |  'rdm' | 'raw' | 'packet' )
 
@@ -423,7 +423,8 @@ AppArmor supports simple coarse grained network mediation.  The network
 rule restrict all socket(2) based operations.  The mediation done is
 a course grained check on whether a socket of a given type and family
 can be created, read, or written.  There is no mediation based of port
-number or protocol beyond tcp, udp, and raw.
+number or protocol beyond tcp, udp, and raw.  Network netlink(7) rules may
+only specify type 'dgram' and 'raw'.
 
 AppArmor network rules are accumulated so that the granted network
 permissions are the union of all the listed network rule permissions.
@@ -437,6 +438,7 @@ eg.
  network tcp,		#allow access to tcp
  network inet tcp,	#allow access to tcp only for inet4 addresses
  network inet6 tcp,	#allow access to tcp only for inet6 addresses
+ network netlink raw,	#allow access to AF_NETLINK SOCK_RAW
 
 =head2 Mount Rules
 
@@ -888,16 +890,14 @@ Example AppArmor DBus rules:
 AppArmor supports fine grained mediation of unix domain abstract and
 anonymous sockets. Unix domain sockets with file system paths are
 mediated via file access rules.
-TODO: do we want to revise this to allow certain permission to be
-      specified by unix rules that can not be specified via file
-      paths?
 
-Abstract unix domain sockets is a nonprotable Linux extension of unix
-domain sockets, see man 7 unix for more information.
+Abstract unix domain sockets is a nonportable Linux extension of unix
+domain sockets, see unix(7) for more information.
 
-=head3 Unix socket paths
+=head3 Unix socket address paths
 
-The path address component of a unix domain socket is specified by the
+The sun_path component (aka the socket address) of a unix domain socket is
+specified by the
   addr=
 
 conditional. If an address conditional is not specified as part of
@@ -908,76 +908,70 @@ the I<@> character, similar to how they are reported (as paths) by
 netstat -x. The address then follows and may contain pattern matching
 and any characters including the null character. In apparmor null
 characters must be specified by using an escape sequence I<\000> or
-I<\x00>. The pattern matching is the same as is used by path matching
+I<\x00>. The pattern matching is the same as is used by file path matching
 so * will not match I</> even though it has no special meaning with
 in an abstract socket name. Eg.
   unix addr=@*,
 
-Anonymous unix domain sockets have no address associated with
-them, however it can be specified with the special I<none> keyword
-to indicate the rule only applies to anonymous unix domain sockets. Eg.
+Anonymous unix domain sockets have no sun_path associated with the socket
+address, however it can be specified with the special I<none> keyword to
+indicate the rule only applies to anonymous unix domain sockets. Eg.
   unix addr=none,
 
 If the address component of a rule is not specified then the rule applies
 to both abstract and anonymous sockets.
 
 =head3 Unix socket permissions
-Unix domain socket rules are accumulated so that the granted unix              
-socket permissions are the union of all the listed unix rule permissions.      
+Unix domain socket rules are accumulated so that the granted unix
+socket permissions are the union of all the listed unix rule permissions.
 
-Unix domain socket rules are broad and general and become more restrictive     
-as further information is specified. Policy may be specified down to           
-the addr and label level. The content of the communication is not              
-examined.                                                                      
+Unix domain socket rules are broad and general and become more restrictive
+as further information is specified. Policy may be specified down to
+the socket address (aka sun_path) and label level. The content of the
+communication is not examined.
 
-Unix socket rule permissions are implied when a rule does not explicitly       
-state an access list. By default if a rule does not have an access list        
-all permissions that are compatible with the specified set of local            
-and peer conditionals are implied.                                             
+Unix socket rule permissions are implied when a rule does not explicitly
+state an access list. By default if a rule does not have an access list
+all permissions that are compatible with the specified set of local
+and peer conditionals are implied.
 
 The create, bind, listen, shutdown, getattr, setattr permissions are
 applied to the local socket. The accept, connect, send, receive permissions
 apply to the combination of a local and peer. Currently it is required that
 create, bind, listen, shutdown, getattr, and settr permission are only
 specified in rules that do not have a peer component.
-???TODO: Do we really want this????
 
-If a rule is specified with a peer component it will not imply the
+If a rule is specified with a peer component it will only imply accept
+(stream), connect (stream), listen, receive and send. It will not imply the
 create, bind, listen, shutdown, getattr, or setattr permissions.
-
-??? TODO: Describe explicitly labeled sockets ???? !!!
 
 =head3 Example Unix domain socket rules:
 
-    # Allow all permissions to unix sockets
-    unix,
+  # Allow all permissions to unix sockets
+  unix,
 
-    # Explicitly allow all unix permissions
-    unix (create, listen, accept, connect, send, receive, getattr, setattr, setopt, getopt),
+  # Explicitly allow all unix permissions
+  unix (create, listen, accept, connect, send, receive, getattr, setattr, setopt, getopt),
 
-    # Explicitly deny unix socket access ??? should this block unix file as well???
-    deny unix,
+  # Explicitly deny unix socket access
+  deny unix,
 
-    
-  unix type=stream,
+  # Allow create and use of abstract and anonymous sockets for profile_name
+  unix peer=(label=@{profile_name}),
 
-  unix type=dgram,
+  # Allow receiving via unix sockets from unconfined
+  unix (receive) peer=(label=unconfined),
 
-  unix addr=none
+  # Allow getattr and shutdown on anonymous sockets
+  unix (getattr, shutdown) peer=(addr=none),
 
-  unix addr=@foo,
+  # Allow SOCK_STREAM connect, receive and send on an abstract socket @bar
+  # with peer running under profile '/foo'
+  unix (connect, receive, send) type=stream peer=(label=/foo,addr="@bar"),
 
-  unix type=stream addr=@foo,
-
-  unix server addr=@foo,
-
-  unix accept addr=@foo peer=(label=/bar),
-
-  unix receive addr=@foo peer=(label=/bar),
-
-
-  unix addr=none
-
+  # Allow accepting connections from and receiving from peer running under
+  # profile '/bar' on abstract socket '@foo'
+  unix (accept, receive) addr=@foo peer=(label=/bar),
 
 =head3 Abstract unix domain sockets autobind
 
@@ -991,7 +985,7 @@ from a regular address.
 
 The coarse grained networking rules can be used to control unix domain
 sockets as well. When fine grained unix domain socket mediation is available
-the coase grained network rule is mapped into the equivalent unix socket
+the coarse grained network rule is mapped into the equivalent unix socket
 rule.
 
 Eg.
@@ -1007,12 +1001,6 @@ to the coarse grained network rule. Eg
 Has no exact match under coarse grained network rules, the closest match is
 the much wider permission rule of.
    network unix,
-
-TODO: ??? should we make unix rules imply this when fine grained mediation
-is not available, or do we fail? Warning to wider is similar to the
-current behavior of loading policy which specify rules that can't be
-enforced. Hrmmm this behavior really needs to be a config option, to
-fail or warn.
 
 =head2 Variables
 
