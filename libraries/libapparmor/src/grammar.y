@@ -159,6 +159,9 @@ aa_record_event_type lookup_aa_event(unsigned int type)
 %token TOK_KEY_INTERFACE
 %token TOK_KEY_MEMBER
 %token TOK_KEY_SIGNAL
+%token TOK_KEY_FSTYPE
+%token TOK_KEY_FLAGS
+%token TOK_KEY_SRCNAME
 
 %token TOK_SYSLOG_KERNEL
 %token TOK_SYSLOG_USER
@@ -354,6 +357,14 @@ key: TOK_KEY_OPERATION TOK_EQUALS TOK_QUOTED_STRING
 	{ ret_record->dbus_member = $3; }
 	| TOK_KEY_SIGNAL TOK_EQUALS TOK_ID
 	{ ret_record->signal = $3; }
+
+	| TOK_KEY_FSTYPE TOK_EQUALS TOK_QUOTED_STRING
+	{ ret_record->fs_type = $3; }
+	| TOK_KEY_FLAGS TOK_EQUALS TOK_QUOTED_STRING
+	{ ret_record->flags = $3; }
+	| TOK_KEY_SRCNAME TOK_EQUALS TOK_QUOTED_STRING
+	{ ret_record->src_name = $3; }
+
 	| TOK_MSG_REST
 	{
 		ret_record->event = AA_RECORD_INVALID;

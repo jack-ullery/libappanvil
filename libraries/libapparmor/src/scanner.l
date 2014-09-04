@@ -161,6 +161,9 @@ key_interface		"interface"
 key_member		"member"
 key_signal		"signal"
 key_peer		"peer"
+key_fstype		"fstype"
+key_flags		"flags"
+key_srcname		"srcname"
 audit			"audit"
 
 /* network addrs */
@@ -340,6 +343,9 @@ yy_flex_debug = 0;
 {key_member}		{ return(TOK_KEY_MEMBER); }
 {key_signal}		{ BEGIN(sub_id); return(TOK_KEY_SIGNAL); }
 {key_peer}		{ BEGIN(safe_string); return(TOK_KEY_PEER); }
+{key_fstype}		{ return(TOK_KEY_FSTYPE); }
+{key_flags}		{ BEGIN(safe_string); return(TOK_KEY_FLAGS); }
+{key_srcname}		{ BEGIN(safe_string); return(TOK_KEY_SRCNAME); }
 
 {syslog_kernel}		{ BEGIN(dmesg_timestamp); return(TOK_SYSLOG_KERNEL); }
 {syslog_user}		{ return(TOK_SYSLOG_USER); }

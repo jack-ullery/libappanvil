@@ -97,6 +97,12 @@ void free_record(aa_log_record *record)
 			free(record->dbus_member);
 		if (record->signal != NULL)
 			free(record->signal );
+		if (record->fs_type != NULL)
+			free(record->fs_type);
+		if (record->flags != NULL)
+			free(record->flags);
+		if (record->src_name != NULL)
+			free(record->src_name);
 
 		free(record);
 	}
