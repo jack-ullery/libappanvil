@@ -203,6 +203,8 @@ syslog_type:
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); free($4); }
 	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP key_type audit_id key_list
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); free($4); }
+	| syslog_date TOK_ID TOK_SYSLOG_KERNEL TOK_DMESG_STAMP TOK_AUDIT TOK_COLON key_type audit_id key_list
+	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); free($4); }
 	| syslog_date TOK_ID TOK_SYSLOG_USER key_list
 	  { ret_record->version = AA_RECORD_SYNTAX_V2; free($2); }
 	;

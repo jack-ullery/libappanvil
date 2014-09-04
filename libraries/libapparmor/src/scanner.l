@@ -198,6 +198,7 @@ yy_flex_debug = 0;
 
 <audit_id>{
 	{digits}		{ yylval->t_str = strdup(yytext); return(TOK_AUDIT_DIGITS);}
+	{colon}{ws}		{ yy_pop_state(yyscanner); return(TOK_COLON); }
 	{colon}			{ return(TOK_COLON); }
 	{period}		{ return(TOK_PERIOD); }
 	{open_paren}		{ return(TOK_OPEN_PAREN); }
