@@ -144,7 +144,7 @@ def delete_net_duplicates(netrules, netrules_other, same_profile=True):
                         netrules_other['rule'].pop(fam)
                         deleted += 1
             else:
-                for sock_type in netrules_other['rule'][fam].keys():
+                for sock_type in list(netrules_other['rule'][fam].keys()):
                     if netrules['rule'].get(fam, False):
                         if netrules['rule'][fam].get(sock_type, False):
                             if not same_profile:
