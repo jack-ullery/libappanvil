@@ -385,7 +385,7 @@ int unix_rule::gen_policy_re(Profile &prof)
 			tmp << "..";
 			buf = tmp.str();
 			if (!prof.policy.rules->add_rule(buf.c_str(), deny,
-							 map_perms(AA_NET_OPT),
+							 map_perms(mask & AA_NET_OPT),
 							 map_perms(audit & AA_NET_OPT),
 							 dfaflags))
 				goto fail;
