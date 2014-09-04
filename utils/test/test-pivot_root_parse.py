@@ -11,25 +11,19 @@
 
 import apparmor.aa as aa
 import unittest
+from common_test import AAParseTest, setup_regex_tests
 
-class AAParsePivotRootTest(unittest.TestCase):
+class AAParsePivotRootTest(AAParseTest):
+    def setUp(self):
+        self.parse_function = aa.parse_pivot_root_rule
 
-    def _test_parse_pivot_root_rule(self, rule):
-        pivot_root = aa.parse_pivot_root_rule(rule)
-        self.assertEqual(rule, pivot_root.serialize(),
-                'pivot_root object returned "%s", expected "%s"' % (pivot_root.serialize(), rule))
-
-    def test_parse_plain_pivot_root_rule(self):
-        self._test_parse_pivot_root_rule('pivot_root,')
-
-    def test_parse_old_pivot_root_rule(self):
-        self._test_parse_pivot_root_rule('pivot_root /old,')
-
-    def test_parse_new_pivot_root_rule(self):
-        self._test_parse_pivot_root_rule('pivot_root /old /new,')
-
-    def test_parse_child_pivot_root_rule(self):
-        self._test_parse_pivot_root_rule('pivot_root /old /new -> /usr/bin/child,')
+    tests = [
+        ('pivot_root,', 'pivot_root base keyword'),
+        ('pivot_root /old,', 'pivot_root oldroot rule'),
+        ('pivot_root /old /new,', 'pivot_root old and new root rule'),
+        ('pivot_root /old /new -> /usr/bin/child,', 'pivot_root child rule'),
+    ]
 
 if __name__ == '__main__':
+    setup_regex_tests(AAParsePivotRootTest)
     unittest.main(verbosity=2)
