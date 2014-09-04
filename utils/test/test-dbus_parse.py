@@ -11,20 +11,18 @@
 
 import apparmor.aa as aa
 import unittest
+from common_test import AAParseTest, setup_regex_tests
 
-class AAParseDBUSTest(unittest.TestCase):
+class AAParseDBUSTest(AAParseTest):
 
-    def test_parse_plain_dbus_rule(self):
-        dstring = 'dbus,'
-        dbus = aa.parse_dbus_rule(dstring)
-        self.assertEqual(dstring, dbus.serialize(),
-                'dbus object returned "%s", expected "%s"' % (dbus.serialize(), dstring))
+    def setUp(self):
+        self.parse_function = aa.parse_dbus_rule
 
-    def test_parse_dbus_simple_send_rule(self):
-        dstring = 'dbus send,'
-        dbus = aa.parse_dbus_rule(dstring)
-        self.assertEqual(dstring, dbus.serialize(),
-                'dbus object returned "%s", expected "%s"' % (dbus.serialize(), dstring))
+    tests = [
+        ('dbus,', 'dbus base keyword'),
+        ('dbus send,', 'dbus simple send rule'),
+    ]
 
 if __name__ == '__main__':
+    setup_regex_tests(AAParseDBUSTest)
     unittest.main(verbosity=2)
