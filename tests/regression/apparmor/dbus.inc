@@ -98,6 +98,28 @@ sendmethod()
   send "$bus" "method_call" "$dest" "$path" "${iface}.Method"
 }
 
+# parameters: bus message_type destination
+#
+# destination must be a connection name
+sendunrequestedreply()
+{
+  out=$(./dbus_unrequested_reply --$1 --type=$2 --name=$3 2>&1)
+  if [ $? -ne 0 ]
+  then
+    fatalerror "$out"
+  fi
+}
+
+sendmethodreturn()
+{
+  sendunrequestedreply "$bus" "method_return" "$dest"
+}
+
+senderror()
+{
+  sendunrequestedreply "$bus" "error" "$dest"
+}
+
 compare_logs()
 {
 	local msg
