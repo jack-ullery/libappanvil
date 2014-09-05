@@ -12,7 +12,6 @@
 #
 # ----------------------------------------------------------------------
 import re
-import copy
 
 import apparmor
 
@@ -123,14 +122,13 @@ def delete_cap_duplicates(profilecaps, profilecaps_other, same_profile=True):
 def delete_net_duplicates(netrules, netrules_other, same_profile=True):
     deleted = 0
     hasher_obj = apparmor.aa.hasher()
-    copy_netrules_other = copy.deepcopy(netrules_other)
     if netrules_other and netrules:
         netglob = False
         # Delete matching rules
         if netrules.get('all', False):
             netglob = True
         # Iterate over a copy of the rules in the other profile
-        for fam in copy_netrules_other['rule'].keys():
+        for fam in list(netrules_other['rule'].keys()):
             if netglob or (type(netrules['rule'][fam]) != type(hasher_obj) and netrules['rule'][fam]):
                 if not same_profile:
                     if type(netrules_other['rule'][fam]) == type(hasher_obj):
