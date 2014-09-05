@@ -154,6 +154,16 @@ sub gen_network($) {
   push (@{$output_rules{$hat}}, "  @rules,\n");
 }
 
+sub gen_unix($) {
+  my $rule = shift;
+  if ($rule =~ /^unix:ALL$/) {
+    push (@{$output_rules{$hat}}, "  unix,\n");
+  } else {
+    $rule =~ s/:/ /g;
+    push(@{$output_rules{$hat}}, "  " . $rule . ",\n");
+  }
+}
+
 sub gen_cap($) {
   my $rule = shift;
   my @rules = split (/:/, $rule);
@@ -376,6 +386,8 @@ sub gen_from_args() {
       gen_netdomain($rule);
     } elsif ($rule =~ /^network:/) {
       gen_network($rule);
+    } elsif ($rule =~ /^unix:/) {
+      gen_unix($rule);
     } elsif ($rule =~ /^cap:/) {
       gen_cap($rule);
     } elsif ($rule =~ /^ptrace:/) {

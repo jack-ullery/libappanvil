@@ -76,7 +76,6 @@ testsocktype()
 
 	# TODO: Make additional changes to test abstract sockets w/ confinement
 	#
-	#  * Adjust genprofile to generate af_unix abstract socket rules
 	#  * Create variables to hold genprofile arguments for socket accesses
 	#    and initialize them according to socket address type
 	#  * Remove the following conditional
