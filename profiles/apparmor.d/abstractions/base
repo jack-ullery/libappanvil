@@ -135,8 +135,8 @@
   # Allow us to create abstract and anonymous sockets
   unix (create),
 
-  # Allow us to getattr, getopt, setop and shutdown for anonymous sockets
-  unix (getattr, getopt, setopt, shutdown) peer=(addr=none),
+  # Allow us to getattr, getopt, setop and shutdown on unix sockets
+  unix (getattr, getopt, setopt, shutdown),
 
   # Workaround https://launchpad.net/bugs/359338 until upstream handles stacked
   # filesystems generally. This does not appreciably decrease security with
