@@ -44,6 +44,10 @@
 
   /var/lib/misc/dnsmasq.leases rw, # Required only for DHCP server usage
 
+  # access to iface mtu needed for Router Advertisement messages in IPv6
+  # Neighbor Discovery protocol (RFC 2461)
+  @{PROC}/sys/net/ipv6/conf/**/mtu r,
+
   # for the read-only TFTP server
   @{TFTP_DIR}/ r,
   @{TFTP_DIR}/** r,
