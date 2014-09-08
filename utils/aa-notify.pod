@@ -44,6 +44,11 @@ B<aa-notify> accepts the following arguments:
 poll AppArmor logs and display desktop notifications. Can be used with '-s'
 option to display a summary on startup.
 
+=item --display $DISPLAY
+
+set the DISPLAY environment variable to $DISPLAY
+(might be needed if sudo resets $DISPLAY)
+
 =item -f FILE, --file=FILE
 
 search FILE for AppArmor messages
