@@ -1556,7 +1556,7 @@ def ask_the_questions():
 
                     if options:
                         options.append('capability %s' % capability)
-                        q['options'] = [options]
+                        q['options'] = options
                         q['selected'] = default_option - 1
 
                     q['headers'] = [_('Profile'), combine_name(profile, hat)]
