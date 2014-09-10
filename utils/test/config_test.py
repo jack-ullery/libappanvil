@@ -12,9 +12,7 @@
 #
 # ----------------------------------------------------------------------
 import unittest
-import sys
 
-sys.path.append('../')
 import apparmor.config as config
 
 class Test(unittest.TestCase):

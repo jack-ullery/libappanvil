@@ -53,13 +53,18 @@
   # 2- Enable the main apache2 profile
   #    sudo aa-enforce /etc/apparmor.d/usr.sbin.apache2
   #
-  # 3- Configure apache with the following:
+  # 3- Configure apache with the following (or similar):
+  #    Alias /phpsysinfo /usr/share/phpsysinfo
+  #    <Location /phpsysinfo>
+  #        <IfModule mod_apparmor.c>
+  #          AAHatName phpsysinfo
+  #        </IfModule>
   #
-  #        <Directory /var/www/phpsysinfo/>
-  #            <IfModule mod_apparmor.c>
-  #                AAHatName phpsysinfo
-  #            </IfModule>
-  #        </Directory>
+  #        # adjust as necessary:
+  #        Options None
+  #        Require local
+  #        Require ip 192.168.0.0/16
+  #    </Location>
   #
 
   #include <abstractions/base>

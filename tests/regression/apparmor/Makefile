@@ -114,8 +114,8 @@ SRC=access.c \
     tcp.c \
     unix_fd_client.c \
     unix_fd_server.c \
-    unix_socket_file.c \
-    unix_socket_file_client.c \
+    unix_socket.c \
+    unix_socket_client.c \
     unlink.c \
     xattrs.c
 
@@ -126,7 +126,7 @@ endif
 
 #only do dbus if proper libs are installl
 ifneq (,$(shell pkg-config --exists dbus-1 && echo TRUE))
-SRC+=dbus_eavesdrop.c dbus_message.c dbus_service.c
+SRC+=dbus_eavesdrop.c dbus_message.c dbus_service.c dbus_unrequested_reply.c
 else
 $(warning ${nl}\
 ************************************************************************${nl}\
@@ -183,14 +183,14 @@ TESTS=access \
       syscall \
       tcp \
       unix_fd_server \
-      unix_socket_file \
+      unix_socket \
       unlink\
       xattrs\
       longpath
 
 #only do dbus if proper libs are installl
 ifneq (,$(shell pkg-config --exists dbus-1 && echo TRUE))
-TESTS+=dbus_eavesdrop dbus_message dbus_service
+TESTS+=dbus_eavesdrop dbus_message dbus_service dbus_unrequested_reply
 endif
 
 # Tests that can crash the kernel should be placed here
@@ -223,6 +223,9 @@ dbus_message: dbus_message.c dbus_common.o
 
 dbus_service: dbus_message dbus_service.c dbus_common.o
 	${CC} ${CFLAGS} ${LDFLAGS} $(filter-out dbus_message, $^) -o $@ ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
+
+dbus_unrequested_reply: dbus_service dbus_unrequested_reply.c dbus_common.o
+	${CC} ${CFLAGS} ${LDFLAGS} $(filter-out dbus_service, $^) -o $@ ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
 
 tests: all
 	@if [ `whoami` = "root" ] ;\

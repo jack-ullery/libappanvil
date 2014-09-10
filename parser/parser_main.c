@@ -28,17 +28,13 @@
 #include <getopt.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <libintl.h>
-#include <locale.h>
 #include <dirent.h>
-#define _(s) gettext(s)
 
 /* enable the following line to get voluminous debug info */
 /* #define DEBUG */
 
 #include <unistd.h>
 #include <limits.h>
-#include <sys/sysctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/apparmor.h>
@@ -689,10 +685,14 @@ static void set_supported_features(void) {
 		kernel_supports_policydb = 1;
 	if (strstr(features_string, "v6"))
 		kernel_abi_version = 6;
+	if (strstr(features_string, "v7"))
+		kernel_abi_version = 7;
 	if (strstr(features_string, "set_load"))
 		kernel_supports_setload = 1;
 	if (strstr(features_string, "network"))
 		kernel_supports_network = 1;
+	if (strstr(features_string, "af_unix"))
+		kernel_supports_unix = 1;
 	if (strstr(features_string, "mount"))
 		kernel_supports_mount = 1;
 	if (strstr(features_string, "dbus"))

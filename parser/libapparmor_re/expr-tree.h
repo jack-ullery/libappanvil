@@ -216,6 +216,7 @@ public:
 	void compute_lastpos() { lastpos.insert(this); }
 	virtual void follow(Cases &cases) = 0;
 	virtual int is_accept(void) = 0;
+	virtual int is_postprocess(void) = 0;
 };
 
 /* common base class for all the different classes that contain
@@ -225,6 +226,7 @@ class CNode: public ImportantNode {
 public:
 	CNode(): ImportantNode() { }
 	int is_accept(void) { return false; }
+	int is_postprocess(void) { return false; }
 };
 
 /* Match one specific character (/c/). */
@@ -369,35 +371,6 @@ public:
 	ostream &dump(ostream &os) { return os << "."; }
 };
 
-/**
- * Indicate that a regular expression matches. An AcceptNode itself
- * doesn't match anything, so it will never generate any transitions.
- */
-class AcceptNode: public ImportantNode {
-public:
-	AcceptNode() { }
-	int is_accept(void) { return true; }
-	void release(void)
-	{
-		/* don't delete AcceptNode via release as they are shared, and
-		 * will be deleted when the table the are stored in is deleted
-		 */
-	}
-
-	void follow(Cases &cases __attribute__ ((unused)))
-	{
-		/* Nothing to follow. */
-	}
-
-	/* requires accept nodes to be common by pointer */
-	int eq(Node *other)
-	{
-		if (dynamic_cast<AcceptNode *>(other))
-			return (this == other);
-		return 0;
-	}
-};
-
 /* Match a node zero or more times. (This is a unary operator.) */
 class StarNode: public OneChildNode {
 public:
@@ -536,6 +509,55 @@ public:
 	void normalize(int dir);
 };
 
+class SharedNode: public ImportantNode {
+public:
+	SharedNode() { }
+	void release(void)
+	{
+		/* don't delete SharedNodes via release as they are shared, and
+		 * will be deleted when the table they are stored in is deleted
+		 */
+	}
+
+	void follow(Cases &cases __attribute__ ((unused)))
+	{
+		/* Nothing to follow. */
+	}
+
+	/* requires shared nodes to be common by pointer */
+	int eq(Node *other) { return (this == other); }
+};
+
+/**
+ * Indicate that a regular expression matches. An AcceptNode itself
+ * doesn't match anything, so it will never generate any transitions.
+ */
+class AcceptNode: public SharedNode {
+public:
+	AcceptNode() { }
+	int is_accept(void) { return true; }
+	int is_postprocess(void) { return false; }
+};
+
+class MatchFlag: public AcceptNode {
+public:
+	MatchFlag(uint32_t flag, uint32_t audit): flag(flag), audit(audit) { }
+	ostream &dump(ostream &os) { return os << "< 0x" << hex << flag << '>'; }
+
+	uint32_t flag;
+	uint32_t audit;
+};
+
+class ExactMatchFlag: public MatchFlag {
+public:
+	ExactMatchFlag(uint32_t flag, uint32_t audit): MatchFlag(flag, audit) {}
+};
+
+class DenyMatchFlag: public MatchFlag {
+public:
+	DenyMatchFlag(uint32_t flag, uint32_t quiet): MatchFlag(flag, quiet) {}
+};
+
 /* Traverse the syntax tree depth-first in an iterator-like manner. */
 class depth_first_traversal {
 	stack<Node *>pos;
@@ -588,23 +610,180 @@ unsigned long hash_NodeSet(NodeSet *ns);
 void flip_tree(Node *node);
 
 
-class MatchFlag: public AcceptNode {
-public:
-	MatchFlag(uint32_t flag, uint32_t audit): flag(flag), audit(audit) { }
-	ostream &dump(ostream &os) { return os << "< 0x" << hex << flag << '>'; }
 
-	uint32_t flag;
-	uint32_t audit;
+/*
+ * hashedNodes - for efficient set comparison
+ */
+class hashedNodeSet {
+public:
+	unsigned long hash;
+	NodeSet *nodes;
+
+	hashedNodeSet(NodeSet *n): nodes(n)
+	{
+		hash = hash_NodeSet(n);
+	}
+
+	bool operator<(hashedNodeSet const &rhs)const
+	{
+		if (hash == rhs.hash) {
+			if (nodes->size() == rhs.nodes->size())
+				return *nodes < *(rhs.nodes);
+			else
+				return nodes->size() < rhs.nodes->size();
+		} else {
+			return hash < rhs.hash;
+		}
+	}
 };
 
-class ExactMatchFlag: public MatchFlag {
+
+class hashedNodeVec {
 public:
-	ExactMatchFlag(uint32_t flag, uint32_t audit): MatchFlag(flag, audit) {}
+	typedef ImportantNode ** iterator;
+	iterator begin() { return nodes; }
+	iterator end() { iterator t = nodes ? &nodes[len] : NULL; return t; }
+
+	unsigned long hash;
+	unsigned long len;
+	ImportantNode **nodes;
+
+	hashedNodeVec(NodeSet *n)
+	{
+		hash = hash_NodeSet(n);
+		len = n->size();
+		nodes = new ImportantNode *[n->size()];
+
+		unsigned int j = 0;
+		for (NodeSet::iterator i = n->begin(); i != n->end(); i++, j++) {
+			nodes[j] = *i;
+		}
+	}
+
+	hashedNodeVec(NodeSet *n, unsigned long h): hash(h)
+	{
+		len = n->size();
+		nodes = new ImportantNode *[n->size()];
+		ImportantNode **j = nodes;
+		for (NodeSet::iterator i = n->begin(); i != n->end(); i++) {
+			*(j++) = *i;
+		}
+	}
+
+	~hashedNodeVec()
+	{
+		delete nodes;
+	}
+
+	unsigned long size()const { return len; }
+
+	bool operator<(hashedNodeVec const &rhs)const
+	{
+		if (hash == rhs.hash) {
+			if (len == rhs.size()) {
+				for (unsigned int i = 0; i < len; i++) {
+					if (nodes[i] != rhs.nodes[i])
+						return nodes[i] < rhs.nodes[i];
+				}
+				return false;
+			}
+			return len < rhs.size();
+		}
+		return hash < rhs.hash;
+	}
 };
 
-class DenyMatchFlag: public MatchFlag {
+class CacheStats {
 public:
-	DenyMatchFlag(uint32_t flag, uint32_t quiet): MatchFlag(flag, quiet) {}
+	unsigned long dup, sum, max;
+
+	CacheStats(void): dup(0), sum(0), max(0) { };
+
+	void clear(void) { dup = sum = max = 0; }
+	virtual unsigned long size(void) const = 0;
+};
+
+class NodeCache: public CacheStats {
+public:
+	set<hashedNodeSet> cache;
+
+	NodeCache(void): cache() { };
+	~NodeCache() { clear(); };
+
+	virtual unsigned long size(void) const { return cache.size(); }
+
+	void clear()
+	{
+		for (set<hashedNodeSet>::iterator i = cache.begin();
+		     i != cache.end(); i++) {
+			delete i->nodes;
+		}
+		cache.clear();
+		CacheStats::clear();
+	}
+
+	NodeSet *insert(NodeSet *nodes)
+	{
+		if (!nodes)
+			return NULL;
+		pair<set<hashedNodeSet>::iterator,bool> uniq;
+		uniq = cache.insert(hashedNodeSet(nodes));
+		if (uniq.second == false) {
+			delete(nodes);
+			dup++;
+		} else {
+			sum += nodes->size();
+			if (nodes->size() > max)
+				max = nodes->size();
+		}
+		return uniq.first->nodes;
+	}
+};
+
+struct deref_less_than {
+       bool operator()(hashedNodeVec * const &lhs, hashedNodeVec * const &rhs)const
+		{
+			return *lhs < *rhs;
+		}
+};
+
+class NodeVecCache: public CacheStats {
+public:
+	set<hashedNodeVec *, deref_less_than> cache;
+
+	NodeVecCache(void): cache() { };
+	~NodeVecCache() { clear(); };
+
+	virtual unsigned long size(void) const { return cache.size(); }
+
+	void clear()
+	{
+		for (set<hashedNodeVec *>::iterator i = cache.begin();
+		     i != cache.end(); i++) {
+			delete *i;
+		}
+		cache.clear();
+		CacheStats::clear();
+	}
+
+	hashedNodeVec *insert(NodeSet *nodes)
+	{
+		if (!nodes)
+			return NULL;
+		pair<set<hashedNodeVec *>::iterator,bool> uniq;
+		hashedNodeVec *nv = new hashedNodeVec(nodes);
+		uniq = cache.insert(nv);
+		if (uniq.second == false) {
+			delete nv;
+			dup++;
+		} else {
+			sum += nodes->size();
+			if (nodes->size() > max)
+				max = nodes->size();
+		}
+		delete(nodes);
+		return (*uniq.first);
+	}
 };
 
 #endif /* __LIBAA_RE_EXPR */

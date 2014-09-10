@@ -32,6 +32,7 @@ PYTOOLS = aa-easyprof aa-genprof aa-logprof aa-cleanprof aa-mergeprof \
 	  aa-status aa-unconfined
 TOOLS = ${PERLTOOLS} ${PYTOOLS} aa-decode
 PYSETUP = python-tools-setup.py
+PYMODULES = $(wildcard apparmor/*.py)
 
 MANPAGES = ${TOOLS:=.8} logprof.conf.5
 
@@ -45,8 +46,8 @@ BINDIR=${DESTDIR}/usr/sbin
 CONFDIR=${DESTDIR}/etc/apparmor
 PYPREFIX=/usr
 
-po/${NAME}.pot: ${TOOLS}
-	$(MAKE) -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} ${MODULES}"
+po/${NAME}.pot: ${TOOLS} ${PYMODULES}
+	$(MAKE) -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} ${PYMODULES}"
 
 .PHONY: install
 install: ${MANPAGES} ${HTMLMANPAGES}
@@ -92,7 +93,7 @@ check_severity_db: /usr/include/linux/capability.h severity.db
 .PHONY: check
 .SILENT: check
 check: check_severity_db
-	for i in ${MODULES} ${PERLTOOLS} ; do \
+	for i in ${PERLTOOLS} ; do \
 		perl -c $$i || exit 1; \
 	done
 	tmpfile=$$(mktemp --tmpdir aa-pyflakes-XXXXXX); \

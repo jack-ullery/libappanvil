@@ -34,7 +34,7 @@
   /usr/sbin/smbd mr,
   /usr/sbin/smbldap-useradd Px,
   /var/cache/samba/** rwk,
-  /var/cache/samba/printing/printers.tdb mrw,
+  /var/{cache,lib}/samba/printing/printers.tdb mrw,
   /var/lib/samba/** rwk,
   /var/lib/sss/pubconf/kdcinfo.* r,
   /{,var/}run/cups/cups.sock rw,

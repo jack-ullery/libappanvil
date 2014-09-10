@@ -21,6 +21,7 @@
 #include "parser.h"
 #include "rule.h"
 #include "libapparmor_re/aare_rules.h"
+#include "network.h"
 
 class Profile;
 
@@ -99,27 +100,6 @@ struct capabilities {
 			if (quiet != 0ull)
 				__debug_capabilities(quiet, "Quiet Caps");
 		};
-};
-
-struct network {
-	unsigned int *allow;		/* array of type masks
-						 * indexed by AF_FAMILY */
-	unsigned int *audit;
-	unsigned int *deny;
-	unsigned int *quiet;
-
-	network(void) { allow = audit = deny = quiet = NULL; }
-
-	void dump(void) {
-		if (allow)
-			__debug_network(allow, "Network");
-		if (audit)
-			__debug_network(audit, "Audit Net");
-		if (deny)
-			__debug_network(deny, "Deny Net");
-		if (quiet)
-			__debug_network(quiet, "Quiet Net");
-	}
 };
 
 struct dfa_stuff {
@@ -230,6 +210,8 @@ public:
 		printf("\n");
 		hat_table.dump();
 	}
+
+	bool alloc_net_table();
 
 	std::string* get_name(bool fqp)
 	{

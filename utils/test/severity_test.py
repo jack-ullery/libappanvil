@@ -13,10 +13,7 @@
 # ----------------------------------------------------------------------
 import os
 import shutil
-import sys
 import unittest
-
-sys.path.append('../')
 
 import apparmor.severity as severity
 from apparmor.common import AppArmorException
@@ -27,7 +24,7 @@ class Test(unittest.TestCase):
         #copy the local profiles to the test directory
         if os.path.exists('./profiles'):
             shutil.rmtree('./profiles')
-        shutil.copytree('/etc/apparmor.d/', './profiles/', symlinks=True)
+        shutil.copytree('../../profiles/apparmor.d/', './profiles/', symlinks=True)
 
     def tearDown(self):
         #Wipe the local profiles from the test directory

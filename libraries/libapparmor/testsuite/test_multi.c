@@ -98,6 +98,7 @@ int print_results(aa_log_record *record)
 
 		print_string("Profile", record->profile);
 		print_string("Peer profile", record->peer_profile);
+		print_string("Peer", record->peer);
 		print_string("Name", record->name);
 		print_string("Command", record->comm);
 		print_string("Name2", record->name2);
@@ -125,6 +126,12 @@ int print_results(aa_log_record *record)
 		print_string("DBus path", record->dbus_path);
 		print_string("DBus interface", record->dbus_interface);
 		print_string("DBus member", record->dbus_member);
+
+		print_string("Signal", record->signal);
+
+		print_string("FS Type", record->fs_type);
+		print_string("Flags", record->flags);
+		print_string("Src name", record->src_name);
 
 		print_long("Epoch", record->epoch, 0);
 		print_long("Audit subid", (long) record->audit_sub_id, 0);

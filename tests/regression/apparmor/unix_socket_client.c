@@ -81,6 +81,8 @@ static int connectionless_messaging(int sock)
 int main(int argc, char *argv[])
 {
 	struct sockaddr_un peer_addr;
+	const char *sun_path;
+	size_t sun_path_len;
 	int sock, type, rc;
 
 	if (argc != 3) {
@@ -88,6 +90,19 @@ int main(int argc, char *argv[])
 			"  type\t\tstream, dgram, or seqpacket\n",
 			argv[0]);
 		exit(1);
+	}
+
+	peer_addr.sun_family = AF_UNIX;
+	memset(peer_addr.sun_path, 0, sizeof(peer_addr.sun_path));
+
+	sun_path = argv[1];
+	sun_path_len = strlen(sun_path);
+	if (sun_path[0] == '@') {
+		memcpy(peer_addr.sun_path, sun_path, sun_path_len);
+		peer_addr.sun_path[0] = '\0';
+		sun_path_len = sizeof(peer_addr.sun_path);
+	} else {
+		memcpy(peer_addr.sun_path, sun_path, sun_path_len + 1);
 	}
 
 	if (!strcmp(argv[2], "stream")) {
@@ -107,10 +122,8 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	peer_addr.sun_family = AF_UNIX;
-	strcpy(peer_addr.sun_path, argv[1]);
 	rc = connect(sock, (struct sockaddr *)&peer_addr,
-		     strlen(peer_addr.sun_path) + sizeof(peer_addr.sun_family));
+		     sun_path_len + sizeof(peer_addr.sun_family));
 	if (rc < 0) {
 		perror("FAIL CLIENT - connect");
 		exit(1);

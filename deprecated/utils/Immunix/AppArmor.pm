@@ -5150,7 +5150,7 @@ sub parse_profile_data($$$) {
 
             $initial_comment = "";
 
-        } elsif (m/^\s*(audit\s+)?(deny\s+)?capability\s+(\S+)\s*,\s*(#.*)?$/) {  # capability entry
+        } elsif (m/^\s*(audit\s+)?(deny\s+)?capability(\s+(\S+))?\s*,\s*(#.*)?$/) {  # capability entry
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
@@ -5158,7 +5158,7 @@ sub parse_profile_data($$$) {
 	    my $audit = $1 ? 1 : 0;
 	    my $allow = $2 ? 'deny' : 'allow';
 	    $allow = 'deny' if ($2);
-            my $capability = $3;
+            my $capability = $3 ? $3 : 'all';
             $profile_data->{$profile}{$hat}{$allow}{capability}{$capability}{set} = 1;
             $profile_data->{$profile}{$hat}{$allow}{capability}{$capability}{audit} = $audit;
         } elsif (m/^\s*set capability\s+(\S+)\s*,\s*(#.*)?$/) {  # capability entry
@@ -5251,7 +5251,7 @@ sub parse_profile_data($$$) {
         } elsif (m/^\s*if\s+(not\s+)?(\$\{?[[:alpha:]][[:alnum:]_]*\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(@\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- variable defined
         } elsif (m/^\s*if\s+(not\s+)?defined\s+(\$\{?[[:alpha:]][[:alnum:]_]+\}?)\s*\{\s*(#.*)?$/) { # conditional -- boolean defined
-        } elsif (m/^\s*(audit\s+)?(deny\s+)?(owner\s+)?([\"\@\/].*?)\s+(\S+)(\s+->\s*(.*?))?\s*,\s*(#.*)?$/) {     # path entry
+        } elsif (m/^\s*(audit\s+)?(deny\s+)?(owner\s+)?(file|([\"\@\/].*?)\s+(\S+))(\s+->\s*(.*?))?\s*,\s*(#.*)?$/) {     # path entry
             if (not $profile) {
                 die sprintf(gettext('%s contains syntax errors.'), $file) . "\n";
             }
@@ -5259,7 +5259,19 @@ sub parse_profile_data($$$) {
 	    my $audit = $1 ? 1 : 0;
 	    my $allow = $2 ? 'deny' : 'allow';
 	    my $user = $3 ? 1 : 0;
-            my ($path, $mode, $nt_name) = ($4, $5, $7);
+            my ($path, $mode, $nt_name) = ($5, $6, $8);
+            my $file_keyword = 0;
+            my $use_mode = 1;
+
+            if ($4 eq "file") {
+                $path = "/{**,}";
+                $file_keyword = 1;
+                if (!$mode) {
+                    # what the parser uses, but we don't care
+                    $mode = "rwixlka";
+                    $use_mode = 0;
+                }
+            }
 
             # strip off any trailing spaces.
             $path =~ s/\s+$//;
@@ -5279,6 +5291,9 @@ sub parse_profile_data($$$) {
             if (!validate_profile_mode($mode, $allow, $nt_name)) {
                 fatal_error(sprintf(gettext('Profile %s contains invalid mode %s.'), $file, $mode));
             }
+
+	    $profile_data->{$profile}{$hat}{$allow}{path}{$path}{use_mode} = $use_mode;
+	    $profile_data->{$profile}{$hat}{$allow}{path}{$path}{file_keyword} = 1 if $file_keyword;
 
 	    my $tmpmode;
 	    if ($user) {
@@ -5352,7 +5367,7 @@ sub parse_profile_data($$$) {
 		$profile_data->{$profile}{$hat}{$allow}{netdomain}{audit}{$fam} = $audit;
             } else {
                 $profile_data->{$profile}{$hat}{$allow}{netdomain}{rule}{all} = 1;
-                $profile_data->{$profile}{$hat}{$allow}{netdomain}{audit}{all} = 1;
+                $profile_data->{$profile}{$hat}{$allow}{netdomain}{audit}{all} = $audit;
             }
         } elsif (/^\s*(tcp_connect|tcp_accept|udp_send|udp_receive)/) {
 # just ignore and drop old style network
@@ -5676,7 +5691,13 @@ sub writecap_rules ($$$) {
 
     my @data;
     if (exists $profile_data->{$allow}{capability}) {
-        for my $cap (sort keys %{$profile_data->{$allow}{capability}}) {
+	my $audit;
+	if (exists $profile_data->{$allow}{capability}{all}) {
+	    $audit = ($profile_data->{$allow}{capability}{all}{audit}) ? 'audit ' : '';
+	    push @data, "${pre}${audit}${allowstr}capability,";
+	}
+	for my $cap (sort keys %{$profile_data->{$allow}{capability}}) {
+	    next if ($cap eq "all");
 	    my $audit = ($profile_data->{$allow}{capability}{$cap}{audit}) ? 'audit ' : '';
 	    if ($profile_data->{$allow}{capability}{$cap}{set}) {
 		push @data, "${pre}${audit}${allowstr}capability ${cap},";
@@ -5709,7 +5730,7 @@ sub writenet_rules ($$$) {
     # dump out the netdomain entries...
     if (exists $profile_data->{$allow}{netdomain}) {
         if ( $profile_data->{$allow}{netdomain}{rule} &&
-             $profile_data->{$allow}{netdomain}{rule} eq 'all') {
+             $profile_data->{$allow}{netdomain}{rule}{all}) {
 	    $audit = "audit " if $profile_data->{$allow}{netdomain}{audit}{all};
             push @data, "${pre}${audit}network,";
         } else {
@@ -5839,7 +5860,13 @@ sub writepath_rules ($$$) {
 		    }
 		    $tmpmode &= ~$tmpaudit;
 		}
-		if ($tmpmode) {
+		my $kw = $profile_data->{$allow}{path}{$path}{file_keyword};
+		my $use_mode = $profile_data->{$allow}{path}{$path}{use_mode};
+		if ($kw) {
+		    my $modestr = "";
+		    $modestr = " " . mode_to_str($tmpmode) if $use_mode;
+		    push @data, "${pre}${allowstr}${ownerstr}file${modestr}${tail},";
+		} elsif ($tmpmode) {
 		    my $modestr = mode_to_str($tmpmode);
 		    if ($path =~ /\s/) {
 			push @data, "${pre}${allowstr}${ownerstr}\"$path\" ${modestr}${tail},";

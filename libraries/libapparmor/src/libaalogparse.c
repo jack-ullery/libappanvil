@@ -71,6 +71,8 @@ void free_record(aa_log_record *record)
 			free(record->info);
 		if (record->peer_info != NULL)
 			free(record->peer_info);
+		if (record->peer != NULL)
+			free(record->peer);
 		if (record->active_hat != NULL)
 			free(record->active_hat);
 		if (record->audit_id != NULL)
@@ -93,6 +95,14 @@ void free_record(aa_log_record *record)
 			free(record->dbus_interface);
 		if (record->dbus_member != NULL)
 			free(record->dbus_member);
+		if (record->signal != NULL)
+			free(record->signal );
+		if (record->fs_type != NULL)
+			free(record->fs_type);
+		if (record->flags != NULL)
+			free(record->flags);
+		if (record->src_name != NULL)
+			free(record->src_name);
 
 		free(record);
 	}

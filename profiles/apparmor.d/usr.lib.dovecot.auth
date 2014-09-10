@@ -27,8 +27,7 @@
   /etc/my.cnf.d/ r,
   /etc/my.cnf.d/*.cnf r,
 
-  /etc/dovecot/dovecot-database.conf.ext r,
-  /etc/dovecot/dovecot-sql.conf.ext r,
+  /etc/dovecot/* r,
   /usr/lib/dovecot/auth mr,
 
   # kerberos replay cache

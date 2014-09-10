@@ -22,6 +22,7 @@
 /etc/kderc r,
 /etc/kde3/* r,
 /etc/kde4rc r,
+/etc/xdg/Trolltech.conf r,
 
 owner @{HOME}/.DCOPserver_* r,
 owner @{HOME}/.ICEauthority r,

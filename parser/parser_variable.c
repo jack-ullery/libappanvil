@@ -21,12 +21,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
-#include <libintl.h>
 #include <linux/limits.h>
 
 #include <string>
-
-#define _(s) gettext(s)
 
 /* #define DEBUG */
 

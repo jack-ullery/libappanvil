@@ -44,11 +44,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
-#include <libintl.h>
 #include <dirent.h>
 #include "parser.h"
 #include "parser_include.h"
-#define _(s) gettext(s)
 
 /* An array of search directories, I sure hope 100's enough */
 #define MAX_PATH 100

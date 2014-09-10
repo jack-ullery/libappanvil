@@ -44,18 +44,27 @@
 
   /var/lib/misc/dnsmasq.leases rw, # Required only for DHCP server usage
 
+  # access to iface mtu needed for Router Advertisement messages in IPv6
+  # Neighbor Discovery protocol (RFC 2461)
+  @{PROC}/sys/net/ipv6/conf/*/mtu r,
+
   # for the read-only TFTP server
   @{TFTP_DIR}/ r,
   @{TFTP_DIR}/** r,
 
   # libvirt config, lease and hosts files for dnsmasq
-  /var/lib/libvirt/dnsmasq/            r,
-  /var/lib/libvirt/dnsmasq/*        r,
-  /var/lib/libvirt/dnsmasq/*.leases rw,
+  /var/lib/libvirt/dnsmasq/          r,
+  /var/lib/libvirt/dnsmasq/*         r,
+  /var/lib/libvirt/dnsmasq/*.leases  rw,
+  /var/lib/libvirt/dnsmasq/*.status* rw,
 
   # libvirt pid files for dnsmasq
   /{,var/}run/libvirt/network/      r,
   /{,var/}run/libvirt/network/*.pid rw,
+
+  # libvirt lease helper
+  /usr/lib/libvirt/libvirt_leaseshelper ix,
+  /{,var/}run/leaseshelper.pid rwk,
 
   # NetworkManager integration
   /{,var/}run/nm-dns-dnsmasq.conf r,

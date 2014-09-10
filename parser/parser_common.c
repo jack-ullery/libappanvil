@@ -17,9 +17,7 @@
  */
 #include <stdlib.h>
 #include <stdarg.h>
-#include <libintl.h>
-#include <locale.h>
-#define _(s) gettext(s)
+
 #include "parser.h"
 
 /* Policy versioning is determined by a combination of 3 values:
@@ -68,6 +66,7 @@ int net_af_max_override = -1;           /* use kernel to determine af_max */
 int kernel_load = 1;
 int kernel_supports_setload = 0;	/* kernel supports atomic set loads */
 int kernel_supports_network = 0;        /* kernel supports network rules */
+int kernel_supports_unix = 0;		/* kernel supports unix socket rules */
 int kernel_supports_policydb = 0;	/* kernel supports new policydb */
 int kernel_supports_mount = 0;	        /* kernel supports mount rules */
 int kernel_supports_dbus = 0;		/* kernel supports dbus rules */

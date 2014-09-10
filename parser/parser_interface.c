@@ -24,8 +24,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <libintl.h>
-#define _(s) gettext(s)
 
 #include <string>
 #include <sstream>
@@ -36,11 +34,6 @@
 
 #include <unistd.h>
 #include <linux/unistd.h>
-
-#include <libintl.h>
-#define _(s) gettext(s)
-
-
 
 
 #define SD_CODE_SIZE (sizeof(u8))
@@ -193,57 +186,57 @@ const char *sd_code_names[] = {
 };
 
 
-inline void sd_write8(std::ostringstream &buf, u8 b)
+static inline void sd_write8(std::ostringstream &buf, u8 b)
 {
 	buf.write((const char *) &b, 1);
 }
 
-inline void sd_write16(std::ostringstream &buf, u16 b)
+static inline void sd_write16(std::ostringstream &buf, u16 b)
 {
 	u16 tmp;
 	tmp = cpu_to_le16(b);
 	buf.write((const char *) &tmp, 2);
 }
 
-inline void sd_write32(std::ostringstream &buf, u32 b)
+static inline void sd_write32(std::ostringstream &buf, u32 b)
 {
 	u32 tmp;
 	tmp = cpu_to_le32(b);
 	buf.write((const char *) &tmp, 4);
 }
 
-inline void sd_write64(std::ostringstream &buf, u64 b)
+static inline void sd_write64(std::ostringstream &buf, u64 b)
 {
 	u64 tmp;
 	tmp = cpu_to_le64(b);
 	buf.write((const char *) &tmp, 8);
 }
 
-inline void sd_write_uint8(std::ostringstream &buf, u8 b)
+static inline void sd_write_uint8(std::ostringstream &buf, u8 b)
 {
 	sd_write8(buf, SD_U8);
 	sd_write8(buf, b);
 }
 
-inline void sd_write_uint16(std::ostringstream &buf, u16 b)
+static inline void sd_write_uint16(std::ostringstream &buf, u16 b)
 {
 	sd_write8(buf, SD_U16);
 	sd_write16(buf, b);
 }
 
-inline void sd_write_uint32(std::ostringstream &buf, u32 b)
+static inline void sd_write_uint32(std::ostringstream &buf, u32 b)
 {
 	sd_write8(buf, SD_U32);
 	sd_write32(buf, b);
 }
 
-inline void sd_write_uint64(std::ostringstream &buf, u64 b)
+static inline void sd_write_uint64(std::ostringstream &buf, u64 b)
 {
 	sd_write8(buf, SD_U64);
 	sd_write64(buf, b);
 }
 
-inline void sd_write_name(std::ostringstream &buf, const char *name)
+static inline void sd_write_name(std::ostringstream &buf, const char *name)
 {
 	PDEBUG("Writing name '%s'\n", name);
 	if (name) {
@@ -253,7 +246,7 @@ inline void sd_write_name(std::ostringstream &buf, const char *name)
 	}
 }
 
-inline void sd_write_blob(std::ostringstream &buf, void *b, int buf_size, char *name)
+static inline void sd_write_blob(std::ostringstream &buf, void *b, int buf_size, char *name)
 {
 	sd_write_name(buf, name);
 	sd_write8(buf, SD_BLOB);
@@ -264,7 +257,7 @@ inline void sd_write_blob(std::ostringstream &buf, void *b, int buf_size, char *
 
 static char zeros[64];
 #define align64(X) (((X) + (typeof(X)) 7) & ~((typeof(X)) 7))
-inline void sd_write_aligned_blob(std::ostringstream &buf, void *b, int b_size,
+static inline void sd_write_aligned_blob(std::ostringstream &buf, void *b, int b_size,
 				 const char *name)
 {
 	sd_write_name(buf, name);
@@ -284,41 +277,41 @@ static void sd_write_strn(std::ostringstream &buf, char *b, int size, const char
 	buf.write(b, size);
 }
 
-inline void sd_write_string(std::ostringstream &buf, char *b, const char *name)
+static inline void sd_write_string(std::ostringstream &buf, char *b, const char *name)
 {
 	sd_write_strn(buf, b, strlen(b) + 1, name);
 }
 
-inline void sd_write_struct(std::ostringstream &buf, const char *name)
+static inline void sd_write_struct(std::ostringstream &buf, const char *name)
 {
 	sd_write_name(buf, name);
 	sd_write8(buf, SD_STRUCT);
 }
 
-inline void sd_write_structend(std::ostringstream &buf)
+static inline void sd_write_structend(std::ostringstream &buf)
 {
 	sd_write8(buf, SD_STRUCTEND);
 }
 
-inline void sd_write_array(std::ostringstream &buf, const char *name, int size)
+static inline void sd_write_array(std::ostringstream &buf, const char *name, int size)
 {
 	sd_write_name(buf, name);
 	sd_write8(buf, SD_ARRAY);
 	sd_write16(buf, size);
 }
 
-inline void sd_write_arrayend(std::ostringstream &buf)
+static inline void sd_write_arrayend(std::ostringstream &buf)
 {
 	sd_write8(buf, SD_ARRAYEND);
 }
 
-inline void sd_write_list(std::ostringstream &buf, const char *name)
+static inline void sd_write_list(std::ostringstream &buf, const char *name)
 {
 	sd_write_name(buf, name);
 	sd_write8(buf, SD_LIST);
 }
 
-inline void sd_write_listend(std::ostringstream &buf)
+static inline void sd_write_listend(std::ostringstream &buf)
 {
 	sd_write8(buf, SD_LISTEND);
 }

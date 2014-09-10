@@ -200,4 +200,4 @@ type=AVC msg=audit(1348982148.195:2933): apparmor="DENIED" operation="file_lock"
 if __name__ == '__main__':
     if 'APPARMOR_DECODE' in os.environ:
         aadecode_bin = os.environ['APPARMOR_DECODE']
-    unittest.main()
+    unittest.main(verbosity=2)

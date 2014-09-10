@@ -11,43 +11,25 @@
 
 import apparmor.aa as aa
 import unittest
+from common_test import AAParseTest, setup_regex_tests
 
-class AAParsePtraceTest(unittest.TestCase):
+class AAParsePtraceTest(AAParseTest):
+    def setUp(self):
+        self.parse_function = aa.parse_ptrace_rule
 
-    def _test_parse_ptrace_rule(self, rule):
-        ptrace = aa.parse_ptrace_rule(rule)
-        self.assertEqual(rule, ptrace.serialize(),
-                'ptrace object returned "%s", expected "%s"' % (ptrace.serialize(), rule))
-
-    def test_parse_plain_ptrace_rule(self):
-        self._test_parse_ptrace_rule('ptrace,')
-
-    def test_parse_readby_ptrace_rule(self):
-        self._test_parse_ptrace_rule('ptrace (readby),')
-
-    def test_parse_trace_ptrace_rule(self):
-        self._test_parse_ptrace_rule('ptrace (trace),')
-
-    def test_parse_trace_read_ptrace_rule(self):
-        self._test_parse_ptrace_rule('ptrace (trace read),')
-
-    def test_parse_r_ptrace_rule(self):
-        self._test_parse_ptrace_rule('ptrace r,')
-
-    def test_parse_w_ptrace_rule(self):
-        self._test_parse_ptrace_rule('ptrace w,')
-
-    def test_parse_rw_ptrace_rule(self):
-        self._test_parse_ptrace_rule('ptrace rw,')
-
-    def test_parse_peer_1_ptrace_rule(self):
-        self._test_parse_ptrace_rule('ptrace read peer=foo,')
-
-    def test_parse_peer_2_ptrace_rule(self):
-        self._test_parse_ptrace_rule('ptrace (trace read) peer=/usr/bin/bar,')
-
-    def test_parse_peer_3_ptrace_rule(self):
-        self._test_parse_ptrace_rule('ptrace wr peer=/sbin/baz,')
+    tests = [
+        ('ptrace,', 'ptrace base keyword rule'),
+        ('ptrace (readby),', 'ptrace readby rule'),
+        ('ptrace (trace),', 'ptrace trace rule'),
+        ('ptrace (trace read),', 'ptrace multi-perm rule'),
+        ('ptrace r,', 'ptrace r rule'),
+        ('ptrace w,', 'ptrace w rule'),
+        ('ptrace rw,', 'ptrace rw rule'),
+        ('ptrace read peer=foo,', 'ptrace peer rule 1'),
+        ('ptrace (trace read) peer=/usr/bin/bar,', 'ptrace peer rule 2'),
+        ('ptrace wr peer=/sbin/baz,', 'ptrace peer rule 3'),
+    ]
 
 if __name__ == '__main__':
-    unittest.main()
+    setup_regex_tests(AAParsePtraceTest)
+    unittest.main(verbosity=2)

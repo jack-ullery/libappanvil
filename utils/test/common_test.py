@@ -13,9 +13,7 @@
 # ----------------------------------------------------------------------
 import unittest
 import re
-import sys
 
-sys.path.append('../')
 import apparmor.common
 import apparmor.config
 
@@ -35,6 +33,27 @@ class Test(unittest.TestCase):
     #    print("Please press the Y button on the keyboard.")
     #    self.assertEqual(apparmor.common.readkey().lower(), 'y', 'Error reading key from shell!')
 
+class AAParseTest(unittest.TestCase):
+    parse_function = None
+
+    def _test_parse_rule(self, rule):
+        self.assertIsNot(self.parse_function, 'Test class did not set a parse_function')
+        parsed = self.parse_function(rule)
+        self.assertEqual(rule, parsed.serialize(),
+            'parse object %s returned "%s", expected "%s"' \
+            %(self.parse_function.__doc__, parsed.serialize(), rule))
+
+def setup_regex_tests(test_class):
+    '''Create tests in test_class using test_class.tests and AAParseTest._test_parse_rule()
+
+    test_class.tests should be tuples of (line, description)
+    '''
+    for (i, (line, desc)) in enumerate(test_class.tests):
+        def stub_test(self, line=line):
+            self._test_parse_rule(line)
+
+        stub_test.__doc__ = "test '%s': %s" % (line, desc)
+        setattr(test_class, 'test_%d' % (i), stub_test)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.test_RegexParser']

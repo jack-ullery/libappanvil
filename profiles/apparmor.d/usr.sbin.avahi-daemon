@@ -12,6 +12,8 @@
   capability setgid,
   capability sys_chroot,
 
+  network netlink dgram,
+
   /etc/avahi/ r,
   /etc/avahi/avahi-daemon.conf r,
   /etc/avahi/hosts r,

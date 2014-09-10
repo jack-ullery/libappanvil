@@ -21,6 +21,11 @@
   /etc/passwd             r,
   /etc/protocols          r,
 
+  # When using libnss-extrausers, the passwd and group files are merged from
+  # an alternate path
+  /var/lib/extrausers/group  r,
+  /var/lib/extrausers/passwd r,
+
   # When using sssd, the passwd and group files are stored in an alternate path
   # and the nss plugin also needs to talk to a pipe
   /var/lib/sss/mc/group   r,
@@ -81,6 +86,10 @@
   network inet6 stream,
   network inet  dgram,
   network inet6 dgram,
+
+  # TODO: adjust when support finer-grained netlink rules
+  # Netlink raw needed for nscd
+  network netlink raw,
 
   # interface details
   @{PROC}/@{pid}/net/route r,

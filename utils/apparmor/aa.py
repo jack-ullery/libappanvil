@@ -1,5 +1,6 @@
 # ----------------------------------------------------------------------
 #    Copyright (C) 2013 Kshitij Gupta <kgupta8592@gmail.com>
+#    Copyright (C) 2014 Christian Boltz <apparmor@cboltz.de>
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public
@@ -115,18 +116,17 @@ atexit.register(on_exit)
 def check_for_LD_XXX(file):
     """Returns True if specified program contains references to LD_PRELOAD or
     LD_LIBRARY_PATH to give the Px/Ux code better suggestions"""
-    found = False
     if not os.path.isfile(file):
         return False
     size = os.stat(file).st_size
     # Limit to checking files under 100k for the sake of speed
     if size > 100000:
         return False
-    with open_file_read(file, encoding='ascii') as f_in:
+    with open(file, 'rb') as f_in:
         for line in f_in:
-            if 'LD_PRELOAD' in line or 'LD_LIBRARY_PATH' in line:
-                found = True
-    return found
+            if b'LD_PRELOAD' in line or b'LD_LIBRARY_PATH' in line:
+                return True
+    return False
 
 def fatal_error(message):
     # Get the traceback to the message
@@ -1127,7 +1127,7 @@ def handle_children(profile, hat, root):
                         nt_name = None
                         for entr in m:
                             if aa[profile][hat]['allow']['path'].get(entr, False):
-                                nt_name = aa[profile][hat]
+                                nt_name = entr
                                 break
                         if to_name and to_name != nt_name:
                             pass
@@ -1556,7 +1556,7 @@ def ask_the_questions():
 
                     if options:
                         options.append('capability %s' % capability)
-                        q['options'] = [options]
+                        q['options'] = options
                         q['selected'] = default_option - 1
 
                     q['headers'] = [_('Profile'), combine_name(profile, hat)]
@@ -1921,30 +1921,19 @@ def ask_the_questions():
                                                 continue
 
                                         user_globs.append(ans)
-                                        options.append(ans)
-                                        default_option = len(options)
+                                        options, default_option = add_to_options(options, ans)
 
                             elif ans == 'CMD_GLOB':
                                 newpath = options[selected].strip()
                                 if not re_match_include(newpath):
                                     newpath = glob_path(newpath)
-
-                                    if newpath not in options:
-                                        options.append(newpath)
-                                        default_option = len(options)
-                                    else:
-                                        default_option = options.index(newpath) + 1
+                                    options, default_option = add_to_options(options, newpath)
 
                             elif ans == 'CMD_GLOBEXT':
                                 newpath = options[selected].strip()
                                 if not re_match_include(newpath):
                                     newpath = glob_path_withext(newpath)
-
-                                    if newpath not in options:
-                                        options.append(newpath)
-                                        default_option = len(options)
-                                    else:
-                                        default_option = options.index(newpath) + 1
+                                    options, default_option = add_to_options(options, newpath)
 
                             elif re.search('\d', ans):
                                 default_option = ans
@@ -2038,6 +2027,13 @@ def ask_the_questions():
 
                             else:
                                 done = False
+
+def add_to_options(options, newpath):
+    if newpath not in options:
+        options.append(newpath)
+
+    default_option = options.index(newpath) + 1
+    return (options, default_option)
 
 def glob_path(newpath):
     """Glob the given file path"""
@@ -2361,8 +2357,6 @@ def save_profiles():
                     profile_name = list(changed.keys())[arg]
                     write_profile_ui_feedback(profile_name)
                     reload_base(profile_name)
-                    #changed.pop(profile_name)
-                    #q['options'] = changed
 
                 elif ans == 'CMD_VIEW_CHANGES':
                     which = list(changed.keys())[arg]
@@ -2382,7 +2376,7 @@ def save_profiles():
 
                     display_changes(oldprofile, newprofile)
 
-            for profile_name in changed_list:
+            for profile_name in sorted(changed.keys()):
                 write_profile_ui_feedback(profile_name)
                 reload_base(profile_name)
 
@@ -2642,6 +2636,7 @@ RE_PROFILE_MOUNT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((mount|remount
 RE_PROFILE_SIGNAL = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(signal\s*,|signal\s+[^#]*\s*,)\s*(#.*)?$')
 RE_PROFILE_PTRACE = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(ptrace\s*,|ptrace\s+[^#]*\s*,)\s*(#.*)?$')
 RE_PROFILE_PIVOT_ROOT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(pivot_root\s*,|pivot_root\s+[^#]*\s*,)\s*(#.*)?$')
+RE_PROFILE_UNIX = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(unix\s*,|unix\s+[^#]*\s*,)\s*(#.*)?$')
 
 # match anything that's not " or #, or matching quotes with anything except quotes inside
 __re_no_or_quoted_hash = '([^#"]|"[^"]*")*'
@@ -3116,6 +3111,28 @@ def parse_profile_data(data, file, do_include):
             pivot_root_rules.append(pivot_root_rule)
             profile_data[profile][hat][allow]['pivot_root'] = pivot_root_rules
 
+        elif RE_PROFILE_UNIX.search(line):
+            matches = RE_PROFILE_UNIX.search(line).groups()
+
+            if not profile:
+                raise AppArmorException(_('Syntax Error: Unexpected unix entry found in file: %s line: %s') % (file, lineno + 1))
+
+            audit = False
+            if matches[0]:
+                audit = True
+            allow = 'allow'
+            if matches[1] and matches[1].strip() == 'deny':
+                allow = 'deny'
+            unix = matches[2].strip()
+
+            unix_rule = parse_unix_rule(unix)
+            unix_rule.audit = audit
+            unix_rule.deny = (allow == 'deny')
+
+            unix_rules = profile_data[profile][hat][allow].get('unix', list())
+            unix_rules.append(unix_rule)
+            profile_data[profile][hat][allow]['unix'] = unix_rules
+
         elif RE_PROFILE_CHANGE_HAT.search(line):
             matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
 
@@ -3191,7 +3208,7 @@ def parse_profile_data(data, file, do_include):
 
     # End of file reached but we're stuck in a profile
     if profile and not do_include:
-        raise AppArmorException(_("Syntax Error: Missing '}' . Reached end of file %s  while inside profile %s") % (file, profile))
+        raise AppArmorException(_("Syntax Error: Missing '}' or ','. Reached end of file %s while inside profile %s") % (file, profile))
 
     return profile_data
 
@@ -3225,6 +3242,10 @@ def parse_ptrace_rule(line):
 def parse_pivot_root_rule(line):
     # XXX Do real parsing here
     return aarules.Raw_Pivot_Root_Rule(line)
+
+def parse_unix_rule(line):
+    # XXX Do real parsing here
+    return aarules.Raw_Unix_Rule(line)
 
 def separate_vars(vs):
     """Returns a list of all the values for a variable"""

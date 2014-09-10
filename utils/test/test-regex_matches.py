@@ -58,6 +58,12 @@ regex_has_comma_testcases = [
     ('pivot_root /old new%s', 'pivot_root with new'),
     ('pivot_root /old /new -> child%s', 'pivot_root with child'),
 
+    ('unix%s', 'bare unix'),
+    ('unix create%s', 'simple unix'),
+    ('peer=(addr=@abad1dea,label=a_profile) %s ', 'peer parens and comma'),
+    ('type=stream%s', 'unix type'),
+    ('unix (connect, receive, send)%s', 'unix perms'),
+
     # the following fail due to inadequacies in the regex
     # ('dbus (r, w, %s', 'incomplete dbus action'),
     # ('member="{Hello,AddMatch,RemoveMatch, %s', 'incomplete {} regex'),  # also invalid policy
@@ -178,7 +184,8 @@ def setup_regex_tests(test_class):
 class AARegexCapability(unittest.TestCase):
     '''Tests for RE_PROFILE_CAP'''
 
-    regex = aa.RE_PROFILE_CAP
+    def setUp(self):
+        self.regex = aa.RE_PROFILE_CAP
 
     tests = [
         ('   capability net_raw,', (None, None, 'net_raw', None)),
@@ -192,7 +199,8 @@ class AARegexCapability(unittest.TestCase):
 class AARegexPath(unittest.TestCase):
     '''Tests for RE_PROFILE_PATH_ENTRY'''
 
-    regex = aa.RE_PROFILE_PATH_ENTRY
+    def setUp(self):
+        self.regex = aa.RE_PROFILE_PATH_ENTRY
 
     tests = [
         ('   /tmp/foo r,',
@@ -210,7 +218,8 @@ class AARegexPath(unittest.TestCase):
 class AARegexBareFile(unittest.TestCase):
     '''Tests for RE_PROFILE_BARE_FILE_ENTRY'''
 
-    regex = aa.RE_PROFILE_BARE_FILE_ENTRY
+    def setUp(self):
+        self.regex = aa.RE_PROFILE_BARE_FILE_ENTRY
 
     tests = [
         ('   file,', (None, None, None, None)),
@@ -227,7 +236,8 @@ class AARegexBareFile(unittest.TestCase):
 class AARegexDbus(unittest.TestCase):
     '''Tests for RE_PROFILE_DBUS'''
 
-    regex = aa.RE_PROFILE_DBUS
+    def setUp(self):
+        self.regex = aa.RE_PROFILE_DBUS
 
     tests = [
         ('   dbus,', (None, None, 'dbus,', None)),
@@ -242,7 +252,8 @@ class AARegexDbus(unittest.TestCase):
 class AARegexMount(unittest.TestCase):
     '''Tests for RE_PROFILE_MOUNT'''
 
-    regex = aa.RE_PROFILE_MOUNT
+    def setUp(self):
+        self.regex = aa.RE_PROFILE_MOUNT
 
     tests = [
         ('   mount,', (None, None, 'mount,', 'mount', None, None)),
@@ -265,7 +276,8 @@ class AARegexMount(unittest.TestCase):
 class AARegexSignal(unittest.TestCase):
     '''Tests for RE_PROFILE_SIGNAL'''
 
-    regex = aa.RE_PROFILE_SIGNAL
+    def setUp(self):
+        self.regex = aa.RE_PROFILE_SIGNAL
 
     tests = [
         ('   signal,', (None, None, 'signal,', None)),
@@ -290,7 +302,8 @@ class AARegexSignal(unittest.TestCase):
 class AARegexPtrace(unittest.TestCase):
     '''Tests for RE_PROFILE_PTRACE'''
 
-    regex = aa.RE_PROFILE_PTRACE
+    def setUp(self):
+        self.regex = aa.RE_PROFILE_PTRACE
 
     tests = [
         ('   ptrace,', (None, None, 'ptrace,', None)),
@@ -311,7 +324,8 @@ class AARegexPtrace(unittest.TestCase):
 class AARegexPivotRoot(unittest.TestCase):
     '''Tests for RE_PROFILE_PIVOT_ROOT'''
 
-    regex = aa.RE_PROFILE_PIVOT_ROOT
+    def setUp(self):
+        self.regex = aa.RE_PROFILE_PIVOT_ROOT
 
     tests = [
         ('   pivot_root,', (None, None, 'pivot_root,', None)),
@@ -334,6 +348,31 @@ class AARegexPivotRoot(unittest.TestCase):
         ('pivot_rootbeer /new, # comment', False),
     ]
 
+class AARegexUnix(unittest.TestCase):
+    '''Tests for RE_PROFILE_UNIX'''
+
+    def setUp(self):
+        self.regex = aa.RE_PROFILE_UNIX
+
+    tests = [
+        ('   unix,', (None, None, 'unix,', None)),
+        ('   audit unix,', ('audit', None, 'unix,', None)),
+        ('   unix accept,', (None, None, 'unix accept,', None)),
+        ('   allow unix connect,', (None, 'allow', 'unix connect,', None)),
+        ('   audit allow unix bind,', ('audit', 'allow', 'unix bind,', None)),
+        ('   deny unix bind,', (None, 'deny', 'unix bind,', None)),
+        ('unix peer=(label=@{profile_name}),',
+         (None, None, 'unix peer=(label=@{profile_name}),', None)),
+        ('unix (receive) peer=(label=unconfined),',
+         (None, None, 'unix (receive) peer=(label=unconfined),', None)),
+        (' unix (getattr, shutdown) peer=(addr=none),',
+         (None, None, 'unix (getattr, shutdown) peer=(addr=none),', None)),
+        ('unix (connect, receive, send) type=stream peer=(label=unconfined,addr="@/tmp/dbus-*"),',
+         (None, None, 'unix (connect, receive, send) type=stream peer=(label=unconfined,addr="@/tmp/dbus-*"),', None)),
+        ('unixlike', False),
+        ('deny unixlike,', False),
+    ]
+
 if __name__ == '__main__':
     verbosity = 2
 
@@ -345,7 +384,7 @@ if __name__ == '__main__':
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexSplitComment))
 
     for tests in (AARegexCapability, AARegexPath, AARegexBareFile,
-                  AARegexDbus, AARegexMount,
+                  AARegexDbus, AARegexMount, AARegexUnix,
                   AARegexSignal, AARegexPtrace, AARegexPivotRoot):
         setup_regex_tests(tests)
         test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(tests))
