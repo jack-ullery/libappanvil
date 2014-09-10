@@ -90,7 +90,7 @@ msgid ""
 "opportunity to choose whether the access should be \n"
 "allowed or denied."
 msgstr ""
-"Starten Sie die Anwendung, für die ein Profil erstellt werden soll, in\n
+"Starten Sie die Anwendung, für die ein Profil erstellt werden soll, in\n"
 " einem anderen Fenster, und führen Sie die Funktionalität jetzt aus.\n"
 " \n"
 " Nach Abschluss dieses Vorgangs wählen Sie unten \"Durchsuchen\", um\n"
