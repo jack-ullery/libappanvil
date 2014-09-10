@@ -7,9 +7,8 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-02-13 10:57-0800\n"
-"PO-Revision-Date: 2013-12-06 18:42+0000\n"
-"Last-Translator: Christian Boltz <Unknown>\n"
-"Language-Team: Novell Language <language@novell.com>\n"
+"PO-Revision-Date: 2014-09-10 21:05+0200\n"
+"Last-Translator: Christian Boltz <apparmor@cboltz.de>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -33,17 +32,19 @@ msgstr ""
 
 #: ../aa-genprof:55
 msgid "name of program to profile"
-msgstr ""
+msgstr "Name des Programms, für das ein Profil erstellt werden soll"
 
 #: ../aa-genprof:65 ../aa-logprof:37
 #, python-format
 msgid "The logfile %s does not exist. Please check the path"
-msgstr ""
+msgstr "Die Logdatei %s ist nicht vorhanden. Überprüfen Sie den Pfad."
 
 #: ../aa-genprof:71 ../aa-logprof:43 ../aa-unconfined:34
 msgid ""
 "It seems AppArmor was not started. Please enable AppArmor and try again."
 msgstr ""
+"AppArmor wurde offenbar nicht gestartet. Aktivieren Sie AppArmor und "
+"versuchen Sie es erneut."
 
 #: ../aa-genprof:76
 #, python-format
@@ -58,11 +59,15 @@ msgid ""
 "environment set up in order to find the fully-qualified path and\n"
 "use the full path as parameter."
 msgstr ""
+"%s wurde in der Systempfadliste nicht gefunden. Wenn der Name der Anwendung\n"
+"richtig ist, führen Sie 'which %s' als Benutzer mit korrekter PATH-Umgebung\n"
+"aus, um den vollständig qualifizierten Pfad zu finden, und benutzen Sie diesen\n"
+"als Parameter."
 
 #: ../aa-genprof:92
 #, python-format
 msgid "%s does not exists, please double-check the path."
-msgstr ""
+msgstr "%s ist nicht vorhanden. Überprüfen Sie den Pfad."
 
 #: ../aa-genprof:120
 msgid ""
@@ -85,6 +90,14 @@ msgid ""
 "opportunity to choose whether the access should be \n"
 "allowed or denied."
 msgstr ""
+"Starten Sie die Anwendung, für die ein Profil erstellt werden soll, in\n
+" einem anderen Fenster, und führen Sie die Funktionalität jetzt aus.\n"
+" \n"
+" Nach Abschluss dieses Vorgangs wählen Sie unten \"Durchsuchen\", um\n"
+"in den Systemprotokollen nach AppArmor-Ereignissen zu suchen. \n"
+" \n"
+"Für jedes AppArmor-Ereignis haben Sie die Gelegenheit anzugeben,\n"
+"ob der Zugriff zugelassen oder verweigert werden soll."
 
 #: ../aa-genprof:143
 msgid "Profiling"
@@ -95,6 +108,8 @@ msgid ""
 "\n"
 "Reloaded AppArmor profiles in enforce mode."
 msgstr ""
+"\n"
+"AppArmor-Profile wurden im Erzwingen-Modus neu geladen."
 
 #: ../aa-genprof:162
 msgid ""
@@ -153,6 +168,7 @@ msgstr ""
 msgid ""
 "The following local profiles were changed. Would you like to save them?"
 msgstr ""
+"Die folgenden lokalen Profile wurden geändert. Möchten Sie sie speichern?"
 
 #: ../aa-mergeprof:131 ../aa-mergeprof:413
 msgid "Path"
@@ -164,7 +180,7 @@ msgstr ""
 
 #: ../aa-mergeprof:149
 msgid "Unknown selection"
-msgstr ""
+msgstr "Unbekannte Auswahl"
 
 #: ../aa-mergeprof:166 ../aa-mergeprof:192
 msgid "File includes"
@@ -177,11 +193,11 @@ msgstr ""
 #: ../aa-mergeprof:178 ../aa-mergeprof:205
 #, python-format
 msgid "Adding %s to the file."
-msgstr ""
+msgstr "%s wird zum Profil hinzugefügt."
 
 #: ../aa-mergeprof:182
 msgid "unknown"
-msgstr ""
+msgstr "unbekannt"
 
 #: ../aa-mergeprof:207 ../aa-mergeprof:258 ../aa-mergeprof:499
 #: ../aa-mergeprof:541 ../aa-mergeprof:658
@@ -205,7 +221,7 @@ msgstr "Schweregrad"
 #: ../aa-mergeprof:256 ../aa-mergeprof:497
 #, python-format
 msgid "Adding %s to profile."
-msgstr ""
+msgstr "%s wird zum Profil hinzugefügt."
 
 #: ../aa-mergeprof:265
 #, python-format
@@ -248,7 +264,7 @@ msgstr "Modus"
 #: ../aa-mergeprof:539
 #, python-format
 msgid "Adding %s %s to profile"
-msgstr ""
+msgstr "%s %s wird zum Profil hinzugefügt."
 
 #: ../aa-mergeprof:557
 msgid "Enter new path: "
@@ -265,7 +281,7 @@ msgstr "Socket-Typ"
 #: ../aa-mergeprof:656
 #, python-format
 msgid "Adding %s to profile"
-msgstr ""
+msgstr "%s wird zum Profil hinzugefügt."
 
 #: ../aa-mergeprof:666
 #, python-format
@@ -275,7 +291,7 @@ msgstr "Netzwerkzugriff '%s' '%s' wird zum Profil hinzugefügt."
 #: ../aa-mergeprof:672
 #, python-format
 msgid "Denying network access %s %s to profile"
-msgstr ""
+msgstr "Netzwerkzugriff '%s' '%s' wird dem Profil verweigert."
 
 #: ../aa-autodep:23
 msgid "Generate a basic AppArmor profile by guessing requirements"
@@ -287,11 +303,11 @@ msgstr ""
 
 #: ../aa-audit:24
 msgid "Switch the given programs to audit mode"
-msgstr ""
+msgstr "Das angegebene Programm in den Audit-Modus versetzen"
 
 #: ../aa-audit:26
 msgid "remove audit mode"
-msgstr ""
+msgstr "Audit-Modus entfernen"
 
 #: ../aa-audit:28
 msgid "Show full trace"
@@ -299,19 +315,19 @@ msgstr ""
 
 #: ../aa-complain:23
 msgid "Switch the given program to complain mode"
-msgstr ""
+msgstr "Das angegebene Programm in den Complain-Modus versetzen"
 
 #: ../aa-complain:25
 msgid "remove complain mode"
-msgstr ""
+msgstr "Complain-Modus entfernen"
 
 #: ../aa-enforce:23
 msgid "Switch the given program to enforce mode"
-msgstr ""
+msgstr "Das angegebene Programm in den Erzwingen-Modus versetzen"
 
 #: ../aa-enforce:25
 msgid "switch to complain mode"
-msgstr ""
+msgstr "In den Complain-Modus versetzen"
 
 #: ../aa-disable:23
 msgid "Disable the profile for the given programs"
@@ -332,12 +348,12 @@ msgstr ""
 #: ../aa-unconfined:79
 #, python-format
 msgid "%s %s (%s) not confined\n"
-msgstr ""
+msgstr "%s %s (%s) nicht eingeschränkt\n"
 
 #: ../aa-unconfined:83
 #, python-format
 msgid "%s %s %snot confined\n"
-msgstr ""
+msgstr "%s %s %snicht eingeschränkt\n"
 
 #: ../aa-unconfined:88
 #, python-format
@@ -347,4 +363,4 @@ msgstr ""
 #: ../aa-unconfined:92
 #, python-format
 msgid "%s %s %sconfined by '%s'\n"
-msgstr ""
+msgstr "%s %s %seingeschränkt durch '%s'\n"
