@@ -35,7 +35,6 @@
 
 #include <unistd.h>
 #include <limits.h>
-#include <sys/sysctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/apparmor.h>
