@@ -63,6 +63,12 @@ socket=${tmpdir}/unix_fd_test
 fd_client=$PWD/unix_fd_client
 okperm=rwl
 badperm=wl
+af_unix=""
+
+if [ "$(have_features network/af_unix)" == "true" ]; then
+	af_unix="unix:create"
+fi
+
 # Content generated with:
 # dd if=/dev/urandom bs=32 count=4 2> /dev/null | od -x | head -8 | sed -e 's/^[[:xdigit:]]\{7\}//g' -e 's/ //g'
 cat > ${file} << EOM
@@ -81,7 +87,7 @@ rm -f ${socket}
 
 # PASS - unconfined client
 
-genprofile $file:$okperm $socket:rw $fd_client:ux
+genprofile $af_unix $file:$okperm $socket:rw $fd_client:ux
 
 runchecktest "fd passing; unconfined client" pass $file $socket $fd_client "delete_file"
 
@@ -99,7 +105,7 @@ EOM
 rm -f ${socket}
 
 # PASS - confined client, rw access to the file
-genprofile $file:$okperm $socket:rw $fd_client:px -- image=$fd_client $file:$okperm $socket:rw
+genprofile $af_unix $file:$okperm $socket:rw $fd_client:px -- image=$fd_client $af_unix $file:$okperm $socket:rw
 runchecktest "fd passing; confined client w/ rw" pass $file $socket $fd_client "delete_file"
 
 sleep 1
@@ -116,7 +122,7 @@ EOM
 rm -f ${socket}
 # FAIL - confined client, w access to the file
 
-genprofile $file:$okperm $socket:rw $fd_client:px -- image=$fd_client $file:$badperm $socket:rw
+genprofile $af_unix $file:$okperm $socket:rw $fd_client:px -- image=$fd_client $af_unix $file:$badperm $socket:rw
 runchecktest "fd passing; confined client w/ w only" fail $file $socket $fd_client "delete_file"
 
 sleep 1
