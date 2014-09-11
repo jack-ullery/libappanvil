@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2013-11-14 10:18-0800\n"
-"PO-Revision-Date: 2013-12-06 18:48+0000\n"
+"PO-Revision-Date: 2014-09-10 19:44+0000\n"
 "Last-Translator: Christian Boltz <Unknown>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-07-24 05:39+0000\n"
-"X-Generator: Launchpad (build 17114)\n"
+"X-Launchpad-Export-Date: 2014-09-11 05:48+0000\n"
+"X-Generator: Launchpad (build 17196)\n"
 "Language: de\n"
 
 #: ../parser_include.c:113
@@ -142,7 +142,7 @@ msgstr "Netzwerkregeln für Profil %s werden nicht erzwungen\n"
 
 #: ../parser_interface.c:666
 msgid "Unknown pattern type\n"
-msgstr ""
+msgstr "Unbekannter Mustertyp\n"
 
 #: ../parser_interface.c:750 ../parser_interface.c:902
 #: ../parser_interface.c:743 ../parser_interface.c:894
@@ -394,20 +394,21 @@ msgstr "Alias %s -> %s konnte nicht erstellt werden\n"
 
 #: parser_yacc.y:417 parser_yacc.y:460
 msgid "Profile flag chroot_relative conflicts with namespace_relative"
-msgstr ""
+msgstr "Profil-Flag chroot_relative steht in Konflikt mit namespace_relative"
 
 #: parser_yacc.y:421 parser_yacc.y:464
 msgid "Profile flag mediate_deleted conflicts with delegate_deleted"
-msgstr ""
+msgstr "Profil-Flag mediate_deleted steht in Konflikt mit delegate_deleted"
 
 #: parser_yacc.y:424 parser_yacc.y:467
 msgid ""
 "Profile flag attach_disconnected conflicts with no_attach_disconnected"
 msgstr ""
+"Profil-Flag attach_disconnected steht in Konflikt mit no_attach_disconnected"
 
 #: parser_yacc.y:427 parser_yacc.y:470
 msgid "Profile flag chroot_attach conflicts with chroot_no_attach"
-msgstr ""
+msgstr "Profil-Flag chroot_attach steht in Konflikt mit chroot_no_attach"
 
 #: parser_yacc.y:441 parser_yacc.y:484
 msgid "Profile flag 'debug' is no longer valid."
@@ -656,11 +657,11 @@ msgstr ""
 
 #: parser_yacc.y:575
 msgid "deny prefix not allowed"
-msgstr ""
+msgstr "deny-Prefix nicht erlaubt"
 
 #: parser_yacc.y:612
 msgid "owner prefix not allowed"
-msgstr ""
+msgstr "owner-Prefix nicht erlaubt"
 
 #: parser_yacc.y:660
 msgid "owner prefix not allow on mount rules"

@@ -7,28 +7,28 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-02-13 10:57-0800\n"
-"PO-Revision-Date: 2014-09-10 21:05+0200\n"
+"PO-Revision-Date: 2014-09-11 02:01+0000\n"
 "Last-Translator: Christian Boltz <apparmor@cboltz.de>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-07-24 05:40+0000\n"
-"X-Generator: Launchpad (build 17114)\n"
+"X-Launchpad-Export-Date: 2014-09-11 05:48+0000\n"
+"X-Generator: Launchpad (build 17196)\n"
 "Language: de\n"
 
 #: ../aa-genprof:52
 msgid "Generate profile for the given program"
-msgstr ""
+msgstr "Profil für das angegebene Programm erstellen"
 
 #: ../aa-genprof:53 ../aa-logprof:25 ../aa-cleanprof:24 ../aa-mergeprof:31
 #: ../aa-autodep:25 ../aa-audit:25 ../aa-complain:24 ../aa-enforce:24
 #: ../aa-disable:24
 msgid "path to profiles"
-msgstr ""
+msgstr "Pfad zu den Profilen"
 
 #: ../aa-genprof:54 ../aa-logprof:26
 msgid "path to logfile"
-msgstr ""
+msgstr "Pfad zur Logdatei"
 
 #: ../aa-genprof:55
 msgid "name of program to profile"
@@ -49,7 +49,7 @@ msgstr ""
 #: ../aa-genprof:76
 #, python-format
 msgid "%s is not a directory."
-msgstr ""
+msgstr "%s ist kein Verzeichnis."
 
 #: ../aa-genprof:90
 #, python-format
@@ -138,19 +138,19 @@ msgstr ""
 #: ../aa-cleanprof:25 ../aa-autodep:26 ../aa-audit:27 ../aa-complain:26
 #: ../aa-enforce:26 ../aa-disable:26
 msgid "name of program"
-msgstr ""
+msgstr "Name des Programms"
 
 #: ../aa-cleanprof:26
 msgid "Silently overwrite with a clean profile"
 msgstr ""
 
-#: ../aa-mergeprof:27
-msgid "Perform a 3way merge on the given profiles"
+#: ../aa-mergeprof:29
+msgid "Perform a 2-way or 3-way merge on the given profiles"
 msgstr ""
 
 #: ../aa-mergeprof:28
 msgid "your profile"
-msgstr ""
+msgstr "Ihr Profil"
 
 #: ../aa-mergeprof:29
 msgid "base profile"
@@ -158,10 +158,6 @@ msgstr ""
 
 #: ../aa-mergeprof:30
 msgid "other profile"
-msgstr ""
-
-#: ../aa-mergeprof:32
-msgid "Automatically merge profiles, exits incase of *x conflicts"
 msgstr ""
 
 #: ../aa-mergeprof:53
@@ -176,7 +172,7 @@ msgstr "Pfad"
 
 #: ../aa-mergeprof:132
 msgid "Select the appropriate mode"
-msgstr ""
+msgstr "Wählen Sie den passenden Modus"
 
 #: ../aa-mergeprof:149
 msgid "Unknown selection"
@@ -331,10 +327,6 @@ msgstr "In den Complain-Modus versetzen"
 
 #: ../aa-disable:23
 msgid "Disable the profile for the given programs"
-msgstr ""
-
-#: ../aa-disable:25
-msgid "enable the profile for the given programs"
 msgstr ""
 
 #: ../aa-unconfined:26
