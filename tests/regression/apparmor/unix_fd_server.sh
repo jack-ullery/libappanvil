@@ -25,6 +25,11 @@ socket=${tmpdir}/unix_fd_test
 fd_client=$PWD/unix_fd_client
 okperm=rw
 badperm=w
+af_unix=""
+
+if [ "$(have_features network/af_unix)" == "true" ]; then
+	af_unix="unix:create"
+fi
 
 # Content generated with:
 # dd if=/dev/urandom bs=32 count=4 2> /dev/null | od -x | head -8 | sed -e 's/^[[:xdigit:]]\{7\}//g' -e 's/ //g'
@@ -51,7 +56,7 @@ rm -f ${socket}
 
 # PASS - confined -> unconfined
 
-genprofile $file:$okperm $socket:rw $fd_client:ux
+genprofile $file:$okperm $af_unix $socket:rw $fd_client:ux
 
 runchecktest "fd passing; confined -> unconfined" pass $file $socket $fd_client
 
@@ -60,7 +65,7 @@ rm -f ${socket}
 
 # FAIL - confined (bad perm) -> unconfined
 
-genprofile $file:$badperm $socket:rw $fd_client:ux
+genprofile $file:$badperm $af_unix $socket:rw $fd_client:ux
 
 runchecktest "fd passing; confined (bad perm) -> unconfined" fail $file $socket $fd_client
 
@@ -69,7 +74,7 @@ rm -f ${socket}
 
 # FAIL - confined (no perm) -> unconfined
 
-genprofile $socket:rw $fd_client:ux
+genprofile $af_unix $socket:rw $fd_client:ux
 
 runchecktest "fd passing; confined (no perm) -> unconfined" fail $file $socket $fd_client
 
@@ -78,7 +83,7 @@ rm -f ${socket}
 
 # PASS (due to delegation) - unconfined -> confined
 
-genprofile image=$fd_client $file:$okperm $socket:rw
+genprofile image=$fd_client $file:$okperm $af_unix $socket:rw
 runchecktest "fd passing; unconfined -> confined" pass $file $socket $fd_client
 
 sleep 1
@@ -86,7 +91,7 @@ rm -f ${socket}
 
 # PASS (due to delegation) - unconfined -> confined (no perm)
 
-genprofile image=$fd_client $socket:rw
+genprofile image=$fd_client $af_unix $socket:rw
 runchecktest "fd passing; unconfined -> confined (no perm)" pass $file $socket $fd_client
 
 sleep 1
@@ -94,7 +99,7 @@ rm -f ${socket}
 
 # PASS - confined -> confined
 
-genprofile $file:$okperm $socket:rw $fd_client:px -- image=$fd_client $file:$okperm $socket:rw
+genprofile $file:$okperm $af_unix $socket:rw $fd_client:px -- image=$fd_client $file:$okperm $af_unix $socket:rw
 runchecktest "fd passing; confined -> confined" pass $file $socket $fd_client
 
 sleep 1
@@ -102,7 +107,7 @@ rm -f ${socket}
 
 # FAIL - confined (bad perm) -> confined
 
-genprofile $file:$badperm $socket:rw $fd_client:px -- image=$fd_client $file:$okperm $socket:rw
+genprofile $file:$badperm $af_unix $socket:rw $fd_client:px -- image=$fd_client $file:$okperm $af_unix $socket:rw
 runchecktest "fd passing; confined (bad perm) -> confined" fail $file $socket $fd_client
 
 sleep 1
@@ -110,7 +115,7 @@ rm -f ${socket}
 
 # FAIL - confined (no perm) -> confined
 
-genprofile $socket:rw $fd_client:px -- image=$fd_client $file:$okperm $socket:rw
+genprofile $af_unix $socket:rw $fd_client:px -- image=$fd_client $file:$okperm $af_unix $socket:rw
 runchecktest "fd passing; confined (no perm) -> confined" fail $file $socket $fd_client
 
 sleep 1
@@ -118,7 +123,7 @@ rm -f ${socket}
 
 # FAIL - confined -> confined (bad perm)
 
-genprofile $file:$okperm $socket:rw $fd_client:px -- image=$fd_client $file:$badperm $socket:rw
+genprofile $file:$okperm $af_unix $socket:rw $fd_client:px -- image=$fd_client $file:$badperm $af_unix $socket:rw
 runchecktest "fd passing; confined -> confined (bad perm)" fail $file $socket $fd_client
 
 sleep 1
@@ -126,7 +131,7 @@ rm -f ${socket}
 
 # FAIL - confined -> confined (no perm)
 
-genprofile $file:$okperm $socket:rw $fd_client:px -- image=$fd_client $socket:rw
+genprofile $file:$okperm $af_unix $socket:rw $fd_client:px -- image=$fd_client $af_unix $socket:rw
 runchecktest "fd passing; confined -> confined (no perm)" fail $file $socket $fd_client
 
 sleep 1
@@ -135,7 +140,7 @@ rm -f ${socket}
 if [ "$(have_features policy/versions/v6)" == "true" ] ; then
     # FAIL - confined client, no access to the socket file
 
-    genprofile $file:$okperm $socket:rw $fd_client:px -- image=$fd_client $file:$okperm
+    genprofile $file:$okperm $af_unix $socket:rw $fd_client:px -- image=$fd_client $file:$okperm $af_unix 
     runchecktest "fd passing; confined client w/o socket access" fail $file $socket $fd_client
 
     sleep 1
