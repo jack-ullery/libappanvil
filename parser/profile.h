@@ -128,7 +128,7 @@ public:
 
 	Profile *parent;
 
-	struct flagvals flags;
+	flagvals flags;
 	struct capabilities caps;
 	struct network net;
 

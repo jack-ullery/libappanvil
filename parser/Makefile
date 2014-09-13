@@ -255,10 +255,10 @@ ptrace.o: ptrace.cc ptrace.h parser.h immunix.h parser_yacc.h rule.h $(APPARMOR_
 network.o: network.c network.h parser.h immunix.h parser_yacc.h rule.h af_names.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-af_rule.o: af_rule.cc af_rule.h network.h parser.h immunix.h parser_yacc.h rule
+af_rule.o: af_rule.cc af_rule.h network.h parser.h profile.h immunix.h parser_yacc.h rule.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-af_unix.o: af_unix.cc af_unix.h network.h af_rule.h parser.h immunix.h parser_y
+af_unix.o: af_unix.cc af_unix.h network.h af_rule.h parser.h profile.h immunix.h parser_y $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 profile.o: profile.cc profile.h parser.h network.h
