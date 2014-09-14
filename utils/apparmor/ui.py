@@ -348,7 +348,7 @@ def Text_PromptUser(question):
         key = get_translated_hotkey(menutext).lower()
         # Duplicate hotkey
         if keys.get(key, False):
-            raise AppArmorException(_('PromptUser: Duplicate hotkey for %s: %s ') % (cmd, menutext))
+            raise AppArmorException(_('PromptUser: Duplicate hotkey for %(command)s: %(menutext)s ') % { 'command': cmd, 'menutext': menutext })
 
         keys[key] = cmd
 
