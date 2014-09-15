@@ -33,12 +33,15 @@
 
 profile sanitized_helper {
   #include <abstractions/base>
+  #include <abstractions/X>
 
   # Allow all networking
   network inet,
   network inet6,
 
   # Allow all DBus communications
+  #include <abstractions/dbus-session-strict>
+  #include <abstractions/dbus-strict>
   dbus,
 
   # Allow exec of anything, but under this profile. Allow transition
