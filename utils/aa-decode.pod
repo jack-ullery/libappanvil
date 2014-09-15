@@ -6,7 +6,7 @@ aa-decode - decode hex-encoded in AppArmor log files
 
 =head1 SYNOPSIS
 
-B<aa-decode> [option] <HEX STRING>
+B<aa-decode> [option] E<lt>HEX STRINGE<gt>
 
 =head1 DESCRIPTION
 

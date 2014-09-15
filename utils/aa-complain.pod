@@ -26,7 +26,7 @@ aa-complain - set an AppArmor security profile to I<complain> mode.
 
 =head1 SYNOPSIS
 
-B<aa-complain I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...] [I<-d /path/to/profiles>]
+B<< aa-complain I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...] [I<-d /path/to/profiles>] >>
 
 =head1 OPTIONS
 

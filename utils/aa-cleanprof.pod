@@ -14,7 +14,7 @@ B<-d --dir  /path/to/profiles>
 
    Specifies where to look for the AppArmor security profile set.
    Defaults to /etc/apparmor.d.
-   
+
 B<-s --silent>
 
    Silently overwrites the profile without user prompt.

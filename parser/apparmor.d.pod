@@ -48,20 +48,20 @@ B<INCLUDE> = '#include' ( I<ABS PATH> | I<MAGIC PATH> )
 
 B<ABS PATH> = '"' path '"' (the path is passed to open(2))
 
-B<MAGIC PATH> = '<' relative path '>' (the path is relative to F</etc/apparmor.d/>)
+B<MAGIC PATH> = 'E<lt>' relative path 'E<gt>' (the path is relative to F</etc/apparmor.d/>)
 
 B<COMMENT> = '#' I<TEXT>
 
 B<TEXT> = any characters
 
-B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<DBUS RULE> | I<UNIX RULE> I<FILE RULE> | 'change_profile -> ' I<PROGRAMCHILD> ) ... ] '}'
+B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | 'capability ' I<CAPABILITY> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<DBUS RULE> | I<UNIX RULE> I<FILE RULE> | 'change_profile -E<gt> ' I<PROGRAMCHILD> ) ... ] '}'
 
 B<SUBPROFILE> = [ I<COMMENT> ... ] ( I<PROGRAMHAT> | 'profile ' I<PROGRAMCHILD> ) '{' [ ( I<FILE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}'
 
 B<CAPABILITY> = (lowercase capability name without 'CAP_' prefix; see
 capabilities(7))
 
-B<NETWORK RULE> = 'network' [ [ I<DOMAIN> ] [ I<TYPE> ] [ I <PROTOCOL> ] ] ','
+B<NETWORK RULE> = 'network' [ [ I<DOMAIN> ] [ I<TYPE> ] [ I<PROTOCOL> ] ] ','
 
 B<DOMAIN> = ( 'inet' | 'ax25' | 'ipx' | 'appletalk' | 'netrom' | 'bridge' | 'atmpvc' | 'x25' | 'inet6' | 'rose' | 'netbeui' | 'security' | 'key' | 'packet' | 'ash' | 'econet' | 'atmsvc' | 'sna' | 'irda' | 'pppox' | 'wanpipe' | 'bluetooth' | 'netlink' ) ','
 
@@ -77,7 +77,7 @@ B<PROGRAMCHILD> = I<SUBPROFILE> name
 
 B<MOUNT RULE> = ( I<MOUNT> | I<REMOUNT> | I<UMOUNT> )
 
-B<MOUNT> = [ 'audit' ] [ 'deny' ] 'mount' [ I<MOUNT CONDITIONS> ] [ I<SOURCE FILEGLOB> ] [ -> [ I<MOUNTPOINT FILEGLOB> ]
+B<MOUNT> = [ 'audit' ] [ 'deny' ] 'mount' [ I<MOUNT CONDITIONS> ] [ I<SOURCE FILEGLOB> ] [ -E<gt> [ I<MOUNTPOINT FILEGLOB> ]
 
 B<REMOUNT> = [ 'audit' ] [ 'deny' ] 'remount' [ I<MOUNT CONDITIONS> ] I<MOUNTPOINT FILEGLOB>
 
@@ -97,7 +97,7 @@ B<MOUNT FLAGS> = ( 'ro' | 'rw' | 'nosuid' | 'suid' | 'nodev' | 'dev' | 'noexec' 
 
 B<MOUNT EXPRESSION> = ( I<ALPHANUMERIC> | I<AARE> ) ...
 
-B<PIVOT ROOT RULE> = [ 'audit' ] [ 'deny' ] pivot_root [ oldroot=I<OLD PUT FILEGLOB> ] [ I<NEW ROOT FILEGLOB> ] [ -> I<PROGRAMCHILD> ]
+B<PIVOT ROOT RULE> = [ 'audit' ] [ 'deny' ] pivot_root [ oldroot=I<OLD PUT FILEGLOB> ] [ I<NEW ROOT FILEGLOB> ] [ -E<gt> I<PROGRAMCHILD> ]
 
 B<PTRACE_RULE> = [ 'audit' ] [ 'deny' ] 'ptrace' [ I<PTRACE ACCESS PERMISSIONS> ] [ I<PTRACE PEER> ]
 
@@ -166,14 +166,14 @@ B<UNIX ACCESS EXPR> = ( I<UNIX ACCESS> | I<UNIX ACCESS LIST> )
 B<UNIX ACCESS> = ( 'create' | 'bind' | 'listen' | 'accept' | 'connect' | 'shutdown' | 'getattr' | 'setattr' | 'getopt' | 'setopt' | 'send' | 'receive' | 'r' | 'w' | 'rw' )
  (some access modes are incompatible with some rules or require additional parameters)
 
-B<UNIX ACCESS LIST> = '(' I<UNIX ACCESS> ( [','] <UNIX ACCESS> )* ')'
+B<UNIX ACCESS LIST> = '(' I<UNIX ACCESS> ( [','] I<UNIX ACCESS> )* ')'
 
 B<UNIX RULE CONDS> = ( I<TYPE COND> | I<PROTO COND> )
  each cond can appear at most once
 
-B<TYPE COND> = 'type' '='  ( <AARE> | '(' ( '"' <AARE> '"' | <AARE> )+ ')' )
+B<TYPE COND> = 'type' '='  ( I<AARE> | '(' ( '"' I<AARE> '"' | I<AARE> )+ ')' )
 
-B<PROTO COND> = 'protocol' '='  ( <AARE> | '(' ( '"' <AARE> '"' | <AARE> )+ ')' )
+B<PROTO COND> = 'protocol' '='  ( I<AARE> | '(' ( '"' I<AARE> '"' | I<AARE> )+ ')' )
 
 B<UNIX LOCAL EXPR> = ( I<UNIX ADDRESS COND> | I<UNIX LABEL COND> | I<UNIX ATTR COND> | I<UNIX OPT COND> )*
  each cond can appear at most once
@@ -181,13 +181,13 @@ B<UNIX LOCAL EXPR> = ( I<UNIX ADDRESS COND> | I<UNIX LABEL COND> | I<UNIX ATTR C
 B<UNIX PEER EXPR> = 'peer' '=' ( I<UNIX ADDRESS COND> | I<UNIX LABEL COND> )+
  each cond can appear at most once
 
-B<UNIX ADDRESS COND> 'addr' '=' ( <AARE> | '(' '"' <AARE> '"' | <AARE> ')' )
+B<UNIX ADDRESS COND> 'addr' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
-B<UNIX LABEL COND> 'label' '=' ( <AARE> | '(' '"' <AARE> '"' | <AARE> ')' )
+B<UNIX LABEL COND> 'label' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
-B<UNIX ATTR COND> 'attr' '=' ( <AARE> | '(' '"' <AARE> '"' | <AARE> ')' )
+B<UNIX ATTR COND> 'attr' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
-B<UNIX OPT COND> 'opt' '=' ( <AARE> | '(' '"' <AARE> '"' | <AARE> ')' )
+B<UNIX OPT COND> 'opt' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
 B<FILE RULE> = I<RULE QUALIFIER> ( '"' I<FILEGLOB> '"' | I<FILEGLOB> ) I<ACCESS> ','
 
@@ -195,13 +195,13 @@ B<RULE QUALIFIER> = [ 'audit' ] [ 'deny' ] [ 'owner' ]
 
 B<FILEGLOB> = (must start with '/' (after variable expansion), B<AARE> have special meanings; see below. May include I<VARIABLE>. Rules with embedded spaces or tabs must be quoted. Rules must end with '/' to apply to directories.)
 
-B<ACCESS> = ( 'r' | 'w' | 'l' | 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'cx -> ' I<PROGRAMCHILD> | 'Cx -> ' I<PROGRAMCHILD> | 'm' ) [ I<ACCESS> ... ]  (not all combinations are allowed; see below.)
+B<ACCESS> = ( 'r' | 'w' | 'l' | 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'cx -E<gt> ' I<PROGRAMCHILD> | 'Cx -E<gt> ' I<PROGRAMCHILD> | 'm' ) [ I<ACCESS> ... ]  (not all combinations are allowed; see below.)
 
 B<VARIABLE> = '@{' I<ALPHA> [ ( I<ALPHANUMERIC> | '_' ) ... ] '}'
 
 B<VARIABLE ASSIGNMENT> = I<VARIABLE> ('=' | '+=') (space separated values)
 
-B<ALIAS RULE> = I<ABS PATH> '->' I<REWRITTEN ABS PATH> ','
+B<ALIAS RULE> = I<ABS PATH> '-E<gt>' I<REWRITTEN ABS PATH> ','
 
 B<ALPHA> = ('a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
@@ -230,31 +230,57 @@ modes:
 
 =over 8
 
-=item B<r> 	- read
+=item B<r>
 
-=item B<w> 	- write -- conflicts with append
+- read
 
-=item B<a>	- append -- conflicts with write
+=item B<w>
 
-=item B<ux> 	- unconfined execute
+- write -- conflicts with append
 
-=item B<Ux> 	- unconfined execute -- scrub the environment
+=item B<a>
 
-=item B<px> 	- discrete profile execute
+- append -- conflicts with write
 
-=item B<Px> 	- discrete profile execute -- scrub the environment
+=item B<ux>
 
-=item B<cx> 	- transition to subprofile on execute
+- unconfined execute
 
-=item B<Cx> 	- transition to subprofile on execute -- scrub the environment
+=item B<Ux>
 
-=item B<ix>	- inherit execute
+- unconfined execute -- scrub the environment
 
-=item B<m>	- allow PROT_EXEC with mmap(2) calls
+=item B<px>
 
-=item B<l> 	- link
+- discrete profile execute
 
-=item B<k>	- lock
+=item B<Px>
+
+- discrete profile execute -- scrub the environment
+
+=item B<cx>
+
+- transition to subprofile on execute
+
+=item B<Cx>
+
+- transition to subprofile on execute -- scrub the environment
+
+=item B<ix>
+
+- inherit execute
+
+=item B<m>
+
+- allow PROT_EXEC with mmap(2) calls
+
+=item B<l>
+
+- link
+
+=item B<k>
+
+- lock
 
 =back
 
@@ -459,29 +485,17 @@ If a conditional is specified using '=', then the rule only grants permission
 for mounts matching the exactly specified options. For example, an AppArmor
 policy with the following rule:
 
-=over 4
-
-mount options=ro /dev/foo -> /mnt/,
-
-=back
+    mount options=ro /dev/foo -E<gt> /mnt/,
 
 Would match:
 
-=over 4
-
-$ mount -o ro /dev/foo /mnt
-
-=back
+    $ mount -o ro /dev/foo /mnt
 
 but not either of these:
 
-=over 4
+    $ mount -o ro,atime /dev/foo /mnt
 
-$ mount -o ro,atime /dev/foo /mnt
-
-$ mount -o rw /dev/foo /mnt
-
-=back
+    $ mount -o rw /dev/foo /mnt
 
 =item 2.
 
@@ -489,39 +503,27 @@ If a conditional is specified using 'in', then the rule grants permission for
 mounts matching any combination of the specified options. For example, if an
 AppArmor policy has the following rule:
 
-=over 4
-
-mount options in (ro,atime) /dev/foo -> /mnt/,
-
-=back
+    mount options in (ro,atime) /dev/foo -> /mnt/,
 
 all of these mount commands will match:
 
-=over 4
+    $ mount -o ro /dev/foo /mnt
 
-$ mount -o ro /dev/foo /mnt
+    $ mount -o ro,atime /dev/foo /mnt
 
-$ mount -o ro,atime /dev/foo /mnt
-
-$ mount -o atime /dev/foo /mnt
-
-=back
+    $ mount -o atime /dev/foo /mnt
 
 but none of these will:
 
-=over 4
+    $ mount -o ro,sync /dev/foo /mnt
 
-$ mount -o ro,sync /dev/foo /mnt
+    $ mount -o ro,atime,sync /dev/foo /mnt
 
-$ mount -o ro,atime,sync /dev/foo /mnt
+    $ mount -o rw /dev/foo /mnt
 
-$ mount -o rw /dev/foo /mnt
+    $ mount -o rw,noatime /dev/foo /mnt
 
-$ mount -o rw,noatime /dev/foo /mnt
-
-$ mount /dev/foo /mnt
-
-=back
+    $ mount /dev/foo /mnt
 
 =item 3.
 
@@ -530,51 +532,32 @@ grants permission for each set of options. This provides a shorthand when
 writing mount rules which might help to logically break up a conditional. For
 example, if an AppArmor policy has the following rule:
 
-=over 4
-
-mount options=ro options=atime
-
-=back
+    mount options=ro options=atime
 
 both of these mount commands will match:
 
-=over 4
+    $ mount -o ro /dev/foo /mnt
 
-$ mount -o ro /dev/foo /mnt
-
-$ mount -o atime /dev/foo /mnt
-
-=back
+    $ mount -o atime /dev/foo /mnt
 
 but this one will not:
 
-=over 4
-
-$ mount -o ro,atime /dev/foo /mnt
-
-=back
+    $ mount -o ro,atime /dev/foo /mnt
 
 =back
 
 Note that separate mount rules are distinct and the options do not accumulate.
 For example, these AppArmor mount rules:
 
-=over 4
+    mount options=ro,
 
-mount options=ro,
-mount options=atime,
-
-=back
+    mount options=atime,
 
 are not equivalent to either of these mount rules:
 
-=over 4
+    mount options=(ro,atime),
 
-mount options=(ro,atime),
-
-mount options in (ro,atime),
-
-=back
+    mount options in (ro,atime),
 
 To help clarify the flexibility and complexity of mount rules, here are some
 example rules with accompanying matching commands:
@@ -584,65 +567,49 @@ example rules with accompanying matching commands:
 =item B<mount,>
 
 the 'mount' rule without any conditionals is the most generic and allows any
-mount. Equivalent to 'mount fstype=** options=** ** -> /**'.
+mount. Equivalent to 'mount fstype=** options=** ** -E<gt> /**'.
 
 =item B<mount /dev/foo,>
 
 allow mounting of /dev/foo anywhere with any options. Some matching mount
 commands:
 
-=over 4
+    $ mount /dev/foo /mnt
 
-$ mount /dev/foo /mnt
+    $ mount -t ext3 /dev/foo /mnt
 
-$ mount -t ext3 /dev/foo /mnt
+    $ mount -t vfat /dev/foo /mnt
 
-$ mount -t vfat /dev/foo /mnt
-
-$ mount -o ro,atime,noexec,nodiratime /dev/foo /srv/some/mountpoint
-
-=back
+    $ mount -o ro,atime,noexec,nodiratime /dev/foo /srv/some/mountpoint
 
 =item B<mount options=ro /dev/foo,>
 
 allow mounting of /dev/foo anywhere, as read only. Some matching mount
 commands:
 
-=over 4
+    $ mount -o ro /dev/foo /mnt
 
-$ mount -o ro /dev/foo /mnt
-
-$ mount -o ro /dev/foo /some/where/else
-
-=back
+    $ mount -o ro /dev/foo /some/where/else
 
 =item B<mount options=(ro,atime) /dev/foo,>
 
 allow mount of /dev/foo anywhere, as read only and using inode access times.
 Some matching mount commands:
 
-=over 4
+    $ mount -o ro,atime /dev/foo /mnt
 
-$ mount -o ro,atime /dev/foo /mnt
-
-$ mount -o ro,atime /dev/foo /some/where/else
-
-=back
+    $ mount -o ro,atime /dev/foo /some/where/else
 
 =item B<mount options in (ro,atime) /dev/foo,>
 
 allow mount of /dev/foo anywhere using some combination of 'ro' and 'atime'
 (see above). Some matching mount commands:
 
-=over 4
+    $ mount -o ro /dev/foo /mnt
 
-$ mount -o ro /dev/foo /mnt
+    $ mount -o atime /dev/foo /some/where/else
 
-$ mount -o atime /dev/foo /some/where/else
-
-$ mount -o ro,atime /dev/foo /some/other/place
-
-=back
+    $ mount -o ro,atime /dev/foo /some/other/place
 
 =item B<mount options=ro /dev/foo, mount options=atime /dev/foo,>
 
@@ -650,68 +617,48 @@ allow mount of /dev/foo anywhere as read only, and allow mount of /dev/foo
 anywhere using inode access times. Note this is expressed as two different
 rules. Matches:
 
-=over 4
+    $ mount -o ro /dev/foo /mnt/1
 
-$ mount -o ro /dev/foo /mnt/1
+    $ mount -o atime /dev/foo /mnt/2
 
-$ mount -o atime /dev/foo /mnt/2
-
-=back
-
-=item B<< mount -> /mnt/**, >>
+=item B<< mount -E<gt> /mnt/**, >>
 
 allow mounting anything under a directory in /mnt/**. Some matching mount
 commands:
 
-=over 4
+    $ mount /dev/foo1 /mnt/1
 
-$ mount /dev/foo1 /mnt/1
+    $ mount -o ro,atime,noexec,nodiratime /dev/foo2 /mnt/deep/path/foo2
 
-$ mount -o ro,atime,noexec,nodiratime /dev/foo2 /mnt/deep/path/foo2
-
-=back
-
-=item B<< mount options=ro -> /mnt/**, >>
+=item B<< mount options=ro -E<gt> /mnt/**, >>
 
 allow mounting anything under /mnt/**, as read only. Some matching mount
 commands:
 
-=over 4
+    $ mount -o ro /dev/foo1 /mnt/1
 
-$ mount -o ro /dev/foo1 /mnt/1
+    $ mount -o ro /dev/foo2 /mnt/deep/path/foo2
 
-$ mount -o ro /dev/foo2 /mnt/deep/path/foo2
-
-=back
-
-=item B<< mount fstype=ext3 options=(rw,atime) /dev/sdb1 -> /mnt/stick/, >>
+=item B<< mount fstype=ext3 options=(rw,atime) /dev/sdb1 -E<gt> /mnt/stick/, >>
 
 allow mounting an ext3 filesystem in /dev/sdb1 on /mnt/stick as read/write and
 using inode access times. Matches only:
 
-=over 4
+    $ mount -o rw,atime /dev/sdb1 /mnt/stick
 
-$ mount -o rw,atime /dev/sdb1 /mnt/stick
-
-=back
-
-=item B<< mount options=(ro, atime) options in (nodev, user) /dev/foo -> /mnt/, >>
+=item B<< mount options=(ro, atime) options in (nodev, user) /dev/foo -E<gt> /mnt/, >>
 
 allow mounting /dev/foo on /mmt/ read only and using inode access times or
 allow mounting /dev/foo on /mnt/ with some combination of 'nodev' and 'user'.
 Matches only:
 
-=over 4
+    $ mount -o ro,atime /dev/foo /mnt
 
-$ mount -o ro,atime /dev/foo /mnt
+    $ mount -o nodev /dev/foo /mnt
 
-$ mount -o nodev /dev/foo /mnt
+    $ mount -o user /dev/foo /mnt
 
-$ mount -o user /dev/foo /mnt
-
-$ mount -o nodev,user /dev/foo /mnt
-
-=back
+    $ mount -o nodev,user /dev/foo /mnt
 
 =back
 
@@ -898,6 +845,7 @@ domain sockets, see unix(7) for more information.
 
 The sun_path component (aka the socket address) of a unix domain socket is
 specified by the
+
   addr=
 
 conditional. If an address conditional is not specified as part of
@@ -911,17 +859,20 @@ characters must be specified by using an escape sequence I<\000> or
 I<\x00>. The pattern matching is the same as is used by file path matching
 so * will not match I</> even though it has no special meaning with
 in an abstract socket name. Eg.
+
   unix addr=@*,
 
 Anonymous unix domain sockets have no sun_path associated with the socket
 address, however it can be specified with the special I<none> keyword to
 indicate the rule only applies to anonymous unix domain sockets. Eg.
+
   unix addr=none,
 
 If the address component of a rule is not specified then the rule applies
 to both abstract and anonymous sockets.
 
 =head3 Unix socket permissions
+
 Unix domain socket rules are accumulated so that the granted unix
 socket permissions are the union of all the listed unix rule permissions.
 
@@ -988,18 +939,20 @@ sockets as well. When fine grained unix domain socket mediation is available
 the coarse grained network rule is mapped into the equivalent unix socket
 rule.
 
-Eg.
+E.G.
+
     network unix,  =>  unix,
 
     network unix stream,   =>  unix stream,
 
 Fine grained mediation rules however can not be lossly converted back
-to the coarse grained network rule. Eg
+to the coarse grained network rule; e.g.
 
    unix bind addr=@example,
 
 Has no exact match under coarse grained network rules, the closest match is
-the much wider permission rule of.
+the much wider permission rule of
+
    network unix,
 
 =head2 Variables
@@ -1308,17 +1261,25 @@ An example AppArmor profile:
 
 =over 4
 
+=item *
+
 Mount options support the use of pattern matching but mount flags are not
 correctly intersected against specified patterns. Eg, 'mount options=**,'
 should be equivalent to 'mount,', but it is not. (LP: #965690)
+
+=item *
 
 The fstype may not be matched against when certain mount command flags are
 used. Specifically fstype matching currently only works when creating a new
 mount and not remount, bind, etc.
 
+=item *
+
 Mount rules with multiple 'options' conditionals are not applied as documented
 but instead merged such that 'options in (ro,nodev) options in (atime)' is
 equivalent to 'options in (ro,nodev,atime)'.
+
+=item *
 
 When specifying mount options with the 'in' conditional, both the positive and
 negative values match when specifying one or the other. Eg, 'rw' matches when

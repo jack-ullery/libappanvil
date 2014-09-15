@@ -64,7 +64,7 @@ provides the AAHatName and AADefaultHatName Apache configuration options.
 =item B<AAHatName>
 
 AAHatName allows you to specify a hat to be used for a given Apache
-E<lt>DirectoryE<gt>, E<lt>DirectoryMatch>, E<lt>LocationE<gt> or
+E<lt>DirectoryE<gt>, E<lt>DirectoryMatchE<gt>, E<lt>LocationE<gt> or
 E<lt>LocationMatchE<gt> directive (see the Apache documenation for more
 details). Note that mod_apparmor behavior can become confused if
 E<lt>Directory*E<gt> and E<lt>Location*E<gt> directives are intermingled
@@ -95,23 +95,35 @@ On each URI request, mod_apparmor will first aa_change_hat(2) into
 Then, after performing the initial parsing of the request, mod_apparmor
 will:
 
-=over 2
+=over 4
 
-1. try to aa_change_hat(2) into a matching AAHatName hat if it exists and
+=item 1
+
+try to aa_change_hat(2) into a matching AAHatName hat if it exists and
 applies, otherwise it will
 
-2. try to aa_change_hat(2) into an AADefaultHatName hat, either the
+=item 2
+
+try to aa_change_hat(2) into an AADefaultHatName hat, either the
 ServerName (the default) or the configuration value specified by the
 AADefaultHatName directive, for the server/vhost, otherwise it will
 
-3. try to aa_change_hat(2) into the ServerName-URI, otherwise it will
+=item 3
 
-4. try to aa_change_hat(2) into the URI itself, otherwise it will
+try to aa_change_hat(2) into the ServerName-URI, otherwise it will
 
-5. try to aa_change_hat(2) into the DEFAULT_URI hat, if it exists, otherwise it
+=item 4
+
+try to aa_change_hat(2) into the URI itself, otherwise it will
+
+=item 5
+
+try to aa_change_hat(2) into the DEFAULT_URI hat, if it exists, otherwise it
 will
 
-6. fall back to the global Apache policy
+=item 6
+
+fall back to the global Apache policy
 
 =back
 

@@ -291,7 +291,7 @@ tst_%: parser_%.c parser.h $(filter-out parser_%.o, ${TEST_OBJECTS})
 
 .SILENT: check
 .PHONY: check
-check: tests
+check: check_pod_files tests
 
 .SILENT: tests
 tests: apparmor_parser ${TESTS}

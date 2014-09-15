@@ -36,7 +36,7 @@ B<-d --dir  /path/to/profiles>
    Defaults to /etc/apparmor.d.
 
 B<-f --file  /path/to/logfile>
-	
+
 	Specifies the location of logfile.
 	Default locations are read from F</etc/apparmor/logprof.conf>.
 	Typical defaults are:

@@ -27,7 +27,7 @@ being disabled or I<complain> mode.
 
 =head1 SYNOPSIS
 
-B<aa-enforce I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...] [I<-d /path/to/profiles>]
+B<< aa-enforce I<E<lt>executableE<gt>> [I<E<lt>executableE<gt>> ...] [I<-d /path/to/profiles>] >>
 
 =head1 OPTIONS
 

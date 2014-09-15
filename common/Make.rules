@@ -266,3 +266,7 @@ ENSCRIPT_ARGS=-C -2jGr -f Courier6 -E
 
 %.pm.ps: %.pm
 	enscript ${ENSCRIPT_ARGS} -o $@ $<
+
+.PHONY: check_pod_files
+check_pod_files:
+	LANG=C podchecker -warning -warning *.pod
