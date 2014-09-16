@@ -11,8 +11,8 @@
 # ------------------------------------------------------------------
 
   # shared snippets for config files
-  /etc/php5/{conf.d,apache2,cli,fastcgi,cgi}/ r,
-  /etc/php5/{conf.d,apache2,cli,fastcgi,cgi}/*.ini r,
+  /etc/php5/**/ r,
+  /etc/php5/**.ini r,
 
   # Xlibs
   /usr/X11R6/lib{,32,64}/lib*.so* mr,
