@@ -159,7 +159,8 @@ int main (int argc, char *argv[])
 		exit(1);
 	} else if (!pid) {
 		execl(argv[4], argv[4], sun_path, argv[2], NULL);
-		exit(0);
+		perror("FAIL - execl");
+		exit(1);
 	}
 
 	pfd.fd = sock;
