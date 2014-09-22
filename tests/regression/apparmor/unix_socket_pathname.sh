@@ -45,6 +45,12 @@ if [ "$(have_features policy/versions/v7)" == "true" ] ; then
 	badserver2=w
 fi
 
+# af_unix support requires 'unix create' to call socket()
+af_unix=
+if [ "$(have_features network/af_unix)" == "true" ] ; then
+	af_unix="unix:create"
+fi
+
 okclient=rw
 badclient1=r
 badclient2=w
@@ -71,19 +77,19 @@ testsocktype()
 
 	# PASS - server w/ access to the file
 
-	genprofile $sockpath:$okserver $client:Ux
+	genprofile $sockpath:$okserver $af_unix $client:Ux
 	runchecktest "$testdesc; confined server w/ access ($okserver)" pass $args
 	removesocket $sockpath
 
 	# FAIL - server w/o access to the file
 
-	genprofile $client:Ux
+	genprofile $af_unix $client:Ux
 	runchecktest "$testdesc; confined server w/o access" fail $args
 	removesocket $sockpath
 
 	# FAIL - server w/ bad access to the file
 
-	genprofile $sockpath:$badserver1 $client:Ux
+	genprofile $sockpath:$badserver1 $af_unix $client:Ux
 	runchecktest "$testdesc; confined server w/ bad access ($badserver1)" fail $args
 	removesocket $sockpath
 
@@ -92,34 +98,52 @@ testsocktype()
 	if [ -n "$badserver2" ] ; then
 		# FAIL - server w/ bad access to the file
 
-		genprofile $sockpath:$badserver2 $client:Ux
+		genprofile $sockpath:$badserver2 $af_unix $client:Ux
 		runchecktest "$testdesc; confined server w/ bad access ($badserver2)" fail $args
 		removesocket $sockpath
 	fi
 
+	if [ -n "$af_unix" ] ; then
+		# FAIL - server w/o af_unix access
+
+		genprofile $sockpath:$okserver $client:Ux
+		runchecktest "$testdesc; confined server w/o af_unix" fail $args
+		removesocket $sockpath
+	fi
+
+	server="$sockpath:$okserver $af_unix $client:px"
+
 	# PASS - client w/ access to the file
 
-	genprofile $sockpath:$okserver $client:px -- image=$client $sockpath:$okclient
+	genprofile $server -- image=$client $sockpath:$okclient $af_unix
 	runchecktest "$testdesc; confined client w/ access ($okclient)" pass $args
 	removesocket $sockpath
 
 	# FAIL - client w/o access to the file
 
-	genprofile $sockpath:$okserver $client:px -- image=$client
+	genprofile $server -- image=$client $af_unix
 	runchecktest "$testdesc; confined client w/o access" fail $args
 	removesocket $sockpath
 
 	# FAIL - client w/ bad access to the file
 
-	genprofile $sockpath:$okserver $client:px -- image=$client $sockpath:$badclient1
+	genprofile $server -- image=$client $sockpath:$badclient1 $af_unix
 	runchecktest "$testdesc; confined client w/ bad access ($badclient1)" fail $args
 	removesocket $sockpath
 
 	# FAIL - client w/ bad access to the file
 
-	genprofile $sockpath:$okserver $client:px -- image=$client $sockpath:$badclient2
+	genprofile $server -- image=$client $sockpath:$badclient2
 	runchecktest "$testdesc; confined client w/ bad access ($badclient2)" fail $args
 	removesocket $sockpath
+
+	if [ -n "$af_unix" ] ; then
+		# FAIL - client w/o af_unix access
+
+		genprofile $server -- image=$client $sockpath:$okclient
+		runchecktest "$testdesc; confined client w/o af_unix" fail $args
+		removesocket $sockpath
+	fi
 
 	removeprofile
 }
