@@ -334,7 +334,7 @@ int unix_rule::gen_policy_re(Profile &prof)
 	}
 
 	write_to_prot(buffer);
-	if (mask & AA_NET_CREATE) {
+	if ((mask & AA_NET_CREATE) && !has_peer_conds()) {
 		buf = buffer.str();
 		if (!prof.policy.rules->add_rule(buf.c_str(), deny,
 						 map_perms(AA_NET_CREATE),
@@ -355,16 +355,18 @@ int unix_rule::gen_policy_re(Profile &prof)
 		buffer << "\\x00";
 
 		/* create already masked off */
-		if (mask & AA_LOCAL_NET_PERMS & ~AA_LOCAL_NET_CMD) {
+		int local_mask = has_peer_conds() ? AA_NET_ACCEPT :
+					AA_LOCAL_NET_PERMS & ~AA_LOCAL_NET_CMD;
+		if (mask & local_mask) {
 			buf = buffer.str();
 			if (!prof.policy.rules->add_rule(buf.c_str(), deny,
-							 map_perms(mask & AA_LOCAL_NET_PERMS & ~AA_LOCAL_NET_CMD),
-							 map_perms(audit & AA_LOCAL_NET_PERMS & ~AA_LOCAL_NET_CMD),
+							 map_perms(mask & local_mask),
+							 map_perms(audit & local_mask),
 							 dfaflags))
 				goto fail;
 		}
 
-		if (mask & AA_NET_LISTEN) {
+		if ((mask & AA_NET_LISTEN) && !has_peer_conds()) {
 			std::ostringstream tmp(buffer.str());
 			tmp.seekp(0, ios_base::end);
 			tmp << "\\x" << std::setfill('0') << std::setw(2) << std::hex << CMD_LISTEN;
@@ -377,7 +379,7 @@ int unix_rule::gen_policy_re(Profile &prof)
 							 dfaflags))
 				goto fail;
 		}
-		if (mask & AA_NET_OPT) {
+		if ((mask & AA_NET_OPT) && !has_peer_conds()) {
 			std::ostringstream tmp(buffer.str());
 			tmp.seekp(0, ios_base::end);
 			tmp << "\\x" << std::setfill('0') << std::setw(2) << std::hex << CMD_OPT;
