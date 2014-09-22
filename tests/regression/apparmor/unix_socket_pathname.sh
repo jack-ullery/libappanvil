@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# Copyright (C) 2013 Canonical, Ltd.
+# Copyright (C) 2014 Canonical, Ltd.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of version 2 of the GNU General Public
@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, contact Canonical Ltd.
 
-#=NAME unix_socket
+#=NAME unix_socket_pathname
 #=DESCRIPTION
 # This tests file access to unix domain sockets. The server opens a socket,
 # forks a client with it's own profile, sends a message to the client over the
@@ -29,9 +29,10 @@ bin=$pwd
 . $bin/prologue.inc
 requires_features policy/versions/v6
 
+settest unix_socket
+
 client=$bin/unix_socket_client
-sockpath_pathname=${tmpdir}/unix_socket.sock
-sockpath_abstract="@apparmor_unix_socket"
+sockpath=${tmpdir}/unix_socket.sock
 message=4a0c83d87aaa7afa2baab5df3ee4df630f0046d5bfb7a3080c550b721f401b3b\
 8a738e1435a3b77aa6482a70fb51c44f20007221b85541b0184de66344d46a4c
 
@@ -48,23 +49,17 @@ okclient=rw
 badclient1=r
 badclient2=w
 
-isabstract()
-{
-	[ "${1:0:1}" == "@" ]
-}
-
 removesocket()
 {
-	if ! isabstract "$1"; then
+	if [ -S "$1" ]; then
 		rm -f "$1"
 	fi
 }
 
 testsocktype()
 {
-	local testdesc=$1 # description (eg, "AF_UNIX abstract socket (dgram)")
-	local sockpath=$2 # fs path or "@NAME" for an abstract sock
-	local socktype=$3 # stream, dgram, or seqpacket
+	local socktype=$1 # stream, dgram, or seqpacket
+	local testdesc="AF_UNIX pathname socket ($socktype)"
 	local args="$sockpath $socktype $message $client"
 
 	removesocket $sockpath
@@ -73,15 +68,6 @@ testsocktype()
 
 	runchecktest "$testdesc; unconfined" pass $args
 	removesocket $sockpath
-
-	# TODO: Make additional changes to test abstract sockets w/ confinement
-	#
-	#  * Create variables to hold genprofile arguments for socket accesses
-	#    and initialize them according to socket address type
-	#  * Remove the following conditional
-	if isabstract $sockpath; then
-		return
-	fi
 
 	# PASS - server w/ access to the file
 
@@ -138,34 +124,6 @@ testsocktype()
 	removeprofile
 }
 
-testsockpath()
-{
-	local sockpath="$1" # $sockpath_pathname or $sockpath_abstract
-	local testdesc="AF_UNIX "
-	local socktype=
-
-	if [ "$sockpath" == "$sockpath_pathname" ]; then
-		testdesc+="pathname socket"
-	elif [ "$sockpath" == "$sockpath_abstract" ]; then
-		testdesc+="abstract socket"
-	else
-		fatalerror "Unknown sockpath addr type: $sockpath"
-	fi
-
-	for socktype in stream dgram seqpacket; do
-		testsocktype "$testdesc ($socktype)" "$sockpath" "$socktype"
-	done
-}
-
-testsockpath "$sockpath_pathname"
-testsockpath "$sockpath_abstract"
-# TODO: testsockpath "$sockpath_unnamed"
-#
-#  * Adjust unix_socket.c and unix_socket_client.c when the socket path is
-#    "UNNAMED"
-#    - Don't bind() the socket
-#    - Don't set SO_CLOEXEC so that the fd can be passed over exec()
-#  * Decide how to generate appropriate access rules (if any are needed)
-#  * Define sockpath_unnamed as "UNNAMED"
-#  * Update testsockpath() to handle sockpath_unnamed
-#  * Create isunnamed() and update removesocket() to call it
+for socktype in stream dgram seqpacket; do
+	testsocktype "$socktype"
+done
