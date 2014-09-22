@@ -107,11 +107,20 @@ int main (int argc, char *argv[])
 	sun_path = argv[1];
 	sun_path_len = strlen(sun_path);
 	if (sun_path[0] == '@') {
+		if (sun_path_len > sizeof(addr.sun_path)) {
+			fprintf(stderr, "FAIL - socket addr too big\n");
+			exit(1);
+		}
 		memcpy(addr.sun_path, sun_path, sun_path_len);
 		addr.sun_path[0] = '\0';
-		sun_path_len = sizeof(addr.sun_path);
 	} else {
-		memcpy(addr.sun_path, sun_path, sun_path_len + 1);
+		/* include the nul terminator for pathname addr types */
+		sun_path_len++;
+		if (sun_path_len > sizeof(addr.sun_path)) {
+			fprintf(stderr, "FAIL - socket addr too big\n");
+			exit(1);
+		}
+		memcpy(addr.sun_path, sun_path, sun_path_len);
 	}
 
 	if (!strcmp(argv[2], "stream")) {
