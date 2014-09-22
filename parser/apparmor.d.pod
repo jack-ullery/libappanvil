@@ -886,15 +886,14 @@ state an access list. By default if a rule does not have an access list
 all permissions that are compatible with the specified set of local
 and peer conditionals are implied.
 
-The create, bind, listen, shutdown, getattr, setattr permissions are
-applied to the local socket. The accept, connect, send, receive permissions
-apply to the combination of a local and peer. Currently it is required that
-create, bind, listen, shutdown, getattr, and settr permission are only
-specified in rules that do not have a peer component.
+The create, bind, listen, shutdown, getattr, setattr, getopt, and setopt
+permissions are local socket permissions. They are only applied to the local
+socket and can't be specified in rules that have a peer component. The accept
+permission applies to the combination of a local and peer socket. The connect,
+send, and receive permissions are peer socket permissions.
 
-If a rule is specified with a peer component it will only imply accept
-(stream), connect (stream), listen, receive and send. It will not imply the
-create, bind, listen, shutdown, getattr, or setattr permissions.
+Only the peer socket permissions will be applied to rules that don't specify
+permissions and contain a peer component.
 
 =head3 Example Unix domain socket rules:
 
@@ -914,7 +913,7 @@ create, bind, listen, shutdown, getattr, or setattr permissions.
   unix (receive) peer=(label=unconfined),
 
   # Allow getattr and shutdown on anonymous sockets
-  unix (getattr, shutdown) peer=(addr=none),
+  unix (getattr, shutdown) addr=none,
 
   # Allow SOCK_STREAM connect, receive and send on an abstract socket @bar
   # with peer running under profile '/foo'
