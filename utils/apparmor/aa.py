@@ -2611,32 +2611,36 @@ def attach_profile_data(profiles, profile_data):
     for p in profile_data.keys():
         profiles[p] = deepcopy(profile_data[p])
 
-## Profile parsing regex
-RE_PROFILE_START = re.compile('^\s*("?(/.+?)"??|(profile\s+"?(.+?)"??))\s+((flags=)?\((.+)\)\s+)?\{\s*(#.*)?$')
-RE_PROFILE_END = re.compile('^\s*\}\s*(#.*)?$')
-RE_PROFILE_CAP = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?capability(\s+\S+)?\s*,\s*(#.*)?$')
-RE_PROFILE_LINK = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)\s*,\s*(#.*)?$')
-RE_PROFILE_CHANGE_PROFILE = re.compile('^\s*change_profile\s+->\s*("??.+?"??),(#.*)?$')
-RE_PROFILE_ALIAS = re.compile('^\s*alias\s+("??.+?"??)\s+->\s*("??.+?"??)\s*,(#.*)?$')
-RE_PROFILE_RLIMIT = re.compile('^\s*set\s+rlimit\s+(.+)\s+(<=)?\s*(.+)\s*,(#.*)?$')
-RE_PROFILE_BOOLEAN = re.compile('^\s*(\$\{?\w*\}?)\s*=\s*(true|false)\s*,?\s*(#.*)?$', flags=re.IGNORECASE)
-RE_PROFILE_VARIABLE = re.compile('^\s*(@\{?\w+\}?)\s*(\+?=)\s*(@*.+?)\s*,?\s*(#.*)?$')
-RE_PROFILE_CONDITIONAL = re.compile('^\s*if\s+(not\s+)?(\$\{?\w*\}?)\s*\{\s*(#.*)?$')
+## Profile parsing Regex
+RE_AUDIT_DENY           = '^\s*(?P<audit>audit\s+)?(?P<allow>allow\s+|deny\s+)?'  # line start, optionally: leading whitespace, <audit> and <allow>/deny
+RE_EOL                  = '\s*(?P<comment>#.*)?$'  # optional whitespace, optional <comment>, end of the line
+RE_COMMA_EOL            = '\s*,' + RE_EOL # optional whitespace, comma + RE_EOL
+
+RE_PROFILE_START        = re.compile('^\s*("?(/.+?)"??|(profile\s+"?(.+?)"??))\s+((flags=)?\((.+)\)\s+)?\{' + RE_EOL)
+RE_PROFILE_END          = re.compile('^\s*\}' + RE_EOL)
+RE_PROFILE_CAP          = re.compile(RE_AUDIT_DENY + 'capability(\s+\S+)?' + RE_COMMA_EOL)
+RE_PROFILE_LINK         = re.compile(RE_AUDIT_DENY + 'link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)' + RE_COMMA_EOL)
+RE_PROFILE_CHANGE_PROFILE = re.compile('^\s*change_profile\s+->\s*("??.+?"??)' + RE_COMMA_EOL)
+RE_PROFILE_ALIAS        = re.compile('^\s*alias\s+("??.+?"??)\s+->\s*("??.+?"??)' + RE_COMMA_EOL)
+RE_PROFILE_RLIMIT       = re.compile('^\s*set\s+rlimit\s+(.+)\s+(<=)?\s*(.+)' + RE_COMMA_EOL)
+RE_PROFILE_BOOLEAN      = re.compile('^\s*(\$\{?\w*\}?)\s*=\s*(true|false)\s*,?' + RE_EOL, flags=re.IGNORECASE)
+RE_PROFILE_VARIABLE     = re.compile('^\s*(@\{?\w+\}?)\s*(\+?=)\s*(@*.+?)\s*,?' + RE_EOL)
+RE_PROFILE_CONDITIONAL  = re.compile('^\s*if\s+(not\s+)?(\$\{?\w*\}?)\s*\{' + RE_EOL)
 RE_PROFILE_CONDITIONAL_VARIABLE = re.compile('^\s*if\s+(not\s+)?defined\s+(@\{?\w+\}?)\s*\{\s*(#.*)?$')
 RE_PROFILE_CONDITIONAL_BOOLEAN = re.compile('^\s*if\s+(not\s+)?defined\s+(\$\{?\w+\}?)\s*\{\s*(#.*)?$')
-RE_PROFILE_BARE_FILE_ENTRY = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(owner\s+)?file\s*,\s*(#.*)?$')
-RE_PROFILE_PATH_ENTRY = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(owner\s+)?(file\s+)?([\"@/].*?)\s+(\S+)(\s+->\s*(.*?))?\s*,\s*(#.*)?$')
-RE_PROFILE_NETWORK = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?network(.*)\s*(#.*)?$')
-RE_PROFILE_CHANGE_HAT = re.compile('^\s*\^(\"??.+?\"??)\s*,\s*(#.*)?$')
-RE_PROFILE_HAT_DEF = re.compile('^\s*\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$')
+RE_PROFILE_BARE_FILE_ENTRY = re.compile(RE_AUDIT_DENY + '(owner\s+)?file' + RE_COMMA_EOL)
+RE_PROFILE_PATH_ENTRY   = re.compile(RE_AUDIT_DENY + '(owner\s+)?(file\s+)?([\"@/].*?)\s+(\S+)(\s+->\s*(.*?))?' + RE_COMMA_EOL)
+RE_PROFILE_NETWORK      = re.compile(RE_AUDIT_DENY + 'network(.*)' + RE_EOL)
 RE_NETWORK_FAMILY_TYPE = re.compile('\s+(\S+)\s+(\S+)\s*,$')
 RE_NETWORK_FAMILY = re.compile('\s+(\S+)\s*,$')
-RE_PROFILE_DBUS = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(dbus\s*,|dbus\s+[^#]*\s*,)\s*(#.*)?$')
-RE_PROFILE_MOUNT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((mount|remount|umount|unmount)(\s+[^#]*)?\s*,)\s*(#.*)?$')
-RE_PROFILE_SIGNAL = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(signal\s*,|signal\s+[^#]*\s*,)\s*(#.*)?$')
-RE_PROFILE_PTRACE = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(ptrace\s*,|ptrace\s+[^#]*\s*,)\s*(#.*)?$')
-RE_PROFILE_PIVOT_ROOT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(pivot_root\s*,|pivot_root\s+[^#]*\s*,)\s*(#.*)?$')
-RE_PROFILE_UNIX = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(unix\s*,|unix\s+[^#]*\s*,)\s*(#.*)?$')
+RE_PROFILE_CHANGE_HAT   = re.compile('^\s*\^(\"??.+?\"??)' + RE_COMMA_EOL)
+RE_PROFILE_HAT_DEF      = re.compile('^\s*\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{' + RE_EOL)
+RE_PROFILE_DBUS         = re.compile(RE_AUDIT_DENY + '(dbus\s*,|dbus\s+[^#]*\s*,)' + RE_EOL)
+RE_PROFILE_MOUNT        = re.compile(RE_AUDIT_DENY + '((mount|remount|umount|unmount)(\s+[^#]*)?\s*,)' + RE_EOL)
+RE_PROFILE_SIGNAL       = re.compile(RE_AUDIT_DENY + '(signal\s*,|signal\s+[^#]*\s*,)' + RE_EOL)
+RE_PROFILE_PTRACE       = re.compile(RE_AUDIT_DENY + '(ptrace\s*,|ptrace\s+[^#]*\s*,)' + RE_EOL)
+RE_PROFILE_PIVOT_ROOT   = re.compile(RE_AUDIT_DENY + '(pivot_root\s*,|pivot_root\s+[^#]*\s*,)' + RE_EOL)
+RE_PROFILE_UNIX         = re.compile(RE_AUDIT_DENY + '(unix\s*,|unix\s+[^#]*\s*,)' + RE_EOL)
 
 # match anything that's not " or #, or matching quotes with anything except quotes inside
 __re_no_or_quoted_hash = '([^#"]|"[^"]*")*'
