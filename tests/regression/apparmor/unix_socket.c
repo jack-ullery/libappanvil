@@ -14,7 +14,6 @@
  * along with this program; if not, contact Canonical Ltd.
  */
 
-#include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,10 +80,39 @@ static int connectionless_messaging(int sock, char *msg_buf, size_t msg_buf_len)
 	return 0;
 }
 
+static int get_set_sock_io_timeo(int sock)
+{
+	struct timeval tv;
+	socklen_t tv_len = sizeof(tv);
+	int rc;
+
+	rc = getsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, &tv_len);
+	if (rc == -1) {
+		perror("FAIL - getsockopt");
+		return 1;
+	}
+
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+
+	rc = setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, tv_len);
+	if (rc == -1) {
+		perror("FAIL - setsockopt (SO_RCVTIMEO)");
+		return 1;
+	}
+
+	rc = setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &tv, tv_len);
+	if (rc == -1) {
+		perror("FAIL - setsockopt (SO_SNDTIMEO)");
+		return 1;
+	}
+
+	return 0;
+}
+
 int main (int argc, char *argv[])
 {
 	struct sockaddr_un addr;
-	struct pollfd pfd;
 	char msg_buf[MSG_BUF_MAX];
 	size_t msg_buf_len;
 	const char *sun_path;
@@ -172,16 +200,9 @@ int main (int argc, char *argv[])
 		exit(1);
 	}
 
-	pfd.fd = sock;
-	pfd.events = POLLIN;
-	rc = poll(&pfd, 1, 500);
-	if (rc < 0) {
-		perror("FAIL - poll");
+	rc = get_set_sock_io_timeo(sock);
+	if (rc)
 		exit(1);
-	} else if (!rc) {
-		fprintf(stderr, "FAIL - poll timed out\n");
-		exit(1);
-	}
 
 	rc = (type & SOCK_STREAM || type & SOCK_SEQPACKET) ?
 		connection_based_messaging(sock, msg_buf, msg_buf_len) :

@@ -46,9 +46,11 @@ if [ "$(have_features policy/versions/v7)" == "true" ] ; then
 fi
 
 # af_unix support requires 'unix create' to call socket()
+# af_unix support requires 'unix getopt' to call getsockopt()
+# af_unix support requires 'unix setopt' to call setsockopt()
 af_unix=
 if [ "$(have_features network/af_unix)" == "true" ] ; then
-	af_unix="unix:create"
+	af_unix="unix:(create,getopt,setopt)"
 fi
 
 okclient=rw
