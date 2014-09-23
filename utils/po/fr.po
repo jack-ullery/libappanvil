@@ -5,65 +5,66 @@ msgid ""
 msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
-"POT-Creation-Date: 2014-09-10 11:15-0700\n"
+"POT-Creation-Date: 2014-09-14 19:29+0530\n"
 "PO-Revision-Date: 2013-11-15 02:39+0000\n"
 "Last-Translator: Novell Language <Unknown>\n"
 "Language-Team: Novell Language <language@novell.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-09-11 05:48+0000\n"
+"X-Launchpad-Export-Date: 2014-09-15 06:02+0000\n"
 "X-Generator: Launchpad (build 17196)\n"
 "Language: fr\n"
 
-#: ../aa-genprof:52
+#: ../aa-genprof:56
 msgid "Generate profile for the given program"
 msgstr ""
 
-#: ../aa-genprof:53 ../aa-logprof:25 ../aa-cleanprof:24 ../aa-mergeprof:31
+#: ../aa-genprof:57 ../aa-logprof:25 ../aa-cleanprof:24 ../aa-mergeprof:34
 #: ../aa-autodep:25 ../aa-audit:25 ../aa-complain:24 ../aa-enforce:24
 #: ../aa-disable:24
 msgid "path to profiles"
 msgstr ""
 
-#: ../aa-genprof:54 ../aa-logprof:26
+#: ../aa-genprof:58 ../aa-logprof:26
 msgid "path to logfile"
 msgstr ""
 
-#: ../aa-genprof:55
+#: ../aa-genprof:59
 msgid "name of program to profile"
 msgstr ""
 
-#: ../aa-genprof:65 ../aa-logprof:37
+#: ../aa-genprof:69 ../aa-logprof:37
 #, python-format
 msgid "The logfile %s does not exist. Please check the path"
 msgstr ""
 
-#: ../aa-genprof:71 ../aa-logprof:43 ../aa-unconfined:34
+#: ../aa-genprof:75 ../aa-logprof:43 ../aa-unconfined:36
 msgid ""
 "It seems AppArmor was not started. Please enable AppArmor and try again."
 msgstr ""
 
-#: ../aa-genprof:76
+#: ../aa-genprof:80 ../aa-mergeprof:47
 #, python-format
 msgid "%s is not a directory."
 msgstr ""
 
-#: ../aa-genprof:90
+#: ../aa-genprof:94
 #, python-format
 msgid ""
-"Can't find %s in the system path list. If the name of the application\n"
-"is correct, please run 'which %s' as a user with correct PATH\n"
+"Can't find %(profiling)s in the system path list. If the name of the "
+"application\n"
+"is correct, please run 'which %(profiling)s' as a user with correct PATH\n"
 "environment set up in order to find the fully-qualified path and\n"
 "use the full path as parameter."
 msgstr ""
 
-#: ../aa-genprof:92
+#: ../aa-genprof:96
 #, python-format
 msgid "%s does not exists, please double-check the path."
 msgstr ""
 
-#: ../aa-genprof:120
+#: ../aa-genprof:124
 msgid ""
 "\n"
 "Before you begin, you may wish to check if a\n"
@@ -72,7 +73,7 @@ msgid ""
 "more information:"
 msgstr ""
 
-#: ../aa-genprof:122
+#: ../aa-genprof:126
 msgid ""
 "Please start the application to be profiled in\n"
 "another window and exercise its functionality now.\n"
@@ -85,24 +86,24 @@ msgid ""
 "allowed or denied."
 msgstr ""
 
-#: ../aa-genprof:143
+#: ../aa-genprof:147
 msgid "Profiling"
 msgstr "Création de profil"
 
-#: ../aa-genprof:161
+#: ../aa-genprof:165
 msgid ""
 "\n"
 "Reloaded AppArmor profiles in enforce mode."
 msgstr ""
 
-#: ../aa-genprof:162
+#: ../aa-genprof:166
 msgid ""
 "\n"
 "Please consider contributing your new profile!\n"
 "See the following wiki page for more information:"
 msgstr ""
 
-#: ../aa-genprof:163
+#: ../aa-genprof:167
 #, python-format
 msgid "Finished generating profile for %s."
 msgstr "Génération du profil terminé pour %s."
@@ -119,8 +120,8 @@ msgstr ""
 msgid "Cleanup the profiles for the given programs"
 msgstr ""
 
-#: ../aa-cleanprof:25 ../aa-autodep:26 ../aa-audit:27 ../aa-complain:26
-#: ../aa-enforce:26 ../aa-disable:26
+#: ../aa-cleanprof:25 ../aa-autodep:26 ../aa-audit:27 ../aa-complain:25
+#: ../aa-enforce:25 ../aa-disable:25
 msgid "name of program"
 msgstr ""
 
@@ -132,144 +133,152 @@ msgstr ""
 msgid "Perform a 2-way or 3-way merge on the given profiles"
 msgstr ""
 
-#: ../aa-mergeprof:28
+#: ../aa-mergeprof:31
 msgid "your profile"
 msgstr ""
 
-#: ../aa-mergeprof:29
+#: ../aa-mergeprof:32
 msgid "base profile"
 msgstr ""
 
-#: ../aa-mergeprof:30
+#: ../aa-mergeprof:33
 msgid "other profile"
 msgstr ""
 
-#: ../aa-mergeprof:53
+#: ../aa-mergeprof:67 ../apparmor/aa.py:2345
 msgid ""
 "The following local profiles were changed. Would you like to save them?"
 msgstr ""
 
-#: ../aa-mergeprof:131 ../aa-mergeprof:413
+#: ../aa-mergeprof:148 ../aa-mergeprof:430 ../apparmor/aa.py:1767
 msgid "Path"
 msgstr "Chemin d'accès"
 
-#: ../aa-mergeprof:132
+#: ../aa-mergeprof:149
 msgid "Select the appropriate mode"
 msgstr ""
 
-#: ../aa-mergeprof:149
+#: ../aa-mergeprof:166
 msgid "Unknown selection"
 msgstr ""
 
-#: ../aa-mergeprof:166 ../aa-mergeprof:192
+#: ../aa-mergeprof:183 ../aa-mergeprof:209
 msgid "File includes"
 msgstr ""
 
-#: ../aa-mergeprof:166 ../aa-mergeprof:192
+#: ../aa-mergeprof:183 ../aa-mergeprof:209
 msgid "Select the ones you wish to add"
 msgstr ""
 
-#: ../aa-mergeprof:178 ../aa-mergeprof:205
+#: ../aa-mergeprof:195 ../aa-mergeprof:222
 #, python-format
 msgid "Adding %s to the file."
 msgstr ""
 
-#: ../aa-mergeprof:182
+#: ../aa-mergeprof:199 ../apparmor/aa.py:2258
 msgid "unknown"
 msgstr ""
 
-#: ../aa-mergeprof:207 ../aa-mergeprof:258 ../aa-mergeprof:499
-#: ../aa-mergeprof:541 ../aa-mergeprof:658
+#: ../aa-mergeprof:224 ../aa-mergeprof:275 ../aa-mergeprof:516
+#: ../aa-mergeprof:558 ../aa-mergeprof:675 ../apparmor/aa.py:1620
+#: ../apparmor/aa.py:1859 ../apparmor/aa.py:1899 ../apparmor/aa.py:2012
 #, python-format
 msgid "Deleted %s previous matching profile entries."
 msgstr "%s entrées de profil précédemment correspondantes supprimées."
 
-#: ../aa-mergeprof:227 ../aa-mergeprof:412 ../aa-mergeprof:612
-#: ../aa-mergeprof:639
+#: ../aa-mergeprof:244 ../aa-mergeprof:429 ../aa-mergeprof:629
+#: ../aa-mergeprof:656 ../apparmor/aa.py:992 ../apparmor/aa.py:1252
+#: ../apparmor/aa.py:1562 ../apparmor/aa.py:1603 ../apparmor/aa.py:1766
+#: ../apparmor/aa.py:1958 ../apparmor/aa.py:1994
 msgid "Profile"
 msgstr "Profil"
 
-#: ../aa-mergeprof:228
+#: ../aa-mergeprof:245 ../apparmor/aa.py:1563 ../apparmor/aa.py:1604
 msgid "Capability"
 msgstr "Mode compatibilité"
 
-#: ../aa-mergeprof:229 ../aa-mergeprof:463
+#: ../aa-mergeprof:246 ../aa-mergeprof:480 ../apparmor/aa.py:1258
+#: ../apparmor/aa.py:1564 ../apparmor/aa.py:1605 ../apparmor/aa.py:1817
 msgid "Severity"
 msgstr "Gravité"
 
-#: ../aa-mergeprof:256 ../aa-mergeprof:497
+#: ../aa-mergeprof:273 ../aa-mergeprof:514 ../apparmor/aa.py:1618
+#: ../apparmor/aa.py:1857
 #, python-format
 msgid "Adding %s to profile."
 msgstr ""
 
-#: ../aa-mergeprof:265
+#: ../aa-mergeprof:282 ../apparmor/aa.py:1627
 #, python-format
 msgid "Adding capability %s to profile."
 msgstr "Ajout de capacité %s au profil."
 
-#: ../aa-mergeprof:272
+#: ../aa-mergeprof:289 ../apparmor/aa.py:1634
 #, python-format
 msgid "Denying capability %s to profile."
 msgstr "Refus de capacité %s au profil."
 
-#: ../aa-mergeprof:422 ../aa-mergeprof:453
+#: ../aa-mergeprof:439 ../aa-mergeprof:470 ../apparmor/aa.py:1776
+#: ../apparmor/aa.py:1807
 msgid "(owner permissions off)"
 msgstr "(autorisations du propriétaire désactivées)"
 
-#: ../aa-mergeprof:427
+#: ../aa-mergeprof:444 ../apparmor/aa.py:1781
 msgid "(force new perms to owner)"
 msgstr "(forcer les nouvelles autorisations pour le propriétaire)"
 
-#: ../aa-mergeprof:430
+#: ../aa-mergeprof:447 ../apparmor/aa.py:1784
 msgid "(force all rule perms to owner)"
 msgstr "(forcer toutes les autorisations de règles pour le propriétaire)"
 
-#: ../aa-mergeprof:442
+#: ../aa-mergeprof:459 ../apparmor/aa.py:1796
 msgid "Old Mode"
 msgstr "Ancien mode"
 
-#: ../aa-mergeprof:443
+#: ../aa-mergeprof:460 ../apparmor/aa.py:1797
 msgid "New Mode"
 msgstr "Nouveau mode"
 
-#: ../aa-mergeprof:458
+#: ../aa-mergeprof:475 ../apparmor/aa.py:1812
 msgid "(force perms to owner)"
 msgstr "(forcer les autorisations pour le propriétaire)"
 
-#: ../aa-mergeprof:461
+#: ../aa-mergeprof:478 ../apparmor/aa.py:1815
 msgid "Mode"
 msgstr "Mode"
 
-#: ../aa-mergeprof:539
+#: ../aa-mergeprof:556
 #, python-format
-msgid "Adding %s %s to profile"
+msgid "Adding %(path)s %(mod)s to profile"
 msgstr ""
 
-#: ../aa-mergeprof:557
+#: ../aa-mergeprof:574 ../apparmor/aa.py:1915
 msgid "Enter new path: "
 msgstr "Saisissez le nouveau chemin : "
 
-#: ../aa-mergeprof:613 ../aa-mergeprof:640
+#: ../aa-mergeprof:630 ../aa-mergeprof:657 ../apparmor/aa.py:1959
+#: ../apparmor/aa.py:1995
 msgid "Network Family"
 msgstr "Famille d'adresses réseau"
 
-#: ../aa-mergeprof:614 ../aa-mergeprof:641
+#: ../aa-mergeprof:631 ../aa-mergeprof:658 ../apparmor/aa.py:1960
+#: ../apparmor/aa.py:1996
 msgid "Socket Type"
 msgstr "Type de socket"
 
-#: ../aa-mergeprof:656
+#: ../aa-mergeprof:673 ../apparmor/aa.py:2010
 #, python-format
 msgid "Adding %s to profile"
 msgstr ""
 
-#: ../aa-mergeprof:666
+#: ../aa-mergeprof:683 ../apparmor/aa.py:2020
 #, python-format
-msgid "Adding network access %s %s to profile."
-msgstr "Ajout de l'accès réseau %s %s au profil."
+msgid "Adding network access %(family)s %(type)s to profile."
+msgstr ""
 
-#: ../aa-mergeprof:672
+#: ../aa-mergeprof:689 ../apparmor/aa.py:2026
 #, python-format
-msgid "Denying network access %s %s to profile"
+msgid "Denying network access %(family)s %(type)s to profile"
 msgstr ""
 
 #: ../aa-autodep:23
@@ -304,32 +313,32 @@ msgstr ""
 msgid "Disable the profile for the given programs"
 msgstr ""
 
-#: ../aa-unconfined:26
+#: ../aa-unconfined:28
 msgid "Lists unconfined processes having tcp or udp ports"
 msgstr ""
 
-#: ../aa-unconfined:27
+#: ../aa-unconfined:29
 msgid "scan all processes from /proc"
 msgstr ""
 
 #: ../aa-unconfined:81
 #, python-format
-msgid "%s %s (%s) not confined"
+msgid "%(pid)s %(program)s (%(commandline)s) not confined"
 msgstr ""
 
 #: ../aa-unconfined:85
 #, python-format
-msgid "%s %s %snot confined"
+msgid "%(pid)s %(program)s%(pname)s not confined"
 msgstr ""
 
 #: ../aa-unconfined:90
 #, python-format
-msgid "%s %s (%s) confined by '%s'"
+msgid "%(pid)s %(program)s (%(commandline)s) confined by '%(attribute)s'"
 msgstr ""
 
 #: ../aa-unconfined:94
 #, python-format
-msgid "%s %s %sconfined by '%s'"
+msgid "%(pid)s %(program)s%(pname)s confined by '%(attribute)s'"
 msgstr ""
 
 #: ../apparmor/aa.py:196
@@ -359,7 +368,7 @@ msgstr ""
 
 #: ../apparmor/aa.py:301
 #, python-format
-msgid "Could not create %s symlink to %s."
+msgid "Could not create %(link)s symlink to %(filename)s."
 msgstr ""
 
 #: ../apparmor/aa.py:314
@@ -370,8 +379,8 @@ msgstr ""
 #: ../apparmor/aa.py:328
 #, python-format
 msgid ""
-"Unable to fork: %s\n"
-"\t%s"
+"Unable to fork: %(program)s\n"
+"\t%(error)s"
 msgstr ""
 
 #: ../apparmor/aa.py:449 ../apparmor/ui.py:303
@@ -418,8 +427,8 @@ msgstr ""
 #: ../apparmor/aa.py:832 ../apparmor/aa.py:883
 #, python-format
 msgid ""
-"WARNING: An error occurred while uploading the profile %s\n"
-"%s"
+"WARNING: An error occurred while uploading the profile %(profile)s\n"
+"%(ret)s"
 msgstr ""
 
 #: ../apparmor/aa.py:833
@@ -533,13 +542,18 @@ msgstr ""
 msgid "Invalid mode found: %s"
 msgstr ""
 
+#: ../apparmor/aa.py:1897
+#, python-format
+msgid "Adding %(path)s %(mode)s to profile"
+msgstr ""
+
 #: ../apparmor/aa.py:1918
 #, python-format
 msgid ""
 "The specified path does not match this log entry:\n"
 "\n"
-"  Log Entry: %s\n"
-"  Entered Path:  %s\n"
+"  Log Entry: %(path)s\n"
+"  Entered Path:  %(ans)s\n"
 "Do you really want to use this path?"
 msgstr ""
 
@@ -579,110 +593,133 @@ msgstr ""
 
 #: ../apparmor/aa.py:2677
 #, python-format
-msgid "%s profile in %s contains syntax errors in line: %s."
+msgid ""
+"%(profile)s profile in %(file)s contains syntax errors in line: %(line)s."
 msgstr ""
 
 #: ../apparmor/aa.py:2734
 #, python-format
-msgid "Syntax Error: Unexpected End of Profile reached in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected End of Profile reached in file: %(file)s line: "
+"%(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2749
 #, python-format
-msgid "Syntax Error: Unexpected capability entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected capability entry found in file: %(file)s line: "
+"%(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2770
 #, python-format
-msgid "Syntax Error: Unexpected link entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected link entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2798
 #, python-format
 msgid ""
-"Syntax Error: Unexpected change profile entry found in file: %s line: %s"
+"Syntax Error: Unexpected change profile entry found in file: %(file)s line: "
+"%(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2820
 #, python-format
-msgid "Syntax Error: Unexpected rlimit entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected rlimit entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2831
 #, python-format
 msgid ""
-"Syntax Error: Unexpected boolean definition found in file: %s line: %s"
+"Syntax Error: Unexpected boolean definition found in file: %(file)s line: "
+"%(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2871
 #, python-format
-msgid "Syntax Error: Unexpected bare file rule found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected bare file rule found in file: %(file)s line: "
+"%(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2894
 #, python-format
-msgid "Syntax Error: Unexpected path entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected path entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2922
 #, python-format
-msgid "Syntax Error: Invalid Regex %s in file: %s line: %s"
+msgid "Syntax Error: Invalid Regex %(path)s in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2925
 #, python-format
-msgid "Invalid mode %s in file: %s line: %s"
+msgid "Invalid mode %(mode)s in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2977
 #, python-format
-msgid "Syntax Error: Unexpected network entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected network entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3007
 #, python-format
-msgid "Syntax Error: Unexpected dbus entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected dbus entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3030
 #, python-format
-msgid "Syntax Error: Unexpected mount entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected mount entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3052
 #, python-format
-msgid "Syntax Error: Unexpected signal entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected signal entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3074
 #, python-format
-msgid "Syntax Error: Unexpected ptrace entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected ptrace entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3096
 #, python-format
-msgid "Syntax Error: Unexpected pivot_root entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected pivot_root entry found in file: %(file)s line: "
+"%(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3118
 #, python-format
-msgid "Syntax Error: Unexpected unix entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected unix entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3140
 #, python-format
 msgid ""
-"Syntax Error: Unexpected change hat declaration found in file: %s line: %s"
+"Syntax Error: Unexpected change hat declaration found in file: %(file)s "
+"line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3152
 #, python-format
-msgid "Syntax Error: Unexpected hat definition found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected hat definition found in file: %(file)s line: "
+"%(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3168
 #, python-format
-msgid "Error: Multiple definitions for hat %s in profile %s."
+msgid "Error: Multiple definitions for hat %(hat)s in profile %(profile)s."
 msgstr ""
 
 #: ../apparmor/aa.py:3185
@@ -692,29 +729,32 @@ msgstr ""
 
 #: ../apparmor/aa.py:3198
 #, python-format
-msgid "Syntax Error: Unknown line found in file: %s line: %s"
+msgid "Syntax Error: Unknown line found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3211
 #, python-format
 msgid ""
-"Syntax Error: Missing '}' or ','. Reached end of file %s while inside "
-"profile %s"
+"Syntax Error: Missing '}' or ','. Reached end of file %(file)s while inside "
+"profile %(profile)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3277
 #, python-format
-msgid "Redefining existing variable %s: %s in %s"
+msgid "Redefining existing variable %(variable)s: %(value)s in %(file)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3282
 #, python-format
-msgid "Values added to a non-existing variable %s: %s in %s"
+msgid ""
+"Values added to a non-existing variable %(variable)s: %(value)s in %(file)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3284
 #, python-format
-msgid "Unknown variable operation %s for variable %s in %s"
+msgid ""
+"Unknown variable operation %(operation)s for variable %(variable)s in "
+"%(file)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3343
@@ -750,6 +790,16 @@ msgstr ""
 #: ../apparmor/logparser.py:127 ../apparmor/logparser.py:132
 #, python-format
 msgid "Log contains unknown mode %s"
+msgstr ""
+
+#: ../apparmor/tools.py:84 ../apparmor/tools.py:126
+#, python-format
+msgid ""
+"Can't find %(program)s in the system path list. If the name of the "
+"application\n"
+"is correct, please run 'which %(program)s' as a user with correct PATH\n"
+"environment set up in order to find the fully-qualified path and\n"
+"use the full path as parameter."
 msgstr ""
 
 #: ../apparmor/tools.py:86 ../apparmor/tools.py:102 ../apparmor/tools.py:128
@@ -806,7 +856,8 @@ msgstr ""
 #: ../apparmor/tools.py:240
 #, python-format
 msgid ""
-"The local profile for %s in file %s was changed. Would you like to save it?"
+"The local profile for %(program)s in file %(file)s was changed. Would you "
+"like to save it?"
 msgstr ""
 
 #: ../apparmor/tools.py:260
@@ -1061,7 +1112,7 @@ msgstr ""
 
 #: ../apparmor/ui.py:351
 #, python-format
-msgid "PromptUser: Duplicate hotkey for %s: %s "
+msgid "PromptUser: Duplicate hotkey for %(command)s: %(menutext)s "
 msgstr ""
 
 #: ../apparmor/ui.py:363
@@ -1072,3 +1123,7 @@ msgstr ""
 #, python-format
 msgid "PromptUser: Invalid default %s"
 msgstr ""
+
+#, python-format
+#~ msgid "Adding network access %s %s to profile."
+#~ msgstr "Ajout de l'accès réseau %s %s au profil."

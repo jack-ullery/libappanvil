@@ -8,13 +8,13 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-13 00:11-0700\n"
-"PO-Revision-Date: 2014-07-15 06:18+0000\n"
+"PO-Revision-Date: 2014-09-21 05:21+0000\n"
 "Last-Translator: abuyop <Unknown>\n"
 "Language-Team: Malay <ms@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-09-14 05:58+0000\n"
+"X-Launchpad-Export-Date: 2014-09-22 05:56+0000\n"
 "X-Generator: Launchpad (build 17196)\n"
 "Language: ms\n"
 
@@ -719,63 +719,63 @@ msgstr "RALAT menggantikan alias untuk profil %s, gagal dimuatkan\n"
 #: ../parser_interface.c:635 ../parser_interface.c:638
 #, c-format
 msgid "%s: Unable to write %s\n"
-msgstr ""
+msgstr "%s: Tidak boleh tulis %s\n"
 
 #: ../parser_main.c:721
 #, c-format
 msgid "Error: Could not read binary profile or cache file %s: %s.\n"
-msgstr ""
+msgstr "Ralat: Tidak dapat baca profil binari atau fail cache %s: %s.\n"
 
 #: ../parser_main.c:811
 #, c-format
 msgid "Error: Could not read cache file '%s', skipping...\n"
-msgstr ""
+msgstr "Ralat: Tidak dapat baca fail cache '%s', melangkau...\n"
 
 #: ../parser_misc.c:575
 #, c-format
 msgid "Internal: unexpected %s mode character '%c' in input"
-msgstr ""
+msgstr "Dalaman: mod %s aksara '%c' tidak dijangka dalam input"
 
 #: ../parser_misc.c:599
 #, c-format
 msgid "Internal error generated invalid %s perm 0x%x\n"
-msgstr ""
+msgstr "Ralat dalaman terjana %s tidak sah perm 0x%x\n"
 
 #: parser_yacc.y:703
 msgid "owner prefix not allowed on mount rules"
-msgstr ""
+msgstr "awalan pemilik tidak dibenarkan pada peraturan lekap"
 
 #: parser_yacc.y:720
 msgid "owner prefix not allowed on dbus rules"
-msgstr ""
+msgstr "awalan pemilik tidak dibenarkan pada peraturan dbus"
 
 #: parser_yacc.y:736
 msgid "owner prefix not allowed on signal rules"
-msgstr ""
+msgstr "awalan pemilik tidak dibenarkan pada peraturan isyarat"
 
 #: parser_yacc.y:752
 msgid "owner prefix not allowed on ptrace rules"
-msgstr ""
+msgstr "awalan pemilik tidak dibenarkan pada peraturan ptrace"
 
 #: parser_yacc.y:768
 msgid "owner prefix not allowed on unix rules"
-msgstr ""
+msgstr "awalan pemilik tidak dibenarkan pada peraturan unix"
 
 #: parser_yacc.y:794
 msgid "owner prefix not allowed on capability rules"
-msgstr ""
+msgstr "awalan pemilik tidak dibenarkan pada peraturan keupayaan"
 
 #: parser_yacc.y:1293
 #, c-format
 msgid "dbus rule: invalid conditional group %s=()"
-msgstr ""
+msgstr "peraturan dbus: kumpulan bersyarat %s=() tidak sah"
 
 #: parser_yacc.y:1371
 #, c-format
 msgid "unix rule: invalid conditional group %s=()"
-msgstr ""
+msgstr "peraturan unix: kumpulan bersyarat %s=() tidak sah"
 
 #: ../parser_regex.c:368
 #, c-format
 msgid "%s: Regex error: trailing '\\' escape character\n"
-msgstr ""
+msgstr "%s: Ralat ungkapan nalar: aksara '\\' escape\n"
