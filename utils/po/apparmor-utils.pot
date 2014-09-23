@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: apparmor@lists.ubuntu.com\n"
-"POT-Creation-Date: 2014-09-10 11:15-0700\n"
+"POT-Creation-Date: 2014-09-14 19:29+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -50,11 +50,12 @@ msgstr ""
 msgid "%s is not a directory."
 msgstr ""
 
-#: ../aa-genprof:94 ../apparmor/tools.py:84 ../apparmor/tools.py:126
+#: ../aa-genprof:94
 #, python-format
 msgid ""
-"Can't find %s in the system path list. If the name of the application\n"
-"is correct, please run 'which %s' as a user with correct PATH\n"
+"Can't find %(profiling)s in the system path list. If the name of the "
+"application\n"
+"is correct, please run 'which %(profiling)s' as a user with correct PATH\n"
 "environment set up in order to find the fully-qualified path and\n"
 "use the full path as parameter."
 msgstr ""
@@ -246,9 +247,9 @@ msgstr ""
 msgid "Mode"
 msgstr ""
 
-#: ../aa-mergeprof:556 ../apparmor/aa.py:1897
+#: ../aa-mergeprof:556
 #, python-format
-msgid "Adding %s %s to profile"
+msgid "Adding %(path)s %(mod)s to profile"
 msgstr ""
 
 #: ../aa-mergeprof:574 ../apparmor/aa.py:1915
@@ -272,12 +273,12 @@ msgstr ""
 
 #: ../aa-mergeprof:683 ../apparmor/aa.py:2020
 #, python-format
-msgid "Adding network access %s %s to profile."
+msgid "Adding network access %(family)s %(type)s to profile."
 msgstr ""
 
 #: ../aa-mergeprof:689 ../apparmor/aa.py:2026
 #, python-format
-msgid "Denying network access %s %s to profile"
+msgid "Denying network access %(family)s %(type)s to profile"
 msgstr ""
 
 #: ../aa-autodep:23
@@ -322,22 +323,22 @@ msgstr ""
 
 #: ../aa-unconfined:81
 #, python-format
-msgid "%s %s (%s) not confined"
+msgid "%(pid)s %(program)s (%(commandline)s) not confined"
 msgstr ""
 
 #: ../aa-unconfined:85
 #, python-format
-msgid "%s %s %snot confined"
+msgid "%(pid)s %(program)s%(pname)s not confined"
 msgstr ""
 
 #: ../aa-unconfined:90
 #, python-format
-msgid "%s %s (%s) confined by '%s'"
+msgid "%(pid)s %(program)s (%(commandline)s) confined by '%(attribute)s'"
 msgstr ""
 
 #: ../aa-unconfined:94
 #, python-format
-msgid "%s %s %sconfined by '%s'"
+msgid "%(pid)s %(program)s%(pname)s confined by '%(attribute)s'"
 msgstr ""
 
 #: ../apparmor/aa.py:196
@@ -367,7 +368,7 @@ msgstr ""
 
 #: ../apparmor/aa.py:301
 #, python-format
-msgid "Could not create %s symlink to %s."
+msgid "Could not create %(link)s symlink to %(filename)s."
 msgstr ""
 
 #: ../apparmor/aa.py:314
@@ -378,8 +379,8 @@ msgstr ""
 #: ../apparmor/aa.py:328
 #, python-format
 msgid ""
-"Unable to fork: %s\n"
-"\t%s"
+"Unable to fork: %(program)s\n"
+"\t%(error)s"
 msgstr ""
 
 #: ../apparmor/aa.py:449 ../apparmor/ui.py:303
@@ -425,8 +426,8 @@ msgstr ""
 #: ../apparmor/aa.py:832 ../apparmor/aa.py:883
 #, python-format
 msgid ""
-"WARNING: An error occurred while uploading the profile %s\n"
-"%s"
+"WARNING: An error occurred while uploading the profile %(profile)s\n"
+"%(ret)s"
 msgstr ""
 
 #: ../apparmor/aa.py:833
@@ -540,13 +541,18 @@ msgstr ""
 msgid "Invalid mode found: %s"
 msgstr ""
 
+#: ../apparmor/aa.py:1897
+#, python-format
+msgid "Adding %(path)s %(mode)s to profile"
+msgstr ""
+
 #: ../apparmor/aa.py:1918
 #, python-format
 msgid ""
 "The specified path does not match this log entry:\n"
 "\n"
-"  Log Entry: %s\n"
-"  Entered Path:  %s\n"
+"  Log Entry: %(path)s\n"
+"  Entered Path:  %(ans)s\n"
 "Do you really want to use this path?"
 msgstr ""
 
@@ -586,109 +592,133 @@ msgstr ""
 
 #: ../apparmor/aa.py:2677
 #, python-format
-msgid "%s profile in %s contains syntax errors in line: %s."
+msgid ""
+"%(profile)s profile in %(file)s contains syntax errors in line: %(line)s."
 msgstr ""
 
 #: ../apparmor/aa.py:2734
 #, python-format
-msgid "Syntax Error: Unexpected End of Profile reached in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected End of Profile reached in file: %(file)s line: "
+"%(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2749
 #, python-format
-msgid "Syntax Error: Unexpected capability entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected capability entry found in file: %(file)s line: "
+"%(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2770
 #, python-format
-msgid "Syntax Error: Unexpected link entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected link entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2798
 #, python-format
 msgid ""
-"Syntax Error: Unexpected change profile entry found in file: %s line: %s"
+"Syntax Error: Unexpected change profile entry found in file: %(file)s line: "
+"%(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2820
 #, python-format
-msgid "Syntax Error: Unexpected rlimit entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected rlimit entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2831
 #, python-format
-msgid "Syntax Error: Unexpected boolean definition found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected boolean definition found in file: %(file)s line: "
+"%(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2871
 #, python-format
-msgid "Syntax Error: Unexpected bare file rule found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected bare file rule found in file: %(file)s line: "
+"%(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2894
 #, python-format
-msgid "Syntax Error: Unexpected path entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected path entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2922
 #, python-format
-msgid "Syntax Error: Invalid Regex %s in file: %s line: %s"
+msgid "Syntax Error: Invalid Regex %(path)s in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2925
 #, python-format
-msgid "Invalid mode %s in file: %s line: %s"
+msgid "Invalid mode %(mode)s in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:2977
 #, python-format
-msgid "Syntax Error: Unexpected network entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected network entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3007
 #, python-format
-msgid "Syntax Error: Unexpected dbus entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected dbus entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3030
 #, python-format
-msgid "Syntax Error: Unexpected mount entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected mount entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3052
 #, python-format
-msgid "Syntax Error: Unexpected signal entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected signal entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3074
 #, python-format
-msgid "Syntax Error: Unexpected ptrace entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected ptrace entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3096
 #, python-format
-msgid "Syntax Error: Unexpected pivot_root entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected pivot_root entry found in file: %(file)s line: "
+"%(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3118
 #, python-format
-msgid "Syntax Error: Unexpected unix entry found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected unix entry found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3140
 #, python-format
 msgid ""
-"Syntax Error: Unexpected change hat declaration found in file: %s line: %s"
+"Syntax Error: Unexpected change hat declaration found in file: %(file)s "
+"line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3152
 #, python-format
-msgid "Syntax Error: Unexpected hat definition found in file: %s line: %s"
+msgid ""
+"Syntax Error: Unexpected hat definition found in file: %(file)s line: "
+"%(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3168
 #, python-format
-msgid "Error: Multiple definitions for hat %s in profile %s."
+msgid "Error: Multiple definitions for hat %(hat)s in profile %(profile)s."
 msgstr ""
 
 #: ../apparmor/aa.py:3185
@@ -698,29 +728,32 @@ msgstr ""
 
 #: ../apparmor/aa.py:3198
 #, python-format
-msgid "Syntax Error: Unknown line found in file: %s line: %s"
+msgid "Syntax Error: Unknown line found in file: %(file)s line: %(line)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3211
 #, python-format
 msgid ""
-"Syntax Error: Missing '}' or ','. Reached end of file %s while inside "
-"profile %s"
+"Syntax Error: Missing '}' or ','. Reached end of file %(file)s while inside "
+"profile %(profile)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3277
 #, python-format
-msgid "Redefining existing variable %s: %s in %s"
+msgid "Redefining existing variable %(variable)s: %(value)s in %(file)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3282
 #, python-format
-msgid "Values added to a non-existing variable %s: %s in %s"
+msgid ""
+"Values added to a non-existing variable %(variable)s: %(value)s in %(file)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3284
 #, python-format
-msgid "Unknown variable operation %s for variable %s in %s"
+msgid ""
+"Unknown variable operation %(operation)s for variable %(variable)s in "
+"%(file)s"
 msgstr ""
 
 #: ../apparmor/aa.py:3343
@@ -756,6 +789,16 @@ msgstr ""
 #: ../apparmor/logparser.py:127 ../apparmor/logparser.py:132
 #, python-format
 msgid "Log contains unknown mode %s"
+msgstr ""
+
+#: ../apparmor/tools.py:84 ../apparmor/tools.py:126
+#, python-format
+msgid ""
+"Can't find %(program)s in the system path list. If the name of the "
+"application\n"
+"is correct, please run 'which %(program)s' as a user with correct PATH\n"
+"environment set up in order to find the fully-qualified path and\n"
+"use the full path as parameter."
 msgstr ""
 
 #: ../apparmor/tools.py:86 ../apparmor/tools.py:102 ../apparmor/tools.py:128
@@ -812,7 +855,8 @@ msgstr ""
 #: ../apparmor/tools.py:240
 #, python-format
 msgid ""
-"The local profile for %s in file %s was changed. Would you like to save it?"
+"The local profile for %(program)s in file %(file)s was changed. Would you "
+"like to save it?"
 msgstr ""
 
 #: ../apparmor/tools.py:260
@@ -1067,7 +1111,7 @@ msgstr ""
 
 #: ../apparmor/ui.py:351
 #, python-format
-msgid "PromptUser: Duplicate hotkey for %s: %s "
+msgid "PromptUser: Duplicate hotkey for %(command)s: %(menutext)s "
 msgstr ""
 
 #: ../apparmor/ui.py:363

@@ -298,7 +298,7 @@ def create_symlink(subdir, filename):
         try:
             os.symlink(filename, link)
         except:
-            raise AppArmorException(_('Could not create %s symlink to %s.') % (link, filename))
+            raise AppArmorException(_('Could not create %(link)s symlink to %(file)s.') % { 'link': link, 'file': filename })
 
 def head(file):
     """Returns the first/head line of the file"""
@@ -325,7 +325,7 @@ def get_output(params):
             # Get the output of the program
             output = subprocess.check_output(params)
         except OSError as e:
-            raise AppArmorException(_("Unable to fork: %s\n\t%s") % (program, str(e)))
+            raise AppArmorException(_("Unable to fork: %(program)s\n\t%(error)s") % { 'program': program, 'error': str(e) })
             # If exit-codes besides 0
         except subprocess.CalledProcessError as e:
             output = e.output
@@ -829,7 +829,7 @@ def yast_select_and_upload_profiles(title, message, profiles_up):
         else:
             if not ret:
                 ret = 'UNKNOWN ERROR'
-            aaui.UI_Important(_('WARNING: An error occurred while uploading the profile %s\n%s') % (p, ret))
+            aaui.UI_Important(_('WARNING: An error occurred while uploading the profile %(profile)s\n%(ret)s') % { 'profile': p, 'ret': ret })
     aaui.UI_Info(_('Uploaded changes to repository.'))
     if yarg.get('NEVER_ASK_AGAIN'):
         unselected_profiles = []
@@ -880,7 +880,7 @@ def console_select_and_upload_profiles(title, message, profiles_up):
                 else:
                     if not ret:
                         ret = 'UNKNOWN ERROR'
-                    aaui.UI_Important(_('WARNING: An error occurred while uploading the profile %s\n%s') % (prof, ret))
+                    aaui.UI_Important(_('WARNING: An error occurred while uploading the profile %(profile)s\n%(ret)s') % { 'profile': prof, 'ret': ret })
         else:
             aaui.UI_Important(_('Repository Error\nRegistration or Signin was unsuccessful. User login\ninformation is required to upload profiles to the repository.\nThese changes could not be sent.'))
 
@@ -1894,7 +1894,7 @@ def ask_the_questions():
 
                                     changed[profile] = True
 
-                                    aaui.UI_Info(_('Adding %s %s to profile') % (path, mode_to_str_user(mode)))
+                                    aaui.UI_Info(_('Adding %(path)s %(mode)s to profile') % { 'path': path, 'mode': mode_to_str_user(mode) })
                                     if deleted:
                                         aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
@@ -1915,7 +1915,7 @@ def ask_the_questions():
                                     ans = aaui.UI_GetString(_('Enter new path: '), arg)
                                     if ans:
                                         if not matchliteral(ans, path):
-                                            ynprompt = _('The specified path does not match this log entry:\n\n  Log Entry: %s\n  Entered Path:  %s\nDo you really want to use this path?') % (path, ans)
+                                            ynprompt = _('The specified path does not match this log entry:\n\n  Log Entry: %(path)s\n  Entered Path:  %(ans)s\nDo you really want to use this path?') % { 'path': path, 'ans': ans }
                                             key = aaui.UI_YesNo(ynprompt, 'n')
                                             if key == 'n':
                                                 continue
@@ -2017,13 +2017,13 @@ def ask_the_questions():
 
                                     changed[profile] = True
 
-                                    aaui.UI_Info(_('Adding network access %s %s to profile.') % (family, sock_type))
+                                    aaui.UI_Info(_('Adding network access %(family)s %(type)s to profile.') % { 'family': family, 'type': sock_type })
 
                             elif ans == 'CMD_DENY':
                                 done = True
                                 aa[profile][hat]['deny']['netdomain']['rule'][family][sock_type] = True
                                 changed[profile] = True
-                                aaui.UI_Info(_('Denying network access %s %s to profile') % (family, sock_type))
+                                aaui.UI_Info(_('Denying network access %(family)s %(type)s to profile') % { 'family': family, 'type': sock_type })
 
                             else:
                                 done = False
@@ -2611,32 +2611,36 @@ def attach_profile_data(profiles, profile_data):
     for p in profile_data.keys():
         profiles[p] = deepcopy(profile_data[p])
 
-## Profile parsing regex
-RE_PROFILE_START = re.compile('^\s*("?(/.+?)"??|(profile\s+"?(.+?)"??))\s+((flags=)?\((.+)\)\s+)?\{\s*(#.*)?$')
-RE_PROFILE_END = re.compile('^\s*\}\s*(#.*)?$')
-RE_PROFILE_CAP = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?capability(\s+\S+)?\s*,\s*(#.*)?$')
-RE_PROFILE_LINK = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)\s*,\s*(#.*)?$')
-RE_PROFILE_CHANGE_PROFILE = re.compile('^\s*change_profile\s+->\s*("??.+?"??),(#.*)?$')
-RE_PROFILE_ALIAS = re.compile('^\s*alias\s+("??.+?"??)\s+->\s*("??.+?"??)\s*,(#.*)?$')
-RE_PROFILE_RLIMIT = re.compile('^\s*set\s+rlimit\s+(.+)\s+(<=)?\s*(.+)\s*,(#.*)?$')
-RE_PROFILE_BOOLEAN = re.compile('^\s*(\$\{?\w*\}?)\s*=\s*(true|false)\s*,?\s*(#.*)?$', flags=re.IGNORECASE)
-RE_PROFILE_VARIABLE = re.compile('^\s*(@\{?\w+\}?)\s*(\+?=)\s*(@*.+?)\s*,?\s*(#.*)?$')
-RE_PROFILE_CONDITIONAL = re.compile('^\s*if\s+(not\s+)?(\$\{?\w*\}?)\s*\{\s*(#.*)?$')
+## Profile parsing Regex
+RE_AUDIT_DENY           = '^\s*(?P<audit>audit\s+)?(?P<allow>allow\s+|deny\s+)?'  # line start, optionally: leading whitespace, <audit> and <allow>/deny
+RE_EOL                  = '\s*(?P<comment>#.*)?$'  # optional whitespace, optional <comment>, end of the line
+RE_COMMA_EOL            = '\s*,' + RE_EOL # optional whitespace, comma + RE_EOL
+
+RE_PROFILE_START        = re.compile('^\s*("?(/.+?)"??|(profile\s+"?(.+?)"??))\s+((flags=)?\((.+)\)\s+)?\{' + RE_EOL)
+RE_PROFILE_END          = re.compile('^\s*\}' + RE_EOL)
+RE_PROFILE_CAP          = re.compile(RE_AUDIT_DENY + 'capability(\s+\S+)?' + RE_COMMA_EOL)
+RE_PROFILE_LINK         = re.compile(RE_AUDIT_DENY + 'link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)' + RE_COMMA_EOL)
+RE_PROFILE_CHANGE_PROFILE = re.compile('^\s*change_profile\s+->\s*("??.+?"??)' + RE_COMMA_EOL)
+RE_PROFILE_ALIAS        = re.compile('^\s*alias\s+("??.+?"??)\s+->\s*("??.+?"??)' + RE_COMMA_EOL)
+RE_PROFILE_RLIMIT       = re.compile('^\s*set\s+rlimit\s+(.+)\s+(<=)?\s*(.+)' + RE_COMMA_EOL)
+RE_PROFILE_BOOLEAN      = re.compile('^\s*(\$\{?\w*\}?)\s*=\s*(true|false)\s*,?' + RE_EOL, flags=re.IGNORECASE)
+RE_PROFILE_VARIABLE     = re.compile('^\s*(@\{?\w+\}?)\s*(\+?=)\s*(@*.+?)\s*,?' + RE_EOL)
+RE_PROFILE_CONDITIONAL  = re.compile('^\s*if\s+(not\s+)?(\$\{?\w*\}?)\s*\{' + RE_EOL)
 RE_PROFILE_CONDITIONAL_VARIABLE = re.compile('^\s*if\s+(not\s+)?defined\s+(@\{?\w+\}?)\s*\{\s*(#.*)?$')
 RE_PROFILE_CONDITIONAL_BOOLEAN = re.compile('^\s*if\s+(not\s+)?defined\s+(\$\{?\w+\}?)\s*\{\s*(#.*)?$')
-RE_PROFILE_BARE_FILE_ENTRY = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(owner\s+)?file\s*,\s*(#.*)?$')
-RE_PROFILE_PATH_ENTRY = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(owner\s+)?(file\s+)?([\"@/].*?)\s+(\S+)(\s+->\s*(.*?))?\s*,\s*(#.*)?$')
-RE_PROFILE_NETWORK = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?network(.*)\s*(#.*)?$')
-RE_PROFILE_CHANGE_HAT = re.compile('^\s*\^(\"??.+?\"??)\s*,\s*(#.*)?$')
-RE_PROFILE_HAT_DEF = re.compile('^\s*\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{\s*(#.*)?$')
+RE_PROFILE_BARE_FILE_ENTRY = re.compile(RE_AUDIT_DENY + '(owner\s+)?file' + RE_COMMA_EOL)
+RE_PROFILE_PATH_ENTRY   = re.compile(RE_AUDIT_DENY + '(owner\s+)?(file\s+)?([\"@/].*?)\s+(\S+)(\s+->\s*(.*?))?' + RE_COMMA_EOL)
+RE_PROFILE_NETWORK      = re.compile(RE_AUDIT_DENY + 'network(.*)' + RE_EOL)
 RE_NETWORK_FAMILY_TYPE = re.compile('\s+(\S+)\s+(\S+)\s*,$')
 RE_NETWORK_FAMILY = re.compile('\s+(\S+)\s*,$')
-RE_PROFILE_DBUS = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(dbus\s*,|dbus\s+[^#]*\s*,)\s*(#.*)?$')
-RE_PROFILE_MOUNT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?((mount|remount|umount|unmount)(\s+[^#]*)?\s*,)\s*(#.*)?$')
-RE_PROFILE_SIGNAL = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(signal\s*,|signal\s+[^#]*\s*,)\s*(#.*)?$')
-RE_PROFILE_PTRACE = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(ptrace\s*,|ptrace\s+[^#]*\s*,)\s*(#.*)?$')
-RE_PROFILE_PIVOT_ROOT = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(pivot_root\s*,|pivot_root\s+[^#]*\s*,)\s*(#.*)?$')
-RE_PROFILE_UNIX = re.compile('^\s*(audit\s+)?(allow\s+|deny\s+)?(unix\s*,|unix\s+[^#]*\s*,)\s*(#.*)?$')
+RE_PROFILE_CHANGE_HAT   = re.compile('^\s*\^(\"??.+?\"??)' + RE_COMMA_EOL)
+RE_PROFILE_HAT_DEF      = re.compile('^\s*\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{' + RE_EOL)
+RE_PROFILE_DBUS         = re.compile(RE_AUDIT_DENY + '(dbus\s*,|dbus\s+[^#]*\s*,)' + RE_EOL)
+RE_PROFILE_MOUNT        = re.compile(RE_AUDIT_DENY + '((mount|remount|umount|unmount)(\s+[^#]*)?\s*,)' + RE_EOL)
+RE_PROFILE_SIGNAL       = re.compile(RE_AUDIT_DENY + '(signal\s*,|signal\s+[^#]*\s*,)' + RE_EOL)
+RE_PROFILE_PTRACE       = re.compile(RE_AUDIT_DENY + '(ptrace\s*,|ptrace\s+[^#]*\s*,)' + RE_EOL)
+RE_PROFILE_PIVOT_ROOT   = re.compile(RE_AUDIT_DENY + '(pivot_root\s*,|pivot_root\s+[^#]*\s*,)' + RE_EOL)
+RE_PROFILE_UNIX         = re.compile(RE_AUDIT_DENY + '(unix\s*,|unix\s+[^#]*\s*,)' + RE_EOL)
 
 # match anything that's not " or #, or matching quotes with anything except quotes inside
 __re_no_or_quoted_hash = '([^#"]|"[^"]*")*'
@@ -2674,7 +2678,7 @@ def parse_profile_data(data, file, do_include):
             if profile:
                 #print(profile, hat)
                 if profile != hat or not matches[3]:
-                    raise AppArmorException(_('%s profile in %s contains syntax errors in line: %s.') % (profile, file, lineno + 1))
+                    raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line: %(line)s.') % { 'profile': profile, 'file': file, 'line': lineno + 1 })
             # Keep track of the start of a profile
             if profile and profile == hat and matches[3]:
                 # local profile
@@ -2731,7 +2735,7 @@ def parse_profile_data(data, file, do_include):
         elif RE_PROFILE_END.search(line):
             # If profile ends and we're not in one
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected End of Profile reached in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected End of Profile reached in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             if in_contained_hat:
                 hat = profile
@@ -2746,7 +2750,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_CAP.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected capability entry found in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected capability entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             audit = False
             if matches[0]:
@@ -2767,7 +2771,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_LINK.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected link entry found in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected link entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             audit = False
             if matches[0]:
@@ -2795,7 +2799,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_CHANGE_PROFILE.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected change profile entry found in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected change profile entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             cp = strip_quotes(matches[0])
             profile_data[profile][hat]['changes_profile'][cp] = True
@@ -2817,7 +2821,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_RLIMIT.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected rlimit entry found in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected rlimit entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             from_name = matches[0]
             to_name = matches[2]
@@ -2828,7 +2832,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_BOOLEAN.search(line)
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected boolean definition found in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected boolean definition found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             bool_var = matches[0]
             value = matches[1]
@@ -2868,7 +2872,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_BARE_FILE_ENTRY.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected bare file rule found in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected bare file rule found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             allow = 'allow'
             if matches[1] and matches[1].strip() == 'deny':
@@ -2891,7 +2895,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_PATH_ENTRY.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected path entry found in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected path entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             audit = False
             if matches[0]:
@@ -2919,10 +2923,10 @@ def parse_profile_data(data, file, do_include):
             try:
                 re.compile(p_re)
             except:
-                raise AppArmorException(_('Syntax Error: Invalid Regex %s in file: %s line: %s') % (path, file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Invalid Regex %(path)s in file: %(file)s line: %(line)s') % { 'path': path, 'file': file, 'line': lineno + 1 })
 
             if not validate_profile_mode(mode, allow, nt_name):
-                raise AppArmorException(_('Invalid mode %s in file: %s line: %s') % (mode, file, lineno + 1))
+                raise AppArmorException(_('Invalid mode %(mode)s in file: %(file)s line: %(line)s') % {'mode': mode, 'file': file, 'line': lineno + 1 })
 
             tmpmode = set()
             if user:
@@ -2974,7 +2978,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_NETWORK.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected network entry found in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected network entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             audit = False
             if matches[0]:
@@ -3004,7 +3008,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_DBUS.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected dbus entry found in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected dbus entry found in file: %(file)s line: %(line)s') % {'file': file, 'line': lineno + 1 })
 
             audit = False
             if matches[0]:
@@ -3027,7 +3031,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_MOUNT.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected mount entry found in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected mount entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             audit = False
             if matches[0]:
@@ -3049,7 +3053,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_SIGNAL.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected signal entry found in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected signal entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             audit = False
             if matches[0]:
@@ -3071,7 +3075,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_PTRACE.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected ptrace entry found in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected ptrace entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             audit = False
             if matches[0]:
@@ -3093,7 +3097,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_PIVOT_ROOT.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected pivot_root entry found in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected pivot_root entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             audit = False
             if matches[0]:
@@ -3115,7 +3119,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_UNIX.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected unix entry found in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected unix entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             audit = False
             if matches[0]:
@@ -3137,7 +3141,7 @@ def parse_profile_data(data, file, do_include):
             matches = RE_PROFILE_CHANGE_HAT.search(line).groups()
 
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected change hat declaration found in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected change hat declaration found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             hat = matches[0]
             hat = strip_quotes(hat)
@@ -3149,7 +3153,7 @@ def parse_profile_data(data, file, do_include):
             # An embedded hat syntax definition starts
             matches = RE_PROFILE_HAT_DEF.search(line).groups()
             if not profile:
-                raise AppArmorException(_('Syntax Error: Unexpected hat definition found in file: %s line: %s') % (file, lineno + 1))
+                raise AppArmorException(_('Syntax Error: Unexpected hat definition found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             in_contained_hat = True
             hat = matches[0]
@@ -3165,7 +3169,7 @@ def parse_profile_data(data, file, do_include):
                 profile_data[profile][hat]['initial_comment'] = initial_comment
             initial_comment = ''
             if filelist[file]['profiles'][profile].get(hat, False):
-                raise AppArmorException(_('Error: Multiple definitions for hat %s in profile %s.') % (hat, profile))
+                raise AppArmorException(_('Error: Multiple definitions for hat %(hat)s in profile %(profile)s.') % { 'hat': hat, 'profile': profile })
             filelist[file]['profiles'][profile][hat] = True
 
         elif line[0] == '#':
@@ -3195,7 +3199,7 @@ def parse_profile_data(data, file, do_include):
             else:
                 lastline = line
         else:
-            raise AppArmorException(_('Syntax Error: Unknown line found in file: %s line: %s') % (file, lineno + 1))
+            raise AppArmorException(_('Syntax Error: Unknown line found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
     # Below is not required I'd say
     if not do_include:
@@ -3208,7 +3212,7 @@ def parse_profile_data(data, file, do_include):
 
     # End of file reached but we're stuck in a profile
     if profile and not do_include:
-        raise AppArmorException(_("Syntax Error: Missing '}' or ','. Reached end of file %s while inside profile %s") % (file, profile))
+        raise AppArmorException(_("Syntax Error: Missing '}' or ','. Reached end of file %(file)s while inside profile %(profile)s") % { 'file': file, 'profile': profile })
 
     return profile_data
 
@@ -3274,14 +3278,14 @@ def store_list_var(var, list_var, value, var_operation, filename):
             var[list_var] = set(vlist)
         else:
             #print('Ignored: New definition for variable for:',list_var,'=', value, 'operation was:',var_operation,'old value=', var[list_var])
-            raise AppArmorException(_('Redefining existing variable %s: %s in %s') % (list_var, value, filename))
+            raise AppArmorException(_('Redefining existing variable %(variable)s: %(value)s in %(file)s') % { 'variable': list_var, 'value': value, 'file': filename })
     elif var_operation == '+=':
         if var.get(list_var, False):
             var[list_var] = set(var[list_var] + vlist)
         else:
-            raise AppArmorException(_('Values added to a non-existing variable %s: %s in %s') % (list_var, value, filename))
+            raise AppArmorException(_('Values added to a non-existing variable %(variable)s: %(value)s in %(file)s') % { 'variable': list_var, 'value': value, 'file': filename })
     else:
-        raise AppArmorException(_('Unknown variable operation %s for variable %s in %s') % (var_operation, list_var, filename))
+        raise AppArmorException(_('Unknown variable operation %(operation)s for variable %(variable)s in %(file)s') % { 'operation': var_operation, 'variable': list_var, 'file': filename })
 
 
 def strip_quotes(data):

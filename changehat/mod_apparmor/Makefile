@@ -95,3 +95,6 @@ install: ${TARGET} ${MANPAGES}
 clean: _clean
 	rm -rf .libs
 	rm -f *.la *.lo *.so *.o *.slo Make.rules
+
+.PHONY: check
+check: check_pod_files

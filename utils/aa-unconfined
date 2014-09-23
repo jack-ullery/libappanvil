@@ -78,17 +78,17 @@ for pid in sorted(pids):
             cmdline = re.sub(r"\x00", " ", cmdline)
             cmdline = re.sub(r"\s+$", "", cmdline).strip()
 
-            ui.UI_Info(_("%s %s (%s) not confined")%(pid, prog, cmdline))
+            ui.UI_Info(_("%(pid)s %(program)s (%(commandline)s) not confined") % { 'pid': pid, 'program': prog, 'commandline': cmdline })
         else:
             if pname and pname[-1] == ')':
-                pname += ' '
-            ui.UI_Info(_("%s %s %snot confined")%(pid, prog, pname))
+                pname = ' ' + pname
+            ui.UI_Info(_("%(pid)s %(program)s%(pname)s not confined") % { 'pid': pid, 'program': prog, 'pname': pname })
     else:
         if regex_interpreter.search(prog):
             cmdline = re.sub(r"\0", " ", cmdline)
             cmdline = re.sub(r"\s+$", "", cmdline).strip()
-            ui.UI_Info(_("%s %s (%s) confined by '%s'")%(pid, prog, cmdline, attr))
+            ui.UI_Info(_("%(pid)s %(program)s (%(commandline)s) confined by '%(attribute)s'") % { 'pid': pid, 'program': prog, 'commandline': cmdline, 'attribute': attr })
         else:
             if pname and pname[-1] == ')':
-                pname += ' '
-            ui.UI_Info(_("%s %s %sconfined by '%s'")%(pid, prog, pname, attr))
+                pname = ' ' + pname
+            ui.UI_Info(_("%(pid)s %(program)s%(pname)s confined by '%(attribute)s'") % { 'pid': pid, 'program': prog, 'pname': pname, 'attribute': attr })

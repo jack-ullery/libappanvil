@@ -25,7 +25,7 @@ install: apparmor.vim manpages
 	$(MAKE) install_manpages DESTDIR=${DESTDIR}
 
 .PHONY: check
-check:
+check: check_pod_files
 	#Testing with all pythons
 	$(call pyalldo, create-apparmor.vim.py > /dev/null)
 

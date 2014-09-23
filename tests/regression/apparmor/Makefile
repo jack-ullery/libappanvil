@@ -183,7 +183,7 @@ TESTS=access \
       syscall \
       tcp \
       unix_fd_server \
-      unix_socket \
+      unix_socket_pathname \
       unlink\
       xattrs\
       longpath

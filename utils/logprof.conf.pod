@@ -61,7 +61,7 @@ own hat.
 The B<[globs]> section allows modification of the logprof rule engine
 with respect to globbing suggestions that the user will be prompted with.
 
-The format of each line is-- "<perl glob> = <apparmor glob>".
+The format of each line is-- "E<lt>perl globE<gt> = E<lt>apparmor globE<gt>".
 
 When aa-logprof(1) asks about a specific path, if the perl glob matches the
 path, it replaces the part of the path that matched with the corresponding

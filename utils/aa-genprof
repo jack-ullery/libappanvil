@@ -91,7 +91,7 @@ else:
 
 if not program or not os.path.exists(program):
     if '/' not in profiling:
-        raise apparmor.AppArmorException(_("Can't find %s in the system path list. If the name of the application\nis correct, please run 'which %s' as a user with correct PATH\nenvironment set up in order to find the fully-qualified path and\nuse the full path as parameter.") %(profiling, profiling))
+        raise apparmor.AppArmorException(_("Can't find %(profiling)s in the system path list. If the name of the application\nis correct, please run 'which %(profiling)s' as a user with correct PATH\nenvironment set up in order to find the fully-qualified path and\nuse the full path as parameter.") % { 'profiling': profiling })
     else:
         raise apparmor.AppArmorException(_('%s does not exists, please double-check the path.') %profiling)
 

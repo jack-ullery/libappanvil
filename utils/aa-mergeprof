@@ -26,7 +26,7 @@ import apparmor.ui as aaui
 from apparmor.translations import init_translation
 _ = init_translation()
 
-parser = argparse.ArgumentParser(description=_('Perform a 2-way or 3-way merge on the given profiles'), 
+parser = argparse.ArgumentParser(description=_('Perform a 2-way or 3-way merge on the given profiles'),
     epilog='WARNING: the arguments will change in a future version!')
 parser.add_argument('mine', type=str, help=_('your profile'))
 parser.add_argument('base', type=str, help=_('base profile'))
@@ -553,7 +553,7 @@ class Merge(object):
 
                                         apparmor.aa.changed[profile] = True
 
-                                        aaui.UI_Info(_('Adding %s %s to profile') % (path, apparmor.aa.mode_to_str_user(mode)))
+                                        aaui.UI_Info(_('Adding %(path)s %(mode)s to profile') % { 'path': path, 'mode': apparmor.aa.mode_to_str_user(mode) })
                                         if deleted:
                                             aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
@@ -680,13 +680,13 @@ class Merge(object):
 
                                         apparmor.aa.changed[profile] = True
 
-                                        aaui.UI_Info(_('Adding network access %s %s to profile.') % (family, sock_type))
+                                        aaui.UI_Info(_('Adding network access %(family)s %(type)s to profile.') % { 'family': family, 'type': sock_type })
 
                                 elif ans == 'CMD_DENY':
                                     done = True
                                     self.user.aa[profile][hat]['deny']['netdomain']['rule'][family][sock_type] = True
                                     apparmor.aa.changed[profile] = True
-                                    aaui.UI_Info(_('Denying network access %s %s to profile') % (family, sock_type))
+                                    aaui.UI_Info(_('Denying network access %(family)s %(type)s to profile') % { 'family': family, 'type': sock_type })
 
                                 else:
                                     done = False

@@ -25,7 +25,7 @@ aa-sandbox - AppArmor sandboxing
 
 =head1 SYNOPSIS
 
-B<aa-sandbox> [option] <path to binary>
+B<aa-sandbox> [option] E<lt>path to binaryE<gt>
 
 =head1 DESCRIPTION
 
@@ -89,11 +89,7 @@ with care to not allow too much access to the sandboxed application. In
 particular, the profile specified with --profile must add a rule to deny access
 to ~/.Xauthority for X sandboxing to be effective. Eg:
 
-=over
-
-audit deny @{HOME}/.Xauthority mrwlk,
-
-=back
+    audit deny @{HOME}/.Xauthority mrwlk,
 
 =item --with-xserver=XSERVER
 
@@ -115,35 +111,19 @@ The starting geometry for the Xephyr(1) server to use.
 
 Use the existing system profile 'firefox' to sandbox /usr/bin/firefox:
 
-=over
-
-$ aa-sandbox -X --profile=firefox /usr/bin/firefox
-
-=back
+    $ aa-sandbox -X --profile=firefox /usr/bin/firefox
 
 Sandbox xeyes:
 
-=over
-
-$ aa-sandbox -X /usr/bin/xeyes
-
-=back
+    $ aa-sandbox -X /usr/bin/xeyes
 
 Sandbox glxgears:
 
-=over
-
-$ aa-sandbox -X --with-xserver=xpra3d /usr/bin/glxgears
-
-=back
+    $ aa-sandbox -X --with-xserver=xpra3d /usr/bin/glxgears
 
 Sandbox uptime:
 
-=over
-
-$ aa-sandbox --read-path="/proc/*" /usr/bin/uptime
-
-=back
+    $ aa-sandbox --read-path="/proc/*" /usr/bin/uptime
 
 =head1 NOTES
 
@@ -152,19 +132,15 @@ xhost access controls need to be enabled and server interpreted values for
 localuser must be removed. One way of achieving this is adding a late running
 Xsession(5) script of the form:
 
-=over
+    # Create an Xauthority file if it doesn't exist
 
-# Create an Xauthority file if it doesn't exist
+    [ ! -f "$HOME/.Xauthority" ] && [ -x /usr/bin/xauth ] &&
+       xauth generate :0 . trusted > /dev/null
 
-[ ! -f "$HOME/.Xauthority" ] && [ -x /usr/bin/xauth ] &&
-    xauth generate :0 . trusted > /dev/null
+    # Default to the Xauthority file
 
-# Default to the Xauthority file
-
-[ -f "$HOME/.Xauthority" ] && [ -x /usr/bin/xhost ] && [ -x /usr/bin/id ] &&
-    xhost -si:localuser:`id -un` > /dev/null
-
-=back
+    [ -f "$HOME/.Xauthority" ] && [ -x /usr/bin/xhost ] && [ -x /usr/bin/id ] &&
+       xhost -si:localuser:`id -un` > /dev/null
 
 After adding the above, it is recommended you remove the existing ~/.Xauthority
 file, then restart your session.
@@ -176,27 +152,27 @@ of limitations regarding both confinement and usability:
 
 =over
 
-As mentioned, the quality of the template or the specified profile directly
+=item * As mentioned, the quality of the template or the specified profile directly
 affects the application's confinement.
 
-DBus system access is all or nothing and DBus session access is unconditionally
+=item * DBus system access is all or nothing and DBus session access is unconditionally
 allowed.
 
-No environment filtering is performed.
+=item * No environment filtering is performed.
 
-X server usage has not been fully audited (though simple attacks are believed
+=item * X server usage has not been fully audited (though simple attacks are believed
 to be protected against when the system is properly setup. See B<NOTES>,
 above).
 
-Using a nested X server for each application is expensive.
+=item * Using a nested X server for each application is expensive.
 
-Only the old X cursor is available with B<xpra> and B<xpra3d>.
+=item * Only the old X cursor is available with B<xpra> and B<xpra3d>.
 
-The Ubuntu global menu is not currently supported. Gtk and Qt applications
+=item * The Ubuntu global menu is not currently supported. Gtk and Qt applications
 should display the non-global menu by default, but applications like Firefox
 and Thunderbird should be adjusted to disable the global menu.
 
-Xpra does not handle screen resizing when hotplugging monitors gracefully.
+=item * Xpra does not handle screen resizing when hotplugging monitors gracefully.
 Restarting the sandbox will resolve the issue.
 
 =back

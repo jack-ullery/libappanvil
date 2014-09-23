@@ -78,6 +78,36 @@ static int connectionless_messaging(int sock)
 	return 0;
 }
 
+static int get_set_sock_io_timeo(int sock)
+{
+	struct timeval tv;
+	socklen_t tv_len = sizeof(tv);
+	int rc;
+
+	rc = getsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, &tv_len);
+	if (rc == -1) {
+		perror("FAIL - getsockopt");
+		return 1;
+	}
+
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+
+	rc = setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, tv_len);
+	if (rc == -1) {
+		perror("FAIL - setsockopt (SO_RCVTIMEO)");
+		return 1;
+	}
+
+	rc = setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &tv, tv_len);
+	if (rc == -1) {
+		perror("FAIL - setsockopt (SO_SNDTIMEO)");
+		return 1;
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	struct sockaddr_un peer_addr;
@@ -98,11 +128,20 @@ int main(int argc, char *argv[])
 	sun_path = argv[1];
 	sun_path_len = strlen(sun_path);
 	if (sun_path[0] == '@') {
+		if (sun_path_len > sizeof(peer_addr.sun_path)) {
+			fprintf(stderr, "FAIL CLIENT - socket addr too big\n");
+			exit(1);
+		}
 		memcpy(peer_addr.sun_path, sun_path, sun_path_len);
 		peer_addr.sun_path[0] = '\0';
-		sun_path_len = sizeof(peer_addr.sun_path);
 	} else {
-		memcpy(peer_addr.sun_path, sun_path, sun_path_len + 1);
+		/* include the nul terminator for pathname addr types */
+		sun_path_len++;
+		if (sun_path_len > sizeof(peer_addr.sun_path)) {
+			fprintf(stderr, "FAIL CLIENT - socket addr too big\n");
+			exit(1);
+		}
+		memcpy(peer_addr.sun_path, sun_path, sun_path_len);
 	}
 
 	if (!strcmp(argv[2], "stream")) {
@@ -121,6 +160,10 @@ int main(int argc, char *argv[])
 		perror("FAIL CLIENT - socket");
 		exit(1);
 	}
+
+	rc = get_set_sock_io_timeo(sock);
+	if (rc)
+		exit(1);
 
 	rc = connect(sock, (struct sockaddr *)&peer_addr,
 		     sun_path_len + sizeof(peer_addr.sun_family));

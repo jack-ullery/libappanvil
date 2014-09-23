@@ -90,9 +90,10 @@ check_severity_db: /usr/include/linux/capability.h severity.db
 	done ; \
 	test "$$RC" -eq 0
 
+# check_pod_files is defined in common/Make.rules
 .PHONY: check
 .SILENT: check
-check: check_severity_db
+check: check_severity_db check_pod_files
 	for i in ${PERLTOOLS} ; do \
 		perl -c $$i || exit 1; \
 	done

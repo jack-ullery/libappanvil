@@ -115,12 +115,8 @@ unix_rule::unix_rule(int mode_p, struct cond_entry *conds,
 		mode = mode_p;
 		if (mode & ~AA_VALID_NET_PERMS)
 			yyerror("mode contains invalid permissions for unix socket rules\n");
-		else if ((mode & AA_NET_BIND) && has_peer_conds())
-			/* Do we want to loosen this? */
-			yyerror("unix socket 'bind' access cannot be used with message rule conditionals\n");
-		else if ((mode & AA_NET_LISTEN) && has_peer_conds())
-			/* Do we want to loosen this? */
-			yyerror("unix socket 'listen' access cannot be used with message rule conditionals\n");
+		else if ((mode & ~AA_PEER_NET_PERMS) && has_peer_conds())
+			yyerror("unix socket 'create', 'shutdown', 'setattr', 'getattr', 'bind', 'listen', 'setopt', and/or 'getopt' accesses cannot be used with peer socket conditionals\n");
 	} else {
 		mode = AA_VALID_NET_PERMS;
 	}
@@ -334,7 +330,7 @@ int unix_rule::gen_policy_re(Profile &prof)
 	}
 
 	write_to_prot(buffer);
-	if (mask & AA_NET_CREATE) {
+	if ((mask & AA_NET_CREATE) && !has_peer_conds()) {
 		buf = buffer.str();
 		if (!prof.policy.rules->add_rule(buf.c_str(), deny,
 						 map_perms(AA_NET_CREATE),
@@ -355,16 +351,18 @@ int unix_rule::gen_policy_re(Profile &prof)
 		buffer << "\\x00";
 
 		/* create already masked off */
-		if (mask & AA_LOCAL_NET_PERMS & ~AA_LOCAL_NET_CMD) {
+		int local_mask = has_peer_conds() ? AA_NET_ACCEPT :
+					AA_LOCAL_NET_PERMS & ~AA_LOCAL_NET_CMD;
+		if (mask & local_mask) {
 			buf = buffer.str();
 			if (!prof.policy.rules->add_rule(buf.c_str(), deny,
-							 map_perms(mask & AA_LOCAL_NET_PERMS & ~AA_LOCAL_NET_CMD),
-							 map_perms(audit & AA_LOCAL_NET_PERMS & ~AA_LOCAL_NET_CMD),
+							 map_perms(mask & local_mask),
+							 map_perms(audit & local_mask),
 							 dfaflags))
 				goto fail;
 		}
 
-		if (mask & AA_NET_LISTEN) {
+		if ((mask & AA_NET_LISTEN) && !has_peer_conds()) {
 			std::ostringstream tmp(buffer.str());
 			tmp.seekp(0, ios_base::end);
 			tmp << "\\x" << std::setfill('0') << std::setw(2) << std::hex << CMD_LISTEN;
@@ -377,7 +375,7 @@ int unix_rule::gen_policy_re(Profile &prof)
 							 dfaflags))
 				goto fail;
 		}
-		if (mask & AA_NET_OPT) {
+		if ((mask & AA_NET_OPT) && !has_peer_conds()) {
 			std::ostringstream tmp(buffer.str());
 			tmp.seekp(0, ios_base::end);
 			tmp << "\\x" << std::setfill('0') << std::setw(2) << std::hex << CMD_OPT;
