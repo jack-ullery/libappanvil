@@ -74,6 +74,7 @@ int force_clear_cache = 0;		/* force clearing regargless of state */
 int create_cache_dir = 0;		/* create the cache dir if missing? */
 int preprocess_only = 0;
 int skip_mode_force = 0;
+int abort_on_error = 0;			/* stop processing profiles if error */
 struct timespec mru_tstamp;
 
 #define FEATURES_STRING_SIZE 8192
@@ -123,6 +124,7 @@ struct option long_options[] = {
 	{"optimize",		1, 0, 'O'},
 	{"Optimize",		1, 0, 'O'},
 	{"preprocess",		0, 0, 'p'},
+	{"abort-on-error",	0, 0, 132},	/* no short option */
 	{NULL, 0, 0, 0},
 };
 
@@ -172,6 +174,7 @@ static void display_usage(const char *command)
 	       "-D [n], --dump		Dump internal info for debugging\n"
 	       "-O [n], --Optimize	Control dfa optimizations\n"
 	       "-h [cmd], --help[=cmd]  Display this text or info about cmd\n"
+	       "--abort-on-error	Abort processing of profiles on first error\n"
 	       ,command);
 }
 
@@ -409,6 +412,9 @@ static int process_arg(int c, char *optarg)
 		break;
 	case 131:
 		create_cache_dir = 1;
+		break;
+	case 132:
+		abort_on_error = 1;
 		break;
 	case 'L':
 		cacheloc = strdup(optarg);
@@ -718,9 +724,10 @@ int process_binary(int option, const char *profilename)
 	if (profilename) {
 		fd = open(profilename, O_RDONLY);
 		if (fd == -1) {
+			retval = errno;
 			PERROR(_("Error: Could not read binary profile or cache file %s: %s.\n"),
 			       profilename, strerror(errno));
-			exit(errno);
+			return retval;
 		}
 	} else {
 		fd = dup(0);
@@ -733,7 +740,7 @@ int process_binary(int option, const char *profilename)
 			chunksize <<= 1;
 			if (!buffer) {
 				PERROR(_("Memory allocation error."));
-				exit(errno);
+				return ENOMEM;
 			}
 		}
 
@@ -859,7 +866,7 @@ int process_profile(int option, const char *profilename)
 		if ( !(yyin = fopen(profilename, "r")) ) {
 			PERROR(_("Error: Could not read profile %s: %s.\n"),
 			       profilename, strerror(errno));
-			exit(errno);
+			return errno;
 		}
 	}
 	else {
@@ -921,7 +928,7 @@ int process_profile(int option, const char *profilename)
 	    !skip_cache) {
 		if (asprintf(&cachename, "%s/%s", cacheloc, basename)<0) {
 			PERROR(_("Memory allocation error."));
-			exit(1);
+			return ENOMEM;
 		}
 		/* Load a binary cache if it exists and is newest */
 		if (!skip_read_cache &&
@@ -937,11 +944,11 @@ int process_profile(int option, const char *profilename)
 			/* Otherwise, set up to save a cached copy */
 			if (asprintf(&cachetemp, "%s-XXXXXX", cachename)<0) {
 				perror("asprintf");
-				exit(1);
+				return ENOMEM;
 			}
 			if ( (cache_fd = mkstemp(cachetemp)) < 0) {
 				perror("mkstemp");
-				exit(1);
+				return ENOMEM;
 			}
 		}
 	}
@@ -1159,7 +1166,7 @@ static void setup_flags(void)
 
 int main(int argc, char *argv[])
 {
-	int retval;
+	int retval, last_error;
 	int i;
 	int optind;
 
@@ -1202,13 +1209,16 @@ int main(int argc, char *argv[])
 
 	setup_flags();
 
-	retval = 0;
-	for (i = optind; retval == 0 && i <= argc; i++) {
+	retval = last_error = 0;
+	for (i = optind; i <= argc; i++) {
 		struct stat stat_file;
 
 		if (i < argc && !(profilename = strdup(argv[i]))) {
 			perror("strdup");
-			return -1;
+			last_error = ENOMEM;
+			if (abort_on_error)
+				break;
+			continue;
 		}
 		/* skip stdin if we've seen other command line arguments */
 		if (i == argc && optind != argc)
@@ -1223,10 +1233,9 @@ int main(int argc, char *argv[])
 			int (*cb)(DIR *dir, const char *name, struct stat *st,
 				  void *data);
 			cb = binary_input ? binary_dir_cb : profile_dir_cb;
-			if (dirat_for_each(NULL, profilename, profilename, cb)) {
+			if ((retval = dirat_for_each(NULL, profilename, profilename, cb))) {
 				PDEBUG("Failed loading profiles from %s\n",
 				       profilename);
-				exit(1);
 			}
 		} else if (binary_input) {
 			retval = process_binary(option, profilename);
@@ -1236,10 +1245,16 @@ int main(int argc, char *argv[])
 
 		if (profilename) free(profilename);
 		profilename = NULL;
+
+		if (retval) {
+			last_error = retval;
+			if (abort_on_error)
+				break;
+		}
 	}
 
 	if (ofile)
 		fclose(ofile);
 
-	return retval;
+	return last_error;
 }
