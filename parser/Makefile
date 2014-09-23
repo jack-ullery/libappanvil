@@ -86,7 +86,7 @@ HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h \
        rule.h common_optarg.h signal.h ptrace.h network.h af_rule.h af_unix.h
 TOOLS = apparmor_parser
 
-OBJECTS = $(SRCS:.c=.o)
+OBJECTS = $(patsubst %.cc, %.o, $(SRCS:.c=.o))
 
 AAREDIR= libapparmor_re
 AAREOBJECT = ${AAREDIR}/libapparmor_re.a
@@ -258,7 +258,7 @@ network.o: network.c network.h parser.h immunix.h parser_yacc.h rule.h af_names.
 af_rule.o: af_rule.cc af_rule.h network.h parser.h profile.h immunix.h parser_yacc.h rule.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-af_unix.o: af_unix.cc af_unix.h network.h af_rule.h parser.h profile.h immunix.h parser_y $(APPARMOR_H)
+af_unix.o: af_unix.cc af_unix.h network.h af_rule.h parser.h profile.h immunix.h parser_yacc.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 profile.o: profile.cc profile.h parser.h network.h
