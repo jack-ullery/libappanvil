@@ -75,6 +75,7 @@ int create_cache_dir = 0;		/* create the cache dir if missing? */
 int preprocess_only = 0;
 int skip_mode_force = 0;
 int abort_on_error = 0;			/* stop processing profiles if error */
+int skip_bad_cache_rebuild = 0;
 struct timespec mru_tstamp;
 
 #define FEATURES_STRING_SIZE 8192
@@ -125,6 +126,7 @@ struct option long_options[] = {
 	{"Optimize",		1, 0, 'O'},
 	{"preprocess",		0, 0, 'p'},
 	{"abort-on-error",	0, 0, 132},	/* no short option */
+	{"skip-bad-cache-rebuild",	0, 0, 133},	/* no short option */
 	{NULL, 0, 0, 0},
 };
 
@@ -175,6 +177,7 @@ static void display_usage(const char *command)
 	       "-O [n], --Optimize	Control dfa optimizations\n"
 	       "-h [cmd], --help[=cmd]  Display this text or info about cmd\n"
 	       "--abort-on-error	Abort processing of profiles on first error\n"
+	       "--skip-bad-cache-rebuild Do not try rebuilding the cache if it is rejected by the kernel\n"
 	       ,command);
 }
 
@@ -415,6 +418,9 @@ static int process_arg(int c, char *optarg)
 		break;
 	case 132:
 		abort_on_error = 1;
+		break;
+	case 133:
+		skip_bad_cache_rebuild = 1;
 		break;
 	case 'L':
 		cacheloc = strdup(optarg);
@@ -938,7 +944,8 @@ int process_profile(int option, const char *profilename)
 			if (show_cache)
 				PERROR("Cache hit: %s\n", cachename);
 			retval = process_binary(option, cachename);
-			goto out;
+			if (!retval || skip_bad_cache_rebuild)
+				goto out;
 		}
 		if (write_cache) {
 			/* Otherwise, set up to save a cached copy */
