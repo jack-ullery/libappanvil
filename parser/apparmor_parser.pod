@@ -276,7 +276,18 @@ Abort processing of profiles on the first error encountered, otherwise
 the parser will continue to try to compile other profiles if specified.
 
 Note: If an error is encountered while processing profiles the last error
-encountered will be used to set the exit code.
+encountered will be used to set the exit code. 
+
+=item --skip-bad-cache-rebuild
+The default behavior of the parser is to check if a cached version of
+a profile exists and if it does it attempt to load it into the kernel.
+If that load is rejected, then the parser will attempt to rebuild the
+cache file, and load again.
+
+This option tells the parser to not attempt to rebuild the cache on
+failure, instead the parser continues on with processing the remaining
+profiles.
+
 =back
 
 =head1 CONFIG FILE
