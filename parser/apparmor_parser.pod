@@ -271,6 +271,12 @@ of time to complete.
 Use --help=optimize to see a full list of which optimization flags are
 supported.
 
+=item --abort-on-error
+Abort processing of profiles on the first error encountered, otherwise
+the parser will continue to try to compile other profiles if specified.
+
+Note: If an error is encountered while processing profiles the last error
+encountered will be used to set the exit code.
 =back
 
 =head1 CONFIG FILE
