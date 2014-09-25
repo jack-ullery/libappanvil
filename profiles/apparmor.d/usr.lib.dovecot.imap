@@ -19,6 +19,7 @@
   #include <abstractions/dovecot-common>
 
   capability setuid,
+  deny capability block_suspend,
 
   @{DOVECOT_MAILSTORE}/ rw,
   @{DOVECOT_MAILSTORE}/** rwkl,

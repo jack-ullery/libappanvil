@@ -36,6 +36,8 @@
   /var/tmp/sieve_* rw,
   /var/tmp/smtp_* rw,
 
+  /{var/,}run/dovecot/auth-token-secret.dat{,.tmp} rw,
+
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.lib.dovecot.auth>
 }
