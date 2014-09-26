@@ -47,8 +47,12 @@ class Test(unittest.TestCase):
     def test_complain(self):
         #Set ntpd profile to complain mode and check if it was correctly set
         subprocess.check_output('%s ./../aa-complain -d ./profiles %s'%(python_interpreter, test_path), shell=True)
+       
+        # "manually" create a force-complain symlink (will be deleted by aa-enforce later)
+        os.mkdir('./profiles/force-complain')
+        os.symlink(local_profilename, './profiles/force-complain/%s'%os.path.basename(local_profilename) )
 
-#        self.assertEqual(os.path.islink('./profiles/force-complain/%s'%os.path.basename(local_profilename)), True, 'Failed to create a symlink for %s in force-complain'%local_profilename)
+        self.assertEqual(os.path.islink('./profiles/force-complain/%s'%os.path.basename(local_profilename)), True, 'Failed to create a symlink for %s in force-complain'%local_profilename)
         self.assertEqual(apparmor.get_profile_flags(local_profilename, test_path), 'complain', 'Complain flag could not be set in profile %s'%local_profilename)
 
         #Set ntpd profile to enforce mode and check if it was correctly set
@@ -61,8 +65,10 @@ class Test(unittest.TestCase):
         # Set audit flag and then complain flag in a profile
         subprocess.check_output('%s ./../aa-audit -d ./profiles %s'%(python_interpreter, test_path), shell=True)
         subprocess.check_output('%s ./../aa-complain -d ./profiles %s'%(python_interpreter, test_path), shell=True)
+        # "manually" create a force-complain symlink (will be deleted by aa-enforce later)
+        os.symlink(local_profilename, './profiles/force-complain/%s'%os.path.basename(local_profilename) )
 
-#        self.assertEqual(os.path.islink('./profiles/force-complain/%s'%os.path.basename(local_profilename)), True, 'Failed to create a symlink for %s in force-complain'%local_profilename)
+        self.assertEqual(os.path.islink('./profiles/force-complain/%s'%os.path.basename(local_profilename)), True, 'Failed to create a symlink for %s in force-complain'%local_profilename)
         self.assertEqual(apparmor.get_profile_flags(local_profilename, test_path), 'audit,complain', 'Complain flag could not be set in profile %s'%local_profilename)
 
         #Remove complain flag first i.e. set to enforce mode
