@@ -217,6 +217,12 @@ int main (int argc, char *argv[])
 		exit(1);
 	}
 
+	rc = shutdown(sock, SHUT_RDWR);
+	if (rc == -1) {
+		perror("FAIL - shutdown");
+		exit(1);
+	}
+
 	printf("PASS\n");
 	exit(0);
 }
