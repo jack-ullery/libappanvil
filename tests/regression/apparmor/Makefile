@@ -184,6 +184,7 @@ TESTS=access \
       tcp \
       unix_fd_server \
       unix_socket_pathname \
+      unix_socket_abstract \
       unlink\
       xattrs\
       longpath
