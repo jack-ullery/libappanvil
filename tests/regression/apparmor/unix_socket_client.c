@@ -24,6 +24,9 @@
 
 #define MSG_BUF_MAX	1024
 
+#define SUN_PATH_SUFFIX		".client"
+#define SUN_PATH_SUFFIX_LEN	strlen(SUN_PATH_SUFFIX)
+
 static int connection_based_messaging(int sock)
 {
 	char msg_buf[MSG_BUF_MAX];
@@ -44,14 +47,33 @@ static int connection_based_messaging(int sock)
 	return 0;
 }
 
-static int connectionless_messaging(int sock)
+static int connectionless_messaging(int sock, struct sockaddr_un *peer_addr,
+				    socklen_t peer_addr_len)
 {
 	struct sockaddr_un addr;
+	size_t peer_path_len = peer_addr_len - sizeof(addr.sun_family);
+	size_t path_len = peer_path_len + SUN_PATH_SUFFIX_LEN;
 	char msg_buf[MSG_BUF_MAX];
 	int rc;
 
+	if (path_len > sizeof(addr.sun_path)) {
+		fprintf(stderr, "FAIL CLIENT - path_len too big\n");
+		return 1;
+	}
+
+	/**
+	 * Subtract 1 to get rid of nul-terminator in pathname address types.
+	 * We're essentially moving the nul char so path_len stays the same.
+	 */
+	if (peer_addr->sun_path[0])
+		peer_path_len--;
+
 	addr.sun_family = AF_UNIX;
-	rc = bind(sock, (struct sockaddr *)&addr, sizeof(sa_family_t));
+	memcpy(addr.sun_path, peer_addr->sun_path, peer_path_len);
+	strcpy(addr.sun_path + peer_path_len, SUN_PATH_SUFFIX);
+
+	rc = bind(sock, (struct sockaddr *)&addr,
+		  path_len + sizeof(addr.sun_family));
 	if (rc < 0) {
 		perror("FAIL CLIENT - bind");
 		return 1;
@@ -174,7 +196,8 @@ int main(int argc, char *argv[])
 
 	rc = (type == SOCK_STREAM || type == SOCK_SEQPACKET) ?
 		connection_based_messaging(sock) :
-		connectionless_messaging(sock);
+		connectionless_messaging(sock, &peer_addr,
+				sun_path_len + sizeof(peer_addr.sun_family));
 	if (rc)
 		exit(1);
 
