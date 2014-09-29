@@ -22,6 +22,8 @@
 #include <sys/un.h>
 #include <unistd.h>
 
+#include "unix_socket_common.h"
+
 #define MSG_BUF_MAX	1024
 
 #define SUN_PATH_SUFFIX		".client"
@@ -32,6 +34,10 @@ static int connection_based_messaging(int sock, struct sockaddr_un *peer_addr,
 {
 	char msg_buf[MSG_BUF_MAX];
 	int rc;
+
+	rc = get_sock_io_timeo(sock);
+	if (rc)
+		return 1;
 
 	rc = connect(sock, (struct sockaddr *)peer_addr, peer_addr_len);
 	if (rc < 0) {
@@ -87,6 +93,10 @@ static int connectionless_messaging(int sock, struct sockaddr_un *peer_addr,
 		return 1;
 	}
 
+	rc = get_sock_io_timeo(sock);
+	if (rc)
+		return 1;
+
 	rc = sendto(sock, NULL, 0, 0, (struct sockaddr *)peer_addr, len);
 	if (rc < 0) {
 		perror("FAIL CLIENT - sendto");
@@ -103,36 +113,6 @@ static int connectionless_messaging(int sock, struct sockaddr_un *peer_addr,
 	rc = sendto(sock, msg_buf, rc, 0, (struct sockaddr *)peer_addr, len);
 	if (rc < 0) {
 		perror("FAIL CLIENT - sendto");
-		return 1;
-	}
-
-	return 0;
-}
-
-static int get_set_sock_io_timeo(int sock)
-{
-	struct timeval tv;
-	socklen_t tv_len = sizeof(tv);
-	int rc;
-
-	rc = getsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, &tv_len);
-	if (rc == -1) {
-		perror("FAIL - getsockopt");
-		return 1;
-	}
-
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
-
-	rc = setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, tv_len);
-	if (rc == -1) {
-		perror("FAIL - setsockopt (SO_RCVTIMEO)");
-		return 1;
-	}
-
-	rc = setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &tv, tv_len);
-	if (rc == -1) {
-		perror("FAIL - setsockopt (SO_SNDTIMEO)");
 		return 1;
 	}
 
@@ -208,7 +188,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	rc = get_set_sock_io_timeo(sock);
+	rc = set_sock_io_timeo(sock);
 	if (rc)
 		exit(1);
 

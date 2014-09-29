@@ -22,6 +22,8 @@
 #include <sys/un.h>
 #include <unistd.h>
 
+#include "unix_socket_common.h"
+
 #define MSG_BUF_MAX 1024
 
 static int connection_based_messaging(int sock, char *msg_buf,
@@ -74,36 +76,6 @@ static int connectionless_messaging(int sock, char *msg_buf, size_t msg_buf_len)
 	rc = recv(sock, msg_buf, msg_buf_len, 0);
 	if (rc < 0) {
 		perror("FAIL - recv");
-		return 1;
-	}
-
-	return 0;
-}
-
-static int get_set_sock_io_timeo(int sock)
-{
-	struct timeval tv;
-	socklen_t tv_len = sizeof(tv);
-	int rc;
-
-	rc = getsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, &tv_len);
-	if (rc == -1) {
-		perror("FAIL - getsockopt");
-		return 1;
-	}
-
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
-
-	rc = setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, tv_len);
-	if (rc == -1) {
-		perror("FAIL - setsockopt (SO_RCVTIMEO)");
-		return 1;
-	}
-
-	rc = setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &tv, tv_len);
-	if (rc == -1) {
-		perror("FAIL - setsockopt (SO_SNDTIMEO)");
 		return 1;
 	}
 
@@ -175,6 +147,10 @@ int main (int argc, char *argv[])
 		exit(1);
 	}
 
+	rc = set_sock_io_timeo(sock);
+	if (rc)
+		exit(1);
+
 	rc = bind(sock, (struct sockaddr *)&addr,
 		  sun_path_len + sizeof(addr.sun_family));
 	if (rc < 0) {
@@ -190,6 +166,10 @@ int main (int argc, char *argv[])
 		}
 	}
 
+	rc = get_sock_io_timeo(sock);
+	if (rc)
+		exit(1);
+
 	pid = fork();
 	if (pid < 0) {
 		perror("FAIL - fork");
@@ -199,10 +179,6 @@ int main (int argc, char *argv[])
 		perror("FAIL - execl");
 		exit(1);
 	}
-
-	rc = get_set_sock_io_timeo(sock);
-	if (rc)
-		exit(1);
 
 	rc = (type & SOCK_STREAM || type & SOCK_SEQPACKET) ?
 		connection_based_messaging(sock, msg_buf, msg_buf_len) :
