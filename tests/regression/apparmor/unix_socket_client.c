@@ -27,10 +27,17 @@
 #define SUN_PATH_SUFFIX		".client"
 #define SUN_PATH_SUFFIX_LEN	strlen(SUN_PATH_SUFFIX)
 
-static int connection_based_messaging(int sock)
+static int connection_based_messaging(int sock, struct sockaddr_un *peer_addr,
+				      socklen_t peer_addr_len)
 {
 	char msg_buf[MSG_BUF_MAX];
 	int rc;
+
+	rc = connect(sock, (struct sockaddr *)peer_addr, peer_addr_len);
+	if (rc < 0) {
+		perror("FAIL CLIENT - connect");
+		exit(1);
+	}
 
 	rc = read(sock, msg_buf, MSG_BUF_MAX);
 	if (rc < 0) {
@@ -54,6 +61,7 @@ static int connectionless_messaging(int sock, struct sockaddr_un *peer_addr,
 	size_t peer_path_len = peer_addr_len - sizeof(addr.sun_family);
 	size_t path_len = peer_path_len + SUN_PATH_SUFFIX_LEN;
 	char msg_buf[MSG_BUF_MAX];
+	socklen_t len = peer_addr_len;
 	int rc;
 
 	if (path_len > sizeof(addr.sun_path)) {
@@ -79,21 +87,22 @@ static int connectionless_messaging(int sock, struct sockaddr_un *peer_addr,
 		return 1;
 	}
 
-	rc = write(sock, NULL, 0);
+	rc = sendto(sock, NULL, 0, 0, (struct sockaddr *)peer_addr, len);
 	if (rc < 0) {
-		perror("FAIL CLIENT - write");
+		perror("FAIL CLIENT - sendto");
 		return 1;
 	}
 
-	rc = read(sock, msg_buf, MSG_BUF_MAX);
+	rc = recvfrom(sock, msg_buf, MSG_BUF_MAX, 0,
+		      (struct sockaddr *)peer_addr, &len);
 	if (rc < 0) {
-		perror("FAIL CLIENT - read");
+		perror("FAIL CLIENT - recvfrom");
 		return 1;
 	}
 
-	rc = write(sock, msg_buf, rc);
+	rc = sendto(sock, msg_buf, rc, 0, (struct sockaddr *)peer_addr, len);
 	if (rc < 0) {
-		perror("FAIL CLIENT - write");
+		perror("FAIL CLIENT - sendto");
 		return 1;
 	}
 
@@ -132,7 +141,8 @@ static int get_set_sock_io_timeo(int sock)
 
 int main(int argc, char *argv[])
 {
-	struct sockaddr_un peer_addr;
+	struct sockaddr_un peer_addr, *pa;
+	socklen_t pa_len;
 	const char *sun_path;
 	size_t sun_path_len;
 	int sock, type, rc;
@@ -187,17 +197,12 @@ int main(int argc, char *argv[])
 	if (rc)
 		exit(1);
 
-	rc = connect(sock, (struct sockaddr *)&peer_addr,
-		     sun_path_len + sizeof(peer_addr.sun_family));
-	if (rc < 0) {
-		perror("FAIL CLIENT - connect");
-		exit(1);
-	}
+	pa = &peer_addr;
+	pa_len = sun_path_len + sizeof(peer_addr.sun_family);
 
 	rc = (type == SOCK_STREAM || type == SOCK_SEQPACKET) ?
-		connection_based_messaging(sock) :
-		connectionless_messaging(sock, &peer_addr,
-				sun_path_len + sizeof(peer_addr.sun_family));
+		connection_based_messaging(sock, pa, pa_len) :
+		connectionless_messaging(sock, pa, pa_len);
 	if (rc)
 		exit(1);
 
