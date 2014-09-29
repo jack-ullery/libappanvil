@@ -139,6 +139,21 @@ static int get_set_sock_io_timeo(int sock)
 	return 0;
 }
 
+static int test_getattr(int sock)
+{
+	struct sockaddr_un addr;
+	socklen_t addr_len = sizeof(addr);
+	int rc;
+
+	rc = getsockname(sock, (struct sockaddr *)&addr, &addr_len);
+	if (rc == -1) {
+		perror("FAIL - getsockname");
+		return 1;
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	struct sockaddr_un peer_addr, *pa;
@@ -194,6 +209,10 @@ int main(int argc, char *argv[])
 	}
 
 	rc = get_set_sock_io_timeo(sock);
+	if (rc)
+		exit(1);
+
+	rc = test_getattr(sock);
 	if (rc)
 		exit(1);
 

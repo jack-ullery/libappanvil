@@ -49,9 +49,10 @@ fi
 # af_unix support requires 'unix create' to call socket()
 # af_unix support requires 'unix getopt' to call getsockopt()
 # af_unix support requires 'unix setopt' to call setsockopt()
+# af_unix support requires 'unix getattr' to call getsockname()
 af_unix=
 if [ "$(have_features network/af_unix)" == "true" ] ; then
-	af_unix="unix:(create,getopt,setopt)"
+	af_unix="unix:(create,getopt,setopt,getattr)"
 fi
 
 okclient=rw
