@@ -78,6 +78,7 @@ testsocktype()
 	local testdesc="AF_UNIX pathname socket ($socktype)"
 	local args="$sockpath $socktype $message $client"
 	local af_unix
+	local af_unix_access
 
 	removesockets $sockpath $client_sockpath
 
@@ -125,6 +126,17 @@ testsocktype()
 		genprofile $sockpath:$okserver $client:Ux
 		runchecktest "$testdesc; confined server w/o af_unix" fail $args
 		removesockets $sockpath $client_sockpath
+
+		# Split the list of AF_UNIX accesses up at the ',' characters
+		# so that they can be iterated through. Remove each access,
+		# one-by-one, and verify that the test fails.
+		for access in ${af_unix_okserver//,/ }; do
+			# FAIL - server w/ a missing af_unix access
+
+			genprofile $sockpath:$okserver "unix:(${af_unix_okserver//$access/})" $client:Ux
+			runchecktest "$testdesc; confined server w/ a missing af_unix access ($access)" fail $args
+			removesockets $sockpath $client_sockpath
+		done
 	fi
 
 	server="$sockpath:$okserver $client_sockpath:$okserver $af_unix $client:px"
@@ -167,6 +179,17 @@ testsocktype()
 		genprofile $server -- image=$client $sockpath:$okclient
 		runchecktest "$testdesc; confined client w/o af_unix" fail $args
 		removesockets $sockpath $client_sockpath
+
+		# Split the list of AF_UNIX accesses up at the ',' characters
+		# so that they can be iterated through. Remove each access,
+		# one-by-one, and verify that the test fails.
+		for access in ${af_unix_okclient//,/ }; do
+			# FAIL - client w/ a missing af_unix access
+
+			genprofile $server -- image=$client $sockpath:$okclient "unix:(${af_unix_okclient//$access/})"
+			runchecktest "$testdesc; confined client w/ a missing af_unix access ($access)" fail $args
+			removesockets $sockpath $client_sockpath
+		done
 	fi
 
 	removeprofile
