@@ -14,6 +14,8 @@
  * along with this program; if not, contact Canonical Ltd.
  */
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,20 +23,26 @@
 #include <sys/types.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "unix_socket_common.h"
 
-#define MSG_BUF_MAX 1024
+#define MSG_BUF_MAX 		1024
+#define PATH_FOR_UNNAMED	"none"
 
-static int connection_based_messaging(int sock, char *msg_buf,
-				      size_t msg_buf_len)
+static int connection_based_messaging(int sock, int sock_is_peer_sock,
+				      char *msg_buf, size_t msg_buf_len)
 {
 	int peer_sock, rc;
 
-	peer_sock = accept(sock, NULL, NULL);
-	if (peer_sock < 0) {
-		perror("FAIL - accept");
-		return 1;
+	if (sock_is_peer_sock) {
+		peer_sock = sock;
+	} else {
+		peer_sock = accept(sock, NULL, NULL);
+		if (peer_sock < 0) {
+			perror("FAIL - accept");
+			return 1;
+		}
 	}
 
 	rc = write(peer_sock, msg_buf, msg_buf_len);
@@ -90,7 +98,8 @@ int main (int argc, char *argv[])
 	const char *sun_path;
 	size_t sun_path_len;
 	pid_t pid;
-	int sock, type, rc;
+	int sock, peer_sock, type, rc;
+	int unnamed = 0;
 
 	if (argc != 5) {
 		fprintf(stderr,
@@ -113,6 +122,8 @@ int main (int argc, char *argv[])
 		}
 		memcpy(addr.sun_path, sun_path, sun_path_len);
 		addr.sun_path[0] = '\0';
+	} else if (!strcmp(sun_path, PATH_FOR_UNNAMED)) {
+		unnamed = 1;
 	} else {
 		/* include the nul terminator for pathname addr types */
 		sun_path_len++;
@@ -141,28 +152,48 @@ int main (int argc, char *argv[])
 	}
 	memcpy(msg_buf, argv[3], msg_buf_len);
 
-	sock = socket(AF_UNIX, type | SOCK_CLOEXEC, 0);
-	if (sock == -1) {
-		perror("FAIL - socket");
-		exit(1);
+	if (unnamed) {
+		int sv[2];
+
+		rc = socketpair(AF_UNIX, type, 0, sv);
+		if (rc == -1) {
+			perror("FAIL - socketpair");
+			exit(1);
+		}
+		sock = sv[0];
+		peer_sock = sv[1];
+
+		rc = fcntl(sock, F_SETFD, FD_CLOEXEC);
+		if (rc == -1) {
+			perror("FAIL - fcntl");
+			exit(1);
+		}
+	} else {
+		sock = socket(AF_UNIX, type | SOCK_CLOEXEC, 0);
+		if (sock == -1) {
+			perror("FAIL - socket");
+			exit(1);
+		}
 	}
 
 	rc = set_sock_io_timeo(sock);
 	if (rc)
 		exit(1);
 
-	rc = bind(sock, (struct sockaddr *)&addr,
-		  sun_path_len + sizeof(addr.sun_family));
-	if (rc < 0) {
-		perror("FAIL - bind");
-		exit(1);
-	}
-
-	if (type & SOCK_STREAM || type & SOCK_SEQPACKET) {
-		rc = listen(sock, 2);
+	if (!unnamed) {
+		rc = bind(sock, (struct sockaddr *)&addr,
+			  sun_path_len + sizeof(addr.sun_family));
 		if (rc < 0) {
-			perror("FAIL - listen");
+			perror("FAIL - bind");
 			exit(1);
+		}
+
+		if (type & SOCK_STREAM || type & SOCK_SEQPACKET) {
+			rc = listen(sock, 2);
+			if (rc < 0) {
+				perror("FAIL - listen");
+				exit(1);
+			}
 		}
 	}
 
@@ -175,13 +206,25 @@ int main (int argc, char *argv[])
 		perror("FAIL - fork");
 		exit(1);
 	} else if (!pid) {
-		execl(argv[4], argv[4], sun_path, argv[2], NULL);
+		char *fd_number = NULL;
+
+		if (unnamed) {
+			rc = asprintf(&fd_number, "%d", peer_sock);
+			if (rc == -1) {
+				perror("FAIL - asprintf");
+				exit(1);
+			}
+		}
+
+		/* fd_number will be NULL for pathname and abstract sockets */
+		execl(argv[4], argv[4], sun_path, argv[2], fd_number, NULL);
 		perror("FAIL - execl");
+		free(fd_number);
 		exit(1);
 	}
 
 	rc = (type & SOCK_STREAM || type & SOCK_SEQPACKET) ?
-		connection_based_messaging(sock, msg_buf, msg_buf_len) :
+		connection_based_messaging(sock, unnamed, msg_buf, msg_buf_len) :
 		connectionless_messaging(sock, msg_buf, msg_buf_len);
 	if (rc)
 		exit(1);
