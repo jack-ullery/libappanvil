@@ -50,9 +50,11 @@ fi
 # af_unix support requires 'unix getopt' to call getsockopt()
 # af_unix support requires 'unix setopt' to call setsockopt()
 # af_unix support requires 'unix getattr' to call getsockname()
-af_unix=
+af_unix_okserver=
+af_unix_okclient=
 if [ "$(have_features network/af_unix)" == "true" ] ; then
-	af_unix="unix:(create,getopt,setopt,getattr)"
+	af_unix_okserver="create,getopt,setopt"
+	af_unix_okclient="create,getopt,setopt,getattr"
 fi
 
 okclient=rw
@@ -75,6 +77,7 @@ testsocktype()
 	local socktype=$1 # stream, dgram, or seqpacket
 	local testdesc="AF_UNIX pathname socket ($socktype)"
 	local args="$sockpath $socktype $message $client"
+	local af_unix
 
 	removesockets $sockpath $client_sockpath
 
@@ -82,6 +85,10 @@ testsocktype()
 
 	runchecktest "$testdesc; unconfined" pass $args
 	removesockets $sockpath $client_sockpath
+
+	if [ -n "$af_unix_okserver" ]; then
+		af_unix="unix:(${af_unix_okserver})"
+	fi
 
 	# PASS - server w/ access to the file
 
@@ -112,7 +119,7 @@ testsocktype()
 
 	fi
 
-	if [ -n "$af_unix" ] ; then
+	if [ -n "$af_unix_okserver" ] ; then
 		# FAIL - server w/o af_unix access
 
 		genprofile $sockpath:$okserver $client:Ux
@@ -121,6 +128,14 @@ testsocktype()
 	fi
 
 	server="$sockpath:$okserver $client_sockpath:$okserver $af_unix $client:px"
+
+	# We are transitioning from testing the server program to testing the
+	# client program. Reset the af_unix variable and, if necessary,
+	# reinitialize it with the needed client permissions.
+	af_unix=
+	if [ -n "$af_unix_okclient" ]; then
+		af_unix="unix:(${af_unix_okclient})"
+	fi
 
 	# PASS - client w/ access to the file
 
@@ -146,7 +161,7 @@ testsocktype()
 	runchecktest "$testdesc; confined client w/ bad access ($badclient2)" fail $args
 	removesockets $sockpath $client_sockpath
 
-	if [ -n "$af_unix" ] ; then
+	if [ -n "$af_unix_okclient" ] ; then
 		# FAIL - client w/o af_unix access
 
 		genprofile $server -- image=$client $sockpath:$okclient
