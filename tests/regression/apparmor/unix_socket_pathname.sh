@@ -53,7 +53,7 @@ fi
 af_unix_okserver=
 af_unix_okclient=
 if [ "$(have_features network/af_unix)" == "true" ] ; then
-	af_unix_okserver="create,getopt,setopt"
+	af_unix_okserver="create,setopt"
 	af_unix_okclient="create,getopt,setopt,getattr"
 fi
 
