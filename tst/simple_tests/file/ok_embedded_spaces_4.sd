@@ -1,6 +1,6 @@
 #=DESCRIPTION Simple test case for embedded spaces
-#=EXRESULT FAIL
+#=EXRESULT PASS
 
 /bin/foo {
-  /abc def r,
+  /abc\ def r,
 }

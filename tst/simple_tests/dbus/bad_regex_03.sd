@@ -4,5 +4,5 @@
 #
 
 profile foo {
-  dbus send bus=session peer=(label=splat\ ),
+  dbus send bus=session peer=(label=spl{at),
 }
