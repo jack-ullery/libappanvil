@@ -2618,7 +2618,7 @@ RE_COMMA_EOL            = '\s*,' + RE_EOL # optional whitespace, comma + RE_EOL
 
 RE_PROFILE_START        = re.compile('^\s*("?(/.+?)"??|(profile\s+"?(.+?)"??))\s+((flags=)?\((.+)\)\s+)?\{' + RE_EOL)
 RE_PROFILE_END          = re.compile('^\s*\}' + RE_EOL)
-RE_PROFILE_CAP          = re.compile(RE_AUDIT_DENY + 'capability(\s+\S+)?' + RE_COMMA_EOL)
+RE_PROFILE_CAP          = re.compile(RE_AUDIT_DENY + 'capability(?P<capability>(\s+\S+)+)?' + RE_COMMA_EOL)
 RE_PROFILE_LINK         = re.compile(RE_AUDIT_DENY + 'link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)' + RE_COMMA_EOL)
 RE_PROFILE_CHANGE_PROFILE = re.compile('^\s*change_profile\s+->\s*("??.+?"??)' + RE_COMMA_EOL)
 RE_PROFILE_ALIAS        = re.compile('^\s*alias\s+("??.+?"??)\s+->\s*("??.+?"??)' + RE_COMMA_EOL)
@@ -2747,22 +2747,18 @@ def parse_profile_data(data, file, do_include):
             initial_comment = ''
 
         elif RE_PROFILE_CAP.search(line):
-            matches = RE_PROFILE_CAP.search(line).groups()
+            matches = RE_PROFILE_CAP.search(line)
 
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected capability entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            audit = False
-            if matches[0]:
-                audit = True
-
-            allow = 'allow'
-            if matches[1] and matches[1].strip() == 'deny':
-                allow = 'deny'
+            audit, allow, allow_keyword = parse_audit_allow(matches)
+            # TODO: honor allow_keyword
 
             capability = ALL
-            if matches[2]:
-                capability = matches[2].strip()
+            if matches.group('capability'):
+                capability = matches.group('capability').strip()
+                # TODO: can contain more than one capability- split it?
 
             profile_data[profile][hat][allow]['capability'][capability]['set'] = True
             profile_data[profile][hat][allow]['capability'][capability]['audit'] = audit
@@ -3215,6 +3211,21 @@ def parse_profile_data(data, file, do_include):
         raise AppArmorException(_("Syntax Error: Missing '}' or ','. Reached end of file %(file)s while inside profile %(profile)s") % { 'file': file, 'profile': profile })
 
     return profile_data
+
+def parse_audit_allow(matches):
+    audit = False
+    if matches.group('audit'):
+        audit = True
+
+    allow = 'allow'
+    allow_keyword = False
+    if matches.group('allow'):
+        allow = matches.group('allow').strip()
+        allow_keyword = True
+        if allow != 'allow' and allow != 'deny':  # should never happen
+            raise AppArmorException(_("Invalid allow/deny keyword %s" % allow))
+
+    return (audit, allow, allow_keyword)
 
 # RE_DBUS_ENTRY = re.compile('^dbus\s*()?,\s*$')
 #   use stuff like '(?P<action>(send|write|w|receive|read|r|rw))'

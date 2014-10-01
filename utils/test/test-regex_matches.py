@@ -162,7 +162,7 @@ def regex_test(self, line, expected):
     for (i, group) in enumerate(groups):
         if group:
             group = group.strip()
-        self.assertEqual(group, expected[i], 'Group %d mismatch' % i)
+        self.assertEqual(group, expected[i], 'Group %d mismatch in rule %s' % (i,line))
 
 
 def setup_regex_tests(test_class):
@@ -188,10 +188,10 @@ class AARegexCapability(unittest.TestCase):
         self.regex = aa.RE_PROFILE_CAP
 
     tests = [
-        ('   capability net_raw,', (None, None, 'net_raw', None)),
-        ('capability     net_raw   ,  ', (None, None, 'net_raw', None)),
-        ('   capability,', (None, None, None, None)),
-        ('   capability   ,  ', (None, None, None, None)),
+        ('   capability net_raw,', (None, None, 'net_raw', 'net_raw', None)),
+        ('capability     net_raw   ,  ', (None, None, 'net_raw', 'net_raw', None)),
+        ('   capability,', (None, None, None, None, None)),
+        ('   capability   ,  ', (None, None, None, None, None)),
         ('   capabilitynet_raw,', False)
     ]
 
