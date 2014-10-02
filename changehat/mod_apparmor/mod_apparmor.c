@@ -29,9 +29,6 @@
 #include <unistd.h>
 
 /* #define DEBUG */
-#ifndef __unused
-#define __unused __attribute__((unused))
-#endif
 
 /* should the following be configurable? */
 #define DEFAULT_HAT "HANDLING_UNTRUSTED_INPUT"

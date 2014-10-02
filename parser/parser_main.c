@@ -1026,7 +1026,7 @@ out:
 }
 
 /* data - name of parent dir */
-static int profile_dir_cb(__unused DIR *dir, const char *name, struct stat *st,
+static int profile_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 			  void *data)
 {
 	int rc = 0;
@@ -1043,7 +1043,7 @@ static int profile_dir_cb(__unused DIR *dir, const char *name, struct stat *st,
 }
 
 /* data - name of parent dir */
-static int binary_dir_cb(__unused DIR *dir, const char *name, struct stat *st,
+static int binary_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 			 void *data)
 {
 	int rc = 0;
@@ -1060,7 +1060,7 @@ static int binary_dir_cb(__unused DIR *dir, const char *name, struct stat *st,
 }
 
 static int clear_cache_cb(DIR *dir, const char *path, struct stat *st,
-			  __unused void *data)
+			  void *data unused)
 {
 	/* remove regular files */
 	if (S_ISREG(st->st_mode))

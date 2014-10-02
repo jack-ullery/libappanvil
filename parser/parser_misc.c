@@ -183,7 +183,7 @@ static struct keyword_table rlimit_table[] = {
 };
 
 /* for alpha matches, check for keywords */
-static int get_table_token(const char *name __unused, struct keyword_table *table,
+static int get_table_token(const char *name unused, struct keyword_table *table,
 			   const char *keyword)
 {
 	int i;
@@ -342,7 +342,7 @@ void warn_uppercase(void)
 	}
 }
 
-static int parse_sub_mode(const char *str_mode, const char *mode_desc __unused)
+static int parse_sub_mode(const char *str_mode, const char *mode_desc unused)
 {
 
 #define IS_DIFF_QUAL(mode, q) (((mode) & AA_MAY_EXEC) && (((mode) & AA_EXEC_TYPE) != ((q) & AA_EXEC_TYPE)))
@@ -529,7 +529,7 @@ int parse_mode(const char *str_mode)
 	return mode;
 }
 
-static int parse_X_sub_mode(const char *X, const char *str_mode, int *result, int fail, const char *mode_desc __unused)
+static int parse_X_sub_mode(const char *X, const char *str_mode, int *result, int fail, const char *mode_desc unused)
 {
 	int mode = 0;
 	const char *p;

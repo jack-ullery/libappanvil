@@ -183,8 +183,8 @@ extern int preprocess_only;
 #define MIN_PORT 0
 #define MAX_PORT 65535
 
-#ifndef __unused
-#define __unused __attribute__ ((unused))
+#ifndef unused
+#define unused __attribute__ ((unused))
 #endif
 
 
