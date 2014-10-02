@@ -52,7 +52,7 @@ public:
 	virtual ostream &dump(ostream &os);
 	virtual int expand_variables(void);
 	virtual int gen_policy_re(Profile &prof);
-	virtual void post_process(Profile &prof __unused) { };
+	virtual void post_process(Profile &prof unused) { };
 };
 
 #endif /* __AA_SIGNAL_H */

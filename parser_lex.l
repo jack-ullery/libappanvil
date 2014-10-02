@@ -119,7 +119,7 @@ struct cb_struct {
 	const char *filename;
 };
 
-static int include_dir_cb(__unused DIR *dir, const char *name, struct stat *st,
+static int include_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 			  void *data)
 {
 	struct cb_struct *d = (struct cb_struct *) data;

@@ -106,7 +106,7 @@ static char *do_alias(struct alias_rule *alias, const char *target)
 
 static Profile *target_prof;
 static struct cod_entry *target_list;
-static void process_entries(const void *nodep, VISIT value, int __unused level)
+static void process_entries(const void *nodep, VISIT value, int level unused)
 {
 	struct alias_rule **t = (struct alias_rule **) nodep;
 	struct cod_entry *entry, *dup = NULL;
@@ -150,7 +150,7 @@ static void process_entries(const void *nodep, VISIT value, int __unused level)
 	}
 }
 
-static void process_name(const void *nodep, VISIT value, int __unused level)
+static void process_name(const void *nodep, VISIT value, int level unused)
 {
 	struct alias_rule **t = (struct alias_rule **) nodep;
 	Profile *prof = target_prof;

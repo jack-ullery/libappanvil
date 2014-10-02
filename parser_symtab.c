@@ -495,7 +495,7 @@ out:
 	return retval;
 }
 
-static void expand_variable(const void *nodep, VISIT value, int __unused level)
+static void expand_variable(const void *nodep, VISIT value, int level unused)
 {
 	struct symtab **t = (struct symtab **) nodep;
 
@@ -547,7 +547,7 @@ static void __dump_symtab_entry(struct symtab *entry, int do_expanded)
 	}
 }
 
-static void dump_symtab_entry(const void *nodep, VISIT value, int __unused level)
+static void dump_symtab_entry(const void *nodep, VISIT value, int level unused)
 {
 	struct symtab **t = (struct symtab **) nodep;
 
@@ -557,7 +557,7 @@ static void dump_symtab_entry(const void *nodep, VISIT value, int __unused level
 	__dump_symtab_entry(*t, 0);
 }
 
-static void dump_expanded_symtab_entry(const void *nodep, VISIT value, int __unused level)
+static void dump_expanded_symtab_entry(const void *nodep, VISIT value, int level unused)
 {
 	struct symtab **t = (struct symtab **) nodep;
 
