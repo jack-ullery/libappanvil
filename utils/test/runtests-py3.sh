@@ -24,7 +24,7 @@ for file in *.py ; do
 	echo
 done
 
-test -n "$failed" && {
+test -z "$failed" || {
 	echo
 	echo "*** The following tests failed:"
 	echo "***   $failed"
