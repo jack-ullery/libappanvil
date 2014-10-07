@@ -495,13 +495,13 @@ def get_profile(prof_name):
         options.append(preferred_user)
     options += tmp_list
 
-    q = dict()
-    q['headers'] = ['Profile', prof_name]
-    q['functions'] = ['CMD_VIEW_PROFILE', 'CMD_USE_PROFILE', 'CMD_CREATE_PROFILE',
+    q = aaui.PromptQuestion()
+    q.headers = ['Profile', prof_name]
+    q.functions = ['CMD_VIEW_PROFILE', 'CMD_USE_PROFILE', 'CMD_CREATE_PROFILE',
                       'CMD_ABORT', 'CMD_FINISHED']
-    q['default'] = "CMD_VIEW_PROFILE"
-    q['options'] = options
-    q['selected'] = 0
+    q.default = "CMD_VIEW_PROFILE"
+    q.options = options
+    q.selected = 0
 
     ans = ''
     while 'CMD_USE_PROFILE' not in ans and 'CMD_CREATE_PROFILE' not in ans:
@@ -509,9 +509,9 @@ def get_profile(prof_name):
             save_profiles()
             return
 
-        ans, arg = aaui.UI_PromptUser(q)
+        ans, arg = q.promptUser()
         p = profile_hash[options[arg]]
-        q['selected'] = options.index(options[arg])
+        q.selected = options.index(options[arg])
         if ans == 'CMD_VIEW_PROFILE':
             if aaui.UI_mode == 'yast':
                 SendDataToYast({'type': 'dialogue-view-profile',
@@ -845,18 +845,18 @@ def upload_profile(url, user, passw, distro, p, profile_string, changelog):
 def console_select_and_upload_profiles(title, message, profiles_up):
     url = cfg['repository']['url']
     profs = profiles_up[:]
-    q = hasher()
-    q['title'] = title
-    q['headers'] = ['Repository', url]
-    q['explanation'] = message
-    q['functions'] = ['CMD_UPLOAD_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ASK_LATER',
+    q = aaui.PromptQuestion()
+    q.title = title
+    q.headers = ['Repository', url]
+    q.explanation = message
+    qfunctions = ['CMD_UPLOAD_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ASK_LATER',
                       'CMD_ASK_NEVER', 'CMD_ABORT']
-    q['default'] = 'CMD_VIEW_CHANGES'
-    q['options'] = [i[0] for i in profs]
-    q['selected'] = 0
+    q.default = 'CMD_VIEW_CHANGES'
+    q.options = [i[0] for i in profs]
+    q.selected = 0
     ans = ''
     while 'CMD_UPLOAD_CHANGES' not in ans and 'CMD_ASK_NEVER' not in ans and 'CMD_ASK_LATER' not in ans:
-        ans, arg = aaui.UI_PromptUser(q)
+        ans, arg = q.promptUser()
         if ans == 'CMD_VIEW_CHANGES':
             display_changes(profs[arg][2], profs[arg][1])
     if ans == 'CMD_NEVER_ASK':
@@ -987,28 +987,26 @@ def handle_children(profile, hat, root):
                 ans = transitions.get(context, 'XXXINVALIDXXX')
 
                 while ans not in ['CMD_ADDHAT', 'CMD_USEDEFAULT', 'CMD_DENY']:
-                    q = hasher()
-                    q['headers'] = []
-                    q['headers'] += [_('Profile'), profile]
+                    q = aaui.PromptQuestion()
+                    q.headers += [_('Profile'), profile]
 
                     if default_hat:
-                        q['headers'] += [_('Default Hat'), default_hat]
+                        q.headers += [_('Default Hat'), default_hat]
 
-                    q['headers'] += [_('Requested Hat'), uhat]
+                    q.headers += [_('Requested Hat'), uhat]
 
-                    q['functions'] = []
-                    q['functions'].append('CMD_ADDHAT')
+                    q.functions.append('CMD_ADDHAT')
                     if default_hat:
-                        q['functions'].append('CMD_USEDEFAULT')
-                    q['functions'] += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
+                        q.functions.append('CMD_USEDEFAULT')
+                    q.functions += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
 
-                    q['default'] = 'CMD_DENY'
+                    q.default = 'CMD_DENY'
                     if aamode == 'PERMITTING':
-                        q['default'] = 'CMD_ADDHAT'
+                        q.default = 'CMD_ADDHAT'
 
                     seen_events += 1
 
-                    ans = aaui.UI_PromptUser(q)
+                    ans = q.promptUser()
 
                     if ans == 'CMD_FINISHED':
                         save_profiles()
@@ -1247,20 +1245,19 @@ def handle_children(profile, hat, root):
                         severity = sev_db.rank(exec_target, 'x')
 
                         # Prompt portion starts
-                        q = hasher()
-                        q['headers'] = []
-                        q['headers'] += [_('Profile'), combine_name(profile, hat)]
+                        q = aaui.PromptQuestion()
+
+                        q.headers += [_('Profile'), combine_name(profile, hat)]
                         if prog and prog != 'HINT':
-                            q['headers'] += [_('Program'), prog]
+                            q.headers += [_('Program'), prog]
 
                         # to_name should not exist here since, transitioning is already handeled
-                        q['headers'] += [_('Execute'), exec_target]
-                        q['headers'] += [_('Severity'), severity]
+                        q.headers += [_('Execute'), exec_target]
+                        q.headers += [_('Severity'), severity]
 
-                        q['functions'] = []
                         # prompt = '\n%s\n' % context_new  # XXX
                         exec_toggle = False
-                        q['functions'] += build_x_functions(default, options, exec_toggle)
+                        q.functions += build_x_functions(default, options, exec_toggle)
 
                         # options = '|'.join(options)
                         seen_events += 1
@@ -1268,11 +1265,11 @@ def handle_children(profile, hat, root):
 
                         ans = ''
                         while not regex_options.search(ans):
-                            ans = aaui.UI_PromptUser(q)[0].strip()
+                            ans = q.promptUser()[0].strip()
                             if ans.startswith('CMD_EXEC_IX_'):
                                 exec_toggle = not exec_toggle
-                                q['functions'] = []
-                                q['functions'] += build_x_functions(default, options, exec_toggle)
+                                q.functions = []
+                                q.functions += build_x_functions(default, options, exec_toggle)
                                 ans = ''
                                 continue
 
@@ -1549,36 +1546,36 @@ def ask_the_questions():
                     default_option = 1
                     options = []
                     newincludes = match_cap_includes(aa[profile][hat], capability)
-                    q = hasher()
+                    q = aaui.PromptQuestion()
 
                     if newincludes:
                         options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
 
                     if options:
                         options.append('capability %s' % capability)
-                        q['options'] = options
-                        q['selected'] = default_option - 1
+                        q.options = options
+                        q.selected = default_option - 1
 
-                    q['headers'] = [_('Profile'), combine_name(profile, hat)]
-                    q['headers'] += [_('Capability'), capability]
-                    q['headers'] += [_('Severity'), severity]
+                    q.headers = [_('Profile'), combine_name(profile, hat)]
+                    q.headers += [_('Capability'), capability]
+                    q.headers += [_('Severity'), severity]
 
                     audit_toggle = 0
 
-                    q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
+                    q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
                                       'CMD_ABORT', 'CMD_FINISHED']
 
                     # In complain mode: events default to allow
                     # In enforce mode: events default to deny
-                    q['default'] = 'CMD_DENY'
+                    q.default = 'CMD_DENY'
                     if aamode == 'PERMITTING':
-                        q['default'] = 'CMD_ALLOW'
+                        q.default = 'CMD_ALLOW'
 
                     seen_events += 1
 
                     done = False
                     while not done:
-                        ans, selected = aaui.UI_PromptUser(q)
+                        ans, selected = q.promptUser()
 
                         if ans == 'CMD_FINISHED':
                             save_profiles()
@@ -1593,14 +1590,14 @@ def ask_the_questions():
                             audit_toggle = not audit_toggle
                             audit = ''
                             if audit_toggle:
-                                q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_OFF',
+                                q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_OFF',
                                                   'CMD_ABORT', 'CMD_FINISHED']
                                 audit = 'audit'
                             else:
-                                q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
+                                q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
                                                   'CMD_ABORT', 'CMD_FINISHED', ]
 
-                            q['headers'] = [_('Profile'), combine_name(profile, hat),
+                            q.headers = [_('Profile'), combine_name(profile, hat),
                                             _('Capability'), audit + capability,
                                             _('Severity'), severity]
 
@@ -1762,8 +1759,8 @@ def ask_the_questions():
                             owner_toggle = cfg['settings']['default_owner_prompt']
                         done = False
                         while not done:
-                            q = hasher()
-                            q['headers'] = [_('Profile'), combine_name(profile, hat),
+                            q = aaui.PromptQuestion()
+                            q.headers = [_('Profile'), combine_name(profile, hat),
                                             _('Path'), path]
 
                             if allow_mode:
@@ -1793,7 +1790,7 @@ def ask_the_questions():
                                 else:
                                     s = mode_to_str_user(prompt_mode) + tail
 
-                                q['headers'] += [_('Old Mode'), mode_to_str_user(allow_mode),
+                                q.headers += [_('Old Mode'), mode_to_str_user(allow_mode),
                                                  _('New Mode'), s]
 
                             else:
@@ -1812,21 +1809,21 @@ def ask_the_questions():
                                     tail = '     ' + _('(force perms to owner)')
 
                                 s = mode_to_str_user(prompt_mode)
-                                q['headers'] += [_('Mode'), s]
+                                q.headers += [_('Mode'), s]
 
-                            q['headers'] += [_('Severity'), severity]
-                            q['options'] = options
-                            q['selected'] = default_option - 1
-                            q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_GLOB',
+                            q.headers += [_('Severity'), severity]
+                            q.options = options
+                            q.selected = default_option - 1
+                            q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_GLOB',
                                               'CMD_GLOBEXT', 'CMD_NEW', 'CMD_ABORT',
                                               'CMD_FINISHED', 'CMD_OTHER']
-                            q['default'] = 'CMD_DENY'
+                            q.default = 'CMD_DENY'
                             if aamode == 'PERMITTING':
-                                q['default'] = 'CMD_ALLOW'
+                                q.default = 'CMD_ALLOW'
 
                             seen_events += 1
 
-                            ans, selected = aaui.UI_PromptUser(q)
+                            ans, selected = q.promptUser()
 
                             if ans == 'CMD_FINISHED':
                                 save_profiles()
@@ -1947,31 +1944,31 @@ def ask_the_questions():
                         default_option = 1
                         options = []
                         newincludes = match_net_includes(aa[profile][hat], family, sock_type)
-                        q = hasher()
+                        q = aaui.PromptQuestion()
                         if newincludes:
                             options += list(map(lambda s: '#include <%s>' % s, sorted(set(newincludes))))
                         if options:
                             options.append('network %s %s' % (family, sock_type))
-                            q['options'] = options
-                            q['selected'] = default_option - 1
+                            q.options = options
+                            q.selected = default_option - 1
 
-                        q['headers'] = [_('Profile'), combine_name(profile, hat)]
-                        q['headers'] += [_('Network Family'), family]
-                        q['headers'] += [_('Socket Type'), sock_type]
+                        q.headers = [_('Profile'), combine_name(profile, hat)]
+                        q.headers += [_('Network Family'), family]
+                        q.headers += [_('Socket Type'), sock_type]
 
                         audit_toggle = 0
-                        q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
+                        q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
                                           'CMD_ABORT', 'CMD_FINISHED']
-                        q['default'] = 'CMD_DENY'
+                        q.default = 'CMD_DENY'
 
                         if aamode == 'PERMITTING':
-                            q['default'] = 'CMD_ALLOW'
+                            q.default = 'CMD_ALLOW'
 
                         seen_events += 1
 
                         done = False
                         while not done:
-                            ans, selected = aaui.UI_PromptUser(q)
+                            ans, selected = q.promptUser()
 
                             if ans == 'CMD_FINISHED':
                                 save_profiles()
@@ -1986,14 +1983,14 @@ def ask_the_questions():
                                 audit = ''
                                 if audit_toggle:
                                     audit = 'audit'
-                                    q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_OFF',
+                                    q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_OFF',
                                                       'CMD_ABORT', 'CMD_FINISHED']
                                 else:
-                                    q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
+                                    q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
                                                       'CMD_ABORT', 'CMD_FINISHED']
-                                q['headers'] = [_('Profile'), combine_name(profile, hat)]
-                                q['headers'] += [_('Network Family'), audit + family]
-                                q['headers'] += [_('Socket Type'), sock_type]
+                                q.headers = [_('Profile'), combine_name(profile, hat)]
+                                q.headers += [_('Network Family'), audit + family]
+                                q.headers += [_('Socket Type'), sock_type]
 
                             elif ans == 'CMD_ALLOW':
                                 selection = options[selected]
@@ -2339,20 +2336,19 @@ def save_profiles():
                     reload_base(profile_name)
 
         else:
-            q = hasher()
-            q['title'] = 'Changed Local Profiles'
-            q['headers'] = []
-            q['explanation'] = _('The following local profiles were changed. Would you like to save them?')
-            q['functions'] = ['CMD_SAVE_CHANGES', 'CMD_SAVE_SELECTED', 'CMD_VIEW_CHANGES', 'CMD_VIEW_CHANGES_CLEAN', 'CMD_ABORT']
-            q['default'] = 'CMD_VIEW_CHANGES'
-            q['options'] = changed
-            q['selected'] = 0
+            q = aaui.PromptQuestion()
+            q.title = 'Changed Local Profiles'
+            q.explanation = _('The following local profiles were changed. Would you like to save them?')
+            q.functions = ['CMD_SAVE_CHANGES', 'CMD_SAVE_SELECTED', 'CMD_VIEW_CHANGES', 'CMD_VIEW_CHANGES_CLEAN', 'CMD_ABORT']
+            q.default = 'CMD_VIEW_CHANGES'
+            q.options = changed
+            q.selected = 0
             ans = ''
             arg = None
             while ans != 'CMD_SAVE_CHANGES':
                 if not changed:
                     return
-                ans, arg = aaui.UI_PromptUser(q)
+                ans, arg = q.promptUser()
                 if ans == 'CMD_SAVE_SELECTED':
                     profile_name = list(changed.keys())[arg]
                     write_profile_ui_feedback(profile_name)

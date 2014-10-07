@@ -61,20 +61,20 @@ def main():
 
         mergeprofiles.ask_the_questions('base')
 
-        q = apparmor.aa.hasher()
-        q['title'] = 'Changed Local Profiles'
-        q['headers'] = []
-        q['explanation'] = _('The following local profiles were changed. Would you like to save them?')
-        q['functions'] = ['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ABORT']
-        q['default'] = 'CMD_VIEW_CHANGES'
-        q['options'] = []
-        q['selected'] = 0
+        q = aaui.PromptQuestion()
+        q.title = _('Changed Local Profiles')
+        q.explanation = _('The following local profiles were changed. Would you like to save them?')
+        q.functions = ['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ABORT']
+        q.default = 'CMD_VIEW_CHANGES'
+        q.options = []
+        q.selected = 0
+
         ans = ''
         arg = None
         programs = list(mergeprofiles.user.aa.keys())
         program = programs[0]
         while ans != 'CMD_SAVE_CHANGES':
-            ans, arg = aaui.UI_PromptUser(q)
+            ans, arg = q.promptUser()
             if ans == 'CMD_SAVE_CHANGES':
                 apparmor.aa.write_profile_ui_feedback(program)
                 apparmor.aa.reload_base(program)
@@ -144,17 +144,17 @@ class Merge(object):
             if conflict_x & set('X'):
                 conflict_x.remove('X')
             if len(conflict_x) > 1:
-                q = apparmor.aa.hasher()
-                q['headers'] = [_('Path'), path]
-                q['headers'] += [_('Select the appropriate mode'), '']
+                q = aaui.PromptQuestion()
+                q.headers = [_('Path'), path]
+                q.headers += [_('Select the appropriate mode'), '']
                 options = []
                 options.append('%s: %s' %(mode, apparmor.aa.mode_to_str_user(new_mode)))# - (old_mode & conflict_x))))
                 options.append('%s: %s' %(mode, apparmor.aa.mode_to_str_user(old_mode)))#(old_mode | new_mode) - (new_mode & conflict_x))))
-                q['options'] = options
-                q['functions'] = ['CMD_ALLOW', 'CMD_ABORT']
+                q.options = options
+                q.functions = ['CMD_ALLOW', 'CMD_ABORT']
                 done = False
                 while not done:
-                    ans, selected = aaui.UI_PromptUser(q)
+                    ans, selected = q.promptUser()
                     if ans == 'CMD_ALLOW':
                         if selected == 0:
                             self.user.aa[profile][hat][allow]['path'][path][mode] = m#apparmor.aa.owner_flatten_mode(new_mode)#(old_mode | new_mode) - (old_mode & conflict_x)
@@ -176,15 +176,17 @@ class Merge(object):
         #Add the file-wide includes from the other profile to the user profile
         done = False
         options = list(map(lambda inc: '#include <%s>' %inc, sorted(other.filelist[other.filename]['include'].keys())))
-        q = apparmor.aa.hasher()
-        q['options'] = options
         default_option = 1
-        q['selected'] = default_option - 1
-        q['headers'] = [_('File includes'), _('Select the ones you wish to add')]
-        q['functions'] = ['CMD_ALLOW', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
-        q['default'] = 'CMD_ALLOW'
+
+        q = aaui.PromptQuestion()
+        q.options = options
+        q.selected = default_option - 1
+        q.headers = [_('File includes'), _('Select the ones you wish to add')]
+        q.functions = ['CMD_ALLOW', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
+        q.default = 'CMD_ALLOW'
+
         while not done and options:
-            ans, selected = aaui.UI_PromptUser(q)
+            ans, selected = q.PromptUser()
             if ans == 'CMD_IGNORE_ENTRY':
                 done = True
             elif ans == 'CMD_ALLOW':
@@ -202,15 +204,17 @@ class Merge(object):
                 #Add the includes from the other profile to the user profile
                 done = False
                 options = list(map(lambda inc: '#include <%s>' %inc, sorted(other.aa[profile][hat]['include'].keys())))
-                q = apparmor.aa.hasher()
-                q['options'] = options
                 default_option = 1
-                q['selected'] = default_option - 1
-                q['headers'] = [_('File includes'), _('Select the ones you wish to add')]
-                q['functions'] = ['CMD_ALLOW', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
-                q['default'] = 'CMD_ALLOW'
+
+                q = aaui.PromptQuestion()
+                q.options = options
+                q.selected = default_option - 1
+                q.headers = [_('File includes'), _('Select the ones you wish to add')]
+                q.functions = ['CMD_ALLOW', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
+                q.default = 'CMD_ALLOW'
+
                 while not done and options:
-                    ans, selected = aaui.UI_PromptUser(q)
+                    ans, selected = q.promptUser()
                     if ans == 'CMD_IGNORE_ENTRY':
                         done = True
                     elif ans == 'CMD_ALLOW':
@@ -232,28 +236,28 @@ class Merge(object):
                         default_option = 1
                         options = []
                         newincludes = apparmor.aa.match_cap_includes(self.user.aa[profile][hat], capability)
-                        q = apparmor.aa.hasher()
+                        q = aaui.PromptQuestion()
                         if newincludes:
                             options += list(map(lambda inc: '#include <%s>' %inc, sorted(set(newincludes))))
 
                         if options:
                             options.append('capability %s' % capability)
-                            q['options'] = [options]
-                            q['selected'] = default_option - 1
+                            q.options = options
+                            q.selected = default_option - 1
 
-                        q['headers'] = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
-                        q['headers'] += [_('Capability'), capability]
-                        q['headers'] += [_('Severity'), severity]
+                        q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
+                        q.headers += [_('Capability'), capability]
+                        q.headers += [_('Severity'), severity]
 
                         audit_toggle = 0
 
-                        q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
+                        q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_ABORT', 'CMD_FINISHED']
 
-                        q['default'] = 'CMD_ALLOW'
+                        q.default = 'CMD_ALLOW'
 
                         done = False
                         while not done:
-                            ans, selected = aaui.UI_PromptUser(q)
+                            ans, selected = q.promptUser()
                             # Ignore the log entry
                             if ans == 'CMD_IGNORE_ENTRY':
                                 done = True
@@ -425,8 +429,8 @@ class Merge(object):
                                 owner_toggle = apparmor.aa.cfg['settings']['default_owner_prompt']
                             done = False
                             while not done:
-                                q =  apparmor.aa.hasher()
-                                q['headers'] = [_('Profile'), apparmor.aa.combine_name(profile, hat),
+                                q =  aaui.PromptQuestion()
+                                q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat),
                                                 _('Path'), path]
 
                                 if allow_mode:
@@ -456,7 +460,7 @@ class Merge(object):
                                     else:
                                         s = apparmor.aa.mode_to_str_user(prompt_mode) + tail
 
-                                    q['headers'] += [_('Old Mode'), apparmor.aa.mode_to_str_user(allow_mode),
+                                    q.headers += [_('Old Mode'), apparmor.aa.mode_to_str_user(allow_mode),
                                                      _('New Mode'), s]
 
                                 else:
@@ -475,19 +479,19 @@ class Merge(object):
                                         tail = '     ' + _('(force perms to owner)')
 
                                     s = apparmor.aa.mode_to_str_user(prompt_mode)
-                                    q['headers'] += [_('Mode'), s]
+                                    q.headers += [_('Mode'), s]
 
-                                q['headers'] += [_('Severity'), severity]
-                                q['options'] = options
-                                q['selected'] = default_option - 1
-                                q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_GLOB',
+                                q.headers += [_('Severity'), severity]
+                                q.options = options
+                                q.selected = default_option - 1
+                                q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_GLOB',
                                                   'CMD_GLOBEXT', 'CMD_NEW', 'CMD_ABORT',
                                                   'CMD_FINISHED', 'CMD_OTHER']
 
-                                q['default'] = 'CMD_ALLOW'
+                                q.default = 'CMD_ALLOW'
 
 
-                                ans, selected = aaui.UI_PromptUser(q)
+                                ans, selected = q.promptUser()
 
                                 if ans == 'CMD_IGNORE_ENTRY':
                                     done = True
@@ -618,27 +622,27 @@ class Merge(object):
                             default_option = 1
                             options = []
                             newincludes = apparmor.aa.match_net_includes(self.user.aa[profile][hat], family, sock_type)
-                            q = apparmor.aa.hasher()
+                            q = aaui.PromptQuestion()
                             if newincludes:
                                 options += list(map(lambda s: '#include <%s>'%s, sorted(set(newincludes))))
                             if True:#options:
                                 options.append('network %s %s' % (family, sock_type))
-                                q['options'] = options
-                                q['selected'] = default_option - 1
+                                q.options = options
+                                q.selected = default_option - 1
 
-                            q['headers'] = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
-                            q['headers'] += [_('Network Family'), family]
-                            q['headers'] += [_('Socket Type'), sock_type]
+                            q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
+                            q.headers += [_('Network Family'), family]
+                            q.headers += [_('Socket Type'), sock_type]
 
                             audit_toggle = 0
-                            q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
+                            q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
                                               'CMD_ABORT', 'CMD_FINISHED']
 
-                            q['default'] = 'CMD_ALLOW'
+                            q.default = 'CMD_ALLOW'
 
                             done = False
                             while not done:
-                                ans, selected = aaui.UI_PromptUser(q)
+                                ans, selected = q.promptUser()
                                 if ans == 'CMD_IGNORE_ENTRY':
                                     done = True
                                     break
@@ -648,14 +652,14 @@ class Merge(object):
                                     audit = ''
                                     if audit_toggle:
                                         audit = 'audit'
-                                        q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_OFF',
+                                        q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_OFF',
                                                           'CMD_ABORT', 'CMD_FINISHED']
                                     else:
-                                        q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
+                                        q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
                                                           'CMD_ABORT', 'CMD_FINISHED']
-                                    q['headers'] = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
-                                    q['headers'] += [_('Network Family'), audit + family]
-                                    q['headers'] += [_('Socket Type'), sock_type]
+                                    q.headers = [_('Profile'), apparmor.aa.combine_name(profile, hat)]
+                                    q.headers += [_('Network Family'), audit + family]
+                                    q.headers += [_('Socket Type'), sock_type]
 
                                 elif ans == 'CMD_ALLOW':
                                     #print(options, selected)

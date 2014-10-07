@@ -234,18 +234,17 @@ class aa_tools:
 
         if filename:
             if not self.silent:
-                q = apparmor.hasher()
-                q['title'] = 'Changed Local Profiles'
-                q['headers'] = []
-                q['explanation'] = _('The local profile for %(program)s in file %(file)s was changed. Would you like to save it?') % { 'program': program, 'file': filename }
-                q['functions'] = ['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ABORT']
-                q['default'] = 'CMD_VIEW_CHANGES'
-                q['options'] = []
-                q['selected'] = 0
+                q = aaui.PromptQuestion()
+                q.title = 'Changed Local Profiles'
+                q.explanation = _('The local profile for %(program)s in file %(file)s was changed. Would you like to save it?') % { 'program': program, 'file': filename }
+                q.functions = ['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ABORT']
+                q.default = 'CMD_VIEW_CHANGES'
+                q.options = []
+                q.selected = 0
                 ans = ''
                 arg = None
                 while ans != 'CMD_SAVE_CHANGES':
-                    ans, arg = aaui.UI_PromptUser(q)
+                    ans, arg = q.promptUser()
                     if ans == 'CMD_SAVE_CHANGES':
                         apparmor.write_profile_ui_feedback(program)
                         apparmor.reload_base(program)
