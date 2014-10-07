@@ -793,13 +793,17 @@ rules:  rules opt_prefix capability
 		if ($2.owner)
 			yyerror(_("owner prefix not allowed on capability rules"));
 
-		if ($2.deny)
+		if ($2.deny && $2.audit) {
 			$1->caps.deny |= $3;
-		else
-			$1->caps.allow |= $3;
-
-		if (!$2.audit)
+		} else if ($2.deny) {
+			$1->caps.deny |= $3;
 			$1->caps.quiet |= $3;
+		} else {
+			$1->caps.allow |= $3;
+			if ($2.audit)
+				$1->caps.audit |= $3;
+		}
+
 		$$ = $1;
 	};
 
