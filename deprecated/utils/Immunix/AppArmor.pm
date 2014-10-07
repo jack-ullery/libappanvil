@@ -5438,8 +5438,9 @@ sub parse_profile_data($$$) {
                   $initial_comment .= "$_\n";
                 }
             }
-        } elsif (/^\s*(audit\s+)?(deny\s+)?(owner\s+)?(capability|dbus|file|mount|pivot_root|remount|umount)/) {
+        } elsif (/^\s*(audit\s+)?(deny\s+)?(owner\s+)?(capability|dbus|file|mount|pivot_root|remount|umount|signal|unix|ptrace|dbus)/) {
 	    # ignore valid rules that are currently unsupported by AppArmor.pm
+            # BUG: when writing the profile, those rules are lost!
         } else {
 	    # we hit something we don't understand in a profile...
 	    die sprintf(gettext('%s contains syntax errors. Line [%s]'), $file, $_) . "\n";
