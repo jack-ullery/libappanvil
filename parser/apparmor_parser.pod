@@ -239,6 +239,16 @@ Do not report on the profiles as they are loaded, and not show warnings.
 
 Report on the profiles as they are loaded, and show warnings.
 
+=item --warn=n
+
+Enable various warnings during policy compilation. A single dump flag
+can be specified per --warn option, but the --warn flag can be passed
+multiple times.
+
+  apparmor_parser --warn=rules-not-enforced ...
+
+Use --help=warn to see a full list of which warn flags are supported.
+
 =item -d, --debug
 
 Given once, only checks the profiles to ensure syntactic correctness.

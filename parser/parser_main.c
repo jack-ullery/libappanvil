@@ -127,6 +127,7 @@ struct option long_options[] = {
 	{"preprocess",		0, 0, 'p'},
 	{"abort-on-error",	0, 0, 132},	/* no short option */
 	{"skip-bad-cache-rebuild",	0, 0, 133},	/* no short option */
+	{"warn",		1, 0, 134},	/* no short option */
 	{NULL, 0, 0, 0},
 };
 
@@ -178,9 +179,25 @@ static void display_usage(const char *command)
 	       "-h [cmd], --help[=cmd]  Display this text or info about cmd\n"
 	       "--abort-on-error	Abort processing of profiles on first error\n"
 	       "--skip-bad-cache-rebuild Do not try rebuilding the cache if it is rejected by the kernel\n"
+	       "--warn n		Enable warnings (see --help=warn)\n"
 	       ,command);
 }
 
+optflag_table_t warnflag_table[] = {
+	{ 0, "rule-not-enforced", "warn if a rule is not enforced", WARN_RULE_NOT_ENFORCED },
+	{ 0, "rule-downgraded", "warn if a rule is downgraded to a lesser but still enforcing rule", WARN_RULE_DOWNGRADED },
+	{ 0, NULL, NULL, 0 },
+};
+
+void display_warn(const char *command)
+{
+	display_version();
+	printf("\n%s: --warn [Option]\n\n"
+	       "Options:\n"
+	       "--------\n"
+	       ,command);
+	print_flag_table(warnflag_table);
+}
 
 /* Treat conf file like options passed on command line
  */
@@ -285,6 +302,8 @@ static int process_arg(int c, char *optarg)
 			   strcmp(optarg, "optimize") == 0 ||
 			   strcmp(optarg, "O") == 0) {
 			display_optimize(progname);
+		} else if (strcmp(optarg, "warn") == 0) {
+			display_warn(progname);
 		} else {
 			PERROR("%s: Invalid --help option %s\n",
 			       progname, optarg);
@@ -384,6 +403,7 @@ static int process_arg(int c, char *optarg)
 	case 'q':
 		conf_verbose = 0;
 		conf_quiet = 1;
+		warnflags = 0;
 		break;
 	case 'v':
 		conf_verbose = 1;
@@ -434,6 +454,14 @@ static int process_arg(int c, char *optarg)
 		skip_cache = 1;
 		preprocess_only = 1;
 		skip_mode_force = 1;
+		break;
+	case 134:
+		if (!handle_flag_table(warnflag_table, optarg,
+				       &warnflags)) {
+			PERROR("%s: Invalid --warn option %s\n",
+			       progname, optarg);
+			exit(1);
+		}
 		break;
 	default:
 		display_usage(progname);

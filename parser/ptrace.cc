@@ -105,7 +105,7 @@ static void warn_once(const char *name)
 {
 	static const char *warned_name = NULL;
 
-	if (warned_name != name) {
+	if ((warnflags & WARN_RULE_NOT_ENFORCED) && warned_name != name) {
 		cerr << "Warning from profile " << name << " (";
 		if (current_filename)
 			cerr << current_filename;

@@ -47,6 +47,13 @@ class rule_t;
  */
 extern int parser_token;
 
+
+#define WARN_RULE_NOT_ENFORCED	1
+#define WARN_RULE_DOWNGRADED	2
+
+extern dfaflags_t warnflags;
+
+
 typedef enum pattern_t pattern_t;
 
 struct prefixes {
