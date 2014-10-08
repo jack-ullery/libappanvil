@@ -849,7 +849,7 @@ def console_select_and_upload_profiles(title, message, profiles_up):
     q.title = title
     q.headers = ['Repository', url]
     q.explanation = message
-    qfunctions = ['CMD_UPLOAD_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ASK_LATER',
+    q.functions = ['CMD_UPLOAD_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ASK_LATER',
                       'CMD_ASK_NEVER', 'CMD_ABORT']
     q.default = 'CMD_VIEW_CHANGES'
     q.options = [i[0] for i in profs]
