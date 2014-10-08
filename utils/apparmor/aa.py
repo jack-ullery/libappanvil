@@ -2609,6 +2609,7 @@ def attach_profile_data(profiles, profile_data):
 
 ## Profile parsing Regex
 RE_AUDIT_DENY           = '^\s*(?P<audit>audit\s+)?(?P<allow>allow\s+|deny\s+)?'  # line start, optionally: leading whitespace, <audit> and <allow>/deny
+RE_OWNER                = '(?P<owner>owner\s+)?'  # optionally: <owner>
 RE_EOL                  = '\s*(?P<comment>#.*)?$'  # optional whitespace, optional <comment>, end of the line
 RE_COMMA_EOL            = '\s*,' + RE_EOL # optional whitespace, comma + RE_EOL
 
@@ -2624,8 +2625,8 @@ RE_PROFILE_VARIABLE     = re.compile('^\s*(@\{?\w+\}?)\s*(\+?=)\s*(@*.+?)\s*,?' 
 RE_PROFILE_CONDITIONAL  = re.compile('^\s*if\s+(not\s+)?(\$\{?\w*\}?)\s*\{' + RE_EOL)
 RE_PROFILE_CONDITIONAL_VARIABLE = re.compile('^\s*if\s+(not\s+)?defined\s+(@\{?\w+\}?)\s*\{\s*(#.*)?$')
 RE_PROFILE_CONDITIONAL_BOOLEAN = re.compile('^\s*if\s+(not\s+)?defined\s+(\$\{?\w+\}?)\s*\{\s*(#.*)?$')
-RE_PROFILE_BARE_FILE_ENTRY = re.compile(RE_AUDIT_DENY + '(owner\s+)?file' + RE_COMMA_EOL)
-RE_PROFILE_PATH_ENTRY   = re.compile(RE_AUDIT_DENY + '(owner\s+)?(file\s+)?([\"@/].*?)\s+(\S+)(\s+->\s*(.*?))?' + RE_COMMA_EOL)
+RE_PROFILE_BARE_FILE_ENTRY = re.compile(RE_AUDIT_DENY + RE_OWNER + 'file' + RE_COMMA_EOL)
+RE_PROFILE_PATH_ENTRY   = re.compile(RE_AUDIT_DENY + RE_OWNER + '(file\s+)?([\"@/].*?)\s+(\S+)(\s+->\s*(.*?))?' + RE_COMMA_EOL)
 RE_PROFILE_NETWORK      = re.compile(RE_AUDIT_DENY + 'network(.*)' + RE_EOL)
 RE_NETWORK_FAMILY_TYPE = re.compile('\s+(\S+)\s+(\S+)\s*,$')
 RE_NETWORK_FAMILY = re.compile('\s+(\S+)\s*,$')
@@ -2861,26 +2862,23 @@ def parse_profile_data(data, file, do_include):
             pass
 
         elif RE_PROFILE_BARE_FILE_ENTRY.search(line):
-            matches = RE_PROFILE_BARE_FILE_ENTRY.search(line).groups()
+            matches = RE_PROFILE_BARE_FILE_ENTRY.search(line)
 
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected bare file rule found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            allow = 'allow'
-            if matches[1] and matches[1].strip() == 'deny':
-                allow = 'deny'
+            audit, allow, allow_keyword = parse_audit_allow(matches)
+            # TODO: honor allow_keyword
 
             mode = apparmor.aamode.AA_BARE_FILE_MODE
-            if not matches[2]:
+            if not matches.group('owner'):
                 mode |= AA_OTHER(apparmor.aamode.AA_BARE_FILE_MODE)
-
-            audit = set()
-            if matches[0]:
-                audit = mode
 
             path_rule = profile_data[profile][hat][allow]['path'][ALL]
             path_rule['mode'] = mode
-            path_rule['audit'] = audit
+            path_rule['audit'] = set()
+            if audit:
+                path_rule['audit'] = mode
             path_rule['file_prefix'] = True
 
         elif RE_PROFILE_PATH_ENTRY.search(line):
