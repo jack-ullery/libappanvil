@@ -5438,7 +5438,7 @@ sub parse_profile_data($$$) {
                   $initial_comment .= "$_\n";
                 }
             }
-        } elsif (/^\s*(audit\s+)?(deny\s+)?(owner\s+)?(capability|dbus|file|mount|pivot_root|remount|umount|signal|unix|ptrace|dbus)/) {
+        } elsif (/^\s*(audit\s+)?(deny\s+)?(owner\s+)?(capability|dbus|file|mount|pivot_root|remount|umount|signal|unix|ptrace)/) {
 	    # ignore valid rules that are currently unsupported by AppArmor.pm
             # BUG: when writing the profile, those rules are lost!
         } else {
