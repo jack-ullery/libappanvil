@@ -303,8 +303,8 @@ class PromptQuestion(object):
         if UI_mode == 'text':
             cmd, arg = self.Text_PromptUser()
         else:
-            q.type = 'wizard'
-            SendDataToYast(q)
+            self.type = 'wizard'
+            SendDataToYast(self)
             ypath, yarg = GetDataFromYast()
             if not cmd:
                 cmd = 'CMD_ABORT'
