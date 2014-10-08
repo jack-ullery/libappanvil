@@ -176,7 +176,8 @@ static void warn_once(const char *name, const char *msg)
 
 static void warn_once(const char *name)
 {
-	warn_once(name, "extended network unix socket rules not enforced");
+	if (warnflags & WARN_RULE_NOT_ENFORCED)
+		warn_once(name, "extended network unix socket rules not enforced");
 }
 
 static void writeu16(std::ostringstream &o, int v)
@@ -321,7 +322,8 @@ int unix_rule::gen_policy_re(Profile &prof)
 		if (kernel_supports_network) {
 			/* only warn if we are building against a kernel
 			 * that requires downgrading */
-			warn_once(prof.name, "downgrading extended network unix socket rule to generic network rule\n");
+			if (warnflags & WARN_RULE_DOWNGRADED)
+				warn_once(prof.name, "downgrading extended network unix socket rule to generic network rule\n");
 			/* TODO: add ability to abort instead of downgrade */
 			return RULE_OK;
 		}
