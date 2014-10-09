@@ -80,6 +80,16 @@ testsocktype()
 	local af_unix
 	local af_unix_access
 
+	# Adjust this when
+	#   https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1373174
+	# and
+	#   https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1373176
+	# get resolved
+	local ex_result="pass"
+	if [ "${socktype}" == "dgram" ] ; then
+		ex_result="xpass"
+	fi
+
 	removesockets $sockpath $client_sockpath
 
 	# PASS - unconfined
@@ -94,7 +104,7 @@ testsocktype()
 	# PASS - server w/ access to the file
 
 	genprofile $sockpath:$okserver $af_unix $client:Ux
-	runchecktest "$testdesc; confined server w/ access ($okserver)" pass $args
+	runchecktest "$testdesc; confined server w/ access ($okserver)" $ex_result $args
 	removesockets $sockpath $client_sockpath
 
 	# FAIL - server w/o access to the file
@@ -152,7 +162,7 @@ testsocktype()
 	# PASS - client w/ access to the file
 
 	genprofile $server -- image=$client $sockpath:$okclient $af_unix
-	runchecktest "$testdesc; confined client w/ access ($okclient)" pass $args
+	runchecktest "$testdesc; confined client w/ access ($okclient)" $ex_result $args
 	removesockets $sockpath $client_sockpath
 
 	# FAIL - client w/o access to the file
