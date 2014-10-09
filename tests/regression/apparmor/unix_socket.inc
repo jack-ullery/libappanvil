@@ -41,6 +41,14 @@ do_test()
 	local genprof="genprofile"
 	local args
 
+	# this is a workaround for
+	# https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1373172
+	local p_ex_result="pass"
+	if [ "$addr_type" == "unnamed" ] && [ "$test_prog" == "server" ] &&
+	   [ "$type" == "dgram" ] ; then
+        	p_ex_result="xpass"
+	fi
+
 	if [ "$test_prog" == "server" ]; then
 		genprof+=" $client:Ux"
 		args="$addr $type $message $client"
@@ -78,20 +86,20 @@ do_test()
 	fi
 
 	$genprof "unix:($l_access)" "unix::peer=(label=$p_label)"
-	runchecktest "$desc (peer label w/ implicit perms)" pass $args
+	runchecktest "$desc (peer label w/ implicit perms)" ${p_ex_result} $args
 
 	$genprof "unix:($l_access)" "unix:($p_access):peer=(label=$p_label)"
-	runchecktest "$desc (peer label w/ explicit perms)" pass $args
+	runchecktest "$desc (peer label w/ explicit perms)" ${p_ex_result} $args
 
 	if [ -n "$p_addr" ]; then
 		$genprof "unix:($l_access)" "unix:($p_access):peer=(addr=$p_addr)"
 		runchecktest "$desc (peer addr)" pass $args
 
 		$genprof "unix:($l_access)" "unix:($p_access):peer=(label=$p_label addr=$p_addr)"
-		runchecktest "$desc (peer label, peer addr)" pass $args
+		runchecktest "$desc (peer label, peer addr)" ${p_ex_result} $args
 
 		$genprof "unix:($l_access):type=$type" "unix:($p_access):type=$type:peer=(label=$p_label addr=$p_addr)"
-		runchecktest "$desc (type, peer label, peer addr)" pass $args
+		runchecktest "$desc (type, peer label, peer addr)" ${p_ex_result} $args
 	fi
 
 	if [ -n "$addr" ]; then
@@ -99,12 +107,12 @@ do_test()
 		runchecktest "$desc (type, addr)" pass $args
 
 		$genprof $u_type_rule "unix:($l_b_access):type=$type:addr=$addr" "unix:($p_access):type=$type:addr=$addr:peer=(label=$p_label)"
-		runchecktest "$desc (type, addr, peer label)" pass $args
+		runchecktest "$desc (type, addr, peer label)" ${p_ex_result} $args
 	fi
 
 	if [ -n "$addr" -a -n "$p_addr" ]; then
 		$genprof $u_type_rule "unix:($l_b_access):type=$type:addr=$addr" "unix:($p_access):type=$type:addr=$addr:peer=(label=$p_label addr=$p_addr)"
-		runchecktest "$desc (type, addr, peer label, peer addr)" pass $args
+		runchecktest "$desc (type, addr, peer label, peer addr)" ${p_ex_result} $args
 	fi
 
 	$genprof
