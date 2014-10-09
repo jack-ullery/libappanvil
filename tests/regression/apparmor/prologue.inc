@@ -250,7 +250,10 @@ checktestfg()
 		fi
 	fi
 
-	if [ -n "$VERBOSE" ]; then
+	# warn about expected failures
+	if [ -n "${_known}" ] ; then
+		echo "x${_pfmode}: ${_testdesc}"
+	elif [ -n "$VERBOSE" ]; then
 		echo "ok: ${_testdesc}"
 	fi
 }
