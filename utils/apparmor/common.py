@@ -168,19 +168,21 @@ def get_directory_contents(path):
 
 def open_file_read(path, encoding='UTF-8'):
     '''Open specified file read-only'''
-    try:
-        orig = codecs.open(path, 'r', encoding)
-    except Exception:
-        raise
-
-    return orig
+    return open_file_anymode('r', path, encoding)
 
 def open_file_write(path):
     '''Open specified file in write/overwrite mode'''
-    try:
-        orig = codecs.open(path, 'w', 'UTF-8')
-    except Exception:
-        raise
+    return open_file_anymode('w', path, 'UTF-8')
+
+def open_file_anymode(mode, path, encoding='UTF-8'):
+    '''Open specified file in specified mode'''
+
+    errorhandling = 'surrogateescape'
+    if sys.version_info[0] < 3:
+        errorhandling = 'replace'
+
+    orig = codecs.open(path, mode, encoding, errors=errorhandling)
+
     return orig
 
 def readkey():
