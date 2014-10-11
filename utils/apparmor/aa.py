@@ -2903,7 +2903,7 @@ def parse_profile_data(data, file, do_include):
             if matches[3]:
                 file_prefix = True
 
-            path = matches[4].strip()
+            path = strip_quotes(matches[4].strip())
             mode = matches[5]
             nt_name = matches[6]
             if nt_name:
@@ -4200,7 +4200,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 if matches[2]:
                     user = True
 
-                path = matches[4].strip()
+                path = strip_quotes(matches[4].strip())
                 mode = matches[5]
                 nt_name = matches[6]
                 if nt_name:
