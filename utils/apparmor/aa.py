@@ -1938,7 +1938,7 @@ def ask_the_questions():
                 #
                 for family in sorted(log_dict[aamode][profile][hat]['netdomain'].keys()):
                     # severity handling for net toggles goes here
-                    for sock_type in sorted(log_dict[profile][profile][hat]['netdomain'][family].keys()):
+                    for sock_type in sorted(log_dict[aamode][profile][hat]['netdomain'][family].keys()):
                         if profile_known_network(aa[profile][hat], family, sock_type):
                             continue
                         default_option = 1

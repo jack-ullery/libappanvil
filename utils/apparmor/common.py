@@ -200,6 +200,8 @@ def readkey():
 def hasher():
     '''A neat alternative to perl's hash reference'''
     # Creates a dictionary for any depth and returns empty dictionary otherwise
+    # WARNING: when reading non-existing sub-dicts, empty dicts will be added.
+    #          This might cause strange effects when using .keys()
     return collections.defaultdict(hasher)
 
 def convert_regexp(regexp):
