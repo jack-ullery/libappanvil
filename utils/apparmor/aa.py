@@ -1993,7 +1993,10 @@ def ask_the_questions():
                                 q.headers += [_('Socket Type'), sock_type]
 
                             elif ans == 'CMD_ALLOW':
-                                selection = options[selected]
+                                if options:
+                                    selection = options[selected]
+                                else:
+                                    selection = 'network %s %s' % (family, sock_type)
                                 done = True
                                 if re_match_include(selection):  # re.search('#include\s+<.+>$', selection):
                                     inc = re_match_include(selection)  # re.search('#include\s+<(.+)>$', selection).groups()[0]
