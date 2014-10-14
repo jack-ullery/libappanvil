@@ -143,9 +143,9 @@ class Severity(object):
         """Returns the max possible rank for file resources containing variables"""
         regex_variable = re.compile('@{([^{.]*)}')
         rank = None
-        if '@' in resource:
-            variable = regex_variable.search(resource).groups()[0]
-            variable = '@{%s}' % variable
+        matches = regex_variable.search(resource)
+        if matches:
+            variable = '@{%s}' % matches.groups()[0]
             #variables = regex_variable.findall(resource)
             for replacement in self.severity['VARIABLES'][variable]:
                 resource_replaced = self.variable_replace(variable, replacement, resource)
