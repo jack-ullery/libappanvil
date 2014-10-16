@@ -239,7 +239,12 @@ class Merge(object):
 
         #Add the file-wide includes from the other profile to the user profile
         done = False
-        options = list(map(lambda inc: '#include <%s>' %inc, sorted(other.filelist[other.filename]['include'].keys())))
+
+        options = []
+        for inc in other.filelist[other.filename]['include'].keys():
+            if not inc in self.user.filelist[self.user.filename]['include'].keys():
+                options.append('#include <%s>' %inc)
+
         default_option = 1
 
         q = aaui.PromptQuestion()
@@ -267,7 +272,12 @@ class Merge(object):
         for hat in sorted(other.aa[profile].keys()):
             #Add the includes from the other profile to the user profile
             done = False
-            options = list(map(lambda inc: '#include <%s>' %inc, sorted(other.aa[profile][hat]['include'].keys())))
+
+            options = []
+            for inc in other.aa[profile][hat]['include'].keys():
+                if not inc in self.user.aa[profile][hat]['include'].keys():
+                    options.append('#include <%s>' %inc)
+
             default_option = 1
 
             q = aaui.PromptQuestion()
