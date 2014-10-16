@@ -6,13 +6,17 @@ aa-mergeprof - merge AppArmor security profiles.
 
 =head1 SYNOPSIS
 
-B<aa-mergeprof I<E<lt>mineE<gt>> I<E<lt>userE<gt>> I<E<lt>otherE<gt>> [I<-d /path/to/profiles>]>
+B<aa-mergeprof I<file> [I<file> ...] [I<-d /path/to/profiles>]>
 
 =head1 OPTIONS
 
+B<file>
+
+   One or more files containing profiles to merge into the profile directory (see -d).
+
 B<-d --dir  /path/to/profiles>
 
-   Specifies where to look for the AppArmor security profile set.
+   Specifies the target directory for the merged AppArmor security profile set.
    Defaults to /etc/apparmor.d.
 
 =head1 DESCRIPTION
