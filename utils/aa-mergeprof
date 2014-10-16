@@ -26,8 +26,7 @@ import apparmor.ui as aaui
 from apparmor.translations import init_translation
 _ = init_translation()
 
-parser = argparse.ArgumentParser(description=_('Perform a 2-way or 3-way merge on the given profiles'),
-    epilog='WARNING: the arguments will change in a future version!')
+parser = argparse.ArgumentParser(description=_('Merge the given profiles into /etc/apparmor.d/ (or the directory specified with -d)'))
 parser.add_argument('files', nargs='+', type=str, help=_('base profile'))
 #parser.add_argument('other', nargs='?', type=str, help=_('other profile'))
 parser.add_argument('-d', '--dir', type=str, help=_('path to profiles'))
@@ -91,11 +90,12 @@ def main():
 
     user_profile_to_file = find_files_from_profiles(profiles_to_merge)
 
-    print(base_files,"\n",other_files)
-    print(base_profile_to_file,"\n",other_profile_to_file,"\n",user_profile_to_file)
-    print(profiles_to_merge)
+#    print(base_files,"\n",other_files)
+#    print(base_profile_to_file,"\n",other_profile_to_file,"\n",user_profile_to_file)
+#    print(profiles_to_merge)
 
     for profile_name in profiles_to_merge:
+        aaui.UI_Info("\n\n" + _("Merging profile for %s" % profile_name))
         user_file = user_profile_to_file[profile_name]
         base_file = base_profile_to_file.get(profile_name, None)
         other_file =  None
@@ -119,7 +119,9 @@ def main():
 def act(files, merge_mode, merging_profile):
     mergeprofiles = Merge(files)
     #Get rid of common/superfluous stuff
-    mergeprofiles.clear_common()
+#    mergeprofiles.clear_common()
+# mergeprofiles.clear_common() temporarily disabled because it crashes,
+# see https://bugs.launchpad.net/apparmor/+bug/1382236
 
 #    if not args.auto:
     if 1 == 1:  # workaround to avoid lots of whitespace changes
@@ -255,7 +257,7 @@ class Merge(object):
         q.default = 'CMD_ALLOW'
 
         while not done and options:
-            ans, selected = q.PromptUser()
+            ans, selected = q.promptUser()
             if ans == 'CMD_IGNORE_ENTRY':
                 done = True
             elif ans == 'CMD_ALLOW':
@@ -264,6 +266,8 @@ class Merge(object):
                 self.user.filelist[self.user.filename]['include'][inc] = True
                 options.pop(selected)
                 aaui.UI_Info(_('Adding %s to the file.') % selection)
+            elif ans == 'CMD_FINISHED':
+                return
 
         sev_db = apparmor.aa.sev_db
         if not sev_db:
@@ -300,6 +304,8 @@ class Merge(object):
                     aaui.UI_Info(_('Adding %s to the file.') % selection)
                     if deleted:
                         aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
+                elif ans == 'CMD_FINISHED':
+                    return
 
             #Add the capabilities
             for allow in ['allow', 'deny']:
@@ -336,6 +342,9 @@ class Merge(object):
                         if ans == 'CMD_IGNORE_ENTRY':
                             done = True
                             break
+
+                        elif ans == 'CMD_FINISHED':
+                            return
 
                         if ans == 'CMD_ALLOW':
                             selection = ''
@@ -571,8 +580,15 @@ class Merge(object):
                                 done = True
                                 break
 
+                            elif ans == 'CMD_FINISHED':
+                                return
+
                             if ans == 'CMD_OTHER':
-                                audit_toggle, owner_toggle = aaui.UI_ask_mode_toggles(audit_toggle, owner_toggle, allow_mode)
+                                aaui.UI_Important("Sorry, not implemented yet!")
+                                # audit_toggle, owner_toggle = aaui.UI_ask_mode_toggles(audit_toggle, owner_toggle, allow_mode)
+# crashes with
+#    audit_toggle, owner_toggle = aaui.UI_ask_mode_toggles(audit_toggle, owner_toggle, allow_mode)
+#    AttributeError: 'module' object has no attribute 'UI_ask_mode_toggles'
                             elif ans == 'CMD_USER_TOGGLE':
                                 owner_toggle += 1
                                 if not allow_mode and owner_toggle == 2:
@@ -720,6 +736,9 @@ class Merge(object):
                             if ans == 'CMD_IGNORE_ENTRY':
                                 done = True
                                 break
+
+                            elif ans == 'CMD_FINISHED':
+                                return
 
                             if ans.startswith('CMD_AUDIT'):
                                 audit_toggle = not audit_toggle
