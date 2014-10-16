@@ -2634,7 +2634,7 @@ RE_PROFILE_NETWORK      = re.compile(RE_AUDIT_DENY + 'network(.*)' + RE_EOL)
 RE_NETWORK_FAMILY_TYPE = re.compile('\s+(\S+)\s+(\S+)\s*,$')
 RE_NETWORK_FAMILY = re.compile('\s+(\S+)\s*,$')
 RE_PROFILE_CHANGE_HAT   = re.compile('^\s*\^(\"??.+?\"??)' + RE_COMMA_EOL)
-RE_PROFILE_HAT_DEF      = re.compile('^\s*\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{' + RE_EOL)
+RE_PROFILE_HAT_DEF      = re.compile('^\s*(\^|hat\s+)(?P<hat>\"??.+?\"??)\s+((flags=)?\((?P<flags>.+)\)\s+)*\{' + RE_EOL)
 RE_PROFILE_DBUS         = re.compile(RE_AUDIT_DENY + '(dbus\s*,|dbus\s+[^#]*\s*,)' + RE_EOL)
 RE_PROFILE_MOUNT        = re.compile(RE_AUDIT_DENY + '((mount|remount|umount|unmount)(\s+[^#]*)?\s*,)' + RE_EOL)
 RE_PROFILE_SIGNAL       = re.compile(RE_AUDIT_DENY + '(signal\s*,|signal\s+[^#]*\s*,)' + RE_EOL)
@@ -3144,14 +3144,14 @@ def parse_profile_data(data, file, do_include):
 
         elif RE_PROFILE_HAT_DEF.search(line):
             # An embedded hat syntax definition starts
-            matches = RE_PROFILE_HAT_DEF.search(line).groups()
+            matches = RE_PROFILE_HAT_DEF.search(line)
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected hat definition found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             in_contained_hat = True
-            hat = matches[0]
+            hat = matches.group('hat')
             hat = strip_quotes(hat)
-            flags = matches[3]
+            flags = matches.group('flags')
 
             profile_data[profile][hat]['flags'] = flags
             profile_data[profile][hat]['declared'] = False
@@ -4321,11 +4321,12 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     #To-Do
                     pass
             elif RE_PROFILE_HAT_DEF.search(line):
-                matches = RE_PROFILE_HAT_DEF.search(line).groups()
+                matches = RE_PROFILE_HAT_DEF.search(line)
                 in_contained_hat = True
-                hat = matches[0]
+                hat = matches.group('hat')
                 hat = strip_quotes(hat)
-                flags = matches[3]
+                flags = matches.group('flags')
+
                 if not write_prof_data[hat]['flags'] == flags:
                     correct = False
                 if not write_prof_data[hat]['declared'] is False:
