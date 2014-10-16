@@ -12,12 +12,14 @@ endif
 MANPAGES=apparmor.vim.5
 VIM_INSTALL_PATH=${DESTDIR}/usr/share/apparmor
 
-all: apparmor.vim manpages
+all: apparmor.vim manpages htmlmanpages
 
 apparmor.vim: apparmor.vim.in Makefile create-apparmor.vim.py
 	${PYTHON} create-apparmor.vim.py > apparmor.vim
 
 manpages: $(MANPAGES)
+
+htmlmanpages: $(HTMLMANPAGES)
 
 install: apparmor.vim manpages
 	install -d $(VIM_INSTALL_PATH)
@@ -29,5 +31,5 @@ check: check_pod_files
 	#Testing with all pythons
 	$(call pyalldo, create-apparmor.vim.py > /dev/null)
 
-clean:
-	rm -f apparmor.vim common $(MANPAGES)
+clean: _clean
+	rm -f apparmor.vim common
