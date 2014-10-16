@@ -167,7 +167,7 @@ syn match sdRLimit /\v^\s*set\s+rlimit\s+(cpu|rttime|nofile|nproc|rtprio|locks|s
 syn match sdEntryW /\v^\s+@@auditdenyowner@@link\s+(subset\s+)?@@FILENAME@@\s+-\>\s+@@FILENAME@@@@EOL@@/ contains=sdGlob,sdComment
 
 
-syn match sdExtHat  /\v^\s+(\^|profile\s+)\S+@@EOL@@/ contains=sdComment " hat without {...}
+syn match sdExtHat  /\v^\s+(\^|hat\s+|profile\s+)\S+@@EOL@@/ contains=sdComment " hat without {...}
 
 
 
@@ -176,7 +176,7 @@ syn match sdProfileName /\v^((profile\s+)?\/\S+|profile\s+([a-zA-Z0-9]\S*\s)?\S+
 syn match sdProfileStart /{/ contained 
 syn match sdProfileEnd /^}\s*(#.*)?$/ contained " TODO: syn region does not (yet?) allow usage of comment in end=
                                                 " TODO: Removing the $ mark from end= will allow non-comments also :-(
-syn match sdHatName /\v^\s+(\^|profile\s+)\S+\s+@@flags@@=\{/ contains=sdProfileStart,sdFlags,sdComment
+syn match sdHatName /\v^\s+(\^|hat\s+|profile\s+)\S+\s+@@flags@@=\{/ contains=sdProfileStart,sdFlags,sdComment
 syn match sdHatStart /{/ contained 
 syn match sdHatEnd /}/ contained " TODO: allow comments + [same as for syn match sdProfileEnd]
 syn match sdFlags /\v@@flags@@/ contained contains=sdFlagKey
@@ -190,7 +190,7 @@ syn match sdInclude /\s*include\s<\S*>/  " TODO: doesn't check until $
 " basic profile block...
 " \s+ does not work in end=, therefore using \s\s*
 syn region Normal start=/\v^(profile\s+)?\S+\s+@@flags@@=\{/ matchgroup=sdProfileEnd end=/^}\s*$/ contains=sdProfileName,Hat,@sdEntry,sdComment,sdError,sdInclude
-syn region Hat start=/\v^\s+(\^|profile\s+)\S+\s+@@flags@@=\{/ matchgroup=sdHatEnd end=/^\s\s*}\s*$/ contains=sdHatName,@sdEntry,sdComment,sdError,sdInclude
+syn region Hat start=/\v^\s+(\^|hat\s+|profile\s+)\S+\s+@@flags@@=\{/ matchgroup=sdHatEnd end=/^\s\s*}\s*$/ contains=sdHatName,@sdEntry,sdComment,sdError,sdInclude
 
 " file permissions
 
