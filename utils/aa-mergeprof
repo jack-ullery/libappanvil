@@ -27,7 +27,7 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 parser = argparse.ArgumentParser(description=_('Merge the given profiles into /etc/apparmor.d/ (or the directory specified with -d)'))
-parser.add_argument('files', nargs='+', type=str, help=_('base profile'))
+parser.add_argument('files', nargs='+', type=str, help=_('Profile(s) to merge'))
 #parser.add_argument('other', nargs='?', type=str, help=_('other profile'))
 parser.add_argument('-d', '--dir', type=str, help=_('path to profiles'))
 #parser.add_argument('-a', '--auto', action='store_true', help=_('Automatically merge profiles, exits incase of *x conflicts'))
@@ -137,7 +137,7 @@ def act(files, merge_mode, merging_profile):
         q.explanation = _('The following local profiles were changed. Would you like to save them?')
         q.functions = ['CMD_SAVE_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ABORT', 'CMD_IGNORE_ENTRY']
         q.default = 'CMD_VIEW_CHANGES'
-        q.options = []
+        q.options = [merging_profile]
         q.selected = 0
 
         ans = ''
@@ -707,8 +707,11 @@ class Merge(object):
                     # severity handling for net toggles goes here
 
                     for sock_type in sorted(other.aa[profile][hat][allow]['netdomain']['rule'][family].keys()):
-                        if apparmor.aa.profile_known_network(self.user.aa[profile][hat], family, sock_type):
-                            continue
+                        #if apparmor.aa.profile_known_network(self.user.aa[profile][hat], family, sock_type):
+                        #    continue
+                        # disabled for now because it crashes, for details and impact see
+                        # https://bugs.launchpad.net/apparmor/+bug/1382241
+
                         default_option = 1
                         options = []
                         newincludes = apparmor.aa.match_net_includes(self.user.aa[profile][hat], family, sock_type)
