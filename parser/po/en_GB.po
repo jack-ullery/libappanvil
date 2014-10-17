@@ -8,13 +8,13 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-13 00:11-0700\n"
-"PO-Revision-Date: 2013-11-15 22:02+0000\n"
-"Last-Translator: Andi Chandler <Unknown>\n"
+"PO-Revision-Date: 2014-10-16 21:22+0000\n"
+"Last-Translator: Anthony Harrington <untaintableangel@ubuntu.com>\n"
 "Language-Team: English (United Kingdom) <en_GB@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-09-14 05:58+0000\n"
+"X-Launchpad-Export-Date: 2014-10-17 05:36+0000\n"
 "X-Generator: Launchpad (build 17196)\n"
 "Language: en_GB\n"
 
@@ -62,30 +62,30 @@ msgstr "Profile does not match signature\n"
 
 #: ../parser_interface.c:87 ../parser_interface.c:90 ../parser_interface.c:67
 msgid "Profile version not supported by Apparmor module\n"
-msgstr ""
+msgstr "Profile version not supported by Apparmor module\n"
 
 #: ../parser_interface.c:90 ../parser_interface.c:93 ../parser_interface.c:70
 msgid "Profile already exists\n"
-msgstr ""
+msgstr "Profile already exists\n"
 
 #: ../parser_interface.c:93 ../parser_interface.c:96 ../parser_interface.c:73
 msgid "Profile doesn't exist\n"
-msgstr ""
+msgstr "Profile doesn't exist\n"
 
 #: ../parser_interface.c:96 ../parser_interface.c:99 ../parser_interface.c:76
 msgid "Permission denied; attempted to load a profile while confined?\n"
-msgstr ""
+msgstr "Permission denied; attempted to load a profile while confined?\n"
 
 #: ../parser_interface.c:99 ../parser_interface.c:102 ../parser_interface.c:79
 #, c-format
 msgid "Unknown error (%d): %s\n"
-msgstr ""
+msgstr "Unknown error (%d): %s\n"
 
 #: ../parser_interface.c:116 ../parser_interface.c:119
 #: ../parser_interface.c:96
 #, c-format
 msgid "%s: Unable to add \"%s\".  "
-msgstr ""
+msgstr "%s: Unable to add \"%s\".  "
 
 #: ../parser_interface.c:121 ../parser_interface.c:124
 #: ../parser_interface.c:101
@@ -97,19 +97,19 @@ msgstr ""
 #: ../parser_interface.c:106
 #, c-format
 msgid "%s: Unable to remove \"%s\".  "
-msgstr ""
+msgstr "%s: Unable to remove \"%s\".  "
 
 #: ../parser_interface.c:131 ../parser_interface.c:134
 #: ../parser_interface.c:111
 #, c-format
 msgid "%s: Unable to write to stdout\n"
-msgstr ""
+msgstr "%s: Unable to write to stdout\n"
 
 #: ../parser_interface.c:135 ../parser_interface.c:138
 #: ../parser_interface.c:115
 #, c-format
 msgid "%s: Unable to write to output file\n"
-msgstr ""
+msgstr "%s: Unable to write to output file\n"
 
 #: ../parser_interface.c:138 ../parser_interface.c:162
 #: ../parser_interface.c:141 ../parser_interface.c:165
