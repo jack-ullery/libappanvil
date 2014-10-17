@@ -26,9 +26,9 @@ INCLUDES = $(all_includes)
 # For more information, see:
 # http://www.gnu.org/software/libtool/manual/html_node/Libtool-versioning.html
 #
-AA_LIB_CURRENT = 2
+AA_LIB_CURRENT = 3
 AA_LIB_REVISION = 0
-AA_LIB_AGE = 1
+AA_LIB_AGE = 2
 
 SUFFIXES = .pc.in .pc
 
