@@ -5438,8 +5438,14 @@ sub parse_profile_data($$$) {
                   $initial_comment .= "$_\n";
                 }
             }
-        } elsif (/^\s*(audit\s+)?(deny\s+)?(owner\s+)?(capability|dbus|file|mount|pivot_root|remount|umount)/) {
+        } elsif (/^\s*(audit\s+)?(deny\s+)?(owner\s+)?(capability|dbus|file|mount|pivot_root|remount|umount|signal|unix|ptrace)/) {
 	    # ignore valid rules that are currently unsupported by AppArmor.pm
+            if (! defined $profile_data->{$profile}{$hat}{unsupported_rules}) {
+                $profile_data->{$profile}{$hat}{unsupported_rules} = [];
+            }
+            $_ =~ s/^\s+|\s+$//g;
+            push @{$profile_data->{$profile}{$hat}{unsupported_rules}}, $_ ;
+
         } else {
 	    # we hit something we don't understand in a profile...
 	    die sprintf(gettext('%s contains syntax errors. Line [%s]'), $file, $_) . "\n";
@@ -5893,6 +5899,25 @@ sub writepaths ($$) {
     return @data;
 }
 
+sub writeunsupportedrules ($$) {
+    my ($prof_data, $depth) = @_;
+
+    my @data;
+    my $pre = "  " x $depth;
+
+    if (defined $prof_data->{unsupported_rules}) {
+
+        for my $rule (@{$prof_data->{unsupported_rules}}){
+            push @data, "${pre}${rule}";
+        }
+
+        push @data, "";
+    }
+
+    return @data;
+
+}
+
 sub write_rules ($$) {
     my ($prof_data, $depth) = @_;
 
@@ -5903,6 +5928,7 @@ sub write_rules ($$) {
     push @data, writerlimits($prof_data, $depth);
     push @data, writecapabilities($prof_data, $depth);
     push @data, writenetdomain($prof_data, $depth);
+    push @data, writeunsupportedrules($prof_data, $depth); ## Legacy support for unknown/new rules
     push @data, writelinks($prof_data, $depth);
     push @data, writepaths($prof_data, $depth);
     push @data, writechange_profile($prof_data, $depth);

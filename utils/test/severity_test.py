@@ -52,6 +52,8 @@ class Test(unittest.TestCase):
         self.assertEqual(rank, 9, 'Wrong rank')
         self.assertEqual(sev_db.rank('/etc/apparmor/**', 'r') , 6,  'Invalid Rank')
         self.assertEqual(sev_db.rank('/etc/**', 'r') , 10,  'Invalid Rank')
+        self.assertEqual(sev_db.rank('/usr/foo@bar', 'r') , 10,  'Invalid Rank')  ## filename containing @
+        self.assertEqual(sev_db.rank('/home/foo@bar', 'rw') , 6,  'Invalid Rank')  ## filename containing @
 
         # Load all variables for /sbin/klogd and test them
         sev_db.load_variables('profiles/sbin.klogd')

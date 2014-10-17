@@ -2,5 +2,5 @@
 #=EXRESULT FAIL
 
 /bin/foo {
-  /abc\ def r,
+  /abc def r,
 }

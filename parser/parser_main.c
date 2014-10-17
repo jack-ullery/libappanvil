@@ -74,6 +74,8 @@ int force_clear_cache = 0;		/* force clearing regargless of state */
 int create_cache_dir = 0;		/* create the cache dir if missing? */
 int preprocess_only = 0;
 int skip_mode_force = 0;
+int abort_on_error = 0;			/* stop processing profiles if error */
+int skip_bad_cache_rebuild = 0;
 struct timespec mru_tstamp;
 
 #define FEATURES_STRING_SIZE 8192
@@ -123,6 +125,9 @@ struct option long_options[] = {
 	{"optimize",		1, 0, 'O'},
 	{"Optimize",		1, 0, 'O'},
 	{"preprocess",		0, 0, 'p'},
+	{"abort-on-error",	0, 0, 132},	/* no short option */
+	{"skip-bad-cache-rebuild",	0, 0, 133},	/* no short option */
+	{"warn",		1, 0, 134},	/* no short option */
 	{NULL, 0, 0, 0},
 };
 
@@ -172,9 +177,27 @@ static void display_usage(const char *command)
 	       "-D [n], --dump		Dump internal info for debugging\n"
 	       "-O [n], --Optimize	Control dfa optimizations\n"
 	       "-h [cmd], --help[=cmd]  Display this text or info about cmd\n"
+	       "--abort-on-error	Abort processing of profiles on first error\n"
+	       "--skip-bad-cache-rebuild Do not try rebuilding the cache if it is rejected by the kernel\n"
+	       "--warn n		Enable warnings (see --help=warn)\n"
 	       ,command);
 }
 
+optflag_table_t warnflag_table[] = {
+	{ 0, "rule-not-enforced", "warn if a rule is not enforced", WARN_RULE_NOT_ENFORCED },
+	{ 0, "rule-downgraded", "warn if a rule is downgraded to a lesser but still enforcing rule", WARN_RULE_DOWNGRADED },
+	{ 0, NULL, NULL, 0 },
+};
+
+void display_warn(const char *command)
+{
+	display_version();
+	printf("\n%s: --warn [Option]\n\n"
+	       "Options:\n"
+	       "--------\n"
+	       ,command);
+	print_flag_table(warnflag_table);
+}
 
 /* Treat conf file like options passed on command line
  */
@@ -279,6 +302,8 @@ static int process_arg(int c, char *optarg)
 			   strcmp(optarg, "optimize") == 0 ||
 			   strcmp(optarg, "O") == 0) {
 			display_optimize(progname);
+		} else if (strcmp(optarg, "warn") == 0) {
+			display_warn(progname);
 		} else {
 			PERROR("%s: Invalid --help option %s\n",
 			       progname, optarg);
@@ -378,6 +403,7 @@ static int process_arg(int c, char *optarg)
 	case 'q':
 		conf_verbose = 0;
 		conf_quiet = 1;
+		warnflags = 0;
 		break;
 	case 'v':
 		conf_verbose = 1;
@@ -410,6 +436,12 @@ static int process_arg(int c, char *optarg)
 	case 131:
 		create_cache_dir = 1;
 		break;
+	case 132:
+		abort_on_error = 1;
+		break;
+	case 133:
+		skip_bad_cache_rebuild = 1;
+		break;
 	case 'L':
 		cacheloc = strdup(optarg);
 		break;
@@ -422,6 +454,14 @@ static int process_arg(int c, char *optarg)
 		skip_cache = 1;
 		preprocess_only = 1;
 		skip_mode_force = 1;
+		break;
+	case 134:
+		if (!handle_flag_table(warnflag_table, optarg,
+				       &warnflags)) {
+			PERROR("%s: Invalid --warn option %s\n",
+			       progname, optarg);
+			exit(1);
+		}
 		break;
 	default:
 		display_usage(progname);
@@ -718,9 +758,10 @@ int process_binary(int option, const char *profilename)
 	if (profilename) {
 		fd = open(profilename, O_RDONLY);
 		if (fd == -1) {
+			retval = errno;
 			PERROR(_("Error: Could not read binary profile or cache file %s: %s.\n"),
 			       profilename, strerror(errno));
-			exit(errno);
+			return retval;
 		}
 	} else {
 		fd = dup(0);
@@ -733,7 +774,7 @@ int process_binary(int option, const char *profilename)
 			chunksize <<= 1;
 			if (!buffer) {
 				PERROR(_("Memory allocation error."));
-				exit(errno);
+				return ENOMEM;
 			}
 		}
 
@@ -859,7 +900,7 @@ int process_profile(int option, const char *profilename)
 		if ( !(yyin = fopen(profilename, "r")) ) {
 			PERROR(_("Error: Could not read profile %s: %s.\n"),
 			       profilename, strerror(errno));
-			exit(errno);
+			return errno;
 		}
 	}
 	else {
@@ -921,7 +962,7 @@ int process_profile(int option, const char *profilename)
 	    !skip_cache) {
 		if (asprintf(&cachename, "%s/%s", cacheloc, basename)<0) {
 			PERROR(_("Memory allocation error."));
-			exit(1);
+			return ENOMEM;
 		}
 		/* Load a binary cache if it exists and is newest */
 		if (!skip_read_cache &&
@@ -931,17 +972,18 @@ int process_profile(int option, const char *profilename)
 			if (show_cache)
 				PERROR("Cache hit: %s\n", cachename);
 			retval = process_binary(option, cachename);
-			goto out;
+			if (!retval || skip_bad_cache_rebuild)
+				goto out;
 		}
 		if (write_cache) {
 			/* Otherwise, set up to save a cached copy */
 			if (asprintf(&cachetemp, "%s-XXXXXX", cachename)<0) {
 				perror("asprintf");
-				exit(1);
+				return ENOMEM;
 			}
 			if ( (cache_fd = mkstemp(cachetemp)) < 0) {
 				perror("mkstemp");
-				exit(1);
+				return ENOMEM;
 			}
 		}
 	}
@@ -1012,7 +1054,7 @@ out:
 }
 
 /* data - name of parent dir */
-static int profile_dir_cb(__unused DIR *dir, const char *name, struct stat *st,
+static int profile_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 			  void *data)
 {
 	int rc = 0;
@@ -1029,7 +1071,7 @@ static int profile_dir_cb(__unused DIR *dir, const char *name, struct stat *st,
 }
 
 /* data - name of parent dir */
-static int binary_dir_cb(__unused DIR *dir, const char *name, struct stat *st,
+static int binary_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 			 void *data)
 {
 	int rc = 0;
@@ -1046,7 +1088,7 @@ static int binary_dir_cb(__unused DIR *dir, const char *name, struct stat *st,
 }
 
 static int clear_cache_cb(DIR *dir, const char *path, struct stat *st,
-			  __unused void *data)
+			  void *data unused)
 {
 	/* remove regular files */
 	if (S_ISREG(st->st_mode))
@@ -1159,7 +1201,7 @@ static void setup_flags(void)
 
 int main(int argc, char *argv[])
 {
-	int retval;
+	int retval, last_error;
 	int i;
 	int optind;
 
@@ -1202,13 +1244,16 @@ int main(int argc, char *argv[])
 
 	setup_flags();
 
-	retval = 0;
-	for (i = optind; retval == 0 && i <= argc; i++) {
+	retval = last_error = 0;
+	for (i = optind; i <= argc; i++) {
 		struct stat stat_file;
 
 		if (i < argc && !(profilename = strdup(argv[i]))) {
 			perror("strdup");
-			return -1;
+			last_error = ENOMEM;
+			if (abort_on_error)
+				break;
+			continue;
 		}
 		/* skip stdin if we've seen other command line arguments */
 		if (i == argc && optind != argc)
@@ -1223,10 +1268,9 @@ int main(int argc, char *argv[])
 			int (*cb)(DIR *dir, const char *name, struct stat *st,
 				  void *data);
 			cb = binary_input ? binary_dir_cb : profile_dir_cb;
-			if (dirat_for_each(NULL, profilename, profilename, cb)) {
+			if ((retval = dirat_for_each(NULL, profilename, profilename, cb))) {
 				PDEBUG("Failed loading profiles from %s\n",
 				       profilename);
-				exit(1);
 			}
 		} else if (binary_input) {
 			retval = process_binary(option, profilename);
@@ -1236,10 +1280,16 @@ int main(int argc, char *argv[])
 
 		if (profilename) free(profilename);
 		profilename = NULL;
+
+		if (retval) {
+			last_error = retval;
+			if (abort_on_error)
+				break;
+		}
 	}
 
 	if (ofile)
 		fclose(ofile);
 
-	return retval;
+	return last_error;
 }

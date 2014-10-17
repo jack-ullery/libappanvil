@@ -85,3 +85,9 @@
   /etc/gnome/defaults.list r,
   /usr/share/gnome/applications/ r,
   /usr/share/gnome/applications/mimeinfo.cache r,
+
+  # Allow connecting to the GNOME vfs socket (still need corresponding DBus
+  # rules)
+  unix (send, receive, connect)
+       type=stream
+       peer=(addr="@/dbus-vfs-daemon/socket-*"),

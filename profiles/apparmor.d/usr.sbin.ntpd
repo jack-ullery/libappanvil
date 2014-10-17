@@ -55,6 +55,7 @@
   /var/opt/novell/xad/rpc/xadsd rw,
   /{,var/}run/nscd/services r,
   /{,var/}run/ntpd.pid w,
+  /{,var/}run/ntp/ntpd.pid w,
   /var/tmp/ntp* rwl,
   @{PROC}/@{pid}/net/if_inet6 r,
 

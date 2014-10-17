@@ -168,19 +168,21 @@ def get_directory_contents(path):
 
 def open_file_read(path, encoding='UTF-8'):
     '''Open specified file read-only'''
-    try:
-        orig = codecs.open(path, 'r', encoding)
-    except Exception:
-        raise
-
-    return orig
+    return open_file_anymode('r', path, encoding)
 
 def open_file_write(path):
     '''Open specified file in write/overwrite mode'''
-    try:
-        orig = codecs.open(path, 'w', 'UTF-8')
-    except Exception:
-        raise
+    return open_file_anymode('w', path, 'UTF-8')
+
+def open_file_anymode(mode, path, encoding='UTF-8'):
+    '''Open specified file in specified mode'''
+
+    errorhandling = 'surrogateescape'
+    if sys.version_info[0] < 3:
+        errorhandling = 'replace'
+
+    orig = codecs.open(path, mode, encoding, errors=errorhandling)
+
     return orig
 
 def readkey():
@@ -198,6 +200,8 @@ def readkey():
 def hasher():
     '''A neat alternative to perl's hash reference'''
     # Creates a dictionary for any depth and returns empty dictionary otherwise
+    # WARNING: when reading non-existing sub-dicts, empty dicts will be added.
+    #          This might cause strange effects when using .keys()
     return collections.defaultdict(hasher)
 
 def convert_regexp(regexp):

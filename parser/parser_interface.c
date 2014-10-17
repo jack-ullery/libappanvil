@@ -442,7 +442,7 @@ void sd_serialize_profile(std::ostringstream &buf, Profile *profile,
 			sd_write_uint16(buf, profile->net.deny[i] & profile->net.quiet[i]);
 		}
 		sd_write_arrayend(buf);
-	} else if (profile->net.allow)
+	} else if (profile->net.allow && (warnflags & WARN_RULE_NOT_ENFORCED))
 		pwarn(_("profile %s network rules not enforced\n"), profile->name);
 
 	if (profile->policy.dfa) {

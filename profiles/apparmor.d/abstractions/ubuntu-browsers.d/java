@@ -12,6 +12,8 @@
   /usr/lib/jvm/java-*-sun-1.*/jre/bin/java{,_vm} cx -> browser_java,
   /usr/lib/jvm/java-*-sun-1.*/jre/lib/*/libnp*.so cx -> browser_java,
   /usr/lib/j2*-ibm/jre/bin/java cx -> browser_java,
+  owner /{,var/}run/user/*/icedteaplugin-*/   rw,
+  owner /{,var/}run/user/*/icedteaplugin-*/** rwk,
 
   # Profile for the supported OpenJDK in Ubuntu. This doesn't require the
   # unfortunate workarounds of the proprietary Javas, so have a separate

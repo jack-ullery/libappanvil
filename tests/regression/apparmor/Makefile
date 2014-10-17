@@ -184,6 +184,8 @@ TESTS=access \
       tcp \
       unix_fd_server \
       unix_socket_pathname \
+      unix_socket_abstract \
+      unix_socket_unnamed \
       unlink\
       xattrs\
       longpath
@@ -227,6 +229,15 @@ dbus_service: dbus_message dbus_service.c dbus_common.o
 dbus_unrequested_reply: dbus_service dbus_unrequested_reply.c dbus_common.o
 	${CC} ${CFLAGS} ${LDFLAGS} $(filter-out dbus_service, $^) -o $@ ${LDLIBS} $(shell pkg-config --cflags --libs dbus-1)
 
+unix_socket_common.o: unix_socket_common.c unix_socket_common.h
+	${CC} ${CFLAGS} ${LDFLAGS} $< -c ${LDLIBS}
+
+unix_socket_client: unix_socket_client.c unix_socket_common.o
+	${CC} ${CFLAGS} ${LDFLAGS} $^ -o $@ ${LDLIBS}
+
+unix_socket: unix_socket.c unix_socket_common.o unix_socket_client
+	${CC} ${CFLAGS} ${LDFLAGS} $(filter-out unix_socket_client, $^) -o $@ ${LDLIBS}
+
 tests: all
 	@if [ `whoami` = "root" ] ;\
 	then \
@@ -266,6 +277,6 @@ alltests: all
 	fi
 
 clean:
-	rm -f $(EXEC) dbus_common.o uservars.inc
+	rm -f $(EXEC) dbus_common.o unix_socket_common.o uservars.inc
 
 regex.sh: open exec

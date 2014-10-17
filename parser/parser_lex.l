@@ -119,7 +119,7 @@ struct cb_struct {
 	const char *filename;
 };
 
-static int include_dir_cb(__unused DIR *dir, const char *name, struct stat *st,
+static int include_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 			  void *data)
 {
 	struct cb_struct *d = (struct cb_struct *) data;
@@ -207,13 +207,14 @@ WS		[[:blank:]]
 NUMBER		[[:digit:]]+
 
 ID_CHARS	[^ \t\n"!,]
-ID 		{ID_CHARS}|(,{ID_CHARS})
+ID 		{ID_CHARS}|(,{ID_CHARS}|\\[ ]|\\\t|\\\"|\\!|\\,)
 IDS		{ID}+
 POST_VAR_ID_CHARS	[^ \t\n"!,]{-}[=\+]
-POST_VAR_ID 	{POST_VAR_ID_CHARS}|(,{POST_VAR_ID_CHARS})
-LIST_VALUE_ID_CHARS	[^ \t\n"!,]{-}[()]
+POST_VAR_ID 	{POST_VAR_ID_CHARS}|(,{POST_VAR_ID_CHARS}|\\[ ]|\\\t|\\\"|\\!|\\,|\\\(|\\\))
+LIST_VALUE_ID_CHARS	([^ \t\n"!,]{-}[()]|\\[ ]|\\\t|\\\"|\\!|\\,|\\\(|\\\))
+LIST_VALUE_QUOTED_ID_CHARS [^\0"]|\\\"
 LIST_VALUE_ID	{LIST_VALUE_ID_CHARS}+
-QUOTED_LIST_VALUE_ID	{LIST_VALUE_ID}|\"{LIST_VALUE_ID}\"
+QUOTED_LIST_VALUE_ID	\"{LIST_VALUE_QUOTED_ID_CHARS}+\"
 ID_CHARS_NOEQ	[^ \t\n"!,]{-}[=]
 LEADING_ID_CHARS_NOEQ [^ \t\n"!,]{-}[=()+&]
 ID_NOEQ		{ID_CHARS_NOEQ}|(,{ID_CHARS_NOEQ})

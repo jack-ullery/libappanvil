@@ -495,13 +495,13 @@ def get_profile(prof_name):
         options.append(preferred_user)
     options += tmp_list
 
-    q = dict()
-    q['headers'] = ['Profile', prof_name]
-    q['functions'] = ['CMD_VIEW_PROFILE', 'CMD_USE_PROFILE', 'CMD_CREATE_PROFILE',
+    q = aaui.PromptQuestion()
+    q.headers = ['Profile', prof_name]
+    q.functions = ['CMD_VIEW_PROFILE', 'CMD_USE_PROFILE', 'CMD_CREATE_PROFILE',
                       'CMD_ABORT', 'CMD_FINISHED']
-    q['default'] = "CMD_VIEW_PROFILE"
-    q['options'] = options
-    q['selected'] = 0
+    q.default = "CMD_VIEW_PROFILE"
+    q.options = options
+    q.selected = 0
 
     ans = ''
     while 'CMD_USE_PROFILE' not in ans and 'CMD_CREATE_PROFILE' not in ans:
@@ -509,9 +509,9 @@ def get_profile(prof_name):
             save_profiles()
             return
 
-        ans, arg = aaui.UI_PromptUser(q)
+        ans, arg = q.promptUser()
         p = profile_hash[options[arg]]
-        q['selected'] = options.index(options[arg])
+        q.selected = options.index(options[arg])
         if ans == 'CMD_VIEW_PROFILE':
             if aaui.UI_mode == 'yast':
                 SendDataToYast({'type': 'dialogue-view-profile',
@@ -845,18 +845,18 @@ def upload_profile(url, user, passw, distro, p, profile_string, changelog):
 def console_select_and_upload_profiles(title, message, profiles_up):
     url = cfg['repository']['url']
     profs = profiles_up[:]
-    q = hasher()
-    q['title'] = title
-    q['headers'] = ['Repository', url]
-    q['explanation'] = message
-    q['functions'] = ['CMD_UPLOAD_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ASK_LATER',
+    q = aaui.PromptQuestion()
+    q.title = title
+    q.headers = ['Repository', url]
+    q.explanation = message
+    q.functions = ['CMD_UPLOAD_CHANGES', 'CMD_VIEW_CHANGES', 'CMD_ASK_LATER',
                       'CMD_ASK_NEVER', 'CMD_ABORT']
-    q['default'] = 'CMD_VIEW_CHANGES'
-    q['options'] = [i[0] for i in profs]
-    q['selected'] = 0
+    q.default = 'CMD_VIEW_CHANGES'
+    q.options = [i[0] for i in profs]
+    q.selected = 0
     ans = ''
     while 'CMD_UPLOAD_CHANGES' not in ans and 'CMD_ASK_NEVER' not in ans and 'CMD_ASK_LATER' not in ans:
-        ans, arg = aaui.UI_PromptUser(q)
+        ans, arg = q.promptUser()
         if ans == 'CMD_VIEW_CHANGES':
             display_changes(profs[arg][2], profs[arg][1])
     if ans == 'CMD_NEVER_ASK':
@@ -987,28 +987,26 @@ def handle_children(profile, hat, root):
                 ans = transitions.get(context, 'XXXINVALIDXXX')
 
                 while ans not in ['CMD_ADDHAT', 'CMD_USEDEFAULT', 'CMD_DENY']:
-                    q = hasher()
-                    q['headers'] = []
-                    q['headers'] += [_('Profile'), profile]
+                    q = aaui.PromptQuestion()
+                    q.headers += [_('Profile'), profile]
 
                     if default_hat:
-                        q['headers'] += [_('Default Hat'), default_hat]
+                        q.headers += [_('Default Hat'), default_hat]
 
-                    q['headers'] += [_('Requested Hat'), uhat]
+                    q.headers += [_('Requested Hat'), uhat]
 
-                    q['functions'] = []
-                    q['functions'].append('CMD_ADDHAT')
+                    q.functions.append('CMD_ADDHAT')
                     if default_hat:
-                        q['functions'].append('CMD_USEDEFAULT')
-                    q['functions'] += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
+                        q.functions.append('CMD_USEDEFAULT')
+                    q.functions += ['CMD_DENY', 'CMD_ABORT', 'CMD_FINISHED']
 
-                    q['default'] = 'CMD_DENY'
+                    q.default = 'CMD_DENY'
                     if aamode == 'PERMITTING':
-                        q['default'] = 'CMD_ADDHAT'
+                        q.default = 'CMD_ADDHAT'
 
                     seen_events += 1
 
-                    ans = aaui.UI_PromptUser(q)
+                    ans = q.promptUser()
 
                     if ans == 'CMD_FINISHED':
                         save_profiles()
@@ -1247,20 +1245,19 @@ def handle_children(profile, hat, root):
                         severity = sev_db.rank(exec_target, 'x')
 
                         # Prompt portion starts
-                        q = hasher()
-                        q['headers'] = []
-                        q['headers'] += [_('Profile'), combine_name(profile, hat)]
+                        q = aaui.PromptQuestion()
+
+                        q.headers += [_('Profile'), combine_name(profile, hat)]
                         if prog and prog != 'HINT':
-                            q['headers'] += [_('Program'), prog]
+                            q.headers += [_('Program'), prog]
 
                         # to_name should not exist here since, transitioning is already handeled
-                        q['headers'] += [_('Execute'), exec_target]
-                        q['headers'] += [_('Severity'), severity]
+                        q.headers += [_('Execute'), exec_target]
+                        q.headers += [_('Severity'), severity]
 
-                        q['functions'] = []
                         # prompt = '\n%s\n' % context_new  # XXX
                         exec_toggle = False
-                        q['functions'] += build_x_functions(default, options, exec_toggle)
+                        q.functions += build_x_functions(default, options, exec_toggle)
 
                         # options = '|'.join(options)
                         seen_events += 1
@@ -1268,11 +1265,11 @@ def handle_children(profile, hat, root):
 
                         ans = ''
                         while not regex_options.search(ans):
-                            ans = aaui.UI_PromptUser(q)[0].strip()
+                            ans = q.promptUser()[0].strip()
                             if ans.startswith('CMD_EXEC_IX_'):
                                 exec_toggle = not exec_toggle
-                                q['functions'] = []
-                                q['functions'] += build_x_functions(default, options, exec_toggle)
+                                q.functions = []
+                                q.functions += build_x_functions(default, options, exec_toggle)
                                 ans = ''
                                 continue
 
@@ -1549,36 +1546,36 @@ def ask_the_questions():
                     default_option = 1
                     options = []
                     newincludes = match_cap_includes(aa[profile][hat], capability)
-                    q = hasher()
+                    q = aaui.PromptQuestion()
 
                     if newincludes:
                         options += list(map(lambda inc: '#include <%s>' % inc, sorted(set(newincludes))))
 
                     if options:
                         options.append('capability %s' % capability)
-                        q['options'] = options
-                        q['selected'] = default_option - 1
+                        q.options = options
+                        q.selected = default_option - 1
 
-                    q['headers'] = [_('Profile'), combine_name(profile, hat)]
-                    q['headers'] += [_('Capability'), capability]
-                    q['headers'] += [_('Severity'), severity]
+                    q.headers = [_('Profile'), combine_name(profile, hat)]
+                    q.headers += [_('Capability'), capability]
+                    q.headers += [_('Severity'), severity]
 
                     audit_toggle = 0
 
-                    q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
+                    q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
                                       'CMD_ABORT', 'CMD_FINISHED']
 
                     # In complain mode: events default to allow
                     # In enforce mode: events default to deny
-                    q['default'] = 'CMD_DENY'
+                    q.default = 'CMD_DENY'
                     if aamode == 'PERMITTING':
-                        q['default'] = 'CMD_ALLOW'
+                        q.default = 'CMD_ALLOW'
 
                     seen_events += 1
 
                     done = False
                     while not done:
-                        ans, selected = aaui.UI_PromptUser(q)
+                        ans, selected = q.promptUser()
 
                         if ans == 'CMD_FINISHED':
                             save_profiles()
@@ -1593,14 +1590,14 @@ def ask_the_questions():
                             audit_toggle = not audit_toggle
                             audit = ''
                             if audit_toggle:
-                                q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_OFF',
+                                q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_OFF',
                                                   'CMD_ABORT', 'CMD_FINISHED']
                                 audit = 'audit'
                             else:
-                                q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
+                                q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
                                                   'CMD_ABORT', 'CMD_FINISHED', ]
 
-                            q['headers'] = [_('Profile'), combine_name(profile, hat),
+                            q.headers = [_('Profile'), combine_name(profile, hat),
                                             _('Capability'), audit + capability,
                                             _('Severity'), severity]
 
@@ -1762,8 +1759,8 @@ def ask_the_questions():
                             owner_toggle = cfg['settings']['default_owner_prompt']
                         done = False
                         while not done:
-                            q = hasher()
-                            q['headers'] = [_('Profile'), combine_name(profile, hat),
+                            q = aaui.PromptQuestion()
+                            q.headers = [_('Profile'), combine_name(profile, hat),
                                             _('Path'), path]
 
                             if allow_mode:
@@ -1793,7 +1790,7 @@ def ask_the_questions():
                                 else:
                                     s = mode_to_str_user(prompt_mode) + tail
 
-                                q['headers'] += [_('Old Mode'), mode_to_str_user(allow_mode),
+                                q.headers += [_('Old Mode'), mode_to_str_user(allow_mode),
                                                  _('New Mode'), s]
 
                             else:
@@ -1812,21 +1809,21 @@ def ask_the_questions():
                                     tail = '     ' + _('(force perms to owner)')
 
                                 s = mode_to_str_user(prompt_mode)
-                                q['headers'] += [_('Mode'), s]
+                                q.headers += [_('Mode'), s]
 
-                            q['headers'] += [_('Severity'), severity]
-                            q['options'] = options
-                            q['selected'] = default_option - 1
-                            q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_GLOB',
+                            q.headers += [_('Severity'), severity]
+                            q.options = options
+                            q.selected = default_option - 1
+                            q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_GLOB',
                                               'CMD_GLOBEXT', 'CMD_NEW', 'CMD_ABORT',
                                               'CMD_FINISHED', 'CMD_OTHER']
-                            q['default'] = 'CMD_DENY'
+                            q.default = 'CMD_DENY'
                             if aamode == 'PERMITTING':
-                                q['default'] = 'CMD_ALLOW'
+                                q.default = 'CMD_ALLOW'
 
                             seen_events += 1
 
-                            ans, selected = aaui.UI_PromptUser(q)
+                            ans, selected = q.promptUser()
 
                             if ans == 'CMD_FINISHED':
                                 save_profiles()
@@ -1941,37 +1938,37 @@ def ask_the_questions():
                 #
                 for family in sorted(log_dict[aamode][profile][hat]['netdomain'].keys()):
                     # severity handling for net toggles goes here
-                    for sock_type in sorted(log_dict[profile][profile][hat]['netdomain'][family].keys()):
+                    for sock_type in sorted(log_dict[aamode][profile][hat]['netdomain'][family].keys()):
                         if profile_known_network(aa[profile][hat], family, sock_type):
                             continue
                         default_option = 1
                         options = []
                         newincludes = match_net_includes(aa[profile][hat], family, sock_type)
-                        q = hasher()
+                        q = aaui.PromptQuestion()
                         if newincludes:
                             options += list(map(lambda s: '#include <%s>' % s, sorted(set(newincludes))))
                         if options:
                             options.append('network %s %s' % (family, sock_type))
-                            q['options'] = options
-                            q['selected'] = default_option - 1
+                            q.options = options
+                            q.selected = default_option - 1
 
-                        q['headers'] = [_('Profile'), combine_name(profile, hat)]
-                        q['headers'] += [_('Network Family'), family]
-                        q['headers'] += [_('Socket Type'), sock_type]
+                        q.headers = [_('Profile'), combine_name(profile, hat)]
+                        q.headers += [_('Network Family'), family]
+                        q.headers += [_('Socket Type'), sock_type]
 
                         audit_toggle = 0
-                        q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
+                        q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
                                           'CMD_ABORT', 'CMD_FINISHED']
-                        q['default'] = 'CMD_DENY'
+                        q.default = 'CMD_DENY'
 
                         if aamode == 'PERMITTING':
-                            q['default'] = 'CMD_ALLOW'
+                            q.default = 'CMD_ALLOW'
 
                         seen_events += 1
 
                         done = False
                         while not done:
-                            ans, selected = aaui.UI_PromptUser(q)
+                            ans, selected = q.promptUser()
 
                             if ans == 'CMD_FINISHED':
                                 save_profiles()
@@ -1986,17 +1983,20 @@ def ask_the_questions():
                                 audit = ''
                                 if audit_toggle:
                                     audit = 'audit'
-                                    q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_OFF',
+                                    q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_OFF',
                                                       'CMD_ABORT', 'CMD_FINISHED']
                                 else:
-                                    q['functions'] = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
+                                    q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_AUDIT_NEW',
                                                       'CMD_ABORT', 'CMD_FINISHED']
-                                q['headers'] = [_('Profile'), combine_name(profile, hat)]
-                                q['headers'] += [_('Network Family'), audit + family]
-                                q['headers'] += [_('Socket Type'), sock_type]
+                                q.headers = [_('Profile'), combine_name(profile, hat)]
+                                q.headers += [_('Network Family'), audit + family]
+                                q.headers += [_('Socket Type'), sock_type]
 
                             elif ans == 'CMD_ALLOW':
-                                selection = options[selected]
+                                if options:
+                                    selection = options[selected]
+                                else:
+                                    selection = 'network %s %s' % (family, sock_type)
                                 done = True
                                 if re_match_include(selection):  # re.search('#include\s+<.+>$', selection):
                                     inc = re_match_include(selection)  # re.search('#include\s+<(.+)>$', selection).groups()[0]
@@ -2339,20 +2339,19 @@ def save_profiles():
                     reload_base(profile_name)
 
         else:
-            q = hasher()
-            q['title'] = 'Changed Local Profiles'
-            q['headers'] = []
-            q['explanation'] = _('The following local profiles were changed. Would you like to save them?')
-            q['functions'] = ['CMD_SAVE_CHANGES', 'CMD_SAVE_SELECTED', 'CMD_VIEW_CHANGES', 'CMD_VIEW_CHANGES_CLEAN', 'CMD_ABORT']
-            q['default'] = 'CMD_VIEW_CHANGES'
-            q['options'] = changed
-            q['selected'] = 0
+            q = aaui.PromptQuestion()
+            q.title = 'Changed Local Profiles'
+            q.explanation = _('The following local profiles were changed. Would you like to save them?')
+            q.functions = ['CMD_SAVE_CHANGES', 'CMD_SAVE_SELECTED', 'CMD_VIEW_CHANGES', 'CMD_VIEW_CHANGES_CLEAN', 'CMD_ABORT']
+            q.default = 'CMD_VIEW_CHANGES'
+            q.options = changed
+            q.selected = 0
             ans = ''
             arg = None
             while ans != 'CMD_SAVE_CHANGES':
                 if not changed:
                     return
-                ans, arg = aaui.UI_PromptUser(q)
+                ans, arg = q.promptUser()
                 if ans == 'CMD_SAVE_SELECTED':
                     profile_name = list(changed.keys())[arg]
                     write_profile_ui_feedback(profile_name)
@@ -2613,12 +2612,13 @@ def attach_profile_data(profiles, profile_data):
 
 ## Profile parsing Regex
 RE_AUDIT_DENY           = '^\s*(?P<audit>audit\s+)?(?P<allow>allow\s+|deny\s+)?'  # line start, optionally: leading whitespace, <audit> and <allow>/deny
+RE_OWNER                = '(?P<owner>owner\s+)?'  # optionally: <owner>
 RE_EOL                  = '\s*(?P<comment>#.*)?$'  # optional whitespace, optional <comment>, end of the line
 RE_COMMA_EOL            = '\s*,' + RE_EOL # optional whitespace, comma + RE_EOL
 
 RE_PROFILE_START        = re.compile('^\s*("?(/.+?)"??|(profile\s+"?(.+?)"??))\s+((flags=)?\((.+)\)\s+)?\{' + RE_EOL)
 RE_PROFILE_END          = re.compile('^\s*\}' + RE_EOL)
-RE_PROFILE_CAP          = re.compile(RE_AUDIT_DENY + 'capability(\s+\S+)?' + RE_COMMA_EOL)
+RE_PROFILE_CAP          = re.compile(RE_AUDIT_DENY + 'capability(?P<capability>(\s+\S+)+)?' + RE_COMMA_EOL)
 RE_PROFILE_LINK         = re.compile(RE_AUDIT_DENY + 'link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)' + RE_COMMA_EOL)
 RE_PROFILE_CHANGE_PROFILE = re.compile('^\s*change_profile\s+->\s*("??.+?"??)' + RE_COMMA_EOL)
 RE_PROFILE_ALIAS        = re.compile('^\s*alias\s+("??.+?"??)\s+->\s*("??.+?"??)' + RE_COMMA_EOL)
@@ -2628,13 +2628,13 @@ RE_PROFILE_VARIABLE     = re.compile('^\s*(@\{?\w+\}?)\s*(\+?=)\s*(@*.+?)\s*,?' 
 RE_PROFILE_CONDITIONAL  = re.compile('^\s*if\s+(not\s+)?(\$\{?\w*\}?)\s*\{' + RE_EOL)
 RE_PROFILE_CONDITIONAL_VARIABLE = re.compile('^\s*if\s+(not\s+)?defined\s+(@\{?\w+\}?)\s*\{\s*(#.*)?$')
 RE_PROFILE_CONDITIONAL_BOOLEAN = re.compile('^\s*if\s+(not\s+)?defined\s+(\$\{?\w+\}?)\s*\{\s*(#.*)?$')
-RE_PROFILE_BARE_FILE_ENTRY = re.compile(RE_AUDIT_DENY + '(owner\s+)?file' + RE_COMMA_EOL)
-RE_PROFILE_PATH_ENTRY   = re.compile(RE_AUDIT_DENY + '(owner\s+)?(file\s+)?([\"@/].*?)\s+(\S+)(\s+->\s*(.*?))?' + RE_COMMA_EOL)
+RE_PROFILE_BARE_FILE_ENTRY = re.compile(RE_AUDIT_DENY + RE_OWNER + 'file' + RE_COMMA_EOL)
+RE_PROFILE_PATH_ENTRY   = re.compile(RE_AUDIT_DENY + RE_OWNER + '(file\s+)?([\"@/].*?)\s+(\S+)(\s+->\s*(.*?))?' + RE_COMMA_EOL)
 RE_PROFILE_NETWORK      = re.compile(RE_AUDIT_DENY + 'network(.*)' + RE_EOL)
 RE_NETWORK_FAMILY_TYPE = re.compile('\s+(\S+)\s+(\S+)\s*,$')
 RE_NETWORK_FAMILY = re.compile('\s+(\S+)\s*,$')
 RE_PROFILE_CHANGE_HAT   = re.compile('^\s*\^(\"??.+?\"??)' + RE_COMMA_EOL)
-RE_PROFILE_HAT_DEF      = re.compile('^\s*\^(\"??.+?\"??)\s+((flags=)?\((.+)\)\s+)*\{' + RE_EOL)
+RE_PROFILE_HAT_DEF      = re.compile('^\s*(\^|hat\s+)(?P<hat>\"??.+?\"??)\s+((flags=)?\((?P<flags>.+)\)\s+)*\{' + RE_EOL)
 RE_PROFILE_DBUS         = re.compile(RE_AUDIT_DENY + '(dbus\s*,|dbus\s+[^#]*\s*,)' + RE_EOL)
 RE_PROFILE_MOUNT        = re.compile(RE_AUDIT_DENY + '((mount|remount|umount|unmount)(\s+[^#]*)?\s*,)' + RE_EOL)
 RE_PROFILE_SIGNAL       = re.compile(RE_AUDIT_DENY + '(signal\s*,|signal\s+[^#]*\s*,)' + RE_EOL)
@@ -2747,22 +2747,18 @@ def parse_profile_data(data, file, do_include):
             initial_comment = ''
 
         elif RE_PROFILE_CAP.search(line):
-            matches = RE_PROFILE_CAP.search(line).groups()
+            matches = RE_PROFILE_CAP.search(line)
 
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected capability entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            audit = False
-            if matches[0]:
-                audit = True
-
-            allow = 'allow'
-            if matches[1] and matches[1].strip() == 'deny':
-                allow = 'deny'
+            audit, allow, allow_keyword = parse_audit_allow(matches)
+            # TODO: honor allow_keyword
 
             capability = ALL
-            if matches[2]:
-                capability = matches[2].strip()
+            if matches.group('capability'):
+                capability = matches.group('capability').strip()
+                # TODO: can contain more than one capability- split it?
 
             profile_data[profile][hat][allow]['capability'][capability]['set'] = True
             profile_data[profile][hat][allow]['capability'][capability]['audit'] = audit
@@ -2869,26 +2865,23 @@ def parse_profile_data(data, file, do_include):
             pass
 
         elif RE_PROFILE_BARE_FILE_ENTRY.search(line):
-            matches = RE_PROFILE_BARE_FILE_ENTRY.search(line).groups()
+            matches = RE_PROFILE_BARE_FILE_ENTRY.search(line)
 
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected bare file rule found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            allow = 'allow'
-            if matches[1] and matches[1].strip() == 'deny':
-                allow = 'deny'
+            audit, allow, allow_keyword = parse_audit_allow(matches)
+            # TODO: honor allow_keyword
 
             mode = apparmor.aamode.AA_BARE_FILE_MODE
-            if not matches[2]:
+            if not matches.group('owner'):
                 mode |= AA_OTHER(apparmor.aamode.AA_BARE_FILE_MODE)
-
-            audit = set()
-            if matches[0]:
-                audit = mode
 
             path_rule = profile_data[profile][hat][allow]['path'][ALL]
             path_rule['mode'] = mode
-            path_rule['audit'] = audit
+            path_rule['audit'] = set()
+            if audit:
+                path_rule['audit'] = mode
             path_rule['file_prefix'] = True
 
         elif RE_PROFILE_PATH_ENTRY.search(line):
@@ -2913,7 +2906,7 @@ def parse_profile_data(data, file, do_include):
             if matches[3]:
                 file_prefix = True
 
-            path = matches[4].strip()
+            path = strip_quotes(matches[4].strip())
             mode = matches[5]
             nt_name = matches[6]
             if nt_name:
@@ -3151,14 +3144,14 @@ def parse_profile_data(data, file, do_include):
 
         elif RE_PROFILE_HAT_DEF.search(line):
             # An embedded hat syntax definition starts
-            matches = RE_PROFILE_HAT_DEF.search(line).groups()
+            matches = RE_PROFILE_HAT_DEF.search(line)
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected hat definition found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             in_contained_hat = True
-            hat = matches[0]
+            hat = matches.group('hat')
             hat = strip_quotes(hat)
-            flags = matches[3]
+            flags = matches.group('flags')
 
             profile_data[profile][hat]['flags'] = flags
             profile_data[profile][hat]['declared'] = False
@@ -3215,6 +3208,21 @@ def parse_profile_data(data, file, do_include):
         raise AppArmorException(_("Syntax Error: Missing '}' or ','. Reached end of file %(file)s while inside profile %(profile)s") % { 'file': file, 'profile': profile })
 
     return profile_data
+
+def parse_audit_allow(matches):
+    audit = False
+    if matches.group('audit'):
+        audit = True
+
+    allow = 'allow'
+    allow_keyword = False
+    if matches.group('allow'):
+        allow = matches.group('allow').strip()
+        allow_keyword = True
+        if allow != 'allow' and allow != 'deny':  # should never happen
+            raise AppArmorException(_("Invalid allow/deny keyword %s" % allow))
+
+    return (audit, allow, allow_keyword)
 
 # RE_DBUS_ENTRY = re.compile('^dbus\s*()?,\s*$')
 #   use stuff like '(?P<action>(send|write|w|receive|read|r|rw))'
@@ -4195,7 +4203,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 if matches[2]:
                     user = True
 
-                path = matches[4].strip()
+                path = strip_quotes(matches[4].strip())
                 mode = matches[5]
                 nt_name = matches[6]
                 if nt_name:
@@ -4313,11 +4321,12 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     #To-Do
                     pass
             elif RE_PROFILE_HAT_DEF.search(line):
-                matches = RE_PROFILE_HAT_DEF.search(line).groups()
+                matches = RE_PROFILE_HAT_DEF.search(line)
                 in_contained_hat = True
-                hat = matches[0]
+                hat = matches.group('hat')
                 hat = strip_quotes(hat)
-                flags = matches[3]
+                flags = matches.group('flags')
+
                 if not write_prof_data[hat]['flags'] == flags:
                     correct = False
                 if not write_prof_data[hat]['declared'] is False:

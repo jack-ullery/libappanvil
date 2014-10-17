@@ -127,7 +127,7 @@ public:
 	int deny;
 
 	mnt_rule(struct cond_entry *src_conds, char *device_p,
-		   struct cond_entry *dst_conds __unused, char *mnt_point_p,
+		   struct cond_entry *dst_conds unused, char *mnt_point_p,
 		   int allow_p);
 	virtual ~mnt_rule()
 	{
@@ -141,7 +141,7 @@ public:
 	virtual ostream &dump(ostream &os);
 	virtual int expand_variables(void);
 	virtual int gen_policy_re(Profile &prof);
-	virtual void post_process(Profile &prof __unused);
+	virtual void post_process(Profile &prof unused);
 };
 
 int is_valid_mnt_cond(const char *name, int src);

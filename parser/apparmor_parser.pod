@@ -239,6 +239,16 @@ Do not report on the profiles as they are loaded, and not show warnings.
 
 Report on the profiles as they are loaded, and show warnings.
 
+=item --warn=n
+
+Enable various warnings during policy compilation. A single dump flag
+can be specified per --warn option, but the --warn flag can be passed
+multiple times.
+
+  apparmor_parser --warn=rules-not-enforced ...
+
+Use --help=warn to see a full list of which warn flags are supported.
+
 =item -d, --debug
 
 Given once, only checks the profiles to ensure syntactic correctness.
@@ -270,6 +280,23 @@ of time to complete.
 
 Use --help=optimize to see a full list of which optimization flags are
 supported.
+
+=item --abort-on-error
+Abort processing of profiles on the first error encountered, otherwise
+the parser will continue to try to compile other profiles if specified.
+
+Note: If an error is encountered while processing profiles the last error
+encountered will be used to set the exit code. 
+
+=item --skip-bad-cache-rebuild
+The default behavior of the parser is to check if a cached version of
+a profile exists and if it does it attempt to load it into the kernel.
+If that load is rejected, then the parser will attempt to rebuild the
+cache file, and load again.
+
+This option tells the parser to not attempt to rebuild the cache on
+failure, instead the parser continues on with processing the remaining
+profiles.
 
 =back
 

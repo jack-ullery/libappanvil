@@ -47,6 +47,13 @@ class rule_t;
  */
 extern int parser_token;
 
+
+#define WARN_RULE_NOT_ENFORCED	1
+#define WARN_RULE_DOWNGRADED	2
+
+extern dfaflags_t warnflags;
+
+
 typedef enum pattern_t pattern_t;
 
 struct prefixes {
@@ -183,8 +190,8 @@ extern int preprocess_only;
 #define MIN_PORT 0
 #define MAX_PORT 65535
 
-#ifndef __unused
-#define __unused __attribute__ ((unused))
+#ifndef unused
+#define unused __attribute__ ((unused))
 #endif
 
 

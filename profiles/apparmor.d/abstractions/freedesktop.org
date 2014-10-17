@@ -11,6 +11,7 @@
 
   # system configuration
   /usr/share/applications/               r,
+  /usr/share/applications/defaults.list  r,
   /usr/share/applications/mimeinfo.cache r,
   /usr/share/applications/*.desktop      r,
   /usr/share/icons/               r,
@@ -30,6 +31,7 @@
   owner @{HOME}/.recently-used.xbel*    rw,
   owner @{HOME}/.local/share/recently-used.xbel* rw,
   owner @{HOME}/.config/user-dirs.dirs  r,
+  owner @{HOME}/.config/mimeapps.list   r,
   owner @{HOME}/.local/share/applications/               r,
   owner @{HOME}/.local/share/applications/*.desktop      r,
   owner @{HOME}/.local/share/applications/defaults.list  r,
