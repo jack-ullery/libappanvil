@@ -2226,7 +2226,7 @@ def match_net_includes(profile, family, nettype):
     newincludes = []
     for incname in include.keys():
 
-        if valid_include(profile, incname) and match_net_include(incname, family, type):
+        if valid_include(profile, incname) and match_net_include(incname, family, nettype):
             newincludes.append(incname)
 
     return newincludes
