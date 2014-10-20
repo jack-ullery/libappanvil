@@ -7,13 +7,13 @@ msgstr ""
 "Project-Id-Version: apparmor-utils\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2014-09-23 21:09+0000\n"
+"PO-Revision-Date: 2014-10-19 21:24+0000\n"
 "Last-Translator: Christian Boltz <Unknown>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-09-24 05:57+0000\n"
+"X-Launchpad-Export-Date: 2014-10-20 05:41+0000\n"
 "X-Generator: Launchpad (build 17196)\n"
 "Language: de\n"
 
@@ -380,7 +380,7 @@ msgstr ""
 #: ../apparmor/aa.py:314
 #, python-format
 msgid "Unable to read first line from %s: File Not Found"
-msgstr ""
+msgstr "Kann die erste Zeile von %s nicht lesen: Datei nicht gefunden"
 
 #: ../apparmor/aa.py:328
 #, python-format
@@ -392,7 +392,7 @@ msgstr ""
 #: ../apparmor/aa.py:449 ../apparmor/ui.py:303
 msgid ""
 "Are you sure you want to abandon this set of profile changes and exit?"
-msgstr ""
+msgstr "Sind Sie sicher, dass Sie diese Profiländerungen verwerfen wollen?"
 
 #: ../apparmor/aa.py:451 ../apparmor/ui.py:305
 msgid "Abandoning all changes."
@@ -409,7 +409,7 @@ msgstr ""
 #: ../apparmor/aa.py:550
 #, python-format
 msgid "Error activating profiles: %s"
-msgstr ""
+msgstr "Fehler beim Aktivieren des Profils: %s"
 
 #: ../apparmor/aa.py:605
 #, python-format
@@ -455,11 +455,11 @@ msgstr ""
 
 #: ../apparmor/aa.py:995
 msgid "Default Hat"
-msgstr ""
+msgstr "Standard-Hat"
 
 #: ../apparmor/aa.py:997
 msgid "Requested Hat"
-msgstr ""
+msgstr "Angeforderter Hat"
 
 #: ../apparmor/aa.py:1218
 #, python-format
@@ -553,7 +553,7 @@ msgstr "Ungültiger Modus gefunden: %s"
 #: ../apparmor/aa.py:1897
 #, python-format
 msgid "Adding %(path)s %(mode)s to profile"
-msgstr ""
+msgstr "Füge %(path)s %(mode)s zum Profil hinzu"
 
 #: ../apparmor/aa.py:1918
 #, python-format
@@ -568,7 +568,7 @@ msgstr ""
 #: ../apparmor/aa.py:2251
 #, python-format
 msgid "Reading log entries from %s."
-msgstr ""
+msgstr "Lese Logeinträge von %s."
 
 #: ../apparmor/aa.py:2254
 #, python-format
@@ -604,6 +604,7 @@ msgstr "Kann AppArmor-Profile in %s nicht lesen"
 msgid ""
 "%(profile)s profile in %(file)s contains syntax errors in line: %(line)s."
 msgstr ""
+"Profil %(profile)s in %(file)s enthält Syntaxfehler in Zeile: %(line)s."
 
 #: ../apparmor/aa.py:2734
 #, python-format
@@ -611,6 +612,8 @@ msgid ""
 "Syntax Error: Unexpected End of Profile reached in file: %(file)s line: "
 "%(line)s"
 msgstr ""
+"Syntaxfehler: Unerwartetes Profilende erreicht in Datei: %(file)s Zeile: "
+"%(line)s"
 
 #: ../apparmor/aa.py:2749
 #, python-format
@@ -618,12 +621,16 @@ msgid ""
 "Syntax Error: Unexpected capability entry found in file: %(file)s line: "
 "%(line)s"
 msgstr ""
+"Syntaxfehler: Unerwarteter capability-Eintrag gefunden in Datei: %(file)s "
+"Zeile: %(line)s"
 
 #: ../apparmor/aa.py:2770
 #, python-format
 msgid ""
 "Syntax Error: Unexpected link entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntaxfehler: Unerwarteter link-Eintrag gefunden in Datei: %(file)s Zeile: "
+"%(line)s"
 
 #: ../apparmor/aa.py:2798
 #, python-format
@@ -631,12 +638,16 @@ msgid ""
 "Syntax Error: Unexpected change profile entry found in file: %(file)s line: "
 "%(line)s"
 msgstr ""
+"Syntaxfehler: Unerwarteter change profile-Eintrag gefunden in Datei: "
+"%(file)s Zeile: %(line)s"
 
 #: ../apparmor/aa.py:2820
 #, python-format
 msgid ""
 "Syntax Error: Unexpected rlimit entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntaxfehler: Unerwarteter rlimit-Eintrag gefunden in Datei: %(file)s Zeile: "
+"%(line)s"
 
 #: ../apparmor/aa.py:2831
 #, python-format
@@ -651,52 +662,67 @@ msgid ""
 "Syntax Error: Unexpected bare file rule found in file: %(file)s line: "
 "%(line)s"
 msgstr ""
+"Syntaxfehler: Unerwartete file-Regel gefunden in Datei: %(file)s Zeile: "
+"%(line)s"
 
 #: ../apparmor/aa.py:2894
 #, python-format
 msgid ""
 "Syntax Error: Unexpected path entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntaxfehler: Unerwarteter Pfad-Eintrag gefunden in Datei: %(file)s Zeile: "
+"%(line)s"
 
 #: ../apparmor/aa.py:2922
 #, python-format
 msgid "Syntax Error: Invalid Regex %(path)s in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntaxfehler: Ungültige Regex %(path)s in Datei: %(file)s Zeile: %(line)s"
 
 #: ../apparmor/aa.py:2925
 #, python-format
 msgid "Invalid mode %(mode)s in file: %(file)s line: %(line)s"
-msgstr ""
+msgstr "Ungültiger Modus %(mode)s in Datei: %(file)s Zeile: %(line)s"
 
 #: ../apparmor/aa.py:2977
 #, python-format
 msgid ""
 "Syntax Error: Unexpected network entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntaxfehler: Unerwarteter network-Eintrag gefunden in Datei: %(file)s "
+"Zeile: %(line)s"
 
 #: ../apparmor/aa.py:3007
 #, python-format
 msgid ""
 "Syntax Error: Unexpected dbus entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntaxfehler: Unerwarteter dbus-Eintrag gefunden in Datei: %(file)s Zeile: "
+"%(line)s"
 
 #: ../apparmor/aa.py:3030
 #, python-format
 msgid ""
 "Syntax Error: Unexpected mount entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntaxfehler: Unerwarteter mount-Eintrag gefunden in Datei: %(file)s Zeile: "
+"%(line)s"
 
 #: ../apparmor/aa.py:3052
 #, python-format
 msgid ""
 "Syntax Error: Unexpected signal entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntaxfehler: Unerwarteter signal-Eintrag gefunden in Datei: %(file)s Zeile: "
+"%(line)s"
 
 #: ../apparmor/aa.py:3074
 #, python-format
 msgid ""
 "Syntax Error: Unexpected ptrace entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntaxfehler: Unerwarteter ptrace-Eintrag gefunden in Datei: %(file)s Zeile: "
+"%(line)s"
 
 #: ../apparmor/aa.py:3096
 #, python-format
@@ -704,12 +730,16 @@ msgid ""
 "Syntax Error: Unexpected pivot_root entry found in file: %(file)s line: "
 "%(line)s"
 msgstr ""
+"Syntaxfehler: Unerwarteter pivot_root-Eintrag gefunden in Datei: %(file)s "
+"Zeile: %(line)s"
 
 #: ../apparmor/aa.py:3118
 #, python-format
 msgid ""
 "Syntax Error: Unexpected unix entry found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntaxfehler: Unerwarteter unix-Eintrag gefunden in Datei: %(file)s Zeile: "
+"%(line)s"
 
 #: ../apparmor/aa.py:3140
 #, python-format
@@ -717,6 +747,8 @@ msgid ""
 "Syntax Error: Unexpected change hat declaration found in file: %(file)s "
 "line: %(line)s"
 msgstr ""
+"Syntaxfehler: Unerwartete change hat-Deklaration gefunden in Datei: %(file)s "
+"Zeile: %(line)s"
 
 #: ../apparmor/aa.py:3152
 #, python-format
@@ -724,11 +756,13 @@ msgid ""
 "Syntax Error: Unexpected hat definition found in file: %(file)s line: "
 "%(line)s"
 msgstr ""
+"Syntaxfehler: Unerwartete hat-Deklaration gefunden in Datei: %(file)s Zeile: "
+"%(line)s"
 
 #: ../apparmor/aa.py:3168
 #, python-format
 msgid "Error: Multiple definitions for hat %(hat)s in profile %(profile)s."
-msgstr ""
+msgstr "Fehler: Mehrfache Definition für hat %(hat)s im Profil %(profile)s."
 
 #: ../apparmor/aa.py:3185
 #, python-format
@@ -739,6 +773,7 @@ msgstr ""
 #, python-format
 msgid "Syntax Error: Unknown line found in file: %(file)s line: %(line)s"
 msgstr ""
+"Syntaxfehler: Unbekannte Zeile gefunden in Datei: %(file)s Zeile: %(line)s"
 
 #: ../apparmor/aa.py:3211
 #, python-format
@@ -746,6 +781,8 @@ msgid ""
 "Syntax Error: Missing '}' or ','. Reached end of file %(file)s while inside "
 "profile %(profile)s"
 msgstr ""
+"Syntaxfehler: Fehlende '}' or ','. Dateiende von %(file)s innerhalb des "
+"Profils %(profile)s erreicht"
 
 #: ../apparmor/aa.py:3277
 #, python-format
@@ -813,13 +850,15 @@ msgstr ""
 #: ../apparmor/tools.py:86 ../apparmor/tools.py:102 ../apparmor/tools.py:128
 #, python-format
 msgid "%s does not exist, please double-check the path."
-msgstr ""
+msgstr "%s existiert nicht, bitte überprüfen Sie den Pfad."
 
 #: ../apparmor/tools.py:100
 msgid ""
 "The given program cannot be found, please try with the fully qualified path "
 "name of the program: "
 msgstr ""
+"Das angegebene Programm kann nicht gefunden werden, bitte geben Sie den "
+"vollständigen Pfad des Programms an: "
 
 #: ../apparmor/tools.py:113 ../apparmor/tools.py:137 ../apparmor/tools.py:157
 #: ../apparmor/tools.py:175 ../apparmor/tools.py:193
@@ -830,7 +869,7 @@ msgstr ""
 #: ../apparmor/tools.py:140
 #, python-format
 msgid "Disabling %s."
-msgstr ""
+msgstr "Deaktiviere %s."
 
 #: ../apparmor/tools.py:198
 #, python-format
@@ -869,6 +908,8 @@ msgid ""
 "The local profile for %(program)s in file %(file)s was changed. Would you "
 "like to save it?"
 msgstr ""
+"Das lokale Profil für %(program)s in Datei %(file)s wurde geändert. Möchten "
+"Sie es speichern?"
 
 #: ../apparmor/tools.py:260
 #, python-format
@@ -877,7 +918,7 @@ msgstr ""
 
 #: ../apparmor/ui.py:61
 msgid "Invalid hotkey for"
-msgstr ""
+msgstr "Ungültiger Hotkey für"
 
 #: ../apparmor/ui.py:77 ../apparmor/ui.py:121 ../apparmor/ui.py:275
 msgid "(Y)es"
