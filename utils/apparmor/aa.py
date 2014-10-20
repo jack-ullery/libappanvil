@@ -4460,7 +4460,8 @@ def netrules_access_check(netrules, family, sock_type):
     if netrules['rule'].get(family, False) is True:
         all_net_family = True
     if (netrules['rule'].get(family, False) and
-            type(netrules['rule'][family]) == dict and
+            type(netrules['rule'][family]) == type(hasher()) and
+            sock_type in netrules['rule'][family].keys() and
             netrules['rule'][family][sock_type]):
         net_family_sock = True
 
