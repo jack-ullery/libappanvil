@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2014-10-16 10:17+0000\n"
+"PO-Revision-Date: 2014-10-20 23:44+0000\n"
 "Last-Translator: Andi Chandler <Unknown>\n"
 "Language-Team: English (United Kingdom) <en_GB@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-10-17 05:36+0000\n"
-"X-Generator: Launchpad (build 17196)\n"
+"X-Launchpad-Export-Date: 2014-10-21 05:40+0000\n"
+"X-Generator: Launchpad (build 17203)\n"
 
 #: ../aa-genprof:52
 msgid "Generate profile for the given program"
@@ -100,13 +100,15 @@ msgstr ""
 
 #: ../aa-genprof:143
 msgid "Profiling"
-msgstr ""
+msgstr "Profiling"
 
 #: ../aa-genprof:161
 msgid ""
 "\n"
 "Reloaded AppArmor profiles in enforce mode."
 msgstr ""
+"\n"
+"Reloaded AppArmor profiles in enforce mode."
 
 #: ../aa-genprof:162
 msgid ""
@@ -114,73 +116,77 @@ msgid ""
 "Please consider contributing your new profile!\n"
 "See the following wiki page for more information:"
 msgstr ""
+"\n"
+"Please consider contributing your new profile!\n"
+"See the following wiki page for more information:"
 
 #: ../aa-genprof:163
 #, python-format
 msgid "Finished generating profile for %s."
-msgstr ""
+msgstr "Finished generating profile for %s."
 
 #: ../aa-logprof:24
 msgid "Process log entries to generate profiles"
-msgstr ""
+msgstr "Process log entries to generate profiles"
 
 #: ../aa-logprof:27
 msgid "mark in the log to start processing after"
-msgstr ""
+msgstr "mark in the log to start processing after"
 
 #: ../aa-cleanprof:23
 msgid "Cleanup the profiles for the given programs"
-msgstr ""
+msgstr "Cleanup the profiles for the given programs"
 
 #: ../aa-cleanprof:25 ../aa-autodep:26 ../aa-audit:27 ../aa-complain:26
 #: ../aa-enforce:26 ../aa-disable:26
 msgid "name of program"
-msgstr ""
+msgstr "name of program"
 
 #: ../aa-cleanprof:26
 msgid "Silently overwrite with a clean profile"
-msgstr ""
+msgstr "Silently overwrite with a clean profile"
 
 #: ../aa-mergeprof:29
 msgid "Perform a 2-way or 3-way merge on the given profiles"
-msgstr ""
+msgstr "Perform a 2-way or 3-way merge on the given profiles"
 
 #: ../aa-mergeprof:28
 msgid "your profile"
-msgstr ""
+msgstr "your profile"
 
 #: ../aa-mergeprof:29
 msgid "base profile"
-msgstr ""
+msgstr "base profile"
 
 #: ../aa-mergeprof:30
 msgid "other profile"
-msgstr ""
+msgstr "other profile"
 
 #: ../aa-mergeprof:53
 msgid ""
 "The following local profiles were changed. Would you like to save them?"
 msgstr ""
+"The following local profiles were changed. Would you like to save them?"
 
 #: ../aa-mergeprof:131 ../aa-mergeprof:413
 msgid "Path"
-msgstr ""
+msgstr "Path"
 
 #: ../aa-mergeprof:132
 msgid "Select the appropriate mode"
-msgstr ""
+msgstr "Select the appropriate mode"
 
 #: ../aa-mergeprof:149
 msgid "Unknown selection"
-msgstr ""
+msgstr "Unknown selection"
 
 #: ../aa-mergeprof:166 ../aa-mergeprof:192
 msgid "File includes"
-msgstr ""
+msgstr "File includes"
 
 #: ../aa-mergeprof:166 ../aa-mergeprof:192
 msgid "Select the ones you wish to add"
-msgstr ""
+msgstr "Select the ones you wish to add"
 
 #: ../aa-mergeprof:178 ../aa-mergeprof:205
 #, python-format
