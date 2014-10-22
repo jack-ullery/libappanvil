@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: apparmor-parser\n"
 "Report-Msgid-Bugs-To: <apparmor@lists.ubuntu.com>\n"
 "POT-Creation-Date: 2014-09-13 00:11-0700\n"
-"PO-Revision-Date: 2014-10-16 21:22+0000\n"
+"PO-Revision-Date: 2014-10-21 12:09+0000\n"
 "Last-Translator: Anthony Harrington <untaintableangel@ubuntu.com>\n"
 "Language-Team: English (United Kingdom) <en_GB@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-10-17 05:36+0000\n"
-"X-Generator: Launchpad (build 17196)\n"
+"X-Launchpad-Export-Date: 2014-10-22 05:36+0000\n"
+"X-Generator: Launchpad (build 17203)\n"
 "Language: en_GB\n"
 
 #: ../parser_include.c:113 ../parser_include.c:111
@@ -91,7 +91,7 @@ msgstr "%s: Unable to add \"%s\".  "
 #: ../parser_interface.c:101
 #, c-format
 msgid "%s: Unable to replace \"%s\".  "
-msgstr ""
+msgstr "%s: Unable to replace \"%s\".  "
 
 #: ../parser_interface.c:126 ../parser_interface.c:129
 #: ../parser_interface.c:106
@@ -116,131 +116,131 @@ msgstr "%s: Unable to write to output file\n"
 #: ../parser_interface.c:118 ../parser_interface.c:142
 #, c-format
 msgid "%s: ASSERT: Invalid option: %d\n"
-msgstr ""
+msgstr "%s: ASSERT: Invalid option: %d\n"
 
 #: ../parser_interface.c:147 ../parser_interface.c:150
 #: ../parser_interface.c:127
 #, c-format
 msgid "Addition succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Addition succeeded for \"%s\".\n"
 
 #: ../parser_interface.c:151 ../parser_interface.c:154
 #: ../parser_interface.c:131
 #, c-format
 msgid "Replacement succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Replacement succeeded for \"%s\".\n"
 
 #: ../parser_interface.c:155 ../parser_interface.c:158
 #: ../parser_interface.c:135
 #, c-format
 msgid "Removal succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Removal succeeded for \"%s\".\n"
 
 #: ../parser_interface.c:251 ../parser_interface.c:254
 #, c-format
 msgid "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
-msgstr ""
+msgstr "PANIC bad increment buffer %p pos %p ext %p size %d res %p\n"
 
 #: ../parser_interface.c:656 ../parser_interface.c:658
 #: ../parser_interface.c:446
 #, c-format
 msgid "profile %s network rules not enforced\n"
-msgstr ""
+msgstr "profile %s network rules not enforced\n"
 
 #: ../parser_interface.c:666
 msgid "Unknown pattern type\n"
-msgstr ""
+msgstr "Unknown pattern type\n"
 
 #: ../parser_interface.c:750 ../parser_interface.c:902
 #: ../parser_interface.c:743 ../parser_interface.c:894
 #: ../parser_interface.c:518 ../parser_interface.c:669
 #, c-format
 msgid "Unable to open %s - %s\n"
-msgstr ""
+msgstr "Unable to open %s - %s\n"
 
 #: ../parser_interface.c:776 ../parser_interface.c:768
 #: ../parser_interface.c:543
 #, c-format
 msgid "Memory Allocation Error: Unable to remove ^%s\n"
-msgstr ""
+msgstr "Memory Allocation Error: Unable to remove ^%s\n"
 
 #: ../parser_interface.c:789 ../parser_interface.c:781
 #: ../parser_interface.c:556
 #, c-format
 msgid "Memory Allocation Error: Unable to remove %s:%s."
-msgstr ""
+msgstr "Memory Allocation Error: Unable to remove %s:%s."
 
 #: ../parser_interface.c:810 ../parser_interface.c:802
 msgid "unable to create work area\n"
-msgstr ""
+msgstr "unable to create work area\n"
 
 #: ../parser_interface.c:818 ../parser_interface.c:810
 #, c-format
 msgid "unable to serialize profile %s\n"
-msgstr ""
+msgstr "unable to serialise profile %s\n"
 
 #: ../parser_interface.c:829 ../parser_interface.c:916
 #: ../parser_interface.c:821 ../parser_interface.c:908
 #: ../parser_interface.c:582
 #, c-format
 msgid "%s: Unable to write entire profile entry\n"
-msgstr ""
+msgstr "%s: Unable to write entire profile entry\n"
 
 #: ../parser_interface.c:839 ../parser_interface.c:831
 #: ../parser_interface.c:593
 #, c-format
 msgid "%s: Unable to write entire profile entry to cache\n"
-msgstr ""
+msgstr "%s: Unable to write entire profile entry to cache\n"
 
 #: parser_lex.l:100 parser_lex.l:163 parser_lex.l:169
 #, c-format
 msgid "Could not open '%s'"
-msgstr ""
+msgstr "Could not open '%s'"
 
 #: parser_lex.l:104 parser_lex.l:167 parser_lex.l:173
 #, c-format
 msgid "fstat failed for '%s'"
-msgstr ""
+msgstr "fstat failed for '%s'"
 
 #: parser_lex.l:121
 #, c-format
 msgid "opendir failed '%s'"
-msgstr ""
+msgstr "opendir failed '%s'"
 
 #: parser_lex.l:152
 #, c-format
 msgid "stat failed for '%s'"
-msgstr ""
+msgstr "stat failed for '%s'"
 
 #: parser_lex.l:155 parser_lex.l:133 parser_lex.l:139
 #, c-format
 msgid "Could not open '%s' in '%s'"
-msgstr ""
+msgstr "Could not open '%s' in '%s'"
 
 #: parser_lex.l:284 parser_lex.l:322 parser_lex.l:362 parser_lex.l:399
 #: parser_lex.l:469 parser_lex.l:655 parser_lex.l:586 parser_lex.l:638
 #, c-format
 msgid "Found unexpected character: '%s'"
-msgstr ""
+msgstr "Found unexpected character: '%s'"
 
 #: parser_lex.l:386 parser_lex.l:418 parser_lex.l:428
 msgid "Variable declarations do not accept trailing commas"
-msgstr ""
+msgstr "Variable declarations do not accept trailing commas"
 
 #: parser_lex.l:420
 #, c-format
 msgid "(network_mode) Found unexpected character: '%s'"
-msgstr ""
+msgstr "(network_mode) Found unexpected character: '%s'"
 
 #: ../parser_main.c:333 ../parser_common.c:61 ../parser_common.c:106
 #, c-format
 msgid "Warning from %s (%s%sline %d): %s"
-msgstr ""
+msgstr "Warning from %s (%s%sline %d): %s"
 
 #: ../parser_main.c:531
 #, c-format
 msgid "%s: Could not allocate memory for subdomainbase mount point\n"
-msgstr ""
+msgstr "%s: Could not allocate memory for subdomainbase mount point\n"
 
 #: ../parser_main.c:577 ../parser_main.c:616 ../parser_main.c:479
 #, c-format
@@ -248,6 +248,8 @@ msgid ""
 "Warning: unable to find a suitable fs in %s, is it mounted?\n"
 "Use --subdomainfs to override.\n"
 msgstr ""
+"Warning: unable to find a suitable fs in %s, is it mounted?\n"
+"Use --subdomainfs to override.\n"
 
 #: ../parser_main.c:597 ../parser_main.c:635 ../parser_main.c:498
 #, c-format
@@ -255,6 +257,8 @@ msgid ""
 "%s: Sorry. You need root privileges to run this program.\n"
 "\n"
 msgstr ""
+"%s: Sorry. You need root privileges to run this programme.\n"
+"\n"
 
 #: ../parser_main.c:604 ../parser_main.c:642 ../parser_main.c:505
 #, c-format
@@ -263,12 +267,15 @@ msgid ""
 "Anybody who can run this program can update your AppArmor profiles.\n"
 "\n"
 msgstr ""
+"%s: Warning! You've set this programme setuid root.\n"
+"Anybody who can run this program can update your AppArmor profiles.\n"
+"\n"
 
 #: ../parser_main.c:704 ../parser_main.c:813 ../parser_main.c:836
 #: ../parser_main.c:946 ../parser_main.c:860
 #, c-format
 msgid "Error: Could not read profile %s: %s.\n"
-msgstr ""
+msgstr "Error: Could not read profile %s: %s.\n"
 
 #: ../parser_main.c:718 ../parser_misc.c:270 parser_yacc.y:227
 #: parser_yacc.y:374 parser_yacc.y:386 parser_yacc.y:484 parser_yacc.y:586
@@ -289,12 +296,12 @@ msgstr ""
 #: parser_yacc.y:1565 parser_yacc.y:1583 parser_yacc.y:1590 parser_yacc.y:1639
 #: ../network.c:314 ../af_unix.cc:203
 msgid "Memory allocation error."
-msgstr ""
+msgstr "Memory allocation error."
 
 #: ../parser_main.c:740 ../parser_main.c:872 ../parser_main.c:757
 #, c-format
 msgid "Cached load succeeded for \"%s\".\n"
-msgstr ""
+msgstr "Cached load succeeded for \"%s\".\n"
 
 #: ../parser_main.c:744 ../parser_main.c:876 ../parser_main.c:761
 #, c-format
@@ -311,6 +318,9 @@ msgid ""
 "Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to lowercase\n"
 "See the apparmor.d(5) manpage for details.\n"
 msgstr ""
+"Uppercase qualifiers \"RWLIMX\" are deprecated, please convert to "
+"lowercase.\n"
+"See the apparmor.d(5) manpage for details.\n"
 
 #: ../parser_misc.c:467 ../parser_misc.c:474 ../parser_misc.c:638
 #: ../parser_misc.c:645 ../parser_misc.c:380 ../parser_misc.c:387
@@ -344,7 +354,7 @@ msgstr ""
 #: ../parser_misc.c:593 ../parser_misc.c:764 ../parser_misc.c:506
 #, c-format
 msgid "Internal: unexpected mode character '%c' in input"
-msgstr ""
+msgstr "Internal: unexpected mode character '%c' in input"
 
 #: ../parser_misc.c:615 ../parser_misc.c:786 ../parser_misc.c:528
 #, c-format
