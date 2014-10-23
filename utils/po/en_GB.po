@@ -8,13 +8,13 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2014-10-20 23:44+0000\n"
+"PO-Revision-Date: 2014-10-22 22:09+0000\n"
 "Last-Translator: Andi Chandler <Unknown>\n"
 "Language-Team: English (United Kingdom) <en_GB@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-10-22 05:36+0000\n"
+"X-Launchpad-Export-Date: 2014-10-23 05:37+0000\n"
 "X-Generator: Launchpad (build 17203)\n"
 
 #: ../aa-genprof:52
@@ -191,30 +191,30 @@ msgstr "Select the ones you wish to add"
 #: ../aa-mergeprof:178 ../aa-mergeprof:205
 #, python-format
 msgid "Adding %s to the file."
-msgstr ""
+msgstr "Adding %s to the file."
 
 #: ../aa-mergeprof:182
 msgid "unknown"
-msgstr ""
+msgstr "unknown"
 
 #: ../aa-mergeprof:207 ../aa-mergeprof:258 ../aa-mergeprof:499
 #: ../aa-mergeprof:541 ../aa-mergeprof:658
 #, python-format
 msgid "Deleted %s previous matching profile entries."
-msgstr ""
+msgstr "Deleted %s previous matching profile entries."
 
 #: ../aa-mergeprof:227 ../aa-mergeprof:412 ../aa-mergeprof:612
 #: ../aa-mergeprof:639
 msgid "Profile"
-msgstr ""
+msgstr "Profile"
 
 #: ../aa-mergeprof:228
 msgid "Capability"
-msgstr ""
+msgstr "Capability"
 
 #: ../aa-mergeprof:229 ../aa-mergeprof:463
 msgid "Severity"
-msgstr ""
+msgstr "Severity"
 
 #: ../aa-mergeprof:256 ../aa-mergeprof:497
 #, python-format
@@ -224,16 +224,16 @@ msgstr ""
 #: ../aa-mergeprof:265
 #, python-format
 msgid "Adding capability %s to profile."
-msgstr ""
+msgstr "Adding capability %s to profile."
 
 #: ../aa-mergeprof:272
 #, python-format
 msgid "Denying capability %s to profile."
-msgstr ""
+msgstr "Denying capability %s to profile."
 
 #: ../aa-mergeprof:422 ../aa-mergeprof:453
 msgid "(owner permissions off)"
-msgstr ""
+msgstr "(owner permissions off)"
 
 #: ../aa-mergeprof:427
 msgid "(force new perms to owner)"
