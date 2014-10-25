@@ -164,7 +164,7 @@ static size_t kernel_af_max(void) {
 		return net_af_max_override;
 
 	fd = open(PROC_VERSION, O_RDONLY);
-	if (!fd)
+	if (fd == -1)
 		/* fall back to default provided during build */
 		return 0;
 	res = read(fd, &buffer, sizeof(buffer) - 1);
