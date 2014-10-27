@@ -26,16 +26,13 @@ common/Make.rules: $(COMMONDIR)/Make.rules
 	ln -sf $(COMMONDIR) .
 endif
 
-.PHONY: clean
+.PHONY: clean check
 ifndef VERBOSE
-.SILENT: clean
+.SILENT: clean check
 endif
+
 clean: _clean
 	rm -rf __pycache__/ common
 
-.PHONY: check
-ifndef VERBOSE
-.SILENT: check
-endif
 check:
 	export PYTHONPATH=.. ; $(foreach test, $(wildcard test-*.py), $(call pyalldo, $(test)))
