@@ -26,13 +26,31 @@ common/Make.rules: $(COMMONDIR)/Make.rules
 	ln -sf $(COMMONDIR) .
 endif
 
-.PHONY: clean check
+COVERAGE_OMIT=test-*.py,common_test.py
+ifneq ($(COVERAGE_OUT), )
+HTML_COVR_ARGS=-d $(COVERAGE_OUT)
+endif
+
+.PHONY: clean check coverage coverage-report coverage-html
 ifndef VERBOSE
-.SILENT: clean check
+.SILENT: clean check .coverage coverage coverage-report coverage-html
 endif
 
 clean: _clean
-	rm -rf __pycache__/ common
+	rm -rf __pycache__/ common .coverage htmlcov
 
 check:
 	export PYTHONPATH=.. ; $(foreach test, $(wildcard test-*.py), $(call pyalldo, $(test)))
+
+.coverage: $(wildcard ../aa-* ../apparmor/*.py test-*.py)
+	export PYTHONPATH=.. ; $(foreach test, $(wildcard test-*.py), $(PYTHON) -m coverage run --branch -p $(test); )
+	$(PYTHON) -m coverage combine
+
+coverage: .coverage
+
+coverage-report: .coverage
+	$(PYTHON) -m coverage report --omit="$(COVERAGE_OMIT)"
+
+coverage-html: .coverage
+	$(PYTHON) -m coverage html --omit="$(COVERAGE_OMIT)" $(HTML_COVR_ARGS)
+
