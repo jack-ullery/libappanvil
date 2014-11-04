@@ -33,7 +33,7 @@ logmark = args.mark or ''
 
 
 if filename:
-    if not os.path.isfile(filename):
+    if not os.path.exists(filename):
         raise apparmor.AppArmorException(_('The logfile %s does not exist. Please check the path') % filename)
     else:
         apparmor.filename = filename
