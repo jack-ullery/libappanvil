@@ -206,8 +206,8 @@ class SeverityDBTest(unittest.TestCase):
         self.assertRaises(IOError, severity.Severity, 'severity.db.does.not.exist')
 
     def test_no_arg_to_severity(self):
-        sev_db = severity.Severity()
-        self.assertIsNone(sev_db, 'expected None, got %s' % (sev_db))
+        with self.assertRaises(AppArmorException):
+            severity.Severity()
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -29,7 +29,7 @@ class Severity(object):
         # For variable expansions for the profile
         self.severity['VARIABLES'] = dict()
         if not dbname:
-            return None
+            raise AppArmorException("No severity db file given")
 
         with open_file_read(dbname) as database:  # open(dbname, 'r')
             for lineno, line in enumerate(database, start=1):
