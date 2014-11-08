@@ -2752,8 +2752,8 @@ def parse_profile_data(data, file, do_include):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected capability entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            audit, allow, allow_keyword = parse_audit_allow(matches)
-            # TODO: honor allow_keyword
+            audit, allow, allow_keyword, comment = parse_audit_allow(matches)
+            # TODO: honor allow_keyword and comment
 
             capability = ALL
             if matches.group('capability'):
@@ -2870,8 +2870,8 @@ def parse_profile_data(data, file, do_include):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected bare file rule found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            audit, allow, allow_keyword = parse_audit_allow(matches)
-            # TODO: honor allow_keyword
+            audit, allow, allow_keyword, comment = parse_audit_allow(matches)
+            # TODO: honor allow_keyword and comment
 
             mode = apparmor.aamode.AA_BARE_FILE_MODE
             if not matches.group('owner'):
@@ -3222,7 +3222,12 @@ def parse_audit_allow(matches):
         if allow != 'allow' and allow != 'deny':  # should never happen
             raise AppArmorException(_("Invalid allow/deny keyword %s" % allow))
 
-    return (audit, allow, allow_keyword)
+    comment = ''
+    if matches.group('comment'):
+        # include a space so that we don't need to add it everywhere when writing the rule
+        comment = ' %s' % matches.group('comment')
+
+    return (audit, allow, allow_keyword, comment)
 
 # RE_DBUS_ENTRY = re.compile('^dbus\s*()?,\s*$')
 #   use stuff like '(?P<action>(send|write|w|receive|read|r|rw))'
