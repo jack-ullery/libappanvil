@@ -2613,7 +2613,7 @@ def attach_profile_data(profiles, profile_data):
 ## Profile parsing Regex
 RE_AUDIT_DENY           = '^\s*(?P<audit>audit\s+)?(?P<allow>allow\s+|deny\s+)?'  # line start, optionally: leading whitespace, <audit> and <allow>/deny
 RE_OWNER                = '(?P<owner>owner\s+)?'  # optionally: <owner>
-RE_EOL                  = '\s*(?P<comment>#.*)?$'  # optional whitespace, optional <comment>, end of the line
+RE_EOL                  = '\s*(?P<comment>#.*?)?\s*$'  # optional whitespace, optional <comment>, optional whitespace, end of the line
 RE_COMMA_EOL            = '\s*,' + RE_EOL # optional whitespace, comma + RE_EOL
 
 RE_PROFILE_START        = re.compile('^\s*("?(/.+?)"??|(profile\s+"?(.+?)"??))\s+((flags=)?\((.+)\)\s+)?\{' + RE_EOL)
