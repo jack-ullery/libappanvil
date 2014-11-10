@@ -76,6 +76,7 @@ clean: _clean
 	rm -rf staging/ build/
 	rm -f apparmor/*.pyc
 	rm -rf apparmor/__pycache__/
+	rm -f common
 
 # ${CAPABILITIES} is defined in common/Make.rules
 .PHONY: check_severity_db

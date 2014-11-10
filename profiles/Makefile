@@ -63,7 +63,7 @@ install: local
 LOCAL_ADDITIONS=$(filter-out ${PROFILES_SOURCE}/local/README, $(wildcard ${PROFILES_SOURCE}/local/*))
 .PHONY: clean
 clean:
-	-rm -f $(NAME)-$(VERSION)*.tar.gz Make.rules ${LOCAL_ADDITIONS}
+	-rm -f $(NAME)-$(VERSION)*.tar.gz Make.rules ${LOCAL_ADDITIONS} common
 
 ifndef VERBOSE
   Q=@

@@ -373,6 +373,7 @@ clean: _clean
 	$(MAKE) -s -C $(AAREDIR) clean
 	$(MAKE) -s -C po clean
 	$(MAKE) -s -C tst clean
+	rm -f common
 
 .SILENT: dist_clean
 dist_clean:
