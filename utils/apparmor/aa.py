@@ -40,7 +40,16 @@ from apparmor.aamode import (str_to_mode, mode_to_str, contains, split_mode,
                              mode_to_str_user, mode_contains, AA_OTHER,
                              flatten_mode, owner_flatten_mode)
 
-from apparmor.regex import *
+from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_CAP, RE_PROFILE_LINK,
+                            RE_PROFILE_CHANGE_PROFILE, RE_PROFILE_ALIAS, RE_PROFILE_RLIMIT,
+                            RE_PROFILE_BOOLEAN, RE_PROFILE_VARIABLE, RE_PROFILE_CONDITIONAL,
+                            RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
+                            RE_PROFILE_BARE_FILE_ENTRY, RE_PROFILE_PATH_ENTRY, RE_PROFILE_NETWORK,
+                            RE_NETWORK_FAMILY_TYPE, RE_NETWORK_FAMILY, RE_PROFILE_CHANGE_HAT,
+                            RE_PROFILE_HAT_DEF, RE_PROFILE_DBUS, RE_PROFILE_MOUNT,
+                            RE_PROFILE_SIGNAL, RE_PROFILE_PTRACE, RE_PROFILE_PIVOT_ROOT,
+                            RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT )
+
 import apparmor.rules as aarules
 
 from apparmor.yasti import SendDataToYast, GetDataFromYast, shutdown_yast
