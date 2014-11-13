@@ -144,60 +144,60 @@ class SeverityDBTest(unittest.TestCase):
         return self.sev_db
 
     def test_simple_db(self):
-        db = self._test_db('''
+        self._test_db('''
     CAP_LEASE 8
     /etc/passwd*    4 8 0
 ''')
 
     def test_cap_val_max_range(self):
-        db = self._test_db("CAP_LEASE 10\n")
+        self._test_db("CAP_LEASE 10\n")
 
     def test_cap_val_min_range(self):
-        db = self._test_db("CAP_LEASE 0\n")
+        self._test_db("CAP_LEASE 0\n")
 
-    def test_cap_val_out_of_range(self):
+    def test_cap_val_out_of_range_1(self):
         with self.assertRaises(AppArmorException):
-            db = self._test_db("CAP_LEASE 18\n")
+            self._test_db("CAP_LEASE 18\n")
 
-    def test_cap_val_out_of_range(self):
+    def test_cap_val_out_of_range_2(self):
         with self.assertRaises(AppArmorException):
-            db = self._test_db("CAP_LEASE -1\n")
+            self._test_db("CAP_LEASE -1\n")
 
     def test_path_insufficient_vals(self):
         with self.assertRaises(AppArmorException):
-            db = self._test_db("/etc/passwd* 0 4\n")
+            self._test_db("/etc/passwd* 0 4\n")
 
     def test_path_too_many_vals(self):
         with self.assertRaises(AppArmorException):
-            db = self._test_db("/etc/passwd* 0 4 5 6\n")
+            self._test_db("/etc/passwd* 0 4 5 6\n")
 
     def test_path_outside_range_1(self):
         with self.assertRaises(AppArmorException):
-            db = self._test_db("/etc/passwd* -2 4 6\n")
+            self._test_db("/etc/passwd* -2 4 6\n")
 
     def test_path_outside_range_2(self):
         with self.assertRaises(AppArmorException):
-            db = self._test_db("/etc/passwd* 12 4 6\n")
+            self._test_db("/etc/passwd* 12 4 6\n")
 
     def test_path_outside_range_3(self):
         with self.assertRaises(AppArmorException):
-            db = self._test_db("/etc/passwd* 2 -4 6\n")
+            self._test_db("/etc/passwd* 2 -4 6\n")
 
     def test_path_outside_range_4(self):
         with self.assertRaises(AppArmorException):
-            db = self._test_db("/etc/passwd 2 14 6\n")
+            self._test_db("/etc/passwd 2 14 6\n")
 
     def test_path_outside_range_5(self):
         with self.assertRaises(AppArmorException):
-            db = self._test_db("/etc/passwd 2 4 -12\n")
+            self._test_db("/etc/passwd 2 4 -12\n")
 
     def test_path_outside_range_6(self):
         with self.assertRaises(AppArmorException):
-            db = self._test_db("/etc/passwd 2 4 4294967297\n")
+            self._test_db("/etc/passwd 2 4 4294967297\n")
 
     def test_garbage_line(self):
         with self.assertRaises(AppArmorException):
-            db = self._test_db("garbage line\n")
+            self._test_db("garbage line\n")
 
     def test_invalid_db(self):
         self.assertRaises(AppArmorException, severity.Severity, 'severity_broken.db')
