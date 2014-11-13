@@ -402,6 +402,15 @@ runchecktest "test 15p -h prog" fail -h -n 100 $helper /bin/true
 runchecktest "test 15p -hc" fail -h -c -n 100 $helper
 runchecktest "test 15p -hc prog" fail -h -c -n 100 $helper /bin/true
 
+# Test LP: #1390592
+# The bug was a policy compilation bug that triggers in a rule such as
+# 'ptrace peer=ABC,'. The first character of the peer conditional value must be
+# a-f|A-F|0-9 to trigger the bug. A parser affected by this bug will create a
+# bad binary policy that causes the kernel to unexpectedly deny the ptrace
+# 'trace' of a process confined by profile ABC.
+genprofile "$helper rpx -> ABC" signal:ALL ptrace:trace:peer=ABC -- image=ABC addimage:$helper /bin/true:rix signal:ALL ptrace:tracedby:peer=$test
+runchecktest "test LP: #1390592 -h prog" pass -h -n 100 $helper /bin/true
+runchecktest "test LP: #1390592 -hc prog" pass -h -c -n 100 $helper /bin/true
 
 ## TODO: ptrace read tests
 ## TODO: ptrace + change_profile
