@@ -35,6 +35,10 @@ class AppArmorException(Exception):
     def __str__(self):
         return repr(self.value)
 
+class AppArmorBug(Exception):
+    '''This class represents AppArmor exceptions "that should never happen"'''
+    pass
+
 #
 # Utility functions
 #
