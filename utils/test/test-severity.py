@@ -68,6 +68,9 @@ class SeverityTest(SeverityBaseTest):
     def test_cap_setpcap(self):
         self._simple_severity_test('CAP_SETPCAP', 9)
 
+    def test_cap_setpcap_lowercase(self):
+        self._simple_severity_test('CAP_setpcap', 9)
+
     def test_cap_unknown_1(self):
         self._simple_severity_test('CAP_UNKNOWN', 10)
 
