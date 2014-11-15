@@ -1571,6 +1571,7 @@ def ask_the_questions():
                     q.headers += [_('Severity'), severity]
 
                     audit_toggle = 0
+                    audit = ''
 
                     q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
                                       'CMD_ABORT', 'CMD_FINISHED']
@@ -1596,16 +1597,17 @@ def ask_the_questions():
                             done = True
                             break
 
-                        if ans == 'CMD_AUDIT':
+                        if ans.startswith('CMD_AUDIT'):
                             audit_toggle = not audit_toggle
-                            audit = ''
                             if audit_toggle:
-                                q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_OFF',
-                                                  'CMD_ABORT', 'CMD_FINISHED']
-                                audit = 'audit'
+                                audit = 'audit '
+                                audit_cmd = 'CMD_AUDIT_OFF'
                             else:
-                                q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
-                                                  'CMD_ABORT', 'CMD_FINISHED', ]
+                                audit = ''
+                                audit_cmd = 'CMD_AUDIT_NEW'
+
+                            q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', audit_cmd,
+                                              'CMD_ABORT', 'CMD_FINISHED', ]
 
                             q.headers = [_('Profile'), combine_name(profile, hat),
                                             _('Capability'), audit + capability,
