@@ -3786,6 +3786,21 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                          'path': write_paths,
                          'change_profile': write_change_profile,
                          }
+        default_write_order = [ 'alias',
+                                'lvar',
+                                'include',
+                                'rlimit',
+                                'capability',
+                                'netdomain',
+                                'dbus',
+                                'mount',
+                                'signal',
+                                'ptrace',
+                                'pivot_root',
+                                'link',
+                                'path',
+                                'change_profile',
+                              ]
         # prof_correct = True  # XXX correct?
         segments = {'alias': False,
                     'lvar': False,
@@ -3794,10 +3809,14 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     'capability': False,
                     'netdomain': False,
                     'dbus': False,
+                    'mount': True, # not handled otherwise yet
+                    'signal': True, # not handled otherwise yet
+                    'ptrace': True, # not handled otherwise yet
+                    'pivot_root': True, # not handled otherwise yet
                     'link': False,
                     'path': False,
                     'change_profile': False,
-                    'include_local_started': False,
+                    'include_local_started': False, # unused
                     }
         #data.append('reading prof')
         for line in f_in:
@@ -3855,31 +3874,22 @@ def serialize_profile_from_old_profile(profile_data, name, options):
             elif RE_PROFILE_END.search(line):
                 # DUMP REMAINDER OF PROFILE
                 if profile:
-                    depth = len(line) - len(line.lstrip())
-                    if True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
+                    depth = int(len(line) - len(line.lstrip()) / 2) + 1
 
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
+                    # first write sections that were modified (and remove them from write_prof_data)
+                    #for segs in write_methods.keys():
+                    for segs in default_write_order:
+                        if segments[segs]:
+                            data += write_methods[segs](write_prof_data[name], depth)
                             segments[segs] = False
                             if write_prof_data[name]['allow'].get(segs, False):
                                 write_prof_data[name]['allow'].pop(segs)
                             if write_prof_data[name]['deny'].get(segs, False):
                                 write_prof_data[name]['deny'].pop(segs)
 
-                    data += write_alias(write_prof_data[name], depth)
-                    data += write_list_vars(write_prof_data[name], depth)
-                    data += write_includes(write_prof_data[name], depth)
-                    data += write_rlimits(write_prof_data, depth)
-                    data += write_capabilities(write_prof_data[name], depth)
-                    data += write_netdomain(write_prof_data[name], depth)
-                    data += write_dbus(write_prof_data[name], depth)
-                    data += write_mount(write_prof_data[name], depth)
-                    data += write_signal(write_prof_data[name], depth)
-                    data += write_ptrace(write_prof_data[name], depth)
-                    data += write_pivot_root(write_prof_data[name], depth)
-                    data += write_links(write_prof_data[name], depth)
-                    data += write_paths(write_prof_data[name], depth)
-                    data += write_change_profile(write_prof_data[name], depth)
+                    # then write everything else
+                    for segs in default_write_order:
+                        data += write_methods[segs](write_prof_data[name], depth)
 
                     write_prof_data.pop(name)
 
