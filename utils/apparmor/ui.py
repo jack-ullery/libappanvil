@@ -28,6 +28,9 @@ debug_logger = DebugLogger('UI')
 # The operating mode: yast or text, text by default
 UI_mode = 'text'
 
+# If Python3, wrap input in raw_input so make check passes
+if not 'raw_input' in dir(__builtins__): raw_input = input
+
 ARROWS = {'A': 'UP', 'B': 'DOWN', 'C': 'RIGHT', 'D': 'LEFT'}
 
 def getkey():
@@ -173,10 +176,7 @@ def UI_GetString(text, default):
     if UI_mode == 'text':
         readline.set_startup_hook(lambda: readline.insert_text(default))
         try:
-            if sys.version_info[0] >= 3:
-                string = input('\n' + text)
-            else:
-                string = raw_input('\n' + text)
+            string = raw_input('\n' + text)
         except EOFError:
             string = ''
         finally:
