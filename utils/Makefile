@@ -46,6 +46,8 @@ BINDIR=${DESTDIR}/usr/sbin
 CONFDIR=${DESTDIR}/etc/apparmor
 PYPREFIX=/usr
 
+PYFLAKES=pyflakes
+
 po/${NAME}.pot: ${TOOLS} ${PYMODULES}
 	$(MAKE) -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} ${PYMODULES}"
 
@@ -100,7 +102,7 @@ check: check_severity_db check_pod_files
 	done
 	for i in ${PYTOOLS} apparmor test/*.py; do \
 		echo Checking $$i; \
-		pyflakes $$i || exit 1; \
+		$(PYFLAKES) $$i || exit 1; \
 	done
 	$(MAKE) -C test check
 	$(MAKE) -C vim check
