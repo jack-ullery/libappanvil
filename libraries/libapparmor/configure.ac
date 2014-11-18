@@ -35,7 +35,7 @@ fi
 
 AC_MSG_CHECKING([whether perl bindings are enabled])
 AC_ARG_WITH(perl,
-[ --with-perl           enable the perl wrapper [[default=no]]],
+[  --with-perl             enable the perl wrapper [[default=no]]],
 [AC_MSG_RESULT($withval)], [AC_MSG_RESULT(no)])
 if test "$with_perl" = "yes"; then
    test -z "$SWIG" && AC_MSG_ERROR([swig is required when enabling perl bindings])
@@ -48,7 +48,7 @@ fi
 
 AC_MSG_CHECKING([whether ruby bindings are enabled])
 AC_ARG_WITH(ruby,
-[ --with-ruby           enable the ruby wrapper [[default=no]]],
+[  --with-ruby             enable the ruby wrapper [[default=no]]],
 [AC_MSG_RESULT($withval)], [AC_MSG_RESULT(no)])
 if test "$with_ruby" = "yes"; then
    test -z "$SWIG" && AC_MSG_ERROR([swig is required when enabling ruby bindings])
