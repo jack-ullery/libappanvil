@@ -62,14 +62,13 @@ the following order.
 libapparmor:
 $ cd ./libraries/libapparmor
 $ sh ./autogen.sh
-$ sh ./configure --prefix=/usr --with-perl	# see below
+$ sh ./configure --prefix=/usr --with-perl --with-python # see below
 $ make
 $ make check
 $ make install
 
-[optional arguments to libapparmor's configure include --with-python
- and --with-ruby, to generate python and ruby bindings to libapparmor,
- respectively.]
+[an additional optional argument to libapparmor's configure is --with-ruby, to
+generate Ruby bindings to libapparmor.]
 
 
 Utilities:
@@ -148,10 +147,7 @@ $ make check
 
 Utils
 -----
-There are some simple tests available, including basic perl syntax
-checks for the perl modules and executables. There are also minimal
-checks on the python utilities and python-based tests in the test/
-subdirectory.
+Tests for the Python utilities exist in the test/ subdirectory.
 $ cd utils
 $ make check
 
@@ -207,13 +203,9 @@ The AppArmor userspace utilities are written with some assumptions about
 installed and available versions of other tools. This is a (possibly
 incomplete) list of known version dependencies:
 
-AppArmor.pm (used by aa-audit, aa-autodep, aa-complain, aa-disable,
-aa-enforce, aa-genprof, aa-logprof, aa-unconfined) requires minimum
-Perl 5.10.1.
+The Python utilities require a minimum of Python 2.7 or Python 3.3.
 
-Python scripts require a minimum of Python 2.7. Some utilities as well
-as some of the parser test scripts may require Python 3.3. Python 3.0,
-3.1, and 3.2 are largely untested.
+Some utilities (aa-exec, aa-notify and aa-decode) require Perl 5.10.1 or newer.
 
 Most shell scripts are written for POSIX-compatible sh. aa-decode expects
 bash, probably version 3.2 and higher.
