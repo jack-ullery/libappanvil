@@ -5,7 +5,7 @@ AC_DEFUN([PROG_POD2MAN],[
 The pod2man program was not found in the default path.  pod2man is part of
 Perl, which can be retrieved from:
 
-    http://www.perl.com/
+    https://www.perl.org
 ])
    fi
 ])
