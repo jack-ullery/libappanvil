@@ -3,9 +3,6 @@
 POD2MAN = pod2man
 PODCHECKER = podchecker
 
-# No perl, no manpages
-if HAVE_PERL
-
 man_MANS = aa_change_hat.2 aa_change_profile.2 aa_getcon.2 aa_find_mountpoint.2
 
 PODS = $(subst .2,.pod,$(man_MANS))
@@ -23,5 +20,3 @@ BUILT_SOURCES = $(man_MANS)
 		--center="AppArmor" \
 		--stderr \
 		$< > $@
-
-endif
