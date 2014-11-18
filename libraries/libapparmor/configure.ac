@@ -14,6 +14,9 @@ PKG_PROG_PKG_CONFIG
 
 AC_PATH_PROG([SWIG], [swig])
 
+sinclude(m4/ac_podchecker.m4)
+PROG_PODCHECKER
+
 sinclude(m4/ac_pod2man.m4)
 PROG_POD2MAN
 
