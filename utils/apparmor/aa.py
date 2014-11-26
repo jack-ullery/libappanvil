@@ -1371,9 +1371,9 @@ def handle_children(profile, hat, root):
                                     interpreter_path = get_full_path(interpreter)
                                     interpreter = re.sub('^(/usr)?/bin/', '', interpreter_path)
 
-                                    aa[profile][hat]['path'][interpreter_path]['mode'] = aa[profile][hat]['path'][interpreter_path].get('mode', str_to_mode('ix')) | str_to_mode('ix')
+                                    aa[profile][hat]['allow']['path'][interpreter_path]['mode'] = aa[profile][hat]['allow']['path'][interpreter_path].get('mode', str_to_mode('ix')) | str_to_mode('ix')
 
-                                    aa[profile][hat]['path'][interpreter_path]['audit'] = aa[profile][hat]['path'][interpreter_path].get('audit', set())
+                                    aa[profile][hat]['allow']['path'][interpreter_path]['audit'] = aa[profile][hat]['allow']['path'][interpreter_path].get('audit', set())
 
                                     if interpreter == 'perl':
                                         aa[profile][hat]['include']['abstractions/perl'] = True
