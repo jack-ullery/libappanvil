@@ -4242,7 +4242,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                                     write_prof_data[name]['allow'].pop(segs)
                                 if write_prof_data[name]['deny'].get(segs, False):
                                     write_prof_data[name]['deny'].pop(segs)
-                            segments['include'] = True
+                        segments['include'] = True
                         write_prof_data[hat]['include'].pop(include_name)
                         data.append(line)
                 else:
