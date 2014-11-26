@@ -1721,7 +1721,7 @@ def ask_the_questions():
                         for incname in include.keys():
                             include_valid = False
                             # If already present skip
-                            if aa[profile][hat][incname]:
+                            if aa[profile][hat]['include'].get(incname, False):
                                 continue
                             if incname.startswith(profile_dir):
                                 incname = incname.replace(profile_dir + '/', '', 1)
@@ -1868,8 +1868,9 @@ def ask_the_questions():
                                         aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                 else:
-                                    if aa[profile][hat]['allow']['path'][path].get('mode', False):
-                                        mode |= aa[profile][hat]['allow']['path'][path]['mode']
+                                    if path in aa[profile][hat]['allow']['path']:
+                                        if aa[profile][hat]['allow']['path'][path].get('mode', False):
+                                            mode |= aa[profile][hat]['allow']['path'][path]['mode']
                                     deleted = []
                                     for entry in aa[profile][hat]['allow']['path'].keys():
                                         if path == entry:
@@ -4538,7 +4539,7 @@ def match_include_to_path(incname, allow, path):
             combinedaudit |= am
             matches += m
 
-        if include[incfile][incfile][allow]['path'][path]:
+        if path in include[incfile][incfile][allow]['path']:
             combinedmode |= include[incfile][incfile][allow]['path'][path]['mode']
             combinedaudit |= include[incfile][incfile][allow]['path'][path]['audit']
 
@@ -4704,7 +4705,7 @@ if not os.path.isfile(parser) or not os.access(parser, os.EX_OK):
 
 filename = conf.find_first_file(cfg['settings']['logfiles']) or '/var/log/syslog'
 if not os.path.isfile(filename):
-    raise AppArmorException('Can\'t find system log.')
+    raise AppArmorException('Can\'t find system log "%s".' % (filename))
 
 ldd = conf.find_first_file(cfg['settings']['ldd']) or '/usr/bin/ldd'
 if not os.path.isfile(ldd) or not os.access(ldd, os.EX_OK):
