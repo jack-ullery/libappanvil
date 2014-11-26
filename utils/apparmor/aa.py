@@ -3819,6 +3819,19 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     'change_profile': False,
                     'include_local_started': False, # unused
                     }
+
+        def write_prior_segments(prof_data, segments, line):
+            data = []
+            for segs in list(filter(lambda x: segments[x], segments.keys())):
+                depth = len(line) - len(line.lstrip())
+                data += write_methods[segs](prof_data, int(depth / 2))
+                segments[segs] = False
+                if prof_data['allow'].get(segs, False):
+                    prof_data['allow'].pop(segs)
+                if prof_data['deny'].get(segs, False):
+                    prof_data['deny'].pop(segs)
+            return data
+
         #data.append('reading prof')
         for line in f_in:
             correct = True
@@ -3948,14 +3961,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['capability'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['capability'] = True
                     write_prof_data[hat][allow]['capability'].pop(capability)
                     data.append(line)
@@ -3989,14 +3995,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['link'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['link'] = True
                     write_prof_data[hat][allow]['link'].pop(link)
                     data.append(line)
@@ -4013,14 +4012,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['change_profile'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['change_profile'] = True
                     write_prof_data[hat]['change_profile'].pop(cp)
                     data.append(line)
@@ -4043,14 +4035,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['alias'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['alias'] = True
                     if profile:
                         write_prof_data[hat]['alias'].pop(from_name)
@@ -4072,14 +4057,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['rlimit'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['rlimit'] = True
                     write_prof_data[hat]['rlimit'].pop(from_name)
                     data.append(line)
@@ -4097,14 +4075,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['lvar'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['lvar'] = True
                     write_prof_data[hat]['lvar'].pop(bool_var)
                     data.append(line)
@@ -4128,14 +4099,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['lvar'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['lvar'] = True
                     if profile:
                         write_prof_data[hat]['lvar'].pop(list_var)
@@ -4166,14 +4130,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                    (not audit or path_rule.get('audit', set()) & audit) and \
                    path_rule.get('file_prefix', set()):
                     if not segments['path'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['path'] = True
                     write_prof_data[hat][allow]['path'].pop(ALL)
                     data.append(line)
@@ -4214,14 +4171,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['path'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['path'] = True
                     write_prof_data[hat][allow]['path'].pop(path)
                     data.append(line)
@@ -4234,14 +4184,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 if profile:
                     if write_prof_data[hat]['include'].get(include_name, False):
                         if not segments['include'] and True in segments.values():
-                            for segs in list(filter(lambda x: segments[x], segments.keys())):
-                                depth = len(line) - len(line.lstrip())
-                                data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                                segments[segs] = False
-                                if write_prof_data[name]['allow'].get(segs, False):
-                                    write_prof_data[name]['allow'].pop(segs)
-                                if write_prof_data[name]['deny'].get(segs, False):
-                                    write_prof_data[name]['deny'].pop(segs)
+                            data += write_prior_segments(write_prof_data[name], segments, line)
                         segments['include'] = True
                         write_prof_data[hat]['include'].pop(include_name)
                         data.append(line)
@@ -4287,14 +4230,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['netdomain'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['netdomain'] = True
 
             elif RE_PROFILE_CHANGE_HAT.search(line):
