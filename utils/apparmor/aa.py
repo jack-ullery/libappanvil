@@ -156,10 +156,8 @@ def fatal_error(message):
     shutdown_yast()
     sys.exit(1)
 
-def check_for_apparmor():
+def check_for_apparmor(filesystem='/proc/filesystems', mounts='/proc/mounts'):
     """Finds and returns the mountpoint for apparmor None otherwise"""
-    filesystem = '/proc/filesystems'
-    mounts = '/proc/mounts'
     support_securityfs = False
     aa_mountpoint = None
     if valid_path(filesystem):
@@ -175,6 +173,7 @@ def check_for_apparmor():
                 if len(split) > 2 and split[2] == 'securityfs':
                     mountpoint = split[1] + '/apparmor'
                     # Check if apparmor is actually mounted there
+                    # XXX valid_path() only checks the syntax, but not if the directory exists!
                     if valid_path(mountpoint) and valid_path(mountpoint + '/profiles'):
                         aa_mountpoint = mountpoint
                         break
