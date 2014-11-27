@@ -68,7 +68,7 @@ MODE_HASH = {'x': AA_MAY_EXEC, 'X': AA_MAY_EXEC,
              }
 
 LOG_MODE_RE = re.compile('(r|w|l|m|k|a|x|ix|ux|px|pux|cx|nx|pix|cix|Ux|Px|PUx|Cx|Nx|Pix|Cix)')
-MODE_MAP_RE = re.compile('(r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N)')
+MODE_MAP_SET = {"r", "w", "l", "m", "k", "a", "x", "i", "u", "p", "c", "n", "I", "U", "P", "C", "N"}
 
 def str_to_mode(string):
     if not string:
@@ -88,26 +88,22 @@ def str_to_mode(string):
 def sub_str_to_mode(string):
     mode = set()
 
-    while string:
-        tmp = MODE_MAP_RE.search(string)
-        if not tmp:
+    for mode_char in string:
+        if mode_char not in MODE_MAP_SET:
             break
-        string = MODE_MAP_RE.sub('', string, 1)
-
-        mode_char = tmp.groups()[0]
         if MODE_HASH.get(mode_char, False):
             mode |= MODE_HASH[mode_char]
-        else:
-            pass
 
     return mode
 
 def split_log_mode(mode):
+    #if the mode has a "::", then the left side is the user mode, and the right side is the other mode
+    #if not, then the mode is both the user and other mode
     user = ''
     other = ''
-    match = re.search('(.*?)::(.*)', mode)
-    if match:
-        user, other = match.groups()
+
+    if "::" in mode:
+        user, other = mode.split("::")
     else:
         user = mode
         other = mode
