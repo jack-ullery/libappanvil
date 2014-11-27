@@ -157,29 +157,27 @@ def fatal_error(message):
     sys.exit(1)
 
 def check_for_apparmor():
-    """Finds and returns the mointpoint for apparmor None otherwise"""
+    """Finds and returns the mountpoint for apparmor None otherwise"""
     filesystem = '/proc/filesystems'
     mounts = '/proc/mounts'
     support_securityfs = False
     aa_mountpoint = None
-    regex_securityfs = re.compile('^\S+\s+(\S+)\s+securityfs\s')
     if valid_path(filesystem):
         with open_file_read(filesystem) as f_in:
             for line in f_in:
                 if 'securityfs' in line:
                     support_securityfs = True
-    if valid_path(mounts):
+                    break
+    if valid_path(mounts) and support_securityfs:
         with open_file_read(mounts) as f_in:
             for line in f_in:
-                if support_securityfs:
-                    match = regex_securityfs.search(line)
-                    if match:
-                        mountpoint = match.groups()[0] + '/apparmor'
-                        if valid_path(mountpoint):
-                            aa_mountpoint = mountpoint
-    # Check if apparmor is actually mounted there
-    if not valid_path(aa_mountpoint + '/profiles'):
-        aa_mountpoint = None
+                split = line.split()
+                if len(split) > 2 and split[2] == 'securityfs':
+                    mountpoint = split[1] + '/apparmor'
+                    # Check if apparmor is actually mounted there
+                    if valid_path(mountpoint) and valid_path(mountpoint + '/profiles'):
+                        aa_mountpoint = mountpoint
+                        break
     return aa_mountpoint
 
 def which(file):
