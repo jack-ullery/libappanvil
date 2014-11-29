@@ -12,6 +12,7 @@
 #
 # ----------------------------------------------------------------------
 import re
+from apparmor.common import AppArmorBug
 
 def AA_OTHER(mode):
     other = set()
@@ -103,11 +104,14 @@ def split_log_mode(mode):
     other = ''
 
     if "::" in mode:
-        user, other = mode.split("::")
+        try:
+            user, other = mode.split("::")
+        except ValueError as e:
+            raise AppArmorBug("Got ValueError '%s' when splitting %s" % (str(e), mode))
     else:
         user = mode
         other = mode
-    #print ('split_logmode:', user, mode)
+
     return user, other
 
 def mode_contains(mode, subset):

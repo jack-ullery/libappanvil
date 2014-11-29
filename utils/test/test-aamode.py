@@ -12,6 +12,7 @@
 import unittest
 
 from apparmor.aamode import split_log_mode, sub_str_to_mode
+from apparmor.common import AppArmorBug
 
 class AamodeTest_split_log_mode(unittest.TestCase):
     def test_split_log_mode_1(self):
@@ -26,6 +27,9 @@ class AamodeTest_split_log_mode(unittest.TestCase):
         self.assertEqual(split_log_mode('r::w'), ('r', 'w'))
     def test_split_log_mode_6(self):
         self.assertEqual(split_log_mode('rw::rw'), ('rw', 'rw'))
+    def test_split_log_mode_invalid_1(self):
+        with self.assertRaises(AppArmorBug):
+            split_log_mode('r::w::r')
 
 class AamodeTest_sub_str_to_mode(unittest.TestCase):
     def test_sub_str_to_mode_1(self):
