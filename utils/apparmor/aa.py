@@ -2768,7 +2768,7 @@ def parse_profile_data(data, file, do_include):
                 raise AppArmorException(_('Syntax Error: Unexpected change profile entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             cp = strip_quotes(matches[0])
-            profile_data[profile][hat]['changes_profile'][cp] = True
+            profile_data[profile][hat]['change_profile'][cp] = True
 
         elif RE_PROFILE_ALIAS.search(line):
             matches = RE_PROFILE_ALIAS.search(line).groups()
@@ -4004,7 +4004,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 matches = RE_PROFILE_CHANGE_PROFILE.search(line).groups()
                 cp = strip_quotes(matches[0])
 
-                if not write_prof_data[hat]['changes_profile'][cp] is True:
+                if not write_prof_data[hat]['change_profile'][cp] is True:
                     correct = False
 
                 if correct:
