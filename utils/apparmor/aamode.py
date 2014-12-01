@@ -137,9 +137,6 @@ def hide_log_mode(mode):
     mode = mode.replace('::', '')
     return mode
 
-def map_log_mode(mode):
-    return mode
-
 def print_mode(mode):
     user, other = split_mode(mode)
     string = sub_mode_to_str(user) + '::' + sub_mode_to_str(other)
