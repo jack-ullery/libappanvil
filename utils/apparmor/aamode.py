@@ -198,9 +198,6 @@ def is_user_mode(mode):
     else:
         return False
 
-def profilemode(mode):
-    pass
-
 def split_mode(mode):
     user = set()
     for i in mode:
