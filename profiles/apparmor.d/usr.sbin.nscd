@@ -33,7 +33,6 @@
   /var/log/nscd.log rw,
   @{PROC}/@{pid}/fd/ r,
   @{PROC}/@{pid}/fd/* r,
-  @{PROC}/@{pid}/maps r,
   @{PROC}/@{pid}/mounts r,
 
   # Site-specific additions and overrides. See local/README for details.
