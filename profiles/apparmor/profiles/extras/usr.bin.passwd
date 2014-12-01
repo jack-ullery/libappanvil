@@ -1,5 +1,4 @@
 # vim:syntax=apparmor
-# Last Modified: Sat Jan  6 09:35:33 2007
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2006 Volker Kuhlmann
@@ -17,15 +16,20 @@
   #include <abstractions/base>
   #include <abstractions/consoles>
   #include <abstractions/nameservice>
+  #include <abstractions/wutmp>
 
   capability chown,
   capability sys_resource,
 
-  /etc/.pwd.lock w,
+  /etc/.pwd.lock wk,
   /etc/pwdutils/logging r,
+  /etc/nshadow rw,
   /etc/shadow rwl,
   /etc/shadow.old rwl,
   /etc/shadow.tmp?????? rwl,
+
+  @{PROC}/@{pid}/loginuid r,
+
   /usr/bin/passwd mr,
   /usr/lib/pwdutils/lib*.so* mr,
   /usr/lib64/pwdutils/lib*.so* mr,
