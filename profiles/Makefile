@@ -78,7 +78,7 @@ endif
 
 ifndef LOGPROF
 # use ../utils logprof
-LOGPROF=perl -I../utils/ ../utils/aa-logprof
+LOGPROF=PYTHONPATH=../utils $(PYTHON) ../utils/aa-logprof
 endif
 
 IGNORE_FILES=${EXTRAS_SOURCE}/README
