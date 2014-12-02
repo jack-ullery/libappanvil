@@ -1,3 +1,5 @@
+# Last Modified: Mon Dec  1 22:15:18 2014
+
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
@@ -19,6 +21,7 @@
   capability setgid,
   capability setuid,
 
+  /usr/bin/man r,
   /usr/lib/man-db/man Px,
 
 }
