@@ -128,7 +128,6 @@ def contains(mode, string):
 
 def validate_log_mode(mode):
     if LOG_MODE_RE.search(mode):
-    #if LOG_MODE_RE.search(mode):
         return True
     else:
         return False
