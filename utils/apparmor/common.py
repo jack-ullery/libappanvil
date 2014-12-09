@@ -20,6 +20,7 @@ import subprocess
 import sys
 import termios
 import tty
+import apparmor.rules as rules
 
 DEBUGGING = False
 
@@ -93,14 +94,15 @@ def recursive_print(src, dpth = 0, key = ''):
         if empty:
             print (tabs + '[--- empty ---]')
     elif isinstance(src, list) or isinstance(src, tuple):
-        empty = True
-        print (tabs + "[")
-        for litem in src:
-            recursive_print(litem, dpth + 2)
-            empty = False
-        if empty:
+        if len(src) == 0:
             print (tabs + '[--- empty ---]')
-        print (tabs + "]")
+        else:
+            print (tabs + "[")
+            for litem in src:
+                recursive_print(litem, dpth + 1)
+            print (tabs + "]")
+    elif isinstance(src, rules._Raw_Rule):
+        src.recursive_print(dpth)
     else:
         if key:
             print (tabs + '%s = %s' % (key, src))
