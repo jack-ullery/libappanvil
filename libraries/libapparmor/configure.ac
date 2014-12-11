@@ -14,8 +14,19 @@ PKG_PROG_PKG_CONFIG
 
 AC_PATH_PROG([SWIG], [swig])
 
-sinclude(m4/ac_pod2man.m4)
-PROG_POD2MAN
+AC_MSG_CHECKING([whether the libapparmor man pages should be generated])
+AC_ARG_ENABLE(man_pages,
+[AS_HELP_STRING([--enable-man-pages], [generate the libapparmor man pages [[default=yes]]])],
+[AC_MSG_RESULT($enableval)],
+[enable_man_pages=yes]
+[AC_MSG_RESULT($enable_man_pages)])
+if test "$enable_man_pages" = "yes"; then
+   sinclude(m4/ac_podchecker.m4)
+   PROG_PODCHECKER
+
+   sinclude(m4/ac_pod2man.m4)
+   PROG_POD2MAN
+fi
 
 AC_MSG_CHECKING([whether python bindings are enabled])
 AC_ARG_WITH(python,
@@ -32,7 +43,7 @@ fi
 
 AC_MSG_CHECKING([whether perl bindings are enabled])
 AC_ARG_WITH(perl,
-[ --with-perl           enable the perl wrapper [[default=no]]],
+[  --with-perl             enable the perl wrapper [[default=no]]],
 [AC_MSG_RESULT($withval)], [AC_MSG_RESULT(no)])
 if test "$with_perl" = "yes"; then
    test -z "$SWIG" && AC_MSG_ERROR([swig is required when enabling perl bindings])
@@ -45,7 +56,7 @@ fi
 
 AC_MSG_CHECKING([whether ruby bindings are enabled])
 AC_ARG_WITH(ruby,
-[ --with-ruby           enable the ruby wrapper [[default=no]]],
+[  --with-ruby             enable the ruby wrapper [[default=no]]],
 [AC_MSG_RESULT($withval)], [AC_MSG_RESULT(no)])
 if test "$with_ruby" = "yes"; then
    test -z "$SWIG" && AC_MSG_ERROR([swig is required when enabling ruby bindings])
@@ -54,6 +65,7 @@ if test "$with_ruby" = "yes"; then
 fi
 
 
+AM_CONDITIONAL(ENABLE_MAN_PAGES, test x$enable_man_pages = xyes)
 AM_CONDITIONAL(HAVE_PYTHON, test x$with_python = xyes)
 AM_CONDITIONAL(HAVE_PERL, test x$with_perl = xyes) 
 AM_CONDITIONAL(HAVE_RUBY, test x$with_ruby = xyes)

@@ -12,6 +12,7 @@
 #
 # ----------------------------------------------------------------------
 import unittest
+import os
 import re
 
 import apparmor.common
@@ -54,6 +55,13 @@ def setup_regex_tests(test_class):
 
         stub_test.__doc__ = "test '%s': %s" % (line, desc)
         setattr(test_class, 'test_%d' % (i), stub_test)
+
+def write_file(directory, file, contents):
+    '''construct path, write contents to it, and return the constructed path'''
+    path = os.path.join(directory, file)
+    with open(path, 'w+') as f:
+        f.write(contents)
+    return path
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.test_RegexParser']

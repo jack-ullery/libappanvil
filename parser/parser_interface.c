@@ -597,7 +597,8 @@ int __sd_serialize_profile(int option, Profile *prof)
 		}
 	}
 
-	close(fd);
+	if (fd != -1)
+		close(fd);
 
 	if (!prof->hat_table.empty() && option != OPTION_REMOVE) {
 		if (load_flattened_hats(prof, option) == 0)

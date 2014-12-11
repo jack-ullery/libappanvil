@@ -40,6 +40,16 @@ from apparmor.aamode import (str_to_mode, mode_to_str, contains, split_mode,
                              mode_to_str_user, mode_contains, AA_OTHER,
                              flatten_mode, owner_flatten_mode)
 
+from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_CAP, RE_PROFILE_LINK,
+                            RE_PROFILE_CHANGE_PROFILE, RE_PROFILE_ALIAS, RE_PROFILE_RLIMIT,
+                            RE_PROFILE_BOOLEAN, RE_PROFILE_VARIABLE, RE_PROFILE_CONDITIONAL,
+                            RE_PROFILE_CONDITIONAL_VARIABLE, RE_PROFILE_CONDITIONAL_BOOLEAN,
+                            RE_PROFILE_BARE_FILE_ENTRY, RE_PROFILE_PATH_ENTRY, RE_PROFILE_NETWORK,
+                            RE_NETWORK_FAMILY_TYPE, RE_NETWORK_FAMILY, RE_PROFILE_CHANGE_HAT,
+                            RE_PROFILE_HAT_DEF, RE_PROFILE_DBUS, RE_PROFILE_MOUNT,
+                            RE_PROFILE_SIGNAL, RE_PROFILE_PTRACE, RE_PROFILE_PIVOT_ROOT,
+                            RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT )
+
 import apparmor.rules as aarules
 
 from apparmor.yasti import SendDataToYast, GetDataFromYast, shutdown_yast
@@ -146,30 +156,27 @@ def fatal_error(message):
     shutdown_yast()
     sys.exit(1)
 
-def check_for_apparmor():
-    """Finds and returns the mointpoint for apparmor None otherwise"""
-    filesystem = '/proc/filesystems'
-    mounts = '/proc/mounts'
+def check_for_apparmor(filesystem='/proc/filesystems', mounts='/proc/mounts'):
+    """Finds and returns the mountpoint for apparmor None otherwise"""
     support_securityfs = False
     aa_mountpoint = None
-    regex_securityfs = re.compile('^\S+\s+(\S+)\s+securityfs\s')
     if valid_path(filesystem):
         with open_file_read(filesystem) as f_in:
             for line in f_in:
                 if 'securityfs' in line:
                     support_securityfs = True
-    if valid_path(mounts):
+                    break
+    if valid_path(mounts) and support_securityfs:
         with open_file_read(mounts) as f_in:
             for line in f_in:
-                if support_securityfs:
-                    match = regex_securityfs.search(line)
-                    if match:
-                        mountpoint = match.groups()[0] + '/apparmor'
-                        if valid_path(mountpoint):
-                            aa_mountpoint = mountpoint
-    # Check if apparmor is actually mounted there
-    if not valid_path(aa_mountpoint + '/profiles'):
-        aa_mountpoint = None
+                split = line.split()
+                if len(split) > 2 and split[2] == 'securityfs':
+                    mountpoint = split[1] + '/apparmor'
+                    # Check if apparmor is actually mounted there
+                    # XXX valid_path() only checks the syntax, but not if the directory exists!
+                    if valid_path(mountpoint) and valid_path(mountpoint + '/profiles'):
+                        aa_mountpoint = mountpoint
+                        break
     return aa_mountpoint
 
 def which(file):
@@ -1361,9 +1368,9 @@ def handle_children(profile, hat, root):
                                     interpreter_path = get_full_path(interpreter)
                                     interpreter = re.sub('^(/usr)?/bin/', '', interpreter_path)
 
-                                    aa[profile][hat]['path'][interpreter_path]['mode'] = aa[profile][hat]['path'][interpreter_path].get('mode', str_to_mode('ix')) | str_to_mode('ix')
+                                    aa[profile][hat]['allow']['path'][interpreter_path]['mode'] = aa[profile][hat]['allow']['path'][interpreter_path].get('mode', str_to_mode('ix')) | str_to_mode('ix')
 
-                                    aa[profile][hat]['path'][interpreter_path]['audit'] = aa[profile][hat]['path'][interpreter_path].get('audit', set())
+                                    aa[profile][hat]['allow']['path'][interpreter_path]['audit'] = aa[profile][hat]['allow']['path'][interpreter_path].get('audit', set())
 
                                     if interpreter == 'perl':
                                         aa[profile][hat]['include']['abstractions/perl'] = True
@@ -1561,6 +1568,7 @@ def ask_the_questions():
                     q.headers += [_('Severity'), severity]
 
                     audit_toggle = 0
+                    audit = ''
 
                     q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
                                       'CMD_ABORT', 'CMD_FINISHED']
@@ -1586,16 +1594,17 @@ def ask_the_questions():
                             done = True
                             break
 
-                        if ans == 'CMD_AUDIT':
+                        if ans.startswith('CMD_AUDIT'):
                             audit_toggle = not audit_toggle
-                            audit = ''
                             if audit_toggle:
-                                q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_OFF',
-                                                  'CMD_ABORT', 'CMD_FINISHED']
-                                audit = 'audit'
+                                audit = 'audit '
+                                audit_cmd = 'CMD_AUDIT_OFF'
                             else:
-                                q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', 'CMD_AUDIT_NEW',
-                                                  'CMD_ABORT', 'CMD_FINISHED', ]
+                                audit = ''
+                                audit_cmd = 'CMD_AUDIT_NEW'
+
+                            q.functions = ['CMD_ALLOW', 'CMD_DENY', 'CMD_IGNORE_ENTRY', audit_cmd,
+                                              'CMD_ABORT', 'CMD_FINISHED', ]
 
                             q.headers = [_('Profile'), combine_name(profile, hat),
                                             _('Capability'), audit + capability,
@@ -1709,7 +1718,7 @@ def ask_the_questions():
                         for incname in include.keys():
                             include_valid = False
                             # If already present skip
-                            if aa[profile][hat][incname]:
+                            if aa[profile][hat]['include'].get(incname, False):
                                 continue
                             if incname.startswith(profile_dir):
                                 incname = incname.replace(profile_dir + '/', '', 1)
@@ -1856,8 +1865,9 @@ def ask_the_questions():
                                         aaui.UI_Info(_('Deleted %s previous matching profile entries.') % deleted)
 
                                 else:
-                                    if aa[profile][hat]['allow']['path'][path].get('mode', False):
-                                        mode |= aa[profile][hat]['allow']['path'][path]['mode']
+                                    if path in aa[profile][hat]['allow']['path']:
+                                        if aa[profile][hat]['allow']['path'][path].get('mode', False):
+                                            mode |= aa[profile][hat]['allow']['path'][path]['mode']
                                     deleted = []
                                     for entry in aa[profile][hat]['allow']['path'].keys():
                                         if path == entry:
@@ -2226,7 +2236,7 @@ def match_net_includes(profile, family, nettype):
     newincludes = []
     for incname in include.keys():
 
-        if valid_include(profile, incname) and match_net_include(incname, family, type):
+        if valid_include(profile, incname) and match_net_include(incname, family, nettype):
             newincludes.append(incname)
 
     return newincludes
@@ -2610,46 +2620,6 @@ def attach_profile_data(profiles, profile_data):
     for p in profile_data.keys():
         profiles[p] = deepcopy(profile_data[p])
 
-## Profile parsing Regex
-RE_AUDIT_DENY           = '^\s*(?P<audit>audit\s+)?(?P<allow>allow\s+|deny\s+)?'  # line start, optionally: leading whitespace, <audit> and <allow>/deny
-RE_OWNER                = '(?P<owner>owner\s+)?'  # optionally: <owner>
-RE_EOL                  = '\s*(?P<comment>#.*)?$'  # optional whitespace, optional <comment>, end of the line
-RE_COMMA_EOL            = '\s*,' + RE_EOL # optional whitespace, comma + RE_EOL
-
-RE_PROFILE_START        = re.compile('^\s*("?(/.+?)"??|(profile\s+"?(.+?)"??))\s+((flags=)?\((.+)\)\s+)?\{' + RE_EOL)
-RE_PROFILE_END          = re.compile('^\s*\}' + RE_EOL)
-RE_PROFILE_CAP          = re.compile(RE_AUDIT_DENY + 'capability(?P<capability>(\s+\S+)+)?' + RE_COMMA_EOL)
-RE_PROFILE_LINK         = re.compile(RE_AUDIT_DENY + 'link\s+(((subset)|(<=))\s+)?([\"\@\/].*?"??)\s+->\s*([\"\@\/].*?"??)' + RE_COMMA_EOL)
-RE_PROFILE_CHANGE_PROFILE = re.compile('^\s*change_profile\s+->\s*("??.+?"??)' + RE_COMMA_EOL)
-RE_PROFILE_ALIAS        = re.compile('^\s*alias\s+("??.+?"??)\s+->\s*("??.+?"??)' + RE_COMMA_EOL)
-RE_PROFILE_RLIMIT       = re.compile('^\s*set\s+rlimit\s+(.+)\s+(<=)?\s*(.+)' + RE_COMMA_EOL)
-RE_PROFILE_BOOLEAN      = re.compile('^\s*(\$\{?\w*\}?)\s*=\s*(true|false)\s*,?' + RE_EOL, flags=re.IGNORECASE)
-RE_PROFILE_VARIABLE     = re.compile('^\s*(@\{?\w+\}?)\s*(\+?=)\s*(@*.+?)\s*,?' + RE_EOL)
-RE_PROFILE_CONDITIONAL  = re.compile('^\s*if\s+(not\s+)?(\$\{?\w*\}?)\s*\{' + RE_EOL)
-RE_PROFILE_CONDITIONAL_VARIABLE = re.compile('^\s*if\s+(not\s+)?defined\s+(@\{?\w+\}?)\s*\{\s*(#.*)?$')
-RE_PROFILE_CONDITIONAL_BOOLEAN = re.compile('^\s*if\s+(not\s+)?defined\s+(\$\{?\w+\}?)\s*\{\s*(#.*)?$')
-RE_PROFILE_BARE_FILE_ENTRY = re.compile(RE_AUDIT_DENY + RE_OWNER + 'file' + RE_COMMA_EOL)
-RE_PROFILE_PATH_ENTRY   = re.compile(RE_AUDIT_DENY + RE_OWNER + '(file\s+)?([\"@/].*?)\s+(\S+)(\s+->\s*(.*?))?' + RE_COMMA_EOL)
-RE_PROFILE_NETWORK      = re.compile(RE_AUDIT_DENY + 'network(.*)' + RE_EOL)
-RE_NETWORK_FAMILY_TYPE = re.compile('\s+(\S+)\s+(\S+)\s*,$')
-RE_NETWORK_FAMILY = re.compile('\s+(\S+)\s*,$')
-RE_PROFILE_CHANGE_HAT   = re.compile('^\s*\^(\"??.+?\"??)' + RE_COMMA_EOL)
-RE_PROFILE_HAT_DEF      = re.compile('^\s*(\^|hat\s+)(?P<hat>\"??.+?\"??)\s+((flags=)?\((?P<flags>.+)\)\s+)*\{' + RE_EOL)
-RE_PROFILE_DBUS         = re.compile(RE_AUDIT_DENY + '(dbus\s*,|dbus\s+[^#]*\s*,)' + RE_EOL)
-RE_PROFILE_MOUNT        = re.compile(RE_AUDIT_DENY + '((mount|remount|umount|unmount)(\s+[^#]*)?\s*,)' + RE_EOL)
-RE_PROFILE_SIGNAL       = re.compile(RE_AUDIT_DENY + '(signal\s*,|signal\s+[^#]*\s*,)' + RE_EOL)
-RE_PROFILE_PTRACE       = re.compile(RE_AUDIT_DENY + '(ptrace\s*,|ptrace\s+[^#]*\s*,)' + RE_EOL)
-RE_PROFILE_PIVOT_ROOT   = re.compile(RE_AUDIT_DENY + '(pivot_root\s*,|pivot_root\s+[^#]*\s*,)' + RE_EOL)
-RE_PROFILE_UNIX         = re.compile(RE_AUDIT_DENY + '(unix\s*,|unix\s+[^#]*\s*,)' + RE_EOL)
-
-# match anything that's not " or #, or matching quotes with anything except quotes inside
-__re_no_or_quoted_hash = '([^#"]|"[^"]*")*'
-
-RE_RULE_HAS_COMMA = re.compile('^' + __re_no_or_quoted_hash +
-    ',\s*(#.*)?$')  # match comma plus any trailing comment
-RE_HAS_COMMENT_SPLIT = re.compile('^(?P<not_comment>' + __re_no_or_quoted_hash + ')' + # store in 'not_comment' group
-    '(?P<comment>#.*)$')  # match trailing comment and store in 'comment' group
-
 def parse_profile_data(data, file, do_include):
     profile_data = hasher()
     profile = None
@@ -2752,8 +2722,8 @@ def parse_profile_data(data, file, do_include):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected capability entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            audit, allow, allow_keyword = parse_audit_allow(matches)
-            # TODO: honor allow_keyword
+            audit, allow, allow_keyword, comment = parse_audit_allow(matches)
+            # TODO: honor allow_keyword and comment
 
             capability = ALL
             if matches.group('capability'):
@@ -2798,7 +2768,7 @@ def parse_profile_data(data, file, do_include):
                 raise AppArmorException(_('Syntax Error: Unexpected change profile entry found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
             cp = strip_quotes(matches[0])
-            profile_data[profile][hat]['changes_profile'][cp] = True
+            profile_data[profile][hat]['change_profile'][cp] = True
 
         elif RE_PROFILE_ALIAS.search(line):
             matches = RE_PROFILE_ALIAS.search(line).groups()
@@ -2870,8 +2840,8 @@ def parse_profile_data(data, file, do_include):
             if not profile:
                 raise AppArmorException(_('Syntax Error: Unexpected bare file rule found in file: %(file)s line: %(line)s') % { 'file': file, 'line': lineno + 1 })
 
-            audit, allow, allow_keyword = parse_audit_allow(matches)
-            # TODO: honor allow_keyword
+            audit, allow, allow_keyword, comment = parse_audit_allow(matches)
+            # TODO: honor allow_keyword and comment
 
             mode = apparmor.aamode.AA_BARE_FILE_MODE
             if not matches.group('owner'):
@@ -3222,7 +3192,12 @@ def parse_audit_allow(matches):
         if allow != 'allow' and allow != 'deny':  # should never happen
             raise AppArmorException(_("Invalid allow/deny keyword %s" % allow))
 
-    return (audit, allow, allow_keyword)
+    comment = ''
+    if matches.group('comment'):
+        # include a space so that we don't need to add it everywhere when writing the rule
+        comment = ' %s' % matches.group('comment')
+
+    return (audit, allow, allow_keyword, comment)
 
 # RE_DBUS_ENTRY = re.compile('^dbus\s*()?,\s*$')
 #   use stuff like '(?P<action>(send|write|w|receive|read|r|rw))'
@@ -3809,6 +3784,21 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                          'path': write_paths,
                          'change_profile': write_change_profile,
                          }
+        default_write_order = [ 'alias',
+                                'lvar',
+                                'include',
+                                'rlimit',
+                                'capability',
+                                'netdomain',
+                                'dbus',
+                                'mount',
+                                'signal',
+                                'ptrace',
+                                'pivot_root',
+                                'link',
+                                'path',
+                                'change_profile',
+                              ]
         # prof_correct = True  # XXX correct?
         segments = {'alias': False,
                     'lvar': False,
@@ -3817,11 +3807,28 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                     'capability': False,
                     'netdomain': False,
                     'dbus': False,
+                    'mount': True, # not handled otherwise yet
+                    'signal': True, # not handled otherwise yet
+                    'ptrace': True, # not handled otherwise yet
+                    'pivot_root': True, # not handled otherwise yet
                     'link': False,
                     'path': False,
                     'change_profile': False,
-                    'include_local_started': False,
+                    'include_local_started': False, # unused
                     }
+
+        def write_prior_segments(prof_data, segments, line):
+            data = []
+            for segs in list(filter(lambda x: segments[x], segments.keys())):
+                depth = len(line) - len(line.lstrip())
+                data += write_methods[segs](prof_data, int(depth / 2))
+                segments[segs] = False
+                if prof_data['allow'].get(segs, False):
+                    prof_data['allow'].pop(segs)
+                if prof_data['deny'].get(segs, False):
+                    prof_data['deny'].pop(segs)
+            return data
+
         #data.append('reading prof')
         for line in f_in:
             correct = True
@@ -3878,31 +3885,22 @@ def serialize_profile_from_old_profile(profile_data, name, options):
             elif RE_PROFILE_END.search(line):
                 # DUMP REMAINDER OF PROFILE
                 if profile:
-                    depth = len(line) - len(line.lstrip())
-                    if True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
+                    depth = int(len(line) - len(line.lstrip()) / 2) + 1
 
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
+                    # first write sections that were modified (and remove them from write_prof_data)
+                    #for segs in write_methods.keys():
+                    for segs in default_write_order:
+                        if segments[segs]:
+                            data += write_methods[segs](write_prof_data[name], depth)
                             segments[segs] = False
                             if write_prof_data[name]['allow'].get(segs, False):
                                 write_prof_data[name]['allow'].pop(segs)
                             if write_prof_data[name]['deny'].get(segs, False):
                                 write_prof_data[name]['deny'].pop(segs)
 
-                    data += write_alias(write_prof_data[name], depth)
-                    data += write_list_vars(write_prof_data[name], depth)
-                    data += write_includes(write_prof_data[name], depth)
-                    data += write_rlimits(write_prof_data, depth)
-                    data += write_capabilities(write_prof_data[name], depth)
-                    data += write_netdomain(write_prof_data[name], depth)
-                    data += write_dbus(write_prof_data[name], depth)
-                    data += write_mount(write_prof_data[name], depth)
-                    data += write_signal(write_prof_data[name], depth)
-                    data += write_ptrace(write_prof_data[name], depth)
-                    data += write_pivot_root(write_prof_data[name], depth)
-                    data += write_links(write_prof_data[name], depth)
-                    data += write_paths(write_prof_data[name], depth)
-                    data += write_change_profile(write_prof_data[name], depth)
+                    # then write everything else
+                    for segs in default_write_order:
+                        data += write_methods[segs](write_prof_data[name], depth)
 
                     write_prof_data.pop(name)
 
@@ -3960,14 +3958,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['capability'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['capability'] = True
                     write_prof_data[hat][allow]['capability'].pop(capability)
                     data.append(line)
@@ -4001,14 +3992,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['link'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['link'] = True
                     write_prof_data[hat][allow]['link'].pop(link)
                     data.append(line)
@@ -4020,19 +4004,12 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 matches = RE_PROFILE_CHANGE_PROFILE.search(line).groups()
                 cp = strip_quotes(matches[0])
 
-                if not write_prof_data[hat]['changes_profile'][cp] is True:
+                if not write_prof_data[hat]['change_profile'][cp] is True:
                     correct = False
 
                 if correct:
                     if not segments['change_profile'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['change_profile'] = True
                     write_prof_data[hat]['change_profile'].pop(cp)
                     data.append(line)
@@ -4055,14 +4032,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['alias'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['alias'] = True
                     if profile:
                         write_prof_data[hat]['alias'].pop(from_name)
@@ -4084,14 +4054,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['rlimit'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['rlimit'] = True
                     write_prof_data[hat]['rlimit'].pop(from_name)
                     data.append(line)
@@ -4109,14 +4072,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['lvar'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['lvar'] = True
                     write_prof_data[hat]['lvar'].pop(bool_var)
                     data.append(line)
@@ -4140,14 +4096,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['lvar'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['lvar'] = True
                     if profile:
                         write_prof_data[hat]['lvar'].pop(list_var)
@@ -4178,14 +4127,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                    (not audit or path_rule.get('audit', set()) & audit) and \
                    path_rule.get('file_prefix', set()):
                     if not segments['path'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['path'] = True
                     write_prof_data[hat][allow]['path'].pop(ALL)
                     data.append(line)
@@ -4226,14 +4168,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['path'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['path'] = True
                     write_prof_data[hat][allow]['path'].pop(path)
                     data.append(line)
@@ -4246,15 +4181,8 @@ def serialize_profile_from_old_profile(profile_data, name, options):
                 if profile:
                     if write_prof_data[hat]['include'].get(include_name, False):
                         if not segments['include'] and True in segments.values():
-                            for segs in list(filter(lambda x: segments[x], segments.keys())):
-                                depth = len(line) - len(line.lstrip())
-                                data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                                segments[segs] = False
-                                if write_prof_data[name]['allow'].get(segs, False):
-                                    write_prof_data[name]['allow'].pop(segs)
-                                if write_prof_data[name]['deny'].get(segs, False):
-                                    write_prof_data[name]['deny'].pop(segs)
-                            segments['include'] = True
+                            data += write_prior_segments(write_prof_data[name], segments, line)
+                        segments['include'] = True
                         write_prof_data[hat]['include'].pop(include_name)
                         data.append(line)
                 else:
@@ -4299,14 +4227,7 @@ def serialize_profile_from_old_profile(profile_data, name, options):
 
                 if correct:
                     if not segments['netdomain'] and True in segments.values():
-                        for segs in list(filter(lambda x: segments[x], segments.keys())):
-                            depth = len(line) - len(line.lstrip())
-                            data += write_methods[segs](write_prof_data[name], int(depth / 2))
-                            segments[segs] = False
-                            if write_prof_data[name]['allow'].get(segs, False):
-                                write_prof_data[name]['allow'].pop(segs)
-                            if write_prof_data[name]['deny'].get(segs, False):
-                                write_prof_data[name]['deny'].pop(segs)
+                        data += write_prior_segments(write_prof_data[name], segments, line)
                     segments['netdomain'] = True
 
             elif RE_PROFILE_CHANGE_HAT.search(line):
@@ -4460,7 +4381,8 @@ def netrules_access_check(netrules, family, sock_type):
     if netrules['rule'].get(family, False) is True:
         all_net_family = True
     if (netrules['rule'].get(family, False) and
-            type(netrules['rule'][family]) == dict and
+            type(netrules['rule'][family]) == type(hasher()) and
+            sock_type in netrules['rule'][family].keys() and
             netrules['rule'][family][sock_type]):
         net_family_sock = True
 
@@ -4550,7 +4472,7 @@ def match_include_to_path(incname, allow, path):
             combinedaudit |= am
             matches += m
 
-        if include[incfile][incfile][allow]['path'][path]:
+        if path in include[incfile][incfile][allow]['path']:
             combinedmode |= include[incfile][incfile][allow]['path'][path]['mode']
             combinedaudit |= include[incfile][incfile][allow]['path'][path]['audit']
 
@@ -4716,7 +4638,7 @@ if not os.path.isfile(parser) or not os.access(parser, os.EX_OK):
 
 filename = conf.find_first_file(cfg['settings']['logfiles']) or '/var/log/syslog'
 if not os.path.isfile(filename):
-    raise AppArmorException('Can\'t find system log.')
+    raise AppArmorException('Can\'t find system log "%s".' % (filename))
 
 ldd = conf.find_first_file(cfg['settings']['ldd']) or '/usr/bin/ldd'
 if not os.path.isfile(ldd) or not os.access(ldd, os.EX_OK):

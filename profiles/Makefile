@@ -63,7 +63,7 @@ install: local
 LOCAL_ADDITIONS=$(filter-out ${PROFILES_SOURCE}/local/README, $(wildcard ${PROFILES_SOURCE}/local/*))
 .PHONY: clean
 clean:
-	-rm -f $(NAME)-$(VERSION)*.tar.gz Make.rules ${LOCAL_ADDITIONS}
+	-rm -f $(NAME)-$(VERSION)*.tar.gz Make.rules ${LOCAL_ADDITIONS} common
 
 ifndef VERBOSE
   Q=@
@@ -78,7 +78,7 @@ endif
 
 ifndef LOGPROF
 # use ../utils logprof
-LOGPROF=perl -I../utils/ ../utils/aa-logprof
+LOGPROF=PYTHONPATH=../utils $(PYTHON) ../utils/aa-logprof
 endif
 
 IGNORE_FILES=${EXTRAS_SOURCE}/README

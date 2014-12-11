@@ -3,8 +3,7 @@
 POD2MAN = pod2man
 PODCHECKER = podchecker
 
-# No perl, no manpages
-if HAVE_PERL
+if ENABLE_MAN_PAGES
 
 man_MANS = aa_change_hat.2 aa_change_profile.2 aa_getcon.2 aa_find_mountpoint.2
 

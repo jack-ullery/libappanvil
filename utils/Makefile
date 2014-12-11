@@ -46,6 +46,8 @@ BINDIR=${DESTDIR}/usr/sbin
 CONFDIR=${DESTDIR}/etc/apparmor
 PYPREFIX=/usr
 
+PYFLAKES=pyflakes
+
 po/${NAME}.pot: ${TOOLS} ${PYMODULES}
 	$(MAKE) -C po ${NAME}.pot NAME=${NAME} SOURCES="${TOOLS} ${PYMODULES}"
 
@@ -76,6 +78,7 @@ clean: _clean
 	rm -rf staging/ build/
 	rm -f apparmor/*.pyc
 	rm -rf apparmor/__pycache__/
+	rm -f common
 
 # ${CAPABILITIES} is defined in common/Make.rules
 .PHONY: check_severity_db
@@ -97,12 +100,9 @@ check: check_severity_db check_pod_files
 	for i in ${PERLTOOLS} ; do \
 		perl -c $$i || exit 1; \
 	done
-	tmpfile=$$(mktemp --tmpdir aa-pyflakes-XXXXXX); \
 	for i in ${PYTOOLS} apparmor test/*.py; do \
 		echo Checking $$i; \
-		pyflakes $$i 2>&1 | grep -v "undefined name '_'" > $$tmpfile; \
-		test -s $$tmpfile && cat $$tmpfile && rm -f $$tmpfile && exit 1; \
-	done || true; \
-	rm -f $$tmpfile
+		$(PYFLAKES) $$i || exit 1; \
+	done
 	$(MAKE) -C test check
 	$(MAKE) -C vim check

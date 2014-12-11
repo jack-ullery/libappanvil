@@ -15,10 +15,8 @@
 
 /usr/sbin/sendmail {
   #include <abstractions/base>
-  #include <abstractions/base>
   #include <abstractions/consoles>
   #include <abstractions/kerberosclient>
-  #include <abstractions/nameservice>
   #include <abstractions/nameservice>
   #include <abstractions/user-tmp>
   #include <abstractions/postfix-common>
@@ -33,7 +31,6 @@
   /etc/ldap.conf              r,
   /etc/mail/*                 r,
   /etc/mail/statistics        rw,
-  /etc/mtab                   r,
   /etc/mtab                   r,
   /etc/postfix/aliases.db                  rw,
   /etc/postfix/aliases                     r,

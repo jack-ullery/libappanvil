@@ -28,7 +28,7 @@ apparmor_parser - loads AppArmor profiles into the kernel
 
 =head1 SYNOPSIS
 
-B<apparmor_parser [options] E<lt>commandE<gt> [profile]...>
+B<apparmor_parser [options] E<lt>commandE<gt> [profiles]...>
 
 B<apparmor_parser [options] E<lt>commandE<gt>>
 
@@ -41,9 +41,16 @@ policy, including loading new apparmor.d(5) profiles into the Linux kernel.
 
 AppArmor profiles restrict the operations available to processes.
 
-The profiles are loaded into the Linux kernel by the B<apparmor_parser>
-program, which by default takes its input from standard input. The input
-supplied to B<apparmor_parser> should be in the format described in
+The B<profiles> are loaded into the Linux kernel by the B<apparmor_parser>
+program. The B<profiles> may be specified by file name or a directory
+name containing a set of profiles. If a directory is specified then the
+B<apparmor_parser> will try to do a profile load for each file in the
+directory that is not a dot file, or explicitly black listed (*.dpkg-new,
+*.dpkg-old, *.dpkg-dist, *-dpkg-bak, *.repnew, *.rpmsave, *orig, *.rej,
+*~). The B<apparmor_parser> will fall back to taking input from standard
+input if a profile or directory is not supplied.
+
+The input supplied to B<apparmor_parser> should be in the format described in
 apparmor.d(5).
 
 =head1 COMMANDS

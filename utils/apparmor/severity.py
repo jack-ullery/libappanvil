@@ -29,7 +29,7 @@ class Severity(object):
         # For variable expansions for the profile
         self.severity['VARIABLES'] = dict()
         if not dbname:
-            return None
+            raise AppArmorException("No severity db file given")
 
         with open_file_read(dbname) as database:  # open(dbname, 'r')
             for lineno, line in enumerate(database, start=1):
@@ -77,8 +77,9 @@ class Severity(object):
 
     def handle_capability(self, resource):
         """Returns the severity of for the capability resource, default value if no match"""
-        if resource in self.severity['CAPABILITIES'].keys():
-            return self.severity['CAPABILITIES'][resource]
+        cap = resource.upper()
+        if cap in self.severity['CAPABILITIES'].keys():
+            return self.severity['CAPABILITIES'][cap]
         # raise ValueError("unexpected capability rank input: %s"%resource)
         warn("unknown capability: %s" % resource)
         return self.severity['DEFAULT_RANK']

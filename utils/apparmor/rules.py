@@ -56,6 +56,15 @@ class _Raw_Rule(object):
                            'deny '  if self.deny else '',
                            self.rule)
 
+    def recursive_print(self, depth):
+        tabs = ' ' * depth * 4
+        print('%s[%s]' % (tabs, type(self).__name__))
+        tabs += ' ' * 4
+        print('%saudit = %s' % (tabs, self.audit))
+        print('%sdeny = %s' % (tabs, self.deny))
+        print('%sraw rule = %s' % (tabs, self.rule))
+
+
 class Raw_DBUS_Rule(_Raw_Rule):
     pass
 

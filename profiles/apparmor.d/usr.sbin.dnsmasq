@@ -24,6 +24,7 @@
   capability net_admin,         # for DHCP server
   capability net_raw,           # for DHCP server ping checks
   network inet raw,
+  network inet6 raw,
 
   signal (receive) peer=/usr/sbin/libvirtd,
   ptrace (readby) peer=/usr/sbin/libvirtd,

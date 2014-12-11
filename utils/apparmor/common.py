@@ -20,6 +20,7 @@ import subprocess
 import sys
 import termios
 import tty
+import apparmor.rules as rules
 
 DEBUGGING = False
 
@@ -34,6 +35,10 @@ class AppArmorException(Exception):
 
     def __str__(self):
         return repr(self.value)
+
+class AppArmorBug(Exception):
+    '''This class represents AppArmor exceptions "that should never happen"'''
+    pass
 
 #
 # Utility functions
@@ -75,33 +80,34 @@ def recursive_print(src, dpth = 0, key = ''):
     # print recursively in a nicely formatted way
     # useful for debugging, too verbose for production code ;-)
 
-    # "stolen" from http://code.activestate.com/recipes/578094-recursively-print-nested-dictionaries/
-    # by Scott S-Allen / MIT License
-    # (output format slightly modified)
+    # based on code "stolen" from Scott S-Allen / MIT License
+    # http://code.activestate.com/recipes/578094-recursively-print-nested-dictionaries/
     """ Recursively prints nested elements."""
-    tabs = lambda n: ' ' * n * 4  # or 2 or 8 or...
-    brace = lambda s, n: '[%s]' % (s)
+    tabs = ' ' * dpth * 4  # or 2 or 8 or...
 
     if isinstance(src, dict):
         empty = True
-        for key, value in src.iteritems():
-            print (tabs(dpth) + brace(key, dpth))
-            recursive_print(value, dpth + 1, key)
+        for key in src.keys():
+            print (tabs + '[%s]' % key)
+            recursive_print(src[key], dpth + 1, key)
             empty = False
         if empty:
-            print (tabs(dpth) + '[--- empty ---]')
+            print (tabs + '[--- empty ---]')
     elif isinstance(src, list) or isinstance(src, tuple):
-        empty = True
-        for litem in src:
-            recursive_print(litem, dpth + 2)
-            empty = False
-        if empty:
-            print (tabs(dpth) + '[--- empty ---]')
+        if len(src) == 0:
+            print (tabs + '[--- empty ---]')
+        else:
+            print (tabs + "[")
+            for litem in src:
+                recursive_print(litem, dpth + 1)
+            print (tabs + "]")
+    elif isinstance(src, rules._Raw_Rule):
+        src.recursive_print(dpth)
     else:
         if key:
-            print (tabs(dpth) + '%s = %s' % (key, src))
+            print (tabs + '%s = %s' % (key, src))
         else:
-            print (tabs(dpth) + '- %s' % src)
+            print (tabs + '- %s' % src)
 
 def cmd(command):
     '''Try to execute the given command.'''

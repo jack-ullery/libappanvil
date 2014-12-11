@@ -12,6 +12,7 @@
 #
 # ----------------------------------------------------------------------
 import re
+from apparmor.common import AppArmorBug
 
 def AA_OTHER(mode):
     other = set()
@@ -67,8 +68,8 @@ MODE_HASH = {'x': AA_MAY_EXEC, 'X': AA_MAY_EXEC,
              'N': AA_EXEC_NT
              }
 
-LOG_MODE_RE = re.compile('(r|w|l|m|k|a|x|ix|ux|px|pux|cx|nx|pix|cix|Ux|Px|PUx|Cx|Nx|Pix|Cix)')
-MODE_MAP_RE = re.compile('(r|w|l|m|k|a|x|i|u|p|c|n|I|U|P|C|N)')
+LOG_MODE_RE = re.compile('^(r|w|l|m|k|a|x|ix|ux|px|pux|cx|nx|pix|cix|Ux|Px|PUx|Cx|Nx|Pix|Cix)+$')
+MODE_MAP_SET = {"r", "w", "l", "m", "k", "a", "x", "i", "u", "p", "c", "n", "I", "U", "P", "C", "N"}
 
 def str_to_mode(string):
     if not string:
@@ -88,30 +89,29 @@ def str_to_mode(string):
 def sub_str_to_mode(string):
     mode = set()
 
-    while string:
-        tmp = MODE_MAP_RE.search(string)
-        if not tmp:
+    for mode_char in string:
+        if mode_char not in MODE_MAP_SET:
             break
-        string = MODE_MAP_RE.sub('', string, 1)
-
-        mode_char = tmp.groups()[0]
         if MODE_HASH.get(mode_char, False):
             mode |= MODE_HASH[mode_char]
-        else:
-            pass
 
     return mode
 
 def split_log_mode(mode):
+    #if the mode has a "::", then the left side is the user mode, and the right side is the other mode
+    #if not, then the mode is both the user and other mode
     user = ''
     other = ''
-    match = re.search('(.*?)::(.*)', mode)
-    if match:
-        user, other = match.groups()
+
+    if "::" in mode:
+        try:
+            user, other = mode.split("::")
+        except ValueError as e:
+            raise AppArmorBug("Got ValueError '%s' when splitting %s" % (str(e), mode))
     else:
         user = mode
         other = mode
-    #print ('split_logmode:', user, mode)
+
     return user, other
 
 def mode_contains(mode, subset):
@@ -128,16 +128,12 @@ def contains(mode, string):
 
 def validate_log_mode(mode):
     if LOG_MODE_RE.search(mode):
-    #if LOG_MODE_RE.search(mode):
         return True
     else:
         return False
 
 def hide_log_mode(mode):
     mode = mode.replace('::', '')
-    return mode
-
-def map_log_mode(mode):
     return mode
 
 def print_mode(mode):
@@ -200,9 +196,6 @@ def is_user_mode(mode):
         return True
     else:
         return False
-
-def profilemode(mode):
-    pass
 
 def split_mode(mode):
     user = set()

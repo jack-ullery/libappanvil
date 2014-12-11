@@ -28,12 +28,11 @@
   /{,var/}run/nscd/ rw,
   /{,var/}run/nscd/db* rwl,
   /{,var/}run/nscd/socket wl,
-  /var/{cache,run}/nscd/{passwd,group,services,hosts,netgroup} rw,
+  /{var/cache,var/run,run}/nscd/{passwd,group,services,hosts,netgroup} rw,
   /{,var/}run/{nscd/,}nscd.pid rwl,
   /var/log/nscd.log rw,
   @{PROC}/@{pid}/fd/ r,
   @{PROC}/@{pid}/fd/* r,
-  @{PROC}/@{pid}/maps r,
   @{PROC}/@{pid}/mounts r,
 
   # Site-specific additions and overrides. See local/README for details.

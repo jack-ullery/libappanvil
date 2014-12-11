@@ -50,6 +50,7 @@
   @{PROC}/filesystems r,
   /usr/lib*/pwdutils/*so* mr,
   /usr/sbin/adduser rmix,
+  /usr/sbin/nscd rPix,
   /usr/sbin/useradd rmix,
   /usr/sbin/useradd.local rmix,
   /var/log/faillog rw,
