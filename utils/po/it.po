@@ -1,4 +1,4 @@
-# English (United Kingdom) translation for apparmor
+# Italian translation for apparmor
 # Copyright (c) 2014 Rosetta Contributors and Canonical Ltd 2014
 # This file is distributed under the same license as the apparmor package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
@@ -8,48 +8,48 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2014-10-22 22:09+0000\n"
-"Last-Translator: Andi Chandler <Unknown>\n"
-"Language-Team: English (United Kingdom) <en_GB@li.org>\n"
+"PO-Revision-Date: 2014-10-27 20:25+0000\n"
+"Last-Translator: Milo Casagrande <milo.casagrande@gmail.com>\n"
+"Language-Team: Italian <it@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-10-23 05:37+0000\n"
+"X-Launchpad-Export-Date: 2014-10-28 05:41+0000\n"
 "X-Generator: Launchpad (build 17203)\n"
 
 #: ../aa-genprof:52
 msgid "Generate profile for the given program"
-msgstr "Generate profile for the given program"
+msgstr "Genera profilo per il programma fornito"
 
 #: ../aa-genprof:53 ../aa-logprof:25 ../aa-cleanprof:24 ../aa-mergeprof:31
 #: ../aa-autodep:25 ../aa-audit:25 ../aa-complain:24 ../aa-enforce:24
 #: ../aa-disable:24
 msgid "path to profiles"
-msgstr "path to profiles"
+msgstr "percorso ai profili"
 
 #: ../aa-genprof:54 ../aa-logprof:26
 msgid "path to logfile"
-msgstr "path to logfile"
+msgstr "percorso a file registro"
 
 #: ../aa-genprof:55
 msgid "name of program to profile"
-msgstr "name of program to profile"
+msgstr "nome del programma per il profilo"
 
 #: ../aa-genprof:65 ../aa-logprof:37
 #, python-format
 msgid "The logfile %s does not exist. Please check the path"
-msgstr "The logfile %s does not exist. Please check the path"
+msgstr "Il file di registro %s non esiste: controllare il percorso"
 
 #: ../aa-genprof:71 ../aa-logprof:43 ../aa-unconfined:34
 msgid ""
 "It seems AppArmor was not started. Please enable AppArmor and try again."
 msgstr ""
-"It seems AppArmor was not started. Please enable AppArmor and try again."
+"AppArmor non sembra essere stato avviato: abilitare AppArmor e riprovare."
 
 #: ../aa-genprof:76
 #, python-format
 msgid "%s is not a directory."
-msgstr "%s is not a directory."
+msgstr "%s non è una directory."
 
 #: ../aa-genprof:94
 #, python-format
@@ -60,16 +60,17 @@ msgid ""
 "environment set up in order to find the fully-qualified path and\n"
 "use the full path as parameter."
 msgstr ""
-"Can't find %(profiling)s in the system path list. If the name of the "
-"application\n"
-"is correct, please run 'which %(profiling)s' as a user with correct PATH\n"
-"environment set up in order to find the fully-qualified path and\n"
-"use the full path as parameter."
+"Impossibile trovare %(profiling)s nell'elenco dei percorsi di sistema. Se il "
+"nome\n"
+"dell'applicazione è corretto, eseguire \"which %(profiling)s\", come utente "
+"con la\n"
+"variable PATH impostata correttamente, per trovare il percorso completo\n"
+"da utilizzare come parametro."
 
 #: ../aa-genprof:92
 #, python-format
 msgid "%s does not exists, please double-check the path."
-msgstr "%s does not exists, please double-check the path."
+msgstr "%s non esiste: controllare il percorso."
 
 #: ../aa-genprof:120
 msgid ""
@@ -80,10 +81,10 @@ msgid ""
 "more information:"
 msgstr ""
 "\n"
-"Before you begin, you may wish to check if a\n"
-"profile already exists for the application you\n"
-"wish to confine. See the following wiki page for\n"
-"more information:"
+"Prima di iniziare, verificare se esiste già\n"
+"un profilo per l'applicazione da isolare.\n"
+"Per maggiori informazioni consultare\n"
+"la seguente pagina wiki:"
 
 #: ../aa-genprof:122
 msgid ""
@@ -100,15 +101,13 @@ msgstr ""
 
 #: ../aa-genprof:143
 msgid "Profiling"
-msgstr "Profiling"
+msgstr "Raccolta profilo"
 
 #: ../aa-genprof:161
 msgid ""
 "\n"
 "Reloaded AppArmor profiles in enforce mode."
 msgstr ""
-"\n"
-"Reloaded AppArmor profiles in enforce mode."
 
 #: ../aa-genprof:162
 msgid ""
@@ -116,124 +115,120 @@ msgid ""
 "Please consider contributing your new profile!\n"
 "See the following wiki page for more information:"
 msgstr ""
-"\n"
-"Please consider contributing your new profile!\n"
-"See the following wiki page for more information:"
 
 #: ../aa-genprof:163
 #, python-format
 msgid "Finished generating profile for %s."
-msgstr "Finished generating profile for %s."
+msgstr "Creazione profilo per %s completata."
 
 #: ../aa-logprof:24
 msgid "Process log entries to generate profiles"
-msgstr "Process log entries to generate profiles"
+msgstr ""
 
 #: ../aa-logprof:27
 msgid "mark in the log to start processing after"
-msgstr "mark in the log to start processing after"
+msgstr ""
 
 #: ../aa-cleanprof:23
 msgid "Cleanup the profiles for the given programs"
-msgstr "Cleanup the profiles for the given programs"
+msgstr "Pulisce i profili per i programmi forniti"
 
 #: ../aa-cleanprof:25 ../aa-autodep:26 ../aa-audit:27 ../aa-complain:26
 #: ../aa-enforce:26 ../aa-disable:26
 msgid "name of program"
-msgstr "name of program"
+msgstr "nome del programma"
 
 #: ../aa-cleanprof:26
 msgid "Silently overwrite with a clean profile"
-msgstr "Silently overwrite with a clean profile"
+msgstr ""
 
 #: ../aa-mergeprof:29
 msgid "Perform a 2-way or 3-way merge on the given profiles"
-msgstr "Perform a 2-way or 3-way merge on the given profiles"
+msgstr "Esegue unione a 2 o 3 vie sui profili forniti"
 
 #: ../aa-mergeprof:28
 msgid "your profile"
-msgstr "your profile"
+msgstr "proprio profilo"
 
 #: ../aa-mergeprof:29
 msgid "base profile"
-msgstr "base profile"
+msgstr "profilo base"
 
 #: ../aa-mergeprof:30
 msgid "other profile"
-msgstr "other profile"
+msgstr "altro profilo"
 
 #: ../aa-mergeprof:53
 msgid ""
 "The following local profiles were changed. Would you like to save them?"
-msgstr ""
-"The following local profiles were changed. Would you like to save them?"
+msgstr "I seguenti file locali sono stati modificati: salvarli?"
 
 #: ../aa-mergeprof:131 ../aa-mergeprof:413
 msgid "Path"
-msgstr "Path"
+msgstr "Percorso"
 
 #: ../aa-mergeprof:132
 msgid "Select the appropriate mode"
-msgstr "Select the appropriate mode"
+msgstr ""
 
 #: ../aa-mergeprof:149
 msgid "Unknown selection"
-msgstr "Unknown selection"
+msgstr "Selezione sconosciuta"
 
 #: ../aa-mergeprof:166 ../aa-mergeprof:192
 msgid "File includes"
-msgstr "File includes"
+msgstr ""
 
 #: ../aa-mergeprof:166 ../aa-mergeprof:192
 msgid "Select the ones you wish to add"
-msgstr "Select the ones you wish to add"
+msgstr "Selezionare quelli da aggiungere"
 
 #: ../aa-mergeprof:178 ../aa-mergeprof:205
 #, python-format
 msgid "Adding %s to the file."
-msgstr "Adding %s to the file."
+msgstr "Aggiunta di %s al file"
 
 #: ../aa-mergeprof:182
 msgid "unknown"
-msgstr "unknown"
+msgstr "sconosciuto"
 
 #: ../aa-mergeprof:207 ../aa-mergeprof:258 ../aa-mergeprof:499
 #: ../aa-mergeprof:541 ../aa-mergeprof:658
 #, python-format
 msgid "Deleted %s previous matching profile entries."
-msgstr "Deleted %s previous matching profile entries."
+msgstr ""
 
 #: ../aa-mergeprof:227 ../aa-mergeprof:412 ../aa-mergeprof:612
 #: ../aa-mergeprof:639
 msgid "Profile"
-msgstr "Profile"
+msgstr "Profilo"
 
 #: ../aa-mergeprof:228
 msgid "Capability"
-msgstr "Capability"
+msgstr "Capacità"
 
 #: ../aa-mergeprof:229 ../aa-mergeprof:463
 msgid "Severity"
-msgstr "Severity"
+msgstr "Severità"
 
 #: ../aa-mergeprof:256 ../aa-mergeprof:497
 #, python-format
 msgid "Adding %s to profile."
-msgstr ""
+msgstr "Aggiunta di %s al profilo."
 
 #: ../aa-mergeprof:265
 #, python-format
 msgid "Adding capability %s to profile."
-msgstr "Adding capability %s to profile."
+msgstr "Aggiunta capacità %s al profilo."
 
 #: ../aa-mergeprof:272
 #, python-format
 msgid "Denying capability %s to profile."
-msgstr "Denying capability %s to profile."
+msgstr ""
 
 #: ../aa-mergeprof:422 ../aa-mergeprof:453
 msgid "(owner permissions off)"
-msgstr "(owner permissions off)"
+msgstr ""
 
 #: ../aa-mergeprof:427
 msgid "(force new perms to owner)"
@@ -245,11 +240,11 @@ msgstr ""
 
 #: ../aa-mergeprof:442
 msgid "Old Mode"
-msgstr ""
+msgstr "Modalità precedente"
 
 #: ../aa-mergeprof:443
 msgid "New Mode"
-msgstr ""
+msgstr "Modalità nuova"
 
 #: ../aa-mergeprof:458
 msgid "(force perms to owner)"
@@ -257,7 +252,7 @@ msgstr ""
 
 #: ../aa-mergeprof:461
 msgid "Mode"
-msgstr ""
+msgstr "Modalità"
 
 #: ../aa-mergeprof:556
 #, python-format
@@ -266,20 +261,20 @@ msgstr ""
 
 #: ../aa-mergeprof:557
 msgid "Enter new path: "
-msgstr ""
+msgstr "Inserire nuovo percorso: "
 
 #: ../aa-mergeprof:613 ../aa-mergeprof:640
 msgid "Network Family"
-msgstr ""
+msgstr "Famiglia di rete"
 
 #: ../aa-mergeprof:614 ../aa-mergeprof:641
 msgid "Socket Type"
-msgstr ""
+msgstr "Tipo di socket"
 
 #: ../aa-mergeprof:656
 #, python-format
 msgid "Adding %s to profile"
-msgstr ""
+msgstr "Aggiunta di %s al profilo"
 
 #: ../aa-mergeprof:683 ../apparmor/aa.py:2020
 #, python-format
