@@ -443,6 +443,10 @@ mnt_rule::mnt_rule(struct cond_entry *src_conds, char *device_p,
 		PERROR("  unsupported mount conditions\n");
 		exit(1);
 	}
+	if (opts) {
+		PERROR("  unsupported mount options\n");
+		exit(1);
+	}
 }
 
 ostream &mnt_rule::dump(ostream &os)
