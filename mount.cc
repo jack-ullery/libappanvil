@@ -834,7 +834,7 @@ int mnt_rule::gen_policy_re(Profile &prof)
 	return RULE_OK;
 
 fail:
-	PERROR("Enocoding of mount rule failed\n");
+	PERROR("Encoding of mount rule failed\n");
 	return RULE_ERROR;
 }
 
