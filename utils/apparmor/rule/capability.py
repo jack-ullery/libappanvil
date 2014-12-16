@@ -35,13 +35,12 @@ class CapabilityRule(BaseRule):
     ALL = __CapabilityAll
 
     def __init__(self, cap_list, audit=False, deny=False, allow_keyword=False,
-                 comment='', log_event=None, raw_rule=None):
+                 comment='', log_event=None):
 
         super(CapabilityRule, self).__init__(audit=audit, deny=deny,
                                              allow_keyword=allow_keyword,
                                              comment=comment,
-                                             log_event=log_event,
-                                             raw_rule=raw_rule)
+                                             log_event=log_event)
         # Because we support having multiple caps in one rule,
         # initializer needs to accept a list of caps.
         self.all_caps = False
@@ -61,9 +60,27 @@ class CapabilityRule(BaseRule):
                 if len(cap.strip()) == 0:
                     raise AppArmorBug('Passed empty capability to CapabilityRule: %s' % str(cap_list))
 
-    @staticmethod
-    def parse(raw_rule):
-        return parse_capability(raw_rule)
+    @classmethod
+    def _parse(cls, raw_rule):
+        '''parse raw_rule and return CapabilityRule'''
+
+        matches = RE_PROFILE_CAP.search(raw_rule)
+        if not matches:
+            raise AppArmorException(_("Invalid capability rule '%s'") % raw_rule)
+
+        audit, deny, allow_keyword, comment = parse_modifiers(matches)
+
+        capability = []
+
+        if matches.group('capability'):
+            capability = matches.group('capability').strip()
+            capability = re.split("[ \t]+", capability)
+        else:
+            capability = CapabilityRule.ALL
+
+        return CapabilityRule(capability, audit=audit, deny=deny,
+                              allow_keyword=allow_keyword,
+                              comment=comment)
 
     def get_clean(self, depth=0):
         '''return rule (in clean/default formatting)'''
@@ -124,27 +141,3 @@ class CapabilityRuleset(BaseRuleset):
     def get_glob(self, path_or_rule):
         '''Return the next possible glob. For capability rules, that's always "capability," (all capabilities)'''
         return 'capability,'
-
-
-def parse_capability(raw_rule):
-    '''parse raw_rule and return CapabilityRule'''
-
-    matches = RE_PROFILE_CAP.search(raw_rule)
-    if not matches:
-        raise AppArmorException(_("Invalid capability rule '%s'") % raw_rule)
-
-    raw_rule = raw_rule.strip()
-
-    audit, deny, allow_keyword, comment = parse_modifiers(matches)
-
-    capability = []
-
-    if matches.group('capability'):
-        capability = matches.group('capability').strip()
-        capability = re.split("[ \t]+", capability)
-    else:
-        capability = CapabilityRule.ALL
-
-    return CapabilityRule(capability, audit=audit, deny=deny,
-                          allow_keyword=allow_keyword,
-                          comment=comment, raw_rule=raw_rule)

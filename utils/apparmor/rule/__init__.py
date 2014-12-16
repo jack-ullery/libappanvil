@@ -23,17 +23,43 @@ _ = init_translation()
 class BaseRule(object):
     '''Base class to handle and store a single rule'''
 
+    # type specific rules should inherit from this class.
+    # Methods that subclasses need to implement:
+    #   __init__
+    #   _parse(cls, raw_rule) (as a class method)
+    #     - parses a raw rule and returns an object of the Rule subclass
+    #   get_clean(depth)
+    #     - return rule in clean format
+    #   is_covered(self, other_rule)
+    #     - check if other_rule is covered by this rule (i.e. is a
+    #       subset of this rule's permissions)
+    #   is_equal_localvars(self, other_rule)
+    #     - equality check for the rule-specific fields
+
     def __init__(self, audit=False, deny=False, allow_keyword=False,
-                 comment='', log_event=None, raw_rule=''):
+                 comment='', log_event=None):
         '''initialize variables needed by all rule types'''
         self.audit = audit
         self.deny = deny
         self.allow_keyword = allow_keyword
-
         self.comment = comment
-
-        self.raw_rule = raw_rule.strip() if raw_rule else None
         self.log_event = log_event
+
+        # Set only in the parse() class method
+        self.raw_rule = None
+
+    @classmethod
+    def parse(cls, raw_rule):
+        rule = cls._parse(raw_rule)
+        rule.raw_rule = raw_rule.strip()
+        return rule
+
+    # @abstractmethod  FIXME - uncomment when python3 only
+    @classmethod
+    def _parse(cls, raw_rule):
+        '''returns a Rule object created from parsing the raw rule.
+           required to be implemented by subclasses; raise exception if not'''
+        raise AppArmorBug("'%s' needs to implement _parse(), but didn't" % (str(cls)))
 
     def get_raw(self, depth=0):
         '''return raw rule (with original formatting, and leading whitespace in the depth parameter)'''
@@ -57,6 +83,16 @@ class BaseRule(object):
             return False
 
         return self.is_equal_localvars(rule_obj)
+
+    # @abstractmethod  FIXME - uncomment when python3 only
+    def is_covered(self, other_rule, check_allow_deny=True, check_audit=False):
+        '''check if other_rule is covered by this rule object'''
+        raise AppArmorBug("'%s' needs to implement is_covered(), but didn't" % (str(self)))
+
+    # @abstractmethod  FIXME - uncomment when python3 only
+    def is_equal_localvars(self, other_rule):
+        '''compare if rule-specific variables are equal'''
+        raise AppArmorBug("'%s' needs to implement is_equal_localvars(), but didn't" % (str(self)))
 
     def modifiers_str(self):
         '''return the allow/deny and audit keyword as string, including whitespace'''
