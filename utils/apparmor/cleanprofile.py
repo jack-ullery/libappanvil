@@ -65,8 +65,8 @@ class CleanProf(object):
                 deleted += apparmor.aa.delete_duplicates(self.other.aa[program][hat], inc)
 
             #Clean the duplicates of caps in other profile
-            deleted += delete_cap_duplicates(self.profile.aa[program][hat]['allow']['capability'], self.other.aa[program][hat]['allow']['capability'], self.same_file)
-            deleted += delete_cap_duplicates(self.profile.aa[program][hat]['deny']['capability'], self.other.aa[program][hat]['deny']['capability'], self.same_file)
+            if not self.same_file:
+                deleted += self.other.aa[program][hat]['capability'].delete_duplicates(self.profile.aa[program][hat]['capability'])
 
             #Clean the duplicates of path in other profile
             deleted += delete_path_duplicates(self.profile.aa[program][hat], self.other.aa[program][hat], 'allow', self.same_file)
@@ -105,17 +105,6 @@ def delete_path_duplicates(profile, profile_other, allow, same_profile=True):
 
     for entry in deleted:
         profile_other[allow]['path'].pop(entry)
-
-    return len(deleted)
-
-def delete_cap_duplicates(profilecaps, profilecaps_other, same_profile=True):
-    deleted = []
-    if profilecaps and profilecaps_other and not same_profile:
-        for capname in profilecaps.keys():
-            if profilecaps_other[capname].get('set', False):
-                deleted.append(capname)
-        for capname in deleted:
-            profilecaps_other.pop(capname)
 
     return len(deleted)
 
