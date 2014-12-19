@@ -14,40 +14,40 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-09-15 06:03+0000\n"
-"X-Generator: Launchpad (build 17196)\n"
+"X-Launchpad-Export-Date: 2014-12-19 05:44+0000\n"
+"X-Generator: Launchpad (build 17286)\n"
 
-#: ../aa-genprof:56
+#: ../aa-genprof:52
 msgid "Generate profile for the given program"
 msgstr "Generera profil för det givna programet"
 
-#: ../aa-genprof:57 ../aa-logprof:25 ../aa-cleanprof:24 ../aa-mergeprof:34
+#: ../aa-genprof:53 ../aa-logprof:25 ../aa-cleanprof:24 ../aa-mergeprof:31
 #: ../aa-autodep:25 ../aa-audit:25 ../aa-complain:24 ../aa-enforce:24
 #: ../aa-disable:24
 msgid "path to profiles"
 msgstr "Sökväg till profiler"
 
-#: ../aa-genprof:58 ../aa-logprof:26
+#: ../aa-genprof:54 ../aa-logprof:26
 msgid "path to logfile"
 msgstr "Sökväg till loggfiler"
 
-#: ../aa-genprof:59
+#: ../aa-genprof:55
 msgid "name of program to profile"
 msgstr "Programets namn att profilera"
 
-#: ../aa-genprof:69 ../aa-logprof:37
+#: ../aa-genprof:65 ../aa-logprof:37
 #, python-format
 msgid "The logfile %s does not exist. Please check the path"
 msgstr "Loggfilen %s existerar inte. Vänligen kontrollera sökvägen."
 
-#: ../aa-genprof:75 ../aa-logprof:43 ../aa-unconfined:36
+#: ../aa-genprof:71 ../aa-logprof:43 ../aa-unconfined:34
 msgid ""
 "It seems AppArmor was not started. Please enable AppArmor and try again."
 msgstr ""
 "Det verkar som AppArmor inte startades. Vänligen aktivera AppArmor och "
 "försök igen."
 
-#: ../aa-genprof:80 ../aa-mergeprof:47
+#: ../aa-genprof:76
 #, python-format
 msgid "%s is not a directory."
 msgstr "%s är inte en katalog."
@@ -62,12 +62,12 @@ msgid ""
 "use the full path as parameter."
 msgstr ""
 
-#: ../aa-genprof:96
+#: ../aa-genprof:92
 #, python-format
 msgid "%s does not exists, please double-check the path."
 msgstr ""
 
-#: ../aa-genprof:124
+#: ../aa-genprof:120
 msgid ""
 "\n"
 "Before you begin, you may wish to check if a\n"
@@ -76,7 +76,7 @@ msgid ""
 "more information:"
 msgstr ""
 
-#: ../aa-genprof:126
+#: ../aa-genprof:122
 msgid ""
 "Please start the application to be profiled in\n"
 "another window and exercise its functionality now.\n"
@@ -89,24 +89,24 @@ msgid ""
 "allowed or denied."
 msgstr ""
 
-#: ../aa-genprof:147
+#: ../aa-genprof:143
 msgid "Profiling"
 msgstr ""
 
-#: ../aa-genprof:165
+#: ../aa-genprof:161
 msgid ""
 "\n"
 "Reloaded AppArmor profiles in enforce mode."
 msgstr ""
 
-#: ../aa-genprof:166
+#: ../aa-genprof:162
 msgid ""
 "\n"
 "Please consider contributing your new profile!\n"
 "See the following wiki page for more information:"
 msgstr ""
 
-#: ../aa-genprof:167
+#: ../aa-genprof:163
 #, python-format
 msgid "Finished generating profile for %s."
 msgstr ""
@@ -123,8 +123,8 @@ msgstr ""
 msgid "Cleanup the profiles for the given programs"
 msgstr ""
 
-#: ../aa-cleanprof:25 ../aa-autodep:26 ../aa-audit:27 ../aa-complain:25
-#: ../aa-enforce:25 ../aa-disable:25
+#: ../aa-cleanprof:25 ../aa-autodep:26 ../aa-audit:27 ../aa-complain:26
+#: ../aa-enforce:26 ../aa-disable:26
 msgid "name of program"
 msgstr ""
 
@@ -136,117 +136,111 @@ msgstr ""
 msgid "Perform a 2-way or 3-way merge on the given profiles"
 msgstr ""
 
-#: ../aa-mergeprof:31
+#: ../aa-mergeprof:28
 msgid "your profile"
 msgstr ""
 
-#: ../aa-mergeprof:32
+#: ../aa-mergeprof:29
 msgid "base profile"
 msgstr ""
 
-#: ../aa-mergeprof:33
+#: ../aa-mergeprof:30
 msgid "other profile"
 msgstr ""
 
-#: ../aa-mergeprof:67 ../apparmor/aa.py:2345
+#: ../aa-mergeprof:53
 msgid ""
 "The following local profiles were changed. Would you like to save them?"
 msgstr ""
 
-#: ../aa-mergeprof:148 ../aa-mergeprof:430 ../apparmor/aa.py:1767
+#: ../aa-mergeprof:131 ../aa-mergeprof:413
 msgid "Path"
 msgstr ""
 
-#: ../aa-mergeprof:149
+#: ../aa-mergeprof:132
 msgid "Select the appropriate mode"
 msgstr ""
 
-#: ../aa-mergeprof:166
+#: ../aa-mergeprof:149
 msgid "Unknown selection"
 msgstr ""
 
-#: ../aa-mergeprof:183 ../aa-mergeprof:209
+#: ../aa-mergeprof:166 ../aa-mergeprof:192
 msgid "File includes"
 msgstr ""
 
-#: ../aa-mergeprof:183 ../aa-mergeprof:209
+#: ../aa-mergeprof:166 ../aa-mergeprof:192
 msgid "Select the ones you wish to add"
 msgstr ""
 
-#: ../aa-mergeprof:195 ../aa-mergeprof:222
+#: ../aa-mergeprof:178 ../aa-mergeprof:205
 #, python-format
 msgid "Adding %s to the file."
 msgstr ""
 
-#: ../aa-mergeprof:199 ../apparmor/aa.py:2258
+#: ../aa-mergeprof:182
 msgid "unknown"
 msgstr ""
 
-#: ../aa-mergeprof:224 ../aa-mergeprof:275 ../aa-mergeprof:516
-#: ../aa-mergeprof:558 ../aa-mergeprof:675 ../apparmor/aa.py:1620
-#: ../apparmor/aa.py:1859 ../apparmor/aa.py:1899 ../apparmor/aa.py:2012
+#: ../aa-mergeprof:207 ../aa-mergeprof:258 ../aa-mergeprof:499
+#: ../aa-mergeprof:541 ../aa-mergeprof:658
 #, python-format
 msgid "Deleted %s previous matching profile entries."
 msgstr ""
 
-#: ../aa-mergeprof:244 ../aa-mergeprof:429 ../aa-mergeprof:629
-#: ../aa-mergeprof:656 ../apparmor/aa.py:992 ../apparmor/aa.py:1252
-#: ../apparmor/aa.py:1562 ../apparmor/aa.py:1603 ../apparmor/aa.py:1766
-#: ../apparmor/aa.py:1958 ../apparmor/aa.py:1994
+#: ../aa-mergeprof:227 ../aa-mergeprof:412 ../aa-mergeprof:612
+#: ../aa-mergeprof:639
 msgid "Profile"
 msgstr ""
 
-#: ../aa-mergeprof:245 ../apparmor/aa.py:1563 ../apparmor/aa.py:1604
+#: ../aa-mergeprof:228
 msgid "Capability"
 msgstr ""
 
-#: ../aa-mergeprof:246 ../aa-mergeprof:480 ../apparmor/aa.py:1258
-#: ../apparmor/aa.py:1564 ../apparmor/aa.py:1605 ../apparmor/aa.py:1817
+#: ../aa-mergeprof:229 ../aa-mergeprof:463
 msgid "Severity"
 msgstr ""
 
-#: ../aa-mergeprof:273 ../aa-mergeprof:514 ../apparmor/aa.py:1618
-#: ../apparmor/aa.py:1857
+#: ../aa-mergeprof:256 ../aa-mergeprof:497
 #, python-format
 msgid "Adding %s to profile."
 msgstr ""
 
-#: ../aa-mergeprof:282 ../apparmor/aa.py:1627
+#: ../aa-mergeprof:265
 #, python-format
 msgid "Adding capability %s to profile."
 msgstr ""
 
-#: ../aa-mergeprof:289 ../apparmor/aa.py:1634
+#: ../aa-mergeprof:272
 #, python-format
 msgid "Denying capability %s to profile."
 msgstr ""
 
-#: ../aa-mergeprof:439 ../aa-mergeprof:470 ../apparmor/aa.py:1776
-#: ../apparmor/aa.py:1807
+#: ../aa-mergeprof:422 ../aa-mergeprof:453
 msgid "(owner permissions off)"
 msgstr ""
 
-#: ../aa-mergeprof:444 ../apparmor/aa.py:1781
+#: ../aa-mergeprof:427
 msgid "(force new perms to owner)"
 msgstr ""
 
-#: ../aa-mergeprof:447 ../apparmor/aa.py:1784
+#: ../aa-mergeprof:430
 msgid "(force all rule perms to owner)"
 msgstr ""
 
-#: ../aa-mergeprof:459 ../apparmor/aa.py:1796
+#: ../aa-mergeprof:442
 msgid "Old Mode"
 msgstr ""
 
-#: ../aa-mergeprof:460 ../apparmor/aa.py:1797
+#: ../aa-mergeprof:443
 msgid "New Mode"
 msgstr ""
 
-#: ../aa-mergeprof:475 ../apparmor/aa.py:1812
+#: ../aa-mergeprof:458
 msgid "(force perms to owner)"
 msgstr ""
 
-#: ../aa-mergeprof:478 ../apparmor/aa.py:1815
+#: ../aa-mergeprof:461
 msgid "Mode"
 msgstr ""
 
@@ -255,21 +249,19 @@ msgstr ""
 msgid "Adding %(path)s %(mod)s to profile"
 msgstr ""
 
-#: ../aa-mergeprof:574 ../apparmor/aa.py:1915
+#: ../aa-mergeprof:557
 msgid "Enter new path: "
 msgstr ""
 
-#: ../aa-mergeprof:630 ../aa-mergeprof:657 ../apparmor/aa.py:1959
-#: ../apparmor/aa.py:1995
+#: ../aa-mergeprof:613 ../aa-mergeprof:640
 msgid "Network Family"
 msgstr ""
 
-#: ../aa-mergeprof:631 ../aa-mergeprof:658 ../apparmor/aa.py:1960
-#: ../apparmor/aa.py:1996
+#: ../aa-mergeprof:614 ../aa-mergeprof:641
 msgid "Socket Type"
 msgstr ""
 
-#: ../aa-mergeprof:673 ../apparmor/aa.py:2010
+#: ../aa-mergeprof:656
 #, python-format
 msgid "Adding %s to profile"
 msgstr ""
@@ -316,11 +308,11 @@ msgstr ""
 msgid "Disable the profile for the given programs"
 msgstr ""
 
-#: ../aa-unconfined:28
+#: ../aa-unconfined:26
 msgid "Lists unconfined processes having tcp or udp ports"
 msgstr ""
 
-#: ../aa-unconfined:29
+#: ../aa-unconfined:27
 msgid "scan all processes from /proc"
 msgstr ""
 
