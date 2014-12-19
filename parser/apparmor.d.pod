@@ -61,7 +61,7 @@ B<SUBPROFILE> = [ I<COMMENT> ... ] ( I<PROGRAMHAT> | 'profile ' I<PROGRAMCHILD> 
 B<CAPABILITY> = (lowercase capability name without 'CAP_' prefix; see
 capabilities(7))
 
-B<NETWORK RULE> = 'network' [ [ I<DOMAIN> ] [ I<TYPE> ] [ I<PROTOCOL> ] ] ','
+B<NETWORK RULE> = 'network' [ [ I<DOMAIN> [ I<TYPE> | I<PROTOCOL> ] ] | [ I<PROTOCOL> ] ] ','
 
 B<DOMAIN> = ( 'inet' | 'ax25' | 'ipx' | 'appletalk' | 'netrom' | 'bridge' | 'atmpvc' | 'x25' | 'inet6' | 'rose' | 'netbeui' | 'security' | 'key' | 'packet' | 'ash' | 'econet' | 'atmsvc' | 'sna' | 'irda' | 'pppox' | 'wanpipe' | 'bluetooth' | 'netlink' ) ','
 
