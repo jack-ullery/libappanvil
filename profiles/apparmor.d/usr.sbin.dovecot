@@ -15,6 +15,7 @@
 /usr/sbin/dovecot {
   #include <abstractions/authentication>
   #include <abstractions/base>
+  #include <abstractions/dovecot-common>
   #include <abstractions/mysql>
   #include <abstractions/nameservice>
   #include <abstractions/ssl_certs>
@@ -25,7 +26,6 @@
   capability fsetid,
   capability kill,
   capability net_bind_service,
-  capability setgid,
   capability setuid,
   capability sys_chroot,
 
@@ -34,7 +34,6 @@
   /etc/lsb-release r,
   /etc/SuSE-release r,
   @{PROC}/@{pid}/mounts r,
-  @{PROC}/filesystems r,
   /usr/bin/doveconf rix,
   /usr/lib/dovecot/anvil Px,
   /usr/lib/dovecot/auth Px,
