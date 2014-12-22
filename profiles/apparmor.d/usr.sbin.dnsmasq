@@ -45,6 +45,8 @@
 
   /var/lib/misc/dnsmasq.leases rw, # Required only for DHCP server usage
 
+  /bin/bash ix, # Required to execute --dhcp-script argument
+
   # access to iface mtu needed for Router Advertisement messages in IPv6
   # Neighbor Discovery protocol (RFC 2461)
   @{PROC}/sys/net/ipv6/conf/*/mtu r,
@@ -64,7 +66,7 @@
   /{,var/}run/libvirt/network/*.pid rw,
 
   # libvirt lease helper
-  /usr/lib/libvirt/libvirt_leaseshelper ix,
+  /usr/lib{,64}/libvirt/libvirt_leaseshelper ix,
   /{,var/}run/leaseshelper.pid rwk,
 
   # NetworkManager integration
