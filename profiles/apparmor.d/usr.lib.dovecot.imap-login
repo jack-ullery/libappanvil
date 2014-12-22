@@ -24,6 +24,7 @@
   network inet6 stream,
 
   /usr/lib/dovecot/imap-login mr,
+  /{,var/}run/dovecot/anvil rw,
   /{,var/}run/dovecot/login/ r,
   /{,var/}run/dovecot/login/* rw,
 
