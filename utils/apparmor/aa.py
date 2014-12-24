@@ -2561,14 +2561,6 @@ def is_skippable_dir(path):
         return True
     return False
 
-def check_include_syntax(errors):
-    # To-Do
-    pass
-
-def check_profile_syntax(errors):
-    # To-Do
-    pass
-
 def read_profiles():
     try:
         os.listdir(profile_dir)
