@@ -153,7 +153,6 @@ class SeverityVarsTest(SeverityBaseTest):
             self._init_tunables('@{invalid} += /home/')
 
     def test_invalid_variable_double_definition(self):
-        invalid_add = '@{foo} = /home/\n@{foo} = /root/'
         with self.assertRaises(AppArmorException):
             self._init_tunables('@{foo} = /home/\n@{foo} = /root/')
 
