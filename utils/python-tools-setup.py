@@ -81,7 +81,7 @@ setup (name='apparmor',
        license='GPL-2',
        cmdclass={'install': Install},
        package_dir={'apparmor': 'staging'},
-       packages=['apparmor'],
+       packages=['apparmor', 'apparmor.rule'],
        py_modules=['apparmor.easyprof']
 )
 
