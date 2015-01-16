@@ -95,29 +95,17 @@ class CapabilityRule(BaseRule):
             else:
                 raise AppArmorBug("Empty capability rule")
 
-    def is_covered(self, rule_obj, check_allow_deny=True, check_audit=False):
-        '''check if rule_obj is covered by this rule object'''
+    def is_covered_localvars(self, other_rule):
+        '''check if other_rule is covered by this rule object'''
 
-        if not type(rule_obj) == CapabilityRule:
-            raise AppArmorBug('Passes non-capability rule: %s' % str(rule_obj))
-
-        if check_allow_deny and self.deny != rule_obj.deny:
-            return False
-
-        if not rule_obj.capability and not rule_obj.all_caps:
+        if not other_rule.capability and not other_rule.all_caps:
             raise AppArmorBug('No capability specified')
 
         if not self.all_caps:
-            if rule_obj.all_caps:
+            if other_rule.all_caps:
                 return False
-            if not rule_obj.capability.issubset(self.capability):
+            if not other_rule.capability.issubset(self.capability):
                 return False
-
-        if check_audit and rule_obj.audit != self.audit:
-            return False
-
-        if rule_obj.audit and not self.audit:
-            return False
 
         # still here? -> then it is covered
         return True

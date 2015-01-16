@@ -68,6 +68,29 @@ class BaseRule(object):
         else:
             return self.get_clean(depth)
 
+    def is_covered(self, other_rule, check_allow_deny=True, check_audit=False):
+        '''check if other_rule is covered by this rule object'''
+
+        if not type(other_rule) == type(self):
+            raise AppArmorBug('Passes %s instead of %s' % (str(other_rule),self.__class__.__name__))
+
+        if check_allow_deny and self.deny != other_rule.deny:
+            return False
+
+        if check_audit and other_rule.audit != self.audit:
+            return False
+
+        if other_rule.audit and not self.audit:
+            return False
+
+        # still here? -> then the common part is covered, check rule-specific things now
+        return self.is_covered_localvars(other_rule)
+
+    # @abstractmethod  FIXME - uncomment when python3 only
+    def is_covered_localvars(self, other_rule):
+        '''check if the rule-specific parts of other_rule is covered by this rule object'''
+        raise AppArmorBug("'%s' needs to implement is_covered_localvars(), but didn't" % (str(self)))
+
     def is_equal(self, rule_obj, strict=False):
         '''compare if rule_obj == self
            Calls is_equal_localvars() to compare rule-specific variables'''
@@ -83,11 +106,6 @@ class BaseRule(object):
             return False
 
         return self.is_equal_localvars(rule_obj)
-
-    # @abstractmethod  FIXME - uncomment when python3 only
-    def is_covered(self, other_rule, check_allow_deny=True, check_audit=False):
-        '''check if other_rule is covered by this rule object'''
-        raise AppArmorBug("'%s' needs to implement is_covered(), but didn't" % (str(self)))
 
     # @abstractmethod  FIXME - uncomment when python3 only
     def is_equal_localvars(self, other_rule):
