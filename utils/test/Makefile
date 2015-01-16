@@ -31,6 +31,13 @@ ifneq ($(COVERAGE_OUT), )
 HTML_COVR_ARGS=-d $(COVERAGE_OUT)
 endif
 
+# use   make COVERAGE_IGNORE_FAILURES=true coverage   to build coverage data even if some tests fail
+ifeq ($(COVERAGE_IGNORE_FAILURES), true)
+  COVERAGE_IGNORE_FAILURES_CMD=true
+else
+  COVERAGE_IGNORE_FAILURES_CMD=set -e
+endif
+
 .PHONY: clean check coverage coverage-report coverage-html
 ifndef VERBOSE
 .SILENT: clean check .coverage coverage coverage-report coverage-html
@@ -43,7 +50,7 @@ check:
 	export PYTHONPATH=.. ; $(foreach test, $(wildcard test-*.py), $(call pyalldo, $(test)))
 
 .coverage: $(wildcard ../aa-* ../apparmor/*.py test-*.py)
-	export PYTHONPATH=.. ; $(foreach test, $(wildcard test-*.py), $(PYTHON) -m coverage run --branch -p $(test); )
+	export PYTHONPATH=.. ; $(COVERAGE_IGNORE_FAILURES_CMD) ; $(foreach test, $(wildcard test-*.py), $(PYTHON) -m coverage run --branch -p $(test); )
 	$(PYTHON) -m coverage combine
 
 coverage: .coverage
