@@ -25,7 +25,7 @@ from apparmor.translations import init_translation
 _ = init_translation()
 
 class ReadLog:
-    RE_LOG_v2_6_syslog = re.compile('kernel:\s+(\[[\d\.\s]+\]\s+)?type=\d+\s+audit\([\d\.\:]+\):\s+apparmor=')
+    RE_LOG_v2_6_syslog = re.compile('kernel:\s+(\[[\d\.\s]+\]\s+)?(audit:\s+)?type=\d+\s+audit\([\d\.\:]+\):\s+apparmor=')
     RE_LOG_v2_6_audit = re.compile('type=AVC\s+(msg=)?audit\([\d\.\:]+\):\s+apparmor=')
     # Used by netdomain to identify the operation types
     # New socket names
