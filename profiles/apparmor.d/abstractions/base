@@ -32,6 +32,7 @@
   /usr/share/zoneinfo/           r,
   /usr/share/zoneinfo/**         r,
   /usr/share/X11/locale/**       r,
+  /{,var/}run/systemd/journal/dev-log w,
 
   /usr/lib{,32,64}/locale/**             mr,
   /usr/lib{,32,64}/gconv/*.so            mr,
