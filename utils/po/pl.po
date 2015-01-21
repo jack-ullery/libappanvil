@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: apparmor\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2014-09-14 19:29+0530\n"
-"PO-Revision-Date: 2014-03-10 17:16+0000\n"
+"PO-Revision-Date: 2015-01-20 09:38+0000\n"
 "Last-Translator: c4 <Unknown>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-12-19 05:44+0000\n"
-"X-Generator: Launchpad (build 17286)\n"
+"X-Launchpad-Export-Date: 2015-01-21 05:32+0000\n"
+"X-Generator: Launchpad (build 17306)\n"
 
 #: ../aa-genprof:52
 msgid "Generate profile for the given program"
@@ -50,7 +50,7 @@ msgstr ""
 #: ../aa-genprof:76
 #, python-format
 msgid "%s is not a directory."
-msgstr "%s is not a directory."
+msgstr "%s nie jest katalogiem."
 
 #: ../aa-genprof:94
 #, python-format
