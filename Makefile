@@ -2,6 +2,11 @@
 #
 OVERRIDE_TARBALL=yes
 
+.PHONY: all
+all:
+	@echo "*** See README for information how to build AppArmor ***"
+	exit 1
+
 include common/Make.rules
 
 DIRS=parser \
