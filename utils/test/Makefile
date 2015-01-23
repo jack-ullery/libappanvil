@@ -18,13 +18,7 @@ NAME 		= apparmor-utils
 all:
 COMMONDIR=../../common/
 
-include common/Make.rules
-
-COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
-ifeq ($(COMMONDIR_EXISTS), true)
-common/Make.rules: $(COMMONDIR)/Make.rules
-	ln -sf $(COMMONDIR) .
-endif
+include $(COMMONDIR)/Make.rules
 
 COVERAGE_OMIT=test-*.py,common_test.py
 ifneq ($(COVERAGE_OUT), )
@@ -43,8 +37,8 @@ ifndef VERBOSE
 .SILENT: clean check .coverage coverage coverage-report coverage-html
 endif
 
-clean: _clean
-	rm -rf __pycache__/ common .coverage htmlcov
+clean:
+	rm -rf __pycache__/ .coverage htmlcov
 
 check:
 	export PYTHONPATH=.. ; $(foreach test, $(wildcard test-*.py), $(call pyalldo, $(test)))

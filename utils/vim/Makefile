@@ -1,13 +1,7 @@
 COMMONDIR=../../common/
 
 all:
-include common/Make.rules
-
-COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
-ifeq ($(COMMONDIR_EXISTS), true)
-common/Make.rules: $(COMMONDIR)/Make.rules
-	ln -sf $(COMMONDIR) .
-endif
+include $(COMMONDIR)/Make.rules
 
 MANPAGES=apparmor.vim.5
 VIM_INSTALL_PATH=${DESTDIR}/usr/share/apparmor
@@ -32,4 +26,4 @@ check: check_pod_files
 	$(call pyalldo, create-apparmor.vim.py > /dev/null)
 
 clean: _clean
-	rm -f apparmor.vim common
+	rm -f apparmor.vim

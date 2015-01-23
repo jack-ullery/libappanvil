@@ -18,13 +18,7 @@ NAME=apparmor-parser
 all:
 COMMONDIR=../common/
 
-include common/Make.rules
-
-COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
-ifeq ($(COMMONDIR_EXISTS), true)
-common/Make.rules: $(COMMONDIR)/Make.rules
-	ln -sf $(COMMONDIR) .
-endif
+include $(COMMONDIR)/Make.rules
 
 DESTDIR=/
 APPARMOR_BIN_PREFIX=${DESTDIR}/lib/apparmor
@@ -357,7 +351,9 @@ install-indep:
 	$(MAKE) -C po install NAME=${NAME} DESTDIR=${DESTDIR}
 	$(MAKE) install_manpages DESTDIR=${DESTDIR}
 
+ifndef VERBOSE
 .SILENT: clean
+endif
 .PHONY: clean
 clean: _clean
 	rm -f core core.* *.o *.s *.a *~ *.gcda *.gcno
@@ -373,7 +369,6 @@ clean: _clean
 	$(MAKE) -s -C $(AAREDIR) clean
 	$(MAKE) -s -C po clean
 	$(MAKE) -s -C tst clean
-	rm -f common
 
 .SILENT: dist_clean
 dist_clean:

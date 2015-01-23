@@ -24,13 +24,7 @@ NAME 		= apparmor-utils
 all:
 COMMONDIR=../../common/
 
-include common/Make.rules
-
-COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
-ifeq ($(COMMONDIR_EXISTS), true)
-common/Make.rules: $(COMMONDIR)/Make.rules
-	ln -sf $(COMMONDIR) .
-endif
+include $(COMMONDIR)/Make.rules
 
 MODDIR = Immunix
 PERLTOOLS = aa-genprof aa-logprof aa-autodep aa-audit aa-complain aa-enforce \
@@ -58,7 +52,6 @@ ifndef VERBOSE
 endif
 clean: _clean
 	rm -f core core.* *.o *.s *.a *~
-	rm -f Make.rules
 	rm -rf staging/ build/
 
 .PHONY: check

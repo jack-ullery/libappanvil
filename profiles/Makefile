@@ -20,16 +20,10 @@
 # Makefile for LSM-based AppArmor profiles
 
 NAME=apparmor-profiles
-ALL: local
+all: local
 COMMONDIR=../common/
 
-include common/Make.rules
-
-COMMONDIR_EXISTS=$(strip $(shell [ -d ${COMMONDIR} ] && echo true))
-ifeq ($(COMMONDIR_EXISTS), true)
-common/Make.rules: $(COMMONDIR)/Make.rules
-	ln -sf $(COMMONDIR) .
-endif
+include $(COMMONDIR)/Make.rules
 
 DESTDIR=/
 PROFILES_DEST=${DESTDIR}/etc/apparmor.d
@@ -63,7 +57,7 @@ install: local
 LOCAL_ADDITIONS=$(filter-out ${PROFILES_SOURCE}/local/README, $(wildcard ${PROFILES_SOURCE}/local/*))
 .PHONY: clean
 clean:
-	-rm -f $(NAME)-$(VERSION)*.tar.gz Make.rules ${LOCAL_ADDITIONS} common
+	-rm -f ${LOCAL_ADDITIONS}
 
 ifndef VERBOSE
   Q=@

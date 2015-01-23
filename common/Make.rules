@@ -15,14 +15,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program; if not, contact Novell, Inc.
 # ------------------------------------------------------------------
-# Make.rules - common make targets and variables for building the SHASS
-# product.
+# Make.rules - common make targets and variables for building AppArmor
 #
 # NOTES:
-#   - must define the package NAME before including this file.
-#   - After checking in to cvs, you'll need to delele the hardlinked
-#     Make.rules files that already exist in the individual application
-#     directories
+#   Before including this file in your Makefile, you should
+#   - define COMMONDIR (the location of the common/ directory)
+#   - define the default rule (usually 'all:'). (Note: you can redefine
+#     it later in your Makefile)
 
 .PHONY: common_Make.rules_is_a_bad_target
 common_Make.rules_is_a_bad_target:
@@ -30,7 +29,7 @@ common_Make.rules_is_a_bad_target:
 	exit 1
 
 DISTRIBUTION=AppArmor
-VERSION=$(shell cat common/Version)
+VERSION=$(shell cat $(COMMONDIR)/Version)
 
 # Convenience functions
 pathsearch = $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(PATH)))))
@@ -175,9 +174,10 @@ $(BUILDRPMSUBDIRS):
 	mkdir -p $(BUILDRPMSUBDIRS)
 
 .PHONY: _clean
+ifndef VERBOSE
 .SILENT: _clean
+endif
 _clean:
-	-[ -z "${NAME}" ] || rm -f ${NAME}-${VERSION}-*.tar.gz
 	-rm -f ${MANPAGES} *.[0-9].gz ${HTMLMANPAGES} pod2htm*.tmp
 
 # =====================
