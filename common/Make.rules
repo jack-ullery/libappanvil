@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------
 #
 #    Copyright (C) 2002-2005 Novell/SUSE
-#    Copyright (C) 2010 Canonical, Ltd.
+#    Copyright (C) 2010-2015 Canonical, Ltd.
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of version 2 of the GNU General Public 
@@ -45,27 +45,6 @@ define nl
 
 endef
 
-# OVERRIDABLE variables
-# Set these variables before including Make.rules to change its behavior
-#   SPECFILE - for packages that have a non-standard specfile name
-#   EXTERNAL_PACKAGE - for packages that have upstream versions that
-#   	we're locally modifying (e.g. imnxcerttool/gnutls).
-#
-# use 'make BUILDIR=/some/where/else/' to override the /usr/src/redhat
-# location -- it *should* pick out the right thing to do based on the
-# .rpmmacros file, but you can still use BUILDDIR to override that.
-TESTBUILDDIR=$(shell [ -f ${HOME}/.rpmmacros ] && awk '/^%_topdir/ {print $$2}' ${HOME}/.rpmmacros)
-ifndef BUILDDIR
-BUILDDIR=$(shell if [ -d "${TESTBUILDDIR}" ] ; then \
-		    echo ${TESTBUILDDIR} | sed "s^/$$^^" ; \
-		  elif [ -d "/usr/src/redhat" ] ; then \
-		    echo "/usr/src/redhat" ; \
-		  elif [ -d "/usr/src/packages" ] ; then \
-		    echo "/usr/src/packages" ; \
-		  else \
-		    echo "/tmp/${NAME}"  ; \
-		  fi ;)
-endif
 ifndef DISTRO
 DISTRO=$(shell if [ -f /etc/slackware-version ] ; then \
 		  echo slackware ; \
@@ -85,65 +64,8 @@ DISTRO=$(shell if [ -f /etc/slackware-version ] ; then \
 	          echo unknown ;\
 	       fi)
 endif
-RPMARG=--define "_topdir $(BUILDDIR:/=)" \
-        --define "vendor NOVELL, Inc." \
-	--define "distribution ${DISTRIBUTION}" \
-	--define "debug_package %{nil}" \
-	--define "immunix_version ${VERSION}" \
-	$(shell [ -d ${BUILDDIR}/BUILDROOT ] && echo --define \"buildroot $(BUILDDIR:/=)/BUILDROOT\") \
-	$(shell [ -n "${DISTRO}" ] && echo --define \"distro ${DISTRO}\")
 
 REPO_VERSION_CMD=([ -x /usr/bin/bzr ] && /usr/bin/bzr version-info . 2> /dev/null || awk '{ print "revno: "$2 }' common/.stamp_rev) | awk '/^revno:/ { print $2 }'
-
-ifdef EXTERNAL_PACKAGE
-RPMARG+=--define "_sourcedir $(shell pwd)"
-endif
-
-ifndef SPECFILE
-SPECFILE        = $(NAME).spec
-endif
-RELEASE_DIR	= $(NAME)-$(VERSION)
-TAR		= /bin/tar czvp -h --exclude .svn --exclude .bzr --exclude .bzrignore --exclude ${RELEASE_DIR}/${RELEASE_DIR} $(shell test -f ${NAME}.exclude && echo "-X ${NAME}.exclude")
-LDCONFIG	= /sbin/ldconfig
-
-RPMSUBDIRS=SOURCES SPECS BUILD BUILDROOT SRPMS RPMS/i386 RPMS/i586 \
-        RPMS/i686 RPMS/athlon RPMS/noarch RPMS/x86_64
-BUILDRPMSUBDIRS=$(foreach subdir, $(RPMSUBDIRS), $(BUILDDIR:/=)/$(subdir))
-
-ifdef EXTERNAL_PACKAGE
-.PHONY: rpm
-rpm: clean $(BUILDRPMSUBDIRS)
-	rpmbuild -ba ${RPMARG} ${SPECFILE}
-
-else
-.PHONY: rpm
-rpm: clean $(BUILDRPMSUBDIRS)
-	__REPO_VERSION=`$(value REPO_VERSION_CMD)` ; \
-	__TARBALL=$(NAME)-$(VERSION)-$${__REPO_VERSION}.tar.gz ; \
-	make $${__TARBALL} ; \
-	cp $${__TARBALL} $(BUILDDIR)/SOURCES/
-	cp ${SPECFILE} $(BUILDDIR)/SPECS/
-	rpmbuild -ba ${RPMARG} ${SPECFILE}
-
-.PHONY: ${SPECFILE}
-${SPECFILE}: ${SPECFILE}.in
-	__REPO_VERSION=`$(value REPO_VERSION_CMD)` ; \
-	sed -e "s/@@immunix_version@@/${VERSION}/g" \
-	    -e "s/@@repo_version@@/$${__REPO_VERSION}/g" $< > $@
-
-%.tar.gz: clean ${SPECFILE}
-	-rm -rf $(RELEASE_DIR)
-	mkdir $(RELEASE_DIR)
-	$(TAR) --exclude $@ . | tar xz -C $(RELEASE_DIR)
-	$(TAR) --exclude $@ -f $@ $(RELEASE_DIR)
-	rm -rf $(RELEASE_DIR)
-
-ifndef OVERRIDE_TARBALL
-.PHONY: tarball
-tarball: clean $(TARBALL)
-endif
-
-endif
 
 ifndef PYTHON_VERSIONS
 PYTHON_VERSIONS = $(call map, pathsearch, python2 python3)
@@ -159,19 +81,12 @@ pyalldo=set -e; $(foreach py, $(PYTHON_VERSIONS), $(py) $(1);)
 .PHONY: version
 .SILENT: version
 version:
-	 rpm -q --define "_sourcedir ." ${RPMARG} --specfile ${SPECFILE}
+	echo $(VERSION)
 
 .PHONY: repo_version
 .SILENT: repo_version
 repo_version:
 	 $(value REPO_VERSION_CMD)
-
-
-.PHONY: build_dir 
-build_dir: $(BUILDRPMSUBDIRS)
-
-$(BUILDRPMSUBDIRS):
-	mkdir -p $(BUILDRPMSUBDIRS)
 
 .PHONY: _clean
 ifndef VERBOSE

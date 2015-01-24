@@ -1,7 +1,5 @@
 #
 #
-OVERRIDE_TARBALL=yes
-
 .PHONY: all
 all:
 	@echo "*** See README for information how to build AppArmor ***"
