@@ -11,8 +11,8 @@ PODS = $(subst .2,.pod,$(man_MANS))
 
 EXTRA_DIST = $(man_MANS) $(PODS)
 
-## delete man pages at maintainer-clean
-BUILT_SOURCES = $(man_MANS)
+## delete man pages at make clean
+CLEANFILES = $(man_MANS)
 
 %.2: %.pod
 	$(PODCHECKER) -warnings -warnings $<
