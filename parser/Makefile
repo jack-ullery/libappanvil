@@ -370,7 +370,3 @@ clean: _clean
 	$(MAKE) -s -C po clean
 	$(MAKE) -s -C tst clean
 
-.SILENT: dist_clean
-dist_clean:
-	@$(MAKE) clean
-	@rm -f $(LEX_C_FILES) $(YACC_C_FILES)
