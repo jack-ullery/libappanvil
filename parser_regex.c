@@ -29,6 +29,7 @@
 
 /* #define DEBUG */
 
+#include "lib.h"
 #include "parser.h"
 #include "profile.h"
 #include "libapparmor_re/apparmor_re.h"
@@ -342,12 +343,26 @@ pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
 
 		default:
 			if (bEscape) {
-				/* quoting mark used for something that
-				 * does not need to be quoted; give a warning */
-				pwarn("Character %c was quoted unnecessarily, "
-				      "dropped preceding quote ('\\') character\n", *sptr);
-			}
-			pcre.append(1, *sptr);
+				const char *pos = sptr;
+				int c;
+				if ((c = str_escseq(&pos, "")) != -1) {
+					/* valid escape we don't want to
+					 * interpret here */
+					pcre.append("\\");
+					pcre.append(sptr, pos - sptr);
+					sptr += (pos - sptr) - 1;
+				} else {
+					/* quoting mark used for something that
+					 * does not need to be quoted; give a
+					 * warning */
+					pwarn("Character %c was quoted "
+					      "unnecessarily, dropped preceding"
+					      " quote ('\\') character\n",
+					      *sptr);
+					pcre.append(1, *sptr);
+				}
+			} else
+				pcre.append(1, *sptr);
 			break;
 		}	/* switch (*sptr) */
 
@@ -927,6 +942,9 @@ static int test_aaregex_to_pcre(void)
 	MY_REGEX_TEST("\\\\|", "\\\\\\|", ePatternBasic);
 	MY_REGEX_TEST("\\\\(", "\\\\\\(", ePatternBasic);
 	MY_REGEX_TEST("\\\\)", "\\\\\\)", ePatternBasic);
+	MY_REGEX_TEST("\\000", "\\000", ePatternBasic);
+	MY_REGEX_TEST("\\x00", "\\x00", ePatternBasic);
+	MY_REGEX_TEST("\\d000", "\\d000", ePatternBasic);
 
 	/* more complicated character class tests */
 	/*   -- embedded alternations */
