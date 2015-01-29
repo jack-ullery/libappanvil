@@ -243,7 +243,10 @@ char *processunquoted(const char *string, int len)
 			 * pass it through to be handled by the backend
 			 * pcre conversion
 			 */
-			if (strchr("*?[]{}^,\\", c) != NULL) {
+			if (c == 0) {
+				strncpy(s, string, pos - string);
+				s += pos - string;
+			} else if (strchr("*?[]{}^,\\", c) != NULL) {
 				*s++ = '\\';
 				*s++ = c;
 			} else
