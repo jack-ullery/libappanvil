@@ -1702,14 +1702,6 @@ def ask_the_questions():
                         if not allow_mode & apparmor.aamode.AA_MAY_EXEC:
                             mode |= str_to_mode('ix')
 
-                    # m is not implied by ix
-
-                    ### If we get an mmap request, check if we already have it in allow_mode
-                    ##if mode & AA_EXEC_MMAP:
-                    ##    # ix implies m, so we don't need to add m if ix is present
-                    ##    if contains(allow_mode, 'ix'):
-                    ##        mode = mode - AA_EXEC_MMAP
-
                     if not mode:
                         continue
 
