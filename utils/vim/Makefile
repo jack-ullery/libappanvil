@@ -25,5 +25,5 @@ check: check_pod_files
 	#Testing with all pythons
 	$(call pyalldo, create-apparmor.vim.py > /dev/null)
 
-clean: _clean
+clean: pod_clean
 	rm -f apparmor.vim

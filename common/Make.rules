@@ -68,11 +68,11 @@ version:
 repo_version:
 	 $(value REPO_VERSION_CMD)
 
-.PHONY: _clean
+.PHONY: pod_clean
 ifndef VERBOSE
-.SILENT: _clean
+.SILENT: pod_clean
 endif
-_clean:
+pod_clean:
 	-rm -f ${MANPAGES} *.[0-9].gz ${HTMLMANPAGES} pod2htm*.tmp
 
 # =====================

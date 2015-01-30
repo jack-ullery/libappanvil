@@ -50,7 +50,7 @@ install:
 ifndef VERBOSE
 .SILENT: clean
 endif
-clean: _clean
+clean: pod_clean
 	rm -f core core.* *.o *.s *.a *~
 	rm -rf staging/ build/
 

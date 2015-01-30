@@ -376,7 +376,7 @@ ifndef VERBOSE
 .SILENT: clean
 endif
 .PHONY: clean
-clean: _clean
+clean: pod_clean
 	rm -f core core.* *.o *.s *.a *~ *.gcda *.gcno
 	rm -f gmon.out
 	rm -f $(TOOLS) $(TESTS)

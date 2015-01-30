@@ -86,7 +86,7 @@ install: ${TARGET} ${MANPAGES}
 	make install_manpages DESTDIR=${DESTDIR}
 
 .PHONY: clean
-clean: _clean
+clean: pod_clean
 	rm -rf .libs
 	rm -f *.la *.lo *.so *.o *.slo
 

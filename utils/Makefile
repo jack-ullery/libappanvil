@@ -63,7 +63,7 @@ install: ${MANPAGES} ${HTMLMANPAGES}
 ifndef VERBOSE
 .SILENT: clean
 endif
-clean: _clean
+clean: pod_clean
 	rm -f core core.* *.o *.s *.a *~
 	$(MAKE) -C po clean
 	$(MAKE) -C vim clean
