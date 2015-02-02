@@ -63,8 +63,9 @@ for pid in sorted(pids):
     if os.path.exists("/proc/%s/attr/current"%pid):
         with aa.open_file_read("/proc/%s/attr/current"%pid) as current:
             for line in current:
-                if line.startswith("/") or line.startswith("null"):
-                    attr = line.strip()
+                line = line.strip()
+                if line.endswith(' (complain)', 1) or line.endswith(' (enforce)', 1): # enforce at least one char as profile name
+                    attr = line
 
     cmdline = apparmor.common.cmd(["cat", "/proc/%s/cmdline"%pid])[1]
     pname = cmdline.split("\0")[0]
