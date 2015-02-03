@@ -46,10 +46,21 @@ class AamodeTest_sub_str_to_mode(unittest.TestCase):
         self.assertEqual(sub_str_to_mode('cix'), {'i', 'x', 'C', 'execunsafe'})
     def test_sub_str_to_mode_7(self):
         self.assertEqual(sub_str_to_mode('rwlk'), {'k', 'r', 'l', 'w'})
-    def test_sub_str_to_mode_8(self):
-        self.assertEqual(sub_str_to_mode('asdf42'), {'a'})
     def test_sub_str_to_mode_dupes(self):
         self.assertEqual(sub_str_to_mode('rwrwrw'), {'r', 'w'})
+
+    def test_sub_str_to_mode_invalid_1(self):
+        with self.assertRaises(AppArmorBug):
+            sub_str_to_mode('asdf42')
+
+    def test_sub_str_to_mode_invalid_2(self):
+        import apparmor.aamode
+        apparmor.aamode.MODE_HASH = {'x': 'foo'}  # simulate MODE_HASH and MODE_MAP_SET getting out of sync
+
+        with self.assertRaises(AppArmorBug):
+            sub_str_to_mode('r')
+
+
 
 class AamodeTest_validate_log_mode(unittest.TestCase):
     def test_validate_log_mode_1(self):
