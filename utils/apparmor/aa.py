@@ -2539,14 +2539,22 @@ def validate_profile_mode(mode, allow, nt_name=None):
         else:
             return False
 
-# rpm backup files, dotfiles, emacs backup files should not be processed
-# The skippable files type needs be synced with apparmor initscript
+
 def is_skippable_file(path):
-    """Returns True if filename matches something to be skipped"""
-    if (re.search('(^|/)\.[^/]*$', path) or re.search('\.rpm(save|new)$', path)
-            or re.search('\.dpkg-(old|new)$', path) or re.search('\.swp$', path)
-            or path[-1] == '~' or path == 'README'):
+    """Returns True if filename matches something to be skipped (rpm or dpkg backup files, hidden files etc.)
+        The list of skippable files needs to be synced with apparmor initscript and libapparmor _aa_is_blacklisted()
+        path: filename (with or without directory)"""
+
+    basename = os.path.basename(path)
+
+    if not basename or basename[0] == '.' or basename == 'README':
         return True
+
+    skippable_suffix = ('.dpkg-new', '.dpkg-old', '.dpkg-dist', '.dpkg-bak', '.rpmnew', '.rpmsave', '.orig', '.rej', '~')
+    if basename.endswith(skippable_suffix):
+        return True
+
+    return False
 
 def is_skippable_dir(path):
     if re.search('(disable|cache|force-complain|lxc)', path):
