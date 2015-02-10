@@ -152,13 +152,13 @@ static char *procattr_path(pid_t pid, const char *attr)
 }
 
 /**
- * parse_confinement_mode - get the mode from the confinement string
- * @con: the confinement string
- * @size: size of the confinement string
+ * parse_confinement_mode - get the mode from the confinement context
+ * @con: the confinement context
+ * @size: size of the confinement context
  *
  * Modifies con to NUL-terminate the label string and the mode string.
  *
- * Returns: a pointer to the NUL-terminated mode inside the confinement string
+ * Returns: a pointer to the NUL-terminated mode inside the confinement context
  * or NULL if the mode was not found
  */
 static char *parse_confinement_mode(char *con, int size)
@@ -262,27 +262,27 @@ out:
 #define INITIAL_GUESS_SIZE 128
 
 /**
- * aa_getprocattr - get the contents of @attr for @tid into @buf
+ * aa_getprocattr - get the contents of @attr for @tid into @label and @mode
  * @tid: tid of task to query
  * @attr: which /proc/<tid>/attr/<attr> to query
- * @con: allocated buffer the result is stored in
- * @mode: if non-NULL and a mode is present, will point to mode string in @con
+ * @label: allocated buffer the label is stored in
+ * @mode: if non-NULL and a mode is present, will point to mode string in @label
  *
  * Returns: size of data read or -1 on error, and sets errno
  *
- * Guarantees that @con and @mode are null terminated.  The length returned
- * is for all data including both @con and @mode, and maybe > than strlen(@con)
- * even if @mode is NULL
+ * Guarantees that @label and @mode are null terminated.  The length returned
+ * is for all data including both @label and @mode, and maybe > than
+ * strlen(@label) even if @mode is NULL
  *
- * Caller is responsible for freeing the buffer returned in @con.  @mode is
- * always contained within @con's buffer and so NEVER do free(@mode)
+ * Caller is responsible for freeing the buffer returned in @label.  @mode is
+ * always contained within @label's buffer and so NEVER do free(@mode)
  */
-int aa_getprocattr(pid_t tid, const char *attr, char **con, char **mode)
+int aa_getprocattr(pid_t tid, const char *attr, char **label, char **mode)
 {
 	int rc, size = INITIAL_GUESS_SIZE/2;
 	char *buffer = NULL;
 
-	if (!con) {
+	if (!label) {
 		errno = EINVAL;
 		return -1;
 	}
@@ -299,11 +299,11 @@ int aa_getprocattr(pid_t tid, const char *attr, char **con, char **mode)
 
 	if (rc == -1) {
 		free(buffer);
-		*con = NULL;
+		*label = NULL;
 		if (mode)
 			*mode = NULL;
 	} else
-		*con = buffer;
+		*label = buffer;
 
 	return rc;
 }
@@ -527,42 +527,42 @@ int (aa_change_hat_vargs)(unsigned long token, int nhats, ...)
 }
 
 /**
- * aa_gettaskcon - get the confinement for task @target in an allocated buffer
+ * aa_gettaskcon - get the confinement context for task @target in an allocated buffer
  * @target: task to query
- * @con: pointer to returned buffer with the confinement string
- * @mode: if non-NULL and a mode is present, will point to mode string in @con
+ * @label: pointer to returned buffer with the label
+ * @mode: if non-NULL and a mode is present, will point to mode string in @label
  *
- * Returns: length of confinement data or -1 on error and sets errno
+ * Returns: length of confinement context or -1 on error and sets errno
  *
- * Guarantees that @con and @mode are null terminated.  The length returned
- * is for all data including both @con and @mode, and maybe > than strlen(@con)
- * even if @mode is NULL
+ * Guarantees that @label and @mode are null terminated.  The length returned
+ * is for all data including both @label and @mode, and maybe > than
+ * strlen(@label) even if @mode is NULL
  *
- * Caller is responsible for freeing the buffer returned in @con.  @mode is
- * always contained within @con's buffer and so NEVER do free(@mode)
+ * Caller is responsible for freeing the buffer returned in @label.  @mode is
+ * always contained within @label's buffer and so NEVER do free(@mode)
  */
-int aa_gettaskcon(pid_t target, char **con, char **mode)
+int aa_gettaskcon(pid_t target, char **label, char **mode)
 {
-	return aa_getprocattr(target, "current", con, mode);
+	return aa_getprocattr(target, "current", label, mode);
 }
 
 /**
- * aa_getcon - get the confinement for current task in an allocated buffer
- * @con: pointer to return buffer with the confinement if successful
- * @mode: if non-NULL and a mode is present, will point to mode string in @con
+ * aa_getcon - get the confinement context for current task in an allocated buffer
+ * @label: pointer to return buffer with the label if successful
+ * @mode: if non-NULL and a mode is present, will point to mode string in @label
  *
- * Returns: length of confinement data or -1 on error and sets errno
+ * Returns: length of confinement context or -1 on error and sets errno
  *
- * Guarantees that @con and @mode are null terminated.  The length returned
- * is for all data including both @con and @mode, and may > than strlen(@con)
- * even if @mode is NULL
+ * Guarantees that @label and @mode are null terminated.  The length returned
+ * is for all data including both @label and @mode, and may > than
+ * strlen(@label) even if @mode is NULL
  *
- * Caller is responsible for freeing the buffer returned in @con.  @mode is
- * always contained within @con's buffer and so NEVER do free(@mode)
+ * Caller is responsible for freeing the buffer returned in @label.  @mode is
+ * always contained within @label's buffer and so NEVER do free(@mode)
  */
-int aa_getcon(char **con, char **mode)
+int aa_getcon(char **label, char **mode)
 {
-	return aa_gettaskcon(aa_gettid(), con, mode);
+	return aa_gettaskcon(aa_gettid(), label, mode);
 }
 
 
@@ -571,14 +571,14 @@ int aa_getcon(char **con, char **mode)
 #endif
 
 /**
- * aa_getpeercon_raw - get the confinement of the socket's peer (other end)
- * @fd: socket to get peer confinement for
+ * aa_getpeercon_raw - get the confinement context of the socket's peer (other end)
+ * @fd: socket to get peer confinement context for
  * @buf: buffer to store the result in
  * @len: initially contains size of the buffer, returns size of data read
  * @mode: if non-NULL and a mode is present, will point to mode string in @buf
  *
- * Returns: length of confinement data including null termination or -1 on error
- *          if errno == ERANGE then @len will hold the size needed
+ * Returns: length of confinement context including null termination or -1 on
+ *          error if errno == ERANGE then @len will hold the size needed
  */
 int aa_getpeercon_raw(int fd, char *buf, int *len, char **mode)
 {
@@ -620,26 +620,26 @@ out:
 }
 
 /**
- * aa_getpeercon - get the confinement of the socket's peer (other end)
- * @fd: socket to get peer confinement for
- * @con: pointer to allocated buffer with the confinement string
- * @mode: if non-NULL and a mode is present, will point to mode string in @con
+ * aa_getpeercon - get the confinement context of the socket's peer (other end)
+ * @fd: socket to get peer confinement context for
+ * @label: pointer to allocated buffer with the label
+ * @mode: if non-NULL and a mode is present, will point to mode string in @label
  *
- * Returns: length of confinement data including null termination or -1 on error
+ * Returns: length of confinement context including null termination or -1 on error
  *
- * Guarantees that @con and @mode are null terminated.  The length returned
- * is for all data including both @con and @mode, and maybe > than strlen(@con)
- * even if @mode is NULL
+ * Guarantees that @label and @mode are null terminated.  The length returned
+ * is for all data including both @label and @mode, and maybe > than
+ * strlen(@label) even if @mode is NULL
  *
- * Caller is responsible for freeing the buffer returned in @con.  @mode is
- * always contained within @con's buffer and so NEVER do free(@mode)
+ * Caller is responsible for freeing the buffer returned in @label.  @mode is
+ * always contained within @label's buffer and so NEVER do free(@mode)
  */
-int aa_getpeercon(int fd, char **con, char **mode)
+int aa_getpeercon(int fd, char **label, char **mode)
 {
 	int rc, last_size, size = INITIAL_GUESS_SIZE;
 	char *buffer = NULL;
 
-	if (!con) {
+	if (!label) {
 		errno = EINVAL;
 		return -1;
 	}
@@ -657,12 +657,12 @@ int aa_getpeercon(int fd, char **con, char **mode)
 
 	if (rc == -1) {
 		free(buffer);
-		*con = NULL;
+		*label = NULL;
 		if (mode)
 			*mode = NULL;
 		size = -1;
 	} else
-		*con = buffer;
+		*label = buffer;
 
 	return size;
 }
