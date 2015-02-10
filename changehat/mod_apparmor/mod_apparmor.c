@@ -137,7 +137,7 @@ aa_enter_hat(request_rec *r)
                     ap_get_module_config(r->server->module_config, &apparmor_module);
     const char *aa_hat_array[6] = { NULL, NULL, NULL, NULL, NULL, NULL };
     int i = 0;
-    char *aa_con, *aa_mode, *aa_hat;
+    char *aa_label, *aa_mode, *aa_hat;
     const char *vhost_uri;
 
     debug_dump_uri(r);
@@ -201,14 +201,14 @@ aa_enter_hat(request_rec *r)
     /* Check to see if a defined AAHatName or AADefaultHatName would
      * apply, but wasn't the hat we landed up in; report a warning if
      * that's the case. */
-    aa_ret = aa_getcon(&aa_con, &aa_mode);
+    aa_ret = aa_getcon(&aa_label, &aa_mode);
     if (aa_ret < 0) {
         ap_log_rerror(APLOG_MARK, APLOG_WARNING, errno, r, "aa_getcon call failed");
     } else {
         ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r,
-                      "AA checks: aa_getcon result is '%s', mode '%s'", aa_con, aa_mode);
+                      "AA checks: aa_getcon result is '%s', mode '%s'", aa_label, aa_mode);
         /* TODO: use libapparmor get hat_name fn here once it is implemented */
-        aa_hat = strstr(aa_con, "//");
+        aa_hat = strstr(aa_label, "//");
         if (aa_hat != NULL && strcmp(aa_mode, "enforce") == 0) {
             aa_hat += 2;  /* skip "//" */
             ap_log_rerror(APLOG_MARK, APLOG_TRACE1, 0, r,
@@ -226,7 +226,7 @@ aa_enter_hat(request_rec *r)
                         scfg->hat_name);
             }
         }
-        free(aa_con);
+        free(aa_label);
     }
 
     return OK;
