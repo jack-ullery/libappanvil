@@ -51,13 +51,13 @@ static int get_socketpair(int pair[2])
 }
 
 static int verify_confinement_context(int fd, const char *fd_name,
-				      const char *expected_con,
+				      const char *expected_label,
 				      const char *expected_mode)
 {
-	char *con, *mode;
+	char *label, *mode;
 	int rc;
 
-	rc = aa_getpeercon(fd, &con, &mode);
+	rc = aa_getpeercon(fd, &label, &mode);
 	if (rc < 0) {
 		fprintf(stderr, "FAIL - %s: aa_getpeercon(%d, , ): %m",
 			fd_name, fd);
@@ -67,10 +67,10 @@ static int verify_confinement_context(int fd, const char *fd_name,
 	if (!mode)
 		mode = NO_MODE;
 
-	if (strcmp(con, expected_con)) {
+	if (strcmp(label, expected_label)) {
 		fprintf(stderr,
-			"FAIL - %s: con \"%s\" != expected_con \"%s\"\n",
-			fd_name, con, expected_con);
+			"FAIL - %s: label \"%s\" != expected_label \"%s\"\n",
+			fd_name, label, expected_label);
 		rc = 2;
 		goto out;
 	}
@@ -85,7 +85,7 @@ static int verify_confinement_context(int fd, const char *fd_name,
 
 	rc = 0;
 out:
-	free(con);
+	free(label);
 	return rc;
 }
 
@@ -133,17 +133,17 @@ static int reexec(int pair[2], int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-	char *expected_con, *expected_mode;
+	char *expected_label, *expected_mode;
 	int pair[2], rc;
 
 	if (argc < 3) {
 		fprintf(stderr,
-			"FAIL - usage: %s <CON> <MODE> [<CHANGE_ONEXEC> ...]\n\n"
-			"  <CON>\t\tThe expected confinement context\n"
+			"FAIL - usage: %s <LABEL> <MODE> [<CHANGE_ONEXEC> ...]\n\n"
+			"  <LABEL>\t\tThe expected confinement label\n"
 			"  <MODE>\tThe expected confinement mode\n"
 			"  <CHANGE_ONEXEC>\tThe profile to change to on exec\n\n"
 			"This program gets a socket pair and then verifies \n"
-			"the confinement context and mode of each file \n"
+			"the confinement label and mode of each file \n"
 			"descriptor. If there is no expected mode string, \n"
 			"<MODE> should be \"%s\".\n\n"
 			"Multiple <CHANGE_ONEXEC> profiles can be specified \n"
@@ -162,17 +162,17 @@ int main(int argc, char **argv)
 	if (get_socketpair(pair))
 		exit(2);
 
-	expected_con = argv[1];
+	expected_label = argv[1];
 	expected_mode = argv[2];
 
 	if (verify_confinement_context(pair[0], "pair[0]",
-				       expected_con, expected_mode)) {
+				       expected_label, expected_mode)) {
 		rc = 3;
 		goto out;
 	}
 
 	if (verify_confinement_context(pair[1], "pair[1]",
-				       expected_con, expected_mode)) {
+				       expected_label, expected_mode)) {
 		rc = 4;
 		goto out;
 	}
