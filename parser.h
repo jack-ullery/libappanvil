@@ -334,7 +334,9 @@ extern const char *basedir;
 #define default_match_pattern "[^\\000]*"
 #define anyone_match_pattern "[^\\000]+"
 
-extern pattern_t convert_aaregex_to_pcre(const char *aare, int anchor,
+#define glob_default	0
+#define glob_null	1
+extern pattern_t convert_aaregex_to_pcre(const char *aare, int anchor, int glob,
 					 std::string& pcre, int *first_re_pos);
 extern int build_list_val_expr(std::string& buffer, struct value_list *list);
 extern int convert_entry(std::string& buffer, char *entry);
