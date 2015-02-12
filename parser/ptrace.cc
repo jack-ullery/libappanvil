@@ -139,7 +139,7 @@ int ptrace_rule::gen_policy_re(Profile &prof)
 	buffer << "\\x" << std::setfill('0') << std::setw(2) << std::hex << AA_CLASS_PTRACE;
 
 	if (peer_label) {
-		ptype = convert_aaregex_to_pcre(peer_label, 0, buf, &pos);
+		ptype = convert_aaregex_to_pcre(peer_label, 0, glob_default, buf, &pos);
 		if (ptype == ePatternInvalid)
 			goto fail;
 		buffer << buf;
