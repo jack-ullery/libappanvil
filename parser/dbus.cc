@@ -149,7 +149,7 @@ ostream &dbus_rule::dump(ostream &os)
 	if (interface)
 		os << " interface=\"" << interface << "\"";
 	if (member)
-		os << " member=\"" << member << os << "\"";
+		os << " member=\"" << member << "\"";
 
 	if (!(mode & AA_DBUS_BIND) && (peer_label || name)) {
 		os << " peer=( ";
