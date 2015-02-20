@@ -72,7 +72,7 @@ unimplemented_warning = False
 sev_db = None
 # The file to read log messages from
 ### Was our
-filename = None
+logfile = None
 
 cfg = None
 repo_cfg = None
@@ -2233,6 +2233,24 @@ def match_net_includes(profile, family, nettype):
 
     return newincludes
 
+def set_logfile(filename):
+    ''' set logfile to a) the specified filename or b) if not given, the first existing logfile from logprof.conf'''
+
+    global logfile
+
+    if filename:
+        logfile = filename
+    else:
+        logfile = conf.find_first_file(cfg['settings']['logfiles']) or '/var/log/syslog'
+
+    if not os.path.exists(logfile):
+        if filename:
+            raise AppArmorException(_('The logfile %s does not exist. Please check the path') % logfile)
+        else:
+            raise AppArmorException('Can\'t find system log "%s".' % (logfile))
+    elif os.path.isdir(logfile):
+        raise AppArmorException(_('%s is a directory. Please specify a file as logfile') % logfile)
+
 def do_logprof_pass(logmark='', passno=0, pid=pid):
     # set up variables for this pass
 #    t = hasher()
@@ -2250,7 +2268,7 @@ def do_logprof_pass(logmark='', passno=0, pid=pid):
 #    skip = hasher()  # XXX global?
 #    filelist = hasher()
 
-    aaui.UI_Info(_('Reading log entries from %s.') % filename)
+    aaui.UI_Info(_('Reading log entries from %s.') % logfile)
 
     if not passno:
         aaui.UI_Info(_('Updating AppArmor profiles in %s.') % profile_dir)
@@ -2264,7 +2282,8 @@ def do_logprof_pass(logmark='', passno=0, pid=pid):
     ##    repo_cfg = read_config('repository.conf')
     ##    if not repo_cfg['repository'].get('enabled', False) or repo_cfg['repository]['enabled'] not in ['yes', 'no']:
     ##    UI_ask_to_enable_repo()
-    log_reader = apparmor.logparser.ReadLog(pid, filename, existing_profiles, profile_dir, log)
+
+    log_reader = apparmor.logparser.ReadLog(pid, logfile, existing_profiles, profile_dir, log)
     log = log_reader.read_log(logmark)
     #read_log(logmark)
 
@@ -4571,10 +4590,6 @@ extra_profile_dir = conf.find_first_dir(cfg['settings']['inactive_profiledir']) 
 parser = conf.find_first_file(cfg['settings']['parser']) or '/sbin/apparmor_parser'
 if not os.path.isfile(parser) or not os.access(parser, os.EX_OK):
     raise AppArmorException('Can\'t find apparmor_parser')
-
-filename = conf.find_first_file(cfg['settings']['logfiles']) or '/var/log/syslog'
-if not os.path.isfile(filename):
-    raise AppArmorException('Can\'t find system log "%s".' % (filename))
 
 ldd = conf.find_first_file(cfg['settings']['ldd']) or '/usr/bin/ldd'
 if not os.path.isfile(ldd) or not os.access(ldd, os.EX_OK):
