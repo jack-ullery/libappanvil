@@ -148,11 +148,14 @@ ostream &af_rule::dump_peer(ostream &os)
 
 ostream &af_rule::dump(ostream &os)
 {
-	os << dump_prefix(os);
+	dump_prefix(os);
 	os << af_name;
-	os << dump_local(os);
-	if (has_peer_conds())
-		os << " peer=(" << dump_peer(os) << ")";
+	dump_local(os);
+	if (has_peer_conds()) {
+		os << " peer=(";
+		dump_peer(os);
+		os  << ")";
+	}
 	os << ",\n";
 
 	return os;
