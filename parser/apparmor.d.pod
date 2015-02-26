@@ -1192,10 +1192,6 @@ files, and the X socket.
 
 =back
 
-The abstractions stored in F</etc/apparmor.d/program-chunks/> are
-intended for use by specific program suites, and are not generally
-useful.
-
 Some of the abstractions rely on variables that are set in files in the
 F</etc/apparmor.d/tunables/> directory. These variables are currently
 B<@{HOME}> and B<@{HOMEDIRS}>. Variables cannot be set in profile scope;
