@@ -342,10 +342,17 @@ int net_find_af_val(const char *af)
 
 const char *net_find_af_name(unsigned int af)
 {
+	int i;
+
 	if (af < 0 || af > get_af_max())
 		return NULL;
 
-	return network_families[af];
+	for (i = 0; i < sizeof(network_mappings) / sizeof(*network_mappings); i++) {
+		if (network_mappings[i].family == af)
+			return network_mappings[i].family_name;
+	}
+
+	return NULL;
 }
 
 void __debug_network(unsigned int *array, const char *name)
@@ -375,7 +382,7 @@ void __debug_network(unsigned int *array, const char *name)
 
 	for (i = 0; i < af_max; i++) {
 		if (array[i]) {
-			const char *fam = network_families[i];
+			const char *fam = net_find_af_name(i);
 			if (fam)
 				printf("%s ", fam);
 			else
