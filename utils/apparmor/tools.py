@@ -89,11 +89,11 @@ class aa_tools:
             yield (program, profile)
 
     def act(self):
+        apparmor.read_profiles()
+
         for (program, profile) in self.get_next_to_profile():
             if program is None:
                 program = profile
-
-            apparmor.read_profiles()
 
             if not program or not(os.path.exists(program) or apparmor.profile_exists(program)):
                 if program and not program.startswith('/'):
@@ -148,9 +148,10 @@ class aa_tools:
                 raise apparmor.AppArmorException(cmd_info[1])
 
     def cmd_enforce(self):
+        apparmor.read_profiles()
+
         for (program, profile) in self.get_next_to_profile():
 
-            apparmor.read_profiles()
             output_name = profile if program is None else program
 
             if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
@@ -166,9 +167,10 @@ class aa_tools:
                 raise apparmor.AppArmorException(cmd_info[1])
 
     def cmd_complain(self):
+        apparmor.read_profiles()
+
         for (program, profile) in self.get_next_to_profile():
 
-            apparmor.read_profiles()
             output_name = profile if program is None else program
 
             if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
@@ -184,9 +186,10 @@ class aa_tools:
                 raise apparmor.AppArmorException(cmd_info[1])
 
     def cmd_audit(self):
+        apparmor.read_profiles()
+
         for (program, profile) in self.get_next_to_profile():
 
-            apparmor.read_profiles()
             output_name = profile if program is None else program
 
             if not os.path.isfile(profile) or apparmor.is_skippable_file(profile):
@@ -207,12 +210,12 @@ class aa_tools:
                 raise apparmor.AppArmorException(cmd_info[1])
 
     def cmd_autodep(self):
+        apparmor.read_profiles()
+
         for (program, profile) in self.get_next_to_profile():
             if not program:
                 aaui.UI_Info(_('Please pass an application to generate a profile for, not a profile itself - skipping %s.') % profile)
                 continue
-
-            apparmor.read_profiles()
 
             apparmor.check_qualifiers(program)
 
