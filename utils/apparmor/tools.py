@@ -32,9 +32,6 @@ class aa_tools:
 
         if tool_name in ['audit']:
             self.remove = args.remove
-        elif tool_name == 'disable':
-            self.disabledir = apparmor.profile_dir + '/disable'
-            self.check_disable_dir()
         elif tool_name == 'autodep':
             self.force = args.force
             self.aa_mountpoint = apparmor.check_for_apparmor()
@@ -49,10 +46,6 @@ class aa_tools:
 
         if not user_perm(apparmor.profile_dir):
             raise apparmor.AppArmorException("Cannot write to profile directory: %s" % (apparmor.profile_dir))
-
-    def check_disable_dir(self):
-        if not os.path.isdir(self.disabledir):
-            raise apparmor.AppArmorException("Can't find AppArmor disable directory %s" % self.disabledir)
 
     def get_next_to_profile(self):
         '''Iterator function to walk the list of arguments passed'''
