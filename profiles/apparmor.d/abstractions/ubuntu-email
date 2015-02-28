@@ -10,6 +10,7 @@
   /usr/bin/balsa Cx -> sanitized_helper,
   /usr/bin/claws-mail Cx -> sanitized_helper,
   /usr/bin/evolution Cx -> sanitized_helper,
+  /usr/bin/geary Cx -> sanitized_helper,
   /usr/bin/gnome-gmail Cx -> sanitized_helper,
   /usr/lib/GNUstep/Applications/GNUMail.app/GNUMail Cx -> sanitized_helper,
   /usr/bin/kmail Cx -> sanitized_helper,
