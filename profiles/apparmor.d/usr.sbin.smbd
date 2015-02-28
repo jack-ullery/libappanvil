@@ -37,7 +37,6 @@
   /var/{cache,lib}/samba/printing/printers.tdb mrw,
   /var/lib/samba/** rwk,
   /var/lib/sss/pubconf/kdcinfo.* r,
-  /{,var/}run/cups/cups.sock rw,
   /{,var/}run/dbus/system_bus_socket rw,
   /{,var/}run/samba/** rk,
   /{,var/}run/samba/ncalrpc/ rw,
