@@ -111,6 +111,7 @@ class ReadLog:
         ev['pid'] = event.pid
         ev['task'] = event.task
         ev['info'] = event.info
+        ev['error_code'] = event.error_code
         dmask = event.denied_mask
         rmask = event.requested_mask
         ev['magic_token'] = event.magic_token
@@ -161,6 +162,11 @@ class ReadLog:
                 ev['aamode'] = mode_convertor[ev['aamode']]
             except KeyError:
                 ev['aamode'] = None
+
+        # "translate" disconnected paths to errors, which means the event will be ignored.
+        # XXX Ideally we should propose to add the attach_disconnected flag to the profile
+        if ev['error_code'] == 13 and ev['info'] == 'Failed name lookup - disconnected path':
+            ev['aamode'] = 'ERROR'
 
         if ev['aamode']:
             #debug_logger.debug(ev)

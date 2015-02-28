@@ -104,6 +104,7 @@ class CapabilityTest(unittest.TestCase):
         self.assertEqual(parsed_event, {
             'request_mask': set(),
             'denied_mask': set(),
+            'error_code': 0,
             'magic_token': 0,
             'parent': 0,
             'profile': '/bin/ping',
