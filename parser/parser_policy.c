@@ -34,8 +34,10 @@
 
 /* #define DEBUG */
 #ifdef DEBUG
+#undef PDEBUG
 #define PDEBUG(fmt, args...) fprintf(stderr, "Lexer: " fmt, ## args)
 #else
+#undef PDEBUG
 #define PDEBUG(fmt, args...)	/* Do nothing */
 #endif
 #define NPDEBUG(fmt, args...)	/* Do nothing */
