@@ -4,8 +4,7 @@
 # vim:syntax=subdomain
 # Last Modified: Sun Apr 17 19:44:44 2005
 #
-/does/not/exist (debug) {
+/does/not/exist3 (debug,complain) {
   /usr/X11R6/lib/lib*so* r,
-  /does/not/exist r,
+  /does/not/exist5 r,
 }
-
