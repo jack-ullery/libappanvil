@@ -615,6 +615,8 @@ def get_profile_flags(filename, program):
                 matches = RE_PROFILE_START.search(line).groups()
                 profile = matches[1] or matches[3]
                 flags = matches[6]
+                if flags and flags.strip() == '':
+                    raise AppArmorException(_('Invalid syntax in %(filename)s for profile %(profile)s: Empty set of flags.' % { 'filename': filename, 'profile': profile } ))
                 if profile == program or program is None:
                     return flags
 

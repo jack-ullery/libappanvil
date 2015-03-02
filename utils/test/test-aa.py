@@ -15,9 +15,19 @@ import shutil
 import tempfile
 from common_test import write_file
 
-from apparmor.aa import check_for_apparmor, is_skippable_file
+from apparmor.aa import check_for_apparmor, get_profile_flags, is_skippable_file
+from apparmor.common import AppArmorException
 
-class AaTest_check_for_apparmor(unittest.TestCase):
+class AaTestWithTempdir(unittest.TestCase):
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp(prefix='aa-py-')
+
+    def tearDown(self):
+        if os.path.exists(self.tmpdir):
+            shutil.rmtree(self.tmpdir)
+
+
+class AaTest_check_for_apparmor(AaTestWithTempdir):
     FILESYSTEMS_WITH_SECURITYFS = 'nodev\tdevtmpfs\nnodev\tsecurityfs\nnodev\tsockfs\n\text3\n\text2\n\text4'
     FILESYSTEMS_WITHOUT_SECURITYFS = 'nodev\tdevtmpfs\nnodev\tsockfs\n\text3\n\text2\n\text4'
 
@@ -27,13 +37,6 @@ class AaTest_check_for_apparmor(unittest.TestCase):
 
     MOUNTS_WITHOUT_SECURITYFS = ( 'proc /proc proc rw,relatime 0 0\n'
         '/dev/sda1 / ext3 rw,noatime,data=ordered 0 0' )
-
-    def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='aa-py-')
-
-    def tearDown(self):
-        if os.path.exists(self.tmpdir):
-            shutil.rmtree(self.tmpdir)
 
     def test_check_for_apparmor_None_1(self):
         filesystems = write_file(self.tmpdir, 'filesystems', self.FILESYSTEMS_WITHOUT_SECURITYFS)
@@ -69,6 +72,38 @@ class AaTest_check_for_apparmor(unittest.TestCase):
         filesystems = write_file(self.tmpdir, 'filesystems', self.FILESYSTEMS_WITH_SECURITYFS)
         mounts = write_file(self.tmpdir, 'mounts', self.MOUNTS_WITH_SECURITYFS % self.tmpdir)
         self.assertEqual('%s/security/apparmor' % self.tmpdir, check_for_apparmor(filesystems, mounts))
+
+class AaTest_get_profile_flags(AaTestWithTempdir):
+    def _test_get_flags(self, profile_header, expected_flags):
+        file = write_file(self.tmpdir, 'profile', '%s {\n}\n' % profile_header)
+        flags = get_profile_flags(file, '/foo')
+        self.assertEqual(flags, expected_flags)
+
+    def test_get_flags_01(self):
+        self._test_get_flags('/foo', None)
+    def test_get_flags_02(self):
+        self._test_get_flags('/foo (  complain  )', '  complain  ')
+    def test_get_flags_04(self):
+        self._test_get_flags('/foo (complain)', 'complain')
+    def test_get_flags_05(self):
+        self._test_get_flags('/foo flags=(complain)', 'complain')
+    def test_get_flags_06(self):
+        self._test_get_flags('/foo flags=(complain,  audit)', 'complain,  audit')
+
+    def test_get_flags_invalid_01(self):
+        with self.assertRaises(AppArmorException):
+            self._test_get_flags('/foo ()', None)
+    def test_get_flags_invalid_02(self):
+        with self.assertRaises(AppArmorException):
+            self._test_get_flags('/foo flags=()', None)
+    def test_get_flags_invalid_03(self):
+        with self.assertRaises(AppArmorException):
+            self._test_get_flags('/foo (  )', '  ')
+
+    def test_get_flags_other_profile(self):
+        with self.assertRaises(AppArmorException):
+            self._test_get_flags('/no-such-profile flags=(complain)', 'complain')
+
 
 class AaTest_is_skippable_file(unittest.TestCase):
     def test_not_skippable_01(self):
