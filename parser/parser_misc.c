@@ -537,7 +537,7 @@ static int parse_X_sub_mode(const char *X, const char *str_mode, int *result, in
 	int mode = 0;
 	const char *p;
 
-	PDEBUG("Parsing X mode: %s\n", X, str_mode);
+	PDEBUG("Parsing %s mode: %s\n", X, str_mode);
 
 	if (!str_mode)
 		return 0;
