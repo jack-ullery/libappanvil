@@ -172,7 +172,7 @@ extern int preprocess_only;
 
 
 #ifdef DEBUG
-#define PDEBUG(fmt, args...) printf("parser: " fmt, ## args)
+#define PDEBUG(fmt, args...) fprintf(stderr, "parser: " fmt, ## args)
 #else
 #define PDEBUG(fmt, args...)	/* Do nothing */
 #endif
