@@ -2634,6 +2634,47 @@ def attach_profile_data(profiles, profile_data):
     for p in profile_data.keys():
         profiles[p] = deepcopy(profile_data[p])
 
+
+def parse_profile_start(line, file, lineno, profile, hat):
+    matches = RE_PROFILE_START.search(line).groups()
+
+    pps_set_profile = False
+    pps_set_hat_external = False
+
+    if profile:
+        #print(profile, hat)
+        if profile != hat or not matches[3]:
+            raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line: %(line)s.') % { 'profile': profile, 'file': file, 'line': lineno + 1 })
+    # Keep track of the start of a profile
+    if profile and profile == hat and matches[3]:
+        # local profile
+        hat = matches[3]
+        in_contained_hat = True
+        pps_set_profile = True
+    else:
+        if matches[1]:
+            profile = matches[1]
+        else:
+            profile = matches[3]
+        #print(profile)
+        if len(profile.split('//')) >= 2:
+            profile, hat = profile.split('//')[:2]
+        else:
+            hat = None
+        in_contained_hat = False
+        if hat:
+            pps_set_hat_external = True
+        else:
+            hat = profile
+
+    flags = matches[6]
+
+    profile = strip_quotes(profile)
+    if hat:
+        hat = strip_quotes(hat)
+
+    return (profile, hat, flags, in_contained_hat, pps_set_profile, pps_set_hat_external)
+
 def parse_profile_data(data, file, do_include):
     profile_data = hasher()
     profile = None
@@ -2657,41 +2698,15 @@ def parse_profile_data(data, file, do_include):
             lastline = None
         # Starting line of a profile
         if RE_PROFILE_START.search(line):
-            matches = RE_PROFILE_START.search(line).groups()
-
-            if profile:
-                #print(profile, hat)
-                if profile != hat or not matches[3]:
-                    raise AppArmorException(_('%(profile)s profile in %(file)s contains syntax errors in line: %(line)s.') % { 'profile': profile, 'file': file, 'line': lineno + 1 })
-            # Keep track of the start of a profile
-            if profile and profile == hat and matches[3]:
-                # local profile
-                hat = matches[3]
-                in_contained_hat = True
+            (profile, hat, flags, in_contained_hat, pps_set_profile, pps_set_hat_external) = parse_profile_start(line, file, lineno, profile, hat)
+            if pps_set_profile:
                 profile_data[profile][hat]['profile'] = True
-            else:
-                if matches[1]:
-                    profile = matches[1]
-                else:
-                    profile = matches[3]
-                #print(profile)
-                if len(profile.split('//')) >= 2:
-                    profile, hat = profile.split('//')[:2]
-                else:
-                    hat = None
-                in_contained_hat = False
-                if hat:
-                    profile_data[profile][hat]['external'] = True
-                else:
-                    hat = profile
+            if pps_set_hat_external:
+                profile_data[profile][hat]['external'] = True
+
             # Profile stored
             existing_profiles[profile] = file
 
-            flags = matches[6]
-
-            profile = strip_quotes(profile)
-            if hat:
-                hat = strip_quotes(hat)
             # save profile name and filename
             profile_data[profile][hat]['name'] = profile
             profile_data[profile][hat]['filename'] = file

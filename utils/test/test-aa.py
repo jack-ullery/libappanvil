@@ -15,7 +15,7 @@ import shutil
 import tempfile
 from common_test import write_file
 
-from apparmor.aa import check_for_apparmor, get_profile_flags, is_skippable_file
+from apparmor.aa import check_for_apparmor, get_profile_flags, is_skippable_file, parse_profile_start
 from apparmor.common import AppArmorException
 
 class AaTestWithTempdir(unittest.TestCase):
@@ -146,6 +146,45 @@ class AaTest_is_skippable_file(unittest.TestCase):
         self.assertTrue(is_skippable_file('/etc/apparmor.d/'))  # directory without filename
     def test_skippable_13(self):
         self.assertTrue(is_skippable_file('README'))
+
+class AaTest_parse_profile_start(unittest.TestCase):
+    def _parse(self, line, profile, hat):
+        return parse_profile_start(line, 'somefile', 1, profile, hat)
+        # (profile, hat, flags, in_contained_hat, pps_set_profile, pps_set_hat_external)
+
+    def test_parse_profile_start_01(self):
+        result = self._parse('/foo {', None, None)
+        expected = ('/foo', '/foo', None, False, False, False)
+        self.assertEqual(result, expected)
+
+    def test_parse_profile_start_02(self):
+        result = self._parse('/foo (complain) {', None, None)
+        expected = ('/foo', '/foo', 'complain', False, False, False)
+        self.assertEqual(result, expected)
+
+    def test_parse_profile_start_03(self):
+        result = self._parse('profile foo /foo {', None, None) # named profile
+        expected = ('foo /foo', 'foo /foo', None, False, False, False) # XXX yes, that's what happens with the current code :-/
+        self.assertEqual(result, expected)
+
+    def test_parse_profile_start_04(self):
+        result = self._parse('profile /foo {', '/bar', '/bar') # child profile
+        expected = ('/bar', '/foo', None, True, True, False)
+        self.assertEqual(result, expected)
+
+    def test_parse_profile_start_05(self):
+        result = self._parse('/foo//bar {', None, None) # external hat
+        expected = ('/foo', 'bar', None, False, False, True)
+        self.assertEqual(result, expected)
+
+
+    def test_parse_profile_start_invalid_01(self):
+        with self.assertRaises(AppArmorException):
+            self._parse('/foo {', '/bar', '/bar') # child profile without profile keyword
+
+    def test_parse_profile_start_invalid_02(self):
+        with self.assertRaises(AttributeError): # XXX does this need error handling in parse_profile_start?
+            self._parse('xy', '/bar', '/bar') # not a profile start
 
 
 if __name__ == '__main__':
