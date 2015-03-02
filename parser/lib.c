@@ -62,9 +62,9 @@
 int dirat_for_each(DIR *dir, const char *name, void *data,
 		   int (* cb)(DIR *, const char *, struct stat *, void *))
 {
-	struct dirent *dirent = NULL, *ent;
+	struct dirent *dirent = NULL;
 	DIR *d = NULL;
-	int error = 0;
+	int error;
 
 	if (!cb || (!dir && !name)) {
 		errno = EINVAL;
@@ -102,10 +102,18 @@ int dirat_for_each(DIR *dir, const char *name, void *data,
 		d = dir;
 	}
 
-	for (error = readdir_r(d, dirent, &ent);
-	     error == 0 && ent != NULL;
-	     error = readdir_r(d, dirent, &ent)) {
+	for (;;) {
+		struct dirent *ent;
 		struct stat my_stat;
+
+		error = readdir_r(d, dirent, &ent);
+		if (error) {
+			PDEBUG("readdir_r failed");
+			errno = error; /* readdir_r directly returns an errno */
+			goto fail;
+		} else if (!ent) {
+			break;
+		}
 
 		if (strcmp(ent->d_name, ".") == 0 ||
 		    strcmp(ent->d_name, "..") == 0)
@@ -126,7 +134,7 @@ int dirat_for_each(DIR *dir, const char *name, void *data,
 		closedir(d);
 	free(dirent);
 
-	return error;
+	return 0;
 
 fail:
 	error = errno;
