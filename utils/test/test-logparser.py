@@ -66,6 +66,34 @@ class TestParseEvent(unittest.TestCase):
         self.assertIsNone(ReadLog.RE_LOG_v2_6_audit.search(event))
         self.assertIsNotNone(ReadLog.RE_LOG_v2_6_syslog.search(event))
 
+    def test_parse_disconnected_path(self):
+        # from https://bugzilla.opensuse.org/show_bug.cgi?id=918787
+        event = 'type=AVC msg=audit(1424425690.883:716630): apparmor="ALLOWED" operation="file_mmap" info="Failed name lookup - disconnected path" error=-13 profile="/sbin/klogd" name="var/run/nscd/passwd" pid=25333 comm="id" requested_mask="r" denied_mask="r" fsuid=1002 ouid=0'
+        parsed_event = self.parser.parse_event(event)
+
+        self.assertEqual(parsed_event, {
+            'aamode': 'ERROR',   # aamode for disconnected paths overridden aamode in parse_event()
+            'active_hat': None,
+            'attr': None,
+            'denied_mask': {'r', '::r'},
+            'error_code': 13,
+            'info': 'Failed name lookup - disconnected path',
+            'magic_token': 0,
+            'name': 'var/run/nscd/passwd',
+            'name2': None,
+            'operation': 'file_mmap',
+            'parent': 0,
+            'pid': 25333,
+            'profile': '/sbin/klogd',
+            'request_mask': {'r', '::r'},
+            'resource': 'Failed name lookup - disconnected path',
+            'task': 0,
+            'time': 1424425690
+        })
+
+        self.assertIsNotNone(ReadLog.RE_LOG_v2_6_audit.search(event))
+        self.assertIsNone(ReadLog.RE_LOG_v2_6_syslog.search(event))
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
