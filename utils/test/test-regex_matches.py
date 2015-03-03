@@ -12,6 +12,7 @@
 import apparmor.aa as aa
 import unittest
 
+from apparmor.regex import strip_quotes
 
 class AARegexHasComma(unittest.TestCase):
     '''Tests for apparmor.aa.RE_RULE_HAS_COMMA'''
@@ -373,6 +374,26 @@ class AARegexUnix(unittest.TestCase):
         ('deny unixlike,', False),
     ]
 
+class TestStripQuotes(unittest.TestCase):
+    def test_strip_quotes_01(self):
+        self.assertEqual('foo', strip_quotes('foo'))
+    def test_strip_quotes_02(self):
+        self.assertEqual('foo', strip_quotes('"foo"'))
+    def test_strip_quotes_03(self):
+        self.assertEqual('"foo', strip_quotes('"foo'))
+    def test_strip_quotes_04(self):
+        self.assertEqual('foo"', strip_quotes('foo"'))
+    def test_strip_quotes_05(self):
+        self.assertEqual('', strip_quotes('""'))
+    def test_strip_quotes_06(self):
+        self.assertEqual('foo"bar', strip_quotes('foo"bar'))
+    def test_strip_quotes_07(self):
+        self.assertEqual('foo"bar', strip_quotes('"foo"bar"'))
+    def test_strip_quotes_08(self):
+        self.assertEqual('"""foo"bar"""', strip_quotes('""""foo"bar""""'))
+
+
+
 if __name__ == '__main__':
     verbosity = 2
 
@@ -382,6 +403,7 @@ if __name__ == '__main__':
     test_suite = unittest.TestSuite()
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexHasComma))
     test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(AARegexSplitComment))
+    test_suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TestStripQuotes))
 
     for tests in (AARegexCapability, AARegexPath, AARegexBareFile,
                   AARegexDbus, AARegexMount, AARegexUnix,

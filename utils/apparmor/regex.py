@@ -55,3 +55,9 @@ RE_RULE_HAS_COMMA = re.compile('^' + __re_no_or_quoted_hash +
 RE_HAS_COMMENT_SPLIT = re.compile('^(?P<not_comment>' + __re_no_or_quoted_hash + ')' + # store in 'not_comment' group
     '(?P<comment>#.*)$')  # match trailing comment and store in 'comment' group
 
+
+def strip_quotes(data):
+    if data[0] + data[-1] == '""':
+        return data[1:-1]
+    else:
+        return data

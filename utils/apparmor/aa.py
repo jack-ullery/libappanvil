@@ -48,7 +48,8 @@ from apparmor.regex import (RE_PROFILE_START, RE_PROFILE_END, RE_PROFILE_CAP, RE
                             RE_NETWORK_FAMILY_TYPE, RE_NETWORK_FAMILY, RE_PROFILE_CHANGE_HAT,
                             RE_PROFILE_HAT_DEF, RE_PROFILE_DBUS, RE_PROFILE_MOUNT,
                             RE_PROFILE_SIGNAL, RE_PROFILE_PTRACE, RE_PROFILE_PIVOT_ROOT,
-                            RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT )
+                            RE_PROFILE_UNIX, RE_RULE_HAS_COMMA, RE_HAS_COMMENT_SPLIT,
+                            strip_quotes )
 
 import apparmor.rules as aarules
 
@@ -3276,12 +3277,6 @@ def store_list_var(var, list_var, value, var_operation, filename):
     else:
         raise AppArmorException(_('Unknown variable operation %(operation)s for variable %(variable)s in %(file)s') % { 'operation': var_operation, 'variable': list_var, 'file': filename })
 
-
-def strip_quotes(data):
-    if data[0] + data[-1] == '""':
-        return data[1:-1]
-    else:
-        return data
 
 def quote_if_needed(data):
     # quote data if it contains whitespace
