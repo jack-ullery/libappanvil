@@ -587,7 +587,9 @@ static int features_dir_cb(DIR *dir, const char *name, struct stat *st,
 	if (S_ISREG(st->st_mode)) {
 		int len, file;
 		int remaining = fst->size - (fst->pos - *fst->buffer);
-		if (!(file = openat(dirfd(dir), name, O_RDONLY))) {
+
+		file = openat(dirfd(dir), name, O_RDONLY);
+		if (file == -1) {
 			PDEBUG("Could not open '%s'", name);
 			return -1;
 		}
