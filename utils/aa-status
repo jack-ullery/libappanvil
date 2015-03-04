@@ -134,10 +134,10 @@ def filter_processes(processes, status):
 
 def find_apparmorfs():
     '''Finds AppArmor mount point'''
-    for p in open("/proc/mounts").readlines():
-        if p.split()[2] == "securityfs" and \
-           os.path.exists(os.path.join(p.split()[1], "apparmor")):
-            return os.path.join(p.split()[1], "apparmor")
+    for p in open("/proc/mounts","rb").readlines():
+        if p.split()[2].decode() == "securityfs" and \
+           os.path.exists(os.path.join(p.split()[1].decode(), "apparmor")):
+            return os.path.join(p.split()[1].decode(), "apparmor")
     return False
 
 def errormsg(message):
