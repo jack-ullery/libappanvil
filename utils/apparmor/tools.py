@@ -122,6 +122,8 @@ class aa_tools:
                     sys.exit(1)
 
     def cmd_disable(self):
+        apparmor.read_profiles()
+
         for (program, profile) in self.get_next_to_profile():
 
             output_name = profile if program is None else program
