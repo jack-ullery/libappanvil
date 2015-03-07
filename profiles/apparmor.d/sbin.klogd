@@ -11,7 +11,7 @@
 
 #include <tunables/global>
 
-/sbin/klogd {
+profile klogd /{usr/,}sbin/klogd {
   #include <abstractions/base>
 
   capability sys_admin, # for backward compatibility with kernel <= 2.6.37
@@ -24,7 +24,7 @@
   @{PROC}/kallsyms		r,
   /dev/tty		rw,
 
-  /sbin/klogd		rmix,
+  /{usr/,}sbin/klogd		rmix,
   /var/log/boot.msg     rwl,
   /{,var/}run/klogd.pid    krwl,
   /{,var/}run/klogd/klogd.pid krwl,
