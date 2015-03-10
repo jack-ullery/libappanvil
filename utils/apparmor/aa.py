@@ -3715,6 +3715,35 @@ def serialize_profile(profile_data, name, options):
 
     return string + '\n'
 
+def serialize_parse_profile_start(line, file, lineno, profile, hat, prof_data_profile, prof_data_external, correct):
+    matches = RE_PROFILE_START.search(line).groups()
+    if profile and profile == hat and matches[3]:
+        hat = matches[3]
+        in_contained_hat = True
+        if prof_data_profile:
+            pass
+    else:
+        if matches[1]:
+            profile = matches[1]
+        else:
+            profile = matches[3]
+        if len(profile.split('//')) >= 2:
+            profile, hat = profile.split('//')[:2]
+        else:
+            hat = None
+        in_contained_hat = False
+        if hat and not prof_data_external:
+            correct = False
+        else:
+            hat = profile
+
+    flags = matches[6]
+    profile = strip_quotes(profile)
+    if hat:
+        hat = strip_quotes(hat)
+
+    return (profile, hat, flags, in_contained_hat, correct)
+
 def serialize_profile_from_old_profile(profile_data, name, options):
     data = []
     string = ''
@@ -3821,31 +3850,9 @@ def serialize_profile_from_old_profile(profile_data, name, options):
             line = line.rstrip('\n')
             #data.append(' ')#data.append('read: '+line)
             if RE_PROFILE_START.search(line):
-                matches = RE_PROFILE_START.search(line).groups()
-                if profile and profile == hat and matches[3]:
-                    hat = matches[3]
-                    in_contained_hat = True
-                    if write_prof_data[profile][hat]['profile']:
-                        pass
-                else:
-                    if matches[1]:
-                        profile = matches[1]
-                    else:
-                        profile = matches[3]
-                    if len(profile.split('//')) >= 2:
-                        profile, hat = profile.split('//')[:2]
-                    else:
-                        hat = None
-                    in_contained_hat = False
-                    if hat and not write_prof_data[profile][hat]['external']:
-                        correct = False
-                    else:
-                        hat = profile
 
-                flags = matches[6]
-                profile = strip_quotes(profile)
-                if hat:
-                    hat = strip_quotes(hat)
+                (profile, hat, flags, in_contained_hat, correct) = serialize_parse_profile_start(
+                        line, prof_filename, None, profile, hat, write_prof_data[profile][hat]['profile'], write_prof_data[profile][hat]['external'], correct)
 
                 if not write_prof_data[hat]['name'] == profile:
                     correct = False
