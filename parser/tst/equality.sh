@@ -273,6 +273,7 @@ do
 	verify_binary_inequality "audit, deny, and audit deny modifiers for \"${rule}\"" \
 		"/t { ${rule}, }" \
 		"/t { audit ${rule}, }" \
+		"/t { audit allow ${rule}, }" \
 		"/t { deny ${rule}, }" \
 		"/t { audit deny ${rule}, }"
 done
@@ -284,6 +285,7 @@ do
 	verify_binary_inequality "deny, audit deny modifier for \"${rule}\"" \
 		"/t { ${rule}, }" \
 		"/t { audit ${rule}, }" \
+		"/t { audit allow ${rule}, }" \
 		"/t { deny /f x, }" \
 		"/t { audit deny /f x, }"
 done
