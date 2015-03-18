@@ -32,24 +32,34 @@ hash_binary_policy()
 	return $?
 }
 
-# verify_binary_equality - compares the binary policy of multiple profiles
-# $1: A short description of the test
-# $2: The known-good profile
-# $3..$n: The profiles to compare against $2
+# verify_binary - compares the binary policy of multiple profiles
+# $1: Test type (equality or inequality)
+# $2: A short description of the test
+# $3: The known-good profile
+# $4..$n: The profiles to compare against $3
 #
 # Upon failure/error, prints out the test description and profiles that failed
 # and increments $fails or $errors for each failure and error, respectively
-verify_binary_equality()
+verify_binary()
 {
-	local desc=$1
-	local good_profile=$2
+	local t=$1
+	local desc=$2
+	local good_profile=$3
 	local good_hash
 	local ret=0
 
 	shift
 	shift
+	shift
 
-	printf "Binary equality %s" "$desc"
+	if [ "$t" != "equality" ] && [ "$t" != "inequality" ]
+	then
+		printf "\nERROR: Unknown test mode:\n%s\n\n" "$t" 1>&2
+		((errors++))
+		return $((ret + 1))
+	fi
+
+	printf "Binary %s %s" "$t" "$desc"
 	good_hash=$(hash_binary_policy "$good_profile")
 	if [ $? -ne 0 ]
 	then
@@ -68,10 +78,17 @@ verify_binary_equality()
 			       "$profile" 1>&2
 			((errors++))
 			((ret++))
-		elif [ "$hash" != "$good_hash" ]
+		elif [ "$t" == "equality" ] && [ "$hash" != "$good_hash" ]
 		then
 			printf "\nFAIL: Hash values do not match\n" 2>&1
 			printf "known-good (%s) != profile-under-test (%s) for the following profile:\n%s\n\n" \
+				"$good_hash" "$hash" "$profile" 1>&2
+			((fails++))
+			((ret++))
+		elif [ "$t" == "inequality" ] && [ "$hash" == "$good_hash" ]
+		then
+			printf "\nFAIL: Hash values match\n" 2>&1
+			printf "known-good (%s) == profile-under-test (%s) for the following profile:\n%s\n\n" \
 				"$good_hash" "$hash" "$profile" 1>&2
 			((fails++))
 			((ret++))
@@ -84,6 +101,16 @@ verify_binary_equality()
 	fi
 
 	return $ret
+}
+
+verify_binary_equality()
+{
+	verify_binary "equality" "$@"
+}
+
+verify_binary_inequality()
+{
+	verify_binary "inequality" "$@"
 }
 
 verify_binary_equality "dbus send" \
