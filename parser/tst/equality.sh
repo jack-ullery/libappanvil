@@ -252,6 +252,42 @@ verify_binary_equality "dbus minimization found in dbus abstractions" \
                    peer=(name=org.freedesktop.DBus),
 	      dbus send bus=session, }"
 
+# Rules compatible with audit, deny, and audit deny
+for rule in "capability" "capability mac_admin" \
+	"network" "network tcp" "network inet6 tcp"\
+	"mount" "mount /a" "mount /a -> /b" "mount options in (ro) /a -> b" \
+	"remount" "remount /a" \
+	"umount" "umount /a" \
+	"pivot_root" "pivot_root /a" "pivot_root oldroot=/" \
+	 "pivot_root oldroot=/ /a" "pivot_root oldroot=/ /a -> foo" \
+	"ptrace" "ptrace trace" "ptrace (readby,tracedby) peer=unconfined" \
+	"signal" "signal (send,receive)" "signal peer=unconfined" \
+	 "signal receive set=(kill)" \
+	"dbus" "dbus send" "dbus bus=system" "dbus bind name=foo" \
+	 "dbus peer=(label=foo)" "dbus eavesdrop" \
+	"unix" "unix (create, listen, accept)" "unix addr=@*" "unix addr=none" \
+	 "unix peer=(label=foo)" \
+	"/f r" "/f w" "/f rwmlk" "/** r" "/**/ w" \
+	"file /f r" "file /f w" "file /f rwmlk"
+do
+	verify_binary_inequality "audit, deny, and audit deny modifiers for \"${rule}\"" \
+		"/t { ${rule}, }" \
+		"/t { audit ${rule}, }" \
+		"/t { deny ${rule}, }" \
+		"/t { audit deny ${rule}, }"
+done
+
+# Rules that need special treatment for the deny modifier
+for rule in "/f ux" "/f Ux" "/f px" "/f Px" "/f ix" \
+	"file /f ux" "file /f UX" "file /f px" "file /f Px" "file /f ix"
+do
+	verify_binary_inequality "deny, audit deny modifier for \"${rule}\"" \
+		"/t { ${rule}, }" \
+		"/t { audit ${rule}, }" \
+		"/t { deny /f x, }" \
+		"/t { audit deny /f x, }"
+done
+
 if [ $fails -ne 0 -o $errors -ne 0 ]
 then
 	printf "ERRORS: %d\nFAILS: %d\n" $errors $fails 2>&1
