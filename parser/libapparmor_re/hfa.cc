@@ -1335,19 +1335,16 @@ int accept_perms(NodeSet *state, perms_t &perms)
 	}
 
 	perms.allow |= exact_match_allow & ~(ALL_AA_EXEC_TYPE);
-
-	if (exact_match_allow & AA_USER_EXEC_TYPE) {
+	perms.audit |= exact_audit & ~(ALL_AA_EXEC_TYPE);
+	
+	if (exact_match_allow & AA_USER_EXEC) {
 		perms.allow = (exact_match_allow & AA_USER_EXEC_TYPE) |
 			(perms.allow & ~AA_USER_EXEC_TYPE);
-		perms.audit = (exact_audit & AA_USER_EXEC_TYPE) |
-			(perms.audit & ~AA_USER_EXEC_TYPE);
 		perms.exact = AA_USER_EXEC_TYPE;
 	}
-	if (exact_match_allow & AA_OTHER_EXEC_TYPE) {
+	if (exact_match_allow & AA_OTHER_EXEC) {
 		perms.allow = (exact_match_allow & AA_OTHER_EXEC_TYPE) |
 			(perms.allow & ~AA_OTHER_EXEC_TYPE);
-		perms.audit = (exact_audit & AA_OTHER_EXEC_TYPE) |
-			(perms.audit & ~AA_OTHER_EXEC_TYPE);
 		perms.exact |= AA_OTHER_EXEC_TYPE;
 	}
 	if (AA_USER_EXEC & perms.deny)
