@@ -270,6 +270,10 @@ for rule in "capability" "capability mac_admin" \
 	"/f r" "/f w" "/f rwmlk" "/** r" "/**/ w" \
 	"file /f r" "file /f w" "file /f rwmlk"
 do
+	verify_binary_equality "allow modifier for \"${rule}\"" \
+		"/t { ${rule}, }" \
+		"/t { allow ${rule}, }"
+
 	verify_binary_inequality "audit, deny, and audit deny modifiers for \"${rule}\"" \
 		"/t { ${rule}, }" \
 		"/t { audit ${rule}, }" \
@@ -282,6 +286,10 @@ done
 for rule in "/f ux" "/f Ux" "/f px" "/f Px" "/f ix" \
 	"file /f ux" "file /f UX" "file /f px" "file /f Px" "file /f ix"
 do
+	verify_binary_equality "allow modifier for \"${rule}\"" \
+		"/t { ${rule}, }" \
+		"/t { allow ${rule}, }" \
+
 	verify_binary_inequality "deny, audit deny modifier for \"${rule}\"" \
 		"/t { ${rule}, }" \
 		"/t { audit ${rule}, }" \
