@@ -323,7 +323,7 @@ struct aa_network_entry *network_entry(const char *family, const char *type,
 
 const char *net_find_af_name(unsigned int af)
 {
-	int i;
+	size_t i;
 
 	if (af < 0 || af > get_af_max())
 		return NULL;
