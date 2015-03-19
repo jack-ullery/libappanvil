@@ -22,13 +22,15 @@
 
 set -o pipefail
 
-APPARMOR_PARSER="${APPARMOR_PARSER:-../apparmor_parser}"
+_SCRIPTDIR=$(dirname "${BASH_SOURCE[0]}" )
+
+APPARMOR_PARSER="${APPARMOR_PARSER:-${_SCRIPTDIR}/../apparmor_parser}"
 fails=0
 errors=0
 
 hash_binary_policy()
 {
-	printf %s "$1" | ${APPARMOR_PARSER} -qS 2>/dev/null| md5sum | cut -d ' ' -f 1
+	printf %s "$1" | ${APPARMOR_PARSER} --features-file ${_SCRIPTDIR}/features_files/features.all -qS 2>/dev/null| md5sum | cut -d ' ' -f 1
 	return $?
 }
 
