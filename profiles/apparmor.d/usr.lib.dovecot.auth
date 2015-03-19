@@ -17,6 +17,7 @@
   #include <abstractions/base>
   #include <abstractions/mysql>
   #include <abstractions/nameservice>
+  #include <abstractions/openssl>
   #include <abstractions/wutmp>
   #include <abstractions/dovecot-common>
 
