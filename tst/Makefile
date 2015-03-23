@@ -9,6 +9,8 @@ PROVE_ARG=-f
 ifeq ($(VERBOSE),1)
   PROVE_ARG+=-v
   PYTEST_ARG = -v
+else
+  undefine VERBOSE
 endif
 
 all: tests
