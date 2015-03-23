@@ -522,9 +522,14 @@ static int process_dfa_entry(aare_rules *dfarules, struct cod_entry *entry)
 	 * out by a deny rule, as both pieces of the link pair must
 	 * match.  audit info for the link is carried on the second
 	 * entry of the pair
+	 *
+	 * So if a deny rule only record it if there are permissions other
+	 * than link in the entry.
+	 * TODO: split link and change_profile entries earlier
 	 */
-	if (entry->deny && (entry->mode & AA_LINK_BITS)) {
-		if (!dfarules->add_rule(tbuf.c_str(), entry->deny,
+	if (entry->deny) {
+		if ((entry->mode & ~(AA_LINK_BITS | AA_CHANGE_PROFILE)) &&
+		    !dfarules->add_rule(tbuf.c_str(), entry->deny,
 					entry->mode & ~AA_LINK_BITS,
 					entry->audit & ~AA_LINK_BITS, dfaflags))
 			return FALSE;
