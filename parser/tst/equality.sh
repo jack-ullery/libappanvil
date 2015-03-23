@@ -291,10 +291,23 @@ do
 		"/t { ${rule}, }" \
 		"/t { allow ${rule}, }"
 
+	verify_binary_equality "audit allow modifier for \"${rule}\"" \
+		"/t { audit ${rule}, }" \
+		"/t { audit allow ${rule}, }"
+
 	verify_binary_inequality "audit, deny, and audit deny modifiers for \"${rule}\"" \
 		"/t { ${rule}, }" \
 		"/t { audit ${rule}, }" \
 		"/t { audit allow ${rule}, }" \
+		"/t { deny ${rule}, }" \
+		"/t { audit deny ${rule}, }"
+
+	verify_binary_inequality "audit vs deny and audit deny modifiers for \"${rule}\"" \
+		"/t { audit ${rule}, }" \
+		"/t { deny ${rule}, }" \
+		"/t { audit deny ${rule}, }"
+
+	verify_binary_inequality "deny and audit deny modifiers for \"${rule}\"" \
 		"/t { deny ${rule}, }" \
 		"/t { audit deny ${rule}, }"
 done
@@ -332,6 +345,10 @@ do
 		"/t { ${rule}, }" \
 		"/t { allow ${rule}, }"
 
+	verify_binary_equality "audit allow modifier for \"${rule}\"" \
+		"/t { audit ${rule}, }" \
+		"/t { audit allow ${rule}, }"
+
 	# skip rules that don't end with x perm
 	if [ -n "${rule##*x}" ] ; then continue ; fi
 
@@ -341,6 +358,19 @@ do
 		"/t { audit allow ${rule}, }" \
 		"/t { deny ${rule% *} x, }" \
 		"/t { audit deny ${rule% *} x, }"
+
+	verify_binary_inequality "audit vs deny and audit deny modifiers for \"${rule}\"" \
+		"/t { audit ${rule}, }" \
+		"/t { deny ${rule% *} x, }" \
+		"/t { audit deny ${rule% *} x, }"
+
+done
+
+# verify deny and audit deny differ for x perms
+for prefix in "/f" "/*" "file /f" "file /*" ; do
+	verify_binary_inequality "deny and audit deny x modifiers for \"${prefix}\"" \
+		"/t { deny ${prefix} x, }" \
+		"/t { audit deny ${prefix} x, }"
 done
 
 #Test equality of leading and trailing file permissions
@@ -357,7 +387,7 @@ for audit in "" "audit" ; do
 					    "lkm" "rwlk" "rwlm" "rwkm" \
 					    "ralk" "ralm" "wlkm" "alkm" \
 					    "rwlkm" "ralkm" ; do
-					verify_binary_equality "leading and trailing perms" \
+					verify_binary_equality "leading and trailing perms for \"${perm}\"" \
 						"/t { ${prefix} /f ${perm}, }" \
 						"/t { ${prefix} ${perm} /f, }"
 				done
@@ -366,7 +396,7 @@ for audit in "" "audit" ; do
 					    "ix" "pux" "Pux" "pix" "Pix" \
 					    "cux" "Cux" "cix" "Cix"
 				do
-					verify_binary_equality "leading and trailing perms" \
+					verify_binary_equality "leading and trailing perms for \"${perm}\"" \
 						"/t { ${prefix} /f ${perm}, }" \
 						"/t { ${prefix} ${perm} /f, }"
 				done
@@ -374,7 +404,7 @@ for audit in "" "audit" ; do
 					    "pux" "Pux" "pix" "Pix" \
 					    "cux" "Cux" "cix" "Cix"
 				do
-					verify_binary_equality "leading and trailing perms" \
+					verify_binary_equality "leading and trailing perms for x-transition \"${perm}\"" \
 						"/t { ${prefix} /f ${perm} -> b, }" \
 						"/t { ${prefix} ${perm} /f -> b, }"
 				done
@@ -396,16 +426,20 @@ do
 	             "pix -> b" "Pix -> b" "cux -> b" "Cux -> b" \
 	             "cix -> b" "Cix -> b"
 	do
-		if [ "$perm1" ==  "$perm2" ] ; then
-			verify_binary_equality "Exec - most specific match: same as glob" \
-				"/t { /* px, /f px, }" \
-				"/t { /* px, }"
+		if [ "$perm1" == "$perm2" ] ; then
+			verify_binary_equality "Exec perm \"${perm1}\" - most specific match: same as glob" \
+				"/t { /* ${perm1}, /f ${perm2}, }" \
+				"/t { /* ${perm1}, }"
 		else
-			verify_binary_inequality "Exec - most specific match: different from glob" \
-				"/t { /* px, /f cx, }" \
-				"/t { /* px, }"
+			verify_binary_inequality "Exec \"${perm1}\" vs \"${perm2}\" - most specific match: different from glob" \
+				"/t { /* ${perm1}, /f ${perm2}, }" \
+				"/t { /* ${perm1}, }"
 		fi
 	done
+	verify_binary_inequality "Exec \"${perm1}\" vs deny x - most specific match: different from glob" \
+		"/t { /* ${perm1}, audit deny /f x, }" \
+		"/t { /* ${perm1}, }"
+
 done
 
 #Test deny carves out permission
