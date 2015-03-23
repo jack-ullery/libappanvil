@@ -27,7 +27,7 @@ _SCRIPTDIR=$(dirname "${BASH_SOURCE[0]}" )
 APPARMOR_PARSER="${APPARMOR_PARSER:-${_SCRIPTDIR}/../apparmor_parser}"
 fails=0
 errors=0
-verbose=
+verbose="${VERBOSE:-}"
 
 hash_binary_policy()
 {
@@ -430,5 +430,6 @@ then
 	exit $(($fails + $errors))
 fi
 
+[ -z "${verbose}" ] && printf "\n"
 printf "PASS\n"
 exit 0
