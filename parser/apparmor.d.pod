@@ -54,7 +54,7 @@ B<COMMENT> = '#' I<TEXT>
 
 B<TEXT> = any characters
 
-B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | I<CAPABILITY RULE> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<DBUS RULE> | I<UNIX RULE> | I<FILE RULE> | 'change_profile -E<gt> ' I<PROGRAMCHILD> ) ... ] '}'
+B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | I<CAPABILITY RULE> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<DBUS RULE> | I<UNIX RULE> | I<FILE RULE> | I<CHANGE_PROFILE RULE> ) ... ] '}'
 
 B<SUBPROFILE> = [ I<COMMENT> ... ] ( I<PROGRAMHAT> | 'profile ' I<PROGRAMCHILD> ) '{' [ ( I<FILE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}'
 
@@ -210,6 +210,10 @@ B<ALIAS RULE> = I<ABS PATH> '-E<gt>' I<REWRITTEN ABS PATH> ','
 B<ALPHA> = ('a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
 
 B<ALPHANUMERIC> = ('0', '1', '2', ... '9', 'a', 'b', 'c', ... 'z', 'A', 'B', ... 'Z')
+
+B<CHANGE_PROFILE RULE> = 'change_profile' [ I<EXEC COND> ] [ -E<gt> I<PROGRAMCHILD> ]
+
+B<EXEC COND> = I<FILEGLOB>
 
 =back
 
@@ -957,6 +961,42 @@ Has no exact match under coarse grained network rules, the closest match is
 the much wider permission rule of
 
    network unix,
+
+=head2 change_profile rules
+
+AppArmor supports self directed profile transitions via the change_profile
+api. Change_profile rules control which permissions for which profiles
+a confined task can transition to.  The profile name can contain apparmor
+pattern matching to specify different profiles.
+
+  change_profile -> **,
+
+The change_profile api allows the transition to be delayed until when
+a task executes another application. If an exec rule transition is
+specified for the application and the change_profile api is used to
+make a transition at exec time, the transition specified by the
+change_profile api takes precedence.
+
+The Change_profile permission can restrict which profiles can be transitioned
+to based off of the executable name by specifying the exec condition.
+
+  change_profile /bin/bash -> new_profile,
+
+The restricting of the transition profile to a given executable at exec
+time is only useful when then current task is allowed to make dynamic
+decisions about what confinement should be, but the decision set needs
+to be controlled. A list of profiles or multiple rules can be used to
+specify the profiles in the set. Eg.
+
+  change_profile /bin/bash -> {new_profile1,new_profile2,new_profile3},
+
+An exec rule can be used to specify a transition for the executable, if
+the transition should be allowed even if the change_profile api has not
+been used to select a transition for those available in the change_profile
+rule set.  Eg.
+
+  /bin/bash Px -> new_profile1,
+  change_profile /bin/bash -> {new_profile1,new_profile2,new_profile3},
 
 =head2 Variables
 
