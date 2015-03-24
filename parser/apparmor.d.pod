@@ -107,6 +107,12 @@ B<MOUNT EXPRESSION> = ( I<ALPHANUMERIC> | I<AARE> ) ...
 
 B<PIVOT ROOT RULE> = [ I<QUALIFIERS> ] pivot_root [ oldroot=I<OLD PUT FILEGLOB> ] [ I<NEW ROOT FILEGLOB> ] [ -E<gt> I<PROGRAMCHILD> ]
 
+B<SOURCE FILEGLOB> = I<FILEGLOB>
+
+B<MOUNTPOINT FILEGLOB> = I<FILEGLOB>
+
+B<OLD PUT FILEGLOB> = I<FILEGLOB>
+
 B<PTRACE_RULE> = [ I<QUALIFIERS> ] 'ptrace' [ I<PTRACE ACCESS PERMISSIONS> ] [ I<PTRACE PEER> ]
 
 B<PTRACE ACCESS PERMISSIONS> = I<PTRACE ACCESS> | I<PTRACE ACCESS LIST>
@@ -195,9 +201,13 @@ B<UNIX ATTR COND> 'attr' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
 B<UNIX OPT COND> 'opt' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
-B<FILE RULE> = [ I<QUALIFIERS> ] [ 'owner' ] [ 'file' ] ( ( '"' I<FILEGLOB> '"' | I<FILEGLOB> ) I<ACCESS>  | [I<ACCESS> ( '"' I<FILEGLOB> '"' | I<FILEGLOB> ) ) [ -E<gt> <EXEC TARGET> ] ','
+B<FILE RULE> = [ I<QUALIFIERS> ] [ 'owner' ] [ 'file' ] ( I<FILEGLOB> I<ACCESS>  | I<ACCESS> I<FILEGLOB> ) [ -E<gt> <EXEC TARGET> ] ','
 
-B<FILEGLOB> = (must start with '/' (after variable expansion), B<AARE> have special meanings; see below. May include I<VARIABLE>. Rules with embedded spaces or tabs must be quoted. Rules must end with '/' to apply to directories.)
+B<FILEGLOB> = ( I<QUOTED FILEGLOB> | I<UNQUOTED FILEGLOB> )
+
+B<QUOTED FILEGLOB> = '"' I<UNQUOTED FILEGLOB> '"'
+
+B<UNQUOTED FILEGLOB> = (must start with '/' (after variable expansion), B<AARE> have special meanings; see below. May include I<VARIABLE>. Rules with embedded spaces or tabs must be quoted. Rules must end with '/' to apply to directories.)
 
 B<ACCESS> = ( 'r' | 'w' | 'a' | 'l' | 'k' | 'm' | I<EXEC TRANSITION> )+  (not all combinations are allowed; see below.)
 
