@@ -195,7 +195,7 @@ B<UNIX ATTR COND> 'attr' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
 B<UNIX OPT COND> 'opt' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
-B<FILE RULE> = [ I<QUALIFIERS> ] [ 'owner' ] [ 'file' ] ( '"' I<FILEGLOB> '"' | I<FILEGLOB> ) I<ACCESS>  [ -E<gt> <EXEC TARGET> ] ','
+B<FILE RULE> = [ I<QUALIFIERS> ] [ 'owner' ] [ 'file' ] ( ( '"' I<FILEGLOB> '"' | I<FILEGLOB> ) I<ACCESS>  | [I<ACCESS> ( '"' I<FILEGLOB> '"' | I<FILEGLOB> ) ) [ -E<gt> <EXEC TARGET> ] ','
 
 B<FILEGLOB> = (must start with '/' (after variable expansion), B<AARE> have special meanings; see below. May include I<VARIABLE>. Rules with embedded spaces or tabs must be quoted. Rules must end with '/' to apply to directories.)
 
@@ -512,6 +512,19 @@ on the new link, it must match the original file exactly.
 
 Allows the program to be able lock a file with this name.  This permission
 covers both advisory and mandatory locking.
+
+=item B<leading OR trailing access permissions>
+
+File rules can be specified with the access permission either leading
+or trailing the file glob. Eg.
+
+  rw /**,		# leading permissions
+
+  /** rw,		# trailing permissions
+
+When a leading permissions is used further rule options and context
+may be allowed, Eg.
+  l /foo -> /bar,	# lead 'l' link permission is equivalent to link rules
 
 =back
 
