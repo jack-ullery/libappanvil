@@ -195,11 +195,15 @@ B<UNIX ATTR COND> 'attr' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
 B<UNIX OPT COND> 'opt' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
-B<FILE RULE> = [ I<QUALIFIERS> ] [ 'owner' ] ( '"' I<FILEGLOB> '"' | I<FILEGLOB> ) I<ACCESS> ','
+B<FILE RULE> = [ I<QUALIFIERS> ] [ 'owner' ] [ 'file' ] ( '"' I<FILEGLOB> '"' | I<FILEGLOB> ) I<ACCESS>  [ -E<gt> <EXEC TARGET> ] ','
 
 B<FILEGLOB> = (must start with '/' (after variable expansion), B<AARE> have special meanings; see below. May include I<VARIABLE>. Rules with embedded spaces or tabs must be quoted. Rules must end with '/' to apply to directories.)
 
-B<ACCESS> = ( 'r' | 'w' | 'l' | 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'cx -E<gt> ' I<PROGRAMCHILD> | 'Cx -E<gt> ' I<PROGRAMCHILD> | 'm' ) [ I<ACCESS> ... ]  (not all combinations are allowed; see below.)
+B<ACCESS> = ( 'r' | 'w' | 'a' | 'l' | 'k' | 'm' | I<EXEC TRANSITION> )+  (not all combinations are allowed; see below.)
+
+B<EXEC TRANSITION> =  ( 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'cx' | 'Cx' | 'pix' | 'Pix' | 'cix' | 'Cix' | 'pux' | 'PUx' | 'cux' | 'CUx' )
+
+B<EXEC TARGET> = name  (requires I<EXEC TRANSITION> specified)
 
 B<VARIABLE> = '@{' I<ALPHA> [ ( I<ALPHANUMERIC> | '_' ) ... ] '}'
 
@@ -278,6 +282,38 @@ modes:
 
 - inherit execute
 
+=item B<pix>
+
+- discrete profile execute with inherit fallback
+
+=item B<Pix>
+
+- discrete profile execute with inherit fallback -- scrub the environment
+
+=item B<cix>
+
+- transition to subprofile on execute with inherit fallback
+
+=item B<Cix>
+
+- transition to subprofile on execute with inherit fallback -- scrub the environment
+
+=item B<pux>
+
+- discrete profile execute with fallback to unconfined
+
+=item B<PUx>
+
+- discrete profile execute with fallback to unconfined -- scrub the environment
+
+=item B<cux>
+
+- transition to subprofile on execute with fallback to unconfined
+
+=item B<Cux>
+
+- transition to subprofile on execute with fallback to unconfined -- scrub the environment
+
 =item B<m>
 
 - allow PROT_EXEC with mmap(2) calls
@@ -337,7 +373,7 @@ over the callee.  Use this mode only if the child absolutely must be
 run unconfined and LD_PRELOAD must be used. Any profile using this mode
 provides negligible security. Use at your own risk.
 
-Incompatible with 'Ux', 'px', 'Px', 'cx', 'Cx', 'ix'.
+Incompatible with other exec transition modes.
 
 =item B<Ux - unconfined execute -- scrub the environment>
 
@@ -351,7 +387,7 @@ designated child processes to be run without any AppArmor protection.
 Use this mode only if the child absolutely must be run unconfined. Use
 at your own risk.
 
-Incompatible with 'ux', 'px', 'Px', 'cx', 'Cx', 'ix'.
+Incompatible with other exec transition modes.
 
 =item B<px - Discrete Profile execute mode>
 
@@ -363,7 +399,7 @@ B<WARNING> 'px' does not scrub the environment of variables such as
 LD_PRELOAD; as a result, the calling domain may have an undue amount of
 influence over the callee.
 
-Incompatible with 'Ux', 'ux', 'Px', 'cx', 'Cx', 'ix'.
+Incompatible with other exec transition modes.
 
 =item B<Px - Discrete Profile execute mode -- scrub the environment>
 
@@ -372,7 +408,7 @@ will invoke the Linux Kernel's B<unsafe_exec> routines to scrub
 the environment, similar to setuid programs. (See ld.so(8) for some
 information on setuid/setgid environment scrubbing.)
 
-Incompatible with 'Ux', 'ux', 'px', 'cx', 'Cx', 'ix'.
+Incompatible with other exec transition modes.
 
 =item B<cx - Transition to Subprofile execute mode>
 
@@ -384,7 +420,7 @@ B<WARNING> 'cx' does not scrub the environment of variables such as
 LD_PRELOAD; as a result, the calling domain may have an undue amount of
 influence over the callee.
 
-Incompatible with 'Ux', 'ux', 'px', 'Px', 'Cx', 'ix'.
+Incompatible with other exec transition modes.
 
 =item B<Cx - Transition to Subprofile execute mode -- scrub the environment>
 
@@ -393,7 +429,7 @@ will invoke the Linux Kernel's B<unsafe_exec> routines to scrub
 the environment, similar to setuid programs. (See ld.so(8) for some
 information on setuid/setgid environment scrubbing.)
 
-Incompatible with 'Ux', 'ux', 'px', 'Px', 'cx', 'ix'.
+Incompatible with other exec transition modes.
 
 =item B<ix - Inherit execute mode>
 
@@ -407,7 +443,51 @@ profile, or losing the permissions of the current profile. There is no
 version to scrub the environment because 'ix' executions don't change
 privileges.
 
-Incompatible with 'Ux', 'ux', 'Px', 'px', 'cx', 'Cx'. Implies 'm'.
+Incompatible with other exec transition modes.
+
+=item B<Profile transition with inheritance fallback execute mode>
+
+These modes attempt to perform a domain transition as specified by
+the matching permission (shown below) and if that transition fails
+to find the matching profile the domain transition proceeds using
+the 'ix' transition mode.
+
+  'Pix' == 'Px' with fallback to 'ix'
+  'pix' == 'px' with fallback to 'ix'
+  'Cix' == 'Cx' with fallback to 'ix'
+  'cix' == 'cx' with fallback to 'ix'
+
+Incompatible with other exec transition modes.
+
+=item B<Profile transition with unconfined fallback execute mode>
+
+These modes attempt to perform a domain transition as specified by
+the matching permission (shown below) and if that transition fails
+to find the matching profile the domain transition proceeds using
+the 'ux' transition mode if 'pux', 'cux' or the 'Ux' transition mode
+if 'PUx', 'CUx' is used.
+
+  'PUx' == 'Px' with fallback to 'Ux'
+  'pux' == 'px' with fallback to 'ux'
+  'CUx' == 'Cx' with fallback to 'Ux'
+  'cux' == 'cx' with fallback to 'ux'
+
+Incompatible with other exec transition modes.
+
+=item B<Directed profile transitions>
+
+The directed ('px', 'Px', 'pix', 'Pix', 'pux', 'PUx') profile and
+subprofile ('cx', 'Cx', 'cix', 'Cix', 'cux', 'CUx') transitions normally
+determine the profile to transition to from the executable name. It
+is however possible to specify the name of the profile that the transition
+should use.
+
+The name of the profile to transition to is specified using the '->'
+followed by the name of the profile to transition to. Eg.
+
+  /bin/** px -> profile,
+
+Incompatible with other exec transition modes.
 
 =item B<m - Allow executable mapping>
 
