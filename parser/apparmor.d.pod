@@ -54,7 +54,7 @@ B<COMMENT> = '#' I<TEXT>
 
 B<TEXT> = any characters
 
-B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | I<CAPABILITY RULE> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<DBUS RULE> | I<UNIX RULE> | I<FILE RULE> | I<CHANGE_PROFILE RULE> ) ... ] '}'
+B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | I<CAPABILITY RULE> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<DBUS RULE> | I<UNIX RULE> | I<FILE RULE> | I<LINK RULE> | I<CHANGE_PROFILE RULE> ) ... ] '}'
 
 B<SUBPROFILE> = [ I<COMMENT> ... ] ( I<PROGRAMHAT> | 'profile ' I<PROGRAMCHILD> ) '{' [ ( I<FILE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}'
 
@@ -165,7 +165,7 @@ B<DBUS ACCESS> = ( 'send' | 'receive' | 'bind' | 'eavesdrop' )  (some accesses a
 
 B<AARE> = B<?*[]{}^> (see below for meanings)
 
-B<UNIX RILE> = [ I<QUALIFIERS> ] 'unix' [ I<UNIX ACCESS EXPR> ] [ I<UNIX RULE CONDS> ] [ I<UNIX LOCAL EXPR> ] [ I<UNIX PEER EXPR> ]
+B<UNIX RULE> = [ I<QUALIFIERS> ] 'unix' [ I<UNIX ACCESS EXPR> ] [ I<UNIX RULE CONDS> ] [ I<UNIX LOCAL EXPR> ] [ I<UNIX PEER EXPR> ]
 
 B<UNIX ACCESS EXPR> = ( I<UNIX ACCESS> | I<UNIX ACCESS LIST> )
 
@@ -204,6 +204,8 @@ B<ACCESS> = ( 'r' | 'w' | 'a' | 'l' | 'k' | 'm' | I<EXEC TRANSITION> )+  (not al
 B<EXEC TRANSITION> =  ( 'ix' | 'ux' | 'Ux' | 'px' | 'Px' | 'cx' | 'Cx' | 'pix' | 'Pix' | 'cix' | 'Cix' | 'pux' | 'PUx' | 'cux' | 'CUx' )
 
 B<EXEC TARGET> = name  (requires I<EXEC TRANSITION> specified)
+
+B<LINK RULE> = I<QUALIFIERS> [ 'owner' ] 'link' [ 'subset' ] <FILEGLOB> ( 'to' | '-E<gt>' ) <FILEGLOB> ','
 
 B<VARIABLE> = '@{' I<ALPHA> [ ( I<ALPHANUMERIC> | '_' ) ... ] '}'
 
@@ -504,9 +506,9 @@ B<LD_LIBRARY_PATH>, given to ld.so(8).
 
 Allows the program to be able to create a link with this name.  When a
 link is created, the new link B<MUST> have a subset of permissions as
-the original file (with the exception that
-the destination does not have to have link access.) If there is an 'x' rule
-on the new link, it must match the original file exactly.
+the original file (with the exception that the destination does not have
+to have link access.) If there is an 'x' rule on the new link, it must
+match the original file exactly.
 
 =item B<k - lock mode>
 
@@ -527,6 +529,44 @@ may be allowed, Eg.
   l /foo -> /bar,	# lead 'l' link permission is equivalent to link rules
 
 =back
+
+=head2 Link rules
+
+Link rules allow specifying permission to form a hard link as a link
+target pair.  If the subset condition is specified then the permissions
+to access the link file must be a subset of the profiles permissions
+to access the target file. If there is an 'x' rule on the new link, it
+must match the original file exactly.
+
+Eg.
+
+  /file1  r,
+  /file2  rwk,
+  /link*  rw,
+  link subset /link* -> /**,
+
+  The link rule allows linking of /link to both /file1 or /file2 by
+  name however because the /link file has 'rw' permissions it is not
+  allowed to link to /file1 because that would grant an access path
+  to /file1 with more permissions than the 'r' permissions the profile
+  specifies.
+
+  A link of /link to /file2 would be allowed because the 'rw' permissions
+  of /link are a subset of the 'rwk' permissions for /file1.
+
+The link rule is equivalent to specifying the 'l' link permission as
+a leading permission with no other file access permissions. When this
+is done the link rule options can be specified.
+
+The following link rule is equivalent to the 'l' permission file rule
+  link /foo -> bar,
+  l /foo -> /bar,
+
+File rules that specify the 'l' permission and don't specify the extend
+link permissions map to link rules as follows.
+  /foo l,
+  l /foo,
+  link subset /foo -> /**,
 
 =head2 Comments
 
