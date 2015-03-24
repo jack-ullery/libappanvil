@@ -54,7 +54,7 @@ B<COMMENT> = '#' I<TEXT>
 
 B<TEXT> = any characters
 
-B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | I<CAPABILITY RULE> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<DBUS RULE> | I<UNIX RULE> | I<FILE RULE> | I<LINK RULE> | I<CHANGE_PROFILE RULE> ) ... ] '}'
+B<PROFILE> = [ I<COMMENT> ... ] [ I<VARIABLE ASSIGNMENT> ... ] ( '"' I<PROGRAM> '"' | I<PROGRAM> ) [ 'flags=(complain)' ]'{' [ ( I<RESOURCE RULE> | I<COMMENT> | I<INCLUDE> | I<SUBPROFILE> | I<CAPABILITY RULE> | I<NETWORK RULE> | I<MOUNT RULE> | I<PIVOT ROOT RULE> | I<DBUS RULE> | I<UNIX RULE> | I<FILE RULE> | I<LINK RULE> | I<CHANGE_PROFILE RULE> | I<RLIMIT RULE>) ... ] '}'
 
 B<SUBPROFILE> = [ I<COMMENT> ... ] ( I<PROGRAMHAT> | 'profile ' I<PROGRAMCHILD> ) '{' [ ( I<FILE RULE> | I<COMMENT> | I<INCLUDE> ) ... ] '}'
 
@@ -201,7 +201,23 @@ B<UNIX ATTR COND> 'attr' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
 B<UNIX OPT COND> 'opt' '=' ( I<AARE> | '(' '"' I<AARE> '"' | I<AARE> ')' )
 
+<<<<<<< HEAD
 B<FILE RULE> = [ I<QUALIFIERS> ] [ 'owner' ] ( 'file' | [ 'file' ] ( I<FILEGLOB> I<ACCESS>  | I<ACCESS> I<FILEGLOB> ) [ -E<gt> <EXEC TARGET> ] ) ','
+=======
+B<RLIMIT RULE> = 'set' 'rlimit' [I<RLIMIT> 'E<lt>=' I<RLIMIT VALUE> ] ','
+
+B<RLIMIT> = ( 'cpu' | 'fsize' | 'data' | 'stack' | 'core' | 'rss' | 'nofile' | 'ofile' | 'as' | 'nproc' | 'memlock' | 'locks' | 'sigpending' | 'msgqueue' | 'nice' | 'rtprio' | 'rttime' )
+
+B<RLIMIT VALUE> = ( I<RLIMIT SIZE> | I<RLIMIT NUMBER> | I <RLIMIT NICE> )
+
+B<RLIMIT SIZE> = I<NUMBER> ( 'K' | 'M' | 'G' ) Only applies to RLIMIT of 'fsize', 'data', 'stack', 'core', 'rss', 'as', 'memlock', 'msgqueue'.
+
+B<RLIMIT NUMBER> = number from 0 to max rlimit value. Only applies ot RLIMIT of 'nofile', 'locks', 'sigpending', 'nproc', 'rtprio', 'cpu'
+
+B<RLIMIT NICE> = a number between -20 and 19. Only applies to RLIMIT of 'nice'
+
+B<FILE RULE> = [ I<QUALIFIERS> ] [ 'owner' ] ( 'file' | [ 'file' ] ( I<FILEGLOB> I<ACCESS>  | [I<ACCESS> I<FILEGLOB> ) [ -E<gt> <EXEC TARGET> ] ) ','
+>>>>>>> f5567b3... Add basic documentation of apparmor rlimit controls
 
 B<FILEGLOB> = ( I<QUOTED FILEGLOB> | I<UNQUOTED FILEGLOB> )
 
@@ -1140,6 +1156,33 @@ rule set.  Eg.
 
   /bin/bash Px -> new_profile1,
   change_profile /bin/bash -> {new_profile1,new_profile2,new_profile3},
+
+=head2 rlimit rules
+
+AppArmor can set and control the resource limits associated with a
+profile as described in the setrlimit(2) man page.
+
+The AppArmor rlimit controls allow setting of limits and restricting
+changes of them and these actions can be audited. Enforcement of the
+set limits is handled by the standard kernel enforcement mechanism
+for rlimits and will not result in an audited apparmor message if
+the limit is enforced.
+
+If a profile does not have an rlimit rule associated with a given
+rlimit then the rlimit is left alone and regular access, including
+changing the limit, is allowed. However if the profile sets an rlimit
+then the current limit is checked and if greater than the limit specified
+in the rule it will be changed to the specified limit.
+
+AppArmor rlimit rules control the hard limit of an application and
+ensure that if the hard limit is lowered that the soft limit does not
+exceed the hard limit value.
+
+Eg.
+
+  set rlimit data <= 100M,
+  set rlimit nproc <= 10,
+  set rlimit nice <= 5,
 
 =head2 Variables
 
