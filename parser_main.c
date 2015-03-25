@@ -914,6 +914,16 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	if (force_clear_cache) {
+		if (clear_cache_files(cacheloc)) {
+			PERROR(_("Failed to clear cache files (%s): %s\n"),
+			       cacheloc, strerror(errno));
+			return 1;
+		}
+
+		return 0;
+	}
+
 	retval = setup_cache(cacheloc);
 	if (retval) {
 		PERROR(_("Failed setting up policy cache (%s): %s\n"),
