@@ -36,29 +36,40 @@
 #define FEATURES_STRING_SIZE 8192
 char *features_string = NULL;
 
-static char *snprintf_buffer(char *buf, char *pos, ssize_t size,
-			     const char *fmt, ...)
-{
-	va_list args;
-	int i, remaining = size - (pos - buf);
-
-	va_start(args, fmt);
-	i = vsnprintf(pos, remaining, fmt, args);
-	va_end(args);
-
-	if (i >= size) {
-		PERROR(_("Feature buffer full."));
-		exit(1);
-	}
-
-	return pos + i;
-}
-
 struct features_struct {
 	char **buffer;
 	int size;
 	char *pos;
 };
+
+static int features_snprintf(struct features_struct *fst, const char *fmt, ...)
+{
+	va_list args;
+	int i, remaining = fst->size - (fst->pos - *fst->buffer);
+
+	if (remaining < 0) {
+		errno = EINVAL;
+		PERROR(_("Invalid features buffer offset\n"));
+		return -1;
+	}
+
+	va_start(args, fmt);
+	i = vsnprintf(fst->pos, remaining, fmt, args);
+	va_end(args);
+
+	if (i < 0) {
+		errno = EIO;
+		PERROR(_("Failed to write to features buffer\n"));
+		return -1;
+	} else if (i >= remaining) {
+		errno = ENOBUFS;
+		PERROR(_("Feature buffer full."));
+		return -1;
+	}
+
+	fst->pos += i;
+	return 0;
+}
 
 static int features_dir_cb(DIR *dir, const char *name, struct stat *st,
 			   void *data)
@@ -69,7 +80,8 @@ static int features_dir_cb(DIR *dir, const char *name, struct stat *st,
 	if (*name == '.' || !strlen(name))
 		return 0;
 
-	fst->pos = snprintf_buffer(*fst->buffer, fst->pos, fst->size, "%s {", name);
+	if (features_snprintf(fst, "%s {", name) == -1)
+		return -1;
 
 	if (S_ISREG(st->st_mode)) {
 		autoclose int file = -1;
@@ -104,7 +116,8 @@ static int features_dir_cb(DIR *dir, const char *name, struct stat *st,
 			return -1;
 	}
 
-	fst->pos = snprintf_buffer(*fst->buffer, fst->pos, fst->size, "}\n");
+	if (features_snprintf(fst, "}\n") == -1)
+		return -1;
 
 	return 0;
 }
