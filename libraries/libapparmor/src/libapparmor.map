@@ -51,3 +51,10 @@ APPARMOR_2.9 {
   local:
 	*;
 } APPARMOR_1.1;
+
+PRIVATE {
+	global:
+		_aa_is_blacklisted;
+	local:
+		*;
+};
