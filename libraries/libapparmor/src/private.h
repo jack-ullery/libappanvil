@@ -23,6 +23,7 @@
 #define autofree __attribute((cleanup(_aa_autofree)))
 #define autoclose __attribute((cleanup(_aa_autoclose)))
 #define autofclose __attribute((cleanup(_aa_autofclose)))
+#define unused __attribute__ ((unused))
 
 #if ENABLE_DEBUG_OUTPUT
 
