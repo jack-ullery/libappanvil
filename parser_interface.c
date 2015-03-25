@@ -42,7 +42,8 @@
 #define SD_STR_LEN (sizeof(u16))
 
 
-int __sd_serialize_profile(int option, Profile *prof, int cache_fd);
+int __sd_serialize_profile(int option, aa_kernel_interface *kernel_interface,
+			   Profile *prof, int cache_fd);
 
 static void print_error(int error)
 {
@@ -83,13 +84,14 @@ static void print_error(int error)
 	}
 }
 
-int load_profile(int option, Profile *prof, int cache_fd)
+int load_profile(int option, aa_kernel_interface *kernel_interface,
+		 Profile *prof, int cache_fd)
 {
 	int retval = 0;
 	int error = 0;
 
 	PDEBUG("Serializing policy for %s.\n", prof->name);
-	retval = __sd_serialize_profile(option, prof, cache_fd);
+	retval = __sd_serialize_profile(option, kernel_interface, prof, cache_fd);
 
 	if (retval < 0) {
 		error = retval;	/* yeah, we'll just report the last error */
@@ -475,7 +477,8 @@ void sd_serialize_top_profile(std::ostringstream &buf, Profile *profile)
 	sd_serialize_profile(buf, profile, profile->parent ? 1 : 0);
 }
 
-int __sd_serialize_profile(int option, Profile *prof, int cache_fd)
+int __sd_serialize_profile(int option, aa_kernel_interface *kernel_interface,
+			   Profile *prof, int cache_fd)
 {
 	autoclose int fd = -1;
 	int error, size, wsize;
@@ -514,7 +517,8 @@ int __sd_serialize_profile(int option, Profile *prof, int cache_fd)
 
 	if (option == OPTION_REMOVE) {
 		if (kernel_load) {
-			if (aa_kernel_interface_remove_policy(prof->fqname().c_str()) == -1)
+			if (aa_kernel_interface_remove_policy(kernel_interface,
+							      prof->fqname().c_str()) == -1)
 				error = -errno;
 		}
 	} else {
@@ -526,10 +530,12 @@ int __sd_serialize_profile(int option, Profile *prof, int cache_fd)
 		size = (long) work_area.tellp();
 		if (kernel_load) {
 			if (option == OPTION_ADD &&
-			    aa_kernel_interface_load_policy(tmp.c_str(), size) == -1) {
+			    aa_kernel_interface_load_policy(kernel_interface,
+							    tmp.c_str(), size) == -1) {
 				error = -errno;
 			} else if (option == OPTION_REPLACE &&
-				   aa_kernel_interface_replace_policy(tmp.c_str(), size) == -1) {
+				   aa_kernel_interface_replace_policy(kernel_interface,
+								      tmp.c_str(), size) == -1) {
 				error = -errno;
 			}
 		} else if ((option == OPTION_STDOUT || option == OPTION_OFILE) &&
@@ -550,7 +556,7 @@ int __sd_serialize_profile(int option, Profile *prof, int cache_fd)
 	}
 
 	if (!prof->hat_table.empty() && option != OPTION_REMOVE) {
-		if (load_flattened_hats(prof, option, cache_fd) == 0)
+		if (load_flattened_hats(prof, option, kernel_interface, cache_fd) == 0)
 			return 0;
 	}
 

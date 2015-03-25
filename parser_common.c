@@ -82,7 +82,6 @@ int option = OPTION_ADD;
 dfaflags_t dfaflags = (dfaflags_t)(DFA_CONTROL_TREE_NORMAL | DFA_CONTROL_TREE_SIMPLE | DFA_CONTROL_MINIMIZE | DFA_CONTROL_DIFF_ENCODE);
 dfaflags_t warnflags = 0;
 
-char *subdomainbase = NULL;
 const char *progname = __FILE__;
 char *profile_ns = NULL;
 char *profilename = NULL;

@@ -32,13 +32,19 @@
 
 #define DEFAULT_APPARMORFS "/sys/kernel/security/apparmor"
 
+struct aa_kernel_interface {
+	unsigned int ref_count;
+	bool supports_setload;
+	int dirfd;
+};
+
 /**
- * aa_find_iface_dir - find where the apparmor interface is located
+ * find_iface_dir - find where the apparmor interface is located
  * @dir - RETURNs: stored location of interface director
  *
  * Returns: 0 on success, -1 with errno set if there is an error
  */
-int aa_find_iface_dir(char **dir)
+static int find_iface_dir(char **dir)
 {
 	if (aa_find_mountpoint(dir) == -1) {
 		struct stat buf;
@@ -53,22 +59,6 @@ int aa_find_iface_dir(char **dir)
 
 	return 0;
 }
-
-/**
- * open_iface_dir - open the apparmor interface dir
- *
- * Returns: opened file descriptor, or -1 with errno on error
- */
-static int open_iface_dir(void)
-{
-	autofree char *dir = NULL;
-
-	if (aa_find_iface_dir(&dir) == -1)
-		return -1;
-
-	return open(dir, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
-}
-
 
 /* bleah the kernel should just loop and do multiple load, but to support
  * older systems we need to do this
@@ -148,24 +138,22 @@ static int write_policy_buffer(int fd, int atomic,
 #define AA_IFACE_FILE_REMOVE	".remove"
 #define AA_IFACE_FILE_REPLACE	".replace"
 
-static int write_policy_buffer_to_iface(const char *iface_file,
+static int write_policy_buffer_to_iface(aa_kernel_interface *kernel_interface,
+					const char *iface_file,
 					const char *buffer, size_t size)
 {
-	autoclose int dirfd = -1;
 	autoclose int fd = -1;
 
-	dirfd = open_iface_dir();
-	if (dirfd == -1)
-		return -1;
-
-	fd = openat(dirfd, iface_file, O_WRONLY | O_CLOEXEC);
+	fd = openat(kernel_interface->dirfd, iface_file, O_WRONLY | O_CLOEXEC);
 	if (fd == -1)
 		return -1;
 
-	return write_policy_buffer(fd, kernel_supports_setload, buffer, size);
+	return write_policy_buffer(fd, kernel_interface->supports_setload,
+				   buffer, size);
 }
 
-static int write_policy_fd_to_iface(const char *iface_file, int fd)
+static int write_policy_fd_to_iface(aa_kernel_interface *kernel_interface,
+				    const char *iface_file, int fd)
 {
 	autofree char *buffer = NULL;
 	int size = 0, asize = 0, rsize;
@@ -190,10 +178,12 @@ static int write_policy_fd_to_iface(const char *iface_file, int fd)
 	if (rsize == -1)
 		return -1;
 
-	return write_policy_buffer_to_iface(iface_file, buffer, size);
+	return write_policy_buffer_to_iface(kernel_interface, iface_file,
+					    buffer, size);
 }
 
-static int write_policy_file_to_iface(const char *iface_file, const char *path)
+static int write_policy_file_to_iface(aa_kernel_interface *kernel_interface,
+				      const char *iface_file, const char *path)
 {
 	autoclose int fd;
 
@@ -201,87 +191,193 @@ static int write_policy_file_to_iface(const char *iface_file, const char *path)
 	if (fd == -1)
 		return -1;
 
-	return write_policy_fd_to_iface(iface_file, fd);
+	return write_policy_fd_to_iface(kernel_interface, iface_file, fd);
+}
+
+/**
+ * aa_kernel_interface_new - create a new kernel_interface from an optional path
+ * @kernel_interface: will point to the address of an allocated and initialized
+ *                    aa_kernel_interface object upon success
+ * @kernel_features: features representing the currently running kernel
+ * @apparmorfs: path to the apparmor directory of the mounted securityfs (can
+ *              be NULL and the path will be auto discovered)
+ *
+ * Returns: 0 on success, -1 on error with errnot set and *@kernel_interface
+ *          pointing to NULL
+ */
+int aa_kernel_interface_new(aa_kernel_interface **kernel_interface,
+			    aa_features *kernel_features,
+			    const char *apparmorfs)
+{
+	aa_kernel_interface *ki;
+	autofree char *alloced_apparmorfs = NULL;
+	char set_load[] = "policy/set_load";
+
+	*kernel_interface = NULL;
+
+	ki = (aa_kernel_interface *) calloc(1, sizeof(*ki));
+	if (!ki) {
+		errno = ENOMEM;
+		return -1;
+	}
+	aa_kernel_interface_ref(ki);
+	ki->dirfd = -1;
+
+	ki->supports_setload = kernel_features ?
+			       aa_features_supports(kernel_features, set_load) :
+			       false;
+
+	if (!apparmorfs) {
+		if (find_iface_dir(&alloced_apparmorfs) == -1) {
+			int save = errno;
+
+			alloced_apparmorfs = NULL;
+			aa_kernel_interface_unref(ki);
+			errno = save;
+			return -1;
+		}
+		/* alloced_apparmorfs will be autofree'ed */
+		apparmorfs = alloced_apparmorfs;
+	}
+
+	ki->dirfd = open(apparmorfs, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
+	if (ki->dirfd < 0) {
+		int save = errno;
+
+		aa_kernel_interface_unref(ki);
+		errno = save;
+		return -1;
+	}
+
+	*kernel_interface = ki;
+
+	return 0;
+}
+
+/**
+ * aa_kernel_interface_ref - increments the ref count of a kernel_interface
+ * @kernel_interface: the kernel_interface
+ *
+ * Returns: the kernel_interface
+ */
+aa_kernel_interface *aa_kernel_interface_ref(aa_kernel_interface *kernel_interface)
+{
+	atomic_inc(&kernel_interface->ref_count);
+	return kernel_interface;
+}
+
+/**
+ * aa_kernel_interface_unref - decrements the ref count and frees the kernel_interface when 0
+ * @kernel_interface: the kernel_interface (can be NULL)
+ */
+void aa_kernel_interface_unref(aa_kernel_interface *kernel_interface)
+{
+	if (kernel_interface &&
+	    atomic_dec_and_test(&kernel_interface->ref_count)) {
+		close(kernel_interface->dirfd);
+		free(kernel_interface);
+	}
 }
 
 /**
  * aa_kernel_interface_load_policy - load a policy into the kernel
+ * @kernel_interface: valid aa_kernel_interface
  * @buffer: a buffer containing a policy
  * @size: the size of the buffer
  *
  * Returns: 0 on success, -1 on error with errno set
  */
-int aa_kernel_interface_load_policy(const char *buffer, size_t size)
+int aa_kernel_interface_load_policy(aa_kernel_interface *kernel_interface,
+				    const char *buffer, size_t size)
 {
-	return write_policy_buffer_to_iface(AA_IFACE_FILE_LOAD, buffer, size);
+	return write_policy_buffer_to_iface(kernel_interface,
+					    AA_IFACE_FILE_LOAD, buffer, size);
 }
 
 /**
  * aa_kernel_interface_load_policy_from_file - load a policy into the kernel
+ * @kernel_interface: valid aa_kernel_interface
  * @path: path to a policy binary
  *
  * Returns: 0 on success, -1 on error with errno set
  */
-int aa_kernel_interface_load_policy_from_file(const char *path)
+int aa_kernel_interface_load_policy_from_file(aa_kernel_interface *kernel_interface,
+					      const char *path)
 {
-	return write_policy_file_to_iface(AA_IFACE_FILE_LOAD, path);
+	return write_policy_file_to_iface(kernel_interface, AA_IFACE_FILE_LOAD,
+					  path);
 }
 
 /**
  * aa_kernel_interface_load_policy_from_fd - load a policy into the kernel
+ * @kernel_interface: valid aa_kernel_interface
  * @fd: a pre-opened, readable file descriptor at the correct offset
  *
  * Returns: 0 on success, -1 on error with errno set
  */
-int aa_kernel_interface_load_policy_from_fd(int fd)
+int aa_kernel_interface_load_policy_from_fd(aa_kernel_interface *kernel_interface,
+					    int fd)
 {
-	return write_policy_fd_to_iface(AA_IFACE_FILE_LOAD, fd);
+	return write_policy_fd_to_iface(kernel_interface, AA_IFACE_FILE_LOAD,
+					fd);
 }
 
 /**
  * aa_kernel_interface_replace_policy - replace a policy in the kernel
+ * @kernel_interface: valid aa_kernel_interface
  * @buffer: a buffer containing a policy
  * @size: the size of the buffer
  *
  * Returns: 0 on success, -1 on error with errno set
  */
-int aa_kernel_interface_replace_policy(const char *buffer, size_t size)
+int aa_kernel_interface_replace_policy(aa_kernel_interface *kernel_interface,
+				       const char *buffer, size_t size)
 {
-	return write_policy_buffer_to_iface(AA_IFACE_FILE_REPLACE,
+	return write_policy_buffer_to_iface(kernel_interface,
+					    AA_IFACE_FILE_REPLACE,
 					    buffer, size);
 }
 
 /**
  * aa_kernel_interface_replace_policy_from_file - replace a policy in the kernel
+ * @kernel_interface: valid aa_kernel_interface
  * @path: path to a policy binary
  *
  * Returns: 0 on success, -1 on error with errno set
  */
-int aa_kernel_interface_replace_policy_from_file(const char *path)
+int aa_kernel_interface_replace_policy_from_file(aa_kernel_interface *kernel_interface,
+						 const char *path)
 {
-	return write_policy_file_to_iface(AA_IFACE_FILE_REPLACE, path);
+	return write_policy_file_to_iface(kernel_interface,
+					  AA_IFACE_FILE_REPLACE, path);
 }
 
 /**
  * aa_kernel_interface_replace_policy_from_fd - replace a policy in the kernel
+ * @kernel_interface: valid aa_kernel_interface
  * @fd: a pre-opened, readable file descriptor at the correct offset
  *
  * Returns: 0 on success, -1 on error with errno set
  */
-int aa_kernel_interface_replace_policy_from_fd(int fd)
+int aa_kernel_interface_replace_policy_from_fd(aa_kernel_interface *kernel_interface,
+					       int fd)
 {
-	return write_policy_fd_to_iface(AA_IFACE_FILE_REPLACE, fd);
+	return write_policy_fd_to_iface(kernel_interface, AA_IFACE_FILE_REPLACE,
+					fd);
 }
 
 /**
  * aa_kernel_interface_remove_policy - remove a policy from the kernel
+ * @kernel_interface: valid aa_kernel_interface
  * @fqname: nul-terminated fully qualified name of the policy to remove
  *
  * Returns: 0 on success, -1 on error with errno set
  */
-int aa_kernel_interface_remove_policy(const char *fqname)
+int aa_kernel_interface_remove_policy(aa_kernel_interface *kernel_interface,
+				      const char *fqname)
 {
-	return write_policy_buffer_to_iface(AA_IFACE_FILE_REMOVE,
+	return write_policy_buffer_to_iface(kernel_interface,
+					    AA_IFACE_FILE_REMOVE,
 					    fqname, strlen(fqname) + 1);
 }
 

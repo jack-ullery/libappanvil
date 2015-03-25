@@ -19,14 +19,30 @@
 #ifndef __AA_KERNEL_INTERFACE_H
 #define __AA_KERNEL_INTERFACE_H
 
-int aa_find_iface_dir(char **dir);
-int aa_kernel_interface_load_policy(const char *buffer, size_t size);
-int aa_kernel_interface_load_policy_from_file(const char *path);
-int aa_kernel_interface_load_policy_from_fd(int fd);
-int aa_kernel_interface_replace_policy(const char *buffer, size_t size);
-int aa_kernel_interface_replace_policy_from_file(const char *path);
-int aa_kernel_interface_replace_policy_from_fd(int fd);
-int aa_kernel_interface_remove_policy(const char *fqname);
+#include "features.h"
+
+typedef struct aa_kernel_interface aa_kernel_interface;
+
+int aa_kernel_interface_new(aa_kernel_interface **kernel_interface,
+			    aa_features *kernel_features,
+			    const char *apparmorfs);
+aa_kernel_interface *aa_kernel_interface_ref(aa_kernel_interface *kernel_interface);
+void aa_kernel_interface_unref(aa_kernel_interface *kernel_interface);
+
+int aa_kernel_interface_load_policy(aa_kernel_interface *kernel_interface,
+				    const char *buffer, size_t size);
+int aa_kernel_interface_load_policy_from_file(aa_kernel_interface *kernel_interface,
+					      const char *path);
+int aa_kernel_interface_load_policy_from_fd(aa_kernel_interface *kernel_interface,
+					    int fd);
+int aa_kernel_interface_replace_policy(aa_kernel_interface *kernel_interface,
+				       const char *buffer, size_t size);
+int aa_kernel_interface_replace_policy_from_file(aa_kernel_interface *kernel_interface,
+						 const char *path);
+int aa_kernel_interface_replace_policy_from_fd(aa_kernel_interface *kernel_interface,
+					       int fd);
+int aa_kernel_interface_remove_policy(aa_kernel_interface *kernel_interface,
+				      const char *fqname);
 int aa_kernel_interface_write_policy(int fd, const char *buffer, size_t size);
 
 #endif /* __AA_KERNEL_INTERFACE_H */
