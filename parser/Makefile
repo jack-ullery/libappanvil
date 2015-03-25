@@ -75,9 +75,10 @@ SRCS = parser_common.c parser_include.c parser_interface.c parser_lex.c \
        parser_yacc.c parser_regex.c parser_variable.c parser_policy.c \
        parser_alias.c common_optarg.c lib.c network.c \
        mount.cc dbus.cc profile.cc rule.cc signal.cc ptrace.cc \
-       af_rule.cc af_unix.cc
+       af_rule.cc af_unix.cc features.c
 HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h \
-       rule.h common_optarg.h signal.h ptrace.h network.h af_rule.h af_unix.h
+       rule.h common_optarg.h signal.h ptrace.h network.h af_rule.h af_unix.h \
+       features.h
 TOOLS = apparmor_parser
 
 OBJECTS = $(patsubst %.cc, %.o, $(SRCS:.c=.o))
@@ -232,6 +233,9 @@ mount.o: mount.cc mount.h parser.h immunix.h rule.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 common_optarg.o: common_optarg.c common_optarg.h parser.h libapparmor_re/apparmor_re.h
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
+
+features.o: features.c features.h parser.h libapparmor_re/apparmor_re.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 lib.o: lib.c lib.h parser.h
