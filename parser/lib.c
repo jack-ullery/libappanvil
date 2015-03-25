@@ -40,6 +40,23 @@ void __autofree(void *p)
 	free(*_p);
 }
 
+void __autoclose(int *fd)
+{
+	if (*fd != -1) {
+		/* if close was interrupted retry */
+		while(close(*fd) == -1 && errno == EINTR);
+		*fd = -1;
+	}
+}
+
+void __autofclose(FILE **f)
+{
+	if (*f) {
+		fclose(*f);
+		*f = NULL;
+	}
+}
+
 /**
  * dirat_for_each: iterate over a directory calling cb for each entry
  * @dir: already opened directory (MAY BE NULL)

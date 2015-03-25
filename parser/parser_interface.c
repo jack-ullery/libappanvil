@@ -479,7 +479,7 @@ void sd_serialize_top_profile(std::ostringstream &buf, Profile *profile)
 int cache_fd = -1;
 int __sd_serialize_profile(int option, Profile *prof)
 {
-	int fd = -1;
+	autoclose int fd = -1;
 	int error = -ENOMEM, size, wsize;
 	std::ostringstream work_area;
 	autofree char *filename = NULL;
@@ -594,9 +594,6 @@ int __sd_serialize_profile(int option, Profile *prof)
 		}
 	}
 
-	if (fd != -1)
-		close(fd);
-
 	if (!prof->hat_table.empty() && option != OPTION_REMOVE) {
 		if (load_flattened_hats(prof, option) == 0)
 			return 0;
@@ -641,7 +638,7 @@ static int write_buffer(int fd, char *buffer, int size, bool set)
 
 int sd_load_buffer(int option, char *buffer, int size)
 {
-	int fd = -1;
+	autoclose int fd = -1;
 	int error, bsize;
 	autofree char *filename = NULL;
 
@@ -666,8 +663,7 @@ int sd_load_buffer(int option, char *buffer, int size)
 	if (fd < 0) {
 		PERROR(_("Unable to open %s - %s\n"), filename,
 		       strerror(errno));
-		error = -errno;
-		goto out;
+		return -errno;
 	}
 
 	if (kernel_supports_setload) {
@@ -688,8 +684,6 @@ int sd_load_buffer(int option, char *buffer, int size)
 				break;
 		}
 	}
-	close(fd);
 
-out:
 	return error;
 }

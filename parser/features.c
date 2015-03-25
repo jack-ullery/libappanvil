@@ -72,7 +72,8 @@ static int features_dir_cb(DIR *dir, const char *name, struct stat *st,
 	fst->pos = snprintf_buffer(*fst->buffer, fst->pos, fst->size, "%s {", name);
 
 	if (S_ISREG(st->st_mode)) {
-		int len, file;
+		autoclose int file = -1;
+		int len;
 		int remaining = fst->size - (fst->pos - *fst->buffer);
 
 		file = openat(dirfd(dir), name, O_RDONLY);
@@ -98,7 +99,6 @@ static int features_dir_cb(DIR *dir, const char *name, struct stat *st,
 			PDEBUG("Error reading feature file '%s'\n", name);
 			return -1;
 		}
-		close(file);
 	} else if (S_ISDIR(st->st_mode)) {
 		if (dirat_for_each(dir, name, fst, features_dir_cb))
 			return -1;
@@ -124,7 +124,7 @@ static char *handle_features_dir(const char *filename, char **buffer, int size,
 
 char *load_features_file(const char *name) {
 	char *buffer;
-	FILE *f = NULL;
+	autofclose FILE *f = NULL;
 	size_t size;
 
 	f = fopen(name, "r");
@@ -140,14 +140,11 @@ char *load_features_file(const char *name) {
 		goto fail;
 	buffer[size] = 0;
 
-	fclose(f);
 	return buffer;
 
 fail:
 	int save = errno;
 	free(buffer);
-	if (f)
-		fclose(f);
 	errno = save;
 	return NULL;
 }
