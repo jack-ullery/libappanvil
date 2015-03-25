@@ -28,5 +28,6 @@ int aa_features_new_from_kernel(aa_features **features);
 aa_features *aa_features_ref(aa_features *features);
 void aa_features_unref(aa_features *features);
 const char *aa_features_get_string(aa_features *features);
+bool aa_features_is_equal(aa_features *features1, aa_features *features2);
 
 #endif /* __AA_FEATURES_H */
