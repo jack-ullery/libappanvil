@@ -574,41 +574,32 @@ no_match:
 
 static void set_supported_features(void)
 {
-	const char *features_string;
-
 	/* has process_args() already assigned a match string? */
 	if (!features && aa_features_new_from_kernel(&features) == -1) {
 		set_features_by_match_file();
 		return;
 	}
 
-	features_string = aa_features_get_string(features);
 	perms_create = 1;
+	kernel_supports_policydb = aa_features_supports(features, "file");
+	kernel_supports_network = aa_features_supports(features, "network");
+	kernel_supports_unix = aa_features_supports(features,
+						    "network/af_unix");
+	kernel_supports_mount = aa_features_supports(features, "mount");
+	kernel_supports_dbus = aa_features_supports(features, "dbus");
+	kernel_supports_signal = aa_features_supports(features, "signal");
+	kernel_supports_ptrace = aa_features_supports(features, "ptrace");
+	kernel_supports_setload = aa_features_supports(features,
+						       "policy/set_load");
+	kernel_supports_diff_encode = aa_features_supports(features,
+							   "policy/diff_encode");
 
-	/* TODO: make this real parsing and config setting */
-	if (strstr(features_string, "file {"))	/* pre policydb is file= */
-		kernel_supports_policydb = 1;
-	if (strstr(features_string, "v6"))
-		kernel_abi_version = 6;
-	if (strstr(features_string, "v7"))
+	if (aa_features_supports(features, "policy/versions/v7"))
 		kernel_abi_version = 7;
-	if (strstr(features_string, "set_load"))
-		kernel_supports_setload = 1;
-	if (strstr(features_string, "network"))
-		kernel_supports_network = 1;
-	if (strstr(features_string, "af_unix"))
-		kernel_supports_unix = 1;
-	if (strstr(features_string, "mount"))
-		kernel_supports_mount = 1;
-	if (strstr(features_string, "dbus"))
-		kernel_supports_dbus = 1;
-	if (strstr(features_string, "signal"))
-		kernel_supports_signal = 1;
-	if (strstr(features_string, "ptrace {"))
-		kernel_supports_ptrace = 1;
-	if (strstr(features_string, "diff_encode"))
-		kernel_supports_diff_encode = 1;
-	else if (dfaflags & DFA_CONTROL_DIFF_ENCODE)
+	else if (aa_features_supports(features, "policy/versions/v6"))
+		kernel_abi_version = 6;
+
+	if (!kernel_supports_diff_encode)
 		/* clear diff_encode because it is not supported */
 		dfaflags &= ~DFA_CONTROL_DIFF_ENCODE;
 }
