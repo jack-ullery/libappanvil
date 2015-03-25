@@ -23,12 +23,10 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/apparmor.h>
 #include <unistd.h>
+#include <sys/apparmor.h>
 
-#include "kernel_interface.h"
-#include "lib.h"
-#include "parser.h"
+#include "private.h"
 
 #define DEFAULT_APPARMORFS "/sys/kernel/security/apparmor"
 

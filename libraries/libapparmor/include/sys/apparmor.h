@@ -116,6 +116,29 @@ int aa_features_write_to_file(aa_features *features, const char *path);
 bool aa_features_is_equal(aa_features *features1, aa_features *features2);
 bool aa_features_supports(aa_features *features, const char *str);
 
+typedef struct aa_kernel_interface aa_kernel_interface;
+int aa_kernel_interface_new(aa_kernel_interface **kernel_interface,
+			    aa_features *kernel_features,
+			    const char *apparmorfs);
+aa_kernel_interface *aa_kernel_interface_ref(aa_kernel_interface *kernel_interface);
+void aa_kernel_interface_unref(aa_kernel_interface *kernel_interface);
+
+int aa_kernel_interface_load_policy(aa_kernel_interface *kernel_interface,
+				    const char *buffer, size_t size);
+int aa_kernel_interface_load_policy_from_file(aa_kernel_interface *kernel_interface,
+					      const char *path);
+int aa_kernel_interface_load_policy_from_fd(aa_kernel_interface *kernel_interface,
+					    int fd);
+int aa_kernel_interface_replace_policy(aa_kernel_interface *kernel_interface,
+				       const char *buffer, size_t size);
+int aa_kernel_interface_replace_policy_from_file(aa_kernel_interface *kernel_interface,
+						 const char *path);
+int aa_kernel_interface_replace_policy_from_fd(aa_kernel_interface *kernel_interface,
+					       int fd);
+int aa_kernel_interface_remove_policy(aa_kernel_interface *kernel_interface,
+				      const char *fqname);
+int aa_kernel_interface_write_policy(int fd, const char *buffer, size_t size);
+
 __END_DECLS
 
 #endif	/* sys/apparmor.h */

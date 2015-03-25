@@ -75,10 +75,10 @@ SRCS = parser_common.c parser_include.c parser_interface.c parser_lex.c \
        parser_yacc.c parser_regex.c parser_variable.c parser_policy.c \
        parser_alias.c common_optarg.c lib.c network.c \
        mount.cc dbus.cc profile.cc rule.cc signal.cc ptrace.cc \
-       af_rule.cc af_unix.cc policy_cache.c kernel_interface.c
+       af_rule.cc af_unix.cc policy_cache.c
 HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h \
        rule.h common_optarg.h signal.h ptrace.h network.h af_rule.h af_unix.h \
-       policy_cache.h kernel_interface.h
+       policy_cache.h
 TOOLS = apparmor_parser
 
 OBJECTS = $(patsubst %.cc, %.o, $(SRCS:.c=.o))
@@ -238,9 +238,6 @@ common_optarg.o: common_optarg.c common_optarg.h parser.h libapparmor_re/apparmo
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 policy_cache.o: policy_cache.c policy_cache.h parser.h lib.h
-	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
-
-kernel_interface.o: kernel_interface.c kernel_interface.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 lib.o: lib.c lib.h parser.h

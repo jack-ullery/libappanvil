@@ -62,6 +62,17 @@ APPARMOR_2.10 {
         aa_features_write_to_file;
         aa_features_is_equal;
         aa_features_supports;
+        aa_kernel_interface_new;
+        aa_kernel_interface_ref;
+        aa_kernel_interface_unref;
+        aa_kernel_interface_load_policy;
+        aa_kernel_interface_load_policy_from_file;
+        aa_kernel_interface_load_policy_from_fd;
+        aa_kernel_interface_replace_policy;
+        aa_kernel_interface_replace_policy_from_file;
+        aa_kernel_interface_replace_policy_from_fd;
+        aa_kernel_interface_remove_policy;
+        aa_kernel_interface_write_policy;
   local:
         *;
 } APPARMOR_2.9;
