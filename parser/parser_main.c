@@ -930,6 +930,10 @@ int main(int argc, char *argv[])
 		} else if (!aa_policy_cache_is_valid(policy_cache)) {
 			if (write_cache && cond_clear_cache &&
 			    aa_policy_cache_create(policy_cache)) {
+				if (show_cache)
+					PERROR("Cache write disabled: Cannot create cache '%s': %m\n",
+					       cacheloc);
+				write_cache = 0;
 				skip_read_cache = 1;
 			} else if (!write_cache || !cond_clear_cache) {
 				if (show_cache)
