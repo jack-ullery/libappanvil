@@ -238,9 +238,6 @@ int setup_cache(const char *cacheloc)
 		return -1;
 	}
 
-	if (force_clear_cache)
-		exit(clear_cache_files(cacheloc));
-
 	/*
          * Deal with cache directory versioning:
          *  - If cache/.features is missing, create it if --write-cache.
