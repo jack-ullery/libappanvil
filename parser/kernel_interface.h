@@ -20,7 +20,13 @@
 #define __AA_KERNEL_INTERFACE_H
 
 int aa_find_iface_dir(char **dir);
-int aa_load_buffer(int option, char *buffer, int size);
-int aa_remove_profile(const char *fqname);
+int aa_kernel_interface_load_policy(const char *buffer, size_t size);
+int aa_kernel_interface_load_policy_from_file(const char *path);
+int aa_kernel_interface_load_policy_from_fd(int fd);
+int aa_kernel_interface_replace_policy(const char *buffer, size_t size);
+int aa_kernel_interface_replace_policy_from_file(const char *path);
+int aa_kernel_interface_replace_policy_from_fd(int fd);
+int aa_kernel_interface_remove_policy(const char *fqname);
+int aa_kernel_interface_write_policy(int fd, const char *buffer, size_t size);
 
 #endif /* __AA_KERNEL_INTERFACE_H */

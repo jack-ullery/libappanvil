@@ -605,62 +605,55 @@ static void set_supported_features(void)
 
 int process_binary(int option, const char *profilename)
 {
-	autofree char *buffer = NULL;
-	int retval = 0, size = 0, asize = 0, rsize;
-	int chunksize = 1 << 14;
-	autoclose int fd = -1;
+	const char *printed_name;
+	int retval;
 
-	if (profilename) {
-		fd = open(profilename, O_RDONLY);
-		if (fd == -1) {
-			retval = errno;
-			PERROR(_("Error: Could not read binary profile or cache file %s: %s.\n"),
-			       profilename, strerror(errno));
-			return retval;
-		}
-	} else {
-		fd = dup(0);
-	}
+	printed_name = profilename ? profilename : "stdin";
 
-	do {
-		if (asize - size == 0) {
-			buffer = (char *) realloc(buffer, chunksize);
-			asize = chunksize;
-			chunksize <<= 1;
-			if (!buffer) {
-				PERROR(_("Memory allocation error."));
-				return ENOMEM;
+	if (kernel_load) {
+		if (option == OPTION_ADD) {
+			retval = profilename ?
+				 aa_kernel_interface_load_policy_from_file(profilename) :
+				 aa_kernel_interface_load_policy_from_fd(0);
+			if (retval == -1) {
+				retval = errno;
+				PERROR(_("Error: Could not load profile %s: %s\n"),
+				       printed_name, strerror(retval));
+				return retval;
 			}
+		} else if (option == OPTION_REPLACE) {
+			retval = profilename ?
+				 aa_kernel_interface_replace_policy_from_file(profilename) :
+				 aa_kernel_interface_replace_policy_from_fd(0);
+			if (retval == -1) {
+				retval = errno;
+				PERROR(_("Error: Could not replace profile %s: %s\n"),
+				       printed_name, strerror(retval));
+				return retval;
+			}
+		} else {
+			PERROR(_("Error: Invalid load option specified: %d\n"),
+			       option);
+			return EINVAL;
 		}
-
-		rsize = read(fd, buffer + size, asize - size);
-		if (rsize)
-			size += rsize;
-	} while (rsize > 0);
-
-	if (rsize == 0) {
-		retval = aa_load_buffer(option, buffer, size);
-		if (retval == -1)
-			retval = -errno;
-	} else
-		retval = rsize;
+	}
 
 	if (conf_verbose) {
 		switch (option) {
 		case OPTION_ADD:
 			printf(_("Cached load succeeded for \"%s\".\n"),
-			       profilename ? profilename : "stdin");
+			       printed_name);
 			break;
 		case OPTION_REPLACE:
 			printf(_("Cached reload succeeded for \"%s\".\n"),
-			       profilename ? profilename : "stdin");
+			       printed_name);
 			break;
 		default:
 			break;
 		}
 	}
 
-	return retval;
+	return 0;
 }
 
 void reset_parser(const char *filename)
