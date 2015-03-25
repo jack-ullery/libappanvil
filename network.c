@@ -25,6 +25,7 @@
 #include <sstream>
 #include <map>
 
+#include "lib.h"
 #include "parser.h"
 #include "profile.h"
 #include "parser_yacc.h"
@@ -154,7 +155,8 @@ static struct network_tuple network_mappings[] = {
 static size_t kernel_af_max(void) {
 	char buffer[32];
 	int major;
-	int fd, res;
+	autoclose int fd = -1;
+	int res;
 
 	if (!net_af_max_override) {
 		return 0;
@@ -168,7 +170,6 @@ static size_t kernel_af_max(void) {
 		/* fall back to default provided during build */
 		return 0;
 	res = read(fd, &buffer, sizeof(buffer) - 1);
-	close(fd);
 	if (res <= 0)
 		return 0;
 	buffer[res] = '\0';

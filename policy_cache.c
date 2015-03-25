@@ -40,13 +40,12 @@ const char header_string[] = "\004\010\000version\000\002";
 bool valid_cached_file_version(const char *cachename)
 {
 	char buffer[16];
-	FILE *f;
+	autofclose FILE *f;
 	if (!(f = fopen(cachename, "r"))) {
 		PERROR(_("Error: Could not read cache file '%s', skipping...\n"), cachename);
 		return false;
 	}
 	size_t res = fread(buffer, 1, 16, f);
-	fclose(f);
 	if (res < 16) {
 		if (debug_cache)
 			pwarn("%s: cache file '%s' invalid size\n", progname, cachename);
@@ -111,7 +110,7 @@ int clear_cache_files(const char *path)
 int create_cache(const char *cachedir, const char *path, const char *features)
 {
 	struct stat stat_file;
-	FILE * f = NULL;
+	autofclose FILE * f = NULL;
 
 	if (clear_cache_files(cachedir) != 0)
 		goto error;
@@ -121,9 +120,6 @@ create_file:
 	if (f) {
 		if (fwrite(features, strlen(features), 1, f) != 1 )
 			goto error;
-
-		fclose(f);
-
 
 		return 0;
 	}

@@ -4,7 +4,11 @@
 #include <dirent.h>
 
 #define autofree __attribute((cleanup(__autofree)))
+#define autoclose __attribute((cleanup(__autoclose)))
+#define autofclose __attribute((cleanup(__autofclose)))
 void __autofree(void *p);
+void __autoclose(int *fd);
+void __autofclose(FILE **f);
 
 int dirat_for_each(DIR *dir, const char *name, void *data,
 		   int (* cb)(DIR *, const char *, struct stat *, void *));

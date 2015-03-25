@@ -498,7 +498,7 @@ static int process_args(int argc, char *argv[])
 static int process_config_file(const char *name)
 {
 	char *optarg;
-	FILE *f;
+	autofclose FILE *f = NULL;
 	int c, o;
 
 	f = fopen(name, "r");
@@ -507,7 +507,6 @@ static int process_config_file(const char *name)
 
 	while ((c = getopt_long_file(f, long_options, &optarg, &o)) != -1)
 		process_arg(c, optarg);
-	fclose(f);
 	return 1;
 }
 
@@ -553,7 +552,7 @@ int have_enough_privilege(void)
 
 static void set_features_by_match_file(void)
 {
-	FILE *ms = fopen(MATCH_FILE, "r");
+	autofclose FILE *ms = fopen(MATCH_FILE, "r");
 	if (ms) {
 		autofree char *match_string = (char *) malloc(1000);
 		if (!match_string)
@@ -563,14 +562,10 @@ static void set_features_by_match_file(void)
 		if (strstr(match_string, " perms=c"))
 			perms_create = 1;
 		kernel_supports_network = 1;
-		goto out;
+		return;
 	}
 no_match:
 	perms_create = 1;
-
-out:
-	if (ms)
-		fclose(ms);
 }
 
 static void set_supported_features(void) {
@@ -618,7 +613,7 @@ int process_binary(int option, const char *profilename)
 	autofree char *buffer = NULL;
 	int retval = 0, size = 0, asize = 0, rsize;
 	int chunksize = 1 << 14;
-	int fd;
+	autoclose int fd = -1;
 
 	if (profilename) {
 		fd = open(profilename, O_RDONLY);
@@ -647,8 +642,6 @@ int process_binary(int option, const char *profilename)
 		if (rsize)
 			size += rsize;
 	} while (rsize > 0);
-
-	close(fd);
 
 	if (rsize == 0)
 		retval = sd_load_buffer(option, buffer, size);
