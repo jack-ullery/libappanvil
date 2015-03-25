@@ -80,8 +80,6 @@ int mru_skip_cache = 1;
 int debug_cache = 0;
 struct timespec mru_tstamp;
 
-char *cacheloc = NULL;
-
 /* Make sure to update BOTH the short and long_options */
 static const char *short_options = "adf:h::rRVvI:b:BCD:NSm:M:qQn:XKTWkL:O:po:";
 struct option long_options[] = {
@@ -856,9 +854,6 @@ static int binary_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 
 static void setup_flags(void)
 {
-	autofree char *cache_features_path = NULL;
-	autofree char *cache_flags = NULL;
-
 	/* Get the match string to determine type of regex support needed */
 	set_supported_features();
 
@@ -870,36 +865,6 @@ static void setup_flags(void)
 		write_cache = 0;
 		skip_read_cache = 1;
 		return;
-	}
-
-
-	/*
-         * Deal with cache directory versioning:
-         *  - If cache/.features is missing, create it if --write-cache.
-         *  - If cache/.features exists, and does not match features_string,
-         *    force cache reading/writing off.
-         */
-	if (asprintf(&cache_features_path, "%s/.features", cacheloc) == -1) {
-		PERROR(_("Memory allocation error."));
-		exit(1);
-	}
-
-	cache_flags = load_features_file(cache_features_path);
-	if (cache_flags) {
-		if (strcmp(features_string, cache_flags) != 0) {
-			if (write_cache && cond_clear_cache) {
-				if (create_cache(cacheloc, cache_features_path,
-						 features_string))
-					skip_read_cache = 1;
-			} else {
-				if (show_cache)
-					PERROR("Cache read/write disabled: %s does not match %s\n", FEATURES_FILE, cache_features_path);
-				write_cache = 0;
-				skip_read_cache = 1;
-			}
-		}
-	} else if (write_cache) {
-		create_cache(cacheloc, cache_features_path, features_string);
 	}
 }
 
@@ -927,17 +892,6 @@ int main(int argc, char *argv[])
 		return retval;
 	}
 
-	/* create the cacheloc once and use it everywhere */
-	if (!cacheloc) {
-		if (asprintf(&cacheloc, "%s/cache", basedir) == -1) {
-			PERROR(_("Memory allocation error."));
-			exit(1);
-		}
-	}
-
-	if (force_clear_cache) 
-		exit(clear_cache_files(cacheloc));
-
 	/* Check to make sure there is an interface to load policy */
 	if (!(UNPRIVILEGED_OPS) && (subdomainbase == NULL) &&
 	    !find_subdomainfs_mountpoint()) {
@@ -947,6 +901,8 @@ int main(int argc, char *argv[])
 	if (!binary_input) parse_default_paths();
 
 	setup_flags();
+
+	setup_cache();
 
 	retval = last_error = 0;
 	for (i = optind; i <= argc; i++) {
