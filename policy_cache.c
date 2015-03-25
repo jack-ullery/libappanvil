@@ -129,23 +129,15 @@ error:
 	if (stat(policy_cache->path, &stat_file) == -1) {
 		if (mkdir(policy_cache->path, 0700) == 0)
 			goto create_file;
-		if (show_cache)
-			PERROR("Can't create cache directory: %s\n",
-			       policy_cache->path);
+		PERROR("Can't create cache directory: %s\n",
+		       policy_cache->path);
 	} else if (!S_ISDIR(stat_file.st_mode)) {
-		if (show_cache)
-			PERROR("File in cache directory location: %s\n",
-			       policy_cache->path);
+		PERROR("File in cache directory location: %s\n",
+		       policy_cache->path);
 	} else {
-		if (show_cache)
-			PERROR("Can't update cache directory: %s\n",
-			       policy_cache->path);
+		PERROR("Can't update cache directory: %s\n",
+		       policy_cache->path);
 	}
-
-	if (show_cache)
-		PERROR("Cache write disabled: cannot create %s\n",
-		       policy_cache->features_path);
-	write_cache = 0;
 
 	return -1;
 }
