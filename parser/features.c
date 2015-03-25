@@ -102,6 +102,7 @@ static int features_dir_cb(DIR *dir, const char *name, struct stat *st,
 		PDEBUG("Opened features \"%s\"\n", name);
 		if (st->st_size > remaining) {
 			PDEBUG("Feature buffer full.");
+			errno = ENOBUFS;
 			return -1;
 		}
 
@@ -128,17 +129,17 @@ static int features_dir_cb(DIR *dir, const char *name, struct stat *st,
 	return 0;
 }
 
-static char *handle_features_dir(const char *filename, char *buffer, int size,
-				 char *pos)
+static int handle_features_dir(const char *filename, char *buffer, int size,
+			       char *pos)
 {
 	struct features_struct fst = { buffer, size, pos };
 
 	if (dirat_for_each(NULL, filename, &fst, features_dir_cb)) {
 		PDEBUG("Failed evaluating %s\n", filename);
-		exit(1);
+		return -1;
 	}
 
-	return fst.pos;
+	return 0;
 }
 
 static int load_features_file(const char *name, char *buffer, size_t size)
@@ -175,6 +176,7 @@ int aa_features_new(aa_features **features, const char *path)
 {
 	struct stat stat_file;
 	aa_features *f;
+	int retval;
 
 	*features = NULL;
 
@@ -188,9 +190,10 @@ int aa_features_new(aa_features **features, const char *path)
 	}
 	aa_features_ref(f);
 
-	if (S_ISDIR(stat_file.st_mode)) {
-		handle_features_dir(path, f->string, STRING_SIZE, f->string);
-	} else if (load_features_file(path, f->string, STRING_SIZE)) {
+	retval = S_ISDIR(stat_file.st_mode) ?
+		 handle_features_dir(path, f->string, STRING_SIZE, f->string) :
+		 load_features_file(path, f->string, STRING_SIZE);
+	if (retval) {
 		int save = errno;
 
 		aa_features_unref(f);
