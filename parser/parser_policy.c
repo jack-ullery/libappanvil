@@ -31,6 +31,7 @@
 #include "parser.h"
 #include "profile.h"
 #include "parser_yacc.h"
+#include "kernel_interface.h"
 
 /* #define DEBUG */
 #ifdef DEBUG
@@ -220,12 +221,13 @@ static int profile_add_hat_rules(Profile *prof)
 	return 0;
 }
 
-int load_policy_list(ProfileList &list, int option, int cache_fd)
+int load_policy_list(ProfileList &list, int option,
+		     aa_kernel_interface *kernel_interface, int cache_fd)
 {
 	int res = 0;
 
 	for (ProfileList::iterator i = list.begin(); i != list.end(); i++) {
-		res = load_profile(option, *i, cache_fd);
+		res = load_profile(option, kernel_interface, *i, cache_fd);
 		if (res != 0)
 			break;
 	}
@@ -233,14 +235,16 @@ int load_policy_list(ProfileList &list, int option, int cache_fd)
 	return res;
 }
 
-int load_flattened_hats(Profile *prof, int option, int cache_fd)
+int load_flattened_hats(Profile *prof, int option,
+			aa_kernel_interface *kernel_interface, int cache_fd)
 {
-	return load_policy_list(prof->hat_table, option, cache_fd);
+	return load_policy_list(prof->hat_table, option, kernel_interface,
+				cache_fd);
 }
 
-int load_policy(int option, int cache_fd)
+int load_policy(int option, aa_kernel_interface *kernel_interface, int cache_fd)
 {
-	return load_policy_list(policy_list, option, cache_fd);
+	return load_policy_list(policy_list, option, kernel_interface, cache_fd);
 }
 
 int load_hats(std::ostringstream &buf, Profile *prof)
