@@ -14,7 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 
 struct ignored_suffix_t {
 	const char * text;
@@ -40,6 +45,35 @@ static struct ignored_suffix_t ignored_suffixes[] = {
 	{ "~", 1, 0 },
 	{ NULL, 0, 0 }
 };
+
+#define DEBUG_ENV_VAR	"LIBAPPARMOR_DEBUG"
+
+void print_error(bool honor_env_var, const char *ident, const char *fmt, ...)
+{
+	va_list args;
+	int openlog_options = 0;
+
+	if (honor_env_var && secure_getenv(DEBUG_ENV_VAR))
+		openlog_options |= LOG_PERROR;
+
+	openlog(ident, openlog_options, LOG_ERR);
+	va_start(args, fmt);
+	vsyslog(LOG_ERR, fmt, args);
+	va_end(args);
+	closelog();
+}
+
+void print_debug(const char *fmt, ...)
+{
+	va_list args;
+
+	if (!secure_getenv(DEBUG_ENV_VAR))
+		return;
+
+	va_start(args, fmt);
+	vfprintf(stderr, fmt, args);
+	va_end(args);
+}
 
 int _aa_is_blacklisted(const char *name, const char *path)
 {

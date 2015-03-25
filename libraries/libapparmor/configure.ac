@@ -14,6 +14,14 @@ PKG_PROG_PKG_CONFIG
 
 AC_PATH_PROG([SWIG], [swig])
 
+AC_MSG_CHECKING([whether the libapparmor debug output should be enabled])
+AC_ARG_ENABLE([debug_output],
+[AS_HELP_STRING([--enable-debug-output], [generate the libapparmor debug output [[default=no]]])],
+[AC_MSG_RESULT([$enableval])],
+[enable_debug_output=no]
+[AC_MSG_RESULT([$enable_debug_output])])
+AS_IF([test "$enable_debug_output" = "yes"], [AC_DEFINE([ENABLE_DEBUG_OUTPUT], [1], [debug output])])
+
 AC_MSG_CHECKING([whether the libapparmor man pages should be generated])
 AC_ARG_ENABLE(man_pages,
 [AS_HELP_STRING([--enable-man-pages], [generate the libapparmor man pages [[default=yes]]])],
@@ -71,7 +79,7 @@ AM_CONDITIONAL(HAVE_PERL, test x$with_perl = xyes)
 AM_CONDITIONAL(HAVE_RUBY, test x$with_ruby = xyes)
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(unistd.h stdint.h)
+AC_CHECK_HEADERS(unistd.h stdint.h syslog.h)
 
 AC_CHECK_FUNCS(asprintf)
 
