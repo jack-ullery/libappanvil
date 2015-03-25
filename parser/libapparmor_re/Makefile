@@ -1,10 +1,17 @@
 # Profiling:
 #EXTRA_CFLAGS = -pg
 
+ifdef USE_SYSTEM
+  # Using the system libapparmor
+  INCLUDE_APPARMOR =
+else
+  INCLUDE_APPARMOR = -I../../libraries/libapparmor/include
+endif
+
 TARGET=libapparmor_re.a
 
 CFLAGS ?= -g -Wall -O2 ${EXTRA_CFLAGS} -std=gnu++0x
-CXXFLAGS := ${CFLAGS}
+CXXFLAGS := ${CFLAGS} ${INCLUDE_APPARMOR}
 
 ARFLAGS=-rcs
 
