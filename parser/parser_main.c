@@ -966,8 +966,14 @@ int process_profile(int option, const char *profilename)
 				    stat_bin.st_size > 0) {
 					if (valid_cached_file_version(cachename))
 						set_mru_tstamp(stat_bin.st_ctim);
-				} else if (debug_cache)
-					pwarn("%s: Invalid or missing cache file '%s'\n", progname, cachename);
+					else if (!cond_clear_cache)
+						write_cache = 0;
+				} else {
+					if (!cond_clear_cache)
+						write_cache = 0;
+					if (debug_cache)
+						pwarn("%s: Invalid or missing cache file '%s' (%s)\n", progname, cachename, strerror(errno));
+				}
 			}
 		}
 
