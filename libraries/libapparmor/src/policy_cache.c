@@ -149,7 +149,7 @@ int aa_policy_cache_new(aa_policy_cache **policy_cache,
 		return -1;
 	}
 
-	pc = (aa_policy_cache *) calloc(1, sizeof(*pc));
+	pc = calloc(1, sizeof(*pc));
 	if (!pc) {
 		errno = ENOMEM;
 		return -1;

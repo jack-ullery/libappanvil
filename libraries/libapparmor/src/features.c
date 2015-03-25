@@ -353,7 +353,7 @@ int aa_features_new(aa_features **features, const char *path)
 	if (stat(path, &stat_file) == -1)
 		return -1;
 
-	f = (aa_features *) calloc(1, sizeof(*f));
+	f = calloc(1, sizeof(*f));
 	if (!f) {
 		errno = ENOMEM;
 		return -1;
@@ -397,7 +397,7 @@ int aa_features_new_from_string(aa_features **features,
 	if (size >= STRING_SIZE)
 		return ENOBUFS;
 
-	f = (aa_features *) calloc(1, sizeof(*f));
+	f = calloc(1, sizeof(*f));
 	if (!f) {
 		errno = ENOMEM;
 		return -1;

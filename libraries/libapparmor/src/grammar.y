@@ -418,7 +418,7 @@ _parse_yacc(char *str)
 	int parser_return;
 
 	ret_record = NULL;
-	ret_record = (aa_log_record *) malloc(sizeof(aa_log_record));
+	ret_record = malloc(sizeof(aa_log_record));
 
 	_init_log_record(ret_record);
 
