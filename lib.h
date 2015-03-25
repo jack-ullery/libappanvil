@@ -7,9 +7,6 @@
 #define autoclose __attribute((cleanup(_aa_autoclose)))
 #define autofclose __attribute((cleanup(_aa_autofclose)))
 
-void atomic_inc(unsigned int *v);
-bool atomic_dec_and_test(unsigned int *v);
-
 int dirat_for_each(DIR *dir, const char *name, void *data,
 		   int (* cb)(DIR *, const char *, struct stat *, void *));
 

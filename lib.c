@@ -29,16 +29,6 @@
 #include "lib.h"
 #include "parser.h"
 
-void atomic_inc(unsigned int *v)
-{
-	__sync_add_and_fetch(v, 1);
-}
-
-bool atomic_dec_and_test(unsigned int *v)
-{
-	return __sync_sub_and_fetch(v, 1) == 0;
-}
-
 int dirat_for_each(DIR *dir, const char *name, void *data,
 		   int (* cb)(DIR *, const char *, struct stat *, void *))
 {
