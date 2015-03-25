@@ -19,8 +19,6 @@
 #ifndef __AA_POLICY_CACHE_H
 #define __AA_POLICY_CACHE_H
 
-#include "features.h"
-
 extern struct timespec mru_tstamp;
 
 /* returns true if time is more recent than mru_tstamp */
@@ -46,19 +44,5 @@ void valid_read_cache(const char *cachename);
 int cache_hit(const char *cachename);
 int setup_cache_tmp(const char **cachetmpname, const char *cachename);
 void install_cache(const char *cachetmpname, const char *cachename);
-
-typedef struct aa_policy_cache aa_policy_cache;
-
-int aa_policy_cache_new(aa_policy_cache **policy_cache,
-			aa_features *kernel_features, const char *path,
-			bool create);
-aa_policy_cache *aa_policy_cache_ref(aa_policy_cache *policy_cache);
-void aa_policy_cache_unref(aa_policy_cache *policy_cache);
-bool aa_policy_cache_is_valid(aa_policy_cache *policy_cache);
-int aa_policy_cache_create(aa_policy_cache *policy_cache);
-int aa_policy_cache_remove(const char *path);
-int aa_policy_cache_replace_all(aa_policy_cache *policy_cache,
-				aa_kernel_interface *kernel_interface);
-
 
 #endif /* __AA_POLICY_CACHE_H */
