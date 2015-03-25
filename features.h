@@ -19,13 +19,14 @@
 #ifndef __AA_FEATURES_H
 #define __AA_FEATURES_H
 
-#include "parser.h"
+typedef struct aa_features aa_features;
 
-#define FEATURES_FILE "/sys/kernel/security/" MODULE_NAME "/features"
-
-extern char *features_string;
-
-char *load_features_file(const char *name);
-int load_features(const char *name);
+int aa_features_new(aa_features **features, const char *path);
+int aa_features_new_from_string(aa_features **features,
+				const char *string, size_t size);
+int aa_features_new_from_kernel(aa_features **features);
+aa_features *aa_features_ref(aa_features *features);
+void aa_features_unref(aa_features *features);
+const char *aa_features_get_string(aa_features *features);
 
 #endif /* __AA_FEATURES_H */

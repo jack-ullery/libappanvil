@@ -82,6 +82,8 @@ struct timespec mru_tstamp;
 
 static char *cacheloc = NULL;
 
+static aa_features *features = NULL;
+
 /* Make sure to update BOTH the short and long_options */
 static const char *short_options = "adf:h::rRVvI:b:BCD:NSm:M:qQn:XKTWkL:O:po:";
 struct option long_options[] = {
@@ -389,11 +391,17 @@ static int process_arg(int c, char *optarg)
 		}
 		break;
 	case 'm':
-		features_string = strdup(optarg);
+		if (aa_features_new_from_string(&features,
+						optarg, strlen(optarg))) {
+			fprintf(stderr,
+				"Failed to parse features string: %m\n");
+			exit(1);
+		}
 		break;
 	case 'M':
-		if (load_features(optarg) == -1) {
-			fprintf(stderr, "Failed to load features from '%s'\n",
+		if (aa_features_new(&features, optarg)) {
+			fprintf(stderr,
+				"Failed to load features from '%s': %m\n",
 				optarg);
 			exit(1);
 		}
@@ -564,16 +572,17 @@ no_match:
 	perms_create = 1;
 }
 
-static void set_supported_features(void) {
+static void set_supported_features(void)
+{
+	const char *features_string;
 
 	/* has process_args() already assigned a match string? */
-	if (!features_string) {
-		if (load_features(FEATURES_FILE) == -1) {
-			set_features_by_match_file();
-			return;
-		}
+	if (!features && aa_features_new_from_kernel(&features) == -1) {
+		set_features_by_match_file();
+		return;
 	}
 
+	features_string = aa_features_get_string(features);
 	perms_create = 1;
 
 	/* TODO: make this real parsing and config setting */
@@ -865,10 +874,9 @@ static void setup_flags(void)
 	set_supported_features();
 
 	/* Gracefully handle AppArmor kernel without compatibility patch */
-	if (!features_string) {
-		PERROR("Cache read/write disabled: %s interface file missing. "
-			"(Kernel needs AppArmor 2.4 compatibility patch.)\n",
-			FEATURES_FILE);
+	if (!features) {
+		PERROR("Cache read/write disabled: interface file missing. "
+			"(Kernel needs AppArmor 2.4 compatibility patch.)\n");
 		write_cache = 0;
 		skip_read_cache = 1;
 		return;
@@ -924,7 +932,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	retval = setup_cache(cacheloc);
+	retval = setup_cache(features, cacheloc);
 	if (retval) {
 		PERROR(_("Failed setting up policy cache (%s): %s\n"),
 		       cacheloc, strerror(errno));
