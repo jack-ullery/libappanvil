@@ -138,7 +138,7 @@ static int include_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 		if (!(yyin = fopen(path,"r")))
 			yyerror(_("Could not open '%s' in '%s'"), path, d->filename);
 		PDEBUG("Opened include \"%s\" in \"%s\"\n", path, d->filename);
-		update_mru_tstamp(yyin);
+		update_mru_tstamp(yyin, path);
 		push_include_stack(path);
 		yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
 	}
@@ -174,7 +174,7 @@ void include_filename(char *filename, int search)
 
         if (S_ISREG(my_stat.st_mode)) {
 		yyin = include_file;
-		update_mru_tstamp(include_file);
+		update_mru_tstamp(include_file, fullpath);
 		PDEBUG("Opened include \"%s\"\n", fullpath);
 		push_include_stack(fullpath);
 		yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));

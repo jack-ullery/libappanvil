@@ -76,6 +76,8 @@ int preprocess_only = 0;
 int skip_mode_force = 0;
 int abort_on_error = 0;			/* stop processing profiles if error */
 int skip_bad_cache_rebuild = 0;
+int mru_skip_cache = 1;
+int debug_cache = 0;
 struct timespec mru_tstamp;
 
 #define FEATURES_STRING_SIZE 8192
@@ -128,6 +130,7 @@ struct option long_options[] = {
 	{"abort-on-error",	0, 0, 132},	/* no short option */
 	{"skip-bad-cache-rebuild",	0, 0, 133},	/* no short option */
 	{"warn",		1, 0, 134},	/* no short option */
+	{"debug-cache",		0, 0, 135},	/* no short option */
 	{NULL, 0, 0, 0},
 };
 
@@ -167,6 +170,7 @@ static void display_usage(const char *command)
 	       "    --skip-bad-cache	Don't clear cache if out of sync\n"
 	       "    --purge-cache	Clear cache regardless of its state\n"
 	       "    --create-cache-dir	Create the cache dir if missing\n"
+	       "    --debug-cache       Debug cache file checks\n"
 	       "-L, --cache-loc n	Set the location of the profile cache\n"
 	       "-q, --quiet		Don't emit warnings\n"
 	       "-v, --verbose		Show profile names as they load\n"
@@ -462,6 +466,9 @@ static int process_arg(int c, char *optarg)
 			       progname, optarg);
 			exit(1);
 		}
+		break;
+	case 135:
+		debug_cache = 1;
 		break;
 	default:
 		display_usage(progname);
@@ -815,6 +822,7 @@ int process_binary(int option, const char *profilename)
 void reset_parser(const char *filename)
 {
 	memset(&mru_tstamp, 0, sizeof(mru_tstamp));
+	mru_skip_cache = 1;
 	free_aliases();
 	free_symtabs();
 	free_policies();
@@ -856,19 +864,28 @@ static bool valid_cached_file_version(const char *cachename)
 	}
 	size_t res = fread(buffer, 1, 16, f);
 	fclose(f);
-	if (res < 16)
+	if (res < 16) {
+		if (debug_cache)
+			pwarn("%s: cache file '%s' invalid size\n", progname, cachename);
 		return false;
+	}
 
 	/* 12 byte header that is always the same and then 4 byte version # */
-	if (memcmp(buffer, header_string, HEADER_STRING_SIZE) != 0)
+	if (memcmp(buffer, header_string, HEADER_STRING_SIZE) != 0) {
+		if (debug_cache)
+			pwarn("%s: cache file '%s' has wrong header\n", progname, cachename);
 		return false;
+	}
 
 	uint32_t version = cpu_to_le32(ENCODE_VERSION(force_complain,
 						      policy_version,
 						      parser_abi_version,
 						      kernel_abi_version));
-	if (memcmp(buffer + 12, &version, 4) != 0)
+	if (memcmp(buffer + 12, &version, 4) != 0) {
+		if (debug_cache)
+			pwarn("%s: cache file '%s' has wrong version\n", progname, cachename);
 		return false;
+	}
 
 	return true;
 }
@@ -878,13 +895,22 @@ static bool valid_cached_file_version(const char *cachename)
 (((a).tv_sec == (mru_tstamp).tv_sec) ? \
   (a).tv_nsec > (mru_tstamp).tv_nsec : (a).tv_sec > (mru_tstamp).tv_sec)
 
-void update_mru_tstamp(FILE *file)
+void set_mru_tstamp(struct timespec t)
+{
+	mru_skip_cache = 0;
+	mru_tstamp = t;
+}
+
+void update_mru_tstamp(FILE *file, const char *name)
 {
 	struct stat stat_file;
-	if (fstat(fileno(file), &stat_file))
+	if (fstat(fileno(file), &stat_file) || (mru_tstamp.tv_sec == 0 && mru_tstamp.tv_nsec == 0))
 		return;
-	if (mru_t_cmp(stat_file.st_mtim))
-		mru_tstamp = stat_file.st_mtim;
+	if (mru_t_cmp(stat_file.st_mtim)) {
+		if (debug_cache)
+			pwarn("%s: file '%s' is newer than cache file\n", progname, name);
+		mru_skip_cache = 1;
+       }
 }
 
 int process_profile(int option, const char *profilename)
@@ -904,10 +930,11 @@ int process_profile(int option, const char *profilename)
 			       profilename, strerror(errno));
 			return errno;
 		}
-	}
-	else {
+	} else {
 		pwarn("%s: cannot use or update cache, disable, or force-complain via stdin\n", progname);
 	}
+
+	reset_parser(profilename);
 
 	if (profilename && option != OPTION_REMOVE) {
 		/* make decisions about disabled or complain-mode profiles */
@@ -928,17 +955,27 @@ int process_profile(int option, const char *profilename)
  			force_complain = 1;
  		}
 
-		/* TODO: add primary cache check.
-		 * If .file for cached binary exists get the list of profile
-		 * names and check their time stamps.
-		 */
-		/* TODO: primary cache miss/hit messages */
+		/* setup cachename and tstamp */
+		if (!force_complain && !skip_cache) {
+			if (asprintf(&cachename, "%s/%s", cacheloc, basename)<0) {
+				PERROR(_("Memory allocation error."));
+				exit(1);
+			}
+			if (!skip_read_cache) {
+				if (stat(cachename, &stat_bin) == 0 &&
+				    stat_bin.st_size > 0) {
+					if (valid_cached_file_version(cachename))
+						set_mru_tstamp(stat_bin.st_ctim);
+				} else if (debug_cache)
+					pwarn("%s: Invalid or missing cache file '%s'\n", progname, cachename);
+			}
+		}
+
 	}
 
-	reset_parser(profilename);
 	if (yyin) {
 		yyrestart(yyin);
-		update_mru_tstamp(yyin);
+		update_mru_tstamp(yyin, profilename ? profilename : "stdin");
 	}
 
 	retval = yyparse();
@@ -960,17 +997,9 @@ int process_profile(int option, const char *profilename)
 	 * Parsing the profile is slower that doing primary cache check
 	 * its still faster than doing full compilation
 	 */
-	if ((profilename && option != OPTION_REMOVE) && !force_complain &&
-	    !skip_cache) {
-		if (asprintf(&cachename, "%s/%s", cacheloc, basename)<0) {
-			PERROR(_("Memory allocation error."));
-			return ENOMEM;
-		}
+	if (cachename) {
 		/* Load a binary cache if it exists and is newest */
-		if (!skip_read_cache &&
-		    stat(cachename, &stat_bin) == 0 &&
-		    stat_bin.st_size > 0 && (mru_t_cmp(stat_bin.st_mtim)) &&
-		    valid_cached_file_version(cachename)) {
+		if (!mru_skip_cache) {
 			if (show_cache)
 				PERROR("Cache hit: %s\n", cachename);
 			retval = process_binary(option, cachename);
