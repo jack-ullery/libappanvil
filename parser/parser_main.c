@@ -792,7 +792,7 @@ int process_profile(int option, const char *profilename)
 				PERROR("Cache hit: %s\n", cachename);
 			retval = process_binary(option, cachename);
 			if (!retval || skip_bad_cache_rebuild)
-				goto out;
+				return retval;
 		}
 		if (write_cache) {
 			/* Otherwise, set up to save a cached copy */
