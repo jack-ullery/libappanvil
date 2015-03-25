@@ -41,5 +41,10 @@ void update_mru_tstamp(FILE *file, const char *path);
 bool valid_cached_file_version(const char *cachename);
 int clear_cache_files(const char *path);
 int create_cache(const char *cachedir, const char *path, const char *features);
+char *cache_filename(const char *cacheloc, const char *basename);
+void valid_read_cache(const char *cachename);
+int cache_hit(const char *cachename);
+int setup_cache_tmp(const char **cachetmpname, const char *cachename);
+void install_cache(const char *cachetmpname, const char *cachename);
 
 #endif /* __AA_POLICY_CACHE_H */

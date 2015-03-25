@@ -220,12 +220,12 @@ static int profile_add_hat_rules(Profile *prof)
 	return 0;
 }
 
-int load_policy_list(ProfileList &list, int option)
+int load_policy_list(ProfileList &list, int option, int cache_fd)
 {
 	int res = 0;
 
 	for (ProfileList::iterator i = list.begin(); i != list.end(); i++) {
-		res = load_profile(option, *i);
+		res = load_profile(option, *i, cache_fd);
 		if (res != 0)
 			break;
 	}
@@ -233,14 +233,14 @@ int load_policy_list(ProfileList &list, int option)
 	return res;
 }
 
-int load_flattened_hats(Profile *prof, int option)
+int load_flattened_hats(Profile *prof, int option, int cache_fd)
 {
-	return load_policy_list(prof->hat_table, option);
+	return load_policy_list(prof->hat_table, option, cache_fd);
 }
 
-int load_policy(int option)
+int load_policy(int option, int cache_fd)
 {
-	return load_policy_list(policy_list, option);
+	return load_policy_list(policy_list, option, cache_fd);
 }
 
 int load_hats(std::ostringstream &buf, Profile *prof)

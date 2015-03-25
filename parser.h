@@ -427,7 +427,7 @@ extern void free_aliases(void);
 extern int profile_merge_rules(Profile *prof);
 
 /* parser_interface.c */
-extern int load_profile(int option, Profile *prof);
+extern int load_profile(int option, Profile *prof, int cache_fd);
 extern void sd_serialize_profile(std::ostringstream &buf, Profile *prof,
 				int flatten);
 extern int sd_load_buffer(int option, char *buffer, int size);
@@ -448,9 +448,9 @@ extern int process_profile_policydb(Profile *prof);
 extern int post_merge_rules(void);
 extern int merge_hat_rules(Profile *prof);
 extern Profile *merge_policy(Profile *a, Profile *b);
-extern int load_policy(int option);
+extern int load_policy(int option, int cache_fd);
 extern int load_hats(std::ostringstream &buf, Profile *prof);
-extern int load_flattened_hats(Profile *prof, int option);
+extern int load_flattened_hats(Profile *prof, int option, int cache_fd);
 extern void dump_policy_hats(Profile *prof);
 extern void dump_policy_names(void);
 void dump_policy(void);

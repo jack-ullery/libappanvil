@@ -145,3 +145,84 @@ error:
 
 	return -1;
 }
+
+char *cache_filename(const char *cacheloc, const char *basename)
+{
+	char *cachename;
+
+	if (asprintf(&cachename, "%s/%s", cacheloc, basename) < 0) {
+		PERROR(_("Memory allocation error."));
+		exit(1);
+	}
+
+	return cachename;
+}
+
+void valid_read_cache(const char *cachename)
+{
+	struct stat stat_bin;
+
+	/* Load a binary cache if it exists and is newest */
+	if (!skip_read_cache) {
+		if (stat(cachename, &stat_bin) == 0 &&
+		    stat_bin.st_size > 0) {
+			if (valid_cached_file_version(cachename))
+				set_mru_tstamp(stat_bin.st_ctim);
+			else if (!cond_clear_cache)
+				write_cache = 0;
+		} else {
+			if (!cond_clear_cache)
+				write_cache = 0;
+			if (debug_cache)
+				pwarn("%s: Invalid or missing cache file '%s' (%s)\n", progname, cachename, strerror(errno));
+		}
+	}
+}
+
+int cache_hit(const char *cachename)
+{
+	if (!mru_skip_cache) {
+		if (show_cache)
+			PERROR("Cache hit: %s\n", cachename);
+		return true;
+	}
+
+	return false;
+}
+
+int setup_cache_tmp(const char **cachetmpname, const char *cachename)
+{
+	char *tmpname;
+	int cache_fd = -1;
+
+	*cachetmpname = NULL;
+	if (write_cache) {
+		/* Otherwise, set up to save a cached copy */
+		if (asprintf(&tmpname, "%s-XXXXXX", cachename)<0) {
+			perror("asprintf");
+			exit(1);
+		}
+		if ((cache_fd = mkstemp(tmpname)) < 0) {
+			perror("mkstemp");
+			exit(1);
+		}
+		*cachetmpname = tmpname;
+	}
+
+	return cache_fd;
+}
+
+void install_cache(const char *cachetmpname, const char *cachename)
+{
+	/* Only install the generate cache file if it parsed correctly
+	   and did not have write/close errors */
+	if (cachetmpname) {
+		if (rename(cachetmpname, cachename) < 0) {
+			pwarn("Warning failed to write cache: %s\n", cachename);
+			unlink(cachetmpname);
+		}
+		else if (show_cache) {
+			PERROR("Wrote cache: %s\n", cachename);
+		}
+	}
+}
