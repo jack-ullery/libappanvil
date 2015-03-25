@@ -110,17 +110,12 @@ static int clear_cache_cb(DIR *dir, const char *path, struct stat *st,
 	return 0;
 }
 
-int clear_cache_files(const char *path)
-{
-	return dirat_for_each(NULL, path, NULL, clear_cache_cb);
-}
-
 static int create_cache(aa_policy_cache *policy_cache, aa_features *features)
 {
 	struct stat stat_file;
 	autofclose FILE * f = NULL;
 
-	if (clear_cache_files(policy_cache->path) != 0)
+	if (aa_policy_cache_remove(policy_cache->path))
 		goto error;
 
 create_file:
@@ -361,4 +356,15 @@ bool aa_policy_cache_is_valid(aa_policy_cache *policy_cache)
 int aa_policy_cache_create(aa_policy_cache *policy_cache)
 {
 	return create_cache(policy_cache, policy_cache->kernel_features);
+}
+
+/**
+ * aa_policy_cache_remove - removes all policy cache files under a path
+ * @path: the path to a policy cache directory
+ *
+ * Returns: 0 on success, -1 on error with errno set
+ */
+int aa_policy_cache_remove(const char *path)
+{
+	return dirat_for_each(NULL, path, NULL, clear_cache_cb);
 }
