@@ -19,6 +19,8 @@
 #ifndef __AA_KERNEL_INTERFACE_H
 #define __AA_KERNEL_INTERFACE_H
 
+#include <sys/apparmor.h>
+
 #include "features.h"
 
 typedef struct aa_kernel_interface aa_kernel_interface;
