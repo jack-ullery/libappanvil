@@ -88,15 +88,12 @@ static const char *next_profile_buffer(const char *buffer, int size)
 	return NULL;
 }
 
-static int write_buffer(int fd, const char *buffer, int size, int set)
+static int write_buffer(int fd, const char *buffer, int size)
 {
-	const char *err_str = set ? "profile set" : "profile";
 	int wsize = write(fd, buffer, size);
 	if (wsize < 0) {
-		PERROR(_("%s: Unable to write %s\n"), progname, err_str);
 		return -1;
 	} else if (wsize < size) {
-		PERROR(_("%s: Unable to write %s\n"), progname, err_str);
 		errno = EPROTO;
 		return -1;
 	}
@@ -124,7 +121,7 @@ static int write_policy_buffer(int fd, int atomic,
 	int rc;
 
 	if (atomic) {
-		rc = write_buffer(fd, buffer, size, true);
+		rc = write_buffer(fd, buffer, size);
 	} else {
 		const char *b, *next;
 
@@ -136,7 +133,7 @@ static int write_policy_buffer(int fd, int atomic,
 				bsize = next - b;
 			else
 				bsize = size;
-			if (write_buffer(fd, b, bsize, false) == -1)
+			if (write_buffer(fd, b, bsize) == -1)
 				return -1;
 		}
 	}
@@ -147,83 +144,156 @@ static int write_policy_buffer(int fd, int atomic,
 	return 0;
 }
 
-/**
- * open_option_iface - open the interface file for @option
- * @aadir: apparmorfs dir
- * @option: load command option
- *
- * Returns: fd to interface or -1 on error, with errno set.
- */
-static int open_option_iface(int aadir, int option)
-{
-	const char *name;
+#define AA_IFACE_FILE_LOAD	".load"
+#define AA_IFACE_FILE_REMOVE	".remove"
+#define AA_IFACE_FILE_REPLACE	".replace"
 
-	switch (option) {
-	case OPTION_ADD:
-		name = ".load";
-		break;
-	case OPTION_REPLACE:
-		name = ".replace";
-		break;
-	case OPTION_REMOVE:
-		name = ".remove";
-		break;
-	default:
-		errno = EINVAL;
-		return -1;
-	}
-
-	return openat(aadir, name, O_WRONLY);
-
-	/* TODO: push up */
-	/*
-	if (fd < 0) {
-		PERROR(_("Unable to open %s - %s\n"), filename,
-		       strerror(errno));
-		return -errno;
-	}
-	*/
-}
-
-int aa_load_buffer(int option, char *buffer, int size)
+static int write_policy_buffer_to_iface(const char *iface_file,
+					const char *buffer, size_t size)
 {
 	autoclose int dirfd = -1;
 	autoclose int fd = -1;
-
-	/* TODO: push backup into caller */
-	if (!kernel_load)
-		return 0;
 
 	dirfd = open_iface_dir();
 	if (dirfd == -1)
 		return -1;
 
-	fd = open_option_iface(dirfd, option);
+	fd = openat(dirfd, iface_file, O_WRONLY | O_CLOEXEC);
 	if (fd == -1)
 		return -1;
 
 	return write_policy_buffer(fd, kernel_supports_setload, buffer, size);
 }
 
-/**
- * aa_remove_profile - remove a profile from the kernel
- * @fqname: the fully qualified name of the profile to remove
- *
- * Returns: 0 on success, -1 on error with errno set
- */
-int aa_remove_profile(const char *fqname)
+static int write_policy_fd_to_iface(const char *iface_file, int fd)
 {
-	autoclose int dirfd = -1;
-	autoclose int fd = -1;
+	autofree char *buffer = NULL;
+	int size = 0, asize = 0, rsize;
+	int chunksize = 1 << 14;
 
-	dirfd = open_iface_dir();
-	if (dirfd == -1)
+	do {
+		if (asize - size == 0) {
+			buffer = (char *) realloc(buffer, chunksize);
+			asize = chunksize;
+			chunksize <<= 1;
+			if (!buffer) {
+				errno = ENOMEM;
+				return -1;
+			}
+		}
+
+		rsize = read(fd, buffer + size, asize - size);
+		if (rsize)
+			size += rsize;
+	} while (rsize > 0);
+
+	if (rsize == -1)
 		return -1;
 
-	fd = open_option_iface(dirfd, OPTION_REMOVE);
+	return write_policy_buffer_to_iface(iface_file, buffer, size);
+}
+
+static int write_policy_file_to_iface(const char *iface_file, const char *path)
+{
+	autoclose int fd;
+
+	fd = open(path, O_RDONLY);
 	if (fd == -1)
 		return -1;
 
-	/* include trailing \0 in buffer write */
-	return write_buffer(fd, fqname, strlen(fqname) + 1, 0);
+	return write_policy_fd_to_iface(iface_file, fd);
+}
+
+/**
+ * aa_kernel_interface_load_policy - load a policy into the kernel
+ * @buffer: a buffer containing a policy
+ * @size: the size of the buffer
+ *
+ * Returns: 0 on success, -1 on error with errno set
+ */
+int aa_kernel_interface_load_policy(const char *buffer, size_t size)
+{
+	return write_policy_buffer_to_iface(AA_IFACE_FILE_LOAD, buffer, size);
+}
+
+/**
+ * aa_kernel_interface_load_policy_from_file - load a policy into the kernel
+ * @path: path to a policy binary
+ *
+ * Returns: 0 on success, -1 on error with errno set
+ */
+int aa_kernel_interface_load_policy_from_file(const char *path)
+{
+	return write_policy_file_to_iface(AA_IFACE_FILE_LOAD, path);
+}
+
+/**
+ * aa_kernel_interface_load_policy_from_fd - load a policy into the kernel
+ * @fd: a pre-opened, readable file descriptor at the correct offset
+ *
+ * Returns: 0 on success, -1 on error with errno set
+ */
+int aa_kernel_interface_load_policy_from_fd(int fd)
+{
+	return write_policy_fd_to_iface(AA_IFACE_FILE_LOAD, fd);
+}
+
+/**
+ * aa_kernel_interface_replace_policy - replace a policy in the kernel
+ * @buffer: a buffer containing a policy
+ * @size: the size of the buffer
+ *
+ * Returns: 0 on success, -1 on error with errno set
+ */
+int aa_kernel_interface_replace_policy(const char *buffer, size_t size)
+{
+	return write_policy_buffer_to_iface(AA_IFACE_FILE_REPLACE,
+					    buffer, size);
+}
+
+/**
+ * aa_kernel_interface_replace_policy_from_file - replace a policy in the kernel
+ * @path: path to a policy binary
+ *
+ * Returns: 0 on success, -1 on error with errno set
+ */
+int aa_kernel_interface_replace_policy_from_file(const char *path)
+{
+	return write_policy_file_to_iface(AA_IFACE_FILE_REPLACE, path);
+}
+
+/**
+ * aa_kernel_interface_replace_policy_from_fd - replace a policy in the kernel
+ * @fd: a pre-opened, readable file descriptor at the correct offset
+ *
+ * Returns: 0 on success, -1 on error with errno set
+ */
+int aa_kernel_interface_replace_policy_from_fd(int fd)
+{
+	return write_policy_fd_to_iface(AA_IFACE_FILE_REPLACE, fd);
+}
+
+/**
+ * aa_kernel_interface_remove_policy - remove a policy from the kernel
+ * @fqname: nul-terminated fully qualified name of the policy to remove
+ *
+ * Returns: 0 on success, -1 on error with errno set
+ */
+int aa_kernel_interface_remove_policy(const char *fqname)
+{
+	return write_policy_buffer_to_iface(AA_IFACE_FILE_REMOVE,
+					    fqname, strlen(fqname) + 1);
+}
+
+/**
+ * aa_kernel_interface_write_policy - write a policy to a file descriptor
+ * @fd: a pre-opened, writeable file descriptor at the correct offset
+ * @buffer: a buffer containing a policy
+ * @size: the size of the buffer
+ *
+ * Returns: 0 on success, -1 on error with errno set
+ */
+int aa_kernel_interface_write_policy(int fd, const char *buffer, size_t size)
+{
+	return write_policy_buffer(fd, 1, buffer, size);
 }

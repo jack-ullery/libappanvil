@@ -522,7 +522,7 @@ int __sd_serialize_profile(int option, Profile *prof, int cache_fd)
 
 	if (option == OPTION_REMOVE) {
 		if (kernel_load) {
-			if (aa_remove_profile(prof->fqname().c_str()) == -1)
+			if (aa_kernel_interface_remove_policy(prof->fqname().c_str()) == -1)
 				error = -errno;
 		}
 	} else {
