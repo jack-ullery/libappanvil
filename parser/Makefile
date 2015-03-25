@@ -240,7 +240,7 @@ common_optarg.o: common_optarg.c common_optarg.h parser.h libapparmor_re/apparmo
 features.o: features.c features.h parser.h libapparmor_re/apparmor_re.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-policy_cache.o: policy_cache.c policy_cache.h parser.h lib.h
+policy_cache.o: policy_cache.c policy_cache.h parser.h lib.h features.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 kernel_interface.o: kernel_interface.c kernel_interface.h
