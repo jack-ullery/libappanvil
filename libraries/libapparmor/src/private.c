@@ -142,6 +142,21 @@ void _aa_autofclose(FILE **f)
 	}
 }
 
+int _aa_asprintf(char **strp, const char *fmt, ...)
+{
+	va_list args;
+	int rc;
+
+	va_start(args, fmt);
+	rc = vasprintf(strp, fmt, args);
+	va_end(args);
+
+	if (rc == -1)
+		*strp = NULL;
+
+	return rc;
+}
+
 /**
  * _aa_dirat_for_each: iterate over a directory calling cb for each entry
  * @dir: already opened directory (MAY BE NULL)

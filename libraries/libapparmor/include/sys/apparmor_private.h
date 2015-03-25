@@ -29,6 +29,8 @@ void _aa_autofree(void *p);
 void _aa_autoclose(int *fd);
 void _aa_autofclose(FILE **f);
 
+int _aa_asprintf(char **strp, const char *fmt, ...);
+
 int _aa_dirat_for_each(DIR *dir, const char *name, void *data,
 		       int (* cb)(DIR *, const char *, struct stat *, void *));
 

@@ -25,6 +25,8 @@
 #define autofclose __attribute((cleanup(_aa_autofclose)))
 #define unused __attribute__ ((unused))
 
+#define asprintf _aa_asprintf
+
 #if ENABLE_DEBUG_OUTPUT
 
 #define PERROR(fmt, args...)	print_error(true, "libapparmor", fmt, ## args)
