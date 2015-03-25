@@ -916,7 +916,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (force_clear_cache) {
-			if (clear_cache_files(cacheloc)) {
+			if (aa_policy_cache_remove(cacheloc)) {
 				PERROR(_("Failed to clear cache files (%s): %s\n"),
 				       cacheloc, strerror(errno));
 				return 1;
