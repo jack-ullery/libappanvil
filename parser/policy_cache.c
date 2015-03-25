@@ -107,7 +107,7 @@ int clear_cache_files(const char *path)
 	return dirat_for_each(NULL, path, NULL, clear_cache_cb);
 }
 
-int create_cache(const char *cachedir, const char *path, const char *features)
+int create_cache(const char *cachedir, const char *path, aa_features *features)
 {
 	struct stat stat_file;
 	autofclose FILE * f = NULL;
@@ -116,13 +116,10 @@ int create_cache(const char *cachedir, const char *path, const char *features)
 		goto error;
 
 create_file:
-	f = fopen(path, "w");
-	if (f) {
-		if (fwrite(features, strlen(features), 1, f) != 1 )
-			goto error;
+	if (aa_features_write_to_file(features, path) == -1)
+		goto error;
 
-		return 0;
-	}
+	return 0;
 
 error:
 	/* does the dir exist? */
@@ -231,7 +228,6 @@ int setup_cache(aa_features *kernel_features, const char *cacheloc)
 {
 	autofree char *cache_features_path = NULL;
 	aa_features *cache_features;
-	const char *kernel_features_string;
 
 	if (!cacheloc) {
 		errno = EINVAL;
@@ -250,12 +246,11 @@ int setup_cache(aa_features *kernel_features, const char *cacheloc)
 		return -1;
 	}
 
-	kernel_features_string = aa_features_get_string(kernel_features);
 	if (!aa_features_new(&cache_features, cache_features_path)) {
 		if (!aa_features_is_equal(kernel_features, cache_features)) {
 			if (write_cache && cond_clear_cache) {
 				if (create_cache(cacheloc, cache_features_path,
-						 kernel_features_string))
+						 kernel_features))
 					skip_read_cache = 1;
 			} else {
 				if (show_cache)
@@ -266,8 +261,7 @@ int setup_cache(aa_features *kernel_features, const char *cacheloc)
 		}
 		aa_features_unref(cache_features);
 	} else if (write_cache) {
-		create_cache(cacheloc, cache_features_path,
-			     kernel_features_string);
+		create_cache(cacheloc, cache_features_path, kernel_features);
 	}
 
 	return 0;
