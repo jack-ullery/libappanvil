@@ -20,13 +20,7 @@
 #include <stdio.h>
 #include <aalogparse.h>
 #include "parser.h"
-
-
-#define MY_TEST(statement, error)               \
-	if (!(statement)) {                     \
-		fprintf(stderr, "FAIL: %s\n", error); \
-		rc = 1; \
-	}
+#include "private.h"
 
 int main(void)
 {

@@ -17,9 +17,20 @@
 #ifndef _SYS_APPARMOR_PRIVATE_H
 #define _SYS_APPARMOR_PRIVATE_H	1
 
+#include <dirent.h>
+#include <stdio.h>
+#include <sys/stat.h>
+
 __BEGIN_DECLS
 
 int _aa_is_blacklisted(const char *name, const char *path);
+
+void _aa_autofree(void *p);
+void _aa_autoclose(int *fd);
+void _aa_autofclose(FILE **f);
+
+int _aa_dirat_for_each(DIR *dir, const char *name, void *data,
+		       int (* cb)(DIR *, const char *, struct stat *, void *));
 
 __END_DECLS
 

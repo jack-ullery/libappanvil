@@ -19,6 +19,10 @@
 
 #include <stdbool.h>
 
+#define autofree __attribute((cleanup(_aa_autofree)))
+#define autoclose __attribute((cleanup(_aa_autoclose)))
+#define autofclose __attribute((cleanup(_aa_autofclose)))
+
 #if ENABLE_DEBUG_OUTPUT
 
 #define PERROR(fmt, args...)	print_error(true, "libapparmor", fmt, ## args)
@@ -30,6 +34,12 @@
 #define PDEBUG(fmt, args...)	/* do nothing */
 
 #endif /* ENABLE_DEBUG_OUTPUT */
+
+#define MY_TEST(statement, error)               \
+	if (!(statement)) {                     \
+		fprintf(stderr, "FAIL: %s\n", error); \
+		rc = 1; \
+	}
 
 void print_error(bool honor_env_var, const char *ident, const char *fmt, ...);
 void print_debug(const char *fmt, ...);

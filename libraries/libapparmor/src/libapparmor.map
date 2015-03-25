@@ -55,6 +55,10 @@ APPARMOR_2.9 {
 PRIVATE {
 	global:
 		_aa_is_blacklisted;
+		_aa_autofree;
+		_aa_autoclose;
+		_aa_autofclose;
+		_aa_dirat_for_each;
 	local:
 		*;
 };
