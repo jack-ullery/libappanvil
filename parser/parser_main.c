@@ -877,7 +877,6 @@ static void setup_flags(void)
 
 int main(int argc, char *argv[])
 {
-	autofree char *cachedir = NULL;
 	int retval, last_error;
 	int i;
 	int optind;
@@ -910,7 +909,17 @@ int main(int argc, char *argv[])
 
 	setup_flags();
 
-	cachedir = setup_cache(cacheloc);
+	if (!cacheloc && asprintf(&cacheloc, "%s/cache", basedir) == -1) {
+		PERROR(_("Memory allocation error."));
+		return 1;
+	}
+
+	retval = setup_cache(cacheloc);
+	if (retval) {
+		PERROR(_("Failed setting up policy cache (%s): %s\n"),
+		       cacheloc, strerror(errno));
+		return 1;
+	}
 
 	retval = last_error = 0;
 	for (i = optind; i <= argc; i++) {
@@ -938,7 +947,7 @@ int main(int argc, char *argv[])
 			struct dir_cb_data cb_data;
 
 			cb_data.dirname = profilename;
-			cb_data.cachedir = cachedir;
+			cb_data.cachedir = cacheloc;
 			cb = binary_input ? binary_dir_cb : profile_dir_cb;
 			if ((retval = dirat_for_each(NULL, profilename,
 						     &cb_data, cb))) {
@@ -948,7 +957,7 @@ int main(int argc, char *argv[])
 		} else if (binary_input) {
 			retval = process_binary(option, profilename);
 		} else {
-			retval = process_profile(option, profilename, cachedir);
+			retval = process_profile(option, profilename, cacheloc);
 		}
 
 		if (profilename) free(profilename);
