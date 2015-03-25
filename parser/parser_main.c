@@ -80,6 +80,8 @@ int mru_skip_cache = 1;
 int debug_cache = 0;
 struct timespec mru_tstamp;
 
+static char *cacheloc = NULL;
+
 /* Make sure to update BOTH the short and long_options */
 static const char *short_options = "adf:h::rRVvI:b:BCD:NSm:M:qQn:XKTWkL:O:po:";
 struct option long_options[] = {
@@ -691,7 +693,7 @@ int test_for_dir_mode(const char *basename, const char *linkdir)
 	return rc;
 }
 
-int process_profile(int option, const char *profilename)
+int process_profile(int option, const char *profilename, const char *cachedir)
 {
 	int retval = 0;
 	autofree const char *cachename = NULL;
@@ -735,7 +737,7 @@ int process_profile(int option, const char *profilename)
 
 		/* setup cachename and tstamp */
 		if (!force_complain && !skip_cache) {
-			cachename = cache_filename(cacheloc, basename);
+			cachename = cache_filename(cachedir, basename);
 			valid_read_cache(cachename);
 		}
 
@@ -820,32 +822,37 @@ out:
 	return retval;
 }
 
-/* data - name of parent dir */
+struct dir_cb_data {
+	const char *dirname;	/* name of the parent dir */
+	const char *cachedir;	/* path to the cache sub directory */
+};
+
+/* data - pointer to a dir_cb_data */
 static int profile_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 			  void *data)
 {
 	int rc = 0;
 
 	if (!S_ISDIR(st->st_mode) && !is_blacklisted(name, NULL)) {
-		const char *dirname = (const char *)data;
+		struct dir_cb_data *cb_data = (struct dir_cb_data *)data;
 		autofree char *path = NULL;
-		if (asprintf(&path, "%s/%s", dirname, name) < 0)
+		if (asprintf(&path, "%s/%s", cb_data->dirname, name) < 0)
 			PERROR(_("Out of memory"));
-		rc = process_profile(option, path);
+		rc = process_profile(option, path, cb_data->cachedir);
 	}
 	return rc;
 }
 
-/* data - name of parent dir */
+/* data - pointer to a dir_cb_data */
 static int binary_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 			 void *data)
 {
 	int rc = 0;
 
 	if (!S_ISDIR(st->st_mode) && !is_blacklisted(name, NULL)) {
-		const char *dirname = (const char *)data;
+		struct dir_cb_data *cb_data = (struct dir_cb_data *)data;
 		autofree char *path = NULL;
-		if (asprintf(&path, "%s/%s", dirname, name) < 0)
+		if (asprintf(&path, "%s/%s", cb_data->dirname, name) < 0)
 			PERROR(_("Out of memory"));
 		rc = process_binary(option, path);
 	}
@@ -870,6 +877,7 @@ static void setup_flags(void)
 
 int main(int argc, char *argv[])
 {
+	autofree char *cachedir = NULL;
 	int retval, last_error;
 	int i;
 	int optind;
@@ -902,7 +910,7 @@ int main(int argc, char *argv[])
 
 	setup_flags();
 
-	setup_cache();
+	cachedir = setup_cache(cacheloc);
 
 	retval = last_error = 0;
 	for (i = optind; i <= argc; i++) {
@@ -927,15 +935,20 @@ int main(int argc, char *argv[])
 		if (profilename && S_ISDIR(stat_file.st_mode)) {
 			int (*cb)(DIR *dir, const char *name, struct stat *st,
 				  void *data);
+			struct dir_cb_data cb_data;
+
+			cb_data.dirname = profilename;
+			cb_data.cachedir = cachedir;
 			cb = binary_input ? binary_dir_cb : profile_dir_cb;
-			if ((retval = dirat_for_each(NULL, profilename, profilename, cb))) {
+			if ((retval = dirat_for_each(NULL, profilename,
+						     &cb_data, cb))) {
 				PDEBUG("Failed loading profiles from %s\n",
 				       profilename);
 			}
 		} else if (binary_input) {
 			retval = process_binary(option, profilename);
 		} else {
-			retval = process_profile(option, profilename);
+			retval = process_profile(option, profilename, cachedir);
 		}
 
 		if (profilename) free(profilename);

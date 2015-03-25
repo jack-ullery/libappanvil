@@ -35,18 +35,17 @@ extern int force_clear_cache;		/* force clearing regargless of state */
 extern int create_cache_dir;		/* create the cache dir if missing? */
 extern int mru_skip_cache;
 extern int debug_cache;
-extern char *cacheloc;
 
 void set_mru_tstamp(struct timespec t);
 void update_mru_tstamp(FILE *file, const char *path);
 bool valid_cached_file_version(const char *cachename);
 int clear_cache_files(const char *path);
 int create_cache(const char *cachedir, const char *path, const char *features);
-char *cache_filename(const char *cacheloc, const char *basename);
+char *cache_filename(const char *cachedir, const char *basename);
 void valid_read_cache(const char *cachename);
 int cache_hit(const char *cachename);
 int setup_cache_tmp(const char **cachetmpname, const char *cachename);
 void install_cache(const char *cachetmpname, const char *cachename);
-void setup_cache(void);
+char *setup_cache(const char *cacheloc);
 
 #endif /* __AA_POLICY_CACHE_H */
