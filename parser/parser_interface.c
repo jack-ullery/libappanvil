@@ -28,6 +28,7 @@
 #include <string>
 #include <sstream>
 
+#include "lib.h"
 #include "parser.h"
 #include "profile.h"
 #include "libapparmor_re/apparmor_re.h"
@@ -374,13 +375,11 @@ void sd_serialize_profile(std::ostringstream &buf, Profile *profile,
 	sd_write_struct(buf, "profile");
 	if (flattened) {
 		assert(profile->parent);
-		char *name = (char *) malloc(3 + strlen(profile->name) +
-				    strlen(profile->parent->name));
+		autofree char *name = (char *) malloc(3 + strlen(profile->name) + strlen(profile->parent->name));
 		if (!name)
 			return;
 		sprintf(name, "%s//%s", profile->parent->name, profile->name);
 		sd_write_string(buf, name, NULL);
-		free(name);
 	} else {
 		sd_write_string(buf, profile->name, NULL);
 	}
@@ -483,7 +482,7 @@ int __sd_serialize_profile(int option, Profile *prof)
 	int fd = -1;
 	int error = -ENOMEM, size, wsize;
 	std::ostringstream work_area;
-	char *filename = NULL;
+	autofree char *filename = NULL;
 
 	switch (option) {
 	case OPTION_ADD:
@@ -522,8 +521,6 @@ int __sd_serialize_profile(int option, Profile *prof)
 	}
 
 	error = 0;
-
-	free(filename);
 
 	if (option == OPTION_REMOVE) {
 		char *name, *ns = NULL;
@@ -646,7 +643,7 @@ int sd_load_buffer(int option, char *buffer, int size)
 {
 	int fd = -1;
 	int error, bsize;
-	char *filename = NULL;
+	autofree char *filename = NULL;
 
 	/* TODO: push backup into caller */
 	if (!kernel_load)
@@ -694,7 +691,5 @@ int sd_load_buffer(int option, char *buffer, int size)
 	close(fd);
 
 out:
-	free(filename);
-
 	return error;
 }
