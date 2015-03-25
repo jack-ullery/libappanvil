@@ -33,11 +33,17 @@
 #include "lib.h"
 #include "parser.h"
 
-#define FEATURES_STRING_SIZE 8192
-char *features_string = NULL;
+#define FEATURES_FILE "/sys/kernel/security/" MODULE_NAME "/features"
+
+#define STRING_SIZE 8192
+
+struct aa_features {
+	unsigned int ref_count;
+	char string[STRING_SIZE];
+};
 
 struct features_struct {
-	char **buffer;
+	char *buffer;
 	int size;
 	char *pos;
 };
@@ -45,7 +51,7 @@ struct features_struct {
 static int features_snprintf(struct features_struct *fst, const char *fmt, ...)
 {
 	va_list args;
-	int i, remaining = fst->size - (fst->pos - *fst->buffer);
+	int i, remaining = fst->size - (fst->pos - fst->buffer);
 
 	if (remaining < 0) {
 		errno = EINVAL;
@@ -86,7 +92,7 @@ static int features_dir_cb(DIR *dir, const char *name, struct stat *st,
 	if (S_ISREG(st->st_mode)) {
 		autoclose int file = -1;
 		int len;
-		int remaining = fst->size - (fst->pos - *fst->buffer);
+		int remaining = fst->size - (fst->pos - fst->buffer);
 
 		file = openat(dirfd(dir), name, O_RDONLY);
 		if (file == -1) {
@@ -122,7 +128,7 @@ static int features_dir_cb(DIR *dir, const char *name, struct stat *st,
 	return 0;
 }
 
-static char *handle_features_dir(const char *filename, char **buffer, int size,
+static char *handle_features_dir(const char *filename, char *buffer, int size,
 				 char *pos)
 {
 	struct features_struct fst = { buffer, size, pos };
@@ -135,49 +141,145 @@ static char *handle_features_dir(const char *filename, char **buffer, int size,
 	return fst.pos;
 }
 
-char *load_features_file(const char *name) {
-	char *buffer;
+static int load_features_file(const char *name, char *buffer, size_t size)
+{
 	autofclose FILE *f = NULL;
-	size_t size;
+	size_t end;
 
 	f = fopen(name, "r");
 	if (!f)
-		return NULL;
-
-	buffer = (char *) malloc(FEATURES_STRING_SIZE);
-	if (!buffer)
-		goto fail;
-
-	size = fread(buffer, 1, FEATURES_STRING_SIZE - 1, f);
-	if (!size || ferror(f))
-		goto fail;
-	buffer[size] = 0;
-
-	return buffer;
-
-fail:
-	int save = errno;
-	free(buffer);
-	errno = save;
-	return NULL;
-}
-
-int load_features(const char *name)
-{
-	struct stat stat_file;
-
-	if (stat(name, &stat_file) == -1)
 		return -1;
 
-	if (S_ISDIR(stat_file.st_mode)) {
-		/* if we have a features directory default to */
-		features_string = (char *) malloc(FEATURES_STRING_SIZE);
-		handle_features_dir(name, &features_string, FEATURES_STRING_SIZE, features_string);
-	} else {
-		features_string = load_features_file(name);
-		if (!features_string)
-			return -1;
+	errno = 0;
+	end = fread(buffer, 1, size - 1, f);
+	if (ferror(f)) {
+		if (!errno)
+			errno = EIO;
+		return -1;
 	}
+	buffer[end] = 0;
 
 	return 0;
+}
+
+/**
+ * aa_features_new - create a new features based on a path
+ * @features: will point to the address of an allocated and initialized
+ *            aa_features object upon success
+ * @path: path to a features file or directory
+ *
+ * Returns: 0 on success, -1 on error with errno set and *@features pointing to
+ *          NULL
+ */
+int aa_features_new(aa_features **features, const char *path)
+{
+	struct stat stat_file;
+	aa_features *f;
+
+	*features = NULL;
+
+	if (stat(path, &stat_file) == -1)
+		return -1;
+
+	f = (aa_features *) calloc(1, sizeof(*f));
+	if (!f) {
+		errno = ENOMEM;
+		return -1;
+	}
+	aa_features_ref(f);
+
+	if (S_ISDIR(stat_file.st_mode)) {
+		handle_features_dir(path, f->string, STRING_SIZE, f->string);
+	} else if (load_features_file(path, f->string, STRING_SIZE)) {
+		int save = errno;
+
+		aa_features_unref(f);
+		errno = save;
+		return -1;
+	}
+
+	*features = f;
+
+	return 0;
+}
+
+/**
+ * aa_features_new_from_string - create a new features based on a string
+ * @features: will point to the address of an allocated and initialized
+ *            aa_features object upon success
+ * @string: a NUL-terminated string representation of features
+ * @size: the size of @string, not counting the NUL-terminator
+ *
+ * Returns: 0 on success, -1 on error with errno set and *@features pointing to
+ *          NULL
+ */
+int aa_features_new_from_string(aa_features **features,
+				const char *string, size_t size)
+{
+	aa_features *f;
+
+	*features = NULL;
+
+	/* Require size to be less than STRING_SIZE so there's room for a NUL */
+	if (size >= STRING_SIZE)
+		return ENOBUFS;
+
+	f = (aa_features *) calloc(1, sizeof(*f));
+	if (!f) {
+		errno = ENOMEM;
+		return -1;
+	}
+	aa_features_ref(f);
+
+	memcpy(f->string, string, size);
+	f->string[size] = '\0';
+	*features = f;
+
+	return 0;
+}
+
+/**
+ * aa_features_new_from_kernel - create a new features based on the current kernel
+ * @features: will point to the address of an allocated and initialized
+ *            aa_features object upon success
+ *
+ * Returns: 0 on success, -1 on error with errno set and *@features pointing to
+ *          NULL
+ */
+int aa_features_new_from_kernel(aa_features **features)
+{
+	return aa_features_new(features, FEATURES_FILE);
+}
+
+/**
+ * aa_features_ref - increments the ref count of a features
+ * @features: the features
+ *
+ * Returns: the features
+ */
+aa_features *aa_features_ref(aa_features *features)
+{
+	atomic_inc(&features->ref_count);
+	return features;
+}
+
+/**
+ * aa_features_unref - decrements the ref count and frees the features when 0
+ * @features: the features (can be NULL)
+ */
+void aa_features_unref(aa_features *features)
+{
+	if (features && atomic_dec_and_test(&features->ref_count))
+		free(features);
+}
+
+/**
+ * aa_features_get_string - provides immutable string representation of features
+ * @features: the features
+ *
+ * Returns: an immutable string representation of features
+ */
+const char *aa_features_get_string(aa_features *features)
+{
+	return features->string;
 }

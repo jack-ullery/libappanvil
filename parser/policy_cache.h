@@ -19,6 +19,8 @@
 #ifndef __AA_POLICY_CACHE_H
 #define __AA_POLICY_CACHE_H
 
+#include "features.h"
+
 extern struct timespec mru_tstamp;
 
 /* returns true if time is more recent than mru_tstamp */
@@ -46,6 +48,6 @@ void valid_read_cache(const char *cachename);
 int cache_hit(const char *cachename);
 int setup_cache_tmp(const char **cachetmpname, const char *cachename);
 void install_cache(const char *cachetmpname, const char *cachename);
-int setup_cache(const char *cacheloc);
+int setup_cache(aa_features *kernel_features, const char *cacheloc);
 
 #endif /* __AA_POLICY_CACHE_H */

@@ -30,7 +30,6 @@
 #define _(s) gettext(s)
 
 #include "lib.h"
-#include "features.h"
 #include "parser.h"
 #include "policy_cache.h"
 
@@ -228,10 +227,11 @@ void install_cache(const char *cachetmpname, const char *cachename)
 	}
 }
 
-int setup_cache(const char *cacheloc)
+int setup_cache(aa_features *kernel_features, const char *cacheloc)
 {
 	autofree char *cache_features_path = NULL;
-	autofree char *cache_flags = NULL;
+	aa_features *cache_features;
+	const char *kernel_features_string;
 
 	if (!cacheloc) {
 		errno = EINVAL;
@@ -250,22 +250,27 @@ int setup_cache(const char *cacheloc)
 		return -1;
 	}
 
-	cache_flags = load_features_file(cache_features_path);
-	if (cache_flags) {
-		if (strcmp(features_string, cache_flags) != 0) {
+	kernel_features_string = aa_features_get_string(kernel_features);
+	if (!aa_features_new(&cache_features, cache_features_path)) {
+		const char *cache_features_string;
+
+		cache_features_string = aa_features_get_string(cache_features);
+		if (strcmp(kernel_features_string, cache_features_string) != 0) {
 			if (write_cache && cond_clear_cache) {
 				if (create_cache(cacheloc, cache_features_path,
-						 features_string))
+						 kernel_features_string))
 					skip_read_cache = 1;
 			} else {
 				if (show_cache)
-					PERROR("Cache read/write disabled: %s does not match %s\n", FEATURES_FILE, cache_features_path);
+					PERROR("Cache read/write disabled: Police cache is invalid\n");
 				write_cache = 0;
 				skip_read_cache = 1;
 			}
 		}
+		aa_features_unref(cache_features);
 	} else if (write_cache) {
-		create_cache(cacheloc, cache_features_path, features_string);
+		create_cache(cacheloc, cache_features_path,
+			     kernel_features_string);
 	}
 
 	return 0;
