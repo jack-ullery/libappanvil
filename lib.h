@@ -1,14 +1,11 @@
 #ifndef __AA_LIB_H_
 #define __AA_LIB_H_
 
-#include <dirent.h>
+#include <sys/apparmor_private.h>
 
-#define autofree __attribute((cleanup(__autofree)))
-#define autoclose __attribute((cleanup(__autoclose)))
-#define autofclose __attribute((cleanup(__autofclose)))
-void __autofree(void *p);
-void __autoclose(int *fd);
-void __autofclose(FILE **f);
+#define autofree __attribute((cleanup(_aa_autofree)))
+#define autoclose __attribute((cleanup(_aa_autoclose)))
+#define autofclose __attribute((cleanup(_aa_autofclose)))
 
 void atomic_inc(unsigned int *v);
 bool atomic_dec_and_test(unsigned int *v);
