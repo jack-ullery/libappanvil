@@ -159,13 +159,15 @@ static int write_policy_fd_to_iface(aa_kernel_interface *kernel_interface,
 
 	do {
 		if (asize - size == 0) {
-			buffer = realloc(buffer, chunksize);
+			char *tmp = realloc(buffer, chunksize);
+
 			asize = chunksize;
 			chunksize <<= 1;
-			if (!buffer) {
+			if (!tmp) {
 				errno = ENOMEM;
 				return -1;
 			}
+			buffer = tmp;
 		}
 
 		rsize = read(fd, buffer + size, asize - size);

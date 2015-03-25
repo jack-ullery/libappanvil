@@ -288,10 +288,15 @@ int aa_getprocattr(pid_t tid, const char *attr, char **label, char **mode)
 	}
 
 	do {
+		char *tmp;
+
 		size <<= 1;
-		buffer = realloc(buffer, size);
-		if (!buffer)
+		tmp = realloc(buffer, size);
+		if (!tmp) {
+			free(buffer);
 			return -1;
+		}
+		buffer = tmp;
 		memset(buffer, 0, size);
 
 		rc = aa_getprocattr_raw(tid, attr, buffer, size, mode);
@@ -645,10 +650,15 @@ int aa_getpeercon(int fd, char **label, char **mode)
 	}
 
 	do {
+		char *tmp;
+
 		last_size = size;
-		buffer = realloc(buffer, size);
-		if (!buffer)
+		tmp = realloc(buffer, size);
+		if (!tmp) {
+			free(buffer);
 			return -1;
+		}
+		buffer = tmp;
 		memset(buffer, 0, size);
 
 		rc = aa_getpeercon_raw(fd, buffer, &size, mode);
