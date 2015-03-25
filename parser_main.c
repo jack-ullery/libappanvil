@@ -71,7 +71,7 @@ int skip_read_cache = 0;
 int write_cache = 0;
 int cond_clear_cache = 1;		/* only applies if write is set */
 int force_clear_cache = 0;		/* force clearing regargless of state */
-int create_cache_dir = 0;		/* create the cache dir if missing? */
+int create_cache_dir = 0;		/* DEPRECATED in favor of write_cache */
 int preprocess_only = 0;
 int skip_mode_force = 0;
 int abort_on_error = 0;			/* stop processing profiles if error */
@@ -165,7 +165,6 @@ static void display_usage(const char *command)
 	       "-W, --write-cache	Save cached profile (force with -T)\n"
 	       "    --skip-bad-cache	Don't clear cache if out of sync\n"
 	       "    --purge-cache	Clear cache regardless of its state\n"
-	       "    --create-cache-dir	Create the cache dir if missing\n"
 	       "    --debug-cache       Debug cache file checks\n"
 	       "-L, --cache-loc n	Set the location of the profile cache\n"
 	       "-q, --quiet		Don't emit warnings\n"
@@ -922,6 +921,9 @@ int main(int argc, char *argv[])
 
 		return 0;
 	}
+
+	if (create_cache_dir)
+		pwarn(_("The --create-cache-dir option is deprecated. Please use --write-cache.\n"));
 
 	retval = setup_cache(features, cacheloc);
 	if (retval) {
