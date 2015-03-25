@@ -478,44 +478,36 @@ void sd_serialize_top_profile(std::ostringstream &buf, Profile *profile)
 int __sd_serialize_profile(int option, Profile *prof, int cache_fd)
 {
 	autoclose int fd = -1;
-	int error = -ENOMEM, size, wsize;
+	int error, size, wsize;
 	std::ostringstream work_area;
-	autofree char *filename = NULL;
 
 	switch (option) {
 	case OPTION_ADD:
-		if (asprintf(&filename, "%s/.load", subdomainbase) == -1)
-			goto exit;
-		if (kernel_load) fd = open(filename, O_WRONLY);
-		break;
 	case OPTION_REPLACE:
-		if (asprintf(&filename, "%s/.replace", subdomainbase) == -1)
-			goto exit;
-		if (kernel_load) fd = open(filename, O_WRONLY);
-		break;
 	case OPTION_REMOVE:
-		if (asprintf(&filename, "%s/.remove", subdomainbase) == -1)
-			goto exit;
-		if (kernel_load) fd = open(filename, O_WRONLY);
 		break;
 	case OPTION_STDOUT:
-		filename = strdup("stdout");
 		fd = dup(1);
+		if (fd < 0) {
+			error = -errno;
+			PERROR(_("Unable to open stdout - %s\n"),
+			       strerror(errno));
+			goto exit;
+		}
 		break;
 	case OPTION_OFILE:
 		fd = dup(fileno(ofile));
+		if (fd < 0) {
+			error = -errno;
+			PERROR(_("Unable to open output file - %s\n"),
+			       strerror(errno));
+			goto exit;
+		}
 		break;
 	default:
 		error = -EINVAL;
 		goto exit;
 		break;
-	}
-
-	if (fd < 0 && (kernel_load || option == OPTION_OFILE || option == OPTION_STDOUT)) {
-		PERROR(_("Unable to open %s - %s\n"), filename,
-		       strerror(errno));
-		error = -errno;
-		goto exit;
 	}
 
 	error = 0;
@@ -526,22 +518,26 @@ int __sd_serialize_profile(int option, Profile *prof, int cache_fd)
 				error = -errno;
 		}
 	} else {
+		std::string tmp;
+
 		sd_serialize_top_profile(work_area, prof);
 
+		tmp = work_area.str();
 		size = (long) work_area.tellp();
-		if (kernel_load || option == OPTION_STDOUT || option == OPTION_OFILE) {
-			std::string tmp = work_area.str();
-			wsize = write(fd, tmp.c_str(), size);
-			if (wsize < 0) {
+		if (kernel_load) {
+			if (option == OPTION_ADD &&
+			    aa_kernel_interface_load_policy(tmp.c_str(), size) == -1) {
 				error = -errno;
-			} else if (wsize < size) {
-				PERROR(_("%s: Unable to write entire profile entry\n"),
-				       progname);
-				error = -EIO;
+			} else if (option == OPTION_REPLACE &&
+				   aa_kernel_interface_replace_policy(tmp.c_str(), size) == -1) {
+				error = -errno;
 			}
+		} else if ((option == OPTION_STDOUT || option == OPTION_OFILE) &&
+			   aa_kernel_interface_write_policy(fd, tmp.c_str(), size) == -1) {
+			error = -errno;
 		}
+
 		if (cache_fd != -1) {
-			std::string tmp = work_area.str();
 			wsize = write(cache_fd, tmp.c_str(), size);
 			if (wsize < 0) {
 				error = -errno;
