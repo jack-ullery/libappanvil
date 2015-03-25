@@ -84,6 +84,16 @@ void print_debug(const char *fmt, ...)
 	va_end(args);
 }
 
+void atomic_inc(unsigned int *v)
+{
+	__sync_add_and_fetch(v, 1);
+}
+
+bool atomic_dec_and_test(unsigned int *v)
+{
+	return __sync_sub_and_fetch(v, 1) == 0;
+}
+
 int _aa_is_blacklisted(const char *name, const char *path)
 {
 	int name_len;

@@ -44,4 +44,7 @@
 void print_error(bool honor_env_var, const char *ident, const char *fmt, ...);
 void print_debug(const char *fmt, ...);
 
+void atomic_inc(unsigned int *v);
+bool atomic_dec_and_test(unsigned int *v);
+
 #endif /* _AA_PRIVATE_H */
