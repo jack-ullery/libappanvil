@@ -27,11 +27,11 @@
 #include <search.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/apparmor.h>
 
 #include "parser.h"
 #include "profile.h"
 #include "parser_yacc.h"
-#include "kernel_interface.h"
 
 /* #define DEBUG */
 #ifdef DEBUG

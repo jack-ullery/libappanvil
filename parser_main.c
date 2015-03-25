@@ -41,7 +41,6 @@
 
 #include "lib.h"
 #include "features.h"
-#include "kernel_interface.h"
 #include "parser.h"
 #include "parser_version.h"
 #include "parser_include.h"

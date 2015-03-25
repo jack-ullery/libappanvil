@@ -30,10 +30,11 @@
 #include <libintl.h>
 #define _(s) gettext(s)
 
+#include <sys/apparmor.h>
+
 #include "immunix.h"
 #include "libapparmor_re/apparmor_re.h"
 #include "libapparmor_re/aare_rules.h"
-#include "kernel_interface.h"
 
 #include <string>
 

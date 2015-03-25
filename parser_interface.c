@@ -27,9 +27,9 @@
 
 #include <string>
 #include <sstream>
+#include <sys/apparmor.h>
 
 #include "lib.h"
-#include "kernel_interface.h"
 #include "parser.h"
 #include "profile.h"
 #include "libapparmor_re/apparmor_re.h"
