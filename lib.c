@@ -33,6 +33,13 @@
 #include "lib.h"
 #include "parser.h"
 
+/* automaticly free allocated variables tagged with autofree on fn exit */
+void __autofree(void *p)
+{
+	void **_p = (void**)p;
+	free(*_p);
+}
+
 /**
  * dirat_for_each: iterate over a directory calling cb for each entry
  * @dir: already opened directory (MAY BE NULL)
@@ -62,7 +69,7 @@
 int dirat_for_each(DIR *dir, const char *name, void *data,
 		   int (* cb)(DIR *, const char *, struct stat *, void *))
 {
-	struct dirent *dirent = NULL;
+	autofree struct dirent *dirent = NULL;
 	DIR *d = NULL;
 	int error;
 
@@ -132,7 +139,6 @@ int dirat_for_each(DIR *dir, const char *name, void *data,
 
 	if (d != dir)
 		closedir(d);
-	free(dirent);
 
 	return 0;
 
@@ -140,7 +146,6 @@ fail:
 	error = errno;
 	if (d && d != dir)
 		closedir(d);
-	free(dirent);
 	errno = error;
 
 	return -1;

@@ -3,6 +3,9 @@
 
 #include <dirent.h>
 
+#define autofree __attribute((cleanup(__autofree)))
+void __autofree(void *p);
+
 int dirat_for_each(DIR *dir, const char *name, void *data,
 		   int (* cb)(DIR *, const char *, struct stat *, void *));
 

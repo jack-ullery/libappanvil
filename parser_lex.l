@@ -125,15 +125,13 @@ static int include_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 {
 	struct cb_struct *d = (struct cb_struct *) data;
 
-	char *path;
+	autofree char *path = NULL;
 
 	if (asprintf(&path, "%s/%s", d->fullpath, name) < 0)
 		yyerror("Out of memory");
 
-	if (is_blacklisted(name, path)) {
-		free(path);
+	if (is_blacklisted(name, path))
 		return 0;
-	}
 
 	if (S_ISREG(st->st_mode)) {
 		if (!(yyin = fopen(path,"r")))
@@ -144,8 +142,6 @@ static int include_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 		yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
 	}
 
-	free(path);
-
 	return 0;
 }
 
@@ -153,7 +149,7 @@ void include_filename(char *filename, int search)
 {
 	FILE *include_file = NULL;
 	struct stat my_stat;
-	char *fullpath = NULL;
+	autofree char *fullpath = NULL;
 
 	if (search) {
 		if (preprocess_only)
@@ -188,9 +184,6 @@ void include_filename(char *filename, int search)
 				  " '%s' in '%s'"), fullpath, filename);;
 		}
 	}
-
-	if (fullpath)
-		free(fullpath);
 }
 
 %}
@@ -281,9 +274,8 @@ LT_EQUAL	<=
 
 <INCLUDE>{
 	(\<([^\> \t\n]+)\>|\"([^\" \t\n]+)\")	{	/* <filename> */
-		char *filename = strndup(yytext, yyleng - 1);
+		autofree char *filename = strndup(yytext, yyleng - 1);
 		include_filename(filename + 1, *filename == '<');
-		free(filename);
 		POP_NODUMP();
 	}
 

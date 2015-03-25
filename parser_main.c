@@ -555,16 +555,13 @@ static void set_features_by_match_file(void)
 {
 	FILE *ms = fopen(MATCH_FILE, "r");
 	if (ms) {
-		char *match_string = (char *) malloc(1000);
+		autofree char *match_string = (char *) malloc(1000);
 		if (!match_string)
 			goto no_match;
-		if (!fgets(match_string, 1000, ms)) {
-			free(match_string);
+		if (!fgets(match_string, 1000, ms))
 			goto no_match;
-		}
 		if (strstr(match_string, " perms=c"))
 			perms_create = 1;
-		free(match_string);
 		kernel_supports_network = 1;
 		goto out;
 	}
@@ -618,7 +615,7 @@ static void set_supported_features(void) {
 
 int process_binary(int option, const char *profilename)
 {
-	char *buffer = NULL;
+	autofree char *buffer = NULL;
 	int retval = 0, size = 0, asize = 0, rsize;
 	int chunksize = 1 << 14;
 	int fd;
@@ -637,7 +634,7 @@ int process_binary(int option, const char *profilename)
 
 	do {
 		if (asize - size == 0) {
-		  buffer = (char *) realloc(buffer, chunksize);
+			buffer = (char *) realloc(buffer, chunksize);
 			asize = chunksize;
 			chunksize <<= 1;
 			if (!buffer) {
@@ -657,8 +654,6 @@ int process_binary(int option, const char *profilename)
 		retval = sd_load_buffer(option, buffer, size);
 	else
 		retval = rsize;
-
-	free(buffer);
 
 	if (conf_verbose) {
 		switch (option) {
@@ -694,7 +689,7 @@ int test_for_dir_mode(const char *basename, const char *linkdir)
 	int rc = 0;
 
 	if (!skip_mode_force) {
-		char *target = NULL;
+		autofree char *target = NULL;
 		if (asprintf(&target, "%s/%s/%s", basedir, linkdir, basename) < 0) {
 			perror("asprintf");
 			exit(1);
@@ -702,8 +697,6 @@ int test_for_dir_mode(const char *basename, const char *linkdir)
 
 		if (access(target, R_OK) == 0)
 			rc = 1;
-
-		free(target);
 	}
 
 	return rc;
@@ -713,8 +706,8 @@ int process_profile(int option, const char *profilename)
 {
 	struct stat stat_bin;
 	int retval = 0;
-	char * cachename = NULL;
-	char * cachetemp = NULL;
+	autofree char *cachename = NULL;
+	autofree char *cachetemp = NULL;
 	const char *basename = NULL;
 
 	/* per-profile states */
@@ -879,10 +872,8 @@ out:
 			unlink(cachetemp);
 			PERROR("Warning failed to create cache: %s\n", basename);
 		}
-		free(cachetemp);
 	}
-	if (cachename)
-		free(cachename);
+
 	return retval;
 }
 
@@ -894,11 +885,10 @@ static int profile_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 
 	if (!S_ISDIR(st->st_mode) && !is_blacklisted(name, NULL)) {
 		const char *dirname = (const char *)data;
-		char *path;
+		autofree char *path = NULL;
 		if (asprintf(&path, "%s/%s", dirname, name) < 0)
 			PERROR(_("Out of memory"));
 		rc = process_profile(option, path);
-		free(path);
 	}
 	return rc;
 }
@@ -911,19 +901,18 @@ static int binary_dir_cb(DIR *dir unused, const char *name, struct stat *st,
 
 	if (!S_ISDIR(st->st_mode) && !is_blacklisted(name, NULL)) {
 		const char *dirname = (const char *)data;
-		char *path;
+		autofree char *path = NULL;
 		if (asprintf(&path, "%s/%s", dirname, name) < 0)
 			PERROR(_("Out of memory"));
 		rc = process_binary(option, path);
-		free(path);
 	}
 	return rc;
 }
 
 static void setup_flags(void)
 {
-	char *cache_features_path = NULL;
-	char *cache_flags = NULL;
+	autofree char *cache_features_path = NULL;
+	autofree char *cache_flags = NULL;
 
 	/* Get the match string to determine type of regex support needed */
 	set_supported_features();
@@ -964,13 +953,9 @@ static void setup_flags(void)
 				skip_read_cache = 1;
 			}
 		}
-		free(cache_flags);
-		cache_flags = NULL;
 	} else if (write_cache) {
 		create_cache(cacheloc, cache_features_path, features_string);
 	}
-
-	free(cache_features_path);
 }
 
 int main(int argc, char *argv[])
