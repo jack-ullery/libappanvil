@@ -29,5 +29,6 @@ aa_features *aa_features_ref(aa_features *features);
 void aa_features_unref(aa_features *features);
 const char *aa_features_get_string(aa_features *features);
 bool aa_features_is_equal(aa_features *features1, aa_features *features2);
+bool aa_features_supports(aa_features *features, const char *str);
 
 #endif /* __AA_FEATURES_H */

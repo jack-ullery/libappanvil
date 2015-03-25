@@ -17,6 +17,7 @@
  */
 
 #include <errno.h>
+#include <ctype.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
@@ -46,6 +47,11 @@ struct features_struct {
 	char *buffer;
 	int size;
 	char *pos;
+};
+
+struct component {
+	const char *str;
+	size_t len;
 };
 
 static int features_snprintf(struct features_struct *fst, const char *fmt, ...)
@@ -161,6 +167,173 @@ static int load_features_file(const char *name, char *buffer, size_t size)
 	buffer[end] = 0;
 
 	return 0;
+}
+
+static bool islbrace(int c)
+{
+	return c == '{';
+}
+
+static bool isrbrace(int c)
+{
+	return c == '}';
+}
+
+static bool isnul(int c)
+{
+	return c == '\0';
+}
+
+static bool isbrace(int c)
+{
+	return islbrace(c) || isrbrace(c);
+}
+
+static bool isbrace_or_nul(int c)
+{
+	return isbrace(c) || isnul(c);
+}
+
+static bool isbrace_space_or_nul(int c)
+{
+	return isbrace(c) || isspace(c) || isnul(c);
+}
+
+static size_t tokenize_path_components(const char *str,
+				       struct component *components,
+				       size_t max_components)
+{
+	size_t i = 0;
+
+	memset(components, 0, sizeof(*components) * max_components);
+
+	if (!str)
+		return 0;
+
+	while (*str && i < max_components) {
+		const char *fwdslash = strchrnul(str, '/');
+
+		/* Save the token if it is not "/" */
+		if (fwdslash != str) {
+			components[i].str = str;
+			components[i].len = fwdslash - str;
+			i++;
+		}
+
+		if (isnul(*fwdslash))
+			break;
+
+		str = fwdslash + 1;
+	}
+
+	return i;
+}
+
+/**
+ * walk_one - walk one component of a features string
+ * @str: a pointer to the current position in a features string
+ * @component: the component to walk
+ * @is_top_level: true if component is a top-level component
+ *
+ * Imagine a features string such as:
+ *
+ *  "feat1 { subfeat1.1 subfeat1.2 } feat2 { subfeat2.1 { subfeat2.1.1 } }"
+ *
+ * You want to know if "feat2/subfeat2.1/subfeat2.8" is valid. It will take 3
+ * invocations of this function to determine if that string is valid. On the
+ * first call, *@str will point to the beginning of the features string,
+ * component->str will be "feat2", and is_top_level will be true since feat2 is
+ * a top level feature. The function will return true and *@str will now point
+ * at the the left brace after "feat2" in the features string. You can call
+ * this function again with component->str being equal to "subfeat2.1" and it
+ * will return true and *@str will now point at the left brace after
+ * "subfeat2.1" in the features string. A third call to the function, with
+ * component->str equal to "subfeat2.8", will return false and *@str will not
+ * be changed.
+ *
+ * Returns true if the walk was successful and false otherwise. If the walk was
+ * successful, *@str will point to the first encountered brace after the walk.
+ * If the walk was unsuccessful, *@str is not updated.
+ */
+static bool walk_one(const char **str, const struct component *component,
+		     bool is_top_level)
+{
+	const char *cur;
+	uint32_t brace_count = 0;
+	size_t i = 0;
+
+	/* NULL pointers and empty strings are not accepted */
+	if (!str || !*str || !component || !component->str || !component->len)
+		return false;
+
+	cur = *str;
+
+	/**
+	 * If @component is not top-level, the first character in the string to
+	 * search MUST be '{'
+	 */
+	if (!is_top_level) {
+		if (!islbrace(*cur))
+			return false;
+
+		cur++;
+	}
+
+	/**
+	 * This loop tries to find the @component in *@str. When this loops
+	 * completes, cur will either point one character past the end of the
+	 * matched @component or to the NUL terminator of *@str.
+	 */
+	while(!isnul(*cur) && i < component->len) {
+		if (!isascii(*cur)) {
+			/* Only ASCII is expected */
+			return false;
+		} else if (islbrace(*cur)) {
+			/* There's a limit to the number of left braces */
+			if (brace_count == UINT32_MAX)
+				return false;
+
+			brace_count++;
+		} else if (isrbrace(*cur)) {
+			/* Check for unexpected right braces */
+			if (brace_count == 0)
+				return false;
+
+			brace_count--;
+		}
+
+		/**
+		 * Move to the next character in @component if we're not inside
+		 * of braces and we have a character match
+		 */
+		if (brace_count == 0 && *cur == component->str[i])
+			i++;
+		else
+			i = 0;
+
+		cur++;
+	}
+
+	/* Return false if a full match was not found */
+	if (i != component->len) {
+		return false;
+	} else if (!isbrace_space_or_nul(*cur))
+		return false;
+
+	/**
+	 * This loop eats up valid (ASCII) characters until a brace or NUL
+	 * character is found so that *@str is properly set to call back into
+	 * this function
+	 */
+	while (!isbrace_or_nul(*cur)) {
+		if (!isascii(*cur))
+			return false;
+
+		cur++;
+	}
+
+	*str = cur;
+	return true;
 }
 
 /**
@@ -299,3 +472,274 @@ bool aa_features_is_equal(aa_features *features1, aa_features *features2)
 	return features1 && features2 &&
 	       strcmp(features1->string, features2->string) == 0;
 }
+
+/**
+ * aa_features_supports - provides features support status
+ * @features: the features
+ * @str: the string representation of a feature to check
+ *
+ * Example @str values are "dbus/mask/send", "caps/mask/audit_read", and
+ * "policy/versions/v7".
+ *
+ * Returns: a bool specifying the support status of @str feature
+ */
+bool aa_features_supports(aa_features *features, const char *str)
+{
+	const char *features_string = features->string;
+	struct component components[32];
+	size_t i, num_components;
+
+	/* Empty strings are not accepted. Neither are leading '/' chars. */
+	if (!str || str[0] == '/')
+		return false;
+
+	/**
+	 * Break @str into an array of components. For example,
+	 * "mount/mask/mount" would turn into { "mount", 5 } as the first
+	 * component, { "mask", 4 } as the second, and { "mount", 5 } as the
+	 * third
+	 */
+	num_components = tokenize_path_components(str, components,
+				sizeof(components) / sizeof(*components));
+
+	/* At least one valid token is required */
+	if (!num_components)
+		return false;
+
+	/* Ensure that all components are valid and found */
+	for (i = 0; i < num_components; i++) {
+		if (!walk_one(&features_string, &components[i], i == 0))
+			return false;
+	}
+
+	return true;
+}
+
+#ifdef UNIT_TEST
+
+#include "unit_test.h"
+
+static int test_tokenize_path_components(void)
+{
+	struct component components[32];
+	size_t max = sizeof(components) / sizeof(*components);
+	size_t num;
+	int rc = 0;
+
+	num = tokenize_path_components(NULL, components, max);
+	MY_TEST(num == 0, "basic NULL test");
+
+	num = tokenize_path_components("", components, max);
+	MY_TEST(num == 0, "basic empty string test");
+
+	num = tokenize_path_components("a", components, 0);
+	MY_TEST(num == 0, "basic empty array test");
+
+	num = tokenize_path_components("a", components, 1);
+	MY_TEST(num == 1, "one component full test (num)");
+	MY_TEST(!strncmp(components[0].str, "a", components[0].len),
+		"one component full test (components[0])");
+
+	num = tokenize_path_components("a/b", components, 2);
+	MY_TEST(num == 2, "two component full test (num)");
+	MY_TEST(!strncmp(components[0].str, "a", components[0].len),
+		"two component full test (components[0])");
+	MY_TEST(!strncmp(components[1].str, "b", components[0].len),
+		"two component full test (components[1])");
+
+	num = tokenize_path_components("a/b/c", components, 1);
+	MY_TEST(num == 1, "not enough components full test (num)");
+	MY_TEST(!strncmp(components[0].str, "a/b/c", components[0].len),
+		"not enough components full test (components[0])");
+
+	num = tokenize_path_components("/", components, max);
+	MY_TEST(num == 0, "no valid components #1 (num)");
+
+	num = tokenize_path_components("////////", components, max);
+	MY_TEST(num == 0, "no valid components #2 (num)");
+
+	num = tokenize_path_components("////////////foo////", components, max);
+	MY_TEST(num == 1, "many invalid components (num)");
+	MY_TEST(!strncmp(components[0].str, "foo", components[0].len),
+		"many invalid components (components[0])");
+
+	num = tokenize_path_components("file", components, max);
+	MY_TEST(num == 1, "file (num)");
+	MY_TEST(!strncmp(components[0].str, "file", components[0].len),
+		"file (components[0])");
+
+	num = tokenize_path_components("/policy///versions//v7/", components, max);
+	MY_TEST(num == 3, "v7 (num)");
+	MY_TEST(!strncmp(components[0].str, "policy", components[0].len),
+		"v7 (components[0])");
+	MY_TEST(!strncmp(components[1].str, "versions", components[1].len),
+		"v7 (components[1])");
+	MY_TEST(!strncmp(components[2].str, "v7", components[2].len),
+		"v7 (components[2])");
+
+	num = tokenize_path_components("dbus/mask/send", components, max);
+	MY_TEST(num == 3, "dbus send (num)");
+	MY_TEST(!strncmp(components[0].str, "dbus", components[0].len),
+		"dbus send (components[0])");
+	MY_TEST(!strncmp(components[1].str, "mask", components[1].len),
+		"dbus send (components[1])");
+	MY_TEST(!strncmp(components[2].str, "send", components[2].len),
+		"dbus send (components[2])");
+
+
+	return rc;
+}
+
+static int do_test_walk_one(const char **str, const struct component *component,
+			    bool is_top_level, bool expect_walk, const char *e1,
+			    const char *e2, const char *e3)
+{
+	const char *save = str ? *str : NULL;
+	bool walked = walk_one(str, component, is_top_level);
+	int rc = 0;
+
+	/* Check if the result of the walk matches the expected result*/
+	MY_TEST(expect_walk == walked, e1);
+	if (save) {
+		/**
+		 * If a walk was expected, @*str should have changed. It
+		 * shouldn't change if a walk was unexpected.
+		 */
+		if (expect_walk) {
+			MY_TEST(*str != save, e2);
+		} else {
+			MY_TEST(*str == save, e3);
+		}
+	}
+
+	return rc;
+}
+
+#define MY_WALK_TEST(str, component, is_top_level, expect_walk, error)	\
+		if (do_test_walk_one(str, component, is_top_level,	\
+				     expect_walk,			\
+				     error " (walk check)", 		\
+				     error " (str didn't change)",	\
+				     error " (str changed)")) {		\
+			rc = 1;						\
+		}
+
+#define MY_GOOD_WALK_TEST(str, component, is_top_level, error)	\
+		MY_WALK_TEST(str, component, is_top_level, true, error)
+#define MY_BAD_WALK_TEST(str, component, is_top_level, error)	\
+		MY_WALK_TEST(str, component, is_top_level, false, error)
+
+static int test_walk_one(void)
+{
+	struct component c;
+	const char *str;
+	int rc = 0;
+
+	MY_BAD_WALK_TEST(NULL, &c, true, "basic NULL str test");
+
+	str = NULL;
+	MY_BAD_WALK_TEST(&str, &c, true, "basic NULL *str test");
+
+	str = "test { a b }";
+	MY_BAD_WALK_TEST(&str, NULL, true, "basic NULL component test");
+
+	str = "test { a b }";
+	c = { NULL, 8 };
+	MY_BAD_WALK_TEST(&str, &c, true, "basic NULL c.str test");
+
+	str = "test { a b }";
+	c = { "", 0 };
+	MY_BAD_WALK_TEST(&str, &c, true, "basic empty c.str test");
+
+	str = "test";
+	c = { "test", 4 };
+	MY_GOOD_WALK_TEST(&str, &c, true, "single component");
+
+	str = "testX";
+	c = { "test", 4 };
+	MY_BAD_WALK_TEST(&str, &c, true, "single component bad str");
+
+	str = "test";
+	c = { "testX", 5 };
+	MY_BAD_WALK_TEST(&str, &c, true, "single component bad c.str");
+
+	str = "test {     }";
+	c = { "test", 4 };
+	MY_GOOD_WALK_TEST(&str, &c, true, "single component empty braces #1");
+
+	str = "test {\n\t}";
+	c = { "test", 4 };
+	MY_GOOD_WALK_TEST(&str, &c, true, "single component empty braces #2");
+
+	str = "test{}";
+	c = { "test", 4 };
+	MY_GOOD_WALK_TEST(&str, &c, true, "single component empty braces #3");
+
+	str = "test\t{}\n       ";
+	c = { "test", 4 };
+	MY_GOOD_WALK_TEST(&str, &c, true, "single component empty braces #4");
+
+	str = "test {}";
+	c = { "test", 4 };
+	MY_BAD_WALK_TEST(&str, &c, false, "single component bad is_top_level");
+
+	str = "front{back";
+	c = { "frontback", 9};
+	MY_BAD_WALK_TEST(&str, &c, true, "brace in the middle #1");
+	MY_BAD_WALK_TEST(&str, &c, false, "brace in the middle #2");
+
+	str = "ardvark { bear cat { deer } }";
+	c = { "ardvark", 7 };
+	MY_GOOD_WALK_TEST(&str, &c, true, "animal walk good ardvark");
+	c = { "deer", 4 };
+	MY_BAD_WALK_TEST(&str, &c, false, "animal walk bad deer");
+	MY_BAD_WALK_TEST(&str, &c, true, "animal walk bad top-level deer");
+	c = { "bear", 4 };
+	MY_BAD_WALK_TEST(&str, &c, true, "animal walk bad bear");
+	c = { "cat", 3 };
+	MY_GOOD_WALK_TEST(&str, &c, false, "animal walk good cat");
+	c = { "ardvark", 7 };
+	MY_BAD_WALK_TEST(&str, &c, true, "animal walk bad ardvark");
+	c = { "deer", 4 };
+	MY_GOOD_WALK_TEST(&str, &c, false, "animal walk good deer");
+
+	str = "dbus {mask {acquire send receive\n}\n}\nsignal {mask {hup int\n}\n}";
+	c = { "hup", 3 };
+	MY_BAD_WALK_TEST(&str, &c, true, "dbus/signal bad hup #1");
+	MY_BAD_WALK_TEST(&str, &c, false, "dbus/signal bad hup #2");
+	c = { "signal", 6 };
+	MY_BAD_WALK_TEST(&str, &c, false, "dbus/signal bad signal");
+	MY_GOOD_WALK_TEST(&str, &c, true, "dbus/signal good signal");
+	c = { "mask", 4 };
+	MY_BAD_WALK_TEST(&str, &c, true, "dbus/signal bad mask");
+	MY_GOOD_WALK_TEST(&str, &c, false, "dbus/signal good mask");
+	c = { "hup", 3 };
+	MY_GOOD_WALK_TEST(&str, &c, false, "dbus/signal good hup");
+
+	str = "policy {set_load {yes\n}\nversions {v7 {yes\n}\nv6 {yes\n}";
+	c = { "policy", 6 };
+	MY_GOOD_WALK_TEST(&str, &c, true, "policy good");
+	c = { "versions", 8 };
+	MY_GOOD_WALK_TEST(&str, &c, false, "versions good");
+	c = { "v7", 2 };
+	MY_GOOD_WALK_TEST(&str, &c, false, "v7 good");
+
+	return rc;
+}
+
+int main(void)
+{
+	int retval, rc = 0;
+
+	retval = test_tokenize_path_components();
+	if (retval)
+		rc = retval;
+
+	retval = test_walk_one();
+	if (retval)
+		rc = retval;
+
+	return rc;
+}
+
+#endif

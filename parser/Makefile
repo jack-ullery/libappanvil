@@ -109,7 +109,7 @@ EXTRA_CFLAGS += $(INCLUDE_APPARMOR)
 LEX_C_FILES	= parser_lex.c
 YACC_C_FILES	= parser_yacc.c parser_yacc.h
 
-TESTS = tst_regex tst_misc tst_symtab tst_variable tst_lib
+TESTS = tst_regex tst_misc tst_symtab tst_variable tst_lib tst_features
 TEST_CFLAGS = $(EXTRA_CFLAGS) -DUNIT_TEST -Wno-unused-result
 TEST_OBJECTS = $(filter-out \
 			parser_lex.o \
@@ -293,6 +293,8 @@ cap_names.h: /usr/include/linux/capability.h
 tst_lib: lib.c parser.h $(filter-out lib.o, ${TEST_OBJECTS})
 	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS) $(TEST_LDLIBS)
 tst_%: parser_%.c parser.h $(filter-out parser_%.o, ${TEST_OBJECTS})
+	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS) $(TEST_LDLIBS)
+tst_features: features.c features.h parser.h
 	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS) $(TEST_LDLIBS)
 
 .SILENT: check
