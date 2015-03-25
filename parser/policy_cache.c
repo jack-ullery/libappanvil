@@ -249,6 +249,34 @@ static int init_cache_features(aa_policy_cache *policy_cache,
 	return 0;
 }
 
+struct replace_all_cb_data {
+	aa_policy_cache *policy_cache;
+	aa_kernel_interface *kernel_interface;
+};
+
+static int replace_all_cb(DIR *dir unused, const char *name, struct stat *st,
+			 void *cb_data)
+{
+	int retval = 0;
+
+	if (!S_ISDIR(st->st_mode) && !is_blacklisted(name, NULL)) {
+		struct replace_all_cb_data *data;
+		autofree char *path = NULL;
+
+		data = (struct replace_all_cb_data *) cb_data;
+		if (asprintf(&path, "%s/%s",
+			     data->policy_cache->path, name) < 0) {
+			path = NULL;
+			errno = ENOMEM;
+			return -1;
+		}
+		retval = aa_kernel_interface_replace_policy_from_file(data->kernel_interface,
+								      path);
+	}
+
+	return retval;
+}
+
 /**
  * aa_policy_cache_new - create a new policy_cache from a path
  * @policy_cache: will point to the address of an allocated and initialized
@@ -367,4 +395,37 @@ int aa_policy_cache_create(aa_policy_cache *policy_cache)
 int aa_policy_cache_remove(const char *path)
 {
 	return dirat_for_each(NULL, path, NULL, clear_cache_cb);
+}
+
+/**
+ * aa_policy_cache_replace_all - performs a kernel policy replacement of all cached policies
+ * @policy_cache: the policy_cache
+ * @kernel_interface: the kernel interface to use when doing the replacement
+ *
+ * Returns: 0 on success, -1 on error with errno set and features pointing to
+ *          NULL
+ */
+int aa_policy_cache_replace_all(aa_policy_cache *policy_cache,
+				aa_kernel_interface *kernel_interface)
+{
+	struct replace_all_cb_data cb_data;
+	int retval;
+
+	if (kernel_interface) {
+		aa_kernel_interface_ref(kernel_interface);
+	} else if (aa_kernel_interface_new(&kernel_interface,
+					   policy_cache->kernel_features,
+					   NULL) == -1) {
+		kernel_interface = NULL;
+		return -1;
+	}
+
+	cb_data.policy_cache = policy_cache;
+	cb_data.kernel_interface = kernel_interface;
+	retval = dirat_for_each(NULL, policy_cache->path, &cb_data,
+				replace_all_cb);
+
+	aa_kernel_interface_unref(kernel_interface);
+
+	return retval;
 }

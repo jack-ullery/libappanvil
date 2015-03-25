@@ -57,5 +57,8 @@ void aa_policy_cache_unref(aa_policy_cache *policy_cache);
 bool aa_policy_cache_is_valid(aa_policy_cache *policy_cache);
 int aa_policy_cache_create(aa_policy_cache *policy_cache);
 int aa_policy_cache_remove(const char *path);
+int aa_policy_cache_replace_all(aa_policy_cache *policy_cache,
+				aa_kernel_interface *kernel_interface);
+
 
 #endif /* __AA_POLICY_CACHE_H */
