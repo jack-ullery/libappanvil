@@ -875,6 +875,7 @@ static void setup_flags(void)
 
 int main(int argc, char *argv[])
 {
+	aa_policy_cache *policy_cache;
 	int retval, last_error;
 	int i;
 	int optind;
@@ -907,29 +908,48 @@ int main(int argc, char *argv[])
 
 	setup_flags();
 
-	if (!cacheloc && asprintf(&cacheloc, "%s/cache", basedir) == -1) {
-		PERROR(_("Memory allocation error."));
-		return 1;
-	}
-
-	if (force_clear_cache) {
-		if (clear_cache_files(cacheloc)) {
-			PERROR(_("Failed to clear cache files (%s): %s\n"),
-			       cacheloc, strerror(errno));
+	if ((!skip_cache && (write_cache || !skip_read_cache)) ||
+	    force_clear_cache) {
+		if (!cacheloc && asprintf(&cacheloc, "%s/cache", basedir) == -1) {
+			PERROR(_("Memory allocation error."));
 			return 1;
 		}
 
-		return 0;
-	}
+		if (force_clear_cache) {
+			if (clear_cache_files(cacheloc)) {
+				PERROR(_("Failed to clear cache files (%s): %s\n"),
+				       cacheloc, strerror(errno));
+				return 1;
+			}
 
-	if (create_cache_dir)
-		pwarn(_("The --create-cache-dir option is deprecated. Please use --write-cache.\n"));
+			return 0;
+		}
 
-	retval = setup_cache(features, cacheloc);
-	if (retval) {
-		PERROR(_("Failed setting up policy cache (%s): %s\n"),
-		       cacheloc, strerror(errno));
-		return 1;
+		if (create_cache_dir)
+			pwarn(_("The --create-cache-dir option is deprecated. Please use --write-cache.\n"));
+
+		retval = aa_policy_cache_new(&policy_cache, features, cacheloc,
+					     write_cache);
+		if (retval) {
+			if (errno != ENOENT) {
+				PERROR(_("Failed setting up policy cache (%s): %s\n"),
+				       cacheloc, strerror(errno));
+				return 1;
+			}
+
+			write_cache = 0;
+			skip_read_cache = 0;
+		} else if (!aa_policy_cache_is_valid(policy_cache)) {
+			if (write_cache && cond_clear_cache &&
+			    aa_policy_cache_create(policy_cache)) {
+				skip_read_cache = 1;
+			} else if (!write_cache || !cond_clear_cache) {
+				if (show_cache)
+					PERROR("Cache read/write disabled: Policy cache is invalid\n");
+				write_cache = 0;
+				skip_read_cache = 1;
+			}
+		}
 	}
 
 	retval = last_error = 0;
