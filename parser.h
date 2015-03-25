@@ -318,9 +318,21 @@ extern void pwarn(const char *fmt, ...) __attribute__((__format__(__printf__, 1,
 
 /* from parser_main (cannot be used in tst builds) */
 extern int force_complain;
-extern struct timespec mru_tstamp;
-extern void update_mru_tstamp(FILE *file, const char *path);
 extern void display_version(void);
+extern int show_cache;
+extern int skip_cache;
+extern int skip_read_cache;
+extern int write_cache;
+extern int cond_clear_cache;
+extern int force_clear_cache;
+extern int create_cache_dir;
+extern int preprocess_only;
+extern int skip_mode_force;
+extern int abort_on_error;
+extern int skip_bad_cache_rebuild;
+extern int mru_skip_cache;
+extern int debug_cache;
+extern struct timespec mru_tstamp;
 
 /* provided by parser_lex.l (cannot be used in tst builds) */
 extern FILE *yyin;

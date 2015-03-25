@@ -42,6 +42,7 @@
 #include "parser_include.h"
 #include "parser_yacc.h"
 #include "lib.h"
+#include "policy_cache.h"
 
 #ifdef PDEBUG
 #undef PDEBUG
