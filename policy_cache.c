@@ -34,8 +34,6 @@
 #include "parser.h"
 #include "policy_cache.h"
 
-char *cacheloc = NULL;
-
 #define le16_to_cpu(x) ((uint16_t)(le16toh (*(uint16_t *) x)))
 
 const char header_string[] = "\004\010\000version\000\002";
@@ -149,11 +147,11 @@ error:
 	return -1;
 }
 
-char *cache_filename(const char *cacheloc, const char *basename)
+char *cache_filename(const char *cachedir, const char *basename)
 {
 	char *cachename;
 
-	if (asprintf(&cachename, "%s/%s", cacheloc, basename) < 0) {
+	if (asprintf(&cachename, "%s/%s", cachedir, basename) < 0) {
 		PERROR(_("Memory allocation error."));
 		exit(1);
 	}
@@ -230,21 +228,27 @@ void install_cache(const char *cachetmpname, const char *cachename)
 	}
 }
 
-void setup_cache(void)
+char *setup_cache(const char *cacheloc)
 {
 	autofree char *cache_features_path = NULL;
 	autofree char *cache_flags = NULL;
+	char *cachedir;
 
-	/* create the cacheloc once and use it everywhere */
-	if (!cacheloc) {
-		if (asprintf(&cacheloc, "%s/cache", basedir) == -1) {
+	if (cacheloc) {
+		cachedir = strdup(cacheloc);
+		if (!cachedir) {
+			PERROR(_("Memory allocation error."));
+			exit(1);
+		}
+	} else {
+		if (asprintf(&cachedir, "%s/cache", basedir) == -1) {
 			PERROR(_("Memory allocation error."));
 			exit(1);
 		}
 	}
 
 	if (force_clear_cache)
-		exit(clear_cache_files(cacheloc));
+		exit(clear_cache_files(cachedir));
 
 	/*
          * Deal with cache directory versioning:
@@ -252,7 +256,7 @@ void setup_cache(void)
          *  - If cache/.features exists, and does not match features_string,
          *    force cache reading/writing off.
          */
-	if (asprintf(&cache_features_path, "%s/.features", cacheloc) == -1) {
+	if (asprintf(&cache_features_path, "%s/.features", cachedir) == -1) {
 		PERROR(_("Memory allocation error."));
 		exit(1);
 	}
@@ -261,7 +265,7 @@ void setup_cache(void)
 	if (cache_flags) {
 		if (strcmp(features_string, cache_flags) != 0) {
 			if (write_cache && cond_clear_cache) {
-				if (create_cache(cacheloc, cache_features_path,
+				if (create_cache(cachedir, cache_features_path,
 						 features_string))
 					skip_read_cache = 1;
 			} else {
@@ -272,6 +276,8 @@ void setup_cache(void)
 			}
 		}
 	} else if (write_cache) {
-		create_cache(cacheloc, cache_features_path, features_string);
+		create_cache(cachedir, cache_features_path, features_string);
 	}
+
+	return cachedir;
 }
