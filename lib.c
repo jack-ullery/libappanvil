@@ -57,6 +57,16 @@ void __autofclose(FILE **f)
 	}
 }
 
+void atomic_inc(unsigned int *v)
+{
+	__sync_add_and_fetch(v, 1);
+}
+
+bool atomic_dec_and_test(unsigned int *v)
+{
+	return __sync_sub_and_fetch(v, 1) == 0;
+}
+
 /**
  * dirat_for_each: iterate over a directory calling cb for each entry
  * @dir: already opened directory (MAY BE NULL)
