@@ -75,10 +75,10 @@ SRCS = parser_common.c parser_include.c parser_interface.c parser_lex.c \
        parser_yacc.c parser_regex.c parser_variable.c parser_policy.c \
        parser_alias.c common_optarg.c lib.c network.c \
        mount.cc dbus.cc profile.cc rule.cc signal.cc ptrace.cc \
-       af_rule.cc af_unix.cc features.c
+       af_rule.cc af_unix.cc features.c policy_cache.c
 HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h \
        rule.h common_optarg.h signal.h ptrace.h network.h af_rule.h af_unix.h \
-       features.h
+       features.h policy_cache.h
 TOOLS = apparmor_parser
 
 OBJECTS = $(patsubst %.cc, %.o, $(SRCS:.c=.o))
@@ -115,7 +115,8 @@ TEST_OBJECTS = $(filter-out \
 			parser_lex.o \
 			parser_yacc.o \
 			common_optarg.o \
-			parser_main.o, ${OBJECTS}) \
+			parser_main.o \
+			policy_cache.o, ${OBJECTS}) \
                $(AAREOBJECTS)
 TEST_LDFLAGS = $(AARE_LDFLAGS)
 
@@ -187,7 +188,7 @@ apparmor_parser: $(OBJECTS) $(AAREOBJECTS) $(LIBAPPARMOR_A)
 parser_yacc.c parser_yacc.h: parser_yacc.y parser.h profile.h
 	$(YACC) $(YFLAGS) -o parser_yacc.c parser_yacc.y
 
-parser_lex.c: parser_lex.l parser_yacc.h parser.h profile.h mount.h dbus.h
+parser_lex.c: parser_lex.l parser_yacc.h parser.h profile.h mount.h dbus.h policy_cache.h
 	$(LEX) ${LEXFLAGS} -o$@ $<
 
 parser_lex.o: parser_lex.c parser.h parser_yacc.h
@@ -199,7 +200,7 @@ parser_misc.o: parser_misc.c parser.h parser_yacc.h profile.h cap_names.h $(APPA
 parser_yacc.o: parser_yacc.c parser_yacc.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-parser_main.o: parser_main.c parser.h parser_version.h libapparmor_re/apparmor_re.h $(APPARMOR_H)
+parser_main.o: parser_main.c parser.h parser_version.h policy_cache.h libapparmor_re/apparmor_re.h $(APPARMOR_H)
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 parser_interface.o: parser_interface.c parser.h profile.h libapparmor_re/apparmor_re.h
@@ -236,6 +237,9 @@ common_optarg.o: common_optarg.c common_optarg.h parser.h libapparmor_re/apparmo
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 features.o: features.c features.h parser.h libapparmor_re/apparmor_re.h
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
+
+policy_cache.o: policy_cache.c policy_cache.h parser.h lib.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 lib.o: lib.c lib.h parser.h
