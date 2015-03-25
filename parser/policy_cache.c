@@ -252,10 +252,7 @@ int setup_cache(aa_features *kernel_features, const char *cacheloc)
 
 	kernel_features_string = aa_features_get_string(kernel_features);
 	if (!aa_features_new(&cache_features, cache_features_path)) {
-		const char *cache_features_string;
-
-		cache_features_string = aa_features_get_string(cache_features);
-		if (strcmp(kernel_features_string, cache_features_string) != 0) {
+		if (!aa_features_is_equal(kernel_features, cache_features)) {
 			if (write_cache && cond_clear_cache) {
 				if (create_cache(cacheloc, cache_features_path,
 						 kernel_features_string))

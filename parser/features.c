@@ -286,3 +286,16 @@ const char *aa_features_get_string(aa_features *features)
 {
 	return features->string;
 }
+
+/**
+ * aa_features_is_equal - equality test for two features
+ * @features1: the first features (can be NULL)
+ * @features2: the second features (can be NULL)
+ *
+ * Returns: true if they're equal, false if they're not or either are NULL
+ */
+bool aa_features_is_equal(aa_features *features1, aa_features *features2)
+{
+	return features1 && features2 &&
+	       strcmp(features1->string, features2->string) == 0;
+}
