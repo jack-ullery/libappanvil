@@ -13,7 +13,7 @@ void __autofclose(FILE **f);
 int dirat_for_each(DIR *dir, const char *name, void *data,
 		   int (* cb)(DIR *, const char *, struct stat *, void *));
 
-bool isodigit(char c);
+int isodigit(char c);
 long strntol(const char *str, const char **endptr, int base, long maxval,
 	     size_t n);
 int strn_escseq(const char **pos, const char *chrs, size_t n);

@@ -41,6 +41,7 @@
 
 #include "lib.h"
 #include "features.h"
+#include "kernel_interface.h"
 #include "parser.h"
 #include "parser_version.h"
 #include "parser_include.h"
@@ -50,7 +51,6 @@
 
 #define OLD_MODULE_NAME "subdomain"
 #define PROC_MODULES "/proc/modules"
-#define DEFAULT_APPARMORFS "/sys/kernel/security/" MODULE_NAME
 #define MATCH_FILE "/sys/kernel/security/" MODULE_NAME "/matching"
 #define MOUNTED_FS "/proc/mounts"
 #define AADFA "pattern=aadfa"
@@ -513,18 +513,14 @@ static int process_config_file(const char *name)
 
 int find_subdomainfs_mountpoint(void)
 {
-	if (aa_find_mountpoint(&subdomainbase) == -1) {
-		struct stat buf;
-		if (stat(DEFAULT_APPARMORFS, &buf) == -1) {
+	if (aa_find_iface_dir(&subdomainbase) == -1) {
 		PERROR(_("Warning: unable to find a suitable fs in %s, is it "
 			 "mounted?\nUse --subdomainfs to override.\n"),
 		       MOUNTED_FS);
-		} else {
-			subdomainbase = strdup(DEFAULT_APPARMORFS);
-		}
+		return false;
 	}
 
-	return (subdomainbase == NULL);
+	return true;
 }
 
 int have_enough_privilege(void)
@@ -643,9 +639,11 @@ int process_binary(int option, const char *profilename)
 			size += rsize;
 	} while (rsize > 0);
 
-	if (rsize == 0)
-		retval = sd_load_buffer(option, buffer, size);
-	else
+	if (rsize == 0) {
+		retval = aa_load_buffer(option, buffer, size);
+		if (retval == -1)
+			retval = -errno;
+	} else
 		retval = rsize;
 
 	if (conf_verbose) {
@@ -988,8 +986,8 @@ int main(int argc, char *argv[])
 
 	/* Check to make sure there is an interface to load policy */
 	if (!(UNPRIVILEGED_OPS) && (subdomainbase == NULL) &&
-	    (retval = find_subdomainfs_mountpoint())) {
-		return retval;
+	    !find_subdomainfs_mountpoint()) {
+		return 1;
 	}
 
 	if (!binary_input) parse_default_paths();
