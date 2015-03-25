@@ -174,7 +174,7 @@ fail:
  *
  * Returns: true if an octal digit, else false
  */
-bool isodigit(char c)
+int isodigit(char c)
 {
 	return (c >= '0' && c <= '7') ? true : false;
 }

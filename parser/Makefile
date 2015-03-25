@@ -75,10 +75,10 @@ SRCS = parser_common.c parser_include.c parser_interface.c parser_lex.c \
        parser_yacc.c parser_regex.c parser_variable.c parser_policy.c \
        parser_alias.c common_optarg.c lib.c network.c \
        mount.cc dbus.cc profile.cc rule.cc signal.cc ptrace.cc \
-       af_rule.cc af_unix.cc features.c policy_cache.c
+       af_rule.cc af_unix.cc features.c policy_cache.c kernel_interface.c
 HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h \
        rule.h common_optarg.h signal.h ptrace.h network.h af_rule.h af_unix.h \
-       features.h policy_cache.h
+       features.h policy_cache.h kernel_interface.h
 TOOLS = apparmor_parser
 
 OBJECTS = $(patsubst %.cc, %.o, $(SRCS:.c=.o))
@@ -119,6 +119,7 @@ TEST_OBJECTS = $(filter-out \
 			policy_cache.o, ${OBJECTS}) \
                $(AAREOBJECTS)
 TEST_LDFLAGS = $(AARE_LDFLAGS)
+TEST_LDLIBS = $(AALIB)
 
 ifdef V
   VERBOSE = 1
@@ -242,6 +243,9 @@ features.o: features.c features.h parser.h libapparmor_re/apparmor_re.h
 policy_cache.o: policy_cache.c policy_cache.h parser.h lib.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
+kernel_interface.o: kernel_interface.c kernel_interface.h
+	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
+
 lib.o: lib.c lib.h parser.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
@@ -287,9 +291,9 @@ cap_names.h: /usr/include/linux/capability.h
 	echo "$(CAPABILITIES)" | LC_ALL=C sed -n -e "s/[ \\t]\\?CAP_\\([A-Z0-9_]\\+\\)/\{\"\\L\\1\", \\UCAP_\\1\},\\n/pg" > $@
 
 tst_lib: lib.c parser.h $(filter-out lib.o, ${TEST_OBJECTS})
-	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS)
+	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS) $(TEST_LDLIBS)
 tst_%: parser_%.c parser.h $(filter-out parser_%.o, ${TEST_OBJECTS})
-	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS)
+	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS) $(TEST_LDLIBS)
 
 .SILENT: check
 .PHONY: check
