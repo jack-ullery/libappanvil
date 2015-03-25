@@ -450,14 +450,36 @@ void aa_features_unref(aa_features *features)
 }
 
 /**
- * aa_features_get_string - provides immutable string representation of features
+ * aa_features_write_to_file - write a string representation to a file
  * @features: the features
+ * @path: the path to write to
  *
- * Returns: an immutable string representation of features
+ * Returns: 0 on success, -1 on error with errno set
  */
-const char *aa_features_get_string(aa_features *features)
+int aa_features_write_to_file(aa_features *features, const char *path)
 {
-	return features->string;
+	autoclose int fd = -1;
+	size_t size;
+	ssize_t retval;
+	char *string;
+
+	fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC | O_CLOEXEC,
+		  S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	if (fd == -1)
+		return -1;
+
+	string = features->string;
+	size = strlen(string);
+	do {
+		retval = write(fd, string, size);
+		if (retval == -1)
+			return -1;
+
+		size -= retval;
+		string += retval;
+	} while (size);
+
+	return 0;
 }
 
 /**
