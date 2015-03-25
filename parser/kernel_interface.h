@@ -21,5 +21,6 @@
 
 int aa_find_iface_dir(char **dir);
 int aa_load_buffer(int option, char *buffer, int size);
+int aa_remove_profile(const char *fqname);
 
 #endif /* __AA_KERNEL_INTERFACE_H */

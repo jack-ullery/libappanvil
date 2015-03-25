@@ -274,10 +274,8 @@ static int process_variables_in_rules(Profile &prof)
 int process_profile_variables(Profile *prof)
 {
 	int error = 0, rc;
-	std::string *buf = prof->get_name(true);
 
-	error = new_set_var(PROFILE_NAME_VARIABLE, buf->c_str());
-	delete buf;
+	error = new_set_var(PROFILE_NAME_VARIABLE, prof->get_name(true).c_str());
 
 	if (!error)
 		error = process_variables_in_entries(prof->entries);

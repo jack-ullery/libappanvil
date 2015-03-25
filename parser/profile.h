@@ -213,25 +213,34 @@ public:
 
 	bool alloc_net_table();
 
-	std::string* get_name(bool fqp)
+	std::string hname(void)
 	{
-		std::string *buf;
-		if (fqp && parent) {
-			buf = parent->get_name(fqp);
-			buf->append("//");
-			buf->append(name);
-		} else {
-			return new std::string(name);
-		}
+		if (!parent)
+			return name;
 
-		return buf;
+		return parent->hname() + "//" + name;
+	}
+
+	/* assumes ns is set as part of profile creation */
+	std::string fqname(void)
+	{
+		if (parent)
+			return parent->fqname() + "://" + name;
+		else if (!ns)
+			return hname();
+		return ":" + std::string(ns) + "://" + hname();
+	}
+
+	std::string get_name(bool fqp)
+	{
+		if (fqp)
+			return fqname();
+		return hname();
 	}
 
 	void dump_name(bool fqp)
 	{
-		std::string *buf = get_name(fqp);;
-		cout << *buf;
-		delete buf;
+		cout << get_name(fqp);;
 	}
 };
 

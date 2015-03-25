@@ -204,3 +204,26 @@ int aa_load_buffer(int option, char *buffer, int size)
 
 	return write_policy_buffer(fd, kernel_supports_setload, buffer, size);
 }
+
+/**
+ * aa_remove_profile - remove a profile from the kernel
+ * @fqname: the fully qualified name of the profile to remove
+ *
+ * Returns: 0 on success, -1 on error with errno set
+ */
+int aa_remove_profile(const char *fqname)
+{
+	autoclose int dirfd = -1;
+	autoclose int fd = -1;
+
+	dirfd = open_iface_dir();
+	if (dirfd == -1)
+		return -1;
+
+	fd = open_option_iface(dirfd, OPTION_REMOVE);
+	if (fd == -1)
+		return -1;
+
+	/* include trailing \0 in buffer write */
+	return write_buffer(fd, fqname, strlen(fqname) + 1, 0);
+}
