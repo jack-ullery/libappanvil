@@ -7,6 +7,8 @@
 #define autoclose __attribute((cleanup(_aa_autoclose)))
 #define autofclose __attribute((cleanup(_aa_autofclose)))
 
+#define asprintf _aa_asprintf
+
 int dirat_for_each(DIR *dir, const char *name, void *data,
 		   int (* cb)(DIR *, const char *, struct stat *, void *));
 
