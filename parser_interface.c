@@ -29,6 +29,7 @@
 #include <sstream>
 
 #include "lib.h"
+#include "kernel_interface.h"
 #include "parser.h"
 #include "profile.h"
 #include "libapparmor_re/apparmor_re.h"
@@ -467,9 +468,7 @@ void sd_serialize_top_profile(std::ostringstream &buf, Profile *profile)
 	sd_write_name(buf, "version");
 	sd_write_uint32(buf, version);
 
-	if (profile_ns) {
-		sd_write_string(buf, profile_ns, "namespace");
-	} else if (profile->ns) {
+	if (profile->ns) {
 		sd_write_string(buf, profile->ns, "namespace");
 	}
 
@@ -523,49 +522,10 @@ int __sd_serialize_profile(int option, Profile *prof)
 	error = 0;
 
 	if (option == OPTION_REMOVE) {
-		char *name, *ns = NULL;
-		int len = 0;
-
-		if (profile_ns) {
-			len += strlen(profile_ns) + 2;
-			ns = profile_ns;
-		} else if (prof->ns) {
-			len += strlen(prof->ns) + 2;
-			ns = prof->ns;
-		}
-		if (prof->parent) {
-			name = (char *) malloc(strlen(prof->name) + 3 +
-				      strlen(prof->parent->name) + len);
-			if (!name) {
-				PERROR(_("Memory Allocation Error: Unable to remove ^%s\n"), prof->name);
-				error = -errno;
-				goto exit;
-			}
-			if (ns)
-				sprintf(name, ":%s:%s//%s", ns,
-					prof->parent->name, prof->name);
-			else
-				sprintf(name, "%s//%s", prof->parent->name,
-					prof->name);
-		} else if (ns) {
-			name = (char *) malloc(len + strlen(prof->name) + 1);
-			if (!name) {
-				PERROR(_("Memory Allocation Error: Unable to remove %s:%s."), ns, prof->name);
-				error = -errno;
-				goto exit;
-			}
-			sprintf(name, ":%s:%s", ns, prof->name);
-		} else {
-			name = prof->name;
-		}
-		size = strlen(name) + 1;
 		if (kernel_load) {
-			wsize = write(fd, name, size);
-			if (wsize < 0)
+			if (aa_remove_profile(prof->fqname().c_str()) == -1)
 				error = -errno;
 		}
-		if (prof->parent || ns)
-			free(name);
 	} else {
 		sd_serialize_top_profile(work_area, prof);
 

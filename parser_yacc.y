@@ -347,7 +347,14 @@ profile:  opt_profile_flag opt_ns profile_base
 		if ($3->name[0] != '/' && !($1 || $2))
 			yyerror(_("Profile names must begin with a '/', namespace or keyword 'profile' or 'hat'."));
 
-		prof->ns = $2;
+		if ($2 && profile_ns) {
+			pwarn("%s: -n %s overriding policy specified namespace :%s:\n", progname, profile_ns, $2);
+			free($2);
+			prof->ns = strdup(profile_ns);
+			if (!prof->ns)
+				yyerror(_("Memory allocation error."));
+		} else
+			prof->ns = $2;
 		if ($1 == 2)
 			prof->flags.hat = 1;
 		$$ = prof;
