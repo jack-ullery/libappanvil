@@ -123,7 +123,7 @@ create_file:
 
 error:
 	/* does the dir exist? */
-	if (stat(cachedir, &stat_file) == -1 && create_cache_dir) {
+	if (stat(cachedir, &stat_file) == -1) {
 		if (mkdir(cachedir, 0700) == 0)
 			goto create_file;
 		if (show_cache)
