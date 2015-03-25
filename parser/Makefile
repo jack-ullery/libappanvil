@@ -75,10 +75,10 @@ SRCS = parser_common.c parser_include.c parser_interface.c parser_lex.c \
        parser_yacc.c parser_regex.c parser_variable.c parser_policy.c \
        parser_alias.c common_optarg.c lib.c network.c \
        mount.cc dbus.cc profile.cc rule.cc signal.cc ptrace.cc \
-       af_rule.cc af_unix.cc features.c policy_cache.c kernel_interface.c
+       af_rule.cc af_unix.cc policy_cache.c kernel_interface.c
 HDRS = parser.h parser_include.h immunix.h mount.h dbus.h lib.h profile.h \
        rule.h common_optarg.h signal.h ptrace.h network.h af_rule.h af_unix.h \
-       features.h policy_cache.h kernel_interface.h
+       policy_cache.h kernel_interface.h
 TOOLS = apparmor_parser
 
 OBJECTS = $(patsubst %.cc, %.o, $(SRCS:.c=.o))
@@ -109,7 +109,7 @@ EXTRA_CFLAGS += $(INCLUDE_APPARMOR)
 LEX_C_FILES	= parser_lex.c
 YACC_C_FILES	= parser_yacc.c parser_yacc.h
 
-TESTS = tst_regex tst_misc tst_symtab tst_variable tst_lib tst_features
+TESTS = tst_regex tst_misc tst_symtab tst_variable tst_lib
 TEST_CFLAGS = $(EXTRA_CFLAGS) -DUNIT_TEST -Wno-unused-result
 TEST_OBJECTS = $(filter-out \
 			parser_lex.o \
@@ -237,10 +237,7 @@ mount.o: mount.cc mount.h parser.h immunix.h rule.h
 common_optarg.o: common_optarg.c common_optarg.h parser.h libapparmor_re/apparmor_re.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
-features.o: features.c features.h parser.h libapparmor_re/apparmor_re.h
-	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
-
-policy_cache.o: policy_cache.c policy_cache.h parser.h lib.h features.h
+policy_cache.o: policy_cache.c policy_cache.h parser.h lib.h
 	$(CXX) $(EXTRA_CFLAGS) -c -o $@ $<
 
 kernel_interface.o: kernel_interface.c kernel_interface.h
@@ -293,8 +290,6 @@ cap_names.h: /usr/include/linux/capability.h
 tst_lib: lib.c parser.h $(filter-out lib.o, ${TEST_OBJECTS})
 	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS) $(TEST_LDLIBS)
 tst_%: parser_%.c parser.h $(filter-out parser_%.o, ${TEST_OBJECTS})
-	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS) $(TEST_LDLIBS)
-tst_features: features.c features.h parser.h
 	$(CXX) $(TEST_CFLAGS) -o $@ $< $(filter-out $(<:.c=.o), ${TEST_OBJECTS}) $(TEST_LDFLAGS) $(TEST_LDLIBS)
 
 .SILENT: check

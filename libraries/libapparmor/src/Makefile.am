@@ -48,7 +48,7 @@ af_protos.h: /usr/include/netinet/in.h
 lib_LTLIBRARIES = libapparmor.la
 noinst_HEADERS = grammar.h parser.h scanner.h af_protos.h private.h
 
-libapparmor_la_SOURCES = grammar.y libaalogparse.c kernel_interface.c scanner.c private.c
+libapparmor_la_SOURCES = grammar.y libaalogparse.c kernel_interface.c scanner.c private.c features.c
 libapparmor_la_LDFLAGS = -version-info $(AA_LIB_CURRENT):$(AA_LIB_REVISION):$(AA_LIB_AGE) -XCClinker -dynamic -pthread \
 	-Wl,--version-script=$(top_srcdir)/src/libapparmor.map
 
@@ -63,7 +63,11 @@ CLEANFILES = libapparmor.pc
 
 tst_aalogmisc_SOURCES = tst_aalogmisc.c
 tst_aalogmisc_LDADD = .libs/libapparmor.a
-check_PROGRAMS = tst_aalogmisc
+
+tst_features_SOURCES = tst_features.c
+tst_features_LDADD = .libs/libapparmor.a
+
+check_PROGRAMS = tst_aalogmisc tst_features
 TESTS = $(check_PROGRAMS)
 
 EXTRA_DIST = grammar.y scanner.l libapparmor.map libapparmor.pc

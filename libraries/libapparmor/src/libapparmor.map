@@ -52,6 +52,20 @@ APPARMOR_2.9 {
 	*;
 } APPARMOR_1.1;
 
+APPARMOR_2.10 {
+  global:
+        aa_features_new;
+        aa_features_new_from_string;
+        aa_features_new_from_kernel;
+        aa_features_ref;
+        aa_features_unref;
+        aa_features_write_to_file;
+        aa_features_is_equal;
+        aa_features_supports;
+  local:
+        *;
+} APPARMOR_2.9;
+
 PRIVATE {
 	global:
 		_aa_is_blacklisted;

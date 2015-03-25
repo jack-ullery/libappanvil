@@ -18,6 +18,7 @@
 #define _AA_PRIVATE_H 1
 
 #include <stdbool.h>
+#include <sys/apparmor_private.h>
 
 #define autofree __attribute((cleanup(_aa_autofree)))
 #define autoclose __attribute((cleanup(_aa_autoclose)))
